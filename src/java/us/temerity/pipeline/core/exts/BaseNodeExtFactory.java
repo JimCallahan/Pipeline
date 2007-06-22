@@ -1,4 +1,4 @@
-// $Id: BaseNodeExtFactory.java,v 1.3 2007/06/21 01:21:57 jim Exp $
+// $Id: BaseNodeExtFactory.java,v 1.4 2007/06/22 01:26:09 jim Exp $
 
 package us.temerity.pipeline.core.exts;
 
@@ -54,6 +54,17 @@ class BaseNodeExtFactory
     return names;
   }
 
+  /**
+   * Get the name of the user performing the operation. 
+   */ 
+  public String 
+  getWorkUser()
+  {
+    if(pNodeID != null) 
+      return pNodeID.getAuthor(); 
+    return null;
+  }
+  
 
 
   /*----------------------------------------------------------------------------------------*/

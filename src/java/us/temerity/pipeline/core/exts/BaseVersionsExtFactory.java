@@ -1,4 +1,4 @@
-// $Id: BaseVersionsExtFactory.java,v 1.2 2007/06/19 22:05:03 jim Exp $
+// $Id: BaseVersionsExtFactory.java,v 1.3 2007/06/22 01:26:09 jim Exp $
 
 package us.temerity.pipeline.core.exts;
 
@@ -23,15 +23,20 @@ class BaseVersionsExtFactory
   /**
    * Construct a task factory.
    * 
+   * @param workUser
+   *   The name of the user performing the operation.
+   * 
    * @param versions
    *   The fully resolved names and revision numbers of the checked-in versions.
    */ 
   public 
   BaseVersionsExtFactory
   (
+   String workUser, 
    TreeMap<String,TreeSet<VersionID>> versions
   ) 
   {
+    pWorkUser = workUser; 
     pVersions = versions; 
   }
 
@@ -53,11 +58,24 @@ class BaseVersionsExtFactory
     return names;
   }
 
-
+  /**
+   * Get the name of the user performing the operation. 
+   */ 
+  public String 
+  getWorkUser()
+  {
+    return pWorkUser; 
+  }
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The name of the user performing the operation.
+   */ 
+  protected String pWorkUser; 
 
   /**
    * The fully resolved names and revision numbers of the checked-in versions to offline.

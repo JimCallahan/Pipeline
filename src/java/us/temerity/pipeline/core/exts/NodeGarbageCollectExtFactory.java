@@ -1,4 +1,4 @@
-// $Id: NodeGarbageCollectExtFactory.java,v 1.2 2007/06/19 22:05:03 jim Exp $
+// $Id: NodeGarbageCollectExtFactory.java,v 1.3 2007/06/22 01:26:09 jim Exp $
 
 package us.temerity.pipeline.core.exts;
 
@@ -56,6 +56,15 @@ class NodeGarbageCollectExtFactory
     return new LinkedList<String>();
   }
 
+  /**
+   * Get the name of the user performing the operation. 
+   */ 
+  public String 
+  getWorkUser()
+  {
+    return null;
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -69,6 +78,18 @@ class NodeGarbageCollectExtFactory
   ) 
   {
     return ext.hasPostNodeGarbageCollectTask();
+  }
+
+  /**
+   * Get the requirements to for the post-operation task. 
+   */ 
+  public ExtReqs
+  getTaskReqs
+  (   
+   BaseMasterExt ext
+  ) 
+  {
+    return new ExtReqs();
   }
 
   /**

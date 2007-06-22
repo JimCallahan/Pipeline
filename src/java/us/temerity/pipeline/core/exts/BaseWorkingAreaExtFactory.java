@@ -1,4 +1,4 @@
-// $Id: BaseWorkingAreaExtFactory.java,v 1.2 2007/06/19 22:05:03 jim Exp $
+// $Id: BaseWorkingAreaExtFactory.java,v 1.3 2007/06/22 01:26:09 jim Exp $
 
 package us.temerity.pipeline.core.exts;
 
@@ -53,6 +53,15 @@ class BaseWorkingAreaExtFactory
   getNodeNames()
   {
     return new LinkedList<String>();
+  }
+
+  /**
+   * Get the name of the user performing the operation. 
+   */ 
+  public String 
+  getWorkUser()
+  {
+    return pAuthor; 
   }
 
 

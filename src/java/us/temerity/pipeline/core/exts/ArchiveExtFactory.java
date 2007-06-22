@@ -1,4 +1,4 @@
-// $Id: ArchiveExtFactory.java,v 1.1 2006/10/11 22:45:40 jim Exp $
+// $Id: ArchiveExtFactory.java,v 1.2 2007/06/22 01:26:09 jim Exp $
 
 package us.temerity.pipeline.core.exts;
 
@@ -26,6 +26,9 @@ class ArchiveExtFactory
   /**
    * Construct a task factory.
    * 
+   * @param workUser
+   *   The name of the user performing the operation.
+   * 
    * @param name 
    *   The name of the archive volume. 
    * 
@@ -42,13 +45,14 @@ class ArchiveExtFactory
   public 
   ArchiveExtFactory
   (
+   String workUser, 
    String name, 
    TreeMap<String,TreeSet<VersionID>> versions, 
    BaseArchiver archiver, 
    String toolset
   ) 
   {
-    super(name, versions, archiver, toolset);
+    super(workUser, name, versions, archiver, toolset);
   }
 
 
@@ -67,6 +71,18 @@ class ArchiveExtFactory
   )
   {
     return ext.hasPreArchiveTest();
+  }
+
+  /**
+   * Get the requirements to for the pre-operation test. 
+   */ 
+  public ExtReqs
+  getTestReqs
+  (   
+   BaseMasterExt ext
+  ) 
+  {
+    return ext.getPreArchiveTestReqs();
   }
 
   /**
@@ -98,6 +114,18 @@ class ArchiveExtFactory
   ) 
   {
     return ext.hasPostArchiveTask();
+  }
+
+  /**
+   * Get the requirements to for the post-operation task. 
+   */ 
+  public ExtReqs
+  getTaskReqs
+  (   
+   BaseMasterExt ext
+  ) 
+  {
+    return ext.getPostArchiveTaskReqs();
   }
 
   /**

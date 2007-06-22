@@ -1,4 +1,4 @@
-// $Id: BaseMasterExt.java,v 1.4 2007/06/20 18:07:45 jim Exp $
+// $Id: BaseMasterExt.java,v 1.5 2007/06/22 01:26:09 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -159,10 +159,22 @@ class BaseMasterExt
   /**
    * Whether to test before creating a new empty working area. <P>
    */  
-  public boolean
+  public final boolean
   hasPreCreateWorkingAreaTest() 
   {
-    return false;
+    return (getPreCreateWorkingAreaTestReqs() != null); 
+  }
+
+  /**
+   * Get the operation requirements to test before creating a new empty working area. <P>
+   * 
+   * Subclasses should override this to return a non-<CODE>null</CODE> set of requirements
+   * in order to enable this test.
+   */  
+  public ExtReqs
+  getPreCreateWorkingAreaTestReqs() 
+  {
+    return null;
   }
 
   /**
@@ -190,12 +202,24 @@ class BaseMasterExt
   /**
    * Whether to run a task after creating a new empty working area. <P>
    */  
-  public boolean
+  public final boolean
   hasPostCreateWorkingAreaTask() 
   {
-    return false;
+    return (getPostCreateWorkingAreaTaskReqs() != null); 
   }
-  
+  	 
+  /**
+   * Get the operation requirements to run a task after creating a new empty working area.<P>
+   * 
+   * Subclasses should override this to return a non-<CODE>null</CODE> set of requirements
+   * in order to enable perform this task. 
+   */  
+  public ExtReqs
+  getPostCreateWorkingAreaTaskReqs() 
+  {
+    return null;
+  }
+
   /**
    * The task to perform after creating a new empty working area. <P>
    * 
@@ -219,11 +243,23 @@ class BaseMasterExt
   /**
    * Whether to test before removing an entire working area. <P>
    */  
-  public boolean
+  public final boolean
   hasPreRemoveWorkingAreaTest() 
   {
-    return false;
+    return (getPreRemoveWorkingAreaTestReqs() != null); 	       
   }
+ 	 
+  /**
+   * Get the operation requirements to test before removing an entire working area. <P>
+   * 
+   * Subclasses should override this to return a non-<CODE>null</CODE> set of requirements
+   * in order to enable this test.
+   */  
+  public ExtReqs
+  getPreRemoveWorkingAreaTestReqs() 
+  {
+    return null;
+  } 
 
   /**
    * Test to perform before removing an entire working area. <P>
@@ -250,11 +286,23 @@ class BaseMasterExt
   /**
    * Whether to run a task after removing an entire working area. <P>
    */  
-  public boolean
+  public final boolean
   hasPostRemoveWorkingAreaTask() 
   {
-    return false;
+    return (getPostRemoveWorkingAreaTaskReqs() != null); 	       
   }
+ 	 
+  /**
+   * Get the operation requirements to run a task after removing an entire working area. <P>
+   * 
+   * Subclasses should override this to return a non-<CODE>null</CODE> set of requirements
+   * in order to enable perform this task. 
+   */  
+  public ExtReqs
+  getPostRemoveWorkingAreaTaskReqs() 
+  {
+    return null;
+  } 
   
   /**
    * The task to perform after removing an entire working area. <P>
@@ -281,11 +329,24 @@ class BaseMasterExt
   /**
    * Whether to test before modifying the properties of a working version of a node. <P>
    */  
-  public boolean
+  public final boolean
   hasPreModifyPropertiesTest() 
   {
-    return false;
+    return (getPreModifyPropertiesTestReqs() != null); 	       
   }
+ 	 
+  /**
+   * Get the operation requirements to test before modifying the properties of a working 
+   * version of a node. <P>
+   * 
+   * Subclasses should override this to return a non-<CODE>null</CODE> set of requirements
+   * in order to enable this test.
+   */  
+  public ExtReqs
+  getPreModifyPropertiesTestReqs() 
+  {
+    return null;
+  } 
 
   /**
    * Test to perform before modifying the properties of a working version of a node. <P>
@@ -312,11 +373,24 @@ class BaseMasterExt
   /**
    * Whether to run a task after modifying the properties of a working version of a node. <P>
    */  
-  public boolean
+  public final boolean
   hasPostModifyPropertiesTask() 
   {
-    return false;
+    return (getPostModifyPropertiesTaskReqs() != null); 	       
   }
+ 	 
+  /**
+   * Get the operation requirements to run a task after modifying the properties of a 
+   * working version of a node. <P>
+   * 
+   * Subclasses should override this to return a non-<CODE>null</CODE> set of requirements
+   * in order to enable perform this task. 
+   */  
+  public ExtReqs
+  getPostModifyPropertiesTaskReqs() 
+  {
+    return null;
+  } 
   
   /**
    * The task to perform after modifying the properties of a working version of a node. <P>
@@ -342,11 +416,24 @@ class BaseMasterExt
    * Whether to test before creating or modifying an existing link between two 
    * node working versions. <P>
    */  
-  public boolean
+  public final boolean
   hasPreLinkTest() 
   {
-    return false;
+    return (getPreLinkTestReqs() != null); 	       
   }
+ 	 
+  /**
+   * Get the operation requirements to test before creating or modifying an existing 
+   * link between two node working versions. <P>
+   * 
+   * Subclasses should override this to return a non-<CODE>null</CODE> set of requirements
+   * in order to enable this test.
+   */  
+  public ExtReqs
+  getPreLinkTestReqs() 
+  {
+    return null;
+  } 
 
   /**
    * Test to perform before creating or modifying an existing link between two 
@@ -396,11 +483,24 @@ class BaseMasterExt
    * Whether to run a task after creating or modifying an existing link between two 
    * node working versions. <P>
    */  
-  public boolean
+  public final boolean
   hasPostLinkTask() 
   {
-    return false;
+    return (getPostLinkTaskReqs() != null); 	       
   }
+ 	 
+  /**
+   * Get the operation requirements to run a task after creating or modifying an existing 
+   * link between two node working versions. <P>
+   * 
+   * Subclasses should override this to return a non-<CODE>null</CODE> set of requirements
+   * in order to enable perform this task. 
+   */  
+  public ExtReqs
+  getPostLinkTaskReqs() 
+  {
+    return null;
+  } 
   
   /**
    * The task to perform after creating or modifying an existing link between two 
@@ -447,11 +547,24 @@ class BaseMasterExt
   /**
    * Whether to test before destroying an existing link between the working versions.
    */  
-  public boolean
+  public final boolean
   hasPreUnlinkTest() 
   {
-    return false;
+    return (getPreUnlinkTestReqs() != null); 	       
   }
+ 	 
+  /**
+   * Get the operation requirements to test before destroying an existing link between 
+   * the working versions. <P>
+   * 
+   * Subclasses should override this to return a non-<CODE>null</CODE> set of requirements
+   * in order to enable this test.
+   */  
+  public ExtReqs
+  getPreUnlinkTestReqs() 
+  {
+    return null;
+  } 
 
   /**
    * Test to perform before destroying an existing link between the working versions. 
@@ -486,11 +599,24 @@ class BaseMasterExt
   /**
    * Whether to run a task after destroying an existing link between the working versions.
    */  
-  public boolean
+  public final boolean
   hasPostUnlinkTask() 
   {
-    return false;
+    return (getPostUnlinkTaskReqs() != null); 	       
   }
+ 	 
+  /**
+   * Get the operation requirements to run a task after destroying an existing link 
+   * between the working versions. <P>
+   * 
+   * Subclasses should override this to return a non-<CODE>null</CODE> set of requirements
+   * in order to enable perform this task. 
+   */  
+  public ExtReqs
+  getPostUnlinkTaskReqs() 
+  {
+    return null;
+  } 
   
   /**
    * The task to perform after destroying an existing link between the working versions. 
@@ -523,11 +649,24 @@ class BaseMasterExt
   /**
    * Whether to test before adding a secondary file sequence to a working version.
    */  
-  public boolean
+  public final boolean
   hasPreAddSecondaryTest() 
   {
-    return false;
+    return (getPreAddSecondaryTestReqs() != null); 	       
   }
+ 	 
+  /**
+   * Get the operation requirements to test before adding a secondary file sequence to 
+   * a working version. <P>
+   * 
+   * Subclasses should override this to return a non-<CODE>null</CODE> set of requirements
+   * in order to enable this test.
+   */  
+  public ExtReqs
+  getPreAddSecondaryTestReqs() 
+  {
+    return null;
+  } 
 
   /**
    * Test to perform before adding a secondary file sequence to a working version.
@@ -554,11 +693,24 @@ class BaseMasterExt
   /**
    * Whether to run a task after adding a secondary file sequence to a working version.
    */  
-  public boolean
+  public final boolean
   hasPostAddSecondaryTask() 
   {
-    return false;
+    return (getPostAddSecondaryTaskReqs() != null); 	       
   }
+ 	 
+  /**
+   * Get the operation requirements to run a task after adding a secondary file sequence 
+   * to a working version. <P>
+   * 
+   * Subclasses should override this to return a non-<CODE>null</CODE> set of requirements
+   * in order to enable perform this task. 
+   */  
+  public ExtReqs
+  getPostAddSecondaryTaskReqs() 
+  {
+    return null;
+  } 
   
   /**
    * The task to perform after adding a secondary file sequence to a working version. 
@@ -583,11 +735,24 @@ class BaseMasterExt
   /**
    * Whether to test before removing a secondary file sequence to a working version.
    */  
-  public boolean
+  public final boolean
   hasPreRemoveSecondaryTest() 
   {
-    return false;
+    return (getPreRemoveSecondaryTestReqs() != null); 	       
   }
+ 	 
+  /**
+   * Get the operation requirements to test before removing a secondary file sequence to 
+   * a working version. <P>
+   * 
+   * Subclasses should override this to return a non-<CODE>null</CODE> set of requirements
+   * in order to enable this test.
+   */  
+  public ExtReqs
+  getPreRemoveSecondaryTestReqs() 
+  {
+    return null;
+  } 
 
   /**
    * Test to perform before removing a secondary file sequence to a working version.
@@ -614,11 +779,24 @@ class BaseMasterExt
   /**
    * Whether to run a task after removing a secondary file sequence to a working version.
    */  
-  public boolean
+  public final boolean
   hasPostRemoveSecondaryTask() 
   {
-    return false;
+    return (getPostRemoveSecondaryTaskReqs() != null); 	       
   }
+ 	 
+  /**
+   * Get the operation requirements to run a task after removing a secondary file sequence 
+   * to a working version. <P>
+   * 
+   * Subclasses should override this to return a non-<CODE>null</CODE> set of requirements
+   * in order to enable perform this task. 
+   */  
+  public ExtReqs
+  getPostRemoveSecondaryTaskReqs() 
+  {
+    return null;
+  } 
   
   /**
    * The task to perform after removing a secondary file sequence to a working version. 
@@ -644,11 +822,24 @@ class BaseMasterExt
    * Whether to test before renaming a working version of a node which has never 
    * been checked-in.
    */  
-  public boolean
+  public final boolean
   hasPreRenameTest() 
   {
-    return false;
+    return (getPreRenameTestReqs() != null); 	       
   }
+ 	 
+  /**
+   * Get the operation requirements to test before renaming a working version of a node 
+   * which has never been checked-in. <P>
+   * 
+   * Subclasses should override this to return a non-<CODE>null</CODE> set of requirements
+   * in order to enable this test.
+   */  
+  public ExtReqs
+  getPreRenameTestReqs() 
+  {
+    return null;
+  } 
 
   /**
    * Test to perform before renaming a working version of a node which has never 
@@ -681,11 +872,24 @@ class BaseMasterExt
    * Whether to run a task after renaming a working version of a node which has never 
    * been checked-in.
    */  
-  public boolean
+  public final boolean
   hasPostRenameTask() 
   {
-    return false;
+    return (getPostRenameTaskReqs() != null); 	       
   }
+ 	 
+  /**
+   * Get the operation requirements to run a task after renaming a working version of a 
+   * node which has never been checked-in. <P>
+   * 
+   * Subclasses should override this to return a non-<CODE>null</CODE> set of requirements
+   * in order to enable perform this task. 
+   */  
+  public ExtReqs
+  getPostRenameTaskReqs() 
+  {
+    return null;
+  } 
   
   /**
    * The task to perform after renaming a working version of a node which has never 
@@ -716,11 +920,24 @@ class BaseMasterExt
    * Whether to test before renumbering the frame ranges of the file sequences 
    * associated with a node.
    */  
-  public boolean
+  public final boolean
   hasPreRenumberTest() 
   {
-    return false;
+    return (getPreRenumberTestReqs() != null); 	       
   }
+ 	 
+  /**
+   * Get the operation requirements to test before renumbering the frame ranges of the 
+   * file sequences associated with a node. <P>
+   * 
+   * Subclasses should override this to return a non-<CODE>null</CODE> set of requirements
+   * in order to enable this test.
+   */  
+  public ExtReqs
+  getPreRenumberTestReqs() 
+  {
+    return null;
+  } 
 
   /**
    * Test to perform before renumbering the frame ranges of the file sequences 
@@ -754,11 +971,24 @@ class BaseMasterExt
    * Whether to run a task after renumbering the frame ranges of the file sequences 
    * associated with a node.
    */  
-  public boolean
+  public final boolean
   hasPostRenumberTask() 
   {
-    return false;
+    return (getPostRenumberTaskReqs() != null); 	       
   }
+ 	 
+  /**
+   * Get the operation requirements to run a task after renumbering the frame ranges of the 
+   * file sequences associated with a node. <P>
+   * 
+   * Subclasses should override this to return a non-<CODE>null</CODE> set of requirements
+   * in order to enable perform this task. 
+   */  
+  public ExtReqs
+  getPostRenumberTaskReqs() 
+  {
+    return null;
+  } 
   
   /**
    * The task to perform after renumbering the frame ranges of the file sequences 
@@ -792,11 +1022,24 @@ class BaseMasterExt
   /**
    * Whether to test before registering an initial working version of a node. 
    */  
-  public boolean
+  public final boolean
   hasPreRegisterTest() 
   {
-    return false;
+    return (getPreRegisterTestReqs() != null); 	       
   }
+ 	 
+  /**
+   * Get the operation requirements to test before registering an initial working version 
+   * of a node. <P>
+   * 
+   * Subclasses should override this to return a non-<CODE>null</CODE> set of requirements
+   * in order to enable this test.
+   */  
+  public ExtReqs
+  getPreRegisterTestReqs() 
+  {
+    return null;
+  } 
 
   /**
    * Test to perform before registering an initial working version of a node. 
@@ -823,11 +1066,24 @@ class BaseMasterExt
   /**
    * Whether to run a tesk after registering an initial working version of a node. 
    */  
-  public boolean
+  public final boolean
   hasPostRegisterTask() 
   {
-    return false;
+    return (getPostRegisterTaskReqs() != null); 	       
   }
+ 	 
+  /**
+   * Get the operation requirements to run a tesk after registering an initial working 
+   * version of a node. <P>
+   * 
+   * Subclasses should override this to return a non-<CODE>null</CODE> set of requirements
+   * in order to enable perform this task. 
+   */  
+  public ExtReqs
+  getPostRegisterTaskReqs() 
+  {
+    return null;
+  } 
   
   /**
    * The task to perform after registering an initial working version of a node. 
@@ -853,11 +1109,24 @@ class BaseMasterExt
    * Whether to test before releasing the working versions of nodes and optionally 
    * remove the associated working area files. 
    */  
-  public boolean
+  public final boolean
   hasPreReleaseTest() 
   {
-    return false;
+    return (getPreReleaseTestReqs() != null); 	       
   }
+ 	 
+  /**
+   * Get the operation requirements to test before releasing the working versions of nodes 
+   * and optionally remove the associated working area files. <P>
+   * 
+   * Subclasses should override this to return a non-<CODE>null</CODE> set of requirements
+   * in order to enable this test.
+   */  
+  public ExtReqs
+  getPreReleaseTestReqs() 
+  {
+    return null;
+  } 
 
   /**
    * Test to perform before releasing the working versions of nodes and optionally 
@@ -894,11 +1163,24 @@ class BaseMasterExt
    * Whether to run a tesk after releasing the working versions of nodes and optionally 
    * remove the associated working area files. 
    */  
-  public boolean
+  public final boolean
   hasPostReleaseTask() 
   {
-    return false;
+    return (getPostReleaseTaskReqs() != null); 	       
   }
+ 	 
+  /**
+   * Get the operation requirements to run a tesk after releasing the working versions 
+   * of nodes and optionally remove the associated working area files. <P>
+   * 
+   * Subclasses should override this to return a non-<CODE>null</CODE> set of requirements
+   * in order to enable perform this task. 
+   */  
+  public ExtReqs
+  getPostReleaseTaskReqs() 
+  {
+    return null;
+  } 
   
   /**
    * The task to perform after releasing the working versions of nodes and optionally 
@@ -933,11 +1215,24 @@ class BaseMasterExt
    * Whether to test before deleting all working and checked-in versions of a node and 
    * optionally remove all associated working area files.  
    */  
-  public boolean
+  public final boolean
   hasPreDeleteTest() 
   {
-    return false;
+    return (getPreDeleteTestReqs() != null); 	       
   }
+ 	 
+  /**
+   * Get the operation requirements to test before deleting all working and checked-in 
+   * versions of a node and optionally remove all associated working area files. <P>
+   * 
+   * Subclasses should override this to return a non-<CODE>null</CODE> set of requirements
+   * in order to enable this test.
+   */  
+  public ExtReqs
+  getPreDeleteTestReqs() 
+  {
+    return null;
+  } 
 
   /**
    * Test to perform before deleting all working and checked-in versions of a node and 
@@ -966,11 +1261,24 @@ class BaseMasterExt
    * Whether to run a tesk after deleting all working and checked-in versions of a node and 
    * optionally remove all associated working area files.  
    */  
-  public boolean
+  public final boolean
   hasPostDeleteTask() 
   {
-    return false;
+    return (getPostDeleteTaskReqs() != null); 	       
   }
+ 	 
+  /**
+   * Get the operation requirements to run a tesk after deleting all working and checked-in 
+   * versions of a node and optionally remove all associated working area files. <P>
+   * 
+   * Subclasses should override this to return a non-<CODE>null</CODE> set of requirements
+   * in order to enable perform this task. 
+   */  
+  public ExtReqs
+  getPostDeleteTaskReqs() 
+  {
+    return null;
+  } 
   
   /**
    * The task to perform after deleting all working and checked-in versions of a node and 
@@ -996,11 +1304,23 @@ class BaseMasterExt
   /**
    * Whether to test before checking-in an individual node.
    */  
-  public boolean
+  public final boolean
   hasPreCheckInTest() 
   {
-    return false;
+    return (getPreCheckInTestReqs() != null); 	       
   }
+ 	 
+  /**
+   * Get the operation requirements to test before checking-in an individual node. <P>
+   * 
+   * Subclasses should override this to return a non-<CODE>null</CODE> set of requirements
+   * in order to enable this test.
+   */  
+  public ExtReqs
+  getPreCheckInTestReqs() 
+  {
+    return null;
+  } 
 
   /**
    * Test to perform before checking-in an individual node.
@@ -1039,11 +1359,23 @@ class BaseMasterExt
   /**
    * Whether to run a tesk after checking-in an individual node.
    */  
-  public boolean
+  public final boolean
   hasPostCheckInTask() 
   {
-    return false;
+    return (getPostCheckInTaskReqs() != null); 	       
   }
+ 	 
+  /**
+   * Get the operation requirements to run a tesk after checking-in an individual node. <P>
+   * 
+   * Subclasses should override this to return a non-<CODE>null</CODE> set of requirements
+   * in order to enable perform this task. 
+   */  
+  public ExtReqs
+  getPostCheckInTaskReqs() 
+  {
+    return null;
+  } 
   
   /**
    * The task to perform after checking-in an individual node.
@@ -1064,11 +1396,23 @@ class BaseMasterExt
   /**
    * Whether to test before checking-out an individual node.
    */  
-  public boolean
+  public final boolean
   hasPreCheckOutTest() 
   {
-    return false;
+    return (getPreCheckOutTestReqs() != null); 	       
   }
+ 	 
+  /**
+   * Get the operation requirements to test before checking-out an individual node. <P>
+   * 
+   * Subclasses should override this to return a non-<CODE>null</CODE> set of requirements
+   * in order to enable this test.
+   */  
+  public ExtReqs
+  getPreCheckOutTestReqs() 
+  {
+    return null;
+  } 
 
   /**
    * Test to perform before checking-out an individual node.
@@ -1104,11 +1448,23 @@ class BaseMasterExt
   /**
    * Whether to run a tesk after checking-out an individual node.
    */  
-  public boolean
+  public final boolean
   hasPostCheckOutTask() 
   {
-    return false;
+    return (getPostCheckOutTaskReqs() != null); 	       
   }
+ 	 
+  /**
+   * Get the operation requirements to run a tesk after checking-out an individual node. <P>
+   * 
+   * Subclasses should override this to return a non-<CODE>null</CODE> set of requirements
+   * in order to enable perform this task. 
+   */  
+  public ExtReqs
+  getPostCheckOutTaskReqs() 
+  {
+    return null;
+  } 
   
   /**
    * The task to perform after checking-out an individual node.
@@ -1134,11 +1490,24 @@ class BaseMasterExt
    * Whether to test before locking the working version of a node to a specific 
    * checked-in version.
    */  
-  public boolean
+  public final boolean
   hasPreLockTest() 
   {
-    return false;
+    return (getPreLockTestReqs() != null); 	       
   }
+ 	 
+  /**
+   * Get the operation requirements to test before locking the working version of a node 
+   * to a specific checked-in version. <P>
+   * 
+   * Subclasses should override this to return a non-<CODE>null</CODE> set of requirements
+   * in order to enable this test.
+   */  
+  public ExtReqs
+  getPreLockTestReqs() 
+  {
+    return null;
+  } 
 
   /**
    * Test to perform before locking the working version of a node to a specific 
@@ -1168,11 +1537,24 @@ class BaseMasterExt
    * Whether to run a tesk after locking the working version of a node to a specific 
    * checked-in version.
    */  
-  public boolean
+  public final boolean
   hasPostLockTask() 
   {
-    return false;
+    return (getPostLockTaskReqs() != null); 	       
   }
+ 	 
+  /**
+   * Get the operation requirements to run a tesk after locking the working version of 
+   * a node to a specific checked-in version. <P>
+   * 
+   * Subclasses should override this to return a non-<CODE>null</CODE> set of requirements
+   * in order to enable perform this task. 
+   */  
+  public ExtReqs
+  getPostLockTaskReqs() 
+  {
+    return null;
+  } 
   
   /**
    * The task to perform after locking the working version of a node to a specific 
@@ -1200,11 +1582,25 @@ class BaseMasterExt
    * Whether to test before changing the checked-in version upon which the working version 
    * is based without modifying the working version properties, links or associated files.
    */  
-  public boolean
+  public final boolean
   hasPreEvolveTest() 
   {
-    return false;
+    return (getPreEvolveTestReqs() != null); 	       
   }
+ 	 
+  /**
+   * Get the operation requirements to test before changing the checked-in version upon 
+   * which the working version is based without modifying the working version properties, 
+   * links or associated files. <P>
+   * 
+   * Subclasses should override this to return a non-<CODE>null</CODE> set of requirements
+   * in order to enable this test.
+   */  
+  public ExtReqs
+  getPreEvolveTestReqs() 
+  {
+    return null;
+  } 
 
   /**
    * Test to perform before changing the checked-in version upon which the working version 
@@ -1234,11 +1630,25 @@ class BaseMasterExt
    * version is based without modifying the working version properties, links or associated 
    * files.
    */  
-  public boolean
+  public final boolean
   hasPostEvolveTask() 
   {
-    return false;
+    return (getPostEvolveTaskReqs() != null); 	       
   }
+ 	 
+  /**
+   * Get the operation requirements to run a tesk after changing the checked-in version 
+   * upon which the working version is based without modifying the working version 
+   * properties, links or associated files. <P>
+   * 
+   * Subclasses should override this to return a non-<CODE>null</CODE> set of requirements
+   * in order to enable perform this task. 
+   */  
+  public ExtReqs
+  getPostEvolveTaskReqs() 
+  {
+    return null;
+  } 
   
   /**
    * The task to perform after changing the checked-in version upon which the working 
@@ -1266,11 +1676,24 @@ class BaseMasterExt
    * Whether to test before reverting specific working area files to an earlier 
    * checked-in version of the files.
    */  
-  public boolean
+  public final boolean
   hasPreRevertFilesTest() 
   {
-    return false;
+    return (getPreRevertFilesTestReqs() != null); 	       
   }
+ 	 
+  /**
+   * Get the operation requirements to test before reverting specific working area files 
+   * to an earlier checked-in version of the files. <P>
+   * 
+   * Subclasses should override this to return a non-<CODE>null</CODE> set of requirements
+   * in order to enable this test.
+   */  
+  public ExtReqs
+  getPreRevertFilesTestReqs() 
+  {
+    return null;
+  } 
 
   /**
    * Test to perform before reverting specific working area files to an earlier 
@@ -1299,11 +1722,24 @@ class BaseMasterExt
    * Whether to run a tesk after reverting specific working area files to an earlier 
    * checked-in version of the files.
    */  
-  public boolean
+  public final boolean
   hasPostRevertFilesTask() 
   {
-    return false;
+    return (getPostRevertFilesTaskReqs() != null); 	       
   }
+ 	 
+  /**
+   * Get the operation requirements to run a tesk after reverting specific working area 
+   * files to an earlier checked-in version of the files. <P>
+   * 
+   * Subclasses should override this to return a non-<CODE>null</CODE> set of requirements
+   * in order to enable perform this task. 
+   */  
+  public ExtReqs
+  getPostRevertFilesTaskReqs() 
+  {
+    return null;
+  } 
   
   /**
    * The task to perform after reverting specific working area files to an earlier 
@@ -1330,11 +1766,24 @@ class BaseMasterExt
    * Whether to test before replacing the primary files associated with one node with 
    * the primary files of another node.
    */  
-  public boolean
+  public final boolean
   hasPreCloneFilesTest() 
   {
-    return false;
+    return (getPreCloneFilesTestReqs() != null); 	       
   }
+ 	 
+  /**
+   * Get the operation requirements to test before replacing the primary files associated 
+   * with one node with the primary files of another node. <P>
+   * 
+   * Subclasses should override this to return a non-<CODE>null</CODE> set of requirements
+   * in order to enable this test.
+   */  
+  public ExtReqs
+  getPreCloneFilesTestReqs() 
+  {
+    return null;
+  } 
 
   /**
    * Test to perform before replacing the primary files associated with one node with 
@@ -1363,11 +1812,24 @@ class BaseMasterExt
    * Whether to run a tesk after replacing the primary files associated with one node with 
    * the primary files of another node.
    */  
-  public boolean
+  public final boolean
   hasPostCloneFilesTask() 
   {
-    return false;
+    return (getPostCloneFilesTaskReqs() != null); 	       
   }
+ 	 
+  /**
+   * Get the operation requirements to run a tesk after replacing the primary files 
+   * associated with one node with the primary files of another node. <P>
+   * 
+   * Subclasses should override this to return a non-<CODE>null</CODE> set of requirements
+   * in order to enable perform this task. 
+   */  
+  public ExtReqs
+  getPostCloneFilesTaskReqs() 
+  {
+    return null;
+  } 
   
   /**
    * The task to perform after replacing the primary files associated with one node with 
@@ -1393,11 +1855,24 @@ class BaseMasterExt
   /**
    * Whether to test before removing the working area files associated with a node.
    */  
-  public boolean
+  public final boolean
   hasPreRemoveFilesTest() 
   {
-    return false;
+    return (getPreRemoveFilesTestReqs() != null); 	       
   }
+ 	 
+  /**
+   * Get the operation requirements to test before removing the working area files 
+   * associated with a node. <P>
+   * 
+   * Subclasses should override this to return a non-<CODE>null</CODE> set of requirements
+   * in order to enable this test.
+   */  
+  public ExtReqs
+  getPreRemoveFilesTestReqs() 
+  {
+    return null;
+  } 
 
   /**
    * Test to perform before removing the working area files associated with a node.
@@ -1425,11 +1900,24 @@ class BaseMasterExt
   /**
    * Whether to run a tesk after removing the working area files associated with a node.
    */  
-  public boolean
+  public final boolean
   hasPostRemoveFilesTask() 
   {
-    return false;
+    return (getPostRemoveFilesTaskReqs() != null); 	       
   }
+ 	 
+  /**
+   * Get the operation requirements to run a tesk after removing the working area files 
+   * associated with a node. <P>
+   * 
+   * Subclasses should override this to return a non-<CODE>null</CODE> set of requirements
+   * in order to enable perform this task. 
+   */  
+  public ExtReqs
+  getPostRemoveFilesTaskReqs() 
+  {
+    return null;
+  } 
   
   /**
    * The task to perform after removing the working area files associated with a node.
@@ -1511,11 +1999,24 @@ class BaseMasterExt
    * Whether to test before archiving the files associated with the given 
    * checked-in versions.
    */  
-  public boolean
+  public final boolean
   hasPreArchiveTest() 
   {
-    return false;
+    return (getPreArchiveTestReqs() != null); 	       
   }
+ 	 
+  /**
+   * Get the operation requirements to test before archiving the files associated with 
+   * the given checked-in versions. <P>
+   * 
+   * Subclasses should override this to return a non-<CODE>null</CODE> set of requirements
+   * in order to enable this test.
+   */  
+  public ExtReqs
+  getPreArchiveTestReqs() 
+  {
+    return null;
+  } 
 
   /**
    * Test to perform before archiving the files associated with the given 
@@ -1552,11 +2053,24 @@ class BaseMasterExt
    * Whether to run a tesk after archiving the files associated with the given 
    * checked-in versions.
    */  
-  public boolean
+  public final boolean
   hasPostArchiveTask() 
   {
-    return false;
+    return (getPostArchiveTaskReqs() != null); 	       
   }
+ 	 
+  /**
+   * Get the operation requirements to run a tesk after archiving the files associated 
+   * with the given checked-in versions. <P>
+   * 
+   * Subclasses should override this to return a non-<CODE>null</CODE> set of requirements
+   * in order to enable perform this task. 
+   */  
+  public ExtReqs
+  getPostArchiveTaskReqs() 
+  {
+    return null;
+  } 
   
   /**
    * The task to perform after archiving the files associated with the given 
@@ -1591,11 +2105,24 @@ class BaseMasterExt
    * Whether to test before removing the repository files associated with the given 
    * checked-in versions.
    */  
-  public boolean
+  public final boolean
   hasPreOfflineTest() 
   {
-    return false;
+    return (getPreOfflineTestReqs() != null); 	       
   }
+ 	 
+  /**
+   * Get the operation requirements to test before removing the repository files associated 
+   * with the given checked-in versions. <P>
+   * 
+   * Subclasses should override this to return a non-<CODE>null</CODE> set of requirements
+   * in order to enable this test.
+   */  
+  public ExtReqs
+  getPreOfflineTestReqs() 
+  {
+    return null;
+  } 
 
   /**
    * Test to perform before removing the repository files associated with the given 
@@ -1620,11 +2147,24 @@ class BaseMasterExt
    * Whether to run a tesk after removing the repository files associated with the given 
    * checked-in versions.
    */  
-  public boolean
+  public final boolean
   hasPostOfflineTask() 
   {
-    return false;
+    return (getPostOfflineTaskReqs() != null); 	       
   }
+ 	 
+  /**
+   * Get the operation requirements to run a tesk after removing the repository files 
+   * associated with the given checked-in versions. <P>
+   * 
+   * Subclasses should override this to return a non-<CODE>null</CODE> set of requirements
+   * in order to enable perform this task. 
+   */  
+  public ExtReqs
+  getPostOfflineTaskReqs() 
+  {
+    return null;
+  } 
   
   /**
    * The task to perform after removing the repository files associated with the given 
@@ -1646,11 +2186,24 @@ class BaseMasterExt
   /**
    * Whether to test before requesting to restore the given set of checked-in versions.
    */  
-  public boolean
+  public final boolean
   hasPreRequestRestoreTest() 
   {
-    return false;
+    return (getPreRequestRestoreTestReqs() != null); 	       
   }
+ 	 
+  /**
+   * Get the operation requirements to test before requesting to restore the given set of 
+   * checked-in versions. <P>
+   * 
+   * Subclasses should override this to return a non-<CODE>null</CODE> set of requirements
+   * in order to enable this test.
+   */  
+  public ExtReqs
+  getPreRequestRestoreTestReqs() 
+  {
+    return null;
+  } 
 
   /**
    * Test to perform before requesting to restore the given set of checked-in versions.
@@ -1673,11 +2226,24 @@ class BaseMasterExt
   /**
    * Whether to run a tesk after requesting to restore the given set of checked-in versions.
    */  
-  public boolean
+  public final boolean
   hasPostRequestRestoreTask() 
   {
-    return false;
+    return (getPostRequestRestoreTaskReqs() != null); 	       
   }
+ 	 
+  /**
+   * Get the operation requirements to run a tesk after requesting to restore the given set 
+   * of checked-in versions. <P>
+   * 
+   * Subclasses should override this to return a non-<CODE>null</CODE> set of requirements
+   * in order to enable perform this task. 
+   */  
+  public ExtReqs
+  getPostRequestRestoreTaskReqs() 
+  {
+    return null;
+  } 
   
   /**
    * The task to perform after requesting to restore the given set of checked-in versions.
@@ -1699,11 +2265,24 @@ class BaseMasterExt
    * Whether to test before denying the request to restore the given set of 
    * checked-in versions.
    */  
-  public boolean
+  public final boolean
   hasPreDenyRestoreTest() 
   {
-    return false;
+    return (getPreDenyRestoreTestReqs() != null); 	       
   }
+ 	 
+  /**
+   * Get the operation requirements to test before denying the request to restore the given 
+   * set of checked-in versions. <P>
+   * 
+   * Subclasses should override this to return a non-<CODE>null</CODE> set of requirements
+   * in order to enable this test.
+   */  
+  public ExtReqs
+  getPreDenyRestoreTestReqs() 
+  {
+    return null;
+  } 
 
   /**
    * Test to perform before denying the request to restore the given set of 
@@ -1728,11 +2307,24 @@ class BaseMasterExt
    * Whether to run a tesk after denying the request to restore the given set of 
    * checked-in versions.
    */  
-  public boolean
+  public final boolean
   hasPostDenyRestoreTask() 
   {
-    return false;
+    return (getPostDenyRestoreTaskReqs() != null); 	       
   }
+ 	 
+  /**
+   * Get the operation requirements to run a tesk after denying the request to restore 
+   * the given set of checked-in versions. <P>
+   * 
+   * Subclasses should override this to return a non-<CODE>null</CODE> set of requirements
+   * in order to enable perform this task. 
+   */  
+  public ExtReqs
+  getPostDenyRestoreTaskReqs() 
+  {
+    return null;
+  } 
   
   /**
    * The task to perform after denying the request to restore the given set of 
@@ -1755,11 +2347,24 @@ class BaseMasterExt
    * Whether to test before restoring the given checked-in versions from the given 
    * archive volume.
    */  
-  public boolean
+  public final boolean
   hasPreRestoreTest() 
   {
-    return false;
+    return (getPreRestoreTestReqs() != null); 	       
   }
+ 	 
+  /**
+   * Get the operation requirements to test before restoring the given checked-in versions 
+   * from the given archive volume. <P>
+   * 
+   * Subclasses should override this to return a non-<CODE>null</CODE> set of requirements
+   * in order to enable this test.
+   */  
+  public ExtReqs
+  getPreRestoreTestReqs() 
+  {
+    return null;
+  } 
 
   /**
    * Test to perform before restoring the given checked-in versions from the given 
@@ -1797,11 +2402,24 @@ class BaseMasterExt
    * Whether to run a tesk after restoring the given checked-in versions from the given 
    * archive volume.
    */  
-  public boolean
+  public final boolean
   hasPostRestoreTask() 
   {
-    return false;
+    return (getPostRestoreTaskReqs() != null); 	       
   }
+ 	 
+  /**
+   * Get the operation requirements to run a tesk after restoring the given checked-in 
+   * versions from the given archive volume. <P>  
+   * 
+   * Subclasses should override this to return a non-<CODE>null</CODE> set of requirements
+   * in order to enable perform this task. 
+   */  
+  public ExtReqs
+  getPostRestoreTaskReqs() 
+  {
+    return null;
+  } 
   
   /**
    * The task to perform after restoring the given checked-in versions from the given 

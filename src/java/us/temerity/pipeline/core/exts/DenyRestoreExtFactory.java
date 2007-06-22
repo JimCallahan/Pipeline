@@ -1,4 +1,4 @@
-// $Id: DenyRestoreExtFactory.java,v 1.1 2006/10/11 22:45:40 jim Exp $
+// $Id: DenyRestoreExtFactory.java,v 1.2 2007/06/22 01:26:09 jim Exp $
 
 package us.temerity.pipeline.core.exts;
 
@@ -26,16 +26,20 @@ class DenyRestoreExtFactory
   /**
    * Construct a task factory.
    * 
+   * @param workUser
+   *   The name of the user performing the operation.
+   * 
    * @param versions
    *   The fully resolved names and revision numbers of the checked-in versions.
    */ 
   public 
   DenyRestoreExtFactory
   (
+   String workUser, 
    TreeMap<String,TreeSet<VersionID>> versions
   ) 
   {
-    super(versions); 
+    super(workUser, versions); 
   }
 
 
@@ -54,6 +58,18 @@ class DenyRestoreExtFactory
   )
   {
     return ext.hasPreDenyRestoreTest();
+  }
+
+  /**
+   * Get the requirements to for the pre-operation test. 
+   */ 
+  public ExtReqs
+  getTestReqs
+  (   
+   BaseMasterExt ext
+  ) 
+  {
+    return ext.getPreDenyRestoreTestReqs();
   }
 
   /**
@@ -85,6 +101,18 @@ class DenyRestoreExtFactory
   ) 
   {
     return ext.hasPostDenyRestoreTask();
+  }
+
+  /**
+   * Get the requirements to for the post-operation task. 
+   */ 
+  public ExtReqs
+  getTaskReqs
+  (   
+   BaseMasterExt ext
+  ) 
+  {
+    return ext.getPostDenyRestoreTaskReqs();
   }
 
   /**

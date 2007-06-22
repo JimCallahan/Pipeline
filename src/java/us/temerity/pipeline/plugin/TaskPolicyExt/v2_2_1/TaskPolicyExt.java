@@ -1,4 +1,4 @@
-// $Id: TaskPolicyExt.java,v 1.2 2007/06/20 18:07:46 jim Exp $
+// $Id: TaskPolicyExt.java,v 1.3 2007/06/22 01:26:09 jim Exp $
 
 package us.temerity.pipeline.plugin.TaskPolicyExt.v2_2_1;
 
@@ -88,15 +88,15 @@ TaskPolicyExt
   /*----------------------------------------------------------------------------------------*/
   /*   C H E C K - I N                                                                      */
   /*----------------------------------------------------------------------------------------*/
-
+	 
   /**
-   * Whether to test before checking-in an individual node.
+   * Get the operation requirements to test before checking-in an individual node. <P>
    */  
-  public boolean
-  hasPreCheckInTest() 
+  public ExtReqs
+  getPreCheckInTestReqs() 
   {
-    return true;
-  }
+    return new ExtReqs(true, true);
+  } 
 
   /**
    * Test to perform before checking-in an individual node.
@@ -139,16 +139,18 @@ TaskPolicyExt
     if(task == null)
       return; 
 
-    String author = nodeID.getAuthor();
-    
+    String workUser = getWorkUser();    
+
     String assigned   = (String) task.getParamValue(aAssignedTo);
     String supervised = (String) task.getParamValue(aSupervisedBy);
 
     boolean isAssigned = 
-      (assigned != null) && (assigned.length() > 0) && (assigned.equals(author));      
+      (assigned != null) && (assigned.length() > 0) &&
+      (assigned.equals(workUser) || (isMemberOrManager(assigned) != null));
     
     boolean isSupervised = 
-      (supervised != null) && (supervised.length() > 0) && (supervised.equals(author));
+      (supervised != null) && (supervised.length() > 0) && 
+      (supervised.equals(workUser) || (isMemberOrManager(supervised) != null));
 
     boolean isNonApproveNode = false;
     {
@@ -178,18 +180,21 @@ TaskPolicyExt
         isApproveNode = true;
     }
 
+    String atext = (assigned == null) ? "" : ("(" + assigned + ")");
+    String stext = (supervised == null) ? "" : ("(" + supervised + ")");
+
     if(isApproveNode && !isSupervised) 
       throw new PipelineException
 	("Checking-in node (" + nodeID.getName() + ") in working area " + 
 	 "(" + nodeID.getAuthor() + "|" + nodeID.getView() + ") is only available to " + 
-         "the supervisor (" + supervised + ") + of the node!");
+         "the supervisor " + stext + " of the node!");
     
     if(isNonApproveNode && !(isAssigned || isSupervised))
       throw new PipelineException
 	("Checking-in node (" + nodeID.getName() + ") in working area " + 
 	 "(" + nodeID.getAuthor() + "|" + nodeID.getView() + ") is only available to " + 
-         "the the artist assigned to work on the node (" + assigned + ") or to the " + 
-         "its supervisor (" + supervised + ")!");
+         "the the artist " + atext + " assigned to work on the node or to the " + 
+         "its supervisor " + stext + "!");
   }
 
 

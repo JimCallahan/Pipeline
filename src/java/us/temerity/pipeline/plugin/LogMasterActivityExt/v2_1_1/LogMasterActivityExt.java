@@ -1,4 +1,4 @@
-// $Id: LogMasterActivityExt.java,v 1.2 2007/06/20 18:07:46 jim Exp $
+// $Id: LogMasterActivityExt.java,v 1.3 2007/06/22 01:26:09 jim Exp $
 
 package us.temerity.pipeline.plugin.LogMasterActivityExt.v2_1_1;
 
@@ -776,12 +776,12 @@ LogMasterActivityExt
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Whether to test before creating a new empty working area. <P>
+   * Get the operation requirements to test before creating a new empty working area. <P>
    */  
-  public boolean
-  hasPreCreateWorkingAreaTest() 
+  public ExtReqs
+  getPreCreateWorkingAreaTestReqs() 
   {
-    return true;
+    return new ExtReqs();
   }
 
   /**
@@ -809,16 +809,16 @@ LogMasterActivityExt
 	("Creating new working area (" + author + "|" + view + ") is not allowed!");
   }
 
-
+	 
   /**
-   * Whether to run a task after creating a new empty working area. <P>
+   * Get the operation requirements to run a task after creating a new empty working area.<P>
    */  
-  public boolean
-  hasPostCreateWorkingAreaTask() 
+  public ExtReqs
+  getPostCreateWorkingAreaTaskReqs() 
   {
-    return isParamTrue(aLogCreateWorkingArea);
+    return new ExtReqs();
   }
-  
+
   /**
    * The task to perform after creating a new empty working area. <P>
    * 
@@ -846,15 +846,15 @@ LogMasterActivityExt
 
 
   /*----------------------------------------------------------------------------------------*/
-
+	 
   /**
-   * Whether to test before removing an entire working area. <P>
+   * Get the operation requirements to test before removing an entire working area. <P>
    */  
-  public boolean
-  hasPreRemoveWorkingAreaTest() 
+  public ExtReqs
+  getPreRemoveWorkingAreaTestReqs() 
   {
-    return true;
-  }
+    return new ExtReqs();
+  } 
 
   /**
    * Test to perform before removing an entire working area. <P>
@@ -881,15 +881,15 @@ LogMasterActivityExt
 	("Removing existing working area (" + author + "|" + view + ") is not allowed!");
   }
 
-
+ 	 
   /**
-   * Whether to run a task after removing an entire working area. <P>
+   * Get the operation requirements to run a task after removing an entire working area. <P>
    */  
-  public boolean
-  hasPostRemoveWorkingAreaTask() 
+  public ExtReqs
+  getPostRemoveWorkingAreaTaskReqs() 
   {
-    return isParamTrue(aLogRemoveWorkingArea);
-  }
+    return new ExtReqs();
+  } 
   
   /**
    * The task to perform after removing an entire working area. <P>
@@ -921,15 +921,16 @@ LogMasterActivityExt
   /*----------------------------------------------------------------------------------------*/
   /*   W O R K I N G   V E R S I O N S                                                      */
   /*----------------------------------------------------------------------------------------*/
-
+	 
   /**
-   * Whether to test before modifying the properties of a working version of a node. <P>
+   * Get the operation requirements to test before modifying the properties of a working 
+   * version of a node. <P>
    */  
-  public boolean
-  hasPreModifyPropertiesTest() 
+  public ExtReqs
+  getPreModifyPropertiesTestReqs() 
   {
-    return true;
-  }
+    return new ExtReqs();
+  } 
 
   /**
    * Test to perform before modifying the properties of a working version of a node. <P>
@@ -957,15 +958,16 @@ LogMasterActivityExt
 	 "(" + nodeID.getAuthor() + "|" + nodeID.getView() + ") is not allowed!");
   }
 
-
+	 
   /**
-   * Whether to run a task after modifying the properties of a working version of a node. <P>
+   * Get the operation requirements to run a task after modifying the properties of a 
+   * working version of a node. <P>
    */  
-  public boolean
-  hasPostModifyPropertiesTask() 
+  public ExtReqs
+  getPostModifyPropertiesTaskReqs() 
   {
-    return isParamTrue(aLogModifyProperties); 
-  }
+    return new ExtReqs();
+  } 
   
   /**
    * The task to perform after modifying the properties of a working version of a node. <P>
@@ -995,16 +997,16 @@ LogMasterActivityExt
 
   
   /*----------------------------------------------------------------------------------------*/
-
+	 
   /**
-   * Whether to test before creating or modifying an existing link between two 
-   * node working versions. <P>
+   * Get the operation requirements to test before creating or modifying an existing 
+   * link between two node working versions. <P>
    */  
-  public boolean
-  hasPreLinkTest() 
+  public ExtReqs
+  getPreLinkTestReqs() 
   {
-    return true;
-  }
+    return new ExtReqs();
+  } 
 
   /**
    * Test to perform before creating or modifying an existing link between two 
@@ -1055,16 +1057,16 @@ LogMasterActivityExt
 	 "allowed!");
   }
 
-
+	 
   /**
-   * Whether to run a task after creating or modifying an existing link between two 
-   * node working versions. <P>
+   * Get the operation requirements to run a task after creating or modifying an existing 
+   * link between two node working versions. <P>
    */  
-  public boolean
-  hasPostLinkTask() 
+  public ExtReqs
+  getPostLinkTaskReqs() 
   {
-    return isParamTrue(aLogLink); 
-  }
+    return new ExtReqs();
+  } 
   
   /**
    * The task to perform after creating or modifying an existing link between two 
@@ -1122,13 +1124,14 @@ LogMasterActivityExt
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Whether to test before destroying an existing link between the working versions.
+   * Get the operation requirements to test before destroying an existing link between 
+   * the working versions. <P>
    */  
-  public boolean
-  hasPreUnlinkTest() 
+  public ExtReqs
+  getPreUnlinkTestReqs() 
   {
-    return true;
-  }
+    return new ExtReqs();
+  } 
 
   /**
    * Test to perform before destroying an existing link between the working versions. 
@@ -1165,15 +1168,16 @@ LogMasterActivityExt
 	 "allowed!");
   }
 
-
+	 
   /**
-   * Whether to run a task after destroying an existing link between the working versions.
+   * Get the operation requirements to run a task after destroying an existing link 
+   * between the working versions. <P>
    */  
-  public boolean
-  hasPostUnlinkTask() 
+  public ExtReqs
+  getPostUnlinkTaskReqs() 
   {
-    return isParamTrue(aLogUnlink); 
-  }
+    return new ExtReqs();
+  } 
   
   /**
    * The task to perform after destroying an existing link between the working versions. 
@@ -1212,15 +1216,16 @@ LogMasterActivityExt
 
 
   /*----------------------------------------------------------------------------------------*/
-
+	 
   /**
-   * Whether to test before adding a secondary file sequence to a working version.
+   * Get the operation requirements to test before adding a secondary file sequence to 
+   * a working version. <P>
    */  
-  public boolean
-  hasPreAddSecondaryTest() 
+  public ExtReqs
+  getPreAddSecondaryTestReqs() 
   {
-    return true;
-  }
+    return new ExtReqs();
+  } 
 
   /**
    * Test to perform before adding a secondary file sequence to a working version.
@@ -1249,16 +1254,16 @@ LogMasterActivityExt
 	 "not allowed!");
   }
 
-
+	 
   /**
-   * Whether to run a task after adding a secondary file sequence to a working version.
+   * Get the operation requirements to run a task after adding a secondary file sequence 
+   * to a working version. <P>
    */  
-  public boolean
-  hasPostAddSecondaryTask() 
+  public ExtReqs
+  getPostAddSecondaryTaskReqs() 
   {
-    return isParamTrue(aLogAddSecondary); 
-  }
-  
+    return new ExtReqs();
+  } 
   /**
    * The task to perform after adding a secondary file sequence to a working version. 
    * 
@@ -1288,15 +1293,16 @@ LogMasterActivityExt
 
 
   /*----------------------------------------------------------------------------------------*/
-
+	 
   /**
-   * Whether to test before removing a secondary file sequence to a working version.
+   * Get the operation requirements to test before removing a secondary file sequence to 
+   * a working version. <P>
    */  
-  public boolean
-  hasPreRemoveSecondaryTest() 
+  public ExtReqs
+  getPreRemoveSecondaryTestReqs() 
   {
-    return true;
-  }
+    return new ExtReqs();
+  } 
 
   /**
    * Test to perform before removing a secondary file sequence to a working version.
@@ -1325,15 +1331,16 @@ LogMasterActivityExt
 	 "not allowed!");
   }
 
-
+  	 
   /**
-   * Whether to run a task after removing a secondary file sequence to a working version.
+   * Get the operation requirements to run a task after removing a secondary file sequence 
+   * to a working version. <P>
    */  
-  public boolean
-  hasPostRemoveSecondaryTask() 
+  public ExtReqs
+  getPostRemoveSecondaryTaskReqs() 
   {
-    return isParamTrue(aLogRemoveSecondary); 
-  }
+    return new ExtReqs();
+  } 
   
   /**
    * The task to perform after removing a secondary file sequence to a working version. 
@@ -1364,16 +1371,16 @@ LogMasterActivityExt
 
 
   /*----------------------------------------------------------------------------------------*/
-
+	 
   /**
-   * Whether to test before renaming a working version of a node which has never 
-   * been checked-in.
+   * Get the operation requirements to test before renaming a working version of a node 
+   * which has never been checked-in. <P>
    */  
-  public boolean
-  hasPreRenameTest() 
+  public ExtReqs
+  getPreRenameTestReqs() 
   {
-    return true;
-  }
+    return new ExtReqs();
+  } 
 
   /**
    * Test to perform before renaming a working version of a node which has never 
@@ -1406,17 +1413,17 @@ LogMasterActivityExt
 	 "(" + nodeID.getAuthor() + "|" + nodeID.getView() + ") is not allowed!");
   }
 
-
+	 
   /**
-   * Whether to run a task after renaming a working version of a node which has never 
-   * been checked-in.
+   * Get the operation requirements to run a task after renaming a working version of a 
+   * node which has never been checked-in. <P>
    */  
-  public boolean
-  hasPostRenameTask() 
+  public ExtReqs
+  getPostRenameTaskReqs() 
   {
-    return isParamTrue(aLogRename);
-  }
-  
+    return new ExtReqs();
+  } 
+
   /**
    * The task to perform after renaming a working version of a node which has never 
    * been checked-in. 
@@ -1452,16 +1459,16 @@ LogMasterActivityExt
 
 
   /*----------------------------------------------------------------------------------------*/
-
+	 
   /**
-   * Whether to test before renumbering the frame ranges of the file sequences 
-   * associated with a node.
+   * Get the operation requirements to test before renumbering the frame ranges of the 
+   * file sequences associated with a node. <P>
    */  
-  public boolean
-  hasPreRenumberTest() 
+  public ExtReqs
+  getPreRenumberTestReqs() 
   {
-    return true;
-  }
+    return new ExtReqs();
+  } 
 
   /**
    * Test to perform before renumbering the frame ranges of the file sequences 
@@ -1497,15 +1504,14 @@ LogMasterActivityExt
 
 
   /**
-   * Whether to run a task after renumbering the frame ranges of the file sequences 
-   * associated with a node.
+   * Get the operation requirements to run a task after renumbering the frame ranges of the 
+   * file sequences associated with a node. <P>
    */  
-  public boolean
-  hasPostRenumberTask() 
+  public ExtReqs
+  getPostRenumberTaskReqs() 
   {
-    return isParamTrue(aLogRenumber);
-  }
-  
+    return new ExtReqs();
+  } 	 
   /**
    * The task to perform after renumbering the frame ranges of the file sequences 
    * associated with a node.
@@ -1545,15 +1551,16 @@ LogMasterActivityExt
   /*----------------------------------------------------------------------------------------*/
   /*   R E V I S I O N   C O N T R O L   O P S                                              */
   /*----------------------------------------------------------------------------------------*/
- 
+ 	 
   /**
-   * Whether to test before registering an initial working version of a node. 
+   * Get the operation requirements to test before registering an initial working version 
+   * of a node. <P>
    */  
-  public boolean
-  hasPreRegisterTest() 
+  public ExtReqs
+  getPreRegisterTestReqs() 
   {
-    return true;
-  }
+    return new ExtReqs();
+  } 
 
   /**
    * Test to perform before registering an initial working version of a node. 
@@ -1583,15 +1590,16 @@ LogMasterActivityExt
 
 
   /*----------------------------------------------------------------------------------------*/
-
+	 
   /**
-   * Whether to run a tesk after registering an initial working version of a node. 
+   * Get the operation requirements to run a tesk after registering an initial working 
+   * version of a node. <P>
    */  
-  public boolean
-  hasPostRegisterTask() 
+  public ExtReqs
+  getPostRegisterTaskReqs() 
   {
-    return isParamTrue(aLogRegister);
-  }
+    return new ExtReqs();
+  } 
 
   /**
    * The task to perform after registering an initial working version of a node. 
@@ -1621,16 +1629,16 @@ LogMasterActivityExt
 
 
   /*----------------------------------------------------------------------------------------*/
-
+	 
   /**
-   * Whether to test before releasing the working versions of nodes and optionally 
-   * remove the associated working area files. 
+   * Get the operation requirements to test before releasing the working versions of nodes 
+   * and optionally remove the associated working area files. <P>
    */  
-  public boolean
-  hasPreReleaseTest() 
+  public ExtReqs
+  getPreReleaseTestReqs() 
   {
-    return true;
-  }
+    return new ExtReqs();
+  } 
 
   /**
    * Test to perform before releasing the working versions of nodes and optionally 
@@ -1666,16 +1674,16 @@ LogMasterActivityExt
 	("Releasing nodes from working area (" + author + "|" + view + ") is not allowed!");
   }
 
-
+	 
   /**
-   * Whether to run a tesk after releasing the working versions of nodes and optionally 
-   * remove the associated working area files. 
+   * Get the operation requirements to run a tesk after releasing the working versions 
+   * of nodes and optionally remove the associated working area files. <P>
    */  
-  public boolean
-  hasPostReleaseTask() 
+  public ExtReqs
+  getPostReleaseTaskReqs() 
   {
-    return isParamTrue(aLogRelease); 
-  }
+    return new ExtReqs();
+  } 
   
   /**
    * The task to perform after releasing the working versions of nodes and optionally 
@@ -1725,16 +1733,16 @@ LogMasterActivityExt
 
 
   /*----------------------------------------------------------------------------------------*/
-
+	 
   /**
-   * Whether to test before deleting all working and checked-in versions of a node and 
-   * optionally remove all associated working area files.  
+   * Get the operation requirements to test before deleting all working and checked-in 
+   * versions of a node and optionally remove all associated working area files. <P>
    */  
-  public boolean
-  hasPreDeleteTest() 
+  public ExtReqs
+  getPreDeleteTestReqs() 
   {
-    return true;
-  }
+    return new ExtReqs();
+  } 
 
   /**
    * Test to perform before deleting all working and checked-in versions of a node and 
@@ -1762,16 +1770,16 @@ LogMasterActivityExt
 	("Deleting node (" + name + ") is not allowed!");
   }
 
-
+	 
   /**
-   * Whether to run a tesk after deleting all working and checked-in versions of a node and 
-   * optionally remove all associated working area files.  
+   * Get the operation requirements to run a tesk after deleting all working and checked-in 
+   * versions of a node and optionally remove all associated working area files. <P>
    */  
-  public boolean
-  hasPostDeleteTask() 
+  public ExtReqs
+  getPostDeleteTaskReqs() 
   {
-    return isParamTrue(aLogDelete);
-  }
+    return new ExtReqs();
+  } 
   
   /**
    * The task to perform after deleting all working and checked-in versions of a node and 
@@ -1802,15 +1810,15 @@ LogMasterActivityExt
 
 
   /*----------------------------------------------------------------------------------------*/
-
+	 
   /**
-   * Whether to test before checking-in an individual node.
+   * Get the operation requirements to test before checking-in an individual node. <P>
    */  
-  public boolean
-  hasPreCheckInTest() 
+  public ExtReqs
+  getPreCheckInTestReqs() 
   {
-    return true;
-  }
+    return new ExtReqs();
+  } 
 
   /**
    * Test to perform before checking-in an individual node.
@@ -1851,15 +1859,15 @@ LogMasterActivityExt
          "The root node of the check-in operation was (" + rname + ").");
   }
 
-
+	 
   /**
-   * Whether to run a tesk after checking-in an individual node.
+   * Get the operation requirements to run a tesk after checking-in an individual node. <P>
    */  
-  public boolean
-  hasPostCheckInTask() 
+  public ExtReqs
+  getPostCheckInTaskReqs() 
   {
-    return isParamTrue(aLogCheckIn); 
-  }
+    return new ExtReqs();
+  } 
   
   /**
    * The task to perform after checking-in an individual node.
@@ -1884,15 +1892,15 @@ LogMasterActivityExt
 
 
   /*----------------------------------------------------------------------------------------*/
-
+ 	 
   /**
-   * Whether to test before checking-out an individual node.
+   * Get the operation requirements to test before checking-out an individual node. <P>
    */  
-  public boolean
-  hasPreCheckOutTest() 
+  public ExtReqs
+  getPreCheckOutTestReqs() 
   {
-    return true;
-  }
+    return new ExtReqs();
+  } 
 
   /**
    * Test to perform before checking-out an individual node.
@@ -1930,15 +1938,15 @@ LogMasterActivityExt
 	 "is not allowed!");
   }
 
-
+  	 
   /**
-   * Whether to run a tesk after checking-out an individual node.
+   * Get the operation requirements to run a tesk after checking-out an individual node. <P>
    */  
-  public boolean
-  hasPostCheckOutTask() 
+  public ExtReqs
+  getPostCheckOutTaskReqs() 
   {
-    return isParamTrue(aLogCheckOut);
-  }
+    return new ExtReqs();
+  } 
   
   /**
    * The task to perform after checking-out an individual node.
@@ -1968,16 +1976,16 @@ LogMasterActivityExt
 
 
   /*----------------------------------------------------------------------------------------*/
-
+	 
   /**
-   * Whether to test before locking the working version of a node to a specific 
-   * checked-in version.
+   * Get the operation requirements to test before locking the working version of a node 
+   * to a specific checked-in version. <P>
    */  
-  public boolean
-  hasPreLockTest() 
+  public ExtReqs
+  getPreLockTestReqs() 
   {
-    return true;
-  }
+    return new ExtReqs();
+  } 
 
   /**
    * Test to perform before locking the working version of a node to a specific 
@@ -2007,16 +2015,16 @@ LogMasterActivityExt
 	 "(" + nodeID.getAuthor() + "|" + nodeID.getView() + ") is not allowed!");
   }
 
-
+	 
   /**
-   * Whether to run a tesk after locking the working version of a node to a specific 
-   * checked-in version.
+   * Get the operation requirements to run a tesk after locking the working version of 
+   * a node to a specific checked-in version. <P>
    */  
-  public boolean
-  hasPostLockTask() 
+  public ExtReqs
+  getPostLockTaskReqs() 
   {
-    return isParamTrue(aLogLock);
-  }
+    return new ExtReqs();
+  } 
   
   /**
    * The task to perform after locking the working version of a node to a specific 
@@ -2047,16 +2055,17 @@ LogMasterActivityExt
 
 
   /*----------------------------------------------------------------------------------------*/
-
+	 
   /**
-   * Whether to test before changing the checked-in version upon which the working version 
-   * is based without modifying the working version properties, links or associated files.
+   * Get the operation requirements to test before changing the checked-in version upon 
+   * which the working version is based without modifying the working version properties, 
+   * links or associated files. <P>
    */  
-  public boolean
-  hasPreEvolveTest() 
+  public ExtReqs
+  getPreEvolveTestReqs() 
   {
-    return true;
-  }
+    return new ExtReqs();
+  } 
 
   /**
    * Test to perform before changing the checked-in version upon which the working version 
@@ -2085,17 +2094,17 @@ LogMasterActivityExt
 	 "(" + nodeID.getAuthor() + "|" + nodeID.getView() + ") is not allowed!");
   }
 
-
+	 
   /**
-   * Whether to run a tesk after changing the checked-in version upon which the working 
-   * version is based without modifying the working version properties, links or associated 
-   * files.
+   * Get the operation requirements to run a tesk after changing the checked-in version 
+   * upon which the working version is based without modifying the working version 
+   * properties, links or associated files. <P>
    */  
-  public boolean
-  hasPostEvolveTask() 
+  public ExtReqs
+  getPostEvolveTaskReqs() 
   {
-    return isParamTrue(aLogEvolve); 
-  }
+    return new ExtReqs();
+  } 
   
   /**
    * The task to perform after changing the checked-in version upon which the working 
@@ -2126,16 +2135,16 @@ LogMasterActivityExt
 
 
   /*----------------------------------------------------------------------------------------*/
-
+	 
   /**
-   * Whether to test before reverting specific working area files to an earlier 
-   * checked-in version of the files.
+   * Get the operation requirements to test before reverting specific working area files 
+   * to an earlier checked-in version of the files. <P>
    */  
-  public boolean
-  hasPreRevertFilesTest() 
+  public ExtReqs
+  getPreRevertFilesTestReqs() 
   {
-    return true;
-  }
+    return new ExtReqs();
+  } 
 
   /**
    * Test to perform before reverting specific working area files to an earlier 
@@ -2163,17 +2172,17 @@ LogMasterActivityExt
 	("Reverting files for node (" + nodeID.getName() + ") in working area " + 
 	 "(" + nodeID.getAuthor() + "|" + nodeID.getView() + ") is not allowed!");
   }
-
-
+	
+ 
   /**
-   * Whether to run a tesk after reverting specific working area files to an earlier 
-   * checked-in version of the files.
+   * Get the operation requirements to run a tesk after reverting specific working area 
+   * files to an earlier checked-in version of the files. <P>
    */  
-  public boolean
-  hasPostRevertFilesTask() 
+  public ExtReqs
+  getPostRevertFilesTaskReqs() 
   {
-    return isParamTrue(aLogRevertFiles); 
-  }
+    return new ExtReqs();
+  } 
   
   /**
    * The task to perform after reverting specific working area files to an earlier 
@@ -2215,16 +2224,16 @@ LogMasterActivityExt
 
 
   /*----------------------------------------------------------------------------------------*/
-
+	 
   /**
-   * Whether to test before replacing the primary files associated with one node with 
-   * the primary files of another node.
+   * Get the operation requirements to test before replacing the primary files associated 
+   * with one node with the primary files of another node. <P>
    */  
-  public boolean
-  hasPreCloneFilesTest() 
+  public ExtReqs
+  getPreCloneFilesTestReqs() 
   {
-    return true;
-  }
+    return new ExtReqs();
+  } 
 
   /**
    * Test to perform before replacing the primary files associated with one node with 
@@ -2254,16 +2263,16 @@ LogMasterActivityExt
 	 "(" + sourceID.getAuthor() + "|" + sourceID.getView() + ") is not allowed!");
   }
   
-  
+  	 
   /**
-   * Whether to run a tesk after replacing the primary files associated with one node with 
-   * the primary files of another node.
+   * Get the operation requirements to run a tesk after replacing the primary files 
+   * associated with one node with the primary files of another node. <P>
    */  
-  public boolean
-  hasPostCloneFilesTask() 
+  public ExtReqs
+  getPostCloneFilesTaskReqs() 
   {
-    return true;
-  }
+    return new ExtReqs();
+  } 
   
   /**
    * The task to perform after replacing the primary files associated with one node with 
@@ -2296,15 +2305,16 @@ LogMasterActivityExt
 
 
   /*----------------------------------------------------------------------------------------*/
-
+	 
   /**
-   * Whether to test before removing the working area files associated with a node.
+   * Get the operation requirements to test before removing the working area files 
+   * associated with a node. <P>
    */  
-  public boolean
-  hasPreRemoveFilesTest() 
+  public ExtReqs
+  getPreRemoveFilesTestReqs() 
   {
-    return true;
-  }
+    return new ExtReqs();
+  } 
 
   /**
    * Test to perform before removing the working area files associated with a node.
@@ -2333,15 +2343,16 @@ LogMasterActivityExt
 	 "(" + nodeID.getAuthor() + "|" + nodeID.getView() + ") is not allowed!");
   }
 
-
+	 
   /**
-   * Whether to run a tesk after removing the working area files associated with a node.
+   * Get the operation requirements to run a tesk after removing the working area files 
+   * associated with a node. <P>
    */  
-  public boolean
-  hasPostRemoveFilesTask() 
+  public ExtReqs
+  getPostRemoveFilesTaskReqs() 
   {
-    return isParamTrue(aLogRemoveFiles); 
-  }
+    return new ExtReqs();
+  } 
   
   /**
    * The task to perform after removing the working area files associated with a node.
@@ -2439,16 +2450,16 @@ LogMasterActivityExt
 
 
   /*----------------------------------------------------------------------------------------*/
-
+	 
   /**
-   * Whether to test before archiving the files associated with the given 
-   * checked-in versions.
+   * Get the operation requirements to test before archiving the files associated with 
+   * the given checked-in versions. <P>
    */  
-  public boolean
-  hasPreArchiveTest() 
+  public ExtReqs
+  getPreArchiveTestReqs() 
   {
-    return true;
-  }
+    return new ExtReqs();
+  } 
 
   /**
    * Test to perform before archiving the files associated with the given 
@@ -2484,17 +2495,17 @@ LogMasterActivityExt
 	("Creating Archive (" + name + ") is not allowed!");
   }
 
-
+	 
   /**
-   * Whether to run a tesk after archiving the files associated with the given 
-   * checked-in versions.
+   * Get the operation requirements to run a tesk after archiving the files associated 
+   * with the given checked-in versions. <P>
    */  
-  public boolean
-  hasPostArchiveTask() 
+  public ExtReqs
+  getPostArchiveTaskReqs() 
   {
-    return isParamTrue(aLogArchive); 
-  }
-  
+    return new ExtReqs();
+  } 
+
   /**
    * The task to perform after archiving the files associated with the given 
    * checked-in versions.
@@ -2545,16 +2556,16 @@ LogMasterActivityExt
 
 
   /*----------------------------------------------------------------------------------------*/
-
+	 
   /**
-   * Whether to test before removing the repository files associated with the given 
-   * checked-in versions.
+   * Get the operation requirements to test before removing the repository files associated 
+   * with the given checked-in versions. <P>
    */  
-  public boolean
-  hasPreOfflineTest() 
+  public ExtReqs
+  getPreOfflineTestReqs() 
   {
-    return true;
-  }
+    return new ExtReqs();
+  } 
 
   /**
    * Test to perform before removing the repository files associated with the given 
@@ -2578,16 +2589,16 @@ LogMasterActivityExt
 	("Offlining previously archived node versions is not allowed!");
   }
 
-
+	 
   /**
-   * Whether to run a tesk after removing the repository files associated with the given 
-   * checked-in versions.
+   * Get the operation requirements to run a tesk after removing the repository files 
+   * associated with the given checked-in versions. <P>
    */  
-  public boolean
-  hasPostOfflineTask() 
+  public ExtReqs
+  getPostOfflineTaskReqs() 
   {
-    return isParamTrue(aLogOffline); 
-  }
+    return new ExtReqs();
+  } 
   
   /**
    * The task to perform after removing the repository files associated with the given 
@@ -2623,15 +2634,16 @@ LogMasterActivityExt
 
 
   /*----------------------------------------------------------------------------------------*/
-
+	 
   /**
-   * Whether to test before requesting to restore the given set of checked-in versions.
+   * Get the operation requirements to test before requesting to restore the given set of 
+   * checked-in versions. <P>
    */  
-  public boolean
-  hasPreRequestRestoreTest() 
+  public ExtReqs
+  getPreRequestRestoreTestReqs() 
   {
-    return true;
-  }
+    return new ExtReqs();
+  } 
 
   /**
    * Test to perform before requesting to restore the given set of checked-in versions.
@@ -2654,15 +2666,16 @@ LogMasterActivityExt
 	("Requests to restore offlined node versions are not allowed!");
   }
 
-
+	 
   /**
-   * Whether to run a tesk after requesting to restore the given set of checked-in versions.
+   * Get the operation requirements to run a tesk after requesting to restore the given set 
+   * of checked-in versions. <P>
    */  
-  public boolean
-  hasPostRequestRestoreTask() 
+  public ExtReqs
+  getPostRequestRestoreTaskReqs() 
   {
-    return isParamTrue(aLogRequestRestore); 
-  }
+    return new ExtReqs();
+  } 
   
   /**
    * The task to perform after requesting to restore the given set of checked-in versions.
@@ -2697,16 +2710,16 @@ LogMasterActivityExt
 
 
   /*----------------------------------------------------------------------------------------*/
-
+	 
   /**
-   * Whether to test before denying the request to restore the given set of 
-   * checked-in versions.
+   * Get the operation requirements to test before denying the request to restore the given 
+   * set of checked-in versions. <P>
    */  
-  public boolean
-  hasPreDenyRestoreTest() 
+  public ExtReqs
+  getPreDenyRestoreTestReqs() 
   {
-    return true;
-  }
+    return new ExtReqs();
+  } 
 
   /**
    * Test to perform before denying the request to restore the given set of 
@@ -2730,16 +2743,16 @@ LogMasterActivityExt
 	("Denials of requests to restore offlined node versions are not allowed!");
   }
 
-
+	 
   /**
-   * Whether to run a tesk after denying the request to restore the given set of 
-   * checked-in versions.
+   * Get the operation requirements to run a tesk after denying the request to restore 
+   * the given set of checked-in versions. <P>
    */  
-  public boolean
-  hasPostDenyRestoreTask() 
+  public ExtReqs
+  getPostDenyRestoreTaskReqs() 
   {
-    return isParamTrue(aLogDenyRestore); 
-  }
+    return new ExtReqs();
+  } 
   
   /**
    * The task to perform after denying the request to restore the given set of 
@@ -2775,16 +2788,16 @@ LogMasterActivityExt
 
 
   /*----------------------------------------------------------------------------------------*/
-
+	 
   /**
-   * Whether to test before restoring the given checked-in versions from the given 
-   * archive volume.
+   * Get the operation requirements to test before restoring the given checked-in versions 
+   * from the given archive volume. <P>
    */  
-  public boolean
-  hasPreRestoreTest() 
+  public ExtReqs
+  getPreRestoreTestReqs() 
   {
-    return true;
-  }
+    return new ExtReqs();
+  } 
 
   /**
    * Test to perform before restoring the given checked-in versions from the given 
@@ -2821,17 +2834,17 @@ LogMasterActivityExt
 	("Restoring nodes versions from Archive (" + name + ") is not allowed!");
   }
 
-
+	 
   /**
-   * Whether to run a tesk after restoring the given checked-in versions from the given 
-   * archive volume.
+   * Get the operation requirements to run a tesk after restoring the given checked-in 
+   * versions from the given archive volume. <P>  
    */  
-  public boolean
-  hasPostRestoreTask() 
+  public ExtReqs
+  getPostRestoreTaskReqs() 
   {
-    return isParamTrue(aLogRestore);
-  }
-  
+    return new ExtReqs();    
+  } 
+
   /**
    * The task to perform after restoring the given checked-in versions from the given 
    * archive volume.

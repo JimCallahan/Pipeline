@@ -1,4 +1,4 @@
-// $Id: BaseExt.java,v 1.4 2007/06/19 22:05:03 jim Exp $
+// $Id: BaseExt.java,v 1.5 2007/06/22 01:26:09 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -109,9 +109,10 @@ class BaseExt
   {
     super();
     
-    pParams      = new TreeMap<String,ExtensionParam>();
-    pEnvironment = new TreeMap<String,String>();
-    pAnnotations = new DoubleMap<String,String,BaseAnnotation>();
+    pParams          = new TreeMap<String,ExtensionParam>();
+    pEnvironment     = new TreeMap<String,String>();
+    pAnnotations     = new DoubleMap<String,String,BaseAnnotation>();
+    pMemberOrManager = new TreeMap<String,Boolean>(); 
   }
 
   /** 
@@ -140,9 +141,10 @@ class BaseExt
   {
     super(name, vid, vendor, desc);
 
-    pParams      = new TreeMap<String,ExtensionParam>();
-    pEnvironment = new TreeMap<String,String>();
-    pAnnotations = new DoubleMap<String,String,BaseAnnotation>();
+    pParams          = new TreeMap<String,ExtensionParam>();
+    pEnvironment     = new TreeMap<String,String>();
+    pAnnotations     = new DoubleMap<String,String,BaseAnnotation>();
+    pMemberOrManager = new TreeMap<String,Boolean>(); 
   }
 
   /**
@@ -159,9 +161,10 @@ class BaseExt
   {
     super(extension.pName, extension.pVersionID, extension.pVendor, extension.pDescription);
 
-    pParams      = extension.pParams;
-    pEnvironment = extension.pEnvironment;
-    pAnnotations = new DoubleMap<String,String,BaseAnnotation>();
+    pParams          = extension.pParams;
+    pEnvironment     = extension.pEnvironment;
+    pAnnotations     = new DoubleMap<String,String,BaseAnnotation>();
+    pMemberOrManager = new TreeMap<String,Boolean>(); 
   }
 
 
@@ -644,7 +647,103 @@ class BaseExt
     return pAnnotations.get(name, aname); 
   }
 
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   W O R K   G R O U P S                                                                */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Clear the cache of all work group memberships.
+   */ 
+  public void 
+  clearWorkGroupMemberships() 
+  {
+    pMemberOrManager.clear(); 
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Set the name of the user performing the operation and their work group memberships.
+   * 
+   * @param user
+   *   The name of the user performing the operation.
+   * 
+   * @param memberships
+   *   The table of membership information indexed by the names of the work groups of which 
+   *   the user is a member. A value of <CODE>false</CODE>, means that the user is a member. 
+   *   If the value is <CODE>true</CODE>, then the user is a manager.  If the value is 
+   *   <CODE>null</CODE> or if the group is missing from the table, then the user is neither
+   *   a member or manager of the group.
+   */
+  public void 
+  setWorkGroupMemberships
+  (
+   String user, 
+   TreeMap<String,Boolean> memberships
+  ) 
+  {
+    if(user == null) 
+      throw new IllegalArgumentException
+        ("The user name cannot be (null)!");
+
+    pWorkUser = user; 
+
+    pMemberOrManager.clear(); 
+    pMemberOrManager.putAll(memberships); 
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the name of the user performing the operation. 
+   * 
+   * @return
+   *    The user name or <CODE>null</CODE> if unknown.
+   */ 
+  public String
+  getWorkUser() 
+  {
+    return pWorkUser; 
+  }
+
+  /**
+   * Get the names of all work groups for which the user performing the operation is a 
+   * member or manager.
+   */ 
+  public Set<String> 
+  getWorkGroups() 
+  {
+    return Collections.unmodifiableSet(pMemberOrManager.keySet());
+  }
+
+  /**
+   * Whether the user performing the operation a member or manager of a particular group.
+   * 
+   * @param gname
+   *   The unique name of the group.
+   * 
+   * @return 
+   *   Returns <CODE>false</CODE> if member, <CODE>true</CODE> if manager or 
+   *   <CODE>null</CODE> not a member or manager of the group.
+   */
+  public Boolean 
+  isMemberOrManager
+  (
+   String gname
+  )
+  {
+    if(gname == null) 
+      throw new IllegalArgumentException
+        ("The work group name cannot be (null)!"); 
+
+    return pMemberOrManager.get(gname);
+  }
   
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   M I S C   F I L E   U T I L S                                                        */
@@ -901,6 +1000,20 @@ class BaseExt
    * annoation name.
    */
   private DoubleMap<String,String,BaseAnnotation>   pAnnotations; 
+
+  /**
+   * The name of the user performing the operation. 
+   */ 
+  private String  pWorkUser; 
+
+  /**
+   * The table of work group memberships indexed by work group name. <P> 
+   * 
+   * If the value is <CODE>false</CODE> then the work user is a member of the group, 
+   * <CODE>true</CODE> means that the user is a manager of the group and <CODE>null</CODE> 
+   * or no entry specifies that the user in not a member or manager of the group.
+   */ 
+  private TreeMap<String,Boolean>  pMemberOrManager; 
 
 }
 

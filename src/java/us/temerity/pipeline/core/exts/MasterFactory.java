@@ -1,4 +1,4 @@
-// $Id: MasterFactory.java,v 1.1 2007/06/19 22:05:03 jim Exp $
+// $Id: MasterFactory.java,v 1.2 2007/06/22 01:26:09 jim Exp $
 
 package us.temerity.pipeline.core.exts;
 
@@ -26,6 +26,12 @@ interface MasterFactory
   public LinkedList<String> 
   getNodeNames(); 
 
+  /**
+   * Get the name of the user performing the operation. 
+   */ 
+  public String 
+  getWorkUser();
+  
 }
 
 

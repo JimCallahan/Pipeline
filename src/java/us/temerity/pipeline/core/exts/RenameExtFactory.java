@@ -1,4 +1,4 @@
-// $Id: RenameExtFactory.java,v 1.1 2006/10/11 22:45:40 jim Exp $
+// $Id: RenameExtFactory.java,v 1.2 2007/06/22 01:26:09 jim Exp $
 
 package us.temerity.pipeline.core.exts;
 
@@ -67,6 +67,18 @@ class RenameExtFactory
   }
 
   /**
+   * Get the requirements to for the pre-operation test. 
+   */ 
+  public ExtReqs
+  getTestReqs
+  (   
+   BaseMasterExt ext
+  ) 
+  {
+    return ext.getPreRenameTestReqs();
+  }
+
+  /**
    * Perform the pre-test passed for this type of operation.
    * 
    * @throws PipelineException
@@ -95,6 +107,18 @@ class RenameExtFactory
   ) 
   {
     return ext.hasPostRenameTask();
+  }
+
+  /**
+   * Get the requirements to for the post-operation task. 
+   */ 
+  public ExtReqs
+  getTaskReqs
+  (   
+   BaseMasterExt ext
+  ) 
+  {
+    return ext.getPostRenameTaskReqs();
   }
 
   /**

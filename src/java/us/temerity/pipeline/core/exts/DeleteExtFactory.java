@@ -1,4 +1,4 @@
-// $Id: DeleteExtFactory.java,v 1.2 2007/06/19 22:05:03 jim Exp $
+// $Id: DeleteExtFactory.java,v 1.3 2007/06/22 01:26:09 jim Exp $
 
 package us.temerity.pipeline.core.exts;
 
@@ -25,6 +25,9 @@ class DeleteExtFactory
   /**
    * Construct a task factory.
    * 
+   * @param workUser
+   *   The name of the user performing the operation.
+   * 
    * @param name 
    *   The fully resolved node name.
    * 
@@ -34,10 +37,12 @@ class DeleteExtFactory
   public 
   DeleteExtFactory
   (
+   String workUser, 
    String name, 
    boolean removeFiles
   )      
   {
+    pWorkUser    = workUser; 
     pName        = name;
     pRemoveFiles = removeFiles;
   }
@@ -60,6 +65,15 @@ class DeleteExtFactory
     return names;
   }
 
+  /**
+   * Get the name of the user performing the operation. 
+   */ 
+  public String 
+  getWorkUser()
+  {
+    return pWorkUser; 
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -73,6 +87,18 @@ class DeleteExtFactory
   )
   {
     return ext.hasPreDeleteTest();
+  }
+
+  /**
+   * Get the requirements to for the pre-operation test. 
+   */ 
+  public ExtReqs
+  getTestReqs
+  (   
+   BaseMasterExt ext
+  ) 
+  {
+    return ext.getPreDeleteTestReqs();
   }
 
   /**
@@ -104,6 +130,18 @@ class DeleteExtFactory
   ) 
   {
     return ext.hasPostDeleteTask();
+  }
+
+  /**
+   * Get the requirements to for the post-operation task. 
+   */ 
+  public ExtReqs
+  getTaskReqs
+  (   
+   BaseMasterExt ext
+  ) 
+  {
+    return ext.getPostDeleteTaskReqs();
   }
 
   /**
@@ -155,6 +193,11 @@ class DeleteExtFactory
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The name of the user performing the operation.
+   */ 
+  protected String pWorkUser; 
 
   /**
    * The fully resolved name of the node.

@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.207 2007/06/21 16:40:50 jim Exp $
+// $Id: MasterMgr.java,v 1.208 2007/06/22 01:26:09 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -5381,39 +5381,55 @@ class MasterMgr
           /* if the current extension has a test... */ 
 	  if((ext != null) && factory.hasTest(ext)) {
 
-            /* get the annotations for all nodes relavant to the currnent test */ 
-            for(String name : factory.getNodeNames()) {
+            /* get the requirements for the test */ 
+            ExtReqs ereqs = factory.getTestReqs(ext);
+            if(ereqs != null) {
 
-              /* pre-cache annotations for the node */ 
-              if(!annotations.containsKey(name)) {
-                timer.aquire();
-                ReentrantReadWriteLock lock = getAnnotationsLock(name); 
-                lock.readLock().lock();
-                try {
-                  timer.resume();
+              /* get the annotations for all nodes relavant to the current test */ 
+              if(ereqs.needsAnnotations()) {
+                for(String name : factory.getNodeNames()) {
+
+                  /* pre-cache annotations for the node */ 
+                  if(!annotations.containsKey(name)) {
+                    timer.aquire();
+                    ReentrantReadWriteLock lock = getAnnotationsLock(name); 
+                    lock.readLock().lock();
+                    try {
+                      timer.resume();
+                      
+                      TreeMap<String,BaseAnnotation> table = getAnnotationsTable(name);
+                      if(table != null) {
+                        for(String aname : table.keySet()) {
+                          BaseAnnotation annot = table.get(aname);
+                          if(annot != null) 
+                            annotations.put(name, aname, (BaseAnnotation) annot.clone());
+                        }
+                      }
+                    }
+                    finally {
+                      lock.readLock().unlock();
+                    }   
+                  }
                   
-                  TreeMap<String,BaseAnnotation> table = getAnnotationsTable(name);
-                  if(table != null) {
-                    for(String aname : table.keySet()) {
-                      BaseAnnotation annot = table.get(aname);
+                  /* lookup the annotations for the node and
+                     register them with the extension plugin instance */ 
+                  TreeMap<String,BaseAnnotation> annots = annotations.get(name);
+                  if(annots != null) {
+                    for(String aname : annots.keySet()) {
+                      BaseAnnotation annot = annots.get(aname);
                       if(annot != null) 
-                        annotations.put(name, aname, (BaseAnnotation) annot.clone());
+                        ext.addAnnotation(name, aname, annot);
                     }
                   }
                 }
-                finally {
-                  lock.readLock().unlock();
-                }   
               }
 
-              /* lookup the annotations for the node and
-                   register them with the extension plugin instance */ 
-              TreeMap<String,BaseAnnotation> annots = annotations.get(name);
-              if(annots != null) {
-                for(String aname : annots.keySet()) {
-                  BaseAnnotation annot = annots.get(aname);
-                  if(annot != null) 
-                    ext.addAnnotation(name, aname, annot);
+              /* get the work group information required by the test */ 
+              if(ereqs.needsWorkGroups()) {
+                String workUser = factory.getWorkUser(); 
+                if(workUser != null) {
+                  ext.setWorkGroupMemberships
+                    (workUser, pAdminPrivileges.getWorkGroupMemberships(workUser));
                 }
               }
             }
@@ -5498,44 +5514,60 @@ class MasterMgr
 	    BaseMasterExt ext = config.getMasterExt();
 	    if(factory.hasTask(ext)) {
               
-              /* get the annotations for all nodes relavant to the currnent task */ 
-              for(String name : factory.getNodeNames()) {
+              /* get the requirements for the task */ 
+              ExtReqs ereqs = factory.getTaskReqs(ext);
+              if(ereqs != null) {
 
-                /* pre-cache annotations for the node */ 
-                if(!annotations.containsKey(name)) {
-                  timer.aquire();
-                  ReentrantReadWriteLock lock = getAnnotationsLock(name); 
-                  lock.readLock().lock();
-                  try {
-                    timer.resume();
+                /* get the annotations for all nodes relavant to the currnent task */ 
+                if(ereqs.needsAnnotations()) {
+                  for(String name : factory.getNodeNames()) {
+
+                    /* pre-cache annotations for the node */ 
+                    if(!annotations.containsKey(name)) {
+                      timer.aquire();
+                      ReentrantReadWriteLock lock = getAnnotationsLock(name); 
+                      lock.readLock().lock();
+                      try {
+                        timer.resume();
+                        
+                        TreeMap<String,BaseAnnotation> table = getAnnotationsTable(name);
+                        if(table != null) {
+                          for(String aname : table.keySet()) {
+                            BaseAnnotation annot = table.get(aname);
+                            if(annot != null) 
+                              annotations.put(name, aname, (BaseAnnotation) annot.clone());
+                          }
+                        }
+                      }
+                      finally {
+                        lock.readLock().unlock();
+                      }   
+                    }
                     
-                    TreeMap<String,BaseAnnotation> table = getAnnotationsTable(name);
-                    if(table != null) {
-                      for(String aname : table.keySet()) {
-                        BaseAnnotation annot = table.get(aname);
+                    /* lookup the annotations for the node and
+                       register them with the extension plugin instance */ 
+                    TreeMap<String,BaseAnnotation> annots = annotations.get(name);
+                    if(annots != null) {
+                      for(String aname : annots.keySet()) {
+                        BaseAnnotation annot = annots.get(aname);
                         if(annot != null) 
-                          annotations.put(name, aname, (BaseAnnotation) annot.clone());
+                          ext.addAnnotation(name, aname, annot);
                       }
                     }
                   }
-                  finally {
-                    lock.readLock().unlock();
-                  }   
                 }
-                
-                /* lookup the annotations for the node and
-                   register them with the extension plugin instance */ 
-                TreeMap<String,BaseAnnotation> annots = annotations.get(name);
-                if(annots != null) {
-                  for(String aname : annots.keySet()) {
-                    BaseAnnotation annot = annots.get(aname);
-                    if(annot != null) 
-                      ext.addAnnotation(name, aname, annot);
+
+                /* get the work group information required by the task */ 
+                if(ereqs.needsWorkGroups()) {
+                  String workUser = factory.getWorkUser(); 
+                  if(workUser != null) {
+                    ext.setWorkGroupMemberships
+                      (workUser, pAdminPrivileges.getWorkGroupMemberships(workUser));
                   }
                 }
               }
-
-	      factory.startTask(config, ext); 
+                  
+              factory.startTask(config, ext); 
             }
 	  }
 	  catch(PipelineException ex) {
@@ -8649,7 +8681,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer("MasterMgr.delete(): " + name);
     
     /* pre-op tests */
-    DeleteExtFactory factory = new DeleteExtFactory(name, removeFiles);
+    DeleteExtFactory factory = new DeleteExtFactory(req.getRequestor(), name, removeFiles);
     try {
       performExtensionTests(timer, factory);
     }
@@ -12383,7 +12415,7 @@ class MasterMgr
 	
 	/* pre-op tests */
 	ArchiveExtFactory factory = 
-	  new ArchiveExtFactory(archiveName, versions, archiver, tname);
+	  new ArchiveExtFactory(req.getRequestor(), archiveName, versions, archiver, tname);
 	try {
 	  performExtensionTests(timer, factory);
 	}
@@ -12916,7 +12948,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer("MasterMgr.offline()");
     
     /* pre-op tests */
-    OfflineExtFactory factory = new OfflineExtFactory(versions);
+    OfflineExtFactory factory = new OfflineExtFactory(req.getRequestor(), versions);
     try {
       performExtensionTests(timer, factory);
     }
@@ -13277,7 +13309,8 @@ class MasterMgr
     TaskTimer timer = new TaskTimer("MasterMgr.requestRestore()");
 
     /* pre-op tests */
-    RequestRestoreExtFactory factory = new RequestRestoreExtFactory(versions);
+    RequestRestoreExtFactory factory = 
+      new RequestRestoreExtFactory(req.getRequestor(), versions);
     try {
       performExtensionTests(timer, factory);
     }
@@ -13382,7 +13415,8 @@ class MasterMgr
     TaskTimer timer = new TaskTimer("MasterMgr.denyRestore()");
 
     /* pre-op tests */
-    DenyRestoreExtFactory factory = new DenyRestoreExtFactory(versions);
+    DenyRestoreExtFactory factory = 
+      new DenyRestoreExtFactory(req.getRequestor(), versions);
     try {
       performExtensionTests(timer, factory);
     }
@@ -13741,7 +13775,7 @@ class MasterMgr
 	
 	/* pre-op tests */
 	RestoreExtFactory factory = 
-	  new RestoreExtFactory(archiveName, versions, archiver, tname);
+	  new RestoreExtFactory(req.getRequestor(), archiveName, versions, archiver, tname);
 	try {
 	  performExtensionTests(timer, factory);
 	}

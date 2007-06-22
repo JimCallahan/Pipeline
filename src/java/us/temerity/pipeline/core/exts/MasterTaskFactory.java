@@ -1,4 +1,4 @@
-// $Id: MasterTaskFactory.java,v 1.2 2007/06/19 22:05:03 jim Exp $
+// $Id: MasterTaskFactory.java,v 1.3 2007/06/22 01:26:09 jim Exp $
 
 package us.temerity.pipeline.core.exts;
 
@@ -28,6 +28,15 @@ interface MasterTaskFactory
   (   
    BaseMasterExt ext
   ); 
+
+  /**
+   * Get the requirements to for the post-operation task. 
+   */ 
+  public ExtReqs
+  getTaskReqs
+  (   
+   BaseMasterExt ext
+  );
 
   /**
    * Create and start a new thread to run the post-operation task. 

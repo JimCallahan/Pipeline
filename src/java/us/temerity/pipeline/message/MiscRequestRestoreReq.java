@@ -1,4 +1,4 @@
-// $Id: MiscRequestRestoreReq.java,v 1.1 2005/03/21 07:04:36 jim Exp $
+// $Id: MiscRequestRestoreReq.java,v 1.2 2007/06/22 01:26:09 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -17,7 +17,7 @@ import java.util.*;
  */
 public
 class MiscRequestRestoreReq
-  implements Serializable
+  extends PrivilegedReq
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R S                                                              */

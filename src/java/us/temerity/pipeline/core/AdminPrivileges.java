@@ -1,4 +1,4 @@
-// $Id: AdminPrivileges.java,v 1.6 2007/06/15 00:27:31 jim Exp $
+// $Id: AdminPrivileges.java,v 1.7 2007/06/22 01:26:09 jim Exp $
  
 package us.temerity.pipeline.core;
 
@@ -375,6 +375,37 @@ class AdminPrivileges
     if(!dead.isEmpty()) 
       writePrivileges();
   }
+
+  /**
+   * Get work group memberships for the given user.
+   * 
+   * @return 
+   *   The table of membership information indexed by the names of the work groups of which 
+   *   the user is a member. A value of <CODE>false</CODE>, means that the user is a member. 
+   *   If the value is <CODE>true</CODE>, then the user is a manager.  If the value is 
+   *   <CODE>null</CODE> or if the group is missing from the table, then the user is neither
+   *   a member or manager of the group.
+   */ 
+  public synchronized TreeMap<String,Boolean>
+  getWorkGroupMemberships
+  (
+   String user
+  ) 
+  {
+    if(user == null) 
+      throw new IllegalArgumentException
+        ("The user name cannot be (null)!");
+
+    TreeMap<String,Boolean> memberships = new TreeMap<String,Boolean>(); 
+    for(String gname : pWorkGroups.getGroups()) {
+      Boolean isManager = pWorkGroups.isMemberOrManager(user, gname);
+      if(isManager != null) 
+        memberships.put(gname, isManager);
+    }
+
+    return memberships;
+  }
+   
 
 
   /*----------------------------------------------------------------------------------------*/
