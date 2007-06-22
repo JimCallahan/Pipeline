@@ -1,4 +1,4 @@
-// $Id: MayaActionUtils.java,v 1.2 2007/04/30 20:51:40 jim Exp $
+// $Id: MayaActionUtils.java,v 1.3 2007/06/22 01:04:39 jesse Exp $
 
 package us.temerity.pipeline.plugin;
 
@@ -57,6 +57,188 @@ class MayaActionUtils
   /*----------------------------------------------------------------------------------------*/
   /*   C O M M O N   P A R A M E T E R S                                                    */
   /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Adds an Initial MEL parameter to the action. <p>
+   * 
+   * The following single valued parameters are added: <BR>
+   * 
+   * <DIV style="margin-left: 40px;"> 
+   *   Initial MEL <BR>
+   *   <DIV style="margin-left: 40px;">
+   *      The source node containing the MEL script to evaluate just after scene creation
+   *      and before any work is done.
+   *   </DIV> <BR>
+   * </DIV> <P> 
+   * 
+   * This method should be called in the subclass constructor before specifying parameter
+   * layouts.
+   */
+  protected void
+  addInitalMELParam()
+  {
+    ActionParam param = 
+      new LinkActionParam
+      (aInitialMEL,
+       "The source node containing the MEL script to evaluate just after scene creation " + 
+       "and before any work is done.",
+       null);
+    addSingleParam(param);
+  }
+  
+  /**
+   * Adds an Model MEL parameter to the action. <p>
+   * 
+   * The following single valued parameters are added: <BR>
+   * 
+   * <DIV style="margin-left: 40px;"> 
+   *   Model MEL <BR>
+   *   <DIV style="margin-left: 40px;">
+   *      The source node containing the MEL script to evaluate after importing all models.
+   *   </DIV> <BR>
+   * </DIV> <P> 
+   * 
+   * This method should be called in the subclass constructor before specifying parameter
+   * layouts.
+   */
+  protected void
+  addModelMELParam()
+  {
+    ActionParam param = 
+      new LinkActionParam
+      (aModelMEL,
+       "The source node containing the MEL script to evaluate after importing all models.",
+       null);
+    addSingleParam(param);
+  }
+  
+  /**
+   * Adds an Anim MEL parameter to the action. <p>
+   * 
+   * The following single valued parameters are added: <BR>
+   * 
+   * <DIV style="margin-left: 40px;"> 
+   *   Anim MEL <BR>
+   *   <DIV style="margin-left: 40px;">
+   *      The source node containing the MEL script to evaluate after importing the animation.
+   *   </DIV> <BR>
+   * </DIV> <P> 
+   * 
+   * This method should be called in the subclass constructor before specifying parameter
+   * layouts.
+   */
+  protected void
+  addAnimMELParam()
+  {
+    ActionParam param = 
+      new LinkActionParam
+      (aAnimMEL,
+       "The source node containing the MEL script to evaluate after importing the animation.",
+       null);
+    addSingleParam(param);
+  }
+  
+  /**
+   * Adds an Final MEL parameter to the action. <p>
+   * 
+   * The following single valued parameters are added: <BR>
+   * 
+   * <DIV style="margin-left: 40px;"> 
+   *   Final MEL <BR>
+   *   <DIV style="margin-left: 40px;">
+   *      The source node containing the MEL script to evaluate after the scene has been saved.
+   *   </DIV> <BR>
+   * </DIV> <P> 
+   * 
+   * This method should be called in the subclass constructor before specifying parameter
+   * layouts.
+   */
+  protected void
+  addFinalMELParam()
+  {
+    ActionParam param = 
+      new LinkActionParam
+      (aFinalMEL,
+       "The source node containing the MEL script to evaluate after the scene has been saved.",
+       null);
+    addSingleParam(param);
+  }
+  
+  /**
+   *  Generates a mel snippet that source the initial MEL script. 
+   */
+  protected void
+  writeInitialMEL
+  (
+    ActionAgenda agenda,
+    FileWriter out
+  )
+    throws PipelineException, IOException
+  {
+    Path initialMEL = getMelScriptSourcePath(aInitialMEL, agenda);
+    if (initialMEL != null) 
+      out.write
+	("// INITIAL SCRIPT\n" + 
+         "print \"Initial Script: " + initialMEL + "\\n\";\n" +
+         "source \"" + initialMEL + "\";\n\n");
+  }
+  
+  /**
+   *  Generates a mel snippet that source the model MEL script. 
+   */
+  protected void
+  writeModelMEL
+  (
+    ActionAgenda agenda,
+    FileWriter out
+  )
+    throws PipelineException, IOException
+  {
+    Path modelMEL = getMelScriptSourcePath(aModelMEL, agenda);
+    if (modelMEL != null) 
+      out.write
+	("// MODEL SCRIPT\n" + 
+         "print \"Model Script: " + modelMEL + "\\n\";\n" +
+         "source \"" + modelMEL + "\";\n\n");
+  }
+  
+  /**
+   *  Generates a mel snippet that source the anim MEL script. 
+   */
+  protected void
+  writeAnimMEL
+  (
+    ActionAgenda agenda,
+    FileWriter out
+  )
+    throws PipelineException, IOException
+  {
+    Path animMEL = getMelScriptSourcePath(aAnimMEL, agenda);
+    if (animMEL != null) 
+      out.write
+	("// ANIM SCRIPT\n" + 
+         "print \"Anim Script: " + animMEL + "\\n\";\n" +
+         "source \"" + animMEL + "\";\n\n");
+  }
+  
+  /**
+   *  Generates a mel snippet that source the final MEL script. 
+   */
+  protected void
+  writeFinalMEL
+  (
+    ActionAgenda agenda,
+    FileWriter out
+  )
+    throws PipelineException, IOException
+  {
+    Path finalMEL = getMelScriptSourcePath(aFinalMEL, agenda);
+    if (finalMEL != null) 
+      out.write
+	("// ANIM SCRIPT\n" + 
+         "print \"Anim Script: " + finalMEL + "\\n\";\n" +
+         "source \"" + finalMEL + "\";\n\n");
+  }
  
   /**
    * Adds Maya units parameters to the action.<P> 
@@ -394,7 +576,6 @@ class MayaActionUtils
    Path scene, 
    File script
   ) 
-    throws PipelineException
   {
     return createMayaPythonLauncher(scene, new Path(script));
   }
@@ -425,7 +606,6 @@ class MayaActionUtils
    Path scene, 
    Path script
   ) 
-    throws PipelineException
   {
     StringBuilder buf = new StringBuilder();
     
@@ -497,7 +677,6 @@ class MayaActionUtils
    NodeID nodeID, 
    Map<String,String> env
   ) 
-    throws PipelineException
   {  
     Map<String,String> nenv = env;
 
@@ -519,7 +698,8 @@ class MayaActionUtils
  
   /** 
    * A convienence method for creating the {@link SubProcessHeavy} instance to be returned
-   * by the {@link #prep prep} method for Maya scene manipulation Actions.<P> 
+   * by the {@link #prep(ActionAgenda, File, File) prep} method for Maya scene manipulation 
+   * Actions.<P> 
    * 
    * The returned OS level process will run Maya in batch mode to optionally load a input
    * Maya scene and then perform some operations specified by a dynamically creatd MEL 
@@ -592,7 +772,7 @@ class MayaActionUtils
    * executable script.<P> 
    * 
    * The returned OS level process will run Maya in batch mode to optionally load a input
-   * Maya scene and then perform some operations specified by a dynamically creatd MEL 
+   * Maya scene and then perform some operations specified by a dynamically created MEL 
    * script. 
    * 
    * @param scene
@@ -607,7 +787,6 @@ class MayaActionUtils
    Path scene, 
    File script 
   ) 
-    throws PipelineException
   {
     StringBuilder buf = new StringBuilder();
 
@@ -684,6 +863,11 @@ class MayaActionUtils
   public static final String aLinearUnits  = "LinearUnits";
   public static final String aAngularUnits = "AngularUnits";
   public static final String aTimeUnits    = "TimeUnits";
+  
+  public static final String aInitialMEL = "InitialMEL";
+  public static final String aModelMEL = "ModelMEL";
+  public static final String aAnimMEL = "AnimMEL";
+  public static final String aFinalMEL = "FinalMEL";
 
 }
 
