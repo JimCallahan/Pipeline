@@ -1,4 +1,4 @@
 #!/bin/sh
 
-../../src/pipeline/config/bootstrap.sh SCEACSG 070614 43000 43100
+../../src/pipeline/config/bootstrap.sh SCEACSG 070621 43000 43100
 
