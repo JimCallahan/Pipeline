@@ -9,7 +9,7 @@ AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(Pipeline, 2.3.2)
+AM_INIT_AUTOMAKE(Pipeline, 2.3.3)
                            
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
@@ -32,7 +32,7 @@ case $build in
     NATIVE_OSTYPE=Unix;
     AC_DEFINE([OS_IS_UNIX], [], [The OS is a standard UNIX variant.]);;
 
-  (powerpc-apple-darwin8.?.?)
+  (powerpc-apple-darwin8.*.?)
     NATIVE_OSTYPE=MacOS;
     AC_DEFINE([OS_IS_MAC_OS], [], [The OS is a Mac OS X (Darwin) system.]);;
 
