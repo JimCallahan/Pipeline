@@ -6,7 +6,7 @@ dest=laf/textures
 tmpfile1="filter-textures1.scm"
 tmpfile2="filter-textures2.scm"
 
-rm -f $tmpfile2
+rm -f $tmpfile1
 echo '(load "'$src/../../../scripts/build-mipmap.scm'")' > $tmpfile1
 echo '(load "'$src/../../../scripts/scale-convert.scm'")' >> $tmpfile1
 
@@ -23,19 +23,10 @@ anynewer2=0
 
 function mkmipmaps {
   frame=$1
-  mode=$2
-  nstate=$3
-  qstate=$4
-  frozen=$5
+  title=$2
 
-  if [ $frozen -eq 1 ]
-  then 
-    simg=`printf "%s.%04d.sgi" $src/$mode"Frozen" $frame`
-    dir=`echo $dest/$nstate-$qstate"-Frozen"-$mode`
-  else 
-    simg=`printf "%s.%04d.sgi" $src/$mode $frame`
-    dir=`echo $dest/$nstate-$qstate-$mode`
-  fi
+  simg=`printf "%s/Components.%04d.sgi" $src $frame`
+  dir=`echo $dest/$title`
 
   if [ ! -d $dir ]
   then 
@@ -64,19 +55,10 @@ function mkmipmaps {
 
 function mkicon {
   frame=$1
-  mode=$2
-  nstate=$3
-  qstate=$4  
-  frozen=$5
+  title=$2
 
-  if [ $frozen -eq 1 ]
-  then 
-    simg=`printf "%s.%04d.sgi" $src/$mode"Frozen" $frame`
-    dir=`echo $dest/$nstate-$qstate"-Frozen"-$mode`
-  else 
-    simg=`printf "%s.%04d.sgi" $src/$mode $frame`
-    dir=`echo $dest/$nstate-$qstate-$mode`
-  fi
+  simg=`printf "%s/Components.%04d.sgi" $src $frame`
+  dir=`echo $dest/$title`
 
   if [ ! -d $dir ]
   then 
@@ -96,282 +78,51 @@ function mkicon {
 #   N O D E   I C O N S 
 #---------------------------------------------------------------------------------------------
 
-for mode in Normal Selected Primary
-do
-  #-------------------------------------------------------------------------------------------
-  # Unfrozen Node/Queue State Icons
-  #-------------------------------------------------------------------------------------------
-
-  frame=0
-  for nstate in Pending CheckedIn Identical NeedsCheckOut Modified \
-                Conflicted ModifiedLinks Missing Added Obsolete \
-                NeedsCheckOutMicro NeedsCheckOutMajor MissingNewer ModifiedLocks
-  do
-    for qstate in Stale Queued Running Aborted Failed Finished Paused Undefined
-    do
-      if [ "$nstate" != "Added" -a "$nstate" != "Obsolete" ] 
-      then 
-        mkmipmaps $frame $mode $nstate $qstate 0
-      fi
-      mkicon $frame $mode $nstate $qstate 0
-      frame=$(($frame + 1))	
-    done
-  done
-
-
-  #-------------------------------------------------------------------------------------------
-  # Unfrozen Undefined Icons
-  #-------------------------------------------------------------------------------------------
-
-  frame=112
-  for extra in Blank Lightweight
-  do
-    simg=`printf "%s.%04d.sgi" $src/$mode $frame`
-    dir=`echo $dest/$extra-$mode`
-
-    if [ ! -d $dir ]
-    then 
-      mkdir -p $dir
-    fi
-
-    filter=0
-    size=128
-    while [ $size -gt 1 ]
-    do
-      size=$(($size / 2)) 
-
-      dimg=$dir/texture.$size.png
-
-      if [ $simg -nt $dimg ] 
-      then
-	filter=1
-      fi
-    done
-
-    if [ $filter -eq 1 ]
-    then 
-      printf '(build-mipmap "%s" "%s/texture" 64)\n' $simg $dir >> $tmpfile1
-      anynewer1=1
-    fi
-
-    frame=$(($frame + 1))
-  done
-
-  frame=112
-  for extra in Blank Lightweight
-  do
-    simg=`printf "%s.%04d.sgi" $src/$mode $frame`
-    dir=`echo $dest/$extra-$mode`
-
-    if [ ! -d $dir ]
-    then 
-      mkdir -p $dir
-    fi
-
-    dimg=$dir/texture.21.png
-    if [ $simg -nt $dimg ] 
-    then
-      printf '(scale-convert "%s" "%s" 21)\n' $simg $dimg >> $tmpfile1
-      anynewer1=1
-    fi
-
-    frame=$(($frame + 1))
-  done
-
-
-  #-------------------------------------------------------------------------------------------
-  # Collapsed and Locked Icons
-  #-------------------------------------------------------------------------------------------
-
-  if [ $mode == "Normal" ]
-  then
-    frame=114
-    for extra in Collapsed Locked
-    do 
-      simg=`printf "%s.%04d.sgi" $src/$mode $frame`
-      dir=`echo $dest/$extra`
-
-      if [ ! -d $dir ]
-      then 
-        mkdir -p $dir
-      fi
-
-      filter=0
-      size=128
-      while [ $size -gt 1 ]
-      do
-	size=$(($size / 2)) 
-
-	dimg=$dir/texture.$size.png
-
-	if [ $simg -nt $dimg ] 
-	then
-	  filter=1
-	fi
-      done
-
-      if [ $filter -eq 1 ]
-      then 
-	printf '(build-mipmap "%s" "%s/texture" 64)\n' $simg $dir >> $tmpfile1
-	anynewer1=1
-      fi
-
-      frame=$(($frame + 1))
-    done
-
-    frame=114
-    for extra in Collapsed Locked
-    do 
-      simg=`printf "%s.%04d.sgi" $src/$mode $frame`
-      dir=`echo $dest/$extra-$mode`
-
-      if [ ! -d $dir ]
-      then 
-	mkdir -p $dir
-      fi
-
-      dimg=$dir/texture.21.png
-      if [ $simg -nt $dimg ] 
-      then
-	printf '(scale-convert "%s" "%s" 21)\n' $simg $dimg >> $tmpfile1
-	anynewer1=1
-      fi
-
-      frame=$(($frame + 1))	
-    done  
-  fi
-
-
-  #-------------------------------------------------------------------------------------------
-  # Frozen Node/Queue State Icons
-  #-------------------------------------------------------------------------------------------
-
-  nstate=Identical
-
-  qstate=Finished
-  frame=21
-  mkmipmaps $frame $mode $nstate $qstate 1
-  mkicon $frame $mode $nstate $qstate 1
-
-  qstate=Stale
-  frame=16
-  mkmipmaps $frame $mode $nstate $qstate 1
-  mkicon $frame $mode $nstate $qstate 1
-
-
-  nstate=Missing
-
-  qstate=Finished
-  frame=61
-  mkmipmaps $frame $mode $nstate $qstate 1
-  mkicon $frame $mode $nstate $qstate 1
-
-  qstate=Stale
-  frame=56
-  mkmipmaps $frame $mode $nstate $qstate 1
-  mkicon $frame $mode $nstate $qstate 1
-
-
-  nstate=MissingNewer
-
-  qstate=Finished
-  frame=101
-  mkmipmaps $frame $mode $nstate $qstate 1
-  mkicon $frame $mode $nstate $qstate 1
-
-  qstate=Stale
-  frame=96
-  mkmipmaps $frame $mode $nstate $qstate 1
-  mkicon $frame $mode $nstate $qstate 1
-
-
-  nstate=ModifiedLinks
-
-  qstate=Finished
-  frame=53
-  mkmipmaps $frame $mode $nstate $qstate 1
-  mkicon $frame $mode $nstate $qstate 1
-
-  qstate=Stale
-  frame=48
-  mkmipmaps $frame $mode $nstate $qstate 1
-  mkicon $frame $mode $nstate $qstate 1
-
-
-  nstate=ModifiedLocks
-
-  qstate=Finished
-  frame=109
-  mkmipmaps $frame $mode $nstate $qstate 1
-  mkicon $frame $mode $nstate $qstate 1
-
-  qstate=Stale
-  frame=104
-  mkmipmaps $frame $mode $nstate $qstate 1
-  mkicon $frame $mode $nstate $qstate 1
-
-
-  nstate=Conflicted
-
-  qstate=Finished
-  frame=45
-  mkmipmaps $frame $mode $nstate $qstate 1
-  mkicon $frame $mode $nstate $qstate 1
-
-  qstate=Stale
-  frame=40
-  mkmipmaps $frame $mode $nstate $qstate 1
-  mkicon $frame $mode $nstate $qstate 1
-
-
-  nstate=NeedsCheckOutMicro
-
-  qstate=Finished
-  frame=85
-  mkmipmaps $frame $mode $nstate $qstate 1
-  mkicon $frame $mode $nstate $qstate 1
-
-  qstate=Stale
-  frame=80
-  mkmipmaps $frame $mode $nstate $qstate 1
-  mkicon $frame $mode $nstate $qstate 1
-
-
-  nstate=NeedsCheckOut
-
-  qstate=Finished
-  frame=29
-  mkmipmaps $frame $mode $nstate $qstate 1
-  mkicon $frame $mode $nstate $qstate 1
-
-  qstate=Stale
-  frame=24
-  mkmipmaps $frame $mode $nstate $qstate 1
-  mkicon $frame $mode $nstate $qstate 1
-
-
-  nstate=NeedsCheckOutMajor
-
-  qstate=Finished
-  frame=29
-  mkmipmaps $frame $mode $nstate $qstate 1
-  mkicon $frame $mode $nstate $qstate 1
-
-  qstate=Stale
-  frame=24
-  mkmipmaps $frame $mode $nstate $qstate 1
-  mkicon $frame $mode $nstate $qstate 1
-
-
-  nstate=Added
-  mkicon 69 $mode $nstate Finished 1
-  mkicon 64 $mode $nstate Stale 1
-
-
-  nstate=Obsolete
-  mkicon 77 $mode $nstate Finished 1
-  mkicon 72 $mode $nstate Stale 1
+frame=1
+for name in Ring Core InstRing InstCore \
+            Pending CheckedIn Identical Conflicted \
+            NeedsCheckOut NeedsCheckOutMicro NeedsCheckOutMajor \
+            Modified ModifiedLinks ModifiedLocks \
+            Missing MissingNewer
+do	
+  mkmipmaps $frame Node-$name
+  mkicon $frame Node-$name
+
+  frame=$(($frame + 1))	
 done
+
+frame=17
+for name in Added Obsolete
+do	
+  mkicon $frame Node-$name
+
+  frame=$(($frame + 1))	
+done
+
+frame=19
+for name in Collapsed Locked               
+do	
+  mkmipmaps $frame $name
+
+  frame=$(($frame + 1))	
+done
+
+
+
+#---------------------------------------------------------------------------------------------
+#   J O B   I C O N S
+#---------------------------------------------------------------------------------------------
+
+frame=21
+for name in Job-Ring Job-Core \
+            ExternalJob-Ring ExternalJob-Core
+do 
+  mkmipmaps $frame $name
+  mkicon $frame $name
+
+  frame=$(($frame + 1))	
+done
+
 
 
 #---------------------------------------------------------------------------------------------
@@ -379,10 +130,10 @@ done
 #---------------------------------------------------------------------------------------------
 
 frame=0
-for rel in None OneToOne All
+for rel in Core None OneToOne All
 do
-  simg=`printf "%s/LinkIcons-painted.%04d.sgi" $src $frame`
-  dir=`echo $dest/LinkRelationship-$rel`
+  simg=`printf "%s/LinkIcons.%04d.sgi" $src $frame`
+  dir=`echo $dest/Link-$rel`
 
   if [ ! -d $dir ]
   then 
@@ -411,6 +162,7 @@ do
 
   frame=$(($frame + 1))
 done
+
 
 
 #---------------------------------------------------------------------------------------------
@@ -449,81 +201,6 @@ do
 done
 
 
-
-#---------------------------------------------------------------------------------------------
-#   J O B   I C O N S
-#---------------------------------------------------------------------------------------------
-
-frame=0
-for mode in Normal Selected Primary
-do
-  for qstate in Queued Preempted Running Aborted Failed Finished Paused Undefined
-  do
-    simg=`printf "%s/JobIcons.%04d.sgi" $src $frame`
-    dir=`echo $dest/Job-$qstate-$mode`
-
-    if [ ! -d $dir ]
-    then 
-      mkdir -p $dir
-    fi
-
-    filter=0
-    size=128
-    while [ $size -gt 1 ]
-    do
-      size=$(($size / 2)) 
-
-      dimg=$dir/texture.$size.png
-      if [ $simg -nt $dimg ] 
-      then
-        filter=1
-      fi
-    done
-
-    if [ $filter -eq 1 ]
-    then 
-      printf '(build-mipmap "%s" "%s/texture" 64)\n' $simg $dir >> $tmpfile2
-      anynewer2=1
-    fi
-
-    frame=$(($frame + 1))
-  done
-done
-
-for mode in Normal Selected Primary
-do
-  for qstate in Queued Preempted Running Aborted Failed Finished Paused Undefined
-  do
-    simg=`printf "%s/JobIcons.%04d.sgi" $src $frame`
-    dir=`echo $dest/ExternalJob-$qstate-$mode`
-
-    if [ ! -d $dir ]
-    then 
-      mkdir -p $dir
-    fi
-
-    filter=0
-    size=128
-    while [ $size -gt 1 ]
-    do
-      size=$(($size / 2)) 
-
-      dimg=$dir/texture.$size.png
-      if [ $simg -nt $dimg ] 
-      then
-        filter=1
-      fi
-    done
-
-    if [ $filter -eq 1 ]
-    then 
-      printf '(build-mipmap "%s" "%s/texture" 64)\n' $simg $dir >> $tmpfile2
-      anynewer2=1
-    fi
-
-    frame=$(($frame + 1))
-  done
-done
 
 
 
