@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.208 2007/06/22 01:26:09 jim Exp $
+// $Id: MasterMgr.java,v 1.209 2007/06/26 18:22:50 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -11327,6 +11327,11 @@ class MasterMgr
                   
                   sourceIndices.put(link.getName(), frames);
                 }
+                break;
+                
+              case None: 
+                throw new PipelineException
+                  ("Somehow a non-Assocation link has a None relationship!");
               }
             }
           }
@@ -15283,6 +15288,11 @@ class MasterMgr
                                     }
                                   }
                                 }
+                                break;
+
+                              case None: 
+                                throw new PipelineException
+                                  ("Somehow a Depenency link has a None relationship!");
                               }		    
                             }
                           }
@@ -15441,6 +15451,11 @@ class MasterMgr
                                     staleLink = true;
                                 }
                               }
+                              break;
+
+                            case None: 
+                              throw new PipelineException
+                                ("Somehow an non-Association link has a None relationship!");
                             }
                           }
                           break;
@@ -15571,6 +15586,11 @@ class MasterMgr
                           }
                         }
                       }
+                      break;
+
+                    case None: 
+                      throw new PipelineException
+                        ("Somehow a non-Association link has a None relationship!");
                     }
                   }
                 }
@@ -19687,10 +19707,8 @@ class MasterMgr
       if(details.getOverallQueueState() != OverallQueueState.Finished) {
 	throw new PipelineException
 	  ("The node (" + name + ") was in a " + details.getOverallQueueState() + 
-	   " (" + NodeStyles.getQueueColorString(details.getOverallQueueState()) + ") " + 
-	   "state.\n\n" +
-	   "All nodes being Checked-In must be in a Finished (" + 
-	   NodeStyles.getQueueColorString(OverallQueueState.Finished) + ") state.");
+           " state.\n\n" +
+	   "All nodes being Checked-In must be in a Finished state.");
       }
 
       /* process the node */ 

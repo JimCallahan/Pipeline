@@ -1,4 +1,4 @@
-// $Id: LinkRelationship.java,v 1.5 2005/01/03 00:05:31 jim Exp $
+// $Id: LinkRelationship.java,v 1.6 2007/06/26 18:22:50 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -18,6 +18,12 @@ import java.util.*;
 public
 enum LinkRelationship
 {  
+  /**
+   * This is only used for Association links where there can be no relationship 
+   * between source and target files.
+   */ 
+  None, 
+
   /**
    * There is a one-to-one relationship between files associated with the target and 
    * source nodes. <P> 
@@ -90,6 +96,7 @@ enum LinkRelationship
   /*----------------------------------------------------------------------------------------*/
 
   private static String sTitles[] = {
+    "None", 
     "1:1", 
     "All"
   };

@@ -1,4 +1,4 @@
-// $Id: LinkMod.java,v 1.11 2007/04/30 20:51:40 jim Exp $
+// $Id: LinkMod.java,v 1.12 2007/06/26 18:22:50 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -145,13 +145,13 @@ class LinkMod
     pRelationship = relationship;
 
     switch(pRelationship) {
-    case All:
-      pFrameOffset = null;
-      break;
-
     case OneToOne:
       if(pFrameOffset == null) 
 	pFrameOffset = 0;
+
+    default:
+      pFrameOffset = null;
+      break;
     }      
   }
   
@@ -170,12 +170,15 @@ class LinkMod
   ) 
   {
     switch(pRelationship) {
-    case All: 
+    case OneToOne:
+      pFrameOffset = offset;
+      break;
+      
+    default:
       throw new IllegalArgumentException
-	("The frame index offset has no meaning for links with an (All) relationship!");
+	("The frame index offset has no meaning for links with an " + 
+         "(" + pRelationship.toTitle() + ") relationship!");
     }
-    
-    pFrameOffset = offset;
   }
 
 

@@ -1,4 +1,4 @@
-// $Id: JBaseLinkDialog.java,v 1.6 2007/06/21 16:40:50 jim Exp $
+// $Id: JBaseLinkDialog.java,v 1.7 2007/06/26 18:22:50 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -67,13 +67,13 @@ class JBaseLinkDialog
 	UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
 	
 	{
-	  ArrayList<String> values = new ArrayList<String>();
-	  values.add(LinkRelationship.All.toTitle());
-	  values.add(LinkRelationship.OneToOne.toTitle());
+          ArrayList<String> values = new ArrayList<String>();
+          values.add(LinkRelationship.All.toTitle());
+          values.add(LinkRelationship.OneToOne.toTitle());
 
 	  JCollectionField field = 
 	    UIFactory.createTitledCollectionField(tpanel, "Link Relationship:", sTSize, 
-						 vpanel, values, sVSize);
+                                                  vpanel, values, sVSize);
 	  pRelationshipField = field;
 
 	  field.addActionListener(this);
@@ -115,7 +115,9 @@ class JBaseLinkDialog
   public LinkRelationship
   getRelationship() 
   {
-    if(pRelationshipField.getSelected().equals("1:1")) 
+    if(pRelationshipField.getSelected().equals("None"))
+      return LinkRelationship.None; 
+    else if(pRelationshipField.getSelected().equals("1:1")) 
       return LinkRelationship.OneToOne;
     else if(pRelationshipField.getSelected().equals("All")) 
       return LinkRelationship.All;
@@ -153,6 +155,10 @@ class JBaseLinkDialog
     pPolicyField.setSelectedIndex(policy.ordinal());
 
     switch(rel) {
+    case None: 
+      pRelationshipField.setSelected("None");
+      break;
+      
     case OneToOne:
       pRelationshipField.setSelected("1:1");
       break;
@@ -208,10 +214,22 @@ class JBaseLinkDialog
     pRelationshipField.removeActionListener(this);
     {
       ArrayList<String> values = new ArrayList<String>();
-      values.add(LinkRelationship.All.toTitle());
-      values.add(LinkRelationship.OneToOne.toTitle());
+      switch(getPolicy()) {
+      case Association:
+         rel = LinkRelationship.None;
+         values.add(LinkRelationship.None.toTitle());
+         pRelationshipField.setEnabled(false);
+         break;
+
+      default:
+        if(rel == LinkRelationship.None) 
+          rel = LinkRelationship.All;
+        values.add(LinkRelationship.All.toTitle());
+        values.add(LinkRelationship.OneToOne.toTitle());
+        pRelationshipField.setEnabled(true);
+      }
+
       pRelationshipField.setValues(values);
-      pRelationshipField.setEnabled(true);
     }
     pRelationshipField.addActionListener(this);
     

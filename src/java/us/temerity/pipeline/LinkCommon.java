@@ -1,4 +1,4 @@
-// $Id: LinkCommon.java,v 1.8 2006/02/27 17:56:01 jim Exp $
+// $Id: LinkCommon.java,v 1.9 2007/06/26 18:22:50 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -213,20 +213,31 @@ class LinkCommon
       throw new GlueException("The \"Policy\" entry was missing or (null)!");
     pPolicy = policy;
 
-    LinkRelationship relationship = (LinkRelationship) decoder.decode("Relationship");
-    if(relationship == null) 
-      throw new GlueException("The \"Relationship\" entry was missing or (null)!");
-    pRelationship = relationship;
-
-    if(pRelationship == LinkRelationship.OneToOne) {
-      Integer offset = (Integer) decoder.decode("FrameOffset");
-      if(offset == null) 
-	throw new GlueException
-	  ("The \"FrameOffset\" was missing or (null)!");
-      pFrameOffset = offset;
-    }
-    else {
+    switch(pPolicy) {
+    case Association:
+      pRelationship = LinkRelationship.None;
       pFrameOffset = null;
+      break;
+
+    case Reference:
+    case Dependency:
+      {
+        LinkRelationship relationship = (LinkRelationship) decoder.decode("Relationship");
+        if(relationship == null) 
+          throw new GlueException("The \"Relationship\" entry was missing or (null)!");
+        pRelationship = relationship;
+
+        if(pRelationship == LinkRelationship.OneToOne) {
+          Integer offset = (Integer) decoder.decode("FrameOffset");
+          if(offset == null) 
+            throw new GlueException
+              ("The \"FrameOffset\" was missing or (null)!");
+          pFrameOffset = offset;
+        }
+        else {
+          pFrameOffset = null;
+        }
+      }
     }
   }
 
