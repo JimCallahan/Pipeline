@@ -1,4 +1,4 @@
-// $Id: ViewerNode.java,v 1.12 2007/06/26 05:18:57 jim Exp $
+// $Id: ViewerNode.java,v 1.13 2007/06/26 18:23:32 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -184,9 +184,13 @@ class ViewerNode
 
       if(pNodeStateDL == null) {
         NodeDetails details = pStatus.getDetails();
-        if((details != null) && !details.isLightweight()) {
+        if(details != null) {
           String nstate = null;
-          if(details.getOverallNodeState() == OverallNodeState.NeedsCheckOut) {
+          if(details.isLightweight()) {
+            if(details.getVersionState() == VersionState.CheckedIn) 
+              nstate = "Node-CheckedIn";
+          }
+          else if(details.getOverallNodeState() == OverallNodeState.NeedsCheckOut) {
             VersionID wvid = details.getWorkingVersion().getWorkingID();
             VersionID lvid = details.getLatestVersion().getVersionID();
             switch(wvid.compareLevel(lvid)) {
@@ -205,8 +209,9 @@ class ViewerNode
           else {
             nstate = ("Node-" + details.getOverallNodeState()); 
           }
-
-          pNodeStateDL = mgr.getIconDL(gl, nstate);
+        
+          if(nstate != null) 
+            pNodeStateDL = mgr.getIconDL(gl, nstate);
         }
       }
       
