@@ -1,4 +1,4 @@
-// $Id: ViewerLinks.java,v 1.7 2007/06/21 16:40:50 jim Exp $
+// $Id: ViewerLinks.java,v 1.8 2007/06/26 05:18:57 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -169,17 +169,23 @@ class ViewerLinks
       /* get the link relationship icon display lists */ 
       try {
 	GeometryMgr mgr = GeometryMgr.getInstance();
-	if(prefs.getDrawLinkRelationship() && (pLinkRelDLs == null)) {
-	  pLinkRelDLs = new int[3];
-	  for(LinkRelationship rel : LinkRelationship.all()) 
-	    pLinkRelDLs[rel.ordinal()] = mgr.getLinkRelationshipDL(gl, rel);
-	}
+	if(prefs.getDrawLinkRelationship()) {
+          if(pLinkRelDLs == null) {
+            pLinkRelDLs = new int[3];
+            for(LinkRelationship rel : LinkRelationship.all()) 
+              pLinkRelDLs[rel.ordinal()] = mgr.getLinkIconDL(gl, "Link-" + rel);
+          }
+
+          if(pLinkCoreDL == null) 
+            pLinkCoreDL = mgr.getLinkIconDL(gl, "Link-Core");
+        }
       }
-      catch(IOException ex) {
+      catch(PipelineException ex) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Tex, LogMgr.Level.Severe,
 	   ex.getMessage());
 	pLinkRelDLs = null;
+        pLinkCoreDL = null;
       }
 	
       /* rebuild the link geometry */ 
@@ -328,7 +334,7 @@ class ViewerLinks
 
 		    ViewerLinkRelationship vrel = 
 		      new ViewerLinkRelationship(link.getLink(), link.getTargetNode(), 
-						 new Point2d(rc, spos.y()));
+						 link.isStale(), new Point2d(rc, spos.y()));
 		    vrels.add(vrel);
 		  }
 
@@ -379,7 +385,7 @@ class ViewerLinks
                       switch(link.getLink().getPolicy()) {
                       case Association:
                         {
-                          double sx = a.x() - prefs.getLinkGap();
+                          double sx = a.x() - 0.1;
                           gl.glVertex2d(sx, a.y());
                           gl.glVertex2d(sx, b.y());
                         }
@@ -478,6 +484,14 @@ class ViewerLinks
 	      {
 		Point2d p = vrel.getPosition();
 		gl.glTranslated(p.x(), p.y(), 0.0);
+
+                gl.glColor3d(1.0, 1.0, 1.0); 
+		gl.glCallList(pLinkCoreDL);
+                
+                if(vrel.isStale()) 
+                  gl.glColor3d(stale.r(), stale.g(), stale.b());
+                else 
+                  gl.glColor3d(color.r(), color.g(), color.b());
 		gl.glCallList(dl);
 	      }
 	      gl.glPopMatrix();	      
@@ -686,7 +700,8 @@ class ViewerLinks
   /**
    * The OpenGL display list handles for the link relationship icon geometry.
    */ 
-  private int[] pLinkRelDLs;
+  private int[]   pLinkRelDLs;
+  private Integer pLinkCoreDL; 
 
   /**
    * Whether the OpenGL display list for the links geometry needs to be rebuilt.

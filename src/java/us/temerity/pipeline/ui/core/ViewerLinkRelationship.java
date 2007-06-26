@@ -1,4 +1,4 @@
-// $Id: ViewerLinkRelationship.java,v 1.1 2005/01/03 06:56:25 jim Exp $
+// $Id: ViewerLinkRelationship.java,v 1.2 2007/06/26 05:18:57 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -31,6 +31,7 @@ class ViewerLinkRelationship
   (
    LinkCommon link,
    ViewerNode vnode, 
+   boolean isStale, 
    Point2d pos
   ) 
   {
@@ -41,6 +42,8 @@ class ViewerLinkRelationship
     if(vnode == null) 
       throw new IllegalArgumentException("The node vnode cannot be (null)!");
     pViewerNode = vnode;
+
+    pIsStale = isStale;
 
     Vector2d size = new Vector2d(0.25, 0.148);
     pBBox = new BBox2d(Point2d.sub(pos, size), Point2d.add(pos, size)); 
@@ -92,6 +95,15 @@ class ViewerLinkRelationship
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Whether the link is Stale.
+   */ 
+  public boolean
+  isStale() 
+  {
+    return pIsStale;
+  }
+
+  /**
    * Whether the given position is inside the node icon.
    */ 
   public boolean
@@ -117,6 +129,11 @@ class ViewerLinkRelationship
    * The target viewer node.
    */ 
   private ViewerNode  pViewerNode;
+
+  /**
+   * Whether the link is Stale.
+   */ 
+  public boolean  pIsStale; 
 
   /**
    * Whether this geometry is currently visible.

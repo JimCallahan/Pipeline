@@ -1,4 +1,4 @@
-// $Id: JNodeAnnotationsPanel.java,v 1.3 2007/06/21 20:18:32 jim Exp $
+// $Id: JNodeAnnotationsPanel.java,v 1.4 2007/06/26 05:18:57 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -526,16 +526,12 @@ class JNodeAnnotationsPanel
         }
         
 	try {
-	  pHeaderIcon.setIcon(TextureMgr.getInstance().getIcon(name));
+	  pHeaderIcon.setIcon(TextureMgr.getInstance().getIcon32(name));
 	}
-	catch(IOException ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Tex, LogMgr.Level.Severe,
-	     "Internal Error:\n" + 
-	     "  " + ex.getMessage());
-	  LogMgr.getInstance().flush();
-	  System.exit(1);
-	} 
+	catch(PipelineException ex) {
+          pHeaderIcon.setIcon(null); 
+	  UIMaster.getInstance().showErrorDialog(ex);
+        }
       }
     }
 
@@ -647,6 +643,8 @@ class JNodeAnnotationsPanel
   public void 
   updateUserPrefs() 
   {
+    TextureMgr.getInstance().rebuildIcons();
+
     updateMenuToolTips();
   }
 

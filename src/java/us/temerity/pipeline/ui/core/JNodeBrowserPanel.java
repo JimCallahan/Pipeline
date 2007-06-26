@@ -1,4 +1,4 @@
-// $Id: JNodeBrowserPanel.java,v 1.17 2007/05/14 16:22:01 jim Exp $
+// $Id: JNodeBrowserPanel.java,v 1.18 2007/06/26 05:18:57 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -573,6 +573,8 @@ class JNodeBrowserPanel
   public void 
   updateUserPrefs() 
   {
+    TextureMgr.getInstance().rebuildIcons();
+
     updateMenuToolTips();
   }
 

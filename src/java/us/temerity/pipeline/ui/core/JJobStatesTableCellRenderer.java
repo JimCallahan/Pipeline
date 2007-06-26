@@ -1,8 +1,9 @@
-// $Id: JJobStatesTableCellRenderer.java,v 1.2 2006/10/11 06:09:39 jim Exp $
+// $Id: JJobStatesTableCellRenderer.java,v 1.3 2007/06/26 05:18:57 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.math.*;
 
 import java.awt.*;
 import java.text.*;
@@ -82,13 +83,36 @@ class JJobStatesTableCellRenderer
       for(wk=0; wk<props.length; wk++)
 	props[wk] /= total;
       
-      pGraph.setValues(props, NodeStyles.getJobColors());
+      UserPrefs prefs = UserPrefs.getInstance();
+      Color[] colors = {
+        colorCast(prefs.getQueuedCoreColor()), 
+        colorCast(prefs.getPreemptedCoreColor()), 
+        colorCast(prefs.getPausedCoreColor()), 
+        colorCast(prefs.getAbortedCoreColor()), 
+        colorCast(prefs.getRunningCoreColor()), 
+        colorCast(prefs.getFinishedCoreColor()), 
+        colorCast(prefs.getFailedCoreColor())
+      };
+
+      pGraph.setValues(props, colors);
     }
     else {
       pGraph.setValues(null, null);
     }
     
     return pPanel;
+  }
+
+  /**
+   * Convert from Pipeline color to Swing color.
+   */ 
+  private Color
+  colorCast
+  (
+   Color3d color
+  )
+  {
+    return new Color((float) color.r(), (float) color.g(), (float) color.b());
   }
 
 

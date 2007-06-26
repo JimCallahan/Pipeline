@@ -1,4 +1,4 @@
-// $Id: JNodeLinksPanel.java,v 1.22 2007/06/21 16:40:50 jim Exp $
+// $Id: JNodeLinksPanel.java,v 1.23 2007/06/26 05:18:57 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -566,16 +566,12 @@ class JNodeLinksPanel
 	}
 	
 	try {
-	  pHeaderIcon.setIcon(TextureMgr.getInstance().getIcon(name));
+	  pHeaderIcon.setIcon(TextureMgr.getInstance().getIcon32(name));
 	}
-	catch(IOException ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Tex, LogMgr.Level.Severe,
-	     "Internal Error:\n" + 
-	     "  " + ex.getMessage());
-	  LogMgr.getInstance().flush();
-	  System.exit(1);
-	} 
+	catch(PipelineException ex) {
+          pHeaderIcon.setIcon(null); 
+	  UIMaster.getInstance().showErrorDialog(ex);
+        }
       }
     }
 
@@ -984,6 +980,8 @@ class JNodeLinksPanel
   public void 
   updateUserPrefs() 
   {
+    TextureMgr.getInstance().rebuildIcons();
+
     updateMenuToolTips();
   }
 

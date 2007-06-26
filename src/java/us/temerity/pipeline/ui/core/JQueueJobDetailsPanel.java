@@ -1,4 +1,4 @@
-// $Id: JQueueJobDetailsPanel.java,v 1.12 2007/05/09 15:27:44 jim Exp $
+// $Id: JQueueJobDetailsPanel.java,v 1.13 2007/06/26 05:18:57 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -811,17 +811,25 @@ class JQueueJobDetailsPanel
       results = pJobInfo.getResults();
 
     /* header */ 
-    if((pJob != null) && (pJobInfo != null)) {
-      pHeaderLabel.setText(" Job " + pJob.getJobID() + ":  " + agenda.getPrimaryTarget());
-      pHeaderIcon.setIcon(sIcons[pJobInfo.getState().ordinal()]);
-
-      pNodeNameField.setText(agenda.getNodeID().getName());
-    }
-    else {
-      pHeaderLabel.setText(null);
-      pHeaderIcon.setIcon(sUndefinedIcon);
-
-      pNodeNameField.setText(null);
+    {
+      String tname = "Job-Undefined-Normal";
+      if((pJob != null) && (pJobInfo != null)) {
+        tname = ("Job-" + pJobInfo.getState() + "-Normal");
+        pHeaderLabel.setText(" Job " + pJob.getJobID() + ":  " + agenda.getPrimaryTarget());
+        pNodeNameField.setText(agenda.getNodeID().getName());
+      }
+      else {
+        pHeaderLabel.setText(null);
+        pNodeNameField.setText(null);
+      }
+      
+      try {
+	pHeaderIcon.setIcon(TextureMgr.getInstance().getIcon64(tname));
+      }
+      catch(PipelineException ex) {
+        pHeaderIcon.setIcon(null); 
+        UIMaster.getInstance().showErrorDialog(ex);
+      }
     }
 
     /* summary panel */ 
@@ -1279,6 +1287,19 @@ class JQueueJobDetailsPanel
 
 
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Update the panel to reflect new user preferences.
+   */ 
+  public void 
+  updateUserPrefs() 
+  {
+    TextureMgr.getInstance().rebuildIcons();
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
   /*   L I S T E N E R S                                                                    */
   /*----------------------------------------------------------------------------------------*/
 
@@ -1594,22 +1615,6 @@ class JQueueJobDetailsPanel
   private static final int  sTSize = 180;
   private static final int  sVSize = 240;
   private static final int  sHSize = 117;
-
-  /**
-   * The JobState header icons.
-   */ 
-  private static final Icon[] sIcons = {
-    new ImageIcon(LookAndFeelLoader.class.getResource("QueuedIcon.png")), 
-    new ImageIcon(LookAndFeelLoader.class.getResource("PreemptedIcon.png")), 
-    new ImageIcon(LookAndFeelLoader.class.getResource("PausedIcon.png")), 
-    new ImageIcon(LookAndFeelLoader.class.getResource("AbortedIcon.png")), 
-    new ImageIcon(LookAndFeelLoader.class.getResource("RunningIcon.png")), 
-    new ImageIcon(LookAndFeelLoader.class.getResource("FinishedIcon.png")), 
-    new ImageIcon(LookAndFeelLoader.class.getResource("FailedIcon.png"))
-  };
-
-  private static final Icon sUndefinedIcon = 
-    new ImageIcon(LookAndFeelLoader.class.getResource("UndefinedIcon.png")); 
 
 
 

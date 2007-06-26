@@ -1,4 +1,4 @@
-// $Id: ViewerNodeHint.java,v 1.8 2007/04/30 08:19:10 jim Exp $
+// $Id: ViewerNodeHint.java,v 1.9 2007/06/26 05:18:57 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -574,7 +574,7 @@ class ViewerNodeHint
         }
       }
     }
-    catch(IOException ex) {
+    catch(PipelineException ex) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Tex, LogMgr.Level.Severe,
 	 ex.getMessage());

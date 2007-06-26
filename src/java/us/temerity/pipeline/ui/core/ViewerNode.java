@@ -1,4 +1,4 @@
-// $Id: ViewerNode.java,v 1.11 2007/04/15 10:30:47 jim Exp $
+// $Id: ViewerNode.java,v 1.12 2007/06/26 05:18:57 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -182,61 +182,51 @@ class ViewerNode
 				       GeometryMgr.TextAlignment.Center, 0.05);
       }
 
-      if(pIconDL == null) {
-	String name = "Blank";
-	NodeDetails details = pStatus.getDetails();
-	if(details != null) {
-          if(details.isLightweight()) {
-            switch(details.getVersionState()) {
-            case CheckedIn:
-              name = "CheckedIn-Undefined"; 
+      if(pNodeStateDL == null) {
+        NodeDetails details = pStatus.getDetails();
+        if((details != null) && !details.isLightweight()) {
+          String nstate = null;
+          if(details.getOverallNodeState() == OverallNodeState.NeedsCheckOut) {
+            VersionID wvid = details.getWorkingVersion().getWorkingID();
+            VersionID lvid = details.getLatestVersion().getVersionID();
+            switch(wvid.compareLevel(lvid)) {
+            case Major:
+              nstate = "Node-NeedsCheckOutMajor";
               break;
-
-            default:
-              name = "Lightweight";
+              
+            case Minor:
+              nstate = "Node-NeedsCheckOut";
+              break;
+              
+            case Micro:
+              nstate = "Node-NeedsCheckOutMicro";
             }
           }
           else {
-            if(details.getOverallNodeState() == OverallNodeState.NeedsCheckOut) {
-              VersionID wvid = details.getWorkingVersion().getWorkingID();
-              VersionID lvid = details.getLatestVersion().getVersionID();
-              switch(wvid.compareLevel(lvid)) {
-              case Major:
-                name = ("NeedsCheckOutMajor-" + details.getOverallQueueState());
-                break;
-                
-              case Minor:
-                name = ("NeedsCheckOut-" + details.getOverallQueueState());
-                break;
-                
-              case Micro:
-                name = ("NeedsCheckOutMicro-" + details.getOverallQueueState());
-              }
-            }
-            else {
-              name = (details.getOverallNodeState() + "-" + details.getOverallQueueState());
-            }
-            
-            NodeMod mod = details.getWorkingVersion();
-            if((mod != null) && mod.isFrozen()) 
-              name = (name + "-Frozen");
+            nstate = ("Node-" + details.getOverallNodeState()); 
           }
-        }
 
-	pIconDL = new int[3];
-	for(SelectionMode mode : SelectionMode.all()) 
-	  pIconDL[mode.ordinal()] = mgr.getNodeIconDL(gl, name + "-" + mode);
+          pNodeStateDL = mgr.getIconDL(gl, nstate);
+        }
       }
       
+      if(pRingDL == null) 
+        pRingDL = mgr.getIconDL(gl, "Node-Ring");
+
+      if(pCoreDL == null) 
+        pCoreDL = mgr.getIconDL(gl, "Node-Core");
+
       if(pCollapsedDL == null) 
 	pCollapsedDL = mgr.getNodeIconDL(gl, "Collapsed");
 
       if(pLockedDL == null) 
 	pLockedDL = mgr.getNodeIconDL(gl, "Locked");
     }
-    catch(IOException ex) {
+    catch(PipelineException ex) {
       pLabelDLs    = null;
-      pIconDL      = null;
+      pNodeStateDL = null;
+      pRingDL      = null;
+      pCoreDL      = null;
       pCollapsedDL = null;
       pLockedDL    = null;
 
@@ -259,26 +249,77 @@ class ViewerNode
    GL gl
   )
   {
+    UserPrefs prefs = UserPrefs.getInstance();
+
+    Color3d white = new Color3d(1.0, 1.0, 1.0);
+
+    Color3d modeColor  = NodeStyles.getSelectionColor3d(pMode);
+    Color3d queueColor = prefs.getUndefinedCoreColor(); 
+    Color3d iconColor  = prefs.getModifiableColor(); 
+    {
+      NodeDetails details = pStatus.getDetails();
+      if(details != null) {
+        if(details.isLightweight()) {
+          if(details.getVersionState() != VersionState.CheckedIn) 
+            queueColor = prefs.getLightweightCoreColor(); 
+        }
+        else {
+          queueColor = NodeStyles.getQueueColor3d(details.getOverallQueueState());
+
+          NodeMod mod = details.getWorkingVersion();
+          if((mod != null) && mod.isFrozen()) {
+            switch(details.getOverallQueueState()) {
+            case Finished: 
+              iconColor = prefs.getFrozenFinishedColor(); 
+              break;
+
+            case Stale: 
+              iconColor = prefs.getFrozenStaleColor(); 
+            }
+          }
+        }
+      }
+    }
+
     gl.glPushMatrix();
     {
       gl.glTranslated(pPos.x(), pPos.y(), 0.0);
-      gl.glCallList(pIconDL[pMode.ordinal()]);
+
+      /* the selection ring */
+      if(pRingDL != null) {
+        gl.glColor3d(modeColor.r(), modeColor.g(), modeColor.b());
+        gl.glCallList(pRingDL); 
+      }
+
+      /* the queue state colored node core */ 
+      if(pCoreDL != null) {
+        gl.glColor3d(queueColor.r(), queueColor.g(), queueColor.b());
+        gl.glCallList(pCoreDL); 
+      }   
+      
+      /* the node state icon */ 
+      if(pNodeStateDL != null) {
+        gl.glColor3d(iconColor.r(), iconColor.g(), iconColor.b());
+        gl.glCallList(pNodeStateDL); 
+      }   
 
       {
 	NodeDetails details = pStatus.getDetails();
 
-	if(pIsLocked) {
+        /* extra symbols to the right of the node */ 
+	if(pIsLocked && (pLockedDL != null)) {
 	  gl.glTranslated(0.7, 0.0, 0.0);
 	  gl.glCallList(pLockedDL);
 	  gl.glTranslated(-0.7, 0.0, 0.0);
 	}
-	else if(pIsCollapsed) {
+	else if(pIsCollapsed && (pCollapsedDL != null)) {
 	  double dx = (details == null) ? -0.8 : 0.8;
 	  gl.glTranslated(dx, 0.0, 0.0);
 	  gl.glCallList(pCollapsedDL);
 	  gl.glTranslated(-dx, 0.0, 0.0);
 	}
 
+        /* the disabled action vertical bar */ 
 	if(details != null) {
 	  NodeCommon com = null;
 	  boolean hasSources = false;
@@ -297,7 +338,6 @@ class ViewerNode
 	    }
 	  }
 
-	  UserPrefs prefs = UserPrefs.getInstance();
 	  if((com != null) &&  (com.getAction() != null) && 
 	     (!com.isActionEnabled()) && (prefs.getDrawDisabledAction()) && 
 	     (pIsCollapsed || !hasSources)) {
@@ -316,19 +356,9 @@ class ViewerNode
 	}
       }
 
+      /* the node label */ 
       {
-	switch(pMode) {
-	case Normal:
-	  gl.glColor3d(1.0, 1.0, 1.0);
-	  break;
-	  
-	case Selected:
-	  gl.glColor3d(1.0, 1.0, 0.0);
-	  break;
-	  
-	case Primary:
-	  gl.glColor3d(0.0, 1.0, 1.0);
-	}	
+        gl.glColor3d(modeColor.r(), modeColor.g(), modeColor.b());
 	
 	switch(pLabelDLs.length) {
 	case 1:
@@ -389,12 +419,22 @@ class ViewerNode
   private int[]  pLabelDLs; 
 
   /**
-   * The OpenGL display list handles for the icon geometry. <P> 
-   * 
-   * The array contains the display lists corresponding to the Normal, Selected and Primary
-   * selection modes.
+   * The OpenGL display list handle for the geometry of the selection ring around 
+   * the outside of the node.
    */ 
-  private int[]  pIconDL; 
+  private Integer  pRingDL; 
+
+  /**
+   * The OpenGL display list handle for the geometry of the queue state colored 
+   * core of the node.
+   */ 
+  private Integer  pCoreDL; 
+
+  /**
+   * The OpenGL display list handle for the node state symbols rendered on top of the 
+   * colored core of the node.
+   */ 
+  private Integer  pNodeStateDL; 
   
   /**
    * The OpenGL display list handle for the collapsed icon geometry.

@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.41 2007/05/28 01:28:20 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.42 2007/06/26 05:18:57 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -553,16 +553,12 @@ class JNodeFilesPanel
 	}
 
 	try {
-	  pHeaderIcon.setIcon(TextureMgr.getInstance().getIcon(name));
+	  pHeaderIcon.setIcon(TextureMgr.getInstance().getIcon32(name));
 	}
-	catch(IOException ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Tex, LogMgr.Level.Severe,
-	     "Internal Error:\n" + 
-	     "  " + ex.getMessage());
-	  LogMgr.getInstance().flush();
-	  System.exit(1);
-	} 
+	catch(PipelineException ex) {
+          pHeaderIcon.setIcon(null); 
+	  UIMaster.getInstance().showErrorDialog(ex);
+        }
       }
     }
 
@@ -1112,6 +1108,8 @@ class JNodeFilesPanel
   public void 
   updateUserPrefs() 
   {
+    TextureMgr.getInstance().rebuildIcons();
+
     updateMenuToolTips();
   }
 
@@ -2308,13 +2306,9 @@ class JNodeFilesPanel
 	String suffix = pIsSelected ? "Selected" : "Normal"; 
 	pStateLabel.setIcon(mgr.getIcon21(pTexPrefix + suffix));
       }	
-      catch(IOException ex) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Tex, LogMgr.Level.Severe,
-	   "Internal Error:\n" + 
-	   "  " + ex.getMessage());
-	LogMgr.getInstance().flush();
-	  System.exit(1);
+      catch(PipelineException ex) {
+        pHeaderIcon.setIcon(null); 
+        UIMaster.getInstance().showErrorDialog(ex);
       }
 
       if(!pIsSelectable) 

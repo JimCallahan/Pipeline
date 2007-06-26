@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.90 2007/05/29 22:23:07 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.91 2007/06/26 05:18:57 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -989,6 +989,8 @@ class JNodeViewerPanel
     pShowDetailHints = prefs.getShowDetailHints();
     pShowDownstream  = prefs.getShowDownstream();
 
+    TextureMgr.getInstance().rebuildIcons();
+
     updateUniverse();
     updateMenuToolTips();
     updateMostRecentNodeMenuItemPrefs();
@@ -1915,7 +1917,7 @@ class JNodeViewerPanel
                                        status.isStaleLink(link.getName()));
         }
         else {
-            pViewerLinks.addDownstreamLink(cnode, vnode);
+          pViewerLinks.addDownstreamLink(cnode, vnode);
         }		
       
         /* update the vertical bounds */ 
@@ -4953,7 +4955,7 @@ class JNodeViewerPanel
       }
 
       TreeSet<String> roots = new TreeSet<String>(pRoots.keySet());
-      tool.initExecution(primary, selected, roots);
+      tool.initExecution(pAuthor, pView, primary, selected, roots);
 
       ToolOpTask task = new ToolOpTask(tool, pGroupID);
       task.start();

@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.41 2007/06/15 00:27:31 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.42 2007/06/26 05:18:57 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1833,16 +1833,12 @@ class JNodeDetailsPanel
       }
       
       try {
-	pHeaderIcon.setIcon(TextureMgr.getInstance().getIcon(name));
+	pHeaderIcon.setIcon(TextureMgr.getInstance().getIcon32(name));
       }
-      catch(IOException ex) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Tex, LogMgr.Level.Severe,
-	   "Internal Error:\n" + 
-	   "  " + ex.getMessage());
-	LogMgr.getInstance().flush();
-	System.exit(1);
-      } 
+      catch(PipelineException ex) {
+        pHeaderIcon.setIcon(null); 
+        UIMaster.getInstance().showErrorDialog(ex);
+      }
     } 
 
     /* frozen node? */
@@ -3529,6 +3525,8 @@ class JNodeDetailsPanel
   public void 
   updateUserPrefs() 
   {
+    TextureMgr.getInstance().rebuildIcons();
+
     updateMenuToolTips();
   }
 

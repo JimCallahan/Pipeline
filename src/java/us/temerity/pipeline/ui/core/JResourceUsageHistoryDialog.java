@@ -1,4 +1,4 @@
-// $Id: JResourceUsageHistoryDialog.java,v 1.20 2007/03/28 20:07:15 jim Exp $
+// $Id: JResourceUsageHistoryDialog.java,v 1.21 2007/06/26 05:18:57 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -580,7 +580,7 @@ class JResourceUsageHistoryDialog
 
 	pBorderResized = false;
       }
-      catch(IOException ex) {
+      catch(PipelineException ex) {
 	UIMaster.getInstance().showErrorDialog(ex);	
       }
     }
@@ -1369,7 +1369,7 @@ class JResourceUsageHistoryDialog
 	      }
 	    }
 	  }
-	  catch(IOException ex) {
+	  catch(PipelineException ex) {
 	    UIMaster.getInstance().showErrorDialog(ex);
 	  }
 	
@@ -1652,7 +1652,7 @@ class JResourceUsageHistoryDialog
 		labelDLs.put(hname, dl);
 	      }
 	    }
-	    catch(IOException ex) {
+	    catch(PipelineException ex) {
 	      UIMaster.getInstance().showErrorDialog(ex);
 	    }
 
@@ -1667,7 +1667,7 @@ class JResourceUsageHistoryDialog
 	      diskDL = mgr.getNodeIconDL(gl, "Disk");
 	      jobDL  = mgr.getNodeIconDL(gl, "Job");
 	    }
-	    catch(IOException ex) {
+	    catch(PipelineException ex) {
 	      UIMaster.getInstance().showErrorDialog(ex);
 	    }
 
@@ -1784,7 +1784,7 @@ class JResourceUsageHistoryDialog
 		}
 	      }
 	    }
-	    catch(IOException ex) {
+	    catch(PipelineException ex) {
 	      UIMaster.getInstance().showErrorDialog(ex);
 	    }
 

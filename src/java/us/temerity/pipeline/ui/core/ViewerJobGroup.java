@@ -1,4 +1,4 @@
-// $Id: ViewerJobGroup.java,v 1.5 2007/01/05 23:46:10 jim Exp $
+// $Id: ViewerJobGroup.java,v 1.6 2007/06/26 05:18:57 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -63,7 +63,7 @@ class ViewerJobGroup
       GeometryMgr mgr = GeometryMgr.getInstance();
       pLabelWidth = 0.35 * mgr.getTextWidth(PackageInfo.sGLFont, pLabelText, 0.05);
     }
-    catch(IOException ex) {
+    catch(PipelineException ex) {
       throw new IllegalArgumentException(ex.getMessage());
     }
   }
@@ -193,17 +193,16 @@ class ViewerJobGroup
 	pLabelDL = mgr.getTextDL(gl, PackageInfo.sGLFont, pLabelText, 
 				 GeometryMgr.TextAlignment.Left, 0.05);
 
-      if(pIconDL == null) {
-	pIconDL = new int[3];
-	for(SelectionMode mode : SelectionMode.all()) 
-	  pIconDL[mode.ordinal()] = 
-	    mgr.getJobIconDL(gl, "Undefined-" + mode, false, pHeight);
-      }
+      if(pRingDL == null) 
+        pRingDL = mgr.getJobIconDL(gl, "Job-Ring", pHeight);
+
+      if(pCoreDL == null) 
+        pCoreDL = mgr.getJobIconDL(gl, "Job-Core", pHeight);
 
       if(pCollapsedDL == null) 
 	pCollapsedDL = mgr.getNodeIconDL(gl, "Collapsed");
     }
-    catch(IOException ex) {
+    catch(PipelineException ex) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Tex, LogMgr.Level.Severe,
 	 ex.getMessage());
@@ -226,7 +225,21 @@ class ViewerJobGroup
     gl.glPushMatrix();
     {
       gl.glTranslated(pPos.x(), pPos.y(), 0.0);
-      gl.glCallList(pIconDL[pMode.ordinal()]);
+
+      Color3d modeColor = NodeStyles.getSelectionColor3d(pMode);  
+
+      /* the selection ring */
+      if(pRingDL != null) {
+        gl.glColor3d(modeColor.r(), modeColor.g(), modeColor.b());
+        gl.glCallList(pRingDL); 
+      }
+
+      /* the job group core */ 
+      if(pCoreDL != null) {
+        Color3d c = NodeStyles.getJobColor3d(null);
+        gl.glColor3d(c.r(), c.g(), c.b());
+        gl.glCallList(pCoreDL); 
+      }   
       
       if(pIsCollapsed) {
 	gl.glTranslated(0.8, 0.0, 0.0);
@@ -234,19 +247,8 @@ class ViewerJobGroup
 	gl.glTranslated(-0.8, 0.0, 0.0);
       }
 
-      {
-	switch(pMode) {
-	case Normal:
-	  gl.glColor3d(1.0, 1.0, 1.0);
-	  break;
-	  
-	case Selected:
-	  gl.glColor3d(1.0, 1.0, 0.0);
-	  break;
-	  
-	case Primary:
-	  gl.glColor3d(0.0, 1.0, 1.0);
-	}
+      { 
+        gl.glColor3d(modeColor.r(), modeColor.g(), modeColor.b());
 	
 	double dy = (0.1875 * ((double) pHeight)) + 0.1;
 	gl.glTranslated(-0.5, dy, 0.0);
@@ -298,13 +300,16 @@ class ViewerJobGroup
   private Integer  pLabelDL; 
 
   /**
-   * The OpenGL display list handles for the icon geometry. <P> 
-   * 
-   * The array contains the display lists corresponding to the Normal, Selected and Primary
-   * selection modes.
+   * The OpenGL display list handle for the geometry of the selection ring around 
+   * the outside of the job group.
    */ 
-  private int[]  pIconDL; 
-  
+  private Integer  pRingDL; 
+
+  /**
+   * The OpenGL display list handle for the geometry of the job group core.
+   */ 
+  private Integer  pCoreDL; 
+
   /**
    * The OpenGL display list handle for the collapsed icon geometry.
    */ 

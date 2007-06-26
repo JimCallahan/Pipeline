@@ -1,4 +1,4 @@
-// $Id: JTextureLoaderBar.java,v 1.13 2007/01/05 23:46:10 jim Exp $
+// $Id: JTextureLoaderBar.java,v 1.14 2007/06/26 05:18:57 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -55,177 +55,63 @@ class JTextureLoaderBar
     pLaunched = new AtomicBoolean(false);
     pFirst = true;
     
-    pTextures = new LinkedList<String>();
-    pIcon21s  = new LinkedList<String>();
+    pTextures32 = new LinkedList<String>();
+    pTextures64 = new LinkedList<String>();
+    pIcons21    = new LinkedList<String>();
     {
-      for(SelectionMode mode : SelectionMode.all()) {
-	for(OverallQueueState qstate : OverallQueueState.all()) {
-	  for(OverallNodeState nstate : OverallNodeState.all()) {
-	    String name = (nstate + "-" + qstate + "-" + mode);
-	    pTextures.add(name);
-	    pIcon21s.add(name);
-	  }
-	  
-	  {
-	    String name = ("NeedsCheckOutMajor-" + qstate + "-" + mode);
-	    pTextures.add(name);
-	    pIcon21s.add(name);
-	  }
-	  
-	  {
-	    String name = ("NeedsCheckOutMicro-" + qstate + "-" + mode);
-	    pTextures.add(name);
-	    pIcon21s.add(name);
-	  }
-	  
-	  pIcon21s.add("Added-" + qstate + "-" + mode);
-	  pIcon21s.add("Obsolete-" + qstate + "-" + mode);
-	}
+      pTextures32.add("Node-Ring");
+      pIcons21.add("Node-Ring");
 
-	{
-	  String name = ("Identical-Finished-Frozen-" + mode);
-	  pTextures.add(name);
-	  pIcon21s.add(name);
-	}
-	
-	{
-	  String name = ("Identical-Stale-Frozen-" + mode);
-	  pTextures.add(name);
-	  pIcon21s.add(name);
-	}
-	
-	{
-	  String name = ("Missing-Finished-Frozen-" + mode);
-	  pTextures.add(name);
-	  pIcon21s.add(name);
-	}
-	
-	{
-	  String name = ("Missing-Stale-Frozen-" + mode);
-	  pTextures.add(name);
-	  pIcon21s.add(name);
-	}
-	
-	{
-	  String name = ("MissingNewer-Finished-Frozen-" + mode);
-	  pTextures.add(name);
-	  pIcon21s.add(name);
-	}
-	
-	{
-	  String name = ("MissingNewer-Stale-Frozen-" + mode);
-	  pTextures.add(name);
-	  pIcon21s.add(name);
-	}
-	
-	{
-	  String name = ("ModifiedLinks-Finished-Frozen-" + mode);
-	  pTextures.add(name);
-	  pIcon21s.add(name);
-	}
-	
-	{
-	  String name = ("ModifiedLinks-Stale-Frozen-" + mode);
-	  pTextures.add(name);
-	  pIcon21s.add(name);
-	}
-	
-	{
-	  String name = ("Conflicted-Finished-Frozen-" + mode);
-	  pTextures.add(name);
-	  pIcon21s.add(name);
-	}
-	
-	{
-	  String name = ("Conflicted-Stale-Frozen-" + mode);
-	  pTextures.add(name);
-	  pIcon21s.add(name);
-	}
-	
-	{
-	  String name = ("NeedsCheckOutMicro-Finished-Frozen-" + mode);
-	  pTextures.add(name);
-	  pIcon21s.add(name);
-	}
-	
-	{
-	  String name = ("NeedsCheckOutMicro-Stale-Frozen-" + mode);
-	  pTextures.add(name);
-	  pIcon21s.add(name);
-	}
-	
-	{
-	  String name = ("NeedsCheckOut-Finished-Frozen-" + mode);
-	  pTextures.add(name);
-	  pIcon21s.add(name);
-	}
-	
-	{
-	  String name = ("NeedsCheckOut-Stale-Frozen-" + mode);
-	  pTextures.add(name);
-	  pIcon21s.add(name);
-	}
-	
-	{
-	  String name = ("NeedsCheckOutMajor-Finished-Frozen-" + mode);
-	  pTextures.add(name);
-	  pIcon21s.add(name);
-	}
-	
-	{
-	  String name = ("NeedsCheckOutMajor-Stale-Frozen-" + mode);
-	  pTextures.add(name);
-	  pIcon21s.add(name);
-	}
+      pTextures32.add("Node-Core");
+      pIcons21.add("Node-Core");
 
-	{
-	  String name = ("Added-Finished-Frozen-" + mode);
-	  pIcon21s.add(name);
-	}
-	
-	{
-	  String name = ("Obsolete-Finished-Frozen-" + mode);
-	  pIcon21s.add(name);
-	}
+      pTextures32.add("Node-InstRing");
+      pIcons21.add("Node-InstRing");
+
+      pTextures32.add("Node-InstCore");
+      pIcons21.add("Node-InstCore");
+
+      for(OverallNodeState nstate : OverallNodeState.all()) {
+        pTextures32.add("Node-" + nstate);
+        pIcons21.add("Node-" + nstate);
       }
 
-      for(SelectionMode mode : SelectionMode.all()) 
-	pTextures.add("Blank-" + mode);
+      pTextures32.add("Node-NeedsCheckOutMicro");
+      pIcons21.add("Node-NeedsCheckOutMicro");
 
-      pTextures.add("Collapsed");
-      pTextures.add("Locked");
+      pTextures32.add("Node-NeedsCheckOutMajor");
+      pIcons21.add("Node-NeedsCheckOutMajor");
+
+      pIcons21.add("Node-Added");
+      pIcons21.add("Node-Obsolete");
+
+      pTextures32.add("Collapsed");
+      pTextures32.add("Locked");
 
       for(LinkRelationship rel : LinkRelationship.all())
-	pTextures.add("LinkRelationship-" + rel);
+	pTextures32.add("Link-" + rel);
+      pTextures32.add("Link-Core");
 
-      for(SelectionMode mode : SelectionMode.all()) {
-	pTextures.add("Job-Queued-" + mode);
-	pTextures.add("Job-Preempted-" + mode);
-	pTextures.add("Job-Running-" + mode);
-	pTextures.add("Job-Aborted-" + mode);
-	pTextures.add("Job-Failed-" + mode);
-	pTextures.add("Job-Finished-" + mode);
-	pTextures.add("Job-Paused-" + mode);
-	pTextures.add("Job-Undefined-" + mode);
-      }
+      pTextures64.add("Job-Ring");
+      pIcons21.add("Job-Ring");
 
-      for(SelectionMode mode : SelectionMode.all()) {
-	pTextures.add("ExternalJob-Queued-" + mode);
-	pTextures.add("ExternalJob-Preempted-" + mode);
-	pTextures.add("ExternalJob-Running-" + mode);
-	pTextures.add("ExternalJob-Aborted-" + mode);
-	pTextures.add("ExternalJob-Failed-" + mode);
-	pTextures.add("ExternalJob-Finished-" + mode);
-	pTextures.add("ExternalJob-Paused-" + mode);
-      }
+      pTextures64.add("Job-Core");
+      pIcons21.add("Job-Core");
+      
+      pTextures32.add("ExternalJob-Ring");
+      pIcons21.add("ExternalJob-Ring");
 
-      pTextures.add("Cpu");
-      pTextures.add("Mem");
-      pTextures.add("Disk");
-      pTextures.add("Job");
+      pTextures32.add("ExternalJob-Core");
+      pIcons21.add("ExternalJob-Core");
+      
+      pTextures32.add("Cpu");
+      pTextures32.add("Mem");
+      pTextures32.add("Disk");
+      pTextures32.add("Job");
     }
 
-    pInc = 1.0 / ((double) (20 + pTextures.size()*3 + pIcon21s.size()));
+    int total = pTextures32.size()*25 + pTextures64.size()*25 + pIcons21.size()*10 + 1050;
+    pInc = 1.0 / ((double) (total)); 
   }
 
 
@@ -296,30 +182,50 @@ class JTextureLoaderBar
 
       if(pFirst) {
 	pFirst = false;
-	pPercent += pInc * 5.0;
-	pCanvas.repaint();
+	pPercent += pInc * 50.0;  
+
+	SwingUtilities.invokeLater(new RefreshTask());
+      }
+      else if(pTex32Idx < pTextures32.size()) {
+	mgr.verifyTexture(gl, pTextures32.get(pTex32Idx), 32);
+	
+	pTex32Idx++;
+	pPercent += pInc * 25.0;
+
+	SwingUtilities.invokeLater(new RefreshTask());
+      }
+      else if(pTex64Idx < pTextures64.size()) {
+	mgr.verifyTexture(gl, pTextures64.get(pTex64Idx), 64);
+	
+	pTex64Idx++;
+	pPercent += pInc * 25.0;
+
+	SwingUtilities.invokeLater(new RefreshTask());
+      }
+      else if(pIcon21Idx < pIcons21.size()) {
+	mgr.verifyIcon21(pIcons21.get(pIcon21Idx));
+
+	pIcon21Idx++;
+	pPercent += pInc * 10.0;
+
+	SwingUtilities.invokeLater(new RefreshTask());
+      }
+      else if(!pIconsRebuilt) {
+        mgr.rebuildIcons();  
+        
+        pIconsRebuilt = true;
+	pPercent += pInc * 500.0;
+
+	SwingUtilities.invokeLater(new RefreshTask());
       }
       else if(!pFontLoaded) {
 	mgr.registerFont(PackageInfo.sGLFont, new CharcoalRegularFontGeometry());
 	mgr.verifyFontTextures(gl, PackageInfo.sGLFont);
 
 	pFontLoaded = true;
-	pPercent += pInc * 15.0;
-	pCanvas.repaint();
-      }
-      else if(pTexIdx < pTextures.size()) {
-	mgr.verifyTexture(gl, pTextures.get(pTexIdx));
-	
-	pTexIdx++;
-	pPercent += pInc * 3.0;
-	pCanvas.repaint();
-      }
-      else if(pIconIdx < pIcon21s.size()) {
-	mgr.verifyIcon21(pIcon21s.get(pIconIdx));
+	pPercent += pInc * 500.0;
 
-	pIconIdx++;
-	pPercent += pInc;
-	pCanvas.repaint();
+	SwingUtilities.invokeLater(new RefreshTask());
       }
       else if(!pLaunched.getAndSet(true)) {
 	SwingUtilities.invokeLater(pFinishedTask);
@@ -366,6 +272,31 @@ class JTextureLoaderBar
 
 
   /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L   C L A S S E S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Update the progress bar.
+   */ 
+  private
+  class RefreshTask
+    extends Thread
+  { 
+    RefreshTask() 
+    {
+      super("JTextureLoaderBar:RefreshTask");
+    }
+
+    public void 
+    run() 
+    {
+      pCanvas.repaint();
+    }
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
@@ -399,40 +330,47 @@ class JTextureLoaderBar
   private boolean  pFirst; 
 
   /**
-   * The names of the textures.
+   * The names of the mip-mapped textures.
    */ 
-  private LinkedList<String>  pTextures;
+  private LinkedList<String>  pTextures32;
+  private LinkedList<String>  pTextures64;
   
   /**
-   * The current texture index.
+   * The current mip-mapped texture index.
    */ 
-  private int  pTexIdx; 
+  private int  pTex32Idx; 
+  private int  pTex64Idx; 
 
 
   /**
    * The names of the 21x21 pixel icons.
    */ 
-  private LinkedList<String>  pIcon21s;
+  private LinkedList<String>  pIcons21;
 
   /**
    * The current 21x21 pixel icon index.
    */ 
-  private int  pIconIdx; 
+  private int  pIcon21Idx; 
 
 
   /**
-   * Have the font textures been loaded.
+   * Whether the font textures have been loaded.
    */ 
   private boolean pFontLoaded;
 
+  /**
+   * Whether the Swing icons have been rebuilt. 
+   */ 
+  private boolean pIconsRebuilt; 
+
   
   /**
-   * The percentage of texture which have already been loaded.
+   * The percentage of startup tasks which have already been completed.
    */ 
   private double  pPercent; 
 
   /**
-   * The increment to the completion percentage for loading one texture.
+   * The base increment to the completion percentage for a task. 
    */ 
   private double  pInc; 
 

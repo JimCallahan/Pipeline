@@ -1,4 +1,4 @@
-// $Id: ViewerPie.java,v 1.4 2007/01/05 23:46:10 jim Exp $
+// $Id: ViewerPie.java,v 1.5 2007/06/26 05:18:57 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -601,7 +601,7 @@ class ViewerPie
 	gl.glEndList();
       }
     }
-    catch(IOException ex) {
+    catch(PipelineException ex) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Tex, LogMgr.Level.Severe,
 	 ex.getMessage());

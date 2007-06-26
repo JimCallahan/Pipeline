@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.43 2007/05/14 16:22:01 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.44 2007/06/26 05:18:57 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -640,6 +640,8 @@ class JQueueJobViewerPanel
   {
     UserPrefs prefs = UserPrefs.getInstance();
     pShowDetailHints = prefs.getShowJobDetailHints();
+
+    TextureMgr.getInstance().rebuildIcons();
 
     updateUniverse();
     updateMenuToolTips();

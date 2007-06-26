@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.56 2007/06/15 00:27:31 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.57 2007/06/26 05:18:57 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -504,7 +504,55 @@ class GenUserPrefsApp
 
 	new BooleanPref
 	("Whether to display fully resolved hostnames.", 
-	 "ShowFullHostnames", "Show Full Hostnames:", false)
+	 "ShowFullHostnames", "Show Full Hostnames:", false), 
+
+	new BasePref(),
+
+	new ColorPref
+	("The color to use for the ring surrounding unselected nodes/jobs.", 
+	 "NormalRingColor", "Normal Ring Color:", Color.white), 
+
+	new ColorPref
+	("The color to use for the ring surrounding selected nodes/jobs.", 
+	 "SelectedRingColor", "Selected Ring Color:", Color.yellow), 
+
+	new ColorPref
+	("The color to use for the ring surrounding primary selected nodes/jobs.", 
+	 "PrimaryRingColor", "Primary Ring Color:", Color.cyan), 
+
+	new BasePref(),
+
+	new ColorPref
+	("The color to use for the core of nodes/jobs with a Queue State of Finished.", 
+	 "FinishedCoreColor", "Finished Core Color:", new Color(0.0f, 0.0f, 1.0f)), 
+
+	new ColorPref
+	("The color to use for the core of nodes/jobs with a Queue State of Stale.", 
+	 "StaleCoreColor", "Stale Core Color:", new Color(0.65f, 0.0f, 0.65f)), 
+
+	new ColorPref
+	("The color to use for the core of nodes/jobs with a Queue State of Queued.", 
+	 "QueuedCoreColor", "Queued Core Color:", new Color(0.0f, 0.82f, 0.82f)), 
+
+	new ColorPref
+	("The color to use for the core of nodes/jobs with a Queue State of Paused.", 
+	 "PausedCoreColor", "Paused Core Color:", new Color(1.0f, 1.0f, 0.f)), 
+
+	new ColorPref
+	("The color to use for the core of nodes/jobs with a Queue State of Running.", 
+	 "RunningCoreColor", "Running Core Color:", new Color(0.0f, 0.75f, 0.0f)), 
+
+	new ColorPref
+	("The color to use for the core of nodes/jobs with a Queue State of Aborted.", 
+	 "AbortedCoreColor", "Aborted Core Color:", new Color(0.87f, 0.56f, 0.0f)), 
+
+	new ColorPref
+	("The color to use for the core of nodes/jobs with a Queue State of Failed.", 
+	 "FailedCoreColor", "Failed Core Color:", new Color(0.83f, 0.0f, 0.0f)), 
+
+	new ColorPref
+	("The color to use for the core of jobs with a Queue State of Preempted.", 
+	 "PreemptedCoreColor", "Preempted Core Color:", new Color(1.0f, 0.0f, 0.75f))
       };
 
       pPrefs.put("Panels|Appearance", prefs);
@@ -549,6 +597,31 @@ class GenUserPrefsApp
       styles.add("Pattern & Range Below");
 
       BasePref prefs[] = {
+	new ColorPref
+	("The color to use for the core of nodes during a Lightweight status update.", 
+	 "LightweightCoreColor", "Lightweight Core Color:", new Color(0.7f, 0.7f, 0.7f)), 
+
+	new ColorPref
+	("The color to use for the core of nodes with a Queue State of Undefined.", 
+	 "UndefinedCoreColor", "Undefined Core Color:", new Color(0.4f, 0.4f, 0.4f)), 
+        
+	new BasePref(),
+
+	new ColorPref
+	("The color to use for the Node State symbols of Modifiable nodes.", 
+	 "ModifiableColor", "Modifiable Color:", new Color(1.0f, 1.0f, 1.0f)), 
+        
+	new ColorPref
+	("The color to use for the Node State symbols of Frozen/Locked nodes.", 
+	 "FrozenFinishedColor", "Frozen Finished Color:", new Color(0.38f, 0.62f, 1.0f)), 
+
+	new ColorPref
+	("The color to use for the Node State symbols of Frozen/Locked nodes which are " + 
+         "also Stale.", 
+	 "FrozenStaleColor", "Frozen Stale Color:", new Color(0.9f, 0.4f, 0.9f)), 
+
+	new BasePref(),
+
 	new ChoicePref
 	("The information displayed by the node label.", 
 	 "NodeLabelStyle", "Label Style:", styles, "Pattern & Range Below"), 
@@ -2436,7 +2509,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.56 2007/06/15 00:27:31 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.57 2007/06/26 05:18:57 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -2691,7 +2764,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.56 2007/06/15 00:27:31 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.57 2007/06/26 05:18:57 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -4048,7 +4121,7 @@ class GenUserPrefsApp
 
       StringBuilder buf = new StringBuilder();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.56 2007/06/15 00:27:31 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.57 2007/06/26 05:18:57 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 

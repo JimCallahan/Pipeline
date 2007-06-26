@@ -1,4 +1,4 @@
-// $Id: GeometryMgr.java,v 1.7 2007/01/05 23:46:10 jim Exp $
+// $Id: GeometryMgr.java,v 1.8 2007/06/26 05:18:57 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -32,9 +32,9 @@ class GeometryMgr
   GeometryMgr()
   {
     pTextDLs     = new HashMap<String,Integer>();
-    pLinkRelDLs  = new EnumMap<LinkRelationship,Integer>(LinkRelationship.class);
-    pNodeIconDLs = new HashMap<String,Integer>();
-    pJobIconDLs  = new HashMap<String,TreeMap<Integer,Integer>>();
+    pLinkIconDLs = new TreeMap<String,Integer>(); 
+    pNodeIconDLs = new TreeMap<String,Integer>();
+    pJobIconDLs  = new DoubleMap<String,Integer,Integer>();
   }
 
 
@@ -68,7 +68,7 @@ class GeometryMgr
    * @param space
    *   The amount of space between characters.
    * 
-   * @throws IOException
+   * @throws PipelineException
    *   If unable to lookup the font.
    */ 
   public double 
@@ -78,13 +78,13 @@ class GeometryMgr
    String text,
    double space
   ) 
-    throws IOException   
+    throws PipelineException   
   {
     double width = 0.0;
     {
       FontGeometry geom = TextureMgr.getInstance().getFontGeometry(name);
       if(geom == null) 
-	throw new IOException 
+	throw new PipelineException 
 	  ("No font named (" + name + ") has been registered with the TextureMgr!");
       
       int wk;
@@ -131,7 +131,7 @@ class GeometryMgr
    * @return 
    *   The display list handle.
    * 
-   * @throws IOException
+   * @throws PipelineException
    *   If unable to lookup or generate the display list.
    */ 
   public synchronized int
@@ -143,7 +143,7 @@ class GeometryMgr
    TextAlignment align, 
    double space
   ) 
-    throws IOException    
+    throws PipelineException    
   {
     String tag = (name + "|" + text + "|" + align + "|" + space);
     Integer dl = pTextDLs.get(tag);
@@ -160,7 +160,7 @@ class GeometryMgr
       {
 	FontGeometry geom = texMgr.getFontGeometry(name);
 	if(geom == null) 
-	  throw new IOException 
+	  throw new PipelineException 
 	    ("No font named (" + name + ") has been registered with the TextureMgr!");
 	
 	int wk;
@@ -251,37 +251,35 @@ class GeometryMgr
    * @param gl
    *   The OpenGL interface.
    * 
-   * @param rel
-   *   The nature of the relationship between source and target node files.
+   * @param name
+   *   The component name.
    * 
    * @return 
    *   The display list handle.
    * 
-   * @throws IOException
+   * @throws PipelineException
    *   If unable to lookup or generate the display list.
    */ 
   public synchronized int
-  getLinkRelationshipDL
+  getLinkIconDL
   (
    GL gl,
-   LinkRelationship rel
+   String name
   ) 
-    throws IOException
+    throws PipelineException
   { 
-    Integer dl = pLinkRelDLs.get(rel);
+    Integer dl = pLinkIconDLs.get(name);
     if(dl == null) {
-      int texID = TextureMgr.getInstance().getTexture(gl,"LinkRelationship-" + rel); 
+      int texID = TextureMgr.getInstance().getTexture(gl, name); 
 
       dl = gl.glGenLists(1);
-      pLinkRelDLs.put(rel, dl);
+      pLinkIconDLs.put(name, dl);
 
       gl.glNewList(dl, GL.GL_COMPILE);
       {
 	gl.glEnable(GL.GL_TEXTURE_2D);
 	gl.glBindTexture(GL.GL_TEXTURE_2D, texID);
 	
-	gl.glColor3d(1.0, 1.0, 1.0);
-
 	gl.glBegin(GL.GL_QUADS);
 	{
 	  gl.glTexCoord2d(0.0, 1.0);
@@ -316,12 +314,12 @@ class GeometryMgr
    *   The OpenGL interface.
    * 
    * @param name
-   *   The icon name. 
+   *   The component name. 
    * 
    * @return 
    *   The display list handle.
    * 
-   * @throws IOException
+   * @throws PipelineException
    *   If unable to lookup or generate the display list.
    */ 
   public synchronized int
@@ -330,7 +328,7 @@ class GeometryMgr
    GL gl,
    String name
   ) 
-    throws IOException
+    throws PipelineException
   { 
     Integer dl = pNodeIconDLs.get(name);
     if(dl == null) {
@@ -372,18 +370,20 @@ class GeometryMgr
    * Get an OpenGL display list which renders a node icon. <P> 
    * 
    * The display list renders a single square quad on the XY plane which is (1.0) units wide
-   * and centered around the origin. 
+   * and centered around the origin. <P> 
+   * 
+   * The base color for the texture is set in the display list to a constant white.
    * 
    * @param gl
    *   The OpenGL interface.
    * 
    * @param name
-   *   The combined node state name.
+   *   The component name.
    * 
    * @return 
    *   The display list handle.
    * 
-   * @throws IOException
+   * @throws PipelineException
    *   If unable to lookup or generate the display list.
    */ 
   public synchronized int
@@ -392,7 +392,7 @@ class GeometryMgr
    GL gl,
    String name
   ) 
-    throws IOException
+    throws PipelineException
   { 
     Integer dl = pNodeIconDLs.get(name);
     if(dl == null) {
@@ -406,7 +406,7 @@ class GeometryMgr
 	gl.glEnable(GL.GL_TEXTURE_2D);
 	gl.glBindTexture(GL.GL_TEXTURE_2D, texID);
 	
-	gl.glColor3d(1.0, 1.0, 1.0);
+        gl.glColor3d(1.0, 1.0, 1.0);
 
 	gl.glBegin(GL.GL_QUADS);
 	{
@@ -442,10 +442,7 @@ class GeometryMgr
    *   The OpenGL interface.
    * 
    * @param name
-   *   The combined job state name.
-   * 
-   * @param external
-   *   Whether the job is external to the job group.
+   *   The component name.
    * 
    * @param height
    *   The vertical job span of the icon.
@@ -453,7 +450,7 @@ class GeometryMgr
    * @return 
    *   The display list handle.
    * 
-   * @throws IOException
+   * @throws PipelineException
    *   If unable to lookup or generate the display list.
    */ 
   public synchronized int
@@ -461,40 +458,26 @@ class GeometryMgr
   (
    GL gl,
    String name, 
-   boolean external,
    int height
   ) 
-    throws IOException
+    throws PipelineException
   { 
     if(height < 1) 
       throw new IllegalArgumentException
 	("The height (" + height + ") must be greater-than zero!");
 
-    if(external && (height > 1)) 
-      throw new IllegalArgumentException
-	("External jobs must have a height of one!");
-
-    String sname = ((external ? "ExternalJob" : "Job") + "-" + name);
-    TreeMap<Integer,Integer> dls = pJobIconDLs.get(sname);
-    if(dls == null) {
-      dls = new TreeMap<Integer,Integer>();
-      pJobIconDLs.put(sname, dls);
-    }
-
-    Integer dl = dls.get(height);
+    Integer dl = pJobIconDLs.get(name, height);
     if(dl == null) {
-      int texID = TextureMgr.getInstance().getTexture(gl, sname);
+      int texID = TextureMgr.getInstance().getTexture(gl, name);
 
       dl = gl.glGenLists(1);
-      dls.put(height, dl);
+      pJobIconDLs.put(name, height, dl);
 
       gl.glNewList(dl, GL.GL_COMPILE);
       {
 	gl.glEnable(GL.GL_TEXTURE_2D);
 	gl.glBindTexture(GL.GL_TEXTURE_2D, texID);
 	
-	gl.glColor3d(1.0, 1.0, 1.0);
-
 	if(height == 1) {
 	  gl.glBegin(GL.GL_QUADS);
 	  {
@@ -816,21 +799,21 @@ class GeometryMgr
   private HashMap<String,Integer>  pTextDLs;
 
   /**
-   * The OpenGL display lists which render the link relationship icons indexed by the 
-   * link relationship name. 
+   * The OpenGL display lists which render the link relationship icons indexed by 
+   * component name. 
    */ 
-  private EnumMap<LinkRelationship,Integer>  pLinkRelDLs;
+  private TreeMap<String,Integer>  pLinkIconDLs;
 
   /**
-   * The OpenGL display lists which render the node icons indexed by the combined node state
+   * The OpenGL display lists which render the node icons indexed by the component name. 
    * name.
    */ 
-  private HashMap<String,Integer>  pNodeIconDLs;
+  private TreeMap<String,Integer>  pNodeIconDLs;
   
   /**
-   * The OpenGL display lists which render the job icons indexed by the job state name
+   * The OpenGL display lists which render the job icons indexed by component name
    * and job height.
    */ 
-  private HashMap<String,TreeMap<Integer,Integer>>  pJobIconDLs;
+  private DoubleMap<String,Integer,Integer>  pJobIconDLs;
   
 }

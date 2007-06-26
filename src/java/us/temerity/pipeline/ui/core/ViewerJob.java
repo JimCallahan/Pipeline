@@ -1,4 +1,4 @@
-// $Id: ViewerJob.java,v 1.4 2007/01/05 23:46:10 jim Exp $
+// $Id: ViewerJob.java,v 1.5 2007/06/26 05:18:57 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -200,17 +200,18 @@ class ViewerJob
   {
     GeometryMgr mgr = GeometryMgr.getInstance();
     try {
-      if(pIconDL == null) {
-	pIconDL = new int[3];
-	for(SelectionMode mode : SelectionMode.all()) 
-	  pIconDL[mode.ordinal()] = 
-	    mgr.getJobIconDL(gl, pStatus.getState() + "-" + mode, pIsExternal, pHeight);
-      }
+      String ext = pIsExternal ? "External" : "";
+
+      if(pRingDL == null) 
+        pRingDL = mgr.getJobIconDL(gl, ext + "Job-Ring", pHeight);
+
+      if(pCoreDL == null) 
+        pCoreDL = mgr.getJobIconDL(gl, ext + "Job-Core", pHeight);
 
       if(pCollapsedDL == null) 
 	pCollapsedDL = mgr.getNodeIconDL(gl, "Collapsed");
     }
-    catch(IOException ex) {
+    catch(PipelineException ex) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Tex, LogMgr.Level.Severe,
 	 ex.getMessage());
@@ -233,7 +234,20 @@ class ViewerJob
     gl.glPushMatrix();
     {
       gl.glTranslated(pPos.x(), pPos.y(), 0.0);
-      gl.glCallList(pIconDL[pMode.ordinal()]);
+      
+      /* the selection ring */
+      if(pRingDL != null) {
+        Color3d c = NodeStyles.getSelectionColor3d(pMode);  
+        gl.glColor3d(c.r(), c.g(), c.b());
+        gl.glCallList(pRingDL); 
+      }
+
+      /* the job state colored core */ 
+      if(pCoreDL != null) {
+        Color3d c = NodeStyles.getJobColor3d(pStatus.getState());
+        gl.glColor3d(c.r(), c.g(), c.b());
+        gl.glCallList(pCoreDL); 
+      }   
       
       if(pIsCollapsed) {
 	gl.glTranslated(0.8, 0.0, 0.0);
@@ -273,13 +287,16 @@ class ViewerJob
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * The OpenGL display list handles for the icon geometry. <P> 
-   * 
-   * The array contains the display lists corresponding to the Normal, Selected and Primary
-   * selection modes.
+   * The OpenGL display list handle for the geometry of the selection ring around 
+   * the outside of the job.
    */ 
-  private int[]  pIconDL; 
-  
+  private Integer  pRingDL; 
+
+  /**
+   * The OpenGL display list handle for the geometry of the job state colored core.
+   */ 
+  private Integer  pCoreDL; 
+
   /**
    * The OpenGL display list handle for the collapsed icon geometry.
    */ 

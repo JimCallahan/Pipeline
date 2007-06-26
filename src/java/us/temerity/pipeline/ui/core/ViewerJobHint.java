@@ -1,4 +1,4 @@
-// $Id: ViewerJobHint.java,v 1.1 2007/04/30 08:19:10 jim Exp $
+// $Id: ViewerJobHint.java,v 1.2 2007/06/26 05:18:57 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -421,7 +421,7 @@ class ViewerJobHint
         }
       }
     }
-    catch(IOException ex) {
+    catch(PipelineException ex) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Tex, LogMgr.Level.Severe,
 	 ex.getMessage());
