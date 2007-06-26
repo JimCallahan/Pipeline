@@ -1,4 +1,4 @@
-// $Id: BaseTool.java,v 1.14 2007/04/01 21:19:42 jim Exp $
+// $Id: BaseTool.java,v 1.15 2007/06/26 05:18:33 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -121,6 +121,12 @@ class BaseTool
    * {@link NodeStatus NodeStatus} associated with selected nodes does not contain a
    * {@link NodeDetails NodeDetails}, then only downstream (grey) nodes were selected. <P> 
    * 
+   * @param author 
+   *   The name of the user which owns the working area where the tool is run.
+   * 
+   * @param view 
+   *   The name of the user's working area view where the tool is run. 
+   *
    * @param primary 
    *   The name of the primary selected node or <CODE>null</CODE>.
    * 
@@ -133,6 +139,8 @@ class BaseTool
   public final void 
   initExecution
   (
+   String author, 
+   String view, 
    String primary, 
    TreeMap<String,NodeStatus> selected, 
    TreeSet<String> roots
@@ -142,6 +150,24 @@ class BaseTool
     pSelected = selected;    
     pRoots    = roots;
     pPhaseIdx = 0;
+  }
+
+  /**
+   * Get the name of the user which owns the working area where the tool is run.
+   */ 
+  public String
+  getAuthor()
+  {
+    return pAuthor;
+  }
+
+  /**
+   * Get the name of the user's working area view where the tool is run. 
+   */ 
+  public String
+  getView()
+  {
+    return pView;
   }
 
 
@@ -418,6 +444,16 @@ class BaseTool
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
+  
+  /** 
+   * The name of user which owns the working area where the tool is run.
+   */
+  private String  pAuthor;
+
+  /** 
+   * The name of the working area view where the tool is run. 
+   */
+  private String  pView;
   
   /**
    * The name of the primary selected node or <CODE>null</CODE> if there is no primary 
