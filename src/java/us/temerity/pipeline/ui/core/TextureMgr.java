@@ -1,4 +1,4 @@
-// $Id: TextureMgr.java,v 1.5 2007/06/26 05:18:57 jim Exp $
+// $Id: TextureMgr.java,v 1.6 2007/06/26 19:22:38 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -145,67 +145,111 @@ class TextureMgr
 
       char code;
       for(code=0; code<texs.length; code++) {
-	int icode = (int) code;
-
-	if(geom.isPrintable(code)) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Tex, LogMgr.Level.Fine,
-	     "Loading Font Texture: " + name + " \"" + code + "\"");
-
-	  int handle[] = new int[1];
-	  gl.glGenTextures(1, handle, 0); 
-	  texs[code] = handle[0];
-
-	  gl.glBindTexture(GL.GL_TEXTURE_2D, handle[0]);
-	  
-	  int level, size; 
-	  for(level=0, size=sMaxFontRes; size>=1; level++, size/=2) {
-	    LogMgr.getInstance().log
-	      (LogMgr.Kind.Tex, LogMgr.Level.Finer,
-	       "Loading MipMap: " + size + "x" + size);
-	    LogMgr.getInstance().flush();
-	    
-	    String path = ("fonts/" + name + "/" + icode + "/texture." + size + ".png");
-	    URL url = LookAndFeelLoader.class.getResource(path);
-	    if(url == null) 
-	      throw new IOException("Unable to find: " + path);
-	    BufferedImage bi = ImageIO.read(url);
-
-	    if((bi.getWidth() != size) || (bi.getHeight() != size)) 
-	      throw new IOException
-		("The image size (" + bi.getWidth() + "x" + bi.getHeight() + ") of " + 
-                 "texture (" + path + ") does not match the expected size " + 
-		 "(" + size + "x" + size + ")!");
-
-	    if(bi.getType() != BufferedImage.TYPE_CUSTOM) 
-	      throw new IOException
-		("The image format (" + bi.getType() + ") of texture (" + path + ") is " +
-		 "not supported!");	    
-	    
-	    byte[] data = ((DataBufferByte) bi.getRaster().getDataBuffer()).getData();
-	    ByteBuffer buf = ByteBuffer.allocateDirect(data.length);
-	    buf.order(ByteOrder.nativeOrder());
-	    buf.put(data, 0, data.length);
-	    buf.rewind();
-	  
-	    gl.glTexImage2D(GL.GL_TEXTURE_2D, level, GL.GL_RGBA, size, size, 
-			    0, GL.GL_RGBA, GL.GL_UNSIGNED_BYTE, buf);
-	  }
-	    
-	  gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP);
-	  gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP);
-	  
-	  gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, 
-			     GL.GL_LINEAR_MIPMAP_LINEAR);
-	  gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);
-	}
+	if(geom.isPrintable(code)) 
+          texs[code] = loadCharacterTexture(gl, name, code);
       }
 
-      pFontTextures.put(name, texs);
+      setFontTextures(name, texs); 
     }
   }
 
- 
+  /** 
+   * Set the OpenGL texture handles for a given font.
+   * 
+   * This method should only be called by the {@link #verifyFontTextures verifyFontTextures} 
+   * method or by {@link JTextureLoaderBar} during plui(1) startup.
+   */ 
+  public synchronized void
+  setFontTextures
+  (
+   String name, 
+   Integer[] handles
+  ) 
+  {
+    if(name == null)
+      throw new IllegalArgumentException("The font name cannot be (null)!");
+
+    /* make sure they haven't already been loaded */ 
+    if(pFontTextures.containsKey(name)) 
+      return;
+
+    pFontTextures.put(name, handles);
+  }
+  
+  /** 
+   * Load the Mip-Map level images from disk and used them to generate the textures for 
+   * a specific character in the given font.
+   * 
+   * This method should only be called by the {@link #verifyFontTextures verifyFontTextures} 
+   * method or by {@link JTextureLoaderBar} during plui(1) startup.
+   * 
+   * @return 
+   *   The OpenDL texture handle for the character.
+   */ 
+  public synchronized int
+  loadCharacterTexture
+  (
+   GL gl, 
+   String name, 
+   char code
+  ) 
+    throws IOException
+  {
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Tex, LogMgr.Level.Fine,
+       "Loading Font Texture: " + name + " \"" + code + "\"");
+
+    int handle[] = new int[1];
+    gl.glGenTextures(1, handle, 0); 
+    
+    gl.glBindTexture(GL.GL_TEXTURE_2D, handle[0]);
+    
+    int level, size; 
+    for(level=0, size=sMaxFontRes; size>=1; level++, size/=2) {
+      LogMgr.getInstance().log
+        (LogMgr.Kind.Tex, LogMgr.Level.Finer,
+         "Loading MipMap: " + size + "x" + size);
+      LogMgr.getInstance().flush();
+	    
+      int icode = (int) code;
+      String path = ("fonts/" + name + "/" + icode + "/texture." + size + ".png");
+      URL url = LookAndFeelLoader.class.getResource(path);
+      if(url == null) 
+        throw new IOException("Unable to find: " + path);
+      BufferedImage bi = ImageIO.read(url);
+
+      if((bi.getWidth() != size) || (bi.getHeight() != size)) 
+        throw new IOException
+          ("The image size (" + bi.getWidth() + "x" + bi.getHeight() + ") of " + 
+           "texture (" + path + ") does not match the expected size " + 
+           "(" + size + "x" + size + ")!");
+
+      if(bi.getType() != BufferedImage.TYPE_CUSTOM) 
+        throw new IOException
+          ("The image format (" + bi.getType() + ") of texture (" + path + ") is " +
+           "not supported!");	    
+	    
+      byte[] data = ((DataBufferByte) bi.getRaster().getDataBuffer()).getData();
+      ByteBuffer buf = ByteBuffer.allocateDirect(data.length);
+      buf.order(ByteOrder.nativeOrder());
+      buf.put(data, 0, data.length);
+      buf.rewind();
+	  
+      gl.glTexImage2D(GL.GL_TEXTURE_2D, level, GL.GL_RGBA, size, size, 
+                      0, GL.GL_RGBA, GL.GL_UNSIGNED_BYTE, buf);
+    }
+	    
+    gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP);
+    gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP);
+	  
+    gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, 
+                       GL.GL_LINEAR_MIPMAP_LINEAR);
+    gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);
+
+    return handle[0];
+  }
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -565,6 +609,26 @@ class TextureMgr
        pFrozenStaleColor.equiv(prefs.getFrozenStaleColor()))
       return; 
 
+    cacheIconColors(); 
+
+    pIcons.clear();
+
+    rebuildNodeIcons(); 
+    rebuildExtraNodeIcons(); 
+    rebuildJobIcons(); 
+  }
+
+  /**
+   * Cache the current user preferences for Swing icon colors.<P> 
+   * 
+   * This method should only be called by the {@link #rebuildIcons rebuildIcons} method
+   * or by {@link JTextureLoaderBar} during plui(1) startup.
+   */ 
+  public synchronized void
+  cacheIconColors() 
+  {
+    UserPrefs prefs = UserPrefs.getInstance();
+
     pNormalRingColor      = prefs.getNormalRingColor();      
     pSelectedRingColor    = prefs.getSelectedRingColor();    
     pPrimaryRingColor     = prefs.getPrimaryRingColor();     
@@ -581,16 +645,18 @@ class TextureMgr
     pModifiableColor      = prefs.getModifiableColor();      
     pFrozenFinishedColor  = prefs.getFrozenFinishedColor();          
     pFrozenStaleColor     = prefs.getFrozenStaleColor();          
+  }
 
-
-    pIcons.clear();
-
-    Color3d modifiable     = prefs.getModifiableColor(); 
-    Color3d frozenFinished = prefs.getFrozenFinishedColor(); 
-    Color3d frozenStale    = prefs.getFrozenStaleColor(); 
-
-    Hashtable props = new Hashtable<String,Object>();
-
+  /**
+   * Composite a new set of Swing icons using the current user preferences for selection
+   * and queue state colors.<P> 
+   * 
+   * This method should only be called by the {@link #rebuildIcons rebuildIcons} method
+   * or by {@link JTextureLoaderBar} during plui(1) startup.
+   */ 
+  public synchronized void
+  rebuildNodeIcons() 
+  {
     LinkedList<SelectionMode> modes = new LinkedList<SelectionMode>(); 
     modes.add(SelectionMode.Normal); 
     modes.add(SelectionMode.Selected); 
@@ -638,7 +704,7 @@ class TextureMgr
                     BufferedImage result = 
                       compositeNodeImages(ringImgs[idx], ringColor, 
                                           coreImgs[idx], coreColor, 
-                                          nodeStateImgs[idx], modifiable);
+                                          nodeStateImgs[idx], pModifiableColor);
                     
                     icons[idx] = new ImageIcon(result);
                   }
@@ -670,9 +736,9 @@ class TextureMgr
                       LogMgr.getInstance().flush();
                       
                       {
-                        Color3d frozen = frozenFinished; 
+                        Color3d frozen = pFrozenFinishedColor; 
                         if(qstate == OverallQueueState.Stale)
-                          frozen = frozenStale; 
+                          frozen = pFrozenStaleColor; 
 
                         BufferedImage result = 
                           compositeNodeImages(ringImgs[idx], ringColor, 
@@ -689,7 +755,28 @@ class TextureMgr
           }
         }
       }
+    }
+  }
       
+  /**
+   * Composite a new set of Swing icons using the current user preferences for selection
+   * and queue state colors.<P> 
+   * 
+   * This method should only be called by the {@link #rebuildIcons rebuildIcons} method
+   * or by {@link JTextureLoaderBar} during plui(1) startup.
+   */ 
+  public synchronized void
+  rebuildExtraNodeIcons() 
+  {
+    LinkedList<SelectionMode> modes = new LinkedList<SelectionMode>(); 
+    modes.add(SelectionMode.Normal); 
+    modes.add(SelectionMode.Selected); 
+
+    /* node icons */ 
+    {
+      BufferedImage ringImgs[] = pIconImages.get("Node-Ring");
+      BufferedImage coreImgs[] = pIconImages.get("Node-Core");
+
       /**
        * 21x21: Blank-Normal
        *        Blank-Selected 
@@ -703,7 +790,7 @@ class TextureMgr
        */ 
       {
         String[] prefix = { "Blank", "Lightweight" };
-        Color3d[] colors = { prefs.getUndefinedCoreColor(), prefs.getLightweightCoreColor() };
+        Color3d[] colors = { pUndefinedCoreColor, pLightweightCoreColor };
         
         int wk;
         for(wk=0; wk<prefix.length; wk++) {
@@ -777,7 +864,7 @@ class TextureMgr
                 BufferedImage result = 
                   compositeNodeImages(ringImgs[0], ringColor, 
                                       coreImgs[0], coreColor, 
-                                      nodeStateImgs[0], modifiable);
+                                      nodeStateImgs[0], pModifiableColor);
                 
                 icons[0] = new ImageIcon(result);
               }
@@ -801,9 +888,9 @@ class TextureMgr
                 LogMgr.getInstance().flush();
                 
                 {
-                  Color3d frozen = frozenFinished; 
+                  Color3d frozen = pFrozenFinishedColor; 
                   if(qstate == OverallQueueState.Stale)
-                    frozen = frozenStale; 
+                    frozen = pFrozenStaleColor; 
 
                   BufferedImage result = 
                     compositeNodeImages(ringImgs[0], ringColor, 
@@ -855,7 +942,7 @@ class TextureMgr
                   BufferedImage result = 
                     compositeNodeImages(ringImgs[1], ringColor, 
                                         coreImgs[1], coreColor, 
-                                        nodeStateImgs[1], modifiable);
+                                        nodeStateImgs[1], pModifiableColor);
                     
                   icons[1] = new ImageIcon(result);
                 }
@@ -879,9 +966,9 @@ class TextureMgr
                   LogMgr.getInstance().flush();
                   
                   {
-                    Color3d frozen = frozenFinished; 
+                    Color3d frozen = pFrozenFinishedColor; 
                     if(qstate == OverallQueueState.Stale)
-                      frozen = frozenStale; 
+                      frozen = pFrozenStaleColor; 
 
                     BufferedImage result = 
                       compositeNodeImages(ringImgs[1], ringColor, 
@@ -936,78 +1023,94 @@ class TextureMgr
             BufferedImage result = 
               compositeNodeImages(ringImgs[0], ringColor, 
                                   coreImgs[0], coreColor, 
-                                  nodeStateImgs[0], modifiable);
+                                  nodeStateImgs[0], pModifiableColor);
             
             icons[0] = new ImageIcon(result);
           }
         }
       }
     }
+  }
 
-    /* job icons */ 
+  /**
+   * Composite a new set of Swing icons using the current user preferences for selection
+   * and queue state colors.<P> 
+   * 
+   * This method should only be called by the {@link #rebuildIcons rebuildIcons} method
+   * or by {@link JTextureLoaderBar} during plui(1) startup.
+   */ 
+  public synchronized void
+  rebuildJobIcons() 
+  {
+    BufferedImage ringImgs[] = pIconImages.get("Job-Ring");
+    BufferedImage coreImgs[] = pIconImages.get("Job-Core");
+    
+    Color3d ringColor = NodeStyles.getSelectionColor3d(SelectionMode.Normal);
+    
+    int size = sIconRes[2]; // 64x32
+    
+    /**
+     * 64x32: Job-<JobState>-Normal
+     */ 
     {
-      BufferedImage ringImgs[] = pIconImages.get("Job-Ring");
-      BufferedImage coreImgs[] = pIconImages.get("Job-Core");
-
-      Color3d ringColor = NodeStyles.getSelectionColor3d(SelectionMode.Normal);
-
-      int size = sIconRes[2]; // 64x64
-        
-      /**
-       * 64x64: Job-<JobState>-Normal
-       */ 
-      {
-        for(JobState jstate : JobState.all()) {
-          Color3d coreColor = NodeStyles.getJobColor3d(jstate);
-        
-          String name = ("Job-" + jstate + "-Normal"); 
-          ImageIcon icons[] = pIcons.get(name); 
-          if(icons == null) {
-            icons = new ImageIcon[sIconRes.length];
-            pIcons.put(name, icons);
-          }
-                  
-          LogMgr.getInstance().log
-            (LogMgr.Kind.Tex, LogMgr.Level.Fine,
-             "Building Icon: " + name + " " + size + "x" + size);
-          LogMgr.getInstance().flush();
-          
-          {
-            BufferedImage result = 
-              compositeNodeImages(ringImgs[2], ringColor, 
-                                  coreImgs[2], coreColor); 
-            
-            icons[2] = new ImageIcon(result);
-          }
-        }
-      }
-
-      /**
-       * 64x64: Job-Undefined-Normal
-       */ 
-      {
-        JobState jstate = null;
+      for(JobState jstate : JobState.all()) {
         Color3d coreColor = NodeStyles.getJobColor3d(jstate);
         
-        String name = ("Job-Undefined-Normal"); 
+        String name = ("Job-" + jstate + "-Normal"); 
         ImageIcon icons[] = pIcons.get(name); 
         if(icons == null) {
           icons = new ImageIcon[sIconRes.length];
           pIcons.put(name, icons);
         }
-        
+                  
         LogMgr.getInstance().log
           (LogMgr.Kind.Tex, LogMgr.Level.Fine,
            "Building Icon: " + name + " " + size + "x" + size);
         LogMgr.getInstance().flush();
-        
+          
         {
           BufferedImage result = 
             compositeNodeImages(ringImgs[2], ringColor, 
                                 coreImgs[2], coreColor); 
-          
-          icons[2] = new ImageIcon(result);
+    
+          WritableRaster raster = 
+            result.getRaster().createWritableChild(0, 16, 64, 32, 0, 0, null); 
+          BufferedImage bi = new BufferedImage(result.getColorModel(), raster, true, null);
+
+          icons[2] = new ImageIcon(bi);
         }
+      }
+    }
+
+    /**
+     * 64x32: Job-Undefined-Normal
+     */ 
+    {
+      JobState jstate = null;
+      Color3d coreColor = NodeStyles.getJobColor3d(jstate);
+        
+      String name = ("Job-Undefined-Normal"); 
+      ImageIcon icons[] = pIcons.get(name); 
+      if(icons == null) {
+        icons = new ImageIcon[sIconRes.length];
+        pIcons.put(name, icons);
+      }
+        
+      LogMgr.getInstance().log
+        (LogMgr.Kind.Tex, LogMgr.Level.Fine,
+         "Building Icon: " + name + " " + size + "x" + size);
+      LogMgr.getInstance().flush();
+        
+      {
+        BufferedImage result = 
+          compositeNodeImages(ringImgs[2], ringColor, 
+                              coreImgs[2], coreColor); 
+          
+        WritableRaster raster = 
+          result.getRaster().createWritableChild(0, 16, 64, 32, 0, 0, null); 
+        BufferedImage bi = new BufferedImage(result.getColorModel(), raster, true, null);
+
+        icons[2] = new ImageIcon(bi);
       }
     }
   }
@@ -1120,7 +1223,7 @@ class TextureMgr
   }
 
   /**
-   * Get the 64x64 icon for the given combination of node states. <P> 
+   * Get the 64x32 icon for the given combination of node states. <P> 
    * 
    * @param name
    *   The name of the texture.
@@ -1409,7 +1512,7 @@ class TextureMgr
 
 
   /**
-   * The resolutions of the icon images.
+   * The resolutions of the icon images: 32x32, 21x21, 64x32
    */ 
   private static final int  sIconRes[] = { 32, 21, 64 };
 

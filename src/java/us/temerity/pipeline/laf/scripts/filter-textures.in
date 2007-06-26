@@ -118,7 +118,6 @@ for name in Job-Ring Job-Core \
             ExternalJob-Ring ExternalJob-Core
 do 
   mkmipmaps $frame $name
-  mkicon $frame $name
 
   frame=$(($frame + 1))	
 done

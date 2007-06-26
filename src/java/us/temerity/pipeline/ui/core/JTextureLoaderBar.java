@@ -1,4 +1,4 @@
-// $Id: JTextureLoaderBar.java,v 1.14 2007/06/26 05:18:57 jim Exp $
+// $Id: JTextureLoaderBar.java,v 1.15 2007/06/26 19:22:38 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -93,16 +93,9 @@ class JTextureLoaderBar
       pTextures32.add("Link-Core");
 
       pTextures64.add("Job-Ring");
-      pIcons21.add("Job-Ring");
-
       pTextures64.add("Job-Core");
-      pIcons21.add("Job-Core");
-      
       pTextures32.add("ExternalJob-Ring");
-      pIcons21.add("ExternalJob-Ring");
-
       pTextures32.add("ExternalJob-Core");
-      pIcons21.add("ExternalJob-Core");
       
       pTextures32.add("Cpu");
       pTextures32.add("Mem");
@@ -110,8 +103,21 @@ class JTextureLoaderBar
       pTextures32.add("Job");
     }
 
-    int total = pTextures32.size()*25 + pTextures64.size()*25 + pIcons21.size()*10 + 1050;
-    pInc = 1.0 / ((double) (total)); 
+    pFontChars = new LinkedList<Character>(); 
+    pFontTextures = new Integer[128];
+    {
+      FontGeometry geom = new CharcoalRegularFontGeometry();
+      TextureMgr.getInstance().registerFont(PackageInfo.sGLFont, geom); 
+
+      char code;
+      for(code=0; code<pFontTextures.length; code++) {
+	if(geom.isPrintable(code)) 
+          pFontChars.add(code);
+      }
+    }
+
+    pTotal = (50 + pTextures32.size()*25 + pTextures64.size()*25 + pIcons21.size()*3 + 
+              281 + 80 + pFontChars.size()*5); 
   }
 
 
@@ -163,7 +169,7 @@ class JTextureLoaderBar
 
     /* draw the progress bar */ 
     {
-      double x = pPercent*2.0 - 1.0;
+      double x = (((double) pCompleted) / ((double) pTotal))*2.0 - 1.0;
 
       gl.glColor3d(0.0, 1.0, 1.0);
       gl.glBegin(GL.GL_QUADS);
@@ -180,54 +186,76 @@ class JTextureLoaderBar
     try {
       TextureMgr mgr = TextureMgr.getInstance();
 
+      int wk; 
       if(pFirst) {
 	pFirst = false;
-	pPercent += pInc * 50.0;  
+	pCompleted += 50.0;  
 
 	SwingUtilities.invokeLater(new RefreshTask());
       }
-      else if(pTex32Idx < pTextures32.size()) {
-	mgr.verifyTexture(gl, pTextures32.get(pTex32Idx), 32);
+      else if(pTex32Idx < pTextures32.size()) {  
+        for(wk=0; wk<10 && pTex32Idx<pTextures32.size(); wk++) {
+          mgr.verifyTexture(gl, pTextures32.get(pTex32Idx), 32);
 	
-	pTex32Idx++;
-	pPercent += pInc * 25.0;
+          pTex32Idx++;
+          pCompleted += 25;
+        }
 
 	SwingUtilities.invokeLater(new RefreshTask());
       }
       else if(pTex64Idx < pTextures64.size()) {
-	mgr.verifyTexture(gl, pTextures64.get(pTex64Idx), 64);
-	
-	pTex64Idx++;
-	pPercent += pInc * 25.0;
+        for(wk=0; wk<10 && pTex64Idx<pTextures64.size(); wk++) {
+          mgr.verifyTexture(gl, pTextures64.get(pTex64Idx), 64);
+          
+          pTex64Idx++;
+          pCompleted += 25;
+        }
 
 	SwingUtilities.invokeLater(new RefreshTask());
       }
       else if(pIcon21Idx < pIcons21.size()) {
-	mgr.verifyIcon21(pIcons21.get(pIcon21Idx));
-
-	pIcon21Idx++;
-	pPercent += pInc * 10.0;
+        for(wk=0; wk<80 && pIcon21Idx<pIcons21.size(); wk++) {
+          mgr.verifyIcon21(pIcons21.get(pIcon21Idx));
+          
+          pIcon21Idx++;
+          pCompleted += 3;
+        }
 
 	SwingUtilities.invokeLater(new RefreshTask());
       }
-      else if(!pIconsRebuilt) {
-        mgr.rebuildIcons();  
+      else if(!pNodeIconsRebuilt) {
+        mgr.cacheIconColors(); 
+        mgr.rebuildNodeIcons();  
         
-        pIconsRebuilt = true;
-	pPercent += pInc * 500.0;
+        pNodeIconsRebuilt = true;
+	pCompleted += 281;
 
 	SwingUtilities.invokeLater(new RefreshTask());
       }
-      else if(!pFontLoaded) {
-	mgr.registerFont(PackageInfo.sGLFont, new CharcoalRegularFontGeometry());
-	mgr.verifyFontTextures(gl, PackageInfo.sGLFont);
+      else if(!pExtraIconsRebuilt) {
+        mgr.rebuildExtraNodeIcons();  
+        mgr.rebuildJobIcons();  
+        
+        pExtraIconsRebuilt = true;
+	pCompleted += 80;
 
-	pFontLoaded = true;
-	pPercent += pInc * 500.0;
-
+	SwingUtilities.invokeLater(new RefreshTask());
+      }
+      else if(pFontCharIdx < pFontChars.size()) {
+        for(wk=0; wk<50 && pFontCharIdx<pFontChars.size(); wk++) {
+          char code = pFontChars.get(pFontCharIdx);
+          pFontTextures[code] = 
+            new Integer(mgr.loadCharacterTexture(gl, PackageInfo.sGLFont, code));
+          
+          pFontCharIdx++;
+          pCompleted += 5;
+        }
+          
 	SwingUtilities.invokeLater(new RefreshTask());
       }
       else if(!pLaunched.getAndSet(true)) {
+        mgr.setFontTextures(PackageInfo.sGLFont, pFontTextures); 
+
 	SwingUtilities.invokeLater(pFinishedTask);
       }
     }
@@ -322,12 +350,24 @@ class JTextureLoaderBar
    * Whether the pFinishTask has been started.
    */ 
   private AtomicBoolean  pLaunched; 
-  
 
   /**
    * Whether this is the first display pass.
    */ 
   private boolean  pFirst; 
+
+  /**
+   * The total expense of loading textures. 
+   */ 
+  private int  pTotal; 
+
+  /**
+   * The amount of the total expense that has already been completed. 
+   */ 
+  private int  pCompleted; 
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * The names of the mip-mapped textures.
@@ -342,6 +382,8 @@ class JTextureLoaderBar
   private int  pTex64Idx; 
 
 
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * The names of the 21x21 pixel icons.
    */ 
@@ -353,25 +395,26 @@ class JTextureLoaderBar
   private int  pIcon21Idx; 
 
 
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Whether the font textures have been loaded.
    */ 
-  private boolean pFontLoaded;
+  private LinkedList<Character>  pFontChars; 
+  private Integer[]              pFontTextures; 
+
+  /**
+   * The current 21x21 pixel icon index.
+   */ 
+  private int  pFontCharIdx; 
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Whether the Swing icons have been rebuilt. 
    */ 
-  private boolean pIconsRebuilt; 
-
+  private boolean pNodeIconsRebuilt; 
+  private boolean pExtraIconsRebuilt; 
   
-  /**
-   * The percentage of startup tasks which have already been completed.
-   */ 
-  private double  pPercent; 
-
-  /**
-   * The base increment to the completion percentage for a task. 
-   */ 
-  private double  pInc; 
-
 }
