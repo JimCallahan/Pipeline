@@ -799,8 +799,10 @@ Node Versions</a></li>
           <span style="font-weight: normal;">[</span><a href="#--view">--view</a><span
  style="font-weight: normal;">=<span style="font-style: italic;">view-name</span>]</span><span
  style="font-weight: normal;"> </span><span
- style="font-weight: normal;"><span style="font-weight: bold;">--ref</span>=<span
- style="font-style: italic;">node-name</span>[,all|<span
+ style="font-weight: normal;"><span style="font-weight: bold;">--assoc</span>=<span
+ style="font-style: italic;">node-name</span><span
+ style="font-weight: bold;"> </span>|<span style="font-weight: bold;">
+--ref</span>=<span style="font-style: italic;">node-name</span>[,all|<span
  style="font-style: italic;">offset</span>] | </span><span
  style="font-weight: normal;"><span style="font-weight: bold;">--depend</span>=<span
  style="font-style: italic;">node-name</span>[,all|<span
@@ -3883,7 +3885,11 @@ owned by the user (<span style="font-style: italic;">user-name</span>).<br>
  style="font-style: italic;">view-name</span>]</span><span
  style="font-weight: normal;"> </span><span
  style="font-weight: normal;"><span style="font-weight: bold;"><br>
-&nbsp;&nbsp;&nbsp; </span><span style="font-weight: bold;">--ref</span>=<span
+&nbsp;&nbsp;&nbsp; </span></span><span style="font-weight: normal;"><span
+ style="font-weight: bold;">--assoc</span>=<span
+ style="font-style: italic;">node-name | </span></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;"></span><span
+ style="font-weight: bold;">--ref</span>=<span
  style="font-style: italic;">node-name</span>[,all|<span
  style="font-style: italic;">offset</span>] | </span><span
  style="font-weight: normal;"><span style="font-weight: bold;">--depend</span>=<span
@@ -3898,7 +3904,25 @@ more upstream nodes to the target working node version (<span
  style="font-style: italic;">user-name</span>).&nbsp; There are three
 types of links which can be created with the following options:<br>
 <span style="font-weight: normal;"><span style="font-style: italic;"><br>
-</span><span style="font-weight: bold;">--ref</span>=<span
+</span><span style="font-weight: bold;"></span></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;">--assoc</span>=<span
+ style="font-style: italic;">node-name<br>
+</span></span>
+<div style="margin-left: 40px;"><br>
+Creates an Association link from the given
+source node (node-name) to the target node.<span
+ style="font-style: italic;"> <br>
+<br>
+</span>This kind of link represents a indirect relationship between
+nodes which does not affect node status. An Association is similar to a
+Reference, except that changes to the source node do not affect the the
+target node's OverallQueueState in any way.&nbsp; They can be used in
+place of Reference links in cases where propogation of staleness from
+the source to targe node is not desirable. <br>
+</div>
+<span style="font-weight: normal;"><span style="font-style: italic;"><br>
+</span></span><span style="font-weight: normal;"><span
+ style="font-weight: bold;">--ref</span>=<span
  style="font-style: italic;">node-name</span>[,all|<span
  style="font-style: italic;">offset</span>]<br>
 <br>
