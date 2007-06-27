@@ -1,4 +1,4 @@
 #!/bin/sh
 
-../../src/pipeline/config/bootstrap.sh Technicolor 070625 43000 43100
+../../src/pipeline/config/bootstrap.sh Technicolor 070626 43000 43100
 
