@@ -1,4 +1,4 @@
-// $Id: MayaMiShaderAction.java,v 1.2 2007/06/28 20:04:35 jesse Exp $
+// $Id: MayaMiShaderAction.java,v 1.3 2007/06/28 23:02:20 jesse Exp $
 
 package us.temerity.pipeline.plugin.MayaMiShaderAction.v2_3_2;
 
@@ -851,7 +851,7 @@ MayaMiShaderAction
 	  out.write
 	    ("  if ($first) \n" + 
 	     "    {\n" + 
-	     "    fprint $fid (\"shaders = {}\");\n" + 
+	     "    fprint $fid (\"shaders = {\");\n" + 
 	     "    $first = 0;\n" + 
 	     "  }\n" + 
 	     "  fprint $fid (\"}\\n\");\n" + 
