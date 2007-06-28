@@ -1,14 +1,12 @@
-// $Id: MayaMiShaderAction.java,v 1.2 2007/06/28 19:52:05 jesse Exp $
+// $Id: MayaMiShaderAction.java,v 1.1 2007/06/28 19:52:05 jesse Exp $
 
-package us.temerity.pipeline.plugin.MayaMiShaderAction.v2_2_1;
+package us.temerity.pipeline.plugin.MayaMiShaderAction.v2_3_2;
 
 import java.io.*;
-import java.util.*;
+import java.util.ArrayList;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.plugin.*; 
-import us.temerity.pipeline.glue.GlueException;
-import us.temerity.pipeline.glue.io.GlueEncoderImpl;
+import us.temerity.pipeline.plugin.MayaActionUtils;
 
 /*------------------------------------------------------------------------------------------*/
 /*   M A Y A   M I   S H A D E R   A C T I O N                                              */
@@ -132,9 +130,9 @@ MayaMiShaderAction
   public 
   MayaMiShaderAction()
   {
-    super("MayaMiShader", new VersionID("2.2.1"), "Temerity",
+    super("MayaMiShader", new VersionID("2.3.2"), "Temerity",
 	  "Exports shaders for the correct pass based on the name of the source.");
-
+    
     {
       ActionParam param = 
 	new LinkActionParam
@@ -202,6 +200,26 @@ MayaMiShaderAction
         (aFixTexturePaths, 
          "Whether to fix the texture paths written by Maya so that they will be " + 
          "compatible with the MRayRender Action.", 
+         true); 
+      addSingleParam(param);
+    }
+    
+    {
+      ActionParam param = 
+        new BooleanActionParam
+        (aUseMRLightLinking, 
+         "Should all maya shaders be converted to using the mental ray light " +
+         "linking conventions.", 
+         true); 
+      addSingleParam(param);
+    }
+    
+    {
+      ActionParam param = 
+        new BooleanActionParam
+        (aDisableLightLinker, 
+         "Should Maya light-linking information be exported.  If UseMRLightLinking is" +
+         "enabled, this should be disabled, otherwise unpredictable results may occur.", 
          true); 
       addSingleParam(param);
     }
@@ -309,6 +327,18 @@ MayaMiShaderAction
 	   null);
 	addSingleParam(param);
       }
+      
+      {
+	ActionParam param = 
+	  new LinkActionParam
+	  (aExportModMEL,
+           "A MEL snippet to insert into the process right before exporting happens." +
+           "The snippet will have access to the $newMats variable, which is an array of" +
+           "all the shading groups that are going to be exported.  Modifications made " +
+           "to this array will change which shaders are exported.", 
+	   null);
+	addSingleParam(param);
+      }
     }
 
     {
@@ -321,7 +351,9 @@ MayaMiShaderAction
       layout.addEntry(aRenderPassSuffix);
       layout.addEntry(aFinalNamespace);
       layout.addSeparator();      
-      layout.addEntry(aFixTexturePaths); 
+      layout.addEntry(aFixTexturePaths);
+      layout.addEntry(aUseMRLightLinking);
+      layout.addEntry(aDisableLightLinker);
 
       {
 	LayoutGroup group = 
@@ -352,6 +384,7 @@ MayaMiShaderAction
         
         group.addEntry(aPreExportMEL);
         group.addEntry(aPostExportMEL);
+        group.addEntry(aExportModMEL);
         
         layout.addSubGroup(group);
       }
@@ -404,6 +437,16 @@ MayaMiShaderAction
     /* MEL script paths */ 
     Path preExportMEL  = getMelScriptSourcePath(aPreExportMEL, agenda);
     Path postExportMEL = getMelScriptSourcePath(aPostExportMEL, agenda);
+    String melSnippet = null;
+    try {
+      melSnippet = getMelSnippet(agenda);
+    }
+    catch (IOException ex) {
+      throw new PipelineException
+	("Unable to read the export mod mel file for Job " + 
+	 "(" + agenda.getJobID() + ")!\n" +
+	 ex.getMessage());
+    }
 
     /* the MI files to export */ 
     FileSeq targetSeq = null;
@@ -434,12 +477,53 @@ MayaMiShaderAction
     String finalNs = getSingleStringParamValue(aFinalNamespace); 
     if(finalNs == null)
       finalNs = "";
+    
+    boolean disableLightLinker = getSingleBooleanParamValue(aDisableLightLinker);
+    boolean useMRLightLinking = getSingleBooleanParamValue(aUseMRLightLinking);
 
 
     /* create a temporary MEL script to export the MI files */ 
+    String tempFile = new Path(getTempPath(agenda), "shaders.py").toOsString();
     File exportMEL = createTemp(agenda, "mel");
     try {
-      FileWriter out = new FileWriter(exportMEL); 
+      FileWriter out = new FileWriter(exportMEL);
+      
+      out.write
+        ("global proc addToArray(string $src[], string $tgt[])\n" + 
+         "{\n" + 
+         "  string $each;\n" + 
+         "  for ($each in $src)\n" + 
+         "    $tgt[size($tgt)] = $each;\n" + 
+         "}\n" + 
+         "\n" + 
+         "global proc string[] getAllMRNodes()\n" + 
+         "{\n" + 
+         "  string $final[];\n" + 
+         "  string $lib;\n" + 
+         "  for ($lib in `mrFactory -q -all`)\n" + 
+         "  {\n" + 
+         "    addToArray(`mrFactory -q -s $lib`, $final)  ;\n" + 
+         "  }\n" + 
+         "  return $final;\n" + 
+         "}\n\n" +
+         "global proc breakConn(string $name)\n" + 
+         "{\n" + 
+         "  string $conns[] = `listConnections -p true -s true -d false $name`;\n" + 
+         "  catch(`disconnectAttr $conns[0] $name`);\n" + 
+         "}\n\n" +
+         "global proc findMayaShaders(string $shader, string $found[])\n" + 
+         "{\n" + 
+         "  string $nodes[] = {\"volumeFog\", \"hairTubeShader\", \"oceanShader\", \"surfaceLuminance\", \"particleCloud\", \"lambert\", \"rampShader\", \"useBackground\", \"phong\", \"phongE\", \"blinn\", \"anisotropic\"}; \n" + 
+         "\n" + 
+         "  string $nodeType = `nodeType $shader`;\n" + 
+         "  if (stringArrayCount($nodeType, $nodes) > 0)\n" + 
+         "    $found[size($found)] = $shader;\n" + 
+         "  string $conn[] = `listConnections -p false -s true -d false $shader`;\n" + 
+         "  $conn = stringArrayRemoveDuplicates($conn);\n" + 
+         "  string $con;\n" + 
+         "  for ($con in $conn)\n" + 
+         "    findMayaShaders($con, $found);\n" + 
+         "}\n\n");
 
       out.write
         ("if(!`pluginInfo -q -l \"Mayatomr\"`)\n" + 
@@ -474,13 +558,20 @@ MayaMiShaderAction
              "setAttr \"defaultRenderGlobals.endFrame\" " + range.getEnd() + ";\n" + 
              "setAttr \"defaultRenderGlobals.byFrameStep\" " + range.getBy() + ";\n");
         }
-
+        
+        if (disableLightLinker)
+          out.write("setAttr \"mentalrayGlobals.exportLightLinker\" false;\n");
+        else
+          out.write("setAttr \"mentalrayGlobals.exportLightLinker\" true;\n");
+        
         out.write
           ("setAttr \"mentalrayGlobals.exportExactHierarchy\" false;\n" +
            "setAttr \"mentalrayGlobals.exportFullDagpath\" false;\n" +
            "setAttr \"mentalrayGlobals.exportTexturesFirst\" false;\n" +
            "setAttr \"mentalrayGlobals.exportPostEffects\" false;\n" +
            "setAttr \"defaultRenderGlobals.enableDefaultLight\" false;\n\n");
+        
+      
       }
 
       /* connect the shaders for the current render pass up to the material shading groups */ 
@@ -505,50 +596,34 @@ MayaMiShaderAction
            
            "  string $sg;\n" +
            "  string $newMats[];\n" +
-
-           "  for($sg in $shadingGroups) {\n" +
+           "  string $mrNodes[] = getAllMRNodes();\n");
+        
+        if (useMRLightLinking)
+          out.write("  string $mayaShaderList[];\n" +
+          	    "  $fid = `fopen \"" + tempFile + "\" \"w\"`;\n" + 
+          	    "  int $first = 1;\n\n");
+        out.write
+          ("  for($sg in $shadingGroups) {\n" +
            "    string $buffer[];\n" +
            "    tokenize($sg, \":\", $buffer);\n" +
            "    string $matBase = $buffer[(size($buffer)-1)];\n\n" +
            
            "    string $matName;\n" +
            "    if($materialNs == $finalNs) {\n" +
-           "      string $conns[] = `listConnections -p true -s true -d false " + 
-                                      "($sg + \".miMaterialShader\")`;\n" +
-           "      catch(`disconnectAttr $conns[0] ($sg + \".miMaterialShader\")`);\n\n" +
-           
-           "      $conns = `listConnections -p true -s true -d false " +
-                             "($sg + \".miDisplacementShader\")`;\n" +
-           "      catch(`disconnectAttr $conns[0] ($sg + \".miDisplacementShader\")`);\n\n" +
-           
-           "      $conns = `listConnections -p true -s true -d false " +
-                             "($sg + \".miShadowShader\")`;\n" +
-           "      catch(`disconnectAttr $conns[0] ($sg + \".miShadowShader\")`);\n\n" +
-           
-           "      $conns = `listConnections -p true -s true -d false " +
-                             "($sg + \".miVolumeShader\")`;\n" +
-           "      catch(`disconnectAttr $conns[0] ($sg + \".miVolumeShader\")`);\n\n" +
-
-           "      $conns = `listConnections -p true -s true -d false " +
-                             "($sg + \".miPhotonShader\")`;\n" +
-           "      catch(`disconnectAttr $conns[0] ($sg + \".miPhotonShader\")`);\n\n" +
-           
-           "      $conns = `listConnections -p true -s true -d false " +
-                             "($sg + \".miPhotonVolumeShader\")`;\n" +
-           "      catch(`disconnectAttr $conns[0] ($sg + \".miPhotonVolumeShader\")`);\n\n" +
-           
-           "      $conns = `listConnections -p true -s true -d false " +
-                             "($sg + \".miEnvironmentShader\")`;\n" +
-           "      catch(`disconnectAttr $conns[0] ($sg + \".miEnvironmentShader\")`);\n\n" +
-           
-           "      $conns = `listConnections -p true -s true -d false " +
-                             "($sg + \".miLightMapShader\")`;\n" +
-           "      catch(`disconnectAttr $conns[0] ($sg + \".miLightMapShader\")`);\n\n" +
-           
-           "      $conns = `listConnections -p true -s true -d false " +
-                             "($sg + \".miContourShader\")`;\n" +
-           "      catch(`disconnectAttr $conns[0] ($sg + \".miContourShader\")`);\n\n" +
-
+           "      breakConn($sg + \".miMaterialShader\");\n" + 
+           "      breakConn($sg + \".miDisplacementShader\");\n" + 
+           "      breakConn($sg + \".miShadowShader\");\n" + 
+           "      breakConn($sg + \".miVolumeShader\");\n" + 
+           "      breakConn($sg + \".miPhotonShader\");\n" + 
+           "      breakConn($sg + \".miPhotonVolumeShader\");\n" + 
+           "      breakConn($sg + \".miEnvironmentShader\");\n" + 
+           "      breakConn($sg + \".miLightMapShader\");\n" + 
+           "      breakConn($sg + \".miContourShader\");\n" + 
+           "      breakConn($sg + \".miMaterialShader\");\n" + 
+           "      // Maya stuff\n" + 
+           "      breakConn($sg + \".surfaceShader\");\n" + 
+           "      breakConn($sg + \".displacementShader\");\n" + 
+           "      breakConn($sg + \".volumeShader\");\n" +
            "      $matName = $sg;\n" +
            "    }\n" + 
            "    else {\n" +
@@ -575,85 +650,204 @@ MayaMiShaderAction
            "    string $shadeName = $shaderNs + $matBase + \"_\" + $passSuffix;\n" +
            "    print(\"SHADER: \" + $shadeName + \"\\n\");\n\n" + 
 
-           "    setAttr ($matName + \".miExportMrMaterial\") 1;\n" + 
+           "    setAttr ($matName + \".miExportMrMaterial\") 0;\n" + 
            "    setAttr ($matName + \".miExportShadingEngine\") 0;\n\n");
+        if (useMRLightLinking)
+          out.write("    clear($mayaShaderList);\n\n");
       
-	if(getSingleBooleanParamValue(aMaterialShader)) 
+	if(getSingleBooleanParamValue(aMaterialShader)) { 
 	  out.write
             ("    if(`objExists $shadeName`) {\n" + 
-             "      connectAttr -f ($shadeName + \".message\")\n" + 
-             "                     ($matName + \".miMaterialShader\");\n" +
-             "    }\n\n"); 
+             "      if (stringArrayCount(`nodeType $shadeName`, $mrNodes)) {\n" + 
+             "        connectAttr -f ($shadeName + \".message\")\n" + 
+             "                       ($matName + \".miMaterialShader\");\n" + 
+             "        print(\"connecting shader: \" + $shadeName + \"\\n\");\n");
+	  if (useMRLightLinking)
+             out.write
+              ("        findMayaShaders($shadeName, $mayaShaderList);\n");
+	  out.write
+            ("      }");
+	  out.write
+	    ("      else { //This is a Maya Shader\n" + 
+	     "        connectAttr -f ($shadeName + \".message\")\n" + 
+	     "                       ($matName + \".surfaceShader\");\n" + 
+	     "        print(\"connecting shader: \" + $shadeName + \"\\n\");\n");
+	  if (useMRLightLinking)
+            out.write
+               ("        findMayaShaders($shadeName, $mayaShaderList);\n" + 
+	        "        $mayaShaderList[size($mayaShaderList)] = ($shadeName + \":shadow\");\n"); 
+	  out.write
+	    ("      }");
+          out.write
+            ("    }\n\n");
+	}
 	
-	if(getSingleBooleanParamValue(aDisplacementShader)) 
+	if(getSingleBooleanParamValue(aDisplacementShader)) {
 	  out.write
             ("    string $dispName = $shaderNs + $matBase + \"_disp\";\n" + 
              "    if(`objExists $dispName`) {\n" +
              "      connectAttr -f ($dispName + \".message\")\n" +
              "                     ($matName + \".miDisplacementShader\");\n" +
-             "    }\n\n");
+             "    print(\"connecting shader: \" + $dispName + \"\\n\");\n");
+	  if (useMRLightLinking)
+	    out.write
+	      ("      findMayaShaders($dispName, $mayaShaderList);\n");
+          out.write("    }\n\n");
+	}
 	
-	if(getSingleBooleanParamValue(aShadowShader))
+	if(getSingleBooleanParamValue(aShadowShader)) {
 	  out.write
             ("    string $shadowName = $shadeName + \"_shad\";\n" +
              "    if(`objExists $shadowName`) {\n" +
              "      connectAttr -f ($shadowName + \".message\")\n" +
-             "                     ($matName + \".miShadowShader\");\n" +
-             "    }\n\n");
+             "                     ($matName + \".miShadowShader\");\n");
+	  if (useMRLightLinking)
+	    out.write
+	      ("      findMayaShaders($shadowName, $mayaShaderList);\n");
+          out.write("    }\n\n");
+	}
 
-	if(getSingleBooleanParamValue(aVolumeShader)) 
+	if(getSingleBooleanParamValue(aVolumeShader)) { 
 	  out.write
             ("    string $volumeName = $shadeName + \"_vol\";\n" +
              "    if(`objExists $volumeName`) {\n" +
              "      connectAttr -f ($volumeName + \".message\")\n" +
-             "                     ($matName + \".miVolumeShader\");\n" +
-             "    }\n\n");
+             "                     ($matName + \".miVolumeShader\");\n");
+	  if (useMRLightLinking)
+	    out.write
+	      ("      findMayaShaders($volumeName, $mayaShaderList);\n");
+          out.write("    }\n\n");
+	}
 
-	if(getSingleBooleanParamValue(aPhotonShader)) 
+	if(getSingleBooleanParamValue(aPhotonShader)) { 
 	  out.write
             ("    string $photonName = $shadeName + \"_pho\";\n" +
              "    if(`objExists $photonName`) {\n" +
              "      connectAttr -f ($photonName + \".message\")\n" +
-             "                     ($matName + \".miPhotonShader\");\n" +
-             "    }\n\n");
+             "                     ($matName + \".miPhotonShader\");\n");
+	  if (useMRLightLinking)
+	    out.write
+	      ("      findMayaShaders($photonName, $mayaShaderList);\n");
+          out.write("    }\n\n");
+	}
 
-	if(getSingleBooleanParamValue(aPhotonVolShader)) 
+	if(getSingleBooleanParamValue(aPhotonVolShader)) { 
 	  out.write
             ("    string $photonVolName = $shadeName + \"_phov\";\n" +
              "    if(`objExists $photonVolName`) {\n" +
              "      connectAttr -f ($photonVolName + \".message\")\n" +
-             "                     ($matName + \".miPhotonVolumeShader\");\n" +
-             "    }\n\n");
+             "                     ($matName + \".miPhotonVolumeShader\");\n");
+	  if (useMRLightLinking)
+	    out.write
+	      ("      findMayaShaders($photonVolName, $mayaShaderList);\n");
+          out.write("    }\n\n");
+	}
 
-	if(getSingleBooleanParamValue(aEnvShader)) 
+	if(getSingleBooleanParamValue(aEnvShader)) { 
 	  out.write
             ("    string $envName = $shadeName + \"_env\";\n" +
              "    if(`objExists $envName`) {\n" +
              "      connectAttr -f ($envName + \".message\")\n" +
-             "                     ($matName + \".miEnvironmentShader\");\n" +
-             "    }\n\n");
+             "                     ($matName + \".miEnvironmentShader\");\n");
+	  if (useMRLightLinking)
+	    out.write
+	      ("      findMayaShaders($envName, $mayaShaderList);\n");
+          out.write("    }\n\n");
+	}
 
-	if(getSingleBooleanParamValue(aLightMapShader)) 
+	if(getSingleBooleanParamValue(aLightMapShader)) { 
 	  out.write
             ("    string $lightMapName = $shadeName + \"_lmap\";\n" +
              "    if(`objExists $lightMapName`) {\n" +
              "      connectAttr -f ($lightMapName + \".message\")\n" +
-             "                     ($matName + \".miLightMapShader\");\n" +
-             "    }\n\n");
+             "                     ($matName + \".miLightMapShader\");\n");
+	  if (useMRLightLinking)
+	    out.write
+	      ("      findMayaShaders($lightMapName, $mayaShaderList);\n");
+          out.write("    }\n\n");
+	}
 
-	if(getSingleBooleanParamValue(aContourShader)) 
+	if(getSingleBooleanParamValue(aContourShader)) { 
 	  out.write
             ("    string $contourName = $shadeName + \"_con\";\n" +
              "    if(`objExists $contourName`) {\n" +
              "      connectAttr -f ($contourName + \".message\")\n" +
-             "                     ($matName + \".miContourShader\");\n" +
-             "    }\n\n");
+             "                     ($matName + \".miContourShader\");\n");
+	  if (useMRLightLinking)
+	    out.write
+	      ("      findMayaShaders($contourName, $mayaShaderList);\n");
+          out.write("    }\n\n");
+	}
+	
+	if (useMRLightLinking)
+	  out.write
+	    ("    if (size($mayaShaderList) > 0) {\n" +
+	     "      print($mayaShaderList);\n" + 
+	     "      string $obj;\n" + 
+	     "      string $lights[];\n" + 
+	     "      select -r $sg;\n" +
+	     "      print($sg + \"\\n\");\n" +
+	     "      string $list[] = `ls -sl`;\n" +
+	     "      print($list);\n" +
+	     "      for ($obj in $list)\n" + 
+	     "      {\n" + 
+	     "        addToArray(`lightlink -q -o $obj -t true -shp false -sets false`, $lights) ;\n" + 
+	     "        string $sets[] = `lightlink -q -o $obj -t false -shp false -sets true` ;\n" + 
+	     "        string $set;\n" + 
+	     "        for ($set in $sets)\n" + 
+	     "        {\n" + 
+	     "          addToArray(`sets -q $set`, $lights);\n" + 
+	     "        }\n" + 
+	     "      }\n" + 
+	     "      $lights = stringArrayRemoveDuplicates($lights);\n" +
+	     "      print($lights);\n" +
+	     "      int $size = size($lights);\n" + 
+	     "      int $i;\n" + 
+	     "      string $shader;\n" + 
+	     "      for ($shader in $mayaShaderList)\n" + 
+	     "      {\n" + 
+	     "        if ($first) \n" + 
+	     "        {\n" + 
+	     "          fprint $fid (\"shaders = {\");\n" + 
+	     "          $first = 0;\n" + 
+	     "        }\n" + 
+	     "        else\n" + 
+	     "          fprint $fid \", \";\n" + 
+	     "        fprint $fid (\"\'\" + $shader + \"\' : [\");\n" + 
+	     "        for ($i = 0; $i < $size; $i++)\n" + 
+	     "        {\n" + 
+	     "          fprint $fid (\"\'\" + $lights[$i] + \"\'\");\n" + 
+	     "          if ($i < ($size -1))\n" + 
+	     "            fprint $fid \", \";\n" + 
+	     "        }\n" + 
+	     "        fprint $fid (\"]\");\n" + 
+	     "      }\n" + 
+	     "    }\n"); 
 
+		  
 	out.write
-          ("  }\n\n" +
-           "  // EXPORT SELECTION\n" +
-           "  select -r -ne $newMats;\n" + 
-           "}\n\n");
+          ("  }\n\n");
+	
+	if (useMRLightLinking) 
+	  out.write
+	    ("  if ($first) \n" + 
+	     "    {\n" + 
+	     "    fprint $fid (\"shaders = {}\");\n" + 
+	     "    $first = 0;\n" + 
+	     "  }\n" + 
+	     "  fprint $fid (\"}\\n\");\n" + 
+	     "  fclose $fid;");
+	
+	out.write
+          ("  // EXPORT SELECTION\n" +
+           "  select -r -ne $newMats;\n");
+	if (useMRLightLinking)
+	  out.write("  select -add `ls -type \"light\"`;\n" +
+	  	    "  select -add $newMats;\n");
+        out.write("}\n\n");
+      }
+      if (melSnippet != null) {
+	out.write(melSnippet);
       }
       
       /* export the MI files */ 
@@ -668,7 +862,7 @@ MayaMiShaderAction
       
         out.write
           ("-active -fragmentExport -fragmentChildDag -fragmentMaterials " +
-           "-fragmentIncomingShdrs -exportFilter 6291191 -xp \\\"3313333333\\\" "); 
+           "-fragmentIncomingShdrs -exportFilter 2089719 -xp \\\"3313333333\\\" "); 
        
         Path tpath = new Path(getTempPath(agenda), 
                               fpat.getPrefix() + "." + fpat.getSuffix());   
@@ -702,7 +896,7 @@ MayaMiShaderAction
       
       /* export the MI files from Maya */ 
       out.write(createMayaPythonLauncher(sourceScene, exportMEL) + "\n");
-      
+
       NodeID id = agenda.getNodeID();
       Path workingArea = 
 	new Path(new Path(PackageInfo.sWorkPath, id.getAuthor()), id.getView());
@@ -713,46 +907,131 @@ MayaMiShaderAction
                      "'renderData/mentalray/']\n\n" +
          "locals = ['" + PackageInfo.getTempPath(OsType.Unix) + "', " + 
                    "'" + PackageInfo.getTempPath(OsType.MacOS) + "', " + 
-                   "'" + PackageInfo.getTempPath(OsType.Windows) + "']\n\n" + 
-         "def fixTexturePaths(spath, tpath):\n" + 
-         "  print\n" + 
-         "  print ('Fixing Texture Paths in: ' + tpath)\n" + 
-         "  source = open(spath, 'rU')\n" + 
+                   "'" + PackageInfo.getTempPath(OsType.Windows) + "']\n" +
+         "lightTypes = ['maya_pointlight', 'maya_spotlight', 'maya_ambientlight', " +
+                       "'maya_directionallight', 'maya_arealight', 'maya_shapelight', " +
+                       "'maya_volumelight']\n" +
+         "mayaShaderTypes = ['maya_lambert', 'maya_shadow', 'maya_blinn', " +
+                            "'maya_anisotropic', 'maya_fur', 'maya_phong', 'maya_phongE', " +
+                            "'maya_rampshader', 'maya_w10fur', 'maya_hairtubeshader', 'maya_oceanshader', " +
+                            "'maya_shadow', 'maya_usebackground', 'maya_fluidshader', 'maya_volumefog', " +
+                            "'maya_particlecloud', 'maya_surfaceluminance']\n" + 
+         "def fixTexturePath(line, target):\n" + 
+         "  parts = line.split()\n" + 
+         "  texture = parts[3].strip('\\\"')\n" + 
+         "  print ('Texture part: ' + texture) \n" + 
+         "  for prefix in prefixes: \n" + 
+         "    if texture.startswith(prefix): \n" + 
+         "      fixed = texture[len(prefix):len(texture)] \n" + 
+         "      print ('Renamed \"' + texture + '\"\\n  To \"' + fixed + '\"')\n" + 
+         "      target.write('color texture ' + parts[2] + ' \"' + fixed + '\"\\n')\n" + 
+         "      noop = False \n" + 
+         "      break \n" + 
+         "  if noop: \n" + 
+         "    isLocal = False \n" + 
+         "    for prefix in locals: \n" + 
+         "      if texture.startswith(prefix): \n" + 
+         "        isLocal = True \n" + 
+         "        break \n" + 
+         "    if not isLocal: \n" + 
+         "      raise SystemExit, ('ERROR: The file texture path \"' + texture + '\" was not valid!') \n" + 
+         "  if noop: \n" + 
+         "    target.write(line) \n" +
+         "\n\n\n" +
+         "def miShader(spath, tpath, ipath):\n" + 
          "  target = open(tpath, 'w')\n" + 
          "  try:\n" + 
-         "    for line in source:\n" + 
-         "      noop = True\n" + 
-         "      if line.startswith('color texture'):\n" + 
-         "        parts = line.split()\n" + 
-         "        texture = parts[3].strip('\"')\n" + 
-         "        for prefix in prefixes:\n" + 
-         "          if texture.startswith(prefix):\n" + 
-         "            fixed = texture[len(prefix):len(texture)]\n" + 
-         "            print ('Renamed \"' + texture + '\"\\n  To \"' + fixed + '\"')\n" + 
-         "            target.write('color texture ' + parts[2] + ' \"' + fixed + '\"\\n')\n" +
-         "            noop = False\n" + 
-         "            break\n" + 
-         "        if noop:\n" + 
-         "          isLocal = False\n" + 
-         "          for prefix in locals:\n" + 
-         "            if texture.startswith(prefix):\n" + 
-         "              isLocal = True\n" + 
-         "              break\n" + 
-         "          if not isLocal:\n" + 
-         "            raise SystemExit, ('ERROR: The file texture path \"' + texture + '\" " +
-                                         "was not valid!')\n" + 
-         "      if noop:\n" + 
-         "        target.write(line)\n" + 
+         "    source = open(spath, 'rU')\n" + 
+         "    \n");
+      if (useMRLightLinking)
+	out.write
+        ("    info = open(ipath, 'rU')\n" + 
+         "    exec info\n" + 
+         "    info.close()\n" + 
+         "    \n" + 
+         "    shadeList = list()\n" + 
+         "    shadeShadow = list()\n" + 
+         "    shadowLookup = dict()\n" + 
+         "    for shader in shaders:\n" + 
+         "      shadeList.append(shader)\n" + 
+         "      shadow = shader + ':shadow'\n" + 
+         "      shadeShadow.append(shadow)\n" + 
+         "      shadowLookup[shadow] = shader\n" + 
+         "      \n");
+      out.write
+        ("    mode = 'normal'\n" + 
+         "    shaderCache = ''\n" + 
+         "    shaderName = ''\n" + 
+         "    try:\n" + 
+         "      for line in source:\n" + 
+         "        clean = line.lstrip()\n" + 
+         "        if mode == 'normal':\n" + 
+         "          if clean.startswith('color texture'):\n" + 
+         "            fixTexturePath(line, target)\n");
+      if (useMRLightLinking)
+	out.write
+        ("          elif clean.startswith('shader'):\n" + 
+         "            mode = 'shader'\n" + 
+         "            shaderCache = line\n" + 
+         "            parts = line.split()\n" + 
+         "            shaderName = parts[1].strip('\"')\n");
+      out.write
+        ("          else:\n" + 
+         "            target.write(line)\n");
+      if (useMRLightLinking)
+	out.write
+        ("        elif mode == 'shader':\n" + 
+         "          parts = line.split()\n" + 
+         "          shaderType = parts[0].strip('\"')\n" + 
+         "          if lightTypes.count(shaderType) > 0:\n" + 
+         "            mode = 'skip'\n" + 
+         "          elif mayaShaderTypes.count(shaderType) > 0:\n" + 
+         "            mode = 'maya'\n" + 
+         "            target.write(shaderCache)\n" + 
+         "            target.write(line)\n" + 
+         "          else:\n" + 
+         "            mode = 'normal'\n" + 
+         "            target.write(shaderCache)\n" + 
+         "            target.write(line)\n" + 
+         "        elif mode == 'skip':\n" + 
+         "          if clean.startswith(')'):\n" + 
+         "            mode = 'normal'\n" + 
+         "        elif mode == 'maya':\n" + 
+         "          if clean.startswith(')'):\n" + 
+         "            target.write(line)\n" + 
+         "            mode = 'normal'\n" + 
+         "          elif clean.startswith('\"lightMode'):\n" + 
+         "            target.write('    \"lightMode\" 0,\\n')\n" + 
+         "            mode = 'lights'\n" + 
+         "          elif clean.startswith('\"lightLink'):\n" + 
+         "            mode = 'maya'\n" + 
+         "          else:\n" + 
+         "            target.write(line)\n" + 
+         "        elif mode == 'lights':\n" + 
+         "          if shadeList.count(shaderName) > 0:\n" + 
+         "            lights = shaders[shaderName]\n" + 
+         "          elif shadeShadow.count(shaderName) > 0:\n" + 
+         "            print('Shadow stuff')\n" + 
+         "            lights = shaders[shadowLookup[shaderName]]\n" + 
+         "          else:\n" + 
+         "            lights = list()\n" + 
+         "          target.write('    \"lightList\" ' + str(lights).replace('\\'', '\"'))\n" + 
+         "          if not clean.startswith(')'):\n" + 
+         "            target.write(',')\n" + 
+         "          target.write('\\n' + line)\n" + 
+         "          mode = 'normal'\n");
+      out.write
+        ("    finally:\n" + 
+         "      source.close()\n" + 
          "  finally:\n" + 
-         "    source.close()\n" + 
-         "    target.close()\n\n");
+         "    target.close()\n\n\n");
 
       /* fix each MI file */ 
       for(Path path : targetSeq.getPaths()) {
         Path spath = new Path(getTempPath(agenda), path); 
         Path tpath = new Path(agenda.getTargetPath(), path); 
-
-        out.write("fixTexturePaths('" + spath + "', '" + tpath + "')\n\n");
+        Path ipath = new Path(tempFile);
+        out.write("miShader('" + spath + "', '" + tpath + "', '"+ ipath + "')\n\n");
       }
 
       out.write("\n" + 
@@ -771,15 +1050,39 @@ MayaMiShaderAction
     return createPythonSubProcess(agenda, script, outFile, errFile); 
   }   
 
-
+  
+  
+  private String 
+  getMelSnippet
+  (
+    ActionAgenda agenda  
+  )
+    throws PipelineException, IOException
+  {
+    String toReturn = null;
+    Path melPath = getMelScriptSourcePath(aExportModMEL, agenda);
+    if (melPath == null)
+      return toReturn;
+    File file = melPath.toFile();
+    BufferedReader in = new BufferedReader(new FileReader(file));
+    while(true) {
+      String line = in.readLine();
+      if(line == null) 
+        break;
+      if (toReturn == null)
+	toReturn = line + "\n";
+      else
+	toReturn += line + "\n";
+    }
+    return toReturn;
+  }
   
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -7595539365398372233L;
+  private static final long serialVersionUID = 4971189759602455128L;
 
-  public static final String aMayaScene          = "MayaScene";
   public static final String aOutputFormat       = "OutputFormat";
   public static final String aMaterialNamespace  = "MaterialNamespace";
   public static final String aShaderNamespace    = "ShaderNamespace";
@@ -797,5 +1100,10 @@ MayaMiShaderAction
   public static final String aContourShader      = "ContourShader";
   public static final String aPostExportMEL      = "PostExportMEL";
   public static final String aPreExportMEL       = "PreExportMEL";
+  public static final String aExportModMEL       = "ExportModMEL";
+  
+  public static final String aDisableLightLinker = "DisableLightLinker";
+  public static final String aUseMRLightLinking  = "UseMRLightLinking";
+  
 	
 }

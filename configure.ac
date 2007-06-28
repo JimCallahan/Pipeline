@@ -1893,6 +1893,7 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/MRayInstGroupAction/v2_0_10/Makefile
   src/java/us/temerity/pipeline/plugin/MRayInstGroupAction/v2_0_9/Makefile
   src/java/us/temerity/pipeline/plugin/MRayInstGroupAction/v2_2_1/Makefile
+  src/java/us/temerity/pipeline/plugin/MRayInstGroupAction/v2_3_2/Makefile
   src/java/us/temerity/pipeline/plugin/MRayMakeShaderAction/Makefile
   src/java/us/temerity/pipeline/plugin/MRayMakeShaderAction/v2_0_9/Makefile
   src/java/us/temerity/pipeline/plugin/MRayMakeShaderAction/v2_2_1/Makefile
@@ -1998,6 +1999,7 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/MayaMiExportAction/v2_0_11/Makefile
   src/java/us/temerity/pipeline/plugin/MayaMiExportAction/v2_0_9/Makefile
   src/java/us/temerity/pipeline/plugin/MayaMiExportAction/v2_2_1/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaMiExportAction/v2_3_2/Makefile
   src/java/us/temerity/pipeline/plugin/MayaMiShaderAction/Makefile
   src/java/us/temerity/pipeline/plugin/MayaMiShaderAction/v2_0_10/Makefile
   src/java/us/temerity/pipeline/plugin/MayaMiShaderAction/v2_0_11/Makefile
@@ -2006,6 +2008,7 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/MayaMiShaderAction/v2_0_14/Makefile
   src/java/us/temerity/pipeline/plugin/MayaMiShaderAction/v2_0_9/Makefile
   src/java/us/temerity/pipeline/plugin/MayaMiShaderAction/v2_2_1/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaMiShaderAction/v2_3_2/Makefile
   src/java/us/temerity/pipeline/plugin/MayaMxsExportAction/Makefile
   src/java/us/temerity/pipeline/plugin/MayaMxsExportAction/v2_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/MayaNoRefEditor/Makefile
