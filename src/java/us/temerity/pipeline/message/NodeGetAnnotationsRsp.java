@@ -1,4 +1,4 @@
-// $Id: NodeGetAnnotationsRsp.java,v 1.1 2007/06/15 00:27:31 jim Exp $
+// $Id: NodeGetAnnotationsRsp.java,v 1.2 2007/06/28 18:36:46 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -124,7 +124,7 @@ class NodeGetAnnotationsRsp
                                                        annot.getVersionID(), 
                                                        annot.getVendor());
           nannot.setParamValues(annot);
-          pAnnotations.put(name, annot);
+          pAnnotations.put(name, nannot);
         }
         catch(PipelineException ex) {
           throw new IOException(ex.getMessage());
