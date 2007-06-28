@@ -1,4 +1,4 @@
-// $Id: MayaMiShaderAction.java,v 1.1 2007/06/28 19:52:05 jesse Exp $
+// $Id: MayaMiShaderAction.java,v 1.2 2007/06/28 20:04:35 jesse Exp $
 
 package us.temerity.pipeline.plugin.MayaMiShaderAction.v2_3_2;
 
@@ -55,6 +55,17 @@ import us.temerity.pipeline.plugin.MayaActionUtils;
  *   <DIV style="margin-left: 40px;">
  *     Whether to fix the texture paths written by Maya so that they will be compatible 
  *     with the MRayRender Action.
+ *   </DIV> <BR>
+ *   
+ *   Disable Lightlinker<BR>
+ *   <DIV style="margin-left: 40px;">
+ *     Should Maya light-linking information be exported.  If UseMRLightLinking is
+ *     enabled, this should be disabled, otherwise unpredictable results may occur.
+ *   </DIV> <BR>
+ *   
+ *   Use MR Lightlinking<BR>
+ *   <DIV style="margin-left: 40px;">
+ *     Should all maya shaders be converted to using the mental ray light linking conventions.
  *   </DIV> <BR>
  * 
  *   <I>Shader Export</I> <BR>
@@ -115,6 +126,14 @@ import us.temerity.pipeline.plugin.MayaActionUtils;
  *     Post Export MEL <BR>
  *     <DIV style="margin-left: 40px;">
  *       The source node which contains the MEL script to evaluate after exporting ends. <BR>
+ *     </DIV>
+ *     
+ *     Export Mod MEL <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       A MEL snippet to insert into the process right before exporting happens.
+ *       The snippet will have access to the $newMats variable, which is an array of
+ *       all the shading groups that are going to be exported.  Modifications made
+ *       to this array will change which shaders are exported. <BR>
  *     </DIV> 
  *    </DIV> 
  * </DIV> <P> 
