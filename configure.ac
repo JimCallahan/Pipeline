@@ -1999,7 +1999,6 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/MayaMiExportAction/v2_0_11/Makefile
   src/java/us/temerity/pipeline/plugin/MayaMiExportAction/v2_0_9/Makefile
   src/java/us/temerity/pipeline/plugin/MayaMiExportAction/v2_2_1/Makefile
-  src/java/us/temerity/pipeline/plugin/MayaMiExportAction/v2_3_2/Makefile
   src/java/us/temerity/pipeline/plugin/MayaMiShaderAction/Makefile
   src/java/us/temerity/pipeline/plugin/MayaMiShaderAction/v2_0_10/Makefile
   src/java/us/temerity/pipeline/plugin/MayaMiShaderAction/v2_0_11/Makefile
