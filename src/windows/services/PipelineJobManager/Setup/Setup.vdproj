@@ -365,7 +365,7 @@
             {
             "Name" = "8:Condition1"
             "Condition" = "8:JAVAHOME"
-            "Message" = "8:JDK 5.0 (Update 11) is required by the Pipeline Job Manager."
+            "Message" = "8:JDK 5.0 (Update 12) is required by the Pipeline Job Manager."
             "InstallUrl" = "8:http://java.sun.com/javase/downloads/index_jdk5.jsp"
             }
         }
@@ -375,7 +375,7 @@
             {
             "Name" = "8:Search forJDK"
             "Root" = "2:1"
-            "RegKey" = "8:SOFTWARE\\JavaSoft\\Java Development Kit\\1.5.0_11"
+            "RegKey" = "8:SOFTWARE\\JavaSoft\\Java Development Kit\\1.5.0_12"
             "Value" = "8:JavaHome"
             "Property" = "8:JAVAHOME"
             }
