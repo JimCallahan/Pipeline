@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.58 2007/06/26 19:24:12 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.59 2007/06/29 04:35:25 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -818,7 +818,7 @@ class GenUserPrefsApp
 	
 	new BoundedDoublePref
 	("The thickness of link lines.", 
-	 "LinkThickness", "Line Thickness:", 0.25, 3.0, 1.0),
+	 "LinkThickness", "Line Thickness:", 0.5, 4.0, 2.0),
 
 	new BasePref(),
 
@@ -2511,7 +2511,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.58 2007/06/26 19:24:12 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.59 2007/06/29 04:35:25 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -2766,7 +2766,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.58 2007/06/26 19:24:12 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.59 2007/06/29 04:35:25 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -4123,7 +4123,7 @@ class GenUserPrefsApp
 
       StringBuilder buf = new StringBuilder();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.58 2007/06/26 19:24:12 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.59 2007/06/29 04:35:25 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 
