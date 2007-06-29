@@ -1,4 +1,4 @@
-// $Id: ViewerLinks.java,v 1.8 2007/06/26 05:18:57 jim Exp $
+// $Id: ViewerLinks.java,v 1.9 2007/06/29 04:35:34 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -385,7 +385,7 @@ class ViewerLinks
                       switch(link.getLink().getPolicy()) {
                       case Association:
                         {
-                          double sx = a.x() - 0.1;
+                          double sx = a.x() - 0.15; 
                           gl.glVertex2d(sx, a.y());
                           gl.glVertex2d(sx, b.y());
                         }
