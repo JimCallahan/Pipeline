@@ -831,173 +831,181 @@ ActionMenuLayout <PluginMenuLayout> #1 {
           Vendor <String> #569 { "Temerity" }
         }
         <PluginMenuLayout> #570 {
-          Title <String> #571 { "Switch" }
-          Name <String> #572 { "Switch" }
+          Title <String> #571 { "Touch" }
+          Name <String> #572 { "Touch" }
           VersionID <VersionID> #573 {
             RevisionNumber <String> #574 { "2.2.1" }
           }
           Vendor <String> #575 { "Temerity" }
         }
         <PluginMenuLayout> #576 {
-          Title <String> #577 { "Touch" }
-          Name <String> #578 { "Touch" }
+          Title <String> #577 { "Copy" }
+          Name <String> #578 { "Copy" }
           VersionID <VersionID> #579 {
-            RevisionNumber <String> #580 { "2.2.1" }
+            RevisionNumber <String> #580 { "2.3.2" }
           }
           Vendor <String> #581 { "Temerity" }
         }
         <PluginMenuLayout> #582 {
-          Title <String> #583 { "ListSources" }
-          Name <String> #584 { "ListSources" }
+          Title <String> #583 { "Switch" }
+          Name <String> #584 { "Switch" }
           VersionID <VersionID> #585 {
             RevisionNumber <String> #586 { "2.2.1" }
           }
           Vendor <String> #587 { "Temerity" }
         }
         <PluginMenuLayout> #588 {
-          Title <String> #589 { "ExtractSeq" }
-          Name <String> #590 { "ExtractSeq" }
+          Title <String> #589 { "ListSources" }
+          Name <String> #590 { "ListSources" }
           VersionID <VersionID> #591 {
             RevisionNumber <String> #592 { "2.2.1" }
           }
           Vendor <String> #593 { "Temerity" }
         }
         <PluginMenuLayout> #594 {
-          Title <String> #595 { "Splice" }
-          Name <String> #596 { "Splice" }
+          Title <String> #595 { "ExtractSeq" }
+          Name <String> #596 { "ExtractSeq" }
           VersionID <VersionID> #597 {
             RevisionNumber <String> #598 { "2.2.1" }
           }
           Vendor <String> #599 { "Temerity" }
         }
         <PluginMenuLayout> #600 {
-          Title <String> #601 { "CatFiles" }
-          Name <String> #602 { "CatFiles" }
+          Title <String> #601 { "Splice" }
+          Name <String> #602 { "Splice" }
           VersionID <VersionID> #603 {
             RevisionNumber <String> #604 { "2.2.1" }
           }
           Vendor <String> #605 { "Temerity" }
         }
+        <PluginMenuLayout> #606 {
+          Title <String> #607 { "CatFiles" }
+          Name <String> #608 { "CatFiles" }
+          VersionID <VersionID> #609 {
+            RevisionNumber <String> #610 { "2.2.1" }
+          }
+          Vendor <String> #611 { "Temerity" }
+        }
       }
     }
-    <PluginMenuLayout> #606 {
-      Title <String> #607 { "Maxwell" }
-      Children <LinkedList> #608 {
-        <PluginMenuLayout> #609 {
-          Title <String> #610 { "MaxwellGlobals" }
-          Name <String> #611 { "MaxwellGlobals" }
-          VersionID <VersionID> #612 {
-            RevisionNumber <String> #613 { "2.0.0" }
-          }
-          Vendor <String> #614 { "Temerity" }
-        }
+    <PluginMenuLayout> #612 {
+      Title <String> #613 { "Maxwell" }
+      Children <LinkedList> #614 {
         <PluginMenuLayout> #615 {
-          Title <String> #616 { "MayaMxsExport" }
-          Name <String> #617 { "MayaMxsExport" }
+          Title <String> #616 { "MaxwellGlobals" }
+          Name <String> #617 { "MaxwellGlobals" }
           VersionID <VersionID> #618 {
             RevisionNumber <String> #619 { "2.0.0" }
           }
           Vendor <String> #620 { "Temerity" }
         }
         <PluginMenuLayout> #621 {
-          Title <String> #622 { "MaxwellRender" }
-          Name <String> #623 { "MaxwellRender" }
+          Title <String> #622 { "MayaMxsExport" }
+          Name <String> #623 { "MayaMxsExport" }
           VersionID <VersionID> #624 {
             RevisionNumber <String> #625 { "2.0.0" }
           }
-          Vendor <REF> #614
+          Vendor <String> #626 { "Temerity" }
         }
-      }
-    }
-    <PluginMenuLayout> #626 {
-      Title <String> #627 { "RealFlow" }
-      Children <LinkedList> #628 {
-        <PluginMenuLayout> #629 {
-          Title <String> #630 { "HfsSdExport" }
-          Name <String> #631 { "HfsSdExport" }
-          VersionID <VersionID> #632 {
-            RevisionNumber <String> #633 { "2.0.0" }
-          }
-          Vendor <String> #634 { "Temerity" }
-        }
-        <PluginMenuLayout> #635 {
-          Title <String> #636 { "MayaSdExport" }
-          Name <String> #637 { "MayaSdExport" }
-          VersionID <VersionID> #638 {
-            RevisionNumber <String> #639 { "2.0.0" }
+        <PluginMenuLayout> #627 {
+          Title <String> #628 { "MaxwellRender" }
+          Name <String> #629 { "MaxwellRender" }
+          VersionID <VersionID> #630 {
+            RevisionNumber <String> #631 { "2.0.0" }
           }
           Vendor <REF> #620
         }
-        <PluginMenuLayout> #640 {
-          Title <String> #641 { "RealFlowSim" }
-          Name <String> #642 { "RealFlowSim" }
-          VersionID <VersionID> #643 {
-            RevisionNumber <String> #644 { "2.0.0" }
+      }
+    }
+    <PluginMenuLayout> #632 {
+      Title <String> #633 { "RealFlow" }
+      Children <LinkedList> #634 {
+        <PluginMenuLayout> #635 {
+          Title <String> #636 { "HfsSdExport" }
+          Name <String> #637 { "HfsSdExport" }
+          VersionID <VersionID> #638 {
+            RevisionNumber <String> #639 { "2.0.0" }
           }
-          Vendor <String> #645 { "Temerity" }
+          Vendor <String> #640 { "Temerity" }
+        }
+        <PluginMenuLayout> #641 {
+          Title <String> #642 { "MayaSdExport" }
+          Name <String> #643 { "MayaSdExport" }
+          VersionID <VersionID> #644 {
+            RevisionNumber <String> #645 { "2.0.0" }
+          }
+          Vendor <REF> #626
+        }
+        <PluginMenuLayout> #646 {
+          Title <String> #647 { "RealFlowSim" }
+          Name <String> #648 { "RealFlowSim" }
+          VersionID <VersionID> #649 {
+            RevisionNumber <String> #650 { "2.0.0" }
+          }
+          Vendor <String> #651 { "Temerity" }
         }
       }
     }
-    <PluginMenuLayout> #646 {
-      Title <String> #647 { "TeX" }
-      Children <LinkedList> #648 {
-        <PluginMenuLayout> #649 {
-          Title <String> #650 { "LyxExport" }
-          Name <String> #651 { "LyxExport" }
-          VersionID <VersionID> #652 {
-            RevisionNumber <String> #653 { "2.0.9" }
+    <PluginMenuLayout> #652 {
+      Title <String> #653 { "TeX" }
+      Children <LinkedList> #654 {
+        <PluginMenuLayout> #655 {
+          Title <String> #656 { "LyxExport" }
+          Name <String> #657 { "LyxExport" }
+          VersionID <VersionID> #658 {
+            RevisionNumber <String> #659 { "2.0.9" }
           }
-          Vendor <String> #654 { "Temerity" }
+          Vendor <String> #660 { "Temerity" }
         }
       }
     }
-    <PluginMenuLayout> #655 {
-      Title <String> #656 { "Java" }
-      Children <LinkedList> #657 {
-        <PluginMenuLayout> #658 {
-          Title <String> #659 { "JavaBuild" }
-          Name <String> #660 { "JavaBuild" }
-          VersionID <VersionID> #661 {
-            RevisionNumber <String> #662 { "2.0.15" }
-          }
-          Vendor <String> #663 { "Temerity" }
-        }
+    <PluginMenuLayout> #661 {
+      Title <String> #662 { "Java" }
+      Children <LinkedList> #663 {
         <PluginMenuLayout> #664 {
-          Title <String> #665 { "JavaUtility" }
-          Name <String> #666 { "JavaUtility" }
+          Title <String> #665 { "JavaBuild" }
+          Name <String> #666 { "JavaBuild" }
           VersionID <VersionID> #667 {
             RevisionNumber <String> #668 { "2.0.15" }
           }
           Vendor <String> #669 { "Temerity" }
         }
+        <PluginMenuLayout> #670 {
+          Title <String> #671 { "JavaUtility" }
+          Name <String> #672 { "JavaUtility" }
+          VersionID <VersionID> #673 {
+            RevisionNumber <String> #674 { "2.0.15" }
+          }
+          Vendor <String> #675 { "Temerity" }
+        }
       }
     }
-    <PluginMenuLayout> #670 {
-      Title <String> #671 { "Syflex" }
-      Children <LinkedList> #672 {
-        <PluginMenuLayout> #673 {
-          Title <String> #674 { "SyflexApplyCache" }
-          Name <String> #675 { "SyflexApplyCache" }
-          VersionID <VersionID> #676 {
-            RevisionNumber <String> #677 { "2.0.9" }
-          }
-          Vendor <String> #678 { "Temerity" }
-        }
+    <PluginMenuLayout> #676 {
+      Title <String> #677 { "Syflex" }
+      Children <LinkedList> #678 {
         <PluginMenuLayout> #679 {
-          Title <String> #680 { "SyflexCache" }
-          Name <String> #681 { "SyflexCache" }
+          Title <String> #680 { "SyflexApplyCache" }
+          Name <String> #681 { "SyflexApplyCache" }
           VersionID <VersionID> #682 {
             RevisionNumber <String> #683 { "2.0.9" }
           }
-          Vendor <REF> #678
+          Vendor <String> #684 { "Temerity" }
         }
-        <PluginMenuLayout> #684 {
-          Title <String> #685 { "SyflexCacheCopy" }
-          Name <String> #686 { "SyflexCacheCopy" }
-          VersionID <VersionID> #687 {
-            RevisionNumber <String> #688 { "2.0.9" }
+        <PluginMenuLayout> #685 {
+          Title <String> #686 { "SyflexCache" }
+          Name <String> #687 { "SyflexCache" }
+          VersionID <VersionID> #688 {
+            RevisionNumber <String> #689 { "2.0.9" }
           }
-          Vendor <REF> #678
+          Vendor <REF> #684
+        }
+        <PluginMenuLayout> #690 {
+          Title <String> #691 { "SyflexCacheCopy" }
+          Name <String> #692 { "SyflexCacheCopy" }
+          VersionID <VersionID> #693 {
+            RevisionNumber <String> #694 { "2.0.9" }
+          }
+          Vendor <REF> #684
         }
       }
     }
