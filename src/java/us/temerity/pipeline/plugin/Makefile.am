@@ -18,11 +18,13 @@ SUBDIRS = \
   AirShadowAction \
   AirShowEditor \
   AirTextureAction \
+  ApproveNodeAnnotation \
   BrickViewerEditor \
   CatFilesAction \
   CatSequenceAction \
   CdRomArchiver \
   CompositeAction \
+  CopyAction \
   CpioFileArchiver \
   CpioTapeArchiver \
   DebugTextureAction \
@@ -37,6 +39,7 @@ SUBDIRS = \
   DsmToTifAction \
   DSViewEditor \
   DviViewerEditor \
+  EditNodeAnnotation \
   EmacsClientEditor \
   EmacsEditor \
   EnvCrossToSeqAction \
@@ -44,7 +47,9 @@ SUBDIRS = \
   ExpertEditor \
   ExplorerEditor \
   ExtractSeqAction \
+  FBXToCurvesAction \
   FCheckEditor \
+  FocusNodeAnnotation \
   FoxitEditor \
   FrameCyclerEditor \
   GEditEditor \
@@ -84,6 +89,7 @@ SUBDIRS = \
   IllustratorEditor \
   ImfDispEditor \
   ImgCvtAction \
+  IntermediateNodeAnnotation \
   InDesignEditor \
   IVEditor \
   IvViewEditor \
@@ -103,6 +109,7 @@ SUBDIRS = \
   MaxwellRenderAction \
   MayaAddReferenceTool \
   MayaAddRefTool \
+  MayaAnimBuildAction \
   MayaAnimExportAction \
   MayaBuildAction \
   MayaCollateAction \
@@ -157,6 +164,7 @@ SUBDIRS = \
   PREnvCubeAction \
   PREnvMapAction \
   PreviewEditor \
+  ProductNodeAnnotation \
   PRPhotonMapAction \
   PRRenderAction \
   PRShaderAction \
@@ -190,6 +198,7 @@ SUBDIRS = \
   ShaveCacheCopyAction \
   ShoEditor \
   SpliceAction \
+  SubmitNodeAnnotation \
   SwitchAction \
   SyflexApplyCacheAction \
   SyflexCacheAction \

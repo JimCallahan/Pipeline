@@ -1,4 +1,4 @@
-// $Id: MayaMiShaderAction.java,v 1.3 2007/06/28 23:02:20 jesse Exp $
+// $Id: MayaMiShaderAction.java,v 1.4 2007/06/30 07:16:15 jesse Exp $
 
 package us.temerity.pipeline.plugin.MayaMiShaderAction.v2_3_2;
 
@@ -55,17 +55,6 @@ import us.temerity.pipeline.plugin.MayaActionUtils;
  *   <DIV style="margin-left: 40px;">
  *     Whether to fix the texture paths written by Maya so that they will be compatible 
  *     with the MRayRender Action.
- *   </DIV> <BR>
- *   
- *   Disable Lightlinker<BR>
- *   <DIV style="margin-left: 40px;">
- *     Should Maya light-linking information be exported.  If UseMRLightLinking is
- *     enabled, this should be disabled, otherwise unpredictable results may occur.
- *   </DIV> <BR>
- *   
- *   Use MR Lightlinking<BR>
- *   <DIV style="margin-left: 40px;">
- *     Should all maya shaders be converted to using the mental ray light linking conventions.
  *   </DIV> <BR>
  * 
  *   <I>Shader Export</I> <BR>
@@ -126,14 +115,6 @@ import us.temerity.pipeline.plugin.MayaActionUtils;
  *     Post Export MEL <BR>
  *     <DIV style="margin-left: 40px;">
  *       The source node which contains the MEL script to evaluate after exporting ends. <BR>
- *     </DIV>
- *     
- *     Export Mod MEL <BR>
- *     <DIV style="margin-left: 40px;">
- *       A MEL snippet to insert into the process right before exporting happens.
- *       The snippet will have access to the $newMats variable, which is an array of
- *       all the shading groups that are going to be exported.  Modifications made
- *       to this array will change which shaders are exported. <BR>
  *     </DIV> 
  *    </DIV> 
  * </DIV> <P> 
@@ -644,6 +625,7 @@ MayaMiShaderAction
            "      breakConn($sg + \".displacementShader\");\n" + 
            "      breakConn($sg + \".volumeShader\");\n" +
            "      $matName = $sg;\n" +
+           "      $newMats[size($newMats)] = $matName;\n" +
            "    }\n" + 
            "    else {\n" +
            "      if($finalNs != \"\") {\n" +
@@ -669,8 +651,7 @@ MayaMiShaderAction
            "    string $shadeName = $shaderNs + $matBase + \"_\" + $passSuffix;\n" +
            "    print(\"SHADER: \" + $shadeName + \"\\n\");\n\n" + 
 
-           "    setAttr ($matName + \".miExportMrMaterial\") 0;\n" + 
-           "    setAttr ($matName + \".miExportShadingEngine\") 0;\n\n");
+           "    setAttr ($matName + \".miExportMrMaterial\") 0;\n");
         if (useMRLightLinking)
           out.write("    clear($mayaShaderList);\n\n");
       
@@ -679,24 +660,26 @@ MayaMiShaderAction
             ("    if(`objExists $shadeName`) {\n" + 
              "      if (stringArrayCount(`nodeType $shadeName`, $mrNodes)) {\n" + 
              "        connectAttr -f ($shadeName + \".message\")\n" + 
-             "                       ($matName + \".miMaterialShader\");\n" + 
+             "                       ($matName + \".miMaterialShader\");\n" +
+             "        setAttr ($matName + \".miExportShadingEngine\") 0;\n" +  
              "        print(\"connecting shader: \" + $shadeName + \"\\n\");\n");
 	  if (useMRLightLinking)
              out.write
               ("        findMayaShaders($shadeName, $mayaShaderList);\n");
 	  out.write
-            ("      }");
+            ("      }\n");
 	  out.write
 	    ("      else { //This is a Maya Shader\n" + 
 	     "        connectAttr -f ($shadeName + \".message\")\n" + 
-	     "                       ($matName + \".surfaceShader\");\n" + 
+	     "                       ($matName + \".surfaceShader\");\n" +
+	     "        setAttr ($matName + \".miExportShadingEngine\") 1;\n" +
 	     "        print(\"connecting shader: \" + $shadeName + \"\\n\");\n");
 	  if (useMRLightLinking)
             out.write
                ("        findMayaShaders($shadeName, $mayaShaderList);\n" + 
 	        "        $mayaShaderList[size($mayaShaderList)] = ($shadeName + \":shadow\");\n"); 
 	  out.write
-	    ("      }");
+	    ("      }\n");
           out.write
             ("    }\n\n");
 	}
@@ -791,7 +774,7 @@ MayaMiShaderAction
             ("    string $contourName = $shadeName + \"_con\";\n" +
              "    if(`objExists $contourName`) {\n" +
              "      connectAttr -f ($contourName + \".message\")\n" +
-             "                     ($matName + \".miContourShader\");\n");
+             "                     ($matName + \".miContourSaditi.kapoor@gmail.comhader\");\n");
 	  if (useMRLightLinking)
 	    out.write
 	      ("      findMayaShaders($contourName, $mayaShaderList);\n");
@@ -801,21 +784,31 @@ MayaMiShaderAction
 	if (useMRLightLinking)
 	  out.write
 	    ("    if (size($mayaShaderList) > 0) {\n" +
+	     "      print(\"MAYA SHADER LIST:\");\n" +
 	     "      print($mayaShaderList);\n" + 
 	     "      string $obj;\n" + 
 	     "      string $lights[];\n" + 
 	     "      select -r $sg;\n" +
-	     "      print($sg + \"\\n\");\n" +
+	     "      print(\"SHADING GROUP: \" + $sg + \"\\n\");\n" +
 	     "      string $list[] = `ls -sl`;\n" +
+	     "      print(\"LIST:\");\n" +
 	     "      print($list);\n" +
 	     "      for ($obj in $list)\n" + 
-	     "      {\n" + 
-	     "        addToArray(`lightlink -q -o $obj -t true -shp false -sets false`, $lights) ;\n" + 
+	     "      {\n" +
+	     "        print(\"OBJECTS: \" + $obj + \"\\n\");\n" +
+	     "        addToArray(`lightlink -q -o $obj -t true -shp false -sets false`, $lights) ;\n" +
+	     "        print(\"   LIGHTS:\\n\");\n" +
+	     "        print($lights);\n" +
+	     "        print(\"   LIGHTS DONE:\\n\");\n" +
 	     "        string $sets[] = `lightlink -q -o $obj -t false -shp false -sets true` ;\n" + 
 	     "        string $set;\n" + 
 	     "        for ($set in $sets)\n" + 
 	     "        {\n" + 
-	     "          addToArray(`sets -q $set`, $lights);\n" + 
+	     "          print(\"SET: \" + $set + \"\\n\");\n" +
+	     "          addToArray(`sets -q $set`, $lights);\n" +
+	     "          print(\"   LIGHTS:\\n\");\n" +
+	     "          print($lights);\n" +
+	     "          print(\"   LIGHTS DONE:\\n\");\n" +
 	     "        }\n" + 
 	     "      }\n" + 
 	     "      $lights = stringArrayRemoveDuplicates($lights);\n" +
@@ -859,7 +852,9 @@ MayaMiShaderAction
 	
 	out.write
           ("  // EXPORT SELECTION\n" +
-           "  select -r -ne $newMats;\n");
+           "  select -r -ne $newMats;\n" +
+           "  print(\"SELECTED:\" + \"\n\");\n" +
+           "  print($newMats);\n");
 	if (useMRLightLinking)
 	  out.write("  select -add `ls -type \"light\"`;\n" +
 	  	    "  select -add $newMats;\n");
@@ -911,7 +906,8 @@ MayaMiShaderAction
       FileWriter out = new FileWriter(script);
 
       /* include the "launch" method definition */ 
-      out.write(getPythonLaunchHeader()); 
+      out.write(getPythonLaunchHeader());
+      out.write("import re\n");
       
       /* export the MI files from Maya */ 
       out.write(createMayaPythonLauncher(sourceScene, exportMEL) + "\n");
@@ -929,7 +925,9 @@ MayaMiShaderAction
                    "'" + PackageInfo.getTempPath(OsType.Windows) + "']\n" +
          "lightTypes = ['maya_pointlight', 'maya_spotlight', 'maya_ambientlight', " +
                        "'maya_directionallight', 'maya_arealight', 'maya_shapelight', " +
-                       "'maya_volumelight']\n" +
+                       "'maya_volumelight', 'mib_light_spot', 'mib_light_point', " +
+                       "'mib_light_infinite', 'physical_light', 'mib_blackbody', 'mib_cie_d', " +
+                       "'mib_light_photometric']\n" +
          "mayaShaderTypes = ['maya_lambert', 'maya_shadow', 'maya_blinn', " +
                             "'maya_anisotropic', 'maya_fur', 'maya_phong', 'maya_phongE', " +
                             "'maya_rampshader', 'maya_w10fur', 'maya_hairtubeshader', 'maya_oceanshader', " +
@@ -937,13 +935,14 @@ MayaMiShaderAction
                             "'maya_particlecloud', 'maya_surfaceluminance']\n" + 
          "def fixTexturePath(line, target):\n" + 
          "  parts = line.split()\n" + 
-         "  texture = parts[3].strip('\\\"')\n" + 
+         "  length = len(parts)\n" + 
+         "  texture = parts[(length - 1)].strip('\\\"')\n" + 
          "  print ('Texture part: ' + texture) \n" + 
          "  for prefix in prefixes: \n" + 
          "    if texture.startswith(prefix): \n" + 
          "      fixed = texture[len(prefix):len(texture)] \n" + 
          "      print ('Renamed \"' + texture + '\"\\n  To \"' + fixed + '\"')\n" + 
-         "      target.write('color texture ' + parts[2] + ' \"' + fixed + '\"\\n')\n" + 
+         "      target.write(\" \".join(parts[0:(length-1)]) + ' \"' + fixed + '\"\\n')\n" + 
          "      noop = False \n" + 
          "      break \n" + 
          "  if noop: \n" + 
@@ -960,8 +959,9 @@ MayaMiShaderAction
          "def miShader(spath, tpath, ipath):\n" + 
          "  target = open(tpath, 'w')\n" + 
          "  try:\n" + 
-         "    source = open(spath, 'rU')\n" + 
-         "    \n");
+         "    source = open(spath, 'rU')\n" +
+         "    pat = re.compile('.*color texture.*')\n\n");
+      
       if (useMRLightLinking)
 	out.write
         ("    info = open(ipath, 'rU')\n" + 
@@ -985,7 +985,7 @@ MayaMiShaderAction
          "      for line in source:\n" + 
          "        clean = line.lstrip()\n" + 
          "        if mode == 'normal':\n" + 
-         "          if clean.startswith('color texture'):\n" + 
+         "          if pat.match(line):\n" + 
          "            fixTexturePath(line, target)\n");
       if (useMRLightLinking)
 	out.write

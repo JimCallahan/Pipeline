@@ -1,4 +1,4 @@
-// $Id: MRayInstGroupAction.java,v 1.1 2007/06/28 19:52:05 jesse Exp $
+// $Id: MRayInstGroupAction.java,v 1.2 2007/06/30 07:16:15 jesse Exp $
 
 package us.temerity.pipeline.plugin.MRayInstGroupAction.v2_3_2;
 
@@ -168,7 +168,7 @@ MRayInstGroupAction
   {
     super("MRayInstGroup", new VersionID("2.3.2"), "Temerity",
 	  "Builds MentalRay \"instgroups\" statements for instances in source MI files.");
-
+    
     {
       ActionParam param = 
 	new LinkActionParam
