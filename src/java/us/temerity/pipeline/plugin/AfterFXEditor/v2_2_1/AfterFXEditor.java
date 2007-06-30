@@ -29,10 +29,7 @@ class AfterFXEditor
 	  "AfterFX");
 
     removeSupport(OsType.Unix);
-    //addSupport(OsType.MacOS); 
     addSupport(OsType.Windows); 
-    
-    underDevelopment();
   }
   
   
