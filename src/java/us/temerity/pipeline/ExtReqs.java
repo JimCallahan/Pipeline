@@ -1,4 +1,4 @@
-// $Id: ExtReqs.java,v 1.1 2007/06/22 01:26:09 jim Exp $
+// $Id: ExtReqs.java,v 1.2 2007/06/30 23:14:03 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -37,11 +37,11 @@ class ExtReqs
   public
   ExtReqs
   (
-   boolean needsAnnoations, 
+   boolean needsAnnotations, 
    boolean needsWorkGroups
   ) 
   {
-    pNeedsAnnotation = needsAnnoations;
+    pNeedsAnnotation = needsAnnotations;
     pNeedsWorkGroups = needsWorkGroups;
   }
 
