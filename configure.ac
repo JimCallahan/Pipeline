@@ -1852,6 +1852,7 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/IllustratorEditor/v2_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/IllustratorEditor/v2_0_9/Makefile
   src/java/us/temerity/pipeline/plugin/IllustratorEditor/v2_2_1/Makefile
+  src/java/us/temerity/pipeline/plugin/IllustratorEditor/v2_3_3/Makefile
   src/java/us/temerity/pipeline/plugin/ImfDispEditor/Makefile
   src/java/us/temerity/pipeline/plugin/ImfDispEditor/v1_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/ImfDispEditor/v2_0_0/Makefile
@@ -1865,6 +1866,7 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/InDesignEditor/v2_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/InDesignEditor/v2_0_9/Makefile
   src/java/us/temerity/pipeline/plugin/InDesignEditor/v2_2_1/Makefile
+  src/java/us/temerity/pipeline/plugin/InDesignEditor/v2_3_3/Makefile
   src/java/us/temerity/pipeline/plugin/IntermediateNodeAnnotation/Makefile
   src/java/us/temerity/pipeline/plugin/IntermediateNodeAnnotation/v2_3_2/Makefile
   src/java/us/temerity/pipeline/plugin/IvViewEditor/Makefile
@@ -2119,6 +2121,7 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/PhotoshopEditor/v2_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/PhotoshopEditor/v2_0_9/Makefile
   src/java/us/temerity/pipeline/plugin/PhotoshopEditor/v2_2_1/Makefile
+  src/java/us/temerity/pipeline/plugin/PhotoshopEditor/v2_3_3/Makefile
   src/java/us/temerity/pipeline/plugin/PreviewEditor/Makefile
   src/java/us/temerity/pipeline/plugin/PreviewEditor/v1_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/PreviewEditor/v2_0_0/Makefile
