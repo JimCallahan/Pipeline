@@ -1,4 +1,4 @@
-// $Id: BaseEditor.java,v 1.22 2007/05/21 17:49:44 jim Exp $
+// $Id: BaseEditor.java,v 1.23 2007/06/30 23:14:18 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -144,6 +144,27 @@ class BaseEditor
     if(PackageInfo.sOsType == OsType.Windows) 
       return (pProgram + ".exe");
     return pProgram;
+  }
+
+  /** 
+   * Sets the name of the editor executable. <P> 
+   * 
+   * Can be used to override the editor program from inside the {@link #prep} or 
+   * {@link #launch} methods from an editor subclass to change the behavior of the superclass
+   * versions of these methods.
+   * 
+   * @param program 
+   *   A name of the editor executable.
+   */
+  public void
+  setProgram
+  (
+   String program   
+  ) 
+  {
+    if(program == null)
+      throw new IllegalArgumentException("The program cannot be (null)!");
+    pProgram = program;
   }
 
    
