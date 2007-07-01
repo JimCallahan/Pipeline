@@ -1,4 +1,4 @@
-// $Id: PhotoshopEditor.java,v 1.1 2007/06/30 23:31:37 jim Exp $
+// $Id: PhotoshopEditor.java,v 1.2 2007/07/01 00:04:33 jim Exp $
 
 package us.temerity.pipeline.plugin.PhotoshopEditor.v2_3_3;
 
@@ -37,8 +37,6 @@ class PhotoshopEditor
     removeSupport(OsType.Unix);
     addSupport(OsType.MacOS); 
     addSupport(OsType.Windows); 
-
-    underDevelopment();
   }
 
 
