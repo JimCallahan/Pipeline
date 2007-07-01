@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.54 2007/06/21 16:40:50 jim Exp $
+// $Id: NodeMod.java,v 1.55 2007/07/01 01:40:05 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -1238,8 +1238,28 @@ class NodeMod
       throw new IllegalArgumentException
 	("Frozen working versions cannot be modified!");
 
+    boolean critical = false;
+    {
+      LinkMod olink = pSources.get(link.getName()); 
+      if(olink != null) {  
+        switch(olink.getPolicy()) {
+        case Reference:
+        case Dependency:
+          critical = true;
+        }
+      }
+
+      switch(link.getPolicy()) {
+      case Reference:
+      case Dependency:
+        critical = true;
+      }
+    }
+       
     pSources.put(link.getName(), new LinkMod(link));
-    updateLastCriticalMod();
+
+    if(critical)
+      updateLastCriticalMod();
   }
 
   /** 
@@ -1269,8 +1289,18 @@ class NodeMod
       throw new PipelineException
 	("No connection to an upstream node named (" + name + ") exists for the working " +
 	 "version (" + pName + ")!");
-
-    pSources.remove(name);
+    
+    boolean critical = false;
+    {
+      LinkMod link = pSources.remove(name);
+      if(link != null) {  
+        switch(link.getPolicy()) {
+        case Reference:
+        case Dependency:
+          critical = true;
+        }
+      }
+    }
 
     if(pAction != null) {
       pAction.clearLinkParams(name);
@@ -1278,7 +1308,8 @@ class NodeMod
       pAction.removeSecondarySourceParams(name);
     }
 
-    updateLastCriticalMod();
+    if(critical)
+      updateLastCriticalMod();
   }
   
   /** 
@@ -1295,6 +1326,15 @@ class NodeMod
       throw new IllegalArgumentException
 	("Frozen working versions cannot be modified!");
 
+    boolean critical = false;
+    for(LinkMod link : pSources.values()) { 
+      switch(link.getPolicy()) {
+      case Reference:
+      case Dependency:
+        critical = true;
+      }
+    }
+    
     pSources.clear();
 
     if(pAction != null) {
@@ -1302,7 +1342,8 @@ class NodeMod
       pAction.removeAllSourceParams(); 
     }
 
-    updateLastCriticalMod();
+    if(critical)
+      updateLastCriticalMod();
   }
 
 
