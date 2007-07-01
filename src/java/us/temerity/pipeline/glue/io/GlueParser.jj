@@ -1,5 +1,8 @@
 options {
   STATIC = false;
+  DEBUG_TOKEN_MANAGER = false; 
+  DEBUG_LOOKAHEAD = false;
+  DEBUG_PARSER = false; 
 }
 
 PARSER_BEGIN(GlueParser)
@@ -72,9 +75,9 @@ GlueParser
    Class vcls
   ) 
   {
-    return new ParseException(
-      "Type mismatch, value of type (" + vcls.getName() + ") cannot be assigned" +
-      " to objects of type (" + cls.getName() + ")!");
+    return new ParseException
+      ("Type mismatch, value of type (" + vcls.getName() + ") cannot be assigned" +
+       " to objects of type (" + cls.getName() + ")!");
   }
 
  
@@ -137,7 +140,6 @@ TOKEN :
 | <REAL_LITERAL:        (["-","+"])? (["0"-"9"])+ "." (["0"-"9"])+ (<EXPONENT>)?>
 
 | <EMPTY_STRING:        "\"\""> 
-| <OPEN_QUOTE:          "\""> : STRING_STATE
 | <COLON:               ":"> 
 
 /* primitive types */ 
@@ -172,13 +174,24 @@ TOKEN :
 | <WS:                  ([" ","\t","\n","\r","\f"])+>
 }
 
+<DEFAULT> 
+MORE :
+{       
+  <"\""> : STRING_STATE
+}
+
 
 /* string literals */ 
 <STRING_STATE>
 TOKEN :
 {
-  <STRING_LITERAL:      ((~["\""]) | "\\\"" )+>
-| <CLOSE_QUOTE:         "\""> : DEFAULT
+  <STRING_LITERAL: "\""> : DEFAULT
+}
+
+<STRING_STATE>
+MORE :
+{
+  <(~["\""]) | ("\\\"") | ["\u0000"-"\uFFFF"]> 
 }
 
 
@@ -746,13 +759,13 @@ StringLiteral() :
   Token t;
 }
 {
-  <OPEN_QUOTE> t=<STRING_LITERAL> <CLOSE_QUOTE>
+  t=<STRING_LITERAL>
   {
     char cs[] = t.image.toCharArray();
 
     StringBuffer buf = new StringBuffer();
     int wk;
-    for(wk=0; wk<cs.length; wk++) {
+    for(wk=1; wk<cs.length-1; wk++) {
       if((cs[wk] != '\\') || ((wk+1) > cs.length) || (cs[wk+1] != '"'))
 	buf.append(cs[wk]);
     }
