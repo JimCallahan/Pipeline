@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.209 2007/06/26 18:22:50 jim Exp $
+// $Id: MasterMgr.java,v 1.210 2007/07/01 02:10:42 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -15488,8 +15488,13 @@ class MasterMgr
         default:
           for(LinkMod link : work.getSources()) {
             LinkVersion blink = base.getSource(link.getName());
-            if((blink == null) || !link.equals(blink)) 
-              status.addStaleLink(link.getName());
+            if((blink == null) || !link.equals(blink)) {
+              switch(link.getPolicy()) {
+              case Reference:
+              case Dependency:
+                status.addStaleLink(link.getName());
+              }
+            }
           }
         }
 
@@ -15642,14 +15647,22 @@ class MasterMgr
    NodeStatus status
   )
   {
+    String name = status.getName();
+
     boolean nonStale = false;
     for(NodeStatus tstatus : status.getTargets()) {
-      if(!tstatus.isStaleLink(status.getName())) {
+      if(!tstatus.isStaleLink(name)) {
 	NodeDetails tdetails = tstatus.getDetails();
 	if(tdetails != null) {
 	  NodeMod tmod = tdetails.getWorkingVersion(); 
-	  if(tmod != null) 
-	    nonStale = true;
+	  if(tmod != null) {
+            LinkMod link = tmod.getSource(name);
+            switch(link.getPolicy()) {
+            case Reference:
+            case Dependency:
+              nonStale = true;
+            }
+          }
 	}
       }
 
