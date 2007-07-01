@@ -1,4 +1,4 @@
-// $Id: PanelUpdater.java,v 1.20 2007/06/15 00:27:31 jim Exp $
+// $Id: PanelUpdater.java,v 1.21 2007/07/01 02:59:35 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -310,10 +310,6 @@ class PanelUpdater
     }
 
     if(pNodeViewerPanel != null) {
-      UserPrefs prefs = UserPrefs.getInstance();
-      if(prefs.getHeavyweightUpdates()) 
-        pLightweightNodeStatus = false;
-
       if(pNodeViewerBranchRoots == null) 
         pNodeViewerBranchRoots = new TreeSet<String>();
 
@@ -391,6 +387,10 @@ class PanelUpdater
     if(pIsRestoring) 
       return;
 
+    UserPrefs prefs = UserPrefs.getInstance();
+    if(prefs.getHeavyweightUpdates()) 
+      pLightweightNodeStatus = false;
+      
     boolean success = true;
     UIMaster master = UIMaster.getInstance();
     if(master.beginPanelOp(pGroupID)) {
