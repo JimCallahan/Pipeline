@@ -127,7 +127,9 @@ Privileges<br>
           </a></li>
         <li style="font-weight: bold;"><a href="#admin_--backup">--backup</a><span
  style="font-weight: normal;">=</span><span
- style="font-style: italic; font-weight: normal;">dir</span></li>
+ style="font-style: italic; font-weight: normal;">dir </span><span
+ style="font-weight: normal;">[<a href="#--dry-run"><span
+ style="font-weight: bold;">--dry-run</span></a>] </span></li>
       </ul>
       <ul>
         <li style="font-weight: bold;"><a href="#admin_--archive">--archive</a><span
@@ -162,8 +164,9 @@ Privileges<br>
  style="font-style: italic;">value</span> ...] [<span
  style="font-weight: bold;">--auto-start</span>] [<span
  style="font-weight: bold;">--toolset</span>=<span
- style="font-style: italic;">toolset-name</span>]<br>
-          </span></li>
+ style="font-style: italic;">toolset-name</span>] </span><span
+ style="font-weight: normal;">[<a href="#--dry-run"><span
+ style="font-weight: bold;">--dry-run</span></a>] </span></li>
         <li style="font-weight: bold;"><span
  style="font-weight: normal;"><a style="color: rgb(0, 0, 0);"
  href="#admin_--offline"><span style="font-weight: bold;">--offline</span></a>
@@ -177,7 +180,9 @@ Privileges<br>
  style="font-weight: bold;">--exclude-latest</span>=<span
  style="font-style: italic;">integer</span>] [<span
  style="font-weight: bold;">--min-archives</span>=<span
- style="font-style: italic;">integer</span>]</span></li>
+ style="font-style: italic;">integer</span>] </span><span
+ style="font-weight: normal;">[<a href="#--dry-run"><span
+ style="font-weight: bold;">--dry-run</span></a>] </span></li>
         <li style="font-weight: bold;"><span
  style="font-weight: normal;"><a style="color: rgb(0, 0, 0);"
  href="#admin_--restore"><span style="font-weight: bold;">--restore</span></a>=<span
@@ -189,9 +194,11 @@ Privileges<br>
  style="font-weight: normal;">[<span style="font-weight: bold;">--toolset</span>=<span
  style="font-style: italic;">toolset-name</span>] </span><span
  style="font-weight: normal;">[<span style="font-weight: bold;">--vsn</span>=<span
- style="font-style: italic;">node-name</span>[:</span><span
+ style="font-style: italic;">node-name</span>:</span><span
  style="font-weight: normal;"><span style="font-style: italic;">major.minor.micro</span>]<span
- style="font-style: italic;"> ...</span>]</span></li>
+ style="font-style: italic;"> ...</span>] </span><span
+ style="font-weight: normal;">[<a href="#--dry-run"><span
+ style="font-weight: bold;">--dry-run</span></a>] </span></li>
       </ul>
       <li style="font-weight: bold;">runtime</li>
       <ul>
@@ -1486,6 +1493,18 @@ immediately and all subsequent commands will be ignored.<br>
 </div>
 <h3><a name="Shared_Options"></a>Shared Options</h3>
 <blockquote>
+  <h4>Administrative Options<br>
+  </h4>
+  <h4><span style="font-weight: normal;"><span
+ style="font-weight: bold;"><a name="--dry-run"></a>--dry-run</span></span></h4>
+  <div style="margin-left: 40px;">Used by several of the admin family
+of commands to gather more information about the impact of an
+administrative operation without actually performing that
+operation.&nbsp; This is useful for testing the impact of an expensive
+or potentially destructive administration operation before deciding
+whether it should be performed.<br>
+  </div>
+  <br>
   <h4>Working Area View Options<br>
   </h4>
 Many commands which operate on the working versions of nodes and their
@@ -2227,8 +2246,13 @@ daemon is not affected by this command.&nbsp; <br>
 </div>
 <div style="margin-left: 40px;"><span style="font-weight: bold;"><a
  name="admin_--backup"></a>admin --backup</span>=<span
- style="font-style: italic;">dir<br>
-<br>
+ style="font-style: italic;">dir </span><span
+ style="font-weight: normal;">[<span style="font-weight: bold;"></span></span><span
+ style="font-weight: normal;"></span><a href="#--dry-run"><span
+ style="font-weight: bold;">--dry-run</span></a><span
+ style="font-weight: normal;"><span style="font-weight: bold;"></span>]
+</span><br>
+<span style="font-style: italic;"><br>
 </span>
 <div style="margin-left: 40px;">Creates a tarball in the given
 directory (dir) which contains a backup of the current state of the
@@ -2272,6 +2296,8 @@ printed when the backup is complete.<br>
 &nbsp; </span>[<span style="font-weight: bold;">--auto-start</span>]</span><span
  style="font-weight: normal;"> [<span style="font-weight: bold;">--toolset</span>=<span
  style="font-style: italic;">toolset-name</span>]</span><span
+ style="font-weight: normal;"> [<a href="#--dry-run"><span
+ style="font-weight: bold;">--dry-run</span></a>] </span><span
  style="font-weight: normal;"></span><span style="font-weight: normal;"><span
  style="font-weight: bold;">
 </span></span>
@@ -2393,7 +2419,9 @@ If the <span style="font-weight: bold;">--toolset </span>option is
 specified, the archiver plugin will be run under that toolset
 environment.&nbsp; Otherwise, the archiver plugin will be run under the
 default toolset environment.<br>
-</span><span style="font-weight: normal;"></span></div>
+</span><span style="font-weight: normal;"><span
+ style="font-weight: bold;"></span></span><br>
+<span style="font-weight: normal;"></span></div>
 <span style="font-weight: normal;"><br>
 </span></div>
 <div style="margin-left: 40px;"><span style="font-weight: bold;"><a
@@ -2409,8 +2437,9 @@ default toolset environment.<br>
  style="font-weight: bold;">--exclude-latest</span>=<span
  style="font-style: italic;">integer</span>] [<span
  style="font-weight: bold;">--min-archives</span>=<span
- style="font-style: italic;">integer</span>]<br>
-</span>
+ style="font-style: italic;">integer</span>] </span><span
+ style="font-weight: normal;">[<a href="#--dry-run"><span
+ style="font-weight: bold;">--dry-run</span></a>] </span>
 <div style="margin-left: 40px;"><br>
 <span style="font-style: italic;"></span>Removes the repository files
 associated with the given checked-in versions which match the given
@@ -2469,11 +2498,12 @@ volumes.&nbsp; By default, the minimum number of archives is (2).<br>
  style="font-weight: normal;">[<span style="font-weight: bold;">--toolset</span>=<span
  style="font-style: italic;">toolset-name</span>]</span><span
  style="font-weight: normal;"><br>
-&nbsp; [<span style="font-weight: bold;">--node</span>=<span
+&nbsp; [<span style="font-weight: bold;">--vsn</span>=<span
  style="font-style: italic;">node-name</span></span><span
- style="font-weight: normal;">[:<span style="font-style: italic;">major.minor.micro</span>]<span
- style="font-style: italic;"> ...</span>]<br>
-</span>
+ style="font-weight: normal;">:<span style="font-style: italic;">major.minor.micro</span>]<span
+ style="font-style: italic;"> ...</span>] </span><span
+ style="font-weight: normal;">[<a href="#--dry-run"><span
+ style="font-weight: bold;">--dry-run</span></a>] </span>
 <div style="margin-left: 40px;"><br>
 <span style="font-style: italic;"></span>Restores the files associated
 with offline checked-in versions from the given archive volume (<span
@@ -2499,19 +2529,15 @@ restore operation.<br>
 </div>
 <div style="margin-left: 80px;"><span style="font-weight: normal;"><span
  style="font-weight: bold;"><br>
---node</span>=<span style="font-style: italic;">node-name</span></span><span
- style="font-weight: normal;">[:<span style="font-style: italic;">major.minor.micro</span>]<span
+--vsn</span>=<span style="font-style: italic;">node-name</span></span><span
+ style="font-weight: normal;">:<span style="font-style: italic;">major.minor.micro</span><span
  style="font-style: italic;"><br>
 </span></span>
 <div style="margin-left: 40px;"><br>
 Specifies the fully resolved names (<span style="font-style: italic;">node-name</span>)
 and revision numbers (<span style="font-weight: normal;"><span
  style="font-style: italic;">major.minor.micro</span>) of the offline
-checked-in versions to restore.&nbsp; If the revision number is
-omitted, all versions of the node contained in the archive volume will
-be restored.&nbsp; If no <span style="font-weight: bold;">--node</span>
-options are specified, the entire contents of the archive volume will
-be restored.<br>
+checked-in versions to restore from the archive.&nbsp; <br>
 <br>
 </span></div>
 </div>
@@ -2521,6 +2547,7 @@ the <span style="font-weight: bold;">--toolset </span>option
 is specified, the archiver plugin will be run under that toolset
 environment.&nbsp; Otherwise, the archiver plugin will be run under the
 original toolset environment used to create the archive volume.<br>
+<br>
 <br>
 </span></div>
 <span style="font-weight: bold;"><a name="runtime_--set_master"></a>runtime

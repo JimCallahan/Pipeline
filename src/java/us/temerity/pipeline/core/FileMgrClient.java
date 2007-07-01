@@ -1,4 +1,4 @@
-// $Id: FileMgrClient.java,v 1.38 2007/03/28 19:51:04 jim Exp $
+// $Id: FileMgrClient.java,v 1.39 2007/07/01 23:54:23 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -385,6 +385,11 @@ interface FileMgrClient
    * @param env
    *   The cooked toolset environment.
    * 
+   * @param dryRunResults
+   *   If not <CODE>null</CODE>, the operation will not be performed but the given buffer
+   *   will be filled with a message detailing the steps that would have been performed
+   *   during an actual execution.
+   * 
    * @return
    *   The STDOUT output of the archiver process.
    */ 
@@ -394,9 +399,11 @@ interface FileMgrClient
    String name, 
    TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs, 
    BaseArchiver archiver,
-   Map<String,String> env
+   Map<String,String> env, 
+   StringBuilder dryRunResults
   ) 
     throws PipelineException;
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -432,13 +439,19 @@ interface FileMgrClient
    * @param symlinks
    *   The revision numbers of the symlinks from later versions which target files being 
    *   offlined, indexed by the names of the to be offlined files.
+   * 
+   * @param dryRunResults
+   *   If not <CODE>null</CODE>, the operation will not be performed but the given buffer
+   *   will be filled with a message detailing the steps that would have been performed
+   *   during an actual execution.
    */  
   public void 
   offline
   (
    String name, 
    VersionID vid, 
-   TreeMap<File,TreeSet<VersionID>> symlinks
+   TreeMap<File,TreeSet<VersionID>> symlinks, 
+   StringBuilder dryRunResults
   ) 
     throws PipelineException;
 
@@ -476,6 +489,11 @@ interface FileMgrClient
    * @param size
    *   The required temporary disk space needed for the restore operation.
    * 
+   * @param dryRunResults
+   *   If not <CODE>null</CODE>, the operation will not be performed but the given buffer
+   *   will be filled with a message detailing the steps that would have been performed
+   *   during an actual execution.
+   * 
    * @return
    *   The STDOUT output of the archiver process.
    */ 
@@ -487,7 +505,8 @@ interface FileMgrClient
    TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs, 
    BaseArchiver archiver, 
    Map<String,String> env, 
-   long size
+   long size, 
+   StringBuilder dryRunResults
   ) 
     throws PipelineException;
 

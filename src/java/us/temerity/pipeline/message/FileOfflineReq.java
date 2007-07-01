@@ -1,4 +1,4 @@
-// $Id: FileOfflineReq.java,v 1.2 2005/03/14 16:08:21 jim Exp $
+// $Id: FileOfflineReq.java,v 1.3 2007/07/01 23:54:23 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -35,13 +35,18 @@ class FileOfflineReq
    * @param symlinks
    *   The revision numbers of the symlinks from later versions which target files being 
    *   offlined, indexed by the names of the to be offlined files.
+   * 
+   * @param dryrun
+   *   Whether to show what files would have been offlined without actually performing
+   *   the offline operation. 
    */
   public
   FileOfflineReq
   (
    String name, 
    VersionID vid,
-   TreeMap<File,TreeSet<VersionID>> symlinks
+   TreeMap<File,TreeSet<VersionID>> symlinks, 
+   boolean dryrun
   )
   { 
     if(name == null) 
@@ -55,6 +60,8 @@ class FileOfflineReq
     if(symlinks == null)
       throw new IllegalArgumentException("The sylminks cannot be (null)!");
     pSymlinks = symlinks;
+
+    pDryRun = dryrun; 
   }
 
 
@@ -90,6 +97,17 @@ class FileOfflineReq
   {
     return pSymlinks; 
   }
+
+  /**
+   * Whether to show what files would have been offlined without actually performing
+   * the offline operation. 
+   */ 
+  public boolean
+  isDryRun() 
+  {
+    return pDryRun;
+  }
+
     
 
 
@@ -120,6 +138,12 @@ class FileOfflineReq
    * offlined, indexed by the names of the to be offlined files.
    */
   private TreeMap<File,TreeSet<VersionID>>  pSymlinks; 
+
+  /**
+   * Whether to show what files would have been offlined without actually performing
+   * the offline operation. 
+   */ 
+  private boolean  pDryRun; 
 
 }
   

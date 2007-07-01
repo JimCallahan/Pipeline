@@ -1,4 +1,4 @@
-// $Id: BaseSubProcess.java,v 1.23 2007/03/18 02:17:16 jim Exp $
+// $Id: BaseSubProcess.java,v 1.24 2007/07/01 23:54:23 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -648,7 +648,59 @@ class BaseSubProcess
    
     return (buf.toString());
   }
+
   
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   D E B U G G I N G                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Generate a message detailing the exact command, working directory and environment which
+   * would be used if the subprocess was executed. 
+   */ 
+  public String
+  getDryRunInfo() 
+  {
+    return getDryRunInfo(true, true);
+  }
+
+  /**
+   * Generate a message detailing the exact command, working directory and environment which
+   * would be used if the subprocess was executed. 
+   * 
+   * @param showWorkingDir
+   *   Whether to add working directory information to the returned message.
+   * 
+   * @param showEnvironment
+   *   Whether to add full environmental variable information to the returned message.
+   */ 
+  public String
+  getDryRunInfo
+  (
+   boolean showWorkingDir, 
+   boolean showEnvironment
+  ) 
+  {
+    StringBuilder buf = new StringBuilder();
+    
+    buf.append(getName() + " [command]: \"" + getCommand() + "\""); 
+
+    if(showWorkingDir) 
+      buf.append("\n" + getName() + " [working directory]: " + getWorkingDir()); 
+    
+    if(showEnvironment) {
+      buf.append("\n" + getName() + " [environment]:\n");
+
+      String[] env = getEnvironment();
+      int wk;
+      for(wk=0; wk<env.length; wk++) 
+        buf.append("\n  " + env[wk]);
+    }
+
+    return buf.toString();
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/

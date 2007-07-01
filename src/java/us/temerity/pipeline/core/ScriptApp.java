@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.77 2007/06/21 16:40:50 jim Exp $
+// $Id: ScriptApp.java,v 1.78 2007/07/01 23:54:23 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -150,14 +150,14 @@ class ScriptApp
        "  Administration\n" +
        "    admin\n" + 
        "      --shutdown [--shutdown-jobmgrs] [--shutdown-pluginmgr]\n" + 
-       "      --backup=dir\n" +
+       "      --backup=dir [--dry-run]\n" +
        "      --archive=archive-prefix [--pattern='node-regex'] [--max-archives=integer]\n" +
        "        [--min-size=bytes] --archiver=archiver-name[:major.minor.micro]]\n" + 
-       "        [--param=name:value ...] [--auto-start] [--toolset=...]\n" + 
+       "        [--param=name:value ...] [--auto-start] [--toolset=...] [--dry-run]\n" + 
        "      --offline [--pattern='node-regex'] [--exclude-latest=integer]\n" + 
-       "        [--min-archives=integer]\n" + 
+       "        [--min-archives=integer] [--dry-run]\n" + 
        "      --restore=archive-name [--param=name:value ...] [--toolset=...]\n" + 
-       "        [--vsn=node-name:major.minor.micro ...]\n" + 
+       "        --vsn=node-name:major.minor.micro [--vsn=...] [--dry-run]\n" + 
        "    runtime\n" + 
        "      --set-master [--remote-log=logger:level[,logger:level[...]]]\n" + 
        "        [--node-gc-interval=msec] [--min-overhead=min] [--max-overhead=max]\n" + 
@@ -614,6 +614,46 @@ class ScriptApp
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Create a 
+   */ 
+  public void 
+  backupDatabase
+  (
+   File file, 
+   boolean dryrun, 
+   MasterMgrClient client
+  ) 
+    throws PipelineException
+  {
+    StringBuilder dryRunResults = null;
+    if(dryrun) {
+      dryRunResults = new StringBuilder(); 
+      dryRunResults.append
+        (tbar(80) + "\n" + 
+         "Database Backup: " + file + "\n" + 
+         bar(80) + "\n" + 
+         "(dry run...)\n\n");
+    }
+
+    client.backupDatabase(file, dryRunResults);
+
+    if(dryrun) {
+      dryRunResults.append(tbar(80)); 
+      LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       dryRunResults.toString()); 
+    }
+    else {
+      LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "Database Saved: " + file);
+    }
+
+    LogMgr.getInstance().flush();
+  }
+
+
+  /**
    * Create a new archive volume containing the matching checked-in versions.
    */ 
   public void 
@@ -629,6 +669,7 @@ class ScriptApp
    TreeMap params, 
    boolean autoStart, 
    String toolset, 
+   boolean dryrun, 
    MasterMgrClient client
   ) 
     throws PipelineException
@@ -776,16 +817,42 @@ class ScriptApp
       }
     }
 
-    /* create the archive volume */ 
-    {
-      StringBuilder buf = new StringBuilder();
-      buf.append("Archiving Checked-In Versions:\n");
+    StringBuilder dryRunResults = null;
+    if(dryrun) {
+      dryRunResults = new StringBuilder(); 
+      dryRunResults.append
+        (tbar(80) + "\n" + 
+         "Archive Checked-In Versions:\n" + 
+         bar(80) + "\n" + 
+         "(dry run...)\n\n");
+
+      dryRunResults.append
+        ("Version Sizes:\n" + 
+         bar(80));
+
       for(String name : selected.keySet()) {
+        dryRunResults.append("\n  " + name + "\n");
+	for(VersionID vid : selected.get(name)) {
+	  Long size = versionSizes.get(name).get(vid);
+	  dryRunResults.append
+	    ("    v" + pad(vid.toString(), ' ', 8) + "  " + formatLong(size) + "\n");
+	}
+      }
+
+      dryRunResults.append
+        ("\n" + 
+         "Archiver Sub-Process Details:\n" + 
+         bar(80) + "\n");
+    }
+    else {
+      StringBuilder buf = new StringBuilder();
+      buf.append("Archiving Checked-In Versions...");
+      for(String name : selected.keySet()) {
+        buf.append("\n  " + name + "\n");
 	for(VersionID vid : selected.get(name)) {
 	  Long size = versionSizes.get(name).get(vid);
 	  buf.append
-	    ("  " + pad(name, ' ', 75) + "  v" + pad(vid.toString(), ' ', 10) + "  (" + 
-	     formatLong(size) + ")\n");
+	    ("    v" + pad(vid.toString(), ' ', 8) + "  " + formatLong(size) + "\n");
 	}
       }
       
@@ -793,9 +860,18 @@ class ScriptApp
 	(LogMgr.Kind.Ops, LogMgr.Level.Info,
 	 buf.toString());
       LogMgr.getInstance().flush();   
+    }
 
-      String archiveName = client.archive(prefix, selected, archiver, toolset);
+    /* create the archive volume */ 
+    String archiveName = client.archive(prefix, selected, archiver, toolset, dryRunResults);
 
+    if(dryrun) {
+      dryRunResults.append(tbar(80)); 
+      LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       dryRunResults.toString()); 
+    }
+    else {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ops, LogMgr.Level.Info,
 	 "Created Archive Volume: " + archiveName + "  (" + formatLong(total) + ")");
@@ -812,6 +888,7 @@ class ScriptApp
    String pattern, 
    Integer exludeLatest, 
    Integer minArchives, 
+   boolean dryrun, 
    MasterMgrClient client
   ) 
     throws PipelineException
@@ -836,24 +913,59 @@ class ScriptApp
 	vids.add(info.getVersionID());
       }
 
-      StringBuilder buf = new StringBuilder();
-      buf.append("Offlining Checked-In Versions:\n");
-      for(String name : versions.keySet()) {
-	for(VersionID vid : versions.get(name)) 
-	  buf.append("  " + pad(name, ' ', 75) + "  v" + vid.toString() + "\n");
+      StringBuilder dryRunResults = null;
+      if(dryrun) {
+        dryRunResults = new StringBuilder(); 
+        dryRunResults.append
+          (tbar(80) + "\n" + 
+           "Offline Checked-In Versions:\n" + 
+           bar(80) + "\n" + 
+           "(dry run...)\n\n");
+
+        dryRunResults.append
+          ("Versions to Offline:\n" + 
+           bar(80));
+        
+        for(String name : versions.keySet()) {
+          dryRunResults.append("\n  " + name + "\n");
+          for(VersionID vid : versions.get(name)) 
+            dryRunResults.append("    v" + vid.toString() + "\n");
+        }
+
+        dryRunResults.append
+          ("\n" + 
+           "Sub-Process Details:\n" + 
+           bar(80) + "\n");
       }
-      
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Ops, LogMgr.Level.Info,
-	 buf.toString());
-      LogMgr.getInstance().flush();   
+      else {
+        StringBuilder buf = new StringBuilder();
+        buf.append("Offlining Checked-In Versions...");
+        for(String name : versions.keySet()) {
+          buf.append("\n  " + name + "\n");
+          for(VersionID vid : versions.get(name)) 
+            buf.append("    v" + vid.toString() + "\n");
+        }
+        
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Ops, LogMgr.Level.Info,
+           buf.toString());
+        LogMgr.getInstance().flush();   
+      }
 
-      client.offline(versions);
+      client.offline(versions, dryRunResults);
 
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Ops, LogMgr.Level.Info,
-	 "Offline Complete.");
-      LogMgr.getInstance().flush();      
+      if(dryrun) {
+        dryRunResults.append(tbar(80)); 
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Ops, LogMgr.Level.Info,
+           dryRunResults.toString()); 
+      }
+      else {
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Ops, LogMgr.Level.Info,
+           "Offline Complete.");
+        LogMgr.getInstance().flush();      
+      }
     }
   }
 
@@ -867,6 +979,7 @@ class ScriptApp
    TreeMap params,
    TreeMap versions, 
    String toolset, 
+   boolean dryrun, 
    MasterMgrClient client
   ) 
     throws PipelineException
@@ -930,7 +1043,59 @@ class ScriptApp
       archiver.setParamValue(pname, value);
     }
 
-    client.restore(archiveName, aversions, archiver, toolset);
+    StringBuilder dryRunResults = null;
+    if(dryrun) {
+      dryRunResults = new StringBuilder(); 
+      dryRunResults.append
+        (tbar(80) + "\n" + 
+         "Restore Checked-In Versions: " + archiveName + "\n" + 
+         bar(80) + "\n" + 
+         "(dry run...)\n\n");
+
+      dryRunResults.append
+        ("Versions to Restore:\n" + 
+         bar(80));
+        
+      for(String name : aversions.keySet()) {
+        dryRunResults.append("\n  " + name + "\n");
+        for(VersionID vid : aversions.get(name)) 
+          dryRunResults.append("    v" + vid.toString() + "\n");
+      }
+
+      dryRunResults.append
+        ("\n" + 
+         "Sub-Process Details:\n" + 
+         bar(80) + "\n");
+    }
+    else {
+      StringBuilder buf = new StringBuilder();
+      buf.append("Restoring Checked-In Versions...");
+      for(String name : aversions.keySet()) {
+        buf.append("\n  " + name + "\n");
+        for(VersionID vid : aversions.get(name)) 
+          buf.append("    v" + vid.toString() + "\n");
+      }
+      
+      LogMgr.getInstance().log
+        (LogMgr.Kind.Ops, LogMgr.Level.Info,
+         buf.toString());
+      LogMgr.getInstance().flush();  
+    }
+
+    client.restore(archiveName, aversions, archiver, toolset, dryRunResults);
+
+    if(dryrun) {
+      dryRunResults.append(tbar(80)); 
+      LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       dryRunResults.toString()); 
+    }
+    else {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Info,
+	 "Versions Restored."); 
+      LogMgr.getInstance().flush();      
+    }
   }
   
   
@@ -997,9 +1162,9 @@ class ScriptApp
 	   pad("-- Archiver Parameters ", '-', 80));
 	
 	for(String pname : archiver.getLayout()) {
-	  buf.append
-	    ("\n" + 
-	     pad(pname, 18) + ": " + archiver.getParamValue(pname));
+	  buf.append("\n");
+          if(pname != null) 
+            buf.append(pad(pname, 18) + ": " + archiver.getParamValue(pname));
 	}
       }
     }

@@ -1,4 +1,4 @@
-// $Id: MiscOfflineReq.java,v 1.2 2006/01/15 06:29:25 jim Exp $
+// $Id: MiscOfflineReq.java,v 1.3 2007/07/01 23:54:23 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -32,11 +32,16 @@ class MiscOfflineReq
    * 
    * @param versions
    *   The fully resolved names and revision numbers of the checked-in versions to offline.
+   * 
+   * @param dryrun
+   *   Whether to show what files would have been offlined without actually performing
+   *   the offline operation. 
    */
   public
   MiscOfflineReq
   (
-    TreeMap<String,TreeSet<VersionID>> versions
+   TreeMap<String,TreeSet<VersionID>> versions,
+   boolean dryrun
   )
   {
     super();
@@ -45,6 +50,8 @@ class MiscOfflineReq
       throw new IllegalArgumentException
 	("The checked-in versions cannot be (null)!");
     pVersions = versions;
+
+    pDryRun = dryrun; 
   }
 
 
@@ -60,6 +67,16 @@ class MiscOfflineReq
   getVersions()
   {
     return pVersions; 
+  }
+
+  /**
+   * Whether to show what files would have been offlined without actually performing
+   * the offline operation. 
+   */ 
+  public boolean
+  isDryRun() 
+  {
+    return pDryRun;
   }
 
 
@@ -80,6 +97,12 @@ class MiscOfflineReq
    * The fully resolved names and revision numbers of the checked-in versions to offline.
    */ 
   private TreeMap<String,TreeSet<VersionID>>  pVersions; 
+
+  /**
+   * Whether to show what files would have been offlined without actually performing
+   * the offline operation. 
+   */ 
+  private boolean  pDryRun; 
 
 }
   

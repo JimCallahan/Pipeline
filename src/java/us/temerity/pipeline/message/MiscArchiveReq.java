@@ -1,4 +1,4 @@
-// $Id: MiscArchiveReq.java,v 1.5 2006/01/15 06:29:25 jim Exp $
+// $Id: MiscArchiveReq.java,v 1.6 2007/07/01 23:54:23 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -41,6 +41,10 @@ class MiscArchiveReq
    * @param toolset
    *   The name of the toolset environment under which the archiver is executed or
    *   <CODE>null</CODE> to use the default toolset.
+   * 
+   * @param dryrun
+   *   Whether to show what files would have been archived without actually performing
+   *   the archive operation. 
    */
   public
   MiscArchiveReq
@@ -48,7 +52,8 @@ class MiscArchiveReq
    String prefix, 
    TreeMap<String,TreeSet<VersionID>> versions, 
    BaseArchiver archiver, 
-   String toolset
+   String toolset, 
+   boolean dryrun
   )
   {
     super();
@@ -69,6 +74,7 @@ class MiscArchiveReq
     pArchiver = archiver;
 
     pToolset = toolset;
+    pDryRun  = dryrun; 
   }
 
 
@@ -114,7 +120,17 @@ class MiscArchiveReq
     return pToolset;
   }
 
+  /**
+   * Whether to show what files would have been archived without actually performing
+   * the archive operation. 
+   */ 
+  public boolean
+  isDryRun() 
+  {
+    return pDryRun;
+  }
 
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   S E R I A L I Z A B L E                                                              */
@@ -137,6 +153,7 @@ class MiscArchiveReq
     out.writeObject(pVersions);
     out.writeObject(new BaseArchiver(pArchiver));
     out.writeObject(pToolset);
+    out.writeObject(pDryRun);
   }  
 
   /**
@@ -167,6 +184,7 @@ class MiscArchiveReq
     }
 
     pToolset = (String) in.readObject();
+    pDryRun  = (Boolean) in.readObject();
   }
 
 
@@ -203,5 +221,12 @@ class MiscArchiveReq
    * <CODE>null</CODE> to use the default toolset.
    */
   private String  pToolset; 
+
+  /**
+   * Whether to show what files would have been archived without actually performing
+   * the archive operation. 
+   */ 
+  private boolean  pDryRun; 
+
 }
   

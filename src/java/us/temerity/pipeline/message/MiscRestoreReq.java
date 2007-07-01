@@ -1,4 +1,4 @@
-// $Id: MiscRestoreReq.java,v 1.4 2006/01/15 06:29:25 jim Exp $
+// $Id: MiscRestoreReq.java,v 1.5 2007/07/01 23:54:23 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -42,14 +42,19 @@ class MiscRestoreReq
    * @param toolset
    *   The name of the toolset environment under which the archiver is executed
    *   or <CODE>null</CODE> to use the original toolset. 
+   * 
+   * @param dryrun
+   *   Whether to show what files would have been restored without actually performing
+   *   the restore operation. 
    */
   public
   MiscRestoreReq
   (
-    String name,
-    TreeMap<String,TreeSet<VersionID>> versions, 
-    BaseArchiver archiver, 
-    String toolset
+   String name,
+   TreeMap<String,TreeSet<VersionID>> versions, 
+   BaseArchiver archiver, 
+   String toolset, 
+   boolean dryrun
   )
   {
     super();
@@ -66,6 +71,7 @@ class MiscRestoreReq
 
     pArchiver = archiver;
     pToolset  = toolset; 
+    pDryRun   = dryrun; 
   }
 
 
@@ -113,6 +119,16 @@ class MiscRestoreReq
     return pToolset;
   }
 
+  /**
+   * Whether to show what files would have been restored without actually performing
+   * the restore operation. 
+   */ 
+  public boolean
+  isDryRun() 
+  {
+    return pDryRun;
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -139,6 +155,7 @@ class MiscRestoreReq
     else 
       out.writeObject((BaseArchiver) null);
     out.writeObject(pToolset);
+    out.writeObject(pDryRun);
   }  
 
   /**
@@ -174,6 +191,7 @@ class MiscRestoreReq
     }
 
     pToolset = (String) in.readObject();
+    pDryRun  = (Boolean) in.readObject();
   }
 
 
@@ -211,5 +229,12 @@ class MiscRestoreReq
    * or <CODE>null</CODE> to use the original toolset.
    */
   private String  pToolset; 
+
+  /**
+   * Whether to show what files would have been restored without actually performing
+   * the restore operation. 
+   */ 
+  private boolean  pDryRun; 
+
 }
   

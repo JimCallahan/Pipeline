@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.210 2007/07/01 02:10:42 jim Exp $
+// $Id: MasterMgr.java,v 1.211 2007/07/01 23:54:23 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -11972,6 +11972,7 @@ class MasterMgr
   )
   {
     File backupFile = req.getBackupFile();
+    boolean dryrun  = req.isDryRun(); 
 
     TaskTimer timer = new TaskTimer("MasterMgr.backupDatabase: " + backupFile);
 
@@ -12001,8 +12002,13 @@ class MasterMgr
 	ArrayList<String> args = new ArrayList<String>();
 	args.add("-zcvf");
 	args.add(backupFile.toString());
+	args.add("annotations"); 
+	args.add("archives"); 
 	args.add("downstream"); 
 	args.add("etc"); 
+	args.add("events"); 
+	args.add("queue/etc");  
+	args.add("queue/job-servers/hosts"); 
 	args.add("repository"); 
 	args.add("toolsets"); 
 	args.add("working"); 
@@ -12011,18 +12017,27 @@ class MasterMgr
 
 	SubProcessLight proc = 
 	  new SubProcessLight("BackupDatabase", "tar", args, env, pNodeDir);
-	try {
-	  proc.start();
-	  proc.join();
-	  if(!proc.wasSuccessful()) 
-	    throw new PipelineException
-	      ("Unable to backing-up Pipeline database:\n\n" + 
-	       "  " + proc.getStdErr());	
-	}
-	catch(InterruptedException ex) {
-	  throw new PipelineException
-	    ("Interrupted while backing-up Pipeline database!");
-	}
+
+        /* if this is a dry run, just report what would have happened... */ 
+        if(dryrun) {
+          return new DryRunRsp(timer, proc.getDryRunInfo()); 
+        }
+
+        /* backup the database files... */ 
+        else {
+          try {
+            proc.start();
+            proc.join();
+            if(!proc.wasSuccessful()) 
+              throw new PipelineException
+                ("Unable to backing-up Pipeline database:\n\n" + 
+                 "  " + proc.getStdErr());	
+          }
+          catch(InterruptedException ex) {
+            throw new PipelineException
+              ("Interrupted while backing-up Pipeline database!");
+          }
+        }
       }
 
       /* post-op tasks */ 
@@ -12395,6 +12410,7 @@ class MasterMgr
 	/* get the toolset environment */ 
 	String tname = req.getToolset();
 	if(tname == null) {
+          timer.aquire();
 	  synchronized(pDefaultToolsetLock) {
 	    timer.resume();	
 	    
@@ -12435,7 +12451,14 @@ class MasterMgr
 	  {
 	    FileMgrClient fclient = getFileMgrClient();
 	    try {
-	      output = fclient.archive(archiveName, fseqs, archiver, env);
+              StringBuilder dryRunResults = null;
+              if(req.isDryRun()) 
+                dryRunResults = new StringBuilder();
+              
+	      output = fclient.archive(archiveName, fseqs, archiver, env, dryRunResults); 
+
+              if(dryRunResults != null) 
+                return new MiscArchiveRsp(timer, archiveName, dryRunResults.toString()); 
 	    }
 	    finally {
 	      freeFileMgrClient(fclient);
@@ -12495,7 +12518,7 @@ class MasterMgr
 	/* post-op tasks */ 
 	startExtensionTasks(timer, factory);
 
-	return new MiscArchiveRsp(timer, archiveName);
+	return new MiscArchiveRsp(timer, archiveName, null);
       }
       finally {
 	onlineOfflineReadUnlock(onOffLocks);
@@ -12976,6 +12999,10 @@ class MasterMgr
       List<ReentrantReadWriteLock> onOffLocks = onlineOfflineWriteLock(versions.keySet());
       try {
 	timer.resume();	
+        
+        StringBuilder dryRunResults = null;
+        if(req.isDryRun()) 
+          dryRunResults = new StringBuilder();
 
 	/* process each node */ 
 	for(String name : versions.keySet()) {	
@@ -13128,24 +13155,26 @@ class MasterMgr
 		{
 		  FileMgrClient fclient = getFileMgrClient();
 		  try {
-		    fclient.offline(name, vid, symlinks);
+		    fclient.offline(name, vid, symlinks, dryRunResults);
 		  }
 		  finally {
 		    freeFileMgrClient(fclient);
 		  }
 		}
 
-		/* update the currently offlined revision numbers */ 
-		synchronized(pOfflined) {
-		  TreeSet<VersionID> offlined = pOfflined.get(name);
-		  if(offlined == null) {
-		    offlined = new TreeSet<VersionID>();
-		    pOfflined.put(name, offlined);
-		  }
-
-		  offlined.add(vid);
-		}
-	      }
+                if(!req.isDryRun()) {
+                  /* update the currently offlined revision numbers */ 
+                  synchronized(pOfflined) {
+                    TreeSet<VersionID> offlined = pOfflined.get(name);
+                    if(offlined == null) {
+                      offlined = new TreeSet<VersionID>();
+                      pOfflined.put(name, offlined);
+                    }
+                    
+                    offlined.add(vid);
+                  }
+                }
+              }
 	    }
 	  }
 	  finally {
@@ -13156,6 +13185,9 @@ class MasterMgr
 	      workingLock.readLock().unlock();
 	  }
 	}
+        
+        if(dryRunResults != null) 
+          return new DryRunRsp(timer, dryRunResults.toString()); 
 
 	cacheModified = true;
 
@@ -13795,7 +13827,15 @@ class MasterMgr
 	  {
 	    FileMgrClient fclient = getFileMgrClient();
 	    try {
-	      output = fclient.extract(archiveName, stamp, fseqs, archiver, env, total);
+              StringBuilder dryRunResults = null;
+              if(req.isDryRun()) 
+                dryRunResults = new StringBuilder();
+
+	      output = fclient.extract(archiveName, stamp, fseqs, archiver, env, total, 
+                                       dryRunResults);
+
+              if(dryRunResults != null) 
+                return new DryRunRsp(timer, dryRunResults.toString()); 
 	    }
 	    finally {
 	      freeFileMgrClient(fclient);

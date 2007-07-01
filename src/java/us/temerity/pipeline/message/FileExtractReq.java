@@ -1,4 +1,4 @@
-// $Id: FileExtractReq.java,v 1.4 2007/03/28 19:56:42 jim Exp $
+// $Id: FileExtractReq.java,v 1.5 2007/07/01 23:54:23 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -46,6 +46,10 @@ class FileExtractReq
    * 
    * @param size
    *   The required temporary disk space needed for the restore operation.
+   * 
+   * @param dryrun
+   *   Whether to show what files would have been extracted without actually performing
+   *   the extract operation. 
    */
   public
   FileExtractReq
@@ -55,7 +59,8 @@ class FileExtractReq
    TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs, 
    BaseArchiver archiver, 
    Map<String,String> env, 
-   Long size
+   Long size, 
+   boolean dryrun
   )
   {
     if(archiveName == null) 
@@ -81,6 +86,7 @@ class FileExtractReq
     pEnvironment = env;
 
     pSize = size;
+    pDryRun = dryrun; 
   }
 
 
@@ -144,6 +150,16 @@ class FileExtractReq
     return pSize; 
   }
 
+  /**
+   * Whether to show what files would have been extracted without actually performing
+   * the extract operation. 
+   */ 
+  public boolean
+  isDryRun() 
+  {
+    return pDryRun;
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -169,6 +185,7 @@ class FileExtractReq
     out.writeObject(new BaseArchiver(pArchiver));
     out.writeObject(pEnvironment);
     out.writeObject(pSize);
+    out.writeObject(pDryRun);
   }  
 
   /**
@@ -201,6 +218,7 @@ class FileExtractReq
 
     pEnvironment = (Map<String,String>) in.readObject();
     pSize = (Long) in.readObject();
+    pDryRun = (Boolean) in.readObject();
   }
 
 
@@ -246,6 +264,12 @@ class FileExtractReq
    * The archiver plugin instance used to perform the restore operation.
    */ 
   private Long  pSize; 
+
+  /**
+   * Whether to show what files would have been extracted without actually performing
+   * the extract operation. 
+   */ 
+  private boolean  pDryRun; 
 
 }
   

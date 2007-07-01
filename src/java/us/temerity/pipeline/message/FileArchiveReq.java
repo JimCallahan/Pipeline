@@ -1,4 +1,4 @@
-// $Id: FileArchiveReq.java,v 1.3 2005/09/07 21:11:16 jim Exp $
+// $Id: FileArchiveReq.java,v 1.4 2007/07/01 23:54:23 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -39,6 +39,10 @@ class FileArchiveReq
    * 
    * @param env
    *   The cooked toolset environment.
+   * 
+   * @param dryrun
+   *   Whether to show what files would have been archived without actually performing
+   *   the archive operation. 
    */
   public
   FileArchiveReq
@@ -46,7 +50,8 @@ class FileArchiveReq
    String archiveName, 
    TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs, 
    BaseArchiver archiver,
-   Map<String,String> env
+   Map<String,String> env, 
+   boolean dryrun
   )
   {
     if(archiveName == null) 
@@ -68,6 +73,8 @@ class FileArchiveReq
       throw new IllegalArgumentException
 	("The toolset environment cannot be (null)!");
     pEnvironment = env;
+
+    pDryRun = dryrun; 
   }
 
 
@@ -113,6 +120,16 @@ class FileArchiveReq
     return pEnvironment;
   }
 
+  /**
+   * Whether to show what files would have been archived without actually performing
+   * the archive operation. 
+   */ 
+  public boolean
+  isDryRun() 
+  {
+    return pDryRun;
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   S E R I A L I Z A B L E                                                              */
@@ -135,6 +152,7 @@ class FileArchiveReq
     out.writeObject(pFileSeqs);
     out.writeObject(new BaseArchiver(pArchiver));
     out.writeObject(pEnvironment);
+    out.writeObject(pDryRun);
   }  
 
   /**
@@ -165,6 +183,7 @@ class FileArchiveReq
     }
 
     pEnvironment = (Map<String,String>) in.readObject();
+    pDryRun = (Boolean) in.readObject();
   }
 
 
@@ -201,5 +220,12 @@ class FileArchiveReq
    * The environment under which the action is executed.
    */
   private Map<String,String> pEnvironment;
+
+  /**
+   * Whether to show what files would have been archived without actually performing
+   * the archive operation. 
+   */ 
+  private boolean  pDryRun; 
+
 }
   

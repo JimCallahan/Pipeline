@@ -1,4 +1,4 @@
-// $Id: FileMgrNetClient.java,v 1.7 2007/03/28 19:51:04 jim Exp $
+// $Id: FileMgrNetClient.java,v 1.8 2007/07/01 23:54:23 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -537,6 +537,11 @@ class FileMgrNetClient
    * @param env
    *   The cooked toolset environment.
    * 
+   * @param dryRunResults
+   *   If not <CODE>null</CODE>, the operation will not be performed but the given buffer
+   *   will be filled with a message detailing the steps that would have been performed
+   *   during an actual execution.
+   * 
    * @return
    *   The STDOUT output of the archiver process.
    */ 
@@ -546,17 +551,21 @@ class FileMgrNetClient
    String name, 
    TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs, 
    BaseArchiver archiver,
-   Map<String,String> env
+   Map<String,String> env, 
+   StringBuilder dryRunResults
   ) 
     throws PipelineException 
   {
     verifyConnection();
 
-    FileArchiveReq req = new FileArchiveReq(name, fseqs, archiver, env);
+    FileArchiveReq req = 
+      new FileArchiveReq(name, fseqs, archiver, env, dryRunResults != null);
 
     Object obj = performLongTransaction(FileRequest.Archive, req, 15000, 60000);  
     if(obj instanceof FileArchiverRsp) {
       FileArchiverRsp rsp = (FileArchiverRsp) obj;
+      if(dryRunResults != null) 
+        dryRunResults.append(rsp.getMessage());
       return rsp.getOutput();
     }
     else {
@@ -614,22 +623,34 @@ class FileMgrNetClient
    * @param symlinks
    *   The revision numbers of the symlinks from later versions which target files being 
    *   offlined, indexed by the names of the to be offlined files.
+   * 
+   * @param dryRunResults
+   *   If not <CODE>null</CODE>, the operation will not be performed but the given buffer
+   *   will be filled with a message detailing the steps that would have been performed
+   *   during an actual execution.
    */  
   public synchronized void 
   offline
   (
    String name, 
    VersionID vid, 
-   TreeMap<File,TreeSet<VersionID>> symlinks
+   TreeMap<File,TreeSet<VersionID>> symlinks, 
+   StringBuilder dryRunResults
   ) 
     throws PipelineException 
   {
     verifyConnection();
 
-    FileOfflineReq req = new FileOfflineReq(name, vid, symlinks);
+    FileOfflineReq req = new FileOfflineReq(name, vid, symlinks, dryRunResults != null);
 
     Object obj = performLongTransaction(FileRequest.Offline, req, 15000, 60000);  
-    handleSimpleResponse(obj);
+    if(obj instanceof DryRunRsp) {
+      DryRunRsp rsp = (DryRunRsp) obj; 
+      dryRunResults.append(rsp.getMessage());
+    }
+    else if(!(obj instanceof SuccessRsp)) {
+      handleFailure(obj);
+    }
   }
 
   /**
@@ -679,6 +700,11 @@ class FileMgrNetClient
    * @param size
    *   The required temporary disk space needed for the restore operation.
    * 
+   * @param dryRunResults
+   *   If not <CODE>null</CODE>, the operation will not be performed but the given buffer
+   *   will be filled with a message detailing the steps that would have been performed
+   *   during an actual execution.
+   * 
    * @return
    *   The STDOUT output of the archiver process.
    */ 
@@ -690,17 +716,22 @@ class FileMgrNetClient
    TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs, 
    BaseArchiver archiver, 
    Map<String,String> env, 
-   long size
+   long size, 
+   StringBuilder dryRunResults
   ) 
     throws PipelineException 
   {
     verifyConnection();
 
-    FileExtractReq req = new FileExtractReq(archiveName, stamp, fseqs, archiver, env, size);
+    FileExtractReq req = 
+      new FileExtractReq(archiveName, stamp, fseqs, archiver, env, size, 
+                         dryRunResults != null);
 
     Object obj = performLongTransaction(FileRequest.Extract, req, 15000, 60000); 
     if(obj instanceof FileArchiverRsp) {
       FileArchiverRsp rsp = (FileArchiverRsp) obj;
+      if(dryRunResults != null) 
+        dryRunResults.append(rsp.getMessage());
       return rsp.getOutput();
     }
     else {

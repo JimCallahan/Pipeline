@@ -1,4 +1,4 @@
-// $Id: MiscBackupDatabaseReq.java,v 1.2 2006/01/15 06:29:25 jim Exp $
+// $Id: MiscBackupDatabaseReq.java,v 1.3 2007/07/01 23:54:23 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -31,11 +31,16 @@ class MiscBackupDatabaseReq
    * 
    * @param file
    *   The name of the backup file.
+   * 
+   * @param dryrun
+   *   Whether to show what files would have been backed up without actually performing
+   *   the backup. 
    */
   public
   MiscBackupDatabaseReq
   (
-   File file
+   File file, 
+   boolean dryrun
   )
   {
     super();
@@ -43,6 +48,8 @@ class MiscBackupDatabaseReq
     if(file == null) 
       throw new IllegalArgumentException("The backup file cannot be (null)!");
     pBackupFile = file;
+
+    pDryRun = dryrun; 
   }
 
 
@@ -60,6 +67,15 @@ class MiscBackupDatabaseReq
     return pBackupFile;
   }
 
+  /**
+   * Whether to show what files would have been backed up without actually performing
+   * the backup. 
+   */ 
+  public boolean
+  isDryRun() 
+  {
+    return pDryRun;
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -78,6 +94,12 @@ class MiscBackupDatabaseReq
    * The name of the backup file.
    */
   private File  pBackupFile;
+
+  /**
+   * Whether to show what files would have been backed up without actually performing
+   * the backup. 
+   */ 
+  private boolean  pDryRun; 
 
 }
   

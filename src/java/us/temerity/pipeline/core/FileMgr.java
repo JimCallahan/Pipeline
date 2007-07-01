@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.65 2007/06/19 02:35:03 jim Exp $
+// $Id: FileMgr.java,v 1.66 2007/07/01 23:54:23 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2485,6 +2485,7 @@ class FileMgr
     TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs = req.getSequences();
     BaseArchiver archiver = req.getArchiver();
     Map<String,String> env = req.getEnvironment();
+    boolean dryrun = req.isDryRun(); 
 
     TaskTimer timer = new TaskTimer("FileMgr.archive: " + archiveName);
 
@@ -2528,7 +2529,11 @@ class FileMgr
 
       FileCleaner.add(outFile);
       FileCleaner.add(errFile);
-      
+
+      /* if this is a dry run, just report what would have happened... */ 
+      if(dryrun) 
+        return new FileArchiverRsp(timer, null, proc.getDryRunInfo()); 
+
       /* run the archiver */ 
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ops, LogMgr.Level.Finer,
@@ -2620,7 +2625,7 @@ class FileMgr
       catch(IOException ex) {
       }
       
-      return new FileArchiverRsp(timer, output);
+      return new FileArchiverRsp(timer, output, null);
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());
@@ -2709,6 +2714,8 @@ class FileMgr
     String name = req.getName();
     VersionID vid = req.getVersionID();
     TreeMap<File,TreeSet<VersionID>> symlinks = req.getSymlinks();
+    boolean dryrun = req.isDryRun(); 
+
     Map<String,String> env = System.getenv();
 
     TaskTimer timer = new TaskTimer("FileMgr.offline(): " + name + " (" + vid + ")");
@@ -2718,6 +2725,10 @@ class FileMgr
     checkedInLock.writeLock().lock();
     try {
       timer.resume();
+
+      StringBuilder dryRunResults = null;
+      if(dryrun) 
+        dryRunResults = new StringBuilder();
 
       File nodeDir = new File(pProdDir, "repository" + name);
 
@@ -2738,22 +2749,28 @@ class FileMgr
 
 	SubProcessLight proc = 
 	  new SubProcessLight("Offline-SetWritable", "chmod", args, env, nodeDir);
-	try {
-	  proc.start();
-	  proc.join();
-	  if(!proc.wasSuccessful()) 
-	    throw new PipelineException
-	      ("Unable to add write access permission to the directories modified " + 
-	       "by the offline of the checked-in version (" + vid + ") of node " + 
-	       "(" + name + "):\n\n" + 
-	       proc.getStdErr());	
-	}
-	catch(InterruptedException ex) {
-	  throw new PipelineException
-	    ("Interrupted while adding write access permission to the directories " + 
-	     "modified by the offline of the checked-in version (" + vid + ") of node " + 
-	     "(" + name + ")");
-	}
+
+        if(dryrun) {
+          dryRunResults.append(proc.getDryRunInfo(true, false) + "\n\n"); 
+        }
+        else {
+          try {
+            proc.start();
+            proc.join();
+            if(!proc.wasSuccessful()) 
+              throw new PipelineException
+                ("Unable to add write access permission to the directories modified " + 
+                 "by the offline of the checked-in version (" + vid + ") of node " + 
+                 "(" + name + "):\n\n" + 
+                 proc.getStdErr());	
+          }
+          catch(InterruptedException ex) {
+            throw new PipelineException
+              ("Interrupted while adding write access permission to the directories " + 
+               "modified by the offline of the checked-in version (" + vid + ") of node " + 
+               "(" + name + ")");
+          }
+        }
       }
 
       /* remove the symlinks in later versions which reference this version */ 
@@ -2774,14 +2791,19 @@ class FileMgr
 	  
 	  try {
 	    for(SubProcessLight proc : procs) {
-	      proc.start();
-	      proc.join();
-	      if(!proc.wasSuccessful()) 
-		throw new PipelineException
-		  ("Unable to remove the stale symlinks referencing the checked-in " + 
-		   "version (" + vid + ") of node (" + name + ") from the repository:\n\n" +
-		   proc.getStdErr());
-	    }
+              if(dryrun) {
+                dryRunResults.append(proc.getDryRunInfo(true, false) + "\n\n"); 
+              }
+              else {
+                proc.start();
+                proc.join();
+                if(!proc.wasSuccessful()) 
+                  throw new PipelineException
+                    ("Unable to remove the stale symlinks referencing the checked-in " + 
+                     "version (" + vid + ") of node (" + name + ") from the repository:\n\n" +
+                     proc.getStdErr());
+              }
+            }
 	  }
 	  catch(InterruptedException ex) {
 	    throw new PipelineException
@@ -2810,15 +2832,20 @@ class FileMgr
 	    }
 	    else {
 	      File link = new File(nodeDir, lvid + "/" + file);
-	      try {
-		NativeFileSys.symlink(target, link);
-	      }
-	      catch(IOException ex) {
-		throw new PipelineException
-		  ("Unable to redirect the symlink (" + link + ") to target " + 
-		   "(" + target + ") during the offlining of the checked-in version " + 
-		   "(" + vid + ") of node (" + name + ") from the repository!");
-	      }
+              if(dryrun) {
+                dryRunResults.append("Symlink: " + link + " -> " + target + "\n\n"); 
+              }
+              else {
+                try {
+                  NativeFileSys.symlink(target, link);
+                }
+                catch(IOException ex) {
+                  throw new PipelineException
+                    ("Unable to redirect the symlink (" + link + ") to target " + 
+                     "(" + target + ") during the offlining of the checked-in version " + 
+                     "(" + vid + ") of node (" + name + ") from the repository!");
+                }
+              }
 	    }
 	  }	
 	}
@@ -2840,15 +2867,20 @@ class FileMgr
 
 	  try {
 	    for(SubProcessLight proc : procs) {
-	      proc.start();
-	      proc.join();
-	      if(!proc.wasSuccessful()) 
-		throw new PipelineException
-		  ("Unable to move the files associated with the checked-in version " + 
-		   "(" + vid + ") of node (" + name + ") referenced by later version " +
-		   "(" + lvid + ") symlinks:\n\n" + 
-		   proc.getStdErr());	
-	    }
+              if(dryrun) {
+                dryRunResults.append(proc.getDryRunInfo(true, false) + "\n\n"); 
+              }
+              else {
+                proc.start();
+                proc.join();
+                if(!proc.wasSuccessful()) 
+                  throw new PipelineException
+                    ("Unable to move the files associated with the checked-in version " + 
+                     "(" + vid + ") of node (" + name + ") referenced by later version " +
+                     "(" + lvid + ") symlinks:\n\n" + 
+                     proc.getStdErr());	
+              }
+            }
 	  }
 	  catch(InterruptedException ex) {
 	    throw new PipelineException
@@ -2880,14 +2912,19 @@ class FileMgr
 
  	try {
 	  for(SubProcessLight proc : procs) {
-	    proc.start();
-	    proc.join();
-	    if(!proc.wasSuccessful()) 
-	      throw new PipelineException
-		("Unable to remove the files associated with the checked-in version " + 
-		 "(" + vid + ") of node (" + name + ") from the repository:\n\n" +
-		 proc.getStdErr());
-	  }
+            if(dryrun) {
+              dryRunResults.append(proc.getDryRunInfo(true, false) + "\n\n"); 
+            }
+            else {
+              proc.start();
+              proc.join();
+              if(!proc.wasSuccessful()) 
+                throw new PipelineException
+                  ("Unable to remove the files associated with the checked-in version " + 
+                   "(" + vid + ") of node (" + name + ") from the repository:\n\n" +
+                   proc.getStdErr());
+            }
+          }
 	}
  	catch(InterruptedException ex) {
  	  throw new PipelineException
@@ -2905,22 +2942,31 @@ class FileMgr
 
 	SubProcessLight proc = 
 	  new SubProcessLight("Offline-SetReadOnly", "chmod", args, env, nodeDir);
-	try {
-	  proc.start();
-	  proc.join();
-	  if(!proc.wasSuccessful()) 
-	    throw new PipelineException
-	      ("Unable to make the modified directories read-only after the " + 
-	       "offline of the checked-in version (" + vid + ") of node " + 
-	       "(" + name + "):\n\n" + 
-	       proc.getStdErr());	
-	}
-	catch(InterruptedException ex) {
-	  throw new PipelineException
-	    ("Interrupted while making the modified directories read-only after the " + 
-	     "offline of the checked-in version (" + vid + ") of node (" + name + ")!");
-	}
+
+        if(dryrun) {
+          dryRunResults.append(proc.getDryRunInfo(true, false) + "\n\n"); 
+        }
+        else {
+          try {
+            proc.start();
+            proc.join();
+            if(!proc.wasSuccessful()) 
+              throw new PipelineException
+                ("Unable to make the modified directories read-only after the " + 
+                 "offline of the checked-in version (" + vid + ") of node " + 
+                 "(" + name + "):\n\n" + 
+                 proc.getStdErr());	
+          }
+          catch(InterruptedException ex) {
+            throw new PipelineException
+              ("Interrupted while making the modified directories read-only after the " + 
+               "offline of the checked-in version (" + vid + ") of node (" + name + ")!");
+          }
+        }
       }
+
+      if(dryrun) 
+        return new DryRunRsp(timer, dryRunResults.toString());
 
       return new SuccessRsp(timer);
     }
@@ -3023,6 +3069,7 @@ class FileMgr
     BaseArchiver archiver = req.getArchiver();
     Map<String,String> env = req.getEnvironment();    
     TreeMap<String,TreeMap<VersionID,TreeSet<FileSeq>>> fseqs = req.getSequences();
+    boolean dryrun = req.isDryRun(); 
     
     File restoreDir = new File(pProdDir, "restore/" + archiveName + "-" + stamp);
 
@@ -3082,6 +3129,10 @@ class FileMgr
 	FileCleaner.add(outFile);
 	FileCleaner.add(errFile);
 	
+        /* if this is a dry run, just report what would have happened... */ 
+        if(dryrun) 
+          return new FileArchiverRsp(timer, null, proc.getDryRunInfo()); 
+
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Ops, LogMgr.Level.Finer,
 	   "Restoring archive volume (" + archiveName + ") using archiver plugin " + 
@@ -3174,7 +3225,7 @@ class FileMgr
 	}
       }
       
-      return new FileArchiverRsp(timer, output);
+      return new FileArchiverRsp(timer, output, null);
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());

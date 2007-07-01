@@ -137,6 +137,11 @@ ScriptOptsParser
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * admin options. 
+   */ 
+  private boolean  pDryRun; 
+
+  /**
    * user --set options. 
    */ 
   private Boolean  pWorkGroupMembership; 
@@ -455,6 +460,7 @@ TOKEN :
 | <NODE_OPT:           "--node">                : NODE_NAME_SEP
 | <FROM:               "--from">                : DATE_SEP 
 | <UNTIL:              "--until">               : DATE_SEP 
+| <DRY_RUN:            "--dry-run"> 
 
   /* argument end separator */ 
 | <AE2:               (["\0"])+>   
@@ -1864,9 +1870,7 @@ BatchCommand()
    LicenseKeyCmds() | SelectionKeyCmds() | JobServerCmds() | 
    EditorCmds() | ActionCmds() | ComparatorCmds() | ToolCmds() | ArchiverCmds() | 
    SuffixEditorCmds() | ViewCmds() | 
-   WorkingCmds() | CheckedInCmds() | NodeCmds()
-   
-   ) (AE())* <EOF>
+   WorkingCmds() | CheckedInCmds() | NodeCmds()) (AE())* <EOF>
   {}
 }
 
@@ -2798,9 +2802,11 @@ AdminBackup()
   throws PipelineException : 
 {
   Token t;
+
+  pDryRun = false; 
 }
 {
-  <BACKUP> EQ() t=<PATH_ARG> AE()
+  <BACKUP> EQ() t=<PATH_ARG> AE() (AdminBackupOpts())*
   {
     File dir = new File(t.image);
     if(!dir.isDirectory()) 
@@ -2809,12 +2815,26 @@ AdminBackup()
 
     SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd.HHmmss");
     File file = new File(dir, "pipeline-db." + format.format(new Date()) + ".tgz");
-    
-    pMasterMgrClient.backupDatabase(file);
-    LogMgr.getInstance().log
-      (LogMgr.Kind.Ops, LogMgr.Level.Info,
-       "Database Saved: " + file);
-    LogMgr.getInstance().flush();
+
+    pApp.backupDatabase(file, pDryRun, pMasterMgrClient); 
+  }
+}
+
+void 
+AdminBackupOpts() : 
+{}
+{
+  (DryRun())
+  {}
+}
+
+void 
+DryRun() : 
+{}
+{
+  <DRY_RUN> AE()
+  {
+    pDryRun = true; 
   }
 }
 
@@ -2836,6 +2856,7 @@ AdminArchive()
   pParams            = new TreeMap();
   pAutoStart         = false;
   pToolset           = null; 
+  pDryRun            = false; 
 }
 {
   <ARCHIVE> EQ() t=<ARCHIVE_PREFIX> AE() (AdminArchiveOpts())*
@@ -2856,7 +2877,7 @@ AdminArchive()
     
     pApp.archive(prefix, pArchivePattern, pMaxArchives, pMinSize, 
 		 pArchiverName, pArchiverVersionID, pArchiverVendor, pParams, 
-		 pAutoStart, pToolset,
+		 pAutoStart, pToolset, pDryRun, 
 		 pMasterMgrClient);
   }
 }
@@ -2866,7 +2887,8 @@ AdminArchiveOpts()
   throws PipelineException : 
 {}
 {
-  (Pattern() | MaxArchives() | MinSize() | Archiver() | Param() | AutoStart() | Toolset()) 
+  (Pattern() | MaxArchives() | MinSize() | Archiver() | Param() | AutoStart() | 
+   Toolset() | DryRun()) 
   {}
 }
 
@@ -2944,9 +2966,10 @@ void
 AdminOffline() 
   throws PipelineException : 
 {
-  pArchivePattern    = null;
-  pExcludeLatest     = 0; 
-  pMinArchives       = 2; 
+  pArchivePattern = null;
+  pExcludeLatest  = 0; 
+  pMinArchives    = 2; 
+  pDryRun         = false;  
 }
 {
   <OFFLINE> AE() (AdminOfflineOpts())*
@@ -2959,7 +2982,7 @@ AdminOffline()
       throw new PipelineException
         ("The --min-archives cannot be negative!");
 
-    pApp.offline(pArchivePattern, pExcludeLatest, pMinArchives, pMasterMgrClient);
+    pApp.offline(pArchivePattern, pExcludeLatest, pMinArchives, pDryRun, pMasterMgrClient);
   }
 }
 
@@ -2968,7 +2991,7 @@ AdminOfflineOpts()
   throws PipelineException : 
 {}
 {
-  (Pattern() | ExcludeLatest() | MinArchives()) 
+  (Pattern() | ExcludeLatest() | MinArchives() | DryRun()) 
   {}
 }
 
@@ -3010,12 +3033,13 @@ AdminRestore()
   pParams            = new TreeMap();
   pCheckedInVersions = new TreeMap(); 
   pToolset           = null; 
+  pDryRun            = false; 
 }
 {
   <RESTORE> EQ() t=<ARCHIVE_PREFIX> AE() (AdminRestoreOpts())*
   {
     String prefix = t.image;
-    pApp.restore(prefix, pParams, pCheckedInVersions, pToolset, pMasterMgrClient);
+    pApp.restore(prefix, pParams, pCheckedInVersions, pToolset, pDryRun, pMasterMgrClient);
   }
 }
 
@@ -3024,7 +3048,7 @@ AdminRestoreOpts()
   throws PipelineException : 
 {}
 {
-  (Param() | CheckedInVersion() | Toolset()) 
+  (Param() | CheckedInVersion() | Toolset() | DryRun()) 
   {}
 }
 

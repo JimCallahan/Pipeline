@@ -1,4 +1,4 @@
-// $Id: FileArchiverRsp.java,v 1.1 2005/03/21 08:52:08 jim Exp $
+// $Id: FileArchiverRsp.java,v 1.2 2007/07/01 23:54:23 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -18,7 +18,7 @@ import java.util.*;
  */
 public
 class FileArchiverRsp
-  extends TimedRsp
+  extends DryRunRsp
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R S                                                              */
@@ -32,23 +32,22 @@ class FileArchiverRsp
    * 
    * @param output
    *   The STDOUT output of the archiver process or <CODE>null</CODE> if none exists.
+   * 
+   * @param msg
+   *   An optional text message detailing how the operation would have been performed 
+   *   or <CODE>null</CODE> if the operation was performed.
    */
   public
   FileArchiverRsp
   (
    TaskTimer timer, 
-   String output
+   String output, 
+   String msg
   )
   { 
-    super(timer);
+    super(timer, msg);
 
     pOutput = output;
-
-    LogMgr.getInstance().log
-      (LogMgr.Kind.Net, LogMgr.Level.Finest,
-       getTimer().toString()); 
-    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
-      LogMgr.getInstance().flush();
   }
 
 

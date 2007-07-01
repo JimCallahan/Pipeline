@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.104 2007/06/21 16:40:50 jim Exp $
+// $Id: MasterMgrClient.java,v 1.105 2007/07/01 23:54:23 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -6020,17 +6020,66 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {
+    backupDatabase(file, null);
+  }
+
+  /**
+   * Create a database backup file. <P> 
+   * 
+   * The backup will not be perfomed until any currently running database operations have 
+   * completed.  Once the databsae backup has begun, all new database operations will blocked
+   * until the backup is complete.  The this reason, the backup should be performed during 
+   * non-peak hours. <P> 
+   * 
+   * The database backup file will typically be named: <P> 
+   * <DIV style="margin-left: 40px;">
+   *   pipeline-db.<I>YYMMDD</I>.<I>HHMMSS</I>.tgz<P>
+   * </DIV>
+   * 
+   * Where <I>YYMMDD</I>.<I>HHMMSS</I> is the year, month, day, hour, minute and second of 
+   * the backup.  The backup file is a <B>gzip</B>(1) compressed <B>tar</B>(1) archive of
+   * the {@link Glueable GLUE} format files which make of the persistent storage of the
+   * Pipeline database. <P> 
+   * 
+   * Only privileged users may create a database backup. <P> 
+   * 
+   * @param file
+   *   The name of the backup file.
+   * 
+   * @param dryRunResults
+   *   If not <CODE>null</CODE>, the operation will not be performed but the given buffer
+   *   will be filled with a message detailing the steps that would have been performed
+   *   during an actual execution.
+   * 
+   * @throws PipelineException 
+   *   If unable to perform the backup.
+   */ 
+  public synchronized void
+  backupDatabase
+  (
+   File file, 
+   StringBuilder dryRunResults
+  ) 
+    throws PipelineException
+  {
     if(PackageInfo.sOsType != OsType.Unix)
       throw new PipelineException
 	("The backup database operation can only be initiated from a Unix client!");
 
     verifyConnection();
+    
+    MiscBackupDatabaseReq req = new MiscBackupDatabaseReq(file, dryRunResults != null); 
 
-    MiscBackupDatabaseReq req = new MiscBackupDatabaseReq(file);
     Object obj = performLongTransaction(MasterRequest.BackupDatabase, req, 15000, 60000);  
-    handleSimpleResponse(obj);    
+    if(obj instanceof DryRunRsp) {
+      DryRunRsp rsp = (DryRunRsp) obj; 
+      dryRunResults.append(rsp.getMessage());
+    }
+    else if(!(obj instanceof SuccessRsp)) {
+      handleFailure(obj);
+    }
   } 
-
+  
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -6070,7 +6119,7 @@ class MasterMgrClient
     if(obj instanceof MiscArchiveQueryRsp) {
       MiscArchiveQueryRsp rsp = (MiscArchiveQueryRsp) obj;
       return rsp.getInfo();
-    }
+    } 
     else {
       handleFailure(obj);
       return null;
@@ -6146,14 +6195,61 @@ class MasterMgrClient
    BaseArchiver archiver, 
    String toolset
   ) 
+   throws PipelineException
+  {
+    return archive(prefix, versions, archiver, toolset, null); 
+  }
+
+  /**
+   * Archive the files associated with the given checked-in versions. <P> 
+   * 
+   * Only privileged users may create archives. <P> 
+   * 
+   * @param prefix
+   *   A prefix to prepend to the created archive volume name.
+   * 
+   * @param versions
+   *   The fully resolved names and revision numbers of the checked-in versions to archive.
+   * 
+   * @param archiver
+   *   The archiver plugin instance used to perform the archive operation.
+   * 
+   * @param toolset
+   *   The name of the toolset environment under which the archiver is executed or 
+   *   <CODE>null</CODE> to use the default toolset.
+   * 
+   * @param dryRunResults
+   *   If not <CODE>null</CODE>, the operation will not be performed but the given buffer
+   *   will be filled with a message detailing the steps that would have been performed
+   *   during an actual execution.
+   * 
+   * @return 
+   *   The unique name given to the newly created archive. 
+   * 
+   * @throws PipelineException
+   *   If unable to perform the archive operation succesfully.
+   */
+  public synchronized String
+  archive
+  (
+   String prefix, 
+   TreeMap<String,TreeSet<VersionID>> versions, 
+   BaseArchiver archiver, 
+   String toolset, 
+   StringBuilder dryRunResults
+  ) 
     throws PipelineException
   {
     verifyConnection();
 
-    MiscArchiveReq req = new MiscArchiveReq(prefix, versions, archiver, toolset);
+    MiscArchiveReq req = 
+      new MiscArchiveReq(prefix, versions, archiver, toolset, dryRunResults != null); 
+
     Object obj = performLongTransaction(MasterRequest.Archive, req, 15000, 60000);  
     if(obj instanceof MiscArchiveRsp) {
       MiscArchiveRsp rsp = (MiscArchiveRsp) obj;
+      if(dryRunResults != null) 
+        dryRunResults.append(rsp.getMessage());
       return rsp.getName();
     }
     else {
@@ -6300,18 +6396,57 @@ class MasterMgrClient
    * @param versions
    *   The fully resolved names and revision numbers of the checked-in versions to offline.
    */ 
+   public synchronized void
+   offline
+   (
+    TreeMap<String,TreeSet<VersionID>> versions
+   ) 
+     throws PipelineException
+   {
+     offline(versions, null); 
+   }
+
+  /**
+   * Remove the repository files associated with the given checked-in versions. <P> 
+   * 
+   * All checked-in versions to be offlined must have prevously been included in at least
+   * one archive. <P> 
+   * 
+   * The offline operation will not be perfomed until any currently running database 
+   * operations have completed.  Once the offline operation has begun, all new database 
+   * operations will blocked until the offline operation is complete.  The this reason, 
+   * this should be performed during non-peak hours. <P> 
+   * 
+   * Only privileged users may offline checked-in versions. <P> 
+   *
+   * @param versions
+   *   The fully resolved names and revision numbers of the checked-in versions to offline.
+   * 
+   * @param dryRunResults
+   *   If not <CODE>null</CODE>, the operation will not be performed but the given buffer
+   *   will be filled with a message detailing the steps that would have been performed
+   *   during an actual execution.
+   */ 
   public synchronized void
   offline
   (
-   TreeMap<String,TreeSet<VersionID>> versions
+   TreeMap<String,TreeSet<VersionID>> versions, 
+   StringBuilder dryRunResults   
   ) 
     throws PipelineException
   {
     verifyConnection();
 
-    MiscOfflineReq req = new MiscOfflineReq(versions);
+    MiscOfflineReq req = new MiscOfflineReq(versions, dryRunResults != null); 
+
     Object obj = performLongTransaction(MasterRequest.Offline, req, 15000, 60000);
-    handleSimpleResponse(obj);    
+    if(obj instanceof DryRunRsp) {
+      DryRunRsp rsp = (DryRunRsp) obj; 
+      dryRunResults.append(rsp.getMessage());
+    }
+    else if(!(obj instanceof SuccessRsp)) {
+      handleFailure(obj);
+    }
   }
 
 
@@ -6482,21 +6617,75 @@ class MasterMgrClient
    * @throws PipelineException
    *   If unable to restore the checked-in versions.
    */
+   public synchronized void
+   restore
+   (
+    String name, 
+    TreeMap<String,TreeSet<VersionID>> versions, 
+    BaseArchiver archiver, 
+    String toolset
+   ) 
+     throws PipelineException
+   {
+     restore(name, versions, archiver, toolset, null);
+   }
+
+  /**
+   * Restore the given checked-in versions from the given archive volume. <P> 
+   * 
+   * Only privileged users may restore checked-in versions. <P> 
+   * 
+   * If an alternative archiver plugin instance is passed as the <CODE>archiver</CODE>
+   * parameter, it must have exactly the same plugin name and revision number as the
+   * archiver plugin used to create the archive volume.  The archiver plugin parameters
+   * can be different to allow for possible changes in file system or site organization.
+   * 
+   * @param name
+   *   The unique name of the archive containing the checked-in versions to restore.
+   * 
+   * @param versions
+   *   The fully resolved names and revision numbers of the checked-in versions to restore.
+   * 
+   * @param archiver
+   *   The alternative archiver plugin instance used to perform the restore operation
+   *   or <CODE>null</CODE> to use the original archiver.
+   * 
+   * @param toolset
+   *   The name of the toolset environment under which the archiver is executed
+   *   or <CODE>null</CODE> to use the original toolset. 
+   * 
+   * @param dryRunResults
+   *   If not <CODE>null</CODE>, the operation will not be performed but the given buffer
+   *   will be filled with a message detailing the steps that would have been performed
+   *   during an actual execution.
+   * 
+   * @throws PipelineException
+   *   If unable to restore the checked-in versions.
+   */
   public synchronized void
   restore
   (
    String name, 
    TreeMap<String,TreeSet<VersionID>> versions, 
    BaseArchiver archiver, 
-   String toolset
+   String toolset, 
+   StringBuilder dryRunResults
   ) 
     throws PipelineException
   {
     verifyConnection();
 
-    MiscRestoreReq req = new MiscRestoreReq(name, versions, archiver, toolset);
+    MiscRestoreReq req = 
+      new MiscRestoreReq(name, versions, archiver, toolset, dryRunResults != null);
+
     Object obj = performLongTransaction(MasterRequest.Restore, req, 15000, 60000);  
-    handleSimpleResponse(obj);    
+    if(obj instanceof DryRunRsp) {
+      DryRunRsp rsp = (DryRunRsp) obj; 
+      dryRunResults.append(rsp.getMessage());
+    }
+    else if(!(obj instanceof SuccessRsp)) {
+      handleFailure(obj);
+    }
   }
 
 
