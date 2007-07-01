@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.60 2007/07/01 00:04:15 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.61 2007/07/01 10:21:07 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -915,6 +915,10 @@ class GenUserPrefsApp
 	("Whether to fit nodes as closely together as possible.", 
 	 "CompactLayout", "Compact Layout", true), 
 	
+	new BoundedDoublePref
+	("The distance between node trees.", 
+	 "NodeTreeSpace", "Node Tree Space:", 1.0, 3.0, 1.0),
+
 	new BasePref(),
 
 	new BooleanPref
@@ -2511,7 +2515,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.60 2007/07/01 00:04:15 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.61 2007/07/01 10:21:07 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -2766,7 +2770,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.60 2007/07/01 00:04:15 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.61 2007/07/01 10:21:07 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -4123,7 +4127,7 @@ class GenUserPrefsApp
 
       StringBuilder buf = new StringBuilder();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.60 2007/07/01 00:04:15 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.61 2007/07/01 10:21:07 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 

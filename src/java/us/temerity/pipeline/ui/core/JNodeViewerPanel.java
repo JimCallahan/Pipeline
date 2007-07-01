@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.91 2007/06/26 05:18:57 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.92 2007/07/01 10:21:07 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1653,6 +1653,7 @@ class JNodeViewerPanel
           /* shift the upstream and downstream nodes to their final position */ 
           if(pHorizontalOrientation) {
             double span = 0.0;
+            double treeSpace = prefs.getNodeTreeSpace()*prefs.getNodeSpaceX(); 
             if(pShowDownstream && status.hasTargets()) {
               Point2d dleft = new Point2d(dbox.getMin().x(), dpos.y());
               Vector2d delta = new Vector2d(dleft, origin);
@@ -1661,19 +1662,20 @@ class JNodeViewerPanel
               delta.add(new Vector2d(0.0, dpos.y() - upos.y()));
               shiftBranch(true, true, status, path, delta);
               
-              span = dbox.getRange().x() + ubox.getRange().x() + 1.5*prefs.getNodeSpaceX();
+              span = dbox.getRange().x() + ubox.getRange().x() + treeSpace; 
             }
             else {
               Vector2d delta = new Vector2d(upos, origin);
               shiftBranch(true, true, status, path, delta);
 
-              span = ubox.getRange().x() + 1.5*prefs.getNodeSpaceX();
+              span = ubox.getRange().x() + treeSpace; 
             }
 
             origin.add(new Vector2d(span, 0.0));
           }
           else {
             double span = 0.0;
+            double treeSpace = prefs.getNodeTreeSpace()*prefs.getNodeSpaceY(); 
             if(pShowDownstream && status.hasTargets()) {
               double shiftY = upos.y() - dpos.y();
 
@@ -1692,13 +1694,13 @@ class JNodeViewerPanel
               delta.add(new Vector2d(0.0, shiftY));
               shiftBranch(true, false, status, path, delta);
 
-              span = (maxY - minY) + 1.5*prefs.getNodeSpaceY();
+              span = (maxY - minY) + treeSpace;
             }
             else {
               Vector2d delta = new Vector2d(new Point2d(upos.x(), ubox.getMax().y()), origin);
               shiftBranch(true, true, status, path, delta);
               
-              span = ubox.getRange().y() + 1.5*prefs.getNodeSpaceY();
+              span = ubox.getRange().y() + treeSpace;
             }
 
             origin.add(new Vector2d(0.0, -span));
