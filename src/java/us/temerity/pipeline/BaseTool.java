@@ -1,4 +1,4 @@
-// $Id: BaseTool.java,v 1.15 2007/06/26 05:18:33 jim Exp $
+// $Id: BaseTool.java,v 1.16 2007/07/03 01:38:12 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -146,6 +146,8 @@ class BaseTool
    TreeSet<String> roots
   )
   {
+    pAuthor   = author; 
+    pView     = view; 
     pPrimary  = primary;
     pSelected = selected;    
     pRoots    = roots;
