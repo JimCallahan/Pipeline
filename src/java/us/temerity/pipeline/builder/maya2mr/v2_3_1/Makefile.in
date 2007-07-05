@@ -270,7 +270,7 @@ all: Makefile java-all $(TARGET)
 
 $(TARGET): java-all
 	(cd ../../../../../..; \
-         $(JAR) cvf $(BUILDER_PATH)/$@ $(BUILDER_PATH)/*.class)
+         $(JAR) cvf $(BUILDER_PATH)/$@ $(BUILDER_PATH)/*.class $(BUILDER_PATH)/stages/*.class)
 
 java-all: $(JAVA_SOURCES)
 	$(JAVA_C) $(JAVA_C_NODEP_FLAGS) $(JAVA_PATHS) $(JAVA_SOURCES)
@@ -290,7 +290,6 @@ install: all installdirs install-sources install-target
 installdirs:
 	$(mkinstalldirs) $(DESTDIR)$(EXAMPLE_DIR)
 	$(mkinstalldirs) $(DESTDIR)$(EXAMPLE_DIR)/stages
-	$(mkinstalldirs) $(DESTDIR)$(BUILDER_DIR)
 
 install-target: $(TARGET)
 	$(INSTALL) -m 644 $< $(DESTDIR)$(BUILDER_DIR);
