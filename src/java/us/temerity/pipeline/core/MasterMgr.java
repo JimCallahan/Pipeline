@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.211 2007/07/01 23:54:23 jim Exp $
+// $Id: MasterMgr.java,v 1.212 2007/07/06 20:12:33 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -12007,8 +12007,6 @@ class MasterMgr
 	args.add("downstream"); 
 	args.add("etc"); 
 	args.add("events"); 
-	args.add("queue/etc");  
-	args.add("queue/job-servers/hosts"); 
 	args.add("repository"); 
 	args.add("toolsets"); 
 	args.add("working"); 
