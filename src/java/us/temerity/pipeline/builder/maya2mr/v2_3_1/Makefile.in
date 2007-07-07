@@ -290,6 +290,7 @@ install: all installdirs install-sources install-target
 installdirs:
 	$(mkinstalldirs) $(DESTDIR)$(EXAMPLE_DIR)
 	$(mkinstalldirs) $(DESTDIR)$(EXAMPLE_DIR)/stages
+	$(mkinstalldirs) $(DESTDIR)$(BUILDER_DIR)
 
 install-target: $(TARGET)
 	$(INSTALL) -m 644 $< $(DESTDIR)$(BUILDER_DIR);
