@@ -197,6 +197,8 @@ class TaskPolicyExt
     }
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
   
   /**
    * Whether to run a tesk after checking-in an individual node.
@@ -232,22 +234,53 @@ class TaskPolicyExt
         String taskName = lookupTaskName(nodeName, an);
         String taskType = lookupTaskType(nodeName, an);
 
-        /*
-         * Useful things you can use in the sql COMMIT
-         * String author = vsn.getAuthor();
-         * VersionID id = vsn.getVersionID();
-         * String message = vsn.getMessage();
-         * java.sql.Date date = new Date(vsn.getTimeStamp());
-         * 
-         */
+        
+        // Useful things you can use in the sql COMMIT
+        // String author = vsn.getAuthor();
+        // VersionID id = vsn.getVersionID();
+        // String message = vsn.getMessage();
+        // java.sql.Date date = new Date(vsn.getTimeStamp());
+        
         if (annotType.equals("SubmitNode")) {
 
-          /* Tell the sql database that a node has been submitted for approval. */
+          // Tell the sql database that a node has been submitted for approval.
           
           LogMgr.getInstance().log
             (Kind.Ops, Level.Info, 
-             "The " + annotType + " (" + nodeName + ") of task (" + taskName + ":" + 
-             taskType + ") has been checked-in!");
+             "The " + annotType + " (" + nodeName + " v" + vsn.getVersionID() + ") of " + 
+             "task (" + taskName + ":" + taskType + ") has been checked-in.");
+
+          /* find all focus and edit nodes upstream for the task */ 
+          TreeMap<String,NodeVersion> focusNodes = new TreeMap<String,NodeVersion>();
+          TreeMap<String,NodeVersion> editNodes  = new TreeMap<String,NodeVersion>();
+          findFocusEditNodes(nodeName, taskName, taskType, vsn, 
+                             focusNodes, editNodes, mclient);
+
+          /* process focus nodes */ 
+          for(NodeVersion fvsn : focusNodes.values()) {
+
+            // Register the current version of the focus node for this submit check-in.
+
+            LogMgr.getInstance().log
+              (Kind.Ops, Level.Info, 
+               "The FocusNode (" + fvsn.getName() + " v" + fvsn.getVersionID() + ") is " + 
+               "associated with task (" + taskName + ":" + taskType + ") submitted for " + 
+               "approval by checking-in the SubmitNode (" + nodeName + " v" + 
+               vsn.getVersionID() + ").");
+          }
+
+          /* process edit nodes */ 
+          for(NodeVersion evsn : editNodes.values()) {
+
+            // Register the current version of the edit node for this submit check-in.
+
+            LogMgr.getInstance().log
+              (Kind.Ops, Level.Info, 
+               "The FocusNode (" + evsn.getName() + " v" + evsn.getVersionID() + ") is " + 
+               "associated with task (" + taskName + ":" + taskType + ") submitted for " + 
+               "approval by checking-in the SubmitNode (" + nodeName + " v" + 
+               vsn.getVersionID() + ").");
+          }
         }
         if (annotType.equals("ApproveNode")) {
 
@@ -255,8 +288,8 @@ class TaskPolicyExt
 
           LogMgr.getInstance().log
             (Kind.Ops, Level.Info, 
-             "The " + annotType + " (" + nodeName + ") of task (" + taskName + ":" + 
-             taskType + ") has been checked-in!");
+             "The " + annotType + " (" + nodeName + " v" + vsn.getVersionID() + ") of " + 
+             "task (" + taskName + ":" + taskType + ") has been checked-in.");
         }
       }
     }
@@ -267,7 +300,41 @@ class TaskPolicyExt
          ex.getMessage());      
     }
   }
-  
+
+  private void 
+  findFocusEditNodes
+  (
+   String submitNodeName, 
+   String submitTaskName, 
+   String submitTaskType, 
+   NodeVersion vsn, 
+   TreeMap<String,NodeVersion> focusNodes, 
+   TreeMap<String,NodeVersion> editNodes, 
+   MasterMgrLightClient mclient
+  )
+    throws PipelineException 
+  {
+    TreeMap<String,BaseAnnotation> annotations = mclient.getAnnotations(vsn.getName());
+    for (String aname : annotations.keySet()) {
+      BaseAnnotation an = annotations.get(aname);
+      String annotType = an.getName();
+
+      if(annotType.equals("FocusNode")) {
+        verifyTask(vsn.getName(), an, submitNodeName, submitTaskName, submitTaskType); 
+        focusNodes.put(vsn.getName(), vsn);
+      }
+      else if(annotType.equals("EditNode")) {
+        verifyTask(vsn.getName(), an, submitNodeName, submitTaskName, submitTaskType); 
+        editNodes.put(vsn.getName(), vsn); 
+      }
+    }
+      
+    for(LinkVersion link : vsn.getSources()) {
+      NodeVersion source = mclient.getCheckedInVersion(link.getName(), link.getVersionID());
+      findFocusEditNodes(submitNodeName, submitTaskName, submitTaskType, source, 
+                         focusNodes, editNodes, mclient);
+    }
+  }
   
   
   /*----------------------------------------------------------------------------------------*/
