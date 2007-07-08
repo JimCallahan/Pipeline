@@ -9,7 +9,7 @@ AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(Pipeline, 2.3.3)
+AM_INIT_AUTOMAKE(Pipeline, 2.3.4)
                            
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
@@ -1028,6 +1028,9 @@ PIPELINE_JAR=""
 AC_SUBST(PIPELINE_LIBDIR)
 PIPELINE_LIBDIR=""
 
+AC_SUBST(PIPELINE_BUILDERDIR)
+PIPELINE_BUILDERDIR=""
+
 
 case "$NATIVE_OSTYPE" in 
   (Unix)  
@@ -1036,6 +1039,7 @@ case "$NATIVE_OSTYPE" in
     PIPELINE_LATEST_JAR="$ROOT_INST_PARENT_DIR/pipeline-latest/lib/api.jar";
     PIPELINE_JAR="$ROOT_INST_DIR/lib/api.jar";
     PIPELINE_LIBDIR="$ROOT_INST_DIR/lib";
+    PIPELINE_BUILDERDIR="$ROOT_INST_DIR/builders/us/temerity/pipeline/builder";
     JOGL_JAR="$ROOT_INST_DIR/jogl/lib/jogl.jar";
     GLUEGEN_JAR="$ROOT_INST_DIR/jogl/lib/gluegen-rt.jar";
     JOGL_LIBRARY_PATH="$ROOT_INST_DIR/jogl/lib/$NATIVE_OSTYPE";
@@ -1048,6 +1052,7 @@ case "$NATIVE_OSTYPE" in
     PIPELINE_LATEST_JAR="$MAC_ROOT_INST_PARENT_DIR/pipeline-latest/lib/api.jar";
     PIPELINE_JAR="$MAC_ROOT_INST_DIR/lib/api.jar";
     PIPELINE_LIBDIR="$MAC_ROOT_INST_DIR/lib";
+    PIPELINE_BUILDERDIR="$MAC_ROOT_INST_DIR/builders/us/temerity/pipeline/builder";
     JOGL_JAR="$MAC_ROOT_INST_DIR/jogl/lib/jogl.jar";
     GLUEGEN_JAR="$MAC_ROOT_INST_DIR/jogl/lib/gluegen-rt.jar";
     JOGL_LIBRARY_PATH="$MAC_ROOT_INST_DIR/jogl/lib/$NATIVE_OSTYPE";
@@ -1060,6 +1065,7 @@ case "$NATIVE_OSTYPE" in
     PIPELINE_LATEST_JAR="$WIN_ROOT_INST_PARENT_DIR/pipeline-latest/lib/api.jar";
     PIPELINE_JAR="$WIN_ROOT_INST_DIR/lib/api.jar";
     PIPELINE_LIBDIR="$WIN_ROOT_INST_DIR/lib";
+    PIPELINE_BUILDERDIR="$WIN_ROOT_INST_DIR/builders/us/temerity/pipeline/builder";
     JOGL_JAR="$WIN_ROOT_INST_DIR/jogl/lib/jogl.jar";
     GLUEGEN_JAR="$WIN_ROOT_INST_DIR/jogl/lib/gluegen-rt.jar";
     JOGL_LIBRARY_PATH="$WIN_ROOT_INST_DIR/jogl/lib/$NATIVE_OSTYPE";
@@ -2335,6 +2341,12 @@ AC_CONFIG_FILES([
   src/java/scripts/profile/plpython
   src/java/scripts/profile/plui
 
+  src/java/scripts/builder/Makefile
+  src/java/scripts/builder/maya2mr/Makefile
+  src/java/scripts/builder/maya2mr/v2_3_1/Makefile
+  src/java/scripts/builder/maya2mr/v2_3_1/plNewAssetBuilder
+  src/java/scripts/builder/maya2mr/v2_3_1/plShotBuilder
+
   src/java/share/Makefile
   src/java/share/Unix/Makefile
   src/java/share/MacOS/Makefile
@@ -2379,6 +2391,12 @@ AC_CONFIG_FILES([
   src/windows/scripts/debug/plui2.bat.src  
   src/windows/scripts/debug/pljobmgr.bat.src
 
+  src/windows/scripts/builder/Makefile
+  src/windows/scripts/builder/maya2mr/Makefile
+  src/windows/scripts/builder/maya2mr/v2_3_1/Makefile
+  src/windows/scripts/builder/maya2mr/v2_3_1/plNewAssetBuilder.bat.src
+  src/windows/scripts/builder/maya2mr/v2_3_1/plShotBuilder.bat.src
+
   src/windows/launchers/Makefile
   src/windows/launchers/plui.exe4j
   src/windows/launchers/debug/Makefile
@@ -2398,9 +2416,13 @@ AC_CONFIG_FILES([
   rpm/rpmmacros
 
   www/Makefile
+  www/images/Makefile
   www/plstats/Makefile
   www/plstats/etc/Makefile
   www/plstats/sql/Makefile
+  www/pltasks/Makefile
+  www/pltasks/etc/Makefile
+  www/pltasks/sql/Makefile
 
 ])
 

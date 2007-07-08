@@ -27,7 +27,8 @@ instsbin_SCRIPTS = \
 
 SUBDIRS = \
   debug \
-  profile
+  profile \
+  builder
 
 
 

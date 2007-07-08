@@ -101,6 +101,10 @@ The core features of Pipeline include:
 @ROOT_INST_DIR@/plugins-extra
 @ROOT_INST_DIR@/builders
 
+%defattr(555,root,root)
+@ROOT_INST_DIR@/builders/us/temerity/pipeline/builder/maya2mr/v2_3_1/Unix/plNewAssetBuilder
+@ROOT_INST_DIR@/builders/us/temerity/pipeline/builder/maya2mr/v2_3_1/Unix/plShotBuilder
+
 %defattr(-,root,root)
 @ROOT_INST_DIR@/lib
 @ROOT_INST_DIR@/examples

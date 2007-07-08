@@ -54,6 +54,10 @@ Pipeline configuration process.
 @ROOT_INST_DIR@/MacOS/debug/sbin/pljobmgr
 @ROOT_INST_DIR@/MacOS/profile/sbin/pljobmgr
 
+%defattr(555,root,root)
+@ROOT_INST_DIR@/builders/us/temerity/pipeline/builder/maya2mr/v2_3_1/MacOS/plNewAssetBuilder
+@ROOT_INST_DIR@/builders/us/temerity/pipeline/builder/maya2mr/v2_3_1/MacOS/plShotBuilder
+
 %defattr(-,root,root)
 @ROOT_INST_DIR@/lib/MacOS
 @ROOT_INST_DIR@/MacOS/Pipeline.app
