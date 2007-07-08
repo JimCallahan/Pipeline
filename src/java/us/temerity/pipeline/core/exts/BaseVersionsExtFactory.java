@@ -1,4 +1,4 @@
-// $Id: BaseVersionsExtFactory.java,v 1.3 2007/06/22 01:26:09 jim Exp $
+// $Id: BaseVersionsExtFactory.java,v 1.4 2007/07/08 01:18:16 jim Exp $
 
 package us.temerity.pipeline.core.exts;
 
@@ -40,32 +40,6 @@ class BaseVersionsExtFactory
     pVersions = versions; 
   }
 
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   O P S                                                                                */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Get the names of all nodes associated with the operation.
-   */ 
-  public LinkedList<String> 
-  getNodeNames()
-  {
-    LinkedList<String> names = new LinkedList<String>();
-    names.addAll(pVersions.keySet());
-    
-    return names;
-  }
-
-  /**
-   * Get the name of the user performing the operation. 
-   */ 
-  public String 
-  getWorkUser()
-  {
-    return pWorkUser; 
-  }
   
 
   /*----------------------------------------------------------------------------------------*/

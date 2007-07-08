@@ -9,10 +9,10 @@ import us.temerity.pipeline.*;
 /*------------------------------------------------------------------------------------------*/
 
 /** 
- * Identifies a node as the node that needs to be rebuilt each time a task is approved. <p>
+ * A node that needs to be rebuilt each time a task has been reviewed and approved.<P> 
  * 
- * Check-in of this node signals the completion of an approval step: the nodes below it are
- * now offically approved.
+ * Check-in of this node signals the completion of an approval step. In other words, that 
+ * alll nodes upstream of this node have been reviewed and officially approved.
  * 
  * This annotation defines the following parameters: <BR>
  * 
@@ -20,15 +20,13 @@ import us.temerity.pipeline.*;
  *   Task Name <BR>
  *   <DIV style="margin-left: 40px;">
  *     The name of the common production goal this node is used to achieve.
- *   </DIV> <BR>
- *    
- *   IsApproved <BR>
+ *   </DIV> <BR> 
+ * 
+ *   Task Type <BR>
  *   <DIV style="margin-left: 40px;">
- *     Is this node actually approved?  This parameter prevents the node from being checked-in
- *     unless it is set to true.  By default this value is never set to true, except right
- *     before an automated process checks in this node.
- *   </DIV> <BR>
- * </DIV> <P> 
+ *     The type of production goal this node is used to achieve.
+ *   </DIV> <BR> 
+ * </DIV> <P>
  */
 public 
 class ApproveNodeAnnotation 
@@ -42,7 +40,7 @@ class ApproveNodeAnnotation
   ApproveNodeAnnotation() 
   {
     super("ApproveNode", new VersionID("2.3.2"), "Temerity", 
-	  "Identifies a node as the node that needs to be rebuilt each time a task is approved.");
+	  "A node that needs to be rebuilt each time a task has been reviewed and approved.");
     
     {
       AnnotationParam param = 
@@ -52,25 +50,16 @@ class ApproveNodeAnnotation
 	 null); 
       addParam(param);
     }
-    
+
     {
       AnnotationParam param = 
-	new BooleanAnnotationParam
-	(aIsApproved, 
-	 "Is this node actually approved?  This parameter prevents the node from being " +
-	 "checked-in unless it is set to true.  By default this value is never set to true, " +
-	 "except right before an automated process checks in this node.", 
-	 false); 
+	new StringAnnotationParam
+	(aTaskType, 
+	 "The type of production goal this node is used to achieve.", 
+	 null); 
       addParam(param);
     }
-    
-    {
-      ArrayList<String> layout = new ArrayList<String>();
-      layout.add(aTaskName);
-      layout.add(null);
-      layout.add(aIsApproved);
-      setLayout(layout);
-    }
+
     underDevelopment();
   }
   
@@ -80,9 +69,9 @@ class ApproveNodeAnnotation
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
   
-  public static final String aTaskName   = "TaskName";
-  public static final String aIsApproved = "IsApproved";
-  
   private static final long serialVersionUID = -1897099035648320035L;
+
+  public static final String aTaskName = "TaskName";
+  public static final String aTaskType = "TaskType";
 
 }

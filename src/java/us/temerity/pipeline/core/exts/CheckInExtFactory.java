@@ -1,4 +1,4 @@
-// $Id: CheckInExtFactory.java,v 1.4 2007/06/22 01:26:09 jim Exp $
+// $Id: CheckInExtFactory.java,v 1.5 2007/07/08 01:18:16 jim Exp $
 
 package us.temerity.pipeline.core.exts;
 
@@ -92,34 +92,6 @@ class CheckInExtFactory
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the names of all nodes associated with the operation.
-   */ 
-  public LinkedList<String> 
-  getNodeNames()
-  {
-    LinkedList<String> names = super.getNodeNames();
-    if(pNodeVsn != null) 
-      names.add(pNodeVsn.getName());
-    names.add(pRootName);
-    
-    return names;
-  } 
-
-  /**
-   * Get the name of the user performing the operation. 
-   */ 
-  public String 
-  getWorkUser()
-  {
-    if(pNodeVsn != null) 
-      return pNodeVsn.getLogMessage().getAuthor(); 
-    return super.getWorkUser(); 
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
    * Does the extension support pre-tests for this type of operation.
    */ 
   public boolean 
@@ -129,18 +101,6 @@ class CheckInExtFactory
   )
   {
     return ext.hasPreCheckInTest();
-  }
-
-  /**
-   * Get the requirements to for the pre-operation test. 
-   */ 
-  public ExtReqs
-  getTestReqs
-  (   
-   BaseMasterExt ext
-  ) 
-  {
-    return ext.getPreCheckInTestReqs();
   }
 
   /**
@@ -172,18 +132,6 @@ class CheckInExtFactory
   ) 
   {
     return ext.hasPostCheckInTask();
-  }
-
-  /**
-   * Get the requirements to for the post-operation task. 
-   */ 
-  public ExtReqs
-  getTaskReqs
-  (   
-   BaseMasterExt ext
-  ) 
-  {
-    return ext.getPostCheckInTaskReqs();
   }
 
   /**

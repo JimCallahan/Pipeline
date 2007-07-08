@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.212 2007/07/06 20:12:33 jim Exp $
+// $Id: MasterMgr.java,v 1.213 2007/07/08 01:18:16 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -5355,10 +5355,6 @@ class MasterMgr
   ) 
     throws PipelineException
   { 
-    /* a temporary cache of the annotations relevant to all nodes for all tests */ 
-    DoubleMap<String,String,BaseAnnotation> annotations = 
-      new DoubleMap<String,String,BaseAnnotation>();
-
     /* the enabled extensions which support the current test */ 
     LinkedList<BaseMasterExt> extensions = new LinkedList<BaseMasterExt>();
 
@@ -5380,60 +5376,7 @@ class MasterMgr
 
           /* if the current extension has a test... */ 
 	  if((ext != null) && factory.hasTest(ext)) {
-
-            /* get the requirements for the test */ 
-            ExtReqs ereqs = factory.getTestReqs(ext);
-            if(ereqs != null) {
-
-              /* get the annotations for all nodes relavant to the current test */ 
-              if(ereqs.needsAnnotations()) {
-                for(String name : factory.getNodeNames()) {
-
-                  /* pre-cache annotations for the node */ 
-                  if(!annotations.containsKey(name)) {
-                    timer.aquire();
-                    ReentrantReadWriteLock lock = getAnnotationsLock(name); 
-                    lock.readLock().lock();
-                    try {
-                      timer.resume();
-                      
-                      TreeMap<String,BaseAnnotation> table = getAnnotationsTable(name);
-                      if(table != null) {
-                        for(String aname : table.keySet()) {
-                          BaseAnnotation annot = table.get(aname);
-                          if(annot != null) 
-                            annotations.put(name, aname, (BaseAnnotation) annot.clone());
-                        }
-                      }
-                    }
-                    finally {
-                      lock.readLock().unlock();
-                    }   
-                  }
-                  
-                  /* lookup the annotations for the node and
-                     register them with the extension plugin instance */ 
-                  TreeMap<String,BaseAnnotation> annots = annotations.get(name);
-                  if(annots != null) {
-                    for(String aname : annots.keySet()) {
-                      BaseAnnotation annot = annots.get(aname);
-                      if(annot != null) 
-                        ext.addAnnotation(name, aname, annot);
-                    }
-                  }
-                }
-              }
-
-              /* get the work group information required by the test */ 
-              if(ereqs.needsWorkGroups()) {
-                String workUser = factory.getWorkUser(); 
-                if(workUser != null) {
-                  ext.setWorkGroupMemberships
-                    (workUser, pAdminPrivileges.getWorkGroupMemberships(workUser));
-                }
-              }
-            }
-            
+            ext.setMasterMgrClient(new MasterMgrDirectLightClient(this));            
             extensions.add(ext);
           }
 	}
@@ -5500,10 +5443,6 @@ class MasterMgr
    MasterTaskFactory factory
   ) 
   {
-    /* a temporary cache of the annotations relevant to all nodes for all tasks */ 
-    DoubleMap<String,String,BaseAnnotation> annotations = 
-      new DoubleMap<String,String,BaseAnnotation>();
-
     timer.aquire(); 
     synchronized(pMasterExtensions) {
       timer.resume();
@@ -5513,60 +5452,7 @@ class MasterMgr
 	  try {
 	    BaseMasterExt ext = config.getMasterExt();
 	    if(factory.hasTask(ext)) {
-              
-              /* get the requirements for the task */ 
-              ExtReqs ereqs = factory.getTaskReqs(ext);
-              if(ereqs != null) {
-
-                /* get the annotations for all nodes relavant to the currnent task */ 
-                if(ereqs.needsAnnotations()) {
-                  for(String name : factory.getNodeNames()) {
-
-                    /* pre-cache annotations for the node */ 
-                    if(!annotations.containsKey(name)) {
-                      timer.aquire();
-                      ReentrantReadWriteLock lock = getAnnotationsLock(name); 
-                      lock.readLock().lock();
-                      try {
-                        timer.resume();
-                        
-                        TreeMap<String,BaseAnnotation> table = getAnnotationsTable(name);
-                        if(table != null) {
-                          for(String aname : table.keySet()) {
-                            BaseAnnotation annot = table.get(aname);
-                            if(annot != null) 
-                              annotations.put(name, aname, (BaseAnnotation) annot.clone());
-                          }
-                        }
-                      }
-                      finally {
-                        lock.readLock().unlock();
-                      }   
-                    }
-                    
-                    /* lookup the annotations for the node and
-                       register them with the extension plugin instance */ 
-                    TreeMap<String,BaseAnnotation> annots = annotations.get(name);
-                    if(annots != null) {
-                      for(String aname : annots.keySet()) {
-                        BaseAnnotation annot = annots.get(aname);
-                        if(annot != null) 
-                          ext.addAnnotation(name, aname, annot);
-                      }
-                    }
-                  }
-                }
-
-                /* get the work group information required by the task */ 
-                if(ereqs.needsWorkGroups()) {
-                  String workUser = factory.getWorkUser(); 
-                  if(workUser != null) {
-                    ext.setWorkGroupMemberships
-                      (workUser, pAdminPrivileges.getWorkGroupMemberships(workUser));
-                  }
-                }
-              }
-                  
+              ext.setMasterMgrClient(new MasterMgrDirectLightClient(this));    
               factory.startTask(config, ext); 
             }
 	  }

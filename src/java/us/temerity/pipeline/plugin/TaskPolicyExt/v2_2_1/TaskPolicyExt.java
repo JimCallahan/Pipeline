@@ -1,4 +1,4 @@
-// $Id: TaskPolicyExt.java,v 1.3 2007/06/22 01:26:09 jim Exp $
+// $Id: TaskPolicyExt.java,v 1.4 2007/07/08 01:18:17 jim Exp $
 
 package us.temerity.pipeline.plugin.TaskPolicyExt.v2_2_1;
 
@@ -88,15 +88,15 @@ TaskPolicyExt
   /*----------------------------------------------------------------------------------------*/
   /*   C H E C K - I N                                                                      */
   /*----------------------------------------------------------------------------------------*/
-	 
+
   /**
-   * Get the operation requirements to test before checking-in an individual node. <P>
+   * Whether to test before checking-in an individual node.
    */  
-  public ExtReqs
-  getPreCheckInTestReqs() 
+  public boolean
+  hasPreCheckInTest() 
   {
-    return new ExtReqs(true, true);
-  } 
+    return true;
+  }	 
 
   /**
    * Test to perform before checking-in an individual node.
@@ -131,7 +131,7 @@ TaskPolicyExt
     throws PipelineException
   {
     boolean restrictAssigned   = isParamTrue(aAssignedCheckIns);
-    boolean restrictSupervised = isParamTrue(aAssignedCheckIns);
+    boolean restrictSupervised = isParamTrue(aSupervisedCheckIns); 
     if(!restrictAssigned && !restrictSupervised) 
       return;
 
@@ -139,18 +139,19 @@ TaskPolicyExt
     if(task == null)
       return; 
 
-    String workUser = getWorkUser();    
-
+    WorkGroups wgroups = getMasterMgrClient().getWorkGroups();
+    
+    String author     = nodeID.getAuthor();
     String assigned   = (String) task.getParamValue(aAssignedTo);
     String supervised = (String) task.getParamValue(aSupervisedBy);
 
     boolean isAssigned = 
       (assigned != null) && (assigned.length() > 0) &&
-      (assigned.equals(workUser) || (isMemberOrManager(assigned) != null));
+      (assigned.equals(author) || (wgroups.isMemberOrManager(author, assigned) != null));
     
     boolean isSupervised = 
       (supervised != null) && (supervised.length() > 0) && 
-      (supervised.equals(workUser) || (isMemberOrManager(supervised) != null));
+      (supervised.equals(author) || (wgroups.isMemberOrManager(author, supervised) != null));
 
     boolean isNonApproveNode = false;
     {
@@ -186,13 +187,13 @@ TaskPolicyExt
     if(isApproveNode && !isSupervised) 
       throw new PipelineException
 	("Checking-in node (" + nodeID.getName() + ") in working area " + 
-	 "(" + nodeID.getAuthor() + "|" + nodeID.getView() + ") is only available to " + 
+	 "(" + author + "|" + nodeID.getView() + ") is only available to " + 
          "the supervisor " + stext + " of the node!");
     
     if(isNonApproveNode && !(isAssigned || isSupervised))
       throw new PipelineException
 	("Checking-in node (" + nodeID.getName() + ") in working area " + 
-	 "(" + nodeID.getAuthor() + "|" + nodeID.getView() + ") is only available to " + 
+	 "(" + author + "|" + nodeID.getView() + ") is only available to " + 
          "the the artist " + atext + " assigned to work on the node or to the " + 
          "its supervisor " + stext + "!");
   }
@@ -220,22 +221,13 @@ TaskPolicyExt
   (
    String name
   ) 
+    throws PipelineException
   {
-    try {
-      String tname = (String) getParamValue(aTaskAnnotationName);
-      BaseAnnotation task = getAnnotation(name, tname);
-      if((task == null) || (!task.getName().equals(aTask)))
-        return null;
-      
+    String tname = (String) getParamValue(aTaskAnnotationName);
+    BaseAnnotation task = getMasterMgrClient().getAnnotation(name, tname);
+    if((task != null) && (task.getName().equals(aTask)))
       return task;
-    }
-    catch(PipelineException ex) {
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Ext, LogMgr.Level.Warning, 
-	 ex.getMessage()); 
-      
-      return null;
-    }
+    return null;
   }
 
   /**
@@ -246,18 +238,10 @@ TaskPolicyExt
   (
    String pname
   ) 
+    throws PipelineException
   {
-    try {
-      Boolean tf = (Boolean) getParamValue(pname); 
-      return ((tf != null) && tf);
-    }
-    catch(PipelineException ex) {
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Ext, LogMgr.Level.Warning, 
-	 ex.getMessage()); 
-      
-      return false;
-    }
+    Boolean tf = (Boolean) getParamValue(pname); 
+    return ((tf != null) && tf);
   }
 
 

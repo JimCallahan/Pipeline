@@ -1,4 +1,4 @@
-// $Id: RevertFilesExtFactory.java,v 1.2 2007/06/22 01:26:09 jim Exp $
+// $Id: RevertFilesExtFactory.java,v 1.3 2007/07/08 01:18:16 jim Exp $
 
 package us.temerity.pipeline.core.exts;
 
@@ -63,18 +63,6 @@ class RevertFilesExtFactory
   }
 
   /**
-   * Get the requirements to for the pre-operation test. 
-   */ 
-  public ExtReqs
-  getTestReqs
-  (   
-   BaseMasterExt ext
-  ) 
-  {
-    return ext.getPreRevertFilesTestReqs();
-  }
-
-  /**
    * Perform the pre-test passed for this type of operation.
    * 
    * @throws PipelineException
@@ -103,18 +91,6 @@ class RevertFilesExtFactory
   ) 
   {
     return ext.hasPostRevertFilesTask();
-  }
-
-  /**
-   * Get the requirements to for the post-operation task. 
-   */ 
-  public ExtReqs
-  getTaskReqs
-  (   
-   BaseMasterExt ext
-  ) 
-  {
-    return ext.getPostRevertFilesTaskReqs();
   }
 
   /**

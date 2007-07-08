@@ -1,6 +1,6 @@
 package us.temerity.pipeline.plugin.TaskPolicyExt.v2_3_2;
 
-import java.util.Set;
+import java.util.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.LogMgr.Kind;
@@ -35,16 +35,16 @@ class TaskPolicyExt
   /*----------------------------------------------------------------------------------------*/
   /*   C H E C K - I N                                                                      */
   /*----------------------------------------------------------------------------------------*/
-	 
+
   /**
-   * Get the operation requirements to test before checking-in an individual node. <P>
+   * Whether to test before checking-in an individual node.
    */  
   @Override
-  public ExtReqs
-  getPreCheckInTestReqs() 
+  public boolean
+  hasPreCheckInTest() 
   {
-    return new ExtReqs(true, true);
-  } 
+    return true;
+  }	 
 
   /**
    * Test to perform before checking-in an individual node.
@@ -81,104 +81,131 @@ class TaskPolicyExt
   {
     String nodeName = nodeID.getName();
     
-    Set<String> rootAnnotations = getAnnotationNames(rname);
-    Set<String> nodeAnnotations = getAnnotationNames(nodeName);
+    MasterMgrLightClient mclient = getMasterMgrClient();
+    TreeMap<String,BaseAnnotation> rootAnnotations = mclient.getAnnotations(rname);
+    TreeMap<String,BaseAnnotation> nodeAnnotations = mclient.getAnnotations(nodeName);
     
-    pUser = getWorkUser();
-    pGroups = getWorkGroups();
+    WorkGroups wgroups = mclient.getWorkGroups();
     
-    boolean rootApprove = false;
-    boolean rootSubmit = false;
-    boolean rootFocus = false;
-    String rootTask = null;
-    
-    for (String rAnName : rootAnnotations) {
-      BaseAnnotation an = getAnnotation(rname, rAnName);
-      String aName = an.getName(); 
-      if ( aName.equals("IntermediateNode") || aName.equals("ProductNode") )
-	  throw new PipelineException
-	    ("The Root node of the checkin (" + rname + ") is a (" + aName + ").  " +
-	     "These nodes cannot be the root of a check-in.");
-      if (aName.equals("FocusNode")) {
-	rootFocus = true;
-	rootTask = verifyRootTask(rname, an);
+    /* lookup the annotations on the root node of the check-in and validate whether the 
+         check-in is allowed based on the annotation parameters */ 
+    boolean rootApprove  = false;
+    boolean rootSubmit   = false;
+    boolean rootFocus    = false;
+    String rootTaskName  = null;
+    String rootTaskType  = null;
+    String rootAnnotType = null;
+    for(String aname : rootAnnotations.keySet()) {
+      BaseAnnotation an = rootAnnotations.get(aname);
+      String annotType = an.getName(); 
+      rootAnnotType = annotType;
+
+      if(annotType.equals("IntermediateNode") || annotType.equals("ProductNode")) {
+        String goodRoot = annotType.equals("ProductNode") ? "ApproveNode" : "SubmitNode"; 
+        throw new PipelineException
+          ("Cannot check-in node (" + rname + "), because it is both the root node of the " + 
+           "check-in operation and a " + annotType + "! You may only check-in a " + 
+           annotType + " as part of the check-in of a " + goodRoot + "."); 
       }
-      if (aName.equals("ApproveNode")) {
-	rootApprove = true;
-	rootTask = verifyRootTask(rname, an);
-	boolean allowed = (Boolean) an.getParamValue(aIsApproved);
-	if (!allowed)
-	  throw new PipelineException
-	    ("The Root node of the checkin (" + rname + ") is an (" + aName + ").  " +
-	     "These nodes cannot be checked-in WHEN the Is Approved parameter is set to (no).");
-      }
-      else if (aName.equals("SubmitNode")) {
-	rootSubmit = true;
-	rootTask = verifyRootTask(rname, an);
-	String assigned = (String) an.getParamValue(aAssignedTo);
-	if (!hasPermissions(assigned))
-	  throw new PipelineException
-	    ("The task (" + rootTask + ") on node (" + rname +") is assigned " +
-	     "to the user/group (" + assigned + ").  You are not allowed to check in " +
-	     "this submit node.");
-      }
-      else if (aName.equals("EditNode")) {
-      	rootTask = verifyRootTask(rname, an);
+      else {
+        if(annotType.equals("FocusNode") || annotType.equals("ApproveNode") || 
+           annotType.equals("SubmitNode") || annotType.equals("EditNode")) {
+          rootTaskName = lookupTaskName(rname, an);
+          rootTaskType = lookupTaskType(rname, an);
+        }
+
+        if(annotType.equals("FocusNode")) {
+          rootFocus = true;
+        }
+        else if(annotType.equals("ApproveNode")) {
+          rootApprove = true;
+          if(!nodeID.getAuthor().equals(PackageInfo.sPipelineUser)) 
+            throw new PipelineException
+              ("Cannot check-in node (" + rname + "), because it is a " + annotType + " " + 
+               "of the task (" + rootTaskName + ":" + rootTaskType + ") which can only be " + 
+               "checked-in by the (" + PackageInfo.sPipelineUser + ") user as part of the " + 
+               "automated post-approval process!"); 
+        }
+        else if(annotType.equals("SubmitNode")) {
+          rootSubmit = true;
+          String author   = nodeID.getAuthor();
+          String assigned = (String) an.getParamValue(aAssignedTo);
+          if((assigned == null) || (assigned.length() == 0)) 
+            throw new PipelineException 
+              ("Cannot check-in node (" + rname + ") because no one was Assigned To the " + 
+               "complete the task (" + rootTaskName + ":" + rootTaskType + ")!"); 
+
+          boolean isGroup = wgroups.isGroup(assigned); 
+          if((!isGroup && !assigned.equals(author)) || 
+             (isGroup && wgroups.isMemberOrManager(author, assigned) == null)) 
+            throw new PipelineException
+              ("The task (" + rootTaskName + ":" + rootTaskType + ") for node " + 
+               "(" + rname + ") is assigned to the " + 
+               (isGroup ? "Pipeline work group [" + assigned + "]" : 
+                          "artist (" + assigned + ")") + 
+               ".  The (" + author + ") user is not assigned to this task and therefore " + 
+               "is not allowed to check-in this submit node.");
+        }
       }
     }
-    if (rootFocus && !rootSubmit)
+
+    //
+    // SHOULD ROOT FOCUS NODES BE ALLOWED EVEN IF THEY ARE THE SUBMIT NODE?
+    //
+    if(rootFocus && !rootSubmit)
       throw new PipelineException
-	    ("The Root node of the checkin (" + rname + ") is a (FocusNode).  " +
-	     "These nodes cannot be the root of a check-in.");
+        ("Cannot check-in node (" + rname + "), because it both a FocusNode and the root " + 
+         "node of the check-in operation without also being a SubmitNode of the task " + 
+         "(" + rootTaskName + ":" + rootTaskType + ")!"); 
     
-    for (String nAnName : nodeAnnotations) {
-      BaseAnnotation an = getAnnotation(nodeName, nAnName);
-      String aName = an.getName(); 
-      if ( aName.equals("FocusNode") || aName.equals("IntermediateNode") ) {
-	if (rootSubmit) 
-	  verifyTaskName(an, rootTask, nodeName, rname);
+
+    /* perform checks based on comparing annotation parameters of the root node of the 
+         check-in with the current node */
+    for(String aname : nodeAnnotations.keySet()) {
+      BaseAnnotation an = nodeAnnotations.get(aname);
+      String annotType = an.getName(); 
+
+      if(annotType.equals("FocusNode") || annotType.equals("IntermediateNode")) {
+	if(rootSubmit) 
+	  verifyTask(nodeName, an, rname, rootTaskName, rootTaskType); 
 	else
           throw new PipelineException
-            ("The node (" + nodeName  + ") is a " + aName + ".  " + aName + "s can only be " +
-             "checked in when the root node of the check-in is a Submit Node.  The root " +
-             "node of this check-in was (" + rname + ")");
+            ("Cannot check-in node (" + nodeName + "), because it is a " + annotType + " " + 
+             "which can only be checked-in when the root node of the check-in operation " + 
+             "is a SubmitNode!.  However in this case, the root node (" + rname + ") was " + 
+             "a " + rootAnnotType + "."); 
       }
-      if (aName.equals("ProductNode")) {
-	if (rootApprove) 
-	  verifyTaskName(an, rootTask, nodeName, rname);
+      else if(annotType.equals("ProductNode")) {
+	if(rootApprove) 
+	  verifyTask(nodeName, an, rname, rootTaskName, rootTaskType); 
 	else
           throw new PipelineException
-            ("The node (" + nodeName  + ") is a " + aName + ".  " + aName + "s can only be " +
-             "checked in when the root node of the check-in is a Approval Node.  The root " +
-             "node of this check-in was (" + rname + ")");
+            ("Cannot check-in node (" + nodeName + "), because it is a " + annotType + " " + 
+             "which can only be checked-in when the root node of the check-in operation " + 
+             "is a ApproveNode!.  However in this case, the root node (" + rname + ") was " + 
+             "a " + rootAnnotType + "."); 
       }
-      if (aName.equals("EditNode")) {
-	verifyTaskName(an, rootTask, nodeName, rname);
+      else if(annotType.equals("EditNode")) {
+        verifyTask(nodeName, an, rname, rootTaskName, rootTaskType); 
       }
-      if (aName.equals("SubmitNode")) {
-	if (!nodeName.equals(rname)) 
+      else if(annotType.equals("SubmitNode") || annotType.equals("ApproveNode")) {
+	if(!nodeName.equals(rname)) 
 	  throw new PipelineException
-	    ("The node (" + nodeName + ") is a Submit Node.  " +
-	     "A Submit Node must be the root of any check-in.");
-      }
-      if (aName.equals("ApproveNode")) {
-	if (!nodeName.equals(rname)) 
-	  throw new PipelineException
-	    ("The node (" + nodeName + ") is an Approve Node.  " +
-	     "An Approve Node must be the root of any check-in.");
+	    ("Cannot check-in node (" + nodeName + ") unless it is the root node of the " + 
+             "check-in operation because it is a " + rootAnnotType + "!"); 
       }
     }
   }
 
   
   /**
-   * Get the operation requirements for a tast after checking-in an individual node. <P>
-   */ 
+   * Whether to run a tesk after checking-in an individual node.
+   */  
   @Override
-  public ExtReqs
-  getPostCheckInTaskReqs() 
+  public boolean
+  hasPostCheckInTask() 
   {
-    return new ExtReqs(true, true);
+    return true;
   }
   
   /** 
@@ -191,31 +218,53 @@ class TaskPolicyExt
   public void 
   postCheckInTask
   (
-    NodeVersion vsn
+   NodeVersion vsn
   )
   {
     String nodeName = vsn.getName();
-    Set<String> anNames = getAnnotationNames(nodeName);
-    for (String nAnName : anNames) {
-      BaseAnnotation an = getAnnotation(nodeName, nAnName);
-      String aname = an.getName();
-      
-      /*
-       * Useful things you can use in the sql COMMIT
-       * String author = vsn.getAuthor();
-       * VersionID id = vsn.getVersionID();
-       * String message = vsn.getMessage();
-       * java.sql.Date date = new Date(vsn.getTimeStamp());
-       * 
-       */
-      if (aname.equals("SubmitNode")) {
-	/*  Tell the sql database that a node has been submitted for approval. */
-	LogMgr.getInstance().log(Kind.Ops, Level.Finer, "Submit node (" + nodeName + ") has been checked-in");
+    try {
+      MasterMgrLightClient mclient = getMasterMgrClient();
+      TreeMap<String,BaseAnnotation> nodeAnnotations = mclient.getAnnotations(nodeName);
+      for (String aname : nodeAnnotations.keySet()) {
+        BaseAnnotation an = nodeAnnotations.get(aname);
+        String annotType = an.getName();
+
+        String taskName = lookupTaskName(nodeName, an);
+        String taskType = lookupTaskType(nodeName, an);
+
+        /*
+         * Useful things you can use in the sql COMMIT
+         * String author = vsn.getAuthor();
+         * VersionID id = vsn.getVersionID();
+         * String message = vsn.getMessage();
+         * java.sql.Date date = new Date(vsn.getTimeStamp());
+         * 
+         */
+        if (annotType.equals("SubmitNode")) {
+
+          /* Tell the sql database that a node has been submitted for approval. */
+          
+          LogMgr.getInstance().log
+            (Kind.Ops, Level.Info, 
+             "The " + annotType + " (" + nodeName + ") of task (" + taskName + ":" + 
+             taskType + ") has been checked-in!");
+        }
+        if (annotType.equals("ApproveNode")) {
+
+          /*  Tell the sql database that approval automation has finished. */
+
+          LogMgr.getInstance().log
+            (Kind.Ops, Level.Info, 
+             "The " + annotType + " (" + nodeName + ") of task (" + taskName + ":" + 
+             taskType + ") has been checked-in!");
+        }
       }
-      if (aname.equals("ApproveNode")) {
-	/*  Tell the sql database that approval automation has finished. */
-	LogMgr.getInstance().log(Kind.Ops, Level.Finer, "Approval node (" + nodeName + ") has been checked-in");
-      }
+    }
+    catch(PipelineException ex) {
+      LogMgr.getInstance().log
+        (Kind.Ops, Level.Warning, 
+         "PostCheckInTask (" + getName() + ") Failed on: " + nodeName + "\n" + 
+         ex.getMessage());      
     }
   }
   
@@ -225,68 +274,74 @@ class TaskPolicyExt
   /*   H E L P E R S                                                                        */
   /*----------------------------------------------------------------------------------------*/
 
-
-
+  /**
+   * Lookup the Task Name from the annotation.
+   */ 
   private String 
-  verifyRootTask
+  lookupTaskName
   (
-    String rname, 
+    String nodeName, 
     BaseAnnotation an
   ) 
     throws PipelineException
   {
-    String rootTask;
-    rootTask = (String) an.getParamValue(aTaskName);
-    if (rootTask == null)
+    String taskName = (String) an.getParamValue(aTaskName);
+    if((taskName == null) || (taskName.length() == 0))
       throw new PipelineException
-        ("(" + rname +") is a task related node with a null Task Name.  This state is not allowed.");
-    return rootTask;
+        ("A Task Name must be supplied for the " + an.getName() + " annotation on node " + 
+         "(" + nodeName +")!"); 
+
+    return taskName;
   }
 
-  private void 
-  verifyTaskName
+  /**
+   * Lookup the Task Type from the annotation.
+   */ 
+  private String 
+  lookupTaskType
   (
-    BaseAnnotation an,
-    String rootTask, 
     String nodeName, 
-    String rname
+    BaseAnnotation an
   ) 
     throws PipelineException
   {
-    String aTask = (String) an.getParamValue(aTaskName);
-    if (aTask == null)
+    String taskType = (String) an.getParamValue(aTaskType);
+    if((taskType == null) || (taskType.length() == 0))
       throw new PipelineException
-        ("(" + nodeName +") is a task related node with a null Task Name.  This state is not allowed.");
-    if (rootTask != null)
-      if (!aTask.equals(rootTask))
-        throw new PipelineException
-          ("This node (" + nodeName + ") and the root node (" + rname + ") belong to " +
-           "two different tasks, (" + aTask + ") and (" + rootTask + ") respectively.  " +
-           "Please limit a check-in to a single task.");
+        ("A Task Type must be supplied for the " + an.getName() + " annotation on node " + 
+         "(" + nodeName +")!"); 
+
+    return taskType;
   }
-  
-  private boolean
-  hasPermissions
+
+  /**
+   * Verify that the Task Name and Task Type match those of the root node.
+   */ 
+  private void 
+  verifyTask
   (
-    String assigned
-  )
+   String nodeName, 
+   BaseAnnotation an,
+   String rootNodeName, 
+   String rootTaskName, 
+   String rootTaskType
+  ) 
+    throws PipelineException
   {
-    if (assigned.equals(pUser))
-      return true;
-    if (pGroups.contains(assigned))
-      return true;
-    return false;
+    String taskName = lookupTaskName(nodeName, an); 
+    String taskType = lookupTaskType(nodeName, an); 
+
+    if(rootTaskName != null) {
+      if(!taskName.equals(rootTaskName) || !taskType.equals(rootTaskType)) {
+        throw new PipelineException
+          ("Cannot check-in node (" + nodeName + ") of the task (" + taskName + ":" + 
+           taskType + ") because the root node of the check-in (" + rootNodeName + ") " + 
+           "belongs to a different task (" + rootTaskName + ":" + rootTaskType + ")!  " + 
+           "Please limit a check-in operation to nodes which share the same task.");
+      }
+    }
   }
-
-  
-  
-  /*----------------------------------------------------------------------------------------*/
-  /*   I N T E R N A L S                                                                    */
-  /*----------------------------------------------------------------------------------------*/
-  
-  private String pUser;
-  private Set<String> pGroups;
-
+      
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -297,6 +352,7 @@ class TaskPolicyExt
   
   
   public static final String aTaskName   = "TaskName";
+  public static final String aTaskType   = "TaskType";
   public static final String aIsApproved = "IsApproved";
   public static final String aAssignedTo = "AssignedTo";
 }

@@ -1,4 +1,4 @@
-// $Id: DeleteExtFactory.java,v 1.3 2007/06/22 01:26:09 jim Exp $
+// $Id: DeleteExtFactory.java,v 1.4 2007/07/08 01:18:16 jim Exp $
 
 package us.temerity.pipeline.core.exts;
 
@@ -54,30 +54,6 @@ class DeleteExtFactory
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the names of all nodes associated with the operation.
-   */ 
-  public LinkedList<String> 
-  getNodeNames()
-  {
-    LinkedList<String> names = new LinkedList<String>();
-    names.add(pName);
-    
-    return names;
-  }
-
-  /**
-   * Get the name of the user performing the operation. 
-   */ 
-  public String 
-  getWorkUser()
-  {
-    return pWorkUser; 
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
    * Does the extension support pre-tests for this type of operation.
    */ 
   public boolean 
@@ -87,18 +63,6 @@ class DeleteExtFactory
   )
   {
     return ext.hasPreDeleteTest();
-  }
-
-  /**
-   * Get the requirements to for the pre-operation test. 
-   */ 
-  public ExtReqs
-  getTestReqs
-  (   
-   BaseMasterExt ext
-  ) 
-  {
-    return ext.getPreDeleteTestReqs();
   }
 
   /**
@@ -130,18 +94,6 @@ class DeleteExtFactory
   ) 
   {
     return ext.hasPostDeleteTask();
-  }
-
-  /**
-   * Get the requirements to for the post-operation task. 
-   */ 
-  public ExtReqs
-  getTaskReqs
-  (   
-   BaseMasterExt ext
-  ) 
-  {
-    return ext.getPostDeleteTaskReqs();
   }
 
   /**

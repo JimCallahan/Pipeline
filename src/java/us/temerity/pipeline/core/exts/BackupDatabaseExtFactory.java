@@ -1,4 +1,4 @@
-// $Id: BackupDatabaseExtFactory.java,v 1.3 2007/06/22 01:26:09 jim Exp $
+// $Id: BackupDatabaseExtFactory.java,v 1.4 2007/07/08 01:18:16 jim Exp $
 
 package us.temerity.pipeline.core.exts;
 
@@ -43,27 +43,6 @@ class BackupDatabaseExtFactory
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the names of all nodes associated with the operation.
-   */ 
-  public LinkedList<String> 
-  getNodeNames()
-  {
-    return new LinkedList<String>();
-  }
-
-  /**
-   * Get the name of the user performing the operation. 
-   */ 
-  public String 
-  getWorkUser()
-  {
-    return null;
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
    * Does the extension support pre-tests for this type of operation.
    */ 
   public boolean 
@@ -73,18 +52,6 @@ class BackupDatabaseExtFactory
   )
   {
     return ext.hasPreBackupDatabaseTest();
-  }
-
-  /**
-   * Get the requirements to for the pre-operation test. 
-   */ 
-  public ExtReqs
-  getTestReqs
-  (   
-   BaseMasterExt ext
-  ) 
-  {
-    return new ExtReqs();
   }
 
   /**
@@ -116,18 +83,6 @@ class BackupDatabaseExtFactory
   ) 
   {
     return ext.hasPostBackupDatabaseTask();
-  }
-
-  /**
-   * Get the requirements to for the post-operation task. 
-   */ 
-  public ExtReqs
-  getTaskReqs
-  (   
-   BaseMasterExt ext
-  ) 
-  {
-    return new ExtReqs();
   }
 
   /**

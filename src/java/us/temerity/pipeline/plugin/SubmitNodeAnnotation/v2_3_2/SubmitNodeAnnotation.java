@@ -9,10 +9,11 @@ import us.temerity.pipeline.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * The node that an artist will check-in to signal that their task is ready for review.<p>
+ * A node that should be checked-in to signal that the task is ready for review.<P> 
  * 
- * All the Edit and Focus nodes for a particular task need to be grouped upstream from this 
- * node.
+ * All nodes with the IntermediateNode, EditNode and FocusNode annotations for the task
+ * should be upstream of this node so that they are assured of being included in all check-in
+ * of this node. 
  * 
  * This annotation defines the following parameters: <BR>
  * 
@@ -21,18 +22,23 @@ import us.temerity.pipeline.*;
  *   <DIV style="margin-left: 40px;">
  *     The name of the common production goal this node is used to achieve.
  *   </DIV> <BR> 
+ * 
+ *   Task Type <BR>
+ *   <DIV style="margin-left: 40px;">
+ *     The type of production goal this node is used to achieve.
+ *   </DIV> <BR> 
  *   
  *   Assigned To <BR>
  *   <DIV style="margin-left: 40px;">
  *     The name of the WorkGroup or specific artist assigned to complete the task involving
  *     this node.  Only a user assigned to a node (or part of the group assigned to the node)
- *     can actually check in the submit node.
+ *     is allowed to check-in this node. 
  *   </DIV> <BR> 
  *   
  *   Approve Node <BR>
  *   <DIV style="margin-left: 40px;">
- *     The approve node that is associated with this Submit node.  Provided solely for information
- *     purposes.
+ *     The approve node that is associated with this Submit node.  Provided solely for 
+ *     information purposes.
  *   </DIV> <BR> 
  * </DIV> <P> 
  */
@@ -48,13 +54,22 @@ class SubmitNodeAnnotation
   SubmitNodeAnnotation() 
   {
     super("SubmitNode", new VersionID("2.3.2"), "Temerity", 
-	  "The node that an artist will check-in to signal that their task is ready for review.");
+	  "A node that should be checked-in to signal that the task is ready for review.");
     
     {
       AnnotationParam param = 
 	new StringAnnotationParam
 	(aTaskName, 
 	 "The name of the common production goal this node is used to achieve.", 
+	 null); 
+      addParam(param);
+    }
+
+    {
+      AnnotationParam param = 
+	new StringAnnotationParam
+	(aTaskType, 
+	 "The type of production goal this node is used to achieve.", 
 	 null); 
       addParam(param);
     }
@@ -69,7 +84,7 @@ class SubmitNodeAnnotation
       addParam(param);
     }
     
-    {
+    { // IS THIS NEEDED??
       AnnotationParam param = 
 	new StringAnnotationParam
 	(aApproveNode, 
@@ -82,6 +97,7 @@ class SubmitNodeAnnotation
     {
       ArrayList<String> layout = new ArrayList<String>();
       layout.add(aTaskName);
+      layout.add(aTaskType);
       layout.add(null);
       layout.add(aAssignedTo);
       layout.add(aApproveNode);
@@ -96,9 +112,11 @@ class SubmitNodeAnnotation
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
   
+  private static final long serialVersionUID = 3689671873063787602L;
+
   public static final String aTaskName    = "TaskName";
+  public static final String aTaskType    = "TaskType";
   public static final String aAssignedTo  = "AssignedTo";
   public static final String aApproveNode = "ApproveNode";
   
-  private static final long serialVersionUID = 3689671873063787602L;
 }

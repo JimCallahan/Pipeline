@@ -7,20 +7,25 @@ import us.temerity.pipeline.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- *  Any node which is being versioned along with the Approval node. <p>
- *  
- *  This annotation exists to prevent this node from being checked in when the Approval node
- *  is not being checked-in.  This prevents illict versioning of things that could 
- *  contaminate the production process.
- *  
- *  This annotation defines the following parameters: <BR>
+ * A node which is being versioned along with the approval node. <p>
  * 
+ * This annotation exists to prevent this node from being checked in when the Approval node
+ * is not being checked-in.  This prevents illict versioning of things that could 
+ * contaminate the production process.
+ * 
+ * This annotation defines the following parameters: <BR>
+ * 
+ * <DIV style="margin-left: 40px;">
+ *   Task Name <BR>
+ *   <DIV style="margin-left: 40px;">
+ *     The name of the common production goal this node is used to achieve.
+ *   </DIV> <BR> 
+ * 
+ *  Task Type <BR>
  *  <DIV style="margin-left: 40px;">
- *    Task Name <BR>
- *    <DIV style="margin-left: 40px;">
- *      The name of the common production goal this node is used to achieve.
- *    </DIV> <BR>
- *  </DIV> <P>
+ *    The type of production goal this node is used to achieve.
+ *  </DIV> <BR> 
+ * </DIV> <P>
  */
 public 
 class ProductNodeAnnotation 
@@ -34,7 +39,7 @@ class ProductNodeAnnotation
   ProductNodeAnnotation() 
   {
     super("ProductNode", new VersionID("2.3.2"), "Temerity", 
-	  "Any node which is being versioned along with the Approval node.");
+	  "A node which is being versioned along with the Approval node.");
     
     {
       AnnotationParam param = 
@@ -44,6 +49,16 @@ class ProductNodeAnnotation
 	 null); 
       addParam(param);
     }
+
+    {
+      AnnotationParam param = 
+	new StringAnnotationParam
+	(aTaskType, 
+	 "The type of production goal this node is used to achieve.", 
+	 null); 
+      addParam(param);
+    }
+
     underDevelopment();
   }
   
@@ -53,7 +68,9 @@ class ProductNodeAnnotation
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
   
-  public static final String aTaskName   = "TaskName";
-  
   private static final long serialVersionUID = 7436765361486860344L;
+
+  public static final String aTaskName = "TaskName";
+  public static final String aTaskType = "TaskType";
+  
 }

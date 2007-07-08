@@ -1,4 +1,4 @@
-// $Id: ReleaseExtFactory.java,v 1.3 2007/06/22 01:26:09 jim Exp $
+// $Id: ReleaseExtFactory.java,v 1.4 2007/07/08 01:18:16 jim Exp $
 
 package us.temerity.pipeline.core.exts;
 
@@ -60,21 +60,6 @@ class ReleaseExtFactory
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the names of all nodes associated with the operation.
-   */ 
-  public LinkedList<String> 
-  getNodeNames()
-  {
-    LinkedList<String> names = new LinkedList<String>();
-    names.addAll(pNodeNames); 
-    
-    return names;
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
    * Does the extension support pre-tests for this type of operation.
    */ 
   public boolean 
@@ -84,18 +69,6 @@ class ReleaseExtFactory
   )
   {
     return ext.hasPreReleaseTest();
-  }
-
-  /**
-   * Get the requirements to for the pre-operation test. 
-   */ 
-  public ExtReqs
-  getTestReqs
-  (   
-   BaseMasterExt ext
-  ) 
-  {
-    return ext.getPreReleaseTestReqs();
   }
 
   /**
@@ -127,18 +100,6 @@ class ReleaseExtFactory
   ) 
   {
     return ext.hasPostReleaseTask();
-  }
-
-  /**
-   * Get the requirements to for the post-operation task. 
-   */ 
-  public ExtReqs
-  getTaskReqs
-  (   
-   BaseMasterExt ext
-  ) 
-  {
-    return ext.getPostReleaseTaskReqs();
   }
 
   /**

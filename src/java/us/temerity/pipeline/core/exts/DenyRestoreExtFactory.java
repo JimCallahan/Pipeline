@@ -1,4 +1,4 @@
-// $Id: DenyRestoreExtFactory.java,v 1.2 2007/06/22 01:26:09 jim Exp $
+// $Id: DenyRestoreExtFactory.java,v 1.3 2007/07/08 01:18:16 jim Exp $
 
 package us.temerity.pipeline.core.exts;
 
@@ -61,18 +61,6 @@ class DenyRestoreExtFactory
   }
 
   /**
-   * Get the requirements to for the pre-operation test. 
-   */ 
-  public ExtReqs
-  getTestReqs
-  (   
-   BaseMasterExt ext
-  ) 
-  {
-    return ext.getPreDenyRestoreTestReqs();
-  }
-
-  /**
    * Perform the pre-test passed for this type of operation.
    * 
    * @throws PipelineException
@@ -101,18 +89,6 @@ class DenyRestoreExtFactory
   ) 
   {
     return ext.hasPostDenyRestoreTask();
-  }
-
-  /**
-   * Get the requirements to for the post-operation task. 
-   */ 
-  public ExtReqs
-  getTaskReqs
-  (   
-   BaseMasterExt ext
-  ) 
-  {
-    return ext.getPostDenyRestoreTaskReqs();
   }
 
   /**

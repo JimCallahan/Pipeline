@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.105 2007/07/01 23:54:23 jim Exp $
+// $Id: MasterMgrClient.java,v 1.106 2007/07/08 01:18:16 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -37,6 +37,7 @@ import javax.crypto.interfaces.*;
 public
 class MasterMgrClient
   extends BaseMgrClient
+  implements MasterMgrLightClient
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */

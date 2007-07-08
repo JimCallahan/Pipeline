@@ -7,20 +7,26 @@ import us.temerity.pipeline.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- *  A node that should be inspected as part of the review process for a task.<p>
- *  
- *  Downstream from the edit node and upstream from the submit node.  These nodes
- *  are what a supervisor will look at to get an idea of whether the task is 
- *  satisfactory. <p>
- *  
- *  This annotation defines the following parameters: <BR>
+ * A node that should be inspected as part of the review process for a task.<p>
  * 
- *  <DIV style="margin-left: 40px;">
- *    Task Name <BR>
- *    <DIV style="margin-left: 40px;">
- *      The name of the common production goal this node is used to achieve.
- *    </DIV> <BR> 
- *  </DIV> <P>
+ * This type of node is located downstream from the EditNode and upstream from the 
+ * SubmitNode for a task and are associated with the data that will be reviewed by 
+ * the supervisor of the task in order to determine if the task has been completed
+ * satisfactorily. <P> 
+ * 
+ * This annotation defines the following parameters: <BR>
+ * 
+ * <DIV style="margin-left: 40px;">
+ *   Task Name <BR>
+ *   <DIV style="margin-left: 40px;">
+ *     The name of the common production goal this node is used to achieve.
+ *   </DIV> <BR> 
+ * 
+ *   Task Type <BR>
+ *   <DIV style="margin-left: 40px;">
+ *     The type of production goal this node is used to achieve.
+ *   </DIV> <BR> 
+ * </DIV> <P>
  */
 public class 
 FocusNodeAnnotation 
@@ -44,6 +50,16 @@ FocusNodeAnnotation
 	 null); 
       addParam(param);
     }
+
+    {
+      AnnotationParam param = 
+	new StringAnnotationParam
+	(aTaskType, 
+	 "The type of production goal this node is used to achieve.", 
+	 null); 
+      addParam(param);
+    }
+
     underDevelopment();
   }
   
@@ -53,7 +69,9 @@ FocusNodeAnnotation
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
   
-  public static final String aTaskName   = "TaskName";
   private static final long serialVersionUID = -3706261505162834053L;
+
+  public static final String aTaskName = "TaskName";
+  public static final String aTaskType = "TaskType";
 
 }

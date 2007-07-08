@@ -9,8 +9,7 @@ import us.temerity.pipeline.*;
 /*------------------------------------------------------------------------------------------*/
 
 /** 
- * Identifies a node as a node that an artist should be editing and provides a field to
- * identify the artist who is assigned to this node.
+ * Identifies the nodes that an artist should be editing in order to accomplish a task.
  * 
  * This annotation defines the following parameters: <BR>
  * 
@@ -20,17 +19,9 @@ import us.temerity.pipeline.*;
  *     The name of the common production goal this node is used to achieve.
  *   </DIV> <BR>
  * 
- *   Assigned To <BR>
+ *   Task Type <BR>
  *   <DIV style="margin-left: 40px;">
- *     The name of the WorkGroup or specific artist assigned to complete the task involving
- *     this node.  In the case of the edit node, this field is purely informational.  There
- *     are no restrictions place upon the check-in of the edit node.
- *   </DIV> <BR>
- *   
- *   Submit Node Name <BR>
- *   <DIV style="margin-left: 40px;">
- *     The name of the submit node that is associated with this edit node.  Provided solely to
- *     make it easy for a user to move from an edit node to a submit node.
+ *     The type of production goal this node is used to achieve.
  *   </DIV> <BR>
  * </DIV> <P> 
  */
@@ -46,8 +37,8 @@ class EditNodeAnnotation
   EditNodeAnnotation()
   {
     super("EditNode", new VersionID("2.3.2"), "Temerity", 
-	  "Identifies a node as a node that an artist should be editing and provides a field to " +
-	  "identify the artist who is assigned to this node.");
+	  "Identifies the nodes that an artist should be editing in order to accomplish " +
+          "a task.");
     
     {
       AnnotationParam param = 
@@ -60,31 +51,13 @@ class EditNodeAnnotation
 
     {
       AnnotationParam param = 
-	new WorkGroupAnnotationParam
-	(aAssignedTo, 
-	 "The name of the WorkGroup or specific artist assigned to complete the task " + 
-         "involving this node.", 
-	 true, true, null); 
-      addParam(param);
-    }
-    
-    {
-      AnnotationParam param = 
 	new StringAnnotationParam
-	(aSubmitNodeName, 
-	 "The name of the common production goal this node is used to achieve.", 
+	(aTaskType, 
+	 "The type of production goal this node is used to achieve.", 
 	 null); 
       addParam(param);
     }
-    
-    {
-      ArrayList<String> layout = new ArrayList<String>();
-      layout.add(aTaskName);
-      layout.add(null);
-      layout.add(aAssignedTo);
-      layout.add(aSubmitNodeName);
-      setLayout(layout);
-    }
+
     underDevelopment();
   }
   
@@ -94,9 +67,8 @@ class EditNodeAnnotation
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
   
-  public static final String aTaskName       = "TaskName";
-  public static final String aAssignedTo     = "AssignedTo";
-  public static final String aSubmitNodeName = "SubmitNodeName";
+  public static final String aTaskName = "TaskName";
+  public static final String aTaskType = "TaskType";
   
   private static final long serialVersionUID = 4845630839422760725L;
   

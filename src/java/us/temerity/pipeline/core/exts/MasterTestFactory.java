@@ -1,4 +1,4 @@
-// $Id: MasterTestFactory.java,v 1.3 2007/06/22 01:26:09 jim Exp $
+// $Id: MasterTestFactory.java,v 1.4 2007/07/08 01:18:16 jim Exp $
 
 package us.temerity.pipeline.core.exts;
 
@@ -15,7 +15,6 @@ import java.util.*;
  */
 public 
 interface MasterTestFactory
-  extends MasterFactory
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   O P S                                                                                */
@@ -29,15 +28,6 @@ interface MasterTestFactory
   (   
    BaseMasterExt ext
   ); 
-
-  /**
-   * Get the requirements to for the pre-operation test. 
-   */ 
-  public ExtReqs
-  getTestReqs
-  (   
-   BaseMasterExt ext
-  );
 
   /**
    * Perform the pre-test passed for this type of operation.
