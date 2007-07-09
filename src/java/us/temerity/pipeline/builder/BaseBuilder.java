@@ -1616,12 +1616,13 @@ class BaseBuilder
     public String
     toString()
     {
-      String message = "Pass (" + getName() + ") contained in Builder (";
       BaseBuilder builder = getParentBuilder();
       
+      String message = "";
       if (builder != null)
-	message += builder.getPrefixedName();
-      message += ")";
+	message += builder.getPrefixedName() + " : ";
+      message += getName();
+      
       return message;
     }
     
