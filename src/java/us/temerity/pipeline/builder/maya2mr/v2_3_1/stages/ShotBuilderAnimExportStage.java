@@ -5,13 +5,13 @@ import java.util.TreeSet;
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.PluginContext;
 import us.temerity.pipeline.builder.UtilContext;
-import us.temerity.pipeline.stages.NoFrameNumStage;
+import us.temerity.pipeline.stages.StandardStage;
 import us.temerity.pipeline.stages.StageInformation;
 
 
 public 
 class ShotBuilderAnimExportStage
-  extends NoFrameNumStage
+  extends StandardStage
 {
   public ShotBuilderAnimExportStage
   (

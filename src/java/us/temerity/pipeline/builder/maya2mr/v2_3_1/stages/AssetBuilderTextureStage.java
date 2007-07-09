@@ -6,7 +6,7 @@ package us.temerity.pipeline.builder.maya2mr.v2_3_1.stages;
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.PluginContext;
 import us.temerity.pipeline.builder.UtilContext;
-import us.temerity.pipeline.stages.NoFrameNumStage;
+import us.temerity.pipeline.stages.StandardStage;
 import us.temerity.pipeline.stages.StageInformation;
 
 /**
@@ -21,7 +21,7 @@ import us.temerity.pipeline.stages.StageInformation;
  */
 public 
 class AssetBuilderTextureStage 
-  extends NoFrameNumStage
+  extends StandardStage
 {
   /**
    * This constructor will initialize the stage and then runs build to generate the
