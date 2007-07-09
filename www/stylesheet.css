@@ -268,7 +268,7 @@ td.spacer {
 }
 
 td.spaceRow {
-  background-color: #d3ceb8; 
+  background-color: #c6c2af; 
   border: #ede9da; 
   border-style: solid;
   border-width: 0px 0px 0px 0px;
@@ -280,11 +280,16 @@ td.value {
 }
 
 code {
-  color:       #ffffff;
-  font-size:   10px; 
+  color:       #000000;
+  font-size:   12px; 
   font-weight: bold;
 }
 
+
+.genhuge { 
+  font-size: 18px; 
+  font-weight: bold;
+}
 
 .genbig { 
   font-size: 14px; 

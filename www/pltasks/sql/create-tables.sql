@@ -8,6 +8,7 @@ CREATE TABLE `events` (
   `task_id` smallint(5) unsigned NOT NULL,
   `ident_id` smallint(5) unsigned NOT NULL,
   `stamp` datetime NOT NULL,
+  `note_id` mediumint(8) unsigned NOT NULL,
   `new_active_id` smallint(5) unsigned default NULL,
   `new_status_id` smallint(5) unsigned default NULL,
   PRIMARY KEY  (`event_id`),
@@ -21,7 +22,9 @@ CREATE TABLE `events` (
 CREATE TABLE `idents` (
   `ident_id` smallint(5) unsigned NOT NULL auto_increment,
   `ident_name` varchar(32) NOT NULL,
-  PRIMARY KEY  (`ident_id`)
+  `is_group` tinyint(1) NOT NULL,
+  PRIMARY KEY  (`ident_id`),
+  KEY `is_group` (`is_group`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 CREATE TABLE `node_info` (
@@ -46,7 +49,7 @@ CREATE TABLE `node_names` (
   `node_id` mediumint(8) unsigned NOT NULL auto_increment,
   `node_name` varchar(2048) NOT NULL,
   PRIMARY KEY  (`node_id`),
-  KEY `node_name` (`node_name`(333))
+  KEY `node_name` (`node_name`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 CREATE TABLE `notes` (
@@ -99,11 +102,9 @@ CREATE TABLE `tasks` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 CREATE TABLE `supervisors` (
-  `super_id` mediumint(8) unsigned NOT NULL auto_increment,
   `ident_id` smallint(5) unsigned NOT NULL,
   `task_id` smallint(5) unsigned NOT NULL,  
-  PRIMARY KEY  (`super_id`),
-  KEY `ident_id` (`ident_id`),
+  PRIMARY KEY `ident_id` (`ident_id`),
   KEY `task_id` (`task_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 

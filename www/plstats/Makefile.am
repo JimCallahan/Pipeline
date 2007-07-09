@@ -1,9 +1,9 @@
 
-# webdir = @ROOT_INST_DIR@/share/www/plstats/
+webdir = @ROOT_INST_DIR@/share/www/plstats/
 
-# web_DATA = \
-#   simple.php \
-#   show-simple.php
+web_DATA = \
+  db-config.php
 
 
-SUBDIRS = etc sql
+
+SUBDIRS = sql
