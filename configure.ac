@@ -1563,6 +1563,7 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/builder/Makefile
   src/java/us/temerity/pipeline/builder/maya2mr/Makefile
   src/java/us/temerity/pipeline/builder/maya2mr/v2_3_1/Makefile
+  src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/Makefile
 
   src/java/us/temerity/pipeline/core/VerifiedApp.java
   src/java/us/temerity/pipeline/laf/scripts/filter-fonts
@@ -1706,6 +1707,8 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/EmacsEditor/v2_0_10/Makefile
   src/java/us/temerity/pipeline/plugin/EmacsEditor/v2_0_9/Makefile
   src/java/us/temerity/pipeline/plugin/EmacsEditor/v2_2_1/Makefile
+  src/java/us/temerity/pipeline/plugin/EmptyFBXAction/Makefile
+  src/java/us/temerity/pipeline/plugin/EmptyFBXAction/v2_3_3/Makefile
   src/java/us/temerity/pipeline/plugin/EnvCrossToSeqAction/Makefile
   src/java/us/temerity/pipeline/plugin/EnvCrossToSeqAction/v2_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/EnvCrossToSeqAction/v2_2_1/Makefile
@@ -2067,6 +2070,8 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/MayaRenderGlobalsAction/v2_2_1/Makefile
   src/java/us/temerity/pipeline/plugin/MayaReplaceRefAction/Makefile
   src/java/us/temerity/pipeline/plugin/MayaReplaceRefAction/v2_2_1/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaReRigMELAction/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaReRigMELAction/v2_3_3/Makefile
   src/java/us/temerity/pipeline/plugin/MayaSdExportAction/Makefile
   src/java/us/temerity/pipeline/plugin/MayaSdExportAction/v2_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/MayaShaderExportAction/Makefile
@@ -2253,6 +2258,10 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/TouchAction/v2_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/TouchAction/v2_0_9/Makefile
   src/java/us/temerity/pipeline/plugin/TouchAction/v2_2_1/Makefile
+  src/java/us/temerity/pipeline/plugin/ThumbnailAction/Makefile
+  src/java/us/temerity/pipeline/plugin/ThumbnailAction/v2_3_3/Makefile
+  src/java/us/temerity/pipeline/plugin/ThumbnailNodeAnnotation/Makefile
+  src/java/us/temerity/pipeline/plugin/ThumbnailNodeAnnotation/v2_3_2/Makefile
   src/java/us/temerity/pipeline/plugin/UltraEditEditor/Makefile
   src/java/us/temerity/pipeline/plugin/UltraEditEditor/v2_0_9/Makefile
   src/java/us/temerity/pipeline/plugin/UltraEditEditor/v2_2_1/Makefile
@@ -2346,6 +2355,8 @@ AC_CONFIG_FILES([
   src/java/scripts/builder/maya2mr/v2_3_1/Makefile
   src/java/scripts/builder/maya2mr/v2_3_1/plNewAssetBuilder
   src/java/scripts/builder/maya2mr/v2_3_1/plShotBuilder
+  src/java/scripts/builder/maya2mr/v2_3_2/Makefile
+  src/java/scripts/builder/maya2mr/v2_3_2/plAdvAssetBuilder
 
   src/java/share/Makefile
   src/java/share/Unix/Makefile
@@ -2396,6 +2407,8 @@ AC_CONFIG_FILES([
   src/windows/scripts/builder/maya2mr/v2_3_1/Makefile
   src/windows/scripts/builder/maya2mr/v2_3_1/plNewAssetBuilder.bat.src
   src/windows/scripts/builder/maya2mr/v2_3_1/plShotBuilder.bat.src
+  src/windows/scripts/builder/maya2mr/v2_3_2/Makefile
+  src/windows/scripts/builder/maya2mr/v2_3_2/plAdvAssetBuilder.bat.src
 
   src/windows/launchers/Makefile
   src/windows/launchers/plui.exe4j
@@ -2418,10 +2431,8 @@ AC_CONFIG_FILES([
   www/Makefile
   www/images/Makefile
   www/plstats/Makefile
-  www/plstats/etc/Makefile
   www/plstats/sql/Makefile
   www/pltasks/Makefile
-  www/pltasks/etc/Makefile
   www/pltasks/sql/Makefile
 
 ])
