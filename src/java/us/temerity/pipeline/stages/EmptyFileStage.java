@@ -13,7 +13,7 @@ import us.temerity.pipeline.builder.UtilContext;
  *
  */
 public class EmptyFileStage
-  extends NoFrameNumStage
+  extends StandardStage
 {
   public
   EmptyFileStage

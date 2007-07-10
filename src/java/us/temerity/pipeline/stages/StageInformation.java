@@ -22,6 +22,7 @@ class StageInformation
     pAddedNodesViewMap = new TreeMap<String, String>();
     pDefaultSelectionKeys = new TreeSet<String>();
     pDefaultLicenseKeys = new TreeSet<String>();
+    pDoAnnotations = false;
   }
 
   
@@ -179,6 +180,22 @@ class StageInformation
     pAddedNodesViewMap.put(name, view);
     return true;
   }
+  
+  public boolean 
+  doAnnotations()
+  {
+    return pDoAnnotations;
+  }
+
+  
+  public void 
+  setDoAnnotations
+  (
+    boolean doAnnotations
+  )
+  {
+    pDoAnnotations = doAnnotations;
+  }
 
   
   
@@ -209,4 +226,7 @@ class StageInformation
   private boolean pUseDefaultSelectionKeys;
   
   private boolean pUseDefaultLicenseKeys;
+  
+  private boolean pDoAnnotations;
+
 }

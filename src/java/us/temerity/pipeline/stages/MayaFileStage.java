@@ -10,7 +10,7 @@ import us.temerity.pipeline.builder.*;
  */
 public 
 class MayaFileStage 
-  extends NoFrameNumStage
+  extends StandardStage
 {
   /**
    * Constructor for this branch stage that allows the user to specify an Editor and an

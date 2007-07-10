@@ -49,6 +49,7 @@ class BaseStage
     pStageInformation = stageInformation;
     pClient = client;
     pPlug = PluginMgrClient.getInstance();
+    pAnnotations = new ListMap<String, BaseAnnotation>();
   }
   
   
@@ -282,7 +283,7 @@ class BaseStage
     int endFrame, 
     int step
   ) 
-  throws PipelineException
+    throws PipelineException
   {
     Path p = new Path(name);
     FilePattern pat = new FilePattern(p.getName(), pad, suffix);
@@ -412,6 +413,10 @@ class BaseStage
     DoubleMap<String, String, TreeSet<VersionID>> plugs = pClient
       .getToolsetActionPlugins(toolset);
     
+    if (plugs == null)
+      throw new PipelineException
+        ("There are no plugins associated with the toolset (" + toolset + ")");
+    
     TreeSet<VersionID> pluginSet = 
       plugs.get(pluginUtil.getPluginVendor(), pluginUtil.getPluginName());
     if (pluginSet == null)
@@ -444,8 +449,18 @@ class BaseStage
   {
     DoubleMap<String, String, TreeSet<VersionID>> plugs = pClient
       .getToolsetEditorPlugins(toolset);
-    VersionID ver = plugs.get(pluginUtil.getPluginVendor(), pluginUtil.getPluginName())
-      .last();
+    
+    if (plugs == null)
+      throw new PipelineException
+        ("There are no plugins associated with the toolset (" + toolset + ")");
+    
+    TreeSet<VersionID> pluginSet = 
+      plugs.get(pluginUtil.getPluginVendor(), pluginUtil.getPluginName());
+    if (pluginSet == null)
+      throw new PipelineException
+        ("No Action Exists that matches the Plugin Context (" + pluginUtil + ") " +
+         "in toolset (" + toolset + ")");
+    VersionID ver = pluginSet.last();
 
     return pPlug.newEditor(pluginUtil.getPluginName(), ver, pluginUtil.getPluginVendor());
   }
@@ -713,7 +728,8 @@ class BaseStage
     pSelectionKeys = selectionKeys;
   }
 
-  public void addLicenseKeys
+  public void 
+  addLicenseKeys
   (
     TreeSet<String> licenseKeys
   )
@@ -723,7 +739,8 @@ class BaseStage
     pLicenseKeys.addAll(licenseKeys);
   }
 
-  public void setLicenseKeys
+  public void 
+  setLicenseKeys
   (
     TreeSet<String> licenseKeys
   )
@@ -731,7 +748,21 @@ class BaseStage
     pLicenseKeys = licenseKeys;
   }
 
+  public void
+  addAnnotation
+  (
+    String name,
+    BaseAnnotation annotation  
+  )
+  {
+    pAnnotations.put(name, annotation);
+  }
   
+  public Map<String, BaseAnnotation>
+  getAnnotations()
+  {
+    return Collections.unmodifiableMap(pAnnotations);
+  }
   
   /*----------------------------------------------------------------------------------------*/
   /*  I N T E R N A L S                                                                     */
@@ -750,6 +781,10 @@ class BaseStage
    * The suffix of the node that is going to be registered.
    */
   protected String pSuffix = null;
+  
+  protected FrameRange pFrameRange;
+  
+  protected int pPadding;
 
   /**
    * The Editor for the node that is going to be registered
@@ -789,6 +824,8 @@ class BaseStage
    * The list of Selection Keys to assign to the built node.
    */
   protected TreeSet<String> pLicenseKeys;
+  
+  protected ListMap<String, BaseAnnotation> pAnnotations;
   
   /**
    * Instance of {@link MasterMgrClient} to perform the stage's operations with.

@@ -193,14 +193,3 @@ class MayaBuildStage
   
   private static final long serialVersionUID = -19415324052636094L;
 }
-
-/**
- * An Enum that defines the two different types of connections for the MayaBuild Action.
- * 
- * @author Jesse Clemens
- */
-enum 
-MayaBuildType
-{
-  IMPORT, REFERENCE;
-}
