@@ -27,10 +27,154 @@ class TaskPolicyExt
     super("TaskPolicy", new VersionID("2.3.2"), "Temerity",
 	  "Restricts access to node operations based on all the Task Annotations.");
     
+    
+    /* server configuration */ 
+    {
+      {
+	ExtensionParam param = 
+	  new StringExtensionParam
+	  (aDatabaseHostname, 
+	   "The hostname running the SQL database server.", 
+	   "localhost");
+	addParam(param);
+      }
+
+      {
+	ExtensionParam param = 
+	  new IntegerExtensionParam
+	  (aDatabasePort, 
+	   "The network port to use to contact the SQL database server.",
+	   3306);
+	addParam(param);
+      }
+
+      {
+	ExtensionParam param = 
+	  new StringExtensionParam
+	  (aDatabaseUser, 
+	   "The user name to use when connecting to the SQL database.",
+	   "pipeline");
+	addParam(param);
+      }
+
+      {
+	ExtensionParam param = 
+	  new StringExtensionParam    // Make a PasswordExtensionParam 
+	  (aDatabasePassword, 
+	   "The password to use when connecting to the SQL database.",
+	   null);
+	addParam(param);
+      }
+    }
+
+    {  
+      LayoutGroup layout = new LayoutGroup(true); 
+      layout.addEntry(aDatabaseHostname);
+      layout.addEntry(aDatabasePort);
+      layout.addSeparator();
+      layout.addEntry(aDatabaseUser);
+      layout.addEntry(aDatabasePassword);
+      
+      setLayout(layout);  
+    }
+
     underDevelopment(); 
   }
   
   
+
+  /*----------------------------------------------------------------------------------------*/
+  /*  P L U G I N   O P S                                                                   */
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Whether to run a task after this extension plugin is first enabled.<P> 
+   * 
+   * A extension plugin can be enabled either during server initialization or during normal
+   * server operation when this specific plugin is enabled manually. 
+   */  
+  public boolean
+  hasPostEnableTask()
+  {
+    return true;
+  }
+
+  /**
+   * The task to perform after this extension plugin is first enabled.<P> 
+   * 
+   * A extension plugin can be enabled either during server initialization or during normal
+   * server operation when this specific plugin is enabled manually.
+   */ 
+  public void 
+  postEnableTask()
+  {
+    try {
+      String hostname = (String) getParamValue(aDatabaseHostname);
+      if((hostname == null) || (hostname.length() == 0))
+	throw new PipelineException("No Database Hostname was specified!");
+      
+      Integer port = (Integer) getParamValue(aDatabasePort);
+      if(port == null)
+	throw new PipelineException("No Database Port was specified!");
+      if(port <= 0)
+	throw new PipelineException("Invalid Database Port (" + port + ")!");
+      
+      String user = (String) getParamValue(aDatabaseUser);
+      if((user == null) || (user.length() == 0))
+	throw new PipelineException("No Database User was specified!");
+      
+      String password = (String) getParamValue(aDatabasePassword);
+      if((password == null) || (password.length() == 0))
+	throw new PipelineException("No Database Password was specified!");
+      
+      sDatabase.connect(hostname, port, user, password);
+    }
+    catch(PipelineException ex) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ext, LogMgr.Level.Severe, 
+         ex.getMessage());
+    }
+    catch(Exception ex) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ext, LogMgr.Level.Severe, 
+	 getFullMessage(ex));
+    }
+  }
+ 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether to run a task after this extension plugin is disabled.<P> 
+   * 
+   * A extension plugin can be disabled either during server shutdown or during normal
+   * server operation when this specific plugin is disabled or removed manually.
+   */  
+  public boolean
+  hasPreDisableTask()
+  {
+    return true;
+  }
+
+  /**
+   * The task to perform after this extension plugin is disabled.<P> 
+   * 
+   * A extension plugin can be disabled either during server shutdown or during normal
+   * server operation when this specific plugin is disabled or removed manually.
+   */ 
+  public void 
+  preDisableTask()
+  {
+    try {
+      sDatabase.disconnect();
+    }
+    catch(Exception ex) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ext, LogMgr.Level.Severe, 
+	 getFullMessage(ex));
+    }
+  }
+ 
   
   /*----------------------------------------------------------------------------------------*/
   /*   C H E C K - I N                                                                      */
@@ -80,6 +224,7 @@ class TaskPolicyExt
     throws PipelineException
   {
     String nodeName = nodeID.getName();
+    String author   = nodeID.getAuthor();
     
     MasterMgrLightClient mclient = getMasterMgrClient();
     TreeMap<String,BaseAnnotation> rootAnnotations = mclient.getAnnotations(rname);
@@ -91,7 +236,6 @@ class TaskPolicyExt
          check-in is allowed based on the annotation parameters */ 
     boolean rootApprove  = false;
     boolean rootSubmit   = false;
-    boolean rootFocus    = false;
     String rootTaskName  = null;
     String rootTaskType  = null;
     String rootAnnotType = null;
@@ -100,7 +244,11 @@ class TaskPolicyExt
       String annotType = an.getName(); 
       rootAnnotType = annotType;
 
-      if(annotType.equals("IntermediateNode") || annotType.equals("ProductNode")) {
+      if(annotType.equals("FocusNode") || 
+         annotType.equals("ThumbnailNode") || 
+         annotType.equals("IntermediateNode") || 
+         annotType.equals("ProductNode")) {
+
         String goodRoot = annotType.equals("ProductNode") ? "ApproveNode" : "SubmitNode"; 
         throw new PipelineException
           ("Cannot check-in node (" + rname + "), because it is both the root node of the " + 
@@ -108,18 +256,17 @@ class TaskPolicyExt
            annotType + " as part of the check-in of a " + goodRoot + "."); 
       }
       else {
-        if(annotType.equals("FocusNode") || annotType.equals("ApproveNode") || 
-           annotType.equals("SubmitNode") || annotType.equals("EditNode")) {
+        if(annotType.equals("SubmitNode") || 
+           annotType.equals("EditNode") ||
+           annotType.equals("ApproveNode")) {
+
           rootTaskName = lookupTaskName(rname, an);
           rootTaskType = lookupTaskType(rname, an);
         }
 
-        if(annotType.equals("FocusNode")) {
-          rootFocus = true;
-        }
-        else if(annotType.equals("ApproveNode")) {
+        if(annotType.equals("ApproveNode")) {
           rootApprove = true;
-          if(!nodeID.getAuthor().equals(PackageInfo.sPipelineUser)) 
+          if(!author.equals(PackageInfo.sPipelineUser)) 
             throw new PipelineException
               ("Cannot check-in node (" + rname + "), because it is a " + annotType + " " + 
                "of the task (" + rootTaskName + ":" + rootTaskType + ") which can only be " + 
@@ -128,36 +275,27 @@ class TaskPolicyExt
         }
         else if(annotType.equals("SubmitNode")) {
           rootSubmit = true;
-          String author   = nodeID.getAuthor();
-          String assigned = (String) an.getParamValue(aAssignedTo);
-          if((assigned == null) || (assigned.length() == 0)) 
-            throw new PipelineException 
-              ("Cannot check-in node (" + rname + ") because no one was Assigned To the " + 
-               "complete the task (" + rootTaskName + ":" + rootTaskType + ")!"); 
-
-          boolean isGroup = wgroups.isGroup(assigned); 
-          if((!isGroup && !assigned.equals(author)) || 
-             (isGroup && wgroups.isMemberOrManager(author, assigned) == null)) 
-            throw new PipelineException
-              ("The task (" + rootTaskName + ":" + rootTaskType + ") for node " + 
-               "(" + rname + ") is assigned to the " + 
-               (isGroup ? "Pipeline work group [" + assigned + "]" : 
-                          "artist (" + assigned + ")") + 
-               ".  The (" + author + ") user is not assigned to this task and therefore " + 
-               "is not allowed to check-in this submit node.");
+          if(!author.equals(PackageInfo.sPipelineUser)) {
+            String assigned = (String) an.getParamValue(aAssignedTo);
+            if((assigned == null) || (assigned.length() == 0)) 
+              throw new PipelineException 
+                ("Cannot check-in node (" + rname + ") because no one was Assigned To the " + 
+                 "complete the task (" + rootTaskName + ":" + rootTaskType + ")!"); 
+            
+            boolean isGroup = wgroups.isGroup(assigned); 
+            if((!isGroup && !assigned.equals(author)) || 
+               (isGroup && wgroups.isMemberOrManager(author, assigned) == null)) 
+              throw new PipelineException
+                ("The task (" + rootTaskName + ":" + rootTaskType + ") for node " + 
+                 "(" + rname + ") is assigned to the " + 
+                 (isGroup ? "Pipeline work group [" + assigned + "]" : 
+                  "artist (" + assigned + ")") + 
+                 ".  The (" + author + ") user is not assigned to this task and therefore " + 
+                 "is not allowed to check-in this submit node.");
+          }
         }
       }
     }
-
-    //
-    // SHOULD ROOT FOCUS NODES BE ALLOWED EVEN IF THEY ARE THE SUBMIT NODE?
-    //
-    if(rootFocus && !rootSubmit)
-      throw new PipelineException
-        ("Cannot check-in node (" + rname + "), because it both a FocusNode and the root " + 
-         "node of the check-in operation without also being a SubmitNode of the task " + 
-         "(" + rootTaskName + ":" + rootTaskType + ")!"); 
-    
 
     /* perform checks based on comparing annotation parameters of the root node of the 
          check-in with the current node */
@@ -165,7 +303,10 @@ class TaskPolicyExt
       BaseAnnotation an = nodeAnnotations.get(aname);
       String annotType = an.getName(); 
 
-      if(annotType.equals("FocusNode") || annotType.equals("IntermediateNode")) {
+      if(annotType.equals("FocusNode") || 
+         annotType.equals("ThumbnailNode") || 
+         annotType.equals("IntermediateNode")) {
+
 	if(rootSubmit) 
 	  verifyTask(nodeName, an, rname, rootTaskName, rootTaskType); 
 	else
@@ -234,62 +375,87 @@ class TaskPolicyExt
         String taskName = lookupTaskName(nodeName, an);
         String taskType = lookupTaskType(nodeName, an);
 
-        
-        // Useful things you can use in the sql COMMIT
-        // String author = vsn.getAuthor();
-        // VersionID id = vsn.getVersionID();
-        // String message = vsn.getMessage();
-        // java.sql.Date date = new Date(vsn.getTimeStamp());
-        
-        if (annotType.equals("SubmitNode")) {
-
-          // Tell the sql database that a node has been submitted for approval.
-          
-          LogMgr.getInstance().log
-            (Kind.Ops, Level.Info, 
-             "The " + annotType + " (" + nodeName + " v" + vsn.getVersionID() + ") of " + 
-             "task (" + taskName + ":" + taskType + ") has been checked-in.");
-
-          /* find all focus and edit nodes upstream for the task */ 
+        if(annotType.equals("SubmitNode")) {
           TreeMap<String,NodeVersion> focusNodes = new TreeMap<String,NodeVersion>();
+          TreeMap<String,NodeVersion> thumbNodes  = new TreeMap<String,NodeVersion>();
           TreeMap<String,NodeVersion> editNodes  = new TreeMap<String,NodeVersion>();
-          findFocusEditNodes(nodeName, taskName, taskType, vsn, 
-                             focusNodes, editNodes, mclient);
+          findSubmitNodes(nodeName, taskName, taskType, vsn, 
+                          focusNodes, thumbNodes, editNodes, mclient);
 
-          /* process focus nodes */ 
-          for(NodeVersion fvsn : focusNodes.values()) {
-
-            // Register the current version of the focus node for this submit check-in.
-
+          /* DEBUG */ 
+          {
             LogMgr.getInstance().log
               (Kind.Ops, Level.Info, 
-               "The FocusNode (" + fvsn.getName() + " v" + fvsn.getVersionID() + ") is " + 
-               "associated with task (" + taskName + ":" + taskType + ") submitted for " + 
-               "approval by checking-in the SubmitNode (" + nodeName + " v" + 
-               vsn.getVersionID() + ").");
-          }
+               "The " + annotType + " (" + nodeName + " v" + vsn.getVersionID() + ") of " + 
+               "task (" + taskName + ":" + taskType + ") has been checked-in.");
 
-          /* process edit nodes */ 
-          for(NodeVersion evsn : editNodes.values()) {
-
-            // Register the current version of the edit node for this submit check-in.
-
-            LogMgr.getInstance().log
-              (Kind.Ops, Level.Info, 
+            for(NodeVersion fvsn : focusNodes.values()) {
+              LogMgr.getInstance().log
+                (Kind.Ops, Level.Info, 
+                 "The FocusNode (" + fvsn.getName() + " v" + fvsn.getVersionID() + ") is " + 
+                 "associated with task (" + taskName + ":" + taskType + ") submitted for " + 
+                 "approval by checking-in the SubmitNode (" + nodeName + " v" + 
+                 vsn.getVersionID() + ").");
+            }
+            
+            for(NodeVersion tvsn : thumbNodes.values()) {
+              LogMgr.getInstance().log
+                (Kind.Ops, Level.Info, 
+                 "The ThumbnailNode (" + tvsn.getName() + " v" + tvsn.getVersionID() + ") " + 
+                 "is associated with task (" + taskName + ":" + taskType + ") submitted " + 
+                 "for approval by checking-in the SubmitNode (" + nodeName + " v" + 
+                 vsn.getVersionID() + ").");
+            }
+            
+            for(NodeVersion evsn : editNodes.values()) {
+              LogMgr.getInstance().log
+                (Kind.Ops, Level.Info, 
                "The FocusNode (" + evsn.getName() + " v" + evsn.getVersionID() + ") is " + 
-               "associated with task (" + taskName + ":" + taskType + ") submitted for " + 
-               "approval by checking-in the SubmitNode (" + nodeName + " v" + 
-               vsn.getVersionID() + ").");
+                 "associated with task (" + taskName + ":" + taskType + ") submitted for " + 
+                 "approval by checking-in the SubmitNode (" + nodeName + " v" + 
+                 vsn.getVersionID() + ").");
+            }
+          }
+          /* DEBUG */
+
+          int tries = 0; 
+          while(true) {
+            try {
+              sDatabase.submitTask(taskName, taskType, vsn, 
+                                   focusNodes, thumbNodes, editNodes); 
+              break;
+            }
+            catch(PipelineException ex) {
+              String msg = 
+                ("TaskSubmission for (" + taskName + ":" + taskType + ") Failed:\n" +
+                 ex.getMessage());      
+
+              if(tries < sMaxTries) {
+                LogMgr.getInstance().log
+                  (Kind.Ops, Level.Warning, 
+                   msg + "\nRetrying...");
+                tries++;
+              }
+              else {
+                LogMgr.getInstance().log
+                  (Kind.Ops, Level.Warning, 
+                   msg + "\nAborted after (" + tries + ") attempts!"); 
+                break;
+              }
+            }
           }
         }
-        if (annotType.equals("ApproveNode")) {
+        else if(annotType.equals("ApproveNode")) {
+          /* DEBUG */ 
+          {
+            LogMgr.getInstance().log
+              (Kind.Ops, Level.Info, 
+               "The " + annotType + " (" + nodeName + " v" + vsn.getVersionID() + ") of " + 
+               "task (" + taskName + ":" + taskType + ") has been checked-in.");
+          }
+          /* DEBUG */
 
-          /*  Tell the sql database that approval automation has finished. */
-
-          LogMgr.getInstance().log
-            (Kind.Ops, Level.Info, 
-             "The " + annotType + " (" + nodeName + " v" + vsn.getVersionID() + ") of " + 
-             "task (" + taskName + ":" + taskType + ") has been checked-in.");
+          //sDatabase.approveTask(taskName, taskType, vsn); 
         }
       }
     }
@@ -301,14 +467,18 @@ class TaskPolicyExt
     }
   }
 
+  /**
+   * Find the focus/edit nodes upstream of the submit node.
+   */ 
   private void 
-  findFocusEditNodes
+  findSubmitNodes
   (
    String submitNodeName, 
    String submitTaskName, 
    String submitTaskType, 
    NodeVersion vsn, 
    TreeMap<String,NodeVersion> focusNodes, 
+   TreeMap<String,NodeVersion> thumbNodes,
    TreeMap<String,NodeVersion> editNodes, 
    MasterMgrLightClient mclient
   )
@@ -323,6 +493,10 @@ class TaskPolicyExt
         verifyTask(vsn.getName(), an, submitNodeName, submitTaskName, submitTaskType); 
         focusNodes.put(vsn.getName(), vsn);
       }
+      else if(annotType.equals("ThumbnailNode")) {
+        verifyTask(vsn.getName(), an, submitNodeName, submitTaskName, submitTaskType); 
+        thumbNodes.put(vsn.getName(), vsn); 
+      }
       else if(annotType.equals("EditNode")) {
         verifyTask(vsn.getName(), an, submitNodeName, submitTaskName, submitTaskType); 
         editNodes.put(vsn.getName(), vsn); 
@@ -331,8 +505,8 @@ class TaskPolicyExt
       
     for(LinkVersion link : vsn.getSources()) {
       NodeVersion source = mclient.getCheckedInVersion(link.getName(), link.getVersionID());
-      findFocusEditNodes(submitNodeName, submitTaskName, submitTaskType, source, 
-                         focusNodes, editNodes, mclient);
+      findSubmitNodes(submitNodeName, submitTaskName, submitTaskType, source, 
+                      focusNodes, thumbNodes, editNodes, mclient);
     }
   }
   
@@ -415,11 +589,28 @@ class TaskPolicyExt
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * The shared SQL database connection.
+   */ 
+  private static TaskDb sDatabase = new TaskDb();
+
+  private static final int sMaxTries = 2; 
+
+
+  /*----------------------------------------------------------------------------------------*/
+
   private static final long serialVersionUID = 5625120891197882080L;
   
   
-  public static final String aTaskName   = "TaskName";
-  public static final String aTaskType   = "TaskType";
-  public static final String aIsApproved = "IsApproved";
-  public static final String aAssignedTo = "AssignedTo";
+  public static final String aDatabaseHostname = "DatabaseHostname"; 
+  public static final String aDatabasePort     = "DatabasePort"; 
+  public static final String aDatabaseFlavor   = "DatabaseFlavor"; 
+  public static final String aDatabaseUser     = "DatabaseUser"; 
+  public static final String aDatabasePassword = "DatabasePassword"; 
+
+  public static final String aTaskName         = "TaskName";
+  public static final String aTaskType         = "TaskType";
+  public static final String aIsApproved       = "IsApproved";
+  public static final String aAssignedTo       = "AssignedTo";
+
 }
