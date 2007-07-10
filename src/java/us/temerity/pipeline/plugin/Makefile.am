@@ -42,6 +42,7 @@ SUBDIRS = \
   EditNodeAnnotation \
   EmacsClientEditor \
   EmacsEditor \
+  EmptyFBXAction \
   EnvCrossToSeqAction \
   EvinceEditor \
   ExpertEditor \
@@ -135,6 +136,7 @@ SUBDIRS = \
   MayaRenderAction \
   MayaRenderGlobalsAction \
   MayaReplaceRefAction \
+  MayaReRigMELAction \
   MayaSdExportAction \
   MayaShaderExportAction \
   MayaTextureSyncTool \
@@ -211,6 +213,8 @@ SUBDIRS = \
   TestAction \
   TextDiffComparator \
   TextEditEditor \
+  ThumbnailAction \
+  ThumbnailNodeAnnotation \
   TouchAction \
   UltraEditEditor \
   VimEditor \
