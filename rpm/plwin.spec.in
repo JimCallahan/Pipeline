@@ -43,6 +43,7 @@ plconfig(1) during Pipeline configuration process.
 %defattr(555,root,root)
 @ROOT_INST_DIR@/builders/us/temerity/pipeline/builder/maya2mr/v2_3_1/Windows/plNewAssetBuilder.bat
 @ROOT_INST_DIR@/builders/us/temerity/pipeline/builder/maya2mr/v2_3_1/Windows/plShotBuilder.bat
+@ROOT_INST_DIR@/builders/us/temerity/pipeline/builder/maya2mr/v2_3_2/Windows/plAdvAssetBuilder.bat
 
 %defattr(555,root,root)
 @ROOT_INST_DIR@/lib/Windows/libNative.dll

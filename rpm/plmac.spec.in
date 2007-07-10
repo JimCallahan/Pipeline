@@ -57,6 +57,7 @@ Pipeline configuration process.
 %defattr(555,root,root)
 @ROOT_INST_DIR@/builders/us/temerity/pipeline/builder/maya2mr/v2_3_1/MacOS/plNewAssetBuilder
 @ROOT_INST_DIR@/builders/us/temerity/pipeline/builder/maya2mr/v2_3_1/MacOS/plShotBuilder
+@ROOT_INST_DIR@/builders/us/temerity/pipeline/builder/maya2mr/v2_3_2/MacOS/plAdvAssetBuilder
 
 %defattr(-,root,root)
 @ROOT_INST_DIR@/lib/MacOS
