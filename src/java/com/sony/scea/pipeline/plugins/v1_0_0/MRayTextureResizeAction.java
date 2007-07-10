@@ -1,4 +1,4 @@
-// $Id: MRayTextureResizeAction.java,v 1.1 2007/02/13 05:27:17 jesse Exp $
+// $Id: MRayTextureResizeAction.java,v 1.2 2007/07/10 08:30:25 jim Exp $
 
 package com.sony.scea.pipeline.plugins.v1_0_0;
 
@@ -9,7 +9,7 @@ import java.util.*;
 import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   M R A Y   T E X T U R E   R E S I Z E   A C T I O N                                                  */
+/*   M R A Y   T E X T U R E   R E S I Z E   A C T I O N                                    */
 /*------------------------------------------------------------------------------------------*/
 
 /** 
