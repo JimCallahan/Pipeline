@@ -129,11 +129,26 @@ public class BuilderApp
 	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
 	 ex.getMessage());
     }
-    catch (InvocationTargetException ex) {
-      Throwable th = ex.getTargetException();
+    catch (NoSuchMethodException ex) {
+      String message = 
+	"Was unable to instantiate the constructor for the specified Builder.  " +
+	"This most likely means that the Builder was not meant to be run as a " +
+	"standalone builder.\n";
+      message += ex.getMessage();
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
-	 getFullMessage(th));
+	 message);
+      ex.printStackTrace();
+    }
+    catch (InvocationTargetException ex) {
+      Throwable th = ex.getTargetException();
+      String message = 
+	"An Invovation Target Exception has occured.  This most likely indicates that " +
+	"the name of the builder being passed to BuilderApp is specified incorrectly.\n";
+      message += getFullMessage(th);
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
+	 message);
       th.printStackTrace();
     }
     catch(Exception ex) {
