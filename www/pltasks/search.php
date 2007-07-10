@@ -5,7 +5,7 @@
 
 <HEAD>
   <META http-equiv="content-type" content="text/html; charset=ISO-8859-1">
-  <TITLE> Pipeline Task Search </TITLE>
+  <TITLE> Task Search </TITLE>
   <LINK rel="stylesheet" type="text/css" href="<?php echo($temerity_root);?>stylesheet.css">
   <LINK rel="SHORTCUT ICON" href="<?php echo($temerity_root);?>favicon.ico">
 </HEAD>
@@ -280,7 +280,6 @@
             }
 
             $task_owners[$tid]['supervised_by'] = $supers; 
-            $task_owners[$tid]['sql'] = $sql;
           }
         }
       }
@@ -554,16 +553,16 @@ function inRequest($value, $table)
 
 <PRE>
 <?php 
-print("<P>_REQUEST<BR>\n");
-var_dump($_REQUEST);
-print("<P>task_titles<BR>\n");
-var_dump($task_titles);
-print("<P>task_sql<BR>\n");
-var_dump($task_sql);
-print("<P>tasks<BR>\n");
-var_dump($tasks);
-print("<P>tasks_owners<BR>\n");
-var_dump($task_owners);
+// print("<P>_REQUEST<BR>\n");
+// var_dump($_REQUEST);
+// print("<P>task_titles<BR>\n");
+// var_dump($task_titles);
+// print("<P>task_sql<BR>\n");
+// var_dump($task_sql);
+// print("<P>tasks<BR>\n");
+// var_dump($tasks);
+// print("<P>tasks_owners<BR>\n");
+// var_dump($task_owners);
 ?>
 </PRE>
 
