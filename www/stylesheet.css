@@ -295,6 +295,11 @@ code {
   font-size: 14px; 
 }
 
+.genbold { 
+  font-size: 14px; 
+  font-weight: bold;
+}
+
 .gen { 
   font-size: 12px; 
 }

@@ -115,6 +115,7 @@
       {
         /* IDs of tasks matching the query */ 
         $task_ids = array();
+        $task_owners = array();
         {
           $first = true;
           $sql = ("SELECT task_id FROM tasks "); 
@@ -204,8 +205,6 @@
               $assigned_select[$e] = 'selected';
           }
 
-          // add supervised by stuff here... 
-
           $result = mysql_query($sql)
             or show_sql_error($sql);
             
@@ -215,11 +214,13 @@
 
         if(count($task_ids) > 0) {
           $sql = 
-            ("SELECT task_titles.title_name AS `title`, " .
+            ("SELECT tasks.task_id AS `tid`, " . 
+                    "task_titles.title_name AS `title`, " .
                     "task_types.type_name AS `type`, " . 
                     "task_activity.active_name as `activity`, " .
                     "task_status.status_name AS `status`, " .
-                    "tasks.assigned_to as `assigned_to` " .
+                    "tasks.assigned_to as `assigned_to`, " .
+                    "tasks.last_modified as `last_modified` " .
              "FROM tasks, task_titles, task_types, task_activity, task_status " .
              "WHERE tasks.title_id = task_titles.title_id  " .
              "AND tasks.type_id = task_types.type_id  " .
@@ -239,7 +240,48 @@
             or show_sql_error($sql);
           
           while($row = mysql_fetch_array($result, MYSQL_ASSOC)) 
-            $tasks[] = $row;
+            $tasks[$row['tid']] = $row;
+        }
+
+        foreach($tasks as $tid => $t) {
+          if($t['assigned_to'] != NULL) {
+            $sql = ("SELECT idents.ident_name AS `name`, " .  
+                           "idents.is_group AS `is_group` " . 
+                    "FROM idents " . 
+                    "WHERE ident_id = " . $t['assigned_to']);
+              
+            $result = mysql_query($sql)
+              or show_sql_error($sql);
+          
+            if($row = mysql_fetch_array($result, MYSQL_ASSOC)) {
+              $name = $row['name'];
+              if($row['is_group']) 
+                $name = '[' . $name . ']';
+              $task_owners[$tid] = array('assigned_to' => $name); 
+            }
+          }
+
+          {
+            $sql = ("SELECT idents.ident_name AS `name`, " .  
+                           "idents.is_group AS `is_group` " . 
+                    "FROM supervisors, idents " . 
+                    "WHERE supervisors.task_id = " . $tid . " " .
+                    "AND supervisors.ident_id = idents.ident_id");
+
+            $result = mysql_query($sql)
+              or show_sql_error($sql);
+          
+            $supers = array();
+            while($row = mysql_fetch_array($result, MYSQL_ASSOC)) {
+              $name = $row['name'];
+              if($row['is_group']) 
+                $name = '[' . $name . ']';
+              $supers[] = $name;
+            }
+
+            $task_owners[$tid]['supervised_by'] = $supers; 
+            $task_owners[$tid]['sql'] = $sql;
+          }
         }
       }
     }
@@ -256,64 +298,51 @@ function inRequest($value, $table)
 ?> 
 
 
+<TABLE class="bg" width="100%" align="center" cellpadding="0" cellspacing="0" border="0"> 
+  <TR><TD class="bg" colspan="3"><DIV style="height: 15px;"></DIV></TD><TR>	
+
+  <TR><TD class="bg" width="15"></TD>
+      <TD class="bg">
+
+
+
+
 <FORM action="search.php?mode=results" method="POST">
-
-<P> 
-<TABLE class="frame" width="95%" align="center" cellpadding="4" cellspacing="1" border="0">
+<TABLE class="frame" width="100%" align="center" cellpadding="4" cellspacing="1" border="0"> 
   <TR>	
-    <TD class="spaceRow" colspan="6" height="1">
+    <TH align="center" class="theader" colspan="6" height="1">
       <IMG src="search.php_files/spacer.gif" alt="" height="1" width="1">
-    </TD>
+    </TH>
   </TR>
 
   <TR>
-    <TD class="spaceRow" align="center" height="1">
-      <IMG src="search.php_files/spacer.gif" alt="" height="1" width="1">
-    </TD>
-
-    <TD class="row1" align="center" colspan="4"><SPAN class="genhuge">
-      Pipeline Task Search
-    </SPAN></TD>
-
-    <TD class="spaceRow" align="center" height="1">
-      <INPUT class="liteoption" value="Search" type="submit">
-    </TD>
-  </TR>
-
-  <TR>	
-    <TD class="spaceRow" colspan="6" height="1">
-      <IMG src="search.php_files/spacer.gif" alt="" height="1" width="1">
-    </TD>
-  </TR>
-
-  <TR>
-    <TD class="row1" align="center" width="17%"><SPAN class="genbig">
+    <TD class="row2" align="center" width="17%"><SPAN class="genbig">
       Task Name:&nbsp;
     </SPAN></TD>
 
-    <TD class="row1" align="center" width="17%"><SPAN class="genbig">
+    <TD class="row2" align="center" width="17%"><SPAN class="genbig">
       Task Type:&nbsp;
     </SPAN></TD>  
 
-    <TD class="row1" align="center" width="17%"><SPAN class="genbig">
+    <TD class="row2" align="center" width="17%"><SPAN class="genbig">
       Task Activity:&nbsp;
     </SPAN></TD> 
 
-    <TD class="row1" align="center" width="17%"><SPAN class="genbig">
+    <TD class="row2" align="center" width="17%"><SPAN class="genbig">
       Task Status:&nbsp;
     </SPAN></TD>
 
-    <TD class="row1" align="center" width="17%"><SPAN class="genbig">
+    <TD class="row2" align="center" width="17%"><SPAN class="genbig">
       Assigned To:&nbsp;
     </SPAN></TD>
 
-    <TD class="row1" align="center" width="17%"><SPAN class="genbig">
+    <TD class="row2" align="center" width="17%"><SPAN class="genbig">
       Supervised By:&nbsp;
     </SPAN></TD> 
   </TR>
 
   <TR>
-    <TD class="row2"><SPAN class="genmed">
+    <TD class="row1"><SPAN class="genmed">
       <SELECT multiple size="7" name="task_titles[]" style="width:100%">
         <?php
         {
@@ -327,7 +356,7 @@ function inRequest($value, $table)
       </SELECT>
     </SPAN></TD>
 
-    <TD class="row2" height="120px"><SPAN class="genmed">
+    <TD class="row1" height="120px"><SPAN class="genmed">
       <SELECT multiple size="7" name="task_types[]" style="width:100%">
         <?php
         {
@@ -340,7 +369,7 @@ function inRequest($value, $table)
       </SELECT>
     </SPAN></TD>      
 
-    <TD class="row2"><SPAN class="genmed">
+    <TD class="row1"><SPAN class="genmed">
       <SELECT multiple size="7" name="task_activity[]" style="width:100%">
         <?php
         {
@@ -353,7 +382,7 @@ function inRequest($value, $table)
       </SELECT>
     </SPAN></TD>        
 
-    <TD class="row2"><SPAN class="genmed">
+    <TD class="row1"><SPAN class="genmed">
       <SELECT multiple size="7" name="task_status[]" style="width:100%">
         <?php
         {
@@ -366,7 +395,7 @@ function inRequest($value, $table)
       </SELECT>
     </SPAN></TD>
 
-    <TD class="row2"><SPAN class="genmed">
+    <TD class="row1"><SPAN class="genmed">
       <SELECT multiple size="7" name="assigned_to[]" style="width:100%">
         <?php
         {
@@ -386,7 +415,7 @@ function inRequest($value, $table)
       </SELECT>
     </SPAN></TD>
 
-    <TD class="row2"><SPAN class="genmed">
+    <TD class="row1"><SPAN class="genmed">
       <SELECT multiple size="7" name="supervised_by[]" style="width:100%">
         <?php
         {
@@ -406,13 +435,122 @@ function inRequest($value, $table)
   </TR>
 
   <TR>	
-    <TD class="spaceRow" colspan="6" height="1">
-      <IMG src="search.php_files/spacer.gif" alt="" height="1" width="1">
+    <TD class="spaceRow" colspan="6" align="center" height="15">
+      <INPUT class="liteoption" value="Search" type="submit">
     </TD>
   </TR>
+</TABLE>
+</FORM>
 
+<DIV style="height: 15px;"></DIV>
+
+<TABLE class="frame" width="100%" align="center" cellpadding="4" cellspacing="1" border="0"> 
   <TR>
-    <TD class="row2" colspan="6">
+    <TH align="center" height="25" class="theader" nowrap="nowrap">
+      <SPAN class="bold">
+        &nbsp;Task&nbsp;Name&nbsp;
+      </SPAN>
+    </TH>
+
+    <TH align="center" class="theader" nowrap="nowrap">
+      <SPAN class="bold">
+        &nbsp;Task&nbsp;Type&nbsp;
+      </SPAN>
+    </TH>
+
+    <TH align="center" width="100" class="theader" nowrap="nowrap">
+      <SPAN class="bold">
+        &nbsp;Task&nbsp;Activity&nbsp;
+      </SPAN>
+    </TH>
+
+    <TH align="center" width="100" class="theader" nowrap="nowrap">
+      <SPAN class="bold">
+        &nbsp;Task&nbsp;Status&nbsp;
+      </SPAN>
+    </TH>
+
+    <TH align="center" width="100" class="theader" nowrap="nowrap">
+      <SPAN class="bold">
+        &nbsp;Assigned&nbsp;To&nbsp;
+      </SPAN>
+    </TH>
+
+    <TH align="center" width="100" class="theader" nowrap="nowrap">
+      <SPAN class="bold">
+        &nbsp;Supervised&nbsp;By&nbsp;
+      </SPAN>
+    </TH>
+
+    <TH align="center" width="100" class="theader" nowrap="nowrap">
+      <SPAN class="bold">
+        &nbsp;Last&nbsp;Modified&nbsp;
+      </SPAN>
+    </TH>
+  </TR>
+
+  <?php
+  {
+    foreach($tasks as $tid => $t) {
+      $assigned = "-";
+      if(strlen($t['assigned_to']) > 0)
+        $assigned = $task_owners[$tid]['assigned_to'];       
+      
+      $supervised = "-";
+      if($task_owners[$tid]['supervised_by'] != NULL) {
+        $first = true;
+        foreach($task_owners[$tid]['supervised_by'] as $s) {
+          if($first) {
+            $supervised = '';
+            $first = false;
+          }
+          else {
+            $supervised .= ', ';
+          }
+         
+          $supervised .= $s;
+        }
+      }
+
+      print('  <TR>' . "\n" . 
+            '    <TD class="row1" align="center"><SPAN class="redbold">' . "\n" . 
+            '      <A href="details.php?task_id=' . $tid . '">' . "\n" . 
+            '        ' . $t['title'] .  
+            '      </A>' . "\n".
+            '    </SPAN></TD>' . "\n" . 
+            '    <TD class="row1" align="center"><SPAN class="redbold">' . "\n" . 
+            '      <A href="details.php?task_id=' . $tid . '">' . "\n" . 
+            '        ' . $t['type'] .  
+            '      </A>' . "\n".
+            '    </SPAN></TD>' . "\n" . 
+            '    <TD class="row2" align="center">' . $t['activity'] . '</TD>' . "\n" .
+            '    <TD class="row2" align="center">' . $t['status'] . '</TD>' . "\n" . 
+            '    <TD class="row3" align="center">' . $assigned . '</TD>' . "\n" . 
+            '    <TD class="row3" align="center">' . $supervised . '</TD>' . "\n" . 
+            '    <TD class="row2" align="center">' . $t['last_modified'] . '</TD>' . "\n" . 
+            '  </TR>' . "\n");
+    }
+  }
+  ?>
+    
+  <TR>	
+    <TH align="center" class="theader" colspan="7" height="1">
+      <IMG src="search.php_files/spacer.gif" alt="" height="1" width="1">
+    </TH>
+  </TR>
+</TABLE>
+
+
+
+
+
+
+    </TD>
+    <TD class="bg" width="15"></TD>
+  </TR>	
+  <TR><TD class="bg" colspan="3"><DIV style="height: 15px;"></DIV></TD><TR>
+</TABLE>	
+
 
 <PRE>
 <?php 
@@ -424,15 +562,11 @@ print("<P>task_sql<BR>\n");
 var_dump($task_sql);
 print("<P>tasks<BR>\n");
 var_dump($tasks);
+print("<P>tasks_owners<BR>\n");
+var_dump($task_owners);
 ?>
 </PRE>
 
-    </TD>
-  </TR>
-
-</TABLE>
-
-</FORM>
 
 
 </BODY>
