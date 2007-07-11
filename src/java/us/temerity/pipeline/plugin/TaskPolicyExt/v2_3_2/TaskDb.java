@@ -1,4 +1,4 @@
-// $Id: TaskDb.java,v 1.1 2007/07/10 08:32:39 jim Exp $
+// $Id: TaskDb.java,v 1.2 2007/07/11 00:35:01 jim Exp $
 
 package us.temerity.pipeline.plugin.TaskPolicyExt.v2_3_2;
 
@@ -259,12 +259,13 @@ class TaskDb
 
       {
         String sql = 
-          ("INSERT INTO tasks (title_id, type_id, active_id, status_id) VALUES (?, ?, ?, ?)");
+          ("INSERT INTO tasks (title_id, type_id, active_id, status_id, last_modified) " +
+           "VALUES (?, ?, ?, ?, ?)");
         pInsertTaskSt = pConnect.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS); 
       }
       
       {
-        String sql = ("UPDATE tasks SET active_id = ? WHERE task_id = ?");
+        String sql = ("UPDATE tasks SET active_id = ?, last_modified = ? WHERE task_id = ?");
         pSubmitTaskSt = pConnect.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS); 
       }
       
@@ -376,13 +377,13 @@ class TaskDb
         if(taskID == null) { 
           Integer activeID = lookupTaskActivity("Inactive");
           Integer statusID = lookupTaskStatus("Unapproved");
-          taskID = insertTask(titleID, typeID, activeID, statusID); 
+          taskID = insertTask(titleID, typeID, activeID, statusID, stamp); 
           eventID = insertCreateEvent(taskID, identID, stamp, noteID);
         }
         else {
           Integer submitID = lookupTaskActivity("Submitted");
           eventID = insertSubmitEvent(taskID, identID, stamp, noteID, submitID);
-          submitTask(taskID, submitID);
+          submitTask(taskID, submitID, stamp);
         }
       }
 
@@ -936,6 +937,9 @@ class TaskDb
    * @param statusID
    *   The ID of the task status. 
    * 
+   * @param stamp
+   *   The timestamp of the last modification.
+   * 
    * @return 
    *   The ID of the newly inserted entry.
    */ 
@@ -945,7 +949,8 @@ class TaskDb
    int titleID, 
    int typeID, 
    int activityID, 
-   int statusID
+   int statusID, 
+   long stamp
   ) 
     throws SQLException
   {
@@ -953,6 +958,7 @@ class TaskDb
     pInsertTaskSt.setInt(2, typeID);
     pInsertTaskSt.setInt(3, activityID);
     pInsertTaskSt.setInt(4, statusID);
+    pInsertTaskSt.setTimestamp(5, new Timestamp(stamp));
     pInsertTaskSt.executeUpdate();
 
     Integer id = null;
@@ -974,17 +980,22 @@ class TaskDb
    * 
    * @param activityID
    *   The ID of the task activity. 
+   * 
+   * @param stamp
+   *   The timestamp of the last modification.
    */
   private synchronized void
   submitTask
   (
    int taskID, 
-   int activityID
+   int activityID,
+   long stamp
   ) 
     throws SQLException
   {
     pSubmitTaskSt.setInt(1, activityID); 
-    pSubmitTaskSt.setInt(2, taskID); 
+    pSubmitTaskSt.setTimestamp(2, new Timestamp(stamp));
+    pSubmitTaskSt.setInt(3, taskID); 
     pSubmitTaskSt.executeUpdate();
   }
 
