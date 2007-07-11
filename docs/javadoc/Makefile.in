@@ -297,6 +297,7 @@ BUILDER_PACKAGES = $(subst /,.,$(patsubst $(top_srcdir)/src/java/%,%,$(BUILDER_D
                   us.temerity.pipeline.glue \
                   us.temerity.pipeline.glue.io \
                   us.temerity.pipeline.math \
+                  us.temerity.pipeline.plugin \
                   us.temerity.pipeline.stages \
                   us.temerity.pipeline.toolset \
                   us.temerity.pipeline.ui
