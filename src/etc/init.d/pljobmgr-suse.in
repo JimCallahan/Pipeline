@@ -1,0 +1,82 @@
+#!/bin/sh -f
+#
+# chkconfig: 2345 99 05
+# description: Start/Stop the Pipeline (v@VERSION@) Job Server daemon
+# processname: pljobmgr
+
+PLJOBMGR_BIN=@ROOT_INST_DIR@/Unix/sbin/pljobmgr
+test -x $PLJOBMGR_BIN || { echo "$PLJOBMGR_BIN not installed"; 
+	if [ "$1" = "stop" ]; then exit 0;
+	else exit 5; fi; }
+
+PLSCRIPT_BIN=@ROOT_INST_DIR@/Unix/bin/plscript
+test -x $PLSCRIPT_BIN || { echo "$PLSCRIPT_BIN not installed"; 
+	if [ "$1" = "stop" ]; then exit 0;
+	else exit 5; fi; }
+
+JPS_BIN=@UNIX_JAVA_HOME@/../bin/jps
+test -x $JPS_BIN || { echo "$JPS_BIN not installed"; 
+	if [ "$1" = "stop" ]; then exit 0;
+	else exit 5; fi; }
+
+PID_FILE=/var/run/pljobmgr.pid
+
+. /etc/rc.status
+
+case "$1" in
+  start)
+	echo -n "Starting Pipeline Job Manager: " 	
+	pid=`$JPS_BIN -m | grep JobMgrApp | awk '{print $1}'`
+	if [ "$pid"x != x ]
+	then 
+	  rc_failed
+        else 
+	  startproc -u 502 -g 201 $PLJOBMGR_BIN --standard-log-file --fail-fast
+	  pid=`$JPS_BIN -m | grep JobMgrApp | awk '{print $1}'`
+	  if [ "$pid"x != x ]
+	  then 
+	    echo $pid > $PID_FILE
+          else 
+	    rc_failed
+          fi
+        fi
+        rc_status -v
+        ;;
+
+  stop)
+	echo -n "Shutting down Pipeline Job Manager: "
+	if [ ! -f $PID_FILE ]
+        then
+	  rc_failed
+        else 
+	  pid=`$JPS_BIN -m | grep JobMgrApp | awk '{print $1}'`
+	  if [ "$pid"x != `cat $PID_FILE`x ]
+	  then 
+	    rc_failed
+          else 
+            kill `cat $PID_FILE`
+	    rm -f $PID_FILE
+          fi 
+        fi 
+	rc_status -v
+	;;
+
+  status)
+	echo -n "Checking for Job Manager Mananager: "
+	if [ ! -f $PID_FILE ]
+        then
+	  rc_failed
+        else 
+	  pid=`$JPS_BIN -m | grep JobMgrApp | awk '{print $1}'`
+	  if [ "$pid"x != `cat $PID_FILE`x ]
+	  then 
+	    rc_failed
+          fi 
+        fi 
+	rc_status -v
+	;;
+
+  *)
+        echo "usage: $0 {start|stop|status}"
+        ;;
+esac

@@ -2364,7 +2364,8 @@ AC_CONFIG_FILES([
 
   src/etc/Makefile
   src/etc/init.d/Makefile
-  src/etc/init.d/pljobmgr
+  src/etc/init.d/pljobmgr-redhat
+  src/etc/init.d/pljobmgr-suse
   src/etc/winopts/Makefile
 
   src/utils/Makefile

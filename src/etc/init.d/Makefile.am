@@ -2,4 +2,5 @@
 etcdir = @ROOT_INST_DIR@/etc/init.d
 
 etc_SCRIPTS = \
-  pljobmgr
+  pljobmgr-redhat \
+  pljobmgr-suse

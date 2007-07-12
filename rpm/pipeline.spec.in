@@ -55,7 +55,8 @@ The core features of Pipeline include:
 @ROOT_INST_DIR@/Unix/profile/bin/plpython
 @ROOT_INST_DIR@/Unix/profile/bin/plui
 
-@ROOT_INST_DIR@/etc/init.d/pljobmgr
+@ROOT_INST_DIR@/etc/init.d/pljobmgr-redhat
+@ROOT_INST_DIR@/etc/init.d/pljobmgr-suse
 @ROOT_INST_DIR@/etc/winopts/pljobmgr
 
 %defattr(4550,root,@PIPELINE_GROUP@)
