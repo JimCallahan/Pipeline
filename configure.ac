@@ -2257,15 +2257,13 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/TextEditEditor/v2_2_1/Makefile
   src/java/us/temerity/pipeline/plugin/ThumbnailAction/Makefile
   src/java/us/temerity/pipeline/plugin/ThumbnailAction/v2_3_3/Makefile
+  src/java/us/temerity/pipeline/plugin/ThumbnailNodeAnnotation/Makefile
+  src/java/us/temerity/pipeline/plugin/ThumbnailNodeAnnotation/v2_3_2/Makefile
   src/java/us/temerity/pipeline/plugin/TouchAction/Makefile
   src/java/us/temerity/pipeline/plugin/TouchAction/v1_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/TouchAction/v2_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/TouchAction/v2_0_9/Makefile
   src/java/us/temerity/pipeline/plugin/TouchAction/v2_2_1/Makefile
-  src/java/us/temerity/pipeline/plugin/ThumbnailAction/Makefile
-  src/java/us/temerity/pipeline/plugin/ThumbnailAction/v2_3_3/Makefile
-  src/java/us/temerity/pipeline/plugin/ThumbnailNodeAnnotation/Makefile
-  src/java/us/temerity/pipeline/plugin/ThumbnailNodeAnnotation/v2_3_2/Makefile
   src/java/us/temerity/pipeline/plugin/UltraEditEditor/Makefile
   src/java/us/temerity/pipeline/plugin/UltraEditEditor/v2_0_9/Makefile
   src/java/us/temerity/pipeline/plugin/UltraEditEditor/v2_2_1/Makefile
