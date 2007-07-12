@@ -25,22 +25,26 @@
   include($temerity_root . "dbopen.php");
   
   /* get search tables */ 
-  $assigned_select = array();
   $users = array();
   $groups = array();
+  $assigned_select = array();
+  $supervised_select = array();
   {
-    $assigned_select[0] = '';
     $users[0] = array('ident_id'   => "0", 
                       'ident_name' => "*ANY*"); 
     $users[10000] = array('ident_id'   => "10000", 
                           'ident_name' => "*NONE*"); 
+
+    $assigned_select[0]   = '';
+    $supervised_select[0] = '';
 
     $sql = ("SELECT ident_id, ident_name FROM idents WHERE is_group = 0"); 
     $result = mysql_query($sql)
       or show_sql_error($sql);
 
     while($row = mysql_fetch_array($result, MYSQL_ASSOC)) {
-      $assigned_select[$row['ident_id']] = '';
+      $assigned_select[$row['ident_id']]   = '';
+      $supervised_select[$row['ident_id']] = '';
       $users[$row['ident_id']] = $row;
     }
   }
@@ -50,7 +54,8 @@
       or show_sql_error($sql);
     
     while($row = mysql_fetch_array($result, MYSQL_ASSOC)) {
-      $assigned_select[$row['ident_id']] = '';
+      $assigned_select[$row['ident_id']]   = '';
+      $supervised_select[$row['ident_id']] = '';
       $groups[$row['ident_id']] = $row;
     }
   }
@@ -109,138 +114,215 @@
   
   /* search results */ 
   $tasks = array();
+  $task_owners = array();
   if(isset($_REQUEST["mode"])) {
     switch($_REQUEST["mode"]) { 
     case 'results':
       {
-        /* IDs of tasks matching the query */ 
-        $task_ids = array();
+        /* search for matching task info (except supervised_by) */ 
         $task_owners = array();
         {
+          $sql = ("SELECT tasks.task_id AS `tid`, " . 
+                         "task_titles.title_name AS `title`, " .
+                         "task_types.type_name AS `type`, " . 
+                         "task_activity.active_name as `activity`, " .
+                         "task_status.status_name AS `status`, " .
+                         "tasks.assigned_to as `assigned_to`, " .
+                         "tasks.last_modified as `last_modified` " .
+                   "FROM tasks, task_titles, task_types, task_activity, task_status " .
+                   "WHERE tasks.title_id = task_titles.title_id  " .
+                   "AND tasks.type_id = task_types.type_id  " .
+                   "AND tasks.status_id = task_status.status_id " .
+                   "AND tasks.active_id = task_activity.active_id " .
+                   "AND tasks.task_id = ANY ( SELECT tasks.task_id " . 
+                                             "FROM tasks, supervisors "); 
+
           $first = true;
-          $sql = ("SELECT task_id FROM tasks "); 
 
-          $has_any = false;
-          foreach($_REQUEST['task_titles'] as $e) {
-            switch($e) {
-            case 0: 
-              $has_any = true;
-              break;
-
-            default:
-              $sql .= ("\n" . ($first ? 'WHERE' : 'OR') . ' title_id = ' . $e . ' ');
-              $first = false;
+          {
+            $first_sub = true;
+            $has_any = false;
+            foreach($_REQUEST['task_titles'] as $e) {
+              switch($e) {
+              case 0: 
+                $has_any = true;
+                break;
+                
+              default:
+                $sql .= (($first ? "WHERE (" : ($first_sub ? "AND (" : "OR")) . 
+                         ' title_id = ' . $e . ' ');
+                $first = false;
+                $first_sub = false;
+              }
+              
+              if(($e == 0) || !$has_any) 
+                $task_titles[$e]['selected'] = 'selected';
             }
 
-            if(($e == 0) || !$has_any) 
-              $task_titles[$e]['selected'] = 'selected';
+            if(!$first_sub) 
+              $sql .= ")";
           }
 
-          $has_any = false;
-          foreach($_REQUEST['task_types'] as $e) {
-            switch($e) {
-            case 0: 
-              $has_any = true;
-              break;
-
-            default:
-              $sql .= ("\n" . ($first ? 'WHERE' : 'OR') . ' type_id = ' . $e . ' ');
-              $first = false;
+          {
+            $first_sub = true;
+            $has_any = false;
+            foreach($_REQUEST['task_types'] as $e) {
+              switch($e) {
+              case 0: 
+                $has_any = true;
+                break;
+                
+              default:
+                $sql .= (($first ? "WHERE (" : ($first_sub ? "AND (" : "OR")) . 
+                         ' type_id = ' . $e . ' ');
+                $first = false;
+                $first_sub = false;
+              }
+              
+              if(($e == 0) || !$has_any) 
+                $task_types[$e]['selected'] = 'selected';
             }
 
-            if(($e == 0) || !$has_any) 
-              $task_types[$e]['selected'] = 'selected';
+            if(!$first_sub) 
+              $sql .= ")";
           }
 
-          $has_any = false;
-          foreach($_REQUEST['task_activity'] as $e) {
-            switch($e) {
-            case 0: 
-              $has_any = true;
-              break;
+          {
+            $first_sub = true;
+            $has_any = false;
+            foreach($_REQUEST['task_activity'] as $e) {
+              switch($e) {
+              case 0: 
+                $has_any = true;
+                break;
 
-            default:
-              $sql .= ("\n" . ($first ? 'WHERE' : 'OR') . ' active_id = ' . $e . ' ');
-              $first = false;
+              default:
+                $sql .= (($first ? "WHERE (" : ($first_sub ? "AND (" : "OR")) . 
+                         ' active_id = ' . $e . ' ');
+                $first = false;
+                $first_sub = false;
+              }
+
+              if(($e == 0) || !$has_any) 
+                $task_activity[$e]['selected'] = 'selected';
             }
 
-            if(($e == 0) || !$has_any) 
-              $task_activity[$e]['selected'] = 'selected';
+            if(!$first_sub) 
+              $sql .= ")";
           }
 
-          $has_any = false;
-          foreach($_REQUEST['task_status'] as $e) {
-            switch($e) {
-            case 0: 
-              $has_any = true;
-              break;
+          {
+            $first_sub = true;
+            $has_any = false;
+            foreach($_REQUEST['task_status'] as $e) {
+              switch($e) {
+              case 0: 
+                $has_any = true;
+                break;
 
-            default:
-              $sql .= ("\n" . ($first ? 'WHERE' : 'OR') . ' status_id = ' . $e . ' ');
-              $first = false;
+              default:
+                $sql .= (($first ? "WHERE (" : ($first_sub ? "AND (" : "OR")) . 
+                         ' status_id = ' . $e . ' ');
+                $first = false;
+                $first_sub = false;
+              }
+
+              if(($e == 0) || !$has_any) 
+                $task_status[$e]['selected'] = 'selected';
             }
 
-            if(($e == 0) || !$has_any) 
-              $task_status[$e]['selected'] = 'selected';
+            if(!$first_sub) 
+              $sql .= ")";
           }
 
-          $has_any  = false;
-          foreach($_REQUEST['assigned_to'] as $e) {
-            switch($e) {
-            case 0: 
-              $has_any = true;
-              break;
+          {
+            $first_sub = true;
+            $has_any  = false;
+            foreach($_REQUEST['assigned_to'] as $e) {
+              switch($e) {
+              case 0: 
+                $has_any = true;
+                break;
 
-            case 10000: 
-              $sql .= ("\n" . ($first ? 'WHERE' : 'OR') . ' assigned_to IS NULL ');
-              $first = false;
-              break;
+              case 10000: 
+                $sql .= (($first ? "WHERE (" : ($first_sub ? "AND (" : "OR")) . 
+                         ' assigned_to IS NULL ');
+                $first = false;
+                $first_sub = false;
+                break;
 
-            default:
-              $sql .= ("\n" . ($first ? 'WHERE' : 'OR') . ' assigned_to = ' . $e . ' ');
-              $first = false;
+              default:
+                $sql .= (($first ? "WHERE (" : ($first_sub ? "AND (" : "OR")) . 
+                         ' assigned_to = ' . $e . ' ');
+                $first = false;
+                $first_sub = false;
+              }
+
+              if(($e == 0) || !$has_any) 
+                $assigned_select[$e] = 'selected';
             }
 
-            if(($e == 0) || !$has_any) 
-              $assigned_select[$e] = 'selected';
+            if(!$first_sub) 
+              $sql .= ")";
           }
 
-          $result = mysql_query($sql)
-            or show_sql_error($sql);
+          {
+            $first_sub = true;
+            $has_any = false;
+            foreach($_REQUEST['supervised_by'] as $e) {
+              switch($e) {
+              case 0: 
+                $has_any = true;
+                break;
             
-          while($row = mysql_fetch_array($result, MYSQL_ASSOC)) 
-            $task_ids[] = $row['task_id'];
-        }
+              case 10000: 
+                $sql .= (($first ? "WHERE (" : ($first_sub ? "AND (" : "OR")) . 
+                         ' ( tasks.task_id = supervisors.task_id AND ' . 
+                            'supervisors.ident_id IS NULL ) ');
+                $first = false;
+                $first_sub = false;            
+                break;
+            
+              default:
+                $sql .= (($first ? "WHERE (" : ($first_sub ? "AND (" : "OR")) . 
+                         ' ( tasks.task_id = supervisors.task_id AND ' . 
+                            'supervisors.ident_id = ' . $e . ' ) ');
+                $first = false;
+                $first_sub = false;
+              }
+          
+              if(($e == 0) || !$has_any) 
+                $supervised_select[$e] = 'selected';
+            }
 
-        if(count($task_ids) > 0) {
-          $sql = 
-            ("SELECT tasks.task_id AS `tid`, " . 
-                    "task_titles.title_name AS `title`, " .
-                    "task_types.type_name AS `type`, " . 
-                    "task_activity.active_name as `activity`, " .
-                    "task_status.status_name AS `status`, " .
-                    "tasks.assigned_to as `assigned_to`, " .
-                    "tasks.last_modified as `last_modified` " .
-             "FROM tasks, task_titles, task_types, task_activity, task_status " .
-             "WHERE tasks.title_id = task_titles.title_id  " .
-             "AND tasks.type_id = task_types.type_id  " .
-             "AND tasks.status_id = task_status.status_id " .
-             "AND tasks.active_id = task_activity.active_id " .
-             "AND ("); 
-          $first = true;
-          foreach($task_ids as $id) {
-            if(!$first) 
-              $sql .= (' OR'); 
-            $first = false;
-            $sql .= (' tasks.task_id = ' . $id); 
+            if(!$first_sub) 
+              $sql .= ")";
           }
-          $sql .= ' )';
+
+          $sql .= " )";
+
 
           $result = mysql_query($sql)
             or show_sql_error($sql);
-          
+
           while($row = mysql_fetch_array($result, MYSQL_ASSOC)) 
             $tasks[$row['tid']] = $row;
+        }
+
+        /* add names of assigned_to and supervised_by users/groups */ 
+        {
+          $has_any = false;
+          foreach($_REQUEST['supervised_by'] as $e) {
+            switch($e) {
+            case 0: 
+              $has_any = true;
+              break;
+            }
+
+            if(($e == 0) || !$has_any) 
+              $supervised_select[$e] = 'selected';
+          }
+
         }
 
         foreach($tasks as $tid => $t) {
@@ -290,10 +372,7 @@
   include($temerity_root . "dbclose.php");
 }
 
-function inRequest($value, $table) 
-{
-  return (isset($_REQUEST[$table]) && in_array($value, $_REQUEST[$table]));
-}
+
 ?> 
 
 
@@ -306,37 +385,36 @@ function inRequest($value, $table)
 
 
 
-<FORM action="search.php?mode=results" method="POST">
+<FORM action="search.php" method="POST">
+<INPUT name="mode" value="results" type="hidden">
 <TABLE class="frame" width="100%" align="center" cellpadding="4" cellspacing="1" border="0"> 
   <TR>	
-    <TH align="center" class="theader" colspan="6" height="1">
-      <IMG src="search.php_files/spacer.gif" alt="" height="1" width="1">
-    </TH>
+    <TD align="center" class="spaceRow" colspan="6" height="1"><DIV style="height: 1px;"><IMG src="<?php echo($temerity_root);?>images/spacer.gif" alt="" height="1" width="1"></DIV></TD>
   </TR>
 
   <TR>
     <TD class="row2" align="center" width="17%"><SPAN class="genbig">
-      Task Name:&nbsp;
+      Task&nbsp;Name:&nbsp;
     </SPAN></TD>
 
     <TD class="row2" align="center" width="17%"><SPAN class="genbig">
-      Task Type:&nbsp;
+      Task&nbsp;Type:&nbsp;
     </SPAN></TD>  
 
     <TD class="row2" align="center" width="17%"><SPAN class="genbig">
-      Task Activity:&nbsp;
+      Task&nbsp;Activity:&nbsp;
     </SPAN></TD> 
 
     <TD class="row2" align="center" width="17%"><SPAN class="genbig">
-      Task Status:&nbsp;
+      Task&nbsp;Status:&nbsp;
     </SPAN></TD>
 
     <TD class="row2" align="center" width="17%"><SPAN class="genbig">
-      Assigned To:&nbsp;
+      Assigned&nbsp;To:&nbsp;
     </SPAN></TD>
 
     <TD class="row2" align="center" width="17%"><SPAN class="genbig">
-      Supervised By:&nbsp;
+      Supervised&nbsp;By:&nbsp;
     </SPAN></TD> 
   </TR>
 
@@ -419,12 +497,14 @@ function inRequest($value, $table)
         <?php
         {
           foreach($users as $e) {
-            print('<OPTION ' . $e['selected'] . ' value="' . $e['ident_id'] . '">' . 
+            print('<OPTION ' . $supervised_select[$e['ident_id']] . 
+                  ' value="' . $e['ident_id'] . '">' . 
                   $e['ident_name'] . '&nbsp;</OPTION>' . "\n");
           }
           
           foreach($groups as $e) {
-            print('<OPTION ' . $e['selected'] . ' value="' . $e['ident_id'] . '">[' . 
+            print('<OPTION ' . $supervised_select[$e['ident_id']] . 
+                  ' value="' . $e['ident_id'] . '">[' . 
                   $e['ident_name'] . ']&nbsp;</OPTION>' . "\n");
           }
         }
@@ -434,26 +514,21 @@ function inRequest($value, $table)
   </TR>
 
   <TR>	
-    <TD class="spaceRow" colspan="6" align="center" height="15">
+    <TH class="theader" colspan="6" align="center" height="15">
       <INPUT class="liteoption" value="Search" type="submit">
-    </TD>
+    </TH>
   </TR>
 </TABLE>
 </FORM>
 
 <DIV style="height: 15px;"></DIV>
 
+<FORM action="details.php" method="POST">
 <TABLE class="frame" width="100%" align="center" cellpadding="4" cellspacing="1" border="0"> 
   <TR>
-    <TH align="center" height="25" class="theader" nowrap="nowrap">
+    <TH align="center" class="theader" colspan="2" nowrap="nowrap">
       <SPAN class="bold">
-        &nbsp;Task&nbsp;Name&nbsp;
-      </SPAN>
-    </TH>
-
-    <TH align="center" class="theader" nowrap="nowrap">
-      <SPAN class="bold">
-        &nbsp;Task&nbsp;Type&nbsp;
+        &nbsp;Task&nbsp&nbsp;
       </SPAN>
     </TH>
 
@@ -481,7 +556,7 @@ function inRequest($value, $table)
       </SPAN>
     </TH>
 
-    <TH align="center" width="100" class="theader" nowrap="nowrap">
+    <TH align="center" width="70" class="theader" nowrap="nowrap">
       <SPAN class="bold">
         &nbsp;Last&nbsp;Modified&nbsp;
       </SPAN>
@@ -511,16 +586,13 @@ function inRequest($value, $table)
         }
       }
 
+
       print('  <TR>' . "\n" . 
-            '    <TD class="row1" align="center"><SPAN class="redbold">' . "\n" . 
-            '      <A href="details.php?task_id=' . $tid . '">' . "\n" . 
-            '        ' . $t['title'] .  
-            '      </A>' . "\n".
+            '    <TD class="row1" width="30" align="center"><SPAN class="redbold">' . "\n" . 
+            '      <INPUT name="task_ids[]" value="' . $tid . '" type="checkbox">' . "\n".
             '    </SPAN></TD>' . "\n" . 
-            '    <TD class="row1" align="center"><SPAN class="redbold">' . "\n" . 
-            '      <A href="details.php?task_id=' . $tid . '">' . "\n" . 
-            '        ' . $t['type'] .  
-            '      </A>' . "\n".
+            '    <TD class="row1" align="left"><SPAN class="redbold">' . "\n" . 
+            '      &nbsp;&nbsp;' . $t['title'] . '&nbsp;:&nbsp;' . $t['type'] . "\n" .
             '    </SPAN></TD>' . "\n" . 
             '    <TD class="row2" align="center">' . $t['activity'] . '</TD>' . "\n" .
             '    <TD class="row2" align="center">' . $t['status'] . '</TD>' . "\n" . 
@@ -533,11 +605,12 @@ function inRequest($value, $table)
   ?>
     
   <TR>	
-    <TH align="center" class="theader" colspan="7" height="1">
-      <IMG src="search.php_files/spacer.gif" alt="" height="1" width="1">
+    <TH class="theader" colspan="7" align="center" height="15">
+      <INPUT class="liteoption" value="Details" type="submit">
     </TH>
   </TR>
 </TABLE>
+</FORM>
 
 
 
@@ -555,6 +628,8 @@ function inRequest($value, $table)
 <?php 
 // print("<P>_REQUEST<BR>\n");
 // var_dump($_REQUEST);
+// print("<P>supervised_select<BR>\n");
+// var_dump($supervised_select);
 // print("<P>task_titles<BR>\n");
 // var_dump($task_titles);
 // print("<P>task_sql<BR>\n");
