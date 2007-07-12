@@ -1,4 +1,4 @@
-// $Id: FrameRange.java,v 1.12 2006/09/29 03:03:21 jim Exp $
+// $Id: FrameRange.java,v 1.13 2007/07/12 10:23:25 jim Exp $
 
 package us.temerity.pipeline;
  
@@ -191,7 +191,7 @@ class FrameRange
       }
     }
       
-    pNumFrames = ((pStart - pEnd) / pBy) + 1;
+    pNumFrames = ((pEnd - pStart) / pBy) + 1;
   }
   
   /**
