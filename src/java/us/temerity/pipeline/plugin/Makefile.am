@@ -214,12 +214,8 @@ SUBDIRS = \
   TestAction \
   TextDiffComparator \
   TextEditEditor \
-<<<<<<< Makefile.am
-  ThumbnailAction \
-=======
   ThumbnailAction \
   ThumbnailNodeAnnotation \
->>>>>>> 1.13
   TouchAction \
   UltraEditEditor \
   VimEditor \
