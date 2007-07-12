@@ -1986,6 +1986,8 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/MayaCompleteEditor/Makefile
   src/java/us/temerity/pipeline/plugin/MayaCompleteEditor/v2_0_10/Makefile
   src/java/us/temerity/pipeline/plugin/MayaCompleteEditor/v2_2_1/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaCurvesExportAction/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaCurvesExportAction/v2_3_4/Makefile
   src/java/us/temerity/pipeline/plugin/MayaDLRenderAction/Makefile
   src/java/us/temerity/pipeline/plugin/MayaDLRenderAction/v2_2_1/Makefile
   src/java/us/temerity/pipeline/plugin/MayaDLShaderExportAction/Makefile
@@ -2253,6 +2255,8 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/TextEditEditor/v2_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/TextEditEditor/v2_0_9/Makefile
   src/java/us/temerity/pipeline/plugin/TextEditEditor/v2_2_1/Makefile
+  src/java/us/temerity/pipeline/plugin/ThumbnailAction/Makefile
+  src/java/us/temerity/pipeline/plugin/ThumbnailAction/v2_3_3/Makefile
   src/java/us/temerity/pipeline/plugin/TouchAction/Makefile
   src/java/us/temerity/pipeline/plugin/TouchAction/v1_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/TouchAction/v2_0_0/Makefile
