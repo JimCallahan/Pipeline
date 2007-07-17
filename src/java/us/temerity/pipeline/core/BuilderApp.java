@@ -143,8 +143,9 @@ public class BuilderApp
     catch (InvocationTargetException ex) {
       Throwable th = ex.getTargetException();
       String message = 
-	"An Invovation Target Exception has occured.  This most likely indicates that " +
-	"the name of the builder being passed to BuilderApp is specified incorrectly.\n";
+	"An Invocation Target Exception has occured.  This most likely indicates that " +
+	"the name of the builder being passed to BuilderApp is specified incorrectly or " +
+	"that an error occured in the Builder's constructor.\n";
       message += getFullMessage(th);
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
