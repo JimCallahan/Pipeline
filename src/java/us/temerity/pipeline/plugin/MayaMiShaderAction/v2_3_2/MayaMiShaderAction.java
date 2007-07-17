@@ -1,4 +1,4 @@
-// $Id: MayaMiShaderAction.java,v 1.5 2007/07/17 15:00:30 jesse Exp $
+// $Id: MayaMiShaderAction.java,v 1.6 2007/07/17 23:22:08 jesse Exp $
 
 package us.temerity.pipeline.plugin.MayaMiShaderAction.v2_3_2;
 
@@ -483,7 +483,7 @@ MayaMiShaderAction
 
 
     /* create a temporary MEL script to export the MI files */ 
-    String tempFile = new Path(getTempPath(agenda), "shaders.py").toOsString();
+    Path ipath = new Path(getTempPath(agenda), "shaders.py");
     File exportMEL = createTemp(agenda, "mel");
     try {
       FileWriter out = new FileWriter(exportMEL);
@@ -600,7 +600,7 @@ MayaMiShaderAction
         
         if (useMRLightLinking)
           out.write("  string $mayaShaderList[];\n" +
-          	    "  $fid = `fopen \"" + tempFile + "\" \"w\"`;\n" + 
+          	    "  $fid = `fopen \"" + ipath + "\" \"w\"`;\n" + 
           	    "  int $first = 1;\n\n");
         out.write
           ("  for($sg in $shadingGroups) {\n" +
@@ -1050,7 +1050,6 @@ MayaMiShaderAction
       for(Path path : targetSeq.getPaths()) {
         Path spath = new Path(getTempPath(agenda), path); 
         Path tpath = new Path(agenda.getTargetPath(), path); 
-        Path ipath = new Path(tempFile);
         out.write("miShader('" + spath + "', '" + tpath + "', '"+ ipath + "')\n\n");
       }
 
