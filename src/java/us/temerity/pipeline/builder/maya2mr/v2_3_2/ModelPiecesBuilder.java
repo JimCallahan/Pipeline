@@ -28,6 +28,7 @@ public class ModelPiecesBuilder extends BaseBuilder
     MasterMgrClient mclient,
     QueueMgrClient qclient,
     BuildsAssetNames assetNames,
+    BuildsProjectNames projectNames,
     BuilderInformation builderInformation,
     int numberOfPieces
   )
@@ -41,6 +42,7 @@ public class ModelPiecesBuilder extends BaseBuilder
           qclient,
           builderInformation);
     pNames = assetNames;
+    pProjectNames = projectNames;
 
     if (numberOfPieces < 1 )
       throw new PipelineException
@@ -135,6 +137,7 @@ public class ModelPiecesBuilder extends BaseBuilder
   private LinkedList<ParamMapping> pPieceParams;
   private TreeSet<String> pPieceNames;
   private BuildsAssetNames pNames;
+  private BuildsProjectNames pProjectNames;
   private boolean pCheckInWhenDone;
   private MayaContext pMayaContext;
   
@@ -188,8 +191,8 @@ public class ModelPiecesBuilder extends BaseBuilder
              "(" + name + ") was present more than once.");
       }
       
-      pPlaceHolderMEL = pNames.getPlaceholderScriptName();
-      pVerifyModelMEL = pNames.getModelVerificationScriptName();
+      pPlaceHolderMEL = pProjectNames.getPlaceholderScriptName();
+      pVerifyModelMEL = pProjectNames.getModelVerificationScriptName();
       pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, "Validation complete.");
     }
     private static final long serialVersionUID = -3548064419172163386L;

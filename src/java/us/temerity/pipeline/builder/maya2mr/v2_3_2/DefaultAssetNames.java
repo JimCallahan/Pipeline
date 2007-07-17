@@ -196,21 +196,6 @@ class DefaultAssetNames
   /*   O V E R R I D A B L E                                                                */
   /*----------------------------------------------------------------------------------------*/
   
-  protected void
-  generateMELScripts()
-  {
-    String melStart = "/projects/" + pProject + "/assets/tools/mel/";
-    
-    pFinalizeMELNodeName = melStart + "finalize-" + pAssetType;
-    pLowRezFinalizeMELNodeName = melStart + "finalize-" + pAssetType + "_lr";
-    pMRInitMELNodeName = melStart + "mr-init";
-    pAutoRigMELNodeName = melStart + "auto-rig";
-    pModelVerifyMELNodeName = melStart + "verify-model";
-    pRigVerifyMELNodeName = melStart + "verify-rig";
-    pShaderVerifyMELNodeName = melStart + "verify-shader";
-    pPlaceholderMELNodeName = null;
-  }
-  
   protected String
   getEditDirectory()
   {
@@ -448,79 +433,6 @@ class DefaultAssetNames
   
   
   /*----------------------------------------------------------------------------------------*/
-  /*   M E L   S C R I P T S                                                                */
-  /*----------------------------------------------------------------------------------------*/
-  
-  /**
-   * @return the finalize script name
-   */
-  public String getFinalizeScriptName()
-  {
-    return pFinalizeMELNodeName;
-  }
-
-  /**
-   * @return the low rez finalize script name
-   */
-  public String getLowRezFinalizeScriptName()
-  {
-    return pLowRezFinalizeMELNodeName;
-  }
-
-  /**
-   * @return the mental ray init script name
-   */
-  public String getMRInitScriptName()
-  {
-    return pMRInitMELNodeName;
-  }
-  
-  /**
-   * @return the auto rig script name
-   */
-  public String getAutoRigScriptName()
-  {
-    return pAutoRigMELNodeName;
-  }
-
-  /**
-   * @return the placeholder script name
-   */
-  public String getPlaceholderScriptName()
-  {
-    return pPlaceholderMELNodeName;
-  }
-  
-  /**
-   * @return the model verification script name
-   */
-  public String
-  getModelVerificationScriptName()
-  {
-    return pModelVerifyMELNodeName;
-  }
-  
-  /**
-   * @return the rig verification script name
-   */
-  public String
-  getRigVerificationScriptName()
-  {
-    return pRigVerifyMELNodeName;
-  }
-  
-  /**
-   * @return the shader verification script name
-   */
-  public String
-  getShaderVerificationScriptName()
-  {
-    return pShaderVerifyMELNodeName;
-  }
-  
-  
-  
-  /*----------------------------------------------------------------------------------------*/
   /*   A P P R O V A L   F O R M A T                                                        */
   /*----------------------------------------------------------------------------------------*/
 
@@ -746,15 +658,6 @@ class DefaultAssetNames
 
   // Texture Nodes
   private String pTextureNodeName;
-  
-  private String pFinalizeMELNodeName;
-  private String pLowRezFinalizeMELNodeName;
-  private String pMRInitMELNodeName;
-  private String pPlaceholderMELNodeName;
-  private String pAutoRigMELNodeName;
-  private String pModelVerifyMELNodeName;
-  private String pRigVerifyMELNodeName;
-  private String pShaderVerifyMELNodeName;
   
   // Model Approval Setup
   private String pModelEditNodeName;

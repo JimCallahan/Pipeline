@@ -1,19 +1,11 @@
-/*
- * Created on Jul 7, 2007
- * Created by jesse
- * For Use in us.temerity.pipeline.builder.maya2mr.v2_3_2.stages
- * 
- */
 package us.temerity.pipeline.builder.maya2mr.v2_3_2;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.builder.BaseNames;
 import us.temerity.pipeline.builder.UtilContext;
 
 public 
 class DefaultProjectNames 
-  extends BaseNames
-  implements BuildsProjectNames
+  extends NullProjectNames
 {
   public DefaultProjectNames
   (
@@ -44,6 +36,7 @@ class DefaultProjectNames
   /*----------------------------------------------------------------------------------------*/
   
   
+  @SuppressWarnings("unused")
   @Override
   public void generateNames() 
     throws PipelineException
@@ -55,8 +48,9 @@ class DefaultProjectNames
     Path startPath = new Path("/projects/" + pProject + "/assets");
     {
       Path scriptsPath =  new Path(startPath, "scripts");
-      pMelSctiptPath =  new Path(scriptsPath, "mel");
+      pMelScriptPath =  new Path(scriptsPath, "mel");
       pRenderSctiptPath = new Path(scriptsPath, "render");
+      pMelScriptPath = new Path(pMelScriptPath, "verify");
     }
     
     {
@@ -90,13 +84,7 @@ class DefaultProjectNames
   }
   
   public String
-  getAssetModelTTGlobals
-  (
-    @SuppressWarnings("unused")
-    String assetName,
-    @SuppressWarnings("unused")
-    String assetType
-  )
+  getAssetModelTTGlobals()
   {
     return new Path(pMayaGlobalsPath, "model_tt").toOsString();
   }
@@ -114,13 +102,7 @@ class DefaultProjectNames
   }
   
   public String
-  getAssetRigAnimGlobals
-  (
-    @SuppressWarnings("unused")
-    String assetName,
-    @SuppressWarnings("unused")
-    String assetType
-  )
+  getAssetRigAnimGlobals()
   {
     return new Path(pMayaGlobalsPath, "rig_tt").toOsString();
   }
@@ -179,6 +161,95 @@ class DefaultProjectNames
     return "Comp"; 
   }
   
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   M E L   S C R I P T S                                                                */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * @return the finalize script name
+   */
+  @Override
+  public String 
+  getFinalizeScriptName
+  (
+    String assetName,
+    String assetType
+  )
+  {
+    return new Path(pMelScriptPath, "finalize-" + assetType).toString();
+  }
+
+  /**
+   * @return the low rez finalize script name
+   */
+  @Override
+  public String 
+  getLowRezFinalizeScriptName
+  (
+    String assetName,
+    String assetType
+  )
+  {
+    return new Path(pMelScriptPath, "finalize-" + assetType + "-lr").toString();
+  }
+
+  /**
+   * @return the mental ray init script name
+   */
+  public String 
+  getMRInitScriptName()
+  {
+    return new Path(pMelScriptPath, "mr-init").toString();
+  }
+  
+  /**
+   * @return the auto rig script name
+   */
+  public String 
+  getAutoRigScriptName()
+  {
+    return new Path(pMelScriptPath, "rigCopy").toString();
+  }
+
+/**
+   * @return the placeholder script name
+   */
+  public String 
+  getPlaceholderScriptName()
+  {
+    return new Path(pMelScriptPath, "placeHolder").toString();
+  }
+  
+  /**
+   * @return the model verification script name
+   */
+  public String
+  getModelVerificationScriptName()
+  {
+    return new Path(pMelVerifyScriptPath, "modVerify").toString();
+  }
+  
+  /**
+   * @return the rig verification script name
+   */
+  public String
+  getRigVerificationScriptName()
+  {
+    return new Path(pMelVerifyScriptPath, "rigVerify").toString();
+  }
+  
+  /**
+   * @return the shader verification script name
+   */
+  public String
+  getShaderVerificationScriptName()
+  {
+    return new Path(pMelVerifyScriptPath, "shdVerify").toString();
+  }
+
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
@@ -194,7 +265,8 @@ class DefaultProjectNames
   /*----------------------------------------------------------------------------------------*/
   
   protected String pProject;
-  protected Path pMelSctiptPath;
+  protected Path pMelScriptPath;
+  protected Path pMelVerifyScriptPath;
   protected Path pRenderSctiptPath;
   protected Path pMayaGlobalsPath;
   protected Path pMRayGlobalsPath;

@@ -1,7 +1,6 @@
 package us.temerity.pipeline.builder.maya2mr.v2_3_2;
 
 import us.temerity.pipeline.FileSeq;
-import us.temerity.pipeline.PipelineException;
 
 public 
 interface BuildsAssetNames
@@ -138,53 +137,6 @@ interface BuildsAssetNames
   public String 
   getTextureNodeName();
   
-  /**
-   * @return the name of the finalize mel script
-   */
-  public String
-  getFinalizeScriptName();
-  
-  /**
-   * @return the name of the low rez finalize mel script
-   */
-  public String
-  getLowRezFinalizeScriptName();
-  
-  /**
-   * @return the Mental Ray initialization mel script
-   */
-  public String
-  getMRInitScriptName();
-  
-  /**
-   * @return the name of the model verification mel Script
-   */
-  public String
-  getModelVerificationScriptName();
-  
-  /**
-   * @return the name of the rig verification mel Script
-   */
-  public String
-  getRigVerificationScriptName();
-  
-  /**
-   * @return the name of the shader verification mel Script
-   */
-  public String
-  getShaderVerificationScriptName();
-  
-  /**
-   * @return the placeholder generation mel script
-   */
-  public String
-  getPlaceholderScriptName();
-  
-  /**
-   * @return the auto-rigging mel script
-   */
-  public String 
-  getAutoRigScriptName();
   
   /*
    * Model Nodes in Approval Method

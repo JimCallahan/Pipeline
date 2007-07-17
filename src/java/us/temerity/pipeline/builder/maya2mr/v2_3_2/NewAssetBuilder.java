@@ -33,6 +33,7 @@ class NewAssetBuilder
          qclient,
          new DefaultBuilderAnswers(mclient, qclient, UtilContext.getDefaultUtilContext(mclient)), 
          new DefaultAssetNames(mclient, qclient),
+         new DefaultProjectNames(mclient, qclient),
          info);
   }
   
@@ -43,6 +44,7 @@ class NewAssetBuilder
     QueueMgrClient qclient,
     AnswersBuilderQueries builderInfo,
     BaseNames assetNames,
+    BaseNames projectNames,
     BuilderInformation builderInformation
   ) 
     throws PipelineException
@@ -55,11 +57,19 @@ class NewAssetBuilder
       	  qclient,
       	  builderInformation);
     pBuilderInfo = builderInfo;
+ 
     if (!(assetNames instanceof BuildsAssetNames))
       throw new PipelineException
-        ("The naming class that was passed in does not implement " +
-         "the BuildsAssetNames interface");
+        ("The naming class that was passed in does not implement the BuildsAssetNames interface");
+    
+    if (!(projectNames instanceof BuildsProjectNames))
+      throw new PipelineException
+        ("The project naming class that was passed in does not implement " +
+         "the BuildsProjectNames interface");
+      
+    addSubBuilder(projectNames);
     addSubBuilder(assetNames);
+    
     {
       UtilityParam param = 
 	new MayaContextUtilityParam
@@ -237,6 +247,8 @@ class NewAssetBuilder
   // Names
   protected BuildsAssetNames pAssetNames;
   
+  protected BuildsProjectNames pProjectNames;
+  
   // Question Answering
   protected AnswersBuilderQueries pBuilderInfo;
 
@@ -325,15 +337,15 @@ class NewAssetBuilder
       pBuildSeparateHead = getBooleanParamValue(new ParamMapping(aBuildSeparateHead));
       pAutoRigSetup = getBooleanParamValue(new ParamMapping(aAutoRigSetup));
 
-      pFinalizeMEL = pAssetNames.getFinalizeScriptName();
+      pFinalizeMEL = pProjectNames.getFinalizeScriptName(null, pAssetNames.getAssetType());
       
-      pLRFinalizeMEL = pAssetNames.getLowRezFinalizeScriptName();
+      pLRFinalizeMEL = pProjectNames.getLowRezFinalizeScriptName(null, pAssetNames.getAssetType());
 
-      pMRInitMEL = pAssetNames.getMRInitScriptName();
+      pMRInitMEL = pProjectNames.getMRInitScriptName();
 
-      pPlaceHolderMEL = pAssetNames.getPlaceholderScriptName();
+      pPlaceHolderMEL = pProjectNames.getPlaceholderScriptName();
       
-      pAutoRigMEL = pAssetNames.getAutoRigScriptName();
+      pAutoRigMEL = pProjectNames.getAutoRigScriptName();
       
       pMayaContext = (MayaContext) getParamValue(aMayaContext);
       
@@ -424,7 +436,7 @@ class NewAssetBuilder
       if (pAutoRigSetup) {
 	skeleton = pAssetNames.getSkeletonNodeName();
 	rigInfo = pAssetNames.getRigInfoNodeName();
-	autoRigMEL = pAssetNames.getAutoRigScriptName();
+	autoRigMEL = pProjectNames.getAutoRigScriptName();
 
 	if (skeleton != null && !checkExistance(skeleton)) {
 	  EmptyMayaAsciiStage stage = 

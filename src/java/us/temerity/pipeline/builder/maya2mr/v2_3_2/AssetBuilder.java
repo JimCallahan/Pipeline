@@ -33,6 +33,7 @@ class AssetBuilder
          qclient,
          new DefaultBuilderAnswers(mclient, qclient, UtilContext.getDefaultUtilContext(mclient)), 
          new DefaultAssetNames(mclient, qclient),
+         new DefaultProjectNames(mclient, qclient),
          info);
   }
   
@@ -43,6 +44,7 @@ class AssetBuilder
     QueueMgrClient qclient,
     AnswersBuilderQueries builderInfo,
     BaseNames assetNames,
+    BaseNames projectNames,
     BuilderInformation builderInformation
   ) 
     throws PipelineException
@@ -58,7 +60,15 @@ class AssetBuilder
     if (!(assetNames instanceof BuildsAssetNames))
       throw new PipelineException
         ("The naming class that was passed in does not implement the BuildsAssetNames interface");
+    
+    if (!(projectNames instanceof BuildsProjectNames))
+      throw new PipelineException
+        ("The project naming class that was passed in does not implement " +
+         "the BuildsProjectNames interface");
+      
+    addSubBuilder(projectNames);
     addSubBuilder(assetNames);
+    
     {
       UtilityParam param = 
 	new MayaContextUtilityParam
@@ -118,8 +128,9 @@ class AssetBuilder
 	 qclient);
       addParam(param);
     }
-    configNamer(assetNames);
+    configNamer(assetNames, projectNames);
     pAssetNames = (BuildsAssetNames) assetNames;
+    pProjectNames = (BuildsProjectNames) projectNames;
     addSetupPass(new InformationPass());
     addConstuctPass(new BuildPass());
     addConstuctPass(new FinalizePass());
@@ -134,11 +145,13 @@ class AssetBuilder
   protected void 
   configNamer 
   (
-    BaseNames names
+    BaseNames names,
+    BaseNames projectNames
   )
     throws PipelineException
   {
     addMappedParam(names.getName(), DefaultAssetNames.aProjectName, aProjectName);
+    addMappedParam(projectNames.getName(), DefaultProjectNames.aProjectName, aProjectName);
   }
   
   
@@ -170,6 +183,8 @@ class AssetBuilder
 
   // Names
   protected BuildsAssetNames pAssetNames;
+  
+  protected BuildsProjectNames pProjectNames;
   
   // Question Answering
   protected AnswersBuilderQueries pBuilderInfo;
@@ -241,11 +256,11 @@ class AssetBuilder
 	getBooleanParamValue(new ParamMapping(aBuildAdvancedShadingNetwork));
       pCheckInWhenDone = getBooleanParamValue(new ParamMapping(aCheckinWhenDone));
 
-      pFinalizeMEL = pAssetNames.getFinalizeScriptName();
+      pFinalizeMEL = pProjectNames.getFinalizeScriptName(null, pAssetNames.getAssetType());
 
-      pMRInitMEL = pAssetNames.getMRInitScriptName();
+      pMRInitMEL = pProjectNames.getMRInitScriptName();
 
-      pPlaceHolderMEL = pAssetNames.getPlaceholderScriptName();
+      pPlaceHolderMEL = pProjectNames.getPlaceholderScriptName();
 
       pMayaContext = (MayaContext) getParamValue(aMayaContext);
       

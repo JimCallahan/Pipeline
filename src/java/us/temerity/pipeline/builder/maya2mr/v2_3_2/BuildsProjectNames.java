@@ -1,9 +1,3 @@
-/*
- * Created on Jul 7, 2007
- * Created by jesse
- * For Use in us.temerity.pipeline.builder.maya2mr.v2_3_2
- * 
- */
 package us.temerity.pipeline.builder.maya2mr.v2_3_2;
 
 public 
@@ -17,11 +11,17 @@ interface BuildsProjectNames
   );
   
   public String
+  getAssetModelTTSetup();
+  
+  public String
   getAssetModelTTGlobals
   (
     String assetName,
     String assetType
   );
+  
+  public String
+  getAssetModelTTGlobals();
   
   public String
   getAssetRigAnimSetup
@@ -31,11 +31,17 @@ interface BuildsProjectNames
   );
   
   public String
+  getAssetRigAnimSetup();
+  
+  public String
   getAssetRigAnimGlobals
   (
     String assetName,
     String assetType
   );
+  
+  public String
+  getAssetRigAnimGlobals();
   
   public String
   getTaskName
@@ -64,4 +70,95 @@ interface BuildsProjectNames
   
   public String
   getCompositingTaskName();
+  
+  /**
+   * @return the name of the finalize mel script
+   */
+  public String
+  getFinalizeScriptName
+  (
+    String assetName,
+    String assetType
+  );
+  
+  public String
+  getFinalizeScriptName();
+  
+  /**
+   * @return the name of the low rez finalize mel script
+   */
+  public String
+  getLowRezFinalizeScriptName
+  (
+    String assetName,
+    String assetType
+  );
+  
+  public String
+  getLowRezFinalizeScriptName();
+
+  
+  /**
+   * @return the Mental Ray initialization mel script
+   */
+  public String
+  getMRInitScriptName();
+  
+  /**
+   * @return the name of the model verification mel Script
+   */
+  public String
+  getModelVerificationScriptName();
+  
+  public String
+  getModelVerificationScriptName
+  (
+    String assetName,
+    String assetType
+  );
+  
+  /**
+   * @return the name of the rig verification mel Script
+   */
+  public String
+  getRigVerificationScriptName();
+  
+  public String
+  getRigVerificationScriptName
+  (
+    String assetName,
+    String assetType
+  );
+  
+  /**
+   * @return the name of the shader verification mel Script
+   */
+  public String
+  getShaderVerificationScriptName();
+  
+  public String
+  getShaderVerificationScriptName
+  (
+    String assetName,
+    String assetType
+  );
+  
+  /**
+   * @return the placeholder generation mel script
+   */
+  public String
+  getPlaceholderScriptName();
+  
+  /**
+   * @return the auto-rigging mel script
+   */
+  public String 
+  getAutoRigScriptName();
+  
+  public String 
+  getAutoRigScriptName
+  (
+    String assetName,
+    String assetType
+  );
 }

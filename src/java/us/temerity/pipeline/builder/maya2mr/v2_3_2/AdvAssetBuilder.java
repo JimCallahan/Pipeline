@@ -12,7 +12,7 @@ import us.temerity.pipeline.stages.*;
 
 public 
 class AdvAssetBuilder 
-  extends BaseBuilder
+  extends ApprovalBuilder
 {
   public 
   AdvAssetBuilder
@@ -61,6 +61,7 @@ class AdvAssetBuilder
          "the BuildsProjectNames interface");
       
     addSubBuilder(assetNames);
+    addSubBuilder(projectNames);
     
     // Globabl parameters
     {
@@ -198,6 +199,7 @@ class AdvAssetBuilder
     pAssetNames = (BuildsAssetNames) assetNames;
     pProjectNames = (BuildsProjectNames) projectNames;
 
+    addSetupPass(new InformationPass());
     
     {
       AdvancedLayoutGroup layout = 
@@ -276,7 +278,7 @@ class AdvAssetBuilder
     throws PipelineException
   {
     addMappedParam(assetNames.getName(), DefaultAssetNames.aProjectName, aProjectName);
-    addMappedParam(projectNames.getName(), DefaultAssetNames.aProjectName, aProjectName);
+    addMappedParam(projectNames.getName(), DefaultProjectNames.aProjectName, aProjectName);
   }
   
   
@@ -298,105 +300,6 @@ class AdvAssetBuilder
   }
 
 
-  /*----------------------------------------------------------------------------------------*/
-  /*  A N N O T A T I O N                                                                   */
-  /*----------------------------------------------------------------------------------------*/
-  
-  protected void
-  isSubmitNode
-  (
-    BaseStage stage,
-    String taskType,
-    String approveNode
-  )
-    throws PipelineException
-  {
-    BaseAnnotation annot = 
-      pPlug.newAnnotation("SubmitNodeAnnotation", new VersionID("2.3.2"), "Temerity");
-    annot.setParamValue("TaskName", pTaskName);
-    annot.setParamValue("TaskType", taskType);
-    annot.setParamValue("ApproveNode", approveNode);
-    stage.addAnnotation("Submit", annot); 
-  }
-  
-  protected void
-  isIntermediateNode
-  (
-    BaseStage stage,
-    String taskType
-  )
-    throws PipelineException
-  {
-    BaseAnnotation annot = 
-      pPlug.newAnnotation("IntermediateNodeAnnotation", new VersionID("2.3.2"), "Temerity");
-    annot.setParamValue("TaskName", pTaskName);
-    annot.setParamValue("TaskType", taskType);
-    stage.addAnnotation("Intermediate", annot); 
-  }
-  
-  protected void
-  isProductNode
-  (
-    BaseStage stage,
-    String taskType
-  )
-    throws PipelineException
-  {
-    BaseAnnotation annot = 
-      pPlug.newAnnotation("ProductNodeAnnotation", new VersionID("2.3.2"), "Temerity");
-    annot.setParamValue("TaskName", pTaskName);
-    annot.setParamValue("TaskType", taskType);
-    stage.addAnnotation("Product", annot); 
-  }
-  
-  protected void
-  isEditNode
-  (
-    BaseStage stage,
-    String taskType
-  )
-    throws PipelineException
-  {
-    BaseAnnotation annot = 
-      pPlug.newAnnotation("EditNodeAnnotation", new VersionID("2.3.2"), "Temerity");
-    annot.setParamValue("TaskName", pTaskName);
-    annot.setParamValue("TaskType", taskType);
-    stage.addAnnotation("Edit", annot); 
-  }
-  
-  protected void
-  isFocusNode
-  (
-    BaseStage stage,
-    String taskType
-  )
-    throws PipelineException
-  {
-    BaseAnnotation annot = 
-      pPlug.newAnnotation("FocusNodeAnnotation", new VersionID("2.3.2"), "Temerity");
-    annot.setParamValue("TaskName", pTaskName);
-    annot.setParamValue("TaskType", taskType);
-    stage.addAnnotation("Intermediate", annot); 
-  }
-  
-  protected void
-  isApprovalNode
-  (
-    BaseStage stage,
-    String taskType,
-    String classPath
-  )
-    throws PipelineException
-  {
-    BaseAnnotation annot = 
-      pPlug.newAnnotation("ApprovalNodeAnnotation", new VersionID("2.3.2"), "Temerity");
-    annot.setParamValue("TaskName", pTaskName);
-    annot.setParamValue("TaskType", taskType);
-    stage.addAnnotation("Approval", annot);
-    //TODO add in the right thing here.
-  }
-  
-  
   
   /*----------------------------------------------------------------------------------------*/
   /*  I N T E R N A L S                                                                     */
@@ -449,7 +352,7 @@ class AdvAssetBuilder
   protected ArrayList<EmptyMayaAsciiStage> pEmptyMayaScenes = 
     new ArrayList<EmptyMayaAsciiStage>();
   
-  protected String pTaskName;
+
   
   
   
@@ -518,25 +421,25 @@ class AdvAssetBuilder
       pAutoRigSetup = getBooleanParamValue(new ParamMapping(aAutoRigSetup));
       pModelTT = getBooleanParamValue(new ParamMapping(aModelTTForApproval));
 
-      pFinalizeMEL = pAssetNames.getFinalizeScriptName();
+      pFinalizeMEL = pProjectNames.getFinalizeScriptName(null, pAssetNames.getAssetType());
       
-      pLRFinalizeMEL = pAssetNames.getLowRezFinalizeScriptName();
+      pLRFinalizeMEL = pProjectNames.getLowRezFinalizeScriptName(null, pAssetNames.getAssetType());
 
-      pMRInitMEL = pAssetNames.getMRInitScriptName();
+      pMRInitMEL = pProjectNames.getMRInitScriptName();
 
-      pPlaceHolderMEL = pAssetNames.getPlaceholderScriptName();
+      pPlaceHolderMEL = pProjectNames.getPlaceholderScriptName();
       
       pVerifyModelMEL = null;
       if (getBooleanParamValue(new ParamMapping(aVerifyModelMEL)))
-        pVerifyModelMEL = pAssetNames.getModelVerificationScriptName();
+        pVerifyModelMEL = pProjectNames.getModelVerificationScriptName();
 
       pVerifyRigMEL = null;
       if (getBooleanParamValue(new ParamMapping(aVerifyRigMEL)))
-        pVerifyRigMEL = pAssetNames.getRigVerificationScriptName();
+        pVerifyRigMEL = pProjectNames.getRigVerificationScriptName();
         
       pVerifyShaderMEL = null;
       if (getBooleanParamValue(new ParamMapping(aVerifyShaderMEL)))
-        pVerifyShaderMEL = pAssetNames.getShaderVerificationScriptName();
+        pVerifyShaderMEL = pProjectNames.getShaderVerificationScriptName();
       
       pMayaContext = (MayaContext) getParamValue(aMayaContext);
 
@@ -564,7 +467,7 @@ class AdvAssetBuilder
         "Starting the init phase in the Information Pass.");
       if (pMultipleModels) {
         ModelPiecesBuilder builder = 
-          new ModelPiecesBuilder(pClient, pQueue, pAssetNames, pBuilderInformation, pNumberOfModels);
+          new ModelPiecesBuilder(pClient, pQueue, pAssetNames, pProjectNames, pBuilderInformation, pNumberOfModels);
         addSubBuilder(builder);
       }
     }
