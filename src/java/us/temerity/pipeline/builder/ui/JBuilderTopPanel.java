@@ -424,7 +424,9 @@ class JBuilderTopPanel
 	}
 
 	pFirstPassLayouts.show(pFirstPassPanel, title);
-	for (DefaultMutableTreeNode node : pViewedYet.keySet()) {
+	LinkedList<DefaultMutableTreeNode> list = 
+	  new LinkedList<DefaultMutableTreeNode>(pViewedYet.keySet()); 
+	for (DefaultMutableTreeNode node : list) {
 	  if (node.equals(newNode))
 	    pViewedYet.put(node, true);
 	}
