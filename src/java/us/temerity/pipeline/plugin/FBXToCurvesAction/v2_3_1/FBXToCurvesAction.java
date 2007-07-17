@@ -28,7 +28,8 @@ import us.temerity.pipeline.plugin.MayaActionUtils;
  *   Export Set<BR>
  *   <DIV style="margin-left: 40px;">
  *     The name of the Maya Set used to identify the DAG nodes whose animation 
- *     channels should be exported. 
+ *     channels should be exported.  This should not include the namespace if the 
+ *     Namespace parameter is being used.
  *     
  *   Namespace <BR>
  *   <DIV style="margin-left: 40px;">
@@ -122,7 +123,8 @@ class FBXToCurvesAction
 	new StringActionParam
 	(aExportSet, 
 	 "The name of the Maya Set used to identify the DAG nodes " +
-	 "whose animation channels should be exported.", 
+	 "whose animation channels should be exported.  This should not include the " +
+	 "namespace if the Namespace parameter is being used.", 
 	 "SELECT"); 
       addSingleParam(param);
     }
@@ -131,7 +133,7 @@ class FBXToCurvesAction
       ActionParam param = 
 	new StringActionParam
 	(aNamespace,
-	 "An MEL script to evaluate in the scene created by exporting the shaders.", 
+	 "The namespace that is on the FBX file that needs to be matched on the Maya scene.", 
 	 null); 
       addSingleParam(param);
     }
@@ -243,7 +245,7 @@ class FBXToCurvesAction
     
     String exportSet = getSingleStringParamValue(aExportSet);
     
-    /* create a temporary MEL script used to export the shaders */ 
+    /* create a temporary MEL script used to export the curves*/ 
     File script = createTemp(agenda, "mel");
     try {
       FileWriter out = new FileWriter(script);

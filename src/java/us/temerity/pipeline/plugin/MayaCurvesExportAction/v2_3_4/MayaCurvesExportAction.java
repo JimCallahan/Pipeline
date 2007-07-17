@@ -30,6 +30,13 @@ import us.temerity.pipeline.plugin.MayaActionUtils;
  *     Should the animation be baked before it is exported.
  *   </DIV> <BR>
  *   
+ *   Selected Time Range<BR>
+ *   <DIV style="margin-left: 40px;">
+ *     Should the animation only be baked over the time range of the selected objects before it
+  	   is exported.  If this is set to (no), then it will be baked over a frame range for
+  	   everything in the scene.
+ *   </DIV> <BR>
+ *   
  *   Alternative Bake MEL<BR>
  *   <DIV style="margin-left: 40px;">
  *     An alternative MEL snippet to do the animation baking.  This code will be
@@ -70,11 +77,13 @@ class MayaCurvesExportAction
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
   
-  public
+public
   MayaCurvesExportAction()
   {
     super("MayaCurvesExport", new VersionID("2.3.4"), "Temerity",
       "An Action to export animation curves from an animated scene.");
+    
+    underDevelopment();
     
     {
       ActionParam param = 
@@ -103,6 +112,18 @@ class MayaCurvesExportAction
 	 false); 
       addSingleParam(param);
     }
+    
+    {
+        ActionParam param = 
+  	new BooleanActionParam
+  	(aSelectedTimeRange,
+  	 "Should the animation only be baked over the time range of the selected objects before it " +
+  	 "is exported.  If this is set to (no), then it will be baked over a frame range for " +
+  	 "everything in the scene.", 
+  	 false); 
+        addSingleParam(param);
+      }
+
     
     {
       ActionParam param = 
@@ -145,6 +166,7 @@ class MayaCurvesExportAction
       layout.addEntry(aCleanUpNamespace);
       layout.addSeparator();
       layout.addEntry(aBakeAnimation);
+      layout.addEntry(aSelectedTimeRange);
       layout.addEntry(aAlternativeBakeMEL);
       layout.addSeparator();
       layout.addEntry(aInitialMEL);
@@ -205,6 +227,7 @@ class MayaCurvesExportAction
     Path bakeMEL = getMelScriptSourcePath(aAlternativeBakeMEL, agenda);
     
     boolean bakeAnim = getSingleBooleanParamValue(aBakeAnimation);
+    boolean selectedTime = getSingleBooleanParamValue(aSelectedTimeRange);
     
     boolean cleanUp = getSingleBooleanParamValue(aCleanUpNamespace);
     boolean tempScene = false;
@@ -229,11 +252,23 @@ class MayaCurvesExportAction
       if (bakeAnim)
 	if (bakeMEL == null) {
 	  out.write("select -r $export;\n");
-	  out.write("selectKey -time \":\" `ls -sl`;\n" + 
+	  if (selectedTime)
+	  out.write("//Baking over selected frame range\n" +
+	  		"selectKey -time \":\" `ls -sl`;\n" + 
 	  	    "float $first = `findKeyframe -w \"first\"`;\n" + 
 	  	    "float $last = `findKeyframe -w \"last\"`;\n");
-	  out.write("select -r $export;\n");
-	  out.write("bakeResults -t ($first + \":\" + $last) -simulation true `ls -sl`;\n\n");
+	  else
+		  out.write("//Baking over whole frame range\n" +
+		  		"selectKey -time \":\" `ls`;\n" + 
+			  	    "float $first = `findKeyframe -w \"first\"`;\n" + 
+			  	    "float $last = `findKeyframe -w \"last\"`;\n");
+	  out.write
+	    ("if ($first != $last)\n" + 
+	  	 "{\n" +
+	  	 "  select -r $export;\n" +
+	  	 "  if (size(`ls -sl`) > 0)\n" +
+	  	 "    bakeResults -t ($first + \":\" + $last) -simulation true `ls -sl`;\n" +
+	     "}\n\n");
 	}
 	else {
 	  String melSnippet = null;
@@ -257,9 +292,17 @@ class MayaCurvesExportAction
       if (tempScene)
 	actualTarget = newScene;
       
-      out.write("file -f " +
-      		"-type \"" + sceneType + "\" " +
-      		"-eas \"" + actualTarget + "\";\n\n");
+      out.write
+        ("if (catch(`file -f " +
+      	 "-type \"" + sceneType + "\" " +
+      	 "-eas \"" + actualTarget + "\"`))\n" +
+      	 "{\n" + 
+      	 "  file -new;\n" + 
+      	 "  file -rename \"" + actualTarget + "\";\n" + 
+      	 "  file -type \"" + sceneType + "\";\n" + 
+      	 "  file -save;\n" +
+         "}\n"); 
+
       
       writeFinalMEL(agenda, out);
       
@@ -331,7 +374,9 @@ class MayaCurvesExportAction
   public static final String aNewSceneMEL        = "NewSceneMEL";
   public static final String aCleanUpNamespace   = "CleanUpNamespace";
   public static final String aBakeAnimation      = "BakeAnimation";
+  public static final String aSelectedTimeRange  = "SelectedTimeRange";
   public static final String aAlternativeBakeMEL = "AlternativeBakeMEL";
-  
-  private static final long serialVersionUID = -5452523041332328780L;
+ 
+	private static final long serialVersionUID = -5925015626788085391L;
+
 }

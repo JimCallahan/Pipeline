@@ -1,4 +1,4 @@
-// $Id: MayaMiShaderAction.java,v 1.4 2007/06/30 07:16:15 jesse Exp $
+// $Id: MayaMiShaderAction.java,v 1.5 2007/07/17 15:00:30 jesse Exp $
 
 package us.temerity.pipeline.plugin.MayaMiShaderAction.v2_3_2;
 
@@ -850,10 +850,11 @@ MayaMiShaderAction
 	     "  fprint $fid (\"}\\n\");\n" + 
 	     "  fclose $fid;");
 	
+	
 	out.write
           ("  // EXPORT SELECTION\n" +
            "  select -r -ne $newMats;\n" +
-           "  print(\"SELECTED:\" + \"\n\");\n" +
+           "  print(\"SELECTED:\\n\");\n" + 
            "  print($newMats);\n");
 	if (useMRLightLinking)
 	  out.write("  select -add `ls -type \"light\"`;\n" +
