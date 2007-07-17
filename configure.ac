@@ -1999,6 +1999,8 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/MayaEditor/v2_0_10/Makefile
   src/java/us/temerity/pipeline/plugin/MayaEditor/v2_0_9/Makefile
   src/java/us/temerity/pipeline/plugin/MayaEditor/v2_2_1/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaExportAction/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaExportAction/v2_3_4/Makefile
   src/java/us/temerity/pipeline/plugin/MayaFTNBuildAction/Makefile
   src/java/us/temerity/pipeline/plugin/MayaFTNBuildAction/v2_3_1/Makefile
   src/java/us/temerity/pipeline/plugin/MayaImgCvtAction/Makefile
@@ -2039,6 +2041,8 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/MayaMxsExportAction/v2_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/MayaNoRefEditor/Makefile
   src/java/us/temerity/pipeline/plugin/MayaNoRefEditor/v2_2_1/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaOccMELAction/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaOccMELAction/v2_3_4/Makefile
   src/java/us/temerity/pipeline/plugin/MayaProjectEditor/Makefile
   src/java/us/temerity/pipeline/plugin/MayaProjectEditor/v2_0_10/Makefile
   src/java/us/temerity/pipeline/plugin/MayaProjectEditor/v2_2_1/Makefile
@@ -2074,6 +2078,8 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/MayaReplaceRefAction/v2_2_1/Makefile
   src/java/us/temerity/pipeline/plugin/MayaReRigMELAction/Makefile
   src/java/us/temerity/pipeline/plugin/MayaReRigMELAction/v2_3_3/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaShdCopyMELAction/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaShdCopyMELAction/v2_3_4/Makefile
   src/java/us/temerity/pipeline/plugin/MayaSdExportAction/Makefile
   src/java/us/temerity/pipeline/plugin/MayaSdExportAction/v2_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/MayaShaderExportAction/Makefile

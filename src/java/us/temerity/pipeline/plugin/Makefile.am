@@ -119,6 +119,7 @@ SUBDIRS = \
   MayaDLRenderAction \
   MayaDLShaderExportAction \
   MayaEditor \
+  MayaExportAction \
   MayaFTNBuildAction \
   MayaImgCvtAction \
   MayaImportAction \
@@ -129,6 +130,7 @@ SUBDIRS = \
   MayaMRayRenderAction \
   MayaMxsExportAction \
   MayaNoRefEditor \
+  MayaOccMELAction \
   MayaProjectEditor \
   MayaPygExportAction \
   MayaReferenceAction \
@@ -139,6 +141,7 @@ SUBDIRS = \
   MayaReplaceRefAction \
   MayaReRigMELAction \
   MayaSdExportAction \
+  MayaShdCopyMELAction \
   MayaShaderExportAction \
   MayaTextureSyncTool \
   MPlayEditor \
