@@ -1,11 +1,10 @@
-// $Id: MRayActionUtils.java,v 1.1 2007/04/04 07:33:30 jim Exp $
+// $Id: MRayActionUtils.java,v 1.2 2007/07/17 15:04:15 jesse Exp $
 
 package us.temerity.pipeline.plugin;
 
-import  us.temerity.pipeline.*;
+import java.util.Map;
 
-import java.util.*;
-import java.io.*;
+import us.temerity.pipeline.*;
 
 
 /*------------------------------------------------------------------------------------------*/
@@ -84,19 +83,18 @@ class MRayActionUtils
    * Generate the name of the Mental Ray renderer based on the Toolset environment and 
    * current operating system type.<P> 
    * 
-   * If the environmental variable MRAY_BINARY is defined, its value will be used as the 
+   * If the environmental variable RAY_BINARY is defined, its value will be used as the 
    * name of the renderer executable instead of the "ray" (Unix/MacOS) or "ray345.exe" 
    * (Windows).  On Windows, the renderer name should include the ".exe" extension.
    * 
    * @param env  
-   *   The environment used to lookup MRAY_BINARY.
+   *   The environment used to lookup RAY_BINARY.
    */
   public static String
   getMRayProgram
   (
    Map<String,String> env
   ) 
-    throws PipelineException
   {
     String ray = env.get("RAY_BINARY");
     if((ray != null) && (ray.length() > 0)) 
