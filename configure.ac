@@ -9,7 +9,7 @@ AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(Pipeline, 2.3.4)
+AM_INIT_AUTOMAKE(Pipeline, 2.3.5)
                            
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
@@ -1973,6 +1973,7 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/MayaBuildAction/v2_0_11/Makefile
   src/java/us/temerity/pipeline/plugin/MayaBuildAction/v2_0_12/Makefile
   src/java/us/temerity/pipeline/plugin/MayaBuildAction/v2_2_1/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaBuildAction/v2_3_4/Makefile
   src/java/us/temerity/pipeline/plugin/MayaCollateAction/Makefile
   src/java/us/temerity/pipeline/plugin/MayaCollateAction/v1_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/MayaCollateAction/v1_1_0/Makefile
@@ -2037,6 +2038,7 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/MayaMiShaderAction/v2_0_9/Makefile
   src/java/us/temerity/pipeline/plugin/MayaMiShaderAction/v2_2_1/Makefile
   src/java/us/temerity/pipeline/plugin/MayaMiShaderAction/v2_3_2/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaMiShaderAction/v2_3_4/Makefile
   src/java/us/temerity/pipeline/plugin/MayaMxsExportAction/Makefile
   src/java/us/temerity/pipeline/plugin/MayaMxsExportAction/v2_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/MayaNoRefEditor/Makefile
