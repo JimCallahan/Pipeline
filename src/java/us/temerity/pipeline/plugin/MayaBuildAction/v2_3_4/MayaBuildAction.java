@@ -497,13 +497,16 @@ class MayaBuildAction
 
 
   /*----------------------------------------------------------------------------------------*/
-  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*   H E L P E R S                                                                        */
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * Create a four digit padding string for a reference number.
+   */ 
   private String 
   pad
   (
-    int num
+   int num
   )
     throws PipelineException
   {
@@ -515,6 +518,12 @@ class MayaBuildAction
       parse = "0" + parse;
     return parse;
   }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
 
   private static final long serialVersionUID = -8942405475862025893L;
 
