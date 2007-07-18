@@ -30,8 +30,8 @@ case "$1" in
 	if [ "$pid"x != x ]
 	then 
 	  rc_failed
-        else 
-	  startproc -u 502 -g 201 $PLJOBMGR_BIN --standard-log-file --fail-fast
+        else
+	  startproc -u @PIPELINE_UID@ -g @PIPELINE_GID@ $PLJOBMGR_BIN --standard-log-file --fail-fast
 	  pid=`$JPS_BIN -m | grep JobMgrApp | awk '{print $1}'`
 	  if [ "$pid"x != x ]
 	  then 
