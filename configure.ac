@@ -2057,6 +2057,8 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/MayaReferenceAction/v2_0_10/Makefile
   src/java/us/temerity/pipeline/plugin/MayaReferenceAction/v2_0_11/Makefile
   src/java/us/temerity/pipeline/plugin/MayaReferenceAction/v2_0_9/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaRemoveRefMELAction/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaRemoveRefMELAction/v2_3_4/Makefile
   src/java/us/temerity/pipeline/plugin/MayaRemoveRefTool/Makefile
   src/java/us/temerity/pipeline/plugin/MayaRemoveRefTool/v2_2_1/Makefile
   src/java/us/temerity/pipeline/plugin/MayaRemoveReferenceTool/Makefile
