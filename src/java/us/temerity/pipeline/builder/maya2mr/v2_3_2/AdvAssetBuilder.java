@@ -354,8 +354,6 @@ class AdvAssetBuilder
   
 
   
-  
-  
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
@@ -425,7 +423,7 @@ class AdvAssetBuilder
       
       pLRFinalizeMEL = pProjectNames.getLowRezFinalizeScriptName(null, pAssetNames.getAssetType());
 
-      pMRInitMEL = pProjectNames.getMRInitScriptName();
+      pMRInitMEL = pProjectNames.getMRayInitScriptName();
 
       pPlaceHolderMEL = pProjectNames.getPlaceholderScriptName();
       

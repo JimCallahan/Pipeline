@@ -223,6 +223,7 @@ class NewAssetBuilder
   /*   C H E C K - I N                                                                      */
   /*----------------------------------------------------------------------------------------*/
   
+  @Override
   protected TreeSet<String>
   getNodesToCheckIn()
   {
@@ -341,7 +342,7 @@ class NewAssetBuilder
       
       pLRFinalizeMEL = pProjectNames.getLowRezFinalizeScriptName(null, pAssetNames.getAssetType());
 
-      pMRInitMEL = pProjectNames.getMRInitScriptName();
+      pMRInitMEL = pProjectNames.getMRayInitScriptName();
 
       pPlaceHolderMEL = pProjectNames.getPlaceholderScriptName();
       

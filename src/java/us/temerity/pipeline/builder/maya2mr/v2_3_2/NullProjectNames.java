@@ -154,7 +154,7 @@ class NullProjectNames
     return null;
   }
 
-  public String getMRInitScriptName()
+  public String getMRayInitScriptName()
   {
     return null;
   }

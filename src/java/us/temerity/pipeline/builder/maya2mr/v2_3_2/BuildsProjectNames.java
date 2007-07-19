@@ -4,6 +4,9 @@ public
 interface BuildsProjectNames
 {
   public String
+  getDummyFile();
+  
+  public String
   getAssetModelTTSetup
   (
     String assetName,
@@ -102,7 +105,7 @@ interface BuildsProjectNames
    * @return the Mental Ray initialization mel script
    */
   public String
-  getMRInitScriptName();
+  getMRayInitScriptName();
   
   /**
    * @return the name of the model verification mel Script
@@ -161,4 +164,16 @@ interface BuildsProjectNames
     String assetName,
     String assetType
   );
+  
+  /**
+   * @return the shader copying mel script name
+   */
+  public String
+  getShaderCopyScriptName();
+  
+  public String
+  getRigCopyScriptName();
+  
+  public String
+  getRemoveReferenceScriptName();
 }

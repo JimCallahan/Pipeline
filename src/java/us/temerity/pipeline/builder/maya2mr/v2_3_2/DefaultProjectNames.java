@@ -66,6 +66,14 @@ class DefaultProjectNames
   }
   
   
+  public String
+  getDummyFile()
+  {
+    Path p = new Path("/projects/" + pProject);
+    p = new Path(new Path(p, "etc"), "dummy");
+    return p.toString();
+  }
+  
   
   /*----------------------------------------------------------------------------------------*/
   /*   V E R I F I C A T I O N   S E T U P S                                                */
@@ -174,6 +182,7 @@ class DefaultProjectNames
   public String 
   getFinalizeScriptName
   (
+    @SuppressWarnings("unused")
     String assetName,
     String assetType
   )
@@ -188,6 +197,7 @@ class DefaultProjectNames
   public String 
   getLowRezFinalizeScriptName
   (
+    @SuppressWarnings("unused")
     String assetName,
     String assetType
   )
@@ -199,7 +209,7 @@ class DefaultProjectNames
    * @return the mental ray init script name
    */
   public String 
-  getMRInitScriptName()
+  getMRayInitScriptName()
   {
     return new Path(pMelScriptPath, "mr-init").toString();
   }
@@ -248,6 +258,34 @@ class DefaultProjectNames
   {
     return new Path(pMelVerifyScriptPath, "shdVerify").toString();
   }
+  
+  /**
+   * @return the shader copying mel script name
+   */
+  public String
+  getShaderCopyScriptName()
+  {
+    return new Path(pMelScriptPath, "shaderCopy").toString();
+  }
+  
+  /**
+   * @return the rig copying mel script name
+   */
+  public String
+  getRigCopyScriptName()
+  {
+    return new Path(pMelScriptPath, "rigCopy").toString();
+  }
+  
+  /**
+   * @return the rig copying mel script name
+   */
+  public String
+  getRemoveReferenceScriptName()
+  {
+    return new Path(pMelScriptPath, "removeReferences").toString();
+  }
+
 
   
 

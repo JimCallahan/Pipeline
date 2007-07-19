@@ -258,7 +258,7 @@ class AssetBuilder
 
       pFinalizeMEL = pProjectNames.getFinalizeScriptName(null, pAssetNames.getAssetType());
 
-      pMRInitMEL = pProjectNames.getMRInitScriptName();
+      pMRInitMEL = pProjectNames.getMRayInitScriptName();
 
       pPlaceHolderMEL = pProjectNames.getPlaceholderScriptName();
 
