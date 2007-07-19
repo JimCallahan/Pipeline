@@ -99,6 +99,24 @@ class BaseStage
       throw new PipelineException(buf.toString());
   }
   
+  public static PluginContext
+  getDefaultEditor
+  (
+    MasterMgrClient client,
+    String suffix
+  )
+    throws PipelineException
+  {
+    TreeSet<SuffixEditor> suffixes =  client.getSuffixEditors();
+    for (SuffixEditor editor : suffixes) {
+      if (editor.getSuffix().equals(suffix)) {
+	BaseEditor edit = editor.getEditor();
+	return new PluginContext(edit.getName(), edit.getVendor());
+      }
+    }
+    return null;
+  }
+  
   
   
   /*----------------------------------------------------------------------------------------*/

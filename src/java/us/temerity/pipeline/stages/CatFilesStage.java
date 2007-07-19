@@ -41,5 +41,27 @@ class CatFilesStage
         order += 50;
       }
   }
+  
+  public
+  CatFilesStage
+  (
+    StageInformation stageInformation,
+    UtilContext context,
+    MasterMgrClient client, 
+    String nodeName,
+    String suffix,
+    LinkedList<String> sources
+  )
+    throws PipelineException
+  {
+   this("CatFilesStage", 
+        "Quick Version of CatFilesStage meant to run directly", 
+        stageInformation, 
+        context, 
+        client, 
+        nodeName, 
+        suffix, 
+        sources); 
+  }
   private static final long serialVersionUID = -1598902054477603895L;
 }

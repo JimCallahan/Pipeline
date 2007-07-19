@@ -36,6 +36,28 @@ public class EmptyFileStage
           new PluginContext("Touch"));
   }
   
+  public
+  EmptyFileStage
+  (
+    StageInformation stageInformation,
+    UtilContext context,
+    MasterMgrClient client, 
+    String nodeName,
+    String suffix
+  )
+    throws PipelineException
+  {
+    super("EmptyFile", 
+          "Stage to build an Empty File",
+          stageInformation,
+          context,
+          client,
+          nodeName, 
+          suffix, 
+          getDefaultEditor(client, suffix), 
+          new PluginContext("Touch"));
+  }
+  
   /**
    * Finishes off the work of the stage after it has been queued.
    * <p>
