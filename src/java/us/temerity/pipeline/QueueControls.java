@@ -1,4 +1,4 @@
-// $Id: QueueControls.java,v 1.2 2006/12/14 19:01:31 jim Exp $
+// $Id: QueueControls.java,v 1.3 2007/07/20 07:47:11 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -40,16 +40,24 @@ class QueueControls
    * 
    * @param dispatcherInterval
    *   The minimum time a cycle of the dispatcher loop should take (in milliseconds).
+   * 
+   * @param nfsCacheInterval
+   *   The minimum time to wait before attempting a NFS directory attribute lookup operation
+   *   after a file in the directory has been created by another host on the network 
+   *   (in milliseconds).  This should be set to the same value as the NFS (acdirmax) 
+   *   mount option for the root production directory on the host running the Queue Manager.
    */ 
   public 
   QueueControls
   (
-   int collectorBatchSize,
-   long dispatcherInterval
+   Integer collectorBatchSize,
+   Long dispatcherInterval, 
+   Long nfsCacheInterval
   ) 
   {    
     setCollectorBatchSize(collectorBatchSize); 
     setDispatcherInterval(dispatcherInterval); 
+    setNfsCacheInterval(nfsCacheInterval); 
   }
 
 
@@ -122,6 +130,43 @@ class QueueControls
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the minimum time to wait before attempting a NFS directory attribute lookup 
+   * operation after a file in the directory has been created by another host on the 
+   * network (in milliseconds). 
+   *
+   * @return 
+   *   The interval or <CODE>null</CODE> if unset.
+   */ 
+  public Long
+  getNfsCacheInterval() 
+  {
+    return pNfsCacheInterval;
+  }
+
+  /**
+   * Set the minimum time to wait before attempting a NFS directory attribute lookup 
+   * operation after a file in the directory has been created by another host on the 
+   * network (in milliseconds). 
+   * 
+   * @param interval
+   *   The interval or <CODE>null</CODE> to unset.
+   */
+  public void 
+  setNfsCacheInterval
+  (
+   Long interval
+  ) 
+  {
+    if((interval != null) && (interval < 0L)) 
+      throw new IllegalArgumentException
+        ("The NFS cache interval (" + interval + ") cannot be negative!");
+    pNfsCacheInterval = interval; 
+  }
+
+
  
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
@@ -145,7 +190,13 @@ class QueueControls
    */ 
   private Long  pDispatcherInterval; 
 
-
+  /**
+   * The minimum time to wait before attempting a NFS directory attribute lookup operation
+   * after a file in the directory has been created by another host on the network 
+   * (in milliseconds).  This should be set to the same value as the NFS (acdirmax) 
+   * mount option for the root production directory on the host running the Queue Manager.
+   */ 
+  private Long  pNfsCacheInterval; 
 
 }
 

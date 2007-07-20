@@ -236,6 +236,20 @@ increasingly more detailed command tracing messages. <br>
 </div>
 </div>
 </div>
+<h3><a name="Global_Options"></a>Global Options<br>
+</h3>
+<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
+ name="--rebuild"></a>--rebuild</span><br>
+<span style="font-weight: bold;"></span><br>
+<div style="margin-left: 40px;">When <span style="font-weight: bold;">plqueuemgr</span>(1)
+is inproperly
+shutdown, it cannot be restarted without using this option.&nbsp; This
+will override the default behavior which views the existance of a
+"lock" file as proof that another Queue Manager process is currently
+running.&nbsp; For this reason, you should be very careful about using
+this option if it is possible that another instance of the Queue
+Manager is already running.</div>
+</div>
 <h3><a name="Performance_Tuning_Options"></a>Performance Tuning Options</h3>
 <div style="margin-left: 40px;"><span style="font-weight: bold;"><a
  name="--collector-batch-size"></a>--collector-batch-size</span>=<span
@@ -260,6 +274,23 @@ sleep for the remainder of the time.&nbsp; Increasing the interval will
 reduce CPU load at the expense of job dispatch latency.<br>
 <br>
 The default value is (2000) msec.&nbsp; Which is (2) seconds.<br>
+<br>
+</div>
+</div>
+<div style="margin-left: 40px;"><span style="font-weight: normal;"><span
+ style="font-weight: bold;"><a name="--nfs-cache-interval"></a>--nfs-cache-interval</span>=<span
+ style="font-style: italic;">msec<br>
+</span></span>
+<div style="margin-left: 40px;"><br>
+Overrides the NFS directory attribute caching interval (msec).&nbsp;
+This sets the minimum time the Queue Manager should to wait before
+attempting a NFS directory attribute lookup operation after a file in
+the directory has been created by another host on the network.&nbsp;
+This interval should be set to the same value as the NFS (acdirmax)
+mount option for the root production directory on the host running the
+Queue Manager.<br>
+<br>
+The default is (5000) msec.&nbsp; Which is (5) seconds.<br>
 </div>
 </div>
 <h3><a name="See_Also"></a>See Also</h3>

@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.78 2007/07/01 23:54:23 jim Exp $
+// $Id: ScriptApp.java,v 1.79 2007/07/20 07:47:12 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -158,14 +158,17 @@ class ScriptApp
        "        [--min-archives=integer] [--dry-run]\n" + 
        "      --restore=archive-name [--param=name:value ...] [--toolset=...]\n" + 
        "        --vsn=node-name:major.minor.micro [--vsn=...] [--dry-run]\n" + 
+       "\n" + 
        "    runtime\n" + 
        "      --set-master [--remote-log=logger:level[,logger:level[...]]]\n" + 
        "        [--node-gc-interval=msec] [--min-overhead=min] [--max-overhead=max]\n" + 
        "        [--avg-node-size=size] [--restore-cleanup-interval=msec]\n" + 
        "      --set-queue [--remote-log=logger:level[,logger:level[...]]]\n" + 
-       "        [--collector-batch-size=num] [--dispatcher-interval=msec]\n" + 
+       "        [--collector-batch-size=num] [--dispatcher-interval=msec]\n" +  
+       "        [--nfs-cache-interval=msec]\n" + 
        "      --get-master\n" + 
        "      --get-queue\n" +
+       "\n" + 
        "    archive-volume\n" + 
        "      --get\n" + 
        "      --get-info=archive-name [--show=section[,section ...]]\n" + 
@@ -175,10 +178,12 @@ class ScriptApp
        "    default-toolset\n" + 
        "      --get\n" + 
        "      --set=toolset-name\n" + 
+       "\n" + 
        "    active-toolset\n" + 
        "      --get\n" + 
        "      --add=toolset-name\n" + 
        "      --remove=toolset-name\n" + 
+       "\n" + 
        "    toolset\n" + 
        "      --get\n" + 
        "      --get-info=toolset-name\n" + 
@@ -197,6 +202,7 @@ class ScriptApp
        "        [--per-slot | --per-host | --per-host-slot]\n" +
        "        [--max-slots=integer] [--max-hosts=integer] [--max-host-slots=integer]\n" +
        "      --remove=key-name\n" +
+       "\n" + 
        "    selection-key\n" + 
        "      --get\n" + 
        "      --get-info=key-name\n" + 
@@ -204,6 +210,7 @@ class ScriptApp
        "      --add=key-name\n" + 
        "        --msg=\"key-description\"\n" + 
        "      --remove=key-name\n" + 
+       "\n" + 
        "    job-server\n" + 
        "      --get\n" + 
        "      --get-info=host-name\n" + 
@@ -220,18 +227,22 @@ class ScriptApp
        "      --get\n" + 
        "      --get-info=editor-name[:major.minor.micro]\n" + 
        "      --get-info-all\n" + 
+       "\n" + 
        "    action\n" + 
        "      --get\n" + 
        "      --get-info=action-name[:major.minor.micro]\n" + 
        "      --get-info-all\n" + 
+       "\n" + 
        "    comparator\n" + 
        "      --get\n" + 
        "      --get-info=comparator-name[:major.minor.micro]\n" + 
        "      --get-info-all\n" + 
+       "\n" + 
        "    tool\n" + 
        "      --get\n" + 
        "      --get-info=tool-name[:major.minor.micro]\n" + 
        "      --get-info-all\n" + 
+       "\n" + 
        "    archiver\n" + 
        "      --get\n" + 
        "      --get-info=archiver-name[:major.minor.micro]\n" + 

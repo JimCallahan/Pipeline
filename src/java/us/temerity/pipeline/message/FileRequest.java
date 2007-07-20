@@ -1,4 +1,4 @@
-// $Id: FileRequest.java,v 1.21 2005/03/30 20:37:29 jim Exp $
+// $Id: FileRequest.java,v 1.22 2007/07/20 07:47:12 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -19,6 +19,14 @@ package us.temerity.pipeline.message;
 public
 enum FileRequest
 {
+  /**
+   * Make sure that the temporary directory exists.
+   */ 
+  ValidateScratchDir, 
+
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * An instance of {@link FileCreateWorkingAreaReq FileCreateWorkingAreaReq} is next.
    */

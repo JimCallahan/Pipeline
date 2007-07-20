@@ -170,6 +170,7 @@ ScriptOptsParser
 
   private Integer pCollectorBatchSize;
   private Long    pDispatcherInterval;
+  private Long    pNfsCacheInterval;
   
   private Long  pNodeGCInterval;
   private Long  pMinOverhead;
@@ -379,6 +380,7 @@ TOKEN :
 | <REMOTE_LOG:               "--remote-log">                : REMOTE_LOG_SEP
 | <COLLECTOR_BATCH_SIZE:     "--collector-batch-size">      : INTEGER_SEP
 | <DISPATCHER_INTERVAL:      "--dispatcher-interval">       : INTEGER_SEP
+| <NFS_CACHE_INTERVAL:       "--nfs-cache-interval">        : INTEGER_SEP
 | <RESTORE_CLEANUP_INTERVAL: "--restore-cleanup-interval">  : INTEGER_SEP
 | <NODE_GC_INTERVAL:         "--node-gc-interval">          : INTEGER_SEP
 | <MIN_OVERHEAD:             "--min-overhead">              : INTEGER_SEP  
@@ -3246,6 +3248,7 @@ SetRuntimeQueue()
   pLogControls = null;
   pCollectorBatchSize = null;
   pDispatcherInterval = null;
+  pNfsCacheInterval   = null;
 }
 {
   <SET_QUEUE_RT> AE() (RuntimeQueueOpts())* 
@@ -3256,8 +3259,12 @@ SetRuntimeQueue()
       noOpts = false;
     }
     
-    if((pCollectorBatchSize != null) || (pDispatcherInterval != null)) {
-      QueueControls controls = new QueueControls(pCollectorBatchSize, pDispatcherInterval);
+    if((pCollectorBatchSize != null) || 
+       (pDispatcherInterval != null) || 
+       (pNfsCacheInterval != null)) {
+
+      QueueControls controls = 
+        new QueueControls(pCollectorBatchSize, pDispatcherInterval, pNfsCacheInterval);
       pQueueMgrClient.setRuntimeControls(controls);
       noOpts = false;
     }
@@ -3284,7 +3291,7 @@ RuntimeQueueOpts()
   throws PipelineException : 
 {}
 {
-  (RemoteLog() | CollectorBatchSize() | DispatcherInterval()) 
+  (RemoteLog() | CollectorBatchSize() | DispatcherInterval() | NfsCacheInterval()) 
   {}
 }
 
@@ -3317,6 +3324,22 @@ void DispatcherInterval()
       throw new PipelineException
         ("The dispatcher interval (" + msec + ") must be positive!");
     pDispatcherInterval = msec; 
+  }
+}
+
+void NfsCacheInterval()
+  throws PipelineException : 
+{
+  Token t;
+}
+{
+  <NFS_CACHE_INTERVAL> EQ() t=<INTEGER> AE()
+  {
+    Long msec = Long.parseLong(t.image);
+    if(msec <= 0) 
+      throw new PipelineException
+        ("The NFS Cache interval (" + msec + ") must be positive!");
+    pNfsCacheInterval = msec; 
   }
 }
 

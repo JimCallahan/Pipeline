@@ -1,4 +1,4 @@
-// $Id: QueueMgrApp.java,v 1.11 2006/07/09 17:05:29 jim Exp $
+// $Id: QueueMgrApp.java,v 1.12 2007/07/20 07:47:12 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -119,6 +119,7 @@ class QueueMgrApp
        "\n" + 
        "GLOBAL OPTIONS:\n" +
        "  [--log-file=...][--log-backups=...][--log=...]\n" +
+       "  [--rebuild]\n" + 
        "\n" + 
        "PERFORMANCE TUNING OPTIONS:\n" +
        "  [--collector-batch-size=...] [--dispatcher-interval=...]\n" + 

@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.91 2007/04/26 17:54:08 jim Exp $
+// $Id: QueueMgr.java,v 1.92 2007/07/20 07:47:11 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -34,24 +34,37 @@ class QueueMgr
    * @param server
    *   The parent queue manager server.
    * 
+   * @param rebuild
+   *   Whether to ignore existing lock files.
+   * 
    * @param collectorBatchSize
    *   The maximum number of job servers per collection sub-thread.
    * 
    * @param dispatcherInterval
    *   The minimum time a cycle of the dispatcher loop should take (in milliseconds).
+   * 
+   * @param nfsCacheInterval
+   *   The minimum time to wait before attempting a NFS directory attribute lookup operation
+   *   after a file in the directory has been created by another host on the network 
+   *   (in milliseconds).  This should be set to the same value as the NFS (acdirmax) 
+   *   mount option for the root production directory on the host running the Queue Manager.
    */
   public
   QueueMgr
   (
    QueueMgrServer server,
+   boolean rebuild, 
    int collectorBatchSize,
-   long dispatcherInterval
+   long dispatcherInterval, 
+   long nfsCacheInterval
   ) 
   { 
     pServer = server;
+    pRebuild = rebuild;
 
     pCollectorBatchSize = new AtomicInteger(collectorBatchSize);
     pDispatcherInterval = new AtomicLong(dispatcherInterval);
+    pNfsCacheInterval   = new AtomicLong(nfsCacheInterval);
 
     if(PackageInfo.sOsType != OsType.Unix)
       throw new IllegalStateException("The OS type must be Unix!");
@@ -130,23 +143,21 @@ class QueueMgr
       /* make sure that the root queue directories exist */ 
       makeRootDirs();
 
-      /* create the lock file */ 
-      {
+      /* validate startup state */ 
+      if(pRebuild) {  
+        removeLockFile();   
+      }
+      else {
 	File file = new File(pQueueDir, "queue/lock");
 	if(file.exists()) 
 	  throw new IllegalStateException
-	    ("Another queue manager is already running!\n" + 
-	     "If you are certain this is not the case, remove the lock file (" + file + ")!");
-	
-	try {
-	  FileWriter out = new FileWriter(file);
-	  out.close();
-	}
-	catch(IOException ex) {
-	  throw new PipelineException
-	    ("Unable to create lock file (" + file + ")!");
-	}
+	    ("Another queue manager may already be running!\n" + 
+	     "If you are certain this is not the case, restart using the --rebuild option!");
       }
+
+      /* create the lock file */ 
+      createLockFile();
+
 
       /* load and initialize the server extensions */ 
       initQueueExtensions();
@@ -169,6 +180,41 @@ class QueueMgr
     }
   } 
 
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Create the lock file.
+   */ 
+  private void 
+  createLockFile()
+    throws PipelineException 
+  {
+    File file = new File(pQueueDir, "queue/lock");
+    try {
+      FileWriter out = new FileWriter(file);
+      out.close();
+    }
+    catch(IOException ex) {
+      throw new PipelineException
+        ("Unable to create lock file (" + file + ")!");
+    }
+  }
+
+  /**
+   * Remove the lock file.
+   */
+  private void 
+  removeLockFile() 
+  {
+    File file = new File(pQueueDir, "queue/lock");
+    if(file.exists())
+      file.delete();
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
   /**
    * Make sure that the root queue directories exist.
    */ 
@@ -596,10 +642,7 @@ class QueueMgr
     }
 
     /* remove the lock file */ 
-    {
-      File file = new File(pQueueDir, "queue/lock");
-      file.delete();
-    }
+    removeLockFile();   
   }
 
 
@@ -807,8 +850,9 @@ class QueueMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    QueueControls controls = 
-      new QueueControls(pCollectorBatchSize.get(), pDispatcherInterval.get());
+    QueueControls controls = new QueueControls(pCollectorBatchSize.get(), 
+                                               pDispatcherInterval.get(), 
+                                               pNfsCacheInterval.get());
 
     return new QueueGetQueueControlsRsp(timer, controls);
   }
@@ -847,6 +891,12 @@ class QueueMgr
 	Long interval = controls.getDispatcherInterval();
 	if(interval != null) 
 	  pDispatcherInterval.set(interval);
+      }
+
+      {
+	Long interval = controls.getNfsCacheInterval();
+	if(interval != null) 
+	  pNfsCacheInterval.set(interval);
       }
 
       return new SuccessRsp(timer);
@@ -7938,11 +7988,14 @@ class QueueMgr
 	  preOpts.add("--remove-destination");
 	  preOpts.add("--target-directory=" + wpath.toOsString());
 
+	  ArrayList<Path> missing = new ArrayList<Path>();
 	  ArrayList<String> args = new ArrayList<String>();
           for(Path target : agenda.getPrimaryTarget().getPaths()) {
             Path path = new Path(tpath, target); 
             if(path.toFile().isFile())
               args.add(path.toOsString()); 
+            else 
+              missing.add(path); 
           }
           
           for(FileSeq fseq : agenda.getSecondaryTargets()) {
@@ -7950,6 +8003,8 @@ class QueueMgr
               Path path = new Path(tpath, target); 
               if(path.toFile().isFile())
                 args.add(path.toOsString()); 
+              else 
+                missing.add(path); 
             }
           }          
 
@@ -7976,6 +8031,51 @@ class QueueMgr
                  "directory for job (" + jobID + ")!"); 
             }
           }
+
+          /* try again after letting the NFS cache expire... */ 
+          if(!missing.isEmpty()) {
+            long nap = pNfsCacheInterval.get();
+            if(nap > 0) {
+              LogMgr.getInstance().logAndFlush
+                (LogMgr.Kind.Sub, LogMgr.Level.Fine,
+                 "WinTarget-CopyTargets: Sleeping for (" + nap + ") ms...");
+              try {
+                Thread.sleep(nap+100L);  /* a little extra for good measure */
+              }
+              catch(InterruptedException ex) {
+              }
+              
+              args.clear(); 
+              for(Path path : missing) { 
+                if(path.toFile().isFile())
+                  args.add(path.toOsString()); 
+              }
+
+              if(!args.isEmpty()) {
+                LinkedList<SubProcessLight> procs = 
+                  SubProcessLight.createMultiSubProcess
+                  (agenda.getNodeID().getAuthor(), 
+                   "WinTarget-CopyTargets[2]", "cp", preOpts, args, env, tpath.toFile());
+                
+                try {
+                  for(SubProcessLight proc : procs) {
+                    proc.start();
+                    proc.join();
+                    if(!proc.wasSuccessful()) 
+                      throw new PipelineException
+                        ("Unable to copy the Windows target files to the working area " + 
+                         "directory for job (" + jobID + "):\n\n" + 
+                         proc.getStdErr());	
+                  }
+                }
+                catch(InterruptedException ex) {
+                  throw new PipelineException
+                    ("Interrupted while copying the Windows target files to the working " + 
+                     "area directory for job (" + jobID + ")!"); 
+                }
+              }
+            }
+          }
         }
       }
 
@@ -7984,11 +8084,14 @@ class QueueMgr
         ArrayList<String> preOpts = new ArrayList<String>();
         preOpts.add("uga-w");
           
+        ArrayList<Path> missing = new ArrayList<Path>();
         ArrayList<String> args = new ArrayList<String>();
         for(Path target : agenda.getPrimaryTarget().getPaths()) {
           Path path = new Path(wpath, target); 
           if(path.toFile().isFile()) 
             args.add(target.toOsString()); 
+          else 
+            missing.add(path); 
         }
         
         for(FileSeq fseq : agenda.getSecondaryTargets()) {
@@ -7996,6 +8099,8 @@ class QueueMgr
             Path path = new Path(wpath, target); 
             if(path.toFile().isFile()) 
               args.add(target.toOsString()); 
+            else 
+              missing.add(path); 
           }
         }
         
@@ -8020,6 +8125,59 @@ class QueueMgr
             throw new PipelineException
               ("Interrupted while making the target files of job (" + jobID + ") " + 
                "read-only!");
+          }
+        }
+
+        /* try again after letting the NFS cache expire... */ 
+        switch(pHostOsType) {
+        case Windows:
+          /* no need to try again on Windows since the WinTarget-CopyTargets task above
+             would have already found any files being hidden by the NFS cache */ 
+          break;
+
+        default:
+          if(!missing.isEmpty()) {
+            long nap = pNfsCacheInterval.get();
+            if(nap > 0) {
+              LogMgr.getInstance().logAndFlush
+                (LogMgr.Kind.Sub, LogMgr.Level.Fine,
+                 "ReadOnlyTargets: Sleeping for (" + nap + ") ms...");
+              try {
+                Thread.sleep(nap+100L);  /* a little extra for good measure */
+              }
+              catch(InterruptedException ex) {
+              }
+              
+              args.clear(); 
+              for(Path path : missing) { 
+                if(path.toFile().isFile())
+                  args.add(path.toOsString()); 
+              }
+              
+              if(!args.isEmpty()) {
+                LinkedList<SubProcessLight> procs = 
+                  SubProcessLight.createMultiSubProcess
+                  (agenda.getNodeID().getAuthor(), 
+                   "ReadOnlyTargets[2]", "chmod", preOpts, args, env, wpath.toFile());
+                
+                try {
+                  for(SubProcessLight proc : procs) {
+                    proc.start();
+                    proc.join();
+                    if(!proc.wasSuccessful()) 
+                      throw new PipelineException
+                        ("Unable to make the target files of job (" + jobID + ") " + 
+                         "read-only:\n\n" + 
+                         "  " + proc.getStdErr());	
+                  }
+                }
+                catch(InterruptedException ex) {
+                  throw new PipelineException
+                    ("Interrupted while making the target files of job (" + jobID + ") " + 
+                     "read-only!");
+                }
+              }
+            }
           }
         }
       }
@@ -8232,6 +8390,11 @@ class QueueMgr
    */
   private Object pMakeDirLock;
  
+  /**
+   * Whether to ignore existing lock files.
+   */
+  private boolean  pRebuild; 
+
 
   /*----------------------------------------------------------------------------------------*/
  
@@ -8398,6 +8561,14 @@ class QueueMgr
 
   /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * The minimum time to wait before attempting a NFS directory attribute lookup operation
+   * after a file in the directory has been created by another host on the network 
+   * (in milliseconds).  This should be set to the same value as the NFS (acdirmax) 
+   * mount option for the root production directory on the host running the Queue Manager.
+   */ 
+  private AtomicLong  pNfsCacheInterval; 
+
   /**
    * The minimum time a cycle of the dispatcher loop should take (in milliseconds).
    */ 

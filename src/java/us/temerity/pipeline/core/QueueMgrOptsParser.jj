@@ -61,6 +61,11 @@ QueueMgrOptsParser
    */
   private QueueMgrApp  pApp;
 
+  /**
+   * Whether to ignore existing lock files.
+   */ 
+  private boolean  pRebuild; 
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -73,6 +78,13 @@ QueueMgrOptsParser
    * The minimum time a cycle of the dispatcher loop should take (in milliseconds).
    */ 
   private long  pDispatcherInterval = 2000L;  /* 2-seconds */ 
+
+  /**
+   * The minimum time to wait before attempting a NFS directory attribute lookup 
+   * operation after a file in the directory has been created by another host on the 
+   * network (in milliseconds). 
+   */ 
+  private long  pNfsCacheInterval = 5000L;  /* 5-seconds */ 
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -109,6 +121,7 @@ TOKEN :
 | <LICENSE:      "--license">    
 
   /* global options */	
+| <REBUILD:           "--rebuild"> 
 | <LOG_FILE:          "--log-file">           : PATH_SEP
 | <STANDARD_LOG_FILE: "--standard-log-file"> 
 | <LOG_BACKUPS:       "--log-backups">        : INTEGER_SEP
@@ -117,6 +130,7 @@ TOKEN :
   /* performance tuning options */ 
 | <COLLECTOR_BATCH_SIZE:     "--collector-batch-size">     : INTEGER_SEP
 | <DISPATCHER_INTERVAL:      "--dispatcher-interval">      : INTEGER_SEP
+| <NFS_CACHE_INTERVAL:       "--nfs-cache-interval">       : INTEGER_SEP
 
   /* seperators */ 
 | <AE1: (["\0"])+> 
@@ -259,7 +273,8 @@ CommandLine()
       }
       
       /* create the server */
-      return new QueueMgrServer(pCollectorBatchSize, pDispatcherInterval);
+      return new QueueMgrServer(pRebuild, 
+                                pCollectorBatchSize, pDispatcherInterval, pNfsCacheInterval);
     }
     
     return null;
@@ -363,9 +378,18 @@ GlobalOpts()
   throws PipelineException : 
 {}
 {
-  (Log() | LogFile() | StandardLogFile() | LogBackups() |
-   CollectorBatchSize() | DispatcherInterval())
+  (Rebuild() | Log() | LogFile() | StandardLogFile() | LogBackups() |
+   CollectorBatchSize() | DispatcherInterval() | NfsCacheInterval())
   {}
+}
+
+void Rebuild() : 
+{}
+{
+  <REBUILD>
+  { 
+    pRebuild = true; 
+  }
 }
 
 void LogFile() : 
@@ -679,6 +703,22 @@ void DispatcherInterval()
       throw new PipelineException
         ("The dispatcher interval (" + msec + ") must be at least 500ms!");
     pDispatcherInterval = msec; 
+  }
+}
+
+void NfsCacheInterval()
+  throws PipelineException : 
+{
+  Token t;
+}
+{
+  <NFS_CACHE_INTERVAL> EQ() t=<INTEGER>
+  {
+    Long msec = Long.parseLong(t.image);
+    if(msec < 0L) 
+      throw new PipelineException
+        ("The NFS cache interval (" + msec + ") cannot be negative!");
+    pNfsCacheInterval = msec; 
   }
 }
 

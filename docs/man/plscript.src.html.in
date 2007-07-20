@@ -237,7 +237,9 @@ Privileges<br>
  style="font-style: italic; font-weight: normal;">num</span><span
  style="font-weight: normal;">] [</span><span style="font-weight: bold;">--dispatcher-interval</span>=<span
  style="font-style: italic; font-weight: normal;">msec</span><span
- style="font-weight: normal;">]</span></li>
+ style="font-weight: normal;">] [<span style="font-weight: bold;">--nfs-cache-interval</span>=<span
+ style="font-style: italic;">msec</span>]<br>
+          </span></li>
         <li style="font-weight: bold;"><a href="#runtime_--get-master"><span
  class="postbody"><span style="font-weight: normal;"><span
  style="font-weight: bold;">--get-master</span></span></span></a></li>
@@ -2596,7 +2598,12 @@ original toolset environment used to create the archive volume.<br>
  href="plqueuemgr.html#--dispatcher-interval"><span
  style="font-weight: bold;">--dispatcher-interval</span></a>=<span
  style="font-style: italic; font-weight: normal;">msec</span><span
- style="font-weight: normal;">]</span><span style="font-weight: normal;"></span>
+ style="font-weight: normal;">] </span><span
+ style="font-weight: normal;">[<a
+ href="plqueuemgr.html#--nfs-cache-interval"><span
+ style="font-weight: bold;">--nfs-cache-interval</span></a>=<span
+ style="font-style: italic;">msec</span>]</span><span
+ style="font-weight: normal;"></span>
 <div style="margin-left: 40px;"><br>
 Controls various runtime configurable parameters of the server daemons
 remotely.&nbsp; The options behave identically as it given on the
