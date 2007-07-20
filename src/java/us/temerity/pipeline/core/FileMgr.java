@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.66 2007/07/01 23:54:23 jim Exp $
+// $Id: FileMgr.java,v 1.67 2007/07/20 07:44:59 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -170,21 +170,16 @@ class FileMgr
 
     /* make sure that the scratch directory exists */ 
     try {
-      Path path = new Path(PackageInfo.sTempPath, "plfilemgr");
-      pScratchDir = path.toFile();
-      if(!pScratchDir.isDirectory())
-	if(!pScratchDir.mkdirs()) 
-	  throw new PipelineException
-	    ("Unable to create the temporary directory (" + pScratchDir + ")!");
+      validateScratchDirHelper();
     }
-    catch(Exception ex) {
+    catch(PipelineException ex) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
 	 ex.getMessage());
       LogMgr.getInstance().flush();
       System.exit(1);
     }
-
+    
     pCheckedInLocks = new HashMap<String,ReentrantReadWriteLock>();
     pWorkingLocks   = new HashMap<NodeID,Object>();
     pMakeDirLock    = new Object();
@@ -194,6 +189,67 @@ class FileMgr
 
   /*----------------------------------------------------------------------------------------*/
   /*   O P S                                                                                */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Make sure that the temporary directory exists.
+   */ 
+  public Object 
+  validateScratchDir()
+  {
+    TaskTimer timer = new TaskTimer("FileMgr.validateScratchDir()");
+    
+    timer.aquire();
+    synchronized(pMakeDirLock) { 
+      timer.resume();	
+
+      try {
+        validateScratchDirHelper();
+      }
+      catch(PipelineException ex) {
+        return new FailureRsp(timer, ex.getMessage());
+      }	
+    }
+
+    return new SuccessRsp(timer);
+  }
+
+  /**
+   * Make sure that the scratch directory exists.
+   */ 
+  private void 
+  validateScratchDirHelper()
+    throws PipelineException
+  {
+    try {
+      Path path = new Path(PackageInfo.sTempPath, "plfilemgr");
+      pScratchDir = path.toFile();
+      if(!pScratchDir.isDirectory())
+	if(!pScratchDir.mkdirs()) 
+	  throw new IOException
+	    ("Unable to create the temporary directory (" + pScratchDir + ")!");
+
+      try {
+        File dummy = File.createTempFile("TempTest.", null, pScratchDir);
+        if(dummy.exists()) 
+          dummy.delete(); 
+      }
+      catch(IOException ex) {
+        throw new IOException
+          ("Unable to create files in the temporary directory (" + pScratchDir + ")!");
+      }
+    }
+    catch(Exception ex) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
+	 getFullMessage(ex));
+      LogMgr.getInstance().flush();
+
+      throw new PipelineException(getFullMessage(ex));
+    }
+  }
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -263,7 +319,7 @@ class FileMgr
 	}
       }
       catch(PipelineException ex) {
-	  return new FailureRsp(timer, ex.getMessage());
+        return new FailureRsp(timer, ex.getMessage());
       }	
     }
 
@@ -1564,6 +1620,8 @@ class FileMgr
 
     timer.aquire();
     try {
+      validateScratchDirHelper();
+
       Object workingLock = getWorkingLock(targetID);
       synchronized(workingLock) {
 	timer.resume();	
@@ -1913,6 +1971,8 @@ class FileMgr
 
     timer.aquire();
     try {
+      validateScratchDirHelper();
+
       Object workingLock = getWorkingLock(req.getNodeID());
       synchronized(workingLock) {
 	timer.resume();	
@@ -2513,7 +2573,7 @@ class FileMgr
       }
 
       /* create temporary directories and files */ 
-      File dir = new File(pTempDir, "plfilemgr/archive/" + archiveName);
+      File dir = new File(pScratchDir, "archive/" + archiveName);
       File scratch = new File(dir, "scratch");
       File outFile = new File(dir, "stdout");
       File errFile = new File(dir, "stderr"); 
@@ -3100,7 +3160,7 @@ class FileMgr
       }
 
       /* create temporary directories and files */ 
-      File tmpdir = new File(pTempDir, "plfilemgr/restore/" + archiveName + "-" + stamp);
+      File tmpdir = new File(pScratchDir, "restore/" + archiveName + "-" + stamp);
       File scratch = new File(tmpdir, "scratch");
       File outFile = new File(tmpdir, "stdout");
       File errFile = new File(tmpdir, "stderr"); 
@@ -3298,8 +3358,7 @@ class FileMgr
 	}
 
 	SubProcessLight proc = 
-	  new SubProcessLight("Restore-SetWritable", "chmod", args, env, 
-			      pTempDir);
+	  new SubProcessLight("Restore-SetWritable", "chmod", args, env, pTempDir);
 	try {
 	  proc.start();
 	  proc.join();
@@ -3490,7 +3549,7 @@ class FileMgr
 	  if(!proc.wasSuccessful()) 
 	    return new FailureRsp
 	      (timer, 
-	     "Unable to remove the temporary directory (" + dir + "):\n\n" + 
+               "Unable to remove the temporary directory (" + dir + "):\n\n" + 
 	       proc.getStdErr());	
 	}
 	catch(InterruptedException ex) {
@@ -3763,8 +3822,6 @@ class FileMgr
   }
  
 
-  /*----------------------------------------------------------------------------------------*/
-  /*   H E L P E R S                                                                        */
   /*----------------------------------------------------------------------------------------*/
  
   /**

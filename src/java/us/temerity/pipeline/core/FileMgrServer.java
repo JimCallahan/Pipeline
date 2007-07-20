@@ -1,4 +1,4 @@
-// $Id: FileMgrServer.java,v 1.34 2007/03/23 23:14:53 jim Exp $
+// $Id: FileMgrServer.java,v 1.35 2007/07/20 07:44:59 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -227,6 +227,14 @@ class FileMgrServer
 
 	    switch(kind) {
 	    /*-- WORKING VERSIONS ----------------------------------------------------------*/
+	    case ValidateScratchDir: 
+	      {
+		objOut.writeObject(pFileMgr.validateScratchDir());
+		objOut.flush(); 
+	      }
+	      break;
+
+	    /*-- WORKING VERSIONS ----------------------------------------------------------*/
 	    case CreateWorkingArea:
 	      {
 		FileCreateWorkingAreaReq req = (FileCreateWorkingAreaReq) objIn.readObject();
@@ -234,7 +242,6 @@ class FileMgrServer
 		objOut.flush(); 
 	      }
 	      break;
-
 
 	    case RemoveWorkingArea:
 	      {

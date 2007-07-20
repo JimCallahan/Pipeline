@@ -1,4 +1,4 @@
-// $Id: FileMgrDirectClient.java,v 1.6 2007/07/01 23:54:23 jim Exp $
+// $Id: FileMgrDirectClient.java,v 1.7 2007/07/20 07:44:59 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -41,6 +41,20 @@ class FileMgrDirectClient
 
   /*----------------------------------------------------------------------------------------*/
   /*   O P S                                                                                */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Make sure that the File Manager can create temporary files.
+   */ 
+  public void 
+  validateScratchDir() 
+    throws PipelineException
+  {
+    Object obj = pFileMgr.validateScratchDir();
+    handleSimpleResponse(obj);
+  }
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /**

@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.213 2007/07/08 01:18:16 jim Exp $
+// $Id: MasterMgr.java,v 1.214 2007/07/20 07:45:38 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -706,7 +706,7 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Create the lock file 
+   * Create the lock file.
    */ 
   private void 
   createLockFile()
@@ -719,7 +719,7 @@ class MasterMgr
     }
     catch(IOException ex) {
       throw new PipelineException 
-	  ("Unable to create lock file (" + file + ")!");
+        ("Unable to create lock file (" + file + ")!");
     }
   }
 
@@ -6986,6 +6986,20 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
 
+    /* make sure the file manager can rename the files */ 
+    {
+      FileMgrClient fclient = getFileMgrClient();
+      try {
+        fclient.validateScratchDir();
+      }
+      catch(PipelineException ex) {
+        return new FailureRsp(timer, ex.getMessage());
+      }
+      finally {
+        freeFileMgrClient(fclient);
+      }
+    }
+
     timer.aquire();
     pDatabaseLock.readLock().lock();
     try {
@@ -10050,6 +10064,20 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
 
+    /* make sure the file manager can clone the files */ 
+    {
+      FileMgrClient fclient = getFileMgrClient();
+      try {
+        fclient.validateScratchDir();
+      }
+      catch(PipelineException ex) {
+        return new FailureRsp(timer, ex.getMessage());
+      }
+      finally {
+        freeFileMgrClient(fclient);
+      }
+    }
+
     timer.aquire();
     pDatabaseLock.readLock().lock();
     try {
@@ -12193,6 +12221,20 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
 
+    /* make sure the file manager can archive files */ 
+    {
+      FileMgrClient fclient = getFileMgrClient();
+      try {
+        fclient.validateScratchDir();
+      }
+      catch(PipelineException ex) {
+        return new FailureRsp(timer, ex.getMessage());
+      }  
+      finally {
+        freeFileMgrClient(fclient);
+      }
+    }
+
     timer.aquire();
     pDatabaseLock.readLock().lock();
     try {
@@ -13597,16 +13639,29 @@ class MasterMgr
 
     TaskTimer timer = new TaskTimer("MasterMgr.restore(): " + archiveName);
 
-    if(!pAdminPrivileges.isMasterAdmin(req))
-      return new FailureRsp
-	(timer, 
-	 "Only a user with Master Admin privileges may restore checked-in versions!"); 
+    /* make sure the file manager can archive files */ 
+    {
+      FileMgrClient fclient = getFileMgrClient();
+      try {
+        fclient.validateScratchDir();
+      }
+      catch(PipelineException ex) {
+        return new FailureRsp(timer, ex.getMessage());
+      }  
+      finally {
+        freeFileMgrClient(fclient);
+      }
+    }
 
     timer.aquire();
     pDatabaseLock.readLock().lock();
     boolean cacheModified = false;
     try {
       timer.resume();	
+
+      if(!pAdminPrivileges.isMasterAdmin(req))
+        throw new PipelineException 
+          ("Only a user with Master Admin privileges may restore checked-in versions!"); 
 
       /* get the archive volume manifest */ 
       ArchiveVolume vol = readArchive(archiveName);
