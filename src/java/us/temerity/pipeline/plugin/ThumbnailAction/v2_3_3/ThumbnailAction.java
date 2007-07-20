@@ -22,7 +22,7 @@ class ThumbnailAction
   public
   ThumbnailAction() 
   {
-    super("Thumbnail", new VersionID("2.3.3"), "SCEA", 
+    super("Thumbnail", new VersionID("2.3.3"), "Temerity", 
 	  "Generates a smaller version of a single image from a sequence of images.");
     
     {
@@ -70,6 +70,7 @@ class ThumbnailAction
    *   If unable to prepare a SubProcess due to illegal, missing or imcompatable 
    *   information in the action agenda or a general failure of the prep method code.
    */
+  @Override
   public SubProcessHeavy
   prep
   (
