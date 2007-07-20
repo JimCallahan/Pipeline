@@ -1,4 +1,4 @@
-// $Id: JCloneDialog.java,v 1.12 2007/06/21 16:40:50 jim Exp $
+// $Id: JCloneDialog.java,v 1.13 2007/07/20 07:55:10 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -270,7 +270,7 @@ class JCloneDialog
     pFileSeqDialog.updateHeader(author, view);
     pRootPath = new Path(PackageInfo.sWorkPath, author + "/" + view);
 
-    pPrefixField.setPath(new Path(pNodeMod.getName() + "-clone"));
+    pPrefixField.setPath(new Path(pNodeMod.getName()));
 
     FileSeq fseq = pNodeMod.getPrimarySequence();
     if(fseq.hasFrameNumbers()) {
