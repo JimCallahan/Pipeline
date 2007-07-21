@@ -1,4 +1,4 @@
-// $Id: CommonActionUtils.java,v 1.7 2007/05/22 02:29:03 jesse Exp $
+// $Id: CommonActionUtils.java,v 1.8 2007/07/21 02:08:09 jesse Exp $
 
 package us.temerity.pipeline.plugin;
 
@@ -563,26 +563,57 @@ class CommonActionUtils
    * 
    * @param name  
    *   The name of the parameter. 
-   *
+   *   
+   * @param allowsNull
+   *   Whether this parameter can have a null or empty value.
+   *   
+   * @return 
+   *   The action parameter value or (optionally)
+   *   <CODE>null</CODE> if the value is null or the empty string. 
+   * 
+   * @throws PipelineException 
+   *   If no single valued parameter with the given name exists or (optionally)
+   *   if the value is null or empty.
+   */ 
+  public final String
+  getSingleStringParamValue
+  (
+   String name,
+   boolean allowsNull
+  ) 
+    throws PipelineException
+  { 
+    String value = (String) getSingleParamValue(name); 
+    if((value == null) || (value.length() == 0)) {
+      if (!allowsNull)
+        throw new PipelineException
+          ("Cannot have an empty String value for parameter (" + name + ")");
+      value = null;
+    }
+    return value;    
+  }
+  
+  /** 
+   * Get the value of the single valued String parameter with the given name.
+   * 
+   * @param name  
+   *   The name of the parameter. 
+   *   
    * @return 
    *   The action parameter value or 
    *   <CODE>null</CODE> if the value is null or the empty string. 
    * 
    * @throws PipelineException 
-   *   If no single valued parameter with the given name exists.
+   *   If no single valued parameter with the given name exists
    */ 
   public final String
   getSingleStringParamValue
   (
-   String name   
+   String name
   ) 
     throws PipelineException
-  { 
-    String value = (String) getSingleParamValue(name); 
-    if((value != null) && (value.length() > 0))
-      return value;
-
-    return null;    
+  {
+    return getSingleStringParamValue(name, true);
   }
 
   
@@ -917,29 +948,62 @@ class CommonActionUtils
    * @param name  
    *   The name of the parameter. 
    *
+   * @param allowsNull
+   *   Whether this parameter can have a null or empty value.
+   *   
    * @return 
-   *   The action parameter value or 
+   *   The action parameter value or (optionally)
    *   <CODE>null</CODE> if the value is null or the empty string. 
    * 
    * @throws PipelineException 
-   *   If no single valued source parameter with the given name exists.
+   *   If no single valued source parameter with the given name exists or (optionally)
+   *   if the value is null or empty.
    */ 
   public final String
   getSourceStringParamValue
   (
     String source,
-    String name     
+    String name,
+    boolean allowsNull
   ) 
     throws PipelineException
   { 
     String value = (String) getSourceParamValue(source, name);
-    if((value != null) && (value.length() > 0))
-      return value;
-
-    return null;    
+    if((value == null) || (value.length() == 0)) {
+      if (!allowsNull)
+        throw new PipelineException
+          ("Cannot have an empty String value for parameter (" + name + ")");
+      value = null;
+    }
+    return value;
   }
-
   
+  /** 
+   * Get the value of the single valued source String parameter with the given name.
+   * 
+   * @param source
+   *   The name of the source.
+   * 
+   * @param name  
+   *   The name of the parameter. 
+   *
+   * @return 
+   *   The action parameter value or 
+   *   <CODE>null</CODE> if the value is null or the empty string. 
+   * 
+   * @throws PipelineException 
+   *   If no single valued source parameter with the given name exists 
+   */ 
+  public final String
+  getSourceStringParamValue
+  (
+    String source,
+    String name
+  ) 
+    throws PipelineException
+  {
+    return getSourceStringParamValue(source, name, true);
+  }
   
   /*----------------------------------------------------------------------------------------*/
   /*   S E C O N D A R Y   S O U R C E   P A R A M E T E R   L O O K U P                    */
@@ -1316,6 +1380,49 @@ class CommonActionUtils
    * @param name  
    *   The name of the parameter. 
    *
+   * @param allowsNull
+   *   Whether this parameter can have a null or empty value.
+   *   
+   * @return 
+   *   The action parameter value or (optionally)
+   *   <CODE>null</CODE> if the value is null or the empty string. 
+   * 
+   * @throws PipelineException 
+   *   If no single valued secondary source parameter with the given name exists or (optionally)
+   *   if the value is null or empty.
+   */ 
+  public final String
+  getSecondarySourceStringParamValue
+  (
+    String source,
+    FilePattern fpat,
+    String name,
+    boolean allowsNull
+  ) 
+    throws PipelineException
+  { 
+    String value = (String) getSecondarySourceParamValue(source, fpat, name);
+    if((value == null) || (value.length() == 0)) {
+      if (!allowsNull)
+        throw new PipelineException
+          ("Cannot have an empty String value for parameter (" + name + ")");
+      value = null;
+    }
+    return value; 
+  }
+  
+  /** 
+   * Get the value of the single valued secondary source String parameter with the given name.
+   * 
+   * @param source
+   *   The name of the source.
+   * 
+   * @param fpat
+   *   The FilePattern of the Secondary Sequence.
+   * 
+   * @param name  
+   *   The name of the parameter. 
+   *
    * @return 
    *   The action parameter value or 
    *   <CODE>null</CODE> if the value is null or the empty string. 
@@ -1328,17 +1435,12 @@ class CommonActionUtils
   (
     String source,
     FilePattern fpat,
-    String name     
+    String name
   ) 
     throws PipelineException
-  { 
-    String value = (String) getSecondarySourceParamValue(source, fpat, name);
-    if((value != null) && (value.length() > 0))
-      return value;
-
-    return null;    
+  {
+    return getSecondarySourceStringParamValue(source, fpat, name, true);
   }
-
   
   
   /*----------------------------------------------------------------------------------------*/
