@@ -1,3 +1,5 @@
+// $Id: MayaOccMELAction.java,v 1.2 2007/07/21 01:01:47 jim Exp $
+
 package us.temerity.pipeline.plugin.MayaOccMELAction.v2_3_4;
 
 import java.io.*;
@@ -5,6 +7,10 @@ import java.io.*;
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.math.Range;
 import us.temerity.pipeline.plugin.CommonActionUtils;
+
+/*------------------------------------------------------------------------------------------*/
+/*   M A Y A   O C C   M E L   A C T I O N                                                  */
+/*------------------------------------------------------------------------------------------*/
 
 /**
  * Creates a mel script that can be run on a scene to have it generate an ambient
@@ -41,8 +47,6 @@ class MayaOccMELAction
     super("MayaOccMEL", new VersionID("2.3.4"), "Temerity",
       "Creates a mel script for an ambient occlusion render pass.");
     
-    underDevelopment();
-
     {
       ActionParam param = 
 	new StringActionParam
@@ -51,6 +55,7 @@ class MayaOccMELAction
          "chOcc");
       addSingleParam(param);
     }
+
     {
       ActionParam param = 
 	new BooleanActionParam
@@ -59,6 +64,7 @@ class MayaOccMELAction
          true);
       addSingleParam(param);
     }
+
     {
       ActionParam param = 
 	new IntegerActionParam
@@ -67,6 +73,7 @@ class MayaOccMELAction
          128);
       addSingleParam(param);
     }
+
     {
       ActionParam param = 
 	new DoubleActionParam
@@ -75,6 +82,7 @@ class MayaOccMELAction
          0.7);
       addSingleParam(param);
     }
+
     {
       ActionParam param = 
 	new DoubleActionParam
@@ -113,32 +121,21 @@ class MayaOccMELAction
     File outFile, 
     File errFile
   )
-  throws PipelineException
+    throws PipelineException
   {
-    /* sanity checks */ 
-    NodeID nodeID = agenda.getNodeID();
-    FileSeq fseq = agenda.getPrimaryTarget();
-    if(!fseq.isSingle() || !fseq.getFilePattern().getSuffix().equals("mel"))
-      throw new PipelineException
-      ("The MayaOccPass Action requires that primary target file sequence must " + 
-      "be a single MEL script!"); 
+    /* target MEL script */ 
+    Path target = getPrimaryTargetPath(agenda, "mel", "MEL script");
 
-    /* create a temporary shell script */ 
-    File melScript = createTemp(agenda, 0644, "mel");
-    Path target = new Path(PackageInfo.sProdPath, 
-	nodeID.getWorkingParent() + "/" + fseq.getFile(0));
-    
+    /* create a temporary file which will be copied to the target */ 
+    File temp = createTemp(agenda, "mel");
     try {
-      PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(melScript)));
+      PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(temp)));
 
-      String suffix = getSingleStringParamValue(aShaderSuffix);
-      
+      String suffix   = getSingleStringParamValue(aShaderSuffix);
       Integer samples = getSingleIntegerParamValue(aSamples, new Range<Integer>(1, null)); 
-
-      Double spread = getSingleDoubleParamValue(aSpread, new Range<Double>(0.001, null));
-
-      Double maxDist = getSingleDoubleParamValue(aMaxDistance, new Range<Double>(.0001, null));
-      
+      Double spread   = getSingleDoubleParamValue(aSpread, new Range<Double>(0.001, null));
+      Double maxDist  = getSingleDoubleParamValue(aMaxDistance, 
+                                                  new Range<Double>(.0001, null));
       boolean connect = getSingleBooleanParamValue(aConnectShaders);
       
       out.write
@@ -173,29 +170,39 @@ class MayaOccMELAction
       	 "  setAttr ($mrTex+\".spread\") " + spread + ";\n" +
       	 "  setAttr ($mrTex+\".max_distance\") " + maxDist + ";\n" +
       	 "  string $new = `rename $mrTex ($sg + \"_" + suffix + "\")`;\n");
-      	 if (connect)
-      	 out.write
-      	   ("  connectAttr -f ($new + \".outValue\") ($sg + \".miMaterialShader\"); \n");
-      	 out.write
-      	 ("}\n" +
-      	  "}\n");
+
+      if(connect)
+        out.write
+          ("  connectAttr -f ($new + \".outValue\") ($sg + \".miMaterialShader\"); \n");
+
+      out.write
+        ("}\n" +
+         "}\n");
       
       out.close();
     } 
     catch(IOException ex) {
       throw new PipelineException
-      ("Unable to write the target MEL script file (" + melScript + ") for Job " + 
-       "(" + agenda.getJobID() + ")!\n" + ex.getMessage());
+        ("Unable to write the target MEL script file (" + temp + ") for Job " + 
+         "(" + agenda.getJobID() + ")!\n" + ex.getMessage());
     }
 
-    return createTempCopySubProcess(agenda, melScript, target, outFile, errFile);
+    /* create the process to run the action */ 
+    return createTempCopySubProcess(agenda, temp, target, outFile, errFile);
   }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
 
   private static final long serialVersionUID = 7899419781457153464L;
 
-  public static final String aMaxDistance = "MaxDistance";
-  public static final String aSpread = "Spread";
-  public static final String aSamples = "Samples";
-  public static final String aShaderSuffix = "ShaderSuffix";
+  public static final String aMaxDistance    = "MaxDistance";
+  public static final String aSpread         = "Spread";
+  public static final String aSamples        = "Samples";
+  public static final String aShaderSuffix   = "ShaderSuffix";
   public static final String aConnectShaders = "ConnectShaders";
+
 }
