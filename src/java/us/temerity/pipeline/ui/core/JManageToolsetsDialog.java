@@ -1,4 +1,4 @@
-// $Id: JManageToolsetsDialog.java,v 1.28 2007/07/21 00:47:08 jim Exp $
+// $Id: JManageToolsetsDialog.java,v 1.29 2007/07/21 10:29:21 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -176,7 +176,7 @@ class JManageToolsetsDialog
 
       item = new JMenuItem("Test...");
       pIncTestPackageItem = item;
-      item.setActionCommand("test-package");
+      item.setActionCommand("test-included-package");
       item.addActionListener(this);
       pIncludedPackagesPopup.add(item);    
 
@@ -3308,59 +3308,62 @@ class JManageToolsetsDialog
    ActionEvent e
   ) 
   {
-    if(e.getActionCommand().equals("toolset-details")) 
+    String cmd = e.getActionCommand();
+    if(cmd.equals("toolset-details")) 
       doToolsetDetails();
-    else if(e.getActionCommand().equals("test-toolset")) 
+    else if(cmd.equals("test-toolset")) 
       doTestToolset();
-    else if(e.getActionCommand().equals("export-toolset")) 
+    else if(cmd.equals("export-toolset")) 
       doExportToolset();
-    else if(e.getActionCommand().equals("new-toolset")) 
+    else if(cmd.equals("new-toolset")) 
       doNewToolset();
-    else if(e.getActionCommand().equals("add-mac-toolset")) 
+    else if(cmd.equals("add-mac-toolset")) 
       doAddToolset(OsType.MacOS);
-    else if(e.getActionCommand().equals("add-win-toolset")) 
+    else if(cmd.equals("add-win-toolset")) 
       doAddToolset(OsType.Windows);
-    else if(e.getActionCommand().equals("clone-toolset")) 
+    else if(cmd.equals("clone-toolset")) 
       doCloneToolset();
-    else if(e.getActionCommand().equals("freeze-toolset")) 
+    else if(cmd.equals("freeze-toolset")) 
       doFreezeToolset();
-    else if(e.getActionCommand().equals("delete-toolset")) 
+    else if(cmd.equals("delete-toolset")) 
       doDeleteToolset();
-    else if(e.getActionCommand().equals("default-toolset")) 
+    else if(cmd.equals("default-toolset")) 
       doDefaultToolset();
-    else if(e.getActionCommand().equals("enable-toolset")) 
+    else if(cmd.equals("enable-toolset")) 
       doEnableToolset();
-    else if(e.getActionCommand().equals("disable-toolset")) 
+    else if(cmd.equals("disable-toolset")) 
       doDisableToolset();
-    else if(e.getActionCommand().equals("package-details")) 
+    else if(cmd.equals("package-details")) 
       doPackageDetails();
-    else if(e.getActionCommand().equals("test-package")) 
+    else if(cmd.equals("test-included-package")) 
+      doTestIncludedPackage();
+    else if(cmd.equals("test-package")) 
       doTestPackage();
-    else if(e.getActionCommand().equals("package-earlier")) 
+    else if(cmd.equals("package-earlier")) 
       doPackageEarlier();
-    else if(e.getActionCommand().equals("package-later")) 
+    else if(cmd.equals("package-later")) 
       doPackageLater();
-    else if(e.getActionCommand().equals("new-package")) 
+    else if(cmd.equals("new-package")) 
       doNewPackage();
-    else if(e.getActionCommand().equals("add-mac-package")) 
+    else if(cmd.equals("add-mac-package")) 
       doAddPackage(OsType.MacOS);
-    else if(e.getActionCommand().equals("add-win-package")) 
+    else if(cmd.equals("add-win-package")) 
       doAddPackage(OsType.Windows);
-    else if(e.getActionCommand().equals("new-package-version")) 
+    else if(cmd.equals("new-package-version")) 
       doNewPackageVersion();
-    else if(e.getActionCommand().equals("clone-package-version")) 
+    else if(cmd.equals("clone-package-version")) 
       doClonePackageVersion();
-    else if(e.getActionCommand().equals("freeze-package")) 
+    else if(cmd.equals("freeze-package")) 
       doFreezePackage();
-    else if(e.getActionCommand().equals("delete-package")) 
+    else if(cmd.equals("delete-package")) 
       doDeletePackage();
-    else if(e.getActionCommand().equals("include-package")) 
+    else if(cmd.equals("include-package")) 
       doIncludePackage();
-    else if(e.getActionCommand().equals("exclude-package")) 
+    else if(cmd.equals("exclude-package")) 
       doExcludePackage();
-    else if(e.getActionCommand().equals("manage-toolset-plugins")) 
+    else if(cmd.equals("manage-toolset-plugins")) 
       doManageToolsetPlugins();
-    else if(e.getActionCommand().equals("manage-package-plugins")) 
+    else if(cmd.equals("manage-package-plugins")) 
       doManagePackagePlugins();    
     else 
       super.actionPerformed(e);
@@ -3865,6 +3868,17 @@ class JManageToolsetsDialog
 
     updateDialogs(true);
     pPackageDetailsDialog.setVisible(true);
+  }
+
+  /**
+   * Test executing a shell command using the environment of the selected package.
+   */ 
+  public void 
+  doTestIncludedPackage()
+  {
+    PackageCommon com = getSelectedIncludedPackage(); 
+    if(com != null)
+      showTestPackageDialog(com);
   }
 
   /**
