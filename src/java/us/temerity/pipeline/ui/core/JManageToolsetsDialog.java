@@ -1,4 +1,4 @@
-// $Id: JManageToolsetsDialog.java,v 1.27 2007/06/19 20:16:06 jim Exp $
+// $Id: JManageToolsetsDialog.java,v 1.28 2007/07/21 00:47:08 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -3565,7 +3565,21 @@ class JManageToolsetsDialog
 	
 	if(diag.wasConfirmed()) {
 	  String tname = diag.getName();
-	  if(tname != null) {
+	  if((tname != null) && (tname.length() > 0)) {
+            if(tname.equals(stname)) {
+              showErrorDialog
+                ("Error:", 
+                 "You must choose a new name for the cloned Toolset!"); 
+              return;
+            }
+            else if(pToolsets.containsKey(tname)) {
+              showErrorDialog
+                ("Error:", 
+                 "The new name specified (" + tname + ") for the cloned Toolset is " + 
+                 "already being used by an existing Toolset!"); 
+              return;
+            }
+
 	    for(OsType os : stoolsets.keySet()) {
 	      Toolset stoolset = lookupToolset(stname, os); 
 	      if((stoolset != null) && pPrivilegeDetails.isDeveloper()) {
