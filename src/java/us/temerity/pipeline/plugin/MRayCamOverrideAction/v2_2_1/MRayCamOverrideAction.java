@@ -1,4 +1,4 @@
-// $Id: MRayCamOverrideAction.java,v 1.1 2007/06/17 15:34:42 jim Exp $
+// $Id: MRayCamOverrideAction.java,v 1.2 2007/07/21 01:02:03 jim Exp $
 
 package us.temerity.pipeline.plugin.MRayCamOverrideAction.v2_2_1;
 
@@ -471,7 +471,7 @@ MRayCamOverrideAction
   )
     throws PipelineException
   { 
-    /* target MEL script */ 
+    /* target MI file */ 
     Path target = getPrimaryTargetPath(agenda, "mi", "Mental Ray Input (.mi) files");
 
     /* create a temporary file which will be copied to the target */ 
