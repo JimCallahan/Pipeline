@@ -12,7 +12,7 @@ import us.temerity.pipeline.*;
  * A node that needs to be rebuilt each time a task has been reviewed and approved.<P> 
  * 
  * Check-in of this node signals the completion of an approval step. In other words, that 
- * alll nodes upstream of this node have been reviewed and officially approved.
+ * all nodes upstream of this node have been reviewed and officially approved.
  * 
  * This annotation defines the following parameters: <BR>
  * 
