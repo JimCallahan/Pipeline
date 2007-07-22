@@ -9,11 +9,12 @@ import us.temerity.pipeline.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A node that should be checked-in to signal that the task is ready for review.<P> 
+ * Signifies the node that should be checked-in to signal that the task is ready for 
+ * review.<P> 
  * 
- * All nodes with the IntermediateNode, EditNode and FocusNode annotations for the task
- * should be upstream of this node so that they are assured of being included in all check-in
- * of this node. 
+ * All nodes with the Task annotation with a Purpose of Thumbnail, Prepare, Focus or Edit
+ * the task should be upstream of this node so that they are assured of being included in 
+ * all check-in of this node. 
  * 
  * This annotation defines the following parameters: <BR>
  * 
@@ -33,13 +34,7 @@ import us.temerity.pipeline.*;
  *     The name of the WorkGroup or specific artist assigned to complete the task involving
  *     this node.  Only a user assigned to a node (or part of the group assigned to the node)
  *     is allowed to check-in this node. 
- *   </DIV> <BR> 
- *   
- *   Approve Node <BR>
- *   <DIV style="margin-left: 40px;">
- *     The approve node that is associated with this Submit node.  Provided solely for 
- *     information purposes.
- *   </DIV> <BR> 
+ *   </DIV>
  * </DIV> <P> 
  */
 public 
@@ -54,7 +49,8 @@ class SubmitNodeAnnotation
   SubmitNodeAnnotation() 
   {
     super("SubmitNode", new VersionID("2.3.2"), "Temerity", 
-	  "A node that should be checked-in to signal that the task is ready for review.");
+	  "Signifies the node that should be checked-in to signal that the task is " + 
+          "ready for review.");
     
     {
       AnnotationParam param = 
@@ -84,25 +80,16 @@ class SubmitNodeAnnotation
       addParam(param);
     }
     
-    { // IS THIS NEEDED??
-      AnnotationParam param = 
-	new StringAnnotationParam
-	(aApproveNode, 
-	 "The approve node that is associated with this Submit node.  " +
-	 "Provided solely for information purposes.", 
-	 null); 
-      addParam(param);
-    }
-    
     {
       ArrayList<String> layout = new ArrayList<String>();
       layout.add(aTaskName);
       layout.add(aTaskType);
       layout.add(null);
       layout.add(aAssignedTo);
-      layout.add(aApproveNode);
+
       setLayout(layout);
     }
+
     underDevelopment();
   }
 
@@ -117,6 +104,5 @@ class SubmitNodeAnnotation
   public static final String aTaskName    = "TaskName";
   public static final String aTaskType    = "TaskType";
   public static final String aAssignedTo  = "AssignedTo";
-  public static final String aApproveNode = "ApproveNode";
   
 }

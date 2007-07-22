@@ -81,7 +81,7 @@ class TaskPolicyExt
     underDevelopment(); 
   }
   
-  
+
 
   /*----------------------------------------------------------------------------------------*/
   /*  P L U G I N   O P S                                                                   */
@@ -232,108 +232,152 @@ class TaskPolicyExt
     
     WorkGroups wgroups = mclient.getWorkGroups();
     
+    // DEBUG
+    LogMgr.getInstance().log
+      (Kind.Ops, Level.Info, 
+       "VALIDATE = " + rname);
+    // DEBUG
+
     /* lookup the annotations on the root node of the check-in and validate whether the 
          check-in is allowed based on the annotation parameters */ 
-    boolean rootApprove  = false;
-    boolean rootSubmit   = false;
-    String rootTaskName  = null;
-    String rootTaskType  = null;
-    String rootAnnotType = null;
+    boolean rootApprove = false;
+    boolean rootSubmit  = false;
+    String rootTaskName = null;
+    String rootTaskType = null;
+    String rootPurpose  = null;
     for(String aname : rootAnnotations.keySet()) {
       BaseAnnotation an = rootAnnotations.get(aname);
-      String annotType = an.getName(); 
-      rootAnnotType = annotType;
+      
+      // DEBUG
+      LogMgr.getInstance().log
+        (Kind.Ops, Level.Info, 
+         "Annotation = " + an.getName()); 
+      // DEBUG
 
-      if(annotType.equals("FocusNode") || 
-         annotType.equals("ThumbnailNode") || 
-         annotType.equals("IntermediateNode") || 
-         annotType.equals("ProductNode")) {
+      if(an.getName().equals(aTask) || an.getName().equals(aSubmitNode)) {
 
-        String goodRoot = annotType.equals("ProductNode") ? "ApproveNode" : "SubmitNode"; 
-        throw new PipelineException
-          ("Cannot check-in node (" + rname + "), because it is both the root node of the " + 
-           "check-in operation and a " + annotType + "! You may only check-in a " + 
-           annotType + " as part of the check-in of a " + goodRoot + "."); 
-      }
-      else {
-        if(annotType.equals("SubmitNode") || 
-           annotType.equals("EditNode") ||
-           annotType.equals("ApproveNode")) {
+        String purpose = lookupPurpose(rname, an); 
+        rootPurpose = purpose;
 
-          rootTaskName = lookupTaskName(rname, an);
-          rootTaskType = lookupTaskType(rname, an);
+        // DEBUG
+        LogMgr.getInstance().log
+          (Kind.Ops, Level.Info, 
+           "Purpose = " + purpose); 
+        // DEBUG
+
+        if(purpose.equals(aFocus) || 
+           purpose.equals(aThumbnail) || 
+           purpose.equals(aPrepare) || 
+           purpose.equals(aProduct)) {
+
+          String goodRoot = purpose.equals(aProduct) ? aApprove : aSubmit; 
+          throw new PipelineException
+            ("Cannot check-in node (" + rname + "), because it is both the root node of " + 
+             "the check-in operation and a " + purpose + " node! You may only check-in a " + 
+             purpose + " node as part of the check-in of a " + goodRoot + " node."); 
         }
-
-        if(annotType.equals("ApproveNode")) {
-          rootApprove = true;
-          if(!author.equals(PackageInfo.sPipelineUser)) 
-            throw new PipelineException
-              ("Cannot check-in node (" + rname + "), because it is a " + annotType + " " + 
-               "of the task (" + rootTaskName + ":" + rootTaskType + ") which can only be " + 
-               "checked-in by the (" + PackageInfo.sPipelineUser + ") user as part of the " + 
-               "automated post-approval process!"); 
-        }
-        else if(annotType.equals("SubmitNode")) {
-          rootSubmit = true;
-          if(!author.equals(PackageInfo.sPipelineUser)) {
-            String assigned = (String) an.getParamValue(aAssignedTo);
-            if((assigned == null) || (assigned.length() == 0)) 
-              throw new PipelineException 
-                ("Cannot check-in node (" + rname + ") because no one was Assigned To the " + 
-                 "complete the task (" + rootTaskName + ":" + rootTaskType + ")!"); 
+        else {
+          if(purpose.equals(aSubmit) || 
+             purpose.equals(aEdit) ||
+             purpose.equals(aApprove)) {
             
-            boolean isGroup = wgroups.isGroup(assigned); 
-            if((!isGroup && !assigned.equals(author)) || 
-               (isGroup && wgroups.isMemberOrManager(author, assigned) == null)) 
+            rootTaskName = lookupTaskName(rname, an);
+            rootTaskType = lookupTaskType(rname, an);
+          }
+          
+          if(purpose.equals(aApprove)) {
+            rootApprove = true;
+            if(!author.equals(PackageInfo.sPipelineUser)) 
               throw new PipelineException
-                ("The task (" + rootTaskName + ":" + rootTaskType + ") for node " + 
-                 "(" + rname + ") is assigned to the " + 
-                 (isGroup ? "Pipeline work group [" + assigned + "]" : 
-                  "artist (" + assigned + ")") + 
-                 ".  The (" + author + ") user is not assigned to this task and therefore " + 
-                 "is not allowed to check-in this submit node.");
+                ("Cannot check-in node (" + rname + "), because it is an Approve node " + 
+                 "of the task (" + rootTaskName + ":" + rootTaskType + ") which can only " + 
+                 "be checked-in by the (" + PackageInfo.sPipelineUser + ") user as part " + 
+                 "of the automated post-approval process!"); 
+          }
+          else if(purpose.equals(aSubmit)) {
+            rootSubmit = true;
+            if(!author.equals(PackageInfo.sPipelineUser)) {
+              String assigned = (String) an.getParamValue(aAssignedTo);
+              if((assigned == null) || (assigned.length() == 0)) 
+                throw new PipelineException 
+                  ("Cannot check-in node (" + rname + ") because no one was AssignedTo " + 
+                   "the complete the task (" + rootTaskName + ":" + rootTaskType + ")!"); 
+              
+              boolean isGroup = wgroups.isGroup(assigned); 
+              if((!isGroup && !assigned.equals(author)) || 
+                 (isGroup && wgroups.isMemberOrManager(author, assigned) == null)) 
+                throw new PipelineException
+                  ("The task (" + rootTaskName + ":" + rootTaskType + ") for node " + 
+                   "(" + rname + ") is assigned to the " + 
+                   (isGroup ? "Pipeline work group [" + assigned + "]" : 
+                    "artist (" + assigned + ")") + 
+                   ".  The (" + author + ") user is not assigned to this task and " + 
+                   "therefore is not allowed to check-in this Submit node.");
+            }
           }
         }
       }
     }
 
+    // DEBUG
+    LogMgr.getInstance().log
+      (Kind.Ops, Level.Info, 
+       "CHECK = " + rname);
+    // DEBUG
+
     /* perform checks based on comparing annotation parameters of the root node of the 
          check-in with the current node */
     for(String aname : nodeAnnotations.keySet()) {
       BaseAnnotation an = nodeAnnotations.get(aname);
-      String annotType = an.getName(); 
 
-      if(annotType.equals("FocusNode") || 
-         annotType.equals("ThumbnailNode") || 
-         annotType.equals("IntermediateNode")) {
+      // DEBUG
+      LogMgr.getInstance().log
+        (Kind.Ops, Level.Info, 
+         "Annotation = " + an.getName()); 
+      // DEBUG
 
-	if(rootSubmit) 
-	  verifyTask(nodeName, an, rname, rootTaskName, rootTaskType); 
-	else
-          throw new PipelineException
-            ("Cannot check-in node (" + nodeName + "), because it is a " + annotType + " " + 
-             "which can only be checked-in when the root node of the check-in operation " + 
-             "is a SubmitNode!.  However in this case, the root node (" + rname + ") was " + 
-             "a " + rootAnnotType + "."); 
-      }
-      else if(annotType.equals("ProductNode")) {
-	if(rootApprove) 
-	  verifyTask(nodeName, an, rname, rootTaskName, rootTaskType); 
-	else
-          throw new PipelineException
-            ("Cannot check-in node (" + nodeName + "), because it is a " + annotType + " " + 
-             "which can only be checked-in when the root node of the check-in operation " + 
-             "is a ApproveNode!.  However in this case, the root node (" + rname + ") was " + 
-             "a " + rootAnnotType + "."); 
-      }
-      else if(annotType.equals("EditNode")) {
-        verifyTask(nodeName, an, rname, rootTaskName, rootTaskType); 
-      }
-      else if(annotType.equals("SubmitNode") || annotType.equals("ApproveNode")) {
-	if(!nodeName.equals(rname)) 
-	  throw new PipelineException
-	    ("Cannot check-in node (" + nodeName + ") unless it is the root node of the " + 
-             "check-in operation because it is a " + rootAnnotType + "!"); 
+      if(an.getName().equals(aTask) || an.getName().equals(aSubmitNode)) {
+
+        String purpose = lookupPurpose(rname, an);
+
+        // DEBUG
+        LogMgr.getInstance().log
+          (Kind.Ops, Level.Info, 
+           "Purpose = " + purpose); 
+        // DEBUG
+
+        if(purpose.equals(aFocus) || 
+           purpose.equals(aThumbnail) || 
+           purpose.equals(aPrepare)) {
+          
+          if(rootSubmit) 
+            verifyTask(nodeName, an, rname, rootTaskName, rootTaskType); 
+          else
+            throw new PipelineException
+              ("Cannot check-in node (" + nodeName + "), because it is a " + purpose + " " + 
+               "node which can only be checked-in when the root node of the check-in " + 
+               "operation is a Submit node!.  However in this case, the root node " + 
+               "(" + rname + ") was a " + rootPurpose + " node."); 
+        }
+        else if(purpose.equals(aProduct)) {
+          if(rootApprove) 
+            verifyTask(nodeName, an, rname, rootTaskName, rootTaskType); 
+          else
+            throw new PipelineException
+              ("Cannot check-in node (" + nodeName + "), because it is a " + purpose + " " + 
+               "node which can only be checked-in when the root node of the check-in " + 
+               "operation is an Approve node!.  However in this case, the root node " + 
+               "(" + rname + ") was a " + rootPurpose + " node."); 
+        }
+        else if(purpose.equals(aEdit)) {
+          verifyTask(nodeName, an, rname, rootTaskName, rootTaskType); 
+        }
+        else if(purpose.equals(aSubmit) || purpose.equals(aApprove)) {
+          if(!nodeName.equals(rname)) 
+            throw new PipelineException
+              ("Cannot check-in node (" + nodeName + ") unless it is the root node of the " + 
+               "check-in operation because it is a " + rootPurpose + " node!"); 
+        }
       }
     }
   }
@@ -370,92 +414,94 @@ class TaskPolicyExt
       TreeMap<String,BaseAnnotation> nodeAnnotations = mclient.getAnnotations(nodeName);
       for (String aname : nodeAnnotations.keySet()) {
         BaseAnnotation an = nodeAnnotations.get(aname);
-        String annotType = an.getName();
+        if(an.getName().equals(aTask) || an.getName().equals(aSubmitNode)) {
 
-        String taskName = lookupTaskName(nodeName, an);
-        String taskType = lookupTaskType(nodeName, an);
+          String taskName = lookupTaskName(nodeName, an);
+          String taskType = lookupTaskType(nodeName, an);
+          String purpose  = lookupPurpose(nodeName, an); 
 
-        if(annotType.equals("SubmitNode")) {
-          TreeMap<String,NodeVersion> focusNodes = new TreeMap<String,NodeVersion>();
-          TreeMap<String,NodeVersion> thumbNodes  = new TreeMap<String,NodeVersion>();
-          TreeMap<String,NodeVersion> editNodes  = new TreeMap<String,NodeVersion>();
-          findSubmitNodes(nodeName, taskName, taskType, vsn, 
-                          focusNodes, thumbNodes, editNodes, mclient);
+          if(purpose.equals(aSubmit)) {
+            TreeMap<String,NodeVersion> focusNodes = new TreeMap<String,NodeVersion>();
+            TreeMap<String,NodeVersion> thumbNodes  = new TreeMap<String,NodeVersion>();
+            TreeMap<String,NodeVersion> editNodes  = new TreeMap<String,NodeVersion>();
+            findSubmitNodes(nodeName, taskName, taskType, vsn, 
+                            focusNodes, thumbNodes, editNodes, mclient);
 
-          /* DEBUG */ 
-          {
-            LogMgr.getInstance().log
-              (Kind.Ops, Level.Info, 
-               "The " + annotType + " (" + nodeName + " v" + vsn.getVersionID() + ") of " + 
-               "task (" + taskName + ":" + taskType + ") has been checked-in.");
-
-            for(NodeVersion fvsn : focusNodes.values()) {
+            /* DEBUG */ 
+            {
               LogMgr.getInstance().log
                 (Kind.Ops, Level.Info, 
-                 "The FocusNode (" + fvsn.getName() + " v" + fvsn.getVersionID() + ") is " + 
-                 "associated with task (" + taskName + ":" + taskType + ") submitted for " + 
-                 "approval by checking-in the SubmitNode (" + nodeName + " v" + 
-                 vsn.getVersionID() + ").");
-            }
-            
-            for(NodeVersion tvsn : thumbNodes.values()) {
-              LogMgr.getInstance().log
-                (Kind.Ops, Level.Info, 
-                 "The ThumbnailNode (" + tvsn.getName() + " v" + tvsn.getVersionID() + ") " + 
-                 "is associated with task (" + taskName + ":" + taskType + ") submitted " + 
-                 "for approval by checking-in the SubmitNode (" + nodeName + " v" + 
-                 vsn.getVersionID() + ").");
-            }
-            
-            for(NodeVersion evsn : editNodes.values()) {
-              LogMgr.getInstance().log
-                (Kind.Ops, Level.Info, 
-               "The FocusNode (" + evsn.getName() + " v" + evsn.getVersionID() + ") is " + 
-                 "associated with task (" + taskName + ":" + taskType + ") submitted for " + 
-                 "approval by checking-in the SubmitNode (" + nodeName + " v" + 
-                 vsn.getVersionID() + ").");
-            }
-          }
-          /* DEBUG */
+                 "The " + purpose + " (" + nodeName + " v" + vsn.getVersionID() + ") of " + 
+                 "task (" + taskName + ":" + taskType + ") has been checked-in.");
 
-          int tries = 0; 
-          while(true) {
-            try {
-              sDatabase.submitTask(taskName, taskType, vsn, 
-                                   focusNodes, thumbNodes, editNodes); 
-              break;
-            }
-            catch(PipelineException ex) {
-              String msg = 
-                ("TaskSubmission for (" + taskName + ":" + taskType + ") Failed:\n" +
-                 ex.getMessage());      
-
-              if(tries < sMaxTries) {
+              for(NodeVersion fvsn : focusNodes.values()) {
                 LogMgr.getInstance().log
-                  (Kind.Ops, Level.Warning, 
-                   msg + "\nRetrying...");
-                tries++;
+                  (Kind.Ops, Level.Info, 
+                   "The FocusNode ("+fvsn.getName()+" v"+fvsn.getVersionID()+") is "+
+                   "associated with task ("+taskName+":"+taskType+") submitted for "+
+                   "approval by checking-in the SubmitNode ("+nodeName+" v"+
+                   vsn.getVersionID()+").");
               }
-              else {
+            
+              for(NodeVersion tvsn : thumbNodes.values()) {
                 LogMgr.getInstance().log
-                  (Kind.Ops, Level.Warning, 
-                   msg + "\nAborted after (" + tries + ") attempts!"); 
+                  (Kind.Ops, Level.Info, 
+                   "The ThumbnailNode ("+tvsn.getName()+" v"+tvsn.getVersionID()+") "+
+                   "is associated with task ("+taskName+":"+taskType+") submitted "+
+                   "for approval by checking-in the SubmitNode ("+nodeName+" v"+
+                   vsn.getVersionID()+").");
+              }
+            
+              for(NodeVersion evsn : editNodes.values()) {
+                LogMgr.getInstance().log
+                  (Kind.Ops, Level.Info, 
+                   "The FocusNode ("+evsn.getName()+" v"+evsn.getVersionID()+") is "+
+                   "associated with task ("+taskName+":"+taskType+") submitted for "+
+                   "approval by checking-in the SubmitNode ("+nodeName+" v"+
+                   vsn.getVersionID()+").");
+              }
+            }
+            /* DEBUG */
+
+            int tries = 0; 
+            while(true) {
+              try {
+                sDatabase.submitTask(taskName, taskType, vsn, 
+                                     focusNodes, thumbNodes, editNodes); 
                 break;
               }
+              catch(PipelineException ex) {
+                String msg = 
+                  ("TaskSubmission for (" + taskName + ":" + taskType + ") Failed:\n" +
+                   ex.getMessage());      
+
+                if(tries < sMaxTries) {
+                  LogMgr.getInstance().log
+                    (Kind.Ops, Level.Warning, 
+                     msg + "\nRetrying...");
+                  tries++;
+                }
+                else {
+                  LogMgr.getInstance().log
+                    (Kind.Ops, Level.Warning, 
+                     msg + "\nAborted after (" + tries + ") attempts!"); 
+                  break;
+                }
+              }
             }
           }
-        }
-        else if(annotType.equals("ApproveNode")) {
-          /* DEBUG */ 
-          {
-            LogMgr.getInstance().log
-              (Kind.Ops, Level.Info, 
-               "The " + annotType + " (" + nodeName + " v" + vsn.getVersionID() + ") of " + 
-               "task (" + taskName + ":" + taskType + ") has been checked-in.");
-          }
-          /* DEBUG */
+          else if(purpose.equals(aApprove)) {
+            /* DEBUG */ 
+            {
+              LogMgr.getInstance().log
+                (Kind.Ops, Level.Info, 
+                 "The " + purpose + " (" + nodeName + " v" + vsn.getVersionID() + ") of " + 
+                 "task (" + taskName + ":" + taskType + ") has been checked-in.");
+            }
+            /* DEBUG */
 
-          //sDatabase.approveTask(taskName, taskType, vsn); 
+            //sDatabase.approveTask(taskName, taskType, vsn); 
+          }
         }
       }
     }
@@ -484,22 +530,25 @@ class TaskPolicyExt
   )
     throws PipelineException 
   {
-    TreeMap<String,BaseAnnotation> annotations = mclient.getAnnotations(vsn.getName());
+    String nodeName = vsn.getName();
+    TreeMap<String,BaseAnnotation> annotations = mclient.getAnnotations(nodeName);
     for (String aname : annotations.keySet()) {
       BaseAnnotation an = annotations.get(aname);
-      String annotType = an.getName();
+      if(an.getName().equals(aTask) || an.getName().equals(aSubmitNode)) {
 
-      if(annotType.equals("FocusNode")) {
-        verifyTask(vsn.getName(), an, submitNodeName, submitTaskName, submitTaskType); 
-        focusNodes.put(vsn.getName(), vsn);
-      }
-      else if(annotType.equals("ThumbnailNode")) {
-        verifyTask(vsn.getName(), an, submitNodeName, submitTaskName, submitTaskType); 
-        thumbNodes.put(vsn.getName(), vsn); 
-      }
-      else if(annotType.equals("EditNode")) {
-        verifyTask(vsn.getName(), an, submitNodeName, submitTaskName, submitTaskType); 
-        editNodes.put(vsn.getName(), vsn); 
+        String purpose = lookupPurpose(nodeName, an); 
+        if(purpose.equals(aFocus)) {
+          verifyTask(nodeName, an, submitNodeName, submitTaskName, submitTaskType); 
+          focusNodes.put(nodeName, vsn);
+        }
+        else if(purpose.equals(aThumbnail)) {
+          verifyTask(nodeName, an, submitNodeName, submitTaskName, submitTaskType); 
+          thumbNodes.put(nodeName, vsn); 
+        }
+        else if(purpose.equals(aEdit)) {
+          verifyTask(nodeName, an, submitNodeName, submitTaskName, submitTaskType); 
+          editNodes.put(nodeName, vsn); 
+        }
       }
     }
       
@@ -529,7 +578,7 @@ class TaskPolicyExt
     String taskName = (String) an.getParamValue(aTaskName);
     if((taskName == null) || (taskName.length() == 0))
       throw new PipelineException
-        ("A Task Name must be supplied for the " + an.getName() + " annotation on node " + 
+        ("A TaskName must be supplied for the " + an.getName() + " annotation on node " + 
          "(" + nodeName +")!"); 
 
     return taskName;
@@ -549,14 +598,37 @@ class TaskPolicyExt
     String taskType = (String) an.getParamValue(aTaskType);
     if((taskType == null) || (taskType.length() == 0))
       throw new PipelineException
-        ("A Task Type must be supplied for the " + an.getName() + " annotation on node " + 
+        ("A TaskType must be supplied for the " + an.getName() + " annotation on node " + 
          "(" + nodeName +")!"); 
 
     return taskType;
   }
 
   /**
-   * Verify that the Task Name and Task Type match those of the root node.
+   * Lookup the annotation Purpose.
+   */ 
+  private String
+  lookupPurpose
+  (
+    String nodeName, 
+    BaseAnnotation an   
+  ) 
+    throws PipelineException
+  {
+    if(an.getName().equals(aSubmitNode)) 
+      return aSubmit; 
+   
+    String purpose = (String) an.getParamValue(aPurpose);
+    if(purpose == null) 
+      throw new PipelineException
+        ("A Purpose must be supplied for the Task annotation on node " + 
+         "(" + nodeName +")!"); 
+
+    return purpose;
+  }
+
+  /**
+   * Verify that the TaskName and TaskType match those of the root node.
    */ 
   private void 
   verifyTask
@@ -610,7 +682,19 @@ class TaskPolicyExt
 
   public static final String aTaskName         = "TaskName";
   public static final String aTaskType         = "TaskType";
+  public static final String aPurpose          = "Purpose";
   public static final String aIsApproved       = "IsApproved";
   public static final String aAssignedTo       = "AssignedTo";
+  
+  public static final String aTask             = "Task";
+  public static final String aSubmitNode       = "SubmitNode";
 
+  public static final String aSubmit           = "Submit";
+  public static final String aEdit             = "Edit";
+  public static final String aPrepare          = "Prepare";
+  public static final String aFocus            = "Focus";
+  public static final String aThumbnail        = "Thumbnail";
+  public static final String aProduct          = "Product";
+  public static final String aApprove          = "Approve";
+      
 }

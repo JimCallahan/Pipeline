@@ -31,7 +31,11 @@ import us.temerity.pipeline.*;
  *     The type of production goal this node is used to achieve.
  *   </DIV> <BR>
  * </DIV> <P> 
+ * 
+ * @deprecated
+ *   This class has been made obsolete by the TaskAnnotation (v2.3.2).
  */
+@Deprecated
 public 
 class ThumbnailNodeAnnotation 
   extends BaseAnnotation
