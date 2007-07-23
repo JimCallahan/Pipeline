@@ -1,5 +1,7 @@
 package us.temerity.pipeline.builder.maya2mr.v2_3_2;
 
+import us.temerity.pipeline.builder.maya2mr.v2_3_2.DefaultProjectNames.GlobalsType;
+
 public 
 interface BuildsProjectNames
 {
@@ -45,6 +47,30 @@ interface BuildsProjectNames
   
   public String
   getAssetRigAnimGlobals();
+  
+  public String
+  getAssetShaderTTSetup
+  (
+    String assetName,
+    String assetType
+  );
+  
+  public String
+  getAssetShaderTTSetup();
+  
+  public String
+  getAssetShaderTTGlobals
+  (
+    String assetName,
+    String assetType,
+    GlobalsType type
+  );
+  
+  public String
+  getAssetShaderTTGlobals
+  (
+    GlobalsType type  
+  );
   
   public String
   getTaskName
@@ -156,7 +182,7 @@ interface BuildsProjectNames
    * @return the auto-rigging mel script
    */
   public String 
-  getAutoRigScriptName();
+  getFinalRigScriptName();
   
   public String 
   getAutoRigScriptName
@@ -176,4 +202,16 @@ interface BuildsProjectNames
   
   public String
   getRemoveReferenceScriptName();
+
+  public String 
+  getPlaceholderSkelScriptName();
+
+  public String 
+  getPlaceholderTTCircleScriptName();
+
+  public String 
+  getPlaceholderTTCenterScriptName();
+
+  public String 
+  getEffectsTaskName();
 }

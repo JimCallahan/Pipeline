@@ -210,7 +210,7 @@ interface BuildsAssetNames
    * @return The rig submit node name.
    */
   public String
-  getRigSubmmitNodeName();
+  getRigSubmitNodeName();
   
   /**
    * @return the rig approve node name.
@@ -254,9 +254,42 @@ interface BuildsAssetNames
   public String
   getRigAnimFBXNodeName();
   
-  public String
-  getRigMELNodeName();
+  /**
+   * @return the texture node for animation textures.
+   */
+  public String 
+  getAnimTextureNodeName();
   
   public String
-  getReRigMELNodeName();
+  getAnimTextureFinalNodeName();
+  
+  public String
+  getTextureFinalNodeName();
+  
+  public String
+  getShaderSubmitNode();
+  
+  public String
+  getShaderApproveNode();
+  
+  public String
+  getShaderExportFinalNodeName();
+  
+  public String
+  getShaderRenderNodeName();
+  
+  public String
+  getShaderLgtMiNodeName();
+  
+  public String
+  getShaderCamMiNodeName();
+  
+  public String
+  getShaderCamOverMiNodeName();
+  
+  public String
+  getShaderShdMiNodeName();
+  
+  public String
+  getShaderTTNodeName();
 }

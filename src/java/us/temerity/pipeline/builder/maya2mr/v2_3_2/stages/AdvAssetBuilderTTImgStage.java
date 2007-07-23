@@ -16,14 +16,16 @@ public
 class AdvAssetBuilderTTImgStage 
   extends TurntableStage
 {
-  public AdvAssetBuilderTTImgStage
+  public 
+  AdvAssetBuilderTTImgStage
   (
-      StageInformation stageInformation,
-      UtilContext context,
-      MasterMgrClient client, 
-      String nodeName,
-      String mayaScene,
-      String globals
+    StageInformation stageInformation,
+    UtilContext context,
+    MasterMgrClient client, 
+    String nodeName,
+    String mayaScene,
+    String globals,
+    Renderer renderer
   )
     throws PipelineException
   {
@@ -37,7 +39,9 @@ class AdvAssetBuilderTTImgStage
           90, 
           4, 
           mayaScene, 
-          globals);
+          globals,
+          renderer);
+    //addSingleParamValue("CameraOverride", "tt:renderCam");
   }
   private static final long serialVersionUID = 8761960778392632689L;
 }

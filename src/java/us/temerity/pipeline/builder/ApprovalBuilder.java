@@ -1,3 +1,5 @@
+// $Id: ApprovalBuilder.java,v 1.2 2007/07/23 20:02:41 jesse Exp $
+
 package us.temerity.pipeline.builder;
 
 import us.temerity.pipeline.*;
@@ -41,6 +43,22 @@ class ApprovalBuilder
     super(name, vid, vendor, desc, mclient, qclient, builderInformation);
   }
 
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O N S T R U C T O R                                                                */
+  /*----------------------------------------------------------------------------------------*/
+  protected final void
+  addDoAnnotationParam()
+  {
+    UtilityParam param = 
+      new BooleanUtilityParam
+      (aDoAnnotations, 
+       "Should Task Annotations be added to all the nodes.", 
+       false); 
+    addParam(param);
+  }
+  
   /*----------------------------------------------------------------------------------------*/
   /*  A N N O T A T I O N                                                                   */
   /*----------------------------------------------------------------------------------------*/
@@ -49,21 +67,19 @@ class ApprovalBuilder
   isSubmitNode
   (
     BaseStage stage,
-    String taskType,
-    String approveNode
+    String taskType
   )
     throws PipelineException
   {
     BaseAnnotation annot = 
-      pPlug.newAnnotation("SubmitNodeAnnotation", new VersionID("2.3.2"), "Temerity");
+      pPlug.newAnnotation("SubmitNode", new VersionID("2.3.2"), "Temerity");
     annot.setParamValue("TaskName", pTaskName);
     annot.setParamValue("TaskType", taskType);
-    annot.setParamValue("ApproveNode", approveNode);
     stage.addAnnotation("Submit", annot); 
   }
   
   protected void
-  isIntermediateNode
+  isPrepareNode
   (
     BaseStage stage,
     String taskType
@@ -71,10 +87,11 @@ class ApprovalBuilder
     throws PipelineException
   {
     BaseAnnotation annot = 
-      pPlug.newAnnotation("IntermediateNodeAnnotation", new VersionID("2.3.2"), "Temerity");
+      pPlug.newAnnotation("Task", new VersionID("2.3.2"), "Temerity");
     annot.setParamValue("TaskName", pTaskName);
     annot.setParamValue("TaskType", taskType);
-    stage.addAnnotation("Intermediate", annot); 
+    annot.setParamValue("Purpose", "Prepare");
+    stage.addAnnotation("Task", annot); 
   }
   
   protected void
@@ -86,10 +103,11 @@ class ApprovalBuilder
     throws PipelineException
   {
     BaseAnnotation annot = 
-      pPlug.newAnnotation("ProductNodeAnnotation", new VersionID("2.3.2"), "Temerity");
+      pPlug.newAnnotation("Task", new VersionID("2.3.2"), "Temerity");
     annot.setParamValue("TaskName", pTaskName);
     annot.setParamValue("TaskType", taskType);
-    stage.addAnnotation("Product", annot); 
+    annot.setParamValue("Purpose", "Prepare");
+    stage.addAnnotation("Task", annot); 
   }
   
   protected void
@@ -101,10 +119,11 @@ class ApprovalBuilder
     throws PipelineException
   {
     BaseAnnotation annot = 
-      pPlug.newAnnotation("EditNodeAnnotation", new VersionID("2.3.2"), "Temerity");
+      pPlug.newAnnotation("Task", new VersionID("2.3.2"), "Temerity");
     annot.setParamValue("TaskName", pTaskName);
     annot.setParamValue("TaskType", taskType);
-    stage.addAnnotation("Edit", annot); 
+    annot.setParamValue("Purpose", "Edit");
+    stage.addAnnotation("Task", annot); 
   }
   
   protected void
@@ -116,28 +135,46 @@ class ApprovalBuilder
     throws PipelineException
   {
     BaseAnnotation annot = 
-      pPlug.newAnnotation("FocusNodeAnnotation", new VersionID("2.3.2"), "Temerity");
+      pPlug.newAnnotation("Task", new VersionID("2.3.2"), "Temerity");
     annot.setParamValue("TaskName", pTaskName);
     annot.setParamValue("TaskType", taskType);
-    stage.addAnnotation("Intermediate", annot); 
+    annot.setParamValue("Purpose", "Focus");
+    stage.addAnnotation("Task", annot); 
   }
   
   protected void
-  isApprovalNode
+  isApproveNode
   (
     BaseStage stage,
-    String taskType,
-    String classPath
+    String taskType
   )
     throws PipelineException
   {
     BaseAnnotation annot = 
-      pPlug.newAnnotation("ApprovalNodeAnnotation", new VersionID("2.3.2"), "Temerity");
+      pPlug.newAnnotation("Task", new VersionID("2.3.2"), "Temerity");
     annot.setParamValue("TaskName", pTaskName);
     annot.setParamValue("TaskType", taskType);
-    stage.addAnnotation("Approval", annot);
-    //TODO add in the right thing here.
+    annot.setParamValue("Purpose", "Approve");
+    stage.addAnnotation("Task", annot);
+  }
+  
+  protected void
+  isThumbnailNode
+  (
+    BaseStage stage,
+    String taskType
+  )
+    throws PipelineException
+  {
+    BaseAnnotation annot = 
+      pPlug.newAnnotation("Task", new VersionID("2.3.2"), "Temerity");
+    annot.setParamValue("TaskName", pTaskName);
+    annot.setParamValue("TaskType", taskType);
+    annot.setParamValue("Purpose", "Thumbnail");
+    stage.addAnnotation("Task", annot);
   }
   
   protected String pTaskName;
+  
+  public static final String aDoAnnotations = "DoAnnotations";
 }

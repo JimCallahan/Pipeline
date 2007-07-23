@@ -195,7 +195,7 @@ class MayaRenderStage
     }
   }
   
-  enum Renderer
+  public enum Renderer
   { 
     Software, Hardware, MentalRay, Vector;
 

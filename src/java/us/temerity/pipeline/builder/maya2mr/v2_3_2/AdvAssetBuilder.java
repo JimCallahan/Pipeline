@@ -1,10 +1,15 @@
+// $Id: AdvAssetBuilder.java,v 1.4 2007/07/23 20:02:51 jesse Exp $
+
 package us.temerity.pipeline.builder.maya2mr.v2_3_2;
+
 import java.util.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
+import us.temerity.pipeline.builder.maya2mr.v2_3_2.DefaultProjectNames.GlobalsType;
 import us.temerity.pipeline.builder.maya2mr.v2_3_2.stages.*;
 import us.temerity.pipeline.stages.*;
+import us.temerity.pipeline.stages.MayaRenderStage.Renderer;
 
 /*------------------------------------------------------------------------------------------*/
 /*   A D V   A S S E T   B U I L D E R                                                      */
@@ -14,6 +19,10 @@ public
 class AdvAssetBuilder 
   extends ApprovalBuilder
 {
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O N S T R U C T O R                                                                */
+  /*----------------------------------------------------------------------------------------*/
+
   public 
   AdvAssetBuilder
   (
@@ -60,9 +69,6 @@ class AdvAssetBuilder
         ("The project naming class that was passed in does not implement " +
          "the BuildsProjectNames interface");
       
-    addSubBuilder(assetNames);
-    addSubBuilder(projectNames);
-    
     // Globabl parameters
     {
       ArrayList<String> projects = pBuilderInfo.getProjectList();
@@ -82,31 +88,20 @@ class AdvAssetBuilder
          new MayaContext()); 
       addParam(param);
     }
-    {
-      UtilityParam param = 
-        new BooleanUtilityParam
-        (aCheckinWhenDone,
-         "Automatically check-in all the nodes when building is finished.", 
-         false); 
-      addParam(param);
-    }
-    {
-      UtilityParam param = 
-        new BooleanUtilityParam
-        (aBuildLowRez, 
-         "Build a Low-Rez model network.", 
-         true); 
-      addParam(param);
-    }
-    {
-      UtilityParam param = 
-        ListUtilityParam.createSelectionKeyParam
-        (aSelectionKeys, 
-         "Which Selection Keys Should be assigned to the constructred nodes", 
-         null,
-         qclient);
-      addParam(param);
-    }
+    addCheckinWhenDoneParam();
+    addSelectionKeyParam();
+    addDoAnnotationParam();
+    
+//    {
+//      UtilityParam param = 
+//        new BooleanUtilityParam
+//        (aBuildLowRez, 
+//         "Build a Low-Rez model network.", 
+//         true); 
+//      addParam(param);
+//    }
+    
+    
 
     //Model Parameters
     {
@@ -130,7 +125,7 @@ class AdvAssetBuilder
       UtilityParam param = 
         new BooleanUtilityParam
         (aVerifyModelMEL, 
-         "Is there a verification MEL to check the model before it is approved", 
+         "Is there a verification MEL to check the model before it is submitted", 
          true); 
       addParam(param);
     }
@@ -139,7 +134,7 @@ class AdvAssetBuilder
     {
       UtilityParam param = 
         new BooleanUtilityParam
-        (aAutoRigSetup,
+        (aReRigSetup,
          "Will this asset use a basic autorig setup?", 
          false); 
       addParam(param);
@@ -155,8 +150,32 @@ class AdvAssetBuilder
     {
       UtilityParam param = 
         new BooleanUtilityParam
+        (aRigAnimForApproval, 
+         "Should there be an animation verification render for rig approval.", 
+         true); 
+      addParam(param);
+    }
+    {
+      String each[] = {"None", "FBX", "Curves", "dkAnim"};
+      ArrayList<String> choices = new ArrayList<String>(Arrays.asList(each));
+      UtilityParam param = 
+        new EnumUtilityParam
+        (aAnimationFormat,
+         "What format is the animation for the rig verification being presented in? " +
+         "If this is set to FBX, then a FBX node and a curves node will be created, " +
+         "with the curve animation being brought into the verification scene.  If " +
+         "curves is selected, a single curves node will be create.  dkAnim support " +
+         "is not complete and selecting that option will cause an exception to be " +
+         "thrown.", 
+         "Curves",
+         choices); 
+      addParam(param);
+    }
+    {
+      UtilityParam param = 
+        new BooleanUtilityParam
         (aVerifyRigMEL, 
-         "Is there a verification MEL to check the rig before it is approved", 
+         "Is there a verification MEL to check the rig before it is submitted", 
          true); 
       addParam(param);
     }
@@ -181,8 +200,16 @@ class AdvAssetBuilder
     {
       UtilityParam param = 
         new BooleanUtilityParam
+        (aShaderTTForApproval, 
+         "Should there be a Turntable for shader verification and approval.", 
+         true); 
+      addParam(param);
+    }
+    {
+      UtilityParam param = 
+        new BooleanUtilityParam
         (aVerifyShaderMEL, 
-         "Is there a verification MEL to check the shaders before it is approved", 
+         "Is there a verification MEL to check the shaders before it is submitted", 
          true); 
       addParam(param);
     }
@@ -195,11 +222,21 @@ class AdvAssetBuilder
       addParam(param);
     }
     
+    if (!assetNames.isGenerated())
+      addSubBuilder(assetNames);
+    if (!projectNames.isGenerated())
+      addSubBuilder(projectNames);
     configNamer(assetNames, projectNames);
+    
     pAssetNames = (BuildsAssetNames) assetNames;
     pProjectNames = (BuildsProjectNames) projectNames;
 
     addSetupPass(new InformationPass());
+    ConstructPass build = new BuildPass();
+    addConstuctPass(build);
+    ConstructPass end = new FinalizePass();
+    addConstuctPass(end);
+    addPassDependency(build, end);
     
     {
       AdvancedLayoutGroup layout = 
@@ -217,6 +254,7 @@ class AdvAssetBuilder
       layout.addEntry(1, aReleaseOnError);
       layout.addEntry(1, null);
       layout.addEntry(1, aProjectName);
+      layout.addEntry(1, aDoAnnotations);
       
       
       LayoutGroup mayaGroup = 
@@ -224,7 +262,7 @@ class AdvAssetBuilder
       
       mayaGroup.addEntry(aMayaContext);
 
-      layout.addEntry(2, aBuildLowRez);
+      //layout.addEntry(2, aBuildLowRez);
       layout.addSubGroup(2, mayaGroup);
       
       {
@@ -238,8 +276,10 @@ class AdvAssetBuilder
       {
         LayoutGroup rigGroup = 
           new LayoutGroup("RigSettings", "Settings related to the rig part of the asset process.", true);
-        rigGroup.addEntry(aAutoRigSetup);  
+        rigGroup.addEntry(aReRigSetup);  
         rigGroup.addEntry(aHasBlendShapes);
+        rigGroup.addEntry(aRigAnimForApproval);
+        rigGroup.addEntry(aAnimationFormat);
         rigGroup.addEntry(aVerifyRigMEL);
         layout.addSubGroup(2, rigGroup);
       }
@@ -247,6 +287,7 @@ class AdvAssetBuilder
         LayoutGroup matGroup = 
           new LayoutGroup("MaterialSettings", "Settings related to the material/shading part of the asset process.", true);
         matGroup.addEntry(aBuildMiShadeNetwork);
+        matGroup.addEntry(aShaderTTForApproval);
         matGroup.addEntry(aBuildTextureNode);
         matGroup.addEntry(aSeparateAnimTextures);
         matGroup.addEntry(aVerifyShaderMEL);
@@ -277,8 +318,10 @@ class AdvAssetBuilder
   )
     throws PipelineException
   {
-    addMappedParam(assetNames.getName(), DefaultAssetNames.aProjectName, aProjectName);
-    addMappedParam(projectNames.getName(), DefaultProjectNames.aProjectName, aProjectName);
+    if (!assetNames.isGenerated())
+      addMappedParam(assetNames.getName(), DefaultAssetNames.aProjectName, aProjectName);
+    if (!projectNames.isGenerated())
+      addMappedParam(projectNames.getName(), DefaultProjectNames.aProjectName, aProjectName);
   }
   
   
@@ -287,6 +330,7 @@ class AdvAssetBuilder
   /*   C H E C K - I N                                                                      */
   /*----------------------------------------------------------------------------------------*/
   
+  @Override
   protected TreeSet<String>
   getNodesToCheckIn()
   {
@@ -315,6 +359,9 @@ class AdvAssetBuilder
   // Question Answering
   protected AnswersBuilderQueries pBuilderInfo;
   
+  protected String pAssetName;
+  protected String pAssetType;
+  
   // conditions on what is being built
   
   /* Model */
@@ -323,15 +370,20 @@ class AdvAssetBuilder
   protected boolean pModelTT;
   
   /* Rig */
-  protected boolean pAutoRigSetup;
+  protected boolean pReRigSetup;
   protected boolean pHasBlendShapes;
+  protected boolean pMakeFBX;
+  protected boolean pMakeCurves;
+  protected boolean pMakeDkAnim;
+  protected boolean pRigTT;
   
   /* Material */
   protected boolean pBuildTextureNode;
-  protected boolean pBuildMiShadingNetwork;
+  protected boolean pBuildMiShadeNetwork;
   protected boolean pSeparateAnimTextures;
+  protected boolean pShadeTT;
   
-  protected boolean pBuildLowRez;
+  //protected boolean pBuildLowRez;
   
   
   // builder conditions
@@ -339,7 +391,7 @@ class AdvAssetBuilder
   
   // Mel Scripts
   protected String pFinalizeMEL;
-  protected String pLRFinalizeMEL;
+  //protected String pLRFinalizeMEL;
   protected String pPlaceHolderMEL;
   protected String pMRInitMEL;
   protected String pVerifyModelMEL;
@@ -352,6 +404,10 @@ class AdvAssetBuilder
   protected ArrayList<EmptyMayaAsciiStage> pEmptyMayaScenes = 
     new ArrayList<EmptyMayaAsciiStage>();
   
+  protected ArrayList<EmptyFileStage> pEmptyFileStages = 
+    new ArrayList<EmptyFileStage>();
+  
+  protected TreeSet<String> pRequiredNodes;
 
   
   /*----------------------------------------------------------------------------------------*/
@@ -367,19 +423,20 @@ class AdvAssetBuilder
   
   //Rig Parameters
   public final static String aHasBlendShapes = "HasBlendShapes";
-  public final static String aAutoRigSetup = "AutoRigSetup"; 
+  public final static String aReRigSetup = "ReRigSetup";
+  public final static String aRigAnimForApproval = "RigAnimForApproval";
+  public final static String aAnimationFormat = "AnimationFormat";
   public final static String aVerifyRigMEL = "VerifyRigMEL";
   
   //Material Parameters
   public final static String aBuildTextureNode = "BuildTextureNode";
   public final static String aBuildMiShadeNetwork = "BuildMiShadeNetwork";
   public final static String aVerifyShaderMEL = "VerifyShaderMEL";
+  public final static String aShaderTTForApproval = "aShaderTTForApproval";
   public final static String aSeparateAnimTextures = "SeparateAnimTextures";
   
-  public final static String aBuildLowRez = "BuildLowRez";
+  //public final static String aBuildLowRez = "BuildLowRez";
   
-  public final static String aCheckinWhenDone = "CheckinWhenDone";
-  public final static String aSelectionKeys = "SelectionKeys";
   public final static String aProjectName = "ProjectName";
   
   private static final long serialVersionUID = -720208594406378352L;
@@ -411,33 +468,89 @@ class AdvAssetBuilder
         "Starting the validate phase in the Information Pass.");
       validateBuiltInParams();
       pBuilderInfo.setContext(pContext);
-      pBuildLowRez = getBooleanParamValue(new ParamMapping(aBuildLowRez));
+      //pBuildLowRez = getBooleanParamValue(new ParamMapping(aBuildLowRez));
       pBuildTextureNode = getBooleanParamValue(new ParamMapping(aBuildTextureNode));
-      pBuildMiShadingNetwork = 
+      pBuildMiShadeNetwork = 
         getBooleanParamValue(new ParamMapping(aBuildMiShadeNetwork));
       pCheckInWhenDone = getBooleanParamValue(new ParamMapping(aCheckinWhenDone));
-      pAutoRigSetup = getBooleanParamValue(new ParamMapping(aAutoRigSetup));
+      pReRigSetup = getBooleanParamValue(new ParamMapping(aReRigSetup));
       pModelTT = getBooleanParamValue(new ParamMapping(aModelTTForApproval));
-
-      pFinalizeMEL = pProjectNames.getFinalizeScriptName(null, pAssetNames.getAssetType());
+      pRigTT = getBooleanParamValue(new ParamMapping(aRigAnimForApproval));
+      pShadeTT = getBooleanParamValue(new ParamMapping(aShaderTTForApproval));
       
-      pLRFinalizeMEL = pProjectNames.getLowRezFinalizeScriptName(null, pAssetNames.getAssetType());
+      { //String each[] = {"None", "FBX", "Curves", "dkAnim"};
+	pMakeFBX = false;
+	pMakeCurves = false;
+	pMakeDkAnim = false;
+	
+	String animFormat = getStringParamValue(new ParamMapping(aAnimationFormat));
+	if (animFormat.equals("FBX")) {
+	  pMakeFBX = true;
+	  pMakeCurves = true;
+	}
+	else if (animFormat.equals("Curves"))
+	  pMakeCurves = true;
+	else if (animFormat.equals("dkAnim"))
+	  pMakeDkAnim = true;
+      }
+      
+      if (pMakeDkAnim)
+	throw new PipelineException
+	  ("The dkAnim support in Pipeline is not finished.  " +
+	   "This option will be activated once it is");
+      
+      pAssetName = pAssetNames.getAssetName();
+      pAssetType = pAssetNames.getAssetType();
+      
+      pRequiredNodes = new TreeSet<String>();
+
+      pFinalizeMEL = pProjectNames.getFinalizeScriptName(null, pAssetType);
+      addNonNullValue(pFinalizeMEL, pRequiredNodes);
+      
+      //pLRFinalizeMEL = pProjectNames.getLowRezFinalizeScriptName(null, pAssetNames.getAssetType());
 
       pMRInitMEL = pProjectNames.getMRayInitScriptName();
+      addNonNullValue(pMRInitMEL, pRequiredNodes);
 
       pPlaceHolderMEL = pProjectNames.getPlaceholderScriptName();
+      addNonNullValue(pPlaceHolderMEL, pRequiredNodes);
       
       pVerifyModelMEL = null;
       if (getBooleanParamValue(new ParamMapping(aVerifyModelMEL)))
         pVerifyModelMEL = pProjectNames.getModelVerificationScriptName();
+      addNonNullValue(pVerifyModelMEL, pRequiredNodes);
 
-      pVerifyRigMEL = null;
-      if (getBooleanParamValue(new ParamMapping(aVerifyRigMEL)))
-        pVerifyRigMEL = pProjectNames.getRigVerificationScriptName();
-        
       pVerifyShaderMEL = null;
       if (getBooleanParamValue(new ParamMapping(aVerifyShaderMEL)))
         pVerifyShaderMEL = pProjectNames.getShaderVerificationScriptName();
+      addNonNullValue(pVerifyShaderMEL, pRequiredNodes);
+      
+      pVerifyRigMEL = null;
+      if (getBooleanParamValue(new ParamMapping(aVerifyRigMEL)))
+        pVerifyRigMEL = pProjectNames.getRigVerificationScriptName();
+      if (!pReRigSetup)
+	addNonNullValue(pVerifyRigMEL, pRequiredNodes);
+      
+      if (pModelTT) {
+	addNonNullValue(pProjectNames.getAssetModelTTSetup(pAssetName, pAssetType), pRequiredNodes);
+	addNonNullValue(pProjectNames.getAssetModelTTGlobals(), pRequiredNodes);
+      }
+      
+      if (pReRigSetup)
+	addNonNullValue(pProjectNames.getFinalRigScriptName(), pRequiredNodes);
+      
+      if (pRigTT) {
+	addNonNullValue(pProjectNames.getAssetRigAnimSetup(pAssetName, pAssetType), pRequiredNodes);
+	addNonNullValue(pProjectNames.getAssetRigAnimGlobals(), pRequiredNodes);
+      }
+      
+      if (pShadeTT) {
+	addNonNullValue(pProjectNames.getAssetShaderTTSetup(pAssetName, pAssetType), pRequiredNodes);
+	if (pBuildMiShadeNetwork)
+	  addNonNullValue(pProjectNames.getAssetShaderTTGlobals(GlobalsType.Standalone), pRequiredNodes);
+	else
+	  addNonNullValue(pProjectNames.getAssetShaderTTGlobals(GlobalsType.Maya2MR), pRequiredNodes);
+      }
       
       pMayaContext = (MayaContext) getParamValue(aMayaContext);
 
@@ -451,7 +564,10 @@ class AdvAssetBuilder
       info.setDefaultSelectionKeys(keys);
       info.setUseDefaultSelectionKeys(true);
       
-      pTaskName = pProjectNames.getTaskName(pAssetNames.getAssetName(), pAssetNames.getAssetType());
+      boolean annot = getBooleanParamValue(new ParamMapping(aDoAnnotations));
+      info.setDoAnnotations(annot);
+      
+      pTaskName = pProjectNames.getTaskName(pAssetName, pAssetType);
       
       pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, "Validation complete.");
     }
@@ -465,8 +581,10 @@ class AdvAssetBuilder
         "Starting the init phase in the Information Pass.");
       if (pMultipleModels) {
         ModelPiecesBuilder builder = 
-          new ModelPiecesBuilder(pClient, pQueue, pAssetNames, pProjectNames, pBuilderInformation, pNumberOfModels);
+          new ModelPiecesBuilder(pClient, pQueue, pAssetNames, pProjectNames, pBuilderInformation, pNumberOfModels, pModelTT);
         addSubBuilder(builder);
+        addMappedParam(builder.getName(), ModelPiecesBuilder.aMayaContext, aMayaContext);
+        addPassDependency(builder.getConstructPass("Build Pass"), getConstructPass("Build Pass")); 
       }
     }
 
@@ -491,6 +609,13 @@ class AdvAssetBuilder
     }
     
     @Override
+    public TreeSet<String> 
+    nodesDependedOn()
+    {
+      return pRequiredNodes;
+    }
+    
+    @Override
     public void 
     buildPhase() 
       throws PipelineException
@@ -499,6 +624,7 @@ class AdvAssetBuilder
         "Starting the build phase in the Build Pass");
       doModel();
       doRig();
+      doShaders();
     }
 
     protected void 
@@ -536,7 +662,10 @@ class AdvAssetBuilder
              verifyModel, 
              edit,
              pVerifyModelMEL);
-          isIntermediateNode(stage, taskType);
+          if (pModelTT)
+            isPrepareNode(stage, taskType);
+          else
+            isFocusNode(stage, taskType);
           stage.build();
         }
       }
@@ -545,7 +674,7 @@ class AdvAssetBuilder
       if(pModelTT) {
         if (!checkExistance(modelTT)) {
           String modelTTSetup = 
-            pProjectNames.getAssetModelTTSetup(pAssetNames.getAssetName(), pAssetNames.getAssetType());
+            pProjectNames.getAssetModelTTSetup(pAssetName, pAssetType);
           AdvAssetBuilderTTStage stage =
             new AdvAssetBuilderTTStage
             (info,
@@ -555,13 +684,12 @@ class AdvAssetBuilder
              modelTT,
              verifyModel,
              modelTTSetup);
-          isIntermediateNode(stage, taskType);
+          isPrepareNode(stage, taskType);
           stage.build();
           addToDisableList(modelTT);
         }
-        if (checkExistance(modelTTImg)) {
-          String globals = 
-            pProjectNames.getAssetModelTTGlobals(pAssetNames.getAssetName(), pAssetNames.getAssetType());
+        if (!checkExistance(modelTTImg)) {
+          String globals = pProjectNames.getAssetModelTTGlobals();
           AdvAssetBuilderTTImgStage stage =
             new AdvAssetBuilderTTImgStage
             (info, 
@@ -569,7 +697,8 @@ class AdvAssetBuilder
              pClient, 
              modelTTImg, 
              modelTT, 
-             globals);
+             globals,
+             Renderer.Software);
           isFocusNode(stage, taskType);
           stage.build();
         }
@@ -577,10 +706,13 @@ class AdvAssetBuilder
       String modelSubmit = pAssetNames.getModelSubmitNodeName();
       if (!checkExistance(modelSubmit)) {
         TreeSet<String> sources = new TreeSet<String>();
-        sources.add(modelTTImg);
+        if (pModelTT)
+          sources.add(modelTTImg);
+        else
+          sources.add(verifyModel);
         TargetStage stage = new TargetStage(info, pContext, pClient, modelSubmit, sources);
         stage.build();
-        isSubmitNode(stage, taskType, pAssetNames.getModelApproveNodeName());
+        isSubmitNode(stage, taskType);
       }
       String modelFinal = pAssetNames.getModelFinalNodeName();
       String modelApprove = pAssetNames.getModelApproveNodeName();
@@ -593,8 +725,7 @@ class AdvAssetBuilder
         TreeSet<String> sources = new TreeSet<String>();
         sources.add(modelFinal);
         TargetStage stage = new TargetStage(info, pContext, pClient, modelApprove, sources);
-        //TODO add the classPath
-        isApprovalNode(stage, taskType, null);
+        isApproveNode(stage, taskType);
         stage.build();
       }
     }
@@ -624,17 +755,22 @@ class AdvAssetBuilder
         }
       }
       String skeleton = pAssetNames.getSkeletonNodeName();
+      String skelMel = pProjectNames.getPlaceholderSkelScriptName();
       if (skeleton != null && !checkExistance(skeleton)) {
-        EmptyMayaAsciiStage stage = 
-          new EmptyMayaAsciiStage
-          (info,
-           pContext,
-           pClient,
-           pMayaContext,
-           skeleton);
-        isEditNode(stage, taskType);
-        stage.build();
-        pEmptyMayaScenes.add(stage);
+	if (skelMel == null) {
+	  EmptyMayaAsciiStage stage = 
+	    new EmptyMayaAsciiStage(info, pContext, pClient, pMayaContext, skeleton);
+	  isEditNode(stage, taskType);
+	  stage.build();
+	  pEmptyMayaScenes.add(stage);
+	}
+	else {
+	  AssetBuilderModelStage stage =
+	    new AssetBuilderModelStage(info, pContext, pClient, pMayaContext, skeleton, skelMel);
+	  isEditNode(stage, taskType);
+	  stage.build();
+	  pModelStages.add(stage);
+	}
       }
       String rigEdit = pAssetNames.getRigEditNodeName();
       if (!checkExistance(rigEdit)) {
@@ -650,24 +786,11 @@ class AdvAssetBuilder
         isEditNode(stage, taskType);
         stage.build();
       }
-      String targetMEL = pVerifyRigMEL;
-      if (pAutoRigSetup) {
-        String rigMEL = pAssetNames.getRigMELNodeName();
-        String reRigMEL = pAssetNames.getReRigMELNodeName();
-        if (!checkExistance(reRigMEL)) {
-          AdvAssetBuilderReRigMELStage stage = 
-            new AdvAssetBuilderReRigMELStage(info, pContext, pClient, reRigMEL);
-          stage.build();
-        }
-        if (!checkExistance(rigMEL)) {
-          AdvAssetBuilderRigMELStage stage = 
-            new AdvAssetBuilderRigMELStage(info, pContext, pClient, rigMEL, reRigMEL, pVerifyRigMEL);
-          isIntermediateNode(stage, taskType);
-          stage.build();
-          targetMEL = rigMEL;
-        }
-      }
+      
       String reRigNode = pAssetNames.getReRigNodeName();
+      String finalRigScript = pProjectNames.getFinalRigScriptName();
+      if (!pReRigSetup)
+	finalRigScript = pVerifyRigMEL;
       if (!checkExistance(reRigNode)) {
         AdvAssetBuilderReRigStage stage = 
           new AdvAssetBuilderReRigStage
@@ -680,15 +803,16 @@ class AdvAssetBuilder
            rigEdit, 
            blendShapes, 
            skeleton, 
-           targetMEL,
-           pAutoRigSetup);
-        isIntermediateNode(stage, taskType);
+           finalRigScript,
+           pReRigSetup);
+        isPrepareNode(stage, taskType);
         stage.build();
       }
       
       doMaterials();
       String matName = pAssetNames.getMaterialNodeName();
       String matExportName = pAssetNames.getMaterialExportNodeName();
+      String texNode = pAssetNames.getAnimTextureNodeName();
       
       String rigFinal = pAssetNames.getRigFinalNodeName();
       if (!checkExistance(rigFinal)) {
@@ -701,7 +825,10 @@ class AdvAssetBuilder
            rigFinal, 
            reRigNode, matName, matExportName,
            pFinalizeMEL);
-        isIntermediateNode(stage, taskType);
+        if (pRigTT)
+          isPrepareNode(stage, taskType);
+        else
+          isFocusNode(stage, taskType);
         stage.build();
       }
       
@@ -710,58 +837,103 @@ class AdvAssetBuilder
       String animCurves = pAssetNames.getRigAnimCurvesNodeName();
       String rigAnim = pAssetNames.getRigAnimNodeName();
       String rigImages = pAssetNames.getRigAnimImagesNodeName();
-      if (!checkExistance(animFBX)) {
-        EmptyFBXStage stage = new EmptyFBXStage(info, pContext, pClient, animFBX);
-        stage.build();
+      if (pRigTT) {
+	if (pMakeFBX) {
+	  if (!checkExistance(animFBX)) {
+	    EmptyFBXStage stage = new EmptyFBXStage(info, pContext, pClient, animFBX);
+	    stage.build();
+	  }
+	}
+	if (pMakeCurves ) {
+	  if (!checkExistance(animCurves)) {
+	    StandardStage stage = null;
+	    if (pMakeFBX) {
+	      stage = 
+		new AdvAssetBuilderCurvesStage
+		(info, 
+		 pContext, 
+		 pClient, 
+		 pMayaContext, 
+		 animCurves, 
+		 skeleton, 
+		 animFBX);
+	    }
+	    else {
+	      stage = 
+		new EmptyMayaAsciiStage(info, pContext, pClient, pMayaContext, animCurves);
+	      pEmptyMayaScenes.add((EmptyMayaAsciiStage) stage);
+	    }
+	    stage.build();
+	  }
+	}
+	if (pMakeDkAnim ) {
+	  if (!checkExistance(animCurves)) {
+	    EmptyFileStage stage = 
+	      new EmptyFileStage(info, pContext, pClient, animCurves, "dkAnim");
+	    stage.build();
+	    pEmptyFileStages.add(stage);
+	  }
+	}
+	if (!checkExistance(rigAnim)) {
+	  String setup = 
+	    pProjectNames.getAssetRigAnimSetup(pAssetName, pAssetType);
+	  StandardStage stage = null;
+	  if (pMakeCurves) {
+	    stage = 
+	      new AdvAssetBuilderAnimStage
+	      (info,
+	       pContext, 
+	       pClient,
+	       pMayaContext,
+	       rigAnim,
+	       animCurves,
+	       rigFinal,
+	       pAssetNames.getNameSpace(),
+	       setup);
+	  }
+	  else if (pMakeDkAnim) {
+	    // do stuff here
+	  }
+	  else {
+	    stage = 
+	      new AdvAssetBuilderTTStage
+	      (info, 
+	       pContext, 
+	       pClient, 
+	       pMayaContext, 
+	       rigAnim, 
+	       rigFinal, 
+	       setup);
+	  }
+	  isPrepareNode(stage, taskType);
+	  stage.build();
+	  addToDisableList(rigAnim);
+	}
+	if (!checkExistance(rigImages)) {
+	  String globals = 
+	    pProjectNames.getAssetRigAnimGlobals();
+	  AdvAssetBuilderTTImgStage stage =
+	    new AdvAssetBuilderTTImgStage
+	    (info, 
+	     pContext, 
+	     pClient, 
+	     rigImages, 
+	     rigAnim, 
+	     globals,
+	     Renderer.Software);
+	  isFocusNode(stage, taskType);
+	  stage.build();
+	}
       }
-      if (!checkExistance(animCurves)) {
-        AdvAssetBuilderCurvesStage stage = 
-          new AdvAssetBuilderCurvesStage
-          (info, 
-           pContext, 
-           pClient, 
-           pMayaContext, 
-           animCurves, 
-           skeleton, 
-           animFBX);
-        stage.build();
-      }
-      if (!checkExistance(rigAnim)) {
-        String setup = pProjectNames.getAssetRigAnimSetup(pAssetNames.getAssetName(), pAssetNames.getAssetType());
-        AdvAssetBuilderAnimStage stage = 
-          new AdvAssetBuilderAnimStage
-          (info,
-           pContext, 
-           pClient,
-           pMayaContext,
-           rigAnim,
-           animCurves,
-           rigFinal,
-           pAssetNames.getNameSpace(),
-           setup);
-        isIntermediateNode(stage, taskType);
-        stage.build();
-      }
-      if (!checkExistance(rigImages)) {
-        String globals = 
-          pProjectNames.getAssetRigAnimGlobals(pAssetNames.getAssetName(), pAssetNames.getAssetType());
-        AdvAssetBuilderTTImgStage stage =
-          new AdvAssetBuilderTTImgStage
-          (info, 
-           pContext, 
-           pClient, 
-           rigImages, 
-           rigAnim, 
-           globals);
-        isFocusNode(stage, taskType);
-        stage.build();
-      }
-      String rigSubmit = pAssetNames.getRigSubmmitNodeName();
+      String rigSubmit = pAssetNames.getRigSubmitNodeName();
       if (!checkExistance(rigSubmit)) {
         TreeSet<String> sources = new TreeSet<String>();
-        sources.add(rigImages);
+        if (pRigTT)
+          sources.add(rigImages);
+        else
+          sources.add(rigFinal);
         TargetStage stage = new TargetStage(info, pContext, pClient, rigSubmit, sources);
-        isSubmitNode(stage, taskType, pAssetNames.getRigApproveNodeName());
+        isSubmitNode(stage, taskType);
         stage.build();
       }
       String assetFinal = pAssetNames.getFinalNodeName();
@@ -772,7 +944,7 @@ class AdvAssetBuilder
         stage.build();
       }
       String miFile = pAssetNames.getModelMiNodeName();
-      if (pBuildMiShadingNetwork) {
+      if (pBuildMiShadeNetwork) {
         if (!checkExistance(miFile)) {
           AdvAssetBuilderModelMiStage stage = 
             new AdvAssetBuilderModelMiStage
@@ -785,16 +957,27 @@ class AdvAssetBuilder
           stage.build();
         }
       }
+      String texFinalNode = null;
+      if (pBuildTextureNode && pSeparateAnimTextures) {
+	texFinalNode = pAssetNames.getAnimTextureFinalNodeName();
+        if (!checkExistance(texFinalNode)) {
+          TreeSet<String> sources = new TreeSet<String>();
+          sources.add(texNode);
+          TargetStage stage = new TargetStage(info, pContext, pClient, texFinalNode, sources);
+          isProductNode(stage, taskType);
+          stage.build();
+        }
+      }
       if (!checkExistance(rigApprove)) {
         TreeSet<String> sources = new TreeSet<String>();
         sources.add(assetFinal);
+        if (pBuildMiShadeNetwork)
+          sources.add(miFile);
+        addNonNullValue(texFinalNode, sources);
         TargetStage stage = new TargetStage(info, pContext, pClient, rigApprove, sources);
-        isApprovalNode(stage, taskType, null);
-        //TODO put in class path
+        isApproveNode(stage, taskType);
         stage.build();
       }
-      doShaders();
-      doTextures();
     }
     
     protected void
@@ -803,18 +986,31 @@ class AdvAssetBuilder
     {
       StageInformation info = pBuilderInformation.getStageInformation();
       String modelFinal = pAssetNames.getModelFinalNodeName();
+      String taskType = pProjectNames.getRiggingTaskName();
+      
+      String texNode = null;
+      if (pBuildTextureNode && pSeparateAnimTextures) {
+	texNode = pAssetNames.getAnimTextureNodeName();
+	if (!checkExistance(texNode)) {
+	  MayaFTNBuildStage stage = 
+	    new MayaFTNBuildStage(info, pContext, pClient, pMayaContext, texNode, true);
+	  isEditNode(stage, taskType);
+	  stage.build();
+	}
+      }
       
       String matName = pAssetNames.getMaterialNodeName();
       if (!checkExistance(matName)) {
-        NewAssetBuilderMaterialStage stage =
-          new NewAssetBuilderMaterialStage
+        AdvAssetMaterialStage stage =
+          new AdvAssetMaterialStage
           (info,
            pContext, 
            pClient,
            pMayaContext,
            matName,
            modelFinal,
-           null);
+           texNode);
+        isEditNode(stage, taskType);
         stage.build();
         addToDisableList(matName);
       }
@@ -828,6 +1024,7 @@ class AdvAssetBuilder
            pClient,
            matExportName, 
            matName);
+        isPrepareNode(stage, taskType);
         stage.build();
       }
     }
@@ -838,16 +1035,231 @@ class AdvAssetBuilder
     {
       StageInformation info = pBuilderInformation.getStageInformation();
       String assetFinal = pAssetNames.getFinalNodeName();
+      String taskType = pProjectNames.getShadingTaskName();
+
+      String texNode = null;
+      if (pBuildTextureNode) {
+	texNode = pAssetNames.getTextureNodeName();
+	if (!checkExistance(texNode)) {
+	  MayaFTNBuildStage stage = 
+	    new MayaFTNBuildStage(info, pContext, pClient, pMayaContext, texNode, true);
+	  isEditNode(stage, taskType);
+	  stage.build();
+	}
+      }
+      
+      String shdNode = pAssetNames.getShaderNodeName();
+      if (!checkExistance(shdNode)) {
+	AdvAssetShaderStage stage = 
+	  new AdvAssetShaderStage
+	  (info, 
+	   pContext, 
+	   pClient, 
+	   pMayaContext, 
+	   shdNode, 
+	   assetFinal, texNode, pMRInitMEL);
+	if (pShadeTT)
+	  isEditNode(stage, taskType);
+	stage.build();
+	addToDisableList(shdNode);
+      }
+      
+      String shdExport = pAssetNames.getShaderExportNodeName();
+      if (!checkExistance(shdExport)) {
+	AssetBuilderShaderExportStage stage =
+	  new AssetBuilderShaderExportStage
+	  (info, 
+	   pContext, 
+	   pClient,
+	   pMayaContext, 
+	   shdExport, 
+	   shdNode, 
+	   pVerifyShaderMEL, 
+	   pAssetNames.getAssetName());
+	if (pShadeTT)
+	  isPrepareNode(stage, taskType);
+	else
+	  isFocusNode(stage, taskType);
+	stage.build();
+      }
+
+      
+      String shdImg = pAssetNames.getShaderRenderNodeName();
+      if (pShadeTT) {
+	String shdTT = pAssetNames.getShaderTTNodeName();
+	if (!checkExistance(shdTT)) {
+	  String setup = 
+	    pProjectNames.getAssetShaderTTSetup(pAssetName, pAssetType);
+	  AdvAssetBuilderTTStage stage = 
+	    new AdvAssetBuilderTTStage
+	    (info, 
+	     pContext, 
+	     pClient,
+	     pMayaContext, 
+	     shdTT, 
+	     pAssetNames.getModelFinalNodeName(), 
+	     setup);
+	  isEditNode(stage, taskType);
+	  stage.build();
+	  addToDisableList(shdTT);
+	}
+
+	if (pBuildMiShadeNetwork) {
+	  String cam = pAssetNames.getShaderCamMiNodeName();
+	  String camOver = pAssetNames.getShaderCamOverMiNodeName();
+	  String lgt = pAssetNames.getShaderLgtMiNodeName();
+	  String shd = pAssetNames.getShaderShdMiNodeName();
+	  if (!checkExistance(cam)) {
+	    AdvAssetCamMiStage stage = 
+	      new AdvAssetCamMiStage(info, pContext, pClient, cam, shdTT);
+	    isPrepareNode(stage, taskType);
+	    stage.build();
+	  }
+	  if (!checkExistance(lgt)) {
+	    AdvAssetLgtMiStage stage = 
+	      new AdvAssetLgtMiStage(info, pContext, pClient, lgt, shdTT);
+	    isPrepareNode(stage, taskType);
+	    stage.build();
+	  }
+	  if (!checkExistance(shd)) {
+	    AdvAssetShdMiStage stage =
+	      new AdvAssetShdMiStage(info, pContext, pClient, shd, shdNode);
+	    isPrepareNode(stage, taskType);
+	    stage.build();
+	  }
+	  if (!checkExistance(camOver)) {
+	    MRayCamOverrideStage stage =
+	      new MRayCamOverrideStage(info, pContext, pClient, camOver);
+	    isPrepareNode(stage, taskType);
+	    stage.build();
+	  }
+	  String options = pProjectNames.getAssetShaderTTGlobals(GlobalsType.Standalone);
+	  String model = pAssetNames.getModelMiNodeName();
+	  if (!checkExistance(shdImg)) {
+	    AdvAssetShdImgStage stage = 
+	      new AdvAssetShdImgStage
+	      (info,
+	       pContext,
+	       pClient,
+	       shdImg,
+	       model,
+	       lgt,
+	       shd,
+	       cam,
+	       camOver,
+	       options);
+	    isFocusNode(stage, taskType);
+	    stage.build();
+	  }
+	}
+	else {
+	  String globals = pProjectNames.getAssetShaderTTGlobals(GlobalsType.Maya2MR);
+	  if (!checkExistance(shdImg)) {
+	    AdvAssetBuilderTTImgStage stage =
+	      new AdvAssetBuilderTTImgStage
+	      (info, 
+	       pContext, 
+	       pClient, 
+	       shdImg, 
+	       shdTT, 
+	       globals,
+	       Renderer.MentalRay);
+	    isFocusNode(stage, taskType);
+	    stage.build();
+	  }
+	}
+      }
+      String shdSubmit = pAssetNames.getShaderSubmitNode();
+      if (!checkExistance(shdSubmit)) {
+        TreeSet<String> sources = new TreeSet<String>();
+        if (pShadeTT)
+          sources.add(shdImg);
+        else
+          sources.add(shdExport);
+        TargetStage stage = new TargetStage(info, pContext, pClient, shdSubmit, sources);
+        isSubmitNode(stage, taskType);
+        stage.build();
+      }
+      
+      //Product Nodes
+      String finalTex = null;
+      String finalShd = pAssetNames.getShaderExportFinalNodeName();
+      if (pBuildTextureNode) {
+	finalTex = pAssetNames.getTextureFinalNodeName();
+	if (!checkExistance(finalTex)) {
+	  EmptyFileStage stage = new EmptyFileStage(info, pContext, pClient, finalTex);
+	  isProductNode(stage, taskType);
+	  stage.build();
+	  pEmptyFileStages.add(stage);
+	}
+      }
+      if (!checkExistance(finalShd)) {
+	ProductStage stage = 
+	  new ProductStage(info, pContext, pClient, finalShd, "ma", shdExport);
+	isPrepareNode(stage, taskType);
+	stage.build();
+      }
+      String shdApprove = pAssetNames.getShaderApproveNode();
+      if (!checkExistance(shdApprove)) {
+	TreeSet<String> sources = new TreeSet<String>();
+	sources.add(finalShd);
+	if (pBuildTextureNode)
+	  sources.add(finalTex);
+	TargetStage stage = new TargetStage(info, pContext, pClient, shdApprove, sources);
+	isApproveNode(stage, taskType);
+	stage.build();
+      }
+    }
+    private static final long serialVersionUID = 9147958678499662058L;
+  }
+  
+  
+  protected 
+  class FinalizePass
+    extends ConstructPass
+  {
+    public 
+    FinalizePass()
+    {
+      super("FinalizePass", 
+	    "The AdvAssetBuilder pass that cleans everything up.");
     }
     
-    protected void
-    doTextures()
+    @Override
+    public TreeSet<String> 
+    preBuildPhase()
+    {
+      pLog.log(LogMgr.Kind.Ops, LogMgr.Level.Fine, 
+	"Starting the prebuild phase in the Finalize Pass");
+      TreeSet<String> toReturn = new TreeSet<String>(getDisableList());
+      toReturn.addAll(getDisableList());
+      for (EmptyMayaAsciiStage stage : pEmptyMayaScenes) {
+	toReturn.add(stage.getNodeName());
+      }
+      for (EmptyFileStage stage : pEmptyFileStages) {
+	toReturn.add(stage.getNodeName());
+      }
+      for (AssetBuilderModelStage stage : pModelStages) {
+	toReturn.add(stage.getNodeName());
+      }
+      return toReturn;
+    }
+    
+    @Override
+    public void 
+    buildPhase() 
       throws PipelineException
     {
-      StageInformation info = pBuilderInformation.getStageInformation();
+      pLog.log(LogMgr.Kind.Ops, LogMgr.Level.Fine, 
+	"Starting the build phase in the Finalize Pass");
+      for (AssetBuilderModelStage stage : pModelStages)
+	stage.finalizeStage();
+      for (EmptyFileStage stage : pEmptyFileStages)
+	stage.finalizeStage();
+      for (EmptyMayaAsciiStage stage : pEmptyMayaScenes)
+	stage.finalizeStage();
+      disableActions();
     }
-
-    
-    private static final long serialVersionUID = 9147958678499662058L;
+    private static final long serialVersionUID = -6423722443630330292L;
   }
 }

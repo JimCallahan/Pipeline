@@ -160,6 +160,7 @@ class AssetBuilder
   /*   C H E C K - I N                                                                      */
   /*----------------------------------------------------------------------------------------*/
   
+  @Override
   protected TreeSet<String>
   getNodesToCheckIn()
   {
@@ -379,7 +380,7 @@ class AssetBuilder
       }
       if(!checkExistance(pAssetNames.getShaderExportNodeName())) {
         new AssetBuilderShaderExportStage(info, pContext, pClient,  pMayaContext, pAssetNames
-          .getShaderExportNodeName(), pAssetNames.getShaderNodeName(), pAssetNames.getAssetName()).build();
+          .getShaderExportNodeName(), pAssetNames.getShaderNodeName(), null, pAssetNames.getAssetName()).build();
         addToQueueList(pAssetNames.getShaderExportNodeName());
         removeFromQueueList(pAssetNames.getFinalNodeName());
       }

@@ -121,14 +121,15 @@ class StandardStage
     if(action != null) {
       pAction = getAction(action, getToolset());
     }
-    if (pFrameRange == null)
+    if (range == null)
       throw new PipelineException("You must specify a frame range in a FrameNumStage");
     pFrameRange = range;
     if (padding == null)
       pPadding = 4;
-    if (padding < 0)
+    else if (padding < 0)
       throw new PipelineException("Cannot have a negative padding value");
-    pPadding = padding;
+    else
+      pPadding = padding;
   }
   
   /**
@@ -205,7 +206,7 @@ class StandardStage
     if(pRegisteredNodeName == null || pEditor == null)
       return null;
     NodeMod toReturn = registerNode(pRegisteredNodeName, pSuffix, pEditor);
-    pStageInformation.addNode(getAuthor(), getView(), pRegisteredNodeName);
+    pStageInformation.addNode(pRegisteredNodeName, getAuthor(), getView());
     return toReturn;
   }
   
@@ -229,7 +230,7 @@ class StandardStage
     NodeMod toReturn = 
       registerSequence(pRegisteredNodeName, pPadding, pSuffix, pEditor, 
 	               pFrameRange.getStart(), pFrameRange.getEnd(), pFrameRange.getBy()); 
-    pStageInformation.addNode(getAuthor(), getView(), pRegisteredNodeName);
+    pStageInformation.addNode(pRegisteredNodeName, getAuthor(), getView());
     return toReturn;
   }
 }

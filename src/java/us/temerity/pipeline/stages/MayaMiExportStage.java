@@ -22,7 +22,6 @@ class MayaMiExportStage
     String nodeName,
     FrameRange range,
     Integer padding,
-    String suffix,
     String mayaScene,
     String exportSet
   )
@@ -36,7 +35,7 @@ class MayaMiExportStage
       nodeName, 
       range, 
       padding, 
-      suffix, 
+      "mi", 
       new PluginContext("Emacs"), 
       new PluginContext("MayaMiExport"));
     setMayaScene(mayaScene);
@@ -53,7 +52,6 @@ class MayaMiExportStage
     UtilContext context,
     MasterMgrClient client,
     String nodeName,
-    String suffix,
     String mayaScene,
     String exportSet
   )
@@ -65,7 +63,7 @@ class MayaMiExportStage
       context, 
       client, 
       nodeName, 
-      suffix, 
+      "mi", 
       new PluginContext("Emacs"), 
       new PluginContext("MayaMiExport"));
     setMayaScene(mayaScene);
@@ -383,6 +381,7 @@ class MayaMiExportStage
   }
   
   private static final long serialVersionUID = -570821544247319782L;
+  
   public static final String sExportSet             = "ExportSet";
   public static final String aExportChildren        = "ExportChildren";
   public static final String aExportMaterials       = "ExportMaterials";
@@ -410,12 +409,12 @@ class MayaMiExportStage
   public static final String aCustomText            = "CustomText";
   public static final String aCustomShaders         = "CustomShaders";
   public static final String aCustomPhenomena       = "CustomPhenomena";
-  public static final String aExportExactHierarchy  = "ExportExactHierarchy";
-  public static final String aExportFullDagPath     = "ExportFullDagPath";
-  public static final String aExportTexturesFirst   = "ExportTexturesFirst";
-  public static final String aExportPostEffects     = "ExportPostEffects";
-  public static final String aExportAssignedOnly    = "ExportAssignedOnly";
-  public static final String aExportVisibleOnly     = "ExportVisibleOnly";
-  public static final String aOptimizeAnimDetection = "OptimizeAnimDetection";
-  public static final String aUseDefaultLight       = "UseDefaultLight";
+  //public static final String aExportExactHierarchy  = "ExportExactHierarchy";
+  //public static final String aExportFullDagPath     = "ExportFullDagPath";
+  //public static final String aExportTexturesFirst   = "ExportTexturesFirst";
+  //public static final String aExportPostEffects     = "ExportPostEffects";
+  //public static final String aExportAssignedOnly    = "ExportAssignedOnly";
+  //public static final String aExportVisibleOnly     = "ExportVisibleOnly";
+  //public static final String aOptimizeAnimDetection = "OptimizeAnimDetection";
+  //public static final String aUseDefaultLight       = "UseDefaultLight";
 }

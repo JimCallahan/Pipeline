@@ -49,8 +49,10 @@ class DefaultProjectNames
     {
       Path scriptsPath =  new Path(startPath, "scripts");
       pMelScriptPath =  new Path(scriptsPath, "mel");
-      pRenderSctiptPath = new Path(scriptsPath, "render");
-      pMelScriptPath = new Path(pMelScriptPath, "verify");
+      pRenderScriptPath = new Path(scriptsPath, "render");
+      pMelPlaceHolderScriptPath =  new Path(pMelScriptPath, "gen");
+      pMelVerifyScriptPath = new Path(pMelScriptPath, "verify");
+      pMelScriptSourcePath = new Path(pMelScriptPath, "source");
     }
     
     {
@@ -63,6 +65,7 @@ class DefaultProjectNames
       Path setupPath = new Path(startPath, "setups");
       pTurntablePath = new Path(setupPath, "tt");
     }
+    done();
   }
   
   
@@ -79,42 +82,76 @@ class DefaultProjectNames
   /*   V E R I F I C A T I O N   S E T U P S                                                */
   /*----------------------------------------------------------------------------------------*/
   
+  @Override
   public String
   getAssetModelTTSetup
   (
+    @SuppressWarnings("unused")
     String assetName,
     String assetType
   )
   {
     if (assetType.equals("character") || assetType.equals("prop"))
       return new Path(pTurntablePath, "model_tt").toString();
-    return new Path(new Path(pTurntablePath, "sets"), assetName + "_tt").toString();
+    return new Path(pTurntablePath, "model_set_tt").toString();
   }
   
+  @Override
   public String
   getAssetModelTTGlobals()
   {
     return new Path(pMayaGlobalsPath, "model_tt").toOsString();
   }
   
+  @Override
+  public String
+  getAssetShaderTTSetup
+  (
+    @SuppressWarnings("unused")
+    String assetName,
+    String assetType
+  )
+  {
+    if (assetType.equals("character") || assetType.equals("prop"))
+      return new Path(pTurntablePath, "shd_tt").toString();
+    return new Path(pTurntablePath, "shd_set_tt").toString();
+  }
+  
+  @Override
+  public String
+  getAssetShaderTTGlobals
+  (
+    GlobalsType type
+  )
+  {
+    if (type.equals(GlobalsType.Standalone))
+      return new Path(pMRayGlobalsPath, "shd_tt").toOsString();
+    return new Path(pMayaGlobalsPath, "shd_tt").toOsString();
+  }
+  
+  
+  @Override
   public String
   getAssetRigAnimSetup
   (
+    @SuppressWarnings("unused")
     String assetName,
     String assetType
   )
   {
     if (assetType.equals("character") || assetType.equals("prop"))
       return new Path(pTurntablePath, "rig_tt").toString();
-    return new Path(new Path(pTurntablePath, "sets"), assetName + "_tt").toString();
+    return new Path(pTurntablePath, "rig_set_tt").toString();
   }
   
+  @Override
   public String
   getAssetRigAnimGlobals()
   {
     return new Path(pMayaGlobalsPath, "rig_tt").toOsString();
   }
   
+  @Override
   public String
   getTaskName
   (
@@ -126,49 +163,62 @@ class DefaultProjectNames
    return pProject + " " + assetName; 
   }
 
+  @Override
   public String
   getModelingTaskName()
   {
-    return "Model";
+    return "Modeling";
   }
 
   
+  @Override
   public String
   getRiggingTaskName()
   {
-    return "Rig"; 
+    return "Rigging"; 
   }
   
+  @Override
   public String
   getShadingTaskName()
   {
-    return "Shade"; 
+    return "Look Dev"; 
   }
   
+  @Override
   public String
   getLayoutTaskName()
   {
     return "Layout"; 
   }
   
+  @Override
   public String
   getAnimTaskName()
   {
-    return "Anim"; 
+    return "Animation"; 
   }
   
+  @Override
   public String
   getLightingTaskName()
   {
-    return "Light"; 
+    return "Lighting"; 
   }
   
+  @Override
   public String
   getCompositingTaskName()
   {
-    return "Comp"; 
+    return "Compositing"; 
   }
   
+  @Override
+  public String
+  getEffectsTaskName()
+  {
+    return "Effects"; 
+  }
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -202,12 +252,13 @@ class DefaultProjectNames
     String assetType
   )
   {
-    return new Path(pMelScriptPath, "finalize-" + assetType + "-lr").toString();
+    return new Path(pMelScriptPath, "finalize-" + assetType + "_lr").toString();
   }
 
   /**
    * @return the mental ray init script name
    */
+  @Override
   public String 
   getMRayInitScriptName()
   {
@@ -217,24 +268,57 @@ class DefaultProjectNames
   /**
    * @return the auto rig script name
    */
+  @Override
   public String 
-  getAutoRigScriptName()
+  getFinalRigScriptName()
   {
-    return new Path(pMelScriptPath, "rigCopy").toString();
+    return new Path(pMelScriptPath, "rigFinal").toString();
   }
 
 /**
    * @return the placeholder script name
    */
+  @Override
   public String 
   getPlaceholderScriptName()
   {
-    return new Path(pMelScriptPath, "placeHolder").toString();
+    return new Path(pMelPlaceHolderScriptPath, "placeHolder").toString();
+  }
+  
+  /**
+   * @return the placeholder skeleton script name
+   */
+  @Override
+  public String 
+  getPlaceholderSkelScriptName()
+  {
+    return new Path(pMelPlaceHolderScriptPath, "placeHolderSkel").toString();
+  }
+  
+  /**
+   * @return the placeholder TT circle mel script name
+   */
+  @Override
+  public String 
+  getPlaceholderTTCircleScriptName()
+  {
+    return new Path(pMelPlaceHolderScriptPath, "placeHolderTT_circle").toString();
+  }
+  
+  /**
+   * @return the placeholder TT circle mel script name
+   */
+  @Override
+  public String 
+  getPlaceholderTTCenterScriptName()
+  {
+    return new Path(pMelPlaceHolderScriptPath, "placeHolderTT_center").toString();
   }
   
   /**
    * @return the model verification script name
    */
+  @Override
   public String
   getModelVerificationScriptName()
   {
@@ -244,6 +328,7 @@ class DefaultProjectNames
   /**
    * @return the rig verification script name
    */
+  @Override
   public String
   getRigVerificationScriptName()
   {
@@ -253,6 +338,7 @@ class DefaultProjectNames
   /**
    * @return the shader verification script name
    */
+  @Override
   public String
   getShaderVerificationScriptName()
   {
@@ -287,7 +373,6 @@ class DefaultProjectNames
   }
 
 
-  
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
@@ -296,7 +381,7 @@ class DefaultProjectNames
   public final static String aProjectName = "ProjectName";
   private static final long serialVersionUID = -6920650613173564121L;
 
-  
+  static enum GlobalsType{Standalone, Maya2MR, Software;}
   
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
@@ -304,11 +389,14 @@ class DefaultProjectNames
   
   protected String pProject;
   protected Path pMelScriptPath;
+  protected Path pMelScriptSourcePath;
   protected Path pMelVerifyScriptPath;
-  protected Path pRenderSctiptPath;
+  protected Path pRenderScriptPath;
   protected Path pMayaGlobalsPath;
   protected Path pMRayGlobalsPath;
   protected Path pTurntablePath;
+  protected Path pMelPlaceHolderScriptPath;
+  
   
   
 }

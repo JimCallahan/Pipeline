@@ -19,7 +19,9 @@ import us.temerity.pipeline.stages.StageInformation;
  * Cannot be run as a standalone Builder.
  * 
  */
-public class ModelPiecesBuilder extends BaseBuilder
+public 
+class ModelPiecesBuilder 
+  extends ApprovalBuilder
 {
 
   public
@@ -30,7 +32,8 @@ public class ModelPiecesBuilder extends BaseBuilder
     BuildsAssetNames assetNames,
     BuildsProjectNames projectNames,
     BuilderInformation builderInformation,
-    int numberOfPieces
+    int numberOfPieces,
+    boolean hasTT
   )
     throws PipelineException
   {
@@ -43,11 +46,14 @@ public class ModelPiecesBuilder extends BaseBuilder
           builderInformation);
     pNames = assetNames;
     pProjectNames = projectNames;
+    pHasTT = hasTT;
 
     if (numberOfPieces < 1 )
       throw new PipelineException
         ("You cannot initialize this builder with a number of pieces that is less than 1");
 
+    pPieceParams = new LinkedList<ParamMapping>();
+    
     {
       UtilityParam param = 
         new MayaContextUtilityParam
@@ -56,14 +62,14 @@ public class ModelPiecesBuilder extends BaseBuilder
          new MayaContext()); 
       addParam(param);
     }
-    {
-      UtilityParam param = 
-        new BooleanUtilityParam
-        (aCheckinWhenDone,
-         "Automatically check-in all the nodes when building is finished.", 
-         false); 
-      addParam(param);
-    }
+    addCheckinWhenDoneParam();
+    
+    addSetupPass(new InformationPass());
+    ConstructPass build = new BuildPass();
+    ConstructPass finalize = new FinalizeLoop();
+    addConstuctPass(finalize);
+    addConstuctPass(build);
+    addPassDependency(build, finalize);
     
     for (int i = 0; i < numberOfPieces; i++) {
       String num = String.valueOf(i);
@@ -124,7 +130,6 @@ public class ModelPiecesBuilder extends BaseBuilder
   /*----------------------------------------------------------------------------------------*/
   
   public final static String aMayaContext = "Maya";
-  public final static String aCheckinWhenDone = "CheckinWhenDone";
   
   private static final long serialVersionUID = -621745474133340612L;
 
@@ -140,6 +145,7 @@ public class ModelPiecesBuilder extends BaseBuilder
   private BuildsProjectNames pProjectNames;
   private boolean pCheckInWhenDone;
   private MayaContext pMayaContext;
+  private boolean pHasTT;
   
   protected String pPlaceHolderMEL;
   protected String pVerifyModelMEL;
@@ -184,8 +190,8 @@ public class ModelPiecesBuilder extends BaseBuilder
           throw new PipelineException
             ("Each model name must have a valid identifier. " +
              "(" + name  + ") is not a valid name.");
-        boolean dup = pPieceNames.add(name);
-        if (dup)
+        boolean unique = pPieceNames.add(name);
+        if (!unique)
           throw new PipelineException
             ("Cannot have two models with the same name.  " +
              "(" + name + ") was present more than once.");
@@ -193,6 +199,9 @@ public class ModelPiecesBuilder extends BaseBuilder
       
       pPlaceHolderMEL = pProjectNames.getPlaceholderScriptName();
       pVerifyModelMEL = pProjectNames.getModelVerificationScriptName();
+      
+      pTaskName = pProjectNames.getTaskName(pNames.getAssetName(), pNames.getAssetType());
+      
       pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, "Validation complete.");
     }
     private static final long serialVersionUID = -3548064419172163386L;
@@ -224,6 +233,8 @@ public class ModelPiecesBuilder extends BaseBuilder
       pLog.log(LogMgr.Kind.Ops, LogMgr.Level.Fine, 
         "Starting the build phase in the Build Pass");
       
+      String taskType = pProjectNames.getModelingTaskName();
+      
       TreeMap<String, String> pieceNodes = new TreeMap<String, String>();
       
       for (String pieceName : pPieceNames) {
@@ -238,8 +249,9 @@ public class ModelPiecesBuilder extends BaseBuilder
              pMayaContext, 
              modelName,
              pPlaceHolderMEL);
-            stage.build();
-            pModelStages.add(stage);
+          isEditNode(stage, taskType);
+          stage.build();
+          pModelStages.add(stage);
         }
       }
       String editName = pNames.getModelEditNodeName();
@@ -251,8 +263,7 @@ public class ModelPiecesBuilder extends BaseBuilder
            pClient,
            pMayaContext,
            editName, 
-           pieceNodes
-          );
+           pieceNodes);
         stage.build();
         addToDisableList(editName);
         addToCheckInList(editName);
@@ -267,14 +278,17 @@ public class ModelPiecesBuilder extends BaseBuilder
            pMayaContext,
            verifyName, 
            pieceNodes,
-           pVerifyModelMEL
-          );
+           pVerifyModelMEL);
+        if (pHasTT)
+          isPrepareNode(stage, taskType);
+        else
+          isFocusNode(stage, taskType);
         stage.build();
         addToCheckInList(verifyName);
       }
     }
-    @Override
 
+    @Override
     public TreeSet<String> 
     nodesDependedOn()
     {

@@ -1,7 +1,8 @@
 package us.temerity.pipeline.builder.maya2mr.v2_3_2;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.builder.*;
+import us.temerity.pipeline.builder.BaseNames;
+import us.temerity.pipeline.builder.UtilContext;
 
 public 
 class DefaultAssetNames
@@ -73,7 +74,7 @@ class DefaultAssetNames
   {
     setContext((UtilContext) getParamValue(aUtilContext));
     
-    boolean pApprovalFormat = getBooleanParamValue(new ParamMapping(aApprovalFormat));
+    pApprovalMode = getBooleanParamValue(new ParamMapping(aApprovalFormat));
     
     pProject = getStringParamValue(new ParamMapping(aProjectName));
     pAssetName =  getStringParamValue(new ParamMapping(aAssetName));
@@ -81,17 +82,17 @@ class DefaultAssetNames
     
     pNameSpace = pAssetName;
 
-    Path assetPath = new Path("/projects/" + pProject + "/assets/" + pAssetType + "/" + pAssetName);
-    String assetStart = assetPath.toString();
+    pAssetPath = new Path("/projects/" + pProject + "/assets/" + pAssetType + "/" + pAssetName);
+    String assetStart = pAssetPath.toString();
     
     String edit = getEditDirectory();
     String submit = getSubmitDirectory();
     String approve = getApproveDirectory();
-    String intermediate = getIntermediateDirectory();
+    String prepare = getPrepareDirectory();
     String product = getProductDirectory();
 
 //  No Approval Format
-    if (!pApprovalFormat) {
+    if (!pApprovalMode) {
       pModelNodeName = assetStart + "/model/" + pAssetName + "_mod";
       pHeadModelNodeName = assetStart + "/model/" + pAssetName + "_mod_head";
       pBlendShapeModelNodeName = assetStart + "/model/" + pAssetName + "_mod_blends";
@@ -116,78 +117,40 @@ class DefaultAssetNames
     }
 //  Approval Format
     else {
-      Path modelStart = new Path(assetPath, "model");
-      {
-        Path modelEdit = new Path(modelStart, edit);
-        pModelEditNodeName = new Path(modelEdit, pAssetName + "_mod").toString();
-      }
-      {
-        Path modelSubmit = new Path(modelStart, submit);
-        pModelSubmitNodeName = new Path(modelSubmit, pAssetName + "_mod_submit").toString();
-        {
-          Path modelIntermediate = new Path(modelSubmit, intermediate);
-          pModelVerifyNodeName = new Path(modelIntermediate, pAssetName + "_mod").toString();
-          pModelTTNodeName = new Path(modelIntermediate, pAssetName + "_mod_tt").toString();
-          pModelTTImagesNodeName = new Path(modelIntermediate, pAssetName + "_mod_img").toString();
-        }
-      }
-      {
-        Path modelApprove = new Path(modelStart, approve);
-        pModelApproveNodeName = new Path(modelApprove, pAssetName + "_mod_approve").toString();
-        {
-          Path modelProduct = new Path(modelApprove, product);
-          pModelFinalNodeName = new Path(modelProduct, pAssetName + "_mod").toString(); 
-        }
-      }
+      pModStart        = new Path(pAssetPath, "model");
+      pModEdit         = new Path(pModStart, edit);
+      pModSubmit       = new Path(pModStart, submit);
+      pModPrepare      = new Path(pModSubmit, prepare);
+      pModApprove      = new Path(pModStart, approve);
+      pModProduct      = new Path(pModApprove, product);
+
+      pRigStart        = new Path(pAssetPath, "rig");
+      pRigEdit         = new Path(pRigStart, edit);
+      pRigSubmit       = new Path(pRigStart, submit);
+      pRigPrepare      = new Path(pRigSubmit, prepare);
+      pRigApprove      = new Path(pRigStart, approve);
+      pRigProduct      = new Path(pRigApprove, product);
+
+      pMatStart        = new Path(pAssetPath, "mat");
+      pMatEdit         = new Path(pMatStart, edit);
+      pMatSubmit       = new Path(pMatStart, submit);
+      pMatPrepare      = new Path(pMatSubmit, prepare);
+
+      pShdStart        = new Path(pAssetPath, "shd");
+      pShdEdit         = new Path(pShdStart, edit);
+      pShdSubmit       = new Path(pShdStart, submit);
+      pShdPrepare      = new Path(pShdSubmit, prepare);
+      pShdApprove      = new Path(pShdStart, approve);
+      pShdProduct      = new Path(pShdApprove, product);
+      
+      pTexStart        = new Path(pAssetPath, "tex");
+      pTexEdit         = new Path(pTexStart, edit);
+      pTexSubmit       = new Path(pTexStart, submit);
+      pTexPrepare      = new Path(pTexSubmit, prepare);
+      pTexApprove      = new Path(pTexStart, approve);
+      pTexProduct      = new Path(pTexApprove, product);
     }
-    {
-      Path rigStart = new Path(assetPath, "rig");
-      {
-        Path rigEdit = new Path(rigStart, edit);
-        pRigEditNodeName = new Path(rigEdit, pAssetName + "_rig").toString();
-        pBlendShapeModelNodeName = new Path(rigEdit, pAssetName + "_blends").toString();
-        pSkeletonNodeName = new Path(rigEdit, pAssetName + "_skel").toString();
-      }
-      {
-        Path rigSubmit = new Path(rigStart, submit);
-        pRigSubmitNodeName = new Path(rigSubmit, pAssetName + "_rig_submit").toString();
-        {
-          Path rigIntermediate = new Path(rigSubmit, intermediate);
-          pReRigNodeName = new Path(rigIntermediate, pAssetName + "_rig").toString();
-          pRigFinalNodeName = new Path(rigIntermediate, pAssetName).toString();
-          pRigAnimNodeName = new Path(rigIntermediate, pAssetName + "_rig_anim").toString();
-          pRigAnimImagesNodeName = new Path(rigIntermediate, pAssetName + "_rig_img").toString();
-          pRigAnimCurvesNodeName = new Path(rigIntermediate, pAssetName + "_rig_crv").toString();
-          pRigAnimFBXNodeName = new Path(rigIntermediate, pAssetName + "_rig_fbx").toString();
-          pRigMELNodeName = new Path(rigIntermediate, pAssetName + "_rigMEL").toString();
-          pReRigMELNodeName = new Path(rigIntermediate, pAssetName + "_rerigMEL").toString();
-        }
-      }
-      {
-        Path rigApprove = new Path(rigStart, approve);
-        pRigApproveNodeName = new Path(rigApprove, pAssetName + "_rig_approve").toString();
-        {
-          Path rigProduct = new Path(rigApprove, product);
-          pModelMiNodeName = new Path(rigProduct, pAssetName + "_geo").toString();
-        }
-        pFinalNodeName = new Path(assetPath, pAssetName).toString();
-        pLowRezFinalNodeName = new Path(assetPath, pAssetName + "_").toString();
-      }
-    }
-    {
-      Path matStart = new Path(assetPath, "mat");
-      {
-        Path matEdit = new Path(matStart, edit);
-        pMaterialNodeName =  new Path(matEdit, pAssetName + "_mat").toString();
-      }
-      {
-        Path matSubmit = new Path(matStart, submit);
-        {
-          Path matIntermediate = new Path(matSubmit, intermediate);
-          pMaterialExportNodeName = new Path(matIntermediate, pAssetName + "_matExport").toString();
-        }
-      }
-    }
+    done();
   }
 
   
@@ -215,9 +178,9 @@ class DefaultAssetNames
   }
   
   protected String
-  getIntermediateDirectory()
+  getPrepareDirectory()
   {
-    return "int";
+    return "prepare";
   }
   
   protected String
@@ -265,6 +228,8 @@ class DefaultAssetNames
   public String 
   getFinalNodeName()
   {
+    if (pApprovalMode)
+      return new Path(pAssetPath, pAssetName).toString();
     return pFinalNodeName;
   }
 
@@ -274,6 +239,8 @@ class DefaultAssetNames
   public String 
   getLowRezFinalNodeName()
   {
+    if (pApprovalMode)
+      return new Path(pAssetPath, pAssetName + "_anim").toString();
     return pLowRezFinalNodeName;
   }
 
@@ -310,6 +277,8 @@ class DefaultAssetNames
   public String 
   getMaterialNodeName()
   {
+    if (pApprovalMode)
+      return new Path(pMatEdit, pAssetName + "_mat").toString();
     return pMaterialNodeName;
   }
 
@@ -319,6 +288,8 @@ class DefaultAssetNames
   public String 
   getMaterialExportNodeName()
   {
+    if (pApprovalMode)
+      return new Path(pMatPrepare, pAssetName + "_matExport").toString();
     return pMaterialExportNodeName;
   }
 
@@ -346,6 +317,8 @@ class DefaultAssetNames
   public String 
   getBlendShapeModelNodeName()
   {
+    if (pApprovalMode)
+      return new Path(pRigEdit, pAssetName + "_blends").toString();
     return pBlendShapeModelNodeName; 
   }
 
@@ -382,6 +355,8 @@ class DefaultAssetNames
   public String 
   getSkeletonNodeName()
   {
+    if (pApprovalMode)
+      return new Path(pRigEdit, pAssetName + "_skel").toString();
     return pSkeletonNodeName;
   }
 
@@ -391,6 +366,8 @@ class DefaultAssetNames
   public String 
   getShaderExportNodeName()
   {
+    if (pApprovalMode)
+      return new Path(pShdPrepare, pAssetName + "_shdExp").toString();
     return pShaderExportNodeName;
   }
 
@@ -418,6 +395,8 @@ class DefaultAssetNames
   public String 
   getShaderNodeName()
   {
+    if (pApprovalMode)
+      return new Path(pShdEdit, pAssetName + "_shd").toString();
     return pShaderNodeName;
   }
 
@@ -427,6 +406,8 @@ class DefaultAssetNames
   public String 
   getTextureNodeName()
   {
+    if (pApprovalMode)
+      return new Path(pTexEdit, pAssetName + "_tex").toString();
     return pTextureNodeName;
   }
   
@@ -439,7 +420,7 @@ class DefaultAssetNames
   public String 
   getModelEditNodeName()
   {
-    return pModelEditNodeName;
+    return new Path(pModEdit, pAssetName + "_mod").toString();
   }
   
   public String 
@@ -448,43 +429,43 @@ class DefaultAssetNames
     String piece
   )
   {
-    return pModelEditNodeName + "_" + piece;
+    return getModelEditNodeName() + "_" + piece;
   }
 
   public String 
   getModelVerifyNodeName()
   {
-    return pModelVerifyNodeName;
+    return new Path(pModPrepare, pAssetName + "_mod").toString();
   }
   
   public String
   getModelFinalNodeName()
   {
-    return pModelFinalNodeName;
+    return new Path(pModProduct, pAssetName + "_mod").toString(); 
   }
   
   public String
   getModelApproveNodeName()
   {
-    return pModelApproveNodeName;
+    return new Path(pModApprove, pAssetName + "_mod_approve").toString();
   }
   
   public String
   getModelSubmitNodeName()
   {
-    return pModelSubmitNodeName;
+    return new Path(pModSubmit, pAssetName + "_mod_submit").toString();
   }
   
   public String
   getModelTTNodeName()
   {
-    return pModelTTNodeName;
+    return new Path(pModPrepare, pAssetName + "_mod_tt").toString();
   }
   
   public String
   getModelTTImagesNodeName()
   {
-    return pModelTTImagesNodeName;
+    return new Path(pModPrepare, pAssetName + "_mod_img").toString();
   }
   
   /**
@@ -493,7 +474,7 @@ class DefaultAssetNames
   public String
   getRigEditNodeName()
   {
-    return pRigEditNodeName;
+    return new Path(pRigEdit, pAssetName + "_rig").toString();
   }
   
   /**
@@ -502,16 +483,16 @@ class DefaultAssetNames
   public String
   getReRigNodeName()
   {
-    return pReRigNodeName;
+    return new Path(pRigPrepare, pAssetName + "_rig").toString();
   }
   
   /**
    * @return The rig submit node name.
    */
   public String
-  getRigSubmmitNodeName()
+  getRigSubmitNodeName()
   {
-    return pRigSubmitNodeName;
+    return new Path(pRigSubmit, pAssetName + "_rig_submit").toString();
   }
   
   /**
@@ -520,7 +501,7 @@ class DefaultAssetNames
   public String
   getRigApproveNodeName()
   {
-    return pRigApproveNodeName;
+    return new Path(pRigApprove, pAssetName + "_rig_approve").toString();
   }
   
   /**
@@ -529,7 +510,7 @@ class DefaultAssetNames
   public String
   getRigAnimNodeName()
   {
-    return pRigAnimNodeName;
+    return new Path(pRigPrepare, pAssetName + "_rig_anim").toString();
   }
   
   /**
@@ -538,7 +519,7 @@ class DefaultAssetNames
   public String
   getRigAnimImagesNodeName()
   {
-    return pRigAnimImagesNodeName;
+    return new Path(pRigPrepare, pAssetName + "_rig_img").toString();
   }
   
   /**
@@ -547,7 +528,7 @@ class DefaultAssetNames
   public String
   getRigFinalNodeName()
   {
-    return pRigFinalNodeName;
+    return  new Path(pRigPrepare, pAssetName).toString();
   }
   
   /**
@@ -556,7 +537,7 @@ class DefaultAssetNames
   public String
   getModelMiNodeName()
   {
-    return pModelMiNodeName;
+    return new Path(pRigProduct, pAssetName + "_geo").toString();
   }
   
   /**
@@ -565,7 +546,7 @@ class DefaultAssetNames
   public String
   getRigAnimCurvesNodeName()
   {
-    return pRigAnimCurvesNodeName;
+    return new Path(pRigPrepare, pAssetName + "_rig_crv").toString();
   }
   
   /**
@@ -574,21 +555,83 @@ class DefaultAssetNames
   public String
   getRigAnimFBXNodeName()
   {
-    return pRigAnimFBXNodeName;
+    return new Path(pRigPrepare, pAssetName + "_rig_fbx").toString();
+  }
+  
+  /**
+   * @return the pTextureNodeName
+   */
+  public String 
+  getAnimTextureNodeName()
+  {
+    return new Path(pTexEdit, pAssetName + "_animTex").toString();
   }
   
   public String
-  getRigMELNodeName()
+  getAnimTextureFinalNodeName()
   {
-    return pRigMELNodeName;
+    return new Path(pTexProduct, pAssetName + "_animTex").toString();
   }
   
   public String
-  getReRigMELNodeName()
+  getTextureFinalNodeName()
   {
-    return pReRigMELNodeName;
+    return new Path(pTexProduct, pAssetName + "_tex").toString();
+  }
+  
+  public String
+  getShaderSubmitNode()
+  {
+    return new Path(pShdSubmit, pAssetName + "_shd_submit").toString();
+  }
+  
+  public String
+  getShaderApproveNode()
+  {
+    return new Path(pShdApprove, pAssetName + "_shd_approve").toString();
+  }
+  
+  public String
+  getShaderRenderNodeName()
+  {
+    return new Path(pShdPrepare, pAssetName + "_shd_img").toString();
   }
 
+  public String
+  getShaderExportFinalNodeName()
+  {
+    return new Path(pShdProduct, pAssetName + "_shdExp").toString();
+  }
+  
+  public String
+  getShaderLgtMiNodeName()
+  {
+    return new Path(pShdPrepare, "lgt").toString();
+  }
+  
+  public String
+  getShaderCamMiNodeName()
+  {
+    return new Path(pShdPrepare, "cam").toString();
+  }
+  
+  public String
+  getShaderCamOverMiNodeName()
+  {
+    return new Path(pShdPrepare, "camOver").toString();
+  }
+  
+  public String
+  getShaderShdMiNodeName()
+  {
+    return new Path(pShdPrepare, "shd").toString();
+  }
+  
+  public String
+  getShaderTTNodeName()
+  {
+    return new Path(pShdEdit, pAssetName + "_shd_tt").toString();
+  }
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -618,6 +661,49 @@ class DefaultAssetNames
   private String pAssetType;
   
   private String pNameSpace;
+  
+  private boolean pApprovalMode;
+  
+  // Paths
+  private Path pAssetPath;
+  private Path pModStart;
+  private Path pModEdit;
+  private Path pModPrepare;
+  private Path pModSubmit;
+  private Path pModApprove;
+  private Path pModProduct;
+  
+  private Path pRigStart;
+  private Path pRigEdit;
+  private Path pRigPrepare;
+  private Path pRigSubmit;
+  private Path pRigApprove;
+  private Path pRigProduct;
+  
+  private Path pMatStart;
+  private Path pMatEdit;
+  private Path pMatPrepare;
+  private Path pMatSubmit;
+  @SuppressWarnings("unused")
+  private Path pMatApprove;
+  @SuppressWarnings("unused")
+  private Path pMatProduct;
+
+  private Path pShdStart;
+  private Path pShdEdit;
+  private Path pShdPrepare;
+  private Path pShdSubmit;
+  private Path pShdApprove;
+  private Path pShdProduct;
+  
+  private Path pTexStart;
+  private Path pTexEdit;
+  @SuppressWarnings("unused")
+  private Path pTexPrepare;
+  private Path pTexSubmit;
+  private Path pTexApprove;
+  private Path pTexProduct;
+  
 
   // Hi Rez Models
   private String pModelNodeName;
@@ -658,29 +744,6 @@ class DefaultAssetNames
 
   // Texture Nodes
   private String pTextureNodeName;
-  
-  // Model Approval Setup
-  private String pModelEditNodeName;
-  private String pModelVerifyNodeName;
-  private String pModelFinalNodeName;
-  private String pModelApproveNodeName;
-  private String pModelSubmitNodeName;
-  private String pModelTTNodeName;
-  private String pModelTTImagesNodeName;
-
-  //Rig Approval Setup
-  private String pRigEditNodeName;
-  private String pReRigNodeName;
-  private String pRigSubmitNodeName;
-  private String pRigApproveNodeName;
-  private String pRigAnimNodeName;
-  private String pRigAnimImagesNodeName;
-  private String pRigFinalNodeName;
-  private String pModelMiNodeName;
-  private String pRigAnimCurvesNodeName;
-  private String pRigAnimFBXNodeName;
-  private String pRigMELNodeName;
-  private String pReRigMELNodeName;
-  
 }
+
 

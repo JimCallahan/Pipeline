@@ -38,7 +38,7 @@ class AdvAssetBuilderTTStage
           mayaContext, 
           nodeName, 
           true);
-    setupLink(modelName, "mod", MayaBuildStage.getReference(), true);
+    setupLink(modelName, "asset", MayaBuildStage.getReference(), true);
     setupLink(ttSetupName, "tt", MayaBuildStage.getReference(), true);
   }
   private static final long serialVersionUID = 1721143532995387785L;

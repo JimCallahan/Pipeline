@@ -11,11 +11,9 @@ import us.temerity.pipeline.builder.*;
  * <p>
  * All stages which inherit from this stage will have their Action set to the MayaBuild
  * Action automatically. This stage also contains a utility method that simplifies adding
- * links and a enum that the stage uses to determine the settings for the links it makes.
- * 
- * @author Jesse Clemens
+ * links.
  */
-public 
+public abstract
 class MayaBuildStage 
   extends MayaFileStage
 {
@@ -68,8 +66,7 @@ class MayaBuildStage
   }
   
   /**
-   * Constructor for this branch stage that allows the caller to override the default
-   * editor.
+   * Constructor for this branch stage.
    *
    * @param name
    *        The name of the stage.

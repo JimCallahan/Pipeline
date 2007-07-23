@@ -262,7 +262,7 @@ class NewAssetBuilder
 
   protected String pMRInitMEL;
   
-  protected String pAutoRigMEL;
+  protected String pFinalRigMEL;
 
   // conditions on what is being built
   protected boolean pBuildLowRez;
@@ -346,7 +346,7 @@ class NewAssetBuilder
 
       pPlaceHolderMEL = pProjectNames.getPlaceholderScriptName();
       
-      pAutoRigMEL = pProjectNames.getAutoRigScriptName();
+      pFinalRigMEL = pProjectNames.getFinalRigScriptName();
       
       pMayaContext = (MayaContext) getParamValue(aMayaContext);
       
@@ -437,7 +437,7 @@ class NewAssetBuilder
       if (pAutoRigSetup) {
 	skeleton = pAssetNames.getSkeletonNodeName();
 	rigInfo = pAssetNames.getRigInfoNodeName();
-	autoRigMEL = pProjectNames.getAutoRigScriptName();
+	autoRigMEL = pProjectNames.getFinalRigScriptName();
 
 	if (skeleton != null && !checkExistance(skeleton)) {
 	  EmptyMayaAsciiStage stage = 
@@ -569,7 +569,7 @@ class NewAssetBuilder
       }
       if(!checkExistance(pAssetNames.getShaderExportNodeName())) {
         new AssetBuilderShaderExportStage(info, pContext, pClient, pMayaContext, pAssetNames
-          .getShaderExportNodeName(), pAssetNames.getShaderNodeName(), pAssetNames.getAssetName()).build();
+          .getShaderExportNodeName(), pAssetNames.getShaderNodeName(), null, pAssetNames.getAssetName()).build();
         addToQueueList(pAssetNames.getShaderExportNodeName());
         removeFromQueueList(pAssetNames.getFinalNodeName());
         addToCheckInList(pAssetNames.getShaderExportNodeName());
@@ -589,7 +589,7 @@ class NewAssetBuilder
       if (pBuildAdvancedShadingNetwork)
 	addNonNullValue(pMRInitMEL, list);
       if (pAutoRigSetup)
-	addNonNullValue(pAutoRigMEL, list);
+	addNonNullValue(pFinalRigMEL, list);
       return list;
     }
     private static final long serialVersionUID = -2455380248604721406L;

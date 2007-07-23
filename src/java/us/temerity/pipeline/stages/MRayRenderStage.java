@@ -20,8 +20,7 @@ class MRayRenderStage
     String nodeName,
     FrameRange range,
     Integer padding,
-    String suffix,
-    String mayaScene
+    String suffix
   )
     throws PipelineException
   {
@@ -34,9 +33,8 @@ class MRayRenderStage
       range, 
       padding, 
       suffix, 
-      new PluginContext("FCheck"), 
+      getDefaultEditor(client, suffix), 
       new PluginContext("MRayRender"));
-    setMayaScene(mayaScene);
   }
   
   protected 
@@ -48,8 +46,7 @@ class MRayRenderStage
     UtilContext context,
     MasterMgrClient client,
     String nodeName,
-    String suffix,
-    String mayaScene
+    String suffix
   )
     throws PipelineException
   {
@@ -60,20 +57,8 @@ class MRayRenderStage
       client, 
       nodeName, 
       suffix, 
-      new PluginContext("FCheck"), 
+      getDefaultEditor(client, suffix), 
       new PluginContext("MRayRender"));
-    setMayaScene(mayaScene);
-  }
-  
-  private void 
-  setMayaScene
-  (
-   String mayaScene 
-  )
-    throws PipelineException
-  {
-    addLink(new LinkMod(mayaScene, LinkPolicy.Dependency));
-    addSingleParamValue("MayaScene", mayaScene);
   }
   
   public void
@@ -88,6 +73,7 @@ class MRayRenderStage
     addSourceParamValue(sourceName, "Contains", type.toString());
   }
   
+  public 
   enum SourceType 
   {
     ShaderIncs, Lights, Shaders, Geometry, InstGroups, Cameras, CamOverride, Options

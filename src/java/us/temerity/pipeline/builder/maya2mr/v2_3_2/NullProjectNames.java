@@ -2,9 +2,10 @@ package us.temerity.pipeline.builder.maya2mr.v2_3_2;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.BaseNames;
+import us.temerity.pipeline.builder.maya2mr.v2_3_2.DefaultProjectNames.GlobalsType;
 
-
-public abstract 
+@SuppressWarnings("unused")
+public abstract
 class NullProjectNames
   extends BaseNames
   implements BuildsProjectNames
@@ -32,7 +33,7 @@ class NullProjectNames
   {
     return null;
   }
-
+  
   public String 
   getAssetModelTTGlobals
   (
@@ -89,12 +90,14 @@ class NullProjectNames
     return null;
   }
 
-  public String getAssetRigAnimSetup()
+  public String 
+  getAssetRigAnimSetup()
   {
     return null;
   }
 
-  public String getAutoRigScriptName()
+  public String 
+  getFinalRigScriptName()
   {
     return null;
   }
@@ -233,5 +236,88 @@ class NullProjectNames
   {
     return null;
   }
+  
+  public String
+  getAssetShaderTTSetup
+  (
+    String assetName,
+    String assetType
+  )
+  {
+    return null;
+  }
+  
+  public String
+  getAssetShaderTTSetup()
+  {
+    return null;
+  }
+  
+  public String
+  getAssetShaderTTGlobals
+  (
+    String assetName,
+    String assetType,
+    GlobalsType type
+  )
+  {
+    return null;
+  }
+  
+  public String
+  getAssetShaderTTGlobals
+  (
+    GlobalsType type    
+  )
+  {
+    return null;
+  }
 
+  public String 
+  getDummyFile()
+  {
+    return null;
+  }
+
+  public String 
+  getRemoveReferenceScriptName()
+  {
+    return null;
+  }
+
+  public String 
+  getRigCopyScriptName()
+  {
+    return null;
+  }
+
+  public String 
+  getShaderCopyScriptName()
+  {
+    return null;
+  }
+
+  public String 
+  getPlaceholderSkelScriptName()
+  {
+    return null;
+  }
+
+  public String 
+  getPlaceholderTTCircleScriptName()
+  {
+    return null;
+  }
+
+  public String 
+  getPlaceholderTTCenterScriptName()
+  {
+    return null;
+  }
+
+  public String 
+  getEffectsTaskName()
+  {
+    return null;
+  }
 }

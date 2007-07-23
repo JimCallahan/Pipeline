@@ -1,6 +1,5 @@
-/*
- * Created on Sep 12, 2006 Created by jesse For Use in us.temerity.pipeline.utils
- */
+// $Id: MayaContext.java,v 1.5 2007/07/23 20:02:41 jesse Exp $
+
 package us.temerity.pipeline.builder;
 
 import java.io.Serializable;

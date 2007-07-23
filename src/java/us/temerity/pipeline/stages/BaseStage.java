@@ -1,3 +1,5 @@
+// $Id: BaseStage.java,v 1.5 2007/07/23 20:03:10 jesse Exp $
+
 package us.temerity.pipeline.stages;
 
 import java.util.*;
@@ -90,7 +92,7 @@ class BaseStage
       try {
 	mclient.release(id, true);
       }
-      catch(PipelineException ex) {
+      catch(Exception ex) {
 	exception = true;
 	buf.append(ex.getMessage() + "\n");
       }
@@ -188,19 +190,21 @@ class BaseStage
     throws PipelineException
   {
     JobReqs reqs = pRegisteredNodeMod.getJobRequirements();
-    if (pSelectionKeys != null) {
-      reqs.addSelectionKeys(pSelectionKeys);
+    if (reqs != null) {
+      if (pSelectionKeys != null) {
+	reqs.addSelectionKeys(pSelectionKeys);
+      }
+      if (pStageInformation.useDefaultSelectionKeys()) {
+	reqs.addSelectionKeys(pStageInformation.getDefaultSelectionKeys());
+      }
+      if (pLicenseKeys != null) {
+	reqs.addLicenseKeys(pLicenseKeys);
+      }
+      if (pStageInformation.useDefaultLicenseKeys()) {
+	reqs.addLicenseKeys(pStageInformation.getDefaultLicenseKeys());
+      }
+      pRegisteredNodeMod.setJobRequirements(reqs);
     }
-    if (pStageInformation.useDefaultSelectionKeys()) {
-      reqs.addSelectionKeys(pStageInformation.getDefaultSelectionKeys());
-    }
-    if (pLicenseKeys != null) {
-      reqs.addLicenseKeys(pLicenseKeys);
-    }
-    if (pStageInformation.useDefaultLicenseKeys()) {
-      reqs.addLicenseKeys(pStageInformation.getDefaultLicenseKeys());
-    }
-    pRegisteredNodeMod.setJobRequirements(reqs);
   }
 
   
@@ -208,7 +212,7 @@ class BaseStage
   /*----------------------------------------------------------------------------------------*/
   /*  N O D E   C O N S T R U C T I O N                                                     */
   /*----------------------------------------------------------------------------------------*/
-  
+
   /**
    * Removes a node's Action.
    * <p>

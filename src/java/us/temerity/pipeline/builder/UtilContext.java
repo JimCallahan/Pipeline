@@ -1,6 +1,3 @@
-/*
- * Created on Aug 30, 2006 Created by jesse For Use in us.temerity.pipeline.utils
- */
 package us.temerity.pipeline.builder;
 
 import java.io.Serializable;

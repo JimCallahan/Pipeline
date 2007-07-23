@@ -21,7 +21,8 @@ class TurntableStage
       int length,
       int padding,
       String mayaScene,
-      String globals
+      String globals,
+      Renderer renderer
     )
       throws PipelineException
     {
@@ -36,6 +37,7 @@ class TurntableStage
             suffix, 
             mayaScene);
       setPreRenderMel(globals);
+      setRenderer(renderer);
     }
     private static final long serialVersionUID = 3240152577221732496L;
 }

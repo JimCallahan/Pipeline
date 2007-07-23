@@ -1,9 +1,5 @@
-/*
- * Created on Jul 9, 2007
- * Created by jesse
- * For Use in us.temerity.pipeline.builder.maya2mr.v2_3_2.stages
- * 
- */
+// $Id: AdvAssetBuilderModelMiStage.java,v 1.2 2007/07/23 20:02:51 jesse Exp $
+
 package us.temerity.pipeline.builder.maya2mr.v2_3_2.stages;
 
 import us.temerity.pipeline.MasterMgrClient;
@@ -33,7 +29,6 @@ class AdvAssetBuilderModelMiStage
           context,
           client,
           nodeName,
-          "ma",
           sourceScene,
           "GEO");
     setGeoAllExport();

@@ -2,9 +2,9 @@ package us.temerity.pipeline.builder;
 
 import java.util.*;
 
-import us.temerity.pipeline.ListMap;
-import us.temerity.pipeline.MultiMap;
+import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.BaseBuilder.ConstructPass;
+import us.temerity.pipeline.builder.BaseBuilder.PassDependency;
 import us.temerity.pipeline.stages.StageInformation;
 
 /*------------------------------------------------------------------------------------------*/
@@ -35,6 +35,7 @@ class BuilderInformation
     pCheckInOrder = new LinkedList<BaseBuilder>();
     pCallHierarchy = new LinkedList<BaseBuilder>();
     pStageInformation = new StageInformation();
+    pPassDependencies = new ListMap<ConstructPass, PassDependency>();
   }
   
   
@@ -123,6 +124,35 @@ class BuilderInformation
     return new LinkedList<ConstructPass>(pAllConstructPasses);
   }
   
+  /**
+   * Creates a dependency between two ConstructPasses.
+   * <p>
+   * The target ConstructPass will not be run until the source ConstructPass has completed.
+   * This allows for Builders to specify the order in which their passes run.
+   */
+  protected final void
+  addPassDependency
+  (
+    ConstructPass sourcePass,
+    ConstructPass targetPass
+  )
+  {
+    if (pPassDependencies.containsKey(targetPass)) {
+      PassDependency pd = pPassDependencies.get(targetPass);
+      pd.addSource(sourcePass);
+    }
+    else {
+      PassDependency pd = 
+	new PassDependency(targetPass, ComplexParam.listFromObject(sourcePass));
+      pPassDependencies.put(targetPass, pd);
+    }
+  }
+  
+  protected final Map<ConstructPass, PassDependency>
+  getPassDependencies()
+  {
+    return Collections.unmodifiableMap(pPassDependencies);
+  }
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -247,5 +277,7 @@ class BuilderInformation
   private LinkedList<BaseBuilder> pCallHierarchy;
   
   private StageInformation pStageInformation;
+  
+  private ListMap<ConstructPass, PassDependency> pPassDependencies; 
   
 }

@@ -117,7 +117,29 @@ class BaseBuilder
     super.setLayout(layout);
   }
   
-
+  protected final void
+  addSelectionKeyParam()
+    throws PipelineException
+  {
+    UtilityParam param = 
+      ListUtilityParam.createSelectionKeyParam
+      (aSelectionKeys, 
+       "Which Selection Keys Should be assigned to the constructed nodes", 
+       null,
+       pQueue);
+    addParam(param);
+  }
+  
+  protected final void
+  addCheckinWhenDoneParam()
+  {
+    UtilityParam param = 
+      new BooleanUtilityParam
+      (aCheckinWhenDone,
+       "Automatically check-in all the nodes when building is finished.", 
+       false); 
+    addParam(param);
+  }
   
   /*----------------------------------------------------------------------------------------*/
   /*   S U B - B U I L D E R S                                                              */
@@ -692,15 +714,23 @@ class BaseBuilder
     ConstructPass targetPass
   )
   {
-    if (sPassDependencies.containsKey(targetPass)) {
-      PassDependency pd = sPassDependencies.get(targetPass);
-      pd.addSource(sourcePass);
+    pBuilderInformation.addPassDependency(sourcePass, targetPass);
+  }
+  
+  public ConstructPass
+  getConstructPass
+  (
+    String name  
+  )
+  {
+    ConstructPass toReturn = null;
+    for (ConstructPass pass : pSecondLoopPasses) {
+      if (pass.getName().equals(name)) {
+	toReturn = pass;
+	break;
+      }
     }
-    else {
-      PassDependency pd = 
-	new PassDependency(targetPass, ComplexParam.listFromObject(sourcePass));
-      sPassDependencies.put(targetPass, pd);
-    }
+    return toReturn;
   }
   
   /**
@@ -753,16 +783,19 @@ class BaseBuilder
   {
     pLog.log(Kind.Bld, Level.Finer, "Building the Second Loop Execution Order.");
     ArrayList<PassDependency> dependencies = new ArrayList<PassDependency>();
-    pExecutionOrder = new ArrayList<ConstructPass>();  
+    pExecutionOrder = new ArrayList<ConstructPass>();
+    
+    Map<ConstructPass, PassDependency> passDependencies = 
+      pBuilderInformation.getPassDependencies();
     
     for (ConstructPass pass : pBuilderInformation.getAllConstructPasses()) {
-      if (!sPassDependencies.containsKey(pass)) {
+      if (!passDependencies.containsKey(pass)) {
 	pExecutionOrder.add(pass);
 	pLog.log(Kind.Bld, Level.Finest, 
 	  "Adding (" + pass.toString() + ") to the execution order.");
       }
       else
-	dependencies.add(sPassDependencies.get(pass));
+	dependencies.add(passDependencies.get(pass));
     }
     
     int number = dependencies.size();
@@ -1210,6 +1243,7 @@ class BaseBuilder
     return new TreeSet<String>(pNodesToCheckIn);
   }
   
+  @Override
   public final int
   getCurrentPass()
   {
@@ -1375,6 +1409,8 @@ class BaseBuilder
    */
   public final static String aReleaseOnError = "ReleaseOnError";
   public final static String aActionOnExistance = "ActionOnExistance";
+  public final static String aSelectionKeys = "SelectionKeys";
+  public final static String aCheckinWhenDone = "CheckinWhenDone";
   
 
   
@@ -1419,10 +1455,6 @@ class BaseBuilder
   private ActionOnExistance pActionOnExistance;
   
   private ArrayList<ConstructPass> pExecutionOrder;
-  
-  private ListMap<ConstructPass, PassDependency> sPassDependencies = 
-    new ListMap<ConstructPass, PassDependency>();
-
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -1536,6 +1568,7 @@ class BaseBuilder
       initPhase();
     }
     
+    @Override
     public String
     toString()
     {
@@ -1675,7 +1708,7 @@ class BaseBuilder
   /*  P R I V A T E   S U B C L A S S E S                                                   */
   /*----------------------------------------------------------------------------------------*/
   
-  private 
+  public static 
   class PassDependency
   {
     public
@@ -1726,6 +1759,7 @@ class BaseBuilder
 	pSources.add(pass);
     }
     
+    @Override
     public String
     toString()
     {

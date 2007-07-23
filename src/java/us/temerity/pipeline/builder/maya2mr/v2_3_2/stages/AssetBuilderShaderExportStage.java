@@ -1,10 +1,6 @@
-/*
- * Created on Sep 18, 2006 Created by jesse For Use in us.temerity.pipeline.stages
- */
 package us.temerity.pipeline.builder.maya2mr.v2_3_2.stages;
 
-import us.temerity.pipeline.MasterMgrClient;
-import us.temerity.pipeline.PipelineException;
+import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.stages.MayaFileStage;
 import us.temerity.pipeline.stages.StageInformation;
@@ -22,6 +18,7 @@ public
 class AssetBuilderShaderExportStage 
   extends MayaFileStage
 {
+  
   /**
    * This constructor will initialize the stage and then runs build to generate the shader
    * export node.
@@ -49,6 +46,7 @@ class AssetBuilderShaderExportStage
     MayaContext mayaContext,
     String nodeName,
     String shadeName,
+    String verifyMel,
     String prefix
   ) 
     throws PipelineException
@@ -65,6 +63,10 @@ class AssetBuilderShaderExportStage
           new PluginContext("MayaShaderExport"));
     setMayaScene(shadeName);
     addSingleParamValue("SelectionPrefix", prefix);
+    if (verifyMel != null) {
+      addLink(new LinkMod(verifyMel, LinkPolicy.Dependency));
+      addSingleParamValue("NewSceneMEL", verifyMel);
+    }
   }
-  private static final long serialVersionUID = 7424624983972003621L;
+  private static final long serialVersionUID = -384787874256066913L;
 }

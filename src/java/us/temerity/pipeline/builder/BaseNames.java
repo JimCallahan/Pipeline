@@ -25,11 +25,24 @@ class BaseNames
     throws PipelineException
   {
     super(name, vid, vendor, desc, mclient, qclient);
+    pGenerated = false;
   }
   
   public abstract void 
   generateNames() 
     throws PipelineException;
+  
+  protected void
+  done()
+  {
+    pGenerated = true;
+  }
+  
+  public boolean
+  isGenerated()
+  {
+    return pGenerated;
+  }
 
   @Override
   protected void 
@@ -51,4 +64,6 @@ class BaseNames
   {
     return 1;
   }
+  
+  private boolean pGenerated;
 }

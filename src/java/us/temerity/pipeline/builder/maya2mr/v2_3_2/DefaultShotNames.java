@@ -61,6 +61,8 @@ public class DefaultShotNames
     throws PipelineException
   {
     setContext((UtilContext) getParamValue(aUtilContext));
+
+    done();
   }
 
   public String getAnimExportNodeName()
