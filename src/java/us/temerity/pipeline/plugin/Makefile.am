@@ -127,6 +127,7 @@ SUBDIRS = \
   MayaMelAction \
   MayaMiExportAction \
   MayaMiShaderAction \
+  MayaMRayInitMELAction \
   MayaMRayRenderAction \
   MayaMxsExportAction \
   MayaNoRefEditor \
@@ -149,6 +150,7 @@ SUBDIRS = \
   MRayCamOverrideAction \
   MRayInstGroupAction \
   MRayMakeShaderAction \
+  MRayOptionsAction \
   MRayRenderAction \
   MRayRenderGlobalsAction \
   MRayShaderAction \

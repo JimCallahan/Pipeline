@@ -231,15 +231,15 @@ public class BuilderApp
     String value
   )
   {
+    if (builder == null)
+      throw new IllegalArgumentException
+        ("Illegal attempt in setting a Parameter value before specifying the Builder " +
+         "that the Parameter resides in.");
     builder = builder.replaceAll("-", " - ");
     LogMgr.getInstance().log(Kind.Arg, Level.Finest, 
       "Reading command line arg for Builder (" + builder + ").\n" +
       "Keys are (" + keys + ").\n" +
       "Value is (" + value + ").");
-    if (builder == null)
-      throw new IllegalArgumentException
-        ("Illegal attempt in setting a Parameter value before specifying the Builder " +
-         "that the Parameter resides in.");
     LinkedList<String> list;
     if (keys == null)
       list = new LinkedList<String>();

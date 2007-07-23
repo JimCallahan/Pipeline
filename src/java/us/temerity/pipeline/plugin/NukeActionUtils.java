@@ -1,4 +1,4 @@
-// $Id: NukeActionUtils.java,v 1.2 2007/05/16 13:12:26 jim Exp $
+// $Id: NukeActionUtils.java,v 1.3 2007/07/23 20:31:39 jesse Exp $
 
 package us.temerity.pipeline.plugin;
 
@@ -20,7 +20,7 @@ import java.io.*;
  */
 public 
 class NukeActionUtils
-  extends PythonActionUtils
+  extends CompositeActionUtils
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
