@@ -1,4 +1,4 @@
-// $Id: MayaRemoveRefMELAction.java,v 1.1 2007/07/19 04:53:27 jesse Exp $
+// $Id: MayaRemoveRefMELAction.java,v 1.2 2007/07/23 20:16:27 jesse Exp $
 
 package us.temerity.pipeline.plugin.MayaRemoveRefMELAction.v2_3_4;
 
@@ -102,6 +102,5 @@ class MayaRemoveRefMELAction
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
-  
-  private static final long serialVersionUID = -4664702227016367430L;
+  private static final long serialVersionUID = -1567432131955325102L;
 }

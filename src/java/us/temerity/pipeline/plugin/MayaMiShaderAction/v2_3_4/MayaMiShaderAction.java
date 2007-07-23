@@ -152,14 +152,7 @@ MayaMiShaderAction
     super("MayaMiShader", new VersionID("2.3.4"), "Temerity",
 	  "Exports shaders for the correct pass based on the name of the source.");
     
-    {
-      ActionParam param = 
-	new LinkActionParam
-	(aMayaScene, 
-	 "The source Maya scene node.", 
-	 null);
-      addSingleParam(param);
-    }
+    addMayaSceneParam();
 
     {
       ArrayList<String> choices = new ArrayList<String>();
