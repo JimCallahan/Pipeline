@@ -6,6 +6,7 @@ web_DATA = \
   dbopen.php \
   dbclose.php \
   error.php \
+  loadpng.php \
   favicon.ico \
   phpinfo.php \
   stylesheet.css
