@@ -27,6 +27,12 @@ CREATE TABLE `idents` (
   KEY `is_group` (`is_group`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
+CREATE TABLE `auth` (
+  `ident_id` smallint(5) unsigned NOT NULL,
+  `password` varchar(128) NOT NULL,
+  PRIMARY KEY  (`ident_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 ;
+
 CREATE TABLE `node_info` (
   `info_id` mediumint(8) unsigned NOT NULL auto_increment,
   `node_id` mediumint(8) unsigned NOT NULL,

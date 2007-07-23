@@ -31,4 +31,5 @@ function show_sql_error($query)
 	     "SQL = <CODE>" . $query . "</CODE></UL>");
 }
 
+
 ?>

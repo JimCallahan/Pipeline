@@ -15,6 +15,7 @@
 <?php
 {
   include($temerity_root . "common.php");
+  include($temerity_root . "pltasks/auth.php");
 
   //------------------------------------------------------------------------------------------
   // SQL QUERIES
@@ -24,8 +25,11 @@
   include($temerity_root . "pltasks/db-config.php");
   include($temerity_root . "dbopen.php");
   
+  /* authenticate the user */
+  $authenicate_body = authenticate();
+
   /* get search tables */ 
-  $users = array();
+  $users  = array();
   $groups = array();
   $assigned_select = array();
   $supervised_select = array();
@@ -382,11 +386,18 @@
   <TR><TD class="bg" width="15"></TD>
       <TD class="bg">
 
+<?php
+{
+  print($authenicate_body); 
+}
+?>
 
-
+<DIV style="height: 15px;"></DIV>
 
 <FORM action="search.php" method="POST">
 <INPUT name="mode" value="results" type="hidden">
+<INPUT name="auth_id" value="<?php echo($auth_id);?>" type="hidden">
+<INPUT name="auth_name" value="<?php echo($auth_name);?>" type="hidden">
 <TABLE class="frame" width="100%" align="center" cellpadding="4" cellspacing="1" border="0"> 
   <TR>	
     <TD align="center" class="spaceRow" colspan="6" height="1"><DIV style="height: 1px;"><IMG src="<?php echo($temerity_root);?>images/spacer.gif" alt="" height="1" width="1"></DIV></TD>
@@ -524,6 +535,8 @@
 <DIV style="height: 15px;"></DIV>
 
 <FORM action="details.php" method="POST">
+<INPUT name="auth_id" value="<?php echo($auth_id);?>" type="hidden">
+<INPUT name="auth_name" value="<?php echo($auth_name);?>" type="hidden">
 <TABLE class="frame" width="100%" align="center" cellpadding="4" cellspacing="1" border="0"> 
   <TR>
     <TH align="center" class="theader" colspan="2" nowrap="nowrap">

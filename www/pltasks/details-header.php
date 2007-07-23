@@ -1,5 +1,7 @@
-<FORM action="post.php" method="POST">
-<INPUT name="task" value="<?php echo($tid);?>" type="hidden">
+<FORM action="../phpinfo.php" method="POST">
+<INPUT name="task_id" value="<?php echo($tid);?>" type="hidden">
+<INPUT name="auth_id" value="<?php echo($auth_id);?>" type="hidden">
+<INPUT name="auth_name" value="<?php echo($auth_name);?>" type="hidden">
 <TABLE class="frame" width="100%" align="center" cellpadding="4" cellspacing="1" border="0">
   <TR> 
     <TH align="left" class="theader" colspan="3" nowrap="nowrap">

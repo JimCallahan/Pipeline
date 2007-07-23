@@ -15,6 +15,7 @@
 <?php
 {
   include($temerity_root . "common.php");
+  include($temerity_root . "pltasks/auth.php");
   include($temerity_root . "pltasks/plscript.php");
 
   //------------------------------------------------------------------------------------------
@@ -24,6 +25,9 @@
   /* open SQL connection */ 
   include($temerity_root . "pltasks/db-config.php");
   include($temerity_root . "dbopen.php");
+
+  /* authenticate the user */
+  $authenicate_body = authenticate();
 
   /* lookup status information */ 
   $task_status = array();
@@ -196,12 +200,20 @@
 }
 ?>
 
-
 <TABLE class="bg" width="100%" align="center" cellpadding="0" cellspacing="0" border="0"> 
   <TR><TD class="bg" colspan="3"><DIV style="height: 15px;"></DIV></TD><TR>	
 
   <TR><TD class="bg" width="15"></TD>
       <TD class="bg">
+
+
+<?php
+{
+  print($authenicate_body); 
+}
+?>
+
+<DIV style="height: 15px;"></DIV>
 
 
 <?php
@@ -288,8 +300,8 @@
 <?php 
 // print("<P>_REQUEST<BR>\n");
 // var_dump($_REQUEST);
-print("<P>tasks<BR>\n");
-var_dump($tasks);
+//print("<P>tasks<BR>\n");
+//var_dump($tasks);
 // print("<P>task_owners<BR>\n");
 // var_dump($task_owners);
 ?>
