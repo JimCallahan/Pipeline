@@ -46,19 +46,19 @@
             if($node['is_edit'] || $node['is_focus']) {
               print('    <TR>' . "\n" . 
                     '      <TD class="' . $row_color . '" align="center" width="50">' . 
-                    '<SPAN class="gensmall"><SPAN class="redbold">');
-          
-            if($node['is_edit']) {
-              print('<A href="temp-edit-script.plpython">Edit</A>'); 
-            }
+                    '<SPAN class="gensmall">');
           
             if($node['is_focus']) {
-              if($node['is_edit']) 
-                print(" "); 
-              print('<A href="temp-focus-script.plpython">Focus</A>'); 
+              $nname = end(explode("/", $node['name'])); 
+              $script = viewFocusNodeScript($node['name'], $node['vid'], $nname); 
+
+              print('<A href="' . $script . '"><SPAN class="redbold">Focus</SPAN></A> ');
             }
+
+            if($node['is_edit']) 
+              print('<SPAN class="bold">Edit</SPAN>'); 
             
-            print('</SPAN></SPAN></TD>' . "\n" . 
+            print('</SPAN></TD>' . "\n" . 
                   '      <TD class="' . $row_color . '" align="left">' . 
                   '<SPAN class="gensmall">&nbsp;' . $node['name'] . '</SPAN></TD>' . "\n" . 
                   '      <TD class="' . $row_color . '" align="center" width="50">' . 

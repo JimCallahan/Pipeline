@@ -157,9 +157,9 @@
         $sql = ("SELECT node_names.node_name as `name`, " .
                        "node_info.node_version as `vid`, " .
                        "node_info.is_edit as `is_edit`, " . 
-                       "node_info.is_focus as `is_focus`, " .    
-                       "node_info.is_thumb as `is_thumb`, " .    // is this needed??
-                       "node_info.is_approve as `is_approve` " . // is this needed??
+                       "node_info.is_focus as `is_focus` " .    
+                //     "node_info.is_thumb as `is_thumb`, " .   
+                //     "node_info.is_approve as `is_approve` " . 
                 "FROM node_info, node_names " . 
                 "WHERE node_info.event_id = " . $eid . " " . 
                 "AND node_info.node_id = node_names.node_id"); 
@@ -288,8 +288,8 @@
 <?php 
 // print("<P>_REQUEST<BR>\n");
 // var_dump($_REQUEST);
-// print("<P>tasks<BR>\n");
-// var_dump($tasks);
+print("<P>tasks<BR>\n");
+var_dump($tasks);
 // print("<P>task_owners<BR>\n");
 // var_dump($task_owners);
 ?>

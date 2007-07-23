@@ -37,13 +37,13 @@
             $image = 'prod/repository' . $thumb['thumb_path'];
             list($width, $height, $type, $attr) = getimagesize($image);
             
-            $tname    = end(explode("/", $thumb['focus_name'])); 
-            $tversion = $thumb['focus_version']; 
+            $tname = end(explode("/", $thumb['focus_name'])); 
+            $tvid  = $thumb['focus_version']; 
 
-            $script = makeEditNodeScript($thumb['focus_name'], $tversion, $tname); 
+            $script = viewFocusNodeScript($thumb['focus_name'], $tvid, $tname); 
 
             $thumbs[] = array('name'    => $tname, 
-                              'version' => $tversion, 
+                              'vid'     => $tvid, 
                               'script'  => $script, 
                               'image'   => $image, 
                               'width'   => $width, 
