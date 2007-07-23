@@ -1,4 +1,4 @@
-// $Id: ActionAgenda.java,v 1.15 2007/06/21 16:40:50 jim Exp $
+// $Id: ActionAgenda.java,v 1.16 2007/07/23 10:09:04 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -211,6 +211,30 @@ class ActionAgenda
   
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * Whether there are any source nodes. 
+   */ 
+  public boolean
+  hasSources()
+  {
+    return (!pPrimarySources.isEmpty()); 
+  }
+  
+  /**
+   * Get the fully resolved names of the first source node.
+   * 
+   * @return 
+   *   The first source node name or <CODE>null</CODE> if there are no sources.
+   */ 
+  public String
+  getSourceName()
+  {
+    if(hasSources()) 
+      return pPrimarySources.firstKey();
+
+    return null;
+  }
+  
   /**
    * Get the fully resolved names of the source nodes.
    */ 
