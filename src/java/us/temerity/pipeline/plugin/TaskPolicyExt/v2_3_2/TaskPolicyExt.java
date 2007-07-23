@@ -421,11 +421,13 @@ class TaskPolicyExt
           String purpose  = lookupPurpose(nodeName, an); 
 
           if(purpose.equals(aSubmit)) {
+            TreeMap<String,String> thumbToFocus    = new TreeMap<String,String>();
+            TreeMap<String,NodeVersion> thumbNodes = new TreeMap<String,NodeVersion>();
             TreeMap<String,NodeVersion> focusNodes = new TreeMap<String,NodeVersion>();
-            TreeMap<String,NodeVersion> thumbNodes  = new TreeMap<String,NodeVersion>();
             TreeMap<String,NodeVersion> editNodes  = new TreeMap<String,NodeVersion>();
-            findSubmitNodes(nodeName, taskName, taskType, vsn, 
-                            focusNodes, thumbNodes, editNodes, mclient);
+            findSubmitNodes(nodeName, taskName, taskType, 
+                            vsn, null, thumbToFocus, thumbNodes, focusNodes, editNodes, 
+                            mclient);
 
             /* DEBUG */ 
             {
@@ -437,19 +439,31 @@ class TaskPolicyExt
               for(NodeVersion fvsn : focusNodes.values()) {
                 LogMgr.getInstance().log
                   (Kind.Ops, Level.Info, 
-                   "The FocusNode ("+fvsn.getName()+" v"+fvsn.getVersionID()+") is "+
+                   "The Focus node ("+fvsn.getName()+" v"+fvsn.getVersionID()+") is "+
                    "associated with task ("+taskName+":"+taskType+") submitted for "+
-                   "approval by checking-in the SubmitNode ("+nodeName+" v"+
+                   "approval by checking-in the Submit node ("+nodeName+" v"+
                    vsn.getVersionID()+").");
               }
             
               for(NodeVersion tvsn : thumbNodes.values()) {
                 LogMgr.getInstance().log
                   (Kind.Ops, Level.Info, 
-                   "The ThumbnailNode ("+tvsn.getName()+" v"+tvsn.getVersionID()+") "+
+                   "The Thumbnail node ("+tvsn.getName()+" v"+tvsn.getVersionID()+") "+
                    "is associated with task ("+taskName+":"+taskType+") submitted "+
-                   "for approval by checking-in the SubmitNode ("+nodeName+" v"+
+                   "for approval by checking-in the Submit node ("+nodeName+" v"+
                    vsn.getVersionID()+").");
+
+                String focus = thumbToFocus.get(tvsn.getName());
+                if(focus != null) {
+                  NodeVersion fvsn = focusNodes.get(focus); 
+                  if(fvsn != null) {
+                    LogMgr.getInstance().log
+                      (Kind.Ops, Level.Info, 
+                       "The Thumbnail node ("+tvsn.getName()+" v"+tvsn.getVersionID()+") "+
+                       "corresponds to Focus Node ("+fvsn.getName()+" v"+
+                       fvsn.getVersionID()+").");              
+                  }
+                }
               }
             
               for(NodeVersion evsn : editNodes.values()) {
@@ -466,8 +480,8 @@ class TaskPolicyExt
             int tries = 0; 
             while(true) {
               try {
-                sDatabase.submitTask(taskName, taskType, vsn, 
-                                     focusNodes, thumbNodes, editNodes); 
+                sDatabase.submitTask(taskName, taskType, vsn, thumbToFocus, 
+                                     thumbNodes, focusNodes, editNodes); 
                 break;
               }
               catch(PipelineException ex) {
@@ -523,14 +537,17 @@ class TaskPolicyExt
    String submitTaskName, 
    String submitTaskType, 
    NodeVersion vsn, 
-   TreeMap<String,NodeVersion> focusNodes, 
+   String currentThumb,  
+   TreeMap<String,String> thumbToFocus, 
    TreeMap<String,NodeVersion> thumbNodes,
+   TreeMap<String,NodeVersion> focusNodes, 
    TreeMap<String,NodeVersion> editNodes, 
    MasterMgrLightClient mclient
   )
     throws PipelineException 
   {
     String nodeName = vsn.getName();
+    String thumb = currentThumb; 
     TreeMap<String,BaseAnnotation> annotations = mclient.getAnnotations(nodeName);
     for (String aname : annotations.keySet()) {
       BaseAnnotation an = annotations.get(aname);
@@ -540,10 +557,15 @@ class TaskPolicyExt
         if(purpose.equals(aFocus)) {
           verifyTask(nodeName, an, submitNodeName, submitTaskName, submitTaskType); 
           focusNodes.put(nodeName, vsn);
+          if(currentThumb != null) {
+            thumbToFocus.put(currentThumb, nodeName);
+            thumb = null;
+          }
         }
         else if(purpose.equals(aThumbnail)) {
           verifyTask(nodeName, an, submitNodeName, submitTaskName, submitTaskType); 
           thumbNodes.put(nodeName, vsn); 
+          thumb = nodeName; 
         }
         else if(purpose.equals(aEdit)) {
           verifyTask(nodeName, an, submitNodeName, submitTaskName, submitTaskType); 
@@ -554,8 +576,9 @@ class TaskPolicyExt
       
     for(LinkVersion link : vsn.getSources()) {
       NodeVersion source = mclient.getCheckedInVersion(link.getName(), link.getVersionID());
-      findSubmitNodes(submitNodeName, submitTaskName, submitTaskType, source, 
-                      focusNodes, thumbNodes, editNodes, mclient);
+      findSubmitNodes(submitNodeName, submitTaskName, submitTaskType, 
+                      source, thumb, thumbToFocus, thumbNodes, focusNodes, editNodes, 
+                      mclient);
     }
   }
   

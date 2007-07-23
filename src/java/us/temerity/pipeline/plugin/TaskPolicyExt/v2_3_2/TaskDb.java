@@ -1,4 +1,4 @@
-// $Id: TaskDb.java,v 1.2 2007/07/11 00:35:01 jim Exp $
+// $Id: TaskDb.java,v 1.3 2007/07/23 06:24:22 jim Exp $
 
 package us.temerity.pipeline.plugin.TaskPolicyExt.v2_3_2;
 
@@ -306,6 +306,15 @@ class TaskDb
         pInsertNodeInfoSt = pConnect.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS); 
       }
 
+      /* thumb info */ 
+      {
+        String sql = 
+          ("INSERT INTO thumb_info " + 
+           "(thumb_info_id, focus_info_id, thumb_path) " + 
+           "VALUES (?, ?, ?)");
+        pInsertThumbInfoSt = pConnect.prepareStatement(sql); 
+      }
+
       txnCommit(); 
     }
     catch(SQLException ex) {
@@ -330,13 +339,21 @@ class TaskDb
    * @param submitNode
    *   The initial version of the submit node being checked-in.
    * 
+   * @param thumbToFocus
+   *   The mapping of the names of the Thumbnail nodes to the corresponding Focus nodes 
+   *   upstream of the submit node being checked-in.
+   *
+   * @param thumbNodes
+   *   The current version of the Thumbnail nodes upstream of the Submit node being checked-in
+   *   indexed by Thunbnail node name.
+   *
    * @param focusNodes
-   *   The current version of the focus nodes upstream of the submit node being checked-in
-   *   indexed by focus node name.
+   *   The current version of the Focus nodes upstream of the Submit node being checked-in
+   *   indexed by Focus node name.
    *
    * @param editNodes
-   *   The current version of the edit nodes upstream of the submit node being checked-in
-   *   indexed by edit node name.
+   *   The current version of the Edit nodes upstream of the Submit node being checked-in
+   *   indexed by Edit node name.
    */  
   public synchronized void
   submitTask
@@ -344,8 +361,9 @@ class TaskDb
    String taskTitle, 
    String taskType,
    NodeVersion submitNode, 
-   TreeMap<String,NodeVersion> focusNodes,   
+   TreeMap<String,String> thumbToFocus,  
    TreeMap<String,NodeVersion> thumbNodes, 
+   TreeMap<String,NodeVersion> focusNodes,  
    TreeMap<String,NodeVersion> editNodes
   )
     throws PipelineException
@@ -392,18 +410,33 @@ class TaskDb
       insertNodeInfo(submitNodeID, submitNode.getVersionID(), eventID, 
                      false, true, false, false, false);
       
-      /* attach info for any upstream focus nodes to the event */ 
-      for(NodeVersion focusNode : focusNodes.values()) {
-        Integer nodeID = lookupNodeName(focusNode.getName());
-        insertNodeInfo(nodeID, focusNode.getVersionID(), eventID, 
-                       false, false, true, false, false); 
-      }
-      
       /* attach info for any upstream thumbnail nodes to the event */ 
+      TreeMap<String,Integer> thumbNodeInfos = new TreeMap<String,Integer>();
       for(NodeVersion thumbNode : thumbNodes.values()) {
         Integer nodeID = lookupNodeName(thumbNode.getName());
-        insertNodeInfo(nodeID, thumbNode.getVersionID(), eventID, 
-                       false, false, false, true, false); 
+        Integer infoID = insertNodeInfo(nodeID, thumbNode.getVersionID(), eventID, 
+                                        false, false, false, true, false); 
+        thumbNodeInfos.put(thumbNode.getName(), infoID); 
+      }
+
+      /* attach info for any upstream focus nodes to the event */ 
+      TreeMap<String,Integer> focusNodeInfos = new TreeMap<String,Integer>();
+      for(NodeVersion focusNode : focusNodes.values()) {
+        Integer nodeID = lookupNodeName(focusNode.getName());
+        Integer infoID = insertNodeInfo(nodeID, focusNode.getVersionID(), eventID, 
+                                        false, false, true, false, false); 
+        focusNodeInfos.put(focusNode.getName(), infoID); 
+      }
+
+      /* attach thumbnail to focus node mappings for the event */ 
+      for(String tname : thumbToFocus.keySet()) {
+        Integer tinfoID = thumbNodeInfos.get(tname);
+        Integer finfoID = focusNodeInfos.get(thumbToFocus.get(tname));
+
+        NodeVersion thumbNode = thumbNodes.get(tname); 
+        Path tpath = thumbNode.getPrimarySequence().getPath(0); 
+        Path rpath = new Path(tname + "/" + thumbNode.getVersionID() + "/" + tpath); 
+        insertThumbInfo(tinfoID, finfoID, rpath); 
       }
       
       /* attach info for any upstream edit nodes to the event */ 
@@ -1249,6 +1282,36 @@ class TaskDb
   }
   
   
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Insert information about a particular thumbnail version.
+   * 
+   * @param thumbInfoID
+   *   The ID of the node info record for the thumbnail node.
+   * 
+   * @param focusInfoID
+   *   The ID of the node info record for the corresponding focus node.
+   * 
+   * @param path
+   *   The full repository path to the thumbnail image file. 
+   */ 
+  private synchronized void
+  insertThumbInfo
+  (
+   int thumbInfoID, 
+   int focusInfoID, 
+   Path path
+  ) 
+    throws SQLException
+  {
+    pInsertThumbInfoSt.setInt(1, thumbInfoID);
+    pInsertThumbInfoSt.setInt(2, focusInfoID);
+    pInsertThumbInfoSt.setString(3, path.toString()); 
+    pInsertThumbInfoSt.executeUpdate();
+  }
+  
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   T R A N S A C T I O N   H E L P E R S                                                */
@@ -1478,5 +1541,7 @@ class TaskDb
   private PreparedStatement  pInsertNodeNameSt;
 
   private PreparedStatement  pInsertNodeInfoSt;
+
+  private PreparedStatement  pInsertThumbInfoSt;
   
 }
