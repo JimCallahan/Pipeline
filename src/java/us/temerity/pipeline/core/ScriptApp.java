@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.79 2007/07/20 07:47:12 jim Exp $
+// $Id: ScriptApp.java,v 1.80 2007/07/23 10:09:42 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2968,11 +2968,20 @@ class ScriptApp
 	break;
 
       case Windows:
-	throw new PipelineException
-	  ("Not implemented yet...");
+        {
+          env.put("USERNAME", author);        
 
-	// FIX THIS: handle Windows specific vars here...
+          Path profile = PackageInfo.getUserProfilePath(PackageInfo.sUser);
+          if(profile != null) 
+            env.put("USERPROFILE", profile.toOsString());
+          
+          Path appdata = PackageInfo.getAppDataPath(PackageInfo.sUser);
+          if(appdata != null) 
+            env.put("APPDATA", appdata.toOsString());
+        }
       }
+
+      env.put("PIPELINE_OSTYPE", PackageInfo.sOsType.toString());
     }
     
     /* get the directory containing the files */ 
@@ -2995,7 +3004,8 @@ class ScriptApp
     }
 
     /* launch an editor for each file sequence */ 
-    TreeMap<Long,SubProcessLight> procs = new TreeMap<Long,SubProcessLight>();
+    TreeMap<Long,SubProcessLight> workingProcs = new TreeMap<Long,SubProcessLight>();
+    ArrayList<SubProcessLight> checkedInProcs = new ArrayList<SubProcessLight>();
     for(FileSeq fs : editSeqs) {
       editor.makeWorkingDirs(dir);
 
@@ -3010,8 +3020,13 @@ class ScriptApp
       else 
 	proc = editor.launch(fs, env, dir);
 
-      Long editID = client.editingStarted(nodeID, editor);
-      procs.put(editID, proc);
+      if(mod != null) {
+        Long editID = client.editingStarted(nodeID, editor);
+        workingProcs.put(editID, proc);
+      }
+      else {
+        checkedInProcs.add(proc); 
+      }
     }
     LogMgr.getInstance().flush();
       
@@ -3021,8 +3036,8 @@ class ScriptApp
 	(LogMgr.Kind.Ops, LogMgr.Level.Info,
 	 "\n" + 
 	 "Waiting for Editor(s) to exit...");
-      for(Long editID : procs.keySet()) {
-	SubProcessLight proc = procs.get(editID); 
+      for(Long editID : workingProcs.keySet()) {
+        SubProcessLight proc = workingProcs.get(editID); 
 	try {
 	  proc.join();
 	  
@@ -3047,12 +3062,35 @@ class ScriptApp
 	  client.editingFinished(editID);
 	}
       }
+
+      for(SubProcessLight proc : checkedInProcs) {
+        try {
+          proc.join();
+          
+          LogMgr.getInstance().log
+            (LogMgr.Kind.Ops, LogMgr.Level.Info, 
+             tbar(80) + "\n" +
+             "Editor Process : " + wordWrap(proc.getCommand(), 17, 80) + "\n" + 
+               "Exit Code      : " + proc.getExitCode() + " " +
+             (proc.wasSuccessful() ? "(success)" : "(failed)") + "\n" +
+             "\n" +
+             pad("-- Output ", '-', 80) + "\n" +
+             proc.getStdOut() + "\n" + 
+             pad("-- Errors ", '-', 80) + "\n" +
+             proc.getStdErr());
+        }
+        catch(InterruptedException ex) {
+          LogMgr.getInstance().log
+            (LogMgr.Kind.Sub, LogMgr.Level.Severe, 
+             "Interrupted while waiting on an Editor Process to exit!");
+        }
+      }
     }
 
     /* give the Editor threads a chance to start... */ 
     else {
-      for(Long editID : procs.keySet()) {
-	SubProcessLight proc = procs.get(editID); 
+      for(Long editID : workingProcs.keySet()) {
+	SubProcessLight proc = workingProcs.get(editID); 
 	while(true) {
 	  if(proc.hasStarted()) 
 	    break;
@@ -3065,6 +3103,19 @@ class ScriptApp
 	}
 
 	client.editingFinished(editID);
+      }
+
+      for(SubProcessLight proc : checkedInProcs) {
+	while(true) {
+	  if(proc.hasStarted()) 
+	    break;
+
+	  try {
+	    Thread.sleep(500);
+	  }
+	  catch(InterruptedException ex) {
+	  }
+	}
       }
     }
   }  
