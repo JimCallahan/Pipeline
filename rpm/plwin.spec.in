@@ -24,12 +24,14 @@ plconfig(1) during Pipeline configuration process.
 
 %defattr(555,root,root)
 @ROOT_INST_DIR@/Windows/bin/plscript.bat
+@ROOT_INST_DIR@/Windows/bin/plscript-batch.bat
 @ROOT_INST_DIR@/Windows/bin/plpython.bat
 @ROOT_INST_DIR@/Windows/bin/plui.exe
 
 @ROOT_INST_DIR@/Windows/sbin/pljobmgr.bat
 
 @ROOT_INST_DIR@/Windows/debug/bin/plscript.bat
+@ROOT_INST_DIR@/Windows/debug/bin/plscript-batch.bat
 @ROOT_INST_DIR@/Windows/debug/bin/plpython.bat
 @ROOT_INST_DIR@/Windows/debug/bin/plui2.bat
 @ROOT_INST_DIR@/Windows/debug/bin/plui.exe

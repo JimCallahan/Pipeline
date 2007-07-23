@@ -2244,6 +2244,7 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/TarTapeArchiver/v2_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/TaskAnnotation/Makefile
   src/java/us/temerity/pipeline/plugin/TaskAnnotation/v2_2_1/Makefile
+  src/java/us/temerity/pipeline/plugin/TaskAnnotation/v2_3_2/Makefile
   src/java/us/temerity/pipeline/plugin/TaskPolicyExt/Makefile
   src/java/us/temerity/pipeline/plugin/TaskPolicyExt/v2_2_1/Makefile
   src/java/us/temerity/pipeline/plugin/TaskPolicyExt/v2_3_2/Makefile
@@ -2329,6 +2330,7 @@ AC_CONFIG_FILES([
   src/java/scripts/plpluginmgr
   src/java/scripts/plqueuemgr
   src/java/scripts/plscript
+  src/java/scripts/plscript-batch
   src/java/scripts/plpython
   src/java/scripts/plui
   src/java/scripts/plvalidate
@@ -2344,6 +2346,7 @@ AC_CONFIG_FILES([
   src/java/scripts/debug/plpluginmgr
   src/java/scripts/debug/plqueuemgr
   src/java/scripts/debug/plscript
+  src/java/scripts/debug/plscript-batch
   src/java/scripts/debug/plpython
   src/java/scripts/debug/plui
   src/java/scripts/debug/pltestnative
@@ -2359,6 +2362,7 @@ AC_CONFIG_FILES([
   src/java/scripts/profile/plpluginmgr
   src/java/scripts/profile/plqueuemgr
   src/java/scripts/profile/plscript
+  src/java/scripts/profile/plscript-batch
   src/java/scripts/profile/plpython
   src/java/scripts/profile/plui
 
@@ -2403,6 +2407,7 @@ AC_CONFIG_FILES([
 
   src/windows/scripts/Makefile
   src/windows/scripts/plscript.bat.src
+  src/windows/scripts/plscript-batch.bat.src
   src/windows/scripts/plpython.bat.src
   src/windows/scripts/pljobmgr.bat.src
 
@@ -2411,6 +2416,7 @@ AC_CONFIG_FILES([
   src/windows/scripts/debug/pltestlight.bat.src
   src/windows/scripts/debug/pltestnative.bat.src
   src/windows/scripts/debug/plscript.bat.src
+  src/windows/scripts/debug/plscript-batch.bat.src
   src/windows/scripts/debug/plpython.bat.src
   src/windows/scripts/debug/plui2.bat.src  
   src/windows/scripts/debug/pljobmgr.bat.src

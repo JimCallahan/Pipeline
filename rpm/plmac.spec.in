@@ -31,11 +31,13 @@ Pipeline configuration process.
 
 @ROOT_INST_DIR@/MacOS/bin/plplugin
 @ROOT_INST_DIR@/MacOS/bin/plscript
+@ROOT_INST_DIR@/MacOS/bin/plscript-batch
 @ROOT_INST_DIR@/MacOS/bin/plpython
 @ROOT_INST_DIR@/MacOS/bin/plui
 
 @ROOT_INST_DIR@/MacOS/debug/bin/plplugin
 @ROOT_INST_DIR@/MacOS/debug/bin/plscript
+@ROOT_INST_DIR@/MacOS/debug/bin/plscript-batch
 @ROOT_INST_DIR@/MacOS/debug/bin/plpython
 @ROOT_INST_DIR@/MacOS/debug/bin/plui
 @ROOT_INST_DIR@/MacOS/debug/bin/pltestnative
@@ -44,6 +46,7 @@ Pipeline configuration process.
 
 @ROOT_INST_DIR@/MacOS/profile/bin/plplugin
 @ROOT_INST_DIR@/MacOS/profile/bin/plscript
+@ROOT_INST_DIR@/MacOS/profile/bin/plscript-batch
 @ROOT_INST_DIR@/MacOS/profile/bin/plpython
 @ROOT_INST_DIR@/MacOS/profile/bin/plui
 

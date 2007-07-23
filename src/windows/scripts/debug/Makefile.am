@@ -6,6 +6,7 @@ instbin_SCRIPTS = \
   pltestlight.bat \
   pltestnative.bat \
   plscript.bat \
+  plscript-batch.bat \
   plpython.bat \
   plui2.bat
 

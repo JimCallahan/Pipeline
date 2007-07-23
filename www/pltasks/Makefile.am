@@ -7,6 +7,7 @@ web_DATA = \
   details-footer.php \
   details-header.php \
   details.php \
+  plscript.php \
   search.php
 
 

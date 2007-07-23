@@ -4,6 +4,7 @@ instbindir = @ROOT_INST_DIR@/@NATIVE_OSTYPE@/bin
 instbin_SCRIPTS = \
   plplugin \
   plscript \
+  plscript-batch \
   plpython \
   plui
 

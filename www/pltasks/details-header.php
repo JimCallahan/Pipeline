@@ -37,8 +37,14 @@
             $image = 'prod/repository' . $thumb['thumb_path'];
             list($width, $height, $type, $attr) = getimagesize($image);
             
-            $thumbs[] = array('name'    => end(explode("/", $thumb['focus_name'])), 
-                              'version' => $thumb['focus_version'],  
+            $tname    = end(explode("/", $thumb['focus_name'])); 
+            $tversion = $thumb['focus_version']; 
+
+            $script = makeEditNodeScript($thumb['focus_name'], $tversion, $tname); 
+
+            $thumbs[] = array('name'    => $tname, 
+                              'version' => $tversion, 
+                              'script'  => $script, 
                               'image'   => $image, 
                               'width'   => $width, 
                               'height'  => $height); 
@@ -60,7 +66,7 @@
           
           foreach($thumbs as $thumb) {
             print('<TD align="center" valign="middle">' . 
-                  '<A HREF="temp-focus-script.plpython">'. 
+                  '<A href="' . $thumb['script'] . '">' .
                   '<IMG alt="" src="' . $temerity_root . 'loadpng.php?' . 
                   'File=pltasks/' . $thumb['image'] . '&Bg=d3ceb8"></A>' . 
                   '</TD>' . "\n" . 

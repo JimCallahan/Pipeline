@@ -15,6 +15,7 @@
 <?php
 {
   include($temerity_root . "common.php");
+  include($temerity_root . "pltasks/plscript.php");
 
   //------------------------------------------------------------------------------------------
   // SQL QUERIES

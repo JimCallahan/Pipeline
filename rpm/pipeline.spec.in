@@ -39,11 +39,13 @@ The core features of Pipeline include:
 
 @ROOT_INST_DIR@/Unix/bin/plplugin
 @ROOT_INST_DIR@/Unix/bin/plscript
+@ROOT_INST_DIR@/Unix/bin/plscript-batch
 @ROOT_INST_DIR@/Unix/bin/plpython
 @ROOT_INST_DIR@/Unix/bin/plui
 
 @ROOT_INST_DIR@/Unix/debug/bin/plplugin
 @ROOT_INST_DIR@/Unix/debug/bin/plscript
+@ROOT_INST_DIR@/Unix/debug/bin/plscript-batch
 @ROOT_INST_DIR@/Unix/debug/bin/plpython
 @ROOT_INST_DIR@/Unix/debug/bin/plui
 @ROOT_INST_DIR@/Unix/debug/bin/pltestnative
@@ -52,6 +54,7 @@ The core features of Pipeline include:
 
 @ROOT_INST_DIR@/Unix/profile/bin/plplugin
 @ROOT_INST_DIR@/Unix/profile/bin/plscript
+@ROOT_INST_DIR@/Unix/profile/bin/plscript-batch
 @ROOT_INST_DIR@/Unix/profile/bin/plpython
 @ROOT_INST_DIR@/Unix/profile/bin/plui
 

@@ -1,0 +1,1 @@
+"@JAVA_RUNTIME@" @JAVA_RUNTIME_OPTS@ @PLSCRIPT_GC_OPTS@ @PLSCRIPT_DEBUG_OPTS@ -cp @PIPELINE_JAR@ us/temerity/pipeline/bootstrap/Main us.temerity.pipeline.core.ScriptApp --batch=%1
