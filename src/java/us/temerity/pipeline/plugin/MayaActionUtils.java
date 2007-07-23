@@ -1,4 +1,4 @@
-// $Id: MayaActionUtils.java,v 1.4 2007/06/22 01:17:15 jesse Exp $
+// $Id: MayaActionUtils.java,v 1.5 2007/07/23 06:23:57 jim Exp $
 
 package us.temerity.pipeline.plugin;
 
@@ -64,10 +64,10 @@ class MayaActionUtils
    * The following single valued parameters are added: <BR>
    * 
    * <DIV style="margin-left: 40px;"> 
- *   Maya Scene <BR>
- *   <DIV style="margin-left: 40px;">
- *     The Maya scene that the Action is going to act upon.
- *   </DIV> <BR>
+   *   Maya Scene <BR>
+   *   <DIV style="margin-left: 40px;">
+   *     The Maya scene that the Action is going to act upon.
+   *   </DIV> <BR>
    * </DIV> <P> 
    * 
    * This method should be called in the subclass constructor before specifying parameter
@@ -172,7 +172,7 @@ class MayaActionUtils
    * <DIV style="margin-left: 40px;"> 
    *   Final MEL <BR>
    *   <DIV style="margin-left: 40px;">
-   *      The source node containing the MEL script to evaluate after the scene has been saved.
+   *     The source node containing the MEL script to evaluate after the scene has been saved.
    *   </DIV> <BR>
    * </DIV> <P> 
    * 
@@ -185,7 +185,8 @@ class MayaActionUtils
     ActionParam param = 
       new LinkActionParam
       (aFinalMEL,
-       "The source node containing the MEL script to evaluate after the scene has been saved.",
+       "The source node containing the MEL script to evaluate after the scene has " + 
+       "been saved.",
        null);
     addSingleParam(param);
   }
