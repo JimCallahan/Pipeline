@@ -1920,6 +1920,8 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/MRayMakeShaderAction/Makefile
   src/java/us/temerity/pipeline/plugin/MRayMakeShaderAction/v2_0_9/Makefile
   src/java/us/temerity/pipeline/plugin/MRayMakeShaderAction/v2_2_1/Makefile
+  src/java/us/temerity/pipeline/plugin/MRayOptionsAction/Makefile
+  src/java/us/temerity/pipeline/plugin/MRayOptionsAction/v2_3_5/Makefile
   src/java/us/temerity/pipeline/plugin/MRayRenderAction/Makefile
   src/java/us/temerity/pipeline/plugin/MRayRenderAction/v2_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/MRayRenderAction/v2_0_10/Makefile
@@ -2012,6 +2014,8 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/MayaImportAction/v2_0_9/Makefile
   src/java/us/temerity/pipeline/plugin/MayaLqExportAction/Makefile
   src/java/us/temerity/pipeline/plugin/MayaLqExportAction/v2_0_9/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaMRayInitMELAction/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaMRayInitMELAction/v2_3_5/Makefile
   src/java/us/temerity/pipeline/plugin/MayaMRayRenderAction/Makefile
   src/java/us/temerity/pipeline/plugin/MayaMRayRenderAction/v2_0_10/Makefile
   src/java/us/temerity/pipeline/plugin/MayaMRayRenderAction/v2_0_11/Makefile
@@ -2373,6 +2377,9 @@ AC_CONFIG_FILES([
   src/java/scripts/builder/maya2mr/v2_3_1/plShotBuilder
   src/java/scripts/builder/maya2mr/v2_3_2/Makefile
   src/java/scripts/builder/maya2mr/v2_3_2/plAdvAssetBuilder
+  src/java/scripts/builder/maya2mr/v2_3_2/plProjectBuilder
+  src/java/scripts/builder/maya2mr/v2_3_2/plProjectScriptBuilder
+  src/java/scripts/builder/maya2mr/v2_3_2/plProjectTurntableBuilder
 
   src/java/share/Makefile
   src/java/share/Unix/Makefile
@@ -2428,6 +2435,9 @@ AC_CONFIG_FILES([
   src/windows/scripts/builder/maya2mr/v2_3_1/plShotBuilder.bat.src
   src/windows/scripts/builder/maya2mr/v2_3_2/Makefile
   src/windows/scripts/builder/maya2mr/v2_3_2/plAdvAssetBuilder.bat.src
+  src/windows/scripts/builder/maya2mr/v2_3_2/plProjectBuilder.bat.src
+  src/windows/scripts/builder/maya2mr/v2_3_2/plProjectScriptBuilder.bat.src
+  src/windows/scripts/builder/maya2mr/v2_3_2/plProjectTurntableBuilder.bat.src
 
   src/windows/launchers/Makefile
   src/windows/launchers/plui.exe4j
