@@ -12,3 +12,7 @@ web_DATA = \
 
 
 SUBDIRS = sql
+
+
+install-data-hook: installdirs
+	ln -s @PRODDIR@ $(top_builddir)/rpm/DEST/pipeline/$(webdir)/prod

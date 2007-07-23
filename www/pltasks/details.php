@@ -152,23 +152,41 @@
     }
   
     foreach($tasks[$tid]['events'] as $eid => $e) {
-      $sql = ("SELECT node_names.node_name as `name`, " .
-                     "node_info.node_version as `vid`, " .
-                     "node_info.is_edit as `is_edit`, " . 
-                     "node_info.is_focus as `is_focus`, " . 
-                     "node_info.is_thumb as `is_thumb`, " . 
-                     "node_info.is_approve as `is_approve` " . 
-              "FROM node_info, node_names " . 
-              "WHERE node_info.event_id = " . $eid . " " . 
-              "AND node_info.node_id = node_names.node_id"); 
-              
-      $tasks[$tid]['sql'] = $sql;
+      {
+        $sql = ("SELECT node_names.node_name as `name`, " .
+                       "node_info.node_version as `vid`, " .
+                       "node_info.is_edit as `is_edit`, " . 
+                       "node_info.is_focus as `is_focus`, " .    
+                       "node_info.is_thumb as `is_thumb`, " .    // is this needed??
+                       "node_info.is_approve as `is_approve` " . // is this needed??
+                "FROM node_info, node_names " . 
+                "WHERE node_info.event_id = " . $eid . " " . 
+                "AND node_info.node_id = node_names.node_id"); 
 
-      $result = mysql_query($sql)
-        or show_sql_error($sql);
+        $result = mysql_query($sql)
+          or show_sql_error($sql);
 
-      while($row = mysql_fetch_array($result, MYSQL_ASSOC)) 
-        $tasks[$tid]['events'][$eid]['nodes'][] = $row;
+        while($row = mysql_fetch_array($result, MYSQL_ASSOC)) 
+          $tasks[$tid]['events'][$eid]['nodes'][] = $row;
+      }
+
+      {
+        $sql = ("SELECT node_names.node_name as `focus_name`,  " .
+                       "node_info.node_version as `focus_version`,  " .
+                       "thumb_info.thumb_path as `thumb_path` " .
+                "FROM `thumb_info`, `node_info`, `node_names` " .
+                "WHERE node_info.event_id = " . $eid . " " . 
+                "AND node_info.info_id = thumb_info.focus_info_id " .
+                "AND node_info.node_id = node_names.node_id"); 
+
+        $tasks[$tid]['sql'] = $sql;
+
+        $result = mysql_query($sql)
+          or show_sql_error($sql);
+
+        while($row = mysql_fetch_array($result, MYSQL_ASSOC)) 
+          $tasks[$tid]['events'][$eid]['thumbnails'][] = $row;
+      }
     }
   }
 

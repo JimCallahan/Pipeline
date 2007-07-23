@@ -45,6 +45,14 @@ CREATE TABLE `node_info` (
   KEY `is_approve` (`is_approve`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
+CREATE TABLE `thumb_info` (
+  `thumb_info_id` mediumint(8) unsigned NOT NULL,
+  `focus_info_id` mediumint(8) unsigned NOT NULL,
+  `thumb_path` varchar(2048) NOT NULL,
+  PRIMARY KEY  (`thumb_info_id`),
+  KEY `focus_info_id` (`focus_info_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 ;
+
 CREATE TABLE `node_names` (
   `node_id` mediumint(8) unsigned NOT NULL auto_increment,
   `node_name` varchar(2048) NOT NULL,
