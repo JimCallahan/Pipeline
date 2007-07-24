@@ -1,4 +1,4 @@
-// $Id: ApprovalBuilder.java,v 1.2 2007/07/23 20:02:41 jesse Exp $
+// $Id: ApprovalBuilder.java,v 1.3 2007/07/24 07:25:15 jim Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -106,7 +106,7 @@ class ApprovalBuilder
       pPlug.newAnnotation("Task", new VersionID("2.3.2"), "Temerity");
     annot.setParamValue("TaskName", pTaskName);
     annot.setParamValue("TaskType", taskType);
-    annot.setParamValue("Purpose", "Prepare");
+    annot.setParamValue("Purpose", "Product");
     stage.addAnnotation("Task", annot); 
   }
   
