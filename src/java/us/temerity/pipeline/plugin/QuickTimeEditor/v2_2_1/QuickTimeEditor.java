@@ -1,4 +1,4 @@
-// $Id: QuickTimeEditor.java,v 1.1 2007/06/17 15:34:45 jim Exp $
+// $Id: QuickTimeEditor.java,v 1.2 2007/07/24 04:23:00 jim Exp $
 
 package us.temerity.pipeline.plugin.QuickTimeEditor.v2_2_1;
 
@@ -118,8 +118,9 @@ class QuickTimeEditor
     /* run the JavaScript */ 
     {
       ArrayList<String> args = new ArrayList<String>();
-      args.add("/nologo");
-      args.add("/B");
+      args.add("//nologo");
+      args.add("//B");
+      args.add("//E:jscript");
       args.add(jscript.toString());
       
       return new SubProcessLight(author, getName(), "cscript.exe", args, env, dir);
