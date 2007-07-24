@@ -141,7 +141,7 @@ class ProjectScriptBuilder
         new BooleanUtilityParam
         (aPlaceholder,
          "Build placeholder MEL scripts for each asset type.", 
-         false); 
+         true); 
       addParam(param);
     }
     
@@ -150,7 +150,7 @@ class ProjectScriptBuilder
         new BooleanUtilityParam
         (aAssetVerification,
          "Build verification mel scripts for each step in the asset process.", 
-         false); 
+         true); 
       addParam(param);
     }
     
@@ -163,7 +163,7 @@ class ProjectScriptBuilder
          "create your own versions of these scripts, you can leave this set to false.  If you" +
          "need to quickly create asset networks that will build and can be checked in, without" +
          "having to create your own mel scripts, set this to (YES)", 
-         false); 
+         true); 
       addParam(param);
     }
     

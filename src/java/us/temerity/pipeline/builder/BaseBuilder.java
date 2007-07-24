@@ -90,7 +90,7 @@ class BaseBuilder
 	new BooleanUtilityParam
 	(aReleaseOnError,
 	 "Release all the created nodes if an exception is thrown.", 
-	 false);
+	 true);
       addParam(param);
     }
     pCurrentPass = 1;

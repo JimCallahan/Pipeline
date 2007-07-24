@@ -96,7 +96,7 @@ class ProjectTurntableBuilder
       UtilityParam param = 
         new BooleanUtilityParam
         (aMakeSetups,
-         "Should be builder create actual turntable seutps.  " +
+         "Should be builder create actual turntable setups.  " +
          "If this is set to (no) then empty scenes will be made", 
          false); 
       addParam(param);
@@ -154,11 +154,13 @@ class ProjectTurntableBuilder
   
   
   @Override
-  protected TreeSet<String> getNodesToCheckIn()
+  protected TreeSet<String> 
+  getNodesToCheckIn()
   {
-    // TODO Auto-generated method stub
-    return null;
+    return getCheckInList();
   }
+  
+  
   
   
   /*----------------------------------------------------------------------------------------*/
