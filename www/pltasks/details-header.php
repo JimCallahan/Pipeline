@@ -1,7 +1,4 @@
-<FORM action="../phpinfo.php" method="POST">
-<INPUT name="task_id" value="<?php echo($tid);?>" type="hidden">
-<INPUT name="auth_id" value="<?php echo($auth_id);?>" type="hidden">
-<INPUT name="auth_name" value="<?php echo($auth_name);?>" type="hidden">
+
 <TABLE class="frame" width="100%" align="center" cellpadding="4" cellspacing="1" border="0">
   <TR> 
     <TH align="left" class="theader" colspan="3" nowrap="nowrap">
@@ -143,9 +140,48 @@
     
   <TR>	
     <TH class="theader" colspan="3" align="center" height="15">
-      <INPUT class="liteoption" value="Post" type="submit">
+
+    <TABLE class="theader" width="100%" align="center" 
+           cellpadding="2" cellspacing="1" border="0">
+      <TR>
+        
+    <?php
+    {
+      $auth_html = 
+        ('  <INPUT name="task_id" value="' . $tid . '" type="hidden">' . "\n" .
+         '  <INPUT name="auth_id" value="' . $auth_id . '" type="hidden">' . "\n" .
+         '  <INPUT name="auth_name" value="' . $auth_name . 'x" type="hidden">');
+      
+      if($auth_name != NULL) {
+        $supervised_by = $task_owners[$tid]['supervised_by']; 
+        if(($supervised_by != NULL) && in_array($auth_name, $supervised_by)) 
+          print('<TH class="theader">' . "\n" . 
+                '<FORM action="../phpinfo.php" method="POST">' . "\n" . 
+                $auth_html . "\n" . 
+                '  <INPUT class="liteoption" value="Review" type="submit">' . "\n" . 
+                '</FORM>' . "\n" . 
+                '</TH>' . "\n");
+
+        if($auth_name == 'pipeline')
+          print('<TH class="theader">' . "\n" . 
+                '<FORM action="../phpinfo.php" method="POST">' . "\n" . 
+                $auth_html . "\n" . 
+                '<INPUT class="liteoption" value="Assign" type="submit">' . "\n" . 
+                '</FORM>' . "\n" . 
+                '</TH>' . "\n");
+      }
+    }
+    ?>
+
+        <TH class="theader"> 
+          <INPUT class="liteoption" value="Comment" type="submit">
+        </TH>
+      </TR>
+    </TABLE>
+
     </TH>
   </TR>
+
 </TABLE>
 </FORM>
 

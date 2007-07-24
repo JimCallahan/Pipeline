@@ -85,11 +85,11 @@
     }
     
     /* add names of assigned_to and supervised_by users/groups */ 
-    if($t['assigned_to'] != NULL) {
+    if($tasks[$tid]['assigned_id'] != NULL) {
       $sql = ("SELECT idents.ident_name AS `name`, " .  
                      "idents.is_group AS `is_group` " . 
               "FROM idents " . 
-              "WHERE ident_id = " . $t['assigned_to']);
+              "WHERE ident_id = " . $tasks[$tid]['assigned_id']);
               
       $result = mysql_query($sql)
         or show_sql_error($sql);
@@ -162,8 +162,6 @@
                        "node_info.node_version as `vid`, " .
                        "node_info.is_edit as `is_edit`, " . 
                        "node_info.is_focus as `is_focus` " .    
-                //     "node_info.is_thumb as `is_thumb`, " .   
-                //     "node_info.is_approve as `is_approve` " . 
                 "FROM node_info, node_names " . 
                 "WHERE node_info.event_id = " . $eid . " " . 
                 "AND node_info.node_id = node_names.node_id"); 
@@ -226,7 +224,7 @@
     $first_task = false;
 
     $assigned = "-";
-    if(strlen($t['assigned_to']) > 0)
+    if(strlen($task_owners[$tid]['assigned_to']) > 0)
       $assigned = $task_owners[$tid]['assigned_to'];       
     
     $supervised = "-";
@@ -300,10 +298,10 @@
 <?php 
 // print("<P>_REQUEST<BR>\n");
 // var_dump($_REQUEST);
-//print("<P>tasks<BR>\n");
-//var_dump($tasks);
-// print("<P>task_owners<BR>\n");
-// var_dump($task_owners);
+print("<P>tasks<BR>\n");
+var_dump($tasks);
+print("<P>task_owners<BR>\n");
+var_dump($task_owners);
 ?>
 </PRE>
 

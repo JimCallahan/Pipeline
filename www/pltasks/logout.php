@@ -32,27 +32,31 @@
     <TD class="row2">
       <TABLE border="0" cellpadding="3" cellspacing="1" width="100%" class="row2">
         <TR>
-          <TD colspan="2" align="center"><DIV style="height: 50px;"></DIV></TD>       
+          <TD colspan="5" align="center"><DIV style="height: 50px;"></DIV></TD>       
         </TR>
 
         <TR>
-          <TD align="center" colspan="3"><SPAN class="genbig">
-            You are now logged out...
-          </SPAN><TD>
-        </TR>
+          <TD align="center"><DIV style="width: 50px;"></DIV></TD>  
 
-        <TR>
-          <TD colspan="3" align="center"><DIV style="height: 25px;"></DIV></TD>       
-        </TR>
-
-        <TR>
-          <TD colspan="2" align="center">
-            <INPUT class="mainoption" value="Login" type="submit">  
+          <TD align="center">
+            <FORM action="login.php" method="POST">
+              <INPUT class="mainoption" value="Login" type="submit"> 
+            </FORM> 
           </TD>
+
+          <TD align="center"><DIV style="width: 8px;"></DIV></TD>  
+
+          <TD align="center">
+            <FORM action="register.php" method="POST">
+              <INPUT class="mainoption" value="Register" type="submit">   
+            </FORM> 
+          </TD>
+
+          <TD align="center"><DIV style="width: 50px;"></DIV></TD>  
         </TR>
 
         <TR>
-          <TD colspan="2" align="center"><DIV style="height: 50px;"></DIV></TD>          
+          <TD colspan="5" align="center"><DIV style="height: 50px;"></DIV></TD>          
         </TR>
       </TABLE>
     </TD>

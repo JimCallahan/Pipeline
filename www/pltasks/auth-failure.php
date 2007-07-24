@@ -31,15 +31,15 @@
         </TR>
 
         <TR>
-          <TD align="right">
+          <TD align="center">
             <FORM action="login.php" method="POST">
-              <INPUT class="mainoption" value="Try Again" type="submit"> 
+              <INPUT class="mainoption" value="Login" type="submit"> 
             </FORM> 
           </TD>
 
           <TD><DIV style="width: 15px;"></DIV></TD>  
 
-          <TD align="left">
+          <TD align="center">
             <FORM action="register.php" method="POST">
               <INPUT class="mainoption" value="Register" type="submit">   
             </FORM> 

@@ -182,6 +182,10 @@ table.warning {
   background-color: #ede9da; 
 }
 
+table.theader {
+  background-color: #bbb6a2;
+}
+
 
 th.bar {
   background-color: #bbb6a2;
