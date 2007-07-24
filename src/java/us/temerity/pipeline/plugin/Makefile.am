@@ -137,6 +137,7 @@ SUBDIRS = \
   MayaReferenceAction \
   MayaRemoveReferenceTool \
   MayaRemoveRefTool \
+  MayaRemoveRefMELAction \
   MayaRenderAction \
   MayaRenderGlobalsAction \
   MayaReplaceRefAction \
