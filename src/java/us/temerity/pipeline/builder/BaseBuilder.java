@@ -346,7 +346,7 @@ class BaseBuilder
       ("Illegal attempt mapping a Builder parameter to a SubBuilder.\n" +
        masterParam + " is not a Simple Parameter in this Builder " +
        "named (" + getName() +  "), making the attempted mapping invalid.\n" +
-       "The full attempted mapping was of " + masterParam+ "in the master " +
+       "The full attempted mapping was of " + masterParam+ " in the master " +
        "to " + subParam + " in the sub Builder(" + subBuilderName + ").");
     
     subBuilder.addParamMapping(subParam, masterParam);

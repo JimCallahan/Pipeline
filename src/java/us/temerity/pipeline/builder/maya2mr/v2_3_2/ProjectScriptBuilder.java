@@ -60,13 +60,6 @@ class ProjectScriptBuilder
         ("The project naming class that was passed in does not implement " +
          "the BuildsProjectNames interface");
     
-    if (!projectNames.isGenerated()) {  
-      addSubBuilder(projectNames);
-      configNamer(projectNames);
-    }
-    
-    pProjectNames = (BuildsProjectNames) projectNames;
-    
     // Global parameters
     {
       ArrayList<String> projects = pBuilderInfo.getProjectList();
@@ -166,6 +159,13 @@ class ProjectScriptBuilder
          true); 
       addParam(param);
     }
+    
+    if (!projectNames.isGenerated()) {  
+      addSubBuilder(projectNames);
+      configNamer(projectNames);
+    }
+    
+    pProjectNames = (BuildsProjectNames) projectNames;
     
     addSetupPass(new InformationPass());
     ConstructPass build = new BuildPass();
