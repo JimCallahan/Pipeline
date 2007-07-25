@@ -99,6 +99,8 @@ public class BuilderApp
     MasterMgrClient mclient = new MasterMgrClient();
     QueueMgrClient qclient = new QueueMgrClient();
     
+    LogMgr.getInstance().setLevel(Kind.Ops, Level.Fine);
+    
     try {
       BuilderOptsParser parser = 
 	new BuilderOptsParser(new StringReader(pPackedArgs));
