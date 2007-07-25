@@ -1,5 +1,13 @@
 #!/bin/sh
 
+puid=`id -u`
+pgid=`id -g`
+if [ $puid -ne @PIPELINE_UID@ -o $pgid -ne @PIPELINE_GID@ ]
+then
+  echo "This program can only be run by the (@PIPELINE_USER@) user!"
+  exit 1
+fi
+
 cd `pwd`
 exec "@JAVA_RUNTIME@" @JAVA_RUNTIME_OPTS@ \
   @PLJOBMGR_GC_OPTS@ \
