@@ -123,8 +123,6 @@ class AfterFXRenderMovAction
     //addSupport(OsType.MacOS);
     addSupport(OsType.Windows);
     removeSupport(OsType.Unix);
-    
-    underDevelopment();
   }
   
   

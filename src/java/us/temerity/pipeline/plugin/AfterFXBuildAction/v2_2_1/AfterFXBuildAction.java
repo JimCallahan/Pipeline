@@ -72,8 +72,6 @@ class AfterFXBuildAction
     sourceLayout.add(aPreMultColor);
     
     setSourceLayout(sourceLayout);
-    
-    underDevelopment();
   }
   
   

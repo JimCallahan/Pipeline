@@ -100,8 +100,6 @@ class AfterFXRenderImgAction
     //addSupport(OsType.MacOS);
     addSupport(OsType.Windows);
     removeSupport(OsType.Unix);
-    
-    underDevelopment();
   }
   
   
