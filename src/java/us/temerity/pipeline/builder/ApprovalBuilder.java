@@ -1,4 +1,4 @@
-// $Id: ApprovalBuilder.java,v 1.3 2007/07/24 07:25:15 jim Exp $
+// $Id: ApprovalBuilder.java,v 1.4 2007/07/25 01:44:41 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -55,7 +55,7 @@ class ApprovalBuilder
       new BooleanUtilityParam
       (aDoAnnotations, 
        "Should Task Annotations be added to all the nodes.", 
-       false); 
+       true); 
     addParam(param);
   }
   

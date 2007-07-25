@@ -2,22 +2,21 @@ package us.temerity.pipeline.builder.tests;
 
 import java.util.TreeSet;
 
-import us.temerity.pipeline.LogMgr;
-import us.temerity.pipeline.PipelineException;
+import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
 
 
 public class TopBuilder
   extends BaseBuilder
 {
-  public TopBuilder() 
+  public TopBuilder(BuilderInformation info) 
     throws PipelineException
   {
-    super("TopBuilder", "The TopLevel Test Builder");
+    super("TopBuilder", "The TopLevel Test Builder", info);
     
     {
-      BuilderParam param = 
-	new IntegerBuilderParam
+      UtilityParam param = 
+	new IntegerUtilityParam
 	(aNumberOfChildren,
 	 "Number of Child Builders to create",
 	 1);
@@ -62,22 +61,22 @@ public class TopBuilder
     validatePhase()
       throws PipelineException
     {
-      sLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
+      pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
 	"Starting the validate phase in " + this.toString());
       validateBuiltInParams();
       pNumberOfChildren = getIntegerParamValue(new ParamMapping(aNumberOfChildren), 1);
-      sLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, "Validation complete.");
+      pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, "Validation complete.");
     }
 
     @Override
     public void initPhase()
       throws PipelineException
     {
-      sLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
+      pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
 	"Starting the init phase in " + this.toString());
       for (int i = 0; i < pNumberOfChildren ; i ++) 
-	addSubBuilder(new BabyBuilder("LittleBaby" + i));
-      sLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
+	addSubBuilder(new BabyBuilder("LittleBaby" + i, pBuilderInformation));
+      pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
 	"Finished the init phase in the Information Pass.");
     }
   }

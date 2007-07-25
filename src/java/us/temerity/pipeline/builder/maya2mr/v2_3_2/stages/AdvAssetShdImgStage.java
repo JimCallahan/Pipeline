@@ -34,7 +34,7 @@ class AdvAssetShdImgStage
           nodeName,
           new FrameRange(1, 90, 1),
           4,
-          "iff");
+          "tga");
     setSource(modelName, SourceType.Geometry);
     setSource(lightsName, SourceType.Lights);
     setSource(shaderName, SourceType.Shaders);

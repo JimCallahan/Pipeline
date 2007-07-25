@@ -35,13 +35,13 @@ class AdvAssetBuilderTTImgStage
           context, 
           client, 
           nodeName, 
-          "iff", 
+          "tga", 
           90, 
           4, 
           mayaScene, 
           globals,
           renderer);
-    //addSingleParamValue("CameraOverride", "tt:renderCam");
+    addSingleParamValue("CameraOverride", "tt:renderCam");
   }
   private static final long serialVersionUID = 8761960778392632689L;
 }

@@ -292,4 +292,13 @@ interface BuildsAssetNames
   
   public String
   getShaderTTNodeName();
+
+  public String 
+  getModelThumbNodeName();
+
+  public String 
+  getRigThumbNodeName();
+
+  public String 
+  getShaderThumbNodeName();
 }

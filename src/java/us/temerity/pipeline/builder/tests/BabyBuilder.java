@@ -11,30 +11,31 @@ public class BabyBuilder
 {
   public BabyBuilder
   (
-    String name
+    String name,
+    BuilderInformation builderInformation
   ) 
     throws PipelineException
   {
-    super(name, "A Baby Builder");
+    super(name, "A Baby Builder", builderInformation);
     {
-      BuilderParam param = 
-	new BooleanBuilderParam
+      UtilityParam param = 
+	new BooleanUtilityParam
 	(aMakeChild,
 	 "Do I need to have a child", 
 	 false);
       addParam(param);
     }
     {
-      BuilderParam param = 
-	new BooleanBuilderParam
+      UtilityParam param = 
+	new BooleanUtilityParam
 	(aMakeLaterChild,
 	 "Do I need to have a child", 
 	 false);
       addParam(param);
     }
     {
-      BuilderParam param = 
-	new BooleanBuilderParam
+      UtilityParam param = 
+	new BooleanUtilityParam
 	(aMakeThirdChild,
 	 "Do I need to have a child", 
 	 false);
@@ -92,22 +93,22 @@ public class BabyBuilder
     validatePhase()
       throws PipelineException
     {
-      sLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
+      pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
 	"Starting the validate phase in " + this.toString());
       validateBuiltInParams();
       pMakeChild = getBooleanParamValue(new ParamMapping(aMakeChild));
-      sLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, "Validation complete.");
+      pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, "Validation complete.");
     }
 
     @Override
     public void initPhase()
       throws PipelineException
     {
-      sLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
+      pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
 	"Starting the init phase in " + this.toString());
       if (pMakeChild)
-	addSubBuilder(new BabyBuilder("FirstChild"));
-      sLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
+	addSubBuilder(new BabyBuilder("FirstChild", pBuilderInformation));
+      pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
 	"Finished the init phase.");
     }
   }
@@ -130,22 +131,22 @@ public class BabyBuilder
     validatePhase()
       throws PipelineException
     {
-      sLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
+      pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
 	"Starting the validate phase in " + this.toString());
       validateBuiltInParams();
       pMakeLaterChild = getBooleanParamValue(new ParamMapping(aMakeLaterChild));
-      sLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, "Validation complete.");
+      pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, "Validation complete.");
     }
 
     @Override
     public void initPhase()
       throws PipelineException
     {
-      sLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
+      pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
 	"Starting the init phase in " + this.toString());
       if (pMakeLaterChild)
-	addSubBuilder(new BabyBuilder("SecondChild"));
-      sLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
+	addSubBuilder(new BabyBuilder("SecondChild", pBuilderInformation));
+      pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
 	"Finished the init phase.");
     }
   }
@@ -168,22 +169,22 @@ public class BabyBuilder
     validatePhase()
       throws PipelineException
     {
-      sLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
+      pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
 	"Starting the validate phase in " + this.toString());
       validateBuiltInParams();
       pMakeThirdChild = getBooleanParamValue(new ParamMapping(aMakeThirdChild));
-      sLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, "Validation complete.");
+      pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, "Validation complete.");
     }
 
     @Override
     public void initPhase()
       throws PipelineException
     {
-      sLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
+      pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
 	"Starting the init phase in " + this.toString());
       if (pMakeThirdChild)
-	addSubBuilder(new BabyBuilder("ThirdChild"));
-      sLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
+	addSubBuilder(new BabyBuilder("ThirdChild", pBuilderInformation));
+      pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
 	"Finished the init phase.");
     }
   }

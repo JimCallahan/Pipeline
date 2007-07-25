@@ -1,5 +1,8 @@
 package us.temerity.pipeline.builder.maya2mr.v2_3_2;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.BaseNames;
 import us.temerity.pipeline.builder.UtilContext;
@@ -44,11 +47,14 @@ class DefaultAssetNames
       addParam(param);
     }
     {
+      String each[] = {"prop", "set", "character"};
+      ArrayList<String> choices = new ArrayList<String>(Arrays.asList(each)); 
       UtilityParam param = 
-	new StringUtilityParam
+	new EnumUtilityParam
 	(aAssetType, 
 	 "The Type of the asset", 
-	 null);
+	 "character",
+	 choices);
       addParam(param);
     }
     {
@@ -90,6 +96,7 @@ class DefaultAssetNames
     String approve = getApproveDirectory();
     String prepare = getPrepareDirectory();
     String product = getProductDirectory();
+    String thumb = getThumbnailDirectory();
 
 //  No Approval Format
     if (!pApprovalMode) {
@@ -123,6 +130,7 @@ class DefaultAssetNames
       pModPrepare      = new Path(pModSubmit, prepare);
       pModApprove      = new Path(pModStart, approve);
       pModProduct      = new Path(pModApprove, product);
+      pModThumb        = new Path(pModStart, thumb);
 
       pRigStart        = new Path(pAssetPath, "rig");
       pRigEdit         = new Path(pRigStart, edit);
@@ -130,6 +138,7 @@ class DefaultAssetNames
       pRigPrepare      = new Path(pRigSubmit, prepare);
       pRigApprove      = new Path(pRigStart, approve);
       pRigProduct      = new Path(pRigApprove, product);
+      pRigThumb        = new Path(pRigStart, thumb);
 
       pMatStart        = new Path(pAssetPath, "mat");
       pMatEdit         = new Path(pMatStart, edit);
@@ -142,6 +151,7 @@ class DefaultAssetNames
       pShdPrepare      = new Path(pShdSubmit, prepare);
       pShdApprove      = new Path(pShdStart, approve);
       pShdProduct      = new Path(pShdApprove, product);
+      pShdThumb        = new Path(pShdStart, thumb);
       
       pTexStart        = new Path(pAssetPath, "tex");
       pTexEdit         = new Path(pTexStart, edit);
@@ -187,6 +197,12 @@ class DefaultAssetNames
   getProductDirectory()
   {
     return "product";
+  }
+  
+  protected String
+  getThumbnailDirectory()
+  {
+    return "thumb";
   }
 
   
@@ -468,6 +484,12 @@ class DefaultAssetNames
     return new Path(pModPrepare, pAssetName + "_mod_img").toString();
   }
   
+  public String
+  getModelThumbNodeName()
+  {
+    return new Path(pModThumb, pAssetName + "_mod_thumb").toString();
+  }
+  
   /**
    * @return The rig edit node name.
    */
@@ -558,6 +580,12 @@ class DefaultAssetNames
     return new Path(pRigPrepare, pAssetName + "_rig_fbx").toString();
   }
   
+  public String
+  getRigThumbNodeName()
+  {
+    return new Path(pRigThumb, pAssetName + "_rig_thumb").toString();
+  }
+  
   /**
    * @return the pTextureNodeName
    */
@@ -633,6 +661,12 @@ class DefaultAssetNames
     return new Path(pShdEdit, pAssetName + "_shd_tt").toString();
   }
   
+  public String
+  getShaderThumbNodeName()
+  {
+    return new Path(pShdThumb, pAssetName + "_shd_thumb").toString();
+  }
+  
   
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
@@ -672,6 +706,7 @@ class DefaultAssetNames
   private Path pModSubmit;
   private Path pModApprove;
   private Path pModProduct;
+  private Path pModThumb;
   
   private Path pRigStart;
   private Path pRigEdit;
@@ -679,6 +714,7 @@ class DefaultAssetNames
   private Path pRigSubmit;
   private Path pRigApprove;
   private Path pRigProduct;
+  private Path pRigThumb;
   
   private Path pMatStart;
   private Path pMatEdit;
@@ -695,6 +731,7 @@ class DefaultAssetNames
   private Path pShdSubmit;
   private Path pShdApprove;
   private Path pShdProduct;
+  private Path pShdThumb;
   
   private Path pTexStart;
   private Path pTexEdit;

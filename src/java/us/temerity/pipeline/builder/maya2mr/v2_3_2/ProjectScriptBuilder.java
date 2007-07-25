@@ -123,7 +123,7 @@ class ProjectScriptBuilder
     {
       UtilityParam param = 
         new BooleanUtilityParam
-        (aMRayInit,
+        (aMentalRayInit,
          "Build a Mental Ray initialization script.", 
          true); 
       addParam(param);
@@ -206,7 +206,7 @@ class ProjectScriptBuilder
       layout.addSeparator(2);
       layout.addEntry(2, aGlobals);
       layout.addSeparator(2);
-      layout.addEntry(2, aMRayInit);
+      layout.addEntry(2, aMentalRayInit);
       
       PassLayoutGroup finalLayout = new PassLayoutGroup(layout.getName(), layout);
       setLayout(finalLayout);
@@ -288,7 +288,7 @@ class ProjectScriptBuilder
   public final static String aCopyShading = "CopyShading";
   public final static String aCopyRigging = "CopyRigging";
   public final static String aGlobals = "Globals";
-  public final static String aMRayInit = "MRayInit";
+  public final static String aMentalRayInit = "MentalRayInit";
   public final static String aPlaceholder = "Placeholder";
   public final static String aAssetVerification = "AssetVerification";
   public final static String aDefaultScripts = "DefaultScripts";
@@ -334,7 +334,7 @@ class ProjectScriptBuilder
       pCopyRigging = getBooleanParamValue(new ParamMapping(aCopyRigging));
       pGlobals = getBooleanParamValue(new ParamMapping(aGlobals));
       //pShaderType = 
-      pMRayInit = getBooleanParamValue(new ParamMapping(aMRayInit));
+      pMRayInit = getBooleanParamValue(new ParamMapping(aMentalRayInit));
       pPlaceholder = getBooleanParamValue(new ParamMapping(aPlaceholder));
       pAssetVerification = getBooleanParamValue(new ParamMapping(aAssetVerification));
       

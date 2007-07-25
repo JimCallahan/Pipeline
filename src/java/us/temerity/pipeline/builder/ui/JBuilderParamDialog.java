@@ -322,7 +322,7 @@ class JBuilderParamDialog
     if (releaseNodes) {
       message += "The builder is set to release all registered nodes.  " +
       		 "Do you wish to release these nodes?\n";
-      JConfirmDialog dialog = new JConfirmDialog(this, message);
+      JConfirmDialog dialog = new JConfirmDialog(this, "Release Nodes?", message);
       dialog.setVisible(true);
       if (dialog.wasConfirmed()) {
 	disableAllButtons();

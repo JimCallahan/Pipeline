@@ -949,7 +949,7 @@ class BaseBuilder
   {
     if (nodeName == null)
       return false;
-    pLog.log(Kind.Ops, Level.Finer, "Checking for existance of the node (" + nodeName + ")");
+    pLog.log(Kind.Ops, Level.Finest, "Checking for existance of the node (" + nodeName + ")");
     boolean exists = nodeExists(nodeName);
     if (!exists) 
       return false;
@@ -1026,7 +1026,7 @@ class BaseBuilder
 	toReturn.addAll(pClient.submitJobs(getAuthor(), getView(), nodeName, null));
       }
       catch(PipelineException ex) {
-	pLog.log(Kind.Ops, Level.Warning, 
+	pLog.log(Kind.Ops, Level.Finest, 
 	  "No job was generated for node ("+nodeName+")\n" + ex.getMessage()); 
       }
     }

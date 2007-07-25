@@ -91,7 +91,7 @@ class ProjectTurntableBuilder
         (aMakeSetups,
          "Should be builder create actual turntable setups.  " +
          "If this is set to (no) then empty scenes will be made", 
-         false); 
+         true); 
       addParam(param);
     }
     

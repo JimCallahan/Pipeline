@@ -1,4 +1,4 @@
-// $Id: AdvAssetBuilder.java,v 1.4 2007/07/23 20:02:51 jesse Exp $
+// $Id: AdvAssetBuilder.java,v 1.5 2007/07/25 01:44:41 jesse Exp $
 
 package us.temerity.pipeline.builder.maya2mr.v2_3_2;
 
@@ -101,7 +101,14 @@ class AdvAssetBuilder
 //      addParam(param);
 //    }
     
-    
+    {
+      UtilityParam param = 
+        new BooleanUtilityParam
+        (aBuildThumbnails, 
+         "Are Thumbnail nodes needed.", 
+         true); 
+      addParam(param);
+    }
 
     //Model Parameters
     {
@@ -194,7 +201,7 @@ class AdvAssetBuilder
         new BooleanUtilityParam
         (aBuildMiShadeNetwork,
          "Build an advanced shading setup for mental ray standalone rendering", 
-         false); 
+         true); 
       addParam(param);
     }
     {
@@ -218,7 +225,7 @@ class AdvAssetBuilder
         new BooleanUtilityParam
         (aSeparateAnimTextures,
          "Build a separate node for textures just for the animators.", 
-         false); 
+         true); 
       addParam(param);
     }
     
@@ -254,8 +261,9 @@ class AdvAssetBuilder
       layout.addEntry(1, aReleaseOnError);
       layout.addEntry(1, null);
       layout.addEntry(1, aProjectName);
-      layout.addEntry(1, aDoAnnotations);
       
+      layout.addEntry(2, aDoAnnotations);
+      layout.addEntry(2, aBuildThumbnails);
       
       LayoutGroup mayaGroup = 
         new LayoutGroup("MayaGroup", "Parameters related to Maya scenes", true);
@@ -388,6 +396,7 @@ class AdvAssetBuilder
   
   // builder conditions
   protected boolean pCheckInWhenDone;
+  protected boolean pBuildThumbnails;
   
   // Mel Scripts
   protected String pFinalizeMEL;
@@ -416,6 +425,8 @@ class AdvAssetBuilder
   
   public final static String aMayaContext = "Maya";
   
+  public final static String aBuildThumbnails = "BuildThumbnails";
+  
   //Model Parameters
   public final static String aSeparateModelPieces = "SeparateModelPieces";
   public final static String aModelTTForApproval = "ModelTTForApproval";
@@ -432,7 +443,7 @@ class AdvAssetBuilder
   public final static String aBuildTextureNode = "BuildTextureNode";
   public final static String aBuildMiShadeNetwork = "BuildMiShadeNetwork";
   public final static String aVerifyShaderMEL = "VerifyShaderMEL";
-  public final static String aShaderTTForApproval = "aShaderTTForApproval";
+  public final static String aShaderTTForApproval = "ShaderTTForApproval";
   public final static String aSeparateAnimTextures = "SeparateAnimTextures";
   
   //public final static String aBuildLowRez = "BuildLowRez";
@@ -477,6 +488,7 @@ class AdvAssetBuilder
       pModelTT = getBooleanParamValue(new ParamMapping(aModelTTForApproval));
       pRigTT = getBooleanParamValue(new ParamMapping(aRigAnimForApproval));
       pShadeTT = getBooleanParamValue(new ParamMapping(aShaderTTForApproval));
+      pBuildThumbnails = getBooleanParamValue(new ParamMapping(aBuildThumbnails));
       
       { //String each[] = {"None", "FBX", "Curves", "dkAnim"};
 	pMakeFBX = false;
@@ -671,6 +683,7 @@ class AdvAssetBuilder
       }
       String modelTT = pAssetNames.getModelTTNodeName();
       String modelTTImg = pAssetNames.getModelTTImagesNodeName();
+      String thumb = null;
       if(pModelTT) {
         if (!checkExistance(modelTT)) {
           String modelTTSetup = 
@@ -702,17 +715,29 @@ class AdvAssetBuilder
           isFocusNode(stage, taskType);
           stage.build();
         }
+        if (pBuildThumbnails) {
+          thumb = pAssetNames.getModelThumbNodeName();
+          if (!checkExistance(thumb)) {
+            ThumbnailStage stage = 
+              new ThumbnailStage(info, pContext, pClient, thumb, "png", modelTTImg, 120);
+            isThumbnailNode(stage, taskType);
+            stage.build();
+          }
+        }
       }
       String modelSubmit = pAssetNames.getModelSubmitNodeName();
       if (!checkExistance(modelSubmit)) {
         TreeSet<String> sources = new TreeSet<String>();
-        if (pModelTT)
+        if (pBuildThumbnails)
+          sources.add(thumb);
+        else if (pModelTT)
           sources.add(modelTTImg);
         else
           sources.add(verifyModel);
         TargetStage stage = new TargetStage(info, pContext, pClient, modelSubmit, sources);
-        stage.build();
         isSubmitNode(stage, taskType);
+        stage.build();
+        addToQueueList(modelSubmit);
       }
       String modelFinal = pAssetNames.getModelFinalNodeName();
       String modelApprove = pAssetNames.getModelApproveNodeName();
@@ -727,6 +752,7 @@ class AdvAssetBuilder
         TargetStage stage = new TargetStage(info, pContext, pClient, modelApprove, sources);
         isApproveNode(stage, taskType);
         stage.build();
+        addToQueueList(modelApprove);
       }
     }
     
@@ -837,6 +863,7 @@ class AdvAssetBuilder
       String animCurves = pAssetNames.getRigAnimCurvesNodeName();
       String rigAnim = pAssetNames.getRigAnimNodeName();
       String rigImages = pAssetNames.getRigAnimImagesNodeName();
+      String thumb = pAssetNames.getRigThumbNodeName();
       if (pRigTT) {
 	if (pMakeFBX) {
 	  if (!checkExistance(animFBX)) {
@@ -924,17 +951,28 @@ class AdvAssetBuilder
 	  isFocusNode(stage, taskType);
 	  stage.build();
 	}
+	if (pBuildThumbnails) {
+          if (!checkExistance(thumb)) {
+            ThumbnailStage stage = 
+              new ThumbnailStage(info, pContext, pClient, thumb, "png", rigImages, 120);
+            isThumbnailNode(stage, taskType);
+            stage.build();
+          }
+        }
       }
       String rigSubmit = pAssetNames.getRigSubmitNodeName();
       if (!checkExistance(rigSubmit)) {
         TreeSet<String> sources = new TreeSet<String>();
-        if (pRigTT)
+        if (pBuildThumbnails)
+          sources.add(thumb);
+        else if (pRigTT)
           sources.add(rigImages);
         else
           sources.add(rigFinal);
         TargetStage stage = new TargetStage(info, pContext, pClient, rigSubmit, sources);
         isSubmitNode(stage, taskType);
         stage.build();
+        addToQueueList(rigSubmit);
       }
       String assetFinal = pAssetNames.getFinalNodeName();
       String rigApprove = pAssetNames.getRigApproveNodeName();
@@ -977,6 +1015,7 @@ class AdvAssetBuilder
         TargetStage stage = new TargetStage(info, pContext, pClient, rigApprove, sources);
         isApproveNode(stage, taskType);
         stage.build();
+        addToQueueList(rigApprove);
       }
     }
     
@@ -1058,8 +1097,7 @@ class AdvAssetBuilder
 	   pMayaContext, 
 	   shdNode, 
 	   assetFinal, texNode, pMRInitMEL);
-	if (pShadeTT)
-	  isEditNode(stage, taskType);
+	isEditNode(stage, taskType);
 	stage.build();
 	addToDisableList(shdNode);
       }
@@ -1083,8 +1121,8 @@ class AdvAssetBuilder
 	stage.build();
       }
 
-      
       String shdImg = pAssetNames.getShaderRenderNodeName();
+      String thumb = pAssetNames.getShaderThumbNodeName();
       if (pShadeTT) {
 	String shdTT = pAssetNames.getShaderTTNodeName();
 	if (!checkExistance(shdTT)) {
@@ -1168,17 +1206,28 @@ class AdvAssetBuilder
 	    stage.build();
 	  }
 	}
+	if (pBuildThumbnails) {
+          if (!checkExistance(thumb)) {
+            ThumbnailStage stage = 
+              new ThumbnailStage(info, pContext, pClient, thumb, "png", shdImg, 120);
+            isThumbnailNode(stage, taskType);
+            stage.build();
+          }
+        }
       }
       String shdSubmit = pAssetNames.getShaderSubmitNode();
       if (!checkExistance(shdSubmit)) {
         TreeSet<String> sources = new TreeSet<String>();
-        if (pShadeTT)
+        if (pBuildThumbnails)
+          sources.add(thumb);
+        else if(pShadeTT)
           sources.add(shdImg);
         else
           sources.add(shdExport);
         TargetStage stage = new TargetStage(info, pContext, pClient, shdSubmit, sources);
         isSubmitNode(stage, taskType);
         stage.build();
+        addToQueueList(shdSubmit);
       }
       
       //Product Nodes
@@ -1208,6 +1257,7 @@ class AdvAssetBuilder
 	TargetStage stage = new TargetStage(info, pContext, pClient, shdApprove, sources);
 	isApproveNode(stage, taskType);
 	stage.build();
+	addToQueueList(shdApprove);
       }
     }
     private static final long serialVersionUID = 9147958678499662058L;
