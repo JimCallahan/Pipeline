@@ -1,4 +1,4 @@
-// $Id: IllustratorEditor.java,v 1.2 2007/07/01 00:04:33 jim Exp $
+// $Id: IllustratorEditor.java,v 1.3 2007/07/25 21:08:12 jim Exp $
 
 package us.temerity.pipeline.plugin.IllustratorEditor.v2_3_3;
 
@@ -149,7 +149,7 @@ class IllustratorEditor
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  //private static final long serialVersionUID = 
+  private static final long serialVersionUID = -8791632022355671809L;
 
 }
 

@@ -79,6 +79,6 @@ class ThumbnailNodeAnnotation
   public static final String aTaskName = "TaskName";
   public static final String aTaskType = "TaskType";
   
-  //private static final long serialVersionUID = 
+  private static final long serialVersionUID = 3903825419336139174L;
   
 }

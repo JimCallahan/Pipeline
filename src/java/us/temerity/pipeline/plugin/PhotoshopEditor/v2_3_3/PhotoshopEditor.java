@@ -1,4 +1,4 @@
-// $Id: PhotoshopEditor.java,v 1.2 2007/07/01 00:04:33 jim Exp $
+// $Id: PhotoshopEditor.java,v 1.3 2007/07/25 21:08:13 jim Exp $
 
 package us.temerity.pipeline.plugin.PhotoshopEditor.v2_3_3;
 
@@ -136,7 +136,7 @@ class PhotoshopEditor
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  //private static final long serialVersionUID = 
+  private static final long serialVersionUID = 89859240031931321L;
 
 }
 
