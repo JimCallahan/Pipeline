@@ -1,4 +1,4 @@
-// $Id: MayaReplaceRefAction.java,v 1.1 2007/06/17 15:34:44 jim Exp $
+// $Id: MayaReplaceRefAction.java,v 1.2 2007/07/25 19:45:44 jim Exp $
 
 package us.temerity.pipeline.plugin.MayaReplaceRefAction.v2_2_1;
 
@@ -71,8 +71,6 @@ MayaReplaceRefAction
 	  "Replaces specific references in the source Maya scene to generate a new " +
 	  "target Maya scene.");
 
-    underDevelopment();
-    
     {
       ActionParam param = 
 	new LinkActionParam

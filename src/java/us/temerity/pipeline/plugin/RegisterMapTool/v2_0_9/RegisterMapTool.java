@@ -1,4 +1,4 @@
-// $Id: RegisterMapTool.java,v 1.1 2007/06/17 15:34:45 jim Exp $
+// $Id: RegisterMapTool.java,v 1.2 2007/07/25 19:45:44 jim Exp $
 
 package us.temerity.pipeline.plugin.RegisterMapTool.v2_0_9;
 
@@ -31,11 +31,6 @@ RegisterMapTool
 	  "Registers nodes associated with optimized Mental Ray memory mappable " + 
 	  "pyramid textures for all the selected image texture nodes.");
 
-    underDevelopment();
-
-    addSupport(OsType.MacOS);
-    addSupport(OsType.Windows);
-    
     pTextureFormats = new ArrayList<String>();
     pTextureFormats.add("bmp");
     pTextureFormats.add("iff");
@@ -52,6 +47,9 @@ RegisterMapTool
     pTextureFormats.add("tga");
     pTextureFormats.add("tif");
     pTextureFormats.add("tiff");
+
+    addSupport(OsType.MacOS);
+    addSupport(OsType.Windows);    
   }
 
 

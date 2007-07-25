@@ -61,8 +61,6 @@ class EditNodeAnnotation
 	 null); 
       addParam(param);
     }
-
-    underDevelopment();
   }
   
   

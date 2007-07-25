@@ -12,8 +12,6 @@ public class SyflexApplyCacheAction extends BaseAction
       super("SyflexApplyCache", new VersionID("2.0.9"), "Temerity", 
 		  "Applies one or more syflex caches to a scene.");
 
-      //underDevelopment();
-
       {
 		  ActionParam param = new LinkActionParam(
 		     aMayaScene,

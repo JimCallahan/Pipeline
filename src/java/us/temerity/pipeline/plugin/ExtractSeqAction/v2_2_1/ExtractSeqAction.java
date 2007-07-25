@@ -1,4 +1,4 @@
-// $Id: ExtractSeqAction.java,v 1.1 2007/06/17 15:34:40 jim Exp $
+// $Id: ExtractSeqAction.java,v 1.2 2007/07/25 19:45:44 jim Exp $
 
 package us.temerity.pipeline.plugin.ExtractSeqAction.v2_2_1;
 
@@ -47,8 +47,6 @@ class ExtractSeqAction
 
     addSupport(OsType.MacOS);
     addSupport(OsType.Windows);
-
-    underDevelopment();
   }
 
   

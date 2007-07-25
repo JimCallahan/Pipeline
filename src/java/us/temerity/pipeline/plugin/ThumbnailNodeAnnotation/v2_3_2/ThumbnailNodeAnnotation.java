@@ -68,8 +68,6 @@ class ThumbnailNodeAnnotation
 	 null); 
       addParam(param);
     }
-
-    underDevelopment();
   }
   
   

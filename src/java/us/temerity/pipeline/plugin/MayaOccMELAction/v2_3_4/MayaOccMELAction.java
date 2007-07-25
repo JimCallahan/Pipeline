@@ -1,4 +1,4 @@
-// $Id: MayaOccMELAction.java,v 1.2 2007/07/21 01:01:47 jim Exp $
+// $Id: MayaOccMELAction.java,v 1.3 2007/07/25 19:45:44 jim Exp $
 
 package us.temerity.pipeline.plugin.MayaOccMELAction.v2_3_4;
 
@@ -91,6 +91,9 @@ class MayaOccMELAction
          4000.0);
       addSingleParam(param);
     }
+
+    addSupport(OsType.MacOS); 
+    addSupport(OsType.Windows); 
   }
   
 

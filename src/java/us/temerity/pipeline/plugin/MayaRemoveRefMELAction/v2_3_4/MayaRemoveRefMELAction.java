@@ -1,4 +1,4 @@
-// $Id: MayaRemoveRefMELAction.java,v 1.2 2007/07/23 20:16:27 jesse Exp $
+// $Id: MayaRemoveRefMELAction.java,v 1.3 2007/07/25 19:45:44 jim Exp $
 
 package us.temerity.pipeline.plugin.MayaRemoveRefMELAction.v2_3_4;
 
@@ -28,7 +28,9 @@ class MayaRemoveRefMELAction
   {
     super("MayaRemoveRefMEL", new VersionID("2.3.4"), "Temerity",
           "Creates a MEL script that removes all references from a scene.");
-    
+
+    addSupport(OsType.MacOS); 
+    addSupport(OsType.Windows); 
   }
   
   

@@ -27,9 +27,7 @@ public class ShaveCacheCopyAction
   public ShaveCacheCopyAction()
   {
     super("ShaveCacheCopy", new VersionID("2.0.9"), 
-      "Temerity", "Copy a Shave and a Haircut cache to another location.");
-    
-    underDevelopment();
+          "Temerity", "Copy a Shave and a Haircut cache to another location.");
   }
  
   

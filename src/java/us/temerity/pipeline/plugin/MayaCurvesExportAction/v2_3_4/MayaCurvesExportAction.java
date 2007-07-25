@@ -83,8 +83,6 @@ public
     super("MayaCurvesExport", new VersionID("2.3.4"), "Temerity",
       "An Action to export animation curves from an animated scene.");
     
-    underDevelopment();
-    
     {
       ActionParam param = 
 	new LinkActionParam
@@ -117,9 +115,9 @@ public
         ActionParam param = 
   	new BooleanActionParam
   	(aSelectedTimeRange,
-  	 "Should the animation only be baked over the time range of the selected objects before it " +
-  	 "is exported.  If this is set to (no), then it will be baked over a frame range for " +
-  	 "everything in the scene.", 
+  	 "Should the animation only be baked over the time range of the selected objects " + 
+         "before it is exported.  If this is set to (no), then it will be baked over a " + 
+         "frame range for everything in the scene.", 
   	 false); 
         addSingleParam(param);
       }
@@ -178,8 +176,9 @@ public
     
     addSupport(OsType.Windows);
     addSupport(OsType.MacOS);
-
   }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   A C T I O N                                                                          */

@@ -28,8 +28,6 @@ class PatternCloneTool
     super("PatternClone", new VersionID("2.3.1"), "Temerity",
 	  "Clones a group of nodes, using pattern replacement to change their names.");
     
-    underDevelopment();
-    
     addSupport(OsType.MacOS);
     addSupport(OsType.Windows);
   }

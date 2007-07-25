@@ -1,4 +1,4 @@
-// $Id: DLShadowAction.java,v 1.1 2007/06/17 15:34:39 jim Exp $
+// $Id: DLShadowAction.java,v 1.2 2007/07/25 19:45:44 jim Exp $
 
 package us.temerity.pipeline.plugin.DLShadowAction.v2_2_1;
 
@@ -64,8 +64,6 @@ class DLShadowAction
     
     addSupport(OsType.MacOS);
     addSupport(OsType.Windows);
-
-    underDevelopment(); 
   }
 
 

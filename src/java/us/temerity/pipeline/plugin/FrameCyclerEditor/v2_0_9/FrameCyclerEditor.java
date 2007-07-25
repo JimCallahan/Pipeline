@@ -1,4 +1,4 @@
-// $Id: FrameCyclerEditor.java,v 1.1 2007/06/17 15:34:40 jim Exp $
+// $Id: FrameCyclerEditor.java,v 1.2 2007/07/25 19:45:44 jim Exp $
 
 package us.temerity.pipeline.plugin.FrameCyclerEditor.v2_0_9;
 
@@ -28,8 +28,6 @@ class FrameCyclerEditor
     super("FrameCycler", new VersionID("2.0.9"), "Temerity",
 	  "The FrameCycler image viewer.", 
 	  "framecycler");  
-
-    underDevelopment();
 
     addSupport(OsType.MacOS);
     addSupport(OsType.Windows);

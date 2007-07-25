@@ -27,7 +27,8 @@ class MayaMRayInitMELAction
     super("MayaMRayInitMEL", new VersionID("2.3.5"), "Temerity",
           "Creates a MEL script that initializes mental ray in a scene.");
     
-    underDevelopment();
+    addSupport(OsType.MacOS); 
+    addSupport(OsType.Windows); 
   }
   
   

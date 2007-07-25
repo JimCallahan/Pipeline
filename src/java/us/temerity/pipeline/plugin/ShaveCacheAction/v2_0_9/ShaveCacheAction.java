@@ -56,8 +56,6 @@ public class ShaveCacheAction
     super("ShaveCache", new VersionID("2.0.9"), 
       "Temerity", "Creates a Shave and a Haircut cache from a maya scene");
 
-    underDevelopment();
-
     {
       ActionParam param = 
 	new LinkActionParam

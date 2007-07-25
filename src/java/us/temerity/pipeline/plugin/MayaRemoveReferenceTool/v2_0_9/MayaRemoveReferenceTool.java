@@ -17,7 +17,6 @@ public class MayaRemoveReferenceTool
 
     addSupport(OsType.MacOS);
     addSupport(OsType.Windows);
-    underDevelopment();
   }
 
   /** 

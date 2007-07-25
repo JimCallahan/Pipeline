@@ -1,4 +1,4 @@
-// $Id: NukeFrameCyclerEditor.java,v 1.1 2007/06/17 15:34:45 jim Exp $
+// $Id: NukeFrameCyclerEditor.java,v 1.2 2007/07/25 19:45:44 jim Exp $
 
 package us.temerity.pipeline.plugin.NukeFrameCyclerEditor.v2_2_1;
 
@@ -124,35 +124,9 @@ class NukeFrameCyclerEditor
       /* create a temporary Python script to run Nuke piping the script to STDIN */ 
       File script = createTemp("py");
       try {
-        FileWriter out = new FileWriter(script); 
-
-//      String nuke = null; 
-//      {
-//        String path = env.get("PATH"); 
-//        if(path == null) 
-//          throw new PipelineException
-//            ("Somehow the PATH environmental variable was not set!");
-//        ExecPath epath = new ExecPath(path);
-        
-//        String nukeProg = NukeActionUtils.getNukeProgram(env); 
-//        File nukeBinary = epath.which(nukeProg); 
-//        if(nukeBinary == null) {
-//          StringBuilder buf = new StringBuilder();
-//          buf.append("Unable to find the Nuke binary (" + nukeProg + ") using the PATH " + 
-//                     "defined by the Toolset environment!\n\n" +
-// 	          "The directories which make up the PATH are: \n");
-	 
-//          for(File edir : epath.getDirectories()) 
-//            buf.append("  " + edir + "\n");
-
-//          throw new PipelineException(buf.toString());
-//        }
-         
-//        nuke = CommonActionUtils.escPath(nukeBinary.getPath());
-//      }        
-
         String nuke = NukeActionUtils.getNukeProgram(env); 
 
+        FileWriter out = new FileWriter(script); 
         out.write
           ("import subprocess\n" + 
            "nuke = open('" + nukeScript + "', 'r')\n" + 

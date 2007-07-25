@@ -1,4 +1,4 @@
-// $Id: MRayOptionsAction.java,v 1.1 2007/07/23 20:11:34 jesse Exp $
+// $Id: MRayOptionsAction.java,v 1.2 2007/07/25 19:45:44 jim Exp $
 
 package us.temerity.pipeline.plugin.MRayOptionsAction.v2_3_5;
 
@@ -26,8 +26,6 @@ class MRayOptionsAction
   {
     super("MRayOptions", new VersionID("2.3.5"), "Temerity",
 	  "Creates a mi file which contains a mental ray options block.");
-    
-    //underDevelopment();
     
     {
       ActionParam param = 
@@ -243,8 +241,7 @@ class MRayOptionsAction
       }
       photonGroup.addSubGroup(pvGroup);
     }
-    
-    
+        
     {
       LayoutGroup finalLayout = new LayoutGroup(true);
       finalLayout.addEntry(aOptionsName);
@@ -257,6 +254,9 @@ class MRayOptionsAction
       finalLayout.addSubGroup(hardwareGroup);
       setSingleLayout(finalLayout);
     }
+
+    addSupport(OsType.MacOS); 
+    addSupport(OsType.Windows); 
   }
   
   @SuppressWarnings("unchecked")

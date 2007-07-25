@@ -29,8 +29,6 @@ class MayaReRigMELAction
     super("MayaReRigMEL", new VersionID("2.3.3"), "Temerity",
           "Creates a MEL script that can be used to copy a rig from one model to another.");
   
-    underDevelopment();
-    
     {
       ActionParam param = 
         new BooleanActionParam
@@ -79,8 +77,12 @@ class MayaReRigMELAction
       addSingleParam(param);
     }
     
+    addSupport(OsType.MacOS); 
+    addSupport(OsType.Windows); 
   }
   
+
+
   /*----------------------------------------------------------------------------------------*/
   /*   A C T I O N                                                                          */
   /*----------------------------------------------------------------------------------------*/

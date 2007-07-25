@@ -1,4 +1,4 @@
-// $Id: TaskAnnotation.java,v 1.5 2007/06/22 01:26:09 jim Exp $
+// $Id: TaskAnnotation.java,v 1.6 2007/07/25 19:45:44 jim Exp $
 
 package us.temerity.pipeline.plugin.TaskAnnotation.v2_2_1;
 
@@ -155,8 +155,6 @@ class TaskAnnotation
 
       setLayout(layout);      
     }
-
-    underDevelopment(); 
   }
 
 

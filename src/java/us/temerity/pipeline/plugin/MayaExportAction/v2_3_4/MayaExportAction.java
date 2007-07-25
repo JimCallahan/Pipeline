@@ -62,8 +62,6 @@ public
     super("MayaExport", new VersionID("2.3.4"), "Temerity",
       "An Action to export selected objects from an animated scene.");
     
-    underDevelopment();
-    
     {
       ActionParam param = 
 	new LinkActionParam
@@ -163,7 +161,9 @@ public
       layout.addEntry(aFinalMEL);
       layout.addEntry(aNewSceneMEL);
       
-      LayoutGroup group = new LayoutGroup("ExportOptions", "Maya Options for file export", true);
+      LayoutGroup group = 
+        new LayoutGroup("ExportOptions", "Maya Options for file export", true);
+
       group.addEntry(aExportChannels);
       group.addEntry(aExportConstraints);
       group.addEntry(aExportExpressions);
@@ -176,8 +176,9 @@ public
     
     addSupport(OsType.Windows);
     addSupport(OsType.MacOS);
-
   }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   A C T I O N                                                                          */

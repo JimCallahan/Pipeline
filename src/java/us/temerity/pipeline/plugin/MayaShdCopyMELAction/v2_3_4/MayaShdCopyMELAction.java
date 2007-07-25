@@ -15,9 +15,9 @@ class MayaShdCopyMELAction
   MayaShdCopyMELAction() 
   {
     super("MayaShdCopyMEL", new VersionID("2.3.4"), "Temerity",
-          "Creates a MEL script that can be used to copy shader assignments from one model to another.");
+          "Creates a MEL script that can be used to copy shader assignments from one " + 
+          "model to another.");
   
-    underDevelopment();
     {
       ActionParam param = 
         new BooleanActionParam
@@ -26,7 +26,12 @@ class MayaShdCopyMELAction
          true);
       addSingleParam(param);
     }
+
+    addSupport(OsType.MacOS); 
+    addSupport(OsType.Windows); 
   }
+
+
   
   /*----------------------------------------------------------------------------------------*/
   /*   A C T I O N                                                                          */
