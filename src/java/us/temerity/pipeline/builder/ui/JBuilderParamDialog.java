@@ -79,6 +79,7 @@ class JBuilderParamDialog
     
     this.validate();
     this.pack();
+    this.setSize(getWidth(), 640);
   }
   
   
