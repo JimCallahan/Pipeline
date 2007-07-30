@@ -860,7 +860,7 @@ class BaseBuilder
     pLog.log(Kind.Ops, Level.Info, "Beginning execution of the check-ins.");
     for (BaseBuilder builder : pBuilderInformation.getCheckinList()) {
       if (builder.performCheckIn()) {
-	builder.checkInNodes(getNodesToCheckIn(), VersionID.Level.Minor, getCheckInMessage());
+	builder.checkInNodes(getNodesToCheckIn(), getCheckinLevel(), getCheckInMessage());
       }
     }
   }
@@ -898,6 +898,16 @@ class BaseBuilder
     return false;
   }
   
+  /**
+   * Level of check-in that the builder should perform.
+   * <p>
+   * Override this method to change it from the default Minor.
+   */
+  protected VersionID.Level
+  getCheckinLevel()
+  {
+    return VersionID.Level.Minor;
+  }
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -1313,6 +1323,10 @@ class BaseBuilder
 	pBuilderInformation.addToCheckinList(parent);
 	pNextBuilder = parent;
 	getNextSetupPass(first);
+      }
+      // if not, add the current builder to the check-in list.
+      else {
+	pBuilderInformation.addToCheckinList(pCurrentBuilder);
       }
     }
     return (pNextSetupPass != null);

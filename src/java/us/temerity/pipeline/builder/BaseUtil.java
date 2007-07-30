@@ -144,6 +144,12 @@ class BaseUtil
    * Sets the {@link UtilContext} that this utility will operate in.
    * <P>
    * This should not be used to change the context in the middle of running a tool.
+   * Generally, this should be set in the first validatePhase of the first Information Pass in
+   * a builder.  That will guarantee that all future decisions are made in the right default 
+   * space.  If a change is needed to the working environment in the middle of running a builder,
+   * it would be best to just create a new {@link UtilContext} and pass that into the necessary
+   * stages, rather than calling this method, as there will be no impact on the rest of the
+   * Builder. 
    * 
    * @param context
    * 	The {@link UtilContext} for the utility. 
@@ -1880,6 +1886,14 @@ class BaseUtil
   /*   S T A T I C   C L A S S E S                                                          */
   /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * A key into a paramter contained in a Utility.  It consists of a mandatory name, which
+   * specifies the parameter name, and an optional list of keys which specify the path
+   * to descend if the parameter is in quesiton is a {@link ComplexUtilityParam}.
+   * <P>
+   * If Complex Parameters are extended to other parts of the Pipeline API, this class will
+   * most likely be converted into a standalone class. 
+   */
   public static
   class ParamMapping
     implements Comparable<ParamMapping>

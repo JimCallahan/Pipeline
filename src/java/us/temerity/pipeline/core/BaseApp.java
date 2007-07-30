@@ -1,13 +1,13 @@
-// $Id: BaseApp.java,v 1.22 2007/04/13 10:37:53 jim Exp $
+// $Id: BaseApp.java,v 1.23 2007/07/30 17:52:21 jesse Exp $
 
 package us.temerity.pipeline.core;
 
+import java.io.File;
+import java.io.FileReader;
+import java.util.*;
+
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.bootstrap.BootApp;
-
-import java.io.*; 
-import java.util.*;
-import java.util.logging.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   B A S E   A P P                                                                        */
