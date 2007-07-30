@@ -42,6 +42,7 @@ class JBuilderTopPanel
     
     pViewedYet = new ListMap<DefaultMutableTreeNode, Boolean>();
     pPanels = new ListMap<DefaultMutableTreeNode, JBuilderParamPanel>();
+    pNeverViewed = new LinkedList<JBuilderParamPanel>();
     
     BoxLayout layout = new BoxLayout(this, BoxLayout.X_AXIS);
     this.setLayout(layout);
@@ -145,11 +146,13 @@ class JBuilderTopPanel
 	  BaseNames baseName = namers.get(name);
 	  PrefixedName prefixName2 = new PrefixedName(theBuilder.getPrefixedName(), name);
 	  JBuilderParamPanel namerPanel = new JBuilderParamPanel(baseName, 1);
-	  DefaultMutableTreeNode node = createTreeNodes(prefixName2.toString());
-	  ((BuilderTreeNodeInfo) node.getUserObject()).setActive();
-	  pFirstPassPanel.add(namerPanel, prefixName2.toString());
-	  pViewedYet.put(node, false);
-	  pPanels.put(node, namerPanel);
+	  if (namerPanel.numberOfParameters() > 0) {
+	    DefaultMutableTreeNode node = createTreeNodes(prefixName2.toString());
+	    ((BuilderTreeNodeInfo) node.getUserObject()).setActive();
+	    pFirstPassPanel.add(namerPanel, prefixName2.toString());
+	    pViewedYet.put(node, false);
+	    pPanels.put(node, namerPanel);
+	  }
 	}
       }
       pFirstPassLayouts.show(pFirstPassPanel, prefixName.toString());
@@ -182,6 +185,7 @@ class JBuilderTopPanel
 	((BuilderTreeNodeInfo) node.getUserObject()).setDone();
       }
       pViewedYet.clear();
+      pNeverViewed.clear();
     }
     
     BaseBuilder theBuilder = pBuilder.getCurrentBuilder();
@@ -199,11 +203,15 @@ class JBuilderTopPanel
 	BaseNames baseName = namers.get(name);
 	PrefixedName prefixName2 = new PrefixedName(theBuilder.getPrefixedName(), name);
 	JBuilderParamPanel namerPanel = new JBuilderParamPanel(baseName, 1);
-	DefaultMutableTreeNode node = createTreeNodes(prefixName2.toString());
-	((BuilderTreeNodeInfo) node.getUserObject()).setActive();
-	pFirstPassPanel.add(namerPanel, prefixName2.toString());
-	pViewedYet.put(node, false);
-	pPanels.put(node, namerPanel);
+	if (namerPanel.numberOfParameters() > 0) {
+	  DefaultMutableTreeNode node = createTreeNodes(prefixName2.toString());
+	  ((BuilderTreeNodeInfo) node.getUserObject()).setActive();
+	  pFirstPassPanel.add(namerPanel, prefixName2.toString());
+	  pViewedYet.put(node, false);
+	  pPanels.put(node, namerPanel);
+	}
+	else
+	  pNeverViewed.add(namerPanel);
       }
     }
     {
@@ -232,6 +240,8 @@ class JBuilderTopPanel
     
     for (DefaultMutableTreeNode node : pViewedYet.keySet())
       toReturn.add(pPanels.get(node));
+    
+    toReturn.addAll(pNeverViewed);
     
     return toReturn;
   }
@@ -284,7 +294,6 @@ class JBuilderTopPanel
     }
     return parent;
   }
-  
   public boolean
   allParamsReady()
   {
@@ -469,6 +478,7 @@ class JBuilderTopPanel
   
   private ListMap<DefaultMutableTreeNode, Boolean> pViewedYet;
   private ListMap<DefaultMutableTreeNode, JBuilderParamPanel> pPanels;
+  private LinkedList<JBuilderParamPanel> pNeverViewed;
   
   private static final String aConstructPasses = "ConstructPasses";
   private static final String aSetupPasses = "SetupPasses";

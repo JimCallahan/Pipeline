@@ -46,6 +46,7 @@ public class JBuilderParamPanel
     AdvancedLayoutGroup layout = builder.getPassLayout(pass);
     SortedMap<String, UtilityParam> params = builder.getParamMap();
     pMappedParams = builder.getMappedParamNames();
+    //AdvancedLayoutGroup  newLayout = compactLayout(layout, pMappedParams);
     
     if (layout.hasEntries()) {
       int numCol = layout.getNumberOfColumns();
@@ -248,7 +249,7 @@ public class JBuilderParamPanel
     return false;
   }
   
-  public Component 
+  private Component 
   parameterToComponent
   (
     UtilityParam bparam,
@@ -482,6 +483,12 @@ public class JBuilderParamPanel
     return sTSize + sVSize + 50;
   }
 
+  public int
+  numberOfParameters()
+  {
+    return pCompToParam.size();
+  }
+  
   
   
   /*----------------------------------------------------------------------------------------*/
