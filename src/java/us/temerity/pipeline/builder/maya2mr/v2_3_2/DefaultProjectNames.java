@@ -100,7 +100,7 @@ class DefaultProjectNames
   public String
   getAssetModelTTGlobals()
   {
-    return new Path(pMayaGlobalsPath, "model_tt").toOsString();
+    return new Path(pMayaGlobalsPath, "model_tt").toString();
   }
   
   @Override
@@ -125,8 +125,8 @@ class DefaultProjectNames
   )
   {
     if (type.equals(GlobalsType.Standalone))
-      return new Path(pMRayGlobalsPath, "shd_tt").toOsString();
-    return new Path(pMayaGlobalsPath, "shd_tt").toOsString();
+      return new Path(pMRayGlobalsPath, "shd_tt").toString();
+    return new Path(pMayaGlobalsPath, "shd_tt").toString();
   }
   
   
@@ -148,7 +148,7 @@ class DefaultProjectNames
   public String
   getAssetRigAnimGlobals()
   {
-    return new Path(pMayaGlobalsPath, "rig_tt").toOsString();
+    return new Path(pMayaGlobalsPath, "rig_tt").toString();
   }
   
   @Override

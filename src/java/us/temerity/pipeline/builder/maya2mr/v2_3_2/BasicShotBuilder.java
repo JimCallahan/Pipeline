@@ -78,7 +78,6 @@ class BasicShotBuilder
   
   public final static String aMayaContext = "Maya";
   
-  public final static String aCheckinWhenDone = "CheckinWhenDone";
   public final static String aProjectName = "ProjectName";
   public final static String aStartFrame = "StartFrame";
   public final static String aEndFrame = "EndFrame";

@@ -130,7 +130,7 @@ class DefaultAssetNames
       pModPrepare      = new Path(pModSubmit, prepare);
       pModApprove      = new Path(pModStart, approve);
       pModProduct      = new Path(pModApprove, product);
-      pModThumb        = new Path(pModStart, thumb);
+      pModThumb        = new Path(pModSubmit, thumb);
 
       pRigStart        = new Path(pAssetPath, "rig");
       pRigEdit         = new Path(pRigStart, edit);
@@ -138,7 +138,7 @@ class DefaultAssetNames
       pRigPrepare      = new Path(pRigSubmit, prepare);
       pRigApprove      = new Path(pRigStart, approve);
       pRigProduct      = new Path(pRigApprove, product);
-      pRigThumb        = new Path(pRigStart, thumb);
+      pRigThumb        = new Path(pRigSubmit, thumb);
 
       pMatStart        = new Path(pAssetPath, "mat");
       pMatEdit         = new Path(pMatStart, edit);
@@ -151,7 +151,7 @@ class DefaultAssetNames
       pShdPrepare      = new Path(pShdSubmit, prepare);
       pShdApprove      = new Path(pShdStart, approve);
       pShdProduct      = new Path(pShdApprove, product);
-      pShdThumb        = new Path(pShdStart, thumb);
+      pShdThumb        = new Path(pShdSubmit, thumb);
       
       pTexStart        = new Path(pAssetPath, "tex");
       pTexEdit         = new Path(pTexStart, edit);

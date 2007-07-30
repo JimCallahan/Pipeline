@@ -21,7 +21,7 @@ import us.temerity.pipeline.stages.StageInformation;
  */
 public 
 class ModelPiecesBuilder 
-  extends ApprovalBuilder
+  extends TaskBuilder
 {
 
   public

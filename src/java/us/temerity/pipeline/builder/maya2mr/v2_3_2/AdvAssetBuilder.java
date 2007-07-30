@@ -1,4 +1,4 @@
-// $Id: AdvAssetBuilder.java,v 1.5 2007/07/25 01:44:41 jesse Exp $
+// $Id: AdvAssetBuilder.java,v 1.6 2007/07/30 17:50:11 jesse Exp $
 
 package us.temerity.pipeline.builder.maya2mr.v2_3_2;
 
@@ -17,7 +17,7 @@ import us.temerity.pipeline.stages.MayaRenderStage.Renderer;
 
 public 
 class AdvAssetBuilder 
-  extends ApprovalBuilder
+  extends TaskBuilder
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -45,7 +45,7 @@ class AdvAssetBuilder
   (
     MasterMgrClient mclient,
     QueueMgrClient qclient,
-    AnswersBuilderQueries builderInfo,
+    AnswersBuilderQueries builderQueries,
     BaseNames assetNames,
     BaseNames projectNames,
     BuilderInformation builderInformation
@@ -59,7 +59,7 @@ class AdvAssetBuilder
           mclient,
           qclient,
           builderInformation);
-    pBuilderInfo = builderInfo;
+    pBuilderQueries = builderQueries;
     if (!(assetNames instanceof BuildsAssetNames))
       throw new PipelineException
         ("The asset naming class that was passed in does not implement " +
@@ -71,7 +71,7 @@ class AdvAssetBuilder
       
     // Globabl parameters
     {
-      ArrayList<String> projects = pBuilderInfo.getProjectList();
+      ArrayList<String> projects = pBuilderQueries.getProjectList();
       UtilityParam param = 
         new OptionalEnumUtilityParam
         (aProjectName,
@@ -365,7 +365,7 @@ class AdvAssetBuilder
   protected BuildsProjectNames pProjectNames;
   
   // Question Answering
-  protected AnswersBuilderQueries pBuilderInfo;
+  protected AnswersBuilderQueries pBuilderQueries;
   
   protected String pAssetName;
   protected String pAssetType;
@@ -478,7 +478,7 @@ class AdvAssetBuilder
       pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
         "Starting the validate phase in the Information Pass.");
       validateBuiltInParams();
-      pBuilderInfo.setContext(pContext);
+      pBuilderQueries.setContext(pContext);
       //pBuildLowRez = getBooleanParamValue(new ParamMapping(aBuildLowRez));
       pBuildTextureNode = getBooleanParamValue(new ParamMapping(aBuildTextureNode));
       pBuildMiShadeNetwork = 

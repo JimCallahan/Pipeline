@@ -42,7 +42,7 @@ class DefaultBuilderAnswers
   )
     throws PipelineException
   {
-    Path search = new Path(new Path("/projects"), project);
+    Path search = new Path(new Path(new Path("/projects"), project), "prod");
     return findChildBranchNames(search);
   }
   
@@ -54,7 +54,11 @@ class DefaultBuilderAnswers
   )
     throws PipelineException
   {
-    Path search = new Path(new Path(new Path("/projects"), project), movie);
+    Path search;
+    if (movie == null)
+      search = new Path(new Path(new Path("/projects"), project), "prod");
+    else
+      search = new Path(new Path(new Path(new Path("/projects"), project), "prod"), movie);
     return findChildBranchNames(search);
   }
   
@@ -67,7 +71,11 @@ class DefaultBuilderAnswers
   )
     throws PipelineException
   {
-    Path search = new Path(new Path(new Path(new Path("/projects"), project), movie), sequence);
+    Path search;
+    if (movie == null)
+      search = new Path(new Path(new Path(new Path("/projects"), project), "prod"), sequence);
+    else
+      search = new Path(new Path(new Path(new Path(new Path("/projects"), project), "prod"), movie), sequence);
     return findChildBranchNames(search);
   }
   
@@ -97,15 +105,6 @@ class DefaultBuilderAnswers
       }
     }
     return toReturn;
-  }
-  
-  public void
-  setContext
-  (
-    UtilContext context
-  )
-  {
-    pContext = context;
   }
   
   public ArrayList<String>
