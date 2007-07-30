@@ -1,4 +1,4 @@
-// $Id: ApprovalBuilder.java,v 1.4 2007/07/25 01:44:41 jesse Exp $
+// $Id: TaskBuilder.java,v 1.1 2007/07/30 17:28:18 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -10,7 +10,7 @@ import us.temerity.pipeline.stages.BaseStage;
  *  into the builder.   
  */
 public abstract 
-class ApprovalBuilder
+class TaskBuilder
   extends BaseBuilder
 {
   /*----------------------------------------------------------------------------------------*/
@@ -28,7 +28,7 @@ class ApprovalBuilder
    * @throws PipelineException
    */
   protected 
-  ApprovalBuilder
+  TaskBuilder
   (
     String name,
     VersionID vid,
