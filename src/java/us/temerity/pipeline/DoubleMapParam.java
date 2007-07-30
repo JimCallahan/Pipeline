@@ -64,7 +64,7 @@ class DoubleMapParam<E>
     aThird = thirdName;
     aThirdDesc = thirdDesc;
     pValues = new DoubleMap<String, String, ArrayList<String>>(values);
-    
+
     String firstValue;
     {
       ArrayList<String> paramValues = new ArrayList<String>(pValues.keySet());
@@ -88,6 +88,7 @@ class DoubleMapParam<E>
 	 secondValue, 
 	 paramValues);
       addParam(param);
+      
     }
     {
       ArrayList<String> paramValues = pValues.get(firstValue, secondValue);
@@ -99,6 +100,13 @@ class DoubleMapParam<E>
 	 value, 
 	 paramValues);
       addParam(param);
+    }
+    {
+      ArrayList<String> layout = new ArrayList<String>();
+      layout.add(aFirst);
+      layout.add(aSecond);
+      layout.add(aThird);
+      setLayout(layout);
     }
   }
   
