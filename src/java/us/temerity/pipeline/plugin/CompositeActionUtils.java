@@ -20,16 +20,16 @@ public class CompositeActionUtils
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Construct with the given name, version, vendor and description.
+   * Constructor with the given name, version, vendor and description.
    * 
    * @param name
-   *                The short name of the action.
+   *        The short name of the action.
    * @param vid
-   *                The action plugin revision number.
+   *        The action plugin revision number.
    * @param vendor
-   *                The name of the plugin vendor.
+   *        The name of the plugin vendor.
    * @param desc
-   *                A short description of the action.
+   *        A short description of the action.
    */
   protected 
   CompositeActionUtils
@@ -43,36 +43,48 @@ public class CompositeActionUtils
     super(name, vid, vendor, desc);
   }
   
+  /**
+   * Adds a Double Action Parameter called CompFrameRate, used to specify
+   * the frame rate that the composition should exist in.
+   */
   protected void 
   addCompFrameRateParam()
   {
     ActionParam param = 
-	new DoubleActionParam
-	(aCompFrameRate,
-	 "The frame rate for the comp.",
-	 30.);
+      new DoubleActionParam
+      (aCompFrameRate,
+       "The frame rate for the comp.",
+       30.);
     addSingleParam(param);
   }
   
+  /**
+   * Adds a Double Action Parameter called Comp Pixel Ratio, used to 
+   * specify the pixel ration that the comp should have.
+   */
   protected void
   addCompPixelRatioParam()
   {
     ActionParam param = 
-	new DoubleActionParam
-	(aCompPixelRatio,
-	 "The pixel aspect ratio for the comp.",
-	 1.);
+      new DoubleActionParam
+      (aCompPixelRatio,
+       "The pixel aspect ratio for the comp.",
+       1.);
     addSingleParam(param);
   }
   
+  /**
+   * Adds an Integer Action Parameter called Comp Height, used to 
+   * specify the height of the comp.
+   */
   protected void
   addCompHeightParam()
   {
     ActionParam param = 
-	new IntegerActionParam
-	(aCompHeight,
-	 "The height in pixels of the comp.",
-	 480);
+      new IntegerActionParam
+      (aCompHeight,
+       "The height in pixels of the comp.",
+       480);
     addSingleParam(param);
   }
   
@@ -80,45 +92,45 @@ public class CompositeActionUtils
   addCompWidthParam()
   {
     ActionParam param = 
-	new IntegerActionParam
-	(aCompWidth,
-	 "The width in pixels of the comp.",
-	 720);
+      new IntegerActionParam
+      (aCompWidth,
+       "The width in pixels of the comp.",
+       720);
     addSingleParam(param);
   }
   
   protected void
   addSourceFrameRateParam
   (
-      Map<String, ActionParam> params
+    Map<String, ActionParam> params
   )
   {
     ActionParam param = 
-	new DoubleActionParam
-	(aFrameRate, 
-	 "The Frame rate to interpret this footage at.",
-	 30.);
+      new DoubleActionParam
+      (aFrameRate, 
+       "The Frame rate to interpret this footage at.",
+       30.);
     params.put(param.getName(), param);
   }
   
   protected void
   addSourcePixelRatioParam
   (
-      Map<String, ActionParam> params
+    Map<String, ActionParam> params
   )
   {
     ActionParam param = 
-	new DoubleActionParam
-	(aPixelRatio, 
-	 "The Pixel Aspect ratio to interpret this footage at.",
-	 1.);
+      new DoubleActionParam
+      (aPixelRatio, 
+       "The Pixel Aspect ratio to interpret this footage at.",
+       1.);
     params.put(param.getName(), param);
   }
   
   protected void
   addSourceAlphaModeParam
   (
-      Map<String, ActionParam> params
+    Map<String, ActionParam> params
   )
   {
     ArrayList<String> choices = new ArrayList<String>(3);
@@ -127,42 +139,42 @@ public class CompositeActionUtils
     choices.add(aPreMultipled);
     
     ActionParam param = 
-	new EnumActionParam
-	(aAlphaMode, 
-	 "How should the footages alpha be interpreted.",
-	 aPreMultipled,
-	 choices);
+      new EnumActionParam
+      (aAlphaMode, 
+       "How should the footages alpha be interpreted.",
+       aPreMultipled,
+       choices);
     params.put(param.getName(), param);
   }
   
   protected void
   addSourceLayerParam
   (
-      Map<String, ActionParam> params
+    Map<String, ActionParam> params
   )
   {
     ActionParam param = 
-	new IntegerActionParam
-	(aLayer, 
-	 "Which level of the comp the source should appear at.  " +
-	 "The higher the number, the closer to the top of the composition it will be layered.",
-	 0);
+      new IntegerActionParam
+      (aLayer, 
+       "Which level of the comp the source should appear at.  " +
+       "The higher the number, the closer to the top of the composition it will be layered.",
+       0);
     params.put(param.getName(), param);
   }
 
   protected void
   addSourcePassParam
   (
-      Map<String, ActionParam> params
+    Map<String, ActionParam> params
   )
   {
     ActionParam param = 
-	new IntegerActionParam
-	(aPass, 
-	 "Which pass should this source be part of.  " +
-	 "If this number is 0, then it will not be part of any pass." +
-	 "This number also controls the order each pas is added into the final comp.",
-	 0);
+      new IntegerActionParam
+      (aPass, 
+       "Which pass should this source be part of.  " +
+       "If this number is 0, then it will not be part of any pass." +
+       "This number also controls the order each pass is added into the final comp.",
+       0);
     params.put(param.getName(), param);
   }
   
@@ -170,22 +182,22 @@ public class CompositeActionUtils
   protected void
   addSourceOrderParam
   (
-      Map<String, ActionParam> params
+    Map<String, ActionParam> params
   )
   {
     ActionParam param = 
-	new IntegerActionParam
-	(aOrder, 
-	 "Where in time order the source should appear.  " +
-	 "Sources with the same order will start at the same time.",
-	 100);
+      new IntegerActionParam
+      (aOrder, 
+       "Where in time order the source should appear.  " +
+       "Sources with the same order will start at the same time.",
+       100);
     params.put(param.getName(), param);
   }
   
   protected void
   addSourcePreMultColorParam
   (
-      Map<String, ActionParam> params
+    Map<String, ActionParam> params
   )
   {
     ArrayList<String> choices = new ArrayList<String>(3);
@@ -193,11 +205,11 @@ public class CompositeActionUtils
     choices.add(aWhite);
     
     ActionParam param = 
-	new EnumActionParam
-	(aPreMultColor, 
-	 "What color should the alpha be premultiplied by.",
-	 aBlack,
-	 choices);
+      new EnumActionParam
+      (aPreMultColor, 
+       "What color should the alpha be premultiplied by.",
+       aBlack,
+       choices);
     params.put(param.getName(), param);
   }
   
