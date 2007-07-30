@@ -1,6 +1,8 @@
 package us.temerity.pipeline.stages;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.LogMgr.Kind;
+import us.temerity.pipeline.LogMgr.Level;
 import us.temerity.pipeline.builder.PluginContext;
 import us.temerity.pipeline.builder.UtilContext;
 
@@ -156,6 +158,8 @@ class StandardStage
   build() 
     throws PipelineException
   {
+    LogMgr.getInstance().log
+      (Kind.Ops, Level.Fine, "Building the node: " + pRegisteredNodeName );
     if (pFrameRange == null)
       pRegisteredNodeMod = registerNode();
     else

@@ -1,7 +1,5 @@
 package us.temerity.pipeline.stages;
 
-import java.awt.Dimension;
-
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.PluginContext;
 import us.temerity.pipeline.builder.UtilContext;
@@ -36,4 +34,5 @@ class ThumbnailStage
     addLink(new LinkMod(source, LinkPolicy.Dependency));
     addSingleParamValue("ThumbnailSize", size);
   }
+  private static final long serialVersionUID = 6947901517583279702L;
 }
