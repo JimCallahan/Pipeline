@@ -1,4 +1,4 @@
-// $Id: MRayOptionsAction.java,v 1.2 2007/07/25 19:45:44 jim Exp $
+// $Id: MRayOptionsAction.java,v 1.3 2007/07/30 17:35:14 jesse Exp $
 
 package us.temerity.pipeline.plugin.MRayOptionsAction.v2_3_5;
 
@@ -241,17 +241,243 @@ class MRayOptionsAction
       }
       photonGroup.addSubGroup(pvGroup);
     }
-        
+    
+    LayoutGroup fgGroup = 
+      new LayoutGroup("FinalGather", "Settings related to Final Gathering", false);
+    {
+      {
+	String array[] = {"on", "off", "only", "fastlookup"}; 
+	ArrayList<String> options = new ArrayList<String>(Arrays.asList(array));
+	add(new EnumActionParam(aFinalGather, dFinalGather, "off", options), fgGroup);
+      }
+      {
+	String array[] = {"None", "\"3.4\"", "\"strict 3.4\"", "\"automatic\"", "\"multiframe\""}; 
+	ArrayList<String> options = new ArrayList<String>(Arrays.asList(array));
+	add(new EnumActionParam(aFGMode, dFGMode, "\"3.4\"", options), fgGroup);
+      }
+      add(new IntegerActionParam(aFGPoints, dFGPoints, 10), fgGroup);	
+      add(new IntegerActionParam(aFGNum, dFGNum, 1000), fgGroup);
+      add(new DoubleActionParam(aFGMax, dFGMax, -1.0), fgGroup);
+      add(new DoubleActionParam(aFGMin, dFGMin, -1.0), fgGroup);
+      add(new BooleanActionParam(aFGViewRadius, dFGViewRadius, false), fgGroup);
+      
+      LayoutGroup fgOptions = 
+	new LayoutGroup("FinalGatherOptions", "Additional Settings related to Final Gathering", false);
+      {
+	add(new DoubleActionParam(aFGFalloffStop, dFGFalloffStop, 0.0), fgOptions);
+	add(new DoubleActionParam(aFGFalloffStart, dFGFalloffStart, 0.0), fgOptions);
+	fgOptions.addSeparator();
+	add(new StringActionParam(aFGFile, dFGFile, null), fgOptions);
+	{
+	  String array[] = {"off", "on", "rebuild"}; 
+	  ArrayList<String> options = new ArrayList<String>(Arrays.asList(array));
+	  add(new EnumActionParam(aFGRebuild, dFGRebuild, "on", options), fgOptions);
+	}
+	fgOptions.addSeparator();
+	add(new IntegerActionParam(aFGReflect, dFGReflect, 0), fgOptions);
+	add(new IntegerActionParam(aFGRefract, dFGRefract, 0), fgOptions);
+	add(new IntegerActionParam(aFGDiffuse, dFGDiffuse, 0), fgOptions);
+	add(new IntegerActionParam(aFGTotal, dFGTotal, 0), fgOptions);
+	fgOptions.addSeparator();
+	add(new IntegerActionParam(aFGFilter, dFGFilter, 1), fgOptions);
+	add(new DoubleActionParam(aFGPresample, dFGPresample, 1.0), fgOptions);
+      }
+      fgGroup.addSubGroup(fgOptions);
+      
+      LayoutGroup fgScale = 
+	new LayoutGroup("FinalGatherScale", "Settings related to Final Gathering Scale", false);
+      {
+	add(new DoubleActionParam(aFGScaleR, dFGScale, 1.0), fgScale);
+	add(new DoubleActionParam(aFGScaleG, dFGScale, 1.0), fgScale);
+	add(new DoubleActionParam(aFGScaleB, dFGScale, 1.0), fgScale);
+	add(new DoubleActionParam(aFGScaleA, dFGScale, 1.0), fgScale);
+	fgScale.addSeparator();
+	add(new DoubleActionParam(aFGSecScaleR, dFGSecScale, 1.0), fgScale);
+	add(new DoubleActionParam(aFGSecScaleG, dFGSecScale, 1.0), fgScale);
+	add(new DoubleActionParam(aFGSecScaleB, dFGSecScale, 1.0), fgScale);
+	add(new DoubleActionParam(aFGSecScaleA, dFGSecScale, 1.0), fgScale);
+      }
+      fgGroup.addSubGroup(fgScale);
+    }
+    
+    LayoutGroup bufferGroup = 
+      new LayoutGroup("FrameBuffer", "Settings related to the Frame Buffer", true);
+    {
+      {
+	String array[] = {"rgb", "alpha", "raw"}; 
+	ArrayList<String> options = new ArrayList<String>(Arrays.asList(array));
+	add(new EnumActionParam(aColorClip, dColorClip, "rgb", options), bufferGroup);
+      }
+      add(new BooleanActionParam(aDesaturate, dDesaturate, false), bufferGroup);
+      add(new BooleanActionParam(aPreMultiply, dPreMultiply, true), bufferGroup);
+      add(new BooleanActionParam(aDither, dDither, false), bufferGroup);
+      add(new DoubleActionParam(aGamma, dGamma, 1.0), bufferGroup);
+    }
+    
+    LayoutGroup contourGroup = 
+      new LayoutGroup("Contours", "Settings related to Contour Rendering", false);
+    {
+      add(new StringActionParam(aContourStore, dContourStore, null), contourGroup);
+      add(new StringActionParam(aContourContrast, dContourContrast, null), contourGroup);
+    }
+    
+    LayoutGroup diagGroup = 
+      new LayoutGroup("Diagnotics", "Settings related to Diagnostic Rendering", false);
+    {
+      {
+	String array[] = {"off", "object", "world", "camera"}; 
+	ArrayList<String> options = new ArrayList<String>(Arrays.asList(array));
+	add(new EnumActionParam(aDiagGrid, dDiagGrid, "off", options), diagGroup);
+      }
+      add(new DoubleActionParam(aDiagGridSize, dDiagGridSize, 1.0), diagGroup);
+      diagGroup.addSeparator();
+      {
+	String array[] = {"off", "depth", "size"}; 
+	ArrayList<String> options = new ArrayList<String>(Arrays.asList(array));
+	add(new EnumActionParam(aDiagBSP, dDiagBSP, "off", options), diagGroup);
+      }
+      diagGroup.addSeparator();
+      {
+	String array[] = {"off", "density", "irradiance"}; 
+	ArrayList<String> options = new ArrayList<String>(Arrays.asList(array));
+	add(new EnumActionParam(aDiagPhoton, dDiagPhoton, "off", options), diagGroup);
+      }
+      add(new DoubleActionParam(aDiagPhotonNum, dDiagPhotonNum, 0.0), diagGroup);
+      diagGroup.addSeparator();
+      add(new BooleanActionParam(aDiagSample, dDiagSample, false), diagGroup);
+      add(new BooleanActionParam(aDiagFinalGather, dDiagFinalGather, false), diagGroup);
+    }
+    
+    LayoutGroup approxGroup = 
+      new LayoutGroup("Approximations", "Settings that related to geometry approximations", false);
+    {
+      {
+	String array[] = {"None", "Parametric", "Reg Parametric", "L/D/A"}; 
+	ArrayList<String> options = new ArrayList<String>(Arrays.asList(array));
+	add(new EnumActionParam(aSubdMethod, dSubdMethod, "None", options), approxGroup);
+      }
+      {
+	String array[] = {"None", "grid", "tree", "delauny", "fine"}; 
+	ArrayList<String> options = new ArrayList<String>(Arrays.asList(array));
+	add(new EnumActionParam(aSurfaceStyle, dSurfaceStyle, "None", options), approxGroup);
+      }
+      add(new IntegerActionParam(aSubdMin, dSubdMin, 1), approxGroup);
+      add(new IntegerActionParam(aSubdMax, dSubdMax, 5), approxGroup);
+      add(new BooleanActionParam(aView, dView, false), approxGroup);
+      LayoutGroup paramGroup =
+	new LayoutGroup("Parametic", "Parametric Settings", false);
+      {
+	add(new DoubleActionParam(aSubdU, dSubdU, 1.0), paramGroup);
+	add(new DoubleActionParam(aSubdV, dSubdV, 1.0), paramGroup);
+      }
+      approxGroup.addSubGroup(paramGroup);
+      
+      LayoutGroup ldaGroup =
+	new LayoutGroup("L/D/A", "Length/Distance/Angle settings", false);
+      {
+	add(new DoubleActionParam(aEdgeLength, dEdgeLength, 0.0), ldaGroup);
+	add(new DoubleActionParam(aDistance, dDistance, 0.0), ldaGroup);
+	add(new DoubleActionParam(aAngle, dAngle, 0.0), ldaGroup);
+	add(new BooleanActionParam(aSatisfyAny, dSatisfyAny, true), ldaGroup);
+      }
+      approxGroup.addSubGroup(ldaGroup);
+    }
+    
+    LayoutGroup displaceGroup = 
+      new LayoutGroup("Displacement Approximations", "Settings that related to displacement approximations", false);
+    {
+      {
+	String array[] = {"None", "Parametric", "Reg Parametric", "L/D/A"}; 
+	ArrayList<String> options = new ArrayList<String>(Arrays.asList(array));
+	add(new EnumActionParam(aDispMethod, dSubdMethod, "None", options), displaceGroup);
+      }
+      {
+	String array[] = {"None", "grid", "tree", "delauny", "fine"}; 
+	ArrayList<String> options = new ArrayList<String>(Arrays.asList(array));
+	add(new EnumActionParam(aDispStyle, dSurfaceStyle, "None", options), displaceGroup);
+      }
+      add(new IntegerActionParam(aDispSubdMin, dSubdMin, 1), displaceGroup);
+      add(new IntegerActionParam(aDispSubdMax, dSubdMax, 5), displaceGroup);
+      add(new BooleanActionParam(aDispView, dView, false), displaceGroup);
+      LayoutGroup paramGroup =
+	new LayoutGroup("Parametic", "Parametric Settings", false);
+      {
+	add(new DoubleActionParam(aDispSubdU, dSubdU, 1.0), paramGroup);
+	add(new DoubleActionParam(aDispSubdV, dSubdV, 1.0), paramGroup);
+      }
+      displaceGroup.addSubGroup(paramGroup);
+      
+      LayoutGroup ldaGroup =
+	new LayoutGroup("L/D/A", "Length/Distance/Angle settings", false);
+      {
+	add(new DoubleActionParam(aDispEdgeLength, dEdgeLength, 0.0), ldaGroup);
+	add(new DoubleActionParam(aDispDistance, dDistance, 0.0), ldaGroup);
+	add(new DoubleActionParam(aDispAngle, dAngle, 0.0), ldaGroup);
+	add(new BooleanActionParam(aDispSatisfyAny, dSatisfyAny, true), ldaGroup);
+      }
+      displaceGroup.addSubGroup(ldaGroup);
+    }
+    approxGroup.addSubGroup(displaceGroup);
+    
+    LayoutGroup miscGroup = 
+      new LayoutGroup("Misc", "Settings that don't fit elsewhere", false);
+    {
+      {
+	String array[] = {"camera", "object"}; 
+	ArrayList<String> options = new ArrayList<String>(Arrays.asList(array));
+	add(new EnumActionParam(aSceneGeometry, dSceneGeometry, "object", options), miscGroup);
+      }
+      add(new IntegerActionParam(aTaskSize, dTaskSize, -1), miscGroup);
+    }
+    
+    LayoutGroup mayaGroup =
+      new LayoutGroup("Maya", "Settings that Autodesk added to mentalray", false);
+    {
+      add(new BooleanActionParam(aEnableMaya, dEnableMaya, true), mayaGroup);
+      add(new BooleanActionParam(aPassAlpha, dPassAlpha, true), mayaGroup);
+      add(new BooleanActionParam(aPassDepth, dPassDepth, false), mayaGroup);
+      add(new BooleanActionParam(aPassLabel, dPassLabel, false), mayaGroup);
+      add(new BooleanActionParam(aEnableGlow, dEnableGlow, false), mayaGroup);
+      add(new IntegerActionParam(aGlowBuffer, dGlowBuffer, 1), mayaGroup);
+      LayoutGroup dataGroup = 
+	new LayoutGroup("Maya Data", "Settings that Autodesk added to mentalray in a data block", false);
+      {
+	add(new IntegerActionParam(aShadowLimit, dShadowLimit, 2), dataGroup);
+	{
+	  String array[] = {"off", "obey", "on"}; 
+	  ArrayList<String> options = new ArrayList<String>(Arrays.asList(array));
+	  add(new EnumActionParam(aShadowLinking, dShadowLinking, "on", options), dataGroup);
+	}
+	dataGroup.addSeparator();
+	add(new BooleanActionParam(aComputeFilter, dComputeFilter, true), dataGroup);
+	add(new DoubleActionParam(aFilterSize, dFilterSize, 1.0), dataGroup);
+	dataGroup.addSeparator();
+	add(new DoubleActionParam(aASQMin, dASQMin, 0.0), dataGroup);
+	add(new DoubleActionParam(aASQMax, dASQMax, 0.0), dataGroup);
+	dataGroup.addSeparator();
+	add(new IntegerActionParam(aReflectBlur, dReflectBlur, 1), dataGroup);
+	add(new IntegerActionParam(aRefractBlur, dRefractBlur, 1), dataGroup);
+      }
+      mayaGroup.addSubGroup(dataGroup);
+    }
+
     {
       LayoutGroup finalLayout = new LayoutGroup(true);
       finalLayout.addEntry(aOptionsName);
       finalLayout.addSubGroup(renderingGroup);
       finalLayout.addSubGroup(sampleGroup);
+      finalLayout.addSubGroup(bufferGroup);
       finalLayout.addSubGroup(shadowGroup);
       finalLayout.addSubGroup(featureGroup);
+      finalLayout.addSubGroup(mayaGroup);
       finalLayout.addSubGroup(photonGroup);
+      finalLayout.addSubGroup(fgGroup);
       finalLayout.addSubGroup(motionGroup);
+      finalLayout.addSubGroup(approxGroup);
       finalLayout.addSubGroup(hardwareGroup);
+      finalLayout.addSubGroup(contourGroup);
+      finalLayout.addSubGroup(miscGroup);
+      finalLayout.addSubGroup(diagGroup);
       setSingleLayout(finalLayout);
     }
 
@@ -362,9 +588,15 @@ class MRayOptionsAction
       FileWriter out = new FileWriter(temp);
       
       String name = getSingleStringParamValue(aOptionsName, false);
-      out.write("options \""+ name +"\"\n");
-
-      // Sampling
+      
+      boolean maya = getSingleBooleanParamValue(aEnableMaya);
+      if (maya)
+	writeMayaData(out, name);
+      
+      out.write
+        ("options \""+ name +"\"\n");
+      
+      writeMisc(out);
       writeSampling(out);
       writeHardware(out);
       writeShadows(out);
@@ -372,10 +604,20 @@ class MRayOptionsAction
       writeRendering(out);
       writeFeatures(out);
       writePhotons(out);
+      writeFG(out);
+      writeContour(out);
+      writeDiag(out);
+      writeApprox(out);
+      writeDisplace(out);
+      if (maya)
+	writeMaya(out);
       
-      //Hardware
+      if (maya)
+	out.write
+	  ("  data \"" + name + ":data\"\n");
       
-      out.write("end options\n");
+      out.write
+        ("end options\n");
       
       out.close();
     }
@@ -635,8 +877,8 @@ class MRayOptionsAction
     String only = getSingleBooleanParamValue(aPMapOnly) ? "on" : "off";
     out.write
       ("  photon trace depth" + pad(pdrl) + pad(pdrr) + pad(pdt) + "\n" +
-       "  photonmap rebuild" + rbld + "\n" +
-       "  photonmap only" + only + "\n");
+       "  photonmap rebuild " + rbld + "\n" +
+       "  photonmap only " + only + "\n");
     if (file != null)
       out.write
         ("photonmap file \"" + file + "\"\n");
@@ -706,6 +948,331 @@ class MRayOptionsAction
     }
   }
   
+  private void 
+  writeMisc
+  (
+    FileWriter out
+  )
+    throws PipelineException, IOException
+  {
+    String spc = getSingleStringParamValue(aSceneGeometry, false);
+    int task = getSingleIntegerParamValue(aTaskSize);
+    
+    out.write
+    ("  #Other Settings\n " +
+     "  " + spc + " space\n");
+    if (task >= 0)
+      out.write
+      ("  task size " + task + "\n");
+    out.write("\n\n");
+  }
+  
+  private void 
+  writeApprox
+  (
+    FileWriter out
+  )
+    throws PipelineException, IOException
+  {
+    String write = "approximate ";
+    String meth = getSingleStringParamValue(aSubdMethod, false);
+    if (meth.equals("None"))
+      return;
+    String mode = getSingleStringParamValue(aSurfaceStyle, false);
+    int min = getSingleIntegerParamValue(aSubdMin, new Range<Integer>(0, 7, true));
+    int max = getSingleIntegerParamValue(aSubdMax, new Range<Integer>(min, 7, true));
+    double u = getSingleDoubleParamValue(aSubdU, new Range<Double>(0.0, null, true));
+    double v = getSingleDoubleParamValue(aSubdV, new Range<Double>(0.0, null, true));
+    double len = getSingleDoubleParamValue(aEdgeLength, new Range<Double>(0.0, null, true));
+    double dist = getSingleDoubleParamValue(aDistance, new Range<Double>(0.0, null, true));
+    double angle = getSingleDoubleParamValue(aAngle, new Range<Double>(0.0, 180d, true));
+    boolean any = getSingleBooleanParamValue(aSatisfyAny);
+    boolean view = getSingleBooleanParamValue(aView);
+    
+    if (meth.equals("L/D/A")) {
+      if (mode.equals("fine")) {
+	write += "fine ";
+	if (view)
+	  write += "view ";
+	if (len > 0)
+	  write += "length " + len;
+      }
+      else if (!mode.equals("None")) {
+	write += mode + " ";
+	if (view)
+	  write += "view ";
+	if (any)
+	  write += "any ";
+	if (len > 0)
+	  write += "length " + len;
+	if (dist >  0)
+	  write += "distance " + dist;
+	if (angle >  0)
+	  write += "angle " + angle;
+      }
+    }
+    else if (meth.equals("Parametric")) {
+      if (mode.equals("fine") || mode.equals("grid"))
+	write += mode + " ";
+      write += "parametric" + pad(u) + pad(v);
+    }
+    else if (meth.equals("Reg Parametric")) {
+      if (mode.equals("fine") || mode.equals("grid"))
+	write += mode + " ";
+      write += "regular parametric" + pad(u) + pad(v);
+    }
+    write += pad(min) + pad(max) + "all";
+    out.write
+      ("  #Approximation Settings\n " +
+       "  " + write + "\n\n\n");
+  }
+  
+  private void 
+  writeDisplace
+  (
+    FileWriter out
+  )
+    throws PipelineException, IOException
+  {
+    String write = "approximate displace ";
+    String meth = getSingleStringParamValue(aDispMethod, false);
+    if (meth.equals("None"))
+      return;
+    String mode = getSingleStringParamValue(aDispStyle, false);
+    int min = getSingleIntegerParamValue(aDispSubdMin, new Range<Integer>(0, 7, true));
+    int max = getSingleIntegerParamValue(aDispSubdMax, new Range<Integer>(min, 7, true));
+    double u = getSingleDoubleParamValue(aDispSubdU, new Range<Double>(0.0, null, true));
+    double v = getSingleDoubleParamValue(aDispSubdV, new Range<Double>(0.0, null, true));
+    double len = getSingleDoubleParamValue(aDispEdgeLength, new Range<Double>(0.0, null, true));
+    double dist = getSingleDoubleParamValue(aDispDistance, new Range<Double>(0.0, null, true));
+    double angle = getSingleDoubleParamValue(aDispAngle, new Range<Double>(0.0, 180d, true));
+    boolean any = getSingleBooleanParamValue(aDispSatisfyAny);
+    boolean view = getSingleBooleanParamValue(aDispView);
+    
+    if (meth.equals("L/D/A")) {
+      if (mode.equals("fine")) {
+	write += "fine ";
+	if (view)
+	  write += "view ";
+	if (len > 0)
+	  write += "length " + len;
+      }
+      else if (!mode.equals("None")) {
+	write += mode + " ";
+	if (view)
+	  write += "view ";
+	if (any)
+	  write += "any ";
+	if (len > 0)
+	  write += "length " + len;
+	if (dist >  0)
+	  write += "distance " + dist;
+	if (angle >  0)
+	  write += "angle " + angle;
+      }
+    }
+    else if (meth.equals("Parametric")) {
+      if (mode.equals("fine") || mode.equals("grid"))
+	write += mode + " ";
+      write += "parametric" + pad(u) + pad(v);
+    }
+    else if (meth.equals("Reg Parametric")) {
+      if (mode.equals("fine") || mode.equals("grid"))
+	write += mode + " ";
+      write += "regular parametric" + pad(u) + pad(v);
+    }
+    write += pad(min) + pad(max) + "all";
+    out.write
+      ("  #Displacement Approximation Settings\n " +
+       "  " + write + "\n\n\n");
+  }
+  
+  private void 
+  writeFG
+  (
+    FileWriter out
+  )
+    throws PipelineException, IOException
+  {
+    out.write
+      ("  #Final Gathering Settings\n ");
+
+    String fg = getSingleStringParamValue(aFinalGather, false);
+    if (fg.equals("off")) {
+      out.write
+        ("  finalgather off\n\n\n");
+      return;
+    }
+    String mode = getSingleStringParamValue(aFGMode, false);
+    int pnt = getSingleIntegerParamValue(aFGPoints, new Range<Integer>(0, null, true));
+    int num = getSingleIntegerParamValue(aFGNum, new Range<Integer>(0, null, true));
+    double max = getSingleDoubleParamValue(aFGMax);
+    double min = getSingleDoubleParamValue(aFGMin);
+    boolean view = getSingleBooleanParamValue(aFGViewRadius);
+    double start = getSingleDoubleParamValue(aFGFalloffStart);
+    double stop = getSingleDoubleParamValue(aFGFalloffStop);
+    String file = getSingleStringParamValue(aFGFile);
+    int filt = getSingleIntegerParamValue(aFGFilter, new Range<Integer>(0, 10, true));
+    String rebld = getSingleStringParamValue(aFGRebuild, false);
+    int rfl = getSingleIntegerParamValue(aFGReflect, new Range<Integer>(0, null, true));
+    int rfr = getSingleIntegerParamValue(aFGRefract, new Range<Integer>(0, null, true));
+    int dif = getSingleIntegerParamValue(aFGDiffuse, new Range<Integer>(0, null, true));
+    int tot = getSingleIntegerParamValue(aFGTotal, new Range<Integer>(0, null, true));
+    double pre = getSingleDoubleParamValue(aFGPresample, new Range<Double>(0.0, null, true));
+    double sr = getSingleDoubleParamValue(aFGScaleR, new Range<Double>(0.0, null, true));
+    double sg = getSingleDoubleParamValue(aFGScaleG, new Range<Double>(0.0, null, true));
+    double sb = getSingleDoubleParamValue(aFGScaleB, new Range<Double>(0.0, null, true));
+    double sa = getSingleDoubleParamValue(aFGScaleA, new Range<Double>(0.0, null, true));
+    double ssr = getSingleDoubleParamValue(aFGSecScaleR, new Range<Double>(0.0, null, true));
+    double ssg = getSingleDoubleParamValue(aFGSecScaleG, new Range<Double>(0.0, null, true));
+    double ssb = getSingleDoubleParamValue(aFGSecScaleB, new Range<Double>(0.0, null, true));
+    double ssa = getSingleDoubleParamValue(aFGSecScaleA, new Range<Double>(0.0, null, true));
+    
+    out.write
+      ("  finalgather " + fg + "\n");
+    if (!mode.equals("None"))
+      out.write
+        ("  \"finalgather mode\" " + mode + "\n");
+    if (mode.equals("\"automatic\"") || mode.equals("\"multiframe\"") )
+      out.write
+        ("  \"finalgather points\" " + pnt + "\n");
+    String acc = "  finalgather accuracy";
+    if (view)
+      acc += (" view ");
+    acc += pad(num);
+    if (max >= 0) {
+      acc += pad(max);
+      if (min >= 0)
+	acc += pad(min);
+    }
+    out.write
+      (acc + "\n");
+    out.write
+      ("  finalgather falloff" + pad(start) + pad(stop) + "\n" );
+    if (file != null)
+      out.write("  finalgather file \"" + file +"\"\n");
+    out.write
+      ("  finalgather filter " + filt + "\n" +
+       "  finalgather rebuild " + rebld + "\n" +
+       "  finalgather trace depth" + pad(rfl) + pad(rfr) + pad(dif) + pad(tot) + "\n" +
+       "  finalgather presample density " + pre + "\n" +
+       "  finalgather scale" + pad(sr) + pad(sg) + pad(sb) + pad(sa) + "\n" + 
+       "  finalgather secondary scale" + pad(ssr) + pad(ssg) + pad(ssb) + pad(ssa) + "\n\n\n");
+  }
+  
+  private void 
+  writeDiag
+  (
+    FileWriter out
+  )
+    throws PipelineException, IOException
+  {
+    String grd = getSingleStringParamValue(aDiagGrid, false);
+    double grdN = getSingleDoubleParamValue(aDiagGridSize, new Range<Double>(0d, null, true));
+    String bsp = getSingleStringParamValue(aDiagBSP, false);
+    String phot = getSingleStringParamValue(aDiagPhoton, false);
+    double photN = getSingleDoubleParamValue(aDiagPhotonNum, new Range<Double>(0d, null, true));
+    String samp = getSingleBooleanParamValue(aDiagSample) ? "on" : "off";
+    String fg = getSingleBooleanParamValue(aDiagFinalGather) ? "on" : "off";
+    
+    out.write
+      ("  #Diagnostic Settings\n" +
+       "  diagnostic grid" + pad(grd) + pad(grdN) + "\n" +
+       "  diagnostic bsp " + bsp + "\n" +
+       "  diagnostic photon" + pad(phot) + pad(photN) + "\n" +
+       "  diagnostic samples " + samp + "\n" +
+       "  diagnostic finalgather " + fg +  "\n\n\n");
+  }
+  
+  private void 
+  writeContour
+  (
+    FileWriter out
+  )
+    throws PipelineException, IOException
+  {
+    String str = getSingleStringParamValue(aContourStore);
+    String con = getSingleStringParamValue(aContourContrast);
+    
+    out.write
+      ("  #Contour Settings\n ");
+    if (str != null)
+      out.write
+        ("  contour store " + str + "\n");
+    if (con != null)
+      out.write
+        ("  contour contrast" + con + "\n");
+    out.write("\n\n");
+  }
+  
+  private void 
+  writeMayaData
+  (
+    FileWriter out,
+    String optionName
+  )
+    throws PipelineException, IOException
+  {
+    String dataName = optionName + ":data";
+    
+    String glw = getSingleBooleanParamValue(aEnableGlow) ? "on" : "off";
+    int lmt = getSingleIntegerParamValue(aShadowLimit, new Range<Integer>(0, null, true));
+    int link = getSingleEnumParamIndex(aShadowLinking);
+    String comp = getSingleBooleanParamValue(aComputeFilter) ? "on" : "off";
+    double size = getSingleDoubleParamValue(aFilterSize, new Range<Double>(0.0, null, true));
+    double amin = getSingleDoubleParamValue(aASQMin, new Range<Double>(0.0, null, true));
+    double amax = getSingleDoubleParamValue(aASQMax, new Range<Double>(0.0, null, true));
+    int rfl = getSingleIntegerParamValue(aReflectBlur, new Range<Integer>(0, null, true));
+    int rfr = getSingleIntegerParamValue(aRefractBlur, new Range<Integer>(0, null, true));
+    
+    out.write
+      ("data \"" + dataName + "\"\n" + 
+       "\"maya_options\" (\n" +
+       "  \"magic\" 1298233697,\n" +
+       "  \"shadowLimit\" " + lmt + "\n" +
+       "  \"shadowLinking\" " + link + "\n" +
+       "  \"computeFilterSize\" " + comp + "\n" +
+       "  \"defaultFilterSize\" " + size + "\n" + 
+       "  \"disableShaderGlow\" " + glw + "\n" +
+       "  \"asqMinThreshold\" " + amin + "\n" +
+       "  \"asqMaxThreshold\" " + amax + "\n" +
+       "  \"reflectionBlurLimit\" " + rfl + "\n" +
+       "  \"refractionBlurLimit\" " + rfr + "\n" +
+       ")\n\n");
+  }
+  
+  private void 
+  writeMaya
+  (
+    FileWriter out
+  )
+    throws PipelineException, IOException
+  {
+    boolean glw = getSingleBooleanParamValue(aEnableGlow);
+    String alp = getSingleBooleanParamValue(aPassAlpha) ? "on" : "off";
+    String dep = getSingleBooleanParamValue(aPassDepth) ? "on" : "off";
+    String lbl = getSingleBooleanParamValue(aPassLabel) ? "on" : "off";
+    int buf = getSingleIntegerParamValue(aGlowBuffer, new Range<Integer>(1, 7, true));
+    
+    out.write
+    ("  #Maya Settings\n ");
+    
+    if (glw)
+      out.write
+        ("frame buffer " + (buf - 1) + " \"+rgb\"\n");
+      
+    out.write
+      ("  state \"maya_state\" (\n" +
+       "    \"passAlphaThrough\" " + alp + "\n" + 
+       "    \"passDepthThrough\" " + dep + "\n" +
+       "    \"passLabelThrough\" " + lbl + "\n");
+    if (glw)
+      out.write
+        ("    \"glowColorBuffer\" " + buf + "\n");
+    out.write
+      ("  )\n\n");
+  }
+  
   private int
   extractMode
   (
@@ -765,8 +1332,29 @@ class MRayOptionsAction
   public static final String aHardwareForce  = "HardwareForce";
   
   /*---Tesselation---------------------------------------------------------------------------*/
-  public static final String aApproximateMin = "ApproximateMin";
-  public static final String aApproximateMax = "ApproximateMax";
+  public static final String aSubdMethod     = "SubdMethod";
+  public static final String aSurfaceStyle   = "SurfaceStyle";
+  public static final String aSubdU          = "SubdU";
+  public static final String aSubdV          = "SubdV";
+  public static final String aSubdMin        = "SubdMin";
+  public static final String aSubdMax        = "SubdMax";
+  public static final String aEdgeLength     = "EdgeLength";
+  public static final String aDistance       = "Distance";
+  public static final String aAngle          = "Angle";
+  public static final String aSatisfyAny     = "SatisfyAny";
+  public static final String aView           = "View";
+  
+  public static final String aDispMethod     = "DispMethod";
+  public static final String aDispStyle      = "DispStyle";
+  public static final String aDispSubdU      = "DispSubdU";
+  public static final String aDispSubdV      = "DispSubdV";
+  public static final String aDispSubdMin    = "DispSubdMin";
+  public static final String aDispSubdMax    = "DispSubdMax";
+  public static final String aDispEdgeLength = "DispEdgeLength";
+  public static final String aDispDistance   = "DispDistance";
+  public static final String aDispAngle      = "DispAngle";
+  public static final String aDispSatisfyAny = "DispSatisfyAny";
+  public static final String aDispView       = "DispView";
   
   /*---Motion Blur---------------------------------------------------------------------------*/
   public static final String aShutterSpeed   = "ShutterSpeed";
@@ -854,8 +1442,73 @@ class MRayOptionsAction
   public static final String aPhotVolScaleA  = "PhotVolScaleA";
   
   /*---Final Gathering-----------------------------------------------------------------------*/
+  public static final String aFinalGather    = "FinalGather";
+  public static final String aFGMode         = "FGMode";
+  public static final String aFGPoints       = "FGPoints";
+  public static final String aFGNum          = "FGNum";
+  public static final String aFGMax          = "FGMax";
+  public static final String aFGMin          = "FGMin";
+  public static final String aFGViewRadius   = "FGViewRadius";
+  public static final String aFGFalloffStart = "FGFalloffStart";
+  public static final String aFGFalloffStop  = "FGFalloffStop";
+  public static final String aFGFile         = "FGFile";
+  public static final String aFGFilter       = "FGFilter";
+  public static final String aFGRebuild      = "FGRebuild";
+  public static final String aFGReflect      = "FGReflect";
+  public static final String aFGRefract      = "FGRefract";
+  public static final String aFGDiffuse      = "FGDiffuse";
+  public static final String aFGTotal        = "FGTotal";
+  public static final String aFGPresample    = "FGPresample";
+  public static final String aFGScaleR       = "FGScaleR";
+  public static final String aFGScaleG       = "FGScaleG";
+  public static final String aFGScaleB       = "FGScaleB";
+  public static final String aFGScaleA       = "FGScaleA";
+  public static final String aFGSecScaleR    = "FGSecScaleR";
+  public static final String aFGSecScaleG    = "FGSecScaleG";
+  public static final String aFGSecScaleB    = "FGSecScaleB";
+  public static final String aFGSecScaleA    = "FGSecScaleA";
+  
+  /*---Frame Buffer--------------------------------------------------------------------------*/
+  public static final String aColorClip      = "ColorClip";
+  public static final String aDesaturate     = "Desaturate";
+  public static final String aPreMultiply    = "PreMultiply";
+  public static final String aDither         = "Dither";
+  public static final String aGamma          = "Gamma";
+  
+  /*---Contour-------------------------------------------------------------------------------*/
+  public static final String aContourStore   = "ContourStore";
+  public static final String aContourContrast= "ContourContrast";
+  
+  /*---Diagnostic----------------------------------------------------------------------------*/
+  public static final String aDiagGrid       = "DiagGrid";
+  public static final String aDiagGridSize   = "DiagGridSize";
+  public static final String aDiagBSP        = "DiagBSP";
+  public static final String aDiagPhoton     = "DiagPhoton";
+  public static final String aDiagPhotonNum  = "DiagPhotonNum";
+  public static final String aDiagSample     = "DiagSample";
+  public static final String aDiagFinalGather= "DiagFinalGather";
   
   /*---Other---------------------------------------------------------------------------------*/
+  public static final String aSceneGeometry  = "SceneGeometry";
+  public static final String aFace           = "Face";
+  public static final String aTaskSize       = "TaskSize";
+
+  /*---Maya----------------------------------------------------------------------------------*/
+  public static final String aEnableMaya     = "EnableMaya";
+  public static final String aPassAlpha      = "PassAlpha";
+  public static final String aPassDepth      = "PassDepth";
+  public static final String aPassLabel      = "PassLabel";
+  public static final String aEnableGlow     = "EnableGlow";
+  public static final String aGlowBuffer     = "GlowBuffer";
+  public static final String aShadowLimit    = "ShadowLimit";
+  public static final String aShadowLinking  = "ShadowLinking";
+  public static final String aComputeFilter  = "ComputeFilter";
+  public static final String aFilterSize     = "FilterSize";
+  public static final String aASQMin         = "ASQMin";
+  public static final String aASQMax         = "ASQMax";
+  public static final String aReflectBlur    = "ReflectBlur";
+  public static final String aRefractBlur    = "RefractBlur";
+  
   
   
   
@@ -916,7 +1569,31 @@ class MRayOptionsAction
     "objects only use hardware.  If no hardware shader exists, objects will render grey";
   
   /*---Tesselation---------------------------------------------------------------------------*/
-  
+  public static final String dSubdMethod = 
+    "The different methods of dividing geometry. L/D/A stands for Length/Distance Angle.";
+  public static final String dSurfaceStyle = 
+    "The different methods of tesselating surfaces.";
+  public static final String dSubdMin = 
+    "The min parameter is a means to enforce a minimal triangulation fineness without any tests";
+  public static final String dSubdMax = 
+    "Specifies a max cutoff point for subdivisions even if criteria are not met.";
+  public static final String dSubdU = 
+    "parametric subdivisions in U";
+  public static final String dSubdV = 
+    "parametric subdivisions in V";
+  public static final String dEdgeLength = 
+    "subdivides the surface such that no edge length of the tessellation exceeds this value";
+  public static final String dDistance = 
+    "the maximum distance dist between the tessellation and the actual surface";
+  public static final String dAngle = 
+    "he maximum angle angle in degrees between normals of adjacent tiles of a displaced polygon";
+  public static final String dSatisfyAny = 
+    "the approximation stops as soon as any of the criteria is satisfied";
+  public static final String dView = 
+    "ontrols whether the edge argument of the length and spatial statements, and the dist " +
+    "argument of the distance and curvature statements, are in the space the object is " +
+    "defined in or in raster space";
+
   /*---Motion Blur---------------------------------------------------------------------------*/
   public static final String dShutter = 
     "The camera shutter opens at time delay and closes at time shutter.  if shutter is " +
@@ -1123,8 +1800,188 @@ class MRayOptionsAction
   
   
   /*---Final Gathering-----------------------------------------------------------------------*/
+  public static final String dFinalGather = 
+    "Final gathering for global illumination is turned on or off.  fastlookup mode also " +
+    "turns final gathering on, but also alters the global illumination photon tracing stage " +
+    "by computing the irradiance at every photon location.  only renders only the finalgather " +
+    "map";
+  
+  public static final String dFGMode = 
+   "automatic mode primarily targets rendering of single still images. The multiframe mode " +
+   "targets rendering of camera fly-through animations. 3.4 mimics old behavior but " +
+   "with improvements.  Mental Ray 3.5 only.  Set to null for other versions.";
+  
+  public static final String dFGPoints = 
+    "In the automatic and multiframe finalgather modes, the number of finalgather points used.";
+  
+  public static final String dFGNum = 
+    "controls how many rays should be used in each final gathering step to " +
+    "compute the indirect illumination";
+  
+  public static final String dFGMax = 
+    "maximum radius in which a final gather result can be interpolated or extrapolated." +
+    "set to negative value to have mental ray compute a default value";
+  
+  public static final String dFGMin = 
+    "distance within a final gather result must be used for interpolation or extrapolation. " +
+    "The default is 10% of the maximum radius.  If Max is negative, this will be default as well.";
+  
+  public static final String dFGViewRadius = 
+    "the min and max values are in pixels";
+  
+  public static final String dFGFalloffStop = 
+    "Objects farther away than stop from the illuminated point will not cast light.";
+  
+  public static final String dFGFalloffStart = 
+    "the beginning of a linear falloff range.  Only used when Stop is active.";
+  
+  public static final String dFGFile = 
+    "use the file filename for loading and saving final gather points";
+  
+  public static final String dFGFilter = 
+    "speckle elimination filter that prevents samples with extreme brightness from skewing " +
+    "the overall energy.  Larger values eliminate more speckles and soften sample contrasts";
+  
+  public static final String dFGRebuild = 
+    "all final gather points will be recomputed and an existing file will be overwritten." +
+    "If freeze is set the finalgather file on disk will not be modified";
+  
+  public static final String dFGReflect = 
+    "sets the number of recursive final gather reflection rays";
+  
+  public static final String dFGRefract = 
+    "sets the number of recursive final gather refraction rays";
+  
+  public static final String dFGDiffuse = 
+    "sets the number of recursive final gather diffuse rays";
+  
+  public static final String dFGTotal = 
+    "sets the number of recursive total final gather rays";
+  
+  public static final String dFGPresample = 
+    "controls the density of initial finalgather points";
+  
+  public static final String dFGScale = 
+    "irradiance obtained from first bounce finalgather is multiplied " +
+    "by the specified color";
+  
+  public static final String dFGSecScale = 
+    "irradiance obtained from secondary bounce finalgather is multiplied " +
+    "by the specified color";
+  
+  /*---Frame Buffer--------------------------------------------------------------------------*/
+  public static final String dColorClip = 
+    "controls how colors are clipped into a valid range [0,1] before being written to a " +
+    "non-floating point frame buffer or file. raw mode should only be used if no layering " +
+    "based on alpha is going to take place ";
+  
+  public static final String dDesaturate = 
+    "If desaturation is turned off, the individual components are simply clipped into " +
+    "the appropriate color range";
+  
+  public static final String dPreMultiply = 
+    "Premultiplication means that colors are stored with alpha multiplied to R, G, and B." +
+    "This option is ignored if the colorclip raw mode is in effect.";
+  
+  public static final String dDither = 
+    "Dithering mitigates banding by introducing noise into the pixel";
+  
+  public static final String dGamma = 
+    "Compensates for output devices with a nonlinear color response. " +
+    "Gamma of 1.0 turns gamma correction off.";
+  
+  /*---Contour-------------------------------------------------------------------------------*/
+  public static final String dContourStore = 
+    "contour store shader name for contour rendering";
+  public static final String dContourContrast = 
+    "contour contrast shader name for contour rendering";
+  
+  /*---Diagnostic----------------------------------------------------------------------------*/
+  public static final String dDiagGrid = 
+    "Draws a colored grid on all objects in the scene visualizing the coordinate space given";
+  
+  public static final String dDiagGridSize =
+    "distance between grid lines.";
+  
+  public static final String dDiagBSP = 
+    "visualizes the depth and leaf size of the BSP tree used for ray tracing acceleration.";
+  
+  public static final String dDiagPhoton = 
+    "produces a false-color rendering of photon density";
+  
+  public static final String dDiagPhotonNum = 
+    "the density (or irradiance) that is assigned to 100%";
+  
+  public static final String dDiagSample = 
+    "grayscale image showing the number of image samples made for each pixel.";
+  
+  public static final String dDiagFinalGather = 
+    "shows final gathering points, as green dots for initial raster-space " +
+    "final gathering points, blue dots3.4 for final gathering points from " +
+    "per-object finalgather map files and red dots for render-time final " +
+    "gathering points";
   
   /*---Other---------------------------------------------------------------------------------*/
+ 
+  public static final String dSceneGeometry =
+    "Camera Space exists for backwards compatibility only dnd is not recommended";
   
+  public static final String dFace = 
+    "Which side of geometric objects to render";
+  
+  public static final String dTaskSize = 
+    "Smaller task sizes are convenient for previewing, but also increase " +
+    "the overall rendering time. Set negative to disable.";
+ 
+  /*---Other---------------------------------------------------------------------------------*/
+  public static final String dEnableMaya = 
+    "Should the maya render globals be enabled.";
+  
+  public static final String dPassAlpha = 
+    "This option passes the mental ray alpha component of the final color as the alpha channel, " +
+    "ignoring the Maya alpha component. This is useful when a custom shader is producing " +
+    "an alpha value.";
+  
+  public static final String dPassDepth = 
+    "This option overrides the Maya depth channel calculation with the default mental ray " +
+    "depth channel calculation. This option is useful when you want to revert to using the " +
+    "mental ray depth calculation";
+  
+  public static final String dPassLabel = 
+    "This option passes label data untouched, rather than allowing adjustment for Maya shaders.";
+  
+  public static final String dEnableGlow = 
+    "Should the shader glow related items be enabled.";
+  
+  public static final String dGlowBuffer = 
+    "Which framebuffer the maya glow is rendering to.";
+  
+  public static final String dShadowLimit = 
+    "The maximum number of times a shadow ray will penetrate a transparent or refracting object.";
+  
+  public static final String dShadowLinking = 
+    "Controls how maya lightlinking works with shadows.  If this is set to (obey), then normal" +
+    "lightlinking is used for shadow calculations.  If this is set to (on), then separate shadow" +
+    "linking is used.  If it is set to off, then no shadow light linking is done.  The use" +
+    "of this option pre-supposes that maya light linking is being used in the scene.";
+  
+  public static final String dComputeFilter = 
+    "computeFilterSize in the maya_options shader";
+  
+  public static final String dFilterSize = 
+    "defaultFilterSize in the maya_options shader";
+   
+  public static final String dASQMin = 
+    "asqMinThreshold in the maya_options shader";
+  
+  public static final String dASQMax = 
+    "asqMaxThreshold in the maya_options shader";
+  
+  public static final String dReflectBlur = 
+    "Determines the blurriness of secondary reflections";
+  
+  public static final String dRefractBlur = 
+    "Determines the blurriness of secondary refractions";
 }
+
 
