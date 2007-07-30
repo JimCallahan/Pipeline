@@ -1976,6 +1976,7 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/MayaBuildAction/v2_0_12/Makefile
   src/java/us/temerity/pipeline/plugin/MayaBuildAction/v2_2_1/Makefile
   src/java/us/temerity/pipeline/plugin/MayaBuildAction/v2_3_4/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaBuildAction/v2_3_5/Makefile
   src/java/us/temerity/pipeline/plugin/MayaCollateAction/Makefile
   src/java/us/temerity/pipeline/plugin/MayaCollateAction/v1_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/MayaCollateAction/v1_1_0/Makefile
@@ -2077,6 +2078,7 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/MayaRenderAction/v2_0_4/Makefile
   src/java/us/temerity/pipeline/plugin/MayaRenderAction/v2_0_9/Makefile
   src/java/us/temerity/pipeline/plugin/MayaRenderAction/v2_2_1/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaRenderAction/v2_3_2/Makefile
   src/java/us/temerity/pipeline/plugin/MayaRenderGlobalsAction/Makefile
   src/java/us/temerity/pipeline/plugin/MayaRenderGlobalsAction/v1_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/MayaRenderGlobalsAction/v2_0_0/Makefile
