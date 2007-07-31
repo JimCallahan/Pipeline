@@ -16,7 +16,7 @@ import java.util.*;
  */
 public 
 class TupleNi
-  implements Glueable, Serializable
+  implements Comparable, Glueable, Serializable
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -1067,6 +1067,59 @@ class TupleNi
     int i; 
     for(i=0; i<pComps.length; i++) 
       pComps[i] /= t.pComps[i];
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O M P A R A B L E                                                                  */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Compares this object with the specified object for order.
+   * 
+   * @param obj 
+   *   The <CODE>Object</CODE> to be compared.
+   */
+  public int
+  compareTo
+  (
+   Object obj
+  )
+  {
+    if(obj == null) 
+      throw new NullPointerException();
+    
+    if(!(obj instanceof TupleNi))
+      throw new IllegalArgumentException("The object to compare was NOT a TupleNi!");
+
+    return compareTo((TupleNi) obj);
+  }
+
+  /**
+   * Compares this <CODE>TupleNi</CODE> with the given <CODE>TupleNi</CODE> for order.
+   * 
+   * @param t
+   *   The <CODE>TupleNi</CODE> to be compared.
+   */
+  public int
+  compareTo
+  (
+   TupleNi t
+  )
+  {
+    if(pComps.length != t.size()) 
+      throw new TupleSizeMismatchException(pComps.length, t.size());
+
+    int i; 
+    for(i=0; i<pComps.length; i++) {
+      if(pComps[i] > t.pComps[i])
+        return 1; 
+      else if(pComps[i] < t.pComps[i])
+        return -1; 
+    }
+     
+    return 0; 
   }
 
 

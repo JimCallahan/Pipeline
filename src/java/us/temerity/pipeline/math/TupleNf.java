@@ -1,4 +1,4 @@
-// $Id: TupleNf.java,v 1.11 2006/11/22 09:08:01 jim Exp $
+// $Id: TupleNf.java,v 1.12 2007/07/31 14:33:58 jim Exp $
 
 package us.temerity.pipeline.math;
 
@@ -16,7 +16,7 @@ import java.util.*;
  */
 public 
 class TupleNf
-  implements Glueable, Serializable
+  implements Comparable, Glueable, Serializable
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -1110,6 +1110,59 @@ class TupleNf
     int i; 
     for(i=0; i<pComps.length; i++) 
       pComps[i] /= t.pComps[i];
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O M P A R A B L E                                                                  */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Compares this object with the specified object for order.
+   * 
+   * @param obj 
+   *   The <CODE>Object</CODE> to be compared.
+   */
+  public int
+  compareTo
+  (
+   Object obj
+  )
+  {
+    if(obj == null) 
+      throw new NullPointerException();
+    
+    if(!(obj instanceof TupleNf))
+      throw new IllegalArgumentException("The object to compare was NOT a TupleNf!");
+
+    return compareTo((TupleNf) obj);
+  }
+
+  /**
+   * Compares this <CODE>TupleNf</CODE> with the given <CODE>TupleNf</CODE> for order.
+   * 
+   * @param t
+   *   The <CODE>TupleNf</CODE> to be compared.
+   */
+  public int
+  compareTo
+  (
+   TupleNf t
+  )
+  {
+    if(pComps.length != t.size()) 
+      throw new TupleSizeMismatchException(pComps.length, t.size());
+
+    int i; 
+    for(i=0; i<pComps.length; i++) {
+      if(pComps[i] > t.pComps[i])
+        return 1; 
+      else if(pComps[i] < t.pComps[i])
+        return -1; 
+    }
+     
+    return 0; 
   }
 
 
