@@ -1,4 +1,4 @@
-// $Id: TaskAnnotation.java,v 1.1 2007/07/22 00:33:10 jim Exp $
+// $Id: TaskAnnotation.java,v 1.2 2007/07/31 15:43:24 jim Exp $
 
 package us.temerity.pipeline.plugin.TaskAnnotation.v2_3_2;
 
@@ -62,14 +62,13 @@ import java.io.*;
  * the supervisor of the task in order to determine if the task has been completed
  * satisfactorily. <P> 
  * 
- * Thumbnail nodes should correspond to a specific focus node which should have a name 
- * derived by stripping off the "thumbs" last directory component of the thumbnail node name. 
- * For instance, for a thumbnail node named "/some-path/thumbs/myimages" there should be a
- * focus node named "/some-path/myimages".  For this example, the thumbnail image would be 
- * named "myimage.jpg".<P>
+ * Thumbnail nodes should correspond to a specific Focus node.  The Focus node for a 
+ * Thumbnail is determined by following the upstream connections util the first Focus node 
+ * for the same task is encountered.  Typically this is the only node directed linked 
+ * to the Thumbnail node.<P> 
  * 
- * Submit nodes have additional parameters and are therefore represented by their own 
- * Annotation plugin called SubmitNode. <P> 
+ * Submit nodes have several additional parameters and are therefore represented by their own 
+ * Annotation plugin class called SubmitNode. <P> 
  * 
  * Product nodes exist to prevent a node from being checked in when the Approval node
  * is not being checked-in.  This prevents illict versioning of things that could 
