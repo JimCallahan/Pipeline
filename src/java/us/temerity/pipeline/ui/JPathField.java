@@ -1,4 +1,4 @@
-// $Id: JPathField.java,v 1.4 2007/01/12 00:05:15 jim Exp $
+// $Id: JPathField.java,v 1.5 2007/07/31 14:52:27 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -101,10 +101,10 @@ class JPathField
    Path path
   ) 
   {
-    if(path == null)
+    if(path != null)
+      setText(path.toString()); 
+    else 
       setText(null); 
-
-    setText(path.toString()); 
   }
   
 
