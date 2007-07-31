@@ -1,4 +1,4 @@
-// $Id: UIFactory.java,v 1.20 2007/05/15 06:08:25 jesse Exp $
+// $Id: UIFactory.java,v 1.21 2007/07/31 14:58:14 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -11,8 +11,8 @@ import javax.swing.*;
 import javax.swing.plaf.synth.SynthLookAndFeel;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.math.*;
 import us.temerity.pipeline.laf.LookAndFeelLoader;
-import us.temerity.pipeline.math.Color3d;
 
 /*------------------------------------------------------------------------------------------*/
 /*   U I   F A C T O R Y                                                                    */
@@ -861,6 +861,141 @@ class UIFactory
   )
   {
     JColorField field = new JColorField(owner, value);
+
+    Dimension size = new Dimension(width, 19);
+    field.setMinimumSize(size);
+    field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+    field.setPreferredSize(size);
+
+    return field;
+  }  
+
+  /**
+   * Create a new Tuple2i field. <P> 
+   * 
+   * @param value
+   *   The initial value.
+   * 
+   * @param width
+   *   The minimum and preferred width.
+   */ 
+  public static JTuple2iField
+  createTuple2iField
+  (
+   Tuple2i value,  
+   int width
+  )
+  { 
+    JTuple2iField field = new JTuple2iField(); 
+    field.setValue(value);
+
+    Dimension size = new Dimension(width, 19);
+    field.setMinimumSize(size);
+    field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+    field.setPreferredSize(size);
+
+    return field;
+  }  
+
+  /**
+   * Create a new Tuple3i field. <P> 
+   * 
+   * @param value
+   *   The initial value.
+   * 
+   * @param width
+   *   The minimum and preferred width.
+   */ 
+  public static JTuple3iField
+  createTuple3iField
+  (
+   Tuple3i value,  
+   int width
+  )
+  { 
+    JTuple3iField field = new JTuple3iField(); 
+    field.setValue(value);
+
+    Dimension size = new Dimension(width, 19);
+    field.setMinimumSize(size);
+    field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+    field.setPreferredSize(size);
+
+    return field;
+  }  
+
+  /**
+   * Create a new Tuple2d field. <P> 
+   * 
+   * @param value
+   *   The initial value.
+   * 
+   * @param width
+   *   The minimum and preferred width.
+   */ 
+  public static JTuple2dField
+  createTuple2dField
+  (
+   Tuple2d value,  
+   int width
+  )
+  { 
+    JTuple2dField field = new JTuple2dField(); 
+    field.setValue(value);
+
+    Dimension size = new Dimension(width, 19);
+    field.setMinimumSize(size);
+    field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+    field.setPreferredSize(size);
+
+    return field;
+  }  
+
+  /**
+   * Create a new Tuple3d field. <P> 
+   * 
+   * @param value
+   *   The initial value.
+   * 
+   * @param width
+   *   The minimum and preferred width.
+   */ 
+  public static JTuple3dField
+  createTuple3dField
+  (
+   Tuple3d value,  
+   int width
+  )
+  { 
+    JTuple3dField field = new JTuple3dField(); 
+    field.setValue(value);
+
+    Dimension size = new Dimension(width, 19);
+    field.setMinimumSize(size);
+    field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+    field.setPreferredSize(size);
+
+    return field;
+  }  
+
+  /**
+   * Create a new Tuple4d field. <P> 
+   * 
+   * @param value
+   *   The initial value.
+   * 
+   * @param width
+   *   The minimum and preferred width.
+   */ 
+  public static JTuple4dField
+  createTuple4dField
+  (
+   Tuple4d value,  
+   int width
+  )
+  { 
+    JTuple4dField field = new JTuple4dField(); 
+    field.setValue(value);
 
     Dimension size = new Dimension(width, 19);
     field.setMinimumSize(size);

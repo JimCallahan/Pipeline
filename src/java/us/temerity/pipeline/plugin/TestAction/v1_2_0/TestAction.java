@@ -1,8 +1,10 @@
-// $Id: TestAction.java,v 1.1 2007/06/17 15:34:46 jim Exp $
+// $Id: TestAction.java,v 1.2 2007/07/31 14:58:40 jim Exp $
 
 package us.temerity.pipeline.plugin.TestAction.v1_2_0;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.plugin.*;
+import us.temerity.pipeline.math.*;
 
 import java.util.*;
 import java.io.*;
@@ -16,7 +18,7 @@ import java.io.*;
  */
 public
 class TestAction
-  extends BaseAction
+  extends CommonActionUtils
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -27,8 +29,6 @@ class TestAction
   {
     super("Test",  new VersionID("1.2.0"), "Temerity", 
 	  "A test action with at lease one of each type of parameter.");
-
-    underDevelopment();
 
     {
       ActionParam param = 
@@ -78,6 +78,56 @@ class TestAction
       addSingleParam(param);
     }
 
+    {
+      ActionParam param = 
+	new Color3dActionParam("MyColor3d",
+                               "A color parameter.", 
+                               new Color3d(1.0, 0.7, 0.1)); 
+      addSingleParam(param);
+    }
+
+    {
+      ActionParam param = 
+	new Tuple2iActionParam("MyTuple2i",
+                               "A tuple parameter with (2) Integer components.", 
+                               new Tuple2i(2, 3)); 
+      addSingleParam(param);
+    }
+
+    {
+      ActionParam param = 
+	new Tuple3iActionParam("MyTuple3i",
+                               "A tuple parameter with (3) Integer components.", 
+                               new Tuple3i(3, 4, 5)); 
+      addSingleParam(param);
+    }
+
+    {
+      ActionParam param = 
+	new Tuple2dActionParam("MyTuple2d",
+                               "A tuple parameter with (2) Double components.", 
+                               new Tuple2d(2.3, 3.4)); 
+      addSingleParam(param);
+    }
+
+    {
+      ActionParam param = 
+	new Tuple3dActionParam("MyTuple3d",
+                               "A tuple parameter with (3) Double components.", 
+                               new Tuple3d(2.3, 3.4, 5.6)); 
+      addSingleParam(param);
+    }
+
+    {
+      ActionParam param = 
+	new Tuple4dActionParam("MyTuple4d",
+                               "A tuple parameter with (4) Double components.", 
+                               new Tuple4d(4.5, 5.6, 6.7, 7.8)); 
+      addSingleParam(param);
+    }
+
+    addSupport(OsType.MacOS);
+    addSupport(OsType.Windows);
   }
 
 
@@ -138,7 +188,50 @@ class TestAction
   )
     throws PipelineException
   {
-    throw new PipelineException("Not implemented yet...");
+    
+    /* create the process to run the action */ 
+    if(PackageInfo.sOsType == OsType.Windows) { 
+      File script = createTemp(agenda, ".bat"); 
+      try {
+        FileWriter out = new FileWriter(script);
+        
+        Path wpath = agenda.getTargetPath(); 
+        
+        for(Path target : agenda.getPrimaryTarget().getPaths()) {
+          Path path = new Path(wpath, target);
+          out.write("@echo off > " + path.toOsString() + "\n"); 
+        }
+        
+        for(FileSeq fseq : agenda.getSecondaryTargets()) {
+          for(Path target : fseq.getPaths()) {
+            Path path = new Path(wpath, target);
+            out.write("@echo off > " + path.toOsString() + "\n"); 
+          }
+        }
+        
+        out.close();
+      }
+      catch(IOException ex) {
+        throw new PipelineException
+          ("Unable to write temporary BAT file (" + script + ") for Job " + 
+           "(" + agenda.getJobID() + ")!\n" +
+           ex.getMessage());
+      }
+      
+      return createScriptSubProcess(agenda, script, outFile, errFile);
+    }
+    else {
+      ArrayList<String> args = new ArrayList<String>();
+      for(File file : agenda.getPrimaryTarget().getFiles()) 
+        args.add(file.toString());
+      
+      for(FileSeq fseq : agenda.getSecondaryTargets()) {
+        for(File file : fseq.getFiles())
+          args.add(file.toString());
+      }
+      
+      return createSubProcess(agenda, "touch", args, outFile, errFile); 
+    }
   }
 
 

@@ -1,4 +1,4 @@
-// $Id: SourceParamsTableModel.java,v 1.6 2006/11/11 07:17:48 jim Exp $
+// $Id: SourceParamsTableModel.java,v 1.7 2007/07/31 14:58:14 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -146,6 +146,36 @@ class SourceParamsTableModel
 	  pRenderers[col]     = new JSimpleTableCellRenderer(JLabel.CENTER);
 	  pEditors[col]       = new JDoubleParamTableCellEditor(160, JLabel.CENTER);
 	}
+	else if(aparam instanceof Color3dActionParam) {
+	  pColumnWidths[col]  = 160;
+	  pRenderers[col]     = new JColorParamTableCellRenderer(parent);
+	  pEditors[col]       = new JColorParamTableCellEditor(parent, 160);
+	}
+ 	else if(aparam instanceof Tuple2iActionParam) {
+ 	  pColumnWidths[col]  = 160;
+ 	  pRenderers[col]     = new JTuple2iParamTableCellRenderer();
+ 	  pEditors[col]       = new JTuple2iParamTableCellEditor(160);
+ 	}
+ 	else if(aparam instanceof Tuple3iActionParam) {
+ 	  pColumnWidths[col]  = 240;
+ 	  pRenderers[col]     = new JTuple3iParamTableCellRenderer();
+ 	  pEditors[col]       = new JTuple3iParamTableCellEditor(240);
+ 	}
+ 	else if(aparam instanceof Tuple2dActionParam) {
+ 	  pColumnWidths[col]  = 160;
+ 	  pRenderers[col]     = new JTuple2dParamTableCellRenderer();
+ 	  pEditors[col]       = new JTuple2dParamTableCellEditor(160);
+ 	}
+ 	else if(aparam instanceof Tuple3dActionParam) {
+ 	  pColumnWidths[col]  = 240;
+ 	  pRenderers[col]     = new JTuple3dParamTableCellRenderer();
+ 	  pEditors[col]       = new JTuple3dParamTableCellEditor(240);
+ 	}
+ 	else if(aparam instanceof Tuple4dActionParam) {
+ 	  pColumnWidths[col]  = 360;
+ 	  pRenderers[col]     = new JTuple4dParamTableCellRenderer();
+ 	  pEditors[col]       = new JTuple4dParamTableCellEditor(360);
+ 	}        
 	else if(aparam instanceof StringActionParam) {
 	  pColumnWidths[col]  = 160;
 	  pRenderers[col]     = new JSimpleTableCellRenderer(JLabel.CENTER);

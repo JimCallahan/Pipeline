@@ -1,4 +1,4 @@
-// $Id: JColorField.java,v 1.5 2006/09/25 12:11:45 jim Exp $
+// $Id: JColorField.java,v 1.6 2007/07/31 14:58:14 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -8,6 +8,7 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.text.*;
+import javax.swing.event.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   C O L O R   F I E L D                                                                  */
@@ -115,9 +116,10 @@ class JColorField
    Color3d color
   ) 
   {
+    initUI();
+
     pValue = new Color3d();
     setValue(color);
-    initUI();
   }
 
   private void 
@@ -126,9 +128,10 @@ class JColorField
    Color color
   ) 
   {
+    initUI();
+
     pValue = new Color3d();
     setColor(color);
-    initUI();
   }
 
   private void 
@@ -142,6 +145,7 @@ class JColorField
 
     {
       JButton btn = new JButton();
+      pButton = btn;
       btn.setName("ColorButton");
       btn.setOpaque(false);
    
@@ -152,7 +156,11 @@ class JColorField
    
       add(btn);
     }
+
+    pListenerList  = new EventListenerList();
+    pActionCommand = "value-changed";
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -201,6 +209,8 @@ class JColorField
       pValue.set(0.5, 0.5, 0.5);
 
     setBackground(getColor());
+
+    fireActionPerformed();   
   }
 
 
@@ -239,6 +249,94 @@ class JColorField
   }
 
 
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   E V E N T S                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Adds the specified action listener to receive action events from this field.
+   */ 
+  public void
+  addActionListener
+  (
+   ActionListener l
+  )
+  {
+    pListenerList.add(ActionListener.class, l);
+  }
+
+  /**
+   * Removes the specified action listener so that it no longer receives action events
+   * from this field.
+   */ 
+  public void 	
+  removeActionListener
+  (
+   ActionListener l
+  )
+  {
+    pListenerList.remove(ActionListener.class, l);
+  }
+          
+  /**
+   * Sets the command string used for action events.
+   */ 
+  public void 	
+  setActionCommand
+  (
+   String command
+  )
+  {
+    pActionCommand = command; 
+  }
+
+  /**
+   * Notifies all listeners that have registered interest for notification of action events.
+   */
+  protected void 
+  fireActionPerformed() 
+  {
+    ActionEvent event = null;
+
+    Object[] listeners = pListenerList.getListenerList();
+    int i;
+    for(i=listeners.length-2; i>=0; i-=2) {
+      if(listeners[i]==ActionListener.class) {
+	if(event == null) 
+	  event = new ActionEvent(this, pEventID++, pActionCommand);
+
+	((ActionListener)listeners[i+1]).actionPerformed(event);
+      }
+    }
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   J C O M P O N E N T   O V E R R I D E S                                              */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Sets whether or not this component is enabled.
+   */ 
+  public void 
+  setEnabled
+  (
+   boolean enabled
+  )
+  {
+    if(enabled && !isEnabled()) {
+      pButton.addActionListener(this);
+      pButton.setEnabled(true);
+    }
+    else if(!enabled && isEnabled()) {
+      pButton.removeActionListener(this);
+      pButton.setEnabled(false);
+    }
+  }
+
+  
  
   /*----------------------------------------------------------------------------------------*/
   /*   L I S T E N E R S                                                                    */
@@ -308,6 +406,11 @@ class JColorField
   private Dialog  pOwnerDialog;
   private Frame   pOwnerFrame;
 
+  /** 
+   * The button which displays the color editor dialog.
+   */ 
+  private JButton  pButton; 
+
   /**
    * The color being displayed.
    */ 
@@ -317,5 +420,23 @@ class JColorField
    * The title of the color editor dialog.
    */ 
   private String  pTitle;
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The action listeners registered to this object.
+   */ 
+  private EventListenerList pListenerList;
+
+  /**
+   * The command string passed to generated action events. 
+   */ 
+  private String  pActionCommand; 
+
+  /**
+   * The unique event ID.
+   */ 
+  private int pEventID; 
 
 }
