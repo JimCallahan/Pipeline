@@ -1,10 +1,11 @@
-// $Id: JNodeDetailsPanel.java,v 1.42 2007/06/26 05:18:57 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.43 2007/07/31 15:01:36 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.ui.*;
 import us.temerity.pipeline.glue.*;
+import us.temerity.pipeline.math.*;
 import us.temerity.pipeline.laf.LookAndFeelLoader;
 
 import java.awt.*;
@@ -2448,17 +2449,6 @@ class JNodeDetailsPanel
 
         hbox.add(UIFactory.createSidebar());
       
-// 	{
-// 	  JPanel spanel = new JPanel();
-// 	  spanel.setName("Spacer");
-	  
-// 	  spanel.setMinimumSize(new Dimension(7, 0));
-// 	  spanel.setMaximumSize(new Dimension(7, Integer.MAX_VALUE));
-// 	  spanel.setPreferredSize(new Dimension(7, 0));
-	  
-// 	  hbox.add(spanel);
-// 	}
-
 	updateSingleActionParams(action, waction, caction, action.getSingleLayout(), hbox, 1);
 	
 	pActionParamsBox.add(hbox);
@@ -2495,7 +2485,7 @@ class JNodeDetailsPanel
 	  UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
 	}
 	else {
-	  UIFactory.addVerticalSpacer(tpanel, vpanel, 4, 3);
+	  UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
 
 	  /* single valued parameter */ 
 	  ActionParam param = action.getSingleParam(pname);
@@ -2564,6 +2554,79 @@ class JNodeDetailsPanel
 		    Double value = (Double) aparam.getValue();
 		    JDoubleField field = 
 		      UIFactory.createDoubleField(value, sVSize, JLabel.CENTER);
+		    pcomps[1] = field;
+
+		    field.addActionListener(this);
+		    field.setActionCommand("action-param-changed:" + aparam.getName());
+
+		    field.setEnabled(!isLocked() && !pIsFrozen);
+
+		    hbox.add(field);
+		  }
+		  else if(aparam instanceof Color3dActionParam) {
+		    Color3d value = (Color3d) aparam.getValue();
+		    JColorField field = 
+		      UIFactory.createColorField(getTopFrame(), value, sVSize);
+		    pcomps[1] = field;
+
+		    field.addActionListener(this);
+		    field.setActionCommand("action-param-changed:" + aparam.getName());
+
+		    field.setEnabled(!isLocked() && !pIsFrozen);
+
+		    hbox.add(field);
+		  }
+		  else if(aparam instanceof Tuple2iActionParam) {
+		    Tuple2i value = (Tuple2i) aparam.getValue();
+		    JTuple2iField field = UIFactory.createTuple2iField(value, sVSize);
+		    pcomps[1] = field;
+
+		    field.addActionListener(this);
+		    field.setActionCommand("action-param-changed:" + aparam.getName());
+
+		    field.setEnabled(!isLocked() && !pIsFrozen);
+
+		    hbox.add(field);
+		  }
+		  else if(aparam instanceof Tuple3iActionParam) {
+		    Tuple3i value = (Tuple3i) aparam.getValue();
+		    JTuple3iField field = UIFactory.createTuple3iField(value, sVSize);
+		    pcomps[1] = field;
+
+		    field.addActionListener(this);
+		    field.setActionCommand("action-param-changed:" + aparam.getName());
+
+		    field.setEnabled(!isLocked() && !pIsFrozen);
+
+		    hbox.add(field);
+		  }
+		  else if(aparam instanceof Tuple2dActionParam) {
+		    Tuple2d value = (Tuple2d) aparam.getValue();
+		    JTuple2dField field = UIFactory.createTuple2dField(value, sVSize);
+		    pcomps[1] = field;
+
+		    field.addActionListener(this);
+		    field.setActionCommand("action-param-changed:" + aparam.getName());
+
+		    field.setEnabled(!isLocked() && !pIsFrozen);
+
+		    hbox.add(field);
+		  }
+		  else if(aparam instanceof Tuple3dActionParam) {
+		    Tuple3d value = (Tuple3d) aparam.getValue();
+		    JTuple3dField field = UIFactory.createTuple3dField(value, sVSize);
+		    pcomps[1] = field;
+
+		    field.addActionListener(this);
+		    field.setActionCommand("action-param-changed:" + aparam.getName());
+
+		    field.setEnabled(!isLocked() && !pIsFrozen);
+
+		    hbox.add(field);
+		  }
+		  else if(aparam instanceof Tuple4dActionParam) {
+		    Tuple4d value = (Tuple4d) aparam.getValue();
+		    JTuple4dField field = UIFactory.createTuple4dField(value, sVSize);
 		    pcomps[1] = field;
 
 		    field.addActionListener(this);
@@ -2661,34 +2724,121 @@ class JNodeDetailsPanel
 		  aparam = caction.getSingleParam(param.getName());
 
 		if(aparam != null) {
-		  String text = "-";
-		  {
-		    if(aparam instanceof LinkActionParam) {
-		      String source = (String) aparam.getValue();
-		      int idx = pLinkActionParamNodeNames.indexOf(source);
-		      if(idx != -1) 
-			text = pLinkActionParamValues.get(idx);
-		    }
-		    else if(aparam instanceof BooleanActionParam) {
-		      Boolean value = (Boolean) aparam.getValue();
-		      if(value != null) 
-			text = (value ? "YES" : "no");
-		      else 
-			text = "-";
-		    }
-		    else {
-		      Comparable value = aparam.getValue();
-		      if(value != null)
-			text = value.toString();
-		    }
+                  if(aparam instanceof Color3dActionParam) {
+		    Color3d value = (Color3d) aparam.getValue();
+		    JColorField field = 
+		      UIFactory.createColorField(getTopFrame(), value, sVSize);
+		    pcomps[3] = field;
+
+		    field.setEnabled(false); 
+
+		    hbox.add(field);
 		  }
+		  else if(aparam instanceof Tuple2iActionParam) {
+		    Tuple2i value = (Tuple2i) aparam.getValue();
+		    JTuple2iField field = new JTuple2iField(); 
+                    field.setValue(value);
+		    pcomps[3] = field;
 
-		  JTextField field = UIFactory.createTextField(text, sVSize, JLabel.CENTER);
-		  pcomps[3] = field;
+                    Dimension size = new Dimension(sVSize, 19);
+                    field.setMinimumSize(size);
+                    field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+                    field.setPreferredSize(size);
 
-		  hbox.add(field);
-		}
-		else {
+		    field.setEnabled(false); 
+
+		    hbox.add(field);
+		  }
+		  else if(aparam instanceof Tuple3iActionParam) {
+		    Tuple3i value = (Tuple3i) aparam.getValue();
+		    JTuple3iField field = new JTuple3iField(); 
+                    field.setValue(value);
+		    pcomps[3] = field;
+
+                    Dimension size = new Dimension(sVSize, 19);
+                    field.setMinimumSize(size);
+                    field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+                    field.setPreferredSize(size);
+
+		    field.setEnabled(false); 
+
+		    hbox.add(field);
+		  }
+		  else if(aparam instanceof Tuple2dActionParam) {
+		    Tuple2d value = (Tuple2d) aparam.getValue();
+		    JTuple2dField field = new JTuple2dField(); 
+                    field.setValue(value);
+		    pcomps[3] = field;
+
+                    Dimension size = new Dimension(sVSize, 19);
+                    field.setMinimumSize(size);
+                    field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+                    field.setPreferredSize(size);
+
+		    field.setEnabled(false); 
+
+		    hbox.add(field);
+		  }
+		  else if(aparam instanceof Tuple3dActionParam) {
+		    Tuple3d value = (Tuple3d) aparam.getValue();
+		    JTuple3dField field = new JTuple3dField(); 
+                    field.setValue(value);
+		    pcomps[3] = field;
+
+                    Dimension size = new Dimension(sVSize, 19);
+                    field.setMinimumSize(size);
+                    field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+                    field.setPreferredSize(size);
+
+		    field.setEnabled(false); 
+
+		    hbox.add(field);
+		  }
+		  else if(aparam instanceof Tuple4dActionParam) {
+		    Tuple4d value = (Tuple4d) aparam.getValue();
+		    JTuple4dField field = new JTuple4dField(); 
+                    field.setValue(value);
+		    pcomps[3] = field;
+
+                    Dimension size = new Dimension(sVSize, 19);
+                    field.setMinimumSize(size);
+                    field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+                    field.setPreferredSize(size);
+
+		    field.setEnabled(false); 
+
+		    hbox.add(field);
+		  }
+                  else {
+                    String text = "-";
+                    {
+                      if(aparam instanceof LinkActionParam) {
+                        String source = (String) aparam.getValue();
+                        int idx = pLinkActionParamNodeNames.indexOf(source);
+                        if(idx != -1) 
+                          text = pLinkActionParamValues.get(idx);
+                      }
+                      else if(aparam instanceof BooleanActionParam) {
+                        Boolean value = (Boolean) aparam.getValue();
+                        if(value != null) 
+                          text = (value ? "YES" : "no");
+                        else 
+                          text = "-";
+                      }
+                      else {
+                        Comparable value = aparam.getValue();
+                        if(value != null)
+                          text = value.toString();
+                      }
+                    }
+                    
+                    JTextField field = UIFactory.createTextField(text, sVSize, JLabel.CENTER);
+                    pcomps[3] = field;
+                    
+                    hbox.add(field);
+                  }
+                }
+                else {
 		  JLabel label = UIFactory.createLabel("-", sVSize, JLabel.CENTER);
 		  label.setName("TextFieldLabel");
 
@@ -3400,6 +3550,36 @@ class JNodeDetailsPanel
 	    if(field.getValue() != null) 
 	      wtext = field.getValue().toString();
 	  }
+	  else if(aparam instanceof Color3dActionParam) {
+	    JColorField field = (JColorField) pcomps[1];
+	    if(field.getValue() != null) 
+	      wtext = field.getValue().toString();
+	  }
+	  else if(aparam instanceof Tuple2iActionParam) {
+	    JTuple2iField field = (JTuple2iField) pcomps[1];
+	    if(field.getValue() != null) 
+	      wtext = field.getValue().toString();  
+	  }
+	  else if(aparam instanceof Tuple3iActionParam) {
+	    JTuple3iField field = (JTuple3iField) pcomps[1];
+	    if(field.getValue() != null) 
+	      wtext = field.getValue().toString();  
+	  }
+	  else if(aparam instanceof Tuple2dActionParam) {
+	    JTuple2dField field = (JTuple2dField) pcomps[1];
+	    if(field.getValue() != null) 
+	      wtext = field.getValue().toString();  
+	  }
+	  else if(aparam instanceof Tuple3dActionParam) {
+	    JTuple3dField field = (JTuple3dField) pcomps[1];
+	    if(field.getValue() != null) 
+	      wtext = field.getValue().toString();  
+	  }
+	  else if(aparam instanceof Tuple4dActionParam) {
+	    JTuple4dField field = (JTuple4dField) pcomps[1];
+	    if(field.getValue() != null) 
+	      wtext = field.getValue().toString();  
+	  }
 	  else if(aparam instanceof StringActionParam) {
 	    JTextField field = (JTextField) pcomps[1];
 	    wtext = field.getText();
@@ -3422,7 +3602,7 @@ class JNodeDetailsPanel
 	   ((waction == null) || caction.getName().equals(waction.getName())))
 	  aparam = caction.getSingleParam(pname);
 	
-	if((aparam != null) && (aparam.getValue() != null))
+	if((aparam != null) && (aparam.getValue() != null)) 
 	  ctext = aparam.getValue().toString();
       }
 
@@ -4033,6 +4213,30 @@ class JNodeDetailsPanel
 		  JDoubleField field = (JDoubleField) pcomps[1];
 		  value = field.getValue();
 		}
+		else if(aparam instanceof Color3dActionParam) { 
+		  JColorField field = (JColorField) pcomps[1];
+		  value = field.getValue();
+		}
+		else if(aparam instanceof Tuple2iActionParam) { 
+		  JTuple2iField field = (JTuple2iField) pcomps[1];
+		  value = field.getValue();
+		}
+		else if(aparam instanceof Tuple3iActionParam) { 
+		  JTuple3iField field = (JTuple3iField) pcomps[1];
+		  value = field.getValue();
+		}
+		else if(aparam instanceof Tuple2dActionParam) { 
+		  JTuple2dField field = (JTuple2dField) pcomps[1];
+		  value = field.getValue();
+		}
+		else if(aparam instanceof Tuple3dActionParam) { 
+		  JTuple3dField field = (JTuple3dField) pcomps[1];
+		  value = field.getValue();
+		}
+		else if(aparam instanceof Tuple4dActionParam) { 
+		  JTuple4dField field = (JTuple4dField) pcomps[1];
+		  value = field.getValue();
+		}
 		else if(aparam instanceof StringActionParam) {
 		  JTextField field = (JTextField) pcomps[1];
 		  value = field.getText();
@@ -4430,6 +4634,30 @@ class JNodeDetailsPanel
 	else if(wparam instanceof DoubleActionParam) {
 	  JDoubleField field = (JDoubleField) pcomps[1];
 	  field.setValue((Double) value);
+	}
+	else if(wparam instanceof Color3dActionParam) {
+	  JColorField field = (JColorField) pcomps[1];
+	  field.setValue((Color3d) value);
+	}
+	else if(wparam instanceof Tuple2iActionParam) {
+	  JTuple2iField field = (JTuple2iField) pcomps[1];
+	  field.setValue((Tuple2i) value);
+	}
+	else if(wparam instanceof Tuple3iActionParam) {
+	  JTuple3iField field = (JTuple3iField) pcomps[1];
+	  field.setValue((Tuple3i) value);
+	}
+	else if(wparam instanceof Tuple2dActionParam) {
+	  JTuple2dField field = (JTuple2dField) pcomps[1];
+	  field.setValue((Tuple2d) value);
+	}
+	else if(wparam instanceof Tuple3dActionParam) {
+	  JTuple3dField field = (JTuple3dField) pcomps[1];
+	  field.setValue((Tuple3d) value);
+	}
+	else if(wparam instanceof Tuple4dActionParam) {
+	  JTuple4dField field = (JTuple4dField) pcomps[1];
+	  field.setValue((Tuple4d) value);
 	}
 	else if(wparam instanceof StringActionParam) {
 	  JTextField field = (JTextField) pcomps[1];
@@ -5490,6 +5718,36 @@ class JNodeDetailsPanel
 	      else if(aparam instanceof DoubleActionParam) {
 		JDoubleField field = (JDoubleField) comps[1];
 		field.setValue((Double) value);
+		doActionParamChanged(pname);
+	      }
+	      else if(aparam instanceof Color3dActionParam) {
+		JColorField field = (JColorField) comps[1];
+		field.setValue((Color3d) value);
+		doActionParamChanged(pname);
+	      }
+	      else if(aparam instanceof Tuple2iActionParam) {
+		JTuple2iField field = (JTuple2iField) comps[1];
+		field.setValue((Tuple2i) value);
+		doActionParamChanged(pname);
+	      }
+	      else if(aparam instanceof Tuple3iActionParam) {
+		JTuple3iField field = (JTuple3iField) comps[1];
+		field.setValue((Tuple3i) value);
+		doActionParamChanged(pname);
+	      }
+	      else if(aparam instanceof Tuple2dActionParam) {
+		JTuple2dField field = (JTuple2dField) comps[1];
+		field.setValue((Tuple2d) value);
+		doActionParamChanged(pname);
+	      }
+	      else if(aparam instanceof Tuple3dActionParam) {
+		JTuple3dField field = (JTuple3dField) comps[1];
+		field.setValue((Tuple3d) value);
+		doActionParamChanged(pname);
+	      }
+	      else if(aparam instanceof Tuple4dActionParam) {
+		JTuple4dField field = (JTuple4dField) comps[1];
+		field.setValue((Tuple4d) value);
 		doActionParamChanged(pname);
 	      }
 	      else if(aparam instanceof StringActionParam) {
