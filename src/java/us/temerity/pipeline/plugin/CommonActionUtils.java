@@ -1,4 +1,4 @@
-// $Id: CommonActionUtils.java,v 1.8 2007/07/21 02:08:09 jesse Exp $
+// $Id: CommonActionUtils.java,v 1.9 2007/07/31 14:49:53 jim Exp $
 
 package us.temerity.pipeline.plugin;
 
@@ -623,7 +623,7 @@ class CommonActionUtils
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Get the selected index of the single valued source Enum parameter with the given name.<P> 
+   * Get the selected index of the single valued source Enum parameter with the given name.<P>
    * 
    * @param source
    *   The name of the source.
@@ -720,7 +720,7 @@ class CommonActionUtils
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Get the value of the single valued non-null source Long parameter with the given name.<P> 
+   * Get the value of the single valued non-null source Long parameter with the given name.<P>
    * 
    * This method can be used to retrieve ByteSizeActionParam values.
    * 
@@ -1388,8 +1388,8 @@ class CommonActionUtils
    *   <CODE>null</CODE> if the value is null or the empty string. 
    * 
    * @throws PipelineException 
-   *   If no single valued secondary source parameter with the given name exists or (optionally)
-   *   if the value is null or empty.
+   *   If no single valued secondary source parameter with the given name exists or 
+   *   (optionally) if the value is null or empty.
    */ 
   public final String
   getSecondarySourceStringParamValue
