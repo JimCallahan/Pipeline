@@ -34,6 +34,14 @@ import us.temerity.pipeline.*;
  *     The name of the WorkGroup or specific artist assigned to complete the task involving
  *     this node.  Only a user assigned to a node (or part of the group assigned to the node)
  *     is allowed to check-in this node. 
+ *   </DIV> <BR>
+ * 
+ *   Builder Path <BR>
+ *   <DIV style="margin-left: 40px;">
+ *     The fully resolved file system path to the launcher script which runs the Builder 
+ *     program responsible for regenerating and checking-in the Approve node all associated
+ *     Product nodes for the task after it has been approved by its supervisor.  If unset, 
+ *     the the default post-approval Builder will be used.
  *   </DIV>
  * </DIV> <P> 
  */
@@ -81,11 +89,25 @@ class SubmitNodeAnnotation
     }
     
     {
+      AnnotationParam param = 
+	new PathAnnotationParam
+	(aBuilderPath, 
+	 "The fully resolved file system path to the launcher script which runs the " + 
+         "Builder program responsible for regenerating and checking-in the Approve node " + 
+         "all associated Product nodes for the task after it has been approved by its " +
+         "supervisor.  If unset, the the default post-approval Builder will be used.", 
+         null);
+      addParam(param);
+    }
+    
+    {
       ArrayList<String> layout = new ArrayList<String>();
       layout.add(aTaskName);
       layout.add(aTaskType);
       layout.add(null);
       layout.add(aAssignedTo);
+      layout.add(null);
+      layout.add(aBuilderPath);
 
       setLayout(layout);
     }
@@ -104,5 +126,6 @@ class SubmitNodeAnnotation
   public static final String aTaskName    = "TaskName";
   public static final String aTaskType    = "TaskType";
   public static final String aAssignedTo  = "AssignedTo";
+  public static final String aBuilderPath = "BuilderPath";
   
 }

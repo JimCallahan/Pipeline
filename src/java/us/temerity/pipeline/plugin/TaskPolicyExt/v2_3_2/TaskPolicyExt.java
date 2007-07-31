@@ -421,6 +421,8 @@ class TaskPolicyExt
           String purpose  = lookupPurpose(nodeName, an); 
 
           if(purpose.equals(aSubmit)) {
+            Path builderPath = (Path) an.getParamValue(aBuilderPath);
+
             TreeMap<String,String> thumbToFocus    = new TreeMap<String,String>();
             TreeMap<String,NodeVersion> thumbNodes = new TreeMap<String,NodeVersion>();
             TreeMap<String,NodeVersion> focusNodes = new TreeMap<String,NodeVersion>();
@@ -428,6 +430,7 @@ class TaskPolicyExt
             findSubmitNodes(nodeName, taskName, taskType, 
                             vsn, null, thumbToFocus, thumbNodes, focusNodes, editNodes, 
                             mclient);
+
 
             /* DEBUG */ 
             {
@@ -480,8 +483,8 @@ class TaskPolicyExt
             int tries = 0; 
             while(true) {
               try {
-                sDatabase.submitTask(taskName, taskType, vsn, thumbToFocus, 
-                                     thumbNodes, focusNodes, editNodes); 
+                sDatabase.submitTask(taskName, taskType, vsn, builderPath, 
+                                     thumbToFocus, thumbNodes, focusNodes, editNodes); 
                 break;
               }
               catch(PipelineException ex) {
@@ -708,6 +711,7 @@ class TaskPolicyExt
   public static final String aPurpose          = "Purpose";
   public static final String aIsApproved       = "IsApproved";
   public static final String aAssignedTo       = "AssignedTo";
+  public static final String aBuilderPath      = "BuilderPath";
   
   public static final String aTask             = "Task";
   public static final String aSubmitNode       = "SubmitNode";

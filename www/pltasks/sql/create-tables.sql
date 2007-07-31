@@ -3,6 +3,19 @@ USE `pltasks`;
 
 -- ----------------------------------------------------------------------------------------
 
+
+CREATE TABLE `auth` (
+  `ident_id` smallint(5) unsigned NOT NULL,
+  `password` varchar(128) NOT NULL,
+  PRIMARY KEY  (`ident_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+CREATE TABLE `builders` (
+  `builder_id` mediumint(8) unsigned NOT NULL auto_increment,
+  `builder_path` varchar(2048) NOT NULL,
+  PRIMARY KEY  (`builder_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
 CREATE TABLE `events` (
   `event_id` smallint(5) unsigned NOT NULL auto_increment,
   `task_id` smallint(5) unsigned NOT NULL,
@@ -11,6 +24,7 @@ CREATE TABLE `events` (
   `note_id` mediumint(8) unsigned NOT NULL,
   `new_active_id` smallint(5) unsigned default NULL,
   `new_status_id` smallint(5) unsigned default NULL,
+  `builder_id` mediumint(8) unsigned default NULL,
   PRIMARY KEY  (`event_id`),
   KEY `task_id` (`task_id`),
   KEY `ident_id` (`ident_id`),
@@ -27,12 +41,6 @@ CREATE TABLE `idents` (
   KEY `is_group` (`is_group`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
-CREATE TABLE `auth` (
-  `ident_id` smallint(5) unsigned NOT NULL,
-  `password` varchar(128) NOT NULL,
-  PRIMARY KEY  (`ident_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 ;
-
 CREATE TABLE `node_info` (
   `info_id` mediumint(8) unsigned NOT NULL auto_increment,
   `node_id` mediumint(8) unsigned NOT NULL,
@@ -41,6 +49,7 @@ CREATE TABLE `node_info` (
   `is_edit` tinyint(1) NOT NULL,
   `is_submit` tinyint(1) NOT NULL,
   `is_focus` tinyint(1) NOT NULL,
+  `is_thumb` tinyint(1) NOT NULL,
   `is_approve` tinyint(1) NOT NULL,
   PRIMARY KEY  (`info_id`),
   KEY `node_id` (`node_id`),
@@ -51,20 +60,12 @@ CREATE TABLE `node_info` (
   KEY `is_approve` (`is_approve`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
-CREATE TABLE `thumb_info` (
-  `thumb_info_id` mediumint(8) unsigned NOT NULL,
-  `focus_info_id` mediumint(8) unsigned NOT NULL,
-  `thumb_path` varchar(2048) NOT NULL,
-  PRIMARY KEY  (`thumb_info_id`),
-  KEY `focus_info_id` (`focus_info_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 ;
-
 CREATE TABLE `node_names` (
   `node_id` mediumint(8) unsigned NOT NULL auto_increment,
   `node_name` varchar(2048) NOT NULL,
   PRIMARY KEY  (`node_id`),
   KEY `node_name` (`node_name`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 CREATE TABLE `notes` (
   `note_id` mediumint(8) unsigned NOT NULL auto_increment,
@@ -72,19 +73,26 @@ CREATE TABLE `notes` (
   PRIMARY KEY  (`note_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
+CREATE TABLE `supervisors` (
+  `task_id` smallint(5) unsigned NOT NULL,
+  `ident_id` smallint(5) unsigned default NULL,
+  KEY `task_id` (`task_id`),
+  KEY `ident_id` (`ident_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
 CREATE TABLE `task_activity` (
   `active_id` smallint(5) unsigned NOT NULL auto_increment,
   `active_name` varchar(32) NOT NULL,
   `active_desc` text,
   PRIMARY KEY  (`active_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=4 ;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 CREATE TABLE `task_status` (
   `status_id` smallint(5) unsigned NOT NULL auto_increment,
   `status_name` varchar(32) NOT NULL,
   `status_desc` text,
   PRIMARY KEY  (`status_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=7 ;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 CREATE TABLE `task_titles` (
   `title_id` mediumint(8) unsigned NOT NULL auto_increment,
@@ -98,7 +106,7 @@ CREATE TABLE `task_types` (
   `type_name` varchar(32) NOT NULL,
   `type_desc` text,
   PRIMARY KEY  (`type_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=9 ;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 CREATE TABLE `tasks` (
   `task_id` smallint(5) unsigned NOT NULL auto_increment,
@@ -107,6 +115,7 @@ CREATE TABLE `tasks` (
   `active_id` smallint(5) unsigned NOT NULL,
   `assigned_to` smallint(5) unsigned default NULL,
   `status_id` smallint(5) unsigned NOT NULL,
+  `last_modified` datetime NOT NULL,
   PRIMARY KEY  (`task_id`),
   KEY `title_id` (`title_id`),
   KEY `type_id` (`type_id`),
@@ -115,12 +124,13 @@ CREATE TABLE `tasks` (
   KEY `status_id` (`status_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
-CREATE TABLE `supervisors` (
-  `ident_id` smallint(5) unsigned NOT NULL,
-  `task_id` smallint(5) unsigned NOT NULL,  
-  PRIMARY KEY `ident_id` (`ident_id`),
-  KEY `task_id` (`task_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+CREATE TABLE `thumb_info` (
+  `thumb_info_id` mediumint(8) unsigned NOT NULL,
+  `focus_info_id` mediumint(8) unsigned NOT NULL,
+  `thumb_path` varchar(2048) NOT NULL,
+  PRIMARY KEY  (`thumb_info_id`),
+  KEY `focus_info_id` (`focus_info_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
 -- ----------------------------------------------------------------------------------------

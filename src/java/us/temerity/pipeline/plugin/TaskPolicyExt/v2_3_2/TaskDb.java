@@ -1,4 +1,4 @@
-// $Id: TaskDb.java,v 1.3 2007/07/23 06:24:22 jim Exp $
+// $Id: TaskDb.java,v 1.4 2007/07/31 15:43:53 jim Exp $
 
 package us.temerity.pipeline.plugin.TaskPolicyExt.v2_3_2;
 
@@ -272,16 +272,30 @@ class TaskDb
       /* events */ 
       {
         String sql = 
-          ("INSERT INTO events (task_id, ident_id, stamp, note_id) VALUES (?, ?, ?, ?)");
+          ("INSERT INTO events (task_id, ident_id, stamp, note_id, builder_id) " + 
+           "VALUES (?, ?, ?, ?, ?)");
         pInsertCreateEventSt = 
           pConnect.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS); 
       }
 
       {
         String sql = 
-          ("INSERT INTO events (task_id, ident_id, stamp, note_id, new_active_id) " + 
-           "VALUES (?, ?, ?, ?, ?)");
+          ("INSERT INTO events " + 
+           "(task_id, ident_id, stamp, note_id, new_active_id, builder_id) " + 
+           "VALUES (?, ?, ?, ?, ?, ?)");
         pInsertSubmitEventSt = 
+          pConnect.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS); 
+      }
+      
+      /* builders */ 
+      {
+        String sql = ("SELECT builder_id FROM builders WHERE builder_path = ?"); 
+        pGetBuilderPathSt = pConnect.prepareStatement(sql);
+      }
+
+      {
+        String sql = ("INSERT INTO builders (builder_path) VALUES (?)");
+        pInsertBuilderPathSt = 
           pConnect.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS); 
       }
       
@@ -361,6 +375,7 @@ class TaskDb
    String taskTitle, 
    String taskType,
    NodeVersion submitNode, 
+   Path builderPath, 
    TreeMap<String,String> thumbToFocus,  
    TreeMap<String,NodeVersion> thumbNodes, 
    TreeMap<String,NodeVersion> focusNodes,  
@@ -390,17 +405,21 @@ class TaskDb
         Integer identID = lookupIdent(submitNode.getAuthor(), false); 
         Integer noteID  = insertNote(submitNode.getMessage());
 
+        Integer builderID = null;
+        if(builderPath != null) 
+          builderID = lookupBuilderPath(builderPath);
+
         long stamp = submitNode.getTimeStamp();
 
         if(taskID == null) { 
           Integer activeID = lookupTaskActivity("Inactive");
           Integer statusID = lookupTaskStatus("Unapproved");
           taskID = insertTask(titleID, typeID, activeID, statusID, stamp); 
-          eventID = insertCreateEvent(taskID, identID, stamp, noteID);
+          eventID = insertCreateEvent(taskID, identID, stamp, noteID, builderID);
         }
         else {
           Integer submitID = lookupTaskActivity("Submitted");
-          eventID = insertSubmitEvent(taskID, identID, stamp, noteID, submitID);
+          eventID = insertSubmitEvent(taskID, identID, stamp, noteID, builderID, submitID);
           submitTask(taskID, submitID, stamp);
         }
       }
@@ -1050,6 +1069,9 @@ class TaskDb
    * @param noteID
    *   The ID of the note associated with the event.
    * 
+   * @param builderID
+   *   The ID of post approval builder or <CODE>null</CODE> if unset.
+   * 
    * @return 
    *   The ID of the newly inserted entry.
    */ 
@@ -1059,7 +1081,8 @@ class TaskDb
    int taskID, 
    int identID, 
    long stamp, 
-   int noteID
+   int noteID, 
+   Integer builderID
   ) 
     throws SQLException
   {
@@ -1067,6 +1090,10 @@ class TaskDb
     pInsertCreateEventSt.setInt(2, identID);
     pInsertCreateEventSt.setTimestamp(3, new Timestamp(stamp));
     pInsertCreateEventSt.setInt(4, noteID);
+    if(builderID != null) 
+      pInsertCreateEventSt.setInt(5, builderID); 
+    else 
+      pInsertCreateEventSt.setNull(5, Types.INTEGER);
     pInsertCreateEventSt.executeUpdate();
 
     Integer id = null;
@@ -1095,6 +1122,9 @@ class TaskDb
    * @param noteID
    *   The ID of the note associated with the event.
    * 
+   * @param builderID
+   *   The ID of post approval builder or <CODE>null</CODE> if unset.
+   * 
    * @param activityID
    *   The ID of the "Submitted" new task activity.
    * 
@@ -1108,6 +1138,7 @@ class TaskDb
    int identID, 
    long stamp, 
    int noteID,
+   Integer builderID,
    int activityID
   ) 
     throws SQLException
@@ -1117,11 +1148,98 @@ class TaskDb
     pInsertSubmitEventSt.setTimestamp(3, new Timestamp(stamp));
     pInsertSubmitEventSt.setInt(4, noteID);
     pInsertSubmitEventSt.setInt(5, activityID);
+    if(builderID != null) 
+      pInsertSubmitEventSt.setInt(6, builderID); 
+    else 
+      pInsertSubmitEventSt.setNull(6, Types.INTEGER);
     pInsertSubmitEventSt.executeUpdate();
 
     Integer id = null;
     {
       ResultSet rs = pInsertSubmitEventSt.getGeneratedKeys();
+      if(rs.next()) 
+        id = rs.getInt(1);
+      rs.close();
+    }
+    
+    return id;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+    
+  /**
+   * Get the ID for a specific builder path creating a new entry if needed.
+   * 
+   * @param path
+   *   The new builder path. 
+   * 
+   * @return 
+   *   The ID of the entry. 
+   */ 
+  private synchronized Integer
+  lookupBuilderPath
+  (
+   Path path
+  ) 
+    throws SQLException
+  {
+    Integer id = getBuilderPath(path); 
+    if(id == null) 
+      id = insertBuilderPath(path); 
+
+    return id;
+  }
+
+  /**
+   * Get the ID for a specific builder path.
+   * 
+   * @param path
+   *   The builder path. 
+   * 
+   * @return 
+   *   The ID of the entry or <CODE>null</CODE> if it does not yet exist. 
+   */ 
+  private synchronized Integer
+  getBuilderPath
+  (
+   Path path   
+  ) 
+    throws SQLException
+  {
+    Integer id = null;
+
+    pGetBuilderPathSt.setString(1, path.toString());
+    ResultSet rs = pGetBuilderPathSt.executeQuery();
+    while(rs.next()) 
+      id = rs.getInt(1);
+    rs.close();
+
+    return id;
+  }
+  
+  /**
+   * Insert a new builder path.
+   * 
+   * @param path
+   *   The new builder path. 
+   * 
+   * @return 
+   *   The ID of the newly inserted entry.
+   */ 
+  private synchronized Integer
+  insertBuilderPath
+  (
+   Path path
+  ) 
+    throws SQLException
+  {
+    pInsertBuilderPathSt.setString(1, path.toString());
+    pInsertBuilderPathSt.executeUpdate();
+
+    Integer id = null;
+    {
+      ResultSet rs = pInsertBuilderPathSt.getGeneratedKeys();
       if(rs.next()) 
         id = rs.getInt(1);
       rs.close();
@@ -1539,6 +1657,9 @@ class TaskDb
   
   private PreparedStatement  pGetNodeNameSt;
   private PreparedStatement  pInsertNodeNameSt;
+
+  private PreparedStatement  pGetBuilderPathSt;
+  private PreparedStatement  pInsertBuilderPathSt;
 
   private PreparedStatement  pInsertNodeInfoSt;
 
