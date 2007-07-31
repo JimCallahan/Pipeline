@@ -1,4 +1,4 @@
-// $Id: JNodeAnnotationsPanel.java,v 1.4 2007/06/26 05:18:57 jim Exp $
+// $Id: JNodeAnnotationsPanel.java,v 1.5 2007/07/31 14:59:25 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1696,6 +1696,10 @@ class JNodeAnnotationsPanel
             JTextField field = (JTextField) comp;
             value = field.getText();	  
           }
+          else if(aparam instanceof PathAnnotationParam) {
+            JPathField field = (JPathField) comp;
+            value = field.getPath();	  
+          }
           else if(aparam instanceof ToolsetAnnotationParam) {
             JCollectionField field = (JCollectionField) comp;
             String toolset = field.getSelected();
@@ -1953,6 +1957,21 @@ class JNodeAnnotationsPanel
 
                 pParamComponents.put(pname, field);	      
               }
+              else if(aparam instanceof PathAnnotationParam) {
+                Path value = (Path) aparam.getValue();
+                JPathField field = 
+                  UIFactory.createTitledPathField 
+                  (tpanel, aparam.getNameUI() + ":", sTSize-7, 
+                   vpanel, value, sVSize, 
+                   aparam.getDescription());
+
+                field.setActionCommand("param-changed:" + pName + ":" + pname);
+                field.addActionListener(pParent);
+
+                field.setEnabled(paramEnabled); 
+
+                pParamComponents.put(pname, field);	      
+              }
               else if(aparam instanceof ToolsetAnnotationParam) {
                 String value = (String) aparam.getValue();
 
@@ -2016,7 +2035,8 @@ class JNodeAnnotationsPanel
                 pParamComponents.put(pname, field);	                      
               }
               else {
-                assert(false) : "Unknown annotation parameter type!";
+                assert(false) : 
+                  ("Unknown annotation parameter type (" + aparam.getName() + ")!");
               }
             }
           }
