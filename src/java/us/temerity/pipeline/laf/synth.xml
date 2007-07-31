@@ -1169,6 +1169,26 @@
   </style>
   <bind style="WarningTextField" type="name" key="WarningTextField"/>
    
+  <style id="SelectionTextField">
+    <state value="DISABLED"> 
+      <color value="#ffff00" type="TEXT_FOREGROUND"/>
+      <color value="#727272" type="TEXT_BACKGROUND"/>
+      <imagePainter path="ValuePanel.png"
+                    method="textFieldBackground"
+                    sourceInsets="3 3 3 3"/>
+    </state>
+    <state> 
+      <color value="#ffff00" type="TEXT_FOREGROUND"/>
+      <color value="#727272" type="TEXT_BACKGROUND"/>
+      <imagePainter path="EditableValuePanel.png"
+                    method="textFieldBackground"
+                    sourceInsets="3 3 3 3"/> 
+    </state>
+    <insets top="2" bottom="2" right="8" left="8"/>
+    <font name="Lucida Sans Bold" size="12"/>
+  </style>
+  <bind style="SelectionTextField" type="name" key="SelectionTextField"/>
+
   <style id="TextFieldLabel">
     <imagePainter path="ValuePanel.png"
                   method="labelBackground"

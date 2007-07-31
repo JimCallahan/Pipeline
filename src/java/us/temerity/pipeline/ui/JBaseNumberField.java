@@ -1,4 +1,4 @@
-// $Id: JBaseNumberField.java,v 1.2 2004/09/05 06:45:30 jim Exp $
+// $Id: JBaseNumberField.java,v 1.3 2007/07/31 14:34:42 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -75,6 +75,8 @@ class JBaseNumberField<T>
   {
     if(color.equals(Color.cyan)) 
       setName("WarningTextField");
+    else if(color.equals(Color.yellow)) 
+      setName("SelectionTextField");
     else    
       setName("EditableTextField");
     
