@@ -1,4 +1,4 @@
-// $Id: MRayAddTexturesTool.java,v 1.1 2007/06/17 15:34:42 jim Exp $
+// $Id: MRayAddTexturesTool.java,v 1.2 2007/07/31 14:32:16 jim Exp $
 
 package us.temerity.pipeline.plugin.MRayAddTexturesTool.v2_2_1;
 
@@ -770,7 +770,7 @@ MRayAddTexturesTool
       if(msg.length() > 0) 
         pWarnings = msg;
 
-      return NextPhase.Finish; 
+      return NextPhase.Finish;   // SHOULDN'T THIS BE: NextPhase.Continue
     }
   }
 
