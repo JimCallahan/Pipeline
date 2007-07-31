@@ -202,6 +202,7 @@ SUBDIRS = \
   ShakeDiffComparator \
   ShakeEditor \
   ShakeQtAction \
+  ShakeThumbnailAction \
   ShaveApplyCacheAction \
   ShaveCacheAction \
   ShaveCacheCopyAction \

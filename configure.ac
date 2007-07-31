@@ -9,7 +9,7 @@ AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(Pipeline, 2.3.5)
+AM_INIT_AUTOMAKE(Pipeline, 2.3.6)
                            
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
@@ -2215,6 +2215,8 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/ShakeQtAction/Makefile
   src/java/us/temerity/pipeline/plugin/ShakeQtAction/v2_0_9/Makefile
   src/java/us/temerity/pipeline/plugin/ShakeQtAction/v2_2_1/Makefile
+  src/java/us/temerity/pipeline/plugin/ShakeThumbnailAction/Makefile
+  src/java/us/temerity/pipeline/plugin/ShakeThumbnailAction/v2_3_6/Makefile
   src/java/us/temerity/pipeline/plugin/ShaveApplyCacheAction/Makefile
   src/java/us/temerity/pipeline/plugin/ShaveApplyCacheAction/v2_0_9/Makefile
   src/java/us/temerity/pipeline/plugin/ShaveCacheAction/Makefile
