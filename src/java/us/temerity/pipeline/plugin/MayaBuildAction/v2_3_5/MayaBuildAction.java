@@ -1,3 +1,5 @@
+// $Id: MayaBuildAction.java,v 1.2 2007/08/01 02:01:31 jesse Exp $
+
 package us.temerity.pipeline.plugin.MayaBuildAction.v2_3_5;
 
 import java.io.*;
@@ -517,16 +519,20 @@ class MayaBuildAction
           }
 
           out.write
-            ("  -options \"v=0\"\n" + 
-             "  \"$WORKING" + mpath + "\"`;\n" + 
-             "string $refNode = `file -q -rfn $actualFile`;\n");
-          
+          ("  -options \"v=0\"\n" + 
+           "  \"$WORKING" + mpath + "\"`;\n");
+        
+        if (buildType.equals(aReference)) {
+          out.write
+            ("string $refNode = `file -q -rfn $actualFile`;\n");
+
           String proxy = proxyNames.get(sname);
           if (proxy != null) {
             out.write
               ("if( isValidReference( $refNode ) )\n" + 
-               "  setAttr ($refNode + \".proxyTag\") -type \"string\" \"" + proxy + "\";\n");
+      	       "  setAttr ($refNode + \".proxyTag\") -type \"string\" \"" + proxy + "\";\n");
           }
+        }
           TreeMap<String, Path> proxies = proxyPaths.get(origSpace);
           if (proxies != null && proxies.size() > 0) {
             for (String proxyName : proxies.keySet()) {
