@@ -145,6 +145,7 @@
            cellpadding="2" cellspacing="1" border="0">
       <TR>
         
+        <TH class="theader">&nbsp;</TH>
     <?php
     {
       $auth_html = 
@@ -155,7 +156,7 @@
       if($auth_name != NULL) {
         $supervised_by = $task_owners[$tid]['supervised_by']; 
         if(($supervised_by != NULL) && in_array($auth_name, $supervised_by)) 
-          print('<TH class="theader">' . "\n" . 
+          print('<TH class="theader" width="100">' . "\n" . 
                 '<FORM action="../phpinfo.php" method="POST">' . "\n" . 
                 $auth_html . "\n" . 
                 '  <INPUT class="liteoption" value="Review" type="submit">' . "\n" . 
@@ -163,19 +164,24 @@
                 '</TH>' . "\n");
 
         if($auth_name == 'pipeline')
-          print('<TH class="theader">' . "\n" . 
+          print('<TH class="theader" width="100">' . "\n" . 
                 '<FORM action="../phpinfo.php" method="POST">' . "\n" . 
                 $auth_html . "\n" . 
                 '<INPUT class="liteoption" value="Assign" type="submit">' . "\n" . 
                 '</FORM>' . "\n" . 
                 '</TH>' . "\n");
+
+        print('<TH class="theader" width="100">' . "\n" . 
+              '<FORM action="../phpinfo.php" method="POST">' . "\n" . 
+              $auth_html . "\n" . 
+              '<INPUT class="liteoption" value="Comment" type="submit">' . "\n" . 
+              '</FORM>' . "\n" . 
+              '</TH>' . "\n");
       }
     }
     ?>
-
-        <TH class="theader"> 
-          <INPUT class="liteoption" value="Comment" type="submit">
-        </TH>
+      
+        <TH class="theader">&nbsp;</TH>
       </TR>
     </TABLE>
 

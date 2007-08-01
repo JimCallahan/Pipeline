@@ -298,10 +298,10 @@
 <?php 
 // print("<P>_REQUEST<BR>\n");
 // var_dump($_REQUEST);
-// print("<P>tasks<BR>\n");
-// var_dump($tasks);
-// print("<P>task_owners<BR>\n");
-// var_dump($task_owners);
+print("<P>tasks<BR>\n");
+var_dump($tasks);
+print("<P>task_owners<BR>\n");
+var_dump($task_owners);
 ?>
 </PRE>
 
