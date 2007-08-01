@@ -1,11 +1,11 @@
 package us.temerity.pipeline.plugin.ShakeThumbnailAction.v2_3_6;
 
-import java.io.File;
-import java.util.ArrayList;
-
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.math.*;
 import us.temerity.pipeline.plugin.CommonActionUtils;
+
+import java.io.*;
+import java.util.*; 
 
 /*------------------------------------------------------------------------------------------*/
 /*   S H A K E   T H U M B N A I L   A C T I O N                                            */
@@ -164,44 +164,47 @@ class ShakeThumbnailAction
       targetPath = getPrimaryTargetPath(agenda, "thumbnail image");
     }
 
-    /* create the process to run the action */
-    {
-      ArrayList<String> args = new ArrayList<String>();
-
+    /* create a temporary Shake script */ 
+    Path script = new Path(createTemp(agenda, "shk"));
+    try {    
       int size = getSingleIntegerParamValue(aThumbnailSize, new Range<Integer>(1, null));
-      String sizeStr = Integer.toString(size); 
-      
+
       Color3d bg = (Color3d) getSingleParamValue(aBackgroundColor); 
       if(bg == null) 
         throw new PipelineException
           ("The BackgroundColor was not specified!");
-
-      args.add("-color");      
-      args.add(sizeStr);     
-      args.add(sizeStr);      
-      args.add("1");      
-      args.add(Double.toString(bg.r()));
-      args.add(Double.toString(bg.g()));
-      args.add(Double.toString(bg.b()));
       
-      args.add("-label");      
-      args.add("bg");      
+      FileWriter out = new FileWriter(script.toFile()); 
 
-      args.add("-fi"); 
-      args.add(sourcePath.toOsString());
-     
-      args.add("-fit");      
-      args.add(sizeStr);      
-      args.add(sizeStr);      
+      out.write
+        ("Bg1 = Color(Fit1.xSize, Fit1.ySize, 1, " + 
+         bg.r() + ", " + bg.g() + ", " + bg.b() + ", 1, 0);\n" + 
+         "In1 = FileIn(\"" + sourcePath.toOsString() + "\", \"Auto\", 0, 0);\n" + 
+         "Fit1 = Fit(In1, " + 
+         "In1.width > In1.height ? " + size + " : " + size + "*(In1.width/In1.height), " + 
+         "In1.width < In1.height ? " + size + " : " + size + "*(In1.height/In1.width), " + 
+         "\"default\", \"default\", 1);\n" + 
+         "Over1 = Over(Fit1, Bg1, 0, 0, 0);\n" + 
+         "Out1 = FileOut(Over1, \"" + targetPath.toOsString() + "\", \"Auto\");\n");
+      
+      out.close();
+    } 
+    catch (IOException ex) {
+      throw new PipelineException
+	("Unable to write temporary Shake script file (" + script + ") for Job " + 
+	 "(" + agenda.getJobID() + ")!\n" +
+	 ex.getMessage());
+    }
 
-      args.add("-over");      
-      args.add("bg");      
+    /* create the process to run the action */
+    {
+      ArrayList<String> args = new ArrayList<String>();
 
-      args.add("-fo");
-      args.add(targetPath.toOsString());
+      args.add("-exec");
+      args.add(script.toOsString());
 
       return createSubProcess(agenda, "shake", args, outFile, errFile);
-    }
+    }    
   }  
   
   
