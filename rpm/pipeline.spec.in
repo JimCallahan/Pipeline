@@ -104,11 +104,11 @@ The core features of Pipeline include:
 %defattr(-,root,root)
 @ROOT_INST_DIR@/plugins-extra
 
-%defattr(444,root,root)
+%defattr(444,@PIPELINE_USER@,@PIPELINE_GROUP@)
 @ROOT_INST_DIR@/builders/us/temerity/pipeline/builder/maya2mr/v2_3_1/maya2mr.jar
 @ROOT_INST_DIR@/builders/us/temerity/pipeline/builder/maya2mr/v2_3_2/maya2mr.jar
 
-%defattr(555,root,root)
+%defattr(555,@PIPELINE_USER@,@PIPELINE_GROUP@)
 @ROOT_INST_DIR@/builders/us/temerity/pipeline/builder/v2_3_2/Unix/plApprovalBuilder
 
 @ROOT_INST_DIR@/builders/us/temerity/pipeline/builder/maya2mr/v2_3_1/Unix/plNewAssetBuilder

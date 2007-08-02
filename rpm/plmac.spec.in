@@ -57,7 +57,7 @@ Pipeline configuration process.
 @ROOT_INST_DIR@/MacOS/debug/sbin/pljobmgr
 @ROOT_INST_DIR@/MacOS/profile/sbin/pljobmgr
 
-%defattr(555,root,root)
+%defattr(555,@PIPELINE_USER@,@PIPELINE_GROUP@)
 @ROOT_INST_DIR@/builders/us/temerity/pipeline/builder/v2_3_2/MacOS/plApprovalBuilder
 
 @ROOT_INST_DIR@/builders/us/temerity/pipeline/builder/maya2mr/v2_3_1/MacOS/plNewAssetBuilder
