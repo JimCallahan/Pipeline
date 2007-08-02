@@ -865,7 +865,8 @@ MayaMiShaderAction
 	     "            fprint $fid \", \";\n" + 
 	     "        }\n" + 
 	     "        fprint $fid (\"]\");\n" + 
-	     "      }\n" + 
+	     "      }\n" +
+	     "      clear($lights);\n" + 
 	     "    }\n"); 
 
 		  
