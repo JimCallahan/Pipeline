@@ -101,12 +101,12 @@ public
     
     {
       ActionParam param = 
-  	    new LinkActionParam
-  	    (aPreExportMEL,
-  	     "A MEL snippet that will get pasted into the mel script right before the " +
-  	     "export happens.  Use this to modify what is selected to change what is " +
-  	     "getting exported..", 
-  	     null); 
+	new LinkActionParam
+	(aPreExportMEL,
+	 "A MEL snippet that will get pasted into the mel script right before the " +
+	 "export happens.  Use this to modify what is selected to change what is " +
+	 "getting exported.", 
+	 null); 
       addSingleParam(param);
     }
     
