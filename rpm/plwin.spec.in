@@ -43,7 +43,7 @@ plconfig(1) during Pipeline configuration process.
 @ROOT_INST_DIR@/Windows/debug/sbin/pljobmgr.bat
 
 %defattr(555,@PIPELINE_USER@,@PIPELINE_GROUP@)
-@ROOT_INST_DIR@/builders/us/temerity/pipeline/builder/maya2mr/v2_3_2/Windows/plApprovalBuilder.bat
+@ROOT_INST_DIR@/builders/us/temerity/pipeline/builder/v2_3_2/Windows/plApprovalBuilder.bat
 
 @ROOT_INST_DIR@/builders/us/temerity/pipeline/builder/maya2mr/v2_3_1/Windows/plNewAssetBuilder.bat
 @ROOT_INST_DIR@/builders/us/temerity/pipeline/builder/maya2mr/v2_3_1/Windows/plShotBuilder.bat
