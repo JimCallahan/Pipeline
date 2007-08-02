@@ -2380,10 +2380,13 @@ AC_CONFIG_FILES([
   src/java/scripts/builder/maya2mr/v2_3_1/plNewAssetBuilder
   src/java/scripts/builder/maya2mr/v2_3_1/plShotBuilder
   src/java/scripts/builder/maya2mr/v2_3_2/Makefile
+  src/java/scripts/builder/maya2mr/v2_3_2/plAssetBuilder
   src/java/scripts/builder/maya2mr/v2_3_2/plAdvAssetBuilder
   src/java/scripts/builder/maya2mr/v2_3_2/plProjectBuilder
   src/java/scripts/builder/maya2mr/v2_3_2/plProjectScriptBuilder
   src/java/scripts/builder/maya2mr/v2_3_2/plProjectTurntableBuilder
+  src/java/scripts/builder/v2_3_2/Makefile
+  src/java/scripts/builder/v2_3_2/plApprovalBuilder
 
   src/java/share/Makefile
   src/java/share/Unix/Makefile
@@ -2438,10 +2441,13 @@ AC_CONFIG_FILES([
   src/windows/scripts/builder/maya2mr/v2_3_1/plNewAssetBuilder.bat.src
   src/windows/scripts/builder/maya2mr/v2_3_1/plShotBuilder.bat.src
   src/windows/scripts/builder/maya2mr/v2_3_2/Makefile
+  src/windows/scripts/builder/maya2mr/v2_3_2/plAssetBuilder.bat.src
   src/windows/scripts/builder/maya2mr/v2_3_2/plAdvAssetBuilder.bat.src
   src/windows/scripts/builder/maya2mr/v2_3_2/plProjectBuilder.bat.src
   src/windows/scripts/builder/maya2mr/v2_3_2/plProjectScriptBuilder.bat.src
   src/windows/scripts/builder/maya2mr/v2_3_2/plProjectTurntableBuilder.bat.src
+  src/windows/scripts/builder/v2_3_2/Makefile
+  src/windows/scripts/builder/v2_3_2/plApprovalBuilder.bat.src
 
   src/windows/launchers/Makefile
   src/windows/launchers/plui.exe4j

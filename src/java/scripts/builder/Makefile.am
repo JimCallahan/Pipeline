@@ -1,4 +1,5 @@
 
 SUBDIRS = \
-  maya2mr
+  maya2mr \
+  v2_3_2
 

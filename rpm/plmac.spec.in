@@ -58,10 +58,13 @@ Pipeline configuration process.
 @ROOT_INST_DIR@/MacOS/profile/sbin/pljobmgr
 
 %defattr(555,root,root)
+@ROOT_INST_DIR@/builders/us/temerity/pipeline/builder/v2_3_2/MacOS/plApprovalBuilder
+
 @ROOT_INST_DIR@/builders/us/temerity/pipeline/builder/maya2mr/v2_3_1/MacOS/plNewAssetBuilder
 @ROOT_INST_DIR@/builders/us/temerity/pipeline/builder/maya2mr/v2_3_1/MacOS/plShotBuilder
 
 @ROOT_INST_DIR@/builders/us/temerity/pipeline/builder/maya2mr/v2_3_2/MacOS/plAdvAssetBuilder
+@ROOT_INST_DIR@/builders/us/temerity/pipeline/builder/maya2mr/v2_3_2/MacOS/plAssetBuilder
 @ROOT_INST_DIR@/builders/us/temerity/pipeline/builder/maya2mr/v2_3_2/MacOS/plProjectBuilder         
 @ROOT_INST_DIR@/builders/us/temerity/pipeline/builder/maya2mr/v2_3_2/MacOS/plProjectScriptBuilder   
 @ROOT_INST_DIR@/builders/us/temerity/pipeline/builder/maya2mr/v2_3_2/MacOS/plProjectTurntableBuilder

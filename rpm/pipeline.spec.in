@@ -109,10 +109,13 @@ The core features of Pipeline include:
 @ROOT_INST_DIR@/builders/us/temerity/pipeline/builder/maya2mr/v2_3_2/maya2mr.jar
 
 %defattr(555,root,root)
+@ROOT_INST_DIR@/builders/us/temerity/pipeline/builder/v2_3_2/Unix/plApprovalBuilder
+
 @ROOT_INST_DIR@/builders/us/temerity/pipeline/builder/maya2mr/v2_3_1/Unix/plNewAssetBuilder
 @ROOT_INST_DIR@/builders/us/temerity/pipeline/builder/maya2mr/v2_3_1/Unix/plShotBuilder
 
 @ROOT_INST_DIR@/builders/us/temerity/pipeline/builder/maya2mr/v2_3_2/Unix/plAdvAssetBuilder
+@ROOT_INST_DIR@/builders/us/temerity/pipeline/builder/maya2mr/v2_3_2/Unix/plAssetBuilder
 @ROOT_INST_DIR@/builders/us/temerity/pipeline/builder/maya2mr/v2_3_2/Unix/plProjectBuilder
 @ROOT_INST_DIR@/builders/us/temerity/pipeline/builder/maya2mr/v2_3_2/Unix/plProjectScriptBuilder
 @ROOT_INST_DIR@/builders/us/temerity/pipeline/builder/maya2mr/v2_3_2/Unix/plProjectTurntableBuilder

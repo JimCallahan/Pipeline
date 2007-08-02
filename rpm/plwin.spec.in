@@ -43,10 +43,13 @@ plconfig(1) during Pipeline configuration process.
 @ROOT_INST_DIR@/Windows/debug/sbin/pljobmgr.bat
 
 %defattr(555,root,root)
+@ROOT_INST_DIR@/builders/us/temerity/pipeline/builder/maya2mr/v2_3_1/Windows/plApprovalBuilder.bat
+
 @ROOT_INST_DIR@/builders/us/temerity/pipeline/builder/maya2mr/v2_3_1/Windows/plNewAssetBuilder.bat
 @ROOT_INST_DIR@/builders/us/temerity/pipeline/builder/maya2mr/v2_3_1/Windows/plShotBuilder.bat
 
 @ROOT_INST_DIR@/builders/us/temerity/pipeline/builder/maya2mr/v2_3_2/Windows/plAdvAssetBuilder.bat
+@ROOT_INST_DIR@/builders/us/temerity/pipeline/builder/maya2mr/v2_3_2/Windows/plAssetBuilder.bat
 @ROOT_INST_DIR@/builders/us/temerity/pipeline/builder/maya2mr/v2_3_2/Windows/plProjectBuilder.bat         
 @ROOT_INST_DIR@/builders/us/temerity/pipeline/builder/maya2mr/v2_3_2/Windows/plProjectScriptBuilder.bat   
 @ROOT_INST_DIR@/builders/us/temerity/pipeline/builder/maya2mr/v2_3_2/Windows/plProjectTurntableBuilder.bat
