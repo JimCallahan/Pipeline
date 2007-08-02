@@ -144,6 +144,10 @@ class DefaultAssetNames
       pMatEdit         = new Path(pMatStart, edit);
       pMatSubmit       = new Path(pMatStart, submit);
       pMatPrepare      = new Path(pMatSubmit, prepare);
+      pMatApprove      = new Path(pMatStart, approve);
+      pMatProduct      = new Path(pMatApprove, product);
+      pMatThumb        = new Path(pMatSubmit, thumb);
+
 
       pShdStart        = new Path(pAssetPath, "shd");
       pShdEdit         = new Path(pShdStart, edit);
@@ -255,9 +259,19 @@ class DefaultAssetNames
   public String 
   getLowRezFinalNodeName()
   {
-    if (pApprovalMode)
-      return new Path(pAssetPath, pAssetName + "_anim").toString();
     return pLowRezFinalNodeName;
+  }
+  
+  public String 
+  getAnimFinalNodeName()
+  {
+    return new Path(pAssetPath, pAssetName + "_anim").toString();
+  }
+  
+  public String 
+  getRenderFinalNodeName()
+  {
+    return new Path(pAssetPath, pAssetName + "_render").toString();
   }
 
   /**
@@ -580,6 +594,15 @@ class DefaultAssetNames
     return new Path(pRigPrepare, pAssetName + "_rig_fbx").toString();
   }
   
+  /**
+   * @return the rig mat export node name.
+   */
+  public String
+  getRigMatExportNodeName()
+  {
+    return new Path(pRigPrepare, pAssetName + "_rig_matExp").toString();
+  }
+  
   public String
   getRigThumbNodeName()
   {
@@ -667,6 +690,41 @@ class DefaultAssetNames
     return new Path(pShdThumb, pAssetName + "_shd_thumb").toString();
   }
   
+  public String
+  getMaterialRenderNodeName()
+  {
+    return new Path(pMatPrepare, pAssetName + "_mat_img").toString();
+  }
+  
+  public String
+  getMaterialTTNodeName()
+  {
+    return new Path(pMatSubmit, pAssetName + "_mat_tt").toString();
+  }
+  
+  public String
+  getMaterialVerifyNodeName()
+  {
+    return new Path(pMatPrepare, pAssetName).toString();
+  }
+  
+  public String
+  getMaterialThumbNodeName()
+  {
+    return new Path(pMatThumb, pAssetName + "_mat_thumb").toString();
+  }
+  
+  public String
+  getMaterialSubmitNodeName()
+  {
+    return new Path(pMatSubmit, pAssetName + "_mat_submit").toString();
+  }
+  
+  public String
+  getMaterialApproveNodeName()
+  {
+    return new Path(pMatApprove, pAssetName + "_mat_approve").toString();
+  }
   
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
@@ -720,10 +778,10 @@ class DefaultAssetNames
   private Path pMatEdit;
   private Path pMatPrepare;
   private Path pMatSubmit;
-  @SuppressWarnings("unused")
   private Path pMatApprove;
   @SuppressWarnings("unused")
   private Path pMatProduct;
+  private Path pMatThumb;
 
   private Path pShdStart;
   private Path pShdEdit;

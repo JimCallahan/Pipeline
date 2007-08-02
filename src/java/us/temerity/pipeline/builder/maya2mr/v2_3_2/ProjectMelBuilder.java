@@ -65,24 +65,9 @@ class ProjectMelBuilder
       addParam(param);
     }
     
-    {
-      UtilityParam param = 
-        new BooleanUtilityParam
-        (aCheckinWhenDone,
-         "Automatically check-in all the nodes when building is finished.", 
-         false); 
-      addParam(param);
-    }
     
-    {
-      UtilityParam param = 
-        ListUtilityParam.createSelectionKeyParam
-        (aSelectionKeys, 
-         "Which Selection Keys Should be assigned to the constructred nodes", 
-         null,
-         qclient);
-      addParam(param);
-    }
+    addCheckinWhenDoneParam();
+    addSelectionKeyParam();
     
     {
       UtilityParam param = 
@@ -254,8 +239,6 @@ class ProjectMelBuilder
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
   
-  public final static String aCheckinWhenDone = "CheckinWhenDone";
-  public final static String aSelectionKeys = "SelectionKeys";
   public final static String aProjectName = "ProjectName";
   
   public final static String aFinalizeAssets = "FinalizeAssets";
@@ -410,6 +393,9 @@ class ProjectMelBuilder
       }
       if (pFinalizeAssetsLR) {
 	LinkedList<String> collectedScripts = new LinkedList<String>();
+	if (pCopyShading)
+	  collectedScripts.add(pProjectNames.getShaderCopyScriptName());
+	collectedScripts.add(pProjectNames.getRemoveReferenceScriptName());
 	for (String type : types) {
 	  String script = pProjectNames.getLowRezFinalizeScriptName(null, type);
 	  if (!checkExistance(script)) {

@@ -26,8 +26,6 @@ class AssetBuilderShaderExportStage
    * 
    * @param context
    *            The {@link UtilContext} that this stage acts in.
-   * @param mayaContext
-   *            The {@link MayaContext} that this stage acts in.
    * @param nodeName
    *            The name of the node that is to be created.
    * @param shadeName
@@ -43,7 +41,6 @@ class AssetBuilderShaderExportStage
     StageInformation stageInformation,
     UtilContext context,
     MasterMgrClient client,
-    MayaContext mayaContext,
     String nodeName,
     String shadeName,
     String verifyMel,
@@ -56,7 +53,7 @@ class AssetBuilderShaderExportStage
           stageInformation,
           context, 
           client,
-          mayaContext, 
+          null, 
           nodeName, 
           true, 
           null,

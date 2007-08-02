@@ -34,6 +34,12 @@ interface BuildsAssetNames
    */
   public String 
   getLowRezFinalNodeName();
+  
+  public String 
+  getAnimFinalNodeName();
+  
+  public String 
+  getRenderFinalNodeName();
 
   /**
    * @return the lowRezMaterialNodeName
@@ -255,6 +261,12 @@ interface BuildsAssetNames
   getRigAnimFBXNodeName();
   
   /**
+   * @return the rig mat export node name.
+   */
+  public String
+  getRigMatExportNodeName();
+  
+  /**
    * @return the texture node for animation textures.
    */
   public String 
@@ -292,12 +304,30 @@ interface BuildsAssetNames
   
   public String
   getShaderTTNodeName();
+  
+  public String
+  getMaterialRenderNodeName();
+  
+  public String
+  getMaterialTTNodeName();
+  
+  public String
+  getMaterialVerifyNodeName();
+  
+  public String
+  getMaterialSubmitNodeName();
+  
+  public String
+  getMaterialApproveNodeName();
 
   public String 
   getModelThumbNodeName();
 
   public String 
   getRigThumbNodeName();
+  
+  public String 
+  getMaterialThumbNodeName();
 
   public String 
   getShaderThumbNodeName();

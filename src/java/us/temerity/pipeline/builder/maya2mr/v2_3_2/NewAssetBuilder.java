@@ -102,14 +102,7 @@ class NewAssetBuilder
          false); 
       addParam(param);
     }
-    {
-      UtilityParam param = 
-	new BooleanUtilityParam
-	(aCheckinWhenDone,
-         "Automatically check-in all the nodes when building is finished.", 
-         false); 
-      addParam(param);
-    }
+    addCheckinWhenDoneParam();
     {
       UtilityParam param = 
 	new BooleanUtilityParam
@@ -137,15 +130,7 @@ class NewAssetBuilder
 	 projects); 
       addParam(param);
     }
-    {
-      UtilityParam param = 
-	ListUtilityParam.createSelectionKeyParam
-	(aSelectionKeys, 
-	 "Which Selection Keys Should be assigned to the constructred nodes", 
-	 null,
-	 qclient);
-      addParam(param);
-    }
+    addSelectionKeyParam();
 
     configNamer(assetNames);
     pAssetNames = (BuildsAssetNames) assetNames;
@@ -295,9 +280,7 @@ class NewAssetBuilder
   public final static String aBuildLowRez = "BuildLowRez";
   public final static String aBuildTextureNode = "BuildTextureNode";
   public final static String aBuildAdvShadeNetwork = "BuildAdvShadeNetwork";
-  public final static String aCheckinWhenDone = "CheckinWhenDone";
   public final static String aBuildSeparateHead = "BuildSeparateHead";
-  public final static String aSelectionKeys = "SelectionKeys";
   public final static String aProjectName = "ProjectName";
   public final static String aAutoRigSetup = "AutoRigSetup";
   
@@ -473,7 +456,7 @@ class NewAssetBuilder
 	   pMayaContext,
 	   rigName,
 	   modelName, headName, blendName,
-	   skeleton, autoRigMEL, rigInfo);
+	   skeleton, autoRigMEL, rigInfo, null);
 	stage.build();
       }
 
@@ -568,8 +551,14 @@ class NewAssetBuilder
         addToDisableList(pAssetNames.getShaderNodeName());
       }
       if(!checkExistance(pAssetNames.getShaderExportNodeName())) {
-        new AssetBuilderShaderExportStage(info, pContext, pClient, pMayaContext, pAssetNames
-          .getShaderExportNodeName(), pAssetNames.getShaderNodeName(), null, pAssetNames.getAssetName()).build();
+        new AssetBuilderShaderExportStage
+        (info, 
+         pContext, 
+         pClient, 
+         pAssetNames.getShaderExportNodeName(), 
+         pAssetNames.getShaderNodeName(), 
+         null, 
+         pAssetNames.getAssetName()).build();
         addToQueueList(pAssetNames.getShaderExportNodeName());
         removeFromQueueList(pAssetNames.getFinalNodeName());
         addToCheckInList(pAssetNames.getShaderExportNodeName());

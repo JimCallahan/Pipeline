@@ -10,7 +10,7 @@ import us.temerity.pipeline.builder.BaseUtil.ParamMapping;
 
 public class DefaultShotNames
   extends BaseNames
-//  implements BuildsShotNames
+  //implements BuildsShotNames
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */

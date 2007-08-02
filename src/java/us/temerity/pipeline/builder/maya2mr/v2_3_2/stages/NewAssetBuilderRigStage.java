@@ -67,7 +67,8 @@ class NewAssetBuilderRigStage
     String blendName,
     String skelName,
     String autoRigMel,
-    String rigInfoName
+    String rigInfoName,
+    String animTextures
   )
     throws PipelineException
   {
@@ -90,6 +91,8 @@ class NewAssetBuilderRigStage
       LinkMod mod = new LinkMod(rigInfoName, LinkPolicy.Dependency);
       addLink(mod);
     }
+    if (animTextures != null)
+      setupLink(animTextures, "tex", MayaBuildStage.getReference(), true);
     if (autoRigMel != null)
       setModelMel(autoRigMel);
   }

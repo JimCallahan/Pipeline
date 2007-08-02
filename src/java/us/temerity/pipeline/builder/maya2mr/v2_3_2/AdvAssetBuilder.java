@@ -1,4 +1,4 @@
-// $Id: AdvAssetBuilder.java,v 1.6 2007/07/30 17:50:11 jesse Exp $
+// $Id: AdvAssetBuilder.java,v 1.7 2007/08/02 01:41:05 jesse Exp $
 
 package us.temerity.pipeline.builder.maya2mr.v2_3_2;
 
@@ -96,7 +96,7 @@ class AdvAssetBuilder
 //      UtilityParam param = 
 //        new BooleanUtilityParam
 //        (aBuildLowRez, 
-//         "Build a Low-Rez model network.", 
+//         "Build a Low-Rez final model, which branches off the rig.", 
 //         true); 
 //      addParam(param);
 //    }
@@ -172,8 +172,7 @@ class AdvAssetBuilder
          "If this is set to FBX, then a FBX node and a curves node will be created, " +
          "with the curve animation being brought into the verification scene.  If " +
          "curves is selected, a single curves node will be create.  dkAnim support " +
-         "is not complete and selecting that option will cause an exception to be " +
-         "thrown.", 
+         "is not complete and selecting that option will cause an exception to be thrown.", 
          "Curves",
          choices); 
       addParam(param);
@@ -188,6 +187,16 @@ class AdvAssetBuilder
     }
     
     //Material Parameters
+//    {
+//      UtilityParam param = 
+//        new BooleanUtilityParam
+//        (aSeparateShade, 
+//         "Should a shader scene be built outside the final character network.  This allows" +
+//         "shader development to proceed external to rig and shading group work and allows new" +
+//         "shader updates to be pushed out without having to go back and rebuild characters.", 
+//         true); 
+//      addParam(param);
+//    }
     {
       UtilityParam param = 
         new BooleanUtilityParam
@@ -264,6 +273,8 @@ class AdvAssetBuilder
       
       layout.addEntry(2, aDoAnnotations);
       layout.addEntry(2, aBuildThumbnails);
+      layout.addSeparator(2);
+      //layout.addEntry(2, aBuildLowRez);
       
       LayoutGroup mayaGroup = 
         new LayoutGroup("MayaGroup", "Parameters related to Maya scenes", true);
@@ -294,6 +305,7 @@ class AdvAssetBuilder
       {
         LayoutGroup matGroup = 
           new LayoutGroup("MaterialSettings", "Settings related to the material/shading part of the asset process.", true);
+        //matGroup.addEntry(aSeparateShade);
         matGroup.addEntry(aBuildMiShadeNetwork);
         matGroup.addEntry(aShaderTTForApproval);
         matGroup.addEntry(aBuildTextureNode);
@@ -386,12 +398,13 @@ class AdvAssetBuilder
   protected boolean pRigTT;
   
   /* Material */
+  //protected boolean pSeparateShade;
   protected boolean pBuildTextureNode;
   protected boolean pBuildMiShadeNetwork;
   protected boolean pSeparateAnimTextures;
   protected boolean pShadeTT;
   
-  //protected boolean pBuildLowRez;
+  protected boolean pBuildLowRez;
   
   
   // builder conditions
@@ -445,6 +458,7 @@ class AdvAssetBuilder
   public final static String aVerifyShaderMEL = "VerifyShaderMEL";
   public final static String aShaderTTForApproval = "ShaderTTForApproval";
   public final static String aSeparateAnimTextures = "SeparateAnimTextures";
+  //public final static String aSeparateShade = "SeparateShade";
   
   //public final static String aBuildLowRez = "BuildLowRez";
   
@@ -489,6 +503,7 @@ class AdvAssetBuilder
       pRigTT = getBooleanParamValue(new ParamMapping(aRigAnimForApproval));
       pShadeTT = getBooleanParamValue(new ParamMapping(aShaderTTForApproval));
       pBuildThumbnails = getBooleanParamValue(new ParamMapping(aBuildThumbnails));
+      //pSeparateShade = getBooleanParamValue(new ParamMapping(aSeparateShade));
       
       { //String each[] = {"None", "FBX", "Curves", "dkAnim"};
 	pMakeFBX = false;
@@ -519,7 +534,8 @@ class AdvAssetBuilder
       pFinalizeMEL = pProjectNames.getFinalizeScriptName(null, pAssetType);
       addNonNullValue(pFinalizeMEL, pRequiredNodes);
       
-      //pLRFinalizeMEL = pProjectNames.getLowRezFinalizeScriptName(null, pAssetNames.getAssetType());
+      //pLRFinalizeMEL = pProjectNames.getLowRezFinalizeScriptName(null, pAssetType);
+      //addNonNullValue(pLRFinalizeMEL, pRequiredNodes);
 
       pMRInitMEL = pProjectNames.getMRayInitScriptName();
       addNonNullValue(pMRInitMEL, pRequiredNodes);
@@ -808,7 +824,7 @@ class AdvAssetBuilder
            pMayaContext,
            rigEdit,
            modelFinal, null, blendShapes,
-           skeleton, null, null);
+           skeleton, null, null, null);
         isEditNode(stage, taskType);
         stage.build();
       }
@@ -1109,7 +1125,6 @@ class AdvAssetBuilder
 	  (info, 
 	   pContext, 
 	   pClient,
-	   pMayaContext, 
 	   shdExport, 
 	   shdNode, 
 	   pVerifyShaderMEL, 

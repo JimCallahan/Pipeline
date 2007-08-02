@@ -1,12 +1,13 @@
 package us.temerity.pipeline.builder.maya2mr.v2_3_2;
 
-import java.util.ArrayList;
-import java.util.TreeSet;
+import java.util.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
+import us.temerity.pipeline.builder.maya2mr.v2_3_2.DefaultProjectNames.GlobalsType;
 import us.temerity.pipeline.builder.maya2mr.v2_3_2.stages.*;
-import us.temerity.pipeline.stages.StageInformation;
+import us.temerity.pipeline.stages.*;
+import us.temerity.pipeline.stages.MayaRenderStage.Renderer;
 
 /*------------------------------------------------------------------------------------------*/
 /*   A S S E T   B U I L D E R                                                              */
@@ -14,13 +15,13 @@ import us.temerity.pipeline.stages.StageInformation;
 
 public
 class AssetBuilder
-  extends BaseBuilder
+  extends TaskBuilder
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
   
-  public
+  public 
   AssetBuilder
   (
     MasterMgrClient mclient,
@@ -30,110 +31,246 @@ class AssetBuilder
     throws PipelineException
   {
     this(mclient,
-         qclient,
-         new DefaultBuilderAnswers(mclient, qclient, UtilContext.getDefaultUtilContext(mclient)), 
-         new DefaultAssetNames(mclient, qclient),
-         new DefaultProjectNames(mclient, qclient),
-         info);
+      qclient,
+      new DefaultBuilderAnswers(mclient, qclient, UtilContext.getDefaultUtilContext(mclient)), 
+      new DefaultAssetNames(mclient, qclient),
+      new DefaultProjectNames(mclient, qclient),
+      info);
   }
   
-  public 
+  public
   AssetBuilder
   (
     MasterMgrClient mclient,
     QueueMgrClient qclient,
-    AnswersBuilderQueries builderInfo,
+    AnswersBuilderQueries builderQueries,
     BaseNames assetNames,
     BaseNames projectNames,
     BuilderInformation builderInformation
   ) 
     throws PipelineException
   {
-    super("AssetBuilder", 
-          new VersionID("2.3.1"),
+    super("AssetBuilder",
+          new VersionID("2.3.2"),
           "Temerity", 
-      	  "The basic Temerity Asset Builder that works with the basic Temerity Names class.",
-      	  mclient,
-      	  qclient,
-      	  builderInformation);
-    pBuilderInfo = builderInfo;
+          "The Temerity Asset Builder that works with the basic Temerity Names class.",
+          mclient,
+          qclient,
+          builderInformation);
+    pBuilderQueries = builderQueries;
     if (!(assetNames instanceof BuildsAssetNames))
       throw new PipelineException
-        ("The naming class that was passed in does not implement the BuildsAssetNames interface");
-    
+        ("The asset naming class that was passed in does not implement " +
+         "the BuildsAssetNames interface");
     if (!(projectNames instanceof BuildsProjectNames))
       throw new PipelineException
         ("The project naming class that was passed in does not implement " +
          "the BuildsProjectNames interface");
       
-    addSubBuilder(projectNames);
-    addSubBuilder(assetNames);
-    
+    // Globabl parameters
+    {
+      ArrayList<String> projects = pBuilderQueries.getProjectList();
+      UtilityParam param = 
+        new OptionalEnumUtilityParam
+        (aProjectName,
+         "The name of the project to build the asset in.", 
+         projects.get(0), 
+         projects); 
+      addParam(param);
+    }
     {
       UtilityParam param = 
-	new MayaContextUtilityParam
-	(aMayaContext,
+        new MayaContextUtilityParam
+        (aMayaContext,
          "The Linear, Angular, and Time Units to assign to all constructed Maya scenes.",
          new MayaContext()); 
       addParam(param);
     }
+    addCheckinWhenDoneParam();
+    addSelectionKeyParam();
+    addDoAnnotationParam();
+    
     {
       UtilityParam param = 
-	new BooleanUtilityParam
-	(aBuildLowRez, 
-	 "Build a Low-Rez model network.", 
-	 true); 
+        new BooleanUtilityParam
+        (aBuildThumbnails, 
+         "Are Thumbnail nodes needed.", 
+         true); 
+      addParam(param);
+    }
+
+    //Model Parameters
+    {
+      UtilityParam param = 
+        new BooleanUtilityParam
+        (aModelTTForApproval, 
+         "Should there be a Turntable for model verification.", 
+         true); 
       addParam(param);
     }
     {
       UtilityParam param = 
-	new BooleanUtilityParam
-	(aBuildTextureNode, 
-	 "Build a texture node", 
-	 true); 
+        new BooleanUtilityParam
+        (aVerifyModelMEL, 
+         "Is there a verification MEL to check the model before it is submitted", 
+         true); 
       addParam(param);
     }
+    
+    //Rig Parameters
     {
       UtilityParam param = 
-	new BooleanUtilityParam
-	(aBuildAdvancedShadingNetwork,
-         "Build an advanced shading setup for mental ray standalone rendering", 
+        new BooleanUtilityParam
+        (aReRigSetup,
+         "Will this asset use a basic autorig setup?", 
+         false); 
+      addParam(param);
+    }    
+    {
+      UtilityParam param = 
+        new BooleanUtilityParam
+        (aHasBlendShapes,
+         "Does the node have blendshapes that need to be attached to the rig?", 
          false); 
       addParam(param);
     }
     {
       UtilityParam param = 
-	new BooleanUtilityParam
-	(aCheckinWhenDone,
-         "Automatically check-in all the nodes when building is finished.", 
-         false); 
+        new BooleanUtilityParam
+        (aRigAnimForApproval, 
+         "Should there be an animation verification render for rig approval.", 
+         true); 
       addParam(param);
     }
     {
-      ArrayList<String> projects = pBuilderInfo.getProjectList();
+      String each[] = {"None", "FBX", "Curves", "dkAnim"};
+      ArrayList<String> choices = new ArrayList<String>(Arrays.asList(each));
       UtilityParam param = 
-	new OptionalEnumUtilityParam
-	(aProjectName,
-	 "The name of the project to build the asset in.", 
-	 projects.get(0), 
-	 projects); 
+        new EnumUtilityParam
+        (aAnimationFormat,
+         "What format is the animation for the rig verification being presented in? " +
+         "If this is set to FBX, then a FBX node and a curves node will be created, " +
+         "with the curve animation being brought into the verification scene.  If " +
+         "curves is selected, a single curves node will be create.  dkAnim support " +
+         "is not complete and selecting that option will cause an exception to be thrown.", 
+         "Curves",
+         choices); 
+      addParam(param);
+    }
+    
+    //Material Parameters
+    {
+      UtilityParam param = 
+        new BooleanUtilityParam
+        (aBuildTextureNode, 
+         "Build a texture node", 
+         true); 
       addParam(param);
     }
     {
       UtilityParam param = 
-	ListUtilityParam.createSelectionKeyParam
-	(aSelectionKeys, 
-	 "Which Selection Keys Should be assigned to the constructred nodes", 
-	 null,
-	 qclient);
+        new BooleanUtilityParam
+        (aMaterialTTForApproval, 
+         "Should there be a Turntable for shader verification and approval.", 
+         true); 
       addParam(param);
     }
+    {
+      UtilityParam param = 
+        new BooleanUtilityParam
+        (aSeparateAnimTextures,
+         "Build a separate node for textures just for the animators.", 
+         true); 
+      addParam(param);
+    }
+    {
+      UtilityParam param = 
+        new BooleanUtilityParam
+        (aVerifyShaderMEL, 
+         "Is there a verification MEL to check the shaders before they are submitted", 
+         true); 
+      addParam(param);
+    }
+    
+    if (!assetNames.isGenerated())
+      addSubBuilder(assetNames);
+    if (!projectNames.isGenerated())
+      addSubBuilder(projectNames);
     configNamer(assetNames, projectNames);
+    
     pAssetNames = (BuildsAssetNames) assetNames;
     pProjectNames = (BuildsProjectNames) projectNames;
+
     addSetupPass(new InformationPass());
-    addConstuctPass(new BuildPass());
-    addConstuctPass(new FinalizePass());
+    ConstructPass build = new BuildPass();
+    addConstuctPass(build);
+    ConstructPass end = new FinalizePass();
+    addConstuctPass(end);
+    addPassDependency(build, end);
+    
+    {
+      AdvancedLayoutGroup layout = 
+        new AdvancedLayoutGroup
+          ("Builder Information", 
+           "The pass where all the basic information about the asset is collected " +
+           "from the user.", 
+           "BuilderSettings", 
+           true);
+      layout.addColumn("Asset Information", true);
+      layout.addEntry(1, aUtilContext);
+      layout.addEntry(1, null);
+      layout.addEntry(1, aCheckinWhenDone);
+      layout.addEntry(1, aActionOnExistance);
+      layout.addEntry(1, aReleaseOnError);
+      layout.addEntry(1, null);
+      layout.addEntry(1, aProjectName);
+      
+      layout.addEntry(2, aDoAnnotations);
+      layout.addEntry(2, aBuildThumbnails);
+      layout.addSeparator(2);
+      
+      LayoutGroup mayaGroup = 
+        new LayoutGroup("MayaGroup", "Parameters related to Maya scenes", true);
+      
+      mayaGroup.addEntry(aMayaContext);
+
+      //layout.addEntry(2, aBuildLowRez);
+      layout.addSubGroup(2, mayaGroup);
+      
+      {
+        LayoutGroup modelGroup = 
+          new LayoutGroup("ModelSettings", "Settings related to the model part of the asset process.", true);
+        modelGroup.addEntry(aModelTTForApproval);
+        modelGroup.addEntry(aVerifyModelMEL);
+        layout.addSubGroup(2, modelGroup);
+      }
+      {
+        LayoutGroup rigGroup = 
+          new LayoutGroup("RigSettings", "Settings related to the rig part of the asset process.", true);
+        rigGroup.addEntry(aReRigSetup);  
+        rigGroup.addEntry(aHasBlendShapes);
+        rigGroup.addEntry(aRigAnimForApproval);
+        rigGroup.addEntry(aAnimationFormat);
+        layout.addSubGroup(2, rigGroup);
+      }
+      {
+        LayoutGroup matGroup = 
+          new LayoutGroup("MaterialSettings", "Settings related to the material/shading part of the asset process.", true);
+        matGroup.addEntry(aMaterialTTForApproval);
+        matGroup.addEntry(aBuildTextureNode);
+        matGroup.addEntry(aSeparateAnimTextures);
+        matGroup.addEntry(aVerifyShaderMEL);
+        layout.addSubGroup(2, matGroup);
+      }
+
+      LayoutGroup skGroup =
+        new LayoutGroup("SelectionKeys", "List of default selection keys", true);
+      skGroup.addEntry(aSelectionKeys);
+      layout.addSubGroup(1, skGroup);
+      
+      PassLayoutGroup finalLayout = new PassLayoutGroup(layout.getName(), layout);
+      setLayout(finalLayout);
+    }
   }
   
   
@@ -145,13 +282,15 @@ class AssetBuilder
   protected void 
   configNamer 
   (
-    BaseNames names,
+    BaseNames assetNames,
     BaseNames projectNames
   )
     throws PipelineException
   {
-    addMappedParam(names.getName(), DefaultAssetNames.aProjectName, aProjectName);
-    addMappedParam(projectNames.getName(), DefaultProjectNames.aProjectName, aProjectName);
+    if (!assetNames.isGenerated())
+      addMappedParam(assetNames.getName(), DefaultAssetNames.aProjectName, aProjectName);
+    if (!projectNames.isGenerated())
+      addMappedParam(projectNames.getName(), DefaultProjectNames.aProjectName, aProjectName);
   }
   
   
@@ -173,7 +312,7 @@ class AssetBuilder
     return pCheckInWhenDone;
   }
 
-  
+
   
   /*----------------------------------------------------------------------------------------*/
   /*  I N T E R N A L S                                                                     */
@@ -184,47 +323,87 @@ class AssetBuilder
 
   // Names
   protected BuildsAssetNames pAssetNames;
-  
   protected BuildsProjectNames pProjectNames;
   
   // Question Answering
-  protected AnswersBuilderQueries pBuilderInfo;
-
+  protected AnswersBuilderQueries pBuilderQueries;
+  
+  protected String pAssetName;
+  protected String pAssetType;
+  
+  // conditions on what is being built
+  
+  /* Model */
+  //protected boolean pMultipleModels;
+  //protected int pNumberOfModels;
+  protected boolean pModelTT;
+  
+  /* Rig */
+  protected boolean pReRigSetup;
+  protected boolean pHasBlendShapes;
+  protected boolean pMakeFBX;
+  protected boolean pMakeCurves;
+  protected boolean pMakeDkAnim;
+  protected boolean pRigTT;
+  
+  /* Material */
+  protected boolean pBuildTextureNode;
+  protected boolean pSeparateAnimTextures;
+  protected boolean pShadeTT;
+  
+  // builder conditions
+  protected boolean pCheckInWhenDone;
+  protected boolean pBuildThumbnails;
+  
   // Mel Scripts
   protected String pFinalizeMEL;
-
+  protected String pLRFinalizeMEL;
   protected String pPlaceHolderMEL;
-
   protected String pMRInitMEL;
+  protected String pVerifyModelMEL;
+  protected String pVerifyShaderMEL;
 
-  // builder conditions
-  protected boolean pBuildLowRez;
-
-  protected boolean pBuildTextureNode;
-
-  protected boolean pBuildAdvancedShadingNetwork;
-
-  protected boolean pCheckInWhenDone;
-
-  // private variables for tracking things.
-
-  protected ArrayList<AssetBuilderModelStage> pModelStages = new ArrayList<AssetBuilderModelStage>();
+  protected ArrayList<AssetBuilderModelStage> pModelStages = 
+    new ArrayList<AssetBuilderModelStage>();
   
+  protected ArrayList<EmptyMayaAsciiStage> pEmptyMayaScenes = 
+    new ArrayList<EmptyMayaAsciiStage>();
+  
+  protected ArrayList<EmptyFileStage> pEmptyFileStages = 
+    new ArrayList<EmptyFileStage>();
+  
+  protected TreeSet<String> pRequiredNodes;
+
   
   
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
   
-  public final static String aMayaContext = "MayaContext";
-  public final static String aBuildLowRez = "BuildLowRez";
-  public final static String aBuildTextureNode = "BuildTextureNode";
-  public final static String aBuildAdvancedShadingNetwork = "BuildAdvancedShadingNetwork";
-  public final static String aCheckinWhenDone = "CheckinWhenDone";
-  public final static String aProjectName = "ProjectName";
-  public final static String aSelectionKeys = "SelectionKeys";
+  public final static String aMayaContext = "Maya";
   
-  private static final long serialVersionUID = -8898612001759637874L;
+  public final static String aBuildThumbnails = "BuildThumbnails";
+  
+  //Model Parameters
+  //public final static String aSeparateModelPieces = "SeparateModelPieces";
+  public final static String aModelTTForApproval = "ModelTTForApproval";
+  public final static String aVerifyModelMEL = "VerifyModelMEL";
+  
+  //Rig Parameters
+  public final static String aHasBlendShapes = "HasBlendShapes";
+  public final static String aReRigSetup = "ReRigSetup";
+  public final static String aRigAnimForApproval = "RigAnimForApproval";
+  public final static String aAnimationFormat = "AnimationFormat";
+  
+  //Material Parameters
+  public final static String aBuildTextureNode = "BuildTextureNode";
+  public final static String aMaterialTTForApproval = "MaterialTTForApproval";
+  public final static String aSeparateAnimTextures = "SeparateAnimTextures";
+  public final static String aVerifyShaderMEL = "VerifyShaderMEL";
+  
+  public final static String aProjectName = "ProjectName";
+  
+  private static final long serialVersionUID = -1692414484571590368L;
 
   
   
@@ -232,190 +411,755 @@ class AssetBuilder
   /*   F I R S T   L O O P                                                                  */
   /*----------------------------------------------------------------------------------------*/
   
-  protected class 
-  InformationPass
+  protected 
+  class InformationPass
     extends SetupPass
   {
     public 
     InformationPass()
     {
-      super("Information Pass", "Information pass for the AssetBuilder");
+      super("Information Pass", 
+            "Information pass for the AssetBuilder");
     }
-
+    
     @SuppressWarnings("unchecked")
     @Override
     public void 
     validatePhase()
       throws PipelineException
     {
-      pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, "Starting the validate phase in the Information Pass.");
+      pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
+        "Starting the validate phase in the Information Pass.");
       validateBuiltInParams();
-      pBuilderInfo.setContext(pContext);
-      pBuildLowRez = getBooleanParamValue(new ParamMapping(aBuildLowRez));
+      pBuilderQueries.setContext(pContext);
       pBuildTextureNode = getBooleanParamValue(new ParamMapping(aBuildTextureNode));
-      pBuildAdvancedShadingNetwork = 
-	getBooleanParamValue(new ParamMapping(aBuildAdvancedShadingNetwork));
       pCheckInWhenDone = getBooleanParamValue(new ParamMapping(aCheckinWhenDone));
+      pReRigSetup = getBooleanParamValue(new ParamMapping(aReRigSetup));
+      pModelTT = getBooleanParamValue(new ParamMapping(aModelTTForApproval));
+      pRigTT = getBooleanParamValue(new ParamMapping(aRigAnimForApproval));
+      pShadeTT = getBooleanParamValue(new ParamMapping(aMaterialTTForApproval));
+      pBuildThumbnails = getBooleanParamValue(new ParamMapping(aBuildThumbnails));
+      
+      { //String each[] = {"None", "FBX", "Curves", "dkAnim"};
+	pMakeFBX = false;
+	pMakeCurves = false;
+	pMakeDkAnim = false;
+	
+	String animFormat = getStringParamValue(new ParamMapping(aAnimationFormat));
+	if (animFormat.equals("FBX")) {
+	  pMakeFBX = true;
+	  pMakeCurves = true;
+	}
+	else if (animFormat.equals("Curves"))
+	  pMakeCurves = true;
+	else if (animFormat.equals("dkAnim"))
+	  pMakeDkAnim = true;
+      }
+      
+      if (pMakeDkAnim)
+	throw new PipelineException
+	  ("The dkAnim support in Pipeline is not finished.  " +
+	   "This option will be activated once it is");
+      
+      pAssetName = pAssetNames.getAssetName();
+      pAssetType = pAssetNames.getAssetType();
+      
+      pRequiredNodes = new TreeSet<String>();
 
-      pFinalizeMEL = pProjectNames.getFinalizeScriptName(null, pAssetNames.getAssetType());
+      pFinalizeMEL = pProjectNames.getFinalizeScriptName(null, pAssetType);
+      addNonNullValue(pFinalizeMEL, pRequiredNodes);
+      
+      pLRFinalizeMEL = pProjectNames.getLowRezFinalizeScriptName(null, pAssetType);
+      addNonNullValue(pLRFinalizeMEL, pRequiredNodes);
 
       pMRInitMEL = pProjectNames.getMRayInitScriptName();
+      addNonNullValue(pMRInitMEL, pRequiredNodes);
 
       pPlaceHolderMEL = pProjectNames.getPlaceholderScriptName();
-
-      pMayaContext = (MayaContext) getParamValue(aMayaContext);
+      addNonNullValue(pPlaceHolderMEL, pRequiredNodes);
       
-      StageInformation stageInfo = pBuilderInformation.getStageInformation();
+      pVerifyModelMEL = null;
+      if (getBooleanParamValue(new ParamMapping(aVerifyModelMEL)))
+        pVerifyModelMEL = pProjectNames.getModelVerificationScriptName();
+      addNonNullValue(pVerifyModelMEL, pRequiredNodes);
+
+      pVerifyShaderMEL = null;
+      if (getBooleanParamValue(new ParamMapping(aVerifyShaderMEL)))
+        pVerifyShaderMEL = pProjectNames.getShaderVerificationScriptName();
+      addNonNullValue(pVerifyShaderMEL, pRequiredNodes);
+      
+      if (pModelTT) {
+	addNonNullValue(pProjectNames.getAssetModelTTSetup(pAssetName, pAssetType), pRequiredNodes);
+	addNonNullValue(pProjectNames.getAssetModelTTGlobals(), pRequiredNodes);
+      }
+      
+      if (pReRigSetup)
+	addNonNullValue(pProjectNames.getFinalRigScriptName(), pRequiredNodes);
+      
+      if (pRigTT) {
+	addNonNullValue(pProjectNames.getAssetRigAnimSetup(pAssetName, pAssetType), pRequiredNodes);
+	addNonNullValue(pProjectNames.getAssetRigAnimGlobals(), pRequiredNodes);
+      }
+      
+      if (pShadeTT) {
+	addNonNullValue(pProjectNames.getAssetShaderTTSetup(pAssetName, pAssetType), pRequiredNodes);
+        addNonNullValue(pProjectNames.getAssetShaderTTGlobals(GlobalsType.Maya2MR), pRequiredNodes);
+      }
+      
+      pMayaContext = (MayaContext) getParamValue(aMayaContext);
+
+      StageInformation info = pBuilderInformation.getStageInformation();
       TreeSet<String> keys = (TreeSet<String>) getParamValue(aSelectionKeys);
-      stageInfo.setDefaultSelectionKeys(keys);
-      stageInfo.setUseDefaultSelectionKeys(true);
+      info.setDefaultSelectionKeys(keys);
+      info.setUseDefaultSelectionKeys(true);
+      
+      boolean annot = getBooleanParamValue(new ParamMapping(aDoAnnotations));
+      info.setDoAnnotations(annot);
+      
+      pTaskName = pProjectNames.getTaskName(pAssetName, pAssetType);
       
       pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, "Validation complete.");
     }
-    private static final long serialVersionUID = -1539635589668134156L;
+    
+    @Override
+    public void 
+    initPhase() 
+      throws PipelineException
+    {
+      pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
+        "Starting the init phase in the Information Pass.");
+    }
+    private static final long serialVersionUID = 826916688187120841L;
   }
-  
+
   
   
   /*----------------------------------------------------------------------------------------*/
   /*   S E C O N D   L O O P                                                                */
   /*----------------------------------------------------------------------------------------*/
   
-  protected class
-  BuildPass
+  protected 
+  class BuildPass
     extends ConstructPass
   {
     public 
     BuildPass()
     {
-      super("Build Pass", "The AssetBuilder Pass which actually constructs the node networks.");
+      super("Build Pass", 
+            "The AssetBuilder Pass which actually constructs the node networks.");
     }
-
+    
+    @Override
+    public TreeSet<String> 
+    nodesDependedOn()
+    {
+      return pRequiredNodes;
+    }
+    
     @Override
     public void 
     buildPhase() 
       throws PipelineException
     {
-      pLog.log(LogMgr.Kind.Ops, LogMgr.Level.Fine, "Starting the build phase in the Build Pass");
-      buildAssetTree
-      (pAssetNames.getFinalNodeName(), 
-       pAssetNames.getMaterialNodeName(),
-       pAssetNames.getRigNodeName(), 
-       pAssetNames.getModelNodeName());
-      if(pBuildLowRez)
-	buildAssetTree
-	(pAssetNames.getLowRezFinalNodeName(), 
-	 pAssetNames.getLowRezMaterialNodeName(), 
-	 pAssetNames.getLowRezRigNodeName(), 
-	 pAssetNames.getLowRezModelNodeName());
-      if(pBuildAdvancedShadingNetwork)
-	buildShadingNetwork();
-      if(pBuildTextureNode)
-	buildTextureNode();
+      pLog.log(LogMgr.Kind.Ops, LogMgr.Level.Fine, 
+        "Starting the build phase in the Build Pass");
+      doModel();
+      doRig();
+      doMaterials();
+    }
+
+    protected void 
+    doModel()
+      throws PipelineException
+    {
+      StageInformation info = pBuilderInformation.getStageInformation();
+      String taskType = pProjectNames.getModelingTaskName();
+      
+      String editModel = pAssetNames.getModelEditNodeName();
+      String verifyModel = pAssetNames.getModelVerifyNodeName();
+      if(!checkExistance(editModel)) {
+	AssetBuilderModelStage stage = 
+	  new AssetBuilderModelStage
+	  (info,
+	   pContext,
+	   pClient,
+	   pMayaContext, 
+	   editModel,
+	   pPlaceHolderMEL);
+	isEditNode(stage, taskType);
+	stage.build();
+	pModelStages.add(stage);
+      }
+      if(!checkExistance(verifyModel)) {
+	TreeMap<String, String> edit = new TreeMap<String, String>();
+	edit.put("mod", editModel);
+	ModelPiecesVerifyStage stage =
+	  new ModelPiecesVerifyStage
+	  (info,
+	   pContext,
+	   pClient,
+	   pMayaContext,
+	   verifyModel, 
+	   edit,
+	   pVerifyModelMEL);
+	if (pModelTT)
+	  isPrepareNode(stage, taskType);
+	else
+	  isFocusNode(stage, taskType);
+	stage.build();
+      }
+      String modelTT = pAssetNames.getModelTTNodeName();
+      String modelTTImg = pAssetNames.getModelTTImagesNodeName();
+      String thumb = null;
+      if(pModelTT) {
+        if (!checkExistance(modelTT)) {
+          String modelTTSetup = 
+            pProjectNames.getAssetModelTTSetup(pAssetName, pAssetType);
+          AdvAssetBuilderTTStage stage =
+            new AdvAssetBuilderTTStage
+            (info,
+             pContext,
+             pClient,
+             pMayaContext,
+             modelTT,
+             verifyModel,
+             modelTTSetup);
+          isPrepareNode(stage, taskType);
+          stage.build();
+          addToDisableList(modelTT);
+        }
+        if (!checkExistance(modelTTImg)) {
+          String globals = pProjectNames.getAssetModelTTGlobals();
+          AdvAssetBuilderTTImgStage stage =
+            new AdvAssetBuilderTTImgStage
+            (info, 
+             pContext, 
+             pClient, 
+             modelTTImg, 
+             modelTT, 
+             globals,
+             Renderer.Software);
+          isFocusNode(stage, taskType);
+          stage.build();
+        }
+        if (pBuildThumbnails) {
+          thumb = pAssetNames.getModelThumbNodeName();
+          if (!checkExistance(thumb)) {
+            ThumbnailStage stage = 
+              new ThumbnailStage(info, pContext, pClient, thumb, "png", modelTTImg, 120);
+            isThumbnailNode(stage, taskType);
+            stage.build();
+          }
+        }
+      }
+      String modelSubmit = pAssetNames.getModelSubmitNodeName();
+      if (!checkExistance(modelSubmit)) {
+        TreeSet<String> sources = new TreeSet<String>();
+        if (pBuildThumbnails)
+          sources.add(thumb);
+        else if (pModelTT)
+          sources.add(modelTTImg);
+        else
+          sources.add(verifyModel);
+        TargetStage stage = new TargetStage(info, pContext, pClient, modelSubmit, sources);
+        isSubmitNode(stage, taskType);
+        stage.build();
+        addToQueueList(modelSubmit);
+      }
+      String modelFinal = pAssetNames.getModelFinalNodeName();
+      String modelApprove = pAssetNames.getModelApproveNodeName();
+      if (!checkExistance(modelFinal)) {
+        ProductStage stage = new ProductStage(info, pContext, pClient, modelFinal, "ma", verifyModel );
+        isProductNode(stage, taskType);
+        stage.build();
+      }
+      if (!checkExistance(modelApprove)) {
+        TreeSet<String> sources = new TreeSet<String>();
+        sources.add(modelFinal);
+        TargetStage stage = new TargetStage(info, pContext, pClient, modelApprove, sources);
+        isApproveNode(stage, taskType);
+        stage.build();
+        addToQueueList(modelApprove);
+      }
     }
     
-    protected void 
-    buildAssetTree
-    (
-      String finalName, 
-      String matName, 
-      String rigName, 
-      String modName
-    ) 
+    protected void
+    doRig()
       throws PipelineException
     {
       StageInformation info = pBuilderInformation.getStageInformation();
-      if(!checkExistance(modName)) {
-        AssetBuilderModelStage stage = 
-          new AssetBuilderModelStage
+      String taskType = pProjectNames.getRiggingTaskName();
+      
+      String modelFinal = pAssetNames.getModelFinalNodeName();
+      String blendShapes = null; 
+      if (pHasBlendShapes) {
+        blendShapes = pAssetNames.getBlendShapeModelNodeName();
+        if (!checkExistance(blendShapes)) {
+          EmptyMayaAsciiStage stage = 
+            new EmptyMayaAsciiStage
+            (info,
+             pContext,
+             pClient,
+             pMayaContext,
+             blendShapes);
+          isEditNode(stage, taskType);
+          stage.build();
+          pEmptyMayaScenes.add(stage);
+        }
+      }
+      String skeleton = pAssetNames.getSkeletonNodeName();
+      String skelMel = pProjectNames.getPlaceholderSkelScriptName();
+      if (skeleton != null && !checkExistance(skeleton)) {
+	if (skelMel == null) {
+	  EmptyMayaAsciiStage stage = 
+	    new EmptyMayaAsciiStage(info, pContext, pClient, pMayaContext, skeleton);
+	  isEditNode(stage, taskType);
+	  stage.build();
+	  pEmptyMayaScenes.add(stage);
+	}
+	else {
+	  AssetBuilderModelStage stage =
+	    new AssetBuilderModelStage(info, pContext, pClient, pMayaContext, skeleton, skelMel);
+	  isEditNode(stage, taskType);
+	  stage.build();
+	  pModelStages.add(stage);
+	}
+      }
+      
+      String texNode = null;
+      if (pBuildTextureNode && pSeparateAnimTextures) {
+	texNode = pAssetNames.getAnimTextureNodeName();
+	if (!checkExistance(texNode)) {
+	  MayaFTNBuildStage stage = 
+	    new MayaFTNBuildStage(info, pContext, pClient, pMayaContext, texNode, true);
+	  isEditNode(stage, taskType);
+	  stage.build();
+	}
+      }
+      
+      String rigEdit = pAssetNames.getRigEditNodeName();
+      if (!checkExistance(rigEdit)) {
+        NewAssetBuilderRigStage stage = 
+          new NewAssetBuilderRigStage
           (info,
+           pContext, 
+           pClient,
+           pMayaContext,
+           rigEdit,
+           modelFinal, null, blendShapes,
+           skeleton, null, null,
+           texNode);
+        isEditNode(stage, taskType);
+        stage.build();
+      }
+      
+      String rigMatExp = pAssetNames.getRigMatExportNodeName();
+      if (!checkExistance(rigMatExp)) {
+        NewAssetBuilderMaterialExportStage stage = 
+          new NewAssetBuilderMaterialExportStage
+          (info, 
            pContext,
            pClient,
-           pMayaContext, 
-           modName,
-           pPlaceHolderMEL);
+           rigMatExp, 
+           rigEdit);
+        isPrepareNode(stage, taskType);
         stage.build();
-        pModelStages.add(stage);
       }
-      if(!checkExistance(rigName)) {
-        new AssetBuilderRigStage(info, pContext, pClient, pMayaContext, rigName, modName).build();
+      
+      String rigSource = rigEdit;
+      
+      if (pReRigSetup) {
+	String reRigNode = pAssetNames.getReRigNodeName();
+	String finalRigScript = pProjectNames.getFinalRigScriptName();
+	if (!checkExistance(reRigNode)) {
+	  AdvAssetBuilderReRigStage stage = 
+	    new AdvAssetBuilderReRigStage
+	    (info, 
+	      pContext, 
+	      pClient, 
+	      pMayaContext, 
+	      reRigNode, 
+	      modelFinal, 
+	      rigEdit, 
+	      blendShapes, 
+	      skeleton, 
+	      finalRigScript,
+	      pReRigSetup);
+	  isPrepareNode(stage, taskType);
+	  stage.build();
+	}
+	rigSource = reRigNode;
       }
-      if(!checkExistance(matName)) {
-        new AssetBuilderMaterialStage(info, pContext, pClient, pMayaContext, matName, rigName).build();
+      
+      String rigFinal = pAssetNames.getRigFinalNodeName();
+      if (!checkExistance(rigFinal)) {
+        NewAssetBuilderFinalStage stage = 
+          new NewAssetBuilderFinalStage
+          (info,
+           pContext, 
+           pClient,
+           pMayaContext,
+           rigFinal, 
+           rigSource, rigEdit, rigMatExp,
+           pLRFinalizeMEL);
+        if (pRigTT)
+          isPrepareNode(stage, taskType);
+        else
+          isFocusNode(stage, taskType);
+        stage.build();
+      }
+      
+      //Submit Fun Time
+      String animFBX = pAssetNames.getRigAnimFBXNodeName();
+      String animCurves = pAssetNames.getRigAnimCurvesNodeName();
+      String rigAnim = pAssetNames.getRigAnimNodeName();
+      String rigImages = pAssetNames.getRigAnimImagesNodeName();
+      String thumb = pAssetNames.getRigThumbNodeName();
+      if (pRigTT) {
+	if (pMakeFBX) {
+	  if (!checkExistance(animFBX)) {
+	    EmptyFBXStage stage = new EmptyFBXStage(info, pContext, pClient, animFBX);
+	    stage.build();
+	  }
+	}
+	if (pMakeCurves ) {
+	  if (!checkExistance(animCurves)) {
+	    StandardStage stage = null;
+	    if (pMakeFBX) {
+	      stage = 
+		new AdvAssetBuilderCurvesStage
+		(info, 
+		 pContext, 
+		 pClient, 
+		 pMayaContext, 
+		 animCurves, 
+		 skeleton, 
+		 animFBX);
+	    }
+	    else {
+	      stage = 
+		new EmptyMayaAsciiStage(info, pContext, pClient, pMayaContext, animCurves);
+	      pEmptyMayaScenes.add((EmptyMayaAsciiStage) stage);
+	    }
+	    stage.build();
+	  }
+	}
+	if (pMakeDkAnim ) {
+	  if (!checkExistance(animCurves)) {
+	    EmptyFileStage stage = 
+	      new EmptyFileStage(info, pContext, pClient, animCurves, "dkAnim");
+	    stage.build();
+	    pEmptyFileStages.add(stage);
+	  }
+	}
+	if (!checkExistance(rigAnim)) {
+	  String setup = 
+	    pProjectNames.getAssetRigAnimSetup(pAssetName, pAssetType);
+	  StandardStage stage = null;
+	  if (pMakeCurves) {
+	    stage = 
+	      new AdvAssetBuilderAnimStage
+	      (info,
+	       pContext, 
+	       pClient,
+	       pMayaContext,
+	       rigAnim,
+	       animCurves,
+	       rigFinal,
+	       pAssetNames.getNameSpace(),
+	       setup);
+	  }
+	  else if (pMakeDkAnim) {
+	    // do stuff here
+	  }
+	  else {
+	    stage = 
+	      new AdvAssetBuilderTTStage
+	      (info, 
+	       pContext, 
+	       pClient, 
+	       pMayaContext, 
+	       rigAnim, 
+	       rigFinal, 
+	       setup);
+	  }
+	  isPrepareNode(stage, taskType);
+	  stage.build();
+	  addToDisableList(rigAnim);
+	}
+	if (!checkExistance(rigImages)) {
+	  String globals = 
+	    pProjectNames.getAssetRigAnimGlobals();
+	  AdvAssetBuilderTTImgStage stage =
+	    new AdvAssetBuilderTTImgStage
+	    (info, 
+	     pContext, 
+	     pClient, 
+	     rigImages, 
+	     rigAnim, 
+	     globals,
+	     Renderer.Software);
+	  isFocusNode(stage, taskType);
+	  stage.build();
+	}
+	if (pBuildThumbnails) {
+          if (!checkExistance(thumb)) {
+            ThumbnailStage stage = 
+              new ThumbnailStage(info, pContext, pClient, thumb, "png", rigImages, 120);
+            isThumbnailNode(stage, taskType);
+            stage.build();
+          }
+        }
+      }
+      String rigSubmit = pAssetNames.getRigSubmitNodeName();
+      if (!checkExistance(rigSubmit)) {
+        TreeSet<String> sources = new TreeSet<String>();
+        if (pBuildThumbnails)
+          sources.add(thumb);
+        else if (pRigTT)
+          sources.add(rigImages);
+        else
+          sources.add(rigFinal);
+        TargetStage stage = new TargetStage(info, pContext, pClient, rigSubmit, sources);
+        isSubmitNode(stage, taskType);
+        stage.build();
+        addToQueueList(rigSubmit);
+      }
+      String assetFinal = pAssetNames.getAnimFinalNodeName();
+      String rigApprove = pAssetNames.getRigApproveNodeName();
+      if (!checkExistance(assetFinal)) {
+        ProductStage stage = new ProductStage(info, pContext, pClient, assetFinal, "ma", rigFinal);
+        isProductNode(stage, taskType);
+        stage.build();
+      }
+      String texFinalNode = null;
+      if (pBuildTextureNode && pSeparateAnimTextures) {
+	texFinalNode = pAssetNames.getAnimTextureFinalNodeName();
+        if (!checkExistance(texFinalNode)) {
+          TreeSet<String> sources = new TreeSet<String>();
+          sources.add(texNode);
+          TargetStage stage = new TargetStage(info, pContext, pClient, texFinalNode, sources);
+          isProductNode(stage, taskType);
+          stage.build();
+        }
+      }
+      if (!checkExistance(rigApprove)) {
+        TreeSet<String> sources = new TreeSet<String>();
+        sources.add(assetFinal);
+        addNonNullValue(texFinalNode, sources);
+        TargetStage stage = new TargetStage(info, pContext, pClient, rigApprove, sources);
+        isApproveNode(stage, taskType);
+        stage.build();
+        addToQueueList(rigApprove);
+      }
+    }
+    
+    protected void
+    doMaterials()
+      throws PipelineException
+    {
+      StageInformation info = pBuilderInformation.getStageInformation();
+      String modelFinal = pAssetNames.getModelFinalNodeName();
+      String taskType = pProjectNames.getShadingTaskName();
+      
+      String texNode = null;
+      if (pBuildTextureNode) {
+	texNode = pAssetNames.getTextureNodeName();
+	if (!checkExistance(texNode)) {
+	  MayaFTNBuildStage stage = 
+	    new MayaFTNBuildStage(info, pContext, pClient, pMayaContext, texNode, true);
+	  isEditNode(stage, taskType);
+	  stage.build();
+	}
+      }
+      
+      String matName = pAssetNames.getMaterialNodeName();
+      if (!checkExistance(matName)) {
+        AdvAssetMaterialStage stage =
+          new AdvAssetMaterialStage
+          (info,
+           pContext, 
+           pClient,
+           pMayaContext,
+           matName,
+           modelFinal,
+           texNode);
+        isEditNode(stage, taskType);
+        stage.build();
         addToDisableList(matName);
       }
-      if(!checkExistance(finalName)) {
-        new AssetBuilderFinalStage
-          (info, pContext, pClient, pMayaContext, finalName, matName, pFinalizeMEL).build();
-        addToQueueList(finalName);
-      }
-    }
 
-    protected void 
-    buildTextureNode() 
-      throws PipelineException
-    {
-      StageInformation info = pBuilderInformation.getStageInformation();
-      String textureNodeName = pAssetNames.getTextureNodeName();
-      String parentName = pBuildAdvancedShadingNetwork ? pAssetNames.getShaderNodeName() : pAssetNames
-        .getMaterialNodeName();
-      if(!checkExistance(textureNodeName)) {
-        new AssetBuilderTextureStage(info, pContext, pClient, textureNodeName, parentName).build();
+      String matExportName = pAssetNames.getMaterialExportNodeName();
+      if (!checkExistance(matExportName)) {
+        AssetBuilderShaderExportStage stage = 
+          new AssetBuilderShaderExportStage
+          (info, 
+           pContext,
+           pClient,
+           matExportName, 
+           matName,
+           pVerifyShaderMEL,
+           "");
+        isPrepareNode(stage, taskType);
+        stage.build();
       }
-    }
 
-    protected void 
-    buildShadingNetwork() 
-      throws PipelineException
-    {
-      StageInformation info = pBuilderInformation.getStageInformation();
-      if(!checkExistance(pAssetNames.getShaderIncludeNodeName())) {
-        new AssetBuilderShaderIncludeStage(info, pContext, pClient, pAssetNames.getShaderIncludeNodeName(),
-          pAssetNames.getShaderIncludeGroupSecSeq()).build();
+      String rigSource = pAssetNames.getAnimFinalNodeName();
+      
+      String matVerify = pAssetNames.getMaterialVerifyNodeName();
+      if (!checkExistance(matVerify)) {
+        NewAssetBuilderFinalStage stage = 
+          new NewAssetBuilderFinalStage
+          (info,
+           pContext, 
+           pClient,
+           pMayaContext,
+           matVerify, 
+           rigSource, matName, matExportName,
+           pFinalizeMEL);
+        if (pShadeTT)
+          isPrepareNode(stage, taskType);
+        else
+          isFocusNode(stage, taskType);
+        stage.build();
       }
-      if(!checkExistance(pAssetNames.getShaderNodeName())) {
-        new AssetBuilderShaderStage(info, pContext, pClient,  pMayaContext, pAssetNames.getShaderNodeName(),
-          pAssetNames.getFinalNodeName(), pAssetNames.getShaderIncludeNodeName(), pMRInitMEL).build();
-        addToDisableList(pAssetNames.getShaderNodeName());
+      String matTT = pAssetNames.getMaterialTTNodeName();
+      String matTTImg = pAssetNames.getMaterialRenderNodeName();
+      String thumb = null;
+      if(pShadeTT) {
+        if (!checkExistance(matTT)) {
+          String matTTSetup = 
+            pProjectNames.getAssetShaderTTSetup(pAssetName, pAssetType);
+          AdvAssetBuilderTTStage stage =
+            new AdvAssetBuilderTTStage
+            (info,
+             pContext,
+             pClient,
+             pMayaContext,
+             matTT,
+             matVerify,
+             matTTSetup);
+          isPrepareNode(stage, taskType);
+          stage.build();
+          addToDisableList(matTT);
+        }
+        if (!checkExistance(matTTImg)) {
+          String globals = pProjectNames.getAssetShaderTTGlobals(GlobalsType.Maya2MR);
+          AdvAssetBuilderTTImgStage stage =
+            new AdvAssetBuilderTTImgStage
+            (info, 
+             pContext, 
+             pClient, 
+             matTTImg, 
+             matTT, 
+             globals,
+             Renderer.MentalRay);
+          isFocusNode(stage, taskType);
+          stage.build();
+        }
+        if (pBuildThumbnails) {
+          thumb = pAssetNames.getMaterialThumbNodeName();
+          if (!checkExistance(thumb)) {
+            ThumbnailStage stage = 
+              new ThumbnailStage(info, pContext, pClient, thumb, "png", matTTImg, 120);
+            isThumbnailNode(stage, taskType);
+            stage.build();
+          }
+        }
       }
-      if(!checkExistance(pAssetNames.getShaderExportNodeName())) {
-        new AssetBuilderShaderExportStage(info, pContext, pClient,  pMayaContext, pAssetNames
-          .getShaderExportNodeName(), pAssetNames.getShaderNodeName(), null, pAssetNames.getAssetName()).build();
-        addToQueueList(pAssetNames.getShaderExportNodeName());
-        removeFromQueueList(pAssetNames.getFinalNodeName());
+      String matSubmit = pAssetNames.getMaterialSubmitNodeName();
+      if (!checkExistance(matSubmit)) {
+        TreeSet<String> sources = new TreeSet<String>();
+        if (pBuildThumbnails)
+          sources.add(thumb);
+        else if (pShadeTT)
+          sources.add(matTTImg);
+        else
+          sources.add(matVerify);
+        TargetStage stage = new TargetStage(info, pContext, pClient, matSubmit, sources);
+        isSubmitNode(stage, taskType);
+        stage.build();
+        addToQueueList(matSubmit);
+      }
+
+      String finalTex = null;
+      if (pBuildTextureNode) {
+	finalTex = pAssetNames.getTextureFinalNodeName();
+	if (!checkExistance(finalTex)) {
+	  EmptyFileStage stage = new EmptyFileStage(info, pContext, pClient, finalTex);
+	  isProductNode(stage, taskType);
+	  stage.build();
+	  pEmptyFileStages.add(stage);
+	}
+      }
+      String matFinal = pAssetNames.getRenderFinalNodeName();
+      String matApprove = pAssetNames.getMaterialApproveNodeName();
+      if (!checkExistance(matFinal)) {
+        ProductStage stage = new ProductStage(info, pContext, pClient, matFinal, "ma", matVerify );
+        isProductNode(stage, taskType);
+        stage.build();
+      }
+      if (!checkExistance(matApprove)) {
+        TreeSet<String> sources = new TreeSet<String>();
+        sources.add(matFinal);
+	if (pBuildTextureNode)
+	  sources.add(finalTex);
+        TargetStage stage = new TargetStage(info, pContext, pClient, matApprove, sources);
+        isApproveNode(stage, taskType);
+        stage.build();
+        addToQueueList(matApprove);
       }
     }
-    private static final long serialVersionUID = 4847241152514088650L;
+    private static final long serialVersionUID = 8287285172355006675L;
   }
-   
-  protected class
-  FinalizePass
+  
+  
+  protected 
+  class FinalizePass
     extends ConstructPass
   {
     public 
     FinalizePass()
     {
-      super("Finalize Pass", "The AssetBuilder pass that disconnects placeholder MEL scripts.");
+      super("FinalizePass", 
+	    "The AssetBuilder pass that cleans everything up.");
     }
     
     @Override
     public TreeSet<String> 
     preBuildPhase()
     {
-      pLog.log(LogMgr.Kind.Ops, LogMgr.Level.Fine, "Starting the prebuild phase in the Finalize Pass");
-      return getDisableList();
+      pLog.log(LogMgr.Kind.Ops, LogMgr.Level.Fine, 
+	"Starting the prebuild phase in the Finalize Pass");
+      TreeSet<String> toReturn = new TreeSet<String>(getDisableList());
+      toReturn.addAll(getDisableList());
+      for (EmptyMayaAsciiStage stage : pEmptyMayaScenes) {
+	toReturn.add(stage.getNodeName());
+      }
+      for (EmptyFileStage stage : pEmptyFileStages) {
+	toReturn.add(stage.getNodeName());
+      }
+      for (AssetBuilderModelStage stage : pModelStages) {
+	toReturn.add(stage.getNodeName());
+      }
+      return toReturn;
     }
-
+    
     @Override
     public void 
     buildPhase() 
       throws PipelineException
     {
-      pLog.log(LogMgr.Kind.Ops, LogMgr.Level.Fine, "Starting the build phase in the Finalize Pass");
+      pLog.log(LogMgr.Kind.Ops, LogMgr.Level.Fine, 
+	"Starting the build phase in the Finalize Pass");
       for (AssetBuilderModelStage stage : pModelStages)
+	stage.finalizeStage();
+      for (EmptyFileStage stage : pEmptyFileStages)
+	stage.finalizeStage();
+      for (EmptyMayaAsciiStage stage : pEmptyMayaScenes)
 	stage.finalizeStage();
       disableActions();
     }
-    private static final long serialVersionUID = 3776473936564046625L;
+    private static final long serialVersionUID = -2030732485658168909L;
   }
 }
