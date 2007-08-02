@@ -9,8 +9,8 @@ class DefaultProjectNames
 {
   public DefaultProjectNames
   (
-      MasterMgrClient mclient,
-      QueueMgrClient qclient
+    MasterMgrClient mclient,
+    QueueMgrClient qclient
   )
     throws PipelineException 
   {

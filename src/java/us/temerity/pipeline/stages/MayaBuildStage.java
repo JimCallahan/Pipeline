@@ -1,6 +1,5 @@
-/*
- * Created on Aug 30, 2006 Created by jesse For Use in us.temerity.pipeline.stages
- */
+// $Id: MayaBuildStage.java,v 1.4 2007/08/02 02:51:27 jesse Exp $
+
 package us.temerity.pipeline.stages;
 
 import us.temerity.pipeline.*;

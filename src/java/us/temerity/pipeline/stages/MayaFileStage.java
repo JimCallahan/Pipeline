@@ -75,7 +75,7 @@ class MayaFileStage
    * 
    * @throws PipelineException
    */
-  public void 
+  protected void 
   setUnits() 
     throws PipelineException
   {
@@ -91,7 +91,7 @@ class MayaFileStage
    * Takes the values in the {@link FrameRange} and uses them to set the correct Single
    * Parameters on the Maya Action.
    */
-  public void
+  protected void
   setFrameRange
   (
     FrameRange range 
@@ -108,7 +108,7 @@ class MayaFileStage
    * <p>
    * This should only be called after the Stage's Action has been created.  
    */
-  public void
+  protected void
   setMayaScene
   (
     String mayaScene
@@ -132,7 +132,7 @@ class MayaFileStage
    * @param melScript
    *            The value for the parameter.
    */
-  public void 
+  protected void 
   setInitialMel
   (
     String melScript
@@ -157,7 +157,7 @@ class MayaFileStage
    *            The value for the parameter.
    * @throws PipelineException
    */
-  public void 
+  protected void 
   setModelMel
   (
     String melScript
@@ -182,7 +182,7 @@ class MayaFileStage
    *            The value for the parameter.
    * @throws PipelineException
    */
-  public void 
+  protected void 
   setAnimMel
   (
     String melScript
@@ -207,7 +207,7 @@ class MayaFileStage
    *            The value for the parameter.
    * @throws PipelineException
    */
-  public void 
+  protected void 
   setFinalMel
   (
     String melScript
@@ -220,6 +220,55 @@ class MayaFileStage
     }
   }
   
+  /**
+   * Utility method for linking a node ande setting the <code>NewSceneMEL</code> single
+   * parameter value that many Maya Actions share.
+   * <p>
+   * The name of a MEL script is passed to this method. That MEL script is then added as a
+   * link to the stage and the correct single parameter is set on the Action. This should
+   * only be called after the stage's Action has already been created.
+   * 
+   * @param melScript
+   *            The value for the parameter.
+   * @throws PipelineException
+   */
+  protected void 
+  setNewSceneMel
+  (
+    String melScript
+  ) 
+    throws PipelineException
+  {
+    if(melScript != null) {
+      addLink(new LinkMod(melScript, LinkPolicy.Dependency));
+      addSingleParamValue("NewSceneMEL", melScript);
+    }
+  }
+  
+  /**
+   * Utility method for linking a node ande setting the <code>PreExportMEL</code> single
+   * parameter value that many Maya Actions share.
+   * <p>
+   * The name of a MEL script is passed to this method. That MEL script is then added as a
+   * link to the stage and the correct single parameter is set on the Action. This should
+   * only be called after the stage's Action has already been created.
+   * 
+   * @param melScript
+   *            The value for the parameter.
+   * @throws PipelineException
+   */
+  protected void 
+  setPreExportMel
+  (
+    String melScript
+  ) 
+    throws PipelineException
+  {
+    if(melScript != null) {
+      addLink(new LinkMod(melScript, LinkPolicy.Dependency));
+      addSingleParamValue("PreExportMEL", melScript);
+    }
+  }
   
   public static void
   setDefaultMayaEditor
@@ -237,7 +286,7 @@ class MayaFileStage
    */
   protected MayaContext pMayaContext;
   
-  private static PluginContext pDefaultMayaEditor = new PluginContext("Maya");
+  private static PluginContext pDefaultMayaEditor = new PluginContext("MayaProject");
   
   private static final long serialVersionUID = -6109809134859336504L;
 

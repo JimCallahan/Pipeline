@@ -1,3 +1,5 @@
+// $Id: AssetBuilder.java,v 1.6 2007/08/02 02:51:27 jesse Exp $
+
 package us.temerity.pipeline.builder.maya2mr.v2_3_2;
 
 import java.util.*;
@@ -100,6 +102,19 @@ class AssetBuilder
     }
 
     //Model Parameters
+    {
+      String each[] = {"Import", "Export"};
+      ArrayList<String> choices = new ArrayList<String>(Arrays.asList(each));
+      UtilityParam param = 
+        new EnumUtilityParam
+        (aModelDelivery, 
+         "How is model data being passed from the edit to the verify stage.  In the Import" +
+         "method, the entire model scene is imported.  In the Export setup a top level group is" +
+         "selected and only geometry under that group is exported in to the verify scene.", 
+         "Import",
+         choices); 
+      addParam(param);
+    }
     {
       UtilityParam param = 
         new BooleanUtilityParam
@@ -240,6 +255,7 @@ class AssetBuilder
       {
         LayoutGroup modelGroup = 
           new LayoutGroup("ModelSettings", "Settings related to the model part of the asset process.", true);
+        modelGroup.addEntry(aModelDelivery);
         modelGroup.addEntry(aModelTTForApproval);
         modelGroup.addEntry(aVerifyModelMEL);
         layout.addSubGroup(2, modelGroup);
@@ -334,9 +350,8 @@ class AssetBuilder
   // conditions on what is being built
   
   /* Model */
-  //protected boolean pMultipleModels;
-  //protected int pNumberOfModels;
   protected boolean pModelTT;
+  protected boolean pImportModel;
   
   /* Rig */
   protected boolean pReRigSetup;
@@ -388,6 +403,7 @@ class AssetBuilder
   //public final static String aSeparateModelPieces = "SeparateModelPieces";
   public final static String aModelTTForApproval = "ModelTTForApproval";
   public final static String aVerifyModelMEL = "VerifyModelMEL";
+  public final static String aModelDelivery   = "ModelDelivery";
   
   //Rig Parameters
   public final static String aHasBlendShapes = "HasBlendShapes";
@@ -439,6 +455,8 @@ class AssetBuilder
       pRigTT = getBooleanParamValue(new ParamMapping(aRigAnimForApproval));
       pShadeTT = getBooleanParamValue(new ParamMapping(aMaterialTTForApproval));
       pBuildThumbnails = getBooleanParamValue(new ParamMapping(aBuildThumbnails));
+      pImportModel = 
+	getStringParamValue(new ParamMapping(aModelDelivery)).equals("Import") ? true : false;
       
       { //String each[] = {"None", "FBX", "Curves", "dkAnim"};
 	pMakeFBX = false;
@@ -521,14 +539,6 @@ class AssetBuilder
       pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, "Validation complete.");
     }
     
-    @Override
-    public void 
-    initPhase() 
-      throws PipelineException
-    {
-      pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
-        "Starting the init phase in the Information Pass.");
-    }
     private static final long serialVersionUID = 826916688187120841L;
   }
 
@@ -590,23 +600,42 @@ class AssetBuilder
 	stage.build();
 	pModelStages.add(stage);
       }
-      if(!checkExistance(verifyModel)) {
-	TreeMap<String, String> edit = new TreeMap<String, String>();
-	edit.put("mod", editModel);
-	ModelPiecesVerifyStage stage =
-	  new ModelPiecesVerifyStage
-	  (info,
-	   pContext,
-	   pClient,
-	   pMayaContext,
-	   verifyModel, 
-	   edit,
-	   pVerifyModelMEL);
-	if (pModelTT)
-	  isPrepareNode(stage, taskType);
-	else
-	  isFocusNode(stage, taskType);
-	stage.build();
+      if (pImportModel) {
+	if(!checkExistance(verifyModel)) {
+	  TreeMap<String, String> edit = new TreeMap<String, String>();
+	  edit.put("mod", editModel);
+	  ModelPiecesVerifyStage stage =
+	    new ModelPiecesVerifyStage
+	    (info,
+	     pContext,
+	     pClient,
+	     pMayaContext,
+	     verifyModel, 
+	     edit,
+	     pVerifyModelMEL);
+	  if (pModelTT)
+	    isPrepareNode(stage, taskType);
+	  else
+	    isFocusNode(stage, taskType);
+	  stage.build();
+	}
+      }
+      else {
+	if(!checkExistance(verifyModel)) {
+	  AssetModelExportStage stage = 
+	    new AssetModelExportStage
+	    (info,
+	     pContext,
+	     pClient,
+	     verifyModel,
+	     "*",
+	     pVerifyModelMEL);
+	  if (pModelTT)
+	    isPrepareNode(stage, taskType);
+	  else
+	    isFocusNode(stage, taskType);
+	  stage.build();
+	}
       }
       String modelTT = pAssetNames.getModelTTNodeName();
       String modelTTImg = pAssetNames.getModelTTImagesNodeName();
