@@ -1,4 +1,4 @@
-// $Id: AssetBuilder.java,v 1.6 2007/08/02 02:51:27 jesse Exp $
+// $Id: AssetBuilder.java,v 1.7 2007/08/02 13:09:13 jim Exp $
 
 package us.temerity.pipeline.builder.maya2mr.v2_3_2;
 
@@ -622,19 +622,19 @@ class AssetBuilder
       }
       else {
 	if(!checkExistance(verifyModel)) {
-	  AssetModelExportStage stage = 
-	    new AssetModelExportStage
-	    (info,
-	     pContext,
-	     pClient,
-	     verifyModel,
-	     "*",
-	     pVerifyModelMEL);
-	  if (pModelTT)
-	    isPrepareNode(stage, taskType);
-	  else
-	    isFocusNode(stage, taskType);
-	  stage.build();
+// 	  AssetModelExportStage stage = 
+// 	    new AssetModelExportStage
+// 	    (info,
+// 	     pContext,
+// 	     pClient,
+// 	     verifyModel,
+// 	     "*",
+// 	     pVerifyModelMEL);
+// 	  if (pModelTT)
+// 	    isPrepareNode(stage, taskType);
+// 	  else
+// 	    isFocusNode(stage, taskType);
+// 	  stage.build();
 	}
       }
       String modelTT = pAssetNames.getModelTTNodeName();
