@@ -13,7 +13,8 @@
   ?>
 
   <TR>
-    <TD class="<?php echo($row_color);?>" align="center" rowspan="2" width="100" height="80">
+    <TD nowrap class="<?php echo($row_color);?>" align="center" 
+        rowspan="2" width="120" height="80">
       <SPAN class="bold">
       <?php 
       {
@@ -21,11 +22,11 @@
           print('&nbsp;' . $e['new_active'] . '&nbsp;<BR>');
         
         if($e['new_status'] != NULL) 
-          print('&nbsp;' . $e['new_status'] . '&nbsp;');
+          print('&nbsp;' . $e['new_status'] . '&nbsp;<BR>');
       }
       ?>
       </SPAN>
-      by <SPAN class="bold"><?php echo($e['name']);?></SPAN>
+      by&nbsp;<SPAN class="bold"><?php echo($e['name']);?></SPAN>
     </TD>  
 
     <TD class="<?php echo($row_color);?>" colspan="<?php echo($has_enodes ? 1 : 2);?>" 

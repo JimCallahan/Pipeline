@@ -2,7 +2,7 @@
 <TABLE class="frame" width="100%" align="center" cellpadding="4" cellspacing="1" border="0">
   <TR> 
     <TH align="left" class="theader" colspan="3" nowrap="nowrap">
-      <SPAN class="genbig" style="color:#b8112d;">&nbsp;&nbsp; 
+      <SPAN class="genbig" style="color:#b8112d;">
         &nbsp;&nbsp;<?php echo($t['title']);?>&nbsp;:&nbsp;<?php echo($t['type']);?> 
       </SPAN> 
     </TH> 
@@ -24,7 +24,14 @@
       <?php
       {
         $events = $t['events'];
+
         $e = current($events);
+        foreach($events as $et) {
+          if($et['thumbnails'] && $et['nodes']) {
+            $e = $et; 
+            break;
+          }
+        }
         
         $thumb_rows = array();
         {
@@ -146,35 +153,54 @@
       <TR>
         
         <TH class="theader">&nbsp;</TH>
+
     <?php
     {
       $auth_html = 
         ('  <INPUT name="task_id" value="' . $tid . '" type="hidden">' . "\n" .
          '  <INPUT name="auth_id" value="' . $auth_id . '" type="hidden">' . "\n" .
-         '  <INPUT name="auth_name" value="' . $auth_name . 'x" type="hidden">');
+         '  <INPUT name="auth_name" value="' . $auth_name . '" type="hidden">' . "\n");
       
-      if($auth_name != NULL) {
-        $supervised_by = $task_owners[$tid]['supervised_by']; 
-        if(($supervised_by != NULL) && in_array($auth_name, $supervised_by)) 
+      $auth_html .= '  <INPUT name="task_list" value="'; 
+      foreach($tids as $ntid)
+        $auth_html .= ($ntid . " "); 
+      $auth_html .= '" type="hidden">'; 
+        
+      if($show_details_buttons) {
+        if($auth_name != NULL) {
+          $supervised_by = $task_owners[$tid]['supervised_by']; 
+          if(($supervised_by != NULL) && in_array($auth_name, $supervised_by)) 
+            print('<TH class="theader" width="100">' . "\n" . 
+                  '<FORM action="post.php" method="POST">' . "\n" . 
+                  $auth_html . "\n" . 
+                  '  <INPUT name="mode" value="review" type="hidden">' . "\n" .
+                  '  <INPUT class="liteoption" value="Review" type="submit">' . "\n" . 
+                  '</FORM>' . "\n" . 
+                  '</TH>' . "\n");
+          
+          if($auth_name == 'pipeline')
+            print('<TH class="theader" width="100">' . "\n" . 
+                  '<FORM action="post.php" method="POST">' . "\n" . 
+                  $auth_html . "\n" . 
+                  '  <INPUT name="mode" value="assign" type="hidden">' . "\n" .
+                  '  <INPUT class="liteoption" value="Assign" type="submit">' . "\n" . 
+                  '</FORM>' . "\n" . 
+                  '</TH>' . "\n");
+          
           print('<TH class="theader" width="100">' . "\n" . 
-                '<FORM action="../phpinfo.php" method="POST">' . "\n" . 
+                '<FORM action="post.php" method="POST">' . "\n" . 
                 $auth_html . "\n" . 
-                '  <INPUT class="liteoption" value="Review" type="submit">' . "\n" . 
+                '  <INPUT name="mode" value="comment" type="hidden">' . "\n" .
+                '  <INPUT class="liteoption" value="Comment" type="submit">' . "\n" . 
                 '</FORM>' . "\n" . 
                 '</TH>' . "\n");
-
-        if($auth_name == 'pipeline')
-          print('<TH class="theader" width="100">' . "\n" . 
-                '<FORM action="../phpinfo.php" method="POST">' . "\n" . 
-                $auth_html . "\n" . 
-                '<INPUT class="liteoption" value="Assign" type="submit">' . "\n" . 
-                '</FORM>' . "\n" . 
-                '</TH>' . "\n");
-
+        }
+      }
+      else {      
         print('<TH class="theader" width="100">' . "\n" . 
-              '<FORM action="../phpinfo.php" method="POST">' . "\n" . 
-              $auth_html . "\n" . 
-              '<INPUT class="liteoption" value="Comment" type="submit">' . "\n" . 
+              '<FORM action="details.php" method="POST">' . "\n" . 
+              $auth_html . "\n" .         
+              '  <INPUT class="liteoption" value="Back to Details" type="submit">' . "\n" . 
               '</FORM>' . "\n" . 
               '</TH>' . "\n");
       }
@@ -192,5 +218,3 @@
 </FORM>
 
 <DIV style="height: 5px;"></DIV>
-
-<TABLE class="frame" width="100%" align="center" cellpadding="4" cellspacing="1" border="0">

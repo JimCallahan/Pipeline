@@ -32,4 +32,13 @@ function show_sql_error($query)
 }
 
 
+/* return an SQL error message */
+function get_sql_error($query) 
+{
+  return ("Could complete query because: " . 
+          "<UL><B>" . mysql_error() . "</B><BR><BR>" . 
+          "SQL = <CODE>" . $query . "</CODE></UL>");
+}
+
+
 ?>

@@ -3,6 +3,16 @@ USE `pltasks`;
 
 -- ----------------------------------------------------------------------------------------
 
+CREATE TABLE `approvals` (
+  `approval_id` mediumint(8) unsigned NOT NULL auto_increment,  
+  `new_status_id` smallint(5) unsigned NOT NULL,
+  `approve_node_id` mediumint(8) unsigned NOT NULL,
+  `submit_node_id` mediumint(8) unsigned NOT NULL,
+  `approved_by` smallint(5) unsigned NOT NULL, 
+  `note_id` mediumint(8) unsigned NOT NULL,
+  `builder_id` mediumint(8) unsigned default NULL,
+   PRIMARY KEY  (`approval_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 CREATE TABLE `auth` (
   `ident_id` smallint(5) unsigned NOT NULL,
@@ -85,14 +95,14 @@ CREATE TABLE `task_activity` (
   `active_name` varchar(32) NOT NULL,
   `active_desc` text,
   PRIMARY KEY  (`active_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=4 ;
 
 CREATE TABLE `task_status` (
   `status_id` smallint(5) unsigned NOT NULL auto_increment,
   `status_name` varchar(32) NOT NULL,
   `status_desc` text,
   PRIMARY KEY  (`status_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=8 ;
 
 CREATE TABLE `task_titles` (
   `title_id` mediumint(8) unsigned NOT NULL auto_increment,
@@ -106,7 +116,7 @@ CREATE TABLE `task_types` (
   `type_name` varchar(32) NOT NULL,
   `type_desc` text,
   PRIMARY KEY  (`type_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=9 ;
 
 CREATE TABLE `tasks` (
   `task_id` smallint(5) unsigned NOT NULL auto_increment,
@@ -141,12 +151,13 @@ INSERT INTO `task_activity` (`active_id`, `active_name`, `active_desc`) VALUES
 (3, 'Submitted', 'Work is temporarily suspended on the task until the supervisor(s) of the task have reviewed the most recent changes submitted for approval.');
 
 INSERT INTO `task_status` (`status_id`, `status_name`, `status_desc`) VALUES 
-(1, 'Unapproved', 'Work completes to date on the task has not yet been reviewed by its supervisor(s) and is therefore not approved for use by other tasks.'),
+(1, 'Unapproved', 'Work completed to date on the task has not yet been reviewed by its supervisor(s) and is therefore not approved for use by other tasks.'),
 (2, 'Changes Required', 'The task has been reviewed by its supervisor(s) who have made notes about the changes which must be completed before the task can be approved.'),
 (3, 'Approved', 'The task has been reviewed and provisionally approved for use by other tasks.'),
 (4, 'On Hold', 'All work should cease on the task until further notice.'),
 (5, 'Could Be Better', 'The task has been reviewed by its supervisor(s) and is considered to be sufficiently complete to satisfy the client, but should be improved if possible after all other tasks are complete.'),
-(6, 'Finalled', 'The task has been reviewed by its supervisor(s) and is judged to be absolutely completed.  No further work should be performed on this task!');
+(6, 'Finalled', 'The task has been reviewed by its supervisor(s) and is judged to be absolutely completed.  No further work should be performed on this task!'), 
+(7, 'Building', 'A post-approval Builder program is currently rebuilding the product nodes for the task and will post the approval information for the task when done.');
 
 INSERT INTO `task_types` (`type_id`, `type_name`, `type_desc`) VALUES 
 (1, 'Modeling', 'Create the geometry and any required UV space mappings required for an asset.'),

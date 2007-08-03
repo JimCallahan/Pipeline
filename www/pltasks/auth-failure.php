@@ -14,8 +14,8 @@
   </TR>
 
   <TR>
-    <TD class="row2">
-      <TABLE border="0" cellpadding="3" cellspacing="1" width="100%" class="row2">
+    <TD class="warning">
+      <TABLE border="0" cellpadding="3" cellspacing="1" width="100%" class="warning">
         <TR>
           <TD colspan="3" align="center"><DIV style="height: 50px;"></DIV></TD>       
         </TR>

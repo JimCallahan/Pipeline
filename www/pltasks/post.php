@@ -5,7 +5,7 @@
 
 <HEAD>
   <META http-equiv="content-type" content="text/html; charset=ISO-8859-1">
-  <TITLE> Task Details </TITLE>
+  <TITLE> Post Comment </TITLE>
   <LINK rel="stylesheet" type="text/css" href="<?php echo($temerity_root);?>stylesheet.css">
   <LINK rel="SHORTCUT ICON" href="<?php echo($temerity_root);?>favicon.ico">
 </HEAD>
@@ -57,22 +57,170 @@
       $task_activity[$row['active_id']] = $row;
   }
 
-  /* lookup task IDs */ 
-  $tids = NULL;
-  if(isset($_REQUEST["task_ids"])) {
-    $tids = $_REQUEST["task_ids"]; 
+  /* lookup activity and status of current task */ 
+  $current_task_active = NULL;
+  $current_task_status = NULL;
+  {
+    $sql = ("SELECT active_id, status_id FROM tasks " . 
+            "WHERE tasks.task_id = " . $_REQUEST["task_id"]);
+    
+    $result = mysql_query($sql)
+      or show_sql_error($sql);
+
+    if($row = mysql_fetch_array($result, MYSQL_ASSOC)) {
+      $current_task_active = $row['active_id']; 
+      $current_task_status = $row['status_id'];             
+    }
   }
-  else if(isset($_REQUEST["task_list"])) {
+
+  /* save original list of task IDs */ 
+  $tids = NULL;
+  if(isset($_REQUEST["task_list"])) {
     $tids = array(); 
-    foreach(explode(" ", $_REQUEST["task_list"]) as $ltid)  {
+    foreach(explode(" ", $_REQUEST["task_list"]) as $ltid) {
       if($ltid != "") 
         $tids[] = $ltid;
     }
   }
 
+  /* lookup task ID */ 
+  $tid = $_REQUEST["task_id"]; 
+
+  /* process post changes required before task/event lookups... (if any) */ 
+  $warning_msg = NULL;
+  $approval_info = NULL;
+  switch($_REQUEST["mode"]) {
+  case 'post_review':
+    {      
+      /* validate */ 
+      if(($_REQUEST["message"] == NULL) || ($_REQUEST["message"] == "")) 
+        $warning_msg = "No review text was supplied!";
+
+      $new_task_status = NULL;
+      if($warning_msg == NULL) {
+        if(($_REQUEST["new_status"] == NULL) || ($_REQUEST["new_status"] == 0)) 
+          $warning_msg = "No change in Task Status was specified!";
+        
+        if($warning_msg == NULL) {
+          $found = false;
+          foreach($task_status as $status) {
+            if($status['status_id'] == $_REQUEST["new_status"]) {
+              $found = true;
+              break;
+            }
+          }
+          
+          if(!$found) 
+            $warning_msg = 
+              ("Somehow the new Task Status specified (" . $_REQUEST["new_status"] . ") " . 
+               "was not legal!");
+        }
+
+        $new_task_status = $_REQUEST["new_status"];
+      }
+      
+      /* insert message */ 
+      $note_id = NULL;
+      if($warning_msg == NULL) {
+        $sql = ("INSERT INTO notes (note_text) VALUES " . 
+                "('" . mysql_real_escape_string($_REQUEST["message"]) . "')");
+        if(mysql_query($sql)) 
+          $note_id = mysql_insert_id();
+        else 
+          $warning_msg = get_sql_error($sql); 
+      }
+
+      switch($new_task_status) {
+      case 2: // Changes Required
+      case 4: // On Hold
+        {
+          $new_task_active = ($new_task_status == 2) ? 2 : 1;
+
+          /* insert event */ 
+          $stamp = time();
+          if($warning_msg == NULL) {
+            $sql = 
+              ("INSERT INTO events (task_id, ident_id, stamp, note_id, " . 
+                                   "new_active_id, new_status_id) " .
+               "VALUES (" . $tid . ", " . $auth_id . ", FROM_UNIXTIME(" . $stamp . "), " . 
+                       $note_id . ", " . $new_task_active . ", " . $new_task_status . ")");
+            if(!mysql_query($sql)) 
+              $warning_msg = get_sql_error($sql); 
+          }
+          
+          /* update task */ 
+          if($warning_msg == NULL) {
+            $sql = 
+              ("UPDATE tasks " . 
+               "SET last_modified = FROM_UNIXTIME(" . $stamp . "), " . 
+               "active_id = " . $new_task_active . ", " . 
+               "status_id = " . $new_task_status . " " .
+               "WHERE task_id = " . $tid);
+            if(!mysql_query($sql)) 
+              $warning_msg = get_sql_error($sql); 
+          }
+        }
+        break;
+
+      case 3: // Approved
+      case 5: // Could Be Better
+      case 6: // Finalled
+        {
+          $approval_info = array('new_status_id' => $new_task_status, 
+                                 'note_id'       => $note_id);
+        }
+      }
+    }
+    break;
+
+  case 'post_comment':
+    {
+      /* validate */ 
+      if(($_REQUEST["message"] == NULL) || ($_REQUEST["message"] == "")) 
+        $warning_msg = "No comment text was supplied!";
+      
+      /* insert message */ 
+      $note_id = NULL;
+      if($warning_msg == NULL) {
+        $sql = ("INSERT INTO notes (note_text) VALUES " . 
+                "('" . mysql_real_escape_string($_REQUEST["message"]) . "')");
+        if(mysql_query($sql)) 
+          $note_id = mysql_insert_id();
+        else 
+          $warning_msg = get_sql_error($sql); 
+      }
+
+      /* insert event */ 
+      $stamp = time();
+      if($warning_msg == NULL) {
+        $sql = 
+          ("INSERT INTO events (task_id, ident_id, stamp, note_id) " .
+           "VALUES (" . $tid . ", " . $auth_id . ", " . 
+           "FROM_UNIXTIME(" . $stamp . "), " . $note_id . ")");
+        if(!mysql_query($sql)) 
+          $warning_msg = get_sql_error($sql); 
+      }
+
+      /* update task */ 
+      if($warning_msg == NULL) {
+        $sql = 
+          ("UPDATE tasks " . 
+           "SET last_modified = FROM_UNIXTIME(" . $stamp . ") " . 
+           "WHERE task_id = " . $tid);
+        if(!mysql_query($sql)) 
+          $warning_msg = get_sql_error($sql); 
+      }
+    }
+    break;
+    
+
+     // ...
+    
+  }
+
   /* lookup task information */ 
   $tasks = array(); 
-  foreach($tids as $tid) {
+  {
     /* search for matching task info (except supervised_by) */ 
     {
       $sql = 
@@ -205,6 +353,16 @@
     }
   }
 
+  /* if the task was approved, insert the approval information... */ 
+  if($approval_info != NULL) {
+    
+
+    // ...
+
+
+  }
+
+
   /* close SQL connection */ 
   include($temerity_root . "dbclose.php");
 }
@@ -230,7 +388,8 @@
 {
   /* process tasks... */ 
   $first_task = true;
-  foreach($tasks as $tid => $t) {
+  $t = $tasks[$tid];
+  {
     if(!$first_task) 
       print('<DIV style="height: 15px;"></DIV>' . "\n\n"); 
     $first_task = false;
@@ -257,14 +416,73 @@
 
     {
       ob_start();
-
-      $show_details_buttons = true;
+      
+      $show_details_buttons = false;
       include ($temerity_root . "pltasks/details-header.php");
       
       $header_contents = ob_get_contents();
       ob_end_clean();
     }
     print($header_contents);
+
+    /* warning box */ 
+    if($warning_msg != NULL) {
+      {
+        ob_start();
+     
+        include ($temerity_root . "pltasks/post-warning.php");
+     
+        $warning_contents = ob_get_contents();
+        ob_end_clean();
+      }
+      print($warning_contents);
+    }
+    
+    /* post form */ 
+    switch($_REQUEST["mode"]) {
+    case 'post_review':
+    case 'review':
+      {
+        if(($_REQUEST["mode"] == 'post_review') && ($warning_msg == NULL))  
+          break;
+
+        /* message text input */ 
+        {
+          ob_start();
+          
+          include ($temerity_root . "pltasks/post-review.php");
+          
+          $review_contents = ob_get_contents();
+          ob_end_clean();
+        }
+        print($review_contents);
+      }
+      break;
+
+    case 'post_comment':
+    case 'comment':
+      {
+        if(($_REQUEST["mode"] == 'post_comment') && ($warning_msg == NULL))  
+          break;
+
+        /* message text input */ 
+        {
+          ob_start();
+          
+          include ($temerity_root . "pltasks/post-comment.php");
+          
+          $comment_contents = ob_get_contents();
+          ob_end_clean();
+        }
+        print($comment_contents);
+      }
+      break;
+
+      
+      
+      // ...
+      
+    }
 
     /* process events... */ 
     print('<TABLE class="frame" width="100%" align="center" ' . 
@@ -314,6 +532,18 @@ print("<P>_REQUEST<BR>\n");
 var_dump($_REQUEST);
 print("<P>tids<BR>\n");
 var_dump($tids);
+print("<P>current_task_active<BR>\n");
+var_dump($current_task_active);
+print("<P>current_task_status<BR>\n");
+var_dump($current_task_status);
+// print("<P>new_task_status<BR>\n");
+// var_dump($new_task_status);
+print("<P>task_status<BR>\n");
+var_dump($task_status);
+// print("<P>debug_sql<BR>\n");
+// var_dump($debug_sql);
+print("<P>approval_info<BR>\n");
+var_dump($approval_info);
 print("<P>tasks<BR>\n");
 var_dump($tasks);
 print("<P>task_owners<BR>\n");

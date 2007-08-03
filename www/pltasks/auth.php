@@ -42,15 +42,15 @@ function authenticate()
        '  <TR><TD class="row2"><TABLE class="row2" width="100%" align="center" ' . 
        'cellpadding="4" cellspacing="1" border="0">' . "\n" .   
        '    <TR>' . "\n" .   
-       '      <TD class="row2" align="left">'); 
+       '      <TD class="row2" align="left" width="300">'); 
     
     if(($auth_name != NULL) && ($auth_id > 0))
       $html .= 
         ('&nbsp;&nbsp;Welcome:&nbsp;&nbsp;<SPAN class="bold">' . $auth_name . '</SPAN>'); 
     
     $html .= 
-      ('</TD>' . "\n" .
-       '      <TD class="row2" align="right"><SPAN class="redbold">'); 
+      ('</TD>' . "\n\n" .
+       '      <TD class="row2" align="right" width="300"><SPAN class="redbold">'); 
     
     if(($auth_name != NULL) && ($auth_id > 0))
       $html .= ('<A href="' . $temerity_root . 'pltasks/logout.php">Logout</A>'); 
