@@ -1,8 +1,16 @@
 
 if FOUNDATION
+
+if PL_LOCAL
 SUBDIRS = src app-extra docs www studios
 else 
+SUBDIRS = src app-extra docs www
+endif
+
+else 
+
 SUBDIRS = src
+
 endif
 
 

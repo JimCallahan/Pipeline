@@ -27,19 +27,3 @@
 			<fileset dir="${ScriptsDir}/Unix"></fileset>
 		</copy>
 	</target>
-	<target name="installMacOS" description="installs the builder scripts into pipeline">
-		<mkdir dir="${MacDir}"/>
-		<copy todir="${MacDir}">
-			<fileset dir="${ScriptsDir}/MacOS"></fileset>
-		</copy>
-	</target>
-	<target name="installWindows" description="installs the builder scripts into pipeline">
-		<mkdir dir="${WinDir}"/>
-		<copy todir="${WinDir}">
-			<fileset dir="${ScriptsDir}/Windows"></fileset>
-		</copy>
-	</target>
-	
-	<target name="all" depends="installjar,installUnix, installMacOS, installWindows">
-	</target> 
-</project>

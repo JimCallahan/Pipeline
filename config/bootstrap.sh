@@ -4,6 +4,7 @@ customer=$1
 sitep=$2
 debug_base=$3
 prof_base=$4
+config_extra=$5
 
 echo "---------------------------------------------------------------------------------------"
 echo "  CONFIGURING: $HOSTNAME"
@@ -32,7 +33,8 @@ pushd i686-pc-linux-gnu-dbg
     --with-crypto-app=$plsrcdir/plconfig \
     --with-customer=$customer \
     --with-customer-profile=$plprofile \
-    --with-shake=/base/apps/i686-pc-linux-gnu-opt/shake-v4.00.0607
+    --with-shake=/base/apps/i686-pc-linux-gnu-opt/shake-v4.00.0607 \
+    $config_extra
 popd
 
 

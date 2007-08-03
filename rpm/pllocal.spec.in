@@ -1,0 +1,36 @@
+Summary: Source code for studio specific plugins and builders.
+Name: pllocal-@CUSTOMER@
+Version: @VERSION@
+Release: @PROFILE_STAMP@
+URL: http://www.temerity.us
+License: Commercial
+Vendor: Temerity Software, Inc
+Group: Applications/Productivity
+BuildRoot: @RPM_ROOT@/DEST/pllocal
+
+%description
+
+This RPM packages up an Eclipse project containing the Java source code 
+for plugins and node builder programs created by Temerity Software for
+a specific studio client.  After installing this RPM, a studio can then
+use Eclipse to build the contained Java code against their locally 
+installed version of Pipeline. 
+
+We recommend that studios copy the installed source code an Eclipse 
+project files to another location after installing this RPM and use
+a version control system to maintain the code. It is likely that a
+studio will continue internal development on the code supplied by
+this RPM so it would be wise to protect any modified code from being
+overwritten by future installs of this RPM.
+
+%files
+
+%defattr(755,@PIPELINE_USER@,@PIPELINE_GROUP@)
+@ROOT_INST_PARENT_DIR@/pipeline-local
+
+%changelog
+* @RPM_DATE@ Temerity Support <support@temerity.us>
+Latest build.
+
+
+

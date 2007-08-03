@@ -5,6 +5,48 @@ noinst_DATA = \
   pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.bin
 
 
+if PL_LOCAL
+
+if HAS_MAC
+
+if HAS_WINDOWS
+    RPMS = \
+      RPMS/i686/pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
+      RPMS/i686/plmaster-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
+      RPMS/i686/plqueuemgr-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
+      RPMS/i686/pllocal-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
+      RPMS/i686/plmac-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
+      RPMS/i686/plwin-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm
+else 
+    RPMS = \
+      RPMS/i686/pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
+      RPMS/i686/plmaster-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
+      RPMS/i686/plqueuemgr-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
+      RPMS/i686/pllocal-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
+      RPMS/i686/plmac-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm
+endif
+
+else  # HAS_MAC
+
+if HAS_WINDOWS 
+  RPMS = \
+    RPMS/i686/pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
+    RPMS/i686/plmaster-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
+    RPMS/i686/plqueuemgr-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
+    RPMS/i686/pllocal-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
+    RPMS/i686/plwin-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm
+else 
+  RPMS = \
+    RPMS/i686/pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
+    RPMS/i686/plmaster-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
+    RPMS/i686/plqueuemgr-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
+    RPMS/i686/pllocal-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm
+endif
+
+endif  # HAS_MAC
+
+else   # PL_LOCAL
+
 if HAS_MAC
 
 if HAS_WINDOWS
@@ -22,7 +64,7 @@ else
       RPMS/i686/plmac-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm
 endif 
 
-else
+else  # HAS_MAC
 
 if HAS_WINDOWS 
   RPMS = \
@@ -37,7 +79,10 @@ else
     RPMS/i686/plqueuemgr-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm
 endif
 
-endif
+endif  # HAS_MAC
+
+endif  # PL_LOCAL
+
 
 
 MAC_SRC_DIR   = $(patsubst $(HOME)/%,/Users/$(USER)/%,$(top_srcdir))
@@ -78,13 +123,16 @@ pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.tgz: pipeline-install $(RPMS)
 	rm -rf pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@
 
 pipeline-install: clean-rpms rpm-mkdirs
-	rm -rf DEST/pipeline DEST/plmaster DEST/plqueuemgr
+	rm -rf DEST/pipeline DEST/plmaster DEST/plqueuemgr DEST/pllocal
 	DESTDIR=`pwd`/DEST/pipeline $(MAKE) -C .. install
 	mkdir -p DEST/plmaster/@NODEDIR@
 	mv DEST/pipeline/@NODEDIR@/* DEST/plmaster/@NODEDIR@
 	mkdir -p DEST/plqueuemgr/@QUEUEDIR@
 	ln -s pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@ \
               DEST/pipeline/@ROOT_INST_PARENT_DIR@/pipeline-latest
+	mkdir -p DEST/pllocal/@ROOT_INST_PARENT_DIR@/pipeline-local
+	mv DEST/pipeline/@ROOT_INST_PARENT_DIR@/pipeline-local \
+           DEST/pllocal/@ROOT_INST_PARENT_DIR@/pipeline-local
 
 
 core-rpms: pipeline-install \
@@ -114,6 +162,14 @@ RPMS/i686/plqueuemgr-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm: \
 
 SPECS/plqueuemgr-@CUSTOMER@-@VERSION@.spec: plqueuemgr.spec
 	cp -f plqueuemgr.spec $@
+
+
+RPMS/i686/pllocal-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm: \
+  SPECS/pllocal-@CUSTOMER@-@VERSION@.spec
+	rpmbuild --rcfile rpmrc -bb SPECS/pllocal-@CUSTOMER@-@VERSION@.spec
+
+SPECS/pllocal-@CUSTOMER@-@VERSION@.spec: pllocal.spec
+	cp -f pllocal.spec $@
 
 
 if HAS_MAC

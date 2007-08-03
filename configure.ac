@@ -145,6 +145,20 @@ AC_PATH_PROG(JAR,     jar,     jar,     $JAVA_PATH)
 AC_MSG_RESULT([ ])
 
 
+
+dnl ------------------------------------------------------------------------------------------
+
+AC_ARG_ENABLE([pllocal], 
+              [  --enable-pllocal             Build studio specific source RPM.],
+              [case "${enable_pllocal}" in    
+               yes) pllocal=true;;
+               no)  pllocal=false;;
+               *)   AC_MSG_ERROR(bad value ${enableval} for --enable-pllocal);;
+               esac], [pllocal=true])
+
+AM_CONDITIONAL(PL_LOCAL, test x$pllocal = xtrue)
+
+
 dnl ------------------------------------------------------------------------------------------
 
 AC_MSG_CHECKING([Customer Symbolic Name])
@@ -1041,7 +1055,6 @@ case "$NATIVE_OSTYPE" in
     PIPELINE_LIBDIR="$ROOT_INST_DIR/lib";
     PIPELINE_BUILDERDIR="$ROOT_INST_DIR/builders/us/temerity/pipeline/builder";
     JOGL_JAR="$ROOT_INST_DIR/jogl/lib/jogl.jar";
-    LATEST_JOGL_JAR="$ROOT_INST_PARENT_DIR/jogl/lib/jogl.jar";
     GLUEGEN_JAR="$ROOT_INST_DIR/jogl/lib/gluegen-rt.jar";
     JOGL_LIBRARY_PATH="$ROOT_INST_DIR/jogl/lib/$NATIVE_OSTYPE";
     JYTHON_DIR="$ROOT_INST_DIR/jython";
@@ -2462,7 +2475,7 @@ AC_CONFIG_FILES([
   studios/radar/Makefile
   studios/radar/pipeline-local/.classpath
   studios/radar/pipeline-local/Makefile
-  studios/radar/pipeline-local/src/builder_v2_3_2.xml
+  studios/radar/pipeline-local/src/builder_v2_3_2.xml-header
   studios/radar/pipeline-local/src/Makefile
   studios/radar/pipeline-local/src/com/Makefile
   studios/radar/pipeline-local/src/com/radar/Makefile
@@ -2491,6 +2504,7 @@ AC_CONFIG_FILES([
   rpm/pipeline.spec
   rpm/plmaster.spec
   rpm/plqueuemgr.spec
+  rpm/pllocal.spec
   rpm/plmac.spec
   rpm/plwin.spec
   rpm/headerB
