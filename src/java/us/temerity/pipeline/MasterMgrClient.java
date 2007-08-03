@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.106 2007/07/08 01:18:16 jim Exp $
+// $Id: MasterMgrClient.java,v 1.107 2007/08/03 08:56:24 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -30,7 +30,7 @@ import javax.crypto.interfaces.*;
  * A connection to the Pipeline master manager daemon. <P> 
  * 
  * This class handles network communication with the Pipeline master manager daemon 
- * <A HREF="../../../../man/plmaster.html"><B>plmaster</B><A>(1).  This class represents the
+ * <A HREF="../../../../man/plmaster.html"><B>plmaster</B></A>(1).  This class represents the
  * interface used by all Pipeline client programs and end user tools to interact with the 
  * Pipeline system.
  */
