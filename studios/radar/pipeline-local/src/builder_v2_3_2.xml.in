@@ -1,0 +1,45 @@
+ 
+<project name="Builder.makejar" default="all" basedir=".">
+
+	<property name="PipelineInstallDir" value="@ROOT_INST_PARENT_DIR@/pipeline-latest"/>
+	
+	<property name="Package" value="com/radar/pipeline/builder/maya2mr/v2_3_2"/>
+	<property name="BinDir" value="bin/${Package}"/>
+	<property name="SrcDir" value="src/${Package}"/>
+	<property name="ScriptsDir" value="${SrcDir}/scripts"/>
+	<property name="TargetName" value="maya2mr"/>
+	<property name="PipelineBuilderDir" value="${PipelineInstallDir}/builders"/>
+	<property name="TargetDir" value="${PipelineBuilderDir}/${Package}"/>
+	<property name="UnixDir" value="${TargetDir}/Unix"/>
+	<property name="MacDir" value="${TargetDir}/MacOS"/>
+	<property name="WinDir" value="${TargetDir}/Windows"/>
+	
+    <target name="makejar" description="makes a jar file of all the classes">
+        <jar destfile="${BinDir}/${TargetName}.jar" includes="${BinDir}/*.class" basedir="."></jar>
+    </target>
+	<target name="installjar" description="installs the jar file into pipeline" depends="makejar" >
+		<mkdir dir="${TargetDir}"/>
+		<copy file="${BinDir}/${TargetName}.jar" todir="${TargetDir}"></copy>
+	</target>
+	<target name="installUnix" description="installs the builder scripts into pipeline">
+		<mkdir dir="${UnixDir}"/>
+		<copy todir="${UnixDir}">
+			<fileset dir="${ScriptsDir}/Unix"></fileset>
+		</copy>
+	</target>
+	<target name="installMacOS" description="installs the builder scripts into pipeline">
+		<mkdir dir="${MacDir}"/>
+		<copy todir="${MacDir}">
+			<fileset dir="${ScriptsDir}/MacOS"></fileset>
+		</copy>
+	</target>
+	<target name="installWindows" description="installs the builder scripts into pipeline">
+		<mkdir dir="${WinDir}"/>
+		<copy todir="${WinDir}">
+			<fileset dir="${ScriptsDir}/Windows"></fileset>
+		</copy>
+	</target>
+	
+	<target name="all" depends="installjar,installUnix, installMacOS, installWindows">
+	</target> 
+</project>

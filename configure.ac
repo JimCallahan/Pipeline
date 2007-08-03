@@ -1041,6 +1041,7 @@ case "$NATIVE_OSTYPE" in
     PIPELINE_LIBDIR="$ROOT_INST_DIR/lib";
     PIPELINE_BUILDERDIR="$ROOT_INST_DIR/builders/us/temerity/pipeline/builder";
     JOGL_JAR="$ROOT_INST_DIR/jogl/lib/jogl.jar";
+    LATEST_JOGL_JAR="$ROOT_INST_PARENT_DIR/jogl/lib/jogl.jar";
     GLUEGEN_JAR="$ROOT_INST_DIR/jogl/lib/gluegen-rt.jar";
     JOGL_LIBRARY_PATH="$ROOT_INST_DIR/jogl/lib/$NATIVE_OSTYPE";
     JYTHON_DIR="$ROOT_INST_DIR/jython";
@@ -2456,6 +2457,35 @@ AC_CONFIG_FILES([
 
   src/unix/Makefile
   src/unix/icons/Makefile
+  
+  studios/Makefile
+  studios/radar/Makefile
+  studios/radar/pipeline-local/.classpath
+  studios/radar/pipeline-local/Makefile
+  studios/radar/pipeline-local/src/builder_v2_3_2.xml
+  studios/radar/pipeline-local/src/Makefile
+  studios/radar/pipeline-local/src/com/Makefile
+  studios/radar/pipeline-local/src/com/radar/Makefile
+  studios/radar/pipeline-local/src/com/radar/pipeline/Makefile
+  studios/radar/pipeline-local/src/com/radar/pipeline/builder/Makefile
+  studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/Makefile
+  studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/Makefile
+  studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Makefile
+  studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Unix/Makefile
+  studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Unix/plRadarAssetBuilder
+  studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Unix/plRadarProjectBuilder
+  studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Unix/plRadarProjectScriptBuilder
+  studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Unix/plRadarProjectTurntableBuilder
+  studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/MacOS/Makefile
+  studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/MacOS/plRadarAssetBuilder
+  studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/MacOS/plRadarProjectBuilder
+  studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/MacOS/plRadarProjectScriptBuilder
+  studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/MacOS/plRadarProjectTurntableBuilder
+  studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Windows/Makefile
+  studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Windows/plRadarAssetBuilder.bat.src
+  studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Windows/plRadarProjectBuilder.bat.src
+  studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Windows/plRadarProjectScriptBuilder.bat.src
+  studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Windows/plRadarProjectTurntableBuilder.bat.src
 
   rpm/Makefile
   rpm/pipeline.spec

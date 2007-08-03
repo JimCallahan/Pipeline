@@ -1,0 +1,4 @@
+SUBDIRS = \
+  Unix \
+  MacOS #\
+  #Windows
