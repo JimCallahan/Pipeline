@@ -1,3 +1,6 @@
 
 SUBDIRS = \
-  maya2mr 
+  approval \
+  maya2mr
+
+
