@@ -2521,6 +2521,7 @@ AC_CONFIG_FILES([
   www/plstats/Makefile
   www/plstats/sql/Makefile
   www/pltasks/Makefile
+  www/pltasks/pipeline-config.php
   www/pltasks/sql/Makefile
 
 ])
