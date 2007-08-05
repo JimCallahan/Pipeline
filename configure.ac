@@ -9,7 +9,7 @@ AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(Pipeline, 2.3.7)
+AM_INIT_AUTOMAKE(Pipeline, 2.3.8)
                            
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
@@ -1575,6 +1575,8 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/bootstrap/BootStrapLoader.java.in
 
   src/java/us/temerity/pipeline/builder/Makefile
+  src/java/us/temerity/pipeline/builder/approval/Makefile
+  src/java/us/temerity/pipeline/builder/approval/v2_3_2/Makefile
   src/java/us/temerity/pipeline/builder/maya2mr/Makefile
   src/java/us/temerity/pipeline/builder/maya2mr/v2_3_1/Makefile
   src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/Makefile
@@ -2389,6 +2391,9 @@ AC_CONFIG_FILES([
   src/java/scripts/profile/plui
 
   src/java/scripts/builder/Makefile
+  src/java/scripts/builder/approval/Makefile
+  src/java/scripts/builder/approval/v2_3_2/Makefile
+  src/java/scripts/builder/approval/v2_3_2/plApprovalBuilder
   src/java/scripts/builder/maya2mr/Makefile
   src/java/scripts/builder/maya2mr/v2_3_1/Makefile
   src/java/scripts/builder/maya2mr/v2_3_1/plNewAssetBuilder
@@ -2399,8 +2404,7 @@ AC_CONFIG_FILES([
   src/java/scripts/builder/maya2mr/v2_3_2/plProjectBuilder
   src/java/scripts/builder/maya2mr/v2_3_2/plProjectScriptBuilder
   src/java/scripts/builder/maya2mr/v2_3_2/plProjectTurntableBuilder
-  src/java/scripts/builder/v2_3_2/Makefile
-  src/java/scripts/builder/v2_3_2/plApprovalBuilder
+
 
   src/java/share/Makefile
   src/java/share/Unix/Makefile
@@ -2450,6 +2454,9 @@ AC_CONFIG_FILES([
   src/windows/scripts/debug/pljobmgr.bat.src
 
   src/windows/scripts/builder/Makefile
+  src/windows/scripts/builder/approval/Makefile
+  src/windows/scripts/builder/approval/v2_3_2/Makefile
+  src/windows/scripts/builder/approval/v2_3_2/plApprovalBuilder.bat.src
   src/windows/scripts/builder/maya2mr/Makefile
   src/windows/scripts/builder/maya2mr/v2_3_1/Makefile
   src/windows/scripts/builder/maya2mr/v2_3_1/plNewAssetBuilder.bat.src
@@ -2460,8 +2467,6 @@ AC_CONFIG_FILES([
   src/windows/scripts/builder/maya2mr/v2_3_2/plProjectBuilder.bat.src
   src/windows/scripts/builder/maya2mr/v2_3_2/plProjectScriptBuilder.bat.src
   src/windows/scripts/builder/maya2mr/v2_3_2/plProjectTurntableBuilder.bat.src
-  src/windows/scripts/builder/v2_3_2/Makefile
-  src/windows/scripts/builder/v2_3_2/plApprovalBuilder.bat.src
 
   src/windows/launchers/Makefile
   src/windows/launchers/plui.exe4j
