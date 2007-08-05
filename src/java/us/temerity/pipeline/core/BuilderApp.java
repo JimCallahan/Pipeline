@@ -36,27 +36,17 @@ public class BuilderApp
   }
 
   
-  public void help()
-  {
-    LogMgr.getInstance().log
-    (LogMgr.Kind.Ops, LogMgr.Level.Info,
-     "USAGE:\n" +
-     "  builderName [options]\n" + 
-     "\n" + 
-     "  builderName --help\n" +
-     "  builderName --html-help\n" +
-     "  builderName --version\n" + 
-     "  builderName --release-date\n" + 
-     "  builderName --copyright\n" + 
-     "  builderName --license\n" + 
-     "\n" + 
-     "GLOBAL OPTIONS:\n" +
-     " [--log=...][--abort][--gui][--builder=...][--<paramName>=<paramValue>...]\n" +
-     "\n" + 
-     "\n" +  
-     "Use \"builderName --html-help\" to browse the full documentation.\n");
-  }
 
+  /*----------------------------------------------------------------------------------------*/
+  /*   R U N                                                                                */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Run the application with the given command-line arguments.
+   * 
+   * @param args 
+   *   The command-line arguments.
+   */ 
   @SuppressWarnings("unchecked")
   public void 
   run
@@ -70,6 +60,7 @@ public class BuilderApp
     }
     
     boolean hasClassName = !(args[0].startsWith("--")); 
+    pBuilderClassName = args[0];
 
     if (!hasClassName)
       packageArguments(args);
@@ -107,14 +98,15 @@ public class BuilderApp
       parser.setApp(this);
       if (hasClassName) {
 	ClassLoader loader = ClassLoader.getSystemClassLoader();
-	Class cls = loader.loadClass(args[0]);
+	Class cls = loader.loadClass(pBuilderClassName);
 	Constructor construct = 
 	  cls.getConstructor
 	  (MasterMgrClient.class, 
 	   QueueMgrClient.class, 
 	   BuilderInformation.class);
 	parser.CommandLine();
-	BuilderInformation info = new BuilderInformation(pGui, pAbortOnGui, pCommandLineParams);
+	BuilderInformation info = 
+          new BuilderInformation(pGui, pAbortOnGui, pCommandLineParams);
 	BaseBuilder builder = (BaseBuilder) construct.newInstance(mclient, qclient, info);
 	builder.run();
       } 
@@ -162,6 +154,46 @@ public class BuilderApp
     }
   }
   
+  
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   O P T I O N S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The implementation of the <CODE>--help</CODE> command-line option.
+   */ 
+  public 
+  void help()
+  {
+    String wrapper = "BuilderName"; 
+    {
+      String parts[] = pBuilderClassName.split("\\.");
+      if(parts.length > 0) 
+        wrapper = parts[parts.length-1];
+    }
+
+    LogMgr.getInstance().log
+    (LogMgr.Kind.Ops, LogMgr.Level.Info,
+     "USAGE:\n" +
+     "  pl" + wrapper + " [options]\n" + 
+     "\n" + 
+     "  pl" + wrapper + " --help\n" +
+     "  pl" + wrapper + " --html-help\n" +
+     "  pl" + wrapper + " --version\n" + 
+     "  pl" + wrapper + " --release-date\n" + 
+     "  pl" + wrapper + " --copyright\n" + 
+     "  pl" + wrapper + " --license\n" + 
+     "\n" + 
+     "GLOBAL OPTIONS:\n" +
+     "  [--log=...] \n" + 
+     "  [--abort] [--gui] \n" + 
+     "  [--builder=...] [--<ParamName>=<ParamValue>...] ...\n" +
+     "\n" + 
+     "\n" +  
+     "Use \"pl" + wrapper + " --html-help\" to browse the full documentation.\n");
+  }
+
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -257,7 +289,9 @@ public class BuilderApp
   /*  I N T E R N A L S                                                                     */
   /*----------------------------------------------------------------------------------------*/
   
-  private boolean pGui = false;
-  private boolean pAbortOnGui = false;
+  private boolean pGui;
+  private boolean pAbortOnGui;
   private MultiMap<String, String> pCommandLineParams; 
+  private String pBuilderClassName;
+
 }

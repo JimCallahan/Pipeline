@@ -49,7 +49,7 @@ BuilderOptsParser
    */
   private BuilderApp pApp;
     
-  private String currentBuilderName = null;
+  private String pCurrentBuilderName = null;
 }
   
 PARSER_END(BuilderOptsParser)
@@ -58,18 +58,18 @@ PARSER_END(BuilderOptsParser)
 TOKEN :
 {       
   /* information options */ 
-  <HELP:             "--help">         		    
-| <HTML_HELP:      	 "--html-help">    		    
-| <VERSION:        	 "--version">      		    
-| <RELEASE_DATE:   	 "--release-date"> 		    
-| <COPYRIGHT:      	 "--copyright">
+  <HELP:           "--help">         		    
+| <HTML_HELP:      "--html-help">    		    
+| <VERSION:        "--version">      		    
+| <RELEASE_DATE:   "--release-date"> 		    
+| <COPYRIGHT:      "--copyright">
 
   /* global options */
-| <GUI:		"--gui">
-| <ABORT:   "--abort">
-| <BUILDER:	"--builder"> : BUILDER_SEP
-| <LOG:     "--log">     : LOG_SEP
-| <PARAM:   "--">        : PARAM_NAME_STATE
+| <GUI:		   "--gui">
+| <ABORT:          "--abort">
+| <BUILDER:    	   "--builder"> : BUILDER_SEP
+| <LOG:            "--log">     : LOG_SEP
+| <PARAM:          "--">        : PARAM_NAME_STATE
 
 
   /* seperators */ 
@@ -151,8 +151,8 @@ TOKEN :
 | <LOG_PLG: 	     "plg">    
 | <LOG_SUB: 	     "sub">     
 | <LOG_TEX: 	     "tex">
-| <LOG_BLD:			 "bld">      
-| <COLON:  	         ":">        : LOG_LEVEL  
+| <LOG_BLD:	     "bld">      
+| <COLON:  	     ":">        : LOG_LEVEL  
 | <ILLEGAL_LOG_TYPE: (~[":"])+>  : IGNORE_STATE    
 }
 
@@ -165,7 +165,7 @@ TOKEN :
 | <FINE:    	      "fine">    
 | <FINER :  	      "finer">   
 | <FINEST:    	      "finest">  
-| <COMMA:  	          ",">             : LOG_TYPE
+| <COMMA:  	      ",">             : LOG_TYPE
 | <AE2:               (["\0"])+>       : DEFAULT
 | <ILLEGAL_LOG_LEVEL: (~["\0",","])+>  : IGNORE_STATE
 }
@@ -310,7 +310,7 @@ Builder()
 {
   <BUILDER> EQ() t=<BUILDER_NAME>
   {
-    currentBuilderName = t.image;
+    pCurrentBuilderName = t.image;
   }
 }
 
@@ -326,7 +326,7 @@ Param()
   <PARAM> t1=<PARAM_NAME> (Key(keys))* EQ() t2=<PARAM_VALUE>
   {
     keys.addFirst(t1.image);
-    pApp.setCommandLineParam(currentBuilderName, keys, t2.image);
+    pApp.setCommandLineParam(pCurrentBuilderName, keys, t2.image);
   }
 }
 
