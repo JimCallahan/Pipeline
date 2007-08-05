@@ -1,0 +1,7 @@
+<?php
+{
+  /* Pipeline globals */ 
+  $pipeline_latest = "@ROOT_INST_PARENT_DIR@/pipeline-latest";
+}
+?>
+ 

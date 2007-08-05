@@ -24,6 +24,7 @@
   
   /* open SQL connection */ 
   include($temerity_root . "pltasks/db-config.php");
+  include($temerity_root . "pltasks/pipeline-config.php");
   include($temerity_root . "dbopen.php");
 
   /* authenticate the user */
@@ -167,8 +168,24 @@
       case 6: // Finalled
         {
           $approval_info = array('new_status_id' => $new_task_status, 
-                                 'note_id'       => $note_id);
+                                 'new_note_id'   => $note_id);
         }
+      }
+    }
+    break;
+
+  case 'retry_review':
+    {
+      /* validate */ 
+      if(($_REQUEST["new_status_id"] == NULL) || ($_REQUEST["new_status_id"] == "")) 
+        $warning_msg = "No new status ID was supplied!";
+
+      if($warning_msg == NULL) {
+        if(($_REQUEST["new_note_id"] == NULL) || ($_REQUEST["new_note_id"] == 0)) 
+          $warning_msg = "No new message ID was supplied!";
+        else
+          $approval_info = array('new_status_id' => $_REQUEST["new_status_id"],
+                                 'new_note_id'   => $_REQUEST["new_note_id"]);
       }
     }
     break;
@@ -212,10 +229,13 @@
       }
     }
     break;
-    
 
-     // ...
-    
+  case 'post_assign':
+    {
+      
+      // ...
+
+    }    
   }
 
   /* lookup task information */ 
@@ -353,15 +373,33 @@
     }
   }
 
-  /* if the task was approved, insert the approval information... */ 
-  if($approval_info != NULL) {
+  /* if the task was approved, run the approval builder */ 
+  $approval_builder_cmdline = NULL;
+  $approval_builder_output  = NULL;
+  $approval_builder_errors  = NULL;
+  $approval_builder_result  = NULL;
+  if(($warning_msg == NULL) && ($approval_info != NULL)) {
+    $filedesc = array(1 => array("pipe", "w"),  
+                      2 => array("pipe", "w"));
+
+    $tmpdir = '/tmp';
     
-
-    // ...
-
-
+    $approval_builder_cmdline = "/base/apps/i686-pc-linux-gnu-dbg/pipeline-latest/builders/us/temerity/pipeline/builder/approval/v2_3_2/Unix/plApprovalBuilder";
+    
+    $approval_process = proc_open($approval_builder_cmdline, $filedesc, $pipes, $tmpdir);
+    if(is_resource($approval_process)) {
+      $approval_builder_output = stream_get_contents($pipes[1]);
+      fclose($pipes[1]);
+      
+      $approval_builder_errors = stream_get_contents($pipes[2]);
+      fclose($pipes[2]);
+      
+      $approval_builder_result = proc_close($process);
+    }
+    else {
+      $warning_msg = "Unable to create process!";
+    }
   }
-
 
   /* close SQL connection */ 
   include($temerity_root . "dbclose.php");
@@ -438,6 +476,19 @@
       print($warning_contents);
     }
     
+    /* approval builder output */ 
+    if($approval_builder_cmdline != NULL) {
+      {
+        ob_start();
+     
+        include ($temerity_root . "pltasks/approval-builder.php");
+     
+        $approval_builder_contents = ob_get_contents();
+        ob_end_clean();
+      }
+      print($approval_builder_contents);
+    }
+    
     /* post form */ 
     switch($_REQUEST["mode"]) {
     case 'post_review':
@@ -478,10 +529,19 @@
       }
       break;
 
-      
-      
-      // ...
-      
+    case 'post_assign':
+    case 'assign':
+      {
+
+
+
+        
+        // ...
+
+
+
+        
+      }          
     }
 
     /* process events... */ 
@@ -528,26 +588,34 @@
 
 <PRE>
 <?php 
-print("<P>_REQUEST<BR>\n");
-var_dump($_REQUEST);
-print("<P>tids<BR>\n");
-var_dump($tids);
-print("<P>current_task_active<BR>\n");
-var_dump($current_task_active);
-print("<P>current_task_status<BR>\n");
-var_dump($current_task_status);
+ print("<P>_REQUEST<BR>\n");
+ var_dump($_REQUEST);
+// print("<P>approval_process<BR>\n");
+// var_dump($approval_process);
+// print("<P>approval_builder_output<BR>\n");
+// var_dump($approval_builder_output);
+// print("<P>approval_builder_errors<BR>\n");
+// var_dump($approval_builder_errors);
+// print("<P>approval_builder_result<BR>\n");
+// var_dump($approval_builder_result);
+// print("<P>tids<BR>\n");
+// var_dump($tids);
+// print("<P>current_task_active<BR>\n");
+// var_dump($current_task_active);
+// print("<P>current_task_status<BR>\n");
+// var_dump($current_task_status);
 // print("<P>new_task_status<BR>\n");
 // var_dump($new_task_status);
-print("<P>task_status<BR>\n");
-var_dump($task_status);
+// print("<P>task_status<BR>\n");
+// var_dump($task_status);
 // print("<P>debug_sql<BR>\n");
 // var_dump($debug_sql);
-print("<P>approval_info<BR>\n");
-var_dump($approval_info);
-print("<P>tasks<BR>\n");
-var_dump($tasks);
-print("<P>task_owners<BR>\n");
-var_dump($task_owners);
+// print("<P>approval_info<BR>\n");
+// var_dump($approval_info);
+// print("<P>tasks<BR>\n");
+// var_dump($tasks);
+// print("<P>task_owners<BR>\n");
+// var_dump($task_owners);
 ?>
 </PRE>
 
