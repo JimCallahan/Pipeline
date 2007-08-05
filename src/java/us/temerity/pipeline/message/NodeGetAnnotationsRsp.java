@@ -1,4 +1,4 @@
-// $Id: NodeGetAnnotationsRsp.java,v 1.2 2007/06/28 18:36:46 jim Exp $
+// $Id: NodeGetAnnotationsRsp.java,v 1.3 2007/08/05 19:07:01 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -116,7 +116,7 @@ class NodeGetAnnotationsRsp
 
     TreeMap<String,BaseAnnotation> annots = (TreeMap<String,BaseAnnotation>) in.readObject();
     for(String name : annots.keySet()) {
-      BaseAnnotation annot = pAnnotations.get(name);
+      BaseAnnotation annot = annots.get(name);
       if(annot != null) {
         try {
           PluginMgrClient client = PluginMgrClient.getInstance();
