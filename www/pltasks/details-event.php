@@ -14,7 +14,7 @@
 
   <TR>
     <TD nowrap class="<?php echo($row_color);?>" align="center" 
-        rowspan="2" width="120" height="80">
+        rowspan="2" width="100" height="80">
       <SPAN class="bold">
       <?php 
       {
