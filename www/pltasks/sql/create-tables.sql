@@ -3,17 +3,6 @@ USE `pltasks`;
 
 -- ----------------------------------------------------------------------------------------
 
-CREATE TABLE `approvals` (
-  `approval_id` mediumint(8) unsigned NOT NULL auto_increment,  
-  `new_status_id` smallint(5) unsigned NOT NULL,
-  `approve_node_id` mediumint(8) unsigned NOT NULL,
-  `submit_node_id` mediumint(8) unsigned NOT NULL,
-  `approved_by` smallint(5) unsigned NOT NULL, 
-  `note_id` mediumint(8) unsigned NOT NULL,
-  `builder_id` mediumint(8) unsigned default NULL,
-   PRIMARY KEY  (`approval_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
-
 CREATE TABLE `auth` (
   `ident_id` smallint(5) unsigned NOT NULL,
   `password` varchar(128) NOT NULL,
