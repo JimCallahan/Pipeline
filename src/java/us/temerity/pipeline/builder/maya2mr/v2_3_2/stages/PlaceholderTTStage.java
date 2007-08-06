@@ -1,4 +1,4 @@
-// $Id: PlaceholderTTStage.java,v 1.1 2007/07/23 20:02:52 jesse Exp $
+// $Id: PlaceholderTTStage.java,v 1.2 2007/08/06 03:50:14 jesse Exp $
 
 package us.temerity.pipeline.builder.maya2mr.v2_3_2.stages;
 
@@ -35,7 +35,7 @@ class PlaceholderTTStage
     String s = "string $cams[] = `camera -focalLength 50`;\n" + 
     	       "rename $cams[0] \"renderCam\";\n" + 
     	       "setAttr \"renderCamShape.farClipPlane\" 100000;\n" + 
-    	       "defaultDirectionalLight(1, 1,1,1, \"0\", 0,0,0);\n" + 
+    	       "defaultDirectionalLight(1, 1,1,1, \"0\", 0,0,0,0);\n" + 
     	       "setAttr \"directionalLight1.rotateX\" -35;\n" + 
     	       "setAttr \"directionalLight1.rotateY\" -20;\n" + 
     	       "parent directionalLight1 renderCam;\n" + 
