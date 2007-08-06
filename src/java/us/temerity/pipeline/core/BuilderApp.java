@@ -77,6 +77,8 @@ public class BuilderApp
       packageArguments(appArgs);
     }
     
+    boolean success = false;
+    
     try {
       PluginMgrClient.init();
     }
@@ -109,6 +111,7 @@ public class BuilderApp
           new BuilderInformation(pGui, pAbortOnGui, pCommandLineParams);
 	BaseBuilder builder = (BaseBuilder) construct.newInstance(mclient, qclient, info);
 	builder.run();
+	success = true;
       } 
       else {
 	parser.CommandLine();
@@ -144,7 +147,7 @@ public class BuilderApp
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
 	 message);
-      th.printStackTrace();
+      //th.printStackTrace();
     }
     catch(Exception ex) {
       LogMgr.getInstance().log
@@ -152,6 +155,11 @@ public class BuilderApp
 	 getFullMessage(ex));
       	ex.printStackTrace();
     }
+    finally {
+      LogMgr.getInstance().cleanup();
+    }
+    
+    System.exit(success ? 0 : 1);
   }
   
   
