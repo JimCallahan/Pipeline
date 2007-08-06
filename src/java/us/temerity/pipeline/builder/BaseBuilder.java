@@ -1814,15 +1814,15 @@ class BaseBuilder
 	pGuiDialog.initUI();
 	pGuiDialog.setVisible(true);
       }
-      catch (PipelineException e) {
-	System.err.println("Problem initializing builder in gui mode.\n" + e.getMessage());
+      catch (PipelineException ex) {
+	System.err.println("Problem initializing builder in gui mode.\n" + ex.getMessage());
 	System.exit(1);
       }
       catch(Exception ex) {
+	ex.printStackTrace();
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Ops, LogMgr.Level.Severe,
 	   getFullMessage(ex));
-	   ex.printStackTrace();
 	System.exit(1);
       }
     }
