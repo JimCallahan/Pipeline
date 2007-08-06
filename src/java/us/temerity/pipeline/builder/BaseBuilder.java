@@ -1385,6 +1385,7 @@ class BaseBuilder
   {
     pClient.disconnect();
     pQueue.disconnect();
+    LogMgr.getInstance().cleanup();
   }
   
   public void

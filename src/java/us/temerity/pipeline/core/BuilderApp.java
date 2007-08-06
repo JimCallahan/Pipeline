@@ -55,7 +55,7 @@ public class BuilderApp
   ) 
   {
     if(args.length == 0) {
-      System.out.print("Builder name was missing!\n");
+      System.err.print("Builder name was missing!\n");
       System.exit(1);
     }
     
@@ -93,6 +93,8 @@ public class BuilderApp
     QueueMgrClient qclient = new QueueMgrClient();
     
     LogMgr.getInstance().setLevel(Kind.Ops, Level.Fine);
+    
+    LogMgr.getInstance().log(Kind.Ops, Level.Info, "Starting Builder Execution!");
     
     try {
       BuilderOptsParser parser = 
@@ -156,7 +158,8 @@ public class BuilderApp
       	ex.printStackTrace();
     }
     finally {
-      LogMgr.getInstance().cleanup();
+      if (pGui)
+	LogMgr.getInstance().cleanup();
     }
     if (!pGui)
       System.exit(success ? 0 : 1);
