@@ -420,6 +420,7 @@ class TaskPolicyExt
           String taskType = lookupTaskType(nodeName, an);
           String purpose  = lookupPurpose(nodeName, an); 
 
+          /* submit node check-in */ 
           if(purpose.equals(aSubmit)) {
             Path builderPath = (Path) an.getParamValue(aBuilderPath);
 
@@ -427,10 +428,9 @@ class TaskPolicyExt
             TreeMap<String,NodeVersion> thumbNodes = new TreeMap<String,NodeVersion>();
             TreeMap<String,NodeVersion> focusNodes = new TreeMap<String,NodeVersion>();
             TreeMap<String,NodeVersion> editNodes  = new TreeMap<String,NodeVersion>();
-            findSubmitNodes(nodeName, taskName, taskType, 
+            mineSubmitTree(nodeName, taskName, taskType, 
                             vsn, null, thumbToFocus, thumbNodes, focusNodes, editNodes, 
                             mclient);
-
 
             /* DEBUG */ 
             {
@@ -507,17 +507,55 @@ class TaskPolicyExt
               }
             }
           }
-          else if(purpose.equals(aApprove)) {
+
+          /* initial approve node check-in */ 
+          else if(purpose.equals(aApprove) && vsn.getVersionID().equals(new VersionID())) {
+            NodeVersion submitVsn = 
+              mineApproveTree(nodeName, taskName, taskType, vsn, mclient);
+
             /* DEBUG */ 
             {
               LogMgr.getInstance().log
                 (Kind.Ops, Level.Info, 
                  "The " + purpose + " (" + nodeName + " v" + vsn.getVersionID() + ") of " + 
                  "task (" + taskName + ":" + taskType + ") has been checked-in.");
+
+              if(submitVsn != null) {
+                LogMgr.getInstance().log
+                  (Kind.Ops, Level.Info, 
+                   "The Submit node (" + submitVsn.getName() + " v" + 
+                   submitVsn.getVersionID()+ ") is associated with task (" + taskName + ":" + 
+                   taskType + ") by checking-in the Approve node (" + nodeName + " v" +
+                   vsn.getVersionID() + ").");
+              }
             }
             /* DEBUG */
+            
+            int tries = 0; 
+            while(true) {
+              try {
+                sDatabase.approveTask(taskName, taskType, vsn, submitVsn); 
+                break;
+              }
+              catch(PipelineException ex) {
+                String msg = 
+                  ("TaskApproval for (" + taskName + ":" + taskType + ") Failed:\n" +
+                   ex.getMessage());      
 
-            //sDatabase.approveTask(taskName, taskType, vsn); 
+                if(tries < sMaxTries) {
+                  LogMgr.getInstance().log
+                    (Kind.Ops, Level.Warning, 
+                     msg + "\nRetrying...");
+                  tries++;
+                }
+                else {
+                  LogMgr.getInstance().log
+                    (Kind.Ops, Level.Warning, 
+                     msg + "\nAborted after (" + tries + ") attempts!"); 
+                  break;
+                }
+              }
+            }                
           }
         }
       }
@@ -531,10 +569,10 @@ class TaskPolicyExt
   }
 
   /**
-   * Find the focus/edit nodes upstream of the submit node.
+   * Find the focus/edit nodes in the tree of nodes rooted at the given submit node.
    */ 
   private void 
-  findSubmitNodes
+  mineSubmitTree
   (
    String submitNodeName, 
    String submitTaskName, 
@@ -554,8 +592,7 @@ class TaskPolicyExt
     TreeMap<String,BaseAnnotation> annotations = mclient.getAnnotations(nodeName);
     for (String aname : annotations.keySet()) {
       BaseAnnotation an = annotations.get(aname);
-      if(an.getName().equals(aTask) || an.getName().equals(aSubmitNode)) {
-
+      if(an.getName().equals(aTask)) {
         String purpose = lookupPurpose(nodeName, an); 
         if(purpose.equals(aFocus)) {
           verifyTask(nodeName, an, submitNodeName, submitTaskName, submitTaskType); 
@@ -579,11 +616,47 @@ class TaskPolicyExt
       
     for(LinkVersion link : vsn.getSources()) {
       NodeVersion source = mclient.getCheckedInVersion(link.getName(), link.getVersionID());
-      findSubmitNodes(submitNodeName, submitTaskName, submitTaskType, 
-                      source, thumb, thumbToFocus, thumbNodes, focusNodes, editNodes, 
-                      mclient);
+      mineSubmitTree(submitNodeName, submitTaskName, submitTaskType, 
+                     source, thumb, thumbToFocus, thumbNodes, focusNodes, editNodes, 
+                     mclient);
     }
   }
+
+  /**
+   * Find the the submit node in the tree of nodes rooted at the given approve node.
+   */ 
+  private NodeVersion
+  mineApproveTree
+  (
+   String approveNodeName, 
+   String approveTaskName, 
+   String approveTaskType, 
+   NodeVersion vsn, 
+   MasterMgrLightClient mclient
+  )
+    throws PipelineException 
+  {
+    String nodeName = vsn.getName();    
+    TreeMap<String,BaseAnnotation> annotations = mclient.getAnnotations(nodeName);
+    for (String aname : annotations.keySet()) {
+      BaseAnnotation an = annotations.get(aname);
+      if(an.getName().equals(aSubmitNode)) {
+        verifyTask(nodeName, an, approveNodeName, approveTaskName, approveTaskType); 
+        return vsn; 
+      }
+    }
+
+    for(LinkVersion link : vsn.getSources()) {
+      NodeVersion source = mclient.getCheckedInVersion(link.getName(), link.getVersionID());
+      NodeVersion submitVsn = 
+        mineApproveTree(approveNodeName, approveTaskName, approveTaskType, source, mclient);
+      if(submitVsn != null) 
+        return submitVsn;
+    }
+
+    return null;
+  }
+
   
   
   /*----------------------------------------------------------------------------------------*/

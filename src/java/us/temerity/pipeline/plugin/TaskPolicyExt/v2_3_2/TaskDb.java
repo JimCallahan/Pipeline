@@ -1,4 +1,4 @@
-// $Id: TaskDb.java,v 1.4 2007/07/31 15:43:53 jim Exp $
+// $Id: TaskDb.java,v 1.5 2007/08/06 03:51:49 jim Exp $
 
 package us.temerity.pipeline.plugin.TaskPolicyExt.v2_3_2;
 
@@ -266,7 +266,12 @@ class TaskDb
       
       {
         String sql = ("UPDATE tasks SET active_id = ?, last_modified = ? WHERE task_id = ?");
-        pSubmitTaskSt = pConnect.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS); 
+        pSubmitTaskSt = pConnect.prepareStatement(sql); 
+      }
+      
+      {
+        String sql = ("UPDATE tasks SET last_modified = ? WHERE task_id = ?");
+        pApproveTaskSt = pConnect.prepareStatement(sql); 
       }
       
       /* events */ 
@@ -284,6 +289,15 @@ class TaskDb
            "(task_id, ident_id, stamp, note_id, new_active_id, builder_id) " + 
            "VALUES (?, ?, ?, ?, ?, ?)");
         pInsertSubmitEventSt = 
+          pConnect.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS); 
+      }
+      
+      {
+        String sql = 
+          ("INSERT INTO events " + 
+           "(task_id, ident_id, stamp, note_id) " + 
+           "VALUES (?, ?, ?, ?)");
+        pInsertApproveEventSt = 
           pConnect.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS); 
       }
       
@@ -342,7 +356,7 @@ class TaskDb
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Insert a task into the SQL database after its initial check-in.
+   * Insert a task into the SQL database after its initial submit node check-in.
    * 
    * @param taskTitle
    *   The title of the task.
@@ -395,7 +409,7 @@ class TaskDb
       /* make sure only the "pipeline" user can create a task! */ 
       if((taskID == null) && !submitNode.getAuthor().equals(PackageInfo.sPipelineUser))
         throw new PipelineException
-          ("Somehow no task (" + taskTitle + ":" + taskType + ") exists, but the " + 
+          ("Somehow no task (" + taskTitle + ":" + taskType + ") exists yet, but the " + 
            "check-in of the SubmitNode (" + submitNode.getName() + ") which will create " +
            "the task was not performed by the (" + PackageInfo.sPipelineUser + ") user!");
 
@@ -474,7 +488,81 @@ class TaskDb
     }
   }
 
+  /**
+   * Insert a task into the SQL database after its initial approve node check-in.
+   * 
+   * @param taskTitle
+   *   The title of the task.
+   * 
+   * @param taskType
+   *   The type of task.
+   * 
+   * @param approveNode
+   *   The initial version of the Approve node being checked-in.
+   * 
+   * @param submitNode
+   *   The current version of the Submit node upstream of the Approve node being checked-in.
+   */  
+  public synchronized void
+  approveTask
+  (
+   String taskTitle, 
+   String taskType,
+   NodeVersion approveNode, 
+   NodeVersion submitNode
+  )
+    throws PipelineException
+  {
+    verifyConnection(); 
+    try {
+      txnStart(); 
 
+      /* lookup the task */ 
+      Integer titleID = lookupTaskTitle(taskTitle);
+      Integer typeID  = lookupTaskType(taskType);
+      Integer taskID  = getTask(titleID, typeID); 
+
+      /* make sure task exists */ 
+      if(taskID == null) 
+        throw new PipelineException
+          ("Somehow no task (" + taskTitle + ":" + taskType + ") exists yet, but an  " + 
+           "attempt to check-in of the ApproveNode (" + approveNode.getName() + ") is " + 
+           "being performed!"); 
+      
+      /* create the approve event */ 
+      Integer eventID = null;
+      {
+        Integer identID = lookupIdent(approveNode.getAuthor(), false); 
+        Integer noteID  = insertNote(approveNode.getMessage());
+        
+        long stamp = approveNode.getTimeStamp();
+
+        eventID = insertApproveEvent(taskID, identID, stamp, noteID);
+        approveTask(taskID, stamp);
+      }
+
+      /* attach info for the approve node to the event */ 
+      Integer approveNodeID = lookupNodeName(approveNode.getName());
+      insertNodeInfo(approveNodeID, approveNode.getVersionID(), eventID, 
+                     false, false, false, false, true);
+
+      /* attach info for the submit node to the event */ 
+      if(submitNode != null) {
+        Integer submitNodeID = lookupNodeName(submitNode.getName());
+        insertNodeInfo(submitNodeID, submitNode.getVersionID(), eventID, 
+                       false, true, false, false, false);
+      }
+
+      txnCommit(); 
+    }
+    catch(SQLException ex) {
+      txnRollback
+        ("The TaskPolicy extension was unable to register the initial approval of task " + 
+         "(" + taskTitle + ":" + taskType + ") with the SQL database!", ex);
+    }
+  }
+
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*  T A B L E   H E L P E R S                                                             */
@@ -1051,6 +1139,28 @@ class TaskDb
     pSubmitTaskSt.executeUpdate();
   }
 
+  /**
+   * Update the last modified timestamp after an initial approval for a task.
+   * 
+   * @param taskID
+   *   The ID of the task. 
+   * 
+   * @param stamp
+   *   The timestamp of the last modification.
+   */
+  private synchronized void
+  approveTask
+  (
+   int taskID, 
+   long stamp
+  ) 
+    throws SQLException
+  {
+    pApproveTaskSt.setTimestamp(1, new Timestamp(stamp));
+    pApproveTaskSt.setInt(2, taskID); 
+    pApproveTaskSt.executeUpdate();
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -1157,6 +1267,51 @@ class TaskDb
     Integer id = null;
     {
       ResultSet rs = pInsertSubmitEventSt.getGeneratedKeys();
+      if(rs.next()) 
+        id = rs.getInt(1);
+      rs.close();
+    }
+    
+    return id;
+  }
+
+  /**
+   * Insert a new event for the initian approval of a task.
+   * 
+   * @param taskID
+   *   The ID of the task. 
+   * 
+   * @param identID
+   *   The ID of the user creating the task. 
+   * 
+   * @param stamp
+   *   The timestamp of when the task was created. 
+   * 
+   * @param noteID
+   *   The ID of the note associated with the event.
+   *
+   * @return 
+   *   The ID of the newly inserted entry.
+   */ 
+  private synchronized Integer
+  insertApproveEvent
+  (
+   int taskID, 
+   int identID, 
+   long stamp, 
+   int noteID
+  ) 
+    throws SQLException
+  {
+    pInsertApproveEventSt.setInt(1, taskID);
+    pInsertApproveEventSt.setInt(2, identID);
+    pInsertApproveEventSt.setTimestamp(3, new Timestamp(stamp));
+    pInsertApproveEventSt.setInt(4, noteID);
+    pInsertApproveEventSt.executeUpdate();
+
+    Integer id = null;
+    {
+      ResultSet rs = pInsertApproveEventSt.getGeneratedKeys();
       if(rs.next()) 
         id = rs.getInt(1);
       rs.close();
@@ -1651,9 +1806,11 @@ class TaskDb
   private PreparedStatement  pGetTaskSt;
   private PreparedStatement  pInsertTaskSt;  
   private PreparedStatement  pSubmitTaskSt;
+  private PreparedStatement  pApproveTaskSt;
 
   private PreparedStatement  pInsertCreateEventSt;
   private PreparedStatement  pInsertSubmitEventSt;
+  private PreparedStatement  pInsertApproveEventSt;
   
   private PreparedStatement  pGetNodeNameSt;
   private PreparedStatement  pInsertNodeNameSt;
