@@ -218,8 +218,10 @@ class JBuilderParamDialog
   public synchronized void 
   doCancel()
   {
-    if (pPhase == GUIPhase.SetupPass || pPhase == GUIPhase.Finished || pPhase == GUIPhase.Error)
-      quit();
+    if (pPhase == GUIPhase.Finished)
+      quit(0);
+    else if (pPhase == GUIPhase.SetupPass || pPhase == GUIPhase.Error)
+      quit(1);
     else if (pRunning == false)
       handleException(new PipelineException("Execution halted by user!"));
     else
@@ -258,10 +260,13 @@ class JBuilderParamDialog
   }
 
   private void
-  quit()
+  quit
+  (
+    int exitCode  
+  )
   {
     pTopPanel.disconnect();
-    System.exit(1);
+    System.exit(exitCode);
   }
   
   private void
@@ -306,7 +311,7 @@ class JBuilderParamDialog
   {
     LogMgr.getInstance().logAndFlush(Kind.Ops, Level.Info, "Everything is now complete.");
     if (pAbort)
-      quit();
+      quit(0);
     pPhase = GUIPhase.Finished;
   }
   

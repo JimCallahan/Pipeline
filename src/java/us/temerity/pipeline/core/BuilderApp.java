@@ -158,8 +158,8 @@ public class BuilderApp
     finally {
       LogMgr.getInstance().cleanup();
     }
-    
-    System.exit(success ? 0 : 1);
+    if (!pGui)
+      System.exit(success ? 0 : 1);
   }
   
   

@@ -1807,17 +1807,29 @@ class BaseBuilder
     public void 
     run() 
     {  
+      boolean success = false;
       UIFactory.initializePipelineUI();
       try {
 	getNextSetupPass(true);
 	pGuiDialog = new JBuilderParamDialog(pBuilder);
 	pGuiDialog.initUI();
 	pGuiDialog.setVisible(true);
+	success = true;
       }
       catch (PipelineException e) {
 	System.err.println("Problem initializing builder in gui mode.\n" + e.getMessage());
 	System.exit(1);
       }
+      catch(Exception ex) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+	   getFullMessage(ex));
+	   ex.printStackTrace();
+      }
+      finally {
+	LogMgr.getInstance().cleanup();
+      }
+      System.exit(success ? 0 : 1);
     }
     
     private BaseBuilder pBuilder;
