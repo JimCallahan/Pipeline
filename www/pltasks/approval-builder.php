@@ -17,7 +17,7 @@
 
     <TD class="row2" align="left" valign="top">
       <SPAN class="gen">
-       <?php print("<PRE>" . $approval_builder_cmdline . "</PRE>"); ?> 
+       <?php print("<P>" . $approval_builder_cmdline . "<P>"); ?> 
       </SPAN>
     </TD>
   </TR>
