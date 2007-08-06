@@ -168,7 +168,8 @@
       case 6: // Finalled
         {
           $approval_info = array('new_status_id' => $new_task_status, 
-                                 'new_note_id'   => $note_id);
+                                 'new_note_id'   => $note_id, 
+                                 'new_note_text' => $_REQUEST["message"]);
         }
       }
     }
@@ -181,11 +182,19 @@
         $warning_msg = "No new status ID was supplied!";
 
       if($warning_msg == NULL) {
-        if(($_REQUEST["new_note_id"] == NULL) || ($_REQUEST["new_note_id"] == 0)) 
-          $warning_msg = "No new message ID was supplied!";
-        else
-          $approval_info = array('new_status_id' => $_REQUEST["new_status_id"],
-                                 'new_note_id'   => $_REQUEST["new_note_id"]);
+        if(($_REQUEST["new_note_id"] == NULL) || ($_REQUEST["new_note_id"] == "")) 
+          $warning_msg = "No new note ID was supplied!";
+        else {
+          $sql = ("SELECT node_text from notes WHERE note_id = " . $_REQUEST["new_note_id"]);
+
+          $result = mysql_query($sql)
+            or show_sql_error($sql);
+
+          if($row = mysql_fetch_array($result, MYSQL_ASSOC)) 
+            $approval_info = array('new_status_id' => $_REQUEST["new_status_id"],
+                                   'new_note_id'   => $_REQUEST["new_note_id"], 
+                                   'new_note_text' => $row['note_text']);
+        }
       }
     }
     break;
@@ -341,7 +350,9 @@
         $sql = ("SELECT node_names.node_name as `name`, " .
                        "node_info.node_version as `vid`, " .
                        "node_info.is_edit as `is_edit`, " . 
-                       "node_info.is_focus as `is_focus` " .    
+                       "node_info.is_focus as `is_focus`, " .  
+                       "node_info.is_submit as `is_submit`, " . 
+                       "node_info.is_approve as `is_approve` " .    
                 "FROM node_info, node_names " . 
                 "WHERE node_info.event_id = " . $eid . " " . 
                 "AND node_info.node_id = node_names.node_id"); 
@@ -379,25 +390,63 @@
   $approval_builder_errors  = NULL;
   $approval_builder_result  = NULL;
   if(($warning_msg == NULL) && ($approval_info != NULL)) {
-    $filedesc = array(1 => array("pipe", "w"),  
-                      2 => array("pipe", "w"));
-
-    $tmpdir = '/tmp';
-    
-    $approval_builder_cmdline = "/base/apps/i686-pc-linux-gnu-dbg/pipeline-latest/builders/us/temerity/pipeline/builder/approval/v2_3_2/Unix/plApprovalBuilder";
-    
-    $approval_process = proc_open($approval_builder_cmdline, $filedesc, $pipes, $tmpdir);
-    if(is_resource($approval_process)) {
-      $approval_builder_output = stream_get_contents($pipes[1]);
-      fclose($pipes[1]);
+    /* lookup the submit/approve nodes */ 
+    $builder_approve_node = NULL;
+    $builder_submit_node  = NULL;
+    foreach($tasks[$tid]['events'] as $eid => $e) {
+      if($e['nodes'] != NULL) {
+        foreach($e['nodes'] as $node) {
+          if($node['is_submit']) {
+            if($builder_submit_node == NULL)
+              $builder_submit_node = $node['name'];
+          }
+          else if($node['is_approve']) {
+            if($builder_approve_node == NULL)
+              $builder_approve_node = $node['name'];
+          }
+        }
+      }
       
-      $approval_builder_errors = stream_get_contents($pipes[2]);
-      fclose($pipes[2]);
-      
-      $approval_builder_result = proc_close($process);
+      if(($builder_submit_node != NULL) && ($builder_approve_node != NULL))
+        break;
     }
-    else {
-      $warning_msg = "Unable to create process!";
+    if(($builder_submit_node == NULL) || ($builder_approve_node == NULL))
+      $warning_msg = "Unable to find both Submit and Approve nodes associated with the task!";
+      
+    /* run the builder... */ 
+    if($warning_msg == NULL) {
+      $filedesc = array(1 => array("pipe", "w"),  
+                        2 => array("pipe", "w"));
+
+      $tmpdir = '/tmp';
+      
+      $approval_builder_cmdline = 
+        ($pipeline_latest . 
+         '/builders/us/temerity/pipeline/builder/approval/v2_3_2/Unix/plApprovalBuilder ' .
+         '--builder=ApprovalBuilder ' . 
+         '--ApproveNode=' . $builder_approve_node . ' ' . 
+         '--SubmitNode=' . $builder_submit_node . ' ' .
+         '--ApprovedBy=' . $auth_name . ' ' . 
+         '--ApprovalMessage=' . escapeshellarg($approval_info['new_note_text'])); 
+
+      $approval_process = proc_open($approval_builder_cmdline, $filedesc, $pipes, $tmpdir);
+      if(is_resource($approval_process)) {
+        $approval_builder_output = stream_get_contents($pipes[1]);
+        fclose($pipes[1]);
+        
+        $approval_builder_errors = stream_get_contents($pipes[2]);
+        fclose($pipes[2]);
+        
+        $approval_builder_result = proc_close($process);
+      }
+      else {
+        $warning_msg = "Unable to create process!";
+      }
+
+
+      //..  create event, update task!
+
+
     }
   }
 
@@ -446,7 +495,7 @@
         }
         else {
           $supervised .= ', ';
-          }
+        }
         
         $supervised .= $s;
       }
@@ -610,10 +659,10 @@
 // var_dump($task_status);
 // print("<P>debug_sql<BR>\n");
 // var_dump($debug_sql);
-// print("<P>approval_info<BR>\n");
-// var_dump($approval_info);
-// print("<P>tasks<BR>\n");
-// var_dump($tasks);
+ print("<P>approval_info<BR>\n");
+ var_dump($approval_info);
+ print("<P>tasks<BR>\n");
+ var_dump($tasks);
 // print("<P>task_owners<BR>\n");
 // var_dump($task_owners);
 ?>
