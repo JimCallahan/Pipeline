@@ -578,8 +578,10 @@ class BaseUtil
   ) 
     throws PipelineException
   {
-    for(String node : nodes) {
-      pClient.checkIn(getAuthor(), getView(), node, message, level);
+    if (nodes != null) {
+      for(String node : nodes) {
+	pClient.checkIn(getAuthor(), getView(), node, message, level);
+      }
     }
   }
 
