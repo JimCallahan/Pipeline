@@ -158,7 +158,7 @@ public class BuilderApp
       	ex.printStackTrace();
     }
     finally {
-      if (pGui)
+      if (!pGui)
 	LogMgr.getInstance().cleanup();
     }
     if (!pGui)
