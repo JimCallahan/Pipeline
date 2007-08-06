@@ -335,6 +335,9 @@ class JBuilderParamDialog
 	disableQuitButton();
 	new ReleaseNodesTask().start();
       }
+      else {
+	enableQuitButton();
+      }
     }
     else {
       disableAllButtons();
