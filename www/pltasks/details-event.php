@@ -47,7 +47,7 @@
 
         $thumb_rows = array();
         {
-          $max_width = 600; 
+          $max_width = 450; 
           $total_width = 0; 
 
           $thumbs = array();
@@ -60,12 +60,12 @@
 
             $script = viewFocusNodeScript($thumb['focus_name'], $tvid, $tname); 
 
-            $thumbs[] = array('name'    => $tname, 
-                              'vid'     => $tvid, 
-                              'script'  => $script, 
-                              'image'   => $image, 
-                              'width'   => $width, 
-                              'height'  => $height); 
+            $thumbs[] = array('name'   => $tname, 
+                              'vid'    => $tvid, 
+                              'script' => $script, 
+                              'image'  => $image, 
+                              'width'  => $width, 
+                              'height' => $height); 
 
             $total_width += $width; 
             if($total_width > $max_width) {

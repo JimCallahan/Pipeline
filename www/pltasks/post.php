@@ -241,7 +241,7 @@
 
   case 'post_assign':
     {
-      
+
       // ...
 
     }    
@@ -610,18 +610,18 @@
       }
       break;
 
-    case 'post_assign':
     case 'assign':
       {
-
-
-
-        
-        // ...
-
-
-
-        
+        /* message text input */ 
+        {
+          ob_start();
+          
+          include ($temerity_root . "pltasks/post-assign.php");
+          
+          $assign_contents = ob_get_contents();
+          ob_end_clean();
+        }
+        print($assign_contents);
       }          
     }
 
@@ -691,8 +691,8 @@
 // var_dump($task_status);
 // print("<P>debug_sql<BR>\n");
 // var_dump($debug_sql);
-print("<P>approval_builder_result<BR>\n");
-var_dump($approval_builder_result);
+// print("<P>approval_builder_result<BR>\n");
+// var_dump($approval_builder_result);
 // print("<P>tasks<BR>\n");
 // var_dump($tasks);
 // print("<P>task_owners<BR>\n");

@@ -122,195 +122,235 @@
   if(isset($_REQUEST["mode"])) {
     switch($_REQUEST["mode"]) { 
     case 'results':
+    case 'repeat':
       {
         /* search for matching task info (except supervised_by) */ 
-        $task_owners = array();
-        {
-          $sql = ("SELECT tasks.task_id AS `tid`, " . 
-                         "task_titles.title_name AS `title`, " .
-                         "task_types.type_name AS `type`, " . 
-                         "task_activity.active_name as `activity`, " .
-                         "task_status.status_name AS `status`, " .
-                         "tasks.assigned_to as `assigned_to`, " .
-                         "tasks.last_modified as `last_modified` " .
-                   "FROM tasks, task_titles, task_types, task_activity, task_status " .
-                   "WHERE tasks.title_id = task_titles.title_id  " .
-                   "AND tasks.type_id = task_types.type_id  " .
-                   "AND tasks.status_id = task_status.status_id " .
-                   "AND tasks.active_id = task_activity.active_id " .
-                   "AND tasks.task_id = ANY ( SELECT tasks.task_id " . 
-                                             "FROM tasks, supervisors "); 
-
-          $first = true;
-
+        switch($_REQUEST["mode"]) { 
+        case 'results':
           {
-            $first_sub = true;
-            $has_any = false;
-            foreach($_REQUEST['task_titles'] as $e) {
-              switch($e) {
-              case 0: 
-                $has_any = true;
-                break;
-                
-              default:
-                $sql .= (($first ? "WHERE (" : ($first_sub ? "AND (" : "OR")) . 
-                         ' title_id = ' . $e . ' ');
-                $first = false;
-                $first_sub = false;
-              }
-              
-              if(($e == 0) || !$has_any) 
-                $task_titles[$e]['selected'] = 'selected';
-            }
+            $sql = ("SELECT tasks.task_id AS `tid`, " . 
+                           "task_titles.title_name AS `title`, " .
+                           "task_types.type_name AS `type`, " . 
+                           "task_activity.active_name as `activity`, " .
+                           "task_status.status_name AS `status`, " .
+                           "tasks.assigned_to as `assigned_to`, " .
+                           "tasks.last_modified as `last_modified` " .
+                     "FROM tasks, task_titles, task_types, task_activity, task_status " .
+                     "WHERE tasks.title_id = task_titles.title_id  " .
+                     "AND tasks.type_id = task_types.type_id  " .
+                     "AND tasks.status_id = task_status.status_id " .
+                     "AND tasks.active_id = task_activity.active_id " .
+                     "AND tasks.task_id = ANY ( SELECT tasks.task_id " . 
+                                               "FROM tasks, supervisors "); 
 
-            if(!$first_sub) 
-              $sql .= ")";
-          }
+            $first = true;
 
-          {
-            $first_sub = true;
-            $has_any = false;
-            foreach($_REQUEST['task_types'] as $e) {
-              switch($e) {
-              case 0: 
-                $has_any = true;
-                break;
-                
-              default:
-                $sql .= (($first ? "WHERE (" : ($first_sub ? "AND (" : "OR")) . 
-                         ' type_id = ' . $e . ' ');
-                $first = false;
-                $first_sub = false;
-              }
-              
-              if(($e == 0) || !$has_any) 
-                $task_types[$e]['selected'] = 'selected';
-            }
+            {
+              $first_sub = true;
+              $has_any = false;
+              foreach($_REQUEST['task_titles'] as $e) {
+                switch($e) {
+                case 0: 
+                  $has_any = true;
+                  break;
 
-            if(!$first_sub) 
-              $sql .= ")";
-          }
+                default:
+                  $sql .= (($first ? "WHERE (" : ($first_sub ? "AND (" : "OR")) . 
+                           ' title_id = ' . $e . ' ');
+                  $first = false;
+                  $first_sub = false;
+                }
 
-          {
-            $first_sub = true;
-            $has_any = false;
-            foreach($_REQUEST['task_activity'] as $e) {
-              switch($e) {
-              case 0: 
-                $has_any = true;
-                break;
-
-              default:
-                $sql .= (($first ? "WHERE (" : ($first_sub ? "AND (" : "OR")) . 
-                         ' active_id = ' . $e . ' ');
-                $first = false;
-                $first_sub = false;
+                if(($e == 0) || !$has_any) 
+                  $task_titles[$e]['selected'] = 'selected';
               }
 
-              if(($e == 0) || !$has_any) 
-                $task_activity[$e]['selected'] = 'selected';
+              if(!$first_sub) 
+                $sql .= ")";
             }
 
-            if(!$first_sub) 
-              $sql .= ")";
-          }
+            {
+              $first_sub = true;
+              $has_any = false;
+              foreach($_REQUEST['task_types'] as $e) {
+                switch($e) {
+                case 0: 
+                  $has_any = true;
+                  break;
 
-          {
-            $first_sub = true;
-            $has_any = false;
-            foreach($_REQUEST['task_status'] as $e) {
-              switch($e) {
-              case 0: 
-                $has_any = true;
-                break;
+                default:
+                  $sql .= (($first ? "WHERE (" : ($first_sub ? "AND (" : "OR")) . 
+                           ' type_id = ' . $e . ' ');
+                  $first = false;
+                  $first_sub = false;
+                }
 
-              default:
-                $sql .= (($first ? "WHERE (" : ($first_sub ? "AND (" : "OR")) . 
-                         ' status_id = ' . $e . ' ');
-                $first = false;
-                $first_sub = false;
+                if(($e == 0) || !$has_any) 
+                  $task_types[$e]['selected'] = 'selected';
               }
 
-              if(($e == 0) || !$has_any) 
-                $task_status[$e]['selected'] = 'selected';
+              if(!$first_sub) 
+                $sql .= ")";
             }
 
-            if(!$first_sub) 
-              $sql .= ")";
-          }
+            {
+              $first_sub = true;
+              $has_any = false;
+              foreach($_REQUEST['task_activity'] as $e) {
+                switch($e) {
+                case 0: 
+                  $has_any = true;
+                  break;
 
-          {
-            $first_sub = true;
-            $has_any  = false;
-            foreach($_REQUEST['assigned_to'] as $e) {
-              switch($e) {
-              case 0: 
-                $has_any = true;
-                break;
+                default:
+                  $sql .= (($first ? "WHERE (" : ($first_sub ? "AND (" : "OR")) . 
+                           ' active_id = ' . $e . ' ');
+                  $first = false;
+                  $first_sub = false;
+                }
 
-              case 10000: 
-                $sql .= (($first ? "WHERE (" : ($first_sub ? "AND (" : "OR")) . 
-                         ' assigned_to IS NULL ');
-                $first = false;
-                $first_sub = false;
-                break;
-
-              default:
-                $sql .= (($first ? "WHERE (" : ($first_sub ? "AND (" : "OR")) . 
-                         ' assigned_to = ' . $e . ' ');
-                $first = false;
-                $first_sub = false;
+                if(($e == 0) || !$has_any) 
+                  $task_activity[$e]['selected'] = 'selected';
               }
 
-              if(($e == 0) || !$has_any) 
-                $assigned_select[$e] = 'selected';
+              if(!$first_sub) 
+                $sql .= ")";
             }
 
-            if(!$first_sub) 
-              $sql .= ")";
-          }
+            {
+              $first_sub = true;
+              $has_any = false;
+              foreach($_REQUEST['task_status'] as $e) {
+                switch($e) {
+                case 0: 
+                  $has_any = true;
+                  break;
 
+                default:
+                  $sql .= (($first ? "WHERE (" : ($first_sub ? "AND (" : "OR")) . 
+                           ' status_id = ' . $e . ' ');
+                  $first = false;
+                  $first_sub = false;
+                }
+
+                if(($e == 0) || !$has_any) 
+                  $task_status[$e]['selected'] = 'selected';
+              }
+
+              if(!$first_sub) 
+                $sql .= ")";
+            }
+
+            {
+              $first_sub = true;
+              $has_any  = false;
+              foreach($_REQUEST['assigned_to'] as $e) {
+                switch($e) {
+                case 0: 
+                  $has_any = true;
+                  break;
+
+                case 10000: 
+                  $sql .= (($first ? "WHERE (" : ($first_sub ? "AND (" : "OR")) . 
+                           ' assigned_to IS NULL ');
+                  $first = false;
+                  $first_sub = false;
+                  break;
+
+                default:
+                  $sql .= (($first ? "WHERE (" : ($first_sub ? "AND (" : "OR")) . 
+                           ' assigned_to = ' . $e . ' ');
+                  $first = false;
+                  $first_sub = false;
+                }
+
+                if(($e == 0) || !$has_any) 
+                  $assigned_select[$e] = 'selected';
+              }
+
+              if(!$first_sub) 
+                $sql .= ")";
+            }
+
+            {
+              $first_sub = true;
+              $has_any = false;
+              foreach($_REQUEST['supervised_by'] as $e) {
+                switch($e) {
+                case 0: 
+                  $has_any = true;
+                  break;
+
+                case 10000: 
+                  $sql .= (($first ? "WHERE (" : ($first_sub ? "AND (" : "OR")) . 
+                           ' ( tasks.task_id = supervisors.task_id AND ' . 
+                              'supervisors.ident_id IS NULL ) ');
+                  $first = false;
+                  $first_sub = false;            
+                  break;
+
+                default:
+                  $sql .= (($first ? "WHERE (" : ($first_sub ? "AND (" : "OR")) . 
+                           ' ( tasks.task_id = supervisors.task_id AND ' . 
+                              'supervisors.ident_id = ' . $e . ' ) ');
+                  $first = false;
+                  $first_sub = false;
+                }
+
+                if(($e == 0) || !$has_any) 
+                  $supervised_select[$e] = 'selected';
+              }
+
+              if(!$first_sub) 
+                $sql .= ")";
+            }
+
+            $sql .= " )";
+
+
+            $result = mysql_query($sql)
+              or show_sql_error($sql);
+
+            while($row = mysql_fetch_array($result, MYSQL_ASSOC)) 
+              $tasks[$row['tid']] = $row;
+          }
+          break;
+
+        /* show a specific set of tasks already selected */ 
+        case repeat:
           {
-            $first_sub = true;
-            $has_any = false;
-            foreach($_REQUEST['supervised_by'] as $e) {
-              switch($e) {
-              case 0: 
-                $has_any = true;
-                break;
+            $sql = ("SELECT tasks.task_id AS `tid`, " . 
+                            "task_titles.title_name AS `title`, " .
+                            "task_types.type_name AS `type`, " . 
+                            "task_activity.active_name as `activity`, " .
+                            "task_status.status_name AS `status`, " .
+                            "tasks.assigned_to as `assigned_to`, " .
+                            "tasks.last_modified as `last_modified` " .
+                      "FROM tasks, task_titles, task_types, task_activity, task_status " .
+                      "WHERE tasks.title_id = task_titles.title_id  " .
+                      "AND tasks.type_id = task_types.type_id  " .
+                      "AND tasks.status_id = task_status.status_id " .
+                      "AND tasks.active_id = task_activity.active_id " .
+                      "AND ( "); 
+
+             if(isset($_REQUEST["task_list"])) {
+               $first_tid = true;
+               foreach(explode(" ", $_REQUEST["task_list"]) as $ltid)  {
+                 if($ltid != "") {
+                   $sql .= (($first_tid ? '' : 'OR ') . 'task_id = ' . $ltid . ' ');
+                   $first_tid = false;
+                 }
+               }
+             }
+
+            $sql .= ")";
+
+            $result = mysql_query($sql)
+              or show_sql_error($sql);
             
-              case 10000: 
-                $sql .= (($first ? "WHERE (" : ($first_sub ? "AND (" : "OR")) . 
-                         ' ( tasks.task_id = supervisors.task_id AND ' . 
-                            'supervisors.ident_id IS NULL ) ');
-                $first = false;
-                $first_sub = false;            
-                break;
-            
-              default:
-                $sql .= (($first ? "WHERE (" : ($first_sub ? "AND (" : "OR")) . 
-                         ' ( tasks.task_id = supervisors.task_id AND ' . 
-                            'supervisors.ident_id = ' . $e . ' ) ');
-                $first = false;
-                $first_sub = false;
-              }
-          
-              if(($e == 0) || !$has_any) 
-                $supervised_select[$e] = 'selected';
-            }
-
-            if(!$first_sub) 
-              $sql .= ")";
+            while($row = mysql_fetch_array($result, MYSQL_ASSOC)) 
+              $tasks[$row['tid']] = $row;
           }
-
-          $sql .= " )";
-
-
-          $result = mysql_query($sql)
-            or show_sql_error($sql);
-
-          while($row = mysql_fetch_array($result, MYSQL_ASSOC)) 
-            $tasks[$row['tid']] = $row;
         }
 
         /* add names of assigned_to and supervised_by users/groups */ 

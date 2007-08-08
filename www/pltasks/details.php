@@ -29,6 +29,30 @@
   /* authenticate the user */
   $authenicate_body = authenticate();
 
+  /* lookup users/workgroups */ 
+  $users  = array();
+  $groups = array();
+  {
+    $users[0] = array('ident_id'   => "0", 
+                      'ident_name' => "*NONE*"); 
+    
+    $sql = ("SELECT ident_id, ident_name FROM idents WHERE is_group = 0"); 
+    $result = mysql_query($sql)
+      or show_sql_error($sql);
+    
+    while($row = mysql_fetch_array($result, MYSQL_ASSOC)) 
+      $users[$row['ident_id']] = $row;
+  }
+  
+  {
+    $sql = ("SELECT ident_id, ident_name FROM idents WHERE is_group = 1"); 
+    $result = mysql_query($sql)
+      or show_sql_error($sql);
+    
+    while($row = mysql_fetch_array($result, MYSQL_ASSOC)) 
+      $groups[$row['ident_id']] = $row;
+  }
+  
   /* lookup status information */ 
   $task_status = array();
   {
@@ -116,6 +140,7 @@
     
     {
       $sql = ("SELECT idents.ident_name AS `name`, " .  
+                     "idents.ident_id AS `id`, " .  
                      "idents.is_group AS `is_group` " . 
               "FROM supervisors, idents " . 
               "WHERE supervisors.task_id = " . $tid . " " .
@@ -125,14 +150,17 @@
         or show_sql_error($sql);
       
       $supers = array();
+      $super_ids = array();
       while($row = mysql_fetch_array($result, MYSQL_ASSOC)) {
         $name = $row['name'];
         if($row['is_group']) 
           $name = '[' . $name . ']';
         $supers[] = $name;
+        $super_ids[] = $row['id'];
       }
       
       $task_owners[$tid]['supervised_by'] = $supers; 
+      $task_owners[$tid]['supervised_by_ids'] = $super_ids; 
     }
 
     /* add events */ 
@@ -318,6 +346,10 @@
 // var_dump($tasks);
 // print("<P>task_owners<BR>\n");
 // var_dump($task_owners);
+// print("<P>users<BR>\n");
+// var_dump($users);
+// print("<P>groups<BR>\n");
+// var_dump($groups);
 ?>
 </PRE>
 

@@ -48,12 +48,12 @@
 
             $script = viewFocusNodeScript($thumb['focus_name'], $tvid, $tname); 
 
-            $thumbs[] = array('name'    => $tname, 
-                              'vid'     => $tvid, 
-                              'script'  => $script, 
-                              'image'   => $image, 
-                              'width'   => $width, 
-                              'height'  => $height); 
+            $thumbs[] = array('name'   => $tname, 
+                              'vid'    => $tvid, 
+                              'script' => $script, 
+                              'image'  => $image, 
+                              'width'  => $width, 
+                              'height' => $height); 
 
             $total_width += $width; 
             if($total_width > $max_width) {
@@ -117,7 +117,41 @@
     </TD>
 
     <TD class="row2" align="center" width="150">
-      <?php echo($assigned);?>
+      <?php 
+      {
+        if($auth_name == "pipeline") {
+          print('<SPAN class="genmed">' . "\n" .  
+                '<FORM action="post.php" method="POST">' . "\n" . 
+                '<SELECT name="new_assigned_to" style="width:100%">' . "\n");
+       
+          foreach($users as $u) {
+            print('<OPTION ');
+         
+            if($u['ident_name'] == $assigned) 
+              print('selected');
+            
+            print(' value="' . $u['ident_id'] . '">' . 
+                  $u['ident_name'] . '&nbsp;</OPTION>' . "\n");
+          }
+          
+          foreach($groups as $g) {
+            print('<OPTION ');
+            
+            if(('[' . $g['ident_name'] . ']') == $assigned) 
+              print('selected');
+            
+            print(' value="' . $g['ident_id'] . '">[' . 
+                  $g['ident_name'] . ']&nbsp;</OPTION>' . "\n");
+          }
+          
+          print('</SELECT>' . "\n" .
+                '</SPAN>' . "\n");
+        }
+        else {
+          print($assigned);
+        }
+      }
+      ?>
     </TD>
   </TR>
 
@@ -127,7 +161,45 @@
     </TD>
 
     <TD class="row2" align="center" width="150">
-      <?php echo($supervised);?>
+      <?php 
+      { 
+        if($auth_name == "pipeline") {
+          print('<SPAN class="genmed">' . "\n" .  
+                '<SELECT multiple size="7" name="new_supervised_by[]" ' . 
+                'style="width:100%">' . "\n");
+          
+          foreach($users as $u) {
+            print('<OPTION ');
+         
+            foreach($task_owners[$tid]['supervised_by_ids'] as $sid) {
+              if($u['ident_id'] == $sid) 
+                print('selected');
+            }
+         
+            print(' value="' . $u['ident_id'] . '">' . 
+                  $u['ident_name'] . '&nbsp;</OPTION>' . "\n");
+          }
+       
+          foreach($groups as $g) {
+            print('<OPTION ');
+         
+            foreach($task_owners[$tid]['supervised_by_ids'] as $sid) {
+              if($g['ident_id'] == $sid) 
+                print('selected');
+            }            
+         
+            print(' value="' . $g['ident_id'] . '">[' . 
+                  $g['ident_name'] . ']&nbsp;</OPTION>' . "\n");
+          }
+       
+          print('</SELECT>' . "\n" .
+                '</SPAN>' . "\n");
+        }
+        else {
+          print($supervised);
+        }
+      }
+      ?>
     </TD>
   </TR>
 
@@ -157,10 +229,10 @@
     <?php
     {
       $auth_html = 
-        ('  <INPUT name="task_id" value="' . $tid . '" type="hidden">' . "\n" .
-         '  <INPUT name="auth_id" value="' . $auth_id . '" type="hidden">' . "\n" .
-         '  <INPUT name="auth_name" value="' . $auth_name . '" type="hidden">' . "\n");
-      
+        ('  <INPUT name="auth_id" value="' . $auth_id . '" type="hidden">' . "\n" .
+         '  <INPUT name="auth_name" value="' . $auth_name . '" type="hidden">' . "\n" . 
+         '  <INPUT name="task_id" value="' . $tid . '" type="hidden">' . "\n");
+
       $auth_html .= '  <INPUT name="task_list" value="'; 
       foreach($tids as $ntid)
         $auth_html .= ($ntid . " "); 
@@ -168,6 +240,14 @@
         
       if($show_details_buttons) {
         if($auth_name != NULL) {
+          if($auth_name == 'pipeline')
+            print('<TH class="theader" width="100">' . "\n" . 
+                  $auth_html . "\n" . 
+                  '  <INPUT name="mode" value="post_assign" type="hidden">' . "\n" .
+                  '  <INPUT class="liteoption" value="Assign" type="submit">' . "\n" . 
+                  '</FORM>' . "\n" . 
+                  '</TH>' . "\n");
+          
           $supervised_by = $task_owners[$tid]['supervised_by']; 
           if(($supervised_by != NULL) && in_array($auth_name, $supervised_by)) 
             print('<TH class="theader" width="100">' . "\n" . 
@@ -175,15 +255,6 @@
                   $auth_html . "\n" . 
                   '  <INPUT name="mode" value="review" type="hidden">' . "\n" .
                   '  <INPUT class="liteoption" value="Review" type="submit">' . "\n" . 
-                  '</FORM>' . "\n" . 
-                  '</TH>' . "\n");
-          
-          if($auth_name == 'pipeline')
-            print('<TH class="theader" width="100">' . "\n" . 
-                  '<FORM action="post.php" method="POST">' . "\n" . 
-                  $auth_html . "\n" . 
-                  '  <INPUT name="mode" value="assign" type="hidden">' . "\n" .
-                  '  <INPUT class="liteoption" value="Assign" type="submit">' . "\n" . 
                   '</FORM>' . "\n" . 
                   '</TH>' . "\n");
           
@@ -204,6 +275,14 @@
               '</FORM>' . "\n" . 
               '</TH>' . "\n");
       }
+      
+      print('<TH class="theader" width="100">' . "\n" . 
+            '<FORM action="search.php" method="POST">' . "\n" . 
+            $auth_html . "\n" .   
+            '  <INPUT name="mode" value="repeat" type="hidden">' . "\n" . 
+            '  <INPUT class="liteoption" value="Back to Search" type="submit">' . "\n" . 
+            '</FORM>' . "\n" . 
+            '</TH>' . "\n");
     }
     ?>
       
