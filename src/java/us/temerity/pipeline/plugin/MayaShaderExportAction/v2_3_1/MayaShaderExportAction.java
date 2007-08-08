@@ -218,7 +218,7 @@ class MayaShaderExportAction
          "  file -op \"v=0\" -type \"" + sceneType + "\" -es \"" + actualTarget + "\";\n" + 
          "}\n" + 
          "else {\n" + 
-         "  file -new;\n" + 
+         "  file -f -new;\n" + 
          "  file -rename \"" + actualTarget + "\";\n" + 
          "  file -type \"" + sceneType + "\";\n" + 
          "  file -save;\n" + 
@@ -235,7 +235,7 @@ class MayaShaderExportAction
 	  	  "print \"New-Scene Script: " + newSceneMEL+ "\\n\";\n" +
 		  "source \"" + newSceneMEL + "\";\n" + 
 		  "file -rename \"" + targetScene + "\";\n" + 
-		  "file -save\n;");
+		  "file -save;\n");
       }
       
       out.close();

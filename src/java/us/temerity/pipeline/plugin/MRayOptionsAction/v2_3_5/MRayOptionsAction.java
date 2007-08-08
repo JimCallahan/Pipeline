@@ -1,4 +1,4 @@
-// $Id: MRayOptionsAction.java,v 1.3 2007/07/30 17:35:14 jesse Exp $
+// $Id: MRayOptionsAction.java,v 1.4 2007/08/08 03:25:48 jesse Exp $
 
 package us.temerity.pipeline.plugin.MRayOptionsAction.v2_3_5;
 
@@ -762,7 +762,7 @@ class MRayOptionsAction
     
     out.write
       ("  #Shadow Settings\n" +
-       "  shadows " + shd + "\n" +
+       "  shadow " + shd + "\n" +
        "  shadowmap " + smap + "\n" +
        "  shadowmap motion " + mtn + "\n");
     if (only)
@@ -1229,14 +1229,14 @@ class MRayOptionsAction
       ("data \"" + dataName + "\"\n" + 
        "\"maya_options\" (\n" +
        "  \"magic\" 1298233697,\n" +
-       "  \"shadowLimit\" " + lmt + "\n" +
-       "  \"shadowLinking\" " + link + "\n" +
-       "  \"computeFilterSize\" " + comp + "\n" +
-       "  \"defaultFilterSize\" " + size + "\n" + 
-       "  \"disableShaderGlow\" " + glw + "\n" +
-       "  \"asqMinThreshold\" " + amin + "\n" +
-       "  \"asqMaxThreshold\" " + amax + "\n" +
-       "  \"reflectionBlurLimit\" " + rfl + "\n" +
+       "  \"shadowLimit\" " + lmt + ",\n" +
+       "  \"shadowLinking\" " + link + ",\n" +
+       "  \"computeFilterSize\" " + comp + ",\n" +
+       "  \"defaultFilterSize\" " + size + ",\n" + 
+       "  \"disableShaderGlow\" " + glw + ",\n" +
+       "  \"asqMinThreshold\" " + amin + ",\n" +
+       "  \"asqMaxThreshold\" " + amax + ",\n" +
+       "  \"reflectionBlurLimit\" " + rfl + ",\n" +
        "  \"refractionBlurLimit\" " + rfr + "\n" +
        ")\n\n");
   }
