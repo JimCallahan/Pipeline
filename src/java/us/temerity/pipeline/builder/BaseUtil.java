@@ -787,6 +787,43 @@ class BaseUtil
       "Adding a parameter named (" + param.getName() + ") to a Builder " +
       "identified by (" + getName() + ")");
   }
+  
+  /**
+   * Replaces an existing parameter with a new parameter.
+   * <P>
+   * The conditions are as follows. The parameter must have the same name as the parameter it
+   * is replacing. If you attempt to replace a parameter that does not exist, an exception is
+   * thrown. If you attempt to replace a parameter from a layout with is not after the current
+   * pass an exception will be thrown. Basically, only parameters which have not had value
+   * inputted into them can be replaced.
+   * 
+   * @param param
+   *        The parameter to add.
+   */
+  protected void 
+  replaceParam
+  (
+    UtilityParam param
+  )
+    throws PipelineException
+  {
+    if ( !pParams.containsKey(param.getName()) )
+      throw new IllegalArgumentException
+        ("No parameter named (" + param.getName() + ") exists to be replaced!");
+    
+    int paramPass = getParameterPass(new ParamMapping(param.getName()));
+    int currentPass = getCurrentPass();
+    if (paramPass <= currentPass)
+      throw new PipelineException
+        ("The attempt to replace parameter ("+ param.getName() +") in pass (" + paramPass + ") " +
+         "failed because the current pass is (" + currentPass + ").");
+
+    pParams.put(param.getName(), param);
+    
+    pLog.log(Kind.Bld, Level.Finest, 
+      "Replaced the parameter named (" + param.getName() + ") in Builder " +
+      "identified by (" + getName() + ")");
+  }
 
   /**
    * Get the value of the parameter with the given name.
@@ -1207,6 +1244,28 @@ class BaseUtil
   {
     TreeSet<String> toReturn = new TreeSet<String>();
     collectLayoutNames(getLayout().getPassLayout(pass), toReturn);
+    return toReturn;
+  }
+  
+  /**
+   *  Returns the layout pass that a particular parameter is contained in. 
+   */
+  public final int
+  getParameterPass
+  (
+    ParamMapping param
+  )
+    throws PipelineException
+  {
+    int toReturn = 1;
+    PassLayoutGroup layout = getLayout();
+    int num = layout.getNumberOfPasses();
+    for (int i = 1; i <= num; i++) {
+      TreeSet<String> params = new TreeSet<String>();
+      collectLayoutNames(layout.getPassLayout(i), params);
+      if (params.contains(param.getParamName()))
+	toReturn = i;
+    }
     return toReturn;
   }
   

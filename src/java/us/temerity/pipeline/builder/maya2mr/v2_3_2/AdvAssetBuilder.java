@@ -1,4 +1,4 @@
-// $Id: AdvAssetBuilder.java,v 1.7 2007/08/02 01:41:05 jesse Exp $
+// $Id: AdvAssetBuilder.java,v 1.8 2007/08/08 16:59:23 jesse Exp $
 
 package us.temerity.pipeline.builder.maya2mr.v2_3_2;
 
@@ -1260,7 +1260,7 @@ class AdvAssetBuilder
       if (!checkExistance(finalShd)) {
 	ProductStage stage = 
 	  new ProductStage(info, pContext, pClient, finalShd, "ma", shdExport);
-	isPrepareNode(stage, taskType);
+	isProductNode(stage, taskType);
 	stage.build();
       }
       String shdApprove = pAssetNames.getShaderApproveNode();

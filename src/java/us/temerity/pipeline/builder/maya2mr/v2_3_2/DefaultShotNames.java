@@ -1,16 +1,16 @@
 package us.temerity.pipeline.builder.maya2mr.v2_3_2;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.TreeMap;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.BaseNames;
 import us.temerity.pipeline.builder.UtilContext;
-import us.temerity.pipeline.builder.BaseUtil.ParamMapping;
 
 
 public class DefaultShotNames
   extends BaseNames
-  //implements BuildsShotNames
+  implements BuildsShotNames
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -503,6 +503,22 @@ public class DefaultShotNames
   }
   
   /**
+   * A node built by combining exported animation with a single hi-rez model file for
+   * exporting out mi files.
+   * 
+   * @param assetName
+   *   The asset that this node will correspond to.
+   */
+  public String
+  getAnimModelExportNodeName
+  (
+    String assetName
+  )
+  {
+    return new Path(new Path(pAnimProduct, "build"), assetName).toString();
+  }
+  
+  /**
    * A node containing the mi file data for one asset made from the animation and
    * the model. 
    * 
@@ -520,7 +536,6 @@ public class DefaultShotNames
   
   /**
    * A node containing the mi file data for the camera made from the animation scene.
-   * @return
    */
   public String
   getCameraMiNodeName()
@@ -528,7 +543,138 @@ public class DefaultShotNames
     return new Path(new Path(pAnimProduct, "mi"), pNamePrefix + "cam").toString();
   }
   
+  /**
+   * A node built by applying exported animation to lighting models.  This node
+   * is referenced by the lighting scene.
+   */  
+  public String
+  getPreLightNodeName()
+  {
+    return new Path(pAnimProduct, pNamePrefix + "preLgt").toString();
+  }
   
+  /**
+   * A scene specific gathering MEL script that is run on the prelight as it is being 
+   * built.  Allows shot specific overrides. 
+   */
+  public String
+  getPreLightMELNodeName()
+  {
+    return new Path(pAnimProduct, pNamePrefix + "preScript").toString();
+  }
+  
+  /**
+   * The node which the artist edits to add lighting to the shot. 
+   */
+  public String
+  getLightEditNodeName()
+  {
+    return new Path(pLgtEdit, pNamePrefix + "lgt").toString();
+  }
+  
+  /**
+   *  The rendered images which are submitted for approval of the lighting scene. 
+   */
+  public String
+  getLightImagesNodeName()
+  {
+    return new Path(pLgtPrepare, pNamePrefix + "img").toString();
+  }
+
+  /**
+   * The submit node for the lighting task.
+   */
+  public String
+  getLightSubmitNodeName()
+  {
+    return new Path(pLgtSubmit, pNamePrefix + "submit").toString();
+  }
+  
+  /**
+   * The approve node for the lighting task.
+   */
+  public String
+  getLightApproveNodeName()
+  {
+    return new Path(pLgtApprove, pNamePrefix + "approve").toString();
+  }
+
+  /**
+   * The instance group nodes for each geometry mi that is coming from animation. 
+   * 
+   * @param assetName
+   *   The asset that this node will correspond to.
+   */
+  public String
+  getGeoInstMiNodeName
+  (
+    String assetName
+  )
+  {
+    return new Path(new Path(pLgtSubmit, "mi"), pNamePrefix + assetName).toString();
+  }
+  
+  /**
+   * The mi file containing the light data from the lighting scene. 
+   */
+  public String
+  getLightMiNodeName
+  ()
+  {
+    return new Path(new Path(pLgtSubmit, "mi"), pNamePrefix + "lgt").toString();
+  }
+
+  /**
+   * The mi file containing the exported shaders for the specified asset
+   * 
+   * @param assetName
+   *   The asset that this node will correspond to.
+   */
+  public String
+  getShaderMiNodeName
+  (
+    String assetName
+  )
+  {
+    return new Path(new Path(pLgtSubmit, "mi"), pNamePrefix + assetName + "_shd").toString();
+  }
+  
+  /**
+   * The mi file containing the camera override mi file.
+   */
+  public String
+  getCamOverrideMiNodeName()
+  {
+    return new Path(new Path(pLgtSubmit, "mi"), pNamePrefix + "camOver").toString();
+  }
+  
+  /**
+   * The mi file containing the render options mi file.
+   */
+  public String
+  getOptionsMiNodeName()
+  {
+    return new Path(new Path(pLgtSubmit, "mi"), pNamePrefix + "opt").toString();
+  }
+  
+  /**
+   * Generated on lighting approval.  This node is used to render all the final
+   * render passes that depend upon lighting. 
+   */
+  public String
+  getFinalLightNodeName()
+  {
+    return new Path(pLgtProduct, pNamePrefix + "lgt").toString();
+  }
+  
+  /**
+   * A thumbnail of the images.
+   */
+  public String
+  getLightThumbNodeName()
+  {
+    return new Path(pLgtThumb, pNamePrefix + "thumb").toString();
+  }
 
 
   /*----------------------------------------------------------------------------------------*/

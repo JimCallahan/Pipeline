@@ -1,6 +1,5 @@
 package us.temerity.pipeline.builder.maya2mr.v2_3_2;
 
-import java.util.ArrayList;
 
 public 
 interface BuildsShotNames
@@ -177,6 +176,19 @@ interface BuildsShotNames
   );
   
   /**
+   * A node built by combining exported animation with a single hi-rez model file for
+   * exporting out mi files.
+   * 
+   * @param assetName
+   *   The asset that this node will correspond to.
+   */
+  public String
+  getAnimModelExportNodeName
+  (
+    String assetName
+  );
+  
+  /**
    * A node containing the mi file data for one asset made from the animation and
    * the model. 
    * 
@@ -191,16 +203,14 @@ interface BuildsShotNames
 
   /**
    * A node containing the mi file data for the camera made from the animation scene.
-   * @return
    */
   public String
   getCameraMiNodeName();
-
   
   /**
-   * A node build by combining animation with lighting models that is passed onto
-   * lighting.
-   */
+   * A node built by applying exported animation to lighting models.  This node
+   * is referenced by the lighting scene.
+   */  
   public String
   getPreLightNodeName();
   
@@ -212,20 +222,6 @@ interface BuildsShotNames
   getPreLightMELNodeName();
   
   /**
-   * A node build by switching animation models for lighting models that is passed onto
-   * lighting.
-   */
-  public String
-  getSwitchLightNodeName();
-  
-  /**
-   * A scene specific gathering MEL script that is run on the switchlight as it is being 
-   * built.  Allows shot specific overrides. 
-   */
-  public String
-  getSwitchLightMELNodeName();
-
-  /**
    * The node which the artist edits to add lighting to the shot. 
    */
   public String
@@ -236,6 +232,12 @@ interface BuildsShotNames
    */
   public String
   getLightImagesNodeName();
+  
+  /**
+   * A thumbnail of the images.
+   */
+  public String
+  getLightThumbNodeName();
 
   /**
    * The submit node for the lighting task.
@@ -248,6 +250,13 @@ interface BuildsShotNames
    */
   public String
   getLightApproveNodeName();
+  
+  /**
+   * Generated on lighting approval.  This node is used to render all the final
+   * render passes that depend upon lighting. 
+   */
+  public String
+  getFinalLightNodeName();
 
   /**
    * The instance group nodes for each geometry mi that is coming from animation. 
@@ -279,16 +288,16 @@ interface BuildsShotNames
   (
     String assetName
   );
-
+  
   /**
-   * The name of the camera scene for this file.
+   * The mi file containing the camera override mi file.
    */
   public String
-  getCameraNodeName();
-
+  getCamOverrideMiNodeName();
+  
   /**
-   *  A list of all the assets contained in this shot. 
-   */  
-  public ArrayList<String>
-  getAssetNames();
+   * The mi file containing the render options mi file.
+   */
+  public String
+  getOptionsMiNodeName();
 }
