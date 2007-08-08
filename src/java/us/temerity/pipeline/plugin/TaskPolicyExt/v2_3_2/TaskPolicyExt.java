@@ -272,7 +272,7 @@ class TaskPolicyExt
 
           String goodRoot = purpose.equals(aProduct) ? aApprove : aSubmit; 
           throw new PipelineException
-            ("Cannot check-in node (" + rname + "), because it is both the root node of " + 
+            ("Aborted for node (" + rname + "), because it is both the root node of " + 
              "the check-in operation and a " + purpose + " node! You may only check-in a " + 
              purpose + " node as part of the check-in of a " + goodRoot + " node."); 
         }
@@ -289,7 +289,7 @@ class TaskPolicyExt
             rootApprove = true;
             if(!author.equals(PackageInfo.sPipelineUser)) 
               throw new PipelineException
-                ("Cannot check-in node (" + rname + "), because it is an Approve node " + 
+                ("Aborted for node (" + rname + "), because it is an Approve node " + 
                  "of the task (" + rootTaskName + ":" + rootTaskType + ") which can only " + 
                  "be checked-in by the (" + PackageInfo.sPipelineUser + ") user as part " + 
                  "of the automated post-approval process!"); 
@@ -300,7 +300,7 @@ class TaskPolicyExt
               String assigned = (String) an.getParamValue(aAssignedTo);
               if((assigned == null) || (assigned.length() == 0)) 
                 throw new PipelineException 
-                  ("Cannot check-in node (" + rname + ") because no one was AssignedTo " + 
+                  ("Aborted for node (" + rname + ") because no one was AssignedTo " + 
                    "the complete the task (" + rootTaskName + ":" + rootTaskType + ")!"); 
               
               boolean isGroup = wgroups.isGroup(assigned); 
@@ -354,7 +354,7 @@ class TaskPolicyExt
             verifyTask(nodeName, an, rname, rootTaskName, rootTaskType); 
           else
             throw new PipelineException
-              ("Cannot check-in node (" + nodeName + "), because it is a " + purpose + " " + 
+              ("Aborted for node (" + nodeName + "), because it is a " + purpose + " " + 
                "node which can only be checked-in when the root node of the check-in " + 
                "operation is a Submit node!.  However in this case, the root node " + 
                "(" + rname + ") was a " + rootPurpose + " node."); 
@@ -364,7 +364,7 @@ class TaskPolicyExt
             verifyTask(nodeName, an, rname, rootTaskName, rootTaskType); 
           else
             throw new PipelineException
-              ("Cannot check-in node (" + nodeName + "), because it is a " + purpose + " " + 
+              ("Aborted for node (" + nodeName + "), because it is a " + purpose + " " + 
                "node which can only be checked-in when the root node of the check-in " + 
                "operation is an Approve node!.  However in this case, the root node " + 
                "(" + rname + ") was a " + rootPurpose + " node."); 
@@ -375,7 +375,7 @@ class TaskPolicyExt
         else if(purpose.equals(aSubmit) || purpose.equals(aApprove)) {
           if(!nodeName.equals(rname)) 
             throw new PipelineException
-              ("Cannot check-in node (" + nodeName + ") unless it is the root node of the " + 
+              ("Aborted for node (" + nodeName + ") unless it is the root node of the " + 
                "check-in operation because it is a " + rootPurpose + " node!"); 
         }
       }
@@ -611,14 +611,19 @@ class TaskPolicyExt
           verifyTask(nodeName, an, submitNodeName, submitTaskName, submitTaskType); 
           editNodes.put(nodeName, vsn); 
         }
+        else if(purpose.equals(aProduct)) {
+          return;
+        }
       }
     }
       
     for(LinkVersion link : vsn.getSources()) {
-      NodeVersion source = mclient.getCheckedInVersion(link.getName(), link.getVersionID());
-      mineSubmitTree(submitNodeName, submitTaskName, submitTaskType, 
-                     source, thumb, thumbToFocus, thumbNodes, focusNodes, editNodes, 
-                     mclient);
+      if(!link.isLocked()) {
+        NodeVersion source = mclient.getCheckedInVersion(link.getName(), link.getVersionID());
+        mineSubmitTree(submitNodeName, submitTaskName, submitTaskType, 
+                       source, thumb, thumbToFocus, thumbNodes, focusNodes, editNodes, 
+                       mclient);
+      }
     }
   }
 
@@ -647,11 +652,13 @@ class TaskPolicyExt
     }
 
     for(LinkVersion link : vsn.getSources()) {
-      NodeVersion source = mclient.getCheckedInVersion(link.getName(), link.getVersionID());
-      NodeVersion submitVsn = 
-        mineApproveTree(approveNodeName, approveTaskName, approveTaskType, source, mclient);
-      if(submitVsn != null) 
-        return submitVsn;
+      if(!link.isLocked()) {
+        NodeVersion source = mclient.getCheckedInVersion(link.getName(), link.getVersionID());
+        NodeVersion submitVsn = 
+          mineApproveTree(approveNodeName, approveTaskName, approveTaskType, source, mclient);
+        if(submitVsn != null) 
+          return submitVsn;
+      }
     }
 
     return null;
