@@ -1,4 +1,4 @@
-// $Id: NodeVersion.java,v 1.24 2007/03/28 19:31:03 jim Exp $
+// $Id: NodeVersion.java,v 1.25 2007/08/08 17:16:57 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -93,7 +93,8 @@ class NodeVersion
     pSources = new TreeMap<String,LinkVersion>();
     for(LinkMod link : mod.getSources()) 
       pSources.put(link.getName(), 
-		   new LinkVersion(link, lvids.get(link.getName()), locked.get(link.getName())));
+		   new LinkVersion(link, lvids.get(link.getName()), 
+                                   locked.get(link.getName())));
 
     if(isNovel == null) 
       throw new IllegalArgumentException("The file novelty table cannot be (null)!");      
