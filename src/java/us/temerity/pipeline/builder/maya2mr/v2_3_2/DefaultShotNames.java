@@ -322,6 +322,31 @@ public class DefaultShotNames
   }
   
   /**
+   * A node containing the exported animation from the layout for a particular character. 
+   */
+  public String
+  getLayoutExportPrepareNodeName
+  (
+    String assetName  
+  )
+  {
+    return new Path(new Path(pLayPrepare, "data"), pNamePrefix + assetName).toString();
+  }
+  
+  /**
+    * A node containing a copy of the exported animation from the layout for creating the
+   * animation scene. 
+   */
+  public String
+  getLayoutExportProductNodeName
+  (
+    String assetName  
+  )
+  {
+    return new Path(new Path(pLayProduct, "data"), pNamePrefix + assetName).toString();
+  }
+  
+  /**
    * The rendered (or playblasted) images for layout submission. 
    */
   public String

@@ -41,6 +41,27 @@ interface BuildsShotNames
   getLayoutExportProductNodeName();
   
   /**
+   * A node containing the exported animation from the layout for a particular character. 
+   */
+  public String
+  getLayoutExportPrepareNodeName
+  (
+    String assetName  
+  );
+  
+  
+  /**
+    * A node containing a copy of the exported animation from the layout for creating the
+   * animation scene. 
+   */
+  public String
+  getLayoutExportProductNodeName
+  (
+    String assetName  
+  );
+  
+  
+  /**
    * The node where the layout animation is reapplied to test the exported animation
    * and create a render for approval. 
    */

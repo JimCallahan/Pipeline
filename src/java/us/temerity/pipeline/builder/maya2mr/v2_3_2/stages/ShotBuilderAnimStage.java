@@ -10,7 +10,7 @@ import us.temerity.pipeline.stages.MayaBuildStage;
 import us.temerity.pipeline.stages.StageInformation;
 
 /**
- * A leaf stage used in the ShotBuilder that builds the animation node.
+ * A leaf stage used in the ShotBuilder that builds  simple animation node.
  * <P>
  * Builds the animation scene. Links all the models, the camera, sets the frame range, etc.
  */
@@ -51,7 +51,7 @@ class ShotBuilderAnimStage
 	setupLink(cameraNode, "camera", getReference(), true);
     }
     for (BuildsAssetNames asset : assets) {
-      String assetName = asset.getLowRezFinalNodeName();
+      String assetName = asset.getFinalNodeName();
       String namespace = asset.getNameSpace();
       setupLink(assetName, namespace, getReference(), true);
     }

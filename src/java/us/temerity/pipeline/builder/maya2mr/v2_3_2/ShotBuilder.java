@@ -1,9 +1,14 @@
 package us.temerity.pipeline.builder.maya2mr.v2_3_2;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.TreeSet;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
+import us.temerity.pipeline.builder.maya2mr.v2_3_2.BuildsAssetNames;
+import us.temerity.pipeline.builder.maya2mr.v2_3_2.stages.ShotBuilderAnimStage;
+import us.temerity.pipeline.builder.maya2mr.v2_3_2.stages.ShotMayaCurvesExportStage;
+import us.temerity.pipeline.stages.StageInformation;
 
 /*------------------------------------------------------------------------------------------*/
 /*   S H O T   B U I L D E R                                                                */
@@ -263,10 +268,12 @@ class ShotBuilder
   protected Boolean pBuildThumbnails;
   protected Boolean pBuildTestImages;
   
-  TreeMap<String, String> pChars;
-  TreeMap<String, String> pSets;
-  TreeMap<String, String> pProps;
-  TreeMap<String, String> pNamespaces;
+//  TreeMap<String, String> pChars;
+//  TreeMap<String, String> pSets;
+//  TreeMap<String, String> pProps;
+//  TreeMap<String, String> pNamespaces;
+  
+  ArrayList<BuildsAssetNames> pAssets;
   
   
   
@@ -398,7 +405,6 @@ class ShotBuilder
            null);
         replaceParam(param);
       }
-      
     }
     
     private static final long serialVersionUID = 3924566232585200969L;
@@ -428,10 +434,7 @@ class ShotBuilder
       pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
         "Starting the validate phase in the Asset Info Pass.");
       
-      pChars = new TreeMap<String, String>();
-      pProps = new TreeMap<String, String>();
-      pSets = new TreeMap<String, String>();
-      pNamespaces = new TreeMap<String, String>();
+      pAssets = new ArrayList<BuildsAssetNames>();
       
       TreeSet<String> chars = (TreeSet<String>) getParamValue(aChars);
       for (String each : chars) {
@@ -440,8 +443,7 @@ class ShotBuilder
 	names.setParamValue(DefaultAssetNames.aAssetName, each);
 	names.setParamValue(DefaultAssetNames.aAssetType, "character");
 	names.generateNames();
-	pChars.put(each, names.getFinalNodeName());
-	pNamespaces.put(names.getFinalNodeName(), names.getNameSpace());
+	pAssets.add((BuildsAssetNames) names);
       }
       
       TreeSet<String> props = (TreeSet<String>) getParamValue(aProps);
@@ -451,8 +453,7 @@ class ShotBuilder
 	names.setParamValue(DefaultAssetNames.aAssetName, each);
 	names.setParamValue(DefaultAssetNames.aAssetType, "prop");
 	names.generateNames();
-	pProps.put(each, names.getFinalNodeName());
-	pNamespaces.put(names.getFinalNodeName(), names.getNameSpace());
+	pAssets.add((BuildsAssetNames) names);
       }
       
       TreeSet<String> sets = (TreeSet<String>) getParamValue(aProps);
@@ -462,8 +463,7 @@ class ShotBuilder
 	names.setParamValue(DefaultAssetNames.aAssetName, each);
 	names.setParamValue(DefaultAssetNames.aAssetType, "set");
 	names.generateNames();
-	pSets.put(each, names.getFinalNodeName());
-	pNamespaces.put(names.getFinalNodeName(), names.getNameSpace());
+	pAssets.add((BuildsAssetNames) names);
       }
     }
     private static final long serialVersionUID = 8371820302516003252L;
@@ -490,7 +490,11 @@ class ShotBuilder
     public TreeSet<String> 
     nodesDependedOn()
     {
-      return new TreeSet<String>(pNamespaces.keySet());
+      TreeSet<String> toReturn = new TreeSet<String>();
+      for (BuildsAssetNames asset : pAssets) {
+	toReturn.add(asset.getFinalNodeName());
+      }
+      return toReturn;
     }
     
     @Override
@@ -507,7 +511,50 @@ class ShotBuilder
 
     private void 
     doLayout()
+      throws PipelineException
     {
+      StageInformation info = pBuilderInformation.getStageInformation();
+      String taskType = pProjectNames.getLayoutTaskName();
+      
+      String layoutScene = pShotNames.getLayoutEditNodeName();
+      if (!checkExistance(layoutScene)) {
+	ShotBuilderAnimStage stage = 
+	  new ShotBuilderAnimStage
+	  (info,
+	   pContext,
+	   pClient,
+	   pMayaContext,
+	   layoutScene, 
+	   pAssets,
+	   null,
+	   pFrameRange,
+	   false);
+	isEditNode(stage, taskType);
+        stage.build();
+        addToDisableList(layoutScene);
+      }
+      
+      pLayoutAnims = new TreeSet<String>();
+      for (BuildsAssetNames asset : pAssets) {
+	pShotNames.getLayoutExportPrepareNodeName(asset.getAssetName());
+      }
+      for (BuildsAssetNames asset : pAssets) {
+	String anim = pShotNames.getLayoutExportPrepareNodeName(asset.getAssetName());
+	String exportSet = asset.getNameSpace() + ":SELECT";
+	if (!checkExistance(anim)) {
+	  ShotMayaCurvesExportStage stage = 
+	    new ShotMayaCurvesExportStage
+	    (info,
+	     pContext,
+	     pClient,
+	     anim,
+	     layoutScene,
+	     exportSet,
+	     false);
+	  isPrepareNode(stage, taskType);
+	  stage.build();
+	}
+      }
     }
     
     private void 
@@ -520,6 +567,7 @@ class ShotBuilder
     {
     }
 
+    private TreeSet<String> pLayoutAnims;
   }
   
   protected 
