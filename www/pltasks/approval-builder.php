@@ -4,7 +4,7 @@
     <TH class="theader" colspan="2" align="left" nowrap="nowrap">
       <SPAN class="genbig">&nbsp;&nbsp;Approval&nbsp;Builder:&nbsp;&nbsp;
         <SPAN class="redbold">
-          <?php print($approval_builder_result ? "Finished" : "Failed"); ?>
+          <?php print($approval_builder_result ? "Failed" : "Finished"); ?>
         </SPAN>
       </SPAN>
     </TH> 
@@ -62,7 +62,7 @@
     <TH class="theader" colspan="2" align="center" height="15">
     <?php            
     {
-      if(!$approval_builder_result) {
+      if($approval_builder_result) {
         print('<FORM action="post.php" method="POST">' . "\n" . 
               $auth_html . "\n" . 
               '  <INPUT name="mode" value="retry_review" type="hidden">' . "\n" .

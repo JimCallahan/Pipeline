@@ -443,10 +443,42 @@
         $warning_msg = "Unable to create process!";
       }
 
+      if(!$approval_builder_result) {
+        $new_task_active = NULL;
+        switch($approval_info['new_status_id']) {
+        case 6:  // Finalled
+          $new_task_active = 1; // Inactive;
+          break;
 
-      //..  create event, update task!
+        default:
+          $new_task_active = 2; // Active;          
+        }
 
-
+        /* insert event */ 
+        $stamp = time();
+        if($warning_msg == NULL) {
+          $sql = 
+            ("INSERT INTO events (task_id, ident_id, stamp, note_id, " . 
+             "new_active_id, new_status_id) " .
+             "VALUES (" . $tid . ", " . $auth_id . ", FROM_UNIXTIME(" . $stamp . "), " . 
+             $approval_info['new_note_id'] . ", " . $new_task_active . ", " . 
+              $approval_info['new_status_id'] . ")");
+          if(!mysql_query($sql)) 
+            $warning_msg = get_sql_error($sql); 
+        }
+        
+         /* update task */ 
+        if($warning_msg == NULL) {
+          $sql = 
+            ("UPDATE tasks " . 
+             "SET last_modified = FROM_UNIXTIME(" . $stamp . "), " . 
+              "active_id = " . $new_task_active . ", " . 
+             "status_id = " . $approval_info['new_status_id'] . " " .
+             "WHERE task_id = " . $tid);
+          if(!mysql_query($sql)) 
+            $warning_msg = get_sql_error($sql); 
+        }
+      }
     }
   }
 
@@ -637,8 +669,8 @@
 
 <PRE>
 <?php 
- print("<P>_REQUEST<BR>\n");
- var_dump($_REQUEST);
+//  print("<P>_REQUEST<BR>\n");
+//  var_dump($_REQUEST);
 // print("<P>approval_process<BR>\n");
 // var_dump($approval_process);
 // print("<P>approval_builder_output<BR>\n");
@@ -659,10 +691,10 @@
 // var_dump($task_status);
 // print("<P>debug_sql<BR>\n");
 // var_dump($debug_sql);
- print("<P>approval_info<BR>\n");
- var_dump($approval_info);
- print("<P>tasks<BR>\n");
- var_dump($tasks);
+print("<P>approval_builder_result<BR>\n");
+var_dump($approval_builder_result);
+// print("<P>tasks<BR>\n");
+// var_dump($tasks);
 // print("<P>task_owners<BR>\n");
 // var_dump($task_owners);
 ?>

@@ -145,8 +145,7 @@ INSERT INTO `task_status` (`status_id`, `status_name`, `status_desc`) VALUES
 (3, 'Approved', 'The task has been reviewed and provisionally approved for use by other tasks.'),
 (4, 'On Hold', 'All work should cease on the task until further notice.'),
 (5, 'Could Be Better', 'The task has been reviewed by its supervisor(s) and is considered to be sufficiently complete to satisfy the client, but should be improved if possible after all other tasks are complete.'),
-(6, 'Finalled', 'The task has been reviewed by its supervisor(s) and is judged to be absolutely completed.  No further work should be performed on this task!'), 
-(7, 'Building', 'A post-approval Builder program is currently rebuilding the product nodes for the task and will post the approval information for the task when done.');
+(6, 'Finalled', 'The task has been reviewed by its supervisor(s) and is judged to be absolutely completed.  No further work should be performed on this task!');
 
 INSERT INTO `task_types` (`type_id`, `type_name`, `type_desc`) VALUES 
 (1, 'Modeling', 'Create the geometry and any required UV space mappings required for an asset.'),
