@@ -119,7 +119,7 @@
     <TD class="row2" align="center" width="150">
       <?php 
       {
-        if($auth_name == "pipeline") {
+        if(($auth_name == "pipeline") && ($_REQUEST["mode"] != 'post_assign')) {
           print('<SPAN class="genmed">' . "\n" .  
                 '<FORM action="post.php" method="POST">' . "\n" . 
                 '<SELECT name="new_assigned_to" style="width:100%">' . "\n");
@@ -163,7 +163,7 @@
     <TD class="row2" align="center" width="150">
       <?php 
       { 
-        if($auth_name == "pipeline") {
+        if(($auth_name == "pipeline") && ($_REQUEST["mode"] != 'post_assign')) {
           print('<SPAN class="genmed">' . "\n" .  
                 '<SELECT multiple size="7" name="new_supervised_by[]" ' . 
                 'style="width:100%">' . "\n");

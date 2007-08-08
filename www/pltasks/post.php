@@ -240,10 +240,47 @@
     break;
 
   case 'post_assign':
-    {
+    if($_REQUEST['auth_name'] == 'pipeline') {
+      /* update assigned to */ 
+      {
+        $sql = NULL;
+        if($_REQUEST['new_assigned_to'] == 0) {
+          $sql = 
+            ("UPDATE tasks " . 
+             "SET assigned_to = NULL " . 
+             "WHERE task_id = " . $tid);
+        }
+        else if($_REQUEST['new_assigned_to'] > 0) {
+          $sql = 
+            ("UPDATE tasks " . 
+             "SET assigned_to = " . $_REQUEST['new_assigned_to'] . " " .
+             "WHERE task_id = " . $tid);
+        }
+        
+        if($sql != NULL) {
+          if(!mysql_query($sql)) 
+            $warning_msg = get_sql_error($sql); 
+        }
+      }
 
-      // ...
+      /* remove existing supervised by */ 
+      if($warning_msg == NULL) {
+        $sql = ('DELETE FROM supervisors WHERE task_id = ' . $tid);
+        if(!mysql_query($sql)) 
+          $warning_msg = get_sql_error($sql); 
+      }
 
+      /* insert new supervised by */ 
+      foreach($_REQUEST['new_supervised_by'] as $nsid) {
+        if($warning_msg == NULL) {
+          if($nsid > 0) {
+            $sql = ('INSERT INTO supervisors (task_id, ident_id) ' . 
+                    'VALUES (' . $tid . ', ' . $nsid . ')');
+            if(!mysql_query($sql)) 
+              $warning_msg = get_sql_error($sql); 
+          }
+        }
+      }
     }    
   }
 
@@ -669,8 +706,8 @@
 
 <PRE>
 <?php 
-//  print("<P>_REQUEST<BR>\n");
-//  var_dump($_REQUEST);
+//   print("<P>_REQUEST<BR>\n");
+//   var_dump($_REQUEST);
 // print("<P>approval_process<BR>\n");
 // var_dump($approval_process);
 // print("<P>approval_builder_output<BR>\n");
