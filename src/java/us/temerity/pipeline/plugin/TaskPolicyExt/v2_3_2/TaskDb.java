@@ -1,4 +1,4 @@
-// $Id: TaskDb.java,v 1.5 2007/08/06 03:51:49 jim Exp $
+// $Id: TaskDb.java,v 1.6 2007/08/14 17:06:30 jim Exp $
 
 package us.temerity.pipeline.plugin.TaskPolicyExt.v2_3_2;
 
@@ -499,17 +499,13 @@ class TaskDb
    * 
    * @param approveNode
    *   The initial version of the Approve node being checked-in.
-   * 
-   * @param submitNode
-   *   The current version of the Submit node upstream of the Approve node being checked-in.
    */  
   public synchronized void
   approveTask
   (
    String taskTitle, 
    String taskType,
-   NodeVersion approveNode, 
-   NodeVersion submitNode
+   NodeVersion approveNode
   )
     throws PipelineException
   {
@@ -545,13 +541,6 @@ class TaskDb
       Integer approveNodeID = lookupNodeName(approveNode.getName());
       insertNodeInfo(approveNodeID, approveNode.getVersionID(), eventID, 
                      false, false, false, false, true);
-
-      /* attach info for the submit node to the event */ 
-      if(submitNode != null) {
-        Integer submitNodeID = lookupNodeName(submitNode.getName());
-        insertNodeInfo(submitNodeID, submitNode.getVersionID(), eventID, 
-                       false, true, false, false, false);
-      }
 
       txnCommit(); 
     }

@@ -509,9 +509,7 @@ class TaskPolicyExt
           }
 
           /* initial approve node check-in */ 
-          else if(purpose.equals(aApprove) && vsn.getVersionID().equals(new VersionID())) {
-            NodeVersion submitVsn = 
-              mineApproveTree(nodeName, taskName, taskType, vsn, mclient);
+          else if(purpose.equals(aApprove)) {
 
             /* DEBUG */ 
             {
@@ -519,22 +517,13 @@ class TaskPolicyExt
                 (Kind.Ops, Level.Info, 
                  "The " + purpose + " (" + nodeName + " v" + vsn.getVersionID() + ") of " + 
                  "task (" + taskName + ":" + taskType + ") has been checked-in.");
-
-              if(submitVsn != null) {
-                LogMgr.getInstance().log
-                  (Kind.Ops, Level.Info, 
-                   "The Submit node (" + submitVsn.getName() + " v" + 
-                   submitVsn.getVersionID()+ ") is associated with task (" + taskName + ":" + 
-                   taskType + ") by checking-in the Approve node (" + nodeName + " v" +
-                   vsn.getVersionID() + ").");
-              }
             }
             /* DEBUG */
             
             int tries = 0; 
             while(true) {
               try {
-                sDatabase.approveTask(taskName, taskType, vsn, submitVsn); 
+                sDatabase.approveTask(taskName, taskType, vsn); 
                 break;
               }
               catch(PipelineException ex) {
