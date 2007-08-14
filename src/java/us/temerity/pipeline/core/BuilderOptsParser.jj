@@ -100,8 +100,8 @@ TOKEN :
 TOKEN :
 {
   <BUILDER_NAME:           (["a"-"z","A"-"Z","0"-"9","-","_"])+> : DEFAULT
-| <MISSING_BUILDER_NAME:    ["\0"]>        				         : IGNORE_STATE
-| <ILLEGAL_BUILDER_NAME:  (~["\0"])+>    						 : IGNORE_STATE
+| <MISSING_BUILDER_NAME:    ["\0"]>        			 : IGNORE_STATE
+| <ILLEGAL_BUILDER_NAME:  (~["\0"])+>    	       		 : IGNORE_STATE
 }
 
 /* parameter */
@@ -111,8 +111,8 @@ TOKEN:
   <PARAM_NAME:          (["a"-"z","A"-"Z","0"-"9","_"])+>
 | <KEY_SEP1:              "-">                                : KEY_STATE
 | <EQ2:                   "=">                                : PARAM_VALUE_STATE
-| <MISSING_PARAM_NAME:   ["\0"]>        				      : IGNORE_STATE
-| <ILLEGAL_PARAM_NAME:  (~["-","=","\0"])+>          		  : IGNORE_STATE
+| <MISSING_PARAM_NAME:   ["\0"]>        		      : IGNORE_STATE
+| <ILLEGAL_PARAM_NAME:  (~["-","=","\0"])+>          	      : IGNORE_STATE
 }
 
 <KEY_STATE> 
@@ -120,15 +120,15 @@ TOKEN :
 {
   <KEY_NAME:           (["a"-"z","A"-"Z","0"-"9","_"])+>
 | <KEY_SEP2:             "-">
-| <EQ4:                  "=">   	                   : PARAM_VALUE_STATE
+| <EQ4:                  "=">   	               : PARAM_VALUE_STATE
 | <MISSING_KEY_SEP:    ~["="]>                         : IGNORE_STATE
-| <ILLEGAL_KEY_STATE: (~["-","=","\0"])+>	           : IGNORE_STATE
+| <ILLEGAL_KEY_STATE: (~["-","=","\0"])+>	       : IGNORE_STATE
 }
 
 <PARAM_VALUE_STATE>
 TOKEN:
 {
-  <PARAM_VALUE:          (["a"-"z","A"-"Z","0"-"9","-","_",".",",","/"," ","(",")",":",";"])+> : DEFAULT
+  <PARAM_VALUE:   (["a"-"z","A"-"Z","0"-"9","-","_",".",",","/"," ","(",")",":",";","'","!","@","#","$","%","^","&","*","+","=","{","}","|","<",">","?"])+> : DEFAULT
 | <MISSING_PARAM_VALUE:   ["\0"]>        				                       : IGNORE_STATE
 | <ILLEGAL_PARAM_VALUE: (~["\0"])+>    						                   : IGNORE_STATE
 }
