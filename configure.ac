@@ -154,7 +154,7 @@ AC_ARG_ENABLE([pllocal],
                yes) pllocal=true;;
                no)  pllocal=false;;
                *)   AC_MSG_ERROR(bad value ${enableval} for --enable-pllocal);;
-               esac], [pllocal=true])
+               esac], [pllocal=false])
 
 AM_CONDITIONAL(PL_LOCAL, test x$pllocal = xtrue)
 
