@@ -1,4 +1,4 @@
-// $Id: TextureMgr.java,v 1.6 2007/06/26 19:22:38 jim Exp $
+// $Id: TextureMgr.java,v 1.7 2007/08/17 20:21:24 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -833,7 +833,7 @@ class TextureMgr
        *        NeedsCheckOutMicro-<OverallQueueState>-Normal
        */
       {
-        String[] prefix = { "NeedsCheckOutMajor", "NeedsCheckOutMajor" };
+        String[] prefix = { "NeedsCheckOutMajor", "NeedsCheckOutMicro" };
         
         SelectionMode mode = SelectionMode.Normal;
         Color3d ringColor = NodeStyles.getSelectionColor3d(mode);
