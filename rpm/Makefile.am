@@ -131,8 +131,11 @@ pipeline-install: clean-rpms rpm-mkdirs
 	ln -s pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@ \
               DEST/pipeline/@ROOT_INST_PARENT_DIR@/pipeline-latest
 	mkdir -p DEST/pllocal/@ROOT_INST_PARENT_DIR@/pipeline-local
-	mv DEST/pipeline/@ROOT_INST_PARENT_DIR@/pipeline-local \
-           DEST/pllocal/@ROOT_INST_PARENT_DIR@/pipeline-local
+	if test -d DEST/pipeline/@ROOT_INST_PARENT_DIR@/pipeline-local; \
+        then \
+          mv DEST/pipeline/@ROOT_INST_PARENT_DIR@/pipeline-local \
+             DEST/pllocal/@ROOT_INST_PARENT_DIR@/pipeline-local; \
+        fi
 
 
 core-rpms: pipeline-install \
@@ -164,12 +167,16 @@ SPECS/plqueuemgr-@CUSTOMER@-@VERSION@.spec: plqueuemgr.spec
 	cp -f plqueuemgr.spec $@
 
 
+if PL_LOCAL
+
 RPMS/i686/pllocal-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm: \
   SPECS/pllocal-@CUSTOMER@-@VERSION@.spec
 	rpmbuild --rcfile rpmrc -bb SPECS/pllocal-@CUSTOMER@-@VERSION@.spec
 
 SPECS/pllocal-@CUSTOMER@-@VERSION@.spec: pllocal.spec
 	cp -f pllocal.spec $@
+
+endif
 
 
 if HAS_MAC
