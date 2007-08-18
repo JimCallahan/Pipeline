@@ -3,6 +3,8 @@ package us.temerity.pipeline.stages;
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.PluginContext;
 import us.temerity.pipeline.builder.UtilContext;
+import us.temerity.pipeline.builder.BaseBuilder.StageFunction;
+import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
 
 
 public 
@@ -25,16 +27,16 @@ class MRayRenderStage
     throws PipelineException
   {
     super(name, 
-      desc, 
-      stageInformation, 
-      context, 
-      client, 
-      nodeName, 
-      range, 
-      padding, 
-      suffix, 
-      getDefaultEditor(client, suffix), 
-      new PluginContext("MRayRender"));
+          desc, 
+          stageInformation, 
+          context, 
+          client, 
+          nodeName, 
+          range, 
+          padding, 
+          suffix, 
+          null, 
+          new PluginContext("MRayRender"));
   }
   
   protected 
@@ -72,6 +74,17 @@ class MRayRenderStage
     addLink(new LinkMod(sourceName, LinkPolicy.Dependency));
     addSourceParamValue(sourceName, "Contains", type.toString());
   }
+  
+  /**
+   * See {@link BaseStage#getStageFunction()}
+   */
+  @Override
+  public String 
+  getStageFunction()
+  {
+    return StageFunction.RenderedImage.toString();
+  }
+
   
   public 
   enum SourceType 

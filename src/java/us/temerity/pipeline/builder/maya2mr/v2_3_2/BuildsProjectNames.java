@@ -214,4 +214,6 @@ interface BuildsProjectNames
 
   public String 
   getEffectsTaskName();
+
+  String getPlaceholderCameraScriptName();
 }

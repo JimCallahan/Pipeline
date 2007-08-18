@@ -16,6 +16,12 @@ interface BuildsShotNames
   /*---Layout--------------------------------------------------------------------------------*/
   
   /**
+   * The node with the animated camera in it.
+   */
+  public String
+  getCameraNodeName();
+  
+  /**
    * The layout node that a user will edit to create the layout.
    */
   public String

@@ -2,6 +2,8 @@ package us.temerity.pipeline.stages;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
+import us.temerity.pipeline.builder.BaseBuilder.StageFunction;
+import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
 
 /**
  * A branch stage designed to make building leaf stages that create Maya files easier.
@@ -62,7 +64,7 @@ class MayaFileStage
           client,
           nodeName, 
           isAscii ? "ma" : "mb", 
-          editor == null ? pDefaultMayaEditor : editor, 
+          editor, 
           action);
     pMayaContext = mayaContext;
   }
@@ -270,24 +272,22 @@ class MayaFileStage
     }
   }
   
-  public static void
-  setDefaultMayaEditor
-  (
-    PluginContext editor
-  )
-  {
-    if (editor == null)
-      throw new IllegalArgumentException("Cannot set the Default Maya Edtior to null.");
-    pDefaultMayaEditor = editor; 
-  }
-
   /**
    * The {@link MayaContext} for the stage.
    */
   protected MayaContext pMayaContext;
   
-  private static PluginContext pDefaultMayaEditor = new PluginContext("MayaProject");
-  
   private static final long serialVersionUID = -6109809134859336504L;
+  
+  /**
+   * See {@link BaseStage#getStageFunction()}
+   */
+  @Override
+  public String 
+  getStageFunction()
+  {
+    return StageFunction.MayaScene.toString();
+  }
+
 
 }

@@ -5,6 +5,7 @@ import java.util.TreeMap;
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.PluginContext;
 import us.temerity.pipeline.builder.UtilContext;
+import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
 
 
 public 

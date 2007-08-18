@@ -6,9 +6,12 @@
  */
 package us.temerity.pipeline.stages;
 
-import us.temerity.pipeline.*;
+import us.temerity.pipeline.MasterMgrClient;
+import us.temerity.pipeline.PipelineException;
 import us.temerity.pipeline.builder.PluginContext;
 import us.temerity.pipeline.builder.UtilContext;
+import us.temerity.pipeline.builder.BaseBuilder.StageFunction;
+import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
 
 public class 
 EmptyFBXStage 
@@ -31,7 +34,7 @@ EmptyFBXStage
       client, 
       nodeName, 
       "fbx", 
-      new PluginContext("Emacs"), 
+      null, 
       new PluginContext("EmptyFBX"));
   }
   
@@ -41,5 +44,17 @@ EmptyFBXStage
   {
     removeAction(pRegisteredNodeName);
   }
+  
+  /**
+   * See {@link BaseStage#getStageFunction()}
+   */
+  @Override
+  public String 
+  getStageFunction()
+  {
+    return StageFunction.MotionBuilderScene.toString();
+  }
+
+  
   private static final long serialVersionUID = 7956888902881045916L;
 }

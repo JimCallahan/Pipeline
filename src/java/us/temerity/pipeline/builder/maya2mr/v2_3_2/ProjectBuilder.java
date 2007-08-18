@@ -6,7 +6,6 @@ import java.util.TreeSet;
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.stages.EmptyFileStage;
-import us.temerity.pipeline.stages.StageInformation;
 
 /*------------------------------------------------------------------------------------------*/
 /*   P R O J E C T   B U I L D E R                                                          */
@@ -95,6 +94,8 @@ class ProjectBuilder
       configNamer(projectNames);
     }
     
+    setDefaultEditors();
+    
     pProjectNames = (BuildsProjectNames) projectNames;
 
     
@@ -105,7 +106,7 @@ class ProjectBuilder
       AdvancedLayoutGroup layout = 
         new AdvancedLayoutGroup
           ("Project Information", 
-           "The pass where all the basic information about the asset is collected " +
+           "The pass where all the basic pStageInformation about the asset is collected " +
            "from the user.", 
            "BuilderSettings", 
            true);
@@ -144,10 +145,34 @@ class ProjectBuilder
     addMappedParam(projectNames.getName(), DefaultProjectNames.aProjectName, aProjectName);
   }
   
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   D E F A U L T   E D I T O R S                                                        */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Override this to change the default editors.
+   */
+  protected void
+  setDefaultEditors()
+  {
+    setDefaultEditor(StageFunction.MayaScene.toString(), new PluginContext("MayaProject"));
+    setDefaultEditor(StageFunction.None.toString(), new PluginContext("Emacs"));
+    setDefaultEditor(StageFunction.TextFile.toString(), new PluginContext("Emacs"));
+    setDefaultEditor(StageFunction.ScriptFile.toString(), new PluginContext("Emacs"));
+    setDefaultEditor(StageFunction.RenderedImage.toString(), new PluginContext("Shake"));
+    setDefaultEditor(StageFunction.SourceImage.toString(), new PluginContext("Gimp"));
+    setDefaultEditor(StageFunction.MotionBuilderScene.toString(), null);
+  }
+  
+  
   @Override
   protected TreeSet<String> 
   getNodesToCheckIn()
   {
+    if (pBuildDummy)
+      return getCheckInList();
     return null;
   }
   
@@ -262,10 +287,9 @@ class ProjectBuilder
     {
       pLog.log(LogMgr.Kind.Ops, LogMgr.Level.Fine, 
         "Starting the build phase in the Build Pass");
-      StageInformation info = pBuilderInformation.getStageInformation();
       if (pBuildDummy) {
 	String node = pProjectNames.getDummyFile();
-	EmptyFileStage stage = new EmptyFileStage(info, pContext, pClient, node);
+	EmptyFileStage stage = new EmptyFileStage(pStageInfo, pContext, pClient, node);
 	stage.build();
 	addToCheckInList(node);
       }

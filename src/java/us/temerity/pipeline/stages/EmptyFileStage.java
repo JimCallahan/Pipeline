@@ -4,6 +4,8 @@ import us.temerity.pipeline.MasterMgrClient;
 import us.temerity.pipeline.PipelineException;
 import us.temerity.pipeline.builder.PluginContext;
 import us.temerity.pipeline.builder.UtilContext;
+import us.temerity.pipeline.builder.BaseBuilder.StageFunction;
+import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
 
 /**
  * A stage to create a node that is just an empty file.
@@ -32,7 +34,7 @@ public class EmptyFileStage
           client,
           nodeName, 
           null, 
-          new PluginContext("Emacs"), 
+          null, 
           new PluginContext("Touch"));
   }
   
@@ -71,6 +73,17 @@ public class EmptyFileStage
   {
     removeAction(pRegisteredNodeName);
   }
+  
+  /**
+   * See {@link BaseStage#getStageFunction()}
+   */
+  @Override
+  public String 
+  getStageFunction()
+  {
+    return StageFunction.TextFile.toString();
+  }
+
   
   private static final long serialVersionUID = -4188429817735845652L;
 }

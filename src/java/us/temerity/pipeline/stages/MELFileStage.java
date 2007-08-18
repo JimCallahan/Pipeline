@@ -4,6 +4,8 @@ import us.temerity.pipeline.MasterMgrClient;
 import us.temerity.pipeline.PipelineException;
 import us.temerity.pipeline.builder.PluginContext;
 import us.temerity.pipeline.builder.UtilContext;
+import us.temerity.pipeline.builder.BaseBuilder.StageFunction;
+import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
 
 
 public 
@@ -56,5 +58,16 @@ class MELFileStage
           BaseStage.getDefaultEditor(client, "mel"), 
           new PluginContext(action));
   }
+  
+  /**
+   * See {@link BaseStage#getStageFunction()}
+   */
+  @Override
+  public String 
+  getStageFunction()
+  {
+    return StageFunction.ScriptFile.toString();
+  }
+
   private static final long serialVersionUID = 9094243771431113273L;
 }

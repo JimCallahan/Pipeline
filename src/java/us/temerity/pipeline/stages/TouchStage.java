@@ -5,6 +5,8 @@ import java.util.TreeSet;
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.PluginContext;
 import us.temerity.pipeline.builder.UtilContext;
+import us.temerity.pipeline.builder.BaseBuilder.StageFunction;
+import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
 
 public 
 class TouchStage 
@@ -31,7 +33,7 @@ class TouchStage
           client, 
           nodeName, 
           suffix, 
-          new PluginContext("Emacs"), 
+          null, 
           new PluginContext("Touch"));
     for (String source : sources)
       addLink(new LinkMod(source, LinkPolicy.Dependency));
@@ -62,10 +64,22 @@ class TouchStage
           range,
           padding, 
           suffix, 
-          new PluginContext("Emacs"), 
+          null, 
           new PluginContext("Touch"));
     for (String source : sources)
       addLink(new LinkMod(source, LinkPolicy.Dependency));
   }
+  
+  /**
+   * See {@link BaseStage#getStageFunction()}
+   */
+  @Override
+  public String 
+  getStageFunction()
+  {
+    return StageFunction.TextFile.toString();
+  }
+
+  
   private static final long serialVersionUID = -324541956598968880L;
 }

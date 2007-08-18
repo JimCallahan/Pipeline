@@ -5,7 +5,8 @@ import java.util.LinkedList;
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.PluginContext;
 import us.temerity.pipeline.builder.UtilContext;
-import us.temerity.pipeline.stages.StandardStage;
+import us.temerity.pipeline.builder.BaseBuilder.StageFunction;
+import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
 
 public 
 class CatFilesStage 
@@ -32,7 +33,7 @@ class CatFilesStage
         client, 
         nodeName, 
         suffix, 
-        new PluginContext("Emacs"), 
+        null, 
         new PluginContext("CatFiles"));
       int order = 100;
       for (String source : sources) {
@@ -63,5 +64,16 @@ class CatFilesStage
         suffix, 
         sources); 
   }
+  
+  /**
+   * See {@link BaseStage#getStageFunction()}
+   */
+  @Override
+  public String 
+  getStageFunction()
+  {
+    return StageFunction.TextFile.toString();
+  }
+  
   private static final long serialVersionUID = -1598902054477603895L;
 }

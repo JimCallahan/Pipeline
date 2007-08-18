@@ -1,4 +1,4 @@
-// $Id: AdvAssetBuilder.java,v 1.8 2007/08/08 16:59:23 jesse Exp $
+// $Id: AdvAssetBuilder.java,v 1.9 2007/08/18 18:14:49 jesse Exp $
 
 package us.temerity.pipeline.builder.maya2mr.v2_3_2;
 
@@ -6,8 +6,10 @@ import java.util.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
+import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
 import us.temerity.pipeline.builder.maya2mr.v2_3_2.DefaultProjectNames.GlobalsType;
 import us.temerity.pipeline.builder.maya2mr.v2_3_2.stages.*;
+import us.temerity.pipeline.math.Range;
 import us.temerity.pipeline.stages.*;
 import us.temerity.pipeline.stages.MayaRenderStage.Renderer;
 
@@ -91,15 +93,6 @@ class AdvAssetBuilder
     addCheckinWhenDoneParam();
     addSelectionKeyParam();
     addDoAnnotationParam();
-    
-//    {
-//      UtilityParam param = 
-//        new BooleanUtilityParam
-//        (aBuildLowRez, 
-//         "Build a Low-Rez final model, which branches off the rig.", 
-//         true); 
-//      addParam(param);
-//    }
     
     {
       UtilityParam param = 
@@ -187,16 +180,6 @@ class AdvAssetBuilder
     }
     
     //Material Parameters
-//    {
-//      UtilityParam param = 
-//        new BooleanUtilityParam
-//        (aSeparateShade, 
-//         "Should a shader scene be built outside the final character network.  This allows" +
-//         "shader development to proceed external to rig and shading group work and allows new" +
-//         "shader updates to be pushed out without having to go back and rebuild characters.", 
-//         true); 
-//      addParam(param);
-//    }
     {
       UtilityParam param = 
         new BooleanUtilityParam
@@ -246,6 +229,8 @@ class AdvAssetBuilder
     
     pAssetNames = (BuildsAssetNames) assetNames;
     pProjectNames = (BuildsProjectNames) projectNames;
+    
+    setDefaultEditors();
 
     addSetupPass(new InformationPass());
     ConstructPass build = new BuildPass();
@@ -330,6 +315,9 @@ class AdvAssetBuilder
   /*   S U B - B U I L D E R   M A P P I N G                                                */
   /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * Override this method to set different parameter mappings for passed in Namers.
+   */
   protected void 
   configNamer 
   (
@@ -342,6 +330,27 @@ class AdvAssetBuilder
       addMappedParam(assetNames.getName(), DefaultAssetNames.aProjectName, aProjectName);
     if (!projectNames.isGenerated())
       addMappedParam(projectNames.getName(), DefaultProjectNames.aProjectName, aProjectName);
+  }
+  
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   D E F A U L T   E D I T O R S                                                        */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Override this to change the default editors.
+   */
+  protected void
+  setDefaultEditors()
+  {
+    setDefaultEditor(StageFunction.MayaScene.toString(), new PluginContext("MayaProject"));
+    setDefaultEditor(StageFunction.None.toString(), new PluginContext("Emacs"));
+    setDefaultEditor(StageFunction.TextFile.toString(), new PluginContext("Emacs"));
+    setDefaultEditor(StageFunction.ScriptFile.toString(), new PluginContext("Emacs"));
+    setDefaultEditor(StageFunction.RenderedImage.toString(), new PluginContext("Shake"));
+    setDefaultEditor(StageFunction.SourceImage.toString(), new PluginContext("Gimp"));
+    setDefaultEditor(StageFunction.MotionBuilderScene.toString(), null);
   }
   
   
@@ -583,17 +592,16 @@ class AdvAssetBuilder
       pMayaContext = (MayaContext) getParamValue(aMayaContext);
 
       pMultipleModels = false;
-      pNumberOfModels = getIntegerParamValue(new ParamMapping(aSeparateModelPieces), 0);
+      pNumberOfModels = getIntegerParamValue(new ParamMapping(aSeparateModelPieces), new Range<Integer>(0, null));
       if (pNumberOfModels > 0)
         pMultipleModels = true;
       
-      StageInformation info = pBuilderInformation.getStageInformation();
       TreeSet<String> keys = (TreeSet<String>) getParamValue(aSelectionKeys);
-      info.setDefaultSelectionKeys(keys);
-      info.setUseDefaultSelectionKeys(true);
+      pStageInfo.setDefaultSelectionKeys(keys);
+      pStageInfo.setUseDefaultSelectionKeys(true);
       
       boolean annot = getBooleanParamValue(new ParamMapping(aDoAnnotations));
-      info.setDoAnnotations(annot);
+      pStageInfo.setDoAnnotations(annot);
       
       pTaskName = pProjectNames.getTaskName(pAssetName, pAssetType);
       
@@ -659,7 +667,6 @@ class AdvAssetBuilder
     doModel()
       throws PipelineException
     {
-      StageInformation info = pBuilderInformation.getStageInformation();
       String taskType = pProjectNames.getModelingTaskName();
       
       String editModel = pAssetNames.getModelEditNodeName();
@@ -668,7 +675,7 @@ class AdvAssetBuilder
         if(!checkExistance(editModel)) {
           AssetBuilderModelStage stage = 
             new AssetBuilderModelStage
-            (info,
+            (pStageInfo,
              pContext,
              pClient,
              pMayaContext, 
@@ -683,7 +690,7 @@ class AdvAssetBuilder
           edit.put("mod", editModel);
           ModelPiecesVerifyStage stage =
             new ModelPiecesVerifyStage
-            (info,
+            (pStageInfo,
              pContext,
              pClient,
              pMayaContext,
@@ -706,7 +713,7 @@ class AdvAssetBuilder
             pProjectNames.getAssetModelTTSetup(pAssetName, pAssetType);
           AdvAssetBuilderTTStage stage =
             new AdvAssetBuilderTTStage
-            (info,
+            (pStageInfo,
              pContext,
              pClient,
              pMayaContext,
@@ -721,7 +728,7 @@ class AdvAssetBuilder
           String globals = pProjectNames.getAssetModelTTGlobals();
           AdvAssetBuilderTTImgStage stage =
             new AdvAssetBuilderTTImgStage
-            (info, 
+            (pStageInfo, 
              pContext, 
              pClient, 
              modelTTImg, 
@@ -735,7 +742,7 @@ class AdvAssetBuilder
           thumb = pAssetNames.getModelThumbNodeName();
           if (!checkExistance(thumb)) {
             ThumbnailStage stage = 
-              new ThumbnailStage(info, pContext, pClient, thumb, "png", modelTTImg, 120);
+              new ThumbnailStage(pStageInfo, pContext, pClient, thumb, "png", modelTTImg, 120);
             isThumbnailNode(stage, taskType);
             stage.build();
           }
@@ -750,7 +757,7 @@ class AdvAssetBuilder
           sources.add(modelTTImg);
         else
           sources.add(verifyModel);
-        TargetStage stage = new TargetStage(info, pContext, pClient, modelSubmit, sources);
+        TargetStage stage = new TargetStage(pStageInfo, pContext, pClient, modelSubmit, sources);
         isSubmitNode(stage, taskType);
         stage.build();
         addToQueueList(modelSubmit);
@@ -758,14 +765,15 @@ class AdvAssetBuilder
       String modelFinal = pAssetNames.getModelFinalNodeName();
       String modelApprove = pAssetNames.getModelApproveNodeName();
       if (!checkExistance(modelFinal)) {
-        ProductStage stage = new ProductStage(info, pContext, pClient, modelFinal, "ma", verifyModel );
+        ProductStage stage = 
+          new ProductStage(pStageInfo, pContext, pClient, modelFinal, "ma", verifyModel, StageFunction.MayaScene.toString());
         isProductNode(stage, taskType);
         stage.build();
       }
       if (!checkExistance(modelApprove)) {
         TreeSet<String> sources = new TreeSet<String>();
         sources.add(modelFinal);
-        TargetStage stage = new TargetStage(info, pContext, pClient, modelApprove, sources);
+        TargetStage stage = new TargetStage(pStageInfo, pContext, pClient, modelApprove, sources);
         isApproveNode(stage, taskType);
         stage.build();
         addToQueueList(modelApprove);
@@ -776,7 +784,6 @@ class AdvAssetBuilder
     doRig()
       throws PipelineException
     {
-      StageInformation info = pBuilderInformation.getStageInformation();
       String taskType = pProjectNames.getRiggingTaskName();
       
       String modelFinal = pAssetNames.getModelFinalNodeName();
@@ -786,7 +793,7 @@ class AdvAssetBuilder
         if (!checkExistance(blendShapes)) {
           EmptyMayaAsciiStage stage = 
             new EmptyMayaAsciiStage
-            (info,
+            (pStageInfo,
              pContext,
              pClient,
              pMayaContext,
@@ -801,14 +808,14 @@ class AdvAssetBuilder
       if (skeleton != null && !checkExistance(skeleton)) {
 	if (skelMel == null) {
 	  EmptyMayaAsciiStage stage = 
-	    new EmptyMayaAsciiStage(info, pContext, pClient, pMayaContext, skeleton);
+	    new EmptyMayaAsciiStage(pStageInfo, pContext, pClient, pMayaContext, skeleton);
 	  isEditNode(stage, taskType);
 	  stage.build();
 	  pEmptyMayaScenes.add(stage);
 	}
 	else {
 	  AssetBuilderModelStage stage =
-	    new AssetBuilderModelStage(info, pContext, pClient, pMayaContext, skeleton, skelMel);
+	    new AssetBuilderModelStage(pStageInfo, pContext, pClient, pMayaContext, skeleton, skelMel);
 	  isEditNode(stage, taskType);
 	  stage.build();
 	  pModelStages.add(stage);
@@ -818,7 +825,7 @@ class AdvAssetBuilder
       if (!checkExistance(rigEdit)) {
         NewAssetBuilderRigStage stage = 
           new NewAssetBuilderRigStage
-          (info,
+          (pStageInfo,
            pContext, 
            pClient,
            pMayaContext,
@@ -836,7 +843,7 @@ class AdvAssetBuilder
       if (!checkExistance(reRigNode)) {
         AdvAssetBuilderReRigStage stage = 
           new AdvAssetBuilderReRigStage
-          (info, 
+          (pStageInfo, 
            pContext, 
            pClient, 
            pMayaContext, 
@@ -860,7 +867,7 @@ class AdvAssetBuilder
       if (!checkExistance(rigFinal)) {
         NewAssetBuilderFinalStage stage = 
           new NewAssetBuilderFinalStage
-          (info,
+          (pStageInfo,
            pContext, 
            pClient,
            pMayaContext,
@@ -883,7 +890,7 @@ class AdvAssetBuilder
       if (pRigTT) {
 	if (pMakeFBX) {
 	  if (!checkExistance(animFBX)) {
-	    EmptyFBXStage stage = new EmptyFBXStage(info, pContext, pClient, animFBX);
+	    EmptyFBXStage stage = new EmptyFBXStage(pStageInfo, pContext, pClient, animFBX);
 	    stage.build();
 	  }
 	}
@@ -893,7 +900,7 @@ class AdvAssetBuilder
 	    if (pMakeFBX) {
 	      stage = 
 		new AdvAssetBuilderCurvesStage
-		(info, 
+		(pStageInfo, 
 		 pContext, 
 		 pClient, 
 		 pMayaContext, 
@@ -903,7 +910,7 @@ class AdvAssetBuilder
 	    }
 	    else {
 	      stage = 
-		new EmptyMayaAsciiStage(info, pContext, pClient, pMayaContext, animCurves);
+		new EmptyMayaAsciiStage(pStageInfo, pContext, pClient, pMayaContext, animCurves);
 	      pEmptyMayaScenes.add((EmptyMayaAsciiStage) stage);
 	    }
 	    stage.build();
@@ -912,7 +919,7 @@ class AdvAssetBuilder
 	if (pMakeDkAnim ) {
 	  if (!checkExistance(animCurves)) {
 	    EmptyFileStage stage = 
-	      new EmptyFileStage(info, pContext, pClient, animCurves, "dkAnim");
+	      new EmptyFileStage(pStageInfo, pContext, pClient, animCurves, "dkAnim");
 	    stage.build();
 	    pEmptyFileStages.add(stage);
 	  }
@@ -924,7 +931,7 @@ class AdvAssetBuilder
 	  if (pMakeCurves) {
 	    stage = 
 	      new AdvAssetBuilderAnimStage
-	      (info,
+	      (pStageInfo,
 	       pContext, 
 	       pClient,
 	       pMayaContext,
@@ -940,7 +947,7 @@ class AdvAssetBuilder
 	  else {
 	    stage = 
 	      new AdvAssetBuilderTTStage
-	      (info, 
+	      (pStageInfo, 
 	       pContext, 
 	       pClient, 
 	       pMayaContext, 
@@ -957,7 +964,7 @@ class AdvAssetBuilder
 	    pProjectNames.getAssetRigAnimGlobals();
 	  AdvAssetBuilderTTImgStage stage =
 	    new AdvAssetBuilderTTImgStage
-	    (info, 
+	    (pStageInfo, 
 	     pContext, 
 	     pClient, 
 	     rigImages, 
@@ -970,7 +977,7 @@ class AdvAssetBuilder
 	if (pBuildThumbnails) {
           if (!checkExistance(thumb)) {
             ThumbnailStage stage = 
-              new ThumbnailStage(info, pContext, pClient, thumb, "png", rigImages, 120);
+              new ThumbnailStage(pStageInfo, pContext, pClient, thumb, "png", rigImages, 120);
             isThumbnailNode(stage, taskType);
             stage.build();
           }
@@ -985,7 +992,7 @@ class AdvAssetBuilder
           sources.add(rigImages);
         else
           sources.add(rigFinal);
-        TargetStage stage = new TargetStage(info, pContext, pClient, rigSubmit, sources);
+        TargetStage stage = new TargetStage(pStageInfo, pContext, pClient, rigSubmit, sources);
         isSubmitNode(stage, taskType);
         stage.build();
         addToQueueList(rigSubmit);
@@ -993,7 +1000,8 @@ class AdvAssetBuilder
       String assetFinal = pAssetNames.getFinalNodeName();
       String rigApprove = pAssetNames.getRigApproveNodeName();
       if (!checkExistance(assetFinal)) {
-        ProductStage stage = new ProductStage(info, pContext, pClient, assetFinal, "ma", rigFinal);
+        ProductStage stage = 
+          new ProductStage(pStageInfo, pContext, pClient, assetFinal, "ma", rigFinal, StageFunction.MayaScene.toString());
         isProductNode(stage, taskType);
         stage.build();
       }
@@ -1002,7 +1010,7 @@ class AdvAssetBuilder
         if (!checkExistance(miFile)) {
           AdvAssetBuilderModelMiStage stage = 
             new AdvAssetBuilderModelMiStage
-            (info,
+            (pStageInfo,
              pContext,
              pClient,
              miFile,
@@ -1017,7 +1025,7 @@ class AdvAssetBuilder
         if (!checkExistance(texFinalNode)) {
           TreeSet<String> sources = new TreeSet<String>();
           sources.add(texNode);
-          TargetStage stage = new TargetStage(info, pContext, pClient, texFinalNode, sources);
+          TargetStage stage = new TargetStage(pStageInfo, pContext, pClient, texFinalNode, sources);
           isProductNode(stage, taskType);
           stage.build();
         }
@@ -1028,7 +1036,7 @@ class AdvAssetBuilder
         if (pBuildMiShadeNetwork)
           sources.add(miFile);
         addNonNullValue(texFinalNode, sources);
-        TargetStage stage = new TargetStage(info, pContext, pClient, rigApprove, sources);
+        TargetStage stage = new TargetStage(pStageInfo, pContext, pClient, rigApprove, sources);
         isApproveNode(stage, taskType);
         stage.build();
         addToQueueList(rigApprove);
@@ -1039,7 +1047,6 @@ class AdvAssetBuilder
     doMaterials()
       throws PipelineException
     {
-      StageInformation info = pBuilderInformation.getStageInformation();
       String modelFinal = pAssetNames.getModelFinalNodeName();
       String taskType = pProjectNames.getRiggingTaskName();
       
@@ -1048,7 +1055,7 @@ class AdvAssetBuilder
 	texNode = pAssetNames.getAnimTextureNodeName();
 	if (!checkExistance(texNode)) {
 	  MayaFTNBuildStage stage = 
-	    new MayaFTNBuildStage(info, pContext, pClient, pMayaContext, texNode, true);
+	    new MayaFTNBuildStage(pStageInfo, pContext, pClient, pMayaContext, texNode, true);
 	  isEditNode(stage, taskType);
 	  stage.build();
 	}
@@ -1058,7 +1065,7 @@ class AdvAssetBuilder
       if (!checkExistance(matName)) {
         AdvAssetMaterialStage stage =
           new AdvAssetMaterialStage
-          (info,
+          (pStageInfo,
            pContext, 
            pClient,
            pMayaContext,
@@ -1074,7 +1081,7 @@ class AdvAssetBuilder
       if (!checkExistance(matExportName)) {
         NewAssetBuilderMaterialExportStage stage = 
           new NewAssetBuilderMaterialExportStage
-          (info, 
+          (pStageInfo, 
            pContext,
            pClient,
            matExportName, 
@@ -1088,7 +1095,6 @@ class AdvAssetBuilder
     doShaders()
       throws PipelineException
     {
-      StageInformation info = pBuilderInformation.getStageInformation();
       String assetFinal = pAssetNames.getFinalNodeName();
       String taskType = pProjectNames.getShadingTaskName();
 
@@ -1097,7 +1103,7 @@ class AdvAssetBuilder
 	texNode = pAssetNames.getTextureNodeName();
 	if (!checkExistance(texNode)) {
 	  MayaFTNBuildStage stage = 
-	    new MayaFTNBuildStage(info, pContext, pClient, pMayaContext, texNode, true);
+	    new MayaFTNBuildStage(pStageInfo, pContext, pClient, pMayaContext, texNode, true);
 	  isEditNode(stage, taskType);
 	  stage.build();
 	}
@@ -1107,7 +1113,7 @@ class AdvAssetBuilder
       if (!checkExistance(shdNode)) {
 	AdvAssetShaderStage stage = 
 	  new AdvAssetShaderStage
-	  (info, 
+	  (pStageInfo, 
 	   pContext, 
 	   pClient, 
 	   pMayaContext, 
@@ -1122,7 +1128,7 @@ class AdvAssetBuilder
       if (!checkExistance(shdExport)) {
 	AssetBuilderShaderExportStage stage =
 	  new AssetBuilderShaderExportStage
-	  (info, 
+	  (pStageInfo, 
 	   pContext, 
 	   pClient,
 	   shdExport, 
@@ -1145,7 +1151,7 @@ class AdvAssetBuilder
 	    pProjectNames.getAssetShaderTTSetup(pAssetName, pAssetType);
 	  AdvAssetBuilderTTStage stage = 
 	    new AdvAssetBuilderTTStage
-	    (info, 
+	    (pStageInfo, 
 	     pContext, 
 	     pClient,
 	     pMayaContext, 
@@ -1164,25 +1170,25 @@ class AdvAssetBuilder
 	  String shd = pAssetNames.getShaderShdMiNodeName();
 	  if (!checkExistance(cam)) {
 	    AdvAssetCamMiStage stage = 
-	      new AdvAssetCamMiStage(info, pContext, pClient, cam, shdTT);
+	      new AdvAssetCamMiStage(pStageInfo, pContext, pClient, cam, shdTT);
 	    isPrepareNode(stage, taskType);
 	    stage.build();
 	  }
 	  if (!checkExistance(lgt)) {
 	    AdvAssetLgtMiStage stage = 
-	      new AdvAssetLgtMiStage(info, pContext, pClient, lgt, shdTT);
+	      new AdvAssetLgtMiStage(pStageInfo, pContext, pClient, lgt, shdTT);
 	    isPrepareNode(stage, taskType);
 	    stage.build();
 	  }
 	  if (!checkExistance(shd)) {
 	    AdvAssetShdMiStage stage =
-	      new AdvAssetShdMiStage(info, pContext, pClient, shd, shdNode);
+	      new AdvAssetShdMiStage(pStageInfo, pContext, pClient, shd, shdNode);
 	    isPrepareNode(stage, taskType);
 	    stage.build();
 	  }
 	  if (!checkExistance(camOver)) {
 	    MRayCamOverrideStage stage =
-	      new MRayCamOverrideStage(info, pContext, pClient, camOver);
+	      new MRayCamOverrideStage(pStageInfo, pContext, pClient, camOver);
 	    isPrepareNode(stage, taskType);
 	    stage.build();
 	  }
@@ -1191,7 +1197,7 @@ class AdvAssetBuilder
 	  if (!checkExistance(shdImg)) {
 	    AdvAssetShdImgStage stage = 
 	      new AdvAssetShdImgStage
-	      (info,
+	      (pStageInfo,
 	       pContext,
 	       pClient,
 	       shdImg,
@@ -1210,7 +1216,7 @@ class AdvAssetBuilder
 	  if (!checkExistance(shdImg)) {
 	    AdvAssetBuilderTTImgStage stage =
 	      new AdvAssetBuilderTTImgStage
-	      (info, 
+	      (pStageInfo, 
 	       pContext, 
 	       pClient, 
 	       shdImg, 
@@ -1224,7 +1230,7 @@ class AdvAssetBuilder
 	if (pBuildThumbnails) {
           if (!checkExistance(thumb)) {
             ThumbnailStage stage = 
-              new ThumbnailStage(info, pContext, pClient, thumb, "png", shdImg, 120);
+              new ThumbnailStage(pStageInfo, pContext, pClient, thumb, "png", shdImg, 120);
             isThumbnailNode(stage, taskType);
             stage.build();
           }
@@ -1239,7 +1245,7 @@ class AdvAssetBuilder
           sources.add(shdImg);
         else
           sources.add(shdExport);
-        TargetStage stage = new TargetStage(info, pContext, pClient, shdSubmit, sources);
+        TargetStage stage = new TargetStage(pStageInfo, pContext, pClient, shdSubmit, sources);
         isSubmitNode(stage, taskType);
         stage.build();
         addToQueueList(shdSubmit);
@@ -1251,7 +1257,7 @@ class AdvAssetBuilder
       if (pBuildTextureNode) {
 	finalTex = pAssetNames.getTextureFinalNodeName();
 	if (!checkExistance(finalTex)) {
-	  EmptyFileStage stage = new EmptyFileStage(info, pContext, pClient, finalTex);
+	  EmptyFileStage stage = new EmptyFileStage(pStageInfo, pContext, pClient, finalTex);
 	  isProductNode(stage, taskType);
 	  stage.build();
 	  pEmptyFileStages.add(stage);
@@ -1259,7 +1265,7 @@ class AdvAssetBuilder
       }
       if (!checkExistance(finalShd)) {
 	ProductStage stage = 
-	  new ProductStage(info, pContext, pClient, finalShd, "ma", shdExport);
+	  new ProductStage(pStageInfo, pContext, pClient, finalShd, "ma", shdExport, StageFunction.MayaScene.toString());
 	isProductNode(stage, taskType);
 	stage.build();
       }
@@ -1269,7 +1275,7 @@ class AdvAssetBuilder
 	sources.add(finalShd);
 	if (pBuildTextureNode)
 	  sources.add(finalTex);
-	TargetStage stage = new TargetStage(info, pContext, pClient, shdApprove, sources);
+	TargetStage stage = new TargetStage(pStageInfo, pContext, pClient, shdApprove, sources);
 	isApproveNode(stage, taskType);
 	stage.build();
 	addToQueueList(shdApprove);

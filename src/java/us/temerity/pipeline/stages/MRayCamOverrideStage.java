@@ -4,6 +4,8 @@ import us.temerity.pipeline.MasterMgrClient;
 import us.temerity.pipeline.PipelineException;
 import us.temerity.pipeline.builder.PluginContext;
 import us.temerity.pipeline.builder.UtilContext;
+import us.temerity.pipeline.builder.BaseBuilder.StageFunction;
+import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
 
 
 public 
@@ -29,7 +31,7 @@ class MRayCamOverrideStage
          client, 
          nodeName, 
          "mi", 
-         new PluginContext("Emacs"), 
+         null, 
          new PluginContext("MRayCamOverride"));
   }
   
@@ -53,5 +55,17 @@ class MRayCamOverrideStage
           new PluginContext("Emacs"), 
           new PluginContext("MRayCamOverride"));
   }
+  
+  /**
+   * See {@link BaseStage#getStageFunction()}
+   */
+  @Override
+  public String 
+  getStageFunction()
+  {
+    return StageFunction.TextFile.toString();
+  }
+
+  
   private static final long serialVersionUID = 4457874075415364187L;
 }

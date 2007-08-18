@@ -3,6 +3,8 @@ package us.temerity.pipeline.stages;
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.PluginContext;
 import us.temerity.pipeline.builder.UtilContext;
+import us.temerity.pipeline.builder.BaseBuilder.StageFunction;
+import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
 
 
 public 
@@ -35,7 +37,7 @@ class MayaRenderStage
           range, 
           padding, 
           suffix, 
-          new PluginContext("FCheck"), 
+          null, 
           new PluginContext("MayaRender"));
     addLink(new LinkMod(mayaScene, LinkPolicy.Dependency));
     addSingleParamValue("MayaScene", mayaScene);
@@ -207,6 +209,17 @@ class MayaRenderStage
       return super.toString();
     }
   }
+  
+  /**
+   * See {@link BaseStage#getStageFunction()}
+   */
+  @Override
+  public String 
+  getStageFunction()
+  {
+    return StageFunction.RenderedImage.toString();
+  }
+
   
   private static final long serialVersionUID = 7499324641660174563L;
 }

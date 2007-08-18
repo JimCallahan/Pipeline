@@ -5,6 +5,7 @@ import us.temerity.pipeline.LogMgr.Kind;
 import us.temerity.pipeline.LogMgr.Level;
 import us.temerity.pipeline.builder.PluginContext;
 import us.temerity.pipeline.builder.UtilContext;
+import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
 
 /**
  * A branch stage designed to make building stages without frame numbers easy.
@@ -57,6 +58,11 @@ class StandardStage
     pSuffix = suffix;
     if(editor != null) {
       pEditor = getEditor(editor, getToolset());
+    }
+    else {
+      PluginContext defaultEditor = stageInformation.getDefaultEditor(getStageFunction());
+      if (defaultEditor != null)
+	pEditor = getEditor(defaultEditor, getToolset());
     }
 
     if(action != null) {
@@ -120,6 +126,12 @@ class StandardStage
     if(editor != null) {
       pEditor = getEditor(editor, getToolset());
     }
+    else {
+      PluginContext defaultEditor = stageInformation.getDefaultEditor(getStageFunction());
+      if (defaultEditor != null)
+	pEditor = getEditor(defaultEditor, getToolset());
+    }
+    
     if(action != null) {
       pAction = getAction(action, getToolset());
     }
@@ -173,6 +185,8 @@ class StandardStage
     if(pAction != null)
       setAction();
     setKeys();
+    if(pAction != null)
+      setJobSettings();
     pClient.modifyProperties(getAuthor(), getView(), pRegisteredNodeMod);
     pRegisteredNodeMod = pClient.getWorkingVersion(getAuthor(), getView(),
         pRegisteredNodeName);
@@ -207,7 +221,7 @@ class StandardStage
   registerNode() 
     throws PipelineException
   {
-    if(pRegisteredNodeName == null || pEditor == null)
+    if(pRegisteredNodeName == null)
       return null;
     NodeMod toReturn = registerNode(pRegisteredNodeName, pSuffix, pEditor);
     pStageInformation.addNode(pRegisteredNodeName, getAuthor(), getView());
@@ -229,7 +243,7 @@ class StandardStage
   registerSequence() 
     throws PipelineException
   {
-    if(pRegisteredNodeName == null || pEditor == null)
+    if(pRegisteredNodeName == null)
       return null;
     NodeMod toReturn = 
       registerSequence(pRegisteredNodeName, pPadding, pSuffix, pEditor, 

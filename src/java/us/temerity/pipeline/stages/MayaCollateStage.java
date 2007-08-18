@@ -4,6 +4,7 @@ import java.util.TreeMap;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
+import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
 
 public 
 class MayaCollateStage

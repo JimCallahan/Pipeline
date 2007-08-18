@@ -9,7 +9,7 @@ package us.temerity.pipeline.builder.maya2mr.v2_3_2.stages;
 import us.temerity.pipeline.MasterMgrClient;
 import us.temerity.pipeline.PipelineException;
 import us.temerity.pipeline.builder.UtilContext;
-import us.temerity.pipeline.stages.StageInformation;
+import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
 import us.temerity.pipeline.stages.TurntableStage;
 
 public 

@@ -316,6 +316,16 @@ class DefaultProjectNames
   }
   
   /**
+   * @return the placeholder TT circle mel script name
+   */
+  @Override
+  public String 
+  getPlaceholderCameraScriptName()
+  {
+    return new Path(pMelPlaceHolderScriptPath, "placeHolderCam").toString();
+  }
+  
+  /**
    * @return the model verification script name
    */
   @Override

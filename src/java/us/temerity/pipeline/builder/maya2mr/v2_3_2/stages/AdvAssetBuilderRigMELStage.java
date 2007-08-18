@@ -11,8 +11,8 @@ import java.util.LinkedList;
 import us.temerity.pipeline.MasterMgrClient;
 import us.temerity.pipeline.PipelineException;
 import us.temerity.pipeline.builder.UtilContext;
+import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
 import us.temerity.pipeline.stages.CatFilesStage;
-import us.temerity.pipeline.stages.StageInformation;
 
 public 
 class AdvAssetBuilderRigMELStage 

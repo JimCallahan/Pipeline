@@ -89,8 +89,6 @@ class BasicShotBuilder
   public final static String aProps = "Props";
   public final static String aSets = "Sets";
   
-  public final static String aSelectionKeys = "SelectionKeys";
-  
   private static final long serialVersionUID = 2017077506125779699L;
 
 }

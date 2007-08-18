@@ -6,7 +6,6 @@ import java.util.TreeSet;
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.builder.maya2mr.v2_3_1.stages.*;
-import us.temerity.pipeline.stages.StageInformation;
 
 /*------------------------------------------------------------------------------------------*/
 /*   A S S E T   B U I L D E R                                                              */
@@ -204,9 +203,7 @@ class AssetBuilder
   public final static String aBuildLowRez = "BuildLowRez";
   public final static String aBuildTextureNode = "BuildTextureNode";
   public final static String aBuildAdvancedShadingNetwork = "BuildAdvancedShadingNetwork";
-  public final static String aCheckinWhenDone = "CheckinWhenDone";
   public final static String aProjectName = "ProjectName";
-  public final static String aSelectionKeys = "SelectionKeys";
   
   private static final long serialVersionUID = -8898612001759637874L;
 
@@ -249,10 +246,9 @@ class AssetBuilder
 
       pMayaContext = (MayaContext) getParamValue(aMayaContext);
       
-      StageInformation stageInfo = pBuilderInformation.getStageInformation();
       TreeSet<String> keys = (TreeSet<String>) getParamValue(aSelectionKeys);
-      stageInfo.setDefaultSelectionKeys(keys);
-      stageInfo.setUseDefaultSelectionKeys(true);
+      pStageInfo.setDefaultSelectionKeys(keys);
+      pStageInfo.setUseDefaultSelectionKeys(true);
       
       pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, "Validation complete.");
     }
@@ -308,11 +304,10 @@ class AssetBuilder
     ) 
       throws PipelineException
     {
-      StageInformation info = pBuilderInformation.getStageInformation();
       if(!checkExistance(modName)) {
         AssetBuilderModelStage stage = 
           new AssetBuilderModelStage
-          (info,
+          (pStageInfo,
            pContext,
            pClient,
            pMayaContext, 
@@ -322,15 +317,15 @@ class AssetBuilder
         pModelStages.add(stage);
       }
       if(!checkExistance(rigName)) {
-        new AssetBuilderRigStage(info, pContext, pClient, pMayaContext, rigName, modName).build();
+        new AssetBuilderRigStage(pStageInfo, pContext, pClient, pMayaContext, rigName, modName).build();
       }
       if(!checkExistance(matName)) {
-        new AssetBuilderMaterialStage(info, pContext, pClient, pMayaContext, matName, rigName).build();
+        new AssetBuilderMaterialStage(pStageInfo, pContext, pClient, pMayaContext, matName, rigName).build();
         addToDisableList(matName);
       }
       if(!checkExistance(finalName)) {
         new AssetBuilderFinalStage
-          (info, pContext, pClient, pMayaContext, finalName, matName, pFinalizeMEL).build();
+          (pStageInfo, pContext, pClient, pMayaContext, finalName, matName, pFinalizeMEL).build();
         addToQueueList(finalName);
       }
     }
@@ -339,12 +334,11 @@ class AssetBuilder
     buildTextureNode() 
       throws PipelineException
     {
-      StageInformation info = pBuilderInformation.getStageInformation();
       String textureNodeName = pAssetNames.getTextureNodeName();
       String parentName = pBuildAdvancedShadingNetwork ? pAssetNames.getShaderNodeName() : pAssetNames
         .getMaterialNodeName();
       if(!checkExistance(textureNodeName)) {
-        new AssetBuilderTextureStage(info, pContext, pClient, textureNodeName, parentName).build();
+        new AssetBuilderTextureStage(pStageInfo, pContext, pClient, textureNodeName, parentName).build();
       }
     }
 
@@ -352,18 +346,17 @@ class AssetBuilder
     buildShadingNetwork() 
       throws PipelineException
     {
-      StageInformation info = pBuilderInformation.getStageInformation();
       if(!checkExistance(pAssetNames.getShaderIncludeNodeName())) {
-        new AssetBuilderShaderIncludeStage(info, pContext, pClient, pAssetNames.getShaderIncludeNodeName(),
+        new AssetBuilderShaderIncludeStage(pStageInfo, pContext, pClient, pAssetNames.getShaderIncludeNodeName(),
           pAssetNames.getShaderIncludeGroupSecSeq()).build();
       }
       if(!checkExistance(pAssetNames.getShaderNodeName())) {
-        new AssetBuilderShaderStage(info, pContext, pClient,  pMayaContext, pAssetNames.getShaderNodeName(),
+        new AssetBuilderShaderStage(pStageInfo, pContext, pClient,  pMayaContext, pAssetNames.getShaderNodeName(),
           pAssetNames.getFinalNodeName(), pAssetNames.getShaderIncludeNodeName(), pMRInitMEL).build();
         addToDisableList(pAssetNames.getShaderNodeName());
       }
       if(!checkExistance(pAssetNames.getShaderExportNodeName())) {
-        new AssetBuilderShaderExportStage(info, pContext, pClient,  pMayaContext, pAssetNames
+        new AssetBuilderShaderExportStage(pStageInfo, pContext, pClient,  pMayaContext, pAssetNames
           .getShaderExportNodeName(), pAssetNames.getShaderNodeName(), pAssetNames.getAssetName()).build();
         addToQueueList(pAssetNames.getShaderExportNodeName());
         removeFromQueueList(pAssetNames.getFinalNodeName());

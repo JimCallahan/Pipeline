@@ -6,8 +6,8 @@ package us.temerity.pipeline.builder.maya2mr.v2_3_1.stages;
 import us.temerity.pipeline.MasterMgrClient;
 import us.temerity.pipeline.PipelineException;
 import us.temerity.pipeline.builder.*;
+import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
 import us.temerity.pipeline.stages.MayaFileStage;
-import us.temerity.pipeline.stages.StageInformation;
 
 /**
  * A leaf stage used in the AssetBuilder that builds the shader export node.

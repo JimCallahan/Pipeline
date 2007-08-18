@@ -1,9 +1,10 @@
-// $Id: MayaBuildStage.java,v 1.4 2007/08/02 02:51:27 jesse Exp $
+// $Id: MayaBuildStage.java,v 1.5 2007/08/18 18:14:47 jesse Exp $
 
 package us.temerity.pipeline.stages;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
+import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
 
 /**
  * A branch stage designed to make building leaf stages with the MayaBuild Action easier.

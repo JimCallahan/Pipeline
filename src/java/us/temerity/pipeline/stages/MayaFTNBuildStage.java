@@ -3,6 +3,7 @@ package us.temerity.pipeline.stages;
 import us.temerity.pipeline.MasterMgrClient;
 import us.temerity.pipeline.PipelineException;
 import us.temerity.pipeline.builder.*;
+import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
 
 /**
  * A branch stage designed to make building leaf stages with the MayaFTNBuild Action easier.

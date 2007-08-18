@@ -11,7 +11,6 @@ import java.util.*;
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.builder.maya2mr.v2_3_2.stages.*;
-import us.temerity.pipeline.stages.StageInformation;
 
 /**
  * Simple builder to constuct a model file from multiple pieces.
@@ -229,7 +228,6 @@ class ModelPiecesBuilder
     buildPhase() 
       throws PipelineException
     {
-      StageInformation info = pBuilderInformation.getStageInformation();
       pLog.log(LogMgr.Kind.Ops, LogMgr.Level.Fine, 
         "Starting the build phase in the Build Pass");
       
@@ -243,7 +241,7 @@ class ModelPiecesBuilder
         if(!checkExistance(modelName)) {
           AssetBuilderModelStage stage = 
             new AssetBuilderModelStage
-            (info,
+            (pStageInfo,
              pContext,
              pClient,
              pMayaContext, 
@@ -258,7 +256,7 @@ class ModelPiecesBuilder
       if (!checkExistance(editName)) {
         ModelPiecesEditStage stage = 
           new ModelPiecesEditStage
-          (info,
+          (pStageInfo,
            pContext,
            pClient,
            pMayaContext,
@@ -272,7 +270,7 @@ class ModelPiecesBuilder
       if (!checkExistance(verifyName)) {
         ModelPiecesVerifyStage stage = 
           new ModelPiecesVerifyStage
-          (info,
+          (pStageInfo,
            pContext,
            pClient,
            pMayaContext,

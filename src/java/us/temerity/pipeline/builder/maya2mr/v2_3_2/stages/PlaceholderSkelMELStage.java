@@ -3,8 +3,9 @@ package us.temerity.pipeline.builder.maya2mr.v2_3_2.stages;
 import us.temerity.pipeline.MasterMgrClient;
 import us.temerity.pipeline.PipelineException;
 import us.temerity.pipeline.builder.UtilContext;
+import us.temerity.pipeline.builder.BaseBuilder.StageFunction;
+import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
 import us.temerity.pipeline.stages.FileWriterStage;
-import us.temerity.pipeline.stages.StageInformation;
 
 
 public 
@@ -28,7 +29,8 @@ class PlaceholderSkelMELStage
       context,
       client,
       nodeName,
-      "mel");
+      "mel",
+      StageFunction.ScriptFile.toString());
     
     String s = "spaceLocator -p 0 0 0 -n Reference;\n" + 
     	       "joint -p 0 0 0  -n Root;\n" + 

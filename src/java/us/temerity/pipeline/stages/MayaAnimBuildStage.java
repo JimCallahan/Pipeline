@@ -8,6 +8,7 @@ package us.temerity.pipeline.stages;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
+import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
 
 public 
 class MayaAnimBuildStage 
@@ -55,7 +56,7 @@ class MayaAnimBuildStage
    * @param buildType
    *        The sort of Maya connection that this link is going to represent. This value
    *        will effect the {@link LinkPolicy} and the source parameters that are set.
-   * @param fileType
+   * @param sceneType
    *        Is this file an Animation file (containing curves) or a model file (containing a
    *        rig).
    */
@@ -99,12 +100,10 @@ class MayaAnimBuildStage
   }
 
   
-  
-  
   private static final long serialVersionUID = -7074698626849138011L;
   
   /**
-   * Utility method to be used with the {@link #setupLink(String, String, MayaBuildType)}
+   * Utility method to be used with the {@link #setupLink(String, String, MayaBuildType, MayaSceneType)}
    * method.
    * 
    * @return The REFERENCE value of {@link MayaBuildType}.
@@ -116,7 +115,7 @@ class MayaAnimBuildStage
   }
 
   /**
-   * Utility method to be used with the {@link #setupLink(String, String, MayaBuildType)}
+   * Utility method to be used with the {@link #setupLink(String, String, MayaBuildType, MayaSceneType)}
    * method.
    * 
    * @return The IMPORT value of {@link MayaBuildType}.

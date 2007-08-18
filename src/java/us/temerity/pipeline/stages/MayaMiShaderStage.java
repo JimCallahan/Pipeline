@@ -3,6 +3,8 @@ package us.temerity.pipeline.stages;
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.PluginContext;
 import us.temerity.pipeline.builder.UtilContext;
+import us.temerity.pipeline.builder.BaseBuilder.StageFunction;
+import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
 
 
 public 
@@ -33,7 +35,7 @@ class MayaMiShaderStage
           range, 
           padding, 
           "mi", 
-          new PluginContext("Emacs"), 
+          null, 
           new PluginContext("MayaMiShader"));
     setMayaScene(mayaScene);
   }
@@ -128,5 +130,16 @@ class MayaMiShaderStage
     }
     addSingleParamValue("ForceMayaLightMode", value);
   }
+  
+  /**
+   * See {@link BaseStage#getStageFunction()}
+   */
+  @Override
+  public String 
+  getStageFunction()
+  {
+    return StageFunction.TextFile.toString();
+  }
+
   private static final long serialVersionUID = -2920151446824828954L;
 }

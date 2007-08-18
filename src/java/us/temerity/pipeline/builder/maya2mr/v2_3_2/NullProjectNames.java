@@ -320,4 +320,10 @@ class NullProjectNames
   {
     return null;
   }
+
+  public String getPlaceholderCameraScriptName()
+  {
+    // TODO Auto-generated method stub
+    return null;
+  }
 }

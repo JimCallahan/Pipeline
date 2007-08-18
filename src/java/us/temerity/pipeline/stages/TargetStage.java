@@ -11,6 +11,7 @@ import java.util.TreeSet;
 import us.temerity.pipeline.MasterMgrClient;
 import us.temerity.pipeline.PipelineException;
 import us.temerity.pipeline.builder.UtilContext;
+import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
 
 public 
 class TargetStage 
@@ -36,5 +37,6 @@ class TargetStage
           null, 
           sources);
   }
+  
   private static final long serialVersionUID = 5221589449119679847L;
 }

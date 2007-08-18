@@ -1,12 +1,14 @@
-// $Id: BaseStage.java,v 1.5 2007/07/23 20:03:10 jesse Exp $
+// $Id: BaseStage.java,v 1.6 2007/08/18 18:14:47 jesse Exp $
 
 package us.temerity.pipeline.stages;
 
 import java.util.*;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.builder.PluginContext;
-import us.temerity.pipeline.builder.UtilContext;
+import us.temerity.pipeline.builder.*;
+import us.temerity.pipeline.builder.BaseBuilder.StageFunction;
+import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
+import us.temerity.pipeline.math.Range;
 
 /*------------------------------------------------------------------------------------------*/
 /*   B A S E   S T A G E                                                                    */
@@ -52,6 +54,10 @@ class BaseStage
     pClient = client;
     pPlug = PluginMgrClient.getInstance();
     pAnnotations = new ListMap<String, BaseAnnotation>();
+    
+    pExecutionMethod = ExecutionMethod.Serial;
+    pBatchSize = 0;
+    pJobReqs = JobReqs.defaultJobReqs();
   }
   
   
@@ -77,7 +83,7 @@ class BaseStage
   cleanUpAddedNodes
   (
     MasterMgrClient mclient,
-    StageInformation info
+    StageState info
   ) 
     throws PipelineException
   {
@@ -206,6 +212,23 @@ class BaseStage
       pRegisteredNodeMod.setJobRequirements(reqs);
     }
   }
+  
+  protected final void
+  setJobSettings()
+    throws PipelineException
+  {
+    pRegisteredNodeMod.setExecutionMethod(pExecutionMethod);
+    if (pExecutionMethod == ExecutionMethod.Parallel)
+      pRegisteredNodeMod.setBatchSize(pBatchSize);
+    JobReqs reqs = pRegisteredNodeMod.getJobRequirements();
+    reqs.setMaxLoad(pJobReqs.getMaxLoad());
+    reqs.setMinDisk(pJobReqs.getMinDisk());
+    reqs.setMinMemory(pJobReqs.getMinMemory());
+    reqs.setPriority(pJobReqs.getPriority());
+    reqs.setRampUp(pJobReqs.getRampUp());
+    pRegisteredNodeMod.setJobRequirements(reqs);
+  }
+  
 
   
   
@@ -439,15 +462,33 @@ class BaseStage
       throw new PipelineException
         ("There are no plugins associated with the toolset (" + toolset + ")");
     
-    TreeSet<VersionID> pluginSet = 
-      plugs.get(pluginUtil.getPluginVendor(), pluginUtil.getPluginName());
-    if (pluginSet == null)
+    TreeSet<VersionID> temp = plugs.get(pluginUtil.getPluginVendor(), pluginUtil.getPluginName());
+    if (temp == null)
       throw new PipelineException
         ("No Action Exists that matches the Plugin Context (" + pluginUtil + ") " +
          "in toolset (" + toolset + ")");
-    VersionID ver = pluginSet.last();
 
-    return pPlug.newAction(pluginUtil.getPluginName(), ver, pluginUtil.getPluginVendor());
+    TreeSet<VersionID> pluginSet = new TreeSet<VersionID>(Collections.reverseOrder());
+    pluginSet.addAll(temp);
+    
+
+    Range<VersionID> contextRange = pluginUtil.getRange();
+    
+    VersionID goodVersion = null;
+    
+    for (VersionID each : pluginSet) {
+      if (contextRange.isInside(each)) {
+	goodVersion = each;
+	break;
+      }
+    }
+    
+    if (goodVersion == null)
+      throw new PipelineException
+        ("No Action Exists that matches the Plugin Context (" + pluginUtil + ") " +
+         "in toolset (" + toolset + ")");
+
+    return pPlug.newAction(pluginUtil.getPluginName(), goodVersion, pluginUtil.getPluginVendor());
   }
 
   /**
@@ -476,15 +517,31 @@ class BaseStage
       throw new PipelineException
         ("There are no plugins associated with the toolset (" + toolset + ")");
     
-    TreeSet<VersionID> pluginSet = 
-      plugs.get(pluginUtil.getPluginVendor(), pluginUtil.getPluginName());
+    TreeSet<VersionID> pluginSet = new TreeSet<VersionID>(Collections.reverseOrder());
+    pluginSet.addAll(plugs.get(pluginUtil.getPluginVendor(), pluginUtil.getPluginName()));
+    
     if (pluginSet == null)
       throw new PipelineException
         ("No Action Exists that matches the Plugin Context (" + pluginUtil + ") " +
          "in toolset (" + toolset + ")");
-    VersionID ver = pluginSet.last();
-
-    return pPlug.newEditor(pluginUtil.getPluginName(), ver, pluginUtil.getPluginVendor());
+    
+    Range<VersionID> contextRange = pluginUtil.getRange();
+    
+    VersionID goodVersion = null;
+    
+    for (VersionID each : pluginSet) {
+      if (contextRange.isInside(each)) {
+	goodVersion = each;
+	break;
+      }
+    }
+    
+    if (goodVersion == null)
+      throw new PipelineException
+        ("No Action Exists that matches the Plugin Context (" + pluginUtil + ") " +
+         "in toolset (" + toolset + ")");
+    
+    return pPlug.newEditor(pluginUtil.getPluginName(), goodVersion, pluginUtil.getPluginVendor());
   }
   
   
@@ -786,6 +843,87 @@ class BaseStage
     return Collections.unmodifiableMap(pAnnotations);
   }
   
+  public void
+  setExecutionMethod
+  (
+    ExecutionMethod method  
+  )
+  {
+    if (method != null)
+      pExecutionMethod = method;
+  }
+  
+  public void
+  setBatchSize
+  (
+    int batchSize  
+  )
+  {
+    pBatchSize = batchSize;
+  }
+  
+  /**
+   * Sets any special job requirements, excluding keys for this job.
+   * <p>
+   * Note that all Selection and License key information will be ignored. To set these values
+   * please use the other helper methods in BaseStage meant to deal with License and Selection
+   * Keys.
+   * 
+   * @see #addSelectionKeys(TreeSet)
+   * @see #setSelectionKeys(TreeSet)
+   * @see #addLicenseKeys(TreeSet) 
+   * @see #setLicenseKeys(TreeSet)
+   */
+  public void
+  setJobReqs
+  (
+    JobReqs reqs
+  )
+  {
+    pJobReqs = reqs;
+  }
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*  N O D E   F U N C T I O N                                                             */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Returns a String that identifies the function of this stage in a builder.
+   * <p>
+   * This is used to select an appropriate editor for the node.  Stages should override
+   * this method to set a value that makes sense.  There are a number of standard values
+   * defined in the {@link BaseBuilder.StageFunction} enumeration which can be used as well. 
+   */
+  public String
+  getStageFunction()
+  {
+    return StageFunction.None.toString();
+  }
+  
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*  I N F O R M A T I O N                                                                 */
+  /*----------------------------------------------------------------------------------------*/
+  
+  public boolean
+  doesActionHaveParam
+  (
+    String paramName  
+  )
+  {
+    if (pAction == null)
+     return false;
+    for (ActionParam param : pAction.getSingleParams() ) {
+      String name = param.getName();
+      if (name.equals(paramName))
+	return true;
+    }
+    return false;
+  }
+  
+  
   /*----------------------------------------------------------------------------------------*/
   /*  I N T E R N A L S                                                                     */
   /*----------------------------------------------------------------------------------------*/
@@ -848,6 +986,12 @@ class BaseStage
   protected TreeSet<String> pLicenseKeys;
   
   protected ListMap<String, BaseAnnotation> pAnnotations;
+  
+  protected ExecutionMethod pExecutionMethod;
+  
+  protected int pBatchSize;
+  
+  protected JobReqs pJobReqs;
   
   /**
    * Instance of {@link MasterMgrClient} to perform the stage's operations with.

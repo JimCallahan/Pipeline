@@ -3,8 +3,8 @@ package us.temerity.pipeline.builder.maya2mr.v2_3_1.stages;
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.PluginContext;
 import us.temerity.pipeline.builder.UtilContext;
+import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
 import us.temerity.pipeline.stages.StandardStage;
-import us.temerity.pipeline.stages.StageInformation;
 
 /**
  * A leaf stage used in the AssetBuilder that builds the shader include node.

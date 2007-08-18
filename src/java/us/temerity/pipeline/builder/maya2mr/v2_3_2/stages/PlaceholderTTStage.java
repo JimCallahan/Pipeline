@@ -1,12 +1,13 @@
-// $Id: PlaceholderTTStage.java,v 1.2 2007/08/06 03:50:14 jesse Exp $
+// $Id: PlaceholderTTStage.java,v 1.3 2007/08/18 18:14:50 jesse Exp $
 
 package us.temerity.pipeline.builder.maya2mr.v2_3_2.stages;
 
 import us.temerity.pipeline.MasterMgrClient;
 import us.temerity.pipeline.PipelineException;
 import us.temerity.pipeline.builder.UtilContext;
+import us.temerity.pipeline.builder.BaseBuilder.StageFunction;
+import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
 import us.temerity.pipeline.stages.FileWriterStage;
-import us.temerity.pipeline.stages.StageInformation;
 
 
 public 
@@ -30,7 +31,8 @@ class PlaceholderTTStage
       context,
       client,
       nodeName,
-      "mel");
+      "mel",
+      StageFunction.ScriptFile.toString());
     
     String s = "string $cams[] = `camera -focalLength 50`;\n" + 
     	       "rename $cams[0] \"renderCam\";\n" + 

@@ -5,11 +5,9 @@ import java.util.TreeSet;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
-import us.temerity.pipeline.builder.maya2mr.v2_3_2.stages.AssetBuilderModelStage;
-import us.temerity.pipeline.builder.maya2mr.v2_3_2.stages.PlaceholderTTStage;
+import us.temerity.pipeline.builder.maya2mr.v2_3_2.stages.*;
 import us.temerity.pipeline.builder.maya2mr.v2_3_2.stages.PlaceholderTTStage.TTType;
 import us.temerity.pipeline.stages.EmptyMayaAsciiStage;
-import us.temerity.pipeline.stages.StageInformation;
 
 /*------------------------------------------------------------------------------------------*/
 /*   P R O J E C T   T U R N T A B L E   B U I L D E R                                      */
@@ -104,6 +102,8 @@ class ProjectTurntableBuilder
     
     pProjectNames = (BuildsProjectNames) projectNames;
     
+    setDefaultEditors();
+    
     addSetupPass(new InformationPass());
     ConstructPass build = new BuildPass();
     ConstructPass end = new FinalizePass();
@@ -115,7 +115,7 @@ class ProjectTurntableBuilder
       AdvancedLayoutGroup layout = 
         new AdvancedLayoutGroup
           ("Builder Information", 
-           "The pass where all the basic information about the asset is collected " +
+           "The pass where all the basic pStageInformation about the asset is collected " +
            "from the user.", 
            "BuilderSettings", 
            true);
@@ -153,6 +153,27 @@ class ProjectTurntableBuilder
   }
   
   
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   D E F A U L T   E D I T O R S                                                        */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Override this to change the default editors.
+   */
+  protected void
+  setDefaultEditors()
+  {
+    setDefaultEditor(StageFunction.MayaScene.toString(), new PluginContext("MayaProject"));
+    setDefaultEditor(StageFunction.None.toString(), new PluginContext("Emacs"));
+    setDefaultEditor(StageFunction.TextFile.toString(), new PluginContext("Emacs"));
+    setDefaultEditor(StageFunction.ScriptFile.toString(), new PluginContext("Emacs"));
+    setDefaultEditor(StageFunction.RenderedImage.toString(), new PluginContext("Shake"));
+    setDefaultEditor(StageFunction.SourceImage.toString(), new PluginContext("Gimp"));
+    setDefaultEditor(StageFunction.MotionBuilderScene.toString(), null);
+  }
+  
+  
   @Override
   protected TreeSet<String> 
   getNodesToCheckIn()
@@ -160,7 +181,12 @@ class ProjectTurntableBuilder
     return getCheckInList();
   }
   
-  
+  @Override
+  protected boolean 
+  performCheckIn()
+  {
+    return pCheckInWhenDone;
+  }
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -230,10 +256,9 @@ class ProjectTurntableBuilder
       
       pMayaContext = (MayaContext) getParamValue(aMayaContext);
       
-      StageInformation info = pBuilderInformation.getStageInformation();
       TreeSet<String> keys = (TreeSet<String>) getParamValue(aSelectionKeys);
-      info.setDefaultSelectionKeys(keys);
-      info.setUseDefaultSelectionKeys(true);
+      pStageInfo.setDefaultSelectionKeys(keys);
+      pStageInfo.setUseDefaultSelectionKeys(true);
       
       pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, "Validation complete.");
     }
@@ -262,7 +287,6 @@ class ProjectTurntableBuilder
     {
       pLog.log(LogMgr.Kind.Ops, LogMgr.Level.Fine, 
         "Starting the build phase in the Build Pass");
-      StageInformation info = pBuilderInformation.getStageInformation();
       String modSetup = pProjectNames.getAssetModelTTSetup(null, "character");
       String modSetSetup = pProjectNames.getAssetModelTTSetup(null, "set");
       String rigSetup = pProjectNames.getAssetRigAnimSetup(null, "character");
@@ -283,7 +307,7 @@ class ProjectTurntableBuilder
 	for (String node : all ) {
 	  if (!checkExistance(node)) {
 	    EmptyMayaAsciiStage stage = 
-	      new EmptyMayaAsciiStage(info, pContext, pClient, pMayaContext, node);
+	      new EmptyMayaAsciiStage(pStageInfo, pContext, pClient, pMayaContext, node);
 	    stage.build();
 	    pEmptyMayaStages.add(stage);
 	    addToCheckInList(node);
@@ -294,29 +318,39 @@ class ProjectTurntableBuilder
 	String circleMel = pProjectNames.getPlaceholderTTCircleScriptName();
 	if (!checkExistance(circleMel)) {
 	  PlaceholderTTStage stage = 
-	    new PlaceholderTTStage(info, pContext, pClient, circleMel, TTType.Circle);
+	    new PlaceholderTTStage(pStageInfo, pContext, pClient, circleMel, TTType.Circle);
 	  stage.build();
 	}
 	for (String circles : pCircles) {
-	  AssetBuilderModelStage stage = 
-	    new AssetBuilderModelStage(info, pContext, pClient, pMayaContext, circles, circleMel);
-	  stage.build();
-	  pModelStages.add(stage);
-	  addToCheckInList(circles);
+	  if (!checkExistance(circles)) {
+	    AssetBuilderModelStage stage = 
+	      new AssetBuilderModelStage(pStageInfo, pContext, pClient, pMayaContext, circles, circleMel);
+	    stage.build();
+	    pModelStages.add(stage);
+	    addToCheckInList(circles);
+	  }
 	}
 	String centerMel = pProjectNames.getPlaceholderTTCenterScriptName();
 	if (!checkExistance(centerMel)) {
 	  PlaceholderTTStage stage = 
-	    new PlaceholderTTStage(info, pContext, pClient, centerMel, TTType.Center);
+	    new PlaceholderTTStage(pStageInfo, pContext, pClient, centerMel, TTType.Center);
 	  stage.build();
 	}
 	for (String centers : pCenter) {
-	  AssetBuilderModelStage stage = 
-	    new AssetBuilderModelStage(info, pContext, pClient, pMayaContext, centers, centerMel);
-	  stage.build();
-	  pModelStages.add(stage);
-	  addToCheckInList(centers);
+	  if (!checkExistance(centers)) {
+	    AssetBuilderModelStage stage = 
+	      new AssetBuilderModelStage(pStageInfo, pContext, pClient, pMayaContext, centers, centerMel);
+	    stage.build();
+	    pModelStages.add(stage);
+	    addToCheckInList(centers);
+	  }
 	}
+      }
+      String cameraMel = pProjectNames.getPlaceholderCameraScriptName();
+      if (!checkExistance(cameraMel)) {
+	PlaceholderCameraStage stage = 
+	  new PlaceholderCameraStage(pStageInfo, pContext, pClient, cameraMel);
+	stage.build();
       }
     }
     private static final long serialVersionUID = -1362555982315848091L;

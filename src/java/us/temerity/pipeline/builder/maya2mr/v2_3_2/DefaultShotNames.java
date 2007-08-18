@@ -275,6 +275,15 @@ public class DefaultShotNames
   /*---Layout--------------------------------------------------------------------------------*/
   
   /**
+   * The node with the animated camera in it.
+   */
+  public String
+  getCameraNodeName()
+  {
+    return new Path(pLayEdit, pNamePrefix + "camera").toString();
+  }
+  
+  /**
    * The node that a user will edit to create the layout.
    */
   public String

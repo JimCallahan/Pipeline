@@ -5,8 +5,8 @@ import java.util.TreeSet;
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.PluginContext;
 import us.temerity.pipeline.builder.UtilContext;
+import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
 import us.temerity.pipeline.stages.StandardStage;
-import us.temerity.pipeline.stages.StageInformation;
 
 
 public 

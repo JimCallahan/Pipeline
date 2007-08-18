@@ -5,6 +5,8 @@ import java.util.TreeMap;
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.PluginContext;
 import us.temerity.pipeline.builder.UtilContext;
+import us.temerity.pipeline.builder.BaseBuilder.StageFunction;
+import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
 
 
 public 
@@ -36,7 +38,7 @@ class MayaMiExportStage
       range, 
       padding, 
       "mi", 
-      new PluginContext("Emacs"), 
+      null, 
       new PluginContext("MayaMiExport"));
     setMayaScene(mayaScene);
     if (exportSet != null)
@@ -379,6 +381,17 @@ class MayaMiExportStage
     values.put(aCustomPhenomena, true);
     setPresets(pAction, values);
   }
+  
+  /**
+   * See {@link BaseStage#getStageFunction()}
+   */
+  @Override
+  public String 
+  getStageFunction()
+  {
+    return StageFunction.TextFile.toString();
+  }
+
   
   private static final long serialVersionUID = -570821544247319782L;
   

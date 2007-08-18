@@ -58,8 +58,10 @@ class DefaultAssetNames
   /*   A C T I O N                                                                          */
   /*----------------------------------------------------------------------------------------*/
   
+  @Override
   public void 
   generateNames() 
+    throws PipelineException
   {
     setContext((UtilContext) getParamValue(aUtilContext));
     

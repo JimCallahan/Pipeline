@@ -5,10 +5,8 @@ import java.util.TreeSet;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
-import us.temerity.pipeline.builder.maya2mr.v2_3_2.BuildsAssetNames;
 import us.temerity.pipeline.builder.maya2mr.v2_3_2.stages.ShotBuilderAnimStage;
 import us.temerity.pipeline.builder.maya2mr.v2_3_2.stages.ShotMayaCurvesExportStage;
-import us.temerity.pipeline.stages.StageInformation;
 
 /*------------------------------------------------------------------------------------------*/
 /*   S H O T   B U I L D E R                                                                */
@@ -162,7 +160,7 @@ class ShotBuilder
       AdvancedLayoutGroup layout = 
         new AdvancedLayoutGroup
           ("Builder Information", 
-           "The pass where all the basic information about the shot is collected " +
+           "The pass where all the basic pStageInformation about the shot is collected " +
            "from the user.", 
            "BuilderSettings", 
            true);
@@ -199,7 +197,7 @@ class ShotBuilder
 	AdvancedLayoutGroup layout2 = 
 	  new AdvancedLayoutGroup
 	  ("Asset Information", 
-	   "The pass where all the basic information about what assets are in the shot" +
+	   "The pass where all the basic pStageInformation about what assets are in the shot" +
 	   "is collected from the user.", 
 	   "Assets", 
 	   true);
@@ -232,6 +230,7 @@ class ShotBuilder
   }
   
   
+  
   /*----------------------------------------------------------------------------------------*/
   /*   S U B - B U I L D E R   M A P P I N G                                                */
   /*----------------------------------------------------------------------------------------*/
@@ -246,6 +245,29 @@ class ShotBuilder
     if (!projectNames.isGenerated())
       addMappedParam(projectNames.getName(), DefaultProjectNames.aProjectName, aProjectName);
   }
+  
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   D E F A U L T   E D I T O R S                                                        */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Override this to change the default editors.
+   */
+  protected void
+  setDefaultEditors()
+  {
+    setDefaultEditor(StageFunction.MayaScene.toString(), new PluginContext("MayaProject"));
+    setDefaultEditor(StageFunction.None.toString(), new PluginContext("Emacs"));
+    setDefaultEditor(StageFunction.TextFile.toString(), new PluginContext("Emacs"));
+    setDefaultEditor(StageFunction.ScriptFile.toString(), new PluginContext("Emacs"));
+    setDefaultEditor(StageFunction.RenderedImage.toString(), new PluginContext("Shake"));
+    setDefaultEditor(StageFunction.SourceImage.toString(), new PluginContext("Gimp"));
+    setDefaultEditor(StageFunction.MotionBuilderScene.toString(), null);
+  }
+  
+  
   
   /*----------------------------------------------------------------------------------------*/
   /*  I N T E R N A L S                                                                     */
@@ -274,7 +296,6 @@ class ShotBuilder
 //  TreeMap<String, String> pNamespaces;
   
   ArrayList<BuildsAssetNames> pAssets;
-  
   
   
   
@@ -443,7 +464,7 @@ class ShotBuilder
 	names.setParamValue(DefaultAssetNames.aAssetName, each);
 	names.setParamValue(DefaultAssetNames.aAssetType, "character");
 	names.generateNames();
-	pAssets.add((BuildsAssetNames) names);
+	pAssets.add(names);
       }
       
       TreeSet<String> props = (TreeSet<String>) getParamValue(aProps);
@@ -453,7 +474,7 @@ class ShotBuilder
 	names.setParamValue(DefaultAssetNames.aAssetName, each);
 	names.setParamValue(DefaultAssetNames.aAssetType, "prop");
 	names.generateNames();
-	pAssets.add((BuildsAssetNames) names);
+	pAssets.add(names);
       }
       
       TreeSet<String> sets = (TreeSet<String>) getParamValue(aProps);
@@ -463,7 +484,7 @@ class ShotBuilder
 	names.setParamValue(DefaultAssetNames.aAssetName, each);
 	names.setParamValue(DefaultAssetNames.aAssetType, "set");
 	names.generateNames();
-	pAssets.add((BuildsAssetNames) names);
+	pAssets.add(names);
       }
     }
     private static final long serialVersionUID = 8371820302516003252L;
@@ -513,14 +534,13 @@ class ShotBuilder
     doLayout()
       throws PipelineException
     {
-      StageInformation info = pBuilderInformation.getStageInformation();
       String taskType = pProjectNames.getLayoutTaskName();
       
       String layoutScene = pShotNames.getLayoutEditNodeName();
       if (!checkExistance(layoutScene)) {
 	ShotBuilderAnimStage stage = 
 	  new ShotBuilderAnimStage
-	  (info,
+	  (pStageInfo,
 	   pContext,
 	   pClient,
 	   pMayaContext,
@@ -538,13 +558,15 @@ class ShotBuilder
       for (BuildsAssetNames asset : pAssets) {
 	pShotNames.getLayoutExportPrepareNodeName(asset.getAssetName());
       }
+      
+      TreeSet<String> anims = new TreeSet<String>();
       for (BuildsAssetNames asset : pAssets) {
 	String anim = pShotNames.getLayoutExportPrepareNodeName(asset.getAssetName());
 	String exportSet = asset.getNameSpace() + ":SELECT";
 	if (!checkExistance(anim)) {
 	  ShotMayaCurvesExportStage stage = 
 	    new ShotMayaCurvesExportStage
-	    (info,
+	    (pStageInfo,
 	     pContext,
 	     pClient,
 	     anim,
@@ -553,6 +575,7 @@ class ShotBuilder
 	     false);
 	  isPrepareNode(stage, taskType);
 	  stage.build();
+	  anims.add(exportSet);
 	}
       }
     }

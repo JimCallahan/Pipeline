@@ -6,7 +6,8 @@ import java.util.TreeSet;
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.builder.maya2mr.v2_3_2.stages.*;
-import us.temerity.pipeline.stages.*;
+import us.temerity.pipeline.stages.EmptyFileStage;
+import us.temerity.pipeline.stages.EmptyMayaAsciiStage;
 
 /*------------------------------------------------------------------------------------------*/
 /*   N E W   A S S E T   B U I L D E R                                                      */
@@ -133,6 +134,8 @@ class NewAssetBuilder
     addSelectionKeyParam();
 
     configNamer(assetNames);
+    setDefaultEditors();
+    
     pAssetNames = (BuildsAssetNames) assetNames;
     addSetupPass(new InformationPass());
     ConstructPass build = new BuildPass();
@@ -145,7 +148,7 @@ class NewAssetBuilder
       AdvancedLayoutGroup layout = 
 	new AdvancedLayoutGroup
 	  ("Builder Information", 
-	   "The pass where all the basic information about the asset is collected " +
+	   "The pass where all the basic pStageInformation about the asset is collected " +
 	   "from the user.", 
 	   "BuilderSettings", 
 	   true);
@@ -200,6 +203,27 @@ class NewAssetBuilder
     throws PipelineException
   {
     addMappedParam(names.getName(), DefaultAssetNames.aProjectName, aProjectName);
+  }
+  
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   D E F A U L T   E D I T O R S                                                        */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Override this to change the default editors.
+   */
+  protected void
+  setDefaultEditors()
+  {
+    setDefaultEditor(StageFunction.MayaScene.toString(), new PluginContext("MayaProject"));
+    setDefaultEditor(StageFunction.None.toString(), new PluginContext("Emacs"));
+    setDefaultEditor(StageFunction.TextFile.toString(), new PluginContext("Emacs"));
+    setDefaultEditor(StageFunction.ScriptFile.toString(), new PluginContext("Emacs"));
+    setDefaultEditor(StageFunction.RenderedImage.toString(), new PluginContext("Shake"));
+    setDefaultEditor(StageFunction.SourceImage.toString(), new PluginContext("Gimp"));
+    setDefaultEditor(StageFunction.MotionBuilderScene.toString(), null);
   }
   
   
@@ -333,10 +357,9 @@ class NewAssetBuilder
       
       pMayaContext = (MayaContext) getParamValue(aMayaContext);
       
-      StageInformation info = pBuilderInformation.getStageInformation();
       TreeSet<String> keys = (TreeSet<String>) getParamValue(aSelectionKeys);
-      info.setDefaultSelectionKeys(keys);
-      info.setUseDefaultSelectionKeys(true);
+      pStageInfo.setDefaultSelectionKeys(keys);
+      pStageInfo.setUseDefaultSelectionKeys(true);
       
       pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, "Validation complete.");
     }
@@ -365,7 +388,6 @@ class NewAssetBuilder
     buildPhase() 
       throws PipelineException
     {
-      StageInformation info = pBuilderInformation.getStageInformation();
       pLog.log(LogMgr.Kind.Ops, LogMgr.Level.Fine, 
 	"Starting the build phase in the Build Pass");
       
@@ -373,7 +395,7 @@ class NewAssetBuilder
       if(!checkExistance(modelName)) {
 	AssetBuilderModelStage stage = 
 	  new AssetBuilderModelStage
-	  (info,
+	  (pStageInfo,
 	   pContext,
 	   pClient,
 	   pMayaContext, 
@@ -392,7 +414,7 @@ class NewAssetBuilder
 	if (!checkExistance(headName)) {
 	  EmptyMayaAsciiStage stage = 
 	    new EmptyMayaAsciiStage
-	    (info,
+	    (pStageInfo,
 	     pContext,
 	     pClient, 
 	     pMayaContext,
@@ -404,7 +426,7 @@ class NewAssetBuilder
 	if (!checkExistance(blendName)) {
 	  EmptyMayaAsciiStage stage = 
 	    new EmptyMayaAsciiStage
-	    (info,
+	    (pStageInfo,
 	     pContext,
 	     pClient,
 	     pMayaContext,
@@ -425,7 +447,7 @@ class NewAssetBuilder
 	if (skeleton != null && !checkExistance(skeleton)) {
 	  EmptyMayaAsciiStage stage = 
 	    new EmptyMayaAsciiStage
-	    (info,
+	    (pStageInfo,
 	     pContext,
 	     pClient,
 	     pMayaContext,
@@ -437,7 +459,7 @@ class NewAssetBuilder
 	if (rigInfo != null && !checkExistance(rigInfo)) {
 	  EmptyFileStage stage = 
 	    new EmptyFileStage
-	    (info,
+	    (pStageInfo,
 	     pContext,
 	     pClient,
 	     rigInfo);
@@ -450,7 +472,7 @@ class NewAssetBuilder
       if (!checkExistance(rigName)) {
 	NewAssetBuilderRigStage stage = 
 	  new NewAssetBuilderRigStage
-	  (info,
+	  (pStageInfo,
 	   pContext, 
 	   pClient,
 	   pMayaContext,
@@ -464,7 +486,7 @@ class NewAssetBuilder
       if (!checkExistance(matName)) {
 	NewAssetBuilderMaterialStage stage =
 	  new NewAssetBuilderMaterialStage
-	  (info,
+	  (pStageInfo,
 	   pContext, 
 	   pClient,
 	   pMayaContext,
@@ -478,7 +500,7 @@ class NewAssetBuilder
       if (!checkExistance(matExportName)) {
 	NewAssetBuilderMaterialExportStage stage = 
 	  new NewAssetBuilderMaterialExportStage
-	  (info, 
+	  (pStageInfo, 
 	   pContext,
 	   pClient,
 	   matExportName, 
@@ -490,7 +512,7 @@ class NewAssetBuilder
       if (!checkExistance(finalName)) {
 	NewAssetBuilderFinalStage stage = 
 	  new NewAssetBuilderFinalStage
-	  (info,
+	  (pStageInfo,
 	   pContext, 
 	   pClient,
 	   pMayaContext,
@@ -506,7 +528,7 @@ class NewAssetBuilder
       if (pBuildLowRez && !checkExistance(lrFinalName)) {
 	NewAssetBuilderFinalStage stage =
 	  new NewAssetBuilderFinalStage
-	  (info,
+	  (pStageInfo,
 	   pContext, 
 	   pClient,
 	   pMayaContext,
@@ -527,12 +549,11 @@ class NewAssetBuilder
     buildTextureNode() 
       throws PipelineException
     {
-      StageInformation info = pBuilderInformation.getStageInformation();
       String textureNodeName = pAssetNames.getTextureNodeName();
       String parentName = pBuildAdvancedShadingNetwork ? pAssetNames.getShaderNodeName() : pAssetNames
         .getMaterialNodeName();
       if(!checkExistance(textureNodeName)) {
-        new AssetBuilderTextureStage(info, pContext, pClient, textureNodeName, parentName).build();
+        new AssetBuilderTextureStage(pStageInfo, pContext, pClient, textureNodeName, parentName).build();
       }
     }
 
@@ -540,19 +561,18 @@ class NewAssetBuilder
     buildShadingNetwork() 
       throws PipelineException
     {
-      StageInformation info = pBuilderInformation.getStageInformation();
       if(!checkExistance(pAssetNames.getShaderIncludeNodeName())) {
-        new AssetBuilderShaderIncludeStage(info, pContext, pClient, pAssetNames.getShaderIncludeNodeName(),
+        new AssetBuilderShaderIncludeStage(pStageInfo, pContext, pClient, pAssetNames.getShaderIncludeNodeName(),
           pAssetNames.getShaderIncludeGroupSecSeq()).build();
       }
       if(!checkExistance(pAssetNames.getShaderNodeName())) {
-        new AssetBuilderShaderStage(info, pContext, pClient, pMayaContext, pAssetNames.getShaderNodeName(),
+        new AssetBuilderShaderStage(pStageInfo, pContext, pClient, pMayaContext, pAssetNames.getShaderNodeName(),
           pAssetNames.getFinalNodeName(), pAssetNames.getShaderIncludeNodeName(), pMRInitMEL).build();
         addToDisableList(pAssetNames.getShaderNodeName());
       }
       if(!checkExistance(pAssetNames.getShaderExportNodeName())) {
         new AssetBuilderShaderExportStage
-        (info, 
+        (pStageInfo, 
          pContext, 
          pClient, 
          pAssetNames.getShaderExportNodeName(), 

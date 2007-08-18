@@ -4,6 +4,8 @@ import us.temerity.pipeline.MasterMgrClient;
 import us.temerity.pipeline.PipelineException;
 import us.temerity.pipeline.builder.MayaContext;
 import us.temerity.pipeline.builder.UtilContext;
+import us.temerity.pipeline.builder.BaseBuilder.StageFunction;
+import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
 
 
 public class EmptyMayaAsciiStage
@@ -42,6 +44,17 @@ public class EmptyMayaAsciiStage
   {
     removeAction(pRegisteredNodeName);
   }
+  
+  /**
+   * See {@link BaseStage#getStageFunction()}
+   */
+  @Override
+  public String 
+  getStageFunction()
+  {
+    return StageFunction.MayaScene.toString();
+  }
+
   
   private static final long serialVersionUID = 1710441722495211817L;
 
