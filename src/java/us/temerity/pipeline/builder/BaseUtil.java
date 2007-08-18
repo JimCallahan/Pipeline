@@ -6,6 +6,7 @@ import us.temerity.pipeline.*;
 import us.temerity.pipeline.LogMgr.Kind;
 import us.temerity.pipeline.LogMgr.Level;
 import us.temerity.pipeline.NodeTreeComp.State;
+import us.temerity.pipeline.math.Range;
 
 /**
  * The abstract class that provides the basis for all utility classes in Pipeline.
@@ -183,7 +184,7 @@ class BaseUtil
     nodeMod.setActionEnabled(false);
     pClient.modifyProperties(getAuthor(), getView(), nodeMod);
   }
-
+  
   /**
    * Enables a node's Action Takes the name of a node and enables the Action for that node.
    * Throws a {@link PipelineException} if there is a problem enabling the action.
@@ -1255,7 +1256,6 @@ class BaseUtil
   (
     ParamMapping param
   )
-    throws PipelineException
   {
     int toReturn = 1;
     PassLayoutGroup layout = getLayout();
@@ -1488,7 +1488,7 @@ class BaseUtil
   /** 
    * Get the value of the single valued non-null Long parameter with the given name.<P> 
    * 
-   * This method can be used to retrieve ByteSizeBuilderParam values.
+   * This method can be used to retrieve ByteSizeUtilityParam values.
    * 
    * @param mapping
    *   The name and keys of the parameter. 
@@ -1507,60 +1507,23 @@ class BaseUtil
   ) 
     throws PipelineException
   {
-    return getLongParamValue(mapping, null, null);
-  }
-
-  /** 
-   * Get the lower bounds checked value of the single valued non-null Long parameter with 
-   * the given name. <P> 
-   * 
-   * Legal values must satisfy: (minValue <= value) <P> 
-   * 
-   * This method can be used to retrieve ByteSizeBuilderParam values.
-   * 
-   * @param mapping
-   *   The name and keys of the parameter. 
-   *
-   * @param minValue
-   *   The minimum (inclusive) legal value or <CODE>null</CODE> for no lower bounds.
-   * 
-   * @return 
-   *   The parameter value.
-   * 
-   * @throws PipelineException 
-   *   If no single valued parameter with the given name exists,
-   *   the value is <CODE>null</CODE> or is out-of-bounds.
-   */ 
-  public long
-  getLongParamValue
-  (
-    ParamMapping mapping,
-    Long minValue 
-  ) 
-    throws PipelineException
-  {
-    return getLongParamValue(mapping, minValue, null);
+    return getLongParamValue(mapping, null);
   }
 
   /** 
    * Get the bounds checked value of the single valued non-null Long parameter with 
    * the given name. <P> 
    * 
-   * Legal values must satisfy: (minValue <= value <= maxValue)<P> 
+   * This method can also be used to retrieve ByteSizeActionParam values.
    * 
-   * This method can be used to retrieve ByteSizeBuilderParam values.
-   * 
-   * @param mapping
-   *   The name and keys of the parameter. 
+   * @param mapping  
+   *   The name and keys of the parameter.  
    *
-   * @param minValue
-   *   The minimum (inclusive) legal value or <CODE>null</CODE> for no lower bounds.
-   * 
-   * @param maxValue
-   *   The maximum (inclusive) legal value or <CODE>null</CODE> for no upper bounds.
+   * @param range
+   *   The valid range values for the parameter. 
    * 
    * @return 
-   *   The parameter value.
+   *   The action parameter value.
    * 
    * @throws PipelineException 
    *   If no single valued parameter with the given name exists,
@@ -1570,8 +1533,7 @@ class BaseUtil
   getLongParamValue
   (
     ParamMapping mapping,
-    Long minValue, 
-    Long maxValue
+    Range<Long> range
   ) 
     throws PipelineException
   {
@@ -1580,19 +1542,13 @@ class BaseUtil
       throw new PipelineException
         ("The required parameter (" + mapping + ") was not set!"); 
 
-    if((minValue != null) && (value < minValue)) 
+    if((range != null) && !range.isInside(value))
       throw new PipelineException
-        ("The value (" + value + ") of parameter (" + mapping + ") was less-than the " + 
-         "minimum allowed value (" + minValue + ")!");
-    
-    if((maxValue != null) && (value > maxValue)) 
-      throw new PipelineException
-        ("The value (" + value + ") of parameter (" + mapping + ") was greater-than the " + 
-         "maximum allowed value (" + maxValue + ")!");
+        ("The value (" + value + ") of parameter (" + mapping + ") was outside the valid " + 
+         "range of values: " + range + "!"); 
 
     return value;
   }
-
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -1616,67 +1572,31 @@ class BaseUtil
   ) 
     throws PipelineException
   {
-    return getIntegerParamValue(mapping, null, null);
-  }
-
-  /** 
-   * Get the lower bounds checked value of the single valued non-null Integer parameter with 
-   * the given name. <P> 
-   * 
-   * Legal values must satisfy: (minValue <= value) 
-   * 
-   * @param mapping
-   *   The name and keys of the parameter. 
-   *
-   * @param minValue
-   *   The minimum (inclusive) legal value or <CODE>null</CODE> for no lower bounds.
-   * 
-   * @return 
-   *   The parameter value.
-   * 
-   * @throws PipelineException 
-   *   If no single valued parameter with the given name exists,
-   *   the value is <CODE>null</CODE> or is out-of-bounds.
-   */ 
-  public int
-  getIntegerParamValue
-  (
-    ParamMapping mapping,
-    Integer minValue 
-  ) 
-    throws PipelineException
-  {
-    return getIntegerParamValue(mapping, minValue, null);
+    return getIntegerParamValue(mapping, null);
   }
 
   /** 
    * Get the bounds checked value of the single valued non-null Integer parameter with 
    * the given name. <P> 
    * 
-   * Legal values must satisfy: (minValue <= value <= maxValue)
-   * 
-   * @param mapping
+   * @param mapping  
    *   The name and keys of the parameter. 
    *
-   * @param minValue
-   *   The minimum (inclusive) legal value or <CODE>null</CODE> for no lower bounds.
-   * 
-   * @param maxValue
-   *   The maximum (inclusive) legal value or <CODE>null</CODE> for no upper bounds.
+   * @param range
+   *   The valid range values for the parameter. 
    * 
    * @return 
-   *   The parameter value.
+   *   The action parameter value.
    * 
    * @throws PipelineException 
    *   If no single valued parameter with the given name exists,
    *   the value is <CODE>null</CODE> or is out-of-bounds.
-   */ 
+   */  
   public int
   getIntegerParamValue
   (
     ParamMapping mapping,
-    Integer minValue, 
-    Integer maxValue
+    Range<Integer> range
   ) 
     throws PipelineException
   {
@@ -1685,19 +1605,13 @@ class BaseUtil
       throw new PipelineException
         ("The required parameter (" + mapping + ") was not set!"); 
 
-    if((minValue != null) && (value < minValue)) 
+    if((range != null) && !range.isInside(value))
       throw new PipelineException
-        ("The value (" + value + ") of parameter (" + mapping + ") was less-than the " + 
-         "minimum allowed value (" + minValue + ")!");
-    
-    if((maxValue != null) && (value > maxValue)) 
-      throw new PipelineException
-        ("The value (" + value + ") of parameter (" + mapping + ") was greater-than the " + 
-         "maximum allowed value (" + maxValue + ")!");
+        ("The value (" + value + ") of parameter (" + mapping + ") was outside the valid " + 
+         "range of values: " + range + "!"); 
 
     return value;
   }
-
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -1721,56 +1635,21 @@ class BaseUtil
   ) 
     throws PipelineException
   {
-    return getDoubleParamValue(mapping, null, null);
-  }
-
-  /** 
-   * Get the lower bounds checked value of the single valued non-null Double parameter with 
-   * the given name. <P> 
-   * 
-   * Legal values must satisfy: (lower < value)
-   * 
-   * @param mapping
-   *   The name and keys of the parameter. 
-   *
-   * @param lower
-   *   The lower bounds (exclusive) of legal values or <CODE>null</CODE> for no lower bounds.
-   * 
-   * @return 
-   *   The parameter value.
-   * 
-   * @throws PipelineException 
-   *   If no single valued parameter with the given name exists, 
-   *   the value is <CODE>null</CODE> or is out-of-bounds.
-   */ 
-  public double
-  getDoubleParamValue
-  (
-    ParamMapping mapping,
-    Double lower
-  ) 
-    throws PipelineException
-  {
-    return getDoubleParamValue(mapping, lower, null);
+    return getDoubleParamValue(mapping, null);
   }
 
   /** 
    * Get the bounds checked value of the single valued non-null Double parameter with 
    * the given name. <P> 
    * 
-   * Legal values must satisfy: (lower < value < upper)
-   * 
-   * @param mapping
+   * @param mapping  
    *   The name and keys of the parameter. 
    *
-   * @param lower
-   *   The lower bounds (exclusive) of legal values or <CODE>null</CODE> for no lower bounds.
-   * 
-   * @param upper
-   *   The upper bounds (exclusive) of legal values or <CODE>null</CODE> for no upper bounds.
+   * @param range
+   *   The valid range values for the parameter. 
    * 
    * @return 
-   *   The parameter value.
+   *   The action parameter value.
    * 
    * @throws PipelineException 
    *   If no single valued parameter with the given name exists, 
@@ -1780,8 +1659,7 @@ class BaseUtil
   getDoubleParamValue
   (
     ParamMapping mapping,
-    Double lower, 
-    Double upper
+    Range<Double> range
   ) 
     throws PipelineException
   {
@@ -1789,29 +1667,57 @@ class BaseUtil
     if(value == null) 
       throw new PipelineException
         ("The required parameter (" + mapping + ") was not set!"); 
-    
-    if((lower != null) && (value <= lower)) 
+
+    if((range != null) && !range.isInside(value))
       throw new PipelineException
-        ("The value (" + value + ") of parameter (" + mapping + ") was not greater-than the " + 
-         "the lower bounds (" + lower + ") for legal values!");
-    
-    if((upper != null) && (value >= upper)) 
-      throw new PipelineException
-        ("The value (" + value + ") of parameter (" + mapping + ") was not less-than the " + 
-         "the upper bounds (" + upper + ") for legal values!");
+        ("The value (" + value + ") of parameter (" + mapping + ") was outside the valid " + 
+         "range of values: " + range + "!"); 
 
     return value;
   }
 
-
   /*----------------------------------------------------------------------------------------*/
-
 
   /** 
    * Get the value of the single valued String parameter with the given name.
    * 
    * @param mapping  
-   *   The name of the parameter. 
+   *   The name and keys of the parameter. 
+   *   
+   * @param allowsNull
+   *   Whether this parameter can have a null or empty value.
+   *   
+   * @return 
+   *   The action parameter value or (optionally)
+   *   <CODE>null</CODE> if the value is null or the empty string. 
+   * 
+   * @throws PipelineException 
+   *   If no single valued parameter with the given name exists or (optionally)
+   *   if the value is null or empty.
+   */ 
+  public final String
+  getStringParamValue
+  (
+    ParamMapping mapping, 
+    boolean allowsNull
+  ) 
+    throws PipelineException
+  { 
+    String value = (String) getParamValue(mapping); 
+    if((value == null) || (value.length() == 0)) {
+      if (!allowsNull)
+        throw new PipelineException
+          ("Cannot have an empty String value for parameter (" + mapping + ")");
+      value = null;
+    }
+    return value;    
+  }
+  
+  /** 
+   * Get the value of the single valued String parameter with the given name.
+   * 
+   * @param mapping  
+   *   The name and keys of the parameter. 
    *
    * @return 
    *   The parameter value or <CODE>null</CODE> if the value is null or the empty string. 
@@ -1822,12 +1728,9 @@ class BaseUtil
   (
     ParamMapping mapping   
   ) 
+    throws PipelineException
   { 
-    String value = (String) getParamValue(mapping); 
-    if((value != null) && (value.length() > 0))
-      return value;
-
-    return null;    
+    return getStringParamValue(mapping, true);
   }
 
   
