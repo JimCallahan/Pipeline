@@ -3,9 +3,8 @@ package us.temerity.pipeline.builder;
 import java.util.*;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.builder.BaseBuilder.ConstructPass;
-import us.temerity.pipeline.builder.BaseBuilder.PassDependency;
-import us.temerity.pipeline.stages.StageInformation;
+import us.temerity.pipeline.builder.BaseBuilder.*;
+import us.temerity.pipeline.stages.StageState;
 
 /*------------------------------------------------------------------------------------------*/
 /*   B U I L D E R   I N F O R M A T I O N                                                  */
@@ -34,7 +33,7 @@ class BuilderInformation
     pNodesToQueue = new TreeSet<String>();
     pCheckInOrder = new LinkedList<BaseBuilder>();
     pCallHierarchy = new LinkedList<BaseBuilder>();
-    pStageInformation = new StageInformation();
+    pStageState = new StageState();
     pPassDependencies = new ListMap<ConstructPass, PassDependency>();
   }
   
@@ -221,6 +220,7 @@ class BuilderInformation
   }
   
   
+  
   /*----------------------------------------------------------------------------------------*/
   /*  A C C E S S                                                                           */
   /*----------------------------------------------------------------------------------------*/
@@ -238,10 +238,17 @@ class BuilderInformation
   }
   
   public final StageInformation
-  getStageInformation()
+  getNewStageInformation()
   {
-    return pStageInformation;
+    return new StageInformation(pStageState);
   }
+  
+  public final StageState
+  getStageState()
+  {
+    return pStageState;
+  }
+  
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -276,8 +283,272 @@ class BuilderInformation
   
   private LinkedList<BaseBuilder> pCallHierarchy;
   
-  private StageInformation pStageInformation;
+  private StageState pStageState;
   
   private ListMap<ConstructPass, PassDependency> pPassDependencies; 
+
   
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*  I N T E R N A L   C L A S S E S                                                       */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A G E   I N F O R M A T I O N                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  public 
+  class StageInformation
+  {
+    /*--------------------------------------------------------------------------------------*/
+    /*   C O N S T R U C T O R                                                              */
+    /*--------------------------------------------------------------------------------------*/
+    
+    private 
+    StageInformation
+    (
+      StageState state  
+    )
+    {
+      if (state == null)
+        throw new IllegalArgumentException
+          ("Cannot pass a null StageStage into StageInformation");
+      pStageState = state;
+      pDefaultSelectionKeys = new TreeSet<String>();
+      pDefaultLicenseKeys = new TreeSet<String>();
+      pDoAnnotations = false;
+      pActionOnExistence = ActionOnExistence.Continue;
+    }
+
+    
+    
+    /*--------------------------------------------------------------------------------------*/
+    /*   A C C E S S                                                                        */
+    /*--------------------------------------------------------------------------------------*/
+    
+    public void
+    setDefaultSelectionKeys
+    (
+      Set<String> keys
+    )
+    {
+      if (keys == null)
+        pDefaultSelectionKeys = new TreeSet<String>();
+      else
+        pDefaultSelectionKeys = new TreeSet<String>(keys);
+    }
+    
+    public void
+    setDefaultLicenseKeys
+    (
+      Set<String> keys
+    )
+    {
+      if (keys == null)
+        pDefaultLicenseKeys = new TreeSet<String>();
+      else
+        pDefaultLicenseKeys = new TreeSet<String>(keys);
+    }
+    
+    public TreeSet<String> 
+    getDefaultSelectionKeys()
+    {
+      return pDefaultSelectionKeys;
+    }
+    
+    public TreeSet<String> 
+    getDefaultLicenseKeys()
+    {
+      return pDefaultLicenseKeys;
+    }
+    
+    public void 
+    setUseDefaultSelectionKeys
+    (
+      boolean value
+    )
+    {
+      pUseDefaultSelectionKeys = value;
+    }
+    
+    public boolean 
+    useDefaultSelectionKeys()
+    {
+      return pUseDefaultSelectionKeys; 
+    }
+
+    public void 
+    setUseDefaultLicenseKeys
+    (
+      boolean value
+    )
+    {
+      pUseDefaultLicenseKeys = value;
+    }
+    
+    public boolean 
+    useDefaultLicenseKeys()
+    {
+      return pUseDefaultLicenseKeys; 
+    }
+
+    public boolean 
+    doAnnotations()
+    {
+      return pDoAnnotations;
+    }
+    
+    public void 
+    setDoAnnotations
+    (
+      boolean doAnnotations
+    )
+    {
+      pDoAnnotations = doAnnotations;
+    }
+    
+    
+    public void
+    setActionOnExistence
+    (
+      ActionOnExistence aoe  
+    )
+    {
+      pActionOnExistence = aoe;
+    }
+    
+    public ActionOnExistence
+    getActionOnExistence()
+    {
+      return pActionOnExistence;
+    }
+    
+    
+
+    /*--------------------------------------------------------------------------------------*/
+    /*   S T A G E   S T A T E   W R A P P E R                                              */
+    /*--------------------------------------------------------------------------------------*/
+    
+    /**
+     * Clears all added nodes that are currently being kept track of.
+     */
+    public void 
+    initializeAddedNodes()
+    {
+      pStageState.initializeAddedNodes();
+    }
+    
+    /**
+     * Gets a list that contains the names of all the nodes that have been built by stages.
+     * 
+     * @return The {@link TreeSet} containing the node names.
+     * @see #getAddedNodesUserMap()
+     * @see #getAddedNodesViewMap()
+     */
+    public TreeSet<String> 
+    getAddedNodes()
+    {
+      return pStageState.getAddedNodes();
+    }
+
+    /**
+     * Gets a mapping of each added node to the user in whose working area the node was
+     * added.
+     * 
+     * @return The {@link TreeMap} containing the user names.
+     * @see #getAddedNodes()
+     * @see #getAddedNodesViewMap()
+     */
+    public TreeMap<String, String> 
+    getAddedNodesUserMap()
+    {
+      return pStageState.getAddedNodesUserMap();
+    }
+
+    /**
+     * Gets a mapping of each added node to the working area where the node was added.
+     * 
+     * @return The {@link TreeMap} containing the working area names.
+     * @see #getAddedNodes()
+     * @see #getAddedNodesUserMap()
+     */
+    public TreeMap<String, String> 
+    getAddedNodesViewMap()
+    {
+      return pStageState.getAddedNodesViewMap();
+    }
+    
+    /**
+     * Adds a node name to the list of nodes created duing the session.
+     * <P>
+     * The method will return a boolean based on whether the node already existed in the
+     * current list. A return value of <code>false</code> indicates that the name was not
+     * added to the list since it already existed then. A return value of <code>true</code>
+     * indicates that the add was succesful. A PipelineException is thrown if the
+     * <code>initializeAddedNodes</code> method was not called before calling this method.
+     * 
+     * @param name
+     * @throws PipelineException
+     * @see #initializeAddedNodes()
+     */
+    public final boolean 
+    addNode
+    (
+      String name,
+      String author,
+      String view
+    ) 
+      throws PipelineException
+    {
+      return pStageState.addNode(name, author, view);
+    }
+    
+    public PluginContext 
+    getDefaultEditor
+    (
+      String function  
+    )
+    {
+      return pStageState.getDefaultEditor(function);
+    }
+    
+    /**
+     * Sets a default editor for a particular stage function type.
+     * <p>
+     * Note that this method is only effective the FIRST time it is called for a particular
+     * function type.  This allows high-level builders to override their child builders if
+     * they do not agree on what the default editor should be.  It is important to remember
+     * this when writing builders with sub-builder.  A Builder should always set the
+     * default editors in its Stage Information class before instantiating any of its 
+     * sub-builders.  Failure to do so may result in the default editor values being
+     * set by the sub-builder.
+     */
+    public void
+    setDefaultEditor
+    (
+      String function,
+      PluginContext plugin
+    )
+    {
+      pStageState.setDefaultEditor(function, plugin);
+    }
+    
+    
+    
+    /*--------------------------------------------------------------------------------------*/
+    /*   I N T E R N A L S                                                                  */
+    /*--------------------------------------------------------------------------------------*/
+    
+    private TreeSet<String> pDefaultSelectionKeys = new TreeSet<String>();
+    
+    private TreeSet<String> pDefaultLicenseKeys = new TreeSet<String>();
+    
+    private boolean pUseDefaultSelectionKeys;
+    
+    private boolean pUseDefaultLicenseKeys;
+    
+    private boolean pDoAnnotations;
+    
+    private ActionOnExistence pActionOnExistence;
+  }
 }
