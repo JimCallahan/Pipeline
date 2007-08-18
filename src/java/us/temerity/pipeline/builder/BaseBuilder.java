@@ -8,6 +8,7 @@ import us.temerity.pipeline.*;
 import us.temerity.pipeline.LogMgr.Kind;
 import us.temerity.pipeline.LogMgr.Level;
 import us.temerity.pipeline.MultiMap.MultiMapNamedEntry;
+import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
 import us.temerity.pipeline.builder.ui.JBuilderParamDialog;
 import us.temerity.pipeline.stages.BaseStage;
 import us.temerity.pipeline.ui.UIFactory;
@@ -69,6 +70,7 @@ class BaseBuilder
   {
     super(name, vid, vendor, desc, mclient, qclient);
     pBuilderInformation = builderInformation;
+    pStageInfo = builderInformation.getNewStageInformation();
     pSubBuilders = new TreeMap<String, BaseBuilder>();
     pSubNames = new TreeMap<String, BaseNames>();
     pPreppedBuilders = new TreeMap<String, BaseBuilder>();
@@ -81,8 +83,8 @@ class BaseBuilder
 	new EnumUtilityParam
 	(aActionOnExistance,
 	 "What action should the Builder take when a node already exists.",
-	 ActionOnExistance.Continue.toString(),
-	 ActionOnExistance.getStringList());
+	 ActionOnExistence.Continue.toString(),
+	 ActionOnExistence.getStringList());
       addParam(param);
     }
     {
@@ -603,7 +605,7 @@ class BaseBuilder
 	logMessage += "All the nodes that were registered will now be released.";
       pLog.log(Kind.Ops, Level.Severe, logMessage);
       if (pReleaseOnError)
-	BaseStage.cleanUpAddedNodes(pClient, pBuilderInformation.getStageInformation());
+	BaseStage.cleanUpAddedNodes(pClient, pBuilderInformation.getStageState());
       return;
     }
     if (finish)
@@ -647,8 +649,8 @@ class BaseBuilder
     pLog.log(Kind.Bld, Level.Finest, "Validating the built-in Parameters.");
     setContext((UtilContext) getParamValue(aUtilContext));
     pReleaseOnError = getBooleanParamValue(new ParamMapping(aReleaseOnError));
-    pActionOnExistance = 
-      ActionOnExistance.valueOf(getStringParamValue(new ParamMapping(aActionOnExistance)));
+    pActionOnExistence = 
+      ActionOnExistence.valueOf(getStringParamValue(new ParamMapping(aActionOnExistance)));
   }
   
   /**
@@ -860,7 +862,7 @@ class BaseBuilder
     pLog.log(Kind.Ops, Level.Info, "Beginning execution of the check-ins.");
     for (BaseBuilder builder : pBuilderInformation.getCheckinList()) {
       if (builder.performCheckIn()) {
-	builder.checkInNodes(getNodesToCheckIn(), getCheckinLevel(), getCheckInMessage());
+	builder.checkInNodes(builder.getNodesToCheckIn(), builder.getCheckinLevel(), builder.getCheckInMessage());
       }
     }
   }
@@ -934,7 +936,7 @@ class BaseBuilder
         ("The node (" + nodeName + ") exists, but in a different working area and was " +
          "never checked in.  The Builder is aborting due to this problem.");
     case LOCAL:
-      if (pActionOnExistance.equals(ActionOnExistance.CheckOut)) {
+      if (pActionOnExistence == ActionOnExistence.CheckOut) {
 	pClient.checkOut(getAuthor(), getView(), nodeName, null, 
 	  CheckOutMode.KeepModified, CheckOutMethod.PreserveFrozen);
 	pLog.log(Kind.Ops, Level.Finest, "Checking out the node.");
@@ -964,7 +966,7 @@ class BaseBuilder
     if (!exists) 
       return false;
     pLog.log(Kind.Ops, Level.Finest, "The node exists.");
-    if (pActionOnExistance.equals(ActionOnExistance.Abort))
+    if (pActionOnExistence == ActionOnExistence.Abort)
       throw new PipelineException
         ("The node (" + nodeName + ") exists.  Aborting Builder operation as per " +
          "the setting of the ActionOnExistance parameter for the builder " +
@@ -978,7 +980,7 @@ class BaseBuilder
     case LOCALONLY:
       return true;
     case LOCAL:
-      switch(pActionOnExistance) {
+      switch(pActionOnExistence) {
       case CheckOut:
 	 pClient.checkOut(getAuthor(), getView(), nodeName, null, 
 	   CheckOutMode.KeepModified, CheckOutMethod.PreserveFrozen);
@@ -988,7 +990,7 @@ class BaseBuilder
 	return true;
       }
     case REP:
-      switch(pActionOnExistance) {
+      switch(pActionOnExistence) {
       case CheckOut:
 	 pClient.checkOut(getAuthor(), getView(), nodeName, null, 
            CheckOutMode.KeepModified, CheckOutMethod.PreserveFrozen);
@@ -1260,6 +1262,30 @@ class BaseBuilder
     return pCurrentPass;
   }
   
+  /**
+   * Sets a default editor for a particular stage function type.
+   * <p>
+   * This is a wrapper function for the
+   * {@link StageInformation#setDefaultEditor(String, PluginContext)} method. If this method
+   * is called, it is not necessary to set the same values in the {@link StageInformation}.
+   * <p>
+   * Note that this method is only effective the FIRST time it is called for a particular
+   * function type. This allows high-level builders to override their child builders if they
+   * do not agree on what the default editor should be. It is important to remember this when
+   * writing builders with sub-builder. A Builder should always set its default editors before
+   * instantiating any of its sub-builders. Failure to do so may result in the default editor
+   * values being set by the sub-builder.
+   */
+  public void
+  setDefaultEditor
+  (
+    String function,
+    PluginContext plugin
+  )
+  {
+    pBuilderInformation.getStageState().setDefaultEditor(function, plugin);
+  }
+  
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -1320,7 +1346,7 @@ class BaseBuilder
 	BaseBuilder parent = pBuilderInformation.pollCallHierarchy();
 	parent.pSubBuilders.remove(pCurrentBuilder.getName());
 	parent.pPreppedBuilders.put(pCurrentBuilder.getName(), pCurrentBuilder);
-	pBuilderInformation.addToCheckinList(parent);
+	pBuilderInformation.addToCheckinList(pCurrentBuilder);
 	pNextBuilder = parent;
 	getNextSetupPass(first);
       }
@@ -1392,7 +1418,7 @@ class BaseBuilder
   releaseNodes() 
     throws PipelineException
   {
-    BaseStage.cleanUpAddedNodes(pClient, pBuilderInformation.getStageInformation());
+    BaseStage.cleanUpAddedNodes(pClient, pBuilderInformation.getStageState());
   }
 
 
@@ -1448,7 +1474,7 @@ class BaseBuilder
   /**
    * A list of nodes which need to be checked in.
    */
-  private TreeSet<String> pNodesToCheckIn = new TreeSet<String>();
+  private LinkedList<String> pNodesToCheckIn = new LinkedList<String>();
 
   /**
    * The list of all associated subBuilders
@@ -1467,9 +1493,11 @@ class BaseBuilder
 
   private int pCurrentPass;
   
-  private ActionOnExistance pActionOnExistance;
+  private ActionOnExistence pActionOnExistence;
   
   private ArrayList<ConstructPass> pExecutionOrder;
+  
+  protected StageInformation pStageInfo; 
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -1506,21 +1534,56 @@ class BaseBuilder
   }
   
   public static 
-  enum ActionOnExistance
+  enum ActionOnExistence
   {
-    CheckOut, Continue, Abort;
+    CheckOut, Continue, Abort, Conform;
     
     public static ArrayList<String>
     getStringList()
     {
       ArrayList<String> toReturn = new ArrayList<String>();
-      for (ActionOnExistance each : ActionOnExistance.values())
+      for (ActionOnExistence each : ActionOnExistence.values())
 	toReturn.add(each.toString());
+      return toReturn;
+    }
+    
+    public static ActionOnExistence
+    valueFromKey
+    (
+      int key
+    )
+    {
+      return ActionOnExistence.values()[key];
+    }
+      
+    public static ActionOnExistence
+    valueFromString
+    (
+      String string  
+    )
+    {
+      ActionOnExistence toReturn = null;
+      for (ActionOnExistence each : ActionOnExistence.values())
+	if (each.toString().equals(string))
+	  toReturn = each;
       return toReturn;
     }
   }
   
-
+  /**
+   *  Defines the use of a node in a particular builder setup.
+   *  <P>
+   *  This enumeration is meant to be used with {@link BaseStage#getStageFunction()}, which
+   *  can cast any of its values to a string and with the get
+   *  This list is not complete and should not be considered limiting.  It will be 
+   *  added to as 
+   */
+  public static
+  enum StageFunction
+  {
+    None, MayaScene, RenderedImage, TextFile, SourceImage, ScriptFile, MotionBuilderScene
+  }
+  
   
   /*----------------------------------------------------------------------------------------*/
   /*  P A S S   S U B C L A S S E S                                                         */
