@@ -1,4 +1,4 @@
-// $Id: BaseStage.java,v 1.6 2007/08/18 18:14:47 jesse Exp $
+// $Id: BaseStage.java,v 1.7 2007/08/18 23:31:33 jesse Exp $
 
 package us.temerity.pipeline.stages;
 
@@ -229,7 +229,6 @@ class BaseStage
     pRegisteredNodeMod.setJobRequirements(reqs);
   }
   
-
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -910,7 +909,7 @@ class BaseStage
   public boolean
   doesActionHaveParam
   (
-    String paramName  
+    String paramName
   )
   {
     if (pAction == null)

@@ -117,9 +117,15 @@ class MayaFileStage
   ) 
     throws PipelineException
   {
-    if (mayaScene != null ) {
-     addLink(new LinkMod(mayaScene, LinkPolicy.Dependency));
-     addSingleParamValue("MayaScene", mayaScene);
+    if (mayaScene != null) {
+      if (doesActionHaveParam("MayaScene")) {
+        addLink(new LinkMod(mayaScene, LinkPolicy.Dependency));
+        addSingleParamValue("MayaScene", mayaScene);
+      }
+      else
+	throw new PipelineException
+	  ("Illegal attempt to link a node to the MayaScene parameter when it does not exist " +
+	   "in the current Action ("+ pAction.getName() +")");
     }
   }
 
@@ -142,8 +148,14 @@ class MayaFileStage
     throws PipelineException
   {
     if(melScript != null) {
-      addLink(new LinkMod(melScript, LinkPolicy.Dependency));
-      addSingleParamValue("InitialMEL", melScript);
+      if (doesActionHaveParam("InitialMEL")) {
+        addLink(new LinkMod(melScript, LinkPolicy.Dependency));
+        addSingleParamValue("InitialMEL", melScript);
+      }
+      else
+	throw new PipelineException
+	  ("Illegal attempt to link a node to the InitalMEL parameter when it does not exist " +
+	   "in the current Action ("+ pAction.getName() +")");
     }
   }
 
@@ -166,9 +178,15 @@ class MayaFileStage
   ) 
     throws PipelineException
   {
-    if(melScript != null) {
-      addLink(new LinkMod(melScript, LinkPolicy.Dependency));
-      addSingleParamValue("ModelMEL", melScript);
+    if(melScript != null) { 
+      if (doesActionHaveParam("ModelMEL")) {
+        addLink(new LinkMod(melScript, LinkPolicy.Dependency));
+        addSingleParamValue("ModelMEL", melScript);
+      }
+      else
+	throw new PipelineException
+	  ("Illegal attempt to link a node to the ModelMEL parameter when it does not exist " +
+	   "in the current Action ("+ pAction.getName() +")");
     }
   }
 
@@ -192,8 +210,14 @@ class MayaFileStage
     throws PipelineException
   {
     if(melScript != null) {
-      addLink(new LinkMod(melScript, LinkPolicy.Dependency));
-      addSingleParamValue("AnimMEL", melScript);
+      if (doesActionHaveParam("AnimMEL")) {
+        addLink(new LinkMod(melScript, LinkPolicy.Dependency));
+        addSingleParamValue("AnimMEL", melScript);
+      }
+      else
+	throw new PipelineException
+	  ("Illegal attempt to link a node to the AnimMEL parameter when it does not exist " +
+	   "in the current Action ("+ pAction.getName() +")");
     }
   }
 
@@ -216,9 +240,15 @@ class MayaFileStage
   ) 
     throws PipelineException
   {
-    if(melScript != null) {
-      addLink(new LinkMod(melScript, LinkPolicy.Dependency));
-      addSingleParamValue("FinalMEL", melScript);
+    if(melScript != null ) {
+      if (doesActionHaveParam("FinalMEL")) {
+        addLink(new LinkMod(melScript, LinkPolicy.Dependency));
+        addSingleParamValue("FinalMEL", melScript);
+      }
+      else
+	throw new PipelineException
+	  ("Illegal attempt to link a node to the FinalMEL parameter when it does not exist " +
+	   "in the current Action ("+ pAction.getName() +")");
     }
   }
   
@@ -242,8 +272,14 @@ class MayaFileStage
     throws PipelineException
   {
     if(melScript != null) {
-      addLink(new LinkMod(melScript, LinkPolicy.Dependency));
-      addSingleParamValue("NewSceneMEL", melScript);
+      if (doesActionHaveParam("NewSceneMEL")) {
+        addLink(new LinkMod(melScript, LinkPolicy.Dependency));
+        addSingleParamValue("NewSceneMEL", melScript);
+      }
+      else
+	throw new PipelineException
+	  ("Illegal attempt to link a node to the NewSceneMEL parameter when it does not exist " +
+	   "in the current Action ("+ pAction.getName() +")");
     }
   }
   
@@ -267,8 +303,14 @@ class MayaFileStage
     throws PipelineException
   {
     if(melScript != null) {
-      addLink(new LinkMod(melScript, LinkPolicy.Dependency));
-      addSingleParamValue("PreExportMEL", melScript);
+      if (doesActionHaveParam("PreExportMEL")) {
+        addLink(new LinkMod(melScript, LinkPolicy.Dependency));
+        addSingleParamValue("PreExportMEL", melScript);
+      }
+      else
+	throw new PipelineException
+	  ("Illegal attempt to link a node to the PreExportMEL parameter when it does not exist " +
+	   "in the current Action ("+ pAction.getName() +")");
     }
   }
   
