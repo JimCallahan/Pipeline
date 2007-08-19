@@ -152,7 +152,7 @@ class AdvancedLayoutGroup
    * 
    * This name is used in the UI as the title of grouping components.
    * 
-   * @see #getName
+   * @see #getName()
    */ 
   public String
   getNameUI()
@@ -180,7 +180,7 @@ class AdvancedLayoutGroup
    * 
    * This name is used in the UI as the title of column.
    * 
-   * @see #getName
+   * @see #getName()
    */ 
   public String
   getColumnNameUI(Integer col)
@@ -428,13 +428,17 @@ class AdvancedLayoutGroup
 	  list.remove(i);
 	}
 	else if(i == 0) {
-	 String next = list.get(i + 1);
-	 if(next == null)
-	   list.remove(i + 1);
+	  if (i != max) {
+	    String next = list.get(i + 1);
+	    if(next == null)
+	      list.remove(i + 1);
+	  }
 	 list.remove(i);
 	}
 	else if(i == max) {
-	  String prev = list.get(i - 1);
+	  String prev = "";
+	  if ((i - 1) >= 0) 
+	    prev = list.get(i - 1);
 	  list.remove(i);
 	  if(prev == null)
 	    list.remove(i - 1);
@@ -550,10 +554,9 @@ class AdvancedLayoutGroup
    * 
    * @param col
    * 	Which column was the access attempted for.
-   * @return
-   * 	
    */
-  private void validateColumn(Integer col)
+  private void 
+  validateColumn(Integer col)
   {
     if (pIsOpen.get(col) == null)
       throw new IllegalArgumentException
