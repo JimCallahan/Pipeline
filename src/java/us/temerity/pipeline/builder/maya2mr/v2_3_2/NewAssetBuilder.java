@@ -392,7 +392,7 @@ class NewAssetBuilder
 	"Starting the build phase in the Build Pass");
       
       String modelName = pAssetNames.getModelNodeName(); 
-      if(!checkExistance(modelName)) {
+      {
 	AssetBuilderModelStage stage = 
 	  new AssetBuilderModelStage
 	  (pStageInfo,
@@ -411,7 +411,7 @@ class NewAssetBuilder
 	headName = pAssetNames.getHeadModelNodeName();
 	blendName = pAssetNames.getBlendShapeModelNodeName();
 
-	if (!checkExistance(headName)) {
+	{
 	  EmptyMayaAsciiStage stage = 
 	    new EmptyMayaAsciiStage
 	    (pStageInfo,
@@ -423,7 +423,7 @@ class NewAssetBuilder
 	  pEmptyMayaScenes.add(stage);
 	}
 
-	if (!checkExistance(blendName)) {
+	{
 	  EmptyMayaAsciiStage stage = 
 	    new EmptyMayaAsciiStage
 	    (pStageInfo,
@@ -444,7 +444,7 @@ class NewAssetBuilder
 	rigInfo = pAssetNames.getRigInfoNodeName();
 	autoRigMEL = pProjectNames.getFinalRigScriptName();
 
-	if (skeleton != null && !checkExistance(skeleton)) {
+	if (skeleton != null) {
 	  EmptyMayaAsciiStage stage = 
 	    new EmptyMayaAsciiStage
 	    (pStageInfo,
@@ -456,7 +456,7 @@ class NewAssetBuilder
 	  pEmptyMayaScenes.add(stage);
 	}
 
-	if (rigInfo != null && !checkExistance(rigInfo)) {
+	if (rigInfo != null) {
 	  EmptyFileStage stage = 
 	    new EmptyFileStage
 	    (pStageInfo,
@@ -469,7 +469,7 @@ class NewAssetBuilder
       }
 
       String rigName = pAssetNames.getRigNodeName();
-      if (!checkExistance(rigName)) {
+      {
 	NewAssetBuilderRigStage stage = 
 	  new NewAssetBuilderRigStage
 	  (pStageInfo,
@@ -483,7 +483,7 @@ class NewAssetBuilder
       }
 
       String matName = pAssetNames.getMaterialNodeName();
-      if (!checkExistance(matName)) {
+      {
 	NewAssetBuilderMaterialStage stage =
 	  new NewAssetBuilderMaterialStage
 	  (pStageInfo,
@@ -497,7 +497,7 @@ class NewAssetBuilder
       }
 
       String matExportName = pAssetNames.getMaterialExportNodeName();
-      if (!checkExistance(matExportName)) {
+      {
 	NewAssetBuilderMaterialExportStage stage = 
 	  new NewAssetBuilderMaterialExportStage
 	  (pStageInfo, 
@@ -509,7 +509,7 @@ class NewAssetBuilder
       }
 
       String finalName = pAssetNames.getFinalNodeName();
-      if (!checkExistance(finalName)) {
+      {
 	NewAssetBuilderFinalStage stage = 
 	  new NewAssetBuilderFinalStage
 	  (pStageInfo,
@@ -525,7 +525,7 @@ class NewAssetBuilder
       }
 
       String lrFinalName = pAssetNames.getLowRezFinalNodeName();
-      if (pBuildLowRez && !checkExistance(lrFinalName)) {
+      if (pBuildLowRez) {
 	NewAssetBuilderFinalStage stage =
 	  new NewAssetBuilderFinalStage
 	  (pStageInfo,
@@ -552,25 +552,23 @@ class NewAssetBuilder
       String textureNodeName = pAssetNames.getTextureNodeName();
       String parentName = pBuildAdvancedShadingNetwork ? pAssetNames.getShaderNodeName() : pAssetNames
         .getMaterialNodeName();
-      if(!checkExistance(textureNodeName)) {
-        new AssetBuilderTextureStage(pStageInfo, pContext, pClient, textureNodeName, parentName).build();
-      }
+      new AssetBuilderTextureStage(pStageInfo, pContext, pClient, textureNodeName, parentName).build();
     }
 
     protected void 
     buildShadingNetwork() 
       throws PipelineException
     {
-      if(!checkExistance(pAssetNames.getShaderIncludeNodeName())) {
+      {
         new AssetBuilderShaderIncludeStage(pStageInfo, pContext, pClient, pAssetNames.getShaderIncludeNodeName(),
           pAssetNames.getShaderIncludeGroupSecSeq()).build();
       }
-      if(!checkExistance(pAssetNames.getShaderNodeName())) {
+      {
         new AssetBuilderShaderStage(pStageInfo, pContext, pClient, pMayaContext, pAssetNames.getShaderNodeName(),
           pAssetNames.getFinalNodeName(), pAssetNames.getShaderIncludeNodeName(), pMRInitMEL).build();
         addToDisableList(pAssetNames.getShaderNodeName());
       }
-      if(!checkExistance(pAssetNames.getShaderExportNodeName())) {
+      {
         new AssetBuilderShaderExportStage
         (pStageInfo, 
          pContext, 

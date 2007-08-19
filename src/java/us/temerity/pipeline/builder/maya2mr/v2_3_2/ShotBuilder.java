@@ -537,7 +537,7 @@ class ShotBuilder
       String taskType = pProjectNames.getLayoutTaskName();
       
       String layoutScene = pShotNames.getLayoutEditNodeName();
-      if (!checkExistance(layoutScene)) {
+      {
 	ShotBuilderAnimStage stage = 
 	  new ShotBuilderAnimStage
 	  (pStageInfo,
@@ -563,7 +563,7 @@ class ShotBuilder
       for (BuildsAssetNames asset : pAssets) {
 	String anim = pShotNames.getLayoutExportPrepareNodeName(asset.getAssetName());
 	String exportSet = asset.getNameSpace() + ":SELECT";
-	if (!checkExistance(anim)) {
+	{
 	  ShotMayaCurvesExportStage stage = 
 	    new ShotMayaCurvesExportStage
 	    (pStageInfo,

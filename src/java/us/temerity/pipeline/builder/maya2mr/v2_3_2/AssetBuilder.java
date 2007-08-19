@@ -1,4 +1,4 @@
-// $Id: AssetBuilder.java,v 1.9 2007/08/18 18:14:49 jesse Exp $
+// $Id: AssetBuilder.java,v 1.10 2007/08/19 00:53:55 jesse Exp $
 
 package us.temerity.pipeline.builder.maya2mr.v2_3_2;
 
@@ -607,7 +607,7 @@ class AssetBuilder
       
       String editModel = pAssetNames.getModelEditNodeName();
       String verifyModel = pAssetNames.getModelVerifyNodeName();
-      if(!checkExistance(editModel)) {
+      {
 	AssetBuilderModelStage stage = 
 	  new AssetBuilderModelStage
 	  (pStageInfo,
@@ -621,47 +621,43 @@ class AssetBuilder
 	pModelStages.add(stage);
       }
       if (pImportModel) {
-	if(!checkExistance(verifyModel)) {
-	  TreeMap<String, String> edit = new TreeMap<String, String>();
-	  edit.put("mod", editModel);
-	  ModelPiecesVerifyStage stage =
-	    new ModelPiecesVerifyStage
-	    (pStageInfo,
-	     pContext,
-	     pClient,
-	     pMayaContext,
-	     verifyModel, 
-	     edit,
-	     pVerifyModelMEL);
-	  if (pModelTT)
-	    isPrepareNode(stage, taskType);
-	  else
-	    isFocusNode(stage, taskType);
-	  stage.build();
-	}
+	TreeMap<String, String> edit = new TreeMap<String, String>();
+	edit.put("mod", editModel);
+	ModelPiecesVerifyStage stage =
+	  new ModelPiecesVerifyStage
+	  (pStageInfo,
+	   pContext,
+	   pClient,
+	   pMayaContext,
+	   verifyModel, 
+	   edit,
+	   pVerifyModelMEL);
+	if (pModelTT)
+	  isPrepareNode(stage, taskType);
+	else
+	  isFocusNode(stage, taskType);
+	stage.build();
       }
       else {
-	if(!checkExistance(verifyModel)) {
- 	  AssetModelExportStage stage = 
- 	    new AssetModelExportStage
- 	    (pStageInfo,
- 	     pContext,
- 	     pClient,
- 	     verifyModel,
- 	     "*",
- 	     pVerifyModelMEL);
- 	  if (pModelTT)
- 	    isPrepareNode(stage, taskType);
- 	  else
- 	    isFocusNode(stage, taskType);
- 	  stage.build();
-	}
+	AssetModelExportStage stage = 
+	  new AssetModelExportStage
+	  (pStageInfo,
+	   pContext,
+	   pClient,
+	   verifyModel,
+	   "*",
+	   pVerifyModelMEL);
+	if (pModelTT)
+	  isPrepareNode(stage, taskType);
+	else
+	  isFocusNode(stage, taskType);
+	stage.build();
       }
       String modelTT = pAssetNames.getModelTTNodeName();
       String modelTTImg = pAssetNames.getModelTTImagesNodeName();
       String thumb = null;
       if(pModelTT) {
-        if (!checkExistance(modelTT)) {
+        {
           String modelTTSetup = 
             pProjectNames.getAssetModelTTSetup(pAssetName, pAssetType);
           AdvAssetBuilderTTStage stage =
@@ -677,7 +673,7 @@ class AssetBuilder
           stage.build();
           addToDisableList(modelTT);
         }
-        if (!checkExistance(modelTTImg)) {
+        {
           String globals = pProjectNames.getAssetModelTTGlobals();
           AdvAssetBuilderTTImgStage stage =
             new AdvAssetBuilderTTImgStage
@@ -693,7 +689,7 @@ class AssetBuilder
         }
         if (pBuildThumbnails) {
           thumb = pAssetNames.getModelThumbNodeName();
-          if (!checkExistance(thumb)) {
+          {
             ThumbnailStage stage = 
               new ThumbnailStage(pStageInfo, pContext, pClient, thumb, "png", modelTTImg, 120);
             isThumbnailNode(stage, taskType);
@@ -702,7 +698,7 @@ class AssetBuilder
         }
       }
       String modelSubmit = pAssetNames.getModelSubmitNodeName();
-      if (!checkExistance(modelSubmit)) {
+      {
         TreeSet<String> sources = new TreeSet<String>();
         if (pBuildThumbnails)
           sources.add(thumb);
@@ -717,13 +713,13 @@ class AssetBuilder
       }
       String modelFinal = pAssetNames.getModelFinalNodeName();
       String modelApprove = pAssetNames.getModelApproveNodeName();
-      if (!checkExistance(modelFinal)) {
+      {
         ProductStage stage = 
           new ProductStage(pStageInfo, pContext, pClient, modelFinal, "ma", verifyModel, StageFunction.MayaScene.toString());
         isProductNode(stage, taskType);
         stage.build();
       }
-      if (!checkExistance(modelApprove)) {
+      {
         TreeSet<String> sources = new TreeSet<String>();
         sources.add(modelFinal);
         TargetStage stage = new TargetStage(pStageInfo, pContext, pClient, modelApprove, sources);
@@ -743,7 +739,7 @@ class AssetBuilder
       String blendShapes = null; 
       if (pHasBlendShapes) {
         blendShapes = pAssetNames.getBlendShapeModelNodeName();
-        if (!checkExistance(blendShapes)) {
+        {
           EmptyMayaAsciiStage stage = 
             new EmptyMayaAsciiStage
             (pStageInfo,
@@ -758,7 +754,7 @@ class AssetBuilder
       }
       String skeleton = pAssetNames.getSkeletonNodeName();
       String skelMel = pProjectNames.getPlaceholderSkelScriptName();
-      if (skeleton != null && !checkExistance(skeleton)) {
+      if (skeleton != null) {
 	if (skelMel == null) {
 	  EmptyMayaAsciiStage stage = 
 	    new EmptyMayaAsciiStage(pStageInfo, pContext, pClient, pMayaContext, skeleton);
@@ -778,7 +774,7 @@ class AssetBuilder
       String texNode = null;
       if (pBuildTextureNode && pSeparateAnimTextures) {
 	texNode = pAssetNames.getAnimTextureNodeName();
-	if (!checkExistance(texNode)) {
+	{
 	  MayaFTNBuildStage stage = 
 	    new MayaFTNBuildStage(pStageInfo, pContext, pClient, pMayaContext, texNode, true);
 	  isEditNode(stage, taskType);
@@ -787,7 +783,7 @@ class AssetBuilder
       }
       
       String rigEdit = pAssetNames.getRigEditNodeName();
-      if (!checkExistance(rigEdit)) {
+      {
         NewAssetBuilderRigStage stage = 
           new NewAssetBuilderRigStage
           (pStageInfo,
@@ -803,7 +799,7 @@ class AssetBuilder
       }
       
       String rigMatExp = pAssetNames.getRigMatExportNodeName();
-      if (!checkExistance(rigMatExp)) {
+      {
         NewAssetBuilderMaterialExportStage stage = 
           new NewAssetBuilderMaterialExportStage
           (pStageInfo, 
@@ -820,7 +816,7 @@ class AssetBuilder
       if (pReRigSetup) {
 	String reRigNode = pAssetNames.getReRigNodeName();
 	String finalRigScript = pProjectNames.getFinalRigScriptName();
-	if (!checkExistance(reRigNode)) {
+	{
 	  AdvAssetBuilderReRigStage stage = 
 	    new AdvAssetBuilderReRigStage
 	    (pStageInfo, 
@@ -841,7 +837,7 @@ class AssetBuilder
       }
       
       String rigFinal = pAssetNames.getRigFinalNodeName();
-      if (!checkExistance(rigFinal)) {
+      {
         NewAssetBuilderFinalStage stage = 
           new NewAssetBuilderFinalStage
           (pStageInfo,
@@ -866,42 +862,36 @@ class AssetBuilder
       String thumb = pAssetNames.getRigThumbNodeName();
       if (pRigTT) {
 	if (pMakeFBX) {
-	  if (!checkExistance(animFBX)) {
-	    EmptyFBXStage stage = new EmptyFBXStage(pStageInfo, pContext, pClient, animFBX);
-	    stage.build();
-	  }
+	  EmptyFBXStage stage = new EmptyFBXStage(pStageInfo, pContext, pClient, animFBX);
+	  stage.build();
 	}
 	if (pMakeCurves ) {
-	  if (!checkExistance(animCurves)) {
-	    StandardStage stage = null;
-	    if (pMakeFBX) {
-	      stage = 
-		new AdvAssetBuilderCurvesStage
-		(pStageInfo, 
-		 pContext, 
-		 pClient, 
-		 pMayaContext, 
-		 animCurves, 
-		 skeleton, 
-		 animFBX);
-	    }
-	    else {
-	      stage = 
-		new EmptyMayaAsciiStage(pStageInfo, pContext, pClient, pMayaContext, animCurves);
-	      pEmptyMayaScenes.add((EmptyMayaAsciiStage) stage);
-	    }
-	    stage.build();
+	  StandardStage stage = null;
+	  if (pMakeFBX) {
+	    stage = 
+	      new AdvAssetBuilderCurvesStage
+	      (pStageInfo, 
+	       pContext, 
+	       pClient, 
+	       pMayaContext, 
+	       animCurves, 
+	       skeleton, 
+	       animFBX);
 	  }
+	  else {
+	    stage = 
+	      new EmptyMayaAsciiStage(pStageInfo, pContext, pClient, pMayaContext, animCurves);
+	    pEmptyMayaScenes.add((EmptyMayaAsciiStage) stage);
+	  }
+	  stage.build();
 	}
 	if (pMakeDkAnim ) {
-	  if (!checkExistance(animCurves)) {
-	    EmptyFileStage stage = 
-	      new EmptyFileStage(pStageInfo, pContext, pClient, animCurves, "dkAnim");
-	    stage.build();
-	    pEmptyFileStages.add(stage);
-	  }
+	  EmptyFileStage stage = 
+	    new EmptyFileStage(pStageInfo, pContext, pClient, animCurves, "dkAnim");
+	  stage.build();
+	  pEmptyFileStages.add(stage);
 	}
-	if (!checkExistance(rigAnim)) {
+	{
 	  String setup = 
 	    pProjectNames.getAssetRigAnimSetup(pAssetName, pAssetType);
 	  StandardStage stage = null;
@@ -922,8 +912,7 @@ class AssetBuilder
 	    // do stuff here
 	  }
 	  else {
-	    stage = 
-	      new AdvAssetBuilderTTStage
+	    stage = new AdvAssetBuilderTTStage
 	      (pStageInfo, 
 	       pContext, 
 	       pClient, 
@@ -936,7 +925,7 @@ class AssetBuilder
 	  stage.build();
 	  addToDisableList(rigAnim);
 	}
-	if (!checkExistance(rigImages)) {
+	{
 	  String globals = 
 	    pProjectNames.getAssetRigAnimGlobals();
 	  AdvAssetBuilderTTImgStage stage =
@@ -952,16 +941,14 @@ class AssetBuilder
 	  stage.build();
 	}
 	if (pBuildThumbnails) {
-          if (!checkExistance(thumb)) {
-            ThumbnailStage stage = 
-              new ThumbnailStage(pStageInfo, pContext, pClient, thumb, "png", rigImages, 120);
-            isThumbnailNode(stage, taskType);
-            stage.build();
-          }
+	  ThumbnailStage stage = 
+	    new ThumbnailStage(pStageInfo, pContext, pClient, thumb, "png", rigImages, 120);
+	  isThumbnailNode(stage, taskType);
+	  stage.build();
         }
       }
       String rigSubmit = pAssetNames.getRigSubmitNodeName();
-      if (!checkExistance(rigSubmit)) {
+      {
         TreeSet<String> sources = new TreeSet<String>();
         if (pBuildThumbnails)
           sources.add(thumb);
@@ -976,7 +963,7 @@ class AssetBuilder
       }
       String assetFinal = pAssetNames.getAnimFinalNodeName();
       String rigApprove = pAssetNames.getRigApproveNodeName();
-      if (!checkExistance(assetFinal)) {
+      {
         ProductStage stage = 
           new ProductStage(pStageInfo, pContext, pClient, assetFinal, "ma", rigFinal, StageFunction.MayaScene.toString());
         isProductNode(stage, taskType);
@@ -985,7 +972,7 @@ class AssetBuilder
       String texFinalNode = null;
       if (pBuildTextureNode && pSeparateAnimTextures) {
 	texFinalNode = pAssetNames.getAnimTextureFinalNodeName();
-        if (!checkExistance(texFinalNode)) {
+        {
           TreeSet<String> sources = new TreeSet<String>();
           sources.add(texNode);
           TargetStage stage = new TargetStage(pStageInfo, pContext, pClient, texFinalNode, sources);
@@ -993,7 +980,7 @@ class AssetBuilder
           stage.build();
         }
       }
-      if (!checkExistance(rigApprove)) {
+      {
         TreeSet<String> sources = new TreeSet<String>();
         sources.add(assetFinal);
         addNonNullValue(texFinalNode, sources);
@@ -1014,7 +1001,7 @@ class AssetBuilder
       String texNode = null;
       if (pBuildTextureNode) {
 	texNode = pAssetNames.getTextureNodeName();
-	if (!checkExistance(texNode)) {
+	{
 	  MayaFTNBuildStage stage = 
 	    new MayaFTNBuildStage(pStageInfo, pContext, pClient, pMayaContext, texNode, true);
 	  isEditNode(stage, taskType);
@@ -1023,7 +1010,7 @@ class AssetBuilder
       }
       
       String matName = pAssetNames.getMaterialNodeName();
-      if (!checkExistance(matName)) {
+      {
         AdvAssetMaterialStage stage =
           new AdvAssetMaterialStage
           (pStageInfo,
@@ -1039,7 +1026,7 @@ class AssetBuilder
       }
 
       String matExportName = pAssetNames.getMaterialExportNodeName();
-      if (!checkExistance(matExportName)) {
+      {
         AssetBuilderShaderExportStage stage = 
           new AssetBuilderShaderExportStage
           (pStageInfo, 
@@ -1056,7 +1043,7 @@ class AssetBuilder
       String rigSource = pAssetNames.getAnimFinalNodeName();
       
       String matVerify = pAssetNames.getMaterialVerifyNodeName();
-      if (!checkExistance(matVerify)) {
+      {
         NewAssetBuilderFinalStage stage = 
           new NewAssetBuilderFinalStage
           (pStageInfo,
@@ -1076,7 +1063,7 @@ class AssetBuilder
       String matTTImg = pAssetNames.getMaterialRenderNodeName();
       String thumb = null;
       if(pShadeTT) {
-        if (!checkExistance(matTT)) {
+        {
           String matTTSetup = 
             pProjectNames.getAssetShaderTTSetup(pAssetName, pAssetType);
           AdvAssetBuilderTTStage stage =
@@ -1092,7 +1079,7 @@ class AssetBuilder
           stage.build();
           addToDisableList(matTT);
         }
-        if (!checkExistance(matTTImg)) {
+        {
           String globals = pProjectNames.getAssetShaderTTGlobals(GlobalsType.Maya2MR);
           AdvAssetBuilderTTImgStage stage =
             new AdvAssetBuilderTTImgStage
@@ -1108,16 +1095,14 @@ class AssetBuilder
         }
         if (pBuildThumbnails) {
           thumb = pAssetNames.getMaterialThumbNodeName();
-          if (!checkExistance(thumb)) {
-            ThumbnailStage stage = 
-              new ThumbnailStage(pStageInfo, pContext, pClient, thumb, "png", matTTImg, 120);
-            isThumbnailNode(stage, taskType);
-            stage.build();
-          }
+          ThumbnailStage stage = 
+            new ThumbnailStage(pStageInfo, pContext, pClient, thumb, "png", matTTImg, 120);
+          isThumbnailNode(stage, taskType);
+          stage.build();
         }
       }
       String matSubmit = pAssetNames.getMaterialSubmitNodeName();
-      if (!checkExistance(matSubmit)) {
+      {
         TreeSet<String> sources = new TreeSet<String>();
         if (pBuildThumbnails)
           sources.add(thumb);
@@ -1134,22 +1119,20 @@ class AssetBuilder
       String finalTex = null;
       if (pBuildTextureNode) {
 	finalTex = pAssetNames.getTextureFinalNodeName();
-	if (!checkExistance(finalTex)) {
-	  EmptyFileStage stage = new EmptyFileStage(pStageInfo, pContext, pClient, finalTex);
-	  isProductNode(stage, taskType);
-	  stage.build();
-	  pEmptyFileStages.add(stage);
-	}
+	EmptyFileStage stage = new EmptyFileStage(pStageInfo, pContext, pClient, finalTex);
+	isProductNode(stage, taskType);
+	stage.build();
+	pEmptyFileStages.add(stage);
       }
       String matFinal = pAssetNames.getRenderFinalNodeName();
       String matApprove = pAssetNames.getMaterialApproveNodeName();
-      if (!checkExistance(matFinal)) {
+      {
         ProductStage stage = 
           new ProductStage(pStageInfo, pContext, pClient, matFinal, "ma", matVerify, StageFunction.MayaScene.toString());
         isProductNode(stage, taskType);
         stage.build();
       }
-      if (!checkExistance(matApprove)) {
+      {
         TreeSet<String> sources = new TreeSet<String>();
         sources.add(matFinal);
 	if (pBuildTextureNode)

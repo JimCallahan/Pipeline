@@ -1,3 +1,5 @@
+// $Id: BaseBuilder.java,v 1.23 2007/08/19 00:57:56 jesse Exp $
+
 package us.temerity.pipeline.builder;
 
 import java.util.*;
@@ -651,6 +653,7 @@ class BaseBuilder
     pReleaseOnError = getBooleanParamValue(new ParamMapping(aReleaseOnError));
     pActionOnExistence = 
       ActionOnExistence.valueOf(getStringParamValue(new ParamMapping(aActionOnExistance)));
+    pStageInfo.setActionOnExistence(pActionOnExistence);
   }
   
   /**
@@ -950,60 +953,6 @@ class BaseBuilder
     default:
       break;
     }
-  }
-  
-  protected final boolean
-  checkExistance
-  (
-    String nodeName
-  ) 
-    throws PipelineException
-  {
-    if (nodeName == null)
-      return false;
-    pLog.log(Kind.Ops, Level.Finest, "Checking for existance of the node (" + nodeName + ")");
-    boolean exists = nodeExists(nodeName);
-    if (!exists) 
-      return false;
-    pLog.log(Kind.Ops, Level.Finest, "The node exists.");
-    if (pActionOnExistence == ActionOnExistence.Abort)
-      throw new PipelineException
-        ("The node (" + nodeName + ") exists.  Aborting Builder operation as per " +
-         "the setting of the ActionOnExistance parameter for the builder " +
-         "( " + getName() +  " )");
-    NodeLocation location = getNodeLocation(nodeName);
-    switch(location) {
-    case OTHER:
-      throw new PipelineException
-        ("The node (" + nodeName + ") exists, but in a different working area and was " +
-         "never checked in.  The Builder is aborting due to this problem.");
-    case LOCALONLY:
-      return true;
-    case LOCAL:
-      switch(pActionOnExistence) {
-      case CheckOut:
-	 pClient.checkOut(getAuthor(), getView(), nodeName, null, 
-	   CheckOutMode.KeepModified, CheckOutMethod.PreserveFrozen);
-	 pLog.log(Kind.Ops, Level.Finest, "Checking out the node.");
-	return true;
-      case Continue:
-	return true;
-      }
-    case REP:
-      switch(pActionOnExistence) {
-      case CheckOut:
-	 pClient.checkOut(getAuthor(), getView(), nodeName, null, 
-           CheckOutMode.KeepModified, CheckOutMethod.PreserveFrozen);
-	 pLog.log(Kind.Ops, Level.Finest, "Checking out the node.");
-	 return true;
-      case Continue:
-	throw new PipelineException
-          ("The node (" + nodeName + ") exists, but is not checked out in the current " +
-           "working area.  Since ActionOnExistance was set to Continue, " +
-           "the Builder is unable to procede.");
-      }
-    }
-    return false;
   }
   
   /**

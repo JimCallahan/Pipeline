@@ -1,12 +1,17 @@
-// $Id: BaseStage.java,v 1.7 2007/08/18 23:31:33 jesse Exp $
+// $Id: BaseStage.java,v 1.8 2007/08/19 00:53:54 jesse Exp $
 
 package us.temerity.pipeline.stages;
 
 import java.util.*;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.LogMgr.Kind;
+import us.temerity.pipeline.LogMgr.Level;
+import us.temerity.pipeline.NodeTreeComp.State;
 import us.temerity.pipeline.builder.*;
+import us.temerity.pipeline.builder.BaseBuilder.ActionOnExistence;
 import us.temerity.pipeline.builder.BaseBuilder.StageFunction;
+import us.temerity.pipeline.builder.BaseUtil.NodeLocation;
 import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
 import us.temerity.pipeline.math.Range;
 
@@ -922,6 +927,186 @@ class BaseStage
     return false;
   }
   
+  /**
+   * Returns the {@link State} of a node. Takes a {@link NodeTreeComp} and a node name. It
+   * traces it way down the tree until it finds the place specified by the node name and
+   * returns the State of that place. It will return <code>null</code> if the specified
+   * path does not exist in the tree defined by the {@link NodeTreeComp}.
+   * 
+   * @param treeComps
+   *        A {@link NodeTreeComp} that should contain information about the node name
+   *        specified by scene. The most common way to acquire this data structure is with
+   *        the <code>updatePaths</code> method in {@link MasterMgrClient}.
+   * @param scene
+   *        The name of the path to search for the {@link State}.
+   * @return The {@link State} of the given name or null if the name is not valid in the
+   *         given {@link NodeTreeComp}.
+   */
+  private State 
+  getState
+  (
+    NodeTreeComp treeComps, 
+    String scene
+  )
+  {
+    State toReturn = null;
+    Path p = new Path(scene);
+    NodeTreeComp dest = null;
+    for(String s : p.getComponents()) {
+      if(dest == null)
+	dest = treeComps.get(s);
+      else
+	dest = dest.get(s);
+
+      if(dest == null)
+	break;
+    }
+    if(dest != null)
+      toReturn = dest.getState();
+    return toReturn;
+  }
+  
+  /**
+   * Returns a boolean that indicates if the name is an existing node in Pipeline.
+   * 
+   * @param name
+   *        The name of the node to search for.
+   * @return <code>true</code> if the node exists. <code>false</code> if the node does
+   *         not exist or if the specified path is a Branch.
+   * @throws PipelineException
+   */
+  private boolean 
+  nodeExists
+  (
+    String name
+  ) 
+  throws PipelineException
+  {
+    TreeMap<String, Boolean> comps = new TreeMap<String, Boolean>();
+    comps.put(name, false);
+    NodeTreeComp treeComps = pClient.updatePaths(getAuthor(), getView(), comps);
+    State state = getState(treeComps, name);
+    if ( state == null || state.equals(State.Branch) )
+      return false;
+    return true;
+  }
+  
+  /**
+   * Returns a enum which indicates where a node lives.
+   * <p>
+   * If a version of the node exists in the current working area, then
+   * {@link BaseBuilder.NodeLocation#LOCAL} is returned. If the node has been checked in, but
+   * is not checked out into the current working area, then
+   * {@link BaseBuilder.NodeLocation#REP} is returned. If the name represents a directory,
+   * <code>null</code> is returned. Otherwise, {@link BaseBuilder.NodeLocation#OTHER} is
+   * returned, indicating that the node exists in some other working area, but was never
+   * checked in.
+   * <p>
+   * Note that this method assumes that the node actually exists. If existance is not assured,
+   * then the {@link #nodeExists(String)} method should be called first.
+   * 
+   * @param name
+   *        The node name.
+   * @return The location of the node.
+   */
+  public NodeLocation 
+  getNodeLocation
+  (
+    String name
+  )
+    throws PipelineException
+  {
+    TreeMap<String, Boolean> comps = new TreeMap<String, Boolean>();
+    comps.put(name, false);
+    NodeTreeComp treeComps = pClient.updatePaths(getAuthor(), getView(), comps);
+    Path p = new Path(name);
+    ArrayList<String> parts = p.getComponents();
+    for (String comp : parts)
+    {
+      treeComps = treeComps.get(comp);
+    }
+    NodeTreeComp.State state = treeComps.getState();
+    NodeLocation toReturn = null;
+    switch (state)
+    {
+      case Branch:
+	toReturn = null;
+	break;
+      case WorkingCurrentCheckedInNone:
+	toReturn = NodeLocation.LOCALONLY;
+	break;
+      case WorkingCurrentCheckedInSome:
+	toReturn = NodeLocation.LOCAL;
+	break;
+      case WorkingNoneCheckedInSome:
+      case WorkingOtherCheckedInSome:
+	toReturn = NodeLocation.REP;
+	break;
+      case WorkingOtherCheckedInNone:
+	toReturn = NodeLocation.OTHER;
+	break;
+      default:
+	assert ( false );
+    }
+    return toReturn;
+  }
+  
+  protected final boolean
+  checkExistance
+  (
+    String nodeName
+  ) 
+    throws PipelineException
+  {
+    ActionOnExistence actionOnExistence = pStageInformation.getActionOnExistence();
+    LogMgr pLog = LogMgr.getInstance();
+    if (nodeName == null)
+      return false;
+    pLog.log(Kind.Ops, Level.Finest, "Checking for existance of the node (" + nodeName + ")");
+    boolean exists = nodeExists(nodeName);
+    if (!exists) 
+      return false;
+    pLog.log(Kind.Ops, Level.Finest, "The node exists.");
+    if (actionOnExistence == ActionOnExistence.Abort)
+      throw new PipelineException
+        ("The node (" + nodeName + ") exists.  Aborting Builder operation as per " +
+         "the setting of the ActionOnExistance parameter in the builder.");
+    NodeLocation location = getNodeLocation(nodeName);
+    switch(location) {
+    case OTHER:
+      throw new PipelineException
+        ("The node (" + nodeName + ") exists, but in a different working area and was " +
+         "never checked in.  The Builder is aborting due to this problem.");
+    case LOCALONLY:
+      return true;
+    case LOCAL:
+      switch(actionOnExistence) {
+      case CheckOut:
+	 pClient.checkOut(getAuthor(), getView(), nodeName, null, 
+	   CheckOutMode.KeepModified, CheckOutMethod.PreserveFrozen);
+	 pLog.log(Kind.Ops, Level.Finest, "Checking out the node.");
+	return true;
+      case Continue:
+	return true;
+      }
+    case REP:
+      switch(actionOnExistence) {
+      case CheckOut:
+	 pClient.checkOut(getAuthor(), getView(), nodeName, null, 
+           CheckOutMode.KeepModified, CheckOutMethod.PreserveFrozen);
+	 pLog.log(Kind.Ops, Level.Finest, "Checking out the node.");
+	 return true;
+      case Continue:
+	throw new PipelineException
+          ("The node (" + nodeName + ") exists, but is not checked out in the current " +
+           "working area.  Since ActionOnExistance was set to Continue, " +
+           "the Builder is unable to procede.");
+      }
+    }
+    return false;
+  }
+
+
   
   /*----------------------------------------------------------------------------------------*/
   /*  I N T E R N A L S                                                                     */

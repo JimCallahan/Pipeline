@@ -238,7 +238,7 @@ class ModelPiecesBuilder
       for (String pieceName : pPieceNames) {
         String modelName = pNames.getModelPieceNodeName(pieceName);
         pieceNodes.put(pieceName, modelName);
-        if(!checkExistance(modelName)) {
+        {
           AssetBuilderModelStage stage = 
             new AssetBuilderModelStage
             (pStageInfo,
@@ -253,7 +253,7 @@ class ModelPiecesBuilder
         }
       }
       String editName = pNames.getModelEditNodeName();
-      if (!checkExistance(editName)) {
+      {
         ModelPiecesEditStage stage = 
           new ModelPiecesEditStage
           (pStageInfo,
@@ -267,7 +267,7 @@ class ModelPiecesBuilder
         addToCheckInList(editName);
       }
       String verifyName = pNames.getModelVerifyNodeName();
-      if (!checkExistance(verifyName)) {
+      {
         ModelPiecesVerifyStage stage = 
           new ModelPiecesVerifyStage
           (pStageInfo,

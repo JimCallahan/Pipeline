@@ -305,52 +305,49 @@ class ProjectTurntableBuilder
 	TreeSet<String> all = new TreeSet<String>(pCircles);
 	all.addAll(pCenter);
 	for (String node : all ) {
-	  if (!checkExistance(node)) {
-	    EmptyMayaAsciiStage stage = 
-	      new EmptyMayaAsciiStage(pStageInfo, pContext, pClient, pMayaContext, node);
-	    stage.build();
-	    pEmptyMayaStages.add(stage);
-	    addToCheckInList(node);
-	  }
+	  EmptyMayaAsciiStage stage = 
+	    new EmptyMayaAsciiStage(pStageInfo, pContext, pClient, pMayaContext, node);
+	  stage.build();
+	  pEmptyMayaStages.add(stage);
+	  addToCheckInList(node);
 	}
       }
       else {
 	String circleMel = pProjectNames.getPlaceholderTTCircleScriptName();
-	if (!checkExistance(circleMel)) {
+	{
 	  PlaceholderTTStage stage = 
 	    new PlaceholderTTStage(pStageInfo, pContext, pClient, circleMel, TTType.Circle);
 	  stage.build();
+	  addToCheckInList(circleMel);
 	}
 	for (String circles : pCircles) {
-	  if (!checkExistance(circles)) {
-	    AssetBuilderModelStage stage = 
-	      new AssetBuilderModelStage(pStageInfo, pContext, pClient, pMayaContext, circles, circleMel);
-	    stage.build();
-	    pModelStages.add(stage);
-	    addToCheckInList(circles);
-	  }
+	  AssetBuilderModelStage stage = 
+	    new AssetBuilderModelStage(pStageInfo, pContext, pClient, pMayaContext, circles, circleMel);
+	  stage.build();
+	  pModelStages.add(stage);
+	  addToCheckInList(circles);
 	}
 	String centerMel = pProjectNames.getPlaceholderTTCenterScriptName();
-	if (!checkExistance(centerMel)) {
+	{
 	  PlaceholderTTStage stage = 
 	    new PlaceholderTTStage(pStageInfo, pContext, pClient, centerMel, TTType.Center);
 	  stage.build();
+	  addToCheckInList(centerMel);
 	}
 	for (String centers : pCenter) {
-	  if (!checkExistance(centers)) {
-	    AssetBuilderModelStage stage = 
-	      new AssetBuilderModelStage(pStageInfo, pContext, pClient, pMayaContext, centers, centerMel);
-	    stage.build();
-	    pModelStages.add(stage);
-	    addToCheckInList(centers);
-	  }
+	  AssetBuilderModelStage stage = 
+	    new AssetBuilderModelStage(pStageInfo, pContext, pClient, pMayaContext, centers, centerMel);
+	  stage.build();
+	  pModelStages.add(stage);
+	  addToCheckInList(centers);
 	}
       }
       String cameraMel = pProjectNames.getPlaceholderCameraScriptName();
-      if (!checkExistance(cameraMel)) {
+      {
 	PlaceholderCameraStage stage = 
 	  new PlaceholderCameraStage(pStageInfo, pContext, pClient, cameraMel);
 	stage.build();
+	addToCheckInList(cameraMel);
       }
     }
     private static final long serialVersionUID = -1362555982315848091L;
