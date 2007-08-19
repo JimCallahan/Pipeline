@@ -12,11 +12,20 @@ public class BabyBuilder
   public BabyBuilder
   (
     String name,
-    BuilderInformation builderInformation
+    MasterMgrClient mclient,
+    QueueMgrClient qclient,
+    BuilderInformation info
   ) 
     throws PipelineException
   {
-    super(name, "A Baby Builder", builderInformation);
+    super(name, 
+          new VersionID("1.0.0"), 
+          "Temerity", 
+          "A Baby Builder", 
+          mclient, 
+          qclient, 
+          info);
+
     {
       UtilityParam param = 
 	new BooleanUtilityParam
@@ -107,7 +116,11 @@ public class BabyBuilder
       pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
 	"Starting the init phase in " + this.toString());
       if (pMakeChild)
-	addSubBuilder(new BabyBuilder("FirstChild", pBuilderInformation));
+      {
+	BabyBuilder builder = new BabyBuilder("FirstChild", pClient, pQueue, pBuilderInformation);
+	builder.disableParam(new ParamMapping(aMakeChild));
+	addSubBuilder(builder);
+      }
       pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
 	"Finished the init phase.");
     }
@@ -145,7 +158,7 @@ public class BabyBuilder
       pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
 	"Starting the init phase in " + this.toString());
       if (pMakeLaterChild)
-	addSubBuilder(new BabyBuilder("SecondChild", pBuilderInformation));
+	addSubBuilder(new BabyBuilder("SecondChild", pClient, pQueue, pBuilderInformation));
       pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
 	"Finished the init phase.");
     }
@@ -183,11 +196,13 @@ public class BabyBuilder
       pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
 	"Starting the init phase in " + this.toString());
       if (pMakeThirdChild)
-	addSubBuilder(new BabyBuilder("ThirdChild", pBuilderInformation));
+	addSubBuilder(new BabyBuilder("ThirdChild", pClient, pQueue, pBuilderInformation));
       pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
 	"Finished the init phase.");
     }
   }
+  
+  private static final long serialVersionUID = 6436445487501678795L;
   
   public static final String aMakeChild = "MakeChild";
   public static final String aMakeLaterChild = "MakeLaterChild";
