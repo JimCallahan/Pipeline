@@ -1,4 +1,4 @@
-// $Id: BaseUtil.java,v 1.16 2007/08/19 00:57:33 jesse Exp $
+// $Id: BaseUtil.java,v 1.17 2007/08/19 04:41:08 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -1992,6 +1992,8 @@ class BaseUtil
     
     private String pParamName;
     private LinkedList<String> pKeys;
+    
+    public static final ParamMapping NullMapping = new ParamMapping("NULL", null);
   }
   
   public static 

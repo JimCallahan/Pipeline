@@ -1,4 +1,4 @@
-// $Id: BaseBuilder.java,v 1.23 2007/08/19 00:57:56 jesse Exp $
+// $Id: BaseBuilder.java,v 1.24 2007/08/19 04:41:08 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -100,6 +100,8 @@ class BaseBuilder
     pCurrentPass = 1;
     pInitialized = false;
   }
+  
+  
   
   /*----------------------------------------------------------------------------------------*/
   /*   L A Y O U T                                                                          */
@@ -397,43 +399,6 @@ class BaseBuilder
   }
   
   /**
-   * Creates a mapping between a parameter in the named Sub-Builder and a parameter
-   * in the parent Builder. 
-   * <p>
-   * Error checking will cover the existance of both parameters and their implementation
-   * of {@link SimpleParamAccess}.  It does not cover that the values in the parameters are
-   * of similar types, so it is completely possible that the mapping may fail during
-   * execution.  It is up to the authors of Builders to ensure that they are only mapping
-   * parameters with identical values.
-   *
-   * @param subBuilderName
-   * 	The subBuilder the mapping is being created in.
-   * @param subParamName
-   * 	The name of the Sub-Builder parameter that is being driven.
-   * @param masterParamName
-   * 	The name of the parent Builder parameter that is driving the Sub-Builder parameter.
-   * @throws PipelineException
-   * 	When either Parameter is not a Simple Parameter or doesn't exist.
-   */
-  public final void
-  addMappedParam
-  (
-    String subBuilderName, 
-    String subParamName,
-    List<String> subKeys,
-    String masterParamName,
-    List<String> masterKeys
-  )
-    throws PipelineException
-  {
-    
-    ParamMapping subMapping = new ParamMapping(subParamName, subKeys);
-    ParamMapping masterMapping = new ParamMapping(masterParamName, masterKeys);
-    
-    addMappedParam(subBuilderName, subMapping, masterMapping);
-  }
-
-  /**
    * Adds a group of Parameter mappings to a Sub-Builder.
    */
   public final void
@@ -446,9 +411,21 @@ class BaseBuilder
   {
     for (ParamMapping sub : mapping.keySet()) {
       ParamMapping master = mapping.get(sub);
-      addMappedParam(subBuilderName, sub.getParamName(), sub.getKeys(), 
-	             master.getParamName(), master.getKeys());
+      addMappedParam(subBuilderName, sub, master);
     }
+  }
+  
+  /**
+   * Sets a null mapping for a parameter that will keep it from being displayed in the 
+   * gui or from accepting a commandline value.
+   */
+  public final void
+  disableParam
+  (
+    ParamMapping param
+  )
+  {
+    addParamMapping(param, ParamMapping.NullMapping);
   }
 
   /**
@@ -477,6 +454,9 @@ class BaseBuilder
     pLog.log(Kind.Ops, Level.Fine, "Initializing the subBuilder (" + name + ").");
     for (ParamMapping subParamMapping : paramMapping.keySet()) {
       ParamMapping masterParamMapping = paramMapping.get(subParamMapping);
+      
+      if (masterParamMapping.equals(ParamMapping.NullMapping))
+	continue;
       
       UtilityParam subParam = subBuilder.getParam(subParamMapping);
       UtilityParam masterParam = this.getParam(masterParamMapping);
@@ -1215,8 +1195,9 @@ class BaseBuilder
    * Sets a default editor for a particular stage function type.
    * <p>
    * This is a wrapper function for the
-   * {@link StageInformation#setDefaultEditor(String, PluginContext)} method. If this method
-   * is called, it is not necessary to set the same values in the {@link StageInformation}.
+   * {@link BuilderInformation.StageInformation#setDefaultEditor(String, PluginContext)}
+   * method. If this method is called, it is not necessary to set the same values in the
+   * {@link BuilderInformation.StageInformation}.
    * <p>
    * Note that this method is only effective the FIRST time it is called for a particular
    * function type. This allows high-level builders to override their child builders if they
