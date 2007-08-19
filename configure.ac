@@ -2095,6 +2095,7 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/MayaRenderAction/v2_0_9/Makefile
   src/java/us/temerity/pipeline/plugin/MayaRenderAction/v2_2_1/Makefile
   src/java/us/temerity/pipeline/plugin/MayaRenderAction/v2_3_2/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaRenderAction/v2_3_8/Makefile
   src/java/us/temerity/pipeline/plugin/MayaRenderGlobalsAction/Makefile
   src/java/us/temerity/pipeline/plugin/MayaRenderGlobalsAction/v1_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/MayaRenderGlobalsAction/v2_0_0/Makefile
