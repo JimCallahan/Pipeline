@@ -1,3 +1,5 @@
+// $Id: MayaFileStage.java,v 1.6 2007/08/19 00:55:32 jesse Exp $
+
 package us.temerity.pipeline.stages;
 
 import us.temerity.pipeline.*;

@@ -172,27 +172,30 @@ class StandardStage
   {
     LogMgr.getInstance().log
       (Kind.Ops, Level.Fine, "Building the node: " + pRegisteredNodeName );
-    if (pFrameRange == null)
-      pRegisteredNodeMod = registerNode();
-    else
-      pRegisteredNodeMod = registerSequence();
-    if(pRegisteredNodeMod == null)
-      return false;
-    if(pSecondarySequences != null)
-      addSecondarySequences();
-    if(pLinks != null)
-      createLinks();
-    if(pAction != null)
-      setAction();
-    setKeys();
-    if(pAction != null)
-      setJobSettings();
-    pClient.modifyProperties(getAuthor(), getView(), pRegisteredNodeMod);
-    pRegisteredNodeMod = pClient.getWorkingVersion(getAuthor(), getView(),
-        pRegisteredNodeName);
-    if (pStageInformation.doAnnotations())
-      doAnnotations();
-    return true;
+    if (!checkExistance(pRegisteredNodeName)) {
+      if (pFrameRange == null)
+	pRegisteredNodeMod = registerNode();
+      else
+	pRegisteredNodeMod = registerSequence();
+      if(pRegisteredNodeMod == null)
+	return false;
+      if(pSecondarySequences != null)
+	addSecondarySequences();
+      if(pLinks != null)
+	createLinks();
+      if(pAction != null)
+	setAction();
+      setKeys();
+      if(pAction != null)
+	setJobSettings();
+      pClient.modifyProperties(getAuthor(), getView(), pRegisteredNodeMod);
+      pRegisteredNodeMod = pClient.getWorkingVersion(getAuthor(), getView(),
+	pRegisteredNodeName);
+      if (pStageInformation.doAnnotations())
+	doAnnotations();
+      return true;
+    }
+    return false;
   }
   
   public void

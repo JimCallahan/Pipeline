@@ -1,3 +1,5 @@
+// $Id: BaseUtil.java,v 1.16 2007/08/19 00:57:33 jesse Exp $
+
 package us.temerity.pipeline.builder;
 
 import java.util.*;
@@ -1824,7 +1826,8 @@ class BaseUtil
    * OTHER means the node only exists in the another working area.
    *
    */
-  public static enum NodeLocation
+  public static 
+  enum NodeLocation
   {
     /**
      * The node exists in the current working area.
