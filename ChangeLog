@@ -1,3 +1,397 @@
+2007-08-17  author  <author@dimetrodon>
+
+	* configure.ac: made pllocal configuration option disabled by default
+
+	* src/java/us/temerity/pipeline/ui/core/TextureMgr.java:
+	fixed missing NeedsCheckOutMicro 32x32 icon
+
+2007-08-14  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/plugin/TaskPolicyExt/v2_3_2/TaskDb.java, src/java/us/temerity/pipeline/plugin/TaskPolicyExt/v2_3_2/TaskPolicyExt.java:
+	approve node post check-in tasks on all versions (not just intial version), now does NOT search for submit node from approve node root
+
+	* src/java/us/temerity/pipeline/core/BuilderOptsParser.jj:
+	added more punctutation characters to param value token
+
+2007-08-14  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/plugin/TaskPolicyExt/v2_3_2/TaskDb.java, src/java/us/temerity/pipeline/plugin/TaskPolicyExt/v2_3_2/TaskPolicyExt.java:
+	approve node post check-in tasks on all versions (not just intial version), now does NOT search for submit node from approve node root
+
+	* src/java/us/temerity/pipeline/core/BuilderOptsParser.jj:
+	added more punctutation characters to param value token
+
+2007-08-09  author  <author@dimetrodon>
+
+	* config/bootstrap-radar.sh: latest site-profile
+
+	* plconfig/customers/radar/070809, plconfig/customers/radar/070809.txt:
+	initial revision
+
+2007-08-08  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/BuildsShotNames.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/DefaultShotNames.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/ShotBuilder.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/stages/ShotBuilderAnimStage.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/stages/ShotMayaCurvesExportStage.java, src/java/us/temerity/pipeline/stages/MayaCurvesExportStage.java:
+	latest builder stuff
+
+	* www/pltasks/details-header.php, www/pltasks/post.php:
+	task assignment/supervisors now works for pipeline user
+
+	* src/java/us/temerity/pipeline/NodeVersion.java:
+	code formatting, no functional difference
+
+	* src/java/us/temerity/pipeline/plugin/TaskPolicyExt/v2_3_2/TaskPolicyExt.java:
+	now stops recursing up node networks when it enounters a locked node or a product node for the submit check-in
+
+	* src/java/us/temerity/pipeline/builder/approval/v2_3_2/.cvsignore, src/java/us/temerity/pipeline/builder/approval/v2_3_2/Makefile.in:
+	removed cvsignore, added Makefile.in
+
+	* src/java/us/temerity/pipeline/builder/BaseUtil.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/AdvAssetBuilder.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/BuildsShotNames.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/DefaultShotNames.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/ShotBuilder.java:
+	latest builder upgrades
+
+	* src/java/us/temerity/pipeline/PlaceholderUtilityParam.java:
+	new param type
+
+	* www/pltasks/details-event.php, www/pltasks/details-header.php, www/pltasks/details.php, www/pltasks/post.php, www/pltasks/search.php:
+	assign almost functional
+
+2007-08-07  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/plugin/MRayOptionsAction/v2_3_5/MRayOptionsAction.java, src/java/us/temerity/pipeline/plugin/MayaShaderExportAction/v2_3_1/MayaShaderExportAction.java:
+	fixed some small bugs that should never have existed.  MRayOptions still has something wrong with it.  Working on it later
+
+	* www/pltasks/details-event.php: added thumbnails to each event panel
+
+	* www/pltasks/Makefile.am, www/pltasks/approval-builder.php, www/pltasks/details.php, www/pltasks/post.php, www/pltasks/sql/create-tables.sql:
+	approval fully functional
+
+2007-08-06  author  <author@dimetrodon>
+
+	* www/pltasks/post.php:
+	running of approval builder is fully functional, approve event/node_info not yet done...
+
+	* www/pltasks/approval-builder.php:
+	no longer preformatting command line
+
+	* src/java/us/temerity/pipeline/builder/ui/JBuilderParamDialog.java:
+	I think i've got it to work
+
+	* src/java/us/temerity/pipeline/core/BuilderApp.java: fuck fuck fuck
+
+	* src/java/us/temerity/pipeline/builder/BaseBuilder.java, src/java/us/temerity/pipeline/core/BuilderApp.java:
+	I hate this shit
+
+	* src/java/us/temerity/pipeline/builder/BaseBuilder.java:
+	no it still didn't work.  at least futurama is on.
+
+	* src/java/us/temerity/pipeline/builder/BaseBuilder.java:
+	well, maybe this fixes the fucking builder exit code problem.  its 11pm the night before siggraph and I'm sitting here wrestling with bullshit programming errors instead of actually working on the presentation.  Isn't programming great?  I can't wait for the singularity so I can have some uber-smart computer do all this for me.
+
+	* src/java/us/temerity/pipeline/builder/BaseBuilder.java, src/java/us/temerity/pipeline/builder/ui/JBuilderParamDialog.java, src/java/us/temerity/pipeline/core/BuilderApp.java:
+	hopefully fixed the builder exit code issues and made it so you can actually run it in GUI mode.
+
+	* src/java/us/temerity/pipeline/builder/BaseUtil.java:
+	fixed a null pointer bug in check-in.  fuckers.  who wrote this code anyway?
+
+	* src/java/us/temerity/pipeline/core/BuilderApp.java:
+	added an exit code
+
+2007-08-05  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/plugin/TaskPolicyExt/v2_3_2/TaskDb.java, src/java/us/temerity/pipeline/plugin/TaskPolicyExt/v2_3_2/TaskPolicyExt.java:
+	now handles initial approval check-in as well
+
+	* src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/stages/PlaceholderTTStage.java:
+	updated to work with maya 8.5
+
+	* www/pltasks/approval-builder.php, www/pltasks/pipeline-config.php.in, www/pltasks/post.php:
+	running of approval builder almost working, can run the builder but aren't giving it the right options yet
+
+	* configure.ac: added pipeline-config.php
+
+	* www/pltasks/details-event.php: made width of left component standard
+
+	* src/java/scripts/builder/approval/v2_3_2/.cvsignore, src/java/scripts/builder/approval/v2_3_2/Makefile.am, src/java/scripts/builder/approval/v2_3_2/plApprovalBuilder.in:
+	fixed - ApprovalBuilder Broken
+
+	* www/pltasks/sql/create-tables.sql: approvals table uneeded
+
+	* configure.ac, docs/Makefile.am, src/java/scripts/builder/Makefile.am, src/java/scripts/builder/approval/.cvsignore, src/java/scripts/builder/approval/Makefile.am, src/java/us/temerity/pipeline/builder/Makefile.am, src/java/us/temerity/pipeline/builder/approval/.cvsignore, src/java/us/temerity/pipeline/builder/approval/Makefile.am, src/java/us/temerity/pipeline/builder/approval/v2_3_2/.cvsignore, src/java/us/temerity/pipeline/builder/approval/v2_3_2/ApprovalBuilder.java, src/java/us/temerity/pipeline/builder/approval/v2_3_2/package.html, src/windows/scripts/builder/Makefile.am, src/windows/scripts/builder/approval/.cvsignore, src/windows/scripts/builder/approval/Makefile.am, src/windows/scripts/builder/approval/v2_3_2/.cvsignore, src/windows/scripts/builder/approval/v2_3_2/Makefile.am, src/windows/scripts/builder/approval/v2_3_2/plApprovalBuilder.bat.src.in:
+	fixed - ApprovalBuilder Broken
+
+	* config/bootstrap-dimetrodon.sh: removed --enable-pllocal
+
+	* src/java/us/temerity/pipeline/message/NodeGetAnnotationsRsp.java:
+	fixed - Network MasterMgrClient.getAnnotations) Broken
+
+	* src/java/us/temerity/pipeline/core/BuilderApp.java, src/java/us/temerity/pipeline/core/BuilderOptsParser.jj:
+	cleanup and standardized code
+
+	* src/java/us/temerity/pipeline/laf/Splash.png, src/java/us/temerity/pipeline/laf/source/Splash.xcf:
+	v2.3.8
+
+2007-08-03  author  <author@dimetrodon>
+
+	* www/common.php, www/pltasks/auth-failure.php, www/pltasks/auth.php, www/pltasks/details-event.php, www/pltasks/details-header.php, www/pltasks/details.php, www/pltasks/logout.php, www/pltasks/post-comment.php, www/pltasks/post-review.php, www/pltasks/post-warning.php, www/pltasks/post.php, www/pltasks/sql/create-tables.sql, www/stylesheet.css:
+	comments and Hold/ChangeRequired review working, Approve/CBB/Final approval queue almost done
+
+	* studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Windows/plRadarAssetBuilder.bat.src.in, studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Windows/plRadarProjectBuilder.bat.src.in, studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Windows/plRadarProjectScriptBuilder.bat.src.in, studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Windows/plRadarProjectTurntableBuilder.bat.src.in:
+	added the radar jar path to the script
+
+	* Makefile.am, config/bootstrap-dimetrodon.sh, config/bootstrap-radar.sh, config/bootstrap.sh, configure.ac, rpm/Makefile.am, rpm/pipeline.spec.in, rpm/pllocal.spec.in, rpm/plmac.spec.in, rpm/plwin.spec.in, studios/radar/pipeline-local/src/Makefile.am, studios/radar/pipeline-local/src/builder_v2_3_2.xml-footer, studios/radar/pipeline-local/src/builder_v2_3_2.xml-header.in, studios/radar/pipeline-local/src/builder_v2_3_2.xml-mac, studios/radar/pipeline-local/src/builder_v2_3_2.xml-win, studios/radar/pipeline-local/src/builder_v2_3_2.xml.in, studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Makefile.am, studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Windows/Makefile.am, studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Windows/plRadarAssetBuilder.bat.src.in, studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Windows/plRadarProjectBuilder.bat.src.in, studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Windows/plRadarProjectScriptBuilder.bat.src.in, studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Windows/plRadarProjectTurntableBuilder.bat.src.in:
+	implemented 1230 - Studio Specific Source RPM
+
+	* src/java/us/temerity/pipeline/MasterMgrClient.java: comments
+
+2007-08-02  author  <author@dimetrodon>
+
+	* Makefile.am, configure.ac, studios/.cvsignore, studios/Makefile.am, studios/radar/.cvsignore, studios/radar/Makefile.am, studios/radar/pipeline-local/.classpath.in, studios/radar/pipeline-local/.cvsignore, studios/radar/pipeline-local/.project, studios/radar/pipeline-local/Makefile.am, studios/radar/pipeline-local/src/.cvsignore, studios/radar/pipeline-local/src/Makefile.am, studios/radar/pipeline-local/src/builder_v2_3_2.xml.in, studios/radar/pipeline-local/src/com/.cvsignore, studios/radar/pipeline-local/src/com/Makefile.am, studios/radar/pipeline-local/src/com/radar/.cvsignore, studios/radar/pipeline-local/src/com/radar/Makefile.am, studios/radar/pipeline-local/src/com/radar/pipeline/.cvsignore, studios/radar/pipeline-local/src/com/radar/pipeline/Makefile.am, studios/radar/pipeline-local/src/com/radar/pipeline/builder/.cvsignore, studios/radar/pipeline-local/src/com/radar/pipeline/builder/Makefile.am, studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/.cvsignore, studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/Makefile.am, studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/.cvsignore, studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/Makefile.am, studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/RadarAssetBuilder.java, studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/RadarAssetNames.java, studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/RadarProjectBuilder.java, studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/RadarProjectNames.java, studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/RadarProjectScriptBuilder.java, studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/RadarProjectTurntableBuilder.java, studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/.cvsignore, studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/MacOS/.cvsignore, studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/MacOS/Makefile.am, studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/MacOS/plRadarAssetBuilder.in, studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/MacOS/plRadarProjectBuilder.in, studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/MacOS/plRadarProjectScriptBuilder.in, studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/MacOS/plRadarProjectTurntableBuilder.in, studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Makefile.am, studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Unix/.cvsignore, studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Unix/Makefile.am, studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Unix/plRadarAssetBuilder.in, studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Unix/plRadarProjectBuilder.in, studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Unix/plRadarProjectScriptBuilder.in, studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Unix/plRadarProjectTurntableBuilder.in, studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Windows/.cvsignore, studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Windows/Makefile.am, studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Windows/plRadarAssetBuilder.bat.src.in, studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Windows/plRadarProjectBuilder.bat.src.in, studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Windows/plRadarProjectScriptBuilder.bat.src.in, studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Windows/plRadarProjectTurntableBuilder.bat.src.in:
+	the radar studio directory and the Makefile.am and configure.ac necessary to make it build.
+
+	* src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/AssetBuilder.java:
+	uncommented disabled code
+
+	* src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/stages/AssetModelExportStage.java, src/java/us/temerity/pipeline/stages/MayaExportStage.java:
+	forgot to check this in
+
+	* rpm/plwin.spec.in: fixed path AGAIN
+
+	* src/java/us/temerity/pipeline/laf/Splash.png, src/java/us/temerity/pipeline/laf/source/Splash.xcf, configure.ac:
+	v2.3.7
+
+	* rpm/plwin.spec.in: wrong path for plApprovalBuilder script
+
+	* src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/AssetBuilder.java:
+	disabled broken code
+
+	* rpm/pipeline.spec.in, rpm/plmac.spec.in, rpm/plwin.spec.in:
+	implemented 1229 - Pipeline needs to own the builders directory
+
+2007-08-01  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/plugin/MayaExportAction/v2_3_4/MayaExportAction.java:
+	formating fix
+
+	* src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/AssetBuilder.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/DefaultProjectNames.java, src/java/us/temerity/pipeline/stages/MayaBuildStage.java, src/java/us/temerity/pipeline/stages/MayaFileStage.java:
+	latest builder code tweaks, nothing major
+
+	* src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/ProjectMelBuilder.java:
+	 replaced with the ProjectScriptBuilder
+
+	* src/java/us/temerity/pipeline/plugin/MayaMiShaderAction/v2_3_4/MayaMiShaderAction.java:
+	bug fix
+
+	* src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/AdvAssetBuilder.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/AssetBuilder.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/BuildsAssetNames.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/DefaultAssetNames.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/DefaultShotNames.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/NewAssetBuilder.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/ProjectMelBuilder.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/stages/AssetBuilderShaderExportStage.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/stages/NewAssetBuilderRigStage.java:
+	latest builder updates
+
+	* configure.ac, rpm/pipeline.spec.in, rpm/plmac.spec.in, rpm/plwin.spec.in, src/java/scripts/builder/Makefile.am, src/java/scripts/builder/maya2mr/v2_3_2/Makefile.am, src/java/scripts/builder/maya2mr/v2_3_2/plAssetBuilder.in, src/windows/scripts/builder/Makefile.am, src/windows/scripts/builder/maya2mr/v2_3_2/Makefile.am, src/windows/scripts/builder/maya2mr/v2_3_2/plAssetBuilder.bat.src.in:
+	scripts for all the new builders
+
+	* www/pltasks/details.php, www/pltasks/details-header.php: latest
+
+	* src/java/us/temerity/pipeline/plugin/ShakeThumbnailAction/v2_3_6/ShakeThumbnailAction.java:
+	fully functional
+
+	* www/pltasks/details.php: latest
+
+2007-07-31  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/plugin/MayaBuildAction/v2_3_5/MayaBuildAction.java:
+	bug fix to code.
+
+	* src/java/us/temerity/pipeline/plugin/SubmitNodeAnnotation/v2_3_2/SubmitNodeAnnotation.java, src/java/us/temerity/pipeline/plugin/TaskPolicyExt/v2_3_2/TaskDb.java, src/java/us/temerity/pipeline/plugin/TaskPolicyExt/v2_3_2/TaskPolicyExt.java, www/pltasks/sql/create-tables.sql:
+	added BuilderPath parameter to the SubmitNode Annotation
+
+	* src/java/us/temerity/pipeline/plugin/TaskAnnotation/v2_3_2/TaskAnnotation.java:
+	comments
+
+	* configure.ac, src/java/us/temerity/pipeline/plugin/Makefile.am, src/java/us/temerity/pipeline/plugin/ShakeThumbnailAction/.cvsignore, src/java/us/temerity/pipeline/plugin/ShakeThumbnailAction/Makefile.am, src/java/us/temerity/pipeline/plugin/ShakeThumbnailAction/package.html, src/java/us/temerity/pipeline/plugin/ShakeThumbnailAction/v2_3_6/Makefile.in, src/java/us/temerity/pipeline/plugin/ShakeThumbnailAction/v2_3_6/ShakeThumbnailAction.java, src/java/us/temerity/pipeline/plugin/ShakeThumbnailAction/v2_3_6/package.html:
+	implemented 1222 - ShakeThumbnail Action
+
+	* src/java/us/temerity/pipeline/ui/core/JNodeDetailsPanel.java:
+	fixed 1184 - Vertical Offset in Node Details pane, implemented 1221 - Tuple Action Parameters
+
+	* src/java/us/temerity/pipeline/ui/core/JNodeAnnotationsPanel.java:
+	implemented 1220 - Path Annotation Parameter
+
+	* src/java/us/temerity/pipeline/plugin/TestAction/v1_2_0/TestAction.java, src/java/us/temerity/pipeline/plugin/TestAction/v1_2_0/TestParams.java, src/java/us/temerity/pipeline/ui/JDoubleTupleField.java, src/java/us/temerity/pipeline/ui/JIntegerTupleField.java, src/java/us/temerity/pipeline/Color3dActionParam.java, src/java/us/temerity/pipeline/Tuple2dActionParam.java, src/java/us/temerity/pipeline/Tuple2iActionParam.java, src/java/us/temerity/pipeline/Tuple3dActionParam.java, src/java/us/temerity/pipeline/Tuple3iActionParam.java, src/java/us/temerity/pipeline/Tuple4dActionParam.java, src/java/us/temerity/pipeline/TupleParam.java, src/java/us/temerity/pipeline/ui/JColorField.java, src/java/us/temerity/pipeline/ui/JColorParamTableCellEditor.java, src/java/us/temerity/pipeline/ui/JColorParamTableCellRenderer.java, src/java/us/temerity/pipeline/ui/JColorTableCellEditor.java, src/java/us/temerity/pipeline/ui/JColorTableCellRenderer.java, src/java/us/temerity/pipeline/ui/JTuple2dField.java, src/java/us/temerity/pipeline/ui/JTuple2dParamTableCellEditor.java, src/java/us/temerity/pipeline/ui/JTuple2dParamTableCellRenderer.java, src/java/us/temerity/pipeline/ui/JTuple2dTableCellEditor.java, src/java/us/temerity/pipeline/ui/JTuple2dTableCellRenderer.java, src/java/us/temerity/pipeline/ui/JTuple2iField.java, src/java/us/temerity/pipeline/ui/JTuple2iParamTableCellEditor.java, src/java/us/temerity/pipeline/ui/JTuple2iParamTableCellRenderer.java, src/java/us/temerity/pipeline/ui/JTuple2iTableCellEditor.java, src/java/us/temerity/pipeline/ui/JTuple2iTableCellRenderer.java, src/java/us/temerity/pipeline/ui/JTuple3dField.java, src/java/us/temerity/pipeline/ui/JTuple3dParamTableCellEditor.java, src/java/us/temerity/pipeline/ui/JTuple3dParamTableCellRenderer.java, src/java/us/temerity/pipeline/ui/JTuple3dTableCellEditor.java, src/java/us/temerity/pipeline/ui/JTuple3dTableCellRenderer.java, src/java/us/temerity/pipeline/ui/JTuple3iField.java, src/java/us/temerity/pipeline/ui/JTuple3iParamTableCellEditor.java, src/java/us/temerity/pipeline/ui/JTuple3iParamTableCellRenderer.java, src/java/us/temerity/pipeline/ui/JTuple3iTableCellEditor.java, src/java/us/temerity/pipeline/ui/JTuple3iTableCellRenderer.java, src/java/us/temerity/pipeline/ui/JTuple4dField.java, src/java/us/temerity/pipeline/ui/JTuple4dParamTableCellEditor.java, src/java/us/temerity/pipeline/ui/JTuple4dParamTableCellRenderer.java, src/java/us/temerity/pipeline/ui/JTuple4dTableCellEditor.java, src/java/us/temerity/pipeline/ui/JTuple4dTableCellRenderer.java, src/java/us/temerity/pipeline/ui/UIFactory.java, src/java/us/temerity/pipeline/ui/core/JSourceParamsDialog.java, src/java/us/temerity/pipeline/ui/core/SourceParamsTableModel.java:
+	implemented 1221 - Tuple Action Parameters
+
+	* src/java/us/temerity/pipeline/PathAnnotationParam.java, src/java/us/temerity/pipeline/ui/JPathField.java:
+	implemented 1220 - Path Annotation Parameter
+
+	* src/java/us/temerity/pipeline/plugin/CommonActionUtils.java: comments
+
+	* src/java/us/temerity/pipeline/ui/JBaseNumberField.java, src/java/us/temerity/pipeline/laf/synth.xml:
+	added SelectionTextField
+
+	* src/java/us/temerity/pipeline/math/TupleNd.java, src/java/us/temerity/pipeline/math/TupleNf.java, src/java/us/temerity/pipeline/math/TupleNi.java, src/java/us/temerity/pipeline/math/TupleNl.java:
+	now Comparable
+
+	* src/java/us/temerity/pipeline/plugin/MRayAddTexturesTool/v2_2_1/MRayAddTexturesTool.java:
+	comments
+
+	* src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/DefaultShotNames.java:
+	commented implements to supress build errors
+
+2007-07-30  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/plugin/CompositeActionUtils.java:
+	formatting fixes
+
+	* src/java/us/temerity/pipeline/builder/BaseBuilder.java, src/java/us/temerity/pipeline/builder/BaseUtil.java, src/java/us/temerity/pipeline/core/BaseApp.java:
+	updates to the core builder files
+
+	* src/java/us/temerity/pipeline/DoubleMapParam.java, src/java/us/temerity/pipeline/DoubleMapUtilityParam.java, src/java/us/temerity/pipeline/TreeMapParam.java, src/java/us/temerity/pipeline/TreeMapUtilityParam.java:
+	latest messing with parameters
+
+	* src/java/us/temerity/pipeline/stages/StandardStage.java, src/java/us/temerity/pipeline/stages/ThumbnailStage.java:
+	latest updates to stages
+
+	* src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/AdvAssetBuilder.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/BasicShotBuilder.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/BuildsShotNames.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/DefaultAssetNames.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/DefaultBuilderAnswers.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/DefaultProjectNames.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/DefaultShotNames.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/ModelPiecesBuilder.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/ShotBuilder.java:
+	latest updates to maya2mr builders
+
+	* configure.ac, src/java/us/temerity/pipeline/plugin/MayaBuildAction/Makefile.am:
+	update plugin building info
+
+	* src/java/us/temerity/pipeline/plugin/MayaRenderAction/Makefile.am, src/java/us/temerity/pipeline/plugin/MayaRenderAction/v2_3_2/Makefile.in, src/java/us/temerity/pipeline/plugin/MayaRenderAction/v2_3_2/MayaRenderAction.java, src/java/us/temerity/pipeline/plugin/MayaRenderAction/v2_3_2/package.html:
+	implemented 1217 - Upgrade MayaRender for Maya 8.5
+
+	* src/java/us/temerity/pipeline/plugin/MRayOptionsAction/v2_3_5/MRayOptionsAction.java:
+	implemented 1186 - MRayOptions Plugin
+
+	* src/java/us/temerity/pipeline/builder/ui/JBuilderParamPanel.java, src/java/us/temerity/pipeline/builder/ui/JBuilderTopPanel.java:
+	implmented 1200 - Empty Namers are displayed
+
+	* src/java/us/temerity/pipeline/builder/PluginContext.java:
+	implmented 1202 - Extend PluginContext to include version numbers
+
+	* src/java/us/temerity/pipeline/builder/ApprovalBuilder.java, src/java/us/temerity/pipeline/builder/TaskBuilder.java:
+	implemented 1206 - Add Generic Approval Builder
+
+	* src/java/us/temerity/pipeline/builder/ui/JBuilderParamDialog.java:
+	implemented 1205 - GUI on startup is too small
+
+	* src/java/us/temerity/pipeline/plugin/MayaBuildAction/v2_3_5/Makefile.in, src/java/us/temerity/pipeline/plugin/MayaBuildAction/v2_3_5/MayaBuildAction.java, src/java/us/temerity/pipeline/plugin/MayaBuildAction/v2_3_5/package.html:
+	implemented 1216 - MayaBuild should support referencing multiple levels of detail using Maya's proxy referencing setup.
+
+2007-07-25  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/plugin/IllustratorEditor/v2_3_3/IllustratorEditor.java, src/java/us/temerity/pipeline/plugin/InDesignEditor/v2_3_3/InDesignEditor.java, src/java/us/temerity/pipeline/plugin/PhotoshopEditor/v2_3_3/PhotoshopEditor.java, src/java/us/temerity/pipeline/plugin/ThumbnailNodeAnnotation/v2_3_2/ThumbnailNodeAnnotation.java:
+	added missing serialVersionUIDs
+
+	* src/java/us/temerity/pipeline/core/BuilderApp.java: fixed logging
+
+	* src/java/us/temerity/pipeline/plugin/ApproveNodeAnnotation/v2_3_2/ApproveNodeAnnotation.java, src/java/us/temerity/pipeline/plugin/DLShadowAction/v2_2_1/DLShadowAction.java, src/java/us/temerity/pipeline/plugin/EditNodeAnnotation/v2_3_2/EditNodeAnnotation.java, src/java/us/temerity/pipeline/plugin/ExtractSeqAction/v2_2_1/ExtractSeqAction.java, src/java/us/temerity/pipeline/plugin/FocusNodeAnnotation/v2_3_2/FocusNodeAnnotation.java, src/java/us/temerity/pipeline/plugin/FrameCyclerEditor/v2_0_9/FrameCyclerEditor.java, src/java/us/temerity/pipeline/plugin/IntermediateNodeAnnotation/v2_3_2/IntermediateNodeAnnotation.java, src/java/us/temerity/pipeline/plugin/MRayOptionsAction/v2_3_5/MRayOptionsAction.java, src/java/us/temerity/pipeline/plugin/MayaCurvesExportAction/v2_3_4/MayaCurvesExportAction.java, src/java/us/temerity/pipeline/plugin/MayaExportAction/v2_3_4/MayaExportAction.java, src/java/us/temerity/pipeline/plugin/MayaMRayInitMELAction/v2_3_5/MayaMRayInitMELAction.java, src/java/us/temerity/pipeline/plugin/MayaOccMELAction/v2_3_4/MayaOccMELAction.java, src/java/us/temerity/pipeline/plugin/MayaReRigMELAction/v2_3_3/MayaReRigMELAction.java, src/java/us/temerity/pipeline/plugin/MayaRemoveRefMELAction/v2_3_4/MayaRemoveRefMELAction.java, src/java/us/temerity/pipeline/plugin/MayaRemoveReferenceTool/v2_0_9/MayaRemoveReferenceTool.java, src/java/us/temerity/pipeline/plugin/MayaReplaceRefAction/v2_2_1/MayaReplaceRefAction.java, src/java/us/temerity/pipeline/plugin/MayaShdCopyMELAction/v2_3_4/MayaShdCopyMELAction.java, src/java/us/temerity/pipeline/plugin/NukeFrameCyclerEditor/v2_2_1/NukeFrameCyclerEditor.java, src/java/us/temerity/pipeline/plugin/PatternCloneTool/v2_3_1/PatternCloneTool.java, src/java/us/temerity/pipeline/plugin/RegisterMapTool/v2_0_10/RegisterMapTool.java, src/java/us/temerity/pipeline/plugin/RegisterMapTool/v2_0_9/RegisterMapTool.java, src/java/us/temerity/pipeline/plugin/ShaveCacheAction/v2_0_9/ShaveCacheAction.java, src/java/us/temerity/pipeline/plugin/ShaveCacheCopyAction/v2_0_9/ShaveCacheCopyAction.java, src/java/us/temerity/pipeline/plugin/SyflexApplyCacheAction/v2_0_9/SyflexApplyCacheAction.java, src/java/us/temerity/pipeline/plugin/TaskAnnotation/v2_2_1/TaskAnnotation.java, src/java/us/temerity/pipeline/plugin/ThumbnailNodeAnnotation/v2_3_2/ThumbnailNodeAnnotation.java:
+	fixed underDevelopment, OS support issues
+
+2007-07-24  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/laf/Splash.png, src/java/us/temerity/pipeline/laf/source/Splash.xcf:
+	v2.3.6
+
+	* src/java/scripts/debug/plfilemgr.in, src/java/scripts/debug/pljobmgr.in, src/java/scripts/debug/plmaster.in, src/java/scripts/debug/plpluginmgr.in, src/java/scripts/debug/plqueuemgr.in, src/java/scripts/plfilemgr.in, src/java/scripts/pljobmgr.in, src/java/scripts/plmaster.in, src/java/scripts/plpluginmgr.in, src/java/scripts/plqueuemgr.in, src/java/scripts/profile/plfilemgr.in, src/java/scripts/profile/pljobmgr.in, src/java/scripts/profile/plmaster.in, src/java/scripts/profile/plpluginmgr.in, src/java/scripts/profile/plqueuemgr.in:
+	implemented 1195 - Run Daemons as 'pipeline' Only
+
+	* rpm/plmaster.spec.in:
+	fixed 1193 - Default Editors prefs writing to read-only dir
+
+	* src/java/us/temerity/pipeline/plugin/AfterFXBuildAction/v2_2_1/AfterFXBuildAction.java, src/java/us/temerity/pipeline/plugin/AfterFXRenderImgAction/v2_2_1/AfterFXRenderImgAction.java, src/java/us/temerity/pipeline/plugin/AfterFXRenderMovAction/v2_2_1/AfterFXRenderMovAction.java:
+	no longer under development
+
+	* src/java/us/temerity/pipeline/builder/ApprovalBuilder.java, src/java/us/temerity/pipeline/builder/BaseBuilder.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/AdvAssetBuilder.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/BuildsAssetNames.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/DefaultAssetNames.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/ProjectScriptBuilder.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/ProjectTurntableBuilder.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/stages/AdvAssetBuilderTTImgStage.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/stages/AdvAssetShdImgStage.java, src/java/us/temerity/pipeline/builder/tests/BabyBuilder.java, src/java/us/temerity/pipeline/builder/tests/TopBuilder.java, src/java/us/temerity/pipeline/builder/ui/JBuilderParamDialog.java, src/java/us/temerity/pipeline/stages/ThumbnailStage.java:
+	latest builder bug fixes
+
+	* www/pltasks/auth-failure.php, www/pltasks/details-header.php, www/pltasks/details.php, www/pltasks/logout.php, www/stylesheet.css:
+	latest authentication fixes
+
+	* config/bootstrap-radar.sh: latest site-profile
+
+	* src/java/us/temerity/pipeline/builder/ApprovalBuilder.java:
+	fixed bug in isProductNode()
+
+	* src/java/us/temerity/pipeline/plugin/QuickTimeEditor/v2_2_1/QuickTimeEditor.java:
+	fixed 1187 - Quicktime editor bug
+
+2007-07-23  author  <author@dimetrodon>
+
+	* src/java/us/temerity/pipeline/builder/BaseBuilder.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/ProjectScriptBuilder.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/ProjectTurntableBuilder.java:
+	fixed the order of sub builder initialization so that it happens after parameter creation
+
+	* src/java/share/Unix/actions: latest menus
+
+	* src/java/us/temerity/pipeline/plugin/Makefile.am:
+	added missing MayaRemoveRefMELAction
+
+	* src/java/us/temerity/pipeline/builder/BaseBuilder.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/ProjectScriptBuilder.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/ProjectTurntableBuilder.java:
+	small param values tweaks
+
+	* ChangeLog: latest
+
+	* rpm/pipeline.spec.in, rpm/plmac.spec.in, rpm/plwin.spec.in:
+	added new maya2mr-2.3.2 builder scripts
+
+	* src/java/scripts/builder/maya2mr/v2_3_2/Makefile.am:
+	removed trailing /
+
+	* www/Makefile.am, www/pltasks/Makefile.am: latest pages
+
+	* www/pltasks/index.php: initial revision
+
+	* plconfig/customers/radar/070723, plconfig/customers/radar/070723.txt:
+	latest
+
+	* www/common.php, www/error.php, www/pltasks/auth-failure.php, www/pltasks/auth.php, www/pltasks/details-header.php, www/pltasks/details.php, www/pltasks/login.php, www/pltasks/logout.php, www/pltasks/register.php, www/pltasks/registered.php, www/pltasks/search.php, www/pltasks/sql/create-tables.sql:
+	authentication works
+
+	* plconfig/customers/crimson/070630: my latest profile
+
+	* src/java/us/temerity/pipeline/core/BuilderApp.java, src/java/us/temerity/pipeline/plugin/Makefile.am, src/java/us/temerity/pipeline/plugin/NukeActionUtils.java:
+	builder config stuff and plugin make files
+
+	* src/java/us/temerity/pipeline/plugin/MayaMiShaderAction/v2_3_4/MayaMiShaderAction.java, src/java/us/temerity/pipeline/plugin/MayaReRigMELAction/v2_3_3/MayaReRigMELAction.java, src/java/us/temerity/pipeline/plugin/MayaRemoveRefMELAction/v2_3_4/MayaRemoveRefMELAction.java:
+	code cleanup
+
+	* configure.ac, src/java/scripts/builder/maya2mr/v2_3_2/Makefile.am, src/java/scripts/builder/maya2mr/v2_3_2/plProjectBuilder.in, src/java/scripts/builder/maya2mr/v2_3_2/plProjectScriptBuilder.in, src/java/scripts/builder/maya2mr/v2_3_2/plProjectTurntableBuilder.in, src/windows/scripts/builder/maya2mr/v2_3_2/Makefile.am, src/windows/scripts/builder/maya2mr/v2_3_2/plProjectBuilder.bat.src.in, src/windows/scripts/builder/maya2mr/v2_3_2/plProjectScriptBuilder.bat.src.in, src/windows/scripts/builder/maya2mr/v2_3_2/plProjectTurntableBuilder.bat.src.in:
+	updated config files for new plugins and builder
+
+	* src/java/us/temerity/pipeline/plugin/MayaMRayInitMELAction/.cvsignore, src/java/us/temerity/pipeline/plugin/MayaMRayInitMELAction/Makefile.am, src/java/us/temerity/pipeline/plugin/MayaMRayInitMELAction/v2_3_5/Makefile.in, src/java/us/temerity/pipeline/plugin/MayaMRayInitMELAction/v2_3_5/MayaMRayInitMELAction.java, src/java/us/temerity/pipeline/plugin/MayaMRayInitMELAction/v2_3_5/package.html:
+	partially implemented 1146 - Mel Generating Actions for Asset Tasks
+
+	* src/java/us/temerity/pipeline/plugin/MRayOptionsAction/.cvsignore, src/java/us/temerity/pipeline/plugin/MRayOptionsAction/Makefile.am, src/java/us/temerity/pipeline/plugin/MRayOptionsAction/v2_3_5/MRayOptionsAction.java, src/java/us/temerity/pipeline/plugin/MRayOptionsAction/v2_3_5/Makefile.in, src/java/us/temerity/pipeline/plugin/MRayOptionsAction/v2_3_5/package.html:
+	partially implemented 1186 - MRayOptions Plugin
+
+	* src/java/us/temerity/pipeline/stages/BaseStage.java, src/java/us/temerity/pipeline/stages/FileWriterStage.java, src/java/us/temerity/pipeline/stages/MRayCamOverrideStage.java, src/java/us/temerity/pipeline/stages/MRayOptionsStage.java, src/java/us/temerity/pipeline/stages/MRayRenderStage.java, src/java/us/temerity/pipeline/stages/MayaBuildStage.java, src/java/us/temerity/pipeline/stages/MayaFTNBuildStage.java, src/java/us/temerity/pipeline/stages/MayaMiExportStage.java, src/java/us/temerity/pipeline/stages/MayaMiShaderStage.java, src/java/us/temerity/pipeline/stages/MayaRenderStage.java, src/java/us/temerity/pipeline/stages/ProductStage.java, src/java/us/temerity/pipeline/stages/StandardStage.java, src/java/us/temerity/pipeline/stages/TargetStage.java, src/java/us/temerity/pipeline/stages/TurntableStage.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/AdvAssetBuilder.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/AssetBuilder.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/BuildsAssetNames.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/BuildsProjectNames.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/DefaultAssetNames.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/DefaultProjectNames.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/DefaultShotNames.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/ModelPiecesBuilder.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/NewAssetBuilder.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/NullProjectNames.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/ProjectBuilder.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/ProjectScriptBuilder.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/ProjectTurntableBuilder.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/stages/AdvAssetBuilderAnimStage.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/stages/AdvAssetBuilderCurvesStage.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/stages/AdvAssetBuilderModelMiStage.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/stages/AdvAssetBuilderTTImgStage.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/stages/AdvAssetBuilderTTStage.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/stages/AdvAssetCamMiStage.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/stages/AdvAssetLgtMiStage.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/stages/AdvAssetMaterialStage.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/stages/AdvAssetShaderStage.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/stages/AdvAssetShdImgStage.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/stages/AdvAssetShdMiStage.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/stages/AssetBuilderShaderExportStage.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/stages/PlaceholderMELStage.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/stages/PlaceholderSkelMELStage.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/stages/PlaceholderTTStage.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/stages/VerifyModelMELStage.java, src/java/us/temerity/pipeline/builder/ApprovalBuilder.java, src/java/us/temerity/pipeline/builder/BaseBuilder.java, src/java/us/temerity/pipeline/builder/BaseNames.java, src/java/us/temerity/pipeline/builder/BuilderInformation.java, src/java/us/temerity/pipeline/builder/MayaContext.java, src/java/us/temerity/pipeline/builder/PluginContext.java, src/java/us/temerity/pipeline/builder/UtilContext.java:
+	latest invocation of all the builder stuff
+
+	* src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/stages/ProductStage.java, src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/stages/TargetStage.java:
+	moved these classes
+
+	* www/pltasks/details-event.php, www/pltasks/details-header.php, www/pltasks/details.php, www/pltasks/plscript.php:
+	improved plscript links
+
+	* src/java/us/temerity/pipeline/toolset/Toolset.java:
+	fixed bug in USERPROFILE and APPDATA which was using UNIX format for WINDOWS paths
+
+	* src/java/us/temerity/pipeline/core/ScriptApp.java:
+	added Windows environment overrides
+
+	* src/java/us/temerity/pipeline/ActionAgenda.java:
+	added hasSources() and getSourceName() methods
+
+	* configure.ac, rpm/pipeline.spec.in, rpm/plmac.spec.in, rpm/plwin.spec.in, src/java/scripts/Makefile.am, src/java/scripts/debug/Makefile.am, src/java/scripts/debug/plscript-batch.in, src/java/scripts/plscript-batch.in, src/java/scripts/profile/Makefile.am, src/java/scripts/profile/plscript-batch.in, src/windows/scripts/Makefile.am, src/windows/scripts/debug/Makefile.am, src/windows/scripts/debug/plscript-batch.bat.src.in, src/windows/scripts/plscript-batch.bat.src.in, www/pltasks/Makefile.am, www/pltasks/details-header.php, www/pltasks/details.php, www/pltasks/plscript.php:
+	plscript based web viewer links work
+
+	* src/java/us/temerity/pipeline/plugin/ThumbnailAction/v2_3_3/ThumbnailAction.java:
+	now supports Mac OS and Windows
+
+	* src/java/us/temerity/pipeline/plugin/TaskPolicyExt/v2_3_2/TaskDb.java, src/java/us/temerity/pipeline/plugin/TaskPolicyExt/v2_3_2/TaskPolicyExt.java:
+	thumbnails now operational
+
+	* src/java/us/temerity/pipeline/plugin/MayaActionUtils.java: comments
+
+	* www/loadpng.php, www/pltasks/Makefile.am, www/pltasks/details-event.php, www/pltasks/details-footer.php, www/pltasks/details-header.php, www/pltasks/details.php, www/pltasks/sql/create-tables.sql:
+	thumbnails operational now
+
 2007-07-23  author  <author@dimetrodon>
 
 	* www/Makefile.am, www/pltasks/Makefile.am: latest pages
