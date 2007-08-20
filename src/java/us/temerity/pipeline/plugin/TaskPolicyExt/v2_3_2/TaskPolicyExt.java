@@ -59,7 +59,7 @@ class TaskPolicyExt
 
       {
 	ExtensionParam param = 
-	  new StringExtensionParam    // Make a PasswordExtensionParam 
+	  new PasswordExtensionParam  
 	  (aDatabasePassword, 
 	   "The password to use when connecting to the SQL database.",
 	   null);
@@ -691,7 +691,7 @@ class TaskPolicyExt
     throws PipelineException
   {
     String taskType = (String) an.getParamValue(aTaskType);
-    if((taskType == null) || (taskType.length() == 0))
+    if(taskType == null)
       throw new PipelineException
         ("A TaskType must be supplied for the " + an.getName() + " annotation on node " + 
          "(" + nodeName +")!"); 

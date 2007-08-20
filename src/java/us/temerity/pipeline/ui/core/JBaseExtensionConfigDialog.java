@@ -1,4 +1,4 @@
-// $Id: JBaseExtensionConfigDialog.java,v 1.2 2007/06/15 00:27:31 jim Exp $
+// $Id: JBaseExtensionConfigDialog.java,v 1.3 2007/08/20 04:46:08 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -251,6 +251,12 @@ class JBaseExtensionConfigDialog
 	  JTextField field = (JTextField) comp;
 	  value = field.getText();	  
 	}
+	else if(aparam instanceof PasswordExtensionParam) {
+	  JPasswordField field = (JPasswordField) comp;
+          char[] pw = field.getPassword();
+          if(pw != null) 
+            value = new String(pw); 
+	}
 	else {
 	  assert(false) : "Unknown extension parameter type!";
 	}
@@ -478,6 +484,18 @@ class JBaseExtensionConfigDialog
 		(tpanel, aparam.getNameUI() + ":", tsize, 
 		 vpanel, value, sVSize, 
 		 aparam.getDescription());
+
+	      pParamComponents.put(pname, field);	      
+	    }
+	    else if(aparam instanceof PasswordExtensionParam) {
+	      String value = (String) aparam.getValue();
+	      JPasswordField field = 
+		UIFactory.createTitledPasswordField 
+		(tpanel, aparam.getNameUI() + ":", tsize, 
+		 vpanel, sVSize, 
+		 aparam.getDescription());
+
+              field.setText(value);
 
 	      pParamComponents.put(pname, field);	      
 	    }
