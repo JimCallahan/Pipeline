@@ -1,4 +1,4 @@
-// $Id: TaskDb.java,v 1.6 2007/08/14 17:06:30 jim Exp $
+// $Id: TaskDb.java,v 1.7 2007/08/20 01:35:37 jim Exp $
 
 package us.temerity.pipeline.plugin.TaskPolicyExt.v2_3_2;
 
@@ -245,6 +245,12 @@ class TaskDb
         pInsertIdentSt = pConnect.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS); 
       }
       
+      /* supervisors */ 
+      {
+        String sql = ("INSERT INTO supervisors (task_id) VALUES (?)");
+        pInsertNullTaskSupervisorSt = pConnect.prepareStatement(sql); 
+      }
+
       /* note */
       {
         String sql = ("INSERT INTO notes (note_text) VALUES (?)");
@@ -823,8 +829,10 @@ class TaskDb
     throws SQLException
   {
     Integer id = getTaskStatus(status); 
-    if(id == null) 
+    if(id == null) { 
       id = insertTaskStatus(status); 
+      insertNullTaskSupervisor(id);
+    }
 
     return id;
   }
@@ -981,6 +989,26 @@ class TaskDb
     }
     
     return id;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Insert a NULL entry for the supervistor of the given task.
+   * 
+   * @param taskID
+   *   The ID of the task. 
+   */ 
+  private synchronized void
+  insertNullTaskSupervisor
+  (
+   int taskID 
+  ) 
+    throws SQLException
+  {
+    pInsertNullTaskSupervisorSt.setInt(1, taskID);
+    pInsertNullTaskSupervisorSt.executeUpdate();
   }
 
 
@@ -1786,6 +1814,8 @@ class TaskDb
 
   private PreparedStatement  pGetTaskStatusSt;
   private PreparedStatement  pInsertTaskStatusSt;
+
+  private PreparedStatement  pInsertNullTaskSupervisorSt;
 
   private PreparedStatement  pGetIdentSt;
   private PreparedStatement  pInsertIdentSt;
