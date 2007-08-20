@@ -1,4 +1,4 @@
-// $Id: BaseMasterExt.java,v 1.6 2007/07/08 01:18:16 jim Exp $
+// $Id: BaseMasterExt.java,v 1.7 2007/08/20 04:43:14 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -153,6 +153,65 @@ class BaseMasterExt
 
 
   /*----------------------------------------------------------------------------------------*/
+  /*   A D M I N I S T R A T I V E   P R I V I L E G E S                                    */
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Whether to test before setting the work groups used to determine the scope of 
+   * administrative privileges. <P>
+   */  
+  public boolean
+  hasPreSetWorkGroupsTest() 
+  {
+    return false;
+  }
+
+  /**
+   * Test to perform before setting the work groups used to determine the scope of 
+   * administrative privileges. <P>
+   * 
+   * @param groups 
+   *   The work groups.
+   * 
+   * @throws PipelineException
+   *   To abort the operation.
+   */  
+  public void
+  preSetWorkGroupsTest
+  (
+   WorkGroups groups   
+  ) 
+    throws PipelineException
+  {}
+
+
+  /**
+   * Whether to run a task after setting the work groups used to determine the scope of 
+   * administrative privileges. <P>
+   */  
+  public boolean
+  hasPostSetWorkGroupsTask() 
+  {
+    return false;
+  }
+
+  /**
+   * The task to perform after setting the work groups used to determine the scope of 
+   * administrative privileges. <P>
+   * 
+   * @param groups 
+   *   The work groups.
+   */  
+  public void
+  postSetWorkGroupsTask
+  (
+   WorkGroups groups  
+  ) 
+  {}
+
+  
+
+  /*----------------------------------------------------------------------------------------*/
   /*   W O R K I N G   A R E A   O P S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
@@ -273,6 +332,138 @@ class BaseMasterExt
   ) 
   {}
 
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   A N N O T A T I O N S                                                                */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether to test before adding an annotation to a node. <P>
+   */  
+  public boolean
+  hasPreAddAnnotationTest() 
+  {
+    return false;
+  }
+
+  /**
+   * Test to perform before adding an annotation to a node. <P>
+   * 
+   * @param nname 
+   *   The fully resolved node name.
+   *
+   * @param aname 
+   *   The name of the annotation. 
+   * 
+   * @param annot 
+   *   The new node annotation to add.
+   *
+   * @throws PipelineException
+   *   To abort the operation.
+   */  
+  public void
+  preAddAnnotationTest
+  (
+   String nname, 
+   String aname, 
+   BaseAnnotation annot 
+  ) 
+    throws PipelineException
+  {}
+
+
+  /**
+   * Whether to run a task after adding an annotation to a node. <P>
+   */  
+  public boolean
+  hasPostAddAnnotationTask() 
+  {
+    return false;
+  }
+
+  /**
+   * The task to perform after adding an annotation to a node. <P>
+   * 
+   * @param nname 
+   *   The fully resolved node name.
+   *
+   * @param aname 
+   *   The name of the annotation. 
+   * 
+   * @param annot 
+   *   The new node annotation added.
+   */  
+  public void
+  postAddAnnotationTask
+  (
+   String nname, 
+   String aname, 
+   BaseAnnotation annot 
+  ) 
+  {}
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether to test before removing an annotation from a node. <P>
+   */  
+  public boolean
+  hasPreRemoveAnnotationTest() 
+  {
+    return false;
+  }
+
+  /**
+   * Test to perform before removing an annotation from a node. <P>
+   * 
+   * @param nname 
+   *   The fully resolved node name.
+   *
+   * @param aname 
+   *   The name of the annotation. 
+   *
+   * @throws PipelineException
+   *   To abort the operation.
+   */  
+  public void
+  preRemoveAnnotationTest
+  (
+   String nname, 
+   String aname
+  ) 
+    throws PipelineException
+  {}
+
+
+  /**
+   * Whether to run a task after removing an annotation from a node. <P>
+   */  
+  public boolean
+  hasPostRemoveAnnotationTask() 
+  {
+    return false;
+  }
+
+  /**
+   * The task to perform after removing an annotation from a node. <P>
+   * 
+   * @param nname 
+   *   The fully resolved node name.
+   *
+   * @param aname 
+   *   The name of the annotation. 
+   */  
+  public void
+  postRemoveAnnotationTask
+  (
+   String nname, 
+   String aname
+  ) 
+  {}
+
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   W O R K I N G   V E R S I O N S                                                      */

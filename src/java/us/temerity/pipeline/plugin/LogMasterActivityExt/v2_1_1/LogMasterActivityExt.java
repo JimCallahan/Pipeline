@@ -1,4 +1,4 @@
-// $Id: LogMasterActivityExt.java,v 1.4 2007/07/08 01:18:17 jim Exp $
+// $Id: LogMasterActivityExt.java,v 1.5 2007/08/20 04:43:14 jim Exp $
 
 package us.temerity.pipeline.plugin.LogMasterActivityExt.v2_1_1;
 
@@ -49,6 +49,27 @@ LogMasterActivityExt
       }
     }
 
+    /* administrative privileges ops */ 
+    {
+      {
+	ExtensionParam param = 
+	  new BooleanExtensionParam
+	  (aAllowSetWorkGroups,
+	   "Whether to allow setting the work groups.", 
+	   true);
+	addParam(param);
+      }
+      
+      {
+	ExtensionParam param = 
+	  new BooleanExtensionParam
+	  (aLogSetWorkGroups,
+	   "Enable logging of setting work groups.",
+	   true);
+	addParam(param);
+      }
+    }
+
     /* working area ops */ 
     {
       {
@@ -84,6 +105,46 @@ LogMasterActivityExt
 	  new BooleanExtensionParam
 	  (aLogRemoveWorkingArea,
 	   "Enable logging of the removal of working areas.",
+	   true);
+	addParam(param);
+      }
+    }
+
+    /* annotation ops */ 
+    {
+      {
+	ExtensionParam param = 
+	  new BooleanExtensionParam
+	  (aAllowAddAnnotation,
+	   "Whether to allow the addition of node annotations.", 
+	   true);
+	addParam(param);
+      }
+      
+      {
+	ExtensionParam param = 
+	  new BooleanExtensionParam
+	  (aLogAddAnnotation,
+	   "Enable logging the addition of node annotations.", 
+	   true);
+	addParam(param);
+      }
+
+
+      {
+	ExtensionParam param = 
+	  new BooleanExtensionParam
+	  (aAllowRemoveAnnotation,
+	   "Whether to allow removal node annotations.", 
+	   true);
+	addParam(param);
+      }
+      
+      {
+	ExtensionParam param = 
+	  new BooleanExtensionParam
+	  (aLogRemoveAnnotation,
+	   "Enable logging the removal of node annotations.", 
 	   true);
 	addParam(param);
       }
@@ -568,12 +629,33 @@ LogMasterActivityExt
 
       {
 	LayoutGroup sub = new LayoutGroup
+	  ("AdminPrivilegesOps", "Administrative privileges operations.", true);
+	sub.addEntry(aAllowSetWorkGroups);
+	sub.addEntry(aLogSetWorkGroups); 
+
+	layout.addSubGroup(sub);
+      }
+
+      {
+	LayoutGroup sub = new LayoutGroup
 	  ("WorkingAreaOps", "Working area management operations.", true);
 	sub.addEntry(aAllowCreateWorkingArea);
 	sub.addEntry(aLogCreateWorkingArea);
 	sub.addSeparator();
 	sub.addEntry(aAllowRemoveWorkingArea);
 	sub.addEntry(aLogRemoveWorkingArea);
+
+	layout.addSubGroup(sub);
+      }
+
+      {
+	LayoutGroup sub = new LayoutGroup
+	  ("AnnotationOps", "Node annotation operations.", true);
+	sub.addEntry(aAllowAddAnnotation); 
+	sub.addEntry(aLogAddAnnotation);
+	sub.addSeparator();
+	sub.addEntry(aAllowRemoveAnnotation);
+	sub.addEntry(aLogRemoveAnnotation);
 
 	layout.addSubGroup(sub);
       }
@@ -769,7 +851,88 @@ LogMasterActivityExt
        "LogMasterActivity Disabled!"); 
   }
 
+  
  
+  /*----------------------------------------------------------------------------------------*/
+  /*   A D M I N I S T R A T I V E   P R I V I L E G E S                                    */
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Whether to test before setting the work groups used to determine the scope of 
+   * administrative privileges. <P>
+   */  
+  public boolean
+  hasPreSetWorkGroupsTest() 
+  {
+    return true;
+  }
+
+  /**
+   * Test to perform before setting the work groups used to determine the scope of 
+   * administrative privileges. <P>
+   * 
+   * @param groups 
+   *   The work groups.
+   * 
+   * @throws PipelineException
+   *   To abort the operation.
+   */  
+  public void
+  preSetWorkGroupsTest
+  (
+   WorkGroups groups   
+  ) 
+    throws PipelineException
+  {
+    if(!isParamTrue(aAllowSetWorkGroups)) 
+      throw new PipelineException
+	("Setting of work groups is not allowed!");
+  }
+
+
+  /**
+   * Whether to run a task after setting the work groups used to determine the scope of 
+   * administrative privileges. <P>
+   */  
+  public boolean
+  hasPostSetWorkGroupsTask() 
+  {
+    return true;
+  }
+
+  /**
+   * The task to perform after setting the work groups used to determine the scope of 
+   * administrative privileges. <P>
+   * 
+   * @param groups 
+   *   The work groups.
+   */  
+  public void
+  postSetWorkGroupsTask
+  (
+   WorkGroups groups  
+  ) 
+  {
+    StringBuilder buf = new StringBuilder();
+    
+    buf.append("SET WORK GROUPS\n"); 
+
+    for(String uname : groups.getUsers()) {
+      buf.append("  User : " + uname + "\n");
+
+      for(String gname : groups.getGroups()) {
+        Boolean mm = groups.isMemberOrManager(uname, gname);
+        if(mm != null) 
+          buf.append("    Group : " + gname + " [" + (mm ? "MANAGER" : "Member") + "]\n");
+      }
+    }    
+
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ext, LogMgr.Level.Info, 
+       buf.toString());
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   W O R K I N G   A R E A   O P S                                                      */
@@ -917,6 +1080,165 @@ LogMasterActivityExt
   }
 
 
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   A N N O T A T I O N S                                                                */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether to test before adding an annotation to a node. <P>
+   */  
+  public boolean
+  hasPreAddAnnotationTest() 
+  {
+    return true;
+  }
+
+  /**
+   * Test to perform before adding an annotation to a node. <P>
+   * 
+   * @param nname 
+   *   The fully resolved node name.
+   *
+   * @param aname 
+   *   The name of the annotation. 
+   * 
+   * @param annot 
+   *   The new node annotation to add.
+   *
+   * @throws PipelineException
+   *   To abort the operation.
+   */  
+  public void
+  preAddAnnotationTest
+  (
+   String nname, 
+   String aname, 
+   BaseAnnotation annot 
+  ) 
+    throws PipelineException
+  {
+    if(!isParamTrue(aAllowAddAnnotation)) 
+      throw new PipelineException
+	("Adding annotation (" + aname + ") to node (" + nname + ") is not allowed!");
+  }
+
+
+  /**
+   * Whether to run a task after adding an annotation to a node. <P>
+   */  
+  public boolean
+  hasPostAddAnnotationTask() 
+  {
+    return true;
+  }
+
+  /**
+   * The task to perform after adding an annotation to a node. <P>
+   * 
+   * @param nname 
+   *   The fully resolved node name.
+   *
+   * @param aname 
+   *   The name of the annotation. 
+   * 
+   * @param annot 
+   *   The new node annotation added.
+   */  
+  public void
+  postAddAnnotationTask
+  (
+   String nname, 
+   String aname, 
+   BaseAnnotation annot 
+  ) 
+  {
+    String msg = 
+      ("ADD ANNNOTATION\n" +
+       "        Node Name : " + nname + "\n" + 
+       "  Annotation Name : " + aname + "\n" + 
+       "      Plugin Name : " + annot.getName() + "\n" + 
+       "   Plugin Version : v" + annot.getVersionID() + "\n" + 
+       "    Plugin Vendor : " + annot.getVendor());
+
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ext, LogMgr.Level.Info, 
+       msg);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether to test before removing an annotation from a node. <P>
+   */  
+  public boolean
+  hasPreRemoveAnnotationTest() 
+  {
+    return true;
+  }
+
+  /**
+   * Test to perform before removing an annotation from a node. <P>
+   * 
+   * @param nname 
+   *   The fully resolved node name.
+   *
+   * @param aname 
+   *   The name of the annotation. 
+   *
+   * @throws PipelineException
+   *   To abort the operation.
+   */  
+  public void
+  preRemoveAnnotationTest
+  (
+   String nname, 
+   String aname
+  ) 
+    throws PipelineException
+  {
+    if(!isParamTrue(aAllowAddAnnotation)) 
+      throw new PipelineException
+	("Removing annotation (" + aname + ") to node (" + nname + ") is not allowed!");
+  }
+
+
+  /**
+   * Whether to run a task after removing an annotation from a node. <P>
+   */  
+  public boolean
+  hasPostRemoveAnnotationTask() 
+  {
+    return true;
+  }
+
+  /**
+   * The task to perform after removing an annotation from a node. <P>
+   * 
+   * @param nname 
+   *   The fully resolved node name.
+   *
+   * @param aname 
+   *   The name of the annotation. 
+   */  
+  public void
+  postRemoveAnnotationTask
+  (
+   String nname, 
+   String aname
+  ) 
+  {
+    String msg = 
+      ("REMOVE ANNNOTATION\n" +
+       "        Node Name : " + nname + "\n" + 
+       "  Annotation Name : " + aname);
+
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ext, LogMgr.Level.Info, 
+       msg);
+  }
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   W O R K I N G   V E R S I O N S                                                      */
@@ -2959,11 +3281,20 @@ LogMasterActivityExt
   private static final String  aEnableDelay             = "EnableDelay"; 	   
   private static final String  aDisableDelay 	        = "DisableDelay";  	   
 
+  private static final String  aAllowSetWorkGroups      = "AllowSetWorkGroups";   
+  private static final String  aLogSetWorkGroups        = "LogSetWorkGroups"; 	   
+
   private static final String  aAllowCreateWorkingArea  = "AllowCreateWorkingArea";   
   private static final String  aLogCreateWorkingArea	= "LogCreateWorkingArea"; 	   
 
   private static final String  aAllowRemoveWorkingArea  = "AllowRemoveWorkingArea";   
   private static final String  aLogRemoveWorkingArea	= "LogRemoveWorkingArea"; 	   
+
+  private static final String  aAllowAddAnnotation      = "AllowAddAnnotation";
+  private static final String  aLogAddAnnotation        = "LogAddAnnotation";
+
+  private static final String  aAllowRemoveAnnotation   = "AllowRemoveAnnotation";
+  private static final String  aLogRemoveAnnotation     = "LogRemoveAnnotation";
 
   private static final String  aAllowModifyProperties   = "AllowModifyProperties";    
   private static final String  aLogModifyProperties 	= "LogModifyProperties";  	   

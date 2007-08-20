@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.214 2007/07/20 07:45:38 jim Exp $
+// $Id: MasterMgr.java,v 1.215 2007/08/20 04:43:15 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1642,11 +1642,24 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer("MasterMgr.setWorkGroups()");
 
+    /* pre-op tests */
+    SetWorkGroupsExtFactory factory = new SetWorkGroupsExtFactory(req.getGroups());
+    try {
+      performExtensionTests(timer, factory);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+
     timer.aquire();
     pDatabaseLock.readLock().lock();
     try {
       pAdminPrivileges.setWorkGroups(timer, req);
       updateAdminPrivileges();
+
+      /* post-op tasks */ 
+      startExtensionTasks(timer, factory);
+
       return new SuccessRsp(timer);
     }
     catch(PipelineException ex) {
@@ -6189,6 +6202,15 @@ class MasterMgr
     String aname         = req.getAnnotationName();
     BaseAnnotation annot = req.getAnnotation();
 
+    /* pre-op tests */
+    AddAnnotationExtFactory factory = new AddAnnotationExtFactory(name, aname, annot);
+    try {
+      performExtensionTests(timer, factory);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+
     timer.aquire();
     pDatabaseLock.readLock().lock();
     ReentrantReadWriteLock lock = getAnnotationsLock(name); 
@@ -6224,6 +6246,9 @@ class MasterMgr
         pAnnotations.put(name, table);
       }
 
+      /* post-op tasks */ 
+      startExtensionTasks(timer, factory);
+
       return new SuccessRsp(timer);
     }
     catch(PipelineException ex) {
@@ -6256,6 +6281,15 @@ class MasterMgr
     String name  = req.getNodeName();
     String aname = req.getAnnotationName();
     
+    /* pre-op tests */
+    RemoveAnnotationExtFactory factory = new RemoveAnnotationExtFactory(name, aname);
+    try {
+      performExtensionTests(timer, factory);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+
     timer.aquire();
     pDatabaseLock.readLock().lock();
     ReentrantReadWriteLock lock = getAnnotationsLock(name); 
@@ -6279,6 +6313,9 @@ class MasterMgr
             
       table.remove(aname); 
       writeAnnotations(name, table);
+
+      /* post-op tasks */ 
+      startExtensionTasks(timer, factory);
 
       return new SuccessRsp(timer);
     }
@@ -6327,6 +6364,15 @@ class MasterMgr
         throw new PipelineException
           ("No annotations exist for node (" + name + ")!"); 
       
+      /* pre-op tests */
+      LinkedList<RemoveAnnotationExtFactory> factories = 
+        new LinkedList<RemoveAnnotationExtFactory>();
+      for(String aname : table.keySet()) {
+        RemoveAnnotationExtFactory factory = new RemoveAnnotationExtFactory(name, aname);
+        factories.add(factory);
+        performExtensionTests(timer, factory);
+      }
+
       File file = new File(pNodeDir, "annotations" + name); 
       if(!file.delete()) 
         throw new PipelineException
@@ -6335,6 +6381,10 @@ class MasterMgr
       synchronized(pAnnotations) {
         pAnnotations.remove(name); 
       }
+
+      /* post-op tasks */ 
+      for(RemoveAnnotationExtFactory factory : factories) 
+        startExtensionTasks(timer, factory);
 
       return new SuccessRsp(timer);
     }
