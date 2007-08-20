@@ -1,4 +1,4 @@
-// $Id: TaskDb.java,v 1.7 2007/08/20 01:35:37 jim Exp $
+// $Id: TaskDb.java,v 1.8 2007/08/20 07:41:49 jim Exp $
 
 package us.temerity.pipeline.plugin.TaskPolicyExt.v2_3_2;
 
@@ -251,6 +251,18 @@ class TaskDb
         pInsertNullTaskSupervisorSt = pConnect.prepareStatement(sql); 
       }
 
+      /* memberships */ 
+      {
+        String sql = ("DELETE FROM memberships"); 
+        pClearMembershipsSt = pConnect.prepareStatement(sql);
+      }
+
+      {
+        String sql = 
+          ("INSERT INTO memberships (user_id, group_id, is_manager) VALUES (?, ?, ?)");
+        pInsertMembershipSt = pConnect.prepareStatement(sql); 
+      }
+
       /* note */
       {
         String sql = ("INSERT INTO notes (note_text) VALUES (?)");
@@ -278,6 +290,11 @@ class TaskDb
       {
         String sql = ("UPDATE tasks SET last_modified = ? WHERE task_id = ?");
         pApproveTaskSt = pConnect.prepareStatement(sql); 
+      }
+      
+      {
+        String sql = ("UPDATE tasks SET assigned_to = ? WHERE task_id = ?");
+        pAssignedToTaskSt = pConnect.prepareStatement(sql); 
       }
       
       /* events */ 
@@ -361,6 +378,109 @@ class TaskDb
   /*  O P S                                                                                 */
   /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * Syncronize the users, work groups and group memberships.
+   */
+  public synchronized void
+  updateWorkGroups
+  (
+   WorkGroups workGroups  
+  ) 
+    throws PipelineException
+  {
+    verifyConnection(); 
+    try {
+      txnStart(); 
+    
+      TreeMap<String,Integer> users = new TreeMap<String,Integer>();
+      for(String uname : workGroups.getUsers()) 
+        users.put(uname, lookupIdent(uname, false));
+
+      TreeMap<String,Integer> groups = new TreeMap<String,Integer>();
+      for(String gname : workGroups.getGroups()) 
+        groups.put(gname, lookupIdent(gname, true));
+
+      clearMemberships();
+      for(String uname : users.keySet()) {
+        Integer userID = users.get(uname);
+
+        for(String gname : groups.keySet()) {
+          Integer groupID = groups.get(gname);
+
+          Boolean mm = workGroups.isMemberOrManager(uname, gname);
+
+          if(mm != null) 
+            insertMembership(userID, groupID, mm);
+        }
+      }
+
+      txnCommit(); 
+    }
+    catch(SQLException ex) {
+      txnRollback
+        ("The TaskPolicy extension was unable to synchronize the WorkGroup information " + 
+         "with the SQL database!", ex);
+    }
+  }
+  
+  /**
+   * Synchronize the AssignedTo property of a task.
+   * 
+   * @param taskTitle
+   *   The title of the task.
+   * 
+   * @param taskType
+   *   The type of task.
+   * 
+   * @param assignedTo
+   *   The name of the user/group assigned to the task 
+   *   or <CODE>null</CODE> if unassigned.
+   * 
+   * @param isGroup
+   *   Whether the assigned name is a work group.
+   */
+  public synchronized void
+  updateAssignedTo
+  (
+   String taskTitle, 
+   String taskType,
+   String assignedTo, 
+   boolean isGroup
+  ) 
+    throws PipelineException
+  {
+    verifyConnection(); 
+    try {
+      txnStart(); 
+
+      /* lookup the task */ 
+      Integer titleID = lookupTaskTitle(taskTitle);
+      Integer typeID  = lookupTaskType(taskType);
+      Integer taskID  = getTask(titleID, typeID); 
+
+      /* make sure the task exists! */ 
+      if(taskID == null)
+        throw new PipelineException
+          ("Somehow no task (" + taskTitle + ":" + taskType + ") does not exist!"); 
+      
+
+      /* get the identity of the user/group assigned to the task */ 
+      Integer identID = null;
+      if((assignedTo != null) && (assignedTo.length() > 0)) 
+        identID = lookupIdent(assignedTo, isGroup);
+
+      /* update the task */ 
+      assignTask(taskID, identID);
+
+      txnCommit(); 
+    }
+    catch(SQLException ex) {
+      txnRollback
+        ("The TaskPolicy extension was unable to synchronize the AssignedTo property for " + 
+         "task (" + taskTitle + ":" + taskType + ") with the SQL database!", ex);
+    }
+  }
+
   /**
    * Insert a task into the SQL database after its initial submit node check-in.
    * 
@@ -1015,6 +1135,46 @@ class TaskDb
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Remove all entries from the memberships table.
+   */
+  private synchronized void
+  clearMemberships()
+    throws SQLException
+  {
+    pClearMembershipsSt.executeUpdate();
+  }
+
+  /**
+   * Insert work group membership information for a user.
+   * 
+   * @param userID
+   *   The ID of the user. 
+   * 
+   * @param groupID
+   *   The ID of the group.
+   * 
+   * @param isManager
+   *   Whether the user is a manager of the work group (or just a member).
+   */ 
+  private synchronized void
+  insertMembership
+  (
+   int userID, 
+   int groupID, 
+   boolean isManager
+  ) 
+    throws SQLException
+  {
+    pInsertMembershipSt.setInt(1, userID);
+    pInsertMembershipSt.setInt(2, groupID);
+    pInsertMembershipSt.setBoolean(3, isManager);
+    pInsertMembershipSt.executeUpdate();
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * Insert a new note.
    * 
    * @param text
@@ -1177,6 +1337,33 @@ class TaskDb
     pApproveTaskSt.setInt(2, taskID); 
     pApproveTaskSt.executeUpdate();
   }
+
+  /**
+   * Update who is assigned to the task.
+   * 
+   * @param taskID
+   *   The ID of the task. 
+   * 
+   * @param assignedTo
+   *   The ID of the user/group assinged to the task.
+   */
+  private synchronized void
+  assignTask
+  (
+   int taskID, 
+   Integer identID
+  ) 
+    throws SQLException
+  {
+    if(identID != null) 
+      pAssignedToTaskSt .setInt(1, identID);
+    else 
+      pAssignedToTaskSt.setNull(1, Types.INTEGER);
+
+    pAssignedToTaskSt.setInt(2, taskID); 
+    pAssignedToTaskSt.executeUpdate();
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -1820,12 +2007,16 @@ class TaskDb
   private PreparedStatement  pGetIdentSt;
   private PreparedStatement  pInsertIdentSt;
 
+  private PreparedStatement  pClearMembershipsSt;
+  private PreparedStatement  pInsertMembershipSt;
+
   private PreparedStatement  pInsertNoteSt;
 
   private PreparedStatement  pGetTaskSt;
   private PreparedStatement  pInsertTaskSt;  
   private PreparedStatement  pSubmitTaskSt;
   private PreparedStatement  pApproveTaskSt;
+  private PreparedStatement  pAssignedToTaskSt;
 
   private PreparedStatement  pInsertCreateEventSt;
   private PreparedStatement  pInsertSubmitEventSt;

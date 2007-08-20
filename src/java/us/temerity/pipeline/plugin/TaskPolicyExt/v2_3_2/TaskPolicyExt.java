@@ -175,7 +175,155 @@ class TaskPolicyExt
     }
   }
  
-  
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   A D M I N I S T R A T I V E   P R I V I L E G E S                                    */
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Whether to run a task after setting the work groups used to determine the scope of 
+   * administrative privileges. <P>
+   */  
+  @Override
+  public boolean
+  hasPostSetWorkGroupsTask() 
+  {
+    return true;
+  }
+
+  /**
+   * The task to perform after setting the work groups used to determine the scope of 
+   * administrative privileges. <P>
+   * 
+   * @param groups 
+   *   The work groups.
+   */  
+  @Override
+  public void
+  postSetWorkGroupsTask
+  (
+   WorkGroups groups  
+  ) 
+  {
+    LogMgr.getInstance().log
+      (Kind.Ops, Level.Info, 
+       "SET WORKGROUPS!"); 
+    
+    int tries = 0; 
+    while(true) {
+      try {
+        sDatabase.updateWorkGroups(groups);
+        break;
+      }
+      catch(PipelineException ex) {
+        String msg = 
+          ("Failed to Update WorkGroups:\n" +
+           ex.getMessage());      
+        
+        if(tries < sMaxTries) {
+          LogMgr.getInstance().log
+            (Kind.Ops, Level.Warning, 
+             msg + "\nRetrying...");
+          tries++;
+        }
+        else {
+          LogMgr.getInstance().log
+            (Kind.Ops, Level.Warning, 
+             msg + "\nAborted after (" + tries + ") attempts!"); 
+          break;
+        }
+      }
+    }
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   A N N O T A T I O N S                                                                */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether to run a task after adding an annotation to a node. <P>
+   */  
+  @Override
+  public boolean
+  hasPostAddAnnotationTask() 
+  {
+    return true;
+  }
+
+  /**
+   * The task to perform after adding an annotation to a node. <P>
+   * 
+   * @param nname 
+   *   The fully resolved node name.
+   *
+   * @param aname 
+   *   The name of the annotation. 
+   * 
+   * @param an
+   *   The new node annotation added.
+   */  
+  @Override
+  public void
+  postAddAnnotationTask
+  (
+   String nname, 
+   String aname, 
+   BaseAnnotation an
+  ) 
+  {
+    MasterMgrLightClient mclient = getMasterMgrClient();
+
+    if(an.getName().equals(aSubmitNode)) {
+      try {
+        String taskName = lookupTaskName(nname, an);
+        String taskType = lookupTaskType(nname, an);
+        
+        String assignedTo = (String) an.getParamValue(aAssignedTo);
+        
+        boolean isGroup = false; 
+        if(assignedTo != null) 
+          isGroup = mclient.getWorkGroups().getGroups().contains(assignedTo);
+
+        int tries = 0; 
+        while(true) {
+          try {
+            sDatabase.updateAssignedTo(taskName, taskType, assignedTo, isGroup);
+            break;
+          }
+          catch(PipelineException ex) {
+            String msg = 
+              ("Update of AssignedTo for (" + taskName + ":" + taskType + ") Failed:\n" +
+               ex.getMessage());      
+            
+            if(tries < sMaxTries) {
+              LogMgr.getInstance().log
+                (Kind.Ops, Level.Warning, 
+                 msg + "\nRetrying...");
+              tries++;
+            }
+            else {
+              LogMgr.getInstance().log
+                (Kind.Ops, Level.Warning, 
+                 msg + "\nAborted after (" + tries + ") attempts!"); 
+              break;
+            }
+          }
+        }
+      }
+      catch(PipelineException ex) {
+        LogMgr.getInstance().log
+          (Kind.Ops, Level.Warning, 
+           "PostAddAnnotationTask (" + getName() + ") Failed on: " + nname + "\n" + 
+           ex.getMessage());      
+      }
+    }
+  }
+
+
+
   /*----------------------------------------------------------------------------------------*/
   /*   C H E C K - I N                                                                      */
   /*----------------------------------------------------------------------------------------*/

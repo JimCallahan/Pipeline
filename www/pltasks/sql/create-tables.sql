@@ -37,8 +37,17 @@ CREATE TABLE `idents` (
   `ident_name` varchar(32) NOT NULL,
   `is_group` tinyint(1) NOT NULL,
   PRIMARY KEY  (`ident_id`),
+  UNIQUE KEY `ident_name` (`ident_name`),
   KEY `is_group` (`is_group`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
+CREATE TABLE `memberships` (
+  `user_id` smallint(5) unsigned NOT NULL,
+  `group_id` smallint(5) unsigned NOT NULL,
+  `is_manager` tinyint(1) NOT NULL,
+  KEY `user_id` (`user_id`),
+  KEY `group_id` (`group_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 ;
 
 CREATE TABLE `node_info` (
   `info_id` mediumint(8) unsigned NOT NULL auto_increment,
@@ -105,7 +114,7 @@ CREATE TABLE `task_types` (
   `type_name` varchar(32) NOT NULL,
   `type_desc` text,
   PRIMARY KEY  (`type_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=9 ;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=10 ;
 
 CREATE TABLE `tasks` (
   `task_id` smallint(5) unsigned NOT NULL auto_increment,
@@ -155,4 +164,5 @@ INSERT INTO `task_types` (`type_id`, `type_name`, `type_desc`) VALUES
 (5, 'Animation', 'Generating the motion data for all animatable objects in a shot.'),
 (6, 'Effects', 'Procedural modeling, animation and rendering including: particles, cloth, dynamics, fluids, etc...'),
 (7, 'Lighting', 'Placing, animating and all lights in a scene, fine tuning shaders and rendering all image passes required to composite a shot.'),
-(8, 'Compositing', 'Combining all render passes and other imagery to produce the final unedited images for a shot.');
+(8, 'Compositing', 'Combining all render passes and other imagery to produce the final unedited images for a shot.'),
+(9, 'Simple Asset', 'An asset combining modeling, rigging and look development in one step.');

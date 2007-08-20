@@ -271,14 +271,26 @@
       }
 
       /* insert new supervised by */ 
-      foreach($_REQUEST['new_supervised_by'] as $nsid) {
-        if($warning_msg == NULL) {
-          if($nsid > 0) {
-            $sql = ('INSERT INTO supervisors (task_id, ident_id) ' . 
-                    'VALUES (' . $tid . ', ' . $nsid . ')');
-            if(!mysql_query($sql)) 
-              $warning_msg = get_sql_error($sql); 
+      {
+        $any_supers = false;
+        foreach($_REQUEST['new_supervised_by'] as $nsid) {
+          if($warning_msg == NULL) {
+            if($nsid > 0) {
+              $sql = ('INSERT INTO supervisors (task_id, ident_id) ' . 
+                      'VALUES (' . $tid . ', ' . $nsid . ')');
+              if(!mysql_query($sql)) 
+                $warning_msg = get_sql_error($sql); 
+              $any_supers = true;
+            }
           }
+        }
+       
+        /* add NULL entry if not supervised */ 
+        if(($warning_msg == NULL) && (!$any_supers)) {
+          $sql = ('INSERT INTO supervisors (task_id) ' . 
+                  'VALUES (' . $tid . ')');
+          if(!mysql_query($sql)) 
+            $warning_msg = get_sql_error($sql); 
         }
       }
     }    
