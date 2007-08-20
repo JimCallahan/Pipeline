@@ -1,4 +1,4 @@
-// $Id: TaskAnnotation.java,v 1.2 2007/07/31 15:43:24 jim Exp $
+// $Id: TaskAnnotation.java,v 1.3 2007/08/20 04:45:17 jim Exp $
 
 package us.temerity.pipeline.plugin.TaskAnnotation.v2_3_2;
 
@@ -101,11 +101,22 @@ class TaskAnnotation
     }
 
     {
+      ArrayList<String> choices = new ArrayList<String>(); 
+      choices.add(aSimpleAsset);  
+      choices.add(aModeling);        
+      choices.add(aRigging);         
+      choices.add(aLookDev);        
+      choices.add(aLayout);          
+      choices.add(aAnimation);       
+      choices.add(aEffects);         
+      choices.add(aLighting);        
+      choices.add(aCompositing);  
+
       AnnotationParam param = 
-	new StringAnnotationParam
+	new EnumAnnotationParam
 	(aTaskType, 
 	 "The type of production goal this node is used to achieve.", 
-	 null); 
+	 aSimpleAsset, choices); 
       addParam(param);
     }
 
@@ -150,6 +161,16 @@ class TaskAnnotation
   public static final String aTaskName = "TaskName";
   public static final String aTaskType = "TaskType";
   public static final String aPurpose  = "Purpose";
+
+  public static final String aSimpleAsset = "Simple Asset";  
+  public static final String aModeling    = "Modeling";        
+  public static final String aRigging     = "Rigging";         
+  public static final String aLookDev     = "Look Dev";        
+  public static final String aLayout      = "Layout";          
+  public static final String aAnimation   = "Animation";       
+  public static final String aEffects     = "Effects";         
+  public static final String aLighting    = "Lighting";        
+  public static final String aCompositing = "Compositing";  
 
   public static final String aEdit      = "Edit";
   public static final String aPrepare   = "Prepare";
