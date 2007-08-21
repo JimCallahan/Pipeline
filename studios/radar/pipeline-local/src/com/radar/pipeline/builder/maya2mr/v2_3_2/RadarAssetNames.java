@@ -82,19 +82,22 @@ class RadarAssetNames
     pBuildWork = new Path(new Path(new Path(startPath, "buildWork"), pAssetType), pAssetName);
     pBuildOutput = new Path(new Path(new Path(startPath, "buildOutput"), pAssetType), pAssetName);
     
-    pWorkMod = new Path(pBuildWork, "model");
-    pWorkRig = new Path(pBuildWork, "rigging");
-    pWorkShd = new Path(pBuildWork, "shading");
-    pWorkTex = new Path(pBuildWork, "sourceImages");
+    pWorkMod   = new Path(pBuildWork, "model");
+    pWorkRig   = new Path(pBuildWork, "rigging");
+    pWorkShd   = new Path(pBuildWork, "shading");
+    pWorkTex   = new Path(pBuildWork, "sourceImages");
+    pWorkAsset = new Path(pBuildWork);
 
-    pLocalWorkMod = new Path(pWorkMod, "localOutput");
-    pLocalWorkRig = new Path(pWorkRig, "localOutput");
-    pLocalWorkShd = new Path(pWorkShd, "localOutput");
+    pLocalWorkMod   = new Path(pWorkMod, "localOutput");
+    pLocalWorkRig   = new Path(pWorkRig, "localOutput");
+    pLocalWorkShd   = new Path(pWorkShd, "localOutput");
+    pLocalWorkAsset = new Path(pWorkAsset, "localOutput");
 
-    pOutMod = new Path(pBuildOutput, "model");
-    pOutRig = new Path(pBuildOutput, "rigging");
-    pOutShd = new Path(pBuildOutput, "shading");
-    pOutTex = new Path(pBuildOutput, "sourceImages");
+    pOutMod   = new Path(pBuildOutput, "model");
+    pOutRig   = new Path(pBuildOutput, "rigging");
+    pOutShd   = new Path(pBuildOutput, "shading");
+    pOutTex   = new Path(pBuildOutput, "sourceImages");
+    pOutAsset = new Path(pBuildOutput);
 
   }
   
@@ -105,15 +108,18 @@ class RadarAssetNames
   private Path pWorkRig;
   private Path pWorkShd;
   private Path pWorkTex;
+  private Path pWorkAsset;
   
   private Path pLocalWorkMod;
   private Path pLocalWorkRig;
   private Path pLocalWorkShd;
+  private Path pLocalWorkAsset;
   
   private Path pOutMod;
   private Path pOutRig;
   private Path pOutShd;
   private Path pOutTex;
+  private Path pOutAsset;
 
   public String 
   getAssetName() 
@@ -170,7 +176,8 @@ class RadarAssetNames
   public String 
   getSkeletonNodeName()
   {
-    return new Path(pWorkRig, pAssetName + "_skeleton").toString();
+    //return new Path(pWorkRig, pAssetName + "_skeleton").toString();
+    return null;
   }
   
   /**
@@ -400,6 +407,56 @@ class RadarAssetNames
   {
     return new Path(pOutShd, pAssetName + "_renderRig_approve").toString();
   }
+
+  public String 
+  getAssetApproveNodeName()
+  {
+    return new Path(pOutAsset, pAssetName + "_" + pAssetType + "_approve").toString();
+  }
+
+  public String 
+  getAssetEditNodeName()
+  {
+    return new Path(pWorkAsset, pAssetName + "_" + pAssetType + "_work").toString();
+  }
+
+  public String 
+  getAssetFinalNodeName()
+  {
+    return new Path(pBuildOutput, pAssetName + "_" + pAssetType).toString();
+  }
+
+  public String 
+  getAssetSubmitNodeName()
+  {
+    return new Path(pWorkAsset, pAssetName + "_" + pAssetType + "_submit").toString();
+  }
+
+  public String 
+  getAssetTTImagesNodeName()
+  {
+    return new Path(pLocalWorkAsset, pAssetName + "_" + pAssetType + "_img").toString();
+  }
+
+  public String 
+  getAssetTTNodeName()
+  {
+    return new Path(pLocalWorkAsset, pAssetName + "_" + pAssetType + "_tt").toString();
+    
+  }
+
+  public String 
+  getAssetThumbNodeName()
+  {
+    return new Path(pLocalWorkAsset, pAssetName + "_" + pAssetType + "_thumb").toString();
+  }
+  
+  public String 
+  getAssetVerifyNodeName()
+  {
+    return new Path(pLocalWorkAsset, pAssetName + "_" + pAssetType + "_pending").toString();
+  }
+
   
   public String 
   getFinalNodeName()
@@ -573,4 +630,5 @@ class RadarAssetNames
   private String pAssetName;
   private String pAssetType;
   private String pNameSpace;
+
 }

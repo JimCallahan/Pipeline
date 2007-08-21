@@ -1,11 +1,8 @@
 package com.radar.pipeline.builder.maya2mr.v2_3_2;
 
 
-import us.temerity.pipeline.MasterMgrClient;
-import us.temerity.pipeline.PipelineException;
-import us.temerity.pipeline.QueueMgrClient;
-import us.temerity.pipeline.builder.BuilderInformation;
-import us.temerity.pipeline.builder.UtilContext;
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.builder.maya2mr.v2_3_2.AssetBuilder;
 import us.temerity.pipeline.builder.maya2mr.v2_3_2.DefaultBuilderAnswers;
 
@@ -37,6 +34,21 @@ class RadarAssetBuilder
        new RadarAssetNames(mclient, qclient),
        new RadarProjectNames(mclient, qclient),
        info);
+  }
+  
+  /**
+   * Overriden to change the default editors.
+   */
+  protected void
+  setDefaultEditors()
+  {
+    setDefaultEditor(StageFunction.MayaScene.toString(), new PluginContext("MayaProject"));
+    setDefaultEditor(StageFunction.None.toString(), new PluginContext("JEdit", "Radar"));
+    setDefaultEditor(StageFunction.TextFile.toString(), new PluginContext("JEdit", "Radar"));
+    setDefaultEditor(StageFunction.ScriptFile.toString(), new PluginContext("JEdit", "Radar"));
+    setDefaultEditor(StageFunction.RenderedImage.toString(), new PluginContext("ImfDisp"));
+    setDefaultEditor(StageFunction.SourceImage.toString(), new PluginContext("Gimp"));
+    setDefaultEditor(StageFunction.MotionBuilderScene.toString(), new PluginContext("JEdit", "Radar"));
   }
   private static final long serialVersionUID = -7603820481994992856L;
 }

@@ -5,6 +5,7 @@ instbin_SCRIPTS = \
   plRadarProjectBuilder.bat \
   plRadarProjectTurntableBuilder.bat \
   plRadarProjectScriptBuilder.bat \
+  plRadarSimpleAssetBuilder.bat \
   plRadarAssetBuilder.bat
 
 

@@ -1,5 +1,5 @@
  
-<project name="Builder.makejar" default="all" basedir=".">
+<project name="Builder.makejar" default="all" basedir="..">
 
 	<property name="PipelineInstallDir" value="@ROOT_INST_PARENT_DIR@/pipeline-latest"/>
 	
@@ -15,7 +15,7 @@
 	<property name="WinDir" value="${TargetDir}/Windows"/>
 	
     <target name="makejar" description="makes a jar file of all the classes">
-        <jar destfile="${BinDir}/${TargetName}.jar" includes="${BinDir}/*.class" basedir="."></jar>
+        <jar destfile="${BinDir}/${TargetName}.jar" includes="${Package}/*.class" basedir="bin"></jar>
     </target>
 	<target name="installjar" description="installs the jar file into pipeline" depends="makejar" >
 		<mkdir dir="${TargetDir}"/>
