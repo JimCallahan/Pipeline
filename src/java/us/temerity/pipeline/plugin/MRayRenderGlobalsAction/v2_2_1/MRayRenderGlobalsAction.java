@@ -1,4 +1,4 @@
-// $Id: MRayRenderGlobalsAction.java,v 1.1 2007/06/17 15:34:43 jim Exp $
+// $Id: MRayRenderGlobalsAction.java,v 1.2 2007/08/21 13:03:51 jesse Exp $
 
 package us.temerity.pipeline.plugin.MRayRenderGlobalsAction.v2_2_1;
 
@@ -1373,7 +1373,7 @@ class MRayRenderGlobalsAction
 	  new IntegerActionParam
 	  (aGridResolution,
 	   "???", 
-	   0);
+	   2);
 	addSingleParam(param);
       }
       
