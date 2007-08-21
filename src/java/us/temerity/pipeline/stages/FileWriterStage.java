@@ -51,22 +51,25 @@ class FileWriterStage
   public boolean build()
     throws PipelineException
   {
-    super.build();
-    File toMake = getWorkingNodeFilePath().toFile();
-    File parentDir = toMake.getParentFile();
-    if (!parentDir.exists())
-      parentDir.mkdirs();
-    try {
-      FileWriter out = new FileWriter(toMake);
-      out.write(pFileContents);
-      out.close();
+    if (super.build())
+    {
+      File toMake = getWorkingNodeFilePath().toFile();
+      File parentDir = toMake.getParentFile();
+      if (!parentDir.exists())
+	parentDir.mkdirs();
+      try {
+	FileWriter out = new FileWriter(toMake);
+	out.write(pFileContents);
+	out.close();
+      }
+      catch (IOException ex) {
+	throw new PipelineException
+	("The FileWriter stage was unable to write the file (" + toMake.getPath() + ").  " + 
+	  ex.getMessage());
+      }
+      return true;
     }
-    catch (IOException ex) {
-      throw new PipelineException
-        ("The FileWriter stage was unable to write the file (" + toMake.getPath() + ").  " + 
-          ex.getMessage());
-    }
-    return true;
+    return false;
   }
   
   /**
