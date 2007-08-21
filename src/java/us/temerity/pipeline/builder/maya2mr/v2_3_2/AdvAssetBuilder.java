@@ -1,4 +1,4 @@
-// $Id: AdvAssetBuilder.java,v 1.10 2007/08/19 00:53:54 jesse Exp $
+// $Id: AdvAssetBuilder.java,v 1.11 2007/08/21 09:52:30 jesse Exp $
 
 package us.temerity.pipeline.builder.maya2mr.v2_3_2;
 
@@ -741,7 +741,7 @@ class AdvAssetBuilder
           thumb = pAssetNames.getModelThumbNodeName();
           {
             ThumbnailStage stage = 
-              new ThumbnailStage(pStageInfo, pContext, pClient, thumb, "png", modelTTImg, 120);
+              new ThumbnailStage(pStageInfo, pContext, pClient, thumb, "png", modelTTImg, 160);
             isThumbnailNode(stage, taskType);
             stage.build();
           }
@@ -973,7 +973,7 @@ class AdvAssetBuilder
 	}
 	if (pBuildThumbnails) {
 	  ThumbnailStage stage = 
-	    new ThumbnailStage(pStageInfo, pContext, pClient, thumb, "png", rigImages, 120);
+	    new ThumbnailStage(pStageInfo, pContext, pClient, thumb, "png", rigImages, 160);
 	  isThumbnailNode(stage, taskType);
 	  stage.build();
         }
@@ -1222,7 +1222,7 @@ class AdvAssetBuilder
 	}
 	if (pBuildThumbnails) {
 	  ThumbnailStage stage = 
-	    new ThumbnailStage(pStageInfo, pContext, pClient, thumb, "png", shdImg, 120);
+	    new ThumbnailStage(pStageInfo, pContext, pClient, thumb, "png", shdImg, 160);
 	  isThumbnailNode(stage, taskType);
 	  stage.build();
         }
