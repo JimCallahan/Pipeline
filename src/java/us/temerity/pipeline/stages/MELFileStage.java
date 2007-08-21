@@ -55,7 +55,7 @@ class MELFileStage
           client,
           nodeName, 
           "mel", 
-          BaseStage.getDefaultEditor(client, "mel"), 
+          null, 
           new PluginContext(action));
   }
   
