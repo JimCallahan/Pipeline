@@ -8,5 +8,6 @@ instbin_SCRIPTS = \
   plProjectBuilder \
   plProjectTurntableBuilder \
   plProjectScriptBuilder \
+  plSimpleAssetBuilder \
   plAssetBuilder
 

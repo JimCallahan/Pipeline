@@ -356,7 +356,6 @@ class ProjectScriptBuilder
       pCopyShading = getBooleanParamValue(new ParamMapping(aCopyShading));
       pCopyRigging = getBooleanParamValue(new ParamMapping(aCopyRigging));
       pGlobals = getBooleanParamValue(new ParamMapping(aGlobals));
-      //pShaderType = 
       pMRayInit = getBooleanParamValue(new ParamMapping(aMentalRayInit));
       pPlaceholder = getBooleanParamValue(new ParamMapping(aPlaceholder));
       pAssetVerification = getBooleanParamValue(new ParamMapping(aAssetVerification));
@@ -397,76 +396,87 @@ class ProjectScriptBuilder
       
       if (pCopyShading) {
 	String script = pProjectNames.getShaderCopyScriptName();
-        {
-          MELFileStage stage = 
-            new MELFileStage(pStageInfo, pContext, pClient, script, "MayaShdCopyMEL");
-          stage.build();
-          addToCheckInList(script);
-          addToQueueList(script);
-        }
+	MELFileStage stage = 
+	  new MELFileStage(pStageInfo, pContext, pClient, script, "MayaShdCopyMEL");
+	boolean build = stage.build();
+	if (build) {
+	  addToCheckInList(script);
+	  addToQueueList(script);
+	}
       }
       if (pCopyRigging) {
 	String script = pProjectNames.getRigCopyScriptName();
-	{
-          MELFileStage stage = 
-            new MELFileStage(pStageInfo, pContext, pClient, script, "MayaReRigMEL");
-          stage.build();
-          addToCheckInList(script);
-          addToQueueList(script);
-        }
+	MELFileStage stage = 
+	  new MELFileStage(pStageInfo, pContext, pClient, script, "MayaReRigMEL");
+	boolean build = stage.build();
+	if (build) {
+	  addToCheckInList(script);
+	  addToQueueList(script);
+	}
       }
       {
 	String script = pProjectNames.getRemoveReferenceScriptName();
-	{
-          MELFileStage stage = 
-            new MELFileStage(pStageInfo, pContext, pClient, script, "MayaRemoveRefMEL");
-          stage.build();
-          addToCheckInList(script);
-          addToQueueList(script);
-        }
+	MELFileStage stage = 
+	  new MELFileStage(pStageInfo, pContext, pClient, script, "MayaRemoveRefMEL");
+	boolean build = stage.build();
+	if (build) {
+	  addToCheckInList(script);
+	  addToQueueList(script);
+	}
       }
       if (pMRayInit) {
 	String script = pProjectNames.getMRayInitScriptName();
 	MELFileStage stage =
 	  new MELFileStage(pStageInfo, pContext, pClient, script, "MayaMRayInitMEL");
-	stage.build();
-	addToCheckInList(script);
-	addToQueueList(script);
+	boolean build = stage.build();
+	if (build) {
+	  addToCheckInList(script);
+	  addToQueueList(script);
+	}
       }
       if (pPlaceholder) {
 	String script = pProjectNames.getPlaceholderScriptName();
 	{
+	  boolean build = false;
 	  if (!pDefaultScripts) {
 	    EmptyFileStage stage = 
 	      new EmptyFileStage(pStageInfo, pContext, pClient, script, "mel");
 	    stage.build();
-	    pEmptyFiles.add(stage);
-	    addToQueueList(script);
+	    build = stage.build();
+	    if (build) {
+	      pEmptyFiles.add(stage);
+	      addToQueueList(script);
+	    }
 	  }
 	  else {
 	    PlaceholderMELStage stage = 
 	      new PlaceholderMELStage(pStageInfo, pContext, pClient, script);
-	    stage.build();
+	    build = stage.build();
 	  }
-	  addToCheckInList(script);
+	  if (build)
+	    addToCheckInList(script);
 	}
 	script = pProjectNames.getPlaceholderSkelScriptName();
 	{
+	  boolean build = false;
 	  if (!pDefaultScripts) {
 	    EmptyFileStage stage = 
 	      new EmptyFileStage(pStageInfo, pContext, pClient, script, "mel");
-	    stage.build();
-	    pEmptyFiles.add(stage);
-	    addToQueueList(script);
+	    build = stage.build();
+	    if (build) {
+	      pEmptyFiles.add(stage);
+	      addToQueueList(script);
+	    }
 	  }
 	  else {
 	    PlaceholderSkelMELStage stage = 
 	      new PlaceholderSkelMELStage(pStageInfo, pContext, pClient, script);
-	    stage.build();
+	    build = stage.build();
 	  }
-	  addToCheckInList(script);
+	  if (build)
+	    addToCheckInList(script);
 	}
-      }
+    }
       String types[] = {"character", "prop", "set"};
       if (pFinalizeAssets) {
 	LinkedList<String> collectedScripts = new LinkedList<String>();
@@ -477,21 +487,21 @@ class ProjectScriptBuilder
 	  String script = pProjectNames.getFinalizeScriptName(null, type);
 	  CatFilesStage stage = 
 	    new CatFilesStage(pStageInfo, pContext, pClient, script, "mel", collectedScripts);
-	  stage.build();
-	  addToCheckInList(script);
-	  addToQueueList(script);
+	  boolean build = stage.build();
+	  if (build) {
+	    addToCheckInList(script);
+	    addToQueueList(script);
+	  }
 	}
       }
       if (pFinalizeAssetsLR) {
 	//LinkedList<String> collectedScripts = new LinkedList<String>();
 	for (String type : types) {
 	  String script = pProjectNames.getLowRezFinalizeScriptName(null, type);
-	  {
-//	    CatFilesStage stage = 
-//	      new CatFilesStage(pStageInfo, pContext, pClient, script, "mel", collectedScripts);
-	    EmptyFileStage stage = new EmptyFileStage(pStageInfo, pContext, pClient, script, "mel");
-	    stage.build();
-	    pEmptyFiles.add(stage);
+	  EmptyFileStage stage = 
+	    new EmptyFileStage(pStageInfo, pContext, pClient, script, "mel");
+	  boolean build = stage.build();
+	  if (build) {
 	    addToCheckInList(script);
 	    addToQueueList(script);
 	  }
@@ -503,19 +513,23 @@ class ProjectScriptBuilder
 	if (!pDefaultScripts)
 	  scripts.add(pProjectNames.getModelVerificationScriptName());
 	scripts.add(pProjectNames.getRigVerificationScriptName());
+	scripts.add(pProjectNames.getAssetVerificationScriptName());
 	for (String script : scripts) {
 	  EmptyFileStage stage = 
 	    new EmptyFileStage(pStageInfo, pContext, pClient, script, "mel");
-	  stage.build();
-	  pEmptyFiles.add(stage);
-	  addToCheckInList(script);
-	  addToQueueList(script);
+	  boolean build = stage.build();
+	  if (build) {
+	    addToCheckInList(script);
+	    addToQueueList(script);
+	    pEmptyFiles.add(stage);
+	  }
 	}
 	if (pDefaultScripts) {
 	  String script = pProjectNames.getModelVerificationScriptName();
 	  VerifyModelMELStage stage = new VerifyModelMELStage(pStageInfo, pContext, pClient, script);
-	  stage.build();
-	  addToCheckInList(script);
+	  boolean build = stage.build();
+	  if (build)
+	   addToCheckInList(script);
 	}
       }
       if (pFinalizeAssets) {
@@ -526,10 +540,10 @@ class ProjectScriptBuilder
 	collectedScripts.add(pProjectNames.getRemoveReferenceScriptName());
 	if (pAssetVerification)
 	  collectedScripts.add(pProjectNames.getRigVerificationScriptName());
-	{
-	  CatFilesStage stage = 
-	    new CatFilesStage(pStageInfo, pContext, pClient, script, "mel", collectedScripts);
-	  stage.build();
+	CatFilesStage stage = 
+	  new CatFilesStage(pStageInfo, pContext, pClient, script, "mel", collectedScripts);
+	boolean build = stage.build();
+	if (build) {
 	  addToCheckInList(script);
 	  addToQueueList(script);
 	}
@@ -538,33 +552,41 @@ class ProjectScriptBuilder
 	String script = pProjectNames.getAssetModelTTGlobals();
 	MELFileStage stage =
 	  new MELFileStage(pStageInfo, pContext, pClient, script, "MayaRenderGlobals");
-	stage.build();
-	addToCheckInList(script);
-	addToQueueList(script);
+	boolean build = stage.build();
+	if (build) {
+	  addToCheckInList(script);
+	  addToQueueList(script);
+	}
       }
       if (pGlobals) {
 	String script = pProjectNames.getAssetRigAnimGlobals();
 	MELFileStage stage =
 	  new MELFileStage(pStageInfo, pContext, pClient, script, "MayaRenderGlobals");
-	stage.build();
-	addToCheckInList(script);
-	addToQueueList(script);
+	boolean build = stage.build();
+	if (build) {
+	  addToCheckInList(script);
+	  addToQueueList(script);
+	}
       }
       if (pGlobals) {
 	String script = pProjectNames.getAssetShaderTTGlobals(GlobalsType.Maya2MR);
 	MELFileStage stage =
 	  new MELFileStage(pStageInfo, pContext, pClient, script, "MRayRenderGlobals");
-	stage.build();
-	addToCheckInList(script);
-	addToQueueList(script);
+	boolean build = stage.build();
+	if (build) {
+	  addToCheckInList(script);
+	  addToQueueList(script);
+	}
       }
       if (pGlobals) {
 	String script = pProjectNames.getAssetShaderTTGlobals(GlobalsType.Standalone);
 	MRayOptionsStage stage =
 	  new MRayOptionsStage(pStageInfo, pContext, pClient, script);
-	stage.build();
-	addToCheckInList(script);
-	addToQueueList(script);
+	boolean build = stage.build();
+	if (build) {
+	  addToCheckInList(script);
+	  addToQueueList(script);
+	}
       }
     } // End of buildPhase()
     private static final long serialVersionUID = -4520437729968377615L;

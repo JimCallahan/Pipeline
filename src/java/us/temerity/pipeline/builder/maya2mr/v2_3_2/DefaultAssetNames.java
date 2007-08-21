@@ -124,7 +124,7 @@ class DefaultAssetNames
     }
 //  Approval Format
     else {
-      pModStart        = new Path(pAssetPath, "model");
+      pModStart        = new Path(pAssetPath, "mod");
       pModEdit         = new Path(pModStart, edit);
       pModSubmit       = new Path(pModStart, submit);
       pModPrepare      = new Path(pModSubmit, prepare);
@@ -148,7 +148,6 @@ class DefaultAssetNames
       pMatProduct      = new Path(pMatApprove, product);
       pMatThumb        = new Path(pMatSubmit, thumb);
 
-
       pShdStart        = new Path(pAssetPath, "shd");
       pShdEdit         = new Path(pShdStart, edit);
       pShdSubmit       = new Path(pShdStart, submit);
@@ -163,6 +162,14 @@ class DefaultAssetNames
       pTexPrepare      = new Path(pTexSubmit, prepare);
       pTexApprove      = new Path(pTexStart, approve);
       pTexProduct      = new Path(pTexApprove, product);
+      
+      pAssetStart      = new Path(pAssetPath);
+      pAssetEdit       = new Path(pAssetStart, edit);
+      pAssetSubmit     = new Path(pAssetStart, submit);
+      pAssetPrepare    = new Path(pAssetSubmit, prepare);
+      pAssetApprove    = new Path(pAssetStart, approve);
+      pAssetProduct    = new Path(pAssetApprove, product);
+      pAssetThumb      = new Path(pAssetSubmit, thumb);
     }
     done();
   }
@@ -699,7 +706,7 @@ class DefaultAssetNames
   public String
   getMaterialTTNodeName()
   {
-    return new Path(pMatSubmit, pAssetName + "_mat_tt").toString();
+    return new Path(pMatPrepare, pAssetName + "_mat_tt").toString();
   }
   
   public String
@@ -724,6 +731,54 @@ class DefaultAssetNames
   getMaterialApproveNodeName()
   {
     return new Path(pMatApprove, pAssetName + "_mat_approve").toString();
+  }
+  
+  public String
+  getAssetApproveNodeName()
+  {
+    return new Path(pAssetApprove, pAssetName + "_approve").toString();
+  }
+  
+  public String
+  getAssetSubmitNodeName()
+  {
+    return new Path(pAssetSubmit, pAssetName + "_submit").toString();
+  }
+  
+  public String
+  getAssetTTNodeName()
+  {
+    return new Path(pAssetPrepare, pAssetName + "_tt").toString();
+  }
+  
+  public String
+  getAssetTTImagesNodeName()
+  {
+    return new Path(pAssetPrepare, pAssetName + "_img").toString();
+  }
+  
+  public String
+  getAssetThumbNodeName()
+  {
+    return new Path(pAssetThumb, pAssetName + "_thumb").toString();
+  }
+  
+  public String 
+  getAssetEditNodeName()
+  {
+    return new Path(pAssetEdit, pAssetName + "_" + pAssetType).toString();
+  }
+  
+  public String 
+  getAssetVerifyNodeName()
+  {
+    return new Path(pAssetPrepare, pAssetName + "_" + pAssetType).toString();
+  }
+  
+  public String 
+  getAssetFinalNodeName()
+  {
+    return new Path(pAssetPath, pAssetName + "_" + pAssetType).toString();
   }
   
   /*----------------------------------------------------------------------------------------*/
@@ -798,6 +853,15 @@ class DefaultAssetNames
   private Path pTexSubmit;
   private Path pTexApprove;
   private Path pTexProduct;
+  
+  private Path pAssetStart;
+  private Path pAssetEdit;
+  private Path pAssetPrepare;
+  private Path pAssetSubmit;
+  private Path pAssetApprove;
+  @SuppressWarnings("unused")
+  private Path pAssetProduct;
+  private Path pAssetThumb;
   
 
   // Hi Rez Models

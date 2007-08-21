@@ -356,6 +356,16 @@ class DefaultProjectNames
   }
   
   /**
+   * @return the shader verification script name
+   */
+  @Override
+  public String
+  getAssetVerificationScriptName()
+  {
+    return new Path(pMelVerifyScriptPath, "assetVerify").toString();
+  }
+  
+  /**
    * @return the shader copying mel script name
    */
   public String

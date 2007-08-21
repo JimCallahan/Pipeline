@@ -173,6 +173,19 @@ interface BuildsProjectNames
   );
   
   /**
+   * @return the name of the asset verification mel Script
+   */
+  public String
+  getAssetVerificationScriptName();
+  
+  public String
+  getAssetVerificationScriptName
+  (
+    String assetName,
+    String assetType
+  );
+  
+  /**
    * @return the placeholder generation mel script
    */
   public String

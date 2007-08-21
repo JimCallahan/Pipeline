@@ -331,4 +331,29 @@ interface BuildsAssetNames
 
   public String 
   getShaderThumbNodeName();
+
+  public String 
+  getAssetApproveNodeName();
+
+  public String 
+  getAssetSubmitNodeName();
+
+  public String 
+  getAssetTTNodeName();
+
+  public String 
+  getAssetTTImagesNodeName();
+
+  public String 
+  getAssetThumbNodeName();
+  
+  public String 
+  getAssetEditNodeName();
+  
+  public String 
+  getAssetVerifyNodeName();
+  
+  public String 
+  getAssetFinalNodeName();
+
 }

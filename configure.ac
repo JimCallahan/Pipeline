@@ -2405,6 +2405,7 @@ AC_CONFIG_FILES([
   src/java/scripts/builder/maya2mr/v2_3_2/plProjectBuilder
   src/java/scripts/builder/maya2mr/v2_3_2/plProjectScriptBuilder
   src/java/scripts/builder/maya2mr/v2_3_2/plProjectTurntableBuilder
+  src/java/scripts/builder/maya2mr/v2_3_2/plSimpleAssetBuilder
 
 
   src/java/share/Makefile
@@ -2468,6 +2469,7 @@ AC_CONFIG_FILES([
   src/windows/scripts/builder/maya2mr/v2_3_2/plProjectBuilder.bat.src
   src/windows/scripts/builder/maya2mr/v2_3_2/plProjectScriptBuilder.bat.src
   src/windows/scripts/builder/maya2mr/v2_3_2/plProjectTurntableBuilder.bat.src
+  src/windows/scripts/builder/maya2mr/v2_3_2/plSimpleAssetBuilder.bat.src
 
   src/windows/launchers/Makefile
   src/windows/launchers/plui.exe4j
@@ -2492,16 +2494,19 @@ AC_CONFIG_FILES([
   studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Makefile
   studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Unix/Makefile
   studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Unix/plRadarAssetBuilder
+  studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Unix/plRadarSimpleAssetBuilder
   studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Unix/plRadarProjectBuilder
   studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Unix/plRadarProjectScriptBuilder
   studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Unix/plRadarProjectTurntableBuilder
   studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/MacOS/Makefile
   studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/MacOS/plRadarAssetBuilder
+  studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/MacOS/plRadarSimpleAssetBuilder
   studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/MacOS/plRadarProjectBuilder
   studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/MacOS/plRadarProjectScriptBuilder
   studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/MacOS/plRadarProjectTurntableBuilder
   studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Windows/Makefile
   studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Windows/plRadarAssetBuilder.bat.src
+  studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Windows/plRadarSimpleAssetBuilder.bat.src
   studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Windows/plRadarProjectBuilder.bat.src
   studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Windows/plRadarProjectScriptBuilder.bat.src
   studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Windows/plRadarProjectTurntableBuilder.bat.src

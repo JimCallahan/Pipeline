@@ -8,6 +8,7 @@ instbin_SCRIPTS = \
   plProjectBuilder.bat \
   plProjectScriptBuilder.bat \
   plProjectTurntableBuilder.bat \
+  plSimpleAssetBuilder.bat \
   plAssetBuilder.bat
 
 

@@ -321,9 +321,25 @@ class NullProjectNames
     return null;
   }
 
-  public String getPlaceholderCameraScriptName()
+  public String 
+  getPlaceholderCameraScriptName()
   {
-    // TODO Auto-generated method stub
+    return null;
+  }
+
+  public String 
+  getAssetVerificationScriptName()
+  {
+    return null;
+  }
+
+  public String 
+  getAssetVerificationScriptName
+  (
+    String assetName,
+    String assetType
+  )
+  {
     return null;
   }
 }
