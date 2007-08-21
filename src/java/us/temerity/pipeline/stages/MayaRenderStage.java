@@ -41,6 +41,8 @@ class MayaRenderStage
           new PluginContext("MayaRender"));
     addLink(new LinkMod(mayaScene, LinkPolicy.Dependency));
     addSingleParamValue("MayaScene", mayaScene);
+    setExecutionMethod(ExecutionMethod.Parallel);
+    setBatchSize(5);
   }
   
   public void

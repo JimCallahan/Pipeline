@@ -37,6 +37,8 @@ class MRayRenderStage
           suffix, 
           null, 
           new PluginContext("MRayRender"));
+    setExecutionMethod(ExecutionMethod.Parallel);
+    setBatchSize(5);
   }
   
   protected 
@@ -59,8 +61,10 @@ class MRayRenderStage
       client, 
       nodeName, 
       suffix, 
-      getDefaultEditor(client, suffix), 
+      null, 
       new PluginContext("MRayRender"));
+    setExecutionMethod(ExecutionMethod.Parallel);
+    setBatchSize(5);
   }
   
   public void
