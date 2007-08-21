@@ -344,6 +344,29 @@ class AdvancedLayoutGroup
     validateColumn(col);
     return Collections.unmodifiableList(pEntries.get(col));
   }
+  
+  /**
+   * Get the names of the parameters and/or presets in the order they should be displayed in
+   * the user interface, but in a modifiable form.
+   * <P>
+   * 
+   * The return list may contain <CODE>null</CODE> values to indicate the positions of
+   * parameter separators.
+   * <p>
+   * This method is intended to be used by the
+   * {@link AdvancedLayoutGroup#removeEntry(String) removeEntry} method in AdvancedLayoutGroup
+   * and should typically not be called by users. The method {@link #getEntries()} should be
+   * used instead.
+   */ 
+  private List<String>
+  getModifiableEntries
+  (
+    Integer col
+  )
+  {
+    validateColumn(col);
+    return pEntries.get(col);
+  }
 
   /**
    * Add the given parameter/preset name to the group. <P> 
@@ -401,7 +424,7 @@ class AdvancedLayoutGroup
     LayoutGroup group
   )
   {
-    if(cleanList(name, group.getEntries()))
+    if(cleanList(name, ((AdvancedLayoutGroup) group).getModifiableEntries(1)))
       return true;
     for(LayoutGroup sub : group.getSubGroups())
       if(cleanGroup(name, sub))

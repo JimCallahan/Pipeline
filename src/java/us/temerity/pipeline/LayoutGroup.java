@@ -1,4 +1,4 @@
-// $Id: LayoutGroup.java,v 1.7 2006/12/10 22:50:26 jesse Exp $
+// $Id: LayoutGroup.java,v 1.8 2007/08/21 09:38:08 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -138,7 +138,11 @@ class LayoutGroup
    * @see us.temerity.pipeline.AdvancedLayoutGroup#addColumn(java.lang.String, boolean)
    */
   @Override
-  public Integer addColumn(String colName, boolean isOpen)
+  public Integer addColumn
+  (
+    String colName, 
+    boolean isOpen
+  )
   {
     throw new IllegalStateException
       ("This method cannot be called on a LayoutGroup.\n" +
@@ -171,8 +175,9 @@ class LayoutGroup
   public List<String>
   getEntries() 
   {
-    return Collections.unmodifiableList(getEntries(1));
+    return getEntries(1);
   }
+  
 
   /**
    * Add the given parameter/preset name to the group. <P> 
