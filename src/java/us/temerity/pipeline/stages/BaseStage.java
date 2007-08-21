@@ -1,4 +1,4 @@
-// $Id: BaseStage.java,v 1.8 2007/08/19 00:53:54 jesse Exp $
+// $Id: BaseStage.java,v 1.9 2007/08/21 12:39:57 jesse Exp $
 
 package us.temerity.pipeline.stages;
 
@@ -519,15 +519,14 @@ class BaseStage
     
     if (plugs == null)
       throw new PipelineException
-        ("There are no plugins associated with the toolset (" + toolset + ")");
+        ("There are no Editor plugins associated with the toolset (" + toolset + ")");
     
+    TreeSet<VersionID> temp = plugs.get(pluginUtil.getPluginVendor(), pluginUtil.getPluginName());
+    if (temp == null)
+      return null;
+
     TreeSet<VersionID> pluginSet = new TreeSet<VersionID>(Collections.reverseOrder());
-    pluginSet.addAll(plugs.get(pluginUtil.getPluginVendor(), pluginUtil.getPluginName()));
-    
-    if (pluginSet == null)
-      throw new PipelineException
-        ("No Action Exists that matches the Plugin Context (" + pluginUtil + ") " +
-         "in toolset (" + toolset + ")");
+    pluginSet.addAll(temp);
     
     Range<VersionID> contextRange = pluginUtil.getRange();
     
