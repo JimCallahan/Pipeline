@@ -430,7 +430,10 @@ class JBuilderParamDialog
     run()
     {
       LinkedList<ConstructPass> run = new LinkedList<ConstructPass>(pExecutionOrder);
+      boolean error = false;
       for (ConstructPass pass : run) {
+	if (error)
+	  break;
 	try {
 	  pass.run();
 	  pExecutionOrder.remove(pass);
@@ -440,13 +443,17 @@ class JBuilderParamDialog
 	}
 	catch (PipelineException ex) {
 	  handleException(ex);
+	  error = true;
 	}
 	catch (Exception ex) {
+	  ex.printStackTrace();
 	  handleException(new PipelineException(ex));
+	  error = true;
 	}
       }
       pRunning =  false;
-      SwingUtilities.invokeLater(new AfterAllConstructPassTask());
+      if (!error)
+	SwingUtilities.invokeLater(new AfterAllConstructPassTask());
     }
   }
   
