@@ -1,4 +1,4 @@
-// $Id: MayaExportStage.java,v 1.2 2007/08/18 18:14:47 jesse Exp $
+// $Id: MayaExportStage.java,v 1.3 2007/08/21 09:42:45 jesse Exp $
 
 package us.temerity.pipeline.stages;
 
@@ -30,6 +30,7 @@ class MayaExportStage
     String nodeName,
     boolean isAscii,
     PluginContext editor,
+    String sourceName,
     String exportName,
     boolean cleanupNamespace
   )
@@ -45,6 +46,7 @@ class MayaExportStage
   	  isAscii,
   	  editor,
   	  new PluginContext("MayaExport"));
+    setMayaScene(sourceName);
     addSingleParamValue("ExportSet", exportName);
     addSingleParamValue(aCleanUpNamespace, cleanupNamespace);
   }

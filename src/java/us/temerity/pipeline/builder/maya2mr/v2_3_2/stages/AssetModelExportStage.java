@@ -18,6 +18,7 @@ class AssetModelExportStage
     UtilContext context,
     MasterMgrClient client, 
     String nodeName,
+    String sourceName,
     String exportName,
     String verifyMEL
   )
@@ -31,6 +32,7 @@ class AssetModelExportStage
           nodeName,
           true,
           null,
+          sourceName,
           exportName,
           true);
     setNewSceneMel(verifyMEL);
