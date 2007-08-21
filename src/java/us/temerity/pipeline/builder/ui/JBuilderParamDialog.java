@@ -441,6 +441,9 @@ class JBuilderParamDialog
 	catch (PipelineException ex) {
 	  handleException(ex);
 	}
+	catch (Exception ex) {
+	  handleException(new PipelineException(ex));
+	}
       }
       pRunning =  false;
       SwingUtilities.invokeLater(new AfterAllConstructPassTask());
@@ -488,6 +491,9 @@ class JBuilderParamDialog
 	}
 	catch (PipelineException ex) {
 	  handleException(ex);
+	}
+	catch (Exception ex) {
+	  handleException(new PipelineException(ex));
 	}
     }
   }
