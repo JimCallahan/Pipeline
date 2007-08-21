@@ -1,4 +1,4 @@
-// $Id: AssetBuilder.java,v 1.10 2007/08/19 00:53:55 jesse Exp $
+// $Id: AssetBuilder.java,v 1.11 2007/08/21 09:51:57 jesse Exp $
 
 package us.temerity.pipeline.builder.maya2mr.v2_3_2;
 
@@ -645,6 +645,7 @@ class AssetBuilder
 	   pContext,
 	   pClient,
 	   verifyModel,
+	   editModel,
 	   "*",
 	   pVerifyModelMEL);
 	if (pModelTT)
@@ -691,7 +692,7 @@ class AssetBuilder
           thumb = pAssetNames.getModelThumbNodeName();
           {
             ThumbnailStage stage = 
-              new ThumbnailStage(pStageInfo, pContext, pClient, thumb, "png", modelTTImg, 120);
+              new ThumbnailStage(pStageInfo, pContext, pClient, thumb, "png", modelTTImg, 160);
             isThumbnailNode(stage, taskType);
             stage.build();
           }
@@ -710,6 +711,7 @@ class AssetBuilder
         isSubmitNode(stage, taskType);
         stage.build();
         addToQueueList(modelSubmit);
+        addToCheckInList(modelSubmit);
       }
       String modelFinal = pAssetNames.getModelFinalNodeName();
       String modelApprove = pAssetNames.getModelApproveNodeName();
@@ -726,6 +728,7 @@ class AssetBuilder
         isApproveNode(stage, taskType);
         stage.build();
         addToQueueList(modelApprove);
+        addToCheckInList(modelApprove);
       }
     }
     
@@ -942,7 +945,7 @@ class AssetBuilder
 	}
 	if (pBuildThumbnails) {
 	  ThumbnailStage stage = 
-	    new ThumbnailStage(pStageInfo, pContext, pClient, thumb, "png", rigImages, 120);
+	    new ThumbnailStage(pStageInfo, pContext, pClient, thumb, "png", rigImages, 160);
 	  isThumbnailNode(stage, taskType);
 	  stage.build();
         }
@@ -960,6 +963,7 @@ class AssetBuilder
         isSubmitNode(stage, taskType);
         stage.build();
         addToQueueList(rigSubmit);
+        addToCheckInList(rigSubmit);
       }
       String assetFinal = pAssetNames.getAnimFinalNodeName();
       String rigApprove = pAssetNames.getRigApproveNodeName();
@@ -988,6 +992,7 @@ class AssetBuilder
         isApproveNode(stage, taskType);
         stage.build();
         addToQueueList(rigApprove);
+        addToCheckInList(rigApprove);
       }
     }
     
@@ -1096,7 +1101,7 @@ class AssetBuilder
         if (pBuildThumbnails) {
           thumb = pAssetNames.getMaterialThumbNodeName();
           ThumbnailStage stage = 
-            new ThumbnailStage(pStageInfo, pContext, pClient, thumb, "png", matTTImg, 120);
+            new ThumbnailStage(pStageInfo, pContext, pClient, thumb, "png", matTTImg, 160);
           isThumbnailNode(stage, taskType);
           stage.build();
         }
@@ -1114,6 +1119,7 @@ class AssetBuilder
         isSubmitNode(stage, taskType);
         stage.build();
         addToQueueList(matSubmit);
+        addToCheckInList(matSubmit);
       }
 
       String finalTex = null;
@@ -1141,6 +1147,7 @@ class AssetBuilder
         isApproveNode(stage, taskType);
         stage.build();
         addToQueueList(matApprove);
+        addToCheckInList(matApprove);
       }
     }
     private static final long serialVersionUID = 8287285172355006675L;
