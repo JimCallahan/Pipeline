@@ -1,4 +1,4 @@
-// $Id: BaseBuilder.java,v 1.24 2007/08/19 04:41:08 jesse Exp $
+// $Id: BaseBuilder.java,v 1.25 2007/08/21 09:50:11 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -845,9 +845,15 @@ class BaseBuilder
     pLog.log(Kind.Ops, Level.Info, "Beginning execution of the check-ins.");
     for (BaseBuilder builder : pBuilderInformation.getCheckinList()) {
       if (builder.performCheckIn()) {
+	pLog.log(Kind.Ops, Level.Fine, 
+	  "Beginning check-in for builder ("+ builder.getPrefixedName() + ").");
 	builder.checkInNodes(builder.getNodesToCheckIn(), builder.getCheckinLevel(), builder.getCheckInMessage());
       }
+      else
+	pLog.log(Kind.Ops, Level.Fine, 
+	  "Check-in was not activated for builder (" + builder.getPrefixedName() + ").");
     }
+    pLog.log(Kind.Ops, Level.Info, "Execution of the check-ins is now finished.");
   }
 
   
