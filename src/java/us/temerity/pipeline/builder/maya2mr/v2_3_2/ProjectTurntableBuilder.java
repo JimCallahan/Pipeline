@@ -64,13 +64,23 @@ class ProjectTurntableBuilder
     // Global parameters
     {
       ArrayList<String> projects = pBuilderInfo.getProjectList();
-      UtilityParam param = 
-        new OptionalEnumUtilityParam
-        (aProjectName,
-         "The name of the project to build the asset in.", 
-         projects.get(0), 
-         projects); 
-      addParam(param);
+      if (projects.size() > 0) {
+	UtilityParam param = 
+	  new OptionalEnumUtilityParam
+	  (aProjectName,
+	   "The name of the project to build the asset in.", 
+	   projects.get(0), 
+	   projects); 
+	addParam(param);
+      }
+      else {
+	UtilityParam param = 
+	  new StringUtilityParam
+	  (aProjectName,
+	   "The name of the project to build the asset in.", 
+	   "projects"); 
+	addParam(param);
+      }
     }
     {
       UtilityParam param = 
