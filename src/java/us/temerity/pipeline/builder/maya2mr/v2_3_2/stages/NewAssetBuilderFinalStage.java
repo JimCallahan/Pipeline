@@ -74,7 +74,7 @@ class NewAssetBuilderFinalStage
           true);
     setupLink(rigName, "", getImport(), false);
     if (matName != null)
-      setupLink(matName, "mat", getReference(), true);
+      setupLink(matName, "source", getReference(), true);
     if (matExpName != null)
       setupLink(matExpName, "", getImport(), false);
     setModelMel(finalizeMel);
