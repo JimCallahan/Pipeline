@@ -1,4 +1,4 @@
-// $Id: AssetBuilder.java,v 1.11 2007/08/21 09:51:57 jesse Exp $
+// $Id: AssetBuilder.java,v 1.12 2007/08/22 14:24:30 jesse Exp $
 
 package us.temerity.pipeline.builder.maya2mr.v2_3_2;
 
@@ -477,6 +477,7 @@ class AssetBuilder
       pRigTT = getBooleanParamValue(new ParamMapping(aRigAnimForApproval));
       pShadeTT = getBooleanParamValue(new ParamMapping(aMaterialTTForApproval));
       pBuildThumbnails = getBooleanParamValue(new ParamMapping(aBuildThumbnails));
+      pHasBlendShapes = getBooleanParamValue(new ParamMapping(aHasBlendShapes));
       pImportModel = 
 	getStringParamValue(new ParamMapping(aModelDelivery)).equals("Import") ? true : false;
       
@@ -801,22 +802,25 @@ class AssetBuilder
         stage.build();
       }
       
-      String rigMatExp = pAssetNames.getRigMatExportNodeName();
-      {
-        NewAssetBuilderMaterialExportStage stage = 
-          new NewAssetBuilderMaterialExportStage
-          (pStageInfo, 
-           pContext,
-           pClient,
-           rigMatExp, 
-           rigEdit);
-        isPrepareNode(stage, taskType);
-        stage.build();
-      }
+      String rigMatExp = null; 
       
       String rigSource = rigEdit;
       
       if (pReRigSetup) {
+	
+	rigMatExp = pAssetNames.getRigMatExportNodeName();
+	{
+	  NewAssetBuilderMaterialExportStage stage = 
+	    new NewAssetBuilderMaterialExportStage
+	    (pStageInfo, 
+	     pContext,
+	     pClient,
+	     rigMatExp, 
+	     rigEdit);
+	  isPrepareNode(stage, taskType);
+	  stage.build();
+	}
+	
 	String reRigNode = pAssetNames.getReRigNodeName();
 	String finalRigScript = pProjectNames.getFinalRigScriptName();
 	{
@@ -841,6 +845,9 @@ class AssetBuilder
       
       String rigFinal = pAssetNames.getRigFinalNodeName();
       {
+	if (rigSource.equals(rigEdit))
+	  rigEdit = null;
+	  
         NewAssetBuilderFinalStage stage = 
           new NewAssetBuilderFinalStage
           (pStageInfo,
