@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.215 2007/08/20 04:43:15 jim Exp $
+// $Id: MasterMgr.java,v 1.216 2007/08/22 03:15:32 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -11017,25 +11017,25 @@ class MasterMgr
 
     /* collect upstream jobs for:
        + nodes without an action or with a disabled action
-       + finished nodes with an enabled action and upstream links which are all 
-           References or Associations */
+       + finished nodes with an enabled action and at least one upstream link which is 
+          either a Reference or an Association */
     {
-      boolean allRef = false; 
+      boolean anyRef = false; 
       if(work.isActionEnabled()) {
         switch(details.getOverallQueueState()) {
         case Finished:
-          allRef = true;
           for(LinkMod link : work.getSources()) {
             switch(link.getPolicy()) {
-            case Dependency: 
-              allRef = false;
+            case Association: 
+            case Reference: 
+              anyRef = true; 
               break;
             }
           }
         }
       }
       
-      if(allRef || !work.isActionEnabled()) {
+      if(anyRef || !work.isActionEnabled()) {
         collectNoActionJobs(status, isRoot, 
                             extJobIDs, nodeJobIDs, upsJobIDs, rootJobIDs, 
                             jobs, assocRoots, timer);
