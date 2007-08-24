@@ -1,4 +1,4 @@
-// $Id: BaseUtil.java,v 1.17 2007/08/19 04:41:08 jesse Exp $
+// $Id: BaseUtil.java,v 1.18 2007/08/24 17:27:29 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -527,7 +527,9 @@ class BaseUtil
   ) 
     throws PipelineException
   {
-    pClient.lock(getAuthor(), getView(), name, null);
+    TreeSet<VersionID> versions = pClient.getCheckedInVersionIDs(name);
+    VersionID latestID = versions.last();
+    pClient.lock(getAuthor(), getView(), name, latestID);
   }
 
   /**
