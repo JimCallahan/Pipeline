@@ -375,6 +375,8 @@ class JBuilderParamDialog
 	pTopPanel.addNextSetupPass();
 	if (pTopPanel.allParamsReady())
 	  setupPhaseEnableButtons();
+	else
+	  disableAllButtons();
       }
       catch (PipelineException ex) {
 	handleException(ex);
