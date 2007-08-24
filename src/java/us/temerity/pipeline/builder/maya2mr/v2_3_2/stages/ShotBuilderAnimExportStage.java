@@ -32,7 +32,8 @@ class ShotBuilderAnimExportStage
           context, 
           client,
           nodeName, null, 
-          new PluginContext("Emacs"), new PluginContext("AnimExport"));
+          null, 
+          new PluginContext("AnimExport"));
     for (String assetName : assetNames) {
       addSecondarySequence(new FileSeq(assetName, "anim"));
     }

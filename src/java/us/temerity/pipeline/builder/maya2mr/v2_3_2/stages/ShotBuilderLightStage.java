@@ -11,8 +11,6 @@ public
 class ShotBuilderLightStage
   extends MayaBuildStage
 {
- 
-
   public
   ShotBuilderLightStage
   (
@@ -39,7 +37,8 @@ class ShotBuilderLightStage
       setFrameRange(range);
     setUnits();
     setupLink(sourceName, sourcePrefix, getReference(), true);
-    setupLink(lgtRigName, "lights", getReference(), true);
+    if (lgtRigName != null)
+      setupLink(lgtRigName, "lights", getReference(), true);
   }
   private static final long serialVersionUID = 4463317246082802738L;
 }
