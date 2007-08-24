@@ -1,4 +1,4 @@
-// $Id: ListParam.java,v 1.4 2007/05/15 06:13:43 jesse Exp $
+// $Id: ListParam.java,v 1.5 2007/08/24 17:28:33 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -82,7 +82,7 @@ class ListParam<E>
     
     for (String each : values) {
       Boolean check = value.contains(each);
-      String tooltip = null;
+      String tooltip = "";
       if (tooltips != null) {
         tooltip = tooltips.get(each);
       }
