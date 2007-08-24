@@ -1,9 +1,8 @@
 package us.temerity.pipeline.stages;
 
-import java.util.TreeMap;
-import java.util.TreeSet;
+import java.util.*;
 
-import us.temerity.pipeline.PipelineException;
+import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.PluginContext;
 
 /*------------------------------------------------------------------------------------------*/
@@ -20,6 +19,8 @@ class StageState
     pAddedNodesUserMap = new TreeMap<String, String>();
     pAddedNodesViewMap = new TreeMap<String, String>();
     pDefaultEditors = new TreeMap<String, PluginContext>();
+    pDefaultLicenseKeys = new MappedArrayList<String, String>();
+    pDefaultSelectionKeys = new MappedArrayList<String, String>();
   }
   
   /*----------------------------------------------------------------------------------------*/
@@ -110,6 +111,11 @@ class StageState
     return true;
   }
   
+  /**
+   * Gets the default editor for a particular function.
+   * 
+   * @return The PluginContext or <code>null</code> is there is no default editor
+   */
   public PluginContext 
   getDefaultEditor
   (
@@ -142,6 +148,81 @@ class StageState
     }
   }
   
+  /**
+   * Gets the default selection keys for a particular function.
+   * 
+   * @return A list of keys or an empty list if no keys exist
+   */
+  public ArrayList<String>
+  getDefaultSelectionKeys
+  (
+    String function  
+  )
+  {
+    ArrayList<String> toReturn = pDefaultSelectionKeys.get(function);
+    if (toReturn == null)
+      toReturn = new ArrayList<String>();
+    return toReturn;
+  }
+  
+  /**
+   * Sets a default selection keys for a particular stage function type.
+   * <p>
+   * Note that this method is only effective the FIRST time it is called for a particular
+   * function type.  This allows high-level builders to override their child builders if
+   * they do not agree on what the default keys should be.  It is important to remember
+   * this when writing builders with sub-builder.  A Builder should always set the
+   * default keys in its Stage State class before instantiating any of its 
+   * sub-builders.  Failure to do so may result in the default keys values being
+   * set by the sub-builder.
+   */
+  public void
+  setDefaultSelectionKeys
+  (
+    String function,
+    ArrayList<String> keys
+  )
+  {
+    if (!pDefaultSelectionKeys.containsKey(function)) {
+      pDefaultSelectionKeys.put(function, keys);
+    }
+  }
+  
+  public ArrayList<String>
+  getDefaultLicenseKeys
+  (
+    String function  
+  )
+  {
+    ArrayList<String> toReturn = pDefaultLicenseKeys.get(function);
+    if (toReturn == null)
+      toReturn = new ArrayList<String>();
+    return toReturn;
+  }
+  
+  /**
+   * Sets a default license keys for a particular stage function type.
+   * <p>
+   * Note that this method is only effective the FIRST time it is called for a particular
+   * function type.  This allows high-level builders to override their child builders if
+   * they do not agree on what the default keys should be.  It is important to remember
+   * this when writing builders with sub-builder.  A Builder should always set the
+   * default keys in its Stage State class before instantiating any of its 
+   * sub-builders.  Failure to do so may result in the default keys values being
+   * set by the sub-builder.
+   */
+  public void
+  setDefaultLicenseKeys
+  (
+    String function,
+    ArrayList<String> keys
+  )
+  {
+    if (!pDefaultLicenseKeys.containsKey(function)) {
+      pDefaultLicenseKeys.put(function, keys);
+    }
+  }
+  
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -165,4 +246,6 @@ class StageState
   private TreeMap<String, String> pAddedNodesViewMap;
   
   private TreeMap<String, PluginContext> pDefaultEditors;
+  private MappedArrayList<String, String> pDefaultSelectionKeys;
+  private MappedArrayList<String, String> pDefaultLicenseKeys;
 }

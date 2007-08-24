@@ -245,8 +245,16 @@ class SimpleAssetBuilder
   protected TreeSet<String> 
   getNodesToCheckIn()
   {
-    return null;
+    return getCheckInList();
   }
+  
+  @Override
+  protected boolean 
+  performCheckIn()
+  {
+    return pCheckInWhenDone;
+  }
+  
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -335,7 +343,7 @@ class SimpleAssetBuilder
       pBuildTurntable = getBooleanParamValue(new ParamMapping(aBuildTurntable));
       pImportModel = 
 	getStringParamValue(new ParamMapping(aModelDelivery)).equals("Import") ? true : false;
-      
+      pCheckInWhenDone = getBooleanParamValue(new ParamMapping(aCheckinWhenDone));
       
       pAssetName = pAssetNames.getAssetName();
       pAssetType = pAssetNames.getAssetType();
@@ -398,6 +406,10 @@ class SimpleAssetBuilder
       
       String taskType = pProjectNames.getModelingTaskName();
       
+      if (pBuildTextureNode) {
+	
+      }
+      
       String editAsset = pAssetNames.getAssetEditNodeName();
       String verifyAsset = pAssetNames.getAssetVerifyNodeName();
       {
@@ -439,7 +451,7 @@ class SimpleAssetBuilder
 	   pClient,
 	   verifyAsset,
 	   editAsset,
-	   "*",
+	   "SELECT",
 	   pVerifyMEL);
 	if (pBuildTurntable)
 	  isPrepareNode(stage, taskType);

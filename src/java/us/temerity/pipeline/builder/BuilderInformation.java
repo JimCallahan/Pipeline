@@ -339,6 +339,15 @@ class BuilderInformation
     }
     
     public void
+    addDefaultSelectionKey
+    (
+      String key  
+    )
+    {
+      pDefaultSelectionKeys.add(key);
+    }
+    
+    public void
     setDefaultLicenseKeys
     (
       Set<String> keys
@@ -348,6 +357,15 @@ class BuilderInformation
         pDefaultLicenseKeys = new TreeSet<String>();
       else
         pDefaultLicenseKeys = new TreeSet<String>(keys);
+    }
+    
+    public void
+    addDefaultLicenseKey
+    (
+      String key  
+    )
+    {
+      pDefaultLicenseKeys.add(key);
     }
     
     public TreeSet<String> 

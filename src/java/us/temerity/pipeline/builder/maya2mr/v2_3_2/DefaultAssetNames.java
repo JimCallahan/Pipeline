@@ -7,6 +7,10 @@ import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.BaseNames;
 import us.temerity.pipeline.builder.UtilContext;
 
+/*------------------------------------------------------------------------------------------*/
+/*   D E F A U L T   A S S E T   N A M E S                                                  */
+/*------------------------------------------------------------------------------------------*/
+
 public 
 class DefaultAssetNames
   extends BaseNames
