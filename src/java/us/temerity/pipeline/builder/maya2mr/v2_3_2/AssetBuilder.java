@@ -1,4 +1,4 @@
-// $Id: AssetBuilder.java,v 1.12 2007/08/22 14:24:30 jesse Exp $
+// $Id: AssetBuilder.java,v 1.13 2007/08/24 11:23:32 jesse Exp $
 
 package us.temerity.pipeline.builder.maya2mr.v2_3_2;
 
@@ -217,14 +217,10 @@ class AssetBuilder
     
     pAssetNames = (BuildsAssetNames) assetNames;
     pProjectNames = (BuildsProjectNames) projectNames;
-
-    addSetupPass(new InformationPass());
-    ConstructPass build = new BuildPass();
-    addConstuctPass(build);
-    ConstructPass end = new FinalizePass();
-    addConstuctPass(end);
-    addPassDependency(build, end);
     
+    addSetupPasses();
+    addConstructPasses();
+
     {
       AdvancedLayoutGroup layout = 
         new AdvancedLayoutGroup
@@ -244,7 +240,6 @@ class AssetBuilder
       
       layout.addEntry(2, aDoAnnotations);
       layout.addEntry(2, aBuildThumbnails);
-      layout.addSeparator(2);
       
       LayoutGroup mayaGroup = 
         new LayoutGroup("MayaGroup", "Parameters related to Maya scenes", true);
@@ -309,6 +304,24 @@ class AssetBuilder
       addMappedParam(assetNames.getName(), DefaultAssetNames.aProjectName, aProjectName);
     if (!projectNames.isGenerated())
       addMappedParam(projectNames.getName(), DefaultProjectNames.aProjectName, aProjectName);
+  }
+  
+  protected void
+  addSetupPasses()
+    throws PipelineException
+  {
+    addSetupPass(new InformationPass());
+  }
+  
+  protected void
+  addConstructPasses()
+    throws PipelineException
+  {
+    ConstructPass build = new BuildPass();
+    addConstuctPass(build);
+    ConstructPass end = new FinalizePass();
+    addConstuctPass(end);
+    addPassDependency(build, end);
   }
   
   
@@ -647,7 +660,7 @@ class AssetBuilder
 	   pClient,
 	   verifyModel,
 	   editModel,
-	   "*",
+	   "GEO",
 	   pVerifyModelMEL);
 	if (pModelTT)
 	  isPrepareNode(stage, taskType);
@@ -847,21 +860,38 @@ class AssetBuilder
       {
 	if (rigSource.equals(rigEdit))
 	  rigEdit = null;
-	  
-        NewAssetBuilderFinalStage stage = 
-          new NewAssetBuilderFinalStage
-          (pStageInfo,
-           pContext, 
-           pClient,
-           pMayaContext,
-           rigFinal, 
-           rigSource, rigEdit, rigMatExp,
-           pLRFinalizeMEL);
-        if (pRigTT)
-          isPrepareNode(stage, taskType);
-        else
-          isFocusNode(stage, taskType);
-        stage.build();
+	if (!pReRigSetup && !pImportModel) {
+	  AssetModelExportStage stage = 
+	    new AssetModelExportStage
+	    (pStageInfo,
+	     pContext,
+	     pClient,
+	     rigFinal,
+	     rigSource,
+	     "SELECT",
+	     pLRFinalizeMEL);
+	  if (pRigTT)
+	    isPrepareNode(stage, taskType);
+	  else
+	    isFocusNode(stage, taskType);
+	  stage.build();
+	}
+	else {
+	  NewAssetBuilderFinalStage stage = 
+	    new NewAssetBuilderFinalStage
+	    (pStageInfo,
+	     pContext, 
+	     pClient,
+	     pMayaContext,
+	     rigFinal, 
+	     rigSource, rigEdit, rigMatExp,
+	     pLRFinalizeMEL);
+	  if (pRigTT)
+	    isPrepareNode(stage, taskType);
+	  else
+	    isFocusNode(stage, taskType);
+	  stage.build();
+	}
       }
       
       //Submit Fun Time
