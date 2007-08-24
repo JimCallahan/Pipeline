@@ -33,6 +33,7 @@ public class BuilderApp
   {
     super("plbuilder");
     pCommandLineParams = new MultiMap<String, String>();
+    pNullParams = new ListMap<LinkedList<String>, String>();
   }
 
   
@@ -112,6 +113,14 @@ public class BuilderApp
 	BuilderInformation info = 
           new BuilderInformation(pGui, pAbortOnGui, pCommandLineParams);
 	BaseBuilder builder = (BaseBuilder) construct.newInstance(mclient, qclient, info);
+	{
+	  String builderName = builder.getPrefixedName().toString();
+	  for (LinkedList<String> keys : pNullParams.keySet()) {
+	    String value = pNullParams.get(keys);
+	    keys.addFirst(builderName);
+	    pCommandLineParams.putValue(keys, value, true);
+	  }
+	}
 	builder.run();
 	success = true;
       } 
@@ -276,19 +285,20 @@ public class BuilderApp
     String value
   )
   {
-    if (builder == null)
-      throw new IllegalArgumentException
-        ("Illegal attempt in setting a Parameter value before specifying the Builder " +
-         "that the Parameter resides in.");
+    if (builder == null) {
+      pNullParams.put(keys, value);
+      LogMgr.getInstance().log(Kind.Arg, Level.Finest, 
+	"Reading command line arg for Parent Builder.\n" +
+	"Keys are (" + keys + ").\n" +
+	"Value is (" + value + ").");
+      return;
+    }
     builder = builder.replaceAll("-", " - ");
     LogMgr.getInstance().log(Kind.Arg, Level.Finest, 
       "Reading command line arg for Builder (" + builder + ").\n" +
       "Keys are (" + keys + ").\n" +
       "Value is (" + value + ").");
     LinkedList<String> list;
-    if (keys == null)
-      list = new LinkedList<String>();
-    else
       list = new LinkedList<String>(keys);
     list.addFirst(builder);
     pCommandLineParams.putValue(list, value, true);
@@ -304,5 +314,6 @@ public class BuilderApp
   private boolean pAbortOnGui;
   private MultiMap<String, String> pCommandLineParams; 
   private String pBuilderClassName;
+  private ListMap<LinkedList<String>, String> pNullParams; 
 
 }
