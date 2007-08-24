@@ -2021,6 +2021,7 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/MayaEditor/v2_2_1/Makefile
   src/java/us/temerity/pipeline/plugin/MayaExportAction/Makefile
   src/java/us/temerity/pipeline/plugin/MayaExportAction/v2_3_4/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaExportAction/v2_3_10/Makefile
   src/java/us/temerity/pipeline/plugin/MayaFTNBuildAction/Makefile
   src/java/us/temerity/pipeline/plugin/MayaFTNBuildAction/v2_3_1/Makefile
   src/java/us/temerity/pipeline/plugin/MayaImgCvtAction/Makefile
