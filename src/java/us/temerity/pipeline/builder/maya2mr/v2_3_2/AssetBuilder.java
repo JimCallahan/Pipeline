@@ -1,4 +1,4 @@
-// $Id: AssetBuilder.java,v 1.13 2007/08/24 11:23:32 jesse Exp $
+// $Id: AssetBuilder.java,v 1.14 2007/08/24 17:32:05 jesse Exp $
 
 package us.temerity.pipeline.builder.maya2mr.v2_3_2;
 
@@ -358,7 +358,8 @@ class AssetBuilder
   }
   
   @Override
-  protected boolean performCheckIn()
+  protected boolean 
+  performCheckIn()
   {
     return pCheckInWhenDone;
   }

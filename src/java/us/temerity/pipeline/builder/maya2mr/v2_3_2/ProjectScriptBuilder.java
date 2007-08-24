@@ -598,6 +598,26 @@ class ProjectScriptBuilder
 	  addToQueueList(script);
 	}
       }
+      if (pGlobals) {
+	String script = pProjectNames.getAnimGlobals();
+	MELFileStage stage =
+	  new MELFileStage(pStageInfo, pContext, pClient, script, "MayaRenderGlobals");
+	boolean build = stage.build();
+	if (build) {
+	  addToCheckInList(script);
+	  addToQueueList(script);
+	}
+      }
+      if (pGlobals) {
+	String script = pProjectNames.getLgtGlobals();
+	MELFileStage stage =
+	  new MELFileStage(pStageInfo, pContext, pClient, script, "MRayRenderGlobals");
+	boolean build = stage.build();
+	if (build) {
+	  addToCheckInList(script);
+	  addToQueueList(script);
+	}
+      }
     } // End of buildPhase()
     private static final long serialVersionUID = -4520437729968377615L;
   }

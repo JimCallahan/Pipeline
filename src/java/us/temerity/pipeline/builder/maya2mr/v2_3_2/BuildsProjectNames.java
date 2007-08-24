@@ -228,5 +228,12 @@ interface BuildsProjectNames
   public String 
   getEffectsTaskName();
 
-  String getPlaceholderCameraScriptName();
+  public String 
+  getPlaceholderCameraScriptName();
+
+  public String 
+  getAnimGlobals();
+
+  public String 
+  getLgtGlobals();
 }

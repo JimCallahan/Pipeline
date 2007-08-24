@@ -342,4 +342,17 @@ class NullProjectNames
   {
     return null;
   }
+  
+  public String 
+  getAnimGlobals()
+  {
+    return null;
+  }
+
+
+  public String 
+  getLgtGlobals()
+  {
+    return null;
+  }
 }

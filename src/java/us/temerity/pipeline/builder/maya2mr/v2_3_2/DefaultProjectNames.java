@@ -3,6 +3,10 @@ package us.temerity.pipeline.builder.maya2mr.v2_3_2;
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.UtilContext;
 
+/*------------------------------------------------------------------------------------------*/
+/*   D E F A U L T   P R O J E C T   N A M E S                                              */
+/*------------------------------------------------------------------------------------------*/
+
 public 
 class DefaultProjectNames 
   extends NullProjectNames
@@ -150,6 +154,24 @@ class DefaultProjectNames
   {
     return new Path(pMayaGlobalsPath, "rig_tt").toString();
   }
+  
+  @Override
+  public String 
+  getAnimGlobals()
+  {
+    return new Path(pMayaGlobalsPath, "anim_globals").toString();
+  }
+
+  @Override
+  public String 
+  getLgtGlobals()
+  {
+    return new Path(pMRayGlobalsPath, "lgt_globals").toString();
+  }
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   V E R I F I C A T I O N   S E T U P S                                                */
+  /*----------------------------------------------------------------------------------------*/
   
   @Override
   public String
@@ -401,7 +423,7 @@ class DefaultProjectNames
   public final static String aProjectName = "ProjectName";
   private static final long serialVersionUID = -6920650613173564121L;
 
-  static enum GlobalsType{Standalone, Maya2MR, Software;}
+  public static enum GlobalsType{Standalone, Maya2MR, Software;}
   
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
@@ -416,7 +438,5 @@ class DefaultProjectNames
   protected Path pMRayGlobalsPath;
   protected Path pTurntablePath;
   protected Path pMelPlaceHolderScriptPath;
-  
-  
-  
+
 }

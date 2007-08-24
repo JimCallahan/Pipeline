@@ -205,17 +205,17 @@ class ShotBuilder
 	 LayoutGroup charGroup =
 	   new LayoutGroup("Characters", "List of characters in the shot", true);
 	 charGroup.addEntry(aChars);
-	 layout.addSubGroup(1, charGroup);
+	 layout2.addSubGroup(1, charGroup);
 	 
 	 LayoutGroup propGroup =
 	   new LayoutGroup("Props", "List of props in the shot", true);
 	 propGroup.addEntry(aProps);
-	 layout.addSubGroup(1, propGroup);
+	 layout2.addSubGroup(1, propGroup);
 	 
 	 LayoutGroup setGroup =
 	   new LayoutGroup("Sets", "List of sets in the shot", true);
 	 setGroup.addEntry(aSets);
-	 layout.addSubGroup(1, setGroup);
+	 layout2.addSubGroup(1, setGroup);
 	 
 	 finalLayout.addPass(layout2.getName(), layout2);
       }
@@ -295,7 +295,7 @@ class ShotBuilder
 //  TreeMap<String, String> pProps;
 //  TreeMap<String, String> pNamespaces;
   
-  ArrayList<BuildsAssetNames> pAssets;
+  private ArrayList<BuildsAssetNames> pAssets;
   
   
   
@@ -601,7 +601,7 @@ class ShotBuilder
     FinalizePass()
     {
       super("FinalizePass", 
-	    "The AdvAssetBuilder pass that cleans everything up.");
+	    "The ShotBuilder pass that cleans everything up.");
     }
   }
 }

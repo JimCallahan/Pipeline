@@ -7,6 +7,9 @@ import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.BaseNames;
 import us.temerity.pipeline.builder.UtilContext;
 
+/*------------------------------------------------------------------------------------------*/
+/*   D E F A U L T   S H O T   N A M E S                                                    */
+/*------------------------------------------------------------------------------------------*/
 
 public class DefaultShotNames
   extends BaseNames
@@ -132,7 +135,7 @@ public class DefaultShotNames
 	pMovieName = 
 	  getStringParamValue(new ParamMapping(aLocation, ComplexParam.listFromObject(aMovieName)));
 	pSeqName = 
-	  getStringParamValue(new ParamMapping(aLocation, ComplexParam.listFromObject(aSequenceName)));
+	  getStringParamValue(new ParamMapping(aLocation, ComplexParam.listFromObject(aSequenceName)), false);
       }
       else
 	pSeqName = getStringParamValue(new ParamMapping(aSequenceName));
@@ -140,22 +143,16 @@ public class DefaultShotNames
     else {
       if (pUseMovie)
 	pMovieName = getStringParamValue(new ParamMapping(aMovieName));
-      pSeqName = getStringParamValue(new ParamMapping(aSequenceName));
+      pSeqName = getStringParamValue(new ParamMapping(aSequenceName), false);
     }
     
-    pShotName = getStringParamValue(new ParamMapping(aShotName));
+    pShotName = getStringParamValue(new ParamMapping(aShotName), false);
     
     pNamePrefix = pSeqName + "_" + pShotName + "_";
     
     if (pUseMovie && pMovieName == null)
       throw new PipelineException
         ("The Movie Name parameter cannot be null if Use Movie has been activated");
-    if (pSeqName == null)
-      throw new PipelineException
-        ("The Sequence Name parameter cannot be null.");
-    if (pShotName == null)
-      throw new PipelineException
-        ("The Shot Name parameter cannot be null.");
     
     if (pMovieName == null)
       pShotPath = 
@@ -271,6 +268,18 @@ public class DefaultShotNames
   {
     return pShotName;  
   }
+  
+  /*---Stuff---------------------------------------------------------------------------------*/
+  
+  /**
+   * A node that contains information about the shot.
+   */
+  public String
+  getShotInfoNodeName()
+  {
+    return null;
+  }
+  
   
   /*---Layout--------------------------------------------------------------------------------*/
   
@@ -596,6 +605,8 @@ public class DefaultShotNames
   {
     return new Path(pAnimProduct, pNamePrefix + "preScript").toString();
   }
+  
+  /*---Light---------------------------------------------------------------------------------*/
   
   /**
    * The node which the artist edits to add lighting to the shot. 
