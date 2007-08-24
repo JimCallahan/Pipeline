@@ -3,7 +3,6 @@ package com.radar.pipeline.builder.maya2mr.v2_3_2;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
-import us.temerity.pipeline.builder.maya2mr.v2_3_2.DefaultBuilderAnswers;
 import us.temerity.pipeline.builder.maya2mr.v2_3_2.ProjectScriptBuilder;
 
 /*------------------------------------------------------------------------------------------*/
@@ -31,7 +30,7 @@ class RadarProjectScriptBuilder
       (mclient,
        qclient,
        new RadarProjectNames(mclient, qclient),
-       new DefaultBuilderAnswers(mclient, qclient, UtilContext.getDefaultUtilContext(mclient)), 
+       new RadarBuilderAnswers(mclient, qclient, UtilContext.getDefaultUtilContext(mclient)), 
        info);
   }
   

@@ -52,7 +52,7 @@ class RadarAssetNames
       addParam(param);
     }
     {
-      String each[] = {"prop", "set", "character"};
+      String each[] = {"prop", "set", "character", "cam"};
       ArrayList<String> choices = new ArrayList<String>(Arrays.asList(each)); 
       UtilityParam param = 
 	new EnumUtilityParam
@@ -165,9 +165,18 @@ class RadarAssetNames
    * @return the headModelNodeName
    */
   public String 
-  getBlendShapeModelNodeName()
+  getBlendShapeEditModelNodeName()
   {
     return new Path(pWorkMod, pAssetName + "_blendShapes").toString();
+  }
+  
+  /**
+   * @return the headModelNodeName
+   */
+  public String 
+  getBlendShapeModelNodeName()
+  {
+    return new Path(pOutMod, pAssetName + "_blendShapes").toString();
   }
 
   /**
