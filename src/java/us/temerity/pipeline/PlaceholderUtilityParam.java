@@ -1,4 +1,4 @@
-// $Id: PlaceholderUtilityParam.java,v 1.1 2007/08/08 16:57:33 jesse Exp $
+// $Id: PlaceholderUtilityParam.java,v 1.2 2007/08/24 17:24:01 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -46,9 +46,6 @@ class PlaceholderUtilityParam
    * 
    * @param desc 
    *   A short description used in tooltips.
-   * 
-   * @param value 
-   *   The default value for this parameter.
    */ 
   public
   PlaceholderUtilityParam
@@ -58,7 +55,7 @@ class PlaceholderUtilityParam
   ) 
   {
     super(name, desc, null);
-    pConstruct = false;
+    pBuilt = true;
   }
 
 
@@ -98,9 +95,9 @@ class PlaceholderUtilityParam
   )
     throws IllegalArgumentException 
   {
-    if (!pConstruct)
+    if (pBuilt)
       throw new IllegalArgumentException
-	("The parameter (" + pName + ") is a placeholder parameter and does not" +
+	("The parameter (" + pName + ") is a placeholder parameter and does not " +
 	 "accept a value!");
   }
 
@@ -110,8 +107,7 @@ class PlaceholderUtilityParam
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
 
-  private boolean pConstruct = true;
-  
+  private boolean pBuilt = false;;
   
   
   /*----------------------------------------------------------------------------------------*/
