@@ -1,4 +1,4 @@
-// $Id: BaseBuilder.java,v 1.25 2007/08/21 09:50:11 jesse Exp $
+// $Id: BaseBuilder.java,v 1.26 2007/08/24 12:21:17 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -12,6 +12,7 @@ import us.temerity.pipeline.LogMgr.Level;
 import us.temerity.pipeline.MultiMap.MultiMapNamedEntry;
 import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
 import us.temerity.pipeline.builder.ui.JBuilderParamDialog;
+import us.temerity.pipeline.math.Range;
 import us.temerity.pipeline.stages.BaseStage;
 import us.temerity.pipeline.ui.UIFactory;
 
@@ -575,6 +576,7 @@ class BaseBuilder
     try {
       pLog.log(Kind.Ops, Level.Fine, "Beginning execution of SetupPasses.");
       executeFirstLoop();
+      checkActions();
       buildSecondLoopExecutionOrder();
       executeSecondLoop();
       waitForJobs(queueJobs());
@@ -610,6 +612,7 @@ class BaseBuilder
     pCurrentBuilder = this;
     pNextBuilder = null;
   }
+  
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -685,7 +688,7 @@ class BaseBuilder
       "Adding a ConstructPass named (" + pass.getName() + ") to the " +
       "Builder identified by (" + getPrefixedName() + ")");
   }
-  
+
   /**
    * Creates a dependency between two ConstructPasses.
    * <p>
@@ -748,6 +751,60 @@ class BaseBuilder
     pBuilderInformation.addToCheckinList(this);
   }
   
+  private final void
+  checkActions()
+    throws PipelineException
+  {
+    MappedArrayList<String, PluginContext> badPlugs = new MappedArrayList<String, PluginContext>();
+    checkActionsHelper(badPlugs);
+    if (badPlugs.size() > 0) {
+      StringBuffer msg = new StringBuffer();
+      for (String toolset: badPlugs.keySet()) {
+	msg.append("Toolset: " + toolset + "\n");
+	for (PluginContext plug : badPlugs.get(toolset))
+	  msg.append("\t" + plug.toString() + "\n");
+      }
+      throw new PipelineException
+        ("The following required plugins are missing from the toolsets.\n\n" + msg.toString());
+    }
+  }
+  
+  private final void
+  checkActionsHelper
+  (
+    MappedArrayList<String, PluginContext> badPlugs
+  )
+    throws PipelineException
+  {
+    MappedArrayList<String, PluginContext> plugs = getNeededActions();
+    if (plugs != null) {
+      for (String toolset : plugs.keySet()) {
+	ArrayList<PluginContext> needed = plugs.get(toolset);
+	PluginSet toolsetPlugs =  pClient.getToolsetActionPlugins(toolset);
+	for (PluginContext each : needed) {
+	  Set<VersionID> ids = 
+	    toolsetPlugs.getVersions(each.getPluginVendor(), each.getPluginName());
+	  if (ids == null || ids.size() == 0) {
+	    badPlugs.put(toolset, each);
+	    continue;
+	  }
+	  Range<VersionID> range = each.getRange();
+	  boolean found = false;
+	  for (VersionID id : ids) {
+	    if (range.isInside(id)) {
+	      found = true;
+	      break;
+	    }
+	  }
+	  if (!found)
+	    badPlugs.put(toolset, each);
+	} // for (PluginContext each : needed)
+      } // for (String toolset : plugs.keySet())
+    }
+    for (BaseBuilder sub : pPreppedBuilders.values()) {
+      sub.checkActionsHelper(badPlugs);
+    }
+  }
   /**
    * Creates an execution order for all the ConstructPasses.
    * <p>
@@ -899,6 +956,7 @@ class BaseBuilder
   {
     return VersionID.Level.Minor;
   }
+  
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -1222,6 +1280,25 @@ class BaseBuilder
     pBuilderInformation.getStageState().setDefaultEditor(function, plugin);
   }
   
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*  V E R I F I C A T I O N                                                               */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Returns a list of Actions required by this Builder, indexed by the toolset that
+   * needs to contain them.
+   * <p>
+   * Builders should override this method to provide their own requirements.  This
+   * validation gets performed after all the Setup Passes have been run but before
+   * any Construct Passes are run.
+   */
+  protected MappedArrayList<String, PluginContext>
+  getNeededActions()
+  {
+    return null;
+  }
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -1838,6 +1915,7 @@ class BaseBuilder
     run() 
     {
       try {
+	checkActions();
 	buildSecondLoopExecutionOrder();
 	SwingUtilities.invokeLater(pGuiDialog.new PrepareConstructPassesTask());
       }
