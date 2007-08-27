@@ -19,8 +19,8 @@ class StageState
     pAddedNodesUserMap = new TreeMap<String, String>();
     pAddedNodesViewMap = new TreeMap<String, String>();
     pDefaultEditors = new TreeMap<String, PluginContext>();
-    pDefaultLicenseKeys = new MappedArrayList<String, String>();
-    pDefaultSelectionKeys = new MappedArrayList<String, String>();
+    pStageFunctionLicenseKeys = new MappedSet<String, String>();
+    pStageFunctionSelectionKeys = new MappedSet<String, String>();
   }
   
   /*----------------------------------------------------------------------------------------*/
@@ -153,15 +153,15 @@ class StageState
    * 
    * @return A list of keys or an empty list if no keys exist
    */
-  public ArrayList<String>
-  getDefaultSelectionKeys
+  public Set<String>
+  getStageFunctionSelectionKeys
   (
     String function  
   )
   {
-    ArrayList<String> toReturn = pDefaultSelectionKeys.get(function);
+    Set<String> toReturn = pStageFunctionSelectionKeys.get(function);
     if (toReturn == null)
-      toReturn = new ArrayList<String>();
+      toReturn = new TreeSet<String>();
     return toReturn;
   }
   
@@ -177,26 +177,31 @@ class StageState
    * set by the sub-builder.
    */
   public void
-  setDefaultSelectionKeys
+  setStageFunctionSelectionKeys
   (
     String function,
-    ArrayList<String> keys
+    TreeSet<String> keys
   )
   {
-    if (!pDefaultSelectionKeys.containsKey(function)) {
-      pDefaultSelectionKeys.put(function, keys);
+    if (!pStageFunctionSelectionKeys.containsKey(function)) {
+      pStageFunctionSelectionKeys.put(function, keys);
     }
   }
   
-  public ArrayList<String>
-  getDefaultLicenseKeys
+  /**
+   * Gets the default license keys for a particular function.
+   * 
+   * @return A list of keys or an empty list if no keys exist
+   */
+  public Set<String>
+  getStageFunctionLicenseKeys
   (
     String function  
   )
   {
-    ArrayList<String> toReturn = pDefaultLicenseKeys.get(function);
+    Set<String> toReturn = pStageFunctionLicenseKeys.get(function);
     if (toReturn == null)
-      toReturn = new ArrayList<String>();
+      toReturn = new TreeSet<String>();
     return toReturn;
   }
   
@@ -212,14 +217,14 @@ class StageState
    * set by the sub-builder.
    */
   public void
-  setDefaultLicenseKeys
+  setStageFunctionLicenseKeys
   (
     String function,
-    ArrayList<String> keys
+    TreeSet<String> keys
   )
   {
-    if (!pDefaultLicenseKeys.containsKey(function)) {
-      pDefaultLicenseKeys.put(function, keys);
+    if (!pStageFunctionLicenseKeys.containsKey(function)) {
+      pStageFunctionLicenseKeys.put(function, keys);
     }
   }
   
@@ -246,6 +251,6 @@ class StageState
   private TreeMap<String, String> pAddedNodesViewMap;
   
   private TreeMap<String, PluginContext> pDefaultEditors;
-  private MappedArrayList<String, String> pDefaultSelectionKeys;
-  private MappedArrayList<String, String> pDefaultLicenseKeys;
+  private MappedSet<String, String> pStageFunctionSelectionKeys;
+  private MappedSet<String, String> pStageFunctionLicenseKeys;
 }

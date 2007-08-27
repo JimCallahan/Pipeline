@@ -1,4 +1,4 @@
-// $Id: BaseBuilder.java,v 1.26 2007/08/24 12:21:17 jesse Exp $
+// $Id: BaseBuilder.java,v 1.27 2007/08/27 01:19:25 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -1278,6 +1278,56 @@ class BaseBuilder
   )
   {
     pBuilderInformation.getStageState().setDefaultEditor(function, plugin);
+  }
+  
+  /**
+   * Sets a default selection keys for a particular stage function type.
+   * <p>
+   * This is a wrapper function for the
+   * {@link BuilderInformation.StageInformation#setStageFunctionSelectionKeys(String, TreeSet)}
+   * method. If this method is called, it is not necessary to set the same values in the
+   * {@link BuilderInformation.StageInformation}.
+   * <p>
+   * Note that this method is only effective the FIRST time it is called for a particular
+   * function type. This allows high-level builders to override their child builders if they
+   * do not agree on what the default keys should be. It is important to remember this when
+   * writing builders with sub-builder. A Builder should always set its default keys before
+   * instantiating any of its sub-builders. Failure to do so may result in the default keys
+   * values being set by the sub-builder.
+   */
+  public void
+  setStageFunctionSelectionKeys
+  (
+    String function,
+    TreeSet<String> keys
+  )
+  {
+    pBuilderInformation.getStageState().setStageFunctionSelectionKeys(function, keys);
+  }
+  
+  /**
+   * Sets a default license keys for a particular stage function type.
+   * <p>
+   * This is a wrapper function for the
+   * {@link BuilderInformation.StageInformation#setStageFunctionLicenseKeys(String, TreeSet)}
+   * method. If this method is called, it is not necessary to set the same values in the
+   * {@link BuilderInformation.StageInformation}.
+   * <p>
+   * Note that this method is only effective the FIRST time it is called for a particular
+   * function type. This allows high-level builders to override their child builders if they
+   * do not agree on what the default keys should be. It is important to remember this when
+   * writing builders with sub-builder. A Builder should always set its default keys before
+   * instantiating any of its sub-builders. Failure to do so may result in the default keys
+   * values being set by the sub-builder.
+   */
+  public void
+  setStageFunctionLicenseKeys
+  (
+    String function,
+    TreeSet<String> keys
+  )
+  {
+    pBuilderInformation.getStageState().setStageFunctionLicenseKeys(function, keys);
   }
   
   

@@ -1,4 +1,4 @@
-// $Id: BaseStage.java,v 1.9 2007/08/21 12:39:57 jesse Exp $
+// $Id: BaseStage.java,v 1.10 2007/08/27 01:19:25 jesse Exp $
 
 package us.temerity.pipeline.stages;
 
@@ -208,12 +208,18 @@ class BaseStage
       if (pStageInformation.useDefaultSelectionKeys()) {
 	reqs.addSelectionKeys(pStageInformation.getDefaultSelectionKeys());
       }
+      Set<String> stageSKeys = pStageInformation.getStageFunctionSelectionKeys(getStageFunction());
+      if (stageSKeys != null)
+	reqs.addSelectionKeys(stageSKeys);
       if (pLicenseKeys != null) {
 	reqs.addLicenseKeys(pLicenseKeys);
       }
       if (pStageInformation.useDefaultLicenseKeys()) {
 	reqs.addLicenseKeys(pStageInformation.getDefaultLicenseKeys());
       }
+      Set<String> stageLKeys = pStageInformation.getStageFunctionLicenseKeys(getStageFunction());
+      if (stageSKeys != null)
+	reqs.addLicenseKeys(stageLKeys);
       pRegisteredNodeMod.setJobRequirements(reqs);
     }
   }

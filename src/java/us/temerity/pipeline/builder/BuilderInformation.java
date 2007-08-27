@@ -316,6 +316,8 @@ class BuilderInformation
       pStageState = state;
       pDefaultSelectionKeys = new TreeSet<String>();
       pDefaultLicenseKeys = new TreeSet<String>();
+      pSelectionKeyStack = new LinkedList<TreeSet<String>>();
+      pLicenseKeyStack = new LinkedList<TreeSet<String>>();
       pDoAnnotations = false;
       pActionOnExistence = ActionOnExistence.Continue;
     }
@@ -371,13 +373,27 @@ class BuilderInformation
     public TreeSet<String> 
     getDefaultSelectionKeys()
     {
-      return pDefaultSelectionKeys;
+      TreeSet<String> toReturn = new TreeSet<String>();
+      if (pDefaultSelectionKeys != null)
+	toReturn.addAll(pDefaultSelectionKeys);
+      for (TreeSet<String> keys : pSelectionKeyStack ) 
+	if (keys != null)
+	  toReturn.addAll(keys);
+      
+      return toReturn;
     }
     
     public TreeSet<String> 
     getDefaultLicenseKeys()
     {
-      return pDefaultLicenseKeys;
+      TreeSet<String> toReturn = new TreeSet<String>();
+      if (pDefaultLicenseKeys != null)
+	toReturn.addAll(pDefaultLicenseKeys);
+      for (TreeSet<String> keys : pLicenseKeyStack) 
+	if (keys != null)
+	  toReturn.addAll(keys);
+      
+      return toReturn;
     }
     
     public void 
@@ -409,7 +425,37 @@ class BuilderInformation
     {
       return pUseDefaultLicenseKeys; 
     }
-
+    
+    public void
+    pushSelectionKeys
+    (
+      TreeSet<String> keys  
+    )
+    {
+      pSelectionKeyStack.addFirst(keys);
+    }
+    
+    public void
+    popSelectionKeys()
+    {
+      pSelectionKeyStack.poll();
+    }
+    
+    public void
+    pushLicenseKeys
+    (
+      TreeSet<String> keys  
+    )
+    {
+      pLicenseKeyStack.addFirst(keys);
+    }
+    
+    public void
+    popLicenseKeys()
+    {
+      pLicenseKeyStack.poll();
+    }
+    
     public boolean 
     doAnnotations()
     {
@@ -551,6 +597,76 @@ class BuilderInformation
       pStageState.setDefaultEditor(function, plugin);
     }
     
+    /**
+     * Gets the default selection keys for a particular function.
+     * 
+     * @return A list of keys or an empty list if no keys exist
+     */
+    public Set<String>
+    getStageFunctionSelectionKeys
+    (
+      String function  
+    )
+    {
+      return pStageState.getStageFunctionSelectionKeys(function);
+    }
+    
+    /**
+     * Sets a default selection keys for a particular stage function type.
+     * <p>
+     * Note that this method is only effective the FIRST time it is called for a particular
+     * function type.  This allows high-level builders to override their child builders if
+     * they do not agree on what the default keys should be.  It is important to remember
+     * this when writing builders with sub-builder.  A Builder should always set the
+     * default keys in its Stage State class before instantiating any of its 
+     * sub-builders.  Failure to do so may result in the default keys values being
+     * set by the sub-builder.
+     */
+    public void
+    setStageFunctionSelectionKeys
+    (
+      String function,
+      TreeSet<String> keys
+    )
+    {
+      pStageState.setStageFunctionSelectionKeys(function, keys);
+    }
+    
+    /**
+     * Gets the default license keys for a particular function.
+     * 
+     * @return A list of keys or an empty list if no keys exist
+     */
+    public Set<String>
+    getStageFunctionLicenseKeys
+    (
+      String function  
+    )
+    {
+      return pStageState.getStageFunctionLicenseKeys(function);
+    }
+    
+    /**
+     * Sets a default license keys for a particular stage function type.
+     * <p>
+     * Note that this method is only effective the FIRST time it is called for a particular
+     * function type.  This allows high-level builders to override their child builders if
+     * they do not agree on what the default keys should be.  It is important to remember
+     * this when writing builders with sub-builder.  A Builder should always set the
+     * default keys in its Stage State class before instantiating any of its 
+     * sub-builders.  Failure to do so may result in the default keys values being
+     * set by the sub-builder.
+     */
+    public void
+    setStageFunctionLicenseKeys
+    (
+      String function,
+      TreeSet<String> keys
+    )
+    {
+      pStageState.setStageFunctionLicenseKeys(function, keys);
+    }
+    
     
     
     /*--------------------------------------------------------------------------------------*/
@@ -560,6 +676,10 @@ class BuilderInformation
     private TreeSet<String> pDefaultSelectionKeys = new TreeSet<String>();
     
     private TreeSet<String> pDefaultLicenseKeys = new TreeSet<String>();
+    
+    private LinkedList<TreeSet<String>> pSelectionKeyStack;
+    
+    private LinkedList<TreeSet<String>> pLicenseKeyStack;
     
     private boolean pUseDefaultSelectionKeys;
     
