@@ -1,0 +1,148 @@
+import socket
+import sys
+import os
+import time
+
+#-------------------------------------------------------------------------------
+# INFORMATION OPTIONS
+#-------------------------------------------------------------------------------
+
+def options():
+    print 'usage: plremote command [options ...]'
+    print '       plremote command-file'
+    print '       plremote -'
+    print 
+    print '       plremote --help'
+    print '       plremote --html-help'
+    print '       plremote --version'
+    print '       plremote --release-date'
+    print '       plremote --copyright'
+    print '       plremote --license'
+
+def help():
+    options()
+    print
+    print '  Commands:'
+    print '    checked-in --view=... [--version=...]'
+    print '    working --select=...'
+    sys.exit(0)
+
+def usage():
+    options()
+    sys.exit(1)
+
+def version(): 
+    print '@VERSION@'
+    sys.exit(0)
+
+def release(): 
+    print '@RELEASE_STAMP@'
+    sys.exit(0)
+    
+def copyright():
+    print '(c) 2002-2007 Temerity Software, Inc.'
+    print 'All rights reserved.'
+    sys.exit(0)
+
+def license():
+    try:
+        f = open('@ROOT_INST_DIR@/share/docs/legal/license.txt', 'rU')
+        for line in f:
+            print line,
+    except IOError:
+        print 'ERROR: Unable to find license file!'
+        sys.exit(1)
+    else: 
+        f.close()
+    sys.exit(0)
+    
+#-------------------------------------------------------------------------------
+
+def showURL(url):
+    if os.name == 'posix' or os.name == 'nt':
+        if isBrowserRunning():
+            displayURL(url)
+        else :
+            launchURL(url)
+    elif os.name == 'mac':
+        os.system('open ' + url + ' &')
+    else:
+        print 'Sorry, web browsing is not yet supported on Windows systems!'
+
+def isBrowserRunning(): 
+    try:
+        not os.system('firefox -remote "ping()"')
+    except:
+        False
+
+def displayURL(url):
+    os.system('firefox -new-tab ' + url)
+
+def launchURL(url):
+    os.system('firefox ' + url + ' &')
+
+def htmlHelp():
+    showURL('file:///@ROOT_INST_DIR@/share/docs/man/plremote.html') 
+    sys.exit(0)
+
+
+#-------------------------------------------------------------------------------
+# COMMAND PARSING
+#-------------------------------------------------------------------------------
+
+if len(sys.argv) != 2:
+    usage()
+
+input = None
+opt = sys.argv[1]
+if opt == '-':
+    input = sys.stdin
+elif opt == '--help':
+    help()
+elif opt == '--html-help':
+    htmlHelp()
+elif opt == '--version':
+    version() 
+elif opt == '--release-date':
+    release()
+elif opt == '--copyright':
+    copyright()
+elif opt == '--license':
+    license()
+elif opt.startswith('checked-in') or opt.startswith('working'):
+    req = opt
+else:
+    try:
+        input = open(opt, 'rU')
+    except IOError:
+        print 'ERROR: Unable to read commands from file (' + opt + ')!'
+        print
+        usage()
+    
+if input: 
+    try:
+        req = input.read()
+    finally:
+        input.close()
+
+
+#-------------------------------------------------------------------------------
+# SEND REQUEST
+#-------------------------------------------------------------------------------
+
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+try:
+    s.connect(('localhost', @PL_REMOTE_PORT@))
+except:
+    print 'Unable to connect to a running plui!'
+    print 'Starting plui...'
+    os.system('@ROOT_INST_DIR@/Unix/bin/plui --no-layout &')
+    time.sleep(45)
+    try:
+        s.connect(('localhost', @PL_REMOTE_PORT@))
+    except:
+        print 'Unable to start plui!'
+        sys.exit(1)
+        
+s.send(req)
+s.close()

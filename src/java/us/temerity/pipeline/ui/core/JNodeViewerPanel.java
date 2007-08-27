@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.92 2007/07/01 10:21:07 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.93 2007/08/27 08:41:32 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -715,7 +715,7 @@ class JNodeViewerPanel
    * @param names
    *   The fully resolved names of the root nodes.
    */
-  private synchronized void 
+  public synchronized void 
   setRoots
   (
    TreeSet<String> names

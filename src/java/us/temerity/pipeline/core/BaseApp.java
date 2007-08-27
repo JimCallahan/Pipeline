@@ -1,4 +1,4 @@
-// $Id: BaseApp.java,v 1.23 2007/07/30 17:52:21 jesse Exp $
+// $Id: BaseApp.java,v 1.24 2007/08/27 08:41:31 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -161,11 +161,10 @@ class BaseApp
     case MacOS:
       {
 	ArrayList<String> args = new ArrayList<String>();
-	args.add("-e");
-	args.add("open location \"" + url + "\"");
+	args.add(url);
         
         SubProcessLight proc = 
-          new SubProcessLight("OpenURL", "osascript", 
+          new SubProcessLight("OpenURL", "open", 
                               args, env, PackageInfo.sTempPath.toFile());
         proc.start();
       }

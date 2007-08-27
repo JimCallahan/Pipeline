@@ -1,0 +1,1 @@
+python.exe "@ROOT_INST_DIR@\etc\python\python.py" "%*"

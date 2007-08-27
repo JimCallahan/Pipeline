@@ -10,6 +10,7 @@ html_DATA = \
   plpython.html \
   plqueuemgr.html \
   plrestore.html \
+  plremote.html \
   pls.html \
   plscript.html \
   plshakeio.html \

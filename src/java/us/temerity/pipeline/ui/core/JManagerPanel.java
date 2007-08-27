@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.42 2007/06/19 22:05:04 jim Exp $
+// $Id: JManagerPanel.java,v 1.43 2007/08/27 08:41:32 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -3069,7 +3069,7 @@ class JManagerPanel
   /**
    * Change the panel group.
    */ 
-  private void 
+  public void 
   doGroup
   (
    int groupID

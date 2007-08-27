@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.67 2007/06/15 00:27:31 jim Exp $
+// $Id: UIMaster.java,v 1.68 2007/08/27 08:41:32 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -6,6 +6,7 @@ import us.temerity.pipeline.*;
 import us.temerity.pipeline.ui.*;
 import us.temerity.pipeline.glue.*;
 import us.temerity.pipeline.math.*;
+import us.temerity.pipeline.core.RemoteServer;
 import us.temerity.pipeline.core.JobMgrPlgControlClient;
 import us.temerity.pipeline.core.LockedGlueFile;
 import us.temerity.pipeline.core.GlueLockException;
@@ -55,6 +56,9 @@ class UIMaster
    * @param restoreSelections
    *   Whether the restored layout should include node and/or job group selections.
    * 
+   * @param remoteServer
+   *   Whether to listen for network connections from plremote(1).
+   * 
    * @param debugGL
    *   Whether to check all OpenGL calls for errors.
    * 
@@ -67,12 +71,16 @@ class UIMaster
    Path layout, 
    boolean restoreLayout,
    boolean restoreSelections, 
+   boolean remoteServer, 
    boolean debugGL, 
    boolean traceGL
   ) 
   {
     pMasterMgrClients = new MasterMgrClient[10];
     pQueueMgrClients  = new QueueMgrClient[10];
+
+    if(remoteServer) 
+      pRemoteServer = new RemoteServer(this);
 
     {
       pOpsLocks   = new ReentrantLock[10];
@@ -84,6 +92,7 @@ class UIMaster
 	pOpsRunning[wk] = new AtomicBoolean(false);
       }
     }
+
 
     pEditorPlugins = 
       new TreeMap<String,TripleMap<String,String,VersionID,TreeSet<OsType>>>();
@@ -105,7 +114,7 @@ class UIMaster
     pActionLayouts     = new TreeMap<String,PluginMenuLayout>();                    
     pToolLayouts       = new TreeMap<String,PluginMenuLayout>();                   
     pArchiverLayouts   = new TreeMap<String,PluginMenuLayout>();                   
-    pMasterExtLayouts   = new TreeMap<String,PluginMenuLayout>();                   
+    pMasterExtLayouts  = new TreeMap<String,PluginMenuLayout>();                   
     pQueueExtLayouts   = new TreeMap<String,PluginMenuLayout>();                   
 
     pNodeBrowserPanels = new PanelGroup<JNodeBrowserPanel>();
@@ -158,6 +167,9 @@ class UIMaster
    * @param restoreSelections
    *   Whether the restored layout should include node and/or job group selections.
    * 
+   * @param remoteServer
+   *   Whether to listen for network connections from plremote(1).
+   * 
    * @param debugGL
    *   Whether to check all OpenGL calls for errors.
    * 
@@ -170,12 +182,14 @@ class UIMaster
    Path layout,
    boolean restoreLayout,
    boolean restoreSelections,
+   boolean remoteServer, 
    boolean debugGL, 
    boolean traceGL
   ) 
   {
     assert(sMaster == null);
-    sMaster = new UIMaster(layout, restoreLayout, restoreSelections, debugGL, traceGL);
+    sMaster = new UIMaster(layout, restoreLayout, restoreSelections, remoteServer, 
+                           debugGL, traceGL);
   }
 
 
@@ -840,7 +854,7 @@ class UIMaster
     }
   }
 
-    
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   P L U G I N S                                                                        */
@@ -1982,6 +1996,65 @@ class UIMaster
     field.updatePlugins(layout, plugins);
   }
 
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   R E M O T E                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Add the given node to the node's selected in one of the Node Browser/Viewer panels 
+   * sharing an update channel.<P> 
+   * 
+   * This command will cause a dialog to be displayed by which queries the user for which 
+   * specific panels will have their node selection modified.  May create new top-level 
+   * windows or replace/add the node to the seleciton of existing panels.
+   * 
+   * @param name
+   *   The fully resolved node name.
+   */ 
+  public void
+  remoteWorkingSelect
+  (
+   String name
+  ) 
+  {
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Finer,
+       "Selecting Working Version: " + name); 
+
+    SwingUtilities.invokeLater(new ShowWorkingSelectDialogTask(name));
+  }
+    
+  /**
+   * Launch the Editor associated with the given checked-in node version in response
+   * to a request from plremote(1).
+   * 
+   * @param name
+   *   The fully resolved node name.
+   * 
+   * @param vid
+   *   The revision number or <CODE>null</CODE> for latest.
+   */ 
+  public void
+  remoteCheckedInView
+  (
+   String name, 
+   VersionID vid
+  )
+    throws PipelineException 
+  {
+    NodeVersion vsn = getMasterMgrClient(0).getCheckedInVersion(name, vid);
+
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Finer,
+       "Viewing Checked-In Version: " + name + " (v" + vsn.getVersionID() + ")"); 
+
+    EditTask task = new EditTask(0, vsn, false, null, null, false);
+    task.start();
+  }
+    
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   P A N E L   G R O U P S                                                              */
@@ -3178,6 +3251,9 @@ class UIMaster
 
     PluginMgrClient.getInstance().disconnect();
 
+    if(pRemoteServer != null) 
+      pRemoteServer.shutdown();
+
     /* give the sockets time to disconnect cleanly */ 
     try {
       Thread.sleep(500);
@@ -3595,6 +3671,8 @@ class UIMaster
 
 	pResourceUsageHistoryDialog = new JResourceUsageHistoryDialog();
 
+        pWorkingSelectDialog = new JWorkingSelectDialog(pFrame);
+
 	JToolDialog.initRootFrame(pFrame);
       }
 
@@ -3628,6 +3706,9 @@ class UIMaster
 	  pFrame.setVisible(true);
 	}
       }
+
+      if(pRemoteServer != null) 
+        pRemoteServer.start();
     }
 
     private UIMaster  pMaster;
@@ -5013,6 +5094,39 @@ class UIMaster
 
 
   /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Show the remote working node selection dialog. 
+   */ 
+  public 
+  class ShowWorkingSelectDialogTask
+    extends Thread
+  {
+    public 
+    ShowWorkingSelectDialogTask
+    (
+     String name
+    ) 
+    {
+      super("UIMaster:ShowWorkingSelectDialogTask");
+      pNodeName = name;
+    }
+
+    public void 
+    run() 
+    {
+      pWorkingSelectDialog.updateSelection
+        (pNodeName, getNodeBrowserPanels(), getNodeViewerPanels());
+
+      pWorkingSelectDialog.setVisible(true);	
+    }
+
+    private String  pNodeName; 
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
@@ -5070,6 +5184,12 @@ class UIMaster
    * The network interfaces to the <B>plqueuemgr</B>(1) daemon.
    */ 
   private QueueMgrClient[]  pQueueMgrClients;
+
+
+  /**
+   * The remote control server thread or <CODE>null</CODE> if disabled.
+   */ 
+  private RemoteServer  pRemoteServer; 
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -5388,5 +5508,10 @@ class UIMaster
    * The server resource usage history dialog.
    */
   private JResourceUsageHistoryDialog  pResourceUsageHistoryDialog;
+
+  /**
+   * The remote working node selection dialog.
+   */
+  private JWorkingSelectDialog  pWorkingSelectDialog;
 
 }

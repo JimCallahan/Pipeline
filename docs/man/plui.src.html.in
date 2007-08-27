@@ -273,10 +273,16 @@ restrores the selected nodes and/or
 job groups at the time the layout was saved.&nbsp; This option causes
 the layout to be restored without selections.<br>
 <br>
-<br>
 </div>
-<span style="font-weight: bold;">--debug-gl</span>=on|off<span
- style="font-weight: bold;"><br>
+<span style="font-weight: bold;">--no-remote<br>
+</span>
+<div style="margin-left: 40px;"><br>
+Do not listen for connections from <a href="plremote.html"><span
+ style="font-weight: bold;">plremote</span></a>(1).<br>
+&nbsp;<br>
+</div>
+<span style="font-weight: bold;"><br>
+--debug-gl</span>=on|off<span style="font-weight: bold;"><br>
 </span>
 <br>
 <div style="margin-left: 40px;">Whether to check all calls to OpenGL
@@ -309,9 +315,10 @@ Java API</span></a><span style="font-weight: bold;"></span></div>
   <blockquote> </blockquote>
   <span style="font-weight: bold;">Pipeline Programs</span><br>
   <div style="margin-left: 40px;"><a href="plui.html"><span
- style="font-weight: bold;">plui</span></a>(1), <a href="plscript.html"><span
- style="font-weight: bold;">plscript</span></a>(1), <a
- href="plpython.html"><span style="font-weight: bold;">plpython</span></a>(1),
+ style="font-weight: bold;">plui</span></a>(1), <a href="plremote.html"><span
+ style="font-weight: bold;">plremote</span></a>(1), <a
+ href="plscript.html"><span style="font-weight: bold;">plscript</span></a>(1),
+  <a href="plpython.html"><span style="font-weight: bold;">plpython</span></a>(1),
   <a href="plplugin.html"><span style="font-weight: bold;"></span></a><a
  href="plplugin.html"><span style="font-weight: bold;">plplugin</span></a>(1)<br>
   <a href="plpluginmgr.html"><span style="font-weight: bold;">plpluginmgr</span></a>(1),

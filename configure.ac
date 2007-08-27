@@ -9,7 +9,7 @@ AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(Pipeline, 2.3.10)
+AM_INIT_AUTOMAKE(Pipeline, 2.3.11)
                            
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
@@ -1252,6 +1252,9 @@ fi
 java_runjdwp="-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address="
 java_debug_opts="-Xdebug ${java_runjdwp}"
 
+AC_SUBST(PL_REMOTE_PORT)
+PL_REMOTE_PORT=${debug_base}
+
 AC_MSG_CHECKING([plmaster])
 AC_SUBST(PLMASTER_DEBUG_OPTS)
 PLMASTER_DEBUG_OPTS=${java_debug_opts}$(($debug_base+1))
@@ -1559,6 +1562,7 @@ AC_CONFIG_FILES([
   docs/man/plplugin.src.html
   docs/man/plpluginmgr.src.html
   docs/man/plqueuemgr.src.html
+  docs/man/plremote.src.html
   docs/man/plrestore.src.html
   docs/man/plscript.src.html  
   docs/man/plpython.src.html
@@ -2355,6 +2359,7 @@ AC_CONFIG_FILES([
   src/java/scripts/plplugin
   src/java/scripts/plpluginmgr
   src/java/scripts/plqueuemgr
+  src/java/scripts/plremote
   src/java/scripts/plscript
   src/java/scripts/plscript-batch
   src/java/scripts/plpython
@@ -2371,6 +2376,7 @@ AC_CONFIG_FILES([
   src/java/scripts/debug/plplugin
   src/java/scripts/debug/plpluginmgr
   src/java/scripts/debug/plqueuemgr
+  src/java/scripts/debug/plremote
   src/java/scripts/debug/plscript
   src/java/scripts/debug/plscript-batch
   src/java/scripts/debug/plpython
@@ -2387,6 +2393,7 @@ AC_CONFIG_FILES([
   src/java/scripts/profile/plplugin
   src/java/scripts/profile/plpluginmgr
   src/java/scripts/profile/plqueuemgr
+  src/java/scripts/profile/plremote
   src/java/scripts/profile/plscript
   src/java/scripts/profile/plscript-batch
   src/java/scripts/profile/plpython
@@ -2417,6 +2424,8 @@ AC_CONFIG_FILES([
   src/etc/init.d/Makefile
   src/etc/init.d/pljobmgr-redhat
   src/etc/init.d/pljobmgr-suse
+  src/etc/python/Makefile
+  src/etc/python/plremote.py
   src/etc/winopts/Makefile
 
   src/utils/Makefile
@@ -2441,6 +2450,7 @@ AC_CONFIG_FILES([
   src/windows/services/PipelineJobManager/PipelineJobManager/ProjectInstaller.h
 
   src/windows/scripts/Makefile
+  src/windows/scripts/plremote.bat.src
   src/windows/scripts/plscript.bat.src
   src/windows/scripts/plscript-batch.bat.src
   src/windows/scripts/plpython.bat.src
@@ -2450,6 +2460,7 @@ AC_CONFIG_FILES([
   src/windows/scripts/debug/pltestheavy.bat.src
   src/windows/scripts/debug/pltestlight.bat.src
   src/windows/scripts/debug/pltestnative.bat.src
+  src/windows/scripts/debug/plremote.bat.src
   src/windows/scripts/debug/plscript.bat.src
   src/windows/scripts/debug/plscript-batch.bat.src
   src/windows/scripts/debug/plpython.bat.src

@@ -1,4 +1,4 @@
-// $Id: GraphicalApp.java,v 1.11 2005/04/03 06:10:12 jim Exp $
+// $Id: GraphicalApp.java,v 1.12 2007/08/27 08:41:31 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -102,7 +102,7 @@ class GraphicalApp
        "\n" + 
        "GLOBAL OPTIONS:\n" +
        "  [--log-file=...] [--log-backups=...] [--log=...]\n" +
-       "  [--no-layout] [--layout=...] [--no-selections]\n" + 
+       "  [--no-layout] [--layout=...] [--no-selections] [--no-remote]\n" + 
        "  [--debug-gl=...] [--trace-gl=...]\n" +
        "\n" + 
        "\n" +  

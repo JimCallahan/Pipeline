@@ -1846,12 +1846,12 @@ BatchOpt()
     while(iter.hasNext()) {
       String line = (String) iter.next();
 
-    LogMgr.getInstance().log
-      (LogMgr.Kind.Ops, LogMgr.Level.Info,
-       "\n" + 
-       pApp.repeat('*', 80) + "\n" +
-       "  BATCH: " + line.replace('\0',' ') + "\n" +
-       pApp.repeat('*', 80) + "\n");
+      LogMgr.getInstance().log
+        (LogMgr.Kind.Ops, LogMgr.Level.Info,
+         "\n" + 
+         pApp.repeat('*', 80) + "\n" +
+         "  BATCH: " + line.replace('\0',' ') + "\n" +
+         pApp.repeat('*', 80) + "\n");
       
       ScriptOptsParser parser = new ScriptOptsParser(new StringReader(line));
       parser.init(this);

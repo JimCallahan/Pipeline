@@ -38,12 +38,14 @@ The core features of Pipeline include:
 @ROOT_INST_DIR@/Unix/bin/plshakeio_exec
 
 @ROOT_INST_DIR@/Unix/bin/plplugin
+@ROOT_INST_DIR@/Unix/bin/plremote
 @ROOT_INST_DIR@/Unix/bin/plscript
 @ROOT_INST_DIR@/Unix/bin/plscript-batch
 @ROOT_INST_DIR@/Unix/bin/plpython
 @ROOT_INST_DIR@/Unix/bin/plui
 
 @ROOT_INST_DIR@/Unix/debug/bin/plplugin
+@ROOT_INST_DIR@/Unix/debug/bin/plremote
 @ROOT_INST_DIR@/Unix/debug/bin/plscript
 @ROOT_INST_DIR@/Unix/debug/bin/plscript-batch
 @ROOT_INST_DIR@/Unix/debug/bin/plpython
@@ -53,6 +55,7 @@ The core features of Pipeline include:
 @ROOT_INST_DIR@/Unix/debug/bin/pltestheavy
 
 @ROOT_INST_DIR@/Unix/profile/bin/plplugin
+@ROOT_INST_DIR@/Unix/profile/bin/plremote
 @ROOT_INST_DIR@/Unix/profile/bin/plscript
 @ROOT_INST_DIR@/Unix/profile/bin/plscript-batch
 @ROOT_INST_DIR@/Unix/profile/bin/plpython
@@ -60,6 +63,7 @@ The core features of Pipeline include:
 
 @ROOT_INST_DIR@/etc/init.d/pljobmgr-redhat
 @ROOT_INST_DIR@/etc/init.d/pljobmgr-suse
+@ROOT_INST_DIR@/etc/python/plremote.py
 @ROOT_INST_DIR@/etc/winopts/pljobmgr
 
 %defattr(4550,root,@PIPELINE_GROUP@)
@@ -121,6 +125,7 @@ The core features of Pipeline include:
 @ROOT_INST_DIR@/share/docs/man/plplugin.html 
 @ROOT_INST_DIR@/share/docs/man/plpluginmgr.html 
 @ROOT_INST_DIR@/share/docs/man/plqueuemgr.html 
+@ROOT_INST_DIR@/share/docs/man/plremote.html 
 @ROOT_INST_DIR@/share/docs/man/plrestore.html 
 @ROOT_INST_DIR@/share/docs/man/plscript.html 
 @ROOT_INST_DIR@/share/docs/man/plpython.html 

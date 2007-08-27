@@ -1,6 +1,6 @@
 
 if FOUNDATION
-  SUBDIRS = init.d winopts
+  SUBDIRS = init.d winopts python
 else
   SUBDIRS = 
 endif

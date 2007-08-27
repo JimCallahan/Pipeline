@@ -315,6 +315,7 @@ PLG_UTIL_SOURCES = $(shell ls $(srcdir)/plugin/*.java)
                    FileMgrOptsParser \
                    JobMgrOptsParser \
                    GraphicalOptsParser \
+                   RemoteOptsParser \
                    MasterOptsParser \
                    PluginOptsParser \
                    PythonOptsParser \

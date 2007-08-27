@@ -3,6 +3,7 @@ instbindir = @ROOT_INST_DIR@/@NATIVE_OSTYPE@/profile/bin
 
 instbin_SCRIPTS = \
   plplugin \
+  plremote \
   plscript \
   plscript-batch \
   plpython \

@@ -1,0 +1,304 @@
+options {
+  STATIC = false;
+}
+
+PARSER_BEGIN(RemoteOptsParser)
+
+package us.temerity.pipeline.core;
+
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.ui.core.*;
+
+import java.util.*;
+import java.text.*;
+import java.io.*;
+
+/*------------------------------------------------------------------------------------------*/
+/*   R E M O T E   O P T S   P A R S E R                                                    */
+/*                                                                                          */
+/*    The parser for the commands send over the network from plremote(1).                   */
+/*------------------------------------------------------------------------------------------*/
+
+class 
+RemoteOptsParser
+{
+  /*----------------------------------------------------------------------------------------*/
+  /*   H E L P E R S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  public void 
+  init
+  ( 
+   UIMaster master
+  ) 
+  {
+    pMaster = master;
+  }
+ 
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The UIMaster instance. 
+   */
+  private UIMaster  pMaster; 
+
+}
+
+
+PARSER_END(RemoteOptsParser)
+
+<DEFAULT> 
+TOKEN :
+{          
+  /* commands */
+  <WORKING:           "working">          : WORKING_OPTS
+| <CHECKED_IN:        "checked-in">       : CHECKED_IN_OPTS
+
+  /* argument end separator */ 
+| <AE1: (["\0"])+>
+
+  /* errors */ 
+| <UNKNOWN_OPTION1:  "-" ("-")? (~["\0","="])*>  : IGNORE_STATE
+| <UNKNOWN_COMMAND1: ~["-","\0"] (~["\0"])*>     : IGNORE_STATE
+}
+
+/* common states */ 
+<IGNORE_STATE> 
+TOKEN :
+{
+  <IGNORED: (~[])+>
+}
+
+<OPTIONS> 
+TOKEN :
+{
+  /* command options */ 
+  <VERSION:      "--version">   : REVISION_NUMBER_SEP  
+
+  /* argument end separator */ 
+| <AE2:               (["\0"])+>   
+
+  /* errors */ 
+| <UNKNOWN_OPTION2:   "-" ("-")? (~["\0","="])*> : IGNORE_STATE
+| <UNKNOWN_COMMAND2:  ~["-","\0"] (~["\0"])*>    : IGNORE_STATE   
+}
+
+
+/* revision number arguments */ 
+<REVISION_NUMBER_SEP> 
+TOKEN :
+{
+  <EQ1:                           "=">   : REVISION_NUMBER_STATE
+| <MISSING_REVISION_NUMBER_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<REVISION_NUMBER_STATE> 
+TOKEN :
+{
+  <REVISION_NUMBER:            (<IREVNUM> "." <REVNUM> "." <REVNUM>)>  
+| <#IREVNUM:                   ["1"-"9"] (["0"-"9"])*>
+| <#REVNUM:                    (["0"-"9"])+>
+| <AE3:                        ["\0"]>                       : OPTIONS
+| <ILLEGAL_REVISION_NUMBER:    (~["\0"])+>                   : IGNORE_STATE
+}
+
+
+/* node name arguments */ 
+<NODE_NAME_SEP> 
+TOKEN :
+{
+  <EQ2:                     "=">   : NODE_NAME_STATE
+| <MISSING_NODE_NAME_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<NODE_NAME_STATE> 
+TOKEN :
+{
+  <NODE_NAME:           ("/" (["a"-"z","A"-"Z","0"-"9","-","_"])+)* 
+			("/" ["a"-"z","A"-"Z"] 
+		          (["a"-"z","A"-"Z","0"-"9","_","-"])*)+>  : OPTIONS
+| <MISSING_NODE_NAME:   ["\0"]>                                    : IGNORE_STATE
+| <ILLEGAL_NODE_NAME:   (~["\0"])+>                                : IGNORE_STATE
+}
+
+
+/* working command options */ 
+<WORKING_OPTS> 
+TOKEN :
+{
+  <WORKING_SELECT:            "--select">                : NODE_NAME_SEP
+| <AE4:                       ["\0"]>   
+| <UNKNOWN_OPTION3:           "-" ("-")? (~["\0","="])*> : IGNORE_STATE
+| <UNKNOWN1:                  ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
+}
+
+
+/* checked-in command options */ 
+<CHECKED_IN_OPTS> 
+TOKEN :
+{
+  <CHECKED_IN_VIEW:           "--view">                  : NODE_NAME_SEP
+| <AE5:                       ["\0"]>   
+| <UNKNOWN_OPTION4:           "-" ("-")? (~["\0","="])*> : IGNORE_STATE
+| <UNKNOWN2:                  ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
+}
+
+
+
+/*------------------------------------------------------------------------------------------*/
+/*   T O P   L E V E L                                                                      */
+/*------------------------------------------------------------------------------------------*/
+
+void
+Command()
+  throws PipelineException :
+{}
+{
+  (WorkingCmds() | CheckedInCmds()) <EOF>
+  {}
+}
+    
+
+
+/*------------------------------------------------------------------------------------------*/
+/*   W O R K I N G   N O D E   V E R S I O N   C O M M A N D S                              */
+/*------------------------------------------------------------------------------------------*/
+
+void 
+WorkingCmds() 
+  throws PipelineException : 
+{}
+{
+  <WORKING> AE() 
+     (WorkingSelect())
+  {}
+}
+
+
+/*------------------------------------------------------------------------------------------*/
+
+void 
+WorkingSelect() 
+  throws PipelineException : 
+{
+  String name = null;
+}
+{
+  <WORKING_SELECT> EQ() name=NodeName() AE()
+  {
+    pMaster.remoteWorkingSelect(name); 
+  }
+}
+
+
+/*------------------------------------------------------------------------------------------*/
+/*   C H E C K E D - I N   N O D E   V E R S I O N   C O M M A N D S                        */
+/*------------------------------------------------------------------------------------------*/
+
+void 
+CheckedInCmds() 
+  throws PipelineException : 
+{}
+{
+  <CHECKED_IN> AE() 
+     (CheckedInView()) 
+  {}
+}
+
+/*------------------------------------------------------------------------------------------*/
+
+void 
+CheckedInView() 
+  throws PipelineException : 
+{
+  String name   = null;
+  VersionID vid = null; 
+}
+{
+  <CHECKED_IN_VIEW> EQ() name=NodeName() AE() (vid=VersionOption())? 
+  {
+    pMaster.remoteCheckedInView(name, vid); 
+  }
+}
+
+
+
+
+/*------------------------------------------------------------------------------------------*/
+/*   S H A R E D   T O K E N S                                                              */
+/*------------------------------------------------------------------------------------------*/
+
+String
+NodeName() : 
+{
+  Token t;
+}
+{
+  t=<NODE_NAME> 
+  {
+    return t.image;
+  }
+}
+
+VersionID 
+VersionOption() 
+  throws PipelineException : 
+{
+  VersionID vid = null; 
+}
+{
+  <VERSION> EQ() vid=RevisionNumber() AE()
+  {
+    return vid;
+  }
+}
+
+VersionID
+RevisionNumber() 
+  throws PipelineException : 
+{
+  Token t; 
+}
+{
+  (t=<REVISION_NUMBER>)
+  {
+    try {
+      return new VersionID(t.image);
+    }
+    catch(IllegalArgumentException ex) {
+      throw new PipelineException(ex.getMessage());
+    }
+  }
+}
+
+
+/*------------------------------------------------------------------------------------------*/
+
+Token
+AE() :
+{
+  Token t;
+}
+{
+  (t=<AE1> | t=<AE2> | t=<AE3> | t=<AE4> | t=<AE5>)
+  { 
+    return t; 
+  }
+}
+
+
+Token
+EQ() :
+{
+  Token t;
+}
+{
+  (t=<EQ1> | t=<EQ2>)  
+  { 
+    return t; 
+  }
+}

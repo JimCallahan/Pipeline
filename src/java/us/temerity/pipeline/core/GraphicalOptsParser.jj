@@ -53,6 +53,7 @@ GraphicalOptsParser
 
     pRestoreLayout     = true;
     pRestoreSelections = true;
+    pRemoteServer      = true;
 
     pDebugGL = true;
     pTraceGL = false;
@@ -106,6 +107,12 @@ GraphicalOptsParser
   private boolean  pRestoreSelections; 
 
 
+  /**
+   * Whether to start the listening for connections from plremote(1).
+   */ 
+  private boolean  pRemoteServer; 
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -143,6 +150,7 @@ TOKEN :
 | <LAYOUT:         "--layout">        : LAYOUT_SEP
 | <NO_LAYOUT:      "--no-layout">     
 | <NO_SELECTIONS:  "--no-selections">     
+| <NO_REMOTE:      "--no-remote">     
 
 | <DEBUG_GL:       "--debug-gl">      : BOOLEAN_SEP
 | <TRACE_GL:       "--trace-gl">      : BOOLEAN_SEP
@@ -328,7 +336,7 @@ CommandLine() :
       }
       
       /* start the application */ 
-      UIMaster.init(pLayout, pRestoreLayout, pRestoreSelections, 
+      UIMaster.init(pLayout, pRestoreLayout, pRestoreSelections, pRemoteServer, 
                     pDebugGL, pTraceGL);
     }
   }
@@ -430,7 +438,7 @@ GlobalOpts() :
 {}
 {
   (Log() | LogFile() | StandardLogFile() | LogBackups() |
-   Layout() | NoLayout() | NoSelections() | 
+   Layout() | NoLayout() | NoSelections() | NoRemote() | 
    DebugGL() | TraceGL()) 
   {}
 }
@@ -677,6 +685,15 @@ void NoSelections() :
   <NO_SELECTIONS> 
   {
     pRestoreSelections = false;
+  }
+}
+
+void NoRemote() : 
+{}
+{
+  <NO_REMOTE> 
+  {
+    pRemoteServer = false;
   }
 }
 

@@ -1,4 +1,4 @@
-// $Id: PackageInfo.java.src.in,v 1.33 2007/06/19 20:16:06 jim Exp $
+// $Id: PackageInfo.java.src.in,v 1.34 2007/08/27 08:41:31 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -899,6 +899,14 @@ class PackageInfo
    */
   @Deprecated
   public static final File sPluginsDir = new File("@ROOT_INST_DIR@/plugins");
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The port number listened to by the Graphical Client program <I>plui(1)</I>. <P> 
+   */
+  public static final int sRemotePort = @PL_REMOTE_PORT@;
 
 
   /*----------------------------------------------------------------------------------------*/
