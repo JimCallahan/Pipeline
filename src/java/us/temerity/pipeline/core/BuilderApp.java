@@ -241,9 +241,6 @@ public class BuilderApp
     case BuilderOptsParserConstants.UNKNOWN_COMMAND:
       return "an unknown command";
 
-    case BuilderOptsParserConstants.GUI:
-      return "the gui flag";
-
     case BuilderOptsParserConstants.PARAM_NAME:
       return "the name of a parameter";
       
