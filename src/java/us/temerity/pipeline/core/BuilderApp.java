@@ -34,6 +34,7 @@ public class BuilderApp
     super("plbuilder");
     pCommandLineParams = new MultiMap<String, String>();
     pNullParams = new ListMap<LinkedList<String>, String>();
+    pGui = true;
   }
 
   

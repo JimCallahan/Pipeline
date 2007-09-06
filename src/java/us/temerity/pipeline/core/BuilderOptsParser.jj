@@ -65,7 +65,7 @@ TOKEN :
 | <COPYRIGHT:      "--copyright">
 
   /* global options */
-| <GUI:		   "--gui">
+| <GUI:		   "--no-gui">
 | <ABORT:          "--abort">
 | <BUILDER:    	   "--builder"> : BUILDER_SEP
 | <LOG:            "--log">     : LOG_SEP
@@ -286,7 +286,7 @@ Gui()
 {
   <GUI> 
   { 
-    pApp.setUsingGUI(true);
+    pApp.setUsingGUI(false);
   }
 }
 
