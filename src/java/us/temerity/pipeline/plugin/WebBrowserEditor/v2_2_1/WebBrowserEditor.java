@@ -1,4 +1,4 @@
-// $Id: WebBrowserEditor.java,v 1.1 2007/06/17 15:34:46 jim Exp $
+// $Id: WebBrowserEditor.java,v 1.2 2007/09/06 03:57:18 jim Exp $
 
 package us.temerity.pipeline.plugin.WebBrowserEditor.v2_2_1;
 
@@ -14,9 +14,9 @@ import java.io.*;
 /**
  * Opens a file using the local web browser. <P> 
  * 
- * On Unix and Windows, a running mozilla(1) and/or firefox(1) browser are first searched
- * for and used if running.  On Mac OS X, either Safari or Preview will be used depending
- * of the type of file being browsed.
+ * On Unix and Windows, the file will be shown in a new tab if a firefox(1) browser is 
+ * already running.  Otherwise, a new browser will be started to display the file.  On Mac 
+ * OS X, either Safari or Preview will be used depending of the type of file being browsed.
  */
 public
 class WebBrowserEditor
@@ -79,7 +79,7 @@ class WebBrowserEditor
   {
     if(!fseq.isSingle())
       throw new PipelineException
-        ("The " + getName() + " Editor can only edit a single file at a time!");
+        ("The " + getName() + " Editor can only display a single file at a time!");
 
     String url = null;
     if(PackageInfo.sOsType == OsType.Windows) 
@@ -87,7 +87,7 @@ class WebBrowserEditor
     else 
       url = "file://" + fseq.getPath(0); 
 
-    String program = null;
+    String program = getProgram();
     ArrayList<String> args = new ArrayList<String>();
 
     if(PackageInfo.sOsType == OsType.MacOS) {
@@ -96,38 +96,15 @@ class WebBrowserEditor
       args.add("open location \"" + url + "\"");
     }
     else {
-      String mozilla = "mozilla";
-      String firefox = "firefox";
-      if(PackageInfo.sOsType == OsType.Windows) {
-        mozilla = "mozilla.exe";
-        firefox = "firefox.exe";        
-      }
-
       ExecPath epath = new ExecPath(env.get("PATH"));
-
-      boolean hasMozilla = (epath.which(mozilla) != null);
-      boolean hasFirefox = (epath.which(firefox) != null);
-      if(hasMozilla && isBrowserRunning(mozilla, env)) {
-        program = mozilla;
-        args.add("-remote");
-        args.add("openURL(" + url + ", new-tab)");
-      }
-      else if(hasFirefox && isBrowserRunning(firefox, env)) {
-        program = firefox;
-        args.add("-remote");
-        args.add("openURL(" + url + ", new-tab)");
-      }
-      else if(hasMozilla) {
-        program = mozilla; 
-        args.add(url);
-      }
-      else if(hasFirefox) {
-        program = firefox; 
+      if(epath.which(program) != null) {
+        if(isBrowserRunning(program, env)) 
+          args.add("-new-tab"); 
         args.add(url);
       }
       else {
         throw new PipelineException 
-          ("Unable to find either firefox(1) or mozilla(1) in the Toolset PATH!"); 
+          ("Unable to find firefox(1) in the Toolset PATH!"); 
       }
     }
 
@@ -144,7 +121,7 @@ class WebBrowserEditor
    * Returns whether a web browser is currently running.
    * 
    * @param browser
-   *   The browser program name (mozilla or firefox).
+   *   The browser program name.
    * 
    * @param env
    *   The shell environment.

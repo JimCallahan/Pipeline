@@ -1,4 +1,4 @@
-// $Id: BaseApp.java,v 1.24 2007/08/27 08:41:31 jim Exp $
+// $Id: BaseApp.java,v 1.25 2007/09/06 03:57:18 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -135,26 +135,40 @@ class BaseApp
     throws PipelineException
   {
     Map<String,String> env = System.getenv();
+
     switch(PackageInfo.sOsType) {
     case Unix:
+    case Windows:
       {
-	ExecPath epath = new ExecPath(env.get("PATH"));
-	File mozilla = epath.which("mozilla");
-	File firefox = epath.which("firefox");
+        String path = env.get("PATH");
+        String firefox = null;
+        switch(PackageInfo.sOsType) {
+        case Unix:
+          firefox = "firefox";
+          break;
 
-	if((mozilla != null) && isBrowserRunning("mozilla", env))
-	  displayURL("mozilla", env, url);
-	else if((firefox != null) && isBrowserRunning("firefox", env))
-	  displayURL("firefox", env, url);
-	else if(mozilla != null)
-	  launchURL("mozilla", env, url);
-	else if(firefox != null)
-	  launchURL("firefox", env, url);
-	else 
+        case Windows:
+          if(path == null) 
+            path = env.get("Path");
+          firefox = "firefox.exe";
+        }
+
+        if(path == null) 
+          throw new PipelineException
+            ("No executable PATH was defined in the environment!");
+
+        ExecPath epath = new ExecPath(path);
+        if(epath.which(firefox) != null) {
+          if(isBrowserRunning(firefox, env))
+            displayURL(firefox, env, url);
+          else 
+            launchURL(firefox, env, url);
+        }
+	else {
 	  LogMgr.getInstance().log
 	    (LogMgr.Kind.Sub, LogMgr.Level.Warning,
-	     "Unable to find either firefox(1) or mozilla(1) on your system to " +
-	     "display URLs!");
+	     "Unable to find (" + firefox + ") on your system to display URLs!");
+        }
       }
       break;
 
@@ -168,12 +182,6 @@ class BaseApp
                               args, env, PackageInfo.sTempPath.toFile());
         proc.start();
       }
-      break;
-
-    case Windows:
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Sub, LogMgr.Level.Warning,
-	 "Sorry, web browsing is not yet supported on Windows systems!");
     }
   }
 
@@ -181,7 +189,7 @@ class BaseApp
    * Returns whether a web browser is currently running.
    * 
    * @param browser
-   *   The browser program name (mozilla or firefox).
+   *   The browser program name.
    * 
    * @param env
    *   The shell environment.
@@ -221,7 +229,7 @@ class BaseApp
    * Direct a running browser to display the given URL.
    * 
    * @param browser
-   *   The browser program name (mozilla or firefox).
+   *   The browser program name.
    * 
    * @param env
    *   The shell environment.
@@ -242,8 +250,8 @@ class BaseApp
     throws PipelineException
   {
     ArrayList<String> args = new ArrayList<String>();
-    args.add("-remote");
-    args.add("openURL(" + url + ", new-tab)");
+    args.add("-new-tab");
+    args.add(url);
     
     SubProcessLight proc = 
       new SubProcessLight("RemoteBrowser", browser, 
@@ -263,7 +271,7 @@ class BaseApp
    * Launch a new browser process to display the given URL.
    * 
    * @param browser
-   *   The browser program name (mozilla or firefox).
+   *   The browser program name.
    * 
    * @param env
    *   The shell environment.
