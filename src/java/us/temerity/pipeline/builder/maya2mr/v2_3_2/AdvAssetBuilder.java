@@ -1,4 +1,4 @@
-// $Id: AdvAssetBuilder.java,v 1.11 2007/08/21 09:52:30 jesse Exp $
+// $Id: AdvAssetBuilder.java,v 1.12 2007/09/06 18:54:34 jesse Exp $
 
 package us.temerity.pipeline.builder.maya2mr.v2_3_2;
 
@@ -231,13 +231,6 @@ class AdvAssetBuilder
     
     setDefaultEditors();
 
-    addSetupPass(new InformationPass());
-    ConstructPass build = new BuildPass();
-    addConstuctPass(build);
-    ConstructPass end = new FinalizePass();
-    addConstuctPass(end);
-    addPassDependency(build, end);
-    
     {
       AdvancedLayoutGroup layout = 
         new AdvancedLayoutGroup
@@ -307,8 +300,38 @@ class AdvAssetBuilder
       setLayout(finalLayout);
     }
   }
+
   
   
+  /*----------------------------------------------------------------------------------------*/
+  /*   P A S S E S                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Override to change setup passes
+   */
+  protected void
+  addSetupPasses()
+    throws PipelineException
+  {
+    addSetupPass(new InformationPass());
+  }
+  
+  /**
+   * Override to change construct passes
+   */
+  protected void
+  addConstructPasses()
+    throws PipelineException
+  {
+    ConstructPass build = new BuildPass();
+    addConstuctPass(build);
+    ConstructPass end = new FinalizePass();
+    addConstuctPass(end);
+    addPassDependency(build, end);
+  }
+  
+ 
   
   /*----------------------------------------------------------------------------------------*/
   /*   S U B - B U I L D E R   M A P P I N G                                                */

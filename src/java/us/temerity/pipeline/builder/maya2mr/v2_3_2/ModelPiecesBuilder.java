@@ -63,12 +63,8 @@ class ModelPiecesBuilder
     }
     addCheckinWhenDoneParam();
     
-    addSetupPass(new InformationPass());
-    ConstructPass build = new BuildPass();
-    ConstructPass finalize = new FinalizeLoop();
-    addConstuctPass(finalize);
-    addConstuctPass(build);
-    addPassDependency(build, finalize);
+    addSetupPasses();
+    addConstructPasses();
     
     for (int i = 0; i < numberOfPieces; i++) {
       String num = String.valueOf(i);
@@ -104,6 +100,34 @@ class ModelPiecesBuilder
     }
   }
   
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   P A S S E S                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Override to change setup passes
+   */
+  protected void
+  addSetupPasses()
+    throws PipelineException
+  {
+    addSetupPass(new InformationPass());
+  }
+  
+  /**
+   * Override to change construct passes
+   */
+  protected void
+  addConstructPasses()
+    throws PipelineException
+  {
+    ConstructPass build = new BuildPass();
+    addConstuctPass(build);
+    ConstructPass end = new FinalizePass();
+    addConstuctPass(end);
+    addPassDependency(build, end);
+  }
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -299,11 +323,11 @@ class ModelPiecesBuilder
   }
   
   protected 
-  class FinalizeLoop
+  class FinalizePass
     extends ConstructPass
   {
     public 
-    FinalizeLoop()
+    FinalizePass()
     {
       super("Finalize Pass", 
             "The ModelPiecesBuilder pass that disconnects placeholder MEL scripts.");

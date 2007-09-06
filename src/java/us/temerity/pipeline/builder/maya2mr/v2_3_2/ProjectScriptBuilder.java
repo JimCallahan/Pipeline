@@ -179,12 +179,8 @@ class ProjectScriptBuilder
     
     setDefaultEditors();
     
-    addSetupPass(new InformationPass());
-    ConstructPass build = new BuildPass();
-    ConstructPass finalize = new FinalizePass();
-    addConstuctPass(finalize);
-    addConstuctPass(build);
-    addPassDependency(build, finalize);
+    addSetupPasses();
+    addConstructPasses();
 
     {
       AdvancedLayoutGroup layout = 
@@ -223,6 +219,36 @@ class ProjectScriptBuilder
       PassLayoutGroup finalLayout = new PassLayoutGroup(layout.getName(), layout);
       setLayout(finalLayout);
     }
+  }
+  
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   P A S S E S                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Override to change setup passes
+   */
+  protected void
+  addSetupPasses()
+    throws PipelineException
+  {
+    addSetupPass(new InformationPass());
+  }
+  
+  /**
+   * Override to change construct passes
+   */
+  protected void
+  addConstructPasses()
+    throws PipelineException
+  {
+    ConstructPass build = new BuildPass();
+    addConstuctPass(build);
+    ConstructPass end = new FinalizePass();
+    addConstuctPass(end);
+    addPassDependency(build, end);
   }
   
   

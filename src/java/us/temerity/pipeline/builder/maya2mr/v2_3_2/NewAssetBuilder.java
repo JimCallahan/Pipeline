@@ -137,12 +137,8 @@ class NewAssetBuilder
     setDefaultEditors();
     
     pAssetNames = (BuildsAssetNames) assetNames;
-    addSetupPass(new InformationPass());
-    ConstructPass build = new BuildPass();
-    ConstructPass finalize = new FinalizeLoop();
-    addConstuctPass(finalize);
-    addConstuctPass(build);
-    addPassDependency(build, finalize);
+    addSetupPasses();
+    addConstructPasses();
     
     {
       AdvancedLayoutGroup layout = 
@@ -187,6 +183,36 @@ class NewAssetBuilder
       PassLayoutGroup finalLayout = new PassLayoutGroup(layout.getName(), layout);
       setLayout(finalLayout);
     }
+  }
+  
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   P A S S E S                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Override to change setup passes
+   */
+  protected void
+  addSetupPasses()
+    throws PipelineException
+  {
+    addSetupPass(new InformationPass());
+  }
+  
+  /**
+   * Override to change construct passes
+   */
+  protected void
+  addConstructPasses()
+    throws PipelineException
+  {
+    ConstructPass build = new BuildPass();
+    addConstuctPass(build);
+    ConstructPass end = new FinalizePass();
+    addConstuctPass(end);
+    addPassDependency(build, end);
   }
   
   
@@ -603,11 +629,11 @@ class NewAssetBuilder
   }
    
   protected 
-  class FinalizeLoop
+  class FinalizePass
     extends ConstructPass
   {
     public 
-    FinalizeLoop()
+    FinalizePass()
     {
       super("Finalize Pass", 
 	    "The NewAssetBuilder pass that disconnects placeholder MEL scripts.");

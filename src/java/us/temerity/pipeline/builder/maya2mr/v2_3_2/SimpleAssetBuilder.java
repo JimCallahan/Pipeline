@@ -148,12 +148,8 @@ class SimpleAssetBuilder
     
     setDefaultEditors();
     
-    addSetupPass(new InformationPass());
-    ConstructPass build = new BuildPass();
-    addConstuctPass(build);
-    ConstructPass end = new FinalizePass();
-    addConstuctPass(end);
-    addPassDependency(build, end);
+    addSetupPasses();
+    addConstructPasses();
     
     {
       AdvancedLayoutGroup layout = 
@@ -195,6 +191,36 @@ class SimpleAssetBuilder
       PassLayoutGroup finalLayout = new PassLayoutGroup(layout.getName(), layout);
       setLayout(finalLayout);
     }
+  }
+  
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   P A S S E S                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Override to change setup passes
+   */
+  protected void
+  addSetupPasses()
+    throws PipelineException
+  {
+    addSetupPass(new InformationPass());
+  }
+  
+  /**
+   * Override to change construct passes
+   */
+  protected void
+  addConstructPasses()
+    throws PipelineException
+  {
+    ConstructPass build = new BuildPass();
+    addConstuctPass(build);
+    ConstructPass end = new FinalizePass();
+    addConstuctPass(end);
+    addPassDependency(build, end);
   }
   
   
