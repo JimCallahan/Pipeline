@@ -65,7 +65,7 @@ TOKEN :
 | <COPYRIGHT:      "--copyright">
 
   /* global options */
-| <GUI:		   "--no-gui">
+| <BATCH:	   "--batch">
 | <ABORT:          "--abort">
 | <BUILDER:    	   "--builder"> : BUILDER_SEP
 | <LOG:            "--log">     : LOG_SEP
@@ -272,7 +272,7 @@ GlobalOpts()
   throws PipelineException :
 {}
 {
-  (Log() | Gui() | Abort() | Builder() | Param())
+  (Log() | Batch() | Abort() | Builder() | Param())
   {}
 }
 
@@ -280,11 +280,11 @@ GlobalOpts()
 /*------------------------------------------------------------------------------------------*/
 
 void
-Gui() 
+Batch() 
   throws PipelineException :
 {}
 {
-  <GUI> 
+  <BATCH> 
   { 
     pApp.setUsingGUI(false);
   }

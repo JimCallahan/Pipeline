@@ -208,7 +208,7 @@ public class BuilderApp
      "\n" + 
      "GLOBAL OPTIONS:\n" +
      "  [--log=...] \n" + 
-     "  [--abort] [--gui] \n" + 
+     "  [--abort] [--batch] \n" + 
      "  [--builder=...] [--<ParamName>=<ParamValue>...] ...\n" +
      "\n" + 
      "\n" +  
