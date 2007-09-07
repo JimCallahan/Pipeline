@@ -1,4 +1,4 @@
-// $Id: JLockDialog.java,v 1.3 2006/09/25 12:11:44 jim Exp $
+// $Id: JLockDialog.java,v 1.4 2007/09/07 18:52:38 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -69,16 +69,8 @@ class JLockDialog
 	}
 	
 	{
-	  JScrollPane scroll = new JScrollPane(vbox);
-	  
-	  scroll.setHorizontalScrollBarPolicy
-	    (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-	  scroll.setVerticalScrollBarPolicy
-	    (ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-	  
-	  scroll.getViewport().setScrollMode(JViewport.BACKINGSTORE_SCROLL_MODE);
-	  
-	  box.add(scroll);
+	  JScrollPane scroll = UIFactory.createVertScrollPane(vbox);
+          box.add(scroll);
 	}
       }
       

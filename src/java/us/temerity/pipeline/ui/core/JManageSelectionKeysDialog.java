@@ -1,4 +1,4 @@
-// $Id: JManageSelectionKeysDialog.java,v 1.14 2006/12/14 02:39:05 jim Exp $
+// $Id: JManageSelectionKeysDialog.java,v 1.15 2007/09/07 18:52:38 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -386,16 +386,14 @@ class JManageSelectionKeysDialog
 	    lst.addMouseListener(this);
 
 	    {
-	      JScrollPane scroll = new JScrollPane(lst);
-	      
-	      scroll.setMinimumSize(new Dimension(150, 50));
-	      scroll.setMaximumSize(new Dimension(150, Integer.MAX_VALUE));
-	      scroll.setPreferredSize(new Dimension(150, 300));
-	      
-	      scroll.setHorizontalScrollBarPolicy
-		(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-	      scroll.setVerticalScrollBarPolicy
-		(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+	      JScrollPane scroll = 
+                UIFactory.createScrollPane
+                (lst, 
+                 ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER,
+                 ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+                 new Dimension(150, 50), 
+                 new Dimension(150, 300), 
+                 new Dimension(150, Integer.MAX_VALUE));
 	      
 	      panel.add(scroll);
 	    }

@@ -1,4 +1,4 @@
-// $Id: JLogsDialog.java,v 1.2 2006/12/07 09:48:31 jim Exp $
+// $Id: JLogsDialog.java,v 1.3 2007/09/07 18:52:38 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -116,9 +116,12 @@ class JLogsDialog
       }
       
       {
-	JScrollPane scroll = new JScrollPane(pMessageArea);
-	scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER); 
-	scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+	JScrollPane scroll = 
+          UIFactory.createScrollPane
+          (pMessageArea, 
+           JScrollPane.HORIZONTAL_SCROLLBAR_NEVER, 
+           JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, 
+           null, null, null); 
 	
 	body.add(scroll);
       }

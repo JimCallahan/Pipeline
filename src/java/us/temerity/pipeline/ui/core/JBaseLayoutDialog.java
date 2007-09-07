@@ -1,4 +1,4 @@
-// $Id: JBaseLayoutDialog.java,v 1.4 2007/04/26 17:54:44 jim Exp $
+// $Id: JBaseLayoutDialog.java,v 1.5 2007/09/07 18:52:38 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -89,15 +89,12 @@ class JBaseLayoutDialog
 	tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 
 	{
-	  JScrollPane scroll = new JScrollPane(pTree);
-	  
-	  scroll.setMinimumSize(new Dimension(230, 120));
-	  scroll.setPreferredSize(new Dimension(230, 150));
-	  
-	  scroll.setHorizontalScrollBarPolicy
-	    (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-	  scroll.setVerticalScrollBarPolicy
-	    (ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+	  JScrollPane scroll =
+            UIFactory.createScrollPane
+            (pTree, 
+             ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED, 
+             ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, 
+             new Dimension(230, 120), new Dimension(230, 150), null);	  
 	  
 	  body.add(scroll);
 	}

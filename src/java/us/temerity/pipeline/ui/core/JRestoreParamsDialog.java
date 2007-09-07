@@ -1,4 +1,4 @@
-// $Id: JRestoreParamsDialog.java,v 1.6 2007/01/12 00:05:15 jim Exp $
+// $Id: JRestoreParamsDialog.java,v 1.7 2007/09/07 18:52:38 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -127,19 +127,7 @@ class JRestoreParamsDialog
 	body.add(spanel);
       }
 
-      JScrollPane scroll = new JScrollPane(body);
-      {
-	scroll.setHorizontalScrollBarPolicy
-	    (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-	scroll.setVerticalScrollBarPolicy
-	  (ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-	
-	Dimension size = new Dimension(sTSize+sVSize+52, 300);
-	scroll.setMinimumSize(size);
-	scroll.setPreferredSize(size);
-
-	scroll.getViewport().setScrollMode(JViewport.BACKINGSTORE_SCROLL_MODE);
-      }
+      JScrollPane scroll = UIFactory.createVertScrollPane(body, sTSize+sVSize+52, 300);
 
       super.initUI("Restore", scroll, "Restore", null, null, "Cancel");
       pack();

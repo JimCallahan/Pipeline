@@ -1,4 +1,4 @@
-// $Id: JArchiveVolumesDialog.java,v 1.5 2007/03/28 20:07:15 jim Exp $
+// $Id: JArchiveVolumesDialog.java,v 1.6 2007/09/07 18:52:38 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -214,18 +214,8 @@ class JArchiveVolumesDialog
 	    sbox.add(Box.createVerticalGlue());
       
 	    {
-	      JScrollPane scroll = new JScrollPane(sbox);
-	      
-	      scroll.setHorizontalScrollBarPolicy
-		(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-	      scroll.setVerticalScrollBarPolicy
-		(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-	      
-	      Dimension size = new Dimension(sTSize+sVSize+52, 150);
-	      scroll.setMinimumSize(size);
-	      scroll.setPreferredSize(size);
-	      
-	      scroll.getViewport().setScrollMode(JViewport.BACKINGSTORE_SCROLL_MODE);
+	      JScrollPane scroll = 
+                UIFactory.createVertScrollPane(sbox, sTSize+sVSize+52, 150);
 
 	      vbox.add(scroll);
 	    }

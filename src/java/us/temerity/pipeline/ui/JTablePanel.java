@@ -1,4 +1,4 @@
-// $Id: JTablePanel.java,v 1.18 2006/12/14 02:39:05 jim Exp $
+// $Id: JTablePanel.java,v 1.19 2007/09/07 18:52:38 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -175,17 +175,13 @@ class JTablePanel
       }
 
       {
-	JScrollPane scroll = new JScrollPane();
-	pTableScroll = scroll;
+        pTableScroll = UIFactory.createScrollPane(pTable, horzScrollPolicy, vertScrollPolicy,
+                                                  null, null, null); 
 
-	scroll.setViewportView(pTable);
-      
-	scroll.setHorizontalScrollBarPolicy(horzScrollPolicy);
-	scroll.setVerticalScrollBarPolicy(vertScrollPolicy);
+	pTableScroll.setViewportView(pTable);
+	pTableScroll.getHorizontalScrollBar().addAdjustmentListener(this);
 
-	scroll.getHorizontalScrollBar().addAdjustmentListener(this);
-
-	add(scroll);
+	add(pTableScroll);
       }
     }
 

@@ -1,4 +1,4 @@
-// $Id: JConfirmKillObsoleteJobsDialog.java,v 1.3 2006/11/22 09:08:01 jim Exp $
+// $Id: JConfirmKillObsoleteJobsDialog.java,v 1.4 2007/09/07 18:52:38 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -78,9 +78,12 @@ class JConfirmKillObsoleteJobsDialog
       }
       
       {
-	JScrollPane scroll = new JScrollPane(area);
-	scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-	scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+	JScrollPane scroll = 
+          UIFactory.createScrollPane
+          (area, 
+           JScrollPane.HORIZONTAL_SCROLLBAR_NEVER, 
+           JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, 
+           null, null, null);
 	
 	body.add(scroll);
       }

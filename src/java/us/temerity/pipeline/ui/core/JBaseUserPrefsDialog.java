@@ -1,4 +1,4 @@
-// $Id: JBaseUserPrefsDialog.java,v 1.10 2007/04/28 22:46:47 jim Exp $
+// $Id: JBaseUserPrefsDialog.java,v 1.11 2007/09/07 18:52:38 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -76,15 +76,12 @@ class JBaseUserPrefsDialog
 	  tree.addTreeSelectionListener(this);
 
 	  {
-	    JScrollPane scroll = new JScrollPane(pTree);
-	    
-	    scroll.setMinimumSize(new Dimension(230, 120));
-	    scroll.setPreferredSize(new Dimension(230, 250));
-	    
-	    scroll.setHorizontalScrollBarPolicy
-	      (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-	    scroll.setVerticalScrollBarPolicy
-	      (ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+	    JScrollPane scroll = 
+              UIFactory.createScrollPane
+              (pTree, 
+               ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER, 
+               ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, 
+               new Dimension(230, 120), new Dimension(230, 250), null); 	    
 	    
 	    panel.add(scroll);
 	  }
@@ -145,17 +142,13 @@ class JBaseUserPrefsDialog
 	}
 
 	{
-	  JScrollPane scroll = new JScrollPane(pCardPanel);
-	  
-	  scroll.setMinimumSize(new Dimension(sTSize+sVSize+50, 120));
-	  scroll.setMaximumSize(new Dimension(sTSize+sVSize+50, Integer.MAX_VALUE));
-
-	  scroll.setHorizontalScrollBarPolicy
-	    (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-	  scroll.setVerticalScrollBarPolicy
-	    (ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-
-	  scroll.getVerticalScrollBar().setUnitIncrement(23);
+	  JScrollPane scroll = 
+            UIFactory.createScrollPane
+            (pCardPanel, 
+             ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER, 
+             ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, 
+             new Dimension(sTSize+sVSize+50, 120), null, 
+             new Dimension(sTSize+sVSize+50, Integer.MAX_VALUE));
 
 	  panel.add(scroll);
 	}

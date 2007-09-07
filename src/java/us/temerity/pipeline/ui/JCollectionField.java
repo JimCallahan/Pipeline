@@ -1,4 +1,4 @@
-// $Id: JCollectionField.java,v 1.16 2007/02/13 03:31:08 jesse Exp $
+// $Id: JCollectionField.java,v 1.17 2007/09/07 18:52:38 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -112,12 +112,12 @@ class JCollectionField
 	  lst.addListSelectionListener(this);
 
 	  {
-	    JScrollPane scroll = new JScrollPane(lst);
-	    
-	    scroll.setHorizontalScrollBarPolicy
-	      (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-	    scroll.setVerticalScrollBarPolicy
-	      (ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+	    JScrollPane scroll = 
+              UIFactory.createScrollPane
+              (lst,
+               ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER, 
+               ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, 
+               null, null, null);
 	  
 	    panel.add(scroll);
 	  }

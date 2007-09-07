@@ -1,4 +1,4 @@
-// $Id: JNodeHistoryPanel.java,v 1.23 2007/06/26 05:18:57 jim Exp $
+// $Id: JNodeHistoryPanel.java,v 1.24 2007/09/07 18:52:38 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -221,17 +221,9 @@ class JNodeHistoryPanel
 	pTextAreas = new ArrayList<JTextArea>();
 
 	{
-	  JScrollPane scroll = new JScrollPane(vbox);
+	  JScrollPane scroll = UIFactory.createVertScrollPane(vbox);
 	  pScroll = scroll;
 	  
-	  scroll.setHorizontalScrollBarPolicy
-	    (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-	  scroll.setVerticalScrollBarPolicy
-	    (ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-
-	  scroll.getViewport().setScrollMode(JViewport.BACKINGSTORE_SCROLL_MODE);
-	  scroll.getVerticalScrollBar().setUnitIncrement(23);
-
 	  add(scroll);
 	}
       }

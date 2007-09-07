@@ -1,4 +1,4 @@
-// $Id: JMonitorSubProcessDialog.java,v 1.5 2006/09/25 12:11:45 jim Exp $
+// $Id: JMonitorSubProcessDialog.java,v 1.6 2007/09/07 18:52:38 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -73,14 +73,12 @@ class JMonitorSubProcessDialog
 	  area.setEditable(false);
 	
 	  {
-	    JScrollPane scroll = new JScrollPane(area);
-	    
-	    scroll.setHorizontalScrollBarPolicy
-	      (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-	    scroll.setVerticalScrollBarPolicy
-	      (ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-	    
-	    scroll.setMinimumSize(new Dimension(100, 50));
+	    JScrollPane scroll = 
+              UIFactory.createScrollPane
+              (area, 
+               ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER, 
+               ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, 
+               new Dimension(100, 50), null, null);
 	    
 	    cpanel.add(scroll);
 	  }	

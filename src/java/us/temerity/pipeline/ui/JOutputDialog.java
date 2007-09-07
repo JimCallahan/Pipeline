@@ -1,4 +1,4 @@
-// $Id: JOutputDialog.java,v 1.2 2006/09/25 12:11:45 jim Exp $
+// $Id: JOutputDialog.java,v 1.3 2007/09/07 18:52:38 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -73,9 +73,12 @@ class JOutputDialog
       }
       
       {
-	JScrollPane scroll = new JScrollPane(pMessageArea);
-	scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-	scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+	JScrollPane scroll = 
+          UIFactory.createScrollPane
+          (pMessageArea, 
+           JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS,
+           JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, 
+           null, null, null);
 	
 	body.add(scroll);
       }

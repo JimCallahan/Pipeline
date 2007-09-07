@@ -1,4 +1,4 @@
-// $Id: JToolsetDetailsDialog.java,v 1.4 2006/09/25 12:11:44 jim Exp $
+// $Id: JToolsetDetailsDialog.java,v 1.5 2007/09/07 18:52:38 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -143,18 +143,14 @@ class JToolsetDetailsDialog
 	}
 	  
 	{
-	  JScrollPane scroll = new JScrollPane(hbox);
-
 	  Dimension size = new Dimension(810, 300);
-	  scroll.setPreferredSize(size);
-	  scroll.setPreferredSize(size);
-	  
-	  scroll.setHorizontalScrollBarPolicy
-	    (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-	  scroll.setVerticalScrollBarPolicy
-	    (ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
-	  
-	  scroll.getVerticalScrollBar().setUnitIncrement(23);
+
+	  JScrollPane scroll =
+            UIFactory.createScrollPane
+            (hbox, 
+             ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER, 
+             ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, 
+             null, size, null); 	  
 
 	  body.add(scroll);
 	}

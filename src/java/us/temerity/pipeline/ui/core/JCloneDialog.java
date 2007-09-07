@@ -1,4 +1,4 @@
-// $Id: JCloneDialog.java,v 1.13 2007/07/20 07:55:10 jim Exp $
+// $Id: JCloneDialog.java,v 1.14 2007/09/07 18:52:38 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -196,19 +196,7 @@ class JCloneDialog
       
       vbox.add(Box.createVerticalGlue());
       
-      JScrollPane scroll = new JScrollPane(vbox);
-      {
-	scroll.setHorizontalScrollBarPolicy
-	  (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-	scroll.setVerticalScrollBarPolicy
-	  (ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-	
-	Dimension size = new Dimension(sTSize+sVSize+52, 312);
-	scroll.setMinimumSize(size);
-	scroll.setPreferredSize(size);
-
-	scroll.getViewport().setScrollMode(JViewport.BACKINGSTORE_SCROLL_MODE);
-      }
+      JScrollPane scroll = UIFactory.createVertScrollPane(vbox, sTSize+sVSize+52, 312);
 
       String extra[][] = {
 	{ "Browse",  "browse" }

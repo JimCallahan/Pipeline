@@ -1,4 +1,4 @@
-// $Id: JExportDialog.java,v 1.5 2006/10/18 06:34:22 jim Exp $
+// $Id: JExportDialog.java,v 1.6 2007/09/07 18:52:38 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -73,22 +73,9 @@ class JExportDialog
       
       vbox.add(Box.createVerticalGlue());
       
-      {
-	JScrollPane scroll = new JScrollPane(vbox);
+      JScrollPane scroll = UIFactory.createVertScrollPane(vbox, sTSize+sVSize+52, 150);
 	
-	scroll.setHorizontalScrollBarPolicy
-	  (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-	scroll.setVerticalScrollBarPolicy
-	  (ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-	
-	Dimension size = new Dimension(sTSize+sVSize+52, 150);
-	scroll.setMinimumSize(size);
-	scroll.setPreferredSize(size);
-
-	scroll.getViewport().setScrollMode(JViewport.BACKINGSTORE_SCROLL_MODE);
-	
-	super.initUI("X", scroll, "Export", null, null, "Cancel");
-      }
+      super.initUI("X", scroll, "Export", null, null, "Cancel");
     }  
   }
 

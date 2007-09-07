@@ -1,4 +1,4 @@
-// $Id: JBaseMonitorPanel.java,v 1.4 2005/01/30 02:05:22 jim Exp $
+// $Id: JBaseMonitorPanel.java,v 1.5 2007/09/07 18:52:38 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -47,18 +47,15 @@ class JBaseMonitorPanel
 	pTextArea = area;
 	
 	{
-	  JScrollPane scroll = new JScrollPane(area);
+	  JScrollPane scroll = 
+            UIFactory.createScrollPane
+            (area, 
+             ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS,
+             ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER, 	  
+             new Dimension(150, 100), new Dimension(800, 500), null);
 	  
-	  scroll.setWheelScrollingEnabled(false);	  
-	  
- 	  scroll.setMinimumSize(new Dimension(150, 100));
- 	  scroll.setPreferredSize(new Dimension(800, 500));
-	  
-	  scroll.setHorizontalScrollBarPolicy
-	    (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
-	  scroll.setVerticalScrollBarPolicy
-	    (ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
-	  
+	  scroll.setWheelScrollingEnabled(false);
+
 	  add(scroll);
 	}
       }

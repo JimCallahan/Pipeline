@@ -1,4 +1,4 @@
-// $Id: JSubProcessFailureDialog.java,v 1.6 2007/02/08 01:49:32 jim Exp $
+// $Id: JSubProcessFailureDialog.java,v 1.7 2007/09/07 18:52:38 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -63,14 +63,12 @@ class JSubProcessFailureDialog
 	}
 
 	{
-	  JScrollPane scroll = new JScrollPane(pCommandArea);
-	  
-	  scroll.setHorizontalScrollBarPolicy
-	    (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-	  scroll.setVerticalScrollBarPolicy
-	    (ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-	  
-	  scroll.setMinimumSize(new Dimension(100, 50));
+	  JScrollPane scroll = 
+            UIFactory.createScrollPane
+            (pCommandArea, 
+             ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER, 
+             ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, 
+             new Dimension(100, 50), null, null);
 
 	  cpanel.add(scroll);
 	}	
@@ -97,14 +95,12 @@ class JSubProcessFailureDialog
 	  }
 	  
 	  {
-	    JScrollPane scroll = new JScrollPane(pStdOutArea);
-	    
-	    scroll.setHorizontalScrollBarPolicy
-	      (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-	    scroll.setVerticalScrollBarPolicy
-	      (ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-	    
-	    scroll.setMinimumSize(new Dimension(100, 50));
+	    JScrollPane scroll = 
+              UIFactory.createScrollPane
+              (pStdOutArea, 
+               ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER, 
+               ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, 
+               new Dimension(100, 50), null, null); 
 
 	    opanel.add(scroll);
 	  }
@@ -129,14 +125,12 @@ class JSubProcessFailureDialog
 	  }
 	  
 	  {
-	    JScrollPane scroll = new JScrollPane(pStdErrArea);
-	    
-	    scroll.setHorizontalScrollBarPolicy
-	      (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-	    scroll.setVerticalScrollBarPolicy
-	      (ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-
-	    scroll.setMinimumSize(new Dimension(100, 50));
+	    JScrollPane scroll = 
+              UIFactory.createScrollPane
+              (pStdErrArea, 
+               ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER, 
+               ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, 
+               new Dimension(100, 50), null, null); 
 	    
 	    epanel.add(scroll);
 	  }

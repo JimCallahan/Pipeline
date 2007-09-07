@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.42 2007/06/26 05:18:57 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.43 2007/09/07 18:52:38 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -273,16 +273,7 @@ class JNodeFilesPanel
 	pFileSeqBox = vbox;
 	
 	{
-	  JScrollPane scroll = new JScrollPane(vbox);
-	  
-	  scroll.setHorizontalScrollBarPolicy
-	    (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-	  scroll.setVerticalScrollBarPolicy
-	    (ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-
-	  scroll.getViewport().setScrollMode(JViewport.BACKINGSTORE_SCROLL_MODE);
-	  scroll.getVerticalScrollBar().setUnitIncrement(23);
-
+	  JScrollPane scroll = UIFactory.createVertScrollPane(vbox);
 	  add(scroll);
 	}
       }
@@ -938,17 +929,12 @@ class JNodeFilesPanel
 				enabled, novel, pNovelty.size());
 	      
 	    {
-	      JScrollPane scroll = new JScrollPane(panel);
-		
-	      scroll.setHorizontalScrollBarPolicy
-		(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
-	      scroll.setVerticalScrollBarPolicy
-		(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
-		
-	      scroll.getViewport().setScrollMode(JViewport.BACKINGSTORE_SCROLL_MODE);
-		
-	      Dimension size = new Dimension(70, 21);
-	      scroll.setMinimumSize(size);
+	      JScrollPane scroll = 
+                UIFactory.createScrollPane
+                (panel, 
+                 ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS, 
+                 ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER, 
+                 new Dimension(70, 21), null, null);
 		
 	      {
 		AdjustLinkage linkage = 

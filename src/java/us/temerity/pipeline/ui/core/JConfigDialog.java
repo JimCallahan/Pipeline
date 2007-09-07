@@ -1,4 +1,4 @@
-// $Id: JConfigDialog.java,v 1.7 2007/06/19 20:16:06 jim Exp $
+// $Id: JConfigDialog.java,v 1.8 2007/09/07 18:52:38 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -148,17 +148,7 @@ class JConfigDialog
 	UIFactory.addVerticalGlue(tpanel, vpanel);
       }
 
-      JScrollPane scroll = null;
-      {
-	scroll = new JScrollPane(body);
-	
-	scroll.setMinimumSize(new Dimension(sTSize+sVSize+19, 120));
-	
-	scroll.setHorizontalScrollBarPolicy
-	  (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-	scroll.setVerticalScrollBarPolicy
-	  (ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-      }
+      JScrollPane scroll = UIFactory.createVertScrollPane(body, sTSize+sVSize+19, 120);
 
       super.initUI("Site Configuration:", scroll, null, null, null, "Close");
     }  

@@ -1,4 +1,4 @@
-// $Id: JPackageDetailsDialog.java,v 1.10 2007/03/28 20:07:15 jim Exp $
+// $Id: JPackageDetailsDialog.java,v 1.11 2007/09/07 18:52:38 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -151,18 +151,14 @@ class JPackageDetailsDialog
 	}
 	  
 	{
-	  JScrollPane scroll = new JScrollPane(hbox);
-
 	  Dimension size = new Dimension(810, 300);
-	  scroll.setPreferredSize(size);
-	  scroll.setPreferredSize(size);
-	  
-	  scroll.setHorizontalScrollBarPolicy
-	    (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-	  scroll.setVerticalScrollBarPolicy
-	    (ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
-	  
-	  scroll.getVerticalScrollBar().setUnitIncrement(23);
+
+	  JScrollPane scroll = 
+            UIFactory.createScrollPane
+            (hbox, 
+             ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER, 
+             ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, 
+             null, size, null);
 
 	  body.add(scroll);
 	}

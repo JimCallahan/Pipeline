@@ -1,4 +1,4 @@
-// $Id: JNodeAnnotationsPanel.java,v 1.5 2007/07/31 14:59:25 jim Exp $
+// $Id: JNodeAnnotationsPanel.java,v 1.6 2007/09/07 18:52:38 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -260,16 +260,7 @@ class JNodeAnnotationsPanel
         pAnnotationsBox = vbox;
 
 	{
-	  JScrollPane scroll = new JScrollPane(vbox);
-	  
-	  scroll.setHorizontalScrollBarPolicy
-	    (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-	  scroll.setVerticalScrollBarPolicy
-	    (ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-
-	  scroll.getViewport().setScrollMode(JViewport.BACKINGSTORE_SCROLL_MODE);
-	  scroll.getVerticalScrollBar().setUnitIncrement(23);
-
+	  JScrollPane scroll = UIFactory.createVertScrollPane(vbox);
 	  add(scroll);
 	}
       }

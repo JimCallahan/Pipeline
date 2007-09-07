@@ -1,4 +1,4 @@
-// $Id: JManageToolsetsDialog.java,v 1.29 2007/07/21 10:29:21 jim Exp $
+// $Id: JManageToolsetsDialog.java,v 1.30 2007/09/07 18:52:38 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -362,17 +362,15 @@ class JManageToolsetsDialog
 	    tree.addTreeSelectionListener(this);
 
 	    {
-	      JScrollPane scroll = new JScrollPane(tree);
-	  
 	      Dimension size = new Dimension(sLWidth, sLHeight);
-	      scroll.setMinimumSize(size);
-	      scroll.setPreferredSize(size);
-	      
-	      scroll.setHorizontalScrollBarPolicy
-		(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-	      scroll.setVerticalScrollBarPolicy
-		(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
-	      
+
+	      JScrollPane scroll =
+                UIFactory.createScrollPane
+                (tree, 
+                 ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER, 
+                 ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, 
+                 size, size, null);
+                 
 	      vbox.add(scroll);
 	    }
 
@@ -428,15 +426,12 @@ class JManageToolsetsDialog
 	    lst.addMouseMotionListener(this);
 
 	    {
-	      JScrollPane scroll = new JScrollPane(lst);
-	      
-	      scroll.setMinimumSize(new Dimension(150, 150));
-	      scroll.setPreferredSize(new Dimension(sLWidth, sLHeight));
-	      
-	      scroll.setHorizontalScrollBarPolicy
-		(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-	      scroll.setVerticalScrollBarPolicy
-		(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+	      JScrollPane scroll = 
+                UIFactory.createScrollPane
+                (lst, 
+                 ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER, 
+                 ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, 
+                 new Dimension(150, 150), new Dimension(sLWidth, sLHeight), null);	      
 	      
 	      vbox.add(scroll);
 	    }
@@ -522,16 +517,14 @@ class JManageToolsetsDialog
 	    tree.addTreeSelectionListener(this);
 
 	    {
-	      JScrollPane scroll = new JScrollPane(tree);
-	  
 	      Dimension size = new Dimension(sLWidth, sLHeight);
-	      scroll.setMinimumSize(size);
-	      scroll.setPreferredSize(size);
-	      
-	      scroll.setHorizontalScrollBarPolicy
-		(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-	      scroll.setVerticalScrollBarPolicy
-		(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+
+	      JScrollPane scroll =
+                UIFactory.createScrollPane
+                (tree, 
+                 ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER, 
+                 ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, 
+                 size, size, null);
 	      
 	      vbox.add(scroll);
 	    }

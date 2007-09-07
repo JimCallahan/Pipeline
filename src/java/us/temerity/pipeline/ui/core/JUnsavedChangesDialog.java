@@ -1,4 +1,4 @@
-// $Id: JUnsavedChangesDialog.java,v 1.2 2007/05/29 22:23:08 jim Exp $
+// $Id: JUnsavedChangesDialog.java,v 1.3 2007/09/07 18:52:38 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -76,9 +76,12 @@ class JUnsavedChangesDialog
 	area.setFocusable(true);
       
 	{
-	  JScrollPane scroll = new JScrollPane(area);
-	  scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-	  scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+	  JScrollPane scroll = 
+            UIFactory.createScrollPane
+            (area, 
+             JScrollPane.HORIZONTAL_SCROLLBAR_NEVER, 
+             JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, 
+             null, null, null);
 	  
 	  body.add(scroll);
 	}

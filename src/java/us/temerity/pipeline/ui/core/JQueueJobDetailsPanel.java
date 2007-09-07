@@ -1,4 +1,4 @@
-// $Id: JQueueJobDetailsPanel.java,v 1.13 2007/06/26 05:18:57 jim Exp $
+// $Id: JQueueJobDetailsPanel.java,v 1.14 2007/09/07 18:52:38 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -572,15 +572,7 @@ class JQueueJobDetailsPanel
 	vbox.add(Box.createVerticalGlue());
 
 	{
-	  JScrollPane scroll = new JScrollPane(vbox);
-	  
-	  scroll.setHorizontalScrollBarPolicy
-	    (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-	  scroll.setVerticalScrollBarPolicy
-	    (ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-
-	  scroll.getVerticalScrollBar().setUnitIncrement(23);
-
+	  JScrollPane scroll = UIFactory.createVertScrollPane(vbox);
 	  add(scroll);
 	}
       }

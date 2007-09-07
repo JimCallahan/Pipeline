@@ -1,4 +1,4 @@
-// $Id: JBaseExtensionConfigDialog.java,v 1.3 2007/08/20 04:46:08 jim Exp $
+// $Id: JBaseExtensionConfigDialog.java,v 1.4 2007/09/07 18:52:38 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -148,20 +148,7 @@ class JBaseExtensionConfigDialog
 	body.add(spanel);
       }
 
-      JScrollPane scroll = new JScrollPane(body);
-      {
-	scroll.setHorizontalScrollBarPolicy
-	    (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-	scroll.setVerticalScrollBarPolicy
-	  (ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-	
-	Dimension size = new Dimension(sTSize+sVSize+52, 300);
-	scroll.setMinimumSize(size);
-	scroll.setPreferredSize(size);
-
-	scroll.getViewport().setScrollMode(JViewport.BACKINGSTORE_SCROLL_MODE);
-	scroll.getVerticalScrollBar().setUnitIncrement(23);
-      }
+      JScrollPane scroll = UIFactory.createVertScrollPane(body, sTSize+sVSize+52, 300);
       
       super.initUI(title + " Extension Configuration:", scroll, 
 		   "Confirm", null, null, "Cancel");

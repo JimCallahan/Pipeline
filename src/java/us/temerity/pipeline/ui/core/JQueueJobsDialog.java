@@ -1,4 +1,4 @@
-// $Id: JQueueJobsDialog.java,v 1.4 2006/12/14 19:48:50 jim Exp $
+// $Id: JQueueJobsDialog.java,v 1.5 2007/09/07 18:52:38 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -208,16 +208,7 @@ class JQueueJobsDialog
       vbox.add(Box.createVerticalGlue());
 
 
-      JScrollPane scroll = new JScrollPane(vbox);
-      {	
-	scroll.setHorizontalScrollBarPolicy
-	  (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-	scroll.setVerticalScrollBarPolicy
-	  (ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-	
-	scroll.getViewport().setScrollMode(JViewport.BACKINGSTORE_SCROLL_MODE);
-	scroll.getVerticalScrollBar().setUnitIncrement(23);
-      }
+      JScrollPane scroll = UIFactory.createVertScrollPane(vbox);
 	
       super.initUI("Queue Jobs Special:", scroll, "Submit", "Reset", null, "Cancel");
       pack();

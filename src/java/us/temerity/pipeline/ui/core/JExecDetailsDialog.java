@@ -1,4 +1,4 @@
-// $Id: JExecDetailsDialog.java,v 1.5 2007/03/18 02:14:26 jim Exp $
+// $Id: JExecDetailsDialog.java,v 1.6 2007/09/07 18:52:38 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -111,14 +111,12 @@ class JExecDetailsDialog
 	}
 	
 	{
-	  JScrollPane scroll = new JScrollPane(pCommandLineArea);
-	  
-	  scroll.setHorizontalScrollBarPolicy
-	    (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-	  scroll.setVerticalScrollBarPolicy
-	    (ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
-	    
-	  scroll.setMinimumSize(new Dimension(100, 27));
+	  JScrollPane scroll = 
+            UIFactory.createScrollPane
+            (pCommandLineArea, 
+             ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER, 
+             ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, 
+             new Dimension(100, 27), null, null);
 
 	  above.add(scroll);
 	}
@@ -161,18 +159,14 @@ class JExecDetailsDialog
 	}
 
 	{
-	  JScrollPane scroll = new JScrollPane(comps[2]);
-	  pEnvScroll = scroll;
-	  
-	  scroll.setHorizontalScrollBarPolicy
-	    (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-	  scroll.setVerticalScrollBarPolicy
-	    (ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
-	
-	  scroll.setMinimumSize(new Dimension(100, 50));
-	  scroll.setPreferredSize(new Dimension(100, 300));
-  
-	  below.add(scroll);
+          pEnvScroll = 
+            UIFactory.createScrollPane
+            (comps[2], 
+             ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER, 
+             ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, 
+             new Dimension(100, 50), new Dimension(100, 300), null);
+          
+	  below.add(pEnvScroll);
 	}
       }
 

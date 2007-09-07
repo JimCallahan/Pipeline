@@ -1,4 +1,4 @@
-// $Id: JConfirmDialog.java,v 1.3 2006/10/23 18:30:57 jim Exp $
+// $Id: JConfirmDialog.java,v 1.4 2007/09/07 18:52:38 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -143,9 +143,12 @@ class JConfirmDialog
 	area.setFocusable(true);
       
 	{
-	  JScrollPane scroll = new JScrollPane(area);
-	  scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-	  scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+	  JScrollPane scroll = 
+            UIFactory.createScrollPane
+            (area, 
+             JScrollPane.HORIZONTAL_SCROLLBAR_NEVER,
+             JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, 
+             null, null, null);
 	  
 	  body.add(scroll);
 	}

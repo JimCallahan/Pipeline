@@ -1,4 +1,4 @@
-// $Id: JConfirmListDialog.java,v 1.4 2006/11/22 09:08:01 jim Exp $
+// $Id: JConfirmListDialog.java,v 1.5 2007/09/07 18:52:38 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -119,14 +119,12 @@ class JConfirmListDialog
 	  area.setEditable(false);
 	  
 	  {
-	    JScrollPane scroll = new JScrollPane(area);
-	    
-	    scroll.setHorizontalScrollBarPolicy
-	      (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-	    scroll.setVerticalScrollBarPolicy
-	      (ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-	    
-	    scroll.getViewport().setScrollMode(JViewport.BACKINGSTORE_SCROLL_MODE);
+	    JScrollPane scroll =
+              UIFactory.createScrollPane
+              (area, 
+               ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER, 
+               ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, 
+               null, null, null);
 	  
 	    vbox.add(scroll);
 	  }

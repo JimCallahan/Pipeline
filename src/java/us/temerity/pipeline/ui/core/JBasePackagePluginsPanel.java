@@ -1,4 +1,4 @@
-// $Id: JBasePackagePluginsPanel.java,v 1.5 2006/10/23 11:30:20 jim Exp $
+// $Id: JBasePackagePluginsPanel.java,v 1.6 2007/09/07 18:52:38 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -86,16 +86,13 @@ class JBasePackagePluginsPanel
 	  tree.addTreeSelectionListener(this);
 	  
 	  {
-	    JScrollPane scroll = new JScrollPane(tree);
-	    
-	    scroll.setMinimumSize(new Dimension(150, 100));
-	    scroll.setPreferredSize(new Dimension(250, 500));
-	    
-	    scroll.setHorizontalScrollBarPolicy
-	      (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-	    scroll.setVerticalScrollBarPolicy
-	      (ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
-	    
+	    JScrollPane scroll = 
+              UIFactory.createScrollPane
+              (tree, 
+               ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER, 
+               ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, 
+               new Dimension(150, 100), new Dimension(250, 500), null);
+            
 	    vbox.add(scroll);
 	  }
 	  
@@ -179,18 +176,14 @@ class JBasePackagePluginsPanel
 	  tree.addTreeSelectionListener(this);
 	  
 	  {
-	    JScrollPane scroll = new JScrollPane(tree);
-	    pAllScroll = scroll;
-
-	    scroll.setMinimumSize(new Dimension(150, 100));
-	    scroll.setPreferredSize(new Dimension(250, 500));
+	    pAllScroll = 
+              UIFactory.createScrollPane
+              (tree, 
+               ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER, 
+               ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, 
+               new Dimension(150, 100), new Dimension(250, 500), null);
 	    
-	    scroll.setHorizontalScrollBarPolicy
-	      (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-	    scroll.setVerticalScrollBarPolicy
-	      (ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
-	    
-	    vbox.add(scroll);
+	    vbox.add(pAllScroll);
 	  }
 	  
 	  vbox.add(Box.createRigidArea(new Dimension(0, 20)));

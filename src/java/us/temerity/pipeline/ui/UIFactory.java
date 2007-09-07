@@ -1,4 +1,4 @@
-// $Id: UIFactory.java,v 1.21 2007/07/31 14:58:14 jim Exp $
+// $Id: UIFactory.java,v 1.22 2007/09/07 18:52:38 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -2670,12 +2670,11 @@ class UIFactory
     if(isScrolled) {
       area.setName("ScrolledTextArea");
 
-      JScrollPane scroll = new JScrollPane(area);
-	
-      scroll.setHorizontalScrollBarPolicy
-	(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-      scroll.setVerticalScrollBarPolicy
-	(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+      JScrollPane scroll = 
+        createScrollPane(area, 
+                         ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER, 
+                         ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, 
+                         null, null, null); 
       
       vpanel.add(scroll);
     }
@@ -2777,12 +2776,11 @@ class UIFactory
     if(isScrolled) {
       area.setName("ScrolledTextArea");
 
-      JScrollPane scroll = new JScrollPane(area);
-      
-      scroll.setHorizontalScrollBarPolicy
-	(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-      scroll.setVerticalScrollBarPolicy
-	    (ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+      JScrollPane scroll = 
+        createScrollPane(area, 
+                         ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER, 
+                         ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, 
+                         null, null, null); 
       
       vpanel.add(scroll);
     }
@@ -3354,6 +3352,104 @@ class UIFactory
 
 
   /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Create a new vertical scrollpane with no horizontal scrollbar.
+   * 
+   * @param view 
+   *   The component to display in the scrollpanes viewport.
+   */ 
+  public static JScrollPane
+  createVertScrollPane
+  (
+   Component view
+  ) 
+  {
+    return createVertScrollPane(view, null, null);
+  }
+
+  /**
+   * Create a new vertical scrollpane with no horizontal scrollbar and 
+   * a minimum/preferred size.
+   * 
+   * @param view 
+   *   The component to display in the scrollpanes viewport.
+   *
+   * @param width
+   *   The minimum and preferred width of the scrollpane or 
+   *   <CODE>null</CODE> to ignore.
+   * 
+   * @param height
+   *   The minimum and preferred height of the scrollpane or 
+   *   <CODE>null</CODE> to ignore.
+   */ 
+  public static JScrollPane
+  createVertScrollPane
+  (
+   Component view, 
+   Integer width, 
+   Integer height
+  ) 
+  {
+    Dimension size = null;
+    if((width != null) && (height != null)) 
+      size = new Dimension(width, height);
+
+    return createScrollPane(view, 
+                            ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER,
+                            ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, 
+                            size, size, null);
+  }
+
+  /**
+   * Create a new scrollpane.
+   * 
+   * @param view 
+   *   The component to display in the scrollpanes viewport.
+   * 
+   * @param hsbPolicy 
+   *   An integer that specifies the horizontal scrollbar policy.
+   *
+   * @param vsbPolicy
+   *   An integer that specifies the vertical scrollbar policy.
+   * 
+   * @param minSize
+   *   The minimum size scrollpane or <CODE>null</CODE> to ignore.
+   * 
+   * @param prefSize
+   *   The preferred size scrollpane or <CODE>null</CODE> to ignore.
+   * 
+   * @param maxSize
+   *   The maximum size scrollpane or <CODE>null</CODE> to ignore.
+   */ 
+  public static JScrollPane
+  createScrollPane
+  (
+   Component view, 
+   int hsbPolicy, 
+   int vsbPolicy, 
+   Dimension minSize, 
+   Dimension prefSize, 
+   Dimension maxSize
+  ) 
+  {
+    JScrollPane scroll = new JScrollPane(view, vsbPolicy, hsbPolicy);
+    
+    if(minSize != null)
+      scroll.setMinimumSize(minSize);
+    if(prefSize != null)
+      scroll.setPreferredSize(prefSize);    
+    if(maxSize != null)
+      scroll.setMaximumSize(maxSize);
+    
+    scroll.getViewport().setScrollMode(JViewport.BACKINGSTORE_SCROLL_MODE);
+    scroll.getVerticalScrollBar().setUnitIncrement(23);
+
+    return scroll;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Add vertical space into the given panels.
@@ -3468,15 +3564,11 @@ class UIFactory
       lst.setCellRenderer(new JListCellRenderer());
 
       {
-	JScrollPane scroll = new JScrollPane(lst);
-	
-	scroll.setMinimumSize(new Dimension(150, 150));
-	scroll.setPreferredSize(size);
-	
-	scroll.setHorizontalScrollBarPolicy
-	  (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-	scroll.setVerticalScrollBarPolicy
-	  (ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+	JScrollPane scroll = 
+          createScrollPane(lst, 
+                           ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER, 
+                           ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, 
+                           new Dimension(150, 150), size, null);
 	
 	vbox.add(scroll);
       }
