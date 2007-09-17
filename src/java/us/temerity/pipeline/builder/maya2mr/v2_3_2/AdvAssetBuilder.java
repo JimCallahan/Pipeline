@@ -1,4 +1,4 @@
-// $Id: AdvAssetBuilder.java,v 1.12 2007/09/06 18:54:34 jesse Exp $
+// $Id: AdvAssetBuilder.java,v 1.13 2007/09/17 03:41:34 jim Exp $
 
 package us.temerity.pipeline.builder.maya2mr.v2_3_2;
 
@@ -230,6 +230,9 @@ class AdvAssetBuilder
     pProjectNames = (BuildsProjectNames) projectNames;
     
     setDefaultEditors();
+
+    addSetupPasses();
+    addConstructPasses();
 
     {
       AdvancedLayoutGroup layout = 
