@@ -219,6 +219,12 @@ JNIEXPORT jint JNICALL Java_us_temerity_pipeline_NativeProcessLight_execNativeLi
 JNIEXPORT jboolean JNICALL Java_us_temerity_pipeline_NativeProcessStats_collectStatsNative
   (JNIEnv *, jobject, jint);
 
+
+/* Header for KillProcess methods */
+
+BOOL WINAPI KillProcess(IN DWORD dwProcessId);
+BOOL WINAPI KillProcessEx(IN DWORD dwProcessId, IN BOOL bTree);
+
 #ifdef __cplusplus
 }
 #endif

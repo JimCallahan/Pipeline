@@ -1,4 +1,4 @@
-// $Id: NativeProcessLight.cpp,v 1.7 2007/03/18 02:17:17 jim Exp $
+// $Id: NativeProcessLight.cpp,v 1.8 2007/09/17 09:10:10 jim Exp $
 
 #include "stdafx.h"
 
@@ -303,48 +303,10 @@ JNICALL Java_us_temerity_pipeline_NativeProcessLight_signalNative
     return;
   }
 
-  /* give this process the ability to kill any process owned by anyone! */ 
-  {
-    /* get the token for the current process */ 
-    HANDLE token;
-    if(!OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES|TOKEN_QUERY, &token)) {
-      env->ThrowNew(IOException, "unable to get token for current process!");
-      return;
-    }
-
-    /* lookup the debug programs privilege */ 
-    LUID luid;
-    if(!LookupPrivilegeValue(NULL, "SeDebugPrivilege", &luid)) {
-      env->ThrowNew(IOException, "debug privilege lookup failed!");
-      return;
-    }
-    
-    /* enable the privilege */ 
-    TOKEN_PRIVILEGES tp;
-    tp.PrivilegeCount = 1;
-    tp.Privileges[0].Luid = luid;
-    tp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
-
-    if(!AdjustTokenPrivileges(token, FALSE, &tp, sizeof(TOKEN_PRIVILEGES), 
-                              (PTOKEN_PRIVILEGES) NULL, (PDWORD) NULL)) {
-      env->ThrowNew(IOException, "adjust token privileges failed!");
-      return;
-    } 
-
-    CloseHandle(token);
-  }
-
-  /* get the process handle */ 
-  HANDLE proc = OpenProcess(PROCESS_TERMINATE, 0, (DWORD) pid);
-  if(proc == NULL) {
-    sprintf(msg, "unable to open handle for process (%d)", pid);
-    env->ThrowNew(IOException, msg);
-  }
-
   /* kill the process */ 
   switch(signal) {
   case 9:  /* SIGKILL */
-    if(!TerminateProcess(proc, -1)) {
+    if(!KillProcessEx((DWORD) pid, TRUE)) {
       sprintf(msg, "failed send signal (%d) to process (%d)", signal, pid);
       env->ThrowNew(IOException, msg);
       return; 
@@ -356,9 +318,6 @@ JNICALL Java_us_temerity_pipeline_NativeProcessLight_signalNative
     env->ThrowNew(IOException, msg);
     return;
   }
-
-  /* cleanup process handles */ 
-  CloseHandle(proc);
 }
 
 
