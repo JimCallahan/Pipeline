@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.44 2007/06/26 05:18:57 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.45 2007/09/20 05:31:25 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2410,7 +2410,7 @@ class JQueueJobViewerPanel
   private synchronized void 
   doQueueJobs() 
   {
-    TreeMap<NodeID,TreeSet<FileSeq>> targets = getQueuedFileSeqs();
+    DoubleMap<NodeID, Long, TreeSet<FileSeq>> targets = getQueuedFileSeqs();
     if(!targets.isEmpty()) {    
       QueueJobsTask task = new QueueJobsTask(targets);
       task.start();
@@ -2426,7 +2426,7 @@ class JQueueJobViewerPanel
   private synchronized void 
   doQueueJobsSpecial() 
   {
-    TreeMap<NodeID,TreeSet<FileSeq>> targets = getQueuedFileSeqs();
+    DoubleMap<NodeID, Long, TreeSet<FileSeq>> targets = getQueuedFileSeqs();
     if(!targets.isEmpty()) {    
       JQueueJobsDialog diag = UIMaster.getInstance().showQueueJobsDialog();
       if(diag.wasConfirmed()) {
@@ -2452,7 +2452,7 @@ class JQueueJobViewerPanel
 
 	QueueJobsTask task = 
 	  new QueueJobsTask(targets, batchSize, priority, interval,
-			    selectionKeys, licenseKeys);
+			    selectionKeys, licenseKeys, true);
 	task.start();
       }
     }
@@ -2464,7 +2464,7 @@ class JQueueJobViewerPanel
   /** 
    * Get the target file sequences of the aborted and failed selected root jobs.
    */ 
-  private synchronized TreeMap<NodeID,TreeSet<FileSeq>> 
+  private synchronized DoubleMap<NodeID, Long, TreeSet<FileSeq>> 
   getQueuedFileSeqs() 
   {
     /* get the aborted and failed selected jobs */ 
@@ -2503,16 +2503,17 @@ class JQueueJobViewerPanel
     }
 
     /* group the jobs by target node */ 
-    TreeMap<NodeID,TreeSet<FileSeq>> targets = new TreeMap<NodeID,TreeSet<FileSeq>>();
+    DoubleMap<NodeID, Long, TreeSet<FileSeq>> targets = new DoubleMap<NodeID, Long, TreeSet<FileSeq>>();
     if(!failed.isEmpty()) {
       for(JobStatus status : failed.values()) {
+	long jobID = status.getJobID();
 	NodeID targetID = status.getNodeID();
 	String author = targetID.getAuthor();
 	if(author.equals(PackageInfo.sUser) || pPrivilegeDetails.isQueueManaged(author)) {
-	  TreeSet<FileSeq> fseqs = targets.get(targetID);
+	  TreeSet<FileSeq> fseqs = targets.get(targetID, jobID);
 	  if(fseqs == null) {
 	    fseqs = new TreeSet<FileSeq>();
-	    targets.put(targetID, fseqs);
+	    targets.put(targetID, jobID, fseqs);
 	  }
 	  
 	  fseqs.add(status.getTargetSequence());
@@ -2970,21 +2971,22 @@ class JQueueJobViewerPanel
     public 
     QueueJobsTask
     (
-     TreeMap<NodeID,TreeSet<FileSeq>> targets
+      DoubleMap<NodeID, Long, TreeSet<FileSeq>> targets
     ) 
     {
-      this(targets, null, null, null, null, null);
+      this(targets, null, null, null, null, null, false);
     }
     
     public 
     QueueJobsTask
     (
-     TreeMap<NodeID,TreeSet<FileSeq>> targets,
+     DoubleMap<NodeID, Long, TreeSet<FileSeq>> targets,
      Integer batchSize, 
      Integer priority, 
      Integer rampUp, 
      TreeSet<String> selectionKeys,
-     TreeSet<String> licenseKeys
+     TreeSet<String> licenseKeys,
+     boolean special
     ) 
     {
       super("JQueueJobsViewerPanel:QueueJobsTask");
@@ -2995,6 +2997,7 @@ class JQueueJobViewerPanel
       pRampUp        = rampUp; 
       pSelectionKeys = selectionKeys;
       pLicenseKeys   = licenseKeys;
+      pSpecial       = special;
     }
 
     public void 
@@ -3006,10 +3009,23 @@ class JQueueJobViewerPanel
 	  for(NodeID nodeID : pTargets.keySet()) {
 	    master.updatePanelOp(pGroupID, 
 				 "Resubmitting Jobs to the Queue: " + nodeID.getName());
-	    MasterMgrClient client = master.getMasterMgrClient(pGroupID); 
-	    client.resubmitJobs
-	      (nodeID, pTargets.get(nodeID), pBatchSize, pPriority, pRampUp, 
-	       pSelectionKeys, pLicenseKeys);
+	    MasterMgrClient client = master.getMasterMgrClient(pGroupID);
+	    TreeMap<Long, TreeSet<FileSeq>> targets = pTargets.get(nodeID);
+	    long jobID = targets.firstKey();
+	    if (pSpecial) 
+	      client.resubmitJobs
+	        (nodeID, targets.get(jobID), pBatchSize, pPriority, pRampUp, 
+	         pSelectionKeys, pLicenseKeys);
+	    else {
+	      
+	      QueueMgrClient queue = master.getQueueMgrClient(pGroupID);
+	      QueueJob job = queue.getJob(jobID);
+	      JobReqs reqs = job.getJobRequirements();
+	      client.resubmitJobs
+	        (nodeID, targets.get(jobID), pBatchSize, reqs.getPriority(), reqs.getRampUp(), 
+	         reqs.getSelectionKeys(), reqs.getLicenseKeys());
+
+	    }
 	  }
 	}
 	catch(PipelineException ex) {
@@ -3024,12 +3040,13 @@ class JQueueJobViewerPanel
       }
     }
 
-    private TreeMap<NodeID,TreeSet<FileSeq>>  pTargets;
-    private Integer                           pBatchSize;
-    private Integer                           pPriority;
-    private Integer                           pRampUp;
-    private TreeSet<String>                   pSelectionKeys;
-    private TreeSet<String>                   pLicenseKeys;
+    private DoubleMap<NodeID, Long, TreeSet<FileSeq>>  pTargets;
+    private Integer                                    pBatchSize;
+    private Integer                                    pPriority;
+    private Integer                                    pRampUp;
+    private TreeSet<String>                            pSelectionKeys;
+    private TreeSet<String>                            pLicenseKeys;
+    private boolean                                    pSpecial;
   }
 
   /** 
