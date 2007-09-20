@@ -24,6 +24,12 @@ import us.temerity.pipeline.plugin.MayaActionUtils;
  *     The name of the Maya Set used to identify the DAG nodes whose animation 
  *     channels should be exported. 
  *   </DIV> <BR>
+ *
+ *   Include Set<BR>
+ *   <DIV style="margin-left: 40px;">
+ *     If Export Set is a set, should that set be selected as well for exporting.
+ *     This does not need to be set if Export Set is a Maya group.
+ *   </DIV> <BR>
  *     
  *   Clean Up Namespace <BR>
  *   <DIV style="margin-left: 40px;">
@@ -69,15 +75,20 @@ class MayaExportAction
     super("MayaExport", new VersionID("2.3.10"), "Temerity",
       "An Action to export selected objects from an animated scene.");
     
+    underDevelopment();
+    
+    addMayaSceneParam();
+    
     {
       ActionParam param = 
-	new LinkActionParam
-	(aMayaScene, 
-	 "The Maya scene containing the target for the animation.", 
-	 null); 
+	new BooleanActionParam
+	(aIncludeSet,
+	 "If Export Set is a set, should that set be selected as well for exporting." +
+	 "This does not need to be set if Export Set is a Maya group.", 
+	 false); 
       addSingleParam(param);
     }
-
+    
     {
       ActionParam param = 
 	new StringActionParam
@@ -161,6 +172,7 @@ class MayaExportAction
       LayoutGroup layout = new LayoutGroup(true);
       layout.addEntry(aMayaScene);
       layout.addEntry(aExportSet);
+      layout.addEntry(aIncludeSet);
       layout.addEntry(aCleanUpNamespace);
       layout.addSeparator();
       layout.addEntry(aInitialMEL);
@@ -246,6 +258,7 @@ class MayaExportAction
       newScene = new Path(getTempPath(agenda), "tempMayaScene." + suffix); 
     
     String exportSet = getSingleStringParamValue(aExportSet);
+    boolean includeSet = getSingleBooleanParamValue(aIncludeSet);
     
     String melSnippet = null;
     try {
@@ -271,13 +284,20 @@ class MayaExportAction
       if (tempScene)
 	actualTarget = newScene;
       
-      if (melSnippet != null) {
-        out.write(melSnippet);
-      }
+      
       
       out.write("if (`objExists $export`) \n" +
       	        "{\n" +
-      	        "  select -r $export;\n" +
+      	        "  select -r $export;\n");
+      if (includeSet)
+	out.write("  select -r -ne $export;\n");
+      out.write("}\n\n");
+
+      if (melSnippet != null) 
+        out.write(melSnippet);
+      
+      out.write("if (size(`ls -sl`) > 0)\n" +
+      		"{\n" + 
       	        "  file -f " +
       		"  -type \"" + sceneType + "\" " +
       		"  -constructionHistory " +  exportHistory + " " +
@@ -358,6 +378,7 @@ class MayaExportAction
   /*----------------------------------------------------------------------------------------*/
   
   public static final String aExportSet          = "ExportSet";
+  public static final String aIncludeSet         = "IncludeSet";
   public static final String aNewSceneMEL        = "NewSceneMEL";
   public static final String aPreExportMEL       = "PreExportMEL";
   public static final String aCleanUpNamespace   = "CleanUpNamespace";
