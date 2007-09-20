@@ -1,4 +1,4 @@
-// $Id: MRayOptionsAction.java,v 1.4 2007/08/08 03:25:48 jesse Exp $
+// $Id: MRayOptionsAction.java,v 1.5 2007/09/20 05:27:06 jesse Exp $
 
 package us.temerity.pipeline.plugin.MRayOptionsAction.v2_3_5;
 
@@ -1176,11 +1176,19 @@ class MRayOptionsAction
     String fg = getSingleBooleanParamValue(aDiagFinalGather) ? "on" : "off";
     
     out.write
-      ("  #Diagnostic Settings\n" +
-       "  diagnostic grid" + pad(grd) + pad(grdN) + "\n" +
-       "  diagnostic bsp " + bsp + "\n" +
-       "  diagnostic photon" + pad(phot) + pad(photN) + "\n" +
-       "  diagnostic samples " + samp + "\n" +
+      ("  #Diagnostic Settings\n");
+    if (grd.equals("off"))
+      out.write("  diagnostic grid" + pad(grd) + "\n");
+    else
+      out.write("  diagnostic grid" + pad(grd) + pad(grdN) + "\n");
+    out.write
+      ("  diagnostic bsp " + bsp + "\n");
+    if (phot.equals("off"))
+      out.write("  diagnostic photon" + pad(phot) + "\n");
+    else
+      out.write("  diagnostic photon" + pad(phot) + pad(photN) + "\n");
+    out.write
+      ("  diagnostic samples " + samp + "\n" +
        "  diagnostic finalgather " + fg +  "\n\n\n");
   }
   
