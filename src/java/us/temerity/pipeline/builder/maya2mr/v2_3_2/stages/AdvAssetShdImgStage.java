@@ -35,13 +35,36 @@ class AdvAssetShdImgStage
           new FrameRange(1, 90, 1),
           4,
           "tga");
-    setSource(modelName, SourceType.Geometry);
-    setSource(lightsName, SourceType.Lights);
-    setSource(shaderName, SourceType.Shaders);
-    setSource(cameraName, SourceType.Cameras);
-    setSource(camOverrideName, SourceType.CamOverride);
-    setSource(optionName, SourceType.Options);
+    setSource(modelName, SourceType.Geometry, LinkRelationship.All);
+    setSource(lightsName, SourceType.Lights, LinkRelationship.OneToOne);
+    setSource(shaderName, SourceType.Shaders, LinkRelationship.OneToOne);
+    setSource(cameraName, SourceType.Cameras, LinkRelationship.OneToOne);
+    setSource(camOverrideName, SourceType.CamOverride, LinkRelationship.All);
+    setSource(optionName, SourceType.Options, LinkRelationship.All);
     addSingleParamValue("CameraName", "tt:renderCamShape");
+  }
+  
+  public void
+  setSource
+  (
+    String sourceName,
+    SourceType type,
+    LinkRelationship relationship
+  )
+    throws PipelineException
+  {
+    switch(relationship) {
+    case All:
+      addLink(new LinkMod(sourceName, LinkPolicy.Dependency));
+      break;
+    case OneToOne:
+      addLink(new LinkMod(sourceName, LinkPolicy.Dependency, relationship, 0));
+      break;
+    case None:
+      throw new PipelineException
+        ("Cannot have a Link Relationship of (None) with a MRayRender Stage.");
+    }
+    addSourceParamValue(sourceName, "Contains", type.toString());
   }
   private static final long serialVersionUID = 5099001800033780443L;
 }

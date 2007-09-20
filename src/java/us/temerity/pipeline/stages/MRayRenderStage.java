@@ -71,11 +71,20 @@ class MRayRenderStage
   setSource
   (
     String sourceName,
-    SourceType type
+    SourceType type,
+    LinkRelationship relationship
   )
     throws PipelineException
   {
-    addLink(new LinkMod(sourceName, LinkPolicy.Dependency));
+    switch(relationship) {
+    case All:
+      addLink(new LinkMod(sourceName, LinkPolicy.Dependency));  
+    case OneToOne:
+      addLink(new LinkMod(sourceName, LinkPolicy.Dependency, relationship, 0));
+    case None:
+      throw new PipelineException
+        ("Cannot have a Link Relationship of (None) with a MRayRender Stage.");
+    }
     addSourceParamValue(sourceName, "Contains", type.toString());
   }
   
