@@ -51,7 +51,7 @@ class DefaultAssetNames
       addParam(param);
     }
     {
-      String each[] = {"prop", "set", "character"};
+      String each[] = {"prop", "set", "character", "cam"};
       ArrayList<String> choices = new ArrayList<String>(Arrays.asList(each)); 
       UtilityParam param = 
 	new EnumUtilityParam
