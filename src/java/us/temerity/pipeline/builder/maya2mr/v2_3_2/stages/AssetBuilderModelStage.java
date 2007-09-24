@@ -78,7 +78,8 @@ class AssetBuilderModelStage
   {
     removeAction(pRegisteredNodeName);
     if(pPlaceHolderMel != null)
-      pClient.unlink(getAuthor(), getView(), pRegisteredNodeName, pPlaceHolderMel);
+      if (pRegisteredNodeMod.getSourceNames().contains(pPlaceHolderMel))
+	pClient.unlink(getAuthor(), getView(), pRegisteredNodeName, pPlaceHolderMel);
   }
   
   private String pPlaceHolderMel;
