@@ -55,7 +55,7 @@ class JBuilderParamDialog
     throws PipelineException
   {
     String header = pBuilder.getNameUI();
-    String cancel = "Quit";
+    String cancel = "Abort";
     String[][] extras = new String[3][2];
     extras[0][0] = "Next";
     extras[0][1] = "next-pass";
@@ -137,7 +137,7 @@ class JBuilderParamDialog
   private void
   checkinPhaseEnableButtons()
   {
-    pNextActionButton.setText("Check-In");
+    pNextActionButton.setText("Finalize");
     pNextActionButton.setActionCommand("check-in");
     pNextButton.setEnabled(false);
     pNextActionButton.setEnabled(true);
@@ -280,6 +280,7 @@ class JBuilderParamDialog
   doCheckin()
   {
     disableAllButtons();
+    pCancelButton.setText("Quit");
     pBuilder.new CheckinTask().start();
   }
   
@@ -325,6 +326,7 @@ class JBuilderParamDialog
     String message = "The builder did not finish succesfully.\n";
     message += ex.getMessage() + "\n";
     pPhase = GUIPhase.Error;
+    pCancelButton.setText("Quit");
     if (releaseNodes) {
       message += "The builder is set to release all registered nodes.  " +
       		 "Do you wish to release these nodes?\n";

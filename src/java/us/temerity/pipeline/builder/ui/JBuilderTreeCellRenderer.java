@@ -48,12 +48,16 @@ class JBuilderTreeCellRenderer
   public Component 
   getTreeCellRendererComponent
   (
+   @SuppressWarnings("unused")
    JTree tree, 
    Object value, 
-   boolean isSelected, 
+   boolean isSelected,
+   @SuppressWarnings("unused")
    boolean isExpanded, 
    boolean isLeaf, 
+   @SuppressWarnings("unused")
    int row, 
+   @SuppressWarnings("unused")
    boolean hasFocus
   ) 
   { 
