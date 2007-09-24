@@ -13,6 +13,7 @@ noinst_PROGRAMS = \
 
 libNative_so_SOURCES = \
   NativeFileSys.cc \
+  NativeOS.cc \
   NativeProcessStats.cc \
   NativeProcessHeavy.cc \
   NativeProcessLight.cc
@@ -40,6 +41,7 @@ endif
 
 EXTRA_DIST = \
   NativeFileSys.hh \
+  NativeOS.hh \
   NativeProcessStats.hh \
   NativeProcessHeavy.hh \
   NativeProcessLight.hh

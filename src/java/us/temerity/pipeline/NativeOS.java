@@ -1,4 +1,4 @@
-// $Id: NativeOS.java,v 1.7 2007/02/22 16:12:39 jim Exp $
+// $Id: NativeOS.java,v 1.8 2007/09/24 08:10:16 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -461,6 +461,45 @@ class NativeOS
     return load;
   }
 
+   
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the abstract file system path location of the given user's home directory.<P> 
+   * 
+   * This method uses the Unix getpwent(3) system function call and is therefore only valid 
+   * on Unix-like operating systems (Unix or MacOS).
+   * 
+   * @param user
+   *   The name of the user.
+   * 
+   * @throws IOException 
+   *   If unable to lookup the path.
+   */
+  public static Path
+  getUserHomePath
+  (
+   String user
+  ) 
+    throws IOException
+  {
+    Path path = null;
+    switch(PackageInfo.sOsType) {
+    case Unix:
+    case MacOS:
+      {
+        String dir = getUserHomePathNative(user);
+        if(dir != null) 
+          path = new Path(dir);  
+      }
+      break;
+
+    default:
+      throw new IOException("This method is not supported on Windows!");
+    }
+
+    return path;
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -508,5 +547,23 @@ class NativeOS
    */
   public static native float
   getLoadAverageNative() 
+    throws IOException;
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the abstract file system path location of the given user's home directory.
+   * 
+   * @param user
+   *   The name of the user.
+   * 
+   * @throws IOException 
+   *   If unable to lookup the path.
+   */
+  public static native String
+  getUserHomePathNative
+  (
+   String user
+  ) 
     throws IOException;
 }
