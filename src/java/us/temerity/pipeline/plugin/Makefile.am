@@ -160,10 +160,14 @@ SUBDIRS = \
   MRayTexturePackAction \
   MRayTextureUnpackAction \
   NEditEditor \
+  NukeAddSourceTool \
+  NukeBuildAction \
   NukeCompAction \
   NukeDiffComparator \
   NukeEditor \
   NukeFrameCyclerEditor \
+  NukeSourceSyncTool \
+  NukeThumbnailAction \
   NukeViewerEditor \
   PatchAction \
   PatternCloneTool \

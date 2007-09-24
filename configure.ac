@@ -9,7 +9,7 @@ AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(Pipeline, 2.3.12a)
+AM_INIT_AUTOMAKE(Pipeline, 2.3.13)
                            
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
@@ -1395,6 +1395,7 @@ AC_CHECK_HEADER([sys/types.h])
 AC_CHECK_HEADER([sys/stat.h])     
 AC_CHECK_HEADER([strings.h])      
 AC_CHECK_HEADER([unistd.h])       
+AC_CHECK_HEADER([pwd.h])       
 
 AC_MSG_RESULT([ ])
 
@@ -2129,6 +2130,10 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/MayaTextureSyncTool/v2_0_9/Makefile
   src/java/us/temerity/pipeline/plugin/NEditEditor/Makefile
   src/java/us/temerity/pipeline/plugin/NEditEditor/v2_2_1/Makefile
+  src/java/us/temerity/pipeline/plugin/NukeAddSourceTool/Makefile
+  src/java/us/temerity/pipeline/plugin/NukeAddSourceTool/v2_3_4/Makefile
+  src/java/us/temerity/pipeline/plugin/NukeBuildAction/Makefile
+  src/java/us/temerity/pipeline/plugin/NukeBuildAction/v2_3_4/Makefile
   src/java/us/temerity/pipeline/plugin/NukeCompAction/Makefile
   src/java/us/temerity/pipeline/plugin/NukeCompAction/v2_2_1/Makefile
   src/java/us/temerity/pipeline/plugin/NukeDiffComparator/Makefile
@@ -2137,6 +2142,10 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/NukeEditor/v2_2_1/Makefile
   src/java/us/temerity/pipeline/plugin/NukeFrameCyclerEditor/Makefile
   src/java/us/temerity/pipeline/plugin/NukeFrameCyclerEditor/v2_2_1/Makefile
+  src/java/us/temerity/pipeline/plugin/NukeSourceSyncTool/Makefile
+  src/java/us/temerity/pipeline/plugin/NukeSourceSyncTool/v2_3_4/Makefile
+  src/java/us/temerity/pipeline/plugin/NukeThumbnailAction/Makefile
+  src/java/us/temerity/pipeline/plugin/NukeThumbnailAction/v2_3_6/Makefile
   src/java/us/temerity/pipeline/plugin/NukeViewerEditor/Makefile
   src/java/us/temerity/pipeline/plugin/NukeViewerEditor/v2_2_1/Makefile
   src/java/us/temerity/pipeline/plugin/PRBrickMakeAction/Makefile
