@@ -5,6 +5,7 @@ import us.temerity.pipeline.LogMgr.Kind;
 import us.temerity.pipeline.LogMgr.Level;
 import us.temerity.pipeline.builder.PluginContext;
 import us.temerity.pipeline.builder.UtilContext;
+import us.temerity.pipeline.builder.BaseBuilder.ActionOnExistence;
 import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
 
 /**
@@ -69,7 +70,7 @@ class StandardStage
       pAction = getAction(action, getToolset());
     }
     pFrameRange = null;
-    pPadding = 0;
+    pPadding = -1;
   }
 
   
@@ -172,33 +173,102 @@ class StandardStage
   {
     LogMgr.getInstance().log
       (Kind.Ops, Level.Fine, "Building the node: " + pRegisteredNodeName );
-    if (!checkExistance(pRegisteredNodeName)) {
-      if (pFrameRange == null)
-	pRegisteredNodeMod = registerNode();
-      else
-	pRegisteredNodeMod = registerSequence();
-      if(pRegisteredNodeMod == null)
-	return false;
-      if(pSecondarySequences != null)
-	addSecondarySequences();
-      if(pLinks != null)
-	createLinks();
-      if(pAction != null)
-	setAction();
-      setKeys();
-      if(pAction != null)
-	setJobSettings();
-      pClient.modifyProperties(getAuthor(), getView(), pRegisteredNodeMod);
+    ActionOnExistence actionOnExistence = pStageInformation.getActionOnExistence(); 
+    if (!checkExistance(pRegisteredNodeName, actionOnExistence))
+      return construct();
+    else if (actionOnExistence == ActionOnExistence.Conform)
+      return conform();
+    else 
       pRegisteredNodeMod = pClient.getWorkingVersion(getAuthor(), getView(),
-	pRegisteredNodeName);
-      if (pStageInformation.doAnnotations())
-	doAnnotations();
-      return true;
-    }
+	      pRegisteredNodeName);
     return false;
   }
   
-  public void
+  public boolean
+  construct()
+    throws PipelineException
+  {
+    if (pFrameRange == null)
+	pRegisteredNodeMod = registerNode();
+    else
+	pRegisteredNodeMod = registerSequence();
+    if(pRegisteredNodeMod == null)
+	return false;
+    if(pSecondarySequences != null)
+	addSecondarySequences();
+    if(pLinks != null)
+	createLinks();
+    if(pAction != null)
+	setAction();
+    setKeys();
+    if(pAction != null)
+	setJobSettings();
+    pClient.modifyProperties(getAuthor(), getView(), pRegisteredNodeMod);
+    pRegisteredNodeMod = pClient.getWorkingVersion(getAuthor(), getView(),
+	pRegisteredNodeName);
+    if (pStageInformation.doAnnotations())
+	doAnnotations();
+    return true;
+  }
+  
+  @Override
+  public boolean 
+  conform()
+    throws PipelineException
+  {
+    LogMgr.getInstance().log
+      (Kind.Ops, Level.Finer, "Conforming the node: " + pRegisteredNodeName );
+    NodeID id = new NodeID(getAuthor(), getView(), pRegisteredNodeName);
+    NodeStatus status = pClient.status(id, true);
+    NodeDetails details = status.getDetails();
+    NodeMod oldMod = details.getWorkingVersion(); 
+    boolean hasFrameNumbers = oldMod.getPrimarySequence().hasFrameNumbers();
+    if (hasFrameNumbers && pFrameRange == null)
+      throw new PipelineException
+        ("Attempting to conform the node (" + pRegisteredNodeName + ") from one with " +
+         "frame numbers to one without frame numbers");
+    if (!hasFrameNumbers && pFrameRange != null)
+      throw new PipelineException
+      ("Attempting to conform the node (" + pRegisteredNodeName + ") from one without " +
+       "frame numbers to one with frame numbers");
+    NodeVersion latest = details.getLatestVersion(); 
+    if ( latest != null) {
+      String oldSuffix = latest.getPrimarySequence().getFilePattern().getSuffix();
+      String newSuffix = latest.getPrimarySequence().getFilePattern().getSuffix();
+      if (!oldSuffix.equals(newSuffix))
+	throw new PipelineException
+	  ("Attempting to conform the node (" + pRegisteredNodeName + ") from having " +
+	   "the suffix (" + oldSuffix + ") to having a suffix (" + newSuffix + ").  " +
+	   "Since this node has been checked-in, this is an illegal modification.");
+    }
+    FilePattern newPat = new FilePattern(pRegisteredNodeName, pPadding, pSuffix);
+    pClient.rename(id, newPat, true);
+    if (pFrameRange != null)
+      pClient.renumber(id, pFrameRange, true);
+    pRegisteredNodeMod = pClient.getWorkingVersion(id);
+    pRegisteredNodeMod.setEditor(pEditor);
+    removeSecondarySequences();
+    if(pSecondarySequences != null)
+      addSecondarySequences();
+    removeLinks();
+    if(pLinks != null)
+      createLinks();
+    if(pAction != null)
+      setAction();
+    pRegisteredNodeMod.setJobRequirements(new JobReqs());
+    setKeys();
+    if(pAction != null)
+	setJobSettings();
+    pClient.modifyProperties(getAuthor(), getView(), pRegisteredNodeMod);
+    pRegisteredNodeMod = pClient.getWorkingVersion(getAuthor(), getView(),
+      pRegisteredNodeName);
+    removeAnnotations();
+    if (pStageInformation.doAnnotations())
+      doAnnotations();
+    return true;
+  }
+  
+  protected final void
   doAnnotations()
     throws PipelineException
   {
@@ -206,6 +276,13 @@ class StandardStage
       BaseAnnotation annot = pAnnotations.get(name);
       pClient.addAnnotation(pRegisteredNodeName, name, annot);
     }
+  }
+  
+  protected final void
+  removeAnnotations()
+    throws PipelineException
+  {
+    pClient.removeAnnotations(pRegisteredNodeName);
   }
   
 

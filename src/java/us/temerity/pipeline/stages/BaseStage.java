@@ -1,4 +1,4 @@
-// $Id: BaseStage.java,v 1.10 2007/08/27 01:19:25 jesse Exp $
+// $Id: BaseStage.java,v 1.11 2007/09/24 17:14:44 jesse Exp $
 
 package us.temerity.pipeline.stages;
 
@@ -145,6 +145,16 @@ class BaseStage
   public abstract boolean 
   build() 
     throws PipelineException;
+  
+  /**
+   * Method that every stage needs to override to perform its function.
+   * 
+   * @return A boolean representing whether the build process completed successfully.
+   * @throws PipelineException
+   */
+  public abstract boolean 
+  conform() 
+    throws PipelineException;
 
   /**
    * Takes all the {@link FileSeq} stored in the pSecondarySequences variable and adds
@@ -161,6 +171,12 @@ class BaseStage
       pRegisteredNodeMod.addSecondarySequence(seq);
     }
     return true;
+  }
+  
+  protected final void
+  removeSecondarySequences()
+  {
+    pRegisteredNodeMod.removeAllSecondarySequences();
   }
 
   /**
@@ -179,6 +195,15 @@ class BaseStage
 	.getPolicy(), link.getRelationship(), link.getFrameOffset());
     }
     return true;
+  }
+  
+  protected final void
+  removeLinks()
+    throws PipelineException
+  {
+    for (String source : pRegisteredNodeMod.getSourceNames()) {
+      pClient.unlink(getAuthor(), getView(), pRegisteredNodeName, source);
+    }
   }
 
   /**
@@ -1059,11 +1084,11 @@ class BaseStage
   protected final boolean
   checkExistance
   (
-    String nodeName
+    String nodeName,
+    ActionOnExistence actionOnExistence
   ) 
     throws PipelineException
   {
-    ActionOnExistence actionOnExistence = pStageInformation.getActionOnExistence();
     LogMgr pLog = LogMgr.getInstance();
     if (nodeName == null)
       return false;
@@ -1087,6 +1112,7 @@ class BaseStage
     case LOCAL:
       switch(actionOnExistence) {
       case CheckOut:
+      case Conform:
 	 pClient.checkOut(getAuthor(), getView(), nodeName, null, 
 	   CheckOutMode.KeepModified, CheckOutMethod.PreserveFrozen);
 	 pLog.log(Kind.Ops, Level.Finest, "Checking out the node.");
@@ -1097,6 +1123,7 @@ class BaseStage
     case REP:
       switch(actionOnExistence) {
       case CheckOut:
+      case Conform:
 	 pClient.checkOut(getAuthor(), getView(), nodeName, null, 
            CheckOutMode.KeepModified, CheckOutMethod.PreserveFrozen);
 	 pLog.log(Kind.Ops, Level.Finest, "Checking out the node.");
