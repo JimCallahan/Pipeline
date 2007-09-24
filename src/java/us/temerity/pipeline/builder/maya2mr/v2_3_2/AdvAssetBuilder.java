@@ -1,4 +1,4 @@
-// $Id: AdvAssetBuilder.java,v 1.13 2007/09/17 03:41:34 jim Exp $
+// $Id: AdvAssetBuilder.java,v 1.14 2007/09/24 17:10:33 jesse Exp $
 
 package us.temerity.pipeline.builder.maya2mr.v2_3_2;
 
@@ -385,7 +385,7 @@ class AdvAssetBuilder
   /*----------------------------------------------------------------------------------------*/
   
   @Override
-  protected TreeSet<String>
+  protected LinkedList<String>
   getNodesToCheckIn()
   {
     return getCheckInList();

@@ -1,4 +1,4 @@
-// $Id: AssetBuilder.java,v 1.14 2007/08/24 17:32:05 jesse Exp $
+// $Id: AssetBuilder.java,v 1.15 2007/09/24 17:10:33 jesse Exp $
 
 package us.temerity.pipeline.builder.maya2mr.v2_3_2;
 
@@ -351,7 +351,7 @@ class AssetBuilder
   /*----------------------------------------------------------------------------------------*/
   
   @Override
-  protected TreeSet<String>
+  protected LinkedList<String>
   getNodesToCheckIn()
   {
     return getCheckInList();
@@ -532,6 +532,8 @@ class AssetBuilder
 
       pPlaceHolderMEL = pProjectNames.getPlaceholderScriptName();
       addNonNullValue(pPlaceHolderMEL, pRequiredNodes);
+      
+      addNonNullValue(pProjectNames.getPlaceholderSkelScriptName(), pRequiredNodes);
       
       pVerifyModelMEL = null;
       if (getBooleanParamValue(new ParamMapping(aVerifyModelMEL)))
@@ -751,9 +753,11 @@ class AssetBuilder
     doRig()
       throws PipelineException
     {
+      LockBundle bundle = new LockBundle();
       String taskType = pProjectNames.getRiggingTaskName();
       
       String modelFinal = pAssetNames.getModelFinalNodeName();
+      bundle.addNodeToLock(modelFinal);
       String blendShapes = null; 
       if (pHasBlendShapes) {
         blendShapes = pAssetNames.getBlendShapeModelNodeName();
@@ -1002,6 +1006,7 @@ class AssetBuilder
         stage.build();
         addToQueueList(rigSubmit);
         addToCheckInList(rigSubmit);
+        bundle.addNodeToCheckin(rigSubmit);
       }
       String assetFinal = pAssetNames.getAnimFinalNodeName();
       String rigApprove = pAssetNames.getRigApproveNodeName();
@@ -1031,7 +1036,9 @@ class AssetBuilder
         stage.build();
         addToQueueList(rigApprove);
         addToCheckInList(rigApprove);
+        bundle.addNodeToCheckin(rigApprove);
       }
+      addLockBundle(bundle);
     }
     
     protected void
@@ -1040,6 +1047,8 @@ class AssetBuilder
     {
       String modelFinal = pAssetNames.getModelFinalNodeName();
       String taskType = pProjectNames.getShadingTaskName();
+      
+      LockBundle bundle = new LockBundle();
       
       String texNode = null;
       if (pBuildTextureNode) {
@@ -1084,6 +1093,8 @@ class AssetBuilder
       }
 
       String rigSource = pAssetNames.getAnimFinalNodeName();
+      
+      bundle.addNodeToLock(rigSource);
       
       String matVerify = pAssetNames.getMaterialVerifyNodeName();
       {
@@ -1158,6 +1169,7 @@ class AssetBuilder
         stage.build();
         addToQueueList(matSubmit);
         addToCheckInList(matSubmit);
+        bundle.addNodeToCheckin(matSubmit);
       }
 
       String finalTex = null;
@@ -1186,7 +1198,9 @@ class AssetBuilder
         stage.build();
         addToQueueList(matApprove);
         addToCheckInList(matApprove);
+        bundle.addNodeToCheckin(matApprove);
       }
+      addLockBundle(bundle);
     }
     private static final long serialVersionUID = 8287285172355006675L;
   }

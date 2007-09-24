@@ -1,5 +1,6 @@
 package us.temerity.pipeline.builder.maya2mr.v2_3_1;
 
+import java.util.LinkedList;
 import java.util.TreeSet;
 
 import us.temerity.pipeline.*;
@@ -51,7 +52,7 @@ class ShotBuilder
   }
   
   @Override
-  protected TreeSet<String> getNodesToCheckIn()
+  protected LinkedList<String> getNodesToCheckIn()
   {
     return null;
   }

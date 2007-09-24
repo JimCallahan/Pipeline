@@ -268,7 +268,7 @@ class SimpleAssetBuilder
   }
 
   @Override
-  protected TreeSet<String> 
+  protected LinkedList<String> 
   getNodesToCheckIn()
   {
     return getCheckInList();
@@ -375,6 +375,10 @@ class SimpleAssetBuilder
       pAssetType = pAssetNames.getAssetType();
       
       pRequiredNodes = new TreeSet<String>();
+      
+      if (pBuildTurntable) {
+	addNonNullValue(pProjectNames.getAssetShaderTTSetup(pAssetName, pAssetType), pRequiredNodes);
+      }
       
       pVerifyMEL = null;
       if (getBooleanParamValue(new ParamMapping(aVerifyMEL)))

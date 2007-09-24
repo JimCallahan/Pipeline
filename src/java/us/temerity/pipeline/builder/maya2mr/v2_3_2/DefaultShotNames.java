@@ -154,7 +154,7 @@ public class DefaultShotNames
       throw new PipelineException
         ("The Movie Name parameter cannot be null if Use Movie has been activated");
     
-    if (pMovieName == null)
+    if (pMovieName != null)
       pShotPath = 
 	new Path(new Path(new Path(new Path("/projects/" + pProject + "/prod/"), pMovieName), pSeqName), pShotName);
     else
@@ -511,7 +511,7 @@ public class DefaultShotNames
   public String
   getAnimApproveNodeName()
   {
-    return new Path(pAnimSubmit, pNamePrefix + "approve").toString();
+    return new Path(pAnimApprove, pNamePrefix + "approve").toString();
   }
   
   /**

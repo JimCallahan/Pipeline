@@ -135,7 +135,8 @@ class ModelPiecesBuilder
   /*----------------------------------------------------------------------------------------*/
 
   @Override
-  protected TreeSet<String> getNodesToCheckIn()
+  protected LinkedList<String> 
+  getNodesToCheckIn()
   {
     return getCheckInList();
   }

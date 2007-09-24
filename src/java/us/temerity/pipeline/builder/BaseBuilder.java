@@ -1,4 +1,4 @@
-// $Id: BaseBuilder.java,v 1.27 2007/08/27 01:19:25 jesse Exp $
+// $Id: BaseBuilder.java,v 1.28 2007/09/24 17:10:33 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -81,6 +81,7 @@ class BaseBuilder
     pFirstLoopPasses = new ArrayList<SetupPass>();
     pRemainingFirstLoopPasses = new LinkedList<SetupPass>();
     pSecondLoopPasses = new ArrayList<ConstructPass>();
+    pLockBundles = new ArrayList<LockBundle>();
     {
       UtilityParam param = 
 	new EnumUtilityParam
@@ -688,6 +689,24 @@ class BaseBuilder
       "Adding a ConstructPass named (" + pass.getName() + ") to the " +
       "Builder identified by (" + getPrefixedName() + ")");
   }
+  
+  /**
+   * Adds a {@link LockBundle} to the current Builder.
+   * 
+   * @throws PipelineException
+   *   If a null LinkBundle is passed in.
+   */
+  public final void
+  addLockBundle
+  (
+    LockBundle bundle  
+  )
+    throws PipelineException
+  {
+    if (bundle == null)
+      throw new PipelineException("Cannot add a null LockBundle");
+    pLockBundles.add(bundle);
+  }
 
   /**
    * Creates a dependency between two ConstructPasses.
@@ -905,6 +924,20 @@ class BaseBuilder
 	pLog.log(Kind.Ops, Level.Fine, 
 	  "Beginning check-in for builder ("+ builder.getPrefixedName() + ").");
 	builder.checkInNodes(builder.getNodesToCheckIn(), builder.getCheckinLevel(), builder.getCheckInMessage());
+	if (builder.pLockBundles.size() > 0) {
+	  pLog.log(Kind.Ops, Level.Fine, 
+	    "Locking appropriate nodes for builder ("+ builder.getPrefixedName() + ").");
+	  for (LockBundle bundle : builder.pLockBundles) {
+	    for (String node : bundle.getNodesToLock())
+	      lockLatest(node);
+	    TreeSet<String> neededNodes = new TreeSet<String>(bundle.getNodesToCheckin());
+	    LinkedList<QueueJobGroup> jobs = queueNodes(neededNodes);
+	    waitForJobs(jobs);
+	    if (!didTheNodesFinishCorrectly(neededNodes))
+	      throw new PipelineException("The jobs did not finish correctly");
+	    checkInNodes(bundle.getNodesToCheckin(), VersionID.Level.Micro, "The tree is now properly locked.");
+	  }
+	}
       }
       else
 	pLog.log(Kind.Ops, Level.Fine, 
@@ -933,7 +966,7 @@ class BaseBuilder
    * This method needs to be overriden to return a list of nodes that this Builder will
    * check-in.
    */
-  protected abstract TreeSet<String>
+  protected abstract LinkedList<String>
   getNodesToCheckIn();
   
   /**
@@ -986,7 +1019,7 @@ class BaseBuilder
       if (pActionOnExistence == ActionOnExistence.CheckOut) {
 	pClient.checkOut(getAuthor(), getView(), nodeName, null, 
 	  CheckOutMode.KeepModified, CheckOutMethod.PreserveFrozen);
-	pLog.log(Kind.Ops, Level.Finest, "Checking out the node.");
+	pLog.log(Kind.Bld, Level.Finest, "Checking out the node.");
       }
       break;
     case REP:
@@ -1242,10 +1275,10 @@ class BaseBuilder
     return new TreeSet<String>(pNodesToDisable);
   }
   
-  protected final TreeSet<String> 
+  protected final LinkedList<String> 
   getCheckInList()
   {
-    return new TreeSet<String>(pNodesToCheckIn);
+    return new LinkedList<String>(pNodesToCheckIn);
   }
   
   @Override
@@ -1553,6 +1586,8 @@ class BaseBuilder
   private ArrayList<SetupPass> pFirstLoopPasses;
   
   private ArrayList<ConstructPass> pSecondLoopPasses;
+  
+  private ArrayList<LockBundle> pLockBundles;
 
   private int pCurrentPass;
   

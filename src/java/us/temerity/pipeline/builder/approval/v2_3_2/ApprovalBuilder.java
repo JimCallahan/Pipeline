@@ -146,7 +146,7 @@ class ApprovalBuilder
   /*----------------------------------------------------------------------------------------*/
   
   @Override
-  protected TreeSet<String> 
+  protected LinkedList<String> 
   getNodesToCheckIn()
   {
     return getCheckInList();
