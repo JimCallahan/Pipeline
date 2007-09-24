@@ -1,0 +1,2 @@
+SUBDIRS = \
+  maya2mr 

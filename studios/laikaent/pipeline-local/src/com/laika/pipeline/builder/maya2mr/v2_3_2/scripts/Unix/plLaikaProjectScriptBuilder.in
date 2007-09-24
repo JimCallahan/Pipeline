@@ -1,0 +1,8 @@
+#!/bin/sh
+
+cd `pwd`
+exec "@CLIENT_JAVA_RUNTIME@" @JAVA_RUNTIME_OPTS@ \
+   @PLUI_GC_OPTS@ \
+  -Djava.library.path=@ROOT_INST_PARENT_DIR@/pipeline-latest/jogl/lib/Unix \
+  -cp @ROOT_INST_PARENT_DIR@/pipeline-latest/lib/api.jar:@ROOT_INST_PARENT_DIR@/pipeline-latest/jogl/lib/jogl.jar:@ROOT_INST_PARENT_DIR@/pipeline-latest/jogl/lib/gluegen-rt.jar:@ROOT_INST_PARENT_DIR@/pipeline-latest/builders/us/temerity/pipeline/builder/maya2mr/v2_3_2/maya2mr.jar:@ROOT_INST_PARENT_DIR@/pipeline-latest/builders/com/laika/pipeline/builder/maya2mr/v2_3_2/maya2mr.jar \
+  us/temerity/pipeline/bootstrap/Main us.temerity.pipeline.core.BuilderApp com.laika.pipeline.builder.maya2mr.v2_3_2.LaikaProjectScriptBuilder "$@"

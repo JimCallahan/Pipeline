@@ -1,3 +1,4 @@
 
 SUBDIRS = \
-  radar
+  radar \
+  laikaent
