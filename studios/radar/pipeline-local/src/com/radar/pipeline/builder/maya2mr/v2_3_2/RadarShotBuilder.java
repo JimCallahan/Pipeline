@@ -234,7 +234,7 @@ class RadarShotBuilder
   }
   
   @Override
-  protected TreeSet<String> 
+  protected LinkedList<String> 
   getNodesToCheckIn()
   {
     return null;

@@ -1,4 +1,4 @@
-// $Id: BaseUtil.java,v 1.18 2007/08/24 17:27:29 jesse Exp $
+// $Id: BaseUtil.java,v 1.19 2007/09/24 17:16:06 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -577,7 +577,7 @@ class BaseUtil
   public void 
   checkInNodes
   (
-    TreeSet<String> nodes, 
+    List<String> nodes, 
     VersionID.Level level, 
     String message
   ) 
