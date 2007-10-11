@@ -1,4 +1,4 @@
-// $Id: JobReqs.java,v 1.18 2007/04/27 20:45:33 jim Exp $
+// $Id: JobReqs.java,v 1.19 2007/10/11 18:52:06 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -12,14 +12,14 @@ import java.io.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * The requirements that a server must meet in order to be eligable to run a job. <P>
+ * The requirements that a server must meet in order to be eligible to run a job. <P>
  *
  * Pipeline determines assignment of jobs to available hosts using a flexible selection 
  * criteria which selects the best job to run on each available job server slot.  Job servers
  * are considered in ascending value of the dispatch Order parameter of each server.  <P> 
  * 
  * For each available job server slot, all pending jobs in the queue are considered for 
- * execution. Each job maintaines a set of requirements which must be met before the job 
+ * execution. Each job maintains a set of requirements which must be met before the job 
  * can be executed on a given host.  All jobs which have requirements not met by the current
  * job server are excluded from consideration.  Among the jobs which are not excluded, the
  * jobs are ranked according to selection score, job priority and finally age in the queue. 
@@ -111,6 +111,7 @@ import java.io.*;
  */
 public
 class JobReqs
+  extends ParentJobReqs
   implements Cloneable, Glueable, Serializable
 {  
   /*----------------------------------------------------------------------------------------*/
@@ -125,8 +126,7 @@ class JobReqs
   public 
   JobReqs()
   {
-    pLicenseKeys   = new HashSet<String>();
-    pSelectionKeys = new HashSet<String>();
+    super();
   }
 
   /**
@@ -139,21 +139,21 @@ class JobReqs
    *    The ramp-up interval (in seconds) for the job.
    * 
    * @param maxLoad 
-   *    The maxmimum system load allowed on an eligable host.
+   *    The maximum system load allowed on an eligible host.
    * 
    * @param minMemory 
-   *    The minimum amount of free memory (in bytes) required on an eligable host.
+   *    The minimum amount of free memory (in bytes) required on an eligible host.
    * 
    * @param minDisk 
    *    The minimum amount of free temporary local disk space (in bytes) required on an 
-   *    eligable host.
+   *    eligible host.
    * 
    * @param licenseKeys 
-   *    The set of license keys an eligable host is required to have or <CODE>null</CODE>
+   *    The set of license keys an eligible host is required to have or <CODE>null</CODE>
    *    for none.
    * 
    * @param selectionKeys 
-   *   The set of selection keys an eligable host is required to have or <CODE>null</CODE>
+   *   The set of selection keys an eligible host is required to have or <CODE>null</CODE>
    *   for none.
    */ 
   public 
@@ -183,7 +183,63 @@ class JobReqs
     if(selectionKeys != null) 
       pSelectionKeys.addAll(selectionKeys);
   }
+  
+  /**
+   * Construct a new set of job requirements, using the values in the existing JobReq
+   * as a base and overriding them wherever non-null values are passed in. <P> 
+   * 
+   * @param reqs
+   *    The base JobReqs whose values will be used when no alternative is specified.
+   * 
+   * @param delta
+   *    The changes that should be made to the base JobReqs.
+   */ 
+  public 
+  JobReqs
+  (
+   JobReqs reqs,
+   JobReqsDelta delta
+  )
+  {
+    if (delta.getPriority() != null )
+      setPriority(delta.getPriority());
+    else
+      setPriority(reqs.getPriority());
 
+    if (delta.getRampUp() != null)
+     setRampUp(delta.getRampUp());
+    else
+      setRampUp(reqs.getRampUp());
+    
+    if (delta.getMaxLoad() != null)
+      setMaxLoad(delta.getMaxLoad());
+    else
+      setMaxLoad(reqs.getMaxLoad());
+    
+    if (delta.getMinMemory() != null)
+      setMinMemory(delta.getMinMemory());
+    else
+      setMinMemory(reqs.getMinMemory());
+    
+    if (delta.getMinDisk() != null)
+      setMinDisk(delta.getMinDisk());
+    else
+      setMinDisk(reqs.getMinDisk());
+
+    pLicenseKeys = new HashSet<String>();
+    if(delta.getLicenseKeys() != null) 
+      pLicenseKeys.addAll(delta.getLicenseKeys());
+    else if (reqs.getLicenseKeys().size() > 0)
+      pLicenseKeys.addAll(reqs.getLicenseKeys());
+
+    pSelectionKeys = new HashSet<String>();
+    if(delta.getSelectionKeys() != null) 
+      pSelectionKeys.addAll(delta.getSelectionKeys());
+    else if (reqs.getSelectionKeys().size() > 0)
+      pSelectionKeys.addAll(reqs.getSelectionKeys());
+  }
+
+  
   
   /*----------------------------------------------------------------------------------------*/
   /*   F A C T O R Y   M E T H O D S                                                        */
@@ -206,15 +262,6 @@ class JobReqs
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Get the relative job priority.
-   */
-  public int
-  getPriority()
-  {
-    return pPriority;
-  }
-
-  /** 
    * Set the relative job priority. The priority can be negative.
    * 
    * @param priority 
@@ -233,15 +280,6 @@ class JobReqs
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Get the ramp-up interval (in seconds).
-   */
-  public int
-  getRampUp() 
-  {
-    return pRampUp;
-  }
-
-  /** 
    * Set the ramp-up interval (in seconds).
    */ 
   public void 
@@ -257,16 +295,7 @@ class JobReqs
 
 
   /** 
-   * Get the maximum allowable system load.
-   */
-  public float
-  getMaxLoad() 
-  {
-    return pMaxLoad;
-  }
-
-  /** 
-   * Set the maximum allowable system load on an eligable host.
+   * Set the maximum allowable system load on an eligible host.
    */ 
   public void 
   setMaxLoad
@@ -281,16 +310,7 @@ class JobReqs
 
   
   /**
-   * Get the minimum amount of free memory (in bytes) required on an eligable host.
-   */ 
-  public long 
-  getMinMemory() 
-  {
-    return pMinMemory;
-  }
-
-  /**
-   * Set the minimum amount of free memory (in bytes) required on an eligable host.
+   * Set the minimum amount of free memory (in bytes) required on an eligible host.
    * 
    */ 
   public void 
@@ -306,18 +326,8 @@ class JobReqs
   
 
   /** 
-   * Get the minimum amount of free temporary local disk space (in bytes) required on an 
-   * eligable host.
-   */
-  public long 
-  getMinDisk() 
-  {
-    return pMinDisk;
-  }
-
-  /** 
    * Set the minimum amount of free temporary local disk space (in bytes) required on an 
-   * eligable host.
+   * eligible host.
    */
   public void 
   setMinDisk
@@ -329,183 +339,6 @@ class JobReqs
       throw new IllegalArgumentException("The minimum free disk space cannot be negative!");
     pMinDisk = bytes;
   }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Get the names of the required license keys. 
-   */
-  public Set<String>
-  getLicenseKeys()
-  {
-    return Collections.unmodifiableSet(pLicenseKeys);
-  }
-
-  /** 
-   * Add the named key to the set of required license keys.
-   *
-   * @param key 
-   *    The name of the license key to add.
-   */
-  public void
-  addLicenseKey
-  (
-   String key
-  ) 
-  {
-    if(key == null) 
-      throw new IllegalArgumentException("The license key cannot be (null)!");
-
-    pLicenseKeys.add(key);
-  }
-
-  /** 
-   * Add all of the given named keys to the set of required license keys.
-   *
-   * @param keys 
-   *    The names of the license keys to add.
-   */
-  public void
-  addLicenseKeys
-  (
-   Set<String> keys
-  ) 
-  {
-    for(String key : keys)
-      if(key == null) 
-        throw new IllegalArgumentException("The license key cannot be (null)!");
-
-    pLicenseKeys.addAll(keys);
-  }
-
-  /** 
-   * Remove the named key from the set of required license keys.
-   *
-   * @param key 
-   *    The name of the license key to remove.
-   */
-  public void
-  removeLicenseKey
-  (
-   String key
-  ) 
-  {
-    pLicenseKeys.remove(key);
-  }
-
-  /** 
-   * Remove all of the named keys from the set of required license keys.
-   *
-   * @param keys 
-   *    The names of the license keys to remove.
-   */
-  public void
-  removeLicenseKeys
-  (
-   Set<String> keys
-  ) 
-  {
-    pLicenseKeys.removeAll(keys);
-  }
-
-  /** 
-   * Remove all required license keys.
-    */
-  public void
-  removeAllLicenseKeys() 
-  {
-    pLicenseKeys.clear();
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Get the names of the required selection keys. 
-   */
-  public Set<String>
-  getSelectionKeys()
-  {
-    return Collections.unmodifiableSet(pSelectionKeys);
-  }
-
-  /** 
-   * Add the named key to the set of required selection keys.
-   *
-   * @param key 
-   *    The name of the selection key to add.
-   */
-  public void
-  addSelectionKey
-  (
-   String key
-  ) 
-  {
-    if(key == null) 
-      throw new IllegalArgumentException("The selection key cannot be (null)!");
-
-    pSelectionKeys.add(key);
-  }
-
-  /** 
-   * Add all of the given named keys to the set of required selection keys.
-   *
-   * @param keys 
-   *    The names of the selection keys to add.
-   */
-  public void
-  addSelectionKeys
-  (
-   Set<String> keys
-  ) 
-  {
-    for(String key : keys)
-      if(key == null) 
-        throw new IllegalArgumentException("The selection key cannot be (null)!");
-
-    pSelectionKeys.addAll(keys);
-  }
-
-  /** 
-   * Remove the named key from the set of required selection keys.
-   *
-   * @param key 
-   *    The name of the selection key to remove.
-   */
-  public void
-  removeSelectionKey
-  (
-   String key
-  ) 
-  {
-    pSelectionKeys.remove(key);
-  }
-
-  /** 
-   * Remove all of the named keys from the set of required selection keys.
-   *
-   * @param keys 
-   *    The names of the selection keys to remove.
-   */
-  public void
-  removeSelectionKeys
-  (
-   Set<String> keys
-  ) 
-  {
-    pSelectionKeys.removeAll(keys);
-  }
-
-  /** 
-   * Remove all required selection keys.
-    */
-  public void
-  removeAllSelectionKeys() 
-  {
-    pSelectionKeys.clear();
-  }
-
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -541,148 +374,10 @@ class JobReqs
   }
 
   
-  /*----------------------------------------------------------------------------------------*/
-  /*   C L O N E A B L E                                                                    */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Return a deep copy of this object.
-   */
-  public Object 
-  clone()
-  {
-    try {
-      JobReqs clone = (JobReqs) super.clone();
-
-      clone.pLicenseKeys   = new HashSet<String>(pLicenseKeys);
-      clone.pSelectionKeys = new HashSet<String>(pSelectionKeys);
-      
-      return clone; 
-    }
-    catch(CloneNotSupportedException ex) {
-      throw new IllegalStateException();       
-    }
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   G L U E A B L E                                                                      */
-  /*----------------------------------------------------------------------------------------*/
-
-  public void 
-  toGlue
-  ( 
-   GlueEncoder encoder  
-  ) 
-    throws GlueException
-  {
-    encoder.encode("Priority",  pPriority);
-    encoder.encode("RampUp",    pRampUp);
-    encoder.encode("MaxLoad",   pMaxLoad);
-    encoder.encode("MinMemory", pMinMemory);
-    encoder.encode("MinDisk",   pMinDisk);
-
-    if(!pLicenseKeys.isEmpty())
-      encoder.encode("LicenseKeys", pLicenseKeys);
-
-    if(!pSelectionKeys.isEmpty())
-      encoder.encode("SelectionKeys", pSelectionKeys);
-  }
-
-  public void 
-  fromGlue
-  (
-   GlueDecoder decoder  
-  ) 
-    throws GlueException
-  {
-    Integer priority = (Integer) decoder.decode("Priority");
-    if(priority == null) 
-      throw new GlueException("The \"Priority\" was missing!");
-    pPriority = priority;
-
-    Integer interval = (Integer) decoder.decode("RampUp");
-    if(interval == null) 
-      interval = 0;
-    pRampUp = interval;
-
-    Float load = (Float) decoder.decode("MaxLoad");
-    if(load == null) 
-      throw new GlueException("The \"MaxLoad\" was missing!");
-    pMaxLoad = load;
-    
-    Long mem = (Long) decoder.decode("MinMemory");
-    if(mem == null) 
-      throw new GlueException("The \"MinMemory\" was missing!");
-    pMinMemory = mem;
-    
-    Long disk = (Long) decoder.decode("MinDisk");
-    if(disk == null) 
-      throw new GlueException("The \"MinDisk\" was missing!");
-    pMinDisk = disk;
-
-    {
-      HashSet<String> keys = (HashSet<String>) decoder.decode("LicenseKeys");
-      if(keys != null) 
-	pLicenseKeys = keys;
-    }
-
-    {
-      HashSet<String> keys = (HashSet<String>) decoder.decode("SelectionKeys");
-      if(keys != null) 
-	pSelectionKeys = keys;
-    }
-  }
-
-
-
+  
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
   private static final long serialVersionUID = -5597354970617647694L;
-
-
- 
-  /*----------------------------------------------------------------------------------------*/
-  /*   I N T E R N A L S                                                                    */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * The relative job priority.
-   */
-  private int  pPriority;
- 
-  /**
-   * The ramp-up interval (in seconds).
-   */
-  private int  pRampUp;
- 
-  /**
-   * The maximum allowable system load on an eligable host.
-   */
-  private float  pMaxLoad;    
- 
-  /**
-   * The minimum amount of free memory (in bytes) required on an eligable host.
-   */      
-  private long  pMinMemory;  
-
-  /**
-   * The minimum amount of free temporary local disk space (in bytes) required on an 
-   * eligable host.
-   */       
-  private long  pMinDisk;           
-					  
-
-  /**
-   * The names of the required license keys. 
-   */
-  private HashSet<String>  pLicenseKeys;
-
-  /**
-   * The names of the required selection keys. 
-   */
-  private HashSet<String>  pSelectionKeys;
-
 }

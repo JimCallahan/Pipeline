@@ -1,9 +1,10 @@
-// $Id: JQueueJobViewerPanel.java,v 1.45 2007/09/20 05:31:25 jesse Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.46 2007/10/11 18:52:07 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.glue.*;
+import us.temerity.pipeline.jesse.ChangeJobReqs;
 import us.temerity.pipeline.math.*;
 
 import java.awt.*;
@@ -253,6 +254,12 @@ class JQueueJobViewerPanel
       item.setActionCommand("kill-jobs");
       item.addActionListener(this);
       pJobPopup.add(item);
+      
+      item = new JMenuItem("Change Job Reqs");
+      pChangeJobReqsItem = item;
+      item.setActionCommand("change-job-reqs");
+      item.addActionListener(this);
+      pJobPopup.add(item);      
 
       pJobPopup.addSeparator();
 
@@ -320,6 +327,12 @@ class JQueueJobViewerPanel
       item = new JMenuItem("Kill Jobs");
       pGroupKillJobsItem = item;
       item.setActionCommand("kill-jobs");
+      item.addActionListener(this);
+      pGroupPopup.add(item);
+      
+      item = new JMenuItem("Change Job Reqs");
+      pGroupKillJobsItem = item;
+      item.setActionCommand("change-job-reqs");
       item.addActionListener(this);
       pGroupPopup.add(item);
       
@@ -577,6 +590,7 @@ class JQueueJobViewerPanel
     pJobResumeJobsItem.setEnabled(!isLocked());
     pJobPreemptJobsItem.setEnabled(!isLocked());
     pJobKillJobsItem.setEnabled(!isLocked());
+    pChangeJobReqsItem.setEnabled(!isLocked());
 
     updateEditorMenus();
   }
@@ -726,6 +740,9 @@ class JQueueJobViewerPanel
     updateMenuToolTip
       (pJobKillJobsItem, prefs.getKillJobs(), 
        "Kill all jobs associated with the selected jobs.");
+    updateMenuToolTip
+      (pChangeJobReqsItem, null, 
+       "Changes the job requirements for the selected jobs.");
     updateMenuToolTip
       (pJobShowNodeItem, prefs.getShowNode(), 
        "Show the node which created the primary selected job in the Node Viewer.");
@@ -2117,6 +2134,8 @@ class JQueueJobViewerPanel
       doDeleteJobGroups();
     else if(cmd.equals("show-node"))
       doShowNode();
+    else if (cmd.equals("change-job-reqs"))
+      doChangeJobReqs();
 
     else {
       clearSelection();
@@ -2612,6 +2631,65 @@ class JQueueJobViewerPanel
 
     clearSelection();
     refresh(); 
+  }
+  
+  /**
+   * Change the jobs requirements associated with the selected jobs.
+   */ 
+  private synchronized void 
+  doChangeJobReqs() 
+  {
+    if (pSelected.size() > 0) {
+      JChangeJobReqsDialog diag = UIMaster.getInstance().showChangeJobReqDialog();
+      if(diag.wasConfirmed()) {
+	
+	Integer priority = null;
+	Integer rampUp = null;
+	Float maxLoad = null;
+	Long minMemory = null;
+	Long minDisk = null;
+	Set<String> licenseKeys = null;
+	Set<String> selectionKeys = null;
+	
+	if (diag.overridePriority())
+	  priority = diag.getPriority();
+	if (diag.overrideRampUp())
+	  rampUp = diag.getRampUp();
+	if (diag.overrideMaxLoad())
+	  maxLoad = diag.getMaxLoad();
+	if (diag.overrideMinMemory())
+	  minMemory = diag.getMinMemory();
+	if (diag.overrideMinDisk())
+	  minDisk = diag.getMinDisk();
+	if (diag.overrideLicenseKeys())
+	  licenseKeys = diag.getLicenseKeys();
+	if (diag.overrideSelectionKeys())
+	  selectionKeys = diag.getSelectionKeys();
+	
+	LinkedList<JobReqsDelta> change = new LinkedList<JobReqsDelta>();
+	for(ViewerJob vjob : pSelected.values()) {
+	  JobStatus status = vjob.getJobStatus();
+	  long jobID = status.getJobID();
+	  switch(status.getState()) {
+	  case Queued:
+	  case Paused:
+	  case Preempted:
+	    JobReqsDelta newReq = new JobReqsDelta
+	      (jobID, priority, rampUp, maxLoad, minMemory, minDisk, 
+	       licenseKeys, selectionKeys);
+	    change.add(newReq);
+	    break;
+	  }
+	}
+
+	if(!change.isEmpty()) {
+	  ChangeJobReqsTask task = new ChangeJobReqsTask(change);
+	  task.start();
+	}
+      } //if(diag.wasConfirmed())
+    }
+    clearSelection();
+    refresh();
   }
 
   /**
@@ -3212,6 +3290,48 @@ class JQueueJobViewerPanel
 
     private TreeSet<Long>  pJobIDs;
   }
+  
+  /** 
+   * Change the job requirements for the given jobs.
+   */ 
+  private
+  class ChangeJobReqsTask
+    extends Thread
+  {
+    public 
+    ChangeJobReqsTask
+    (   
+     LinkedList<JobReqsDelta> jobReqChanges
+    ) 
+    {
+      super("JQueueJobsViewerPanel:ChangeJobReqsTask");
+
+      pJobReqChanges = jobReqChanges;
+    }
+
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp(pGroupID, "Changing Job Reqs...")) {
+	try {
+	  master.getQueueMgrClient(pGroupID).changeJobReqs(pJobReqChanges);
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
+	}
+	finally {
+	  master.endPanelOp(pGroupID, "Done.");
+	}
+
+	updatePanels();
+      }
+    }
+
+    private LinkedList<JobReqsDelta> pJobReqChanges;
+  }
+
 
   /** 
    * Delete the completed job group.
@@ -3388,6 +3508,7 @@ class JQueueJobViewerPanel
   private JMenuItem  pJobResumeJobsItem;
   private JMenuItem  pJobPreemptJobsItem;
   private JMenuItem  pJobKillJobsItem;
+  private JMenuItem  pChangeJobReqsItem;
   private JMenuItem  pJobShowNodeItem;
 
   /**
@@ -3414,6 +3535,7 @@ class JQueueJobViewerPanel
   private JMenuItem  pGroupKillJobsItem;
   private JMenuItem  pGroupHideGroupsItem;
   private JMenuItem  pGroupDeleteGroupsItem;
+  private JMenuItem  pGroupChangeJobReqsItem;
   private JMenuItem  pGroupShowNodeItem;
 
   /**

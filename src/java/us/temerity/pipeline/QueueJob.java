@@ -1,4 +1,4 @@
-// $Id: QueueJob.java,v 1.12 2007/03/18 02:42:35 jim Exp $
+// $Id: QueueJob.java,v 1.13 2007/10/11 18:52:06 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -116,12 +116,29 @@ class QueueJob
   }
 
   /** 
-   * Get the requirements that a server must meet in order to be eligable to run this job.
+   * Get the requirements that a server must meet in order to be eligible to run this job.
    */
   public JobReqs
   getJobRequirements() 
   {
     return pJobReqs;
+  }
+  
+  /** 
+   * Sets the requirements that a server must meet in order to be eligible to run this job. <p>
+   *
+   * Note that there is no way, through the public API, to apply these changes to an existing
+   * job.  Please use the {@link QueueMgrClient#changeJobReqs(LinkedList)} to change the job 
+   * requirements of an existing job.
+   * 
+   */
+  public void 
+  setJobRequirements
+  (
+    JobReqs reqs  
+  ) 
+  {
+    pJobReqs = reqs;
   }
   
   /**
@@ -170,6 +187,7 @@ class QueueJob
    * its parameters from the generic staticly loaded BaseAction instance in the object 
    * stream. 
    */ 
+  @SuppressWarnings("unchecked")
   private void 
   readObject
   (
@@ -222,6 +240,7 @@ class QueueJob
       encoder.encode("SourceJobIDs", pSourceJobIDs);
   }
 
+  @SuppressWarnings("unchecked")
   public void 
   fromGlue
   (

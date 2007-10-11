@@ -1,17 +1,16 @@
-// $Id: JQueueJobsDialog.java,v 1.5 2007/09/07 18:52:38 jim Exp $
+// $Id: JQueueJobsDialog.java,v 1.6 2007/10/11 18:52:07 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
-import us.temerity.pipeline.*;
-import us.temerity.pipeline.ui.*; 
-
 import java.awt.*;
 import java.awt.event.*;
-import java.io.*;
-import java.util.*;
+import java.util.TreeMap;
+import java.util.TreeSet;
+
 import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.tree.*;
+
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.ui.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   Q U E U E   J O B S   D I A L O G                                                      */
@@ -38,10 +37,14 @@ class JQueueJobsDialog
   public 
   JQueueJobsDialog
   (
-   Frame owner
+   Frame owner,
+   String title,
+   boolean batching
   )  
   {
-    super(owner, "Queue Jobs Special");
+    super(owner, title);
+    
+    pBatching = batching;
 
     /* initialize fields */ 
     {
@@ -61,7 +64,7 @@ class JQueueJobsDialog
 	  JPanel tpanel = (JPanel) comps[0];
 	  JPanel vpanel = (JPanel) comps[1];
 	  
-	  {
+	  if (pBatching) {
 	    {
 	      JBooleanField field = 
 		UIFactory.createTitledBooleanField(tpanel, "Override Batch Size:", sTSize,
@@ -77,9 +80,9 @@ class JQueueJobsDialog
 	    pBatchSizeField = 
 	      UIFactory.createTitledIntegerField(tpanel, "Batch Size:", sTSize,
 						vpanel, null, sVSize);
+	    
+	    UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
 	  }
-	  
-	  UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
 	  
 	  {
 	    {
@@ -91,8 +94,6 @@ class JQueueJobsDialog
 	      field.addActionListener(this);
 	      field.setActionCommand("priority-changed");
 	    }
-	    
-	    pOverridePriorityField.addActionListener(this);
 	    
 	    UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
 	    
@@ -114,8 +115,6 @@ class JQueueJobsDialog
 	      field.setActionCommand("ramp-up-changed");
 	    }
 	    
-	    pOverrideRampUpField.addActionListener(this);
-	    
 	    UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
 	    
 	    pRampUpField = 
@@ -126,6 +125,57 @@ class JQueueJobsDialog
 	
 	JDrawer drawer = 
 	  new JDrawer("Job Requirements:", (JComponent) comps[2], true);
+	vbox.add(drawer);
+      }
+      
+      /* Machine Stats*/
+      {
+	Component comps[] = UIFactory.createTitledPanels();
+	JPanel tpanel = (JPanel) comps[0];
+	JPanel vpanel = (JPanel) comps[1];
+	{
+	  pOverrideMaxLoadField = 
+	    UIFactory.createTitledBooleanField
+	      (tpanel, "Override Max Load:", sTSize, vpanel, sVSize);
+	  pOverrideMaxLoadField.addActionListener(this);
+	  pOverrideMaxLoadField.setActionCommand("load-changed");
+
+	  UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+
+	  pMaxLoadField = 
+	    UIFactory.createTitledFloatField
+	      (tpanel, "Max Load:", sTSize, vpanel, null, sVSize);
+	}
+	UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
+	{
+	  pOverrideMinMemoryField = 
+	    UIFactory.createTitledBooleanField
+	      (tpanel, "Override Min Memory:", sTSize, vpanel, sVSize);
+	  pOverrideMinMemoryField.addActionListener(this);
+	  pOverrideMinMemoryField.setActionCommand("memory-changed");
+
+	  UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+
+	  pMinMemoryField = 
+	    UIFactory.createTitledByteSizeField
+	      (tpanel, "Min Memory:", sTSize, vpanel, null, sVSize);
+	}
+	UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
+	{
+	  pOverrideMinDiskField = 
+	    UIFactory.createTitledBooleanField
+	      (tpanel, "Override Min Disk:", sTSize, vpanel, sVSize);
+	  pOverrideMinDiskField.addActionListener(this);
+	  pOverrideMinDiskField.setActionCommand("disk-changed");
+
+	  UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+
+	  pMinDiskField = 
+	    UIFactory.createTitledByteSizeField
+	      (tpanel, "Min Disk:", sTSize, vpanel, null, sVSize);
+	}
+	JDrawer drawer = 
+	  new JDrawer("Machine Stats:", (JComponent) comps[2], true);
 	vbox.add(drawer);
       }
       
@@ -210,9 +260,17 @@ class JQueueJobsDialog
 
       JScrollPane scroll = UIFactory.createVertScrollPane(vbox);
 	
-      super.initUI("Queue Jobs Special:", scroll, "Submit", "Reset", null, "Cancel");
+      super.initUI(title + ":", scroll, "Submit", "Reset", null, "Cancel");
       pack();
     }
+  }
+  
+  public JQueueJobsDialog
+  (
+    Frame parent
+  )
+  {
+    this(parent, DEFAULT_NAME, true); 
   }
 
 
@@ -400,7 +458,66 @@ class JQueueJobsDialog
   {
     return pRampUpField.getValue();
   }
+  
+  /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * Whether to override the min memory interval.
+   */ 
+  public boolean 
+  overrideMinMemory() 
+  {
+    return pOverrideMinMemoryField.getValue();
+  }
+  
+  /**
+   * The overridden min memory interval.
+   */ 
+  public Long
+  getMinMemory()
+  {
+    return pMinMemoryField.getValue();
+  }
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether to override the min disk interval.
+   */ 
+  public boolean 
+  overrideMinDisk() 
+  {
+    return pOverrideMinDiskField.getValue();
+  }
+  
+  /**
+   * The overridden min disk interval.
+   */ 
+  public Long
+  getMinDisk()
+  {
+    return pMinDiskField.getValue();
+  }
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether to override the max load interval.
+   */ 
+  public boolean 
+  overrideMaxLoad() 
+  {
+    return pOverrideMaxLoadField.getValue();
+  }
+  
+  /**
+   * The overridden max load interval.
+   */ 
+  public Float
+  getMaxLoad()
+  {
+    return pMaxLoadField.getValue();
+  }
 
   /*----------------------------------------------------------------------------------------*/
   
@@ -456,6 +573,20 @@ class JQueueJobsDialog
 
     return keys;
   }
+  
+  public void
+  disableBatchSize()
+  {
+    pBatchSizeField.setEnabled(false);
+    pOverrideBatchSizeField.setEnabled(false);
+  }
+  
+  public void
+  enableBatchSize()
+  {
+    pBatchSizeField.setEnabled(true);
+    pOverrideBatchSizeField.setEnabled(true);
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -468,13 +599,21 @@ class JQueueJobsDialog
    * Invoked when the component has been made invisible.
    */ 
   public void 	
-  componentHidden(ComponentEvent e) {} 
+  componentHidden
+  (
+    @SuppressWarnings("unused")
+    ComponentEvent e
+  ) {} 
 
   /**
    * Invoked when the component's position changes.
    */ 
   public void 
-  componentMoved(ComponentEvent e) {} 
+  componentMoved  
+  (
+    @SuppressWarnings("unused")
+    ComponentEvent e
+  ) {} 
 
   /**
    * Invoked when the component's size changes.
@@ -499,7 +638,11 @@ class JQueueJobsDialog
    * Invoked when the component has been made visible.
    */
   public void 
-  componentShown(ComponentEvent e) {}
+  componentShown
+  (
+    @SuppressWarnings("unused")
+    ComponentEvent e
+  ) {} 
 
 
 
@@ -525,6 +668,12 @@ class JQueueJobsDialog
       doSelectionKeysChanged();
     else if(cmd.equals("license-keys-changed")) 
       doLicenseKeysChanged();
+    else if (cmd.equals("disk-changed"))
+      doMinDiskChanged();
+    else if (cmd.equals("memory-changed"))
+      doMinMemoryChanged();
+    else if (cmd.equals("load-changed"))
+      doMaxLoadChanged();
     else 
       super.actionPerformed(e);
   }
@@ -580,6 +729,54 @@ class JQueueJobsDialog
     else {
       pRampUpField.setEnabled(false);
       pRampUpField.setValue(null);
+    }
+  }
+
+  /**
+   * The value of the override min memory field has changed.
+   */
+  public void 
+  doMinMemoryChanged()
+  {
+    if(pOverrideMinMemoryField.getValue()) {
+      pMinMemoryField.setEnabled(true);
+      pMinMemoryField.setValue(JobReqs.defaultJobReqs().getMinMemory());
+    }
+    else {
+      pMinMemoryField.setEnabled(false);
+      pMinMemoryField.setValue(null);
+    }
+  }
+  
+  /**
+   * The value of the override min disk field has changed.
+   */
+  public void 
+  doMinDiskChanged()
+  {
+    if(pOverrideMinDiskField.getValue()) {
+      pMinDiskField.setEnabled(true);
+      pMinDiskField.setValue(JobReqs.defaultJobReqs().getMinDisk());
+    }
+    else {
+      pMinDiskField.setEnabled(false);
+      pMinDiskField.setValue(null);
+    }
+  }
+  
+  /**
+   * The value of the override min disk field has changed.
+   */
+  public void 
+  doMaxLoadChanged()
+  {
+    if(pOverrideMaxLoadField.getValue()) {
+      pMaxLoadField.setEnabled(true);
+      pMaxLoadField.setValue(JobReqs.defaultJobReqs().getMaxLoad());
+    }
+    else {
+      pMaxLoadField.setEnabled(false);
+      pMaxLoadField.setValue(null);
     }
   }
 
@@ -750,6 +947,8 @@ class JQueueJobsDialog
   
   private static final long serialVersionUID = -8678401089074297592L;
   
+  private static final String DEFAULT_NAME = "Queue Jobs Special";
+  
   private static final int sTSize = 150;
   private static final int sVSize = 250;
 
@@ -772,7 +971,7 @@ class JQueueJobsDialog
   private JBooleanField  pOverrideBatchSizeField;
   
   /**
-   * The overriden batch size.
+   * The overridden batch size.
    */ 
   private JIntegerField  pBatchSizeField;
   
@@ -783,20 +982,49 @@ class JQueueJobsDialog
   private JBooleanField  pOverridePriorityField;
   
   /**
-   * The overriden priority.
+   * The overridden priority.
    */ 
   private JIntegerField  pPriorityField;
   
-
   /**
    * Whether to override the ramp-up interval.
    */ 
   private JBooleanField  pOverrideRampUpField;
   
   /**
-   * The overriden ramp-up interval.
+   * The overridden ramp-up interval.
    */ 
   private JIntegerField  pRampUpField;
+  
+  /**
+   * Whether to override the Min Disk requirement.
+   */
+  private JBooleanField  pOverrideMinDiskField;
+  
+  /**
+   * The overridden Min Disk value.
+   */
+  private JByteSizeField pMinDiskField;
+  
+  /**
+   * Whether to override the Min Memory requirement.
+   */
+  private JBooleanField  pOverrideMinMemoryField;
+  
+  /**
+   * The overridden Min Memory value.
+   */
+  private JByteSizeField pMinMemoryField;
+  
+  /**
+   * Whether to override the Max Load requirement.
+   */
+  private JBooleanField pOverrideMaxLoadField;
+
+  /**
+   * The overridden Max Load value.
+   */
+  private JFloatField   pMaxLoadField;
 
   
   /*----------------------------------------------------------------------------------------*/
@@ -833,5 +1061,9 @@ class JQueueJobsDialog
    * Whether to export each license key indexed by license key name.
    */ 
   private TreeMap<String,JBooleanField>  pLicenseKeyFields;
+  
+  /*----------------------------------------------------------------------------------------*/
+  
+  private boolean pBatching;
   
 }

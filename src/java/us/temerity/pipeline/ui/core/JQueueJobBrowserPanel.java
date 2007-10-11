@@ -1,4 +1,4 @@
-// $Id: JQueueJobBrowserPanel.java,v 1.32 2007/05/14 16:22:01 jim Exp $
+// $Id: JQueueJobBrowserPanel.java,v 1.33 2007/10/11 18:52:07 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -143,6 +143,12 @@ class JQueueJobBrowserPanel
 	item = new JMenuItem("Kill Jobs");
 	pGroupsKillItem = item;
 	item.setActionCommand("groups-kill-jobs");
+	item.addActionListener(this);
+	pGroupsPopup.add(item);
+	
+	item = new JMenuItem("Change Job Reqs");
+	pGroupsChangeJobReqsItem = item;
+	item.setActionCommand("groups-change-job-reqs");
 	item.addActionListener(this);
 	pGroupsPopup.add(item);
 
@@ -645,6 +651,7 @@ class JQueueJobBrowserPanel
       pGroupsResumeItem.setEnabled(selected && !isLocked());
       pGroupsPreemptItem.setEnabled(selected && !isLocked());
       pGroupsKillItem.setEnabled(selected && !isLocked());
+      pGroupsChangeJobReqsItem.setEnabled(selected && !isLocked());
       pGroupsDeleteItem.setEnabled(selected && !isLocked());
       pGroupsDeleteCompletedItem.setEnabled(!isLocked());
       break;
@@ -656,6 +663,7 @@ class JQueueJobBrowserPanel
       pGroupsResumeItem.setEnabled(selected);
       pGroupsPreemptItem.setEnabled(selected);
       pGroupsKillItem.setEnabled(selected);
+      pGroupsChangeJobReqsItem.setEnabled(selected);
       pGroupsDeleteItem.setEnabled(selected);
       pGroupsDeleteCompletedItem.setEnabled(true);
     }
@@ -730,6 +738,9 @@ class JQueueJobBrowserPanel
     updateMenuToolTip
       (pGroupsPreemptItem, prefs.getPreemptJobs(), 
        "Preempt all jobs associated with the selected groups.");
+    updateMenuToolTip
+      (pGroupsChangeJobReqsItem, null, 
+       "Changes the job requirements for all jobs associated with the selected groups.");
     updateMenuToolTip
       (pGroupsKillItem, prefs.getKillJobs(), 
        "Kill all jobs associated with the selected groups.");
@@ -938,6 +949,8 @@ class JQueueJobBrowserPanel
       doGroupsPreemptJobs();
     else if(cmd.equals("groups-kill-jobs")) 
       doGroupsKillJobs();
+    else if(cmd.equals("groups-change-job-reqs"))
+      doGroupsChangeJobsReqs();
 
     else if(cmd.equals("delete-group")) 
       doGroupsDelete();
@@ -1274,6 +1287,70 @@ class JQueueJobBrowserPanel
   { 
     DeleteCompletedJobGroupsTask task = new DeleteCompletedJobGroupsTask(pViewFilter); 
     task.start();
+  }
+  
+  /** 
+   * Change the job requirements for the given job groups.
+   */ 
+  public void
+  doGroupsChangeJobsReqs()
+  {
+    JChangeJobReqsDialog diag = UIMaster.getInstance().showChangeJobReqDialog();
+    if(diag.wasConfirmed()) {
+
+      Integer priority = null;
+      Integer rampUp = null;
+      Float maxLoad = null;
+      Long minMemory = null;
+      Long minDisk = null;
+      Set<String> licenseKeys = null;
+      Set<String> selectionKeys = null;
+
+      if (diag.overridePriority())
+	priority = diag.getPriority();
+      if (diag.overrideRampUp())
+	rampUp = diag.getRampUp();
+      if (diag.overrideMaxLoad())
+	maxLoad = diag.getMaxLoad();
+      if (diag.overrideMinMemory())
+	minMemory = diag.getMinMemory();
+      if (diag.overrideMinDisk())
+	minDisk = diag.getMinDisk();
+      if (diag.overrideLicenseKeys())
+	licenseKeys = diag.getLicenseKeys();
+      if (diag.overrideSelectionKeys())
+	selectionKeys = diag.getSelectionKeys();
+      LinkedList<JobReqsDelta> change = new LinkedList<JobReqsDelta>();
+      for(Long groupID : getSelectedGroupIDs()) {
+	QueueJobGroup group = pJobGroups.get(groupID);
+	if(group != null) {
+	  for(Long jobID : group.getJobIDs()) {
+	    JobStatus status = pJobStatus.get(jobID);
+	    String author = null;
+	    if(status != null) {
+	      switch(status.getState()) {
+	      case Queued:
+	      case Paused:
+	      case Preempted:
+		author = status.getNodeID().getAuthor();
+	      }
+	    }
+
+	    if((author != null) &&
+	      (author.equals(PackageInfo.sUser) || pPrivilegeDetails.isQueueManaged(author))) {
+	      JobReqsDelta newReq = new JobReqsDelta
+	        (jobID, priority, rampUp, maxLoad, minMemory, minDisk, 
+		 licenseKeys, selectionKeys);
+	      change.add(newReq);
+	    }
+	  }
+	}
+      }
+      if(!change.isEmpty()) {
+	ChangeJobReqsTask task = new ChangeJobReqsTask(change);
+	task.start();
+      }
+    }
   }
 
 
@@ -1812,6 +1889,47 @@ class JQueueJobBrowserPanel
 
     private TreeSet<Long>  pJobIDs;
   }
+  
+  /** 
+   * Change the job requirements for the given jobs.
+   */ 
+  private
+  class ChangeJobReqsTask
+    extends Thread
+  {
+    public 
+    ChangeJobReqsTask
+    (   
+     LinkedList<JobReqsDelta> jobReqChanges
+    ) 
+    {
+      super("JQueueJobsViewerPanel:ChangeJobReqsTask");
+
+      pJobReqChanges = jobReqChanges;
+    }
+
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp(pGroupID, "Changing Job Reqs...")) {
+	try {
+	  master.getQueueMgrClient(pGroupID).changeJobReqs(pJobReqChanges);
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
+	}
+	finally {
+	  master.endPanelOp(pGroupID, "Done.");
+	}
+
+	updatePanels();
+      }
+    }
+
+    private LinkedList<JobReqsDelta> pJobReqChanges;
+  }
 
   /** 
    * Delete the selected completed job groups.
@@ -1968,6 +2086,7 @@ class JQueueJobBrowserPanel
   private JMenuItem  pGroupsResumeItem; 
   private JMenuItem  pGroupsPreemptItem;
   private JMenuItem  pGroupsKillItem;
+  private JMenuItem  pGroupsChangeJobReqsItem;
   private JMenuItem  pGroupsDeleteItem;
   private JMenuItem  pGroupsDeleteCompletedItem;
 

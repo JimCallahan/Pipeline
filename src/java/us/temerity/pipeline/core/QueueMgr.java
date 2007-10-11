@@ -1,19 +1,18 @@
-// $Id: QueueMgr.java,v 1.92 2007/07/20 07:47:11 jim Exp $
+// $Id: QueueMgr.java,v 1.93 2007/10/11 18:52:06 jesse Exp $
 
 package us.temerity.pipeline.core;
-
-import us.temerity.pipeline.*;
-import us.temerity.pipeline.glue.*;
-import us.temerity.pipeline.glue.io.*;
-import us.temerity.pipeline.message.*;
-import us.temerity.pipeline.toolset.*;
-import us.temerity.pipeline.core.exts.*;
 
 import java.io.*;
 import java.net.*;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.*;
+
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.core.exts.*;
+import us.temerity.pipeline.glue.*;
+import us.temerity.pipeline.message.*;
+import us.temerity.pipeline.toolset.Toolset;
 
 /*------------------------------------------------------------------------------------------*/
 /*   Q U E U E   M G R                                                                      */
@@ -126,7 +125,9 @@ class QueueMgr
       pReady         = new TreeSet<Long>();
 
       pJobFileLocks = new TreeMap<Long,Object>();
-      pJobs         = new TreeMap<Long,QueueJob>(); 
+      pJobs         = new TreeMap<Long,QueueJob>();
+      
+      pJobReqsChanges = new TreeMap<Long, JobReqs>();
 
       pJobInfoFileLocks = new TreeMap<Long,Object>();
       pJobInfo          = new TreeMap<Long,QueueJobInfo>();
@@ -3754,6 +3755,64 @@ class QueueMgr
       return new FailureRsp(timer, ex.getMessage());	  
     }     
   }
+  
+  /**
+   * Change the job requirements of the jobs with the given IDs. <P> 
+   * 
+   * @param req 
+   *   The request.
+   *    
+   * @return 
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable resume the jobs. 
+   */ 
+  public Object
+  changeJobReqs
+  (
+   QueueJobReqsReq req
+  )
+  {
+    TaskTimer timer = new TaskTimer("QueueMgr.changeJobReqs()");
+
+    try {
+      boolean unprivileged = false; 
+
+      timer.aquire();
+      synchronized(pJobs) {
+	timer.resume();
+      
+	LinkedList<JobReqsDelta> changes = req.getJobReqsChanges(); 
+	for(JobReqsDelta delta : changes ) {
+	  long jobID = delta.getJobID();
+	  QueueJob job = pJobs.get(jobID);
+	  if(job != null) {
+	    String author = job.getActionAgenda().getNodeID().getAuthor();
+	    if(pAdminPrivileges.isQueueManaged(req, author)) {
+	      JobReqs reqs = new JobReqs(job.getJobRequirements(), delta);
+	      timer.aquire();
+	      synchronized (pJobReqsChanges) {
+		timer.resume();
+		pJobReqsChanges.put(jobID, reqs);
+	      }
+	    }
+	    else 
+	      unprivileged = true;
+	  }
+	}
+      }
+
+      if(unprivileged)
+	throw new PipelineException
+	  ("Only a user with Queue Admin privileges may change job requirements " +
+	   "on jobs owned by another user!");
+
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
+    }     
+  }
+  
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -4759,6 +4818,52 @@ class QueueMgr
 	      /* post-preempt tasks */ 
 	      startExtensionTasks(tm, new JobPreemptedExtFactory(job, preemptedInfo));
 	    }
+	  }
+	}
+      }
+      LogMgr.getInstance().logSubStage
+	(LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
+	 tm, timer);
+    }
+    
+    /* Apply the pending changes to the job requirements for jobs.*/
+    {
+      timer.suspend();
+      TaskTimer tm = new TaskTimer("Dispatcher [ChangeJobReqs]");
+      
+      while (true) {
+	long jobID;
+	JobReqs reqs;
+
+	tm.aquire();
+	synchronized (pJobReqsChanges) {
+	  tm.resume();
+	  if (pJobReqsChanges.isEmpty())
+	    break;
+	 jobID = pJobReqsChanges.firstKey();
+	 reqs = pJobReqsChanges.remove(jobID);
+	}
+
+	QueueJobInfo info = null;
+	tm.aquire();
+	synchronized(pJobInfo) {
+	  tm.resume();
+	  info = pJobInfo.get(jobID);
+	}
+	
+	if(info != null) {
+	  switch(info.getState()) {
+	  case Paused:
+	  case Preempted:
+	  case Queued:
+	    QueueJob job = null;
+	    tm.aquire();
+	    synchronized(pJobs) {
+	      tm.resume();
+	      job = pJobs.get(jobID);
+	      job.setJobRequirements(reqs);
+	    }
+	  break;
 	  }
 	}
       }
@@ -8365,7 +8470,7 @@ class QueueMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The parent queue mananger server. 
+   * The parent queue manager server. 
    */
   private QueueMgrServer  pServer; 
 
@@ -8399,7 +8504,7 @@ class QueueMgr
   /*----------------------------------------------------------------------------------------*/
  
   /**
-   * The combined work groups and adminstrative privileges.
+   * The combined work groups and administrative privileges.
    */ 
   private AdminPrivileges  pAdminPrivileges; 
 
@@ -8653,8 +8758,16 @@ class QueueMgr
    * 
    * Access to this field should be protected by a synchronized block.
    */ 
-  private TreeMap<Long,QueueJobInfo>  pJobInfo; 
+  private TreeMap<Long,QueueJobInfo>  pJobInfo;
+  
+  /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * A table of pending changes to the JobReqs of QueueJobs. <p>
+   * 
+   * Access to this field should be protected by a synchronized block.
+   */
+  private TreeMap<Long,JobReqs>  pJobReqsChanges;
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -8717,6 +8830,12 @@ class QueueMgr
    *     ...
    *   }
    *   synchronized(pHosts) {
+   *     ...
+   *   }
+   * }
+   * 
+   * synchronized(pJobs) {
+   *   synchronized(pJobReqsChanges) {
    *     ...
    *   }
    * }

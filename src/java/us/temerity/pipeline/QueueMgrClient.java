@@ -1,4 +1,4 @@
-// $Id: QueueMgrClient.java,v 1.39 2007/04/15 10:30:44 jim Exp $
+// $Id: QueueMgrClient.java,v 1.40 2007/10/11 18:52:06 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -1340,6 +1340,31 @@ class QueueMgrClient
     handleSimpleResponse(obj);
   }
   
+  /**
+   * Changes the job requirements defined by the deltas. <P> 
+   * 
+   * If the owner of the jobs is different than the current user, this method 
+   * will fail unless the current user has QueueAdmin privileges. 
+   * 
+   * @param jobReqsChanges
+   *   The job requirements indexed by unique job identifiers
+   * 
+   * @throws PipelineException 
+   *   If unable to change the job requirements for the jobs.
+   */  
+  public synchronized void
+  changeJobReqs
+  (
+    LinkedList<JobReqsDelta> jobReqsChanges
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+
+    QueueJobReqsReq req = new QueueJobReqsReq(jobReqsChanges);
+    Object obj = performTransaction(QueueRequest.ChangeJobReqs, req); 
+    handleSimpleResponse(obj);
+  }
 
   /*----------------------------------------------------------------------------------------*/
 

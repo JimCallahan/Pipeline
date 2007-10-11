@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.68 2007/08/27 08:41:32 jim Exp $
+// $Id: UIMaster.java,v 1.69 2007/10/11 18:52:07 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2408,6 +2408,17 @@ class UIMaster
     pQueueJobsDialog.setVisible(true);
     return pQueueJobsDialog;
   }
+  
+  /**
+   * Show the change job requirement submission dialog.
+   */ 
+  public JChangeJobReqsDialog
+  showChangeJobReqDialog()
+  {
+    pChangeJobReqsDialog.updateKeys();
+    pChangeJobReqsDialog.setVisible(true);
+    return pChangeJobReqsDialog;
+  }
 
   /**
    * Show an dialog giving details of the failure of the given subprocess.
@@ -3646,6 +3657,7 @@ class UIMaster
 	pManageSelectionKeysDialog = new JManageSelectionKeysDialog();
 
 	pQueueJobsDialog = new JQueueJobsDialog(pFrame);
+	pChangeJobReqsDialog = new JChangeJobReqsDialog(pFrame);
 	
 	pSubProcessFailureDialog = new JSubProcessFailureDialog(pFrame);
 
@@ -5463,6 +5475,11 @@ class UIMaster
    * The queue job submission dialog.
    */ 
   private JQueueJobsDialog  pQueueJobsDialog;
+  
+  /**
+   * The change job requirements dialog
+   */
+  private JChangeJobReqsDialog  pChangeJobReqsDialog;
 
   /**
    * The dialog giving details of the failure of a subprocess.
