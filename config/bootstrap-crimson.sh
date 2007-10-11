@@ -1,5 +1,3 @@
 #!/bin/sh
 
-../../src/pipeline/config/bootstrap.sh crimson 061117 45000 45100 --enable-pllocal-all
-
-
+../src/pipeline/config/bootstrap.sh crimson 070630 43000 43100 --enable-pllocal-all
