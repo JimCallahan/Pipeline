@@ -1,4 +1,4 @@
-// $Id: BaseUtil.java,v 1.19 2007/09/24 17:16:06 jesse Exp $
+// $Id: BaseUtil.java,v 1.20 2007/10/11 18:36:07 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -29,8 +29,16 @@ class BaseUtil
    * 
    * @param name
    *        The name of the utility.
+   * @param vid
+   *        The version id of this utility.
+   * @param vendor
+   *        The vendor who provided this utility
    * @param desc
    *        A description of what the utility should do.
+   * @param mclient
+   *        The instance of the Master Manager that the utility will use to execute.
+   * @param qclient
+   *        The instance of the Queue Manager that the utility will use to execute.
    * @param context
    *        The {@link UtilContext} that this utility is going to operate in.
    */
@@ -80,14 +88,23 @@ class BaseUtil
 
   /**
    * Default constructor for BaseUtil. <P>
+   * 
    * The {@link UtilContext} for this utility will need to be initialized using
    * {@link #setContext(UtilContext)} before any of the methods in this 
    * class are used. 
    * 
    * @param name
    *        The name of the utility.
+   * @param vid
+   *        The version id of this utility.
+   * @param vendor
+   *        The vendor who provided this utility
    * @param desc
    *        A description of what the utility should do.
+   * @param mclient
+   *        The instance of the Master Manager that the utility will use to execute.
+   * @param qclient
+   *        The instance of the Queue Manager that the utility will use to execute.
    */
   protected 
   BaseUtil
@@ -146,16 +163,15 @@ class BaseUtil
   /**
    * Sets the {@link UtilContext} that this utility will operate in.
    * <P>
-   * This should not be used to change the context in the middle of running a tool.
-   * Generally, this should be set in the first validatePhase of the first Information Pass in
-   * a builder.  That will guarantee that all future decisions are made in the right default 
-   * space.  If a change is needed to the working environment in the middle of running a builder,
-   * it would be best to just create a new {@link UtilContext} and pass that into the necessary
-   * stages, rather than calling this method, as there will be no impact on the rest of the
-   * Builder. 
+   * This should not be used to change the context in the middle of running a tool. Generally,
+   * this should be set in the first validatePhase of the first Information Pass in a builder.
+   * That will guarantee that all future decisions are made in the right default space. If a
+   * change is needed to the working environment in the middle of running a builder, it would
+   * be best to just create a new {@link UtilContext} and pass that into the necessary stages,
+   * rather than calling this method, as there will be no impact on the rest of the Builder.
    * 
    * @param context
-   * 	The {@link UtilContext} for the utility. 
+   *        The {@link UtilContext} for the utility.
    */
   public void 
   setContext
@@ -167,19 +183,20 @@ class BaseUtil
   }
   
   /**
-   * Disables a node's Action. Takes the name of a node and disables the Action for that
-   * node. Throws a {@link PipelineException} if there is a problem disabling the action.
+   * Disables a node's Action.
+   * <p>
+   * Takes the name of a node and disables the Action for that node. Throws a
+   * {@link PipelineException} if there is a problem disabling the action.
    * 
    * @param name
    *        The full name of the node to have its Action disabled.
-   * @throws PipelineException
    */
   public void 
   disableAction
   (
     String name
   ) 
-  throws PipelineException
+    throws PipelineException
   {
     NodeID nodeID = new NodeID(getAuthor(), getView(), name);
     NodeMod nodeMod = pClient.getWorkingVersion(nodeID);
@@ -188,19 +205,20 @@ class BaseUtil
   }
   
   /**
-   * Enables a node's Action Takes the name of a node and enables the Action for that node.
-   * Throws a {@link PipelineException} if there is a problem enabling the action.
+   * Enables a node's Action.
+   * <p>
+   * Takes the name of a node and enables the Action for that node. Throws a
+   * {@link PipelineException} if there is a problem enabling the action.
    * 
    * @param name
    *        The full name of the node to have its Action enabled.
-   * @throws PipelineException
    */
   public void 
   enableAction
   (
     String name
   ) 
-  throws PipelineException
+    throws PipelineException
   {
     NodeID nodeID = new NodeID(getAuthor(), getView(), name);
     NodeMod nodeMod = pClient.getWorkingVersion(nodeID);
@@ -211,20 +229,18 @@ class BaseUtil
   /**
    * Removes a node's Action.
    * <p>
-   * Takes the name of a node and removes any Action that the node
-   * might have. Throws a {@link PipelineException} if there is a problem removing the
-   * action.
+   * Takes the name of a node and removes any Action that the node might have. Throws a
+   * {@link PipelineException} if there is a problem removing the action.
    * 
    * @param name
    *        The full name of the node to have its Action removed.
-   * @throws PipelineException
    */
   public void 
   removeAction
   (
     String name
   ) 
-  throws PipelineException
+    throws PipelineException
   {
     NodeID nodeID = new NodeID(getAuthor(), getView(), name);
     NodeMod nodeMod = pClient.getWorkingVersion(nodeID);
@@ -233,19 +249,20 @@ class BaseUtil
   }
 
   /**
-   * Releases a group of nodes. Takes a {@link TreeSet} of node names and releases all the
-   * nodes in the list. Throws a PipelineException if there is a problem releasing a node.
+   * Releases a group of nodes.
+   * <p>
+   * Takes a {@link TreeSet} of node names and releases all the nodes in the list. Throws a
+   * {@link PipelineException} if there is a problem releasing a node.
    * 
    * @param nodes
    *        A list of the full nodes names of everything to be released.
-   * @throws PipelineException
    */
   public void 
   releaseNodes
   (
     TreeSet<String> nodes
   ) 
-  throws PipelineException
+    throws PipelineException
   {
     for(String s : nodes) {
       pClient.release(getAuthor(), getView(), s, true);
@@ -259,7 +276,6 @@ class BaseUtil
    *        The name of the node to search for.
    * @return <code>true</code> if the node exists. <code>false</code> if the node does
    *         not exist or if the specified path is a Branch.
-   * @throws PipelineException
    */
   public boolean 
   nodeExists
@@ -278,7 +294,7 @@ class BaseUtil
   }
   
   /**
-   * Returns a enum which indicates where a node lives.
+   * Returns an enum which indicates where a node lives.
    * <p>
    * If a version of the node exists in the current working area, then
    * {@link NodeLocation#LOCAL} is returned. If the node has been checked in, but is not
@@ -306,32 +322,30 @@ class BaseUtil
     NodeTreeComp treeComps = pClient.updatePaths(getAuthor(), getView(), comps);
     Path p = new Path(name);
     ArrayList<String> parts = p.getComponents();
-    for (String comp : parts)
-    {
+    for (String comp : parts) {
       treeComps = treeComps.get(comp);
     }
     NodeTreeComp.State state = treeComps.getState();
     NodeLocation toReturn = null;
-    switch (state)
-    {
-      case Branch:
-	toReturn = null;
-	break;
-      case WorkingCurrentCheckedInNone:
-	toReturn = NodeLocation.LOCALONLY;
-	break;
-      case WorkingCurrentCheckedInSome:
-	toReturn = NodeLocation.LOCAL;
-	break;
-      case WorkingNoneCheckedInSome:
-      case WorkingOtherCheckedInSome:
-	toReturn = NodeLocation.REP;
-	break;
-      case WorkingOtherCheckedInNone:
-	toReturn = NodeLocation.OTHER;
-	break;
-      default:
-	assert ( false );
+    switch (state){
+    case Branch:
+      toReturn = null;
+      break;
+    case WorkingCurrentCheckedInNone:
+      toReturn = NodeLocation.LOCALONLY;
+      break;
+    case WorkingCurrentCheckedInSome:
+      toReturn = NodeLocation.LOCAL;
+      break;
+    case WorkingNoneCheckedInSome:
+    case WorkingOtherCheckedInSome:
+      toReturn = NodeLocation.REP;
+      break;
+    case WorkingOtherCheckedInNone:
+      toReturn = NodeLocation.OTHER;
+      break;
+    default:
+      assert (false);
     }
     return toReturn;
   }
@@ -343,14 +357,13 @@ class BaseUtil
    *        The path to start the search underneath
    * @return An {@link ArrayList} containing all the paths (both directories and nodes)
    *         located directly under the given path.
-   * @throws PipelineException
    */
   public ArrayList<String> 
   findChildNodeNames
   (
     Path start
   ) 
-  throws PipelineException
+    throws PipelineException
   {
     ArrayList<String> toReturn = new ArrayList<String>();
     TreeMap<String, Boolean> comps = new TreeMap<String, Boolean>();
@@ -374,7 +387,6 @@ class BaseUtil
    *        The path to start the search underneath
    * @return An {@link ArrayList} containing the names of all the directories located
    *         directly under the given path.
-   * @throws PipelineException
    */
   public ArrayList<String> 
   findChildBranchNames
@@ -432,10 +444,12 @@ class BaseUtil
 
   /**
    * Check-outs the latest version of a node if the working version is older than the latest
-   * checked-in version. Checks the current version ID of a node against the newest
-   * checked-in version. If the ID's are the same, it does nothing. If ID is older it checks
-   * out the node, using the CheckOutMode and CheckOutMethod passed in. Throws a
-   * {@link PipelineException} if no checked-in versions of the node exist.
+   * checked-in version.
+   * <p>
+   * Checks the current version ID of a node against the newest checked-in version. If the
+   * ID's are the same, it does nothing. If ID is older it checks out the node, using the
+   * CheckOutMode and CheckOutMethod passed in. Throws a {@link PipelineException} if no
+   * checked-in versions of the node exist.
    * 
    * @param name
    *        The name of the node node to checkout.
@@ -443,7 +457,6 @@ class BaseUtil
    *        The {@link CheckOutMode} to use.
    * @param method
    *        The {@link CheckOutMethod} to use.
-   * @throws PipelineException
    * @see #checkOutLatest(String, CheckOutMode, CheckOutMethod)
    */
   public void 
@@ -459,15 +472,13 @@ class BaseUtil
     try {
       mod = pClient.getWorkingVersion(getAuthor(), getView(), name);
     }
-    catch(PipelineException ex)
-    {}
+    catch(PipelineException ex) {}
 
     TreeSet<VersionID> versions = null;
     try {
       versions = pClient.getCheckedInVersionIDs(name);
     }
-    catch(PipelineException ex)
-    {
+    catch(PipelineException ex) {
       throw new PipelineException(
         "getNewest has aborted since there is no Checked-In Version of the node.\n "
             + ex.getMessage());
@@ -487,9 +498,10 @@ class BaseUtil
   }
 
   /**
-   * Check-outs the latest version of a node. Check-outs the latest version of the node
-   * using the CheckOutMode and CheckOutMethod passed in. Throws a {@link PipelineException}
-   * if the check-out fails.
+   * Check-outs the latest version of a node.
+   * <p>
+   * Check-outs the latest version of the node using the CheckOutMode and CheckOutMethod
+   * passed in. Throws a {@link PipelineException} if the check-out fails.
    * 
    * @param name
    *        The name of the node node to checkout.
@@ -497,7 +509,6 @@ class BaseUtil
    *        The {@link CheckOutMode} to use.
    * @param method
    *        The {@link CheckOutMethod} to use.
-   * @throws PipelineException
    * @see #checkOutNewer(String, CheckOutMode, CheckOutMethod)
    */
   public void 
@@ -513,12 +524,12 @@ class BaseUtil
   }
 
   /**
-   * Locks the latest version of the node. Throws a {@link PipelineException} if no
-   * checked-in versions of the node exist.
+   * Locks the latest version of the node.
+   * <p>
+   * Throws a {@link PipelineException} if no checked-in versions of the node exist.
    * 
    * @param name
    *        The name of the node node to checkout.
-   * @throws PipelineException
    */
   public void 
   lockLatest
@@ -534,12 +545,12 @@ class BaseUtil
 
   /**
    * Determines the latest checked-in version of a node and evolves the current working
-   * version of the that node to the latest version. Throws a {@link PipelineException} if
-   * no checked-in versions of the node exist.
+   * version of the that node to the latest version.
+   * <p>
+   * Throws a {@link PipelineException} if no checked-in versions of the node exist.
    * 
    * @param name
    *        The name of the node to be evolved.
-   * @throws PipelineException
    */
   public void 
   evolveNode
@@ -583,19 +594,19 @@ class BaseUtil
   ) 
     throws PipelineException
   {
-    if (nodes != null) {
-      for(String node : nodes) {
+    if (nodes != null) 
+      for(String node : nodes) 
 	pClient.checkIn(getAuthor(), getView(), node, message, level);
-      }
-    }
   }
 
   /**
-   * Returns <code>true</code> if the entire tree given has an {@link OverallQueueState}
-   * of Finished. Starts at the node specified in the node status passed in and decends down
-   * the tree, checking the {@link OverallQueueState} of each node. If every node it finds
-   * is in the Finished state, the method will return <code>true</code>. If any are found
-   * in a state which is not Finished, then <code>false</code> sis returned.
+   * Returns <code>true</code> if the entire tree given has an {@link OverallQueueState} of
+   * Finished.
+   * <p>
+   * Starts at the node specified in the node status passed in and decends down the tree,
+   * checking the {@link OverallQueueState} of each node. If every node it finds is in the
+   * Finished state, the method will return <code>true</code>. If any are found in a state
+   * which is not Finished, then <code>false</code> sis returned.
    * 
    * @param status
    *        The status of the root node of the tree to be searched.
@@ -625,6 +636,11 @@ class BaseUtil
     }
   }
 
+  /**
+   * Static method to return a list of all the selection keys.
+   * @param client
+   *   The instance of the Queue Manager to use to extract the information.
+   */
   public static ArrayList<SelectionKey>
   getSelectionKeys
   (
@@ -634,7 +650,12 @@ class BaseUtil
   {
     return client.getSelectionKeys();
   }
-  
+
+  /**
+   * Static method to return a list of all the license keys.
+   * @param client
+   *   The instance of the Queue Manager to use to extract the information.
+   */
   public static ArrayList<LicenseKey>
   getLicenseKeys
   (
@@ -687,17 +708,17 @@ class BaseUtil
   }
 
   /**
-   * Recursive function to search for nodes under a given path. A recursive function that
-   * starts with the current {@link NodeTreeComp}, travels down the tree, and adds any
-   * nodes it finds to an {@link ArrayList} being passed as a parameter. It is important to
-   * note when using this method that the {@link ArrayList} is being modified inside the
-   * method. The {@link ArrayList} will contain the fully resolved node names for all the
-   * nodes.
+   * Recursive function to search for nodes under a given path.
+   * <p>
+   * Starts with the current {@link NodeTreeComp}, travels down the tree, and adds any nodes
+   * it finds to an {@link ArrayList} being passed as a parameter. It is important to note
+   * when using this method that the {@link ArrayList} is being modified inside the method.
+   * The {@link ArrayList} will contain the fully resolved node names for all the nodes.
    * 
    * @param treeComps
    *        A {@link NodeTreeComp} that should contain information about the node name
-   *        specified by scene. The most common way to acquire this data structure is with
-   *        the <code>updatePaths</code> method in {@link MasterMgrClient}.
+   *        specified by scene. The most common way to acquire this data structure is with the
+   *        <code>updatePaths</code> method in {@link MasterMgrClient}.
    * @param toReturn
    *        An {@link ArrayList} that will hold every node that is found by this method.
    * @param path
@@ -754,12 +775,13 @@ class BaseUtil
   }
 
   
+  
   /*----------------------------------------------------------------------------------------*/
   /* G L O B A L   P A R A M E T E R S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Does the Class have any parameters?
+   * Does the utility have any parameters?
    */
   public boolean 
   hasParams()
@@ -768,13 +790,15 @@ class BaseUtil
   }
 
   /**
-   * Add a parameter to this Class.
+   * Add a parameter to this utility.
    * <P>
-   * This method is used by subclasses in their constructors to initialize the set of
-   * global parameters that they support.
+   * This method is used by subclasses in their constructors to initialize the set of global
+   * parameters that they support.
    * 
    * @param param
    *        The parameter to add.
+   * @throws PipelineException
+   *         If a parameter is added with a name that already exists.
    */
   protected void 
   addParam
@@ -798,12 +822,12 @@ class BaseUtil
    * <P>
    * The conditions are as follows. The parameter must have the same name as the parameter it
    * is replacing. If you attempt to replace a parameter that does not exist, an exception is
-   * thrown. If you attempt to replace a parameter from a layout with is not after the current
+   * thrown. If you attempt to replace a parameter from a layout which is not after the current
    * pass an exception will be thrown. Basically, only parameters which have not had value
-   * inputted into them can be replaced.
+   * inputed into them can be replaced.
    * 
    * @param param
-   *        The parameter to add.
+   *        The parameter to replace.
    */
   protected void 
   replaceParam
@@ -887,6 +911,15 @@ class BaseUtil
     return ((ComplexParamAccess<UtilityParam>) param).getValue(keys); 
   }
   
+  /**
+   * Get the value of the Simple Parameter described by the {@link ParamMapping}.
+   * 
+   * @param mapping
+   *        The name of the parameter.
+   * 
+   * @throws IllegalArgumentException if no parameter with the given name exists or if the
+   * named parameter does not implement {@link SimpleParamAccess}.
+   */
   @SuppressWarnings("unchecked")
   public Comparable
   getParamValue
@@ -899,6 +932,13 @@ class BaseUtil
     return getParamValue(mapping.getParamName());
   }
 
+  /**
+   * Get the parameter located inside the named Complex Parameter and identified by the list
+   * of keys.
+   * 
+   * @throws IllegalArgumentException
+   *         if no parameter with the given name exists.
+   */
   @SuppressWarnings("unchecked")
   public UtilityParam 
   getParam
@@ -927,8 +967,8 @@ class BaseUtil
    * 
    * @param name
    *        The name of the parameter.
-   * @return The parameter or <CODE>null</CODE> if no parameter with the given name
-   *         exists.
+   * @throws IllegalArgumentException
+   *         if no parameter with the given name exists.
    */
   public UtilityParam 
   getParam
@@ -941,7 +981,14 @@ class BaseUtil
     return pParams.get(name);
   }
   
-  @SuppressWarnings("unchecked")
+  /**
+   * Get the parameter described by the {@link ParamMapping}.
+   * 
+   * @param mapping
+   *        The name of the parameter.
+   * @throws IllegalArgumentException
+   *         if no parameter with the given name exists.
+   */
   public UtilityParam
   getParam
   (
@@ -953,12 +1000,18 @@ class BaseUtil
     return getParam(mapping.getParamName());
   }
 
+  /**
+   * Gets a collection of all the Parameters in this utility.
+   */
   public Collection<UtilityParam> 
   getParams()
   {
     return Collections.unmodifiableCollection(pParams.values());
   }
-  
+
+  /**
+   * Gets a collection of the names of all the Parameters in this utility.
+   */
   public Collection<String> 
   getParamNames()
   {
@@ -1007,6 +1060,16 @@ class BaseUtil
     return false;
   }
 
+  /**
+   * Set the value of a parameter.
+   * 
+   * @param name
+   *        The name of the parameter.
+   * @param keys
+   *        The list of keys that are an index into the Complex Parameter
+   * @param value
+   *        The new value of the parameter.
+   */
   @SuppressWarnings("unchecked")
   public final boolean
   setParamValue
@@ -1027,6 +1090,14 @@ class BaseUtil
     return ((ComplexParamAccess<UtilityParam>) param).setValue(keys, value);
   }
   
+  /**
+   * Set the value of a parameter.
+   * 
+   * @param mapping
+   *        The mapping that describes this parameter
+   * @param value
+   *        The new value of the parameter.
+   */
   @SuppressWarnings("unchecked")
   public final boolean
   setParamValue
@@ -1041,6 +1112,9 @@ class BaseUtil
     return setParamValue(mapping.getParamName(), value);
   }
   
+  /**
+   *  Does a parameter with this name exist? 
+   */
   public boolean
   hasParam
   (
@@ -1053,6 +1127,9 @@ class BaseUtil
     return true;
   }
   
+  /**
+   *  Does a parameter with this name and these keys exist? 
+   */
   @SuppressWarnings("unchecked")
   public boolean
   hasParam
@@ -1076,6 +1153,9 @@ class BaseUtil
     return ((ComplexParamAccess<UtilityParam>) param).hasParam(keys); 
   }
   
+  /**
+   *  Does a parameter defined by this mapping exist? 
+   */
   @SuppressWarnings("unchecked")
   public boolean
   hasParam
@@ -1088,6 +1168,9 @@ class BaseUtil
     return hasParam(mapping.getParamName());
   }
   
+  /**
+   * Does a parameter with this name that implements {@link SimpleParamAccess} exist?
+   */
   public boolean
   hasSimpleParam
   (
@@ -1101,7 +1184,11 @@ class BaseUtil
       return true;
     return false;
   }
-  
+
+  /**
+   * Does a parameter with this name and these keys that implements {@link SimpleParamAccess}
+   * exist?
+   */
   @SuppressWarnings("unchecked")
   public boolean
   hasSimpleParam
@@ -1126,6 +1213,9 @@ class BaseUtil
     return ((ComplexParamAccess<UtilityParam>) param).hasSimpleParam(keys); 
   }
   
+  /**
+   * Does a parameter defined by this mapping that implements {@link SimpleParamAccess} exist?
+   */
   @SuppressWarnings("unchecked")
   public boolean
   hasSimpleParam
@@ -1138,6 +1228,9 @@ class BaseUtil
     return hasSimpleParam(mapping.getParamName());
   }
   
+  /**
+   * Does a parameter with this name that implements {@link SimpleParamFromString} exist?
+   */
   public boolean
   canSetSimpleParamFromString
   (
@@ -1152,6 +1245,10 @@ class BaseUtil
     return false;
   }
   
+  /**
+   * Does a parameter with this name and these keys that implements
+   * {@link SimpleParamFromString} exist?
+   */
   @SuppressWarnings("unchecked")
   public boolean
   canSetSimpleParamFromString
@@ -1176,6 +1273,10 @@ class BaseUtil
     return ((ComplexParamAccess<UtilityParam>) param).canSetSimpleParamFromString(keys); 
   }
   
+  /**
+   * Does a parameter defined by this mapping that implements {@link SimpleParamFromString}
+   * exist?
+   */
   @SuppressWarnings("unchecked")
   public boolean
   canSetSimpleParamFromString
@@ -1195,18 +1296,20 @@ class BaseUtil
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Sets the hierarchical grouping of parameters which determine the layout of 
-   * UI components in different passes. <P> 
+   * Sets the hierarchical grouping of parameters which determine the layout of UI components
+   * in different passes.
+   * <P>
    * 
-   * The given layouts must contain an entry for all parameters 
-   * defined for the action exactly once in all the passes.  A collapsible drawer component 
-   * will be created for each layout group which contains a field for each parameter
-   * entry in the order specified by the group.  All <CODE>null</CODE> entries will cause 
-   * additional space to be added between the UI fields. Each layout subgroup will be represented 
-   * by its own drawer nested within the drawer for the parent layout group. <P> 
+   * The given layouts must contain an entry for all parameters defined for the action exactly
+   * once in all the passes. A collapsable drawer component will be created for each layout
+   * group which contains a field for each parameter entry in the order specified by the
+   * group. All <CODE>null</CODE> entries will cause additional space to be added between
+   * the UI fields. Each layout subgroup will be represented by its own drawer nested within
+   * the drawer for the parent layout group.
+   * <P>
    * 
-   * This method should be called by subclasses in their constructor after building the appropriate 
-   * {@link PassLayoutGroup}.
+   * This method should be called by subclasses in their constructor after building the
+   * appropriate {@link PassLayoutGroup}.
    */
   protected void
   setLayout
@@ -1342,6 +1445,13 @@ class BaseUtil
   /*   S U B - B U I L D E R S                                                              */
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * Defines a mapping between a parameter in this Utility and a parameter in its parent.
+   * <p>
+   * This setting has no effect on the utility level.  It is up to implementing classes to 
+   * decide how to take advantage of this functionality.
+   * @see BaseBuilder#addMappedParam(String, ParamMapping, ParamMapping)
+   */
   protected final void
   addParamMapping
   (
@@ -1362,7 +1472,7 @@ class BaseUtil
   }
   
   /**
-   * Gets all the mapped parameters and the parameters that drive them.
+   * Gets the names of all the mapped parameters.
    */
   public final Set<ParamMapping> 
   getMappedParamNames()
@@ -1398,6 +1508,12 @@ class BaseUtil
     pPrefixName = new PrefixedName(namedPrefix);
   }
   
+  /**
+   * Returns the current pass of the utility.
+   * <p>
+   * Utilities are responsible for keep track of their own passes, but this method should
+   * always return the current pass.
+   */
   public abstract int
   getCurrentPass();
   
@@ -1791,10 +1907,10 @@ class BaseUtil
   private TreeMap<ParamMapping, ParamMapping> pParamMapping;
   
   /**
-   * Is the class that inherets from this class allowed to have children?
+   * Is the class that inherits from this class allowed to have children?
    * <p>
    * This is an important consideration, since having child {@link HasBuilderParams} means
-   * that those classes have to be able to maange those children.  It also means that 
+   * that those classes have to be able to manage those children.  It also means that 
    * calculations of things like the maximum number of passes necessary to run or the collection
    * of layouts that much more difficult.
    * <p>
@@ -1805,7 +1921,7 @@ class BaseUtil
   //private final boolean pAllowsChildren;
   
   /**
-   * 
+   * The prefixed name of the utility
    */
   private PrefixedName pPrefixName = null;
   
@@ -1856,9 +1972,9 @@ class BaseUtil
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * A key into a paramter contained in a Utility.  It consists of a mandatory name, which
+   * A key into a parameter contained in a Utility.  It consists of a mandatory name, which
    * specifies the parameter name, and an optional list of keys which specify the path
-   * to descend if the parameter is in quesiton is a {@link ComplexUtilityParam}.
+   * to descend if the parameter is in question is a {@link ComplexUtilityParam}.
    * <P>
    * If Complex Parameters are extended to other parts of the Pipeline API, this class will
    * most likely be converted into a standalone class. 
@@ -1867,6 +1983,9 @@ class BaseUtil
   class ParamMapping
     implements Comparable<ParamMapping>
   {
+    /**
+     * Copy Constructor.
+     */
     public
     ParamMapping
     (
@@ -1876,6 +1995,9 @@ class BaseUtil
       this(mapping.getParamName(), mapping.getKeys());
     }
     
+    /**
+     * Constructs a {@link ParamMapping} which has just a name and no keys. 
+     */
     public
     ParamMapping
     (
@@ -1885,6 +2007,9 @@ class BaseUtil
       this(paramName, null);
     }
     
+    /**
+     * Constructs a {@link ParamMapping} which has a name and a list of keys.
+     */
     public
     ParamMapping
     (
@@ -1903,12 +2028,18 @@ class BaseUtil
 	pKeys = new LinkedList<String>(keys);
     }
     
+    /**
+     * Gets the name of the parameter. 
+     */
     public String
     getParamName()
     {
       return pParamName;
     }
     
+    /**
+     * Does the mapping have keys?  
+     */
     public boolean
     hasKeys()
     {
@@ -1917,6 +2048,11 @@ class BaseUtil
       return true;
     }
     
+    /**
+     * Gets a list of the keys from this mapping
+     * <p>
+     * Returns <code>null</code> if there are no keys.  
+     */
     public List<String>
     getKeys()
     {
@@ -1925,6 +2061,9 @@ class BaseUtil
       return Collections.unmodifiableList(pKeys);
     }
     
+    /**
+     *  Appends a key to the list of keys 
+     */
     public void
     addKey
     (
@@ -1998,9 +2137,18 @@ class BaseUtil
     public static final ParamMapping NullMapping = new ParamMapping("NULL", null);
   }
   
+  /**
+   * Represents the name of the utility.
+   * <p>
+   * It is defined as a hierarchical list of names, starting with its top-level parent and
+   * descending down to the name of the current utility.
+   */
   public static 
   class PrefixedName
   {
+    /**
+     * Builds a new name from a list of existing names, while appending a new name. 
+     */
     public
     PrefixedName
     (
@@ -2016,6 +2164,9 @@ class BaseUtil
 	pPrefixes.add(name);
     }
     
+    /**
+     * Creates a name with no prefixes.
+     */
     public PrefixedName
     (
       String name
@@ -2024,6 +2175,9 @@ class BaseUtil
       pPrefixes = ComplexParam.listFromObject(name);
     }
     
+    /**
+     * Builds a new name from an existing {@link PrefixedName}, while appending a new name. 
+     */
     public PrefixedName
     (
       PrefixedName prefixName,
@@ -2037,7 +2191,10 @@ class BaseUtil
       if (name != null)
 	pPrefixes.add(name);
     }
-    
+
+    /**
+     * Copy Constructor.
+     */
     public PrefixedName
     (
       PrefixedName prefixName
@@ -2050,7 +2207,8 @@ class BaseUtil
     }
     
     @Override
-    public String toString()
+    public String 
+    toString()
     {
       StringBuilder toReturn = new StringBuilder();
       for (String each : pPrefixes) {
