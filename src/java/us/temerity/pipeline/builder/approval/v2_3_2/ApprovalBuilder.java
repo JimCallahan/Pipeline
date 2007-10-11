@@ -217,7 +217,7 @@ class ApprovalBuilder
       /* make sure the Submit node exists, has the correct annotation and matches 
          task name/type passed to the builder. */ 
       {
-        pSubmitNode = getStringParamValue(new ParamMapping(aSubmitNode));
+        pSubmitNode = getStringParamValue(new ParamMapping(aSubmitNode), false);
         if (!nodeExists(pSubmitNode))
           throw new PipelineException
 	  ("The node (" + pSubmitNode + ") passed in as the Submit Node is not valid!"); 
@@ -245,7 +245,7 @@ class ApprovalBuilder
       /* make sure the Submit node exists, has the correct annotation and matches 
          task name/type passed to the builder. */ 
       {
-        pApproveNode = getStringParamValue(new ParamMapping(aApproveNode));
+        pApproveNode = getStringParamValue(new ParamMapping(aApproveNode), false);
         if (!nodeExists(pApproveNode))
           throw new PipelineException
 	  ("The node (" + pApproveNode + ") passed in as the Approve Node is not valid!"); 
@@ -280,8 +280,8 @@ class ApprovalBuilder
       setContext(new UtilContext(PackageInfo.sPipelineUser, workingArea, 
                                  pContext.getToolset()));
       
-      pApprovedBy = getStringParamValue(new ParamMapping(aApprovedBy));
-      pApprovalMessage = getStringParamValue(new ParamMapping(aApprovalMessage));
+      pApprovedBy = getStringParamValue(new ParamMapping(aApprovedBy), false);
+      pApprovalMessage = getStringParamValue(new ParamMapping(aApprovalMessage), false);
       
       pCheckInLevel = getEnumParamIndex(new ParamMapping(aCheckInLevel));
       switch(pCheckInLevel) {
