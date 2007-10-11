@@ -1,3 +1,3 @@
 #!/bin/sh
 
-../../src/pipeline/config/bootstrap.sh dimetrodon 070627 45000 45100 --enable-pllocal
+../../src/pipeline/config/bootstrap.sh dimetrodon 070627 45000 45100 --enable-pllocal-all

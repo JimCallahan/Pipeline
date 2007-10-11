@@ -149,14 +149,23 @@ AC_MSG_RESULT([ ])
 dnl ------------------------------------------------------------------------------------------
 
 AC_ARG_ENABLE([pllocal], 
-              [  --enable-pllocal             Build studio specific source RPM.],
+              [  --enable-pllocal             Build the studio specific source RPM.],
               [case "${enable_pllocal}" in    
                yes) pllocal=true;;
                no)  pllocal=false;;
                *)   AC_MSG_ERROR(bad value ${enableval} for --enable-pllocal);;
                esac], [pllocal=false])
 
-AM_CONDITIONAL(PL_LOCAL, test x$pllocal = xtrue)
+AC_ARG_ENABLE([pllocal-all], 
+              [  --enable-pllocal-all         Build ALL studio specific source RPMs.],
+              [case "${enable_pllocal_all}" in    
+               yes) pllocal_all=true;;
+               no)  pllocal_all=false;;
+               *)   AC_MSG_ERROR(bad value ${enableval} for --enable-pllocal-all);;
+               esac], [pllocal_all=false])
+
+AM_CONDITIONAL(PL_LOCAL, test x$pllocal = xtrue -o x$pllocal_all = xtrue )
+AM_CONDITIONAL(PL_LOCAL_ALL, test x$pllocal_all = xtrue)
 
 
 dnl ------------------------------------------------------------------------------------------
