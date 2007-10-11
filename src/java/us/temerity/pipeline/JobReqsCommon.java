@@ -6,7 +6,7 @@ import java.util.*;
 import us.temerity.pipeline.glue.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   P A R E N T   J O B   R E Q S                                                          */
+/*   J O B   R E Q S   C O M M O N                                                          */
 /*------------------------------------------------------------------------------------------*/
 
 /**
@@ -109,7 +109,7 @@ import us.temerity.pipeline.glue.*;
  * @see SelectionKey
  */
 public 
-class ParentJobReqs
+class JobReqsCommon
   implements Glueable, Serializable, Cloneable
 {
   /*----------------------------------------------------------------------------------------*/
@@ -122,7 +122,7 @@ class ParentJobReqs
    * from user code.
    */
   protected
-  ParentJobReqs()
+  JobReqsCommon()
   {
     pLicenseKeys   = new HashSet<String>();
     pSelectionKeys = new HashSet<String>();

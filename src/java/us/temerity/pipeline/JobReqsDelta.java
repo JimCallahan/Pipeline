@@ -15,7 +15,7 @@ import java.util.Set;
  */
 public 
 class JobReqsDelta
-  extends ParentJobReqs
+  extends JobReqsCommon
   implements Serializable
 {
   /**

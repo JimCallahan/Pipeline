@@ -1,4 +1,4 @@
-// $Id: JobReqs.java,v 1.19 2007/10/11 18:52:06 jesse Exp $
+// $Id: JobReqs.java,v 1.20 2007/10/11 19:34:34 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -111,7 +111,7 @@ import java.io.*;
  */
 public
 class JobReqs
-  extends ParentJobReqs
+  extends JobReqsCommon
   implements Cloneable, Glueable, Serializable
 {  
   /*----------------------------------------------------------------------------------------*/
