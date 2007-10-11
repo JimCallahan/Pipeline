@@ -99,7 +99,7 @@ class ProjectBuilder
 
     
     addSetupPass(new InformationPass());
-    addConstuctPass(new BuildPass());
+    addConstructPass(new BuildPass());
     
     {
       AdvancedLayoutGroup layout = 
@@ -151,7 +151,7 @@ class ProjectBuilder
     throws PipelineException
   {
     ConstructPass build = new BuildPass();
-    addConstuctPass(build);
+    addConstructPass(build);
   }
  
   

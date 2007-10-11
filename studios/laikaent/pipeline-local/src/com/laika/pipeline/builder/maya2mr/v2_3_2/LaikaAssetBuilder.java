@@ -78,9 +78,9 @@ class LaikaAssetBuilder
     throws PipelineException
   {
     ConstructPass build = new BuildPass();
-    addConstuctPass(build);
+    addConstructPass(build);
     ConstructPass end = new FinalizePass();
-    addConstuctPass(end);
+    addConstructPass(end);
     addPassDependency(build, end);
   }
   

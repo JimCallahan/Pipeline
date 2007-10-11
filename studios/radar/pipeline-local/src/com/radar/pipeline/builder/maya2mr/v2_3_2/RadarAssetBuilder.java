@@ -81,9 +81,9 @@ class RadarAssetBuilder
     throws PipelineException
   {
     ConstructPass build = new RadarBuildPass();
-    addConstuctPass(build);
+    addConstructPass(build);
     ConstructPass end = new FinalizePass();
-    addConstuctPass(end);
+    addConstructPass(end);
     addPassDependency(build, end);
   }
   

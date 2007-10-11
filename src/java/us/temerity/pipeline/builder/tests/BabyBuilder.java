@@ -53,7 +53,7 @@ public class BabyBuilder
     addSetupPass(new FirstInfoPass());
     addSetupPass(new SecondInfoPass());
     addSetupPass(new ThirdInfoPass());
-    addConstuctPass(new ConstructPass("LaLaLa", "Builds this shit!"));
+    addConstructPass(new ConstructPass("LaLaLa", "Builds this shit!"));
     {
       PassLayoutGroup layout = new PassLayoutGroup("TopLayout", "The whole layout");
       {

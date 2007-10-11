@@ -1,3 +1,5 @@
+// $Id: BuilderInformation.java,v 1.7 2007/10/11 19:12:44 jesse Exp $
+
 package us.temerity.pipeline.builder;
 
 import java.util.*;
@@ -92,7 +94,7 @@ class BuilderInformation
   /*----------------------------------------------------------------------------------------*/
   
   public final boolean
-  addConstuctPass
+  addConstructPass
   (
     ConstructPass pass,
     BaseBuilder builder

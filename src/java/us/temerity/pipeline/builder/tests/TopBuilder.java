@@ -37,8 +37,8 @@ public class TopBuilder
     addSetupPass(new InformationLoop());
     ConstructPass build1 = new ConstructPass("Build1", "Doesn't build anything"); 
     ConstructPass build2 = new ConstructPass("Build2", "Doesn't build anything");
-    addConstuctPass(build1);
-    addConstuctPass(build2);
+    addConstructPass(build1);
+    addConstructPass(build2);
     addPassDependency(build1, build2);
   }
   

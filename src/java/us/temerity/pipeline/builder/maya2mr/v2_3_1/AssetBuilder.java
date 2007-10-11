@@ -119,8 +119,8 @@ class AssetBuilder
     configNamer(assetNames);
     pAssetNames = (BuildsAssetNames) assetNames;
     addSetupPass(new InformationPass());
-    addConstuctPass(new BuildPass());
-    addConstuctPass(new FinalizePass());
+    addConstructPass(new BuildPass());
+    addConstructPass(new FinalizePass());
   }
   
   

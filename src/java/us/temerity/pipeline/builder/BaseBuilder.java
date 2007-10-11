@@ -1,4 +1,4 @@
-// $Id: BaseBuilder.java,v 1.28 2007/09/24 17:10:33 jesse Exp $
+// $Id: BaseBuilder.java,v 1.29 2007/10/11 19:12:44 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -670,7 +670,7 @@ class BaseBuilder
    *         has already been added.
    */
   public final void
-  addConstuctPass
+  addConstructPass
   (
     ConstructPass pass
   ) 
@@ -679,7 +679,7 @@ class BaseBuilder
     if (pass == null)
       throw new PipelineException("Cannot add a null ConstructPass");
     pSecondLoopPasses.add(pass);
-    if (!pBuilderInformation.addConstuctPass(pass, this))
+    if (!pBuilderInformation.addConstructPass(pass, this))
       throw new PipelineException
         ("The attempt to add the Construct Pass (" + pass.getName() + ") to " +
          "the Builder identified with (" + this.getPrefixedName() + ") was invalid.  " +

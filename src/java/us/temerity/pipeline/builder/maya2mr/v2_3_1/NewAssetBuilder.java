@@ -141,8 +141,8 @@ class NewAssetBuilder
     addSetupPass(new InformationLoop());
     ConstructPass build = new BuildLoop();
     ConstructPass finalize = new FinalizeLoop();
-    addConstuctPass(finalize);
-    addConstuctPass(build);
+    addConstructPass(finalize);
+    addConstructPass(build);
     addPassDependency(build, finalize);
     
     {

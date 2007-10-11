@@ -1,4 +1,4 @@
-// $Id: AdvAssetBuilder.java,v 1.14 2007/09/24 17:10:33 jesse Exp $
+// $Id: AdvAssetBuilder.java,v 1.15 2007/10/11 19:12:45 jesse Exp $
 
 package us.temerity.pipeline.builder.maya2mr.v2_3_2;
 
@@ -328,9 +328,9 @@ class AdvAssetBuilder
     throws PipelineException
   {
     ConstructPass build = new BuildPass();
-    addConstuctPass(build);
+    addConstructPass(build);
     ConstructPass end = new FinalizePass();
-    addConstuctPass(end);
+    addConstructPass(end);
     addPassDependency(build, end);
   }
   

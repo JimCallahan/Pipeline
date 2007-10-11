@@ -120,7 +120,7 @@ class ApprovalBuilder
          builderInformation);
     
     addSetupPass(new ApprovalInformationPass());
-    addConstuctPass(new ActionPass());
+    addConstructPass(new ActionPass());
     
     {
       LayoutGroup layout = new LayoutGroup(true);

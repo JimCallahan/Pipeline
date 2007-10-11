@@ -140,9 +140,9 @@ class LaikaShotBuilder
     addSetupPass(new FirstInfoPass());
     addSetupPass(new AssetInfoPass());
     ConstructPass build = new BuildPass();
-    addConstuctPass(build);
+    addConstructPass(build);
     ConstructPass end = new FinalizePass();
-    addConstuctPass(end);
+    addConstructPass(end);
     addPassDependency(build, end);
 
     {
