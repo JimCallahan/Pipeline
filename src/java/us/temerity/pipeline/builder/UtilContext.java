@@ -107,6 +107,8 @@ public class UtilContext
     else
       view = userAreas.first();
     String toolset = client.getDefaultToolsetName();
+    if (toolset == null)
+      toolset = client.getActiveToolsetNames().first();
     return new UtilContext(author, view, toolset);
   }
   
