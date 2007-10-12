@@ -25,7 +25,6 @@ class JChangeJobReqsDialog
   )
   {
     super(parent, "Change Job Reqs", false);
-    disableBatchSize();
   }
   
   
@@ -33,6 +32,15 @@ class JChangeJobReqsDialog
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * @throws IllegalStateException when an attempt is made to access this field.
+   */
+  @Override
+  public void doBatchSizeChanged()
+  {
+    throw new IllegalStateException("Batch size is not a valid field for changing Job Requirements.");
+  }
   
   /**
    * @throws IllegalStateException when an attempt is made to access this field.

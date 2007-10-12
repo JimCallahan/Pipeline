@@ -1,4 +1,4 @@
-// $Id: JQueueJobsDialog.java,v 1.6 2007/10/11 18:52:07 jesse Exp $
+// $Id: JQueueJobsDialog.java,v 1.7 2007/10/12 22:11:43 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -574,21 +574,8 @@ class JQueueJobsDialog
     return keys;
   }
   
-  public void
-  disableBatchSize()
-  {
-    pBatchSizeField.setEnabled(false);
-    pOverrideBatchSizeField.setEnabled(false);
-  }
+
   
-  public void
-  enableBatchSize()
-  {
-    pBatchSizeField.setEnabled(true);
-    pOverrideBatchSizeField.setEnabled(true);
-  }
-
-
   /*----------------------------------------------------------------------------------------*/
   /*   L I S T E N E R S                                                                    */
   /*----------------------------------------------------------------------------------------*/
@@ -840,9 +827,12 @@ class JQueueJobsDialog
   { 
     /* job requirements panel */ 
     {
-      pOverrideBatchSizeField.setValue(false);
-      pBatchSizeField.setEnabled(false);
-      pBatchSizeField.setValue(null);
+      
+      if (pBatching) {
+        pOverrideBatchSizeField.setValue(false);
+        pBatchSizeField.setEnabled(false);
+        pBatchSizeField.setValue(null);
+      }
      
       pOverridePriorityField.setValue(false);
       pPriorityField.setEnabled(false);
