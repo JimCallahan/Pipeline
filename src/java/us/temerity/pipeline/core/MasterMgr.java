@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.216 2007/08/22 03:15:32 jim Exp $
+// $Id: MasterMgr.java,v 1.217 2007/10/12 20:28:33 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2105,8 +2105,10 @@ class MasterMgr
    MiscSetToolsetActiveReq req 
   ) 
   {
-    String tname  = req.getName();
-    String active = (req.isActive() ? "active" : "inactive");
+    String tname     = req.getName();
+    boolean isActive = req.isActive();
+
+    String active = (isActive ? "active" : "inactive");
 
     TaskTimer timer = 
       new TaskTimer("MasterMgr.setActiveToolsetName(): " + tname + " [" + active + "]");
@@ -2119,6 +2121,14 @@ class MasterMgr
 	  ("Only a user with Master Admin privileges may change the active status " + 
 	   "of a toolset!");
 
+      synchronized(pDefaultToolsetLock) {
+	timer.resume();
+        if((pDefaultToolset != null) && pDefaultToolset.equals(tname) && !isActive)
+          throw new PipelineException
+            ("The default toolset (" + tname + ") cannot be made inactive!");
+      }
+
+      timer.aquire();
       synchronized(pToolsets) {
 	timer.resume();
 	
@@ -2132,14 +2142,12 @@ class MasterMgr
 	     "Unix implementation!");
       }
       
-      boolean removed = false;
-      
       timer.aquire();
       synchronized(pActiveToolsets) {
 	timer.resume();	 
 	
 	boolean changed = false;
-	if(req.isActive()) {
+	if(isActive) {
 	  if(!pActiveToolsets.contains(tname)) {
 	    pActiveToolsets.add(tname);
 	    changed = true;
@@ -2149,30 +2157,11 @@ class MasterMgr
 	  if(pActiveToolsets.contains(tname)) {
 	    pActiveToolsets.remove(tname);
 	    changed = true;
-	    removed = true;
 	  }
 	}
 	
 	if(changed) 
 	  writeActiveToolsets();
-      }
-      
-      if(removed) {
-	timer.aquire();
-	synchronized(pDefaultToolsetLock) {
-	  timer.resume();	 
-	  
-	  if((pDefaultToolset != null) && pDefaultToolset.equals(tname)) {
-	    pDefaultToolset = null;
-	    
-	    File file = new File(pNodeDir, "toolsets/default-toolset");
-	    if(file.exists()) {
-	      if(!file.delete())
-		throw new PipelineException
-		  ("Unable to remove the old default toolset file (" + file + ")!");
-	    }
-	  }
-	}
       }
       
       return new SuccessRsp(timer);

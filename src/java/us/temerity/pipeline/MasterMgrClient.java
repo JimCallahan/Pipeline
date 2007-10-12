@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.107 2007/08/03 08:56:24 jim Exp $
+// $Id: MasterMgrClient.java,v 1.108 2007/10/12 20:28:33 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -487,7 +487,8 @@ class MasterMgrClient
   /**
    * Set the active/inactive state of a Unix toolset. <P> 
    * 
-   * This method will fail if the current user does not have privileged access status.
+   * This method will fail if the current user does not have privileged access status.  The
+   * current default toolset cannot be made inactive.
    * 
    * @param name
    *   The name of the toolset.
