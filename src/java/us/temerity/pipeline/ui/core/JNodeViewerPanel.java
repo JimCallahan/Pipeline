@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.93 2007/08/27 08:41:32 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.94 2007/10/12 22:32:31 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -509,7 +509,7 @@ class JNodeViewerPanel
             sub.add(item);
           }
 
-          if(wk == 4) {
+          {
             item = new JPopupMenuItem(menus[wk], "Delete...");
             pDeleteItem = item;
             item.setActionCommand("delete");
@@ -4129,7 +4129,7 @@ class JNodeViewerPanel
 	  if(mod != null) 
 	    text = mod.getPrimarySequence().toString();
 	  else if(vsn != null) 
-	    text = mod.getPrimarySequence().toString();
+	    text = vsn.getPrimarySequence().toString();
 	}
     
 	if(pDeleteDialog == null) 
