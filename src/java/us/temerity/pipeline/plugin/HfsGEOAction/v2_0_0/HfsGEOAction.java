@@ -1,4 +1,4 @@
-// $Id: HfsGEOAction.java,v 1.1 2007/06/17 15:34:41 jim Exp $
+// $Id: HfsGEOAction.java,v 1.2 2007/10/12 20:28:02 jim Exp $
 
 package us.temerity.pipeline.plugin.HfsGEOAction.v2_0_0;
 
@@ -264,7 +264,7 @@ class HfsGEOAction
 	       "source nodes!");
 	  
 	  String suffix = fseq.getFilePattern().getSuffix();
-	  if(!fseq.isSingle() || (suffix == null) || !(suffix.equals("mel"))) 
+	  if(!fseq.isSingle() || (suffix == null) || !(suffix.equals("cmd"))) 
 	    throw new PipelineException
 	      ("The HfsGEO Action requires that the source node specified by the Pre " +
 	       "Render Script parameter (" + sname + ") must have a single command script " + 
