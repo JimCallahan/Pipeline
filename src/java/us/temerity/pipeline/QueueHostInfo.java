@@ -1,4 +1,4 @@
-// $Id: QueueHostInfo.java,v 1.6 2007/06/20 18:09:44 jim Exp $
+// $Id: QueueHostInfo.java,v 1.7 2007/10/14 02:04:15 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -104,13 +104,7 @@ class QueueHostInfo
   {
     super(name);
 
-    {
-      Matcher m = sHostPattern.matcher(name);
-      if(m.find() && (m.group().length() > 0))
-        pShortName = m.group();
-      else 
-        pShortName = name;
-    }
+    initShortName();
 
     if(status == null) 
       throw new IllegalArgumentException("The status cannot be (null)!");
@@ -134,6 +128,19 @@ class QueueHostInfo
 
     pSelectionGroup = group; 
     pSelectionSchedule = schedule; 
+  }
+
+  /**
+   * Initialize the short hostname from the fully resolved hostname.
+   */
+  private synchronized void
+  initShortName() 
+  {
+    Matcher m = sHostPattern.matcher(pName);
+    if(m.find() && (m.group().length() > 0))
+      pShortName = m.group();
+    else 
+      pShortName = pName;
   }
 
 
@@ -509,9 +516,6 @@ class QueueHostInfo
   {
     super.toGlue(encoder); 
     
-    if(pShortName != null)
-      encoder.encode("ShortName", pShortName);
-
     if(pReservation != null) 
       encoder.encode("Reservation", pReservation);
      
@@ -531,11 +535,7 @@ class QueueHostInfo
   {
     super.fromGlue(decoder);
 
-    String sname = (String) decoder.decode("ShortName"); 
-    if(sname != null) 
-      pShortName = sname;
-    else 
-      pShortName = pName;
+    initShortName();
 
     String author = (String) decoder.decode("Reservation"); 
     if(author != null) 

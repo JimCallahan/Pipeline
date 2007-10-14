@@ -1,4 +1,4 @@
-// $Id: QueueJobInfo.java,v 1.18 2007/04/28 22:43:21 jim Exp $
+// $Id: QueueJobInfo.java,v 1.19 2007/10/14 02:04:15 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -73,8 +73,24 @@ class QueueJobInfo
     pCompletedStamp = info.pCompletedStamp;
     
     pHostname = info.pHostname; 
+    if(pHostname != null) 
+      initShortHostname();
+
     pOsType   = info.pOsType;
     pResults  = info.pResults;
+  }
+
+  /**
+   * Initialize the short hostname from the fully resolved hostname.
+   */
+  private synchronized void
+  initShortHostname() 
+  {
+    Matcher m = sHostPattern.matcher(pHostname);
+    if(m.find() && (m.group().length() > 0))
+      pShortHostmame = m.group();
+    else 
+      pShortHostname = pHostname;
   }
 
   
@@ -235,14 +251,7 @@ class QueueJobInfo
       throw new IllegalArgumentException
 	("The hostname cannot be (null)!");
     pHostname = hostname; 
-    
-    {
-      Matcher m = sHostPattern.matcher(hostname);
-      if(m.find() && (m.group().length() > 0))
-        pShortHostname = m.group();
-      else 
-        pShortHostname = hostname;
-    }
+    initShortHostname();
 
     if(os == null) 
       throw new IllegalArgumentException
@@ -259,10 +268,10 @@ class QueueJobInfo
   public synchronized void 
   preempted() 
   {
-    pHostname = null;
+    pHostname      = null;
     pShortHostname = null;
-    pStartedStamp = null;
-    pOsType = null;
+    pStartedStamp  = null;
+    pOsType        = null;
 
     pState = JobState.Preempted;
   }
@@ -333,9 +342,6 @@ class QueueJobInfo
     if(pHostname != null)
       encoder.encode("Hostname", pHostname);
 
-    if(pShortHostname != null)
-      encoder.encode("ShortHostname", pShortHostname);
-
     if(pOsType != null)
       encoder.encode("OsType", pOsType);
 
@@ -381,16 +387,10 @@ class QueueJobInfo
 
     {
       String host = (String) decoder.decode("Hostname"); 
-      if(host != null) 
+      if(host != null) {
 	pHostname = host;
-    }
-
-    {
-      String host = (String) decoder.decode("ShortHostname"); 
-      if(host != null) 
-	pShortHostname = host;
-      else 
-        pShortHostname = pHostname;
+        initShortHostname();
+      }
     }
 
     {
@@ -417,7 +417,7 @@ class QueueJobInfo
   /**
    * A regular expression to match the first component of a fully resolved hostname.
    */ 
-  private static final Pattern sHostPattern = Pattern.compile("^\\p{Alpha}(\\p{Alnum})+");
+  private static final Pattern sHostPattern = Pattern.compile("([^\\.])+");
 
 
 
