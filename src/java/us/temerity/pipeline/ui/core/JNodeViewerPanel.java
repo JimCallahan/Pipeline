@@ -1,23 +1,22 @@
-// $Id: JNodeViewerPanel.java,v 1.94 2007/10/12 22:32:31 jesse Exp $
+// $Id: JNodeViewerPanel.java,v 1.95 2007/10/15 20:46:21 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
-import us.temerity.pipeline.*;
-import us.temerity.pipeline.ui.*;
-import us.temerity.pipeline.math.*; 
-import us.temerity.pipeline.glue.*;
-
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.geom.*;
-import java.io.*;
 import java.util.*;
-import java.util.concurrent.atomic.*;
 
+import javax.media.opengl.GL;
+import javax.media.opengl.GLAutoDrawable;
 import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.tree.*;
-import javax.media.opengl.*;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
+
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.glue.*;
+import us.temerity.pipeline.math.*;
+import us.temerity.pipeline.ui.JConfirmDialog;
+import us.temerity.pipeline.ui.JConfirmListDialog;
 
 /*------------------------------------------------------------------------------------------*/
 /*   N O D E   V I E W E R   P A N E L                                                      */
@@ -5458,6 +5457,9 @@ class JNodeViewerPanel
 		  
 		  if(pExportDialog.exportPriority()) 
 		    tjreqs.setPriority(sjreqs.getPriority());
+		  
+		  if(pExportDialog.exportRampUpInterval()) 
+		    tjreqs.setRampUp(sjreqs.getRampUp());
 		  
 		  if(pExportDialog.exportMaxLoad()) 
 		    tjreqs.setMaxLoad(sjreqs.getMaxLoad());

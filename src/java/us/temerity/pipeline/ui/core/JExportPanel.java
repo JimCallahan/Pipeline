@@ -1,17 +1,17 @@
-// $Id: JExportPanel.java,v 1.3 2006/10/18 06:34:22 jim Exp $
+// $Id: JExportPanel.java,v 1.4 2007/10/15 20:46:20 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
-import us.temerity.pipeline.*;
-import us.temerity.pipeline.ui.*; 
-
-import java.awt.*;
+import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.event.*;
-import java.io.*;
-import java.util.*;
+import java.util.TreeMap;
+import java.util.TreeSet;
+
 import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.tree.*;
+
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.ui.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   E X P O R T   P A N E L                                                                */
@@ -189,6 +189,12 @@ class JExportPanel
 		
 		UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
 		
+		pRampUpField = 
+		  UIFactory.createTitledBooleanField(tpanel, "Ramp Up Interval:", pTSize-7,
+		                                    vpanel, pVSize);
+		
+		UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+		
 		pMaxLoadField = 
 		  UIFactory.createTitledBooleanField(tpanel, "Maximum Load:", pTSize-7,
 						    vpanel, pVSize);
@@ -363,6 +369,12 @@ class JExportPanel
     return pPriorityField.getValue();
   }
   
+  public boolean
+  exportRampUpInterval()
+  {
+    return pRampUpField.getValue();
+  }
+  
   /**
    * Whether to export the max system load.
    */ 
@@ -518,6 +530,7 @@ class JExportPanel
       pExecutionMethodField.setValue(true);
       pBatchSizeField.setValue(true);
       pPriorityField.setValue(true);
+      pRampUpField.setValue(true);
       pMaxLoadField.setValue(true);
       pMinMemoryField.setValue(true);
       pMinDiskField.setValue(true);
@@ -782,6 +795,7 @@ class JExportPanel
 
     pExecutionMethodField.setValue(exportAll);
     pBatchSizeField.setValue(exportAll);
+    pRampUpField.setValue(exportAll);
     pPriorityField.setValue(exportAll);
     pMaxLoadField.setValue(exportAll);
     pMinMemoryField.setValue(exportAll);
@@ -903,6 +917,11 @@ class JExportPanel
    * Whether to export the job priority.
    */ 
   private JBooleanField  pPriorityField;
+  
+  /**
+   * Whether to export the ramp up interval
+   */
+  private JBooleanField  pRampUpField;
   
   /**
    * Whether to export the maximum system load.

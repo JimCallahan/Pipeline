@@ -1,17 +1,16 @@
-// $Id: JCloneDialog.java,v 1.14 2007/09/07 18:52:38 jim Exp $
+// $Id: JCloneDialog.java,v 1.15 2007/10/15 20:46:20 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
-import us.temerity.pipeline.*;
-import us.temerity.pipeline.ui.*; 
-
 import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
-import java.util.*;
+import java.awt.event.ActionEvent;
+import java.io.File;
+import java.util.TreeSet;
+
 import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.tree.*;
+
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.ui.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   C L O N E   D I A L O G                                                                */
@@ -236,7 +235,7 @@ class JCloneDialog
   /**
    * Update the UI components based on the given node version.
    * 
-   * @param node
+   * @param mod
    *   The node version.
    */ 
   public void 
@@ -672,6 +671,9 @@ class JCloneDialog
 	
 	if(pExportPanel.exportPriority()) 
 	  jreqs.setPriority(ojreqs.getPriority());
+	
+	if (pExportPanel.exportRampUpInterval())
+	  jreqs.setRampUp(ojreqs.getRampUp());
 	
 	if(pExportPanel.exportMaxLoad()) 
 	  jreqs.setMaxLoad(ojreqs.getMaxLoad());

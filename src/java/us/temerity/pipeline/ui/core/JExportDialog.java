@@ -1,17 +1,16 @@
-// $Id: JExportDialog.java,v 1.6 2007/09/07 18:52:38 jim Exp $
+// $Id: JExportDialog.java,v 1.7 2007/10/15 20:46:20 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
-import us.temerity.pipeline.*;
-import us.temerity.pipeline.ui.*; 
+import java.awt.Dimension;
+import java.awt.Frame;
+import java.util.TreeSet;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
-import java.util.*;
 import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.tree.*;
+
+import us.temerity.pipeline.NodeMod;
+import us.temerity.pipeline.ui.JBaseDialog;
+import us.temerity.pipeline.ui.UIFactory;
 
 /*------------------------------------------------------------------------------------------*/
 /*   E X P O R T   D I A L O G                                                              */
@@ -184,6 +183,15 @@ class JExportDialog
   exportPriority() 
   {
     return pExportPanel.exportPriority();  
+  }
+  
+  /**
+   * Whether to export the ramp up interval.
+   */ 
+  public boolean
+  exportRampUpInterval()
+  {
+    return pExportPanel.exportRampUpInterval();
   }
   
   /**
