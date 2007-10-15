@@ -1,4 +1,4 @@
-// $Id: QueueJobInfo.java,v 1.19 2007/10/14 02:04:15 jim Exp $
+// $Id: QueueJobInfo.java,v 1.20 2007/10/15 19:56:57 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -88,7 +88,7 @@ class QueueJobInfo
   {
     Matcher m = sHostPattern.matcher(pHostname);
     if(m.find() && (m.group().length() > 0))
-      pShortHostmame = m.group();
+      pShortHostname = m.group();
     else 
       pShortHostname = pHostname;
   }
