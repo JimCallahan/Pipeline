@@ -9,7 +9,7 @@ import us.temerity.pipeline.builder.BaseBuilder.ActionOnExistence;
 import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
 
 /**
- * A branch stage designed to make building stages without frame numbers easy.
+ * A branch stage designed to make building stages easy.
  */
 public abstract
 class StandardStage 

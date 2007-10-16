@@ -112,7 +112,7 @@ public class BuilderApp
 	   BuilderInformation.class);
 	parser.CommandLine();
 	BuilderInformation info = 
-          new BuilderInformation(pGui, pAbortOnGui, pCommandLineParams);
+          new BuilderInformation(pGui, pAbortOnBadParam, pCommandLineParams);
 	BaseBuilder builder = (BaseBuilder) construct.newInstance(mclient, qclient, info);
 	{
 	  String builderName = builder.getPrefixedName().toString();
@@ -272,7 +272,7 @@ public class BuilderApp
     boolean abort
   )
   {
-    pAbortOnGui = abort;
+    pAbortOnBadParam = abort;
   }
   
   public void
@@ -309,7 +309,7 @@ public class BuilderApp
   /*----------------------------------------------------------------------------------------*/
   
   private boolean pGui;
-  private boolean pAbortOnGui;
+  private boolean pAbortOnBadParam;
   private MultiMap<String, String> pCommandLineParams; 
   private String pBuilderClassName;
   private ListMap<LinkedList<String>, String> pNullParams; 
