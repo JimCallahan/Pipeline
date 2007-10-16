@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.217 2007/10/12 20:28:33 jim Exp $
+// $Id: MasterMgr.java,v 1.218 2007/10/16 00:58:15 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -7261,18 +7261,23 @@ class MasterMgr
 
 	    /* copy any per-source parameters from the old named node to the new named node */
 	    BaseAction oaction = omod.getAction();
-	    if((oaction != null) && 
-	       oaction.supportsSourceParams() && 
-	       (!oaction.getSourceNames().isEmpty() || 
-		!oaction.getSecondarySourceNames().isEmpty())) {
+	    if(oaction != null) {
 	      
 	      /* relookup the new working version to get the added links */ 
 	      nmod = getWorkingBundle(nid).getVersion();
 	      
 	      /* get the current action related parameters */ 
 	      {
-		BaseAction naction = nmod.getAction(); 
-		naction.setSourceParamValues(oaction);
+		BaseAction naction = nmod.getAction();
+		/* This is necessary to preserve the LinkParam values that were cleared when
+		 * all the sources were disconnected above.  Otherwise all the SingleParam
+		 * except the LinkParams are copied, but the LinkParam values are missing*/
+		naction.setSingleParamValues(oaction);
+		
+		if (oaction.supportsSourceParams() && 
+		       (!oaction.getSourceNames().isEmpty() || 
+			!oaction.getSecondarySourceNames().isEmpty()))
+		  naction.setSourceParamValues(oaction);
 		nmod.setAction(naction);
 	      }
 	      
