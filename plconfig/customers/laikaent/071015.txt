@@ -1,0 +1,55 @@
+FileHeapSize = 2147483648
+FileHostname = plmaster.adtech2.laika.com
+FilePort = 53136
+HomeDirectory = /laika/home/alt
+HostIDs = 
+    plfilemgr.adtech2.laika.com   119012652518976850378171576951627002828
+    plmaster.adtech2.laika.com    119012652518976850378171576951627002828
+    plpluginmgr.adtech2.laika.com 119012652518976850378171576951627002828
+    plqueuemgr.adtech2.laika.com  65296473445345897788988352646082730614
+JavaClassVersion = 49.0
+JavaHome = /laika/opt/temerity/jdk1.5.0_13/jre
+JavaName = Java HotSpot(TM) Client VM
+JavaVendor = Sun Microsystems Inc.
+JavaVersion = 1.5.0_13
+JobPort = 53140
+LegacyPlugins = false
+LicenseEnd = Fri Dec 14 18:09:04 EST 2007
+LicenseEndStamp = 1197673744299
+LicenseStart = Mon Oct 15 19:09:04 EDT 2007
+LicenseStartStamp = 1192489744299
+LicenseType = 60-Day Evaluation
+MacHomeDirectory = /laika/home/alt
+MacProductionDirectory = /laika/jobs/temerity/prod
+MacRootInstallDirectory = /laika/opt/temerity
+MacSupport = true
+MacTemporaryDirectory = /var/tmp
+MasterHeapSize = 2147483648
+MasterHostname = plmaster.adtech2.laika.com
+MasterPort = 53135
+NodeDirectory = /opt/temerity
+OS-Arch = i386
+OS-Name = Linux
+OS-Version = 2.6.9-55.ELsmp
+PipelineGroup = temerity
+PipelineGroupID = 1134
+PipelineUser = temerity
+PipelineUserID = 113
+PlConfigVersion = 3.2.2
+PluginHostname = plmaster.adtech2.laika.com
+PluginPort = 53141
+ProductionDirectory = /laika/jobs/temerity/prod
+QueueDirectory = /opt/temerity
+QueueHeapSize = 2147483648
+QueueHostname = plqueuemgr.adtech2.laika.com
+QueuePort = 53139
+RootInstallDirectory = /laika/opt/temerity
+TemporaryDirectory = /var/tmp
+UnixJavaHome = /laika/opt/temerity/jdk1.5.0_13/jre
+WinAppDataNeedsUser = true
+WinJavaHome = C:/Program Files/Java/jdk1.5.0_13/jre
+WinServer = false
+WinSupport = false
+WinTemporaryDirectory = C:/WINDOWS/Temp
+WinUserProfileDirectory = C:/Documents and Settings
+WinUserProfileNeedsUser = true
