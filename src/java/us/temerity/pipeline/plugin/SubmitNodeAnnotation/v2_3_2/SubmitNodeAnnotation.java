@@ -70,11 +70,22 @@ class SubmitNodeAnnotation
     }
 
     {
+      ArrayList<String> choices = new ArrayList<String>(); 
+      choices.add(aSimpleAsset);  
+      choices.add(aModeling);        
+      choices.add(aRigging);         
+      choices.add(aLookDev);        
+      choices.add(aLayout);          
+      choices.add(aAnimation);       
+      choices.add(aEffects);         
+      choices.add(aLighting);        
+      choices.add(aCompositing);  
+
       AnnotationParam param = 
-	new StringAnnotationParam
+	new EnumAnnotationParam
 	(aTaskType, 
 	 "The type of production goal this node is used to achieve.", 
-	 null); 
+	 aSimpleAsset, choices); 
       addParam(param);
     }
 
@@ -127,5 +138,15 @@ class SubmitNodeAnnotation
   public static final String aTaskType    = "TaskType";
   public static final String aAssignedTo  = "AssignedTo";
   public static final String aBuilderPath = "BuilderPath";
+  
+  public static final String aSimpleAsset = "Simple Asset";  
+  public static final String aModeling    = "Modeling";        
+  public static final String aRigging     = "Rigging";         
+  public static final String aLookDev     = "Look Dev";        
+  public static final String aLayout      = "Layout";          
+  public static final String aAnimation   = "Animation";       
+  public static final String aEffects     = "Effects";         
+  public static final String aLighting    = "Lighting";        
+  public static final String aCompositing = "Compositing";  
   
 }
