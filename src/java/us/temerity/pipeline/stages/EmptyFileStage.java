@@ -56,7 +56,7 @@ public class EmptyFileStage
           client,
           nodeName, 
           suffix, 
-          getDefaultEditor(client, suffix), 
+          null, 
           new PluginContext("Touch"));
   }
   
