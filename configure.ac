@@ -1855,6 +1855,9 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/HfsOPLibsAction/Makefile
   src/java/us/temerity/pipeline/plugin/HfsOPLibsAction/v1_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/HfsOPLibsAction/v2_0_0/Makefile
+  src/java/us/temerity/pipeline/plugin/HfsOPLibsAction/v2_3_14/Makefile
+  src/java/us/temerity/pipeline/plugin/HfsOPLibsMergeAction/Makefile  
+  src/java/us/temerity/pipeline/plugin/HfsOPLibsMergeAction/v2_3_14/Makefile
   src/java/us/temerity/pipeline/plugin/HfsOTLMergeAction/Makefile
   src/java/us/temerity/pipeline/plugin/HfsOTLMergeAction/v1_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/HfsOTLMergeAction/v2_0_0/Makefile

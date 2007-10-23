@@ -79,6 +79,7 @@ SUBDIRS = \
   HfsMantraAction \
   HfsMRayDSAction \
   HfsOPLibsAction \
+  HfsOPLibsMergeAction \
   HfsOTLMergeAction \
   HfsRenderAction \
   HfsRManDSAction \
