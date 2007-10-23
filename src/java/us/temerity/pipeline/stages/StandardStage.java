@@ -3,9 +3,7 @@ package us.temerity.pipeline.stages;
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.LogMgr.Kind;
 import us.temerity.pipeline.LogMgr.Level;
-import us.temerity.pipeline.builder.PluginContext;
-import us.temerity.pipeline.builder.UtilContext;
-import us.temerity.pipeline.builder.BaseBuilder.ActionOnExistence;
+import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
 
 /**
@@ -15,6 +13,10 @@ public abstract
 class StandardStage 
   extends BaseStage
 {
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O N S T R U C T O R                                                                */
+  /*----------------------------------------------------------------------------------------*/
+ 
   /**
    * Constructor that allows the specification of the name of an Editor (with vendor) and an
    * Action (with vendor).
@@ -99,7 +101,7 @@ class StandardStage
    *        The suffix for the created node.
    * @param editor
    *        Contains the name and vendor for the Editor plugin. If this is <code>null</code>
-   *        then the Maya Editor from Temerity will be used. *
+   *        then the Maya Editor from Temerity will be used. 
    * @param action
    *        Contains the name and vendor for the Action plugin.
    * 
@@ -148,23 +150,83 @@ class StandardStage
   }
   
   /**
+   * Construct a node identical to the given working version.
+   * 
+   * @param name
+   *        The name of the stage.
+   * 
+   * @param desc
+   *        A description of what the stage should do.
+   * 
+   * @param stageInformation
+   *        Class containing basic information shared among all stages.
+   * 
+   * @param context
+   *        The {@link UtilContext} that this stage acts in.
+   * 
+   * @param mod
+   *        The original node working version.
+   */
+  protected 
+  StandardStage
+  (
+    String name, 
+    String desc,
+    StageInformation stageInformation,
+    UtilContext context,
+    MasterMgrClient client,
+    NodeMod mod
+  )
+    throws PipelineException
+  {
+    super(name, desc, stageInformation, context, client);
+
+    pRegisteredNodeName = mod.getName();
+
+    {
+      FileSeq primary = mod.getPrimarySequence();
+      FilePattern fpat = primary.getFilePattern();
+      pSuffix = fpat.getSuffix();
+      pFrameRange = primary.getFrameRange();
+      pPadding = fpat.getPadding();
+      
+      pSecondarySequences.addAll(mod.getSecondarySequences());
+    }
+
+    pEditor = mod.getEditor();
+    pAction = mod.getAction();
+
+    pExecutionMethod = mod.getExecutionMethod();
+    if(pExecutionMethod == ExecutionMethod.Parallel)
+      pBatchSize = mod.getBatchSize();
+
+    pLinks.addAll(mod.getSources());
+  }
+  
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   O P S                                                                                */
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
    * Constructs the node from all the given pieces.
    * <p>
-   * This method does the following things.
+   * This method looks at the ActionOnExistence parameter and decides what to do.  It can
+   * either:
    * <ul>
-   * <li> Registers the node.
-   * <li> Adds the secondary sequences.
-   * <li> Creates all the links.
-   * <li> Sets the Action.
-   * <li> Performs a {@link MasterMgrClient#modifyProperties(String, String, NodeMod)} to
-   * commit all the updates.
-   * <li> Sets the pRegisteredNodeMod to the newly modified working version.
-   * <li> If doAnnotations is set in the stage information, then it adds all the stored
-   * annotations in the stage to the node.
+   * <li> Register a node which doesn't exist.
+   * <li> Checkout a node that exists.
+   * <li> Throw an exception if a node exists.
+   * <li> Continue without doing anything if a node exists
+   * <li> Conform an existing node 
+   * </ul>
+   * If you wish to use simply build or conform a node without having to use the logic
+   * that is built into this method, simply override this method in an inheriting stage
+   * and call either {@link #construct()} or {@link #conform()} as desired.
    * 
-   * @return <code>true</code> if the node was registered successfully. <code>false</code>
-   *         if something happened and the node was not registered.
-   * @see BaseStage#build()
+   * @see #conform()
+   * @see #construct()
    */
   @Override
   public boolean 
@@ -184,6 +246,27 @@ class StandardStage
     return false;
   }
   
+  /**
+   * Constructs the node from all the given pieces.
+   * <p>
+   * This method does the following things.
+   * <ul>
+   * <li> Registers the node.
+   * <li> Adds the secondary sequences.
+   * <li> Creates all the links.
+   * <li> Sets the Action.
+   * <li> Sets all the Job Requirements
+   * <li> Performs a {@link MasterMgrClient#modifyProperties(String, String, NodeMod)} to
+   * commit all the updates.
+   * <li> Sets the pRegisteredNodeMod to the newly modified working version.
+   * <li> If doAnnotations is set in the stage information, then it adds all the stored
+   * annotations in the stage to the node.
+   * 
+   * @return <code>true</code> if the node was registered successfully. <code>false</code>
+   *         if something happened and the node was not registered.
+   * @see BaseStage#build()
+   * @see #build()
+   */
   public boolean
   construct()
     throws PipelineException
@@ -211,6 +294,28 @@ class StandardStage
     return true;
   }
   
+  /**
+   * Modifies an existing node to match all the given pieces.
+   * <p>
+   * This method does the following things.
+   * <ul>
+   * <li> Renumbers the node if necessary.
+   * <li> Removes all existing secondary sequences and adds new ones
+   * <li> Unlinks all existing nodes and makes new links
+   * <li> Removes the Editor and Action and adds new ones.
+   * <li> Sets all the Job Requirements
+   * <li> Performs a {@link MasterMgrClient#modifyProperties(String, String, NodeMod)} to
+   * commit all the updates.
+   * <li> Sets the pRegisteredNodeMod to the newly modified working version.
+   * <li> Removes all existing annotations.
+   * <li> If doAnnotations is set in the stage information, then it adds all the stored
+   * annotations in the stage to the node.
+   * 
+   * @return <code>true</code> if the node was registered successfully. <code>false</code>
+   *         if something happened and the node was not registered.
+   * @see BaseStage#build()
+   * @see #build()
+   */
   @Override
   public boolean 
   conform()
@@ -241,8 +346,6 @@ class StandardStage
 	   "the suffix (" + oldSuffix + ") to having a suffix (" + newSuffix + ").  " +
 	   "Since this node has been checked-in, this is an illegal modification.");
     }
-    FilePattern newPat = new FilePattern(pRegisteredNodeName, pPadding, pSuffix);
-    pClient.rename(id, newPat, true);
     if (pFrameRange != null)
       pClient.renumber(id, pFrameRange, true);
     pRegisteredNodeMod = pClient.getWorkingVersion(id);
@@ -258,41 +361,22 @@ class StandardStage
     pRegisteredNodeMod.setJobRequirements(new JobReqs());
     setKeys();
     if(pAction != null)
-	setJobSettings();
+      setJobSettings();
     pClient.modifyProperties(getAuthor(), getView(), pRegisteredNodeMod);
-    pRegisteredNodeMod = pClient.getWorkingVersion(getAuthor(), getView(),
-      pRegisteredNodeName);
+    pRegisteredNodeMod = pClient.getWorkingVersion(getAuthor(), getView(), pRegisteredNodeName);
     removeAnnotations();
     if (pStageInformation.doAnnotations())
       doAnnotations();
     return true;
   }
   
-  protected final void
-  doAnnotations()
-    throws PipelineException
-  {
-    for (String name : pAnnotations.keySet()) {
-      BaseAnnotation annot = pAnnotations.get(name);
-      pClient.addAnnotation(pRegisteredNodeName, name, annot);
-    }
-  }
-  
-  protected final void
-  removeAnnotations()
-    throws PipelineException
-  {
-    pClient.removeAnnotations(pRegisteredNodeName);
-  }
-  
-
   /**
-   * Registers a node with the given name and extention, using the given Editor.
+   * Registers a node with the given name and extension, using the given Editor.
    * <P>
-   * If either the name or the editor is null, the method will not attempt to register a
-   * node. Instead it just return <code>null</code>. This method also adds the
-   * registered node to the list in BaseStage, allowing for its removal in case of errors.
-   * Throws a {@link PipelineException} if anything goes wrong with the registration
+   * If either the name or the editor is null, the method will not attempt to register a node.
+   * Instead it just return <code>null</code>. This method also adds the registered node to
+   * the list stored in the {@link StageInformation}, allowing for its removal in case of
+   * errors. Throws a {@link PipelineException} if anything goes wrong with the registration
    * process.
    * 
    * @return The {@link NodeMod} that represents the newly created node.
@@ -309,12 +393,12 @@ class StandardStage
   }
   
   /**
-   * Registers a node with the given name and extention, using the given Editor.
+   * Registers a node with the given name and extension, using the given Editor.
    * <P>
-   * If either the name or the editor is null, the method will not attempt to register a
-   * node. Instead it just return <code>null</code>. This method also adds the
-   * registered node to the list in BaseStage, allowing for its removal in case of errors.
-   * Throws a {@link PipelineException} if anything goes wrong with the registration
+   * If either the name or the editor is null, the method will not attempt to register a node.
+   * Instead it just return <code>null</code>. This method also adds the registered node to
+   * the list stored in the {@link StageInformation}, allowing for its removal in case of
+   * errors. Throws a {@link PipelineException} if anything goes wrong with the registration
    * process.
    * 
    * @return The {@link NodeMod} that represents the newly created node.

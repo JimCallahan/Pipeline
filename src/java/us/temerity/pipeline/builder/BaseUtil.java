@@ -1,4 +1,4 @@
-// $Id: BaseUtil.java,v 1.20 2007/10/11 18:36:07 jesse Exp $
+// $Id: BaseUtil.java,v 1.21 2007/10/23 01:52:07 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -13,8 +13,31 @@ import us.temerity.pipeline.math.Range;
 /**
  * The abstract class that provides the basis for all utility classes in Pipeline.
  * <P>
- * This class contains all the information and helper methods that will be used by
- * utility classes.
+ * This class contains all the information and helper methods that will be used by utility
+ * classes. There are two main types of methods in this class.
+ * <p>
+ * One group relates to UtilityParameters and are helper methods for adding, removing, and
+ * querying parameters. These methods follow the standard format of all other plugins with
+ * parameters, with the additional functionality that there are methods to replace parameters.
+ * Parameter replacement is intended for situations where a parameter is needed but its values
+ * are not known when the utility is initialized. In these cases, the parameter can be
+ * declared and placed in a layout as a {@link PlaceholderUtilityParam} and then later
+ * replaced with the actual parameter. See the {@link #replaceParam(UtilityParam)} method for
+ * more information on this.
+ * <p>
+ * The other group of methods is for high-level interaction with and querying of node
+ * networks. These include methods for searching trees, interacting with Actions, and getting
+ * versions of nodes.
+ * <p>
+ * BaseUtil declares one parameter in its constructor. Any class which inherits from BaseUtil
+ * that is using parameters and parameter layouts will need to have a way to account for this
+ * parameter.
+ * <ul>
+ * <li> UtilContext - This parameter represents the context in which the Utility is going to
+ * be run.
+ * </ul>
+ * 
+ * 
  */
 public abstract
 class BaseUtil
@@ -154,6 +177,7 @@ class BaseUtil
 
     return (buf.toString());
   }
+  
   
   
   /*----------------------------------------------------------------------------------------*/

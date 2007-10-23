@@ -1,4 +1,4 @@
-// $Id: BaseStage.java,v 1.11 2007/09/24 17:14:44 jesse Exp $
+// $Id: BaseStage.java,v 1.12 2007/10/23 01:50:18 jesse Exp $
 
 package us.temerity.pipeline.stages;
 
@@ -9,7 +9,6 @@ import us.temerity.pipeline.LogMgr.Kind;
 import us.temerity.pipeline.LogMgr.Level;
 import us.temerity.pipeline.NodeTreeComp.State;
 import us.temerity.pipeline.builder.*;
-import us.temerity.pipeline.builder.BaseBuilder.ActionOnExistence;
 import us.temerity.pipeline.builder.BaseBuilder.StageFunction;
 import us.temerity.pipeline.builder.BaseUtil.NodeLocation;
 import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
@@ -40,6 +39,8 @@ class BaseStage
    *        The name of the stage.
    * @param desc
    *        A description of what the stage should do.
+   * @param stageInformation
+   * Contains information about stage execution that is global for all stages.
    * @param context
    *        The context the stage operates in.
    */
@@ -112,6 +113,15 @@ class BaseStage
       throw new PipelineException(buf.toString());
   }
   
+  /**
+   * Returns the default editor for the given suffix.
+   * 
+   * @param client
+   *        The instance of the Master Manager used to perform the lookup.
+   * 
+   * @param suffix
+   *        The suffix to find the editor for.
+   */
   public static PluginContext
   getDefaultEditor
   (
@@ -173,6 +183,12 @@ class BaseStage
     return true;
   }
   
+  /**
+   * Removes all of the secondary sequences from the registered node.
+   * <p>
+   * This method does not apply the changes. It is necessary to call modifyProperties on the
+   * pRegisteredNodeMod variable to make this permanent.
+   */
   protected final void
   removeSecondarySequences()
   {
@@ -197,6 +213,9 @@ class BaseStage
     return true;
   }
   
+  /**
+   * Removes all the links from the registered node.
+   */
   protected final void
   removeLinks()
     throws PipelineException
@@ -221,6 +240,10 @@ class BaseStage
     return true;
   }
   
+  /**
+   *  Takes all the selection and license keys and applies them to the Job Requirements
+   *  for the registered node.
+   */
   protected final void
   setKeys() 
     throws PipelineException
@@ -249,7 +272,11 @@ class BaseStage
     }
   }
   
-  protected final void
+  /**
+   * Takes all the Job Requirements (not counting the Selection and License keys) and applies
+   * them to the registered node.
+   */
+  protected void
   setJobSettings()
     throws PipelineException
   {
@@ -265,6 +292,29 @@ class BaseStage
     pRegisteredNodeMod.setJobRequirements(reqs);
   }
   
+  /**
+   * Adds all the annotations to the node.
+   */
+  protected final void
+  doAnnotations()
+    throws PipelineException
+  {
+    for (String name : pAnnotations.keySet()) {
+      BaseAnnotation annot = pAnnotations.get(name);
+      pClient.addAnnotation(pRegisteredNodeName, name, annot);
+    }
+  }
+
+  /**
+   * Removes all the annotations from the node.
+   */
+  protected final void
+  removeAnnotations()
+    throws PipelineException
+  {
+    pClient.removeAnnotations(pRegisteredNodeName);
+  }
+  
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -272,7 +322,7 @@ class BaseStage
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Removes a node's Action.
+   * Removes the registered node's Action.
    * <p>
    * Takes the name of a node and removes any Action that the node
    * might have. Throws a {@link PipelineException} if there is a problem removing the
@@ -280,7 +330,6 @@ class BaseStage
    * 
    * @param name
    *        The full name of the node to have its Action removed.
-   * @throws PipelineException
    */
   public void 
   removeAction
@@ -310,7 +359,6 @@ class BaseStage
    * @param editor
    *        The Editor for the new node.
    * @return The {@link NodeMod} representing the newly registered node.
-   * @throws PipelineException
    */
   public NodeMod 
   registerNode
@@ -350,7 +398,6 @@ class BaseStage
    * @param step
    *        The step for the sequence.
    * @return The {@link NodeMod} representing the newly registered node.
-   * @throws PipelineException
    */
   public NodeMod 
   registerSequence
@@ -390,7 +437,6 @@ class BaseStage
    * @param cloneAction
    *        Should the action of the old node be copied to the new node.
    * @return a {@link NodeMod} representing the newly created node.
-   * @throws PipelineException
    */
   public NodeMod 
   cloneNode
@@ -477,10 +523,9 @@ class BaseStage
    * Finds the latest version of a plugin from a specified vendor in the given toolset.
    * 
    * @param pluginUtil
-   *        Contains the name and the vendor the the plugin *
+   *        Contains the name and the vendor the the plugin 
    * @param toolset
    *        The toolset from which the version of the Action will be extracted.
-   * @throws PipelineException
    */
   public BaseAction 
   getAction
@@ -535,7 +580,6 @@ class BaseStage
    *        Contains the name and the vendor the the plugin
    * @param toolset
    *        The toolset from which the version of the Editor will be extracted.
-   * @throws PipelineException
    */
   public BaseEditor 
   getEditor
@@ -711,7 +755,6 @@ class BaseStage
    *            The name of the single parameter to add.
    * @param value
    *            The value the named single parameter should have.
-   * @throws PipelineException
    */
   @SuppressWarnings("unchecked")
   public void 
@@ -741,7 +784,6 @@ class BaseStage
    *            The name of the source parameter to add.
    * @param value
    *            The value the named source parameter should have.
-   * @throws PipelineException
    */
   @SuppressWarnings("unchecked")
   public void 
@@ -778,7 +820,6 @@ class BaseStage
    *            The name of the secondary source parameter to add.
    * @param value
    *            The value the named secondary source parameter should have.
-   * @throws PipelineException
    */
   @SuppressWarnings("unchecked")
   public void 
@@ -822,7 +863,12 @@ class BaseStage
     pSecondarySequences.add(seq);
   }
 
-  public void addSelectionKeys
+  /**
+   * Adds the set of Selection Keys to the Selection Keys that will be assigned to the
+   * registered node.
+   */
+  public void 
+  addSelectionKeys
   (
     TreeSet<String> selectionKeys
   )
@@ -831,16 +877,23 @@ class BaseStage
       pSelectionKeys = new TreeSet<String>();
     pSelectionKeys.addAll(selectionKeys);
   }
-  
+
+  /**
+   * Replaces the existing of Selection Keys with the new set.
+   */
   public void 
   setSelectionKeys
   (
     TreeSet<String> selectionKeys
   )
   {
-    pSelectionKeys = selectionKeys;
+    pSelectionKeys = new TreeSet<String>(selectionKeys);
   }
 
+  /**
+   * Adds the set of License Keys to the License Keys that will be assigned to the
+   * registered node.
+   */
   public void 
   addLicenseKeys
   (
@@ -852,6 +905,9 @@ class BaseStage
     pLicenseKeys.addAll(licenseKeys);
   }
 
+  /**
+   * Replaces the existing of License Keys with the new set.
+   */
   public void 
   setLicenseKeys
   (
@@ -861,6 +917,12 @@ class BaseStage
     pLicenseKeys = licenseKeys;
   }
 
+  /**
+   * Adds an annotation with the given name to the registered node.
+   * <p>
+   * The annotations will not actually be assigned until the
+   * {@link #doAnnotations()} method is called.
+   */
   public void
   addAnnotation
   (
@@ -871,12 +933,18 @@ class BaseStage
     pAnnotations.put(name, annotation);
   }
   
+  /**
+   * Gets the list of all the annotations that are going to be added to the registered node.
+   */
   public Map<String, BaseAnnotation>
   getAnnotations()
   {
     return Collections.unmodifiableMap(pAnnotations);
   }
   
+  /**
+   * Adds an {@link ExecutionMethod} that will be assigned to the registered node.
+   */
   public void
   setExecutionMethod
   (
@@ -886,7 +954,11 @@ class BaseStage
     if (method != null)
       pExecutionMethod = method;
   }
-  
+
+  /**
+   * Adds a batch size that will be assigned to the registered node, assuming it has the
+   * Parallel ExecutionMethod.
+   */
   public void
   setBatchSize
   (
@@ -941,6 +1013,10 @@ class BaseStage
   /*  I N F O R M A T I O N                                                                 */
   /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * Does the Action that is going to be assigned to the registered node have a
+   * SingleParameter with the given name?
+   */
   public boolean
   doesActionHaveParam
   (
@@ -1081,6 +1157,10 @@ class BaseStage
     return toReturn;
   }
   
+  /**
+   * Checks for the existence of node and takes action based on what the value of the 
+   * actionOnExistence parameter.
+   */
   protected final boolean
   checkExistance
   (
@@ -1100,7 +1180,7 @@ class BaseStage
     if (actionOnExistence == ActionOnExistence.Abort)
       throw new PipelineException
         ("The node (" + nodeName + ") exists.  Aborting Builder operation as per " +
-         "the setting of the ActionOnExistance parameter in the builder.");
+         "the setting of the ActionOnExistence parameter in the builder.");
     NodeLocation location = getNodeLocation(nodeName);
     switch(location) {
     case OTHER:
@@ -1131,7 +1211,7 @@ class BaseStage
       case Continue:
 	throw new PipelineException
           ("The node (" + nodeName + ") exists, but is not checked out in the current " +
-           "working area.  Since ActionOnExistance was set to Continue, " +
+           "working area.  Since ActionOnExistence was set to Continue, " +
            "the Builder is unable to procede.");
       }
     }
@@ -1143,9 +1223,15 @@ class BaseStage
   /*----------------------------------------------------------------------------------------*/
   /*  I N T E R N A L S                                                                     */
   /*----------------------------------------------------------------------------------------*/
-  
+
+  /**
+   * The UtilContext that the stage operates in.
+   */
   protected UtilContext pUtilContext;
   
+  /**
+   * Contains shared information between all stages.
+   */
   protected StageInformation pStageInformation;
   
   /**
@@ -1170,7 +1256,7 @@ class BaseStage
   /**
    * The Action for the node that is going to be registered.
    * <p>
-   * This also stores all the paramter (single, source, and secondary source) information.
+   * This also stores all the parameter (single, source, and secondary source) information.
    */
   protected BaseAction pAction = null;
 
