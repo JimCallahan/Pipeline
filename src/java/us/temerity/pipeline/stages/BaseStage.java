@@ -1,4 +1,4 @@
-// $Id: BaseStage.java,v 1.12 2007/10/23 01:50:18 jesse Exp $
+// $Id: BaseStage.java,v 1.13 2007/10/23 02:26:17 jim Exp $
 
 package us.temerity.pipeline.stages;
 
@@ -9,6 +9,7 @@ import us.temerity.pipeline.LogMgr.Kind;
 import us.temerity.pipeline.LogMgr.Level;
 import us.temerity.pipeline.NodeTreeComp.State;
 import us.temerity.pipeline.builder.*;
+import us.temerity.pipeline.builder.ActionOnExistence;
 import us.temerity.pipeline.builder.BaseBuilder.StageFunction;
 import us.temerity.pipeline.builder.BaseUtil.NodeLocation;
 import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
@@ -914,7 +915,7 @@ class BaseStage
     TreeSet<String> licenseKeys
   )
   {
-    pLicenseKeys = licenseKeys;
+    pLicenseKeys = new TreeSet<String>(licenseKeys);
   }
 
   /**
