@@ -163,7 +163,7 @@ class SimpleAssetBuilder
       layout.addEntry(1, aUtilContext);
       layout.addEntry(1, null);
       layout.addEntry(1, aCheckinWhenDone);
-      layout.addEntry(1, aActionOnExistance);
+      layout.addEntry(1, aActionOnExistence);
       layout.addEntry(1, aReleaseOnError);
       layout.addEntry(1, null);
       layout.addEntry(1, aProjectName);

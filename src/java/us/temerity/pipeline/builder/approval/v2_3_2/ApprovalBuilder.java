@@ -126,7 +126,7 @@ class ApprovalBuilder
       LayoutGroup layout = new LayoutGroup(true);
       layout.addEntry(aUtilContext);
       layout.addSeparator();
-      layout.addEntry(aActionOnExistance);
+      layout.addEntry(aActionOnExistence);
       layout.addEntry(aReleaseOnError);
       layout.addSeparator();
       layout.addEntry(aApproveNode);

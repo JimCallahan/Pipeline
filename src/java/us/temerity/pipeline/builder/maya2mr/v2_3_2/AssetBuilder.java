@@ -1,4 +1,4 @@
-// $Id: AssetBuilder.java,v 1.16 2007/10/11 19:12:45 jesse Exp $
+// $Id: AssetBuilder.java,v 1.17 2007/10/23 01:49:06 jesse Exp $
 
 package us.temerity.pipeline.builder.maya2mr.v2_3_2;
 
@@ -233,7 +233,7 @@ class AssetBuilder
       layout.addEntry(1, aUtilContext);
       layout.addEntry(1, null);
       layout.addEntry(1, aCheckinWhenDone);
-      layout.addEntry(1, aActionOnExistance);
+      layout.addEntry(1, aActionOnExistence);
       layout.addEntry(1, aReleaseOnError);
       layout.addEntry(1, null);
       layout.addEntry(1, aProjectName);

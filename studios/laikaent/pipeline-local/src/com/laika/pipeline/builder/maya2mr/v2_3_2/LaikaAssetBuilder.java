@@ -16,7 +16,7 @@ import us.temerity.pipeline.math.Range;
  * The Laika Films Asset Builder
  * <p>
  * Note, due to how the blend shape nodes are being generated, using this builder with
- * ActionOnExistance set to Conform will result in undesirable behavior.  So don't do it.
+ * ActionOnExistence set to Conform will result in undesirable behavior.  So don't do it.
  */
 public 
 class LaikaAssetBuilder
