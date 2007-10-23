@@ -1,4 +1,4 @@
-// $Id: BaseBuilder.java,v 1.30 2007/10/23 01:46:30 jesse Exp $
+// $Id: BaseBuilder.java,v 1.31 2007/10/23 01:53:19 jim Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -1690,60 +1690,6 @@ class BaseBuilder
   {
     Complete, Problem, InProgress
   }
-  
-//   public static 
-//   enum ActionOnExistence
-//   {
-//     CheckOut, Continue, Abort, Conform;
- 
-//     public static ArrayList<ActionOnExistence>
-//     all() 
-//     {
-//       ActionOnExistence values[] = values();
-//       ArrayList<ActionOnExistence> all = new ArrayList<ActionOnExistence>(values.length);
-//       int wk;
-//       for(wk=0; wk<values.length; wk++)
-//         all.add(values[wk]);
-//       return all;
-//     }
-
-//     public static ArrayList<String>
-//     titles() 
-//     {
-//       ArrayList<String> titles = new ArrayList<String>();
-//       for(ActionOnExistence method : ActionOnExistence.all()) 
-//         titles.add(method.toTitle());
-//       return titles;
-//     }
- 
-//     public static ActionOnExistence
-//     valueFromKey
-//     (
-//       int key
-//     )
-//     {
-//       return ActionOnExistence.values()[key];
-//     }
-   
-//     public static ActionOnExistence
-//     valueFromString
-//     (
-//       String string  
-//     )
-//     {
-//       ActionOnExistence toReturn = null;
-//       for (ActionOnExistence each : ActionOnExistence.values())
-// 	if (each.toString().equals(string))
-// 	  toReturn = each;
-//       return toReturn;
-//     }
-
-//     public String
-//     toTitle() 
-//     {
-//       return toString();
-//     }
-//   }
   
   /**
    *  Defines the use of a node in a particular builder setup.
