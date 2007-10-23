@@ -1,4 +1,4 @@
-// $Id: MRayInstGroupAction.java,v 1.2 2007/06/30 07:16:15 jesse Exp $
+// $Id: MRayInstGroupAction.java,v 1.3 2007/10/23 01:49:00 jim Exp $
 
 package us.temerity.pipeline.plugin.MRayInstGroupAction.v2_3_2;
 
@@ -187,7 +187,8 @@ MRayInstGroupAction
       ActionParam param = 
 	new EnumActionParam
 	(aListType,
-	 "Whether the list of instances should be the only instances Included or the instances that are Excluded from the render instance.",
+	 "Whether the list of instances should be the only instances Included or the " + 
+         "instances that are Excluded from the render instance.",
 	 "Include",
 	 choices);
       addSingleParam(param);
@@ -203,8 +204,8 @@ MRayInstGroupAction
       ActionParam param = 
 	new EnumActionParam
 	(aVisible,
-	 "Do you want to override the (visible) attribute for these instances.  Select None" +
-	 "for no override or the value you want the override to have.",
+	 "Do you want to override the (visible) attribute for these instances.  " + 
+         "Select None for no override or the value you want the override to have.",
 	 "None",
 	 threeChoices);
       addSingleParam(param);
@@ -214,8 +215,8 @@ MRayInstGroupAction
       ActionParam param = 
 	new EnumActionParam
 	(aShadowMap,
-	 "Do you want to override the (shadowmap) attribute for these instances.  Select None" +
-	 "for no override or the value you want the override to have.",
+	 "Do you want to override the (shadowmap) attribute for these instances.  " + 
+         "Select None for no override or the value you want the override to have.",
 	 "None",
 	 threeChoices);
       addSingleParam(param);
@@ -225,8 +226,8 @@ MRayInstGroupAction
       ActionParam param = 
 	new EnumActionParam
 	(aTrace,
-	 "Do you want to override the (trace) attribute for these instances.  Select None" +
-	 "for no override or the value you want the override to have.",
+	 "Do you want to override the (trace) attribute for these instances.  " + 
+         "Select None for no override or the value you want the override to have.",
 	 "None",
 	 threeChoices);
       addSingleParam(param);
@@ -236,8 +237,8 @@ MRayInstGroupAction
       ActionParam param = 
 	new EnumActionParam
 	(aShadow,
-	 "Do you want to override the (shadow) attribute for these instances.  Select None" +
-	 "for no override or the value you want the override to have.",
+	 "Do you want to override the (shadow) attribute for these instances.  " + 
+         "Select None for no override or the value you want the override to have.",
 	 "None",
 	 threeChoices);
       addSingleParam(param);
@@ -254,8 +255,8 @@ MRayInstGroupAction
       ActionParam param = 
 	new EnumActionParam
 	(aFace,
-	 "Do you want to override the (face) attribute for these instances.  Select None" +
-	 "for no override or the value you want the override to have.",
+	 "Do you want to override the (face) attribute for these instances.  " + 
+         "Select None for no override or the value you want the override to have.",
 	 "None",
 	 choices);
       addSingleParam(param);
@@ -271,8 +272,8 @@ MRayInstGroupAction
       ActionParam param = 
 	new EnumActionParam
 	(aShadowMode,
-	 "Do you want to override the (shadow) attribute for these instances.  Select None" +
-	 "for no override or the value you want the override to have.",
+	 "Do you want to override the (shadow) attribute for these instances.  " + 
+         "Select None for no override or the value you want the override to have.",
 	 "None",
 	 choices);
       addSingleParam(param);
@@ -467,7 +468,8 @@ MRayInstGroupAction
       }
       {
 	LayoutGroup sub = 
-	  new LayoutGroup("Caustics and GI", "Settings for Caustics and Global Illumination", true);
+	  new LayoutGroup("Caustics and GI", 
+                          "Settings for Caustics and Global Illumination", true);
 	sub.addEntry(aCastCaustics);
 	sub.addEntry(aReceiveCaustics);
 	sub.addEntry(aCausticInteract);
