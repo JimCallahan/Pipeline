@@ -1,8 +1,9 @@
-// $Id: MasterMgr.java,v 1.218 2007/10/16 00:58:15 jesse Exp $
+// $Id: MasterMgr.java,v 1.219 2007/10/23 02:29:58 jim Exp $
 
 package us.temerity.pipeline.core;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.glue.*;
 import us.temerity.pipeline.glue.io.*;
 import us.temerity.pipeline.message.*;
@@ -10384,6 +10385,397 @@ class MasterMgr
       pDatabaseLock.readLock().unlock();
     }
   }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   N O D E   B U N D L E S                                                              */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Create a new node bundle (JAR achive) by packing up a tree of nodes from a working 
+   * area rooted at the given node.<P> 
+   *
+   * If successful, this will create a new node bundle containing the node properties, links
+   * and associated working area data files for the entire tree of nodes rooted at the given
+   * node.  The node bundle will contain full copies of all files associated with these nodes
+   * regardless of whether they where checked-out modifiable, frozen or locked within the 
+   * current working area.  All node metadata, including detailed information about the
+   * toolsets and toolset packages required, will be written to a GLUE file included in the
+   * node bundle. <P> 
+   * 
+   * The node bundle will always be written into the root directory of the working area 
+   * containing the root node of the node tree being packed into the archive.  The name of
+   * the archive is automatically generated based on the name of the root node and the 
+   * time when the operation begins.  The full path to the create JAR file is returned by
+   * this method if successfull. <P> 
+   * 
+   * Create a new node JAR archive by packing up a tree of nodes from a working area rooted 
+   * at the given node.<P> 
+   *
+   * If the owner of the root node is different than the current user, this method 
+   * will fail unless the current user has privileged access status. All nodes to be packed
+   * into the JAR archive must be in a Finished (blue) state.  Any nodes not in a Finished
+   * state will cause the entire operation to abort.<P> 
+   * 
+   * @param req 
+   *   The pack request.
+   *
+   * @return
+   *   <CODE>NodePackRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to create the node JAR archive.
+   */ 
+  public Object
+  packNodes
+  ( 
+   NodePackReq req 
+  ) 
+  {
+    NodeID nodeID = req.getNodeID();
+    String name = nodeID.getName();
+
+    TaskTimer timer = new TaskTimer(); 
+
+    /* pre-op tests */
+    try {
+      PackExtFactory factory = new PackExtFactory(nodeID); 
+      performExtensionTests(timer, factory);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      timer.resume();	
+
+      if(!pAdminPrivileges.isNodeManaged(req, nodeID)) 
+	throw new PipelineException
+	  ("Only a user with Node Manager privileges may create a node JAR archive " + 
+           "containing nodes from a working areas owned by another user!");
+
+      /* get the current status of the root node */ 
+      NodeStatus status = performNodeOperation(new NodeOp(), nodeID, timer);
+      
+      /* collecting validated working versions in the order they should be unpacked */ 
+      LinkedList<NodeMod> nodes = new LinkedList<NodeMod>();
+      validatePacked(status, nodes, new TreeSet<String>());
+
+      /* get the bundled toolsets and packages */ 
+      DoubleMap<String,OsType,Toolset> bundledToolsets = 
+        new DoubleMap<String,OsType,Toolset>();
+      TripleMap<String,OsType,VersionID,PackageVersion> bundledPackages = 
+        new TripleMap<String,OsType,VersionID,PackageVersion>();
+      {
+        timer.aquire();
+        synchronized(pToolsets) {
+          timer.resume();
+          
+          for(NodeMod mod : nodes) {
+            String tname = mod.getToolset();
+            if(!bundledToolsets.containsKey(tname)) {
+              TreeMap<OsType,Toolset> toolsets = pToolsets.get(tname);
+              for(OsType os : toolsets.keySet()) {
+                Toolset toolset = toolsets.get(os);
+                if(toolset == null) 
+                  toolset = readToolset(tname, os);
+                
+                bundledToolsets.put(tname, os, toolset);
+              }
+            }
+          }
+        }
+
+	timer.aquire();
+	synchronized(pToolsetPackages) {
+	  timer.resume();
+	  
+          for(String tname : bundledToolsets.keySet()) {
+            for(OsType os : bundledToolsets.keySet(tname)) {
+              Toolset tset = bundledToolsets.get(tname, os);
+
+              int wk;
+              for(wk=0; wk<tset.getNumPackages(); wk++) {
+                String pname = tset.getPackageName(wk);
+                VersionID vid = tset.getPackageVersionID(wk); 
+                PackageVersion pkg = getToolsetPackage(pname, vid, os);
+                bundledPackages.put(pname, os, vid, pkg);
+              }
+            }
+          }
+        }
+      }
+      
+      /* create the node bundle and node JAR archive */ 
+      NodeBundle bundle = null; 
+      Path nodeArchive = null;
+      {
+        try {
+          bundle = new NodeBundle(TimeStamps.now(), nodeID, nodes, 
+                                  bundledToolsets, bundledPackages);
+        }
+        catch(Exception ex) {
+          throw new PipelineException(ex);
+        }
+
+        FileMgrClient fclient = getFileMgrClient();
+        try {
+          nodeArchive = fclient.packNodes(bundle);
+        }
+        finally {
+          freeFileMgrClient(fclient);
+        }
+      }
+
+      /* post-op tasks */ 
+      {
+        PackExtFactory factory = new PackExtFactory(bundle); 
+        startExtensionTasks(timer, factory);
+      }
+      
+      return new NodePackRsp(timer, nodeID, nodeArchive);    
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+  /**
+   * Recursively validate the nodes to pack while collecting the working versions in
+   * depth-first order.
+   */ 
+  private void 
+  validatePacked
+  (
+   NodeStatus status,  
+   LinkedList<NodeMod> nodes,
+   TreeSet<String> seen
+  ) 
+    throws PipelineException
+  {
+    for(NodeStatus sstatus : status.getSources()) 
+      validatePacked(sstatus, nodes, seen);      
+
+    if(seen.contains(status.getName()))
+      return;
+
+    seen.add(status.getName());
+
+    NodeDetails details = status.getDetails();
+    if(details == null) 
+      throw new PipelineException
+        ("Cannot create a node bundle containing a checked-in node " + 
+         "(" + status.getName() + ")!");
+    
+    if(details.getOverallQueueState() != OverallQueueState.Finished) 
+      throw new PipelineException
+        ("Cannot create a node bundle containing the node (" + status.getName() + ") " + 
+         "unless its QueueState is Finished (blue)!");
+
+    NodeMod mod = details.getWorkingVersion();
+    if(mod == null) 
+      throw new PipelineException
+        ("Cannot create a node bundle containing the node (" + status.getName() + ") " + 
+         "unless it has been checked-out!");
+
+    nodes.add(mod);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Extract the node metadata from a node bundle containing a tree of nodes packed at 
+   * another site. <P> 
+   * 
+   * This method is useful for querying for information about the toolsets being used by 
+   * the nodes in the node bundle without unpacking them.  Using this information, a suitable
+   * mapping of toolsets from the site which created the nodes to the toolsets at the local
+   * site can be generated.  If this remapping of toolsets is not specified, than the default
+   * toolset at the local site will be used for all unpacked nodes.  In many cases, this will
+   * not be sufficient to insure that the nodes function properly after being unpacked.
+   * 
+   * @param req 
+   *   The extract bundle request.
+   *
+   * @return
+   *   <CODE>NodeExtractBundleRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to extract the node bundle.
+   */ 
+  public Object
+  extractBundle
+  ( 
+   NodeExtractBundleReq req 
+  ) 
+  {
+    TaskTimer timer = new TaskTimer(); 
+
+    try {    
+      Path bundlePath = req.getPath();
+
+      /* extract the node bundle */ 
+      NodeBundle bundle = null; 
+      {
+        FileMgrClient fclient = getFileMgrClient();
+        try {
+          bundle = fclient.extractBundle(bundlePath);
+        }
+        finally {
+          freeFileMgrClient(fclient);
+        }
+      }
+
+      return new NodeExtractBundleRsp(timer, bundle, bundlePath); 
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Unpack a node bundle containing a tree of nodes packed at another site into the given
+   * working area.<P> 
+   * 
+   * @param req 
+   *   The extract bundle request.
+   *
+   * @return
+   *   <CODE>NodeUnpackReq</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to unpack the nodes from the node bundle.
+   */ 
+  public Object
+  unpackNodes
+  ( 
+   NodeUnpackReq req 
+  ) 
+  {
+    Path bundlePath = req.getPath();
+
+    String author = req.getAuthor();
+    String view   = req.getView();
+
+    boolean releaseOnError = req.getReleaseOnError();
+    ActionOnExistence actOnExist = req.getActionOnExistence();
+
+    TreeMap<String,String> toolsetRemap      = req.getToolsetRemap();
+    TreeMap<String,String> selectionKeyRemap = req.getSelectionKeyRemap();
+    TreeMap<String,String> licenseKeyRemap   = req.getLicenseKeyRemap();
+
+    TaskTimer timer = new TaskTimer(); 
+
+    /* pre-op tests */
+    try {
+      UnpackExtFactory factory = 
+        new UnpackExtFactory(bundlePath, author, view, releaseOnError, actOnExist, 
+                             toolsetRemap, selectionKeyRemap, licenseKeyRemap, null);
+      performExtensionTests(timer, factory);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      timer.resume();	
+
+      if(!pAdminPrivileges.isNodeManaged(req, author)) 
+	throw new PipelineException
+	  ("Only a user with Node Manager privileges may unpack a node bundle " +
+           "into a working area owned by another user!");
+
+      /* extract the node bundle */ 
+      NodeBundle bundle = null; 
+      {
+        FileMgrClient fclient = getFileMgrClient();
+        try {
+          bundle = fclient.extractBundle(bundlePath);
+        }
+        finally {
+          freeFileMgrClient(fclient);
+        }
+      }
+      
+      /* use the bundle builder to unpack the nodes */ 
+      {
+        /* initialize the builder's parameters */ 
+        MultiMap<String, String> cparams = new MultiMap<String, String>();
+        {
+          LinkedList<String> ckeys = new LinkedList<String>(); 
+          ckeys.add("BundleBuilder");
+          ckeys.add(BaseUtil.aUtilContext); 
+          
+          ckeys.add(UtilContextUtilityParam.aAuthor); 
+          cparams.putValue(ckeys, author);
+          ckeys.removeLast();
+          
+          ckeys.add(UtilContextUtilityParam.aView); 
+          cparams.putValue(ckeys, view);
+          ckeys.removeLast();
+          
+          timer.aquire();
+          synchronized(pDefaultToolsetLock) {
+            timer.resume();	
+            
+            ckeys.add(UtilContextUtilityParam.aToolset); 
+            cparams.putValue(ckeys, pDefaultToolset);
+            ckeys.removeLast(); 
+          }
+          ckeys.removeLast(); 
+
+          ckeys.add(BaseBuilder.aActionOnExistence); 
+          cparams.putValue(ckeys, actOnExist.toTitle()); 
+          ckeys.removeLast(); 
+          
+          ckeys.add(BaseBuilder.aReleaseOnError); 
+          cparams.putValue(ckeys, String.valueOf(releaseOnError)); 
+          ckeys.removeLast(); 
+        }
+        
+        BuilderInformation info = new BuilderInformation(false, false, cparams);
+        MasterMgrClient mclient = new MasterMgrClient();  // MAKE THIS DIRECT!!
+
+        BaseBuilder builder = 
+          new BundleBuilder(mclient, pQueueMgrClient, info, bundle, bundlePath, 
+                            toolsetRemap, selectionKeyRemap, licenseKeyRemap);
+        
+        builder.run();
+      }
+          
+      /* unpack the node data files */ 
+      FileMgrClient fclient = getFileMgrClient();
+      try {
+        fclient.unpackNodes(bundlePath, bundle, author, view);
+      }
+      finally {
+        freeFileMgrClient(fclient);
+      }
+      
+      /* post-op tasks */ 
+      {
+        UnpackExtFactory factory = 
+          new UnpackExtFactory(bundlePath, author, view, releaseOnError, actOnExist, 
+                               toolsetRemap, selectionKeyRemap, licenseKeyRemap, bundle); 
+        startExtensionTasks(timer, factory);
+      }
+      
+      return new SuccessRsp(timer);    
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/

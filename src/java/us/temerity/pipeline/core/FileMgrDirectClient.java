@@ -1,4 +1,4 @@
-// $Id: FileMgrDirectClient.java,v 1.7 2007/07/20 07:44:59 jim Exp $
+// $Id: FileMgrDirectClient.java,v 1.8 2007/10/23 02:29:58 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -461,6 +461,96 @@ class FileMgrDirectClient
 
     Object obj = pFileMgr.deleteCheckedIn(req);
     handleSimpleResponse(obj);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Create a new node bundle.<P> 
+   * 
+   * @param bundle
+   *   The node bundle metadata. 
+   * 
+   * @return
+   *   The abstract file system path to the newly create node bundle.
+   */ 
+  public Path
+  packNodes
+  (
+   NodeBundle bundle
+  ) 
+    throws PipelineException
+  {
+    FilePackNodesReq req = new FilePackNodesReq(bundle);
+
+    Object obj = pFileMgr.packNodes(req);
+    if(obj instanceof FilePackNodesRsp) {
+      FilePackNodesRsp rsp = (FilePackNodesRsp) obj;
+      return rsp.getPath();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }
+
+  /**
+   * Extract the node metadata from a node bundle containing a tree of nodes packed at 
+   * another site. <P> 
+   * 
+   * @param bundlePath
+   *   The abstract file system path to the node bundle.
+   */ 
+  public NodeBundle
+  extractBundle
+  (
+   Path bundlePath
+  ) 
+    throws PipelineException
+  {
+    FileExtractBundleReq req = new FileExtractBundleReq(bundlePath);
+
+    Object obj = pFileMgr.extractBundle(req);
+    if(obj instanceof FileExtractBundleRsp) {
+      FileExtractBundleRsp rsp = (FileExtractBundleRsp) obj;
+      return rsp.getBundle();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }
+
+  /**
+   * Unpack a node bundle files into the given working area.<P> 
+   * 
+   * @param bundlePath
+   *   The abstract file system path to the node bundle.
+   * 
+   * @param bundle
+   *   The node bundle metadata. 
+   * 
+   * @param author 
+   *   The name of the user which owns the working version.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   */ 
+  public void
+  unpackNodes
+  ( 
+   Path bundlePath, 
+   NodeBundle bundle,
+   String author, 
+   String view
+  ) 
+    throws PipelineException
+  {
+    FileUnpackNodesReq req = new FileUnpackNodesReq(bundlePath, bundle, author, view);
+    
+    Object obj = pFileMgr.unpackNodes(req);
+    handleSimpleResponse(obj);    
   }
 
 

@@ -1,4 +1,4 @@
-// $Id: MasterRequest.java,v 1.58 2007/06/15 00:27:31 jim Exp $
+// $Id: MasterRequest.java,v 1.59 2007/10/23 02:29:58 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -642,6 +642,24 @@ enum MasterRequest
    * An instance of {@link NodeEvolveReq} is next.
    */
   Evolve, 
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * An instance of {@link NodePackReq} is next.
+   */
+  Pack, 
+
+  /**
+   * An instance of {@link NodeExtractBundleReq} is next.
+   */
+  ExtractBundle, 
+
+  /**
+   * An instance of {@link NodeUnpackReq} is next.
+   */
+  Unpack, 
 
 
   /*----------------------------------------------------------------------------------------*/

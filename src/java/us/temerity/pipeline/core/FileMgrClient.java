@@ -1,4 +1,4 @@
-// $Id: FileMgrClient.java,v 1.40 2007/07/20 07:44:59 jim Exp $
+// $Id: FileMgrClient.java,v 1.41 2007/10/23 02:29:58 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -353,6 +353,65 @@ interface FileMgrClient
   ) 
     throws PipelineException;
 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Create a new node bundle.<P> 
+   * 
+   * @param bundle
+   *   The node bundle metadata. 
+   * 
+   * @return
+   *   The abstract file system path to the newly create node bundle.
+   */ 
+  public Path
+  packNodes
+  (
+   NodeBundle bundle
+  ) 
+    throws PipelineException;
+    
+  /**
+   * Extract the node metadata from a node bundle containing a tree of nodes packed at 
+   * another site. <P> 
+   * 
+   * @param bundlePath
+   *   The abstract file system path to the node bundle.
+   */ 
+  public NodeBundle
+  extractBundle
+  (
+   Path bundlePath
+  ) 
+    throws PipelineException;
+
+  /**
+   * Unpack a node bundle files into the given working area.<P> 
+   * 
+   * @param bundlePath
+   *   The abstract file system path to the node bundle.
+   * 
+   * @param bundle
+   *   The node bundle metadata. 
+   * 
+   * @param author 
+   *   The name of the user which owns the working version.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   */ 
+  public void
+  unpackNodes
+  ( 
+   Path bundlePath, 
+   NodeBundle bundle,
+   String author, 
+   String view
+  ) 
+    throws PipelineException;
+
+    
 
   /*----------------------------------------------------------------------------------------*/
 

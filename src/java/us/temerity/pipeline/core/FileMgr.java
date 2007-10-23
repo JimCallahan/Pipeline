@@ -1,13 +1,17 @@
-// $Id: FileMgr.java,v 1.67 2007/07/20 07:44:59 jim Exp $
+// $Id: FileMgr.java,v 1.68 2007/10/23 02:29:58 jim Exp $
 
 package us.temerity.pipeline.core;
 
-import us.temerity.pipeline.message.*;
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.glue.*;
+import us.temerity.pipeline.glue.io.*;
+import us.temerity.pipeline.message.*;
 
 import java.io.*;
 import java.util.*;
+import java.util.jar.*; 
 import java.util.concurrent.locks.*;
+import java.text.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   F I L E   M G R                                                                        */
@@ -222,8 +226,8 @@ class FileMgr
     throws PipelineException
   {
     try {
-      Path path = new Path(PackageInfo.sTempPath, "plfilemgr");
-      pScratchDir = path.toFile();
+      pScratchPath = new Path(PackageInfo.sTempPath, "plfilemgr");
+      pScratchDir = pScratchPath.toFile();
       if(!pScratchDir.isDirectory())
 	if(!pScratchDir.mkdirs()) 
 	  throw new IOException
@@ -2300,6 +2304,8 @@ class FileMgr
     ReentrantReadWriteLock checkedInLock = getCheckedInLock(name);
     checkedInLock.writeLock().lock();
     try {
+      timer.resume();	
+
       String rdir  = (pProdDir + "/repository" + name);
       String crdir = (pProdDir + "/checksum/repository" + name);
       
@@ -2378,6 +2384,418 @@ class FileMgr
       checkedInLock.writeLock().unlock();
     }  
   }  
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Create a new node bundle.<P> 
+   * 
+   * @param req 
+   *   The pack nodes request.
+   * 
+   * @return
+   *   <CODE>FilePackNodesRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to create the node bundle.
+   */
+  public Object
+  packNodes
+  (
+   FilePackNodesReq req
+  ) 
+  {
+    NodeBundle bundle = req.getBundle();
+    NodeID rootID = bundle.getRootNodeID();
+
+    TaskTimer timer = new TaskTimer("FileMgr.packNodes(): " + rootID);
+    
+    try {
+      /* determine the name of the node bundle and GLUE file containing the metadata */ 
+      String bname = null;
+      Path jarPath = null;
+      Path gluePath = null;
+      Path workPath = null;
+      {
+        Path path = new Path(rootID.getName());
+        SimpleDateFormat fmt = new SimpleDateFormat("yyMMdd-HHmmss"); 
+        bname = (path.getName() + "-" + fmt.format(new Date(bundle.getCreatedOn())));
+
+        workPath = new Path(PackageInfo.sProdPath, 
+                            "/working/" + rootID.getAuthor() + "/" + rootID.getView());
+
+        jarPath  = new Path(workPath, bname + ".nb"); 
+        gluePath = new Path(pScratchPath, bname + ".glue");
+      }
+      
+      /* write the node bundle GLUE file */ 
+      {
+        File file = gluePath.toFile();
+        if(file.exists()) 
+          throw new PipelineException
+            ("Somehow a node metadata GLUE file (" + gluePath + ") already exists!");
+        FileCleaner.add(file);
+
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+           "Writing Node Bundle Metadata: " + bname);
+        
+        try {
+          String glue = null;
+          try {
+            GlueEncoder ge = new GlueEncoderImpl("NodeBundle", bundle);
+            glue = ge.getText();
+          }
+          catch(GlueException ex) {
+            LogMgr.getInstance().log
+              (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+               "Unable to generate a Glue format representation of the node metadata for " + 
+               "the node bundle (" + bname + ")!");
+            LogMgr.getInstance().flush();
+            
+            throw new IOException(ex.getMessage());
+          }
+	  
+          {
+            FileWriter out = new FileWriter(file);
+            out.write(glue);
+            out.flush();
+            out.close();
+          }
+        }
+        catch(IOException ex) {
+          throw new PipelineException
+            ("I/O ERROR: \n" + 
+             "  While attempting to write the node metadata file (" + file + ")...\n" +
+             "    " + ex.getMessage());
+        }
+      }
+      
+      /* create the node bundle JAR file */ 
+      { 
+	Map<String,String> env = System.getenv();
+
+        {
+          ArrayList<String> args = new ArrayList<String>();
+          args.add("-cvMf");
+          args.add(jarPath.toOsString());
+          args.add(gluePath.getName());
+          
+          SubProcessLight proc = 
+            new SubProcessLight(rootID.getAuthor(), 
+                                "PackNodes", "jar", args, env, pScratchDir); 
+          
+          try {
+            proc.start();
+            proc.join();
+            if(!proc.wasSuccessful()) 
+              throw new PipelineException
+                ("Unable to create node bundle (" + jarPath + "):\n\n" + 
+                 "  " + proc.getStdErr());	
+          }
+          catch(InterruptedException ex) {
+            throw new PipelineException
+            ("Interrupted while creating node bundle (" + jarPath + ")!");
+          }
+        }
+        
+        {
+          ArrayList<String> preOpts = new ArrayList<String>();
+          preOpts.add("-uvMf");
+          preOpts.add(jarPath.toOsString());
+
+          ArrayList<String> args = new ArrayList<String>();
+          for(NodeMod mod : bundle.getWorkingVersions()) {
+            Path npath = new Path(mod.getName());
+            Path parent = npath.getParentPath();
+            for(FileSeq fseq : mod.getSequences()) {
+              for(Path path : fseq.getPaths()) {
+                Path fpath = new Path(parent, path); 
+                args.add("." + fpath.toOsString());
+              }
+            }
+          }
+
+	  if(!args.isEmpty()) {
+	    LinkedList<SubProcessLight> procs = 
+	      SubProcessLight.createMultiSubProcess
+                (rootID.getAuthor(), 
+                 "PackNodes", "jar", preOpts, args, env, workPath.toFile());
+          
+	    try {
+	      for(SubProcessLight proc : procs) {
+                proc.start();
+                proc.join();
+                if(!proc.wasSuccessful()) 
+                  throw new PipelineException
+                    ("Unable to append files to node bundle (" + jarPath + "):\n\n" + 
+                     "  " + proc.getStdErr());	
+              }
+            }
+            catch(InterruptedException ex) {
+              throw new PipelineException
+                ("Interrupted while appending files to node bundle (" + jarPath + ")!");
+            }
+          }
+        }
+      }
+
+      return new FilePackNodesRsp(timer, rootID, jarPath);
+    }
+    catch(PipelineException ex) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Severe, 
+	 ex.getMessage());
+      return new FailureRsp(timer, ex.getMessage());
+    }
+  }  
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Extract the node metadata from a node bundle containing a tree of nodes packed at 
+   * another site. <P> 
+   * 
+   * @param req 
+   *   The extract bundle request.
+   * 
+   * @return
+   *   <CODE>FileExtractBundleRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to create the node bundle.
+   */
+  public Object
+  extractBundle
+  (
+   FileExtractBundleReq req
+  ) 
+  {
+    Path bundlePath = req.getPath();
+    TaskTimer timer = new TaskTimer("FileMgr.extractBundle(): " + bundlePath);
+    try {
+      return new FileExtractBundleRsp(timer, extractBundleHelper(bundlePath), bundlePath); 
+    }
+    catch(PipelineException ex) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Severe, 
+	 ex.getMessage());
+      return new FailureRsp(timer, ex.getMessage());
+    }
+  }
+
+  /**
+   * Extract the node metadata from a node bundle containing a tree of nodes packed at 
+   * another site. <P> 
+   * 
+   * @param bundlePath
+   *   The abstract file system path to the node bundle.
+   */
+  private NodeBundle
+  extractBundleHelper
+  (
+   Path bundlePath
+  ) 
+    throws PipelineException
+  {
+    String jarName = bundlePath.getName();
+    if(!jarName.endsWith(".nb")) 
+      throw new PipelineException
+        ("The file supplied (" + bundlePath + ") is not a node bundle (.nb)!");
+    String glueName = (jarName.substring(0, jarName.length()-2) + "glue"); 
+    
+    NodeBundle bundle = null;
+    {
+      /* extract the raw bytes of the GLUE file */ 
+      byte glueBytes[] = null;
+      try {
+        JarInputStream in = new JarInputStream(new FileInputStream(bundlePath.toFile())); 
+      
+        while(true) {
+          JarEntry entry = in.getNextJarEntry();
+          if(entry == null) 
+            break;
+        
+          if(!entry.isDirectory()) {
+            if(entry.getName().equals(glueName)) {
+              ByteArrayOutputStream bout = new ByteArrayOutputStream();
+            
+              byte buf[] = new byte[4096];
+              while(true) {
+                int len = in.read(buf, 0, buf.length); 
+                if(len == -1) 
+                  break;
+                bout.write(buf, 0, len);
+              }
+            
+              glueBytes = bout.toByteArray();
+              break;
+            }
+          }
+        }          
+      
+        in.close();
+      }
+      catch(IOException ex) {
+        throw new PipelineException
+          ("Unable to extract the GLUE file (" + glueName + ") from the node bundle " +
+           "file (" + bundlePath + ")!");
+      }
+    
+      if(glueBytes == null) 
+        throw new PipelineException
+          ("Unable to find the GLUE file (" + glueName + ") in the node bundle " +
+           "file (" + bundlePath + ")!");
+      
+      /* decode the GLUE raw bytes */ 
+      try {
+        GlueDecoder gd = new GlueDecoderImpl(new ByteArrayInputStream(glueBytes));
+        bundle = (NodeBundle) gd.getObject();
+      }
+      catch(Exception ex) {
+        throw new PipelineException
+          ("Unable to read the GLUE file (" + glueName + ")!");
+      }
+    }
+
+    return bundle; 
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Unpack a node bundle files into the given working area.<P> 
+   * 
+   * @param req 
+   *   The extract bundle request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to unpack the node bundle files.
+   */ 
+  public Object
+  unpackNodes
+  ( 
+   FileUnpackNodesReq req
+  ) 
+  {
+    Path jarPath = req.getPath();
+    NodeBundle bundle = req.getBundle();
+    String author = req.getAuthor();
+    String view = req.getView();
+
+    TaskTimer timer = new TaskTimer("FileMgr.unpackNodes(): " + jarPath);
+    
+    try {
+      String jarName = jarPath.getName();
+      if(!jarName.endsWith(".nb")) 
+        throw new PipelineException
+          ("The file supplied (" + jarPath + ") is not a node bundle (.nb)!");
+      String glueName = (jarName.substring(0, jarName.length()-2) + "glue"); 
+
+      Path workPath = new Path(PackageInfo.sProdPath, 
+                               "/working/" + author + "/" + view);
+
+      Map<String,String> env = System.getenv();
+
+      /* unpack all of the files */ 
+      {
+        ArrayList<String> args = new ArrayList<String>();
+        args.add("-xvf");
+        args.add(jarPath.toOsString());
+          
+        SubProcessLight proc = 
+          new SubProcessLight(author, 
+                              "UnpackNodeFiles", "jar", args, env, workPath.toFile()); 
+        try {
+          proc.start();
+          proc.join();
+          if(!proc.wasSuccessful()) 
+            throw new PipelineException
+              ("Unable to unpack node bundle (" + jarPath + "):\n\n" + 
+               "  " + proc.getStdErr());	
+        }
+        catch(InterruptedException ex) {
+          throw new PipelineException
+            ("Interrupted while unpacking node bundle (" + jarPath + ")!");
+        }
+      }
+
+      /* touch the files in depth first order */
+      {
+        ArrayList<String> preOpts = new ArrayList<String>();
+
+        ArrayList<String> args = new ArrayList<String>();
+        for(NodeMod mod : bundle.getWorkingVersions()) {
+          Path npath = new Path(mod.getName());
+          Path parent = npath.getParentPath();
+          for(FileSeq fseq : mod.getSequences()) {
+            for(Path path : fseq.getPaths()) {
+              Path fpath = new Path(parent, path); 
+              args.add("." + fpath.toOsString());
+            }
+          }
+        }
+
+        if(!args.isEmpty()) {
+          LinkedList<SubProcessLight> procs = 
+            SubProcessLight.createMultiSubProcess
+              (author, 
+               "TouchUnpackedNodeFiles", "touch", preOpts, args, env, workPath.toFile());
+          
+          try {
+            for(SubProcessLight proc : procs) {
+              proc.start();
+              proc.join();
+              if(!proc.wasSuccessful()) 
+                throw new PipelineException
+                  ("Unable to touch unpacked files from node bundle (" + jarPath + "):\n\n" + 
+                   "  " + proc.getStdErr());	
+            }
+          }
+          catch(InterruptedException ex) {
+            throw new PipelineException
+              ("Interrupted while touching unpacked files from node bundle " + 
+               "(" + jarPath + ")!");
+            }
+        }
+      }
+
+      /* delete unpacked node bundle metadata GLUE file */ 
+      {
+        Path gluePath = new Path(workPath, glueName);
+
+        ArrayList<String> args = new ArrayList<String>();
+ 	args.add("--force");
+        args.add(glueName);
+
+        SubProcessLight proc = 
+          new SubProcessLight(author, 
+                              "DeleteBundleMetadata", "rm", args, env, workPath.toFile()); 
+        try {
+          proc.start();
+          proc.join();
+          if(!proc.wasSuccessful()) 
+            throw new PipelineException
+              ("Unable to delete unpacked node bundle metadate GLUE file " + 
+               "(" + gluePath + ")!\n\n" + 
+               "  " + proc.getStdErr());	
+        }
+        catch(InterruptedException ex) {
+          throw new PipelineException
+            ("Interrupted while unpacking node bundle metadate GLUE file " + 
+             "(" + gluePath + ")!");
+        }
+      }
+      
+      return new SuccessRsp(timer);      
+    }
+    catch(PipelineException ex) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Severe, 
+	 ex.getMessage());
+      return new FailureRsp(timer, ex.getMessage());
+    }
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -3867,7 +4285,9 @@ class FileMgr
   private File pProdDir; 
   private File pRepoDir; 
   private File pTempDir; 
+
   private File pScratchDir; 
+  private Path pScratchPath; 
 
   /**
    * The file system directory creation lock.

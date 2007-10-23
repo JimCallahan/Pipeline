@@ -1,4 +1,4 @@
-// $Id: LogMasterActivityExt.java,v 1.5 2007/08/20 04:43:14 jim Exp $
+// $Id: LogMasterActivityExt.java,v 1.6 2007/10/23 02:29:58 jim Exp $
 
 package us.temerity.pipeline.plugin.LogMasterActivityExt.v2_1_1;
 
@@ -6,6 +6,8 @@ import java.io.*;
 import java.util.*;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.builder.*;
+import us.temerity.pipeline.toolset.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   L O G   M A S T E R   A C T I V I T Y   E X T                                          */
@@ -430,7 +432,6 @@ LogMasterActivityExt
 	addParam(param);
       }
 
-
       {
 	ExtensionParam param = 
 	  new BooleanExtensionParam
@@ -473,7 +474,7 @@ LogMasterActivityExt
 	ExtensionParam param = 
 	  new BooleanExtensionParam
 	  (aAllowRemoveFiles,
-	   "Whether to allow the deletiong of working are node files.",
+	   "Whether to allow the deletion of working are node files.",
 	   true);
 	addParam(param);
       }
@@ -482,10 +483,49 @@ LogMasterActivityExt
 	ExtensionParam param = 
 	  new BooleanExtensionParam
 	  (aLogRemoveFiles,
-	   "Enable logging of the deletiong of working are node files.", 
+	   "Enable logging of the deletion of working are node files.", 
 	   true);
 	addParam(param);
       }
+
+
+      {
+	ExtensionParam param = 
+	  new BooleanExtensionParam
+	  (aAllowPackBundle,
+	   "Whether to allow creation of new node bundles.",
+	   true);
+	addParam(param);
+      }
+      
+      {
+	ExtensionParam param = 
+	  new BooleanExtensionParam
+	  (aLogPackBundle,
+	   "Enable logging of creating new node bundles.",
+	   true);
+	addParam(param);
+      }
+
+
+      {
+	ExtensionParam param = 
+	  new BooleanExtensionParam
+	  (aAllowUnpackBundle,
+	   "Whether to allow unpacking of node bundles.",
+	   true);
+	addParam(param);
+      }
+      
+      {
+	ExtensionParam param = 
+	  new BooleanExtensionParam
+	  (aLogUnpackBundle,
+	   "Enable logging of the unpacking of node bundles.",
+	   true);
+	addParam(param);
+      }
+
     }
 
     /* administration ops */ 
@@ -719,6 +759,12 @@ LogMasterActivityExt
 	sub.addSeparator();
 	sub.addEntry(aAllowRemoveFiles); 
 	sub.addEntry(aLogRemoveFiles); 
+	sub.addSeparator();
+	sub.addEntry(aAllowPackBundle); 
+	sub.addEntry(aLogPackBundle); 
+	sub.addSeparator();
+	sub.addEntry(aAllowUnpackBundle); 
+	sub.addEntry(aLogUnpackBundle); 
 
 	layout.addSubGroup(sub);
       }
@@ -2450,6 +2496,411 @@ LogMasterActivityExt
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Whether to test before creating a new node bundle by packing up a tree of working 
+   * area nodes rooted at the given node.
+   */  
+  public boolean
+  hasPrePackBundleTest() 
+  {
+    return true;
+  }
+
+  /**
+   * Test to perform before creating a new node bundle by packing up a tree of working 
+   * area nodes rooted at the given node.
+   * 
+   * @param nodeID 
+   *   The unique working version identifier. 
+   * 
+   * @throws PipelineException
+   *   To abort the operation.
+   */  
+  public void
+  prePackBundleTest
+  (
+   NodeID nodeID
+  ) 
+    throws PipelineException
+  {
+    if(!isParamTrue(aAllowPackBundle)) 
+      throw new PipelineException
+	("Creating a node bundle from the tree of nodes rooted at " +
+         "(" + nodeID.getName() + ") in working area " + 
+         "(" + nodeID.getAuthor() + "|" + nodeID.getView() + ") is not allowed!");
+  }
+
+  /**
+   * Whether to run a tesk after creating a new node bundle by packing up a tree of 
+   * working area nodes rooted at the given node.
+   */  
+  public boolean
+  hasPostPackBundleTask() 
+  {
+    return true;
+  }
+  
+  /**
+   * The task to perform after creating a new node bundle by packing up a tree of 
+   * working area nodes rooted at the given node.
+   * 
+   * @param bundle
+   *   The node bundle metadata. 
+   */  
+  public void
+  postPackBundleTask
+  (
+   NodeBundle bundle
+  ) 
+  {
+    StringBuilder buf = new StringBuilder();
+
+    NodeID root = bundle.getRootNodeID();
+    
+    buf.append
+      ("PACK NODE BUNDLE\n" +
+       "  Working Area : " + root.getAuthor() + "|" + root.getView() + "\n" + 
+       "     Root Node : " + root.getName() + "\n"); 
+
+    {
+      buf.append("         Nodes : "); 
+      boolean first = true;
+      for(NodeMod mod : bundle.getWorkingVersions()) {
+        if(!first) 
+          buf.append("               : "); 
+        first = false; 
+
+        buf.append(mod.getName() + "\n");
+      }
+    }
+
+    {
+      buf.append("      Toolsets : "); 
+      boolean first = true;
+      for(String tname : bundle.getAllToolsetNames()) {
+        TreeMap<OsType,Toolset> toolsets = bundle.getOsToolsets(tname);
+
+        if(!first) 
+          buf.append("               : "); 
+        first = false; 
+
+        boolean firstOs = true;
+        buf.append(tname + " ["); 
+        for(OsType os : toolsets.keySet()) {
+          if(!firstOs) 
+            buf.append(", "); 
+          firstOs = false;
+          
+          buf.append(os.toString());
+        }
+        buf.append("]\n");
+      }
+    }
+
+    {
+      DoubleMap<String,OsType,TreeSet<VersionID>> pkgs = bundle.getAllToolsetPackageNames();
+
+      buf.append("      Packages : "); 
+      boolean first = true;
+      for(String pname : pkgs.keySet()) {
+        if(!first) 
+          buf.append("               : "); 
+        first = false; 
+
+        for(OsType os : pkgs.keySet(pname)) {
+          buf.append(pname + " [" + os + "] [");
+
+          boolean firstVsn = true;
+          for(VersionID vid : pkgs.get(pname, os)) {
+            if(!firstVsn) 
+              buf.append(" "); 
+            firstVsn = false;
+          
+            buf.append("v" + vid); 
+          }
+          buf.append("]\n");
+        }
+      }
+    }
+
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ext, LogMgr.Level.Info, 
+       buf.toString());    
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether to test before unpacking a bundle containing a tree of nodes packed at 
+   * another site into the given working area.
+   */  
+  public boolean
+  hasPreUnpackTest() 
+  {
+    return true;
+  }
+
+  /**
+   * Test to perform before unpacking a bundle containing a tree of nodes packed at 
+   * another site into the given working area.
+   * 
+   * @param bundlePath
+   *   The abstract file system path to the node bundle.
+   * 
+   * @param author 
+   *   The name of the user which owns the working version.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param releaseOnError
+   *   Whether to release all newly registered and/or modified nodes from the working area
+   *   if an error occurs in unpacking the node bundle.
+   * 
+   * @param actOnExist
+   *   What steps to take when encountering previously existing local versions of nodes
+   *   being unpacked.
+   * 
+   * @param toolsetRemap
+   *   A table mapping the names of toolsets associated with the nodes in the bundle
+   *   to toolsets at the local site.  Toolsets not found in this table will be remapped 
+   *   to the local default toolset instead.
+   * 
+   * @param selectionKeyRemap
+   *   A table mapping the names of selection keys associated with the nodes in the node 
+   *   bundle to selection keys at the local site.  Any selection keys not found in this 
+   *   table will be ignored.
+   * 
+   * @param licenseKeyRemap
+   *   A table mapping the names of license keys associated with the nodes in the node 
+   *   bundle to license keys at the local site.  Any license keys not found in this 
+   *   table will be ignored.
+   * 
+   * @throws PipelineException
+   *   To abort the operation.
+   */  
+  public void
+  preUnpackTest
+  (
+   Path bundlePath, 
+   String author, 
+   String view, 
+   boolean releaseOnError, 
+   ActionOnExistence actOnExist,   
+   TreeMap<String,String> toolsetRemap,
+   TreeMap<String,String> selectionKeyRemap,
+   TreeMap<String,String> licenseKeyRemap
+  ) 
+    throws PipelineException
+  {
+    if(!isParamTrue(aAllowUnpackBundle)) 
+      throw new PipelineException
+	("Unpacking node bundle (" + bundlePath + ") in the working area " + 
+         "(" + author + "|" + view + ") is not allowed!");
+  }
+
+
+  /**
+   * Whether to run a tesk after unpacking a bundle containing a tree of nodes packed at 
+   * another site into the given working area.
+   */  
+  public boolean
+  hasPostUnpackTask() 
+  {
+    return true;
+  }
+  
+  /**
+   * The task to perform after unpacking a bundle containing a tree of nodes packed at 
+   * another site into the given working area.
+   * 
+   * @param bundlePath
+   *   The abstract file system path to the node node bundle.
+   * 
+   * @param author 
+   *   The name of the user which owns the working version.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param releaseOnError
+   *   Whether to release all newly registered and/or modified nodes from the working area
+   *   if an error occurs in unpacking the node bundle.
+   * 
+   * @param actOnExist
+   *   What steps to take when encountering previously existing local versions of nodes
+   *   being unpacked.
+   * 
+   * @param toolsetRemap
+   *   A table mapping the names of toolsets associated with the nodes in the node bundle
+   *   to toolsets at the local site.  Toolsets not found in this table will be remapped 
+   *   to the local default toolset instead.
+   * 
+   * @param selectionKeyRemap
+   *   A table mapping the names of selection keys associated with the nodes in the node 
+   *   bundle to selection keys at the local site.  Any selection keys not found in this 
+   *   table will be ignored.
+   * 
+   * @param licenseKeyRemap
+   *   A table mapping the names of license keys associated with the nodes in the node 
+   *   bundle to license keys at the local site.  Any license keys not found in this 
+   *   table will be ignored.
+   * 
+   * @param bundle
+   *   The node bundle metadata. 
+   */  
+  public void
+  postUnpackTask
+  (
+   Path bundlePath, 
+   String author, 
+   String view,    
+   boolean releaseOnError, 
+   ActionOnExistence actOnExist,
+   TreeMap<String,String> toolsetRemap,
+   TreeMap<String,String> selectionKeyRemap,
+   TreeMap<String,String> licenseKeyRemap,
+   NodeBundle bundle
+  ) 
+  {
+    StringBuilder buf = new StringBuilder();
+
+    NodeID root = bundle.getRootNodeID();
+    
+    buf.append
+      ("UNPACK NODE BUNDLE\n" +
+       "          Node Bundle : " + bundlePath + "\n" +
+       "         Working Area : " + author + "|" + view + "\n" + 
+       "     Release On Error : " + (releaseOnError ? "YES" : "no") + "\n" +
+       "  Action On Existence : " + actOnExist + "\n");
+
+    {
+      buf.append("        Toolset Remap : "); 
+      if(!toolsetRemap.isEmpty()) {
+        boolean first = true;
+        for(String otname : toolsetRemap.keySet()) {
+          String ltname = toolsetRemap.get(otname); 
+          
+          if(!first) 
+            buf.append("                      : "); 
+          first = false; 
+          
+          buf.append(otname + " -> " + ltname + "\n"); 
+        }
+      }
+      else {
+        buf.append("[None]\n"); 
+      }
+    }
+    
+    {
+      buf.append("  Selection Key Remap : "); 
+      if(!selectionKeyRemap.isEmpty()) {
+        boolean first = true;
+        for(String okname : selectionKeyRemap.keySet()) {
+          String lkname = selectionKeyRemap.get(okname); 
+          
+          if(!first) 
+            buf.append("                      : "); 
+          first = false; 
+          
+          buf.append(okname + " -> " + lkname + "\n"); 
+        }
+      }
+      else {
+        buf.append("[None]\n"); 
+      }
+    }
+    
+    {
+      buf.append("    License Key Remap : "); 
+      if(!selectionKeyRemap.isEmpty()) {
+        boolean first = true;
+        for(String okname : licenseKeyRemap.keySet()) {
+          String lkname = licenseKeyRemap.get(okname); 
+          
+          if(!first) 
+            buf.append("                      : "); 
+          first = false; 
+        
+          buf.append(okname + " -> " + lkname + "\n"); 
+        }
+      }
+      else {
+        buf.append("[None]\n"); 
+      }
+    }
+    
+    {
+      buf.append("        Bundles Nodes : "); 
+      boolean first = true;
+      for(NodeMod mod : bundle.getWorkingVersions()) {
+        if(!first) 
+          buf.append("                      : "); 
+        first = false; 
+
+        buf.append(mod.getName() + "\n");
+      }
+    }
+
+    {
+      buf.append("             Toolsets : "); 
+      boolean first = true;
+      for(String tname : bundle.getAllToolsetNames()) {
+        TreeMap<OsType,Toolset> toolsets = bundle.getOsToolsets(tname);
+
+        if(!first) 
+          buf.append("                      : "); 
+        first = false; 
+
+        boolean firstOs = true;
+        buf.append(tname + " ["); 
+        for(OsType os : toolsets.keySet()) {
+          if(!firstOs) 
+            buf.append(", "); 
+          firstOs = false;
+          
+          buf.append(os.toString());
+        }
+        buf.append("]\n");
+      }
+    }
+
+    {
+      DoubleMap<String,OsType,TreeSet<VersionID>> pkgs = bundle.getAllToolsetPackageNames();
+
+      buf.append("             Packages : "); 
+      boolean first = true;
+      for(String pname : pkgs.keySet()) {
+        for(OsType os : pkgs.keySet(pname)) {
+          if(!first) 
+            buf.append("                      : "); 
+          first = false; 
+
+          buf.append(pname + " [" + os + "] [");
+
+          boolean firstVsn = true;
+          for(VersionID vid : pkgs.get(pname, os)) {
+            if(!firstVsn) 
+              buf.append(" "); 
+            firstVsn = false;
+          
+            buf.append("v" + vid); 
+          }
+          buf.append("]\n");
+        }
+      }
+    }
+    
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ext, LogMgr.Level.Info, 
+       buf.toString());    
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * Whether to test before reverting specific working area files to an earlier 
    * checked-in version of the files.
    */  
@@ -3337,6 +3788,12 @@ LogMasterActivityExt
 
   private static final String aAllowEvolve              = "AllowEvolve";      
   private static final String aLogEvolve                = "LogEvolve";      
+
+  private static final String aAllowPackBundle          = "AllowPackBundle";      
+  private static final String aLogPackBundle            = "LogPackBundle";      
+
+  private static final String aAllowUnpackBundle        = "AllowUnpackBundle";      
+  private static final String aLogUnpackBundle          = "LogUnpackBundle";      
 
   private static final String aAllowRevertFiles         = "AllowRevertFiles";      
   private static final String aLogRevertFiles           = "LogRevertFiles";      

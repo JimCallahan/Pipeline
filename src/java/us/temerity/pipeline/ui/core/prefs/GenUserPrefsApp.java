@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.61 2007/07/01 10:21:07 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.62 2007/10/23 02:29:59 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -765,6 +765,11 @@ class GenUserPrefsApp
 	new HotKeyPref
 	("Evolve the current primary selection.",
 	 "NodeViewerEvolve", "Evolve Version:"), 
+        
+	new HotKeyPref
+        ("Create a new node bundle (JAR archive) by packing up tree of nodes rooted at the " +
+         "current primary selection.", 
+	 "NodeViewerPackBundle", "Pack Bundle:"), 
 
 	new BasePref(),
 
@@ -980,6 +985,10 @@ class GenUserPrefsApp
 	("Register a new node.",
 	 "NodeViewerRegisterNewNode", "Register New Node:",
 	 false, false, false, 82), /* R */ 	
+
+	new HotKeyPref
+        ("Unpack the contents of a node bundle (JAR archive) into the current working area.",
+         "NodeViewerUnpackBundle", "Unpack Bundle:"), 
 
 	new BasePref(),
 
@@ -2211,6 +2220,7 @@ class GenUserPrefsApp
       
 	group.addAll(manager);
 	group.add("NodeViewerRegisterNewNode");
+	group.add("NodeViewerUnpackBundle");
 	group.add(update);
 	group.addAll(camera);
 	group.add("ShowHideDetailHints"); 
@@ -2244,6 +2254,7 @@ class GenUserPrefsApp
 	group.add("NodeViewerCheckOut");
 	group.add("NodeViewerLock");
 	group.add("NodeViewerEvolve");
+	group.add("NodeViewerPackBundle");
 	group.add("NodeViewerClone");
 	group.add("NodeViewerRelease");
 	group.add("NodeViewerReleaseView");
@@ -2515,7 +2526,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.61 2007/07/01 10:21:07 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.62 2007/10/23 02:29:59 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -2770,7 +2781,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.61 2007/07/01 10:21:07 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.62 2007/10/23 02:29:59 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -4127,7 +4138,7 @@ class GenUserPrefsApp
 
       StringBuilder buf = new StringBuilder();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.61 2007/07/01 10:21:07 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.62 2007/10/23 02:29:59 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 

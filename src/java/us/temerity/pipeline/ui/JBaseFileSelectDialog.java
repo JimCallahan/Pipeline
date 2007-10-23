@@ -1,4 +1,4 @@
-// $Id: JBaseFileSelectDialog.java,v 1.14 2007/09/07 18:52:37 jim Exp $
+// $Id: JBaseFileSelectDialog.java,v 1.15 2007/10/23 02:29:59 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -170,6 +170,8 @@ class JBaseFileSelectDialog
 	  btn.setActionCommand("jump-home");
 	  btn.addActionListener(this);
 	  
+	  btn.setToolTipText(UIFactory.formatToolTip("Jump to the user's home directory."));
+
 	  hbox.add(btn);
 	} 
 

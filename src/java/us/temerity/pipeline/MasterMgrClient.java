@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.108 2007/10/12 20:28:33 jim Exp $
+// $Id: MasterMgrClient.java,v 1.109 2007/10/23 02:29:58 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -6,6 +6,7 @@ import us.temerity.pipeline.message.*;
 import us.temerity.pipeline.toolset.*;
 import us.temerity.pipeline.glue.*;
 import us.temerity.pipeline.event.*;
+import us.temerity.pipeline.builder.*; 
 
 import java.io.*;
 import java.nio.*;
@@ -608,7 +609,7 @@ class MasterMgrClient
   }
 
   /**
-   * Get a OS specific toolset.
+   * Get an OS specific toolset.
    * 
    * @param name
    *   The toolset name.
@@ -5443,6 +5444,236 @@ class MasterMgrClient
     handleSimpleResponse(obj);
   }
 
+  
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   N O D E   B U N D L E S                                                              */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Create a new node bundle (JAR achive) by packing up a tree of nodes from a working 
+   * area rooted at the given node.<P> 
+   *
+   * If successful, this will create a new node bundle containing the node properties, links
+   * and associated working area data files for the entire tree of nodes rooted at the given
+   * node.  The node bundle will contain full copies of all files associated with these nodes
+   * regardless of whether they where checked-out modifiable, frozen or locked within the 
+   * current working area.  All node metadata, including detailed information about the
+   * toolsets and toolset packages required, will be written to a GLUE file included in the
+   * node bundle. <P> 
+   * 
+   * The node bundle will always be written into the root directory of the working area 
+   * containing the root node of the node tree being packed into the archive.  The name of
+   * the archive is automatically generated based on the name of the root node and the 
+   * time when the operation begins.  The full path to the create JAR file is returned by
+   * this method if successfull. <P> 
+   * 
+   * If the <CODE>author</CODE> argument is different than the current user, this method 
+   * will fail unless the current user has privileged access status. All nodes to be packed
+   * into the node bundle must be in a Finished (blue) state.  Any nodes not in a Finished
+   * state will cause the entire operation to abort.<P> 
+   * 
+   * @param author 
+   *   The name of the user which owns the working version.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param name 
+   *   The fully resolved node name of the root node.
+   * 
+   * @return
+   *   The abstract file system path to the newly create node bundle.
+   * 
+   * @throws PipelineException
+   *   If unable to create the node bundle containing the nodes. 
+   * 
+   * @see #extractBundle
+   * @see #unpackNode
+   */ 
+  public synchronized Path
+  packNodes
+  ( 
+   String author, 
+   String view, 
+   String name
+  )
+    throws PipelineException
+  {
+    return packNodes(new NodeID(author, view, name)); 
+  }
+
+  /**
+   * Create a new node bundle (JAR achive) by packing up a tree of nodes from a working 
+   * area rooted at the given node.<P> 
+   *
+   * If successful, this will create a new node bundle containing the node properties, links
+   * and associated working area data files for the entire tree of nodes rooted at the given
+   * node.  The node bundle will contain full copies of all files associated with these nodes
+   * regardless of whether they where checked-out modifiable, frozen or locked within the 
+   * current working area.  All node metadata, including detailed information about the
+   * toolsets and toolset packages required, will be written to a GLUE file included in the
+   * node bundle. <P> 
+   * 
+   * The node bundle will always be written into the root directory of the working area 
+   * containing the root node of the node tree being packed into the archive.  The name of
+   * the archive is automatically generated based on the name of the root node and the 
+   * time when the operation begins.  The full path to the create JAR file is returned by
+   * this method if successfull. <P> 
+   * 
+   * Create a new node JAR archive by packing up a tree of nodes from a working area rooted 
+   * at the given node.<P> 
+   *
+   * If the owner of the root node is different than the current user, this method 
+   * will fail unless the current user has privileged access status. All nodes to be packed
+   * into the JAR archive must be in a Finished (blue) state.  Any nodes not in a Finished
+   * state will cause the entire operation to abort.<P> 
+   * 
+   * @param nodeID 
+   *   The unique working version identifier of the root node.
+   * 
+   * @return
+   *   The abstract file system path to the newly create node bundle.
+   * 
+   * @throws PipelineException
+   *   If unable to create the node bundle containing the nodes. 
+   * 
+   * @see #extractBundle
+   * @see #unpackNode
+   */ 
+  public synchronized Path 
+  packNodes
+  ( 
+   NodeID nodeID
+  )
+    throws PipelineException
+  {
+    verifyConnection();
+
+    NodePackReq req = new NodePackReq(nodeID);
+    
+    Object obj = performLongTransaction(MasterRequest.Pack, req, 15000, 60000); 
+    if(obj instanceof NodePackRsp) {
+      NodePackRsp rsp = (NodePackRsp) obj;
+      return rsp.getPath();
+    }
+    else {
+      handleFailure(obj);
+      return null;        
+    } 
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Extract the node metadata from a node bundle containing a tree of nodes packed at 
+   * another site. <P> 
+   * 
+   * This method is useful for querying for information about the toolsets being used by 
+   * the nodes in the node bundle without unpacking them.  Using this information, a suitable
+   * mapping of toolsets from the site which created the nodes to the toolsets at the local
+   * site can be generated.  If this remapping of toolsets is not specified, than the default
+   * toolset at the local site will be used for all unpacked nodes.  In many cases, this will
+   * not be sufficient to insure that the nodes function properly after being unpacked.
+   * 
+   * @param bundlePath
+   *   The abstract file system path to the node bundle.
+   * 
+   * @throws PipelineException
+   *   If unable to extract the node metadata from the node bundle.
+   * 
+   * @see #packNode
+   * @see #unpackNodes
+   */ 
+  public synchronized NodeBundle
+  extractBundle
+  (
+   Path bundlePath
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+    
+    NodeExtractBundleReq req = new NodeExtractBundleReq(bundlePath); 
+
+    Object obj = performTransaction(MasterRequest.ExtractBundle, req);  
+    if(obj instanceof NodeExtractBundleRsp) {
+      NodeExtractBundleRsp rsp = (NodeExtractBundleRsp) obj;
+      return rsp.getBundle();
+    }
+    else {
+      handleFailure(obj);
+      return null;        
+    } 
+  }
+
+  /**
+   * Unpack a node bundle containing a tree of nodes packed at another site into the given
+   * working area.<P> 
+   * 
+   * @param bundlePath
+   *   The abstract file system path to the node bundle.
+   * 
+   * @param author 
+   *   The name of the user which owns the working version.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param releaseOnError
+   *   Whether to release all newly registered and/or modified nodes from the working area
+   *   if an error occurs in unpacking the node bundle.
+   * 
+   * @param actOnExist
+   *   What steps to take when encountering previously existing local versions of nodes
+   *   being unpacked.
+   * 
+   * @param toolsetRemap
+   *   A table mapping the names of toolsets associated with the nodes in the node bundle
+   *   to toolsets at the local site.  Toolsets not found in this table will be remapped 
+   *   to the local default toolset instead.
+   * 
+   * @param selectionKeyRemap
+   *   A table mapping the names of selection keys associated with the nodes in the node 
+   *   bundle to selection keys at the local site.  Any selection keys not found in this 
+   *   table will be ignored.
+   * 
+   * @param licenseKeyRemap
+   *   A table mapping the names of license keys associated with the nodes in the node 
+   *   bundle to license keys at the local site.  Any license keys not found in this 
+   *   table will be ignored.
+   * 
+   * @throws PipelineException
+   *   If unable to unpack the nodes from the node bundle.
+   * 
+   * @see #packNode
+   * @see #extractBundle
+   */ 
+  public synchronized void 
+  unpackNodes
+  (
+   Path bundlePath, 
+   String author, 
+   String view,    
+   boolean releaseOnError, 
+   ActionOnExistence actOnExist,
+   TreeMap<String,String> toolsetRemap,
+   TreeMap<String,String> selectionKeyRemap,
+   TreeMap<String,String> licenseKeyRemap
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+
+    NodeUnpackReq req = 
+      new NodeUnpackReq(bundlePath, author, view, releaseOnError, actOnExist, 
+                        toolsetRemap, selectionKeyRemap, licenseKeyRemap);
+    
+    Object obj = performLongTransaction(MasterRequest.Unpack, req, 15000, 60000); 
+    handleSimpleResponse(obj);
+  }
+  
 
 
   /*----------------------------------------------------------------------------------------*/

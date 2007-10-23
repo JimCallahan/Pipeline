@@ -1,7 +1,8 @@
-// $Id: BaseMasterExt.java,v 1.7 2007/08/20 04:43:14 jim Exp $
+// $Id: BaseMasterExt.java,v 1.8 2007/10/23 02:29:58 jim Exp $
 
 package us.temerity.pipeline;
 
+import  us.temerity.pipeline.builder.*;
 import  us.temerity.pipeline.glue.*;
 
 import java.util.*;
@@ -1447,6 +1448,194 @@ class BaseMasterExt
   (
    NodeID nodeID,
    VersionID vid
+  ) 
+  {}
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether to test before creating a new node bundle by packing up a tree of working 
+   * area nodes rooted at the given node.
+   */  
+  public boolean
+  hasPrePackTest() 
+  {
+    return false;
+  }
+
+  /**
+   * Test to perform before creating a new node bundle by packing up a tree of working 
+   * area nodes rooted at the given node.
+   * 
+   * @param nodeID 
+   *   The unique working version identifier of the root node.
+   * 
+   * @throws PipelineException
+   *   To abort the operation.
+   */  
+  public void
+  prePackTest
+  (
+   NodeID nodeID
+  ) 
+    throws PipelineException
+  {}
+
+
+  /**
+   * Whether to run a tesk after creating a new node bundle by packing up a tree of 
+   * working area nodes rooted at the given node.
+   */  
+  public boolean
+  hasPostPackTask() 
+  {
+    return false;
+  }
+  
+  /**
+   * The task to perform after creating a new node bundle by packing up a tree of 
+   * working area nodes rooted at the given node.
+   * 
+   * @param bundle
+   *   The node bundle metadata. 
+   */  
+  public void
+  postPackTask
+  (
+   NodeBundle bundle
+  ) 
+  {}
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether to test before unpacking a bundle containing a tree of nodes packed at 
+   * another site into the given working area.
+   */  
+  public boolean
+  hasPreUnpackTest() 
+  {
+    return false;
+  }
+
+  /**
+   * Test to perform before unpacking a bundle containing a tree of nodes packed at 
+   * another site into the given working area.
+   * 
+   * @param bundlePath
+   *   The abstract file system path to the node bundle.
+   * 
+   * @param author 
+   *   The name of the user which owns the working version.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param releaseOnError
+   *   Whether to release all newly registered and/or modified nodes from the working area
+   *   if an error occurs in unpacking the node bundle.
+   * 
+   * @param actOnExist
+   *   What steps to take when encountering previously existing local versions of nodes
+   *   being unpacked.
+   * 
+   * @param toolsetRemap
+   *   A table mapping the names of toolsets associated with the nodes in the bundle
+   *   to toolsets at the local site.  Toolsets not found in this table will be remapped 
+   *   to the local default toolset instead.
+   * 
+   * @param selectionKeyRemap
+   *   A table mapping the names of selection keys associated with the nodes in the node 
+   *   bundle to selection keys at the local site.  Any selection keys not found in this 
+   *   table will be ignored.
+   * 
+   * @param licenseKeyRemap
+   *   A table mapping the names of license keys associated with the nodes in the node 
+   *   bundle to license keys at the local site.  Any license keys not found in this 
+   *   table will be ignored.
+   * 
+   * @throws PipelineException
+   *   To abort the operation.
+   */  
+  public void
+  preUnpackTest
+  (
+   Path bundlePath, 
+   String author, 
+   String view, 
+   boolean releaseOnError, 
+   ActionOnExistence actOnExist,   
+   TreeMap<String,String> toolsetRemap,
+   TreeMap<String,String> selectionKeyRemap,
+   TreeMap<String,String> licenseKeyRemap
+  ) 
+    throws PipelineException
+  {}
+
+
+  /**
+   * Whether to run a tesk after unpacking a bundle containing a tree of nodes packed at 
+   * another site into the given working area.
+   */  
+  public boolean
+  hasPostUnpackTask() 
+  {
+    return false;
+  }
+  
+  /**
+   * The task to perform after unpacking a bundle containing a tree of nodes packed at 
+   * another site into the given working area.
+   * 
+   * @param bundlePath
+   *   The abstract file system path to the node node bundle.
+   * 
+   * @param author 
+   *   The name of the user which owns the working version.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param releaseOnError
+   *   Whether to release all newly registered and/or modified nodes from the working area
+   *   if an error occurs in unpacking the node bundle.
+   * 
+   * @param actOnExist
+   *   What steps to take when encountering previously existing local versions of nodes
+   *   being unpacked.
+   * 
+   * @param toolsetRemap
+   *   A table mapping the names of toolsets associated with the nodes in the node bundle
+   *   to toolsets at the local site.  Toolsets not found in this table will be remapped 
+   *   to the local default toolset instead.
+   * 
+   * @param selectionKeyRemap
+   *   A table mapping the names of selection keys associated with the nodes in the node 
+   *   bundle to selection keys at the local site.  Any selection keys not found in this 
+   *   table will be ignored.
+   * 
+   * @param licenseKeyRemap
+   *   A table mapping the names of license keys associated with the nodes in the node 
+   *   bundle to license keys at the local site.  Any license keys not found in this 
+   *   table will be ignored.
+   * 
+   * @param bundle
+   *   The node bundle metadata. 
+   */  
+  public void
+  postUnpackTask
+  (
+   Path bundlePath, 
+   String author, 
+   String view,    
+   boolean releaseOnError, 
+   ActionOnExistence actOnExist,
+   TreeMap<String,String> toolsetRemap,
+   TreeMap<String,String> selectionKeyRemap,
+   TreeMap<String,String> licenseKeyRemap,
+   NodeBundle bundle
   ) 
   {}
 

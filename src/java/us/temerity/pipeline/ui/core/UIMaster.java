@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.69 2007/10/11 18:52:07 jesse Exp $
+// $Id: UIMaster.java,v 1.70 2007/10/23 02:29:59 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2288,6 +2288,33 @@ class UIMaster
   }
 
   /**
+   * Show a short generic message dialog. 
+   */ 
+  public void 
+  showInfoDialog
+  (
+   Frame owner,  
+   String msg
+  ) 
+  {
+    SwingUtilities.invokeLater(new ShowInfoDialogTask(owner, msg));
+  }
+
+  /**
+   * Show a longer generic message dialog. 
+   */ 
+  public void 
+  showInfoDialog
+  (
+   Frame owner,  
+   String title, 
+   String msg
+  ) 
+  {
+    SwingUtilities.invokeLater(new ShowInfoDialogTask(owner, title, msg));
+  }
+
+  /**
    * Show an error message dialog with the given title and message.
    */ 
   public void 
@@ -2300,7 +2327,6 @@ class UIMaster
     pErrorDialog.setMessage(title, msg);
     SwingUtilities.invokeLater(new ShowErrorDialogTask());
   }
-
 
   /**
    * Show the user preferences dialog.
@@ -4285,6 +4311,53 @@ class UIMaster
 
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * Show an generic message dialog. 
+   * 
+   * The reason for the thread wrapper is to allow the rest of the UI to repaint before
+   * showing the dialog.
+   */ 
+  private
+  class ShowInfoDialogTask
+    extends Thread
+  { 
+    public 
+    ShowInfoDialogTask
+    (
+     Frame owner,  
+     String msg
+    ) 
+    {
+      this(owner, msg, null); 
+    }
+
+    public 
+    ShowInfoDialogTask
+    (
+     Frame owner,  
+     String title, 
+     String msg
+    ) 
+    {
+      super("UIMaster:ShowInfoDialogTask");
+      
+      pMessageOwner = owner;
+      pMessageTitle = title; 
+      pMessageText = msg;
+    }
+
+    public void 
+    run() 
+    {
+      JInfoDialog diag = new JInfoDialog(pMessageOwner, pMessageTitle, pMessageText);
+      diag.setVisible(true);
+    }
+
+    private Frame  pMessageOwner;
+    private String pMessageTitle;
+    private String pMessageText;
+  }
+  
   /**
    * Show the error dialog. <P> 
    * 

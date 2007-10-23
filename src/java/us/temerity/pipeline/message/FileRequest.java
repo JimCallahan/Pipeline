@@ -1,4 +1,4 @@
-// $Id: FileRequest.java,v 1.22 2007/07/20 07:47:12 jim Exp $
+// $Id: FileRequest.java,v 1.23 2007/10/23 02:29:58 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -28,12 +28,12 @@ enum FileRequest
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * An instance of {@link FileCreateWorkingAreaReq FileCreateWorkingAreaReq} is next.
+   * An instance of {@link FileCreateWorkingAreaReq} is next.
    */
   CreateWorkingArea, 
   
   /**
-   * An instance of {@link FileRemoveWorkingAreaReq FileRemoveWorkingAreaReq} is next.
+   * An instance of {@link FileRemoveWorkingAreaReq} is next.
    */
   RemoveWorkingArea, 
 
@@ -41,52 +41,52 @@ enum FileRequest
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * An instance of {@link FileCheckInReq FileCheckInReq} is next.
+   * An instance of {@link FileCheckInReq} is next.
    */
   CheckIn, 
   
   /**
-   * An instance of {@link FileCheckOutReq FileCheckOutReq} is next.
+   * An instance of {@link FileCheckOutReq} is next.
    */
   CheckOut, 
   
   /**
-   * An instance of {@link FileRevertReq FileRevertReq} is next.
+   * An instance of {@link FileRevertReq} is next.
    */
   Revert, 
   
   /**
-   * An instance of {@link FileCloneReq FileCloneReq} is next.
+   * An instance of {@link FileCloneReq} is next.
    */
   Clone, 
   
   /**
-   * An instance of {@link FileStateReq FileStateReq} is next.
+   * An instance of {@link FileStateReq} is next.
    */
   State, 
 
   /**
-   * An instance of {@link FileRemoveReq FileRemoveReq} is next.
+   * An instance of {@link FileRemoveReq} is next.
    */
   Remove, 
 
   /**
-   * An instance of {@link FileRemoveAllReq FileRemoveAllReq} is next.
+   * An instance of {@link FileRemoveAllReq} is next.
    */
   RemoveAll, 
 
   /**
-   * An instance of {@link FileRenameReq FileRenameReq} is next.
+   * An instance of {@link FileRenameReq} is next.
    */
   Rename, 
 
   /**
-   * An instance of {@link FileChangeModeReq FileChangeModeReq} is next.
+   * An instance of {@link FileChangeModeReq} is next.
    */
   ChangeMode,
 
   /**
-   * An instance of {@link FileDeleteCheckedInReq FileDeleteCheckedInReq} is next.
+   * An instance of {@link FileDeleteCheckedInReq} is next.
    */
   DeleteCheckedIn, 
 
@@ -94,12 +94,30 @@ enum FileRequest
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * An instance of {@link FileGetArchiveSizesReq FileGetArchiveSizesReq} is next.
+   * An instance of {@link FilePackNodesReq} is next.
+   */
+  PackNodes, 
+
+  /**
+   * An instance of {@link FileExtractBundleReq} is next.
+   */
+  ExtractBundle, 
+
+  /**
+   * An instance of {@link FileUnpackNodesReq} is next.
+   */
+  UnpackNodes, 
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * An instance of {@link FileGetArchiveSizesReq} is next.
    */
   GetArchiveSizes, 
 
   /**
-   * An instance of {@link FileArchiveReq FileArchiveReq} is next.
+   * An instance of {@link FileArchiveReq} is next.
    */
   Archive, 
 
@@ -107,12 +125,12 @@ enum FileRequest
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * An instance of {@link FileGetOfflineSizesReq FileGetOfflineSizesReq} is next.
+   * An instance of {@link FileGetOfflineSizesReq} is next.
    */
   GetOfflineSizes, 
 
   /**
-   * An instance of {@link FileOfflineReq FileOfflineReq} is next.
+   * An instance of {@link FileOfflineReq} is next.
    */
   Offline, 
 
@@ -125,17 +143,17 @@ enum FileRequest
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * An instance of {@link FileExtractReq FileExtractReq} is next.
+   * An instance of {@link FileExtractReq} is next.
    */
   Extract, 
 
   /**
-   * An instance of {@link FileRestoreReq FileRestoreReq} is next.
+   * An instance of {@link FileRestoreReq} is next.
    */
   Restore, 
 
   /**
-   * An instance of {@link FileExtractCleanupReq FileExtractCleanupReq} is next.
+   * An instance of {@link FileExtractCleanupReq} is next.
    */
   ExtractCleanup, 
 

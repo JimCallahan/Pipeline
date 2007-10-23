@@ -1,4 +1,4 @@
-// $Id: NodeEventOp.java,v 1.1 2007/01/01 16:09:51 jim Exp $
+// $Id: NodeEventOp.java,v 1.2 2007/10/23 02:29:58 jim Exp $
 
 package us.temerity.pipeline.event;
 
@@ -39,6 +39,11 @@ enum NodeEventOp
    * without modifying the working version properties, links or associated files.
    */ 
   Evolved, 
+
+  /**
+   * The transcription of a collection of working area nodes to create node bundle.
+   */ 
+  Transcribed, 
 
   /**
    * The change in one or more properties of a working version of a node.
@@ -110,6 +115,7 @@ enum NodeEventOp
     "Checked-In", 
     "Checked-Out", 
     "Evolved", 
+    "Transcribed", 
     "Props Modified", 
     "Links Modified", 
     "Seqs Modified", 

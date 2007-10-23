@@ -1,22 +1,22 @@
-// $Id: JNodeViewerPanel.java,v 1.95 2007/10/15 20:46:21 jesse Exp $
+// $Id: JNodeViewerPanel.java,v 1.96 2007/10/23 02:29:59 jim Exp $
 
 package us.temerity.pipeline.ui.core;
+
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.builder.*;
+import us.temerity.pipeline.toolset.*;
+import us.temerity.pipeline.glue.*;
+import us.temerity.pipeline.math.*;
+import us.temerity.pipeline.ui.*;
 
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
+import java.io.*;
 
-import javax.media.opengl.GL;
-import javax.media.opengl.GLAutoDrawable;
+import javax.media.opengl.*;
 import javax.swing.*;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
-
-import us.temerity.pipeline.*;
-import us.temerity.pipeline.glue.*;
-import us.temerity.pipeline.math.*;
-import us.temerity.pipeline.ui.JConfirmDialog;
-import us.temerity.pipeline.ui.JConfirmListDialog;
+import javax.swing.event.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   N O D E   V I E W E R   P A N E L                                                      */
@@ -124,6 +124,12 @@ class JNodeViewerPanel
       item = new JMenuItem("Request Restore...");     
       pPanelRestoreItem = item;
       item.setActionCommand("restore");
+      item.addActionListener(this);
+      pPanelPopup.add(item);
+      
+      item = new JMenuItem("Unpack Bundle...");
+      pUnpackBundleItem = item;
+      item.setActionCommand("unpack-bundle");
       item.addActionListener(this);
       pPanelPopup.add(item);
       
@@ -489,11 +495,17 @@ class JNodeViewerPanel
           }
           
           if(wk == 4) {
-            sub.addSeparator();
-
             item = new JPopupMenuItem(menus[wk], "Evolve Version...");
             pEvolveItem = item;
             item.setActionCommand("evolve");
+            item.addActionListener(this);
+            sub.add(item);
+
+            sub.addSeparator();
+
+            item = new JPopupMenuItem(menus[wk], "Pack Bundle...");
+            pPackBundleItem = item;
+            item.setActionCommand("pack-bundle");
             item.addActionListener(this);
             sub.add(item);
           }
@@ -1016,6 +1028,9 @@ class JNodeViewerPanel
     updateMenuToolTip
       (pPanelRestoreItem, prefs.getNodeViewerCheckOut(), 
        "Submit requests to restore offline checked-in versions.");
+    updateMenuToolTip
+      (pUnpackBundleItem, prefs.getNodeViewerUnpackBundle(), 
+       "Unpack the contents of a node bundle (JAR archive) into the current working area."); 
 
     updateMenuToolTip
       (pFrameSelectionItem, prefs.getFrameSelection(), 
@@ -1157,6 +1172,10 @@ class JNodeViewerPanel
     updateMenuToolTip
       (pEvolveItem, prefs.getNodeViewerEvolve(), 
        "Evolve the current primary selection.");
+    updateMenuToolTip
+      (pPackBundleItem, prefs.getNodeViewerPackBundle(), 
+       "Create a new node bundle (JAR archive) by packing up tree of nodes rooted at the " + 
+       "current primary selection.");
     updateMenuToolTip
       (pCloneItem, prefs.getNodeViewerClone(), 
        "Register a new node which is a clone of the current primary selection.");
@@ -1339,6 +1358,7 @@ class JNodeViewerPanel
     pDeleteItem.setEnabled(pPrivilegeDetails.isMasterAdmin());
 
     pEvolveItem.setEnabled(hasCheckedIn && nodePrivileged);
+    pPackBundleItem.setEnabled(nodePrivileged);
     pCloneItem.setEnabled(nodePrivileged);
 
     pExportItem.setEnabled(multiple && nodePrivileged);
@@ -3018,6 +3038,9 @@ class JNodeViewerPanel
       else if((prefs.getNodeViewerEvolve() != null) &&
 	      prefs.getNodeViewerEvolve().wasPressed(e))
 	doEvolve();
+      else if((prefs.getNodeViewerPackBundle() != null) &&
+	      prefs.getNodeViewerPackBundle().wasPressed(e))
+	doPackBundle();
       
       else if((prefs.getNodeViewerClone() != null) &&
 	      prefs.getNodeViewerClone().wasPressed(e))
@@ -3298,6 +3321,10 @@ class JNodeViewerPanel
       doLock();
     else if(cmd.equals("evolve"))
       doEvolve();
+    else if(cmd.equals("pack-bundle"))
+      doPackBundle();
+    else if(cmd.equals("unpack-bundle"))
+      doUnpackBundle();
     else if(cmd.equals("restore"))
       doRestore();
 
@@ -4656,6 +4683,66 @@ class JNodeViewerPanel
     refresh(); 
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Create a new node bundle by transcribing the tree of nodes rooted at the 
+   * primary selected node.
+   */ 
+  private synchronized void 
+  doPackBundle() 
+  {
+    if(warnUnsavedDetailPanelChangesBeforeOp("PackBundle")) 
+      return;
+
+    if(pPrimary != null) {
+      NodeID nodeID = pPrimary.getNodeStatus().getNodeID();
+
+      JConfirmDialog diag = new JConfirmDialog(getTopFrame(), "Are you sure?"); 
+      diag.setVisible(true);
+      if(diag.wasConfirmed()) {
+        PackBundleTask task = new PackBundleTask(nodeID);
+        task.start();
+      }
+    }
+
+    clearSelection();
+    refresh(); 
+  }
+
+  /**
+   * Unpack the contents of a node bundle (JAR archive) into the current working area.
+   */ 
+  private synchronized void 
+  doUnpackBundle() 
+  {
+    if(warnUnsavedDetailPanelChangesBeforeOp("UnpackBundle")) 
+      return;
+
+    JUnpackBundleDialog diag = 
+      new JUnpackBundleDialog(pGroupID, getTopFrame(), pAuthor, pView);
+
+    diag.setVisible(true);
+    if(diag.wasConfirmed()) {
+      Path bundlePath = diag.getBundlePath();
+      NodeBundle bundle = diag.getBundle();
+      if((bundlePath != null) && (bundle != null)) {
+        UnpackBundleTask task = 
+          new UnpackBundleTask(bundlePath, bundle.getRootNodeID().getName(), 
+                               diag.getReleaseOnError(), diag.getActionOnExistence(), 
+                               diag.getToolsetRemap(), diag.getSelectionKeyRemap(), 
+                               diag.getLicenseKeyRemap());
+        task.start();
+      }
+    }
+
+    refresh(); 
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+ 
   /**
    * Restore offline checked-in versions of the primary selected node.
    */ 
@@ -5073,6 +5160,41 @@ class JNodeViewerPanel
     }
   }
   
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   H E L P E R S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Generates a formatted string representation of a large integer number.
+   */ 
+  private String
+  formatLong
+  (
+   Long value
+  ) 
+  {
+    if(value == null) 
+      return "-";
+
+    if(value < 1024) {
+      return value.toString();
+    }
+    else if(value < 1048576) {
+      double k = ((double) value) / 1024.0;
+      return String.format("%1$.1fK", k);
+    }
+    else if(value < 1073741824) {
+      double m = ((double) value) / 1048576.0;
+      return String.format("%1$.1fM", m);
+    }
+    else {
+      double g = ((double) value) / 1073741824.0;
+      return String.format("%1$.1fG", g);
+    }
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -6300,6 +6422,154 @@ class JNodeViewerPanel
   }
 
   /** 
+   * Create a new node bundle (JAR archive) by packing up tree of nodes.
+   */ 
+  private
+  class PackBundleTask
+    extends Thread
+  {
+    public 
+    PackBundleTask
+    (
+     NodeID nodeID
+    ) 
+    {
+      super("JNodeViewerPanel:PackBundleTask");
+
+      pNodeID = nodeID;
+    }
+
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp(pGroupID, "Packing Bundle for: " + pNodeID.getName())) {
+	try {
+	  MasterMgrClient client = master.getMasterMgrClient(pGroupID);
+	  Path bundlePath = client.packNodes(pNodeID); 
+          NodeBundle bundle = client.extractBundle(bundlePath); 
+          long bundleSize = bundlePath.toFile().length();
+
+          {
+            StringBuilder buf = new StringBuilder();
+
+            buf.append
+              ("\n" + 
+               "A new node bundle (JAR archive) has been successfully created:\n\n" + 
+               "  " + bundlePath + "\n\n\n" +              
+               "The node bundle contains the following nodes from the " + 
+               "(" + pNodeID.getAuthor() + "|" + pNodeID.getView() + ") working area:\n\n"); 
+
+            for(NodeMod mod : bundle.getWorkingVersions()) {
+              buf.append("  " + mod.getName() + "\n");
+              for(FileSeq fseq : mod.getSequences()) 
+                buf.append("    " + fseq + "\n\n");
+            }
+            
+            buf.append
+              ("\n" + 
+               "The Toolsets used by these nodes are:\n\n");
+            for(String tname : bundle.getAllToolsetNames()) {
+              TreeMap<OsType,Toolset> toolsets = bundle.getOsToolsets(tname);
+              boolean firstOs = true;
+              buf.append("  " + tname + "\n"); 
+              for(OsType os : toolsets.keySet()) 
+                buf.append("    " + os.toString() + "\n");
+              buf.append("\n");
+            }
+
+            String title = 
+              ("Node Bundle Created:  " + bundlePath.getName() + 
+               " (" + formatLong(bundleSize) + ")");
+
+            master.showInfoDialog(getTopFrame(), title, buf.toString());
+          }
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
+	}
+	finally {
+	  master.endPanelOp(pGroupID, "Done.");
+	}
+
+	updateRoots();
+      }
+    }
+
+    private NodeID  pNodeID; 
+  }
+
+  /** 
+   * Unpack the contents of a node bundle (JAR archive) into the current working area.
+   */ 
+  private
+  class UnpackBundleTask
+    extends Thread
+  {
+    public 
+    UnpackBundleTask
+    (
+     Path bundlePath, 
+     String rootName, 
+     boolean releaseOnError, 
+     ActionOnExistence actOnExist,
+     TreeMap<String,String> toolsetRemap,
+     TreeMap<String,String> selectionKeyRemap,
+     TreeMap<String,String> licenseKeyRemap
+    ) 
+    {
+      super("JNodeViewerPanel:UnpackBundleTask");
+
+      pBundlePath = bundlePath;
+      pRootName = rootName;
+      pReleaseOnError = releaseOnError;
+      pActOnExist = actOnExist;
+      pToolsetRemap = toolsetRemap;
+      pSelectionKeyRemap = selectionKeyRemap;
+      pLicenseKeyRemap = licenseKeyRemap;
+    }
+
+    public void 
+    run() 
+    {
+      String rootName = null;
+
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp(pGroupID, "Unpacking Bundle: " + pBundlePath)) {
+ 	try {
+ 	  MasterMgrClient client = master.getMasterMgrClient(pGroupID);
+          client.unpackNodes(pBundlePath, pAuthor, pView, 
+                             pReleaseOnError, pActOnExist, 
+                             pToolsetRemap, pSelectionKeyRemap, pLicenseKeyRemap);
+
+          rootName = pRootName;
+ 	}
+ 	catch(PipelineException ex) {
+ 	  master.showErrorDialog(ex);
+ 	  return;
+ 	}
+ 	finally {
+ 	  master.endPanelOp(pGroupID, "Done.");
+ 	}
+
+ 	if(rootName != null) 
+          addRoot(rootName);
+        else 
+          updateRoots();
+      }
+    }
+
+    private Path  pBundlePath;
+    private String  pRootName; 
+    private boolean  pReleaseOnError; 
+    private ActionOnExistence  pActOnExist;
+    private TreeMap<String,String>  pToolsetRemap;
+    private TreeMap<String,String>  pSelectionKeyRemap;
+    private TreeMap<String,String>  pLicenseKeyRemap;
+  }
+
+  /** 
    * Get the names and revision numbers of the nodes to restore.
    */ 
   private
@@ -6753,6 +7023,7 @@ class JNodeViewerPanel
   private JMenuItem  pRegisterItem;
   private JMenuItem  pReleaseViewItem;
   private JMenuItem  pPanelRestoreItem;
+  private JMenuItem  pUnpackBundleItem;
   private JMenuItem  pFrameAllItem;
   private JMenuItem  pFrameSelectionItem;
   private JMenuItem  pAutomaticExpandItem;
@@ -6825,6 +7096,7 @@ class JNodeViewerPanel
   private JPopupMenuItem  pKillJobsItem;
   private JPopupMenuItem  pCheckInItem;
   private JPopupMenuItem  pEvolveItem;
+  private JPopupMenuItem  pPackBundleItem;
   private JPopupMenuItem  pCloneItem;
   private JPopupMenuItem  pRemoveFilesItem;
   private JPopupMenuItem  pExportItem;

@@ -1,4 +1,4 @@
-// $Id: FileMgrServer.java,v 1.35 2007/07/20 07:44:59 jim Exp $
+// $Id: FileMgrServer.java,v 1.36 2007/10/23 02:29:58 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -328,6 +328,31 @@ class FileMgrServer
 	      {
 		FileDeleteCheckedInReq req = (FileDeleteCheckedInReq) objIn.readObject();
 		objOut.writeObject(pFileMgr.deleteCheckedIn(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+            /*-- NODE BUNDLES --------------------------------------------------------------*/
+	    case PackNodes:
+	      {
+		FilePackNodesReq req = (FilePackNodesReq) objIn.readObject();
+		objOut.writeObject(pFileMgr.packNodes(req));
+		objOut.flush(); 
+	      }
+	      break;  
+
+            case ExtractBundle:
+	      {
+		FileExtractBundleReq req = (FileExtractBundleReq) objIn.readObject();
+		objOut.writeObject(pFileMgr.extractBundle(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+            case UnpackNodes:
+	      {
+		FileUnpackNodesReq req = (FileUnpackNodesReq) objIn.readObject();
+		objOut.writeObject(pFileMgr.unpackNodes(req));
 		objOut.flush(); 
 	      }
 	      break;

@@ -1,4 +1,4 @@
-// $Id: JToolsetDetailsDialog.java,v 1.5 2007/09/07 18:52:38 jim Exp $
+// $Id: JToolsetDetailsDialog.java,v 1.6 2007/10/23 02:29:59 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -215,7 +215,7 @@ class JToolsetDetailsDialog
 	pHeaderLabel.setText(os + " Toolset:  " + pToolset.getName());
 
 	pAuthorField.setText(toolset.getAuthor());
-	pTimeStampField.setText(toolset.getTimeStamp().toString());
+	pTimeStampField.setText(TimeStamps.format(toolset.getTimeStamp()));
 	pDescriptionArea.setText(toolset.getDescription());
 	
 	pHistoryPanel.setVisible(true);

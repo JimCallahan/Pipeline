@@ -1,4 +1,4 @@
-// $Id: PackageInfo.java.src.in,v 1.34 2007/08/27 08:41:31 jim Exp $
+// $Id: PackageInfo.java.src.in,v 1.35 2007/10/23 02:29:58 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -599,6 +599,16 @@ class PackageInfo
    * The name of the user running this program.
    */ 
   public static final String sUser = System.getProperty("user.name");
+
+  /**
+   * The name of the studio customer.
+   */
+  public static final String sCustomer = "@CUSTOMER@";
+
+  /**
+   * The name of the studio customer's site profile.
+   */
+  public static final String sCustomerProfile = "@CUSTOMER_PROFILE@";
 
   /**
    * The version identifier of this Pipeline release.

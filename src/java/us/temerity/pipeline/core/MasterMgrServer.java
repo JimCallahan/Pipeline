@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.80 2007/06/15 00:27:31 jim Exp $
+// $Id: MasterMgrServer.java,v 1.81 2007/10/23 02:29:58 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1260,6 +1260,31 @@ class MasterMgrServer
 	      {
 		NodeEvolveReq req = (NodeEvolveReq) objIn.readObject();
 		objOut.writeObject(pMasterMgr.evolve(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+            /*-- NODE BUNDLES --------------------------------------------------------------*/
+	    case Pack:
+	      {
+		NodePackReq req = (NodePackReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.packNodes(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case ExtractBundle:
+	      {
+		NodeExtractBundleReq req = (NodeExtractBundleReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.extractBundle(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case Unpack:
+	      {
+		NodeUnpackReq req = (NodeUnpackReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.unpackNodes(req));
 		objOut.flush(); 
 	      }
 	      break;
