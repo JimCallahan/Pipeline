@@ -20,10 +20,13 @@ import java.util.*;
  * value is added to the keys <code>first,second,third,fourth</code> with the
  * <code>leafOnly</code> flag turned on, an exception will be thrown when the putValue
  * methods finds the value at <code>third</code>.
+ * <p>
+ * This is built on top of the {@link ListMap} data structure, so it provides an ordered
+ * mapping.
  */
 public 
 class MultiMap<K, V>
-  extends TreeMap<K, MultiMap<K, V>>
+  extends ListMap<K, MultiMap<K, V>>
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -351,6 +354,9 @@ class MultiMap<K, V>
   /*   C O N V E R S I O N                                                                  */
   /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * 
+   */
   public ArrayList<MultiMapEntry<K, V>> 
   entries()
   {
@@ -383,11 +389,11 @@ class MultiMap<K, V>
     }
   }
   
-  public MappedArrayList<K, MultiMapNamedEntry<K, V>>
+  public ListMappedArrayList<K, MultiMapNamedEntry<K, V>>
   namedEntries()
   {
-    MappedArrayList<K, MultiMapNamedEntry<K, V>> toReturn = 
-      new MappedArrayList<K, MultiMapNamedEntry<K,V>>();
+    ListMappedArrayList<K, MultiMapNamedEntry<K, V>> toReturn = 
+      new ListMappedArrayList<K, MultiMapNamedEntry<K,V>>();
     for (K key : keySet() ) {
       LinkedList<K> keys = new LinkedList<K>();
       keys.add(key);
@@ -399,7 +405,7 @@ class MultiMap<K, V>
   private void
   buildNamedEntries
   (
-    MappedArrayList<K, MultiMapNamedEntry<K, V>> store,
+    ListMappedArrayList<K, MultiMapNamedEntry<K, V>> store,
     LinkedList<K> keys
   )
   {
