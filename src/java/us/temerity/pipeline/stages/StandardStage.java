@@ -6,6 +6,8 @@ import us.temerity.pipeline.LogMgr.Level;
 import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
 
+import java.util.*;
+
 /**
  * A branch stage designed to make building stages easy.
  */
@@ -189,7 +191,8 @@ class StandardStage
       pSuffix = fpat.getSuffix();
       pFrameRange = primary.getFrameRange();
       pPadding = fpat.getPadding();
-      
+
+      pSecondarySequences = new LinkedList<FileSeq>();  // SHOULDN'T NEED THIS!!!
       pSecondarySequences.addAll(mod.getSecondarySequences());
     }
 
@@ -200,6 +203,7 @@ class StandardStage
     if(pExecutionMethod == ExecutionMethod.Parallel)
       pBatchSize = mod.getBatchSize();
 
+    pLinks = new LinkedList<LinkMod>();  // SHOULDN'T NEED THIS!!!
     pLinks.addAll(mod.getSources());
   }
   
