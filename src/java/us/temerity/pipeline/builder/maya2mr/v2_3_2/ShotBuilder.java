@@ -590,6 +590,7 @@ class ShotBuilder
     {
     }
 
+    static final long serialVersionUID = -8286569846722409488L;
     private TreeSet<String> pLayoutAnims;
   }
   
@@ -603,6 +604,8 @@ class ShotBuilder
       super("FinalizePass", 
 	    "The ShotBuilder pass that cleans everything up.");
     }
+
+    static final long serialVersionUID = 2545974042023177026L;
   }
 }
 
