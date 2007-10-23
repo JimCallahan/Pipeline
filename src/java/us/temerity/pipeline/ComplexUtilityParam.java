@@ -31,6 +31,9 @@ class ComplexUtilityParam
     super();
   }
   
+  /**
+   * Constructor which takes the name of the parameter and a description.
+   */
   protected ComplexUtilityParam
   (
     String name,  

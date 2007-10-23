@@ -133,6 +133,29 @@ interface ComplexParamAccess<E>
     Comparable value
   );
   
+  /**
+   * Sets the value of the nested parameter identified by the key from a String value.
+   */
+  @SuppressWarnings("unchecked")
+  public boolean
+  fromString
+  (
+    String key, 
+    String value
+  );
+  
+  /**
+   * Sets the value of the nested parameter identified by the list of keys from a 
+   * String value.
+   */
+  @SuppressWarnings("unchecked")
+  public boolean
+  fromString
+  (
+    List<String> keys, 
+    String value
+  );
+  
   
   
   /*----------------------------------------------------------------------------------------*/

@@ -14,7 +14,7 @@ import us.temerity.pipeline.glue.GlueDecoder;
  * A Complex Parameter is a parameter that contains other parameters, both
  * {@link SimpleParam SimpleParams} and other ComplexParams. It is implemented using Generics,
  * allowing for easy subclassing for each parameter type. For an example of this behavior, see
- * {@link ComplexUtilityParam} which subclasses this class. In the end, this class is just an
+ * {@link ComplexUtilityParam} which extends this class. In the end, this class is just an
  * implementation of the {@link ComplexParamAccess} interface, which is also implemented using
  * Generics. It is theoretically possible to create an alternative implementation of
  * {@link ComplexParamAccess} and not use {@link ComplexParam}, though it is hard to think of
@@ -27,7 +27,9 @@ import us.temerity.pipeline.glue.GlueDecoder;
  * return a boolean that indicates if this ComplexParameter ever needs to update its values.
  * This method should only consider the scope of the current Parameter. Complex Parameters
  * which are nested inside this parameter will be asked as well and a final answer will be
- * created from an aggregate of all their responses.
+ * created from an aggregate of all their responses. So a ComplexParameter is being created
+ * which nests another Complex Parameter which does need updating, the top level parameter
+ * does not have return true for this method.
  * <p>
  * The other method is {@link #valueUpdated(String)}. This method is called by
  * {@link #setValue(List, Comparable)} or {@link #setValue(String, Comparable)} if it is
@@ -59,6 +61,9 @@ class ComplexParam<E>
     super();
   }
   
+  /**
+   *  Constructor which takes the name of the parameter and a description. 
+   */
   protected 
   ComplexParam
   (
@@ -80,7 +85,7 @@ class ComplexParam<E>
    * Adds a parameter to this complex parameters.
    * 
    * @throws IllegalArgumentException if the value passed in is not an instance of 
-   * {@link BaseParam}.
+   * {@link BaseParam} or if there is already a parameter with the same name.
    */
   public final void
   addParam
@@ -218,6 +223,13 @@ class ComplexParam<E>
     return pParams;
   }
   
+  /**
+   * Sets the value of the parameter identified by the key.
+   * <p>
+   * The param being set must implement the {@link SimpleParamAccess} interface. The
+   * {@link #hasSimpleParam(String)} method can be used to check if a given parameter is
+   * setable.
+   */
   @SuppressWarnings("unchecked")
   public final boolean 
   setValue
@@ -229,6 +241,13 @@ class ComplexParam<E>
     return setValue(listFromObject(key), value);
   }
   
+  /**
+   * Sets the value of the parameter identified by the list of keys.
+   * <p>
+   * The param being set must implement the {@link SimpleParamAccess} interface. The
+   * {@link #hasSimpleParam(List)} method can be used to check if a given parameter is
+   * setable.
+   */
   @SuppressWarnings("unchecked")
   public final boolean
   setValue
@@ -260,6 +279,67 @@ class ComplexParam<E>
     return returned;
   }
   
+  /**
+   * Sets the value of the nested parameter identified by the key from a String value.
+   * <p>
+   * The param being set must implement the {@link SimpleParamFromString} interface. The
+   * {@link #canSetSimpleParamFromString(String)} method can be used to check if a given parameter is
+   * setable.
+   */
+  @SuppressWarnings("unchecked")
+  public boolean
+  fromString
+  (
+    String key, 
+    String value
+  )
+  {
+    return fromString(listFromObject(key), value);
+  }
+  
+
+  /**
+   * Sets the value of the nested parameter identified by the list of keys from a 
+   * String value.
+   * <p>
+   * The param being set must implement the {@link SimpleParamFromString} interface. The
+   * {@link #canSetSimpleParamFromString(List)} method can be used to check if a given parameter is
+   * setable.
+   */
+  @SuppressWarnings("unchecked")
+  public boolean
+  fromString
+  (
+    List<String> keys, 
+    String value
+  )
+  {
+    verifyKeys(keys);
+    LinkedList<String> newKeys = new LinkedList<String>(keys);
+    String key = nextKey(newKeys);
+    if (newKeys.size() == 0) {
+      E param = getParam(keys);
+      if(param instanceof SimpleParamFromString) {
+	SimpleParamFromString simple = (SimpleParamFromString) param;
+	simple.fromString(value);
+	if (needsUpdating())
+	  return valueUpdated(key);
+	return false;
+      }
+      throw new IllegalArgumentException
+        ("Attempt to call fromString() on a parameter that is not settable from a String.");
+    }
+
+    ComplexParamAccess<E> param = getComplexParam(key);
+    boolean returned = param.setValue(newKeys, value);
+    if (needsUpdating())
+      return (valueUpdated(key) || returned);
+    return returned;
+  }
+
+  /**
+   *  Checks for the existence of a parameter identified by the key.
+   */
   public final boolean 
   hasParam
   (
@@ -269,6 +349,9 @@ class ComplexParam<E>
     return hasParam(listFromObject(key));
   }
 
+  /**
+   *  Checks for the existence of a parameter identified by the list of keys. 
+   */
   public final boolean 
   hasParam
   (
@@ -377,13 +460,16 @@ class ComplexParam<E>
    * This method needs to be overwritten if the Parameter has to adjust some of its values
    * when some of its other values have changed.
    * <p>
-   * By default it does nothing.  This method gets called by setValue.  There should never
-   * be a need for this method to be called directly.
+   * By default it does nothing.
+   * <p>
+   * This method gets called by setValue. There should never be a need for this method to be
+   * called directly.
    * 
-   * @param paramName The name of the parameter that has been changed.
+   * @param paramName
+   *        The name of the parameter that has been changed.
    * 
-   * @return A boolean that indicates if values have been changed.  This value is used by
-   * the GUI to determine if it needs to update its fields.  
+   * @return A boolean that indicates if values have been changed. This value is used by the
+   *         GUI to determine if it needs to update its fields.
    */
   protected boolean
   valueUpdated
@@ -436,6 +522,11 @@ class ComplexParam<E>
   /*   L A Y O U T                                                                          */
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * Gets the layout of member parameters for this parameter.
+   * <p>
+   * If no layout has been specified, an alphabetically ordered list is returned. 
+   */
   public ArrayList<String> 
   getLayout()
   {
@@ -444,6 +535,12 @@ class ComplexParam<E>
     return pLayout;
   }
   
+  /**
+   * Sets the layout of member parameters.
+   * <p>
+   * The List passed in must contain every parameter name once and only once.
+   * @param layout
+   */
   protected void 
   setLayout
   (
@@ -484,7 +581,7 @@ class ComplexParam<E>
   
   /**
    * Checks that a list of keys is not <code>null</code> and contains at least
-   * on key value;
+   * one key value;
    * 
    * @throws IllegalArgumentException if the above conditions aren't met.
    */
@@ -522,6 +619,14 @@ class ComplexParam<E>
     return toReturn;
   }
   
+  /**
+   * Returns a member Complex Parameter identified by the given key.
+   * 
+   * @param key
+   *        The parameter key.
+   * @throws IllegalArgumentException
+   *         if the key passed in does not represent a valid Complex Parameter.
+   */
   @SuppressWarnings("unchecked")
   private ComplexParamAccess<E>
   getComplexParam
@@ -546,6 +651,9 @@ class ComplexParam<E>
   /*   S T A T I C   U T I L I T Y   M E T H O D S                                          */
   /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * Creates a {@link LinkedList} from a single item.
+   */
   public static <E> LinkedList<E>
   listFromObject
   (

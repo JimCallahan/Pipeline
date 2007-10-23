@@ -1,11 +1,12 @@
-// $Id: BuilderInformation.java,v 1.7 2007/10/11 19:12:44 jesse Exp $
+// $Id: BuilderInformation.java,v 1.8 2007/10/23 01:46:30 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
 import java.util.*;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.builder.BaseBuilder.*;
+import us.temerity.pipeline.builder.BaseBuilder.ConstructPass;
+import us.temerity.pipeline.builder.BaseBuilder.PassDependency;
 import us.temerity.pipeline.stages.StageState;
 
 /*------------------------------------------------------------------------------------------*/

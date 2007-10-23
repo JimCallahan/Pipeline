@@ -1,4 +1,4 @@
-// $Id: BaseBuilder.java,v 1.29 2007/10/11 19:12:44 jesse Exp $
+// $Id: BaseBuilder.java,v 1.30 2007/10/23 01:46:30 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -23,24 +23,60 @@ import us.temerity.pipeline.ui.UIFactory;
 /**
  * The parent class of all Builders.
  * <p>
- * Stuff here.
+ * <h2>Introduction</h2>
+ * Builders are Utilities designed to make creating applications that interact with Pipeline
+ * node networks simpler to write and maintain. The primary focus of Builders is
+ * programatically creating large and complicated node networks while needing minimal
+ * information and intervention from a user. However, that is not the only use for Builders
+ * which can be used in an situation that requires a framework for complicated access to node
+ * networks.
  * <p>
- * Terminology used within these java docs.
+ * Builders are designed to function in either command-line or graphical mode, with all UI
+ * code being automatically generated from the builder's configuration. They are also designed
+ * to be modular, allowing builders to be nested inside other builders to create higher level
+ * builders quickly and easily.
+ * <p>
+ * <h2>Parameters</h2>
+ * <p>
+ * BaseBuilder declares two parameters in its constructor. Any class which inherits from
+ * BaseBaseBuilder that is using parameters and parameter layouts will need to have a way to
+ * account for these parameters as well as the parameters which come from {@link BaseUtil}.
+ * <ul>
+ * <li> ActionOnExistence - This parameter is used to control the behavior of the Builder when
+ * a node it is supposed to build already exists.
+ * <li> ReleaseOnError - This parameter controls the behavior of the Builder if it encounters
+ * an error during the course of its execution. If this parameter is set to <code>true</code>,
+ * an error will cause the Builder to release all the nodes that have been created during its
+ * run.
+ * </ul>
+ * BaseBuilder also contains utility methods for creating two other parameters that a majority
+ * of Builders may want to implement.
+ * <ul>
+ * <li> CheckinWhenDone - This parameter can be used to specify whether the Builder should
+ * check in nodes it has created when it finishes execution. By default this parameter's value
+ * is used in the {@link #performCheckIn()} method.
+ * <li> SelectionKeys - This parameter is a list of all the Selection Keys that exist in the
+ * Pipeline install, allowing the user of the Builder to specify a subset of them for some
+ * purpose.  Usually this parameter is used to specify a list of keys that all nodes being
+ * built will contain.
+ * </ul>
+ * <p>
+ * <h2>Terminology used within these java docs.</h2>
  * <dl>
  * <dt>Builder</dt>
  * <dd>Refers to any instance of this class. Usually preceded with 'parent' when being used
  * with Sub-Builder to make the relation clear. </dd>
  * <dt>Sub-Builder</dt>
- * <dd>Refers to any instance of {@link BaseUtil} that is being used as a child of
- * the current Builder.</dd>
+ * <dd>Refers to any instance of {@link BaseUtil} that is being used as a child of the
+ * current Builder.</dd>
  * <dt>child Builder</dt>
  * <dd>Refers to any instance of this class that is being used as a child of the current
- * builder.</dd>
+ * builder. The child Builders of a Builder are a subset of the Sub-Builders.</dd>
  * <dt>child Namer</dt>
  * <dd>Refers to any instance of {@link BaseNames} that is being used as a child of the
- * current builder</dd>
+ * current builder. The child Namers of a Builder are a subset of the Sub-Builders.</dd>
  * <dt>New Sub-Builder
- * <dd>Referes to any Sub-Builder before it has been prepared by the First Loop, either by
+ * <dd>Refers to any Sub-Builder before it has been prepared by the First Loop, either by
  * executing the SetupPasses if it is a child Builder or by calling
  * {@link BaseNames#generateNames()} if it is a child Namer</dd>
  * <dt>First Loop
@@ -85,10 +121,10 @@ class BaseBuilder
     {
       UtilityParam param = 
 	new EnumUtilityParam
-	(aActionOnExistance,
+	(aActionOnExistence,
 	 "What action should the Builder take when a node already exists.",
 	 ActionOnExistence.Continue.toString(),
-	 ActionOnExistence.getStringList());
+	 ActionOnExistence.titles());
       addParam(param);
     }
     {
@@ -193,7 +229,7 @@ class BaseBuilder
     if (defaultMapping) {
       addMappedParam(instanceName, aUtilContext, aUtilContext);
       if (subBuilder instanceof BaseBuilder) {
-	addMappedParam(instanceName, aActionOnExistance, aActionOnExistance);
+	addMappedParam(instanceName, aActionOnExistence, aActionOnExistence);
 	addMappedParam(instanceName, aReleaseOnError, aReleaseOnError);
       }
     }
@@ -475,6 +511,7 @@ class BaseBuilder
     }
   }
   
+  @SuppressWarnings("unchecked")
   private final void
   assignCommandLineParams(BaseUtil utility)
     throws PipelineException
@@ -502,7 +539,7 @@ class BaseBuilder
     /* This creates a Mapped ArrayList with Parameter name as the key set and
      * the list of keys contained in the MultiMapNamedEntry as the key set.
      */
-    MappedArrayList<String, MultiMapNamedEntry<String, String>> commandLineValues = 
+    ListMappedArrayList<String, MultiMapNamedEntry<String, String>> commandLineValues = 
       specificEntrys.namedEntries();
     
     
@@ -518,10 +555,19 @@ class BaseBuilder
 	  ParamMapping mapping = new ParamMapping(paramName, keys);
 	  if (!mappedParams.contains(mapping)) {
 	    String value = entry.getValue();
+	    pLog.log(Kind.Arg, Level.Finest, 
+	      "Setting command line parameter (" + mapping + ") from builder " +
+	      "(" + prefixName + ") with the value (" + value + ").");
 	    if (utility.canSetSimpleParamFromString(mapping)) {
-	      SimpleParamFromString param = (SimpleParamFromString) utility.getParam(mapping);
 	      try {
-		param.fromString(value);
+		if (keys == null || keys.isEmpty()) {
+		  SimpleParamFromString param = (SimpleParamFromString) utility.getParam(mapping);
+		  param.fromString(value);
+		}
+		else {
+		  ComplexParamAccess<UtilityParam> param = (ComplexParamAccess<UtilityParam>) utility.getParam(paramName);
+		  param.fromString(keys, value);
+		}
 	      } 
 	      catch (IllegalArgumentException ex) {
 		String message = "There was an error setting the value of a Parameter " +
@@ -530,9 +576,6 @@ class BaseBuilder
     		  throw new PipelineException(message);
 		pLog.log(Kind.Arg, Level.Warning, message);
 	      }
-	      pLog.log(Kind.Arg, Level.Finest, 
-		"Setting command line parameter (" + mapping + ") from builder " +
-		"(" + prefixName + ") with the value (" + value + ").");
 	    }
 	    else {
 	      String message = "Cannot set command line parameter (" + mapping + ") " +
@@ -588,10 +631,11 @@ class BaseBuilder
       logMessage += ex.getMessage() + "\n";
       if (pReleaseOnError) 
 	logMessage += "All the nodes that were registered will now be released.";
-      pLog.log(Kind.Ops, Level.Severe, logMessage);
+
       if (pReleaseOnError)
 	BaseStage.cleanUpAddedNodes(pClient, pBuilderInformation.getStageState());
-      return;
+
+      throw new PipelineException(logMessage);
     }
     if (finish)
       executeCheckIn();
@@ -636,7 +680,7 @@ class BaseBuilder
     setContext((UtilContext) getParamValue(aUtilContext));
     pReleaseOnError = getBooleanParamValue(new ParamMapping(aReleaseOnError));
     pActionOnExistence = 
-      ActionOnExistence.valueOf(getStringParamValue(new ParamMapping(aActionOnExistance)));
+      ActionOnExistence.valueOf(getStringParamValue(new ParamMapping(aActionOnExistence)));
     pStageInfo.setActionOnExistence(pActionOnExistence);
   }
   
@@ -972,11 +1016,27 @@ class BaseBuilder
   /**
    * Should this builder check-in the nodes that it has specified with
    * {@link #getNodesToCheckIn()}.
+   * <p>
+   * If the parameter CheckinWhenDone exists, this method will attempt to read its value. If
+   * the read fails or if the parameter does not exist, <code>false</code> will be returned.
+   * <p>
+   * This method can be overridden if different behavior is desired.
    */
   protected boolean
   performCheckIn()
   {
-    return false;
+    boolean toReturn = false;
+    try {
+    if (hasParam(aCheckinWhenDone))
+      toReturn = getBooleanParamValue(new ParamMapping(aCheckinWhenDone));
+    } 
+    catch (PipelineException ex) {
+      pLog.log(Kind.Ops, Level.Warning, 
+      "There was an error in the performCheckIn method of Builder " +
+      "(" + getPrefixedName() + ") attempting to access the CheckinWhenDone parameter.  " +
+      "This builder will not attempt to check-in its nodes.\n" + ex.getMessage());
+    }
+    return toReturn;
   }
   
   /**
@@ -1545,7 +1605,7 @@ class BaseBuilder
    * Parameter names.
    */
   public final static String aReleaseOnError = "ReleaseOnError";
-  public final static String aActionOnExistance = "ActionOnExistance";
+  public final static String aActionOnExistence = "ActionOnExistence";
   public final static String aSelectionKeys = "SelectionKeys";
   public final static String aCheckinWhenDone = "CheckinWhenDone";
   
@@ -1631,42 +1691,59 @@ class BaseBuilder
     Complete, Problem, InProgress
   }
   
-  public static 
-  enum ActionOnExistence
-  {
-    CheckOut, Continue, Abort, Conform;
-    
-    public static ArrayList<String>
-    getStringList()
-    {
-      ArrayList<String> toReturn = new ArrayList<String>();
-      for (ActionOnExistence each : ActionOnExistence.values())
-	toReturn.add(each.toString());
-      return toReturn;
-    }
-    
-    public static ActionOnExistence
-    valueFromKey
-    (
-      int key
-    )
-    {
-      return ActionOnExistence.values()[key];
-    }
-      
-    public static ActionOnExistence
-    valueFromString
-    (
-      String string  
-    )
-    {
-      ActionOnExistence toReturn = null;
-      for (ActionOnExistence each : ActionOnExistence.values())
-	if (each.toString().equals(string))
-	  toReturn = each;
-      return toReturn;
-    }
-  }
+//   public static 
+//   enum ActionOnExistence
+//   {
+//     CheckOut, Continue, Abort, Conform;
+ 
+//     public static ArrayList<ActionOnExistence>
+//     all() 
+//     {
+//       ActionOnExistence values[] = values();
+//       ArrayList<ActionOnExistence> all = new ArrayList<ActionOnExistence>(values.length);
+//       int wk;
+//       for(wk=0; wk<values.length; wk++)
+//         all.add(values[wk]);
+//       return all;
+//     }
+
+//     public static ArrayList<String>
+//     titles() 
+//     {
+//       ArrayList<String> titles = new ArrayList<String>();
+//       for(ActionOnExistence method : ActionOnExistence.all()) 
+//         titles.add(method.toTitle());
+//       return titles;
+//     }
+ 
+//     public static ActionOnExistence
+//     valueFromKey
+//     (
+//       int key
+//     )
+//     {
+//       return ActionOnExistence.values()[key];
+//     }
+   
+//     public static ActionOnExistence
+//     valueFromString
+//     (
+//       String string  
+//     )
+//     {
+//       ActionOnExistence toReturn = null;
+//       for (ActionOnExistence each : ActionOnExistence.values())
+// 	if (each.toString().equals(string))
+// 	  toReturn = each;
+//       return toReturn;
+//     }
+
+//     public String
+//     toTitle() 
+//     {
+//       return toString();
+//     }
+//   }
   
   /**
    *  Defines the use of a node in a particular builder setup.
