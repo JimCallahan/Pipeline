@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.96 2007/10/23 02:29:59 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.97 2007/10/25 00:08:15 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -6463,7 +6463,8 @@ class JNodeViewerPanel
             for(NodeMod mod : bundle.getWorkingVersions()) {
               buf.append("  " + mod.getName() + "\n");
               for(FileSeq fseq : mod.getSequences()) 
-                buf.append("    " + fseq + "\n\n");
+                buf.append("    " + fseq + "\n");
+              buf.append("\n");
             }
             
             buf.append
