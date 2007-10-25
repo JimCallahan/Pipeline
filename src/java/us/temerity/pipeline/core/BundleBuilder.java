@@ -146,7 +146,7 @@ class BundleBuilder
                           pToolsetRemap, pSelectionKeyRemap, pLicenseKeyRemap);
 	stage.build();
 
-        if(!mod.isActionEnabled()) 
+        if((mod.getAction() != null) && !mod.isActionEnabled()) 
           addToDisableList(mod.getName());
       }
       
