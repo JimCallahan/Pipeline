@@ -1,4 +1,4 @@
-// $Id: JUnpackBundleDialog.java,v 1.1 2007/10/23 02:29:59 jim Exp $
+// $Id: JUnpackBundleDialog.java,v 1.2 2007/10/25 00:08:52 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -446,135 +446,72 @@ class JUnpackBundleDialog
     }
 
     /* rebuild the toolsets drawer */
-    {
-      TreeMap<String,String> oldRemap = getToolsetRemap();
-
-      pToolsetBox.removeAll();
-      pToolsetFields.clear();
-
-      Component comps[] = UIFactory.createTitledPanels();
-      JPanel tpanel = (JPanel) comps[0];
-      JPanel vpanel = (JPanel) comps[1];
-
-      if(!tsets.isEmpty()) {
-        ArrayList<String> names = new ArrayList<String>();
-        names.add("-");
-        names.addAll(toolsets);
-
-        for(String tname : tsets) {
-          JCollectionField field = 
-            UIFactory.createTitledCollectionField
-              (tpanel, tname + ":", sTSize, 
-               vpanel, names, this, sVSize, 
-               "Remap the bundled toolset (" + tname + ") to this local toolset.");
-          
-          String old = oldRemap.get(tname);
-          if((old != null) && names.contains(old))
-            field.setSelected(old);
-
-          pToolsetFields.put(tname, field);
-          
-          UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
-        }
-      }
-      else {
-        tpanel.add(Box.createRigidArea(new Dimension(sTSize, 0)));
-        vpanel.add(Box.createHorizontalGlue());
-      }
-
-      pToolsetBox.add(comps[2]);
-      pToolsetBox.revalidate();
-      pToolsetBox.repaint();
-    }
+    updateNameMap(pToolsetBox, pToolsetFields, getToolsetRemap(), 
+                  toolsets, "toolset");
 
     /* rebuild the selection keys drawer */
-    {
-      TreeMap<String,String> oldRemap = getSelectionKeyRemap();
-
-      pSelectionKeyBox.removeAll();
-      pSelectionKeyFields.clear();
-
-      Component comps[] = UIFactory.createTitledPanels();
-      JPanel tpanel = (JPanel) comps[0];
-      JPanel vpanel = (JPanel) comps[1];
-
-      if(!skeys.isEmpty()) {
-        ArrayList<String> names = new ArrayList<String>();
-        names.add("-");
-        names.addAll(selectionKeys);
-
-        for(String kname : skeys) {
-          JCollectionField field = 
-            UIFactory.createTitledCollectionField
-              (tpanel, kname + ":", sTSize, 
-               vpanel, names, this, sVSize, 
-               "Remap the bundled selection key (" + kname + ") to this " +
-               "local selection key.");
-          
-          String old = oldRemap.get(kname);
-          if((old != null) && names.contains(old))
-            field.setSelected(old);
-
-          pSelectionKeyFields.put(kname, field);
-          
-          UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
-        }
-      }
-      else {
-        tpanel.add(Box.createRigidArea(new Dimension(sTSize, 0)));
-        vpanel.add(Box.createHorizontalGlue());
-      }
-
-      pSelectionKeyBox.add(comps[2]);
-      pSelectionKeyBox.revalidate();
-      pSelectionKeyBox.repaint();
-    }
-
+    updateNameMap(pSelectionKeyBox, pSelectionKeyFields, getSelectionKeyRemap(), 
+                  selectionKeys, "selection key");
+    
     /* rebuild the license keys drawer */
-    {
-      TreeMap<String,String> oldRemap = getLicenseKeyRemap();
-
-      pLicenseKeyBox.removeAll();
-      pLicenseKeyFields.clear();
-
-      Component comps[] = UIFactory.createTitledPanels();
-      JPanel tpanel = (JPanel) comps[0];
-      JPanel vpanel = (JPanel) comps[1];
-
-      if(!lkeys.isEmpty()) {
-        ArrayList<String> names = new ArrayList<String>();
-        names.add("-");
-        names.addAll(licenseKeys);
-
-        for(String kname : lkeys) {
-          JCollectionField field = 
-            UIFactory.createTitledCollectionField
-              (tpanel, kname + ":", sTSize, 
-               vpanel, names, this, sVSize, 
-               "Remap the bundled license key (" + kname + ") to this " +
-               "local license key.");
-          
-          String old = oldRemap.get(kname);
-          if((old != null) && names.contains(old))
-            field.setSelected(old);
-
-          pLicenseKeyFields.put(kname, field);
-          
-          UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
-        }
-      }
-      else {
-        tpanel.add(Box.createRigidArea(new Dimension(sTSize, 0)));
-        vpanel.add(Box.createHorizontalGlue());
-      }
-
-      pLicenseKeyBox.add(comps[2]);
-      pLicenseKeyBox.revalidate();
-      pLicenseKeyBox.repaint();
-    }
-
+    updateNameMap(pLicenseKeyBox, pLicenseKeyFields, getLicenseKeyRemap(), 
+                  licenseKeys, "license key");
+    
     /* whether the bundle is valid */ 
     pConfirmButton.setEnabled((bundlePath != null) && (pNodeBundle != null));
+  }
+
+  /** 
+   * Rebuild the UI components for mapping a bundled name to a local name.
+   */ 
+  private void 
+  updateNameMap
+  (
+   Box mapBox, 
+   TreeMap<String,JCollectionField> mapFields, 
+   TreeMap<String,String> oldRemap, 
+   TreeSet<String> localValues, 
+   String title 
+  ) 
+  {
+    mapBox.removeAll();
+    mapFields.clear();
+
+    Component comps[] = UIFactory.createTitledPanels();
+    JPanel tpanel = (JPanel) comps[0];
+    JPanel vpanel = (JPanel) comps[1];
+
+    if(!tsets.isEmpty()) {
+      ArrayList<String> names = new ArrayList<String>();
+      names.add("-");
+      names.addAll(localValues);
+
+      for(String name : tsets) {
+        JCollectionField field = 
+          UIFactory.createTitledCollectionField
+          (tpanel, name + ":", sTSize, 
+           vpanel, names, this, sVSize, 
+           "Remap the bundled " + title + " (" + name + ") to this local " + title + ".");
+          
+        String old = oldRemap.get(name);
+        if((old != null) && names.contains(old))
+          field.setSelected(old);
+        else if(localValues.contains(name)) 
+          field.setSelected(name);
+
+        mapFields.put(name, field);
+          
+        UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+      }
+    }
+    else {
+      tpanel.add(Box.createRigidArea(new Dimension(sTSize, 0)));
+      vpanel.add(Box.createHorizontalGlue());
+    }
+
+    mapBox.add(comps[2]);
+    mapBox.revalidate();
+    mapBox.repaint();
   }
 
 
