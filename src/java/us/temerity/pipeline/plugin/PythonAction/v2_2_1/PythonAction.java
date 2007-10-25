@@ -1,4 +1,4 @@
-// $Id: PythonAction.java,v 1.1 2007/06/17 15:34:45 jim Exp $
+// $Id: PythonAction.java,v 1.2 2007/10/25 00:02:51 jim Exp $
 
 package us.temerity.pipeline.plugin.PythonAction.v2_2_1;
 
@@ -332,7 +332,13 @@ class PythonAction
       }
 
       TreeMap<String,String> nenv = new TreeMap<String,String>(agenda.getEnvironment()); 
-      nenv.put("PYTHONPATH", scratch.toOsString());
+      {
+        String orig = nenv.get("PYTHONPATH");
+        if((orig != null) && (orig.length() > 0)) 
+          nenv.put("PYTHONPATH", orig + PackageInfo.getPathSep() + scratch.toOsString());
+        else 
+          nenv.put("PYTHONPATH", scratch.toOsString());
+      }
 
       return createPythonSubProcess(agenda, scriptPath.toFile(), args, nenv, 
                                     outFile, errFile);
