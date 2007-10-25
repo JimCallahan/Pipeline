@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.219 2007/10/23 02:29:58 jim Exp $
+// $Id: MasterMgr.java,v 1.220 2007/10/25 00:07:38 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -5716,43 +5716,9 @@ class MasterMgr
 	  ("Only a user with Node Manager privileges may create working areas owned " +
 	   "by another user!");
 
-      timer.aquire();
-      synchronized(pWorkingAreaViews) {
-	timer.resume();	
-
-	/* make sure it doesn't already exist */ 
-	TreeSet<String> views = pWorkingAreaViews.get(author);
-	if((views != null) && views.contains(view))
-	  return new SuccessRsp(timer);
+      /* create the working area */ 
+      createWorkingAreaHelper(timer, author, view);
 	
-	/* create the working area node directory */ 
-	File dir = new File(pNodeDir, "working/" + author + "/" + view);
-	synchronized(pMakeDirLock) {
-	  if(!dir.isDirectory()) {
-	    if(!dir.mkdirs()) 
-	      return new FailureRsp
-		(timer, "Unable to create the working area (" + view + ") for user " + 
-		 "(" + author + ")!");
-	  }
-	}
-
-	/* create the working area files directory */ 
-	FileMgrClient fclient = getFileMgrClient();
-	try {
-	  fclient.createWorkingArea(author, view);
-	}
-	finally {
-	  freeFileMgrClient(fclient);
-	}
-	
-	/* add the view to the runtime table */ 
-	if(views == null) {
-	  views = new TreeSet<String>();
-	  pWorkingAreaViews.put(author, views);
-	}
-	views.add(view);
-      }
-		
       /* post-op tasks */ 
       startExtensionTasks(timer, factory);
       
@@ -5763,6 +5729,58 @@ class MasterMgr
     }
     finally {
       pDatabaseLock.readLock().unlock();
+    }
+  }  
+
+  /**
+   * Create a new empty working area. <P> 
+   * 
+   * This should only be called from inside a pDatabaseLock.readLock().
+   */ 
+  private void 
+  createWorkingAreaHelper
+  ( 
+   TaskTimer timer,    
+   String author,
+   String view 
+  ) 
+    throws PipelineException
+  {
+    timer.aquire();
+    synchronized(pWorkingAreaViews) {
+      timer.resume();	
+      
+      /* make sure it doesn't already exist */ 
+      TreeSet<String> views = pWorkingAreaViews.get(author);
+      if((views != null) && views.contains(view))
+        return;
+      
+      /* create the working area node directory */ 
+      File dir = new File(pNodeDir, "working/" + author + "/" + view);
+      synchronized(pMakeDirLock) {
+        if(!dir.isDirectory()) {
+          if(!dir.mkdirs()) 
+            throw new PipelineException
+              ("Unable to create the working area (" + view + ") for user " + 
+               "(" + author + ")!");
+        }
+      }
+      
+      /* create the working area files directory */ 
+      FileMgrClient fclient = getFileMgrClient();
+      try {
+        fclient.createWorkingArea(author, view);
+      }
+      finally {
+        freeFileMgrClient(fclient);
+      }
+      
+      /* add the view to the runtime table */ 
+      if(views == null) {
+        views = new TreeSet<String>();
+        pWorkingAreaViews.put(author, views);
+      }
+      views.add(view);
     }
   }  
 
@@ -6351,8 +6369,7 @@ class MasterMgr
 
       TreeMap<String,BaseAnnotation> table = getAnnotationsTable(name);
       if(table == null) 
-        throw new PipelineException
-          ("No annotations exist for node (" + name + ")!"); 
+        return new SuccessRsp(timer);
       
       /* pre-op tests */
       LinkedList<RemoveAnnotationExtFactory> factories = 
@@ -10462,6 +10479,29 @@ class MasterMgr
       LinkedList<NodeMod> nodes = new LinkedList<NodeMod>();
       validatePacked(status, nodes, new TreeSet<String>());
 
+      /* get the associated node annotations */ 
+      DoubleMap<String,String,BaseAnnotation> annotations = 
+        new DoubleMap<String,String,BaseAnnotation>();
+      for(NodeMod mod : nodes) {
+        String nname = mod.getName();
+
+        timer.aquire();
+        ReentrantReadWriteLock lock = getAnnotationsLock(name); 
+        lock.readLock().lock();
+        try {
+          timer.resume();
+    
+          TreeMap<String,BaseAnnotation> table = getAnnotationsTable(nname);
+          if(table != null) {
+            for(String aname : table.keySet())
+              annotations.put(nname, aname, table.get(aname));
+          }
+        }
+        finally {
+          lock.readLock().unlock();
+        }
+      }
+
       /* get the bundled toolsets and packages */ 
       DoubleMap<String,OsType,Toolset> bundledToolsets = 
         new DoubleMap<String,OsType,Toolset>();
@@ -10512,7 +10552,7 @@ class MasterMgr
       Path nodeArchive = null;
       {
         try {
-          bundle = new NodeBundle(TimeStamps.now(), nodeID, nodes, 
+          bundle = new NodeBundle(TimeStamps.now(), nodeID, nodes, annotations, 
                                   bundledToolsets, bundledPackages);
         }
         catch(Exception ex) {
@@ -10690,6 +10730,9 @@ class MasterMgr
 	throw new PipelineException
 	  ("Only a user with Node Manager privileges may unpack a node bundle " +
            "into a working area owned by another user!");
+
+      /* make sure the working area exists */ 
+      createWorkingAreaHelper(timer, author, view);
 
       /* extract the node bundle */ 
       NodeBundle bundle = null; 
