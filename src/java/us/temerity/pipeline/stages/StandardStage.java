@@ -327,50 +327,70 @@ class StandardStage
   {
     LogMgr.getInstance().log
       (Kind.Ops, Level.Finer, "Conforming the node: " + pRegisteredNodeName );
+
     NodeID id = new NodeID(getAuthor(), getView(), pRegisteredNodeName);
-    NodeStatus status = pClient.status(id, true);
-    NodeDetails details = status.getDetails();
-    NodeMod oldMod = details.getWorkingVersion(); 
-    boolean hasFrameNumbers = oldMod.getPrimarySequence().hasFrameNumbers();
-    if (hasFrameNumbers && pFrameRange == null)
-      throw new PipelineException
-        ("Attempting to conform the node (" + pRegisteredNodeName + ") from one with " +
-         "frame numbers to one without frame numbers");
-    if (!hasFrameNumbers && pFrameRange != null)
-      throw new PipelineException
-      ("Attempting to conform the node (" + pRegisteredNodeName + ") from one without " +
-       "frame numbers to one with frame numbers");
-    NodeVersion latest = details.getLatestVersion(); 
-    if ( latest != null) {
-      String oldSuffix = latest.getPrimarySequence().getFilePattern().getSuffix();
-      String newSuffix = latest.getPrimarySequence().getFilePattern().getSuffix();
-      if (!oldSuffix.equals(newSuffix))
-	throw new PipelineException
-	  ("Attempting to conform the node (" + pRegisteredNodeName + ") from having " +
-	   "the suffix (" + oldSuffix + ") to having a suffix (" + newSuffix + ").  " +
-	   "Since this node has been checked-in, this is an illegal modification.");
+    {
+      NodeStatus status = pClient.status(id, true);
+      NodeDetails details = status.getDetails();
+      NodeMod oldMod = details.getWorkingVersion(); 
+      boolean hasFrameNumbers = oldMod.getPrimarySequence().hasFrameNumbers();
+      if (hasFrameNumbers && pFrameRange == null)
+        throw new PipelineException
+          ("Attempting to conform the node (" + pRegisteredNodeName + ") from one with " +
+           "frame numbers to one without frame numbers");
+      if (!hasFrameNumbers && pFrameRange != null)
+        throw new PipelineException
+          ("Attempting to conform the node (" + pRegisteredNodeName + ") from one without " +
+           "frame numbers to one with frame numbers");
+      
+      NodeVersion latest = details.getLatestVersion(); 
+      if ( latest != null) {
+        String oldSuffix = latest.getPrimarySequence().getFilePattern().getSuffix();
+        String newSuffix = latest.getPrimarySequence().getFilePattern().getSuffix();
+        if (((oldSuffix == null) && (newSuffix != null)) ||
+            ((oldSuffix != null) && !oldSuffix.equals(newSuffix)))
+          throw new PipelineException
+            ("Attempting to conform the node (" + pRegisteredNodeName + ") from having " +
+             ((oldSuffix == null) ? "no suffix" : "the suffix (" + oldSuffix + ")") + " " + 
+             "to having " + 
+             ((newSuffix == null) ? "no suffix" : "the suffix (" + newSuffix + ")") + ".  " + 
+             "Since this node has been checked-in, this is an illegal modification.");
+      }
     }
+
     if (pFrameRange != null)
       pClient.renumber(id, pFrameRange, true);
+
     pRegisteredNodeMod = pClient.getWorkingVersion(id);
-    pRegisteredNodeMod.setEditor(pEditor);
-    removeSecondarySequences();
-    if(pSecondarySequences != null)
-      addSecondarySequences();
-    removeLinks();
-    if(pLinks != null)
-      createLinks();
-    if(pAction != null)
-      setAction();
-    pRegisteredNodeMod.setJobRequirements(new JobReqs());
-    setKeys();
-    if(pAction != null)
-      setJobSettings();
-    pClient.modifyProperties(getAuthor(), getView(), pRegisteredNodeMod);
-    pRegisteredNodeMod = pClient.getWorkingVersion(getAuthor(), getView(), pRegisteredNodeName);
+    {
+      pRegisteredNodeMod.setEditor(pEditor);
+
+      removeSecondarySequences();
+      if(pSecondarySequences != null)
+        addSecondarySequences();
+      
+      removeLinks();
+      if(pLinks != null)
+        createLinks();
+      
+      if(pAction != null)
+        setAction();
+      
+      setKeys();
+
+      if(pAction != null) {
+        pRegisteredNodeMod.setJobRequirements(new JobReqs());
+        setJobSettings();
+      }
+      
+      pClient.modifyProperties(getAuthor(), getView(), pRegisteredNodeMod);
+    }
+    pRegisteredNodeMod = pClient.getWorkingVersion(id);
+
     removeAnnotations();
     if (pStageInformation.doAnnotations())
       doAnnotations();
+
     return true;
   }
   
