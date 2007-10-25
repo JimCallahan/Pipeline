@@ -1,4 +1,4 @@
-// $Id: NodeBundle.java,v 1.1 2007/10/23 02:29:58 jim Exp $
+// $Id: NodeBundle.java,v 1.2 2007/10/25 00:09:09 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -45,6 +45,10 @@ class NodeBundle
    * @param versions
    *   The working versions of the nodes in the order they should be unpacked.
    * 
+   * @param annotations
+   *   The annotations associated with nodes indexed by fully resolved node name and 
+   *   annotation name.
+   * 
    * @param toolsets
    *   The toolsets used by the nodes indexed by toolset name and operating system type.
    * 
@@ -58,6 +62,7 @@ class NodeBundle
    long stamp,
    NodeID rootNodeID, 
    LinkedList<NodeMod> versions, 
+   DoubleMap<String,String,BaseAnnotation> annotations, 
    DoubleMap<String,OsType,Toolset> toolsets, 
    TripleMap<String,OsType,VersionID,PackageVersion> packages
   ) 
@@ -78,6 +83,11 @@ class NodeBundle
       throw new IllegalArgumentException
         ("The working node versions to bundle cannot be (null)!");
     pVersions = versions; 
+
+    if(annotations == null) 
+      throw new IllegalArgumentException
+        ("The annotations to bundle cannot be (null)!");
+    pAnnotations = annotations; 
 
     if(toolsets == null) 
       throw new IllegalArgumentException
@@ -205,6 +215,46 @@ class NodeBundle
   getWorkingVersions() 
   {
     return Collections.unmodifiableList(pVersions);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /** 
+   * Get the names of the annotations for the given node.
+   * 
+   * @param nname 
+   *   The fully resolved node name.
+   */ 
+  public Set<String> 
+  getAnnotationNames
+  (
+   String nname
+  ) 
+  {
+    Set<String> keys = pAnnotations.keySet(nname);
+    if(keys != null) 
+      Collections.unmodifiableSet(keys);
+    return new TreeSet<String>();
+  }
+
+  /**
+   * Get the a specific annotation for the given node. 
+   * 
+   * @param nname 
+   *   The fully resolved node name.
+   * 
+   * @param aname 
+   *   The name of the annotation. 
+   */
+  public BaseAnnotation
+  getAnnotation
+  (
+   String nname, 
+   String aname
+  ) 
+  {
+    return pAnnotations.get(nname, aname);   
   }
 
 
@@ -347,6 +397,103 @@ class NodeBundle
 
 
   /*----------------------------------------------------------------------------------------*/
+  /*   S E R I A L I Z A B L E                                                              */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Write the serializable fields to the object stream. <P> 
+   * 
+   * This enables the class to convert a dynamically loaded annotation plugin instance into a 
+   * generic staticly loaded BaseAnnotation instance before serialization.
+   */ 
+  private void 
+  writeObject
+  (
+   java.io.ObjectOutputStream out
+  )
+    throws IOException
+  {
+    out.writeObject(pCreatedOn);
+    out.writeObject(pCreatedBy);
+    out.writeObject(pCustomer);
+    out.writeObject(pCustomerProfile);
+    out.writeObject(pPipelineVersion);
+    out.writeObject(pPipelineRelease);
+    out.writeObject(pRootNodeID);
+    out.writeObject(pVersions); 
+
+    {
+      DoubleMap<String,String,BaseAnnotation> annotations = 
+        new DoubleMap<String,String,BaseAnnotation>(); 
+
+      for(String nname : pAnnotations.keySet()) {
+        for(String aname : pAnnotations.keySet(nname)) 
+          annotations.put(nname, aname, 
+                          new BaseAnnotation(pAnnotations.get(nname, aname)));
+      }
+
+      out.writeObject(annotations); 
+    }
+
+    out.writeObject(pToolsets);
+    out.writeObject(pPackages);
+  }
+
+  
+  /**
+   * Read the serializable fields from the object stream. <P> 
+   * 
+   * This enables the class to dynamically instantiate an annotation plugin instance and copy
+   * its parameters from the generic staticly loaded BaseAnnotation instance in the object 
+   * stream. 
+   */ 
+  private void 
+  readObject
+  (
+   java.io.ObjectInputStream in
+  )
+    throws IOException, ClassNotFoundException
+  {
+    pCreatedOn = (Long) in.readObject();
+    pCreatedBy = (String) in.readObject();
+    pCustomer = (String) in.readObject();
+    pCustomerProfile = (String) in.readObject();
+    pPipelineVersion = (String) in.readObject();
+    pPipelineRelease = (String) in.readObject();
+    pRootNodeID = (NodeID) in.readObject();
+    pVersions = (LinkedList<NodeMod>) in.readObject();
+
+    {
+      pAnnotations = new DoubleMap<String,String,BaseAnnotation>(); 
+      
+      DoubleMap<String,String,BaseAnnotation> annotations = 
+        (DoubleMap<String,String,BaseAnnotation>) in.readObject();
+
+      try {
+        PluginMgrClient client = PluginMgrClient.getInstance();
+        for(String nname : annotations.keySet()) {
+          for(String aname : annotations.keySet(nname)) {
+            BaseAnnotation annot = annotations.get(nname, aname);
+            pAnnotations.put(nname, aname, 
+                             client.newAnnotation(annot.getName(), 
+                                                  annot.getVersionID(), 
+                                                  annot.getVendor()));
+          }
+        }
+      }  
+      catch(PipelineException ex) {
+        throw new IOException(ex.getMessage());
+      }    
+    }
+
+    pToolsets = (DoubleMap<String,OsType,Toolset>) in.readObject();
+    pPackages = (TripleMap<String,OsType,VersionID,PackageVersion>) in.readObject();
+  }
+
+
+
+
+  /*----------------------------------------------------------------------------------------*/
   /*   G L U E A B L E                                                                      */
   /*----------------------------------------------------------------------------------------*/
 
@@ -365,6 +512,20 @@ class NodeBundle
     encoder.encode("PipelineRelease", pPipelineRelease);
     encoder.encode("RootNodeID", pRootNodeID);
     encoder.encode("Versions", pVersions); 
+
+    if(!pAnnotations.isEmpty()) {
+      DoubleMap<String,String,BaseAnnotation> annotations = 
+        new DoubleMap<String,String,BaseAnnotation>(); 
+
+      for(String nname : pAnnotations.keySet()) {
+        for(String aname : pAnnotations.keySet(nname)) 
+          annotations.put(nname, aname, 
+                          new BaseAnnotation(pAnnotations.get(nname, aname)));
+      }
+
+      encoder.encode("Annotations", annotations); 
+    }
+
     encoder.encode("Toolsets", pToolsets);
     encoder.encode("Packages", pPackages);
   }
@@ -415,6 +576,30 @@ class NodeBundle
     if(versions == null) 
       throw new GlueException("The \"Versions\" was missing or (null)!");
     pVersions = versions;
+    
+    {
+      pAnnotations = new DoubleMap<String,String,BaseAnnotation>(); 
+      
+      DoubleMap<String,String,BaseAnnotation> annotations = 
+        (DoubleMap<String,String,BaseAnnotation>) decoder.decode("Annotations"); 
+      if(annotations != null) {
+        try {
+          PluginMgrClient client = PluginMgrClient.getInstance();
+          for(String nname : annotations.keySet()) {
+            for(String aname : annotations.keySet(nname)) {
+              BaseAnnotation annot = annotations.get(nname, aname);
+              pAnnotations.put(nname, aname, 
+                               client.newAnnotation(annot.getName(), 
+                                                    annot.getVersionID(), 
+                                                    annot.getVendor()));
+            }
+          }
+        }  
+        catch(PipelineException ex) {
+          throw new GlueException(ex.getMessage());
+        }    
+      }
+    }
     
     DoubleMap<String,OsType,Toolset> toolsets = 
       (DoubleMap<String,OsType,Toolset>) decoder.decode("Toolsets"); 
@@ -485,7 +670,13 @@ class NodeBundle
    * Gets the working versions of the nodes in the order they should be unpacked.
    */
   private LinkedList<NodeMod>  pVersions; 
-    
+
+  /**
+   * Gets the annotations associated with nodes indexed by fully resolved node name and 
+   * annotation name.
+   */
+  private DoubleMap<String,String,BaseAnnotation>  pAnnotations; 
+
   /**
    * Gets the toolsets used by the nodes indexed by toolset name and operating system type.
    */
