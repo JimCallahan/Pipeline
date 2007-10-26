@@ -75,6 +75,7 @@ class StandardStage
     }
     pFrameRange = null;
     pPadding = -1;
+    initBooleans();
   }
 
   
@@ -149,6 +150,7 @@ class StandardStage
       throw new PipelineException("Cannot have a negative padding value");
     else
       pPadding = padding;
+    initBooleans();
   }
   
   /**
@@ -179,7 +181,6 @@ class StandardStage
     MasterMgrClient client,
     NodeMod mod
   )
-    throws PipelineException
   {
     super(name, desc, stageInformation, context, client);
 
@@ -205,6 +206,14 @@ class StandardStage
 
     pLinks = new LinkedList<LinkMod>();  // SHOULDN'T NEED THIS!!!
     pLinks.addAll(mod.getSources());
+    initBooleans();
+  }
+  
+  private void
+  initBooleans()
+  {
+    pNodeConstructed = false;
+    pNodeConformed = false;
   }
   
 
@@ -338,6 +347,8 @@ class StandardStage
   {
     LogMgr.getInstance().log
       (Kind.Ops, Level.Finer, "Conforming the node: " + pRegisteredNodeName );
+    pStageInformation.addConformedNode(getName());
+    pNodeConformed = true;
 
     NodeID id = new NodeID(getAuthor(), getView(), pRegisteredNodeName);
     {
@@ -425,6 +436,7 @@ class StandardStage
     if(pRegisteredNodeName == null)
       return null;
     NodeMod toReturn = registerNode(pRegisteredNodeName, pSuffix, pEditor);
+    pNodeConstructed = true;
     pStageInformation.addNode(pRegisteredNodeName, getAuthor(), getView());
     return toReturn;
   }
@@ -448,8 +460,31 @@ class StandardStage
       return null;
     NodeMod toReturn = 
       registerSequence(pRegisteredNodeName, pPadding, pSuffix, pEditor, 
-	               pFrameRange.getStart(), pFrameRange.getEnd(), pFrameRange.getBy()); 
+	               pFrameRange.getStart(), pFrameRange.getEnd(), pFrameRange.getBy());
+    pNodeConstructed = true;
     pStageInformation.addNode(pRegisteredNodeName, getAuthor(), getView());
     return toReturn;
   }
+  
+  /**
+   * Was the node conformed in this stage.
+   */
+  protected boolean
+  wasNodeConformed()
+  {
+   return pNodeConformed;
+  }
+  
+  /**
+   * Was the node constructed in this stage.
+   */
+  protected boolean
+  wasNodeConstructed()
+  {
+   return pNodeConstructed; 
+  }
+  
+  private boolean pNodeConstructed;
+  private boolean pNodeConformed;
+  
 }

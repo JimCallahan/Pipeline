@@ -1,4 +1,4 @@
-// $Id: BaseStage.java,v 1.14 2007/10/26 19:35:46 jim Exp $
+// $Id: BaseStage.java,v 1.15 2007/10/26 20:59:28 jesse Exp $
 
 package us.temerity.pipeline.stages;
 
@@ -65,6 +65,8 @@ class BaseStage
     pExecutionMethod = ExecutionMethod.Serial;
     pBatchSize = 0;
     pJobReqs = JobReqs.defaultJobReqs();
+    
+    pNodeCheckedOut = false;
   }
   
   
@@ -691,7 +693,18 @@ class BaseStage
   {
     return pUtilContext.getToolset();
   }
+  
+  /**
+   * Was the node Checked Out by the {@link #checkExistance(String, ActionOnExistence)} 
+   * method.
+   */
+  protected boolean
+  wasNodeCheckedOut()
+  {
+   return pNodeCheckedOut; 
+  }
 
+  
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -1202,6 +1215,7 @@ class BaseStage
       case Conform:
 	 pClient.checkOut(getAuthor(), getView(), nodeName, null, 
 	   CheckOutMode.KeepModified, CheckOutMethod.PreserveFrozen);
+	 pStageInformation.addCheckedOutNode(nodeName);
 	 pLog.log(Kind.Ops, Level.Finest, "Checking out the node.");
 	return true;
       case Continue:
@@ -1213,6 +1227,7 @@ class BaseStage
       case Conform:
 	 pClient.checkOut(getAuthor(), getView(), nodeName, null, 
            CheckOutMode.KeepModified, CheckOutMethod.PreserveFrozen);
+	 pStageInformation.addCheckedOutNode(nodeName);
 	 pLog.log(Kind.Ops, Level.Finest, "Checking out the node.");
 	 return true;
       case Continue:
@@ -1308,5 +1323,11 @@ class BaseStage
   protected MasterMgrClient pClient;
   
   protected PluginMgrClient pPlug;
+  
+  /**
+   * Was the node Checked Out by the {@link #checkExistance(String, ActionOnExistence)} 
+   * method.
+   */
+  private boolean pNodeCheckedOut;
 
 }

@@ -3,6 +3,7 @@ package us.temerity.pipeline.stages;
 import java.util.*;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.builder.ActionOnExistence;
 import us.temerity.pipeline.builder.PluginContext;
 
 /*------------------------------------------------------------------------------------------*/
@@ -21,6 +22,9 @@ class StageState
     pDefaultEditors = new TreeMap<String, PluginContext>();
     pStageFunctionLicenseKeys = new MappedSet<String, String>();
     pStageFunctionSelectionKeys = new MappedSet<String, String>();
+    
+    pConformedNodes = new TreeSet<String>();
+    pCheckedOutNodes = new TreeSet<String>();
   }
   
   /*----------------------------------------------------------------------------------------*/
@@ -48,7 +52,7 @@ class StageState
   public TreeSet<String> 
   getAddedNodes()
   {
-    return pAddedNodes;
+    return new TreeSet<String>(pAddedNodes);
   }
 
   /**
@@ -62,7 +66,7 @@ class StageState
   public TreeMap<String, String> 
   getAddedNodesUserMap()
   {
-    return pAddedNodesUserMap;
+    return new TreeMap<String, String>(pAddedNodesUserMap);
   }
 
   /**
@@ -75,7 +79,26 @@ class StageState
   public TreeMap<String, String> 
   getAddedNodesViewMap()
   {
-    return pAddedNodesViewMap;
+    return new TreeMap<String, String>(pAddedNodesViewMap);
+  }
+  
+  /**
+   * Gets a list of all the nodes that have been conformed by a stage.
+   */
+  public TreeSet<String>
+  getConformedNodes()
+  {
+    return new TreeSet<String>(pConformedNodes);
+  }
+  
+  /**
+   * Gets a list of all the nodes that have been checked out by a stage in the
+   * {@link StandardStage#checkExistance(String, ActionOnExistence)} method.
+   */
+  public TreeSet<String>
+  getCheckedOutNodes()
+  {
+    return new TreeSet<String>(pCheckedOutNodes);
   }
   
   /**
@@ -109,6 +132,30 @@ class StageState
     pAddedNodesUserMap.put(name, author);
     pAddedNodesViewMap.put(name, view);
     return true;
+  }
+  
+  /**
+   * Adds a node to the list of things that have been checked out by a stage.
+   */
+  public final void
+  addCheckedOutNode
+  (
+    String name  
+  )
+  {
+    pCheckedOutNodes.add(name);
+  }
+  
+  /**
+   * Adds a node to the list of things that have been conformed by a stage.
+   */
+  public final void
+  addConformedNode
+  (
+    String name  
+  )
+  {
+    pConformedNodes.add(name);
   }
   
   /**
@@ -249,6 +296,9 @@ class StageState
    * A mapping of added nodes to the working area they were added in.
    */
   private TreeMap<String, String> pAddedNodesViewMap;
+  
+  private TreeSet<String> pConformedNodes;
+  private TreeSet<String> pCheckedOutNodes;
   
   private TreeMap<String, PluginContext> pDefaultEditors;
   private MappedSet<String, String> pStageFunctionSelectionKeys;
