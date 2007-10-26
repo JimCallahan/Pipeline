@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.68 2007/10/23 02:29:58 jim Exp $
+// $Id: FileMgr.java,v 1.69 2007/10/26 19:35:30 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2697,6 +2697,59 @@ class FileMgr
 
       Map<String,String> env = System.getenv();
 
+      /* generate a list of all files contained in the bundle in depth first order */ 
+      ArrayList<Path> bundledPaths = new ArrayList<Path>();
+      ArrayList<Path> proceduralPaths = new ArrayList<Path>();
+      for(NodeMod mod : bundle.getWorkingVersions()) {
+        boolean isProcedural = (mod.getAction() != null) && mod.isActionEnabled();
+        Path npath = new Path(mod.getName());
+        Path parent = new Path(workPath, npath.getParentPath()); 
+        for(FileSeq fseq : mod.getSequences()) {
+          for(Path path : fseq.getPaths()) {
+            Path fpath = new Path(parent, path);
+            bundledPaths.add(fpath);
+            if(isProcedural) 
+              proceduralPaths.add(fpath);
+          }
+        }
+      }
+
+      /* make any previously existing files associated with nodes with enabled actions
+           writable so that there won't be permissions errors when unpacking */ 
+      {
+        ArrayList<String> preOpts = new ArrayList<String>();
+        preOpts.add("u+w");
+        
+        ArrayList<String> args = new ArrayList<String>();
+        for(Path path : proceduralPaths) { 
+          if(path.toFile().exists()) 
+            args.add(path.toOsString());
+        }
+        
+        if(!args.isEmpty()) {
+          LinkedList<SubProcessLight> procs = 
+            SubProcessLight.createMultiSubProcess
+              (author, "Unpack-SetWritable", "chmod", preOpts, args, env, workPath.toFile()); 
+
+          try {
+            for(SubProcessLight proc : procs) {
+              proc.start();
+              proc.join();
+              if(!proc.wasSuccessful()) 
+                throw new PipelineException
+                  ("Unable to add write access permission to the files being " + 
+                   "unpacked from the node bundle (" + jarPath + "):\n\n" + 
+                   proc.getStdErr());	
+            }
+          }
+          catch(InterruptedException ex) {
+            throw new PipelineException
+              ("Interrupted while adding write access permission to the files being " + 
+               "unpacked from the node bundle (" + jarPath + ").");
+          }
+        }
+      }
+
       /* unpack all of the files */ 
       {
         ArrayList<String> args = new ArrayList<String>();
@@ -2725,22 +2778,14 @@ class FileMgr
         ArrayList<String> preOpts = new ArrayList<String>();
 
         ArrayList<String> args = new ArrayList<String>();
-        for(NodeMod mod : bundle.getWorkingVersions()) {
-          Path npath = new Path(mod.getName());
-          Path parent = npath.getParentPath();
-          for(FileSeq fseq : mod.getSequences()) {
-            for(Path path : fseq.getPaths()) {
-              Path fpath = new Path(parent, path); 
-              args.add("." + fpath.toOsString());
-            }
-          }
-        }
+        for(Path path : bundledPaths) 
+          args.add(path.toOsString());
 
         if(!args.isEmpty()) {
           LinkedList<SubProcessLight> procs = 
             SubProcessLight.createMultiSubProcess
-              (author, 
-               "TouchUnpackedNodeFiles", "touch", preOpts, args, env, workPath.toFile());
+              (author, "TouchUnpackedNodeFiles", "touch", preOpts, args, 
+               env, workPath.toFile());
           
           try {
             for(SubProcessLight proc : procs) {
@@ -2760,6 +2805,41 @@ class FileMgr
         }
       }
 
+      /* make all unpacked files associated with nodes with enabled actions read-only */ 
+      {
+        ArrayList<String> preOpts = new ArrayList<String>();
+        preOpts.add("u-w");
+        
+        ArrayList<String> args = new ArrayList<String>();
+        for(Path path : proceduralPaths) { 
+          if(path.toFile().exists()) 
+            args.add(path.toOsString());
+        }
+        
+        if(!args.isEmpty()) {
+          LinkedList<SubProcessLight> procs = 
+            SubProcessLight.createMultiSubProcess
+              (author, "Unpack-SetReadOnly", "chmod", preOpts, args, env, workPath.toFile()); 
+
+          try {
+            for(SubProcessLight proc : procs) {
+              proc.start();
+              proc.join();
+              if(!proc.wasSuccessful()) 
+                throw new PipelineException
+                  ("Unable make the procedurally generated files being unpacked from the " + 
+                   "node bundle (" + jarPath + ") read-only:\n\n" + 
+                   proc.getStdErr());	
+            }
+          }
+          catch(InterruptedException ex) {
+            throw new PipelineException
+              ("Interrupted while making the procedurally generated files being unpacked " +
+               "from the node bundle (" + jarPath + ") read-only."); 
+          }
+        }
+      }
+
       /* delete unpacked node bundle metadata GLUE file */ 
       {
         Path gluePath = new Path(workPath, glueName);
@@ -2769,8 +2849,9 @@ class FileMgr
         args.add(glueName);
 
         SubProcessLight proc = 
-          new SubProcessLight(author, 
-                              "DeleteBundleMetadata", "rm", args, env, workPath.toFile()); 
+          new SubProcessLight
+            (author, "DeleteBundleMetadata", "rm", args, env, workPath.toFile()); 
+
         try {
           proc.start();
           proc.join();
