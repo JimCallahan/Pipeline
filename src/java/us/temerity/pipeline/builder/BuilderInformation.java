@@ -1,4 +1,4 @@
-// $Id: BuilderInformation.java,v 1.8 2007/10/23 01:46:30 jesse Exp $
+// $Id: BuilderInformation.java,v 1.9 2007/10/26 23:16:38 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -7,7 +7,7 @@ import java.util.*;
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.BaseBuilder.ConstructPass;
 import us.temerity.pipeline.builder.BaseBuilder.PassDependency;
-import us.temerity.pipeline.stages.StageState;
+import us.temerity.pipeline.stages.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   B U I L D E R   I N F O R M A T I O N                                                  */
@@ -506,6 +506,28 @@ class BuilderInformation
     }
     
     /**
+     * Gets a list of all the nodes that have been conformed by a stage.
+     */
+    public TreeSet<String>
+    getConformedNodes()
+    {
+      return pStageState.getConformedNodes();
+    }
+    
+    /**
+     * Gets a list of all the nodes that have been checked out using the
+     * {@link BaseStage#checkOut(VersionID, CheckOutMode, CheckOutMethod)} method.
+     * <p>
+     * This does not include nodes that were checked out as part of the neededNode
+     * functionality in Builders.
+     */
+    public TreeSet<String>
+    getCheckedOutNodes()
+    {
+      return pStageState.getCheckedOutNodes();
+    }
+    
+    /**
      * Gets a list that contains the names of all the nodes that have been built by stages.
      * 
      * @return The {@link TreeSet} containing the node names.
@@ -568,6 +590,30 @@ class BuilderInformation
       throws PipelineException
     {
       return pStageState.addNode(name, author, view);
+    }
+    
+    /**
+     * Adds a node to the list of things that have been checked out by a stage.
+     */
+    public final void
+    addCheckedOutNode
+    (
+      String name  
+    )
+    {
+      pStageState.addCheckedOutNode(name);
+    }
+    
+    /**
+     * Adds a node to the list of things that have been conformed by a stage.
+     */
+    public final void
+    addConformedNode
+    (
+      String name  
+    )
+    {
+      pStageState.addConformedNode(name);
     }
     
     public PluginContext 

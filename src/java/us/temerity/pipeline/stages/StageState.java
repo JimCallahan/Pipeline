@@ -3,7 +3,6 @@ package us.temerity.pipeline.stages;
 import java.util.*;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.builder.ActionOnExistence;
 import us.temerity.pipeline.builder.PluginContext;
 
 /*------------------------------------------------------------------------------------------*/
@@ -92,8 +91,11 @@ class StageState
   }
   
   /**
-   * Gets a list of all the nodes that have been checked out by a stage in the
-   * {@link StandardStage#checkExistance(String, ActionOnExistence)} method.
+   * Gets a list of all the nodes that have been checked out using the
+   * {@link BaseStage#checkOut(VersionID, CheckOutMode, CheckOutMethod)} method.
+   * <p>
+   * This does not include nodes that were checked out as part of the neededNode
+   * functionality in Builders.
    */
   public TreeSet<String>
   getCheckedOutNodes()

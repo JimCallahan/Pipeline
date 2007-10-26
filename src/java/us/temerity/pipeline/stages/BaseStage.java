@@ -1,4 +1,4 @@
-// $Id: BaseStage.java,v 1.16 2007/10/26 21:04:13 jesse Exp $
+// $Id: BaseStage.java,v 1.17 2007/10/26 23:16:38 jesse Exp $
 
 package us.temerity.pipeline.stages;
 
@@ -1215,7 +1215,7 @@ class BaseStage
       case Conform:
 	 pClient.checkOut(getAuthor(), getView(), nodeName, null, 
 	   CheckOutMode.KeepModified, CheckOutMethod.PreserveFrozen);
-	 pStageInformation.addCheckedOutNode(nodeName);
+	 checkOut(CheckOutMode.KeepModified, CheckOutMethod.PreserveFrozen);
 	 pLog.log(Kind.Ops, Level.Finest, "Checking out the node.");
 	return true;
       case Continue:
@@ -1225,9 +1225,7 @@ class BaseStage
       switch(actionOnExistence) {
       case CheckOut:
       case Conform:
-	 pClient.checkOut(getAuthor(), getView(), nodeName, null, 
-           CheckOutMode.KeepModified, CheckOutMethod.PreserveFrozen);
-	 pStageInformation.addCheckedOutNode(nodeName);
+	 checkOut(CheckOutMode.KeepModified, CheckOutMethod.PreserveFrozen);
 	 pLog.log(Kind.Ops, Level.Finest, "Checking out the node.");
 	 return true;
       case Continue:
@@ -1238,6 +1236,63 @@ class BaseStage
       }
     }
     return false;
+  }
+  
+  /**
+   * Checks out the latest version of the node associated with this stage, adding it to the
+   * list of nodes that has been checked out.
+   * <p>
+   * This is the preferred method for stages and builders to cause a node to be checked out,
+   * since it keeps track of what has been checked out.
+   * 
+   * @param mode
+   *   The CheckoutMode for the checkout
+   * 
+   * @param method
+   *   The CheckoutMethod for the checkout
+   */
+  public final void
+  checkOut
+  (
+    CheckOutMode mode,
+    CheckOutMethod method
+  )
+    throws PipelineException
+  {
+    checkOut(null, mode, method);
+  }
+  
+  /**
+   * Checks out the given version of the node associated with this stage, adding it to the
+   * list of nodes that has been checked out.
+   * <p>
+   * This is the preferred method for stages and builders to cause a node to be checked out,
+   * since it keeps track of what has been checked out.
+   * 
+   * @param version
+   *   The version of the node to check out.
+   * 
+   * @param mode
+   *   The CheckoutMode for the check out
+   * 
+   * @param method
+   *   The CheckoutMethod for the check out
+   *   
+   * 
+   */
+  public final void
+  checkOut
+  (
+    VersionID version,
+    CheckOutMode mode,
+    CheckOutMethod method
+  )
+    throws PipelineException
+  {
+    pClient.checkOut(getAuthor(), getView(), pRegisteredNodeName, version, 
+      mode, method);
+    pStageInformation.addCheckedOutNode(pRegisteredNodeName);
+    pNodeCheckedOut = true;
   }
 
 
