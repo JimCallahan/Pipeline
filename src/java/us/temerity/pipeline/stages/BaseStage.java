@@ -1,4 +1,4 @@
-// $Id: BaseStage.java,v 1.15 2007/10/26 20:59:28 jesse Exp $
+// $Id: BaseStage.java,v 1.16 2007/10/26 21:04:13 jesse Exp $
 
 package us.temerity.pipeline.stages;
 
@@ -698,7 +698,7 @@ class BaseStage
    * Was the node Checked Out by the {@link #checkExistance(String, ActionOnExistence)} 
    * method.
    */
-  protected boolean
+  public boolean
   wasNodeCheckedOut()
   {
    return pNodeCheckedOut; 

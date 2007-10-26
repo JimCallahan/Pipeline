@@ -469,7 +469,7 @@ class StandardStage
   /**
    * Was the node conformed in this stage.
    */
-  protected boolean
+  public boolean
   wasNodeConformed()
   {
    return pNodeConformed;
@@ -478,7 +478,7 @@ class StandardStage
   /**
    * Was the node constructed in this stage.
    */
-  protected boolean
+  public boolean
   wasNodeConstructed()
   {
    return pNodeConstructed; 
