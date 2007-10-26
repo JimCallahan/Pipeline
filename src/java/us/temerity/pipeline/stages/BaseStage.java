@@ -1,4 +1,4 @@
-// $Id: BaseStage.java,v 1.13 2007/10/23 02:26:17 jim Exp $
+// $Id: BaseStage.java,v 1.14 2007/10/26 19:35:46 jim Exp $
 
 package us.temerity.pipeline.stages;
 
@@ -141,10 +141,10 @@ class BaseStage
     return null;
   }
   
-  
+
   
   /*----------------------------------------------------------------------------------------*/
-  /*  I N T E R N A L   H E L P E R S                                                       */
+  /*  N O D E   O P S                                                                       */
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -166,6 +166,12 @@ class BaseStage
   public abstract boolean 
   conform() 
     throws PipelineException;
+ 
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*  I N T E R N A L   H E L P E R S                                                       */
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Takes all the {@link FileSeq} stored in the pSecondarySequences variable and adds
