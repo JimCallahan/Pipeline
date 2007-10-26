@@ -208,9 +208,9 @@ class StandardStage
   }
   
 
-
+ 
   /*----------------------------------------------------------------------------------------*/
-  /*   O P S                                                                                */
+  /*  N O D E   O P S                                                                       */
   /*----------------------------------------------------------------------------------------*/
  
   /**
@@ -239,15 +239,17 @@ class StandardStage
   {
     LogMgr.getInstance().log
       (Kind.Ops, Level.Fine, "Building the node: " + pRegisteredNodeName );
+
     ActionOnExistence actionOnExistence = pStageInformation.getActionOnExistence(); 
     if (!checkExistance(pRegisteredNodeName, actionOnExistence))
       return construct();
     else if (actionOnExistence == ActionOnExistence.Conform)
       return conform();
-    else 
-      pRegisteredNodeMod = pClient.getWorkingVersion(getAuthor(), getView(),
-	      pRegisteredNodeName);
-    return false;
+    else {
+      pRegisteredNodeMod = 
+        pClient.getWorkingVersion(getAuthor(), getView(), pRegisteredNodeName);
+      return false;
+    }
   }
   
   /**
@@ -276,25 +278,34 @@ class StandardStage
     throws PipelineException
   {
     if (pFrameRange == null)
-	pRegisteredNodeMod = registerNode();
+      pRegisteredNodeMod = registerNode();
     else
-	pRegisteredNodeMod = registerSequence();
+      pRegisteredNodeMod = registerSequence();
+
     if(pRegisteredNodeMod == null)
-	return false;
+      return false;
+
     if(pSecondarySequences != null)
-	addSecondarySequences();
+      addSecondarySequences();
+
     if(pLinks != null)
-	createLinks();
-    if(pAction != null)
-	setAction();
+      createLinks();
+
+    if(pAction != null) {
+      setAction();
+      setJobSettings();
+    }
+      
     setKeys();
-    if(pAction != null)
-	setJobSettings();
+
     pClient.modifyProperties(getAuthor(), getView(), pRegisteredNodeMod);
-    pRegisteredNodeMod = pClient.getWorkingVersion(getAuthor(), getView(),
-	pRegisteredNodeName);
+
+    pRegisteredNodeMod = 
+      pClient.getWorkingVersion(getAuthor(), getView(), pRegisteredNodeName);
+
     if (pStageInformation.doAnnotations())
 	doAnnotations();
+
     return true;
   }
   
@@ -363,8 +374,6 @@ class StandardStage
 
     pRegisteredNodeMod = pClient.getWorkingVersion(id);
     {
-      pRegisteredNodeMod.setEditor(pEditor);
-
       removeSecondarySequences();
       if(pSecondarySequences != null)
         addSecondarySequences();
@@ -372,17 +381,18 @@ class StandardStage
       removeLinks();
       if(pLinks != null)
         createLinks();
-      
-      if(pAction != null)
-        setAction();
-      
-      setKeys();
 
+      pRegisteredNodeMod.setToolset(getToolset());
+      pRegisteredNodeMod.setEditor(pEditor);
+
+      setAction();
       if(pAction != null) {
         pRegisteredNodeMod.setJobRequirements(new JobReqs());
         setJobSettings();
       }
       
+      setKeys();
+
       pClient.modifyProperties(getAuthor(), getView(), pRegisteredNodeMod);
     }
     pRegisteredNodeMod = pClient.getWorkingVersion(id);
@@ -393,7 +403,10 @@ class StandardStage
 
     return true;
   }
-  
+
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Registers a node with the given name and extension, using the given Editor.
    * <P>
