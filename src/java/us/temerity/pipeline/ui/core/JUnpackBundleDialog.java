@@ -1,4 +1,4 @@
-// $Id: JUnpackBundleDialog.java,v 1.2 2007/10/25 00:08:52 jim Exp $
+// $Id: JUnpackBundleDialog.java,v 1.3 2007/10/26 19:37:53 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -447,15 +447,15 @@ class JUnpackBundleDialog
 
     /* rebuild the toolsets drawer */
     updateNameMap(pToolsetBox, pToolsetFields, getToolsetRemap(), 
-                  toolsets, "toolset");
+                  toolsets, tsets, "toolset");
 
     /* rebuild the selection keys drawer */
     updateNameMap(pSelectionKeyBox, pSelectionKeyFields, getSelectionKeyRemap(), 
-                  selectionKeys, "selection key");
+                  selectionKeys, skeys, "selection key");
     
     /* rebuild the license keys drawer */
     updateNameMap(pLicenseKeyBox, pLicenseKeyFields, getLicenseKeyRemap(), 
-                  licenseKeys, "license key");
+                  licenseKeys, lkeys, "license key");
     
     /* whether the bundle is valid */ 
     pConfirmButton.setEnabled((bundlePath != null) && (pNodeBundle != null));
@@ -471,6 +471,7 @@ class JUnpackBundleDialog
    TreeMap<String,JCollectionField> mapFields, 
    TreeMap<String,String> oldRemap, 
    TreeSet<String> localValues, 
+   TreeSet<String> bundledValues, 
    String title 
   ) 
   {
@@ -481,12 +482,12 @@ class JUnpackBundleDialog
     JPanel tpanel = (JPanel) comps[0];
     JPanel vpanel = (JPanel) comps[1];
 
-    if(!tsets.isEmpty()) {
+    if(!bundledValues.isEmpty()) {
       ArrayList<String> names = new ArrayList<String>();
       names.add("-");
       names.addAll(localValues);
 
-      for(String name : tsets) {
+      for(String name : bundledValues) {
         JCollectionField field = 
           UIFactory.createTitledCollectionField
           (tpanel, name + ":", sTSize, 
