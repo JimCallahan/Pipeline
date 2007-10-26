@@ -18,6 +18,39 @@ class BundleBuilder
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
  
+  /**
+   * Construct a new builder.
+   * 
+   * @param mclient
+   *   The network connection to plmaster(1).
+   * 
+   * @param qclient
+   *   The network connection to plqueuemgr(1).
+   * 
+   * @param builderInformation
+   *   Common shared information among all builders.
+   * 
+   * @param bundle
+   *   The extracted node bundle metadata.
+   * 
+   * @param bundlePath
+   *   The abstract file system path to the node bundle file.
+   * 
+   * @param toolsetRemap
+   *   A table mapping the names of toolsets associated with the nodes in the node bundle
+   *   to toolsets at the local site.  Toolsets not found in this table will be remapped 
+   *   to the local default toolset instead.
+   * 
+   * @param selectionKeyRemap
+   *   A table mapping the names of selection keys associated with the nodes in the node 
+   *   bundle to selection keys at the local site.  Any selection keys not found in this 
+   *   table will be ignored.
+   * 
+   * @param licenseKeyRemap
+   *   A table mapping the names of license keys associated with the nodes in the node 
+   *   bundle to license keys at the local site.  Any license keys not found in this 
+   *   table will be ignored.
+   */ 
   public
   BundleBuilder
   (
@@ -172,27 +205,33 @@ class BundleBuilder
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   *
+   * The extracted node bundle metadata.
    */ 
   private NodeBundle  pBundle; 
 
   /**
-   *
+   * The abstract file system path to the node bundle file.
    */ 
   private Path  pBundlePath;  
 
   /**
-   *
+   * A table mapping the names of toolsets associated with the nodes in the node bundle
+   * to toolsets at the local site.  Toolsets not found in this table will be remapped 
+   * to the local default toolset instead.
    */ 
   private TreeMap<String,String>  pToolsetRemap;  
 
   /**
-   *
+   * A table mapping the names of selection keys associated with the nodes in the node 
+   * bundle to selection keys at the local site.  Any selection keys not found in this 
+   * table will be ignored.
    */ 
   private TreeMap<String,String>  pSelectionKeyRemap; 
 
   /**
-   *
+   * A table mapping the names of license keys associated with the nodes in the node 
+   * bundle to license keys at the local site.  Any license keys not found in this 
+   * table will be ignored.
    */ 
   private TreeMap<String,String>  pLicenseKeyRemap;
 
