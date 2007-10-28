@@ -1,4 +1,4 @@
-// $Id: NodeStatus.java,v 1.19 2006/08/31 18:20:11 jim Exp $
+// $Id: NodeStatus.java,v 1.20 2007/10/28 21:51:16 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -242,6 +242,58 @@ class NodeStatus
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Find the status of the given if it is upstream.
+   * 
+   * @param name
+   *   The fully resolved name of the node.
+   */ 
+  public NodeStatus
+  findUpstreamNamed
+  (
+   String name
+  ) 
+  {
+    if(getName().equals(name)) 
+      return this;
+
+    for(NodeStatus status : pSources.values()) {
+      NodeStatus found = status.findUpstreamNamed(name);
+      if(found != null)
+        return found;
+    }
+
+    return null;
+  }
+
+  /**
+   * Find the status of the given if it is downstream.
+   * 
+   * @param name
+   *   The fully resolved name of the node.
+   */ 
+  public NodeStatus
+  findDownstreamNamed
+  (
+   String name
+  ) 
+  {
+    if(getName().equals(name)) 
+      return this;
+
+    for(NodeStatus status : pSources.values()) {
+      NodeStatus found = status.findDownstreamNamed(name);
+      if(found != null)
+        return found;
+    }
+
+    return null;
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * Whether the given node is one of the upstream nodes.
    * 
    * @param name
@@ -253,15 +305,7 @@ class NodeStatus
    String name
   ) 
   {
-    if(getName().equals(name)) 
-      return true;
-
-    for(NodeStatus status : pSources.values()) {
-      if(status.hasUpstreamNamed(name)) 
-	return true;
-    }
-
-    return false;
+    return (findUpstreamNamed(name) != null);
   }
 
   /**
@@ -276,15 +320,7 @@ class NodeStatus
    String name
   ) 
   {
-    if(getName().equals(name)) 
-      return true;
-
-    for(NodeStatus status : pTargets.values()) {
-      if(status.hasDownstreamNamed(name)) 
-	return true;
-    }
-
-    return false;
+    return (findDownstreamNamed(name) != null);
   }
 
 
