@@ -1,4 +1,4 @@
-// $Id: ActionOnExistence.java,v 1.1 2007/10/23 02:25:30 jim Exp $
+// $Id: ActionOnExistence.java,v 1.2 2007/10/28 21:50:25 jim Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -17,7 +17,7 @@ enum ActionOnExistence
 {  
   /**
    * Check-out the latest version of the node into the current working area, but do not 
-   * overrite any of its settings.
+   * overwrite any of its settings.
    */
   CheckOut,
 
