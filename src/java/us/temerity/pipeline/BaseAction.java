@@ -1,4 +1,4 @@
-// $Id: BaseAction.java,v 1.47 2007/05/29 18:26:53 jim Exp $
+// $Id: BaseAction.java,v 1.48 2007/10/29 23:18:20 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -418,7 +418,13 @@ class BaseAction
 
     TreeMap<String,ActionParam> params = getInitialSourceParams();
     if(params == null)
-      throw new IllegalStateException(); 
+      throw new IllegalStateException
+        ("The action overrides hasSourceParams(), but returned (null) from " + 
+         "getInitialSourceParams()!"); 
+    if(params.isEmpty())
+      throw new IllegalStateException
+        ("The action overrides hasSourceParams(), but returned an empty table of source " + 
+         "parameters from getInitialSourceParams()!"); 
     
     pSourceParams.put(source, params);
   }
@@ -448,7 +454,13 @@ class BaseAction
 
     TreeMap<String,ActionParam> params = getInitialSourceParams();
     if(params == null)
-      throw new IllegalStateException(); 
+      throw new IllegalStateException
+        ("The action overrides hasSourceParams(), but returned (null) from " + 
+         "getInitialSourceParams()!"); 
+    if(params.isEmpty())
+      throw new IllegalStateException
+        ("The action overrides hasSourceParams(), but returned an empty table of source " + 
+         "parameters from getInitialSourceParams()!"); 
     
     TreeMap<FilePattern,TreeMap<String,ActionParam>> ftable = pSecondaryParams.get(source);
     if(ftable == null) {
@@ -463,7 +475,9 @@ class BaseAction
    * Get an initial set of action parameters associated with an upstream node. <P> 
    * 
    * Subclasses which support per-source parameters MUST override this method
-   * to provide a means for initializing parameters for dependencies.  
+   * to provide a means for initializing parameters for dependencies.  The returned
+   * table cannot be (null) or empty if {@link #hasSourceParams} has been overridden 
+   * to return (true).
    */ 
   public TreeMap<String,ActionParam>
   getInitialSourceParams()
