@@ -1,4 +1,4 @@
-// $Id: BaseStage.java,v 1.18 2007/10/30 06:08:56 jim Exp $
+// $Id: BaseStage.java,v 1.19 2007/10/30 20:40:55 jesse Exp $
 
 package us.temerity.pipeline.stages;
 
@@ -9,9 +9,7 @@ import us.temerity.pipeline.LogMgr.Kind;
 import us.temerity.pipeline.LogMgr.Level;
 import us.temerity.pipeline.NodeTreeComp.State;
 import us.temerity.pipeline.builder.*;
-import us.temerity.pipeline.builder.ActionOnExistence;
 import us.temerity.pipeline.builder.BaseBuilder.StageFunction;
-import us.temerity.pipeline.builder.BaseUtil.NodeLocation;
 import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
 import us.temerity.pipeline.math.Range;
 
@@ -1024,7 +1022,7 @@ class BaseStage
   public String
   getStageFunction()
   {
-    return StageFunction.None.toString();
+    return StageFunction.aNone;
   }
   
   
@@ -1118,66 +1116,6 @@ class BaseStage
   }
   
   /**
-   * Returns a enum which indicates where a node lives.
-   * <p>
-   * If a version of the node exists in the current working area, then
-   * {@link BaseBuilder.NodeLocation#LOCAL} is returned. If the node has been checked in, but
-   * is not checked out into the current working area, then
-   * {@link BaseBuilder.NodeLocation#REP} is returned. If the name represents a directory,
-   * <code>null</code> is returned. Otherwise, {@link BaseBuilder.NodeLocation#OTHER} is
-   * returned, indicating that the node exists in some other working area, but was never
-   * checked in.
-   * <p>
-   * Note that this method assumes that the node actually exists. If existance is not assured,
-   * then the {@link #nodeExists(String)} method should be called first.
-   * 
-   * @param name
-   *        The node name.
-   * @return The location of the node.
-   */
-  public NodeLocation 
-  getNodeLocation
-  (
-    String name
-  )
-    throws PipelineException
-  {
-    TreeMap<String, Boolean> comps = new TreeMap<String, Boolean>();
-    comps.put(name, false);
-    NodeTreeComp treeComps = pClient.updatePaths(getAuthor(), getView(), comps);
-    Path p = new Path(name);
-    ArrayList<String> parts = p.getComponents();
-    for (String comp : parts)
-    {
-      treeComps = treeComps.get(comp);
-    }
-    NodeTreeComp.State state = treeComps.getState();
-    NodeLocation toReturn = null;
-    switch (state)
-    {
-      case Branch:
-	toReturn = null;
-	break;
-      case WorkingCurrentCheckedInNone:
-	toReturn = NodeLocation.LOCALONLY;
-	break;
-      case WorkingCurrentCheckedInSome:
-	toReturn = NodeLocation.LOCAL;
-	break;
-      case WorkingNoneCheckedInSome:
-      case WorkingOtherCheckedInSome:
-	toReturn = NodeLocation.REP;
-	break;
-      case WorkingOtherCheckedInNone:
-	toReturn = NodeLocation.OTHER;
-	break;
-      default:
-	assert ( false );
-    }
-    return toReturn;
-  }
-  
-  /**
    * Checks for the existence of node and takes action based on what the value of the 
    * actionOnExistence parameter.
    */
@@ -1201,25 +1139,31 @@ class BaseStage
       throw new PipelineException
         ("The node (" + nodeName + ") exists.  Aborting Builder operation as per " +
          "the setting of the ActionOnExistence parameter in the builder.");
-    NodeLocation location = getNodeLocation(nodeName);
-    switch(location) {
-    case OTHER:
+    TreeMap<String, Boolean> comps = new TreeMap<String, Boolean>();
+    comps.put(nodeName, false);
+    NodeTreeComp treeComps = pClient.updatePaths(getAuthor(), getView(), comps);
+    State state = treeComps.getState(nodeName);
+    switch(state) {
+    case WorkingOtherCheckedInNone:
       throw new PipelineException
         ("The node (" + nodeName + ") exists, but in a different working area and was " +
          "never checked in.  The Builder is aborting due to this problem.");
-    case LOCALONLY:
+    case WorkingCurrentCheckedInNone:
       return true;
-    case LOCAL:
+    case WorkingCurrentCheckedInSome:
       switch(actionOnExistence) {
       case CheckOut:
       case Conform:
+	 pClient.checkOut(getAuthor(), getView(), nodeName, null, 
+	   CheckOutMode.KeepModified, CheckOutMethod.PreserveFrozen);
 	 checkOut(CheckOutMode.KeepModified, CheckOutMethod.PreserveFrozen);
 	 pLog.log(Kind.Ops, Level.Finest, "Checking out the node.");
 	return true;
       case Continue:
 	return true;
       }
-    case REP:
+    case WorkingNoneCheckedInSome:
+    case WorkingOtherCheckedInSome:
       switch(actionOnExistence) {
       case CheckOut:
       case Conform:

@@ -1,4 +1,4 @@
-// $Id: AssetBuilder.java,v 1.17 2007/10/23 01:49:06 jesse Exp $
+// $Id: AssetBuilder.java,v 1.18 2007/10/30 20:40:55 jesse Exp $
 
 package us.temerity.pipeline.builder.maya2mr.v2_3_2;
 
@@ -336,13 +336,13 @@ class AssetBuilder
   protected void
   setDefaultEditors()
   {
-    setDefaultEditor(StageFunction.MayaScene.toString(), new PluginContext("MayaProject"));
-    setDefaultEditor(StageFunction.None.toString(), new PluginContext("Emacs"));
-    setDefaultEditor(StageFunction.TextFile.toString(), new PluginContext("Emacs"));
-    setDefaultEditor(StageFunction.ScriptFile.toString(), new PluginContext("Emacs"));
-    setDefaultEditor(StageFunction.RenderedImage.toString(), new PluginContext("Shake"));
-    setDefaultEditor(StageFunction.SourceImage.toString(), new PluginContext("Gimp"));
-    setDefaultEditor(StageFunction.MotionBuilderScene.toString(), null);
+    setDefaultEditor(StageFunction.aMayaScene, new PluginContext("MayaProject"));
+    setDefaultEditor(StageFunction.aNone, new PluginContext("Emacs"));
+    setDefaultEditor(StageFunction.aTextFile, new PluginContext("Emacs"));
+    setDefaultEditor(StageFunction.aScriptFile, new PluginContext("Emacs"));
+    setDefaultEditor(StageFunction.aRenderedImage, new PluginContext("Shake"));
+    setDefaultEditor(StageFunction.aSourceImage, new PluginContext("Gimp"));
+    setDefaultEditor(StageFunction.aMotionBuilderScene, null);
   }
   
   
@@ -734,7 +734,7 @@ class AssetBuilder
       String modelApprove = pAssetNames.getModelApproveNodeName();
       {
         ProductStage stage = 
-          new ProductStage(pStageInfo, pContext, pClient, modelFinal, "ma", verifyModel, StageFunction.MayaScene.toString());
+          new ProductStage(pStageInfo, pContext, pClient, modelFinal, "ma", verifyModel, StageFunction.aMayaScene.toString());
         isProductNode(stage, taskType);
         stage.build();
       }
@@ -1012,7 +1012,7 @@ class AssetBuilder
       String rigApprove = pAssetNames.getRigApproveNodeName();
       {
         ProductStage stage = 
-          new ProductStage(pStageInfo, pContext, pClient, assetFinal, "ma", rigFinal, StageFunction.MayaScene.toString());
+          new ProductStage(pStageInfo, pContext, pClient, assetFinal, "ma", rigFinal, StageFunction.aMayaScene.toString());
         isProductNode(stage, taskType);
         stage.build();
       }
@@ -1184,7 +1184,7 @@ class AssetBuilder
       String matApprove = pAssetNames.getMaterialApproveNodeName();
       {
         ProductStage stage = 
-          new ProductStage(pStageInfo, pContext, pClient, matFinal, "ma", matVerify, StageFunction.MayaScene.toString());
+          new ProductStage(pStageInfo, pContext, pClient, matFinal, "ma", matVerify, StageFunction.aMayaScene.toString());
         isProductNode(stage, taskType);
         stage.build();
       }

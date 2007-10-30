@@ -93,7 +93,7 @@ class FileWriterStage
   {
     if (pStageFunction != null)
       return pStageFunction;
-    return StageFunction.TextFile.toString();
+    return StageFunction.aTextFile;
   }
 
   

@@ -1,4 +1,4 @@
-// $Id: MayaFileStage.java,v 1.6 2007/08/19 00:55:32 jesse Exp $
+// $Id: MayaFileStage.java,v 1.7 2007/10/30 20:40:55 jesse Exp $
 
 package us.temerity.pipeline.stages;
 
@@ -330,7 +330,7 @@ class MayaFileStage
   public String 
   getStageFunction()
   {
-    return StageFunction.MayaScene.toString();
+    return StageFunction.aMayaScene;
   }
 
 

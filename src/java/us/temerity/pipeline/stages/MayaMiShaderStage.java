@@ -138,7 +138,7 @@ class MayaMiShaderStage
   public String 
   getStageFunction()
   {
-    return StageFunction.TextFile.toString();
+    return StageFunction.aTextFile;
   }
 
   private static final long serialVersionUID = -2920151446824828954L;

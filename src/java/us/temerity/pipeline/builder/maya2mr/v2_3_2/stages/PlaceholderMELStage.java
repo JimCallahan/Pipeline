@@ -1,4 +1,4 @@
-// $Id: PlaceholderMELStage.java,v 1.2 2007/08/18 18:14:50 jesse Exp $
+// $Id: PlaceholderMELStage.java,v 1.3 2007/10/30 20:40:55 jesse Exp $
 
 package us.temerity.pipeline.builder.maya2mr.v2_3_2.stages;
 
@@ -31,7 +31,7 @@ class PlaceholderMELStage
       client,
       nodeName,
       "mel",
-      StageFunction.ScriptFile.toString());
+      StageFunction.aScriptFile);
     
     String s = "string $fileName = `file -q -sn -shn` ;\n" + 
     	       "string $buffer[];\n" + 

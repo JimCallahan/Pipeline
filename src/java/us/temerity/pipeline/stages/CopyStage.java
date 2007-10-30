@@ -73,7 +73,7 @@ class CopyStage
   public String 
   getStageFunction()
   {
-    return StageFunction.None.toString();
+    return StageFunction.aNone;
   }
 
   

@@ -72,7 +72,7 @@ class CatFilesStage
   public String 
   getStageFunction()
   {
-    return StageFunction.TextFile.toString();
+    return StageFunction.aTextFile;
   }
   
   private static final long serialVersionUID = -1598902054477603895L;

@@ -77,7 +77,7 @@ class TouchStage
   public String 
   getStageFunction()
   {
-    return StageFunction.TextFile.toString();
+    return StageFunction.aTextFile;
   }
 
   

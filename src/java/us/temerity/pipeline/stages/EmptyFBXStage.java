@@ -52,7 +52,7 @@ EmptyFBXStage
   public String 
   getStageFunction()
   {
-    return StageFunction.MotionBuilderScene.toString();
+    return StageFunction.aMotionBuilderScene;
   }
 
   

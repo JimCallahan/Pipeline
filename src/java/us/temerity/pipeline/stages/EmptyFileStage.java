@@ -81,7 +81,7 @@ public class EmptyFileStage
   public String 
   getStageFunction()
   {
-    return StageFunction.TextFile.toString();
+    return StageFunction.aTextFile;
   }
 
   

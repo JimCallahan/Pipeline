@@ -29,7 +29,7 @@ class VerifyModelMELStage
       client,
       nodeName,
       "mel",
-      StageFunction.ScriptFile.toString());
+      StageFunction.aScriptFile);
     
     String s = "// String to verify that all geometry has the right name.\n" + 
     		"{\n" + 

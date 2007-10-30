@@ -40,7 +40,7 @@ class MRayOptionsStage
   public String 
   getStageFunction()
   {
-    return StageFunction.TextFile.toString();
+    return StageFunction.aTextFile;
   }
   
   private static final long serialVersionUID = 167310982141538453L;

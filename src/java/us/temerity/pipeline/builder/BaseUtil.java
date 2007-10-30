@@ -1,4 +1,4 @@
-// $Id: BaseUtil.java,v 1.21 2007/10/23 01:52:07 jesse Exp $
+// $Id: BaseUtil.java,v 1.22 2007/10/30 20:40:55 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -311,69 +311,12 @@ class BaseUtil
     TreeMap<String, Boolean> comps = new TreeMap<String, Boolean>();
     comps.put(name, false);
     NodeTreeComp treeComps = pClient.updatePaths(getAuthor(), getView(), comps);
-    State state = getState(treeComps, name);
+    State state = treeComps.getState(name);
     if ( state == null || state.equals(State.Branch) )
       return false;
     return true;
   }
   
-  /**
-   * Returns an enum which indicates where a node lives.
-   * <p>
-   * If a version of the node exists in the current working area, then
-   * {@link NodeLocation#LOCAL} is returned. If the node has been checked in, but is not
-   * checked out into the current working area, then {@link NodeLocation#REP} is returned. If
-   * the name represents a directory, <code>null</code> is returned. Otherwise,
-   * {@link NodeLocation#OTHER} is returned, indicating that the node exists in some other
-   * working area, but was never checked in.
-   * <p>
-   * Note that this method assumes that the node actually exists. If existance is not assured,
-   * then the {@link #nodeExists(String)} method should be called first.
-   * 
-   * @param name
-   *        The node name.
-   * @return The location of the node.
-   */
-  public NodeLocation 
-  getNodeLocation
-  (
-    String name
-  )
-    throws PipelineException
-  {
-    TreeMap<String, Boolean> comps = new TreeMap<String, Boolean>();
-    comps.put(name, false);
-    NodeTreeComp treeComps = pClient.updatePaths(getAuthor(), getView(), comps);
-    Path p = new Path(name);
-    ArrayList<String> parts = p.getComponents();
-    for (String comp : parts) {
-      treeComps = treeComps.get(comp);
-    }
-    NodeTreeComp.State state = treeComps.getState();
-    NodeLocation toReturn = null;
-    switch (state){
-    case Branch:
-      toReturn = null;
-      break;
-    case WorkingCurrentCheckedInNone:
-      toReturn = NodeLocation.LOCALONLY;
-      break;
-    case WorkingCurrentCheckedInSome:
-      toReturn = NodeLocation.LOCAL;
-      break;
-    case WorkingNoneCheckedInSome:
-    case WorkingOtherCheckedInSome:
-      toReturn = NodeLocation.REP;
-      break;
-    case WorkingOtherCheckedInNone:
-      toReturn = NodeLocation.OTHER;
-      break;
-    default:
-      assert (false);
-    }
-    return toReturn;
-  }
-
   /**
    * Returns all the paths that are located directly underneath a given path.
    * 
@@ -636,7 +579,7 @@ class BaseUtil
    *        The status of the root node of the tree to be searched.
    */
   public boolean 
-  getTreeState
+  isTreeFinished
   (
     NodeStatus status
   )
@@ -647,7 +590,7 @@ class BaseUtil
       Collection<NodeStatus> stati = status.getSources();
       if(stati != null) {
 	for(NodeStatus stat : stati) {
-	  boolean temp = getTreeState(stat);
+	  boolean temp = isTreeFinished(stat);
 	  if(!temp)
 	    return temp;
 	}
@@ -691,45 +634,6 @@ class BaseUtil
   }
   
   // Utility methods for this class.
-
-  /**
-   * Returns the {@link State} of a node. Takes a {@link NodeTreeComp} and a node name. It
-   * traces it way down the tree until it finds the place specified by the node name and
-   * returns the State of that place. It will return <code>null</code> if the specified
-   * path does not exist in the tree defined by the {@link NodeTreeComp}.
-   * 
-   * @param treeComps
-   *        A {@link NodeTreeComp} that should contain information about the node name
-   *        specified by scene. The most common way to acquire this data structure is with
-   *        the <code>updatePaths</code> method in {@link MasterMgrClient}.
-   * @param scene
-   *        The name of the path to search for the {@link State}.
-   * @return The {@link State} of the given name or null if the name is not valid in the
-   *         given {@link NodeTreeComp}.
-   */
-  private State 
-  getState
-  (
-    NodeTreeComp treeComps, 
-    String scene
-  )
-  {
-    State toReturn = null;
-    Path p = new Path(scene);
-    NodeTreeComp dest = null;
-    for(String s : p.getComponents()) {
-      if(dest == null)
-	dest = treeComps.get(s);
-      else
-	dest = dest.get(s);
-
-      if(dest == null)
-	break;
-    }
-    if(dest != null)
-      toReturn = dest.getState();
-    return toReturn;
-  }
 
   /**
    * Recursive function to search for nodes under a given path.
@@ -1954,41 +1858,6 @@ class BaseUtil
    */
   protected final LogMgr pLog = LogMgr.getInstance();
 
-  
-  
-  /*----------------------------------------------------------------------------------------*/
-  /*   E N U M S                                                                            */
-  /*----------------------------------------------------------------------------------------*/
-  
-  /**
-   * Has one of three values representing where a node lives.
-   * <p>
-   * LOCAL means the node exists in the current working area.
-   * REP means the node exists in the repository, but not the current working area.
-   * OTHER means the node only exists in the another working area.
-   *
-   */
-  public static 
-  enum NodeLocation
-  {
-    /**
-     * The node exists in the current working area.
-     */
-    LOCAL,
-    /**
-     * The node exists in the current working area, but does not exist in the respoistory. 
-     */
-    LOCALONLY,
-    /**
-     * The node exists in the repository, but not the current working area.
-     */
-    REP,
-    /**
-     * The node only exists in the another working area.
-     */
-    OTHER;
-  }
-  
   
   
   /*----------------------------------------------------------------------------------------*/

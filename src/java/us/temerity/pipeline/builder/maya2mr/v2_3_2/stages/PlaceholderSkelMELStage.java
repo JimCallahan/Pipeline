@@ -30,7 +30,7 @@ class PlaceholderSkelMELStage
       client,
       nodeName,
       "mel",
-      StageFunction.ScriptFile.toString());
+      StageFunction.aScriptFile);
     
     String s = "spaceLocator -p 0 0 0 -n Reference;\n" + 
     	       "joint -p 0 0 0  -n Root;\n" + 

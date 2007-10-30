@@ -95,7 +95,7 @@ class MRayRenderStage
   public String 
   getStageFunction()
   {
-    return StageFunction.RenderedImage.toString();
+    return StageFunction.aRenderedImage;
   }
 
   

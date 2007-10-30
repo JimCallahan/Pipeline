@@ -1,6 +1,7 @@
 package us.temerity.pipeline.builder.maya2mr.v2_3_2;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
@@ -182,13 +183,13 @@ class ProjectBuilder
   protected void
   setDefaultEditors()
   {
-    setDefaultEditor(StageFunction.MayaScene.toString(), new PluginContext("MayaProject"));
-    setDefaultEditor(StageFunction.None.toString(), new PluginContext("Emacs"));
-    setDefaultEditor(StageFunction.TextFile.toString(), new PluginContext("Emacs"));
-    setDefaultEditor(StageFunction.ScriptFile.toString(), new PluginContext("Emacs"));
-    setDefaultEditor(StageFunction.RenderedImage.toString(), new PluginContext("Shake"));
-    setDefaultEditor(StageFunction.SourceImage.toString(), new PluginContext("Gimp"));
-    setDefaultEditor(StageFunction.MotionBuilderScene.toString(), null);
+    setDefaultEditor(StageFunction.aMayaScene, new PluginContext("MayaProject"));
+    setDefaultEditor(StageFunction.aNone, new PluginContext("Emacs"));
+    setDefaultEditor(StageFunction.aTextFile, new PluginContext("Emacs"));
+    setDefaultEditor(StageFunction.aScriptFile, new PluginContext("Emacs"));
+    setDefaultEditor(StageFunction.aRenderedImage, new PluginContext("Shake"));
+    setDefaultEditor(StageFunction.aSourceImage, new PluginContext("Gimp"));
+    setDefaultEditor(StageFunction.aMotionBuilderScene, null);
   }
   
   

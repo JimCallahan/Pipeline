@@ -52,7 +52,7 @@ class MRayCamOverrideStage
           client, 
           nodeName, 
           "mi", 
-          new PluginContext("Emacs"), 
+          null, 
           new PluginContext("MRayCamOverride"));
   }
   
@@ -63,7 +63,7 @@ class MRayCamOverrideStage
   public String 
   getStageFunction()
   {
-    return StageFunction.TextFile.toString();
+    return StageFunction.aTextFile;
   }
 
   

@@ -1,4 +1,4 @@
-// $Id: PlaceholderTTStage.java,v 1.3 2007/08/18 18:14:50 jesse Exp $
+// $Id: PlaceholderTTStage.java,v 1.4 2007/10/30 20:40:55 jesse Exp $
 
 package us.temerity.pipeline.builder.maya2mr.v2_3_2.stages;
 
@@ -32,7 +32,7 @@ class PlaceholderTTStage
       client,
       nodeName,
       "mel",
-      StageFunction.ScriptFile.toString());
+      StageFunction.aScriptFile);
     
     String s = "string $cams[] = `camera -focalLength 50`;\n" + 
     	       "rename $cams[0] \"renderCam\";\n" + 

@@ -39,14 +39,15 @@ class RadarProjectBuilder
   protected void
   setDefaultEditors()
   {
-    setDefaultEditor(StageFunction.MayaScene.toString(), new PluginContext("MayaProject"));
-    setDefaultEditor(StageFunction.None.toString(), new PluginContext("JEdit", "Radar"));
-    setDefaultEditor(StageFunction.TextFile.toString(), new PluginContext("JEdit", "Radar"));
-    setDefaultEditor(StageFunction.ScriptFile.toString(), new PluginContext("JEdit", "Radar"));
-    setDefaultEditor(StageFunction.RenderedImage.toString(), new PluginContext("ImfDisp"));
-    setDefaultEditor(StageFunction.SourceImage.toString(), new PluginContext("Gimp"));
-    setDefaultEditor(StageFunction.MotionBuilderScene.toString(), new PluginContext("JEdit", "Radar"));
+    setDefaultEditor(StageFunction.aMayaScene, new PluginContext("MayaProject"));
+    setDefaultEditor(StageFunction.aNone, new PluginContext("Jedit", "Radar"));
+    setDefaultEditor(StageFunction.aTextFile, new PluginContext("Jedit", "Radar"));
+    setDefaultEditor(StageFunction.aScriptFile, new PluginContext("Jedit", "Radar"));
+    setDefaultEditor(StageFunction.aRenderedImage, new PluginContext("ImfDisp"));
+    setDefaultEditor(StageFunction.aSourceImage, new PluginContext("Gimp"));
+    setDefaultEditor(StageFunction.aMotionBuilderScene, new PluginContext("Jedit", "Radar"));
   }
+
   
   private static final long serialVersionUID = -7932410944847347891L;
 }

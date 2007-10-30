@@ -66,7 +66,7 @@ class MELFileStage
   public String 
   getStageFunction()
   {
-    return StageFunction.ScriptFile.toString();
+    return StageFunction.aScriptFile;
   }
 
   private static final long serialVersionUID = 9094243771431113273L;

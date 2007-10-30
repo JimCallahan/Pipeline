@@ -64,13 +64,13 @@ class LaikaAssetBuilder
   protected void
   setDefaultEditors()
   {
-    setDefaultEditor(StageFunction.MayaScene.toString(), new PluginContext("MayaProject"));
-    setDefaultEditor(StageFunction.None.toString(), new PluginContext("Emacs"));
-    setDefaultEditor(StageFunction.TextFile.toString(), new PluginContext("Emacs"));
-    setDefaultEditor(StageFunction.ScriptFile.toString(), new PluginContext("Emacs"));
-    setDefaultEditor(StageFunction.RenderedImage.toString(), new PluginContext("Shake"));
-    setDefaultEditor(StageFunction.SourceImage.toString(), new PluginContext("Gimp"));
-    setDefaultEditor(StageFunction.MotionBuilderScene.toString(), new PluginContext("Emacs"));
+    setDefaultEditor(StageFunction.aMayaScene, new PluginContext("MayaProject"));
+    setDefaultEditor(StageFunction.aNone, new PluginContext("Emacs"));
+    setDefaultEditor(StageFunction.aTextFile, new PluginContext("Emacs"));
+    setDefaultEditor(StageFunction.aScriptFile, new PluginContext("Emacs"));
+    setDefaultEditor(StageFunction.aRenderedImage, new PluginContext("Shake"));
+    setDefaultEditor(StageFunction.aSourceImage, new PluginContext("Gimp"));
+    setDefaultEditor(StageFunction.aMotionBuilderScene, new PluginContext("Emacs"));
   }
   
   protected void

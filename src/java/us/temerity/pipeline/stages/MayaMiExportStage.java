@@ -66,7 +66,7 @@ class MayaMiExportStage
       client, 
       nodeName, 
       "mi", 
-      new PluginContext("Emacs"), 
+      null, 
       new PluginContext("MayaMiExport"));
     setMayaScene(mayaScene);
     if (exportSet != null)
@@ -389,7 +389,7 @@ class MayaMiExportStage
   public String 
   getStageFunction()
   {
-    return StageFunction.TextFile.toString();
+    return StageFunction.aTextFile;
   }
 
   

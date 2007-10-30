@@ -1,4 +1,4 @@
-// $Id: BaseBuilder.java,v 1.31 2007/10/23 01:53:19 jim Exp $
+// $Id: BaseBuilder.java,v 1.32 2007/10/30 20:40:55 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -10,6 +10,7 @@ import us.temerity.pipeline.*;
 import us.temerity.pipeline.LogMgr.Kind;
 import us.temerity.pipeline.LogMgr.Level;
 import us.temerity.pipeline.MultiMap.MultiMapNamedEntry;
+import us.temerity.pipeline.NodeTreeComp.State;
 import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
 import us.temerity.pipeline.builder.ui.JBuilderParamDialog;
 import us.temerity.pipeline.math.Range;
@@ -624,7 +625,7 @@ class BaseBuilder
       buildSecondLoopExecutionOrder();
       executeSecondLoop();
       waitForJobs(queueJobs());
-      finish = didTheNodesFinishCorrectly(pBuilderInformation.getQueueList());
+      finish = areAllFinished(pBuilderInformation.getQueueList());
     }
     catch (Exception ex) {
       String logMessage = "An Exception was thrown during the course of execution.\n";
@@ -977,7 +978,7 @@ class BaseBuilder
 	    TreeSet<String> neededNodes = new TreeSet<String>(bundle.getNodesToCheckin());
 	    LinkedList<QueueJobGroup> jobs = queueNodes(neededNodes);
 	    waitForJobs(jobs);
-	    if (!didTheNodesFinishCorrectly(neededNodes))
+	    if (!areAllFinished(neededNodes))
 	      throw new PipelineException("The jobs did not finish correctly");
 	    checkInNodes(bundle.getNodesToCheckin(), VersionID.Level.Micro, "The tree is now properly locked.");
 	  }
@@ -1069,20 +1070,24 @@ class BaseBuilder
       throw new PipelineException
         ("The needed node (" + nodeName + ") for builder (" + getPrefixedName() + ") " +
          "does not exist.  Stopping execution.");
-    NodeLocation location = getNodeLocation(nodeName);
-    switch(location) {
-    case OTHER:
+    TreeMap<String, Boolean> comps = new TreeMap<String, Boolean>();
+    comps.put(nodeName, false);
+    NodeTreeComp treeComps = pClient.updatePaths(getAuthor(), getView(), comps);
+    State state = treeComps.getState(nodeName);
+    switch(state) {
+    case WorkingOtherCheckedInNone:
       throw new PipelineException
         ("The node (" + nodeName + ") exists, but in a different working area and was " +
          "never checked in.  The Builder is aborting due to this problem.");
-    case LOCAL:
+    case WorkingCurrentCheckedInSome:
       if (pActionOnExistence == ActionOnExistence.CheckOut) {
 	pClient.checkOut(getAuthor(), getView(), nodeName, null, 
 	  CheckOutMode.KeepModified, CheckOutMethod.PreserveFrozen);
 	pLog.log(Kind.Bld, Level.Finest, "Checking out the node.");
       }
       break;
-    case REP:
+    case WorkingNoneCheckedInSome:
+    case WorkingOtherCheckedInSome:
       pClient.checkOut(getAuthor(), getView(), nodeName, null, 
 	CheckOutMode.KeepModified, CheckOutMethod.PreserveFrozen);
       pLog.log(Kind.Bld, Level.Finest, "Checking out the node.");
@@ -1131,8 +1136,8 @@ class BaseBuilder
     return toReturn;
   }
   
-  protected final JobsState 
-  areJobsFinished
+  protected final JobProgress 
+  getJobProgress
   (
     LinkedList<QueueJobGroup> queueJobs
   ) 
@@ -1158,7 +1163,7 @@ class BaseBuilder
 	case Failed:
 	case Aborted:
 	  pLog.log(Kind.Ops, Level.Finest, "\tThe Job did not completely successfully"); 
-	  return JobsState.Problem;
+	  return JobProgress.Problem;
 	case Paused:
 	case Preempted:
 	case Queued:
@@ -1181,8 +1186,8 @@ class BaseBuilder
       "Out of (" + total + ") total jobs, (" + finished + ") are finished, " +
       "(" + running + ") are running, and (" + waiting + ") are waiting.");
     if (!done)
-	return JobsState.InProgress;
-    return JobsState.Complete;
+	return JobProgress.InProgress;
+    return JobProgress.Complete;
   }
   
   protected final void
@@ -1194,8 +1199,8 @@ class BaseBuilder
   {
     pLog.log(Kind.Ops, Level.Fine, "Waiting for the jobs to finish");
     do {
-      JobsState state = areJobsFinished(jobs);
-      if(state.equals(JobsState.InProgress)) {
+      JobProgress state = getJobProgress(jobs);
+      if(state.equals(JobProgress.InProgress)) {
         try {
           pLog.log(Kind.Ops, Level.Finer, 
             "Sleeping for 7 seconds before checking jobs again.");
@@ -1219,7 +1224,7 @@ class BaseBuilder
    * @throws PipelineException
    */
   protected final boolean 
-  didTheNodesFinishCorrectly
+  areAllFinished
   (
     TreeSet<String> queuedNodes
   ) 
@@ -1229,7 +1234,7 @@ class BaseBuilder
     boolean toReturn = true;
     for(String nodeName : queuedNodes) {
       NodeStatus status = pClient.status(getAuthor(), getView(), nodeName);
-      toReturn = getTreeState(status);
+      toReturn = isTreeFinished(status);
       if(!toReturn)
 	break;
     }
@@ -1686,7 +1691,7 @@ class BaseBuilder
   /*----------------------------------------------------------------------------------------*/
 
   protected 
-  enum JobsState
+  enum JobProgress
   {
     Complete, Problem, InProgress
   }
@@ -1700,9 +1705,15 @@ class BaseBuilder
    *  added to as 
    */
   public static
-  enum StageFunction
+  class StageFunction
   {
-    None, MayaScene, RenderedImage, TextFile, SourceImage, ScriptFile, MotionBuilderScene
+    public final static String aNone               = "None";
+    public final static String aMayaScene          = "MayaScene";
+    public final static String aRenderedImage      = "RenderedImage";
+    public final static String aTextFile           = "TextFile";
+    public final static String aSourceImage        = "SourceImage";
+    public final static String aScriptFile         = "ScriptFile";
+    public final static String aMotionBuilderScene = "MotionBuilderScene";
   }
   
   
@@ -1824,7 +1835,7 @@ class BaseBuilder
       if (neededNodes.size() > 0) {
 	LinkedList<QueueJobGroup> jobs = queueNodes(neededNodes);
 	waitForJobs(jobs);
-	if (!didTheNodesFinishCorrectly(neededNodes))
+	if (!areAllFinished(neededNodes))
 	  throw new PipelineException("The jobs did not finish correctly");
       }
       for (String needed : this.nodesDependedOn())
@@ -2061,7 +2072,7 @@ class BaseBuilder
     {
       try {
 	waitForJobs(queueJobs());
-	pJobsFinishedCorrectly = didTheNodesFinishCorrectly(pBuilderInformation.getQueueList());
+	pJobsFinishedCorrectly = areAllFinished(pBuilderInformation.getQueueList());
 	SwingUtilities.invokeLater(new AfterQueueTask());
       }
       catch (PipelineException ex) {

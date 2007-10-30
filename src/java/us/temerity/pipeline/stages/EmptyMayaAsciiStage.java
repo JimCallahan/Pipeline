@@ -52,7 +52,7 @@ public class EmptyMayaAsciiStage
   public String 
   getStageFunction()
   {
-    return StageFunction.MayaScene.toString();
+    return StageFunction.aMayaScene;
   }
 
   

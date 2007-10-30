@@ -219,7 +219,7 @@ class MayaRenderStage
   public String 
   getStageFunction()
   {
-    return StageFunction.RenderedImage.toString();
+    return StageFunction.aRenderedImage;
   }
 
   

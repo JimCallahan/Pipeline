@@ -131,6 +131,8 @@ class RadarShotBuilder
       addParam(param);
     }
     
+    setDefaultEditors();
+    
     if (!projectNames.isGenerated())
       addSubBuilder(projectNames);
 
@@ -238,6 +240,21 @@ class RadarShotBuilder
   getNodesToCheckIn()
   {
     return null;
+  }
+
+  /**
+   * Overriden to change the default editors.
+   */
+  protected void
+  setDefaultEditors()
+  {
+    setDefaultEditor(StageFunction.aMayaScene, new PluginContext("MayaProject"));
+    setDefaultEditor(StageFunction.aNone, new PluginContext("Jedit", "Radar"));
+    setDefaultEditor(StageFunction.aTextFile, new PluginContext("Jedit", "Radar"));
+    setDefaultEditor(StageFunction.aScriptFile, new PluginContext("Jedit", "Radar"));
+    setDefaultEditor(StageFunction.aRenderedImage, new PluginContext("ImfDisp"));
+    setDefaultEditor(StageFunction.aSourceImage, new PluginContext("Gimp"));
+    setDefaultEditor(StageFunction.aMotionBuilderScene, new PluginContext("Jedit", "Radar"));
   }
 
   
@@ -626,7 +643,7 @@ class RadarShotBuilder
 	     animProduct, 
 	     "ma", 
 	     animPrepare, 
-	     StageFunction.MayaScene.toString());
+	     StageFunction.aMayaScene);
 	  isProductNode(stage, taskType);
 	  stage.build();
 	}
@@ -817,7 +834,7 @@ class RadarShotBuilder
 	   lightFinal, 
 	   "ma", 
 	   lighting, 
-	   StageFunction.MayaScene.toString());
+	   StageFunction.aMayaScene);
 	isProductNode(stage, taskType);
 	stage.build();
       }

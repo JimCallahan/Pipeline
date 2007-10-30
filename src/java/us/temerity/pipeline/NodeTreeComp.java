@@ -1,4 +1,4 @@
-// $Id: NodeTreeComp.java,v 1.6 2006/02/27 17:56:01 jim Exp $
+// $Id: NodeTreeComp.java,v 1.7 2007/10/30 20:40:55 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -104,6 +104,41 @@ class NodeTreeComp
   getState() 
   {
     return pState;
+  }
+  
+  /**
+   * Returns the {@link State} of a node in this NodeTreeComp.
+   * <p>
+   * It will return <code>null</code> if the specified path does not exist in the tree
+   * defined by this {@link NodeTreeComp}.
+   * 
+   * @param path
+   *        The name of the path to search for the {@link State}.
+
+   * @return The {@link State} of the given name or null if the name is not valid in this
+   *         {@link NodeTreeComp}.
+   */
+  public State
+  getState
+  (
+    String path  
+  )
+  {
+    State toReturn = null;
+    Path p = new Path(path);
+    NodeTreeComp dest = null;
+    for(String s : p.getComponents()) {
+      if(dest == null)
+	dest = this.get(s);
+      else
+	dest = dest.get(s);
+
+      if(dest == null)
+	break;
+    }
+    if(dest != null)
+      toReturn = dest.getState();
+    return toReturn;
   }
 
   
