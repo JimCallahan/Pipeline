@@ -1,4 +1,4 @@
-// $Id: FileUnpackNodesReq.java,v 1.1 2007/10/23 02:29:58 jim Exp $
+// $Id: FileUnpackNodesReq.java,v 1.2 2007/10/30 06:08:15 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -39,6 +39,9 @@ class FileUnpackNodesReq
    * 
    * @param view 
    *   The name of the user's working area view. 
+   * 
+   * @param skipUnpack
+   *   The names the nodes who's files should not be unpacked. 
    */
   public
   FileUnpackNodesReq
@@ -46,7 +49,8 @@ class FileUnpackNodesReq
    Path bundlePath, 
    NodeBundle bundle,
    String author, 
-   String view
+   String view, 
+   TreeSet<String> skipUnpack
   )
   { 
     super();
@@ -68,6 +72,10 @@ class FileUnpackNodesReq
     if(view == null) 
       throw new IllegalArgumentException("The view cannot be (null)!");
     pView = view;
+
+    if(skipUnpack == null) 
+      throw new IllegalArgumentException("The skipUnpack cannot be (null)!");
+    pSkipUnpack = skipUnpack;
   }
 
 
@@ -112,6 +120,15 @@ class FileUnpackNodesReq
     return pView;
   }
 
+  /** 
+   * Get the names the nodes who's files should not be unpacked. 
+   */
+  public TreeSet<String>
+  getSkipUnpack()
+  {
+    return pSkipUnpack;
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -145,6 +162,11 @@ class FileUnpackNodesReq
    * The name of the working area view.
    */
   private String  pView;
+
+  /** 
+   * The names the nodes who's files should not be unpacked. 
+   */
+  private TreeSet<String>  pSkipUnpack;
 
 
 }

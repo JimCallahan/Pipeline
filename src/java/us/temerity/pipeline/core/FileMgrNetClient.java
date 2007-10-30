@@ -1,4 +1,4 @@
-// $Id: FileMgrNetClient.java,v 1.10 2007/10/23 02:29:58 jim Exp $
+// $Id: FileMgrNetClient.java,v 1.11 2007/10/30 06:06:48 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -573,6 +573,9 @@ class FileMgrNetClient
    * 
    * @param view 
    *   The name of the user's working area view. 
+   * 
+   * @param skipUnpack
+   *   The names the nodes who's files should not be unpacked. 
    */ 
   public void
   unpackNodes
@@ -580,13 +583,15 @@ class FileMgrNetClient
    Path bundlePath, 
    NodeBundle bundle,
    String author, 
-   String view
+   String view, 
+   TreeSet<String> skipUnpack
   ) 
     throws PipelineException
   {
     verifyConnection();
 
-    FileUnpackNodesReq req = new FileUnpackNodesReq(bundlePath, bundle, author, view);
+    FileUnpackNodesReq req = 
+      new FileUnpackNodesReq(bundlePath, bundle, author, view, skipUnpack);
     
     Object obj = performLongTransaction(FileRequest.UnpackNodes, req, 15000, 60000);
     handleSimpleResponse(obj);    

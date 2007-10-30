@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.69 2007/10/26 19:35:30 jim Exp $
+// $Id: FileMgr.java,v 1.70 2007/10/30 06:06:48 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2682,6 +2682,7 @@ class FileMgr
     NodeBundle bundle = req.getBundle();
     String author = req.getAuthor();
     String view = req.getView();
+    TreeSet<String> skipUnpack = req.getSkipUnpack();
 
     TaskTimer timer = new TaskTimer("FileMgr.unpackNodes(): " + jarPath);
     
@@ -2692,8 +2693,8 @@ class FileMgr
           ("The file supplied (" + jarPath + ") is not a node bundle (.nb)!");
       String glueName = (jarName.substring(0, jarName.length()-2) + "glue"); 
 
-      Path workPath = new Path(PackageInfo.sProdPath, 
-                               "/working/" + author + "/" + view);
+      Path workPath = new Path(PackageInfo.sProdPath, "/working/" + author + "/" + view);
+      int workLen = workPath.toOsString().length();
 
       Map<String,String> env = System.getenv();
 
@@ -2701,15 +2702,17 @@ class FileMgr
       ArrayList<Path> bundledPaths = new ArrayList<Path>();
       ArrayList<Path> proceduralPaths = new ArrayList<Path>();
       for(NodeMod mod : bundle.getWorkingVersions()) {
-        boolean isProcedural = (mod.getAction() != null) && mod.isActionEnabled();
-        Path npath = new Path(mod.getName());
-        Path parent = new Path(workPath, npath.getParentPath()); 
-        for(FileSeq fseq : mod.getSequences()) {
-          for(Path path : fseq.getPaths()) {
-            Path fpath = new Path(parent, path);
-            bundledPaths.add(fpath);
-            if(isProcedural) 
-              proceduralPaths.add(fpath);
+        if(!skipUnpack.contains(mod.getName())) {
+          boolean isProcedural = (mod.getAction() != null) && mod.isActionEnabled();
+          Path npath = new Path(mod.getName());
+          Path parent = new Path(workPath, npath.getParentPath()); 
+          for(FileSeq fseq : mod.getSequences()) {
+            for(Path path : fseq.getPaths()) {
+              Path fpath = new Path(parent, path);
+              bundledPaths.add(fpath);
+              if(isProcedural) 
+                proceduralPaths.add(fpath);
+            }
           }
         }
       }
@@ -2750,26 +2753,38 @@ class FileMgr
         }
       }
 
-      /* unpack all of the files */ 
+      /* unpack all of the unskipped files */  
       {
+        ArrayList<String> preOpts = new ArrayList<String>();
+        preOpts.add("-xvf");
+        preOpts.add(jarPath.toOsString());
+        
         ArrayList<String> args = new ArrayList<String>();
-        args.add("-xvf");
-        args.add(jarPath.toOsString());
-          
-        SubProcessLight proc = 
-          new SubProcessLight(author, 
-                              "UnpackNodeFiles", "jar", args, env, workPath.toFile()); 
-        try {
-          proc.start();
-          proc.join();
-          if(!proc.wasSuccessful()) 
-            throw new PipelineException
-              ("Unable to unpack node bundle (" + jarPath + "):\n\n" + 
-               "  " + proc.getStdErr());	
+        for(Path path : bundledPaths) {
+          String full = path.toOsString();
+          args.add(full.substring(workLen+1, full.length()));
         }
-        catch(InterruptedException ex) {
-          throw new PipelineException
-            ("Interrupted while unpacking node bundle (" + jarPath + ")!");
+
+        if(!args.isEmpty()) {
+          LinkedList<SubProcessLight> procs = 
+            SubProcessLight.createMultiSubProcess
+              (author, "UnpackNodeFiles", "jar", preOpts, args, 
+               env, workPath.toFile());
+
+          try {
+            for(SubProcessLight proc : procs) {
+              proc.start();
+              proc.join();
+              if(!proc.wasSuccessful()) 
+                throw new PipelineException
+                  ("Unable to unpack node bundle (" + jarPath + "):\n\n" + 
+                   "  " + proc.getStdErr());	
+            }
+          }
+          catch(InterruptedException ex) {
+            throw new PipelineException
+              ("Interrupted while unpacking node bundle (" + jarPath + ")!");
+          }
         }
       }
 
@@ -2786,7 +2801,7 @@ class FileMgr
             SubProcessLight.createMultiSubProcess
               (author, "TouchUnpackedNodeFiles", "touch", preOpts, args, 
                env, workPath.toFile());
-          
+
           try {
             for(SubProcessLight proc : procs) {
               proc.start();
@@ -2801,7 +2816,7 @@ class FileMgr
             throw new PipelineException
               ("Interrupted while touching unpacked files from node bundle " + 
                "(" + jarPath + ")!");
-            }
+          }
         }
       }
 

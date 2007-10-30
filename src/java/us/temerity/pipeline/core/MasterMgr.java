@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.220 2007/10/25 00:07:38 jim Exp $
+// $Id: MasterMgr.java,v 1.221 2007/10/30 06:07:09 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -10746,7 +10746,9 @@ class MasterMgr
         }
       }
       
-      /* use the bundle builder to unpack the nodes */ 
+      /* use the bundle builder to unpack the nodes, 
+           determine which nodes where not conformed during the process */ 
+      TreeSet<String> unconformed = new TreeSet<String>();
       {
         /* initialize the builder's parameters */ 
         MultiMap<String, String> cparams = new MultiMap<String, String>();
@@ -10788,14 +10790,41 @@ class MasterMgr
         BaseBuilder builder = 
           new BundleBuilder(mclient, pQueueMgrClient, info, bundle, bundlePath, 
                             toolsetRemap, selectionKeyRemap, licenseKeyRemap);
-        
         builder.run();
+
+       switch(actOnExist) {
+       case CheckOut:
+       case Continue:
+         unconformed.addAll(info.getNewStageInformation().getCheckedOutNodes());
+       }
       }
           
+      /* determine which nodes have files which should NOT be unpacked: 
+          if there are nodes which where just checked-out upstream or left unaltered, 
+            then the files associated with unpacked nodes with enabled actions should 
+            be skipped since they will need to be regenerated anyway */
+      TreeSet<String> skipUnpack = new TreeSet<String>();
+      if(!unconformed.isEmpty()) {
+        NodeID rootID = new NodeID(author, view, bundle.getRootNodeID().getName());
+        NodeStatus status = performNodeOperation(null, rootID, timer);
+        for(NodeMod mod : bundle.getWorkingVersions()) {
+          if((mod.getAction() != null) && mod.isActionEnabled()) {
+            String nname = mod.getName();
+            NodeStatus nstatus = status.findUpstreamNamed(nname);
+            for(String uname : unconformed) {
+              if(nstatus.hasUpstreamNamed(uname)) {
+                skipUnpack.add(nname);
+                break;
+              }
+            }
+          }
+        }
+      }
+
       /* unpack the node data files */ 
       FileMgrClient fclient = getFileMgrClient();
       try {
-        fclient.unpackNodes(bundlePath, bundle, author, view);
+        fclient.unpackNodes(bundlePath, bundle, author, view, skipUnpack); 
       }
       finally {
         freeFileMgrClient(fclient);

@@ -1,4 +1,4 @@
-// $Id: FileMgrDirectClient.java,v 1.8 2007/10/23 02:29:58 jim Exp $
+// $Id: FileMgrDirectClient.java,v 1.9 2007/10/30 06:06:48 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -536,6 +536,9 @@ class FileMgrDirectClient
    * 
    * @param view 
    *   The name of the user's working area view. 
+   * 
+   * @param skipUnpack
+   *   The names the nodes who's files should not be unpacked. 
    */ 
   public void
   unpackNodes
@@ -543,11 +546,13 @@ class FileMgrDirectClient
    Path bundlePath, 
    NodeBundle bundle,
    String author, 
-   String view
+   String view, 
+   TreeSet<String> skipUnpack
   ) 
     throws PipelineException
   {
-    FileUnpackNodesReq req = new FileUnpackNodesReq(bundlePath, bundle, author, view);
+    FileUnpackNodesReq req = 
+      new FileUnpackNodesReq(bundlePath, bundle, author, view, skipUnpack);
     
     Object obj = pFileMgr.unpackNodes(req);
     handleSimpleResponse(obj);    

@@ -1,4 +1,4 @@
-// $Id: FileMgrClient.java,v 1.41 2007/10/23 02:29:58 jim Exp $
+// $Id: FileMgrClient.java,v 1.42 2007/10/30 06:06:48 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -400,6 +400,9 @@ interface FileMgrClient
    * 
    * @param view 
    *   The name of the user's working area view. 
+   * 
+   * @param skipUnpack
+   *   The names the nodes who's files should not be unpacked. 
    */ 
   public void
   unpackNodes
@@ -407,7 +410,8 @@ interface FileMgrClient
    Path bundlePath, 
    NodeBundle bundle,
    String author, 
-   String view
+   String view, 
+   TreeSet<String> skipUnpack
   ) 
     throws PipelineException;
 
