@@ -1,4 +1,4 @@
-// $Id: BaseStage.java,v 1.17 2007/10/26 23:16:38 jesse Exp $
+// $Id: BaseStage.java,v 1.18 2007/10/30 06:08:56 jim Exp $
 
 package us.temerity.pipeline.stages;
 
@@ -1213,8 +1213,6 @@ class BaseStage
       switch(actionOnExistence) {
       case CheckOut:
       case Conform:
-	 pClient.checkOut(getAuthor(), getView(), nodeName, null, 
-	   CheckOutMode.KeepModified, CheckOutMethod.PreserveFrozen);
 	 checkOut(CheckOutMode.KeepModified, CheckOutMethod.PreserveFrozen);
 	 pLog.log(Kind.Ops, Level.Finest, "Checking out the node.");
 	return true;
