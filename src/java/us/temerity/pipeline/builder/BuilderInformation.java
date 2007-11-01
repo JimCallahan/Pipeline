@@ -1,4 +1,4 @@
-// $Id: BuilderInformation.java,v 1.9 2007/10/26 23:16:38 jesse Exp $
+// $Id: BuilderInformation.java,v 1.10 2007/11/01 07:49:07 jim Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -528,6 +528,19 @@ class BuilderInformation
     }
     
     /**
+     * Gets a list of all the nodes that have been checked out using the
+     * {@link BaseStage#checkOut(VersionID, CheckOutMode, CheckOutMethod)} method.
+     * <p>
+     * This does not include nodes that were checked out as part of the neededNode
+     * functionality in Builders.
+     */
+    public TreeSet<String>
+    getSkippedNodes()
+    {
+      return pStageState.getSkippedNodes();
+    }
+    
+    /**
      * Gets a list that contains the names of all the nodes that have been built by stages.
      * 
      * @return The {@link TreeSet} containing the node names.
@@ -602,6 +615,18 @@ class BuilderInformation
     )
     {
       pStageState.addCheckedOutNode(name);
+    }
+    
+    /**
+     * Adds a node to the list of things that have been checked out by a stage.
+     */
+    public final void
+    addSkippedNode
+    (
+      String name  
+    )
+    {
+      pStageState.addSkippedNode(name);
     }
     
     /**

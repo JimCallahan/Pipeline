@@ -24,6 +24,7 @@ class StageState
     
     pConformedNodes = new TreeSet<String>();
     pCheckedOutNodes = new TreeSet<String>();
+    pSkippedNodes = new TreeSet<String>();
   }
   
   /*----------------------------------------------------------------------------------------*/
@@ -104,6 +105,19 @@ class StageState
   }
   
   /**
+   * Gets a list of all the nodes that have been checked out using the
+   * {@link BaseStage#checkOut(VersionID, CheckOutMode, CheckOutMethod)} method.
+   * <p>
+   * This does not include nodes that were checked out as part of the neededNode
+   * functionality in Builders.
+   */
+  public TreeSet<String>
+  getSkippedNodes()
+  {
+    return new TreeSet<String>(pSkippedNodes);
+  }
+  
+  /**
    * Adds a node name to the list of nodes created duing the session.
    * <P>
    * The method will return a boolean based on whether the node already existed in the
@@ -146,6 +160,18 @@ class StageState
   )
   {
     pCheckedOutNodes.add(name);
+  }
+  
+  /**
+   * Adds a node to the list of things that have been checked out by a stage.
+   */
+  public final void
+  addSkippedNode
+  (
+    String name  
+  )
+  {
+    pSkippedNodes.add(name);
   }
   
   /**
@@ -301,6 +327,7 @@ class StageState
   
   private TreeSet<String> pConformedNodes;
   private TreeSet<String> pCheckedOutNodes;
+  private TreeSet<String> pSkippedNodes;
   
   private TreeMap<String, PluginContext> pDefaultEditors;
   private MappedSet<String, String> pStageFunctionSelectionKeys;
