@@ -725,6 +725,26 @@
 
 
 
+  <!--  E Q U A L S   B U T T O N  -->
+
+  <style id="EqualsButton"> 
+    <state>
+      <imagePainter path="EqualsButton.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="PRESSED">
+      <imagePainter path="EqualsButtonPressed.png"
+                    sourceInsets="0 0 0 0"/>
+    </state> 
+    <state value="DISABLED">
+      <imagePainter path="EqualsButtonDisabled.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+  </style>
+  <bind style="EqualsButton" type="name" key="EqualsButton"/>
+
+
+
   <!--  C O L O R   B U T T O N  -->
 
   <style id="ColorButton"> 
