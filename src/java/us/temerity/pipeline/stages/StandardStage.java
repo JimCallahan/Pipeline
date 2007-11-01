@@ -208,12 +208,16 @@ class StandardStage
     pLinks.addAll(mod.getSources());
     initBooleans();
   }
-  
+
+
+  /*----------------------------------------------------------------------------------------*/
+
   private void
   initBooleans()
   {
-    pNodeConstructed = false;
+    pNodeAdded     = false;
     pNodeConformed = false;
+    pNodeSkipped   = false;
   }
   
 
@@ -255,6 +259,8 @@ class StandardStage
     else if (actionOnExistence == ActionOnExistence.Conform)
       return conform();
     else {
+      pStageInformation.addSkippedNode(pRegisteredNodeName); 
+      pNodeSkipped = true;
       pRegisteredNodeMod = 
         pClient.getWorkingVersion(getAuthor(), getView(), pRegisteredNodeName);
       return false;
@@ -347,7 +353,7 @@ class StandardStage
   {
     LogMgr.getInstance().log
       (Kind.Ops, Level.Finer, "Conforming the node: " + pRegisteredNodeName );
-    pStageInformation.addConformedNode(getName());
+    pStageInformation.addConformedNode(pRegisteredNodeName); 
     pNodeConformed = true;
 
     NodeID id = new NodeID(getAuthor(), getView(), pRegisteredNodeName);
@@ -436,7 +442,7 @@ class StandardStage
     if(pRegisteredNodeName == null)
       return null;
     NodeMod toReturn = registerNode(pRegisteredNodeName, pSuffix, pEditor);
-    pNodeConstructed = true;
+    pNodeAdded = true;
     pStageInformation.addNode(pRegisteredNodeName, getAuthor(), getView());
     return toReturn;
   }
@@ -461,7 +467,7 @@ class StandardStage
     NodeMod toReturn = 
       registerSequence(pRegisteredNodeName, pPadding, pSuffix, pEditor, 
 	               pFrameRange.getStart(), pFrameRange.getEnd(), pFrameRange.getBy());
-    pNodeConstructed = true;
+    pNodeAdded = true;
     pStageInformation.addNode(pRegisteredNodeName, getAuthor(), getView());
     return toReturn;
   }
@@ -476,15 +482,34 @@ class StandardStage
   }
   
   /**
+   * Was the node added (registered) in this stage.
+   */
+  public boolean
+  wasNodeAdded()
+  {
+   return pNodeAdded; 
+  }
+ 
+  /**
    * Was the node constructed in this stage.
    */
   public boolean
-  wasNodeConstructed()
+  wasNodeSkipped() 
   {
-   return pNodeConstructed; 
+    return pNodeSkipped; 
   }
-  
-  private boolean pNodeConstructed;
+ 
+ 
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Flags for what actions where taken for the node which was processed by this stage.
+   */ 
+  private boolean pNodeAdded;
   private boolean pNodeConformed;
+  private boolean pNodeSkipped; 
   
 }
