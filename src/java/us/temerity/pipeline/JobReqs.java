@@ -1,4 +1,4 @@
-// $Id: JobReqs.java,v 1.20 2007/10/11 19:34:34 jesse Exp $
+// $Id: JobReqs.java,v 1.21 2007/11/01 07:47:52 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -360,16 +360,16 @@ class JobReqs
     if((obj != null) && (obj instanceof JobReqs)) {
       JobReqs reqs = (JobReqs) obj;
 
-      if((pPriority == reqs.pPriority) &&
-	 (pRampUp == reqs.pRampUp) && 
-	 (pMaxLoad == reqs.pMaxLoad) && 
-	 (pMinMemory == reqs.pMinMemory) && 
-	 (pMinDisk == reqs.pMinDisk) && 
+      if((pPriority.equals(reqs.pPriority)) &&
+	 (pRampUp.equals(reqs.pRampUp)) && 
+	 (pMaxLoad.equals(reqs.pMaxLoad)) && 
+	 (pMinMemory.equals(reqs.pMinMemory)) && 
+	 (pMinDisk.equals(reqs.pMinDisk)) && 
 	 pLicenseKeys.equals(reqs.pLicenseKeys) &&
 	 pSelectionKeys.equals(reqs.pSelectionKeys))
 	return true;
     }
-
+    
     return false;
   }
 
