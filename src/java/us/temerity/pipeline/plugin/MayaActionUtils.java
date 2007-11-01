@@ -1,8 +1,9 @@
-// $Id: MayaActionUtils.java,v 1.5 2007/07/23 06:23:57 jim Exp $
+// $Id: MayaActionUtils.java,v 1.6 2007/11/01 19:16:55 jesse Exp $
 
 package us.temerity.pipeline.plugin;
 
 import  us.temerity.pipeline.*;
+import us.temerity.pipeline.plugin.MayaExportAction.v2_3_10.MayaExportAction;
 
 import java.util.*;
 import java.io.*;
@@ -265,6 +266,52 @@ class MayaActionUtils
 	("// ANIM SCRIPT\n" + 
          "print \"Anim Script: " + finalMEL + "\\n\";\n" +
          "source \"" + finalMEL + "\";\n\n");
+  }
+  
+  /**
+   * Extracts a MEL script from a file and returns it as a String.
+   * <p>
+   * Useful for including actual MEL code in a generated script rather than sourcing it. Use
+   * when the MEL code needs to have access to the same local variables as the script that is
+   * calling it. See its use in {@link MayaExportAction} for an example.
+   * 
+   * @param agenda
+   *   The action's agenda.
+   * 
+   * @param param
+   *   The name of the link parameter that the mel script it hooked up to.
+   * 
+   * @return 
+   *   The contents of the file or <code>null</code> if the parameter does not have a
+   *   value
+   * 
+   * @throws IOException
+   *   If there is trouble opening or reading the MEL file.
+   */
+  protected String
+  getMelSnippet
+  (
+    ActionAgenda agenda,
+    String param
+  )
+    throws PipelineException, IOException
+  {
+    String toReturn = null;
+    Path melPath = getMelScriptSourcePath(param, agenda);
+    if (melPath == null)
+      return toReturn;
+    File file = melPath.toFile();
+    BufferedReader in = new BufferedReader(new FileReader(file));
+    while(true) {
+      String line = in.readLine();
+      if(line == null) 
+        break;
+      if (toReturn == null)
+	toReturn = line + "\n";
+      else
+	toReturn += line + "\n";
+    }
+    return toReturn;
   }
  
   /**

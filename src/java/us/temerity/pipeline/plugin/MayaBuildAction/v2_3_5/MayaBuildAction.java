@@ -1,4 +1,4 @@
-// $Id: MayaBuildAction.java,v 1.2 2007/08/01 02:01:31 jesse Exp $
+// $Id: MayaBuildAction.java,v 1.3 2007/11/01 19:16:55 jesse Exp $
 
 package us.temerity.pipeline.plugin.MayaBuildAction.v2_3_5;
 
@@ -7,7 +7,7 @@ import java.util.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.math.Range;
-import us.temerity.pipeline.plugin.MayaActionUtils;
+import us.temerity.pipeline.plugin.MayaBuildUtils;
 
 /*------------------------------------------------------------------------------------------*/
 /*   M A Y A   B U I L D   A C T I O N                                                      */
@@ -101,7 +101,7 @@ import us.temerity.pipeline.plugin.MayaActionUtils;
  *   Name Space<BR>
  *   <DIV style="margin-left: 40px;">
  *     Whether Maya should create a namespace for the imported/referenced scene.
- *     This option is highly recomended to avoid name clashes.
+ *     This option is highly recommended to avoid name clashes.
  *   </DIV> <BR>
  *   
  *   Num Instances<BR>
@@ -128,14 +128,14 @@ import us.temerity.pipeline.plugin.MayaActionUtils;
  *   Proxy Name <BR>
  *   <DIV style="margin-left: 40px;">
  *     The proxy name to be used for the referenced Maya scene.  If Build Type is set
- *     to Reference, this will be the proxy tag for the reference.  If Build Type is se
+ *     to Reference, this will be the proxy tag for the reference.  If Build Type is set
  *     to Import than this field will be ignored.
  *   </DIV> <BR>
  * </DIV> <P> 
  */
 public
 class MayaBuildAction
-  extends MayaActionUtils
+  extends MayaBuildUtils
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -148,24 +148,11 @@ class MayaBuildAction
 	  "Builds a Maya scene from component scenes.");
     
     addUnitsParams();
-    
-    {
-      ActionParam param = 
-	new IntegerActionParam
-	(aStartFrame,
-	 "The start frame of the generated Maya scene.", 
-	 1);
-      addSingleParam(param);
-    }
-    
-    {
-      ActionParam param = 
-	new IntegerActionParam
-	(aEndFrame,
-	 "The end frame of the generated Maya scene.", 
-	 24);
-      addSingleParam(param);
-    }
+    addStartFrameParam();
+    addEndFrameParam();
+    addInitalMELParam();
+    addModelMELParam();
+    addFinalMELParam();
     
     {
       ActionParam param = 
@@ -175,10 +162,6 @@ class MayaBuildAction
 	 false);
       addSingleParam(param);
     }
-    
-    addInitalMELParam();
-    addModelMELParam();
-    addFinalMELParam();
     
     {
       LayoutGroup layout = new LayoutGroup(true);
@@ -235,71 +218,13 @@ class MayaBuildAction
   {
     TreeMap<String,ActionParam> params = new TreeMap<String,ActionParam>();
 
-    {
-      ArrayList<String> choices = new ArrayList<String>();
-      choices.add(aImport);
-      choices.add(aReference);
-      choices.add(aProxy);
+    addBuildTypeSourceParam(params);
+    addNamespaceSourceParam(params);
+    addPrefixNameSourceParam(params);
+    addProxyNameSourceParam(params);
+    addNumInstancesSourceParam(params);
+    addInstanceStartSourceParam(params);
 
-      ActionParam param = 
-	new EnumActionParam
-	(aBuildType,
-	 "The method Maya should use to merge the data from the source scene into the " + 
-         "generated scene.", 
-         aReference, choices);  	 
-      params.put(param.getName(), param);
-    }
-
-    {
-      ActionParam param = 
-	new BooleanActionParam
-	(aNameSpace,
-	 "Whether Maya should create a namespace for the imported/referenced scene.  " + 
-         "This option is highly recomended to avoid name clashes.",
-	 true);
-      params.put(param.getName(), param);
-    }
-    
-    {
-      ActionParam param = 
-	new StringActionParam
-	(aPrefixName,
-	 "The namespace prefix to use for the imported/referenced Maya scene inside the " +
-         "generated Maya scene.  If unset, the namespace is based on the filename.",
-	 null);
-      params.put(param.getName(), param);
-    }
-    
-    {
-      ActionParam param = 
-	new StringActionParam
-	(aProxyName,
-	 "This parameter will set the Maya Proxy name for this proxy level.",
-	 null);
-      params.put(param.getName(), param);
-    }
-    
-    {
-      ActionParam param = 
-	new IntegerActionParam
-	(aNumInstances,
-	 "The number of instances of a model that should be created.  If this is set " + 
-	 "to zero, then one instance will still be created, but it will not have " + 
-	 "any numbering in the namespace.", 
-	 0);
-      params.put(param.getName(), param);
-    }
-    
-    {
-      ActionParam param = 
-	new IntegerActionParam
-	(aInstanceStart,
-	 "The number for the first instance of a reference.  This allows numbered " + 
-	 "instances to start somewhere besides zero.", 
-	 0);
-      params.put(param.getName(), param);
-    }
-    
     return params;
   }
   
@@ -623,20 +548,6 @@ class MayaBuildAction
   /*----------------------------------------------------------------------------------------*/
 
   private static final long serialVersionUID = -3616929088803763448L;
-
-  public static final String aBuildType       = "BuildType";
-  public static final String aNameSpace       = "NameSpace";
-  public static final String aPrefixName      = "PrefixName";
-  public static final String aProxyName       = "ProxyName";
-  public static final String aStartFrame      = "StartFrame";
-  public static final String aEndFrame        = "EndFrame";
-  public static final String aDeferReferences = "DeferReferences";
-  public static final String aNumInstances    = "NumInstances";
-  public static final String aInstanceStart   = "InstanceStart";
-  
-  public static final String aProxy           = "Proxy";
-  public static final String aImport          = "Import";
-  public static final String aReference       = "Reference";
 
   
 }
