@@ -1,9 +1,10 @@
-// $Id: JUnpackBundleDialog.java,v 1.3 2007/10/26 19:37:53 jim Exp $
+// $Id: JUnpackBundleDialog.java,v 1.4 2007/11/01 07:55:25 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
+import us.temerity.pipeline.toolset.*;
 import us.temerity.pipeline.ui.*;
 
 import java.awt.*;
@@ -35,6 +36,8 @@ class JUnpackBundleDialog
    * 
    * @param owner
    *   The parent frame.
+   * 
+
    */ 
   public 
   JUnpackBundleDialog
@@ -256,6 +259,8 @@ class JUnpackBundleDialog
       pFileSelectDialog = new JFileSelectDialog(this, "Node Bundle", "Select Node Bundle:", 
                                                 "Node Bundle File:", 100, "Select"); 
       pFileSelectDialog.setRootDir(new File("/"));
+
+      pToolsetCompareDialog = new JToolsetCompareDialog(this);
     }
 
     updateBundle(null, null);
@@ -447,15 +452,15 @@ class JUnpackBundleDialog
 
     /* rebuild the toolsets drawer */
     updateNameMap(pToolsetBox, pToolsetFields, getToolsetRemap(), 
-                  toolsets, tsets, "toolset");
+                  toolsets, tsets, "toolset", true);
 
     /* rebuild the selection keys drawer */
     updateNameMap(pSelectionKeyBox, pSelectionKeyFields, getSelectionKeyRemap(), 
-                  selectionKeys, skeys, "selection key");
+                  selectionKeys, skeys, "selection key", false);
     
     /* rebuild the license keys drawer */
     updateNameMap(pLicenseKeyBox, pLicenseKeyFields, getLicenseKeyRemap(), 
-                  licenseKeys, lkeys, "license key");
+                  licenseKeys, lkeys, "license key", false);
     
     /* whether the bundle is valid */ 
     pConfirmButton.setEnabled((bundlePath != null) && (pNodeBundle != null));
@@ -472,7 +477,8 @@ class JUnpackBundleDialog
    TreeMap<String,String> oldRemap, 
    TreeSet<String> localValues, 
    TreeSet<String> bundledValues, 
-   String title 
+   String title, 
+   boolean toolsetCompare
   ) 
   {
     mapBox.removeAll();
@@ -488,11 +494,47 @@ class JUnpackBundleDialog
       names.addAll(localValues);
 
       for(String name : bundledValues) {
+        JLabel label = 
+          UIFactory.createFixedLabel
+            (name + ":", sTSize, JLabel.RIGHT, 
+             "Remap the bundled " + title + " (" + name + ") to this local " + title + ".");
+        tpanel.add(label);
+        
         JCollectionField field = 
-          UIFactory.createTitledCollectionField
-          (tpanel, name + ":", sTSize, 
-           vpanel, names, this, sVSize, 
-           "Remap the bundled " + title + " (" + name + ") to this local " + title + ".");
+          UIFactory.createCollectionField(names, this, toolsetCompare ? sVSize-22 : sVSize);
+
+        if(toolsetCompare) {
+          Box hbox = new Box(BoxLayout.X_AXIS);
+
+          hbox.add(field); 
+
+          hbox.add(Box.createRigidArea(new Dimension(3, 0)));
+          
+          {
+            JButton btn = new JButton();
+	    btn.setName("EqualsButton");
+            btn.setRolloverEnabled(false);
+            btn.setFocusable(false);
+
+            Dimension size = new Dimension(19, 19);
+            btn.setMinimumSize(size);
+            btn.setPreferredSize(size);
+            btn.setMaximumSize(size);
+	  
+            btn.addActionListener(this);
+            btn.setActionCommand("compare-toolset:" + name);
+
+            String tooltip = "Display the toolset comparison dialog.";
+            btn.setToolTipText(UIFactory.formatToolTip(tooltip));
+
+            hbox.add(btn);
+          }
+          
+          vpanel.add(hbox);
+        }
+        else {
+          vpanel.add(field);
+        }
           
         String old = oldRemap.get(name);
         if((old != null) && names.contains(old))
@@ -537,6 +579,8 @@ class JUnpackBundleDialog
       doBundleChanged();  
     else if(cmd.equals("browse"))
       doBrowse();  
+    else if(cmd.startsWith("compare-toolset:")) 
+      doCompareToolset(cmd.substring(16));
     else 
       super.actionPerformed(e);
   }
@@ -545,18 +589,6 @@ class JUnpackBundleDialog
   /*----------------------------------------------------------------------------------------*/
   /*  A C T I O N S                                                                        */
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Apply changes and close. 
-   */ 
-  public void 
-  doConfirm()
-  {
-
-    // ...
-
-    super.doConfirm();
-  }
 
   /** 
    * The bundle file name has been modified.
@@ -587,6 +619,21 @@ class JUnpackBundleDialog
       pBundleField.setPath(new Path(pFileSelectDialog.getSelectedFile()));
     doBundleChanged();
   }
+
+  /** 
+   * Browse for a new bundle file.
+   */ 
+  private void
+  doCompareToolset
+  (
+   String tname 
+  ) 
+  {
+    JCollectionField field = pToolsetFields.get(tname); 
+    CompareToolsetsTask task = new CompareToolsetsTask(tname, field.getSelected());
+    task.start();
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -668,6 +715,89 @@ class JUnpackBundleDialog
 
 
   /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Get the local toolset for comparison.
+   */ 
+  private
+  class CompareToolsetsTask
+   extends Thread
+  {
+    public 
+    CompareToolsetsTask
+    (
+     String bundled,
+     String local
+    ) 
+    {
+      super("JUnpackBundleDialog:CompareToolsetsTask");
+
+      pBundledToolsetName = bundled; 
+      pLocalToolsetName   = local;
+    }
+
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp(pChannel, "Fetching Toolset: " + pLocalToolsetName)) {
+ 	try {
+          TreeMap<OsType,Toolset> bundled = pNodeBundle.getOsToolsets(pBundledToolsetName);
+
+ 	  MasterMgrClient client = master.getMasterMgrClient(pChannel);
+          TreeMap<OsType,Toolset> local = client.getOsToolsets(pLocalToolsetName);
+
+          ShowCompareToolsetsDialog task = new ShowCompareToolsetsDialog(bundled, local);
+          SwingUtilities.invokeLater(task);
+ 	}
+ 	catch(PipelineException ex) {
+ 	  master.showErrorDialog(ex);
+ 	  return;
+ 	}
+ 	finally {
+ 	  master.endPanelOp(pChannel, "Done.");
+ 	}
+      }
+    }
+
+    private String pBundledToolsetName; 
+    private String pLocalToolsetName; 
+  }
+
+  /** 
+   * Update the dialog components.
+   */ 
+  private
+  class ShowCompareToolsetsDialog
+   extends Thread
+  {
+    public 
+    ShowCompareToolsetsDialog
+    (
+     TreeMap<OsType,Toolset> bundled,
+     TreeMap<OsType,Toolset> local
+    ) 
+    {
+      super("JUnpackBundleDialog:ShowCompareToolsetsDialog");
+
+      pBundledToolsets = bundled;
+      pLocalToolsets   = local;
+    }
+
+    public void 
+    run() 
+    {
+      pToolsetCompareDialog.updateToolsets(pBundledToolsets, pLocalToolsets);
+      pToolsetCompareDialog.setVisible(true);
+    }
+
+    private TreeMap<OsType,Toolset> pBundledToolsets; 
+    private TreeMap<OsType,Toolset> pLocalToolsets; 
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
   
@@ -743,4 +873,8 @@ class JUnpackBundleDialog
    */ 
   private JFileSelectDialog  pFileSelectDialog;
 
+  /**
+   * The dialog for comparing bundled and local toolsets.
+   */
+  private JToolsetCompareDialog  pToolsetCompareDialog; 
 }
