@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.221 2007/10/30 06:07:09 jim Exp $
+// $Id: MasterMgr.java,v 1.222 2007/11/01 07:53:33 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -10792,11 +10792,12 @@ class MasterMgr
                             toolsetRemap, selectionKeyRemap, licenseKeyRemap);
         builder.run();
 
-       switch(actOnExist) {
-       case CheckOut:
-       case Continue:
-         unconformed.addAll(info.getNewStageInformation().getCheckedOutNodes());
-       }
+        switch(actOnExist) {
+        case CheckOut:
+        case Continue:
+          unconformed.addAll(info.getNewStageInformation().getCheckedOutNodes());
+          unconformed.addAll(info.getNewStageInformation().getSkippedNodes());
+        }
       }
           
       /* determine which nodes have files which should NOT be unpacked: 
@@ -10804,6 +10805,7 @@ class MasterMgr
             then the files associated with unpacked nodes with enabled actions should 
             be skipped since they will need to be regenerated anyway */
       TreeSet<String> skipUnpack = new TreeSet<String>();
+      skipUnpack.addAll(unconformed);
       if(!unconformed.isEmpty()) {
         NodeID rootID = new NodeID(author, view, bundle.getRootNodeID().getName());
         NodeStatus status = performNodeOperation(null, rootID, timer);
