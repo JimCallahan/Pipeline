@@ -247,8 +247,6 @@ class ProjectBuilder
     validatePhase()
       throws PipelineException
     {
-      pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
-        "Starting the validate phase in the Information Pass.");
       validateBuiltInParams();
       pBuilderInfo.setContext(pContext);
       
@@ -311,8 +309,6 @@ class ProjectBuilder
     buildPhase() 
       throws PipelineException
     {
-      pLog.log(LogMgr.Kind.Ops, LogMgr.Level.Fine, 
-        "Starting the build phase in the Build Pass");
       if (pBuildDummy) {
 	String node = pProjectNames.getDummyFile();
 	EmptyFileStage stage = new EmptyFileStage(pStageInfo, pContext, pClient, node);

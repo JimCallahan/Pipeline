@@ -1,4 +1,4 @@
-// $Id: BaseBuilder.java,v 1.32 2007/10/30 20:40:55 jesse Exp $
+// $Id: BaseBuilder.java,v 1.33 2007/11/01 19:08:53 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -1738,28 +1738,19 @@ class BaseBuilder
     public void 
     validatePhase() 
       throws PipelineException
-    {
-      pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Finest, 
-	"Stub validate phase in the " + pName + ".");      
-    }
+    {}
     
     @SuppressWarnings("unused")
     public void 
     gatherPhase() 
       throws PipelineException
-    {
-      pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Finest, 
-	"Stub gather phase in the " + pName + ".");
-    }
+    {}
     
     @SuppressWarnings("unused")
     public void
     initPhase()
       throws PipelineException
-    {
-      pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Finest, 
-	"Stub init phase in the " + pName + ".");
-    }
+    {}
 
     public final void
     run()
@@ -1773,8 +1764,14 @@ class BaseBuilder
 	pSubNames.remove(name);
 	pGeneratedNames.put(name, names);
       }
+      pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Finer, 
+        "Starting the validate phase in the (" + getName() + ").");
       validatePhase();
+      pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Finer, 
+        "Starting the gather phase in the (" + getName() + ").");
       gatherPhase();
+      pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Finer, 
+        "Starting the init phase in the (" + getName() + ").");
       initPhase();
     }
     
@@ -1807,8 +1804,6 @@ class BaseBuilder
     preBuildPhase()
       throws PipelineException
     {
-      pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Finest, 
-	"Stub preBuild phase in the " + pName + ".");
       return new TreeSet<String>();
     }
     
@@ -1816,10 +1811,7 @@ class BaseBuilder
     public void
     buildPhase()
       throws PipelineException
-    {
-      pLog.log(Kind.Ops, Level.Finest, 
-	"Stub build phase in the " + pName + ".");
-    }
+    {}
     
     public TreeSet<String>
     nodesDependedOn()
@@ -1831,6 +1823,8 @@ class BaseBuilder
     run()
       throws PipelineException
     {
+      pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Finer, 
+        "Starting the pre-build phase in the (" + getName() + ").");
       TreeSet<String> neededNodes = preBuildPhase();
       if (neededNodes.size() > 0) {
 	LinkedList<QueueJobGroup> jobs = queueNodes(neededNodes);
@@ -1840,6 +1834,8 @@ class BaseBuilder
       }
       for (String needed : this.nodesDependedOn())
 	neededNode(needed);
+      pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Finer, 
+        "Starting the build phase in the (" + getName() + ").");
       buildPhase();
     }
     

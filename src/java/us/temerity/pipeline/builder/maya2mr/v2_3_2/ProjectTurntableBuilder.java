@@ -281,8 +281,6 @@ class ProjectTurntableBuilder
     validatePhase()
       throws PipelineException
     {
-      pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
-        "Starting the validate phase in the Information Pass.");
       validateBuiltInParams();
       pBuilderInfo.setContext(pContext);
       
@@ -321,8 +319,6 @@ class ProjectTurntableBuilder
     buildPhase() 
       throws PipelineException
     {
-      pLog.log(LogMgr.Kind.Ops, LogMgr.Level.Fine, 
-        "Starting the build phase in the Build Pass");
       String modSetup = pProjectNames.getAssetModelTTSetup(null, "character");
       String modSetSetup = pProjectNames.getAssetModelTTSetup(null, "set");
       String rigSetup = pProjectNames.getAssetRigAnimSetup(null, "character");
@@ -404,8 +400,6 @@ class ProjectTurntableBuilder
     public TreeSet<String> 
     preBuildPhase()
     {
-      pLog.log(LogMgr.Kind.Ops, LogMgr.Level.Fine, 
-        "Starting the prebuild phase in the Finalize Pass");
       TreeSet<String> toReturn = new TreeSet<String>();
       for (EmptyMayaAsciiStage stage : pEmptyMayaStages)
 	toReturn.add(stage.getNodeName());
@@ -419,8 +413,6 @@ class ProjectTurntableBuilder
     buildPhase() 
       throws PipelineException
     {
-      pLog.log(LogMgr.Kind.Ops, LogMgr.Level.Fine, 
-        "Starting the build phase in the Finalize Pass");
       for (AssetBuilderModelStage stage : pModelStages)
         stage.finalizeStage();
       for (EmptyMayaAsciiStage stage : pEmptyMayaStages)

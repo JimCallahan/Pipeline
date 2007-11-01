@@ -1,4 +1,4 @@
-// $Id: AdvAssetBuilder.java,v 1.17 2007/10/30 20:40:55 jesse Exp $
+// $Id: AdvAssetBuilder.java,v 1.18 2007/11/01 19:08:53 jesse Exp $
 
 package us.temerity.pipeline.builder.maya2mr.v2_3_2;
 
@@ -523,8 +523,6 @@ class AdvAssetBuilder
     validatePhase()
       throws PipelineException
     {
-      pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
-        "Starting the validate phase in the Information Pass.");
       validateBuiltInParams();
       pBuilderQueries.setContext(pContext);
       //pBuildLowRez = getBooleanParamValue(new ParamMapping(aBuildLowRez));
@@ -638,8 +636,6 @@ class AdvAssetBuilder
     initPhase() 
       throws PipelineException
     {
-      pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
-        "Starting the init phase in the Information Pass.");
       if (pMultipleModels) {
         ModelPiecesBuilder builder = 
           new ModelPiecesBuilder(pClient, pQueue, pAssetNames, pProjectNames, pBuilderInformation, pNumberOfModels, pModelTT);
@@ -681,8 +677,6 @@ class AdvAssetBuilder
     buildPhase() 
       throws PipelineException
     {
-      pLog.log(LogMgr.Kind.Ops, LogMgr.Level.Fine, 
-        "Starting the build phase in the Build Pass");
       doModel();
       doRig();
       doShaders();
@@ -1317,8 +1311,6 @@ class AdvAssetBuilder
     public TreeSet<String> 
     preBuildPhase()
     {
-      pLog.log(LogMgr.Kind.Ops, LogMgr.Level.Fine, 
-	"Starting the prebuild phase in the Finalize Pass");
       TreeSet<String> toReturn = new TreeSet<String>(getDisableList());
       toReturn.addAll(getDisableList());
       for (EmptyMayaAsciiStage stage : pEmptyMayaScenes) {
@@ -1338,8 +1330,6 @@ class AdvAssetBuilder
     buildPhase() 
       throws PipelineException
     {
-      pLog.log(LogMgr.Kind.Ops, LogMgr.Level.Fine, 
-	"Starting the build phase in the Finalize Pass");
       for (AssetBuilderModelStage stage : pModelStages)
 	stage.finalizeStage();
       for (EmptyFileStage stage : pEmptyFileStages)

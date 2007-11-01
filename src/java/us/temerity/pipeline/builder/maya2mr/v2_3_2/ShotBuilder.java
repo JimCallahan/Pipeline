@@ -349,8 +349,6 @@ class ShotBuilder
     validatePhase()
       throws PipelineException
     {
-      pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
-        "Starting the validate phase in the Asset Info Pass.");
       validateBuiltInParams();
       pBuilderQueries.setContext(pContext);
       
@@ -368,8 +366,6 @@ class ShotBuilder
     initPhase() 
       throws PipelineException
     {
-      pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
-        "Starting the init phase in the First Info Pass.");
       DefaultShotNames names = 
 	new DefaultShotNames(pProject, pMovieFormat, !pNewSequence, pClient, pQueue, pBuilderQueries);
       addSubBuilder(names);
@@ -452,9 +448,6 @@ class ShotBuilder
     validatePhase()
       throws PipelineException
     {
-      pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
-        "Starting the validate phase in the Asset Info Pass.");
-      
       pAssets = new ArrayList<BuildsAssetNames>();
       
       TreeSet<String> chars = (TreeSet<String>) getParamValue(aChars);
@@ -523,8 +516,6 @@ class ShotBuilder
     buildPhase() 
       throws PipelineException
     {
-      pLog.log(LogMgr.Kind.Ops, LogMgr.Level.Fine, 
-        "Starting the build phase in the Build Pass");
       doLayout();
       doAnim();
       doLighting();

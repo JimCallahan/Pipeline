@@ -358,8 +358,6 @@ class NewAssetBuilder
     validatePhase()
       throws PipelineException
     {
-      pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
-	"Starting the validate phase in the Information Pass.");
       validateBuiltInParams();
       pBuilderInfo.setContext(pContext);
       pBuildLowRez = getBooleanParamValue(new ParamMapping(aBuildLowRez));
@@ -413,9 +411,6 @@ class NewAssetBuilder
     buildPhase() 
       throws PipelineException
     {
-      pLog.log(LogMgr.Kind.Ops, LogMgr.Level.Fine, 
-	"Starting the build phase in the Build Pass");
-      
       String modelName = pAssetNames.getModelNodeName(); 
       {
 	AssetBuilderModelStage stage = 
@@ -642,8 +637,6 @@ class NewAssetBuilder
     public TreeSet<String> 
     preBuildPhase()
     {
-      pLog.log(LogMgr.Kind.Ops, LogMgr.Level.Fine, 
-	"Starting the prebuild phase in the Finalize Pass");
       TreeSet<String> toReturn = new TreeSet<String>(getDisableList());
       if (pBuildSeparateHead)
 	toReturn.add(pAssetNames.getBlendShapeModelNodeName());
@@ -659,8 +652,6 @@ class NewAssetBuilder
     buildPhase() 
       throws PipelineException
     {
-      pLog.log(LogMgr.Kind.Ops, LogMgr.Level.Fine, 
-	"Starting the build phase in the Finalize Pass");
       for (AssetBuilderModelStage stage : pModelStages)
 	stage.finalizeStage();
       for (EmptyFileStage stage : pRigInfoStages)

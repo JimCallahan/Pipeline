@@ -378,8 +378,6 @@ class ProjectScriptBuilder
     validatePhase()
       throws PipelineException
     {
-      pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
-        "Starting the validate phase in the Information Pass.");
       validateBuiltInParams();
       pBuilderInfo.setContext(pContext);
       
@@ -427,9 +425,6 @@ class ProjectScriptBuilder
     buildPhase() 
       throws PipelineException
     {
-      pLog.log(LogMgr.Kind.Ops, LogMgr.Level.Fine, 
-        "Starting the build phase in the Build Pass");
-      
       if (pCopyShading) {
 	String script = pProjectNames.getShaderCopyScriptName();
 	MELFileStage stage = 
@@ -663,8 +658,6 @@ class ProjectScriptBuilder
     public TreeSet<String> 
     preBuildPhase()
     {
-      pLog.log(LogMgr.Kind.Ops, LogMgr.Level.Fine, 
-	"Starting the prebuild phase in the Finalize Pass");
       TreeSet<String> toReturn = new TreeSet<String>(getDisableList());
       for (EmptyFileStage stage : pEmptyFiles) 
 	toReturn.add(stage.getNodeName());
@@ -676,8 +669,6 @@ class ProjectScriptBuilder
     buildPhase() 
       throws PipelineException
     {
-      pLog.log(LogMgr.Kind.Ops, LogMgr.Level.Fine, 
-	"Starting the build phase in the Finalize Pass");
       for (EmptyFileStage stage : pEmptyFiles)
 	stage.finalizeStage();
     }

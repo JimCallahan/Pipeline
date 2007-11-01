@@ -3,8 +3,6 @@ package com.radar.pipeline.builder.maya2mr.v2_3_2;
 import java.util.*;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.LogMgr.Kind;
-import us.temerity.pipeline.LogMgr.Level;
 import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.builder.maya2mr.v2_3_2.*;
 import us.temerity.pipeline.builder.maya2mr.v2_3_2.stages.*;
@@ -332,8 +330,6 @@ class RadarShotBuilder
     validatePhase()
       throws PipelineException
     {
-      pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
-        "Starting the validate phase in the First Info Pass.");
       validateBuiltInParams();
       pBuilderQueries.setContext(pContext);
       
@@ -356,8 +352,6 @@ class RadarShotBuilder
     initPhase() 
       throws PipelineException
     {
-      pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
-        "Starting the init phase in the First Info Pass.");
       RadarShotNames names = 
 	new RadarShotNames(pProject, !pNewSequence, pClient, pQueue, pBuilderQueries);
       addSubBuilder(names);
@@ -441,9 +435,6 @@ class RadarShotBuilder
     validatePhase()
       throws PipelineException
     {
-      pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
-        "Starting the validate phase in the Asset Info Pass.");
-      
       pAssets = new TreeMap<String, AssetBundle>();
       
       {
@@ -517,8 +508,6 @@ class RadarShotBuilder
     public void buildPhase()
       throws PipelineException
     {
-      pLog.log(Kind.Ops, Level.Fine, "Starting the build phase in the Finalize pass.");
-      
       doRenderCam();
       doLayout();
       doAnimation();
@@ -867,8 +856,6 @@ class RadarShotBuilder
     public TreeSet<String> 
     preBuildPhase()
     {
-      pLog.log(LogMgr.Kind.Ops, LogMgr.Level.Fine, 
-	"Starting the prebuild phase in the Finalize Pass");
       TreeSet<String> toReturn = new TreeSet<String>(getDisableList());
       toReturn.addAll(getDisableList());
       for (EmptyMayaAsciiStage stage : pEmptyMayaScenes) {
@@ -888,8 +875,6 @@ class RadarShotBuilder
     buildPhase() 
       throws PipelineException
     {
-      pLog.log(LogMgr.Kind.Ops, LogMgr.Level.Fine, 
-	"Starting the build phase in the Finalize Pass");
       for (AssetBuilderModelStage stage : pModelStages)
 	stage.finalizeStage();
       for (EmptyFileStage stage : pEmptyFileStages)

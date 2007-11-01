@@ -1,4 +1,4 @@
-// $Id: AssetBuilder.java,v 1.18 2007/10/30 20:40:55 jesse Exp $
+// $Id: AssetBuilder.java,v 1.19 2007/11/01 19:08:53 jesse Exp $
 
 package us.temerity.pipeline.builder.maya2mr.v2_3_2;
 
@@ -480,8 +480,6 @@ class AssetBuilder
     validatePhase()
       throws PipelineException
     {
-      pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
-        "Starting the validate phase in the Information Pass.");
       validateBuiltInParams();
       pBuilderQueries.setContext(pContext);
       pBuildTextureNode = getBooleanParamValue(new ParamMapping(aBuildTextureNode));
@@ -609,8 +607,6 @@ class AssetBuilder
     buildPhase() 
       throws PipelineException
     {
-      pLog.log(LogMgr.Kind.Ops, LogMgr.Level.Fine, 
-        "Starting the build phase in the Build Pass");
       doModel();
       doRig();
       doMaterials();
@@ -1221,8 +1217,6 @@ class AssetBuilder
     public TreeSet<String> 
     preBuildPhase()
     {
-      pLog.log(LogMgr.Kind.Ops, LogMgr.Level.Fine, 
-	"Starting the prebuild phase in the Finalize Pass");
       TreeSet<String> toReturn = new TreeSet<String>(getDisableList());
       toReturn.addAll(getDisableList());
       for (EmptyMayaAsciiStage stage : pEmptyMayaScenes) {
@@ -1242,8 +1236,6 @@ class AssetBuilder
     buildPhase() 
       throws PipelineException
     {
-      pLog.log(LogMgr.Kind.Ops, LogMgr.Level.Fine, 
-	"Starting the build phase in the Finalize Pass");
       for (AssetBuilderModelStage stage : pModelStages)
 	stage.finalizeStage();
       for (EmptyFileStage stage : pEmptyFileStages)

@@ -200,8 +200,6 @@ class ModelPiecesBuilder
     validatePhase()
       throws PipelineException
     {
-      pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
-        "Starting the validate phase in the Information Pass.");
       validateBuiltInParams();
       pCheckInWhenDone = getBooleanParamValue(new ParamMapping(aCheckinWhenDone));
       
@@ -253,9 +251,6 @@ class ModelPiecesBuilder
     buildPhase() 
       throws PipelineException
     {
-      pLog.log(LogMgr.Kind.Ops, LogMgr.Level.Fine, 
-        "Starting the build phase in the Build Pass");
-      
       String taskType = pProjectNames.getModelingTaskName();
       
       TreeMap<String, String> pieceNodes = new TreeMap<String, String>();
@@ -338,8 +333,6 @@ class ModelPiecesBuilder
     public TreeSet<String> 
     preBuildPhase()
     {
-      pLog.log(LogMgr.Kind.Ops, LogMgr.Level.Fine, 
-        "Starting the prebuild phase in the Finalize Pass");
       TreeSet<String> toReturn = new TreeSet<String>(getDisableList());
       return toReturn;
     }
@@ -349,8 +342,6 @@ class ModelPiecesBuilder
     buildPhase() 
       throws PipelineException
     {
-      pLog.log(LogMgr.Kind.Ops, LogMgr.Level.Fine, 
-        "Starting the build phase in the Finalize Pass");
       for (AssetBuilderModelStage stage : pModelStages)
         stage.finalizeStage();
       disableActions();

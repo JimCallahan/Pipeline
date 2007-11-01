@@ -3,8 +3,6 @@ package com.laika.pipeline.builder.maya2mr.v2_3_2;
 import java.util.*;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.LogMgr.Kind;
-import us.temerity.pipeline.LogMgr.Level;
 import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.builder.maya2mr.v2_3_2.*;
 import us.temerity.pipeline.builder.maya2mr.v2_3_2.stages.*;
@@ -327,8 +325,6 @@ class LaikaShotBuilder
     validatePhase()
       throws PipelineException
     {
-      pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
-        "Starting the validate phase in the First Info Pass.");
       validateBuiltInParams();
       pBuilderQueries.setContext(pContext);
       
@@ -351,8 +347,6 @@ class LaikaShotBuilder
     initPhase() 
       throws PipelineException
     {
-      pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
-        "Starting the init phase in the First Info Pass.");
       DefaultShotNames names = 
 	new DefaultShotNames(pProject, false, !pNewSequence, pClient, pQueue, pBuilderQueries);
       addSubBuilder(names);
@@ -436,9 +430,6 @@ class LaikaShotBuilder
     validatePhase()
       throws PipelineException
     {
-      pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
-        "Starting the validate phase in the Asset Info Pass.");
-      
       pAssets = new TreeMap<String, AssetBundle>();
       
       {
@@ -533,8 +524,6 @@ class LaikaShotBuilder
     public void buildPhase()
       throws PipelineException
     {
-      pLog.log(Kind.Ops, Level.Fine, "Starting the build phase in the Build pass.");
-      
       if (!pRenderCamExists)
 	doRenderCam();
       doLayout();
@@ -886,8 +875,6 @@ class LaikaShotBuilder
     public TreeSet<String> 
     preBuildPhase()
     {
-      pLog.log(LogMgr.Kind.Ops, LogMgr.Level.Fine, 
-	"Starting the prebuild phase in the Finalize Pass");
       TreeSet<String> toReturn = new TreeSet<String>(getDisableList());
       toReturn.addAll(getDisableList());
       for (EmptyMayaAsciiStage stage : pEmptyMayaScenes) {
@@ -907,8 +894,6 @@ class LaikaShotBuilder
     buildPhase() 
       throws PipelineException
     {
-      pLog.log(LogMgr.Kind.Ops, LogMgr.Level.Fine, 
-	"Starting the build phase in the Finalize Pass");
       for (AssetBuilderModelStage stage : pModelStages)
 	stage.finalizeStage();
       for (EmptyFileStage stage : pEmptyFileStages)

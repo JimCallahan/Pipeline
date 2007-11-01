@@ -360,8 +360,6 @@ class SimpleAssetBuilder
     validatePhase()
       throws PipelineException
     {
-      pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
-        "Starting the validate phase in the Information Pass.");
       validateBuiltInParams();
       pBuilderQueries.setContext(pContext);
       pBuildTextureNode = getBooleanParamValue(new ParamMapping(aBuildTextureNode));
@@ -431,9 +429,6 @@ class SimpleAssetBuilder
     buildPhase() 
       throws PipelineException
     {
-      pLog.log(LogMgr.Kind.Ops, LogMgr.Level.Fine, 
-        "Starting the build phase in the Build Pass");
-      
       String taskType = pProjectNames.getModelingTaskName();
       
       if (pBuildTextureNode) {
@@ -582,8 +577,6 @@ class SimpleAssetBuilder
     public TreeSet<String> 
     preBuildPhase()
     {
-      pLog.log(LogMgr.Kind.Ops, LogMgr.Level.Fine, 
-	"Starting the prebuild phase in the Finalize Pass");
       TreeSet<String> toReturn = new TreeSet<String>(getDisableList());
       toReturn.addAll(getDisableList());
       for (AssetBuilderModelStage stage : pModelStages) {
@@ -597,8 +590,6 @@ class SimpleAssetBuilder
     buildPhase() 
       throws PipelineException
     {
-      pLog.log(LogMgr.Kind.Ops, LogMgr.Level.Fine, 
-	"Starting the build phase in the Finalize Pass");
       for (AssetBuilderModelStage stage : pModelStages)
 	stage.finalizeStage();
       disableActions();
