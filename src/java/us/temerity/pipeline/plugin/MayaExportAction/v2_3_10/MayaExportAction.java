@@ -262,7 +262,7 @@ class MayaExportAction
     
     String melSnippet = null;
     try {
-      melSnippet = getMelSnippet(agenda);
+      melSnippet = getMelSnippet(agenda, aPreExportMEL);
     }
     catch (IOException ex) {
       throw new PipelineException
@@ -346,31 +346,6 @@ class MayaExportAction
     return createMayaSubProcess(mayaSourceScene, script, true, agenda, outFile, errFile);
   }
 
-  
-  private String 
-  getMelSnippet
-  (
-    ActionAgenda agenda  
-  )
-    throws PipelineException, IOException
-  {
-    String toReturn = null;
-    Path melPath = getMelScriptSourcePath(aPreExportMEL, agenda);
-    if (melPath == null)
-      return toReturn;
-    File file = melPath.toFile();
-    BufferedReader in = new BufferedReader(new FileReader(file));
-    while(true) {
-      String line = in.readLine();
-      if(line == null) 
-        break;
-      if (toReturn == null)
-	toReturn = line + "\n";
-      else
-	toReturn += line + "\n";
-    }
-    return toReturn;
-  }
   
   
   /*----------------------------------------------------------------------------------------*/
