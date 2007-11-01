@@ -1999,6 +1999,7 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/MayaAddReferenceTool/v2_0_9/Makefile
   src/java/us/temerity/pipeline/plugin/MayaAnimBuildAction/Makefile
   src/java/us/temerity/pipeline/plugin/MayaAnimBuildAction/v2_3_1/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaAnimBuildAction/v2_3_14/Makefile
   src/java/us/temerity/pipeline/plugin/MayaAnimExportAction/Makefile
   src/java/us/temerity/pipeline/plugin/MayaAnimExportAction/v1_0_0/Makefile
   src/java/us/temerity/pipeline/plugin/MayaAnimExportAction/v2_0_0/Makefile
@@ -2025,6 +2026,7 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/MayaCompleteEditor/v2_2_1/Makefile
   src/java/us/temerity/pipeline/plugin/MayaCurvesExportAction/Makefile
   src/java/us/temerity/pipeline/plugin/MayaCurvesExportAction/v2_3_4/Makefile
+  src/java/us/temerity/pipeline/plugin/MayaCurvesExportAction/v2_3_14/Makefile
   src/java/us/temerity/pipeline/plugin/MayaDLRenderAction/Makefile
   src/java/us/temerity/pipeline/plugin/MayaDLRenderAction/v2_2_1/Makefile
   src/java/us/temerity/pipeline/plugin/MayaDLShaderExportAction/Makefile
