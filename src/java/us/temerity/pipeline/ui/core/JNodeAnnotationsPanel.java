@@ -1,19 +1,18 @@
-// $Id: JNodeAnnotationsPanel.java,v 1.6 2007/09/07 18:52:38 jim Exp $
+// $Id: JNodeAnnotationsPanel.java,v 1.7 2007/11/03 22:07:35 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
-import us.temerity.pipeline.*;
-import us.temerity.pipeline.ui.*;
-import us.temerity.pipeline.glue.*;
-
 import java.awt.*;
 import java.awt.event.*;
-import java.io.*;
 import java.util.*;
-import java.text.*;
+
 import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.tree.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.Document;
+
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.ui.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   N O D E   A N N O T A T I O N   P A N E L                                              */
@@ -25,7 +24,7 @@ import javax.swing.tree.*;
 public  
 class JNodeAnnotationsPanel
   extends JTopLevelPanel
-  implements MouseListener, KeyListener, ComponentListener, ActionListener
+  implements MouseListener, KeyListener, ComponentListener, ActionListener, DocumentListener
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -68,12 +67,12 @@ class JNodeAnnotationsPanel
     {
       pAnnotationsPanels = new TreeMap<String,JAnnotationPanel>();
       pDeadAnnotations = new TreeSet<String>();
+      pDocToAnnotation = new ListMap<Document, String>();
     }
 
     /* initialize the popup menus */ 
     {
       JMenuItem item;
-      JMenu sub;
       
       pWorkingPopup   = new JPopupMenu();  
       pCheckedInPopup = new JPopupMenu(); 
@@ -946,6 +945,35 @@ class JNodeAnnotationsPanel
     else if(cmd.equals("remove-files"))
       doRemoveFiles();        
   }
+  
+  /*-- DOCUMENT LISTENER METHODS -----------------------------------------------------------*/
+
+  public void 
+  changedUpdate
+  (
+    DocumentEvent e
+  )
+  {}
+
+  public void 
+  insertUpdate
+  (
+    DocumentEvent e
+  )
+  {
+    Document doc = e.getDocument();
+    doAnnotationParamChanged(doc);
+  }
+
+  public void 
+  removeUpdate
+  (
+    DocumentEvent e
+  )
+  {
+    Document doc = e.getDocument();
+    doAnnotationParamChanged(doc);
+  } 
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -1095,6 +1123,21 @@ class JNodeAnnotationsPanel
       if(panel != null) 
         panel.annotationParamChanged(aname); 
     }
+  }
+  
+  /**
+   * Notify the panel that an annotation parameter has changed value.
+   */ 
+  public void 
+  doAnnotationParamChanged
+  (
+   Document doc
+  ) 
+  {
+    String name = pDocToAnnotation.get(doc);
+    JAnnotationPanel panel = pAnnotationsPanels.get(name);
+    if(panel != null) 
+      panel.annotationParamChanged(doc); 
   }
 
  
@@ -1496,6 +1539,7 @@ class JNodeAnnotationsPanel
 	pAnnotation = annot; 
         pParent = parent; 
         pParamComponents = new TreeMap<String,Component>();
+        pDocToParam = new ListMap<Document, String>();
       }
 
       /* panel components */ 
@@ -1683,6 +1727,10 @@ class JNodeAnnotationsPanel
             JIntegerField field = (JIntegerField) comp;
             value = field.getValue();
           }
+          else if(aparam instanceof TextAreaAnnotationParam) {
+            JTextArea field = (JTextArea) comp;
+            value = field.getText();	  
+          }
           else if(aparam instanceof StringAnnotationParam) {
             JTextField field = (JTextField) comp;
             value = field.getText();	  
@@ -1744,6 +1792,20 @@ class JNodeAnnotationsPanel
      String aname
     ) 
     {
+      unsavedChange("Parameter Changed: " + aname + " (" + aname + ")"); 
+      pIsModified = true;
+    }
+    
+    /**
+     * Notify the panel that an annotation parameter has changed value.
+     */ 
+    public void 
+    annotationParamChanged
+    (
+     Document doc
+    ) 
+    {
+      String aname = pDocToParam.get(doc);
       unsavedChange("Parameter Changed: " + aname + " (" + aname + ")"); 
       pIsModified = true;
     }
@@ -1933,6 +1995,25 @@ class JNodeAnnotationsPanel
 
                 pParamComponents.put(pname, field);
               }
+              else if(aparam instanceof TextAreaAnnotationParam) {
+        	TextAreaAnnotationParam bparam = (TextAreaAnnotationParam) aparam; 
+                String value = (String) aparam.getValue();
+                int rows = bparam.getRows();
+                JTextArea field = 
+                  UIFactory.createTitledEditableTextArea
+                  (tpanel, aparam.getNameUI() + ":", sTSize-7, 
+                   vpanel, value, sVSize, rows, true,
+                   aparam.getDescription());
+                
+                Document doc = field.getDocument();
+                doc.addDocumentListener(pParent);
+                pDocToParam.put(doc, pname);
+                pDocToAnnotation.put(doc, pName);
+
+                field.setEnabled(paramEnabled); 
+
+                pParamComponents.put(pname, field);	      
+              }
               else if(aparam instanceof StringAnnotationParam) {
                 String value = (String) aparam.getValue();
                 JTextField field = 
@@ -2103,6 +2184,8 @@ class JNodeAnnotationsPanel
 
     private JDrawer                    pParamsDrawer; 
     private TreeMap<String,Component>  pParamComponents; 
+    
+    private ListMap<Document, String> pDocToParam;
   }
 
 
@@ -2484,6 +2567,7 @@ class JNodeAnnotationsPanel
   /**
    * The scroll panel containing the messages.
    */ 
-  private JScrollPane  pScroll; 
-
+  private JScrollPane  pScroll;
+  
+  private ListMap<Document, String> pDocToAnnotation;
 }

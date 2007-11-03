@@ -161,6 +161,8 @@ SUBDIRS = \
   MRayTexturePackAction \
   MRayTextureUnpackAction \
   NEditEditor \
+  NodeNoteAnnotation \
+  NodeNoteTool \
   NukeAddSourceTool \
   NukeBuildAction \
   NukeCompAction \

@@ -2144,6 +2144,10 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/plugin/MayaTextureSyncTool/v2_0_9/Makefile
   src/java/us/temerity/pipeline/plugin/NEditEditor/Makefile
   src/java/us/temerity/pipeline/plugin/NEditEditor/v2_2_1/Makefile
+  src/java/us/temerity/pipeline/plugin/NodeNoteAnnotation/Makefile
+  src/java/us/temerity/pipeline/plugin/NodeNoteAnnotation/v2_3_14/Makefile
+  src/java/us/temerity/pipeline/plugin/NodeNoteTool/Makefile
+  src/java/us/temerity/pipeline/plugin/NodeNoteTool/v2_3_14/Makefile
   src/java/us/temerity/pipeline/plugin/NukeAddSourceTool/Makefile
   src/java/us/temerity/pipeline/plugin/NukeAddSourceTool/v2_3_4/Makefile
   src/java/us/temerity/pipeline/plugin/NukeBuildAction/Makefile
