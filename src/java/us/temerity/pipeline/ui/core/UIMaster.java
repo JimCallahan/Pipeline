@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.70 2007/10/23 02:29:59 jim Exp $
+// $Id: UIMaster.java,v 1.71 2007/11/04 20:42:38 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -4736,7 +4736,10 @@ class UIMaster
      String view, 
      Integer batchSize, 
      Integer priority, 
-     Integer interval, 
+     Integer interval,
+     Float maxLoad,              
+     Long minMemory,              
+     Long minDisk, 
      TreeSet<String> selectionKeys,
      TreeSet<String> licenseKeys
     ) 
@@ -4749,6 +4752,9 @@ class UIMaster
       pBatchSize     = batchSize;
       pPriority      = priority; 
       pRampUp        = interval;
+      pMaxLoad       = maxLoad;
+      pMinMemory     = minMemory;
+      pMinDisk       = minDisk;
       pSelectionKeys = selectionKeys;
       pLicenseKeys   = licenseKeys; 
     }
@@ -4762,7 +4768,10 @@ class UIMaster
      String view, 
      Integer batchSize, 
      Integer priority, 
-     Integer interval, 
+     Integer interval,
+     Float maxLoad,              
+     Long minMemory,              
+     Long minDisk,  
      TreeSet<String> selectionKeys,
      TreeSet<String> licenseKeys
     ) 
@@ -4774,6 +4783,9 @@ class UIMaster
       pBatchSize     = batchSize;
       pPriority      = priority; 
       pRampUp        = interval;
+      pMaxLoad       = maxLoad;
+      pMinMemory     = minMemory;
+      pMinDisk       = minDisk;
       pSelectionKeys = selectionKeys;
       pLicenseKeys   = licenseKeys; 
     }
@@ -4788,7 +4800,8 @@ class UIMaster
 	    master.updatePanelOp(pChannel, "Submitting Jobs to the Queue: " + name);
 	    MasterMgrClient client = master.getMasterMgrClient(pChannel);
 	    client.submitJobs(pAuthorName, pViewName, name, null, 
-			      pBatchSize, pPriority, pRampUp, 
+			      pBatchSize, pPriority, pRampUp,
+			      pMaxLoad, pMinMemory, pMinDisk,
 			      pSelectionKeys, pLicenseKeys);
 	  }
 	}
@@ -4808,6 +4821,9 @@ class UIMaster
     private Integer          pBatchSize;
     private Integer          pPriority;
     private Integer          pRampUp; 
+    private Float            pMaxLoad;        
+    private Long             pMinMemory;              
+    private Long             pMinDisk;
     private TreeSet<String>  pSelectionKeys;
     private TreeSet<String>  pLicenseKeys;
   }

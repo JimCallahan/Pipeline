@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.47 2007/10/12 23:19:19 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.48 2007/11/04 20:42:38 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2460,6 +2460,18 @@ class JQueueJobViewerPanel
 	if(diag.overrideRampUp()) 
 	  interval = diag.getRampUp();
 	
+	Float maxLoad = null;
+	if(diag.overrideMaxLoad())
+	  maxLoad = diag.getMaxLoad();
+	
+	Long minMemory = null;
+	if(diag.overrideMinMemory())
+	  minMemory = diag.getMinMemory();
+	
+	Long minDisk= null;
+	if(diag.overrideMinDisk())
+	  minDisk = diag.getMinDisk();
+	
 	TreeSet<String> selectionKeys = null;
 	if(diag.overrideSelectionKeys()) 
 	  selectionKeys = diag.getSelectionKeys();
@@ -2470,6 +2482,7 @@ class JQueueJobViewerPanel
 
 	QueueJobsTask task = 
 	  new QueueJobsTask(targets, batchSize, priority, interval,
+	                    maxLoad, minMemory, minDisk,
 			    selectionKeys, licenseKeys, true);
 	task.start();
       }
@@ -3051,7 +3064,7 @@ class JQueueJobViewerPanel
       DoubleMap<NodeID, Long, TreeSet<FileSeq>> targets
     ) 
     {
-      this(targets, null, null, null, null, null, false);
+      this(targets, null, null, null, null, null, null, null, null, false);
     }
     
     public 
@@ -3061,6 +3074,9 @@ class JQueueJobViewerPanel
      Integer batchSize, 
      Integer priority, 
      Integer rampUp, 
+     Float maxLoad,              
+     Long minMemory,              
+     Long minDisk, 
      TreeSet<String> selectionKeys,
      TreeSet<String> licenseKeys,
      boolean special
@@ -3072,6 +3088,9 @@ class JQueueJobViewerPanel
       pBatchSize     = batchSize;
       pPriority      = priority; 
       pRampUp        = rampUp; 
+      pMaxLoad       = maxLoad;
+      pMinMemory     = minMemory;
+      pMinDisk       = minDisk;
       pSelectionKeys = selectionKeys;
       pLicenseKeys   = licenseKeys;
       pSpecial       = special;
@@ -3091,7 +3110,8 @@ class JQueueJobViewerPanel
 	    long jobID = targets.firstKey();
 	    if (pSpecial) 
 	      client.resubmitJobs
-	        (nodeID, targets.get(jobID), pBatchSize, pPriority, pRampUp, 
+	        (nodeID, targets.get(jobID), pBatchSize, pPriority, pRampUp,
+	          pMaxLoad, pMinMemory, pMinDisk,
 	         pSelectionKeys, pLicenseKeys);
 	    else {
 	      
@@ -3099,7 +3119,8 @@ class JQueueJobViewerPanel
 	      QueueJob job = queue.getJob(jobID);
 	      JobReqs reqs = job.getJobRequirements();
 	      client.resubmitJobs
-	        (nodeID, targets.get(jobID), pBatchSize, reqs.getPriority(), reqs.getRampUp(), 
+	        (nodeID, targets.get(jobID), pBatchSize, reqs.getPriority(), reqs.getRampUp(),
+	         reqs.getMaxLoad(), reqs.getMinMemory(), reqs.getMinDisk(),
 	         reqs.getSelectionKeys(), reqs.getLicenseKeys());
 
 	    }
@@ -3121,6 +3142,9 @@ class JQueueJobViewerPanel
     private Integer                                    pBatchSize;
     private Integer                                    pPriority;
     private Integer                                    pRampUp;
+    private Float                                      pMaxLoad;        
+    private Long                                       pMinMemory;              
+    private Long                                       pMinDisk;
     private TreeSet<String>                            pSelectionKeys;
     private TreeSet<String>                            pLicenseKeys;
     private boolean                                    pSpecial;

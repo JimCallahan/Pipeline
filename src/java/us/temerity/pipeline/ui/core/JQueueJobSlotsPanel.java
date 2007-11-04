@@ -1,4 +1,4 @@
-// $Id: JQueueJobSlotsPanel.java,v 1.11 2007/05/14 16:22:01 jim Exp $
+// $Id: JQueueJobSlotsPanel.java,v 1.12 2007/11/04 20:42:38 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1119,7 +1119,7 @@ class JQueueJobSlotsPanel
      TreeMap<NodeID,TreeSet<FileSeq>> targets
     ) 
     {
-      this(targets, null, null, null, null, null);
+      this(targets, null, null, null, null, null, null, null, null);
     }
     
     public 
@@ -1129,6 +1129,9 @@ class JQueueJobSlotsPanel
      Integer batchSize, 
      Integer priority, 
      Integer rampUp, 
+     Float maxLoad,              
+     Long minMemory,              
+     Long minDisk,  
      TreeSet<String> selectionKeys,
      TreeSet<String> licenseKeys
     ) 
@@ -1139,6 +1142,9 @@ class JQueueJobSlotsPanel
       pBatchSize     = batchSize;
       pPriority      = priority; 
       pRampUp        = rampUp; 
+      pMaxLoad       = maxLoad;
+      pMinMemory     = minMemory;
+      pMinDisk       = minDisk;
       pSelectionKeys = selectionKeys;
       pSelectionKeys = licenseKeys;
     }
@@ -1156,6 +1162,7 @@ class JQueueJobSlotsPanel
  	    MasterMgrClient client = master.getMasterMgrClient(pGroupID);
 	    client.resubmitJobs(nodeID, pTargets.get(nodeID), 
 				pBatchSize, pPriority, pRampUp, 
+				pMaxLoad, pMinMemory, pMinDisk,
 				pSelectionKeys, pLicenseKeys);
 	  }
 	}
@@ -1175,6 +1182,9 @@ class JQueueJobSlotsPanel
     private Integer                           pBatchSize;
     private Integer                           pPriority;
     private Integer                           pRampUp; 
+    private Float                             pMaxLoad;        
+    private Long                              pMinMemory;              
+    private Long                              pMinDisk;
     private TreeSet<String>                   pSelectionKeys;
     private TreeSet<String>                   pLicenseKeys;
   }

@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.43 2007/09/07 18:52:38 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.44 2007/11/04 20:42:37 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1907,6 +1907,18 @@ class JNodeFilesPanel
 	if(diag.overrideRampUp()) 
 	  interval = diag.getRampUp();
 	
+	Float maxLoad = null;
+	if(diag.overrideMaxLoad())
+	  maxLoad = diag.getMaxLoad();
+	
+	Long minMemory = null;
+	if(diag.overrideMinMemory())
+	  minMemory = diag.getMinMemory();
+	
+	Long minDisk= null;
+	if(diag.overrideMinDisk())
+	  minDisk = diag.getMinDisk();
+	  
 	TreeSet<String> selectionKeys = null;
 	if(diag.overrideSelectionKeys()) 
 	  selectionKeys = diag.getSelectionKeys();
@@ -1916,7 +1928,8 @@ class JNodeFilesPanel
 	  licenseKeys = diag.getLicenseKeys();
 	
 	QueueJobsTask task = 
-	  new QueueJobsTask(pSelected, batchSize, priority, interval, 
+	  new QueueJobsTask(pSelected, batchSize, priority, interval,
+	    		    maxLoad, minMemory, minDisk,
 			    selectionKeys, licenseKeys);
 	task.start();
       }
@@ -3260,7 +3273,7 @@ class JNodeFilesPanel
      TreeSet<Integer> indices
     ) 
     {
-      this(indices, null, null, null, null, null);
+      this(indices, null, null, null, null, null, null, null, null);
     }
     
     public 
@@ -3269,7 +3282,10 @@ class JNodeFilesPanel
      TreeSet<Integer> indices, 
      Integer batchSize, 
      Integer priority, 
-     Integer rampUp, 
+     Integer rampUp,
+     Float maxLoad,              
+     Long minMemory,              
+     Long minDisk,  
      TreeSet<String> selectionKeys, 
      TreeSet<String> licenseKeys
     ) 
@@ -3280,6 +3296,9 @@ class JNodeFilesPanel
       pBatchSize     = batchSize;
       pPriority      = priority; 
       pRampUp        = rampUp; 
+      pMaxLoad       = maxLoad;
+      pMinMemory     = minMemory;
+      pMinDisk       = minDisk;
       pSelectionKeys = selectionKeys;
       pLicenseKeys   = licenseKeys; 
     }
@@ -3293,6 +3312,7 @@ class JNodeFilesPanel
 	  MasterMgrClient client = master.getMasterMgrClient(pGroupID);
 	  client.submitJobs(pAuthor, pView, pStatus.getName(), pIndices, 
 			    pBatchSize, pPriority, pRampUp, 
+			    pMaxLoad, pMinMemory, pMinDisk,
 			    pSelectionKeys, pLicenseKeys);
 	}
 	catch(PipelineException ex) {
@@ -3311,6 +3331,9 @@ class JNodeFilesPanel
     private Integer          pBatchSize;
     private Integer          pPriority;
     private Integer          pRampUp; 
+    private Float            pMaxLoad;        
+    private Long             pMinMemory;              
+    private Long             pMinDisk;
     private TreeSet<String>  pSelectionKeys;
     private TreeSet<String>  pLicenseKeys;
   }

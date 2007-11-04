@@ -1,22 +1,24 @@
-// $Id: JNodeViewerPanel.java,v 1.97 2007/10/25 00:08:15 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.98 2007/11/04 20:42:38 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
-
-import us.temerity.pipeline.*;
-import us.temerity.pipeline.builder.*;
-import us.temerity.pipeline.toolset.*;
-import us.temerity.pipeline.glue.*;
-import us.temerity.pipeline.math.*;
-import us.temerity.pipeline.ui.*;
 
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
-import java.io.*;
 
-import javax.media.opengl.*;
+import javax.media.opengl.GL;
+import javax.media.opengl.GLAutoDrawable;
 import javax.swing.*;
-import javax.swing.event.*;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
+
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.builder.ActionOnExistence;
+import us.temerity.pipeline.glue.*;
+import us.temerity.pipeline.math.*;
+import us.temerity.pipeline.toolset.Toolset;
+import us.temerity.pipeline.ui.JConfirmDialog;
+import us.temerity.pipeline.ui.JConfirmListDialog;
 
 /*------------------------------------------------------------------------------------------*/
 /*   N O D E   V I E W E R   P A N E L                                                      */
@@ -4256,6 +4258,18 @@ class JNodeViewerPanel
 	Integer interval = null;
 	if(diag.overrideRampUp()) 
 	  interval = diag.getRampUp();
+	
+	Float maxLoad = null;
+	if(diag.overrideMaxLoad())
+	  maxLoad = diag.getMaxLoad();
+	
+	Long minMemory = null;
+	if(diag.overrideMinMemory())
+	  minMemory = diag.getMinMemory();
+	
+	Long minDisk= null;
+	if(diag.overrideMinDisk())
+	  minDisk = diag.getMinDisk();
 	  
 	TreeSet<String> selectionKeys = null;
 	if(diag.overrideSelectionKeys()) 
@@ -4267,6 +4281,7 @@ class JNodeViewerPanel
 
 	QueueJobsTask task = 
 	  new QueueJobsTask(roots, batchSize, priority, interval, 
+	    		    maxLoad, minMemory, minDisk,
 			    selectionKeys, licenseKeys);
 	task.start();
       }
@@ -5475,6 +5490,7 @@ class JNodeViewerPanel
       pSource  = source; 
       pTargets = targets;
     }
+    @SuppressWarnings("unchecked")
     public void 
     run() 
     {
@@ -5611,7 +5627,29 @@ class JNodeViewerPanel
 	      }
 
 	      /* apply the changes */ 
-	      client.modifyProperties(pAuthor, pView, tmod);	      
+	      client.modifyProperties(pAuthor, pView, tmod);
+	      
+	      /* copy the annotations*/
+	      {
+		TreeMap<String, BaseAnnotation> annots = client.getAnnotations(smod.getName());
+		for (String aname : annots.keySet()) {
+		  if (pExportDialog.exportAnnotation(aname)) {
+		    BaseAnnotation an = annots.get(aname);
+		    PluginMgrClient mgr = PluginMgrClient.getInstance();
+		    BaseAnnotation newAnnot = mgr.newAnnotation(an.getName(), 
+		      an.getVersionID(), 
+		      an.getVendor()); 
+		    for (AnnotationParam param : an.getParams()) {
+		      String paramName = param.getName();
+		      Comparable value = param.getValue();
+		      AnnotationParam newParam = newAnnot.getParam(paramName);
+		      newParam.setValue(value);
+		    }
+		    client.addAnnotation(tmod.getName(), aname, newAnnot);
+		  }
+		}
+	      }
+	      
 	    }
 	  }
 	}
@@ -6051,7 +6089,7 @@ class JNodeViewerPanel
      TreeSet<String> names
     ) 
     {
-      this(names, null, null, null, null, null);
+      this(names, null, null, null, null, null, null, null, null);
     }
 
     public 
@@ -6060,13 +6098,17 @@ class JNodeViewerPanel
      TreeSet<String> names, 
      Integer batchSize, 
      Integer priority, 
-     Integer rampUp, 
+     Integer rampUp,
+     Float maxLoad,              
+     Long minMemory,              
+     Long minDisk, 
      TreeSet<String> selectionKeys,
      TreeSet<String> licenseKeys
     ) 
     {
       UIMaster.getInstance().super(pGroupID, names, pAuthor, pView, 
-				   batchSize, priority, rampUp, 
+				   batchSize, priority, rampUp,
+				   maxLoad, minMemory, minDisk,
 				   selectionKeys, licenseKeys);
       setName("JNodeViewerPanel:QueueJobsTask");
     }

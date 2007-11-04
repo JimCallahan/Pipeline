@@ -1,11 +1,10 @@
-// $Id: NodeSubmitJobsReq.java,v 1.7 2006/12/12 00:06:44 jim Exp $
+// $Id: NodeSubmitJobsReq.java,v 1.8 2007/11/04 20:42:38 jesse Exp $
 
 package us.temerity.pipeline.message;
 
 import us.temerity.pipeline.*; 
 import us.temerity.pipeline.core.*; 
 
-import java.io.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
@@ -41,20 +40,8 @@ class NodeSubmitJobsReq
    *   For parallel jobs, this overrides the maximum number of frames assigned to each job
    *   associated with the root node of the job submission.  
    * 
-   * @param priority 
-   *   Overrides the priority of jobs associated with the root node of the job submission 
-   *   relative to other jobs.  
-   * 
-   * @param rampUp
-   *   Overrides the ramp-up interval (in seconds) for the job.
-   * 
-   * @param selectionKeys 
-   *   Overrides the set of selection keys an eligable host is required to have for jobs 
-   *   associated with the root node of the job submission.
-   * 
-   * @param licenseKeys 
-   *   Overrides the set of license keys required by them job associated with the root 
-   *   node of the job submission.
+   * @param reqs
+   *   The list of all the job requirements that are going to overridden.
    */
   public
   NodeSubmitJobsReq
@@ -62,12 +49,8 @@ class NodeSubmitJobsReq
    NodeID id, 
    TreeSet<Integer> indices,
    Integer batchSize, 
-   Integer priority, 
-   Integer rampUp, 
-   Set<String> selectionKeys,
-   Set<String> licenseKeys   
+   JobReqsDelta reqs   
   )
-    throws PipelineException
   { 
     super();
 
@@ -78,10 +61,7 @@ class NodeSubmitJobsReq
 
     pFileIndices   = indices; 
     pBatchSize     = batchSize;
-    pPriority      = priority;
-    pRampUp        = rampUp; 
-    pSelectionKeys = selectionKeys;
-    pLicenseKeys   = licenseKeys; 
+    pReqs          = reqs;
   }
 
 
@@ -135,7 +115,7 @@ class NodeSubmitJobsReq
   public Integer
   getPriority()
   {
-    return pPriority;
+    return pReqs.getPriority();
   }
 
   /** 
@@ -148,11 +128,51 @@ class NodeSubmitJobsReq
   public Integer
   getRampUp()
   {
-    return pRampUp; 
+    return pReqs.getRampUp(); 
+  }
+  
+  /** 
+   * Overrides the max load of jobs associated with the root node of the job 
+   * submission.
+   * 
+   * @return 
+   *   The max load or <CODE>null</CODE> to use node's original max load.
+   */
+  public Float
+  getMaxLoad() 
+  {
+    return pReqs.getMaxLoad();
   }
 
+  /** 
+   * Overrides the min memory of jobs associated with the root node of the job 
+   * submission.
+   * 
+   * @return 
+   *   The min memory or <CODE>null</CODE> to use node's original min memory.
+   */
+  public Long 
+  getMinMemory() 
+  {
+    return pReqs.getMinMemory();
+  }
+
+  /** 
+   * Overrides the min disk of jobs associated with the root node of the job 
+   * submission.
+   * 
+   * @return 
+   *   The min disk or <CODE>null</CODE> to use node's original min disk.
+   */
+  public Long 
+  getMinDisk() 
+  {
+    return pReqs.getMinDisk();
+  }
+  
+
   /**
-   * Overrides the set of selection keys an eligable host is required to have for jobs 
+   * Overrides the set of selection keys an eligible host is required to have for jobs 
    * associated with the root node of the job submission.
    * 
    * @return 
@@ -161,7 +181,7 @@ class NodeSubmitJobsReq
   public Set<String>
   getSelectionKeys()
   {
-    return pSelectionKeys;
+    return pReqs.getSelectionKeys();
   }
 
   /**
@@ -174,9 +194,10 @@ class NodeSubmitJobsReq
   public Set<String>
   getLicenseKeys()
   {
-    return pLicenseKeys;
+    return pReqs.getLicenseKeys();
   }
 
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
@@ -209,28 +230,8 @@ class NodeSubmitJobsReq
   protected Integer  pBatchSize;         
 
   /**
-   * Overrides the priority of jobs associated with the root node of the job submission 
-   * relative to other jobs.  
+   * The list of all the special queue requirements for the jobs.
    */
-  private Integer  pPriority;
-  
-  /** 
-   * Overrides the ramp-up interval of jobs associated with the root node of the job 
-   * submission.
-   */
-  private Integer  pRampUp; 
-
-  /**
-   * Overrides the set of selection keys an eligable host is required to have for jobs 
-   * associated with the root node of the job submission.
-   */
-  private Set<String>  pSelectionKeys;
-
-  /**
-   * Overrides the set of license keys required by them job associated with the root 
-   * node of the job submission.
-   */
-  private Set<String>  pLicenseKeys;
-
+  private JobReqsDelta pReqs;
 }
   

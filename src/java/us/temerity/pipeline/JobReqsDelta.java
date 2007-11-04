@@ -40,6 +40,36 @@ class JobReqsDelta
     pLicenseKeys = null;
   }
   
+  /**
+   * Construct a new set of job requirements. <P> 
+   * 
+   * @param jobID
+   *   The id of the job that this delta is supposed to apply to.
+   * 
+   * @param priority 
+   *    The priority of the job relative to other jobs.  
+   * 
+   * @param rampUp
+   *    The ramp-up interval (in seconds) for the job.
+   * 
+   * @param maxLoad 
+   *    The maximum system load allowed on an eligible host.
+   * 
+   * @param minMemory 
+   *    The minimum amount of free memory (in bytes) required on an eligible host.
+   * 
+   * @param minDisk 
+   *    The minimum amount of free temporary local disk space (in bytes) required on an 
+   *    eligible host.
+   * 
+   * @param licenseKeys 
+   *    The set of license keys an eligible host is required to have or <CODE>null</CODE>
+   *    for none.
+   * 
+   * @param selectionKeys 
+   *   The set of selection keys an eligible host is required to have or <CODE>null</CODE>
+   *   for none.
+   */ 
   public JobReqsDelta
   (
     long jobID,

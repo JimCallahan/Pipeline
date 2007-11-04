@@ -1,4 +1,4 @@
-// $Id: JNodeAnnotationsPanel.java,v 1.7 2007/11/03 22:07:35 jesse Exp $
+// $Id: JNodeAnnotationsPanel.java,v 1.8 2007/11/04 20:42:37 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1288,6 +1288,18 @@ class JNodeAnnotationsPanel
 	  if(diag.overrideRampUp()) 
 	    interval = diag.getRampUp();
 	  
+	  Float maxLoad = null;
+	  if(diag.overrideMaxLoad())
+	    maxLoad = diag.getMaxLoad();
+
+	  Long minMemory = null;
+	  if(diag.overrideMinMemory())
+	    minMemory = diag.getMinMemory();
+
+	  Long minDisk= null;
+	  if(diag.overrideMinDisk())
+	    minDisk = diag.getMinDisk();
+	  
 	  TreeSet<String> selectionKeys = null;
 	  if(diag.overrideSelectionKeys()) 
 	    selectionKeys = diag.getSelectionKeys();
@@ -1298,6 +1310,7 @@ class JNodeAnnotationsPanel
 	  
 	  QueueJobsTask task = 
 	    new QueueJobsTask(pStatus.getName(), batchSize, priority, interval, 
+	      		      maxLoad, minMemory, minDisk,
 			      selectionKeys, licenseKeys);
 	  task.start();
 	}
@@ -2310,7 +2323,7 @@ class JNodeAnnotationsPanel
      String name
     ) 
     {
-      this(name, null, null, null, null, null);
+      this(name, null, null, null, null, null, null, null, null);
     }
 
     public 
@@ -2319,13 +2332,17 @@ class JNodeAnnotationsPanel
      String name, 
      Integer batchSize, 
      Integer priority, 
-     Integer rampUp, 
+     Integer rampUp,
+     Float maxLoad,              
+     Long minMemory,              
+     Long minDisk,  
      TreeSet<String> selectionKeys,
      TreeSet<String> licenseKeys
     ) 
     {
       UIMaster.getInstance().super(pGroupID, name, pAuthor, pView, 
-				   batchSize, priority, rampUp, 
+				   batchSize, priority, rampUp,
+				   maxLoad, minMemory, minDisk,
 				   selectionKeys, licenseKeys);
       setName("JNodeAnnotationsPanel:QueueJobsTask");
     }

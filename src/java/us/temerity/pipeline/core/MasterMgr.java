@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.222 2007/11/01 07:53:33 jim Exp $
+// $Id: MasterMgr.java,v 1.223 2007/11/04 20:42:38 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -11026,7 +11026,8 @@ class MasterMgr
 	   "working areas owned by another user!");
 
       return submitJobGroupsCommon(req.getNodeID(), req.getFileIndices(), null, 
-                                   req.getBatchSize(), req.getPriority(), req.getRampUp(), 
+                                   req.getBatchSize(), req.getPriority(), req.getRampUp(),
+                                   req.getMaxLoad(), req.getMinMemory(), req.getMinDisk(),
                                    req.getSelectionKeys(), req.getLicenseKeys(), 
                                    timer);
     }
@@ -11075,7 +11076,8 @@ class MasterMgr
 
       /* submit the jobs */ 
       return submitJobGroupsCommon(req.getNodeID(), null, req.getTargetFileSequences(), 
-                                   req.getBatchSize(), req.getPriority(), req.getRampUp(), 
+                                   req.getBatchSize(), req.getPriority(), req.getRampUp(),
+                                   req.getMaxLoad(), req.getMinMemory(), req.getMinDisk(),
                                    req.getSelectionKeys(), req.getLicenseKeys(), 
                                    timer);
     }
@@ -11138,7 +11140,10 @@ class MasterMgr
    TreeSet<FileSeq> targetSeqs, 
    Integer batchSize, 
    Integer priority, 
-   Integer rampUp, 
+   Integer rampUp,
+   Float maxLoad,              
+   Long minMemory,              
+   Long minDisk,  
    Set<String> selectionKeys,
    Set<String> licenseKeys,
    TaskTimer timer 
@@ -11206,12 +11211,14 @@ class MasterMgr
         /* submit the jobs for the root node */ 
         QueueJobGroup group = null;
         if(rootNodeID.equals(nodeID)) {
-          group = submitJobsCommon(status, indices, batchSize, priority, rampUp, 
+          group = submitJobsCommon(status, indices, batchSize, priority, rampUp,
+            			   maxLoad, minMemory, minDisk,
                                    selectionKeys, licenseKeys, assocRoots, 
                                    timer);
         }
         else {
-          group = submitJobsCommon(status, indices, null, null, null, 
+          group = submitJobsCommon(status, indices, null, null, null,
+            			   null, null, null,
                                    null, null, assocRoots, 
                                    timer);
         }
@@ -11284,7 +11291,10 @@ class MasterMgr
    TreeSet<Integer> indices,
    Integer batchSize, 
    Integer priority, 
-   Integer rampUp, 
+   Integer rampUp,
+   Float maxLoad,              
+   Long minMemory,              
+   Long minDisk,  
    Set<String> selectionKeys,
    Set<String> licenseKeys,
    TreeSet<String> assocRoots, 
@@ -11301,7 +11311,8 @@ class MasterMgr
       TreeMap<Long,QueueJob> jobs = new TreeMap<Long,QueueJob>();
       
       submitJobs(status, indices, 
-		 true, batchSize, priority, rampUp, selectionKeys, licenseKeys, 
+		 true, batchSize, priority, rampUp, maxLoad, minMemory, minDisk, 
+		 selectionKeys, licenseKeys, 
 		 extJobIDs, nodeJobIDs, upsJobIDs, rootJobIDs, jobs, assocRoots, 
 		 timer);
       
@@ -11451,7 +11462,10 @@ class MasterMgr
    boolean isRoot, 
    Integer batchSize, 
    Integer priority, 
-   Integer rampUp, 
+   Integer rampUp,
+   Float maxLoad,              
+   Long minMemory,              
+   Long minDisk,  
    Set<String> selectionKeys,
    Set<String> licenseKeys,
    TreeMap<NodeID,Long[]> extJobIDs,   
@@ -11775,7 +11789,7 @@ class MasterMgr
               if((lindices != null) && (!lindices.isEmpty())) {
                 NodeStatus lstatus = status.getSource(link.getName());
                 submitJobs(lstatus, lindices, 
-                           false, null, null, null, null, null, 
+                           false, null, null, null, null, null, null, null, null,
                            extJobIDs, nodeJobIDs, upsJobIDs, rootJobIDs, 
                            jobs, assocRoots, timer);
               }
@@ -11874,7 +11888,16 @@ class MasterMgr
 	      jreqs.setPriority(priority);
 
 	    if(isRoot && (rampUp != null)) 
-	      jreqs.setRampUp(rampUp); 
+	      jreqs.setRampUp(rampUp);
+	    
+	    if(isRoot && (maxLoad != null)) 
+	      jreqs.setMaxLoad(maxLoad);
+	    
+	    if(isRoot && (minMemory != null)) 
+	      jreqs.setMinMemory(minMemory);
+	    
+	    if(isRoot && (minDisk != null)) 
+	      jreqs.setMinDisk(minDisk);
 
 	    if(isRoot && (selectionKeys != null)) {
 	      jreqs.removeAllSelectionKeys(); 
@@ -12034,7 +12057,7 @@ class MasterMgr
           NodeID lnodeID = lstatus.getNodeID();
           
           submitJobs(lstatus, null, 
-                     false, null, null, null, null, null, 
+                     false, null, null, null, null, null, null, null, null,
                      extJobIDs, nodeJobIDs, upsJobIDs, rootJobIDs, 
                      jobs, assocRoots, timer);
            

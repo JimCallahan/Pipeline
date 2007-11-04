@@ -1,4 +1,4 @@
-// $Id: JQueueJobBrowserPanel.java,v 1.33 2007/10/11 18:52:07 jesse Exp $
+// $Id: JQueueJobBrowserPanel.java,v 1.34 2007/11/04 20:42:38 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1059,6 +1059,18 @@ class JQueueJobBrowserPanel
 	Integer interval = null;
 	if(diag.overrideRampUp()) 
 	  interval = diag.getRampUp();
+	
+	Float maxLoad = null;
+	if(diag.overrideMaxLoad())
+	  maxLoad = diag.getMaxLoad();
+	
+	Long minMemory = null;
+	if(diag.overrideMinMemory())
+	  minMemory = diag.getMinMemory();
+	
+	Long minDisk= null;
+	if(diag.overrideMinDisk())
+	  minDisk = diag.getMinDisk();
 	  
 	TreeSet<String> selectionKeys = null;
 	if(diag.overrideSelectionKeys()) 
@@ -1070,6 +1082,7 @@ class JQueueJobBrowserPanel
 	
 	QueueJobsTask task = 
 	  new QueueJobsTask(targets, batchSize, priority, interval,
+	                    maxLoad, minMemory, minDisk,
 			    selectionKeys, licenseKeys);
 	task.start();
       }
@@ -1667,7 +1680,7 @@ class JQueueJobBrowserPanel
      TreeMap<NodeID,TreeSet<FileSeq>> targets
     ) 
     {
-      this(targets, null, null, null, null, null);
+      this(targets, null, null, null, null, null, null, null, null);
     }
     
     public 
@@ -1677,6 +1690,9 @@ class JQueueJobBrowserPanel
      Integer batchSize, 
      Integer priority, 
      Integer rampUp, 
+     Float maxLoad,              
+     Long minMemory,              
+     Long minDisk,  
      TreeSet<String> selectionKeys,
      TreeSet<String> licenseKeys
     ) 
@@ -1687,6 +1703,9 @@ class JQueueJobBrowserPanel
       pBatchSize     = batchSize;
       pPriority      = priority; 
       pRampUp        = rampUp; 
+      pMaxLoad       = maxLoad;
+      pMinMemory     = minMemory;
+      pMinDisk       = minDisk;
       pSelectionKeys = selectionKeys;
       pSelectionKeys = licenseKeys;
     }
@@ -1702,7 +1721,8 @@ class JQueueJobBrowserPanel
 				 "Resubmitting Jobs to the Queue: " + nodeID.getName());
 	    MasterMgrClient client = master.getMasterMgrClient(pGroupID);
 	    client.resubmitJobs
-	      (nodeID, pTargets.get(nodeID), pBatchSize, pPriority, pRampUp, 
+	      (nodeID, pTargets.get(nodeID), pBatchSize, pPriority, pRampUp,
+	       pMaxLoad, pMinMemory, pMinDisk,
 	       pSelectionKeys, pLicenseKeys);
 	  }
 	}
@@ -1722,6 +1742,9 @@ class JQueueJobBrowserPanel
     private Integer                           pBatchSize;
     private Integer                           pPriority;
     private Integer                           pRampUp; 
+    private Float                             pMaxLoad;        
+    private Long                              pMinMemory;              
+    private Long                              pMinDisk;
     private TreeSet<String>                   pSelectionKeys;
     private TreeSet<String>                   pLicenseKeys;
   }
