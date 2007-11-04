@@ -1,11 +1,8 @@
-// $Id: StringAnnotationParam.java,v 1.1 2007/06/15 00:27:31 jim Exp $
+// $Id: StringAnnotationParam.java,v 1.2 2007/11/04 20:44:35 jesse Exp $
 
 package us.temerity.pipeline;
 
 import us.temerity.pipeline.glue.GlueDecoder;
-
-import java.util.*;
-import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   S T R I N G   A N N O T A T I O N   P A R A M                                          */
