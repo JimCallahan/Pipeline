@@ -1,10 +1,11 @@
-// $Id: JCloneDialog.java,v 1.15 2007/10/15 20:46:20 jesse Exp $
+// $Id: JCloneDialog.java,v 1.16 2007/11/04 20:39:48 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import javax.swing.*;
@@ -588,6 +589,7 @@ class JCloneDialog
   /**
    * Register the node and clone the selected links and files.
    */ 
+  @SuppressWarnings("unchecked")
   private void
   doClone
   (
@@ -704,6 +706,27 @@ class JCloneDialog
     
     /* apply the changes */ 
     client.modifyProperties(pAuthor, pView, mod);
+    
+    /* Do the annotations */
+    {
+      TreeMap<String, BaseAnnotation> annots = client.getAnnotations(pNodeMod.getName());
+      for (String aname : annots.keySet()) {
+	if (pExportPanel.exportAnnotation(aname)) {
+	  BaseAnnotation an = annots.get(aname);
+	  PluginMgrClient mgr = PluginMgrClient.getInstance();
+	  BaseAnnotation newAnnot = mgr.newAnnotation(an.getName(), 
+	                                              an.getVersionID(), 
+	                                              an.getVendor()); 
+	  for (AnnotationParam param : an.getParams()) {
+	    String paramName = param.getName();
+	    Comparable value = param.getValue();
+	    AnnotationParam newParam = newAnnot.getParam(paramName);
+	    newParam.setValue(value);
+	  }
+	  client.addAnnotation(mod.getName(), aname, newAnnot);
+	}
+      }
+    }
 
     /* copy the files */ 
     if(pCopyFilesField.getValue()) {
@@ -899,7 +922,7 @@ class JCloneDialog
    * Whether to clone the other node parameters, actions and links.
    */ 
   private JExportPanel  pExportPanel; 
-
+  
 
   /*----------------------------------------------------------------------------------------*/
 

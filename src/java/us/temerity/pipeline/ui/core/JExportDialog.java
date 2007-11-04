@@ -1,4 +1,4 @@
-// $Id: JExportDialog.java,v 1.7 2007/10/15 20:46:20 jesse Exp $
+// $Id: JExportDialog.java,v 1.8 2007/11/04 20:39:48 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -259,7 +259,21 @@ class JExportDialog
     return pExportPanel.exportSource(sname); 
   }
 
-
+  
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Whether to export the annotation to the given source node.
+   */ 
+  public boolean
+  exportAnnotation
+  (
+   String sname
+  ) 
+  {
+    return pExportPanel.exportAnnotation(sname); 
+  }
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   U S E R   I N T E R F A C E                                                          */
