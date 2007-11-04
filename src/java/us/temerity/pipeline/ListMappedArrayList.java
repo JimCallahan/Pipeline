@@ -1,4 +1,4 @@
-// $Id: ListMappedArrayList.java,v 1.1 2007/10/23 01:43:39 jesse Exp $
+// $Id: ListMappedArrayList.java,v 1.2 2007/11/04 20:40:42 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -139,6 +139,18 @@ class ListMappedArrayList<K, V>
       throw new IllegalArgumentException("The key cannot be (null)!");
    
     return super.put(key, null);
+  }
+
+  /**
+   * Type-safe getter
+   */
+  public ArrayList<V> 
+  get
+  (
+    K key
+  )
+  {
+    return super.get(key);
   }
   
   

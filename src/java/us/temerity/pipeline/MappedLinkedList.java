@@ -139,6 +139,17 @@ class MappedLinkedList<K, V>
     return super.put(key, null);
   }
   
+  /**
+   * Type-safe getter method.
+   */
+  public LinkedList<V> get
+  (
+    K key
+  )
+  {
+    return super.get(key);
+  }
+  
   
   
   /*----------------------------------------------------------------------------------------*/

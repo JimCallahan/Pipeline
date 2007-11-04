@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.109 2007/10/23 02:29:58 jim Exp $
+// $Id: MasterMgrClient.java,v 1.110 2007/11/04 20:40:42 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -5871,7 +5871,7 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {
-    return submitJobs(new NodeID(author, view, name), indices, null, null, null, null, null);
+    return submitJobs(new NodeID(author, view, name), indices, null, null, null, null, null, null, null, null);
   }
 
   /**
@@ -5934,14 +5934,18 @@ class MasterMgrClient
    TreeSet<Integer> indices, 
    Integer batchSize, 
    Integer priority, 
-   Integer rampUp, 
+   Integer rampUp,
+   Float maxLoad,              
+   Long minMemory,              
+   Long minDisk,  
    Set<String> selectionKeys,
    Set<String> licenseKeys 
   ) 
     throws PipelineException
   {
     return submitJobs(new NodeID(author, view, name), indices, 
-		      batchSize, priority, rampUp, selectionKeys, licenseKeys);
+		      batchSize, priority, rampUp, maxLoad, minMemory, minDisk, 
+		      selectionKeys, licenseKeys);
   }
 
   /**
@@ -5972,7 +5976,7 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {
-    return submitJobs(nodeID, indices, null, null, null, null, null);
+    return submitJobs(nodeID, indices, null, null, null, null, null, null, null, null);
   }
 
   /**
@@ -6012,6 +6016,16 @@ class MasterMgrClient
    * 
    * @param rampUp
    *    The ramp-up interval (in seconds) for the job.
+   *    
+   * @param maxLoad 
+   *    The maximum system load allowed on an eligible host.
+   * 
+   * @param minMemory 
+   *    The minimum amount of free memory (in bytes) required on an eligible host.
+   * 
+   * @param minDisk 
+   *    The minimum amount of free temporary local disk space (in bytes) required on an 
+   *    eligible host.
    * 
    * @param selectionKeys 
    *   Overrides the set of selection keys an eligable host is required to have for jobs 
@@ -6034,7 +6048,10 @@ class MasterMgrClient
    TreeSet<Integer> indices,
    Integer batchSize, 
    Integer priority,  
-   Integer rampUp, 
+   Integer rampUp,
+   Float maxLoad,              
+   Long minMemory,              
+   Long minDisk,    
    Set<String> selectionKeys,
    Set<String> licenseKeys   
   ) 
@@ -6042,9 +6059,13 @@ class MasterMgrClient
   {
     verifyConnection();
 
+    JobReqsDelta delta = 
+      new JobReqsDelta
+      (0l, priority, rampUp, maxLoad, minMemory, minDisk, 
+       licenseKeys, selectionKeys);
+    
     NodeSubmitJobsReq req = 
-      new NodeSubmitJobsReq(nodeID, indices, batchSize, priority, rampUp, 
-			    selectionKeys, licenseKeys);
+      new NodeSubmitJobsReq(nodeID, indices, batchSize, delta);
 
     Object obj = performTransaction(MasterRequest.SubmitJobs, req);
     if(obj instanceof NodeSubmitJobsRsp) {
@@ -6099,6 +6120,16 @@ class MasterMgrClient
    * 
    * @param rampUp
    *    The ramp-up interval (in seconds) for the job.
+   *    
+   * @param maxLoad 
+   *    The maximum system load allowed on an eligible host.
+   * 
+   * @param minMemory 
+   *    The minimum amount of free memory (in bytes) required on an eligible host.
+   * 
+   * @param minDisk 
+   *    The minimum amount of free temporary local disk space (in bytes) required on an 
+   *    eligible host.
    * 
    * @param selectionKeys 
    *   Overrides the set of selection keys an eligable host is required to have for jobs 
@@ -6122,16 +6153,23 @@ class MasterMgrClient
    Integer batchSize, 
    Integer priority, 
    Integer rampUp, 
+   Float maxLoad,              
+   Long minMemory,              
+   Long minDisk,  
    Set<String> selectionKeys,
    Set<String> licenseKeys   
   ) 
     throws PipelineException
   {
     verifyConnection();
+    
+    JobReqsDelta delta = 
+      new JobReqsDelta
+      (0l, priority, rampUp, maxLoad, minMemory, minDisk, 
+       licenseKeys, selectionKeys);
 
     NodeResubmitJobsReq req = 
-      new NodeResubmitJobsReq(nodeID, targetSeqs, batchSize, priority, rampUp, 
-			      selectionKeys, licenseKeys);
+      new NodeResubmitJobsReq(nodeID, targetSeqs, batchSize, delta);
 
     Object obj = performTransaction(MasterRequest.ResubmitJobs, req);
     if(obj instanceof NodeSubmitJobsRsp) {

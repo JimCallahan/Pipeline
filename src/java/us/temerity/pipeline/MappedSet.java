@@ -107,6 +107,17 @@ public class MappedSet<K, V>
 	put(a, each);
   }
   
+  /**
+   * Type-safe getter method.
+   */
+  public TreeSet<V> get
+  (
+    K key
+  )
+  {
+    return super.get(key);
+  }
+  
   
   
   /*----------------------------------------------------------------------------------------*/
