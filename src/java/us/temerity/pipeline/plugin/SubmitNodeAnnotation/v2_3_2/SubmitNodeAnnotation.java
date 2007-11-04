@@ -1,3 +1,5 @@
+// $Id: SubmitNodeAnnotation.java,v 1.6 2007/11/04 20:45:02 jesse Exp $
+
 package us.temerity.pipeline.plugin.SubmitNodeAnnotation.v2_3_2;
 
 import java.util.ArrayList;
