@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.98 2007/11/04 20:42:38 jesse Exp $
+// $Id: JNodeViewerPanel.java,v 1.99 2007/11/05 04:32:59 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -96,6 +96,15 @@ class JNodeViewerPanel
       pRemoveSecondarySeqs = new TreeMap<String,FileSeq>();
 
       pRefreshDefaultToolMenu = true; 
+    }
+    
+    /* tool popup menu */ 
+    {
+      pToolPopup = new JPopupMenu();  
+      pToolPopup.addPopupMenuListener(this);
+
+      pDefaultToolPopup = new JPopupMenu();  
+      pDefaultToolPopup.addPopupMenuListener(this);
     }
 
     /* panel popup menu */ 
@@ -245,6 +254,8 @@ class JNodeViewerPanel
       pViewsEditingMenus    = new JMenu[5];
 
       pEditWithMenus = new JMenu[4];
+      
+      pToolMenu = new JMenu[5];
 
       JPopupMenu menus[] = { 
 	pUndefinedNodePopup, pPanelLockedNodePopup, pCheckedInNodePopup, 
@@ -530,6 +541,13 @@ class JNodeViewerPanel
             sub.add(item);
           }
 	}
+        
+        /* Tools menu */
+        {
+          JMenu sub = new JMenu("Tools");
+          pToolMenu[wk] = sub;
+          menus[wk].add(sub);
+        }
 
         pFirstRecentIndex[wk] = menus[wk].getComponentCount();
         pRecentMenuItems.add(new LinkedList<String>());
@@ -565,15 +583,6 @@ class JNodeViewerPanel
       item.setActionCommand("link-unlink");
       item.addActionListener(this);
       pLinkPopup.add(item);
-    }
-
-    /* tool popup menu */ 
-    {
-      pToolPopup = new JPopupMenu();  
-      pToolPopup.addPopupMenuListener(this);
-
-      pDefaultToolPopup = new JPopupMenu();  
-      pDefaultToolPopup.addPopupMenuListener(this);
     }
 
     updateMenuToolTips();
@@ -1397,6 +1406,7 @@ class JNodeViewerPanel
   {
     pEditorMenuToolset = null;
     pToolMenuToolset = null;
+    pToolMenusToolset = null;
     pRefreshDefaultToolMenu = true;
   }
 
@@ -1433,6 +1443,37 @@ class JNodeViewerPanel
     pEditAsOwnerItem.setEnabled(pPrivilegeDetails.isNodeManaged(pAuthor) && 
                                 !PackageInfo.sUser.equals(pAuthor) && 
                                 (PackageInfo.sOsType != OsType.Windows));
+  }
+  
+  /**
+   * Update the tool plugin menus in the main node menu (over a node).
+   */ 
+  private synchronized void
+  updateToolMenus()
+  {
+    String toolset = null;
+    if(pPrimary != null) {
+      NodeStatus status = pPrimary.getNodeStatus();
+      if(status != null) {
+	NodeDetails details = status.getDetails();
+	if(details != null) {
+	  if(details.getWorkingVersion() != null) 
+	    toolset = details.getWorkingVersion().getToolset();
+	  else if(details.getLatestVersion() != null) 
+	    toolset = details.getLatestVersion().getToolset();
+	}
+      }
+    }
+    
+    if((toolset != null) && !toolset.equals(pToolMenusToolset)) {
+      UIMaster master = UIMaster.getInstance();
+      int wk;
+      for(wk=0; wk<pToolMenu.length; wk++) 
+	master.rebuildToolMenu(pNodeMenus[wk], 
+                               pGroupID, toolset, pToolMenu[wk], this);
+      
+      pToolMenusToolset = toolset;
+    }    
   }
 
   /**
@@ -2672,6 +2713,7 @@ class JNodeViewerPanel
 	      refresh();
 
 	      updateWorkingAreaMenus();
+	      updateToolMenus();
 	    
 	      NodeDetails details = pPrimary.getNodeStatus().getDetails();
 	      if(details != null) {
@@ -6982,6 +7024,11 @@ class JNodeViewerPanel
    * The toolset used to build the tool menu.
    */ 
   private String  pToolMenuToolset;
+  
+  /**
+   * The toolset used to build the tool menus.
+   */ 
+  private String  pToolMenusToolset;
 
   /**
    * Whether the default toolset menu needs to be rebuilt.
@@ -7088,8 +7135,8 @@ class JNodeViewerPanel
    * The tool plugin popup menus.
    */ 
   private JPopupMenu  pToolPopup; 
-  private JPopupMenu  pDefaultToolPopup; 
-
+  private JPopupMenu  pDefaultToolPopup;
+  
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -7153,6 +7200,11 @@ class JNodeViewerPanel
   private JMenu[]  pEditWithMenus; 
   private JMenu[]  pViewsContainingMenus;
   private JMenu[]  pViewsEditingMenus;
+  
+  /**
+   * The tool plugin menu in the Node Menu
+   */
+  private JMenu[]  pToolMenu;
 
   /**
    * The remove secondary node submenu.

@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.71 2007/11/04 20:42:38 jesse Exp $
+// $Id: UIMaster.java,v 1.72 2007/11/05 04:32:59 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1191,6 +1191,85 @@ class UIMaster
    int channel, 
    String tname, 
    JPopupMenu menu, 
+   ActionListener listener
+  ) 
+  {
+    PluginMenuLayout layout = null;
+    TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
+    try {
+      MasterMgrClient client = getMasterMgrClient(channel);
+
+      synchronized(pToolPlugins) {
+	plugins = pToolPlugins.get(tname);
+	if(plugins == null) {
+	  DoubleMap<String,String,TreeSet<VersionID>> index = 
+	    client.getToolsetToolPlugins(tname);
+
+	  TripleMap<String,String,VersionID,TreeSet<OsType>> all = 
+	    PluginMgrClient.getInstance().getTools();
+
+	  plugins = new TripleMap<String,String,VersionID,TreeSet<OsType>>();
+	  for(String vendor : index.keySet()) {
+	    for(String name : index.get(vendor).keySet()) {
+	      for(VersionID vid : index.get(vendor).get(name)) {
+		plugins.put(vendor, name, vid, all.get(vendor, name, vid));
+	      }
+	    }
+	  }
+
+	  pToolPlugins.put(tname, plugins);
+	}
+      }
+      
+      synchronized(pToolLayouts) {
+	layout = pToolLayouts.get(tname);
+	if(layout == null) {
+	  layout = client.getToolMenuLayout(tname);
+	  pToolLayouts.put(tname, layout);
+	}
+      }
+    }
+    catch(PipelineException ex) {
+      showErrorDialog(ex);
+    }
+
+    menu.removeAll();
+    if((layout != null) && !layout.isEmpty()) {
+      for(PluginMenuLayout pml : layout) 
+	menu.add(rebuildPluginMenuHelper(topmenu, pml, "run-tool", plugins, listener));
+    }
+    else {
+      JPopupMenuItem item = new JPopupMenuItem(topmenu, "(None Specified)");
+      item.setEnabled(false);
+      menu.add(item);
+    }
+  }
+  
+  /**
+   * Rebuild the contents of an tool plugin menu for the given toolset.
+   * 
+   * @param topmenu
+   *   The top-level popup menu containing the items.
+   * 
+   * @param channel
+   *   The index of the update channel.
+   * 
+   * @param tname
+   *   The name of the toolset.
+   * 
+   * @param menu
+   *   The menu to be rebuilt.
+   * 
+   * @param listener
+   *   The listener for menu selection events.
+   */ 
+  public void
+  rebuildToolMenu
+  (
+   JPopupMenu topmenu,
+   int channel, 
+   String tname, 
+   JMenu menu, 
    ActionListener listener
   ) 
   {
