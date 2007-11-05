@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.110 2007/11/04 20:40:42 jesse Exp $
+// $Id: MasterMgrClient.java,v 1.111 2007/11/05 23:46:51 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -4686,11 +4686,14 @@ class MasterMgrClient
    *
    * @param mod
    *   The initial working version to register.
+   *   
+   * @return
+   *   The NodeMod which represents the node that was just registered.
    * 
    * @throws PipelineException
    *   If unable to register the given node.
    */
-  public synchronized void 
+  public synchronized NodeMod 
   register
   ( 
    String author, 
@@ -4705,7 +4708,14 @@ class MasterMgrClient
     NodeRegisterReq req = new NodeRegisterReq(id, mod);
 
     Object obj = performTransaction(MasterRequest.Register, req);
-    handleSimpleResponse(obj);
+    if(obj instanceof NodeGetWorkingRsp) {
+      NodeGetWorkingRsp rsp = (NodeGetWorkingRsp) obj;
+      return rsp.getNodeMod();      
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
   }
 
 
@@ -5220,11 +5230,14 @@ class MasterMgrClient
    * 
    * @param newName
    *   The fully resolved name of the cloned node.
+   *   
+   * @return 
+   *   A {@link NodeMod} representing the newly cloned node.
    * 
    * @throws PipelineException
    *   If unable to clone the given node.
    */
-  public synchronized void 
+  public synchronized NodeMod 
   clone
   ( 
    String author, 
@@ -5234,7 +5247,7 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {
-    clone(author, view, oldName, newName, true, true, true);
+    return clone(author, view, oldName, newName, true, true, true);
   }
 
   /**
@@ -5263,11 +5276,14 @@ class MasterMgrClient
    * 
    * @param cloneFiles
    *   Whether to copy the files of source node as well.
+   *   
+   * @return 
+   *   A {@link NodeMod} representing the newly cloned node.
    * 
    * @throws PipelineException
    *   If unable to clone the given node.
    */
-  public synchronized void 
+  public synchronized NodeMod 
   clone
   ( 
    String author, 
@@ -5329,6 +5345,7 @@ class MasterMgrClient
       NodeID target = new NodeID(author, view, newName);
       cloneFiles(source, target);
     }
+    return getWorkingVersion(author, view, newName);
   } 
 
   /**

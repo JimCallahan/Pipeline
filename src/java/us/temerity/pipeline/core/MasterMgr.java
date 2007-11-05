@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.223 2007/11/04 20:42:38 jesse Exp $
+// $Id: MasterMgr.java,v 1.224 2007/11/05 23:46:51 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -8297,8 +8297,9 @@ class MasterMgr
 
 	/* post-op tasks */ 
 	startExtensionTasks(timer, factory);
-
-	return new SuccessRsp(timer);
+	
+	NodeMod returnMod = new NodeMod(getWorkingBundle(req.getNodeID()).getVersion());
+	return new NodeGetWorkingRsp(timer, req.getNodeID(), returnMod);
       }
       finally {
 	lock.writeLock().unlock();
