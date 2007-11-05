@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.48 2007/11/04 20:42:38 jesse Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.49 2007/11/05 04:33:53 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2503,15 +2503,11 @@ class JQueueJobViewerPanel
     for(ViewerJob vjob : pSelected.values()) {
       JobStatus status = vjob.getJobStatus();
       if(status != null) {
-	switch(status.getState()) {
-	case Aborted:
-	case Failed:
-	  failed.put(status.getJobID(), status);
-	}
+	failed.put(status.getJobID(), status);
       }
     }
 
-    /* elimenate the non-root jobs */ 
+    /* eliminate the non-root jobs */ 
     {
       TreeSet<Long> sourceIDs = new TreeSet<Long>();
       for(Long jobID : failed.keySet()) {

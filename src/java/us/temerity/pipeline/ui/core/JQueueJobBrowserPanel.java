@@ -1,4 +1,4 @@
-// $Id: JQueueJobBrowserPanel.java,v 1.34 2007/11/04 20:42:38 jesse Exp $
+// $Id: JQueueJobBrowserPanel.java,v 1.35 2007/11/05 04:33:53 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1103,11 +1103,7 @@ class JQueueJobBrowserPanel
 	  JobStatus status = pJobStatus.get(jobID);
 	  NodeID targetID = null;
 	  if(status != null) {
-	    switch(status.getState()) {
-	    case Aborted:
-	    case Failed:
-	      targetID = status.getNodeID();
-	    }
+	    targetID = status.getNodeID();
 	  }
       
 	  if(targetID != null) {
