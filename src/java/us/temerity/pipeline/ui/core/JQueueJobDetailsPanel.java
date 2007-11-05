@@ -1,20 +1,17 @@
-// $Id: JQueueJobDetailsPanel.java,v 1.14 2007/09/07 18:52:38 jim Exp $
+// $Id: JQueueJobDetailsPanel.java,v 1.15 2007/11/05 22:48:12 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
-import us.temerity.pipeline.*;
-import us.temerity.pipeline.ui.*;
-import us.temerity.pipeline.glue.*;
-import us.temerity.pipeline.laf.LookAndFeelLoader;
-
 import java.awt.*;
 import java.awt.event.*;
-import java.io.*;
 import java.util.*;
-import java.text.*;
+
 import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.tree.*;
+
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.glue.*;
+import us.temerity.pipeline.math.*;
+import us.temerity.pipeline.ui.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   Q U E U E   J O B   D E T A I L S   P A N E L                                          */
@@ -65,6 +62,9 @@ class JQueueJobDetailsPanel
   private void 
   initUI()
   {
+    pLinkActionParamNodeNames = new ArrayList<String>();
+    pLinkActionParamValues = new ArrayList<String>();
+    
     /* initialize the panel components */ 
     {
       setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));  
@@ -385,7 +385,7 @@ class JQueueJobDetailsPanel
 	  pProcessDrawer = drawer;
 	  vbox.add(drawer);
 	} 
-
+	
 	/* job requirements */ 
 	{ 
 	  Box jrbox = new Box(BoxLayout.Y_AXIS);
@@ -508,6 +508,71 @@ class JQueueJobDetailsPanel
 	  pJobReqsDrawer = drawer;
 	  vbox.add(drawer);
 	}
+	
+	/* action information */
+	{
+	  Box actbox = new Box(BoxLayout.Y_AXIS);
+	  pActionBox = actbox;
+	  
+	  {
+	    Component comps[] = createCommonPanels();
+	    {
+	      JPanel tpanel = (JPanel) comps[0];
+	      JPanel vpanel = (JPanel) comps[1];
+	      
+	      /* Action Name */
+	      {
+		pActionNameField = UIFactory.createTitledTextField
+		  (tpanel, "Action:", sTSize, 
+		   vpanel, "-", sVSize, 
+		   "The name of the Action plugin used to regenerate the job's files.");
+	      }
+	      
+	      UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+	      
+	      /* Action Version */
+	      {
+		pActionVersionField = UIFactory.createTitledTextField
+		  (tpanel, "Version:", sTSize, 
+		   vpanel, "-", sVSize, 
+		   "The revision number of the Action plugin.");
+	      }
+	      
+	      UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+	      
+	      /* Action Vendor */
+	      {
+		pActionVendorField = UIFactory.createTitledTextField
+		  (tpanel, "Vendor:", sTSize, 
+		   vpanel, "-", sVSize, 
+		   "The name of the vendor of the Action plugin.");
+	      }
+	      
+	      UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+	      
+	      /* Action OS Support */
+	      {
+		pActionOsSupportField = UIFactory.createTitledOsSupportField
+		  (tpanel, "OS Support:", sTSize, 
+		   vpanel, sVSize, 
+		   "The operating system types supported by the Action plugin.");
+	      }
+	    }
+	    actbox.add(comps[2]);
+	  }
+	  {
+	    Box apbox = new Box(BoxLayout.Y_AXIS);
+	    pActionParamsBox = apbox;
+
+	    actbox.add(apbox);
+	  }
+	  
+	  JDrawer drawer = new JDrawer("Action Information:", actbox, false);
+	  drawer.setToolTipText(UIFactory.formatToolTip
+	    ("Information about the Action that is associated with the job."));
+	  pActionDrawer = drawer;
+	  vbox.add(drawer);
+	}
 
 	/* files panel */ 
 	{
@@ -516,17 +581,8 @@ class JQueueJobDetailsPanel
 	  
 	  fbox.addComponentListener(this);
 	  
-	  {
-	    JPanel spanel = new JPanel();
-	    spanel.setName("Spacer");
-	    
-	    spanel.setMinimumSize(new Dimension(7, 0));
-	    spanel.setMaximumSize(new Dimension(7, Integer.MAX_VALUE));
-	    spanel.setPreferredSize(new Dimension(7, 0));
-	    
-	    fbox.add(spanel);
-	  }
-	
+	  fbox.add(UIFactory.createSidebar());
+	  
 	  {
 	    Box dbox = new Box(BoxLayout.Y_AXIS);
 
@@ -996,6 +1052,28 @@ class JQueueJobDetailsPanel
 	pPageFaultsField.setText(formatLong(faults));
       }
     }
+    
+    /* action panel */
+    
+    if (pJob != null) {
+      BaseAction action = pJob.getAction();
+      assert(action != null);
+
+      pActionNameField.setText(action.getName());
+      pActionVersionField.setText("v" + action.getVersionID());
+      pActionVendorField.setText(action.getVendor());
+      pActionOsSupportField.setSupports(action.getSupports());
+      
+      updateActionParams(action);
+    }
+    else {
+      pActionNameField.setText(null);
+      pActionVersionField.setText(null);
+      pActionVendorField.setText(null);
+      pActionOsSupportField.setSupports(null);
+      
+      updateActionParams(null);
+    }
 
     /* job requirements panel */ 
     {
@@ -1276,6 +1354,317 @@ class JQueueJobDetailsPanel
       return String.format("%1$.1fG", g);
     }
   }
+  
+  /**
+   * Update the UI components associated with the job's action's parameters.
+   */ 
+  private void 
+  updateActionParams
+  (
+    BaseAction action
+  ) 
+  {
+    pActionParamsBox.removeAll();
+
+    Component comps[] = createCommonPanels();
+    JPanel tpanel = (JPanel) comps[0];
+    tpanel.setName("BottomTitlePanel");
+    JPanel vpanel = (JPanel) comps[1];
+    vpanel.setName("BottomValuePanel");
+
+    /* per-source params */ 
+    if((action != null) && action.supportsSourceParams()) {
+      ActionAgenda agenda = pJob.getActionAgenda();
+      UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
+
+      pViewSourceParamsDialog = null;
+      
+      pSourceParamComponents = new Component[2];
+      
+      {
+	JLabel label = UIFactory.createFixedLabel
+	  ("Source Parameters:", sTSize, JLabel.RIGHT, 
+	   "The Action plugin parameters associated with each source node file sequence.");
+	pSourceParamComponents[0] = label;
+	
+	tpanel.add(label);
+      }
+      
+      { 
+	Box hbox = new Box(BoxLayout.X_AXIS);
+	
+	if(action.supportsSourceParams()) {
+	  JButton btn = new JButton("View...");
+	  pSourceParamComponents[1] = btn;
+		
+	  btn.setName("ValuePanelButton");
+	  btn.setRolloverEnabled(false);
+	  btn.setFocusable(false);
+	  
+	  Dimension size = new Dimension(sVSize, 19);
+	  btn.setMinimumSize(size);
+	  btn.setPreferredSize(size);
+	  btn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+	  
+	  btn.addActionListener(this);
+	  btn.setActionCommand("view-source-params");
+	    
+	  hbox.add(btn);
+	  
+	  {
+	    String title = agenda.getPrimaryTarget().toString();
+	    
+	    ArrayList<String> snames  = new ArrayList<String>();
+	    ArrayList<String> stitles = new ArrayList<String>();
+	    ArrayList<FileSeq> sfseqs = new ArrayList<FileSeq>();
+
+	    for(String sname : agenda.getSourceNames()) {
+
+	      FileSeq primary = agenda.getPrimarySource(sname);
+	      String stitle = primary.toString();
+
+	      snames.add(sname);
+	      stitles.add(stitle);
+	      sfseqs.add(null);
+
+	      for(FileSeq fseq : agenda.getSecondarySources(sname)) {
+		snames.add(sname);
+		stitles.add(stitle);
+		sfseqs.add(fseq);
+	      }
+	    }
+	    
+	    pViewSourceParamsDialog = 
+	      new JSourceParamsDialog
+	        (getTopFrame(), false, title, snames, stitles, sfseqs, action);
+	  }
+	}
+	else {
+	  JTextField field = UIFactory.createTextField("-", sVSize, JLabel.CENTER);
+	  pSourceParamComponents[1] = field;
+	  
+	  hbox.add(field);
+	}
+	
+	vpanel.add(hbox);
+      }	
+    }
+    else {
+      tpanel.add(Box.createRigidArea(new Dimension(sTSize, 0)));
+      vpanel.add(Box.createHorizontalGlue());
+    }
+    pActionParamsBox.add(comps[2]);
+
+    /* single valued parameters */ 
+    if((action != null) && action.hasSingleParams()) {
+      ActionAgenda agenda = pJob.getActionAgenda();
+      pLinkActionParamValues.clear();
+      pLinkActionParamValues.add("-");
+      for(String sname : agenda.getSourceNames()) 
+	pLinkActionParamValues.add(agenda.getPrimarySource(sname).toString());
+      
+      pLinkActionParamNodeNames.clear();
+      pLinkActionParamNodeNames.add(null);
+      pLinkActionParamNodeNames.addAll(agenda.getSourceNames());
+
+      {
+	Box hbox = new Box(BoxLayout.X_AXIS);
+	hbox.addComponentListener(this);
+
+        hbox.add(UIFactory.createSidebar());
+      
+	updateSingleActionParams(action, action.getSingleLayout(), hbox, 1);
+	
+	pActionParamsBox.add(hbox);
+      }
+    }
+
+    pActionBox.revalidate();
+    pActionBox.repaint();
+  }
+
+  /**
+   * Recursively create drawers containing the working and checked-in single valued 
+   * action parameters.
+   */ 
+  private void 
+  updateSingleActionParams
+  (
+   BaseAction action, 
+   LayoutGroup group, 
+   Box sbox, 
+   int level
+  ) 
+  {
+    Box dbox = new Box(BoxLayout.Y_AXIS);    
+    {
+      Component comps[] = createCommonPanels();
+      JPanel tpanel = (JPanel) comps[0];
+      JPanel vpanel = (JPanel) comps[1];
+
+      for(String pname : group.getEntries()) {
+	if(pname == null) {
+	  UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
+	}
+	else {
+	  UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+
+	  /* single valued parameter */ 
+	  ActionParam aparam = action.getSingleParam(pname);
+	  if(aparam != null) {
+	    if(aparam instanceof Color3dActionParam) {
+	      Color3d value = (Color3d) aparam.getValue();
+	      JColorField field = UIFactory.createTitledColorField
+	        (getTopFrame(), tpanel,aparam.getNameUI() + ":" ,  sTSize-7*level, 
+		 vpanel, value, sVSize);
+
+	      field.setEnabled(false); 
+	    }
+	    else if(aparam instanceof Tuple2iActionParam) {
+	      createLabel(aparam, level, tpanel);
+	      Tuple2i value = (Tuple2i) aparam.getValue();
+	      JTuple2iField field = new JTuple2iField(); 
+	      field.setValue(value);
+
+	      Dimension size = new Dimension(sVSize, 19);
+	      field.setMinimumSize(size);
+	      field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+	      field.setPreferredSize(size);
+
+	      field.setEnabled(false); 
+
+	      vpanel.add(field);
+	    }
+	    else if(aparam instanceof Tuple3iActionParam) {
+	      createLabel(aparam, level, tpanel);
+	      Tuple3i value = (Tuple3i) aparam.getValue();
+	      JTuple3iField field = new JTuple3iField(); 
+	      field.setValue(value);
+
+	      Dimension size = new Dimension(sVSize, 19);
+	      field.setMinimumSize(size);
+	      field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+	      field.setPreferredSize(size);
+
+	      field.setEnabled(false); 
+
+	      vpanel.add(field);
+	    }
+	    else if(aparam instanceof Tuple2dActionParam) {
+	      createLabel(aparam, level, tpanel);
+	      Tuple2d value = (Tuple2d) aparam.getValue();
+	      JTuple2dField field = new JTuple2dField(); 
+	      field.setValue(value);
+
+	      Dimension size = new Dimension(sVSize, 19);
+	      field.setMinimumSize(size);
+	      field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+	      field.setPreferredSize(size);
+
+	      field.setEnabled(false); 
+
+	      vpanel.add(field);
+	    }
+	    else if(aparam instanceof Tuple3dActionParam) {
+	      createLabel(aparam, level, tpanel);
+	      Tuple3d value = (Tuple3d) aparam.getValue();
+	      JTuple3dField field = new JTuple3dField(); 
+	      field.setValue(value);
+
+	      Dimension size = new Dimension(sVSize, 19);
+	      field.setMinimumSize(size);
+	      field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+	      field.setPreferredSize(size);
+
+	      field.setEnabled(false); 
+
+	      vpanel.add(field);
+	    }
+	    else if(aparam instanceof Tuple4dActionParam) {
+	      createLabel(aparam, level, tpanel);
+	      Tuple4d value = (Tuple4d) aparam.getValue();
+	      JTuple4dField field = new JTuple4dField(); 
+	      field.setValue(value);
+
+	      Dimension size = new Dimension(sVSize, 19);
+	      field.setMinimumSize(size);
+	      field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+	      field.setPreferredSize(size);
+
+	      field.setEnabled(false); 
+
+	      vpanel.add(field);
+	    }
+	    else {
+	      String text = "-";
+	      {
+		if(aparam instanceof LinkActionParam) {
+		  String source = (String) aparam.getValue();
+		  int idx = pLinkActionParamNodeNames.indexOf(source);
+		  if(idx != -1) 
+		    text = pLinkActionParamValues.get(idx);
+		}
+		else if(aparam instanceof BooleanActionParam) {
+		  Boolean value = (Boolean) aparam.getValue();
+		  if(value != null) 
+		    text = (value ? "YES" : "no");
+		  else 
+		    text = "-";
+		}
+		else {
+		  Comparable value = aparam.getValue();
+		  if(value != null)
+		    text = value.toString();
+		}
+	      }
+
+	      JTextField field = UIFactory.createTitledTextField
+	        (tpanel,aparam.getNameUI() + ":" ,  sTSize-7*level, 
+		 vpanel, text, sVSize);
+	    }
+	  }
+	}
+      }
+      dbox.add(comps[2]);
+    }
+    
+    if(!group.getSubGroups().isEmpty())  {
+      Box hbox = new Box(BoxLayout.X_AXIS);
+      hbox.addComponentListener(this);
+
+      hbox.add(UIFactory.createSidebar());
+
+      {
+	Box vbox = new Box(BoxLayout.Y_AXIS);
+	for(LayoutGroup sgroup : group.getSubGroups()) 
+	  updateSingleActionParams(action, sgroup, vbox, level+1);
+
+	hbox.add(vbox);
+      }
+      dbox.add(hbox);
+    }
+    
+    {
+      JDrawer drawer = new JDrawer(group.getNameUI() + ":", dbox, true);
+      drawer.setToolTipText(UIFactory.formatToolTip(group.getDescription()));
+      sbox.add(drawer);
+    }
+  }
+  
+  private JLabel
+  createLabel
+  (
+    ActionParam aparam,
+    int level,
+    JPanel tpanel
+  )
+  {
+    JLabel toReturn = UIFactory.createFixedLabel
+	(aparam.getNameUI() + ":", sTSize-7*level, JLabel.RIGHT, 
+	 aparam.getDescription());
+    tpanel.add(toReturn);
+    return toReturn;
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -1456,6 +1845,8 @@ class JQueueJobDetailsPanel
       doShowOutput();
     else if(cmd.equals("show-error")) 
       doShowErrors();
+    else if(cmd.equals("view-source-params"))
+      doViewSourceParams();
   }
 
 
@@ -1506,6 +1897,15 @@ class JQueueJobDetailsPanel
       pStdErrDialog.setVisible(true);
     }
   }
+  
+  /**
+   * Show a dialog for viewing the checked-in per-source parameters.
+   */ 
+  private void 
+  doViewSourceParams() 
+  {
+    pViewSourceParamsDialog.setVisible(true);
+  }  
 
 
 
@@ -1795,6 +2195,65 @@ class JQueueJobDetailsPanel
    */ 
   private JDrawer  pJobReqsDrawer;
 
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * The field for the name of the Action.
+   */
+  private JTextField pActionNameField;
+  
+  /**
+   * The field for the version of the Action.
+   */
+  private JTextField pActionVersionField;
+  
+  /**
+   * The field for the vendor of the Action.
+   */
+  private JTextField pActionVendorField;
+  
+  /**
+   * The field for the supported OS's of the Action.
+   */
+  private JOsSupportField pActionOsSupportField;
+  
+  /**
+   * The action parameters container.
+   */ 
+  private Box  pActionParamsBox;
+  
+  /**
+   * The action container.
+   */ 
+  private Box  pActionBox;
+  
+  /**
+   * A map of the components representing the Action Parameters indexed by parameter name.
+   */
+  private TreeMap<String,Component[]>  pActionParamComponents;
+  
+  /**
+   * The UI compontents related to per-source action parameters.
+   */ 
+  private Component pSourceParamComponents[]; 
+  
+  /**
+   * The dialog used to view checked-in per-source parameters.
+   */ 
+  private JSourceParamsDialog  pViewSourceParamsDialog;
+
+  /**
+   * The drawer containing the action components.
+   */ 
+  private JDrawer  pActionDrawer;
+  
+  /**
+   * The JCollectionField values and corresponding fully resolved names of the 
+   * upstream nodes used by LinkActionParam fields.
+   */ 
+  private ArrayList<String>  pLinkActionParamValues;
+  private ArrayList<String>  pLinkActionParamNodeNames;
+  
   
   /*----------------------------------------------------------------------------------------*/
 
