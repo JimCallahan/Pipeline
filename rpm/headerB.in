@@ -38,7 +38,7 @@ tarball=pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.tgz
 if [ -x /usr/bin/md5sum ]
 then
   echo "Extracting..."
-  tail +@HEADER_LENGTH@ $0 > $tarball
+  tail --lines=+@HEADER_LENGTH@ $0 > $tarball
 
   echo -n "Verifying Software Integrity... "
   if echo "@CHECKSUM@" | /usr/bin/md5sum --check --status - 
