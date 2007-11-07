@@ -1,0 +1,35 @@
+#!/bin/bash
+
+JAR=$1
+
+rm -f plugin-all
+
+for pdir in `find . -mindepth 1 -maxdepth 1 -type d | sort`
+do 
+  plugin=`echo $pdir | awk -F/ '{print $2}'`
+
+  for vdir in `find $pdir -mindepth 1 -maxdepth 1 -type d | sort`
+  do 
+    version=`echo $vdir | awk -F/ '{print $3}'`
+#   echo $plugin $version
+
+    cnt=`find $vdir -type f -name "*.class" | wc -l`
+    if [ $cnt -eq 1 ] 
+    then
+      cfile=`find $vdir -type f -name "*.class" | sed 's:\./:us/temerity/pipeline/plugin/:g'`
+      echo "PLUGIN CLASS:" $cfile
+      echo $cfile >> plugin-all
+    else 
+      jfile=us/temerity/pipeline/plugin/$plugin/$version/$plugin.jar
+      echo "PLUGIN JAR:" $jfile
+      pushd ../../../.. >& /dev/null
+        echo $JAR cvf $jfile \
+          `find us/temerity/pipeline/plugin/$plugin/$version -type f -name "*.class"`
+        $JAR cvf $jfile \
+          `find us/temerity/pipeline/plugin/$plugin/$version -type f -name "*.class"`
+      popd >& /dev/null
+      echo $jfile >> plugin-all
+    fi
+  done
+done
+
