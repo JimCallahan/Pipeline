@@ -22,6 +22,7 @@ popd
 
 
 pushd i686-pc-linux-gnu-dbg
+  time \
   CC="/usr/local/compat-gcc-3.3.4/bin/gcc -m32" \
   CXX="/usr/local/compat-gcc-3.3.4/bin/g++ -m32" \
   LD_LIBRARY_PATH=/usr/local/compat-gcc-3.3.4/lib \
@@ -47,9 +48,11 @@ then
   echo "  UPDATING: $MAC_HOSTNAME"
   echo "-------------------------------------------------------------------------------------"
 
+  time \
   rsync -av --exclude-from=$plsrcdir/config/excluded --delete-excluded \
     $plsrcdir/ $MAC_HOSTNAME:/Users/$USER/code-$customer/src/pipeline
 
+  time \
   ssh $MAC_HOSTNAME "source .bash_profile; \
                      cd code-$customer/build/pipeline; \
                      ../../src/pipeline/config/bootstrap-mac.sh \
@@ -66,9 +69,11 @@ then
   echo "  UPDATING: $WIN_HOSTNAME"
   echo "-------------------------------------------------------------------------------------"
 
+  time \
   rsync -av --exclude-from=$plsrcdir/config/excluded --delete-excluded \
     $plsrcdir/ $WIN_HOSTNAME:/home/$USER/code/src/pipeline
 
+  time \
   ssh $WIN_HOSTNAME "source .bash_profile; \
                      cd code/build/pipeline; \
                      ../../src/pipeline/config/bootstrap-win.sh \
