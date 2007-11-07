@@ -1,5 +1,265 @@
 Jython NEWS
 
+Jython 2.2.1
+  Identical to 2.2.1 rc2
+
+Jython 2.2.1 rc2
+  Bugs fixed
+    - Python files are parsed using the JVM's default encoding
+    - [ 1800378 ] __unicode__ ignored on subclasses of builtin types
+    - [ 1801802 ] JavaImportHelper not thread safe
+    - python.console.encoding is silently ignored if the JVM doesn't support the given encoding
+
+Jython 2.2.1 rc1
+  Bugs fixed
+    - Reading and writing on files would run data through the JVM's default charset
+    - Include the row number where an exception occured while using a zxJDBC cursor
+    - [ 1766527 ] in keyword doesn't work on os.environ
+    - [ 1767194 ] xmllib applies default namespace to attributes incorrectly
+    - [ 1768074 ] str.replace doesn't handle an empty string to be replaced
+    - [ 1775893 ] in keyword does not use dict.has_key()
+    - [ 1782493 ] jython --version doesn't show the java version number
+    - [ 1782856 ] zxJDBC.Timestamp returns hours in AM/PM not 24 hour time
+    - [ 1783960 ] can not exclude parts from text-mode installation
+    - [ 1799328 ] string formatting doesn't call __unicode__ on %s in unicode objects 
+    - [ 1763263 ] os.utime(path, None) doesn't work (incl. a patch)
+    - [ 1758904 ] I added doc strings for functions in os module (javaos.py).
+    - [ 1735774 ] Redirecting stdout/err with os.popen fails if cmd is unicode
+    - [ 1773865 ] Patch for [1768990] pickle fails on subclasses
+    - [ 1783153 ] Patch: compatibility with Java 1.3 for Jython 2.2
+
+Jython 2.2
+  Identical to 2.2 rc3
+Jython 2.2 rc3
+  New Features
+    - Added telnetlib from CPython
+    - Added cpython_compatible_select to select.  See
+    http://wiki.python.org/jython/SelectModule for information on when
+    to use it.
+    - Several more java.nio exceptions are mapped to their corresponding
+    Python error codes when thrown.
+  Bugs fixed
+    - recv on closed sockets threw an exception instead returning the
+    empty string
+    -  A PySystemState being garbage collected caused System.out and
+    System.in to be closed.  This would cause 'print' to stop working.
+    - Closing a FileWrapper on a socket closes its underlying socket
+    - Sockets just have their [In|Out]putStreams closed instead of being
+    properly shutdown by shutdown()
+    - SO_REUSEADDR is reset on sockets from a server socket's accept call 
+    causing later binds to the server socket's port to fail.
+    - Client sockets that have bind called before connect don't respect 
+    SO_REUSEADDR
+    - [ 1758838 ] execfile() throws a NullPointerException in the interactive
+    console
+
+Jython 2.2 rc2
+  Bugs fixed
+    - [ 931129 ] jython -jar some-path/test.jar fails
+    - [ 1719528 ] -c doesn't put the empty string in sys.path
+    - [ 1746957 ] Weird 'uu' prefix for unicode
+    - [ 1747092 ] Failed imports should not be "cached"
+    - [ 1742770 ] urllib.urlopen('http://inv') -> UnknownHostException
+    - [ 1745068 ] select gives confusing message when given blocking sockets
+    - [ 1744775 ] umlauts displayed incorrectly in installer
+    - timeouts on socket client connects were not being honoured
+    - a float could not be passed as milliseconds to select.poll.poll
+
+Jython 2.2 rc1
+  New features
+    - Completely rewritten socket module and new select module using java.nio 
+    which allows the use of SSL and non-blocking sockets.
+    - Explicit imports of Java classes like 'from java.net import URL' or 
+    'import java.net.URL' work with package scanning disabled.
+  Bugs fixed
+    - [ 1708080 ] float("1d") -> 1.0 (not ValueError as expected)
+    - [ 1661700 ] os.path.abspath raises IOException if drive not accessible
+    - [ 1662689 ] os.path.abspath eliminates symlinks
+    - [ 1717498 ] os.path.splitdrive does nothing for Windows drives
+    - [ 1622207 ] _weakref.ref(o) only works if the argument is hasheable
+    - [ 1735864 ] Parser not threadsafe
+    - [ 1722306 ] OverflowError in UDP Socket Implementation
+    - [ 1348645 ] socket.py send() requires too many arguments
+    - [ 998602 ] urllib : https request does not work
+    - [ 621180 ] module socket _udpsocket close bug
+
+Jython 2.2 beta2
+  New features
+    - All functions in __builtin__ are new style functions instead of reflected
+      functions
+    - Classmethods added to newstyle classes
+    - array is a newstyle class
+    - org.python.util.JLineConsole provides readline-like functionality with 
+      JLine without requiring native readline
+  
+  Bugs fixed
+    - [ 1599012 ] current directory is prepended to entries in sys.path
+    - [ 1654484 ] Initializing PyJavaClass for java.lang.OutOfMemory causes a further OutOfMemory problem
+    - [ 1661679 ] types.UnicodeType is str
+    - [ 1659819 ] Joining unicode items with string doesn't create unicode
+    - [ 1603253 ] Thread's setDaemon setting does not work
+    - types module uses newstyle classes
+    - [ 1671134 ] '%s' % u'x' returns str object
+    - [ 1672800 ] __import__('module', None) raises AttributeError
+    - [ 1576036 ] Fix: SyspathJavaLoader file reader causes importerror
+    - [ 1605847 ] co_filename set in bytecode doesn't match __file__
+    - [ 1603312 ] subclasses of int raise a TypeError when given large value
+    - [ 1603315 ] str missing object keyword arg
+    - [ 1603747 ] Multiple InteractiveInterpreter share same setErr/Out
+    - [ 1619040 ] dict.fromkeys() should take iterable
+    - [ 1658647 ] type(x) calls x.__class__.__init__
+    - [ 1699556 ] SAXException descends from Java's Exception instead of Python's
+    - [ 1603686 ] Unmarshaling long-error
+    - [ 1230674 ] eval with from future does not work through import
+    - [ 663592 ] Problems calling an overriden class in the constructor
+    - [ 448398 ] open('test.txt', 'w').write('test') fails
+    - [ 1671373 ] A "$_PyInner.class" file in a package causes import to fail
+    - [ 1671431 ] dir function does not work with database connection object
+    - [ 1713513 ] os.environ fails in Windows Vista JDK 1.6_01
+  Patches applied
+    - [ 1681774 ] str.decode, unicode.encode and str(u'') fixes
+    - [ 1682423 ] Convert PyModule to a new-style class
+    - [ 1682498 ] Fix int(None) raising an AttributeError
+    - [ 1684172 ] Changes to make compileall work
+    - [ 1628469 ] fixes for failing builtin tests
+
+  
+Jython 2.2 beta1
+  New features
+    - much improved support for __unicode__ especially in the parser (u"string" and
+        friends now result in a PyUnicode object)
+    - added datetime support using the pure python datetime.py from cpython non-dist.
+    - new-style classes and their instances are Java serializable
+    - most new-style builtin types can be pickleds
+    - __slots__ for new-style classes
+    - xml modules from pyxml readded
+    - comparison operations between subclasses of
+        builtin types tries the subclass first even if it's on the right side 
+  Bugs fixed.
+    - Modules that throw exceptions while being imported aren't left
+       in sys.modules
+    - Don't allow sys.recursionlimit to be set below 0
+    - [ 1533624 ] NPE thrown building traceback for a call that jumps
+       threads
+    - [ 1531644 ] import * makes java exception uncatchable
+    - [1243049, 1218089] Can't subclass builtin types in 2.2a1
+    - [1256506] Importing directory module with 12+ char name fails
+    - [1512745] Allow arbitrary precision for formatted strings,
+        but only 250 chars for decimal, integer and long
+    - [1506749] Instance __dict__ are unassignable
+    - [1599004] several fixes to get the sha module up to speed
+    - [1616493] unicode objects can't be passed to os.path
+        methods
+    - [ 979157 ] Stack traces untrimmed
+    - [ 1299032 ] os.getenv out of sync with cpython
+    - [ 738951 ] jython slice behavior differs from python in __getattr__
+    - [ 610576 ] Impl of abstract method not found
+    - [ 1374088 ] keyword args to dict() constructor ignored
+    - [ 730082 ] new can't create unbound methods
+    - [ 1382581 ] double(s) read inaccurately from database
+    - [ 1603312 ] subclasses of int raise a TypeError when given large
+       value
+    - [1465476] bad parenthesis nesting terminates interpreter
+    - [ 1227282 ] Deadlock between PythonTraceFunction.safeCall() and
+       imp.import
+    - [ 1421812 ] Jython 2.2a and 2.1 imports directories as modules
+    - [ 480017 ] Proxy super classes are loaded from syspath, not the
+       proxy's classpath
+    - [ 628315 ] problem with Java synchronized lists
+    - [ 1284344 ] __file__ compiled into .py.class file
+    - [ 610576 ] Impl of abstract method not found
+  Patches applied.
+    - [906256] Follow spec for read modes of open()
+    - [868514] yield in finally block -- yield in nested try:except:
+    - [1542997] Only evaluate the second expression in an assert
+        if the first expression is false
+    - [1612711]: add iterkeys, itervalues and iteritems to
+        PyStringMap
+    - [ 1267425 ] make cStringIO work with gzip.py
+    - [ 1361317 ] __set__ failing on PyProperty
+    
+
+17-jul-2005 Jython 2.2 alpha1
+
+  New features
+   - Integrated patch (by Aleks Totic) that allows to use the Python parser
+     outside of Jython. PythonGrammar grows two constructors, one of which 
+     _must_ be used:
+        PythonGrammar(CharStream stream,IParserHost host)
+        PythonGrammar(PythonGrammarTokenManager tm, IParserHost host)
+     They both takes an impl of org.python.parser.IParserHost to which 
+     literal building is delegated. org.python.core.parser contains the
+     source of the impl used by Jython.
+   - New-style classes
+   - PEP 302 implementation
+   - Java collections integration
+    - finished long/int unification -- PyObject.__int__() now returns a
+      PyObject (which could be a PyInteger or a PyLong).
+    - dict and list conform to CPython 2.3 behaviors (such as the 3 arg 
+        list.index()).
+    - new-style conversion of tuple, float, file and str.
+    - Preliminary work on a unicode type.
+    - Imported tempfile.py and userlist.py from CPython 2.3 and applied some
+        small adjustments to get tests to pass.
+    - Reworked message construction for TypeError exceptions
+      (such as the exceptions generated from operations like [] + "").
+
+31-jul-2003 Jython 2.2 alpha0
+
+  New features
+   - Iterators (pep-234).
+   - Changing the Division Operator (pep-238)
+   - Implemented a new compiler AST.
+   - Quitting (Ctrl-Z/D) Jython in interactive mode will force the running JVM
+     to exit, even if there are non-daemon threads (e.g. AWT), this is likely 
+     the expected behavior.  The behavior for (non-interactive) scripts is 
+     unchanged and still matches that of Java programs.
+   - OutOfMemoryError can be caught, also matching MemoryError, that means
+     that a caught PyException.value.__tojava__(Throwable.class)
+     can potentially be a OutOfMemoryError instance. This is different from
+     the old aborting behavior (System.exit was called) [change needed to pass
+     a test in CPython test_b1].
+          
+  Bug fixes.
+   - Renamed the use of the java1.4 reserved words 'assert'.
+   - [ #222805 ] multi-line statements in the JPython interpreter
+   - [ #495866 ] need dynamic scale for BigDecimal
+   - [ #499973 ] isql.Prompt can't be written to stdout.
+   - [ #508111 ] jythonc generates invalid statements
+   - [ #511493 ] jreload truncates large class files
+   - [ #515894 ] Behaviour of "+=" stm. is different from
+   - [ #517237 ] Binary ops with int and long fail
+   - [ #521704 ] no errno module
+   - [ #522423 ] cStringIO has no reset() method
+   - [ #522558 ] list() is broken 
+   - [ #522828 ] struct.pack('>NNs', v) fails for NN > 20
+   - [ #529242 ] Python singletons deserialization bug
+   - [ #532747 ] for i in iter(d)
+   - [ #533354 ] bug in xml.dom.minidom.parseString
+   - [ #533541 ] send() on _udpsocket fails
+   - [ #544891 ] problems with socket.py
+   - [ #545235 ] unexpected match with re
+   - [ #549107 ] .__doc__ doesn't work in jython
+   - [ #562943 ] os.path.getmtime misbehaves on nonfile
+   - [ #567844 ] list() does not make a shallow copy
+   - [ #572769 ] Blank input lines break readline console
+   - [ #573784 ] popen does not work
+   - [ #573791 ] os.system partly  broken
+   - [ #575110 ] Multiple for's on Collection broken
+   - [ #577395 ] Outer finally not executed at return
+   - [ #581785 ] bug in 4DOM
+   - [ #582618 ] Case insensitive re.match fails
+   - [ #608628 ] long(java.math.BigInteger) does not work
+   - [ #609505 ] SQLWarning tuples not populated
+   - [ #620978 ] Variable default for Options.caseok
+   - [ #625364 ] sys.last_traceback not set?   
+   - [ #631017 ] Private fields mismangled
+   - [ #631035 ] Negative repeat cause java exception.
+   - [ #631430 ] read(-1) uses wrong fileposition.
+   - [ #636381 ] Match Error for +? pattern element
+   - [ #654863 ] string.split behaves differently
+   - [ #668194 ] broken non greedy regular expressions
+ 
 31-dec-2001 Jython 2.1 final
 
   Bug fixes.

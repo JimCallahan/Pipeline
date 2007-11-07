@@ -166,6 +166,8 @@ The core features of Pipeline include:
 %defattr(444,root,root)
 @ROOT_INST_DIR@/jython/ACKNOWLEDGMENTS 
 @ROOT_INST_DIR@/jython/LICENSE.txt	 
+@ROOT_INST_DIR@/jython/LICENSE_Apache.txt	 
+@ROOT_INST_DIR@/jython/LICENSE_CPython.txt	 
 @ROOT_INST_DIR@/jython/NEWS 
 @ROOT_INST_DIR@/jython/README.txt
 @ROOT_INST_DIR@/jython/jython.jar             
