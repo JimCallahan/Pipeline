@@ -1,12 +1,11 @@
-// $Id: QueueHostInfo.java,v 1.7 2007/10/14 02:04:15 jim Exp $
+// $Id: QueueHostInfo.java,v 1.8 2007/11/20 05:42:08 jesse Exp $
 
 package us.temerity.pipeline;
 
-import us.temerity.pipeline.glue.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import java.util.*;
-import java.util.regex.*; 
-import java.io.*;
+import us.temerity.pipeline.glue.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   Q U E U E   H O S T   I N F O                                                          */
@@ -83,6 +82,21 @@ class QueueHostInfo
    * @param schedule
    *   The name of the current selection schedule 
    *   or <CODE>null</CODE> if the choice of selection group is currently manual.
+   *   
+   * @param groupState
+   *   Is the selection group of this host editable. 
+   *  
+   * @param statusState
+   *   Is the status of this host editable.
+   *   
+   * @param reservationState
+   *   Is the reservation status of this host editable.
+   *   
+   * @param orderState
+   *   Is the order of this host editable.
+   *   
+   * @param slotState
+   *   Is the number of slots on this host editable.
    */ 
   public
   QueueHostInfo
@@ -99,7 +113,12 @@ class QueueHostInfo
    Long hold, 
    ResourceSample sample, 
    String group,
-   String schedule
+   String schedule,
+   EditableState groupState,
+   EditableState statusState,
+   EditableState reservationState,
+   EditableState orderState,
+   EditableState slotState
   ) 
   {
     super(name);
@@ -128,6 +147,12 @@ class QueueHostInfo
 
     pSelectionGroup = group; 
     pSelectionSchedule = schedule; 
+    
+    pGroupState = groupState;
+    pStatusState = statusState;
+    pReservationState = reservationState;
+    pSlotState = slotState;
+    pOrderState = orderState;
   }
 
   /**
@@ -262,9 +287,57 @@ class QueueHostInfo
     return pReservationPending;
   }
 
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Is the selection group of the host editable.
+   */
+  public EditableState
+  getGroupState()
+  {
+    return pGroupState;
+  }
+  
+  /**
+   * Is the reservation status of the host editable.
+   */
+  public EditableState 
+  getReservationState()
+  {
+    return pReservationState;
+  }
+
+  /**
+   * Is the status of the host editable.
+   */
+  public EditableState
+  getStatusState()
+  {
+    return pStatusState;
+  }
+  
+  /**
+   * Is the number of slots on the host editable.
+   */
+  public EditableState 
+  getSlotState()
+  {
+    return pSlotState;
+  }
+  
+  /**
+   * Is the order of the host editable.
+   */
+  public EditableState 
+  getOrderState()
+  {
+    return pOrderState;
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
+
+  
 
   /**
    * Get the job dispatching order for this host.
@@ -635,7 +708,7 @@ class QueueHostInfo
   private long pHoldTimeStamp;
 
   /**
-   * The lastest resource usage sample or <CODE>null</CODE> if no samples exist.
+   * The latest resource usage sample or <CODE>null</CODE> if no samples exist.
    */ 
   private ResourceSample  pSample;
 
@@ -656,5 +729,40 @@ class QueueHostInfo
   private String  pSelectionSchedule; 
   private boolean pSelectionSchedulePending; 
 
-
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Is the reservation status of the machine editable?
+   * <p>
+   * This is being set by the scheduler when the schedule on the machine is being applied. 
+   */
+  private EditableState pReservationState;
+  
+  /**
+   * Is the status of the machine editable?
+   * <p>
+   * This is being set by the scheduler when the schedule on the machine is being applied. 
+   */
+  private EditableState pStatusState;
+  
+  /**
+   * Is the number of slots on the machine editable?
+   * <p>
+   * This is being set by the scheduler when the schedule on the machine is being applied. 
+   */
+  private EditableState pSlotState;
+  
+  /**
+   * Is the order of the machine editable?
+   * <p>
+   * This is being set by the scheduler when the schedule on the machine is being applied. 
+   */
+  private EditableState pOrderState;
+  
+  /**
+   * Is the selection group of the machine editable?
+   * <p>
+   * This is being set by the scheduler when the schedule on the machine is being applied. 
+   */
+  private EditableState pGroupState;
 }

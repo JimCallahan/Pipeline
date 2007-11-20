@@ -1,11 +1,11 @@
-// $Id: SelectionSchedule.java,v 1.4 2007/03/28 19:31:03 jim Exp $
+// $Id: SelectionSchedule.java,v 1.5 2007/11/20 05:42:08 jesse Exp $
 
 package us.temerity.pipeline;
 
-import us.temerity.pipeline.glue.*;
+import java.util.LinkedList;
+import java.util.Set;
 
-import java.util.*;
-import java.io.*;
+import us.temerity.pipeline.glue.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   S E L E C T I O N   S C H E D U L E                                                    */
@@ -135,7 +135,7 @@ class SelectionSchedule
    * selection groups.
    * 
    * @param groups
-   *   The names of the valid seleciton groups.
+   *   The names of the valid selection groups.
    * 
    * @return 
    *   Whether any rules where modified.
@@ -163,7 +163,7 @@ class SelectionSchedule
    * selection groups.
    * 
    * @param groups
-   *   The names of the invalid seleciton groups.
+   *   The names of the invalid selection groups.
    * 
    * @return 
    *   Whether any rules where modified.
@@ -193,9 +193,29 @@ class SelectionSchedule
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the name of the selection group active for the given point in time (milliseconds 
+   * Gets the selection rule active for the given point in time (milliseconds 
    * since midnight, January 1, 1970 UTC).
    * 
+   * @return
+   *   The name of the selection group or <CODE>null</CODE> if none is active.
+   */ 
+  public SelectionRule
+  activeRule
+  (
+    long stamp  
+  )
+  {
+    for(SelectionRule rule : pRules) {
+      if(rule.isActive(stamp)) 
+	return rule;
+    }
+    return null;
+  }
+  
+  /**
+   * Get the name of the selection group active for the given point in time (milliseconds 
+   * since midnight, January 1, 1970 UTC).
+   * <p>
    * @return
    *   The name of the selection group or <CODE>null</CODE> if none is active.
    */ 
@@ -212,6 +232,240 @@ class SelectionSchedule
 
     return null;
   }
+  
+  /**
+   * Get the server Status active for the given point in time (milliseconds 
+   * since midnight, January 1, 1970 UTC).
+   * 
+   * @return
+   *   The server Status or <code>null</code> if none is set.
+   */ 
+  public QueueHostStatus
+  activeSeverStatus
+  (
+    long stamp  
+  )
+  {
+    QueueHostStatus toReturn = null;
+    for(SelectionRule rule : pRules) {
+      if(rule.isActive(stamp)) { 
+	toReturn = rule.getServerStatus();
+	break;
+      }
+    }
+    return toReturn;
+  }
+  
+  /**
+   * Get the remove reservation status active for the given point in time (milliseconds 
+   * since midnight, January 1, 1970 UTC).
+   * 
+   * @return
+   *   The reservation status.
+   */ 
+  public boolean
+  activeReservationStatus
+  (
+    long stamp  
+  )
+  {
+    boolean toReturn = false;
+    for(SelectionRule rule : pRules) {
+      if(rule.isActive(stamp)) { 
+	toReturn = rule.getRemoveReservation();
+	break;
+      }
+    }
+    return toReturn;
+  }
+  
+  /**
+   * Get the order value active for the given point in time (milliseconds 
+   * since midnight, January 1, 1970 UTC).
+   * 
+   * @return
+   *   The order.
+   */ 
+  public Integer
+  activeOrder
+  (
+    long stamp  
+  )
+  {
+    Integer toReturn = null;
+    for(SelectionRule rule : pRules) {
+      if(rule.isActive(stamp)) { 
+	toReturn = rule.getOrder();
+	break;
+      }
+    }
+    return toReturn;
+  }
+  
+  /**
+   * Get the slots value active for the given point in time (milliseconds 
+   * since midnight, January 1, 1970 UTC).
+   * 
+   * @return
+   *   The number of slots.
+   */ 
+  public Integer
+  activeSlots
+  (
+    long stamp  
+  )
+  {
+    Integer toReturn = null;
+    for(SelectionRule rule : pRules) {
+      if(rule.isActive(stamp)) { 
+	toReturn = rule.getSlots();
+	break;
+      }
+    }
+    return toReturn;
+  }
+  
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   E D I T   S T A T E                                                                  */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Returns the {@link EditableState} that indicates when the selection group of a host with this
+   * schedule will be editable.
+   */
+  public EditableState
+  getGroupEditState
+  (
+    long stamp  
+  )
+  {
+    SelectionRule currentRule = activeRule(stamp);
+    boolean active = false;
+    boolean any = false;
+    for(SelectionRule rule : pRules) {
+      String value = rule.getGroup(); 
+      if (value != null)
+	any = true;
+      if(currentRule == rule && value != null)
+	active = true;
+      if (active && any)
+	return EditableState.Automatic;
+    }
+    if (!active && any)
+      return EditableState.SemiAutomatic;
+    return EditableState.Manual;
+  }
+  
+  /**
+   * Returns the {@link EditableState} that indicates when the server status of a host with this
+   * schedule will be editable.
+   */
+  public EditableState
+  getServerStatusEditState
+  (
+    long stamp  
+  )
+  {
+    SelectionRule currentRule = activeRule(stamp);
+    boolean active = false;
+    boolean any = false;
+    for(SelectionRule rule : pRules) {
+      QueueHostStatus value = rule.getServerStatus();
+      if (value != null)
+	any = true;
+      if(currentRule == rule && value != null)
+	active = true;
+      if (active && any)
+	return EditableState.Automatic;
+    }
+    if (!active && any)
+      return EditableState.SemiAutomatic;
+    return EditableState.Manual;
+  }
+  
+  /**
+   * Returns the {@link EditableState} that indicates when the reservation status of a host with this
+   * schedule will be editable.
+   */
+  public EditableState
+  getReservationEditState
+  (
+    long stamp  
+  )
+  {
+    SelectionRule currentRule = activeRule(stamp);
+    boolean active = false;
+    boolean any = false;
+    for(SelectionRule rule : pRules) {
+      boolean value = rule.getRemoveReservation();
+      if (value)
+	any = true;
+      if(currentRule == rule && value)
+	active = true;
+      if (active && any)
+	return EditableState.Automatic;
+    }
+    if (!active && any)
+      return EditableState.SemiAutomatic;
+    return EditableState.Manual;
+  }
+  
+  /**
+   * Returns the {@link EditableState} that indicates when the order of a host with this
+   * schedule will be editable.
+   */
+  public EditableState
+  getOrderEditState
+  (
+    long stamp  
+  )
+  {
+    SelectionRule currentRule = activeRule(stamp);
+    boolean active = false;
+    boolean any = false;
+    for(SelectionRule rule : pRules) {
+      Integer value = rule.getOrder();
+      if (value != null)
+	any = true;
+      if(currentRule == rule && value != null)
+	active = true;
+      if (active && any)
+	return EditableState.Automatic;
+    }
+    if (!active && any)
+      return EditableState.SemiAutomatic;
+    return EditableState.Manual;
+  }
+  
+  /**
+   * Returns the {@link EditableState} that indicates when the slots of a host with this
+   * schedule will be editable.
+   */
+  public EditableState
+  getSlotsEditState
+  (
+    long stamp  
+  )
+  {
+    SelectionRule currentRule = activeRule(stamp);
+    boolean active = false;
+    boolean any = false;
+    for(SelectionRule rule : pRules) {
+      Integer value = rule.getSlots();
+      if (value != null)
+	any = true;
+      if(currentRule == rule && value != null)
+	active = true;
+      if (active && any)
+	return EditableState.Automatic;
+    }
+    if (!active && any)
+      return EditableState.SemiAutomatic;
+    return EditableState.Manual;
+  }
+  
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -231,6 +485,7 @@ class SelectionSchedule
       encoder.encode("Rules", pRules);    
   }
 
+  @SuppressWarnings("unchecked")
   public void 
   fromGlue
   (

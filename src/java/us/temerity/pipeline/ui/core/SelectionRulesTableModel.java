@@ -1,16 +1,15 @@
-// $Id: SelectionRulesTableModel.java,v 1.2 2006/01/15 06:29:26 jim Exp $
+// $Id: SelectionRulesTableModel.java,v 1.3 2007/11/20 05:42:07 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
+import java.util.*;
+
+import javax.swing.JLabel;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
+
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.ui.*;
-
-import java.awt.*;
-import java.awt.event.*;
-import java.text.*;
-import java.util.*;
-import javax.swing.*;
-import javax.swing.table.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   S E L E C T I O N   R U L E S   T A B L E   M O D E L                                  */
@@ -52,11 +51,12 @@ class SelectionRulesTableModel
 
     /* initialize the columns */ 
     { 
-      pNumColumns = 7;
+      pNumColumns = 11;
 
       {
 	Class classes[] = { 
-	  String.class, Integer.class, String.class, String.class, 
+	  String.class, QueueHostStatus.class, Boolean.class, Integer.class, Integer.class,
+	  Integer.class, String.class, String.class, 
 	  new boolean[1].getClass(), 
 	  String.class, String.class
 	}; 
@@ -65,14 +65,19 @@ class SelectionRulesTableModel
 
       {
 	String names[] = {
-	  "Group", "Order", "Rule", "Date", "Weekdays", "Begins", "Ends"
+	  "Group", "Status", "RemoveReserv", "NewOrder", "NewSlots", 
+	  "Order", "Rule", "Date", "Weekdays", "Begins", "Ends"
 	};
 	pColumnNames = names;
       }
 
       {
 	String desc[] = {
-	  "The selection group used when the rule is active.", 
+	  "The selection group used when the rule is active.",
+	  "What to do with the server's status when the rule is active",
+	  "Should the server's reservation be removed when the rule is active?",
+	  "How to change the server's order when the rule is active",
+	  "How to change the server's number of job slots when the rule is active",
 	  "The order in which rules are applied.", 
 	  "The type of selection rule.", 
 	  "The specific date when the rule begins.", 
@@ -85,14 +90,18 @@ class SelectionRulesTableModel
 
       {
 	int widths[] = { 
-	  120, 80, 80, 120, 154, 60, 60
+	  120, 90, 100, 80, 80, 80, 80, 120, 154, 60, 60
 	};
 	pColumnWidths = widths;
       }
 
       {
 	TableCellRenderer renderers[] = {
-	  new JSimpleTableCellRenderer(JLabel.CENTER), 
+	  new JSimpleTableCellRenderer(JLabel.CENTER),
+	  new JSimpleTableCellRenderer(JLabel.CENTER),
+	  new JSimpleTableCellRenderer(JLabel.CENTER),
+	  new JSimpleTableCellRenderer(JLabel.CENTER),
+	  new JSimpleTableCellRenderer(JLabel.CENTER),
 	  new JSimpleTableCellRenderer(JLabel.CENTER), 
 	  new JSimpleTableCellRenderer(JLabel.CENTER), 
 	  new JSimpleTableCellRenderer(JLabel.CENTER),   
@@ -110,7 +119,11 @@ class SelectionRulesTableModel
 	rules.add("Daily");
 
 	TableCellEditor editors[] = {
-	  null, 
+	  null,
+	  null,
+	  new JBooleanTableCellEditor(120, JLabel.CENTER),
+	  new JIntegerTableCellEditor(120, JLabel.CENTER),
+	  new JIntegerTableCellEditor(120, JLabel.CENTER),
 	  new JIntegerTableCellEditor(120, JLabel.CENTER),
 	  new JCollectionTableCellEditor(rules, 120), 
 	  new JStringTableCellEditor(120, JLabel.CENTER),
@@ -122,7 +135,6 @@ class SelectionRulesTableModel
       }
     }
   }
-
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -148,10 +160,30 @@ class SelectionRulesTableModel
 	break;
 	
       case 1:
-	value = pOrder.get(idx);
+	value = rule.getServerStatus();
+	if (value == null)
+	  value = QueueHostStatus.Hung;
 	break;
 	
       case 2:
+	value = rule.getRemoveReservation();
+	break;
+	
+      case 3:
+	value = rule.getOrder();
+	if (value == null)
+	  value = -1;
+	
+      case 4:
+	value = rule.getSlots();
+	if (value == null)
+	  value = -1;
+	
+      case 5:
+	value = pOrder.get(idx);
+	break;
+	
+      case 6:
 	if(rule instanceof DailySelectionRule) 
 	  value = "Daily"; 
 	else if(rule instanceof SpecificSelectionRule) 
@@ -160,7 +192,7 @@ class SelectionRulesTableModel
 	  value = "Default";
 	break;
 	
-      case 3:
+      case 7:
 	value = "";
 	if(rule instanceof SpecificSelectionRule) {
 	  SpecificSelectionRule srule = (SpecificSelectionRule) rule;
@@ -168,7 +200,7 @@ class SelectionRulesTableModel
 	}	    
 	break;
 	
-      case 4:
+      case 8:
 	value = "";
 	if(rule instanceof DailySelectionRule) {
 	  DailySelectionRule drule = (DailySelectionRule) rule;
@@ -183,7 +215,7 @@ class SelectionRulesTableModel
 	}
 	break;
 	
-      case 5:
+      case 9:
 	value = "";
 	if(rule instanceof IntervalSelectionRule) {
 	  IntervalSelectionRule irule = (IntervalSelectionRule) rule;
@@ -191,7 +223,7 @@ class SelectionRulesTableModel
 	}
 	break;
 
-      case 6:
+      case 10:
 	value = "";
 	if(rule instanceof IntervalSelectionRule) {
 	  IntervalSelectionRule irule = (IntervalSelectionRule) rule;
@@ -354,6 +386,16 @@ class SelectionRulesTableModel
 
 	return editor;
       }
+    case 1:
+      {
+	ArrayList<String> values = new ArrayList<String>();
+	values.add("-");
+	values.add(QueueHostStatus.Enabled.toString());
+	values.add(QueueHostStatus.Disabled.toString());
+	JCollectionTableCellEditor editor = new JCollectionTableCellEditor(values, 120);
+
+	return editor;
+      }
 
     default:
       return pEditors[col];
@@ -387,22 +429,26 @@ class SelectionRulesTableModel
   {
     if(!pPrivilegeDetails.isQueueAdmin()) 
       return false;
-
+    
     SelectionRule rule = pRules.get(pRowToIndex[row]);
     switch(col) {
     case 0: 
     case 1:
     case 2:
-      return true;
-      
     case 3:
-      return (rule instanceof SpecificSelectionRule);
-      
     case 4:
-      return (rule instanceof DailySelectionRule); 
-      
     case 5:
     case 6:
+      return true;
+      
+    case 7:
+      return (rule instanceof SpecificSelectionRule);
+      
+    case 8:
+      return (rule instanceof DailySelectionRule); 
+      
+    case 9:
+    case 10:
       return (rule instanceof IntervalSelectionRule);
     }
 
@@ -430,11 +476,29 @@ class SelectionRulesTableModel
 	  group = "-";
 	return group;
       }
-	
+    
     case 1:
+      {
+	QueueHostStatus stat = rule.getServerStatus();
+	if (stat == null)
+	  return "-";
+	else
+	  return stat.toString();
+      }
+      
+    case 2:
+      return rule.getRemoveReservation();
+	
+    case 3:
+      return rule.getOrder();
+      
+    case 4:
+      return rule.getSlots();
+	
+    case 5:
       return pOrder.get(srow);
 	
-    case 2:
+    case 6:
       if(rule instanceof DailySelectionRule) 
 	return "Daily"; 
       else if(rule instanceof SpecificSelectionRule) 
@@ -442,7 +506,7 @@ class SelectionRulesTableModel
       else
 	return "Default";
 	
-    case 3:
+    case 7:
       if(rule instanceof SpecificSelectionRule) {
 	SpecificSelectionRule srule = (SpecificSelectionRule) rule;
 	return srule.getStartDateString();
@@ -451,7 +515,7 @@ class SelectionRulesTableModel
 	return null; 
       }
 	
-    case 4:
+    case 8:
       if(rule instanceof DailySelectionRule) {
 	DailySelectionRule drule = (DailySelectionRule) rule;
 	return drule.getActiveFlags();
@@ -460,7 +524,7 @@ class SelectionRulesTableModel
 	return null;
       }
 	
-    case 5:
+    case 9:
       if(rule instanceof IntervalSelectionRule) {
 	IntervalSelectionRule irule = (IntervalSelectionRule) rule;
 	return irule.getStartTimeString();
@@ -469,7 +533,7 @@ class SelectionRulesTableModel
 	return null;
       }
       
-    case 6:
+    case 10:
       if(rule instanceof IntervalSelectionRule) {
 	IntervalSelectionRule irule = (IntervalSelectionRule) rule;
 	return irule.getEndTimeString();
@@ -532,12 +596,41 @@ class SelectionRulesTableModel
 	rule.setGroup(group);
 	return true;
       }
-	
+      
     case 1:
+      {
+	String temp = (String) value;
+	if (temp.equals("-")) {
+	  rule.setServerStatus(null);
+	  return true;
+	}
+	QueueHostStatus status = QueueHostStatus.valueOf(temp);
+	rule.setServerStatus(status);
+	return true;
+      }
+    case 2:
+      {
+	rule.setRemoveReservation((Boolean) value);
+	return true;
+      }
+    
+    case 3:
+      {
+	rule.setOrder((Integer) value);
+	return true;
+      }
+      
+    case 4:
+      {
+	rule.setSlots((Integer) value);
+	return true;
+      }
+	
+    case 5:
       pOrder.set(srow, (Integer) value);
       return true;
 	
-    case 2:
+    case 6:
       {
 	String rname = (String) value;
 	if(rname.equals("Daily") && !(rule instanceof DailySelectionRule)) {
@@ -556,7 +649,7 @@ class SelectionRulesTableModel
 	}
       }
 	
-    case 3:
+    case 7:
       if(rule instanceof SpecificSelectionRule) {
 	SpecificSelectionRule srule = (SpecificSelectionRule) rule;
 	String str = (String) value;
@@ -574,7 +667,7 @@ class SelectionRulesTableModel
       }
       break;
 	
-    case 4:
+    case 8:
       if(rule instanceof DailySelectionRule) {
 	DailySelectionRule drule = (DailySelectionRule) rule;
 	boolean[] flags = (boolean[]) value;
@@ -585,7 +678,7 @@ class SelectionRulesTableModel
       }
       break;
 
-    case 5:
+    case 9:
       if(rule instanceof IntervalSelectionRule) {
 	IntervalSelectionRule irule = (IntervalSelectionRule) rule;
 	String str = (String) value;
@@ -602,7 +695,7 @@ class SelectionRulesTableModel
       }
       break;
       
-    case 6:
+    case 10:
       if(rule instanceof IntervalSelectionRule) {
 	IntervalSelectionRule irule = (IntervalSelectionRule) rule;
 	String str = (String) value;

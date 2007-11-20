@@ -896,8 +896,7 @@
     <font name="Lucida Sans Bold" size="12"/>
   </style>
   <bind style="PurpleValuePanel" type="name" key="PurpleValuePanel"/>
-
-
+  
 
   <!--  G R A P H   P A N E L  -->
 
@@ -1667,7 +1666,30 @@
     <font name="Lucida Sans Bold" size="12"/>
   </style>
   <bind style="PurpleTableCellRenderer" type="name" key="PurpleTableCellRenderer"/>
-
+  
+  <style id="PurpleCheckTableCellRenderer">
+    <imagePainter path="PurpleCheckPanel.png"
+                  sourceInsets="3 3 3 17"/>
+    <insets top="2" bottom="2" right="8" left="8"/>
+    <font name="Lucida Sans Bold" size="12"/>
+  </style>
+  <bind style="PurpleCheckTableCellRenderer" type="name" key="PurpleCheckTableCellRenderer"/>
+  
+  <style id="PurpleConflictTableCellRenderer">
+    <imagePainter path="PurpleConflictPanel.png"
+                  sourceInsets="3 3 3 17"/>
+    <insets top="2" bottom="2" right="8" left="8"/>
+    <font name="Lucida Sans Bold" size="12"/>
+  </style>
+  <bind style="PurpleConflictTableCellRenderer" type="name" key="PurpleConflictTableCellRenderer"/>
+  
+  <style id="PurpleLockTableCellRenderer">
+    <imagePainter path="PurpleLockPanel.png"
+                  sourceInsets="3 3 3 17"/>
+    <insets top="2" bottom="2" right="8" left="8"/>
+    <font name="Lucida Sans Bold" size="12"/>
+  </style>
+  <bind style="PurpleLockTableCellRenderer" type="name" key="PurpleLockTableCellRenderer"/>
 
   <!--  L I S T  -->
 

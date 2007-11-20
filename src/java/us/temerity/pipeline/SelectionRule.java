@@ -1,11 +1,10 @@
-// $Id: SelectionRule.java,v 1.2 2007/03/28 19:31:03 jim Exp $
+// $Id: SelectionRule.java,v 1.3 2007/11/20 05:42:08 jesse Exp $
 
 package us.temerity.pipeline;
 
-import us.temerity.pipeline.glue.*;
+import java.io.Serializable;
 
-import java.util.*;
-import java.io.*;
+import us.temerity.pipeline.glue.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   S E L E C T I O N   R U L E                                                            */
@@ -30,7 +29,9 @@ class SelectionRule
    */ 
   public
   SelectionRule()
-  {}
+  {
+    
+  }
 
   /**
    * Copy constructor. 
@@ -42,6 +43,10 @@ class SelectionRule
   )
   {
     pGroup = rule.pGroup;
+    pServerStatus = rule.pServerStatus;
+    pRemoveReservation = rule.pRemoveReservation;
+    pOrder = rule.pOrder;
+    pSlots = rule.pSlots;
   }
 
 
@@ -54,7 +59,8 @@ class SelectionRule
    * Get the name of the selection group which is activated by this rule.
    * 
    * @return
-   *   The selection group or <CODE>null</CODE> if undefined.
+   *   The selection group, {@link #aNone} if the rule removes the selection group,
+   *   or <CODE>null</CODE> if this rule is not effecting selection groups.
    */ 
   public String
   getGroup() 
@@ -63,8 +69,8 @@ class SelectionRule
   }
 
   /**
-   * Set the name of the selection group which is activated by this rule or 
-   * <CODE>null</CODE> to clear.
+   * Set the name of the selection group which is activated by this rule, {@link #aNone} 
+   * to have it set no selection group or <CODE>null</CODE> to disable this rule.
    */ 
   public void
   setGroup
@@ -74,9 +80,124 @@ class SelectionRule
   {
     pGroup = name;
   }
+  
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the {@link QueueHostStatus} which is implemented by this rule.
+   * 
+   * @return
+   *   The service status or <CODE>null</CODE> if this rule is not effecting 
+   *   the server status.
+   */ 
+  public QueueHostStatus 
+  getServerStatus()
+  {
+    return pServerStatus;
+  }
+
+  /**
+   * Set the {@link QueueHostStatus} which is implemented by this rule or 
+   * <CODE>null</CODE> if this rule is not effecting the server status.
+   * 
+   * @throws IllegalArgumentException if any value except <code>null</code>,
+   * {@link QueueHostStatus#Disabled} or {@link QueueHostStatus#Enabled} is passed in. 
+   */ 
+  public void 
+  setServerStatus
+  (
+    QueueHostStatus serverStatus
+  )
+  {
+    if (serverStatus != null && 
+       !(serverStatus == QueueHostStatus.Enabled || serverStatus == QueueHostStatus.Disabled))
+      throw new IllegalArgumentException
+        ("Only Enabled, Disabled, or null are valid values for this method.");
+    pServerStatus = serverStatus;
+  }
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Does this rule remove all Reservations.
+   * 
+   * @return
+   *   The remove reservation status.
+   */ 
+  public boolean
+  getRemoveReservation()
+  {
+    return pRemoveReservation;
+  }
+
+  /**
+   * Set the action of this rule with respect to removing reservations.
+   */
+  public void 
+  setRemoveReservation
+  (
+    boolean removeReservations
+  )
+  {
+    pRemoveReservation = removeReservations;
+  }
+  
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Gets the Order which is implemented by this rule.
+   * 
+   * @return
+   *   The order or <CODE>null</CODE> if this rule is not effecting the order.
+   */ 
+  public Integer
+  getOrder()
+  {
+    return pOrder;
+  }
+
+  /**
+   * Set the Order which is implemented by this rule or 
+   * <CODE>null</CODE> if this rule is not effecting the order.
+   */ 
+  public void 
+  setOrder
+  (
+    Integer order
+  )
+  {
+    pOrder = order;
+  }
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Gets the number of slots which is implemented by this rule.
+   * 
+   * @return
+   *   The number of slot or <CODE>null</CODE> if this rule is not effecting slots.
+   */ 
+  public Integer
+  getSlots()
+  {
+    return pSlots;
+  }
+
+  /**
+   * Set the number of slots which is implemented by this rule or 
+   * <CODE>null</CODE> if this rule is not effecting the slots.
+   */ 
+  public void 
+  setSlots
+  (
+    Integer slots
+  )
+  {
+    pSlots = slots;
+  }
 
 
-
+  
   /*----------------------------------------------------------------------------------------*/
   /*   P R E D I C A T E S                                                                  */
   /*----------------------------------------------------------------------------------------*/
@@ -88,7 +209,8 @@ class SelectionRule
   public boolean
   isActive
   (
-   long stamp
+    @SuppressWarnings("unused")
+    long stamp
   )
   {
     return true;
@@ -122,7 +244,11 @@ class SelectionRule
   ) 
     throws GlueException
   {
-    encoder.encode("Group", pGroup);  
+    encoder.encode("Group", pGroup);
+    encoder.encode("ServerStatus", pServerStatus);
+    encoder.encode("RemoveReservation", pRemoveReservation);
+    encoder.encode("Order", pOrder);
+    encoder.encode("Slots", pSlots);
   }
 
   public void 
@@ -133,6 +259,13 @@ class SelectionRule
     throws GlueException
   {
     pGroup = (String) decoder.decode("Group"); 
+    pServerStatus = (QueueHostStatus) decoder.decode("ServerStatus");
+    Boolean tempValue = (Boolean) decoder.decode("RemoveReservation");
+    if (tempValue == null)
+      tempValue = false;
+    pRemoveReservation = tempValue;
+    pOrder = (Integer) decoder.decode("Order");
+    pSlots = (Integer) decoder.decode("Slots");
   }
   
   
@@ -152,5 +285,21 @@ class SelectionRule
   /**
    * The name of the selection group which is activated by this rule.
    */ 
-  protected String  pGroup; 
+  protected String pGroup; 
+  
+  /**
+   * How the rule should manipulate the Status of machines.
+   */
+  protected QueueHostStatus pServerStatus;
+  
+  /**
+   * Should the rule manipulate the reservation Status of machines.
+   */
+  protected boolean pRemoveReservation;
+  
+  protected Integer pOrder;
+  
+  protected Integer pSlots;
+  
+  public static final String aNone = "[None]";
 }

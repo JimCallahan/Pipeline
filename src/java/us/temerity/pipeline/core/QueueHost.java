@@ -1,12 +1,11 @@
-// $Id: QueueHost.java,v 1.7 2007/03/28 19:51:04 jim Exp $
+// $Id: QueueHost.java,v 1.8 2007/11/20 05:42:08 jesse Exp $
 
 package us.temerity.pipeline.core;
 
+import java.util.*;
+
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.glue.*;
-
-import java.util.*;
-import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   Q U E U E   H O S T                                                                    */
@@ -209,9 +208,128 @@ class QueueHost
   {
     pReservation = author;
   }
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Is the reservation status of the host editable.
+   */
+  public EditableState 
+  getReservationState()
+  {
+    return pReservationState;
+  }
+
+
+  /**
+   * Sets whether the reservation status of the host is editable.
+   */
+  public void 
+  setReservationState
+  (
+    EditableState reservationState
+  )
+  {
+    pReservationState = reservationState;
+  }
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Is the status of the host editable.
+   */
+  public EditableState 
+  getStatusState()
+  {
+    return pStatusState;
+  }
+
+  /**
+   * Set whether the status of the host is editable.
+   */
+  public void 
+  setStatusState
+  (
+    EditableState statusState
+  )
+  {
+    pStatusState = statusState;
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Is the order of the host editable.
+   */
+  public EditableState 
+  getOrderState()
+  {
+    return pOrderState;
+  }
+
+  /**
+   * Set whether the order of the host is editable.
+   */
+  public void 
+  setOrderState
+  (
+    EditableState orderState
+  )
+  {
+    pOrderState = orderState;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Is the number of slots on the host editable.
+   */
+  public EditableState 
+  getSlotState()
+  {
+    return pSlotState;
+  }
+
+  /**
+   * Set whether the status of the host is editable.
+   */
+  public void 
+  setSlotState
+  (
+    EditableState slotState
+  )
+  {
+    pSlotState = slotState;
+  }
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Is the selection group on the host editable.
+   */
+  public EditableState 
+  getGroupState()
+  {
+    return pGroupState;
+  }
+
+  /**
+   * Set whether the status of the host is editable.
+   */
+  public void 
+  setGroupState
+  (
+    EditableState groupState
+  )
+  {
+    pGroupState = groupState;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
 
   /**
    * Get job dispatching order for this host.
@@ -732,7 +850,8 @@ class QueueHost
   {
     return new QueueHostInfo(pName, getInfoStatus(), pReservation, pOrder, pJobSlots, 
 			     pOsType, pNumProcessors, pTotalMemory, pTotalDisk, 
-			     getHold(), pSample, pSelectionGroup, pSelectionSchedule); 
+			     getHold(), pSample, pSelectionGroup, pSelectionSchedule,
+			     pGroupState, pStatusState, pReservationState, pOrderState, pSlotState); 
   }
 
 
@@ -860,13 +979,7 @@ class QueueHost
       return titles;
     }
   }
-
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   S T A T I C   I N T E R N A L S                                                      */
-  /*----------------------------------------------------------------------------------------*/
-
+  
   private static final long serialVersionUID = -5965011973074654660L;
 
 
@@ -941,7 +1054,7 @@ class QueueHost
   private TreeMap<Long,Long>  pHoldTimeStamps;
 
   /**
-   * The lastest resource usage sample or <CODE>null</CODE> if no samples exist.
+   * The latest resource usage sample or <CODE>null</CODE> if no samples exist.
    */ 
   private ResourceSample  pSample;
 
@@ -963,6 +1076,43 @@ class QueueHost
    * The name of the current selection group or <CODE>null</CODE> not a member of any 
    * selection group. 
    */ 
-  private String pSelectionGroup; 
+  private String pSelectionGroup;
+  
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Is the reservation status of the machine editable?
+   * <p>
+   * This is being set by the scheduler when the schedule on the machine is being applied. 
+   */
+  private EditableState pReservationState;
+  
+  /**
+   * Is the status of the machine editable?
+   * <p>
+   * This is being set by the scheduler when the schedule on the machine is being applied. 
+   */
+  private EditableState pStatusState;
+  
+  /**
+   * Is the order of the machine editable?
+   * <p>
+   * This is being set by the scheduler when the schedule on the machine is being applied. 
+   */
+  private EditableState pOrderState;
+  
+  /**
+   * Is the number of slots on the machine editable?
+   * <p>
+   * This is being set by the scheduler when the schedule on the machine is being applied. 
+   */
+  private EditableState pSlotState;
+  
+  /**
+   * Is the selection group on the machine editable?
+   * <p>
+   * This is being set by the scheduler when the schedule on the machine is being applied. 
+   */
+  private EditableState pGroupState;
 
 }

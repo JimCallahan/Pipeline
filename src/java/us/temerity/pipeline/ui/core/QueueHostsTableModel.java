@@ -1,15 +1,15 @@
-// $Id: QueueHostsTableModel.java,v 1.17 2007/05/09 15:27:44 jim Exp $
+// $Id: QueueHostsTableModel.java,v 1.18 2007/11/20 05:42:08 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
+import java.util.*;
+
+import javax.swing.JLabel;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
+
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.ui.*;
-
-import java.text.*;
-import java.net.*;
-import java.util.*;
-import javax.swing.*;
-import javax.swing.table.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   Q U E U E   H O S T S   T A B L E   M O D E L                                          */
@@ -18,6 +18,20 @@ import javax.swing.table.*;
 /**
  * A {@link SortableTableModel SortableTableModel} which contains a set of 
  * {@link QueueHostInfo QueueHostInfo} instances.
+ * 
+ * <ol "start = 0">
+ * <li> Status
+ * <li> OS
+ * <li> System Load
+ * <li> Free Memory
+ * <li> Free Disk Space
+ * <li> Jobs
+ * <li> Slots
+ * <li> Reservation
+ * <li> Order
+ * <li> Group
+ * <li> Schedule
+ * </ol>
  */ 
 public
 class QueueHostsTableModel
@@ -619,6 +633,27 @@ class QueueHostsTableModel
   { 
     return pQueueHosts.get(pRowToIndex[row]);
   }
+  
+  /**
+   * Is the host editable by the current user?
+   * <p>
+   * This method is meant to be used by Renderers that need to color themselves
+   * based on the editable state of a host.
+   * 
+   * @param hostName
+   *   The name of the host.
+   */
+  public boolean
+  isHostEditable
+  (
+    String hostName  
+  )
+  {
+    if(pPrivilegeDetails.isQueueAdmin()) 
+      return true;
+    return pLocalHostnames.contains(hostName);
+  }
+  
  
  
  /*----------------------------------------------------------------------------------------*/
@@ -717,6 +752,46 @@ class QueueHostsTableModel
   /*----------------------------------------------------------------------------------------*/
   /*   T A B L E   M O D E L   O V E R R I D E S                                            */
   /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the renderer for the given column. 
+   */ 
+  public TableCellRenderer
+  getRenderer
+  (
+   int col   
+  )
+  {
+    switch(col) {
+    case 0:
+      return new JQHostStatusTableCellRenderer(this);
+    case 1:
+      return new JSimpleTableCellRenderer(JLabel.CENTER);
+    case 2:
+      return new JResourceSamplesTableCellRenderer
+      (this, JResourceSamplesTableCellRenderer.SampleType.Load);
+    case 3:
+      return new JResourceSamplesTableCellRenderer
+      (this, JResourceSamplesTableCellRenderer.SampleType.Memory);
+    case 4:
+      return new JResourceSamplesTableCellRenderer
+      (this, JResourceSamplesTableCellRenderer.SampleType.Disk);
+    case 5:
+      return new JResourceSamplesTableCellRenderer
+      (this, JResourceSamplesTableCellRenderer.SampleType.Jobs);
+    case 6:
+      return new JQHostSlotsTableCellRenderer(this);
+    case 7:
+      return new JQHostReservationTableCellRenderer(this);
+    case 8:
+      return new JQHostOrderTableCellRenderer(this);
+    case 9:
+      return new JQHostSGroupTableCellRenderer(this);
+    case 10:
+      return new JQHostSSchedTableCellRenderer(this);
+    }
+    return null;
+  }
 
   /**
    * Returns the number of rows in the model.
@@ -737,30 +812,39 @@ class QueueHostsTableModel
    int col
   ) 
   {
-    boolean editable = false;
     QueueHostInfo host = pQueueHosts.get(pRowToIndex[row]);
-    if(pPrivilegeDetails.isQueueAdmin()) 
-      editable = true;
-    else 
-      editable = pLocalHostnames.contains(host.getName());
+    boolean editable = isHostEditable(host.getName());
       
     switch(col) {
-    case 0:
-    case 6: 
-    case 7: 
+    /* Slots */
+    case 6:
+      return (editable && 
+	      ((host != null) && (host.getSlotState() != EditableState.Automatic)));
+    /* Order */
     case 8:
+      return (editable && 
+	      ((host != null) && (host.getOrderState() != EditableState.Automatic)));
     case 10:
       return editable;
  
+    /* Status */
+    case 0:
+      return (editable && 
+	      ((host != null) && (host.getStatusState() != EditableState.Automatic)));
+    /* Reservation */
+    case 7:
+      return (editable && 
+	      ((host != null) && (host.getReservationState() != EditableState.Automatic)));
+    /* Selection Group */
     case 9:
       return (editable && 
-	      ((host != null) && (host.getSelectionSchedule() == null)));
-
+	      ((host != null) && (host.getGroupState() != EditableState.Automatic)));
+      
     default:
       return false;
     }
   }
-
+  
   /**
    * Returns the value for the cell at columnIndex and rowIndex.
    */ 

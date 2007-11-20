@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.93 2007/10/11 18:52:06 jesse Exp $
+// $Id: QueueMgr.java,v 1.94 2007/11/20 05:42:08 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.*;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.core.QueueHost.Status;
 import us.temerity.pipeline.core.exts.*;
 import us.temerity.pipeline.glue.*;
 import us.temerity.pipeline.message.*;
@@ -5815,7 +5816,7 @@ class QueueMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Perform one round of sheduling the assignment of selection groups to job servers. 
+   * Perform one round of scheduling the assignment of selection groups to job servers. 
    */ 
   public void 
   scheduler()
@@ -5823,7 +5824,16 @@ class QueueMgr
     TaskTimer timer = new TaskTimer("Scheduler");
 
     /* precompute current groups for each schedule */ 
-    TreeMap<String,String> scheduledGroups = new TreeMap<String,String>();
+    TreeMap<String,String> scheduledGroups = new TreeMap<String, String>();
+    TreeMap<String, EditableState> scheduledGroupsEdit = new TreeMap<String, EditableState>();
+    TreeMap<String, QueueHostStatus> scheduledSStat = new TreeMap<String, QueueHostStatus>();
+    TreeMap<String, EditableState> scheduledSStatEdit = new TreeMap<String, EditableState>();
+    TreeMap<String, Boolean> scheduledRStat = new TreeMap<String, Boolean>();
+    TreeMap<String, EditableState> scheduledRStatEdit = new TreeMap<String, EditableState>();
+    TreeMap<String, Integer> scheduledOrder = new TreeMap<String, Integer>();
+    TreeMap<String, EditableState> scheduledOrderEdit = new TreeMap<String, EditableState>();
+    TreeMap<String, Integer> scheduledSlots = new TreeMap<String, Integer>();
+    TreeMap<String, EditableState> scheduledSlotsEdit = new TreeMap<String, EditableState>();
     {
       timer.suspend();
       TaskTimer tm = new TaskTimer("Scheduler [Compute Groups]");
@@ -5832,8 +5842,18 @@ class QueueMgr
 	tm.resume();
 	
         long now = System.currentTimeMillis();
-	for(SelectionSchedule sched : pSelectionSchedules.values()) 
+	for(SelectionSchedule sched : pSelectionSchedules.values()) { 
 	  scheduledGroups.put(sched.getName(), sched.activeGroup(now));
+	  scheduledGroupsEdit.put(sched.getName(), sched.getGroupEditState(now));
+	  scheduledSStat.put(sched.getName(), sched.activeSeverStatus(now));
+	  scheduledSStatEdit.put(sched.getName(), sched.getServerStatusEditState(now));
+	  scheduledRStat.put(sched.getName(), sched.activeReservationStatus(now));
+	  scheduledRStatEdit.put(sched.getName(), sched.getReservationEditState(now));
+	  scheduledOrder.put(sched.getName(), sched.activeOrder(now));
+	  scheduledOrderEdit.put(sched.getName(), sched.getOrderEditState(now));
+	  scheduledSlots.put(sched.getName(), sched.activeSlots(now));
+	  scheduledSlotsEdit.put(sched.getName(), sched.getSlotsEditState(now));
+	}
       }
       LogMgr.getInstance().logSubStage
 	(LogMgr.Kind.Sch, LogMgr.Level.Finer, 
@@ -5856,20 +5876,120 @@ class QueueMgr
 	    String sname = host.getSelectionSchedule();
 	    String gname = host.getSelectionGroup();
 	    if(sname != null) {
-	      String name = scheduledGroups.get(sname);
-	      if(!pSelectionGroups.containsKey(name)) 
-		name = null;
 	      
-	      if(!(((name == null) && (gname == null)) ||
-		   ((name != null) && (name.equals(gname))))) {
-		host.setSelectionGroup(name);
-		modified = true;
+	      /* Selection Group */
+	      {
+		String name = scheduledGroups.get(sname);
+		EditableState state = scheduledGroupsEdit.get(sname);
+
+		if (name != null){
+
+		  if (name.equals(SelectionRule.aNone) && gname != null) {
+		    host.setSelectionGroup(null);
+		    modified = true;
+		    LogMgr.getInstance().logAndFlush
+		    (LogMgr.Kind.Sch, LogMgr.Level.Finest,
+		      "Scheduler [" + hname + "]: " + 
+		      "Selection Group = " + "null" + " (" + gname + ")\n");
+		  }
+		  else if((gname == null) || !name.equals(gname)) {
+		    host.setSelectionGroup(name);
+		    modified = true;
+
+		    LogMgr.getInstance().logAndFlush
+		    (LogMgr.Kind.Sch, LogMgr.Level.Finest,
+		      "Scheduler [" + hname + "]: " + 
+		      "Selection Group = " + name + " (" + gname + ")\n");
+		  }
+		}
+		host.setGroupState(state);
+	      }  /* Selection Group */
+	      
+	      /* Server Status */
+	      {
+		QueueHostStatus sstat = scheduledSStat.get(sname);
+		QueueHostStatus current = host.getInfoStatus();
+		EditableState state = scheduledSStatEdit.get(sname);
+		if (sstat != null) {
+		  if (current != QueueHostStatus.Shutdown) {
+		    if (sstat != current) {
+		      switch (sstat) {
+		      case Enabled:
+			host.setStatus(Status.Enabled);
+			modified = true;
+			break;
+		      case Disabled:
+			host.setStatus(Status.Disabled);
+			modified = true;
+			break;
+		      }
+		      
+		      
+		      LogMgr.getInstance().logAndFlush
+		      (LogMgr.Kind.Sch, LogMgr.Level.Finest,
+			"Scheduler [" + hname + "]: " + 
+			"Server Status = " + sstat+ " (" + current + ")\n");
+		    }
+		  }
+		}
+		host.setStatusState(state);
+	      } /* Server Status */
+	      
+	      /* Remove Reservation */
+	      {
+		String current = host.getReservation();
+		boolean rstat = scheduledRStat.get(sname);
+		EditableState state = scheduledRStatEdit.get(sname);
 		
-		LogMgr.getInstance().logAndFlush
+		if (rstat && current != null) {
+		  host.setReservation(null);
+		  modified = true;
+		  LogMgr.getInstance().logAndFlush
 		  (LogMgr.Kind.Sch, LogMgr.Level.Finest,
-		   "Scheduler [" + hname + "]: " + 
-		   "Selection Group = " + name + " (" + gname + ")\n");
+		    "Scheduler [" + hname + "]: " + 
+		    "Remove Reservation\n");
+		}
+		host.setReservationState(state);
+	      } /* Remove Reservation */
+	      
+	      /* Order */
+	      {
+		int current = host.getOrder();
+		Integer order = scheduledOrder.get(sname);
+		EditableState state = scheduledOrderEdit.get(sname);
+		if (order != null && !order.equals(current)) {
+		  host.setOrder(order);
+		  modified = true;
+		  LogMgr.getInstance().logAndFlush
+		  (LogMgr.Kind.Sch, LogMgr.Level.Finest,
+		    "Scheduler [" + hname + "]: " + 
+		    "Order = " + order + " (" + current + ")\n");
+		}
+		host.setOrderState(state);
+	      } /* Order */
+	      
+	      /* Slots */
+	      {
+		int current = host.getJobSlots();
+		Integer slots = scheduledSlots.get(sname);
+		EditableState state = scheduledSlotsEdit.get(sname);
+		if (slots != null && !slots.equals(current)) {
+		  host.setJobSlots(slots);
+		  modified = true;
+		  LogMgr.getInstance().logAndFlush
+		  (LogMgr.Kind.Sch, LogMgr.Level.Finest,
+		    "Scheduler [" + hname + "]: " + 
+		    "Slots = " + slots + " (" + current + ")\n");
+		}
+		host.setSlotState(state);
 	      }
+	    }
+	    else {
+	      host.setSlotState(EditableState.Manual);
+	      host.setStatusState(EditableState.Manual);
+	      host.setReservationState(EditableState.Manual);
+	      host.setOrderState(EditableState.Manual);
+	      host.setGroupState(EditableState.Manual);
 	    }
 	  }
 	}
