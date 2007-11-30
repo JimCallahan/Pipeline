@@ -38,6 +38,7 @@ class JobReqsDelta
     pMinDisk = null;
     pSelectionKeys = null;
     pLicenseKeys = null;
+    pHardwareKeys = null;
   }
   
   /**
@@ -69,6 +70,10 @@ class JobReqsDelta
    * @param selectionKeys 
    *   The set of selection keys an eligible host is required to have or <CODE>null</CODE>
    *   for none.
+   *   
+   * @param hardwareKeys 
+   *   The set of hardware keys an eligible host is required to have or <CODE>null</CODE>
+   *   for none.
    */ 
   public JobReqsDelta
   (
@@ -79,7 +84,8 @@ class JobReqsDelta
     Long minMemory,              
     Long minDisk,                
     Set<String> licenseKeys,
-    Set<String> selectionKeys
+    Set<String> selectionKeys,
+    Set<String> hardwareKeys
   )
   {
     pJobID = jobID;
@@ -98,6 +104,11 @@ class JobReqsDelta
       pSelectionKeys = new HashSet<String>(selectionKeys);
     else
       pSelectionKeys = null;
+    
+    if (hardwareKeys != null)
+      pHardwareKeys = new HashSet<String>(hardwareKeys);
+    else
+      pHardwareKeys = null;
   }
   
   /*----------------------------------------------------------------------------------------*/

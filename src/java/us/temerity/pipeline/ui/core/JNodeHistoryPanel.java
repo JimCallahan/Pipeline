@@ -1,4 +1,4 @@
-// $Id: JNodeHistoryPanel.java,v 1.25 2007/11/04 20:42:38 jesse Exp $
+// $Id: JNodeHistoryPanel.java,v 1.26 2007/11/30 20:14:25 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1188,10 +1188,14 @@ class JNodeHistoryPanel
 	  if(diag.overrideLicenseKeys()) 
 	    licenseKeys = diag.getLicenseKeys();
 	  
+	  TreeSet<String> hardwareKeys = null;
+	  if(diag.overrideHardwareKeys()) 
+	    hardwareKeys = diag.getHardwareKeys();
+	  
 	  QueueJobsTask task = 
 	    new QueueJobsTask(pStatus.getName(), batchSize, priority, interval,
 	                      maxLoad, minMemory, minDisk,
-			      selectionKeys, licenseKeys);
+			      selectionKeys, licenseKeys, hardwareKeys);
 	  task.start();
 	}
       }
@@ -1485,7 +1489,7 @@ class JNodeHistoryPanel
      String name
     ) 
     {
-      this(name, null, null, null, null, null, null, null, null);
+      this(name, null, null, null, null, null, null, null, null, null);
     }
 
     public 
@@ -1499,13 +1503,14 @@ class JNodeHistoryPanel
      Long minMemory,              
      Long minDisk,  
      TreeSet<String> selectionKeys,
-     TreeSet<String> licenseKeys
+     TreeSet<String> licenseKeys,
+     TreeSet<String> hardwareKeys
     ) 
     {
       UIMaster.getInstance().super(pGroupID, name, pAuthor, pView, 
 				   batchSize, priority, rampUp, 
 				   maxLoad, minMemory, minDisk,
-				   selectionKeys, licenseKeys);
+				   selectionKeys, licenseKeys, hardwareKeys);
       setName("JNodeHistoryPanel:QueueJobsTask");
     }
 

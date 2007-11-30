@@ -1,4 +1,4 @@
-// $Id: JQHostSlotsTableCellRenderer.java,v 1.2 2007/11/20 05:42:08 jesse Exp $
+// $Id: JQHostSlotsTableCellRenderer.java,v 1.3 2007/11/30 20:14:25 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -66,17 +66,26 @@ class JQHostSlotsTableCellRenderer
     
     QueueHostInfo qinfo = pParent.getHostInfo(row);
     
-    Color foreground = Color.white;
-    
     if (qinfo != null) {
       boolean editable = pParent.isHostEditable(qinfo.getName());
-      EditableState pEditState = qinfo.getSlotState();
+      EditableState pEditState = qinfo.getSlotsState();
    
-      if (isSelected)
-	foreground = Color.yellow;
+      if (editable) {
+	switch(pEditState) {
+	case Manual:
+	  setName("GreenCheckTableCellRenderer");
+	  break;
+	case SemiAutomatic:
+	  setName("GreenConflictTableCellRenderer");
+	  break;
+	case Automatic:
+	  setName("GreenLockTableCellRenderer");
+	}
+      }
+      else
+	setName("GreenTableCellRenderer");
     }
 
-    setForeground(foreground);
     if((qinfo != null) && qinfo.isJobSlotsPending()) 
       setForeground(Color.cyan);
 

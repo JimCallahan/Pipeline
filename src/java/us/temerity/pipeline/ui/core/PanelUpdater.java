@@ -1,4 +1,4 @@
-// $Id: PanelUpdater.java,v 1.21 2007/07/01 02:59:35 jim Exp $
+// $Id: PanelUpdater.java,v 1.22 2007/11/30 20:14:26 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -489,6 +489,7 @@ class PanelUpdater
 	  master.updatePanelOp(pGroupID, "Updating License/Selection Keys...");
 	  pLicenseKeys   = qclient.getLicenseKeys();
 	  pSelectionKeys = qclient.getSelectionKeys();
+	  pHardwareKeys  = qclient.getHardwareKeys();
 	}
 
 	if(!pNodeDetailsOnly) {
@@ -529,6 +530,7 @@ class PanelUpdater
 		pHosts              = qclient.getHosts(pServerHistogramSpecs);
 		pSelectionGroups    = qclient.getSelectionGroupNames();
 		pSelectionSchedules = qclient.getSelectionScheduleNames();
+		pHardwareGroups     = qclient.getHardwareGroupNames();
 
 		/* add full intervals for missing hosts */ 
 		{
@@ -727,7 +729,7 @@ class PanelUpdater
 	/* node details */ 
 	if(pNodeDetailsPanel != null) 
 	  pNodeDetailsPanel.applyPanelUpdates
-	    (pAuthor, pView, pDetailedNode, pLicenseKeys, pSelectionKeys);
+	    (pAuthor, pView, pDetailedNode, pLicenseKeys, pSelectionKeys, pHardwareKeys);
 	
 	/* node files */ 
 	if(pNodeFilesPanel != null) 
@@ -763,7 +765,8 @@ class PanelUpdater
 	    if(pQueueJobServersPanel != null) 
 	      pQueueJobServersPanel.applyPanelUpdates
 		(pAuthor, pView, pServersFiltered, pHosts, pSamples, 
-		 pWorkGroups, pWorkUsers, pSelectionGroups, pSelectionSchedules);
+		 pWorkGroups, pWorkUsers, pSelectionGroups, pSelectionSchedules, 
+		 pHardwareGroups);
 	    
 	    /* job slots */ 
 	    if(pQueueJobSlotsPanel != null) 
@@ -786,7 +789,7 @@ class PanelUpdater
 	if(pQueueJobDetailsPanel != null) 
 	  pQueueJobDetailsPanel.applyPanelUpdates
 	    (pAuthor, pView, pDetailedJob, pDetailedJobInfo, pDetailedJobExecDetails, 
-	     pLicenseKeys, pSelectionKeys);
+	     pLicenseKeys, pSelectionKeys, pHardwareKeys);
       }
     }
   }
@@ -940,7 +943,11 @@ class PanelUpdater
    * The current selection keys.
    */
   private ArrayList<SelectionKey>  pSelectionKeys; 
-
+  
+  /**
+   * The current hardware keys.
+   */
+  private ArrayList<HardwareKey>  pHardwareKeys; 
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -1004,6 +1011,11 @@ class PanelUpdater
    * The current selection keys.
    */
   private TreeSet<String>  pSelectionSchedules;
+  
+  /**
+   * The current hardware groups,
+   */
+  private TreeSet<String>  pHardwareGroups;
   
   /**
    * The names of the user work groups.

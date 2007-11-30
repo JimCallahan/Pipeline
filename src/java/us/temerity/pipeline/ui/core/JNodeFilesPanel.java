@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.44 2007/11/04 20:42:37 jesse Exp $
+// $Id: JNodeFilesPanel.java,v 1.45 2007/11/30 20:14:25 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1927,10 +1927,14 @@ class JNodeFilesPanel
 	if(diag.overrideLicenseKeys()) 
 	  licenseKeys = diag.getLicenseKeys();
 	
+	TreeSet<String> hardwareKeys = null;
+	if(diag.overrideHardwareKeys()) 
+	  hardwareKeys = diag.getHardwareKeys();
+	
 	QueueJobsTask task = 
 	  new QueueJobsTask(pSelected, batchSize, priority, interval,
 	    		    maxLoad, minMemory, minDisk,
-			    selectionKeys, licenseKeys);
+			    selectionKeys, licenseKeys, hardwareKeys);
 	task.start();
       }
     }
@@ -3273,7 +3277,7 @@ class JNodeFilesPanel
      TreeSet<Integer> indices
     ) 
     {
-      this(indices, null, null, null, null, null, null, null, null);
+      this(indices, null, null, null, null, null, null, null, null, null);
     }
     
     public 
@@ -3287,7 +3291,8 @@ class JNodeFilesPanel
      Long minMemory,              
      Long minDisk,  
      TreeSet<String> selectionKeys, 
-     TreeSet<String> licenseKeys
+     TreeSet<String> licenseKeys,
+     TreeSet<String> hardwareKeys
     ) 
     {
       super("JNodeFilesPanel:QueueJobsTask");
@@ -3300,7 +3305,8 @@ class JNodeFilesPanel
       pMinMemory     = minMemory;
       pMinDisk       = minDisk;
       pSelectionKeys = selectionKeys;
-      pLicenseKeys   = licenseKeys; 
+      pLicenseKeys   = licenseKeys;
+      pHardwareKeys  = hardwareKeys;
     }
 
     public void 
@@ -3313,7 +3319,7 @@ class JNodeFilesPanel
 	  client.submitJobs(pAuthor, pView, pStatus.getName(), pIndices, 
 			    pBatchSize, pPriority, pRampUp, 
 			    pMaxLoad, pMinMemory, pMinDisk,
-			    pSelectionKeys, pLicenseKeys);
+			    pSelectionKeys, pLicenseKeys, pHardwareKeys);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
@@ -3336,6 +3342,7 @@ class JNodeFilesPanel
     private Long             pMinDisk;
     private TreeSet<String>  pSelectionKeys;
     private TreeSet<String>  pLicenseKeys;
+    private TreeSet<String>  pHardwareKeys;
   }
 
   /** 

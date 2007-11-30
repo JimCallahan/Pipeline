@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.45 2007/11/04 20:42:37 jesse Exp $
+// $Id: JNodeDetailsPanel.java,v 1.46 2007/11/30 20:14:25 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -12,6 +12,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.util.*;
+
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.tree.*;
@@ -88,6 +89,7 @@ class JNodeDetailsPanel
 
       pSelectionKeyComponents = new TreeMap<String,Component[]>();
       pLicenseKeyComponents   = new TreeMap<String,Component[]>();
+      pHardwareKeyComponents  = new TreeMap<String,Component[]>();
     }
 
     /* initialize the popup menus */ 
@@ -1338,6 +1340,19 @@ class JNodeDetailsPanel
 		pSelectionDrawer = drawer;
 		dbox.add(drawer);
 	      }
+	      
+	      /* hardware keys */ 
+	      {
+		Box box = new Box(BoxLayout.Y_AXIS);
+		pHardwareKeysBox = box;
+
+		JDrawer drawer = new JDrawer("Hardware Keys:", box, false);
+		drawer.setToolTipText(UIFactory.formatToolTip
+		  ("The set of hardware keys a server must have in order to be eligable " + 
+		   "to run jobs associated with this node."));
+		pHardwareDrawer = drawer;
+		dbox.add(drawer);
+	      }
 
 	      /* license keys */ 
 	      {
@@ -1351,7 +1366,7 @@ class JNodeDetailsPanel
 		pLicenseDrawer = drawer;
 		dbox.add(drawer);
 	      }
-
+	      
 	      jrbox.add(dbox);
 	    }
 
@@ -1392,7 +1407,7 @@ class JNodeDetailsPanel
       addMouseListener(this); 
     }
 
-    updateNodeStatus(null, null, null);
+    updateNodeStatus(null, null, null, null);
   }
 
   /**
@@ -1682,13 +1697,14 @@ class JNodeDetailsPanel
    String view,
    NodeStatus status, 
    ArrayList<LicenseKey> licenseKeys, 
-   ArrayList<SelectionKey> selectionKeys
+   ArrayList<SelectionKey> selectionKeys,
+   ArrayList<HardwareKey> hardwareKeys
   )
   {
     if(!pAuthor.equals(author) || !pView.equals(view)) 
       super.setAuthorView(author, view);    
 
-    updateNodeStatus(status, licenseKeys, selectionKeys);
+    updateNodeStatus(status, licenseKeys, selectionKeys, hardwareKeys);
   }
 
   /**
@@ -1740,7 +1756,8 @@ class JNodeDetailsPanel
   (
    NodeStatus status, 
    ArrayList<LicenseKey> licenseKeys, 
-   ArrayList<SelectionKey> selectionKeys
+   ArrayList<SelectionKey> selectionKeys,
+   ArrayList<HardwareKey> hardwareKeys
   ) 
   {
     updatePrivileges();
@@ -1748,6 +1765,7 @@ class JNodeDetailsPanel
     pStatus        = status;
     pLicenseKeys   = licenseKeys; 
     pSelectionKeys = selectionKeys;
+    pHardwareKeys  = hardwareKeys;
 
     NodeDetails details = null;
     if(pStatus != null) 
@@ -3306,6 +3324,114 @@ class JNodeDetailsPanel
 
 	pSelectionKeysBox.add(comps[2]);
       }
+      
+      /* hardware keys */ 
+      {
+	TreeMap<String,String> keys = new TreeMap<String,String>();
+	if(pHardwareKeys != null) {
+	  for(HardwareKey key : pHardwareKeys)
+	    keys.put(key.getName(), key.getDescription());
+	}
+
+	pHardwareKeysBox.removeAll();
+	pHardwareKeyComponents.clear();
+
+	Component comps[] = createCommonPanels();
+	JPanel tpanel = (JPanel) comps[0];
+	JPanel vpanel = (JPanel) comps[1];
+    
+	if(keys.isEmpty()) {
+	  tpanel.add(Box.createRigidArea(new Dimension(sTSize-7, 0)));
+	  vpanel.add(Box.createHorizontalGlue());
+	}
+	else {
+	  boolean first = true; 
+	  for(String kname : keys.keySet()) {
+	    boolean hasWorkingKey = 
+	      (wjreq != null) && wjreq.getHardwareKeys().contains(kname);
+	    boolean hasCheckedInKey = 
+	      (cjreq != null) && cjreq.getHardwareKeys().contains(kname);
+
+	    if(!first) 
+	      UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+	    first = false;
+
+	    Component pcomps[] = new Component[4];
+
+	    {
+	      JLabel label = UIFactory.createFixedLabel
+		(kname + ":", sTSize-7, JLabel.RIGHT, keys.get(kname));
+	      pcomps[0] = label;
+
+	      tpanel.add(label);
+	    }
+
+	    { 
+	      Box hbox = new Box(BoxLayout.X_AXIS);
+
+	      {
+		JBooleanField field = UIFactory.createBooleanField(sVSize);
+		pcomps[1] = field;
+
+		if(wjreq != null)
+		  field.setValue(hasWorkingKey);
+		else 
+		  field.setValue(null);
+
+		field.setActionCommand("hardware-key-changed:" + kname);
+		field.addActionListener(this);
+
+		field.setEnabled(!isLocked() && !pIsFrozen && (wjreq != null));
+
+		hbox.add(field);
+	      }
+
+	      hbox.add(Box.createRigidArea(new Dimension(4, 0)));
+
+	      {
+		JButton btn = new JButton();		 
+		pcomps[2] = btn;
+		btn.setName("SmallLeftArrowButton");
+
+		Dimension size = new Dimension(12, 12);
+		btn.setMinimumSize(size);
+		btn.setMaximumSize(size);
+		btn.setPreferredSize(size);
+
+		btn.setActionCommand("set-hardware-key:" + kname);
+		btn.addActionListener(this);
+
+		btn.setEnabled(!isLocked() && !pIsFrozen && 
+			       (wjreq != null) && (cjreq != null));
+
+		hbox.add(btn);
+	      } 
+
+	      hbox.add(Box.createRigidArea(new Dimension(4, 0)));
+
+	      {
+		JTextField field = 
+		  UIFactory.createTextField("-", sVSize, JLabel.CENTER);
+		pcomps[3] = field;
+
+		if(cjreq != null)
+		  field.setText(hasCheckedInKey ? "YES" : "no");
+
+		hbox.add(field);
+	      }
+
+	      vpanel.add(hbox);
+	    }
+
+	    pHardwareKeyComponents.put(kname, pcomps);
+
+	    doHardwareKeyChanged(kname, modified);
+	  }
+	}
+
+	pHardwareKeysBox.add(comps[2]);
+      }
+
 
       /* license keys */ 
       {
@@ -3775,6 +3901,7 @@ class JNodeDetailsPanel
     encoder.encode("ActionDrawerOpen",    pActionDrawer.isOpen());
     encoder.encode("JobReqsDrawerOpen",   pJobReqsDrawer.isOpen());
     encoder.encode("SelectionDrawerOpen", pSelectionDrawer.isOpen());
+    encoder.encode("HardwareDrawerOpen",  pHardwareDrawer.isOpen());
     encoder.encode("LicenseDrawerOpen",   pLicenseDrawer.isOpen());
   }
 
@@ -3813,6 +3940,12 @@ class JNodeDetailsPanel
       Boolean open = (Boolean) decoder.decode("SelectionDrawerOpen");
       if(open != null) 
 	pSelectionDrawer.setIsOpen(open);
+    }
+    
+    {
+      Boolean open = (Boolean) decoder.decode("HardwareDrawerOpen");
+      if(open != null) 
+	pHardwareDrawer.setIsOpen(open);
     }
 
     {
@@ -4101,6 +4234,10 @@ class JNodeDetailsPanel
       doSelectionKeyChanged(cmd.substring(22), true);
     else if(cmd.startsWith("set-selection-key:")) 
       doSetSelectionKey(cmd.substring(18));
+    else if(cmd.startsWith("hardware-key-changed:")) 
+      doHardwareKeyChanged(cmd.substring(21), true);
+    else if(cmd.startsWith("set-hardware-key:")) 
+      doSetHardwareKey(cmd.substring(17));
     else if(cmd.startsWith("license-key-changed:")) 
       doLicenseKeyChanged(cmd.substring(20), true);
     else if(cmd.startsWith("set-license-key:")) 
@@ -4343,6 +4480,19 @@ class JNodeDetailsPanel
 		Boolean value = field.getValue();
 		if((value != null) && value) 
 		  jreq.addSelectionKey(kname);
+	      }
+	    }
+	    
+	    /* hardware keys */ 
+	    {
+	      jreq.removeAllHardwareKeys();
+
+	      for(String kname : pHardwareKeyComponents.keySet()) {
+		Component pcomps[] = pHardwareKeyComponents.get(kname);
+		JBooleanField field = (JBooleanField) pcomps[1];
+		Boolean value = field.getValue();
+		if((value != null) && value) 
+		  jreq.addHardwareKey(kname);
 	      }
 	    }
 
@@ -5196,6 +5346,62 @@ class JNodeDetailsPanel
       pcomps[3].setForeground(color);
     }
   }
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Set the hardware key field with the given name from the value of the checked-in field.
+   */ 
+  private void 
+  doSetHardwareKey
+  (
+   String kname
+  ) 
+  { 
+    Component pcomps[] = pHardwareKeyComponents.get(kname);
+    if(pcomps != null) {
+      JBooleanField wfield = (JBooleanField) pcomps[1];
+
+      String ckey = ((JTextField) pcomps[3]).getText();
+      if(ckey.equals("YES"))
+	wfield.setValue(true);
+      else if(ckey.equals("no"))
+	wfield.setValue(false);
+
+      doHardwareKeyChanged(kname, true);
+    }
+  }
+
+  /**
+   * Update the appearance of the hardware key field with the given name after a 
+   * change of value.
+   */ 
+  private void 
+  doHardwareKeyChanged
+  (
+   String kname,
+   boolean modified
+  ) 
+  {
+    Component pcomps[] = pHardwareKeyComponents.get(kname);
+    if(pcomps != null) {
+      if(modified)
+        unsavedChange("Hardware Key: " + kname); 
+    
+      Color color = Color.white;
+      if(hasWorking() && hasCheckedIn()) {
+	String wkey = ((JBooleanField) pcomps[1]).getText();
+	String ckey = ((JTextField) pcomps[3]).getText();
+	if(!ckey.equals(wkey))
+	  color = Color.cyan;
+      }
+
+      pcomps[0].setForeground(color);
+      pcomps[1].setForeground(color);
+      pcomps[3].setForeground(color);
+    }
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -5421,10 +5627,14 @@ class JNodeDetailsPanel
 	  if(diag.overrideLicenseKeys()) 
 	    licenseKeys = diag.getLicenseKeys();
 	  
+	  TreeSet<String> hardwareKeys = null;
+	  if(diag.overrideHardwareKeys()) 
+	    hardwareKeys = diag.getHardwareKeys();
+	  
 	  QueueJobsTask task = 
 	    new QueueJobsTask(pStatus.getName(), batchSize, priority, interval,
 	                      maxLoad, minMemory, minDisk,
-			      selectionKeys, licenseKeys);
+			      selectionKeys, licenseKeys, hardwareKeys);
 	  task.start();
 	}
       }
@@ -5882,7 +6092,7 @@ class JNodeDetailsPanel
      String name
     ) 
     {
-      this(name, null, null, null, null, null, null, null, null);
+      this(name, null, null, null, null, null, null, null, null, null);
     }
 
     public 
@@ -5896,13 +6106,14 @@ class JNodeDetailsPanel
      Long minMemory,              
      Long minDisk, 
      TreeSet<String> selectionKeys,
-     TreeSet<String> licenseKeys
+     TreeSet<String> licenseKeys,
+     TreeSet<String> hardwareKeys
     ) 
     {
       UIMaster.getInstance().super(pGroupID, name, pAuthor, pView, 
 				   batchSize, priority, rampUp,
 				   maxLoad, minMemory, minDisk,
-				   selectionKeys, licenseKeys);
+				   selectionKeys, licenseKeys, hardwareKeys);
       setName("JNodeDetailsPanel:QueueJobsTask");
     }
 
@@ -6089,6 +6300,11 @@ class JNodeDetailsPanel
    * The current selection keys.
    */
   private ArrayList<SelectionKey>  pSelectionKeys; 
+  
+  /**
+   * The current hardware keys.
+   */
+  private ArrayList<HardwareKey>  pHardwareKeys; 
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -6642,8 +6858,26 @@ class JNodeDetailsPanel
   private TreeMap<String,Component[]>  pLicenseKeyComponents;
   
   /**
-   * The drawer containing the licence key components.
+   * The drawer containing the license key components.
    */ 
   private JDrawer  pLicenseDrawer;
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The hardware keys container.
+   */ 
+  private Box  pHardwareKeysBox;
+
+  /**
+   * The title, working and checked-in hardware key components indexed by 
+   * hardware key name.
+   */ 
+  private TreeMap<String,Component[]>  pHardwareKeyComponents;
+  
+  /**
+   * The drawer containing the hardware key components.
+   */ 
+  private JDrawer  pHardwareDrawer;
 
 }

@@ -1,21 +1,21 @@
-// $Id: JQueueJobViewerPanel.java,v 1.49 2007/11/05 04:33:53 jesse Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.50 2007/11/30 20:14:26 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
+
+import java.awt.*;
+import java.awt.event.*;
+import java.io.File;
+import java.util.*;
+
+import javax.media.opengl.GL;
+import javax.media.opengl.GLAutoDrawable;
+import javax.swing.*;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.glue.*;
 import us.temerity.pipeline.math.*;
-
-import java.awt.*;
-import java.awt.event.*;
-import java.awt.geom.*;
-import java.io.*;
-import java.util.*;
-
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.tree.*;
-import javax.media.opengl.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   Q U E U E   J O B   V I E W E R   P A N E L                                            */
@@ -2479,11 +2479,15 @@ class JQueueJobViewerPanel
 	TreeSet<String> licenseKeys = null;
 	if(diag.overrideLicenseKeys()) 
 	  licenseKeys = diag.getLicenseKeys();
+	
+	TreeSet<String> hardwareKeys = null;
+	if(diag.overrideHardwareKeys()) 
+	  hardwareKeys = diag.getHardwareKeys();
 
 	QueueJobsTask task = 
 	  new QueueJobsTask(targets, batchSize, priority, interval,
 	                    maxLoad, minMemory, minDisk,
-			    selectionKeys, licenseKeys, true);
+			    selectionKeys, licenseKeys, hardwareKeys, true);
 	task.start();
       }
     }
@@ -2658,6 +2662,7 @@ class JQueueJobViewerPanel
 	Long minDisk = null;
 	Set<String> licenseKeys = null;
 	Set<String> selectionKeys = null;
+	Set<String> hardwareKeys = null;
 	
 	if (diag.overridePriority())
 	  priority = diag.getPriority();
@@ -2673,6 +2678,8 @@ class JQueueJobViewerPanel
 	  licenseKeys = diag.getLicenseKeys();
 	if (diag.overrideSelectionKeys())
 	  selectionKeys = diag.getSelectionKeys();
+	if (diag.overrideHardwareKeys())
+	  hardwareKeys = diag.getHardwareKeys();
 	
 	LinkedList<JobReqsDelta> change = new LinkedList<JobReqsDelta>();
 	for(ViewerJob vjob : pSelected.values()) {
@@ -2684,7 +2691,7 @@ class JQueueJobViewerPanel
 	  case Preempted:
 	    JobReqsDelta newReq = new JobReqsDelta
 	      (jobID, priority, rampUp, maxLoad, minMemory, minDisk, 
-	       licenseKeys, selectionKeys);
+	       licenseKeys, selectionKeys, hardwareKeys);
 	    change.add(newReq);
 	    break;
 	  }
@@ -3060,7 +3067,7 @@ class JQueueJobViewerPanel
       DoubleMap<NodeID, Long, TreeSet<FileSeq>> targets
     ) 
     {
-      this(targets, null, null, null, null, null, null, null, null, false);
+      this(targets, null, null, null, null, null, null, null, null, null, false);
     }
     
     public 
@@ -3075,6 +3082,7 @@ class JQueueJobViewerPanel
      Long minDisk, 
      TreeSet<String> selectionKeys,
      TreeSet<String> licenseKeys,
+     TreeSet<String> hardwareKeys,
      boolean special
     ) 
     {
@@ -3089,6 +3097,7 @@ class JQueueJobViewerPanel
       pMinDisk       = minDisk;
       pSelectionKeys = selectionKeys;
       pLicenseKeys   = licenseKeys;
+      pHardwareKeys  = hardwareKeys;
       pSpecial       = special;
     }
 
@@ -3108,7 +3117,7 @@ class JQueueJobViewerPanel
 	      client.resubmitJobs
 	        (nodeID, targets.get(jobID), pBatchSize, pPriority, pRampUp,
 	          pMaxLoad, pMinMemory, pMinDisk,
-	         pSelectionKeys, pLicenseKeys);
+	         pSelectionKeys, pLicenseKeys, pHardwareKeys);
 	    else {
 	      
 	      QueueMgrClient queue = master.getQueueMgrClient(pGroupID);
@@ -3117,7 +3126,7 @@ class JQueueJobViewerPanel
 	      client.resubmitJobs
 	        (nodeID, targets.get(jobID), pBatchSize, reqs.getPriority(), reqs.getRampUp(),
 	         reqs.getMaxLoad(), reqs.getMinMemory(), reqs.getMinDisk(),
-	         reqs.getSelectionKeys(), reqs.getLicenseKeys());
+	         reqs.getSelectionKeys(), reqs.getLicenseKeys(), reqs.getHardwareKeys());
 
 	    }
 	  }
@@ -3143,6 +3152,7 @@ class JQueueJobViewerPanel
     private Long                                       pMinDisk;
     private TreeSet<String>                            pSelectionKeys;
     private TreeSet<String>                            pLicenseKeys;
+    private TreeSet<String>                            pHardwareKeys;
     private boolean                                    pSpecial;
   }
 

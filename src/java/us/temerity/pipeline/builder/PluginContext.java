@@ -1,11 +1,26 @@
 package us.temerity.pipeline.builder;
 
 import us.temerity.pipeline.VersionID;
+import us.temerity.pipeline.glue.*;
 import us.temerity.pipeline.math.Range;
 
 public 
 class PluginContext
+  implements Glueable
 {
+  /**
+   * This constructor is required by the {@link GlueDecoder} to instantiate the class when
+   * encountered during the reading of GLUE format files and should not be called from
+   * user code.
+   */
+  public 
+  PluginContext()
+  {
+    pPluginName = null;
+    pPluginVendor = null;
+    pRange = null;
+  }
+  
   public 
   PluginContext
   (
@@ -77,6 +92,32 @@ class PluginContext
     return("[Plugin Name: " + pPluginName + ", Vendor: " + 
            pPluginVendor + ", Range: " + pRange.toString() + "]");
   }
+  
+  @SuppressWarnings("unchecked")
+  public void 
+  fromGlue
+  (
+    GlueDecoder decoder
+  )
+    throws GlueException
+  {
+    pPluginName = (String) decoder.decode("PluginName");
+    pPluginVendor = (String) decoder.decode("PluginVendor");
+    pRange = (Range<VersionID>) decoder.decode("Range");
+  }
+
+  public void 
+  toGlue
+  (
+    GlueEncoder encoder
+  )
+    throws GlueException
+  {
+    encoder.encode("PluginName", pPluginName);
+    encoder.encode("PluginVendor", pPluginName);
+    encoder.encode("Range", pRange);
+  }
+
 
   private String pPluginName;
   private String pPluginVendor;

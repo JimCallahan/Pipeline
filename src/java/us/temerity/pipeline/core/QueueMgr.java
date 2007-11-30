@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.94 2007/11/20 05:42:08 jesse Exp $
+// $Id: QueueMgr.java,v 1.95 2007/11/30 20:14:24 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -9,7 +9,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.*;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.core.QueueHost.Status;
 import us.temerity.pipeline.core.exts.*;
 import us.temerity.pipeline.glue.*;
 import us.temerity.pipeline.message.*;
@@ -95,7 +94,10 @@ class QueueMgr
       pAdminPrivileges = new AdminPrivileges();
       pMasterMgrClient = new MasterMgrClient();
 
-      pLicenseKeys = new TreeMap<String,LicenseKey>();
+      pLicenseKeys        = new TreeMap<String,LicenseKey>();
+
+      pHardwareKeys       = new TreeMap<String, HardwareKey>();
+      pHardwareGroups     = new TreeMap<String, HardwareGroup>();
 
       pSelectionKeys      = new TreeMap<String,SelectionKey>();
       pSelectionGroups    = new TreeMap<String,SelectionGroup>();
@@ -169,7 +171,11 @@ class QueueMgr
 
       /* load the hosts if any exist */ 
       initHosts();
-
+      
+      /* run the scheduler to get everything all lined up and correct */
+//      TaskTimer timer = new TaskTimer("Scheduler");
+//      doScheduler(timer);
+      
       /* initialize the job related tables from disk files */ 
       initJobTables();
     }
@@ -285,11 +291,15 @@ class QueueMgr
     TaskTimer timer = new TaskTimer();
     LogMgr.getInstance().log
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
-       "Loading License/Selection Keys...");   
+       "Loading License/Selection/Hardware Keys...");   
     LogMgr.getInstance().flush();
 
     /* load the license keys if any exist */ 
     readLicenseKeys();
+    
+    /* load the hardware keys if any exist */ 
+    readHardwareKeys();
+    readHardwareGroups();
     
     /* load the selection keys, groups and schedules if any exist */ 
     readSelectionKeys();
@@ -1158,7 +1168,7 @@ class QueueMgr
       return new QueueGetSelectionKeysRsp(timer, keys);
     }
   }
-
+  
   /**
    * Add the given selection key to the currently defined selection keys. <P> 
    * 
@@ -1642,6 +1652,8 @@ class QueueMgr
 	}
       
 	writeSelectionSchedules();
+	DemandSchedulerTask task = new DemandSchedulerTask();
+	task.start();
       }
     
       return new SuccessRsp(timer);
@@ -1651,6 +1663,345 @@ class QueueMgr
     }    
   }
 
+
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   H A R D W A R E   K E Y S                                                            */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the names of the currently defined hardware keys. <P>  
+   * 
+   * @return
+   *   <CODE>QueueGetHardwareKeyNamesRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to get the key names.
+   */
+  public Object
+  getHardwareKeyNames() 
+  {
+    TaskTimer timer = new TaskTimer();
+    timer.aquire();
+    synchronized(pHardwareKeys) {
+      timer.resume();
+      
+      TreeSet<String> names = new TreeSet<String>(pHardwareKeys.keySet());
+      
+      return new QueueGetHardwareKeyNamesRsp(timer, names);
+    }
+  }
+  
+  /**
+   * Get the current hardware keys. 
+   * 
+   * @return
+   *   <CODE>QueueGetHardwareKeysRsp</CODE> if successful.
+   */ 
+  public Object
+  getHardwareKeys() 
+  {
+    TaskTimer timer = new TaskTimer();
+    timer.aquire();
+    synchronized(pHardwareKeys) {
+      timer.resume();
+      
+      ArrayList<HardwareKey> keys = new ArrayList<HardwareKey>(pHardwareKeys.values());
+      
+      return new QueueGetHardwareKeysRsp(timer, keys);
+    }
+  }
+  
+  /**
+   * Add the given hardware key to the currently defined hardware keys. <P> 
+   * 
+   * If a hardware key already exists which has the same name as the given key, it will be 
+   * silently overridden by this operation. <P> 
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to add the key.
+   */ 
+  public Object
+  addHardwareKey
+  (
+   QueueAddHardwareKeyReq req
+  ) 
+  {
+    HardwareKey key = req.getHardwareKey();
+
+    TaskTimer timer = new TaskTimer("QueueMgr.addHardwareKey(): " + key.getName());
+    timer.aquire();
+    try {
+      if(!pAdminPrivileges.isQueueAdmin(req))
+	throw new PipelineException
+	  ("Only a user with Queue Admin privileges may add hardware keys!");
+
+      synchronized(pSelectionKeys) {
+	timer.resume();
+
+	pHardwareKeys.put(key.getName(), key);
+	writeHardwareKeys();
+
+	return new SuccessRsp(timer);
+      }
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
+    }
+  }
+  
+  /**
+   * Remove the hardware key with the given name from currently defined hardware keys. <P> 
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to remove the key.
+   */ 
+  public Object
+  removeHardwareKey
+  (
+   QueueRemoveHardwareKeyReq req
+  ) 
+  {
+    String kname = req.getKeyName();
+
+    TaskTimer timer = new TaskTimer("QueueMgr.removeHardwareKey(): " + kname); 
+    timer.aquire();
+    try {
+      if(!pAdminPrivileges.isQueueAdmin(req))
+	throw new PipelineException
+	  ("Only a user with Queue Admin privileges may remove hardware keys!");
+
+      synchronized(pHardwareGroups) {
+	boolean modified = false;
+	synchronized(pHardwareKeys) {
+	  timer.resume();
+	
+	  {
+	    pHardwareKeys.remove(kname);
+	    writeHardwareKeys();
+	  }
+	  
+	  for(HardwareGroup hg : pHardwareGroups.values()) {
+	    if(hg.hasKey(kname)) {
+	      hg.removeKey(kname);
+	      modified = true;
+	    }
+	  }
+	}
+
+	if(modified) 
+	  writeHardwareGroups();
+      }
+
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
+    }
+  }  
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the names of all existing hardware groups. 
+   * 
+   * @return
+   *   <CODE>QueueGetHardwareGroupNamesRsp</CODE> if successful.
+   */ 
+  public Object
+  getHardwareGroupNames() 
+  {
+    TaskTimer timer = new TaskTimer();
+    timer.aquire();
+    synchronized(pHardwareGroups) {
+      timer.resume();
+
+      TreeSet<String> names = new TreeSet<String>(pHardwareGroups.keySet());
+      return new QueueGetHardwareGroupNamesRsp(timer, names);
+    }
+  }
+  
+  /**
+   * Get the current hardware key values for all existing hardware groups. 
+   * 
+   * @return
+   *   <CODE>QueueGetHardwareGroupsRsp</CODE> if successful.
+   */ 
+  public Object
+  getHardwareGroups() 
+  {
+    TaskTimer timer = new TaskTimer();
+    timer.aquire();
+    synchronized(pHardwareGroups) {
+      timer.resume();
+      
+      return new QueueGetHardwareGroupsRsp(timer, pHardwareGroups);
+    }
+  }
+  
+  /**
+   * Add a new hardware group. <P> 
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to add the host.
+   */ 
+  public Object
+  addHardwareGroup
+  (
+   QueueAddHardwareGroupReq req
+  ) 
+  {
+    String name = req.getName();
+    TaskTimer timer = new TaskTimer("QueueMgr.addHardwareGroup(): " + name);
+    timer.aquire();
+    try {
+      if(!pAdminPrivileges.isQueueAdmin(req))
+	throw new PipelineException
+	  ("Only a user with Queue Admin privileges may add hardware groups!"); 
+
+      synchronized(pHardwareGroups) {
+	timer.resume();
+	
+	if(pHardwareGroups.containsKey(name)) 
+	  throw new PipelineException
+	    ("A hardware group named (" + name + ") already exists!");
+	pHardwareGroups.put(name, new HardwareGroup(name));
+
+	writeHardwareGroups();
+
+	return new SuccessRsp(timer);
+      }
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
+    }    
+  }
+
+  /**
+   * Remove the given existing hardware group. <P> 
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to remove the selection group.
+   */ 
+  public Object
+  removeHardwareGroups
+  (
+   QueueRemoveHardwareGroupsReq req
+  ) 
+  {
+    TreeSet<String> names = req.getNames();
+
+    TaskTimer timer = new TaskTimer("QueueMgr.removeHardwareGroups():");
+    timer.aquire();
+    try {
+      if(!pAdminPrivileges.isQueueAdmin(req))
+	throw new PipelineException
+	  ("Only a user with Queue Admin privileges may remove hardware groups!"); 
+
+      synchronized(pHosts) {
+	  synchronized(pHardwareGroups) {
+	    timer.resume();
+	
+	    {
+	      for(String name : names)
+		pHardwareGroups.remove(name);
+	      
+	      writeHardwareGroups();
+	    }
+	    
+	    {
+	      boolean modified = false;
+	      for(QueueHost host : pHosts.values()) {
+		String gname = host.getHardwareGroup();
+		if((gname != null) && names.contains(gname)) {
+		  host.setHardwareGroup(null);
+		  modified = true;
+		}
+	      }
+	      
+	      if(modified) 
+		writeHosts();
+	    }
+	  }
+      }
+
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
+    }    
+  }
+
+  /**
+   * Change the hardware key values for the given hardware groups. <P> 
+   * 
+   * For an detailed explanation of how hardware keys are used to determine the assignment
+   * of jobs to hosts, see {@link JobReqs JobReqs}. <P> 
+   * 
+   * @param req 
+   *   The request.
+   *    
+   * @return 
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to change the selection groups.
+   */ 
+  public Object
+  editHardwareGroups
+  (
+   QueueEditHardwareGroupsReq req
+  ) 
+  {
+    TaskTimer timer = new TaskTimer("QueueMgr.editHardwareGroups()");
+
+    timer.aquire();
+    try {
+      if(!pAdminPrivileges.isQueueAdmin(req))
+	throw new PipelineException
+	  ("Only a user with Queue Admin privileges may edit hardware groups!");
+
+      synchronized(pHardwareGroups) {
+	synchronized(pHardwareKeys) {
+	  timer.resume();
+	
+	  for(HardwareGroup hg : req.getHardwareGroups()) {
+	    /* strip any obsolete hardware keys */ 
+	    TreeSet<String> dead = new TreeSet<String>();
+	    for(String key : hg.getKeys()) {
+	      if(!pHardwareKeys.containsKey(key)) 
+		dead.add(key);
+	    }
+	    for(String key : dead) 
+	      hg.removeKey(key);
+
+	    /* update the group */ 
+	    pHardwareGroups.put(hg.getName(), hg);
+	  }
+	}
+      
+	writeHardwareGroups();
+      }
+    
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
+    }    
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -2076,7 +2427,7 @@ class QueueMgr
       }
     }
 
-    /* proces the hosts */ 
+    /* process the hosts */ 
     timer.aquire();
     synchronized(pHostsInfo) {
       timer.resume();
@@ -2235,6 +2586,7 @@ class QueueMgr
 	    ("The host (" + hname + ") is already a job server!");
 	
 	/* pre-add host tests */
+	// TODO is this doubled code?
 	performExtensionTests(timer, factory);
 	
 	pHosts.put(hname, new QueueHost(hname));
@@ -2402,12 +2754,60 @@ class QueueMgr
 	      ("Only a user with Queue Admin privileges may may edit the properties of a " + 
 	       "job server (" + hname + ") which is not the local host!");
 	}
-      }	
+      }
+      
+      TreeMap<String,QueueHostMod> finalChanges = new TreeMap<String, QueueHostMod>();
+      
+      SelectionScheduleMatrix matrix = null;
+      
+      /* This block looks at all the pending mods and checks to see if they are
+       * modifying the schedule property of any of the hosts.  If the schedule is
+       * being modified, then we need to create a QueueHostMod that accurately reflects
+       * changes caused by the schedule and then add in any changes from the user
+       * submitted mod that are still applicable.  
+       */
+      timer.aquire();
+      synchronized(pHostsInfo) {
+	synchronized(pSelectionSchedules) {
+	  timer.resume();
+	  matrix = new SelectionScheduleMatrix(pSelectionSchedules, System.currentTimeMillis());
+	}
+	Set<String> scheduleNames = matrix.getScheduleNames();
+	for(String hname : changes.keySet()) {
+	  QueueHostMod mod = changes.get(hname);
+	  boolean edited = false;
+	  QueueHostInfo info = pHostsInfo.get(hname);
+	  
+	  String scheduleName = null;
+	  
+	  String currentSched = null;
+	  if (info != null )
+	    currentSched = info.getSelectionSchedule();
+	  
+	  if (mod.isSelectionScheduleModified()) {
+	    String newSched = mod.getSelectionSchedule();
+	    if (newSched != null && scheduleNames.contains(newSched)) 
+	      scheduleName = newSched;
+	  } 
+	  else if (currentSched != null && scheduleNames.contains(currentSched)) 
+	    scheduleName = currentSched;
+	  
+	  if (scheduleName != null && info != null) {
+	    QueueHostMod schedMod = 
+	      QueueHostMod.getModFromSchedule(matrix, scheduleName, info);
+	    QueueHostMod.combineMods(schedMod, mod);
+	    finalChanges.put(hname, schedMod);
+	    edited = true;
+	  }
+	  if (!edited)
+	    finalChanges.put(hname, mod);
+	}
+      } // synchronized(pHostsInfo) 
 
       timer.aquire();
       synchronized(pHostsMod) {
 	timer.resume();
-	pHostsMod.putAll(changes);
+	pHostsMod.putAll(finalChanges);
       }
 
       updatePendingHostChanges(timer);
@@ -2487,10 +2887,28 @@ class QueueMgr
 	      qinfo.setJobSlots(qmod.getJobSlots()); 
 
 	    if(qmod.isSelectionGroupModified()) 
-	      qinfo.setSelectionGroup(qmod.getSelectionGroup()); 
+	      qinfo.setSelectionGroup(qmod.getSelectionGroup());
+	    
+	    if(qmod.isHardwareGroupModified()) 
+	      qinfo.setHardwareGroup(qmod.getHardwareGroup()); 
 
 	    if(qmod.isSelectionScheduleModified()) 
-	      qinfo.setSelectionSchedule(qmod.getSelectionSchedule()); 
+	      qinfo.setSelectionSchedule(qmod.getSelectionSchedule());
+	    
+	    if (qinfo.getSelectionSchedule() != null) {
+	      qinfo.setGroupState(qmod.getGroupState());
+	      qinfo.setOrderState(qmod.getOrderState());
+	      qinfo.setSlotsState(qmod.getSlotsState());
+	      qinfo.setStatusState(qmod.getStatusState());
+	      qinfo.setReservationState(qmod.getReservationState());
+	    }
+	    else {
+	      qinfo.setGroupState(EditableState.Manual);
+	      qinfo.setOrderState(EditableState.Manual);
+	      qinfo.setSlotsState(EditableState.Manual);
+	      qinfo.setStatusState(EditableState.Manual);
+	      qinfo.setReservationState(EditableState.Manual);
+	    }
 	  }
 	}
       }
@@ -2542,11 +2960,12 @@ class QueueMgr
 	    tm.aquire();
 	    synchronized(pHostsMod) {
 	      tm.resume();
-	      changes = new TreeMap<String,QueueHostStatusChange>(); 
+	      changes = new TreeMap<String,QueueHostStatusChange>();
 	      for(String hname : pHostsMod.keySet()) {
 		QueueHostMod qmod = pHostsMod.get(hname);
-		if(qmod.isStatusModified()) 
+		if(qmod.isStatusModified()) {
 		  changes.put(hname, qmod.getStatus());
+		}
 	      }
 	    }
 	  }
@@ -2691,6 +3110,22 @@ class QueueMgr
 		  }
 		}
 	      }
+	      
+	      /* hardware groups */ 
+	      if(qmod.isHardwareGroupModified()) {
+		tm.aquire();
+		synchronized(pHardwareGroups) {
+		  tm.resume();
+		  
+		  String name = qmod.getHardwareGroup(); 
+		  if((name == null) || pHardwareGroups.containsKey(name)) {
+		    host.setHardwareGroup(name);
+		    if(modifiedHosts != null) 
+		      modifiedHosts.add(hname);
+		    diskModified = true;
+		  }
+		}
+	      }	      
 
 	      /* selection schedules */ 
 	      if(qmod.isSelectionScheduleModified()) {
@@ -2706,6 +3141,15 @@ class QueueMgr
 		    diskModified = true;
 		  }
 		}
+	      }
+	      
+	      /* Editable States */
+	      {
+		host.setGroupState(qmod.getGroupState());
+		host.setOrderState(qmod.getOrderState());
+		host.setReservationState(qmod.getReservationState());
+		host.setSlotsState(qmod.getSlotsState());
+		host.setStatusState(qmod.getStatusState());
 	      }
 	    }
 	  }
@@ -2883,6 +3327,7 @@ class QueueMgr
     
     host.setStatus(status);
   }
+  
 
   
   /*----------------------------------------------------------------------------------------*/
@@ -5012,7 +5457,7 @@ class QueueMgr
 	 tm, timer);
     }
 
-    /* update the read-only cache of job server info before aquiring any potentially
+    /* update the read-only cache of job server info before acquiring any potentially
        long duration locks on the pHosts table */ 
     {
       timer.suspend();
@@ -5036,6 +5481,14 @@ class QueueMgr
 	dtm.resume();
 	keys.addAll(pSelectionKeys.keySet());
       }
+      
+      TreeSet<String> hardwareKeys = new TreeSet<String>();
+      dtm.aquire();
+      synchronized(pHardwareKeys) {
+	dtm.resume();
+	hardwareKeys.addAll(pHardwareKeys.keySet());
+      }
+
 
       dtm.aquire();
       synchronized(pHosts) {
@@ -5138,6 +5591,20 @@ class QueueMgr
 				    score = 0;
 				  else 
 				    score = sg.computeSelectionScore(jreqs, keys);
+				}
+			      }
+			    }
+			    /* Hardware Keys*/
+			    if (!jreqs.getHardwareKeys().isEmpty()) {
+			      String gname = host.getHardwareGroup();
+			      if(gname != null) {
+				tm.aquire();
+				synchronized(pHardwareGroups) {
+				  tm.resume();
+				  HardwareGroup hg = pHardwareGroups.get(gname);
+				  if(hg != null)
+				    if (!hg.isEligible(jreqs, hardwareKeys))
+				      score = null;
 				}
 			      }
 			    }
@@ -5818,204 +6285,13 @@ class QueueMgr
   /**
    * Perform one round of scheduling the assignment of selection groups to job servers. 
    */ 
-  public void 
+  public void
   scheduler()
   {
     TaskTimer timer = new TaskTimer("Scheduler");
-
-    /* precompute current groups for each schedule */ 
-    TreeMap<String,String> scheduledGroups = new TreeMap<String, String>();
-    TreeMap<String, EditableState> scheduledGroupsEdit = new TreeMap<String, EditableState>();
-    TreeMap<String, QueueHostStatus> scheduledSStat = new TreeMap<String, QueueHostStatus>();
-    TreeMap<String, EditableState> scheduledSStatEdit = new TreeMap<String, EditableState>();
-    TreeMap<String, Boolean> scheduledRStat = new TreeMap<String, Boolean>();
-    TreeMap<String, EditableState> scheduledRStatEdit = new TreeMap<String, EditableState>();
-    TreeMap<String, Integer> scheduledOrder = new TreeMap<String, Integer>();
-    TreeMap<String, EditableState> scheduledOrderEdit = new TreeMap<String, EditableState>();
-    TreeMap<String, Integer> scheduledSlots = new TreeMap<String, Integer>();
-    TreeMap<String, EditableState> scheduledSlotsEdit = new TreeMap<String, EditableState>();
-    {
-      timer.suspend();
-      TaskTimer tm = new TaskTimer("Scheduler [Compute Groups]");
-      tm.aquire();
-      synchronized(pSelectionSchedules) {
-	tm.resume();
-	
-        long now = System.currentTimeMillis();
-	for(SelectionSchedule sched : pSelectionSchedules.values()) { 
-	  scheduledGroups.put(sched.getName(), sched.activeGroup(now));
-	  scheduledGroupsEdit.put(sched.getName(), sched.getGroupEditState(now));
-	  scheduledSStat.put(sched.getName(), sched.activeSeverStatus(now));
-	  scheduledSStatEdit.put(sched.getName(), sched.getServerStatusEditState(now));
-	  scheduledRStat.put(sched.getName(), sched.activeReservationStatus(now));
-	  scheduledRStatEdit.put(sched.getName(), sched.getReservationEditState(now));
-	  scheduledOrder.put(sched.getName(), sched.activeOrder(now));
-	  scheduledOrderEdit.put(sched.getName(), sched.getOrderEditState(now));
-	  scheduledSlots.put(sched.getName(), sched.activeSlots(now));
-	  scheduledSlotsEdit.put(sched.getName(), sched.getSlotsEditState(now));
-	}
-      }
-      LogMgr.getInstance().logSubStage
-	(LogMgr.Kind.Sch, LogMgr.Level.Finer, 
-	 tm, timer);
-    }
     
-    /* update the hosts */ 
-    {
-      timer.suspend();
-      TaskTimer utm = new TaskTimer("Scheduler [Update Hosts]");      
-      utm.aquire();
-      synchronized(pHosts) {
-	boolean modified = false;
-	synchronized(pSelectionGroups) {
-	  utm.resume();
-	  
-	  for(String hname : pHosts.keySet()) {
-	    QueueHost host = pHosts.get(hname);
-	    
-	    String sname = host.getSelectionSchedule();
-	    String gname = host.getSelectionGroup();
-	    if(sname != null) {
-	      
-	      /* Selection Group */
-	      {
-		String name = scheduledGroups.get(sname);
-		EditableState state = scheduledGroupsEdit.get(sname);
-
-		if (name != null){
-
-		  if (name.equals(SelectionRule.aNone) && gname != null) {
-		    host.setSelectionGroup(null);
-		    modified = true;
-		    LogMgr.getInstance().logAndFlush
-		    (LogMgr.Kind.Sch, LogMgr.Level.Finest,
-		      "Scheduler [" + hname + "]: " + 
-		      "Selection Group = " + "null" + " (" + gname + ")\n");
-		  }
-		  else if((gname == null) || !name.equals(gname)) {
-		    host.setSelectionGroup(name);
-		    modified = true;
-
-		    LogMgr.getInstance().logAndFlush
-		    (LogMgr.Kind.Sch, LogMgr.Level.Finest,
-		      "Scheduler [" + hname + "]: " + 
-		      "Selection Group = " + name + " (" + gname + ")\n");
-		  }
-		}
-		host.setGroupState(state);
-	      }  /* Selection Group */
-	      
-	      /* Server Status */
-	      {
-		QueueHostStatus sstat = scheduledSStat.get(sname);
-		QueueHostStatus current = host.getInfoStatus();
-		EditableState state = scheduledSStatEdit.get(sname);
-		if (sstat != null) {
-		  if (current != QueueHostStatus.Shutdown) {
-		    if (sstat != current) {
-		      switch (sstat) {
-		      case Enabled:
-			host.setStatus(Status.Enabled);
-			modified = true;
-			break;
-		      case Disabled:
-			host.setStatus(Status.Disabled);
-			modified = true;
-			break;
-		      }
-		      
-		      
-		      LogMgr.getInstance().logAndFlush
-		      (LogMgr.Kind.Sch, LogMgr.Level.Finest,
-			"Scheduler [" + hname + "]: " + 
-			"Server Status = " + sstat+ " (" + current + ")\n");
-		    }
-		  }
-		}
-		host.setStatusState(state);
-	      } /* Server Status */
-	      
-	      /* Remove Reservation */
-	      {
-		String current = host.getReservation();
-		boolean rstat = scheduledRStat.get(sname);
-		EditableState state = scheduledRStatEdit.get(sname);
-		
-		if (rstat && current != null) {
-		  host.setReservation(null);
-		  modified = true;
-		  LogMgr.getInstance().logAndFlush
-		  (LogMgr.Kind.Sch, LogMgr.Level.Finest,
-		    "Scheduler [" + hname + "]: " + 
-		    "Remove Reservation\n");
-		}
-		host.setReservationState(state);
-	      } /* Remove Reservation */
-	      
-	      /* Order */
-	      {
-		int current = host.getOrder();
-		Integer order = scheduledOrder.get(sname);
-		EditableState state = scheduledOrderEdit.get(sname);
-		if (order != null && !order.equals(current)) {
-		  host.setOrder(order);
-		  modified = true;
-		  LogMgr.getInstance().logAndFlush
-		  (LogMgr.Kind.Sch, LogMgr.Level.Finest,
-		    "Scheduler [" + hname + "]: " + 
-		    "Order = " + order + " (" + current + ")\n");
-		}
-		host.setOrderState(state);
-	      } /* Order */
-	      
-	      /* Slots */
-	      {
-		int current = host.getJobSlots();
-		Integer slots = scheduledSlots.get(sname);
-		EditableState state = scheduledSlotsEdit.get(sname);
-		if (slots != null && !slots.equals(current)) {
-		  host.setJobSlots(slots);
-		  modified = true;
-		  LogMgr.getInstance().logAndFlush
-		  (LogMgr.Kind.Sch, LogMgr.Level.Finest,
-		    "Scheduler [" + hname + "]: " + 
-		    "Slots = " + slots + " (" + current + ")\n");
-		}
-		host.setSlotState(state);
-	      }
-	    }
-	    else {
-	      host.setSlotState(EditableState.Manual);
-	      host.setStatusState(EditableState.Manual);
-	      host.setReservationState(EditableState.Manual);
-	      host.setOrderState(EditableState.Manual);
-	      host.setGroupState(EditableState.Manual);
-	    }
-	  }
-	}
-
-	/* write changes to disk */ 
-	if(modified) {
-	  utm.suspend();
-	  TaskTimer tm = new TaskTimer("Scheduler [Write Hosts]");  
-	  try {
-	    writeHosts();
-	  }
-	  catch(PipelineException ex) {
-	    LogMgr.getInstance().log
-	      (LogMgr.Kind.Ops, LogMgr.Level.Severe,
-	       ex.getMessage());
-	  }
-	  LogMgr.getInstance().logSubStage
-	    (LogMgr.Kind.Sch, LogMgr.Level.Finest, 
-	     tm, utm); 
-	}
-      }
-      LogMgr.getInstance().logSubStage
-	(LogMgr.Kind.Sch, LogMgr.Level.Finer, 
-	 utm, timer);
-    }
-
+    doScheduler(timer);
+    
     /* if we're ahead of schedule, take a nap */ 
     {
       LogMgr.getInstance().logStage
@@ -6039,6 +6315,99 @@ class QueueMgr
 	  (LogMgr.Kind.Sch, LogMgr.Level.Finest,
 	   "Scheduler: Overbudget by (" + (-nap) + ") ms...");
       }	
+    }
+
+  }
+  
+  /**
+   * Method which actually does the scheduling.
+   * <p>
+   * Broken out in case it ever needs to be called by itself.
+   * @param timer
+   */
+  private void 
+  doScheduler
+  (
+    TaskTimer timer  
+  )
+  {
+    /* precompute current groups for each schedule */ 
+    SelectionScheduleMatrix matrix = null;
+    {
+      timer.suspend();
+      TaskTimer tm = new TaskTimer("Scheduler [Compute Groups]");
+      tm.aquire();
+      synchronized(pSelectionSchedules) {
+	tm.resume();
+        long now = System.currentTimeMillis();
+        matrix = new SelectionScheduleMatrix(pSelectionSchedules, now);
+      }
+      LogMgr.getInstance().logSubStage
+	(LogMgr.Kind.Sch, LogMgr.Level.Finer, 
+	 tm, timer);
+    }
+    
+    /* update the hosts */ 
+    {
+      timer.suspend();
+      TaskTimer utm = new TaskTimer("Scheduler [Update HostMods]");      
+      utm.aquire();
+      synchronized(pHostsInfo) {
+	synchronized(pHostsMod) {
+	  utm.resume();
+
+	  for(String hname : pHostsInfo.keySet()) {
+	    QueueHostInfo host = pHostsInfo.get(hname);
+
+	    String sname = host.getSelectionSchedule();
+
+	    if(sname != null) {
+
+	      QueueHostMod scheduleMod = 
+		QueueHostMod.getModFromSchedule(matrix, sname, host);
+
+	      /* Selection Group */
+	      if (scheduleMod.isSelectionGroupModified())
+		LogMgr.getInstance().logAndFlush
+		(LogMgr.Kind.Sch, LogMgr.Level.Finest,
+		 "Scheduler [" + hname + "]: " + 
+		 "Selection Group = " + scheduleMod.getSelectionGroup() + 
+		 " (" + host.getSelectionGroup()+ ")\n");
+	      if (scheduleMod.isStatusModified())
+		LogMgr.getInstance().logAndFlush
+		(LogMgr.Kind.Sch, LogMgr.Level.Finest,
+		 "Scheduler [" + hname + "]: " + 
+		 "Server Status = " + scheduleMod.getStatus().toTitle() + 
+		 " (" + host.getStatus().toTitle() + ")\n");
+	      if (scheduleMod.isReservationModified())
+		LogMgr.getInstance().logAndFlush
+		(LogMgr.Kind.Sch, LogMgr.Level.Finest,
+		 "Scheduler [" + hname + "]: " + 
+		 "Remove Reservation\n");
+	      if (scheduleMod.isOrderModified())
+		LogMgr.getInstance().logAndFlush
+		(LogMgr.Kind.Sch, LogMgr.Level.Finest,
+		 "Scheduler [" + hname + "]: " + 
+		 "Order = " + scheduleMod.getOrder() + 
+		 " (" + host.getOrder() + ")\n");
+	      if (scheduleMod.isJobSlotsModified()) 
+		LogMgr.getInstance().logAndFlush
+		(LogMgr.Kind.Sch, LogMgr.Level.Finest,
+		 "Scheduler [" + hname + "]: " + 
+		 "Slots = " + scheduleMod.getJobSlots() + 
+		 " (" + host.getJobSlots() + ")\n");
+	      
+	      QueueHostMod existing = pHostsMod.get(hname);
+	      if (existing != null)
+	        QueueHostMod.combineMods(scheduleMod, existing);
+	      pHostsMod.put(hname, scheduleMod);
+	    }
+	  }
+	  LogMgr.getInstance().logSubStage
+	  (LogMgr.Kind.Sch, LogMgr.Level.Finer, 
+	    utm, timer);
+	}
+      }
     }
   }
 
@@ -6238,6 +6607,210 @@ class QueueMgr
 
 	for(LicenseKey key : keys) 
 	  pLicenseKeys.put(key.getName(), key);
+      }
+    }
+  }
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Write the hardware keys to disk. <P> 
+   * 
+   * @throws PipelineException
+   *   If unable to write the hardware keys file.
+   */ 
+  private void 
+  writeHardwareKeys() 
+    throws PipelineException
+  {
+    synchronized(pHardwareKeys) {
+      File file = new File(pQueueDir, "queue/etc/hardware-keys");
+      if(file.exists()) {
+	if(!file.delete())
+	  throw new PipelineException
+	    ("Unable to remove the old hardware keys file (" + file + ")!");
+      }
+      
+      if(!pHardwareKeys.isEmpty()) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	   "Writing Hardware Keys.");
+
+	try {
+	  String glue = null;
+	  try {
+	    ArrayList<HardwareKey> keys = 
+	      new ArrayList<HardwareKey>(pHardwareKeys.values());
+	    GlueEncoder ge = new GlueEncoderImpl("HardwareKeys", keys);
+	    glue = ge.getText();
+	  }
+	  catch(GlueException ex) {
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	       "Unable to generate a Glue format representation of the hardware keys!");
+	    
+	    throw new IOException(ex.getMessage());
+	  }
+	  
+	  {
+	    FileWriter out = new FileWriter(file);
+	    out.write(glue);
+	    out.flush();
+	    out.close();
+	  }
+	}
+	catch(IOException ex) {
+	  throw new PipelineException
+	    ("I/O ERROR: \n" + 
+	     "  While attempting to write the hardware keys file (" + file + ")...\n" + 
+	     "    " + ex.getMessage());
+	}
+      }
+    }
+  }
+  
+  /**
+   * Read the hardware keys from disk. <P> 
+   * 
+   * @throws PipelineException
+   *   If unable to read the hardware keys file.
+   */ 
+  private void 
+  readHardwareKeys() 
+    throws PipelineException
+  {
+    synchronized(pHardwareKeys) {
+      pHardwareKeys.clear();
+
+      File file = new File(pQueueDir, "queue/etc/hardware-keys");
+      if(file.isFile()) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	   "Reading Hardware Keys.");
+
+	ArrayList<HardwareKey> keys = null;
+	try {
+	  GlueDecoder gd = new GlueDecoderImpl(file);
+	  keys = (ArrayList<HardwareKey>) gd.getObject();
+	}
+	catch(Exception ex) {
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	     "The hardware keys file (" + file + ") appears to be corrupted:\n" + 
+	     "  " + ex.getMessage());
+	  
+	  throw new PipelineException
+	    ("I/O ERROR: \n" + 
+	     "  While attempting to read the hardware keys file (" + file + ")...\n" + 
+	     "    " + ex.getMessage());
+	}
+	if(keys == null) 
+	  throw new IllegalStateException("The hardware keys cannot be (null)!");
+	
+	for(HardwareKey key : keys) 
+	  pHardwareKeys.put(key.getName(), key);
+      }
+    }
+  }
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Write the hardware groups to disk. <P> 
+   * 
+   * @throws PipelineException
+   *   If unable to write the hardware groups file.
+   */ 
+  private void 
+  writeHardwareGroups() 
+    throws PipelineException
+  {
+    synchronized(pHardwareGroups) {
+      File file = new File(pQueueDir, "queue/etc/hardware-groups");
+      if(file.exists()) {
+	if(!file.delete())
+	  throw new PipelineException
+	    ("Unable to remove the old hardware groups file (" + file + ")!");
+      }
+      
+      if(!pHardwareGroups.isEmpty()) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	   "Writing Hardware Groups.");
+
+	try {
+	  String glue = null;
+	  try {
+	    ArrayList<HardwareGroup> groups = 
+	      new ArrayList<HardwareGroup>(pHardwareGroups.values());
+	    GlueEncoder ge = new GlueEncoderImpl("HardwareGroups", groups);
+	    glue = ge.getText();
+	  }
+	  catch(GlueException ex) {
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	       "Unable to generate a Glue format representation of the hardware groups!");
+	    
+	    throw new IOException(ex.getMessage());
+	  }
+	  
+	  {
+	    FileWriter out = new FileWriter(file);
+	    out.write(glue);
+	    out.flush();
+	    out.close();
+	  }
+	}
+	catch(IOException ex) {
+	  throw new PipelineException
+	    ("I/O ERROR: \n" + 
+	     "  While attempting to write the hardware groups file (" + file + ")...\n" + 
+	     "    " + ex.getMessage());
+	}
+      }
+    }
+  }
+  
+  /**
+   * Read the hardware groups from disk. <P> 
+   * 
+   * @throws PipelineException
+   *   If unable to read the hardware groups file.
+   */ 
+  private void 
+  readHardwareGroups() 
+    throws PipelineException
+  {
+    synchronized(pHardwareGroups) {
+      pHardwareGroups.clear();
+
+      File file = new File(pQueueDir, "queue/etc/hardware-groups");
+      if(file.isFile()) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+	   "Reading Selection Groups.");
+
+	ArrayList<HardwareGroup> groups = null;
+	try {
+	  GlueDecoder gd = new GlueDecoderImpl(file);
+	  groups = (ArrayList<HardwareGroup>) gd.getObject();
+	}
+	catch(Exception ex) {
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+	     "The hardware groups file (" + file + ") appears to be corrupted:\n" + 
+	     "  " + ex.getMessage());
+	  
+	  throw new PipelineException
+	    ("I/O ERROR: \n" + 
+	     "  While attempting to read the hardware groups file (" + file + ")...\n" + 
+	     "    " + ex.getMessage());
+	}
+	if(groups == null) 
+	  throw new IllegalStateException("The hardware groups cannot be (null)!");
+
+	for(HardwareGroup key : groups) 
+	  pHardwareGroups.put(key.getName(), key);
       }
     }
   }
@@ -7542,6 +8115,26 @@ class QueueMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Runs the scheduler after selection schedules have been modified
+   */
+  private 
+  class DemandSchedulerTask
+    extends Thread
+  {
+    /*-- THREAD RUN ------------------------------------------------------------------------*/
+
+    public void 
+    run() 
+    {
+      TaskTimer timer = new TaskTimer("Demand Scheduler");
+      doScheduler(timer);
+      LogMgr.getInstance().logStage
+	(LogMgr.Kind.Sch, LogMgr.Level.Fine,
+	 timer); 
+    }
+  }
+  
+  /**
    * Collects resource stats from a subset of the enabled job servers.
    */
   private 
@@ -8643,6 +9236,21 @@ class QueueMgr
    */ 
   private TreeMap<String,LicenseKey>  pLicenseKeys; 
 
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The cached table of hardware keys indexed by hardware key name.
+   * 
+   * Access to this field should be protected by a synchronized block.
+   */ 
+  private TreeMap<String,HardwareKey>  pHardwareKeys; 
+  
+  /**
+   * The cached table of hardware groups indexed by group name.
+   * 
+   * Access to this field should be protected by a synchronized block.
+   */ 
+  private TreeMap<String,HardwareGroup>  pHardwareGroups; 
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -8946,6 +9554,9 @@ class QueueMgr
    * }
    *
    * synchronized(pHostsInfo) {
+   *   synchronized(pSelectionSchedules) {
+   *     ...
+   *   }
    *   synchronized(pHostsMod) {
    *     ...
    *   }

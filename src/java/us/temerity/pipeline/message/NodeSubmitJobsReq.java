@@ -1,4 +1,4 @@
-// $Id: NodeSubmitJobsReq.java,v 1.8 2007/11/04 20:42:38 jesse Exp $
+// $Id: NodeSubmitJobsReq.java,v 1.9 2007/11/30 20:14:25 jesse Exp $
 
 package us.temerity.pipeline.message;
 
@@ -197,6 +197,18 @@ class NodeSubmitJobsReq
     return pReqs.getLicenseKeys();
   }
 
+  /**
+   * Overrides the set of hardware keys required by them job associated with the root 
+   * node of the job submission.
+   * 
+   * @return 
+   *   The hardware keys or <CODE>null</CODE> to use node's original hardware keys.
+   */
+  public Set<String>
+  getHardwareKeys()
+  {
+    return pReqs.getHardwareKeys();
+  }
   
 
   /*----------------------------------------------------------------------------------------*/

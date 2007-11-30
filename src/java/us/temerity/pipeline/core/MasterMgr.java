@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.224 2007/11/05 23:46:51 jesse Exp $
+// $Id: MasterMgr.java,v 1.225 2007/11/30 20:14:24 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1626,7 +1626,7 @@ class MasterMgr
    * Set the work groups used to determine the scope of administrative privileges. <P> 
    * 
    * This operation requires Master Admin privileges 
-   * (see {@link Privileges#isMasterAdmin isMasterAdmin 
+   * (see {@link Privileges#isMasterAdmin isMasterAdmin} 
    * 
    * @param req 
    *   The request.
@@ -11029,7 +11029,7 @@ class MasterMgr
       return submitJobGroupsCommon(req.getNodeID(), req.getFileIndices(), null, 
                                    req.getBatchSize(), req.getPriority(), req.getRampUp(),
                                    req.getMaxLoad(), req.getMinMemory(), req.getMinDisk(),
-                                   req.getSelectionKeys(), req.getLicenseKeys(), 
+                                   req.getSelectionKeys(), req.getLicenseKeys(), req.getHardwareKeys(), 
                                    timer);
     }
     catch(PipelineException ex) {
@@ -11080,7 +11080,7 @@ class MasterMgr
                                    req.getBatchSize(), req.getPriority(), req.getRampUp(),
                                    req.getMaxLoad(), req.getMinMemory(), req.getMinDisk(),
                                    req.getSelectionKeys(), req.getLicenseKeys(), 
-                                   timer);
+                                   req.getHardwareKeys(), timer);
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());
@@ -11147,6 +11147,7 @@ class MasterMgr
    Long minDisk,  
    Set<String> selectionKeys,
    Set<String> licenseKeys,
+   Set<String> hardwareKeys,
    TaskTimer timer 
   )
     throws PipelineException 
@@ -11214,13 +11215,13 @@ class MasterMgr
         if(rootNodeID.equals(nodeID)) {
           group = submitJobsCommon(status, indices, batchSize, priority, rampUp,
             			   maxLoad, minMemory, minDisk,
-                                   selectionKeys, licenseKeys, assocRoots, 
+                                   selectionKeys, licenseKeys, hardwareKeys, assocRoots, 
                                    timer);
         }
         else {
           group = submitJobsCommon(status, indices, null, null, null,
             			   null, null, null,
-                                   null, null, assocRoots, 
+                                   null, null, null, assocRoots, 
                                    timer);
         }
 
@@ -11298,6 +11299,7 @@ class MasterMgr
    Long minDisk,  
    Set<String> selectionKeys,
    Set<String> licenseKeys,
+   Set<String> hardwareKeys,
    TreeSet<String> assocRoots, 
    TaskTimer timer 
   )
@@ -11313,7 +11315,7 @@ class MasterMgr
       
       submitJobs(status, indices, 
 		 true, batchSize, priority, rampUp, maxLoad, minMemory, minDisk, 
-		 selectionKeys, licenseKeys, 
+		 selectionKeys, licenseKeys, hardwareKeys,
 		 extJobIDs, nodeJobIDs, upsJobIDs, rootJobIDs, jobs, assocRoots, 
 		 timer);
       
@@ -11469,6 +11471,7 @@ class MasterMgr
    Long minDisk,  
    Set<String> selectionKeys,
    Set<String> licenseKeys,
+   Set<String> hardwareKeys,
    TreeMap<NodeID,Long[]> extJobIDs,   
    TreeMap<NodeID,Long[]> nodeJobIDs,   
    TreeMap<NodeID,TreeSet<Long>> upsJobIDs, 
@@ -11790,7 +11793,7 @@ class MasterMgr
               if((lindices != null) && (!lindices.isEmpty())) {
                 NodeStatus lstatus = status.getSource(link.getName());
                 submitJobs(lstatus, lindices, 
-                           false, null, null, null, null, null, null, null, null,
+                           false, null, null, null, null, null, null, null, null, null,
                            extJobIDs, nodeJobIDs, upsJobIDs, rootJobIDs, 
                            jobs, assocRoots, timer);
               }
@@ -11903,6 +11906,11 @@ class MasterMgr
 	    if(isRoot && (selectionKeys != null)) {
 	      jreqs.removeAllSelectionKeys(); 
 	      jreqs.addSelectionKeys(selectionKeys);
+	    }
+	    
+	    if(isRoot && (hardwareKeys != null)) {
+	      jreqs.removeAllHardwareKeys(); 
+	      jreqs.addHardwareKeys(hardwareKeys);
 	    }
 
 	    if(isRoot && (licenseKeys != null)) {
@@ -12058,7 +12066,7 @@ class MasterMgr
           NodeID lnodeID = lstatus.getNodeID();
           
           submitJobs(lstatus, null, 
-                     false, null, null, null, null, null, null, null, null,
+                     false, null, null, null, null, null, null, null, null, null,
                      extJobIDs, nodeJobIDs, upsJobIDs, rootJobIDs, 
                      jobs, assocRoots, timer);
            
@@ -17370,7 +17378,7 @@ class MasterMgr
    * @param root
    *   The delete operation should stop at this directory regardles of whether it is empty.
    * 
-   * @param parent
+   * @param dir
    *   The start directory of the delete operation.
    */ 
   public void 

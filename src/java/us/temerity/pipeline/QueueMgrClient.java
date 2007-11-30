@@ -1,4 +1,4 @@
-// $Id: QueueMgrClient.java,v 1.40 2007/10/11 18:52:06 jesse Exp $
+// $Id: QueueMgrClient.java,v 1.41 2007/11/30 20:14:24 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -727,6 +727,279 @@ class QueueMgrClient
     
     QueueEditSelectionSchedulesReq req = new QueueEditSelectionSchedulesReq(schedules);
     Object obj = performTransaction(QueueRequest.EditSelectionSchedules, req); 
+    handleSimpleResponse(obj);
+  }
+
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   H A R D W A R E   K E Y S                                                            */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the names of the currently defined hardware keys. <P>  
+   * 
+   * @throws PipelineException
+   *   If unable to retrieve the names of the hardware keys.
+   */
+  public synchronized TreeSet<String>
+  getHardwareKeyNames() 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    Object obj = performTransaction(QueueRequest.GetHardwareKeyNames, null);
+    if(obj instanceof QueueGetHardwareKeyNamesRsp) {
+      QueueGetHardwareKeyNamesRsp rsp = (QueueGetHardwareKeyNamesRsp) obj;
+      return rsp.getKeyNames();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }        
+  }
+
+  /**
+   * Get the currently defined hardware keys. <P>  
+   * 
+   * @throws PipelineException
+   *   If unable to retrieve the hardware keys.
+   */
+  public synchronized ArrayList<HardwareKey>
+  getHardwareKeys() 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    Object obj = performTransaction(QueueRequest.GetHardwareKeys, null);
+    if(obj instanceof QueueGetHardwareKeysRsp) {
+      QueueGetHardwareKeysRsp rsp = (QueueGetHardwareKeysRsp) obj;
+      return rsp.getKeys();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }        
+  }
+
+  /**
+   * Add the given hardware key to the currently defined hardware keys. <P> 
+   * 
+   * If a hardware key already exists which has the same name as the given key, it will be 
+   * silently overridden by this operation. <P> 
+   * 
+   * This method will fail if the current user does not have privileged access status.
+   * 
+   * @param key
+   *   The hardware key to add.
+   * 
+   * @throws PipelineException
+   *   If unable to add the hardware key.
+   */ 
+  public synchronized void
+  addHardwareKey
+  (
+    HardwareKey key
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    QueueAddHardwareKeyReq req = new QueueAddHardwareKeyReq(key);
+    Object obj = performTransaction(QueueRequest.AddHardwareKey, req); 
+    handleSimpleResponse(obj);
+  }
+
+  /**
+   * Remove the hardware key with the given name from currently defined hardware keys. <P> 
+   * 
+   * This method will fail if the current user does not have privileged access status.
+   * 
+   * @param kname
+   *   The name of the hardware key to remove.
+   * 
+   * @throws PipelineException
+   *   If unable to remove the hardware key.
+   */ 
+  public synchronized void
+  removeHardwareKey
+  (
+   String kname
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    QueueRemoveHardwareKeyReq req = new QueueRemoveHardwareKeyReq(kname);
+    Object obj = performTransaction(QueueRequest.RemoveHardwareKey, req); 
+    handleSimpleResponse(obj);
+  }  
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the names of all existing hardware groups. 
+   * 
+   * @return
+   *   The hardware group names. 
+   * 
+   * @throws PipelineException
+   *   If unable to retrieve the information.
+   */ 
+  public synchronized TreeSet<String> 
+  getHardwareGroupNames() 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    Object obj = performTransaction(QueueRequest.GetHardwareGroupNames, null);
+    if(obj instanceof QueueGetHardwareGroupNamesRsp) {
+      QueueGetHardwareGroupNamesRsp rsp = (QueueGetHardwareGroupNamesRsp) obj;
+      return rsp.getNames();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }        
+  }
+
+  /**
+   * Get the current hardware key values for all existing hardware groups. 
+   * 
+   * @return
+   *   The hardware groups indexed by group name. 
+   * 
+   * @throws PipelineException
+   *   If unable to retrieve the information.
+   */ 
+  public synchronized TreeMap<String,HardwareGroup> 
+  getHardwareGroups() 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    Object obj = performTransaction(QueueRequest.GetHardwareGroups, null);
+    if(obj instanceof QueueGetHardwareGroupsRsp) {
+      QueueGetHardwareGroupsRsp rsp = (QueueGetHardwareGroupsRsp) obj;
+      return rsp.getHardwareGroups();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }        
+  }
+
+  /**
+   * Add a new hardware group. <P> 
+   * 
+   * @param gname
+   *   The name of the new hardware group. 
+   * 
+   * @throws PipelineException
+   *   If a hardware group already exists with the given name. 
+   */ 
+  public synchronized void
+  addHardwareGroup
+  (
+   String gname
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+    
+    QueueAddHardwareGroupReq req = new QueueAddHardwareGroupReq(gname);
+    Object obj = performTransaction(QueueRequest.AddHardwareGroup, req);
+    handleSimpleResponse(obj);
+  }
+
+  /**
+   * Remove the given existing hardware group. <P> 
+   * 
+   * @param gname
+   *   The name of the hardware group. 
+   * 
+   * @throws PipelineException
+   *   If unable to remove the hardware group.
+   */ 
+  public synchronized void
+  removeHardwareGroup
+  (
+   String gname
+  ) 
+    throws PipelineException 
+  {
+    TreeSet<String> gnames = new TreeSet<String>();
+    gnames.add(gname);
+    
+    removeHardwareGroups(gnames);
+  }
+  
+  /**
+   * Remove the given existing hardware groups. <P> 
+   * 
+   * @param gnames
+   *   The names of the hardware groups. 
+   * 
+   * @throws PipelineException
+   *   If unable to remove the hardware groups.
+   */ 
+  public synchronized void
+  removeHardwareGroups
+  (
+   TreeSet<String> gnames
+  ) 
+    throws PipelineException 
+  {
+    verifyConnection();
+    
+    QueueRemoveHardwareGroupsReq req = new QueueRemoveHardwareGroupsReq(gnames);
+    Object obj = performTransaction(QueueRequest.RemoveHardwareGroups, req);
+    handleSimpleResponse(obj);
+  }
+  
+  /**
+   * Change the hardware key values for the given hardware group. <P> 
+   * 
+   * For an detailed explanation of how hardware keys are used to determine the assignment
+   * of jobs to hosts, see {@link JobReqs JobReqs}. <P> 
+   * 
+   * @param group
+   *   The hardware group to modify.
+   */ 
+  public synchronized void
+  editHardwareGroup
+  (
+    HardwareGroup group
+  ) 
+    throws PipelineException 
+  {
+    ArrayList<HardwareGroup> groups = new ArrayList<HardwareGroup>();
+    groups.add(group);
+
+    editHardwareGroups(groups);
+  }
+
+  /**
+   * Change the hardware key values for the given hardware groups. <P> 
+   * 
+   * For an detailed explanation of how hardware keys are used to determine the assignment
+   * of jobs to hosts, see {@link JobReqs JobReqs}. <P> 
+   * 
+   * @param groups
+   *   The hardware groups to modify.
+   */ 
+  public synchronized void
+  editHardwareGroups
+  (
+   Collection<HardwareGroup> groups
+  ) 
+    throws PipelineException 
+  {
+    verifyConnection();
+    
+    QueueEditHardwareGroupsReq req = new QueueEditHardwareGroupsReq(groups);
+    Object obj = performTransaction(QueueRequest.EditHardwareGroups, req); 
     handleSimpleResponse(obj);
   }
 

@@ -1,4 +1,4 @@
-// $Id: JStatusTableCellEditor.java,v 1.1 2007/11/30 20:06:25 jesse Exp $
+// $Id: JStatusTableCellEditor.java,v 1.2 2007/11/30 20:17:13 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -47,6 +47,7 @@ class JStatusTableCellEditor
     else {
       QueueHostStatus status = qinfo.getStatus();
     }
+    return super.getTableCellEditorComponent(table, value, isSelected, row, column);
   }
   
   

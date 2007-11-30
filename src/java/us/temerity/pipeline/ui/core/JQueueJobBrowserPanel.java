@@ -1,19 +1,19 @@
-// $Id: JQueueJobBrowserPanel.java,v 1.35 2007/11/05 04:33:53 jesse Exp $
+// $Id: JQueueJobBrowserPanel.java,v 1.36 2007/11/30 20:14:25 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
-
-import us.temerity.pipeline.*;
-import us.temerity.pipeline.ui.*;
-import us.temerity.pipeline.glue.*;
 
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
-import java.net.*;
-import java.io.*;
+
 import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.table.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.glue.*;
+import us.temerity.pipeline.ui.AbstractSortableTableModel;
+import us.temerity.pipeline.ui.JTablePanel;
 
 /*------------------------------------------------------------------------------------------*/
 /*   Q U E U E   J O B   B R O W S E R   P A N E L                                          */
@@ -1080,10 +1080,14 @@ class JQueueJobBrowserPanel
 	if(diag.overrideLicenseKeys()) 
 	  licenseKeys = diag.getLicenseKeys();
 	
+	TreeSet<String> hardwareKeys = null;
+	if(diag.overrideHardwareKeys()) 
+	  hardwareKeys = diag.getHardwareKeys();
+	
 	QueueJobsTask task = 
 	  new QueueJobsTask(targets, batchSize, priority, interval,
 	                    maxLoad, minMemory, minDisk,
-			    selectionKeys, licenseKeys);
+			    selectionKeys, licenseKeys, hardwareKeys);
 	task.start();
       }
     }
@@ -1314,6 +1318,7 @@ class JQueueJobBrowserPanel
       Long minDisk = null;
       Set<String> licenseKeys = null;
       Set<String> selectionKeys = null;
+      Set<String> hardwareKeys = null;
 
       if (diag.overridePriority())
 	priority = diag.getPriority();
@@ -1329,6 +1334,8 @@ class JQueueJobBrowserPanel
 	licenseKeys = diag.getLicenseKeys();
       if (diag.overrideSelectionKeys())
 	selectionKeys = diag.getSelectionKeys();
+      if (diag.overrideHardwareKeys())
+	hardwareKeys = diag.getHardwareKeys();
       LinkedList<JobReqsDelta> change = new LinkedList<JobReqsDelta>();
       for(Long groupID : getSelectedGroupIDs()) {
 	QueueJobGroup group = pJobGroups.get(groupID);
@@ -1349,7 +1356,7 @@ class JQueueJobBrowserPanel
 	      (author.equals(PackageInfo.sUser) || pPrivilegeDetails.isQueueManaged(author))) {
 	      JobReqsDelta newReq = new JobReqsDelta
 	        (jobID, priority, rampUp, maxLoad, minMemory, minDisk, 
-		 licenseKeys, selectionKeys);
+		 licenseKeys, selectionKeys, hardwareKeys);
 	      change.add(newReq);
 	    }
 	  }
@@ -1676,7 +1683,7 @@ class JQueueJobBrowserPanel
      TreeMap<NodeID,TreeSet<FileSeq>> targets
     ) 
     {
-      this(targets, null, null, null, null, null, null, null, null);
+      this(targets, null, null, null, null, null, null, null, null, null);
     }
     
     public 
@@ -1690,7 +1697,8 @@ class JQueueJobBrowserPanel
      Long minMemory,              
      Long minDisk,  
      TreeSet<String> selectionKeys,
-     TreeSet<String> licenseKeys
+     TreeSet<String> licenseKeys,
+     TreeSet<String> hardwareKeys
     ) 
     {
       super("JQueueJobsBrowserPanel:QueueJobsTask");
@@ -1704,6 +1712,7 @@ class JQueueJobBrowserPanel
       pMinDisk       = minDisk;
       pSelectionKeys = selectionKeys;
       pSelectionKeys = licenseKeys;
+      pHardwareKeys  = hardwareKeys;
     }
 
     public void 
@@ -1719,7 +1728,7 @@ class JQueueJobBrowserPanel
 	    client.resubmitJobs
 	      (nodeID, pTargets.get(nodeID), pBatchSize, pPriority, pRampUp,
 	       pMaxLoad, pMinMemory, pMinDisk,
-	       pSelectionKeys, pLicenseKeys);
+	       pSelectionKeys, pLicenseKeys, pHardwareKeys);
 	  }
 	}
 	catch(PipelineException ex) {
@@ -1743,6 +1752,7 @@ class JQueueJobBrowserPanel
     private Long                              pMinDisk;
     private TreeSet<String>                   pSelectionKeys;
     private TreeSet<String>                   pLicenseKeys;
+    private TreeSet<String>                   pHardwareKeys;
   }
 
   /** 

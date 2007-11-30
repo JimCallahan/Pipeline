@@ -1,4 +1,4 @@
-// $Id: QueueHost.java,v 1.8 2007/11/20 05:42:08 jesse Exp $
+// $Id: QueueHost.java,v 1.9 2007/11/30 20:14:24 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -71,6 +71,13 @@ class QueueHost
 
     pSelectionSchedule = qinfo.getSelectionSchedule();
     pSelectionGroup    = qinfo.getSelectionGroup();
+    pHardwareGroup     = qinfo.getHardwareGroup();
+    
+    pSlotState = qinfo.getSlotsState();
+    pStatusState = qinfo.getStatusState();
+    pOrderState = qinfo.getOrderState();
+    pReservationState = qinfo.getReservationState();
+    pGroupState = qinfo.getGroupState();
   }
 
 
@@ -287,7 +294,7 @@ class QueueHost
    * Is the number of slots on the host editable.
    */
   public EditableState 
-  getSlotState()
+  getSlotsState()
   {
     return pSlotState;
   }
@@ -296,7 +303,7 @@ class QueueHost
    * Set whether the status of the host is editable.
    */
   public void 
-  setSlotState
+  setSlotsState
   (
     EditableState slotState
   )
@@ -732,7 +739,32 @@ class QueueHost
     pSelectionGroup = name;
   }
 
+ /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * Get the name of the current hardware group. 
+   * 
+   * @return
+   *   The hardware group or <CODE>null</CODE> not a member of any hardware group.
+   */ 
+  public synchronized String
+  getHardwareGroup() 
+  {
+    return pHardwareGroup;
+  }
+
+  /**
+   * Set the name of the current hardware group or <CODE>null</CODE> to clear.
+   */ 
+  public synchronized void
+  setHardwareGroup
+  (
+   String name
+  ) 
+  {
+    pHardwareGroup = name;
+  }
+
   /*----------------------------------------------------------------------------------------*/
   
   /** 
@@ -850,7 +882,7 @@ class QueueHost
   {
     return new QueueHostInfo(pName, getInfoStatus(), pReservation, pOrder, pJobSlots, 
 			     pOsType, pNumProcessors, pTotalMemory, pTotalDisk, 
-			     getHold(), pSample, pSelectionGroup, pSelectionSchedule,
+			     getHold(), pSample, pSelectionGroup, pSelectionSchedule, pHardwareGroup,
 			     pGroupState, pStatusState, pReservationState, pOrderState, pSlotState); 
   }
 
@@ -878,6 +910,7 @@ class QueueHost
 
     encoder.encode("SelectionSchedule", pSelectionSchedule);
     encoder.encode("SelectionGroup", pSelectionGroup);
+    encoder.encode("HardwareGroup", pHardwareGroup);
   }
 
   public void 
@@ -905,6 +938,7 @@ class QueueHost
 
     pSelectionSchedule = (String) decoder.decode("SelectionSchedule"); 
     pSelectionGroup    = (String) decoder.decode("SelectionGroup"); 
+    pHardwareGroup     = (String) decoder.decode("HardwareGroup");
   }
   
   
@@ -1077,6 +1111,12 @@ class QueueHost
    * selection group. 
    */ 
   private String pSelectionGroup;
+  
+  /**
+   * The name of the current hardware group or <CODE>null</CODE> not a member of any 
+   * hardware group. 
+   */ 
+  private String pHardwareGroup;
   
   /*----------------------------------------------------------------------------------------*/
   

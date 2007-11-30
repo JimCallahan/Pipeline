@@ -1639,6 +1639,33 @@
     <font name="Lucida Sans Bold" size="12"/>
   </style>
   <bind style="SimpleTableCellRenderer" type="name" key="SimpleTableCellRenderer"/>
+  
+  <style id="GreyCheckTableCellRenderer">
+    <imagePainter path="GreyCheckPanel.png"
+                  method="labelBackground"
+                  sourceInsets="3 17 3 3"/>
+    <insets top="2" bottom="2" right="8" left="21"/>
+    <font name="Lucida Sans Bold" size="12"/>
+  </style>
+  <bind style="GreyCheckTableCellRenderer" type="name" key="GreyCheckTableCellRenderer"/>
+  
+  <style id="GreyConflictTableCellRenderer">
+    <imagePainter path="GreyConflictPanel.png"
+                  method="labelBackground"
+                  sourceInsets="3 17 3 3"/>
+    <insets top="2" bottom="2" right="8" left="21"/>
+    <font name="Lucida Sans Bold" size="12"/>
+  </style>
+  <bind style="GreyConflictTableCellRenderer" type="name" key="GreyConflictTableCellRenderer"/>
+  
+  <style id="GreyLockTableCellRenderer">
+    <imagePainter path="GreyLockPanel.png"
+                  method="labelBackground"
+                  sourceInsets="3 17 3 3"/>
+    <insets top="2" bottom="2" right="8" left="21"/>
+    <font name="Lucida Sans Bold" size="12"/>
+  </style>
+  <bind style="GreyLockTableCellRenderer" type="name" key="GreyLockTableCellRenderer"/>
 
   <style id="BlueTableCellRenderer">
     <imagePainter path="BlueValuePanel.png"
@@ -1648,6 +1675,33 @@
     <font name="Lucida Sans Bold" size="12"/>
   </style>
   <bind style="BlueTableCellRenderer" type="name" key="BlueTableCellRenderer"/>
+  
+  <style id="BlueCheckTableCellRenderer">
+    <imagePainter path="BlueCheckPanel.png"
+                  method="labelBackground"
+                  sourceInsets="3 17 3 3"/>
+    <insets top="2" bottom="2" right="8" left="21"/>
+    <font name="Lucida Sans Bold" size="12"/>
+  </style>
+  <bind style="BlueCheckTableCellRenderer" type="name" key="BlueCheckTableCellRenderer"/>
+  
+  <style id="BlueConflictTableCellRenderer">
+    <imagePainter path="BlueConflictPanel.png"
+                  method="labelBackground"
+                  sourceInsets="3 17 3 3"/>
+    <insets top="2" bottom="2" right="8" left="21"/>
+    <font name="Lucida Sans Bold" size="12"/>
+  </style>
+  <bind style="BlueConflictTableCellRenderer" type="name" key="BlueConflictTableCellRenderer"/>
+  
+  <style id="BlueLockTableCellRenderer">
+    <imagePainter path="BlueLockPanel.png"
+                  method="labelBackground"
+                  sourceInsets="3 17 3 3"/>
+    <insets top="2" bottom="2" right="8" left="21"/>
+    <font name="Lucida Sans Bold" size="12"/>
+  </style>
+  <bind style="BlueLockTableCellRenderer" type="name" key="BlueLockTableCellRenderer"/>
 
   <style id="GreenTableCellRenderer">
     <imagePainter path="GreenValuePanel.png"
@@ -1657,6 +1711,33 @@
     <font name="Lucida Sans Bold" size="12"/>
   </style>
   <bind style="GreenTableCellRenderer" type="name" key="GreenTableCellRenderer"/>
+  
+  <style id="GreenCheckTableCellRenderer">
+    <imagePainter path="GreenCheckPanel.png"
+                  method="labelBackground"
+                  sourceInsets="3 17 3 3"/>
+    <insets top="2" bottom="2" right="8" left="21"/>
+    <font name="Lucida Sans Bold" size="12"/>
+  </style>
+  <bind style="GreenCheckTableCellRenderer" type="name" key="GreenCheckTableCellRenderer"/>
+  
+  <style id="GreenConflictTableCellRenderer">
+    <imagePainter path="GreenConflictPanel.png"
+                  method="labelBackground"
+                  sourceInsets="3 17 3 3"/>
+    <insets top="2" bottom="2" right="8" left="21"/>
+    <font name="Lucida Sans Bold" size="12"/>
+  </style>
+  <bind style="GreenConflictTableCellRenderer" type="name" key="GreenConflictTableCellRenderer"/>
+  
+  <style id="GreenLockTableCellRenderer">
+    <imagePainter path="GreenLockPanel.png"
+                  method="labelBackground"
+                  sourceInsets="3 17 3 3"/>
+    <insets top="2" bottom="2" right="8" left="21"/>
+    <font name="Lucida Sans Bold" size="12"/>
+  </style>
+  <bind style="GreenLockTableCellRenderer" type="name" key="GreenLockTableCellRenderer"/>
 
   <style id="PurpleTableCellRenderer">
     <imagePainter path="PurpleValuePanel.png"
@@ -1669,6 +1750,7 @@
   
   <style id="PurpleCheckTableCellRenderer">
     <imagePainter path="PurpleCheckPanel.png"
+                  method="labelBackground"
                   sourceInsets="3 17 3 3"/>
     <insets top="2" bottom="2" right="8" left="21"/>
     <font name="Lucida Sans Bold" size="12"/>
@@ -1677,6 +1759,7 @@
   
   <style id="PurpleConflictTableCellRenderer">
     <imagePainter path="PurpleConflictPanel.png"
+                  method="labelBackground"
                   sourceInsets="3 17 3 3"/>
     <insets top="2" bottom="2" right="8" left="21"/>
     <font name="Lucida Sans Bold" size="12"/>
@@ -1685,6 +1768,7 @@
   
   <style id="PurpleLockTableCellRenderer">
     <imagePainter path="PurpleLockPanel.png"
+                  method="labelBackground"
                   sourceInsets="3 17 3 3"/>
     <insets top="2" bottom="2" right="8" left="21"/>
     <font name="Lucida Sans Bold" size="12"/>

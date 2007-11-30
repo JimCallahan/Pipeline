@@ -1,19 +1,19 @@
-// $Id: JQueueJobServersPanel.java,v 1.10 2007/05/14 16:22:01 jim Exp $
+// $Id: JQueueJobServersPanel.java,v 1.11 2007/11/30 20:14:26 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
-import us.temerity.pipeline.*;
-import us.temerity.pipeline.ui.*;
-import us.temerity.pipeline.glue.*;
-
 import java.awt.*;
 import java.awt.event.*;
-import java.util.*;
 import java.net.*;
-import java.io.*;
+import java.util.*;
+
 import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.table.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.ui.JTablePanel;
+import us.temerity.pipeline.ui.UIFactory;
 
 /*------------------------------------------------------------------------------------------*/
 /*   Q U E U E   J O B   S E R V E R S   P A N E L                                          */
@@ -362,7 +362,7 @@ class JQueueJobServersPanel
       }
     }
 
-    updateJobs(false, null, null, null, null, null, null);
+    updateJobs(false, null, null, null, null, null, null, null);
   }
 
 
@@ -540,14 +540,15 @@ class JQueueJobServersPanel
    Set<String> workGroups, 
    Set<String> workUsers,
    TreeSet<String> selectionGroups, 
-   TreeSet<String> selectionSchedules
+   TreeSet<String> selectionSchedules,
+   TreeSet<String> hardwareGroups
   )
   {
     if(!pAuthor.equals(author) || !pView.equals(view)) 
       super.setAuthorView(author, view);    
 
     updateJobs(filtered, hosts, samples, 
-               workGroups, workUsers, selectionGroups, selectionSchedules);
+               workGroups, workUsers, selectionGroups, selectionSchedules, hardwareGroups);
   }
 
   /**
@@ -638,13 +639,15 @@ class JQueueJobServersPanel
    Set<String> workGroups, 
    Set<String> workUsers,
    TreeSet<String> selectionGroups, 
-   TreeSet<String> selectionSchedules
+   TreeSet<String> selectionSchedules,
+   TreeSet<String> hardwareGroups
   ) 
   {
     updatePrivileges();
 
     /* job server panel */ 
-    if((hosts != null) && (selectionGroups != null) && (selectionSchedules != null)) {
+    if((hosts != null) && (selectionGroups != null) && (selectionSchedules != null) && 
+       (hardwareGroups != null )) {
       pHeaderLabel.setText("Queue Servers:" + 
                            (filtered ? ("  ( " + hosts.size() + " matched )") : ""));  
 
@@ -661,7 +664,7 @@ class JQueueJobServersPanel
       }
 
       pHostsTableModel.setQueueHosts
-	(hosts, samples, workGroups, workUsers, selectionGroups, selectionSchedules, 
+	(hosts, samples, workGroups, workUsers, selectionGroups, selectionSchedules, hardwareGroups, 
 	 pPrivilegeDetails);
 
       updateHostsHeaderButtons();

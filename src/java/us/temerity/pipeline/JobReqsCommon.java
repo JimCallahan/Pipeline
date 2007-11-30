@@ -126,6 +126,7 @@ class JobReqsCommon
   {
     pLicenseKeys   = new HashSet<String>();
     pSelectionKeys = new HashSet<String>();
+    pHardwareKeys  = new HashSet<String>();
   }
   
   
@@ -360,7 +361,96 @@ class JobReqsCommon
   {
     pSelectionKeys.clear();
   }
+
+  /*----------------------------------------------------------------------------------------*/
   
+
+  /**
+   * Get the names of the required hardware keys. 
+   */
+  public Set<String>
+  getHardwareKeys()
+  {
+    if (pHardwareKeys == null)
+      return pHardwareKeys;
+    return Collections.unmodifiableSet(pHardwareKeys);
+  }
+
+  /** 
+   * Add the named key to the set of required hardware keys.
+   *
+   * @param key 
+   *    The name of the hardware key to add.
+   */
+  public void
+  addHardwareKey
+  (
+   String key
+  ) 
+  {
+    if(key == null) 
+      throw new IllegalArgumentException("The hardware key cannot be (null)!");
+
+    pHardwareKeys.add(key);
+  }
+
+  /** 
+   * Add all of the given named keys to the set of required hardware keys.
+   *
+   * @param keys 
+   *    The names of the hardware keys to add.
+   */
+  public void
+  addHardwareKeys
+  (
+   Set<String> keys
+  ) 
+  {
+    for(String key : keys)
+      if(key == null) 
+        throw new IllegalArgumentException("The hardware key cannot be (null)!");
+
+    pHardwareKeys.addAll(keys);
+  }
+
+  /** 
+   * Remove the named key from the set of required hardware keys.
+   *
+   * @param key 
+   *    The name of the hardware key to remove.
+   */
+  public void
+  removeHardwareKey
+  (
+   String key
+  ) 
+  {
+    pHardwareKeys.remove(key);
+  }
+
+  /** 
+   * Remove all of the named keys from the set of required hardware keys.
+   *
+   * @param keys 
+   *    The names of the hardware keys to remove.
+   */
+  public void
+  removeHardwareKeys
+  (
+   Set<String> keys
+  ) 
+  {
+    pHardwareKeys.removeAll(keys);
+  }
+
+  /** 
+   * Remove all required hardware keys.
+    */
+  public void
+  removeAllHardwareKeys() 
+  {
+    pHardwareKeys.clear();
+  }
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -378,6 +468,7 @@ class JobReqsCommon
 
       clone.pLicenseKeys   = new HashSet<String>(pLicenseKeys);
       clone.pSelectionKeys = new HashSet<String>(pSelectionKeys);
+      clone.pHardwareKeys  = new HashSet<String>(pHardwareKeys);
       
       return clone; 
     }
@@ -410,6 +501,9 @@ class JobReqsCommon
 
     if(!pSelectionKeys.isEmpty())
       encoder.encode("SelectionKeys", pSelectionKeys);
+    
+    if(!pHardwareKeys.isEmpty())
+      encoder.encode("HardwareKeys", pHardwareKeys);
   }
 
   @SuppressWarnings("unchecked")
@@ -455,6 +549,12 @@ class JobReqsCommon
       HashSet<String> keys = (HashSet<String>) decoder.decode("SelectionKeys");
       if(keys != null) 
 	pSelectionKeys = keys;
+    }
+    
+    {
+      HashSet<String> keys = (HashSet<String>) decoder.decode("HardwareKeys");
+      if(keys != null) 
+	pHardwareKeys = keys;
     }
   }
 
@@ -507,4 +607,9 @@ class JobReqsCommon
    * The names of the required selection keys. 
    */
   protected HashSet<String>  pSelectionKeys;
+ 
+  /**
+   * The names of the required hardware keys. 
+   */
+  protected HashSet<String>  pHardwareKeys;
 }

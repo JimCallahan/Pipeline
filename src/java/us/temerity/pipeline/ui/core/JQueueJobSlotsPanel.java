@@ -1,19 +1,17 @@
-// $Id: JQueueJobSlotsPanel.java,v 1.12 2007/11/04 20:42:38 jesse Exp $
+// $Id: JQueueJobSlotsPanel.java,v 1.13 2007/11/30 20:14:26 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
-import us.temerity.pipeline.*;
-import us.temerity.pipeline.ui.*;
-import us.temerity.pipeline.glue.*;
-
 import java.awt.*;
 import java.awt.event.*;
-import java.util.*;
+import java.io.File;
 import java.net.*;
-import java.io.*;
+import java.util.*;
+
 import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.table.*;
+
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.ui.JTablePanel;
 
 /*------------------------------------------------------------------------------------------*/
 /*   Q U E U E   J O B   S L O T S   P A N E L                                              */
@@ -1119,7 +1117,7 @@ class JQueueJobSlotsPanel
      TreeMap<NodeID,TreeSet<FileSeq>> targets
     ) 
     {
-      this(targets, null, null, null, null, null, null, null, null);
+      this(targets, null, null, null, null, null, null, null, null, null);
     }
     
     public 
@@ -1133,7 +1131,8 @@ class JQueueJobSlotsPanel
      Long minMemory,              
      Long minDisk,  
      TreeSet<String> selectionKeys,
-     TreeSet<String> licenseKeys
+     TreeSet<String> licenseKeys,
+     TreeSet<String> hardwareKeys
     ) 
     {
       super("JQueueJobsBrowserPanel:QueueJobsTask");
@@ -1146,7 +1145,8 @@ class JQueueJobSlotsPanel
       pMinMemory     = minMemory;
       pMinDisk       = minDisk;
       pSelectionKeys = selectionKeys;
-      pSelectionKeys = licenseKeys;
+      pLicenseKeys   = licenseKeys;
+      pHardwareKeys  = hardwareKeys;
     }
 
     public void 
@@ -1163,7 +1163,7 @@ class JQueueJobSlotsPanel
 	    client.resubmitJobs(nodeID, pTargets.get(nodeID), 
 				pBatchSize, pPriority, pRampUp, 
 				pMaxLoad, pMinMemory, pMinDisk,
-				pSelectionKeys, pLicenseKeys);
+				pSelectionKeys, pLicenseKeys, pHardwareKeys);
 	  }
 	}
 	catch(PipelineException ex) {
@@ -1187,6 +1187,7 @@ class JQueueJobSlotsPanel
     private Long                              pMinDisk;
     private TreeSet<String>                   pSelectionKeys;
     private TreeSet<String>                   pLicenseKeys;
+    private TreeSet<String>                   pHardwareKeys;
   }
 
   /** 

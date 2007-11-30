@@ -1,4 +1,4 @@
-// $Id: JQHostSGroupTableCellRenderer.java,v 1.2 2007/11/20 05:42:08 jesse Exp $
+// $Id: JQHostSGroupTableCellRenderer.java,v 1.3 2007/11/30 20:21:33 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -64,10 +64,6 @@ class JQHostSGroupTableCellRenderer
   {
     super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
-    String oldName = getName();
-    
-    setName("PurpleTableCellRenderer");
-    
     QueueHostInfo qinfo = pParent.getHostInfo(row);
     
     if((qinfo != null) && qinfo.isSelectionGroupPending()) 
@@ -87,16 +83,11 @@ class JQHostSGroupTableCellRenderer
 	  break;
 	case Automatic:
 	  setName("PurpleLockTableCellRenderer");
-	  break;
 	}
       }
+      else
+	setName("PurpleTableCellRenderer");
     }
-    
-    if (!getName().equals(oldName)) {
-      validate();
-      repaint();
-    }
-
     return this;
   }
 

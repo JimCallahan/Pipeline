@@ -1,4 +1,4 @@
-// $Id: JNodeAnnotationsPanel.java,v 1.8 2007/11/04 20:42:37 jesse Exp $
+// $Id: JNodeAnnotationsPanel.java,v 1.9 2007/11/30 20:14:25 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1308,10 +1308,14 @@ class JNodeAnnotationsPanel
 	  if(diag.overrideLicenseKeys()) 
 	    licenseKeys = diag.getLicenseKeys();
 	  
+	  TreeSet<String> hardwareKeys = null;
+	  if(diag.overrideHardwareKeys()) 
+	    hardwareKeys = diag.getHardwareKeys();
+	  
 	  QueueJobsTask task = 
 	    new QueueJobsTask(pStatus.getName(), batchSize, priority, interval, 
 	      		      maxLoad, minMemory, minDisk,
-			      selectionKeys, licenseKeys);
+			      selectionKeys, licenseKeys, hardwareKeys);
 	  task.start();
 	}
       }
@@ -2323,7 +2327,7 @@ class JNodeAnnotationsPanel
      String name
     ) 
     {
-      this(name, null, null, null, null, null, null, null, null);
+      this(name, null, null, null, null, null, null, null, null, null);
     }
 
     public 
@@ -2337,13 +2341,14 @@ class JNodeAnnotationsPanel
      Long minMemory,              
      Long minDisk,  
      TreeSet<String> selectionKeys,
-     TreeSet<String> licenseKeys
+     TreeSet<String> licenseKeys,
+     TreeSet<String> hardwareKeys
     ) 
     {
       UIMaster.getInstance().super(pGroupID, name, pAuthor, pView, 
-				   batchSize, priority, rampUp,
+				   batchSize, priority, rampUp, 
 				   maxLoad, minMemory, minDisk,
-				   selectionKeys, licenseKeys);
+				   selectionKeys, licenseKeys, hardwareKeys);
       setName("JNodeAnnotationsPanel:QueueJobsTask");
     }
 

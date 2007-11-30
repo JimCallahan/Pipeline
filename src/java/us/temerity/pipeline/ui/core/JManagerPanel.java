@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.43 2007/08/27 08:41:32 jim Exp $
+// $Id: JManagerPanel.java,v 1.44 2007/11/30 20:14:25 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -415,7 +415,13 @@ class JManagerPanel
 	pSelectionKeysItem = item;
 	item.setActionCommand("manage-selection-keys");
 	item.addActionListener(this);
-	sub.add(item);  
+	sub.add(item);
+	
+	item = new JMenuItem("Hardware Keys...");
+	pHardwareKeysItem = item;
+	item.setActionCommand("manage-hardware-keys");
+	item.addActionListener(this);
+	sub.add(item); 
 
 	sub.addSeparator();
 
@@ -1160,6 +1166,9 @@ class JManagerPanel
     updateMenuToolTip
       (pSelectionKeysItem, prefs.getShowManageSelectionKeys(), 
        "Manage the selection keys, groups and schedules.");
+    updateMenuToolTip
+      (pHardwareKeysItem, prefs.getShowManageHardwareKeys(), 
+       "Manage the hardware keys and groups.");
     
     updateMenuToolTip
       (pServerExtensionsItem, prefs.getShowManageServerExtensions(), 
@@ -2115,6 +2124,8 @@ class JManagerPanel
         master.showManageLicenseKeysDialog();
       else if(cmd.equals("manage-selection-keys"))
         master.showManageSelectionKeysDialog();
+      else if(cmd.equals("manage-hardware-keys"))
+        master.showManageHardwareKeysDialog();
 
       else if(cmd.equals("server-extensions"))
         master.showManageServerExtensionsDialog(); 
@@ -3815,6 +3826,7 @@ class JManagerPanel
   private JMenuItem  pManageToolsetsItem;
   private JMenuItem  pLicenseKeysItem;
   private JMenuItem  pSelectionKeysItem;
+  private JMenuItem  pHardwareKeysItem;
 
   private JMenuItem  pServerExtensionsItem;
   private JMenuItem  pBackupDatabaseItem;

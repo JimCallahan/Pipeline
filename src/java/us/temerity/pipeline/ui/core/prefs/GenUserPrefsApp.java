@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.62 2007/10/23 02:29:59 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.63 2007/11/30 20:14:26 jesse Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -123,6 +123,10 @@ class GenUserPrefsApp
 	new HotKeyPref
 	("Manage the selection keys.", 
 	 "ShowManageSelectionKeys", "Selection Keys:"),
+
+	 new HotKeyPref
+	 ("Manage the hardware keys.", 
+	  "ShowManageHardwareKeys", "Hardware Keys:"),
 
 	new BasePref(),
 
@@ -2023,6 +2027,35 @@ class GenUserPrefsApp
 
       pPrefs.put("Dialogs|Selection Keys|Hot Keys", prefs);
     }
+    
+    /* The Hardware Keys Dialog*/
+    {
+      BasePref prefs[] = {
+	new HotKeyPref
+	("Add a new hardware key.", 
+	 "HardwareKeysAdd", "Add Key:"), 
+
+	new HotKeyPref
+	("Remove the selected hardware keys.", 
+	 "HardwareKeysRemove", "Remove Key:"), 
+
+	new BasePref(),
+
+	new HotKeyPref
+	("Add a new hardware group.", 
+	 "HardwareGroupsAdd", "Add Group:"), 
+
+	new HotKeyPref
+	("Add a new hardware group which is a copy of the selected group.", 
+	 "HardwareGroupsClone", "Add Group:"), 
+
+	new HotKeyPref
+	("Remove the selected hardware groups.", 
+	 "HardwareGroupsRemove", "Remove Group:"), 
+      };
+
+      pPrefs.put("Dialogs|Hardware Keys|Hot Keys", prefs);
+    }
 
     /* panel ordering */ 
     {
@@ -2071,6 +2104,7 @@ class GenUserPrefsApp
 
       pPrefPanels.add("Dialogs|Privileges|Hot Keys");
       pPrefPanels.add("Dialogs|Selection Keys|Hot Keys");
+      pPrefPanels.add("Dialogs|Hardware Keys|Hot Keys");
     }
 
     /* hot key groups */ 
@@ -2145,6 +2179,7 @@ class GenUserPrefsApp
 	manager.add("ShowManageToolsets");
 	manager.add("ShowManageLicenseKeys");
 	manager.add("ShowManageSelectionKeys");
+	manager.add("ShowManageHardwareKeys");
 	manager.add("ShowManageServerExtensions");
 	manager.add("Quit");
       
@@ -2484,6 +2519,18 @@ class GenUserPrefsApp
 	group.add("SelectionRulesClone");
 	group.add("SelectionRulesRemove");
       }
+      
+      {
+	TreeSet<String> group = new TreeSet<String>();
+	pHotKeyGroups.put("HardwareKeys", group);
+      
+	group.add("HardwareKeysAdd");
+	group.add("HardwareKeysRemove");
+
+	group.add("HardwareGroupsAdd");
+	group.add("HardwareGroupsClone");
+	group.add("HardwareGroupsRemove");
+      }
     }
   }
 
@@ -2526,7 +2573,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.62 2007/10/23 02:29:59 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.63 2007/11/30 20:14:26 jesse Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -2781,7 +2828,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.62 2007/10/23 02:29:59 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.63 2007/11/30 20:14:26 jesse Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -4138,7 +4185,7 @@ class GenUserPrefsApp
 
       StringBuilder buf = new StringBuilder();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.62 2007/10/23 02:29:59 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.63 2007/11/30 20:14:26 jesse Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 

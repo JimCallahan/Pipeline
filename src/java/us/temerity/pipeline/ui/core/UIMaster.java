@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.72 2007/11/05 04:32:59 jesse Exp $
+// $Id: UIMaster.java,v 1.73 2007/11/30 20:14:26 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2492,6 +2492,16 @@ class UIMaster
     pManageSelectionKeysDialog.updateAll();
     pManageSelectionKeysDialog.setVisible(true);
   }
+  
+  /**
+   * Show the manage hardware keys and groups.
+   */ 
+  public void 
+  showManageHardwareKeysDialog()
+  {
+    pManageHardwareKeysDialog.updateAll();
+    pManageHardwareKeysDialog.setVisible(true);
+  }  
 
   /**
    * Show the manage editors dialog.
@@ -3760,6 +3770,7 @@ class UIMaster
 	pManageToolsetsDialog      = new JManageToolsetsDialog();
 	pManageLicenseKeysDialog   = new JManageLicenseKeysDialog();
 	pManageSelectionKeysDialog = new JManageSelectionKeysDialog();
+	pManageHardwareKeysDialog  = new JManageHardwareKeysDialog();
 
 	pQueueJobsDialog = new JQueueJobsDialog(pFrame);
 	pChangeJobReqsDialog = new JChangeJobReqsDialog(pFrame);
@@ -4372,6 +4383,7 @@ class UIMaster
 
 	pResourceUsageHistoryDialog.updateUserPrefs();
 	pManageSelectionKeysDialog.updateUserPrefs();
+	pManageHardwareKeysDialog.updateUserPrefs();
 
 	{
 	  ToolTipManager mgr = ToolTipManager.sharedInstance();
@@ -4820,7 +4832,8 @@ class UIMaster
      Long minMemory,              
      Long minDisk, 
      TreeSet<String> selectionKeys,
-     TreeSet<String> licenseKeys
+     TreeSet<String> licenseKeys,
+     TreeSet<String> hardwareKeys
     ) 
     {
       super("UIMaster:QueueJobsTask", channel, author, view);
@@ -4836,6 +4849,7 @@ class UIMaster
       pMinDisk       = minDisk;
       pSelectionKeys = selectionKeys;
       pLicenseKeys   = licenseKeys; 
+      pHardwareKeys  = hardwareKeys;
     }
 
     public 
@@ -4852,7 +4866,8 @@ class UIMaster
      Long minMemory,              
      Long minDisk,  
      TreeSet<String> selectionKeys,
-     TreeSet<String> licenseKeys
+     TreeSet<String> licenseKeys,
+     TreeSet<String> hardwareKeys
     ) 
     {
       super("UIMaster:QueueJobsTask", channel, author, view);
@@ -4867,6 +4882,7 @@ class UIMaster
       pMinDisk       = minDisk;
       pSelectionKeys = selectionKeys;
       pLicenseKeys   = licenseKeys; 
+      pHardwareKeys  = hardwareKeys;
     }
 
     public void 
@@ -4881,7 +4897,7 @@ class UIMaster
 	    client.submitJobs(pAuthorName, pViewName, name, null, 
 			      pBatchSize, pPriority, pRampUp,
 			      pMaxLoad, pMinMemory, pMinDisk,
-			      pSelectionKeys, pLicenseKeys);
+			      pSelectionKeys, pLicenseKeys, pHardwareKeys);
 	  }
 	}
 	catch(PipelineException ex) {
@@ -4905,6 +4921,7 @@ class UIMaster
     private Long             pMinDisk;
     private TreeSet<String>  pSelectionKeys;
     private TreeSet<String>  pLicenseKeys;
+    private TreeSet<String>  pHardwareKeys;
   }
 
   /** 
@@ -5638,6 +5655,11 @@ class UIMaster
    * The manage selection keys, groups and schedules dialog.
    */ 
   private JManageSelectionKeysDialog  pManageSelectionKeysDialog;
+  
+  /**
+   * The manage hardware keys and groups.
+   */ 
+  private JManageHardwareKeysDialog  pManageHardwareKeysDialog;
 
   /**
    * The queue job submission dialog.

@@ -1,4 +1,4 @@
-// $Id: QueueRequest.java,v 1.24 2007/10/11 18:52:07 jesse Exp $
+// $Id: QueueRequest.java,v 1.25 2007/11/30 20:14:25 jesse Exp $
 
 package us.temerity.pipeline.message;
 
@@ -130,7 +130,6 @@ enum QueueRequest
    */
   EditSelectionGroups, 
   
-
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -160,6 +159,55 @@ enum QueueRequest
    */
   EditSelectionSchedules, 
   
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the names of the hardware keys.
+   */ 
+  GetHardwareKeyNames,
+
+  /**
+   * Get the hardware keys.
+   */ 
+  GetHardwareKeys,
+
+  /**
+   * An instance {@link QueueAddHardwareKeyReq QueueAddHardwareKeyReq} is next.
+   */
+  AddHardwareKey, 
+  
+  /**
+   * An instance {@link QueueRemoveHardwareKeyReq QueueRemoveHardwareKeyReq} is next.
+   */
+  RemoveHardwareKey, 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the names of all existing hardware groups. 
+   */ 
+  GetHardwareGroupNames, 
+
+  /**
+   * Get the current hardware biases for all existing hardware groups. 
+   */ 
+  GetHardwareGroups, 
+
+  /**
+   * An instance {@link QueueAddHardwareGroupReq QueueAddHardwareGroupReq} is next.
+   */
+  AddHardwareGroup, 
+
+  /**
+   * An instance {@link QueueRemoveHardwareGroupsReq QueueRemoveHardwareGroupsReq} is next.
+   */
+  RemoveHardwareGroups, 
+
+  /**
+   * An instance {@link QueueEditHardwareGroupsReq QueueEditHardwareGroupsReq} is next.
+   */
+  EditHardwareGroups, 
+  
 
   /*----------------------------------------------------------------------------------------*/
   
@@ -169,12 +217,12 @@ enum QueueRequest
   GetQueueExtension, 
   
   /**
-   * An instance of {@link QueueRemoveQueueExtension} is next.
+   * An instance of {@link QueueRemoveQueueExtensionReq} is next.
    */
   RemoveQueueExtension, 
   
   /**
-   * An instance of {@link QueueSetQueueExtension} is next.
+   * An instance of {@link QueueSetQueueExtensionReq} is next.
    */
   SetQueueExtension, 
 

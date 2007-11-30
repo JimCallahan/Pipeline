@@ -1,4 +1,4 @@
-// $Id: JQueueJobsDialog.java,v 1.7 2007/10/12 22:11:43 jesse Exp $
+// $Id: JQueueJobsDialog.java,v 1.8 2007/11/30 20:14:26 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -50,6 +50,7 @@ class JQueueJobsDialog
     {
       pSelectionKeyFields = new TreeMap<String,JBooleanField>();
       pLicenseKeyFields   = new TreeMap<String,JBooleanField>();
+      pHardwareKeyFields  = new TreeMap<String,JBooleanField>();
     }
 
     /* create dialog body components */ 
@@ -240,8 +241,40 @@ class JQueueJobsDialog
 	JDrawer drawer = new JDrawer("License Keys:", box, false);
 	vbox.add(drawer);
       }
+      
+      /* hardware keys */ 
+      {
+	Box box = new Box(BoxLayout.Y_AXIS);
 
-      /* initialize the selection/license keys */ 
+	Component comps[] = UIFactory.createTitledPanels();
+	{
+	  JPanel tpanel = (JPanel) comps[0];
+	  tpanel.setName("TopTitlePanel");
+	  JPanel vpanel = (JPanel) comps[1];
+	  vpanel.setName("TopValuePanel");
+	  
+	  {
+	    JBooleanField field = 
+	      UIFactory.createTitledBooleanField(tpanel, "Override Hardware Keys:", sTSize,
+						vpanel, sVSize);
+	    pOverrideHardwareKeysField = field;
+
+	    field.addActionListener(this);
+	    field.setActionCommand("hardware-keys-changed");
+	  }
+	
+	  box.add(comps[2]);
+	}
+	  
+	pHardwareKeysBox = new Box(BoxLayout.Y_AXIS);
+	box.add(pHardwareKeysBox);
+	  
+	JDrawer drawer = new JDrawer("Hardware Keys:", box, false);
+	vbox.add(drawer);
+      }
+
+
+      /* initialize the selection/license/hardware keys */ 
       doApply();
 
       {
@@ -279,19 +312,21 @@ class JQueueJobsDialog
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Display the current selection/license keys.
+   * Display the current selection/license/hardware keys.
    */ 
   public void 
   updateKeys() 
   {
-    /* lookup latestselection/license keys */ 
+    /* lookup latest selection/license keys */ 
     TreeSet<String> sknames = new TreeSet<String>();
     TreeSet<String> lknames = new TreeSet<String>();
+    TreeSet<String> hknames = new TreeSet<String>();
     {
       QueueMgrClient qclient = UIMaster.getInstance().getQueueMgrClient();
       try {
 	sknames.addAll(qclient.getSelectionKeyNames());
 	lknames.addAll(qclient.getLicenseKeyNames());
+	hknames.addAll(qclient.getHardwareKeyNames());
       }
       catch(PipelineException ex) {
 	showErrorDialog(ex);
@@ -343,6 +378,53 @@ class JQueueJobsDialog
       }
 
       pSelectionKeysBox.add(comps[2]);
+    }
+    
+    /* hardware keys panel */ 
+    {
+      boolean override = pOverrideHardwareKeysField.getValue();
+
+      TreeSet<String> selected = new TreeSet<String>();
+      for(String kname : pHardwareKeyFields.keySet()) {
+	JBooleanField field = pHardwareKeyFields.get(kname);
+	if(field != null) {
+	  Boolean value = field.getValue(); 
+	  if((value != null) && value) 
+	    selected.add(kname);
+	}
+      }
+
+      pHardwareKeysBox.removeAll();
+      pHardwareKeyFields.clear();
+
+      Component comps[] = UIFactory.createTitledPanels();
+      JPanel tpanel = (JPanel) comps[0];
+      tpanel.setName("BottomTitlePanel");
+      JPanel vpanel = (JPanel) comps[1];
+      vpanel.setName("BottomValuePanel");
+
+      if(hknames.isEmpty()) {
+	tpanel.add(Box.createRigidArea(new Dimension(sTSize-7, 0)));
+	vpanel.add(Box.createHorizontalGlue());
+      }
+      else {
+	boolean first = true;
+	for(String kname : hknames) {
+	  UIFactory.addVerticalSpacer(tpanel, vpanel, first ? 6 : 3);
+	  first = false;
+
+	  JBooleanField field = 
+	    UIFactory.createTitledBooleanField(tpanel, kname + ":", sTSize,
+					       vpanel, sVSize);
+
+	  field.setEnabled(override);
+	  field.setValue(override && selected.contains(kname));
+
+	  pHardwareKeyFields.put(kname, field);
+	}
+      }
+
+      pHardwareKeysBox.add(comps[2]);
     }
       
     /* license keys panel */ 
@@ -574,6 +656,33 @@ class JQueueJobsDialog
     return keys;
   }
   
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Whether to override the hardware keys. 
+   */ 
+  public boolean 
+  overrideHardwareKeys() 
+  {
+    return pOverrideHardwareKeysField.getValue();
+  }
+
+  /**
+   * The names of the overriden hardware keys. 
+   */ 
+  public TreeSet<String> 
+  getHardwareKeys() 
+  {
+    TreeSet<String> keys = new TreeSet<String>();
+    for(String kname : pHardwareKeyFields.keySet()) {
+      JBooleanField field = pHardwareKeyFields.get(kname);
+      if((field != null) && (field.getValue() != null) && field.getValue())
+	keys.add(kname);
+    }
+
+    return keys;
+  }
+  
 
   
   /*----------------------------------------------------------------------------------------*/
@@ -655,6 +764,8 @@ class JQueueJobsDialog
       doSelectionKeysChanged();
     else if(cmd.equals("license-keys-changed")) 
       doLicenseKeysChanged();
+    else if(cmd.equals("hardware-keys-changed")) 
+      doHardwareKeysChanged();
     else if (cmd.equals("disk-changed"))
       doMinDiskChanged();
     else if (cmd.equals("memory-changed"))
@@ -792,6 +903,32 @@ class JQueueJobsDialog
       }
     }
   }
+  
+  /**
+   * The value of the override hardware keys field has changed.
+   */ 
+  public void 
+  doHardwareKeysChanged()
+  {
+    if(pOverrideHardwareKeysField.getValue()) {
+      for(String kname : pHardwareKeyFields.keySet()) {
+	JBooleanField field = pHardwareKeyFields.get(kname);
+	if(field != null) {
+	  field.setEnabled(true);
+	  field.setValue(false);
+	}
+      }
+    }
+    else {
+      for(String kname : pHardwareKeyFields.keySet()) {
+	JBooleanField field = pHardwareKeyFields.get(kname);
+	if(field != null) {
+	  field.setEnabled(false);
+	  field.setValue(null);
+	}
+      }
+    }
+  }
 
   /**
    * The value of the override license keys field has changed.
@@ -839,14 +976,16 @@ class JQueueJobsDialog
       pPriorityField.setValue(null);
     }
 
-    /* lookup latestselection/license keys */ 
+    /* lookup latest selection/license keys */ 
     TreeSet<String> sknames = new TreeSet<String>();
     TreeSet<String> lknames = new TreeSet<String>();
+    TreeSet<String> hknames = new TreeSet<String>();
     {
       QueueMgrClient qclient = UIMaster.getInstance().getQueueMgrClient();
       try {
 	sknames.addAll(qclient.getSelectionKeyNames());
 	lknames.addAll(qclient.getLicenseKeyNames());
+	hknames.addAll(qclient.getHardwareKeyNames());
       }
       catch(PipelineException ex) {
 	showErrorDialog(ex);
@@ -888,6 +1027,43 @@ class JQueueJobsDialog
 
       pSelectionKeysBox.add(comps[2]);
     }
+    
+    /* hardware keys panel */ 
+    {
+      pOverrideHardwareKeysField.setValue(false);
+
+      pHardwareKeysBox.removeAll();
+      pHardwareKeyFields.clear();
+
+      Component comps[] = UIFactory.createTitledPanels();
+      JPanel tpanel = (JPanel) comps[0];
+      tpanel.setName("BottomTitlePanel");
+      JPanel vpanel = (JPanel) comps[1];
+      vpanel.setName("BottomValuePanel");
+
+      if(hknames.isEmpty()) {
+	tpanel.add(Box.createRigidArea(new Dimension(sTSize-7, 0)));
+	vpanel.add(Box.createHorizontalGlue());
+      }
+      else {
+	boolean first = true;
+	for(String kname : hknames) {
+	  UIFactory.addVerticalSpacer(tpanel, vpanel, first ? 6 : 3);
+	  first = false;
+
+	  JBooleanField field = 
+	    UIFactory.createTitledBooleanField(tpanel, kname + ":", sTSize,
+					       vpanel, sVSize);
+	  field.setEnabled(false);
+	  field.setValue(null);
+
+	  pHardwareKeyFields.put(kname, field);
+	}
+      }
+
+      pHardwareKeysBox.add(comps[2]);
+    }
+
       
     /* license keys panel */ 
     {
@@ -1051,6 +1227,23 @@ class JQueueJobsDialog
    * Whether to export each license key indexed by license key name.
    */ 
   private TreeMap<String,JBooleanField>  pLicenseKeyFields;
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether to override the hardware keys.
+   */ 
+  private JBooleanField  pOverrideHardwareKeysField;
+
+  /**
+   * The hardware keys container.
+   */ 
+  private Box  pHardwareKeysBox;
+
+  /**
+   * Whether to export each hardware key indexed by license key name.
+   */ 
+  private TreeMap<String,JBooleanField>  pHardwareKeyFields;
   
   /*----------------------------------------------------------------------------------------*/
   

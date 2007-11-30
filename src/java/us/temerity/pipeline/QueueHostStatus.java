@@ -1,4 +1,4 @@
-// $Id: QueueHostStatus.java,v 1.1 2006/07/02 00:27:49 jim Exp $
+// $Id: QueueHostStatus.java,v 1.2 2007/11/30 20:14:23 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -111,6 +111,29 @@ enum QueueHostStatus
   toTitle() 
   {
     return toString();
+  }
+  
+  /**
+   * Converts this data into a QueueHostStatusChange for use in a {@link QueueHostMod}.
+   * <p>
+   * This convenience method is intended to make it easy to take the {@link QueueHostStatus}
+   * found in a {@link SelectionRule} and translate it into a form which a
+   * {@link QueueHostMod} can easily work with. As a result, it is only concerned with the
+   * {@link #Disabled} and {@link #Enabled} fields in this enumeration, since those are the
+   * only two that are actually used in {@link SelectionRule}. Any other value will return
+   * <code>null</code>.
+   */
+  public QueueHostStatusChange
+  toQueueHostStatusChange()
+  {
+     switch(this) {
+     case Disabled:
+       return QueueHostStatusChange.Disable;
+     case Enabled:
+       return QueueHostStatusChange.Enable;
+     default:
+       return null;
+     }
   }
 
 

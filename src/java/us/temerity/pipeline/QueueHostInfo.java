@@ -1,4 +1,4 @@
-// $Id: QueueHostInfo.java,v 1.8 2007/11/20 05:42:08 jesse Exp $
+// $Id: QueueHostInfo.java,v 1.9 2007/11/30 20:14:23 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -32,6 +32,11 @@ class QueueHostInfo
   {
     pStatus = QueueHostStatus.Shutdown; 
     pHoldTimeStamp = 0L; 
+    pGroupState = EditableState.Manual;
+    pStatusState = EditableState.Manual;
+    pReservationState = EditableState.Manual;
+    pSlotState = EditableState.Manual;
+    pOrderState = EditableState.Manual;
   }
 
   /**
@@ -114,6 +119,7 @@ class QueueHostInfo
    ResourceSample sample, 
    String group,
    String schedule,
+   String hardwareGroup,
    EditableState groupState,
    EditableState statusState,
    EditableState reservationState,
@@ -147,6 +153,7 @@ class QueueHostInfo
 
     pSelectionGroup = group; 
     pSelectionSchedule = schedule; 
+    pHardwareGroup = hardwareGroup;
     
     pGroupState = groupState;
     pStatusState = statusState;
@@ -181,7 +188,7 @@ class QueueHostInfo
   isPending()
   {
     return (isStatusPending() || pReservationPending || pOrderPending || pJobSlotsPending ||
-	    pSelectionSchedulePending || pSelectionGroupPending);
+	    pSelectionSchedulePending || pSelectionGroupPending || pHardwareGroupPending);
   }
    
 
@@ -239,7 +246,6 @@ class QueueHostInfo
       return false;
     }
   }
-
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -299,12 +305,36 @@ class QueueHostInfo
   }
   
   /**
+   * @param groupState the groupState to set
+   */
+  public void 
+  setGroupState
+  (
+    EditableState groupState
+  )
+  {
+    pGroupState = groupState;
+  }
+  
+  /**
    * Is the reservation status of the host editable.
    */
   public EditableState 
   getReservationState()
   {
     return pReservationState;
+  }
+  
+  /**
+   * @param reservationState the reservationState to set
+   */
+  public void 
+  setReservationState
+  (
+    EditableState reservationState
+  )
+  {
+    pReservationState = reservationState;
   }
 
   /**
@@ -317,14 +347,38 @@ class QueueHostInfo
   }
   
   /**
+   * @param statusState the statusState to set
+   */
+  public void 
+  setStatusState
+  (
+    EditableState statusState
+  )
+  {
+    pStatusState = statusState;
+  }
+
+  /**
    * Is the number of slots on the host editable.
    */
   public EditableState 
-  getSlotState()
+  getSlotsState()
   {
     return pSlotState;
   }
   
+  /**
+   * @param slotState the slotState to set
+   */
+  public void 
+  setSlotsState
+  (
+    EditableState slotState
+  )
+  {
+    pSlotState = slotState;
+  }
+
   /**
    * Is the order of the host editable.
    */
@@ -334,10 +388,19 @@ class QueueHostInfo
     return pOrderState;
   }
 
+  /**
+   * @param orderState the orderState to set
+   */
+  public void 
+  setOrderState
+  (
+    EditableState orderState
+  )
+  {
+    pOrderState = orderState;
+  }
 
   /*----------------------------------------------------------------------------------------*/
-
-  
 
   /**
    * Get the job dispatching order for this host.
@@ -566,12 +629,48 @@ class QueueHostInfo
   }
 
   /**
-   * Whether a change in selection schedule is pending.
+   * Whether a change in selection group is pending.
    */ 
   public synchronized boolean
   isSelectionGroupPending()
   {
     return pSelectionGroupPending;
+  }
+  
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the name of the current hardware group. 
+   * 
+   * @return
+   *   The hardware group or <CODE>null</CODE> not a member of any hardware group.
+   */ 
+  public synchronized String
+  getHardwareGroup() 
+  {
+    return pHardwareGroup;
+  }
+
+  /**
+   * Set the name of the current hardware group or <CODE>null</CODE> to clear.
+   */ 
+  public synchronized void
+  setHardwareGroup
+  (
+   String name
+  ) 
+  {
+    pHardwareGroup = name;
+    pHardwareGroupPending = true;
+  }
+
+  /**
+   * Whether a change in hardware group is pending.
+   */ 
+  public synchronized boolean
+  isHardwareGroupPending()
+  {
+    return pHardwareGroupPending;
   }
   
   
@@ -597,6 +696,7 @@ class QueueHostInfo
 
     encoder.encode("SelectionSchedule", pSelectionSchedule);
     encoder.encode("SelectionGroup", pSelectionGroup);
+    encoder.encode("HardwareGroup", pHardwareGroup);
   }
 
   public void 
@@ -625,7 +725,8 @@ class QueueHostInfo
     pJobSlots = slots;
 
     pSelectionSchedule = (String) decoder.decode("SelectionSchedule"); 
-    pSelectionGroup    = (String) decoder.decode("SelectionGroup"); 
+    pSelectionGroup    = (String) decoder.decode("SelectionGroup");
+    pHardwareGroup     = (String) decoder.decode("HardwareGroup");
   }
   
   
@@ -727,7 +828,14 @@ class QueueHostInfo
    * selection group is currently manual.
    */ 
   private String  pSelectionSchedule; 
-  private boolean pSelectionSchedulePending; 
+  private boolean pSelectionSchedulePending;
+  
+  /**
+   * The name of the current hardware group or <CODE>null</CODE> not a member of any 
+   * hardware group. 
+   */ 
+  private String  pHardwareGroup; 
+  private boolean pHardwareGroupPending; 
 
   /*----------------------------------------------------------------------------------------*/
   

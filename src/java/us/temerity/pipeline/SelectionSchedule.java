@@ -1,4 +1,4 @@
-// $Id: SelectionSchedule.java,v 1.5 2007/11/20 05:42:08 jesse Exp $
+// $Id: SelectionSchedule.java,v 1.6 2007/11/30 20:14:24 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -241,7 +241,7 @@ class SelectionSchedule
    *   The server Status or <code>null</code> if none is set.
    */ 
   public QueueHostStatus
-  activeSeverStatus
+  activeServerStatus
   (
     long stamp  
   )

@@ -1,4 +1,4 @@
-// $Id: JobReqs.java,v 1.21 2007/11/01 07:47:52 jim Exp $
+// $Id: JobReqs.java,v 1.22 2007/11/30 20:14:23 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -155,6 +155,10 @@ class JobReqs
    * @param selectionKeys 
    *   The set of selection keys an eligible host is required to have or <CODE>null</CODE>
    *   for none.
+   *   
+   * @param hardwareKeys 
+   *   The set of hardware keys an eligible host is required to have or <CODE>null</CODE>
+   *   for none.
    */ 
   public 
   JobReqs
@@ -165,7 +169,8 @@ class JobReqs
    long minMemory,              
    long minDisk,                
    Set<String> licenseKeys,
-   Set<String> selectionKeys
+   Set<String> selectionKeys,
+   Set<String> hardwareKeys
   )
   {
     setPriority(priority);
@@ -182,6 +187,10 @@ class JobReqs
     pSelectionKeys = new HashSet<String>();
     if(selectionKeys != null) 
       pSelectionKeys.addAll(selectionKeys);
+    
+    pHardwareKeys = new HashSet<String>();
+    if(hardwareKeys != null) 
+      pHardwareKeys.addAll(hardwareKeys);
   }
   
   /**
@@ -237,6 +246,12 @@ class JobReqs
       pSelectionKeys.addAll(delta.getSelectionKeys());
     else if (reqs.getSelectionKeys().size() > 0)
       pSelectionKeys.addAll(reqs.getSelectionKeys());
+    
+    pHardwareKeys = new HashSet<String>();
+    if(delta.getHardwareKeys() != null) 
+      pHardwareKeys.addAll(delta.getHardwareKeys());
+    else if (reqs.getHardwareKeys().size() > 0)
+      pHardwareKeys.addAll(reqs.getHardwareKeys());
   }
 
   
@@ -252,7 +267,7 @@ class JobReqs
   defaultJobReqs() 
   {
     return (new JobReqs(50, 0, 2.5f, 134217728L, 67108864L, 
-			new HashSet<String>(), new HashSet<String>()));
+			new HashSet<String>(), new HashSet<String>(), new HashSet<String>()));
   }
 
 
@@ -366,7 +381,8 @@ class JobReqs
 	 (pMinMemory.equals(reqs.pMinMemory)) && 
 	 (pMinDisk.equals(reqs.pMinDisk)) && 
 	 pLicenseKeys.equals(reqs.pLicenseKeys) &&
-	 pSelectionKeys.equals(reqs.pSelectionKeys))
+	 pSelectionKeys.equals(reqs.pSelectionKeys) &&
+	 pHardwareKeys.equals(reqs.pHardwareKeys))
 	return true;
     }
     

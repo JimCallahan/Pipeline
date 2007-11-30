@@ -1,4 +1,4 @@
-// $Id: JQueueJobDetailsPanel.java,v 1.15 2007/11/05 22:48:12 jesse Exp $
+// $Id: JQueueJobDetailsPanel.java,v 1.16 2007/11/30 20:14:26 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -485,6 +485,16 @@ class JQueueJobDetailsPanel
 		dbox.add(drawer);
 	      }
 	      
+	      /* hardware keys */ 
+	      {
+		JDrawer drawer = new JDrawer("Hardware Keys:",  new JPanel(), false);
+		drawer.setToolTipText(UIFactory.formatToolTip
+		  ("The set of hardware keys a server must have in order to be eligable " + 
+		   "to run jobs associated with this node."));
+		pHardwareDrawer = drawer;
+		dbox.add(drawer);
+	      }
+	      
 	      /* license keys */ 
 	      {
 		JDrawer drawer = new JDrawer("License Keys:", new JPanel(), false);
@@ -638,7 +648,7 @@ class JQueueJobDetailsPanel
       addMouseListener(this); 
     }
 
-    updateJob(null, null, null, null, null);
+    updateJob(null, null, null, null, null, null);
   }
 
   /**
@@ -800,13 +810,14 @@ class JQueueJobDetailsPanel
    QueueJobInfo info, 
    SubProcessExecDetails details,
    ArrayList<LicenseKey> licenseKeys, 
-   ArrayList<SelectionKey> selectionKeys
+   ArrayList<SelectionKey> selectionKeys,
+   ArrayList<HardwareKey> hardwareKeys
   )
   {
     if(!pAuthor.equals(author) || !pView.equals(view)) 
       super.setAuthorView(author, view);    
 
-    updateJob(job, info, details, licenseKeys, selectionKeys);
+    updateJob(job, info, details, licenseKeys, selectionKeys, hardwareKeys);
   }
 
 
@@ -837,7 +848,8 @@ class JQueueJobDetailsPanel
    QueueJobInfo info, 
    SubProcessExecDetails details, 
    ArrayList<LicenseKey> licenseKeys, 
-   ArrayList<SelectionKey> selectionKeys
+   ArrayList<SelectionKey> selectionKeys,
+   ArrayList<HardwareKey> hardwareKeys
   ) 
   {
     updatePrivileges();
@@ -849,6 +861,7 @@ class JQueueJobDetailsPanel
     pExecDetails   = details; 
     pLicenseKeys   = licenseKeys; 
     pSelectionKeys = selectionKeys;
+    pHardwareKeys  = hardwareKeys;
 
     ActionAgenda agenda = null;
     if(pJob != null) 
@@ -1129,6 +1142,43 @@ class JQueueJobDetailsPanel
 	}
 
 	pSelectionDrawer.setContents((JComponent) comps[2]);
+      }
+      
+      /* hardware keys */ 
+      {
+	TreeMap<String,String> keys = new TreeMap<String,String>();
+	if((pJob != null) && (pHardwareKeys != null)) {
+	  for(HardwareKey key : pHardwareKeys)
+	    keys.put(key.getName(), key.getDescription());
+	}
+
+	Component comps[] = createCommonPanels();
+	JPanel tpanel = (JPanel) comps[0];
+	JPanel vpanel = (JPanel) comps[1];
+
+	if(keys.isEmpty()) {
+	  tpanel.add(Box.createRigidArea(new Dimension(sTSize-7, 0)));
+	  vpanel.add(Box.createHorizontalGlue());
+	}
+	else {
+	  JobReqs jreqs = pJob.getJobRequirements();
+
+	  boolean first = true; 
+	  for(String kname : keys.keySet()) {
+	
+	    if(!first) 
+	      UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+	    first = false;
+
+	    String value = jreqs.getHardwareKeys().contains(kname) ? "YES" : "no";
+
+	    JTextField field = 
+	      UIFactory.createTitledTextField(tpanel, kname + ":", sTSize-7, 
+					     vpanel, value, sVSize, keys.get(kname));
+	  }
+	}
+
+	pHardwareDrawer.setContents((JComponent) comps[2]);
       }
 
       /* license keys */ 
@@ -1928,7 +1978,9 @@ class JQueueJobDetailsPanel
     
     encoder.encode("JobReqsDrawerOpen",     pJobReqsDrawer.isOpen());
     encoder.encode("SelectionDrawerOpen",   pSelectionDrawer.isOpen());
+    encoder.encode("ActionDrawerOpen",      pActionDrawer.isOpen());
     encoder.encode("LicenseDrawerOpen",     pLicenseDrawer.isOpen());
+    encoder.encode("HardwareDrawerOpen",    pHardwareDrawer.isOpen());
     
     encoder.encode("FilesDrawerOpen",       pFilesDrawer.isOpen());
     encoder.encode("TargetFilesDrawerOpen", pTargetFilesDrawer.isOpen());
@@ -1969,11 +2021,22 @@ class JQueueJobDetailsPanel
     }
     
     {
+      Boolean open = (Boolean) decoder.decode("ActionDrawerOpen");
+      if(open != null) 
+ 	pActionDrawer.setIsOpen(open);
+    }
+    
+    {
       Boolean open = (Boolean) decoder.decode("LicenseDrawerOpen");
       if(open != null) 
  	pLicenseDrawer.setIsOpen(open);
     }
-
+    
+    {
+      Boolean open = (Boolean) decoder.decode("HardwareDrawerOpen");
+      if(open != null) 
+ 	pHardwareDrawer.setIsOpen(open);
+    }
 
     {
       Boolean open = (Boolean) decoder.decode("FilesDrawerOpen");
@@ -2038,6 +2101,11 @@ class JQueueJobDetailsPanel
    * The current selection keys.
    */
   private ArrayList<SelectionKey>  pSelectionKeys; 
+  
+  /**
+   * The current selection keys.
+   */
+  private ArrayList<HardwareKey>  pHardwareKeys; 
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -2228,12 +2296,7 @@ class JQueueJobDetailsPanel
   private Box  pActionBox;
   
   /**
-   * A map of the components representing the Action Parameters indexed by parameter name.
-   */
-  private TreeMap<String,Component[]>  pActionParamComponents;
-  
-  /**
-   * The UI compontents related to per-source action parameters.
+   * The UI components related to per-source action parameters.
    */ 
   private Component pSourceParamComponents[]; 
   
@@ -2271,6 +2334,11 @@ class JQueueJobDetailsPanel
    * The drawer containing the licence key components.
    */ 
   private JDrawer  pLicenseDrawer;
+  
+  /**
+   * The drawer containing the licence key components.
+   */ 
+  private JDrawer  pHardwareDrawer;
 
 
   /*----------------------------------------------------------------------------------------*/

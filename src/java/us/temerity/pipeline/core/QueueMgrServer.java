@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.48 2007/10/11 18:52:07 jesse Exp $
+// $Id: QueueMgrServer.java,v 1.49 2007/11/30 20:14:24 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -510,6 +510,83 @@ class QueueMgrServer
 		objOut.flush(); 
 	      }
 	      break;
+	      
+	    /*-- HARDWARE KEYS -------------------------------------------------------------*/
+	    case GetHardwareKeyNames:
+	      {
+		objOut.writeObject(pQueueMgr.getHardwareKeyNames());
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case GetHardwareKeys:
+	      {
+		objOut.writeObject(pQueueMgr.getHardwareKeys());
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case AddHardwareKey:
+	      {
+		QueueAddHardwareKeyReq req = 
+		  (QueueAddHardwareKeyReq) objIn.readObject();
+		objOut.writeObject(pQueueMgr.addHardwareKey(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case RemoveHardwareKey:
+	      {
+		QueueRemoveHardwareKeyReq req = 
+		  (QueueRemoveHardwareKeyReq) objIn.readObject();
+		objOut.writeObject(pQueueMgr.removeHardwareKey(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+
+	    /*-- HARDWARE GROUPS -----------------------------------------------------------*/
+	    case GetHardwareGroupNames:
+	      {
+		objOut.writeObject(pQueueMgr.getHardwareGroupNames());
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case GetHardwareGroups:
+	      {
+		objOut.writeObject(pQueueMgr.getHardwareGroups());
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case AddHardwareGroup:
+	      {
+		QueueAddHardwareGroupReq req = 
+		  (QueueAddHardwareGroupReq) objIn.readObject();
+		objOut.writeObject(pQueueMgr.addHardwareGroup(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case RemoveHardwareGroups:
+	      {
+		QueueRemoveHardwareGroupsReq req = 
+		  (QueueRemoveHardwareGroupsReq) objIn.readObject();
+		objOut.writeObject(pQueueMgr.removeHardwareGroups(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case EditHardwareGroups:
+	      {
+		QueueEditHardwareGroupsReq req = 
+		  (QueueEditHardwareGroupsReq) objIn.readObject();
+		objOut.writeObject(pQueueMgr.editHardwareGroups(req));
+		objOut.flush(); 
+	      }
+	      break;
+
 
 
 	    /*-- SERVER EXTENSIONS ---------------------------------------------------------*/

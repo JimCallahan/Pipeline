@@ -1,4 +1,4 @@
-// $Id: QueueHostStatusChange.java,v 1.1 2006/07/02 00:27:49 jim Exp $
+// $Id: QueueHostStatusChange.java,v 1.2 2007/11/30 20:14:24 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -9,7 +9,7 @@ import java.util.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A request to chang the operational status of a job server host.
+ * A request to change the operational status of a job server host.
  */
 public
 enum QueueHostStatusChange
@@ -78,6 +78,5 @@ enum QueueHostStatusChange
   {
     return toString();
   }
-
-
+  
 }

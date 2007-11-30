@@ -1,4 +1,4 @@
-// $Id: JQHostOrderTableCellRenderer.java,v 1.2 2007/11/20 05:42:07 jesse Exp $
+// $Id: JQHostOrderTableCellRenderer.java,v 1.3 2007/11/30 20:14:25 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -65,18 +65,25 @@ class JQHostOrderTableCellRenderer
 
     QueueHostInfo qinfo = pParent.getHostInfo(row);
     
-    Color foreground = Color.white;
-    
     if (qinfo != null) {
       boolean editable = pParent.isHostEditable(qinfo.getName());
       EditableState pEditState = qinfo.getOrderState();
-      
-      if (isSelected)
-	foreground = Color.yellow;
+      if (editable) {
+	switch(pEditState) {
+	case Manual:
+	  setName("PurpleCheckTableCellRenderer");
+	  break;
+	case SemiAutomatic:
+	  setName("PurpleConflictTableCellRenderer");
+	  break;
+	case Automatic:
+	  setName("PurpleLockTableCellRenderer");
+	}
+      }
+      else
+	setName("PurpleTableCellRenderer");
     }
 
-    setForeground(foreground);
-    
     if((qinfo != null) && qinfo.isOrderPending()) 
       setForeground(Color.cyan);
 

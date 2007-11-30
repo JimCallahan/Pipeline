@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.111 2007/11/05 23:46:51 jesse Exp $
+// $Id: MasterMgrClient.java,v 1.112 2007/11/30 20:14:23 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -5888,7 +5888,7 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {
-    return submitJobs(new NodeID(author, view, name), indices, null, null, null, null, null, null, null, null);
+    return submitJobs(new NodeID(author, view, name), indices, null, null, null, null, null, null, null, null, null);
   }
 
   /**
@@ -5956,13 +5956,14 @@ class MasterMgrClient
    Long minMemory,              
    Long minDisk,  
    Set<String> selectionKeys,
-   Set<String> licenseKeys 
+   Set<String> licenseKeys,
+   Set<String> hardwareKeys
   ) 
     throws PipelineException
   {
     return submitJobs(new NodeID(author, view, name), indices, 
 		      batchSize, priority, rampUp, maxLoad, minMemory, minDisk, 
-		      selectionKeys, licenseKeys);
+		      selectionKeys, licenseKeys, hardwareKeys);
   }
 
   /**
@@ -5993,7 +5994,7 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {
-    return submitJobs(nodeID, indices, null, null, null, null, null, null, null, null);
+    return submitJobs(nodeID, indices, null, null, null, null, null, null, null, null, null);
   }
 
   /**
@@ -6070,7 +6071,8 @@ class MasterMgrClient
    Long minMemory,              
    Long minDisk,    
    Set<String> selectionKeys,
-   Set<String> licenseKeys   
+   Set<String> licenseKeys,
+   Set<String> hardwareKeys
   ) 
     throws PipelineException
   {
@@ -6079,7 +6081,7 @@ class MasterMgrClient
     JobReqsDelta delta = 
       new JobReqsDelta
       (0l, priority, rampUp, maxLoad, minMemory, minDisk, 
-       licenseKeys, selectionKeys);
+       licenseKeys, selectionKeys, hardwareKeys);
     
     NodeSubmitJobsReq req = 
       new NodeSubmitJobsReq(nodeID, indices, batchSize, delta);
@@ -6174,7 +6176,8 @@ class MasterMgrClient
    Long minMemory,              
    Long minDisk,  
    Set<String> selectionKeys,
-   Set<String> licenseKeys   
+   Set<String> licenseKeys,
+   Set<String> hardwareKeys
   ) 
     throws PipelineException
   {
@@ -6183,7 +6186,7 @@ class MasterMgrClient
     JobReqsDelta delta = 
       new JobReqsDelta
       (0l, priority, rampUp, maxLoad, minMemory, minDisk, 
-       licenseKeys, selectionKeys);
+       licenseKeys, selectionKeys, hardwareKeys);
 
     NodeResubmitJobsReq req = 
       new NodeResubmitJobsReq(nodeID, targetSeqs, batchSize, delta);

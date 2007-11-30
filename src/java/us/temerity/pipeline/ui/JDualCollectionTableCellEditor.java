@@ -1,13 +1,15 @@
-// $Id: JDualCollectionTableCellEditor.java,v 1.1 2006/07/02 00:27:50 jim Exp $
+// $Id: JDualCollectionTableCellEditor.java,v 1.2 2007/11/30 20:14:25 jesse Exp $
 
 package us.temerity.pipeline.ui;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.text.*;
-import java.util.*;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Collection;
+
 import javax.swing.*;
-import javax.swing.table.*;
+import javax.swing.table.TableCellEditor;
 
 /*------------------------------------------------------------------------------------------*/
 /*   D U A L   C O L L E C T I O N   T A B L E   C E L L   E D I T O R                      */
@@ -73,14 +75,7 @@ class JDualCollectionTableCellEditor
    int width
   ) 
   {
-    pField = new JDualCollectionField(selectValues, displayValues, parent);
-    
-    Dimension size = new Dimension(width, 19);
-    pField.setMinimumSize(size);
-    pField.setMaximumSize(size);
-    pField.setPreferredSize(size);
-
-    pField.addActionListener(this);
+    createField(selectValues, displayValues, parent, width);
   }
 
 
@@ -107,6 +102,40 @@ class JDualCollectionTableCellEditor
   /*   R E N D E R I N G                                                                    */
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * Updates the field in the renderer.
+   * 
+   * @param selectValues
+   *   The values which can be selected using a pull-down menu.
+   * 
+   * @param displayValues
+   *   The values which can be displayed in the field.
+   * 
+   * @param parent
+   *   The parent dialog or <CODE>null</CODE> the field is not a child of a dialog.
+   * 
+   * @param width
+   *   The horizontal size.
+   */
+  public void
+  createField
+  (
+    Collection<String> selectValues, 
+    Collection<String> displayValues, 
+    JDialog parent, 
+    int width
+  )
+  {
+    pField = new JDualCollectionField(selectValues, displayValues, parent);
+    
+    Dimension size = new Dimension(width, 19);
+    pField.setMinimumSize(size);
+    pField.setMaximumSize(size);
+    pField.setPreferredSize(size);
+
+    pField.addActionListener(this);
+  }
+  
   /**
    * Returns the value contained in the editor.
    */ 

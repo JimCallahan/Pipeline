@@ -1,4 +1,4 @@
-// $Id: JSimpleTableCellRenderer.java,v 1.2 2004/06/22 19:42:40 jim Exp $
+// $Id: JSimpleTableCellRenderer.java,v 1.3 2007/11/30 20:14:25 jesse Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -77,6 +77,7 @@ class JSimpleTableCellRenderer
     return this;
   }
 
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C    I N T E R N A L S                                                     */
