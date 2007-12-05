@@ -1,4 +1,4 @@
-// $Id: PanelUpdater.java,v 1.22 2007/11/30 20:14:26 jesse Exp $
+// $Id: PanelUpdater.java,v 1.23 2007/12/05 04:51:32 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -531,6 +531,7 @@ class PanelUpdater
 		pSelectionGroups    = qclient.getSelectionGroupNames();
 		pSelectionSchedules = qclient.getSelectionScheduleNames();
 		pHardwareGroups     = qclient.getHardwareGroupNames();
+		pScheduleMatrix     = qclient.getSelectionScheduleMatrix();
 
 		/* add full intervals for missing hosts */ 
 		{
@@ -766,7 +767,7 @@ class PanelUpdater
 	      pQueueJobServersPanel.applyPanelUpdates
 		(pAuthor, pView, pServersFiltered, pHosts, pSamples, 
 		 pWorkGroups, pWorkUsers, pSelectionGroups, pSelectionSchedules, 
-		 pHardwareGroups);
+		 pHardwareGroups, pScheduleMatrix);
 	    
 	    /* job slots */ 
 	    if(pQueueJobSlotsPanel != null) 
@@ -1011,6 +1012,11 @@ class PanelUpdater
    * The current selection keys.
    */
   private TreeSet<String>  pSelectionSchedules;
+  
+  /**
+   * The current values for all the schedules.
+   */
+  private SelectionScheduleMatrix pScheduleMatrix;
   
   /**
    * The current hardware groups,

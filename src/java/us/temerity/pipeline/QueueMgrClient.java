@@ -1,4 +1,4 @@
-// $Id: QueueMgrClient.java,v 1.41 2007/11/30 20:14:24 jesse Exp $
+// $Id: QueueMgrClient.java,v 1.42 2007/12/05 04:51:31 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -621,6 +621,15 @@ class QueueMgrClient
       handleFailure(obj);
       return null;
     }        
+  }
+  
+  public synchronized SelectionScheduleMatrix
+  getSelectionScheduleMatrix()
+    throws PipelineException
+  {
+    TreeMap<String,SelectionSchedule> schedules = getSelectionSchedules();
+    SelectionScheduleMatrix matrix = new SelectionScheduleMatrix(schedules, System.currentTimeMillis());
+    return matrix;
   }
 
   /**

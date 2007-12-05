@@ -1,4 +1,4 @@
-// $Id: JQueueJobServersPanel.java,v 1.11 2007/11/30 20:14:26 jesse Exp $
+// $Id: JQueueJobServersPanel.java,v 1.12 2007/12/05 04:51:31 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -380,6 +380,16 @@ class JQueueJobServersPanel
     return "Queue Servers";
   }
   
+  /**
+   * Get a matrix of all the values for all the {@link SelectionSchedule SelectionSchedules}
+   * at the time of the last update.
+   */
+  public SelectionScheduleMatrix
+  getSelectionScheduleMatrix()
+  {
+    return pMatrix;
+  }
+  
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -541,11 +551,14 @@ class JQueueJobServersPanel
    Set<String> workUsers,
    TreeSet<String> selectionGroups, 
    TreeSet<String> selectionSchedules,
-   TreeSet<String> hardwareGroups
+   TreeSet<String> hardwareGroups,
+   SelectionScheduleMatrix matrix
   )
   {
     if(!pAuthor.equals(author) || !pView.equals(view)) 
-      super.setAuthorView(author, view);    
+      super.setAuthorView(author, view);  
+    
+    pMatrix = matrix;
 
     updateJobs(filtered, hosts, samples, 
                workGroups, workUsers, selectionGroups, selectionSchedules, hardwareGroups);
@@ -1525,6 +1538,12 @@ class JQueueJobServersPanel
    * The container of the header buttons for the selection key columns.
    */ 
   private Box  pSelectionKeyHeaderBox; 
+  
+  /**
+   * The matrix representing all the selection schedule values at the time of the 
+   * last update.
+   */
+  private SelectionScheduleMatrix pMatrix;
 
 
 }

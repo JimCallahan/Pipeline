@@ -1,4 +1,4 @@
-// $Id: JDualCollectionTableCellEditor.java,v 1.2 2007/11/30 20:14:25 jesse Exp $
+// $Id: JDualCollectionTableCellEditor.java,v 1.3 2007/12/05 04:51:31 jesse Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -201,5 +201,7 @@ class JDualCollectionTableCellEditor
    * The collection field editor.
    */ 
   private JCollectionField  pField;
+  
+  private int pWidth;
 
 }

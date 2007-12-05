@@ -1,4 +1,4 @@
-// $Id: QueueHostsTableModel.java,v 1.19 2007/11/30 20:14:26 jesse Exp $
+// $Id: QueueHostsTableModel.java,v 1.20 2007/12/05 04:51:32 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -162,14 +162,8 @@ class QueueHostsTableModel
       }
 
       {
-	JDualCollectionTableCellEditor status = null;
-	{
-	  ArrayList<String> dvals = new ArrayList<String>(QueueHostStatus.titles());
-	  dvals.addAll(QueueHostStatusChange.titles());
-	  
-	  status = new JDualCollectionTableCellEditor
-	                 (QueueHostStatusChange.titles(), dvals, 120);
-	}
+	JStatusTableCellEditor status = 
+	  new JStatusTableCellEditor(this, 120);
 
 	JIntegerTableCellEditor slots = 
 	  new JIntegerTableCellEditor(70, JLabel.CENTER);
@@ -195,6 +189,39 @@ class QueueHostsTableModel
     }
   }
 
+
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   A C C E S S                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Gets the name of the schedule that is current assigned to a row, including the current 
+   * value if it is in the process of being edited (even if the edit has not been applied).
+   */
+  public String
+  getCurrentScheduleName
+  (
+    int row  
+  )
+  {
+    QueueHostInfo qinfo = getHostInfo(row);
+    String toReturn = qinfo.getSelectionSchedule();
+    if (pEditedScheduleIndices.contains(row)) {
+      toReturn = (String) getValueAt(row, 10);
+    }
+    return toReturn;
+  }
+  
+  /**
+   * Get a matrix of all the values for all the {@link SelectionSchedule SelectionSchedules}
+   * at the time of the last update.
+   */
+  public SelectionScheduleMatrix
+  getSelectionScheduleMatrix()
+  {
+    return pParent.getSelectionScheduleMatrix();
+  }
 
   /*----------------------------------------------------------------------------------------*/
   /*   S O R T I N G                                                                        */
@@ -381,15 +408,6 @@ class QueueHostsTableModel
   )
   {
     switch(col) {
-    case 0:
-      {
-	JDualCollectionTableCellEditor status = null;
-	ArrayList<String> dvals = new ArrayList<String>(QueueHostStatus.titles());
-	dvals.addAll(QueueHostStatusChange.titles());
-
-	status = new JDualCollectionTableCellEditor(QueueHostStatusChange.titles(), dvals, 120);
-	return status;
-      }
     case 7:
       {
 	ArrayList<String> choices = new ArrayList<String>();
@@ -829,14 +847,14 @@ class QueueHostsTableModel
     case 8:
       return (editable && 
 	      ((host != null) && (host.getOrderState() != EditableState.Automatic)));
-    case 10:
-    case 11:
-      return editable;
- 
     /* Status */
     case 0:
-      return (editable && 
-	      ((host != null) && (host.getStatusState() != EditableState.Automatic)));
+    /* Schedule */
+    case 10:
+    /* Hardware Group */ 
+    case 11:
+      return editable;
+
     /* Reservation */
     case 7:
       return (editable && 
@@ -971,53 +989,54 @@ class QueueHostsTableModel
     switch(col) {
     case 0:
       {
-	return setStatus(host, srow, hostname, value, null);
+	return setStatus(host, srow, hostname, value, null, false);
       }
     case 6:
       {
-	return setSlots(host, srow, hostname, (Integer) value, null);
+	return setSlots(host, srow, hostname, (Integer) value, null, false);
       }
       
     case 7:
       {
-	return setReservation(host, srow, hostname, (String) value, null);
+	return setReservation(host, srow, hostname, (String) value, null, false);
       }
 
     case 8:
       {
-	return setOrder(host, srow, hostname, (Integer) value, null);
+	return setOrder(host, srow, hostname, (Integer) value, null, false);
       }
 
     case 9:
       {
-	return setGroup(host, srow, hostname, (String) value, null);
+	return setGroup(host, srow, hostname, (String) value, null, false);
       }
 
     case 10:
-    {
-      String schedName = (String) value;
-      if(schedName.equals("-")) 
-	schedName = null;
-      host.setSelectionSchedule(schedName);
+      {
+	String sname = (String) value;
+	if(sname.equals("-")) 
+	  sname = null;
+	host.setSelectionSchedule(sname);
 
-      pEditedScheduleIndices.add(srow);
-      pParent.unsavedChange("Selection Schedule: " + hostname);
+	pEditedScheduleIndices.add(srow);
+	pParent.unsavedChange("Selection Schedule: " + hostname);
 
-      UIMaster master = UIMaster.getInstance();
-      QueueMgrClient client = master.getQueueMgrClient();
-      try {
-	if (schedName != null) {
-	  TreeMap<String,SelectionSchedule> schedules = client.getSelectionSchedules();
-	  if(schedules != null) {
-	    SelectionSchedule sched = schedules.get(schedName);
-	    if(sched != null) {
-	      long now = System.currentTimeMillis();
-	      setGroup(host, srow, hostname, sched.activeGroup(now), sched.getGroupEditState(now));
-	      setSlots(host, srow, hostname, sched.activeSlots(now), sched.getSlotsEditState(now));
-	      setStatus(host, srow, hostname, sched.activeServerStatus(now), sched.getServerStatusEditState(now));
-	      if (sched.activeReservationStatus(now) == true)
-		setReservation(host, srow, hostname, "-", sched.getReservationEditState(now));
-	      setOrder(host, srow, hostname, sched.activeOrder(now), sched.getOrderEditState(now));
+	if (sname != null) {
+	  SelectionScheduleMatrix matrix = pParent.getSelectionScheduleMatrix();
+	  if(matrix != null) {
+	    Set<String> schedules = matrix.getScheduleNames();
+	    if(schedules.contains(sname)) {
+	      setGroup(host, srow, hostname, matrix.getScheduledGroup(sname), 
+		matrix.getScheduledGroupState(sname), true);
+	      setSlots(host, srow, hostname, matrix.getScheduledSlots(sname), 
+		matrix.getScheduledSlotsState(sname), true);
+	      setStatus(host, srow, hostname, matrix.getScheduledStatus(sname), 
+		matrix.getScheduledStatusState(sname), true);
+	      if (matrix.getScheduledReservation(sname) == true)
+		setReservation(host, srow, hostname, "-", 
+		  matrix.getScheduledReservationState(sname), true);
+	      setOrder(host, srow, hostname, matrix.getScheduledOrder(sname), 
+		matrix.getScheduledOrderState(sname), true);
 	    }
 	    else 
 	      clearState(host);
@@ -1025,12 +1044,8 @@ class QueueHostsTableModel
 	}
 	else
 	  clearState(host);
+	return true; 
       }
-      catch(PipelineException ex) {
-	master.showErrorDialog(ex);
-      }
-      return true; 
-    }
     
     case 11:
       {
@@ -1065,10 +1080,11 @@ class QueueHostsTableModel
     int srow,
     String hostname,
     String group,
-    EditableState state
+    EditableState state,
+    boolean sched
   )
   {
-    if (state == null || state == EditableState.Automatic) {
+    if ( (sched && (state == null || state == EditableState.Automatic)  ) || !sched  ) {
       if(group.equals("-")) 
 	group = null;
       host.setSelectionGroup(group);
@@ -1112,10 +1128,11 @@ class QueueHostsTableModel
     int srow,
     String hostname,
     Integer order,
-    EditableState state
+    EditableState state,
+    boolean sched
   )
   {
-    if (state == null || state == EditableState.Automatic) {
+    if ( (sched && (state == null || state == EditableState.Automatic)  ) || !sched  ) { 
       if((order != null) && (order >= 0)) {
 	host.setOrder(order);
 	pEditedOrderIndices.add(srow);
@@ -1138,10 +1155,11 @@ class QueueHostsTableModel
     int srow,
     String hostname,
     Integer slots,
-    EditableState state
+    EditableState state,
+    boolean sched
   )
   {
-    if (state == null || state == EditableState.Automatic) {
+    if ( (sched && (state == null || state == EditableState.Automatic)  ) || !sched  ) {
       if((slots != null) && (slots >= 0)) {
 	host.setJobSlots(slots);
 	pEditedSlotsIndices.add(srow);
@@ -1164,11 +1182,12 @@ class QueueHostsTableModel
     int srow,
     String hostname,
     Object value,
-    EditableState state
+    EditableState state,
+    boolean sched
   )
   {
     boolean toReturn = false;
-    if (state == null || state == EditableState.Automatic) {
+    if ( (sched && (state == null || state == EditableState.Automatic)  ) || !sched  ) {
       if(QueueHostStatusChange.titles().contains(value)) {
 	QueueHostStatusChange change = 
 	  QueueHostStatusChange.valueOf(QueueHostStatusChange.class, (String) value);
@@ -1193,20 +1212,23 @@ class QueueHostsTableModel
     int srow,
     String hostname,
     String res,
-    EditableState state
+    EditableState state,
+    boolean sched
   )
   {
-    if(res.equals("-")) 
-      host.setReservation(null); 
-    else if(res.startsWith("[") && res.endsWith("]"))
-      host.setReservation(res.substring(1, res.length()-1));
-    else 
-      host.setReservation(res);
+    if ( (sched && (state == null || state == EditableState.Automatic)  ) || !sched  ) {
+      if(res.equals("-")) 
+	host.setReservation(null); 
+      else if(res.startsWith("[") && res.endsWith("]"))
+	host.setReservation(res.substring(1, res.length()-1));
+      else 
+	host.setReservation(res);
+      pEditedReserveIndices.add(srow);
+      pParent.unsavedChange("Reservation: " + hostname);
+    }
     if (state != null)
       host.setReservationState(state);
 
-    pEditedReserveIndices.add(srow);
-    pParent.unsavedChange("Reservation: " + hostname);
     return true;
   }
 

@@ -1,4 +1,4 @@
-// $Id: QueueHostMod.java,v 1.2 2007/11/30 20:14:23 jesse Exp $
+// $Id: QueueHostMod.java,v 1.3 2007/12/05 04:51:31 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -116,6 +116,8 @@ class QueueHostMod
     pReservationState = EditableState.Manual;
     pSlotState = EditableState.Manual;
     pOrderState = EditableState.Manual;
+    
+    pAllowedStatus = null;
   }
 
   /**
@@ -453,6 +455,7 @@ class QueueHostMod
   {
     /* Status */
     QueueHostStatusChange changedStatus = null;
+    QueueHostStatusChange allowedStatus = null;
     {
       QueueHostStatus current = info.getStatus();
       QueueHostStatus sch = sched.getScheduledStatus(sname);
@@ -460,6 +463,10 @@ class QueueHostMod
 	  !(current == QueueHostStatus.Hung || current == QueueHostStatus.Shutdown || 
 	  current == QueueHostStatus.Terminating)) 
 	changedStatus = sch.toQueueHostStatusChange();
+      else if (current == QueueHostStatus.Hung || current == QueueHostStatus.Shutdown || 
+	  current == QueueHostStatus.Terminating)
+	allowedStatus = sch.toQueueHostStatusChange();
+	
     }
     
     /* Group */
@@ -513,15 +520,15 @@ class QueueHostMod
     boolean scheduleChanged = false;
     {
       String current = info.getSelectionSchedule();
-      if (current != null && !current.equals(sname))
+      if (current == null || !current.equals(sname))
 	scheduleChanged = true;
-    
     }
     
     QueueHostMod mod = 
       new QueueHostMod(changedStatus, newReservation, reserveChanged, 
 	               newOrder, newSlots, newGroup, groupChanged, 
 	               sname, scheduleChanged, null, false);
+    mod.pAllowedStatus = allowedStatus;
     setModStateFromSched(mod, sched, sname);
     
     return mod;
@@ -572,9 +579,26 @@ class QueueHostMod
     QueueHostMod otherMod
   )
   {
-    if (scheduledMod.getStatusState() != EditableState.Automatic)
-      if (otherMod.pStatusChange != null)
+    /*
+     * Cases where we want to override what the schedule says.
+     * 1. If the schedule is not controlling the status.  duh.
+     * 2. If the job server is being terminated.  This is always allowed.
+     * 3. If the schedule has an allowable schedule value which is not being
+     * set because the host is in an off state (either shutdown or hung) and
+     * the value being set is the value the schedule would have set if it was
+     * not ignoring its value.
+     */
+    if (otherMod.pStatusChange != null) {
+      EditableState statusState = scheduledMod.getStatusState(); 
+      if ( statusState != EditableState.Automatic) 
 	scheduledMod.setStatus(otherMod.pStatusChange);
+      else {
+	if (otherMod.pStatusChange == QueueHostStatusChange.Terminate)
+	  scheduledMod.setStatus(otherMod.pStatusChange);
+	else if (otherMod.pStatusChange == scheduledMod.pAllowedStatus)
+	  scheduledMod.setStatus(otherMod.pStatusChange);
+      }
+    }
     
     if (scheduledMod.getOrderState() != EditableState.Automatic)
       if (otherMod.pOrder != null)
@@ -625,7 +649,14 @@ class QueueHostMod
    * Changes to the operational status of the host or <CODE>null</CODE> if unchanged.
    */ 
   private QueueHostStatusChange  pStatusChange;
-
+  
+  /**
+   * The status that the schedule would set the status to if it was going to change it
+   * but couldn't or <code>null</code> if the schedule doesn't want to change the 
+   * statue or if it can successfully set the status.
+   */
+  private QueueHostStatusChange  pAllowedStatus;
+  
   /**
    * The name of the reserving user or <CODE>null</CODE> if the host should not be reserved.
    */ 

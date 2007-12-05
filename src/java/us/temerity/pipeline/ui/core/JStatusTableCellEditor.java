@@ -1,12 +1,10 @@
-// $Id: JStatusTableCellEditor.java,v 1.2 2007/11/30 20:17:13 jesse Exp $
+// $Id: JStatusTableCellEditor.java,v 1.3 2007/12/05 04:51:31 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
 import java.awt.Component;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.*;
 
-import javax.swing.JDialog;
 import javax.swing.JTable;
 
 import us.temerity.pipeline.*;
@@ -25,6 +23,7 @@ class JStatusTableCellEditor
   {
     super(QueueHostStatusChange.titles(), getAllValues(), null, width);
     pParent = parent;
+    pWidth = width;
   }
   
   /**
@@ -41,12 +40,32 @@ class JStatusTableCellEditor
   )
   {
     QueueHostInfo qinfo = pParent.getHostInfo(row);
-    ArrayList<String> selectable = null;
+    List<String> selectable = null;
     if (qinfo.getStatusState() != EditableState.Automatic) 
       selectable = QueueHostStatusChange.titles();
     else {
-      QueueHostStatus status = qinfo.getStatus();
+      String schedName = pParent.getCurrentScheduleName(row);
+      if (schedName != null) {
+	SelectionScheduleMatrix matrix = pParent.getSelectionScheduleMatrix();
+	if(matrix != null) {
+	  Set<String> schedNames = matrix.getScheduleNames();
+	  if(schedNames.contains(schedName)) {
+	    QueueHostStatus stat = matrix.getScheduledStatus(schedName);
+	    switch (stat) {
+	    case Enabled:
+	      selectable = Arrays.asList(sEnableOnly);
+	      break;
+	    case Disabled:
+	      selectable = Arrays.asList(sDisableOnly);
+	      break;
+	    }
+	  }
+	}
+      }
     }
+    if (selectable == null)
+	selectable = QueueHostStatusChange.titles();
+    createField(selectable, getAllValues(), null, pWidth);
     return super.getTableCellEditorComponent(table, value, isSelected, row, column);
   }
   
@@ -80,5 +99,7 @@ class JStatusTableCellEditor
    * The parent table model.
    */ 
   private QueueHostsTableModel  pParent;
+  
+  private int pWidth;
 
 }
