@@ -1,4 +1,4 @@
-// $Id: HardwareGroup.java,v 1.1 2007/11/30 20:06:24 jesse Exp $
+// $Id: HardwareGroup.java,v 1.2 2007/12/05 05:45:58 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -235,6 +235,7 @@ class HardwareGroup
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
+  private static final long serialVersionUID = -6235842136559531067L;
 
 
 
