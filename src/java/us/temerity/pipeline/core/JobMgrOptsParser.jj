@@ -105,6 +105,7 @@ TOKEN :
   /* global options */	
 | <LOG_FILE:          "--log-file">           : PATH_SEP
 | <STANDARD_LOG_FILE: "--standard-log-file"> 
+| <STANDARD_LOG_DIR:  "--standard-log-dir">   : PATH_SEP
 | <LOG_BACKUPS:       "--log-backups">        : INTEGER_SEP
 | <LOG:               "--log">                : LOG_SEP
 
@@ -343,7 +344,7 @@ void
 GlobalOpts() :
 {}
 {
-  (Log() | LogFile() | StandardLogFile() | LogBackups() | FailFast())
+  (Log() | LogFile() | StandardLogFile() | StandardLogDir() | LogBackups() | FailFast())
   {}
 }
 
@@ -355,6 +356,43 @@ void LogFile() :
   <LOG_FILE> EQ() t=<PATH_ARG>
   { 
     pLogFile = new Path(t.image);
+  }
+}
+
+void StandardLogDir() :
+{
+  Token t;
+}
+{
+  <STANDARD_LOG_DIR> EQ() t=<PATH_ARG>
+    { 
+    String hostname = null;
+    {
+      TreeSet hostnames = new TreeSet();
+      try {
+	Enumeration nets = NetworkInterface.getNetworkInterfaces();  
+	while(nets.hasMoreElements()) {
+	  NetworkInterface net = (NetworkInterface) nets.nextElement();
+	  Enumeration addrs = net.getInetAddresses();
+	  while(addrs.hasMoreElements()) {
+	    InetAddress addr = (InetAddress) addrs.nextElement();
+	    if((addr instanceof Inet4Address) && !addr.isLoopbackAddress()) 
+	      hostnames.add(addr.getCanonicalHostName());
+	  }
+	}
+	
+	if(hostnames.isEmpty()) 
+	  throw new IOException();
+      }
+      catch(Exception ex) {
+	System.out.print("Could not determine the name of this machine!");
+	System.exit(1);
+      }
+
+      hostname = (String) hostnames.first();
+    }
+
+    pLogFile = new Path(new Path(t.image), "pljobmgr." + hostname + ".log");
   }
 }
 

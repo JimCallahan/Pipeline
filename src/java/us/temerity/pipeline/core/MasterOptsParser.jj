@@ -147,6 +147,7 @@ TOKEN :
 | <PRESERVE_OFFLINED: "--preserve-offlined"> 
 | <FILE_MGR:          "--file-mgr">   
 | <LOG_FILE:          "--log-file">                : PATH_SEP
+| <STANDARD_LOG_DIR:  "--standard-log-dir">        : PATH_SEP
 | <STANDARD_LOG_FILE: "--standard-log-file"> 
 | <LOG_BACKUPS:       "--log-backups">             : INTEGER_SEP
 | <LOG:               "--log">                     : LOG_SEP
@@ -411,7 +412,7 @@ GlobalOpts()
 {}
 {
   (Rebuild() | PreserveOfflined() | FileMgr() |
-   Log() | LogFile() | StandardLogFile() | LogBackups() |
+   Log() | LogFile() | StandardLogFile() | StandardLogDir() | LogBackups() |
    NodeGCInterval() | MinOverhead() | MaxOverhead() | AvgNodeSize() |
    RestoreCleanupInterval())
   {}
@@ -453,6 +454,17 @@ void LogFile() :
   <LOG_FILE> EQ() t=<PATH_ARG>
   { 
     pLogFile = new Path(t.image);
+  }
+}
+
+void StandardLogDir() :
+{
+  Token t;
+}
+{
+  <STANDARD_LOG_DIR> EQ() t=<PATH_ARG>
+  { 
+    pLogFile = new Path(new Path(t.image), "plmaster.log");
   }
 }
 
