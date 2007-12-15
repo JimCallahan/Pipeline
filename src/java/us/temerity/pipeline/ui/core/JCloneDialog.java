@@ -1,4 +1,4 @@
-// $Id: JCloneDialog.java,v 1.16 2007/11/04 20:39:48 jesse Exp $
+// $Id: JCloneDialog.java,v 1.17 2007/12/15 07:29:10 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -693,6 +693,13 @@ class JCloneDialog
 	    jreqs.removeLicenseKey(kname);
 	}
 	
+	for(String kname : pExportPanel.exportedHardwareKeys()) {
+	  if(ojreqs.getHardwareKeys().contains(kname)) 
+	    jreqs.addHardwareKey(kname);
+	  else 
+	    jreqs.removeHardwareKey(kname);
+	}
+
 	for(String kname : pExportPanel.exportedSelectionKeys()) {
 	  if(ojreqs.getSelectionKeys().contains(kname)) 
 	    jreqs.addSelectionKey(kname);

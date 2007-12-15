@@ -1,4 +1,4 @@
-// $Id: JExportPanel.java,v 1.5 2007/11/04 20:39:48 jesse Exp $
+// $Id: JExportPanel.java,v 1.6 2007/12/15 07:29:10 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -53,6 +53,7 @@ class JExportPanel
       pActionParamFields  = new TreeMap<String,JBooleanField>();
       pSelectionKeyFields = new TreeMap<String,JBooleanField>();
       pLicenseKeyFields   = new TreeMap<String,JBooleanField>();
+      pHardwareKeyFields   = new TreeMap<String,JBooleanField>();
       pSourceFields       = new TreeMap<String,JBooleanField>();
       pAnnotationFields   = new TreeMap<String, JBooleanField>();
     }
@@ -235,6 +236,15 @@ class JExportPanel
 	      JDrawer drawer = new JDrawer("License Keys:", box, true);
 	      dbox.add(drawer);
 	    }
+	    
+	    /* hardware keys */ 
+            {
+              Box box = new Box(BoxLayout.Y_AXIS);
+              pHardwareKeysBox = box;
+              
+              JDrawer drawer = new JDrawer("Hardware Keys:", box, true);
+              dbox.add(drawer);
+            }
 	    
 	    jrbox.add(dbox);
 	  }
@@ -444,6 +454,22 @@ class JExportPanel
 
     return exported;
   }
+  
+  /**
+   * The names of the exported hardware keys. 
+   */ 
+  public TreeSet<String> 
+  exportedHardwareKeys() 
+  {
+    TreeSet<String> exported = new TreeSet<String>();
+    for(String kname : pHardwareKeyFields.keySet()) {
+      JBooleanField field = pHardwareKeyFields.get(kname);
+      if((field != null) && (field.getValue() != null) && field.getValue())
+        exported.add(kname);
+    }
+
+    return exported;
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -568,7 +594,7 @@ class JExportPanel
       {
 	UIMaster master = UIMaster.getInstance();
 	try {
-	  knames.addAll(master.getQueueMgrClient(pChannel).getLicenseKeyNames());
+	  knames.addAll(master.getQueueMgrClient(pChannel).getLicenseKeyNames(true));
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
@@ -611,7 +637,7 @@ class JExportPanel
       {
 	UIMaster master = UIMaster.getInstance();
 	try {
-	  knames.addAll(master.getQueueMgrClient(pChannel).getSelectionKeyNames());
+	  knames.addAll(master.getQueueMgrClient(pChannel).getSelectionKeyNames(true));
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
@@ -647,6 +673,50 @@ class JExportPanel
 
       pSelectionKeysBox.add(comps[2]);
     }
+    
+    /* hardware keys panel */ 
+    {
+      TreeSet<String> knames = new TreeSet<String>();
+      {
+        UIMaster master = UIMaster.getInstance();
+        try {
+          knames.addAll(master.getQueueMgrClient(pChannel).getHardwareKeyNames(true));
+        }
+        catch(PipelineException ex) {
+          master.showErrorDialog(ex);
+        }
+      }
+      
+      pHardwareKeysBox.removeAll();
+      pHardwareKeyFields.clear();
+
+      Component comps[] = UIFactory.createTitledPanels();
+      JPanel tpanel = (JPanel) comps[0];
+      JPanel vpanel = (JPanel) comps[1];
+      
+      if(knames.isEmpty()) {
+        tpanel.add(Box.createRigidArea(new Dimension(pTSize-7, 0)));
+        vpanel.add(Box.createHorizontalGlue());
+      }
+      else {
+        boolean first = true; 
+        for(String kname : knames) {
+          if(!first) 
+            UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+          first = false;
+
+          JBooleanField field = 
+            UIFactory.createTitledBooleanField(tpanel, kname + ":", pTSize-7,
+                                              vpanel, pVSize);
+          field.setValue(true);
+
+          pHardwareKeyFields.put(kname, field);
+        }
+      }
+
+      pHardwareKeysBox.add(comps[2]);
+    }
+
       
     pActionBox.revalidate();
     pActionBox.repaint();
@@ -892,6 +962,9 @@ class JExportPanel
     for(JBooleanField field : pLicenseKeyFields.values()) 
       field.setValue(exportAll);
     
+    for(JBooleanField field : pHardwareKeyFields.values()) 
+      field.setValue(exportAll);
+    
     for(JBooleanField field : pSourceFields.values()) 
       field.setValue(exportAll);
     
@@ -1051,6 +1124,18 @@ class JExportPanel
    * Whether to export each license key indexed by license key name.
    */ 
   private TreeMap<String,JBooleanField>  pLicenseKeyFields;
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The hardware keys container.
+   */ 
+  private Box  pHardwareKeysBox;
+
+  /**
+   * Whether to export each hardware key indexed by hardware key name.
+   */ 
+  private TreeMap<String,JBooleanField>  pHardwareKeyFields;
   
 
   /*----------------------------------------------------------------------------------------*/
