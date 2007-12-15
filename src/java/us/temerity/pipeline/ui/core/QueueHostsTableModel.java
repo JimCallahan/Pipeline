@@ -1,4 +1,4 @@
-// $Id: QueueHostsTableModel.java,v 1.20 2007/12/05 04:51:32 jesse Exp $
+// $Id: QueueHostsTableModel.java,v 1.21 2007/12/15 07:51:30 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -31,6 +31,7 @@ import us.temerity.pipeline.ui.*;
  * <li> Order
  * <li> Group
  * <li> Schedule
+ * <li> Hardware Group
  * </ol>
  */ 
 public
@@ -1035,6 +1036,9 @@ class QueueHostsTableModel
 	      if (matrix.getScheduledReservation(sname) == true)
 		setReservation(host, srow, hostname, "-", 
 		  matrix.getScheduledReservationState(sname), true);
+	      else
+		setReservation(host, srow, hostname, null, 
+		  matrix.getScheduledReservationState(sname), true);
 	      setOrder(host, srow, hostname, matrix.getScheduledOrder(sname), 
 		matrix.getScheduledOrderState(sname), true);
 	    }
@@ -1216,15 +1220,17 @@ class QueueHostsTableModel
     boolean sched
   )
   {
-    if ( (sched && (state == null || state == EditableState.Automatic)  ) || !sched  ) {
-      if(res.equals("-")) 
-	host.setReservation(null); 
-      else if(res.startsWith("[") && res.endsWith("]"))
-	host.setReservation(res.substring(1, res.length()-1));
-      else 
-	host.setReservation(res);
-      pEditedReserveIndices.add(srow);
-      pParent.unsavedChange("Reservation: " + hostname);
+    if (res != null) {
+      if ( (sched && (state == null || state == EditableState.Automatic)  ) || !sched  ) {
+	if(res.equals("-")) 
+	  host.setReservation(null); 
+	else if(res.startsWith("[") && res.endsWith("]"))
+	  host.setReservation(res.substring(1, res.length()-1));
+	else 
+	  host.setReservation(res);
+	pEditedReserveIndices.add(srow);
+	pParent.unsavedChange("Reservation: " + hostname);
+      }
     }
     if (state != null)
       host.setReservationState(state);
