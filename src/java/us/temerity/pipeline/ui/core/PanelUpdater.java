@@ -1,15 +1,12 @@
-// $Id: PanelUpdater.java,v 1.23 2007/12/05 04:51:32 jesse Exp $
+// $Id: PanelUpdater.java,v 1.24 2007/12/15 07:50:31 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
-import us.temerity.pipeline.*;
-import us.temerity.pipeline.glue.*;
-import us.temerity.pipeline.glue.io.*;
-
-import java.awt.*;
 import java.util.*;
-import javax.swing.*;
-import javax.swing.text.*;
+
+import javax.swing.SwingUtilities;
+
+import us.temerity.pipeline.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   P A N E L   U P D A T E R                                                              */
@@ -103,7 +100,7 @@ class PanelUpdater
    * @param lightweight 
    *   Whether perform lightweight status (true) or heavyweight status (false).
    * 
-   * @param brachRoots
+   * @param branchRoots
    *   If doing lightweight status, first perform heavyweight status on the branch of 
    *   nodes upstream of these nodes. 
    */ 
@@ -379,8 +376,9 @@ class PanelUpdater
   }
 
   /**
-   * Perform the update in a seperate thread.
+   * Perform the update in a separate thread.
    */ 
+  @Override
   public void 
   run()
   {
@@ -486,10 +484,25 @@ class PanelUpdater
 
 	/* license & selection keys */ 
 	if((pNodeDetailsPanel != null) || (pQueueJobDetailsPanel != null)) {
-	  master.updatePanelOp(pGroupID, "Updating License/Selection Keys...");
+	  master.updatePanelOp(pGroupID, "Updating License/Selection/Hardware Keys...");
 	  pLicenseKeys   = qclient.getLicenseKeys();
 	  pSelectionKeys = qclient.getSelectionKeys();
 	  pHardwareKeys  = qclient.getHardwareKeys();
+	  
+	  pUserSelectionKeys = new ArrayList<SelectionKey>();
+	  for (SelectionKey key : pSelectionKeys)
+	    if (!key.hasPlugin())
+	      pUserSelectionKeys.add(key);
+	  
+	  pUserLicenseKeys = new ArrayList<LicenseKey>();
+	  for (LicenseKey key : pLicenseKeys)
+	    if (!key.hasPlugin())
+	      pUserLicenseKeys.add(key);
+	  
+	  pUserHardwareKeys = new ArrayList<HardwareKey>();
+          for (HardwareKey key : pHardwareKeys)
+            if (!key.hasPlugin())
+              pUserHardwareKeys.add(key);
 	}
 
 	if(!pNodeDetailsOnly) {
@@ -699,6 +712,7 @@ class PanelUpdater
       super("PanelUpdate:UpdateTask");
     }
   
+    @Override
     public void 
     run()
     {	
@@ -730,7 +744,7 @@ class PanelUpdater
 	/* node details */ 
 	if(pNodeDetailsPanel != null) 
 	  pNodeDetailsPanel.applyPanelUpdates
-	    (pAuthor, pView, pDetailedNode, pLicenseKeys, pSelectionKeys, pHardwareKeys);
+	    (pAuthor, pView, pDetailedNode, pUserLicenseKeys, pUserSelectionKeys, pUserHardwareKeys);
 	
 	/* node files */ 
 	if(pNodeFilesPanel != null) 
@@ -939,16 +953,31 @@ class PanelUpdater
    * The current license keys.
    */
   private ArrayList<LicenseKey>  pLicenseKeys; 
+  
+  /**
+   * The current license keys that a user can set
+   */
+  private ArrayList<LicenseKey>  pUserLicenseKeys;
 
   /**
    * The current selection keys.
    */
-  private ArrayList<SelectionKey>  pSelectionKeys; 
+  private ArrayList<SelectionKey>  pSelectionKeys;
+  
+  /**
+   * The current selection keys that a user can set
+   */
+  private ArrayList<SelectionKey>  pUserSelectionKeys;
   
   /**
    * The current hardware keys.
    */
   private ArrayList<HardwareKey>  pHardwareKeys; 
+  
+  /**
+   * The current license keys that a user can set
+   */
+  private ArrayList<HardwareKey>  pUserHardwareKeys; 
 
   /*----------------------------------------------------------------------------------------*/
 

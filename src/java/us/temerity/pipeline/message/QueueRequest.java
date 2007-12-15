@@ -1,4 +1,4 @@
-// $Id: QueueRequest.java,v 1.25 2007/11/30 20:14:25 jesse Exp $
+// $Id: QueueRequest.java,v 1.26 2007/12/15 07:52:02 jesse Exp $
 
 package us.temerity.pipeline.message;
 
@@ -338,6 +338,10 @@ enum QueueRequest
    */
   ChangeJobReqs,
 
+  /**
+   * Updates the keys set by plugins for the jobs with the given IDs.
+   */
+  UpdateJobKeys,
 
   /**
    * Kill and requeue all jobs associated with the given working version.<P> 
