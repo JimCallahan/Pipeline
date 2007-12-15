@@ -1,4 +1,4 @@
-// $Id: NodeTree.java,v 1.7 2007/05/30 04:29:45 jim Exp $
+// $Id: NodeTree.java,v 1.8 2007/12/15 07:49:38 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -47,9 +47,6 @@ class NodeTree
    * 
    * @param fseq
    *   The file sequence to test.
-   * 
-   * @param checkSeqsOnly
-   *   Whether to only check the file sequences, ignoring node name conflicts.
    */ 
   public synchronized boolean
   isNodePrimaryUnused
@@ -69,9 +66,6 @@ class NodeTree
    * 
    * @param fseq
    *   The file sequence to test.
-   * 
-   * @param checkSeqsOnly
-   *   Whether to only check the file sequences, ignoring node name conflicts.
    */ 
   public synchronized boolean
   isNodeSecondaryUnused
@@ -104,6 +98,34 @@ class NodeTree
   ) 
   {
     return (getNodeReservingSeq(name, fseq, checkSeqsOnly) == null); 
+  }
+  
+  /**
+   * Is the given fully resolved node name used by any checked-in
+   * nodes? 
+   * 
+   * @param name
+   *   The fully resolved node name.
+   */
+  public synchronized boolean
+  isNameCheckedIn
+  (
+    String name  
+  )
+  {
+    Path p = new Path(name);
+    ArrayList<String> pieces = p.getComponents();
+
+    NodeTreeEntry e = pNodeTreeRoot;
+
+    for (String each : pieces) {
+      e = e.get(each);
+      if (e == null)
+        return false;
+    }
+    if (e.isCheckedIn())
+      return true;
+    return false;
   }
 
 
