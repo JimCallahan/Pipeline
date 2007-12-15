@@ -1,11 +1,11 @@
-// $Id: NodeMod.java,v 1.55 2007/07/01 01:40:05 jim Exp $
+// $Id: NodeMod.java,v 1.56 2007/12/15 07:37:32 jesse Exp $
 
 package us.temerity.pipeline;
 
-import us.temerity.pipeline.glue.*;
-
-import java.io.*;
+import java.io.File;
 import java.util.*;
+
+import us.temerity.pipeline.glue.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   N O D E   M O D                                                                        */
@@ -582,7 +582,7 @@ class NodeMod
 
     updateLastMod();
 
-    return new ArrayList(dead);
+    return new ArrayList<File>(dead);
   }
   
 
@@ -1168,6 +1168,7 @@ class NodeMod
   /** 
    * Does this version have links to upstream nodes.
    */
+  @Override
   public boolean 
   hasSources() 
   {
@@ -1177,6 +1178,7 @@ class NodeMod
   /** 
    * Get the fully resolved names of the upstream nodes.
    */
+  @Override
   public Set<String>
   getSourceNames() 
   {
@@ -1388,6 +1390,7 @@ class NodeMod
    * @param obj 
    *   The reference object with which to compare.
    */
+  @Override
   public boolean
   equals
   (
@@ -1420,6 +1423,7 @@ class NodeMod
   /**
    * Return a deep copy of this object.
    */
+  @Override
   public Object 
   clone()
   {
@@ -1432,6 +1436,7 @@ class NodeMod
   /*   G L U E A B L E                                                                      */
   /*----------------------------------------------------------------------------------------*/
 
+  @Override
   public void 
   toGlue
   ( 
@@ -1458,7 +1463,7 @@ class NodeMod
       encoder.encode("Sources", pSources);
   }
 
-
+  @Override
   public void 
   fromGlue
   (
