@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.100 2007/11/30 20:14:25 jesse Exp $
+// $Id: JNodeViewerPanel.java,v 1.101 2007/12/15 07:38:15 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -5660,6 +5660,14 @@ class JNodeViewerPanel
 		    else 
 		      tjreqs.removeLicenseKey(kname);
 		  }
+		  
+		  for(String kname : pExportDialog.exportedHardwareKeys()) {
+		    if(sjreqs.getHardwareKeys().contains(kname)) 
+		      tjreqs.addHardwareKey(kname);
+		    else 
+		      tjreqs.removeHardwareKey(kname);
+		  }
+
 		  
 		  for(String kname : pExportDialog.exportedSelectionKeys()) {
 		    if(sjreqs.getSelectionKeys().contains(kname)) 
