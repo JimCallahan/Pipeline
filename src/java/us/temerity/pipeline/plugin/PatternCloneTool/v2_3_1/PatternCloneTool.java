@@ -104,8 +104,17 @@ class PatternCloneTool
         pCopyFiles = UIFactory.createTitledBooleanField
 		      (tpanel, "Copy Files:", sTSize, 
 		      vpanel, sVSize, 
-		      "Should the primary files each node be copied.");
+		      "Should the primary files of each node be copied.");
         pCopyFiles.setValue(false);
+        
+        UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+        
+        pCopyAnnotations = UIFactory.createTitledBooleanField
+                           (tpanel, "Copy Annotations:", sTSize, 
+                            vpanel, sVSize, 
+                            "Should the node annotations on each node be copied.");
+        pCopyAnnotations.setValue(false);
+
         
         hbox.add(comps[2]);
       }
@@ -157,6 +166,7 @@ class PatternCloneTool
     boolean cloneAction = pCloneActions.getValue();
     boolean cloneLinks = pCloneLinks.getValue();
     boolean copyFiles = pCopyFiles.getValue();
+    boolean copyAnnotations = pCopyAnnotations.getValue();
     
     String oldP = pOldPattern.getText();
     String newP = pNewPattern.getText();
@@ -169,7 +179,7 @@ class PatternCloneTool
 	if (mod.getAction() == null)
 	  cloneAction = false;
 	System.out.println(pUser + "\t" + pView + "\t" + node + "\t" + newName);
-	mclient.clone(pUser, pView, node, newName, cloneAction, cloneLinks, copyFiles);
+	mclient.clone(pUser, pView, node, newName, cloneAction, cloneLinks, copyFiles, copyAnnotations);
       }
     }
     return false;
@@ -201,5 +211,6 @@ class PatternCloneTool
   private JBooleanField pCloneActions;
   private JBooleanField pCloneLinks;
   private JBooleanField pCopyFiles;
+  private JBooleanField pCopyAnnotations;
 
 }
