@@ -1,4 +1,4 @@
-// $Id: BaseAction.java,v 1.48 2007/10/29 23:18:20 jim Exp $
+// $Id: BaseAction.java,v 1.49 2007/12/15 07:43:04 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -13,7 +13,7 @@ import java.io.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * The superclass of all Pipelin node action plugins. <P>
+ * The superclass of all Pipeline node action plugins. <P>
  * 
  * Actions are used by Pipeline to regenerate the files associated with non-leaf nodes
  * in a consistent and reliable manner. <P> 
