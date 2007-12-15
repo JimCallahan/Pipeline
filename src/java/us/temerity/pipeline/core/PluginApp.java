@@ -1,4 +1,4 @@
-// $Id: PluginApp.java,v 1.11 2007/06/15 00:27:31 jim Exp $
+// $Id: PluginApp.java,v 1.12 2007/12/15 07:41:15 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -277,6 +277,28 @@ class PluginApp
 	}
       }
     }
+    
+    {
+      TripleMap<String,String,VersionID,TreeSet<OsType>> versions = client.getKeyChoosers();
+      if(!versions.isEmpty()) {
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Ops, LogMgr.Level.Info,
+           tbar(80) + "\n" + 
+           "  K E Y   C H O O S E R S");
+        
+        for(String vendor : versions.keySet()) {
+          for(String name : versions.get(vendor).keySet()) {
+            for(VersionID vid : versions.get(vendor).get(name).keySet()) {
+              BaseQueueExt plg = client.newQueueExt(name, vid, vendor);
+              LogMgr.getInstance().log
+                (LogMgr.Kind.Ops, LogMgr.Level.Info,
+                 bar(80) + "\n\n" + plg + "\n");
+            }
+          }
+        }
+      }
+    }
+
 
     LogMgr.getInstance().flush();
   }

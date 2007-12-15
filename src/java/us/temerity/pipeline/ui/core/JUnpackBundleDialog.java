@@ -1,4 +1,4 @@
-// $Id: JUnpackBundleDialog.java,v 1.4 2007/11/01 07:55:25 jim Exp $
+// $Id: JUnpackBundleDialog.java,v 1.5 2007/12/15 07:41:15 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -442,8 +442,8 @@ class JUnpackBundleDialog
       defaultToolset = mclient.getDefaultToolsetName();
       
       QueueMgrClient qclient = master.getQueueMgrClient(pChannel);
-      selectionKeys = qclient.getSelectionKeyNames();
-      licenseKeys = qclient.getLicenseKeyNames();
+      selectionKeys = qclient.getSelectionKeyNames(true);
+      licenseKeys = qclient.getLicenseKeyNames(true);
     }
     catch(PipelineException ex) {
       showErrorDialog(ex);

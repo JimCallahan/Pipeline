@@ -1,15 +1,11 @@
-// $Id: BasePluginMgrClient.java,v 1.10 2007/06/15 00:27:31 jim Exp $
+// $Id: BasePluginMgrClient.java,v 1.11 2007/12/15 07:43:34 jesse Exp $
   
 package us.temerity.pipeline;
 
-import us.temerity.pipeline.*;
-import us.temerity.pipeline.message.*;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
-import java.net.*; 
-import java.io.*; 
-import java.nio.*;
-import java.nio.channels.*;
-import java.util.*;
+import us.temerity.pipeline.message.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   B A S E   P L U G I N   M G R   C L I E N T                                            */
@@ -39,14 +35,15 @@ class BasePluginMgrClient
     super(PackageInfo.sPluginServer, PackageInfo.sPluginPort, 
 	  PluginRequest.Disconnect, PluginRequest.Shutdown);
 
-    pEditors     = new TripleMap<String,String,VersionID,PluginData>();  
-    pActions     = new TripleMap<String,String,VersionID,PluginData>();  
-    pComparators = new TripleMap<String,String,VersionID,PluginData>();  
-    pTools  	 = new TripleMap<String,String,VersionID,PluginData>();   
-    pAnnotations = new TripleMap<String,String,VersionID,PluginData>();   
-    pArchivers   = new TripleMap<String,String,VersionID,PluginData>();  
-    pMasterExts  = new TripleMap<String,String,VersionID,PluginData>();  
-    pQueueExts   = new TripleMap<String,String,VersionID,PluginData>();  
+    pEditors       = new TripleMap<String,String,VersionID,PluginData>();  
+    pActions       = new TripleMap<String,String,VersionID,PluginData>();  
+    pComparators   = new TripleMap<String,String,VersionID,PluginData>();  
+    pTools  	   = new TripleMap<String,String,VersionID,PluginData>();   
+    pAnnotations   = new TripleMap<String,String,VersionID,PluginData>();   
+    pArchivers     = new TripleMap<String,String,VersionID,PluginData>();  
+    pMasterExts    = new TripleMap<String,String,VersionID,PluginData>();  
+    pQueueExts     = new TripleMap<String,String,VersionID,PluginData>();
+    pKeyChoosers   = new TripleMap<String,String,VersionID,PluginData>();
   }
 
 
@@ -79,7 +76,8 @@ class BasePluginMgrClient
       updatePlugins(rsp.getAnnotations(), pAnnotations); 
       updatePlugins(rsp.getArchivers(), pArchivers); 
       updatePlugins(rsp.getMasterExts(), pMasterExts); 
-      updatePlugins(rsp.getQueueExts(), pQueueExts); 
+      updatePlugins(rsp.getQueueExts(), pQueueExts);
+      updatePlugins(rsp.getKeyChoosers(), pKeyChoosers);
      
       pCycleID = rsp.getCycleID();
     }
@@ -220,6 +218,16 @@ class BasePluginMgrClient
   {
     return getPlugins(pQueueExts);
   }
+  
+  /**
+   * Get the vender, names, version numbers and supported operating system types 
+   * of all available Key Chooser plugins. <P> 
+   */ 
+  public synchronized TripleMap<String,String,VersionID,TreeSet<OsType>>
+  getKeyChoosers() 
+  {
+    return getPlugins(pKeyChoosers);
+  }
 
   /**
    * Get the vender, names and version numbers of all plugins in the given table.
@@ -253,7 +261,7 @@ class BasePluginMgrClient
    * Create a new editor plugin instance. <P> 
    * 
    * Note that the <CODE>name</CODE> argument is not the name of the class, but rather the 
-   * name obtained by calling {@link BaseEditor#getName BaseEditor.getName} for the returned 
+   * name obtained by calling {@link BaseEditor#getName() BaseEditor.getName} for the returned 
    * editor.
    *
    * @param name 
@@ -285,7 +293,7 @@ class BasePluginMgrClient
    * Create a new action plugin instance. <P> 
    * 
    * Note that the <CODE>name</CODE> argument is not the name of the class, but rather the 
-   * name obtained by calling {@link BaseAction#getName BaseAction.getName} for the returned 
+   * name obtained by calling {@link BaseAction#getName() BaseAction.getName} for the returned 
    * action.
    *
    * @param name 
@@ -317,7 +325,7 @@ class BasePluginMgrClient
    * Create a new comparator plugin instance. <P> 
    * 
    * Note that the <CODE>name</CODE> argument is not the name of the class, but rather the 
-   * name obtained by calling {@link BaseComparator#getName BaseComparator.getName} for the 
+   * name obtained by calling {@link BaseComparator#getName() BaseComparator.getName} for the 
    * returned comparator.
    *
    * @param name 
@@ -349,7 +357,7 @@ class BasePluginMgrClient
    * Create a new tool plugin instance. <P> 
    * 
    * Note that the <CODE>name</CODE> argument is not the name of the class, but rather the 
-   * name obtained by calling {@link BaseTool#getName BaseTool.getName} for the returned 
+   * name obtained by calling {@link BaseTool#getName() BaseTool.getName} for the returned 
    * tool.
    *
    * @param name 
@@ -381,7 +389,7 @@ class BasePluginMgrClient
    * Create a new annotation plugin instance. <P> 
    * 
    * Note that the <CODE>name</CODE> argument is not the name of the class, but rather the 
-   * name obtained by calling {@link BaseAnnotation#getName BaseAnnotation.getName} for the 
+   * name obtained by calling {@link BaseAnnotation#getName() BaseAnnotation.getName} for the 
    * returned annotation.
    *
    * @param name 
@@ -413,7 +421,7 @@ class BasePluginMgrClient
    * Create a new archiver plugin instance. <P> 
    * 
    * Note that the <CODE>name</CODE> argument is not the name of the class, but rather the 
-   * name obtained by calling {@link BaseArchiver#getName BaseArchiver.getName} for the 
+   * name obtained by calling {@link BaseArchiver#getName() BaseArchiver.getName} for the 
    * returned archiver.
    *
    * @param name 
@@ -445,7 +453,7 @@ class BasePluginMgrClient
    * Create a new master extension plugin instance. <P> 
    * 
    * Note that the <CODE>name</CODE> argument is not the name of the class, but rather the 
-   * name obtained by calling {@link BaseMasterExt#getName BaseMasterExt.getName} for the 
+   * name obtained by calling {@link BaseMasterExt#getName() BaseMasterExt.getName} for the 
    * returned master extension.
    *
    * @param name 
@@ -477,7 +485,7 @@ class BasePluginMgrClient
    * Create a new queue extension plugin instance. <P> 
    * 
    * Note that the <CODE>name</CODE> argument is not the name of the class, but rather the 
-   * name obtained by calling {@link BaseQueueExt#getName BaseQueueExt.getName} for the 
+   * name obtained by calling {@link BaseQueueExt#getName() BaseQueueExt.getName} for the 
    * returned queue extension.
    *
    * @param name 
@@ -503,6 +511,38 @@ class BasePluginMgrClient
     throws PipelineException
   {
     return (BaseQueueExt) newPlugin("QueueExt", pQueueExts, name, vid, vendor);
+  }
+  
+  /**
+   * Create a new key chooser plugin instance. <P> 
+   * 
+   * Note that the <CODE>name</CODE> argument is not the name of the class, but rather the 
+   * name obtained by calling {@link BaseKeyChooser#getName() BaseKeyChooser.getName} for the 
+   * returned key chooser.
+   *
+   * @param name 
+   *   The name of the key chooser plugin to instantiate.  
+   * 
+   * @param vid
+   *   The revision number of the key chooser to instantiate 
+   *   or <CODE>null</CODE> for the latest version.
+   * 
+   * @param vendor
+   *   The name of the plugin vendor or <CODE>null</CODE> for Temerity.
+   * 
+   * @throws PipelineException
+   *   If no key chooser plugin can be found or instantiation fails for some reason.
+   */
+  public synchronized BaseKeyChooser
+  newKeyChooser
+  (
+   String name, 
+   VersionID vid, 
+   String vendor
+  ) 
+    throws PipelineException
+  {
+    return (BaseKeyChooser) newPlugin("KeyChooser", pKeyChoosers, name, vid, vendor);
   }
   
   /**
@@ -688,7 +728,13 @@ class BasePluginMgrClient
    * The cached Queue Extension plugin data 
    * indexed by vendor, class name and revision number.
    */ 
-  private TripleMap<String,String,VersionID,PluginData>  pQueueExts; 
+  private TripleMap<String,String,VersionID,PluginData>  pQueueExts;
+  
+  /**
+   * The cached Selection Key plugin data 
+   * indexed by vendor, class name and revision number.
+   */ 
+  private TripleMap<String,String,VersionID,PluginData>  pKeyChoosers;
 
 }
 

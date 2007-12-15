@@ -1,16 +1,15 @@
-// $Id: PluginMgr.java,v 1.14 2007/06/15 00:27:31 jim Exp $
+// $Id: PluginMgr.java,v 1.15 2007/12/15 07:41:15 jesse Exp $
 
 package us.temerity.pipeline.core;
 
-import us.temerity.pipeline.message.*;
-import us.temerity.pipeline.*;
-
-import java.lang.reflect.*; 
 import java.io.*;
 import java.util.*;
-import java.util.concurrent.locks.*;
-import java.util.jar.*; 
-import java.util.zip.*;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.jar.*;
+import java.util.zip.ZipEntry;
+
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.message.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   P L U G I N   M G R                                                                    */
@@ -48,14 +47,15 @@ class PluginMgr
       
       pLoadCycleID = 1L;
       
-      pEditors     = new TripleMap<String,String,VersionID,Plugin>();  
-      pActions     = new TripleMap<String,String,VersionID,Plugin>();  
-      pComparators = new TripleMap<String,String,VersionID,Plugin>();  
-      pTools  	   = new TripleMap<String,String,VersionID,Plugin>();   
-      pAnnotations = new TripleMap<String,String,VersionID,Plugin>();   
-      pArchivers   = new TripleMap<String,String,VersionID,Plugin>();  
-      pMasterExts  = new TripleMap<String,String,VersionID,Plugin>();  
-      pQueueExts   = new TripleMap<String,String,VersionID,Plugin>();  
+      pEditors       = new TripleMap<String,String,VersionID,Plugin>();  
+      pActions       = new TripleMap<String,String,VersionID,Plugin>();  
+      pComparators   = new TripleMap<String,String,VersionID,Plugin>();  
+      pTools  	     = new TripleMap<String,String,VersionID,Plugin>();   
+      pAnnotations   = new TripleMap<String,String,VersionID,Plugin>();   
+      pArchivers     = new TripleMap<String,String,VersionID,Plugin>();  
+      pMasterExts    = new TripleMap<String,String,VersionID,Plugin>();  
+      pQueueExts     = new TripleMap<String,String,VersionID,Plugin>();  
+      pSelectionKeys = new TripleMap<String,String,VersionID,Plugin>();
 
       pSerialVersionUIDs = new TreeMap<Long,String>(); 
     }
@@ -146,10 +146,13 @@ class PluginMgr
 
       TripleMap<String,String,VersionID,Object[]> queueExts = 
 	collectUpdated(cycleID, pQueueExts);
+      
+      TripleMap<String,String,VersionID,Object[]> selectionKeys = 
+        collectUpdated(cycleID, pSelectionKeys);
 
       return new PluginUpdateRsp(timer, pLoadCycleID, 
 				 editors, actions, comparators, tools, annotations, 
-                                 archivers, masterExts, queueExts);
+                                 archivers, masterExts, queueExts, selectionKeys);
     }
     finally {
       pPluginLock.readLock().unlock();
@@ -654,6 +657,8 @@ class PluginMgr
 	addPlugin(plg, cname, contents, pMasterExts);
       else if(plg instanceof BaseQueueExt) 
 	addPlugin(plg, cname, contents, pQueueExts);
+      else if(plg instanceof BaseKeyChooser)
+        addPlugin(plg, cname, contents, pSelectionKeys);
       else 
 	throw new PipelineException
 	  ("The class file (" + pluginfile + ") does not contain a Pipeline plugin!");
@@ -846,6 +851,11 @@ class PluginMgr
    * The loaded Queue Extension plugins indexed by plugin name and revision number.
    */
   private TripleMap<String,String,VersionID,Plugin>  pQueueExts; 
+  
+  /**
+   * The loaded Selection Key plugins indexed by plugin name and revision number.
+   */
+  private TripleMap<String,String,VersionID,Plugin>  pSelectionKeys; 
 
   /**
    * The serialVersionUIDs of all loaded plugins used to test for conflicts.

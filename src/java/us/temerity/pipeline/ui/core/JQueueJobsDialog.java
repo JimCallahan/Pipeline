@@ -1,4 +1,4 @@
-// $Id: JQueueJobsDialog.java,v 1.8 2007/11/30 20:14:26 jesse Exp $
+// $Id: JQueueJobsDialog.java,v 1.9 2007/12/15 07:41:15 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -324,9 +324,9 @@ class JQueueJobsDialog
     {
       QueueMgrClient qclient = UIMaster.getInstance().getQueueMgrClient();
       try {
-	sknames.addAll(qclient.getSelectionKeyNames());
-	lknames.addAll(qclient.getLicenseKeyNames());
-	hknames.addAll(qclient.getHardwareKeyNames());
+	sknames.addAll(qclient.getSelectionKeyNames(true));
+	lknames.addAll(qclient.getLicenseKeyNames(true));
+	hknames.addAll(qclient.getHardwareKeyNames(true));
       }
       catch(PipelineException ex) {
 	showErrorDialog(ex);
@@ -983,9 +983,9 @@ class JQueueJobsDialog
     {
       QueueMgrClient qclient = UIMaster.getInstance().getQueueMgrClient();
       try {
-	sknames.addAll(qclient.getSelectionKeyNames());
-	lknames.addAll(qclient.getLicenseKeyNames());
-	hknames.addAll(qclient.getHardwareKeyNames());
+	sknames.addAll(qclient.getSelectionKeyNames(true));
+	lknames.addAll(qclient.getLicenseKeyNames(true));
+	hknames.addAll(qclient.getHardwareKeyNames(true));
       }
       catch(PipelineException ex) {
 	showErrorDialog(ex);
