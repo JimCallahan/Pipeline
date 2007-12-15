@@ -106,7 +106,7 @@ import us.temerity.pipeline.glue.*;
  * </DIV> 
  * 
  * @see LicenseKey
- * @see SelectionKey
+ * @see KeyChooser
  */
 public 
 class JobReqsCommon

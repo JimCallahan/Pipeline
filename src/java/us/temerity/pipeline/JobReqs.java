@@ -1,4 +1,4 @@
-// $Id: JobReqs.java,v 1.22 2007/11/30 20:14:23 jesse Exp $
+// $Id: JobReqs.java,v 1.23 2007/12/15 07:14:57 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -108,6 +108,8 @@ import java.io.*;
  * 
  * @see LicenseKey
  * @see SelectionKey
+ * @see HardwareKey
+ * @see BaseKeyChooser
  */
 public
 class JobReqs
@@ -354,6 +356,7 @@ class JobReqs
       throw new IllegalArgumentException("The minimum free disk space cannot be negative!");
     pMinDisk = bytes;
   }
+  
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -366,6 +369,7 @@ class JobReqs
    * @param obj 
    *   The reference object with which to compare.
    */
+  @Override
   public boolean
   equals
   (

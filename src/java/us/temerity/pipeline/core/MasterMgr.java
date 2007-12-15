@@ -1,24 +1,24 @@
-// $Id: MasterMgr.java,v 1.225 2007/11/30 20:14:24 jesse Exp $
+// $Id: MasterMgr.java,v 1.226 2007/12/15 07:14:57 jesse Exp $
 
 package us.temerity.pipeline.core;
 
+import java.io.*;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
+import us.temerity.pipeline.core.exts.*;
+import us.temerity.pipeline.event.*;
 import us.temerity.pipeline.glue.*;
-import us.temerity.pipeline.glue.io.*;
 import us.temerity.pipeline.message.*;
 import us.temerity.pipeline.toolset.*;
-import us.temerity.pipeline.event.*;
-import us.temerity.pipeline.core.exts.*;
-import us.temerity.pipeline.ui.core.NodeStyles;
-
-import java.io.*;
-import java.util.*;
-import java.util.regex.*;
-import java.util.concurrent.*;
-import java.util.concurrent.locks.*;
-import java.util.concurrent.atomic.*;
-import java.text.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   N O D E   M G R                                                                        */
@@ -5588,8 +5588,6 @@ class MasterMgr
       if(editors == null) 
 	editors = new TreeMap<String,SuffixEditor>();
       }
-      if(editors == null)
-	throw new IllegalStateException("Editors cannot be (null)!"); 
       
       return editors;
     }
@@ -6168,14 +6166,9 @@ class MasterMgr
 
     String name = req.getNodeName();
 
-    timer.aquire();
     pDatabaseLock.readLock().lock();
-    ReentrantReadWriteLock lock = getAnnotationsLock(name); 
-    lock.readLock().lock();
     try {
-      timer.resume();
-    
-      TreeMap<String,BaseAnnotation> table = getAnnotationsTable(name);
+      TreeMap<String,BaseAnnotation> table = getAnnotationsHelper(timer, name);
 
       return new NodeGetAnnotationsRsp(timer, table);
     }
@@ -6183,8 +6176,40 @@ class MasterMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
-      lock.readLock().unlock();
       pDatabaseLock.readLock().unlock();
+    }
+  }
+  
+  /**
+   * Helper method for getting all the annotations for a node.
+   * <p>
+   * This method assumes that the pDatabaseLock has been acquired before this
+   * was called.
+   * @param timer
+   *   Timer associated with this task.
+   * @param name
+   *   The name of the node to get the annotations for.
+   */
+  private TreeMap<String, BaseAnnotation> 
+  getAnnotationsHelper
+  (
+    TaskTimer timer,
+    String name
+  )
+    throws PipelineException
+  {
+    timer.aquire();
+    ReentrantReadWriteLock lock = getAnnotationsLock(name); 
+    lock.readLock().lock();
+    try {
+      timer.resume();
+    
+      TreeMap<String, BaseAnnotation> table = getAnnotationsTable(name);
+
+      return table;
+    }
+    finally {
+      lock.readLock().unlock();
     }  
   }
   
@@ -6209,7 +6234,71 @@ class MasterMgr
     String name          = req.getNodeName();
     String aname         = req.getAnnotationName();
     BaseAnnotation annot = req.getAnnotation();
+    
+    pDatabaseLock.readLock().lock();
 
+    try {
+      return addAnnotationHelper(req, timer, name, aname, annot);
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }  
+  }
+  
+  private Object
+  addAnnotationsHelper
+  (
+    PrivilegedReq req,
+    TaskTimer timer,
+    String name,
+    TreeMap<String, BaseAnnotation> annots
+  )
+  {
+    TreeMap<String, FailureRsp> errors = new TreeMap<String, FailureRsp>();
+    for (String each : annots.keySet()) {
+      TaskTimer child = new TaskTimer("MasterMgr.addAnnotationHelper()");
+      timer.suspend();
+      Object returned = addAnnotationHelper(req, child, name, each, annots.get(each));
+      timer.accum(child);
+      if (returned instanceof FailureRsp)
+        errors.put(each, (FailureRsp) returned);
+    }
+    
+    if (!errors.isEmpty()) {
+      String msg = "An error occured while adding annotations to the node (" + name + ")\n";
+      for (String each : errors.keySet()) {
+        msg += ("  " + each + ": " + errors.get(each).getMessage() + "\n");
+      }
+      return new FailureRsp(timer, msg);
+    }
+    return new SuccessRsp(timer);
+  }
+  
+  /**
+   * Help method for adding an annotation to a node.
+   * <p>
+   * Assumes that the pDatabaseLock read lock has been acquired before it is called.
+   * @param req
+   *   The privileged req generating the annotation to be added.
+   * @param timer
+   *   Event timer.
+   * @param name
+   *   The name of the node to add the annotation to.
+   * @param aname
+   *   The name of the annotation.
+   * @param annot
+   *   The annotation being added.
+   */
+  private Object
+  addAnnotationHelper
+  (
+    PrivilegedReq req,
+    TaskTimer timer,
+    String name,
+    String aname,
+    BaseAnnotation annot
+  )
+  {
     /* pre-op tests */
     AddAnnotationExtFactory factory = new AddAnnotationExtFactory(name, aname, annot);
     try {
@@ -6220,7 +6309,7 @@ class MasterMgr
     }
 
     timer.aquire();
-    pDatabaseLock.readLock().lock();
+
     ReentrantReadWriteLock lock = getAnnotationsLock(name); 
     lock.writeLock().lock();
     try {
@@ -6264,7 +6353,6 @@ class MasterMgr
     }
     finally {
       lock.writeLock().unlock();
-      pDatabaseLock.readLock().unlock();
     }  
   }
 
@@ -6356,8 +6444,42 @@ class MasterMgr
 
     String name = req.getNodeName();
     
-    timer.aquire();
     pDatabaseLock.readLock().lock();
+    try {
+      return removeAnnotationsHelper(req, timer, name);
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+
+  }
+  
+  /**
+   * Help method for removing all the annotations from a given node.
+   * <p>
+   * This method assumes that the pDatabaseLock read lock has already been
+   * acquired. 
+   * 
+   * @param req 
+   *   The request.
+   * @param timer
+   *   Event timer.
+   * @param name
+   *   The name of the node.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to remove the annotations.
+   */
+  private Object
+  removeAnnotationsHelper
+  (
+    PrivilegedReq req,
+    TaskTimer timer,
+    String name
+  )
+  {
+    timer.aquire();
     ReentrantReadWriteLock lock = getAnnotationsLock(name); 
     lock.writeLock().lock();
     try {
@@ -6400,7 +6522,6 @@ class MasterMgr
     }
     finally {
       lock.writeLock().unlock();
-      pDatabaseLock.readLock().unlock();
     }  
   }
 
@@ -7424,9 +7545,45 @@ class MasterMgr
 	  }
 	}
       }
-
+      
       /* post-op tasks */ 
       startExtensionTasks(timer, factory);
+      
+      /* Removes the annotations. This is here because you want this to run after 
+       * the post tasks have started in case it throws an error and aborts this
+       * method.  If it does throw an error, it will be reported to the user as
+       * an actual error, even though all that failed was the annotation removal. 
+       */
+      {
+        TreeMap<String, BaseAnnotation> annots = getAnnotationsHelper(timer, name);
+        if (annots != null) {
+          
+          TaskTimer child = new TaskTimer("MasterMgr.removeAnnotationHelper()");
+          timer.suspend();
+          Object removed = removeAnnotationsHelper(req, child, name);
+          timer.accum(child);
+          
+          child = new TaskTimer("MasterMgr.addAnnotationHelper()");
+          timer.suspend();
+          Object added = addAnnotationsHelper(req, child, nname, annots);
+          timer.accum(child);
+          
+          if (removed instanceof FailureRsp) {
+            FailureRsp rsp = (FailureRsp) removed;
+            throw new PipelineException
+            ("After the node was successfully renamed, " +
+              "a failure occured when trying to remove the annotations from the ex-node: " + 
+              rsp.getMessage());
+          }
+          if (added instanceof FailureRsp) {
+            FailureRsp rsp = (FailureRsp) removed;
+            throw new PipelineException
+            ("After the node was successfully renamed, " +
+              "a failure occured when trying to add annotations to the new node: " + 
+              rsp.getMessage());
+          }
+        }
+      }
 
       return new SuccessRsp(timer);
     }
@@ -8435,7 +8592,37 @@ class MasterMgr
 
       /* post-op tasks */ 
       startExtensionTasks(timer, factory);
-
+      
+      /* Removes the annotations. This is here because you want this to run after 
+       * the post tasks have started in case it throws an error and aborts this
+       * method.  If it does throw an error, it will be reported to the user as
+       * an actual error, even though all that failed was the annotation removal. 
+       */
+      {
+        TreeMap<String, FailureRsp> errors = new TreeMap<String, FailureRsp>();
+        for (String name : nodeNames) {
+          if (!pNodeTree.isNameCheckedIn(name)) {
+            TaskTimer child = new TaskTimer("MasterMgr.removeAnnotationsHelper()");
+            timer.suspend();
+            Object returned = removeAnnotationsHelper(req, child, name);
+            timer.accum(child);
+            if (returned instanceof FailureRsp) {
+              errors.put(name, (FailureRsp) returned);
+            }
+          }
+        }
+        if (!errors.isEmpty()) {
+          String msg = 
+            "After the nodes were successfully released, " +
+            "a failure occured when trying to remove annotations from the nodes:\n ";
+          for (String each : errors.keySet()) {
+            FailureRsp rsp = errors.get(each);
+            msg += ("Node (" + each + ") had the following error: " + rsp.getMessage());
+          }
+          throw new PipelineException(msg);
+        }
+      }
+      
       return new SuccessRsp(timer);
     }
     catch(PipelineException ex) {
@@ -8467,7 +8654,7 @@ class MasterMgr
   (
    NodeID id, 
    boolean removeFiles, 
-   boolean removeNodeTreePath, 
+   boolean removeNodeTreePath,
    TaskTimer timer
   )
     throws PipelineException 
@@ -8526,7 +8713,7 @@ class MasterMgr
 	HashMap<NodeID,WorkingBundle> table = pWorkingBundles.get(name);
 	table.remove(id);
       }
-	
+      
       /* keep track of the change to the node version cache */ 
       decrementWorkingCounter(id);
 
@@ -8557,11 +8744,9 @@ class MasterMgr
 	deleteEmptyParentDirs(root, new File(pNodeDir, 
 					     id.getWorkingParent().toString()));
       }
-	
+      
       /* update the downstream links of this node */ 
       {
-	boolean isRevoked = false;
-	  
 	timer.aquire();	
 	ReentrantReadWriteLock downstreamLock = getDownstreamLock(name);
 	downstreamLock.writeLock().lock();
@@ -8791,10 +8976,29 @@ class MasterMgr
 
       /* remove the leaf node tree entry */ 
       pNodeTree.removeNodeTreePath(name);
-
+      
       /* post-op tasks */ 
       startExtensionTasks(timer, factory);
-
+      
+      /* Removes the annotations. This is here because you want this to run after 
+       * the post tasks have started in case it throws an error and aborts this
+       * method.  If it does throw an error, it will be reported to the user as
+       * an actual error, even though all that failed was the annotation removal. 
+       */
+      {
+        TaskTimer child = new TaskTimer("MasterMgr.removeAnnotationsHelper()");
+        timer.suspend();
+        Object returned = removeAnnotationsHelper(req, child, name);
+        timer.accum(child);
+        
+        if (returned instanceof FailureRsp) {
+          FailureRsp rsp = (FailureRsp) returned;
+          throw new PipelineException
+            ("After the node was successfully deleted, " +
+             "a failure occured when trying to remove the annotations from the ex-node: " + 
+             rsp.getMessage());
+        }
+      }
       return new SuccessRsp(timer);
     }
     catch(PipelineException ex) {
@@ -9187,8 +9391,6 @@ class MasterMgr
 	  CheckedInBundle bundle = checkedIn.get(checkedIn.lastKey());
 	  vsn = new NodeVersion(bundle.getVersion());
 	}
-	if(vsn == null)
-	  throw new IllegalStateException(); 
       }
 
       /* mark having seen this node already */ 
@@ -9206,8 +9408,7 @@ class MasterMgr
       if(work != null) {
 	switch(mode) {
 	case OverwriteAll:
-	  if((details != null) && 
-	     (details.getOverallNodeState() == OverallNodeState.Identical) && 
+	  if((details.getOverallNodeState() == OverallNodeState.Identical) && 
 	     (details.getOverallQueueState() == OverallQueueState.Finished) && 
 	     work.getWorkingID().equals(vsn.getVersionID())) {
 	    branch.removeLast();
@@ -9413,8 +9614,6 @@ class MasterMgr
 	  CheckedInBundle bundle = checkedIn.get(checkedIn.lastKey());
 	  vsn = new NodeVersion(bundle.getVersion());
 	}
-	if(vsn == null)
-	  throw new IllegalStateException(); 
       }
 
       /* pre-op test */ 
@@ -9456,8 +9655,7 @@ class MasterMgr
       if(work != null) {
 	switch(mode) {
 	case OverwriteAll:
-	  if((details != null) && 
-	     (details.getOverallNodeState() == OverallNodeState.Identical) && 
+	  if((details.getOverallNodeState() == OverallNodeState.Identical) && 
 	     (details.getOverallQueueState() == OverallQueueState.Finished) && 
 	     work.getWorkingID().equals(vsn.getVersionID())) {
 
@@ -9811,8 +10009,6 @@ class MasterMgr
 	      throw new PipelineException
 		("No checked-in version (" + vid + ") of node (" + name + ") exists!"); 
 	    vsn = new NodeVersion(bundle.getVersion());
-	    if(vsn == null)
-	      throw new IllegalStateException(); 
 	  }
 
 	  /* make sure the checked-in version has no Association/Reference links */ 
@@ -11902,7 +12098,7 @@ class MasterMgr
 	    
 	    if(isRoot && (minDisk != null)) 
 	      jreqs.setMinDisk(minDisk);
-
+	    
 	    if(isRoot && (selectionKeys != null)) {
 	      jreqs.removeAllSelectionKeys(); 
 	      jreqs.addSelectionKeys(selectionKeys);
@@ -11918,7 +12114,7 @@ class MasterMgr
 	      jreqs.addLicenseKeys(licenseKeys);
 	    }
 	  }
-
+	  
 	  BaseAction action = work.getAction();
 	  {
 	    /* strip per-source parameters which do not correspond to secondary sequences
@@ -11955,8 +12151,11 @@ class MasterMgr
 	      }
 	    }
 	  }
-
+	  
 	  QueueJob job = new QueueJob(agenda, action, jreqs, sourceIDs);
+	  
+	  /* Perform all serverside key calculations*/
+          adjustJobRequirements(timer, job, jreqs);
 		       
 	  jobs.put(jobID, job);
 	}
@@ -11977,6 +12176,96 @@ class MasterMgr
 	    njobIDs[idx] = jobID;
 	}
       }
+    }
+  }
+
+
+  /**
+   * Change the given job requirements so that they are correct based on the
+   * plugins that are contained in the selection, hardware, and license keys.
+   * <p>
+   * Note that this method will modifiy the job requirements that are passed in.  
+   * If this is not desired behavior, a copy should be made of the 
+   * job requirements before they are passed in.
+   * 
+   * @param timer
+   *   An event time.
+   * @param job
+   *   The job that the requirements are being adjusted for.
+   * @param jreqs
+   *   The current job requirements that are going to be modified.
+   */
+  private void 
+  adjustJobRequirements
+  (
+    TaskTimer timer,
+    QueueJob job,
+    JobReqs jreqs
+  )
+    throws PipelineException
+  {
+    /* Lazily evaluate this only if necessary*/
+    TreeMap<String, BaseAnnotation> annots = null;
+    NodeID nodeID = job.getNodeID();
+    /* Selection Keys */
+    {
+      ArrayList<SelectionKey> allKeys  = pQueueMgrClient.getSelectionKeys();
+      TreeSet<String> finalKeys = new TreeSet<String>();
+      Set<String> currentKeys = jreqs.getSelectionKeys();
+
+      for (SelectionKey key : allKeys) {
+        String name = key.getName();
+        if (!key.hasPlugin() && currentKeys.contains(name))
+          finalKeys.add(name); 
+        else if (key.hasPlugin()) {
+          if (annots == null)
+            annots = getAnnotationsHelper(timer, nodeID.getName());
+          if (key.getPlugin().isActive(job, annots))
+            finalKeys.add(name);
+        }
+      }
+      jreqs.removeAllSelectionKeys();
+      jreqs.addSelectionKeys(finalKeys);
+    }
+    /* License Keys */
+    {
+      ArrayList<LicenseKey> allKeys  = pQueueMgrClient.getLicenseKeys();
+      TreeSet<String> finalKeys = new TreeSet<String>();
+      Set<String> currentKeys = jreqs.getLicenseKeys();
+
+      for (LicenseKey key : allKeys) {
+        String name = key.getName();
+        if (!key.hasPlugin() && currentKeys.contains(name))
+          finalKeys.add(name); 
+        else if (key.hasPlugin()) {
+          if (annots == null)
+            annots = getAnnotationsHelper(timer, nodeID.getName());
+          if (key.getPlugin().isActive(job, annots))
+            finalKeys.add(name);
+        }
+      }
+      jreqs.removeAllLicenseKeys();
+      jreqs.addLicenseKeys(finalKeys);
+    }
+    /* Hardware Keys */
+    {
+      ArrayList<HardwareKey> allKeys  = pQueueMgrClient.getHardwareKeys();
+      TreeSet<String> finalKeys = new TreeSet<String>();
+      Set<String> currentKeys = jreqs.getHardwareKeys();
+
+      for (HardwareKey key : allKeys) {
+        String name = key.getName();
+        if (!key.hasPlugin() && currentKeys.contains(name))
+          finalKeys.add(name); 
+        else if (key.hasPlugin()) {
+          if (annots == null)
+            annots = getAnnotationsHelper(timer, nodeID.getName());
+          if (key.getPlugin().isActive(job, annots))
+            finalKeys.add(name);
+        }
+      }
+      jreqs.removeAllHardwareKeys();
+      jreqs.addHardwareKeys(finalKeys);
     }
   }
 
@@ -12359,8 +12648,6 @@ class MasterMgr
       finally {
 	lock.readLock().unlock();
       }    
-      if(fseqs == null)
-	throw new IllegalStateException(); 
       
       if(!activeIDs.isEmpty()) 
 	pQueueMgrClient.killJobs(activeIDs);
@@ -13332,7 +13619,6 @@ class MasterMgr
 		if(bundle == null) 
 		  throw new PipelineException 
 		    ("No checked-in version (" + vid + ") of node (" + name + ") exists!");
-		NodeVersion vsn = checkedIn.get(vid).getVersion();
 		int vidx = vids.indexOf(vid);
 		
 		/* determine which files contributes to the offlined size */ 
@@ -13516,7 +13802,6 @@ class MasterMgr
 		if(bundle == null) 
 		  throw new PipelineException 
 		    ("No checked-in version (" + vid + ") of node (" + name + ") exists!");
-		NodeVersion vsn = checkedIn.get(vid).getVersion();
 		int vidx = vids.indexOf(vid);
 	    
 		/* make sure at lease one archive volume contains the version */ 
@@ -14366,7 +14651,6 @@ class MasterMgr
 	    TreeMap<File,Boolean[]> novelty = noveltyByFile(checkedIn);
 	    
 	    for(VersionID vid : versions.get(name)) {
-	      CheckedInBundle bundle = checkedIn.get(vid);
 	      int vidx = vids.indexOf(vid);
 	      
 	      /* determine what files and/or links need to be modified */ 
@@ -15078,6 +15362,7 @@ class MasterMgr
    * @throws PipelineException 
    *   If unable to perform the node operation.
    */ 
+  @SuppressWarnings("null")
   private void 
   performUpstreamNodeOp
   (
@@ -15572,7 +15857,6 @@ class MasterMgr
               if(!workIsLocked) {
                 for(LinkMod link : work.getSources()) {
                   NodeDetails ldetails = table.get(link.getName()).getDetails();
-                  VersionID lvid = ldetails.getWorkingVersion().getWorkingID();
 
                   switch(ldetails.getOverallNodeState()) {
                   case ModifiedLocks:
@@ -15688,11 +15972,11 @@ class MasterMgr
 
               if(jobIDs.length != jIDs.size())
                 throw new IllegalStateException(); 
-              jobIDs = (Long[]) jIDs.toArray(jobIDs);
+              jobIDs = jIDs.toArray(jobIDs);
 
               if(js.length != jobStates.size())
                 throw new IllegalStateException(); 
-              js = (JobState[]) jobStates.toArray(js);
+              js = jobStates.toArray(js);
             }
 
             int wk;
@@ -17785,6 +18069,7 @@ class MasterMgr
    * @throws PipelineException
    *   If unable to read the cache file.
    */ 
+  @SuppressWarnings("unchecked")
   private void
   readRestoredOn()
     throws PipelineException
@@ -18544,6 +18829,7 @@ class MasterMgr
    * @throws PipelineException
    *   If unable to read the extensions file.
    */ 
+  @SuppressWarnings("unchecked")
   private void 
   readMasterExtensions()
     throws PipelineException
@@ -18924,8 +19210,6 @@ class MasterMgr
 	   "    " + ex.getMessage());
       }
 
-      if(plugins == null)
-	throw new IllegalStateException(); 
       table.put(name, vid, plugins);
     }
   }
@@ -19039,6 +19323,7 @@ class MasterMgr
    * @throws PipelineException
    *   If unable to read the suffix editor mappings file.
    */ 
+  @SuppressWarnings("unchecked")
   private TreeMap<String,SuffixEditor>
   readSuffixEditors
   (
@@ -20224,6 +20509,7 @@ class MasterMgr
      * @throws PipelineException 
      *   If unable to perform the operation.
      */ 
+    @Override
     public void 
     perform
     (
@@ -20505,6 +20791,7 @@ class MasterMgr
     /**
      * Does this operation modify the checked-in versions of the node?
      */ 
+    @Override
     public boolean
     writesCheckedIn()
     {

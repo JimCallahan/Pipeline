@@ -1,24 +1,29 @@
-// $Id: LicenseKey.java,v 1.6 2006/02/27 17:56:01 jim Exp $
+// $Id: LicenseKey.java,v 1.7 2007/12/15 07:14:57 jesse Exp $
 
 package us.temerity.pipeline;
 
-import us.temerity.pipeline.glue.*;
+import java.util.TreeMap;
 
-import java.util.*;
-import java.io.*;
+import us.temerity.pipeline.glue.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   L I C E N S E   K E Y                                                                  */
 /*------------------------------------------------------------------------------------------*/
 
-/** 
+/**
  * A symbolic key which represents a limited number of floating software licenses.
+ * 
+ * License Keys can have an optional plugin which determine when they are turned on for jobs.
+ * Under normal operation, a user selects which keys are on for each node that is submitted
+ * for regeneration. However, if there a plugin associated with the license key, the user will
+ * not be able to specify that license key. Instead the plugin will be used to calculate
+ * whether the key should be on or off for the given node at the time of job submission.
  * 
  * @see JobReqs
  */
 public
 class LicenseKey
-  extends Described
+  extends BaseKey
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -72,6 +77,55 @@ class LicenseKey
   ) 
   {
     super(name, desc);
+
+    pUsedPerHost = new TreeMap<String,Integer>();
+
+    setScheme(scheme);
+    setMaxSlots(maxSlots);
+    setMaxHosts(maxHosts);
+    setMaxHostSlots(maxHostSlots);
+  }
+  
+  /** 
+   * Construct a new license key.
+   * 
+   * @param name 
+   *   The name of the license key.
+   * 
+   * @param desc 
+   *   A short description of the license key.
+   * 
+   * @param plugin
+   *   The plugin that will be used to determine when this key is on.
+   * 
+   * @param scheme
+   *   The scheme used to determine the number of available licenses.
+   * 
+   * @param maxSlots
+   *   The maximum number of slots running a job which requires the license key or 
+   *   <CODE>null</CODE> if the license scheme is not PerSlot.
+   * 
+   * @param maxHosts
+   *   The maximum number of hosts which may run a job which requires the license key or 
+   *   <CODE>null</CODE> if the license scheme is PerSlot.
+   * 
+   * @param maxHostSlots
+   *   The maximum number of slots which may run a job requiring the license key on a 
+   *   single host or <CODE>null</CODE> if the license scheme is not PerHostSlot.
+   */ 
+  public
+  LicenseKey
+  (
+   String name,  
+   String desc,
+   BaseKeyChooser plugin,
+   LicenseScheme scheme, 
+   Integer maxSlots, 
+   Integer maxHosts, 
+   Integer maxHostSlots
+  ) 
+  {
+    super(name, desc, plugin);
 
     pUsedPerHost = new TreeMap<String,Integer>();
 
@@ -311,16 +365,16 @@ class LicenseKey
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Attempt to aquire a license.
+   * Attempt to acquire a license.
    * 
    * @param hostname
-   *   The name of the host where the job aquiring the license will run.
+   *   The name of the host where the job acquiring the license will run.
    * 
    * @return 
    *   Whether a license was available.
    */ 
   public synchronized boolean
-  aquire
+  acquire
   (
    String hostname
   ) 
@@ -380,10 +434,10 @@ class LicenseKey
   }
 
   /**
-   * Release a previously aquired license.
+   * Release a previously acquired license.
    *
    * @param hostname
-   *   The name of the host where the job which aquired the license was run.
+   *   The name of the host where the job which acquired the license was run.
    */ 
   public synchronized void
   release
@@ -402,6 +456,7 @@ class LicenseKey
   /*   G L U E A B L E                                                                      */
   /*----------------------------------------------------------------------------------------*/
   
+  @Override
   public void 
   toGlue
   ( 
@@ -411,7 +466,6 @@ class LicenseKey
   {
     super.toGlue(encoder);
     
-    encoder.encode("Description", pDescription);    
     encoder.encode("LicenseScheme", pScheme);    
     
     switch(pScheme) {
@@ -427,6 +481,7 @@ class LicenseKey
     }
   }
   
+  @Override
   public void 
   fromGlue
   (
@@ -435,11 +490,6 @@ class LicenseKey
     throws GlueException
   {
     super.fromGlue(decoder);
-
-    String desc = (String) decoder.decode("Description"); 
-    if(desc == null) 
-      throw new GlueException("The \"Description\" was missing!");
-    pDescription = desc;
 
     LicenseScheme scheme = (LicenseScheme) decoder.decode("LicenseScheme"); 
     if(scheme == null) 

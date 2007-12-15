@@ -1,4 +1,4 @@
-// $Id: PluginUpdateRsp.java,v 1.7 2007/06/15 00:27:31 jim Exp $
+// $Id: PluginUpdateRsp.java,v 1.8 2007/12/15 07:14:57 jesse Exp $
 
 package us.temerity.pipeline.message;
 
@@ -56,12 +56,16 @@ class PluginUpdateRsp
    *   The new or updated Archiver plugin class [name, bytes, supports] 
    *   indexed by class name and revision number.
    * 
-   * @param masterExt
+   * @param masterExts
    *   The new or updated Master Extension plugin class [name, bytes, supports] 
    *   indexed by class name and revision number.
    * 
-   * @param queueExt
+   * @param queueExts
    *   The new or updated Queue Extension plugin class [name, bytes, supports] 
+   *   indexed by class name and revision number.
+   *   
+   * @param keyChoosers
+   *   The new or updated Key Chooser plugin class [name, bytes, supports] 
    *   indexed by class name and revision number.
    */
   public
@@ -76,7 +80,8 @@ class PluginUpdateRsp
    TripleMap<String,String,VersionID,Object[]> annotations,
    TripleMap<String,String,VersionID,Object[]> archivers,
    TripleMap<String,String,VersionID,Object[]> masterExts, 
-   TripleMap<String,String,VersionID,Object[]> queueExts
+   TripleMap<String,String,VersionID,Object[]> queueExts,
+   TripleMap<String,String,VersionID,Object[]> keyChoosers
   )
   { 
     super(timer);
@@ -116,6 +121,10 @@ class PluginUpdateRsp
     if(queueExts == null) 
       throw new IllegalArgumentException("The Queue Extension plugins cannot be (null)!");
     pQueueExts = queueExts;
+    
+    if(keyChoosers == null) 
+      throw new IllegalArgumentException("The Key Chooser plugins cannot be (null)!");
+    pKeyChoosers = keyChoosers;
 
     if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest)) {
       LogMgr.getInstance().log
@@ -223,9 +232,18 @@ class PluginUpdateRsp
     return pQueueExts; 
   }
 
+  /**
+   * Gets the new or updated Selection Key plugin class [name, bytes, supports] 
+   * indexed by class name and revision number.
+   */
+  public TripleMap<String,String,VersionID,Object[]>
+  getKeyChoosers() 
+  {
+    return pKeyChoosers; 
+  }
 
 
-
+  
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
@@ -293,6 +311,12 @@ class PluginUpdateRsp
    * indexed by class name and revision number.
    */ 
   private TripleMap<String,String,VersionID,Object[]>  pQueueExts; 
+  
+  /**
+   * The new or updated Key Choosers plugin class [name, bytes, supports] 
+   * indexed by class name and revision number.
+   */ 
+  private TripleMap<String,String,VersionID,Object[]>  pKeyChoosers; 
 
 }
   

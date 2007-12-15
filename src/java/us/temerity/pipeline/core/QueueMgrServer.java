@@ -1,17 +1,14 @@
-// $Id: QueueMgrServer.java,v 1.49 2007/11/30 20:14:24 jesse Exp $
+// $Id: QueueMgrServer.java,v 1.50 2007/12/15 07:14:57 jesse Exp $
 
 package us.temerity.pipeline.core;
 
+import java.io.*;
+import java.net.*;
+import java.nio.channels.*;
+import java.util.HashSet;
+
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.message.*;
-import us.temerity.pipeline.core.exts.*;
-
-import java.io.*;
-import java.nio.*;
-import java.nio.channels.*;
-import java.net.*;
-import java.util.*;
-import java.util.concurrent.atomic.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   Q U E U E   M G R   S E R V E R                                                        */
@@ -80,6 +77,7 @@ class QueueMgrServer
    * 
    * This will only return if there is an unrecoverable error.
    */
+  @Override
   public void 
   run() 
   {
@@ -247,6 +245,7 @@ class QueueMgrServer
       pChannel = channel;
     }
 
+    @Override
     public void 
     run() 
     {
@@ -352,7 +351,9 @@ class QueueMgrServer
 	    /*-- LICENSE KEYS --------------------------------------------------------------*/
 	    case GetLicenseKeyNames:
 	      {
-		objOut.writeObject(pQueueMgr.getLicenseKeyNames());
+	        QueueGetLicenseKeyNamesReq req = 
+                  (QueueGetLicenseKeyNamesReq) objIn.readObject();
+		objOut.writeObject(pQueueMgr.getLicenseKeyNames(req.getUserSettableOnly()));
 		objOut.flush(); 
 	      }
 	      break;
@@ -395,7 +396,9 @@ class QueueMgrServer
 	    /*-- SELECTION KEYS ------------------------------------------------------------*/
 	    case GetSelectionKeyNames:
 	      {
-		objOut.writeObject(pQueueMgr.getSelectionKeyNames());
+	        QueueGetSelectionKeyNamesReq req = 
+                   (QueueGetSelectionKeyNamesReq) objIn.readObject();
+		objOut.writeObject(pQueueMgr.getSelectionKeyNames(req.getUserSettableOnly()));
 		objOut.flush(); 
 	      }
 	      break;
@@ -514,7 +517,9 @@ class QueueMgrServer
 	    /*-- HARDWARE KEYS -------------------------------------------------------------*/
 	    case GetHardwareKeyNames:
 	      {
-		objOut.writeObject(pQueueMgr.getHardwareKeyNames());
+	        QueueGetHardwareKeyNamesReq req = 
+                  (QueueGetHardwareKeyNamesReq) objIn.readObject();
+		objOut.writeObject(pQueueMgr.getHardwareKeyNames(req.getUserSettableOnly()));
 		objOut.flush(); 
 	      }
 	      break;
@@ -782,7 +787,14 @@ class QueueMgrServer
 	      }
 	      break;
 
-
+	    case UpdateJobKeys:
+	      {
+	        QueueJobsReq req = (QueueJobsReq) objIn.readObject();
+	        objOut.writeObject(pQueueMgr.updateJobKeys(req));
+	        objOut.flush();
+	      }
+	    break;
+	      
 	    case PreemptNodeJobs:
 	      {
 		QueueNodeJobsReq req = (QueueNodeJobsReq) objIn.readObject();
@@ -980,6 +992,7 @@ class QueueMgrServer
       pScheduler = scheduler;
     }
 
+    @Override
     public void 
     run() 
     {
@@ -1029,6 +1042,7 @@ class QueueMgrServer
       super("QueueMgrServer:CollectorTask");
     }
 
+    @Override
     public void 
     run() 
     {
@@ -1070,6 +1084,7 @@ class QueueMgrServer
       super("QueueMgrServer:DispatcherTask");
     }
 
+    @Override
     public void 
     run() 
     {
@@ -1113,6 +1128,7 @@ class QueueMgrServer
       super("QueueMgrServer:SchedulerTask");
     }
 
+    @Override
     public void 
     run() 
     {
@@ -1154,6 +1170,7 @@ class QueueMgrServer
       super("QueueMgrServer:HeapStatsTask");
     }
 
+    @Override
     public void 
     run() 
     {

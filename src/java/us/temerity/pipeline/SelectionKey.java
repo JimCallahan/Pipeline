@@ -1,11 +1,8 @@
-// $Id: SelectionKey.java,v 1.2 2006/02/27 17:54:52 jim Exp $
+// $Id: SelectionKey.java,v 1.3 2007/12/15 07:14:57 jesse Exp $
 
 package us.temerity.pipeline;
 
 import us.temerity.pipeline.glue.*;
-
-import java.util.*;
-import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   S E L E C T I O N   K E Y                                                              */
@@ -13,12 +10,20 @@ import java.io.*;
 
 /** 
  * A symbolic key used to select the best host on which to run a job.
+ * <p>
+ * Selection Keys can have an optional plugin which determine when they are turned on for
+ * jobs.  Under normal operation, a user selects which keys are on for each node that is 
+ * submitted for regeneration.  However, if there a plugin associated with the selection key,
+ * the user will not be able to specify a value for that selection key.  Instead the plugin will
+ * be used to calculate whether the key should be on or off for the given node at the time
+ * of job submission.
  * 
  * @see JobReqs
+ * @see BaseKeyChooser
  */
 public
 class SelectionKey
-  extends Described
+  extends BaseKey
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -36,7 +41,8 @@ class SelectionKey
   }
 
   /** 
-   * Construct a new selection key.
+   * Construct a new selection key, that does not use a {@link BaseKeyChooser} to
+   * determine when it is on.
    * 
    * @param name 
    *   The name of the selection key.
@@ -53,38 +59,29 @@ class SelectionKey
   {
     super(name, desc);
   }
-
   
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   G L U E A B L E                                                                      */
-  /*----------------------------------------------------------------------------------------*/
-  
-  public void 
-  toGlue
-  ( 
-   GlueEncoder encoder  
-  ) 
-    throws GlueException
-  {
-    super.toGlue(encoder);
-    
-    encoder.encode("Description", pDescription);  
-  }
-  
-  public void 
-  fromGlue
+  /** 
+   * Construct a new selection key that uses a {@link BaseKeyChooser} to determine when
+   * it is on.
+   * 
+   * @param name 
+   *   The name of the selection key.
+   * 
+   * @param desc 
+   *   A short description of the selection key.
+   *   
+   * @param plugin
+   *   The plugin that will be used to determine when this key is on.
+   */ 
+  public
+  SelectionKey
   (
-   GlueDecoder decoder  
+   String name,  
+   String desc,
+   BaseKeyChooser plugin
   ) 
-    throws GlueException
   {
-    super.fromGlue(decoder);
-
-    String desc = (String) decoder.decode("Description"); 
-    if(desc == null) 
-      throw new GlueException("The \"Description\" was missing!");
-    pDescription = desc;
+    super(name, desc, plugin);
   }
 
 
@@ -95,7 +92,6 @@ class SelectionKey
 
   private static final long serialVersionUID = -8056112617746926162L;
 
-  
 }
 
 

@@ -1,4 +1,4 @@
-// $Id: QueueMgrClient.java,v 1.42 2007/12/05 04:51:31 jesse Exp $
+// $Id: QueueMgrClient.java,v 1.43 2007/12/15 07:14:57 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -153,16 +153,24 @@ class QueueMgrClient
   /**
    * Get the names of the currently defined license keys. <P>  
    * 
+   * @param userSettableOnly
+   *   Whether to only return a list of the license key names that the user can set.
+   * 
    * @throws PipelineException
    *   If unable to retrieve the names of the license keys.
    */
   public synchronized TreeSet<String>
-  getLicenseKeyNames() 
+  getLicenseKeyNames
+  (
+    boolean userSettableOnly  
+  ) 
     throws PipelineException  
   {
     verifyConnection();
 
-    Object obj = performTransaction(QueueRequest.GetLicenseKeyNames, null);
+    QueueGetLicenseKeyNamesReq req = new QueueGetLicenseKeyNamesReq(userSettableOnly);
+
+    Object obj = performTransaction(QueueRequest.GetLicenseKeyNames, req);
     if(obj instanceof QueueGetLicenseKeyNamesRsp) {
       QueueGetLicenseKeyNamesRsp rsp = (QueueGetLicenseKeyNamesRsp) obj;
       return rsp.getKeyNames();
@@ -180,7 +188,10 @@ class QueueMgrClient
    *   If unable to retrieve the license keys.
    */
   public synchronized ArrayList<LicenseKey>
-  getLicenseKeys() 
+  getLicenseKeys
+  (
+    
+  ) 
     throws PipelineException  
   {
     verifyConnection();
@@ -302,18 +313,25 @@ class QueueMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the names of the currently defined selection keys. <P>  
+   * Get the names of the currently defined selection keys. <P>
+   * 
+   * @param userSettableOnly
+   *   Whether to only return a list of the selection key names that the user can set.
    * 
    * @throws PipelineException
    *   If unable to retrieve the names of the selection keys.
    */
   public synchronized TreeSet<String>
-  getSelectionKeyNames() 
+  getSelectionKeyNames
+  (
+    boolean userSettableOnly  
+  ) 
     throws PipelineException  
   {
     verifyConnection();
 
-    Object obj = performTransaction(QueueRequest.GetSelectionKeyNames, null);
+    QueueGetSelectionKeyNamesReq req = new QueueGetSelectionKeyNamesReq(userSettableOnly);
+    Object obj = performTransaction(QueueRequest.GetSelectionKeyNames, req);
     if(obj instanceof QueueGetSelectionKeyNamesRsp) {
       QueueGetSelectionKeyNamesRsp rsp = (QueueGetSelectionKeyNamesRsp) obj;
       return rsp.getKeyNames();
@@ -748,16 +766,23 @@ class QueueMgrClient
   /**
    * Get the names of the currently defined hardware keys. <P>  
    * 
+   * @param userSettableOnly
+   *   Whether to only return a list of the hardware key names that the user can set.
+   * 
    * @throws PipelineException
    *   If unable to retrieve the names of the hardware keys.
    */
   public synchronized TreeSet<String>
-  getHardwareKeyNames() 
+  getHardwareKeyNames
+  (
+    boolean userSettableOnly    
+  ) 
     throws PipelineException  
   {
     verifyConnection();
 
-    Object obj = performTransaction(QueueRequest.GetHardwareKeyNames, null);
+    QueueGetHardwareKeyNamesReq req = new QueueGetHardwareKeyNamesReq(userSettableOnly);
+    Object obj = performTransaction(QueueRequest.GetHardwareKeyNames, req);
     if(obj instanceof QueueGetHardwareKeyNamesRsp) {
       QueueGetHardwareKeyNamesRsp rsp = (QueueGetHardwareKeyNamesRsp) obj;
       return rsp.getKeyNames();
@@ -1129,8 +1154,8 @@ class QueueMgrClient
    * by the given histogram specs. <P> 
    * 
    * In order to be considered a match, the individual histogram spec for each host property 
-   * with any included catagories must include the catagory (see 
-   * {@link HistogramSpec#isIncluded}) which contains the host property.
+   * with any included categories must include the category (see 
+   * {@link HistogramSpec#isIncluded(int)}) which contains the host property.
    * 
    * @param specs
    *   The set of histogram specifications to match.
@@ -1286,7 +1311,7 @@ class QueueMgrClient
    * load on the server and the amount of data which must be transmitted over the network.<P> 
    * 
    * If you only want to know the most recent resource sample collected for a host, it is 
-   * much more efficient to use the {@link #getHosts} method to obtain the current job server
+   * much more efficient to use the {@link #getHosts() getHosts} method to obtain the current job server
    * host information and then accessing the last collected resource sample using the 
    * {@link QueueHostInfo#getLatestSample QueueHostInfo.getLatestSample} method.
    * 
@@ -1645,6 +1670,32 @@ class QueueMgrClient
 
     QueueJobReqsReq req = new QueueJobReqsReq(jobReqsChanges);
     Object obj = performTransaction(QueueRequest.ChangeJobReqs, req); 
+    handleSimpleResponse(obj);
+  }
+  
+  /**
+   * Updates the generated keys for the jobs with the given IDs. <P> 
+   * 
+   * If the owner of the jobs are different than the current user, this method 
+   * will fail unless the current user has QueueAdmin privileges. 
+   * 
+   * @param jobIDs
+   *   The unique job identifiers.
+   * 
+   * @throws PipelineException 
+   *   If unable to resume the jobs.
+   */  
+  public synchronized void
+  updateJobKeys
+  (
+    TreeSet<Long> jobIDs
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+
+    QueueJobsReq req = new QueueJobsReq(jobIDs);
+    Object obj = performTransaction(QueueRequest.UpdateJobKeys, req); 
     handleSimpleResponse(obj);
   }
 
@@ -2046,6 +2097,7 @@ class QueueMgrClient
   /**
    * Get the object input given a socket input stream.
    */ 
+  @Override
   protected ObjectInput
   getObjectInput
   (
@@ -2060,6 +2112,7 @@ class QueueMgrClient
   /**
    * Get the error message to be shown when the server cannot be contacted.
    */ 
+  @Override
   protected String
   getServerDownMessage()
   {

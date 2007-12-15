@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.81 2007/11/30 20:14:24 jesse Exp $
+// $Id: ScriptApp.java,v 1.82 2007/12/15 07:14:57 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2340,7 +2340,7 @@ class ScriptApp
 	   pad("-- License Keys ", '-', 80));
 
 	Set<String> keys = jreqs.getLicenseKeys();
-	for(String kname : qclient.getLicenseKeyNames()) {
+	for(String kname : qclient.getLicenseKeyNames(false)) {
 	  buf.append
 	    ("\n" + 
 	     pad(kname, 18) + ": " + (keys.contains(kname) ? "YES" : "no"));
@@ -2353,7 +2353,7 @@ class ScriptApp
 	   pad("-- Selection Keys ", '-', 80));
 
 	Set<String> keys = jreqs.getSelectionKeys();
-	for(String kname : qclient.getSelectionKeyNames()) {
+	for(String kname : qclient.getSelectionKeyNames(false)) {
 	  buf.append
 	    ("\n" + 
 	     pad(kname, 18) + ": " + (keys.contains(kname) ? "YES" : "no"));
@@ -3963,7 +3963,7 @@ class ScriptApp
 	    if(vjreqs != null) 
 	      vkeys = vjreqs.getLicenseKeys();
  
-	    for(String kname : qclient.getLicenseKeyNames()) {
+	    for(String kname : qclient.getLicenseKeyNames(false)) {
 	      String mstr = "-";
 	      if(mkeys != null) 
 		mstr = (mkeys.contains(kname) ? "YES" : "no");
@@ -3991,7 +3991,7 @@ class ScriptApp
 	    if(vjreqs != null) 
 	      vkeys = vjreqs.getSelectionKeys();
  
-	    for(String kname : qclient.getSelectionKeyNames()) {
+	    for(String kname : qclient.getSelectionKeyNames(false)) {
 	      String mstr = "-";
 	      if(mkeys != null) 
 		mstr = (mkeys.contains(kname) ? "YES" : "no");

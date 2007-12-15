@@ -1,4 +1,4 @@
-// $Id: HardwareKey.java,v 1.1 2007/11/30 20:06:24 jesse Exp $
+// $Id: HardwareKey.java,v 1.2 2007/12/15 07:14:57 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -8,14 +8,20 @@ import us.temerity.pipeline.glue.*;
 /*   H A R D W A R E   K E Y                                                                */
 /*------------------------------------------------------------------------------------------*/
 
-/** 
+/**
  * A symbolic key used to select the best host on which to run a job.
+ * <p>
+ * Hardware Keys can have an optional plugin which determine when they are turned on for jobs.
+ * Under normal operation, a user selects which keys are on for each node that is submitted
+ * for regeneration. However, if there a plugin associated with the hardware key, the user
+ * will not be able to specify that hardware key. Instead the plugin will be used to calculate
+ * whether the key should be on or off for the given node at the time of job submission.
  * 
  * @see JobReqs
  */
 public
 class HardwareKey
-  extends Described
+  extends BaseKey
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -50,41 +56,28 @@ class HardwareKey
   {
     super(name, desc);
   }
-
   
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   G L U E A B L E                                                                      */
-  /*----------------------------------------------------------------------------------------*/
-  
-  public void 
-  toGlue
-  ( 
-   GlueEncoder encoder  
-  ) 
-    throws GlueException
-  {
-    super.toGlue(encoder);
-    
-    encoder.encode("Description", pDescription);  
-  }
-  
-  public void 
-  fromGlue
+  /** 
+   * Construct a new hardware key.
+   * 
+   * @param name 
+   *   The name of the hardware key.
+   * 
+   * @param desc 
+   *   A short description of the hardware key.
+   */ 
+  public
+  HardwareKey
   (
-   GlueDecoder decoder  
+   String name,  
+   String desc,
+   BaseKeyChooser plugin
   ) 
-    throws GlueException
   {
-    super.fromGlue(decoder);
-
-    String desc = (String) decoder.decode("Description"); 
-    if(desc == null) 
-      throw new GlueException("The \"Description\" was missing!");
-    pDescription = desc;
+    super(name, desc, plugin);
   }
 
-
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */

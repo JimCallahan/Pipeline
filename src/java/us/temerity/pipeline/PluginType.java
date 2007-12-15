@@ -1,4 +1,4 @@
-// $Id: PluginType.java,v 1.3 2007/06/19 05:47:00 jesse Exp $
+// $Id: PluginType.java,v 1.4 2007/12/15 07:14:57 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -67,7 +67,13 @@ enum PluginType
   /**
    * Plugins used to dynamically modify node networks inside pipeline.
    */
-  Procedure; 
+  Procedure,
+  
+  /**
+   * Plugins used to dynamically determine if jobs meet certain criteria necessary to run them
+   * on certain machines.
+   */
+  KeyChooser; 
 
 
 

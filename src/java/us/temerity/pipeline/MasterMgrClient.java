@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.112 2007/11/30 20:14:23 jesse Exp $
+// $Id: MasterMgrClient.java,v 1.113 2007/12/15 07:14:57 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -5247,7 +5247,7 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {
-    return clone(author, view, oldName, newName, true, true, true);
+    return clone(author, view, oldName, newName, true, true, true, true);
   }
 
   /**
@@ -5258,25 +5258,20 @@ class MasterMgrClient
    *  
    * @param author 
    *   The name of the user which owns the cloned version.
-   * 
    * @param view 
    *   The name of the user's working area view. 
-   *
    * @param oldName
    *   The fully resolved name of the source node to clone.
-   * 
    * @param newName
    *   The fully resolved name of the cloned node.
-   * 
    * @param cloneAction
    *   Whether to clone the action and action parameters of source node.
-   * 
    * @param cloneLinks
    *   Whether to clone the links of the source node as well.
-   * 
    * @param cloneFiles
    *   Whether to copy the files of source node as well.
-   *   
+   * @param cloneAnnotations TODO
+   * 
    * @return 
    *   A {@link NodeMod} representing the newly cloned node.
    * 
@@ -5292,7 +5287,8 @@ class MasterMgrClient
    String newName, 
    boolean cloneAction, 
    boolean cloneLinks, 
-   boolean cloneFiles
+   boolean cloneFiles, 
+   boolean cloneAnnotations 
   ) 
     throws PipelineException
   {
@@ -5345,6 +5341,13 @@ class MasterMgrClient
       NodeID target = new NodeID(author, view, newName);
       cloneFiles(source, target);
     }
+    
+    if(cloneAnnotations) {
+      TreeMap<String, BaseAnnotation> annots = getAnnotations(oldName);
+      for (String aname : annots.keySet())
+        addAnnotation(newName, aname, annots.get(aname));
+    }
+    
     return getWorkingVersion(author, view, newName);
   } 
 

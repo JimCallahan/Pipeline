@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.95 2007/11/30 20:14:24 jesse Exp $
+// $Id: QueueMgr.java,v 1.96 2007/12/15 07:14:57 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -530,7 +530,7 @@ class QueueMgr
           for(String kname : job.getJobRequirements().getLicenseKeys()) {
             LicenseKey key = pLicenseKeys.get(kname);
             if(key != null) {
-              if(key.aquire(hostname)) 
+              if(key.acquire(hostname)) 
                 aquiredKeys.add(kname);
               else {
                 LogMgr.getInstance().log
@@ -926,20 +926,34 @@ class QueueMgr
 
   /**
    * Get the names of the currently defined license keys. <P>  
-   * 
+   *
+   * @param userSettableOnly
+   *   Only return the names of the keys that the user can set.
+   *   
    * @return
    *   <CODE>QueueGetLicenseKeyNamesRsp</CODE> if successful or 
    *   <CODE>FailureRsp</CODE> if unable to get the key names.
    */
   public Object
-  getLicenseKeyNames() 
+  getLicenseKeyNames
+  (
+    boolean userSettableOnly  
+  )  
   {
     TaskTimer timer = new TaskTimer();
     timer.aquire();
     synchronized(pLicenseKeys) {
       timer.resume();
       
-      TreeSet<String> names = new TreeSet<String>(pLicenseKeys.keySet());
+      TreeSet<String> names = null;
+      if (!userSettableOnly)
+        names = new TreeSet<String>(pLicenseKeys.keySet());
+      else {
+        names = new TreeSet<String>();
+        for (String name : pLicenseKeys.keySet())
+          if (!pLicenseKeys.get(name).hasPlugin())
+            names.add(name);
+      }
       
       return new QueueGetLicenseKeyNamesRsp(timer, names);
     }
@@ -1128,21 +1142,35 @@ class QueueMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the names of the currently defined selection keys. <P>  
+   * Get the names of the currently defined selection keys. <P>
+   * 
+   * @param userSettableOnly
+   *   Only return the names of the keys that the user can set.
    * 
    * @return
    *   <CODE>QueueGetSelectionKeyNamesRsp</CODE> if successful or 
    *   <CODE>FailureRsp</CODE> if unable to get the key names.
    */
   public Object
-  getSelectionKeyNames() 
+  getSelectionKeyNames
+  (
+    boolean userSettableOnly  
+  ) 
   {
     TaskTimer timer = new TaskTimer();
     timer.aquire();
     synchronized(pSelectionKeys) {
       timer.resume();
       
-      TreeSet<String> names = new TreeSet<String>(pSelectionKeys.keySet());
+      TreeSet<String> names = null;
+      if (!userSettableOnly)
+        names = new TreeSet<String>(pSelectionKeys.keySet());
+      else {
+        names = new TreeSet<String>();
+        for (String name : pSelectionKeys.keySet())
+          if (!pSelectionKeys.get(name).hasPlugin())
+            names.add(name);
+      }
       
       return new QueueGetSelectionKeyNamesRsp(timer, names);
     }
@@ -1459,6 +1487,8 @@ class QueueMgr
 	    for(String key : sg.getKeys()) {
 	      if(!pSelectionKeys.containsKey(key)) 
 		dead.add(key);
+	      else if (pSelectionKeys.get(key).hasPlugin())
+	        dead.add(key);
 	    }
 	    for(String key : dead) 
 	      sg.removeBias(key);
@@ -1672,19 +1702,33 @@ class QueueMgr
   /**
    * Get the names of the currently defined hardware keys. <P>  
    * 
+   * @param userSettableOnly
+   *   Only return the names of the keys that the user can set.
+   * 
    * @return
    *   <CODE>QueueGetHardwareKeyNamesRsp</CODE> if successful or 
    *   <CODE>FailureRsp</CODE> if unable to get the key names.
    */
   public Object
-  getHardwareKeyNames() 
+  getHardwareKeyNames
+  (
+    boolean userSettableOnly  
+  ) 
   {
     TaskTimer timer = new TaskTimer();
     timer.aquire();
     synchronized(pHardwareKeys) {
       timer.resume();
       
-      TreeSet<String> names = new TreeSet<String>(pHardwareKeys.keySet());
+      TreeSet<String> names = null;
+      if (!userSettableOnly)
+        names = new TreeSet<String>(pHardwareKeys.keySet());
+      else {
+        names = new TreeSet<String>();
+        for (String name : pHardwareKeys.keySet())
+          if (!pHardwareKeys.get(name).hasPlugin())
+            names.add(name);
+      }
       
       return new QueueGetHardwareKeyNamesRsp(timer, names);
     }
@@ -1738,7 +1782,7 @@ class QueueMgr
 	throw new PipelineException
 	  ("Only a user with Queue Admin privileges may add hardware keys!");
 
-      synchronized(pSelectionKeys) {
+      synchronized(pHardwareKeys) {
 	timer.resume();
 
 	pHardwareKeys.put(key.getName(), key);
@@ -2585,10 +2629,6 @@ class QueueMgr
 	  throw new PipelineException
 	    ("The host (" + hname + ") is already a job server!");
 	
-	/* pre-add host tests */
-	// TODO is this doubled code?
-	performExtensionTests(timer, factory);
-	
 	pHosts.put(hname, new QueueHost(hname));
 	writeHosts();
       }
@@ -2627,7 +2667,7 @@ class QueueMgr
 
     TreeSet<String> deadHosts = new TreeSet<String>();
     try {
-      /* filter out non-existant hosts */ 
+      /* filter out non-existent hosts */ 
       TreeSet<String> hostnames = new TreeSet<String>();
       {
 	timer.aquire();
@@ -2950,29 +2990,31 @@ class QueueMgr
 	    }
 	  }
 	}
-	   
+	  
+	TreeMap<String, QueueHostMod> changes = new TreeMap<String, QueueHostMod>();
 	/* status */ 
 	{
 	  /* make a copy of pending status changes before attempting network communication 
-	     so that the pHostsMod lock will be held for only a short amount of time */ 
-	  TreeMap<String,QueueHostStatusChange> changes = null;
+	     so that the pHostsMod lock will be held for only a short amount of time */
+	  TreeMap<String,QueueHostStatusChange> statusChanges = null;
 	  {
 	    tm.aquire();
 	    synchronized(pHostsMod) {
 	      tm.resume();
-	      changes = new TreeMap<String,QueueHostStatusChange>();
+	      statusChanges = new TreeMap<String,QueueHostStatusChange>();
 	      for(String hname : pHostsMod.keySet()) {
-		QueueHostMod qmod = pHostsMod.get(hname);
+		QueueHostMod qmod = pHostsMod.remove(hname);
+		changes.put(hname, qmod);
 		if(qmod.isStatusModified()) {
-		  changes.put(hname, qmod.getStatus());
+		  statusChanges.put(hname, qmod.getStatus());
 		}
 	      }
 	    }
 	  }
 
-	  if(changes != null) {
-	    for(String hname : changes.keySet()) {
-	      QueueHostStatusChange change = changes.get(hname);
+	  if(statusChanges != null) {
+	    for(String hname : statusChanges.keySet()) {
+	      QueueHostStatusChange change = statusChanges.get(hname);
 	      QueueHost host = pHosts.get(hname);
 	      if((change != null) && (host != null)) {
 		switch(change) {
@@ -3062,100 +3104,94 @@ class QueueMgr
 	}	
 
 	/* other host property changes... */
-	tm.aquire();
-	synchronized(pHostsMod) {
-	  tm.resume();
+	for(String hname : changes.keySet()) {
+	  QueueHost host = pHosts.get(hname);
+	  if(host != null) {
+	    QueueHostMod qmod = changes.get(hname);
 
-	  for(String hname : pHostsMod.keySet()) {
-	    QueueHost host = pHosts.get(hname);
-	    if(host != null) {
-	      QueueHostMod qmod = pHostsMod.get(hname);
+	    /* user reservations */ 
+	    if(qmod.isReservationModified()) {
+	      host.setReservation(qmod.getReservation());
+	      if(modifiedHosts != null) 
+	        modifiedHosts.add(hname);
+	      diskModified = true;
+	    }
 
-	      /* user reservations */ 
-	      if(qmod.isReservationModified()) {
-		host.setReservation(qmod.getReservation());
-		if(modifiedHosts != null) 
-		  modifiedHosts.add(hname);
-		diskModified = true;
-	      }
-	    
-	      /* job orders */ 
-	      if(qmod.isOrderModified()) {
-		host.setOrder(qmod.getOrder());
-		if(modifiedHosts != null) 
-		  modifiedHosts.add(hname);
-		diskModified = true;
-	      }
+	    /* job orders */ 
+	    if(qmod.isOrderModified()) {
+	      host.setOrder(qmod.getOrder());
+	      if(modifiedHosts != null) 
+	        modifiedHosts.add(hname);
+	      diskModified = true;
+	    }
 
-	      /* job slots */ 
-	      if(qmod.isJobSlotsModified()) {
-		host.setJobSlots(qmod.getJobSlots()); 
-		if(modifiedHosts != null) 
-		  modifiedHosts.add(hname);
-		diskModified = true;
-	      }
+	    /* job slots */ 
+	    if(qmod.isJobSlotsModified()) {
+	      host.setJobSlots(qmod.getJobSlots()); 
+	      if(modifiedHosts != null) 
+	        modifiedHosts.add(hname);
+	      diskModified = true;
+	    }
 
-	      /* selection groups */ 
-	      if(qmod.isSelectionGroupModified()) {
-		tm.aquire();
-		synchronized(pSelectionGroups) {
-		  tm.resume();
-		  
-		  String name = qmod.getSelectionGroup(); 
-		  if((name == null) || pSelectionGroups.containsKey(name)) {
-		    host.setSelectionGroup(name);
-		    if(modifiedHosts != null) 
-		      modifiedHosts.add(hname);
-		    diskModified = true;
-		  }
-		}
-	      }
-	      
-	      /* hardware groups */ 
-	      if(qmod.isHardwareGroupModified()) {
-		tm.aquire();
-		synchronized(pHardwareGroups) {
-		  tm.resume();
-		  
-		  String name = qmod.getHardwareGroup(); 
-		  if((name == null) || pHardwareGroups.containsKey(name)) {
-		    host.setHardwareGroup(name);
-		    if(modifiedHosts != null) 
-		      modifiedHosts.add(hname);
-		    diskModified = true;
-		  }
-		}
-	      }	      
+	    /* selection groups */ 
+	    if(qmod.isSelectionGroupModified()) {
+	      tm.aquire();
+	      synchronized(pSelectionGroups) {
+	        tm.resume();
 
-	      /* selection schedules */ 
-	      if(qmod.isSelectionScheduleModified()) {
-		tm.aquire();
-		synchronized(pSelectionSchedules) {
-		  tm.resume();
-	      
-		  String name = qmod.getSelectionSchedule();
-		  if((name == null) || pSelectionSchedules.containsKey(name)) {
-		    host.setSelectionSchedule(name);
-		    if(modifiedHosts != null) 
-		      modifiedHosts.add(hname);
-		    diskModified = true;
-		  }
-		}
-	      }
-	      
-	      /* Editable States */
-	      {
-		host.setGroupState(qmod.getGroupState());
-		host.setOrderState(qmod.getOrderState());
-		host.setReservationState(qmod.getReservationState());
-		host.setSlotsState(qmod.getSlotsState());
-		host.setStatusState(qmod.getStatusState());
+	        String name = qmod.getSelectionGroup(); 
+	        if((name == null) || pSelectionGroups.containsKey(name)) {
+	          host.setSelectionGroup(name);
+	          if(modifiedHosts != null) 
+	            modifiedHosts.add(hname);
+	          diskModified = true;
+	        }
 	      }
 	    }
+
+	    /* hardware groups */ 
+	    if(qmod.isHardwareGroupModified()) {
+	      tm.aquire();
+	      synchronized(pHardwareGroups) {
+	        tm.resume();
+
+	        String name = qmod.getHardwareGroup(); 
+	        if((name == null) || pHardwareGroups.containsKey(name)) {
+	          host.setHardwareGroup(name);
+	          if(modifiedHosts != null) 
+	            modifiedHosts.add(hname);
+	          diskModified = true;
+	        }
+	      }
+	    }	      
+
+	    /* selection schedules */ 
+	    if(qmod.isSelectionScheduleModified()) {
+	      tm.aquire();
+	      synchronized(pSelectionSchedules) {
+	        tm.resume();
+
+	        String name = qmod.getSelectionSchedule();
+	        if((name == null) || pSelectionSchedules.containsKey(name)) {
+	          host.setSelectionSchedule(name);
+	          if(modifiedHosts != null) 
+	            modifiedHosts.add(hname);
+	          diskModified = true;
+	        }
+	      }
+	    }
+
+	    /* Editable States */
+	    {
+	      host.setGroupState(qmod.getGroupState());
+	      host.setOrderState(qmod.getOrderState());
+	      host.setReservationState(qmod.getReservationState());
+	      host.setSlotsState(qmod.getSlotsState());
+	      host.setStatusState(qmod.getStatusState());
+	    }
 	  }
-	    
-	  pHostsMod.clear(); 
 	}
+	    
 
 	/* write changes to host database file disk */ 
 	if(diskModified) 
@@ -4235,6 +4271,7 @@ class QueueMgr
 	    String author = job.getActionAgenda().getNodeID().getAuthor();
 	    if(pAdminPrivileges.isQueueManaged(req, author)) {
 	      JobReqs reqs = new JobReqs(job.getJobRequirements(), delta);
+	      adjustJobRequirements(timer, job, reqs);
 	      timer.aquire();
 	      synchronized (pJobReqsChanges) {
 		timer.resume();
@@ -4257,6 +4294,162 @@ class QueueMgr
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());	  
     }     
+  }
+  
+  /**
+   * Updates the auto-calculated keys for the jobs with the given IDs. <P> 
+   * 
+   * @param req 
+   *   The request.
+   *    
+   * @return 
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable resume the jobs. 
+   */ 
+  public Object
+  updateJobKeys
+  (
+   QueueJobsReq req
+  )
+  {
+    TaskTimer timer = new TaskTimer("QueueMgr.updateJobKeys()");
+
+    try {
+      boolean unprivileged = false; 
+
+      TreeSet<Long> ids = req.getJobIDs(); 
+      for(Long id : ids) {
+        QueueJob job = null;
+        timer.aquire();
+        synchronized(pJobs) {
+          timer.resume();
+          job = pJobs.get(ids);
+        }
+        if(job != null) {
+          String author = job.getActionAgenda().getNodeID().getAuthor();
+          if(pAdminPrivileges.isQueueManaged(req, author)) {
+            JobReqs reqs = (JobReqs) job.getJobRequirements().clone();
+            adjustJobRequirements(timer, job, reqs);
+            timer.aquire();
+            synchronized (pJobReqsChanges) {
+              timer.resume();
+              pJobReqsChanges.put(id, reqs);
+            }
+          }
+          else 
+            unprivileged = true;
+        }
+      }
+
+      if(unprivileged)
+        throw new PipelineException
+          ("Only a user with Queue Admin privileges may update the selection keys" +
+           "on jobs owned by another user!");
+
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());      
+    }     
+  }
+  
+  
+  /**
+   * Change the given job requirements so that they are correct based on the
+   * plugins that are contained in the selection, hardware, and license keys.
+   * <p>
+   * Note that this method will modify the job requirements that are passed in.  
+   * If this is not desired behavior, a copy should be made of the 
+   * job requirements before they are passed in.
+   * 
+   * @param timer
+   *   An event time.
+   * @param job
+   *   The job that the requirements are being adjusted for.
+   * @param jreqs
+   *   The current job requirements that are going to be modified.
+   */
+  private void 
+  adjustJobRequirements
+  (
+    TaskTimer timer,
+    QueueJob job,
+    JobReqs jreqs
+  )
+    throws PipelineException
+  {
+    /* Lazily evaluate this only if necessary*/
+    TreeMap<String, BaseAnnotation> annots = null;
+    NodeID nodeID = job.getNodeID();
+    /* Selection Keys */
+    {
+      ArrayList<SelectionKey> allKeys = null;
+      synchronized(pSelectionKeys) {
+        allKeys = new ArrayList<SelectionKey>(pSelectionKeys.values());
+      }
+      TreeSet<String> finalKeys = new TreeSet<String>();
+      Set<String> currentKeys = jreqs.getSelectionKeys();
+
+      for (SelectionKey key : allKeys) {
+        String name = key.getName();
+        if (!key.hasPlugin() && currentKeys.contains(name))
+          finalKeys.add(name); 
+        else if (key.hasPlugin()) {
+          if (annots == null)
+            annots = pMasterMgrClient.getAnnotations(nodeID.getName());
+          if (key.getPlugin().isActive(job, annots))
+            finalKeys.add(name);
+        }
+      }
+      jreqs.removeAllSelectionKeys();
+      jreqs.addSelectionKeys(finalKeys);
+    }
+    /* License Keys */
+    {
+      ArrayList<LicenseKey> allKeys = null;
+      synchronized(pLicenseKeys) {
+        allKeys = new ArrayList<LicenseKey>(pLicenseKeys.values());
+      }
+      TreeSet<String> finalKeys = new TreeSet<String>();
+      Set<String> currentKeys = jreqs.getLicenseKeys();
+
+      for (LicenseKey key : allKeys) {
+        String name = key.getName();
+        if (!key.hasPlugin() && currentKeys.contains(name))
+          finalKeys.add(name); 
+        else if (key.hasPlugin()) {
+          if (annots == null)
+            annots = pMasterMgrClient.getAnnotations(nodeID.getName());
+          if (key.getPlugin().isActive(job, annots))
+            finalKeys.add(name);
+        }
+      }
+      jreqs.removeAllLicenseKeys();
+      jreqs.addLicenseKeys(finalKeys);
+    }
+    /* Hardware Keys */
+    {
+      ArrayList<HardwareKey> allKeys = null;
+      synchronized(pHardwareKeys) {
+        allKeys = new ArrayList<HardwareKey>(pHardwareKeys.values());
+      }
+      TreeSet<String> finalKeys = new TreeSet<String>();
+      Set<String> currentKeys = jreqs.getHardwareKeys();
+
+      for (HardwareKey key : allKeys) {
+        String name = key.getName();
+        if (!key.hasPlugin() && currentKeys.contains(name))
+          finalKeys.add(name); 
+        else if (key.hasPlugin()) {
+          if (annots == null)
+            annots = pMasterMgrClient.getAnnotations(nodeID.getName());
+          if (key.getPlugin().isActive(job, annots))
+            finalKeys.add(name);
+        }
+      }
+      jreqs.removeAllHardwareKeys();
+      jreqs.addHardwareKeys(finalKeys);
+    }
   }
   
 
@@ -6028,7 +6221,7 @@ class QueueMgr
  	for(String kname : jreqs.getLicenseKeys()) {
  	  LicenseKey key = pLicenseKeys.get(kname);
  	  if(key != null) {
- 	    if(key.aquire(host.getName())) 
+ 	    if(key.acquire(host.getName())) 
  	      aquiredKeys.add(kname);
  	    else {
  	      available = false; 
@@ -9567,7 +9760,15 @@ class QueueMgr
    * 
    * synchronized(pJobs) {
    *   synchronized(pJobReqsChanges) {
-   *     ...
+   *     synchronized(pSelectionKeys) {
+   *         ...
+   *     }
+   *     synchronized(pHardwareKeys) {
+   *       ...
+   *     }
+   *     synchronized(pLicenseKeys) {
+   *         ...
+   *     }
    *   }
    * }
    * 
