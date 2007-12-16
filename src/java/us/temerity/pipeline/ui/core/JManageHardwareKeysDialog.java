@@ -1,4 +1,4 @@
-// $Id: JManageHardwareKeysDialog.java,v 1.1 2007/11/30 20:06:25 jesse Exp $
+// $Id: JManageHardwareKeysDialog.java,v 1.2 2007/12/16 06:32:49 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -7,8 +7,7 @@ import java.awt.event.*;
 import java.util.*;
 
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
+import javax.swing.event.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.ui.*;
@@ -24,7 +23,7 @@ public
 class JManageHardwareKeysDialog
   extends JTopLevelDialog
   implements ListSelectionListener, MouseListener, KeyListener, ActionListener, 
-             AdjustmentListener
+             AdjustmentListener, ChangeListener
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -127,7 +126,7 @@ class JManageHardwareKeysDialog
 	  panel.addKeyListener(this);
 
 	  {
-	    HardwareKeysTableModel model = new HardwareKeysTableModel();
+	    BaseKeysTableModel model = new BaseKeysTableModel();
 	    pKeysTableModel = model;
 	    
 	    JTablePanel tpanel = new JTablePanel(model);
@@ -156,7 +155,7 @@ class JManageHardwareKeysDialog
 	tab.addTab(body);
       }
 
-      /* selection groups panel */ 
+      /* hardware groups panel */ 
       {
 	JPanel body = new JPanel();
 	body.setLayout(new BoxLayout(body, BoxLayout.Y_AXIS));  
@@ -281,7 +280,8 @@ class JManageHardwareKeysDialog
 
       String extra[][] = {
 	null,
-	{ "Update", "update" }
+	{ "Update", "update"},
+	{ "Edit", "edit" },
       };
 
       JButton btns[] = super.initUI(null, tab, "Confirm", "Apply", extra, "Close");
@@ -289,16 +289,25 @@ class JManageHardwareKeysDialog
       pUpdateButton = btns[1];
       pUpdateButton.setToolTipText(UIFactory.formatToolTip(
         "Update the hardware keys and groups."));
+      
+      pEditButton = btns[2];
+      pEditButton.setToolTipText(UIFactory.formatToolTip(
+        "Edit the selected hardware key."));
 
       pConfirmButton.setToolTipText(UIFactory.formatToolTip(
        "Apply the changes and close."));
       pApplyButton.setToolTipText(UIFactory.formatToolTip(
        "Apply the changes."));
+      
+      pKeyDetailsDialog = new JKeyChooserConfigDialog(this, "Hardware");
 
       updateAll();
       pack();
     }
 
+    /* This needs to be run after the edit button is created. */
+    pTab.addChangeListener(this);
+    
     pKeysCreateDialog   = new JCreateHardwareKeyDialog(this);
     pGroupsNewDialog    = new JNewHardwareGroupDialog(this);
   }
@@ -320,18 +329,20 @@ class JManageHardwareKeysDialog
     try {
       pPrivilegeDetails = master.getMasterMgrClient().getPrivilegeDetails();
 
-      ArrayList<HardwareKey> keys = client.getHardwareKeys();
+      ArrayList<BaseKey> keys = new ArrayList<BaseKey>();
+      for (HardwareKey key : client.getHardwareKeys() )
+        keys.add(key);
       TreeMap<String,HardwareGroup> groups = client.getHardwareGroups();
 
       pGroupNames.clear();
       pGroupNames.addAll(groups.keySet());
 
       TreeMap<String,String> keyDesc = new TreeMap<String,String>();
-      for(HardwareKey key : keys) 
+      for(BaseKey key : keys) 
 	keyDesc.put(key.getName(), key.getDescription());
       
-      /* update selection keys */ 
-      pKeysTableModel.setHardwareKeys(keys);
+      /* update hardware keys */ 
+      pKeysTableModel.setKeys(keys);
       
       /* update hardware groups */ 
       pGroupNamesTableModel.setNames(pGroupNames);
@@ -562,13 +573,13 @@ class JManageHardwareKeysDialog
     switch(e.getButton()) {
     case MouseEvent.BUTTON3:
       {
-	int on1  = (MouseEvent.BUTTON3_DOWN_MASK);
+	int on1  = (InputEvent.BUTTON3_DOWN_MASK);
 	
-	int off1 = (MouseEvent.BUTTON1_DOWN_MASK | 
-		    MouseEvent.BUTTON2_DOWN_MASK | 
-		    MouseEvent.SHIFT_DOWN_MASK |
-		    MouseEvent.ALT_DOWN_MASK |
-		    MouseEvent.CTRL_DOWN_MASK);
+	int off1 = (InputEvent.BUTTON1_DOWN_MASK | 
+		    InputEvent.BUTTON2_DOWN_MASK | 
+		    InputEvent.SHIFT_DOWN_MASK |
+		    InputEvent.ALT_DOWN_MASK |
+		    InputEvent.CTRL_DOWN_MASK);
 
 	/* BUTTON3: popup menus */ 
 	if((mods & (on1 | off1)) == on1) {
@@ -663,6 +674,21 @@ class JManageHardwareKeysDialog
    */ 
   public void 	
   keyTyped(KeyEvent e) {} 
+  
+  
+  /*-- CHANGE LISTENER METHODS -------------------------------------------------------------*/
+
+  /**
+   * Invoked when the tab panel changes
+   */
+  public void stateChanged
+  (
+    ChangeEvent e
+  )
+  {
+    int i = pTab.getSelectedIndex();
+    pEditButton.setEnabled((i == 0));
+  } 
 
 
   /*-- ACTION LISTENER METHODS -------------------------------------------------------------*/
@@ -670,6 +696,7 @@ class JManageHardwareKeysDialog
   /** 
    * Invoked when an action occurs. 
    */ 
+  @Override
   public void 
   actionPerformed
   (
@@ -691,6 +718,8 @@ class JManageHardwareKeysDialog
 
     else if(cmd.equals("update")) 
       doUpdate();
+    else if(cmd.equals("edit")) 
+      doEdit();
     else 
       super.actionPerformed(e);
   }
@@ -729,6 +758,7 @@ class JManageHardwareKeysDialog
   /**
    * Apply changes and close. 
    */ 
+  @Override
   public void 
   doConfirm() 
   {
@@ -739,6 +769,7 @@ class JManageHardwareKeysDialog
   /**
    * Apply changes. 
    */ 
+  @Override
   public void 
   doApply()
   {
@@ -778,7 +809,39 @@ class JManageHardwareKeysDialog
     pApplyButton.setEnabled(true);
   }
  
+  private void
+  doEdit()
+  {
+    UIMaster master = UIMaster.getInstance();
+    int row = pKeysTablePanel.getTable().getSelectedRow();
+    if(row == -1) 
+      return;
 
+    BaseKeyChooser oplugin = pKeysTableModel.getKeyChooser(row);
+    pKeyDetailsDialog.setKeyChooser(oplugin);
+    pKeyDetailsDialog.setVisible(true);
+    
+    if(pKeyDetailsDialog.wasConfirmed()) {
+      BaseKeyChooser plugin = pKeyDetailsDialog.getKeyChooser();
+      BaseKey key = pKeysTableModel.getKey(row);
+      if(key != null) {
+        try {
+          QueueMgrClient qclient = master.getQueueMgrClient();
+          HardwareKey newKey = 
+            new HardwareKey(key.getName(), key.getDescription(), plugin); 
+          qclient.addHardwareKey(newKey);
+          
+          ArrayList<BaseKey> newKeys = new ArrayList<BaseKey>();
+          for (HardwareKey k : qclient.getHardwareKeys())
+            newKeys.add(k);
+          pKeysTableModel.setKeys(newKeys);
+        }
+        catch(PipelineException ex) {
+          showErrorDialog(ex);
+        }
+      }
+    }
+  }
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -1068,6 +1131,11 @@ class JManageHardwareKeysDialog
    * The dialog update button.
    */ 
   private JButton  pUpdateButton; 
+  
+  /**
+   * The dialog edit button.
+   */
+  private JButton  pEditButton; 
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -1087,7 +1155,7 @@ class JManageHardwareKeysDialog
   /**
    * The selection keys table model.
    */ 
-  private HardwareKeysTableModel  pKeysTableModel;
+  private BaseKeysTableModel  pKeysTableModel;
 
   /**
    * The selection keys table panel.
@@ -1126,6 +1194,10 @@ class JManageHardwareKeysDialog
    */ 
   private JTablePanel  pGroupNamesTablePanel;
 
+  /**
+   * The add/edit configuration dialog.
+   */ 
+  private JKeyChooserConfigDialog  pKeyDetailsDialog; 
 
   /**
    * The selection groups table model.
@@ -1141,7 +1213,7 @@ class JManageHardwareKeysDialog
   /**
    * The new selection group creation dialog.
    */ 
-  private JNewHardwareGroupDialog pGroupsNewDialog; 
+  private JNewHardwareGroupDialog pGroupsNewDialog;
 
 }
 

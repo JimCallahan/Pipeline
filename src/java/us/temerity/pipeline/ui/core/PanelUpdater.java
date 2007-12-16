@@ -1,4 +1,4 @@
-// $Id: PanelUpdater.java,v 1.24 2007/12/15 07:50:31 jesse Exp $
+// $Id: PanelUpdater.java,v 1.25 2007/12/16 06:31:50 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -491,17 +491,17 @@ class PanelUpdater
 	  
 	  pUserSelectionKeys = new ArrayList<SelectionKey>();
 	  for (SelectionKey key : pSelectionKeys)
-	    if (!key.hasPlugin())
+	    if (!key.hasKeyChooser())
 	      pUserSelectionKeys.add(key);
 	  
 	  pUserLicenseKeys = new ArrayList<LicenseKey>();
 	  for (LicenseKey key : pLicenseKeys)
-	    if (!key.hasPlugin())
+	    if (!key.hasKeyChooser())
 	      pUserLicenseKeys.add(key);
 	  
 	  pUserHardwareKeys = new ArrayList<HardwareKey>();
           for (HardwareKey key : pHardwareKeys)
-            if (!key.hasPlugin())
+            if (!key.hasKeyChooser())
               pUserHardwareKeys.add(key);
 	}
 

@@ -1,17 +1,16 @@
-// $Id: JManageSelectionKeysDialog.java,v 1.15 2007/09/07 18:52:38 jim Exp $
+// $Id: JManageSelectionKeysDialog.java,v 1.16 2007/12/16 06:32:49 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
-
-import us.temerity.pipeline.*;
-import us.temerity.pipeline.ui.*;
 
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
+
 import javax.swing.*;
-import javax.swing.table.*;
 import javax.swing.event.*;
-import javax.swing.border.*;
+
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.ui.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   M A N A G E   S E L E C T I O N   K E Y S   D I A L O G                                */
@@ -24,7 +23,7 @@ public
 class JManageSelectionKeysDialog
   extends JTopLevelDialog
   implements ListSelectionListener, MouseListener, KeyListener, ActionListener, 
-             AdjustmentListener
+             AdjustmentListener, ChangeListener
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -172,7 +171,7 @@ class JManageSelectionKeysDialog
 	  panel.addKeyListener(this);
 
 	  {
-	    SelectionKeysTableModel model = new SelectionKeysTableModel();
+	    BaseKeysTableModel model = new BaseKeysTableModel();
 	    pKeysTableModel = model;
 	    
 	    JTablePanel tpanel = new JTablePanel(model);
@@ -432,8 +431,9 @@ class JManageSelectionKeysDialog
       }
 
       String extra[][] = {
-	null,
-	{ "Update", "update" }
+        null,
+        { "Update", "update"},
+        { "Edit", "edit" },
       };
 
       JButton btns[] = super.initUI(null, tab, "Confirm", "Apply", extra, "Close");
@@ -441,6 +441,10 @@ class JManageSelectionKeysDialog
       pUpdateButton = btns[1];
       pUpdateButton.setToolTipText(UIFactory.formatToolTip(
         "Update the selection keys, groups and schedules."));
+      
+      pEditButton = btns[2];
+      pEditButton.setToolTipText(UIFactory.formatToolTip(
+        "Edit the selected hardware key."));
 
       pConfirmButton.setToolTipText(UIFactory.formatToolTip(
        "Apply the changes and close."));
@@ -450,10 +454,14 @@ class JManageSelectionKeysDialog
       updateAll();
       pack();
     }
+    
+    /* This needs to be run after the edit button is created. */
+    pTab.addChangeListener(this);
 
     pKeysCreateDialog   = new JCreateSelectionKeyDialog(this);
     pGroupsNewDialog    = new JNewSelectionGroupDialog(this);
     pSchedulesNewDialog = new JNewSelectionScheduleDialog(this);
+    pKeyDetailsDialog   = new JKeyChooserConfigDialog(this, "Selection");
   }
 
   
@@ -473,7 +481,9 @@ class JManageSelectionKeysDialog
     try {
       pPrivilegeDetails = master.getMasterMgrClient().getPrivilegeDetails();
 
-      ArrayList<SelectionKey> keys = client.getSelectionKeys();
+      ArrayList<BaseKey> keys = new ArrayList<BaseKey>();
+      for (SelectionKey key : client.getSelectionKeys() )
+        keys.add(key);
       TreeMap<String,SelectionGroup> groups = client.getSelectionGroups();
 
       pGroupNames.clear();
@@ -483,11 +493,11 @@ class JManageSelectionKeysDialog
       pSchedules.putAll(client.getSelectionSchedules());
       
       TreeMap<String,String> keyDesc = new TreeMap<String,String>();
-      for(SelectionKey key : keys) 
+      for(BaseKey key : keys) 
 	keyDesc.put(key.getName(), key.getDescription());
       
       /* update selection keys */ 
-      pKeysTableModel.setSelectionKeys(keys);
+      pKeysTableModel.setKeys(keys);
 
       /* update selection groups */ 
       pGroupNamesTableModel.setNames(pGroupNames);
@@ -809,13 +819,13 @@ class JManageSelectionKeysDialog
     switch(e.getButton()) {
     case MouseEvent.BUTTON3:
       {
-	int on1  = (MouseEvent.BUTTON3_DOWN_MASK);
+	int on1  = (InputEvent.BUTTON3_DOWN_MASK);
 	
-	int off1 = (MouseEvent.BUTTON1_DOWN_MASK | 
-		    MouseEvent.BUTTON2_DOWN_MASK | 
-		    MouseEvent.SHIFT_DOWN_MASK |
-		    MouseEvent.ALT_DOWN_MASK |
-		    MouseEvent.CTRL_DOWN_MASK);
+	int off1 = (InputEvent.BUTTON1_DOWN_MASK | 
+		    InputEvent.BUTTON2_DOWN_MASK | 
+		    InputEvent.SHIFT_DOWN_MASK |
+		    InputEvent.ALT_DOWN_MASK |
+		    InputEvent.CTRL_DOWN_MASK);
 
 	/* BUTTON3: popup menus */ 
 	if((mods & (on1 | off1)) == on1) {
@@ -942,13 +952,27 @@ class JManageSelectionKeysDialog
    */ 
   public void 	
   keyTyped(KeyEvent e) {} 
+  
+  /*-- CHANGE LISTENER METHODS -------------------------------------------------------------*/
 
+  /**
+   * Invoked when the tab panel changes
+   */
+  public void stateChanged
+  (
+    ChangeEvent e
+  )
+  {
+    int i = pTab.getSelectedIndex();
+    pEditButton.setEnabled((i == 0));
+  } 
 
   /*-- ACTION LISTENER METHODS -------------------------------------------------------------*/
 
   /** 
    * Invoked when an action occurs. 
    */ 
+  @Override
   public void 
   actionPerformed
   (
@@ -986,11 +1010,12 @@ class JManageSelectionKeysDialog
 
     else if(cmd.equals("update")) 
       doUpdate();
+    else if(cmd.equals("edit")) 
+      doEdit();
     else 
       super.actionPerformed(e);
   }
-
-
+  
   /*-- ADJUSTMENT LISTENER METHODS ---------------------------------------------------------*/
 
   /**
@@ -1024,6 +1049,7 @@ class JManageSelectionKeysDialog
   /**
    * Apply changes and close. 
    */ 
+  @Override
   public void 
   doConfirm() 
   {
@@ -1034,6 +1060,7 @@ class JManageSelectionKeysDialog
   /**
    * Apply changes. 
    */ 
+  @Override
   public void 
   doApply()
   {
@@ -1082,6 +1109,39 @@ class JManageSelectionKeysDialog
     pApplyButton.setEnabled(true);
   }
  
+  private void
+  doEdit()
+  {
+    UIMaster master = UIMaster.getInstance();
+    int row = pKeysTablePanel.getTable().getSelectedRow();
+    if(row == -1) 
+      return;
+
+    BaseKeyChooser oplugin = pKeysTableModel.getKeyChooser(row);
+    pKeyDetailsDialog.setKeyChooser(oplugin);
+    pKeyDetailsDialog.setVisible(true);
+    
+    if(pKeyDetailsDialog.wasConfirmed()) {
+      BaseKeyChooser plugin = pKeyDetailsDialog.getKeyChooser();
+      BaseKey key = pKeysTableModel.getKey(row);
+      if(key != null) {
+        try {
+          QueueMgrClient qclient = master.getQueueMgrClient();
+          SelectionKey newKey = 
+            new SelectionKey(key.getName(), key.getDescription(), plugin); 
+          qclient.addSelectionKey(newKey);
+          
+          ArrayList<BaseKey> newKeys = new ArrayList<BaseKey>();
+          for (SelectionKey k : qclient.getSelectionKeys())
+            newKeys.add(k);
+          pKeysTableModel.setKeys(newKeys);
+        }
+        catch(PipelineException ex) {
+          showErrorDialog(ex);
+        }
+      }
+    }
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -1603,6 +1663,11 @@ class JManageSelectionKeysDialog
    * The dialog update button.
    */ 
   private JButton  pUpdateButton; 
+  
+  /**
+   * The dialog edit button.
+   */
+  private JButton  pEditButton; 
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -1622,7 +1687,7 @@ class JManageSelectionKeysDialog
   /**
    * The selection keys table model.
    */ 
-  private SelectionKeysTableModel  pKeysTableModel;
+  private BaseKeysTableModel  pKeysTableModel;
 
   /**
    * The selection keys table panel.
@@ -1676,7 +1741,12 @@ class JManageSelectionKeysDialog
   /**
    * The new selection group creation dialog.
    */ 
-  private JNewSelectionGroupDialog pGroupsNewDialog; 
+  private JNewSelectionGroupDialog pGroupsNewDialog;
+  
+  /**
+   * The add/edit configuration dialog.
+   */ 
+  private JKeyChooserConfigDialog  pKeyDetailsDialog; 
 
 
   /*----------------------------------------------------------------------------------------*/
