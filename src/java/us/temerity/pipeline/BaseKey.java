@@ -1,6 +1,9 @@
-// $Id: BaseKey.java,v 1.1 2007/12/15 07:24:58 jesse Exp $
+// $Id: BaseKey.java,v 1.2 2007/12/16 06:26:40 jesse Exp $
 
 package us.temerity.pipeline;
+
+import java.io.IOException;
+import java.io.Serializable;
 
 import us.temerity.pipeline.glue.*;
 
@@ -21,6 +24,7 @@ import us.temerity.pipeline.glue.*;
  */
 public class BaseKey
   extends Described
+  implements Serializable, Glueable
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -69,7 +73,7 @@ public class BaseKey
    * @param desc 
    *   A short description of the key.
    *   
-   * @param plugin
+   * @param keyChooser
    *   The plugin that will be used to determine when this key is on.
    */ 
   public
@@ -77,11 +81,11 @@ public class BaseKey
   (
    String name,  
    String desc,
-   BaseKeyChooser plugin
+   BaseKeyChooser keyChooser
   ) 
   {
     super(name, desc);
-    pKeyChooser = plugin;
+    pKeyChooser = keyChooser;
   }
   
   
@@ -94,7 +98,7 @@ public class BaseKey
    * Does this key contain a plugin that is used to determine when it is on?
    */
   public boolean
-  hasPlugin()
+  hasKeyChooser()
   {
     return (pKeyChooser != null);
   }
@@ -106,7 +110,7 @@ public class BaseKey
    * or <code>null</code> if there is no plugin associated with this key.
    */
   public BaseKeyChooser
-  getPlugin()
+  getKeyChooser()
   {
     return pKeyChooser;
   }
@@ -118,7 +122,7 @@ public class BaseKey
    *   The plugin or <code>null</code> to remove the existing plugin.
    */
   public void 
-  setPlugin
+  setKeyChooser
   (
     BaseKeyChooser keyChooser
   )
@@ -126,6 +130,64 @@ public class BaseKey
     pKeyChooser = keyChooser;
   }
   
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   S E R I A L I Z A B L E                                                              */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Write the serializable fields to the object stream. <P> 
+   * 
+   * This enables the node to convert a dynamically loaded action plugin instance into a 
+   * generic staticly loaded BaseKeyChooser instance before serialization.
+   */ 
+  private void 
+  writeObject
+  (
+   java.io.ObjectOutputStream out
+  )
+    throws IOException
+  {
+    BaseKeyChooser plug = null;
+    if(pKeyChooser != null) 
+      plug = new BaseKeyChooser(pKeyChooser);
+    out.writeObject(plug);
+  }
+
+  /**
+   * Read the serializable fields from the object stream. <P> 
+   * 
+   * This enables the node to dynamically instantiate an action plugin instance and copy
+   * its parameters from the generic staticly loaded BaseAction instance in the object 
+   * stream. 
+   */ 
+  @SuppressWarnings("unchecked")
+  private void 
+  readObject
+  (
+    java.io.ObjectInputStream in
+  )
+    throws IOException, ClassNotFoundException
+  {
+    BaseKeyChooser plug = (BaseKeyChooser) in.readObject();
+    if(plug != null) {
+      try {
+        PluginMgrClient client = PluginMgrClient.getInstance();
+        pKeyChooser = client.newKeyChooser(plug.getName(), 
+                                           plug.getVersionID(), 
+                                           plug.getVendor());
+        pKeyChooser.setParamValues(plug);
+      }
+      catch(PipelineException ex) {
+        throw new IOException(ex.getMessage());
+      }
+    }
+    else {
+      pKeyChooser = null;
+    }
+  }
+
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -162,7 +224,19 @@ public class BaseKey
       throw new GlueException("The \"Description\" was missing!");
     pDescription = desc;
     
-    pKeyChooser = (BaseKeyChooser) decoder.decode("KeyChooser");
+    BaseKeyChooser key = (BaseKeyChooser) decoder.decode("KeyChooser");
+    if(key != null) {
+      try {
+        PluginMgrClient client = PluginMgrClient.getInstance();
+        pKeyChooser = client.newKeyChooser(key.getName(), 
+                                           key.getVersionID(), 
+                                           key.getVendor());
+        pKeyChooser.setParamValues(key);
+      }
+      catch(PipelineException ex) {
+        throw new GlueException(ex.getMessage());
+      }
+    }
   }
   
 

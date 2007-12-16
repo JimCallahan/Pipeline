@@ -1,4 +1,4 @@
-// $Id: SelectionKey.java,v 1.3 2007/12/15 07:14:57 jesse Exp $
+// $Id: SelectionKey.java,v 1.4 2007/12/16 06:26:40 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -70,7 +70,7 @@ class SelectionKey
    * @param desc 
    *   A short description of the selection key.
    *   
-   * @param plugin
+   * @param keyChooser
    *   The plugin that will be used to determine when this key is on.
    */ 
   public
@@ -78,10 +78,10 @@ class SelectionKey
   (
    String name,  
    String desc,
-   BaseKeyChooser plugin
+   BaseKeyChooser keyChooser
   ) 
   {
-    super(name, desc, plugin);
+    super(name, desc, keyChooser);
   }
 
 

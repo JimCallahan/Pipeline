@@ -1,4 +1,4 @@
-// $Id: BaseKeyChooser.java,v 1.1 2007/12/15 07:24:58 jesse Exp $
+// $Id: BaseKeyChooser.java,v 1.2 2007/12/16 06:26:40 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -107,7 +107,10 @@ class BaseKeyChooser
   /**
    * Return a value indicating whether the given node meets the criteria for this key.
    * <P> 
-   * @param job TODO
+   * @param job
+   *   The QueueJob that the key is going to apply to.  This contains the BaseAction and
+   *   the ActionAgenda that can be mined for information.
+   *   
    * @param annots
    *   The list of annotations assigned to the node the job is being created for.
    * 

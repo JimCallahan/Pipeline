@@ -1,4 +1,4 @@
-// $Id: LicenseKey.java,v 1.7 2007/12/15 07:14:57 jesse Exp $
+// $Id: LicenseKey.java,v 1.8 2007/12/16 06:26:40 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -95,7 +95,7 @@ class LicenseKey
    * @param desc 
    *   A short description of the license key.
    * 
-   * @param plugin
+   * @param keyChooser
    *   The plugin that will be used to determine when this key is on.
    * 
    * @param scheme
@@ -118,14 +118,14 @@ class LicenseKey
   (
    String name,  
    String desc,
-   BaseKeyChooser plugin,
+   BaseKeyChooser keyChooser,
    LicenseScheme scheme, 
    Integer maxSlots, 
    Integer maxHosts, 
    Integer maxHostSlots
   ) 
   {
-    super(name, desc, plugin);
+    super(name, desc, keyChooser);
 
     pUsedPerHost = new TreeMap<String,Integer>();
 

@@ -1,4 +1,4 @@
-// $Id: HardwareKey.java,v 1.2 2007/12/15 07:14:57 jesse Exp $
+// $Id: HardwareKey.java,v 1.3 2007/12/16 06:26:40 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -65,16 +65,19 @@ class HardwareKey
    * 
    * @param desc 
    *   A short description of the hardware key.
+   *   
+   * @param keyChooser
+   *   The plugin that will be used to determine when this key is on.   
    */ 
   public
   HardwareKey
   (
    String name,  
    String desc,
-   BaseKeyChooser plugin
+   BaseKeyChooser keyChooser
   ) 
   {
-    super(name, desc, plugin);
+    super(name, desc, keyChooser);
   }
 
   
