@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.73 2007/11/30 20:14:26 jesse Exp $
+// $Id: UIMaster.java,v 1.74 2007/12/16 11:03:59 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -108,6 +108,10 @@ class UIMaster
       new TreeMap<String,TripleMap<String,String,VersionID,TreeSet<OsType>>>();
     pQueueExtPlugins = 
       new TreeMap<String,TripleMap<String,String,VersionID,TreeSet<OsType>>>();
+    pAnnotationPlugins = 
+      new TreeMap<String,TripleMap<String,String,VersionID,TreeSet<OsType>>>();
+    pKeyChooserPlugins = 
+      new TreeMap<String,TripleMap<String,String,VersionID,TreeSet<OsType>>>();
     
     pEditorLayouts     = new TreeMap<String,PluginMenuLayout>();                   
     pComparatorLayouts = new TreeMap<String,PluginMenuLayout>();                  
@@ -116,6 +120,8 @@ class UIMaster
     pArchiverLayouts   = new TreeMap<String,PluginMenuLayout>();                   
     pMasterExtLayouts  = new TreeMap<String,PluginMenuLayout>();                   
     pQueueExtLayouts   = new TreeMap<String,PluginMenuLayout>();                   
+    pAnnotationLayouts = new TreeMap<String,PluginMenuLayout>();                   
+    pKeyChooserLayouts = new TreeMap<String,PluginMenuLayout>();                   
 
     pNodeBrowserPanels = new PanelGroup<JNodeBrowserPanel>();
     pNodeViewerPanels  = new PanelGroup<JNodeViewerPanel>();
@@ -893,11 +899,8 @@ class UIMaster
     synchronized(pArchiverPlugins) {
       pArchiverPlugins.clear();
     }
-    synchronized(pMasterExtPlugins) {
-      pMasterExtPlugins.clear();
-    }
-    synchronized(pQueueExtPlugins) {
-      pQueueExtPlugins.clear();
+    synchronized(pAnnotationPlugins) {
+      pAnnotationPlugins.clear();
     }
 
     synchronized(pEditorLayouts) {
@@ -915,11 +918,38 @@ class UIMaster
     synchronized(pArchiverLayouts) {
       pArchiverLayouts.clear();
     }    
+    synchronized(pAnnotationLayouts) {
+      pAnnotationLayouts.clear();
+    }    
+  }
+
+  public void 
+  clearExtPluginCaches() 
+  {
+    synchronized(pMasterExtPlugins) {
+      pMasterExtPlugins.clear();
+    }
+    synchronized(pQueueExtPlugins) {
+      pQueueExtPlugins.clear();
+    }
+
     synchronized(pMasterExtLayouts) {
       pMasterExtLayouts.clear();
     }    
     synchronized(pQueueExtLayouts) {
       pQueueExtLayouts.clear();
+    }    
+  }
+
+  public void 
+  clearKeyChooserPluginCaches() 
+  {
+    synchronized(pKeyChooserPlugins) {
+      pKeyChooserPlugins.clear();
+    }
+
+    synchronized(pKeyChooserLayouts) {
+      pKeyChooserLayouts.clear();
     }    
   }
 
@@ -2064,6 +2094,234 @@ class UIMaster
 	if(layout == null) {
 	  layout = client.getQueueExtMenuLayout(tname);
 	  pQueueExtLayouts.put(tname, layout);
+	}
+      }
+    }
+    catch(PipelineException ex) {
+      showErrorDialog(ex);
+      return;
+    }
+
+    field.updatePlugins(layout, plugins);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Create a new annotation plugin selection field based on the default toolset.
+   * 
+   * @param width
+   *   The minimum and preferred width of the field.
+   */ 
+  public JPluginSelectionField
+  createAnnotationSelectionField
+  (
+   int width  
+  ) 
+  {
+    PluginMenuLayout layout = null;
+    TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
+    try {
+      MasterMgrClient client = getMasterMgrClient();
+      String tname = client.getDefaultToolsetName();
+
+      synchronized(pAnnotationPlugins) {
+	plugins = pAnnotationPlugins.get(tname);
+	if(plugins == null) {
+	  DoubleMap<String,String,TreeSet<VersionID>> index = 
+	    client.getToolsetAnnotationPlugins(tname);
+
+	  TripleMap<String,String,VersionID,TreeSet<OsType>> all = 
+	    PluginMgrClient.getInstance().getAnnotations();
+
+	  plugins = new TripleMap<String,String,VersionID,TreeSet<OsType>>();
+	  for(String vendor : index.keySet()) {
+	    for(String name : index.keySet(vendor)) {
+	      for(VersionID vid : index.get(vendor, name)) {
+		plugins.put(vendor, name, vid, all.get(vendor, name, vid));
+	      }
+	    }
+	  }
+
+	  pAnnotationPlugins.put(tname, plugins);
+	}
+      }
+      
+      synchronized(pAnnotationLayouts) {
+	layout = pAnnotationLayouts.get(tname);
+	if(layout == null) {
+	  layout = client.getAnnotationMenuLayout(tname);
+	  pAnnotationLayouts.put(tname, layout);
+	}
+      }
+    }
+    catch(PipelineException ex) {
+      showErrorDialog(ex);
+
+      layout = new PluginMenuLayout();
+      plugins = new TripleMap<String,String,VersionID,TreeSet<OsType>>();
+    }
+
+    return UIFactory.createPluginSelectionField(layout, plugins, width);
+  }
+
+  /**
+   * Update the contents of an annotation plugin field.
+   */ 
+  public void 
+  updateAnnotationPluginField
+  (
+   JPluginSelectionField field
+  ) 
+  {
+    PluginMenuLayout layout = null;
+    TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
+    try {
+      MasterMgrClient client = getMasterMgrClient();
+      String tname = client.getDefaultToolsetName();
+
+      synchronized(pAnnotationPlugins) {
+	plugins = pAnnotationPlugins.get(tname);
+	if(plugins == null) {
+	  DoubleMap<String,String,TreeSet<VersionID>> index = 
+	    client.getToolsetAnnotationPlugins(tname);
+
+	  TripleMap<String,String,VersionID,TreeSet<OsType>> all = 
+	    PluginMgrClient.getInstance().getAnnotations();
+
+	  plugins = new TripleMap<String,String,VersionID,TreeSet<OsType>>();
+	  for(String vendor : index.keySet()) {
+	    for(String name : index.keySet(vendor)) {
+	      for(VersionID vid : index.get(vendor, name)) {
+		plugins.put(vendor, name, vid, all.get(vendor, name, vid));
+	      }
+	    }
+	  }
+
+	  pAnnotationPlugins.put(tname, plugins);
+	}
+      }
+      
+      synchronized(pAnnotationLayouts) {
+	layout = pAnnotationLayouts.get(tname);
+	if(layout == null) {
+	  layout = client.getAnnotationMenuLayout(tname);
+	  pAnnotationLayouts.put(tname, layout);
+	}
+      }
+    }
+    catch(PipelineException ex) {
+      showErrorDialog(ex);
+      return;
+    }
+
+    field.updatePlugins(layout, plugins);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Create a new key chooser plugin selection field based on the default toolset.
+   * 
+   * @param width
+   *   The minimum and preferred width of the field.
+   */ 
+  public JPluginSelectionField
+  createKeyChooserSelectionField
+  (
+   int width  
+  ) 
+  {
+    PluginMenuLayout layout = null;
+    TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
+    try {
+      MasterMgrClient client = getMasterMgrClient();
+      String tname = client.getDefaultToolsetName();
+
+      synchronized(pKeyChooserPlugins) {
+	plugins = pKeyChooserPlugins.get(tname);
+	if(plugins == null) {
+	  DoubleMap<String,String,TreeSet<VersionID>> index = 
+	    client.getToolsetKeyChooserPlugins(tname);
+
+	  TripleMap<String,String,VersionID,TreeSet<OsType>> all = 
+	    PluginMgrClient.getInstance().getKeyChoosers();
+
+	  plugins = new TripleMap<String,String,VersionID,TreeSet<OsType>>();
+	  for(String vendor : index.keySet()) {
+	    for(String name : index.keySet(vendor)) {
+	      for(VersionID vid : index.get(vendor, name)) {
+		plugins.put(vendor, name, vid, all.get(vendor, name, vid));
+	      }
+	    }
+	  }
+
+	  pKeyChooserPlugins.put(tname, plugins);
+	}
+      }
+      
+      synchronized(pKeyChooserLayouts) {
+	layout = pKeyChooserLayouts.get(tname);
+	if(layout == null) {
+	  layout = client.getKeyChooserMenuLayout(tname);
+	  pKeyChooserLayouts.put(tname, layout);
+	}
+      }
+    }
+    catch(PipelineException ex) {
+      showErrorDialog(ex);
+
+      layout = new PluginMenuLayout();
+      plugins = new TripleMap<String,String,VersionID,TreeSet<OsType>>();
+    }
+
+    return UIFactory.createPluginSelectionField(layout, plugins, width);
+  }
+
+  /**
+   * Update the contents of an key chooser plugin field.
+   */ 
+  public void 
+  updateKeyChooserPluginField
+  (
+   JPluginSelectionField field
+  ) 
+  {
+    PluginMenuLayout layout = null;
+    TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
+    try {
+      MasterMgrClient client = getMasterMgrClient();
+      String tname = client.getDefaultToolsetName();
+
+      synchronized(pKeyChooserPlugins) {
+	plugins = pKeyChooserPlugins.get(tname);
+	if(plugins == null) {
+	  DoubleMap<String,String,TreeSet<VersionID>> index = 
+	    client.getToolsetKeyChooserPlugins(tname);
+
+	  TripleMap<String,String,VersionID,TreeSet<OsType>> all = 
+	    PluginMgrClient.getInstance().getKeyChoosers();
+
+	  plugins = new TripleMap<String,String,VersionID,TreeSet<OsType>>();
+	  for(String vendor : index.keySet()) {
+	    for(String name : index.keySet(vendor)) {
+	      for(VersionID vid : index.get(vendor, name)) {
+		plugins.put(vendor, name, vid, all.get(vendor, name, vid));
+	      }
+	    }
+	  }
+
+	  pKeyChooserPlugins.put(tname, plugins);
+	}
+      }
+      
+      synchronized(pKeyChooserLayouts) {
+	layout = pKeyChooserLayouts.get(tname);
+	if(layout == null) {
+	  layout = client.getKeyChooserMenuLayout(tname);
+	  pKeyChooserLayouts.put(tname, layout);
 	}
       }
     }
@@ -5553,6 +5811,10 @@ class UIMaster
 		  TripleMap<String,String,VersionID,TreeSet<OsType>>>  pMasterExtPlugins;
   private TreeMap<String,
 		  TripleMap<String,String,VersionID,TreeSet<OsType>>>  pQueueExtPlugins;
+  private TreeMap<String,
+		  TripleMap<String,String,VersionID,TreeSet<OsType>>>  pAnnotationPlugins;
+  private TreeMap<String,
+		  TripleMap<String,String,VersionID,TreeSet<OsType>>>  pKeyChooserPlugins;
 
   /** 
    * Caches of plugin menu layouts indexed by toolset name.
@@ -5564,6 +5826,8 @@ class UIMaster
   private TreeMap<String,PluginMenuLayout>  pArchiverLayouts; 
   private TreeMap<String,PluginMenuLayout>  pMasterExtLayouts; 
   private TreeMap<String,PluginMenuLayout>  pQueueExtLayouts; 
+  private TreeMap<String,PluginMenuLayout>  pAnnotationLayouts; 
+  private TreeMap<String,PluginMenuLayout>  pKeyChooserLayouts; 
 
 
 

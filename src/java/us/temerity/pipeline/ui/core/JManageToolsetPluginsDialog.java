@@ -1,4 +1,4 @@
-// $Id: JManageToolsetPluginsDialog.java,v 1.8 2006/10/23 11:30:20 jim Exp $
+// $Id: JManageToolsetPluginsDialog.java,v 1.9 2007/12/16 11:03:59 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -53,9 +53,11 @@ class JManageToolsetPluginsDialog
       pPluginPanels.add(new JToolsetComparatorPluginsPanel(parent, this));
       pPluginPanels.add(new JToolsetActionPluginsPanel(parent, this));
       pPluginPanels.add(new JToolsetToolPluginsPanel(parent, this));
+      pPluginPanels.add(new JToolsetAnnotationPluginsPanel(parent, this));
       pPluginPanels.add(new JToolsetArchiverPluginsPanel(parent, this));
       pPluginPanels.add(new JToolsetMasterExtPluginsPanel(parent, this));
       pPluginPanels.add(new JToolsetQueueExtPluginsPanel(parent, this));
+      pPluginPanels.add(new JToolsetKeyChooserPluginsPanel(parent, this));
       
       pTab = new JTabbedPanel();
       for(JBaseToolsetPluginsPanel panel : pPluginPanels) 

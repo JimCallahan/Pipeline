@@ -1,4 +1,4 @@
-// $Id: JKeyChooserConfigDialog.java,v 1.1 2007/12/16 06:32:49 jesse Exp $
+// $Id: JKeyChooserConfigDialog.java,v 1.2 2007/12/16 11:03:59 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -65,7 +65,9 @@ class JKeyChooserConfigDialog
 
           tpanel.add(label);
 
-          JPluginSelectionField field = createKeyChooserPluginField(); 
+          UIMaster master = UIMaster.getInstance();
+          master.clearKeyChooserPluginCaches();
+          JPluginSelectionField field = master.createKeyChooserSelectionField(sVSize);
           pKeyChooserField = field;
           
           field.setActionCommand("chooser-changed");
@@ -212,58 +214,14 @@ class JKeyChooserConfigDialog
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Create the field for editing the server extension plugin.
-   */ 
-  private JPluginSelectionField
-  createKeyChooserPluginField()
-  {
-    TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = 
-      PluginMgrClient.getInstance().getKeyChoosers();
-    
-    PluginMenuLayout layout = new PluginMenuLayout();
-    for(String avendor : plugins.keySet()) {
-      PluginMenuLayout vmenu = new PluginMenuLayout(avendor);
-      layout.add(vmenu);
-      
-      for(String aname : plugins.keySet(avendor)) {
-        PluginMenuLayout nmenu = new PluginMenuLayout(aname);
-        vmenu.add(nmenu);
-        
-        for(VersionID avid : plugins.keySet(avendor, aname)) {
-          PluginMenuLayout item = new PluginMenuLayout("v" + avid, aname, avid, avendor);
-          nmenu.add(item);
-        }
-      }
-    }
-    
-    return UIFactory.createPluginSelectionField(layout, plugins, sVSize);
-  }
-  
-  /**
-   * Create the field for editing the server extension plugin.
+   * Update the field for editing the server extension plugin.
    */ 
   private void 
   updateKeyChooserField()
   {
-    TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = 
-      PluginMgrClient.getInstance().getKeyChoosers();
-    
-    PluginMenuLayout layout = new PluginMenuLayout();
-    for(String avendor : plugins.keySet()) {
-      PluginMenuLayout vmenu = new PluginMenuLayout(avendor);
-      layout.add(vmenu);
-      
-      for(String aname : plugins.keySet(avendor)) {
-        PluginMenuLayout nmenu = new PluginMenuLayout(aname);
-        vmenu.add(nmenu);
-        
-        for(VersionID avid : plugins.keySet(avendor, aname)) {
-          PluginMenuLayout item = new PluginMenuLayout("v" + avid, aname, avid, avendor);
-          nmenu.add(item);
-        }
-      }
-    }
-    pKeyChooserField.updatePlugins(layout, plugins);
+    UIMaster master = UIMaster.getInstance();
+    master.clearKeyChooserPluginCaches();
+    master.updateKeyChooserPluginField(pKeyChooserField); 
 
     updateKeyChooserFields();
     updateKeyChooserParams();
@@ -609,6 +567,7 @@ class JKeyChooserConfigDialog
    */
   public void 
   componentShown(ComponentEvent e) {}
+
 
   /*-- ACTION LISTENER METHODS -------------------------------------------------------------*/
 

@@ -1,4 +1,4 @@
-// $Id: JManageToolsetsDialog.java,v 1.30 2007/09/07 18:52:38 jim Exp $
+// $Id: JManageToolsetsDialog.java,v 1.31 2007/12/16 11:03:59 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1162,6 +1162,149 @@ class JManageToolsetsDialog
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Get the annotation plugin menu associated with the given toolset.
+   * 
+   * @param tname
+   *   The toolset name.
+   */ 
+  public PluginMenuLayout
+  getToolsetAnnotations
+  (
+   String tname
+  ) 
+    throws PipelineException
+  {
+    Toolset toolset = lookupToolset(tname, OsType.Unix);
+    if(toolset == null) 
+      throw new PipelineException
+	("No toolset named (" + tname + ") exists!");
+       
+    PluginMenuLayout layout = null;
+    if(!toolset.isFrozen()) 
+      layout = pToolsetLayouts.get(tname, PluginType.Annotation);
+    else 
+      layout = pFrozenToolsetLayouts.get(tname, PluginType.Annotation);
+
+    if(layout == null) 
+      layout = new PluginMenuLayout();
+
+    return layout;
+  }
+
+  /**
+   * Set the annotation plugins associated with the given toolset.
+   * 
+   * @param tname
+   *   The toolset name.
+   * 
+   * @param layout
+   *   The plugin menu layout. 
+   */ 
+  public void
+  setToolsetAnnotations
+  ( 
+   String tname, 
+   PluginMenuLayout layout
+  ) 
+    throws PipelineException
+  {
+    Toolset toolset = lookupToolset(tname, OsType.Unix);
+    if(toolset == null) 
+      throw new PipelineException
+	("No toolset named (" + tname + ") exists!");
+
+    PluginMenuLayout layout2 = layout;
+    if(layout2 == null) 
+      layout2 = new PluginMenuLayout();
+
+    if(!toolset.isFrozen()) {
+      pToolsetLayouts.put(tname, PluginType.Annotation, layout2);
+    }
+    else {
+      pFrozenToolsetLayouts.put(tname, PluginType.Annotation, layout2);
+
+      UIMaster master = UIMaster.getInstance();
+      MasterMgrClient client = master.getMasterMgrClient();
+      client.setAnnotationMenuLayout(tname, layout2);
+    }    
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the key chooser plugin menu associated with the given toolset.
+   * 
+   * @param tname
+   *   The toolset name.
+   */ 
+  public PluginMenuLayout
+  getToolsetKeyChoosers
+  (
+   String tname
+  ) 
+    throws PipelineException
+  {
+    Toolset toolset = lookupToolset(tname, OsType.Unix);
+    if(toolset == null) 
+      throw new PipelineException
+	("No toolset named (" + tname + ") exists!");
+       
+    PluginMenuLayout layout = null;
+    if(!toolset.isFrozen()) 
+      layout = pToolsetLayouts.get(tname, PluginType.KeyChooser);
+    else 
+      layout = pFrozenToolsetLayouts.get(tname, PluginType.KeyChooser);
+
+    if(layout == null) 
+      layout = new PluginMenuLayout();
+
+    return layout;
+  }
+
+  /**
+   * Set the key chooser plugins associated with the given toolset.
+   * 
+   * @param tname
+   *   The toolset name.
+   * 
+   * @param layout
+   *   The plugin menu layout. 
+   */ 
+  public void
+  setToolsetKeyChoosers
+  ( 
+   String tname, 
+   PluginMenuLayout layout
+  ) 
+    throws PipelineException
+  {
+    Toolset toolset = lookupToolset(tname, OsType.Unix);
+    if(toolset == null) 
+      throw new PipelineException
+	("No toolset named (" + tname + ") exists!");
+
+    PluginMenuLayout layout2 = layout;
+    if(layout2 == null) 
+      layout2 = new PluginMenuLayout();
+
+    if(!toolset.isFrozen()) {
+      pToolsetLayouts.put(tname, PluginType.KeyChooser, layout2);
+    }
+    else {
+      pFrozenToolsetLayouts.put(tname, PluginType.KeyChooser, layout2);
+
+      UIMaster master = UIMaster.getInstance();
+      MasterMgrClient client = master.getMasterMgrClient();
+      client.setKeyChooserMenuLayout(tname, layout2);
+    }    
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * Cache all of the checked-in packages associated with a toolset.
    */ 
   private void 
@@ -1856,6 +1999,150 @@ class JManageToolsetsDialog
       UIMaster master = UIMaster.getInstance();
       MasterMgrClient client = master.getMasterMgrClient();
       client.setPackageQueueExtPlugins(pname, vid, plugins);
+    }    
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the annotation plugins associated with the given package.
+   * 
+   * @param pname
+   *   The toolset name.
+   * 
+   * @param vid
+   *   The package revision number or <CODE>null</CODE> for working packages.
+   */ 
+  public PluginSet
+  getPackageAnnotations
+  (
+   String pname, 
+   VersionID vid
+  ) 
+    throws PipelineException
+  {
+    PluginSet pset = null;
+    if(vid == null) 
+      pset = pPackagePlugins.get(pname, PluginType.Annotation); 
+    else {
+      pset = pFrozenPackagePlugins.get(pname, vid, PluginType.Annotation);
+      if(pset == null) {
+	UIMaster master = UIMaster.getInstance();
+	MasterMgrClient client = master.getMasterMgrClient();
+	pset = client.getPackageAnnotationPlugins(pname, vid);
+	pFrozenPackagePlugins.put(pname, vid, PluginType.Annotation, pset);
+      }
+    }
+
+    if(pset == null) 
+      pset = new PluginSet();
+
+    return pset;
+  }
+
+  /**
+   * Set the annotation plugins associated with the given package.
+   * 
+   * @param pname
+   *   The toolset name.
+   * 
+   * @param vid
+   *   The package revision number or <CODE>null</CODE> for working packages.
+   * 
+   * @param plugins
+   *   The vendors, names and revision numbers of the plugins.
+   */ 
+  public void
+  setPackageAnnotations
+  ( 
+   String pname,
+   VersionID vid,
+   PluginSet plugins
+  ) 
+    throws PipelineException
+  {
+    if(vid == null) {
+      pPackagePlugins.put(pname, PluginType.Annotation, plugins); 
+    }
+    else {
+      pFrozenPackagePlugins.put(pname, vid, PluginType.Annotation, plugins);
+
+      UIMaster master = UIMaster.getInstance();
+      MasterMgrClient client = master.getMasterMgrClient();
+      client.setPackageAnnotationPlugins(pname, vid, plugins);
+    }    
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the key chooser plugins associated with the given package.
+   * 
+   * @param pname
+   *   The toolset name.
+   * 
+   * @param vid
+   *   The package revision number or <CODE>null</CODE> for working packages.
+   */ 
+  public PluginSet
+  getPackageKeyChoosers
+  (
+   String pname, 
+   VersionID vid
+  ) 
+    throws PipelineException
+  {
+    PluginSet pset = null;
+    if(vid == null) 
+      pset = pPackagePlugins.get(pname, PluginType.KeyChooser); 
+    else {
+      pset = pFrozenPackagePlugins.get(pname, vid, PluginType.KeyChooser);
+      if(pset == null) {
+	UIMaster master = UIMaster.getInstance();
+	MasterMgrClient client = master.getMasterMgrClient();
+	pset = client.getPackageKeyChooserPlugins(pname, vid);
+	pFrozenPackagePlugins.put(pname, vid, PluginType.KeyChooser, pset);
+      }
+    }
+
+    if(pset == null) 
+      pset = new PluginSet();
+
+    return pset;
+  }
+
+  /**
+   * Set the key chooser plugins associated with the given package.
+   * 
+   * @param pname
+   *   The toolset name.
+   * 
+   * @param vid
+   *   The package revision number or <CODE>null</CODE> for working packages.
+   * 
+   * @param plugins
+   *   The vendors, names and revision numbers of the plugins.
+   */ 
+  public void
+  setPackageKeyChoosers
+  ( 
+   String pname,
+   VersionID vid,
+   PluginSet plugins
+  ) 
+    throws PipelineException
+  {
+    if(vid == null) {
+      pPackagePlugins.put(pname, PluginType.KeyChooser, plugins); 
+    }
+    else {
+      pFrozenPackagePlugins.put(pname, vid, PluginType.KeyChooser, plugins);
+
+      UIMaster master = UIMaster.getInstance();
+      MasterMgrClient client = master.getMasterMgrClient();
+      client.setPackageKeyChooserPlugins(pname, vid, plugins);
     }    
   }
 
@@ -3690,6 +3977,8 @@ class JManageToolsetsDialog
 	    setToolsetArchivers(tname, pToolsetLayouts.get(tname, PluginType.Archiver));
 	    setToolsetMasterExts(tname, pToolsetLayouts.get(tname, PluginType.MasterExt));
 	    setToolsetQueueExts(tname, pToolsetLayouts.get(tname, PluginType.QueueExt));
+	    setToolsetAnnotations(tname, pToolsetLayouts.get(tname, PluginType.Annotation));
+	    setToolsetKeyChoosers(tname, pToolsetLayouts.get(tname, PluginType.KeyChooser));
 	  }
 	  catch(PipelineException ex) {
 	    showErrorDialog(ex);

@@ -1,4 +1,4 @@
-// $Id: JNodeAnnotationsPanel.java,v 1.10 2007/12/16 06:32:24 jesse Exp $
+// $Id: JNodeAnnotationsPanel.java,v 1.11 2007/12/16 11:03:59 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1622,12 +1622,9 @@ class JNodeAnnotationsPanel
                "The name of the Annotation plugin.");
             
             tpanel.add(label);
-            
-            JPluginSelectionField field = 
-              UIFactory.createPluginSelectionField
-              (new PluginMenuLayout(), 
-               new TripleMap<String,String,VersionID,TreeSet<OsType>>(), 
-               sVSize);
+
+            JPluginSelectionField field =  
+              UIMaster.getInstance().createAnnotationSelectionField(sVSize);
             pAnnotationField = field;
             
             field.setActionCommand("annotation-changed:" + pName);
@@ -1833,26 +1830,7 @@ class JNodeAnnotationsPanel
     private void 
     updateAnnotation() 
     {
-      TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = 
-        PluginMgrClient.getInstance().getAnnotations();
-      
-      PluginMenuLayout layout = new PluginMenuLayout();
-      for(String avendor : plugins.keySet()) {
-        PluginMenuLayout vmenu = new PluginMenuLayout(avendor);
-        layout.add(vmenu);
-        
-        for(String aname : plugins.keySet(avendor)) {
-          PluginMenuLayout nmenu = new PluginMenuLayout(aname);
-          vmenu.add(nmenu);
-          
-          for(VersionID avid : plugins.keySet(avendor, aname)) {
-            PluginMenuLayout item = new PluginMenuLayout("v" + avid, aname, avid, avendor);
-            nmenu.add(item);
-          }
-        }
-      }
-      
-      pAnnotationField.updatePlugins(layout, plugins);
+      UIMaster.getInstance().updateAnnotationPluginField(pAnnotationField); 
 
       updateAnnotationFields();
       updateAnnotationParams();

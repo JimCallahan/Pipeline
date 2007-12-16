@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.81 2007/10/23 02:29:58 jim Exp $
+// $Id: MasterMgrServer.java,v 1.82 2007/12/16 11:03:59 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -861,6 +861,102 @@ class MasterMgrServer
 		MiscSetPackagePluginsReq req = 
 		  (MiscSetPackagePluginsReq) objIn.readObject();
 		objOut.writeObject(pMasterMgr.setPackageQueueExtPlugins(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+
+	    /*----------------------------------*/
+	      
+	    case GetAnnotationMenuLayout:
+	      {
+		MiscGetPluginMenuLayoutReq req = 
+		  (MiscGetPluginMenuLayoutReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getAnnotationMenuLayout(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case SetAnnotationMenuLayout:
+	      {
+		MiscSetPluginMenuLayoutReq req = 
+		  (MiscSetPluginMenuLayoutReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.setAnnotationMenuLayout(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case GetToolsetAnnotationPlugins:
+	      {
+		MiscGetToolsetPluginsReq req = 
+		  (MiscGetToolsetPluginsReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getToolsetAnnotationPlugins(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case GetPackageAnnotationPlugins:
+	      {
+		MiscGetPackagePluginsReq req = 
+		  (MiscGetPackagePluginsReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getPackageAnnotationPlugins(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case SetPackageAnnotationPlugins:
+	      {
+		MiscSetPackagePluginsReq req = 
+		  (MiscSetPackagePluginsReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.setPackageAnnotationPlugins(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+
+	    /*----------------------------------*/
+	      
+	    case GetKeyChooserMenuLayout:
+	      {
+		MiscGetPluginMenuLayoutReq req = 
+		  (MiscGetPluginMenuLayoutReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getKeyChooserMenuLayout(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case SetKeyChooserMenuLayout:
+	      {
+		MiscSetPluginMenuLayoutReq req = 
+		  (MiscSetPluginMenuLayoutReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.setKeyChooserMenuLayout(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case GetToolsetKeyChooserPlugins:
+	      {
+		MiscGetToolsetPluginsReq req = 
+		  (MiscGetToolsetPluginsReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getToolsetKeyChooserPlugins(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case GetPackageKeyChooserPlugins:
+	      {
+		MiscGetPackagePluginsReq req = 
+		  (MiscGetPackagePluginsReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.getPackageKeyChooserPlugins(req));
+		objOut.flush(); 
+	      }
+	      break;
+
+	    case SetPackageKeyChooserPlugins:
+	      {
+		MiscSetPackagePluginsReq req = 
+		  (MiscSetPackagePluginsReq) objIn.readObject();
+		objOut.writeObject(pMasterMgr.setPackageKeyChooserPlugins(req));
 		objOut.flush(); 
 	      }
 	      break;

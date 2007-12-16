@@ -1,4 +1,4 @@
-// $Id: JMasterExtensionConfigDialog.java,v 1.1 2006/10/11 22:45:41 jim Exp $
+// $Id: JMasterExtensionConfigDialog.java,v 1.2 2007/12/16 11:03:59 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -102,7 +102,9 @@ class JMasterExtensionConfigDialog
   protected JPluginSelectionField
   createExtPluginField()
   {
-    return UIMaster.getInstance().createMasterExtSelectionField(sVSize);
+    UIMaster master = UIMaster.getInstance(); 
+    master.clearExtPluginCaches();
+    return master.createMasterExtSelectionField(sVSize);
   }
   
   /**
@@ -111,7 +113,9 @@ class JMasterExtensionConfigDialog
   protected void 
   updateExtPluginField()
   {
-    UIMaster.getInstance().updateMasterExtPluginField(pToolset, pExtensionField);
+    UIMaster master = UIMaster.getInstance(); 
+    master.clearExtPluginCaches();
+    master.updateMasterExtPluginField(pToolset, pExtensionField);
   }
 
 

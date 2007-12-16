@@ -1,4 +1,4 @@
-// $Id: MasterRequest.java,v 1.59 2007/10/23 02:29:58 jim Exp $
+// $Id: MasterRequest.java,v 1.60 2007/12/16 11:03:59 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -338,12 +338,12 @@ enum MasterRequest
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get layout of the master extension plugin selection menu associated with a toolset.
+   * Get layout of the queue extension plugin selection menu associated with a toolset.
    */
   GetQueueExtMenuLayout, 
   
   /**
-   * Set layout of the master extension plugin selection menu associated with a toolset.
+   * Set layout of the queue extension plugin selection menu associated with a toolset.
    */
   SetQueueExtMenuLayout, 
 
@@ -361,6 +361,62 @@ enum MasterRequest
    * An instance of {@link MiscGetPackagePluginsReq} is next.
    */
   SetPackageQueueExtPlugins, 
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get layout of the annotation plugin selection menu associated with a toolset.
+   */
+  GetAnnotationMenuLayout, 
+  
+  /**
+   * Set layout of the annotation plugin selection menu associated with a toolset.
+   */
+  SetAnnotationMenuLayout, 
+
+  /**
+   * An instance of {@link MiscGetToolsetPluginsReq} is next.
+   */
+  GetToolsetAnnotationPlugins, 
+  
+  /**
+   * An instance of {@link MiscGetPackagePluginsReq} is next.
+   */
+  GetPackageAnnotationPlugins, 
+  
+  /**
+   * An instance of {@link MiscGetPackagePluginsReq} is next.
+   */
+  SetPackageAnnotationPlugins, 
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get layout of the key chooser plugin selection menu associated with a toolset.
+   */
+  GetKeyChooserMenuLayout, 
+  
+  /**
+   * Set layout of the key chooser plugin selection menu associated with a toolset.
+   */
+  SetKeyChooserMenuLayout, 
+
+  /**
+   * An instance of {@link MiscGetToolsetPluginsReq} is next.
+   */
+  GetToolsetKeyChooserPlugins, 
+  
+  /**
+   * An instance of {@link MiscGetPackagePluginsReq} is next.
+   */
+  GetPackageKeyChooserPlugins, 
+  
+  /**
+   * An instance of {@link MiscGetPackagePluginsReq} is next.
+   */
+  SetPackageKeyChooserPlugins, 
 
 
   /*----------------------------------------------------------------------------------------*/

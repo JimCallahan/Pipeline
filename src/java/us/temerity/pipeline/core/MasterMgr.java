@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.227 2007/12/16 06:28:42 jesse Exp $
+// $Id: MasterMgr.java,v 1.228 2007/12/16 11:03:59 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -370,13 +370,12 @@ class MasterMgr
       pEditorMenuLayouts     = new TreeMap<String,PluginMenuLayout>();
       pComparatorMenuLayouts = new TreeMap<String,PluginMenuLayout>();
       pActionMenuLayouts     = new TreeMap<String,PluginMenuLayout>();
-      pToolMenuLayouts       = new TreeMap<String,PluginMenuLayout>();
-  
-      pArchiverMenuLayouts       = new TreeMap<String,PluginMenuLayout>();
-      pDefaultArchiverMenuLayout = new PluginMenuLayout();  // ???
-
+      pToolMenuLayouts       = new TreeMap<String,PluginMenuLayout>();  
+      pArchiverMenuLayouts   = new TreeMap<String,PluginMenuLayout>();
       pMasterExtMenuLayouts  = new TreeMap<String,PluginMenuLayout>();
       pQueueExtMenuLayouts   = new TreeMap<String,PluginMenuLayout>();
+      pAnnotationMenuLayouts = new TreeMap<String,PluginMenuLayout>();
+      pKeyChooserMenuLayouts = new TreeMap<String,PluginMenuLayout>();
 
       pPackageEditorPlugins     = new DoubleMap<String,VersionID,PluginSet>();
       pPackageComparatorPlugins = new DoubleMap<String,VersionID,PluginSet>();
@@ -385,6 +384,8 @@ class MasterMgr
       pPackageArchiverPlugins   = new DoubleMap<String,VersionID,PluginSet>();
       pPackageMasterExtPlugins  = new DoubleMap<String,VersionID,PluginSet>();
       pPackageQueueExtPlugins   = new DoubleMap<String,VersionID,PluginSet>();
+      pPackageAnnotationPlugins = new DoubleMap<String,VersionID,PluginSet>();
+      pPackageKeyChooserPlugins = new DoubleMap<String,VersionID,PluginSet>();
 
       pMasterExtensions = new TreeMap<String,MasterExtensionConfig>();
 
@@ -780,9 +781,17 @@ class MasterMgr
       readPluginMenuLayout(null, "master extension", 
 			   pMasterExtMenuLayouts); 
     
-    pDefaultArchiverMenuLayout = 
+    pDefaultQueueExtMenuLayout = 
       readPluginMenuLayout(null, "queue extension", 
 			   pQueueExtMenuLayouts); 
+
+    pDefaultAnnotationMenuLayout = 
+      readPluginMenuLayout(null, "annotation", 
+			   pAnnotationMenuLayouts); 
+
+    pDefaultKeyChooserMenuLayout = 
+      readPluginMenuLayout(null, "key chooser", 
+			   pKeyChooserMenuLayouts); 
 
     /* initialize toolsets */ 
     {
@@ -829,6 +838,12 @@ class MasterMgr
 
 	    readPluginMenuLayout(tname, "queue extension", 
 				 pQueueExtMenuLayouts); 
+
+	    readPluginMenuLayout(tname, "annotation", 
+				 pAnnotationMenuLayouts); 
+
+	    readPluginMenuLayout(tname, "key chooser", 
+				 pKeyChooserMenuLayouts); 
 	  }
 	}
       }
@@ -875,6 +890,12 @@ class MasterMgr
 
 		    readPackagePlugins(pname, vid, "queue extension", 
 				       pPackageQueueExtPlugins);
+
+		    readPackagePlugins(pname, vid, "annotation", 
+				       pPackageAnnotationPlugins);
+
+		    readPackagePlugins(pname, vid, "key chooser", 
+				       pPackageKeyChooserPlugins);
 		  }
 		}
 	      }
@@ -3116,6 +3137,28 @@ class MasterMgr
 	  layouts.put(PluginType.QueueExt, new PluginMenuLayout());
       }
       
+      timer.aquire();
+      synchronized(pAnnotationMenuLayouts) {
+	timer.resume();	
+
+	PluginMenuLayout layout = pAnnotationMenuLayouts.get(name);
+	if(layout != null) 
+	  layouts.put(PluginType.Annotation, new PluginMenuLayout(layout));
+	else 
+	  layouts.put(PluginType.Annotation, new PluginMenuLayout());
+      }
+      
+      timer.aquire();
+      synchronized(pKeyChooserMenuLayouts) {
+	timer.resume();	
+
+	PluginMenuLayout layout = pKeyChooserMenuLayouts.get(name);
+	if(layout != null) 
+	  layouts.put(PluginType.KeyChooser, new PluginMenuLayout(layout));
+	else 
+	  layouts.put(PluginType.KeyChooser, new PluginMenuLayout());
+      }
+      
       return new MiscGetPluginMenuLayoutsRsp(timer, layouts);
     }
     finally {
@@ -3245,6 +3288,34 @@ class MasterMgr
 	      plugins = new PluginSet(); 
 
 	    allPlugins.put(pname, pvid, PluginType.QueueExt, plugins);
+	  }
+	}
+      }
+
+      timer.aquire();
+      synchronized(pPackageAnnotationPlugins) {
+	timer.resume();
+	for(String pname : packages.keySet()) {
+	  for(VersionID pvid : packages.get(pname)) {
+	    PluginSet plugins = pPackageAnnotationPlugins.get(pname, pvid);
+	    if(plugins == null)
+	      plugins = new PluginSet(); 
+
+	    allPlugins.put(pname, pvid, PluginType.Annotation, plugins);
+	  }
+	}
+      }
+
+      timer.aquire();
+      synchronized(pPackageKeyChooserPlugins) {
+	timer.resume();
+	for(String pname : packages.keySet()) {
+	  for(VersionID pvid : packages.get(pname)) {
+	    PluginSet plugins = pPackageKeyChooserPlugins.get(pname, pvid);
+	    if(plugins == null)
+	      plugins = new PluginSet(); 
+
+	    allPlugins.put(pname, pvid, PluginType.KeyChooser, plugins);
 	  }
 	}
       }
@@ -5049,6 +5120,522 @@ class MasterMgr
 
 	writePackagePlugins(req.getName(), req.getVersionID(), 
 			    "queue extension", pPackageQueueExtPlugins);
+
+	return new SuccessRsp(timer);
+      }
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Get the layout of the annotation plugin menu associated with a toolset.
+   *
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>MiscGetPluginMenuLayoutRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to determine the menu layout.
+   */ 
+  public Object 
+  getAnnotationMenuLayout
+  ( 
+   MiscGetPluginMenuLayoutReq req 
+  ) 
+  {
+    String name = req.getName();
+
+    TaskTimer timer = 
+      new TaskTimer("MasterMgr.getAnnotationMenuLayout(): " + name);
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pAnnotationMenuLayouts) {
+	timer.resume();	
+
+	PluginMenuLayout layout = null;
+	if(name == null) 
+	  layout = pDefaultAnnotationMenuLayout;
+	else 
+	  layout = pAnnotationMenuLayouts.get(name);
+
+	if(layout != null) 
+	  return new MiscGetPluginMenuLayoutRsp(timer, new PluginMenuLayout(layout));
+	else 
+	  return new MiscGetPluginMenuLayoutRsp(timer, new PluginMenuLayout());
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+  /**
+   * Set the layout of the annotation plugin selection menu.
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to set the menu layout.
+   */ 
+  public Object 
+  setAnnotationMenuLayout
+  ( 
+   MiscSetPluginMenuLayoutReq req 
+  ) 
+  {
+    String name = req.getName();
+
+    TaskTimer timer = 
+      new TaskTimer("MasterMgr.setAnnotationMenuLayout(): " + name);
+    
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      if(!pAdminPrivileges.isDeveloper(req)) 
+	throw new PipelineException
+	  ("Only a user with Developer privileges may set the annotation menu layout!");
+
+      synchronized(pAnnotationMenuLayouts) {
+	timer.resume();	
+
+	PluginMenuLayout layout = req.getLayout();
+
+	if(name == null) {
+	  pDefaultAnnotationMenuLayout = layout;
+	}
+	else {
+	  if(layout == null) 
+	    pAnnotationMenuLayouts.remove(name);
+	  else 
+	    pAnnotationMenuLayouts.put(name, layout);
+	}
+
+	writePluginMenuLayout(name, "annotation", 
+			      pAnnotationMenuLayouts, pDefaultAnnotationMenuLayout);
+
+	return new SuccessRsp(timer);
+      }
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+  /**
+   * Get the annotation plugins associated with all packages of a toolset.
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>MiscGetPackagePluginsRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to lookup the plugins.
+   */ 
+  public Object
+  getToolsetAnnotationPlugins
+  (
+   MiscGetToolsetPluginsReq req 
+  ) 
+  {
+    String tname = req.getName();
+
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      TreeMap<String,TreeSet<VersionID>> packages = new TreeMap<String,TreeSet<VersionID>>();
+      synchronized(pToolsets) {
+	timer.resume();
+
+	try {
+	  Toolset toolset = getToolset(tname, OsType.Unix, timer);	
+	  int wk;
+	  for(wk=0; wk<toolset.getNumPackages(); wk++) {
+	    String pname = toolset.getPackageName(wk);
+	    VersionID pvid = toolset.getPackageVersionID(wk);
+	    
+	    TreeSet<VersionID> vids = packages.get(pname);
+	    if(vids == null) {
+	      vids = new TreeSet<VersionID>();
+	      packages.put(pname, vids);
+	    }
+	    
+	    vids.add(pvid);	    
+	  }
+	}
+	catch(PipelineException ex) {
+	}
+      }
+
+      PluginSet plugins = new PluginSet();
+      {
+	timer.aquire();
+	synchronized(pPackageAnnotationPlugins) {
+	  timer.resume();
+	  
+	  for(String pname : packages.keySet()) {
+	    for(VersionID pvid : packages.get(pname)) {
+	      PluginSet pset = pPackageAnnotationPlugins.get(pname, pvid);
+	      if(pset != null) 
+		plugins.addAll(pset);
+	    }
+	  }
+	}
+      }
+
+      return new MiscGetPackagePluginsRsp(timer, plugins); 
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+  /**
+   * Get the annotation plugins associated with a toolset package.
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>MiscGetPackagePluginsRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to lookup the plugins.
+   */ 
+  public Object
+  getPackageAnnotationPlugins
+  (
+   MiscGetPackagePluginsReq req 
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pPackageAnnotationPlugins) {
+	timer.resume();
+	
+	PluginSet plugins = pPackageAnnotationPlugins.get(req.getName(), req.getVersionID());
+	if(plugins == null)
+	  plugins = new PluginSet(); 
+
+	return new MiscGetPackagePluginsRsp(timer, plugins); 
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+  /**
+   * Set the annotation plugins associated with a toolset package.
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to lookup the plugins.
+   */ 
+  public Object
+  setPackageAnnotationPlugins
+  (
+   MiscSetPackagePluginsReq req 
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      if(!pAdminPrivileges.isDeveloper(req)) 
+	throw new PipelineException
+	  ("Only a user with Developer privileges may change the annotation plugins " + 
+	   "associated with a toolset package!"); 
+
+      synchronized(pPackageAnnotationPlugins) {
+	timer.resume();
+	
+	if(req.getPlugins() == null)
+	  pPackageAnnotationPlugins.remove(req.getName(), req.getVersionID());
+	else 
+	  pPackageAnnotationPlugins.put(req.getName(), req.getVersionID(), req.getPlugins());
+
+	writePackagePlugins(req.getName(), req.getVersionID(), 
+			    "annotation", pPackageAnnotationPlugins);
+
+	return new SuccessRsp(timer);
+      }
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Get the layout of the key chooser plugin menu associated with a toolset.
+   *
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>MiscGetPluginMenuLayoutRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to determine the menu layout.
+   */ 
+  public Object 
+  getKeyChooserMenuLayout
+  ( 
+   MiscGetPluginMenuLayoutReq req 
+  ) 
+  {
+    String name = req.getName();
+
+    TaskTimer timer = 
+      new TaskTimer("MasterMgr.getKeyChooserMenuLayout(): " + name);
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pKeyChooserMenuLayouts) {
+	timer.resume();	
+
+	PluginMenuLayout layout = null;
+	if(name == null) 
+	  layout = pDefaultKeyChooserMenuLayout;
+	else 
+	  layout = pKeyChooserMenuLayouts.get(name);
+
+	if(layout != null) 
+	  return new MiscGetPluginMenuLayoutRsp(timer, new PluginMenuLayout(layout));
+	else 
+	  return new MiscGetPluginMenuLayoutRsp(timer, new PluginMenuLayout());
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+  /**
+   * Set the layout of the key chooser plugin selection menu.
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to set the menu layout.
+   */ 
+  public Object 
+  setKeyChooserMenuLayout
+  ( 
+   MiscSetPluginMenuLayoutReq req 
+  ) 
+  {
+    String name = req.getName();
+
+    TaskTimer timer = 
+      new TaskTimer("MasterMgr.setKeyChooserMenuLayout(): " + name);
+    
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      if(!pAdminPrivileges.isDeveloper(req)) 
+	throw new PipelineException
+	  ("Only a user with Developer privileges may set the key chooser menu layout!");
+
+      synchronized(pKeyChooserMenuLayouts) {
+	timer.resume();	
+
+	PluginMenuLayout layout = req.getLayout();
+
+	if(name == null) {
+	  pDefaultKeyChooserMenuLayout = layout;
+	}
+	else {
+	  if(layout == null) 
+	    pKeyChooserMenuLayouts.remove(name);
+	  else 
+	    pKeyChooserMenuLayouts.put(name, layout);
+	}
+
+	writePluginMenuLayout(name, "key chooser", 
+			      pKeyChooserMenuLayouts, pDefaultKeyChooserMenuLayout);
+
+	return new SuccessRsp(timer);
+      }
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());	  
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+  /**
+   * Get the key chooser plugins associated with all packages of a toolset.
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>MiscGetPackagePluginsRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to lookup the plugins.
+   */ 
+  public Object
+  getToolsetKeyChooserPlugins
+  (
+   MiscGetToolsetPluginsReq req 
+  ) 
+  {
+    String tname = req.getName();
+
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      TreeMap<String,TreeSet<VersionID>> packages = new TreeMap<String,TreeSet<VersionID>>();
+      synchronized(pToolsets) {
+	timer.resume();
+
+	try {
+	  Toolset toolset = getToolset(tname, OsType.Unix, timer);	
+	  int wk;
+	  for(wk=0; wk<toolset.getNumPackages(); wk++) {
+	    String pname = toolset.getPackageName(wk);
+	    VersionID pvid = toolset.getPackageVersionID(wk);
+	    
+	    TreeSet<VersionID> vids = packages.get(pname);
+	    if(vids == null) {
+	      vids = new TreeSet<VersionID>();
+	      packages.put(pname, vids);
+	    }
+	    
+	    vids.add(pvid);	    
+	  }
+	}
+	catch(PipelineException ex) {
+	}
+      }
+
+      PluginSet plugins = new PluginSet();
+      {
+	timer.aquire();
+	synchronized(pPackageKeyChooserPlugins) {
+	  timer.resume();
+	  
+	  for(String pname : packages.keySet()) {
+	    for(VersionID pvid : packages.get(pname)) {
+	      PluginSet pset = pPackageKeyChooserPlugins.get(pname, pvid);
+	      if(pset != null) 
+		plugins.addAll(pset);
+	    }
+	  }
+	}
+      }
+
+      return new MiscGetPackagePluginsRsp(timer, plugins); 
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+  /**
+   * Get the key chooser plugins associated with a toolset package.
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>MiscGetPackagePluginsRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to lookup the plugins.
+   */ 
+  public Object
+  getPackageKeyChooserPlugins
+  (
+   MiscGetPackagePluginsReq req 
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pPackageKeyChooserPlugins) {
+	timer.resume();
+	
+	PluginSet plugins = pPackageKeyChooserPlugins.get(req.getName(), req.getVersionID());
+	if(plugins == null)
+	  plugins = new PluginSet(); 
+
+	return new MiscGetPackagePluginsRsp(timer, plugins); 
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+  /**
+   * Set the key chooser plugins associated with a toolset package.
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to lookup the plugins.
+   */ 
+  public Object
+  setPackageKeyChooserPlugins
+  (
+   MiscSetPackagePluginsReq req 
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      if(!pAdminPrivileges.isDeveloper(req)) 
+	throw new PipelineException
+	  ("Only a user with Developer privileges may change the key chooser plugins " + 
+	   "associated with a toolset package!"); 
+
+      synchronized(pPackageKeyChooserPlugins) {
+	timer.resume();
+	
+	if(req.getPlugins() == null)
+	  pPackageKeyChooserPlugins.remove(req.getName(), req.getVersionID());
+	else 
+	  pPackageKeyChooserPlugins.put(req.getName(), req.getVersionID(), req.getPlugins());
+
+	writePackagePlugins(req.getName(), req.getVersionID(), 
+			    "key chooser", pPackageKeyChooserPlugins);
 
 	return new SuccessRsp(timer);
       }
@@ -21178,6 +21765,12 @@ class MasterMgr
   private TreeMap<String,PluginMenuLayout>  pQueueExtMenuLayouts;
   private PluginMenuLayout                  pDefaultQueueExtMenuLayout;
 
+  private TreeMap<String,PluginMenuLayout>  pAnnotationMenuLayouts;
+  private PluginMenuLayout                  pDefaultAnnotationMenuLayout;
+
+  private TreeMap<String,PluginMenuLayout>  pKeyChooserMenuLayouts;
+  private PluginMenuLayout                  pDefaultKeyChooserMenuLayout;
+
   /**
    * The cached tables of the vendors, names and versions of all plugins associated with a 
    * package indexed by package name and package revision number. <P> 
@@ -21191,6 +21784,8 @@ class MasterMgr
   private DoubleMap<String,VersionID,PluginSet>  pPackageArchiverPlugins; 
   private DoubleMap<String,VersionID,PluginSet>  pPackageMasterExtPlugins; 
   private DoubleMap<String,VersionID,PluginSet>  pPackageQueueExtPlugins; 
+  private DoubleMap<String,VersionID,PluginSet>  pPackageAnnotationPlugins; 
+  private DoubleMap<String,VersionID,PluginSet>  pPackageKeyChooserPlugins; 
 
 
   /*----------------------------------------------------------------------------------------*/

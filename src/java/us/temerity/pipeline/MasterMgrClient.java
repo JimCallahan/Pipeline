@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.114 2007/12/16 06:26:02 jesse Exp $
+// $Id: MasterMgrClient.java,v 1.115 2007/12/16 11:03:59 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -2763,6 +2763,448 @@ class MasterMgrClient
     MiscSetPackagePluginsReq req = new MiscSetPackagePluginsReq(name, vid, plugins);
 
     Object obj = performTransaction(MasterRequest.SetPackageQueueExtPlugins, req); 
+    handleSimpleResponse(obj); 
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the default layout of the annotation plugin menu.
+   * 
+   * @return 
+   *   The heirarchical set of annotation plugin menus.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the annotation menu layout.
+   */ 
+  public synchronized PluginMenuLayout
+  getAnnotationMenuLayout()
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    MiscGetPluginMenuLayoutReq req = new MiscGetPluginMenuLayoutReq(null);
+
+    Object obj = performTransaction(MasterRequest.GetAnnotationMenuLayout, req); 
+    if(obj instanceof MiscGetPluginMenuLayoutRsp) {
+      MiscGetPluginMenuLayoutRsp rsp = (MiscGetPluginMenuLayoutRsp) obj;
+      return rsp.getLayout();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    } 
+  }
+
+  /**
+   * Set the default layout of the annotation plugin menu.
+   * 
+   * @param layout
+   *   The heirarchical set of annotation plugin menus.
+   * 
+   * @throws PipelineException
+   *   If unable to set the annotation menu layout.
+   */ 
+  public synchronized void 
+  setAnnotationMenuLayout
+  (
+   PluginMenuLayout layout
+  ) 
+    throws PipelineException      
+  {
+    verifyConnection();
+
+    MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(null, layout);
+
+    Object obj = performTransaction(MasterRequest.SetAnnotationMenuLayout, req); 
+    handleSimpleResponse(obj);    
+  }
+
+  /**
+   * Get the layout of the annotation plugin menu associated with a toolset.
+   * 
+   * @param name
+   *   The toolset name.
+   * 
+   * @return 
+   *   The heirarchical set of annotation plugin menus.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the annotation menu layout.
+   */ 
+  public synchronized PluginMenuLayout
+  getAnnotationMenuLayout
+  (
+   String name
+  )
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    MiscGetPluginMenuLayoutReq req = new MiscGetPluginMenuLayoutReq(name);
+
+    Object obj = performTransaction(MasterRequest.GetAnnotationMenuLayout, req); 
+    if(obj instanceof MiscGetPluginMenuLayoutRsp) {
+      MiscGetPluginMenuLayoutRsp rsp = (MiscGetPluginMenuLayoutRsp) obj;
+      return rsp.getLayout();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    } 
+  }
+  
+  /**
+   * Set the layout of the annotation plugin menu associated with a toolset.
+   * 
+   * @param name
+   *   The toolset name.
+   * 
+   * @param layout
+   *   The heirarchical set of annotation plugin menus.
+   * 
+   * @throws PipelineException
+   *   If unable to set the annotation menu layout.
+   */ 
+  public synchronized void 
+  setAnnotationMenuLayout
+  (
+   String name, 
+   PluginMenuLayout layout
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(name, layout);
+
+    Object obj = performTransaction(MasterRequest.SetAnnotationMenuLayout, req); 
+    handleSimpleResponse(obj);    
+  }
+
+  /**
+   * Get the annotation plugins associated with all packages of a toolset.
+   * 
+   * @param name
+   *   The toolset name.
+   * 
+   * @return 
+   *   The vendors, names and revision numbers of the associated annotation plugins.
+   * 
+   * @throws PipelineException
+   *   If unable to get the plugins.
+   */ 
+  public synchronized PluginSet
+  getToolsetAnnotationPlugins
+  (
+   String name
+  )
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    MiscGetToolsetPluginsReq req = new MiscGetToolsetPluginsReq(name);
+
+    Object obj = performTransaction(MasterRequest.GetToolsetAnnotationPlugins, req);
+    if(obj instanceof MiscGetPackagePluginsRsp) {
+      MiscGetPackagePluginsRsp rsp = (MiscGetPackagePluginsRsp) obj;
+      return rsp.getPlugins();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    } 
+  }
+
+  /**
+   * Get the annotation plugins associated with a toolset package.
+   * 
+   * @param name
+   *   The toolset package name.
+   * 
+   * @param vid
+   *   The revision number of the package.
+   * 
+   * @return 
+   *   The vendors, names and revision numbers of the associated annotation plugins.
+   * 
+   * @throws PipelineException
+   *   If unable to get the plugins.
+   */ 
+  public synchronized PluginSet
+  getPackageAnnotationPlugins
+  (
+   String name, 
+   VersionID vid
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    MiscGetPackagePluginsReq req = new MiscGetPackagePluginsReq(name, vid);
+
+    Object obj = performTransaction(MasterRequest.GetPackageAnnotationPlugins, req);
+    if(obj instanceof MiscGetPackagePluginsRsp) {
+      MiscGetPackagePluginsRsp rsp = (MiscGetPackagePluginsRsp) obj;
+      return rsp.getPlugins();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    } 
+  }
+
+  /**
+   * Set the annotation plugins associated with a toolset package.
+   * 
+   * @param name
+   *   The toolset package name.
+   * 
+   * @param vid
+   *   The revision number of the package.
+   * 
+   * @param plugins
+   *   The vendors, names and revision numbers of the associated annotation plugins.
+   * 
+   * @throws PipelineException
+   *   If unable to set the plugins.
+   */ 
+  public synchronized void 
+  setPackageAnnotationPlugins
+  ( 
+   String name,  
+   VersionID vid,
+   PluginSet plugins
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    MiscSetPackagePluginsReq req = new MiscSetPackagePluginsReq(name, vid, plugins);
+
+    Object obj = performTransaction(MasterRequest.SetPackageAnnotationPlugins, req); 
+    handleSimpleResponse(obj); 
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the default layout of the key chooser plugin menu.
+   * 
+   * @return 
+   *   The heirarchical set of key chooser plugin menus.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the key chooser menu layout.
+   */ 
+  public synchronized PluginMenuLayout
+  getKeyChooserMenuLayout()
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    MiscGetPluginMenuLayoutReq req = new MiscGetPluginMenuLayoutReq(null);
+
+    Object obj = performTransaction(MasterRequest.GetKeyChooserMenuLayout, req); 
+    if(obj instanceof MiscGetPluginMenuLayoutRsp) {
+      MiscGetPluginMenuLayoutRsp rsp = (MiscGetPluginMenuLayoutRsp) obj;
+      return rsp.getLayout();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    } 
+  }
+
+  /**
+   * Set the default layout of the key chooser plugin menu.
+   * 
+   * @param layout
+   *   The heirarchical set of key chooser plugin menus.
+   * 
+   * @throws PipelineException
+   *   If unable to set the key chooser menu layout.
+   */ 
+  public synchronized void 
+  setKeyChooserMenuLayout
+  (
+   PluginMenuLayout layout
+  ) 
+    throws PipelineException      
+  {
+    verifyConnection();
+
+    MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(null, layout);
+
+    Object obj = performTransaction(MasterRequest.SetKeyChooserMenuLayout, req); 
+    handleSimpleResponse(obj);    
+  }
+
+  /**
+   * Get the layout of the key chooser plugin menu associated with a toolset.
+   * 
+   * @param name
+   *   The toolset name.
+   * 
+   * @return 
+   *   The heirarchical set of key chooser plugin menus.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the key chooser menu layout.
+   */ 
+  public synchronized PluginMenuLayout
+  getKeyChooserMenuLayout
+  (
+   String name
+  )
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    MiscGetPluginMenuLayoutReq req = new MiscGetPluginMenuLayoutReq(name);
+
+    Object obj = performTransaction(MasterRequest.GetKeyChooserMenuLayout, req); 
+    if(obj instanceof MiscGetPluginMenuLayoutRsp) {
+      MiscGetPluginMenuLayoutRsp rsp = (MiscGetPluginMenuLayoutRsp) obj;
+      return rsp.getLayout();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    } 
+  }
+  
+  /**
+   * Set the layout of the key chooser plugin menu associated with a toolset.
+   * 
+   * @param name
+   *   The toolset name.
+   * 
+   * @param layout
+   *   The heirarchical set of key chooser plugin menus.
+   * 
+   * @throws PipelineException
+   *   If unable to set the key chooser menu layout.
+   */ 
+  public synchronized void 
+  setKeyChooserMenuLayout
+  (
+   String name, 
+   PluginMenuLayout layout
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(name, layout);
+
+    Object obj = performTransaction(MasterRequest.SetKeyChooserMenuLayout, req); 
+    handleSimpleResponse(obj);    
+  }
+
+  /**
+   * Get the key chooser plugins associated with all packages of a toolset.
+   * 
+   * @param name
+   *   The toolset name.
+   * 
+   * @return 
+   *   The vendors, names and revision numbers of the associated key chooser plugins.
+   * 
+   * @throws PipelineException
+   *   If unable to get the plugins.
+   */ 
+  public synchronized PluginSet
+  getToolsetKeyChooserPlugins
+  (
+   String name
+  )
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    MiscGetToolsetPluginsReq req = new MiscGetToolsetPluginsReq(name);
+
+    Object obj = performTransaction(MasterRequest.GetToolsetKeyChooserPlugins, req);
+    if(obj instanceof MiscGetPackagePluginsRsp) {
+      MiscGetPackagePluginsRsp rsp = (MiscGetPackagePluginsRsp) obj;
+      return rsp.getPlugins();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    } 
+  }
+
+  /**
+   * Get the key chooser plugins associated with a toolset package.
+   * 
+   * @param name
+   *   The toolset package name.
+   * 
+   * @param vid
+   *   The revision number of the package.
+   * 
+   * @return 
+   *   The vendors, names and revision numbers of the associated key chooser plugins.
+   * 
+   * @throws PipelineException
+   *   If unable to get the plugins.
+   */ 
+  public synchronized PluginSet
+  getPackageKeyChooserPlugins
+  (
+   String name, 
+   VersionID vid
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    MiscGetPackagePluginsReq req = new MiscGetPackagePluginsReq(name, vid);
+
+    Object obj = performTransaction(MasterRequest.GetPackageKeyChooserPlugins, req);
+    if(obj instanceof MiscGetPackagePluginsRsp) {
+      MiscGetPackagePluginsRsp rsp = (MiscGetPackagePluginsRsp) obj;
+      return rsp.getPlugins();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    } 
+  }
+
+  /**
+   * Set the key chooser plugins associated with a toolset package.
+   * 
+   * @param name
+   *   The toolset package name.
+   * 
+   * @param vid
+   *   The revision number of the package.
+   * 
+   * @param plugins
+   *   The vendors, names and revision numbers of the associated key chooser plugins.
+   * 
+   * @throws PipelineException
+   *   If unable to set the plugins.
+   */ 
+  public synchronized void 
+  setPackageKeyChooserPlugins
+  ( 
+   String name,  
+   VersionID vid,
+   PluginSet plugins
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    MiscSetPackagePluginsReq req = new MiscSetPackagePluginsReq(name, vid, plugins);
+
+    Object obj = performTransaction(MasterRequest.SetPackageKeyChooserPlugins, req); 
     handleSimpleResponse(obj); 
   }
 

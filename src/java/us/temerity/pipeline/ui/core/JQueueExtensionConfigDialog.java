@@ -1,4 +1,4 @@
-// $Id: JQueueExtensionConfigDialog.java,v 1.1 2006/10/11 22:45:41 jim Exp $
+// $Id: JQueueExtensionConfigDialog.java,v 1.2 2007/12/16 11:03:59 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -102,7 +102,9 @@ class JQueueExtensionConfigDialog
   protected JPluginSelectionField
   createExtPluginField()
   {
-    return UIMaster.getInstance().createQueueExtSelectionField(sVSize);
+    UIMaster master = UIMaster.getInstance(); 
+    master.clearExtPluginCaches();
+    return master.createQueueExtSelectionField(sVSize);
   }
   
   /**
@@ -111,7 +113,9 @@ class JQueueExtensionConfigDialog
   protected void 
   updateExtPluginField()
   {
-    UIMaster.getInstance().updateQueueExtPluginField(pToolset, pExtensionField);
+    UIMaster master = UIMaster.getInstance(); 
+    master.clearExtPluginCaches();
+    master.updateQueueExtPluginField(pToolset, pExtensionField);
   }
 
 
