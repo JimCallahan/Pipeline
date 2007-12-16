@@ -1,4 +1,4 @@
-// $Id: KeyParam.java,v 1.1 2007/12/15 07:56:12 jesse Exp $
+// $Id: KeyParam.java,v 1.2 2007/12/16 11:12:16 jesse Exp $
 
 package us.temerity.pipeline.param.key;
 
@@ -9,7 +9,7 @@ import us.temerity.pipeline.glue.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A parameter of selection key classes. 
+ * A parameter of key chooser classes. 
  */
 public abstract
 interface KeyParam
@@ -49,12 +49,14 @@ interface KeyParam
   /**
    * Gets the value of the parameter. 
    */ 
+  @SuppressWarnings("unchecked")
   public Comparable
   getValue();
   
   /**
    * Sets the value of the parameter. 
    */
+  @SuppressWarnings("unchecked")
   public void 
   setValue
   (
