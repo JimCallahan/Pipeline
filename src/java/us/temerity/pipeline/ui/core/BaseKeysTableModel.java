@@ -1,4 +1,4 @@
-// $Id: BaseKeysTableModel.java,v 1.1 2007/12/16 06:32:49 jesse Exp $
+// $Id: BaseKeysTableModel.java,v 1.2 2007/12/16 12:22:09 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -289,7 +289,7 @@ class BaseKeysTableModel
   }
   
   /**
-   * Returns the Key Chooser for the given row.
+   * Return the Key Chooser for the given row.
    */ 
   public BaseKeyChooser 
   getKeyChooser
@@ -303,7 +303,7 @@ class BaseKeysTableModel
   }
   
   /**
-   * Returns the Key for the given row.
+   * Return the Key for the given row.
    */ 
   public BaseKey
   getKey

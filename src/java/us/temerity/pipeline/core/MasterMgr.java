@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.228 2007/12/16 11:03:59 jim Exp $
+// $Id: MasterMgr.java,v 1.229 2007/12/16 12:22:09 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -11940,6 +11940,7 @@ class MasterMgr
     throws PipelineException 
   {
     LinkedList<QueueJobGroup> jobGroups = new LinkedList<QueueJobGroup>();
+    ArrayList<String> exceptions = new ArrayList<String>(); 
     {
       TreeSet<String> assocRoots = new TreeSet<String>();     
       NodeID nodeID = rootNodeID;
@@ -12003,12 +12004,12 @@ class MasterMgr
           group = submitJobsCommon(status, indices, batchSize, priority, rampUp,
             			   maxLoad, minMemory, minDisk,
                                    selectionKeys, licenseKeys, hardwareKeys, assocRoots, 
-                                   timer);
+                                   exceptions, timer);
         }
         else {
           group = submitJobsCommon(status, indices, null, null, null,
             			   null, null, null,
-                                   null, null, null, assocRoots, 
+                                   null, null, null, assocRoots, exceptions,
                                    timer);
         }
 
@@ -12030,6 +12031,17 @@ class MasterMgr
       throw new PipelineException
         ("No new jobs where generated for node (" + rootNodeID.getName() + ") or any " + 
          "node upstream of this node!");
+    
+    if (exceptions.size() > 0) {
+      String msg = "";
+      for (String each : exceptions)
+        msg += each + "\n\n";
+      
+      throw new PipelineException
+        ("While job submission was successful, the following errors occured during" +
+         "KeyChooser execution.  These errors may effect the ability of the jobs on " +
+         "the queue to run.\n\n" + msg);
+    }
     
     return new NodeSubmitJobsRsp(timer, jobGroups);
   }
@@ -12088,6 +12100,7 @@ class MasterMgr
    Set<String> licenseKeys,
    Set<String> hardwareKeys,
    TreeSet<String> assocRoots, 
+   ArrayList<String> exceptions,
    TaskTimer timer 
   )
     throws PipelineException 
@@ -12104,7 +12117,7 @@ class MasterMgr
 		 true, batchSize, priority, rampUp, maxLoad, minMemory, minDisk, 
 		 selectionKeys, licenseKeys, hardwareKeys,
 		 extJobIDs, nodeJobIDs, upsJobIDs, rootJobIDs, jobs, assocRoots, 
-		 timer);
+		 exceptions, timer);
       
       if(jobs.isEmpty()) 
         return null; 
@@ -12265,6 +12278,7 @@ class MasterMgr
    TreeSet<Long> rootJobIDs,    
    TreeMap<Long,QueueJob> jobs, 
    TreeSet<String> assocRoots, 
+   ArrayList<String> exceptions,
    TaskTimer timer 
   ) 
     throws PipelineException
@@ -12303,7 +12317,7 @@ class MasterMgr
       if(anyRef || !work.isActionEnabled()) {
         collectNoActionJobs(status, isRoot, 
                             extJobIDs, nodeJobIDs, upsJobIDs, rootJobIDs, 
-                            jobs, assocRoots, timer);
+                            jobs, assocRoots, exceptions, timer);
         return;
       }
     }
@@ -12582,7 +12596,7 @@ class MasterMgr
                 submitJobs(lstatus, lindices, 
                            false, null, null, null, null, null, null, null, null, null,
                            extJobIDs, nodeJobIDs, upsJobIDs, rootJobIDs, 
-                           jobs, assocRoots, timer);
+                           jobs, assocRoots, exceptions, timer);
               }
             }
           }
@@ -12746,7 +12760,12 @@ class MasterMgr
 	  QueueJob job = new QueueJob(agenda, action, jreqs, sourceIDs);
 	  
 	  /* Perform all serverside key calculations*/
-          adjustJobRequirements(timer, job.queryOnlyCopy(), jreqs);
+	  try {
+            adjustJobRequirements(timer, job.queryOnlyCopy(), job.getJobRequirements());
+	  } 
+	  catch(PipelineException ex) {
+	    exceptions.add(ex.getMessage());
+	  }
 		       
 	  jobs.put(jobID, job);
 	}
@@ -12798,6 +12817,7 @@ class MasterMgr
     /* Lazily evaluate this only if necessary*/
     TreeMap<String, BaseAnnotation> annots = null;
     NodeID nodeID = job.getNodeID();
+    PipelineException toThrow = null;
     /* Selection Keys */
     {
       ArrayList<SelectionKey> allKeys  = pQueueMgrClient.getSelectionKeys();
@@ -12811,8 +12831,16 @@ class MasterMgr
         else if (key.hasKeyChooser()) {
           if (annots == null)
             annots = getAnnotationsHelper(timer, nodeID.getName());
-          if (key.getKeyChooser().isActive(job, annots))
-            finalKeys.add(name);
+          try {
+            if (key.getKeyChooser().computeIsActive(job, annots))
+              finalKeys.add(name);
+          }
+          catch (Exception e) {
+            if (toThrow == null)
+              toThrow = new PipelineException(e.getMessage());
+            else
+              toThrow = new PipelineException(e.getMessage() + "\n" + toThrow.getMessage());
+          }
         }
       }
       jreqs.removeAllSelectionKeys();
@@ -12831,8 +12859,16 @@ class MasterMgr
         else if (key.hasKeyChooser()) {
           if (annots == null)
             annots = getAnnotationsHelper(timer, nodeID.getName());
-          if (key.getKeyChooser().isActive(job, annots))
-            finalKeys.add(name);
+          try {
+            if (key.getKeyChooser().computeIsActive(job, annots))
+              finalKeys.add(name);
+          }
+          catch (Exception e) {
+            if (toThrow == null)
+              toThrow = new PipelineException(e.getMessage());
+            else
+              toThrow = new PipelineException(e.getMessage() + "\n" + toThrow.getMessage());
+          }
         }
       }
       jreqs.removeAllLicenseKeys();
@@ -12851,14 +12887,25 @@ class MasterMgr
         else if (key.hasKeyChooser()) {
           if (annots == null)
             annots = getAnnotationsHelper(timer, nodeID.getName());
-          if (key.getKeyChooser().isActive(job, annots))
-            finalKeys.add(name);
+          try {
+            if (key.getKeyChooser().computeIsActive(job, annots))
+              finalKeys.add(name);
+          }
+          catch (Exception e) {
+            if (toThrow == null)
+              toThrow = new PipelineException(e.getMessage());
+            else
+              toThrow = new PipelineException(e.getMessage() + "\n" + toThrow.getMessage());
+          }
         }
       }
       jreqs.removeAllHardwareKeys();
       jreqs.addHardwareKeys(finalKeys);
     }
+    if (toThrow != null)
+      throw toThrow;
   }
+  
 
   /**
    * Collect the IDs of jobs upstream of a node without an Action or for a node with an 
@@ -12907,7 +12954,8 @@ class MasterMgr
    TreeMap<NodeID,TreeSet<Long>> upsJobIDs, 
    TreeSet<Long> rootJobIDs,    
    TreeMap<Long,QueueJob> jobs, 
-   TreeSet<String> assocRoots, 
+   TreeSet<String> assocRoots,
+   ArrayList<String> exceptions,
    TaskTimer timer 
   ) 
     throws PipelineException
@@ -12948,7 +12996,7 @@ class MasterMgr
           submitJobs(lstatus, null, 
                      false, null, null, null, null, null, null, null, null, null,
                      extJobIDs, nodeJobIDs, upsJobIDs, rootJobIDs, 
-                     jobs, assocRoots, timer);
+                     jobs, assocRoots, exceptions, timer);
            
           /* external job IDs */ 
           {

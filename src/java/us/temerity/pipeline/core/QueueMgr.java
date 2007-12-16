@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.97 2007/12/16 06:28:42 jesse Exp $
+// $Id: QueueMgr.java,v 1.98 2007/12/16 12:22:09 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -4255,6 +4255,7 @@ class QueueMgr
   )
   {
     TaskTimer timer = new TaskTimer("QueueMgr.changeJobReqs()");
+    ArrayList<String> exceptions = new ArrayList<String>();
 
     try {
       boolean unprivileged = false; 
@@ -4271,7 +4272,12 @@ class QueueMgr
 	    String author = job.getActionAgenda().getNodeID().getAuthor();
 	    if(pAdminPrivileges.isQueueManaged(req, author)) {
 	      JobReqs reqs = new JobReqs(job.getJobRequirements(), delta);
-	      adjustJobRequirements(timer, job.queryOnlyCopy(), reqs);
+	      try {
+	        adjustJobRequirements(timer, job.queryOnlyCopy(), reqs);
+	      }
+	      catch (PipelineException ex) {
+	        exceptions.add(ex.getMessage());
+	      }
 	      timer.aquire();
 	      synchronized (pJobReqsChanges) {
 		timer.resume();
@@ -4288,6 +4294,17 @@ class QueueMgr
 	throw new PipelineException
 	  ("Only a user with Queue Admin privileges may change job requirements " +
 	   "on jobs owned by another user!");
+      
+      if (exceptions.size() > 0) {
+        String msg = "";
+        for (String each : exceptions)
+          msg += each + "\n\n";
+        
+        throw new PipelineException
+          ("While changing job requirements was successful, the following errors occured " +
+           "during KeyChooser execution.  These errors may effect the ability of the jobs on" +
+           "the queue to run.\n\n" + msg);
+      }
 
       return new SuccessRsp(timer);
     }
@@ -4313,6 +4330,7 @@ class QueueMgr
   )
   {
     TaskTimer timer = new TaskTimer("QueueMgr.updateJobKeys()");
+    ArrayList<String> exceptions = new ArrayList<String>();
 
     try {
       boolean unprivileged = false; 
@@ -4329,7 +4347,12 @@ class QueueMgr
           String author = job.getActionAgenda().getNodeID().getAuthor();
           if(pAdminPrivileges.isQueueManaged(req, author)) {
             JobReqs reqs = (JobReqs) job.getJobRequirements().clone();
-            adjustJobRequirements(timer, job.queryOnlyCopy(), reqs);
+            try {
+              adjustJobRequirements(timer, job.queryOnlyCopy(), reqs);
+            }
+            catch (PipelineException ex) {
+              exceptions.add(ex.getMessage());
+            }
             timer.aquire();
             synchronized (pJobReqsChanges) {
               timer.resume();
@@ -4345,6 +4368,17 @@ class QueueMgr
         throw new PipelineException
           ("Only a user with Queue Admin privileges may update the selection keys" +
            "on jobs owned by another user!");
+      
+      if (exceptions.size() > 0) {
+        String msg = "";
+        for (String each : exceptions)
+          msg += each + "\n\n";
+        
+        throw new PipelineException
+          ("While updating job keys was successful, the following errors occured " +
+           "during KeyChooser execution.  These errors may effect the ability of the jobs on" +
+           "the queue to run.\n\n" + msg);
+      }
 
       return new SuccessRsp(timer);
     }
@@ -4380,6 +4414,7 @@ class QueueMgr
   {
     /* Lazily evaluate this only if necessary*/
     TreeMap<String, BaseAnnotation> annots = null;
+    PipelineException toThrow = null;
     NodeID nodeID = job.getNodeID();
     /* Selection Keys */
     {
@@ -4397,8 +4432,16 @@ class QueueMgr
         else if (key.hasKeyChooser()) {
           if (annots == null)
             annots = pMasterMgrClient.getAnnotations(nodeID.getName());
-          if (key.getKeyChooser().isActive(job, annots))
-            finalKeys.add(name);
+          try {
+            if (key.getKeyChooser().computeIsActive(job, annots))
+              finalKeys.add(name);
+          }
+          catch (Exception e) {
+            if (toThrow == null)
+              toThrow = new PipelineException(e.getMessage());
+            else
+              toThrow = new PipelineException(e.getMessage() + "\n" + toThrow.getMessage());
+          }
         }
       }
       jreqs.removeAllSelectionKeys();
@@ -4420,8 +4463,16 @@ class QueueMgr
         else if (key.hasKeyChooser()) {
           if (annots == null)
             annots = pMasterMgrClient.getAnnotations(nodeID.getName());
-          if (key.getKeyChooser().isActive(job, annots))
-            finalKeys.add(name);
+          try {
+            if (key.getKeyChooser().computeIsActive(job, annots))
+              finalKeys.add(name);
+          }
+          catch (Exception e) {
+            if (toThrow == null)
+              toThrow = new PipelineException(e.getMessage());
+            else
+              toThrow = new PipelineException(e.getMessage() + "\n" + toThrow.getMessage());
+          }
         }
       }
       jreqs.removeAllLicenseKeys();
@@ -4443,13 +4494,23 @@ class QueueMgr
         else if (key.hasKeyChooser()) {
           if (annots == null)
             annots = pMasterMgrClient.getAnnotations(nodeID.getName());
-          if (key.getKeyChooser().isActive(job, annots))
-            finalKeys.add(name);
+          try {
+            if (key.getKeyChooser().computeIsActive(job, annots))
+              finalKeys.add(name);
+          }
+          catch (Exception e) {
+            if (toThrow == null)
+              toThrow = new PipelineException(e.getMessage());
+            else
+              toThrow = new PipelineException(e.getMessage() + "\n" + toThrow.getMessage());
+          }
         }
       }
       jreqs.removeAllHardwareKeys();
       jreqs.addHardwareKeys(finalKeys);
     }
+    if (toThrow != null)
+      throw toThrow;
   }
   
 

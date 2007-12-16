@@ -1,4 +1,4 @@
-// $Id: JKeyChooserConfigDialog.java,v 1.2 2007/12/16 11:03:59 jim Exp $
+// $Id: JKeyChooserConfigDialog.java,v 1.3 2007/12/16 12:22:09 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -7,7 +7,6 @@ import java.awt.event.*;
 import java.util.*;
 
 import javax.swing.*;
-import javax.swing.event.DocumentEvent;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.param.key.*;
@@ -31,6 +30,11 @@ class JKeyChooserConfigDialog
   
   /**
    * Construct a new dialog.
+   * 
+   * @param owner
+   *   The owning frame
+   * @param title
+   *   A prefix for the name of the dialog
    */ 
   public 
   JKeyChooserConfigDialog
@@ -60,7 +64,7 @@ class JKeyChooserConfigDialog
         {
           JLabel label = 
             UIFactory.createFixedLabel
-            (title + " Key Chooser:", sTSize, JLabel.RIGHT, 
+            (title + " Key Chooser:", sTSize, SwingConstants.RIGHT, 
              "The name of the " + title + " Key Chooser plugin.");
 
           tpanel.add(label);
@@ -459,6 +463,7 @@ class JKeyChooserConfigDialog
                 else 
                   field.setSelected("-");
               }
+              pParamComponents.put(pname, field);
             }
             else {
               assert(false) : "Unknown key parameter type!";
@@ -574,6 +579,7 @@ class JKeyChooserConfigDialog
   /** 
    * Invoked when an action occurs. 
    */ 
+  @Override
   public void 
   actionPerformed
   (

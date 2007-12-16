@@ -1,4 +1,4 @@
-// $Id: JManageHardwareKeysDialog.java,v 1.2 2007/12/16 06:32:49 jesse Exp $
+// $Id: JManageHardwareKeysDialog.java,v 1.3 2007/12/16 12:22:09 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -281,7 +281,7 @@ class JManageHardwareKeysDialog
       String extra[][] = {
 	null,
 	{ "Update", "update"},
-	{ "Edit", "edit" },
+	{ "Edit", "edit" }
       };
 
       JButton btns[] = super.initUI(null, tab, "Confirm", "Apply", extra, "Close");
@@ -358,6 +358,7 @@ class JManageHardwareKeysDialog
     updateKeysMenu();
     updateGroupsMenu();
 
+    pEditButton.setEnabled(pPrivilegeDetails.isQueueAdmin());
     pConfirmButton.setEnabled(false);
     pApplyButton.setEnabled(false);
   }
@@ -809,6 +810,9 @@ class JManageHardwareKeysDialog
     pApplyButton.setEnabled(true);
   }
  
+  /**
+   * Launch a dialog to add or remove a KeyChooser plugin to the key.
+   */
   private void
   doEdit()
   {

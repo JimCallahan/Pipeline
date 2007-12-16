@@ -1,17 +1,18 @@
-// $Id: JManageLicenseKeysDialog.java,v 1.8 2006/09/25 12:11:44 jim Exp $
+// $Id: JManageLicenseKeysDialog.java,v 1.9 2007/12/16 12:22:09 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
-import us.temerity.pipeline.*;
-import us.temerity.pipeline.ui.*;
+import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
-import javax.swing.*;
-import javax.swing.table.*;
-import javax.swing.event.*;
-import javax.swing.border.*;
+import javax.swing.JButton;
+import javax.swing.JPanel;
+
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.ui.JTablePanel;
+import us.temerity.pipeline.ui.JTopLevelDialog;
 
 /*------------------------------------------------------------------------------------------*/
 /*   M A N A G E   L I C E N S E   K E Y S   D I A L O G                                    */
@@ -61,7 +62,8 @@ class JManageLicenseKeysDialog
 	null,
 	{ "Add",    "add" }, 
 	{ "Remove", "remove" },
-	{ "Update", "update" }
+	{ "Update", "update" },
+	{ "Edit", "edit" }
       };
 
       JButton btns[] = 
@@ -69,12 +71,14 @@ class JManageLicenseKeysDialog
 
       pAddButton    = btns[1];
       pRemoveButton = btns[2];
+      pEditButton   = btns[4];
 
       updateLicenseKeys();
       pack();
     }
 
-    pCreateDialog = new JCreateLicenseKeyDialog(this);
+    pCreateDialog     = new JCreateLicenseKeyDialog(this);
+    pKeyDetailsDialog = new JKeyChooserConfigDialog(this, "License");
   }
 
   
@@ -104,6 +108,7 @@ class JManageLicenseKeysDialog
     pRemoveButton.setEnabled(pPrivilegeDetails.isQueueAdmin());
     pConfirmButton.setEnabled(false);
     pApplyButton.setEnabled(false);
+    pEditButton.setEnabled(pPrivilegeDetails.isQueueAdmin());
   }
 
 
@@ -117,6 +122,7 @@ class JManageLicenseKeysDialog
   /** 
    * Invoked when an action occurs. 
    */ 
+  @Override
   public void 
   actionPerformed
   (
@@ -130,6 +136,8 @@ class JManageLicenseKeysDialog
       doRemove();
     else if(cmd.equals("update")) 
       doUpdate();
+    else if(cmd.equals("edit")) 
+      doEdit();
     else 
       super.actionPerformed(e);
   }
@@ -143,6 +151,7 @@ class JManageLicenseKeysDialog
   /**
    * Apply changes and close. 
    */ 
+  @Override
   public void 
   doConfirm()
   {
@@ -153,6 +162,7 @@ class JManageLicenseKeysDialog
   /**
    * Apply changes. 
    */ 
+  @Override
   public void 
   doApply()
   {
@@ -238,7 +248,7 @@ class JManageLicenseKeysDialog
     }
   }
 
-  /*
+  /**
    * Update the table with the current license keys.
    */ 
   private void 
@@ -246,6 +256,41 @@ class JManageLicenseKeysDialog
   {
     pTablePanel.cancelEditing();
     updateLicenseKeys();
+  }
+  
+  /**
+   * Launch a dialog to add or remove a KeyChooser plugin to the key.
+   */
+  private void
+  doEdit()
+  {
+    UIMaster master = UIMaster.getInstance();
+    int row = pTablePanel.getTable().getSelectedRow();
+    if(row == -1) 
+      return;
+
+    BaseKeyChooser oplugin = pTableModel.getKeyChooser(row);
+    pKeyDetailsDialog.setKeyChooser(oplugin);
+    pKeyDetailsDialog.setVisible(true);
+    
+    if(pKeyDetailsDialog.wasConfirmed()) {
+      BaseKeyChooser plugin = pKeyDetailsDialog.getKeyChooser();
+      LicenseKey key = pTableModel.getKey(row);
+      if(key != null) {
+        try {
+          QueueMgrClient qclient = master.getQueueMgrClient();
+          LicenseKey newKey = 
+            new LicenseKey(key.getName(), key.getDescription(), plugin,
+                           key.getScheme(), key.getMaxSlots(), key.getMaxHosts(), key.getMaxHostSlots()); 
+          qclient.addLicenseKey(newKey);
+          
+          pTableModel.setLicenseKeys(qclient.getLicenseKeys(), pPrivilegeDetails);
+        }
+        catch(PipelineException ex) {
+          showErrorDialog(ex);
+        }
+      }
+    }
   }
 
   /**
@@ -292,9 +337,15 @@ class JManageLicenseKeysDialog
    */ 
   private JButton  pAddButton;
   private JButton  pRemoveButton;
+  private JButton  pEditButton;
 
   /**
    * The new key creation dialog.
    */ 
   private JCreateLicenseKeyDialog  pCreateDialog; 
+  
+  /**
+   * The add/edit configuration dialog.
+   */ 
+  private JKeyChooserConfigDialog  pKeyDetailsDialog; 
 }

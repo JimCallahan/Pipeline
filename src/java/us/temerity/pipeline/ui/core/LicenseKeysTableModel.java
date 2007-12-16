@@ -1,16 +1,15 @@
-// $Id: LicenseKeysTableModel.java,v 1.6 2006/01/15 06:29:26 jim Exp $
+// $Id: LicenseKeysTableModel.java,v 1.7 2007/12/16 12:22:09 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
+import java.util.ArrayList;
+
+import javax.swing.SwingConstants;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
+
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.ui.*;
-
-import java.awt.*;
-import java.awt.event.*;
-import java.text.*;
-import java.util.*;
-import javax.swing.*;
-import javax.swing.table.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   L I C E N S E   K E Y S   T A B L E   M O D E L                                        */
@@ -48,12 +47,13 @@ class LicenseKeysTableModel
 
     /* initialize the columns */ 
     { 
-      pNumColumns = 7;
+      pNumColumns = 10;
 
       {
 	Class classes[] = { 
 	  String.class, String.class, String.class,
-	  Integer.class, Integer.class, Integer.class, Integer.class 
+	  Integer.class, Integer.class, Integer.class, Integer.class,
+	  BaseKeyChooser.class, String.class, String.class
 	}; 
 	pColumnClasses = classes;
       }
@@ -61,7 +61,8 @@ class LicenseKeysTableModel
       {
 	String names[] = {
 	  "Key", "Description", "Scheme", 
-	  "Available", "Max Slots", "Max Hosts", "Max Host Slots"
+	  "Available", "Max Slots", "Max Hosts", "Max Host Slots",
+	  "Plugin", "Version", "Vendor"
 	};
 	pColumnNames = names;
       }
@@ -75,7 +76,10 @@ class LicenseKeysTableModel
 	  "The maximum number of slots running a job which requires the license key.", 
 	  "The maximum number of hosts which may run a job which requires the license key.", 
 	  "The maximum number of slots which may run a job requiring the license key on a" + 
-	  "single host."
+	  "single host.",
+	  "The name of the KeyChooser plugin for this key.",
+          "The revision number of the KeyChooser plugin.", 
+          "The name of the KeyChooser plugin vendor."
 	};
 	pColumnDescriptions = desc;
       }
@@ -83,20 +87,24 @@ class LicenseKeysTableModel
       {
 	int widths[] = { 
 	  120, 360, 120, 
-	  120, 120, 120, 120
+	  120, 120, 120, 120,
+	  120, 120, 120
 	};
 	pColumnWidths = widths;
       }
 
       {
 	TableCellRenderer renderers[] = {
-	  new JSimpleTableCellRenderer(JLabel.CENTER), 
-	  new JSimpleTableCellRenderer(JLabel.LEFT), 
-	  new JSimpleTableCellRenderer(JLabel.CENTER),
-	  new JSimpleTableCellRenderer(JLabel.CENTER),
-	  new JSimpleTableCellRenderer(JLabel.CENTER),
-	  new JSimpleTableCellRenderer(JLabel.CENTER),
-	  new JSimpleTableCellRenderer(JLabel.CENTER)
+	  new JSimpleTableCellRenderer(SwingConstants.CENTER), 
+	  new JSimpleTableCellRenderer(SwingConstants.LEFT), 
+	  new JSimpleTableCellRenderer(SwingConstants.CENTER),
+	  new JSimpleTableCellRenderer(SwingConstants.CENTER),
+	  new JSimpleTableCellRenderer(SwingConstants.CENTER),
+	  new JSimpleTableCellRenderer(SwingConstants.CENTER),
+	  new JSimpleTableCellRenderer(SwingConstants.CENTER),
+          new JPluginTableCellRenderer(SwingConstants.CENTER), 
+          new JSimpleTableCellRenderer(SwingConstants.CENTER), 
+          new JSimpleTableCellRenderer(SwingConstants.CENTER)
 	};
 	pRenderers = renderers;
       }
@@ -107,9 +115,12 @@ class LicenseKeysTableModel
 	  null, 
 	  new JCollectionTableCellEditor(LicenseScheme.titles(), 120),
 	  null,
-	  new JIntegerTableCellEditor(120, JLabel.CENTER),
-	  new JIntegerTableCellEditor(120, JLabel.CENTER),
-	  new JIntegerTableCellEditor(120, JLabel.CENTER)
+	  new JIntegerTableCellEditor(120, SwingConstants.CENTER),
+	  new JIntegerTableCellEditor(120, SwingConstants.CENTER),
+	  new JIntegerTableCellEditor(120, SwingConstants.CENTER),
+          null,
+          null,
+          null
 	};
 	pEditors = editors;
       }
@@ -127,6 +138,7 @@ class LicenseKeysTableModel
   /**
    * Sort the rows by the values in the current sort column and direction.
    */ 
+  @Override
   public void 
   sort()
   {
@@ -171,6 +183,36 @@ class LicenseKeysTableModel
 	if(value == null)
 	  value = "";
 	break;
+
+      case 7:
+        {
+          BaseKeyChooser plug = key.getKeyChooser();
+          if (plug == null)
+            value = "-";
+          else
+            value = plug.getName();
+          break;
+        }
+
+      case 8:
+        {
+          BaseKeyChooser plug = key.getKeyChooser();
+          if (plug == null)
+            value = "-";
+          else
+            value = plug.getVersionID().toString();
+          break;
+        }
+
+      case 9:
+        {
+          BaseKeyChooser plug = key.getKeyChooser();
+          if (plug == null)
+            value = "-";
+          else
+            value = plug.getVendor();
+          break;
+        }
       }
       
       int wk;
@@ -278,6 +320,7 @@ class LicenseKeysTableModel
   /**
    * Returns true if the cell at rowIndex and columnIndex is editable.
    */ 
+  @Override
   public boolean 	
   isCellEditable
   (
@@ -321,6 +364,7 @@ class LicenseKeysTableModel
   )
   {
     LicenseKey key = pLicenseKeys.get(pRowToIndex[row]);
+    BaseKeyChooser plug = key.getKeyChooser();
     switch(col) {
     case 0:
       return key.getName();
@@ -343,6 +387,22 @@ class LicenseKeysTableModel
     case 6:
       return key.getMaxHostSlots();
 
+    case 7:
+      return plug;
+      
+    case 8:
+      if (plug == null)
+        return "-";
+      else
+        return plug.getVersionID().toString();
+      
+    case 9:
+      if (plug == null)
+        return "-";
+      else
+        return plug.getVendor();
+
+
     default:
       assert(false);
       return null;
@@ -352,6 +412,7 @@ class LicenseKeysTableModel
   /**
    * Sets the value in the cell at columnIndex and rowIndex to aValue.
    */ 
+  @Override
   public void 
   setValueAt
   (
@@ -444,6 +505,32 @@ class LicenseKeysTableModel
       fireTableDataChanged();
       pParent.doEdited(); 
     }
+  }
+  
+  /**
+   * Return the Key Chooser for the given row.
+   */ 
+  public BaseKeyChooser 
+  getKeyChooser
+  (
+    int row  
+  )
+  {
+    BaseKey key = pLicenseKeys.get(pRowToIndex[row]);
+    BaseKeyChooser plug = key.getKeyChooser();
+    return plug;
+  }
+  
+  /**
+   * Return the Key for the given row.
+   */ 
+  public LicenseKey
+  getKey
+  (
+    int row  
+  )
+  {
+    return pLicenseKeys.get(pRowToIndex[row]);
   }
 
 

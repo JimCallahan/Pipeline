@@ -1,4 +1,4 @@
-// $Id: BaseKey.java,v 1.2 2007/12/16 06:26:40 jesse Exp $
+// $Id: BaseKey.java,v 1.3 2007/12/16 12:22:09 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -206,7 +206,7 @@ public class BaseKey
     
     encoder.encode("Description", pDescription);
     if (pKeyChooser != null)
-      encoder.encode("KeyChooser", pKeyChooser);
+      encoder.encode("KeyChooser", new BaseKeyChooser(pKeyChooser));
   }
   
   @Override

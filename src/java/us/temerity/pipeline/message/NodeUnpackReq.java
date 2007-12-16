@@ -1,4 +1,4 @@
-// $Id: NodeUnpackReq.java,v 1.2 2007/12/16 06:26:02 jesse Exp $
+// $Id: NodeUnpackReq.java,v 1.3 2007/12/16 12:22:09 jesse Exp $
 
 package us.temerity.pipeline.message;
 
@@ -60,6 +60,11 @@ class NodeUnpackReq
    * @param licenseKeyRemap
    *   A table mapping the names of license keys associated with the nodes in the node 
    *   bundle to license keys at the local site.  Any license keys not found in this 
+   *   table will be ignored.
+   *   
+   * @param hardwareKeyRemap
+   *   A table mapping the names of hardware keys associated with the nodes in the node 
+   *   bundle to hardware keys at the local site.  Any hardware keys not found in this 
    *   table will be ignored.
    */
   public

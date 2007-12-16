@@ -1,9 +1,11 @@
-// $Id: BaseKeyChooser.java,v 1.2 2007/12/16 06:26:40 jesse Exp $
+// $Id: BaseKeyChooser.java,v 1.3 2007/12/16 12:22:09 jesse Exp $
 
 package us.temerity.pipeline;
 
 import java.util.*;
 
+import us.temerity.pipeline.LogMgr.Kind;
+import us.temerity.pipeline.LogMgr.Level;
 import us.temerity.pipeline.glue.*;
 import us.temerity.pipeline.param.key.KeyParam;
 
@@ -82,10 +84,13 @@ class BaseKeyChooser
   }
   
   /**
-   * Copy constructor. <P> 
-   * 
+   * Copy constructor. 
+   * <P> 
    * Used internally to create a generic instances of plugin subclasses.  This constructor
-   * should not be used in end user code! <P> 
+   * should not be used in end user code! 
+   * <P> 
+   * @param key
+   *   The source to copy from 
    */ 
   public 
   BaseKeyChooser
@@ -130,8 +135,49 @@ class BaseKeyChooser
     throws PipelineException
   {
     throw new PipelineException
-      ("The isActive() method was not implemented by the Selection Key (" + pName + ")!");
+      ("The isActive() method was not implemented by the KeyChooser (" + pName + ")!");
   }
+  
+  /**
+   * Actual method that is called by the servers that provides exception wrapping
+   * and handling. 
+   * <p>
+   * @param job
+   *   The QueueJob that the key is going to apply to.  This contains the BaseAction and
+   *   the ActionAgenda that can be mined for information.
+   *   
+   * @param annots
+   *   The list of annotations assigned to the node the job is being created for.
+   * 
+   * @return 
+   *   Whether this key is active for the job being created by the given node.
+   * 
+   * @throws PipelineException if any error occurs while running 
+   *   {@link #isActive(QueueJob, TreeMap)}
+   */
+  public final boolean
+  computeIsActive
+  (
+    QueueJob job,
+    TreeMap <String, BaseAnnotation> annots 
+  )
+    throws PipelineException
+  {
+    try {
+      return isActive(job, annots);  
+    }
+    catch (Exception e) {
+      String msg = "An error occured in KeyChooser (" + getName() + ")  " +
+      		   "version (" + getVersionID().toString() + "), " +
+      		   "provided by (" + getVendor() + ").  \n" + e.getMessage();
+      if (e instanceof PipelineException)
+        LogMgr.getInstance().logAndFlush(Kind.Ops, Level.Warning, msg);
+      else
+        LogMgr.getInstance().logAndFlush(Kind.Ops, Level.Severe, msg);
+      throw new PipelineException(msg);
+    }
+  }
+  
   
   
   /*----------------------------------------------------------------------------------------*/
