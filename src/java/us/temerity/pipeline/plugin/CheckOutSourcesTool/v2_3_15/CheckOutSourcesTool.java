@@ -1,4 +1,4 @@
-// $Id: CheckOutSourcesTool.java,v 1.1 2007/12/16 11:11:34 jesse Exp $
+// $Id: CheckOutSourcesTool.java,v 1.2 2007/12/16 11:02:48 jim Exp $
 
 package us.temerity.pipeline.plugin.CheckoutSourcesTool.v2_3_15;
 
@@ -12,24 +12,24 @@ import us.temerity.pipeline.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Checks out the latest version of the selected node, as well as the latest version of all
+ * Checks-out the latest version of the selected node, as well as the latest version of all
  * its children nodes.
  * <p>
  * If a source node is locked, it will be relocked to the latest version from the repository.
- * If the source node is based on the latest version, it will be ignored (even if it is a Modified state).
- * If the source node is Conflicted, it will be ignored.  Otherwise it will be checked out with the Overwrite All
- * and PreserveFrozen settings.
+ * If the source node is based on the latest version, it will be ignored (even if it is a 
+ * Modified state). If the source node is Conflicted, it will be ignored.  Otherwise it will 
+ * be checked-out with the Overwrite All and PreserveFrozen settings.
  */
 public 
-class CheckoutSourcesTool
+class CheckOutSourcesTool
   extends BaseTool
 {
   public 
-  CheckoutSourcesTool()
+  CheckOutSourcesTool()
   {
-    super("CheckoutSources", new VersionID("2.3.15"), "Temerity",
-      "Checks out the latest version of the selected node, as well as" +
-      "the latest version of all its children nodes.");
+    super("CheckOutSources", new VersionID("2.3.15"), "Temerity",
+          "Checks-out the latest version of the selected node, as well as" +
+          "the latest version of all its children nodes.");
     
     underDevelopment();
     
@@ -60,7 +60,7 @@ class CheckoutSourcesTool
     if (pSelected.size() > 1)
       throw new PipelineException
         ("Please only select one node before running this tool");
-    return ": Performing check out";
+    return ": Performing Check-out";
   }
   
   /**
@@ -102,8 +102,8 @@ class CheckoutSourcesTool
 	  lock.put(source, latest);
 	  break;
 	}
-	if (det.getOverallNodeState() != OverallNodeState.Conflicted)
-	  checkOut.add(source);
+      if (det.getOverallNodeState() != OverallNodeState.Conflicted)
+        checkOut.add(source);
     }
     
     for (String each : checkOut) {
@@ -116,6 +116,7 @@ class CheckoutSourcesTool
       VersionID latest = lock.get(each);
       mclient.lock(sid, latest);
     }
+
     return false;
   }
   
