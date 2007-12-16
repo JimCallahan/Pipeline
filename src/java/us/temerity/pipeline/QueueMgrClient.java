@@ -1,4 +1,4 @@
-// $Id: QueueMgrClient.java,v 1.43 2007/12/15 07:14:57 jesse Exp $
+// $Id: QueueMgrClient.java,v 1.44 2007/12/16 09:10:46 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -153,8 +153,9 @@ class QueueMgrClient
   /**
    * Get the names of the currently defined license keys. <P>  
    * 
-   * @param userSettableOnly
-   *   Whether to only return a list of the license key names that the user can set.
+   * @param userChoosableOnly
+   *   Whether to exclude the names of the license keys currently controlled by a KeyChooser
+   *   plugin.
    * 
    * @throws PipelineException
    *   If unable to retrieve the names of the license keys.
@@ -162,13 +163,13 @@ class QueueMgrClient
   public synchronized TreeSet<String>
   getLicenseKeyNames
   (
-    boolean userSettableOnly  
+    boolean userChoosableOnly  
   ) 
     throws PipelineException  
   {
     verifyConnection();
 
-    QueueGetLicenseKeyNamesReq req = new QueueGetLicenseKeyNamesReq(userSettableOnly);
+    QueueGetLicenseKeyNamesReq req = new QueueGetLicenseKeyNamesReq(userChoosableOnly);
 
     Object obj = performTransaction(QueueRequest.GetLicenseKeyNames, req);
     if(obj instanceof QueueGetLicenseKeyNamesRsp) {
@@ -188,10 +189,7 @@ class QueueMgrClient
    *   If unable to retrieve the license keys.
    */
   public synchronized ArrayList<LicenseKey>
-  getLicenseKeys
-  (
-    
-  ) 
+  getLicenseKeys() 
     throws PipelineException  
   {
     verifyConnection();
@@ -315,8 +313,9 @@ class QueueMgrClient
   /**
    * Get the names of the currently defined selection keys. <P>
    * 
-   * @param userSettableOnly
-   *   Whether to only return a list of the selection key names that the user can set.
+   * @param userChoosableOnly
+   *   Whether to exclude the names of the selection keys currently controlled by a KeyChooser
+   *   plugin.
    * 
    * @throws PipelineException
    *   If unable to retrieve the names of the selection keys.
@@ -324,13 +323,13 @@ class QueueMgrClient
   public synchronized TreeSet<String>
   getSelectionKeyNames
   (
-    boolean userSettableOnly  
+    boolean userChoosableOnly  
   ) 
     throws PipelineException  
   {
     verifyConnection();
 
-    QueueGetSelectionKeyNamesReq req = new QueueGetSelectionKeyNamesReq(userSettableOnly);
+    QueueGetSelectionKeyNamesReq req = new QueueGetSelectionKeyNamesReq(userChoosableOnly);
     Object obj = performTransaction(QueueRequest.GetSelectionKeyNames, req);
     if(obj instanceof QueueGetSelectionKeyNamesRsp) {
       QueueGetSelectionKeyNamesRsp rsp = (QueueGetSelectionKeyNamesRsp) obj;
@@ -646,7 +645,8 @@ class QueueMgrClient
     throws PipelineException
   {
     TreeMap<String,SelectionSchedule> schedules = getSelectionSchedules();
-    SelectionScheduleMatrix matrix = new SelectionScheduleMatrix(schedules, System.currentTimeMillis());
+    SelectionScheduleMatrix matrix = 
+      new SelectionScheduleMatrix(schedules, System.currentTimeMillis());
     return matrix;
   }
 
@@ -766,8 +766,9 @@ class QueueMgrClient
   /**
    * Get the names of the currently defined hardware keys. <P>  
    * 
-   * @param userSettableOnly
-   *   Whether to only return a list of the hardware key names that the user can set.
+   * @param userChoosableOnly
+   *   Whether to exclude the names of the hardware keys currently controlled by a KeyChooser
+   *   plugin.
    * 
    * @throws PipelineException
    *   If unable to retrieve the names of the hardware keys.
@@ -775,13 +776,13 @@ class QueueMgrClient
   public synchronized TreeSet<String>
   getHardwareKeyNames
   (
-    boolean userSettableOnly    
+    boolean userChoosableOnly    
   ) 
     throws PipelineException  
   {
     verifyConnection();
 
-    QueueGetHardwareKeyNamesReq req = new QueueGetHardwareKeyNamesReq(userSettableOnly);
+    QueueGetHardwareKeyNamesReq req = new QueueGetHardwareKeyNamesReq(userChoosableOnly);
     Object obj = performTransaction(QueueRequest.GetHardwareKeyNames, req);
     if(obj instanceof QueueGetHardwareKeyNamesRsp) {
       QueueGetHardwareKeyNamesRsp rsp = (QueueGetHardwareKeyNamesRsp) obj;
