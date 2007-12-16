@@ -1,0 +1,21 @@
+KeyChooserMenuLayout <PluginMenuLayout> #1 {
+  Title <String> #2 { "Plugin Menu" }
+  Children <LinkedList> #3 {
+    <PluginMenuLayout> #4 {
+      Title <String> #5 { "NodeName" }
+      Name <String> #6 { "NodeName" }
+      VersionID <VersionID> #7 {
+        RevisionNumber <String> #8 { "2.3.15" }
+      }
+      Vendor <String> #9 { "Temerity" }
+    }
+    <PluginMenuLayout> #10 {
+      Title <String> #11 { "UserName" }
+      Name <String> #12 { "UserName" }
+      VersionID <VersionID> #13 {
+        RevisionNumber <String> #14 { "2.3.15" }
+      }
+      Vendor <REF> #9
+    }
+  }
+}

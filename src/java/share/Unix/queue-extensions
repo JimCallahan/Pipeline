@@ -1,0 +1,21 @@
+QueueExtensionMenuLayout <PluginMenuLayout> #1 {
+  Title <String> #2 { "Plugin Menu" }
+  Children <LinkedList> #3 {
+    <PluginMenuLayout> #4 {
+      Title <String> #5 { "LogQueueActivity" }
+      Name <String> #6 { "LogQueueActivity" }
+      VersionID <VersionID> #7 {
+        RevisionNumber <String> #8 { "2.1.1" }
+      }
+      Vendor <String> #9 { "Temerity" }
+    }
+    <PluginMenuLayout> #10 {
+      Title <String> #11 { "QueueStats" }
+      Name <String> #12 { "QueueStats" }
+      VersionID <VersionID> #13 {
+        RevisionNumber <String> #14 { "2.1.1" }
+      }
+      Vendor <REF> #9
+    }
+  }
+}

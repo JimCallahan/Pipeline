@@ -1,0 +1,39 @@
+AnnotationMenuLayout <PluginMenuLayout> #1 {
+  Title <String> #2 { "Plugin Menu" }
+  Children <LinkedList> #3 {
+    <PluginMenuLayout> #4 {
+      Title <String> #5 { "TaskPolicy" }
+      Children <LinkedList> #6 {
+        <PluginMenuLayout> #7 {
+          Title <String> #8 { "Submit" }
+          Name <String> #9 { "SubmitNode" }
+          VersionID <VersionID> #10 {
+            RevisionNumber <String> #11 { "2.3.2" }
+          }
+          Vendor <String> #12 { "Temerity" }
+        }
+        <PluginMenuLayout> #13 {
+          Title <String> #14 { "Task" }
+          Name <String> #15 { "Task" }
+          VersionID <VersionID> #16 {
+            RevisionNumber <String> #17 { "2.3.2" }
+          }
+          Vendor <REF> #12
+        }
+      }
+    }
+    <PluginMenuLayout> #18 {
+      Title <String> #19 { "Util" }
+      Children <LinkedList> #20 {
+        <PluginMenuLayout> #21 {
+          Title <String> #22 { "NodeNote" }
+          Name <String> #23 { "NodeNote" }
+          VersionID <VersionID> #24 {
+            RevisionNumber <String> #25 { "2.3.14" }
+          }
+          Vendor <REF> #12
+        }
+      }
+    }
+  }
+}

@@ -2,36 +2,41 @@ ComparatorMenuLayout <PluginMenuLayout> #1 {
   Title <String> #2 { "Plugin Menu" }
   Children <LinkedList> #3 {
     <PluginMenuLayout> #4 {
-      Title <String> #5 { "ShakeDiff" }
-      Name <String> #6 { "ShakeDiff" }
-      VersionID <VersionID> #7 {
-        RevisionNumber <String> #8 { "2.2.1" }
+      Title <String> #5 { "Images" }
+      Children <LinkedList> #6 {
+        <PluginMenuLayout> #7 {
+          Title <String> #8 { "GimpDiff" }
+          Name <String> #9 { "GimpDiff" }
+          VersionID <VersionID> #10 {
+            RevisionNumber <String> #11 { "2.2.1" }
+          }
+          Vendor <String> #12 { "Temerity" }
+        }
+        <PluginMenuLayout> #13 {
+          Title <String> #14 { "NukeDiff" }
+          Name <String> #15 { "NukeDiff" }
+          VersionID <VersionID> #16 {
+            RevisionNumber <String> #17 { "2.2.1" }
+          }
+          Vendor <String> #18 { "Temerity" }
+        }
+        <PluginMenuLayout> #19 {
+          Title <String> #20 { "ShakeDiff" }
+          Name <String> #21 { "ShakeDiff" }
+          VersionID <VersionID> #22 {
+            RevisionNumber <String> #23 { "2.2.1" }
+          }
+          Vendor <String> #24 { "Temerity" }
+        }
       }
-      Vendor <String> #9 { "Temerity" }
     }
-    <PluginMenuLayout> #10 {
-      Title <String> #11 { "NukeDiff" }
-      Name <String> #12 { "NukeDiff" }
-      VersionID <VersionID> #13 {
-        RevisionNumber <String> #14 { "2.2.1" }
+    <PluginMenuLayout> #25 {
+      Title <String> #26 { "TextDiff" }
+      Name <String> #27 { "TextDiff" }
+      VersionID <VersionID> #28 {
+        RevisionNumber <String> #29 { "2.2.1" }
       }
-      Vendor <String> #15 { "Temerity" }
-    }
-    <PluginMenuLayout> #16 {
-      Title <String> #17 { "GimpDiff" }
-      Name <String> #18 { "GimpDiff" }
-      VersionID <VersionID> #19 {
-        RevisionNumber <String> #20 { "2.2.1" }
-      }
-      Vendor <String> #21 { "Temerity" }
-    }
-    <PluginMenuLayout> #22 {
-      Title <String> #23 { "TextDiff" }
-      Name <String> #24 { "TextDiff" }
-      VersionID <VersionID> #25 {
-        RevisionNumber <String> #26 { "2.2.1" }
-      }
-      Vendor <String> #27 { "Temerity" }
+      Vendor <String> #30 { "Temerity" }
     }
   }
 }
