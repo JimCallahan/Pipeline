@@ -1,4 +1,4 @@
-// $Id: PluginMgr.java,v 1.15 2007/12/15 07:41:15 jesse Exp $
+// $Id: PluginMgr.java,v 1.16 2007/12/16 09:09:45 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -47,15 +47,15 @@ class PluginMgr
       
       pLoadCycleID = 1L;
       
-      pEditors       = new TripleMap<String,String,VersionID,Plugin>();  
-      pActions       = new TripleMap<String,String,VersionID,Plugin>();  
-      pComparators   = new TripleMap<String,String,VersionID,Plugin>();  
-      pTools  	     = new TripleMap<String,String,VersionID,Plugin>();   
-      pAnnotations   = new TripleMap<String,String,VersionID,Plugin>();   
-      pArchivers     = new TripleMap<String,String,VersionID,Plugin>();  
-      pMasterExts    = new TripleMap<String,String,VersionID,Plugin>();  
-      pQueueExts     = new TripleMap<String,String,VersionID,Plugin>();  
-      pSelectionKeys = new TripleMap<String,String,VersionID,Plugin>();
+      pEditors     = new PluginCache();  
+      pActions     = new PluginCache();  
+      pComparators = new PluginCache();  
+      pTools  	   = new PluginCache();   
+      pAnnotations = new PluginCache();   
+      pArchivers   = new PluginCache();  
+      pMasterExts  = new PluginCache();  
+      pQueueExts   = new PluginCache();  
+      pKeyChoosers = new PluginCache();
 
       pSerialVersionUIDs = new TreeMap<Long,String>(); 
     }
@@ -123,98 +123,21 @@ class PluginMgr
       
       Long cycleID = req.getCycleID();
 
-      TripleMap<String,String,VersionID,Object[]> editors = 
-	collectUpdated(cycleID, pEditors);
-
-      TripleMap<String,String,VersionID,Object[]> actions = 
-	collectUpdated(cycleID, pActions);
-
-      TripleMap<String,String,VersionID,Object[]> comparators =
-	collectUpdated(cycleID, pComparators);
-
-      TripleMap<String,String,VersionID,Object[]> tools =
-	collectUpdated(cycleID, pTools);
-
-      TripleMap<String,String,VersionID,Object[]> annotations =
-	collectUpdated(cycleID, pAnnotations);
-
-      TripleMap<String,String,VersionID,Object[]> archivers = 
-	collectUpdated(cycleID, pArchivers);
-
-      TripleMap<String,String,VersionID,Object[]> masterExts = 
-	collectUpdated(cycleID, pMasterExts);
-
-      TripleMap<String,String,VersionID,Object[]> queueExts = 
-	collectUpdated(cycleID, pQueueExts);
-      
-      TripleMap<String,String,VersionID,Object[]> selectionKeys = 
-        collectUpdated(cycleID, pSelectionKeys);
-
       return new PluginUpdateRsp(timer, pLoadCycleID, 
-				 editors, actions, comparators, tools, annotations, 
-                                 archivers, masterExts, queueExts, selectionKeys);
+                                 pEditors.collectUpdated(cycleID), 
+                                 pActions.collectUpdated(cycleID), 
+                                 pComparators.collectUpdated(cycleID), 
+                                 pTools.collectUpdated(cycleID), 
+                                 pAnnotations.collectUpdated(cycleID), 
+                                 pArchivers.collectUpdated(cycleID), 
+                                 pMasterExts.collectUpdated(cycleID), 
+                                 pQueueExts.collectUpdated(cycleID), 
+                                 pKeyChoosers.collectUpdated(cycleID)); 
     }
     finally {
       pPluginLock.readLock().unlock();
     }
   }  
-
-  /**
-   * Collect the plugin classes which have been loaded after the given load cycle. <P> 
-   * 
-   * @param cycleID
-   *   The load cycle or <CODE>null</CODE> to collect all plugin classes.
-   * 
-   * @param plugins
-   *   The loaded plugins.
-   */ 
-  private TripleMap<String,String,VersionID,Object[]>
-  collectUpdated
-  (
-   Long cycleID, 
-   TripleMap<String,String,VersionID,Plugin> plugins
-  ) 
-  {
-    TripleMap<String,String,VersionID,Object[]> updated = 
-      new TripleMap<String,String,VersionID,Object[]>(); 
-    
-    if(cycleID == null) {
-      for(String vendor : plugins.keySet()) {
-	for(String name : plugins.get(vendor).keySet()) {
-	  for(VersionID vid : plugins.get(vendor).get(name).keySet()) {
-	    Plugin plg = plugins.get(vendor, name, vid);
-	    
-	    Object[] objs = new Object[3];
-	    objs[0] = plg.getClassName();
-	    objs[1] = plg.getContents();
-	    objs[2] = plg.getSupports();
-
-	    updated.put(vendor, name, vid, objs);
-	  }
-	}
-      }
-    }
-    else {  
-      for(String vendor : plugins.keySet()) {
-	for(String name : plugins.get(vendor).keySet()) {
-	  for(VersionID vid : plugins.get(vendor).get(name).keySet()) {
-      	    Plugin plg = plugins.get(vendor, name, vid);
-
-	    if(cycleID < plg.getCycleID()) {
-	      Object[] objs = new Object[3];
-	      objs[0] = plg.getClassName();
-	      objs[1] = plg.getContents();
-	      objs[2] = plg.getSupports();
-
-	      updated.put(vendor, name, vid, objs);
-	    }
-	  }
-	}
-      }
-    }
-
-    return updated;
-  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -642,23 +565,23 @@ class PluginMgr
       }
 
       if(plg instanceof BaseEditor) 
-	addPlugin(plg, cname, contents, pEditors);
+	pEditors.addPlugin(plg, cname, contents);
       else if(plg instanceof BaseAction) 
-	addPlugin(plg, cname, contents, pActions);
+	pActions.addPlugin(plg, cname, contents);
       else if(plg instanceof BaseComparator) 
-	addPlugin(plg, cname, contents, pComparators);
+	pComparators.addPlugin(plg, cname, contents);
       else if(plg instanceof BaseTool) 
-	addPlugin(plg, cname, contents, pTools);
+        pTools.addPlugin(plg, cname, contents);
       else if(plg instanceof BaseAnnotation) 
-	addPlugin(plg, cname, contents, pAnnotations);
+	pAnnotations.addPlugin(plg, cname, contents);
       else if(plg instanceof BaseArchiver) 
-	addPlugin(plg, cname, contents, pArchivers);
+	pArchivers.addPlugin(plg, cname, contents);
       else if(plg instanceof BaseMasterExt) 
-	addPlugin(plg, cname, contents, pMasterExts);
+	pMasterExts.addPlugin(plg, cname, contents);
       else if(plg instanceof BaseQueueExt) 
-	addPlugin(plg, cname, contents, pQueueExts);
+	pQueueExts.addPlugin(plg, cname, contents);
       else if(plg instanceof BaseKeyChooser)
-        addPlugin(plg, cname, contents, pSelectionKeys);
+        pKeyChoosers.addPlugin(plg, cname, contents);
       else 
 	throw new PipelineException
 	  ("The class file (" + pluginfile + ") does not contain a Pipeline plugin!");
@@ -676,43 +599,6 @@ class PluginMgr
     finally {
       LogMgr.getInstance().flush();
     }
-  }
-
-  /**
-   * Add a newly loaded plugin to the cached plugin table.
-   * 
-   * @param plg 
-   *   An instance of the loaded plugin class.
-   * 
-   * @param cname
-   *   The full name of the plugin class.
-   * 
-   * @param contents
-   *   The raw plugin class bytes indexed by class name.
-   * 
-   * @param table
-   *   The cached plugins.
-   */ 
-  private void 
-  addPlugin
-  (
-   BasePlugin plg,
-   String cname, 
-   TreeMap<String,byte[]> contents, 
-   TripleMap<String,String,VersionID,Plugin> table
-  ) 
-    throws PipelineException 
-  {
-    Plugin plugin = table.get(plg.getVendor(), plg.getName(), plg.getVersionID());
-    if((plugin != null) && (!plugin.isUnderDevelopment())) 
-      throw new PipelineException 
-	("Cannot install the plugin (" + cname + ") because a previously installed " + 
-	 "version of this plugin exists which is no longer under development!");
-
-    table.put(plg.getVendor(), plg.getName(), plg.getVersionID(),
-	      new Plugin(pLoadCycleID, cname, 
-			 plg.getSupports(), plg.isUnderDevelopment(), 
-			 contents));
   }
 
 
@@ -782,6 +668,114 @@ class PluginMgr
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * The loaded plugins indexed by plugin name and revision number.
+   */
+  private 
+  class PluginCache
+    extends TripleMap<String,String,VersionID,Plugin>
+  {
+    /**
+     * Construct a new cache.
+     */
+    public 
+    PluginCache() 
+    {
+      super();
+    }
+
+    /**
+     * Collect the plugin classes which have been loaded after the given load cycle. <P> 
+     * 
+     * @param cycleID
+     *   The load cycle or <CODE>null</CODE> to collect all plugin classes.
+     */ 
+    private TripleMap<String,String,VersionID,Object[]>
+    collectUpdated
+    (
+     Long cycleID
+    ) 
+    {
+      TripleMap<String,String,VersionID,Object[]> updated = 
+        new TripleMap<String,String,VersionID,Object[]>(); 
+    
+      if(cycleID == null) {
+        for(String vendor : keySet()) {
+          for(String name : get(vendor).keySet()) {
+            for(VersionID vid : get(vendor).get(name).keySet()) {
+              Plugin plg = get(vendor, name, vid);
+              
+              Object[] objs = new Object[3];
+              objs[0] = plg.getClassName();
+              objs[1] = plg.getContents();
+              objs[2] = plg.getSupports();
+              
+              updated.put(vendor, name, vid, objs);
+            }
+          }
+        }
+      }
+      else {  
+        for(String vendor : keySet()) {
+          for(String name : get(vendor).keySet()) {
+            for(VersionID vid : get(vendor).get(name).keySet()) {
+              Plugin plg = get(vendor, name, vid);
+              
+              if(cycleID < plg.getCycleID()) {
+                Object[] objs = new Object[3];
+                objs[0] = plg.getClassName();
+                objs[1] = plg.getContents();
+                objs[2] = plg.getSupports();
+                
+                updated.put(vendor, name, vid, objs);
+              }
+            }
+          }
+        }
+      }
+      
+      return updated;
+    }
+
+    /**
+     * Add a newly loaded plugin to the cached plugin table.
+     * 
+     * @param plg 
+     *   An instance of the loaded plugin class.
+     * 
+     * @param cname
+     *   The full name of the plugin class.
+     * 
+     * @param contents
+     *   The raw plugin class bytes indexed by class name.
+     */ 
+    private void 
+    addPlugin
+    (
+     BasePlugin plg,
+     String cname, 
+     TreeMap<String,byte[]> contents
+    ) 
+      throws PipelineException 
+    {
+      Plugin plugin = get(plg.getVendor(), plg.getName(), plg.getVersionID());
+      if((plugin != null) && (!plugin.isUnderDevelopment())) 
+        throw new PipelineException 
+          ("Cannot install the plugin (" + cname + ") because a previously installed " + 
+           "version of this plugin exists which is no longer under development!");
+      
+      put(plg.getVendor(), plg.getName(), plg.getVersionID(),
+          new Plugin(pLoadCycleID, cname, 
+                     plg.getSupports(), plg.isUnderDevelopment(), 
+                     contents));
+    }
+
+    static final long serialVersionUID = 6780638964799823468L;
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
@@ -813,49 +807,17 @@ class PluginMgr
   private Long  pLoadCycleID;
 
   /**
-   * The loaded Editor plugins indexed by plugin name and revision number.
+   * The various types of loaded plugins.
    */
-  private TripleMap<String,String,VersionID,Plugin>  pEditors; 
-
-  /**
-   * The loaded Action plugins indexed by plugin name and revision number.
-   */
-  private TripleMap<String,String,VersionID,Plugin>  pActions; 
-
-  /**
-   * The loaded Comparator plugins indexed by plugin name and revision number.
-   */
-  private TripleMap<String,String,VersionID,Plugin>  pComparators; 
-
-  /**
-   * The loaded Tool plugins indexed by plugin name and revision number.
-   */
-  private TripleMap<String,String,VersionID,Plugin>  pTools; 
-
-  /**
-   * The loaded Annotation plugins indexed by plugin name and revision number.
-   */
-  private TripleMap<String,String,VersionID,Plugin>  pAnnotations; 
-
-  /**
-   * The loaded Archiver plugins indexed by plugin name and revision number.
-   */
-  private TripleMap<String,String,VersionID,Plugin>  pArchivers; 
-
-  /**
-   * The loaded Master Extension plugins indexed by plugin name and revision number.
-   */
-  private TripleMap<String,String,VersionID,Plugin>  pMasterExts; 
-
-  /**
-   * The loaded Queue Extension plugins indexed by plugin name and revision number.
-   */
-  private TripleMap<String,String,VersionID,Plugin>  pQueueExts; 
-  
-  /**
-   * The loaded Selection Key plugins indexed by plugin name and revision number.
-   */
-  private TripleMap<String,String,VersionID,Plugin>  pSelectionKeys; 
+  private PluginCache  pEditors;
+  private PluginCache  pActions; 
+  private PluginCache  pComparators; 
+  private PluginCache  pTools; 
+  private PluginCache  pAnnotations; 
+  private PluginCache  pArchivers; 
+  private PluginCache  pMasterExts; 
+  private PluginCache  pQueueExts; 
+  private PluginCache  pKeyChoosers; 
 
   /**
    * The serialVersionUIDs of all loaded plugins used to test for conflicts.
