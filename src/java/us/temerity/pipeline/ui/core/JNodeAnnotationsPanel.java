@@ -1,4 +1,4 @@
-// $Id: JNodeAnnotationsPanel.java,v 1.9 2007/11/30 20:14:25 jesse Exp $
+// $Id: JNodeAnnotationsPanel.java,v 1.10 2007/12/16 06:32:24 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1718,7 +1718,7 @@ class JNodeAnnotationsPanel
     }
 
     /**
-     * Get the updated annoation plugin instance.
+     * Get the updated annotation plugin instance.
      */
     public BaseAnnotation
     getAnnotation() 
