@@ -1,4 +1,4 @@
-// $Id: JUnpackBundleDialog.java,v 1.5 2007/12/15 07:41:15 jesse Exp $
+// $Id: JUnpackBundleDialog.java,v 1.6 2007/12/16 06:29:14 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -60,6 +60,7 @@ class JUnpackBundleDialog
       pToolsetFields      = new TreeMap<String,JCollectionField>();
       pSelectionKeyFields = new TreeMap<String,JCollectionField>();
       pLicenseKeyFields   = new TreeMap<String,JCollectionField>();
+      pHardwareKeyFields   = new TreeMap<String,JCollectionField>();
     }
 
     /* create dialog body components */ 
@@ -231,6 +232,14 @@ class JUnpackBundleDialog
               sbox.add(drawer);
             }
             
+            /* hardware key remap */ 
+            {
+              pHardwareKeyBox = new Box(BoxLayout.Y_AXIS);
+              
+              JDrawer drawer = new JDrawer("Convert Hardware Keys:", pHardwareKeyBox, false);
+              sbox.add(drawer);
+            }
+            
             sbox.add(UIFactory.createFiller(sTSize+sVSize+30));
             sbox.add(Box.createVerticalGlue());
 
@@ -363,6 +372,24 @@ class JUnpackBundleDialog
 
     return remap;
   }
+  
+  /**
+   * Get the table mapping the names of hardware keys associated with the nodes in the node 
+   * bundle to hardware keys at the local site.
+   */ 
+  public TreeMap<String,String> 
+  getHardwareKeyRemap()
+  {
+    TreeMap<String,String> remap = new TreeMap<String,String>();
+
+    for(String kname : pHardwareKeyFields.keySet()) {
+      String value = pHardwareKeyFields.get(kname).getSelected();
+      if((value != null) && !value.equals("-")) 
+        remap.put(kname, value);
+    }
+
+    return remap;
+  }
 
 
 
@@ -419,6 +446,7 @@ class JUnpackBundleDialog
     TreeSet<String> tsets = new TreeSet<String>();
     TreeSet<String> skeys = new TreeSet<String>();
     TreeSet<String> lkeys = new TreeSet<String>();
+    TreeSet<String> hkeys = new TreeSet<String>();
     if(pNodeBundle != null) {
       tsets.addAll(pNodeBundle.getAllToolsetNames());
       for(NodeMod mod : pNodeBundle.getWorkingVersions()) {
@@ -426,6 +454,7 @@ class JUnpackBundleDialog
         if(jreqs != null) {
           skeys.addAll(jreqs.getSelectionKeys());
           lkeys.addAll(jreqs.getLicenseKeys());
+          hkeys.addAll(jreqs.getHardwareKeys());
         }
       }
     }
@@ -435,6 +464,7 @@ class JUnpackBundleDialog
     String defaultToolset = null;
     TreeSet<String> selectionKeys = null;
     TreeSet<String> licenseKeys = null;
+    TreeSet<String> hardwareKeys = null;
     try {
       UIMaster master = UIMaster.getInstance();
       MasterMgrClient mclient = master.getMasterMgrClient(pChannel);
@@ -444,6 +474,7 @@ class JUnpackBundleDialog
       QueueMgrClient qclient = master.getQueueMgrClient(pChannel);
       selectionKeys = qclient.getSelectionKeyNames(true);
       licenseKeys = qclient.getLicenseKeyNames(true);
+      hardwareKeys = qclient.getHardwareKeyNames(true);
     }
     catch(PipelineException ex) {
       showErrorDialog(ex);
@@ -461,6 +492,10 @@ class JUnpackBundleDialog
     /* rebuild the license keys drawer */
     updateNameMap(pLicenseKeyBox, pLicenseKeyFields, getLicenseKeyRemap(), 
                   licenseKeys, lkeys, "license key", false);
+    
+    /* rebuild the hardware keys drawer */
+    updateNameMap(pHardwareKeyBox, pHardwareKeyFields, getHardwareKeyRemap(), 
+                  hardwareKeys, hkeys, "hardware key", false);
     
     /* whether the bundle is valid */ 
     pConfirmButton.setEnabled((bundlePath != null) && (pNodeBundle != null));
@@ -867,6 +902,12 @@ class JUnpackBundleDialog
    */ 
   private Box                               pLicenseKeyBox;
   private TreeMap<String,JCollectionField>  pLicenseKeyFields;
+  
+  /**
+   * Hardware key remap components.
+   */ 
+  private Box                               pHardwareKeyBox;
+  private TreeMap<String,JCollectionField>  pHardwareKeyFields;
 
   /**
    * The node bundle file selection dialog.

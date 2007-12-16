@@ -1,4 +1,4 @@
-// $Id: BuilderInformation.java,v 1.10 2007/11/01 07:49:07 jim Exp $
+// $Id: BuilderInformation.java,v 1.11 2007/12/16 06:26:02 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -319,6 +319,7 @@ class BuilderInformation
       pStageState = state;
       pDefaultSelectionKeys = new TreeSet<String>();
       pDefaultLicenseKeys = new TreeSet<String>();
+      pDefaultHardwareKeys = new TreeSet<String>();
       pSelectionKeyStack = new LinkedList<TreeSet<String>>();
       pLicenseKeyStack = new LinkedList<TreeSet<String>>();
       pDoAnnotations = false;
@@ -373,6 +374,27 @@ class BuilderInformation
       pDefaultLicenseKeys.add(key);
     }
     
+    public void
+    setDefaultHardwareKeys
+    (
+      Set<String> keys
+    )
+    {
+      if (keys == null)
+        pDefaultHardwareKeys = new TreeSet<String>();
+      else
+        pDefaultHardwareKeys = new TreeSet<String>(keys);
+    }
+    
+    public void
+    addDefaultHardwareKey
+    (
+      String key  
+    )
+    {
+      pDefaultHardwareKeys.add(key);
+    }
+    
     public TreeSet<String> 
     getDefaultSelectionKeys()
     {
@@ -395,6 +417,19 @@ class BuilderInformation
       for (TreeSet<String> keys : pLicenseKeyStack) 
 	if (keys != null)
 	  toReturn.addAll(keys);
+      
+      return toReturn;
+    }
+    
+    public TreeSet<String> 
+    getDefaultHardwareKeys()
+    {
+      TreeSet<String> toReturn = new TreeSet<String>();
+      if (pDefaultHardwareKeys != null)
+        toReturn.addAll(pDefaultHardwareKeys);
+      for (TreeSet<String> keys : pHardwareKeyStack) 
+        if (keys != null)
+          toReturn.addAll(keys);
       
       return toReturn;
     }
@@ -429,6 +464,21 @@ class BuilderInformation
       return pUseDefaultLicenseKeys; 
     }
     
+    public void 
+    setUseDefaultHardwareKeys
+    (
+      boolean value
+    )
+    {
+      pUseDefaultHardwareKeys = value;
+    }
+    
+    public boolean 
+    useDefaultHardwareKeys()
+    {
+      return pUseDefaultHardwareKeys; 
+    }
+    
     public void
     pushSelectionKeys
     (
@@ -459,6 +509,21 @@ class BuilderInformation
       pLicenseKeyStack.poll();
     }
     
+    public void
+    pushHardwareKeys
+    (
+      TreeSet<String> keys  
+    )
+    {
+      pHardwareKeyStack.addFirst(keys);
+    }
+    
+    public void
+    popHardwareKeys()
+    {
+      pHardwareKeyStack.poll();
+    }
+    
     public boolean 
     doAnnotations()
     {
@@ -473,7 +538,6 @@ class BuilderInformation
     {
       pDoAnnotations = doAnnotations;
     }
-    
     
     public void
     setActionOnExistence
@@ -741,6 +805,41 @@ class BuilderInformation
       pStageState.setStageFunctionLicenseKeys(function, keys);
     }
     
+    /**
+     * Gets the default hardware keys for a particular function.
+     * 
+     * @return A list of keys or an empty list if no keys exist
+     */
+    public Set<String>
+    getStageFunctionHardwareKeys
+    (
+      String function  
+    )
+    {
+      return pStageState.getStageFunctionHardwareKeys(function);
+    }
+    
+    /**
+     * Sets a default hardware keys for a particular stage function type.
+     * <p>
+     * Note that this method is only effective the FIRST time it is called for a particular
+     * function type.  This allows high-level builders to override their child builders if
+     * they do not agree on what the default keys should be.  It is important to remember
+     * this when writing builders with sub-builder.  A Builder should always set the
+     * default keys in its Stage State class before instantiating any of its 
+     * sub-builders.  Failure to do so may result in the default keys values being
+     * set by the sub-builder.
+     */
+    public void
+    setStageFunctionHardwareKeys
+    (
+      String function,
+      TreeSet<String> keys
+    )
+    {
+      pStageState.setStageFunctionHardwareKeys(function, keys);
+    }
+    
     
     
     /*--------------------------------------------------------------------------------------*/
@@ -751,13 +850,19 @@ class BuilderInformation
     
     private TreeSet<String> pDefaultLicenseKeys = new TreeSet<String>();
     
+    private TreeSet<String> pDefaultHardwareKeys = new TreeSet<String>();
+    
     private LinkedList<TreeSet<String>> pSelectionKeyStack;
     
     private LinkedList<TreeSet<String>> pLicenseKeyStack;
     
+    private LinkedList<TreeSet<String>> pHardwareKeyStack;
+    
     private boolean pUseDefaultSelectionKeys;
     
     private boolean pUseDefaultLicenseKeys;
+    
+    private boolean pUseDefaultHardwareKeys;
     
     private boolean pDoAnnotations;
     

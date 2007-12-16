@@ -1,10 +1,11 @@
 package us.temerity.pipeline.core;
 
-import us.temerity.pipeline.*;
-import us.temerity.pipeline.builder.*;
-import us.temerity.pipeline.stages.*;
+import java.util.LinkedList;
+import java.util.TreeMap;
 
-import java.util.*;
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.builder.BaseBuilder;
+import us.temerity.pipeline.builder.BuilderInformation;
 
 /*------------------------------------------------------------------------------------------*/
 /*   B U N D L E   B U I L D E R                                                            */
@@ -61,7 +62,8 @@ class BundleBuilder
     Path bundlePath, 
     TreeMap<String,String> toolsetRemap, 
     TreeMap<String,String> selectionKeyRemap,
-    TreeMap<String,String> licenseKeyRemap
+    TreeMap<String,String> licenseKeyRemap,
+    TreeMap<String,String> hardwareKeyRemap
   ) 
     throws PipelineException
   {
@@ -78,6 +80,7 @@ class BundleBuilder
     pToolsetRemap      = toolsetRemap;      
     pSelectionKeyRemap = selectionKeyRemap; 
     pLicenseKeyRemap   = licenseKeyRemap;   
+    pHardwareKeyRemap  = hardwareKeyRemap;
 
     addSetupPass(new InformationPass());
     addConstructPass(new BuildPass());
@@ -117,6 +120,7 @@ class BundleBuilder
   /**
    * No check-ins required.
    */
+  @Override
   protected LinkedList<String>
   getNodesToCheckIn()
   {
@@ -176,7 +180,8 @@ class BundleBuilder
         BundleStage stage = 
           new BundleStage(pStageInfo, pContext, pClient, mod, 
                           new TreeMap<String,BaseAnnotation>() /* FIX THIS!! */, 
-                          pToolsetRemap, pSelectionKeyRemap, pLicenseKeyRemap);
+                          pToolsetRemap, 
+                          pSelectionKeyRemap, pLicenseKeyRemap, pHardwareKeyRemap);
 	stage.build();
 
         if((mod.getAction() != null) && !mod.isActionEnabled()) 
@@ -234,6 +239,13 @@ class BundleBuilder
    * table will be ignored.
    */ 
   private TreeMap<String,String>  pLicenseKeyRemap;
+  
+  /**
+   * A table mapping the names of hardware keys associated with the nodes in the node 
+   * bundle to hardware keys at the local site.  Any hardware keys not found in this 
+   * table will be ignored.
+   */ 
+  private TreeMap<String,String>  pHardwareKeyRemap;
 
 }
 

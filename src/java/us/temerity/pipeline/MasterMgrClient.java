@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.113 2007/12/15 07:14:57 jesse Exp $
+// $Id: MasterMgrClient.java,v 1.114 2007/12/16 06:26:02 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -5680,7 +5680,8 @@ class MasterMgrClient
    ActionOnExistence actOnExist,
    TreeMap<String,String> toolsetRemap,
    TreeMap<String,String> selectionKeyRemap,
-   TreeMap<String,String> licenseKeyRemap
+   TreeMap<String,String> licenseKeyRemap,
+   TreeMap<String,String> hardwareKeyRemap
   ) 
     throws PipelineException
   {
@@ -5688,7 +5689,7 @@ class MasterMgrClient
 
     NodeUnpackReq req = 
       new NodeUnpackReq(bundlePath, author, view, releaseOnError, actOnExist, 
-                        toolsetRemap, selectionKeyRemap, licenseKeyRemap);
+                        toolsetRemap, selectionKeyRemap, licenseKeyRemap, hardwareKeyRemap);
     
     Object obj = performLongTransaction(MasterRequest.Unpack, req, 15000, 60000); 
     handleSimpleResponse(obj);

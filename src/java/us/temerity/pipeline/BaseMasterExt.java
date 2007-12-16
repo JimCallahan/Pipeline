@@ -1,4 +1,4 @@
-// $Id: BaseMasterExt.java,v 1.8 2007/10/23 02:29:58 jim Exp $
+// $Id: BaseMasterExt.java,v 1.9 2007/12/16 06:33:59 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -1569,7 +1569,8 @@ class BaseMasterExt
    ActionOnExistence actOnExist,   
    TreeMap<String,String> toolsetRemap,
    TreeMap<String,String> selectionKeyRemap,
-   TreeMap<String,String> licenseKeyRemap
+   TreeMap<String,String> licenseKeyRemap,
+   TreeMap<String,String> hardwareKeyRemap
   ) 
     throws PipelineException
   {}
@@ -1635,6 +1636,7 @@ class BaseMasterExt
    TreeMap<String,String> toolsetRemap,
    TreeMap<String,String> selectionKeyRemap,
    TreeMap<String,String> licenseKeyRemap,
+   TreeMap<String,String> hardwareKeyRemap,
    NodeBundle bundle
   ) 
   {}

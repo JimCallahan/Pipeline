@@ -1,4 +1,4 @@
-// $Id: NodeUnpackReq.java,v 1.1 2007/10/23 02:29:58 jim Exp $
+// $Id: NodeUnpackReq.java,v 1.2 2007/12/16 06:26:02 jesse Exp $
 
 package us.temerity.pipeline.message;
 
@@ -72,7 +72,8 @@ class NodeUnpackReq
    ActionOnExistence actOnExist, 
    TreeMap<String,String> toolsetRemap,
    TreeMap<String,String> selectionKeyRemap,
-   TreeMap<String,String> licenseKeyRemap
+   TreeMap<String,String> licenseKeyRemap,
+   TreeMap<String,String> hardwareKeyRemap
   )
   { 
     super();
@@ -107,6 +108,10 @@ class NodeUnpackReq
     if(licenseKeyRemap == null) 
       pLicenseKeyRemap = new TreeMap<String,String>();
     pLicenseKeyRemap = licenseKeyRemap;
+    
+    if(hardwareKeyRemap == null) 
+      pHardwareKeyRemap = new TreeMap<String,String>();
+    pHardwareKeyRemap = hardwareKeyRemap;
   }
 
 
@@ -191,6 +196,16 @@ class NodeUnpackReq
   {
     return pLicenseKeyRemap;
   }
+  
+  /** 
+   * Get the table mapping the names of hardware keys associated with the nodes in the node 
+   * bundle to hardware keys at the local site.  
+   */
+  public TreeMap<String,String>
+  getHardwareKeyRemap()
+  {
+    return pHardwareKeyRemap;
+  }
 
 
 
@@ -252,6 +267,13 @@ class NodeUnpackReq
    * table will be ignored.
    */
   private TreeMap<String,String>  pLicenseKeyRemap;
+  
+  /**
+   * A table mapping the names of hardware keys associated with the nodes in the node 
+   * bundle to hardware keys at the local site.  Any hardware keys not found in this 
+   * table will be ignored.
+   */
+  private TreeMap<String,String>  pHardwareKeyRemap;
 
 
 }

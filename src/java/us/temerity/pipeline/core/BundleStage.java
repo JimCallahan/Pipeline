@@ -35,9 +35,9 @@ class BundleStage
     TreeMap<String,BaseAnnotation> annotations, 
     TreeMap<String,String> toolsetRemap, 
     TreeMap<String,String> selectionKeyRemap,
-    TreeMap<String,String> licenseKeyRemap
+    TreeMap<String,String> licenseKeyRemap,
+    TreeMap<String,String> hardwareKeyRemap
   )
-    throws PipelineException
   {
     super("Bundle", "Description...", stageInfo, context, client, mod); 
 
@@ -71,6 +71,16 @@ class BundleStage
             licenseKeys.add(nkey);
         }
         addLicenseKeys(licenseKeys);
+      }
+      
+      {
+        TreeSet<String> hardwareKeys = new TreeSet<String>();
+        for(String key : jreqs.getHardwareKeys()) {
+          String nkey = hardwareKeyRemap.get(key); 
+          if(nkey != null) 
+            hardwareKeys.add(nkey);
+        }
+        addHardwareKeys(hardwareKeys);
       }
     }
 

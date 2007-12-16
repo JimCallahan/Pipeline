@@ -1,12 +1,11 @@
-// $Id: UnpackExtFactory.java,v 1.1 2007/10/23 02:29:58 jim Exp $
+// $Id: UnpackExtFactory.java,v 1.2 2007/12/16 06:26:02 jesse Exp $
 
 package us.temerity.pipeline.core.exts;
 
-import us.temerity.pipeline.*;
-import us.temerity.pipeline.builder.*;
+import java.util.TreeMap;
 
-import java.io.*;
-import java.util.*;
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.builder.ActionOnExistence;
 
 /*------------------------------------------------------------------------------------------*/
 /*   U N P A C K   E X T   F A C T O R Y                                                    */
@@ -38,6 +37,7 @@ class UnpackExtFactory
    TreeMap<String,String> toolsetRemap,
    TreeMap<String,String> selectionKeyRemap,
    TreeMap<String,String> licenseKeyRemap,
+   TreeMap<String,String> hardwareKeyRemap,
    NodeBundle bundle
   ) 
   {
@@ -51,6 +51,7 @@ class UnpackExtFactory
     pToolsetRemap      = toolsetRemap;
     pSelectionKeyRemap = selectionKeyRemap;
     pLicenseKeyRemap   = licenseKeyRemap;
+    pHardwareKeyRemap  = hardwareKeyRemap;
 
     pBundle = bundle;
   }
@@ -88,7 +89,7 @@ class UnpackExtFactory
     throws PipelineException
   {
     ext.preUnpackTest(pPath, pAuthor, pView, pReleaseOnError, pActionOnExistence,
-                      pToolsetRemap, pSelectionKeyRemap, pLicenseKeyRemap); 
+                      pToolsetRemap, pSelectionKeyRemap, pLicenseKeyRemap, pHardwareKeyRemap); 
   }
 
 
@@ -144,12 +145,13 @@ class UnpackExtFactory
 	    config, ext);
     }
 
+    @Override
     public void 
     runTask() 
       throws PipelineException
     {
       pExtension.postUnpackTask(pPath, pAuthor, pView, pReleaseOnError, pActionOnExistence,
-                                pToolsetRemap, pSelectionKeyRemap, pLicenseKeyRemap, pBundle);
+                                pToolsetRemap, pSelectionKeyRemap, pLicenseKeyRemap, pHardwareKeyRemap, pBundle);
     }
   }
 
@@ -213,6 +215,13 @@ class UnpackExtFactory
    * table will be ignored.
    */
   private TreeMap<String,String>  pLicenseKeyRemap;
+  
+  /**
+   * A table mapping the names of hardware keys associated with the nodes in the node 
+   * bundle to hardware keys at the local site.  Any hardware keys not found in this 
+   * table will be ignored.
+   */
+  private TreeMap<String,String>  pHardwareKeyRemap;
 
   /**
    * The node bundle metadata. 

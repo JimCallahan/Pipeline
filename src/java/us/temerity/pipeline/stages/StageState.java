@@ -21,6 +21,7 @@ class StageState
     pDefaultEditors = new TreeMap<String, PluginContext>();
     pStageFunctionLicenseKeys = new MappedSet<String, String>();
     pStageFunctionSelectionKeys = new MappedSet<String, String>();
+    pStageFunctionHardwareKeys = new MappedSet<String, String>();
     
     pConformedNodes = new TreeSet<String>();
     pCheckedOutNodes = new TreeSet<String>();
@@ -303,6 +304,46 @@ class StageState
     }
   }
   
+  /**
+   * Gets the default hardware keys for a particular function.
+   * 
+   * @return A list of keys or an empty list if no keys exist
+   */
+  public Set<String>
+  getStageFunctionHardwareKeys
+  (
+    String function  
+  )
+  {
+    Set<String> toReturn = pStageFunctionHardwareKeys.get(function);
+    if (toReturn == null)
+      toReturn = new TreeSet<String>();
+    return toReturn;
+  }
+  
+  /**
+   * Sets a default hardware keys for a particular stage function type.
+   * <p>
+   * Note that this method is only effective the FIRST time it is called for a particular
+   * function type.  This allows high-level builders to override their child builders if
+   * they do not agree on what the default keys should be.  It is important to remember
+   * this when writing builders with sub-builder.  A Builder should always set the
+   * default keys in its Stage State class before instantiating any of its 
+   * sub-builders.  Failure to do so may result in the default keys values being
+   * set by the sub-builder.
+   */
+  public void
+  setStageFunctionHardwareKeys
+  (
+    String function,
+    TreeSet<String> keys
+  )
+  {
+    if (!pStageFunctionHardwareKeys.containsKey(function)) {
+      pStageFunctionHardwareKeys.put(function, keys);
+    }
+  }
+  
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -332,4 +373,5 @@ class StageState
   private TreeMap<String, PluginContext> pDefaultEditors;
   private MappedSet<String, String> pStageFunctionSelectionKeys;
   private MappedSet<String, String> pStageFunctionLicenseKeys;
+  private MappedSet<String, String> pStageFunctionHardwareKeys;
 }

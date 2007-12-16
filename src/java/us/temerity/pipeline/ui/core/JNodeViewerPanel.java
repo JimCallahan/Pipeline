@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.101 2007/12/15 07:38:15 jesse Exp $
+// $Id: JNodeViewerPanel.java,v 1.102 2007/12/16 06:30:05 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -4793,7 +4793,7 @@ class JNodeViewerPanel
           new UnpackBundleTask(bundlePath, bundle.getRootNodeID().getName(), 
                                diag.getReleaseOnError(), diag.getActionOnExistence(), 
                                diag.getToolsetRemap(), diag.getSelectionKeyRemap(), 
-                               diag.getLicenseKeyRemap());
+                               diag.getLicenseKeyRemap(), diag.getHardwareKeyRemap());
         task.start();
       }
     }
@@ -6614,7 +6614,8 @@ class JNodeViewerPanel
      ActionOnExistence actOnExist,
      TreeMap<String,String> toolsetRemap,
      TreeMap<String,String> selectionKeyRemap,
-     TreeMap<String,String> licenseKeyRemap
+     TreeMap<String,String> licenseKeyRemap,
+     TreeMap<String,String> hardwareKeyRemap
     ) 
     {
       super("JNodeViewerPanel:UnpackBundleTask");
@@ -6626,6 +6627,7 @@ class JNodeViewerPanel
       pToolsetRemap = toolsetRemap;
       pSelectionKeyRemap = selectionKeyRemap;
       pLicenseKeyRemap = licenseKeyRemap;
+      pHardwareKeyRemap = hardwareKeyRemap;
     }
 
     public void 
@@ -6639,7 +6641,8 @@ class JNodeViewerPanel
  	  MasterMgrClient client = master.getMasterMgrClient(pGroupID);
           client.unpackNodes(pBundlePath, pAuthor, pView, 
                              pReleaseOnError, pActOnExist, 
-                             pToolsetRemap, pSelectionKeyRemap, pLicenseKeyRemap);
+                             pToolsetRemap, 
+                             pSelectionKeyRemap, pLicenseKeyRemap, pHardwareKeyRemap);
 
           rootName = pRootName;
  	}
@@ -6665,6 +6668,7 @@ class JNodeViewerPanel
     private TreeMap<String,String>  pToolsetRemap;
     private TreeMap<String,String>  pSelectionKeyRemap;
     private TreeMap<String,String>  pLicenseKeyRemap;
+    private TreeMap<String,String>  pHardwareKeyRemap;
   }
 
   /** 

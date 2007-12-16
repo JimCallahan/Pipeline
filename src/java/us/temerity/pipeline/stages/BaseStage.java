@@ -1,4 +1,4 @@
-// $Id: BaseStage.java,v 1.19 2007/10/30 20:40:55 jesse Exp $
+// $Id: BaseStage.java,v 1.20 2007/12/16 06:26:02 jesse Exp $
 
 package us.temerity.pipeline.stages;
 
@@ -275,6 +275,15 @@ class BaseStage
       Set<String> stageLKeys = pStageInformation.getStageFunctionLicenseKeys(getStageFunction());
       if (stageSKeys != null)
 	reqs.addLicenseKeys(stageLKeys);
+      if (pHardwareKeys != null) {
+        reqs.addHardwareKeys(pHardwareKeys);
+      }
+      if (pStageInformation.useDefaultHardwareKeys()) {
+        reqs.addHardwareKeys(pStageInformation.getDefaultHardwareKeys());
+      }
+      Set<String> stageHKeys = pStageInformation.getStageFunctionHardwareKeys(getStageFunction());
+      if (stageHKeys != null)
+        reqs.addHardwareKeys(stageHKeys);
       pRegisteredNodeMod.setJobRequirements(reqs);
     }
   }
@@ -471,7 +480,6 @@ class BaseStage
       pat = new FilePattern(name, oldPat.getPadding(), oldPat.getSuffix());
     }
     else {
-      range = null;
       pat = new FilePattern(name, oldPat.getSuffix());
     }
     FileSeq newSeq = new FileSeq(pat, range);
@@ -934,6 +942,33 @@ class BaseStage
   {
     pLicenseKeys = new TreeSet<String>(licenseKeys);
   }
+  
+  /**
+   * Adds the set of License Keys to the License Keys that will be assigned to the
+   * registered node.
+   */
+  public void 
+  addHardwareKeys
+  (
+    TreeSet<String> hardwareKeys
+  )
+  {
+    if (pHardwareKeys == null)
+      pHardwareKeys = new TreeSet<String>();
+    pHardwareKeys.addAll(hardwareKeys);
+  }
+
+  /**
+   * Replaces the existing of Hardware Keys with the new set.
+   */
+  public void 
+  setHardwareKeys
+  (
+    TreeSet<String> hardwareKeys
+  )
+  {
+    pHardwareKeys = new TreeSet<String>(hardwareKeys);
+  }
 
   /**
    * Adds an annotation with the given name to the registered node.
@@ -1302,9 +1337,14 @@ class BaseStage
   protected TreeSet<String> pSelectionKeys;
   
   /**
-   * The list of Selection Keys to assign to the built node.
+   * The list of License Keys to assign to the built node.
    */
   protected TreeSet<String> pLicenseKeys;
+  
+  /**
+   * The list of Hardware Keys to assign to the built node.
+   */
+  protected TreeSet<String> pHardwareKeys;
   
   protected ListMap<String, BaseAnnotation> pAnnotations;
   
