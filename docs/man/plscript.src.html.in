@@ -398,6 +398,29 @@ Administration</span></span></a><br>
  style="font-weight: bold;">--remove</span></a>=<span
  style="font-style: italic;">key-name</span></span></li>
       </ul>
+      <li style="font-weight: bold;"><span style="font-weight: normal;"><span
+ style="font-weight: bold;">hardware-key</span></span></li>
+      <ul>
+        <li style="font-weight: bold;"><a href="#hardware-key_--get">--get</a></li>
+        <li style="font-weight: bold;"><a
+ href="#hardware-key_--get-info">--get-info</a><span
+ style="font-weight: normal;">=<span style="font-style: italic;">key-name</span></span></li>
+        <li style="font-weight: bold;"><a
+ href="#hardware-key_--get-info-all"><span style="font-weight: normal;"><span
+ style="font-weight: bold;">--get-info-all</span></span></a></li>
+        <li style="font-weight: bold;"><span
+ style="font-weight: normal;"><a href="#hardware-key_--add"><span
+ style="font-weight: bold;">--add</span></a>=<span
+ style="font-style: italic;">key-name</span> </span><span
+ style="font-weight: bold;">--msg</span><span
+ style="font-weight: normal;"><span style="font-weight: bold;"></span></span><span
+ style="font-weight: normal;">='<span style="font-style: italic;">key-description</span>'<br>
+          </span></li>
+        <li style="font-weight: bold;"><span
+ style="font-weight: normal;"><a href="#hardware-key_--remove"><span
+ style="font-weight: bold;">--remove</span></a>=<span
+ style="font-style: italic;">key-name</span></span></li>
+      </ul>
     </ul>
     <ul>
       <li style="font-weight: bold;"><span style="font-weight: normal;"><span
@@ -699,6 +722,8 @@ Node Versions</a></li>
  style="font-weight: bold;">--license-key</span></a>=<span
  style="font-style: italic;">key-name</span>[:true|false] ...] [<a
  href="#--selection-key"><span style="font-weight: bold;">--selection-key</span></a>=<span
+ style="font-style: italic;">key-name</span>[:true|false] ...] [<a
+ href="#--hardware-key"><span style="font-weight: bold;">--hardware-key</span></a>=<span
  style="font-style: italic;">key-name</span>[:true|false] ...]</span></li>
         <li style="font-weight: bold;"><span
  style="font-weight: normal;"><a href="#working_--clone"><span
@@ -798,6 +823,9 @@ Node Versions</a></li>
  style="font-weight: bold;">--license-key</span></a>=<span
  style="font-style: italic;">key-name</span>[:true|false] ...] [<a
  href="#--selection-key"><span style="font-weight: bold;">--selection-key</span></a>=<span
+ style="font-style: italic;">key-name</span>[:true|false] ...] </span><span
+ style="font-weight: normal;">[<a href="#--hardware-key"><span
+ style="font-weight: bold;">--hardware-key</span></a>=<span
  style="font-style: italic;">key-name</span>[:true|false] ...]</span></li>
         <li style="font-weight: bold;"><span
  style="font-weight: normal;"><a href="#working_--link"><span
@@ -1795,7 +1823,20 @@ with the target node must acquire before running.</div>
 named key (<span style="font-style: italic;">key-name</span>) to the
 set of selection keys a job server must support in order to be eligible
 to run jobs associated
-with the target node.&nbsp; </div>
+with the target node. <br>
+</div>
+<span style="font-weight: normal;"><span style="font-weight: bold;"><br>
+<a name="--hardware-key"></a>--hardware-key</span>=<span
+ style="font-style: italic;">key-name</span>[:true|false]</span><span
+ style="font-weight: normal;"></span><br>
+<br>
+<div style="margin-left: 40px;">Adds (true) or removes (false) the
+named key (<span style="font-style: italic;">key-name</span>) to the
+set of hardware keys a job server must support in order to be eligible
+to run jobs associated
+with the target node. <span style="font-weight: bold;"><br>
+<br>
+</span></div>
 <h4>File Sequence Options</h4>
 Options used to specify or select the files associated with nodes.<br>
 <br>
@@ -3046,11 +3087,94 @@ from the set of existing selection keys.<span
 <span style="font-weight: normal;"></span><br>
 <span style="font-weight: normal;">This command requires Queue Admin
 privileges.<br>
-<br>
 </span></div>
 <br>
+<br>
 <span style="font-weight: normal;"><span style="font-weight: bold;"><a
- name="job-server_--get"></a>job-server</span></span>
+ name="hardware-key_--get"></a>hardware-key</span></span>
+<span style="font-weight: bold;">--get<br>
+</span>
+<div style="margin-left: 40px;"><br>
+Prints the names of the existing hardware keys.<br>
+<br>
+</div>
+<span style="font-weight: normal;"><span style="font-weight: bold;"><a
+ name="hardware-key_--get-info"></a></span></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;">hardware</span></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;">-key</span></span>
+<span style="font-weight: bold;">--get-info</span><span
+ style="font-weight: normal;">=<span style="font-style: italic;">key-name<br>
+<br>
+</span></span>
+<div style="margin-left: 40px;">Prints a summary of information about
+the given hardware key (<span style="font-style: italic;">key-name</span>).&nbsp;
+The information
+includes a short
+description of the hardware key.<br>
+<br>
+</div>
+<span style="font-weight: normal;"><span style="font-weight: bold;"><a
+ name="hardware-key_--get-info-all"></a></span></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;">hardware</span></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;">-key</span></span>
+<span style="font-weight: bold;">--get-info-all<br>
+<br>
+</span>
+<div style="margin-left: 40px;"><span style="font-weight: bold;"></span>Prints
+a summary of information for all hardware keys.&nbsp; Equivalent to
+performing a <a href="#hardware-key_--get-info"><span
+ style="font-weight: bold;">hardware-key
+--get-info</span></a> for each existing hardware key.</div>
+<span style="font-weight: bold;"><br>
+</span><span style="font-weight: normal;"><span
+ style="font-weight: bold;"><a name="hardware-key_--add"></a></span></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;">hardware</span></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;">-key
+</span></span><span style="font-weight: normal;"><span
+ style="font-weight: bold;">--add</span>=<span
+ style="font-style: italic;">key-name</span><span
+ style="font-weight: bold;"><br>
+&nbsp;&nbsp;&nbsp; </span></span><span style="font-weight: bold;">--msg</span><span
+ style="font-weight: normal;"><span style="font-weight: bold;"></span></span><span
+ style="font-weight: normal;">='<span style="font-style: italic;">key-description</span>'<br>
+<br>
+</span>
+<div style="margin-left: 40px;">Adds a new hardware key (<span
+ style="font-style: italic;">key-name</span>)
+to the set of existing hardware keys. The
+description of the hardware key (<span style="font-style: italic;">log-message</span>)
+is required. <br>
+</div>
+<br>
+<div style="margin-left: 40px;"><span style="font-weight: normal;">This
+command requires Queue Admin privileges.<br>
+<br>
+</span></div>
+<span style="font-weight: normal;"><span style="font-weight: bold;"><a
+ name="hardware-key_--remove"></a></span></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;">hardware</span></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;">-key
+</span></span><span style="font-weight: normal;"><span
+ style="font-weight: bold;">--remove</span>=<span
+ style="font-style: italic;">key-name<br>
+<br>
+</span></span>
+<div style="margin-left: 40px;"><span style="font-weight: normal;"><span
+ style="font-style: italic;"></span></span><span
+ style="font-weight: normal;"><span style="font-style: italic;"></span></span><span
+ style="font-weight: normal;"><span style="font-weight: bold;"></span></span>Removes
+the given hardware key (<span style="font-style: italic;">key-name</span>)
+from the set of existing hardware keys.<span
+ style="font-weight: normal;">
+</span><br>
+<span style="font-weight: normal;"></span><br>
+<span style="font-weight: normal;">This command requires Queue Admin
+privileges.<br>
+<br>
+</span><span style="font-weight: normal;"></span></div>
+<span style="font-weight: normal;"><br>
+</span><span style="font-weight: normal;"><span
+ style="font-weight: bold;"><a name="job-server_--get"></a>job-server</span></span>
 <span style="font-weight: bold;">--get<br>
 </span>
 <div style="margin-left: 40px;"><br>
@@ -3762,6 +3886,10 @@ links.<br>
  style="font-style: italic;">key-name</span>[:true|false] ...] <br>
 &nbsp;&nbsp;&nbsp; [<a href="#--selection-key"><span
  style="font-weight: bold;">--selection-key</span></a>=<span
+ style="font-style: italic;">key-name</span>[:true|false] ...]</span><span
+ style="font-weight: normal;"><br>
+&nbsp;&nbsp;&nbsp; [<a href="#--hardware-key"><span
+ style="font-weight: bold;">--hardware-key</span></a>=<span
  style="font-style: italic;">key-name</span>[:true|false] ...]</span><br>
 <span style="font-weight: normal;"></span><br>
 <div style="margin-left: 40px;">Register a new working node version
@@ -3898,6 +4026,10 @@ with the working version.<br>
  style="font-style: italic;">key-name</span>[:true|false] ...] <br>
 &nbsp;&nbsp;&nbsp; [<a href="#--selection-key"><span
  style="font-weight: bold;">--selection-key</span></a>=<span
+ style="font-style: italic;">key-name</span>[:true|false] ...]</span><span
+ style="font-weight: normal;"></span><span style="font-weight: normal;"><br>
+&nbsp;&nbsp;&nbsp; [<a href="#--hardware-key"><span
+ style="font-weight: bold;">--hardware-key</span></a>=<span
  style="font-style: italic;">key-name</span>[:true|false] ...]</span><br>
 <span style="font-weight: normal;"></span><br>
 <div style="margin-left: 40px;">Sets one or more properties of the

@@ -259,6 +259,7 @@ ScriptOptsParser
   private Long             pMinDisk;
   private TreeMap          pLicenseKeys;
   private TreeMap          pSelectionKeys;
+  private TreeMap          pHardwareKeys;
 
   private Boolean     pRemoveFiles;
   private Boolean     pRenameFiles;
@@ -334,6 +335,7 @@ TOKEN :
 | <TOOLSET1:          "toolset">          : TOOLSET_OPTS 
 | <LICENSE_KEY1:      "license-key">      : KEY_OPTS 
 | <SELECTION_KEY1:    "selection-key">    : KEY_OPTS  
+| <HARDWARE_KEY1:     "hardware-key">     : KEY_OPTS  
 | <JOB_SERVER:        "job-server">       : JOB_SERVER_OPTS
 | <EDITOR1:           "editor">           : EDITOR_OPTS
 | <ACTION1:           "action">           : ACTION_OPTS
@@ -433,6 +435,7 @@ TOKEN :
 | <MIN_DISK:           "--min-disk">        	: BYTE_SIZE_SEP	      
 | <LICENSE_KEY2:       "--license-key">     	: KEY_TOGGLE_SEP	      
 | <SELECTION_KEY2:     "--selection-key">   	: KEY_TOGGLE_SEP
+| <HARDWARE_KEY2:      "--hardware-key">   	: KEY_TOGGLE_SEP
 | <CLONE_SOURCE:       "--clone-source">        : NODE_NAME_SEP
 | <ASSOC:              "--assoc">             	: LINK_PARAM_SEP	      
 | <REF:                "--ref">             	: LINK_PARAM_SEP	      
@@ -1759,7 +1762,7 @@ Commands()
 {
   (UserCmds() | WorkGroupCmds() | PrivilegeCmds() | AdminCmds() | RuntimeCmds() | 
    ArchiveVolumeCmds() | DefaultToolsetCmds() | ActiveToolsetCmds() | ToolsetCmds() |
-   LicenseKeyCmds() | SelectionKeyCmds() | JobServerCmds() | 
+   LicenseKeyCmds() | SelectionKeyCmds() | HardwareKeyCmds() | JobServerCmds() | 
    EditorCmds() | ActionCmds() | ComparatorCmds() | ToolCmds() | ArchiverCmds() | 
    SuffixEditorCmds() | ViewCmds() | 
    WorkingCmds() | CheckedInCmds() | NodeCmds()) 
@@ -1872,7 +1875,7 @@ BatchCommand()
 {
   (UserCmds() | WorkGroupCmds() | PrivilegeCmds() | AdminCmds() | RuntimeCmds() | 
    ArchiveVolumeCmds() | DefaultToolsetCmds() | ActiveToolsetCmds() | ToolsetCmds() |
-   LicenseKeyCmds() | SelectionKeyCmds() | JobServerCmds() | 
+   LicenseKeyCmds() | SelectionKeyCmds() | HardwareKeyCmds() | JobServerCmds() | 
    EditorCmds() | ActionCmds() | ComparatorCmds() | ToolCmds() | ArchiverCmds() | 
    SuffixEditorCmds() | ViewCmds() | 
    WorkingCmds() | CheckedInCmds() | NodeCmds()) (AE())* <EOF>
@@ -3676,7 +3679,7 @@ LicenseKeyGet()
 {
   <KEY_GET> AE()
   {
-    TreeSet knames = pQueueMgrClient.getLicenseKeyNames();
+    TreeSet knames = pQueueMgrClient.getLicenseKeyNames(false);
     Iterator iter = knames.iterator();
     while(iter.hasNext()) {
       String kname = (String) iter.next();
@@ -3806,7 +3809,7 @@ SelectionKeyGet()
 {
   <KEY_GET> AE()
   {
-    TreeSet knames = pQueueMgrClient.getSelectionKeyNames();
+    TreeSet knames = pQueueMgrClient.getSelectionKeyNames(false);
     Iterator iter = knames.iterator();
     while(iter.hasNext()) {
       String kname = (String) iter.next();
@@ -3879,6 +3882,104 @@ SelectionKeyRemove()
     LogMgr.getInstance().log
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
        "Removed selection key (" + kname + ").");
+    LogMgr.getInstance().flush();
+  }
+}
+
+
+/*------------------------------------------------------------------------------------------*/
+
+void 
+HardwareKeyCmds() 
+  throws PipelineException : 
+{}
+{
+  <HARDWARE_KEY1> AE() 
+     (HardwareKeyGet() | HardwareKeyGetInfo() | HardwareKeyGetInfoAll() | 
+      HardwareKeyAdd() | HardwareKeyRemove())
+  {}
+}
+
+void 
+HardwareKeyGet() 
+  throws PipelineException : 
+{}
+{
+  <KEY_GET> AE()
+  {
+    TreeSet knames = pQueueMgrClient.getHardwareKeyNames(false);
+    Iterator iter = knames.iterator();
+    while(iter.hasNext()) {
+      String kname = (String) iter.next();
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Info,
+	 kname);
+    }
+    LogMgr.getInstance().flush();    
+  }
+}
+
+void 
+HardwareKeyGetInfo() 
+  throws PipelineException : 
+{
+  String kname = null;
+}
+{
+  <KEY_GET_INFO> EQ() kname=KeyName() AE()
+  {
+    pApp.printHardwareKey(kname, pQueueMgrClient);
+  }
+}
+
+void 
+HardwareKeyGetInfoAll() 
+  throws PipelineException : 
+{}
+{
+  <KEY_GET_INFO_ALL> AE()
+  {
+    pApp.printHardwareKey(null, pQueueMgrClient);
+  }
+}
+
+void 
+HardwareKeyAdd() 
+  throws PipelineException : 
+{
+  String kname = null;
+  pMessage     = null;
+}
+{
+  <KEY_ADD> EQ() kname=KeyName() AE() Msg()
+  {
+    if(pMessage == null) 
+      throw new PipelineException("The --msg option is required!");
+
+    HardwareKey key = new HardwareKey(kname, pMessage);
+    pQueueMgrClient.addHardwareKey(key);
+    
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "Added hardware key (" + kname + ").");
+    LogMgr.getInstance().flush();
+  }
+}
+ 
+void 
+HardwareKeyRemove() 
+  throws PipelineException : 
+{
+  String kname = null;
+}
+{
+  <KEY_REMOVE> EQ() kname=KeyName() AE()
+  {
+    pQueueMgrClient.removeHardwareKey(kname);
+
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       "Removed hardware key (" + kname + ").");
     LogMgr.getInstance().flush();
   }
 }
@@ -4904,6 +5005,7 @@ WorkingRegister()
   pMinDisk         = null;
   pLicenseKeys     = new TreeMap();
   pSelectionKeys   = new TreeMap();
+  pHardwareKeys    = new TreeMap();
 }
 {
   <WORKING_REGISTER> EQ() name=NodeName() AE() (WorkingRegisterOpts())*
@@ -4919,7 +5021,7 @@ WorkingRegister()
       pActionEnabled, pParams, pSourceParams, 
       pOverflowPolicy, pExecutionMethod, pBatchSize, 
       pPriority, pRampUp, pMaxLoad, pMinMemory, pMinDisk, 
-      pLicenseKeys, pSelectionKeys,
+      pLicenseKeys, pSelectionKeys, pHardwareKeys, 
       pMasterMgrClient);
 
     LogMgr.getInstance().log
@@ -4938,7 +5040,7 @@ WorkingRegisterOpts()
    Action() | ActionEnabled() | Param() | SourceParam() | 
    Ignore() | Abort() | Serial() | Subdivided() | Parallel() | BatchSize() | 
    Priority() | RampUp() | MaxLoad() | MinMemory() | MinDisk() | 
-   LicenseKey() | SelectionKey()) 
+   LicenseKey() | SelectionKey() | HardwareKey()) 
   {}
 }
 
@@ -5061,6 +5163,7 @@ WorkingSet()
   pMinDisk         = null;
   pLicenseKeys     = new TreeMap();
   pSelectionKeys   = new TreeMap();
+  pHardwareKeys    = new TreeMap();
 }
 {
   <WORKING_SET> EQ() name=NodeName() AE() (WorkingSetOpts())*
@@ -5072,7 +5175,7 @@ WorkingSet()
        pActionEnabled, pParams, pSourceParams, 
        pOverflowPolicy, pExecutionMethod, pBatchSize, 
        pPriority, pRampUp, pMaxLoad, pMinMemory, pMinDisk, 
-       pLicenseKeys, pSelectionKeys,
+       pLicenseKeys, pSelectionKeys, pHardwareKeys,
        pMasterMgrClient);
 
     LogMgr.getInstance().log
@@ -5091,7 +5194,7 @@ WorkingSetOpts()
    NoAction() | Action() | ActionEnabled() | Param() | NoParam() | SourceParam() | 
    Ignore() | Abort() | Serial() | Subdivided() | Parallel() | BatchSize() | 
    Priority() | RampUp() | MaxLoad() | MinMemory() | MinDisk() | 
-   LicenseKey() | SelectionKey()) 
+   LicenseKey() | SelectionKey() | HardwareKey())  
   {}
 }
 
@@ -6978,6 +7081,7 @@ NoAction() :
     pMinDisk         = null;
     pLicenseKeys     = new TreeMap();
     pSelectionKeys   = new TreeMap();
+    pHardwareKeys    = new TreeMap();
   }
 }
 
@@ -7207,6 +7311,19 @@ SelectionKey() :
   <SELECTION_KEY2> EQ() kname=KeyName() (COLON() add=BooleanLiteral())? AE()
   {
     pSelectionKeys.put(kname, add);
+  }
+}
+
+void
+HardwareKey() : 
+{
+  String kname; 
+  Boolean add = true;
+}
+{
+  <HARDWARE_KEY2> EQ() kname=KeyName() (COLON() add=BooleanLiteral())? AE()
+  {
+    pHardwareKeys.put(kname, add);
   }
 }
 

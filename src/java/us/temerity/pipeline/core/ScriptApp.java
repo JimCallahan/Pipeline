@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.82 2007/12/15 07:14:57 jesse Exp $
+// $Id: ScriptApp.java,v 1.83 2007/12/16 09:11:31 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -211,6 +211,14 @@ class ScriptApp
        "        --msg=\"key-description\"\n" + 
        "      --remove=key-name\n" + 
        "\n" + 
+       "    hardware-key\n" + 
+       "      --get\n" + 
+       "      --get-info=key-name\n" + 
+       "      --get-info-all\n" + 
+       "      --add=key-name\n" + 
+       "        --msg=\"key-description\"\n" + 
+       "      --remove=key-name\n" + 
+       "\n" + 
        "    job-server\n" + 
        "      --get\n" + 
        "      --get-info=host-name\n" + 
@@ -218,8 +226,9 @@ class ScriptApp
        "      --add=host-name\n" + 
        "      --set=host-name\n" + 
        "       [--shutdown | --disable | --enable] [--reserve=user-name | --open]\n" + 
-       "       [--order=integer] [--slots=integer] [--selection-bias=key-name:bias]\n" + 
-       "       [--remove-key=key-name]\n" + 
+       "       [--order=integer] [--slots=integer] [--selection-schedule=schedule-name]\n " + 
+       "       [--no-selection-schedule] [--selection-group=group-name]\n " + 
+       "       [--no-selection-group]\n " + 
        "      --remove=host-name\n" + 
        "\n" + 
        "  Plugins\n" + 
@@ -284,6 +293,7 @@ class ScriptApp
        "        [--max-load=real] [--min-memory=bytes[K|M|G]] [--min-disk=bytes[K|M|G]]\n" +
        "        [--license-key=key-name[:true|false] ...]\n" +
        "        [--selection-key=key-name[:true|false] ...]\n" +
+       "        [--hardware-key=key-name[:true|false] ...]\n" +
        "      --clone=node-name\n" + 
        "        [--author=user-name] [--view=view-name]\n" + 
        "        --clone-source=node-name\n" + 
@@ -301,6 +311,7 @@ class ScriptApp
        "        [--max-load=real] [--min-memory=bytes[K|M|G]] [--min-disk=bytes[K|M|G]]\n" +
        "        [--license-key=key-name[:true|false] ...]\n" + 
        "        [--selection-key=key-name[:true|false] ...]\n" +
+       "        [--hardware-key=key-name[:true|false] ...]\n" +
        "      --link=node-name\n" +
        "        [--author=user-name] [--view=view-name]\n" +
        "        --assoc=node-name |\n" + 
@@ -1622,6 +1633,9 @@ class ScriptApp
     LogMgr.getInstance().flush();
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Print a text representation of the given selection key.
    */ 
@@ -1665,6 +1679,56 @@ class ScriptApp
        buf.toString());
     LogMgr.getInstance().flush();    
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Print a text representation of the given hardware key.
+   */ 
+  public void 
+  printHardwareKey
+  (
+   String kname, 
+   QueueMgrClient client
+  ) 
+    throws PipelineException
+  {
+    StringBuilder buf = new StringBuilder(); 
+    boolean first = true;
+    boolean found = false;
+    ArrayList<HardwareKey> keys = client.getHardwareKeys();
+    for(HardwareKey key : keys) {
+      if((kname == null) || key.getName().equals(kname)) {
+	if(first) 
+	  buf.append(tbar(80) + "\n");
+	else 
+	  buf.append("\n\n" + bar(80) + "\n");
+	first = false;
+
+	buf.append
+	  ("Hardware Key  : " + key.getName() + "\n" + 
+	   "Description   : " + wordWrap(key.getDescription(), 16, 80));
+
+	if(kname != null) {
+	  found = true;
+	  break;
+	}
+      }
+    }
+
+    if((kname != null) && !found) 
+      throw new PipelineException
+	("No hardware key named (" + kname + ") exists!");
+
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       buf.toString());
+    LogMgr.getInstance().flush();    
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Print a text representation of the given job server host.
@@ -2359,6 +2423,19 @@ class ScriptApp
 	     pad(kname, 18) + ": " + (keys.contains(kname) ? "YES" : "no"));
 	}
       }
+
+      {
+	buf.append
+	  ("\n\n" +
+	   pad("-- Hardware Keys ", '-', 80));
+
+	Set<String> keys = jreqs.getHardwareKeys();
+	for(String kname : qclient.getHardwareKeyNames(false)) {
+	  buf.append
+	    ("\n" + 
+	     pad(kname, 18) + ": " + (keys.contains(kname) ? "YES" : "no"));
+	}
+      }
     }
   }
 
@@ -2423,6 +2500,7 @@ class ScriptApp
    Long minDisk,
    TreeMap licenseKeys,
    TreeMap selectionKeys,
+   TreeMap hardwareKeys,
    MasterMgrClient client
   ) 
     throws PipelineException
@@ -2460,7 +2538,9 @@ class ScriptApp
 	 (TreeMap<String,TreeMap<String,String>>) sourceParams, 
 	 overflowPolicy, executionMethod, batchSize,
 	 priority, rampUp, maxLoad, minMemory, minDisk,
-	 (TreeMap<String,Boolean>) licenseKeys, (TreeMap<String,Boolean>) selectionKeys,
+	 (TreeMap<String,Boolean>) licenseKeys, 
+         (TreeMap<String,Boolean>) selectionKeys,
+         (TreeMap<String,Boolean>) hardwareKeys,
 	 null, null, null, null, 
 	 client);
     }
@@ -2499,6 +2579,7 @@ class ScriptApp
    Long minDisk,
    TreeMap licenseKeys,
    TreeMap selectionKeys,
+   TreeMap hardwareKeys,
    MasterMgrClient client
   ) 
     throws PipelineException
@@ -2538,7 +2619,9 @@ class ScriptApp
 	 (TreeMap<String,TreeMap<String,String>>) sourceParams, 
 	 overflowPolicy, executionMethod, batchSize,
 	 priority, rampUp, maxLoad, minMemory, minDisk,
-	 (TreeMap<String,Boolean>) licenseKeys, (TreeMap<String,Boolean>) selectionKeys,
+	 (TreeMap<String,Boolean>) licenseKeys,
+         (TreeMap<String,Boolean>) selectionKeys,
+         (TreeMap<String,Boolean>) hardwareKeys,
 	 prevJobReqs, prevOverflowPolicy, prevExecutionMethod, prevBatchSize, 
 	 client);
     }
@@ -2573,6 +2656,7 @@ class ScriptApp
    Long minDisk,
    TreeMap<String,Boolean> licenseKeys,
    TreeMap<String,Boolean> selectionKeys,
+   TreeMap<String,Boolean> hardwareKeys,
    JobReqs prevJobReqs,
    OverflowPolicy prevOverflowPolicy,
    ExecutionMethod prevExecutionMethod,
@@ -2782,6 +2866,17 @@ class ScriptApp
 		jreqs.addSelectionKey(kname);
 	      else 
 		jreqs.removeSelectionKey(kname);
+	    }
+	  }
+ 
+	  {
+	    TreeMap<String,Boolean> keys = (TreeMap<String,Boolean>) hardwareKeys;
+	    for(String kname : keys.keySet()) {
+	      boolean hasKey = keys.get(kname); 
+	      if(hasKey) 
+		jreqs.addHardwareKey(kname);
+	      else 
+		jreqs.removeHardwareKey(kname);
 	    }
 	  }
 
@@ -3992,6 +4087,34 @@ class ScriptApp
 	      vkeys = vjreqs.getSelectionKeys();
  
 	    for(String kname : qclient.getSelectionKeyNames(false)) {
+	      String mstr = "-";
+	      if(mkeys != null) 
+		mstr = (mkeys.contains(kname) ? "YES" : "no");
+
+	      String vstr = "-";
+	      if(vkeys != null) 
+		vstr = (vkeys.contains(kname) ? "YES" : "no");
+
+	      buf.append
+		("\n" + 
+		 pad(kname, 18) + ": " + pad(mstr, ' ', 30) + " : " + vstr);
+	    }
+	  }
+
+	  {
+	    buf.append
+	      ("\n\n" +
+	       pad("-- Hardware Keys ", '-', 80));
+
+	    Set<String> mkeys = null;
+	    if(mjreqs != null) 
+	      mkeys = mjreqs.getHardwareKeys();
+ 
+	    Set<String> vkeys = null;
+	    if(vjreqs != null) 
+	      vkeys = vjreqs.getHardwareKeys();
+ 
+	    for(String kname : qclient.getHardwareKeyNames(false)) {
 	      String mstr = "-";
 	      if(mkeys != null) 
 		mstr = (mkeys.contains(kname) ? "YES" : "no");
