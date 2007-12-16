@@ -1,4 +1,4 @@
-// $Id: SubmitJobsExtFactory.java,v 1.1 2006/10/11 22:45:40 jim Exp $
+// $Id: SubmitJobsExtFactory.java,v 1.2 2007/12/16 06:28:42 jesse Exp $
 
 package us.temerity.pipeline.core.exts;
 
@@ -38,7 +38,9 @@ class SubmitJobsExtFactory
   )      
   {
     pGroup = group;
-    pJobs  = jobs; 
+    pJobs  = new TreeMap<Long, QueueJob>();
+    for (Long id : jobs.keySet())
+      pJobs.put(id, jobs.get(id).queryOnlyCopy());
   }
 
 

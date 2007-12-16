@@ -1,4 +1,4 @@
-// $Id: QueueJob.java,v 1.13 2007/10/11 18:52:06 jesse Exp $
+// $Id: QueueJob.java,v 1.14 2007/12/16 06:28:42 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -125,8 +125,8 @@ class QueueJob
   }
   
   /** 
-   * Sets the requirements that a server must meet in order to be eligible to run this job. <p>
-   *
+   * Sets the requirements that a server must meet in order to be eligible to run this job. 
+   * <p>
    * Note that there is no way, through the public API, to apply these changes to an existing
    * job.  Please use the {@link QueueMgrClient#changeJobReqs(LinkedList)} to change the job 
    * requirements of an existing job.
@@ -148,6 +148,23 @@ class QueueJob
   getSourceJobIDs()
   {
     return Collections.unmodifiableSortedSet(pSourceJobIDs);
+  }
+  
+  /**
+   * Returns a copy of this job that can only be used for querying information.
+   * <p>
+   * The {@link JobReqs} and the {@link BaseAction} are both copies of the information
+   * in the original job, so that any modifications to them will not be reflected in
+   * the actual QueueJob this came from.
+   */
+  public QueueJob
+  queryOnlyCopy()
+  {
+    BaseAction newAction = new BaseAction(pAction);
+    JobReqs newReqs = (JobReqs) pJobReqs.clone();
+    TreeSet<Long> newIDs = new TreeSet<Long>();
+    newIDs.addAll(pSourceJobIDs);
+    return new QueueJob(pActionAgenda, newAction, newReqs, newIDs);
   }
 
 

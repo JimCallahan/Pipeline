@@ -1,4 +1,4 @@
-// $Id: BaseJobExtFactory.java,v 1.1 2006/10/11 22:45:40 jim Exp $
+// $Id: BaseJobExtFactory.java,v 1.2 2007/12/16 06:28:42 jesse Exp $
 
 package us.temerity.pipeline.core.exts;
 
@@ -31,7 +31,7 @@ class BaseJobExtFactory
    QueueJob job
   )      
   {
-    pJob = job;
+    pJob = job.queryOnlyCopy();
   }
 
 

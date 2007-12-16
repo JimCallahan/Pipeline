@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.96 2007/12/15 07:14:57 jesse Exp $
+// $Id: QueueMgr.java,v 1.97 2007/12/16 06:28:42 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -951,7 +951,7 @@ class QueueMgr
       else {
         names = new TreeSet<String>();
         for (String name : pLicenseKeys.keySet())
-          if (!pLicenseKeys.get(name).hasPlugin())
+          if (!pLicenseKeys.get(name).hasKeyChooser())
             names.add(name);
       }
       
@@ -1168,7 +1168,7 @@ class QueueMgr
       else {
         names = new TreeSet<String>();
         for (String name : pSelectionKeys.keySet())
-          if (!pSelectionKeys.get(name).hasPlugin())
+          if (!pSelectionKeys.get(name).hasKeyChooser())
             names.add(name);
       }
       
@@ -1487,7 +1487,7 @@ class QueueMgr
 	    for(String key : sg.getKeys()) {
 	      if(!pSelectionKeys.containsKey(key)) 
 		dead.add(key);
-	      else if (pSelectionKeys.get(key).hasPlugin())
+	      else if (pSelectionKeys.get(key).hasKeyChooser())
 	        dead.add(key);
 	    }
 	    for(String key : dead) 
@@ -1726,7 +1726,7 @@ class QueueMgr
       else {
         names = new TreeSet<String>();
         for (String name : pHardwareKeys.keySet())
-          if (!pHardwareKeys.get(name).hasPlugin())
+          if (!pHardwareKeys.get(name).hasKeyChooser())
             names.add(name);
       }
       
@@ -4271,7 +4271,7 @@ class QueueMgr
 	    String author = job.getActionAgenda().getNodeID().getAuthor();
 	    if(pAdminPrivileges.isQueueManaged(req, author)) {
 	      JobReqs reqs = new JobReqs(job.getJobRequirements(), delta);
-	      adjustJobRequirements(timer, job, reqs);
+	      adjustJobRequirements(timer, job.queryOnlyCopy(), reqs);
 	      timer.aquire();
 	      synchronized (pJobReqsChanges) {
 		timer.resume();
@@ -4329,7 +4329,7 @@ class QueueMgr
           String author = job.getActionAgenda().getNodeID().getAuthor();
           if(pAdminPrivileges.isQueueManaged(req, author)) {
             JobReqs reqs = (JobReqs) job.getJobRequirements().clone();
-            adjustJobRequirements(timer, job, reqs);
+            adjustJobRequirements(timer, job.queryOnlyCopy(), reqs);
             timer.aquire();
             synchronized (pJobReqsChanges) {
               timer.resume();
@@ -4392,12 +4392,12 @@ class QueueMgr
 
       for (SelectionKey key : allKeys) {
         String name = key.getName();
-        if (!key.hasPlugin() && currentKeys.contains(name))
+        if (!key.hasKeyChooser() && currentKeys.contains(name))
           finalKeys.add(name); 
-        else if (key.hasPlugin()) {
+        else if (key.hasKeyChooser()) {
           if (annots == null)
             annots = pMasterMgrClient.getAnnotations(nodeID.getName());
-          if (key.getPlugin().isActive(job, annots))
+          if (key.getKeyChooser().isActive(job, annots))
             finalKeys.add(name);
         }
       }
@@ -4415,12 +4415,12 @@ class QueueMgr
 
       for (LicenseKey key : allKeys) {
         String name = key.getName();
-        if (!key.hasPlugin() && currentKeys.contains(name))
+        if (!key.hasKeyChooser() && currentKeys.contains(name))
           finalKeys.add(name); 
-        else if (key.hasPlugin()) {
+        else if (key.hasKeyChooser()) {
           if (annots == null)
             annots = pMasterMgrClient.getAnnotations(nodeID.getName());
-          if (key.getPlugin().isActive(job, annots))
+          if (key.getKeyChooser().isActive(job, annots))
             finalKeys.add(name);
         }
       }
@@ -4438,12 +4438,12 @@ class QueueMgr
 
       for (HardwareKey key : allKeys) {
         String name = key.getName();
-        if (!key.hasPlugin() && currentKeys.contains(name))
+        if (!key.hasKeyChooser() && currentKeys.contains(name))
           finalKeys.add(name); 
-        else if (key.hasPlugin()) {
+        else if (key.hasKeyChooser()) {
           if (annots == null)
             annots = pMasterMgrClient.getAnnotations(nodeID.getName());
-          if (key.getPlugin().isActive(job, annots))
+          if (key.getKeyChooser().isActive(job, annots))
             finalKeys.add(name);
         }
       }

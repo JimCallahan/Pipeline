@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.226 2007/12/15 07:14:57 jesse Exp $
+// $Id: MasterMgr.java,v 1.227 2007/12/16 06:28:42 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -10904,6 +10904,7 @@ class MasterMgr
     TreeMap<String,String> toolsetRemap      = req.getToolsetRemap();
     TreeMap<String,String> selectionKeyRemap = req.getSelectionKeyRemap();
     TreeMap<String,String> licenseKeyRemap   = req.getLicenseKeyRemap();
+    TreeMap<String,String> hardwareKeyRemap  = req.getHardwareKeyRemap();
 
     TaskTimer timer = new TaskTimer(); 
 
@@ -10911,7 +10912,8 @@ class MasterMgr
     try {
       UnpackExtFactory factory = 
         new UnpackExtFactory(bundlePath, author, view, releaseOnError, actOnExist, 
-                             toolsetRemap, selectionKeyRemap, licenseKeyRemap, null);
+                             toolsetRemap, 
+                             selectionKeyRemap, licenseKeyRemap, hardwareKeyRemap, null);
       performExtensionTests(timer, factory);
     }
     catch(PipelineException ex) {
@@ -10986,7 +10988,8 @@ class MasterMgr
 
         BaseBuilder builder = 
           new BundleBuilder(mclient, pQueueMgrClient, info, bundle, bundlePath, 
-                            toolsetRemap, selectionKeyRemap, licenseKeyRemap);
+                            toolsetRemap, 
+                            selectionKeyRemap, licenseKeyRemap, hardwareKeyRemap);
         builder.run();
 
         switch(actOnExist) {
@@ -11033,7 +11036,8 @@ class MasterMgr
       {
         UnpackExtFactory factory = 
           new UnpackExtFactory(bundlePath, author, view, releaseOnError, actOnExist, 
-                               toolsetRemap, selectionKeyRemap, licenseKeyRemap, bundle); 
+                               toolsetRemap, 
+                               selectionKeyRemap, licenseKeyRemap, hardwareKeyRemap, bundle); 
         startExtensionTasks(timer, factory);
       }
       
@@ -12155,7 +12159,7 @@ class MasterMgr
 	  QueueJob job = new QueueJob(agenda, action, jreqs, sourceIDs);
 	  
 	  /* Perform all serverside key calculations*/
-          adjustJobRequirements(timer, job, jreqs);
+          adjustJobRequirements(timer, job.queryOnlyCopy(), jreqs);
 		       
 	  jobs.put(jobID, job);
 	}
@@ -12215,12 +12219,12 @@ class MasterMgr
 
       for (SelectionKey key : allKeys) {
         String name = key.getName();
-        if (!key.hasPlugin() && currentKeys.contains(name))
+        if (!key.hasKeyChooser() && currentKeys.contains(name))
           finalKeys.add(name); 
-        else if (key.hasPlugin()) {
+        else if (key.hasKeyChooser()) {
           if (annots == null)
             annots = getAnnotationsHelper(timer, nodeID.getName());
-          if (key.getPlugin().isActive(job, annots))
+          if (key.getKeyChooser().isActive(job, annots))
             finalKeys.add(name);
         }
       }
@@ -12235,12 +12239,12 @@ class MasterMgr
 
       for (LicenseKey key : allKeys) {
         String name = key.getName();
-        if (!key.hasPlugin() && currentKeys.contains(name))
+        if (!key.hasKeyChooser() && currentKeys.contains(name))
           finalKeys.add(name); 
-        else if (key.hasPlugin()) {
+        else if (key.hasKeyChooser()) {
           if (annots == null)
             annots = getAnnotationsHelper(timer, nodeID.getName());
-          if (key.getPlugin().isActive(job, annots))
+          if (key.getKeyChooser().isActive(job, annots))
             finalKeys.add(name);
         }
       }
@@ -12255,12 +12259,12 @@ class MasterMgr
 
       for (HardwareKey key : allKeys) {
         String name = key.getName();
-        if (!key.hasPlugin() && currentKeys.contains(name))
+        if (!key.hasKeyChooser() && currentKeys.contains(name))
           finalKeys.add(name); 
-        else if (key.hasPlugin()) {
+        else if (key.hasKeyChooser()) {
           if (annots == null)
             annots = getAnnotationsHelper(timer, nodeID.getName());
-          if (key.getPlugin().isActive(job, annots))
+          if (key.getKeyChooser().isActive(job, annots))
             finalKeys.add(name);
         }
       }
