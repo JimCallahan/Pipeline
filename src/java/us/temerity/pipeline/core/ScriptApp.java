@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.83 2007/12/16 09:11:31 jim Exp $
+// $Id: ScriptApp.java,v 1.84 2007/12/29 23:05:31 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -252,9 +252,29 @@ class ScriptApp
        "      --get-info=tool-name[:major.minor.micro]\n" + 
        "      --get-info-all\n" + 
        "\n" + 
+       "    annotation\n" + 
+       "      --get\n" + 
+       "      --get-info=annotation-name[:major.minor.micro]\n" + 
+       "      --get-info-all\n" + 
+       "\n" + 
        "    archiver\n" + 
        "      --get\n" + 
        "      --get-info=archiver-name[:major.minor.micro]\n" + 
+       "      --get-info-all\n" + 
+       "\n" + 
+       "    master-extension\n" + 
+       "      --get\n" + 
+       "      --get-info=master-extension-name[:major.minor.micro]\n" + 
+       "      --get-info-all\n" + 
+       "\n" + 
+       "    queue-extension\n" + 
+       "      --get\n" + 
+       "      --get-info=queue-extension-name[:major.minor.micro]\n" + 
+       "      --get-info-all\n" + 
+       "\n" + 
+       "    key-chooser\n" + 
+       "      --get\n" + 
+       "      --get-info=key-chooser-name[:major.minor.micro]\n" + 
        "      --get-info-all\n" + 
        "\n" + 
        "  User Preferences\n" + 
@@ -2052,6 +2072,36 @@ class ScriptApp
   }
 
   /**
+   * Print information about all Annotation plugins.
+   */ 
+  public void 
+  annotationGetInfoAll()
+    throws PipelineException
+  {
+    PluginMgrClient client = PluginMgrClient.getInstance();
+    TripleMap<String,String,VersionID,TreeSet<OsType>> versions = client.getAnnotations();
+    if(!versions.isEmpty()) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Info,
+	 tbar(80) + "\n" + 
+	 "  A N N O T A T I O N S");
+      
+      for(String vendor : versions.keySet()) {
+	for(String name : versions.get(vendor).keySet()) {
+	  for(VersionID vid : versions.get(vendor).get(name).keySet()) {
+	    BaseAnnotation plg = client.newAnnotation(name, vid, vendor);
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+	       bar(80) + "\n\n" + plg + "\n");
+	  }
+	}
+      }
+    }
+
+    LogMgr.getInstance().flush();
+  }
+
+  /**
    * Print information about all Archiver plugins.
    */ 
   public void 
@@ -2081,6 +2131,95 @@ class ScriptApp
     LogMgr.getInstance().flush();
   }
 
+  /**
+   * Print information about all MasterExtension plugins.
+   */ 
+  public void 
+  masterExtensionGetInfoAll()
+    throws PipelineException
+  {
+    PluginMgrClient client = PluginMgrClient.getInstance();
+    TripleMap<String,String,VersionID,TreeSet<OsType>> versions = client.getMasterExts();
+    if(!versions.isEmpty()) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Info,
+	 tbar(80) + "\n" + 
+	 "  M A S T E R   E X T E N S I O N S");
+      
+      for(String vendor : versions.keySet()) {
+	for(String name : versions.get(vendor).keySet()) {
+	  for(VersionID vid : versions.get(vendor).get(name).keySet()) {
+	    BaseMasterExt plg = client.newMasterExt(name, vid, vendor);
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+	       bar(80) + "\n\n" + plg + "\n");
+	  }
+	}
+      }
+    }
+
+    LogMgr.getInstance().flush();
+  }
+
+  /**
+   * Print information about all QueueExtension plugins.
+   */ 
+  public void 
+  queueExtensionGetInfoAll()
+    throws PipelineException
+  {
+    PluginMgrClient client = PluginMgrClient.getInstance();
+    TripleMap<String,String,VersionID,TreeSet<OsType>> versions = client.getQueueExts();
+    if(!versions.isEmpty()) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Info,
+	 tbar(80) + "\n" + 
+	 "  Q U E U E   E X T E N S I O N S");
+      
+      for(String vendor : versions.keySet()) {
+	for(String name : versions.get(vendor).keySet()) {
+	  for(VersionID vid : versions.get(vendor).get(name).keySet()) {
+	    BaseQueueExt plg = client.newQueueExt(name, vid, vendor);
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+	       bar(80) + "\n\n" + plg + "\n");
+	  }
+	}
+      }
+    }
+
+    LogMgr.getInstance().flush();
+  }
+
+  /**
+   * Print information about all KeyChooser plugins.
+   */ 
+  public void 
+  keyChooserGetInfoAll()
+    throws PipelineException
+  {
+    PluginMgrClient client = PluginMgrClient.getInstance();
+    TripleMap<String,String,VersionID,TreeSet<OsType>> versions = client.getKeyChoosers();
+    if(!versions.isEmpty()) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Info,
+	 tbar(80) + "\n" + 
+	 "  K E Y   C H O O S E R S");
+      
+      for(String vendor : versions.keySet()) {
+	for(String name : versions.get(vendor).keySet()) {
+	  for(VersionID vid : versions.get(vendor).get(name).keySet()) {
+	    BaseKeyChooser plg = client.newKeyChooser(name, vid, vendor);
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+	       bar(80) + "\n\n" + plg + "\n");
+	  }
+	}
+      }
+    }
+
+    LogMgr.getInstance().flush();
+  }
 
 
   /*----------------------------------------------------------------------------------------*/

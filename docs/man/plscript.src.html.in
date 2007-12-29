@@ -532,6 +532,23 @@ Administration</span></span></a><br>
  style="font-weight: normal;"><a href="#tool_--get-info-all"><span
  style="font-weight: bold;">--get-info-all</span></a></span></li>
       </ul>
+      <li style="font-weight: bold; color: rgb(0, 0, 0);">annotation<br>
+      </li>
+      <ul>
+        <li style="font-weight: bold; color: rgb(0, 0, 0);"><a
+ href="#annotation_--get">--get</a></li>
+        <li style="font-weight: bold; color: rgb(0, 0, 0);"><a
+ href="#annotation_--get-info">--get-info</a><span
+ style="font-weight: normal;">=<span style="font-style: italic;">annotation-name</span>[:<span
+ style="font-style: italic;">major</span>.<span
+ style="font-style: italic;">minor</span>.<span
+ style="font-style: italic;">micro</span>]</span><span
+ style="font-weight: normal;">[<span style="font-style: italic;">,vendor-name</span>]</span><span
+ style="font-weight: normal;"></span></li>
+        <li style="font-weight: bold; color: rgb(0, 0, 0);"><span
+ style="font-weight: normal;"><a href="#annotation_--get-info-all"><span
+ style="font-weight: bold;">--get-info-all</span></a></span></li>
+      </ul>
       <li style="font-weight: bold; color: rgb(0, 0, 0);">archiver<br>
       </li>
       <ul>
@@ -547,6 +564,57 @@ Administration</span></span></a><br>
  style="font-weight: normal;"></span></li>
         <li style="font-weight: bold; color: rgb(0, 0, 0);"><span
  style="font-weight: normal;"><a href="#archiver_--get-info-all"><span
+ style="font-weight: bold;">--get-info-all</span></a></span></li>
+      </ul>
+      <li style="font-weight: bold; color: rgb(0, 0, 0);">master-extension<br>
+      </li>
+      <ul>
+        <li style="font-weight: bold; color: rgb(0, 0, 0);"><a
+ href="#master-extension_--get">--get</a></li>
+        <li style="font-weight: bold; color: rgb(0, 0, 0);"><a
+ href="#master-extension_--get-info">--get-info</a><span
+ style="font-weight: normal;">=<span style="font-style: italic;">master-extension-name</span>[:<span
+ style="font-style: italic;">major</span>.<span
+ style="font-style: italic;">minor</span>.<span
+ style="font-style: italic;">micro</span>]</span><span
+ style="font-weight: normal;">[<span style="font-style: italic;">,vendor-name</span>]</span><span
+ style="font-weight: normal;"></span></li>
+        <li style="font-weight: bold; color: rgb(0, 0, 0);"><span
+ style="font-weight: normal;"><a href="#master-extension_--get-info-all"><span
+ style="font-weight: bold;">--get-info-all</span></a></span></li>
+      </ul>
+      <li style="font-weight: bold; color: rgb(0, 0, 0);">queue-extension<br>
+      </li>
+      <ul>
+        <li style="font-weight: bold; color: rgb(0, 0, 0);"><a
+ href="#queue-extension_--get">--get</a></li>
+        <li style="font-weight: bold; color: rgb(0, 0, 0);"><a
+ href="#queue-extension_--get-info">--get-info</a><span
+ style="font-weight: normal;">=<span style="font-style: italic;">queue-extension-name</span>[:<span
+ style="font-style: italic;">major</span>.<span
+ style="font-style: italic;">minor</span>.<span
+ style="font-style: italic;">micro</span>]</span><span
+ style="font-weight: normal;">[<span style="font-style: italic;">,vendor-name</span>]</span><span
+ style="font-weight: normal;"></span></li>
+        <li style="font-weight: bold; color: rgb(0, 0, 0);"><span
+ style="font-weight: normal;"><a href="#queue-extension_--get-info-all"><span
+ style="font-weight: bold;">--get-info-all</span></a></span></li>
+      </ul>
+      <li style="font-weight: bold; color: rgb(0, 0, 0);">key-chooser<br>
+      </li>
+      <ul>
+        <li style="font-weight: bold; color: rgb(0, 0, 0);"><a
+ href="#key-chooser_--get">--get</a></li>
+        <li style="font-weight: bold; color: rgb(0, 0, 0);"><a
+ href="#key-chooser_--get-info">--get-info</a><span
+ style="font-weight: normal;">=<span style="font-style: italic;">key-chooser-name</span>[:<span
+ style="font-style: italic;">major</span>.<span
+ style="font-style: italic;">minor</span>.<span
+ style="font-style: italic;">micro</span>]</span><span
+ style="font-weight: normal;">[<span style="font-style: italic;">,vendor-name</span>]</span><span
+ style="font-weight: normal;"></span></li>
+        <li style="font-weight: bold; color: rgb(0, 0, 0);"><span
+ style="font-weight: normal;"><a href="#key-chooser_--get-info-all"><span
  style="font-weight: bold;">--get-info-all</span></a></span></li>
       </ul>
     </ul>
@@ -3370,9 +3438,11 @@ daemon, it will be shutdown immeadiately.<span
 <br>
 This command requires Queue Admin privileges.</span></div>
 </div>
-<h3><a name="Plugins"></a>Plugins</h3>
-<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
- name="editor_--get"></a>editor --get</span><br>
+<h3><a name="Plugins"></a>Pipeline Plugins</h3>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">Editor
+Plugins:<br>
+<br>
+<a name="editor_--get"></a>editor --get</span><br>
 <br>
 <div style="margin-left: 40px;">Prints the names and versions of the
 Editor plugins.<br>
@@ -3409,8 +3479,10 @@ Editor plugins.&nbsp; Equivalent to performing a <a
 <br>
 </div>
 </div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
- name="action_--get"></a>action --get</span><br>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">Action
+plugins: <br>
+<br>
+<a name="action_--get"></a>action --get</span><br>
 <br>
 <div style="margin-left: 40px;">Prints the names and versions of the
 Action plugins.<br>
@@ -3449,8 +3521,10 @@ Action plugins.&nbsp; Equivalent to performing a <a
 <br>
 </div>
 </div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
- name="comparator_--get"></a>comparator --get</span><br>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">Comparator
+Plugins: <br>
+<br>
+<a name="comparator_--get"></a>comparator --get</span><br>
 <br>
 <div style="margin-left: 40px;">Prints the names and versions of the
 Comparator plugins.<br>
@@ -3490,8 +3564,10 @@ Comparator plugins.&nbsp; Equivalent to performing a <a
 <br>
 </div>
 </div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
- name="tool_--get"></a>tool --get</span><br>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">Tool
+Plugins: <br>
+<br>
+<a name="tool_--get"></a>tool --get</span><br>
 <br>
 </div>
 <div style="margin-left: 80px;">Prints the names and versions of the
@@ -3531,8 +3607,58 @@ to performing a <a href="#tool_--get-info"><span
 --get-info</span></a> for each Tool plugin.<br>
 </div>
 <br>
+<span style="font-weight: bold;"><br>
+Annotation Plugins: <br>
 <br>
-<span style="font-weight: bold;"><a name="archiver_--get"></a>archiver
+<a name="annotation_--get"></a>annotation
+--get</span><br>
+<br>
+</div>
+<div style="margin-left: 80px;">Prints the names and versions of the
+Annotation plugins.<br>
+</div>
+<div style="margin-left: 40px;"><br>
+<span style="font-weight: bold;"><a name="annotation_--get-info"></a>annotation</span><span
+ style="font-weight: bold;"> --get-info</span><span
+ style="font-weight: normal;">=<span style="font-style: italic;">action-name</span>[:<span
+ style="font-style: italic;">major</span>.<span
+ style="font-style: italic;">minor</span>.<span
+ style="font-style: italic;">micro</span>]</span><span
+ style="font-weight: normal;">[<span style="font-style: italic;">,vendor-name</span>]</span><br>
+<span style="font-weight: normal;"></span><br>
+<span style="font-weight: normal;"></span></div>
+<div style="margin-left: 80px;">Prints a summary of information about
+the given version (<span style="font-weight: normal;"><span
+ style="font-style: italic;">major</span>.<span
+ style="font-style: italic;">minor</span>.<span
+ style="font-style: italic;">micro</span>) of an </span>Annotation<span
+ style="font-weight: normal;"> plugin</span><span
+ style="font-weight: normal;"> created by the given vendor (<span
+ style="font-style: italic;">vendor-name</span>)</span><span
+ style="font-weight: normal;">.</span><span style="font-weight: normal;">&nbsp;
+The information includes a description of the plugin, the name of the
+associated Java class and the timestamp of when the plugin was
+installed.<br>
+</span></div>
+<div style="margin-left: 40px;"><br>
+<span style="font-weight: bold;"><a name="annotation_--get-info-all"></a>annotation</span><span
+ style="font-weight: bold;"> --get-info-all</span><br>
+<br>
+<div style="margin-left: 40px;">Prints a summary of information for all
+Annotation plugins.&nbsp;
+Equivalent to performing a <a
+ href="plscript.src.html.in#annotation_--get-info"><span
+ style="font-weight: bold;">annotation
+--get-info</span></a> for each Annotation plugin.
+</div>
+</div>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"></div>
+<br>
+<br>
+<span style="font-weight: bold;">Archiver Plugins: <br>
+<br>
+<a name="archiver_--get"></a>archiver
 --get</span><br>
 <br>
 </div>
@@ -3568,11 +3694,171 @@ installed.<br>
 <br>
 <div style="margin-left: 40px;">Prints a summary of information for all
 Archiver plugins.&nbsp;
-Equivalent to performing a <a href="#archiver_--get-info"><span
+Equivalent to performing a <a
+ href="plscript.src.html.in#archiver_--get-info"><span
  style="font-weight: bold;">archiver
---get-info</span></a> for each Archiver plugin.
+--get-info</span></a> for each Archiver plugin.<br>
 </div>
 </div>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"><br>
+<br>
+</div>
+</div>
+<span style="font-weight: bold;">Master Extension Plugins: <br>
+<br>
+<a name="master-extension_--get"></a>master-extension
+--get</span><br>
+<br>
+</div>
+<div style="margin-left: 80px;">Prints the names and versions of the
+Master Extension plugins.<br>
+</div>
+<div style="margin-left: 40px;"><br>
+<span style="font-weight: bold;"><a name="master-extension_--get-info"></a>master-extension</span><span
+ style="font-weight: bold;"> --get-info</span><span
+ style="font-weight: normal;">=<span style="font-style: italic;">action-name</span>[:<span
+ style="font-style: italic;">major</span>.<span
+ style="font-style: italic;">minor</span>.<span
+ style="font-style: italic;">micro</span>]</span><span
+ style="font-weight: normal;">[<span style="font-style: italic;">,vendor-name</span>]</span><br>
+<span style="font-weight: normal;"></span><br>
+<span style="font-weight: normal;"></span></div>
+<div style="margin-left: 80px;">Prints a summary of information about
+the given version (<span style="font-weight: normal;"><span
+ style="font-style: italic;">major</span>.<span
+ style="font-style: italic;">minor</span>.<span
+ style="font-style: italic;">micro</span>) of an </span>Master
+Extension<span style="font-weight: normal;"> plugin</span><span
+ style="font-weight: normal;"> created by the given vendor (<span
+ style="font-style: italic;">vendor-name</span>)</span><span
+ style="font-weight: normal;">.</span><span style="font-weight: normal;">&nbsp;
+The information includes a description of the plugin, the name of the
+associated Java class and the timestamp of when the plugin was
+installed.<br>
+</span></div>
+<div style="margin-left: 40px;"><br>
+<span style="font-weight: bold;"><a
+ name="master-extension_--get-info-all"></a>master-extension</span><span
+ style="font-weight: bold;"> --get-info-all</span><br>
+<br>
+<div style="margin-left: 40px;">Prints a summary of information for all
+Master Extension plugins.&nbsp;
+Equivalent to performing a <a
+ href="plscript.src.html.in#master-extension_--get-info"><span
+ style="font-weight: bold;">master-extension
+--get-info</span></a> for each Master Extension plugin.<br>
+</div>
+</div>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"><br>
+<br>
+</div>
+</div>
+<span style="font-weight: bold;">Queue Extension Plugins: <br>
+<br>
+<a name="queue-extension_--get"></a>queue-extension
+--get</span><br>
+<br>
+</div>
+<div style="margin-left: 80px;">Prints the names and versions of the
+Queue Extension plugins.<br>
+</div>
+<div style="margin-left: 40px;"><br>
+<span style="font-weight: bold;"><a name="queue-extension_--get-info"></a>queue-extension</span><span
+ style="font-weight: bold;"> --get-info</span><span
+ style="font-weight: normal;">=<span style="font-style: italic;">action-name</span>[:<span
+ style="font-style: italic;">major</span>.<span
+ style="font-style: italic;">minor</span>.<span
+ style="font-style: italic;">micro</span>]</span><span
+ style="font-weight: normal;">[<span style="font-style: italic;">,vendor-name</span>]</span><br>
+<span style="font-weight: normal;"></span><br>
+<span style="font-weight: normal;"></span></div>
+<div style="margin-left: 80px;">Prints a summary of information about
+the given version (<span style="font-weight: normal;"><span
+ style="font-style: italic;">major</span>.<span
+ style="font-style: italic;">minor</span>.<span
+ style="font-style: italic;">micro</span>) of an </span>Queue Extension<span
+ style="font-weight: normal;"> plugin</span><span
+ style="font-weight: normal;"> created by the given vendor (<span
+ style="font-style: italic;">vendor-name</span>)</span><span
+ style="font-weight: normal;">.</span><span style="font-weight: normal;">&nbsp;
+The information includes a description of the plugin, the name of the
+associated Java class and the timestamp of when the plugin was
+installed.<br>
+</span></div>
+<div style="margin-left: 40px;"><br>
+<span style="font-weight: bold;"><a
+ name="queue-extension_--get-info-all"></a>queue-extension</span><span
+ style="font-weight: bold;"> --get-info-all</span><br>
+<br>
+<div style="margin-left: 40px;">Prints a summary of information for all
+Queue Extension plugins.&nbsp;
+Equivalent to performing a <a
+ href="plscript.src.html.in#queue-extension_--get-info"><span
+ style="font-weight: bold;">queue-extension
+--get-info</span></a> for each Queue Extension plugin.<br>
+</div>
+</div>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"><br>
+<br>
+</div>
+</div>
+<span style="font-weight: bold;">Key-Chooser Plugins: <br>
+<br>
+<a name="key-chooser_--get"></a>key-chooser
+--get</span><br>
+<br>
+</div>
+<div style="margin-left: 80px;">Prints the names and versions of the
+Key-Chooser plugins.<br>
+</div>
+<div style="margin-left: 40px;"><br>
+<span style="font-weight: bold;"><a name="key-chooser_--get-info"></a>key-chooser</span><span
+ style="font-weight: bold;"> --get-info</span><span
+ style="font-weight: normal;">=<span style="font-style: italic;">action-name</span>[:<span
+ style="font-style: italic;">major</span>.<span
+ style="font-style: italic;">minor</span>.<span
+ style="font-style: italic;">micro</span>]</span><span
+ style="font-weight: normal;">[<span style="font-style: italic;">,vendor-name</span>]</span><br>
+<span style="font-weight: normal;"></span><br>
+<span style="font-weight: normal;"></span></div>
+<div style="margin-left: 80px;">Prints a summary of information about
+the given version (<span style="font-weight: normal;"><span
+ style="font-style: italic;">major</span>.<span
+ style="font-style: italic;">minor</span>.<span
+ style="font-style: italic;">micro</span>) of an </span>Key-Chooser<span
+ style="font-weight: normal;"> plugin</span><span
+ style="font-weight: normal;"> created by the given vendor (<span
+ style="font-style: italic;">vendor-name</span>)</span><span
+ style="font-weight: normal;">.</span><span style="font-weight: normal;">&nbsp;
+The information includes a description of the plugin, the name of the
+associated Java class and the timestamp of when the plugin was
+installed.<br>
+</span></div>
+<div style="margin-left: 40px;"><br>
+<span style="font-weight: bold;"><a name="key-chooser_--get-info-all"></a>key-chooser</span><span
+ style="font-weight: bold;"> --get-info-all</span><br>
+<br>
+<div style="margin-left: 40px;">Prints a summary of information for all
+Key-Chooser plugins.&nbsp;
+Equivalent to performing a <a
+ href="plscript.src.html.in#key-chooser_--get-info"><span
+ style="font-weight: bold;">key-chooser
+--get-info</span></a> for each Key-Chooser plugin.<br>
+</div>
+</div>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"><br>
+<br>
+</div>
+</div>
+<span style="font-weight: bold;"></span></div>
 <h3><a name="User_Preferences"></a><span style="font-weight: bold;"></span>User
 Preferences</h3>
 <div style="margin-left: 40px;"><span style="font-weight: bold;"><a

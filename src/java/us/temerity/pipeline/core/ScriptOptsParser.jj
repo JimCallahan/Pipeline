@@ -340,8 +340,12 @@ TOKEN :
 | <EDITOR1:           "editor">           : EDITOR_OPTS
 | <ACTION1:           "action">           : ACTION_OPTS
 | <COMPARATOR:        "comparator">       : COMPARATOR_OPTS
-| <TOOL:              "tool">             : TOOL_OPTS        
-| <ARCHIVER:          "archiver">         : ARCHIVER_OPTS        
+| <TOOL:              "tool">             : TOOL_OPTS      
+| <ANNOTATION:        "annotation">       : ANNOTATION_OPTS  
+| <ARCHIVER:          "archiver">         : ARCHIVER_OPTS  
+| <MASTER_EXTENSION:  "master_extension"> : MASTER_EXTENSION_OPTS
+| <QUEUE_EXTENSION:   "queue_extension">  : QUEUE_EXTENSION_OPTS
+| <KEY_CHOOSER:       "key_chooser">      : KEY_CHOOSER_OPTS      
 | <SUFFIX_EDITOR:     "suffix-editor">    : SUFFIX_EDITOR_OPTS
 | <VIEW1:             "view">             : VIEW_OPTS
 | <WORKING:           "working">          : WORKING_OPTS
@@ -917,6 +921,26 @@ TOKEN :
 }
 
 
+/* annotation arguments */ 
+<ANNOTATION_NAME_SEP> 
+TOKEN :
+{
+  <EQ44:                     "=">   : ANNOTATION_NAME_STATE
+| <MISSING_ANNOTATION_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<ANNOTATION_NAME_STATE> 
+TOKEN :
+{
+  <ANNOTATION_NAME:      (["a"-"z","A"-"Z"]) 
+	                   (["a"-"z","A"-"Z","0"-"9","_","-"])+>   
+| <COLON12:              ":">                                     : REVISION_NUMBER_STATE2 
+| <COMMA19:              ",">                                     : VENDOR_NAME_STATE 
+| <AE58:                 ["\0"]>                                  : OPTIONS
+| <ILLEGAL_ANNOTATION:   (~[":",",","\0"])+>                      : IGNORE_STATE
+}
+
+
 /* archiver arguments */ 
 <ARCHIVER_NAME_SEP> 
 TOKEN :
@@ -934,6 +958,65 @@ TOKEN :
 | <COMMA15:            ",">                                     : VENDOR_NAME_STATE 
 | <AE43:               ["\0"]>                                  : OPTIONS
 | <ILLEGAL_ARCHIVER:   (~[":",",","\0"])+>                      : IGNORE_STATE
+}
+
+
+/* master extension arguments */ 
+<MASTER_EXTENSION_NAME_SEP> 
+TOKEN :
+{
+  <EQ45:                     "=">   : MASTER_EXTENSION_NAME_STATE
+| <MISSING_MASTER_EXTENSION_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<MASTER_EXTENSION_NAME_STATE> 
+TOKEN :
+{
+  <MASTER_EXTENSION_NAME:     (["a"-"z","A"-"Z"]) 
+	                        (["a"-"z","A"-"Z","0"-"9","_","-"])+>   
+| <COLON13:                   ":">                            : REVISION_NUMBER_STATE2 
+| <COMMA20:                   ",">                            : VENDOR_NAME_STATE 
+| <AE59:                      ["\0"]>                         : OPTIONS
+| <ILLEGAL_MASTER_EXTENSION:  (~[":",",","\0"])+>             : IGNORE_STATE
+}
+
+/* queue extension arguments */ 
+<QUEUE_EXTENSION_NAME_SEP> 
+TOKEN :
+{
+  <EQ46:                     "=">   : QUEUE_EXTENSION_NAME_STATE
+| <MISSING_QUEUE_EXTENSION_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<QUEUE_EXTENSION_NAME_STATE> 
+TOKEN :
+{
+  <QUEUE_EXTENSION_NAME:     (["a"-"z","A"-"Z"]) 
+	                       (["a"-"z","A"-"Z","0"-"9","_","-"])+>   
+| <COLON14:                  ":">                                : REVISION_NUMBER_STATE2 
+| <COMMA21:                  ",">                                : VENDOR_NAME_STATE 
+| <AE60:                     ["\0"]>                             : OPTIONS
+| <ILLEGAL_QUEUE_EXTENSION:  (~[":",",","\0"])+>                 : IGNORE_STATE
+}
+
+
+/* key chooser arguments */ 
+<KEY_CHOOSER_NAME_SEP> 
+TOKEN :
+{
+  <EQ47:                     "=">    : KEY_CHOOSER_NAME_STATE
+| <MISSING_KEY_CHOOSER_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<KEY_CHOOSER_NAME_STATE> 
+TOKEN :
+{
+  <KEY_CHOOSER_NAME:      (["a"-"z","A"-"Z"]) 
+	                    (["a"-"z","A"-"Z","0"-"9","_","-"])+>   
+| <COLON15:               ":">                                 : REVISION_NUMBER_STATE2 
+| <COMMA22:               ",">                                 : VENDOR_NAME_STATE 
+| <AE61:                  ["\0"]>                              : OPTIONS
+| <ILLEGAL_KEY_CHOOSER:   (~[":",",","\0"])+>                  : IGNORE_STATE
 }
 
 
@@ -1596,6 +1679,19 @@ TOKEN :
 }
 
 
+/* annotation command options */ 
+<ANNOTATION_OPTS> 
+TOKEN :
+{
+  <ANNOTATION_GET:            "--get">                   : OPTIONS
+| <ANNOTATION_GET_INFO:       "--get-info">              : ANNOTATION_NAME_SEP  
+| <ANNOTATION_GET_INFO_ALL:   "--get-info-all">          : OPTIONS
+| <AE62:                      ["\0"]>   
+| <UNKNOWN_OPTION24:          "-" ("-")? (~["\0","="])*> : IGNORE_STATE
+| <UNKNOWN24:                 ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
+}
+
+
 /* archiver command options */ 
 <ARCHIVER_OPTS> 
 TOKEN :
@@ -1608,6 +1704,44 @@ TOKEN :
 | <UNKNOWN11:               ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
 }
 
+
+/* master_extension command options */ 
+<MASTER_EXTENSION_OPTS> 
+TOKEN :
+{
+  <MASTER_EXTENSION_GET:            "--get">                   : OPTIONS
+| <MASTER_EXTENSION_GET_INFO:       "--get-info">              : MASTER_EXTENSION_NAME_SEP  
+| <MASTER_EXTENSION_GET_INFO_ALL:   "--get-info-all">          : OPTIONS
+| <AE63:                            ["\0"]>   
+| <UNKNOWN_OPTION25:                "-" ("-")? (~["\0","="])*> : IGNORE_STATE
+| <UNKNOWN25:                       ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
+}
+
+
+/* queue_extension command options */ 
+<QUEUE_EXTENSION_OPTS> 
+TOKEN :
+{
+  <QUEUE_EXTENSION_GET:            "--get">                   : OPTIONS
+| <QUEUE_EXTENSION_GET_INFO:       "--get-info">              : QUEUE_EXTENSION_NAME_SEP  
+| <QUEUE_EXTENSION_GET_INFO_ALL:   "--get-info-all">          : OPTIONS
+| <AE64:                           ["\0"]>   
+| <UNKNOWN_OPTION26:               "-" ("-")? (~["\0","="])*> : IGNORE_STATE
+| <UNKNOWN26:                      ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
+}
+
+
+/* key_chooser command options */ 
+<KEY_CHOOSER_OPTS> 
+TOKEN :
+{
+  <KEY_CHOOSER_GET:            "--get">                   : OPTIONS
+| <KEY_CHOOSER_GET_INFO:       "--get-info">              : KEY_CHOOSER_NAME_SEP  
+| <KEY_CHOOSER_GET_INFO_ALL:   "--get-info-all">          : OPTIONS
+| <AE65:                       ["\0"]>   
+| <UNKNOWN_OPTION27:           "-" ("-")? (~["\0","="])*> : IGNORE_STATE
+| <UNKNOWN27:                  ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
+}
 
 
 /* job server command options */ 
@@ -1763,9 +1897,9 @@ Commands()
   (UserCmds() | WorkGroupCmds() | PrivilegeCmds() | AdminCmds() | RuntimeCmds() | 
    ArchiveVolumeCmds() | DefaultToolsetCmds() | ActiveToolsetCmds() | ToolsetCmds() |
    LicenseKeyCmds() | SelectionKeyCmds() | HardwareKeyCmds() | JobServerCmds() | 
-   EditorCmds() | ActionCmds() | ComparatorCmds() | ToolCmds() | ArchiverCmds() | 
-   SuffixEditorCmds() | ViewCmds() | 
-   WorkingCmds() | CheckedInCmds() | NodeCmds()) 
+   EditorCmds() | ActionCmds() | ComparatorCmds() | ToolCmds() | AnnotationCmds() | 
+   ArchiverCmds() | MasterExtensionCmds() | QueueExtensionCmds() | KeyChooserCmds() | 
+   SuffixEditorCmds() | ViewCmds() | WorkingCmds() | CheckedInCmds() | NodeCmds()) 
   {
     disconnect();
   }
@@ -1876,9 +2010,10 @@ BatchCommand()
   (UserCmds() | WorkGroupCmds() | PrivilegeCmds() | AdminCmds() | RuntimeCmds() | 
    ArchiveVolumeCmds() | DefaultToolsetCmds() | ActiveToolsetCmds() | ToolsetCmds() |
    LicenseKeyCmds() | SelectionKeyCmds() | HardwareKeyCmds() | JobServerCmds() | 
-   EditorCmds() | ActionCmds() | ComparatorCmds() | ToolCmds() | ArchiverCmds() | 
-   SuffixEditorCmds() | ViewCmds() | 
-   WorkingCmds() | CheckedInCmds() | NodeCmds()) (AE())* <EOF>
+   EditorCmds() | ActionCmds() | ComparatorCmds() | ToolCmds() | AnnotationCmds() | 
+   ArchiverCmds() | MasterExtensionCmds() | QueueExtensionCmds() | KeyChooserCmds() | 
+   SuffixEditorCmds() | ViewCmds() | WorkingCmds() | CheckedInCmds() | NodeCmds()) 
+    (AE())* <EOF>
   {}
 }
 
@@ -4552,6 +4687,76 @@ ToolGetInfoAll()
 /*------------------------------------------------------------------------------------------*/
 
 void 
+AnnotationCmds() 
+  throws PipelineException : 
+{}
+{
+  <ANNOTATION> AE() 
+     (AnnotationGet() | AnnotationGetInfo() | AnnotationGetInfoAll())
+  {}
+}
+
+void 
+AnnotationGet() 
+  throws PipelineException : 
+{}
+{
+  <ANNOTATION_GET> AE()
+  {
+    TreeMap table = PluginMgrClient.getInstance().getAnnotations();
+    Iterator iter = table.keySet().iterator();
+    while(iter.hasNext()) {
+      String name      = (String) iter.next();
+      TreeSet versions = (TreeSet) table.get(name);
+      
+      Iterator viter = versions.iterator();
+      while(viter.hasNext()) {
+	VersionID vid = (VersionID) viter.next();
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ops, LogMgr.Level.Info,
+	   name + " (v" + vid + ")");
+      }
+    }
+    
+    LogMgr.getInstance().flush();
+  }
+}
+
+void 
+AnnotationGetInfo() 
+  throws PipelineException : 
+{
+  String name = null;
+  VersionID vid = null;
+  String vendor = null;
+}
+{
+  <ANNOTATION_GET_INFO> EQ() name=AnnotationName() 
+    (COLON() vid=RevisionNumber())? (COMMA() vendor=VendorName())? AE()
+  {
+    BaseAnnotation plg = PluginMgrClient.getInstance().newAnnotation(name, vid, vendor);
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       plg.toString());
+    LogMgr.getInstance().flush();
+  }
+}
+
+void 
+AnnotationGetInfoAll() 
+  throws PipelineException : 
+{}
+{
+  <ANNOTATION_GET_INFO_ALL> AE()
+  {
+    pApp.annotationGetInfoAll();
+  }
+}
+
+
+/*------------------------------------------------------------------------------------------*/
+
+void 
 ArchiverCmds() 
   throws PipelineException : 
 {}
@@ -4618,6 +4823,216 @@ ArchiverGetInfoAll()
   }
 }
 
+
+/*------------------------------------------------------------------------------------------*/
+
+void 
+MasterExtensionCmds() 
+  throws PipelineException : 
+{}
+{
+  <MASTER_EXTENSION> AE() 
+     (MasterExtensionGet() | MasterExtensionGetInfo() | MasterExtensionGetInfoAll())
+  {}
+}
+
+void 
+MasterExtensionGet() 
+  throws PipelineException : 
+{}
+{
+  <MASTER_EXTENSION_GET> AE()
+  {
+    TreeMap table = PluginMgrClient.getInstance().getMasterExts();
+    Iterator iter = table.keySet().iterator();
+    while(iter.hasNext()) {
+      String name      = (String) iter.next();
+      TreeSet versions = (TreeSet) table.get(name);
+      
+      Iterator viter = versions.iterator();
+      while(viter.hasNext()) {
+	VersionID vid = (VersionID) viter.next();
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ops, LogMgr.Level.Info,
+	   name + " (v" + vid + ")");
+      }
+    }
+    
+    LogMgr.getInstance().flush();
+  }
+}
+
+void 
+MasterExtensionGetInfo() 
+  throws PipelineException : 
+{
+  String name = null;
+  VersionID vid = null;
+  String vendor = null;
+}
+{
+  <MASTER_EXTENSION_GET_INFO> EQ() name=MasterExtensionName() 
+    (COLON() vid=RevisionNumber())? (COMMA() vendor=VendorName())? AE()
+  {
+    BaseMasterExt plg = PluginMgrClient.getInstance().newMasterExt(name, vid, vendor);
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       plg.toString());
+    LogMgr.getInstance().flush();
+  }
+}
+
+void 
+MasterExtensionGetInfoAll() 
+  throws PipelineException : 
+{}
+{
+  <MASTER_EXTENSION_GET_INFO_ALL> AE()
+  {
+    pApp.masterExtensionGetInfoAll();
+  }
+}
+
+
+/*------------------------------------------------------------------------------------------*/
+
+void 
+QueueExtensionCmds() 
+  throws PipelineException : 
+{}
+{
+  <QUEUE_EXTENSION> AE() 
+     (QueueExtensionGet() | QueueExtensionGetInfo() | QueueExtensionGetInfoAll())
+  {}
+}
+
+void 
+QueueExtensionGet() 
+  throws PipelineException : 
+{}
+{
+  <QUEUE_EXTENSION_GET> AE()
+  {
+    TreeMap table = PluginMgrClient.getInstance().getQueueExts();
+    Iterator iter = table.keySet().iterator();
+    while(iter.hasNext()) {
+      String name      = (String) iter.next();
+      TreeSet versions = (TreeSet) table.get(name);
+      
+      Iterator viter = versions.iterator();
+      while(viter.hasNext()) {
+	VersionID vid = (VersionID) viter.next();
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ops, LogMgr.Level.Info,
+	   name + " (v" + vid + ")");
+      }
+    }
+    
+    LogMgr.getInstance().flush();
+  }
+}
+
+void 
+QueueExtensionGetInfo() 
+  throws PipelineException : 
+{
+  String name = null;
+  VersionID vid = null;
+  String vendor = null;
+}
+{
+  <QUEUE_EXTENSION_GET_INFO> EQ() name=QueueExtensionName() 
+    (COLON() vid=RevisionNumber())? (COMMA() vendor=VendorName())? AE()
+  {
+    BaseQueueExt plg = PluginMgrClient.getInstance().newQueueExt(name, vid, vendor);
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       plg.toString());
+    LogMgr.getInstance().flush();
+  }
+}
+
+void 
+QueueExtensionGetInfoAll() 
+  throws PipelineException : 
+{}
+{
+  <QUEUE_EXTENSION_GET_INFO_ALL> AE()
+  {
+    pApp.queueExtensionGetInfoAll();
+  }
+}
+
+
+/*------------------------------------------------------------------------------------------*/
+
+void 
+KeyChooserCmds() 
+  throws PipelineException : 
+{}
+{
+  <KEY_CHOOSER> AE() 
+     (KeyChooserGet() | KeyChooserGetInfo() | KeyChooserGetInfoAll())
+  {}
+}
+
+void 
+KeyChooserGet() 
+  throws PipelineException : 
+{}
+{
+  <KEY_CHOOSER_GET> AE()
+  {
+    TreeMap table = PluginMgrClient.getInstance().getKeyChoosers();
+    Iterator iter = table.keySet().iterator();
+    while(iter.hasNext()) {
+      String name      = (String) iter.next();
+      TreeSet versions = (TreeSet) table.get(name);
+      
+      Iterator viter = versions.iterator();
+      while(viter.hasNext()) {
+	VersionID vid = (VersionID) viter.next();
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ops, LogMgr.Level.Info,
+	   name + " (v" + vid + ")");
+      }
+    }
+    
+    LogMgr.getInstance().flush();
+  }
+}
+
+void 
+KeyChooserGetInfo() 
+  throws PipelineException : 
+{
+  String name = null;
+  VersionID vid = null;
+  String vendor = null;
+}
+{
+  <KEY_CHOOSER_GET_INFO> EQ() name=KeyChooserName() 
+    (COLON() vid=RevisionNumber())? (COMMA() vendor=VendorName())? AE()
+  {
+    BaseKeyChooser plg = 
+      PluginMgrClient.getInstance().newKeyChooser(name, vid, vendor);
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       plg.toString());
+    LogMgr.getInstance().flush();
+  }
+}
+
+void 
+KeyChooserGetInfoAll() 
+  throws PipelineException : 
+{}
+{
+  <KEY_CHOOSER_GET_INFO_ALL> AE()
+  {
+    pApp.keyChooserGetInfoAll();
+  }
+}
 
 
 /*------------------------------------------------------------------------------------------*/
@@ -7634,12 +8049,60 @@ ToolName() :
 }
 
 String
+AnnotationName() : 
+{
+  Token t;
+}
+{
+  t=<ANNOTATION_NAME>
+  {
+    return t.image;
+  }
+}
+
+String
 ArchiverName() : 
 {
   Token t;
 }
 {
   t=<ARCHIVER_NAME>
+  {
+    return t.image;
+  }
+}
+
+String
+MasterExtensionName() : 
+{
+  Token t;
+}
+{
+  t=<MASTER_EXTENSION_NAME>
+  {
+    return t.image;
+  }
+}
+ 
+String
+QueueExtensionName() : 
+{
+  Token t;
+}
+{
+  t=<QUEUE_EXTENSION_NAME>
+  {
+    return t.image;
+  }
+}
+
+String
+KeyChooserName() : 
+{
+  Token t;
+}
+{
+  t=<KEY_CHOOSER_NAME>
   {
     return t.image;
   }
@@ -7923,7 +8386,8 @@ AE() :
    t=<AE41> | t=<AE42> | t=<AE43> | t=<AE44> | t=<AE45> | 
    t=<AE46> | t=<AE47> | t=<AE48> | t=<AE49> | t=<AE50> | 
    t=<AE51> | t=<AE52> | t=<AE53> | t=<AE54> | t=<AE55> | 
-   t=<AE56> | t=<AE57>)
+   t=<AE56> | t=<AE57> | t=<AE58> | t=<AE59> | t=<AE60> | 
+   t=<AE61> | t=<AE62> | t=<AE63> | t=<AE64> | t=<AE65>)
   { 
     return t; 
   }
@@ -7983,9 +8447,9 @@ COLON() :
   Token t;
 }
 {
-  (t=<COLON1> | t=<COLON2>  | t=<COLON3>  | t=<COLON4>  | t=<COLON5>  | 
-   t=<COLON6> | t=<COLON7>  | t=<COLON8>  | t=<COLON9>  | t=<COLON10> | 
-   t=<COLON11>)
+  (t=<COLON1>  | t=<COLON2>  | t=<COLON3>  | t=<COLON4>  | t=<COLON5>  | 
+   t=<COLON6>  | t=<COLON7>  | t=<COLON8>  | t=<COLON9>  | t=<COLON10> | 
+   t=<COLON11> | t=<COLON12> | t=<COLON13> | t=<COLON14> | t=<COLON15>)
   { 
     return t; 
   }
@@ -8000,7 +8464,8 @@ COMMA() :
   (t=<COMMA1>  | t=<COMMA2>  | t=<COMMA3>  | t=<COMMA4>  | t=<COMMA5>  | 
    t=<COMMA6>  | t=<COMMA7>  | t=<COMMA8>  | t=<COMMA9>  | t=<COMMA10> |
    t=<COMMA11> | t=<COMMA12> | t=<COMMA13> | t=<COMMA14> | t=<COMMA15> |
-   t=<COMMA16> | t=<COMMA17> | t=<COMMA18>)
+   t=<COMMA16> | t=<COMMA17> | t=<COMMA18> | t=<COMMA19> | t=<COMMA20> |
+   t=<COMMA21> | t=<COMMA22>)
   { 
     return t; 
   }
@@ -8020,7 +8485,8 @@ EQ() :
    t=<EQ26> | t=<EQ27> | t=<EQ28> | t=<EQ29> | t=<EQ30> | 
    t=<EQ31> | t=<EQ32> | t=<EQ33> | t=<EQ34> | t=<EQ35> | 
    t=<EQ36> | t=<EQ37> | t=<EQ38> | t=<EQ39> | t=<EQ40> | 
-   t=<EQ41> | t=<EQ42> | t=<EQ43>)
+   t=<EQ41> | t=<EQ42> | t=<EQ43> | t=<EQ44> | t=<EQ45> | 
+   t=<EQ46> | t=<EQ47>)
   { 
     return t; 
   }
