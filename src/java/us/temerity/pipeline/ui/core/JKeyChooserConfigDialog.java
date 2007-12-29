@@ -1,4 +1,4 @@
-// $Id: JKeyChooserConfigDialog.java,v 1.3 2007/12/16 12:22:09 jesse Exp $
+// $Id: JKeyChooserConfigDialog.java,v 1.4 2007/12/29 04:04:30 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -149,6 +149,7 @@ class JKeyChooserConfigDialog
   {
     pKeyChooser = plugin;
     updateKeyChooser();
+    pConfirmButton.setEnabled(false);
   }
   
   /**
@@ -524,8 +525,7 @@ class JKeyChooserConfigDialog
   private void 
   updateButton()
   {
-    BaseKeyChooser ext = getKeyChooser();
-    pConfirmButton.setEnabled(ext != null);
+    pConfirmButton.setEnabled(true);
   }
 
 
