@@ -39,6 +39,10 @@ The plmaster(1) program is distributed in the main Pipeline RPM:
 %config @NODEDIR@/etc/default-layouts/Unix/comparators
 %config @NODEDIR@/etc/default-layouts/Unix/editors
 %config @NODEDIR@/etc/default-layouts/Unix/tools
+%config @NODEDIR@/etc/default-layouts/Unix/annotations
+%config @NODEDIR@/etc/default-layouts/Unix/master-extensions
+%config @NODEDIR@/etc/default-layouts/Unix/queue-extensions
+%config @NODEDIR@/etc/default-layouts/Unix/key-choosers
 
 %changelog
 * @RPM_DATE@ Temerity Support <support@temerity.us>
