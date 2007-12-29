@@ -177,10 +177,15 @@ class BundleBuilder
       
       /* unpack the nodes */ 
       for(NodeMod mod : pBundle.getWorkingVersions()) {
+        TreeMap<String,BaseAnnotation> annots = new TreeMap<String,BaseAnnotation>();
+        for(String aname : pBundle.getAnnotationNames(mod.getName())) {
+          BaseAnnotation annot = pBundle.getAnnotation(mod.getName(), aname);
+          if(annot != null) 
+            annots.put(aname, annot);
+        }
+
         BundleStage stage = 
-          new BundleStage(pStageInfo, pContext, pClient, mod, 
-                          new TreeMap<String,BaseAnnotation>() /* FIX THIS!! */, 
-                          pToolsetRemap, 
+          new BundleStage(pStageInfo, pContext, pClient, mod, annots, pToolsetRemap, 
                           pSelectionKeyRemap, pLicenseKeyRemap, pHardwareKeyRemap);
 	stage.build();
 
