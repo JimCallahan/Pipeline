@@ -13,7 +13,6 @@ html_DATA = \
   plremote.html \
   pls.html \
   plscript.html \
-  plshakeio.html \
   plui.html \
   plvalidate.html \
   realpath.html

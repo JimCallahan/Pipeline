@@ -34,8 +34,6 @@ The core features of Pipeline include:
 
 @ROOT_INST_DIR@/Unix/bin/realpath
 @ROOT_INST_DIR@/Unix/bin/pls
-@ROOT_INST_DIR@/Unix/bin/plshakeio
-@ROOT_INST_DIR@/Unix/bin/plshakeio_exec
 
 @ROOT_INST_DIR@/Unix/bin/plplugin
 @ROOT_INST_DIR@/Unix/bin/plremote
@@ -133,7 +131,6 @@ The core features of Pipeline include:
 @ROOT_INST_DIR@/share/docs/man/plvalidate.html 
 
 @ROOT_INST_DIR@/share/docs/man/pls.html
-@ROOT_INST_DIR@/share/docs/man/plshakeio.html
 @ROOT_INST_DIR@/share/docs/man/realpath.html
 
 @ROOT_INST_DIR@/share/icons/plui.png
