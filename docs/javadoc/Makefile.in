@@ -340,7 +340,8 @@ BUILDER_PACKAGES = $(subst /,.,$(patsubst $(top_srcdir)/src/java/%,%,$(BUILDER_D
                              $(subst .,/,$(PACKAGES)))
 
 
-   JAVADOC_OPTS = -sourcepath $(top_srcdir)/src/java \
+   JAVADOC_OPTS = -J-Xmx128m \
+                  -sourcepath $(top_srcdir)/src/java \
                   -classpath $(top_builddir)/src/java:$(srcdir)/../../src/java/jogl/jogl.jar \
                   -d javadoc -source 1.5 -use $(EXTERNAL_URLS) \
                   -header '</EM><BIG><A href="http://www.temerity.us" target="_top"><SPAN style="color: \#ffffff;"><B>TEMERITY</B></SPAN></A></BIG><EM>' \
