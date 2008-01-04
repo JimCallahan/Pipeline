@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.98 2007/12/16 12:22:09 jesse Exp $
+// $Id: QueueMgr.java,v 1.99 2008/01/04 21:31:39 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -3003,12 +3003,13 @@ class QueueMgr
 	      tm.resume();
 	      statusChanges = new TreeMap<String,QueueHostStatusChange>();
 	      for(String hname : pHostsMod.keySet()) {
-		QueueHostMod qmod = pHostsMod.remove(hname);
+		QueueHostMod qmod = pHostsMod.get(hname);
 		changes.put(hname, qmod);
 		if(qmod.isStatusModified()) {
 		  statusChanges.put(hname, qmod.getStatus());
 		}
 	      }
+              pHostsMod.clear();
 	    }
 	  }
 
