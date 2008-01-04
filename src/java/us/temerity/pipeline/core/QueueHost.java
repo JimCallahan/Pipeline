@@ -1,4 +1,4 @@
-// $Id: QueueHost.java,v 1.9 2007/11/30 20:14:24 jesse Exp $
+// $Id: QueueHost.java,v 1.10 2008/01/04 05:03:00 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -94,6 +94,12 @@ class QueueHost
     pLastModified = System.currentTimeMillis(); 
 
     pHoldTimeStamps = new TreeMap<Long,Long>();
+
+    pGroupState = EditableState.Manual;
+    pStatusState = EditableState.Manual;
+    pReservationState = EditableState.Manual;
+    pSlotState = EditableState.Manual;
+    pOrderState = EditableState.Manual;
   }
 
 
@@ -880,10 +886,11 @@ class QueueHost
   public synchronized QueueHostInfo
   toInfo() 
   {
-    return new QueueHostInfo(pName, getInfoStatus(), pReservation, pOrder, pJobSlots, 
-			     pOsType, pNumProcessors, pTotalMemory, pTotalDisk, 
-			     getHold(), pSample, pSelectionGroup, pSelectionSchedule, pHardwareGroup,
-			     pGroupState, pStatusState, pReservationState, pOrderState, pSlotState); 
+    return new QueueHostInfo
+      (pName, getInfoStatus(), pReservation, pOrder, pJobSlots, 
+       pOsType, pNumProcessors, pTotalMemory, pTotalDisk, 
+       getHold(), pSample, pSelectionGroup, pSelectionSchedule, pHardwareGroup,
+       pGroupState, pStatusState, pReservationState, pOrderState, pSlotState); 
   }
 
 
