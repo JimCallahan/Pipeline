@@ -330,8 +330,7 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 
      MSG_SOURCES = $(shell ls $(srcdir)/message/*.java)
 
-   PARAM_SOURCES = $(shell ls $(srcdir)/param/*.java) \
-                   $(shell ls $(srcdir)/param/key/*.java)
+   PARAM_SOURCES = $(shell ls $(srcdir)/param/key/*.java)
 
 PLG_UTIL_SOURCES = $(shell ls $(srcdir)/plugin/*.java)
 
@@ -421,7 +420,6 @@ $(ALL_JAR): java-all textures fonts
                     us/temerity/pipeline/laf/fonts \
                     us/temerity/pipeline/math/*.class \
                     us/temerity/pipeline/message/*.class \
-                    us/temerity/pipeline/param/*.class \
                     us/temerity/pipeline/param/key/*.class; \
          $(JAR) uvf us/temerity/pipeline/$(ALL_JAR) \
                     us/temerity/pipeline/plugin/*.class \
@@ -450,7 +448,6 @@ $(API_JAR): java-all textures fonts
                     us/temerity/pipeline/laf/fonts \
                     us/temerity/pipeline/math/*.class \
                     us/temerity/pipeline/message/*.class \
-                    us/temerity/pipeline/param/*.class \
                     us/temerity/pipeline/param/key/*.class; \
          $(JAR) uvf us/temerity/pipeline/$(API_JAR) \
                     us/temerity/pipeline/plugin/*.class \
@@ -553,7 +550,7 @@ web-icons: laf/scripts/build-web-icons textures
 
 #--------------------------------------------------------------------------------------------#
 
-install: all installdirs install-jar install-plugins
+install: all installdirs install-jar install-plugins install-plugin-sources
 	$(MAKE) -C builder $@
 
 install-jar: $(API_JAR) $(VAULT)
@@ -584,6 +581,16 @@ installdirs:
 	$(mkinstalldirs) $(DESTDIR)$(PRODDIR)/restore
 	$(mkinstalldirs) $(DESTDIR)$(PRODDIR)/target
 	$(mkinstalldirs) $(DESTDIR)$(NODEDIR)
+
+install-plugin-sources: $(JAVA_SOURCES)
+	@for p in `find $(srcdir)/plugin -type f -name "*.java"`; do \
+          f=`echo $$p | sed -e 's:$(srcdir)/::g'`; \
+          dir=$(DESTDIR)$(ROOT_INST_DIR)/examples/us/temerity/pipeline/`dirname $$f`; \
+          echo $(mkinstalldirs) $$dir; \
+          $(mkinstalldirs) $$dir; \
+          echo $(INSTALL) -m 444 $$p $(DESTDIR)$(ROOT_INST_DIR)/examples/us/temerity/pipeline/$$f; \
+          $(INSTALL) -m 444 $$p $(DESTDIR)$(ROOT_INST_DIR)/examples/us/temerity/pipeline/$$f; \
+         done
 
 
 #--------------------------------------------------------------------------------------------#
@@ -622,7 +629,6 @@ clean-class:
 	rm -f glue/io/*.class
 	rm -f laf/*.class
 	rm -f message/*.class
-	rm -f param/*.class
 	rm -f param/key/*.class
 	rm -f plugin/*.class
 	rm -f plugin/*/*/*.class
