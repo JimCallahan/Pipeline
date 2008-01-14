@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.99 2008/01/04 21:31:39 jim Exp $
+// $Id: QueueMgr.java,v 1.100 2008/01/14 07:54:37 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -4274,7 +4274,10 @@ class QueueMgr
 	    if(pAdminPrivileges.isQueueManaged(req, author)) {
 	      JobReqs reqs = new JobReqs(job.getJobRequirements(), delta);
 	      try {
-	        adjustJobRequirements(timer, job.queryOnlyCopy(), reqs);
+	        TaskTimer subTimer = new TaskTimer("QueueMgr.adjustJobRequirements()");
+	        timer.suspend();
+	        adjustJobRequirements(subTimer, job.queryOnlyCopy(), reqs);
+	        timer.accum(subTimer);
 	      }
 	      catch (PipelineException ex) {
 	        exceptions.add(ex.getMessage());
@@ -4349,7 +4352,10 @@ class QueueMgr
           if(pAdminPrivileges.isQueueManaged(req, author)) {
             JobReqs reqs = (JobReqs) job.getJobRequirements().clone();
             try {
-              adjustJobRequirements(timer, job.queryOnlyCopy(), reqs);
+              TaskTimer subTimer = new TaskTimer("QueueMgr.adjustJobRequirements()");
+              timer.suspend();
+              adjustJobRequirements(subTimer, job.queryOnlyCopy(), reqs);
+              timer.accum(subTimer);
             }
             catch (PipelineException ex) {
               exceptions.add(ex.getMessage());
@@ -9311,6 +9317,7 @@ class QueueMgr
       pJobID    = jobID;
     }
 
+    @Override
     public void 
     run() 
     {
@@ -9324,7 +9331,7 @@ class QueueMgr
 	  (LogMgr.Kind.Job, LogMgr.Level.Severe,
 	   ex.getMessage()); 
       }
-      finally {
+      finally { 
 	if(client != null)
 	  client.disconnect();
       }
