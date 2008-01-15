@@ -1,5 +1,5 @@
 
-instbindir = @ROOT_INST_DIR@/@NATIVE_OSTYPE@/profile/bin
+instbindir = @ROOT_INST_DIR@/@NATIVE_OSTYPE@-@NATIVE_ARCHTYPE@-Profile/bin
 
 instbin_SCRIPTS = \
   plplugin \
@@ -10,7 +10,7 @@ instbin_SCRIPTS = \
   plui
 
 
-instsbindir = @ROOT_INST_DIR@/@NATIVE_OSTYPE@/profile/sbin
+instsbindir = @ROOT_INST_DIR@/@NATIVE_OSTYPE@-@NATIVE_ARCHTYPE@-Profile/sbin
 
 if FOUNDATION
 admin_scripts = \

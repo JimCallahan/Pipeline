@@ -1,4 +1,4 @@
-// $Id: Native.java,v 1.9 2006/12/05 17:45:34 jim Exp $
+// $Id: Native.java,v 1.10 2008/01/15 14:50:16 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -39,8 +39,9 @@ class Native
 	ext = ".dll";
       }
       
-      Path path = new Path(PackageInfo.sInstPath, 
-			   "/lib/" + PackageInfo.sOsType + "/libNative" + ext);
+      String osarch = (PackageInfo.sOsType + "-" + PackageInfo.sArchType + "-Opt");
+      Path path = new Path(PackageInfo.sInstPath, "/lib/" + osarch + "/libNative" + ext);
+
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ops, LogMgr.Level.Fine,
 	 "Loading Native Library: " + path.toOsString());

@@ -23,42 +23,42 @@ plconfig(1) during Pipeline configuration process.
 %files
 
 %defattr(555,root,root)
-@ROOT_INST_DIR@/Windows/bin/plremote.bat
-@ROOT_INST_DIR@/Windows/bin/plscript.bat
-@ROOT_INST_DIR@/Windows/bin/plscript-batch.bat
-@ROOT_INST_DIR@/Windows/bin/plpython.bat
-@ROOT_INST_DIR@/Windows/bin/plui.exe
+@ROOT_INST_DIR@/Windows-x86-Opt/bin/plremote.bat
+@ROOT_INST_DIR@/Windows-x86-Opt/bin/plscript.bat
+@ROOT_INST_DIR@/Windows-x86-Opt/bin/plscript-batch.bat
+@ROOT_INST_DIR@/Windows-x86-Opt/bin/plpython.bat
+@ROOT_INST_DIR@/Windows-x86-Opt/bin/plui.exe
 
-@ROOT_INST_DIR@/Windows/sbin/pljobmgr.bat
+@ROOT_INST_DIR@/Windows-x86-Opt/sbin/pljobmgr.bat
 
-@ROOT_INST_DIR@/Windows/debug/bin/plremote.bat
-@ROOT_INST_DIR@/Windows/debug/bin/plscript.bat
-@ROOT_INST_DIR@/Windows/debug/bin/plscript-batch.bat
-@ROOT_INST_DIR@/Windows/debug/bin/plpython.bat
-@ROOT_INST_DIR@/Windows/debug/bin/plui2.bat
-@ROOT_INST_DIR@/Windows/debug/bin/plui.exe
+@ROOT_INST_DIR@/Windows-x86-Debug/bin/plremote.bat
+@ROOT_INST_DIR@/Windows-x86-Debug/bin/plscript.bat
+@ROOT_INST_DIR@/Windows-x86-Debug/bin/plscript-batch.bat
+@ROOT_INST_DIR@/Windows-x86-Debug/bin/plpython.bat
+@ROOT_INST_DIR@/Windows-x86-Debug/bin/plui2.bat
+@ROOT_INST_DIR@/Windows-x86-Debug/bin/plui.exe
 
-@ROOT_INST_DIR@/Windows/debug/bin/pltestnative.bat
-@ROOT_INST_DIR@/Windows/debug/bin/pltestheavy.bat
-@ROOT_INST_DIR@/Windows/debug/bin/pltestlight.bat
+@ROOT_INST_DIR@/Windows-x86-Debug/bin/pltestnative.bat
+@ROOT_INST_DIR@/Windows-x86-Debug/bin/pltestheavy.bat
+@ROOT_INST_DIR@/Windows-x86-Debug/bin/pltestlight.bat
 
-@ROOT_INST_DIR@/Windows/debug/sbin/pljobmgr.bat
+@ROOT_INST_DIR@/Windows-x86-Debug/sbin/pljobmgr.bat
 
 %defattr(-,@PIPELINE_USER@,@PIPELINE_GROUP@)
 @ROOT_INST_DIR@/builders
 
 %defattr(555,root,root)
-@ROOT_INST_DIR@/lib/Windows/libNative.dll
+@ROOT_INST_DIR@/lib/Windows-x86-Opt/libNative.dll
 
 %defattr(555,root,root)
-@ROOT_INST_DIR@/jogl/lib/Windows/gluegen-rt.dll
-@ROOT_INST_DIR@/jogl/lib/Windows/jogl_awt.dll
-@ROOT_INST_DIR@/jogl/lib/Windows/jogl_cg.dll
-@ROOT_INST_DIR@/jogl/lib/Windows/jogl.dll
+@ROOT_INST_DIR@/jogl/lib/Windows-x86-Opt/gluegen-rt.dll
+@ROOT_INST_DIR@/jogl/lib/Windows-x86-Opt/jogl_awt.dll
+@ROOT_INST_DIR@/jogl/lib/Windows-x86-Opt/jogl_cg.dll
+@ROOT_INST_DIR@/jogl/lib/Windows-x86-Opt/jogl.dll
 
 %defattr(555,root,root)
-@ROOT_INST_DIR@/jython/Windows/jython.bat
-@ROOT_INST_DIR@/jython/Windows/jythonc.bat
+@ROOT_INST_DIR@/jython/Windows-x86-Opt/jython.bat
+@ROOT_INST_DIR@/jython/Windows-x86-Opt/jythonc.bat
 
 %changelog
 * @RPM_DATE@ Temerity Support <support@temerity.us>

@@ -6,22 +6,28 @@ debug_base=$3
 prof_base=$4
 config_extra=$5
 
-echo "---------------------------------------------------------------------------------------"
-echo "  CONFIGURING: $HOSTNAME"
-echo "---------------------------------------------------------------------------------------"
 
-rm -rf i686-pc-linux-gnu-dbg
-mkdir  i686-pc-linux-gnu-dbg
+echo "---------------------------------------------------------------------------------------"
+echo "  AUTOGEN: $HOSTNAME"
+echo "---------------------------------------------------------------------------------------"
 
 plsrcdir=$HOME/code-$customer/src/pipeline
 plprofile=$plsrcdir/plconfig/customers/$customer/$sitep
 
 pushd $plsrcdir
-  sh autogen.sh
+  time sh autogen.sh
 popd
 
 
-pushd i686-pc-linux-gnu-dbg
+echo 
+echo "---------------------------------------------------------------------------------------"
+echo "  CONFIGURING (foundation): $HOSTNAME"
+echo "---------------------------------------------------------------------------------------"
+
+rm -rf debug
+mkdir  debug
+
+pushd debug
   time \
   CC="/usr/bin/gcc-4.1" \
   CXX="/usr/bin/g++-4.1" \
@@ -33,8 +39,30 @@ pushd i686-pc-linux-gnu-dbg
     --with-crypto-app=$plsrcdir/plconfig \
     --with-customer=$customer \
     --with-customer-profile=$plprofile \
-    --with-shake=/base/apps/i686-pc-linux-gnu-opt/shake-v4.00.0607 \
-    $config_extra
+    ${config_extra}
+popd
+
+
+echo 
+echo "---------------------------------------------------------------------------------------"
+echo "  CONFIGURING (native): $HOSTNAME"
+echo "---------------------------------------------------------------------------------------"
+
+rm -rf debug-native
+mkdir  debug-native
+
+pushd debug-native
+  time \
+  CC="/usr/bin/gcc-4.1" \
+  CXX="/usr/bin/g++-4.1" \
+  $plsrcdir/configure \
+    --disable-opt \
+    --with-target-archtype=x86 \
+    --with-debug-base=$debug_base \
+    --with-prof-base=$prof_base \
+    --with-crypto-app=$plsrcdir/plconfig \
+    --with-customer=$customer \
+    --with-customer-profile=$plprofile
 popd
 
 
@@ -43,6 +71,7 @@ if [ "x$mac_support" == "xtrue" ]
 then
   MAC_HOSTNAME=tadpole
 
+  echo 
   echo "-------------------------------------------------------------------------------------"
   echo "  UPDATING: $MAC_HOSTNAME"
   echo "-------------------------------------------------------------------------------------"
@@ -64,6 +93,7 @@ if [ "x$win_support" == "xtrue" ]
 then
   WIN_HOSTNAME=lizard
 
+  echo 
   echo "-------------------------------------------------------------------------------------"
   echo "  UPDATING: $WIN_HOSTNAME"
   echo "-------------------------------------------------------------------------------------"

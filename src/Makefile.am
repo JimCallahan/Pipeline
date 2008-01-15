@@ -1,12 +1,22 @@
 
 if IS_MAC_OS
   SUBDIRS = java utils native mac-apps
-else
+else !IS_MAC_OS
 
 if IS_WINDOWS 
   SUBDIRS = java windows
-else 
-  SUBDIRS = unix etc java utils native
-endif
+else !IS_WINDOWS
 
-endif
+if IS_UNIX
+
+if FOUNDATION 
+  SUBDIRS = java utils native unix etc 
+else 
+  SUBDIRS = java utils native
+endif 
+
+endif IS_UNIX
+
+endif !IS_WINDOWS
+
+endif !IS_MAC_OS

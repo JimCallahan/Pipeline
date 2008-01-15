@@ -1,5 +1,5 @@
 
-instbindir = @ROOT_INST_DIR@/@NATIVE_OSTYPE@/debug/bin
+instbindir = @ROOT_INST_DIR@/@NATIVE_OSTYPE@-@NATIVE_ARCHTYPE@-Debug/bin
 
 instbin_SCRIPTS = \
   pltestheavy.bat \
@@ -12,7 +12,7 @@ instbin_SCRIPTS = \
   plui2.bat
 
 
-instsbindir = @ROOT_INST_DIR@/@NATIVE_OSTYPE@/debug/sbin
+instsbindir = @ROOT_INST_DIR@/@NATIVE_OSTYPE@-@NATIVE_ARCHTYPE@-Debug/sbin
 
 instsbin_SCRIPTS = \
    pljobmgr.bat

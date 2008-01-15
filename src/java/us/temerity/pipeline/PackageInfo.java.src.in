@@ -1,4 +1,4 @@
-// $Id: PackageInfo.java.src.in,v 1.35 2007/10/23 02:29:58 jim Exp $
+// $Id: PackageInfo.java.src.in,v 1.36 2008/01/15 14:50:17 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -25,30 +25,64 @@ class PackageInfo
    * Initialize fields which must be determined at runtime.
    */ 
   static {
-    String opsys = null;
-    String oarch = null;
+    String osType = null;
+    String archType = null;
+    String buildType = null;
     try {
-      opsys = System.getProperty("os.name");
-      oarch = System.getProperty("os.arch");
+      osType    = System.getProperty("pipeline.ostype");
+      archType  = System.getProperty("pipeline.archtype");
+      buildType = System.getProperty("pipeline.buildtype");
     }
     catch(Exception ex) {
     }
-    if(opsys == null)
-      throw new IllegalStateException(); 
+
+    if(osType == null)
+      throw new IllegalStateException
+        ("Unable to find (pipeline.ostype) in the Java environment used to determine " + 
+         "the current OsType!"); 
+    
+    if(archType == null)
+      throw new IllegalStateException
+        ("Unable to find (pipeline.archtype) in the Java environment used to determine " + 
+         "the current ArchType!"); 
+    
+    if(buildType == null)
+      throw new IllegalStateException
+        ("Unable to find (pipeline.buildtype) in the Java environment used to determine " + 
+         "the current BuildType!"); 
     
     OsType os = null;
-    if(opsys.equals("Linux")) 
+    if(osType.equals("Linux")) 
       os = OsType.Unix;
-    else if (opsys.equals("Mac OS X")) 
+    else if (osType.equals("MacOS")) 
       os = OsType.MacOS;
-    else if(opsys.equals("Windows XP") || 
-	    opsys.equals("Windows 2000") ||
-	    opsys.equals("Windows 2003") ||
-	    opsys.equals("Windows NT")) 
+    else if(osType.equals("Windows")) 
       os = OsType.Windows; 
     else 
-      throw new IllegalStateException("Unsupported OS type (" + opsys + ")!");
+      throw new IllegalStateException("Unsupported OsType (" + osType + ")!");
     sOsType = os;
+
+    ArchType arch = null;
+    if(archType.equals("x86")) 
+      arch = ArchType.x86;
+    else if (archType.equals("x86_64")) 
+      arch = ArchType.x86_64;
+    else if (archType.equals("UnivBin")) 
+      arch = ArchType.UnivBin; 
+    else 
+      throw new IllegalStateException("Unsupported ArchType (" + archType + ")!");
+    sArchType = arch;
+
+    BuildType build = null;
+    if (buildType.equals("Opt"))
+      build = BuildType.Opt;
+    else if(buildType.equals("Debug")) 
+      build = BuildType.Debug;
+    else if(buildType.equals("Profile"))
+      build = BuildType.Profile; 
+    else 
+      throw new IllegalStateException("Unsupported BuildType (" + buildType + ")!");
+    sBuildType = build;
 
     switch(os) {
     case Unix:
@@ -151,7 +185,7 @@ class PackageInfo
   }
 
   /**
-   * Gets the path seperator for the givenating system.
+   * Gets the path seperator for the given operating system.
    */ 
   public static String
   getPathSep
@@ -1091,6 +1125,17 @@ class PackageInfo
    */ 
   public static final OsType sOsType; 
   
+  /**
+   * The CPU architecture type of the host running the Java VM.
+   */ 
+  public static final ArchType sArchType; 
+  
+  /**
+   * The code build type of the currently running Java code.
+   */ 
+  public static final BuildType sBuildType; 
+  
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -1106,7 +1151,7 @@ class PackageInfo
    * The copyright notice for Pipeline. 
    */
   public static final String sCopyright = 
-    ("Copyright (c) 2002-2007 Temerity Software, Inc.\n" + 
+    ("Copyright (c) 2002-2008 Temerity Software, Inc.\n" + 
      "All rights reserved.");
   
   

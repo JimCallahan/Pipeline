@@ -1,5 +1,5 @@
 
-jogldir = @ROOT_INST_DIR@/jogl/lib/Windows
+jogldir = @ROOT_INST_DIR@/jogl/lib/Windows-x86_64-Opt
 
 jogl_DATA = \
   gluegen-rt.dll \

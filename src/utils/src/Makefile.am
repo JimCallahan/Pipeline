@@ -1,7 +1,7 @@
 AUTOMAKE_OPTIONS = no-dependencies
 
 
-instbindir = @ROOT_INST_DIR@/@NATIVE_OSTYPE@/bin
+instbindir = @ROOT_INST_DIR@/@NATIVE_OSTYPE@-@NATIVE_ARCHTYPE@-Opt/bin
 
 instbin_PROGRAMS = \
   pls \
@@ -51,7 +51,7 @@ endif
 
 #--------------------------------------------------------------------------------------------#
 
-instsbindir  = @ROOT_INST_DIR@/@NATIVE_OSTYPE@/sbin
+instsbindir  = @ROOT_INST_DIR@/@NATIVE_OSTYPE@-@NATIVE_ARCHTYPE@-Opt/sbin
 
 instsbin_PROGRAMS = \
   plrun

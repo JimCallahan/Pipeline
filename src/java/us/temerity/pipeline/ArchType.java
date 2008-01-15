@@ -1,4 +1,4 @@
-// $Id: ArchType.java,v 1.1 2006/11/04 02:14:25 jim Exp $
+// $Id: ArchType.java,v 1.2 2008/01/15 14:50:16 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -15,19 +15,19 @@ public
 enum ArchType
 {  
   /** 
-   * Intel/AMD i386 compatible processor.
+   * A 32-bit Intel/AMD i386 compatible processor.
    */
   x86, 
 
-  /**
-   * PowerPC 7450 processor.
-   */
-  G4, 
-
   /** 
-   * PowerPC 970 processor.
-   */ 
-  G5; 
+   * A 64-bit Intel/AMD i386 compatible processor.
+   */
+  x86_64, 
+
+  /**
+   * Any of the CPU types supported by a Universal Binary.
+   */
+  UnivBin;
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -72,7 +72,18 @@ enum ArchType
   public String
   toTitle() 
   {
-    return toString();
+    return sTitles[ordinal()];
   }
 
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  private static String sTitles[] = {
+    "x86 (32-bit)", 
+    "x86 (65-bit)", 
+    "Universal Binary"
+  };
 }

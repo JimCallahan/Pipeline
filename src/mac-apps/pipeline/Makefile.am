@@ -1,5 +1,5 @@
 
-appdir = @ROOT_INST_DIR@/MacOs/Pipeline.app/Contents
+appdir = @ROOT_INST_DIR@/MacOs-UnivBin-Opt/Pipeline.app/Contents
 
 app_DATA = \
   Info.plist \

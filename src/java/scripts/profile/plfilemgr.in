@@ -12,5 +12,6 @@ cd `pwd`
 exec "@JAVA_RUNTIME@" @JAVA_RUNTIME_OPTS@ \
   @PLFILEMGR_GC_OPTS@ \
   @PLFILEMGR_PROFILE_OPTS@ \
+  @JAVA_OSARCH_TYPE@ @JAVA_BUILD_TYPE@=Profile \
   -cp @PIPELINE_JAR@ \
   us/temerity/pipeline/bootstrap/Main us.temerity.pipeline.core.FileMgrApp "$@"

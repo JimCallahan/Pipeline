@@ -1,5 +1,5 @@
 
-jogldir = @ROOT_INST_DIR@/jogl/lib/MacOS
+jogldir = @ROOT_INST_DIR@/jogl/lib/MacOS-UnivBin-Opt
 
 jogl_DATA = \
   libgluegen-rt.jnilib \

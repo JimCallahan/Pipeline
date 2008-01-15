@@ -7,11 +7,11 @@ else
 SUBDIRS = src app-extra docs www
 endif
 
-else 
+else !FOUNDATION
 
 SUBDIRS = src
 
-endif
+endif !FOUNDATION
 
 
 

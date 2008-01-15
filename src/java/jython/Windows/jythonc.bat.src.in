@@ -10,4 +10,4 @@ if [%1] == [] goto end
         goto loop
 :end
 
-"@JYTHON_DIR@\Windows\jython" "@JYTHON_DIR@\Tools\jythonc\jythonc.py" %ARGS%
+"@JYTHON_DIR@\Windows-@NATIVE_ARCHTYPE@-Opt\jython" "@JYTHON_DIR@\Tools\jythonc\jythonc.py" %ARGS%

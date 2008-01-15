@@ -22,26 +22,26 @@ dnl ----------------------------------------------------------------------------
 dnl   Configuration options.
 dnl ------------------------------------------------------------------------------------------
 
-AC_MSG_CHECKING([Native OS Type])
+AC_MSG_CHECKING([Native OsType])
 
 AC_SUBST(NATIVE_OSTYPE)
 NATIVE_OSTYPE=
 
-case $build in
-  (i686-pc-linux-gnu | x86_64-unknown-linux-gnu)          
+case $build_os in
+  (linux-gnu)
     NATIVE_OSTYPE=Unix;
-    AC_DEFINE([OS_IS_UNIX], [], [The OS is a standard UNIX variant.]);;
-
-  (powerpc-apple-darwin8.*.?)
+    AC_DEFINE([OS_IS_UNIX], [], [The OsType is a standard UNIX variant.]);;
+   
+  (darwin8.*.?)
     NATIVE_OSTYPE=MacOS;
-    AC_DEFINE([OS_IS_MAC_OS], [], [The OS is a Mac OS X (Darwin) system.]);;
+    AC_DEFINE([OS_IS_MAC_OS], [], [The OsType is a MacOS (Darwin) system.]);;
 
-  (i686-pc-cygwin) 
+  (cygwin) 
     NATIVE_OSTYPE=Windows;
-    AC_DEFINE([OS_IS_WINDOWS], [], [The OS is a Windows XP system.]);;
+    AC_DEFINE([OS_IS_WINDOWS], [], [The OsType is a Windows system.]);;
 
   (*)
-    AC_MSG_ERROR(unsupported native OS type: $build_os);;
+    AC_MSG_ERROR(unsupported build_os: $build_os);;
 esac
 
 AC_MSG_RESULT([$NATIVE_OSTYPE])
@@ -50,6 +50,143 @@ AM_CONDITIONAL(IS_UNIX, test x$NATIVE_OSTYPE = xUnix)
 AM_CONDITIONAL(IS_MAC_OS, test x$NATIVE_OSTYPE = xMacOS)
 AM_CONDITIONAL(IS_WINDOWS, test x$NATIVE_OSTYPE = xWindows)
 
+
+dnl ------------------------------------------------------------------------------------------
+
+AC_MSG_CHECKING([Target ArchType])
+
+AC_ARG_WITH([target-archtype], 
+            [  --with-target-archtype=TYPE    The target CPU architecture type.])
+
+AC_SUBST(TARGET_ARCHTYPE)
+TARGET_ARCHTYPE=
+
+case "$with_target_archtype" in
+  (x86 | x86_64 | default) 
+    TARGET_ARCHTYPE=$with_target_archtype;;
+
+  ("") 
+    TARGET_ARCHTYPE=default;;
+
+  (*) 
+    AC_MSG_ERROR(unsupported Target ArchType $with_target_archtype);;
+esac
+
+AC_MSG_RESULT([$TARGET_ARCHTYPE])
+
+
+dnl ------------------------------------------------------------------------------------------
+
+AC_MSG_CHECKING([Native ArchType])
+
+AC_SUBST(NATIVE_ARCHTYPE)
+NATIVE_ARCHTYPE=
+
+case $build_cpu in 
+  (i686) 
+    NATIVE_ARCHTYPE=x86;;
+
+  (x86_64) 
+    NATIVE_ARCHTYPE=x86_64;;
+
+  (powerpc) 
+    NATIVE_ARCHTYPE=UnivBin;;
+
+  (*)
+    AC_MSG_ERROR(unsupported Build CPU $build_cpu);;
+esac
+
+native_not_target=false
+
+if test x$NATIVE_ARCHTYPE = xx86
+then 
+  if test x$TARGET_ARCHTYPE = xx86 -o x$TARGET_ARCHTYPE = xdefault
+  then
+    CC+=" -n32"
+    CXX+=" -n32"
+    AC_DEFINE([ARCH_IS_x86], [], [The ArchType is a x86 32-bit.])
+  else 
+    if test x$TARGET_ARCHTYPE = xx86_64
+    then
+      AC_MSG_ERROR(unsupported Target ArchType $TARGET_ARCHTYPE for Native ArchType $NATIVE_ARCHTYPE)
+    fi
+  fi
+fi
+
+if test x$NATIVE_ARCHTYPE = xx86_64
+then 
+  if test x$TARGET_ARCHTYPE = xx86
+  then
+    CC+=" -n32"
+    CXX+=" -n32"
+    NATIVE_ARCHTYPE=$TARGET_ARCHTYPE
+    native_not_target=true
+    AC_DEFINE([ARCH_IS_x86], [], [The ArchType is a x86 32-bit.])
+  else 
+    if test x$TARGET_ARCHTYPE = xx86_64 -o x$TARGET_ARCHTYPE = xdefault
+    then
+      CC+=" -fPIC"
+      CXX+=" -fPIC"
+      AC_DEFINE([ARCH_IS_x86_64], [], [The ArchType is a x86 64-bit.])
+    else 
+      AC_MSG_ERROR(unsupported Target ArchType $TARGET_ARCHTYPE for Native ArchType $NATIVE_ARCHTYPE)
+    fi
+  fi
+fi
+
+if test x$NATIVE_ARCHTYPE = xUnivBin
+then 
+  if test x$TARGET_ARCHTYPE = xdefault
+  then
+    AC_DEFINE([ARCH_IS_UnivBin], [], [The ArchType is Universal Binary.])
+  else 
+    AC_MSG_ERROR(unsupported Target ArchType $TARGET_ARCHTYPE for Native ArchType $NATIVE_ARCHTYPE)
+  fi
+fi
+
+AC_MSG_RESULT([$NATIVE_ARCHTYPE])
+
+AM_CONDITIONAL(IS_x86, test x$NATIVE_ARCHTYPE = xx86)
+AM_CONDITIONAL(IS_x86_64, test x$NATIVE_ARCHTYPE = xx86_64)
+AM_CONDITIONAL(IS_UnivBin, test x$NATIVE_ARCHTYPE = xUnivBin)
+
+AM_CONDITIONAL(IS_UNIX_NATIVE_ONLY, test $native_not_target)
+
+
+dnl ------------------------------------------------------------------------------------------
+
+AC_SUBST(EXTRA_DEBUG_SUBDIRS)
+EXTRA_DEBUG_SUBDIRS=""
+
+AC_SUBST(BUILD_MODE)
+BUILD_MODE=dbg
+
+AC_ARG_ENABLE([opt], 
+              [  --enable-opt              Use optimization options.],
+              [case "${enable_opt}" in
+               yes) BUILD_MODE=opt;;
+               no)  BUILD_MODE=dbg;;
+               *)   AC_MSG_ERROR(bad value ${enableval} for --enable-opt);;
+               esac], [BUILD_MODE=dbg])
+
+if test "$BUILD_MODE" = "opt" 
+then 
+  CXXFLAGS="$CXXFLAGS -O2 -DNDEBUG";
+  JAVA_RUNTIME_OPTS="-disableassertions"
+  EXTRA_DEBUG_SUBDIRS=""
+else
+  CXXFLAGS="$CXXFLAGS -g";
+  JAVA_C_FLAGS="$JAVA_C_FLAGS -g"
+  JAVA_RUNTIME_OPTS="-enableassertions"
+  EXTRA_DEBUG_SUBDIRS="tests"
+fi
+
+case "$NATIVE_OSTYPE" in 
+  (Unix | MacOS) 
+    JAVA_RUNTIME_OPTS="$JAVA_RUNTIME_OPTS -server";;
+esac
+
+AC_MSG_RESULT([ ])
 
 
 dnl ------------------------------------------------------------------------------------------
@@ -78,9 +215,10 @@ AC_ARG_ENABLE([foundation],
                yes) foundation=true;;
                no)  foundation=false;;
                *)   AC_MSG_ERROR(bad value ${enableval} for --enable-foundation);;
-               esac], [foundation=true])
+               esac], [foundation=false])
 
 AM_CONDITIONAL(FOUNDATION, test x$foundation = xtrue)
+
 
 
 dnl ------------------------------------------------------------------------------------------
@@ -95,31 +233,6 @@ AC_MSG_CHECKING([path])
 AC_MSG_RESULT([$PATH])
 
 
-AC_MSG_RESULT([ ])
-
-
-
-dnl -- SHAKE --------------------------------------------------------------------------------
-
-AC_MSG_CHECKING([Root Shake Directory])
-
-AC_ARG_WITH([shake], 
-            [  --with-shake=DIR               The root directory of the Shake installation.])
-
-AC_SUBST(NR_SHAKE_LOCATION)
-NR_SHAKE_LOCATION=
-
-if test "$with_shake"
-then 
-  NR_SHAKE_LOCATION=$with_shake
-else
-  if test "$NATIVE_OSTYPE" = "Unix" 
-  then
-    AC_MSG_ERROR([the --with-shake option is required for Unix builds.])
-  fi
-fi
-
-AC_MSG_RESULT([$NR_SHAKE_LOCATION])
 AC_MSG_RESULT([ ])
 
 
@@ -1028,7 +1141,7 @@ AC_SUBST(GLUEGEN_JAR)
 GLUEGEN_JAR=""
 
 AC_SUBST(JOGL_LIBRARY_PATH)
-JOGL_LIBRARY_PATH="$ROOT_INST_DIR/jogl/lib/$NATIVE_OSTYPE";
+JOGL_LIBRARY_PATH="$ROOT_INST_DIR/jogl/lib/${NATIVE_OSTYPE}-${NATIVE_ARCHTYPE}-Opt";
 
 
 AC_SUBST(JYTHON_DIR)
@@ -1065,7 +1178,7 @@ case "$NATIVE_OSTYPE" in
     PIPELINE_BUILDERDIR="$ROOT_INST_DIR/builders/us/temerity/pipeline/builder";
     JOGL_JAR="$ROOT_INST_DIR/jogl/lib/jogl.jar";
     GLUEGEN_JAR="$ROOT_INST_DIR/jogl/lib/gluegen-rt.jar";
-    JOGL_LIBRARY_PATH="$ROOT_INST_DIR/jogl/lib/$NATIVE_OSTYPE";
+    JOGL_LIBRARY_PATH="$ROOT_INST_DIR/jogl/lib/${NATIVE_OSTYPE}-${NATIVE_ARCHTYPE}-Opt";
     JYTHON_DIR="$ROOT_INST_DIR/jython";
     JYTHON_JAR="$ROOT_INST_DIR/jython/jython.jar";;
 
@@ -1078,7 +1191,7 @@ case "$NATIVE_OSTYPE" in
     PIPELINE_BUILDERDIR="$MAC_ROOT_INST_DIR/builders/us/temerity/pipeline/builder";
     JOGL_JAR="$MAC_ROOT_INST_DIR/jogl/lib/jogl.jar";
     GLUEGEN_JAR="$MAC_ROOT_INST_DIR/jogl/lib/gluegen-rt.jar";
-    JOGL_LIBRARY_PATH="$MAC_ROOT_INST_DIR/jogl/lib/$NATIVE_OSTYPE";
+    JOGL_LIBRARY_PATH="$MAC_ROOT_INST_DIR/jogl/lib/${NATIVE_OSTYPE}-${NATIVE_ARCHTYPE}-Opt";
     JYTHON_DIR="$MAC_ROOT_INST_DIR/jython";
     JYTHON_JAR="$MAC_ROOT_INST_DIR/jython/jython.jar";;
 
@@ -1091,40 +1204,9 @@ case "$NATIVE_OSTYPE" in
     PIPELINE_BUILDERDIR="$WIN_ROOT_INST_DIR/builders/us/temerity/pipeline/builder";
     JOGL_JAR="$WIN_ROOT_INST_DIR/jogl/lib/jogl.jar";
     GLUEGEN_JAR="$WIN_ROOT_INST_DIR/jogl/lib/gluegen-rt.jar";
-    JOGL_LIBRARY_PATH="$WIN_ROOT_INST_DIR/jogl/lib/$NATIVE_OSTYPE";
+    JOGL_LIBRARY_PATH="$WIN_ROOT_INST_DIR/jogl/lib/${NATIVE_OSTYPE}-${NATIVE_ARCHTYPE}-Opt";
     JYTHON_DIR="$WIN_ROOT_INST_DIR/jython";
     JYTHON_JAR="$WIN_ROOT_INST_DIR/jython/jython.jar";;
-esac
-
-AC_SUBST(EXTRA_DEBUG_SUBDIRS)
-EXTRA_DEBUG_SUBDIRS=""
-
-AC_SUBST(BUILD_MODE)
-BUILD_MODE=dbg
-
-AC_ARG_ENABLE([opt], 
-              [  --enable-opt              Use optimization options.],
-              [case "${enable_opt}" in
-               yes) BUILD_MODE=opt;;
-               no)  BUILD_MODE=dbg;;
-               *)   AC_MSG_ERROR(bad value ${enableval} for --enable-opt);;
-               esac], [BUILD_MODE=dbg])
-
-if test "$BUILD_MODE" = "opt" 
-then 
-  CXXFLAGS="$CXXFLAGS -O2 -DNDEBUG";
-  JAVA_RUNTIME_OPTS="-disableassertions"
-  EXTRA_DEBUG_SUBDIRS=""
-else
-  CXXFLAGS="$CXXFLAGS -g";
-  JAVA_C_FLAGS="$JAVA_C_FLAGS -g"
-  JAVA_RUNTIME_OPTS="-enableassertions"
-  EXTRA_DEBUG_SUBDIRS="tests"
-fi
-
-case "$NATIVE_OSTYPE" in 
-  (Unix | MacOS) 
-    JAVA_RUNTIME_OPTS="$JAVA_RUNTIME_OPTS -server";;
 esac
 
 
@@ -1173,6 +1255,23 @@ AC_MSG_CHECKING([jni ldflags])
 AC_MSG_RESULT([$JNI_LDFLAGS])
 AC_MSG_RESULT([ ])
 
+
+
+dnl ------------------------------------------------------------------------------------------
+
+AC_MSG_RESULT([Java Architecture Options:])
+
+AC_MSG_CHECKING([Java Os/Arch Options])
+AC_SUBST(JAVA_OSARCH_TYPE)
+JAVA_OSARCH_TYPE="-Dpipeline.ostype=${NATIVE_OSTYPE} -Dpipeline.archtype=${NATIVE_ARCHTYPE}"
+AC_MSG_RESULT([$JAVA_OSARCH_TYPE])
+
+AC_MSG_CHECKING([Java Build Option Prefix])
+AC_SUBST(JAVA_BUILD_TYPE)
+JAVA_BUILD_TYPE="-Dpipeline.buildtype"
+AC_MSG_RESULT([$JAVA_BUILD_TYPE=])
+
+AC_MSG_RESULT([ ])
 
 
 
@@ -1605,9 +1704,11 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/tests/TestInfo.java
 
   src/java/jogl/Makefile
-  src/java/jogl/MacOS/Makefile
-  src/java/jogl/Unix/Makefile
-  src/java/jogl/Windows/Makefile
+  src/java/jogl/MacOS-UnivBin-Opt/Makefile
+  src/java/jogl/Unix-x86-Opt/Makefile
+  src/java/jogl/Unix-x86_64-Opt/Makefile
+  src/java/jogl/Windows-x86_64-Opt/Makefile
+  src/java/jogl/Windows-x86-Opt/Makefile
 
   src/java/jython/Makefile
   src/java/jython/Unix/Makefile

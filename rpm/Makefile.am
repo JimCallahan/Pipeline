@@ -1,4 +1,6 @@
 
+if IS_UNIX
+
 if FOUNDATION 
 
 noinst_DATA = \
@@ -26,7 +28,7 @@ else
       RPMS/i686/plmac-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm
 endif
 
-else  # HAS_MAC
+else !HAS_MAC
 
 if HAS_WINDOWS 
   RPMS = \
@@ -43,9 +45,9 @@ else
     RPMS/i686/pllocal-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm
 endif
 
-endif  # HAS_MAC
+endif !HAS_MAC
 
-else   # PL_LOCAL
+else !PL_LOCAL
 
 if HAS_MAC
 
@@ -64,7 +66,7 @@ else
       RPMS/i686/plmac-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm
 endif 
 
-else  # HAS_MAC
+else !HAS_MAC
 
 if HAS_WINDOWS 
   RPMS = \
@@ -79,9 +81,9 @@ else
     RPMS/i686/plqueuemgr-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm
 endif
 
-endif  # HAS_MAC
+endif !HAS_MAC
 
-endif  # PL_LOCAL
+endif !PL_LOCAL
 
 
 
@@ -113,8 +115,6 @@ header: pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.tgz \
           sed -e "s/@CHECKSUM@/$$checksum/g" headerB | \
           sed -e "s/@HEADER_LENGTH@/$$hlen/g" >> header)
 
-
-
 pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.tgz: pipeline-install $(RPMS) 
 	rm -rf pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@
 	mkdir pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@
@@ -136,6 +136,23 @@ pipeline-install: clean-rpms rpm-mkdirs
           mv DEST/pipeline/@ROOT_INST_PARENT_DIR@/pipeline-local \
              DEST/pllocal/@ROOT_INST_PARENT_DIR@/pipeline-local; \
         fi
+
+
+if IS_UNIX_NATIVE_ONLY
+
+native-only:
+	@echo "-----------------------------------------------------------------------------"
+	@echo "  BUILDING (native only): "
+	@echo "-----------------------------------------------------------------------------"
+	$(MAKE) -C ../../debug-native/rpm all
+	rsync -av ../../debug-native/rpm/DEST/unix-native DEST
+
+else !IS_UNIX_NATIVE_ONLY
+
+native-only:
+
+endif !IS_UNIX_NATIVE_ONLY
+
 
 
 core-rpms: pipeline-install \
@@ -176,7 +193,7 @@ RPMS/i686/pllocal-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm: \
 SPECS/pllocal-@CUSTOMER@-@VERSION@.spec: pllocal.spec
 	cp -f pllocal.spec $@
 
-endif
+endif PL_LOCAL
 
 
 if HAS_MAC
@@ -201,7 +218,7 @@ RPMS/i686/plmac-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm: \
 SPECS/plmac-@CUSTOMER@-@VERSION@.spec: plmac.spec
 	cp -f plmac.spec $@
 
-endif
+endif HAS_MAC
 
 
 if HAS_WINDOWS
@@ -233,11 +250,11 @@ install-win-service:
           @RPM_ROOT@/PipelineJobManager-@CUSTOMER@-@WIN_SERVICE_VERSION@-@PROFILE_STAMP@.msi \
           ../../../../releases/pipeline
 
-else 
+else !HAS_WINDOWS
 
 install-win-service:
 
-endif
+endif !HAS_WINDOWS
 
 
 
@@ -254,7 +271,20 @@ clean: clean-rpms
 	rm -f header pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.bin
 	$(MAKE) -C ../ clean
 
-endif
+
+else !FOUNDATION
+
+all: clean-rpms rpm-mkdirs
+	rm -rf DEST/unix-native
+	DESTDIR=`pwd`/DEST/unix-native $(MAKE) -C .. install
+
+clean: clean-rpms
+	rm -rf BUILD DEST RPMS SPECS SOURCES SRPMS
+	$(MAKE) -C ../ clean
+
+endif !FOUNDATION
+
+endif IS_UNIX
 
 
 #---------------------------------------------------------------------------------------------
@@ -269,8 +299,10 @@ clean: clean-rpms
 	rm -rf BUILD DEST RPMS SPECS SOURCES SRPMS
 	$(MAKE) -C ../ clean
 
-endif 
+endif IS_MAC_OS
 
+
+#---------------------------------------------------------------------------------------------
 
 if IS_WINDOWS
 
@@ -282,7 +314,7 @@ clean: clean-rpms
 	rm -rf BUILD DEST RPMS SPECS SOURCES SRPMS
 	$(MAKE) -C ../ clean
 
-endif 
+endif IS_WINDOWS
 
 
 #---------------------------------------------------------------------------------------------

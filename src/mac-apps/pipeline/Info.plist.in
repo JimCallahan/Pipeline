@@ -13,11 +13,11 @@
 	<key>CFBundleSignature</key>
 	<string>PLUI</string>
 	<key>NSHumanReadableCopyright</key>
-	<string>Copyright © 2002-2005 Temerity Software, Inc.</string>
+	<string>Copyright © 2002-2008 Temerity Software, Inc.</string>
 	<key>CFBundleExecutable</key>
 	<string>plui</string>
 	<key>CFBundleGetInfoString</key>
-	<string>@VERSION@ © 2002-2005 Temerity Software, Inc.</string>
+	<string>@VERSION@ © 2002-2008 Temerity Software, Inc.</string>
 	<key>CFBundleIconFile</key>
 	<string>pipeline.icns</string>
         <key>CFBundleInfoDictionaryVersion</key>

@@ -1,5 +1,5 @@
 
-jogldir = @ROOT_INST_DIR@/jython/Windows
+jogldir = @ROOT_INST_DIR@/jython/Windows-@NATIVE_ARCHTYPE@-Opt
 
 jogl_DATA = \
   jython.bat \

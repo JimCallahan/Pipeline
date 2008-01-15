@@ -1,5 +1,5 @@
 
-instbindir = @ROOT_INST_DIR@/@NATIVE_OSTYPE@/debug/bin
+instbindir = @ROOT_INST_DIR@/@NATIVE_OSTYPE@-@NATIVE_ARCHTYPE@-Debug/bin
 
 instbin_SCRIPTS = \
   plplugin \
@@ -13,7 +13,7 @@ instbin_SCRIPTS = \
   pltestlight
 
 
-instsbindir = @ROOT_INST_DIR@/@NATIVE_OSTYPE@/debug/sbin
+instsbindir = @ROOT_INST_DIR@/@NATIVE_OSTYPE@-@NATIVE_ARCHTYPE@-Debug/sbin
 
 if FOUNDATION
 admin_scripts = \

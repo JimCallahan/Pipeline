@@ -32,32 +32,32 @@ The core features of Pipeline include:
 %defattr(555,root,root)
 @ROOT_INST_PARENT_DIR@/pipeline-latest
 
-@ROOT_INST_DIR@/Unix/bin/realpath
-@ROOT_INST_DIR@/Unix/bin/pls
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Opt/bin/realpath
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Opt/bin/pls
 
-@ROOT_INST_DIR@/Unix/bin/plplugin
-@ROOT_INST_DIR@/Unix/bin/plremote
-@ROOT_INST_DIR@/Unix/bin/plscript
-@ROOT_INST_DIR@/Unix/bin/plscript-batch
-@ROOT_INST_DIR@/Unix/bin/plpython
-@ROOT_INST_DIR@/Unix/bin/plui
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Opt/bin/plplugin
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Opt/bin/plremote
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Opt/bin/plscript
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Opt/bin/plscript-batch
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Opt/bin/plpython
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Opt/bin/plui
 
-@ROOT_INST_DIR@/Unix/debug/bin/plplugin
-@ROOT_INST_DIR@/Unix/debug/bin/plremote
-@ROOT_INST_DIR@/Unix/debug/bin/plscript
-@ROOT_INST_DIR@/Unix/debug/bin/plscript-batch
-@ROOT_INST_DIR@/Unix/debug/bin/plpython
-@ROOT_INST_DIR@/Unix/debug/bin/plui
-@ROOT_INST_DIR@/Unix/debug/bin/pltestnative
-@ROOT_INST_DIR@/Unix/debug/bin/pltestlight
-@ROOT_INST_DIR@/Unix/debug/bin/pltestheavy
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Debug/bin/plplugin
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Debug/bin/plremote
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Debug/bin/plscript
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Debug/bin/plscript-batch
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Debug/bin/plpython
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Debug/bin/plui
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Debug/bin/pltestnative
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Debug/bin/pltestlight
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Debug/bin/pltestheavy
 
-@ROOT_INST_DIR@/Unix/profile/bin/plplugin
-@ROOT_INST_DIR@/Unix/profile/bin/plremote
-@ROOT_INST_DIR@/Unix/profile/bin/plscript
-@ROOT_INST_DIR@/Unix/profile/bin/plscript-batch
-@ROOT_INST_DIR@/Unix/profile/bin/plpython
-@ROOT_INST_DIR@/Unix/profile/bin/plui
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Profile/bin/plplugin
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Profile/bin/plremote
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Profile/bin/plscript
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Profile/bin/plscript-batch
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Profile/bin/plpython
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Profile/bin/plui
 
 @ROOT_INST_DIR@/etc/init.d/pljobmgr-redhat
 @ROOT_INST_DIR@/etc/init.d/pljobmgr-suse
@@ -65,29 +65,29 @@ The core features of Pipeline include:
 @ROOT_INST_DIR@/etc/winopts/pljobmgr
 
 %defattr(4550,root,@PIPELINE_GROUP@)
-@ROOT_INST_DIR@/Unix/sbin/plrun
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Opt/sbin/plrun
 
 %defattr(500,@PIPELINE_USER@,@PIPELINE_GROUP@)
-@ROOT_INST_DIR@/Unix/sbin/plfilemgr
-@ROOT_INST_DIR@/Unix/sbin/pljobmgr
-@ROOT_INST_DIR@/Unix/sbin/plmaster
-@ROOT_INST_DIR@/Unix/sbin/plpluginmgr
-@ROOT_INST_DIR@/Unix/sbin/plqueuemgr
-@ROOT_INST_DIR@/Unix/sbin/plrestore
-@ROOT_INST_DIR@/Unix/sbin/plvalidate
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Opt/sbin/plfilemgr
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Opt/sbin/pljobmgr
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Opt/sbin/plmaster
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Opt/sbin/plpluginmgr
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Opt/sbin/plqueuemgr
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Opt/sbin/plrestore
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Opt/sbin/plvalidate
 
-@ROOT_INST_DIR@/Unix/debug/sbin/plfilemgr
-@ROOT_INST_DIR@/Unix/debug/sbin/pljobmgr
-@ROOT_INST_DIR@/Unix/debug/sbin/plmaster
-@ROOT_INST_DIR@/Unix/debug/sbin/plpluginmgr
-@ROOT_INST_DIR@/Unix/debug/sbin/plqueuemgr
-@ROOT_INST_DIR@/Unix/debug/sbin/plvalidate
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Debug/sbin/plfilemgr
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Debug/sbin/pljobmgr
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Debug/sbin/plmaster
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Debug/sbin/plpluginmgr
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Debug/sbin/plqueuemgr
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Debug/sbin/plvalidate
 
-@ROOT_INST_DIR@/Unix/profile/sbin/plfilemgr
-@ROOT_INST_DIR@/Unix/profile/sbin/pljobmgr
-@ROOT_INST_DIR@/Unix/profile/sbin/plmaster
-@ROOT_INST_DIR@/Unix/profile/sbin/plpluginmgr
-@ROOT_INST_DIR@/Unix/profile/sbin/plqueuemgr
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Profile/sbin/plfilemgr
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Profile/sbin/pljobmgr
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Profile/sbin/plmaster
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Profile/sbin/plpluginmgr
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Profile/sbin/plqueuemgr
 
 
 %defattr(775,@PIPELINE_USER@,@PIPELINE_GROUP@)
@@ -150,10 +150,10 @@ The core features of Pipeline include:
 @ROOT_INST_DIR@/jogl/Userguide.html
 @ROOT_INST_DIR@/jogl/lib/jogl.jar
 @ROOT_INST_DIR@/jogl/lib/gluegen-rt.jar
-@ROOT_INST_DIR@/jogl/lib/Unix/libgluegen-rt.so
-@ROOT_INST_DIR@/jogl/lib/Unix/libjogl_awt.so
-@ROOT_INST_DIR@/jogl/lib/Unix/libjogl_cg.so
-@ROOT_INST_DIR@/jogl/lib/Unix/libjogl.so
+@ROOT_INST_DIR@/jogl/lib/Unix-@NATIVE_ARCHTYPE@-Opt/libgluegen-rt.so
+@ROOT_INST_DIR@/jogl/lib/Unix-@NATIVE_ARCHTYPE@-Opt/libjogl_awt.so
+@ROOT_INST_DIR@/jogl/lib/Unix-@NATIVE_ARCHTYPE@-Opt/libjogl_cg.so
+@ROOT_INST_DIR@/jogl/lib/Unix-@NATIVE_ARCHTYPE@-Opt/libjogl.so
 
 %defattr(-,root,root)
 @ROOT_INST_DIR@/jython/Doc
@@ -170,8 +170,8 @@ The core features of Pipeline include:
 @ROOT_INST_DIR@/jython/jython.jar             
 
 %defattr(555,root,root)
-@ROOT_INST_DIR@/jython/Unix/jython
-@ROOT_INST_DIR@/jython/Unix/jythonc
+@ROOT_INST_DIR@/jython/Unix-@NATIVE_ARCHTYPE@-Opt/jython
+@ROOT_INST_DIR@/jython/Unix-@NATIVE_ARCHTYPE@-Opt/jythonc
 
 %defattr(777,root,root)
 @ROOT_INST_DIR@/jython/cachedir

@@ -9,8 +9,8 @@ echo "--------------------------------------------------------------------------
 echo "  CONFIGURING: $HOSTNAME"
 echo "---------------------------------------------------------------------------------------"
 
-rm -rf i686-pc-linux-gnu-dbg
-mkdir  i686-pc-linux-gnu-dbg
+rm -rf debug
+mkdir  debug
 
 plsrcdir=$HOME/code/src/pipeline
 
@@ -20,9 +20,10 @@ popd
 
 plprofile=../../../src/pipeline/plconfig/customers/$customer/$sitep
 
-pushd i686-pc-linux-gnu-dbg
+pushd debug
+  CC="/usr/bin/gcc" \
+  CXX="/usr/bin/g++" \
   $plsrcdir/configure \
-    --disable-foundation \
     --disable-opt \
     --with-debug-base=$debug_base \
     --with-prof-base=$prof_base \

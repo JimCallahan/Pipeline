@@ -1,4 +1,4 @@
-instdatadir = @ROOT_INST_DIR@/lib/@NATIVE_OSTYPE@
+instdatadir = @ROOT_INST_DIR@/lib/@NATIVE_OSTYPE@-@NATIVE_ARCHTYPE@-Opt
 
 instdata_DATA = \
   libNative.dll

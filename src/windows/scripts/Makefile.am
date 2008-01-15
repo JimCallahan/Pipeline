@@ -1,5 +1,5 @@
 
-instbindir = @ROOT_INST_DIR@/@NATIVE_OSTYPE@/bin
+instbindir = @ROOT_INST_DIR@/@NATIVE_OSTYPE@-@NATIVE_ARCHTYPE@-Opt/bin
 
 instbin_SCRIPTS = \
   plremote.bat \
@@ -8,7 +8,7 @@ instbin_SCRIPTS = \
   plpython.bat
 
 
-instsbindir = @ROOT_INST_DIR@/@NATIVE_OSTYPE@/sbin
+instsbindir = @ROOT_INST_DIR@/@NATIVE_OSTYPE@-@NATIVE_ARCHTYPE@-Opt/sbin
 
 instsbin_SCRIPTS = \
   pljobmgr.bat

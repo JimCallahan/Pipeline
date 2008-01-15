@@ -26,56 +26,56 @@ Pipeline configuration process.
 %files
 
 %defattr(555,root,root)
-@ROOT_INST_DIR@/MacOS/bin/realpath
-@ROOT_INST_DIR@/MacOS/bin/pls
+@ROOT_INST_DIR@/MacOS-UnivBin-Opt/bin/realpath
+@ROOT_INST_DIR@/MacOS-UnivBin-Opt/bin/pls
 
-@ROOT_INST_DIR@/MacOS/bin/plplugin
-@ROOT_INST_DIR@/MacOS/bin/plremote
-@ROOT_INST_DIR@/MacOS/bin/plscript
-@ROOT_INST_DIR@/MacOS/bin/plscript-batch
-@ROOT_INST_DIR@/MacOS/bin/plpython
-@ROOT_INST_DIR@/MacOS/bin/plui
+@ROOT_INST_DIR@/MacOS-UnivBin-Opt/bin/plplugin
+@ROOT_INST_DIR@/MacOS-UnivBin-Opt/bin/plremote
+@ROOT_INST_DIR@/MacOS-UnivBin-Opt/bin/plscript
+@ROOT_INST_DIR@/MacOS-UnivBin-Opt/bin/plscript-batch
+@ROOT_INST_DIR@/MacOS-UnivBin-Opt/bin/plpython
+@ROOT_INST_DIR@/MacOS-UnivBin-Opt/bin/plui
 
-@ROOT_INST_DIR@/MacOS/debug/bin/plplugin
-@ROOT_INST_DIR@/MacOS/debug/bin/plremote
-@ROOT_INST_DIR@/MacOS/debug/bin/plscript
-@ROOT_INST_DIR@/MacOS/debug/bin/plscript-batch
-@ROOT_INST_DIR@/MacOS/debug/bin/plpython
-@ROOT_INST_DIR@/MacOS/debug/bin/plui
-@ROOT_INST_DIR@/MacOS/debug/bin/pltestnative
-@ROOT_INST_DIR@/MacOS/debug/bin/pltestlight
-@ROOT_INST_DIR@/MacOS/debug/bin/pltestheavy
+@ROOT_INST_DIR@/MacOS-UnivBin-Debug/bin/plplugin
+@ROOT_INST_DIR@/MacOS-UnivBin-Debug/bin/plremote
+@ROOT_INST_DIR@/MacOS-UnivBin-Debug/bin/plscript
+@ROOT_INST_DIR@/MacOS-UnivBin-Debug/bin/plscript-batch
+@ROOT_INST_DIR@/MacOS-UnivBin-Debug/bin/plpython
+@ROOT_INST_DIR@/MacOS-UnivBin-Debug/bin/plui
+@ROOT_INST_DIR@/MacOS-UnivBin-Debug/bin/pltestnative
+@ROOT_INST_DIR@/MacOS-UnivBin-Debug/bin/pltestlight
+@ROOT_INST_DIR@/MacOS-UnivBin-Debug/bin/pltestheavy
 
-@ROOT_INST_DIR@/MacOS/profile/bin/plplugin
-@ROOT_INST_DIR@/MacOS/profile/bin/plremote
-@ROOT_INST_DIR@/MacOS/profile/bin/plscript
-@ROOT_INST_DIR@/MacOS/profile/bin/plscript-batch
-@ROOT_INST_DIR@/MacOS/profile/bin/plpython
-@ROOT_INST_DIR@/MacOS/profile/bin/plui
+@ROOT_INST_DIR@/MacOS-UnivBin-Profile/bin/plplugin
+@ROOT_INST_DIR@/MacOS-UnivBin-Profile/bin/plremote
+@ROOT_INST_DIR@/MacOS-UnivBin-Profile/bin/plscript
+@ROOT_INST_DIR@/MacOS-UnivBin-Profile/bin/plscript-batch
+@ROOT_INST_DIR@/MacOS-UnivBin-Profile/bin/plpython
+@ROOT_INST_DIR@/MacOS-UnivBin-Profile/bin/plui
 
 %defattr(4550,root,@PIPELINE_GROUP@)
-@ROOT_INST_DIR@/MacOS/sbin/plrun
+@ROOT_INST_DIR@/MacOS-UnivBin-Opt/sbin/plrun
 
-@ROOT_INST_DIR@/MacOS/sbin/pljobmgr
-@ROOT_INST_DIR@/MacOS/debug/sbin/pljobmgr
-@ROOT_INST_DIR@/MacOS/profile/sbin/pljobmgr
+@ROOT_INST_DIR@/MacOS-UnivBin-Opt/sbin/pljobmgr
+@ROOT_INST_DIR@/MacOS-UnivBin-Debug/sbin/pljobmgr
+@ROOT_INST_DIR@/MacOS-UnivBin-Profile/sbin/pljobmgr
 
 %defattr(-,@PIPELINE_USER@,@PIPELINE_GROUP@)
 @ROOT_INST_DIR@/builders
 
 %defattr(-,root,root)
-@ROOT_INST_DIR@/lib/MacOS
-@ROOT_INST_DIR@/MacOS/Pipeline.app
+@ROOT_INST_DIR@/lib/MacOS-UnivBin-Opt
+@ROOT_INST_DIR@/MacOS-UnivBin-Opt/Pipeline.app
 
 %defattr(444,root,root)
-@ROOT_INST_DIR@/jogl/lib/MacOS/libgluegen-rt.jnilib
-@ROOT_INST_DIR@/jogl/lib/MacOS/libjogl_awt.jnilib
-@ROOT_INST_DIR@/jogl/lib/MacOS/libjogl_cg.jnilib
-@ROOT_INST_DIR@/jogl/lib/MacOS/libjogl.jnilib
+@ROOT_INST_DIR@/jogl/lib/MacOS-UnivBin-Opt/libgluegen-rt.jnilib
+@ROOT_INST_DIR@/jogl/lib/MacOS-UnivBin-Opt/libjogl_awt.jnilib
+@ROOT_INST_DIR@/jogl/lib/MacOS-UnivBin-Opt/libjogl_cg.jnilib
+@ROOT_INST_DIR@/jogl/lib/MacOS-UnivBin-Opt/libjogl.jnilib
 
 %defattr(555,root,root)
-@ROOT_INST_DIR@/jython/MacOS/jython
-@ROOT_INST_DIR@/jython/MacOS/jythonc
+@ROOT_INST_DIR@/jython/MacOS-UnivBin-Opt/jython
+@ROOT_INST_DIR@/jython/MacOS-UnivBin-Opt/jythonc
 
 %changelog
 * @RPM_DATE@ Temerity Support <support@temerity.us>

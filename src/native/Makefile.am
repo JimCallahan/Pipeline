@@ -1,7 +1,7 @@
 AUTOMAKE_OPTIONS = no-dependencies
 
 
-dsodir = @ROOT_INST_DIR@/lib/@NATIVE_OSTYPE@
+dsodir = @ROOT_INST_DIR@/lib/@NATIVE_OSTYPE@-@NATIVE_ARCHTYPE@-Opt
 
 
 dso_DATA = \
