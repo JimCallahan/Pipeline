@@ -23,8 +23,8 @@ popd
 
 pushd i686-pc-linux-gnu-dbg
   time \
-  CC="/usr/bin/gcc-4.1 -m32" \
-  CXX="/usr/bin/g++-4.1 -m32" \
+  CC="/usr/bin/gcc-4.1" \
+  CXX="/usr/bin/g++-4.1" \
   $plsrcdir/configure \
     --enable-foundation \
     --disable-opt \
