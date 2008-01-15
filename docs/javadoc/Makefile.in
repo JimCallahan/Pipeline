@@ -340,7 +340,7 @@ BUILDER_PACKAGES = $(subst /,.,$(patsubst $(top_srcdir)/src/java/%,%,$(BUILDER_D
                              $(subst .,/,$(PACKAGES)))
 
 
-   JAVADOC_OPTS = -J-Xmx128m \
+   JAVADOC_OPTS = -J-Xmx512m \
                   -sourcepath $(top_srcdir)/src/java \
                   -classpath $(top_builddir)/src/java:$(srcdir)/../../src/java/jogl/jogl.jar \
                   -d javadoc -source 1.5 -use $(EXTERNAL_URLS) \
