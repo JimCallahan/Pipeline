@@ -1,6 +1,6 @@
  	<target name="installWindows" description="installs the builder scripts into pipeline">
 		<mkdir dir="${WinDir}"/>
 		<copy todir="${WinDir}">
-			<fileset dir="${ScriptsDir}/Windows"></fileset>
+			<fileset dir="${ScriptsDir}/Windows-@NATIVE_ARCHTYPE@-Opt"></fileset>
 		</copy>
 	</target>

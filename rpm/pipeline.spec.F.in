@@ -1,0 +1,5 @@
+@ROOT_INST_DIR@/jogl/lib/Unix-@NATIVE_ARCHTYPE@-Opt/libgluegen-rt.so
+@ROOT_INST_DIR@/jogl/lib/Unix-@NATIVE_ARCHTYPE@-Opt/libjogl.so
+@ROOT_INST_DIR@/jogl/lib/Unix-@NATIVE_ARCHTYPE@-Opt/libjogl_awt.so
+@ROOT_INST_DIR@/jogl/lib/Unix-@NATIVE_ARCHTYPE@-Opt/libjogl_cg.so
+

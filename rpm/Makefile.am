@@ -137,24 +137,6 @@ pipeline-install: clean-rpms rpm-mkdirs
              DEST/pllocal/@ROOT_INST_PARENT_DIR@/pipeline-local; \
         fi
 
-
-if IS_UNIX_NATIVE_ONLY
-
-native-only:
-	@echo "-----------------------------------------------------------------------------"
-	@echo "  BUILDING (native only): "
-	@echo "-----------------------------------------------------------------------------"
-	$(MAKE) -C ../../debug-native/rpm all
-	rsync -av ../../debug-native/rpm/DEST/unix-native DEST
-
-else !IS_UNIX_NATIVE_ONLY
-
-native-only:
-
-endif !IS_UNIX_NATIVE_ONLY
-
-
-
 core-rpms: pipeline-install \
   RPMS/i686/pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
   RPMS/i686/plmaster-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
@@ -169,11 +151,39 @@ SPECS/plmaster-@CUSTOMER@-@VERSION@.spec: plmaster.spec
 
 
 RPMS/i686/pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm: \
-  SPECS/pipeline-@CUSTOMER@-@VERSION@.spec
+  native-only SPECS/pipeline-@CUSTOMER@-@VERSION@.spec 
 	rpmbuild --rcfile rpmrc -bb SPECS/pipeline-@CUSTOMER@-@VERSION@.spec
 
-SPECS/pipeline-@CUSTOMER@-@VERSION@.spec: pipeline.spec
-	cp -f pipeline.spec $@
+if HAS_X86_SUBPASS
+
+native-only: 
+	@echo "-----------------------------------------------------------------------------"
+	@echo "  BUILDING (native only): @NATIVE_ARCHOPTS@"
+	@echo "-----------------------------------------------------------------------------"
+	$(MAKE) -C ../../debug-native/rpm all
+	rsync -av ../../debug-native/rpm/DEST/unix-native/ DEST/pipeline
+
+.FORCE: SPECS/pipeline-@CUSTOMER@-@VERSION@.spec
+SPECS/pipeline-@CUSTOMER@-@VERSION@.spec: \
+  pipeline.spec.A pipeline.spec.B pipeline.spec.C pipeline.spec.D pipeline.spec.E \
+  pipeline.spec.F pipeline.spec.G
+	rm pipeline.spec.B pipeline.spec.D pipeline.spec.F
+	rsync -av ../../debug-native/rpm/pipeline.spec.B pipeline.spec.B
+	rsync -av ../../debug-native/rpm/pipeline.spec.D pipeline.spec.D
+	rsync -av ../../debug-native/rpm/pipeline.spec.F pipeline.spec.F
+	cat $+ > $@
+
+
+
+else !HAS_X86_SUBPASS
+
+native-only:
+
+SPECS/pipeline-@CUSTOMER@-@VERSION@.spec: \
+  pipeline.spec.A pipeline.spec.C pipeline.spec.E pipeline.spec.G
+	cat $+ > $@
+
+endif !HAS_X86_SUBPASS
 
 
 RPMS/i686/plqueuemgr-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm: \
@@ -194,6 +204,8 @@ SPECS/pllocal-@CUSTOMER@-@VERSION@.spec: pllocal.spec
 	cp -f pllocal.spec $@
 
 endif PL_LOCAL
+
+
 
 
 if HAS_MAC
@@ -274,7 +286,9 @@ clean: clean-rpms
 
 else !FOUNDATION
 
-all: clean-rpms rpm-mkdirs
+native-specs: pipeline.spec.B pipeline.spec.D pipeline.spec.F
+
+all: clean-rpms rpm-mkdirs native-specs
 	rm -rf DEST/unix-native
 	DESTDIR=`pwd`/DEST/unix-native $(MAKE) -C .. install
 

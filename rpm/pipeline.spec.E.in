@@ -1,0 +1,65 @@
+%defattr(775,@PIPELINE_USER@,@PIPELINE_GROUP@)
+%dir @PRODDIR@/working
+%dir @ROOT_INST_DIR@/logs
+
+%defattr(755,@PIPELINE_USER@,@PIPELINE_GROUP@)
+%dir @PRODDIR@/repository
+%dir @PRODDIR@/checksum
+%dir @PRODDIR@/restore
+%dir @PRODDIR@/target
+
+%defattr(-,@PIPELINE_USER@,@PIPELINE_GROUP@)
+@ROOT_INST_DIR@/plugins
+
+%defattr(-,root,root)
+@ROOT_INST_DIR@/plugins-extra
+
+%defattr(-,@PIPELINE_USER@,@PIPELINE_GROUP@)
+@ROOT_INST_DIR@/builders
+
+%defattr(-,root,root)
+@ROOT_INST_DIR@/lib
+@ROOT_INST_DIR@/examples
+
+@ROOT_INST_DIR@/share/docs/images
+@ROOT_INST_DIR@/share/docs/javadoc
+@ROOT_INST_DIR@/share/docs/legal
+
+@ROOT_INST_DIR@/share/docs/man/plfilemgr.html 
+@ROOT_INST_DIR@/share/docs/man/pljobmgr.html 
+@ROOT_INST_DIR@/share/docs/man/plmaster.html 
+@ROOT_INST_DIR@/share/docs/man/plplugin.html 
+@ROOT_INST_DIR@/share/docs/man/plpluginmgr.html 
+@ROOT_INST_DIR@/share/docs/man/plqueuemgr.html 
+@ROOT_INST_DIR@/share/docs/man/plremote.html 
+@ROOT_INST_DIR@/share/docs/man/plrestore.html 
+@ROOT_INST_DIR@/share/docs/man/plscript.html 
+@ROOT_INST_DIR@/share/docs/man/plpython.html 
+@ROOT_INST_DIR@/share/docs/man/plui.html 
+@ROOT_INST_DIR@/share/docs/man/plvalidate.html 
+
+@ROOT_INST_DIR@/share/docs/man/pls.html
+@ROOT_INST_DIR@/share/docs/man/realpath.html
+
+@ROOT_INST_DIR@/share/icons/plui.png
+
+@ROOT_INST_DIR@/share/www
+
+%dir @ROOT_INST_DIR@/plconfig
+
+%defattr(-,root,root)
+@ROOT_INST_DIR@/jogl/docs
+
+%defattr(444,root,root)
+@ROOT_INST_DIR@/jogl/CHANGELOG.txt
+@ROOT_INST_DIR@/jogl/README.txt
+@ROOT_INST_DIR@/jogl/COPYRIGHT-JOGL.txt
+@ROOT_INST_DIR@/jogl/LICENSE-JOGL.txt
+@ROOT_INST_DIR@/jogl/Userguide.html
+@ROOT_INST_DIR@/jogl/lib/jogl.jar
+@ROOT_INST_DIR@/jogl/lib/gluegen-rt.jar
+@ROOT_INST_DIR@/jogl/lib/Unix-@NATIVE_ARCHTYPE@-Opt/libgluegen-rt.so
+@ROOT_INST_DIR@/jogl/lib/Unix-@NATIVE_ARCHTYPE@-Opt/libjogl_awt.so
+@ROOT_INST_DIR@/jogl/lib/Unix-@NATIVE_ARCHTYPE@-Opt/libjogl_cg.so
+@ROOT_INST_DIR@/jogl/lib/Unix-@NATIVE_ARCHTYPE@-Opt/libjogl.so
+

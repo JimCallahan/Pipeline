@@ -1,6 +1,6 @@
 	<target name="installMacOS" description="installs the builder scripts into pipeline">
 		<mkdir dir="${MacDir}"/>
 		<copy todir="${MacDir}">
-			<fileset dir="${ScriptsDir}/MacOS"></fileset>
+			<fileset dir="${ScriptsDir}/MacOS-@NATIVE_ARCHTYPE@-Opt"></fileset>
 		</copy>
 	</target>

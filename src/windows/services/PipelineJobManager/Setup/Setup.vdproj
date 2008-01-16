@@ -87,7 +87,7 @@
         "DisplayName" = "8:Debug"
         "IsDebugOnly" = "11:TRUE"
         "IsReleaseOnly" = "11:FALSE"
-        "OutputFilename" = "8:..\\..\\..\\..\\..\\..\\..\\build\\pipeline\\i686-pc-linux-gnu-dbg\\src\\windows\\services\\PipelineJobManager.msi"
+        "OutputFilename" = "8:..\\..\\..\\..\\..\\..\\..\\build\\pipeline\\debug\\src\\windows\\services\\PipelineJobManager.msi"
         "PackageFilesAs" = "3:2"
         "PackageFileSize" = "3:-2147483648"
         "CabType" = "3:1"
@@ -1043,7 +1043,7 @@
         {
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_62FD107D51234EE88F4AE1C90DD60F1E"
             {
-            "SourcePath" = "8:..\\..\\..\\..\\..\\..\\..\\build\\pipeline\\i686-pc-linux-gnu-dbg\\src\\windows\\services\\PipelineJobManager\\PipelineEditRegistry.exe"
+            "SourcePath" = "8:..\\..\\..\\..\\..\\..\\..\\build\\pipeline\\debug\\src\\windows\\services\\PipelineJobManager\\PipelineEditRegistry.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_3DDCE7DA41394F789A85B8B8DE540C8E"
@@ -1071,7 +1071,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_7FBE5C81888343B3B5FFE77670F71A5A"
             {
-            "SourcePath" = "8:..\\..\\..\\..\\..\\..\\..\\build\\pipeline\\i686-pc-linux-gnu-dbg\\src\\windows\\services\\PipelineJobManager\\PipelineJobManager.exe"
+            "SourcePath" = "8:..\\..\\..\\..\\..\\..\\..\\build\\pipeline\\debug\\src\\windows\\services\\PipelineJobManager\\PipelineJobManager.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_3DDCE7DA41394F789A85B8B8DE540C8E"

@@ -1,5 +1,5 @@
 
-instbindir = @ROOT_INST_PARENT_DIR@/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Windows
+instbindir = @ROOT_INST_PARENT_DIR@/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Windows-@NATIVE_ARCHTYPE@-Opt
 
 instbin_SCRIPTS = \
   plRadarProjectBuilder.bat \

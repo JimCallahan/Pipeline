@@ -17,8 +17,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="..\..\..\..\..\build\pipeline\i686-pc-linux-gnu-dbg\src\windows\native"
-			IntermediateDirectory="..\..\..\..\..\build\pipeline\i686-pc-linux-gnu-dbg\src\windows\native\build"
+			OutputDirectory="..\..\..\..\..\build\pipeline\debug\src\windows\native"
+			IntermediateDirectory="..\..\..\..\..\build\pipeline\debug\src\windows\native\build"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"

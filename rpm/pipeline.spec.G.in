@@ -1,0 +1,27 @@
+%defattr(-,root,root)
+@ROOT_INST_DIR@/jython/Doc
+@ROOT_INST_DIR@/jython/Lib
+@ROOT_INST_DIR@/jython/Tools
+
+%defattr(444,root,root)
+@ROOT_INST_DIR@/jython/ACKNOWLEDGMENTS 
+@ROOT_INST_DIR@/jython/LICENSE.txt	 
+@ROOT_INST_DIR@/jython/LICENSE_Apache.txt	 
+@ROOT_INST_DIR@/jython/LICENSE_CPython.txt	 
+@ROOT_INST_DIR@/jython/NEWS 
+@ROOT_INST_DIR@/jython/README.txt
+@ROOT_INST_DIR@/jython/jython.jar             
+
+%defattr(555,root,root)
+@ROOT_INST_DIR@/jython/Unix-@NATIVE_ARCHTYPE@-Opt/jython
+@ROOT_INST_DIR@/jython/Unix-@NATIVE_ARCHTYPE@-Opt/jythonc
+
+%defattr(777,root,root)
+@ROOT_INST_DIR@/jython/cachedir
+
+%defattr(444,root,root)
+@ROOT_INST_DIR@/app-extra/nuke/init.tcl
+
+%changelog
+* @RPM_DATE@ Temerity Support <support@temerity.us>
+Latest build.

@@ -12,13 +12,13 @@ instbin_SCRIPTS = \
 
 instsbindir = @ROOT_INST_DIR@/@NATIVE_OSTYPE@-@NATIVE_ARCHTYPE@-Profile/sbin
 
-if FOUNDATION
+if IS_UNIX
 admin_scripts = \
   plfilemgr \
   plmaster \
   plpluginmgr \
   plqueuemgr
-endif
+endif IS_UNIX
 
 instsbin_SCRIPTS = \
   pljobmgr \

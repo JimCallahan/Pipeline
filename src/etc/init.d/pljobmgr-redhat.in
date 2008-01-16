@@ -7,8 +7,8 @@
 
 . /etc/rc.d/init.d/functions
 
-PLJOBMGR=@ROOT_INST_DIR@/Unix/sbin/pljobmgr
-PLSCRIPT=@ROOT_INST_DIR@/Unix/bin/plscript
+PLJOBMGR=@ROOT_INST_PARENT_DIR@/pipeline-latest/Unix-@NATIVE_ARCHTYPE@-Opt/sbin/pljobmgr
+PLSCRIPT=@ROOT_INST_PARENT_DIR@/pipeline-latest/Unix-@NATIVE_ARCHTYPE@-Opt/bin/plscript
 
 PLRUNUSER="runuser -s /bin/bash - @PIPELINE_USER@ -c "
 PLPROCESS="ps -U @PIPELINE_UID@ -G @PIPELINE_GID@ -o args="

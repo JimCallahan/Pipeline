@@ -12,7 +12,7 @@ instbin_SCRIPTS = \
 
 instsbindir = @ROOT_INST_DIR@/@NATIVE_OSTYPE@-@NATIVE_ARCHTYPE@-Opt/sbin
 
-if FOUNDATION
+if IS_UNIX
 admin_scripts = \
   plfilemgr \
   plmaster \
@@ -20,7 +20,8 @@ admin_scripts = \
   plqueuemgr \
   plrestore \
   plvalidate
-endif
+endif IS_UNIX
+
 
 instsbin_SCRIPTS = \
   pljobmgr \

@@ -29,6 +29,8 @@ mkdir  debug
 
 pushd debug
   time \
+  JAVA_HOME=/usr/java/jdk1.5.0_14-x86 \
+  PATH="$JAVA_HOME/bin:$PATH" \
   CC="/usr/local/compat-gcc-3.3.4/bin/gcc" \
   CXX="/usr/local/compat-gcc-3.3.4/bin/g++" \
   LD_LIBRARY_PATH=/usr/local/compat-gcc-3.3.4/lib \
@@ -45,6 +47,9 @@ pushd debug
 popd
 
 
+
+JAVA_HOME=/usr/java/jdk1.5.0_14-x86
+PATH="$JAVA_HOME/bin:$PATH"
 
 mac_support=`java -classpath $plsrcdir/plconfig CryptoApp $plprofile --lookup MacSupport`
 if [ "x$mac_support" == "xtrue" ]

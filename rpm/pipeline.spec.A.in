@@ -1,0 +1,67 @@
+Summary: The Pipeline production visualization/automation system.
+Name: pipeline-@CUSTOMER@
+Version: @VERSION@
+Release: @PROFILE_STAMP@
+URL: http://www.temerity.us
+License: Commercial
+Vendor: Temerity Software, Inc
+Group: Applications/Productivity
+BuildRoot: @RPM_ROOT@/DEST/pipeline
+AutoReq: no
+
+
+%description
+Pipeline consists of a suite of programs which use a high-level node 
+based representation of the production process to perform a wide range 
+of visualization, automation and administrative services.
+
+The core features of Pipeline include: 
+  + Graphical tools to visualize and control the production process.
+  + Advanced revision control of production data files, processes and 
+     dependencies.
+  + Modeling of arbitrarily complex production pipelines.
+  + Automatic generation of jobs needed to complete a production process.
+  + Execution of jobs both locally and by a distributed execution queue.
+  + Automation of data archiving and restoration.
+  + Command-line based scripting of all functionality.
+  + Rich Java based plugin API allowing almost unlimited customization 
+     and extension.
+
+%files
+
+%defattr(555,root,root)
+@ROOT_INST_PARENT_DIR@/pipeline-latest
+
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Opt/bin/realpath
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Opt/bin/pls
+
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Debug/bin/plplugin
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Debug/bin/plremote
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Debug/bin/plscript
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Debug/bin/plscript-batch
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Debug/bin/plui
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Debug/bin/plpython
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Debug/bin/pltestnative
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Debug/bin/pltestlight
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Debug/bin/pltestheavy
+
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Opt/bin/plplugin
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Opt/bin/plremote
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Opt/bin/plscript
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Opt/bin/plscript-batch
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Opt/bin/plpython
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Opt/bin/plui
+
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Profile/bin/plplugin
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Profile/bin/plremote
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Profile/bin/plscript
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Profile/bin/plscript-batch
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Profile/bin/plui
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Profile/bin/plpython
+
+@ROOT_INST_DIR@/etc/init.d/Unix-@NATIVE_ARCHTYPE@-Opt/pljobmgr-redhat
+@ROOT_INST_DIR@/etc/init.d/Unix-@NATIVE_ARCHTYPE@-Opt/pljobmgr-suse
+
+@ROOT_INST_DIR@/etc/python/plremote.py
+@ROOT_INST_DIR@/etc/winopts/pljobmgr
+

@@ -11,7 +11,7 @@ SUBDIRS = Unix MacOS
 
 endif
 
-else  # HAS_MAC
+else !HAS_MAC
 
 if HAS_WINDOWS
 
@@ -21,6 +21,6 @@ else
 
 SUBDIRS = Unix
 
-endif  # HAS_MAC
-
 endif 
+
+endif !HAS_MAC

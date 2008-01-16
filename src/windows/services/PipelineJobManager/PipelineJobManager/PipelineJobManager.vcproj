@@ -17,8 +17,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="../../../../../../../build/pipeline/i686-pc-linux-gnu-dbg/src/windows/services/PipelineJobManager"
-			IntermediateDirectory="../../../../../../../build/pipeline/i686-pc-linux-gnu-dbg/src/windows/services/PipelineJobManager/build"
+			OutputDirectory="../../../../../../../build/pipeline/debug/src/windows/services/PipelineJobManager"
+			IntermediateDirectory="../../../../../../../build/pipeline/debug/src/windows/services/PipelineJobManager/build"
 			ConfigurationType="1"
 			CharacterSet="1"
 			ManagedExtensions="1"
@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;F:\Program Files\Java\jdk1.5.0_14\include&quot;;&quot;F:\Program Files\Java\jdk1.5.0_14\include\win32&quot;;&quot;..\..\..\..\..\..\..\build\pipeline\i686-pc-linux-gnu-dbg\src\windows\services\PipelineJobManager\PipelineJobManager&quot;"
+				AdditionalIncludeDirectories="&quot;F:\Program Files\Java\jdk1.5.0_14\include&quot;;&quot;F:\Program Files\Java\jdk1.5.0_14\include\win32&quot;;&quot;..\..\..\..\..\..\..\build\pipeline\debug\src\windows\services\PipelineJobManager\PipelineJobManager&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="2"

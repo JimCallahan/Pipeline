@@ -10,9 +10,9 @@ else !IS_WINDOWS
 if IS_UNIX
 
 if FOUNDATION 
-  SUBDIRS = java utils native unix etc 
+  SUBDIRS = java utils native etc unix
 else 
-  SUBDIRS = java utils native
+  SUBDIRS = java utils native etc 
 endif 
 
 endif IS_UNIX

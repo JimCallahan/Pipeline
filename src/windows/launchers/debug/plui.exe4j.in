@@ -2,7 +2,7 @@
 <exe4j version="3.1.2">
   <directoryPresets config="C:/cygwin@top_srcdir@/src/windows/icons" />
   <application name="plui" distributionSourceDir="C:/cygwin@top_srcdir@/../.." />
-  <executable name="plui" type="1" iconSet="true" iconFile="C:/cygwin@top_srcdir@/src/windows/icons/WindowsLogo.ico" executableDir="./build/pipeline/i686-pc-linux-gnu-dbg/src/windows/launchers/debug" redirectStderr="true" stderrFile="error.log" redirectStdout="false" stdoutFile="output.log" failOnStderrOutput="true" executableMode="1" changeWorkingDirectory="true" workingDirectory="." singleInstance="false" serviceStartType="2" serviceDependencies="" serviceDescription="" jreLocation="">
+  <executable name="plui" type="1" iconSet="true" iconFile="C:/cygwin@top_srcdir@/src/windows/icons/WindowsLogo.ico" executableDir="./build/pipeline/debug/src/windows/launchers/debug" redirectStderr="true" stderrFile="error.log" redirectStdout="false" stdoutFile="output.log" failOnStderrOutput="true" executableMode="1" changeWorkingDirectory="true" workingDirectory="." singleInstance="false" serviceStartType="2" serviceDependencies="" serviceDescription="" jreLocation="">
     <messageSet language="English" />
     <versionInfo include="true" fileVersion="" companyName="Temerity Software, Inc." fileDescription="Pipeline User Interface" legalCopyright="Copyright (c) 2002-2006 Temerity Software, Inc." productVersion="2.0.8.0" internalName="" />
   </executable>

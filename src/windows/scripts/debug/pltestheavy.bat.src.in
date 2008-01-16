@@ -1,1 +1,1 @@
-"@JAVA_RUNTIME@" @JAVA_RUNTIME_OPTS@ @PLUI_GC_OPTS@ @PLUI_DEBUG_OPTS@ -cp @PIPELINE_JAR@ us/temerity/pipeline/bootstrap/Main us.temerity.pipeline.core.TestNativeProcessHeavyApp %*
+"@JAVA_RUNTIME@" @JAVA_RUNTIME_OPTS@ @PLUI_GC_OPTS@ @PLUI_DEBUG_OPTS@ @JAVA_OSARCH_TYPE@ @JAVA_BUILD_TYPE@=Debug -cp @PIPELINE_JAR@ us/temerity/pipeline/bootstrap/Main us.temerity.pipeline.core.TestNativeProcessHeavyApp %*

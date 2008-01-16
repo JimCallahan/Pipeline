@@ -4,12 +4,12 @@
 # description: Start/Stop the Pipeline (v@VERSION@) Job Server daemon
 # processname: pljobmgr
 
-PLJOBMGR_BIN=@ROOT_INST_DIR@/Unix/sbin/pljobmgr
+PLJOBMGR_BIN=@ROOT_INST_PARENT_DIR@/pipeline-latest/Unix-@NATIVE_ARCHTYPE@-Opt/sbin/pljobmgr
 test -x $PLJOBMGR_BIN || { echo "$PLJOBMGR_BIN not installed"; 
 	if [ "$1" = "stop" ]; then exit 0;
 	else exit 5; fi; }
 
-PLSCRIPT_BIN=@ROOT_INST_DIR@/Unix/bin/plscript
+PLSCRIPT_BIN=@ROOT_INST_PARENT_DIR@/pipeline-latest/Unix-@NATIVE_ARCHTYPE@-Opt/bin/plscript
 test -x $PLSCRIPT_BIN || { echo "$PLSCRIPT_BIN not installed"; 
 	if [ "$1" = "stop" ]; then exit 0;
 	else exit 5; fi; }

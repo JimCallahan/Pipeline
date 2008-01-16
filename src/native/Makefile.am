@@ -33,6 +33,10 @@ libNative_so_LDFLAGS  = \
 
 else 
 
+# 64-bit only
+libNative_so_CXXFLAGS = \
+  -fPIC
+
 libNative_so_LDFLAGS = \
   @JNI_LDFLAGS@
 

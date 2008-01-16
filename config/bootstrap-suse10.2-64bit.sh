@@ -29,10 +29,13 @@ mkdir  debug
 
 pushd debug
   time \
+  JAVA_HOME=/usr/java/jdk1.5.0_14 \
+  PATH="$JAVA_HOME/bin:$PATH" \
   CC="/usr/bin/gcc-4.1" \
   CXX="/usr/bin/g++-4.1" \
   $plsrcdir/configure \
     --enable-foundation \
+    --enable-x86-subpass \
     --disable-opt \
     --with-debug-base=$debug_base \
     --with-prof-base=$prof_base \
@@ -53,6 +56,8 @@ mkdir  debug-native
 
 pushd debug-native
   time \
+  JAVA_HOME=/usr/java/jdk1.5.0_14-x86 \
+  PATH="$JAVA_HOME/bin:$PATH" \
   CC="/usr/bin/gcc-4.1" \
   CXX="/usr/bin/g++-4.1" \
   $plsrcdir/configure \
@@ -65,6 +70,10 @@ pushd debug-native
     --with-customer-profile=$plprofile
 popd
 
+
+
+JAVA_HOME=/usr/java/jdk1.5.0_14-x86
+PATH="$JAVA_HOME/bin:$PATH"
 
 mac_support=`java -classpath $plsrcdir/plconfig CryptoApp $plprofile --lookup MacSupport`
 if [ "x$mac_support" == "xtrue" ]

@@ -10,9 +10,9 @@
 	<property name="TargetName" value="maya2mr"/>
 	<property name="PipelineBuilderDir" value="${PipelineInstallDir}/builders"/>
 	<property name="TargetDir" value="${PipelineBuilderDir}/${Package}"/>
-	<property name="UnixDir" value="${TargetDir}/Unix"/>
-	<property name="MacDir" value="${TargetDir}/MacOS"/>
-	<property name="WinDir" value="${TargetDir}/Windows"/>
+	<property name="UnixDir" value="${TargetDir}/Unix-@NATIVE_ARCHTYPE@-Opt"/>
+	<property name="MacDir" value="${TargetDir}/MacOS-@NATIVE_ARCHTYPE@-Opt"/>
+	<property name="WinDir" value="${TargetDir}/Windows-@NATIVE_ARCHTYPE@-Opt"/>
 	
     <target name="makejar" description="makes a jar file of all the classes">
         <jar destfile="${BinDir}/${TargetName}.jar" includes="${Package}/*.class" basedir="bin"></jar>
@@ -24,6 +24,6 @@
 	<target name="installUnix" description="installs the builder scripts into pipeline">
 		<mkdir dir="${UnixDir}"/>
 		<copy todir="${UnixDir}">
-			<fileset dir="${ScriptsDir}/Unix"></fileset>
+			<fileset dir="${ScriptsDir}/Unix-@NATIVE_ARCHTYPE@-Opt"></fileset>
 		</copy>
 	</target>

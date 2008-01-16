@@ -77,6 +77,19 @@ AC_MSG_RESULT([$TARGET_ARCHTYPE])
 
 dnl ------------------------------------------------------------------------------------------
 
+AC_ARG_ENABLE([x86-subpass], 
+              [  --enable-x86-subpass      Build secondary x86-only binary/lib pass.],
+              [case "${enable_x86_subpass}" in
+               yes) x86_subpass=true;;
+               no)  x86_subpass=false;;
+               *)   AC_MSG_ERROR(bad value ${enableval} for --enable-x86-subpass);;
+               esac], [x86_subpass=false])
+
+AM_CONDITIONAL(HAS_X86_SUBPASS, test x$x86_subpass = xtrue)
+
+
+dnl ------------------------------------------------------------------------------------------
+
 AC_MSG_CHECKING([Native ArchType])
 
 AC_SUBST(NATIVE_ARCHTYPE)
@@ -96,14 +109,12 @@ case $build_cpu in
     AC_MSG_ERROR(unsupported Build CPU $build_cpu);;
 esac
 
-native_not_target=false
-
 if test x$NATIVE_ARCHTYPE = xx86
 then 
   if test x$TARGET_ARCHTYPE = xx86 -o x$TARGET_ARCHTYPE = xdefault
   then
-    CC+=" -n32"
-    CXX+=" -n32"
+    CC+=" -m32"
+    CXX+=" -m32"
     AC_DEFINE([ARCH_IS_x86], [], [The ArchType is a x86 32-bit.])
   else 
     if test x$TARGET_ARCHTYPE = xx86_64
@@ -117,10 +128,9 @@ if test x$NATIVE_ARCHTYPE = xx86_64
 then 
   if test x$TARGET_ARCHTYPE = xx86
   then
-    CC+=" -n32"
-    CXX+=" -n32"
+    CC+=" -m32"
+    CXX+=" -m32"
     NATIVE_ARCHTYPE=$TARGET_ARCHTYPE
-    native_not_target=true
     AC_DEFINE([ARCH_IS_x86], [], [The ArchType is a x86 32-bit.])
   else 
     if test x$TARGET_ARCHTYPE = xx86_64 -o x$TARGET_ARCHTYPE = xdefault
@@ -149,8 +159,6 @@ AC_MSG_RESULT([$NATIVE_ARCHTYPE])
 AM_CONDITIONAL(IS_x86, test x$NATIVE_ARCHTYPE = xx86)
 AM_CONDITIONAL(IS_x86_64, test x$NATIVE_ARCHTYPE = xx86_64)
 AM_CONDITIONAL(IS_UnivBin, test x$NATIVE_ARCHTYPE = xUnivBin)
-
-AM_CONDITIONAL(IS_UNIX_NATIVE_ONLY, test $native_not_target)
 
 
 dnl ------------------------------------------------------------------------------------------
@@ -1925,7 +1933,13 @@ AC_CONFIG_FILES([
   studios/laikaent/pipeline-local/src/com/laika/pipeline/builder/maya2mr/v2_3_2/scripts/Windows/plLaikaProjectTurntableBuilder.bat.src
 
   rpm/Makefile
-  rpm/pipeline.spec
+  rpm/pipeline.spec.A
+  rpm/pipeline.spec.B
+  rpm/pipeline.spec.C
+  rpm/pipeline.spec.D
+  rpm/pipeline.spec.E
+  rpm/pipeline.spec.F
+  rpm/pipeline.spec.G
   rpm/plmaster.spec
   rpm/plqueuemgr.spec
   rpm/pllocal.spec
@@ -1947,10 +1961,3 @@ AC_CONFIG_FILES([
 
 AC_OUTPUT
 
-
-
-#  www/gcstats/Makefile
-#  www/gcstats/etc/Makefile
-#  www/gcstats/sql/Makefile
-#  www/swfcharts/Makefile
-#  www/swfcharts/charts_library/Makefile
