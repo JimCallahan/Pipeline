@@ -116,11 +116,25 @@ The standard log file for this site on Linux and Mac OS X is:<br>
 </div>
 On Windows the standard log file path is:<br>
 <div style="margin-left: 40px;">&nbsp;<br>
-%APPDATA%\Temerity\Pipeline\plui.log.#</div>
+%APPDATA%\Temerity\Pipeline\plui.log.#<br>
+<br>
+</div>
 </div>
 <div style="margin-left: 40px;">
 <div style="margin-left: 80px;"></div>
-<span style="font-weight: bold;"></span><br>
+<span style="font-weight: bold;"></span><span style="font-weight: bold;"><a
+ name="--standard-log-dir"></a>--standard-log-dir</span>=<span
+ style="font-style: italic;">dirname</span><br>
+<span style="font-weight: bold;">
+</span><br>
+<span style="font-weight: bold;">
+</span>
+<div style="margin-left: 40px;">Write all output to the standard log
+file for <span style="font-weight: bold;">plui</span>(1) written to
+the given logs directory (<span style="font-style: italic;">dirname</span>)
+instead
+of printing to stdout.</div>
+<br>
 <span style="font-weight: bold;">
 <a name="--log-depth"></a>--log-backups</span>=<span
  style="font-style: italic;">num</span><br>

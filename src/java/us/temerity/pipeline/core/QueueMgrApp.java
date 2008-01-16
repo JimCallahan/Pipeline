@@ -1,4 +1,4 @@
-// $Id: QueueMgrApp.java,v 1.12 2007/07/20 07:47:12 jim Exp $
+// $Id: QueueMgrApp.java,v 1.13 2008/01/16 21:15:00 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -118,7 +118,8 @@ class QueueMgrApp
        "  plqueuemgr --license\n" + 
        "\n" + 
        "GLOBAL OPTIONS:\n" +
-       "  [--log-file=...][--log-backups=...][--log=...]\n" +
+       "  [--log-file=...] [--standard-log-file] [--standard-log-dir=...] \n" + 
+       "  [--log-backups=...] [--log=...]\n" +
        "  [--rebuild]\n" + 
        "\n" + 
        "PERFORMANCE TUNING OPTIONS:\n" +

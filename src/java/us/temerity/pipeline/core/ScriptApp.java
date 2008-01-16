@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.84 2007/12/29 23:05:31 jim Exp $
+// $Id: ScriptApp.java,v 1.85 2008/01/16 21:15:00 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -121,7 +121,8 @@ class ScriptApp
        "  plscript --license\n" + 
        "\n" + 
        "GLOBAL OPTIONS:\n" +
-       "  [--log-file=...] [--log-backups=...] [--log=...]\n" +
+       "  [--log-file=...] [--standard-log-file] [--standard-log-dir=...] \n" + 
+       "  [--log-backups=...] [--log=...]\n" +
        "\n" + 
        "COMMANDS:\n\n" +
        "  User Privileges:\n" +

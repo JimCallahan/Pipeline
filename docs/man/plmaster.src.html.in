@@ -156,10 +156,22 @@ of printing to stdout.<br>
 The standard log file for this site is:<br>
 <div style="margin-left: 40px;"><br>
 @ROOT_INST_DIR@/logs/plmaster.log.#<br>
+<br>
 </div>
 </div>
-<span style="font-weight: bold;"><br>
-<a name="--log-depth"></a>--log-backups</span>=<span
+<span style="font-weight: bold;"><a name="--standard-log-dir"></a>--standard-log-dir</span>=<span
+ style="font-style: italic;">dirname</span><br>
+<span style="font-weight: bold;">
+</span><br>
+<span style="font-weight: bold;">
+</span>
+<div style="margin-left: 40px;">Write all output to the standard log
+file for <span style="font-weight: bold;">plmaster</span>(1) written
+to the given logs directory (<span style="font-style: italic;">dirname</span>)
+instead
+of printing to stdout.</div>
+<br>
+<span style="font-weight: bold;"><a name="--log-depth"></a>--log-backups</span>=<span
  style="font-style: italic;">num<br>
 </span>
 <div style="margin-left: 40px;"><br>

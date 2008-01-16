@@ -1,4 +1,4 @@
-// $Id: JobMgrApp.java,v 1.9 2005/04/03 06:10:12 jim Exp $
+// $Id: JobMgrApp.java,v 1.10 2008/01/16 21:15:00 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -118,7 +118,8 @@ class JobMgrApp
        "  pljobmgr --license\n" + 
        "\n" + 
        "GLOBAL OPTIONS:\n" +
-       "  [--log-file=...][--log-backups=...][--log=...]\n" +
+       "  [--log-file=...] [--standard-log-file] [--standard-log-dir=...] \n" + 
+       "  [--log-backups=...] [--log=...]\n" +
        "\n" + 
        "\n" +  
        "Use \"pljobmgr --html-help\" to browse the full documentation.\n");

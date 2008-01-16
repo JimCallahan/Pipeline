@@ -1,4 +1,4 @@
-// $Id: FileMgrApp.java,v 1.17 2006/05/07 21:30:08 jim Exp $
+// $Id: FileMgrApp.java,v 1.18 2008/01/16 21:15:00 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -128,7 +128,8 @@ class FileMgrApp
        "  plfilemgr --license\n" + 
        "\n" + 
        "GLOBAL OPTIONS:\n" +
-       "  [--log-file=...][--log-backups=...][--log=...]\n" +
+       "  [--log-file=...] [--standard-log-file] [--standard-log-dir=...] \n" + 
+       "  [--log-backups=...] [--log=...]\n" +
        "\n" + 
        "\n" +  
        "Use \"plfilemgr --html-help\" to browse the full documentation.\n");
