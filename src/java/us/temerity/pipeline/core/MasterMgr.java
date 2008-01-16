@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.230 2008/01/14 08:05:07 jesse Exp $
+// $Id: MasterMgr.java,v 1.231 2008/01/16 20:19:47 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -11813,11 +11813,12 @@ class MasterMgr
 	  ("Only a user with Queue Manager privileges may submit jobs for nodes in " + 
 	   "working areas owned by another user!");
 
-      return submitJobGroupsCommon(req.getNodeID(), req.getFileIndices(), null, 
-                                   req.getBatchSize(), req.getPriority(), req.getRampUp(),
-                                   req.getMaxLoad(), req.getMinMemory(), req.getMinDisk(),
-                                   req.getSelectionKeys(), req.getLicenseKeys(), req.getHardwareKeys(), 
-                                   timer);
+      return submitJobGroupsCommon
+        (req.getNodeID(), req.getFileIndices(), null, 
+         req.getBatchSize(), req.getPriority(), req.getRampUp(),
+         req.getMaxLoad(), req.getMinMemory(), req.getMinDisk(),
+         req.getSelectionKeys(), req.getLicenseKeys(), req.getHardwareKeys(), 
+         timer);
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());
@@ -11863,11 +11864,12 @@ class MasterMgr
 	   "working areas owned by another user!");
 
       /* submit the jobs */ 
-      return submitJobGroupsCommon(req.getNodeID(), null, req.getTargetFileSequences(), 
-                                   req.getBatchSize(), req.getPriority(), req.getRampUp(),
-                                   req.getMaxLoad(), req.getMinMemory(), req.getMinDisk(),
-                                   req.getSelectionKeys(), req.getLicenseKeys(), 
-                                   req.getHardwareKeys(), timer);
+      return submitJobGroupsCommon
+        (req.getNodeID(), null, req.getTargetFileSequences(), 
+         req.getBatchSize(), req.getPriority(), req.getRampUp(),
+         req.getMaxLoad(), req.getMinMemory(), req.getMinDisk(),
+         req.getSelectionKeys(), req.getLicenseKeys(), req.getHardwareKeys(), 
+         timer);
     }
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());
@@ -11944,7 +11946,12 @@ class MasterMgr
     {
       TreeSet<String> assocRoots = new TreeSet<String>();     
       NodeID nodeID = rootNodeID;
-      
+
+      /* cache the currently available selection, license and hardware keys */ 
+      ArrayList<SelectionKey> allSelectionKeys = pQueueMgrClient.getSelectionKeys();
+      ArrayList<LicenseKey>   allLicenseKeys   = pQueueMgrClient.getLicenseKeys();
+      ArrayList<HardwareKey>  allHardwareKeys  = pQueueMgrClient.getHardwareKeys();
+
       /* as long as there are more root nodes to submit... */ 
       while((nodeID != null) || !assocRoots.isEmpty()) {
         
@@ -12003,14 +12010,16 @@ class MasterMgr
         if(rootNodeID.equals(nodeID)) {
           group = submitJobsCommon(status, indices, batchSize, priority, rampUp,
             			   maxLoad, minMemory, minDisk,
-                                   selectionKeys, licenseKeys, hardwareKeys, assocRoots, 
-                                   exceptions, timer);
+                                   selectionKeys, licenseKeys, hardwareKeys, 
+                                   allSelectionKeys, allLicenseKeys, allHardwareKeys, 
+                                   assocRoots, exceptions, timer);
         }
         else {
           group = submitJobsCommon(status, indices, null, null, null,
             			   null, null, null,
-                                   null, null, null, assocRoots, exceptions,
-                                   timer);
+                                   null, null, null, 
+                                   allSelectionKeys, allLicenseKeys, allHardwareKeys, 
+                                   assocRoots, exceptions, timer);
         }
 
         if(group != null) 
@@ -12075,6 +12084,19 @@ class MasterMgr
    *   Overrides the set of license keys required by them job associated with the root 
    *   node of the job submission.
    * 
+   * @param hardwareKeys 
+   *   Overrides the set of hardware keys required by them job associated with the root 
+   *   node of the job submission.
+   * 
+   * @param allSelectionKeys
+   *   A cache of all currently defined selection keys.
+   * 
+   * @param allLicenseKeys
+   *   A cache of all currently defined license keys.
+   *
+   * @param allHardwareKeys
+   *   A cache of all currently defined hardware keys.
+   * 
    * @param assocRoots
    *   The names of nodes encountered on the upstream side of an Association link.
    * 
@@ -12099,6 +12121,9 @@ class MasterMgr
    Set<String> selectionKeys,
    Set<String> licenseKeys,
    Set<String> hardwareKeys,
+   ArrayList<SelectionKey> allSelectionKeys, 
+   ArrayList<LicenseKey> allLicenseKeys, 
+   ArrayList<HardwareKey> allHardwareKeys,
    TreeSet<String> assocRoots, 
    ArrayList<String> exceptions,
    TaskTimer timer 
@@ -12116,6 +12141,7 @@ class MasterMgr
       submitJobs(status, indices, 
 		 true, batchSize, priority, rampUp, maxLoad, minMemory, minDisk, 
 		 selectionKeys, licenseKeys, hardwareKeys,
+                 allSelectionKeys, allLicenseKeys, allHardwareKeys, 
 		 extJobIDs, nodeJobIDs, upsJobIDs, rootJobIDs, jobs, assocRoots, 
 		 exceptions, timer);
       
@@ -12233,6 +12259,15 @@ class MasterMgr
    *   Overrides the set of license keys required by them job associated with the root 
    *   node of the job submission.
    * 
+   * @param allSelectionKeys
+   *   A cache of all currently defined selection keys.
+   * 
+   * @param allLicenseKeys
+   *   A cache of all currently defined license keys.
+   *
+   * @param allHardwareKeys
+   *   A cache of all currently defined hardware keys.
+   * 
    * @param extJobIDs
    *   The per-file IDs of pre-existing jobs which will regenerate the files indexed 
    *   by working version node ID. 
@@ -12272,6 +12307,9 @@ class MasterMgr
    Set<String> selectionKeys,
    Set<String> licenseKeys,
    Set<String> hardwareKeys,
+   ArrayList<SelectionKey> allSelectionKeys, 
+   ArrayList<LicenseKey> allLicenseKeys, 
+   ArrayList<HardwareKey> allHardwareKeys,
    TreeMap<NodeID,Long[]> extJobIDs,   
    TreeMap<NodeID,Long[]> nodeJobIDs,   
    TreeMap<NodeID,TreeSet<Long>> upsJobIDs, 
@@ -12316,6 +12354,7 @@ class MasterMgr
       
       if(anyRef || !work.isActionEnabled()) {
         collectNoActionJobs(status, isRoot, 
+                            allSelectionKeys, allLicenseKeys, allHardwareKeys, 
                             extJobIDs, nodeJobIDs, upsJobIDs, rootJobIDs, 
                             jobs, assocRoots, exceptions, timer);
         return;
@@ -12598,6 +12637,7 @@ class MasterMgr
                 NodeStatus lstatus = status.getSource(link.getName());
                 submitJobs(lstatus, lindices, 
                            false, null, null, null, null, null, null, null, null, null,
+                           allSelectionKeys, allLicenseKeys, allHardwareKeys, 
                            extJobIDs, nodeJobIDs, upsJobIDs, rootJobIDs, 
                            jobs, assocRoots, exceptions, timer);
               }
@@ -12767,7 +12807,8 @@ class MasterMgr
             TaskTimer subTimer = new TaskTimer("MasterMgr.adjustJobRequirements()");
             timer.suspend();
             try {
-              adjustJobRequirements(subTimer, job.queryOnlyCopy(), jreqs);
+              adjustJobRequirements(subTimer, job.queryOnlyCopy(), jreqs, 
+                                    allSelectionKeys, allLicenseKeys, allHardwareKeys);
               job.setJobRequirements(jreqs);
             } 
             catch(PipelineException ex) {
@@ -12801,8 +12842,6 @@ class MasterMgr
     }
   }
 
-
-
   /**
    * Change the given job requirements so that they are correct based on the
    * plugins that are contained in the selection, hardware, and license keys.
@@ -12813,31 +12852,45 @@ class MasterMgr
    * 
    * @param timer
    *   An event time.
+   * 
    * @param job
    *   The job that the requirements are being adjusted for.
+   *
    * @param jreqs
    *   The current job requirements that are going to be modified.
+   * 
+   * @param allSelectionKeys
+   *   A cache of all currently defined selection keys.
+   * 
+   * @param allLicenseKeys
+   *   A cache of all currently defined license keys.
+   *
+   * @param allHardwareKeys
+   *   A cache of all currently defined hardware keys.
    */
   private void 
   adjustJobRequirements
   (
     TaskTimer timer,
     QueueJob job,
-    JobReqs jreqs
+    JobReqs jreqs, 
+    ArrayList<SelectionKey> allSelectionKeys, 
+    ArrayList<LicenseKey> allLicenseKeys, 
+    ArrayList<HardwareKey> allHardwareKeys    
   )
     throws PipelineException
   {
-    /* Lazily evaluate this only if necessary*/
+    /* lazily evaluate this only if necessary */
     TreeMap<String, BaseAnnotation> annots = null;
     NodeID nodeID = job.getNodeID();
     PipelineException toThrow = null;
-    /* Selection Keys */
+
+    /* selection keys */
     {
-      ArrayList<SelectionKey> allKeys  = pQueueMgrClient.getSelectionKeys();
       TreeSet<String> finalKeys = new TreeSet<String>();
       Set<String> currentKeys = jreqs.getSelectionKeys();
 
-      for (SelectionKey key : allKeys) {
+      for (SelectionKey key : allSelectionKeys) {
         String name = key.getName();
         if (!key.hasKeyChooser() && currentKeys.contains(name))
           finalKeys.add(name); 
@@ -12859,13 +12912,13 @@ class MasterMgr
       jreqs.removeAllSelectionKeys();
       jreqs.addSelectionKeys(finalKeys);
     }
-    /* License Keys */
+
+    /* license keys */
     {
-      ArrayList<LicenseKey> allKeys  = pQueueMgrClient.getLicenseKeys();
       TreeSet<String> finalKeys = new TreeSet<String>();
       Set<String> currentKeys = jreqs.getLicenseKeys();
 
-      for (LicenseKey key : allKeys) {
+      for (LicenseKey key : allLicenseKeys) {
         String name = key.getName();
         if (!key.hasKeyChooser() && currentKeys.contains(name))
           finalKeys.add(name); 
@@ -12887,13 +12940,13 @@ class MasterMgr
       jreqs.removeAllLicenseKeys();
       jreqs.addLicenseKeys(finalKeys);
     }
-    /* Hardware Keys */
+
+    /* hardware keys */
     {
-      ArrayList<HardwareKey> allKeys  = pQueueMgrClient.getHardwareKeys();
       TreeSet<String> finalKeys = new TreeSet<String>();
       Set<String> currentKeys = jreqs.getHardwareKeys();
 
-      for (HardwareKey key : allKeys) {
+      for (HardwareKey key : allHardwareKeys) {
         String name = key.getName();
         if (!key.hasKeyChooser() && currentKeys.contains(name))
           finalKeys.add(name); 
@@ -12915,6 +12968,7 @@ class MasterMgr
       jreqs.removeAllHardwareKeys();
       jreqs.addHardwareKeys(finalKeys);
     }
+
     if (toThrow != null)
       throw toThrow;
   }
@@ -12932,6 +12986,15 @@ class MasterMgr
    * 
    * @param isRoot
    *   The this the root node of the job submission tree?
+   * 
+   * @param allSelectionKeys
+   *   A cache of all currently defined selection keys.
+   * 
+   * @param allLicenseKeys
+   *   A cache of all currently defined license keys.
+   *
+   * @param allHardwareKeys
+   *   A cache of all currently defined hardware keys.
    * 
    * @param extJobIDs
    *   The per-file IDs of pre-existing jobs which will regenerate the files indexed 
@@ -12962,6 +13025,9 @@ class MasterMgr
   (
    NodeStatus status, 
    boolean isRoot, 
+   ArrayList<SelectionKey> allSelectionKeys, 
+   ArrayList<LicenseKey> allLicenseKeys, 
+   ArrayList<HardwareKey> allHardwareKeys,
    TreeMap<NodeID,Long[]> extJobIDs,   
    TreeMap<NodeID,Long[]> nodeJobIDs,   
    TreeMap<NodeID,TreeSet<Long>> upsJobIDs, 
@@ -13008,6 +13074,7 @@ class MasterMgr
           
           submitJobs(lstatus, null, 
                      false, null, null, null, null, null, null, null, null, null,
+                     allSelectionKeys, allLicenseKeys, allHardwareKeys, 
                      extJobIDs, nodeJobIDs, upsJobIDs, rootJobIDs, 
                      jobs, assocRoots, exceptions, timer);
            
