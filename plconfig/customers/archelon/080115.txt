@@ -5,7 +5,7 @@ HomeDirectory = /crypt/home
 HostIDs = 
     archelon.temeritysoftware.com -121753525611606212411024894397500990040
 JavaClassVersion = 49.0
-JavaHome = /usr/java/jdk1.5.0_14-x86_64/jre
+JavaHome = /usr/java/jdk1.5.0_14/jre
 JavaName = Java HotSpot(TM) 64-Bit Server VM
 JavaVendor = Sun Microsystems Inc.
 JavaVersion = 1.5.0_14
