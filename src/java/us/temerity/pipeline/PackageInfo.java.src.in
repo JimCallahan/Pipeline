@@ -1,4 +1,4 @@
-// $Id: PackageInfo.java.src.in,v 1.38 2008/01/17 02:39:01 jim Exp $
+// $Id: PackageInfo.java.src.in,v 1.39 2008/01/17 03:26:37 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -63,8 +63,8 @@ class PackageInfo
         break;
 
       case Windows: 
-        if(!opsys.equals("Windows XP") && !opsys.equals("Windows 2000") &&
-           !opsys.equals("Windows 2003") && !opsys.equals("Windows NT"))
+        if(!osName.equals("Windows XP") && !osName.equals("Windows 2000") &&
+           !osName.equals("Windows 2003") && !osName.equals("Windows NT"))
           throw new IllegalStateException
             ("Attempting to run the (Windows) version on a the (" + osName + ") " + 
              "operating system!");
