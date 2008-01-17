@@ -1,4 +1,4 @@
 #!/bin/sh
 
 ../../src/pipeline/config/bootstrap-suse10.2-64bit.sh \
-  icvfx 080109 43000 43100
+  icvfx 080116 43000 43100
