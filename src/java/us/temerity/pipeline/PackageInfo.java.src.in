@@ -1,4 +1,4 @@
-// $Id: PackageInfo.java.src.in,v 1.37 2008/01/16 05:30:33 jim Exp $
+// $Id: PackageInfo.java.src.in,v 1.38 2008/01/17 02:39:01 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -25,20 +25,50 @@ class PackageInfo
    * Initialize fields which must be determined at runtime.
    */ 
   static {
-    String osType = null;
-    String archType = null;
-    String buildType = null;
+    /* lookup the OS and CPU archtecture related JVM properties */ 
+    String plOsType = null;
+    String plArchType = null;
+    String plBuildType = null;
+    String osName = null;
+    String osArch = null;
     try {
-      osType    = System.getProperty("pipeline.ostype");
-      archType  = System.getProperty("pipeline.archtype");
-      buildType = System.getProperty("pipeline.buildtype");
+      plOsType    = System.getProperty("pipeline.ostype");
+      plArchType  = System.getProperty("pipeline.archtype");
+      plBuildType = System.getProperty("pipeline.buildtype");
+
+      osName = System.getProperty("os.name");
+      osArch = System.getProperty("os.arch");
     }
     catch(Exception ex) {
     }
 
     OsType os = null;
     try {
-      os = OsType.valueOf(OsType.class, osType);
+      os = OsType.valueOf(OsType.class, plOsType);
+
+      /* set the OsType */ 
+      switch(os) {
+      case Unix: 
+        if(!osName.equals("Linux")) 
+          throw new IllegalStateException
+            ("Attempting to run the (Unix) version on the (" + osName + ") " + 
+             "operating system!");
+        break;
+
+      case MacOS:
+        if(!osName.equals("Mac OS X")) 
+          throw new IllegalStateException
+            ("Attempting to run the (MacOS) version on a the (" + osName + ") " + 
+             "operating system!");
+        break;
+
+      case Windows: 
+        if(!opsys.equals("Windows XP") && !opsys.equals("Windows 2000") &&
+           !opsys.equals("Windows 2003") && !opsys.equals("Windows NT"))
+          throw new IllegalStateException
+            ("Attempting to run the (Windows) version on a the (" + osName + ") " + 
+             "operating system!");
+      }
     }
     catch(NullPointerException ex) {
       throw new IllegalStateException
@@ -46,13 +76,37 @@ class PackageInfo
          "the current OsType!"); 
     }
     catch(IllegalArgumentException ex) {
-      throw new IllegalStateException("Unsupported OsType (" + osType + ")!");
+      throw new IllegalStateException("Unsupported OsType (" + plOsType + ")!");
     }
     sOsType = os;
 
+    /* set the ArchType */ 
     ArchType arch = null;
     try {
-      arch = ArchType.valueOf(ArchType.class, archType);
+      arch = ArchType.valueOf(ArchType.class, plArchType);
+      
+      switch (arch) {
+      case x86:
+        if(!osArch.equals("x86") && !osArch.equals("i386"))
+          throw new IllegalStateException
+            ("Attempting to run the (x86) version on a machine with a (" + osArch + ") " + 
+             "CPU architecture!");
+        break;
+        
+      case x86_64:
+        if(!osArch.equals("amd64")) 
+          throw new IllegalStateException
+            ("Attempting to run the (x86_64) version on a machine with a (" + osArch + ") " + 
+             "CPU architecture!");
+        break;
+        
+      case UnivBin:
+//      if(!osArch.equals("ppc") && !osArch.equals("???") ... ) 
+//        throw new IllegalStateException
+//         ("Attempting to run the (UnivBin) version on a machine with a (" + osArch + ") " +
+//          "CPU architecture!");
+        break;
+      }
     }
     catch(NullPointerException ex) {
       throw new IllegalStateException
@@ -60,13 +114,14 @@ class PackageInfo
          "the current ArchType!"); 
     }
     catch(IllegalArgumentException ex) {
-      throw new IllegalStateException("Unsupported ArchType (" + archType + ")!");
+      throw new IllegalStateException("Unsupported ArchType (" + plArchType + ")!");
     }
     sArchType = arch;
 
+    /* set the BuildType */ 
     BuildType build = null;
     try {
-      build = BuildType.valueOf(BuildType.class, buildType);
+      build = BuildType.valueOf(BuildType.class, plBuildType);
     }
     catch(NullPointerException ex) {
       throw new IllegalStateException
@@ -74,7 +129,7 @@ class PackageInfo
          "the current BuildType!"); 
     }
     catch(IllegalArgumentException ex) {
-      throw new IllegalStateException("Unsupported BuildType (" + buildType + ")!");
+      throw new IllegalStateException("Unsupported BuildType (" + plBuildType + ")!");
     }
     sBuildType = build;
 
