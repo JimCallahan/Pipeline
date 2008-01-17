@@ -1,1 +1,1 @@
---standard-log-file --log=all:finest --fail-fast
+--standard-log-file --fail-fast
