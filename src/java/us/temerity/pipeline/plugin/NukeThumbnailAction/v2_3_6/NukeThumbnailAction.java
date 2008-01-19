@@ -44,7 +44,7 @@ import java.util.*;
  * 
  *   Background Color<BR>
  *   <DIV style="margin-left: 40px;">
- *    If specified, the background color to be used to composite the thumbnail image over.
+ *     The background color to be used to composite the thumbnail image over.
  *   </DIV> 
  * </DIV> <P> 
  * 
