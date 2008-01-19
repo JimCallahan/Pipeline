@@ -44,7 +44,7 @@ import java.util.*;
  */
 public 
 class NukeThumbnailAction
-  extends CommonActionUtils
+  extends NukeActionUtils
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -122,7 +122,7 @@ class NukeThumbnailAction
     underDevelopment();
 
     addSupport(OsType.MacOS);
-    //addSupport(OsType.Windows);   // Seems to just hang on Windows boxes, not sure why!
+    addSupport(OsType.Windows); 
   }
   
   
@@ -201,84 +201,85 @@ class NukeThumbnailAction
     }
 
     /* create a temporary Nuke script */ 
-    Path tclScript = new Path(createTemp(agenda, "tcl"));
+    Path script = new Path(createTemp(agenda, "nk"));
     try {    
       int size = getSingleIntegerParamValue(aThumbnailSize, new Range<Integer>(1, null));
+      boolean overBg = getSingleBooleanParamValue(aOverBackground);
 
       Color3d bg = (Color3d) getSingleParamValue(aBackgroundColor); 
       if(bg == null) 
         throw new PipelineException
           ("The BackgroundColor was not specified!");
       
-      FileWriter out = new FileWriter(tclScript.toFile()); 
+      FileWriter out = new FileWriter(script.toFile()); 
+
+      /* create a constant background? */ 
+      if(overBg) 
+        out.write("Constant {\n" + 
+                  " inputs 0\n" + 
+                  " channels rgb\n" + 
+                  " color {0.576754 0.719033 0.821674 0}\n" + 
+                  " name BG\n" + 
+                  "}\n");
 
       /* read the file in */
-      out.write("Read -New name READ file " + sourcePath + "\n");
+      out.write("Read {\n" + 
+                " inputs 0\n" + 
+                " file " + sourcePath + "\n" +
+                " name READ\n" + 
+                "}\n");
 
-      /* add an alpha channel? */ 
+      /* add an alpha channel to the input image? */
       if(getSingleBooleanParamValue(aAddAlpha)) 
         out.write("add_layer {alpha rgba.alpha}\n" + 
-                  "AddChannels -New name ALPHA channels alpha color 1\n");
+                  "AddChannels {\n" + 
+                  " channels alpha\n" + 
+                  " color 1\n" + 
+                  " name ALPHA\n" + 
+                  "}\n");
 
       /* resize it */
-      out.write("Reformat -New name RESIZE type \"to box\" " +
-      		"box_width " + size + " box_height " + size + "\n");
+      out.write("Reformat {\n" + 
+                " type \"to box\"\n" + 
+                " box_width " + size + "\n" + 
+                " box_height " + size + "\n" + 
+                " name RESIZE\n" + 
+                "}\n");
 
-      /* comp over BG */ 
-      boolean overBg = getSingleBooleanParamValue(aOverBackground);
+      /* comp resized image over the background? */ 
       if(overBg) 
-        out.write("Merge2 -New name MERGE operation under bbox B\n");
+        out.write("Merge2 {\n" + 
+                  " inputs 2\n" + 
+                  " operation under\n" + 
+                  " bbox B\n" + 
+                  " name MERGE\n" + 
+                  "}\n");
       
-      /* output */
-      out.write("Write -New name WRITE file " + targetPath + "\n");
-      
-      /* BG */
-      if(overBg) 
-        out.write("Constant -New name BG color {"+bg.r()+" "+bg.g()+" "+bg.b()+"}\n" + 
-                  "input MERGE 1 BG\n" +    
-                  "input MERGE 0 RESIZE\n");
+      /* write the thumbnail out */
+      out.write("Write {\n" + 
+                " file " + targetPath + "\n" +
+                " name WRITE\n" + 
+                "}\n");
 
-      /* do it */
-      out.write("execute WRITE 1\n");
-      
       out.close();
     } 
     catch (IOException ex) {
       throw new PipelineException
-	("Unable to write temporary TCL script file (" + tclScript + ") for Job " + 
+	("Unable to write temporary Nuke script file (" + script + ") for Job " + 
 	 "(" + agenda.getJobID() + ")!\n" +
 	 ex.getMessage());
     }
 
-    /* create a temporary Python script to run Nuke piping the script to STDIN */ 
-    Map<String, String> env = agenda.getEnvironment();
-    File pyScript = createTemp(agenda, "py");
-    try {
-      FileWriter out = new FileWriter(pyScript); 
-
-      String nukeApp = NukeActionUtils.getNukeProgram(env); 
-      out.write
-      ("import subprocess\n" + 
-	"nukeScript = open('" + tclScript + "', 'r')\n" + 
-	"p = subprocess.Popen(['" + nukeApp + "', '-t'], stdin=nukeScript)\n" + 
-      "p.communicate()\n");
-      out.close();
-    } 
-    catch (IOException ex) {
-      throw new PipelineException
-      ("Unable to write temporary Python script file (" + pyScript + ") for Job " + 
-	"(" + agenda.getJobID() + ")!\n" +
-	ex.getMessage());
-    }
-
-    /* create the process to run the action */
+    /* create the process to run the action */ 
     {
       ArrayList<String> args = new ArrayList<String>();
-      String python = PythonActionUtils.getPythonProgram(env);
-      args.add(pyScript.getPath());
+      args.add("-nx"); 
+      args.add(script.toString()); 
+      args.add("1"); 
 
-      return createSubProcess(agenda, python, args, outFile, errFile);
-    }    
+      return createSubProcess(agenda, getNukeProgram(agenda), args, agenda.getEnvironment(), 
+                              agenda.getTargetPath().toFile(), outFile, errFile);
+    }
   }  
   
   
