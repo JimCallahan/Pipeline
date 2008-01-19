@@ -95,7 +95,7 @@ class NukeThumbnailAction
 	(aAddAlpha, 
 	 "Whether to add an solid alpha channel to the input image before resizing and/or " + 
          "compositing over the optional background layer.", 
-         true);
+         false);
       addSingleParam(param);
     }
 
@@ -129,8 +129,6 @@ class NukeThumbnailAction
 
       setSingleLayout(layout);  
     }
-
-    underDevelopment();
 
     addSupport(OsType.MacOS);
     addSupport(OsType.Windows); 
