@@ -31,6 +31,17 @@ import java.util.*;
  *    proportionally so that it fits within a square region of this size.
  *   </DIV> 
  * 
+ *   Add Alpha<BR>
+ *   <DIV style="margin-left: 40px;">
+ *    Whether to add an solid alpha channel to the input image before resizing and/or 
+ *    compositing over the optional background layer.
+ *   </DIV> 
+ * 
+ *   Over Background<BR>
+ *   <DIV style="margin-left: 40px;">
+ *     Whether to composite the thumbnail images over a constant colored background layer.
+ *   </DIV> 
+ * 
  *   Background Color<BR>
  *   <DIV style="margin-left: 40px;">
  *    If specified, the background color to be used to composite the thumbnail image over.
@@ -82,7 +93,7 @@ class NukeThumbnailAction
       ActionParam param = 
 	new BooleanActionParam
 	(aAddAlpha, 
-	 "Whether to add an solid alpha channel to the input image before resizing or " + 
+	 "Whether to add an solid alpha channel to the input image before resizing and/or " + 
          "compositing over the optional background layer.", 
          true);
       addSingleParam(param);
