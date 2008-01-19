@@ -36,6 +36,11 @@ import java.util.*;
  *    If specified, the background color to be used to composite the thumbnail image over.
  *   </DIV> 
  * </DIV> <P> 
+ * 
+ * By default, this Action executes the "Nuke4.6" binary.  This can be overridden by 
+ * specifying an alternate binary with the NUKE_BINARY environmental variable in the 
+ * Toolset used to run this Action plugin. On Windows, the Nuke binary name should 
+ * include the ".exe" extension.<P> 
  */
 public 
 class NukeThumbnailAction
@@ -75,17 +80,40 @@ class NukeThumbnailAction
 
     {
       ActionParam param = 
+	new BooleanActionParam
+	(aAddAlpha, 
+	 "Whether to add an solid alpha channel to the input image before resizing or " + 
+         "compositing over the optional background layer.", 
+         true);
+      addSingleParam(param);
+    }
+
+    {
+      ActionParam param = 
+	new BooleanActionParam
+	(aOverBackground, 
+	 "Whether to composite the thumbnail images over a constant colored " + 
+         "background layer.", 
+         true);
+      addSingleParam(param);
+    }
+
+    {
+      ActionParam param = 
 	new Color3dActionParam
 	(aBackgroundColor, 
-	 "The thumbnail is composited over a background image of this color.", 
-	 new Color3d(0.0, 0.0, 0.0));
+	 "The thumbnail is composited over a background layer of this constant color.", 
+	 new Color3d(0.5, 0.5, 0.5));
       addSingleParam(param);
     }
 
     {  
       LayoutGroup layout = new LayoutGroup(true);
       layout.addEntry(aImageNumber);   
-      layout.addEntry(aThumbnailSize);   
+      layout.addEntry(aThumbnailSize);  
+      layout.addSeparator();
+      layout.addEntry(aAddAlpha);   
+      layout.addEntry(aOverBackground);   
       layout.addEntry(aBackgroundColor);   
 
       setSingleLayout(layout);  
@@ -94,6 +122,7 @@ class NukeThumbnailAction
     underDevelopment();
 
     addSupport(OsType.MacOS);
+    //addSupport(OsType.Windows);   // Seems to just hang on Windows boxes, not sure why!
   }
   
   
@@ -141,7 +170,7 @@ class NukeThumbnailAction
     {
       if(sname == null) 
 	throw new PipelineException
-	("The NukeThumbnail Action only accepts a single source node.");
+          ("The NukeThumbnail Action only accepts a single source node.");
 
       if(!fseq.hasFrameNumbers())
 	throw new PipelineException
@@ -156,7 +185,8 @@ class NukeThumbnailAction
 	  "sequence (" + fseq + ")!"); 
 
       int index = range.frameToIndex(frame);
-      sourcePath = getWorkingNodeFilePaths(agenda, sname, fseq).get(index);
+      Path spath = new Path("WORKING" + sname);
+      sourcePath = new Path(spath.getParentPath(), fseq.getPath(index));
     }
 
     /* the target thumbnail image path */
@@ -183,21 +213,30 @@ class NukeThumbnailAction
       FileWriter out = new FileWriter(tclScript.toFile()); 
 
       /* read the file in */
-      out.write("Read -New name READ file " + sourcePath.toOsString() + "\n");
+      out.write("Read -New name READ file " + sourcePath + "\n");
+
+      /* add an alpha channel? */ 
+      if(getSingleBooleanParamValue(aAddAlpha)) 
+        out.write("add_layer {alpha rgba.alpha}\n" + 
+                  "AddChannels -New name ALPHA channels alpha color 1\n");
 
       /* resize it */
       out.write("Reformat -New name RESIZE type \"to box\" " +
       		"box_width " + size + " box_height " + size + "\n");
 
-      /* comp over BG */
-      out.write("Merge2 -New name MERGE operation under bbox B\n");
+      /* comp over BG */ 
+      boolean overBg = getSingleBooleanParamValue(aOverBackground);
+      if(overBg) 
+        out.write("Merge2 -New name MERGE operation under bbox B\n");
       
       /* output */
-      out.write("Write -New name WRITE file " + targetPath.toOsString() + "\n");
+      out.write("Write -New name WRITE file " + targetPath + "\n");
       
       /* BG */
-      out.write("Constant -New name BG color {"+bg.r()+" "+bg.g()+" "+bg.b()+"}\n");
-      out.write("input MERGE 1 BG\n");
+      if(overBg) 
+        out.write("Constant -New name BG color {"+bg.r()+" "+bg.g()+" "+bg.b()+"}\n" + 
+                  "input MERGE 1 BG\n" +    
+                  "input MERGE 0 RESIZE\n");
 
       /* do it */
       out.write("execute WRITE 1\n");
@@ -211,16 +250,7 @@ class NukeThumbnailAction
 	 ex.getMessage());
     }
 
-    /* Create a temporary Python script to run Nuke piping the script to STDIN 
-     * NOTE:  we're passing a "-d :0" argument to Nuke, which defines the X Display.
-     * This shouldn't be necessary in Terminal Mode, but for some reason, Nuke spits
-     * out a 'can't open DISPLAY ""' error if we don't.
-     * 
-     * TODO:  turns out that the Nuke "save_script" function is trying to open the
-     * X display, even in terminal mode.  This causes this action to barf on machines
-     * with no X servers (um, like anything in a renderfarm).  Need to figure out why
-     * the heck Nuke is doing this, and make it stop.
-     */ 
+    /* create a temporary Python script to run Nuke piping the script to STDIN */ 
     Map<String, String> env = agenda.getEnvironment();
     File pyScript = createTemp(agenda, "py");
     try {
@@ -230,7 +260,7 @@ class NukeThumbnailAction
       out.write
       ("import subprocess\n" + 
 	"nukeScript = open('" + tclScript + "', 'r')\n" + 
-	"p = subprocess.Popen(['" + nukeApp + "', '-t', '-d :0'], stdin=nukeScript)\n" + 
+	"p = subprocess.Popen(['" + nukeApp + "', '-t'], stdin=nukeScript)\n" + 
       "p.communicate()\n");
       out.close();
     } 
@@ -259,6 +289,8 @@ class NukeThumbnailAction
   
   public static final String aImageNumber     = "ImageNumber";
   public static final String aThumbnailSize   = "ThumbnailSize"; 
+  public static final String aAddAlpha        = "AddAlpha"; 
+  public static final String aOverBackground  = "OverBackground"; 
   public static final String aBackgroundColor = "BackgroundColor"; 
   
   private static final long serialVersionUID = 4550814638289129942L;
