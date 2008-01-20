@@ -1,4 +1,4 @@
-// $Id: NukeCompAction.java,v 1.1 2007/06/17 15:34:44 jim Exp $
+// $Id: NukeCompAction.java,v 1.2 2008/01/20 06:43:17 jim Exp $
 
 package us.temerity.pipeline.plugin.NukeCompAction.v2_2_1;
 
@@ -217,16 +217,7 @@ class NukeCompAction
       args.add("-nx"); 
       args.addAll(getExtraOptionsArgs());
       args.add(script.toString()); 
-      
-      FrameRange range = agenda.getPrimaryTarget().getFrameRange();
-      if(range != null) {
-        if(range.isSingle()) 
-          args.add(Integer.toString(range.getStart()));
-        else if(range.getBy() == 1) 
-          args.add(range.getStart() + "," + range.getEnd());
-        else 
-          args.add(range.getStart() + "," + range.getEnd() + "," + range.getBy());
-      }
+      args.add(toNukeFrameRange(agenda.getPrimaryTarget().getFrameRange()));
 
       return createSubProcess(agenda, getNukeProgram(agenda), args, agenda.getEnvironment(), 
                               agenda.getTargetPath().toFile(), outFile, errFile);
