@@ -1,4 +1,4 @@
-// $Id: JTuple3iField.java,v 1.1 2007/07/31 14:58:14 jim Exp $
+// $Id: JTuple3iField.java,v 1.2 2008/01/20 01:38:06 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -73,15 +73,15 @@ class JTuple3iField
   public void 
   setValue
   (
-   Tuple3i tuple
+   Tuple3i value
   ) 
   {
-    if(tuple == null) 
+    if(value == null) 
       return;
     
     int i;
     for(i=0; i<pSize; i++) 
-      pFields[i].setValue(tuple.getComp(i));
+      pFields[i].setValue(value.getComp(i));
     
     fireActionPerformed();
   }

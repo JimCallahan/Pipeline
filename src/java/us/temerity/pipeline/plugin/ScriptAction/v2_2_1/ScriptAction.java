@@ -1,4 +1,4 @@
-// $Id: ScriptAction.java,v 1.1 2007/06/17 15:34:45 jim Exp $
+// $Id: ScriptAction.java,v 1.2 2008/01/20 01:38:06 jim Exp $
 
 package us.temerity.pipeline.plugin.ScriptAction.v2_2_1;
 
@@ -110,7 +110,7 @@ import java.io.*;
  * Note that some of these variables may not be defined if there are no secondary file
  * sequences or node dependencies. <P> 
  * 
- * For new development, we would recommend using the {@link PythonAction Python} Action 
+ * For new development, we would recommend using the Python Action 
  * instead of this Action for the best multi-platform support.  Although you could provide
  * a Python script to this Action as its Script source node, passing job prep information
  * through the environment is less elegant than the dynamic module approach used by the 

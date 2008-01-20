@@ -1,4 +1,4 @@
-// $Id: MRayRenderGlobalsAction.java,v 1.1 2007/06/17 15:34:43 jim Exp $
+// $Id: MRayRenderGlobalsAction.java,v 1.2 2008/01/20 01:38:06 jim Exp $
 
 package us.temerity.pipeline.plugin.MRayRenderGlobalsAction.v2_0_9;
 
@@ -16,10 +16,9 @@ import java.io.*;
  * Creates a MEL script which when executed by Maya will set many of the most useful global 
  * rendering parameters of the Maya scene specific to the Mental Ray renderer. <P> 
  * 
- * This generated MEL script can then be used as the PreRenderMEL script of a 
- * {@link us.temerity.pipeline.plugin.v1_2_0.MayaRenderAction MayaRender} action to allow 
- * control over rendering parameters directly from Pipeline without the need to reopen 
- * the Maya scene. <P> 
+ * This generated MEL script can then be used as the PreRenderMEL script of a MayaRender
+ * action to allow control over rendering parameters directly from Pipeline without the need 
+ * to reopen the Maya scene. <P> 
  * 
  * This action defines the following single valued parameters: <BR>
  * 

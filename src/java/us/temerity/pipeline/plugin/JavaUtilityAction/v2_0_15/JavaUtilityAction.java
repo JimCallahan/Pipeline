@@ -1,4 +1,4 @@
-// $Id: JavaUtilityAction.java,v 1.1 2007/06/19 18:24:49 jim Exp $
+// $Id: JavaUtilityAction.java,v 1.2 2008/01/20 01:38:05 jim Exp $
 
 package us.temerity.pipeline.plugin.JavaUtilityAction.v2_0_15;
 
@@ -18,7 +18,7 @@ import us.temerity.pipeline.glue.io.GlueEncoderImpl;
  * Run an external Pipeline utility application. <P> 
  * 
  * The application must be packaged as JAR file and is typically compiled from Java sources
- * using the {@link JavaBuildAction}.  The class specified by Main Class must be derived 
+ * using the JavaBuild Action.  The class specified by Main Class must be derived 
  * from {@link BaseUtilityApp}.
  * 
  * This action defines the following single valued parameters: <BR>

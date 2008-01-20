@@ -1,4 +1,4 @@
-// $Id: MaxwellGlobalsAction.java,v 1.1 2007/06/17 15:34:43 jim Exp $
+// $Id: MaxwellGlobalsAction.java,v 1.2 2008/01/20 01:38:06 jim Exp $
 
 package us.temerity.pipeline.plugin.MaxwellGlobalsAction.v2_0_0;
 
@@ -16,10 +16,9 @@ import java.io.*;
  * Creates a MEL script which when executed by Maya will set many of the most useful global 
  * rendering parameters related to the Maxwell renderer in the Maya scene. <P> 
  * 
- * This generated MEL script can then be used as the PreRenderMEL script of a 
- * {@link us.temerity.pipeline.plugin.v2_0_0.MayaMxsExportAction MayaMxsExport} action to allow 
- * control over Maxwell rendering parameters directly from Pipeline without the need to 
- * reopen the Maya scene. <P> 
+ * This generated MEL script can then be used as the PreRenderMEL script of a MayaMxsExport 
+ * action to allow control over Maxwell rendering parameters directly from Pipeline without 
+ * the need to reopen the Maya scene. <P> 
  * 
  * This action defines the following single valued parameters: <BR>
  * 

@@ -1,4 +1,4 @@
-// $Id: JTuple3dTableCellRenderer.java,v 1.1 2007/07/31 14:58:14 jim Exp $
+// $Id: JTuple3dTableCellRenderer.java,v 1.2 2008/01/20 01:38:06 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -30,9 +30,6 @@ class JTuple3dTableCellRenderer
 
   /**
    * Construct a new renderer.
-   * 
-   * @param owner
-   *   The owning parent dialog.
    */
   public 
   JTuple3dTableCellRenderer() 

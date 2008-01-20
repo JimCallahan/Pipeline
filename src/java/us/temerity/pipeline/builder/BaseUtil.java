@@ -1,4 +1,4 @@
-// $Id: BaseUtil.java,v 1.22 2007/10/30 20:40:55 jesse Exp $
+// $Id: BaseUtil.java,v 1.23 2008/01/20 01:38:05 jim Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -1378,6 +1378,7 @@ class BaseUtil
    * <p>
    * This setting has no effect on the utility level.  It is up to implementing classes to 
    * decide how to take advantage of this functionality.
+   * 
    * @see BaseBuilder#addMappedParam(String, ParamMapping, ParamMapping)
    */
   protected final void

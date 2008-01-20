@@ -79,7 +79,6 @@ class ListMap<K, V>
    * the <tt>add</tt> or <tt>addAll</tt> operations.
    *
    * @return a set view of the mappings contained in this map.
-   * @see Map#Entry Map.Entry
    */
   public Set<java.util.Map.Entry<K, V>> 
   entrySet()

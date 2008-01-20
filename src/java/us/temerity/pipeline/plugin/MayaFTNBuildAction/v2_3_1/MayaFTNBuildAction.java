@@ -13,7 +13,7 @@ import us.temerity.pipeline.plugin.MayaActionUtils;
 
 /**
  * Generates a new Maya scene that can contains both Maya and MentalRay texture nodes for all
- * the textures that are linked to this node.
+ * the texture nodes that are linked to this node.
  * 
  * At each stage in the process, an optional MEL script may be evaluated.  The MEL scripts
  * must be the primary file sequence of one of the source nodes and are assigned to the 

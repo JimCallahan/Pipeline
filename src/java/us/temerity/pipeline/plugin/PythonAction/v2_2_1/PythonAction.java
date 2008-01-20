@@ -1,4 +1,4 @@
-// $Id: PythonAction.java,v 1.2 2007/10/25 00:02:51 jim Exp $
+// $Id: PythonAction.java,v 1.3 2008/01/20 01:38:06 jim Exp $
 
 package us.temerity.pipeline.plugin.PythonAction.v2_2_1;
 
@@ -18,7 +18,7 @@ import java.io.*;
  * This action provides some specialized features to support executing Python scripts within
  * the Pipeline framework.  The supplied Python script need not be executable since this 
  * action must work on all operating systems.  Although Python scripts could be used with 
- * the {@link ScriptAction Script} action, this plugin is usually preferable since it is much
+ * the Script action, this plugin is usually preferable since it is much
  * more convienient and provides controls over how the Python interpreter is invoked.  It is
  * also possible to write Python scripts using the "os" module which are truely platform
  * independent.<P> 

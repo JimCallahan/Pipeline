@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.115 2007/12/16 11:03:59 jim Exp $
+// $Id: MasterMgrClient.java,v 1.116 2008/01/20 01:38:05 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -5951,7 +5951,7 @@ class MasterMgrClient
    *   If unable to create the node bundle containing the nodes. 
    * 
    * @see #extractBundle
-   * @see #unpackNode
+   * @see #unpackNodes
    */ 
   public synchronized Path
   packNodes
@@ -6001,7 +6001,7 @@ class MasterMgrClient
    *   If unable to create the node bundle containing the nodes. 
    * 
    * @see #extractBundle
-   * @see #unpackNode
+   * @see #unpackNodes
    */ 
   public synchronized Path 
   packNodes
@@ -6045,7 +6045,7 @@ class MasterMgrClient
    * @throws PipelineException
    *   If unable to extract the node metadata from the node bundle.
    * 
-   * @see #packNode
+   * @see #packNodes
    * @see #unpackNodes
    */ 
   public synchronized NodeBundle
@@ -6109,7 +6109,7 @@ class MasterMgrClient
    * @throws PipelineException
    *   If unable to unpack the nodes from the node bundle.
    * 
-   * @see #packNode
+   * @see #packNodes
    * @see #extractBundle
    */ 
   public synchronized void 

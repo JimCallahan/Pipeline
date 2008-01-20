@@ -1,4 +1,4 @@
-// $Id: BaseStage.java,v 1.20 2007/12/16 06:26:02 jesse Exp $
+// $Id: BaseStage.java,v 1.21 2008/01/20 01:38:06 jim Exp $
 
 package us.temerity.pipeline.stages;
 
@@ -1052,7 +1052,7 @@ class BaseStage
    * <p>
    * This is used to select an appropriate editor for the node.  Stages should override
    * this method to set a value that makes sense.  There are a number of standard values
-   * defined in the {@link BaseBuilder.StageFunction} enumeration which can be used as well. 
+   * defined in {@link StageFunction} which can be used as well. 
    */
   public String
   getStageFunction()

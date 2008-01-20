@@ -415,7 +415,7 @@ PLG_UTIL_SOURCES = $(shell ls $(srcdir)/plugin/*.java)
 
 @BUILD_LEGACY_PLUGINS_TRUE@  PLUGINS1 = $(shell find $(srcdir)/plugin -type f -wholename "*/v1_*_*/*.java")
  PLUGINS2 = $(shell find $(srcdir)/plugin -type f -wholename "*/v2_0_*/*.java")
- PLUGINS3 = $(shell find $(srcdir)/plugin -type f -wholename "*/v2_[1-3]_*/*.java")
+ PLUGINS3 = $(shell find $(srcdir)/plugin -type f -wholename "*/v2_[1-4]_*/*.java")
 
 
 
@@ -481,7 +481,7 @@ $(API_JAR): java-all textures fonts
          $(JAR) uvf $$bdir/$(API_JAR) \
                     us/temerity/pipeline/laf/*.xml us/temerity/pipeline/laf/*.png)
 
-plugin/plugin-all: java-all
+plugin/plugin-all: java-all java-plugins
 	(cd plugin; $(srcdir)/plugin/archive-plugins $(JAR)) 
 
 bootstrap-jar: bootstrap-all
@@ -512,7 +512,7 @@ ui/core/prefs/GenUserPrefsApp.class: ui/core/prefs/GenUserPrefsApp.java
 	$(JAVA_C) $(JAVA_C_FLAGS) -d ui/core/prefs -classpath $(srcdir)/ui/core/prefs $<
 
 java-all: $(JAVA_SOURCES) $(JAVA_MSG_SOURCES) $(JAVA_UI_SOURCES) $(JAVA_CORE_SOURCES) \
-          $(JAVA_UI_CORE_SOURCES) $(JAVA_BLD_SOURCES) $(PLUGINS1) $(PLUGINS2) $(PLUGINS3)
+          $(JAVA_UI_CORE_SOURCES) $(JAVA_BLD_SOURCES) 
 	$(JAVA_C) $(JAVA_C_FLAGS) $(JAVA_PATHS) $(JAVA_SOURCES)
 	$(JAVA_C) $(JAVA_C_FLAGS) $(JAVA_PATHS) $(JAVA_EVENT_SOURCES)
 	$(JAVA_C) $(JAVA_C_FLAGS) $(JAVA_PATHS) $(JAVA_MATH_SOURCES)
@@ -521,12 +521,25 @@ java-all: $(JAVA_SOURCES) $(JAVA_MSG_SOURCES) $(JAVA_UI_SOURCES) $(JAVA_CORE_SOU
 	$(JAVA_C) $(JAVA_C_FLAGS) $(JAVA_PATHS) $(JAVA_CORE_SOURCES)
 	$(JAVA_C) $(JAVA_C_FLAGS) $(JAVA_PATHS) $(JAVA_UI_CORE_SOURCES)
 	$(JAVA_C) $(JAVA_C_FLAGS) $(JAVA_PATHS) $(JAVA_BLD_SOURCES)
-@BUILD_LEGACY_PLUGINS_TRUE@	$(JAVA_C) $(JAVA_C_NODEP_FLAGS) $(JAVA_PATHS) $(PLUGINS1)
-	$(JAVA_C) $(JAVA_C_NODEP_FLAGS) $(JAVA_PATHS) $(PLUGINS2)
-	$(JAVA_C) $(JAVA_C_FLAGS) $(JAVA_PATHS) $(PLUGINS3)
 	touch $@
 	ls core/*.class ui/core/*.class core/exts/*.class > vault-sources
 	rm -f $(top_builddir)/docs/javadoc/docs-all
+
+
+java-plugins: java-plugins1 java-plugins2 java-plugins3
+	touch $@
+
+java-plugins1: $(PLUGINS1)
+@BUILD_LEGACY_PLUGINS_TRUE@	$(JAVA_C) $(JAVA_C_NODEP_FLAGS) $(JAVA_PATHS) $(PLUGINS1)
+	touch $@
+
+java-plugins2: $(PLUGINS2)
+	$(JAVA_C) $(JAVA_C_NODEP_FLAGS) $(JAVA_PATHS) $(PLUGINS2)
+	touch $@
+
+java-plugins3: $(PLUGINS3)
+	$(JAVA_C) $(JAVA_C_FLAGS) $(JAVA_PATHS) $(PLUGINS3)
+	touch $@
 
 
 core/%.java: core/%.jj

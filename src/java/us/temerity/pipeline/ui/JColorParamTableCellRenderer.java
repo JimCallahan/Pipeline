@@ -1,4 +1,4 @@
-// $Id: JColorParamTableCellRenderer.java,v 1.1 2007/07/31 14:58:14 jim Exp $
+// $Id: JColorParamTableCellRenderer.java,v 1.2 2008/01/20 01:38:06 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -16,7 +16,7 @@ import javax.swing.table.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * The renderer for {@link JTable} cells containing {@link Color3dParam} data. 
+ * The renderer for {@link JTable} cells containing TupleParam<Color3d> data. 
  */ 
 public
 class JColorParamTableCellRenderer

@@ -1,4 +1,4 @@
-// $Id: JTuple4dParamTableCellRenderer.java,v 1.1 2007/07/31 14:58:14 jim Exp $
+// $Id: JTuple4dParamTableCellRenderer.java,v 1.2 2008/01/20 01:38:06 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -16,7 +16,7 @@ import javax.swing.table.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * The renderer for {@link JTable} cells containing {@link Tuple4dParam} data. 
+ * The renderer for {@link JTable} cells containing TupleParam<Tuple4d> data. 
  */ 
 public
 class JTuple4dParamTableCellRenderer

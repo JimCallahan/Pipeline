@@ -1,4 +1,4 @@
-// $Id: EnvCrossToSeqAction.java,v 1.1 2007/06/17 15:34:39 jim Exp $
+// $Id: EnvCrossToSeqAction.java,v 1.2 2008/01/20 01:38:05 jim Exp $
 
 package us.temerity.pipeline.plugin.EnvCrossToSeqAction.v2_0_0;
 
@@ -37,8 +37,7 @@ import java.io.*;
  * </DIV> <P>
  * 
  * This sequence of images can then be converted into RenderMan environment cube textures 
- * using the {@link PREnvCubeAction PREnvCube}, {@link AirEnvCubeAction AirEnvCube} or 
- * {@link DLEnvCubeAction DLEnvCube} actions. <P> 
+ * using the PREnvCube, AirEnvCube, DLEnvCube actions. <P> 
  * 
  * This action defines the following single valued parameters: <BR>
  * 
