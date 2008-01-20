@@ -75,8 +75,6 @@ class MayaExportAction
     super("MayaExport", new VersionID("2.3.10"), "Temerity",
       "An Action to export selected objects from an animated scene.");
     
-    underDevelopment();
-    
     addMayaSceneParam();
     
     {
@@ -138,32 +136,31 @@ class MayaExportAction
     }
     
     {
-        ActionParam param = 
+      ActionParam param = 
       	new BooleanActionParam
       	(aExportConstraints,
       	 "Should constraint information be exported.", 
       	 true); 
-        addSingleParam(param);
-      }
-
+      addSingleParam(param);
+    }
+    
     {
-        ActionParam param = 
+      ActionParam param = 
       	new BooleanActionParam
       	(aExportExpressions,
       	 "Should expression information be exported.", 
       	 true); 
-        addSingleParam(param);
-      }
-
+      addSingleParam(param);
+    }
+    
     {
-        ActionParam param = 
+      ActionParam param = 
       	new BooleanActionParam
       	(aExportHistory,
       	 "Should history information be exported.", 
       	 true); 
         addSingleParam(param);
-      }
-
+    }
     
     addInitalMELParam();
     addFinalMELParam();

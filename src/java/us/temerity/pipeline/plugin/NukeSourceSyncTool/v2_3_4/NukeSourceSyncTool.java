@@ -1,4 +1,4 @@
-// $Id: NukeSourceSyncTool.java,v 1.1 2007/09/24 08:06:59 jim Exp $
+// $Id: NukeSourceSyncTool.java,v 1.2 2008/01/20 06:42:17 jim Exp $
 
 package us.temerity.pipeline.plugin.NukeSourceSyncTool.v2_3_4;
 
@@ -28,8 +28,6 @@ class NukeSourceSyncTool
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
-  
-
   
   public
   NukeSourceSyncTool()
@@ -1824,6 +1822,8 @@ class NukeSourceSyncTool
       log("COULDN'T PARSE");
     return fseq;
   }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */

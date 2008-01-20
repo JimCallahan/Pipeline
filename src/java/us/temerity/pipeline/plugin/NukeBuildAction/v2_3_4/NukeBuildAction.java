@@ -1,3 +1,5 @@
+// $Id: NukeBuildAction.java,v 1.2 2008/01/20 06:42:17 jim Exp $
+
 package us.temerity.pipeline.plugin.NukeBuildAction.v2_3_4;
 
 import java.io.*;
@@ -19,7 +21,7 @@ import us.temerity.pipeline.plugin.*;
  **/
 public 
 class NukeBuildAction
-extends CompositeActionUtils
+  extends CompositeActionUtils
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -188,7 +190,8 @@ extends CompositeActionUtils
     try {      
       PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(nukeScript)));
 
-      Double compFrameRate = getSingleDoubleParamValue(aCompFrameRate, new Range<Double>(1., 9999.));
+      Double compFrameRate = 
+        getSingleDoubleParamValue(aCompFrameRate, new Range<Double>(1., 9999.));
       out.write("knob root.fps "+compFrameRate+"\n");
 
       /* Calculate the offsets for each Order
@@ -409,8 +412,8 @@ extends CompositeActionUtils
   /*   S T A T I C   M E T H O D S                                                          */
   /*----------------------------------------------------------------------------------------*/
 
-  /* getNukeBlendMode() - returns a string that Nuke understands as a value for the "operation"
-   * knob of a "Merge2" node.
+  /* getNukeBlendMode() - returns a string that Nuke understands as a value for the 
+   * "operation" knob of a "Merge2" node.
    */
   private static String
   getNukeBlendMode
@@ -510,3 +513,8 @@ extends CompositeActionUtils
   private static final long serialVersionUID = 1622629414069115214L;
 
 }
+	       
+	       
+	       
+	       
+	       
