@@ -1,3 +1,5 @@
 #!/bin/sh
 
-../../src/pipeline/config/bootstrap.sh TheO 080109 43000 43100
+time ../../src/pipeline/config/bootstrap-suse10.1-32bit.sh \
+  TheO 080118 43000 43100
+
