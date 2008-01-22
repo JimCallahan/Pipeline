@@ -152,17 +152,20 @@ namespace PipelineJobManager {
           /* set the JVM initialization arguments */
           JavaVMInitArgs vm_args;
           {
-            JavaVMOption options[6];
+            JavaVMOption options[9];
             options[0].optionString = "@PLJOBMGR_XMS@"; 
             options[1].optionString = "@PLJOBMGR_XMX@"; 
             options[2].optionString = "-Xrs"; 
             options[3].optionString = "-Xdebug"; 
             options[4].optionString = "@PLJOBMGR_XRUNJDWP@";
             options[5].optionString = "-Djava.class.path=@PIPELINE_LATEST_JAR@"; 
+            options[6].optionString = "-Dpipeline.ostype=@NATIVE_OSTYPE@";
+            options[7].optionString = "-Dpipeline.archtype=@NATIVE_ARCHTYPE@";
+            options[8].optionString = "-Dpipeline.buildtype=Debug";
       
             vm_args.version = JNI_VERSION_1_2;
             vm_args.options = options;
-            vm_args.nOptions = 6;
+            vm_args.nOptions = 9;
             vm_args.ignoreUnrecognized = 1;
           }
           
