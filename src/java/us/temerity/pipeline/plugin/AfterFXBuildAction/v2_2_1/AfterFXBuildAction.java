@@ -142,14 +142,31 @@ class AfterFXBuildAction
       params.put(param.getName(), param);
     }
     
-    addSourceLayerParam(params);
-    addSourcePassParam(params);
-    addSourceOrderParam(params);
+    {
+      ActionParam param = 
+        new IntegerActionParam
+        (aLayer, 
+         "Which level of the comp the source should appear at.  " +
+         "The higher the number, the closer to the top of the composition it will " + 
+         "be layered.",
+         0);
+      params.put(param.getName(), param);
+    }
 
+    {
+      ActionParam param = 
+        new IntegerActionParam
+        (aPass, 
+         "Which pass should this source be part of.  " +
+         "If this number is 0, then it will not be part of any pass." +
+         "This number also controls the order each pass is added into the final comp.",
+         0);
+      params.put(param.getName(), param);
+    }
+
+    addSourceOrderParam(params);
     addSourceFrameRateParam(params);
-    
-    addSourcePixelRatioParam(params);
-    
+    addSourcePixelRatioParam(params);    
     addSourceAlphaModeParam(params);
     addSourcePreMultColorParam(params);
     

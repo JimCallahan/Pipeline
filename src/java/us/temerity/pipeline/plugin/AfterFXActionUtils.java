@@ -1,3 +1,5 @@
+// $Id: AfterFXActionUtils.java,v 1.4 2008/01/23 16:25:58 jim Exp $
+
 package us.temerity.pipeline.plugin;
 
 import us.temerity.pipeline.*;
@@ -24,13 +26,16 @@ class AfterFXActionUtils
    * Construct with the given name, version, vendor and description.
    * 
    * @param name
-   *                The short name of the action.
+   *   The short name of the action.
+   * 
    * @param vid
-   *                The action plugin revision number.
+   *   The action plugin revision number.
+   * 
    * @param vendor
-   *                The name of the plugin vendor.
+   *   The name of the plugin vendor.
+   * 
    * @param desc
-   *                A short description of the action.
+   *   A short description of the action.
    */
   protected 
   AfterFXActionUtils
@@ -55,8 +60,10 @@ class AfterFXActionUtils
    * target node.
    * 
    * @param agenda
-   *                The agenda to be accomplished by the action.
-   * @return The path to the target After Effects scene.
+   *   The agenda to be accomplished by the action.
+   * 
+   * @return 
+   *   The path to the target After Effects scene.
    */
   public Path 
   getAfterFXSceneTargetPath
@@ -73,10 +80,13 @@ class AfterFXActionUtils
    * node specified by the given parameter.
    * 
    * @param pname
-   *                The name of the single valued MEL parameter.
+   *   The name of the single valued MEL parameter.
+   * 
    * @param agenda
-   *                The agenda to be accomplished by the action.
-   * @return The path to the MEL script or null if none was specified.
+   *   The agenda to be accomplished by the action.
+   * 
+   * @return 
+   *   The path to the MEL script or null if none was specified.
    */
   public Path
   getJavaScriptSourcePath
@@ -94,10 +104,13 @@ class AfterFXActionUtils
    * source node specified by the given parameter.
    * 
    * @param pname
-   *                The name of the single valued Scene parameter.
+   *   The name of the single valued Scene parameter.
+   * 
    * @param agenda
-   *                The agenda to be accomplished by the action.
-   * @return The path to the MEL script or null if none was specified.
+   *   The agenda to be accomplished by the action.
+   * 
+   * @return 
+   *   The path to the MEL script or null if none was specified.
    */
   public Path
   getAfterFXSceneSourcePath
@@ -118,8 +131,7 @@ class AfterFXActionUtils
   
   private static final long serialVersionUID = 2432054682863935407L;
   
-  
-  public static final String aAfterFXScene = "AfterFXScene";
-  public static final String aPreRenderScript = "PreRenderScript";
+  public static final String aAfterFXScene     = "AfterFXScene";
+  public static final String aPreRenderScript  = "PreRenderScript";
   public static final String aPostRenderScript = "PostRenderScript";
 }

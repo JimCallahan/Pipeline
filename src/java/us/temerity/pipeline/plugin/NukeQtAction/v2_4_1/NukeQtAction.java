@@ -1,3 +1,5 @@
+// $Id: NukeQtAction.java,v 1.2 2008/01/23 16:25:59 jim Exp $
+
 package us.temerity.pipeline.plugin.NukeQtAction.v2_4_1;
 
 import us.temerity.pipeline.*;

@@ -1,6 +1,6 @@
-// $Id: InDesignEditor.java,v 1.4 2008/01/23 16:25:59 jim Exp $
+// $Id: InDesignEditor.java,v 1.1 2008/01/23 16:25:59 jim Exp $
 
-package us.temerity.pipeline.plugin.InDesignEditor.v2_3_3;
+package us.temerity.pipeline.plugin.InDesignEditor.v2_4_1;
 
 import us.temerity.pipeline.*; 
 
@@ -30,13 +30,15 @@ class InDesignEditor
   public
   InDesignEditor()
   {
-    super("InDesign", new VersionID("2.3.3"), "Temerity",
+    super("InDesign", new VersionID("2.4.1"), "Temerity",
 	  "The Adobe InDesign document editor.", 
 	  "InDesign");
 
     removeSupport(OsType.Unix);
     addSupport(OsType.MacOS); 
     addSupport(OsType.Windows); 
+
+    underDevelopment(); 
   }
 
 
@@ -87,12 +89,13 @@ class InDesignEditor
 
       return super.prep(author, fseq, env, dir);
     }
-
-    ArrayList<String> args = new ArrayList<String>();
-    for(File file : fseq.getFiles()) 
-      args.add(file.getPath());
-    
-    return new SubProcessLight(author, getName(), getProgram(), args, env, dir);
+    else {
+      ArrayList<String> args = new ArrayList<String>();
+      for(File file : fseq.getFiles()) 
+        args.add(file.getPath());
+      
+      return new SubProcessLight(author, getName(), getProgram(), args, env, dir);
+    }
   }
 
   /** 
@@ -136,7 +139,7 @@ class InDesignEditor
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -5746983922180659862L;
+  private static final long serialVersionUID = -3814502124160272055L;
 
 }
 

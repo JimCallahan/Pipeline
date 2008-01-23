@@ -1,6 +1,6 @@
-// $Id: InDesignEditor.java,v 1.4 2008/01/23 16:25:59 jim Exp $
+// $Id: PhotoshopEditor.java,v 1.1 2008/01/23 16:25:59 jim Exp $
 
-package us.temerity.pipeline.plugin.InDesignEditor.v2_3_3;
+package us.temerity.pipeline.plugin.PhotoshopEditor.v2_4_1;
 
 import us.temerity.pipeline.*; 
 
@@ -12,15 +12,15 @@ import java.io.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * The Adobe InDesign document editor.<P> 
+ * The Adobe Photoshop image editor.<P> 
  * 
  * The ADOBE_CS_VERSION environmental variable from the Toolset can be specified to 
- * override the default version of the Adobe Create Suite used to launch InDesign.  For
- * example, setting ADOBE_CS_VERSION="3" will cause "Adobe InDesign CS3" to be used as 
- * the application instead of the default "Adobe InDesign CS2".
+ * override the default version of the Adobe Create Suite used to launch Photoshop.  For
+ * example, setting ADOBE_CS_VERSION="3" will cause "Adobe Photoshop CS3" to be used as 
+ * the application instead of the default "Adobe Photoshop CS2".
  */
 public
-class InDesignEditor
+class PhotoshopEditor
   extends BaseOpenEditor
 {  
   /*----------------------------------------------------------------------------------------*/
@@ -28,15 +28,17 @@ class InDesignEditor
   /*----------------------------------------------------------------------------------------*/
   
   public
-  InDesignEditor()
+  PhotoshopEditor()
   {
-    super("InDesign", new VersionID("2.3.3"), "Temerity",
-	  "The Adobe InDesign document editor.", 
-	  "InDesign");
+    super("Photoshop", new VersionID("2.4.1"), "Temerity",
+	  "The Adobe Photoshop image editor.", 
+	  "Photoshop");
 
     removeSupport(OsType.Unix);
     addSupport(OsType.MacOS); 
     addSupport(OsType.Windows); 
+
+    underDevelopment(); 
   }
 
 
@@ -83,17 +85,19 @@ class InDesignEditor
       String csv = env.get("ADOBE_CS_VERSION");
       if(csv == null) 
         csv = "2";
-      setProgram("Adobe InDesign CS" + csv); 
+      setProgram("Adobe Photoshop CS" + csv); 
 
       return super.prep(author, fseq, env, dir);
     }
-
-    ArrayList<String> args = new ArrayList<String>();
-    for(File file : fseq.getFiles()) 
-      args.add(file.getPath());
-    
-    return new SubProcessLight(author, getName(), getProgram(), args, env, dir);
+    else {
+      ArrayList<String> args = new ArrayList<String>();
+      for(File file : fseq.getFiles()) 
+        args.add(file.getPath());
+      
+      return new SubProcessLight(author, getName(), getProgram(), args, env, dir);
+    }
   }
+
 
   /** 
    * This implementation always throws a PipelineException, to insure that the {@link #prep
@@ -136,7 +140,7 @@ class InDesignEditor
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -5746983922180659862L;
+  private static final long serialVersionUID = 4972833496636031573L;
 
 }
 

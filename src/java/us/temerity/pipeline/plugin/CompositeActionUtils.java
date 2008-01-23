@@ -1,3 +1,5 @@
+// $Id: CompositeActionUtils.java,v 1.3 2008/01/23 16:25:58 jim Exp $
+
 package us.temerity.pipeline.plugin;
 
 import java.util.ArrayList;
@@ -23,13 +25,16 @@ public class CompositeActionUtils
    * Constructor with the given name, version, vendor and description.
    * 
    * @param name
-   *        The short name of the action.
+   *  The short name of the action.
+   * 
    * @param vid
-   *        The action plugin revision number.
+   *  The action plugin revision number.
+   * 
    * @param vendor
-   *        The name of the plugin vendor.
+   *  The name of the plugin vendor.
+   * 
    * @param desc
-   *        A short description of the action.
+   *   A short description of the action.
    */
   protected 
   CompositeActionUtils
@@ -156,7 +161,7 @@ public class CompositeActionUtils
     ActionParam param = 
       new IntegerActionParam
       (aLayer, 
-       "Which level of the comp the source should appear at.  " +
+       "The top-level layer index of the source image.  " + 
        "The higher the number, the closer to the top of the composition it will be layered.",
        0);
     params.put(param.getName(), param);
@@ -171,13 +176,13 @@ public class CompositeActionUtils
     ActionParam param = 
       new IntegerActionParam
       (aPass, 
-       "Which pass should this source be part of.  " +
-       "If this number is 0, then it will not be part of any pass." +
-       "This number also controls the order each pass is added into the final comp.",
+       "The intra-layer pass index of the source image.  " + 
+       "Passes are added to a layer in increasing pass index order.  " + 
+       "However if the pass index is (0), the source images will not be part of any " + 
+       "top-level layer.", 
        0);
     params.put(param.getName(), param);
   }
-  
   
   protected void
   addSourceOrderParam
@@ -220,63 +225,63 @@ public class CompositeActionUtils
   /*----------------------------------------------------------------------------------------*/
   
   // Single Params
-  public static final String aCompFrameRate = "CompFrameRate";
+  public static final String aCompFrameRate  = "CompFrameRate";
   public static final String aCompPixelRatio = "CompPixelRatio";
-  public static final String aCompHeight = "CompHeight";
-  public static final String aCompWidth = "CompWidth";
+  public static final String aCompHeight     = "CompHeight";
+  public static final String aCompWidth      = "CompWidth";
   
   // Source Params
-  public static final String aFrameRate = "FrameRate";
-  public static final String aPixelRatio = "PixelRatio";
-  public static final String aAlphaMode = "AlphaMode";
+  public static final String aFrameRate    = "FrameRate";
+  public static final String aPixelRatio   = "PixelRatio";
+  public static final String aAlphaMode    = "AlphaMode";
   public static final String aPreMultColor = "PreMultColor";
-  public static final String aLayer = "Layer";
-  public static final String aPass = "Pass";
-  public static final String aOrder = "Order";
-  public static final String aBlendMode = "BlendMode";
+  public static final String aLayer        = "Layer";
+  public static final String aPass         = "Pass";
+  public static final String aOrder        = "Order";
+  public static final String aBlendMode    = "BlendMode";
   
   // Options for BlendMode
-  public static final String aAdd = "Add";
-  public static final String aAlphaAdd = "AlphaAdd";
-  public static final String aClassicColorBurn = "ClassicColorBurn";
+  public static final String aAdd               = "Add";
+  public static final String aAlphaAdd          = "AlphaAdd";
+  public static final String aClassicColorBurn  = "ClassicColorBurn";
   public static final String aClassicColorDodge = "ClassicColorDodge";
   public static final String aClassicDifference = "ClassicDifference";
-  public static final String aColorBurn = "ColorBurn";
-  public static final String aColorDodge = "ColorDodge";
-  public static final String aColor = "Color";
-  public static final String aDancingDissolve = "DancingDissolve";
-  public static final String aDarken = "Darken";
-  public static final String aDifference = "Difference";
-  public static final String aDissolve = "Dissolve";
-  public static final String aExclusion = "Exclusion";
-  public static final String aHardLight = "HardLight";
-  public static final String aHue = "Hue";
-  public static final String aLighten = "Lighten";
-  public static final String aLinearBurn = "LinearBurn";
-  public static final String aLinearDodge = "LinearDodge";
-  public static final String aLinearLight = "LinearLight";
-  public static final String aLuminescentPremul= "LuminescentPremul";
-  public static final String aLuminosity = "Luminosity";
-  public static final String aMultiply = "Multiply";
-  public static final String aNormal = "Normal";
-  public static final String aOverlay = "Overlay";
-  public static final String aPinLight = "PinLight";
-  public static final String aSaturation = "Saturation";
-  public static final String aScreen = "Screen";
-  public static final String aSilhouetteAlpha = "SilhouetteAlpha";
-  public static final String aSilhouetteLuma = "SilhouetteLuma";
-  public static final String aSoftLight = "SoftLight";
-  public static final String aStencilAlpha = "StencilAlpha";
-  public static final String aStencilLuma = "StencilLuma";
-  public static final String aVividLight = "VividLight";
+  public static final String aColorBurn         = "ColorBurn";
+  public static final String aColorDodge        = "ColorDodge";
+  public static final String aColor             = "Color";
+  public static final String aDancingDissolve   = "DancingDissolve";
+  public static final String aDarken            = "Darken";
+  public static final String aDifference        = "Difference";
+  public static final String aDissolve          = "Dissolve";
+  public static final String aExclusion         = "Exclusion";
+  public static final String aHardLight         = "HardLight";
+  public static final String aHue               = "Hue";
+  public static final String aLighten           = "Lighten";
+  public static final String aLinearBurn        = "LinearBurn";
+  public static final String aLinearDodge       = "LinearDodge";
+  public static final String aLinearLight       = "LinearLight";
+  public static final String aLuminescentPremul = "LuminescentPremul";
+  public static final String aLuminosity        = "Luminosity";
+  public static final String aMultiply          = "Multiply";
+  public static final String aNormal            = "Normal";
+  public static final String aOverlay           = "Overlay";
+  public static final String aPinLight          = "PinLight";
+  public static final String aSaturation        = "Saturation";
+  public static final String aScreen            = "Screen";
+  public static final String aSilhouetteAlpha   = "SilhouetteAlpha";
+  public static final String aSilhouetteLuma    = "SilhouetteLuma";
+  public static final String aSoftLight         = "SoftLight";
+  public static final String aStencilAlpha      = "StencilAlpha";
+  public static final String aStencilLuma       = "StencilLuma";
+  public static final String aVividLight        = "VividLight";
   
   // Options for AlphaMode
-  public static final String aIgnore = "Ignore";
-  public static final String aStraight = "Straight";
+  public static final String aIgnore       = "Ignore";
+  public static final String aStraight     = "Straight";
   public static final String aPreMultipled = "PreMultiplied";
   
   // Options for PreMultiplyColor
-  public static final String aWhite =  "White";
+  public static final String aWhite = "White";
   public static final String aBlack = "Black";
   
   private static final long serialVersionUID = 2177685729941417899L;

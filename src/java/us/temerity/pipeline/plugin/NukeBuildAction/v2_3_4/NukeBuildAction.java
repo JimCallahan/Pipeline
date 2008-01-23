@@ -1,4 +1,4 @@
-// $Id: NukeBuildAction.java,v 1.2 2008/01/20 06:42:17 jim Exp $
+// $Id: NukeBuildAction.java,v 1.3 2008/01/23 16:25:59 jim Exp $
 
 package us.temerity.pipeline.plugin.NukeBuildAction.v2_3_4;
 
@@ -16,12 +16,14 @@ import us.temerity.pipeline.plugin.*;
 /** 
  * Generates a new Nuke comp from component image sources.
  * 
- *  TODO:  this doesn't handle secondary file sequences, which seems like an important case.
- *  Per jesse - AfterFXBuildAction doesn't either, so this is o.k. for now.<P> 
- **/
+ * By default, this Action executes the "Nuke4.6" binary.  This can be overridden by 
+ * specifying an alternate binary with the NUKE_BINARY environmental variable in the 
+ * Toolset used to run this Action plugin. On Windows, the Nuke binary name should 
+ * include the ".exe" extension.<P> 
+ */
 public 
 class NukeBuildAction
-  extends CompositeActionUtils
+  extends NukeActionUtils
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -31,37 +33,46 @@ class NukeBuildAction
   NukeBuildAction()
   {
     super("NukeBuild", new VersionID("2.3.4"), "Temerity",
-    "Generates a new Nuke comp from component image sources.");
+          "Generates a new Nuke comp from component image sources.");
 
     addCompFrameRateParam();
     addCompHeightParam();
     addCompWidthParam();
     addCompPixelRatioParam();
 
-    addSingleParam(new BooleanActionParam(aCompDoMerges,
-      		   "Whether or not to build Merge nodes.",
-      		   true)); 
-    /* 
-     * TODO:  what is supported?
-     */
+    {
+      ActionParam param = 
+        new BooleanActionParam
+        (aCompDoMerges,
+         "Whether or not to build Merge nodes.",
+         true); 
+      addSingleParam(param);
+    }
+ 
+    {
+      LayoutGroup layout = new LayoutGroup(true);
+      layout.addEntry(aCompDoMerges);
+      layout.addEntry(aCompHeight);
+      layout.addEntry(aCompWidth);
+      layout.addEntry(aCompPixelRatio);
+      layout.addEntry(aCompFrameRate);
+
+      setSingleLayout(layout);
+    }
+
+    {
+      LinkedList<String> layout = new LinkedList<String>();
+      layout.add(aLayer);
+      layout.add(aPass);
+      layout.add(aOrder);
+      layout.add(aBlendMode);
+      layout.add(aAlphaMode);
+
+      setSourceLayout(layout);
+    }
+  
     //addSupport(OsType.MacOS);
     //addSupport(OsType.Windows);
-
-    LayoutGroup layout = new LayoutGroup(true);
-    layout.addEntry(aCompDoMerges);
-    layout.addEntry(aCompHeight);
-    layout.addEntry(aCompWidth);
-    layout.addEntry(aCompPixelRatio);
-    layout.addEntry(aCompFrameRate);
-    setSingleLayout(layout);
-
-    LinkedList<String> sourceLayout = new LinkedList<String>();
-    sourceLayout.add(aLayer);
-    sourceLayout.add(aPass);
-    sourceLayout.add(aOrder);
-    sourceLayout.add(aBlendMode);
-    sourceLayout.add(aAlphaMode);
-    setSourceLayout(sourceLayout);
 
     underDevelopment();
   }
@@ -90,7 +101,7 @@ class NukeBuildAction
     TreeMap<String,ActionParam> params = new TreeMap<String,ActionParam>();
 
     {
-      /* NOTE:  these are in the order in which they appear in the Nuke interface */
+      /* NOTE: these are in the order in which they appear in the Nuke interface */
       ArrayList<String> choices = new ArrayList<String>();
       choices.add(aNormal);	
       choices.add(aDisjointOver);
@@ -133,16 +144,6 @@ class NukeBuildAction
     addSourceLayerParam(params);
     addSourcePassParam(params);
     addSourceOrderParam(params);
-
-    /* These are in AfterFXBuildAction, but are not required by Nuke.
-     * The functionality could be duplicated by building additonal nodes, but it's 
-     * questionable whether this is of any real use.  For now, assuming it's better 
-     * to have a simpler interface.
-     * 
-     *addSourceFrameRateParam(params);
-     *addSourcePixelRatioParam(params);
-     */
-
     addSourceAlphaModeParam(params);
 
     return params;
@@ -178,14 +179,13 @@ class NukeBuildAction
   public SubProcessHeavy
   prep
   (
-    ActionAgenda agenda,
-    File outFile, 
-    File errFile 
+   ActionAgenda agenda,
+   File outFile, 
+   File errFile 
   )
-  throws PipelineException
+    throws PipelineException
   {
-
-    /* create a temporary TCL script file to feed to Nuke*/ 
+    /* create a temporary TCL script file to feed to Nuke */ 
     File nukeScript = createTemp(agenda, "tcl");
     try {      
       PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(nukeScript)));
@@ -194,8 +194,7 @@ class NukeBuildAction
         getSingleDoubleParamValue(aCompFrameRate, new Range<Double>(1., 9999.));
       out.write("knob root.fps "+compFrameRate+"\n");
 
-      /* Calculate the offsets for each Order
-       */
+      /* calculate the offsets for each Order */
       TreeMap<Integer, Double> orderStart = new TreeMap<Integer, Double>();
 
       MappedLinkedList<Integer, Double> orderLength = new MappedLinkedList<Integer, Double>();
@@ -226,40 +225,41 @@ class NukeBuildAction
       
       Boolean compDoMerges = getSingleBooleanParamValue(aCompDoMerges);
 
-      // Iterate over the passes
-      MappedLinkedList<Integer, String> passList = new MappedLinkedList<Integer, String>();
+      /* iterate over the layers */ 
+      MappedLinkedList<Integer, String> layerList = new MappedLinkedList<Integer, String>();
       for (String sourceName : agenda.getSourceNames()) {
-	Integer pass = (Integer) getSourceParamValue(sourceName, aPass);
-	passList.put(pass, sourceName);
+	Integer layer = (Integer) getSourceParamValue(sourceName, aLayer);
+	layerList.put(layer, sourceName);
       }
-      boolean firstPass = true;
+      boolean firstLayer = true;
       String lastBlendMode = null;
-      for (Integer pass : passList.keySet()) {
-	String passCompName = "Pass" + pass;
+      for (Integer layer : layerList.keySet()) {
+	String layerCompName = "Layer" + layer;
 
-	out.write("# PASS = " + passCompName + "\n");
+	out.write("# LAYER = " + layerCompName + "\n");
 
-	// Iterate over the layers in this pass
-	MappedLinkedList<Integer, String> layerList = new MappedLinkedList<Integer, String>();
-	LinkedList<String> layers = passList.get(pass);
-	for (String sourceName : layers) {
-	  Integer layer = (Integer) getSourceParamValue(sourceName, aLayer);
-	  layerList.put(layer, sourceName);
+	/* iterate over the passes in this layer */ 
+	MappedLinkedList<Integer, String> passList = new MappedLinkedList<Integer, String>();
+	LinkedList<String> passes = layerList.get(layer);
+	for (String sourceName : passes) {
+	  Integer pass = (Integer) getSourceParamValue(sourceName, aPass);
+	  passList.put(pass, sourceName);
 	}	
-	boolean firstLayer = true;
-	for (int layer : layerList.keySet()) {
-	  out.write("# LAYER = " + layer + "\n");
+	boolean firstPass = true;
+	for (int pass : passList.keySet()) {
+	  out.write("# PASS = " + pass + "\n");
 
-	  // Iterate over the sources in this layer
+	  /* iterate over the sources in this pass */
 	  boolean firstSource = true;
-	  for (String sourceName : layerList.get(layer)) {
+	  for (String sourceName : passList.get(pass)) {
 	    lastBlendMode = (String) getSourceParamValue(sourceName, aBlendMode);
 	    writeSourceToScript(agenda, out, orderStart, sourceName);
 	    out.write("set thisSourceRoot [selected_node]\n");
 
-	    // If there were previous sources, connect this source to them
+	    /* if there were previous sources, connect this source to them */ 
 	    if (compDoMerges && firstSource == false) {
-	      blendNodes(agenda, out, "$thisSourceRoot", "$lastSourceRoot", lastBlendMode, "sourceMerge");
+	      blendNodes(agenda, out, "$thisSourceRoot", "$lastSourceRoot", 
+                         lastBlendMode, "sourceMerge");
 	      out.write("set lastSourceRoot [selected_node]\n");
 	    } else {
 	      out.write("set lastSourceRoot $thisSourceRoot\n");
@@ -267,56 +267,49 @@ class NukeBuildAction
 	    }
 	  }
 
-	  // If there were previous layers, connect this layer to them
-	  if (compDoMerges && firstLayer == false) {
-	    blendNodes(agenda, out, "$lastSourceRoot", "$lastLayerRoot", lastBlendMode, "layerMerge"+layer);
-	    out.write("set lastLayerRoot [selected_node]\n");
+	  /* if there were previous passes, connect this pass to them */ 
+	  if (compDoMerges && firstPass == false) {
+	    blendNodes(agenda, out, "$lastSourceRoot", "$lastPassRoot", 
+                       lastBlendMode, "passMerge"+pass);
+	    out.write("set lastPassRoot [selected_node]\n");
 	  } else {
-	    out.write("set lastLayerRoot $lastSourceRoot\n");
-	    firstLayer = false;
+	    out.write("set lastPassRoot $lastSourceRoot\n");
+	    firstPass = false;
 	  }
 	}
 
-	// If there were previous passes, connect this pass to them
-	if (compDoMerges && firstPass == false) {
-	  blendNodes(agenda, out, "$lastLayerRoot", "$lastPassRoot", lastBlendMode, "passMerge"+pass);
-	  out.write("set lastPassRoot [selected_node]\n");
+	/* if there were previous layers, connect this layer to them */ 
+	if (compDoMerges && firstLayer == false) {
+	  blendNodes(agenda, out, "$lastPassRoot", "$lastLayerRoot", 
+                     lastBlendMode, "layerMerge"+layer);
+	  out.write("set lastLayerRoot [selected_node]\n");
 	} else {
-	  out.write("set lastPassRoot $lastLayerRoot\n");
-	  firstPass = false;
+	  out.write("set lastLayerRoot $lastPassRoot\n");
+	  firstLayer = false;
 	}
       }
 
-      // Save the Nuke script
+      /* save the Nuke script */ 
       Path targetPath = getPrimaryTargetPath(agenda, "nk", "Nuke comp file");
       out.write("script_save "+targetPath+"\n");
 
-      // Close the temp TCL script
+      /* close the temp TCL script */ 
       out.close();
     }
     catch(IOException ex) {
       throw new PipelineException
-      ("Unable to write temporary TCL script file (" + nukeScript + ") for Job " + 
-	"(" + agenda.getJobID() + ")!\n" +
-	ex.getMessage());
+        ("Unable to write temporary TCL script file (" + nukeScript + ") for Job " + 
+         "(" + agenda.getJobID() + ")!\n" +
+         ex.getMessage());
     }
 
-    /* Create a temporary Python script to run Nuke piping the script to STDIN 
-     * NOTE:  we're passing a "-d :0" argument to Nuke, which defines the X Display.
-     * This shouldn't be necessary in Terminal Mode, but for some reason, Nuke spits
-     * out a 'can't open DISPLAY ""' error if we don't.
-     * 
-     * TODO:  turns out that the Nuke "save_script" function is trying to open the
-     * X display, even in terminal mode.  This causes this action to barf on machines
-     * with no X servers (um, like anything in a renderfarm).  Need to figure out why
-     * the heck Nuke is doing this, and make it stop.
-     */ 
+    /* create a temporary Python script to run Nuke piping the script to STDIN */ 
     Map<String, String> env = agenda.getEnvironment();
     File pyScript = createTemp(agenda, "py");
     try {
       FileWriter out = new FileWriter(pyScript); 
 
-      String nukeApp = NukeActionUtils.getNukeProgram(env); 
+      String nukeApp = getNukeProgram(env); 
       out.write
       ("import subprocess\n" + 
 	"nukeScript = open('" + nukeScript + "', 'r')\n" + 
@@ -340,8 +333,15 @@ class NukeBuildAction
     }
   }
 
-  /* blendNodes - create a Merge2 node in Nuke to composite the given layers,
-   * with the given blendMode as the operation.  
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   H E L P E R S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Create a Merge2 node in Nuke to composite the given passes with the given blendMode 
+   * as the operation.  
    */
   private void 
   blendNodes
@@ -353,10 +353,9 @@ class NukeBuildAction
     String blendMode,
     String name
   )
-  throws PipelineException
+    throws PipelineException
   {
-
-    String nukeBlendMode = getNukeBlendMode(blendMode);
+    String nukeBlendMode = blendModeStr(blendMode);
     if (name == null)
       name = "merge"+fgSource;
     out.write("Merge2 -New name "+name+" operation "+nukeBlendMode+"\n");
@@ -364,8 +363,9 @@ class NukeBuildAction
     out.write("input "+name+" 1 "+fgSource+"\n");
   }
 
-  /* writeSourceToScript - spit out the code to read a source sequence into Nuke,
-   * and optionally offset it in time based on the Order parameter.
+  /** 
+   * Spit out the code to read a source sequence into Nuke and optionally offset it in 
+   * time based on the Order parameter.
    */
   private void
   writeSourceToScript
@@ -375,7 +375,7 @@ class NukeBuildAction
     TreeMap<Integer, Double> orderStart, 
     String sourceName
   )
-  throws PipelineException
+    throws PipelineException
   {
     FileSeq sSeq = agenda.getPrimarySource(sourceName);
 
@@ -387,7 +387,7 @@ class NukeBuildAction
     FilePattern fpat = sSeq.getFilePattern();
     FrameRange range = sSeq.getFrameRange();      
     Path readPath = new Path("WORKING" + (new Path(sourceName)).getParent() + "/" + 
-      NukeActionUtils.toNukeFilePattern(fpat).toString());
+                             toNukeFilePattern(fpat).toString());
 
     String cmd = "Read -New file " + readPath.toOsString();
     if (range != null)
@@ -408,17 +408,14 @@ class NukeBuildAction
       out.write("Premult -New \n");
   }
 
-  /*----------------------------------------------------------------------------------------*/
-  /*   S T A T I C   M E T H O D S                                                          */
-  /*----------------------------------------------------------------------------------------*/
-
-  /* getNukeBlendMode() - returns a string that Nuke understands as a value for the 
-   * "operation" knob of a "Merge2" node.
+  /** 
+   * Generates a string that Nuke understands as a value for the "operation" knob of 
+   * a "Merge2" node.
    */
-  private static String
-  getNukeBlendMode
+  private String
+  blendModeStr
   (
-    String paramName
+   String paramName
   )
   {
     if (paramName.equals(aAdd))
@@ -486,31 +483,32 @@ class NukeBuildAction
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
+  private static final long serialVersionUID = 1622629414069115214L;
+
+  
   /* TODO:  these need to be migrated upward into CompositeActionUtils 
    * Also, the functions "normal", "add", and "stencilAlpha" need to be standardized.
    * Nuke calls them "over", "plus" and "stencil", respectively.  (I'm not 100% sure
    * about stencil, actually.)
    */
-  public static final String aAtop = "Atop";
-  public static final String aAverage = "Average";
+  public static final String aAtop         = "Atop";
+  public static final String aAverage      = "Average";
   public static final String aConjointOver = "Conjoint-Over";
-  public static final String aCopy = "Copy";
+  public static final String aCopy         = "Copy";
   public static final String aDisjointOver = "Disjoint-Over";
-  public static final String aDivide = "Divide";
-  public static final String aFrom = "From";
-  public static final String aIn = "In";
-  public static final String aMask = "Mask";
-  public static final String aMatte = "Matte";
-  public static final String aMax = "Max";
-  public static final String aMin = "Min";
-  public static final String aMinus = "Minus";
-  public static final String aOut = "Out";
-  public static final String aUnder = "Under";
-  public static final String aXor = "Xor";  
+  public static final String aDivide       = "Divide";
+  public static final String aFrom         = "From";
+  public static final String aIn           = "In";
+  public static final String aMask         = "Mask";
+  public static final String aMatte        = "Matte";
+  public static final String aMax          = "Max";
+  public static final String aMin          = "Min";
+  public static final String aMinus        = "Minus";
+  public static final String aOut          = "Out";
+  public static final String aUnder        = "Under";
+  public static final String aXor          = "Xor";  
 
   public static final String aCompDoMerges = "CompDoMerges";
-
-  private static final long serialVersionUID = 1622629414069115214L;
 
 }
 	       

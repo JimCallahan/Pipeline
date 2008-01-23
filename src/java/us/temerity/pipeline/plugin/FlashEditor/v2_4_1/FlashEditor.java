@@ -1,6 +1,6 @@
-// $Id: InDesignEditor.java,v 1.4 2008/01/23 16:25:59 jim Exp $
+// $Id: FlashEditor.java,v 1.1 2008/01/23 16:25:59 jim Exp $
 
-package us.temerity.pipeline.plugin.InDesignEditor.v2_3_3;
+package us.temerity.pipeline.plugin.FlashEditor.v2_4_1;
 
 import us.temerity.pipeline.*; 
 
@@ -8,19 +8,19 @@ import java.util.*;
 import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   P H O T O S H O P   E D I T O R                                                        */
+/*   F L A S H   E D I T O R                                                                */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * The Adobe InDesign document editor.<P> 
+ * The Adobe Flash 2D animation editor.<P> 
  * 
  * The ADOBE_CS_VERSION environmental variable from the Toolset can be specified to 
- * override the default version of the Adobe Create Suite used to launch InDesign.  For
- * example, setting ADOBE_CS_VERSION="3" will cause "Adobe InDesign CS3" to be used as 
- * the application instead of the default "Adobe InDesign CS2".
+ * override the default version of the Adobe Create Suite used to launch Flash.  For
+ * example, setting ADOBE_CS_VERSION="3" will cause "Adobe Flash CS3" to be used as 
+ * the application instead of the default "Adobe Flash CS2".
  */
 public
-class InDesignEditor
+class FlashEditor
   extends BaseOpenEditor
 {  
   /*----------------------------------------------------------------------------------------*/
@@ -28,15 +28,17 @@ class InDesignEditor
   /*----------------------------------------------------------------------------------------*/
   
   public
-  InDesignEditor()
+  FlashEditor()
   {
-    super("InDesign", new VersionID("2.3.3"), "Temerity",
-	  "The Adobe InDesign document editor.", 
-	  "InDesign");
+    super("Flash", new VersionID("2.4.1"), "Temerity",
+	  "The Adobe Flash image editor.", 
+	  "Flash");
 
     removeSupport(OsType.Unix);
     addSupport(OsType.MacOS); 
     addSupport(OsType.Windows); 
+
+    underDevelopment(); 
   }
 
 
@@ -83,17 +85,19 @@ class InDesignEditor
       String csv = env.get("ADOBE_CS_VERSION");
       if(csv == null) 
         csv = "2";
-      setProgram("Adobe InDesign CS" + csv); 
+      setProgram("Adobe Flash CS" + csv); 
 
       return super.prep(author, fseq, env, dir);
     }
-
-    ArrayList<String> args = new ArrayList<String>();
-    for(File file : fseq.getFiles()) 
-      args.add(file.getPath());
-    
-    return new SubProcessLight(author, getName(), getProgram(), args, env, dir);
+    else {
+      ArrayList<String> args = new ArrayList<String>();
+      for(File file : fseq.getFiles()) 
+        args.add(file.getPath());
+      
+      return new SubProcessLight(author, getName(), getProgram(), args, env, dir);
+    }
   }
+
 
   /** 
    * This implementation always throws a PipelineException, to insure that the {@link #prep
@@ -136,7 +140,7 @@ class InDesignEditor
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -5746983922180659862L;
+  private static final long serialVersionUID = -8083202380035759130L;
 
 }
 

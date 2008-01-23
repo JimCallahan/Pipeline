@@ -1,4 +1,4 @@
-// $Id: IllustratorEditor.java,v 1.3 2007/07/25 21:08:12 jim Exp $
+// $Id: IllustratorEditor.java,v 1.4 2008/01/23 16:25:59 jim Exp $
 
 package us.temerity.pipeline.plugin.IllustratorEditor.v2_3_3;
 
@@ -32,7 +32,7 @@ class IllustratorEditor
   {
     super("Illustrator", new VersionID("2.3.3"), "Temerity",
 	  "The Adobe Illustrator vector graphics editor.", 
-	  "Illustrator.exe");
+	  "Illustrator");
 
     removeSupport(OsType.Unix);
     addSupport(OsType.MacOS); 

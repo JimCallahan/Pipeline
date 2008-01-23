@@ -1,4 +1,4 @@
-// $Id: NukeCompAction.java,v 1.2 2008/01/20 06:43:17 jim Exp $
+// $Id: NukeCompAction.java,v 1.3 2008/01/23 16:25:59 jim Exp $
 
 package us.temerity.pipeline.plugin.NukeCompAction.v2_2_1;
 
@@ -19,7 +19,6 @@ import java.io.*;
  * All Write nodes in the Nuke script for file sequences associated with the target node 
  * will be executed.  Any Write nodes not associated with target file sequences will be
  * ignored.  
- * 
  * 
  * This action defines the following single valued parameters: <BR>
  * 
