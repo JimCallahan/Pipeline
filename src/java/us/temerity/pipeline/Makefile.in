@@ -594,8 +594,8 @@ install-plugins: plugin/plugin-all
            dir=$(DESTDIR)$(ROOT_INST_DIR)/plugins/`dirname $$ppath`; \
            echo $(mkinstalldirs) $$dir; \
            $(mkinstalldirs) $$dir; \
-           echo $(INSTALL) -m 444 $$ppath $$dir; \
-           $(INSTALL) -m 444 $$ppath $$dir; \
+           echo $(INSTALL) -m 644 $$ppath $$dir; \
+           $(INSTALL) -m 644 $$ppath $$dir; \
          done)
 	$(mkinstalldirs) $(DESTDIR)$(ROOT_INST_DIR)/plugins-extra/us/temerity/pipeline/plugin
 	mv $(DESTDIR)$(ROOT_INST_DIR)/plugins/us/temerity/pipeline/plugin/QueueStatsExt \
