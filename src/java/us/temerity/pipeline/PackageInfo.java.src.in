@@ -1,4 +1,4 @@
-// $Id: PackageInfo.java.src.in,v 1.39 2008/01/17 03:26:37 jim Exp $
+// $Id: PackageInfo.java.src.in,v 1.40 2008/01/23 16:26:46 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -44,6 +44,11 @@ class PackageInfo
 
     OsType os = null;
     try {
+      if(plOsType == null) 
+        throw new IllegalStateException
+          ("Unable to find (pipeline.ostype) in the Java environment used to determine " + 
+           "the current OsType!"); 
+
       os = OsType.valueOf(OsType.class, plOsType);
 
       /* set the OsType */ 
@@ -70,11 +75,6 @@ class PackageInfo
              "operating system!");
       }
     }
-    catch(NullPointerException ex) {
-      throw new IllegalStateException
-        ("Unable to find (pipeline.ostype) in the Java environment used to determine " + 
-         "the current OsType!"); 
-    }
     catch(IllegalArgumentException ex) {
       throw new IllegalStateException("Unsupported OsType (" + plOsType + ")!");
     }
@@ -83,6 +83,11 @@ class PackageInfo
     /* set the ArchType */ 
     ArchType arch = null;
     try {
+      if(plArchType == null)         
+        throw new IllegalStateException
+          ("Unable to find (pipeline.archtype) in the Java environment used to determine " + 
+           "the current ArchType!"); 
+
       arch = ArchType.valueOf(ArchType.class, plArchType);
       
       switch (arch) {
@@ -108,11 +113,6 @@ class PackageInfo
         break;
       }
     }
-    catch(NullPointerException ex) {
-      throw new IllegalStateException
-        ("Unable to find (pipeline.archtype) in the Java environment used to determine " + 
-         "the current ArchType!"); 
-    }
     catch(IllegalArgumentException ex) {
       throw new IllegalStateException("Unsupported ArchType (" + plArchType + ")!");
     }
@@ -121,12 +121,12 @@ class PackageInfo
     /* set the BuildType */ 
     BuildType build = null;
     try {
+      if(plBuildType == null) 
+        throw new IllegalStateException
+          ("Unable to find (pipeline.buildtype) in the Java environment used to determine " + 
+           "the current BuildType!"); 
+
       build = BuildType.valueOf(BuildType.class, plBuildType);
-    }
-    catch(NullPointerException ex) {
-      throw new IllegalStateException
-        ("Unable to find (pipeline.buildtype) in the Java environment used to determine " + 
-         "the current BuildType!"); 
     }
     catch(IllegalArgumentException ex) {
       throw new IllegalStateException("Unsupported BuildType (" + plBuildType + ")!");
