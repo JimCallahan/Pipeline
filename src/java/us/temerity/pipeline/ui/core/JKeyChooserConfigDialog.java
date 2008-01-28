@@ -1,4 +1,4 @@
-// $Id: JKeyChooserConfigDialog.java,v 1.4 2007/12/29 04:04:30 jesse Exp $
+// $Id: JKeyChooserConfigDialog.java,v 1.5 2008/01/28 11:41:07 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -369,6 +369,8 @@ class JKeyChooserConfigDialog
                  vpanel, sVSize, 
                  aparam.getDescription());
               field.setValue(value);
+              field.addActionListener(this);
+              field.setActionCommand("value-changed");
 
               pParamComponents.put(pname, field);
             }
@@ -379,6 +381,8 @@ class JKeyChooserConfigDialog
                 (tpanel, aparam.getNameUI() + ":", tsize, 
                  vpanel, value, sVSize, 
                  aparam.getDescription());
+              field.addActionListener(this);
+              field.setActionCommand("value-changed");
 
               pParamComponents.put(pname, field);
             }
@@ -389,6 +393,8 @@ class JKeyChooserConfigDialog
                 (tpanel, aparam.getNameUI() + ":", tsize, 
                  vpanel, value, sVSize, 
                  aparam.getDescription());
+              field.addActionListener(this);
+              field.setActionCommand("value-changed");
 
               pParamComponents.put(pname, field);
             }
@@ -400,6 +406,8 @@ class JKeyChooserConfigDialog
                 (tpanel, aparam.getNameUI() + ":", tsize, 
                  vpanel, eparam.getValues(), sVSize, 
                  aparam.getDescription());
+              field.addActionListener(this);
+              field.setActionCommand("value-changed");
               
               field.setSelected((String) eparam.getValue());
 
@@ -412,6 +420,8 @@ class JKeyChooserConfigDialog
                 (tpanel, aparam.getNameUI() + ":", tsize, 
                  vpanel, value, sVSize, 
                  aparam.getDescription());
+              field.addActionListener(this);
+              field.setActionCommand("value-changed");
 
               pParamComponents.put(pname, field);
             }
@@ -422,6 +432,8 @@ class JKeyChooserConfigDialog
                 (tpanel, aparam.getNameUI() + ":", tsize, 
                  vpanel, value, sVSize,  
                  aparam.getDescription());
+              field.addActionListener(this);
+              field.setActionCommand("value-changed");
 
               pParamComponents.put(pname, field);             
             }
@@ -432,6 +444,8 @@ class JKeyChooserConfigDialog
                 (tpanel, aparam.getNameUI() + ":", tsize, 
                  vpanel, value, sVSize, 
                  aparam.getDescription());
+              field.addActionListener(this);
+              field.setActionCommand("value-changed");
 
               pParamComponents.put(pname, field);             
             }
@@ -453,6 +467,8 @@ class JKeyChooserConfigDialog
                 (tpanel, aparam.getNameUI() + ":", sTSize-7, 
                  vpanel, values, sVSize, 
                  aparam.getDescription());
+              field.addActionListener(this);
+              field.setActionCommand("value-changed");
               
               if(value == null) 
                 field.setSelected("-");
@@ -589,6 +605,8 @@ class JKeyChooserConfigDialog
     String cmd = e.getActionCommand();
     if(cmd.equals("chooser-changed")) 
       doKeyChooserChanged();
+    else if (cmd.equals("value-changed"))
+      updateButton();
     else
       super.actionPerformed(e);
   }
