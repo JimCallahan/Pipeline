@@ -1,11 +1,10 @@
-// $Id: BaseAnnotation.java,v 1.2 2007/06/19 22:05:03 jim Exp $
+// $Id: BaseAnnotation.java,v 1.3 2008/01/28 12:06:09 jesse Exp $
 
 package us.temerity.pipeline;
 
-import us.temerity.pipeline.glue.*; 
-
 import java.util.*;
-import java.io.*;
+
+import us.temerity.pipeline.glue.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   B A S E   A N N O T A T I O N                                                          */
@@ -30,7 +29,7 @@ import java.io.*;
  * network.<P>
  * 
  * While new plugin subclass versions are being modified and tested the 
- * {@link #underDevelopment underDevelopment} method should be called in the subclasses
+ * {@link #underDevelopment() underDevelopment} method should be called in the subclasses
  * constructor to enable the plugin to be dynamically reloaded.
  */
 public
@@ -106,6 +105,7 @@ class BaseAnnotation
   /**
    * Get which general type of plugin this is. 
    */ 
+  @Override
   public final PluginType
   getPluginType()
   {
@@ -124,6 +124,7 @@ class BaseAnnotation
    * @param os
    *   The operating system type.
    */ 
+  @Override
   protected final void 
   addSupport
   (
@@ -150,6 +151,7 @@ class BaseAnnotation
    * @param os
    *   The operating system type.
    */ 
+  @Override
   protected final void 
   removeSupport
   (
@@ -172,6 +174,7 @@ class BaseAnnotation
    * This method is disabled because Annotation plugins can only support the default 
    * Unix operating system.
    */ 
+  @Override
   protected final void
   setSupports
   (
@@ -185,8 +188,40 @@ class BaseAnnotation
     super.setSupports(oss);
   }
 
+  /**
+   * Is the ability to add this Annotation to a node open to all users?
+   * <p>
+   * By default, only users with the Annotator privilege can add new Annotations to nodes. If
+   * it is desirable to have any user able to add this Annotation to a node, this method
+   * should be overridden to return <code>true</code>.
+   * 
+   * @return <code>true</code> if any user can add this annotation or <code>false</code>
+   *         if only users with the Annotator privilege can add this annotation.
+   */
+  public boolean
+  isUserAddable()
+  {
+    return false;
+  }
+  
+  /**
+   * Is the ability to remove this Annotation to a node open to all users?
+   * <p>
+   * By default, only users with the Annotator privilege can remove Annotations from nodes. If
+   * it is desirable to have any user able to remove this Annotation from a node, this method
+   * should be overridden to return <code>true</code>.
+   * 
+   * @return <code>true</code> if any user can remove this annotation or <code>false</code>
+   *         if only users with the Annotator privilege can remove this annotation.
+   */
+  public boolean
+  isUserRemovable()
+  {
+    return false;
+  }
 
-
+  
+  
   /*----------------------------------------------------------------------------------------*/
   /*   P A R A M E T E R S                                                                  */
   /*----------------------------------------------------------------------------------------*/
@@ -519,6 +554,7 @@ class BaseAnnotation
    * @param obj 
    *   The reference object with which to compare.
    */
+  @Override
   public final boolean
   equals
   (
@@ -557,6 +593,7 @@ class BaseAnnotation
   /**
    * Return a deep copy of this object.
    */
+  @Override
   public final Object 
   clone()
   {
@@ -577,6 +614,7 @@ class BaseAnnotation
   /*   G L U E A B L E                                                                      */
   /*----------------------------------------------------------------------------------------*/
   
+  @Override
   public final void 
   toGlue
   ( 
@@ -590,6 +628,7 @@ class BaseAnnotation
       encoder.encode("Params", pParams);
   }
   
+  @Override
   public final void 
   fromGlue
   (
@@ -627,7 +666,7 @@ class BaseAnnotation
   private TreeMap<String,AnnotationParam>  pParams;    
 
   /**
-   * Used to determing the order and grouping of parameters in the graphical user interface. 
+   * Used to determine the order and grouping of parameters in the graphical user interface. 
    */ 
   private ArrayList<String>  pLayout;
   
