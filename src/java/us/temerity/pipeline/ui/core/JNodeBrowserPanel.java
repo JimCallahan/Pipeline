@@ -1,4 +1,4 @@
-// $Id: JNodeBrowserPanel.java,v 1.19 2007/09/07 18:52:38 jim Exp $
+// $Id: JNodeBrowserPanel.java,v 1.20 2008/01/28 12:02:23 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -18,7 +18,7 @@ import javax.swing.tree.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * The directory-like browser of the node name heirarchy used to select nodes for display
+ * The directory-like browser of the node name hierarchy used to select nodes for display
  * in the {@link JNodeViewerPanel JNodeViewerPanel}.
  */ 
 public  

@@ -1,4 +1,4 @@
-// $Id: JTopLevelDialog.java,v 1.2 2006/10/11 22:45:41 jim Exp $
+// $Id: JTopLevelDialog.java,v 1.3 2008/01/28 12:02:23 jesse Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -14,6 +14,13 @@ import javax.swing.*;
 
 /**
  * Base class of all top-level non-modal application dialogs.
+ * <p>
+ * By default this contains the following buttons.
+ * <ul>
+ * <li>Confirm
+ * <li>Apply
+ * <li>Cancel
+ * </ul> 
  */ 
 public 
 class JTopLevelDialog
