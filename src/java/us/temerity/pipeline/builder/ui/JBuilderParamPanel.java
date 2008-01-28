@@ -395,13 +395,13 @@ public class JBuilderParamPanel
 	  (tpanel, displayName, tsize, 
 	   vpanel, eparam.getValues(), vsize, 
 	   bparam.getDescription());
+
+	field.setSelected((String) eparam.getValue());
 	
 	if (actionCommand != null) {
 	  field.addActionListener(this);
 	  field.setActionCommand(actionCommand);
 	}
-
-	field.setSelected((String) eparam.getValue());
 
 	return field;
       }
