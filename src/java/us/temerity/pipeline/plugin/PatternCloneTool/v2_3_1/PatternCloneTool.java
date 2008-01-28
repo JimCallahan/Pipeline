@@ -14,6 +14,11 @@ import us.temerity.pipeline.ui.*;
 
 /**
  * Clones a group of nodes, using pattern replacement to change their names.
+ * <p>
+ * It is important to note that this tool is not performing any modification to links, either
+ * in Pipeline or inside files.  It cannot be used to create a clone of an existing network.
+ * Instead it is designed to allow the copying of a group nodes that are not dependent on 
+ * each other, but that share a similar naming convention.
  */
 public 
 class PatternCloneTool 
@@ -22,6 +27,7 @@ class PatternCloneTool
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
+  
   public 
   PatternCloneTool()
   {

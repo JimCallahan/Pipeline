@@ -1,4 +1,4 @@
-// $Id: NodeNoteAnnotation.java,v 1.1 2007/11/03 22:07:35 jesse Exp $
+// $Id: NodeNoteAnnotation.java,v 1.2 2008/01/28 12:09:29 jesse Exp $
 
 package us.temerity.pipeline.plugin.NodeNoteAnnotation.v2_3_14;
 
@@ -36,6 +36,16 @@ class NodeNoteAnnotation
     }
   }
   
+  /*----------------------------------------------------------------------------------------*/
+  /*   A C C E S S                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+  
+  @Override
+  public boolean 
+  isUserAddable()
+  {
+    return true;
+  }
   
   /**
    * Node notes are editable by all users. <P> 
@@ -61,6 +71,7 @@ class NodeNoteAnnotation
     return true;
   }
   
+ 
   
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */

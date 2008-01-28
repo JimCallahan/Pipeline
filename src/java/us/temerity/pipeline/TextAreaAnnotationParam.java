@@ -1,4 +1,4 @@
-// $Id: TextAreaAnnotationParam.java,v 1.1 2007/11/03 22:08:18 jesse Exp $
+// $Id: TextAreaAnnotationParam.java,v 1.2 2008/01/28 12:08:26 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -43,6 +43,9 @@ class TextAreaAnnotationParam
    * 
    * @param value 
    *   The default value for this parameter.
+   *   
+   * @param rows
+   *   The number of rows that should be displayed in the user interface
    */ 
   public
   TextAreaAnnotationParam
