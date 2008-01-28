@@ -23,6 +23,9 @@ import java.util.*;
  * <p>
  * This is built on top of the {@link ListMap} data structure, so it provides an ordered
  * mapping.
+ * <p>
+ * @param <K> The key type.
+ * @param <V> The value type.
  */
 public 
 class MultiMap<K, V>
@@ -51,12 +54,27 @@ class MultiMap<K, V>
     pLeafValue = value;
   }
   
+  public MultiMap
+  (
+    MultiMap<K, V> mmap
+  )
+  {
+    super();
+    putAll(mmap);
+  }
+  
   
   
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * Sets the leaf value of the current MultiMap node.
+   * <p>
+   * @param leafValue The new value.
+   * @return The old value, if any, of the MultiMap node.
+   */
   public V
   setLeafValue
   (
@@ -68,6 +86,9 @@ class MultiMap<K, V>
     return toReturn;
   }
   
+  /**
+   * Gets the leaf value of the current MultiMap node.
+   */
   public V
   getLeafValue()
   {
@@ -97,6 +118,7 @@ class MultiMap<K, V>
    return putValue(key, value, false); 
   }
   
+  @SuppressWarnings("null")
   public V
   putValue
   (
@@ -134,6 +156,43 @@ class MultiMap<K, V>
   )
   {
     return putValue(keys, value, false);
+  }
+  
+  /**
+   * Inserts all the of key/value mappings from the given map into this map.
+   * 
+   * @param tmap
+   *   The map to insert.
+   */ 
+  public void
+  putAll
+  (
+   MultiMap<K,V> tmap
+  )  
+  {
+    pLeafValue = tmap.pLeafValue;
+    
+    for (K key : tmap.keySet()) {
+      MultiMap<K, V> entry = tmap.get(key);
+      LinkedList<K> keys = listFromObject(key);
+      putAllHelper(entry, keys);
+    }
+  }
+  
+  private void
+  putAllHelper
+  (
+    MultiMap<K,V> source,
+    LinkedList<K> keys 
+  )
+  {
+    putValue(keys, source.pLeafValue);
+    for (K key : source.keySet()) {
+      MultiMap<K, V> entry = source.get(key);
+      LinkedList<K> newKeys = new LinkedList<K>(keys);
+      newKeys.add(key);
+      putAllHelper(entry, newKeys);
+    }
   }
   
   /*----------------------------------------------------------------------------------------*/
@@ -187,6 +246,7 @@ class MultiMap<K, V>
   
   /*----------------------------------------------------------------------------------------*/
 
+  @SuppressWarnings("null")
   public V
   removeValue
   (
