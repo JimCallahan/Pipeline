@@ -154,6 +154,7 @@ class JBuilderParamDialog
   /**
    * Invoked when the user attempts to close the window from the window's system menu.
    */ 
+  @Override
   public void 	
   windowClosing
   (
@@ -169,6 +170,7 @@ class JBuilderParamDialog
   /** 
    * Invoked when an action occurs. 
    */ 
+  @Override
   public void 
   actionPerformed
   (
@@ -215,6 +217,7 @@ class JBuilderParamDialog
   /**
    * Cancel changes and close.
    */ 
+  @Override
   public synchronized void 
   doCancel()
   {
@@ -265,8 +268,12 @@ class JBuilderParamDialog
     int exitCode  
   )
   {
-    pTopPanel.disconnect();
-    System.exit(exitCode);
+    if (pBuilder.terminateAppOnQuit()) {
+      pTopPanel.disconnect();
+      System.exit(exitCode);
+    } else {
+      this.setVisible(false);
+    }
   }
   
   private void
@@ -370,6 +377,7 @@ class JBuilderParamDialog
   class NextParameterPassTask
     extends Thread
   {
+    @Override
     public void 
     run()
     {

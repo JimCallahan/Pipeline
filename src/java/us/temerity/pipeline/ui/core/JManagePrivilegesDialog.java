@@ -1,4 +1,4 @@
-// $Id: JManagePrivilegesDialog.java,v 1.3 2007/06/15 00:27:31 jim Exp $
+// $Id: JManagePrivilegesDialog.java,v 1.4 2008/01/28 11:58:51 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -508,12 +508,12 @@ class  JManagePrivilegesDialog
    MouseEvent e
   ) 
   {
-    pGroupUnderMouse = null;
-
     int mods = e.getModifiersEx();
     switch(e.getButton()) {
     case MouseEvent.BUTTON3:
       {
+        pGroupUnderMouse = null;
+        
 	int on1  = (MouseEvent.BUTTON3_DOWN_MASK);
 	
 	int off1 = (MouseEvent.BUTTON1_DOWN_MASK | 
@@ -557,7 +557,7 @@ class  JManagePrivilegesDialog
    MouseEvent e
   ) 
   {
-    pGroupUnderMouse = null;
+      //pGroupUnderMouse = null;
   }
 
 

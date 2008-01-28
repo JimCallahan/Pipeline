@@ -1,10 +1,11 @@
-// $Id: BasePluginMgrClient.java,v 1.12 2007/12/16 09:09:45 jim Exp $
+// $Id: BasePluginMgrClient.java,v 1.13 2008/01/28 12:00:51 jesse Exp $
   
 package us.temerity.pipeline;
 
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import us.temerity.pipeline.builder.BaseBuilderCollection;
 import us.temerity.pipeline.message.*;
 
 /*------------------------------------------------------------------------------------------*/
@@ -44,6 +45,7 @@ class BasePluginMgrClient
     pMasterExts    = new PluginDataCache("MasterExts");  
     pQueueExts     = new PluginDataCache("QueueExts");
     pKeyChoosers   = new PluginDataCache("KeyChoosers");
+    pBuilderCollections = new PluginDataCache("BuilderCollections");
   }
 
 
@@ -78,6 +80,7 @@ class BasePluginMgrClient
       pMasterExts.updatePlugins(rsp.getMasterExts()); 
       pQueueExts.updatePlugins(rsp.getQueueExts());
       pKeyChoosers.updatePlugins(rsp.getKeyChoosers());
+      pBuilderCollections.updatePlugins(rsp.getBuilderCollections());
      
       pCycleID = rsp.getCycleID();
     }
@@ -179,6 +182,16 @@ class BasePluginMgrClient
   getKeyChoosers() 
   {
     return pKeyChoosers.getPlugins();
+  }
+  
+  /**
+   * Get the vender, names, version numbers and supported operating system types 
+   * of all available Builder Collection plugins. <P> 
+   */ 
+  public synchronized TripleMap<String,String,VersionID,TreeSet<OsType>>
+  getBuilderCollections() 
+  {
+    return pBuilderCollections.getPlugins();
   }
 
 
@@ -473,6 +486,38 @@ class BasePluginMgrClient
     return (BaseKeyChooser) pKeyChoosers.newPlugin(name, vid, vendor);
   }
   
+  /**
+   * Create a new builder collection plugin instance. <P> 
+   * 
+   * Note that the <CODE>name</CODE> argument is not the name of the class, but rather the 
+   * name obtained by calling {@link BaseBuilderCollection#getName() 
+   * BaseBuilderCollection.getName} for the returned builder collection.
+   *
+   * @param name 
+   *   The name of the builder collection plugin to instantiate.  
+   * 
+   * @param vid
+   *   The revision number of the builder collection to instantiate 
+   *   or <CODE>null</CODE> for the latest version.
+   * 
+   * @param vendor
+   *   The name of the plugin vendor or <CODE>null</CODE> for Temerity.
+   * 
+   * @throws PipelineException
+   *   If no builder collection plugin can be found or instantiation fails for some reason.
+   */
+  public synchronized BaseBuilderCollection
+  newBuilderCollection
+  (
+   String name, 
+   VersionID vid, 
+   String vendor
+  ) 
+    throws PipelineException
+  {
+    return (BaseBuilderCollection) pBuilderCollections.newPlugin(name, vid, vendor);
+  }
+  
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -553,7 +598,7 @@ class BasePluginMgrClient
     }
 
     /**
-     * Copy the new or updated plugin classess into the cached plugin class table.
+     * Copy the new or updated plugin classes into the cached plugin class table.
      */ 
     public void 
     updatePlugins
@@ -719,6 +764,7 @@ class BasePluginMgrClient
   private PluginDataCache  pMasterExts; 
   private PluginDataCache  pQueueExts;
   private PluginDataCache  pKeyChoosers;
+  private PluginDataCache  pBuilderCollections;
 
 }
 

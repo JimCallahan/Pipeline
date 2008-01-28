@@ -44,8 +44,6 @@ class RadarShotBuilder
     throws PipelineException
   {
     super("RadarShotBuilder", 
-      	  new VersionID("1.0.0"), 
-      	  "Radar",
 	  "The basic Radar Shot Builder that works with the basic Radar Names class.",
 	  mclient,
 	  qclient,

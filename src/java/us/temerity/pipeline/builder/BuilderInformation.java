@@ -1,4 +1,4 @@
-// $Id: BuilderInformation.java,v 1.11 2007/12/16 06:26:02 jesse Exp $
+// $Id: BuilderInformation.java,v 1.12 2008/01/28 12:00:51 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -19,7 +19,7 @@ class BuilderInformation
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
-  
+
   public
   BuilderInformation
   (
@@ -28,8 +28,22 @@ class BuilderInformation
     MultiMap<String, String> commandLineParams
   )
   {
+    this(usingGui, true, abortOnBadParam, commandLineParams);
+  }
+
+  
+  public
+  BuilderInformation
+  (
+    boolean usingGui,
+    boolean terminateAppWithGui,
+    boolean abortOnBadParam,
+    MultiMap<String, String> commandLineParams
+  )
+  {
     pUsingGUI = usingGui;
     pAbortOnBadParam = abortOnBadParam;
+    pTerminateAppOnQuit = terminateAppWithGui;
     pCommandLineParams = commandLineParams;
     pAllConstructPasses = new LinkedList<ConstructPass>();
     pPassToBuilderMap = new ListMap<ConstructPass, BaseBuilder>();
@@ -240,6 +254,12 @@ class BuilderInformation
     return pAbortOnBadParam;
   }
   
+  public final boolean
+  terminateAppOnQuit()
+  {
+    return pTerminateAppOnQuit;
+  }
+  
   public final StageInformation
   getNewStageInformation()
   {
@@ -281,6 +301,8 @@ class BuilderInformation
   private boolean pUsingGUI = false;
   
   private boolean pAbortOnBadParam = false;
+  
+  private boolean pTerminateAppOnQuit;
   
   private LinkedList<BaseBuilder> pCheckInOrder;
   

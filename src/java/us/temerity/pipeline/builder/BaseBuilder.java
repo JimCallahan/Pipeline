@@ -1,4 +1,4 @@
-// $Id: BaseBuilder.java,v 1.33 2007/11/01 19:08:53 jesse Exp $
+// $Id: BaseBuilder.java,v 1.34 2008/01/28 12:00:51 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -16,6 +16,7 @@ import us.temerity.pipeline.builder.ui.JBuilderParamDialog;
 import us.temerity.pipeline.math.Range;
 import us.temerity.pipeline.stages.BaseStage;
 import us.temerity.pipeline.ui.UIFactory;
+import us.temerity.pipeline.ui.core.UIMaster;
 
 /*------------------------------------------------------------------------------------------*/
 /*   B A S E   B U I L D E R                                                                */
@@ -99,8 +100,6 @@ class BaseBuilder
   BaseBuilder
   (
     String name,
-    VersionID vid,
-    String vendor,
     String desc,
     MasterMgrClient mclient,
     QueueMgrClient qclient,
@@ -108,7 +107,7 @@ class BaseBuilder
   )
     throws PipelineException
   {
-    super(name, vid, vendor, desc, mclient, qclient);
+    super(name, desc, mclient, qclient);
     pBuilderInformation = builderInformation;
     pStageInfo = builderInformation.getNewStageInformation();
     pSubBuilders = new TreeMap<String, BaseBuilder>();
@@ -185,6 +184,8 @@ class BaseBuilder
        false); 
     addParam(param);
   }
+  
+  
   
   /*----------------------------------------------------------------------------------------*/
   /*   S U B - B U I L D E R S                                                              */
@@ -1567,7 +1568,13 @@ class BaseBuilder
   /*   S H U T D O W N                                                                      */
   /*----------------------------------------------------------------------------------------*/
   
-  public void
+  public final boolean
+  terminateAppOnQuit()
+  {
+    return pBuilderInformation.terminateAppOnQuit();
+  }
+  
+  public final void
   disconnectClients()
   {
     pClient.disconnect();
@@ -1575,7 +1582,7 @@ class BaseBuilder
     LogMgr.getInstance().cleanup();
   }
   
-  public void
+  public final void
   releaseNodes() 
     throws PipelineException
   {
@@ -2007,15 +2014,29 @@ class BaseBuilder
 	pGuiDialog.setVisible(true);
       }
       catch (PipelineException ex) {
-	System.err.println("Problem initializing builder in gui mode.\n" + ex.getMessage());
-	System.exit(1);
+	quit(ex, 1);
       }
       catch(Exception ex) {
-	ex.printStackTrace();
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Ops, LogMgr.Level.Severe,
-	   getFullMessage(ex));
-	System.exit(1);
+	quit(ex, 1);
+      }
+    }
+    
+    private void
+    quit
+    (
+      Exception ex,
+      int exitCode  
+    )
+    {
+      LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+       getFullMessage(ex));
+      if (pBuilder.terminateAppOnQuit()) {
+        System.err.println("Problem initializing builder in gui mode.\n" + ex.getMessage());
+        System.exit(exitCode);
+      } else {
+        pGuiDialog.setVisible(false);
+        UIMaster.getInstance().showErrorDialog(ex);
       }
     }
     private BaseBuilder pBuilder;

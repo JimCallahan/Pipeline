@@ -1,8 +1,4 @@
 #!/bin/sh
 
 cd `pwd`
-exec "@CLIENT_JAVA_RUNTIME@" @JAVA_RUNTIME_OPTS@ \
-  @PLUI_GC_OPTS@ \
-  -Djava.library.path=@JOGL_LIBRARY_PATH@ \
-  -cp @PIPELINE_JAR@:@JOGL_JAR@:@GLUEGEN_JAR@:@PIPELINE_BUILDERDIR@/maya2mr/v2_3_2/maya2mr.jar \
-  us/temerity/pipeline/bootstrap/Main us.temerity.pipeline.core.BuilderApp us.temerity.pipeline.builder.maya2mr.v2_3_2.AssetBuilder "$@"
+exec plbuilder Maya2MR 2.3.2 Temerity Asset "$@"

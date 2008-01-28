@@ -1419,6 +1419,12 @@ AC_SUBST(PLTESTNATIVE_DEBUG_OPTS)
 PLTESTNATIVE_DEBUG_OPTS=${java_debug_opts}$(($debug_base+10))
 AC_MSG_RESULT([$PLTESTNATIVE_DEBUG_OPTS])
 
+AC_MSG_CHECKING([plbuilder])
+AC_SUBST(PLBUILDER_DEBUG_OPTS)
+PLBUILDER_DEBUG_OPTS=${java_debug_opts}$(($debug_base+11))
+AC_MSG_RESULT([$PLBUILDER_DEBUG_OPTS])
+
+
 AC_MSG_RESULT([ ])
 
 
@@ -1477,6 +1483,11 @@ AC_MSG_CHECKING([plpluginmgr])
 AC_SUBST(PLPLUGINMGR_PROFILE_OPTS)
 PLPLUGINMGR_PROFILE_OPTS=${java_prof_opts}$(($prof_base+9))${java_prof_dir}"plpluginmgr"
 AC_MSG_RESULT([$PLPLUGINMGR_PROFILE_OPTS])
+
+AC_MSG_CHECKING([plbuilder])
+AC_SUBST(PLBUILDER_PROFILE_OPTS)
+PLBUILDER_PROFILE_OPTS=${java_prof_opts}$(($prof_base+10))${java_prof_dir}"plbuilder"
+AC_MSG_RESULT([$PLBUILDER_PROFILE_OPTS])
 
 AC_MSG_RESULT([ ])
 
@@ -1730,6 +1741,7 @@ AC_CONFIG_FILES([
   src/java/jython/Windows/jythonc.bat.src
 
   src/java/scripts/Makefile
+  src/java/scripts/plbuilder
   src/java/scripts/plfilemgr
   src/java/scripts/pljobmgr
   src/java/scripts/plmaster
@@ -1747,6 +1759,7 @@ AC_CONFIG_FILES([
   src/java/scripts/upgrade-hosts-file
 
   src/java/scripts/debug/Makefile
+  src/java/scripts/debug/plbuilder
   src/java/scripts/debug/plfilemgr
   src/java/scripts/debug/pljobmgr
   src/java/scripts/debug/plmaster
@@ -1764,6 +1777,7 @@ AC_CONFIG_FILES([
   src/java/scripts/debug/plvalidate
 
   src/java/scripts/profile/Makefile
+  src/java/scripts/profile/plbuilder
   src/java/scripts/profile/plfilemgr
   src/java/scripts/profile/pljobmgr
   src/java/scripts/profile/plmaster
@@ -1834,6 +1848,7 @@ AC_CONFIG_FILES([
   src/windows/scripts/pljobmgr.bat.src
 
   src/windows/scripts/debug/Makefile
+  src/windows/scripts/debug/plbuilder.bat.src
   src/windows/scripts/debug/pltestheavy.bat.src
   src/windows/scripts/debug/pltestlight.bat.src
   src/windows/scripts/debug/pltestnative.bat.src
@@ -1841,7 +1856,7 @@ AC_CONFIG_FILES([
   src/windows/scripts/debug/plscript.bat.src
   src/windows/scripts/debug/plscript-batch.bat.src
   src/windows/scripts/debug/plpython.bat.src
-  src/windows/scripts/debug/plui2.bat.src  
+  src/windows/scripts/debug/plui2.bat.src
   src/windows/scripts/debug/pljobmgr.bat.src
 
   src/windows/scripts/builder/Makefile

@@ -25,8 +25,6 @@ class RadarBuilderAnswers
     throws PipelineException 
   {
     super("RadarImplemention",
-      	  new VersionID("2.3.2"),
-      	  "Radar",
           "The Radar implementation of the AnswersBuilderQueries",
           mclient,
           qclient,

@@ -30,8 +30,6 @@ class RadarAssetNames
     throws PipelineException 
   {
     super("RadarAssetNames", 
-      	  new VersionID("2.3.2"),
-      	  "Radar",
           "The basic naming class for assets built at Radar",
           mclient,
           qclient);

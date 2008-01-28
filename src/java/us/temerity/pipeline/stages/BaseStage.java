@@ -1,4 +1,4 @@
-// $Id: BaseStage.java,v 1.21 2008/01/20 01:38:06 jim Exp $
+// $Id: BaseStage.java,v 1.22 2008/01/28 11:58:52 jesse Exp $
 
 package us.temerity.pipeline.stages;
 
@@ -20,8 +20,7 @@ import us.temerity.pipeline.math.Range;
 /**
  * The class that provides the basis for all the stage builders in Pipeline
  * <P>
- * This class contains all the information and helper methods that will be used by stage
- * builders.
+ * This class contains all the information and helper methods that will be used by stages.
  */
 public abstract 
 class BaseStage
@@ -39,9 +38,11 @@ class BaseStage
    * @param desc
    *        A description of what the stage should do.
    * @param stageInformation
-   * Contains information about stage execution that is global for all stages.
+   *        Contains information about stage execution that is global for all stages.
    * @param context
    *        The context the stage operates in.
+   * @param client
+   *        The instance of Master Manager that the stage performs all its actions in.
    */
   protected 
   BaseStage

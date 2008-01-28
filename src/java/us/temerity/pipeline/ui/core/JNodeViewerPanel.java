@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.102 2007/12/16 06:30:05 jesse Exp $
+// $Id: JNodeViewerPanel.java,v 1.103 2008/01/28 11:58:50 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -141,6 +141,12 @@ class JNodeViewerPanel
       item = new JMenuItem("Unpack Bundle...");
       pUnpackBundleItem = item;
       item.setActionCommand("unpack-bundle");
+      item.addActionListener(this);
+      pPanelPopup.add(item);
+      
+      item = new JMenuItem("Launch Builder...");
+      pLaunchBuilderItem = item;
+      item.setActionCommand("launch-builder");
       item.addActionListener(this);
       pPanelPopup.add(item);
       
@@ -1265,6 +1271,11 @@ class JNodeViewerPanel
       pShowHideEditingHintItem.setText("Show Editing Hint");
       pShowHideEditingHintItem.setEnabled(false);
     }
+    if (!isLocked())
+      pLaunchBuilderItem.setEnabled(true);
+    else
+      pLaunchBuilderItem.setEnabled(false);
+
   }
 
   /**
@@ -3369,6 +3380,8 @@ class JNodeViewerPanel
       doPackBundle();
     else if(cmd.equals("unpack-bundle"))
       doUnpackBundle();
+    else if (cmd.equals("launch-builder"))
+      doLaunchBuilder();
     else if(cmd.equals("restore"))
       doRestore();
 
@@ -4801,6 +4814,15 @@ class JNodeViewerPanel
     refresh(); 
   }
 
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Launches a builder.
+   */
+  private synchronized void doLaunchBuilder()
+  {
+    UIMaster.getInstance().showBuilderLaunchDialog(pAuthor, pView);
+  }
 
   /*----------------------------------------------------------------------------------------*/
  
@@ -7131,6 +7153,7 @@ class JNodeViewerPanel
   private JMenuItem  pReleaseViewItem;
   private JMenuItem  pPanelRestoreItem;
   private JMenuItem  pUnpackBundleItem;
+  private JMenuItem  pLaunchBuilderItem;
   private JMenuItem  pFrameAllItem;
   private JMenuItem  pFrameSelectionItem;
   private JMenuItem  pAutomaticExpandItem;

@@ -1,4 +1,4 @@
-// $Id: MasterRequest.java,v 1.60 2007/12/16 11:03:59 jim Exp $
+// $Id: MasterRequest.java,v 1.61 2008/01/28 11:58:52 jesse Exp $
 
 package us.temerity.pipeline.message;
 
@@ -417,6 +417,33 @@ enum MasterRequest
    * An instance of {@link MiscGetPackagePluginsReq} is next.
    */
   SetPackageKeyChooserPlugins, 
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get layout of the builder collection plugin selection menu associated with a toolset.
+   */
+  GetBuilderCollectionMenuLayout, 
+  
+  /**
+   * Set layout of the builder collection plugin selection menu associated with a toolset.
+   */
+  SetBuilderCollectionMenuLayout, 
+
+  /**
+   * An instance of {@link MiscGetToolsetPluginsReq} is next.
+   */
+  GetToolsetBuilderCollectionPlugins, 
+  
+  /**
+   * An instance of {@link MiscGetPackagePluginsReq} is next.
+   */
+  GetPackageBuilderCollectionPlugins, 
+  
+  /**
+   * An instance of {@link MiscGetPackagePluginsReq} is next.
+   */
+  SetPackageBuilderCollectionPlugins, 
 
 
   /*----------------------------------------------------------------------------------------*/

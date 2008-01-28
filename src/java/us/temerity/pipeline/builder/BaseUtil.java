@@ -1,4 +1,4 @@
-// $Id: BaseUtil.java,v 1.23 2008/01/20 01:38:05 jim Exp $
+// $Id: BaseUtil.java,v 1.24 2008/01/28 12:00:51 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -41,7 +41,7 @@ import us.temerity.pipeline.math.Range;
  */
 public abstract
 class BaseUtil
-  extends BasePlugin
+  extends Described
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -69,8 +69,6 @@ class BaseUtil
   BaseUtil
   (
     String name,
-    VersionID vid,
-    String vendor,
     String desc,
     MasterMgrClient mclient,
     QueueMgrClient qclient,
@@ -78,7 +76,7 @@ class BaseUtil
   ) 
     throws PipelineException 
   {
-    super(name, vid, vendor, desc);
+    super(name, desc);
     pClient = mclient;
     pQueue = qclient;
     pPlug = PluginMgrClient.getInstance();
@@ -133,15 +131,13 @@ class BaseUtil
   BaseUtil
   (
     String name,
-    VersionID vid,
-    String vendor,
     String desc,    
     MasterMgrClient mclient,
     QueueMgrClient qclient
   ) 
     throws PipelineException 
   {
-    this(name, vid, vendor, desc, mclient, qclient, null);
+    this(name, desc, mclient, qclient, null);
   }
 
   
@@ -339,10 +335,14 @@ class BaseUtil
     Path p = new Path(start);
     ArrayList<String> parts = p.getComponents();
     for(String comp : parts) {
+      if (treeComps == null)
+        break;
       treeComps = treeComps.get(comp);
     }
-    for(String s : treeComps.keySet()) {
-      toReturn.add(s);
+    if (treeComps != null) {
+      for(String s : treeComps.keySet()) {
+        toReturn.add(s);
+      }
     }
     return toReturn;
   }
@@ -978,7 +978,7 @@ class BaseUtil
     UtilityParam param = pParams.get(name);
     if ( param == null )
       throw new IllegalArgumentException
-        ("No parameter named (" + param.getName() + ") exists for this extension!");
+        ("No parameter named (" + name + ") exists for this extension!");
     if (! (param instanceof SimpleParamAccess))
       throw new IllegalArgumentException
         ("The parameter (" + name + ") in builder (" + getName() + ") does not implement " +
@@ -1782,6 +1782,35 @@ class BaseUtil
     return getStringParamValue(mapping, true);
   }
 
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Generate a string containing both the exception message and stack trace. 
+   * 
+   * @param ex 
+   *   The thrown exception.   
+   */ 
+  protected String 
+  getFullMessage
+  (
+   Throwable ex
+  ) 
+  {
+    StringBuilder buf = new StringBuilder();
+     
+    if(ex.getMessage() != null) 
+      buf.append(ex.getMessage() + "\n\n");     
+    else if(ex.toString() != null) 
+      buf.append(ex.toString() + "\n\n");       
+      
+    buf.append("Stack Trace:\n");
+    StackTraceElement stack[] = ex.getStackTrace();
+    int wk;
+    for(wk=0; wk<stack.length; wk++) 
+      buf.append("  " + stack[wk].toString() + "\n");
+   
+    return (buf.toString());
+  }
   
   
   /*----------------------------------------------------------------------------------------*/

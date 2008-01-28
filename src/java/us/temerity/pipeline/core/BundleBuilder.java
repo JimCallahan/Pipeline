@@ -68,8 +68,6 @@ class BundleBuilder
     throws PipelineException
   {
     super("BundleBuilder",
-          new VersionID("1.0.0"),
-          "Temerity", 
           "Builds a network of nodes based on the contents of a node bundle.", 
           mclient,
           qclient,

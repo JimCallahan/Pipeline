@@ -1,5 +1,6 @@
 package us.temerity.pipeline.builder.tests;
 
+import java.util.LinkedList;
 import java.util.TreeSet;
 
 import us.temerity.pipeline.*;
@@ -19,8 +20,6 @@ public class TopBuilder
     throws PipelineException
   {
     super("TopBuilder", 
-          new VersionID("1.0.0"), 
-          "Temerity", 
           "The TopLevel Test Builder", 
           mclient, 
           qclient, 
@@ -43,7 +42,7 @@ public class TopBuilder
   }
   
   @Override
-  protected TreeSet<String> getNodesToCheckIn()
+  protected LinkedList<String> getNodesToCheckIn()
   {
     return null;
   }

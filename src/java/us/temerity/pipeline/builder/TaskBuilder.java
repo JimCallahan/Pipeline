@@ -1,4 +1,4 @@
-// $Id: TaskBuilder.java,v 1.1 2007/07/30 17:28:18 jesse Exp $
+// $Id: TaskBuilder.java,v 1.2 2008/01/28 12:00:51 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -31,8 +31,6 @@ class TaskBuilder
   TaskBuilder
   (
     String name,
-    VersionID vid,
-    String vendor,
     String desc,
     MasterMgrClient mclient,
     QueueMgrClient qclient,
@@ -40,7 +38,7 @@ class TaskBuilder
   )
     throws PipelineException
   {
-    super(name, vid, vendor, desc, mclient, qclient, builderInformation);
+    super(name, desc, mclient, qclient, builderInformation);
   }
 
   

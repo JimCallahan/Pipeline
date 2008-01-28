@@ -44,8 +44,6 @@ class LaikaShotBuilder
     throws PipelineException
   {
     super("LaikaShotBuilder", 
-      	  new VersionID("2.3.2"), 
-      	  "Laika",
 	  "The basic Laika Shot Builder that works with the basic Laika Names class.",
 	  mclient,
 	  qclient,

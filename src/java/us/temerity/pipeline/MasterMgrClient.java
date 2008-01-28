@@ -1,26 +1,19 @@
-// $Id: MasterMgrClient.java,v 1.116 2008/01/20 01:38:05 jim Exp $
+// $Id: MasterMgrClient.java,v 1.117 2008/01/28 12:00:51 jesse Exp $
 
 package us.temerity.pipeline;
 
+import java.io.*;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
+import java.util.*;
+import java.util.regex.Pattern;
+
+import us.temerity.pipeline.builder.ActionOnExistence;
+import us.temerity.pipeline.event.BaseNodeEvent;
+import us.temerity.pipeline.glue.Glueable;
 import us.temerity.pipeline.message.*;
 import us.temerity.pipeline.toolset.*;
-import us.temerity.pipeline.glue.*;
-import us.temerity.pipeline.event.*;
-import us.temerity.pipeline.builder.*; 
-
-import java.io.*;
-import java.nio.*;
-import java.nio.channels.*;
-import java.net.*;
-import java.math.*;
-import java.util.*;
-import java.util.regex.*;
-import java.security.*;
-import java.security.spec.*;
-import java.security.interfaces.*;
-import javax.crypto.*;
-import javax.crypto.spec.*;
-import javax.crypto.interfaces.*;
 
 
 /*------------------------------------------------------------------------------------------*/
@@ -93,6 +86,7 @@ class MasterMgrClient
    * Order the server to refuse any further requests and then to exit as soon as all
    * currently pending requests have be completed.
    */
+  @Override
   public synchronized void 
   shutdown() 
     throws PipelineException 
@@ -3208,7 +3202,227 @@ class MasterMgrClient
     handleSimpleResponse(obj); 
   }
 
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the default layout of the builder collection plugin menu.
+   * 
+   * @return 
+   *   The hierarchical set of builder collection plugin menus.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the builder collection menu layout.
+   */ 
+  public synchronized PluginMenuLayout
+  getBuilderCollectionMenuLayout()
+    throws PipelineException  
+  {
+    verifyConnection();
 
+    MiscGetPluginMenuLayoutReq req = new MiscGetPluginMenuLayoutReq(null);
+
+    Object obj = performTransaction(MasterRequest.GetBuilderCollectionMenuLayout, req); 
+    if(obj instanceof MiscGetPluginMenuLayoutRsp) {
+      MiscGetPluginMenuLayoutRsp rsp = (MiscGetPluginMenuLayoutRsp) obj;
+      return rsp.getLayout();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    } 
+  }
+
+  /**
+   * Set the default layout of the builder collection plugin menu.
+   * 
+   * @param layout
+   *   The hierarchical set of builder collection plugin menus.
+   * 
+   * @throws PipelineException
+   *   If unable to set the builder collection menu layout.
+   */ 
+  public synchronized void 
+  setBuilderCollectionMenuLayout
+  (
+   PluginMenuLayout layout
+  ) 
+    throws PipelineException      
+  {
+    verifyConnection();
+
+    MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(null, layout);
+
+    Object obj = performTransaction(MasterRequest.SetBuilderCollectionMenuLayout, req); 
+    handleSimpleResponse(obj);    
+  }
+
+  /**
+   * Get the layout of the builder collection plugin menu associated with a toolset.
+   * 
+   * @param name
+   *   The toolset name.
+   * 
+   * @return 
+   *   The hierarchical set of builder collection plugin menus.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the builder collection menu layout.
+   */ 
+  public synchronized PluginMenuLayout
+  getBuilderCollectionMenuLayout
+  (
+   String name
+  )
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    MiscGetPluginMenuLayoutReq req = new MiscGetPluginMenuLayoutReq(name);
+
+    Object obj = performTransaction(MasterRequest.GetBuilderCollectionMenuLayout, req); 
+    if(obj instanceof MiscGetPluginMenuLayoutRsp) {
+      MiscGetPluginMenuLayoutRsp rsp = (MiscGetPluginMenuLayoutRsp) obj;
+      return rsp.getLayout();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    } 
+  }
+  
+  /**
+   * Set the layout of the builder collection plugin menu associated with a toolset.
+   * 
+   * @param name
+   *   The toolset name.
+   * 
+   * @param layout
+   *   The hierarchical set of builder collection plugin menus.
+   * 
+   * @throws PipelineException
+   *   If unable to set the builder collection menu layout.
+   */ 
+  public synchronized void 
+  setBuilderCollectionMenuLayout
+  (
+   String name, 
+   PluginMenuLayout layout
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    MiscSetPluginMenuLayoutReq req = new MiscSetPluginMenuLayoutReq(name, layout);
+
+    Object obj = performTransaction(MasterRequest.SetBuilderCollectionMenuLayout, req); 
+    handleSimpleResponse(obj);    
+  }
+
+  /**
+   * Get the builder collection plugins associated with all packages of a toolset.
+   * 
+   * @param name
+   *   The toolset name.
+   * 
+   * @return 
+   *   The vendors, names and revision numbers of the associated builder collection plugins.
+   * 
+   * @throws PipelineException
+   *   If unable to get the plugins.
+   */ 
+  public synchronized PluginSet
+  getToolsetBuilderCollectionPlugins
+  (
+   String name
+  )
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    MiscGetToolsetPluginsReq req = new MiscGetToolsetPluginsReq(name);
+
+    Object obj = performTransaction(MasterRequest.GetToolsetBuilderCollectionPlugins, req);
+    if(obj instanceof MiscGetPackagePluginsRsp) {
+      MiscGetPackagePluginsRsp rsp = (MiscGetPackagePluginsRsp) obj;
+      return rsp.getPlugins();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    } 
+  }
+
+  /**
+   * Get the builder collection plugins associated with a toolset package.
+   * 
+   * @param name
+   *   The toolset package name.
+   * 
+   * @param vid
+   *   The revision number of the package.
+   * 
+   * @return 
+   *   The vendors, names and revision numbers of the associated builder collection plugins.
+   * 
+   * @throws PipelineException
+   *   If unable to get the plugins.
+   */ 
+  public synchronized PluginSet
+  getPackageBuilderCollectionPlugins
+  (
+   String name, 
+   VersionID vid
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    MiscGetPackagePluginsReq req = new MiscGetPackagePluginsReq(name, vid);
+
+    Object obj = performTransaction(MasterRequest.GetPackageBuilderCollectionPlugins, req);
+    if(obj instanceof MiscGetPackagePluginsRsp) {
+      MiscGetPackagePluginsRsp rsp = (MiscGetPackagePluginsRsp) obj;
+      return rsp.getPlugins();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    } 
+  }
+
+  /**
+   * Set the builder collection plugins associated with a toolset package.
+   * 
+   * @param name
+   *   The toolset package name.
+   * 
+   * @param vid
+   *   The revision number of the package.
+   * 
+   * @param plugins
+   *   The vendors, names and revision numbers of the associated builder collection plugins.
+   * 
+   * @throws PipelineException
+   *   If unable to set the plugins.
+   */ 
+  public synchronized void 
+  setPackageBuilderCollectionPlugins
+  ( 
+   String name,  
+   VersionID vid,
+   PluginSet plugins
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    MiscSetPackagePluginsReq req = new MiscSetPackagePluginsReq(name, vid, plugins);
+
+    Object obj = performTransaction(MasterRequest.SetPackageBuilderCollectionPlugins, req); 
+    handleSimpleResponse(obj); 
+  }
+  
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   S E R V E R   E X T E N S I O N S                                                    */
@@ -6190,7 +6404,6 @@ class MasterMgrClient
     }
   }
 
-
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -7711,6 +7924,7 @@ class MasterMgrClient
   /**
    * Get the object input given a socket input stream.
    */ 
+  @Override
   protected ObjectInput
   getObjectInput
   (
@@ -7725,6 +7939,7 @@ class MasterMgrClient
   /**
    * Get the error message to be shown when the server cannot be contacted.
    */ 
+  @Override
   protected String
   getServerDownMessage()
   {

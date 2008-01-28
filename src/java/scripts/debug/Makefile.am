@@ -10,7 +10,8 @@ instbin_SCRIPTS = \
   plui \
   pltestnative \
   pltestheavy \
-  pltestlight
+  pltestlight \
+  plbuilder
 
 
 instsbindir = @ROOT_INST_DIR@/@NATIVE_OSTYPE@-@NATIVE_ARCHTYPE@-Debug/sbin

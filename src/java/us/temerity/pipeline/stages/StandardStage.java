@@ -167,6 +167,9 @@ class StandardStage
    * 
    * @param context
    *        The {@link UtilContext} that this stage acts in.
+   *        
+   * @param client
+   *        The instance of Master Manager that the stage performs all its actions in.
    * 
    * @param mod
    *        The original node working version.

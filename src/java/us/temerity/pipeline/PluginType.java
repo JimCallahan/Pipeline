@@ -1,4 +1,4 @@
-// $Id: PluginType.java,v 1.4 2007/12/15 07:14:57 jesse Exp $
+// $Id: PluginType.java,v 1.5 2008/01/28 12:00:51 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -57,12 +57,7 @@ enum PluginType
   /**
    * External tools used to build networks of nodes.
    */
-  Builder,
-  
-  /**
-   * Plugins that define groups of node names for use with Builders.
-   */
-  Namer,
+  BuilderCollection,
   
   /**
    * Plugins used to dynamically modify node networks inside pipeline.

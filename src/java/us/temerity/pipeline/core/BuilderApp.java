@@ -1,14 +1,14 @@
+// $Id: BuilderApp.java,v 1.22 2008/01/28 11:58:52 jesse Exp $
+
 package us.temerity.pipeline.core;
 
 import java.io.StringReader;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedList;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.LogMgr.Kind;
 import us.temerity.pipeline.LogMgr.Level;
-import us.temerity.pipeline.builder.BaseBuilder;
+import us.temerity.pipeline.builder.BaseBuilderCollection;
 import us.temerity.pipeline.builder.BuilderInformation;
 
 /*------------------------------------------------------------------------------------------*/
@@ -49,6 +49,7 @@ public class BuilderApp
    * @param args 
    *   The command-line arguments.
    */ 
+  @Override
   @SuppressWarnings("unchecked")
   public void 
   run
@@ -56,28 +57,28 @@ public class BuilderApp
     String[] args
   ) 
   {
-    if(args.length == 0) {
-      System.err.print("Builder name was missing!\n");
+    if(args.length < 4) {
+      System.err.print("Builder invocation information is missing!\n");
       System.exit(1);
     }
     
-    boolean hasClassName = !(args[0].startsWith("--")); 
-    pBuilderClassName = args[0];
+    pCollectionName = args[0];
+    pCollectionVersion = new VersionID(args[1]);
+    pCollectionVendor = args[2];
+    pBuilderName = args[3];
+    
 
-    if (!hasClassName)
-      packageArguments(args);
-    else
-    {
-      String appArgs[] = null;
-      {
-	appArgs = new String[args.length-1];
-	int wk;
-	for(wk=0; wk<appArgs.length; wk++) { 
-	  appArgs[wk] = args[wk+1];
-	}
+    String appArgs[] = null;
+    if (args.length > 4) {
+      appArgs = new String[args.length-4];
+      int wk;
+      for(wk=0; wk<appArgs.length; wk++) { 
+        appArgs[wk] = args[wk+4];
       }
-      packageArguments(appArgs);
     }
+    else
+      appArgs = new String[0];
+    packageArguments(appArgs);
     
     boolean success = false;
     
@@ -102,32 +103,24 @@ public class BuilderApp
       BuilderOptsParser parser = 
 	new BuilderOptsParser(new StringReader(pPackedArgs));
       parser.setApp(this);
-      if (hasClassName) {
-	ClassLoader loader = ClassLoader.getSystemClassLoader();
-	Class cls = loader.loadClass(pBuilderClassName);
-	Constructor construct = 
-	  cls.getConstructor
-	  (MasterMgrClient.class, 
-	   QueueMgrClient.class, 
-	   BuilderInformation.class);
-	parser.CommandLine();
-	BuilderInformation info = 
-          new BuilderInformation(pGui, pAbortOnBadParam, pCommandLineParams);
-	BaseBuilder builder = (BaseBuilder) construct.newInstance(mclient, qclient, info);
-	{
-	  String builderName = builder.getPrefixedName().toString();
-	  for (LinkedList<String> keys : pNullParams.keySet()) {
-	    String value = pNullParams.get(keys);
-	    keys.addFirst(builderName);
-	    pCommandLineParams.putValue(keys, value, true);
-	  }
-	}
-	builder.run();
-	success = true;
-      } 
-      else {
-	parser.CommandLine();
+      
+      parser.CommandLine();
+
+      for (LinkedList<String> keys : pNullParams.keySet()) {
+        String value = pNullParams.get(keys);
+        keys.addFirst(pBuilderName);
+        pCommandLineParams.putValue(keys, value, true);
       }
+      
+      BuilderInformation info = 
+        new BuilderInformation(pGui, pAbortOnBadParam, pCommandLineParams);
+      
+      BaseBuilderCollection collection = 
+        PluginMgrClient.getInstance().newBuilderCollection
+          (pCollectionName, pCollectionVersion, pCollectionVendor);
+
+      collection.instantiateBuilder(pBuilderName, mclient, qclient, info);
+      success = true;
     }
     catch(ParseException ex) {
       ex.printStackTrace();
@@ -137,29 +130,6 @@ public class BuilderApp
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
 	 ex.getMessage());
-    }
-    catch (NoSuchMethodException ex) {
-      String message = 
-	"Was unable to instantiate the constructor for the specified Builder.  " +
-	"This most likely means that the Builder was not meant to be run as a " +
-	"standalone builder.\n";
-      message += ex.getMessage();
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
-	 message);
-      ex.printStackTrace();
-    }
-    catch (InvocationTargetException ex) {
-      Throwable th = ex.getTargetException();
-      String message = 
-	"An Invocation Target Exception has occured.  This most likely indicates that " +
-	"the name of the builder being passed to BuilderApp is specified incorrectly or " +
-	"that an error occured in the Builder's constructor.\n";
-      message += getFullMessage(th);
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
-	 message);
-      //th.printStackTrace();
     }
     catch(Exception ex) {
       LogMgr.getInstance().log
@@ -184,15 +154,11 @@ public class BuilderApp
   /**
    * The implementation of the <CODE>--help</CODE> command-line option.
    */ 
+  @Override
   public 
   void help()
   {
-    String wrapper = "BuilderName"; 
-    {
-      String parts[] = pBuilderClassName.split("\\.");
-      if(parts.length > 0) 
-        wrapper = parts[parts.length-1];
-    }
+    String wrapper = "builder"; 
 
     LogMgr.getInstance().log
     (LogMgr.Kind.Ops, LogMgr.Level.Info,
@@ -206,6 +172,8 @@ public class BuilderApp
      "  pl" + wrapper + " --copyright\n" + 
      "  pl" + wrapper + " --license\n" + 
      "\n" + 
+     "INVOCATION: \n" +
+     "CollectionName CollectionVersion CollectionVendor BuilderName" + 
      "GLOBAL OPTIONS:\n" +
      "  [--log=...] \n" + 
      "  [--abort] [--batch] \n" + 
@@ -222,8 +190,9 @@ public class BuilderApp
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Generate an explanitory message for the non-literal token.
+   * Generate an explanatory message for the non-literal token.
    */ 
+  @Override
   protected String
   tokenExplain
   (
@@ -311,7 +280,10 @@ public class BuilderApp
   private boolean pGui;
   private boolean pAbortOnBadParam;
   private MultiMap<String, String> pCommandLineParams; 
-  private String pBuilderClassName;
+  private String pCollectionName;
+  private VersionID pCollectionVersion;
+  private String pCollectionVendor;
+  private String pBuilderName;
   private ListMap<LinkedList<String>, String> pNullParams; 
 
 }

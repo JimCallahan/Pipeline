@@ -9,7 +9,8 @@ instbin_SCRIPTS = \
   plscript.bat \
   plscript-batch.bat \
   plpython.bat \
-  plui2.bat
+  plui2.bat \
+  plbuilder.bat
 
 
 instsbindir = @ROOT_INST_DIR@/@NATIVE_OSTYPE@-@NATIVE_ARCHTYPE@-Debug/sbin

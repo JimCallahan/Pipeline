@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.44 2007/11/30 20:14:25 jesse Exp $
+// $Id: JManagerPanel.java,v 1.45 2008/01/28 11:58:51 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -384,6 +384,12 @@ class JManagerPanel
       item.setActionCommand("update-plugins");
       item.addActionListener(this);
       pPopup.add(item);  
+      
+      item = new JMenuItem("Launch Builders...");
+      pLaunchBuilderItem = item;
+      item.setActionCommand("launch-builders");
+      item.addActionListener(this);
+      pPopup.add(item);
 
       pPopup.addSeparator();
 
@@ -1152,6 +1158,9 @@ class JManagerPanel
     updateMenuToolTip
       (pUpdatePluginsItem, prefs.getUpdatePlugins(), 
        "Make sure that the latest plugins and plugin menus are being used.");
+    updateMenuToolTip
+      (pLaunchBuilderItem, prefs.getLaunchBuilders(), 
+       "Opens up a dialog allowing the selection and invocation of all installed builders.");
 
     updateMenuToolTip
       (pManagePrivilegesItem, prefs.getShowManagePrivileges(), 
@@ -2114,6 +2123,8 @@ class JManagerPanel
         master.showDefaultEditorsDialog(); 
       else if(cmd.equals("update-plugins"))
         master.clearPluginCache();
+      else if(cmd.equals("launch-builders"))
+        master.showBuilderLaunchDialog();
 
       else if(cmd.equals("manage-privileges"))
         master.showManagePrivilegesDialog();
@@ -3818,6 +3829,7 @@ class JManagerPanel
   private JMenu      pRestoreLayoutMenu;
   private JMenu      pRestoreLayoutNoSelectMenu;
 
+  private JMenuItem  pLaunchBuilderItem;
   private JMenuItem  pPreferencesItem;
   private JMenuItem  pDefaultEditorsItem;
   private JMenuItem  pUpdatePluginsItem;

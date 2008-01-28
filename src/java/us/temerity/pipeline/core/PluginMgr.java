@@ -1,4 +1,4 @@
-// $Id: PluginMgr.java,v 1.16 2007/12/16 09:09:45 jim Exp $
+// $Id: PluginMgr.java,v 1.17 2008/01/28 11:58:53 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -9,6 +9,7 @@ import java.util.jar.*;
 import java.util.zip.ZipEntry;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.builder.BaseBuilderCollection;
 import us.temerity.pipeline.message.*;
 
 /*------------------------------------------------------------------------------------------*/
@@ -56,6 +57,7 @@ class PluginMgr
       pMasterExts  = new PluginCache();  
       pQueueExts   = new PluginCache();  
       pKeyChoosers = new PluginCache();
+      pBuilderCollection = new PluginCache();
 
       pSerialVersionUIDs = new TreeMap<Long,String>(); 
     }
@@ -132,7 +134,8 @@ class PluginMgr
                                  pArchivers.collectUpdated(cycleID), 
                                  pMasterExts.collectUpdated(cycleID), 
                                  pQueueExts.collectUpdated(cycleID), 
-                                 pKeyChoosers.collectUpdated(cycleID)); 
+                                 pKeyChoosers.collectUpdated(cycleID),
+                                 pBuilderCollection.collectUpdated(cycleID)); 
     }
     finally {
       pPluginLock.readLock().unlock();
@@ -582,6 +585,8 @@ class PluginMgr
 	pQueueExts.addPlugin(plg, cname, contents);
       else if(plg instanceof BaseKeyChooser)
         pKeyChoosers.addPlugin(plg, cname, contents);
+      else if(plg instanceof BaseBuilderCollection)
+        pBuilderCollection.addPlugin(plg, cname, contents);
       else 
 	throw new PipelineException
 	  ("The class file (" + pluginfile + ") does not contain a Pipeline plugin!");
@@ -817,7 +822,8 @@ class PluginMgr
   private PluginCache  pArchivers; 
   private PluginCache  pMasterExts; 
   private PluginCache  pQueueExts; 
-  private PluginCache  pKeyChoosers; 
+  private PluginCache  pKeyChoosers;
+  private PluginCache  pBuilderCollection;
 
   /**
    * The serialVersionUIDs of all loaded plugins used to test for conflicts.

@@ -60,26 +60,17 @@ public class BuilderTest
   public static void main(String[] args)
   {
     ArrayList<String> argv = new ArrayList<String>();
-    //argv.add("us.temerity.pipeline.builder.maya2mr.v2_3_2.ProjectBuilder");
-    //argv.add("us.temerity.pipeline.builder.maya2mr.v2_3_2.ProjectScriptBuilder");
-    //argv.add("us.temerity.pipeline.builder.maya2mr.v2_3_2.ProjectTurntableBuilder");
-    //argv.add("us.temerity.pipeline.builder.maya2mr.v2_3_2.AssetBuilder");
-    //argv.add("us.temerity.pipeline.builder.tests.TopBuilder");
-    //argv.add("us.temerity.pipeline.builder.maya2mr.v2_3_2.AdvAssetBuilder");
-    //argv.add("us.temerity.pipeline.builder.maya2mr.v2_3_2.SimpleAssetBuilder");
-    //argv.add("us.temerity.pipeline.builder.v2_3_2.ApprovalBuilder");
-    //argv.add("com.radar.pipeline.builder.maya2mr.v2_3_2.RadarProjectScriptBuilder");
-    //argv.add("com.radar.pipeline.builder.maya2mr.v2_3_2.RadarAssetBuilder");
-    //argv.add("com.radar.pipeline.builder.maya2mr.v2_3_2.RadarSimpleAssetBuilder");
-    //argv.add("com.radar.pipeline.builder.maya2mr.v2_3_2.RadarShotBuilder");
-    //argv.add("com.laika.pipeline.builder.maya2mr.v2_3_2.LaikaSimpleAssetBuilder");
-    argv.add("com.laika.pipeline.builder.maya2mr.v2_3_2.LaikaShotBuilder");
+    argv.add("Maya2MR");
+    argv.add("2.3.2");
+    argv.add("Temerity");
+    argv.add("Maya2MR");
     argv.add("--log=ops:finest,arg:finest,bld:finest");
     //argv.add("--log=bld:warning,ops:finest");
     argv.add("--ProjectName=testProject");
-    argv.add("--UtilContext-Author=pipeline");
+    argv.add("--UtilContext-Author=jim");
+    argv.add("--UtilContext-View=seaside");
     //argv.add("--abort");
-    //argv.add("--no-gui");
+    //argv.add("--batch");
 
     String list[] = argv.toArray(new String[0]);
     BuilderApp app = new BuilderApp();

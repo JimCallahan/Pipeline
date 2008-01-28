@@ -1,4 +1,4 @@
-// $Id: PluginMenuLayout.java,v 1.6 2005/09/09 21:22:08 jim Exp $
+// $Id: PluginMenuLayout.java,v 1.7 2008/01/28 12:00:51 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -12,7 +12,7 @@ import java.io.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Represents the layout of a heirarchical set of menus for selection of a specific 
+ * Represents the layout of a hierarchical set of menus for selection of a specific 
  * Pipeline plugin version.
  */
 public

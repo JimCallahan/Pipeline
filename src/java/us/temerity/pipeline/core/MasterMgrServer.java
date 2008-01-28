@@ -1,18 +1,16 @@
-// $Id: MasterMgrServer.java,v 1.82 2007/12/16 11:03:59 jim Exp $
+// $Id: MasterMgrServer.java,v 1.83 2008/01/28 11:58:53 jesse Exp $
 
 package us.temerity.pipeline.core;
 
-import us.temerity.pipeline.*;
-import us.temerity.pipeline.message.*;
-import us.temerity.pipeline.event.*;
-import us.temerity.pipeline.core.exts.*;
-
 import java.io.*;
-import java.nio.*;
-import java.nio.channels.*;
 import java.net.*;
-import java.util.*;
-import java.util.concurrent.atomic.*;
+import java.nio.channels.*;
+import java.util.HashSet;
+import java.util.TreeSet;
+
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.event.EditedNodeEvent;
+import us.temerity.pipeline.message.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   M A S T E R   M G R   S E R V E R                                                      */
@@ -112,6 +110,7 @@ class MasterMgrServer
    * 
    * This will only return if there is an unrecoverable error.
    */
+  @Override
   public void 
   run() 
   {
@@ -257,6 +256,7 @@ class MasterMgrServer
       pRunningEditorIDs = new TreeSet<Long>(); 
     }
 
+    @Override
     public void 
     run() 
     {
@@ -960,6 +960,53 @@ class MasterMgrServer
 		objOut.flush(); 
 	      }
 	      break;
+	      
+            /*----------------------------------*/
+              
+            case GetBuilderCollectionMenuLayout:
+              {
+                MiscGetPluginMenuLayoutReq req = 
+                  (MiscGetPluginMenuLayoutReq) objIn.readObject();
+                objOut.writeObject(pMasterMgr.getBuilderCollectionMenuLayout(req));
+                objOut.flush(); 
+              }
+              break;
+
+            case SetBuilderCollectionMenuLayout:
+              {
+                MiscSetPluginMenuLayoutReq req = 
+                  (MiscSetPluginMenuLayoutReq) objIn.readObject();
+                objOut.writeObject(pMasterMgr.setBuilderCollectionMenuLayout(req));
+                objOut.flush(); 
+              }
+              break;
+
+            case GetToolsetBuilderCollectionPlugins:
+              {
+                MiscGetToolsetPluginsReq req = 
+                  (MiscGetToolsetPluginsReq) objIn.readObject();
+                objOut.writeObject(pMasterMgr.getToolsetBuilderCollectionPlugins(req));
+                objOut.flush(); 
+              }
+              break;
+
+            case GetPackageBuilderCollectionPlugins:
+              {
+                MiscGetPackagePluginsReq req = 
+                  (MiscGetPackagePluginsReq) objIn.readObject();
+                objOut.writeObject(pMasterMgr.getPackageBuilderCollectionPlugins(req));
+                objOut.flush(); 
+              }
+              break;
+
+            case SetPackageBuilderCollectionPlugins:
+              {
+                MiscSetPackagePluginsReq req = 
+                  (MiscSetPackagePluginsReq) objIn.readObject();
+                objOut.writeObject(pMasterMgr.setPackageBuilderCollectionPlugins(req));
+                objOut.flush(); 
+              }
+              break;
 
 
 	    /*-- SERVER EXTENSIONS ---------------------------------------------------------*/
@@ -1401,7 +1448,7 @@ class MasterMgrServer
 
 		TaskTimer timer = new TaskTimer(); 
 		try {
-		  InetAddress addr = (InetAddress) pSocket.getInetAddress();
+		  InetAddress addr = pSocket.getInetAddress();
 		  String hostname = addr.getCanonicalHostName();
 
 		  EditedNodeEvent event = req.getEvent(hostname);
@@ -1756,6 +1803,7 @@ class MasterMgrServer
       super("MasterMgrServer:NodeGCTask");
     }
 
+    @Override
     public void 
     run() 
     {
@@ -1797,6 +1845,7 @@ class MasterMgrServer
       super("MasterMgrServer:EventWriterTask");
     }
 
+    @Override
     public void 
     run() 
     {
@@ -1838,6 +1887,7 @@ class MasterMgrServer
       super("MasterMgrServer:LicenseTask");
     }
 
+    @Override
     public void 
     run() 
     {

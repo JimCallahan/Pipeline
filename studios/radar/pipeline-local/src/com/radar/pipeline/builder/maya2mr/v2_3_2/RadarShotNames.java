@@ -32,8 +32,6 @@ public class RadarShotNames
     throws PipelineException 
   {
     super("RadarShotNames", 
-      	  new VersionID("2.3.2"),
-      	  "Radar",
           "The basic naming class for shots built at Radar",
           mclient,
           qclient);

@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.231 2008/01/16 20:19:47 jim Exp $
+// $Id: MasterMgr.java,v 1.232 2008/01/28 11:58:52 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -367,25 +367,27 @@ class MasterMgr
       pToolsets           = new TreeMap<String,TreeMap<OsType,Toolset>>();
       pToolsetPackages    = new TripleMap<String,OsType,VersionID,PackageVersion>();
 
-      pEditorMenuLayouts     = new TreeMap<String,PluginMenuLayout>();
-      pComparatorMenuLayouts = new TreeMap<String,PluginMenuLayout>();
-      pActionMenuLayouts     = new TreeMap<String,PluginMenuLayout>();
-      pToolMenuLayouts       = new TreeMap<String,PluginMenuLayout>();  
-      pArchiverMenuLayouts   = new TreeMap<String,PluginMenuLayout>();
-      pMasterExtMenuLayouts  = new TreeMap<String,PluginMenuLayout>();
-      pQueueExtMenuLayouts   = new TreeMap<String,PluginMenuLayout>();
-      pAnnotationMenuLayouts = new TreeMap<String,PluginMenuLayout>();
-      pKeyChooserMenuLayouts = new TreeMap<String,PluginMenuLayout>();
+      pEditorMenuLayouts            = new TreeMap<String,PluginMenuLayout>();
+      pComparatorMenuLayouts        = new TreeMap<String,PluginMenuLayout>();
+      pActionMenuLayouts            = new TreeMap<String,PluginMenuLayout>();
+      pToolMenuLayouts              = new TreeMap<String,PluginMenuLayout>();  
+      pArchiverMenuLayouts          = new TreeMap<String,PluginMenuLayout>();
+      pMasterExtMenuLayouts         = new TreeMap<String,PluginMenuLayout>();
+      pQueueExtMenuLayouts          = new TreeMap<String,PluginMenuLayout>();
+      pAnnotationMenuLayouts        = new TreeMap<String,PluginMenuLayout>();
+      pKeyChooserMenuLayouts        = new TreeMap<String,PluginMenuLayout>();
+      pBuilderCollectionMenuLayouts = new TreeMap<String,PluginMenuLayout>();
 
-      pPackageEditorPlugins     = new DoubleMap<String,VersionID,PluginSet>();
-      pPackageComparatorPlugins = new DoubleMap<String,VersionID,PluginSet>();
-      pPackageActionPlugins     = new DoubleMap<String,VersionID,PluginSet>();
-      pPackageToolPlugins       = new DoubleMap<String,VersionID,PluginSet>();
-      pPackageArchiverPlugins   = new DoubleMap<String,VersionID,PluginSet>();
-      pPackageMasterExtPlugins  = new DoubleMap<String,VersionID,PluginSet>();
-      pPackageQueueExtPlugins   = new DoubleMap<String,VersionID,PluginSet>();
-      pPackageAnnotationPlugins = new DoubleMap<String,VersionID,PluginSet>();
-      pPackageKeyChooserPlugins = new DoubleMap<String,VersionID,PluginSet>();
+      pPackageEditorPlugins            = new DoubleMap<String,VersionID,PluginSet>();
+      pPackageComparatorPlugins        = new DoubleMap<String,VersionID,PluginSet>();
+      pPackageActionPlugins            = new DoubleMap<String,VersionID,PluginSet>();
+      pPackageToolPlugins              = new DoubleMap<String,VersionID,PluginSet>();
+      pPackageArchiverPlugins          = new DoubleMap<String,VersionID,PluginSet>();
+      pPackageMasterExtPlugins         = new DoubleMap<String,VersionID,PluginSet>();
+      pPackageQueueExtPlugins          = new DoubleMap<String,VersionID,PluginSet>();
+      pPackageAnnotationPlugins        = new DoubleMap<String,VersionID,PluginSet>();
+      pPackageKeyChooserPlugins        = new DoubleMap<String,VersionID,PluginSet>();
+      pPackageBuilderCollectionPlugins = new DoubleMap<String,VersionID,PluginSet>();
 
       pMasterExtensions = new TreeMap<String,MasterExtensionConfig>();
 
@@ -792,6 +794,10 @@ class MasterMgr
     pDefaultKeyChooserMenuLayout = 
       readPluginMenuLayout(null, "key chooser", 
 			   pKeyChooserMenuLayouts); 
+    
+    pDefaultBuilderCollectionMenuLayout =
+      readPluginMenuLayout(null, "builder collection", 
+                           pBuilderCollectionMenuLayouts);
 
     /* initialize toolsets */ 
     {
@@ -843,7 +849,10 @@ class MasterMgr
 				 pAnnotationMenuLayouts); 
 
 	    readPluginMenuLayout(tname, "key chooser", 
-				 pKeyChooserMenuLayouts); 
+				 pKeyChooserMenuLayouts);
+	    
+	    readPluginMenuLayout(tname, "builder collection", 
+                                 pBuilderCollectionMenuLayouts); 
 	  }
 	}
       }
@@ -896,6 +905,9 @@ class MasterMgr
 
 		    readPackagePlugins(pname, vid, "key chooser", 
 				       pPackageKeyChooserPlugins);
+		    
+		    readPackagePlugins(pname, vid, "builder collection", 
+                                       pPackageBuilderCollectionPlugins);
 		  }
 		}
 	      }
@@ -3159,6 +3171,17 @@ class MasterMgr
 	  layouts.put(PluginType.KeyChooser, new PluginMenuLayout());
       }
       
+      timer.aquire();
+      synchronized(pBuilderCollectionMenuLayouts) {
+        timer.resume(); 
+
+        PluginMenuLayout layout = pBuilderCollectionMenuLayouts.get(name);
+        if(layout != null) 
+          layouts.put(PluginType.BuilderCollection, new PluginMenuLayout(layout));
+        else 
+          layouts.put(PluginType.BuilderCollection, new PluginMenuLayout());
+      }
+      
       return new MiscGetPluginMenuLayoutsRsp(timer, layouts);
     }
     finally {
@@ -3318,6 +3341,20 @@ class MasterMgr
 	    allPlugins.put(pname, pvid, PluginType.KeyChooser, plugins);
 	  }
 	}
+      }
+      
+      timer.aquire();
+      synchronized(pPackageBuilderCollectionPlugins) {
+        timer.resume();
+        for(String pname : packages.keySet()) {
+          for(VersionID pvid : packages.get(pname)) {
+            PluginSet plugins = pPackageBuilderCollectionPlugins.get(pname, pvid);
+            if(plugins == null)
+              plugins = new PluginSet(); 
+
+            allPlugins.put(pname, pvid, PluginType.BuilderCollection, plugins);
+          }
+        }
       }
 
       return new MiscGetSelectPackagePluginsRsp(timer, allPlugins); 
@@ -5647,8 +5684,267 @@ class MasterMgr
       pDatabaseLock.readLock().unlock();
     }
   }
+  
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the layout of the builder collection plugin menu associated with a toolset.
+   *
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>MiscGetPluginMenuLayoutRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to determine the menu layout.
+   */ 
+  public Object 
+  getBuilderCollectionMenuLayout
+  ( 
+   MiscGetPluginMenuLayoutReq req 
+  ) 
+  {
+    String name = req.getName();
+
+    TaskTimer timer = 
+      new TaskTimer("MasterMgr.getBuilderCollectionMenuLayout(): " + name);
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pBuilderCollectionMenuLayouts) {
+        timer.resume(); 
+
+        PluginMenuLayout layout = null;
+        if(name == null) 
+          layout = pDefaultBuilderCollectionMenuLayout;
+        else 
+          layout = pBuilderCollectionMenuLayouts.get(name);
+
+        if(layout != null) 
+          return new MiscGetPluginMenuLayoutRsp(timer, new PluginMenuLayout(layout));
+        else 
+          return new MiscGetPluginMenuLayoutRsp(timer, new PluginMenuLayout());
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+  /**
+   * Set the layout of the builder collection plugin selection menu.
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to set the menu layout.
+   */ 
+  public Object 
+  setBuilderCollectionMenuLayout
+  ( 
+   MiscSetPluginMenuLayoutReq req 
+  ) 
+  {
+    String name = req.getName();
+
+    TaskTimer timer = 
+      new TaskTimer("MasterMgr.setBuilderCollectionMenuLayout(): " + name);
+    
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      if(!pAdminPrivileges.isDeveloper(req)) 
+        throw new PipelineException
+          ("Only a user with Developer privileges may set the builder collection menu layout!");
+
+      synchronized(pBuilderCollectionMenuLayouts) {
+        timer.resume(); 
+
+        PluginMenuLayout layout = req.getLayout();
+
+        if(name == null) {
+          pDefaultBuilderCollectionMenuLayout = layout;
+        }
+        else {
+          if(layout == null) 
+            pBuilderCollectionMenuLayouts.remove(name);
+          else 
+            pBuilderCollectionMenuLayouts.put(name, layout);
+        }
+
+        writePluginMenuLayout(name, "builder collection", 
+                              pBuilderCollectionMenuLayouts, 
+                              pDefaultBuilderCollectionMenuLayout);
+
+        return new SuccessRsp(timer);
+      }
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());      
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+  /**
+   * Get the builder collection plugins associated with all packages of a toolset.
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>MiscGetPackagePluginsRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to lookup the plugins.
+   */ 
+  public Object
+  getToolsetBuilderCollectionPlugins
+  (
+   MiscGetToolsetPluginsReq req 
+  ) 
+  {
+    String tname = req.getName();
+
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      TreeMap<String,TreeSet<VersionID>> packages = new TreeMap<String,TreeSet<VersionID>>();
+      synchronized(pToolsets) {
+        timer.resume();
+
+        try {
+          Toolset toolset = getToolset(tname, OsType.Unix, timer);      
+          int wk;
+          for(wk=0; wk<toolset.getNumPackages(); wk++) {
+            String pname = toolset.getPackageName(wk);
+            VersionID pvid = toolset.getPackageVersionID(wk);
+            
+            TreeSet<VersionID> vids = packages.get(pname);
+            if(vids == null) {
+              vids = new TreeSet<VersionID>();
+              packages.put(pname, vids);
+            }
+            
+            vids.add(pvid);         
+          }
+        }
+        catch(PipelineException ex) {
+        }
+      }
+
+      PluginSet plugins = new PluginSet();
+      {
+        timer.aquire();
+        synchronized(pPackageBuilderCollectionPlugins) {
+          timer.resume();
+          
+          for(String pname : packages.keySet()) {
+            for(VersionID pvid : packages.get(pname)) {
+              PluginSet pset = pPackageBuilderCollectionPlugins.get(pname, pvid);
+              if(pset != null) 
+                plugins.addAll(pset);
+            }
+          }
+        }
+      }
+
+      return new MiscGetPackagePluginsRsp(timer, plugins); 
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+  /**
+   * Get the builder collection plugins associated with a toolset package.
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>MiscGetPackagePluginsRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to lookup the plugins.
+   */ 
+  public Object
+  getPackageBuilderCollectionPlugins
+  (
+   MiscGetPackagePluginsReq req 
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pPackageBuilderCollectionPlugins) {
+        timer.resume();
+        
+        PluginSet plugins = pPackageBuilderCollectionPlugins.get(req.getName(), req.getVersionID());
+        if(plugins == null)
+          plugins = new PluginSet(); 
+
+        return new MiscGetPackagePluginsRsp(timer, plugins); 
+      }
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+  /**
+   * Set the builder collection plugins associated with a toolset package.
+   * 
+   * @param req
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to lookup the plugins.
+   */ 
+  public Object
+  setPackageBuilderCollectionPlugins
+  (
+   MiscSetPackagePluginsReq req 
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      if(!pAdminPrivileges.isDeveloper(req)) 
+        throw new PipelineException
+          ("Only a user with Developer privileges may change the builder collection plugins " + 
+           "associated with a toolset package!"); 
+
+      synchronized(pPackageBuilderCollectionPlugins) {
+        timer.resume();
+        
+        if(req.getPlugins() == null)
+          pPackageBuilderCollectionPlugins.remove(req.getName(), req.getVersionID());
+        else 
+          pPackageBuilderCollectionPlugins.put(req.getName(), req.getVersionID(), req.getPlugins());
+
+        writePackagePlugins(req.getName(), req.getVersionID(), 
+                            "builder collection", pPackageBuilderCollectionPlugins);
+
+        return new SuccessRsp(timer);
+      }
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());      
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
 
 
+  
   /*----------------------------------------------------------------------------------------*/
   /*   S E R V E R   E X T E N S I O N S                                                    */
   /*----------------------------------------------------------------------------------------*/
@@ -6912,10 +7208,12 @@ class MasterMgr
          !(tannot.getVersionID().equals(annot.getVersionID())) ||
          !(tannot.getVendor().equals(annot.getVendor()))) {
 
-        if(!pAdminPrivileges.isAnnotator(req)) 
+        if(!pAdminPrivileges.isAnnotator(req) && !annot.isUserAddable()) 
           throw new PipelineException
             ("Only a user with Annotator privileges may add new annotations or replace " + 
-             "existing annotations of with a different plugin Name, Version or Vendor!"); 
+             "existing annotations of with a different plugin Name, Version or Vendor!" +
+             "The only exception to this is if the annotation has set the isUserAddable" +
+             "flag.  The annotation that was being added does not set this flag."); 
         
         table.put(aname, annot);
       }
@@ -6980,10 +7278,6 @@ class MasterMgr
     try {
       timer.resume();
     
-      if(!pAdminPrivileges.isAnnotator(req)) 
-        throw new PipelineException
-          ("Only a user with Annotator privileges may remove annotations from a node!");
-
       TreeMap<String,BaseAnnotation> table = getAnnotationsTable(name);
       if(table == null) 
         throw new PipelineException
@@ -6993,7 +7287,14 @@ class MasterMgr
       if(annot == null) 
         throw new PipelineException
           ("No annotation name (" + aname + ") exists for node (" + name + ")!"); 
-            
+
+      if(!pAdminPrivileges.isAnnotator(req) && !annot.isUserRemovable()) 
+        throw new PipelineException
+          ("Only a user with Annotator privileges may remove annotations from a node!" +
+           "The only exception to this is if the annotation has set the isUserRemovable" +
+           "flag.  The annotation that was being removed does not set this flag.");
+      
+      
       table.remove(aname); 
       writeAnnotations(name, table);
 
@@ -7072,35 +7373,56 @@ class MasterMgr
     try {
       timer.resume();
     
-      if(!pAdminPrivileges.isAnnotator(req)) 
-        throw new PipelineException
-          ("Only a user with Annotator privileges may remove annotations from a node!");
-
       TreeMap<String,BaseAnnotation> table = getAnnotationsTable(name);
       if(table == null) 
         return new SuccessRsp(timer);
       
+      ArrayList<String> removeList = new ArrayList<String>();
       /* pre-op tests */
-      LinkedList<RemoveAnnotationExtFactory> factories = 
-        new LinkedList<RemoveAnnotationExtFactory>();
+      TreeMap<String, RemoveAnnotationExtFactory> factories = 
+        new TreeMap<String, RemoveAnnotationExtFactory>();
       for(String aname : table.keySet()) {
         RemoveAnnotationExtFactory factory = new RemoveAnnotationExtFactory(name, aname);
-        factories.add(factory);
+        factories.put(aname, factory);
         performExtensionTests(timer, factory);
-      }
+        BaseAnnotation annot = table.get(aname);
 
-      File file = new File(pNodeDir, "annotations" + name); 
-      if(!file.delete()) 
-        throw new PipelineException
-          ("Unable to remove the annotations file (" + file + ")!");        
+        if( pAdminPrivileges.isAnnotator(req) || annot.isUserRemovable()) 
+          removeList.add(aname);
+      }
+      for (String remove : removeList)
+        table.remove(remove);
+
+      boolean error = false;
       
-      synchronized(pAnnotations) {
-        pAnnotations.remove(name); 
+      if (table.isEmpty()) {
+        File file = new File(pNodeDir, "annotations" + name); 
+        if(!file.delete()) 
+          throw new PipelineException
+          ("Unable to remove the annotations file (" + file + ")!");
+        synchronized(pAnnotations) {
+          pAnnotations.remove(name); 
+        }
+      }
+      else {
+        writeAnnotations(name, table);
+        error =true;
       }
 
       /* post-op tasks */ 
-      for(RemoveAnnotationExtFactory factory : factories) 
-        startExtensionTasks(timer, factory);
+      for(String aname : removeList) {
+        RemoveAnnotationExtFactory factory = factories.get(aname); 
+        if (factory != null)
+          startExtensionTasks(timer, factory);
+      }
+      
+      if (error)
+        throw new PipelineException
+          ("Only a user with Annotator privileges may remove annotations from a node!" +
+           "The only exception to this is if the annotation has set the isUserRemovable" +
+           "flag.  The following annotations being removed did not set that flag:\n" +
+           table.keySet());
+
 
       return new SuccessRsp(timer);
     }
@@ -12326,7 +12648,7 @@ class MasterMgr
     NodeDetails details = status.getDetails();
     if(details == null) 
       throw new PipelineException
-        ("Cannot generate jobs for the checked-in node (" + status + ")!");
+	("Cannot generate jobs for the checked-in node (" + status + ")!");
     
     NodeMod work = details.getWorkingVersion();
     if(work.isLocked()) 
@@ -12380,163 +12702,163 @@ class MasterMgr
     switch(work.getExecutionMethod()) {
     case Serial:
       {
-        /* does a job already exist or been generated for the node? */ 
-        if((extJobIDs.get(nodeID) != null) || (nodeJobIDs.get(nodeID) != null))
-          return;
+	/* does a job already exist or been generated for the node? */ 
+	if((extJobIDs.get(nodeID) != null) || (nodeJobIDs.get(nodeID) != null))
+	  return;
 
-        /* are all frames Finished or Running/Queued/Paused? */ 
-        boolean finished = true;
-        boolean running  = true; 
-        {
-          int idx;
-          for(idx=0; idx<queueStates.length; idx++) {
-            switch(queueStates[idx]) {
-            case Finished:
-              running = false;
-              break;
-              
-            case Running:
-            case Queued:
-            case Paused:
-              finished = false;
-              break;
-              
-            default:
-              finished = false;
-              running  = false;
-            }
-          }
-        }
+	/* are all frames Finished or Running/Queued/Paused? */ 
+	boolean finished = true;
+	boolean running  = true; 
+	{
+	  int idx;
+	  for(idx=0; idx<queueStates.length; idx++) {
+	    switch(queueStates[idx]) {
+	    case Finished:
+	      running = false;
+	      break;
+	      
+	    case Running:
+	    case Queued:
+	    case Paused:
+	      finished = false;
+	      break;
+	      
+	    default:
+	      finished = false;
+	      running  = false;
+	    }
+	  }
+	}
 
 
-        if(running) {
-          extJobIDs.put(nodeID, jobIDs);
-        }
-        else if(!finished) {
-          TreeSet<Integer> frames = new TreeSet<Integer>(); 
-          int idx;
-          for(idx=0; idx<numFrames; idx++) 
-            frames.add(idx);
-          
-          batches.add(frames);
-        }
+	if(running) {
+	  extJobIDs.put(nodeID, jobIDs);
+	}
+	else if(!finished) {
+	  TreeSet<Integer> frames = new TreeSet<Integer>(); 
+	  int idx;
+	  for(idx=0; idx<numFrames; idx++) 
+	    frames.add(idx);
+	  
+	  batches.add(frames);
+	}
       }
       break; 
       
     case Subdivided:
     case Parallel:
       {
-        /* determine which of the requested frames needs to be regenerated */ 
-        TreeSet<Integer> regen = new TreeSet<Integer>();
-        {
-          TreeSet<Integer> allIndices = new TreeSet<Integer>();
-          if(indices != null) 
-            allIndices.addAll(indices);
-          else {
-            int idx;
-            for(idx=0; idx<numFrames; idx++) 
-              allIndices.add(idx);
-          }
+	/* determine which of the requested frames needs to be regenerated */ 
+	TreeSet<Integer> regen = new TreeSet<Integer>();
+	{
+	  TreeSet<Integer> allIndices = new TreeSet<Integer>();
+	  if(indices != null) 
+	    allIndices.addAll(indices);
+	  else {
+	    int idx;
+	    for(idx=0; idx<numFrames; idx++) 
+	      allIndices.add(idx);
+	  }
 
-          Long[] extIDs  = extJobIDs.get(nodeID);
-          Long[] njobIDs = nodeJobIDs.get(nodeID);
+	  Long[] extIDs  = extJobIDs.get(nodeID);
+	  Long[] njobIDs = nodeJobIDs.get(nodeID);
 
-          for(Integer idx : allIndices) {
-            if((idx < 0) || (idx >= numFrames)) 
-              throw new PipelineException
-                ("Illegal frame index (" + idx + ") given for node (" + nodeID + ") " + 
-                 "during job submission!");
+	  for(Integer idx : allIndices) {
+	    if((idx < 0) || (idx >= numFrames)) 
+	      throw new PipelineException
+		("Illegal frame index (" + idx + ") given for node (" + nodeID + ") " + 
+		 "during job submission!");
 
-            if((njobIDs == null) || (njobIDs[idx] == null)) {
-              switch(queueStates[idx]) {
-              case Finished:
-                break;
+	    if((njobIDs == null) || (njobIDs[idx] == null)) {
+	      switch(queueStates[idx]) {
+	      case Finished:
+		break;
 
-              case Running:
-              case Queued:
-              case Paused:
-                {
-                  if(extIDs == null) {
-                    extIDs = new Long[numFrames];
-                    extJobIDs.put(nodeID, extIDs);
-                  }
+	      case Running:
+	      case Queued:
+	      case Paused:
+		{
+		  if(extIDs == null) {
+		    extIDs = new Long[numFrames];
+		    extJobIDs.put(nodeID, extIDs);
+		  }
 
-                  if(extIDs[idx] == null) 
-                    extIDs[idx] = jobIDs[idx];
-                  if(extIDs[idx] == null)
-                    throw new IllegalStateException(); 
-                }
-                break;
+		  if(extIDs[idx] == null) 
+		    extIDs[idx] = jobIDs[idx];
+		  if(extIDs[idx] == null)
+		    throw new IllegalStateException(); 
+		}
+		break;
 
-              case Stale:
-              case Aborted:
-              case Failed:
-                regen.add(idx);
-                break;
+	      case Stale:
+	      case Aborted:
+	      case Failed:
+		regen.add(idx);
+		break;
 
-              case Undefined:
-                throw new IllegalStateException(); 
-              }
-            }
-          }
-        }
+	      case Undefined:
+		throw new IllegalStateException(); 
+	      }
+	    }
+	  }
+	}
 
-        /* group the frames into batches */ 
-        if(!regen.isEmpty()) {
-          switch(work.getExecutionMethod()) {
-          case Subdivided:
-            {
-              int maxIdx = regen.last();
-              if(maxIdx == 0) {
-                TreeSet<Integer> batch = new TreeSet<Integer>();
-                batch.add(maxIdx);
-                batches.add(batch);
-              }
-              else {
-                ArrayList<Integer> sindices = new ArrayList<Integer>();
-                if(regen.contains(0)) 
-                  sindices.add(0);
-                
-                {
-                  int e = (int) Math.floor(Math.log((double) maxIdx) / Math.log(2.0));
-                  for(; e>=0; e--) {
-                    int si = (int) Math.pow(2.0, (double) e);
-                    int inc = si * 2;
-                    int i;
-                    for(i=si; i<=maxIdx; i+=inc) {
-                      if(regen.contains(i)) 
-                        sindices.add(i);
-                    }
-                  }
-                }
+	/* group the frames into batches */ 
+	if(!regen.isEmpty()) {
+	  switch(work.getExecutionMethod()) {
+	  case Subdivided:
+	    {
+	      int maxIdx = regen.last();
+	      if(maxIdx == 0) {
+		TreeSet<Integer> batch = new TreeSet<Integer>();
+		batch.add(maxIdx);
+		batches.add(batch);
+	      }
+	      else {
+		ArrayList<Integer> sindices = new ArrayList<Integer>();
+		if(regen.contains(0)) 
+		  sindices.add(0);
+		
+		{
+		  int e = (int) Math.floor(Math.log((double) maxIdx) / Math.log(2.0));
+		  for(; e>=0; e--) {
+		    int si = (int) Math.pow(2.0, (double) e);
+		    int inc = si * 2;
+		    int i;
+		    for(i=si; i<=maxIdx; i+=inc) {
+		      if(regen.contains(i)) 
+			sindices.add(i);
+		    }
+		  }
+		}
 
-                for(Integer i : sindices) {
-                  TreeSet<Integer> batch = new TreeSet<Integer>();
-                  batch.add(i);
-                  batches.add(batch);
-                }
-              }
-            }
-            break;
-            
-          case Parallel:
-            {
-              TreeSet<Integer> batch = new TreeSet<Integer>();
-              for(Integer idx : regen) {
-                if(!batch.isEmpty() && 
-                   (((bsize > 0) && (batch.size() >= bsize)) ||
-                    (idx > (batch.last()+1)))) {
-                  batches.add(batch);
-                  batch = new TreeSet<Integer>();
-                }       
-                
-                batch.add(idx);
-              }
-            
-              batches.add(batch);
-            }
-          }
-        }
+		for(Integer i : sindices) {
+		  TreeSet<Integer> batch = new TreeSet<Integer>();
+		  batch.add(i);
+		  batches.add(batch);
+		}
+	      }
+	    }
+	    break;
+	    
+	  case Parallel:
+	    {
+	      TreeSet<Integer> batch = new TreeSet<Integer>();
+	      for(Integer idx : regen) {
+		if(!batch.isEmpty() && 
+		   (((bsize > 0) && (batch.size() >= bsize)) ||
+		    (idx > (batch.last()+1)))) {
+		  batches.add(batch);
+		  batch = new TreeSet<Integer>();
+		}	
+		
+		batch.add(idx);
+	      }
+	    
+	      batches.add(batch);
+	    }
+	  }
+	}
       }
     }
     
@@ -12550,20 +12872,20 @@ class MasterMgr
     /* generate jobs for each frame batch */ 
     else {
       if(work.isFrozen()) 
-        throw new PipelineException
-          ("Cannot generate jobs for the frozen node (" + nodeID + ")!");
+	throw new PipelineException
+	  ("Cannot generate jobs for the frozen node (" + nodeID + ")!");
       
       boolean first = true;
       JobReqs jreqs = null;
       
       for(TreeSet<Integer> batch : batches) {
-        if(batch.isEmpty())
-          throw new IllegalStateException(); 
-        
-        /* determine the frame indices of the source nodes depended on by the 
-           frames of this batch */
-        TreeMap<String,TreeSet<Integer>> sourceIndices = 
-          new TreeMap<String,TreeSet<Integer>>();
+	if(batch.isEmpty())
+	  throw new IllegalStateException(); 
+	
+	/* determine the frame indices of the source nodes depended on by the 
+	   frames of this batch */
+	TreeMap<String,TreeSet<Integer>> sourceIndices = 
+	  new TreeMap<String,TreeSet<Integer>>();
         for(LinkMod link : work.getSources()) {
           switch(link.getPolicy()) {
           case Reference:
@@ -12622,8 +12944,8 @@ class MasterMgr
           }
         }
       
-        /* generate jobs for the source frames first */ 
-        for(LinkMod link : work.getSources()) {  
+	/* generate jobs for the source frames first */ 
+	for(LinkMod link : work.getSources()) {  
           switch(link.getPolicy()) {
           case Association:
             assocRoots.add(link.getName());
@@ -12643,11 +12965,11 @@ class MasterMgr
               }
             }
           }
-        }
+	}
 
-        /* determine the source job IDs */ 
-        TreeSet<Long> sourceIDs = new TreeSet<Long>();
-        for(LinkMod link : work.getSources()) {
+	/* determine the source job IDs */ 
+	TreeSet<Long> sourceIDs = new TreeSet<Long>();
+	for(LinkMod link : work.getSources()) {
           switch(link.getPolicy()) {
           case Reference:
           case Dependency:
@@ -12660,7 +12982,7 @@ class MasterMgr
                 sourceIDs.addAll(upsIDs);
               
               TreeSet<Integer> lindices = sourceIndices.get(link.getName());
-              if((lindices != null) && !lindices.isEmpty()) {             
+              if((lindices != null) && !lindices.isEmpty()) {		  
                 Long[] nIDs = nodeJobIDs.get(lnodeID);
                 Long[] eIDs = extJobIDs.get(lnodeID);
                 
@@ -12675,132 +12997,132 @@ class MasterMgr
           }
         }
       
-        /* generate a QueueJob for the batch */ 
-        long jobID = pNextJobID++;
-        {
-          FileSeq primaryTarget = 
-            new FileSeq(work.getPrimarySequence(), batch.first(), batch.last());
+	/* generate a QueueJob for the batch */ 
+	long jobID = pNextJobID++;
+	{
+	  FileSeq primaryTarget = 
+	    new FileSeq(work.getPrimarySequence(), batch.first(), batch.last());
 
-          TreeSet<FileSeq> secondaryTargets = new TreeSet<FileSeq>();
-          for(FileSeq fseq : work.getSecondarySequences()) 
-            secondaryTargets.add(new FileSeq(fseq, batch.first(), batch.last()));
+	  TreeSet<FileSeq> secondaryTargets = new TreeSet<FileSeq>();
+	  for(FileSeq fseq : work.getSecondarySequences()) 
+	    secondaryTargets.add(new FileSeq(fseq, batch.first(), batch.last()));
 
-          TreeMap<String,FileSeq> primarySources = new TreeMap<String,FileSeq>();
-          TreeMap<String,Set<FileSeq>> secondarySources = 
-            new TreeMap<String,Set<FileSeq>>();
-          TreeMap<String,ActionInfo> actionInfos = new TreeMap<String,ActionInfo>();
-          for(String sname : sourceIndices.keySet()) {
-            TreeSet<Integer> lindices = sourceIndices.get(sname);
-            if((lindices != null) && !lindices.isEmpty()) {
-              NodeStatus lstatus = status.getSource(sname);
-              NodeDetails ldetails = lstatus.getDetails();
-              NodeMod lwork = ldetails.getWorkingVersion();
+	  TreeMap<String,FileSeq> primarySources = new TreeMap<String,FileSeq>();
+	  TreeMap<String,Set<FileSeq>> secondarySources = 
+	    new TreeMap<String,Set<FileSeq>>();
+	  TreeMap<String,ActionInfo> actionInfos = new TreeMap<String,ActionInfo>();
+	  for(String sname : sourceIndices.keySet()) {
+	    TreeSet<Integer> lindices = sourceIndices.get(sname);
+	    if((lindices != null) && !lindices.isEmpty()) {
+	      NodeStatus lstatus = status.getSource(sname);
+	      NodeDetails ldetails = lstatus.getDetails();
+	      NodeMod lwork = ldetails.getWorkingVersion();
 
-              {
-                FileSeq fseq = lwork.getPrimarySequence();
-                primarySources.put(sname, 
-                                   new FileSeq(fseq, lindices.first(), lindices.last()));
-              }
+	      {
+		FileSeq fseq = lwork.getPrimarySequence();
+		primarySources.put(sname, 
+				   new FileSeq(fseq, lindices.first(), lindices.last()));
+	      }
 
-              {
-                TreeSet<FileSeq> fseqs = new TreeSet<FileSeq>();
-                for(FileSeq fseq : lwork.getSecondarySequences()) 
-                  fseqs.add(new FileSeq(fseq, lindices.first(), lindices.last()));
+	      {
+		TreeSet<FileSeq> fseqs = new TreeSet<FileSeq>();
+		for(FileSeq fseq : lwork.getSecondarySequences()) 
+		  fseqs.add(new FileSeq(fseq, lindices.first(), lindices.last()));
 
-                if(!fseqs.isEmpty()) 
-                  secondarySources.put(sname, fseqs);
-              }   
+		if(!fseqs.isEmpty()) 
+		  secondarySources.put(sname, fseqs);
+	      }	  
 
-              BaseAction laction = lwork.getAction();
-              if(laction != null) {
-                LinkMod slink = work.getSource(sname);
-                if((slink != null) && (slink.getPolicy() == LinkPolicy.Dependency)) {
-                  ActionInfo ainfo = new ActionInfo(laction, lwork.isActionEnabled());
-                  actionInfos.put(sname, ainfo);
-                }
-              }
-            }
-          }
+	      BaseAction laction = lwork.getAction();
+	      if(laction != null) {
+		LinkMod slink = work.getSource(sname);
+		if((slink != null) && (slink.getPolicy() == LinkPolicy.Dependency)) {
+		  ActionInfo ainfo = new ActionInfo(laction, lwork.isActionEnabled());
+		  actionInfos.put(sname, ainfo);
+		}
+	      }
+	    }
+	  }
 
-          cacheToolset(work.getToolset(), timer);
+	  cacheToolset(work.getToolset(), timer);
 
-          ActionAgenda agenda = 
-            new ActionAgenda(jobID, nodeID, 
-                             primaryTarget, secondaryTargets, 
-                             primarySources, secondarySources, actionInfos,  
-                             work.getToolset());
-          if (first) {
-            jreqs = work.getJobRequirements();
-            
-            if(isRoot && (priority != null)) 
-              jreqs.setPriority(priority);
+	  ActionAgenda agenda = 
+	    new ActionAgenda(jobID, nodeID, 
+			     primaryTarget, secondaryTargets, 
+			     primarySources, secondarySources, actionInfos,  
+			     work.getToolset());
+	  if (first) {
+	    jreqs = work.getJobRequirements();
+	    
+	    if(isRoot && (priority != null)) 
+	      jreqs.setPriority(priority);
 
-            if(isRoot && (rampUp != null)) 
-              jreqs.setRampUp(rampUp);
-            
-            if(isRoot && (maxLoad != null)) 
-              jreqs.setMaxLoad(maxLoad);
-            
-            if(isRoot && (minMemory != null)) 
-              jreqs.setMinMemory(minMemory);
-            
-            if(isRoot && (minDisk != null)) 
-              jreqs.setMinDisk(minDisk);
-            
-            if(isRoot && (selectionKeys != null)) {
-              jreqs.removeAllSelectionKeys(); 
-              jreqs.addSelectionKeys(selectionKeys);
-            }
-            
-            if(isRoot && (hardwareKeys != null)) {
-              jreqs.removeAllHardwareKeys(); 
-              jreqs.addHardwareKeys(hardwareKeys);
-            }
+	    if(isRoot && (rampUp != null)) 
+	      jreqs.setRampUp(rampUp);
+	    
+	    if(isRoot && (maxLoad != null)) 
+	      jreqs.setMaxLoad(maxLoad);
+	    
+	    if(isRoot && (minMemory != null)) 
+	      jreqs.setMinMemory(minMemory);
+	    
+	    if(isRoot && (minDisk != null)) 
+	      jreqs.setMinDisk(minDisk);
+	    
+	    if(isRoot && (selectionKeys != null)) {
+	      jreqs.removeAllSelectionKeys(); 
+	      jreqs.addSelectionKeys(selectionKeys);
+	    }
+	    
+	    if(isRoot && (hardwareKeys != null)) {
+	      jreqs.removeAllHardwareKeys(); 
+	      jreqs.addHardwareKeys(hardwareKeys);
+	    }
 
-            if(isRoot && (licenseKeys != null)) {
-              jreqs.removeAllLicenseKeys(); 
-              jreqs.addLicenseKeys(licenseKeys);
-            }
-          }
-          
-          BaseAction action = work.getAction();
-          {
-            /* strip per-source parameters which do not correspond to secondary sequences
-               of the currently linked upstream nodes */ 
-            {
-              TreeMap<String,TreeSet<FilePattern>> dead = 
-                new TreeMap<String,TreeSet<FilePattern>>();
+	    if(isRoot && (licenseKeys != null)) {
+	      jreqs.removeAllLicenseKeys(); 
+	      jreqs.addLicenseKeys(licenseKeys);
+	    }
+	  }
+	  
+	  BaseAction action = work.getAction();
+	  {
+	    /* strip per-source parameters which do not correspond to secondary sequences
+	       of the currently linked upstream nodes */ 
+	    {
+	      TreeMap<String,TreeSet<FilePattern>> dead = 
+		new TreeMap<String,TreeSet<FilePattern>>();
 
-              for(String sname : action.getSecondarySourceNames()) {
-                Set<FilePattern> fpats = action.getSecondarySequences(sname);
-                if(!fpats.isEmpty()) {
-                  NodeMod lmod = status.getSource(sname).getDetails().getWorkingVersion();
-                  
-                  TreeSet<FilePattern> live = new TreeSet<FilePattern>();
-                  for(FileSeq fseq : lmod.getSecondarySequences()) 
-                    live.add(fseq.getFilePattern());
-                  
-                  for(FilePattern fpat : fpats) {
-                    if(!live.contains(fpat)) {
-                      TreeSet<FilePattern> dpats = dead.get(sname);
-                      if(dpats == null) {
-                        dpats = new TreeSet<FilePattern>();
-                        dead.put(sname, dpats);
-                      }
-                      dpats.add(fpat);
-                    }
-                  }
-                }
-              }
+	      for(String sname : action.getSecondarySourceNames()) {
+		Set<FilePattern> fpats = action.getSecondarySequences(sname);
+		if(!fpats.isEmpty()) {
+		  NodeMod lmod = status.getSource(sname).getDetails().getWorkingVersion();
+		  
+		  TreeSet<FilePattern> live = new TreeSet<FilePattern>();
+		  for(FileSeq fseq : lmod.getSecondarySequences()) 
+		    live.add(fseq.getFilePattern());
+		  
+		  for(FilePattern fpat : fpats) {
+		    if(!live.contains(fpat)) {
+		      TreeSet<FilePattern> dpats = dead.get(sname);
+		      if(dpats == null) {
+			dpats = new TreeSet<FilePattern>();
+			dead.put(sname, dpats);
+		      }
+		      dpats.add(fpat);
+		    }
+		  }
+		}
+	      }
 
-              for(String sname : dead.keySet()) {
-                for(FilePattern fpat : dead.get(sname)) 
-                  action.removeSecondarySourceParams(sname, fpat);
-              }
-            }
-          }
-          
-          QueueJob job = new QueueJob(agenda, action, jreqs, sourceIDs);
+	      for(String sname : dead.keySet()) {
+		for(FilePattern fpat : dead.get(sname)) 
+		  action.removeSecondarySourceParams(sname, fpat);
+	      }
+	    }
+	  }
+	  
+	  QueueJob job = new QueueJob(agenda, action, jreqs, sourceIDs);
 
           if (first) {
             /* Perform all serverside key calculations*/
@@ -12823,21 +13145,21 @@ class MasterMgr
           jobs.put(jobID, job);
         }
 
-        /* if this is the root node, add the job to the set of root jobs */ 
-        if(isRoot) 
-          rootJobIDs.add(jobID);
+	/* if this is the root node, add the job to the set of root jobs */ 
+	if(isRoot) 
+	  rootJobIDs.add(jobID);
 
-        /* update the node jobs table entries for the files which make up the batch */ 
-        {
-          Long[] njobIDs = nodeJobIDs.get(nodeID);
-          if(njobIDs == null) {
-            njobIDs = new Long[numFrames];
-            nodeJobIDs.put(nodeID, njobIDs);
-          }
-        
-          for(Integer idx : batch) 
-            njobIDs[idx] = jobID;
-        }
+	/* update the node jobs table entries for the files which make up the batch */ 
+	{
+	  Long[] njobIDs = nodeJobIDs.get(nodeID);
+	  if(njobIDs == null) {
+	    njobIDs = new Long[numFrames];
+	    nodeJobIDs.put(nodeID, njobIDs);
+	  }
+	
+	  for(Integer idx : batch) 
+	    njobIDs[idx] = jobID;
+	}
       } //  for(TreeSet<Integer> batch : batches)
     }
   }
@@ -12895,8 +13217,11 @@ class MasterMgr
         if (!key.hasKeyChooser() && currentKeys.contains(name))
           finalKeys.add(name); 
         else if (key.hasKeyChooser()) {
-          if (annots == null)
+          if (annots == null) {
             annots = getAnnotationsHelper(timer, nodeID.getName());
+            if (annots == null)
+              annots = new TreeMap<String, BaseAnnotation>();
+          }
           try {
             if (key.getKeyChooser().computeIsActive(job, annots))
               finalKeys.add(name);
@@ -12923,8 +13248,11 @@ class MasterMgr
         if (!key.hasKeyChooser() && currentKeys.contains(name))
           finalKeys.add(name); 
         else if (key.hasKeyChooser()) {
-          if (annots == null)
+          if (annots == null) {
             annots = getAnnotationsHelper(timer, nodeID.getName());
+            if (annots == null)
+              annots = new TreeMap<String, BaseAnnotation>();
+          }
           try {
             if (key.getKeyChooser().computeIsActive(job, annots))
               finalKeys.add(name);
@@ -12951,8 +13279,11 @@ class MasterMgr
         if (!key.hasKeyChooser() && currentKeys.contains(name))
           finalKeys.add(name); 
         else if (key.hasKeyChooser()) {
-          if (annots == null)
+          if (annots == null) {
             annots = getAnnotationsHelper(timer, nodeID.getName());
+            if (annots == null)
+              annots = new TreeMap<String, BaseAnnotation>();
+          }
           try {
             if (key.getKeyChooser().computeIsActive(job, annots))
               finalKeys.add(name);
@@ -21898,6 +22229,10 @@ class MasterMgr
 
   private TreeMap<String,PluginMenuLayout>  pKeyChooserMenuLayouts;
   private PluginMenuLayout                  pDefaultKeyChooserMenuLayout;
+  
+  private TreeMap<String,PluginMenuLayout>  pBuilderCollectionMenuLayouts;
+  private PluginMenuLayout                  pDefaultBuilderCollectionMenuLayout;
+  
 
   /**
    * The cached tables of the vendors, names and versions of all plugins associated with a 
@@ -21914,7 +22249,7 @@ class MasterMgr
   private DoubleMap<String,VersionID,PluginSet>  pPackageQueueExtPlugins; 
   private DoubleMap<String,VersionID,PluginSet>  pPackageAnnotationPlugins; 
   private DoubleMap<String,VersionID,PluginSet>  pPackageKeyChooserPlugins; 
-
+  private DoubleMap<String,VersionID,PluginSet>  pPackageBuilderCollectionPlugins;
 
   /*----------------------------------------------------------------------------------------*/
   

@@ -1,5 +1,6 @@
 package us.temerity.pipeline.builder.tests;
 
+import java.util.LinkedList;
 import java.util.TreeSet;
 
 import us.temerity.pipeline.*;
@@ -19,8 +20,6 @@ public class BabyBuilder
     throws PipelineException
   {
     super(name, 
-          new VersionID("1.0.0"), 
-          "Temerity", 
           "A Baby Builder", 
           mclient, 
           qclient, 
@@ -59,7 +58,7 @@ public class BabyBuilder
       {
 	LayoutGroup group = new LayoutGroup(true);
 	group.addEntry(aUtilContext);
-	group.addEntry(aActionOnExistance);
+	group.addEntry(aActionOnExistence);
 	group.addEntry(aReleaseOnError);
 	group.addEntry(aMakeChild);
 	layout.addPass("FirstPass", group);
@@ -79,7 +78,7 @@ public class BabyBuilder
   }
   
   @Override
-  protected TreeSet<String> getNodesToCheckIn()
+  protected LinkedList<String> getNodesToCheckIn()
   {
     return null;
   }

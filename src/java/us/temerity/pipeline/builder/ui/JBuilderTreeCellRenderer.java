@@ -10,7 +10,7 @@ import javax.swing.tree.TreeCellRenderer;
 import us.temerity.pipeline.laf.LookAndFeelLoader;
 
 /*------------------------------------------------------------------------------------------*/
-/*   U S E R   P R E F S   T R E E   C E L L   R E N D E R E R                              */
+/*   B U I L D E R   T R E E   C E L L   R E N D E R E R                                    */
 /*------------------------------------------------------------------------------------------*/
 
 /**

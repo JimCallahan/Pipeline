@@ -1,4 +1,4 @@
-// $Id: PluginUpdateRsp.java,v 1.8 2007/12/15 07:14:57 jesse Exp $
+// $Id: PluginUpdateRsp.java,v 1.9 2008/01/28 11:58:52 jesse Exp $
 
 package us.temerity.pipeline.message;
 
@@ -81,7 +81,8 @@ class PluginUpdateRsp
    TripleMap<String,String,VersionID,Object[]> archivers,
    TripleMap<String,String,VersionID,Object[]> masterExts, 
    TripleMap<String,String,VersionID,Object[]> queueExts,
-   TripleMap<String,String,VersionID,Object[]> keyChoosers
+   TripleMap<String,String,VersionID,Object[]> keyChoosers,
+   TripleMap<String,String,VersionID,Object[]> builderCollections
   )
   { 
     super(timer);
@@ -125,6 +126,10 @@ class PluginUpdateRsp
     if(keyChoosers == null) 
       throw new IllegalArgumentException("The Key Chooser plugins cannot be (null)!");
     pKeyChoosers = keyChoosers;
+    
+    if(builderCollections == null) 
+      throw new IllegalArgumentException("The Builder Collections plugins cannot be (null)!");
+    pBuilderCollections = builderCollections;
 
     if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest)) {
       LogMgr.getInstance().log
@@ -233,7 +238,7 @@ class PluginUpdateRsp
   }
 
   /**
-   * Gets the new or updated Selection Key plugin class [name, bytes, supports] 
+   * Gets the new or updated Key Chooser plugin class [name, bytes, supports] 
    * indexed by class name and revision number.
    */
   public TripleMap<String,String,VersionID,Object[]>
@@ -241,6 +246,16 @@ class PluginUpdateRsp
   {
     return pKeyChoosers; 
   }
+  
+  /**
+   * Gets the new or updated Builder Collections plugin class [name, bytes, supports] 
+   * indexed by class name and revision number.
+   */
+  public TripleMap<String,String,VersionID,Object[]>
+  getBuilderCollections() 
+  {
+    return pBuilderCollections; 
+  }  
 
 
   
@@ -317,6 +332,12 @@ class PluginUpdateRsp
    * indexed by class name and revision number.
    */ 
   private TripleMap<String,String,VersionID,Object[]>  pKeyChoosers; 
+  
+  /**
+   * The new or updated Builder Collection plugin class [name, bytes, supports] 
+   * indexed by class name and revision number.
+   */ 
+  private TripleMap<String,String,VersionID,Object[]>  pBuilderCollections; 
 
 }
   

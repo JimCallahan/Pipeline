@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.74 2007/12/16 11:03:59 jim Exp $
+// $Id: UIMaster.java,v 1.75 2008/01/28 11:58:50 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -6,6 +6,7 @@ import us.temerity.pipeline.*;
 import us.temerity.pipeline.ui.*;
 import us.temerity.pipeline.glue.*;
 import us.temerity.pipeline.math.*;
+import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.core.RemoteServer;
 import us.temerity.pipeline.core.JobMgrPlgControlClient;
 import us.temerity.pipeline.core.LockedGlueFile;
@@ -112,16 +113,19 @@ class UIMaster
       new TreeMap<String,TripleMap<String,String,VersionID,TreeSet<OsType>>>();
     pKeyChooserPlugins = 
       new TreeMap<String,TripleMap<String,String,VersionID,TreeSet<OsType>>>();
+    pBuilderCollectionPlugins = 
+      new TreeMap<String,TripleMap<String,String,VersionID,TreeSet<OsType>>>();
     
-    pEditorLayouts     = new TreeMap<String,PluginMenuLayout>();                   
-    pComparatorLayouts = new TreeMap<String,PluginMenuLayout>();                  
-    pActionLayouts     = new TreeMap<String,PluginMenuLayout>();                    
-    pToolLayouts       = new TreeMap<String,PluginMenuLayout>();                   
-    pArchiverLayouts   = new TreeMap<String,PluginMenuLayout>();                   
-    pMasterExtLayouts  = new TreeMap<String,PluginMenuLayout>();                   
-    pQueueExtLayouts   = new TreeMap<String,PluginMenuLayout>();                   
-    pAnnotationLayouts = new TreeMap<String,PluginMenuLayout>();                   
-    pKeyChooserLayouts = new TreeMap<String,PluginMenuLayout>();                   
+    pEditorLayouts            = new TreeMap<String,PluginMenuLayout>();                   
+    pComparatorLayouts        = new TreeMap<String,PluginMenuLayout>();                  
+    pActionLayouts            = new TreeMap<String,PluginMenuLayout>();                    
+    pToolLayouts              = new TreeMap<String,PluginMenuLayout>();                   
+    pArchiverLayouts          = new TreeMap<String,PluginMenuLayout>();                   
+    pMasterExtLayouts         = new TreeMap<String,PluginMenuLayout>();                   
+    pQueueExtLayouts          = new TreeMap<String,PluginMenuLayout>();                   
+    pAnnotationLayouts        = new TreeMap<String,PluginMenuLayout>();                   
+    pKeyChooserLayouts        = new TreeMap<String,PluginMenuLayout>();
+    pBuilderCollectionLayouts = new TreeMap<String,PluginMenuLayout>();
 
     pNodeBrowserPanels = new PanelGroup<JNodeBrowserPanel>();
     pNodeViewerPanels  = new PanelGroup<JNodeViewerPanel>();
@@ -950,6 +954,18 @@ class UIMaster
 
     synchronized(pKeyChooserLayouts) {
       pKeyChooserLayouts.clear();
+    }    
+  }
+  
+  public void 
+  clearBuilderCollectionPluginCaches() 
+  {
+    synchronized(pBuilderCollectionPlugins) {
+      pBuilderCollectionPlugins.clear();
+    }
+
+    synchronized(pBuilderCollectionLayouts) {
+      pBuilderCollectionLayouts.clear();
     }    
   }
 
@@ -2332,6 +2348,120 @@ class UIMaster
 
     field.updatePlugins(layout, plugins);
   }
+  
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Create a new builder collection plugin selection field based on the default toolset.
+   * 
+   * @param width
+   *   The minimum and preferred width of the field.
+   */ 
+  public JPluginSelectionField
+  createBuilderCollectionSelectionField
+  (
+   int width  
+  ) 
+  {
+    PluginMenuLayout layout = null;
+    TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
+    try {
+      MasterMgrClient client = getMasterMgrClient();
+      String tname = client.getDefaultToolsetName();
+
+      synchronized(pBuilderCollectionPlugins) {
+        plugins = pBuilderCollectionPlugins.get(tname);
+        if(plugins == null) {
+          DoubleMap<String,String,TreeSet<VersionID>> index = 
+            client.getToolsetBuilderCollectionPlugins(tname);
+
+          TripleMap<String,String,VersionID,TreeSet<OsType>> all = 
+            PluginMgrClient.getInstance().getBuilderCollections();
+
+          plugins = new TripleMap<String,String,VersionID,TreeSet<OsType>>();
+          for(String vendor : index.keySet()) {
+            for(String name : index.keySet(vendor)) {
+              for(VersionID vid : index.get(vendor, name)) {
+                plugins.put(vendor, name, vid, all.get(vendor, name, vid));
+              }
+            }
+          }
+
+          pBuilderCollectionPlugins.put(tname, plugins);
+        }
+      }
+      
+      synchronized(pBuilderCollectionLayouts) {
+        layout = pBuilderCollectionLayouts.get(tname);
+        if(layout == null) {
+          layout = client.getBuilderCollectionMenuLayout(tname);
+          pBuilderCollectionLayouts.put(tname, layout);
+        }
+      }
+    }
+    catch(PipelineException ex) {
+      showErrorDialog(ex);
+
+      layout = new PluginMenuLayout();
+      plugins = new TripleMap<String,String,VersionID,TreeSet<OsType>>();
+    }
+
+    return UIFactory.createPluginSelectionField(layout, plugins, width);
+  }
+
+  /**
+   * Update the contents of a builder collection plugin field.
+   */ 
+  public void 
+  updateBuilderCollectionPluginField
+  (
+   JPluginSelectionField field
+  ) 
+  {
+    PluginMenuLayout layout = null;
+    TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
+    try {
+      MasterMgrClient client = getMasterMgrClient();
+      String tname = client.getDefaultToolsetName();
+
+      synchronized(pBuilderCollectionPlugins) {
+        plugins = pBuilderCollectionPlugins.get(tname);
+        if(plugins == null) {
+          DoubleMap<String,String,TreeSet<VersionID>> index = 
+            client.getToolsetBuilderCollectionPlugins(tname);
+
+          TripleMap<String,String,VersionID,TreeSet<OsType>> all = 
+            PluginMgrClient.getInstance().getBuilderCollections();
+
+          plugins = new TripleMap<String,String,VersionID,TreeSet<OsType>>();
+          for(String vendor : index.keySet()) {
+            for(String name : index.keySet(vendor)) {
+              for(VersionID vid : index.get(vendor, name)) {
+                plugins.put(vendor, name, vid, all.get(vendor, name, vid));
+              }
+            }
+          }
+
+          pBuilderCollectionPlugins.put(tname, plugins);
+        }
+      }
+      
+      synchronized(pBuilderCollectionLayouts) {
+        layout = pBuilderCollectionLayouts.get(tname);
+        if(layout == null) {
+          layout = client.getBuilderCollectionMenuLayout(tname);
+          pBuilderCollectionLayouts.put(tname, layout);
+        }
+      }
+    }
+    catch(PipelineException ex) {
+      showErrorDialog(ex);
+      return;
+    }
+
+    field.updatePlugins(layout, plugins);
+  }
+
 
 
 
@@ -2710,6 +2840,43 @@ class UIMaster
   {
     pManageToolsetsDialog.updateAll();
     pManageToolsetsDialog.setVisible(true);
+  }
+  
+  /**
+   * Shows the launch builder dialog.
+   */
+  public void
+  showBuilderLaunchDialog()
+  {
+    pBuilderLaunchDialog.updateAll();
+    pBuilderLaunchDialog.setParams(null, null);
+    pBuilderLaunchDialog.setVisible(true);
+  }
+  
+  /**
+   * Shows the launch builder dialog.
+   */
+  public void
+  showBuilderLaunchDialog
+  (
+    String author,
+    String view
+  )
+  {
+    pBuilderLaunchDialog.updateAll();
+    ListMap<LinkedList<String>, String> params = new ListMap<LinkedList<String>, String>();
+    {
+      String array[] = {BaseUtil.aUtilContext, UtilContextUtilityParam.aAuthor};
+      LinkedList<String> authorKeys = new LinkedList<String>(Arrays.asList(array));
+      params.put(authorKeys, author);
+    }
+    {
+      String array[] = {BaseUtil.aUtilContext, UtilContextUtilityParam.aView};
+      LinkedList<String> viewKeys = new LinkedList<String>(Arrays.asList(array));
+      params.put(viewKeys, view);
+    }
+    pBuilderLaunchDialog.setParams(params, null);
+    pBuilderLaunchDialog.setVisible(true);
   }
 
   /**
@@ -4058,6 +4225,8 @@ class UIMaster
 	pResourceUsageHistoryDialog = new JResourceUsageHistoryDialog();
 
         pWorkingSelectDialog = new JWorkingSelectDialog(pFrame);
+        
+        pBuilderLaunchDialog = new JBuilderLaunchDialog();
 
 	JToolDialog.initRootFrame(pFrame);
       }
@@ -5815,6 +5984,9 @@ class UIMaster
 		  TripleMap<String,String,VersionID,TreeSet<OsType>>>  pAnnotationPlugins;
   private TreeMap<String,
 		  TripleMap<String,String,VersionID,TreeSet<OsType>>>  pKeyChooserPlugins;
+  private TreeMap<String,
+                  TripleMap<String,String,VersionID,TreeSet<OsType>>>  pBuilderCollectionPlugins;
+
 
   /** 
    * Caches of plugin menu layouts indexed by toolset name.
@@ -5827,7 +5999,8 @@ class UIMaster
   private TreeMap<String,PluginMenuLayout>  pMasterExtLayouts; 
   private TreeMap<String,PluginMenuLayout>  pQueueExtLayouts; 
   private TreeMap<String,PluginMenuLayout>  pAnnotationLayouts; 
-  private TreeMap<String,PluginMenuLayout>  pKeyChooserLayouts; 
+  private TreeMap<String,PluginMenuLayout>  pKeyChooserLayouts;
+  private TreeMap<String,PluginMenuLayout>  pBuilderCollectionLayouts;
 
 
 
@@ -5984,5 +6157,9 @@ class UIMaster
    * The remote working node selection dialog.
    */
   private JWorkingSelectDialog  pWorkingSelectDialog;
-
+  
+  /**
+   * The builder launch dialog
+   */
+  private JBuilderLaunchDialog pBuilderLaunchDialog;
 }

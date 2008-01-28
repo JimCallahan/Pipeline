@@ -5,7 +5,8 @@ instbin_SCRIPTS = \
   plremote.bat \
   plscript.bat \
   plscript-batch.bat \
-  plpython.bat
+  plpython.bat \
+  plbuilder.bat
 
 
 instsbindir = @ROOT_INST_DIR@/@NATIVE_OSTYPE@-@NATIVE_ARCHTYPE@-Opt/sbin
