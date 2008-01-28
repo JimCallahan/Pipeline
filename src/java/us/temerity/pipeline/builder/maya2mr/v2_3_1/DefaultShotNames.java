@@ -26,8 +26,6 @@ public class DefaultShotNames
     throws PipelineException
   {
     super("DefaultShotNames",
-      	  new VersionID("2.1.3"),
-      	  "Temerity",
           "The basic naming class for a shot provided by Temerity",
           mclient,
           qclient);

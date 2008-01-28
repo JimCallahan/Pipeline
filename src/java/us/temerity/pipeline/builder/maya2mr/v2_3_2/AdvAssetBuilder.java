@@ -1,4 +1,4 @@
-// $Id: AdvAssetBuilder.java,v 1.18 2007/11/01 19:08:53 jesse Exp $
+// $Id: AdvAssetBuilder.java,v 1.19 2008/01/28 11:46:09 jesse Exp $
 
 package us.temerity.pipeline.builder.maya2mr.v2_3_2;
 
@@ -53,9 +53,7 @@ class AdvAssetBuilder
   ) 
     throws PipelineException
   {
-    super("AdvAssetBuilder",
-          new VersionID("2.3.2"),
-          "Temerity", 
+    super("AdvAsset",
           "The Advanced Temerity Asset Builder that works with the basic Temerity Names class.",
           mclient,
           qclient,

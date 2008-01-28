@@ -37,8 +37,6 @@ class ModelPiecesBuilder
     throws PipelineException
   {
     super("ModelPiecesBuilder",
-          new VersionID("2.3.2"),
-          "Temerity", 
           "Simple builder to constuct a model file from multiple pieces.",
           mclient,
           qclient,

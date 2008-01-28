@@ -46,8 +46,6 @@ class AssetBuilder
     throws PipelineException
   {
     super("AssetBuilder", 
-          new VersionID("2.3.1"),
-          "Temerity", 
       	  "The basic Temerity Asset Builder that works with the basic Temerity Names class.",
       	  mclient,
       	  qclient,

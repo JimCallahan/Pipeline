@@ -46,9 +46,7 @@ class ProjectBuilder
   ) 
     throws PipelineException
   {
-    super("ProjectBuilder",
-          new VersionID("2.3.2"),
-          "Temerity", 
+    super("Project",
           "The Project Builder that works with the basic Temerity Project Names class.",
           mclient,
           qclient,

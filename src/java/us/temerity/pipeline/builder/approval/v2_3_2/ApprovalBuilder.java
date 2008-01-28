@@ -41,8 +41,6 @@ class ApprovalBuilder
   ApprovalBuilder
   (
     String name,
-    VersionID vid,
-    String vendor,
     String desc,
     MasterMgrClient mclient,
     QueueMgrClient qclient,
@@ -50,7 +48,7 @@ class ApprovalBuilder
   )
     throws PipelineException
   {
-    super(name, vid, vendor, desc, mclient, qclient, builderInformation);
+    super(name, desc, mclient, qclient, builderInformation);
     
     {
       UtilityParam param = 
@@ -111,8 +109,6 @@ class ApprovalBuilder
     throws PipelineException
   {
     this("ApprovalBuilder",
-         new VersionID("2.3.2"),
-         "Temerity",
          "This can be used for approve nodes with the most basic of setups.  In most" +
          "cases it will be necessary to override this class.",
          mclient,

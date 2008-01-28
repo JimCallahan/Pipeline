@@ -47,8 +47,6 @@ class ShotBuilder
     throws PipelineException
   {
     super("ShotBuilder", 
-      	  new VersionID("2.3.2"), 
-      	  "Temerity",
 	  "The basic Temerity Shot Builder that works with the basic Temerity Names class.",
 	  mclient,
 	  qclient,

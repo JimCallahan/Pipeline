@@ -29,8 +29,6 @@ class DefaultAssetNames
     throws PipelineException 
   {
     super("DefaultAssetNames", 
-      	  new VersionID("2.3.2"),
-      	  "Temerity",
           "The basic naming class for an asset provided by Temerity",
           mclient,
           qclient);

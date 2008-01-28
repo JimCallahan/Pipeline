@@ -47,9 +47,7 @@ class ProjectTurntableBuilder
   ) 
     throws PipelineException
   {
-    super("ProjectTurntableBuilder",
-          new VersionID("2.3.2"),
-          "Temerity", 
+    super("ProjectTurntable",
           "The Project Turntable Setup Builder that works with the basic Temerity Project Names class.",
           mclient,
           qclient,

@@ -20,8 +20,6 @@ class DefaultBuilderAnswers
     throws PipelineException 
   {
     super("BasicBuilderImplemention",
-      	  new VersionID("2.3.2"),
-      	  "Temerity",
           "The basic implementation of the AnswersBuilderQueries, provided by Temerity",
           mclient,
           qclient,

@@ -19,14 +19,12 @@ class NullProjectNames
   public NullProjectNames
   (
     String name,
-    VersionID vid,
-    String vendor,
     String desc,
     MasterMgrClient mclient,
     QueueMgrClient qclient)
     throws PipelineException
   {
-    super(name, vid, vendor, desc, mclient, qclient);
+    super(name, desc, mclient, qclient);
   }
 
   public String getAnimTaskName()

@@ -19,8 +19,6 @@ class DefaultProjectNames
     throws PipelineException 
   {
     super("DefaultProjectNames", 
-          new VersionID("2.3.2"),
-          "Temerity",
           "The basic naming class for project specific files.",
           mclient,
           qclient);
