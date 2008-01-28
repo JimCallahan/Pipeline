@@ -1,6 +1,6 @@
-// $Id: CheckOutSourcesTool.java,v 1.2 2007/12/16 11:02:48 jim Exp $
+// $Id: CheckOutSourcesTool.java,v 1.3 2008/01/28 12:11:33 jesse Exp $
 
-package us.temerity.pipeline.plugin.CheckoutSourcesTool.v2_3_15;
+package us.temerity.pipeline.plugin.CheckOutSourcesTool.v2_3_15;
 
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -51,6 +51,7 @@ class CheckOutSourcesTool
    * @throws PipelineException 
    *   If unable to validate the given user input.
    */  
+  @Override
   public synchronized String
   collectPhaseInput() 
     throws PipelineException 
@@ -78,6 +79,7 @@ class CheckOutSourcesTool
    * @throws PipelineException 
    *   If unable to successfully execute this phase of the tool.
    */ 
+  @Override
   public synchronized boolean
   executePhase
   (
