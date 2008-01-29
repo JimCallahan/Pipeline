@@ -1,4 +1,4 @@
-// $Id: JRegisterDialog.java,v 1.18 2007/02/09 07:10:48 jim Exp $
+// $Id: JRegisterDialog.java,v 1.19 2008/01/29 20:44:07 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -518,6 +518,12 @@ class JRegisterDialog
       UIMaster master = UIMaster.getInstance();
       try {
 	master.getMasterMgrClient().createWorkingArea(pAuthor, pView);
+        if(!rootDir.exists()) 
+          throw new PipelineException
+            ("Somehow the working area directory (" + rootDir + ") is not visible " + 
+             "yet from the local machine even though it has been created by the " +
+             "Master Manager.  This is probably due to NFS caching, so you can try " + 
+             "again to Browse in a few seconds and it should work fine.");
       }
       catch(PipelineException ex) {	
 	master.showErrorDialog(ex);
