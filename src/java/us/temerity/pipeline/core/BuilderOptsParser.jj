@@ -50,6 +50,10 @@ BuilderOptsParser
   private BuilderApp pApp;
     
   private String pCurrentBuilderName = null;
+  private String pCollectionName = null;
+  private VersionID pVersionID = null;
+  private String pVendor = null;
+  private String pBuilderName = null;
 }
   
 PARSER_END(BuilderOptsParser)
@@ -65,14 +69,18 @@ TOKEN :
 | <COPYRIGHT:      "--copyright">
 
   /* global options */
-| <BATCH:	   "--batch">
+| <BATCH:	       "--batch">
 | <ABORT:          "--abort">
-| <BUILDER:    	   "--builder"> : BUILDER_SEP
-| <LOG:            "--log">     : LOG_SEP
-| <PARAM:          "--">        : PARAM_NAME_STATE
+| <BUILDER:    	   "--builder">      : BUILDER_SEP
+| <LOG:            "--log">          : LOG_SEP
+| <COLLECTION:     "--collection">   : COLLECTION_SEP
+| <REVISION:       "--versionid">    : REVISION_SEP
+| <VENDOR:         "--vendor">       : VENDOR_SEP
+| <BUILDERNAME:    "--builder-name"> : BUILDERNAME_SEP
+| <PARAM:          "--">             : PARAM_NAME_STATE
 
 
-  /* seperators */ 
+  /* separators */ 
 | <AE1: (["\0"])+> 
 
   /* errors */ 
@@ -85,6 +93,74 @@ TOKEN :
 TOKEN :
 {
   <IGNORED: (~[])+>
+}
+
+/* collection */ 
+<COLLECTION_SEP> 
+TOKEN :
+{
+  <EQ8:                   "=">      : COLLECTION_NAME_STATE
+| <MISSING_COLLECTION_SEP: ~["="]>  : IGNORE_STATE
+}
+
+<COLLECTION_NAME_STATE> 
+TOKEN :
+{
+  <COLLECTION_NAME:           (["a"-"z","A"-"Z"]) 
+	                          (["a"-"z","A"-"Z","0"-"9","_","-"])+> : DEFAULT
+| <MISSING_COLLECTION_NAME:    ["\0"]>        			 : IGNORE_STATE
+| <ILLEGAL_COLLECTION_NAME:  (~["\0"])+>    	       		 : IGNORE_STATE
+}
+
+/* version */ 
+<REVISION_SEP> 
+TOKEN :
+{
+  <EQ5:                   "=">    : REVISION_NAME_STATE
+| <MISSING_REVISION_SEP: ~["="]>  : IGNORE_STATE
+}
+
+<REVISION_NAME_STATE> 
+TOKEN :
+{
+  <REVISION_NUMBER:            (<IREVNUM> "." <REVNUM> "." <REVNUM>)> : DEFAULT
+| <#IREVNUM:                   ["1"-"9"] (["0"-"9"])*>
+| <#REVNUM:                    (["0"-"9"])+>
+| <MISSING_REVISION_NAME:       ["\0"]>                    : IGNORE_STATE
+| <ILLEGAL_REVISION_NAME:    (~["\0"])+>                   : IGNORE_STATE
+}
+
+/* vendor */ 
+<VENDOR_SEP> 
+TOKEN :
+{
+  <EQ6:                   "=">      : VENDOR_NAME_STATE
+| <MISSING_VENDOR_SEP: ~["="]>  : IGNORE_STATE
+}
+
+<VENDOR_NAME_STATE> 
+TOKEN :
+{
+  <VENDOR_NAME:           (["a"-"z","A"-"Z"]) 
+	                          (["a"-"z","A"-"Z","0"-"9","_","-"])+> : DEFAULT
+| <MISSING_VENDOR_NAME:    ["\0"]>        			 : IGNORE_STATE
+| <ILLEGAL_VENDOR_NAME:  (~["\0"])+>    	       		 : IGNORE_STATE
+}
+
+/* builder name */ 
+<BUILDERNAME_SEP> 
+TOKEN :
+{
+  <EQ7:                   "=">      : BUILDERNAME_NAME_STATE
+| <MISSING_BUILDERNAME_SEP: ~["="]>  : IGNORE_STATE
+}
+
+<BUILDERNAME_NAME_STATE> 
+TOKEN :
+{
+  <BUILDERNAME_NAME:           (["a"-"z","A"-"Z","0"-"9"])+> : DEFAULT
+| <MISSING_BUILDERNAME_NAME:    ["\0"]>        			 : IGNORE_STATE
+| <ILLEGAL_BUILDERNAME_NAME:  (~["\0"])+>    	       		 : IGNORE_STATE
 }
 
 
@@ -272,10 +348,65 @@ GlobalOpts()
   throws PipelineException :
 {}
 {
-  (Log() | Batch() | Abort() | Builder() | Param())
+  (CollectionVersion() | CollectionName() | CollectionVendor() | BuilderName() | Log() | 
+   Batch() | Abort() | Builder() | Param())
   {}
 }
 
+/*------------------------------------------------------------------------------------------*/
+
+
+void
+CollectionName()
+  throws PipelineException :
+{
+  Token t;
+}
+{
+  <COLLECTION> EQ() t=<COLLECTION_NAME>
+  {
+    pApp.setCollectionName(t.image);
+  }
+}
+
+void
+CollectionVersion()
+  throws PipelineException :
+{
+  Token t;
+}
+{
+  <REVISION> EQ() t=<REVISION_NUMBER>
+  {
+    pApp.setCollectionVersion(new VersionID(t.image));
+  }
+}
+
+void
+CollectionVendor()
+  throws PipelineException :
+{
+  Token t;
+}
+{
+  <VENDOR> EQ() t=<VENDOR_NAME>
+  {
+    pApp.setCollectionVendor(t.image);
+  }
+}
+
+void
+BuilderName()
+  throws PipelineException :
+{
+  Token t;
+}
+{
+  <BUILDERNAME> EQ() t=<BUILDERNAME_NAME>
+  {
+    pApp.setBuilderName(t.image);
+  }
+}
 
 /*------------------------------------------------------------------------------------------*/
 
@@ -577,7 +708,7 @@ EQ() :
   Token t;
 }
 {
-  (t=<EQ1> | t=<EQ2> | t=<EQ3> | t= <EQ4>)
+  (t=<EQ1> | t=<EQ2> | t=<EQ3> | t= <EQ4> | t= <EQ5> | t= <EQ6> | t= <EQ7> | t= <EQ8>)
   { 
     return t; 
   }

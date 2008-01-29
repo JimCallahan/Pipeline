@@ -1,4 +1,4 @@
-// $Id: BuilderApp.java,v 1.22 2008/01/28 11:58:52 jesse Exp $
+// $Id: BuilderApp.java,v 1.23 2008/01/29 09:13:19 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -35,6 +35,11 @@ public class BuilderApp
     pCommandLineParams = new MultiMap<String, String>();
     pNullParams = new ListMap<LinkedList<String>, String>();
     pGui = true;
+    
+    pCollectionName = null;
+    pCollectionVendor = null;
+    pCollectionVersion = null;
+    pBuilderName = null;
   }
 
   
@@ -57,28 +62,7 @@ public class BuilderApp
     String[] args
   ) 
   {
-    if(args.length < 4) {
-      System.err.print("Builder invocation information is missing!\n");
-      System.exit(1);
-    }
-    
-    pCollectionName = args[0];
-    pCollectionVersion = new VersionID(args[1]);
-    pCollectionVendor = args[2];
-    pBuilderName = args[3];
-    
-
-    String appArgs[] = null;
-    if (args.length > 4) {
-      appArgs = new String[args.length-4];
-      int wk;
-      for(wk=0; wk<appArgs.length; wk++) { 
-        appArgs[wk] = args[wk+4];
-      }
-    }
-    else
-      appArgs = new String[0];
-    packageArguments(appArgs);
+    packageArguments(args);
     
     boolean success = false;
     
@@ -123,7 +107,6 @@ public class BuilderApp
       success = true;
     }
     catch(ParseException ex) {
-      ex.printStackTrace();
       handleParseException(ex);
     }
     catch (PipelineException ex) {
@@ -173,7 +156,8 @@ public class BuilderApp
      "  pl" + wrapper + " --license\n" + 
      "\n" + 
      "INVOCATION: \n" +
-     "CollectionName CollectionVersion CollectionVendor BuilderName" + 
+     "--collection=CollectionName(:VersionID)(,VendorName)\n" +
+     "--builder-name=BuilderName\n" + 
      "GLOBAL OPTIONS:\n" +
      "  [--log=...] \n" + 
      "  [--abort] [--batch] \n" + 
@@ -206,6 +190,18 @@ public class BuilderApp
 
     case BuilderOptsParserConstants.UNKNOWN_OPTION:
       return "an unknown option";
+      
+    case BuilderOptsParserConstants.COLLECTION_NAME:
+      return "The name of the Builder Collection plugin to run.";
+      
+    case BuilderOptsParserConstants.REVISION_NUMBER:
+      return "The version numner of the Builder Collection plugin to run.";
+      
+    case BuilderOptsParserConstants.VENDOR_NAME:
+      return "The vendor of the Builder Collection plugin to run.";
+      
+    case BuilderOptsParserConstants.BUILDERNAME_NAME:
+      return "The name of the Builder in the Builder Collection plugin to run.";
 
     case BuilderOptsParserConstants.UNKNOWN_COMMAND:
       return "an unknown command";
@@ -217,7 +213,7 @@ public class BuilderApp
       return "the value of a parameter";
       
     case BuilderOptsParserConstants.BUILDER_NAME:
-      return "the name of a builder";
+      return "the name of a builder currently having parameters assigned to it";
       
     default: 
       if(printLiteral)
@@ -271,7 +267,72 @@ public class BuilderApp
     pCommandLineParams.putValue(list, value, true);
   }
 
+  /**
+   * @param collectionName the collectionName to set
+   */
+  public void 
+  setCollectionName
+  (
+    String collectionName
+  )
+    throws PipelineException
+  {
+    if (pCollectionName != null)
+      throw new PipelineException
+        ("It is not allowed to set the Collection Name parameter more than once.");
+    pCollectionName = collectionName;
+  }
   
+  /**
+   * @param collectionVersion the collectionVersion to set
+   */
+  public void 
+  setCollectionVersion
+  (
+    VersionID collectionVersion
+  )
+    throws PipelineException
+  {
+    if (pCollectionVersion != null)
+      throw new PipelineException
+        ("It is not allowed to set the Collection Version parameter more than once.");
+
+    pCollectionVersion = collectionVersion;
+  }
+
+  /**
+   * @param collectionVendor the collectionVendor to set
+   */
+  public void 
+  setCollectionVendor
+  (
+    String collectionVendor
+  )
+    throws PipelineException
+  {
+    if (pCollectionVendor != null)
+      throw new PipelineException
+        ("It is not allowed to set the Collection Vendor parameter more than once.");
+    pCollectionVendor = collectionVendor;
+  }
+  
+  /**
+   * @param builderName the builderName to set
+   */
+  public void 
+  setBuilderName
+  (
+    String builderName
+  )
+    throws PipelineException
+  {
+    if (pBuilderName != null)
+      throw new PipelineException
+        ("It is not allowed to set the Builder Name parameter more than once.");
+    pBuilderName = builderName;
+  } 
+  
+
   
   /*----------------------------------------------------------------------------------------*/
   /*  I N T E R N A L S                                                                     */
@@ -284,6 +345,7 @@ public class BuilderApp
   private VersionID pCollectionVersion;
   private String pCollectionVendor;
   private String pBuilderName;
-  private ListMap<LinkedList<String>, String> pNullParams; 
+  private ListMap<LinkedList<String>, String> pNullParams;
+  
 
 }
