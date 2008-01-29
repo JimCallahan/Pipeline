@@ -62,6 +62,22 @@ ToolMenuLayout <PluginMenuLayout> #1 {
           }
           Vendor <String> #47 { "Temerity" }
         }
+        <PluginMenuLayout> #48 {
+          Title <String> #49 { "Pattern Clone" }
+          Name <String> #50 { "PatternClone" }
+          VersionID <VersionID> #51 {
+            RevisionNumber <String> #52 { "2.3.1" }
+          }
+          Vendor <String> #53 { "Temerity" }
+        }
+        <PluginMenuLayout> #54 {
+          Title <String> #55 { "ImportExternal" }
+          Name <String> #56 { "ImportExternal" }
+          VersionID <VersionID> #57 {
+            RevisionNumber <String> #58 { "2.3.15" }
+          }
+          Vendor <String> #59 { "Temerity" }
+        }
       }
     }
   }

@@ -1,4 +1,4 @@
 #!/bin/sh
 
 cd `pwd`
-exec plbuilder Maya2MR 2.3.2 Temerity ProjectTurntable "$@"
+exec @PIPELINE_ARCHDIR@-Opt/bin/plbuilder Maya2MR 2.3.2 Temerity ProjectTurntable "$@"

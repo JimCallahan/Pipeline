@@ -1,1 +1,1 @@
-plbuilder.bat Approval 2.3.2 Temerity Approval %*
+@PIPELINE_ARCHDIR@-Opt/bin/plbuilder.bat Approval 2.3.2 Temerity Approval %*

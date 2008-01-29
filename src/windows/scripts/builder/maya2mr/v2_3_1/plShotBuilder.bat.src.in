@@ -1,1 +1,1 @@
-plbuilder.bat Maya2MR 2.3.1 Temerity Shot %*
+@PIPELINE_ARCHDIR@-Opt/bin/plbuilder.bat Maya2MR 2.3.1 Temerity Shot %*

@@ -1,4 +1,4 @@
 #!/bin/sh
 
 cd `pwd`
-exec plbuilder Approval 2.3.2 Temerity Approval "$@"
+exec @PIPELINE_ARCHDIR@-Opt/bin/plbuilder Approval 2.3.2 Temerity Approval "$@"
