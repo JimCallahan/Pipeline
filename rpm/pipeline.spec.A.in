@@ -39,28 +39,28 @@ The core features of Pipeline include:
 @ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Debug/bin/plremote
 @ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Debug/bin/plscript
 @ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Debug/bin/plscript-batch
-@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Debug/bin/plui
 @ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Debug/bin/plpython
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Debug/bin/plbuilder
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Debug/bin/plui
 @ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Debug/bin/pltestnative
 @ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Debug/bin/pltestlight
 @ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Debug/bin/pltestheavy
-@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Debug/bin/plbuilder
 
 @ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Opt/bin/plplugin
 @ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Opt/bin/plremote
 @ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Opt/bin/plscript
 @ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Opt/bin/plscript-batch
 @ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Opt/bin/plpython
-@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Opt/bin/plui
 @ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Opt/bin/plbuilder
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Opt/bin/plui
 
 @ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Profile/bin/plplugin
 @ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Profile/bin/plremote
 @ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Profile/bin/plscript
 @ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Profile/bin/plscript-batch
-@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Profile/bin/plui
 @ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Profile/bin/plpython
 @ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Profile/bin/plbuilder
+@ROOT_INST_DIR@/Unix-@NATIVE_ARCHTYPE@-Profile/bin/plui
 
 @ROOT_INST_DIR@/etc/init.d/Unix-@NATIVE_ARCHTYPE@-Opt/pljobmgr-redhat
 @ROOT_INST_DIR@/etc/init.d/Unix-@NATIVE_ARCHTYPE@-Opt/pljobmgr-suse
