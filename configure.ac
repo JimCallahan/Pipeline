@@ -9,7 +9,7 @@ AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(Pipeline, 2.4.1b1)
+AM_INIT_AUTOMAKE(Pipeline, 2.4.1b2)
                            
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
@@ -1172,8 +1172,8 @@ PIPELINE_JAR=""
 AC_SUBST(PIPELINE_LIBDIR)
 PIPELINE_LIBDIR=""
 
-AC_SUBST(PIPELINE_BUILDERDIR)
-PIPELINE_BUILDERDIR=""
+AC_SUBST(PIPELINE_ARCHDIR) 
+PIPELINE_ARCHDIR=""
 
 
 case "$NATIVE_OSTYPE" in 
@@ -1183,7 +1183,7 @@ case "$NATIVE_OSTYPE" in
     PIPELINE_LATEST_JAR="$ROOT_INST_PARENT_DIR/pipeline-latest/lib/api.jar";
     PIPELINE_JAR="$ROOT_INST_DIR/lib/api.jar";
     PIPELINE_LIBDIR="$ROOT_INST_DIR/lib";
-    PIPELINE_BUILDERDIR="$ROOT_INST_DIR/builders/us/temerity/pipeline/builder";
+    PIPELINE_ARCHDIR="$ROOT_INST_DIR/${NATIVE_OSTYPE}-${NATIVE_ARCHTYPE}";
     JOGL_JAR="$ROOT_INST_DIR/jogl/lib/jogl.jar";
     GLUEGEN_JAR="$ROOT_INST_DIR/jogl/lib/gluegen-rt.jar";
     JOGL_LIBRARY_PATH="$ROOT_INST_DIR/jogl/lib/${NATIVE_OSTYPE}-${NATIVE_ARCHTYPE}-Opt";
@@ -1196,7 +1196,7 @@ case "$NATIVE_OSTYPE" in
     PIPELINE_LATEST_JAR="$MAC_ROOT_INST_PARENT_DIR/pipeline-latest/lib/api.jar";
     PIPELINE_JAR="$MAC_ROOT_INST_DIR/lib/api.jar";
     PIPELINE_LIBDIR="$MAC_ROOT_INST_DIR/lib";
-    PIPELINE_BUILDERDIR="$MAC_ROOT_INST_DIR/builders/us/temerity/pipeline/builder";
+    PIPELINE_ARCHDIR="$MAC_ROOT_INST_DIR/${NATIVE_OSTYPE}-${NATIVE_ARCHTYPE}";
     JOGL_JAR="$MAC_ROOT_INST_DIR/jogl/lib/jogl.jar";
     GLUEGEN_JAR="$MAC_ROOT_INST_DIR/jogl/lib/gluegen-rt.jar";
     JOGL_LIBRARY_PATH="$MAC_ROOT_INST_DIR/jogl/lib/${NATIVE_OSTYPE}-${NATIVE_ARCHTYPE}-Opt";
@@ -1209,7 +1209,7 @@ case "$NATIVE_OSTYPE" in
     PIPELINE_LATEST_JAR="$WIN_ROOT_INST_PARENT_DIR/pipeline-latest/lib/api.jar";
     PIPELINE_JAR="$WIN_ROOT_INST_DIR/lib/api.jar";
     PIPELINE_LIBDIR="$WIN_ROOT_INST_DIR/lib";
-    PIPELINE_BUILDERDIR="$WIN_ROOT_INST_DIR/builders/us/temerity/pipeline/builder";
+    PIPELINE_ARCHDIR="$WIN_ROOT_INST_DIR/${NATIVE_OSTYPE}-${NATIVE_ARCHTYPE}";
     JOGL_JAR="$WIN_ROOT_INST_DIR/jogl/lib/jogl.jar";
     GLUEGEN_JAR="$WIN_ROOT_INST_DIR/jogl/lib/gluegen-rt.jar";
     JOGL_LIBRARY_PATH="$WIN_ROOT_INST_DIR/jogl/lib/${NATIVE_OSTYPE}-${NATIVE_ARCHTYPE}-Opt";
@@ -1845,10 +1845,10 @@ AC_CONFIG_FILES([
   src/windows/scripts/plscript.bat.src
   src/windows/scripts/plscript-batch.bat.src
   src/windows/scripts/plpython.bat.src
+  src/windows/scripts/plbuilder.bat.src
   src/windows/scripts/pljobmgr.bat.src
 
   src/windows/scripts/debug/Makefile
-  src/windows/scripts/debug/plbuilder.bat.src
   src/windows/scripts/debug/pltestheavy.bat.src
   src/windows/scripts/debug/pltestlight.bat.src
   src/windows/scripts/debug/pltestnative.bat.src
@@ -1856,6 +1856,7 @@ AC_CONFIG_FILES([
   src/windows/scripts/debug/plscript.bat.src
   src/windows/scripts/debug/plscript-batch.bat.src
   src/windows/scripts/debug/plpython.bat.src
+  src/windows/scripts/debug/plbuilder.bat.src
   src/windows/scripts/debug/plui2.bat.src
   src/windows/scripts/debug/pljobmgr.bat.src
 
