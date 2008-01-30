@@ -1,4 +1,4 @@
-// $Id: BaseBuilderCollection.java,v 1.3 2008/01/30 09:28:46 jim Exp $
+// $Id: BaseBuilderCollection.java,v 1.4 2008/01/30 09:37:33 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -155,7 +155,8 @@ class BaseBuilderCollection
         throw new IllegalArgumentException
         ("The builder (" + name + ") defined in this Collection was not " + 
          "specified by any the builder layout group!");
-    }  
+    }
+    pLayout = group;
   }
   
   /**
