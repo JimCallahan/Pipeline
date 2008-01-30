@@ -1,2 +1,2 @@
 SUBDIRS = \
-  plugin 
+  v2_3_2 
