@@ -1,4 +1,4 @@
-// $Id: BasePluginMgrClient.java,v 1.13 2008/01/28 12:00:51 jesse Exp $
+// $Id: BasePluginMgrClient.java,v 1.14 2008/01/30 09:04:13 jesse Exp $
   
 package us.temerity.pipeline;
 
@@ -46,6 +46,12 @@ class BasePluginMgrClient
     pQueueExts     = new PluginDataCache("QueueExts");
     pKeyChoosers   = new PluginDataCache("KeyChoosers");
     pBuilderCollections = new PluginDataCache("BuilderCollections");
+    
+    
+    pBuilderCollectionLayouts = 
+      new TripleMap<String, String, VersionID, LayoutGroup>();
+    pAnnotationPermissions = 
+      new TripleMap<String, String, VersionID, AnnotationPermissions>();
   }
 
 
@@ -81,6 +87,9 @@ class BasePluginMgrClient
       pQueueExts.updatePlugins(rsp.getQueueExts());
       pKeyChoosers.updatePlugins(rsp.getKeyChoosers());
       pBuilderCollections.updatePlugins(rsp.getBuilderCollections());
+      
+      pBuilderCollectionLayouts.putAll(rsp.getBuilderCollectionLayouts());
+      pAnnotationPermissions.putAll(rsp.getAnnotationPermissions());
      
       pCycleID = rsp.getCycleID();
     }
@@ -192,6 +201,24 @@ class BasePluginMgrClient
   getBuilderCollections() 
   {
     return pBuilderCollections.getPlugins();
+  }
+  
+  /**
+   * Get the Layout Group of all available Builder Collection plugins. <P> 
+   */ 
+  public synchronized TripleMap<String,String,VersionID,LayoutGroup>
+  getBuilderCollectionLayouts() 
+  {
+    return pBuilderCollectionLayouts;
+  }
+  
+  /**
+   * Get the Permissions of all available Annotation plugins. <P> 
+   */ 
+  public synchronized TripleMap<String,String,VersionID,AnnotationPermissions>
+  getAnnotationPermissions() 
+  {
+    return pAnnotationPermissions;
   }
 
 
@@ -518,6 +545,112 @@ class BasePluginMgrClient
     return (BaseBuilderCollection) pBuilderCollections.newPlugin(name, vid, vendor);
   }
   
+  /**
+   * Gets the LayoutGroup of builder names for the builder collection. <P> 
+   * 
+   * Note that the <CODE>name</CODE> argument is not the name of the class, but rather the 
+   * name obtained by calling {@link BaseBuilderCollection#getName() 
+   * BaseBuilderCollection.getName} for the returned builder collection.
+   *
+   * @param name 
+   *   The name of the builder collection plugin.  
+   * 
+   * @param vid
+   *   The revision number of the builder collection or <CODE>null</CODE> 
+   *   for the latest version.
+   * 
+   * @param vendor
+   *   The name of the plugin vendor or <CODE>null</CODE> for Temerity.
+   * 
+   * @throws PipelineException
+   *   If no builder collection plugin layout can be found.
+   */
+  public synchronized LayoutGroup
+  getBuilderCollectionLayout
+  (
+   String name, 
+   VersionID vid, 
+   String vendor
+  ) 
+    throws PipelineException
+  {
+    String vend = vendor;
+    if (vend == null)
+      vend = "Temerity";
+    TreeMap<String, TreeMap<VersionID, LayoutGroup>> groups1 = 
+      pBuilderCollectionLayouts.get(name);
+
+    if (groups1 == null)
+      throw new PipelineException
+      ("No Layout Group for the Builder Collection named (" + name + ") created by the " +
+        "(" + vend + ") vendor exists!");
+    
+    TreeMap<VersionID, LayoutGroup> groups2 = groups1.get(vend);
+    if (groups2 == null || groups2.isEmpty())
+      throw new PipelineException
+      ("No Layout Group for the Builder Collection named (" + name + ") created by the " +
+        "(" + vend + ") vendor exists!");
+    
+    VersionID id = vid;
+    if (id == null)
+      id = groups2.lastKey();
+    
+    return groups2.get(id);
+  }
+  
+  /**
+   * Gets the User Permissions for the annotation. <P> 
+   * 
+   * Note that the <CODE>name</CODE> argument is not the name of the class, but rather the 
+   * name obtained by calling {@link BaseAnnotation#getName() 
+   * Annotation.getName} for the returned builder collection.
+   *
+   * @param name 
+   *   The name of the annotation plugin.  
+   * 
+   * @param vid
+   *   The revision number of the annotation or <CODE>null</CODE> 
+   *   for the latest version.
+   * 
+   * @param vendor
+   *   The name of the plugin vendor or <CODE>null</CODE> for Temerity.
+   * 
+   * @throws PipelineException
+   *   If no annotations permission can be found.
+   */
+  public synchronized AnnotationPermissions
+  getAnnotationPermission
+  (
+   String name, 
+   VersionID vid, 
+   String vendor
+  )
+    throws PipelineException
+  {
+    String vend = vendor;
+    if (vend == null)
+      vend = "Temerity";
+    TreeMap<String, TreeMap<VersionID, AnnotationPermissions>> groups1 = 
+      pAnnotationPermissions.get(name);
+
+    if (groups1 == null)
+      throw new PipelineException
+      ("No Permissions for the Annotation named (" + name + ") created by the " +
+        "(" + vend + ") vendor exists!");
+    
+    TreeMap<VersionID, AnnotationPermissions> groups2 = groups1.get(vend);
+    if (groups2 == null || groups2.isEmpty())
+      throw new PipelineException
+      ("No Permissions for the Annotation named (" + name + ") created by the " +
+        "(" + vend + ") vendor exists!");
+    
+    VersionID id = vid;
+    if (id == null)
+      id = groups2.lastKey();
+    
+    return groups2.get(id);
+  }
+  
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -765,6 +898,11 @@ class BasePluginMgrClient
   private PluginDataCache  pQueueExts;
   private PluginDataCache  pKeyChoosers;
   private PluginDataCache  pBuilderCollections;
+  
+  private TripleMap<String,String,VersionID,LayoutGroup> pBuilderCollectionLayouts;
+  
+  private TripleMap<String, String, VersionID, AnnotationPermissions> pAnnotationPermissions; 
+
 
 }
 

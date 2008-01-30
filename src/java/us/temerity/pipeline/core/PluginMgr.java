@@ -1,4 +1,4 @@
-// $Id: PluginMgr.java,v 1.17 2008/01/28 11:58:53 jesse Exp $
+// $Id: PluginMgr.java,v 1.18 2008/01/30 09:04:13 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -7,6 +7,8 @@ import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.jar.*;
 import java.util.zip.ZipEntry;
+
+import javatests.AnonInner;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.BaseBuilderCollection;
@@ -58,7 +60,13 @@ class PluginMgr
       pQueueExts   = new PluginCache();  
       pKeyChoosers = new PluginCache();
       pBuilderCollection = new PluginCache();
-
+      
+      pBuilderCollectionLayouts = 
+        new TripleMap<String, String, VersionID, LayoutGroup>();
+      
+      pAnnotationPermissions = 
+        new TripleMap<String, String, VersionID, AnnotationPermissions>();
+      
       pSerialVersionUIDs = new TreeMap<Long,String>(); 
     }
 
@@ -125,17 +133,44 @@ class PluginMgr
       
       Long cycleID = req.getCycleID();
 
+      TripleMap<String, String, VersionID, Object[]> builders = 
+        pBuilderCollection.collectUpdated(cycleID);
+      
+      TripleMap<String, String, VersionID, LayoutGroup> groups =
+        new TripleMap<String, String, VersionID, LayoutGroup>();
+      for (String name : builders.keySet()) {
+        for (String vendor : builders.keySet(name)) {
+          for (VersionID id : builders.keySet(name, vendor)) {
+            groups.put(name, vendor, id, pBuilderCollectionLayouts.get(name, vendor, id));
+          }
+        }
+      }
+      
+      TripleMap<String, String, VersionID, Object[]> annotations = 
+        pAnnotations.collectUpdated(cycleID);
+      TripleMap<String, String, VersionID, AnnotationPermissions> permissions =
+        new TripleMap<String, String, VersionID, AnnotationPermissions>();
+      for (String name : annotations.keySet()) {
+        for (String vendor : annotations.keySet(name)) {
+          for (VersionID id : annotations.keySet(name, vendor)) {
+            permissions.put(name, vendor, id, pAnnotationPermissions.get(name, vendor, id));
+          }
+        }
+      }
+      
       return new PluginUpdateRsp(timer, pLoadCycleID, 
                                  pEditors.collectUpdated(cycleID), 
                                  pActions.collectUpdated(cycleID), 
                                  pComparators.collectUpdated(cycleID), 
                                  pTools.collectUpdated(cycleID), 
-                                 pAnnotations.collectUpdated(cycleID), 
+                                 annotations, 
                                  pArchivers.collectUpdated(cycleID), 
                                  pMasterExts.collectUpdated(cycleID), 
                                  pQueueExts.collectUpdated(cycleID), 
                                  pKeyChoosers.collectUpdated(cycleID),
-                                 pBuilderCollection.collectUpdated(cycleID)); 
+                                 builders,
+                                 groups,
+                                 permissions); 
     }
     finally {
       pPluginLock.readLock().unlock();
@@ -575,8 +610,16 @@ class PluginMgr
 	pComparators.addPlugin(plg, cname, contents);
       else if(plg instanceof BaseTool) 
         pTools.addPlugin(plg, cname, contents);
-      else if(plg instanceof BaseAnnotation) 
+      else if(plg instanceof BaseAnnotation) {
 	pAnnotations.addPlugin(plg, cname, contents);
+	BaseAnnotation annot = (BaseAnnotation) plg;
+	AnnotationPermissions permissions = 
+	  new AnnotationPermissions(
+	    annot.isUserAddable(), 
+	    annot.isUserRemovable());
+	pAnnotationPermissions.put
+	  (plg.getVendor(), plg.getName(), plg.getVersionID(), permissions);
+      }
       else if(plg instanceof BaseArchiver) 
 	pArchivers.addPlugin(plg, cname, contents);
       else if(plg instanceof BaseMasterExt) 
@@ -585,8 +628,13 @@ class PluginMgr
 	pQueueExts.addPlugin(plg, cname, contents);
       else if(plg instanceof BaseKeyChooser)
         pKeyChoosers.addPlugin(plg, cname, contents);
-      else if(plg instanceof BaseBuilderCollection)
+      else if(plg instanceof BaseBuilderCollection) {
         pBuilderCollection.addPlugin(plg, cname, contents);
+        BaseBuilderCollection collection = (BaseBuilderCollection) plg;
+        LayoutGroup group = collection.getLayout();
+        pBuilderCollectionLayouts.put
+          (plg.getVendor(), plg.getName(), plg.getVersionID(), group);
+      }
       else 
 	throw new PipelineException
 	  ("The class file (" + pluginfile + ") does not contain a Pipeline plugin!");
@@ -824,6 +872,10 @@ class PluginMgr
   private PluginCache  pQueueExts; 
   private PluginCache  pKeyChoosers;
   private PluginCache  pBuilderCollection;
+  
+  private TripleMap<String,String,VersionID,LayoutGroup> pBuilderCollectionLayouts;
+  
+  private TripleMap<String, String, VersionID, AnnotationPermissions> pAnnotationPermissions; 
 
   /**
    * The serialVersionUIDs of all loaded plugins used to test for conflicts.

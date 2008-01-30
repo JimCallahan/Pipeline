@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.75 2008/01/28 11:58:50 jesse Exp $
+// $Id: UIMaster.java,v 1.76 2008/01/30 09:04:13 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -115,6 +115,9 @@ class UIMaster
       new TreeMap<String,TripleMap<String,String,VersionID,TreeSet<OsType>>>();
     pBuilderCollectionPlugins = 
       new TreeMap<String,TripleMap<String,String,VersionID,TreeSet<OsType>>>();
+    
+    pBuilderLayouts = new TripleMap<String, String, VersionID, LayoutGroup>();
+    pAnnotationPermissions = new TripleMap<String, String, VersionID, AnnotationPermissions>();
     
     pEditorLayouts            = new TreeMap<String,PluginMenuLayout>();                   
     pComparatorLayouts        = new TreeMap<String,PluginMenuLayout>();                  
@@ -924,6 +927,9 @@ class UIMaster
     }    
     synchronized(pAnnotationLayouts) {
       pAnnotationLayouts.clear();
+    }
+    synchronized(pAnnotationPermissions) {
+      pAnnotationPermissions.clear();
     }    
   }
 
@@ -966,7 +972,10 @@ class UIMaster
 
     synchronized(pBuilderCollectionLayouts) {
       pBuilderCollectionLayouts.clear();
-    }    
+    }
+    synchronized (pBuilderLayouts) {
+      pBuilderLayouts.clear();
+    }
   }
 
 
@@ -2171,6 +2180,27 @@ class UIMaster
 	  pAnnotationLayouts.put(tname, layout);
 	}
       }
+      
+      synchronized(pAnnotationPermissions) {
+        if (pAnnotationPermissions == null)
+          pAnnotationPermissions = PluginMgrClient.getInstance().getAnnotationPermissions();
+      }
+      
+      
+      if (!client.getPrivilegeDetails(PackageInfo.sUser).isAnnotator()) {
+        TripleMap<String,String,VersionID,TreeSet<OsType>> newPlugins =
+          new TripleMap<String, String, VersionID, TreeSet<OsType>>();
+        for (String vend : plugins.keySet()) {
+          for (String name : plugins.keySet(vend)) {
+            for (VersionID ver : plugins.keySet(vend, name)) {
+              AnnotationPermissions perm = pAnnotationPermissions.get(name, vend, ver);
+              if (perm.isUserCreatable())
+                newPlugins.put(vend, name, ver, plugins.get(vend, name, ver));
+            }
+          }
+        }
+        plugins = newPlugins;
+      }
     }
     catch(PipelineException ex) {
       showErrorDialog(ex);
@@ -2178,7 +2208,6 @@ class UIMaster
       layout = new PluginMenuLayout();
       plugins = new TripleMap<String,String,VersionID,TreeSet<OsType>>();
     }
-
     return UIFactory.createPluginSelectionField(layout, plugins, width);
   }
 
@@ -2225,6 +2254,27 @@ class UIMaster
 	  layout = client.getAnnotationMenuLayout(tname);
 	  pAnnotationLayouts.put(tname, layout);
 	}
+      }
+      
+      synchronized(pAnnotationPermissions) {
+        if (pAnnotationPermissions == null)
+          pAnnotationPermissions = PluginMgrClient.getInstance().getAnnotationPermissions();
+      }
+      
+      
+      if (!client.getPrivilegeDetails(PackageInfo.sUser).isAnnotator()) {
+        TripleMap<String,String,VersionID,TreeSet<OsType>> newPlugins =
+          new TripleMap<String, String, VersionID, TreeSet<OsType>>();
+        for (String vend : plugins.keySet()) {
+          for (String name : plugins.keySet(vend)) {
+            for (VersionID ver : plugins.keySet(vend, name)) {
+              AnnotationPermissions perm = pAnnotationPermissions.get(name, vend, ver);
+              if (perm.isUserCreatable())
+                newPlugins.put(vend, name, ver, plugins.get(vend, name, ver));
+            }
+          }
+        }
+        plugins = newPlugins;
       }
     }
     catch(PipelineException ex) {
@@ -5986,6 +6036,13 @@ class UIMaster
 		  TripleMap<String,String,VersionID,TreeSet<OsType>>>  pKeyChooserPlugins;
   private TreeMap<String,
                   TripleMap<String,String,VersionID,TreeSet<OsType>>>  pBuilderCollectionPlugins;
+  
+  
+  /**
+   * Caches of plugins specific options, indexed by name, vendor, and revision number.
+   */
+  private TripleMap<String,String,VersionID,LayoutGroup> pBuilderLayouts;
+  private TripleMap<String,String,VersionID,AnnotationPermissions> pAnnotationPermissions;
 
 
   /** 

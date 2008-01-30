@@ -1,9 +1,9 @@
-// $Id: BuilderApp.java,v 1.23 2008/01/29 09:13:19 jesse Exp $
+// $Id: BuilderApp.java,v 1.24 2008/01/30 09:04:13 jesse Exp $
 
 package us.temerity.pipeline.core;
 
 import java.io.StringReader;
-import java.util.LinkedList;
+import java.util.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.LogMgr.Kind;
@@ -99,11 +99,94 @@ public class BuilderApp
       BuilderInformation info = 
         new BuilderInformation(pGui, pAbortOnBadParam, pCommandLineParams);
       
-      BaseBuilderCollection collection = 
-        PluginMgrClient.getInstance().newBuilderCollection
+      if (pBuilderName != null && pCollectionName != null) {
+        BaseBuilderCollection collection = 
+          PluginMgrClient.getInstance().newBuilderCollection
           (pCollectionName, pCollectionVersion, pCollectionVendor);
 
-      collection.instantiateBuilder(pBuilderName, mclient, qclient, info);
+        collection.instantiateBuilder(pBuilderName, mclient, qclient, info);
+      } 
+      else if (pBuilderName != null) {
+        DoubleMap<String, String, TreeSet<VersionID>> toPrint = 
+          new DoubleMap<String, String, TreeSet<VersionID>>();
+        
+        TripleMap<String, String, VersionID, LayoutGroup> layouts = 
+          PluginMgrClient.getInstance().getBuilderCollectionLayouts();
+        for (String vendor : layouts.keySet()) {
+          for (String name : layouts.keySet(vendor)) {
+            TreeSet<VersionID> versions = new TreeSet<VersionID>();
+            for (VersionID id : layouts.keySet(vendor, name)) {
+              LayoutGroup group = layouts.get(vendor, name, id);
+              TreeSet<String> names = new TreeSet<String>(); 
+              collectLayoutNames(group, names);
+              if (names.contains(pBuilderName))
+                 versions.add(id);
+            }
+            if (!versions.isEmpty())
+              toPrint.put(vendor, name, versions);
+          }
+        }
+        if (toPrint.isEmpty())
+          LogMgr.getInstance().log
+          (LogMgr.Kind.Ops, LogMgr.Level.Info,
+            "There are no Builder Collections containing a builder named " +
+            "(" + pBuilderName + ")");
+        else {
+          LogMgr.getInstance().log
+          (LogMgr.Kind.Ops, LogMgr.Level.Info,
+            "There are builders  named (" + pBuilderName + ") contained in the " +
+            "following Builder Collections");
+          for (String vendor : toPrint.keySet()) {
+            for (String name : toPrint.keySet(vendor)) {
+              for (VersionID id : toPrint.get(vendor, name)) {
+                LogMgr.getInstance().log
+                (LogMgr.Kind.Ops, LogMgr.Level.Info,
+                  name + ":" + id.toString() + "," + vendor);
+              }
+            }
+          }
+        }
+      }
+      else
+      {
+        DoubleMap<String, String, TreeSet<VersionID>> toPrint = getPrintList();
+        
+        TripleMap<String, String, VersionID, LayoutGroup> layouts = 
+          PluginMgrClient.getInstance().getBuilderCollectionLayouts();
+        
+        if (toPrint.isEmpty())
+          LogMgr.getInstance().log
+          (LogMgr.Kind.Ops, LogMgr.Level.Info,
+            "There are no Builder Collections which match the provided criteria.\n" +
+            "Name: " + makeNameThingie(pCollectionName) + "\n" +
+            "Vendor: " + makeNameThingie(pCollectionVendor) + "\n" +
+            "Version: " + makeNameThingie2(pCollectionVersion));
+        else {
+          for (String vendor : toPrint.keySet()) {
+            LogMgr.getInstance().log
+            (LogMgr.Kind.Ops, LogMgr.Level.Info,
+              "Vendor: " + vendor);
+            for (String name : toPrint.keySet(vendor)) {
+              for (VersionID id : toPrint.get(vendor, name)) {
+                LogMgr.getInstance().log
+                (LogMgr.Kind.Ops, LogMgr.Level.Info,
+                  "  Collection: " + name + " (" + id.toString() + ")");
+                LayoutGroup group = layouts.get(vendor, name, id);
+                TreeSet<String> names = new TreeSet<String>(); 
+                collectLayoutNames(group, names);
+                for (String bname : names) {
+                  LogMgr.getInstance().log
+                  (LogMgr.Kind.Ops, LogMgr.Level.Info,
+                   "    Builder: " + bname);
+                }
+              }
+            }
+            LogMgr.getInstance().log
+            (LogMgr.Kind.Ops, LogMgr.Level.Info,
+             "");
+          }
+        }
+      }
       success = true;
     }
     catch(ParseException ex) {
@@ -172,6 +255,28 @@ public class BuilderApp
   /*----------------------------------------------------------------------------------------*/
   /*   H E L P E R S                                                                        */
   /*----------------------------------------------------------------------------------------*/
+  
+  private String
+  makeNameThingie
+  (
+    String name  
+  )
+  {
+    if (name == null)
+      return "[ALL]";
+    return name;
+  }
+  
+  private String
+  makeNameThingie2
+  (
+    VersionID id
+  )
+  {
+    if (id == null)
+      return "[ALL]";
+    return id.toString();
+  }
   
   /**
    * Generate an explanatory message for the non-literal token.
@@ -332,6 +437,69 @@ public class BuilderApp
     pBuilderName = builderName;
   } 
   
+  private DoubleMap<String, String, TreeSet<VersionID>>
+  getPrintList()
+  {
+    TripleMap<String, String, VersionID, TreeSet<OsType>> coll = 
+      PluginMgrClient.getInstance().getBuilderCollections();
+    
+    DoubleMap<String, String, TreeSet<VersionID>> toPrint = 
+      new DoubleMap<String, String, TreeSet<VersionID>>();
+    
+    Set<String> vendors = new TreeSet<String>();
+    
+    if (pCollectionVendor == null )
+      vendors = coll.keySet();
+    else 
+      vendors.add(pCollectionVendor);
+    
+    for (String vendor : vendors) {
+      
+      Set<String> collnames = new TreeSet<String>();
+      Set<String> vendorSet = coll.keySet(vendor); 
+      if (pCollectionName == null) {
+        if (vendorSet != null )
+          collnames = coll.keySet(vendor);
+      }
+      else 
+        if (vendorSet != null && vendorSet.contains(pCollectionName) )
+          collnames.add(pCollectionName);
+      
+      for (String collname : collnames) {
+        
+        TreeSet<VersionID> versions = new TreeSet<VersionID>();
+        Set<VersionID> collVers =  coll.keySet(vendor, collname);
+        if (pCollectionVersion == null) {
+          if (collVers != null ) 
+            versions = new TreeSet<VersionID>(collVers);
+        }
+        else
+          if (collVers != null && collVers.contains(pCollectionVersion))
+            versions.add(pCollectionVersion);
+        
+        if (!versions.isEmpty())
+         toPrint.put(vendor, collname, versions);
+      }
+    }
+    return toPrint;
+  }
+  
+  /**
+   * Recursively search the parameter groups to collect the builder names.
+   */ 
+  private final void 
+  collectLayoutNames
+  (
+   LayoutGroup group, 
+   TreeSet<String> names
+  ) 
+  {
+    for(String name : group.getEntries()) 
+        names.add(name);
+
+    for(LayoutGroup sgroup : group.getSubGroups()) 
+      collectLayoutNames(sgroup, names);
+  }
 
   
   /*----------------------------------------------------------------------------------------*/

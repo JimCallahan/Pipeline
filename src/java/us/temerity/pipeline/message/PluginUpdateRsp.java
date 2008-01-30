@@ -1,4 +1,4 @@
-// $Id: PluginUpdateRsp.java,v 1.9 2008/01/28 11:58:52 jesse Exp $
+// $Id: PluginUpdateRsp.java,v 1.10 2008/01/30 09:04:13 jesse Exp $
 
 package us.temerity.pipeline.message;
 
@@ -7,6 +7,8 @@ import us.temerity.pipeline.core.*;
 
 import java.io.*;
 import java.util.*;
+
+import javatests.AnonInner;
 
 /*------------------------------------------------------------------------------------------*/
 /*   P L U G I N   U P D A T E   R S P                                                      */
@@ -67,6 +69,17 @@ class PluginUpdateRsp
    * @param keyChoosers
    *   The new or updated Key Chooser plugin class [name, bytes, supports] 
    *   indexed by class name and revision number.
+   *   
+   * @param builderCollections
+   *   The new or updated Builder Collection plugin class [name, bytes, supports] 
+   *   indexed by class name and revision number.
+   *   
+   * @param builderCollectionLayouts
+   *   The new or updated Builder Collection layouts indexed by class name and 
+   *   revision number.
+   *   
+   * @param annotationPermissions
+   *   The new or updated Annotation Permissions indexed by class name and revision number.
    */
   public
   PluginUpdateRsp
@@ -82,7 +95,9 @@ class PluginUpdateRsp
    TripleMap<String,String,VersionID,Object[]> masterExts, 
    TripleMap<String,String,VersionID,Object[]> queueExts,
    TripleMap<String,String,VersionID,Object[]> keyChoosers,
-   TripleMap<String,String,VersionID,Object[]> builderCollections
+   TripleMap<String,String,VersionID,Object[]> builderCollections,
+   TripleMap<String,String,VersionID,LayoutGroup> builderCollectionLayouts,
+   TripleMap<String,String,VersionID,AnnotationPermissions> annotationPermissions
   )
   { 
     super(timer);
@@ -130,6 +145,14 @@ class PluginUpdateRsp
     if(builderCollections == null) 
       throw new IllegalArgumentException("The Builder Collections plugins cannot be (null)!");
     pBuilderCollections = builderCollections;
+    
+    if(builderCollectionLayouts == null) 
+      throw new IllegalArgumentException("The Builder Collections layouts cannot be (null)!");
+    pBuilderCollectionLayouts = builderCollectionLayouts;
+    
+    if(annotationPermissions == null) 
+      throw new IllegalArgumentException("The Annotation permissions cannot be (null)!");
+    pAnnotationPermissions = annotationPermissions;
 
     if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest)) {
       LogMgr.getInstance().log
@@ -256,6 +279,26 @@ class PluginUpdateRsp
   {
     return pBuilderCollections; 
   }  
+  
+  /**
+   * Gets the new or updated Builder Collections Layouts indexed by class name and revision
+   * number.
+   */
+  public TripleMap<String,String,VersionID,LayoutGroup>
+  getBuilderCollectionLayouts() 
+  {
+    return pBuilderCollectionLayouts; 
+  }
+  
+  /**
+   * Gets the new or updated Annotation Permissions indexed by class name and revision
+   * number.
+   */
+  public TripleMap<String,String,VersionID,AnnotationPermissions>
+  getAnnotationPermissions() 
+  {
+    return pAnnotationPermissions; 
+  }
 
 
   
@@ -338,6 +381,16 @@ class PluginUpdateRsp
    * indexed by class name and revision number.
    */ 
   private TripleMap<String,String,VersionID,Object[]>  pBuilderCollections; 
+  
+  /**
+   * The new or updated Builder Collection layouts.
+   */ 
+  private TripleMap<String,String,VersionID,LayoutGroup>  pBuilderCollectionLayouts; 
+  
+  /**
+   * The new or updated Annotation permissions.
+   */ 
+  private TripleMap<String,String,VersionID,AnnotationPermissions>  pAnnotationPermissions; 
 
 }
   
