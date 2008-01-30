@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.100 2008/01/14 07:54:37 jesse Exp $
+// $Id: QueueMgr.java,v 1.101 2008/01/30 09:06:08 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -4437,8 +4437,11 @@ class QueueMgr
         if (!key.hasKeyChooser() && currentKeys.contains(name))
           finalKeys.add(name); 
         else if (key.hasKeyChooser()) {
-          if (annots == null)
+          if (annots == null) {
             annots = pMasterMgrClient.getAnnotations(nodeID.getName());
+            if (annots == null)
+               annots = new TreeMap<String, BaseAnnotation>();
+          }
           try {
             if (key.getKeyChooser().computeIsActive(job, annots))
               finalKeys.add(name);
@@ -4468,8 +4471,11 @@ class QueueMgr
         if (!key.hasKeyChooser() && currentKeys.contains(name))
           finalKeys.add(name); 
         else if (key.hasKeyChooser()) {
-          if (annots == null)
+          if (annots == null) {
             annots = pMasterMgrClient.getAnnotations(nodeID.getName());
+            if (annots == null)
+               annots = new TreeMap<String, BaseAnnotation>();
+          }
           try {
             if (key.getKeyChooser().computeIsActive(job, annots))
               finalKeys.add(name);
@@ -4499,8 +4505,11 @@ class QueueMgr
         if (!key.hasKeyChooser() && currentKeys.contains(name))
           finalKeys.add(name); 
         else if (key.hasKeyChooser()) {
-          if (annots == null)
+          if (annots == null) {
             annots = pMasterMgrClient.getAnnotations(nodeID.getName());
+            if (annots == null)
+               annots = new TreeMap<String, BaseAnnotation>();
+          }
           try {
             if (key.getKeyChooser().computeIsActive(job, annots))
               finalKeys.add(name);
@@ -6076,7 +6085,7 @@ class QueueMgr
 		LogMgr.getInstance().logAndFlush
 		  (LogMgr.Kind.Ops, LogMgr.Level.Finest,
 		   "Updated Slots [" + hostname + "]:  Free = " + slots + "\n");
-	      }
+	      } //while(slots > 0) 
 	      LogMgr.getInstance().logSubStage
 		(LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
 		 stm, dtm); 
