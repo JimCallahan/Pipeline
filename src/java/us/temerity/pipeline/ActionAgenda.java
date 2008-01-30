@@ -1,4 +1,4 @@
-// $Id: ActionAgenda.java,v 1.16 2007/07/23 10:09:04 jim Exp $
+// $Id: ActionAgenda.java,v 1.17 2008/01/30 09:07:46 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -9,7 +9,7 @@ import java.util.regex.*;
 import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   A C T I O N   A D J E N D A                                                            */
+/*   A C T I O N   A G E N D A                                                              */
 /*------------------------------------------------------------------------------------------*/
 
 /**
