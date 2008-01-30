@@ -163,11 +163,17 @@ AM_CONDITIONAL(IS_UnivBin, test x$NATIVE_ARCHTYPE = xUnivBin)
 
 dnl ------------------------------------------------------------------------------------------
 
-AC_SUBST(EXTRA_DEBUG_SUBDIRS)
-EXTRA_DEBUG_SUBDIRS=""
-
 AC_SUBST(BUILD_MODE)
 BUILD_MODE=dbg
+
+AC_SUBST(JAVA_C_FLAGS)
+JAVA_C_FLAGS=""
+
+AC_SUBST(JAVA_RUNTIME_OPTS)
+JAVA_RUNTIME_OPTS=""
+
+AC_SUBST(EXTRA_DEBUG_SUBDIRS)
+EXTRA_DEBUG_SUBDIRS=""
 
 AC_ARG_ENABLE([opt], 
               [  --enable-opt              Use optimization options.],
@@ -1110,8 +1116,7 @@ AC_MSG_RESULT([$JAVA_INC])
 
 AC_MSG_CHECKING([Javac Flags])
 
-AC_SUBST(JAVA_C_FLAGS)
-JAVA_C_FLAGS="-source 1.5 -Xlint:all,deprecation,-unchecked,-fallthrough"
+JAVA_C_FLAGS="$JAVA_C_FLAGS -source 1.5 -Xlint:all,deprecation,-unchecked,-fallthrough"
 JAVA_C_FLAGS="$JAVA_C_FLAGS -J-Xms64m -J-Xmx256m"
 
 AC_MSG_RESULT([$JAVA_C_FLAGS])
@@ -1157,10 +1162,6 @@ JYTHON_DIR=""
 
 AC_SUBST(JYTHON_JAR)
 JYTHON_JAR=""
-
-
-AC_SUBST(JAVA_RUNTIME_OPTS)
-JAVA_RUNTIME_OPTS=""
 
 
 AC_SUBST(PIPELINE_LATEST_JAR)
