@@ -1,4 +1,4 @@
-// $Id: BaseUtil.java,v 1.24 2008/01/28 12:00:51 jesse Exp $
+// $Id: BaseUtil.java,v 1.25 2008/01/30 06:35:07 jim Exp $
 
 package us.temerity.pipeline.builder;
 

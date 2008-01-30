@@ -1,4 +1,4 @@
-// $Id: MayaBuildStage.java,v 1.5 2007/08/18 18:14:47 jesse Exp $
+// $Id: MayaBuildStage.java,v 1.6 2008/01/30 06:35:07 jim Exp $
 
 package us.temerity.pipeline.stages;
 

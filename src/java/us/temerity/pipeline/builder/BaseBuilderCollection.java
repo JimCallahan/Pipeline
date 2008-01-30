@@ -1,4 +1,4 @@
-// $Id: BaseBuilderCollection.java,v 1.1 2008/01/28 12:00:51 jesse Exp $
+// $Id: BaseBuilderCollection.java,v 1.2 2008/01/30 06:35:07 jim Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -70,18 +70,19 @@ class BaseBuilderCollection
    * Used internally to create a generic instances of plugin subclasses.  This constructor
    * should not be used in end user code! 
    * <P> 
-   * @param collection
+   * @param collect
    *   The source to copy from 
    */ 
   public 
   BaseBuilderCollection
   (
-    BaseBuilderCollection collection
+    BaseBuilderCollect collect
   ) 
   {
-    super(collection.pName, collection.pVersionID, collection.pVendor, collection.pDescription);
-
+    super(collect.pName, collect.pVersionID, collect.pVendor, collect.pDescription);
   }
+
+
   
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */

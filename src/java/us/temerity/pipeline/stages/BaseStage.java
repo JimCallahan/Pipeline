@@ -1,4 +1,4 @@
-// $Id: BaseStage.java,v 1.22 2008/01/28 11:58:52 jesse Exp $
+// $Id: BaseStage.java,v 1.23 2008/01/30 06:35:07 jim Exp $
 
 package us.temerity.pipeline.stages;
 
