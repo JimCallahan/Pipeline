@@ -333,12 +333,6 @@ MODERN_PACKAGES = $(subst /,.,$(patsubst $(top_srcdir)/src/java/%,%,$(MODERN_DIR
 
 PLUGIN_PACKAGES = $(MODERN_PACKAGES) $(BUILD_LEGACY_PLUGINS_FALSE) $(LEGACY_PACKAGES) 
 
-
-    BUILDER_DIRS = $(shell find $(top_srcdir)/src/java/us/temerity/pipeline/builder/*/v?_*_* \
-                                -maxdepth 2 -type d -not -name CVS)
-
-BUILDER_PACKAGES = $(subst /,.,$(patsubst $(top_srcdir)/src/java/%,%,$(BUILDER_DIRS)))
-
   MAIN_PACKAGES = us.temerity.pipeline \
                   us.temerity.pipeline.builder \
                   us.temerity.pipeline.builder.ui \
@@ -352,7 +346,7 @@ BUILDER_PACKAGES = $(subst /,.,$(patsubst $(top_srcdir)/src/java/%,%,$(BUILDER_D
                   us.temerity.pipeline.ui
 
 
-       PACKAGES = $(MAIN_PACKAGES) $(PLUGIN_PACKAGES) $(BUILDER_PACKAGES)
+       PACKAGES = $(MAIN_PACKAGES) $(PLUGIN_PACKAGES) 
 
    PACKAGE_HTML = $(patsubst %,$(top_srcdir)/src/java/%/package.html,\
                              $(subst .,/,$(PACKAGES)))

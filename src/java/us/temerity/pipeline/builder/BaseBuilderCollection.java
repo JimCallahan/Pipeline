@@ -1,4 +1,4 @@
-// $Id: BaseBuilderCollection.java,v 1.2 2008/01/30 06:35:07 jim Exp $
+// $Id: BaseBuilderCollection.java,v 1.3 2008/01/30 09:28:46 jim Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -76,7 +76,7 @@ class BaseBuilderCollection
   public 
   BaseBuilderCollection
   (
-    BaseBuilderCollect collect
+   BaseBuilderCollection collect
   ) 
   {
     super(collect.pName, collect.pVersionID, collect.pVendor, collect.pDescription);

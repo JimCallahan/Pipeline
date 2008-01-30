@@ -14,9 +14,6 @@
 %defattr(-,root,root)
 @ROOT_INST_DIR@/plugins-extra
 
-%defattr(-,@PIPELINE_USER@,@PIPELINE_GROUP@)
-@ROOT_INST_DIR@/builders
-
 %defattr(-,root,root)
 @ROOT_INST_DIR@/lib
 @ROOT_INST_DIR@/examples

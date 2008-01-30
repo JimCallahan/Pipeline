@@ -1706,14 +1706,6 @@ AC_CONFIG_FILES([
   src/java/us/temerity/pipeline/Makefile
   src/java/us/temerity/pipeline/PackageInfo.java.src
   src/java/us/temerity/pipeline/bootstrap/BootStrapLoader.java.in
-
-  src/java/us/temerity/pipeline/builder/Makefile
-  src/java/us/temerity/pipeline/builder/approval/Makefile
-  src/java/us/temerity/pipeline/builder/approval/v2_3_2/Makefile
-  src/java/us/temerity/pipeline/builder/maya2mr/Makefile
-  src/java/us/temerity/pipeline/builder/maya2mr/v2_3_1/Makefile
-  src/java/us/temerity/pipeline/builder/maya2mr/v2_3_2/Makefile
-
   src/java/us/temerity/pipeline/core/VerifiedApp.java
   src/java/us/temerity/pipeline/laf/scripts/filter-fonts
   src/java/us/temerity/pipeline/laf/scripts/filter-textures
@@ -1791,23 +1783,6 @@ AC_CONFIG_FILES([
   src/java/scripts/profile/plpython
   src/java/scripts/profile/plui
 
-  src/java/scripts/builder/Makefile
-  src/java/scripts/builder/approval/Makefile
-  src/java/scripts/builder/approval/v2_3_2/Makefile
-  src/java/scripts/builder/approval/v2_3_2/plApprovalBuilder
-  src/java/scripts/builder/maya2mr/Makefile
-  src/java/scripts/builder/maya2mr/v2_3_1/Makefile
-  src/java/scripts/builder/maya2mr/v2_3_1/plNewAssetBuilder
-  src/java/scripts/builder/maya2mr/v2_3_1/plShotBuilder
-  src/java/scripts/builder/maya2mr/v2_3_2/Makefile
-  src/java/scripts/builder/maya2mr/v2_3_2/plAssetBuilder
-  src/java/scripts/builder/maya2mr/v2_3_2/plAdvAssetBuilder
-  src/java/scripts/builder/maya2mr/v2_3_2/plProjectBuilder
-  src/java/scripts/builder/maya2mr/v2_3_2/plProjectScriptBuilder
-  src/java/scripts/builder/maya2mr/v2_3_2/plProjectTurntableBuilder
-  src/java/scripts/builder/maya2mr/v2_3_2/plSimpleAssetBuilder
-
-
   src/java/share/Makefile
   src/java/share/Unix/Makefile
   src/java/share/MacOS/Makefile
@@ -1860,22 +1835,6 @@ AC_CONFIG_FILES([
   src/windows/scripts/debug/plbuilder.bat.src
   src/windows/scripts/debug/plui2.bat.src
   src/windows/scripts/debug/pljobmgr.bat.src
-
-  src/windows/scripts/builder/Makefile
-  src/windows/scripts/builder/approval/Makefile
-  src/windows/scripts/builder/approval/v2_3_2/Makefile
-  src/windows/scripts/builder/approval/v2_3_2/plApprovalBuilder.bat.src
-  src/windows/scripts/builder/maya2mr/Makefile
-  src/windows/scripts/builder/maya2mr/v2_3_1/Makefile
-  src/windows/scripts/builder/maya2mr/v2_3_1/plNewAssetBuilder.bat.src
-  src/windows/scripts/builder/maya2mr/v2_3_1/plShotBuilder.bat.src
-  src/windows/scripts/builder/maya2mr/v2_3_2/Makefile
-  src/windows/scripts/builder/maya2mr/v2_3_2/plAssetBuilder.bat.src
-  src/windows/scripts/builder/maya2mr/v2_3_2/plAdvAssetBuilder.bat.src
-  src/windows/scripts/builder/maya2mr/v2_3_2/plProjectBuilder.bat.src
-  src/windows/scripts/builder/maya2mr/v2_3_2/plProjectScriptBuilder.bat.src
-  src/windows/scripts/builder/maya2mr/v2_3_2/plProjectTurntableBuilder.bat.src
-  src/windows/scripts/builder/maya2mr/v2_3_2/plSimpleAssetBuilder.bat.src
 
   src/windows/launchers/Makefile
   src/windows/launchers/plui.exe4j

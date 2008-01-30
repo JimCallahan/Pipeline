@@ -63,9 +63,6 @@ Pipeline configuration process.
 @ROOT_INST_DIR@/MacOS-UnivBin-Debug/sbin/pljobmgr
 @ROOT_INST_DIR@/MacOS-UnivBin-Profile/sbin/pljobmgr
 
-%defattr(-,@PIPELINE_USER@,@PIPELINE_GROUP@)
-@ROOT_INST_DIR@/builders
-
 %defattr(-,root,root)
 @ROOT_INST_DIR@/lib/MacOS-UnivBin-Opt
 @ROOT_INST_DIR@/MacOS-UnivBin-Opt/Pipeline.app

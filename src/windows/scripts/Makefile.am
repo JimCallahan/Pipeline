@@ -25,8 +25,7 @@ WIN_JOGL_LIBRARY_PATH = $(shell echo '@JOGL_LIBRARY_PATH@' | sed -e 's|/|\\\\\\\
 
 
 SUBDIRS = \
-  debug \
-  builder
+  debug
 
 
 %.bat: %.bat.src

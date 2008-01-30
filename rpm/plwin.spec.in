@@ -45,9 +45,6 @@ plconfig(1) during Pipeline configuration process.
 
 @ROOT_INST_DIR@/Windows-x86-Debug/sbin/pljobmgr.bat
 
-%defattr(-,@PIPELINE_USER@,@PIPELINE_GROUP@)
-@ROOT_INST_DIR@/builders
-
 %defattr(555,root,root)
 @ROOT_INST_DIR@/lib/Windows-x86-Opt/libNative.dll
 

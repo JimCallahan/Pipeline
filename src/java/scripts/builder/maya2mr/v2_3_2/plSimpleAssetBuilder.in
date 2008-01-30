@@ -1,4 +1,0 @@
-#!/bin/sh
-
-cd `pwd`
-exec @PIPELINE_ARCHDIR@-Opt/bin/plbuilder Maya2MR 2.3.2 Temerity SimpleAsset "$@"
