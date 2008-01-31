@@ -1,4 +1,4 @@
-// $Id: BasePluginMgrClient.java,v 1.15 2008/01/31 17:29:11 jim Exp $
+// $Id: BasePluginMgrClient.java,v 1.16 2008/01/31 22:54:25 jesse Exp $
   
 package us.temerity.pipeline;
 
@@ -209,7 +209,7 @@ class BasePluginMgrClient
   public synchronized TripleMap<String,String,VersionID,LayoutGroup>
   getBuilderCollectionLayouts() 
   {
-    return pBuilderCollectionLayouts;
+    return new TripleMap<String,String,VersionID,LayoutGroup>(pBuilderCollectionLayouts);
   }
   
   /**
@@ -218,7 +218,7 @@ class BasePluginMgrClient
   public synchronized TripleMap<String,String,VersionID,AnnotationPermissions>
   getAnnotationPermissions() 
   {
-    return pAnnotationPermissions;
+    return new TripleMap<String,String,VersionID,AnnotationPermissions>(pAnnotationPermissions);
   }
 
 

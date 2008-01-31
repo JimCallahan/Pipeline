@@ -1,4 +1,4 @@
-// $Id: BaseBuilderCollection.java,v 1.4 2008/01/30 09:37:33 jesse Exp $
+// $Id: BaseBuilderCollection.java,v 1.5 2008/01/31 22:54:26 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -125,7 +125,7 @@ class BaseBuilderCollection
    * Sets the hierarchical grouping of builder which determine the layout of UI components.
    * <P>
    * The given layouts must contain one and only entry for all builders in the collection. 
-   * <code>Null</code> entries are not allowed in this Layout.
+   * <code>Null</code> entries will create seperators in the menu system.
    * <P>
    * This method should be called by subclasses in their constructor.
    * 
@@ -177,11 +177,6 @@ class BaseBuilderCollection
             ("The builder (" + name + ") was specified more than once " +
              "in the given parameter group!");
         names.add(name);
-      }
-      else {
-        throw new IllegalArgumentException
-        ("A (null) entry was found in the LayoutGroup!  BuilderCollections do not support " +
-         "(null) entries in their LayoutGroups.");
       }
     }
       
