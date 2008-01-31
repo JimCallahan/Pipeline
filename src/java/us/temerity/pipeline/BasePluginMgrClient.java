@@ -1,4 +1,4 @@
-// $Id: BasePluginMgrClient.java,v 1.14 2008/01/30 09:04:13 jesse Exp $
+// $Id: BasePluginMgrClient.java,v 1.15 2008/01/31 17:29:11 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -831,7 +831,8 @@ class BasePluginMgrClient
       TreeMap<String,TreeMap<VersionID,PluginData>> plugins = get(vend);
       if(plugins == null) 
         throw new PipelineException
-          ("No plugins created by the (" + vend + ") vendor exist!");
+          ("Unable to instantiate the (" + name + ((vid!=null)?(" v" + vid):"") + ") " + 
+           "plugin, because no plugins created by the (" + vend + ") vendor exist!");
       
       TreeMap<VersionID,PluginData> versions = plugins.get(name);
       if(versions == null) 

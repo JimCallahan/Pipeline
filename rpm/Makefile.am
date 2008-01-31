@@ -86,6 +86,13 @@ endif !HAS_MAC
 endif !PL_LOCAL
 
 
+if PL_LOCAL_ALL
+  STUDIOS = radar 
+#  STUDIOS = icvfx laikaent radar 
+else
+  STUDIOS = $(CUSTOMER) 
+endif
+
 
 MAC_SRC_DIR   = $(patsubst $(HOME)/%,/Users/$(USER)/%,$(top_srcdir))
 MAC_BUILD_DIR = $(patsubst $(HOME)/%,/Users/$(USER)/%,$(shell pwd))
@@ -131,10 +138,23 @@ pipeline-install: clean-rpms rpm-mkdirs
 	ln -s pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@ \
               DEST/pipeline/@ROOT_INST_PARENT_DIR@/pipeline-latest
 	mkdir -p DEST/pllocal/@ROOT_INST_PARENT_DIR@/pipeline-local
-	if test -d DEST/pipeline/@ROOT_INST_PARENT_DIR@/pipeline-local; \
+	@if test -d DEST/pipeline/@ROOT_INST_PARENT_DIR@/pipeline-local; \
         then \
-          mv DEST/pipeline/@ROOT_INST_PARENT_DIR@/pipeline-local \
+          echo mv DEST/pipeline/@ROOT_INST_PARENT_DIR@/pipeline-local/* \
              DEST/pllocal/@ROOT_INST_PARENT_DIR@/pipeline-local; \
+          mv DEST/pipeline/@ROOT_INST_PARENT_DIR@/pipeline-local/* \
+             DEST/pllocal/@ROOT_INST_PARENT_DIR@/pipeline-local; \
+          for studio in $(STUDIOS); \
+          do \
+            echo ln -s ../../../src \
+              DEST/pllocal/@ROOT_INST_PARENT_DIR@/pipeline-local/build/eclipse/$$studio/src;\
+            ln -s ../../../src \
+              DEST/pllocal/@ROOT_INST_PARENT_DIR@/pipeline-local/build/eclipse/$$studio/src;\
+            echo ln -s ../../../src \
+              DEST/pllocal/@ROOT_INST_PARENT_DIR@/pipeline-local/build/make/$$studio/src;\
+            ln -s ../../../src \
+              DEST/pllocal/@ROOT_INST_PARENT_DIR@/pipeline-local/build/make/$$studio/src;\
+          done; \
         fi
 
 core-rpms: pipeline-install \

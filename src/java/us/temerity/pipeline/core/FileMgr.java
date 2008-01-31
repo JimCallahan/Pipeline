@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.70 2007/10/30 06:06:48 jim Exp $
+// $Id: FileMgr.java,v 1.71 2008/01/31 17:29:11 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -16,7 +16,7 @@ import java.text.*;
 /*------------------------------------------------------------------------------------------*/
 /*   F I L E   M G R                                                                        */
 /*------------------------------------------------------------------------------------------*/
-
+ 
 /**
  * The manager of file system queries and operations. <P> 
  * 
@@ -2637,7 +2637,7 @@ class FileMgr
       catch(IOException ex) {
         throw new PipelineException
           ("Unable to extract the GLUE file (" + glueName + ") from the node bundle " +
-           "file (" + bundlePath + ")!");
+           "file (" + bundlePath + "): \n" + ex.getMessage());
       }
     
       if(glueBytes == null) 
@@ -2652,7 +2652,7 @@ class FileMgr
       }
       catch(Exception ex) {
         throw new PipelineException
-          ("Unable to read the GLUE file (" + glueName + ")!");
+          ("Unable to read the GLUE file (" + glueName + "):\n" + ex.getMessage());
       }
     }
 

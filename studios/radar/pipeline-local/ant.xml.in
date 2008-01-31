@@ -1,0 +1,43 @@
+<project name="@CUSTOMER@" default="MakePlugins" basedir=".">
+
+  <property name="PipelineLatest" 
+            value="@ROOT_INST_PARENT_DIR@/pipeline-latest"/>
+
+  <property name="RadarMaya2MRCollection" 
+            value="com/radar/pipeline/plugin/RadarMaya2MRCollection"/>
+
+  
+  <target name="Make-RadarMaya2MRCollection-v2.3.2" 
+          description="Builds the plugin JAR file.">
+
+    <jar destfile="bin/${RadarMaya2MRCollection}/v2_3_2/RadarMaya2MRCollection.jar" 
+         includes="${RadarMaya2MRCollection}/*.class" 
+         basedir="bin">
+    </jar>
+  </target>
+
+
+  <target name="Install-RadarMaya2MRCollection-v2.3.2" 
+          description="Installs the plugin JAR."
+          depends="Make-RadarMaya2MRCollection-v2.3.2">
+
+    <exec executable="${PipelineLatest}/Unix-x86-Opt/bin/plplugin" 
+          dir="bin" failonerror=true>
+      <arg value="--install"/>
+      <arg value="bin/${RadarMaya2MRCollection}/v2_3_2/RadarMaya2MRCollection.jar"/>
+    </exec>
+  </target>
+
+
+  <target name="MakePlugins" 
+          description="Make all Pipeline plugins." 
+          depends="Make-RadarMaya2MRCollection-v2.3.2"> 
+  </target>
+
+
+  <target name="InstallPlugins" 
+          description="Installs all Pipeline plugins." 
+          depends="MakePlugins"> 
+  </target>
+
+</project> 

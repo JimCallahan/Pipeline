@@ -1,4 +1,4 @@
-// $Id: RadarMaya2MRCollection.java,v 1.1 2008/01/30 20:00:13 jesse Exp $
+// $Id: RadarMaya2MRCollection.java,v 1.2 2008/01/31 17:29:11 jim Exp $
 
 package com.radar.pipeline.plugin.RadarMaya2MRCollection.v2_3_2;
 
@@ -51,8 +51,10 @@ class RadarMaya2MRCollection
       group.addSubGroup(assets);
     }
     setLayout(group);
+
     underDevelopment();
   }
+
   
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */

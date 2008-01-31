@@ -30,7 +30,8 @@ class ShotBuilder
   {
     this(mclient, 
          qclient, 
-         new DefaultBuilderAnswers(mclient, qclient, UtilContext.getDefaultUtilContext(mclient)),
+         new DefaultBuilderAnswers(mclient, qclient, 
+                                   UtilContext.getDefaultUtilContext(mclient)),
          new DefaultProjectNames(mclient, qclient),
          info);
   }

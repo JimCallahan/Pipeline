@@ -1,5 +1,14 @@
+studioroot = @ROOT_INST_PARENT_DIR@/pipeline-local/build/make/radar
 
-javadir = @ROOT_INST_PARENT_DIR@/pipeline-local/src/com/radar/pipeline/plugin/RadarMaya2MRCollection/v2_3_2
+makefiledir = $(studioroot)/build/com/radar/pipeline/plugin/RadarMaya2MRCollection/v2_3_2
+
+makefile_DATA = \
+  Makefile.local
+
+
+sourceroot = @ROOT_INST_PARENT_DIR@/pipeline-local/src
+
+javadir = $(sourceroot)/com/radar/pipeline/plugin/RadarMaya2MRCollection/v2_3_2
 
 java_DATA = \
   RadarAnimEditStage.java \

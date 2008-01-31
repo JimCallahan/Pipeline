@@ -1848,65 +1848,18 @@ AC_CONFIG_FILES([
 
   studios/radar/Makefile
   studios/radar/pipeline-local/.classpath
+  studios/radar/pipeline-local/.project 
+  studios/radar/pipeline-local/ant.xml
   studios/radar/pipeline-local/Makefile
-  studios/radar/pipeline-local/src/builder_v2_3_2.xml-header
   studios/radar/pipeline-local/src/Makefile
+  studios/radar/pipeline-local/src/Makefile.local
   studios/radar/pipeline-local/src/com/Makefile
   studios/radar/pipeline-local/src/com/radar/Makefile
   studios/radar/pipeline-local/src/com/radar/pipeline/Makefile
-  studios/radar/pipeline-local/src/com/radar/pipeline/builder/Makefile
-  studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/Makefile
-  studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/Makefile
-  studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Makefile
-  studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Unix/Makefile
-  studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Unix/plRadarAssetBuilder
-  studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Unix/plRadarSimpleAssetBuilder
-  studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Unix/plRadarProjectBuilder
-  studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Unix/plRadarProjectScriptBuilder
-  studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Unix/plRadarProjectTurntableBuilder
-  studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/MacOS/Makefile
-  studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/MacOS/plRadarAssetBuilder
-  studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/MacOS/plRadarSimpleAssetBuilder
-  studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/MacOS/plRadarProjectBuilder
-  studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/MacOS/plRadarProjectScriptBuilder
-  studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/MacOS/plRadarProjectTurntableBuilder
-  studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Windows/Makefile
-  studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Windows/plRadarAssetBuilder.bat.src
-  studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Windows/plRadarSimpleAssetBuilder.bat.src
-  studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Windows/plRadarProjectBuilder.bat.src
-  studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Windows/plRadarProjectScriptBuilder.bat.src
-  studios/radar/pipeline-local/src/com/radar/pipeline/builder/maya2mr/v2_3_2/scripts/Windows/plRadarProjectTurntableBuilder.bat.src
-
-  studios/laikaent/Makefile
-  studios/laikaent/pipeline-local/.classpath
-  studios/laikaent/pipeline-local/Makefile
-  studios/laikaent/pipeline-local/src/builder_v2_3_2.xml-header
-  studios/laikaent/pipeline-local/src/Makefile
-  studios/laikaent/pipeline-local/src/com/Makefile
-  studios/laikaent/pipeline-local/src/com/laika/Makefile
-  studios/laikaent/pipeline-local/src/com/laika/pipeline/Makefile
-  studios/laikaent/pipeline-local/src/com/laika/pipeline/builder/Makefile
-  studios/laikaent/pipeline-local/src/com/laika/pipeline/builder/maya2mr/Makefile
-  studios/laikaent/pipeline-local/src/com/laika/pipeline/builder/maya2mr/v2_3_2/Makefile
-  studios/laikaent/pipeline-local/src/com/laika/pipeline/builder/maya2mr/v2_3_2/scripts/Makefile
-  studios/laikaent/pipeline-local/src/com/laika/pipeline/builder/maya2mr/v2_3_2/scripts/Unix/Makefile
-  studios/laikaent/pipeline-local/src/com/laika/pipeline/builder/maya2mr/v2_3_2/scripts/Unix/plLaikaAssetBuilder
-  studios/laikaent/pipeline-local/src/com/laika/pipeline/builder/maya2mr/v2_3_2/scripts/Unix/plLaikaSimpleAssetBuilder
-  studios/laikaent/pipeline-local/src/com/laika/pipeline/builder/maya2mr/v2_3_2/scripts/Unix/plLaikaProjectBuilder
-  studios/laikaent/pipeline-local/src/com/laika/pipeline/builder/maya2mr/v2_3_2/scripts/Unix/plLaikaProjectScriptBuilder
-  studios/laikaent/pipeline-local/src/com/laika/pipeline/builder/maya2mr/v2_3_2/scripts/Unix/plLaikaProjectTurntableBuilder
-  studios/laikaent/pipeline-local/src/com/laika/pipeline/builder/maya2mr/v2_3_2/scripts/MacOS/Makefile
-  studios/laikaent/pipeline-local/src/com/laika/pipeline/builder/maya2mr/v2_3_2/scripts/MacOS/plLaikaAssetBuilder
-  studios/laikaent/pipeline-local/src/com/laika/pipeline/builder/maya2mr/v2_3_2/scripts/MacOS/plLaikaSimpleAssetBuilder
-  studios/laikaent/pipeline-local/src/com/laika/pipeline/builder/maya2mr/v2_3_2/scripts/MacOS/plLaikaProjectBuilder
-  studios/laikaent/pipeline-local/src/com/laika/pipeline/builder/maya2mr/v2_3_2/scripts/MacOS/plLaikaProjectScriptBuilder
-  studios/laikaent/pipeline-local/src/com/laika/pipeline/builder/maya2mr/v2_3_2/scripts/MacOS/plLaikaProjectTurntableBuilder
-  studios/laikaent/pipeline-local/src/com/laika/pipeline/builder/maya2mr/v2_3_2/scripts/Windows/Makefile
-  studios/laikaent/pipeline-local/src/com/laika/pipeline/builder/maya2mr/v2_3_2/scripts/Windows/plLaikaAssetBuilder.bat.src
-  studios/laikaent/pipeline-local/src/com/laika/pipeline/builder/maya2mr/v2_3_2/scripts/Windows/plLaikaSimpleAssetBuilder.bat.src
-  studios/laikaent/pipeline-local/src/com/laika/pipeline/builder/maya2mr/v2_3_2/scripts/Windows/plLaikaProjectBuilder.bat.src
-  studios/laikaent/pipeline-local/src/com/laika/pipeline/builder/maya2mr/v2_3_2/scripts/Windows/plLaikaProjectScriptBuilder.bat.src
-  studios/laikaent/pipeline-local/src/com/laika/pipeline/builder/maya2mr/v2_3_2/scripts/Windows/plLaikaProjectTurntableBuilder.bat.src
+  studios/radar/pipeline-local/src/com/radar/pipeline/plugin/Makefile
+  studios/radar/pipeline-local/src/com/radar/pipeline/plugin/RadarMaya2MRCollection/Makefile
+  studios/radar/pipeline-local/src/com/radar/pipeline/plugin/RadarMaya2MRCollection/v2_3_2/Makefile
+  studios/radar/pipeline-local/src/com/radar/pipeline/plugin/RadarMaya2MRCollection/v2_3_2/Makefile.local
 
   rpm/Makefile
   rpm/pipeline.spec.A

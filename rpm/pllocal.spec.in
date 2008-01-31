@@ -25,8 +25,9 @@ overwritten by future installs of this RPM.
 
 %files
 
-%defattr(755,@PIPELINE_USER@,@PIPELINE_GROUP@)
+%defattr(-,@PIPELINE_USER@,@PIPELINE_GROUP@)
 @ROOT_INST_PARENT_DIR@/pipeline-local
+
 
 %changelog
 * @RPM_DATE@ Temerity Support <support@temerity.us>

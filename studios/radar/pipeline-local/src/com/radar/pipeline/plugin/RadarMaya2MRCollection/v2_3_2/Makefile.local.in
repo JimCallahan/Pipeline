@@ -1,0 +1,35 @@
+#--- VARIABLES -------------------------------------------------------------------------------
+
+   MAYA2MR_JAR = @ROOT_INST_PARENT_DIR@/pipeline-latest/plugins/us/temerity/pipeline/plugin/Maya2MRCollection/v2_3_2/Maya2MRCollection.jar
+
+    CLASS_ROOT = ../../../../../..
+
+  JAVA_PACKAGE = com/radar/pipeline/plugin/RadarMaya2MRCollection/v2_3_2
+  JAVA_SOURCES = $(shell find $(CLASS_ROOT)/../src/$(JAVA_PACKAGE) -type f -name "*.java")
+
+        TARGET = Maya2MRCollection.jar
+
+
+
+
+#--- RULES -----------------------------------------------------------------------------------
+
+install: $(TARGET)
+	(cd $(CLASS_ROOT); \
+         $(PLPLUGIN) --install $(JAVA_PACKAGE)/$(TARGET))
+
+all: $(TARGET)
+
+$(TARGET): java-all
+	(cd $(CLASS_ROOT); \
+         $(JAR) -cvf $(JAVA_PACKAGE)/$(TARGET) \
+                `find $(JAVA_PACKAGE) -type f -name "*.class"`)
+
+java-all: $(JAVA_SOURCES)
+	$(JAVAC) $(JAVAC_OPTS) -classpath $(API_JAR):$(MAYA2MR_JAR):. -d $(CLASS_ROOT) \
+          $(JAVA_SOURCES)
+
+
+clean:
+	find . -type f -name "*.class" -exec rm -f {} \; -print
+	rm -f $(TARGET)

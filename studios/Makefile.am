@@ -1,6 +1,7 @@
 if PL_LOCAL_ALL
 
-  SUBDIRS = radar laikaent
+#  SUBDIRS = icvfx laikaent radar 
+  SUBDIRS = radar 
 
 else
 
