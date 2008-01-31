@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.103 2008/01/28 11:58:50 jesse Exp $
+// $Id: JNodeViewerPanel.java,v 1.104 2008/01/31 00:33:13 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -13,7 +13,7 @@ import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.builder.ActionOnExistence;
+import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.glue.*;
 import us.temerity.pipeline.math.*;
 import us.temerity.pipeline.toolset.Toolset;
@@ -144,11 +144,13 @@ class JNodeViewerPanel
       item.addActionListener(this);
       pPanelPopup.add(item);
       
-      item = new JMenuItem("Launch Builder...");
-      pLaunchBuilderItem = item;
-      item.setActionCommand("launch-builder");
-      item.addActionListener(this);
-      pPanelPopup.add(item);
+      pPanelPopup.addSeparator();
+      
+      JMenu menu = new JMenu("Launch Builder");
+      pLaunchBuilderMenu= menu;
+      //item.setActionCommand("launch-builder");
+      //item.addActionListener(this);
+      pPanelPopup.add(menu);
       
       pPanelPopup.addSeparator();
       
@@ -1271,11 +1273,6 @@ class JNodeViewerPanel
       pShowHideEditingHintItem.setText("Show Editing Hint");
       pShowHideEditingHintItem.setEnabled(false);
     }
-    if (!isLocked())
-      pLaunchBuilderItem.setEnabled(true);
-    else
-      pLaunchBuilderItem.setEnabled(false);
-
   }
 
   /**
@@ -1524,6 +1521,20 @@ class JNodeViewerPanel
     if(pRefreshDefaultToolMenu) {
       UIMaster master = UIMaster.getInstance();
       master.rebuildDefaultToolMenu(pDefaultToolPopup, pGroupID, pDefaultToolPopup, this);
+      
+      pRefreshDefaultToolMenu = false; 
+    }    
+  }
+  
+  /**
+   * Update the default builder collection plugin menus (nothing under the mouse).
+   */ 
+  private synchronized void 
+  updateDefaultBuilderMenu()
+  {
+    if(pRefreshDefaultToolMenu) {
+      UIMaster master = UIMaster.getInstance();
+      master.rebuildDefaultBuilderCollectionMenu(pPanelPopup, pGroupID, pLaunchBuilderMenu, this, !isLocked());
       
       pRefreshDefaultToolMenu = false; 
     }    
@@ -2816,6 +2827,7 @@ class JNodeViewerPanel
 	    /* BUTTON3: panel popup menu */ 
 	    if((mods & (on1 | off1)) == on1) {
 	      updatePanelMenu();
+	      updateDefaultBuilderMenu();
 	      pPanelPopup.show(e.getComponent(), e.getX(), e.getY());
 	    }
 
@@ -3380,8 +3392,8 @@ class JNodeViewerPanel
       doPackBundle();
     else if(cmd.equals("unpack-bundle"))
       doUnpackBundle();
-    else if (cmd.equals("launch-builder"))
-      doLaunchBuilder();
+    else if (cmd.startsWith("launch-builder:"))
+      doLaunchBuilder(cmd.substring(15));
     else if(cmd.equals("restore"))
       doRestore();
 
@@ -4819,9 +4831,30 @@ class JNodeViewerPanel
   /**
    * Launches a builder.
    */
-  private synchronized void doLaunchBuilder()
+  private synchronized void 
+  doLaunchBuilder
+  (
+    String builderToLaunch  
+  )
   {
-    UIMaster.getInstance().showBuilderLaunchDialog(pAuthor, pView);
+    ListMap<LinkedList<String>, String> params =
+      new ListMap<LinkedList<String>, String>();
+    {
+      String array[] = {BaseUtil.aUtilContext, UtilContextUtilityParam.aAuthor};
+      LinkedList<String> authorKeys = new LinkedList<String>(Arrays.asList(array));
+      params.put(authorKeys, pAuthor);
+    }
+    {
+      String array[] = {BaseUtil.aUtilContext, UtilContextUtilityParam.aView};
+      LinkedList<String> viewKeys = new LinkedList<String>(Arrays.asList(array));
+      params.put(viewKeys, pView);
+    }
+    String[] collectionInfo = builderToLaunch.split(":");
+    VersionID id = new VersionID(collectionInfo[1]);
+    LaunchBuilderTask task = 
+      new LaunchBuilderTask(collectionInfo[0], id, collectionInfo[2], 
+                            collectionInfo[3], params);
+    task.start();
   }
 
   /*----------------------------------------------------------------------------------------*/
@@ -7008,6 +7041,60 @@ class JNodeViewerPanel
     private ToolOpTask  pOpTask; 
     private String      pMessage; 
   }
+  
+  /**
+   * Runs a builder.
+   */
+  private 
+  class LaunchBuilderTask
+    extends Thread
+  {
+    private 
+    LaunchBuilderTask
+    (
+      String collectionName,
+      VersionID collectionVersion,
+      String collectionVendor,
+      String builderName,
+      ListMap<LinkedList<String>, String> params
+    )
+    {
+      pCollectionName = collectionName;
+      pCollectionVersion = collectionVersion;
+      pCollectionVendor = collectionVendor;
+      pBuilderName = builderName;
+      pTopLevelParams = params;
+    }
+    
+    @Override
+    public void 
+    run()
+    {
+      try {
+        BaseBuilderCollection collection = 
+          PluginMgrClient.getInstance().newBuilderCollection
+            (pCollectionName, 
+             pCollectionVersion, 
+             pCollectionVendor);
+       MultiMap<String, String> params = new MultiMap<String, String>();
+       for (LinkedList<String> keys : pTopLevelParams.keySet()) {
+         String value = pTopLevelParams.get(keys);
+         keys.addFirst(pBuilderName);
+         params.putValue(keys, value, true);
+       }
+        collection.instantiateBuilder(pBuilderName, null, null, true, true, false, params);
+      } catch(Exception ex)
+      {
+        UIMaster.getInstance().showErrorDialog(ex);
+      }
+    }
+    
+    private String pCollectionName;
+    private String pCollectionVendor;
+    private VersionID pCollectionVersion;
+    private String pBuilderName;
+    private ListMap<LinkedList<String>, String> pTopLevelParams;
+  }
 
 
 
@@ -7153,7 +7240,6 @@ class JNodeViewerPanel
   private JMenuItem  pReleaseViewItem;
   private JMenuItem  pPanelRestoreItem;
   private JMenuItem  pUnpackBundleItem;
-  private JMenuItem  pLaunchBuilderItem;
   private JMenuItem  pFrameAllItem;
   private JMenuItem  pFrameSelectionItem;
   private JMenuItem  pAutomaticExpandItem;
@@ -7167,7 +7253,8 @@ class JNodeViewerPanel
   private JMenuItem  pShowHideEditorHintItem;
   private JMenuItem  pShowHideActionHintItem;
   private JMenuItem  pShowHideEditingHintItem;
-  
+
+  private JMenu      pLaunchBuilderMenu;
 
   /*----------------------------------------------------------------------------------------*/
 

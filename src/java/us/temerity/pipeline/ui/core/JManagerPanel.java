@@ -1,21 +1,22 @@
-// $Id: JManagerPanel.java,v 1.45 2008/01/28 11:58:51 jesse Exp $
+// $Id: JManagerPanel.java,v 1.46 2008/01/31 00:33:13 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
-import us.temerity.pipeline.*;
-import us.temerity.pipeline.ui.*;
-import us.temerity.pipeline.glue.*;
-import us.temerity.pipeline.core.BaseApp;
-import us.temerity.pipeline.core.LockedGlueFile;
-import us.temerity.pipeline.core.GlueLockException;
-import us.temerity.pipeline.laf.LookAndFeelLoader;
-
 import java.awt.*;
 import java.awt.event.*;
-import java.io.*;
+import java.io.File;
 import java.util.*;
+
 import javax.swing.*;
-import javax.swing.event.*;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
+
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.builder.BaseBuilderCollection;
+import us.temerity.pipeline.core.BaseApp;
+import us.temerity.pipeline.glue.*;
+import us.temerity.pipeline.laf.LookAndFeelLoader;
+import us.temerity.pipeline.ui.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   M A N A G E R   P A N E L                                                              */
@@ -385,11 +386,9 @@ class JManagerPanel
       item.addActionListener(this);
       pPopup.add(item);  
       
-      item = new JMenuItem("Launch Builders...");
-      pLaunchBuilderItem = item;
-      item.setActionCommand("launch-builders");
-      item.addActionListener(this);
-      pPopup.add(item);
+      JMenu menu = new JMenu("Launch Builders");
+      pLaunchBuilderMenu = menu;
+      pPopup.add(menu);
 
       pPopup.addSeparator();
 
@@ -1158,9 +1157,6 @@ class JManagerPanel
     updateMenuToolTip
       (pUpdatePluginsItem, prefs.getUpdatePlugins(), 
        "Make sure that the latest plugins and plugin menus are being used.");
-    updateMenuToolTip
-      (pLaunchBuilderItem, prefs.getLaunchBuilders(), 
-       "Opens up a dialog allowing the selection and invocation of all installed builders.");
 
     updateMenuToolTip
       (pManagePrivilegesItem, prefs.getShowManagePrivileges(), 
@@ -2123,8 +2119,8 @@ class JManagerPanel
         master.showDefaultEditorsDialog(); 
       else if(cmd.equals("update-plugins"))
         master.clearPluginCache();
-      else if(cmd.equals("launch-builders"))
-        master.showBuilderLaunchDialog();
+      else if(cmd.startsWith("launch-builder:"))
+        doLaunchBuilder(cmd.substring(15));
 
       else if(cmd.equals("manage-privileges"))
         master.showManagePrivilegesDialog();
@@ -3084,6 +3080,27 @@ class JManagerPanel
       }
     }	
   }
+  
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Launches a builder.
+   */
+  private synchronized void 
+  doLaunchBuilder
+  (
+    String builderToLaunch  
+  )
+  {
+    ListMap<LinkedList<String>, String> params =
+      new ListMap<LinkedList<String>, String>();
+    String[] collectionInfo = builderToLaunch.split(":");
+    VersionID id = new VersionID(collectionInfo[1]);
+    LaunchBuilderTask task = 
+      new LaunchBuilderTask(collectionInfo[0], id, collectionInfo[2], 
+                            collectionInfo[3], params);
+    task.start();
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -3416,6 +3433,11 @@ class JManagerPanel
  	}
       } 
       
+      {
+        UIMaster master = UIMaster.getInstance();
+        master.rebuildDefaultBuilderCollectionMenu(pPopup, 0, pLaunchBuilderMenu, pPanel, true);
+      }
+      
       pPopup.show(e.getComponent(), e.getX(), e.getY()); 
     }
 
@@ -3658,6 +3680,60 @@ class JManagerPanel
 	KeyboardFocusManager.getCurrentKeyboardFocusManager().clearGlobalFocusOwner();
     }
   }
+  
+  /**
+   * Runs a builder.
+   */
+  private 
+  class LaunchBuilderTask
+    extends Thread
+  {
+    private 
+    LaunchBuilderTask
+    (
+      String collectionName,
+      VersionID collectionVersion,
+      String collectionVendor,
+      String builderName,
+      ListMap<LinkedList<String>, String> params
+    )
+    {
+      pCollectionName = collectionName;
+      pCollectionVersion = collectionVersion;
+      pCollectionVendor = collectionVendor;
+      pBuilderName = builderName;
+      pTopLevelParams = params;
+    }
+    
+    @Override
+    public void 
+    run()
+    {
+      try {
+        BaseBuilderCollection collection = 
+          PluginMgrClient.getInstance().newBuilderCollection
+            (pCollectionName, 
+             pCollectionVersion, 
+             pCollectionVendor);
+       MultiMap<String, String> params = new MultiMap<String, String>();
+       for (LinkedList<String> keys : pTopLevelParams.keySet()) {
+         String value = pTopLevelParams.get(keys);
+         keys.addFirst(pBuilderName);
+         params.putValue(keys, value, true);
+       }
+        collection.instantiateBuilder(pBuilderName, null, null, true, true, false, params);
+      } catch(Exception ex)
+      {
+        UIMaster.getInstance().showErrorDialog(ex);
+      }
+    }
+    
+    private String pCollectionName;
+    private String pCollectionVendor;
+    private VersionID pCollectionVersion;
+    private String pBuilderName;
+    private ListMap<LinkedList<String>, String> pTopLevelParams;
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -3829,7 +3905,7 @@ class JManagerPanel
   private JMenu      pRestoreLayoutMenu;
   private JMenu      pRestoreLayoutNoSelectMenu;
 
-  private JMenuItem  pLaunchBuilderItem;
+  private JMenu      pLaunchBuilderMenu;
   private JMenuItem  pPreferencesItem;
   private JMenuItem  pDefaultEditorsItem;
   private JMenuItem  pUpdatePluginsItem;

@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.76 2008/01/30 09:04:13 jesse Exp $
+// $Id: UIMaster.java,v 1.77 2008/01/31 00:33:13 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -909,6 +909,10 @@ class UIMaster
     synchronized(pAnnotationPlugins) {
       pAnnotationPlugins.clear();
     }
+    synchronized(pBuilderCollectionPlugins) {
+      pBuilderCollectionPlugins.clear();
+    }
+
 
     synchronized(pEditorLayouts) {
       pEditorLayouts.clear();
@@ -928,9 +932,16 @@ class UIMaster
     synchronized(pAnnotationLayouts) {
       pAnnotationLayouts.clear();
     }
+    synchronized(pBuilderCollectionLayouts) {
+      pBuilderCollectionLayouts.clear();
+    }
+
     synchronized(pAnnotationPermissions) {
       pAnnotationPermissions.clear();
-    }    
+    }
+    synchronized (pBuilderLayouts) {
+      pBuilderLayouts.clear();
+    }
   }
 
   public void 
@@ -969,7 +980,6 @@ class UIMaster
     synchronized(pBuilderCollectionPlugins) {
       pBuilderCollectionPlugins.clear();
     }
-
     synchronized(pBuilderCollectionLayouts) {
       pBuilderCollectionLayouts.clear();
     }
@@ -1477,6 +1487,93 @@ class UIMaster
       menu.add(item);
     }
   }
+  
+  /**
+   * Rebuild the contents of an builder plugin menu for the given toolset.
+   * 
+   * @param topmenu
+   *   The top-level popup menu containing the items.
+   * 
+   * @param channel
+   *   The index of the update channel.
+   * 
+   * @param menu
+   *   The menu to be rebuilt.
+   * 
+   * @param listener
+   *   The listener for menu selection events.
+   */ 
+  public void
+  rebuildDefaultBuilderCollectionMenu
+  (
+   JPopupMenu topmenu,
+   int channel, 
+   JMenu menu, 
+   ActionListener listener,
+   boolean enabled
+  ) 
+  {
+    PluginMenuLayout layout = null;
+    TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
+    TripleMap<String, String, VersionID, LayoutGroup> builderLayouts = null;
+    try {
+      MasterMgrClient client = getMasterMgrClient(channel);
+      String tname = client.getDefaultToolsetName();
+
+      synchronized(pBuilderCollectionPlugins) {
+        plugins = pBuilderCollectionPlugins.get(tname);
+        if(plugins == null) {
+          DoubleMap<String,String,TreeSet<VersionID>> index = 
+            client.getToolsetBuilderCollectionPlugins(tname);
+
+          TripleMap<String,String,VersionID,TreeSet<OsType>> all = 
+            PluginMgrClient.getInstance().getBuilderCollections();
+
+          plugins = new TripleMap<String,String,VersionID,TreeSet<OsType>>();
+          for(String vendor : index.keySet()) {
+            for(String name : index.get(vendor).keySet()) {
+              for(VersionID vid : index.get(vendor).get(name)) {
+                plugins.put(vendor, name, vid, all.get(vendor, name, vid));
+              }
+            }
+          }
+          
+          pBuilderCollectionPlugins.put(tname, plugins);
+        }
+      }
+      
+      synchronized(pBuilderCollectionLayouts) {
+        layout = pBuilderCollectionLayouts.get(tname);
+        if(layout == null) {
+          layout = client.getBuilderCollectionMenuLayout(tname);
+          pBuilderCollectionLayouts.put(tname, layout);
+        }
+      }
+      synchronized(pBuilderLayouts) {
+        if(pBuilderLayouts.isEmpty()) {
+          pBuilderLayouts = PluginMgrClient.getInstance().getBuilderCollectionLayouts();
+        }
+        builderLayouts = 
+          new TripleMap<String, String, VersionID, LayoutGroup>(pBuilderLayouts);
+      }
+    }
+    catch(PipelineException ex) {
+      showErrorDialog(ex);
+    }
+
+    menu.removeAll();
+    if((layout != null) && !layout.isEmpty()) {
+      for(PluginMenuLayout pml : layout) 
+        menu.add(rebuildCollectionPluginMenuHelper(topmenu, pml, "launch-builder", 
+                                                   plugins, builderLayouts, listener, 
+                                                   enabled));
+    }
+    else {
+      JPopupMenuItem item = new JPopupMenuItem(topmenu, "(None Specified)");
+      item.setEnabled(false);
+      menu.add(item);
+    }
+  }
 
   /**
    * Recursively build a plugin menu.
@@ -1530,6 +1627,83 @@ class UIMaster
     }
 
     return item;
+  }
+  
+  /**
+   * Recursively build a plugin menu.
+   * 
+   * @param topmenu
+   *   The top-level popup menu containing the items.
+   * 
+   * @param layout
+   *   The current plugin submenu layout.
+   * 
+   * @param prefix
+   *   The action command prefix.
+   *
+   * @param plugins
+   *   The plugins supported by the current toolset.
+   * 
+   * @param listener
+   *   The listener for menu selection events.
+   */ 
+  private JMenuItem
+  rebuildCollectionPluginMenuHelper
+  (
+   JPopupMenu topmenu,
+   PluginMenuLayout layout, 
+   String prefix, 
+   TripleMap<String,String,VersionID,TreeSet<OsType>> plugins,
+   TripleMap<String, String, VersionID, LayoutGroup> builderLayouts,
+   ActionListener listener,
+   boolean enabled
+  ) 
+  {
+    JMenuItem item = null;
+    if(layout.isMenuItem()) {
+      JMenu sub = new JMenu(layout.getName());
+      LayoutGroup group = 
+        builderLayouts.get(layout.getVendor(), layout.getName(), layout.getVersionID());
+      rebuildMenuFromLayoutGroup(topmenu, sub, prefix + ":" + layout.getName() + ":" + 
+                                 layout.getVersionID() + ":" + layout.getVendor(), group, 
+                                 listener, enabled);
+      item = sub;
+    }
+    else {
+      JMenu sub = new JMenu(layout.getTitle()); 
+      for(PluginMenuLayout pml : layout) 
+        sub.add(rebuildCollectionPluginMenuHelper(topmenu, pml, prefix, plugins, 
+          builderLayouts, listener, enabled));
+      item = sub;
+    }
+
+    return item;
+  }
+  
+  private void
+  rebuildMenuFromLayoutGroup
+  (
+    JPopupMenu topmenu,
+    JMenu parent,
+    String prefix,
+    LayoutGroup group,
+    ActionListener listener,
+    boolean enabled
+  )
+  {
+    for (LayoutGroup subGroup : group.getSubGroups()) {
+      JMenu sub = new JMenu(subGroup.getName());
+      rebuildMenuFromLayoutGroup(topmenu, sub, prefix, subGroup, listener, enabled);
+      parent.add(sub);
+    }
+    
+    for (String entry : group.getEntries()) {
+      JMenuItem item = new JPopupMenuItem(topmenu, entry);
+      item.setEnabled(enabled);
+      item.setActionCommand(prefix + ":" + entry);
+      item.addActionListener(listener);
+      parent.add(item);
+    }
   }
 
 
