@@ -11,7 +11,7 @@
           description="Builds the plugin JAR file.">
 
     <jar destfile="bin/${RadarMaya2MRCollection}/v2_3_2/RadarMaya2MRCollection.jar" 
-         includes="${RadarMaya2MRCollection}/*.class" 
+         includes="${RadarMaya2MRCollection}/v2_3_2/*.class" 
          basedir="bin">
     </jar>
   </target>
@@ -22,9 +22,9 @@
           depends="Make-RadarMaya2MRCollection-v2.3.2">
 
     <exec executable="${PipelineLatest}/Unix-x86-Opt/bin/plplugin" 
-          dir="bin" failonerror=true>
+          dir="bin" failonerror="true">
       <arg value="--install"/>
-      <arg value="bin/${RadarMaya2MRCollection}/v2_3_2/RadarMaya2MRCollection.jar"/>
+      <arg value="${RadarMaya2MRCollection}/v2_3_2/RadarMaya2MRCollection.jar"/>
     </exec>
   </target>
 
