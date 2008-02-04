@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.71 2008/01/31 17:29:11 jim Exp $
+// $Id: FileMgr.java,v 1.72 2008/02/04 07:58:24 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2647,6 +2647,7 @@ class FileMgr
       
       /* decode the GLUE raw bytes */ 
       try {
+        PluginMgrClient.getInstance().update();
         GlueDecoder gd = new GlueDecoderImpl(new ByteArrayInputStream(glueBytes));
         bundle = (NodeBundle) gd.getObject();
       }
