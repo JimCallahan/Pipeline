@@ -1846,6 +1846,32 @@ AC_CONFIG_FILES([
 
   studios/Makefile
 
+  studios/icvfx/Makefile
+  studios/icvfx/pipeline-local/.classpath
+  studios/icvfx/pipeline-local/.project 
+  studios/icvfx/pipeline-local/ant.xml
+  studios/icvfx/pipeline-local/Makefile
+  studios/icvfx/pipeline-local/src/Makefile
+  studios/icvfx/pipeline-local/src/Makefile.local
+  studios/icvfx/pipeline-local/src/com/Makefile
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/Makefile
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/Makefile
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/Makefile
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/LensInfoAction/Makefile
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/LensInfoAction/v1_0_0/Makefile
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/LensInfoAction/v1_0_0/Makefile.local
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/LensInfoAction/v1_0_1/Makefile
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/LensInfoAction/v1_0_1/Makefile.local
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/PFTrackBuildAction/Makefile
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/PFTrackBuildAction/v1_0_0/Makefile
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/PFTrackBuildAction/v1_0_0/Makefile.local
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/PFTrackEditor/Makefile
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/PFTrackEditor/v1_0_0/Makefile
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/PFTrackEditor/v1_0_0/Makefile.local
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/Makefile
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/Makefile
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/Makefile.local
+
   studios/radar/Makefile
   studios/radar/pipeline-local/.classpath
   studios/radar/pipeline-local/.project 
@@ -1860,6 +1886,22 @@ AC_CONFIG_FILES([
   studios/radar/pipeline-local/src/com/radar/pipeline/plugin/RadarMaya2MRCollection/Makefile
   studios/radar/pipeline-local/src/com/radar/pipeline/plugin/RadarMaya2MRCollection/v2_3_2/Makefile
   studios/radar/pipeline-local/src/com/radar/pipeline/plugin/RadarMaya2MRCollection/v2_3_2/Makefile.local
+
+  studios/SCEACSG/Makefile
+  studios/SCEACSG/pipeline-local/.classpath
+  studios/SCEACSG/pipeline-local/.project 
+  studios/SCEACSG/pipeline-local/ant.xml
+  studios/SCEACSG/pipeline-local/Makefile
+  studios/SCEACSG/pipeline-local/src/Makefile
+  studios/SCEACSG/pipeline-local/src/Makefile.local
+  studios/SCEACSG/pipeline-local/src/com/Makefile
+  studios/SCEACSG/pipeline-local/src/com/sony/Makefile
+  studios/SCEACSG/pipeline-local/src/com/sony/scea/Makefile
+  studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/Makefile
+  studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/Makefile
+  studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ModelReplaceAction/Makefile
+  studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ModelReplaceAction/v1_2_0/Makefile
+  studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ModelReplaceAction/v1_2_0/Makefile.local
 
   rpm/Makefile
   rpm/pipeline.spec.A

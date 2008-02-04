@@ -87,8 +87,7 @@ endif !PL_LOCAL
 
 
 if PL_LOCAL_ALL
-  STUDIOS = radar 
-#  STUDIOS = icvfx laikaent radar 
+  STUDIOS = icvfx radar SCEACSG
 else
   STUDIOS = $(CUSTOMER) 
 endif
