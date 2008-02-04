@@ -414,8 +414,12 @@ PLG_UTIL_SOURCES = $(shell ls $(srcdir)/plugin/*.java)
 
 
 @BUILD_LEGACY_PLUGINS_TRUE@PLUGINS1 = $(shell find $(srcdir)/plugin -type f -regex '@srcdir@/plugin/[^/]*/v1_[0-9]+_[0-9]+/[^.]*\.java')
-PLUGINS2 = $(shell find $(srcdir)/plugin -type f -regex '@srcdir@/plugin/[^/]*/v2_0_[0-9]+/[^.]*\.java')
-PLUGINS3 = $(shell find $(srcdir)/plugin -type f -regex '@srcdir@/plugin/[^/]*/v2_[^0]_[0-9]+/[^.]*\.java')
+PLUGINS2 = $(shell find $(srcdir)/plugin -type f -regex '@srcdir@/plugin/[^/]*/v2_0_[0-6]/[^.]*\.java')
+PLUGINS3 = $(shell find $(srcdir)/plugin -type f -regex '@srcdir@/plugin/[^/]*/v2_0_[7-9]/[^.]*\.java') \
+           $(shell find $(srcdir)/plugin -type f -regex '@srcdir@/plugin/[^/]*/v2_0_1[0-9]/[^.]*\.java')
+PLUGINS4 = $(shell find $(srcdir)/plugin -type f -regex '@srcdir@/plugin/[^/]*/v2_[1-2]_1?[0-9]+/[^.]*\.java')
+PLUGINS5 = $(shell find $(srcdir)/plugin -type f -regex '@srcdir@/plugin/[^/]*/v2_[3-9]_1?[0-9]+/[^.]*\.java')
+
 
 
 
@@ -526,20 +530,28 @@ java-all: $(JAVA_SOURCES) $(JAVA_MSG_SOURCES) $(JAVA_UI_SOURCES) $(JAVA_CORE_SOU
 	rm -f $(top_builddir)/docs/javadoc/docs-all
 
 
-java-plugins: java-plugins1 java-plugins2 java-plugins3
-	touch $@
+java-plugins: java-plugins1 java-plugins2 java-plugins3 java-plugins4 java-plugins5
+	cat java-plugins1 java-plugins2 java-plugins3 java-plugins4 java-plugins5 > $@
 
 java-plugins1: $(PLUGINS1)
 @BUILD_LEGACY_PLUGINS_TRUE@	$(JAVA_C) $(JAVA_C_NODEP_FLAGS) $(JAVA_PATHS) $(PLUGINS1)
-	touch $@
+	@(rm $@; for p in $(PLUGINS1); do echo $$p >> $@; done)
 
 java-plugins2: $(PLUGINS2)
 	$(JAVA_C) $(JAVA_C_NODEP_FLAGS) $(JAVA_PATHS) $(PLUGINS2)
-	touch $@
+	@(rm $@; for p in $(PLUGINS2); do echo $$p >> $@; done)
 
 java-plugins3: $(PLUGINS3)
-	$(JAVA_C) $(JAVA_C_FLAGS) $(JAVA_PATHS) $(PLUGINS3)
-	touch $@
+	$(JAVA_C) $(JAVA_C_NODEP_FLAGS) $(JAVA_PATHS) $(PLUGINS3)
+	@(rm $@; for p in $(PLUGINS3); do echo $$p >> $@; done)
+
+java-plugins4: $(PLUGINS4)
+	$(JAVA_C) $(JAVA_C_FLAGS) $(JAVA_PATHS) $(PLUGINS4)
+	@(rm $@; for p in $(PLUGINS4); do echo $$p >> $@; done)
+
+java-plugins5: $(PLUGINS5)
+	$(JAVA_C) $(JAVA_C_FLAGS) $(JAVA_PATHS) $(PLUGINS5)
+	@(rm $@; for p in $(PLUGINS5); do echo $$p >> $@; done)
 
 
 core/%.java: core/%.jj
