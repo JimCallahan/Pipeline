@@ -1,0 +1,7 @@
+#--- RULES -----------------------------------------------------------------------------------
+
+%: 
+	$(MAKE) -f Makefile.local -C LensInfoAction $@ 
+	$(MAKE) -f Makefile.local -C PFTrackBuildAction $@ 
+	$(MAKE) -f Makefile.local -C PFTrackEditor $@
+	$(MAKE) -f Makefile.local -C WtmCollection $@

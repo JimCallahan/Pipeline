@@ -1,0 +1,31 @@
+<project name="@CUSTOMER@" default="MakePlugins" basedir=".">
+
+  <property name="PipelineLatest" 
+            value="@ROOT_INST_PARENT_DIR@/pipeline-latest"/>
+
+  <property name="ModelReplaceAction" 
+            value="com/sony/scea/pipeline/plugin/ModelReplaceAction"/>
+
+
+  <target name="Install-ModelReplaceAction-v1.2.0" 
+          description="Installs the plugin JAR.">
+
+    <exec executable="${PipelineLatest}/Unix-x86-Opt/bin/plplugin" 
+          dir="bin" failonerror=true>
+      <arg value="--install"/>
+      <arg value="bin/${ModelReplaceAction}/v1_2_0/ModelReplaceAction.class"/>
+    </exec>
+  </target>
+
+
+  <target name="MakePlugins" 
+          description="Make all Pipeline plugins." 
+          depends="Make-ModelReplaceAction-v1.2.0"> 
+  </target>
+
+  <target name="InstallPlugins" 
+          description="Installs all Pipeline plugins." 
+          depends="MakePlugins"> 
+  </target>
+
+</project> 

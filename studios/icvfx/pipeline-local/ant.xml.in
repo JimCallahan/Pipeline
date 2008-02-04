@@ -1,0 +1,62 @@
+<project name="@CUSTOMER@" default="MakePlugins" basedir=".">
+
+  <property name="PipelineLatest" 
+            value="@ROOT_INST_PARENT_DIR@/pipeline-latest"/>
+
+  <property name="LensInfoAction" 
+            value="com/intelligentcreatures/pipeline/plugin/LensInfoAction"/>
+
+  <property name="PFTrackBuildAction" 
+            value="com/intelligentcreatures/pipeline/plugin/PFTrackBuildAction"/>
+
+  <property name="PFTrackEditor" 
+            value="com/intelligentcreatures/pipeline/plugin/PFTrackEditor"/>
+
+
+
+  <target name="Install-LensInfoAction-v1.0.0" 
+          description="Installs the plugin JAR.">
+
+    <exec executable="${PipelineLatest}/Unix-x86-Opt/bin/plplugin" 
+          dir="bin" failonerror=true>
+      <arg value="--install"/>
+      <arg value="bin/${LensInfoAction}/v1_0_0/LensInfoAction.class"/>
+    </exec>
+  </target>
+
+
+
+  <target name="Install-PFTrackBuildAction-v1.0.0" 
+          description="Installs the plugin JAR.">
+
+    <exec executable="${PipelineLatest}/Unix-x86-Opt/bin/plplugin" 
+          dir="bin" failonerror=true>
+      <arg value="--install"/>
+      <arg value="bin/${PFTrackBuildAction}/v1_0_0/PFTrackBuildAction.class"/>
+    </exec>
+  </target>
+
+
+
+  <target name="Install-PFTrackEditor-v1.0.0" 
+          description="Installs the plugin JAR.">
+
+    <exec executable="${PipelineLatest}/Unix-x86-Opt/bin/plplugin" 
+          dir="bin" failonerror=true>
+      <arg value="--install"/>
+      <arg value="bin/${PFTrackEditor}/v1_0_0/PFTrackEditor.class"/>
+    </exec>
+  </target>
+
+
+  <target name="MakePlugins" 
+          description="Make all Pipeline plugins." 
+          depends="Make-LensInfoAction-v1.0.0,Make-PFTrackBuildAction-v1.0.0,Make-PFTrackEditor-v1.0.0"> 
+  </target>
+
+  <target name="InstallPlugins" 
+          description="Installs all Pipeline plugins." 
+          depends="MakePlugins"> 
+  </target>
+
+</project> 
