@@ -1,4 +1,4 @@
-// $Id: SimpleLogMessage.java,v 1.4 2007/03/28 19:31:03 jim Exp $
+// $Id: SimpleLogMessage.java,v 1.5 2008/02/04 03:56:12 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -145,7 +145,7 @@ class SimpleLogMessage
 
       if((pTimeStamp == log.pTimeStamp) && 
 	 pAuthor.equals(log.pAuthor) &&
-	 pMessage.equals(log.pMessage));
+	 pMessage.equals(log.pMessage))
 	return true;
     }
     return false;
