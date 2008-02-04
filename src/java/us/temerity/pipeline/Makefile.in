@@ -535,23 +535,23 @@ java-plugins: java-plugins1 java-plugins2 java-plugins3 java-plugins4 java-plugi
 
 java-plugins1: $(PLUGINS1)
 @BUILD_LEGACY_PLUGINS_TRUE@	$(JAVA_C) $(JAVA_C_NODEP_FLAGS) $(JAVA_PATHS) $(PLUGINS1)
-	@(rm $@; for p in $(PLUGINS1); do echo $$p >> $@; done)
+	@(rm -f $@; for p in $(PLUGINS1); do echo $$p >> $@; done)
 
 java-plugins2: $(PLUGINS2)
 	$(JAVA_C) $(JAVA_C_NODEP_FLAGS) $(JAVA_PATHS) $(PLUGINS2)
-	@(rm $@; for p in $(PLUGINS2); do echo $$p >> $@; done)
+	@(rm -f $@; for p in $(PLUGINS2); do echo $$p >> $@; done)
 
 java-plugins3: $(PLUGINS3)
 	$(JAVA_C) $(JAVA_C_NODEP_FLAGS) $(JAVA_PATHS) $(PLUGINS3)
-	@(rm $@; for p in $(PLUGINS3); do echo $$p >> $@; done)
+	@(rm -f $@; for p in $(PLUGINS3); do echo $$p >> $@; done)
 
 java-plugins4: $(PLUGINS4)
 	$(JAVA_C) $(JAVA_C_FLAGS) $(JAVA_PATHS) $(PLUGINS4)
-	@(rm $@; for p in $(PLUGINS4); do echo $$p >> $@; done)
+	@(rm -f $@; for p in $(PLUGINS4); do echo $$p >> $@; done)
 
 java-plugins5: $(PLUGINS5)
 	$(JAVA_C) $(JAVA_C_FLAGS) $(JAVA_PATHS) $(PLUGINS5)
-	@(rm $@; for p in $(PLUGINS5); do echo $$p >> $@; done)
+	@(rm -f $@; for p in $(PLUGINS5); do echo $$p >> $@; done)
 
 
 core/%.java: core/%.jj
