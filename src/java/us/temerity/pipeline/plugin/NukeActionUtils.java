@@ -1,4 +1,4 @@
-// $Id: NukeActionUtils.java,v 1.3 2007/07/23 20:31:39 jesse Exp $
+// $Id: NukeActionUtils.java,v 1.4 2008/02/04 04:01:33 jim Exp $
 
 package us.temerity.pipeline.plugin;
 
@@ -56,8 +56,21 @@ class NukeActionUtils
 
 
   /*----------------------------------------------------------------------------------------*/
-  /*   P R O G R A M   L O O K U P                                                          */
+  /*   F I L E   N A M I N G                                                                */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The Nuke script file format extensions.                            
+   */ 
+  public static final ArrayList<String> 
+  getNukeExtensions() 
+  {
+    ArrayList<String> suffixes = new ArrayList<String>();
+    suffixes.add("nk"); 
+    suffixes.add("nuke"); 
+    
+    return suffixes;
+  }
 
   /**
    * Convert a Pipeline file pattern into a Nuke file pattern string.
@@ -85,7 +98,9 @@ class NukeActionUtils
   }
 
   /**
-   * Convert a Pipeline frame range into a Nuke frame range string.
+   * Convert a Pipeline frame range into a Nuke frame range string.<P> 
+   * 
+   * If the range is (null), then "1" is returned.
    */ 
   public static final String
   toNukeFrameRange
@@ -93,7 +108,9 @@ class NukeActionUtils
    FrameRange range
   ) 
   {
-    if(range.isSingle()) 
+    if(range == null) 
+      return "1";
+    else if(range.isSingle()) 
       return Integer.toString(range.getStart());
     else if(range.getBy() == 1) 
       return (range.getStart() + "," + range.getEnd());
