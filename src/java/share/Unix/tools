@@ -47,36 +47,44 @@ ToolMenuLayout <PluginMenuLayout> #1 {
       Title <String> #34 { "Utils" }
       Children <LinkedList> #35 {
         <PluginMenuLayout> #36 {
-          Title <String> #37 { "Renumber" }
-          Name <String> #38 { "Renumber" }
+          Title <String> #37 { "NodeNote" }
+          Name <String> #38 { "NodeNote" }
           VersionID <VersionID> #39 {
-            RevisionNumber <String> #40 { "2.2.1" }
+            RevisionNumber <String> #40 { "2.3.14" }
           }
           Vendor <String> #41 { "Temerity" }
         }
         <PluginMenuLayout> #42 {
-          Title <String> #43 { "DisableAction" }
-          Name <String> #44 { "DisableAction" }
+          Title <String> #43 { "Renumber" }
+          Name <String> #44 { "Renumber" }
           VersionID <VersionID> #45 {
             RevisionNumber <String> #46 { "2.2.1" }
           }
           Vendor <String> #47 { "Temerity" }
         }
         <PluginMenuLayout> #48 {
-          Title <String> #49 { "Pattern Clone" }
-          Name <String> #50 { "PatternClone" }
+          Title <String> #49 { "DisableAction" }
+          Name <String> #50 { "DisableAction" }
           VersionID <VersionID> #51 {
-            RevisionNumber <String> #52 { "2.3.1" }
+            RevisionNumber <String> #52 { "2.2.1" }
           }
           Vendor <String> #53 { "Temerity" }
         }
         <PluginMenuLayout> #54 {
-          Title <String> #55 { "ImportExternal" }
-          Name <String> #56 { "ImportExternal" }
+          Title <String> #55 { "Pattern Clone" }
+          Name <String> #56 { "PatternClone" }
           VersionID <VersionID> #57 {
-            RevisionNumber <String> #58 { "2.3.15" }
+            RevisionNumber <String> #58 { "2.3.1" }
           }
           Vendor <String> #59 { "Temerity" }
+        }
+        <PluginMenuLayout> #60 {
+          Title <String> #61 { "ImportExternal" }
+          Name <String> #62 { "ImportExternal" }
+          VersionID <VersionID> #63 {
+            RevisionNumber <String> #64 { "2.3.15" }
+          }
+          Vendor <String> #65 { "Temerity" }
         }
       }
     }

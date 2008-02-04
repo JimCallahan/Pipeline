@@ -465,5 +465,18 @@ EditorMenuLayout <PluginMenuLayout> #1 {
         }
       }
     }
+    <PluginMenuLayout> #329 {
+      Title <String> #330 { "ICVFX" }
+      Children <LinkedList> #331 {
+        <PluginMenuLayout> #332 {
+          Title <String> #333 { "PFTrack" }
+          Name <String> #334 { "PFTrack" }
+          VersionID <VersionID> #335 {
+            RevisionNumber <String> #336 { "1.0.0" }
+          }
+          Vendor <String> #337 { "ICVFX" }
+        }
+      }
+    }
   }
 }
