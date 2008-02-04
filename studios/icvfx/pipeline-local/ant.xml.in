@@ -1,4 +1,4 @@
-<project name="@CUSTOMER@" default="MakePlugins" basedir=".">
+<project name="icvfx" default="MakePlugins" basedir=".">
 
   <property name="PipelineLatest" 
             value="@ROOT_INST_PARENT_DIR@/pipeline-latest"/>
