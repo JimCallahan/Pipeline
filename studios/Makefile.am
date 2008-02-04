@@ -1,6 +1,6 @@
 if PL_LOCAL_ALL
 
-  SUBDIRS = icvfx radar SCEACSG 
+  SUBDIRS = icvfx radar SCEACSG TheO
 
 else
 
