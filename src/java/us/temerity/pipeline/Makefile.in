@@ -531,7 +531,7 @@ java-all: $(JAVA_SOURCES) $(JAVA_MSG_SOURCES) $(JAVA_UI_SOURCES) $(JAVA_CORE_SOU
 
 
 java-plugins: java-plugins1 java-plugins2 java-plugins3 java-plugins4 java-plugins5
-	cat java-plugins java-plugins2 java-plugins3 java-plugins4 java-plugins5 > $@
+	cat java-plugins1 java-plugins2 java-plugins3 java-plugins4 java-plugins5 > $@
 
 java-plugins1: $(PLUGINS1)
 @BUILD_LEGACY_PLUGINS_TRUE@	$(JAVA_C) $(JAVA_C_NODEP_FLAGS) $(JAVA_PATHS) $(PLUGINS1)
