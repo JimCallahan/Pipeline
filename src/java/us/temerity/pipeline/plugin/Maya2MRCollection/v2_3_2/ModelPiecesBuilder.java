@@ -265,7 +265,7 @@ class ModelPiecesBuilder
              pMayaContext, 
              modelName,
              pPlaceHolderMEL);
-          isEditNode(stage, taskType);
+          addEditAnnotation(stage, taskType);
           stage.build();
           pModelStages.add(stage);
         }
@@ -296,9 +296,9 @@ class ModelPiecesBuilder
            pieceNodes,
            pVerifyModelMEL);
         if (pHasTT)
-          isPrepareNode(stage, taskType);
+          addPrepareAnnotation(stage, taskType);
         else
-          isFocusNode(stage, taskType);
+          addFocusAnnotation(stage, taskType);
         stage.build();
         addToCheckInList(verifyName);
       }

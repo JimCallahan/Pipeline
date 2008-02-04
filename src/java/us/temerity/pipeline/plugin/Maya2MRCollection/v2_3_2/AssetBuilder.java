@@ -1,4 +1,4 @@
-// $Id: AssetBuilder.java,v 1.1 2008/01/30 09:28:46 jim Exp $
+// $Id: AssetBuilder.java,v 1.2 2008/02/04 08:34:16 jim Exp $
 
 package us.temerity.pipeline.plugin.Maya2MRCollection.v2_3_2;
 
@@ -627,7 +627,7 @@ class AssetBuilder
 	   pMayaContext, 
 	   editModel,
 	   pPlaceHolderMEL);
-	isEditNode(stage, taskType);
+	addEditAnnotation(stage, taskType);
 	stage.build();
 	pModelStages.add(stage);
       }
@@ -644,9 +644,9 @@ class AssetBuilder
 	   edit,
 	   pVerifyModelMEL);
 	if (pModelTT)
-	  isPrepareNode(stage, taskType);
+	  addPrepareAnnotation(stage, taskType);
 	else
-	  isFocusNode(stage, taskType);
+	  addFocusAnnotation(stage, taskType);
 	stage.build();
       }
       else {
@@ -660,9 +660,9 @@ class AssetBuilder
 	   "GEO",
 	   pVerifyModelMEL);
 	if (pModelTT)
-	  isPrepareNode(stage, taskType);
+	  addPrepareAnnotation(stage, taskType);
 	else
-	  isFocusNode(stage, taskType);
+	  addFocusAnnotation(stage, taskType);
 	stage.build();
       }
       String modelTT = pAssetNames.getModelTTNodeName();
@@ -681,7 +681,7 @@ class AssetBuilder
              modelTT,
              verifyModel,
              modelTTSetup);
-          isPrepareNode(stage, taskType);
+          addPrepareAnnotation(stage, taskType);
           stage.build();
           addToDisableList(modelTT);
         }
@@ -696,7 +696,7 @@ class AssetBuilder
              modelTT, 
              globals,
              Renderer.Software);
-          isFocusNode(stage, taskType);
+          addFocusAnnotation(stage, taskType);
           stage.build();
         }
         if (pBuildThumbnails) {
@@ -704,7 +704,7 @@ class AssetBuilder
           {
             ThumbnailStage stage = 
               new ThumbnailStage(pStageInfo, pContext, pClient, thumb, "png", modelTTImg, 160);
-            isThumbnailNode(stage, taskType);
+            addThumbnailAnnotation(stage, taskType);
             stage.build();
           }
         }
@@ -719,7 +719,7 @@ class AssetBuilder
         else
           sources.add(verifyModel);
         TargetStage stage = new TargetStage(pStageInfo, pContext, pClient, modelSubmit, sources);
-        isSubmitNode(stage, taskType);
+        addSubmitAnnotation(stage, taskType);
         stage.build();
         addToQueueList(modelSubmit);
         addToCheckInList(modelSubmit);
@@ -729,14 +729,14 @@ class AssetBuilder
       {
         ProductStage stage = 
           new ProductStage(pStageInfo, pContext, pClient, modelFinal, "ma", verifyModel, StageFunction.aMayaScene.toString());
-        isProductNode(stage, taskType);
+        addProductAnnotation(stage, taskType);
         stage.build();
       }
       {
         TreeSet<String> sources = new TreeSet<String>();
         sources.add(modelFinal);
         TargetStage stage = new TargetStage(pStageInfo, pContext, pClient, modelApprove, sources);
-        isApproveNode(stage, taskType);
+        addApproveAnnotation(stage, taskType);
         stage.build();
         addToQueueList(modelApprove);
         addToCheckInList(modelApprove);
@@ -763,7 +763,7 @@ class AssetBuilder
              pClient,
              pMayaContext,
              blendShapes);
-          isEditNode(stage, taskType);
+          addEditAnnotation(stage, taskType);
           stage.build();
           pEmptyMayaScenes.add(stage);
         }
@@ -774,14 +774,14 @@ class AssetBuilder
 	if (skelMel == null) {
 	  EmptyMayaAsciiStage stage = 
 	    new EmptyMayaAsciiStage(pStageInfo, pContext, pClient, pMayaContext, skeleton);
-	  isEditNode(stage, taskType);
+	  addEditAnnotation(stage, taskType);
 	  stage.build();
 	  pEmptyMayaScenes.add(stage);
 	}
 	else {
 	  AssetBuilderModelStage stage =
 	    new AssetBuilderModelStage(pStageInfo, pContext, pClient, pMayaContext, skeleton, skelMel);
-	  isEditNode(stage, taskType);
+	  addEditAnnotation(stage, taskType);
 	  stage.build();
 	  pModelStages.add(stage);
 	}
@@ -793,7 +793,7 @@ class AssetBuilder
 	{
 	  MayaFTNBuildStage stage = 
 	    new MayaFTNBuildStage(pStageInfo, pContext, pClient, pMayaContext, texNode, true);
-	  isEditNode(stage, taskType);
+	  addEditAnnotation(stage, taskType);
 	  stage.build();
 	}
       }
@@ -810,7 +810,7 @@ class AssetBuilder
            modelFinal, null, blendShapes,
            skeleton, null, null,
            texNode);
-        isEditNode(stage, taskType);
+        addEditAnnotation(stage, taskType);
         stage.build();
       }
       
@@ -829,7 +829,7 @@ class AssetBuilder
 	     pClient,
 	     rigMatExp, 
 	     rigEdit);
-	  isPrepareNode(stage, taskType);
+	  addPrepareAnnotation(stage, taskType);
 	  stage.build();
 	}
 	
@@ -849,7 +849,7 @@ class AssetBuilder
 	      skeleton, 
 	      finalRigScript,
 	      pReRigSetup);
-	  isPrepareNode(stage, taskType);
+	  addPrepareAnnotation(stage, taskType);
 	  stage.build();
 	}
 	rigSource = reRigNode;
@@ -870,9 +870,9 @@ class AssetBuilder
 	     "SELECT",
 	     pLRFinalizeMEL);
 	  if (pRigTT)
-	    isPrepareNode(stage, taskType);
+	    addPrepareAnnotation(stage, taskType);
 	  else
-	    isFocusNode(stage, taskType);
+	    addFocusAnnotation(stage, taskType);
 	  stage.build();
 	}
 	else {
@@ -886,9 +886,9 @@ class AssetBuilder
 	     rigSource, rigEdit, rigMatExp,
 	     pLRFinalizeMEL);
 	  if (pRigTT)
-	    isPrepareNode(stage, taskType);
+	    addPrepareAnnotation(stage, taskType);
 	  else
-	    isFocusNode(stage, taskType);
+	    addFocusAnnotation(stage, taskType);
 	  stage.build();
 	}
       }
@@ -960,7 +960,7 @@ class AssetBuilder
 	       rigFinal, 
 	       setup);
 	  }
-	  isPrepareNode(stage, taskType);
+	  addPrepareAnnotation(stage, taskType);
 	  stage.build();
 	  addToDisableList(rigAnim);
 	}
@@ -976,13 +976,13 @@ class AssetBuilder
 	     rigAnim, 
 	     globals,
 	     Renderer.Software);
-	  isFocusNode(stage, taskType);
+	  addFocusAnnotation(stage, taskType);
 	  stage.build();
 	}
 	if (pBuildThumbnails) {
 	  ThumbnailStage stage = 
 	    new ThumbnailStage(pStageInfo, pContext, pClient, thumb, "png", rigImages, 160);
-	  isThumbnailNode(stage, taskType);
+	  addThumbnailAnnotation(stage, taskType);
 	  stage.build();
         }
       }
@@ -996,7 +996,7 @@ class AssetBuilder
         else
           sources.add(rigFinal);
         TargetStage stage = new TargetStage(pStageInfo, pContext, pClient, rigSubmit, sources);
-        isSubmitNode(stage, taskType);
+        addSubmitAnnotation(stage, taskType);
         stage.build();
         addToQueueList(rigSubmit);
         addToCheckInList(rigSubmit);
@@ -1007,7 +1007,7 @@ class AssetBuilder
       {
         ProductStage stage = 
           new ProductStage(pStageInfo, pContext, pClient, assetFinal, "ma", rigFinal, StageFunction.aMayaScene.toString());
-        isProductNode(stage, taskType);
+        addProductAnnotation(stage, taskType);
         stage.build();
       }
       String texFinalNode = null;
@@ -1017,7 +1017,7 @@ class AssetBuilder
           TreeSet<String> sources = new TreeSet<String>();
           sources.add(texNode);
           TargetStage stage = new TargetStage(pStageInfo, pContext, pClient, texFinalNode, sources);
-          isProductNode(stage, taskType);
+          addProductAnnotation(stage, taskType);
           stage.build();
         }
       }
@@ -1026,7 +1026,7 @@ class AssetBuilder
         sources.add(assetFinal);
         addNonNullValue(texFinalNode, sources);
         TargetStage stage = new TargetStage(pStageInfo, pContext, pClient, rigApprove, sources);
-        isApproveNode(stage, taskType);
+        addApproveAnnotation(stage, taskType);
         stage.build();
         addToQueueList(rigApprove);
         addToCheckInList(rigApprove);
@@ -1050,7 +1050,7 @@ class AssetBuilder
 	{
 	  MayaFTNBuildStage stage = 
 	    new MayaFTNBuildStage(pStageInfo, pContext, pClient, pMayaContext, texNode, true);
-	  isEditNode(stage, taskType);
+	  addEditAnnotation(stage, taskType);
 	  stage.build();
 	}
       }
@@ -1066,7 +1066,7 @@ class AssetBuilder
            matName,
            modelFinal,
            texNode);
-        isEditNode(stage, taskType);
+        addEditAnnotation(stage, taskType);
         stage.build();
         addToDisableList(matName);
       }
@@ -1082,7 +1082,7 @@ class AssetBuilder
            matName,
            pVerifyShaderMEL,
            "");
-        isPrepareNode(stage, taskType);
+        addPrepareAnnotation(stage, taskType);
         stage.build();
       }
 
@@ -1102,9 +1102,9 @@ class AssetBuilder
            rigSource, matName, matExportName,
            pFinalizeMEL);
         if (pShadeTT)
-          isPrepareNode(stage, taskType);
+          addPrepareAnnotation(stage, taskType);
         else
-          isFocusNode(stage, taskType);
+          addFocusAnnotation(stage, taskType);
         stage.build();
       }
       String matTT = pAssetNames.getMaterialTTNodeName();
@@ -1123,7 +1123,7 @@ class AssetBuilder
              matTT,
              matVerify,
              matTTSetup);
-          isPrepareNode(stage, taskType);
+          addPrepareAnnotation(stage, taskType);
           stage.build();
           addToDisableList(matTT);
         }
@@ -1138,14 +1138,14 @@ class AssetBuilder
              matTT, 
              globals,
              Renderer.MentalRay);
-          isFocusNode(stage, taskType);
+          addFocusAnnotation(stage, taskType);
           stage.build();
         }
         if (pBuildThumbnails) {
           thumb = pAssetNames.getMaterialThumbNodeName();
           ThumbnailStage stage = 
             new ThumbnailStage(pStageInfo, pContext, pClient, thumb, "png", matTTImg, 160);
-          isThumbnailNode(stage, taskType);
+          addThumbnailAnnotation(stage, taskType);
           stage.build();
         }
       }
@@ -1159,7 +1159,7 @@ class AssetBuilder
         else
           sources.add(matVerify);
         TargetStage stage = new TargetStage(pStageInfo, pContext, pClient, matSubmit, sources);
-        isSubmitNode(stage, taskType);
+        addSubmitAnnotation(stage, taskType);
         stage.build();
         addToQueueList(matSubmit);
         addToCheckInList(matSubmit);
@@ -1170,7 +1170,7 @@ class AssetBuilder
       if (pBuildTextureNode) {
 	finalTex = pAssetNames.getTextureFinalNodeName();
 	EmptyFileStage stage = new EmptyFileStage(pStageInfo, pContext, pClient, finalTex);
-	isProductNode(stage, taskType);
+	addProductAnnotation(stage, taskType);
 	stage.build();
 	pEmptyFileStages.add(stage);
       }
@@ -1179,7 +1179,7 @@ class AssetBuilder
       {
         ProductStage stage = 
           new ProductStage(pStageInfo, pContext, pClient, matFinal, "ma", matVerify, StageFunction.aMayaScene.toString());
-        isProductNode(stage, taskType);
+        addProductAnnotation(stage, taskType);
         stage.build();
       }
       {
@@ -1188,7 +1188,7 @@ class AssetBuilder
 	if (pBuildTextureNode)
 	  sources.add(finalTex);
         TargetStage stage = new TargetStage(pStageInfo, pContext, pClient, matApprove, sources);
-        isApproveNode(stage, taskType);
+        addApproveAnnotation(stage, taskType);
         stage.build();
         addToQueueList(matApprove);
         addToCheckInList(matApprove);

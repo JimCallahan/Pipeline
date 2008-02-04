@@ -444,7 +444,7 @@ class SimpleAssetBuilder
 	   pMayaContext, 
 	   editAsset,
 	   pPlaceHolderMEL);
-	isEditNode(stage, taskType);
+	addEditAnnotation(stage, taskType);
 	stage.build();
 	pModelStages.add(stage);
       }
@@ -461,9 +461,9 @@ class SimpleAssetBuilder
 	   edit,
 	   pVerifyMEL);
 	if (pBuildTurntable)
-	  isPrepareNode(stage, taskType);
+	  addPrepareAnnotation(stage, taskType);
 	else
-	  isFocusNode(stage, taskType);
+	  addFocusAnnotation(stage, taskType);
 	stage.build();
       }
       else {
@@ -477,9 +477,9 @@ class SimpleAssetBuilder
 	   "SELECT",
 	   pVerifyMEL);
 	if (pBuildTurntable)
-	  isPrepareNode(stage, taskType);
+	  addPrepareAnnotation(stage, taskType);
 	else
-	  isFocusNode(stage, taskType);
+	  addFocusAnnotation(stage, taskType);
 	stage.build();
       }
       String assetTT = pAssetNames.getAssetTTNodeName();
@@ -498,7 +498,7 @@ class SimpleAssetBuilder
              assetTT,
              verifyAsset,
              assetTTSetup);
-          isPrepareNode(stage, taskType);
+          addPrepareAnnotation(stage, taskType);
           stage.build();
           addToDisableList(assetTT);
         }
@@ -513,14 +513,14 @@ class SimpleAssetBuilder
              assetTT, 
              globals,
              Renderer.MentalRay);
-          isFocusNode(stage, taskType);
+          addFocusAnnotation(stage, taskType);
           stage.build();
         }
         if (pBuildThumbnail) {
           thumb = pAssetNames.getAssetThumbNodeName();
           ThumbnailStage stage = 
             new ThumbnailStage(pStageInfo, pContext, pClient, thumb, "png", assetTTImg, 160);
-          isThumbnailNode(stage, taskType);
+          addThumbnailAnnotation(stage, taskType);
           stage.build();
         }
       }
@@ -534,7 +534,7 @@ class SimpleAssetBuilder
         else
           sources.add(verifyAsset);
         TargetStage stage = new TargetStage(pStageInfo, pContext, pClient, assetSubmit, sources);
-        isSubmitNode(stage, taskType);
+        addSubmitAnnotation(stage, taskType);
         stage.build();
         addToQueueList(assetSubmit);
         addToCheckInList(assetSubmit);
@@ -544,14 +544,14 @@ class SimpleAssetBuilder
       {
         ProductStage stage = 
           new ProductStage(pStageInfo, pContext, pClient, assetFinal, "ma", verifyAsset, StageFunction.aMayaScene);
-        isProductNode(stage, taskType);
+        addProductAnnotation(stage, taskType);
         stage.build();
       }
       {
         TreeSet<String> sources = new TreeSet<String>();
         sources.add(assetFinal);
         TargetStage stage = new TargetStage(pStageInfo, pContext, pClient, assetApprove, sources);
-        isApproveNode(stage, taskType);
+        addApproveAnnotation(stage, taskType);
         stage.build();
         addToQueueList(assetApprove);
         addToCheckInList(assetApprove);

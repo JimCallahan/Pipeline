@@ -539,7 +539,7 @@ class ShotBuilder
 	   null,
 	   pFrameRange,
 	   false);
-	isEditNode(stage, taskType);
+	addEditAnnotation(stage, taskType);
         stage.build();
         addToDisableList(layoutScene);
       }
@@ -563,7 +563,7 @@ class ShotBuilder
 	     layoutScene,
 	     exportSet,
 	     false);
-	  isPrepareNode(stage, taskType);
+	  addPrepareAnnotation(stage, taskType);
 	  stage.build();
 	  anims.add(exportSet);
 	}

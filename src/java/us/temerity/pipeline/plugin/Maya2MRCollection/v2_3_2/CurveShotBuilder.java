@@ -607,7 +607,7 @@ class CurveShotBuilder
 	   cameraName,
 	   layoutCameraAnimation,
 	   pFrameRange);
-	isEditNode(stage, taskType);
+	addEditAnnotation(stage, taskType);
 	stage.build();
 	addToDisableList(animEdit);
       }
@@ -634,7 +634,7 @@ class CurveShotBuilder
 	     animEdit,
 	     nameSpace + ":SELECT",
 	     true);
-	  isPrepareNode(stage, taskType);
+	  addPrepareAnnotation(stage, taskType);
 	  stage.build();
 	}
 	{
@@ -647,7 +647,7 @@ class CurveShotBuilder
 	     "ma", 
 	     animPrepare, 
 	     StageFunction.aMayaScene.toString());
-	  isProductNode(stage, taskType);
+	  addProductAnnotation(stage, taskType);
 	  stage.build();
 	}
 	animPrepareFiles.put(nameSpace, animPrepare);
@@ -666,7 +666,7 @@ class CurveShotBuilder
 	   animPrepareFiles,
 	   null,
 	   pFrameRange);
-	isPrepareNode(stage, taskType);
+	addPrepareAnnotation(stage, taskType);
 	stage.build();
       }
       String animRender = pShotNames.getAnimImgNodeName();
@@ -686,20 +686,20 @@ class CurveShotBuilder
 	     animBuild, 
 	     globals,
 	     Renderer.Software);
-	  isFocusNode(stage, taskType);
+	  addFocusAnnotation(stage, taskType);
 	  stage.build();
       }
       {
 	ThumbnailStage stage = 
 	  new ThumbnailStage(pStageInfo, pContext, pClient, animThumb, "png", animRender, 160);
-	isThumbnailNode(stage, taskType);
+	addThumbnailAnnotation(stage, taskType);
 	stage.build();
       }
       {
         TreeSet<String> sources = new TreeSet<String>();
         sources.add(animThumb);
         TargetStage stage = new TargetStage(pStageInfo, pContext, pClient, animSubmit, sources);
-        isSubmitNode(stage, taskType);
+        addSubmitAnnotation(stage, taskType);
         stage.build();
         addToQueueList(animSubmit);
         addToCheckInList(animSubmit);
@@ -759,7 +759,7 @@ class CurveShotBuilder
         TreeSet<String> sources = new TreeSet<String>();
         sources.add(preLight);
         TargetStage stage = new TargetStage(pStageInfo, pContext, pClient, animApprove, sources);
-        isApproveNode(stage, taskType);
+        addApproveAnnotation(stage, taskType);
         stage.build();
         addToQueueList(animApprove);
         addToCheckInList(animApprove);
@@ -786,7 +786,7 @@ class CurveShotBuilder
 	   "pre",
 	   null,
 	   pFrameRange);
-	isEditNode(stage, taskType);
+	addEditAnnotation(stage, taskType);
 	stage.build();
 	addToDisableList(lighting);
       }
@@ -807,20 +807,20 @@ class CurveShotBuilder
 	     lighting, 
 	     globals,
 	     Renderer.MentalRay);
-	  isFocusNode(stage, taskType);
+	  addFocusAnnotation(stage, taskType);
 	  stage.build();
       }
       {
 	ThumbnailStage stage = 
 	  new ThumbnailStage(pStageInfo, pContext, pClient, lgtThumb, "png", lgtRender, 160);
-	isThumbnailNode(stage, taskType);
+	addThumbnailAnnotation(stage, taskType);
 	stage.build();
       }
       {
         TreeSet<String> sources = new TreeSet<String>();
         sources.add(lgtThumb);
         TargetStage stage = new TargetStage(pStageInfo, pContext, pClient, lightSubmit, sources);
-        isSubmitNode(stage, taskType);
+        addSubmitAnnotation(stage, taskType);
         stage.build();
         addToQueueList(lightSubmit);
         addToCheckInList(lightSubmit);
@@ -838,7 +838,7 @@ class CurveShotBuilder
 	   "ma", 
 	   lighting, 
 	   StageFunction.aMayaScene.toString());
-	isProductNode(stage, taskType);
+	addProductAnnotation(stage, taskType);
 	stage.build();
       }
       String lgtApprove = pShotNames.getLightApproveNodeName();
@@ -846,7 +846,7 @@ class CurveShotBuilder
         TreeSet<String> sources = new TreeSet<String>();
         sources.add(lightFinal);
         TargetStage stage = new TargetStage(pStageInfo, pContext, pClient, lgtApprove, sources);
-        isApproveNode(stage, taskType);
+        addApproveAnnotation(stage, taskType);
         stage.build();
         addToQueueList(lgtApprove);
         addToCheckInList(lgtApprove);

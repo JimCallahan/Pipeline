@@ -1,4 +1,4 @@
-// $Id: AdvAssetBuilder.java,v 1.1 2008/01/30 09:28:46 jim Exp $
+// $Id: AdvAssetBuilder.java,v 1.2 2008/02/04 08:34:15 jim Exp $
 
 package us.temerity.pipeline.plugin.Maya2MRCollection.v2_3_2;
 
@@ -698,7 +698,7 @@ class AdvAssetBuilder
 	     pMayaContext, 
 	     editModel,
 	     pPlaceHolderMEL);
-	  isEditNode(stage, taskType);
+	  addEditAnnotation(stage, taskType);
 	  stage.build();
 	  pModelStages.add(stage);
 	}
@@ -715,9 +715,9 @@ class AdvAssetBuilder
              edit,
              pVerifyModelMEL);
           if (pModelTT)
-            isPrepareNode(stage, taskType);
+            addPrepareAnnotation(stage, taskType);
           else
-            isFocusNode(stage, taskType);
+            addFocusAnnotation(stage, taskType);
           stage.build();
         }
       }
@@ -737,7 +737,7 @@ class AdvAssetBuilder
              modelTT,
              verifyModel,
              modelTTSetup);
-          isPrepareNode(stage, taskType);
+          addPrepareAnnotation(stage, taskType);
           stage.build();
           addToDisableList(modelTT);
         }
@@ -752,7 +752,7 @@ class AdvAssetBuilder
              modelTT, 
              globals,
              Renderer.Software);
-          isFocusNode(stage, taskType);
+          addFocusAnnotation(stage, taskType);
           stage.build();
         }
         if (pBuildThumbnails) {
@@ -760,7 +760,7 @@ class AdvAssetBuilder
           {
             ThumbnailStage stage = 
               new ThumbnailStage(pStageInfo, pContext, pClient, thumb, "png", modelTTImg, 160);
-            isThumbnailNode(stage, taskType);
+            addThumbnailAnnotation(stage, taskType);
             stage.build();
           }
         }
@@ -775,7 +775,7 @@ class AdvAssetBuilder
         else
           sources.add(verifyModel);
         TargetStage stage = new TargetStage(pStageInfo, pContext, pClient, modelSubmit, sources);
-        isSubmitNode(stage, taskType);
+        addSubmitAnnotation(stage, taskType);
         stage.build();
         addToQueueList(modelSubmit);
       }
@@ -784,14 +784,14 @@ class AdvAssetBuilder
       {
         ProductStage stage = 
           new ProductStage(pStageInfo, pContext, pClient, modelFinal, "ma", verifyModel, StageFunction.aMayaScene.toString());
-        isProductNode(stage, taskType);
+        addProductAnnotation(stage, taskType);
         stage.build();
       }
       {
         TreeSet<String> sources = new TreeSet<String>();
         sources.add(modelFinal);
         TargetStage stage = new TargetStage(pStageInfo, pContext, pClient, modelApprove, sources);
-        isApproveNode(stage, taskType);
+        addApproveAnnotation(stage, taskType);
         stage.build();
         addToQueueList(modelApprove);
       }
@@ -815,7 +815,7 @@ class AdvAssetBuilder
              pClient,
              pMayaContext,
              blendShapes);
-          isEditNode(stage, taskType);
+          addEditAnnotation(stage, taskType);
           stage.build();
           pEmptyMayaScenes.add(stage);
         }
@@ -826,14 +826,14 @@ class AdvAssetBuilder
 	if (skelMel == null) {
 	  EmptyMayaAsciiStage stage = 
 	    new EmptyMayaAsciiStage(pStageInfo, pContext, pClient, pMayaContext, skeleton);
-	  isEditNode(stage, taskType);
+	  addEditAnnotation(stage, taskType);
 	  stage.build();
 	  pEmptyMayaScenes.add(stage);
 	}
 	else {
 	  AssetBuilderModelStage stage =
 	    new AssetBuilderModelStage(pStageInfo, pContext, pClient, pMayaContext, skeleton, skelMel);
-	  isEditNode(stage, taskType);
+	  addEditAnnotation(stage, taskType);
 	  stage.build();
 	  pModelStages.add(stage);
 	}
@@ -849,7 +849,7 @@ class AdvAssetBuilder
            rigEdit,
            modelFinal, null, blendShapes,
            skeleton, null, null, null);
-        isEditNode(stage, taskType);
+        addEditAnnotation(stage, taskType);
         stage.build();
       }
       
@@ -871,7 +871,7 @@ class AdvAssetBuilder
            skeleton, 
            finalRigScript,
            pReRigSetup);
-        isPrepareNode(stage, taskType);
+        addPrepareAnnotation(stage, taskType);
         stage.build();
       }
       
@@ -892,9 +892,9 @@ class AdvAssetBuilder
            reRigNode, matName, matExportName,
            pFinalizeMEL);
         if (pRigTT)
-          isPrepareNode(stage, taskType);
+          addPrepareAnnotation(stage, taskType);
         else
-          isFocusNode(stage, taskType);
+          addFocusAnnotation(stage, taskType);
         stage.build();
       }
       
@@ -970,7 +970,7 @@ class AdvAssetBuilder
 	       rigFinal, 
 	       setup);
 	  }
-	  isPrepareNode(stage, taskType);
+	  addPrepareAnnotation(stage, taskType);
 	  stage.build();
 	  addToDisableList(rigAnim);
 	}
@@ -986,13 +986,13 @@ class AdvAssetBuilder
 	     rigAnim, 
 	     globals,
 	     Renderer.Software);
-	  isFocusNode(stage, taskType);
+	  addFocusAnnotation(stage, taskType);
 	  stage.build();
 	}
 	if (pBuildThumbnails) {
 	  ThumbnailStage stage = 
 	    new ThumbnailStage(pStageInfo, pContext, pClient, thumb, "png", rigImages, 160);
-	  isThumbnailNode(stage, taskType);
+	  addThumbnailAnnotation(stage, taskType);
 	  stage.build();
         }
       }
@@ -1006,7 +1006,7 @@ class AdvAssetBuilder
         else
           sources.add(rigFinal);
         TargetStage stage = new TargetStage(pStageInfo, pContext, pClient, rigSubmit, sources);
-        isSubmitNode(stage, taskType);
+        addSubmitAnnotation(stage, taskType);
         stage.build();
         addToQueueList(rigSubmit);
       }
@@ -1015,7 +1015,7 @@ class AdvAssetBuilder
       {
         ProductStage stage = 
           new ProductStage(pStageInfo, pContext, pClient, assetFinal, "ma", rigFinal, StageFunction.aMayaScene.toString());
-        isProductNode(stage, taskType);
+        addProductAnnotation(stage, taskType);
         stage.build();
       }
       String miFile = pAssetNames.getModelMiNodeName();
@@ -1027,7 +1027,7 @@ class AdvAssetBuilder
 	   pClient,
 	   miFile,
 	   assetFinal);
-	isProductNode(stage, taskType);
+	addProductAnnotation(stage, taskType);
 	stage.build();
       }
       String texFinalNode = null;
@@ -1037,7 +1037,7 @@ class AdvAssetBuilder
           TreeSet<String> sources = new TreeSet<String>();
           sources.add(texNode);
           TargetStage stage = new TargetStage(pStageInfo, pContext, pClient, texFinalNode, sources);
-          isProductNode(stage, taskType);
+          addProductAnnotation(stage, taskType);
           stage.build();
         }
       }
@@ -1048,7 +1048,7 @@ class AdvAssetBuilder
           sources.add(miFile);
         addNonNullValue(texFinalNode, sources);
         TargetStage stage = new TargetStage(pStageInfo, pContext, pClient, rigApprove, sources);
-        isApproveNode(stage, taskType);
+        addApproveAnnotation(stage, taskType);
         stage.build();
         addToQueueList(rigApprove);
       }
@@ -1067,7 +1067,7 @@ class AdvAssetBuilder
 	{
 	  MayaFTNBuildStage stage = 
 	    new MayaFTNBuildStage(pStageInfo, pContext, pClient, pMayaContext, texNode, true);
-	  isEditNode(stage, taskType);
+	  addEditAnnotation(stage, taskType);
 	  stage.build();
 	}
       }
@@ -1083,7 +1083,7 @@ class AdvAssetBuilder
            matName,
            modelFinal,
            texNode);
-        isEditNode(stage, taskType);
+        addEditAnnotation(stage, taskType);
         stage.build();
         addToDisableList(matName);
       }
@@ -1097,7 +1097,7 @@ class AdvAssetBuilder
            pClient,
            matExportName, 
            matName);
-        isPrepareNode(stage, taskType);
+        addPrepareAnnotation(stage, taskType);
         stage.build();
       }
     }
@@ -1115,7 +1115,7 @@ class AdvAssetBuilder
 	{
 	  MayaFTNBuildStage stage = 
 	    new MayaFTNBuildStage(pStageInfo, pContext, pClient, pMayaContext, texNode, true);
-	  isEditNode(stage, taskType);
+	  addEditAnnotation(stage, taskType);
 	  stage.build();
 	}
       }
@@ -1130,7 +1130,7 @@ class AdvAssetBuilder
 	   pMayaContext, 
 	   shdNode, 
 	   assetFinal, texNode, pMRInitMEL);
-	isEditNode(stage, taskType);
+	addEditAnnotation(stage, taskType);
 	stage.build();
 	addToDisableList(shdNode);
       }
@@ -1147,9 +1147,9 @@ class AdvAssetBuilder
 	   pVerifyShaderMEL, 
 	   pAssetNames.getAssetName());
 	if (pShadeTT)
-	  isPrepareNode(stage, taskType);
+	  addPrepareAnnotation(stage, taskType);
 	else
-	  isFocusNode(stage, taskType);
+	  addFocusAnnotation(stage, taskType);
 	stage.build();
       }
 
@@ -1169,7 +1169,7 @@ class AdvAssetBuilder
 	     shdTT, 
 	     pAssetNames.getModelFinalNodeName(), 
 	     setup);
-	  isEditNode(stage, taskType);
+	  addEditAnnotation(stage, taskType);
 	  stage.build();
 	  addToDisableList(shdTT);
 	}
@@ -1182,25 +1182,25 @@ class AdvAssetBuilder
 	  {
 	    AdvAssetCamMiStage stage = 
 	      new AdvAssetCamMiStage(pStageInfo, pContext, pClient, cam, shdTT);
-	    isPrepareNode(stage, taskType);
+	    addPrepareAnnotation(stage, taskType);
 	    stage.build();
 	  }
 	  {
 	    AdvAssetLgtMiStage stage = 
 	      new AdvAssetLgtMiStage(pStageInfo, pContext, pClient, lgt, shdTT);
-	    isPrepareNode(stage, taskType);
+	    addPrepareAnnotation(stage, taskType);
 	    stage.build();
 	  }
 	  {
 	    AdvAssetShdMiStage stage =
 	      new AdvAssetShdMiStage(pStageInfo, pContext, pClient, shd, shdNode);
-	    isPrepareNode(stage, taskType);
+	    addPrepareAnnotation(stage, taskType);
 	    stage.build();
 	  }
 	  {
 	    MRayCamOverrideStage stage =
 	      new MRayCamOverrideStage(pStageInfo, pContext, pClient, camOver);
-	    isPrepareNode(stage, taskType);
+	    addPrepareAnnotation(stage, taskType);
 	    stage.build();
 	  }
 	  String options = pProjectNames.getAssetShaderTTGlobals(GlobalsType.Standalone);
@@ -1218,7 +1218,7 @@ class AdvAssetBuilder
 	       cam,
 	       camOver,
 	       options);
-	    isFocusNode(stage, taskType);
+	    addFocusAnnotation(stage, taskType);
 	    stage.build();
 	  }
 	}
@@ -1234,14 +1234,14 @@ class AdvAssetBuilder
 	       shdTT, 
 	       globals,
 	       Renderer.MentalRay);
-	    isFocusNode(stage, taskType);
+	    addFocusAnnotation(stage, taskType);
 	    stage.build();
 	  }
 	}
 	if (pBuildThumbnails) {
 	  ThumbnailStage stage = 
 	    new ThumbnailStage(pStageInfo, pContext, pClient, thumb, "png", shdImg, 160);
-	  isThumbnailNode(stage, taskType);
+	  addThumbnailAnnotation(stage, taskType);
 	  stage.build();
         }
       }
@@ -1255,7 +1255,7 @@ class AdvAssetBuilder
         else
           sources.add(shdExport);
         TargetStage stage = new TargetStage(pStageInfo, pContext, pClient, shdSubmit, sources);
-        isSubmitNode(stage, taskType);
+        addSubmitAnnotation(stage, taskType);
         stage.build();
         addToQueueList(shdSubmit);
       }
@@ -1267,7 +1267,7 @@ class AdvAssetBuilder
 	finalTex = pAssetNames.getTextureFinalNodeName();
 	{
 	  EmptyFileStage stage = new EmptyFileStage(pStageInfo, pContext, pClient, finalTex);
-	  isProductNode(stage, taskType);
+	  addProductAnnotation(stage, taskType);
 	  stage.build();
 	  pEmptyFileStages.add(stage);
 	}
@@ -1275,7 +1275,7 @@ class AdvAssetBuilder
       {
 	ProductStage stage = 
 	  new ProductStage(pStageInfo, pContext, pClient, finalShd, "ma", shdExport, StageFunction.aMayaScene.toString());
-	isProductNode(stage, taskType);
+	addProductAnnotation(stage, taskType);
 	stage.build();
       }
       String shdApprove = pAssetNames.getShaderApproveNode();
@@ -1285,7 +1285,7 @@ class AdvAssetBuilder
 	if (pBuildTextureNode)
 	  sources.add(finalTex);
 	TargetStage stage = new TargetStage(pStageInfo, pContext, pClient, shdApprove, sources);
-	isApproveNode(stage, taskType);
+	addApproveAnnotation(stage, taskType);
 	stage.build();
 	addToQueueList(shdApprove);
       }
