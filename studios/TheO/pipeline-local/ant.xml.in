@@ -1,0 +1,43 @@
+<project name="TheO" default="MakePlugins" basedir=".">
+
+  <property name="PipelineLatest" 
+            value="@ROOT_INST_PARENT_DIR@/pipeline-latest"/>
+
+  <property name="ZohanCollection" 
+            value="com/theorphanage/pipeline/plugin/ZohanCollection"/>
+
+  
+  <target name="Make-ZohanCollection-v1.0.0" 
+          description="Builds the plugin JAR file.">
+
+    <jar destfile="bin/${ZohanCollection}/v1_0_0/ZohanCollection.jar" 
+         includes="${ZohanCollection}/v1_0_0/*.class" 
+         basedir="bin">
+    </jar>
+  </target>
+
+
+  <target name="Install-ZohanCollection-v1.0.0" 
+          description="Installs the plugin JAR."
+          depends="Make-ZohanCollection-v1.0.0">
+
+    <exec executable="${PipelineLatest}/Unix-x86-Opt/bin/plplugin" 
+          dir="bin" failonerror="true">
+      <arg value="--install"/>
+      <arg value="${ZohanCollection}/v1_0_0/ZohanCollection.jar"/>
+    </exec>
+  </target>
+
+
+  <target name="MakePlugins" 
+          description="Make all Pipeline plugins." 
+          depends="Make-ZohanCollection-v1.0.0"> 
+  </target>
+
+
+  <target name="InstallPlugins" 
+          description="Installs all Pipeline plugins." 
+          depends="MakePlugins"> 
+  </target>
+
+</project> 
