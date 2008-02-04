@@ -1,4 +1,4 @@
-// $Id: BaseBuilderCollection.java,v 1.5 2008/01/31 22:54:26 jesse Exp $
+// $Id: BaseBuilderCollection.java,v 1.6 2008/02/04 12:12:47 jim Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -99,18 +99,19 @@ class BaseBuilderCollection
   }
   
   /**
-   * Returns a list of all the builders that the this collection has in it, followed
-   * by the full classpath to the class file that can be used to instantiate that builder.
-   * <p>
-   * All Builder Collections needs to override this method to return the list of builders
-   * that they provide.
+   * Returns a table of the fullly resolved node builder class names indexed by the short 
+   * names of the builders provided by this collection.<P> 
+   * 
+   * All builder collections should override this method to return information about 
+   * the specific builders they provide.  The key in the same should be identical to that 
+   * returned by the {@link BaseBuilder.getName() BaseBuilder#getName} method.
    * 
    * @return
-   *   A mapping of Builder names to the classpath for the Builder.  By default, 
-   *   this returns an empty TreeMap.
+   *   The mapping of short builder names to the full class name of the builder.  By default
+   *   an empty TreeMap is returned.
    */
   public TreeMap<String, String>
-  getListOfBuilders()
+  getBuildersProvided()
   {
     return new TreeMap<String, String>();
   }
@@ -141,7 +142,7 @@ class BaseBuilderCollection
     TreeSet<String> names = new TreeSet<String>();
     collectLayoutNames(group, names);
     
-    Set<String> builderNames = getListOfBuilders().keySet();
+    Set<String> builderNames = getBuildersProvided().keySet();
     
     for(String name : names) {
       if(!builderNames.contains(name) )
@@ -200,7 +201,7 @@ class BaseBuilderCollection
     if(pLayout == null) {
       pLayout = new LayoutGroup("Builders", 
                                 "The builders in this collection.", true);
-      for(String name : getListOfBuilders().keySet()) 
+      for(String name : getBuildersProvided().keySet()) 
         pLayout.addEntry(name);
     }
     
@@ -221,7 +222,7 @@ class BaseBuilderCollection
    * 
    * @param builderName
    *   The short name of the Builder to instantiate.  This needs to be one of the names
-   *   in the keySet of the TreeMap returned by the {@link #getListOfBuilders()} method.
+   *   in the keySet of the TreeMap returned by the {@link #getBuildersProvided()} method.
    *   
    * @param terminateOnQuit
    *   Should be entire app quit when the builder execution ends.  This needs to be false
@@ -255,7 +256,7 @@ class BaseBuilderCollection
    * 
    * @param builderName
    *   The short name of the Builder to instantiate.  This needs to be one of the names
-   *   in the keySet of the TreeMap returned by the {@link #getListOfBuilders()} method.
+   *   in the keySet of the TreeMap returned by the {@link #getBuildersProvided()} method.
    * @param mclient
    *   The instance of {@link MasterMgrClient} for the builder to use or <code>null</code>
    *   if a new connection should be created.
@@ -305,7 +306,7 @@ class BaseBuilderCollection
    * 
    * @param builderName
    *   The short name of the Builder to instantiate.  This needs to be one of the names
-   *   in the keySet of the TreeMap returned by the {@link #getListOfBuilders()} method.
+   *   in the keySet of the TreeMap returned by the {@link #getBuildersProvided()} method.
    * @param mclient
    *   The instance of {@link MasterMgrClient} for the builder to use or <code>null</code>
    *   if a new connection should be created.
@@ -330,7 +331,7 @@ class BaseBuilderCollection
   )
     throws PipelineException
   {
-    TreeMap<String, String> list = getListOfBuilders();
+    TreeMap<String, String> list = getBuildersProvided();
     if (!list.keySet().contains(builderName))
       throw new PipelineException
         ("There is no Builder named (" + builderName + ") defined in the BuilderCollection " +

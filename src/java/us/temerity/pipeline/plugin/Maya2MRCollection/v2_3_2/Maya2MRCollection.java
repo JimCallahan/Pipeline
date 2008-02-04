@@ -1,4 +1,4 @@
-// $Id: Maya2MRCollection.java,v 1.1 2008/01/30 09:28:46 jim Exp $
+// $Id: Maya2MRCollection.java,v 1.2 2008/02/04 12:12:48 jim Exp $
 
 package us.temerity.pipeline.plugin.Maya2MRCollection.v2_3_2;
 
@@ -68,19 +68,20 @@ class Maya2MRCollection
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Returns a list of all the builders that the this collection has in it, followed
-   * by the full classpath to the class file that can be used to instantiate that builder.
-   * <p>
-   * All Builder Collections needs to override this method to return the list of builders
-   * that they provide.
+   * Returns a table of the fullly resolved node builder class names indexed by the short 
+   * names of the builders provided by this collection.<P> 
+   * 
+   * All builder collections should override this method to return information about 
+   * the specific builders they provide.  The key in the same should be identical to that 
+   * returned by the {@link BaseBuilder.getName() BaseBuilder#getName} method.
    * 
    * @return
-   *   A mapping of Builder names to the classpath for the Builder.  By default, 
-   *   this returns an empty TreeMap.
+   *   The mapping of short builder names to the full class name of the builder.  By default
+   *   an empty TreeMap is returned.
    */
   @Override
   public TreeMap<String, String> 
-  getListOfBuilders()
+  getBuildersProvided()
   {
     String pkg = "us.temerity.pipeline.plugin.Maya2MRCollection.v2_3_2.";
 

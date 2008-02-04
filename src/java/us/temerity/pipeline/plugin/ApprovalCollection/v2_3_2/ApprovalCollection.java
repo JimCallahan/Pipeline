@@ -1,4 +1,4 @@
-// $Id: ApprovalCollection.java,v 1.1 2008/01/30 09:28:46 jim Exp $
+// $Id: ApprovalCollection.java,v 1.2 2008/02/04 12:12:48 jim Exp $
 
 package us.temerity.pipeline.plugin.ApprovalCollection.v2_3_2;
 
@@ -47,7 +47,7 @@ public class ApprovalCollection
    */
   @Override
   public TreeMap<String, String> 
-  getListOfBuilders()
+  getBuildersProvided()
   {
     String pkg = "us.temerity.pipeline.plugin.ApprovalCollection.v2_3_2.";
 
