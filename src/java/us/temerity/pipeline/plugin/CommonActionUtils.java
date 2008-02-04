@@ -1,9 +1,9 @@
-// $Id: CommonActionUtils.java,v 1.9 2007/07/31 14:49:53 jim Exp $
+// $Id: CommonActionUtils.java,v 1.10 2008/02/04 04:00:10 jim Exp $
 
 package us.temerity.pipeline.plugin;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.math.Range;
+import us.temerity.pipeline.math.*;
 
 import java.util.*;
 import java.io.*;
@@ -495,6 +495,202 @@ class CommonActionUtils
   /*----------------------------------------------------------------------------------------*/
 
   /** 
+   * Get the value of the single valued non-null Tuple2i parameter with the given name.
+   * 
+   * @param name  
+   *   The name of the parameter. 
+   *
+   * @return 
+   *   The action parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued parameter with the given name exists or 
+   *   the value is <CODE>null</CODE>.
+   */ 
+  public final Tuple2i
+  getSingleTuple2iParamValue
+  (
+   String name   
+  ) 
+    throws PipelineException
+  {
+    return getSingleTuple2iParamValue(name, null, false);
+  }
+
+  /** 
+   * Get the value of the single valued Tuple2i parameter with the given name.
+   * 
+   * @param name  
+   *   The name of the parameter. 
+   *
+   * @param allowsNull
+   *   Whether this parameter can have a null value.
+   * 
+   * @return 
+   *   The action parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued parameter with the given name exists or 
+   *   the value is <CODE>null</CODE> and allowsNull is <CODE>false</CODE>.
+   */ 
+  public final Tuple2i
+  getSingleTuple2iParamValue
+  (
+   String name, 
+   boolean allowsNull 
+  ) 
+    throws PipelineException
+  {
+    return getSingleTuple2iParamValue(name, null, allowsNull);
+  }
+
+  /** 
+   * Get the bounds checked value of the single valued Tuple2i parameter with 
+   * the given name. <P> 
+   * 
+   * @param name  
+   *   The name of the parameter. 
+   *
+   * @param range
+   *   The valid range values for the parameter. 
+   * 
+   * @param allowsNull
+   *   Whether this parameter can have a null value.
+   * 
+   * @return 
+   *   The action parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued parameter with the given name exists,
+   *   the value is <CODE>null</CODE> or is out-of-bounds.
+   */ 
+  public final Tuple2i
+  getSingleTuple2iParamValue
+  (
+   String name, 
+   Range<Tuple2i> range, 
+   boolean allowsNull
+  ) 
+    throws PipelineException
+  {
+    Tuple2i value = (Tuple2i) getSingleParamValue(name); 
+    if(value == null) {
+      if(!allowsNull) 
+        throw new PipelineException
+          ("The required parameter (" + name + ") was not set!"); 
+      return null;
+    }
+
+    if((range != null) && !range.isInside(value))
+      throw new PipelineException
+        ("The value (" + value + ") of parameter (" + name + ") was outside the valid " + 
+         "range of values: " + range + "!"); 
+
+    return value;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Get the value of the single valued non-null Tuple3i parameter with the given name.
+   * 
+   * @param name  
+   *   The name of the parameter. 
+   *
+   * @return 
+   *   The action parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued parameter with the given name exists or 
+   *   the value is <CODE>null</CODE>.
+   */ 
+  public final Tuple3i
+  getSingleTuple3iParamValue
+  (
+   String name   
+  ) 
+    throws PipelineException
+  {
+    return getSingleTuple3iParamValue(name, null, false);
+  }
+
+  /** 
+   * Get the value of the single valued Tuple3i parameter with the given name.
+   * 
+   * @param name  
+   *   The name of the parameter. 
+   *
+   * @param allowsNull
+   *   Whether this parameter can have a null value.
+   * 
+   * @return 
+   *   The action parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued parameter with the given name exists or 
+   *   the value is <CODE>null</CODE> and allowsNull is <CODE>false</CODE>.
+   */ 
+  public final Tuple3i
+  getSingleTuple3iParamValue
+  (
+   String name, 
+   boolean allowsNull   
+  ) 
+    throws PipelineException
+  {
+    return getSingleTuple3iParamValue(name, null, allowsNull);
+  }
+
+  /** 
+   * Get the bounds checked value of the single valued Tuple3i parameter with 
+   * the given name. <P> 
+   * 
+   * @param name  
+   *   The name of the parameter. 
+   *
+   * @param range
+   *   The valid range values for the parameter. 
+   * 
+   * @param allowsNull
+   *   Whether this parameter can have a null value.
+   * 
+   * @return 
+   *   The action parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued parameter with the given name exists,
+   *   the value is <CODE>null</CODE> or is out-of-bounds.
+   */ 
+  public final Tuple3i
+  getSingleTuple3iParamValue
+  (
+   String name, 
+   Range<Tuple3i> range, 
+   boolean allowsNull
+  ) 
+    throws PipelineException
+  {
+    Tuple3i value = (Tuple3i) getSingleParamValue(name); 
+    if(value == null) {
+      if(!allowsNull) 
+        throw new PipelineException
+          ("The required parameter (" + name + ") was not set!"); 
+      return null;
+    }
+
+    if((range != null) && !range.isInside(value))
+      throw new PipelineException
+        ("The value (" + value + ") of parameter (" + name + ") was outside the valid " + 
+         "range of values: " + range + "!"); 
+
+    return value;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
    * Get the value of the single valued non-null Double parameter with the given name.
    * 
    * @param name  
@@ -546,6 +742,300 @@ class CommonActionUtils
     if(value == null) 
       throw new PipelineException
         ("The required parameter (" + name + ") was not set!"); 
+
+    if((range != null) && !range.isInside(value))
+      throw new PipelineException
+        ("The value (" + value + ") of parameter (" + name + ") was outside the valid " + 
+         "range of values: " + range + "!"); 
+
+    return value;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Get the value of the single valued non-null Tuple2d parameter with the given name.
+   * 
+   * @param name  
+   *   The name of the parameter. 
+   *
+   * @return 
+   *   The action parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued parameter with the given name exists or 
+   *   the value is <CODE>null</CODE>.
+   */ 
+  public final Tuple2d
+  getSingleTuple2dParamValue
+  (
+   String name   
+  ) 
+    throws PipelineException
+  {
+    return getSingleTuple2dParamValue(name, null, false);
+  }
+
+  /** 
+   * Get the value of the single valued Tuple2d parameter with the given name.
+   * 
+   * @param name  
+   *   The name of the parameter. 
+   *
+   * @param allowsNull
+   *   Whether this parameter can have a null value.
+   * 
+   * @return 
+   *   The action parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued parameter with the given name exists or 
+   *   the value is <CODE>null</CODE> and allowsNull is <CODE>false</CODE>.
+   */ 
+  public final Tuple2d
+  getSingleTuple2dParamValue
+  (
+   String name, 
+   boolean allowsNull 
+  ) 
+    throws PipelineException
+  {
+    return getSingleTuple2dParamValue(name, null, allowsNull);
+  }
+
+  /** 
+   * Get the bounds checked value of the single valued Tuple2d parameter with 
+   * the given name. <P> 
+   * 
+   * @param name  
+   *   The name of the parameter. 
+   *
+   * @param range
+   *   The valid range values for the parameter. 
+   * 
+   * @param allowsNull
+   *   Whether this parameter can have a null value.
+   * 
+   * @return 
+   *   The action parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued parameter with the given name exists,
+   *   the value is <CODE>null</CODE> or is out-of-bounds.
+   */ 
+  public final Tuple2d
+  getSingleTuple2dParamValue
+  (
+   String name, 
+   Range<Tuple2d> range, 
+   boolean allowsNull
+  ) 
+    throws PipelineException
+  {
+    Tuple2d value = (Tuple2d) getSingleParamValue(name); 
+    if(value == null) {
+      if(!allowsNull) 
+        throw new PipelineException
+          ("The required parameter (" + name + ") was not set!"); 
+      return null;
+    }
+
+    if((range != null) && !range.isInside(value))
+      throw new PipelineException
+        ("The value (" + value + ") of parameter (" + name + ") was outside the valid " + 
+         "range of values: " + range + "!"); 
+
+    return value;
+  }
+ 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Get the value of the single valued non-null Tuple3d parameter with the given name.
+   * 
+   * @param name  
+   *   The name of the parameter. 
+   *
+   * @return 
+   *   The action parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued parameter with the given name exists or 
+   *   the value is <CODE>null</CODE>.
+   */ 
+  public final Tuple3d
+  getSingleTuple3dParamValue
+  (
+   String name   
+  ) 
+    throws PipelineException
+  {
+    return getSingleTuple3dParamValue(name, null, false);
+  }
+
+  /** 
+   * Get the value of the single valued Tuple3d parameter with the given name.
+   * 
+   * @param name  
+   *   The name of the parameter. 
+   *
+   * @param allowsNull
+   *   Whether this parameter can have a null value.
+   * 
+   * @return 
+   *   The action parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued parameter with the given name exists or 
+   *   the value is <CODE>null</CODE> and allowsNull is <CODE>false</CODE>.
+   */ 
+  public final Tuple3d
+  getSingleTuple3dParamValue
+  (
+   String name, 
+   boolean allowsNull 
+  ) 
+    throws PipelineException
+  {
+    return getSingleTuple3dParamValue(name, null, allowsNull);
+  }
+
+  /** 
+   * Get the bounds checked value of the single valued Tuple3d parameter with 
+   * the given name. <P> 
+   * 
+   * @param name  
+   *   The name of the parameter. 
+   *
+   * @param range
+   *   The valid range values for the parameter. 
+   * 
+   * @param allowsNull
+   *   Whether this parameter can have a null value.
+   * 
+   * @return 
+   *   The action parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued parameter with the given name exists,
+   *   the value is <CODE>null</CODE> or is out-of-bounds.
+   */ 
+  public final Tuple3d
+  getSingleTuple3dParamValue
+  (
+   String name, 
+   Range<Tuple3d> range, 
+   boolean allowsNull
+  ) 
+    throws PipelineException
+  {
+    Tuple3d value = (Tuple3d) getSingleParamValue(name); 
+    if(value == null) {
+      if(!allowsNull) 
+        throw new PipelineException
+          ("The required parameter (" + name + ") was not set!"); 
+      return null;
+    }
+
+    if((range != null) && !range.isInside(value))
+      throw new PipelineException
+        ("The value (" + value + ") of parameter (" + name + ") was outside the valid " + 
+         "range of values: " + range + "!"); 
+
+    return value;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Get the value of the single valued non-null Tuple4d parameter with the given name.
+   * 
+   * @param name  
+   *   The name of the parameter. 
+   *
+   * @return 
+   *   The action parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued parameter with the given name exists or 
+   *   the value is <CODE>null</CODE>.
+   */ 
+  public final Tuple4d
+  getSingleTuple4dParamValue
+  (
+   String name   
+  ) 
+    throws PipelineException
+  {
+    return getSingleTuple4dParamValue(name, null, false);
+  }
+
+  /** 
+   * Get the value of the single valued Tuple4d parameter with the given name.
+   * 
+   * @param name  
+   *   The name of the parameter. 
+   *
+   * @param allowsNull
+   *   Whether this parameter can have a null value.
+   * 
+   * @return 
+   *   The action parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued parameter with the given name exists or 
+   *   the value is <CODE>null</CODE> and allowsNull is <CODE>false</CODE>.
+   */ 
+  public final Tuple4d
+  getSingleTuple4dParamValue
+  (
+   String name, 
+   boolean allowsNull 
+  ) 
+    throws PipelineException
+  {
+    return getSingleTuple4dParamValue(name, null, allowsNull);
+  }
+
+  /** 
+   * Get the bounds checked value of the single valued Tuple4d parameter with 
+   * the given name. <P> 
+   * 
+   * @param name  
+   *   The name of the parameter. 
+   *
+   * @param range
+   *   The valid range values for the parameter. 
+   * 
+   * @param allowsNull
+   *   Whether this parameter can have a null value.
+   * 
+   * @return 
+   *   The action parameter value.
+   * 
+   * @throws PipelineException 
+   *   If no single valued parameter with the given name exists,
+   *   the value is <CODE>null</CODE> or is out-of-bounds.
+   */ 
+  public final Tuple4d
+  getSingleTuple4dParamValue
+  (
+   String name, 
+   Range<Tuple4d> range, 
+   boolean allowsNull
+  ) 
+    throws PipelineException
+  {
+    Tuple4d value = (Tuple4d) getSingleParamValue(name); 
+    if(value == null) {
+      if(!allowsNull) 
+        throw new PipelineException
+          ("The required parameter (" + name + ") was not set!"); 
+      return null;
+    }
 
     if((range != null) && !range.isInside(value))
       throw new PipelineException
