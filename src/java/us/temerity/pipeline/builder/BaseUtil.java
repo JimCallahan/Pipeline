@@ -1,4 +1,4 @@
-// $Id: BaseUtil.java,v 1.26 2008/02/05 08:37:29 jesse Exp $
+// $Id: BaseUtil.java,v 1.27 2008/02/05 09:36:28 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -1928,7 +1928,20 @@ class BaseUtil
       String paramName
     )
     {
-      this(paramName, null);
+      this(paramName, new LinkedList<String>());
+    }
+    
+    /**
+     * Constructs a {@link ParamMapping} which has just a name and a single key. 
+     */
+    public
+    ParamMapping
+    (
+      String paramName,
+      String firstKey
+    )
+    {
+      this(paramName, ComplexParam.listFromObject(firstKey));
     }
     
     /**
@@ -2058,7 +2071,7 @@ class BaseUtil
     private String pParamName;
     private LinkedList<String> pKeys;
     
-    public static final ParamMapping NullMapping = new ParamMapping("NULL", null);
+    public static final ParamMapping NullMapping = new ParamMapping("NULL");
   }
   
   /**

@@ -28,6 +28,10 @@ public abstract
 class BaseNames
   extends BaseUtil
 {
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O N S T R U C T O R                                                                */
+  /*----------------------------------------------------------------------------------------*/
+  
   protected 
   BaseNames
   (
@@ -42,10 +46,21 @@ class BaseNames
     pGenerated = false;
   }
   
+  /**
+   * Evaluate any parameters that the Namer has and then generate the names that are going to
+   * be returned by its access methods.
+   * 
+   * @throws PipelineException If any of the parameter values that have been set are 
+   * incorrect or if names cannot be generated.
+   */
   public abstract void 
   generateNames() 
     throws PipelineException;
   
+  /**
+   * Called during Builder execution, this method is responsible for calling
+   * {@link #generateNames()} and for setting the generated flag to true.
+   */
   public final void
   run()
     throws PipelineException
@@ -55,8 +70,8 @@ class BaseNames
   }
   
   /**
-   * Has generateNames() been run on this builder yet?
-s   */
+   * Has generateNames() been run on this namer yet?
+   */
   public final boolean
   isGenerated()
   {
@@ -83,6 +98,12 @@ s   */
   {
     return 1;
   }
+
   
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*  I N T E R N A L S                                                                     */
+  /*----------------------------------------------------------------------------------------*/
+
   private boolean pGenerated;
 }

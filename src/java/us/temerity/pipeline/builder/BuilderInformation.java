@@ -1,4 +1,4 @@
-// $Id: BuilderInformation.java,v 1.13 2008/02/05 08:37:29 jesse Exp $
+// $Id: BuilderInformation.java,v 1.14 2008/02/05 09:36:28 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -675,12 +675,12 @@ class BuilderInformation
     }
     
     /**
-     * Adds a node name to the list of nodes created duing the session.
+     * Adds a node name to the list of nodes created during the session.
      * <P>
      * The method will return a boolean based on whether the node already existed in the
      * current list. A return value of <code>false</code> indicates that the name was not
      * added to the list since it already existed then. A return value of <code>true</code>
-     * indicates that the add was succesful. A PipelineException is thrown if the
+     * indicates that the add was successful.  A PipelineException is thrown if the
      * <code>initializeAddedNodes</code> method was not called before calling this method.
      * 
      * @param name
