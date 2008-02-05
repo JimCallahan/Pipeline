@@ -16,7 +16,7 @@ public class Test {
     MasterMgrClient client = new MasterMgrClient();
     QueueMgrClient queue = new QueueMgrClient();
     UtilContext util = new UtilContext("jesse_clemens", "default", "test3");
-    StudioDefinitions defs = new StudioDefinitions(client, queue, util);
+    StudioDefinitions defs = new StudioDefinitions(client, queue);
     DoubleMap<String, String, ArrayList<String>> toReturn = defs.getAllProjectsAllNamesForParam();
     for (String p : toReturn.keySet()) {
       System.out.println("Project: " +  p);

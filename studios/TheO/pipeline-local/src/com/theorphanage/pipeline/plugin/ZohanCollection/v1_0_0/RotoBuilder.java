@@ -39,8 +39,8 @@ class RotoBuilder
     QueueMgrClient qclient,
     BuilderInformation builderInformation, 
     StudioDefinitions defs,
-    ProjectNames projectNames,
-    ShotNames shotNames
+    ProjectNames projectNamer,
+    ShotNames shotNamer
   )
     throws PipelineException
   {
@@ -51,8 +51,8 @@ class RotoBuilder
         builderInformation);
     
     pDefs = defs;
-    pProjectNames = projectNames;
-    pShotNames = shotNames;
+    pProjectNamer = projectNamer;
+    pShotNamer = shotNamer;
 
     {
       UtilityParam param = 
@@ -60,7 +60,7 @@ class RotoBuilder
             aLocation, 
             "The Project, Sequence, and Shot to put the Roto in.",
             aProjectName,
-            "Select the name of the project or [[NEW]] to create a new project",
+            "Select the name of the project",
             aSequenceName,
             "Select the name of the sequence or [[NEW]] to create a new sequence",
             aShotName,
@@ -78,11 +78,11 @@ class RotoBuilder
     addCheckinWhenDoneParam();
     addDoAnnotationParam();
     
-    if (!projectNames.isGenerated()) {
-      addSubBuilder(projectNames);
+    if (!projectNamer.isGenerated()) {
+      addSubBuilder(projectNamer);
       ParamMapping mapping = 
         new ParamMapping(aLocation, ComplexParam.listFromObject(aProjectName));
-      addMappedParam(projectNames.getName(), new ParamMapping(ProjectNames.aProjectName), mapping);
+      addMappedParam(projectNamer.getName(), new ParamMapping(ProjectNames.aProjectName), mapping);
     }
     
     addSetupPass(new FirstInfoPass());
@@ -142,8 +142,8 @@ class RotoBuilder
 
   
   private StudioDefinitions pDefs;
-  private ShotNames pShotNames;
-  private ProjectNames pProjectNames;
+  private ShotNames pShotNamer;
+  private ProjectNames pProjectNamer;
   private ArrayList<String> pPlatePaths;
   
   protected
@@ -192,24 +192,24 @@ class RotoBuilder
     initPhase() 
       throws PipelineException 
     {
-      if (pShotNames == null) {
-        pShotNames = new ShotNames(pClient, pQueue, pDefs);
+      if (pShotNamer == null) {
+        pShotNamer = new ShotNames(pClient, pQueue, pDefs);
       }
       
-      if (!pShotNames.isGenerated()) {
-        addSubBuilder(pShotNames);
+      if (!pShotNamer.isGenerated()) {
+        addSubBuilder(pShotNamer);
 
         if (pShotName.equals(StudioDefinitions.aNEW))  {
           ParamMapping mapping = new ParamMapping(aLocation, ComplexParam.listFromObject(aShotName));
-          addMappedParam(pShotNames.getName(), new ParamMapping(ShotNames.aShotName), mapping);
+          addMappedParam(pShotNamer.getName(), new ParamMapping(ShotNames.aShotName), mapping);
         }
         if (pSequenceName.equals(StudioDefinitions.aNEW))  {
           ParamMapping mapping = new ParamMapping(aLocation, ComplexParam.listFromObject(aSequenceName));
-          addMappedParam(pShotNames.getName(), new ParamMapping(ShotNames.aSequenceName), mapping);
+          addMappedParam(pShotNamer.getName(), new ParamMapping(ShotNames.aSequenceName), mapping);
         }
         if (pProjectName.equals(StudioDefinitions.aNEW))  {
           ParamMapping mapping = new ParamMapping(aLocation, ComplexParam.listFromObject(aProjectName));
-          addMappedParam(pShotNames.getName(), new ParamMapping(ShotNames.aProjectName), mapping);
+          addMappedParam(pShotNamer.getName(), new ParamMapping(ShotNames.aProjectName), mapping);
         }
       }
     }
@@ -238,7 +238,7 @@ class RotoBuilder
     initPhase()
       throws PipelineException
     {
-      TreeSet<String> plates = new TreeSet<String>(findChildNodeNames(pShotNames.getPlatePath()));
+      TreeSet<String> plates = new TreeSet<String>(findChildNodeNames(pShotNamer.getPlatePath()));
       {
         ListUtilityParam param =
           new ListUtilityParam(aPlates, "A list of plates to potentially include in the roto", null, plates, null, null);
@@ -267,7 +267,7 @@ class RotoBuilder
     {
       ComparableTreeSet<String> plates = (ComparableTreeSet<String>) getParamValue(aPlates);
       pPlatePaths = new ArrayList<String>();
-      Path plateStart = pShotNames.getPlatePath();
+      Path plateStart = pShotNamer.getPlatePath();
       for (String plate : plates) {
         pPlatePaths.add(new Path(plateStart, plate).toString());
       }

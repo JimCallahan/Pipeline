@@ -136,10 +136,6 @@ class StudioDefinitions
       shots.add(aNEW);
       toReturn.put(project, aNEW, shots);
     }
-    ArrayList<String> shots = new ArrayList<String>();
-    shots.add(aNEW);
-    toReturn.put(aNEW, aNEW, shots);
-    
     return toReturn;
   }
   
