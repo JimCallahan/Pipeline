@@ -186,22 +186,19 @@ class RotoBuilder
         addSubBuilder(pShotNamer);
 
         if (!pShotName.equals(StudioDefinitions.aNEW))  {
-          ParamMapping mapping = 
-            new ParamMapping(aLocation, ComplexParam.listFromObject(aShotName));
           addMappedParam(pShotNamer.getName(), 
-                         new ParamMapping(ShotNames.aShotName), mapping);
+                         new ParamMapping(ShotNames.aShotName),
+                         new ParamMapping(aLocation, ComplexParam.listFromObject(aShotName)));
         }
         if (!pSequenceName.equals(StudioDefinitions.aNEW))  {
-          ParamMapping mapping = 
-            new ParamMapping(aLocation, ComplexParam.listFromObject(aSequenceName));
           addMappedParam(pShotNamer.getName(), 
-                         new ParamMapping(ShotNames.aSequenceName), mapping);
+                         new ParamMapping(ShotNames.aSequenceName),
+                         new ParamMapping(aLocation, ComplexParam.listFromObject(aSequenceName)));
         }
         if (!pProjectName.equals(StudioDefinitions.aNEW))  {
-          ParamMapping mapping = 
-            new ParamMapping(aLocation, ComplexParam.listFromObject(aProjectName));
           addMappedParam(pShotNamer.getName(), 
-                         new ParamMapping(ShotNames.aProjectName), mapping);
+                         new ParamMapping(ShotNames.aProjectName),
+                         new ParamMapping(aLocation, ComplexParam.listFromObject(aProjectName)));
         }
       }
     }
