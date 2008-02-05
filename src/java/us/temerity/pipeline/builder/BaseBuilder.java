@@ -1,4 +1,4 @@
-// $Id: BaseBuilder.java,v 1.36 2008/02/05 07:15:04 jesse Exp $
+// $Id: BaseBuilder.java,v 1.37 2008/02/05 08:10:38 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -54,13 +54,16 @@ import us.temerity.pipeline.ui.core.UIMaster;
  * BaseBuilder also contains utility methods for creating two other parameters that a majority
  * of Builders may want to implement.
  * <ul>
+ * 
  * <li> CheckinWhenDone - This parameter can be used to specify whether the Builder should
  * check in nodes it has created when it finishes execution. By default this parameter's value
  * is used in the {@link #performCheckIn()} method.
+ * 
  * <li> SelectionKeys - This parameter is a list of all the Selection Keys that exist in the
  * Pipeline install, allowing the user of the Builder to specify a subset of them for some
  * purpose.  Usually this parameter is used to specify a list of keys that all nodes being
  * built will contain.
+ * 
  * </ul>
  * <p>
  * <h2>Terminology used within these java docs.</h2>
@@ -69,8 +72,8 @@ import us.temerity.pipeline.ui.core.UIMaster;
  * <dd>Refers to any instance of this class. Usually preceded with 'parent' when being used
  * with Sub-Builder to make the relation clear. </dd>
  * <dt>Sub-Builder</dt>
- * <dd>Refers to any instance of {@link BaseUtil} that is being used as a child of the
- * current Builder.</dd>
+ *   <dd>Refers to any instance of {@link BaseUtil} that is being used as a child of the
+ *       current Builder.</dd>
  * <dt>child Builder</dt>
  * <dd>Refers to any instance of this class that is being used as a child of the current
  * builder. The child Builders of a Builder are a subset of the Sub-Builders.</dd>
@@ -1765,6 +1768,16 @@ class BaseBuilder
   /*  P A S S   S U B C L A S S E S                                                         */
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * A pass which is responsible for gathering input from the user, checking that the input
+   * is correct and makes sense, and creating any new Sub-Builders which may need to be run
+   * as a result of the input.
+   * <p>
+   * Each Setup Pass is broken down into three phases.  The distinction between these three
+   * phases is purely cosmetic, as there is no difference in how any of them are invoked.  It
+   * exists to make sub-classing easy, allowing specific sorts of functionality to be
+   * overriden without having to change other parts. 
+   */
   public 
   class SetupPass
     extends Described
@@ -1778,18 +1791,48 @@ class BaseBuilder
       super(name, desc);
     }
     
+    /**
+     * Phase in which parameter values should be extracted from parameters and checked
+     * for consistency and applicability.
+     * <p>
+     * This Phase is when any class variables that need to be set from Parameter values
+     * should be set.  It is also a good time to start constructing variable lists of nodes
+     * which will be needed by the builder, based upon which parameters are set.  These lists
+     * can be used in the {@link ConstructPass#nodesDependedOn() nodesDependedOn()} method
+     * of later ConstructPasses.
+     * 
+     * @throws PipelineException  If any of the parameter values do not make sense or 
+     * result in conflicting circumstances.
+     */
     @SuppressWarnings("unused")
     public void 
     validatePhase() 
       throws PipelineException
     {}
     
+    /**
+     * Phase in which outside sources of information can be consulted to ascertain information.
+     * <p>
+     * Examples might include talking to an SQL database or opening up a Maya scene to extract
+     * information about which characters are in a shot or which characters should be in a shot
+     * as compared to which characters actually are in a shot.
+     * @throws PipelineException  If there is an error involved while invoking the outside
+     * source of information.
+     */
     @SuppressWarnings("unused")
     public void 
     gatherPhase() 
       throws PipelineException
     {}
     
+    /**
+     * Phase in which new Sub-Builders should be created and added to the current Builder.
+     * <p>
+     * The logic on whether or not a Sub-Builder should be added is probably properly done
+     * in either the validate or the gather Phase.  The init phase should be solely devoted
+     * to creating the new instances.
+     * @throws PipelineException
+     */
     @SuppressWarnings("unused")
     public void
     initPhase()
