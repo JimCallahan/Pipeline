@@ -1,6 +1,9 @@
 #--- RULES -----------------------------------------------------------------------------------
 
 %: 
+	$(MAKE) -f Makefile.local -C SubmitTaskAnnotation $@ 
+	$(MAKE) -f Makefile.local -C ApproveTaskAnnotation $@ 
+	$(MAKE) -f Makefile.local -C CommonTaskAnnotation $@ 
 	$(MAKE) -f Makefile.local -C LensInfoAction $@ 
 	$(MAKE) -f Makefile.local -C PFTrackBuildAction $@ 
 	$(MAKE) -f Makefile.local -C PFTrackEditor $@

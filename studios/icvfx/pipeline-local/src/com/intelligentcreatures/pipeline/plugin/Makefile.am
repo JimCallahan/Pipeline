@@ -8,6 +8,9 @@ makefile_DATA = \
 
 
 SUBDIRS = \
+  SubmitTaskAnnotation \
+  ApproveTaskAnnotation \
+  CommonTaskAnnotation \
   LensInfoAction \
   PFTrackBuildAction \
   PFTrackEditor \
