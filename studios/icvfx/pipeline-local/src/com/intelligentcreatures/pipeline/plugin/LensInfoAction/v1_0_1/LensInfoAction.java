@@ -1,5 +1,5 @@
 
-package com.intelligentcreatures.pipeline.plugin.LensInfoAction.v1_0_0;
+package com.intelligentcreatures.pipeline.plugin.LensInfoAction.v1_0_1;
 
 import us.temerity.pipeline.*; 
 import us.temerity.pipeline.plugin.*; 
@@ -187,11 +187,6 @@ extends CommonActionUtils
 
     addSupport(OsType.MacOS);
     addSupport(OsType.Windows);
-
-    ////////////////////////////////////////////
-    // U N D E R   D E V E L O P M E N T
-    ///////////////////////////////////////////
-    underDevelopment();
   }
 
 
@@ -264,7 +259,7 @@ extends CommonActionUtils
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  public static final long serialVersionUID = 3919928339662446844L;
+  public static final long serialVersionUID = -8536967306812150859L;
 
   public static final String aLens 	 = "Lens";
   public static final String aFocus 	 = "Focus";
@@ -282,6 +277,5 @@ extends CommonActionUtils
   public static final String aZoom 	 = "Zoom";
   public static final String aRamp  	 = "Ramp";
 
-  public static final String aRenderResolution = "RenderResolution";
 }
 
