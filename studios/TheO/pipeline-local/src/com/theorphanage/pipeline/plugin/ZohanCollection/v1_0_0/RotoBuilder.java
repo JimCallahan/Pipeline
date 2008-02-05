@@ -132,20 +132,6 @@ class RotoBuilder
     return getCheckInList();
   }
   
-  private static final long serialVersionUID = 6680062424812172450L;
-  
-  public final static String aLocation = "Location";
-  public final static String aProjectName = "ProjectName";
-  public final static String aSequenceName = "SequenceName";
-  public final static String aShotName = "ShotName";
-  public final static String aPlates  = "Plates";
-
-  
-  private StudioDefinitions pDefs;
-  private ShotNames pShotNamer;
-  private ProjectNames pProjectNamer;
-  private ArrayList<String> pPlatePaths;
-  
   protected
   class FirstInfoPass
     extends SetupPass
@@ -199,17 +185,23 @@ class RotoBuilder
       if (!pShotNamer.isGenerated()) {
         addSubBuilder(pShotNamer);
 
-        if (pShotName.equals(StudioDefinitions.aNEW))  {
-          ParamMapping mapping = new ParamMapping(aLocation, ComplexParam.listFromObject(aShotName));
-          addMappedParam(pShotNamer.getName(), new ParamMapping(ShotNames.aShotName), mapping);
+        if (!pShotName.equals(StudioDefinitions.aNEW))  {
+          ParamMapping mapping = 
+            new ParamMapping(aLocation, ComplexParam.listFromObject(aShotName));
+          addMappedParam(pShotNamer.getName(), 
+                         new ParamMapping(ShotNames.aShotName), mapping);
         }
-        if (pSequenceName.equals(StudioDefinitions.aNEW))  {
-          ParamMapping mapping = new ParamMapping(aLocation, ComplexParam.listFromObject(aSequenceName));
-          addMappedParam(pShotNamer.getName(), new ParamMapping(ShotNames.aSequenceName), mapping);
+        if (!pSequenceName.equals(StudioDefinitions.aNEW))  {
+          ParamMapping mapping = 
+            new ParamMapping(aLocation, ComplexParam.listFromObject(aSequenceName));
+          addMappedParam(pShotNamer.getName(), 
+                         new ParamMapping(ShotNames.aSequenceName), mapping);
         }
-        if (pProjectName.equals(StudioDefinitions.aNEW))  {
-          ParamMapping mapping = new ParamMapping(aLocation, ComplexParam.listFromObject(aProjectName));
-          addMappedParam(pShotNamer.getName(), new ParamMapping(ShotNames.aProjectName), mapping);
+        if (!pProjectName.equals(StudioDefinitions.aNEW))  {
+          ParamMapping mapping = 
+            new ParamMapping(aLocation, ComplexParam.listFromObject(aProjectName));
+          addMappedParam(pShotNamer.getName(), 
+                         new ParamMapping(ShotNames.aProjectName), mapping);
         }
       }
     }
@@ -295,4 +287,18 @@ class RotoBuilder
     
   }
 
+  private static final long serialVersionUID = 6680062424812172450L;
+  
+  public final static String aLocation = "Location";
+  public final static String aProjectName = "ProjectName";
+  public final static String aSequenceName = "SequenceName";
+  public final static String aShotName = "ShotName";
+  public final static String aPlates  = "Plates";
+
+  
+  private StudioDefinitions pDefs;
+  private ShotNames pShotNamer;
+  private ProjectNames pProjectNamer;
+  private ArrayList<String> pPlatePaths;
+  
 }
