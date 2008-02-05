@@ -17,7 +17,8 @@ public
 class RotoBuilder 
   extends TaskBuilder 
 {
-  public RotoBuilder
+  public 
+  RotoBuilder
   (
     MasterMgrClient mclient,
     QueueMgrClient qclient,
@@ -26,19 +27,20 @@ class RotoBuilder
     throws PipelineException
   {
     this(mclient, qclient, info, 
-        new StudioDefinitions(mclient, qclient, UtilContext.getDefaultUtilContext(mclient)),
-        null,
-        new ProjectNames(mclient, qclient));
+        new StudioDefinitions(mclient, qclient),
+        new ProjectNames(mclient, qclient),
+        null);
   }
   
-  public RotoBuilder
+  public 
+  RotoBuilder
   (
     MasterMgrClient mclient,
     QueueMgrClient qclient,
     BuilderInformation builderInformation, 
     StudioDefinitions defs,
-    BaseNames assetNames,
-    ProjectNames projectNames
+    ProjectNames projectNames,
+    ShotNames shotNames
   )
     throws PipelineException
   {
@@ -49,9 +51,9 @@ class RotoBuilder
         builderInformation);
     
     pDefs = defs;
+    pProjectNames = projectNames;
+    pShotNames = shotNames;
 
-    DoubleMap<String, String, ArrayList<String>> allNames = pDefs.getAllProjectsAllNamesForParam();
-    
     {
       UtilityParam param = 
         new DoubleMapUtilityParam(
@@ -60,14 +62,16 @@ class RotoBuilder
             aProjectName,
             "Select the name of the project or [[NEW]] to create a new project",
             aSequenceName,
-            "Select the name of the sequence or [[NEW]] to create a new project",
+            "Select the name of the sequence or [[NEW]] to create a new sequence",
             aShotName,
-            "Select the name of the shot or [[NEW]] to create a new project",
-            allNames);
+            "Select the name of the shot or [[NEW]] to create a new shot",
+            pDefs.getAllProjectsAllNamesForParam());
       addParam(param);
     }
+    
     {
-      UtilityParam param = new PlaceholderUtilityParam(aPlates, "Which existing plates should be used.");
+      UtilityParam param = 
+        new PlaceholderUtilityParam(aPlates, "Which existing plates should be used.");
       addParam(param);
     }
     
@@ -76,10 +80,10 @@ class RotoBuilder
     
     if (!projectNames.isGenerated()) {
       addSubBuilder(projectNames);
-      ParamMapping mapping = new ParamMapping(aLocation, ComplexParam.listFromObject(aProjectName));
-      addMappedParam(projectNames.getName(), new ParamMapping(ShotNames.aProjectName), mapping);
+      ParamMapping mapping = 
+        new ParamMapping(aLocation, ComplexParam.listFromObject(aProjectName));
+      addMappedParam(projectNames.getName(), new ParamMapping(ProjectNames.aProjectName), mapping);
     }
-    pProjectNames = projectNames;
     
     addSetupPass(new FirstInfoPass());
     addSetupPass(new SecondInfoPass());
@@ -162,17 +166,20 @@ class RotoBuilder
       pDefs.setContext(pContext);
       
       {
-        ParamMapping mapping = new ParamMapping(aLocation, ComplexParam.listFromObject(aProjectName));
+        ParamMapping mapping = 
+          new ParamMapping(aLocation, ComplexParam.listFromObject(aProjectName));
         pProjectName = getStringParamValue(mapping);
       }
       
       {
-        ParamMapping mapping = new ParamMapping(aLocation, ComplexParam.listFromObject(aSequenceName));
+        ParamMapping mapping = 
+          new ParamMapping(aLocation, ComplexParam.listFromObject(aSequenceName));
         pSequenceName = getStringParamValue(mapping);
       }
       
       {
-        ParamMapping mapping = new ParamMapping(aLocation, ComplexParam.listFromObject(aShotName));
+        ParamMapping mapping = 
+          new ParamMapping(aLocation, ComplexParam.listFromObject(aShotName));
         pShotName = getStringParamValue(mapping);
       }
       
@@ -185,21 +192,25 @@ class RotoBuilder
     initPhase() 
       throws PipelineException 
     {
-      ShotNames names = new ShotNames(pClient, pQueue, pDefs);
-      addSubBuilder(names);
-      pShotNames = names;
+      if (pShotNames == null) {
+        pShotNames = new ShotNames(pClient, pQueue, pDefs);
+      }
       
-      if (pShotName.equals(StudioDefinitions.aNEW))  {
-        ParamMapping mapping = new ParamMapping(aLocation, ComplexParam.listFromObject(aShotName));
-        addMappedParam(pShotNames.getName(), new ParamMapping(ShotNames.aShotName), mapping);
-      }
-      if (pSequenceName.equals(StudioDefinitions.aNEW))  {
-        ParamMapping mapping = new ParamMapping(aLocation, ComplexParam.listFromObject(aSequenceName));
-        addMappedParam(pShotNames.getName(), new ParamMapping(ShotNames.aSequenceName), mapping);
-      }
-      if (pProjectName.equals(StudioDefinitions.aNEW))  {
-        ParamMapping mapping = new ParamMapping(aLocation, ComplexParam.listFromObject(aProjectName));
-        addMappedParam(pShotNames.getName(), new ParamMapping(ShotNames.aProjectName), mapping);
+      if (!pShotNames.isGenerated()) {
+        addSubBuilder(pShotNames);
+
+        if (pShotName.equals(StudioDefinitions.aNEW))  {
+          ParamMapping mapping = new ParamMapping(aLocation, ComplexParam.listFromObject(aShotName));
+          addMappedParam(pShotNames.getName(), new ParamMapping(ShotNames.aShotName), mapping);
+        }
+        if (pSequenceName.equals(StudioDefinitions.aNEW))  {
+          ParamMapping mapping = new ParamMapping(aLocation, ComplexParam.listFromObject(aSequenceName));
+          addMappedParam(pShotNames.getName(), new ParamMapping(ShotNames.aSequenceName), mapping);
+        }
+        if (pProjectName.equals(StudioDefinitions.aNEW))  {
+          ParamMapping mapping = new ParamMapping(aLocation, ComplexParam.listFromObject(aProjectName));
+          addMappedParam(pShotNames.getName(), new ParamMapping(ShotNames.aProjectName), mapping);
+        }
       }
     }
     
@@ -262,6 +273,26 @@ class RotoBuilder
       }
     }
     private static final long serialVersionUID = 6265724310033372952L;
+  }
+  
+  protected
+  class FirstConstructPass
+    extends ConstructPass
+  {
+    public 
+    FirstConstructPass()
+    {
+      super("FirstConstructPass",
+            "Makes the RotoBuilder nodes.");
+    }
+    
+    @Override
+    public TreeSet<String> 
+    nodesDependedOn()
+    {
+      return new TreeSet<String>(pPlatePaths);
+    }
+    
   }
 
 }

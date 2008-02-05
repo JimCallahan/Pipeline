@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.BaseUtil;
-import us.temerity.pipeline.builder.UtilContext;
 
 public 
 class StudioDefinitions 
@@ -15,16 +14,14 @@ class StudioDefinitions
   StudioDefinitions
   (
     MasterMgrClient mclient,
-    QueueMgrClient qclient,
-    UtilContext context
+    QueueMgrClient qclient
   ) 
     throws PipelineException 
   {
     super("StudioDefinitions",
           "Provides basic information about where things are located in the default Orphanage Pipeline setup.",
           mclient,
-          qclient,
-          context);
+          qclient);
   }
   
   /**
@@ -117,11 +114,7 @@ class StudioDefinitions
     DoubleMap<String, String, ArrayList<String>> toReturn = new DoubleMap<String, String, ArrayList<String>>();
     for (String project : getProjectList()) {
       for (String seq : getSequenceList(project)) {
-        ArrayList<String> shots = new ArrayList<String>();  
-        for (String shot : getShotList(project, seq)) {
-          shots.add(shot);
-        }
-        toReturn.put(project, seq, shots);
+        toReturn.put(project, seq, getShotList(project, seq));
       }
     }
     return toReturn;
@@ -135,18 +128,16 @@ class StudioDefinitions
     for (String project : getProjectList()) {
       for (String seq : getSequenceList(project)) {
         ArrayList<String> shots = new ArrayList<String>();
-        for (String shot : getShotList(project, seq)) {
-          shots.add(shot);
-        }
-        shots.add(0, aNEW);
+        shots.add(aNEW);
+        shots.addAll(getShotList(project, seq));
         toReturn.put(project, seq, shots);
       }
       ArrayList<String> shots = new ArrayList<String>();
-      shots.add(0, aNEW);
+      shots.add(aNEW);
       toReturn.put(project, aNEW, shots);
     }
     ArrayList<String> shots = new ArrayList<String>();
-    shots.add(0, aNEW);
+    shots.add(aNEW);
     toReturn.put(aNEW, aNEW, shots);
     
     return toReturn;
@@ -163,7 +154,8 @@ class StudioDefinitions
   
   
   @Override
-  public int getCurrentPass()
+  public int 
+  getCurrentPass()
   {
     throw new IllegalArgumentException("Don't do this shit");
   }

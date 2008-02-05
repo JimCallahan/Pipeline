@@ -1,12 +1,8 @@
 package com.theorphanage.pipeline.plugin.ZohanCollection.v1_0_0;
 
-import java.util.ArrayList;
-
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.BaseNames;
 import us.temerity.pipeline.builder.UtilContext;
-import us.temerity.pipeline.builder.BaseUtil.ParamMapping;
-import us.temerity.pipeline.plugin.SubmitNodeAnnotation.v2_3_2.SubmitNodeAnnotation;
 
 public 
 class ShotNames 
@@ -16,7 +12,8 @@ class ShotNames
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
   
-  public ShotNames
+  public 
+  ShotNames
   (
     MasterMgrClient mclient,
     QueueMgrClient qclient,
@@ -59,10 +56,10 @@ class ShotNames
   }
 
   
+  
   /*----------------------------------------------------------------------------------------*/
   /*   A C T I O N                                                                          */
   /*----------------------------------------------------------------------------------------*/
-  
   
   @Override
   public void 
