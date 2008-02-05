@@ -1,4 +1,4 @@
-// $Id: PlaceholderUtilityParam.java,v 1.2 2007/08/24 17:24:01 jesse Exp $
+// $Id: PlaceholderUtilityParam.java,v 1.3 2008/02/05 07:17:43 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -9,11 +9,10 @@ import us.temerity.pipeline.glue.GlueDecoder;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * An plugin parameter that is meant to be replaced.
- * 
+ * A plugin parameter that is meant to be replaced.
  * <p>
  * Trying to set a value for this parameter or trying to display it in the GUI will result in
- * an Exception being thrown. It exists to allow layouts to be constructed with all the
+ * an exception being thrown. It exists to allow layouts to be constructed with all the
  * correct parameters in them when all parameter values may not be known at the beginning
  * of the builder run.
  * <P>

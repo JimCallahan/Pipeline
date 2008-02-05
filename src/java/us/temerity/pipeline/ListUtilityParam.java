@@ -125,6 +125,31 @@ class ListUtilityParam
   }
   
   public static ListUtilityParam
+  createHardwareKeyParam
+  (
+    String name,
+    String desc,
+    Set<String> value,
+    QueueMgrClient qclient
+  )
+    throws PipelineException
+  {
+    ArrayList<HardwareKey> keys = qclient.getHardwareKeys();
+    
+    TreeSet<String> values = new TreeSet<String>();
+    TreeMap<String, String> tooltips = new TreeMap<String, String>();
+    
+    if (value == null)
+      value = new TreeSet<String>();
+    
+    for (HardwareKey key : keys) {
+       values.add(key.getName());
+       tooltips.put(key.getName(), key.getDescription());
+    }
+    return new ListUtilityParam(name, desc, value, values, null, tooltips);
+  }
+  
+  public static ListUtilityParam
   createLicenseKeyParam
   (
     String name,
