@@ -1,4 +1,4 @@
-// $Id: BaseBuilder.java,v 1.35 2008/01/30 06:35:07 jim Exp $
+// $Id: BaseBuilder.java,v 1.36 2008/02/05 07:15:04 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -87,6 +87,25 @@ import us.temerity.pipeline.ui.core.UIMaster;
  * <dt>Second Loop
  * <dd>The period of Builder execution during with all the ConstructPasses are run.
  * </dl>
+ * <h2>Requirements</h2>
+ * <p>
+ * Builder operate under the following conditions.
+ * <ul>
+ * <li> Any Builder which is going to be run as a standalone builder (i.e., it can be launched
+ * by itself) needs to have a constructor which matches the following form
+ * <code>Constructor({@link MasterMgrClient}, {@link QueueMgrClient}, 
+ * {@link BuilderInformation})</code>.  If such a constructor does not exist, then any attempts
+ * to invoke the Builder from the command-line or from inside plui will fail.  In addition,
+ * a Builder may have as many other constructors in whatever form, for when it is used as
+ * a Child Builder.  A Builder which is only intended to be a Child Builder (see 
+ * {@link ModelPiecesBuilder} for an example) does not have the same restrictions on its 
+ * constructor.  A majority of the Temerity builder define at least one additional 
+ * Constructor which take all the Namer classes that the Builder uses.  This makes it easy
+ * to subclass the Builder and pass in different implementations of the Namer classes and 
+ * makes it easy for parent Builder to have their own Namer classes which are passed to their
+ * children.  In cases where this is true, it is very important to make use of the 
+ * {@link BaseNames#isGenerated() isGenerated} method of Namers to ensure that they are
+ * not displayed more than once.
  */
 public abstract 
 class BaseBuilder
@@ -161,6 +180,15 @@ class BaseBuilder
     super.setLayout(layout);
   }
   
+  /**
+   * Adds a Selection Key parameter to the current Builder.
+   * <p>
+   * This parameter is a list of all the Selection Keys that exist in the Pipeline install,
+   * allowing the user of the Builder to specify a subset of them for some purpose. Usually
+   * this parameter is used to specify a list of keys that all nodes being built will contain.
+   * 
+   * @throws PipelineException
+   */
   protected final void
   addSelectionKeyParam()
     throws PipelineException
@@ -174,6 +202,15 @@ class BaseBuilder
     addParam(param);
   }
   
+  /**
+   * Adds a Check-In when done parameter to the current Builder.
+   * <p>
+   * This parameter can be used to specify whether the Builder should check in nodes it has
+   * created when it finishes execution. By default this parameter's value is used in the
+   * {@link #performCheckIn()} method.
+   * 
+   * @throws PipelineException
+   */
   protected final void
   addCheckinWhenDoneParam()
   {
@@ -1792,6 +1829,24 @@ class BaseBuilder
     private static final long serialVersionUID = -2836639845295302403L;
   }
   
+  /**
+   * A pass which is responsible for building and/or modifying a group of nodes.
+   * <p>
+   * Construct passes are run after all the {@link SetupPass SetupPasses} have been run.
+   * <p>
+   * The execution path of a Construct Pass is as follows.
+   * <ol>
+   * <li> Check for all the nodes that the Pass depends on (as set by the
+   * {@link ConstructPass#nodesDependedOn() nodesDependedOn} method) and make sure they are
+   * all in the current working area. Abort Builder execution if any of those nodes are
+   * missing.
+   * <li> Queue all the nodes that are specified by the
+   * {@link ConstructPass#preBuildPhase() preBuildPhase} method.  Wait for these jobs to
+   * finish before continuing.  If all the jobs do not successfully complete, terminated
+   * Builder execution.
+   * <li> Run the build method to construct/modify nodes.
+   * 
+   */
   public 
   class ConstructPass
     extends Described
@@ -1820,6 +1875,27 @@ class BaseBuilder
       throws PipelineException
     {}
     
+    /**
+     * A list of nodes which have to exist before this Pass is run.
+     * <p>
+     * The Builder will search for each of these nodes and makes sure that it exists in the
+     * current working area. If the nodes does not exist in the current area, then it will
+     * check out the node. If the node does exist, then it will not check it out, unless the
+     * {@link ActionOnExistence} is set to {@link ActionOnExistence#CheckOut CheckOut}. If
+     * the node does not exist or cannot be checked-out (so if it is Pending in a different
+     * working area) then a {@link PipelineException} will get thrown and builder execution
+     * will terminate.
+     * <p>
+     * It is important to note that the Builder does not care if a needed node is in a
+     * Finished or Identical state. The most common use of this method should be for nodes
+     * which have been created by other processes, either manual or other builders. Obviously
+     * a Builder should be able to rely on its own internal consistency to make sure that all
+     * of the nodes it needs that it itself builds exist. If it needs to make sure that a node
+     * that it builds is in a Finished state, then the {@link #preBuildPhase() preBuildPhase}
+     * method should be used instead.
+     * 
+     * @see #preBuildPhase()
+     */
     public TreeSet<String>
     nodesDependedOn()
     {
@@ -1884,7 +1960,13 @@ class BaseBuilder
     
     private static final long serialVersionUID = 2397375949761850587L;
   }
+
   
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*  P U B L I C   S U B C L A S S E S                                                     */
+  /*----------------------------------------------------------------------------------------*/
+
   public static
   class PassName
   {
@@ -1915,11 +1997,6 @@ class BaseBuilder
     private PrefixedName pBuilderName;
   }
   
-  
-  
-  /*----------------------------------------------------------------------------------------*/
-  /*  P R I V A T E   S U B C L A S S E S                                                   */
-  /*----------------------------------------------------------------------------------------*/
   
   public static 
   class PassDependency
@@ -1989,6 +2066,12 @@ class BaseBuilder
     private ConstructPass pTarget;
     private LinkedList<ConstructPass> pSources;
   }
+
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*  G U I   T H R E A D   C L A S S E S                                                   */
+  /*----------------------------------------------------------------------------------------*/
   
   private
   class BuilderGuiThread
