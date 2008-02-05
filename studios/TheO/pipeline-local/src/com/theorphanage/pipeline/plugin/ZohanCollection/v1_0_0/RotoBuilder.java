@@ -81,7 +81,7 @@ class RotoBuilder
     if (!projectNamer.isGenerated()) {
       addSubBuilder(projectNamer);
       ParamMapping mapping = 
-        new ParamMapping(aLocation, ComplexParam.listFromObject(aProjectName));
+        new ParamMapping(aLocation, aProjectName);
       addMappedParam(projectNamer.getName(), new ParamMapping(ProjectNames.aProjectName), mapping);
     }
     
@@ -153,19 +153,19 @@ class RotoBuilder
       
       {
         ParamMapping mapping = 
-          new ParamMapping(aLocation, ComplexParam.listFromObject(aProjectName));
+          new ParamMapping(aLocation, aProjectName);
         pProjectName = getStringParamValue(mapping);
       }
       
       {
         ParamMapping mapping = 
-          new ParamMapping(aLocation, ComplexParam.listFromObject(aSequenceName));
+          new ParamMapping(aLocation, aSequenceName);
         pSequenceName = getStringParamValue(mapping);
       }
       
       {
         ParamMapping mapping = 
-          new ParamMapping(aLocation, ComplexParam.listFromObject(aShotName));
+          new ParamMapping(aLocation, aShotName);
         pShotName = getStringParamValue(mapping);
       }
       
@@ -185,20 +185,20 @@ class RotoBuilder
       if (!pShotNamer.isGenerated()) {
         addSubBuilder(pShotNamer);
 
-        if (!pShotName.equals(StudioDefinitions.aNEW))  {
+        if (!pProjectName.equals(StudioDefinitions.aNEW))  {
           addMappedParam(pShotNamer.getName(), 
-                         new ParamMapping(ShotNames.aShotName),
-                         new ParamMapping(aLocation, ComplexParam.listFromObject(aShotName)));
+                         new ParamMapping(ShotNames.aProjectName),
+                         new ParamMapping(aLocation,aProjectName));
         }
         if (!pSequenceName.equals(StudioDefinitions.aNEW))  {
           addMappedParam(pShotNamer.getName(), 
                          new ParamMapping(ShotNames.aSequenceName),
-                         new ParamMapping(aLocation, ComplexParam.listFromObject(aSequenceName)));
+                         new ParamMapping(aLocation, aSequenceName));
         }
-        if (!pProjectName.equals(StudioDefinitions.aNEW))  {
+        if (!pShotName.equals(StudioDefinitions.aNEW))  {
           addMappedParam(pShotNamer.getName(), 
-                         new ParamMapping(ShotNames.aProjectName),
-                         new ParamMapping(aLocation, ComplexParam.listFromObject(aProjectName)));
+                         new ParamMapping(ShotNames.aShotName),
+                         new ParamMapping(aLocation, aShotName));
         }
       }
     }
