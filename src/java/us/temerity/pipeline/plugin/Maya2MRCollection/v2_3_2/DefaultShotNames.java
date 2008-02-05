@@ -194,7 +194,6 @@ public class DefaultShotNames
       pLgtProduct  = new Path(pLgtApprove, product);
       pLgtThumb    = new Path(pLgtSubmit, thumb);
     }
-    done();
   }
 
   /*----------------------------------------------------------------------------------------*/

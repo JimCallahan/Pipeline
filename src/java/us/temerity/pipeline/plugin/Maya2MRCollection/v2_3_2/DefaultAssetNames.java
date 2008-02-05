@@ -173,7 +173,6 @@ class DefaultAssetNames
       pAssetProduct    = new Path(pAssetApprove, product);
       pAssetThumb      = new Path(pAssetSubmit, thumb);
     }
-    done();
   }
 
   

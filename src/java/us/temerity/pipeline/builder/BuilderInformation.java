@@ -1,4 +1,4 @@
-// $Id: BuilderInformation.java,v 1.12 2008/01/28 12:00:51 jesse Exp $
+// $Id: BuilderInformation.java,v 1.13 2008/02/05 08:37:29 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -13,6 +13,14 @@ import us.temerity.pipeline.stages.*;
 /*   B U I L D E R   I N F O R M A T I O N                                                  */
 /*------------------------------------------------------------------------------------------*/
 
+/**
+ * Contains information that is being shared among all Builders in a given invocation.
+ * <p>
+ * Only one of these should exist for an given invocation of a Builder. Users should never
+ * need to create one of these on their own, unless it is being used in a call to
+ * {@link BaseBuilderCollection#instantiateBuilder(String, MasterMgrClient, QueueMgrClient, 
+ * BuilderInformation)) instantiateBuilder}.
+ */
 public 
 class BuilderInformation
 {

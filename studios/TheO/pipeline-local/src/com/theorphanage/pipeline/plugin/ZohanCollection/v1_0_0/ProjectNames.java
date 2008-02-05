@@ -41,9 +41,9 @@ extends BaseNames
   /*----------------------------------------------------------------------------------------*/
   
   
-  @SuppressWarnings("unused")
   @Override
-  public void generateNames() 
+  public void 
+  generateNames() 
     throws PipelineException
   {
     setContext((UtilContext) getParamValue(aUtilContext));
@@ -57,7 +57,6 @@ extends BaseNames
       Path disPath = new Path(startPath, discipline.toString() );
         pStartPaths.put(discipline, disPath);
     }
-    done();
   }
   
   

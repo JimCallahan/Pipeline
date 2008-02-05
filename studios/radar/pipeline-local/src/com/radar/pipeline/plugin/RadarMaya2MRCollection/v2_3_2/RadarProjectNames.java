@@ -65,7 +65,6 @@ class RadarProjectNames
       Path setupPath = new Path(startPath, "projectSetups");
       pTurntablePath = new Path(setupPath, "tt");
     }
-    done();
   }
   private static final long serialVersionUID = 4916962629028568427L;
 }

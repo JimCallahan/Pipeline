@@ -67,7 +67,6 @@ class DefaultProjectNames
       Path setupPath = new Path(startPath, "setups");
       pTurntablePath = new Path(setupPath, "tt");
     }
-    done();
   }
   
   

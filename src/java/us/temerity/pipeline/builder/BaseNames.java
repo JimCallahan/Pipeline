@@ -8,6 +8,22 @@ package us.temerity.pipeline.builder;
 
 import us.temerity.pipeline.*;
 
+/*------------------------------------------------------------------------------------------*/
+/*   B A S E   N A M E S                                                                    */
+/*------------------------------------------------------------------------------------------*/
+
+/**
+ *  The parent class for all Namers.
+ *  <p>
+ *  Namers are simply Utility classes that exist to provide node names to Builders, which
+ *  the Builders use to construct their node networks.  Namers are defined separately from
+ *  Builders in order to make it easy to change the node name and directory structure that
+ *  Builders make, without having to change any of the actual functionality of the Builder.
+ *  <p>
+ *  Namers must implement a single method, {@link #generateNames()}, which should evaluate
+ *  any parameters that the Namer has and then generate the names that are going to be
+ *  returned by its access methods.
+ */
 public abstract
 class BaseNames
   extends BaseUtil
@@ -30,20 +46,25 @@ class BaseNames
   generateNames() 
     throws PipelineException;
   
-  protected void
-  done()
+  public final void
+  run()
+    throws PipelineException
   {
+    generateNames();
     pGenerated = true;
   }
   
-  public boolean
+  /**
+   * Has generateNames() been run on this builder yet?
+s   */
+  public final boolean
   isGenerated()
   {
     return pGenerated;
   }
 
   @Override
-  protected void 
+  protected final void 
   setLayout
   (
     PassLayoutGroup layout

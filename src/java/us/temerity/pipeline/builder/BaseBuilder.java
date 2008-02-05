@@ -1,4 +1,4 @@
-// $Id: BaseBuilder.java,v 1.37 2008/02/05 08:10:38 jesse Exp $
+// $Id: BaseBuilder.java,v 1.38 2008/02/05 08:37:29 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -14,6 +14,7 @@ import us.temerity.pipeline.NodeTreeComp.State;
 import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
 import us.temerity.pipeline.builder.ui.JBuilderParamDialog;
 import us.temerity.pipeline.math.Range;
+import us.temerity.pipeline.plugin.Maya2MRCollection.v2_3_2.ModelPiecesBuilder;
 import us.temerity.pipeline.stages.BaseStage;
 import us.temerity.pipeline.ui.UIFactory;
 import us.temerity.pipeline.ui.core.UIMaster;
@@ -44,13 +45,17 @@ import us.temerity.pipeline.ui.core.UIMaster;
  * BaseBaseBuilder that is using parameters and parameter layouts will need to have a way to
  * account for these parameters as well as the parameters which come from {@link BaseUtil}.
  * <ul>
+ * 
  * <li> ActionOnExistence - This parameter is used to control the behavior of the Builder when
  * a node it is supposed to build already exists.
+ * 
  * <li> ReleaseOnError - This parameter controls the behavior of the Builder if it encounters
  * an error during the course of its execution. If this parameter is set to <code>true</code>,
  * an error will cause the Builder to release all the nodes that have been created during its
  * run.
+ * 
  * </ul>
+ * 
  * BaseBuilder also contains utility methods for creating two other parameters that a majority
  * of Builders may want to implement.
  * <ul>
@@ -69,26 +74,32 @@ import us.temerity.pipeline.ui.core.UIMaster;
  * <h2>Terminology used within these java docs.</h2>
  * <dl>
  * <dt>Builder</dt>
- * <dd>Refers to any instance of this class. Usually preceded with 'parent' when being used
- * with Sub-Builder to make the relation clear. </dd>
+ *   <dd>Refers to any instance of this class. Usually preceded with 'parent' when being used
+ *       with Sub-Builder to make the relation clear. </dd>
+ *       
  * <dt>Sub-Builder</dt>
  *   <dd>Refers to any instance of {@link BaseUtil} that is being used as a child of the
  *       current Builder.</dd>
+ * 
  * <dt>child Builder</dt>
- * <dd>Refers to any instance of this class that is being used as a child of the current
- * builder. The child Builders of a Builder are a subset of the Sub-Builders.</dd>
+ *   <dd>Refers to any instance of this class that is being used as a child of the current
+ *       builder. The child Builders of a Builder are a subset of the Sub-Builders.</dd>
+ * 
  * <dt>child Namer</dt>
- * <dd>Refers to any instance of {@link BaseNames} that is being used as a child of the
- * current builder. The child Namers of a Builder are a subset of the Sub-Builders.</dd>
+ *   <dd>Refers to any instance of {@link BaseNames} that is being used as a child of the
+ *       current builder. The child Namers of a Builder are a subset of the Sub-Builders.</dd>
+ *       
  * <dt>New Sub-Builder
- * <dd>Refers to any Sub-Builder before it has been prepared by the First Loop, either by
- * executing the SetupPasses if it is a child Builder or by calling
- * {@link BaseNames#generateNames()} if it is a child Namer</dd>
+ *   <dd>Refers to any Sub-Builder before it has been prepared by the First Loop, either by
+ *       executing the SetupPasses if it is a child Builder or by calling
+ *       {@link BaseNames#generateNames()} if it is a child Namer</dd>
+ * 
  * <dt>First Loop
- * <dd>The period of Builder execution during which all the SetupPasses are run and child
- * Namers have {@link BaseNames#generateNames()} called.
+ *   <dd>The period of Builder execution during which all the SetupPasses are run and child
+ *       Namers have {@link BaseNames#generateNames()} called.
+ * 
  * <dt>Second Loop
- * <dd>The period of Builder execution during with all the ConstructPasses are run.
+ *   <dd>The period of Builder execution during with all the ConstructPasses are run.
  * </dl>
  * <h2>Requirements</h2>
  * <p>
@@ -236,7 +247,7 @@ class BaseBuilder
    * <p>
    * Should never be called in a Builder constructor.  
    * @throws PipelineException
-   *         If an attempt is made to add a Sub-Builder with the same name as on that already
+   *         If an attempt is made to add a Sub-Builder with the same name as one that already
    *         exists.
    */
   public final void 
@@ -1816,6 +1827,7 @@ class BaseBuilder
      * Examples might include talking to an SQL database or opening up a Maya scene to extract
      * information about which characters are in a shot or which characters should be in a shot
      * as compared to which characters actually are in a shot.
+     * 
      * @throws PipelineException  If there is an error involved while invoking the outside
      * source of information.
      */
@@ -1831,6 +1843,7 @@ class BaseBuilder
      * The logic on whether or not a Sub-Builder should be added is probably properly done
      * in either the validate or the gather Phase.  The init phase should be solely devoted
      * to creating the new instances.
+     * 
      * @throws PipelineException
      */
     @SuppressWarnings("unused")
@@ -1847,7 +1860,7 @@ class BaseBuilder
       for(String name : listOfNames) {
 	BaseNames names = pSubNames.get(name);
 	initializeSubBuilder(name);
-	names.generateNames();
+	names.run();
 	pSubNames.remove(name);
 	pGeneratedNames.put(name, names);
       }

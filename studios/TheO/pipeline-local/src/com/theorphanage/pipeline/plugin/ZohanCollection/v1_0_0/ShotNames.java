@@ -76,7 +76,7 @@ class ShotNames
     
     pFullName = pSequenceName + pShotName;  
     
-    Path startPath = new Path(new Path(new Path(StudioDefinitions.aProjectStartPath, pProject), pSequenceName), pFullName);
+    Path startPath = StudioDefinitions.getShotPath(aProjectName, aSequenceName, aShotName);
     for (Discipline discipline : Discipline.values()) {
       Path disPath = new Path(startPath, discipline.toString() );
       for (SubDir dir : SubDir.values()) {
@@ -84,7 +84,6 @@ class ShotNames
         pStartPaths.put(discipline, dir, finalPath);
       }
     }
-    done();
   }
   
   /*----------------------------------------------------------------------------------------*/

@@ -1,4 +1,4 @@
-// $Id: BaseUtil.java,v 1.25 2008/01/30 06:35:07 jim Exp $
+// $Id: BaseUtil.java,v 1.26 2008/02/05 08:37:29 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -36,8 +36,6 @@ import us.temerity.pipeline.math.Range;
  * <li> UtilContext - This parameter represents the context in which the Utility is going to
  * be run.
  * </ul>
- * 
- * 
  */
 public abstract
 class BaseUtil
@@ -302,7 +300,7 @@ class BaseUtil
   (
     String name
   ) 
-  throws PipelineException
+    throws PipelineException
   {
     TreeMap<String, Boolean> comps = new TreeMap<String, Boolean>();
     comps.put(name, false);
@@ -750,12 +748,15 @@ class BaseUtil
    * <P>
    * The conditions are as follows. The parameter must have the same name as the parameter it
    * is replacing. If you attempt to replace a parameter that does not exist, an exception is
-   * thrown. If you attempt to replace a parameter from a layout which is not after the current
-   * pass an exception will be thrown. Basically, only parameters which have not had value
-   * inputed into them can be replaced.
+   * thrown. Only parameters which have not had value inputed into them can be replaced. If an
+   * attempt is made to replace a parameter from a layout which is not after the current pass
+   * an exception will be thrown.
    * 
    * @param param
-   *        The parameter to replace.
+   *   The parameter to replace.
+   * @throws PipelineException
+   *   If a parameter which does not exist or which belongs to a pass that is before the
+   *   current pass is replaced.
    */
   protected void 
   replaceParam
@@ -1826,19 +1827,19 @@ class BaseUtil
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * The static instance of the Master Manager that is being used to perform all the
+   * The instance of the Master Manager that is being used to perform all the
    * Pipeline operations in this stage.
    */
   protected final MasterMgrClient pClient;
   
   /**
-   * The static instance of the Queue Manager that is being used to perform all the
+   * The instance of the Queue Manager that is being used to perform all the
    * Pipeline operations in this stage.
    */
   protected final QueueMgrClient pQueue;
 
   /**
-   * Static instance of the Plugin Manager which is used to perform all plugin related stage
+   * The instance of the Plugin Manager which is used to perform all plugin related stage
    * operations.
    */
   protected final PluginMgrClient pPlug;
