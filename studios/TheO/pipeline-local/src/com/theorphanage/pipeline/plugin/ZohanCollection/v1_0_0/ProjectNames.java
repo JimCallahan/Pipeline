@@ -6,7 +6,6 @@ import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.BaseNames;
 import us.temerity.pipeline.builder.UtilContext;
 
-import com.theorphanage.pipeline.plugin.ZohanCollection.v1_0_0.ShotNames.Discipline;
 
 public 
 class ProjectNames 
