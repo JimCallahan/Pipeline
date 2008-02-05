@@ -1,4 +1,4 @@
-// $Id: StudioDefinitions.java,v 1.1 2008/02/04 12:04:51 jim Exp $
+// $Id: StudioDefinitions.java,v 1.2 2008/02/05 03:03:07 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -357,8 +357,7 @@ class StudioDefinitions
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  //private static final long serialVersionUID = 
-  
+  private static final long serialVersionUID = -8108986071922344646L;
 
   public static String aProjectsParent  = "projects";
   public static String aSequencesParent = "shots";
