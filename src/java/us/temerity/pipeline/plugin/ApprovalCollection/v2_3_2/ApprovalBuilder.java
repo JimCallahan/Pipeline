@@ -29,8 +29,6 @@ class ApprovalBuilder
 
   /**
    * @param name
-   * @param vid
-   * @param vendor
    * @param desc
    * @param mclient
    * @param qclient

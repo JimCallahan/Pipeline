@@ -1,4 +1,4 @@
-// $Id: BaseUtil.java,v 1.28 2008/02/06 05:11:27 jesse Exp $
+// $Id: BaseUtil.java,v 1.29 2008/02/06 07:44:19 jim Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -50,10 +50,6 @@ class BaseUtil
    * 
    * @param name
    *        The name of the utility.
-   * @param vid
-   *        The version id of this utility.
-   * @param vendor
-   *        The vendor who provided this utility
    * @param desc
    *        A description of what the utility should do.
    * @param mclient
@@ -114,10 +110,6 @@ class BaseUtil
    * 
    * @param name
    *        The name of the utility.
-   * @param vid
-   *        The version id of this utility.
-   * @param vendor
-   *        The vendor who provided this utility
    * @param desc
    *        A description of what the utility should do.
    * @param mclient

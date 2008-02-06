@@ -1,4 +1,4 @@
-// $Id: BuilderInformation.java,v 1.15 2008/02/06 05:11:27 jesse Exp $
+// $Id: BuilderInformation.java,v 1.16 2008/02/06 07:44:19 jim Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -18,7 +18,7 @@ import us.temerity.pipeline.stages.*;
  * Only one of these should exist for an given invocation of a Builder. Users should never
  * need to create one of these on their own, unless it is being used in a call to
  * {@link BaseBuilderCollection#instantiateBuilder(String, MasterMgrClient, QueueMgrClient, 
- * BuilderInformation)) instantiateBuilder}.  If the same instance of BuilderInformation
+ * BuilderInformation) instantiateBuilder}.  If the same instance of BuilderInformation
  * is not passed to all Sub-Builders, unexpected and wrong behavior may occur.
  */
 public 

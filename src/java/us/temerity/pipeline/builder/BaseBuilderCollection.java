@@ -1,4 +1,4 @@
-// $Id: BaseBuilderCollection.java,v 1.6 2008/02/04 12:12:47 jim Exp $
+// $Id: BaseBuilderCollection.java,v 1.7 2008/02/06 07:44:19 jim Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -104,7 +104,7 @@ class BaseBuilderCollection
    * 
    * All builder collections should override this method to return information about 
    * the specific builders they provide.  The key in the same should be identical to that 
-   * returned by the {@link BaseBuilder.getName() BaseBuilder#getName} method.
+   * returned by the {@link BaseBuilder#getName BaseBuilder.getName()} method.
    * 
    * @return
    *   The mapping of short builder names to the full class name of the builder.  By default

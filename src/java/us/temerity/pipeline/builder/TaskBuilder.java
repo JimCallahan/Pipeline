@@ -1,4 +1,4 @@
-// $Id: TaskBuilder.java,v 1.3 2008/01/31 17:29:11 jim Exp $
+// $Id: TaskBuilder.java,v 1.4 2008/02/06 07:44:19 jim Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -19,8 +19,6 @@ class TaskBuilder
   
   /**
    * @param name
-   * @param vid
-   * @param vendor
    * @param desc
    * @param mclient
    * @param qclient

@@ -1,4 +1,4 @@
-// $Id: BaseBuilder.java,v 1.39 2008/02/06 05:11:27 jesse Exp $
+// $Id: BaseBuilder.java,v 1.40 2008/02/06 07:44:19 jim Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -1985,7 +1985,6 @@ class BaseBuilder
     
     /**
      * Gets the name of the Builder which created this pass.
-     * @return
      */
     public PrefixedName
     getParentBuilderName()
@@ -1995,7 +1994,6 @@ class BaseBuilder
     
     /**
      * Gets the instance of BaseBuilder which created this pass.
-     * @return
      */
     private BaseBuilder
     getParentBuilder()

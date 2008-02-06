@@ -1,4 +1,4 @@
-// $Id: Maya2MRCollection.java,v 1.3 2008/02/06 05:11:29 jesse Exp $
+// $Id: Maya2MRCollection.java,v 1.4 2008/02/06 07:44:19 jim Exp $
 
 package us.temerity.pipeline.plugin.Maya2MRCollection.v2_3_2;
 
@@ -73,7 +73,7 @@ class Maya2MRCollection
    * 
    * All builder collections should override this method to return information about 
    * the specific builders they provide.  The key in the same should be identical to that 
-   * returned by the {@link BaseBuilder.getName() BaseBuilder#getName} method.
+   * returned by the {@link BaseBuilder#getName BaseBuilder.getName()} method.
    * 
    * @return
    *   The mapping of short builder names to the full class name of the builder.  By default

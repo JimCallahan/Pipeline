@@ -8,6 +8,7 @@ package us.temerity.pipeline.stages;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
+import us.temerity.pipeline.stages.MayaBuildType;
 import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
 
 public 
