@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.77 2008/01/31 00:33:13 jesse Exp $
+// $Id: UIMaster.java,v 1.78 2008/02/06 07:37:59 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -3293,6 +3293,22 @@ class UIMaster
     pLogsDialog.setVisible(true);
   }
 
+  /**
+   * Show the log history dialog. 
+   * 
+   * @param 
+   *   Whether logging is enabled at the start.
+   */ 
+  public void 
+  showLogsDialog
+  (
+   boolean enabled
+  )
+  {
+    pLogsDialog.setEnabled(enabled);
+    pLogsDialog.setVisible(true);
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
  
@@ -4440,6 +4456,9 @@ class UIMaster
 
 	{
 	  ArrayList<LogMgr.Kind> kinds = new ArrayList<LogMgr.Kind>();
+	  kinds.add(LogMgr.Kind.Arg);
+	  kinds.add(LogMgr.Kind.Ops);
+	  kinds.add(LogMgr.Kind.Bld);
 	  kinds.add(LogMgr.Kind.Net);
 	  kinds.add(LogMgr.Kind.Sub);
 
