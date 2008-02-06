@@ -1,4 +1,4 @@
-// $Id: FinalizableStage.java,v 1.2 2008/02/06 18:17:43 jim Exp $
+// $Id: FinalizableStage.java,v 1.3 2008/02/06 21:33:22 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
 
@@ -21,12 +21,6 @@ import java.util.*;
 public 
 interface FinalizableStage 
 {
-  /**
-   * Getter for the name of the created node.
-   */
-  public String 
-    getNodeName();
-
   /**
    * Finishes off the work of the stage after it has been queued.
    */

@@ -1,10 +1,11 @@
-// $Id: PlatesBuilder.java,v 1.6 2008/02/06 18:17:43 jim Exp $
+// $Id: PlatesBuilder.java,v 1.7 2008/02/06 21:33:22 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
 import com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages.*;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.math.*;
 import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.stages.*;
 
@@ -105,7 +106,8 @@ class PlatesBuilder
       pRequiredNodeNames = new TreeSet<String>(); 
       pMiscReferenceNodeNames = new TreeSet<String>(); 
 
-      pFinalStages = new ArrayList<FinalizableStage>(); 
+      pFirstStages  = new ArrayList<BaseStage>(); 
+      pSecondStages = new ArrayList<BaseStage>(); 
 
       // ... 
     }
@@ -184,10 +186,13 @@ class PlatesBuilder
       ConstructPass build = new BuildPass();
       addConstructPass(build);
       
-      ConstructPass end = new FinalizePass();
-      addConstructPass(end);
-      
-      addPassDependency(build, end);
+      ConstructPass first = new FirstQueueDisablePass(); 
+      addConstructPass(first); 
+      addPassDependency(build, first);
+
+      ConstructPass second = new SecondQueueDisablePass(); 
+      addConstructPass(second); 
+      addPassDependency(first, second);
     }
 
     /* specify the layout of the parameters for each pass in the UI */ 
@@ -582,7 +587,6 @@ class PlatesBuilder
 				  pBackgroundPlateNodeName, vfxShotDataNodeName); 
 	  addTaskAnnotation(stage, NodePurpose.Edit); 
 	  stage.build();  
-	  addToQueueList(solveDistortionNodeName);
 	  addToDisableList(solveDistortionNodeName);
 	}
 	
@@ -594,7 +598,7 @@ class PlatesBuilder
 				   solveDistortionNodeName);
 	  addTaskAnnotation(stage, NodePurpose.Prepare); 
 	  stage.build();  
-	  pFinalStages.add(stage);
+	  pFirstStages.add(stage);
 	}
 
 	String readDistortedNodeName = pShotNamer.getReadDistortedNode(); 
@@ -616,7 +620,7 @@ class PlatesBuilder
 	  stage.build();  
 	}
 
-	String gridAlignNodeName = pShotNamer.getGridAlignNode();
+	pGridAlignNodeName = pShotNamer.getGridAlignNode();
 	{
 	  LinkedList<String> sources = new LinkedList<String>(); 
 	  sources.add(reformatOriginalNodeName); 
@@ -626,19 +630,18 @@ class PlatesBuilder
  
 	  NukeCatStage stage = 
 	    new NukeCatStage(pStageInfo, pContext, pClient, 
-			     gridAlignNodeName, sources); 
+			     pGridAlignNodeName, sources); 
 	  stage.addLink(new LinkMod(pPlatesOriginalGridNodeName, LinkPolicy.Reference));
 	  stage.addLink(new LinkMod(distortedGridNodeName, LinkPolicy.Reference));
 	  addTaskAnnotation(stage, NodePurpose.Edit); 
-	  stage.build();  
-	  addToQueueList(gridAlignNodeName);
-	  addToDisableList(gridAlignNodeName);
+	  stage.build(); 
+	  pSecondStages.add(stage); 
 	}
 	
 	String gridAlignImageNodeName = pShotNamer.getGridAlignImageNode();
 	{
 	  LinkedList<String> sources = new LinkedList<String>(); 
-	  sources.add(gridAlignNodeName); 
+	  sources.add(pGridAlignNodeName); 
 
 	  NukeCatCompStage stage = 
 	    new NukeCatCompStage(pStageInfo, pContext, pClient,
@@ -652,7 +655,7 @@ class PlatesBuilder
 	  NukeThumbnailStage stage = 
 	    new NukeThumbnailStage(pStageInfo, pContext, pClient,
 				   gridAlignThumbNodeName, "tif", gridAlignImageNodeName, 
-				   1, 150);
+				   1, 150, true, true, new Color3d()); 
 	  addTaskAnnotation(stage, NodePurpose.Thumbnail); 
 	  stage.build(); 
 	}
@@ -711,7 +714,7 @@ class PlatesBuilder
     }
 
 
-    /*-- STAGE HELPERS ---------------------------------------------------------------------*/
+    /*-- HELPERS --*/
 
     private String
     buildVfxReference
@@ -734,24 +737,23 @@ class PlatesBuilder
 
     private static final long serialVersionUID = -5216068758078265108L;
   }
-  
-  /** 
-   *
-   */ 
+   
+
+  /*----------------------------------------------------------------------------------------*/
+
   protected 
-  class FinalizePass
+  class FirstQueueDisablePass
     extends ConstructPass
   {
     public 
-    FinalizePass()
+    FirstQueueDisablePass()
     {
-      super("Finalize Pass", 
-	    "The SimpleAssetBuilder pass that cleans everything up.");
+      super("First Queue/Disable Pass", 
+	    "");
     }
     
     /**
-     * Returns a set of nodes that have to be in a Finished queue state before the
-     * buildPhase() method is called.
+     * Return first level nodes to be queued.
      */ 
     @Override
     public TreeSet<String> 
@@ -760,28 +762,95 @@ class PlatesBuilder
       TreeSet<String> regenerate = new TreeSet<String>();
 
       regenerate.addAll(getDisableList());
-      for(FinalizableStage stage : pFinalStages) 
+      for(BaseStage stage : pFirstStages) 
  	regenerate.add(stage.getNodeName());
 
       return regenerate;
     }
     
     /**
-     * Remove any placeholders and temporary settings used during construction and 
-     * prepare the nodes for final check-in. 
+     * Remove any placeholders and temporary settings used during second level 
+     * construction and prepare the nodes for check-in.<P> 
+     * 
+     * Then second level nodes to be queued and disabled... 
      */ 
     @Override
     public void 
     buildPhase() 
       throws PipelineException
     {
-      for(FinalizableStage stage : pFinalStages) 
-	stage.finalizeStage();
-
+      /* process first level nodes */ 
+      for(BaseStage stage : pFirstStages) {
+	if(stage instanceof FinalizableStage) 
+	  ((FinalizableStage) stage).finalizeStage();
+      }
       disableActions();
+      
+      /* reset the disable list to clear out first pass nodes */ 
+      clearDisableList();
+
+      /* add second level nodes to be disabled */ 
+      addToDisableList(pGridAlignNodeName);
     }
     
-    private static final long serialVersionUID = 2931899251798393266L;
+    private static final long serialVersionUID = 4574894365632367362L;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  protected 
+  class SecondQueueDisablePass
+    extends ConstructPass
+  {
+    public 
+    SecondQueueDisablePass() 
+    {
+      super("Second Queue/Disable Pass", 
+	    "");
+    }
+    
+    /**
+     * Return second level nodes to be queued.
+     */ 
+    @Override
+    public TreeSet<String> 
+    preBuildPhase()
+    {
+      TreeSet<String> regenerate = new TreeSet<String>();
+
+      regenerate.addAll(getDisableList());
+      for(BaseStage stage : pSecondStages) 
+ 	regenerate.add(stage.getNodeName());
+
+      return regenerate;
+    }
+    
+    /**
+     * Remove any placeholders and temporary settings used during second level 
+     * construction and prepare the nodes for check-in. 
+     */ 
+    @Override
+    public void 
+    buildPhase() 
+      throws PipelineException
+    {
+      /* process second level nodes */ 
+      for(BaseStage stage : pSecondStages) {
+	if(stage instanceof FinalizableStage) 
+	  ((FinalizableStage) stage).finalizeStage();
+      }
+      disableActions();
+
+
+
+      // ...
+
+
+
+    }
+    
+    private static final long serialVersionUID = 6643366544737486251L;
   }
 
 
@@ -828,7 +897,8 @@ class PlatesBuilder
   /**
    * The stages which require running a finalizeStage() method before check-in.
    */ 
-  private ArrayList<FinalizableStage> pFinalStages; 
+  private ArrayList<BaseStage> pFirstStages; 
+  private ArrayList<BaseStage> pSecondStages; 
 
   /**
    * Whether all nodes should be checked-in at the end of execution. <P> 
@@ -861,6 +931,8 @@ class PlatesBuilder
   private String pGridGradeWarpNodeName; 
   private String pGridGradeDiffNodeName; 
 
+
+  private String pGridAlignNodeName;
 
   // ... 
 

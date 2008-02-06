@@ -13,6 +13,7 @@ javadir = $(sourceroot)/com/intelligentcreatures/pipeline/plugin/WtmCollection/v
 java_DATA = \
   AppDirs.java \
   AssetType.java \
+  ICStageFunction.java \
   ICTaskBuilder.java \
   NodePurpose.java \
   PlatesBuilder.java \
@@ -20,5 +21,10 @@ java_DATA = \
   ShotNamer.java \
   StudioDefinitions.java \
   TaskType.java \
-  WtmCollection.java \
-  stages/LensInfo.java
+  WtmCollection.java
+
+
+
+SUBDIRS = \
+  stages
+

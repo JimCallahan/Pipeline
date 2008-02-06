@@ -1,10 +1,11 @@
-// $Id: NukeThumbnailStage.java,v 1.1 2008/02/06 18:17:43 jim Exp $
+// $Id: NukeThumbnailStage.java,v 1.2 2008/02/06 21:33:22 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
 
 import com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.*; 
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.math.*;
 import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
 import us.temerity.pipeline.stages.*;
@@ -65,7 +66,10 @@ class NukeThumbnailStage
    String suffix,
    String source,
    int imageNumber, 
-   int thumbnailSize
+   int thumbnailSize, 
+   boolean addAlpha, 
+   boolean overBackground, 
+   Color3d backgroundColor
   )
     throws PipelineException
   {
@@ -79,6 +83,9 @@ class NukeThumbnailStage
     addLink(new LinkMod(source, LinkPolicy.Dependency));
     addSingleParamValue("ImageNumber", imageNumber);
     addSingleParamValue("ThumbnailSize", thumbnailSize);
+    addSingleParamValue("AddAlpha", addAlpha);
+    addSingleParamValue("OverBackground", overBackground);
+    addSingleParamValue("BackgroundColor", backgroundColor);
   }
   
 
