@@ -1,4 +1,4 @@
-// $Id: DistortedGridStage.java,v 1.1 2008/02/06 16:29:48 jim Exp $
+// $Id: DistortedGridStage.java,v 1.4 2008/02/07 14:14:33 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
 
@@ -63,11 +63,8 @@ class DistortedGridStage
   {
     super("PFTrackBuild", 
           "Creates a node which uses the PFTrackBuild action.", 
-          stageInfo, 
-          context, 
-          client, 
-          nodeName, 
-          "tif", 
+          stageInfo, context, client, 
+          nodeName, "tif", 
           null, 
           new PluginContext("Copy"));   
 

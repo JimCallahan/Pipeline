@@ -1,6 +1,8 @@
-// $Id: LensInfoStage.java,v 1.5 2008/02/06 21:33:22 jim Exp $
+// $Id: NukeThumbnailStage.java,v 1.1 2008/02/06 18:17:43 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
+
+import com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.*; 
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
@@ -10,22 +12,24 @@ import us.temerity.pipeline.stages.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   L E N S   D A T A   S T A G E                                                          */
+/*   N U K E   T H U M B N A I L   S T A G E                                                */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Creates a node which uses the LensInfo action.
+ * Generates a thumbnail image using the NukeThumbnail action.
  */ 
 public 
-class LensInfoStage 
+class NukeThumbnailStage
   extends StandardStage
 {
-  /*----------------------------------------------------------------------------------------*/
-  /*   C O N S T R U C T O R                                                                */
-  /*----------------------------------------------------------------------------------------*/
-  
   /**
    * Construct a new stage.
+   * 
+   * @param name
+   *   The name of the stage.
+   * 
+   * @param desc
+   *   A description of what the stage should do.
    * 
    * @param stageInfo
    *   Class containing basic information shared among all stages.
@@ -38,23 +42,43 @@ class LensInfoStage
    * 
    * @param nodeName
    *   The name of the node that is to be created.
+   * 
+   * @param suffix
+   *   The suffix for the created node.
+   * 
+   * @param source
+   *   The name of source images.
+   * 
+   * @param thumbnailSize
+   *   Specifies the frame number of image from the source sequence to process.
+   * 
+   * @param thumbnailSize
+   *   The image resolution of the generatted thumbnail. 
    */
   public
-  LensInfoStage
+  NukeThumbnailStage
   (
    StageInformation stageInfo,
    UtilContext context,
-   MasterMgrClient client, 
-   String nodeName
+   MasterMgrClient client,
+   String nodeName, 
+   String suffix,
+   String source,
+   int imageNumber, 
+   int thumbnailSize
   )
     throws PipelineException
   {
-    super("LensInfo", 
-          "Creates a node which uses the LensInfo action.", 
-          stageInfo, context, client, 
-          nodeName, null, 
-          null, 
-          new PluginContext("LensInfo", "ICVFX"));
+    super("NukeThumbnailStage",
+          "Generates a thumbnail image using the NukeThumbnail action.", 
+          stageInfo, context, client,
+          nodeName, suffix,
+          null,
+          new PluginContext("NukeThumbnail"));
+
+    addLink(new LinkMod(source, LinkPolicy.Dependency));
+    addSingleParamValue("ImageNumber", imageNumber);
+    addSingleParamValue("ThumbnailSize", thumbnailSize);
   }
   
 
@@ -62,7 +86,7 @@ class LensInfoStage
   /*----------------------------------------------------------------------------------------*/
   /*   O V E R R I D E S                                                                    */
   /*----------------------------------------------------------------------------------------*/
-  
+ 
   /**
    * See {@link BaseStage#getStageFunction()}
    */
@@ -70,7 +94,7 @@ class LensInfoStage
   public String 
   getStageFunction()
   {
-    return StageFunction.aNone;
+    return StageFunction.aRenderedImage;
   }
 
 
@@ -79,6 +103,6 @@ class LensInfoStage
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
  
-  private static final long serialVersionUID = -1458573679042030943L;
+  private static final long serialVersionUID = 4435149474061655258L;
 
 }

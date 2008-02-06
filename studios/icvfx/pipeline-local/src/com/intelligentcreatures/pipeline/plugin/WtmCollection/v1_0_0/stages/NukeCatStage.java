@@ -1,4 +1,4 @@
-// $Id: NukeCatStage.java,v 1.1 2008/02/06 16:29:48 jim Exp $
+// $Id: NukeCatStage.java,v 1.4 2008/02/07 14:14:33 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
 
@@ -44,6 +44,9 @@ class NukeCatStage
    * 
    * @param imageName
    *   The name of source image node.
+   * 
+   * @param sources
+   *   The name of source Nuke scripts. 
    */
   public
   NukeCatStage
@@ -59,11 +62,8 @@ class NukeCatStage
     super("NukeCat", 
 	  "Creates a node which concatenates several Nuke script fragments into a " + 
 	  "single unified Nuke script.", 
-	  stageInfo, 
-	  context, 
-	  client, 
-	  nodeName, 
-	  "nk", 
+	  stageInfo, context, client, 
+	  nodeName, "nk", 
 	  sources); 
   }
   

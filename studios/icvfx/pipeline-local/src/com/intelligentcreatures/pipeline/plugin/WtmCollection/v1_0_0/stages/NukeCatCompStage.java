@@ -1,4 +1,4 @@
-// $Id: NukeReadStage.java,v 1.4 2008/02/07 14:14:33 jim Exp $
+// $Id: NukeCatCompStage.java,v 1.2 2008/02/06 21:33:22 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
 
@@ -12,16 +12,17 @@ import us.temerity.pipeline.stages.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   N U K E   R E A D   S T A G E                                                          */
+/*   N U K E   C A T   C O M P   S T A G E                                                  */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Creates a node which uses the NukeRead action.
+ * Creates a node which concatenates a Write node onto the end of a script which will 
+ * generate the target imagess. 
  */ 
 public 
-class NukeReadStage 
+class NukeCatCompStage 
   extends StandardStage
-{ 
+{
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
@@ -29,12 +30,6 @@ class NukeReadStage
   /**
    * Construct a new stage.
    * 
-   * @param name
-   *   The name of the stage.
-   * 
-   * @param desc
-   *   A description of what the stage should do.
-   * 
    * @param stageInfo
    *   Class containing basic information shared among all stages.
    * 
@@ -47,35 +42,40 @@ class NukeReadStage
    * @param nodeName
    *   The name of the node that is to be created.
    * 
-   * @param imageName
-   *   The name of source image node.
+   * @param suffix
+   *   The suffix for the created node.
+   * 
+   * @param sources
+   *   The name of source Nuke scripts. 
    */
-  protected
-  NukeReadStage
+  public
+  NukeCatCompStage
   (
-   String name, 
-   String desc,
    StageInformation stageInfo,
    UtilContext context,
    MasterMgrClient client, 
    String nodeName, 
-   String imageName,
-   PluginContext action
+   String suffix,
+   LinkedList<String> sources
   )
     throws PipelineException
   {
-    super(name, desc,
-          stageInfo, context, client, 
-          nodeName, "nk", 
-          null, 
-	  action); 
+    super("NukeCatComp", 
+	  "Creates a node which concatenates a Write node onto the end of a script " + 
+	  "which will generate the target imagess.", 
+	  stageInfo, context, client, 
+	  nodeName, suffix, 
+	  null, 
+	  new PluginContext("NukeCatComp")); 
 
-    addLink(new LinkMod(imageName, LinkPolicy.Dependency));
-
-    if(imageName != null) 
-      addSingleParamValue("ImageSource", imageName); 
+    int order = 100;
+    for(String source : sources) {
+      addLink(new LinkMod(source, LinkPolicy.Dependency));
+      addSourceParamValue(source, "Order", order);
+      order += 50;
+    }
   }
-
+  
   /**
    * Construct a new stage.
    * 
@@ -91,25 +91,47 @@ class NukeReadStage
    * @param nodeName
    *   The name of the node that is to be created.
    * 
-   * @param imageName
-   *   The name of source image node.
+   * @param range
+   *   The frame range for the node.
+   * 
+   * @param padding
+   *   The padding for the file numbers. If this is set to <code>null</code>, a
+   *   padding of 4 will be used.
+   * 
+   * @param suffix
+   *   The suffix for the created node.
+   * 
+   * @param sources
+   *   The name of source Nuke scripts. 
    */
   public
-  NukeReadStage
+  NukeCatCompStage
   (
    StageInformation stageInfo,
    UtilContext context,
    MasterMgrClient client, 
    String nodeName, 
-   String imageName
+   FrameRange range,
+   Integer padding,
+   String suffix,
+   LinkedList<String> sources
   )
     throws PipelineException
   {
-    this("NukeRead", 
-	 "Creates a node which uses the NukeRead action.", 
-	 stageInfo, context, client, 
-	 nodeName, imageName, 
-	 new PluginContext("NukeRead"));
+    super("NukeCatComp", 
+	  "Creates a node which concatenates a Write node onto the end of a script " + 
+	  "which will generate the target imagess.", 
+	  stageInfo, context, client, 
+	  nodeName, range, padding, suffix, 
+	  null, 
+	  new PluginContext("NukeCatComp")); 
+
+    int order = 100;
+    for(String source : sources) {
+      addLink(new LinkMod(source, LinkPolicy.Dependency));
+      addSourceParamValue(source, "Order", order);
+      order += 50;
+    }
   }
   
 
@@ -125,7 +147,7 @@ class NukeReadStage
   public String 
   getStageFunction()
   {
-    return ICStageFunction.aNukeScript;
+    return ICStageFunction.aRenderedImage;
   }
 
 
@@ -134,6 +156,6 @@ class NukeReadStage
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
  
-  private static final long serialVersionUID = 7286056856278936588L;
+  private static final long serialVersionUID = -9051902390137200075L;
 
 }

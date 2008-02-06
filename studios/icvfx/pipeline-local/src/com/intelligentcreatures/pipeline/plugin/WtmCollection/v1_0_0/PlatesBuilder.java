@@ -1,4 +1,4 @@
-// $Id: PlatesBuilder.java,v 1.5 2008/02/06 16:29:48 jim Exp $
+// $Id: PlatesBuilder.java,v 1.6 2008/02/06 18:17:43 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -568,7 +568,8 @@ class PlatesBuilder
 	String vfxShotDataNodeName = pShotNamer.getVfxShotDataNode(); 
 	{
 	  LensInfoStage stage = 
-	    new LensInfoStage(pStageInfo, pContext, pClient, vfxShotDataNodeName); 
+	    new LensInfoStage(pStageInfo, pContext, pClient, 
+			      vfxShotDataNodeName); 
 	  addTaskAnnotation(stage, NodePurpose.Edit); 
 	  stage.build(); 
 	}
@@ -624,18 +625,53 @@ class PlatesBuilder
 	  sources.add(pGridGradeDiffNodeName); 
  
 	  NukeCatStage stage = 
-	    new NukeCatStage(pStageInfo, pContext, pClient, gridAlignNodeName, sources); 
+	    new NukeCatStage(pStageInfo, pContext, pClient, 
+			     gridAlignNodeName, sources); 
 	  stage.addLink(new LinkMod(pPlatesOriginalGridNodeName, LinkPolicy.Reference));
 	  stage.addLink(new LinkMod(distortedGridNodeName, LinkPolicy.Reference));
 	  addTaskAnnotation(stage, NodePurpose.Edit); 
 	  stage.build();  
-	  addToQueueList(solveDistortionNodeName);
-	  addToDisableList(solveDistortionNodeName);
+	  addToQueueList(gridAlignNodeName);
+	  addToDisableList(gridAlignNodeName);
+	}
+	
+	String gridAlignImageNodeName = pShotNamer.getGridAlignImageNode();
+	{
+	  LinkedList<String> sources = new LinkedList<String>(); 
+	  sources.add(gridAlignNodeName); 
+
+	  NukeCatCompStage stage = 
+	    new NukeCatCompStage(pStageInfo, pContext, pClient,
+				 gridAlignImageNodeName, "tif", sources);
+	  addTaskAnnotation(stage, NodePurpose.Focus); 
+	  stage.build(); 
 	}
 
+	String gridAlignThumbNodeName = pShotNamer.getGridAlignThumbNode();
+	{
+	  NukeThumbnailStage stage = 
+	    new NukeThumbnailStage(pStageInfo, pContext, pClient,
+				   gridAlignThumbNodeName, "tif", gridAlignImageNodeName, 
+				   1, 150);
+	  addTaskAnnotation(stage, NodePurpose.Thumbnail); 
+	  stage.build(); 
+	}
 
+	String submitNodeName = pShotNamer.getPlateSubmitNode();
+	{
+	  TreeSet<String> sources = new TreeSet<String>();
+	  sources.add(gridAlignThumbNodeName);
+	  sources.add(vfxRefNodeName);
 
-	// /prod/wtm/ri/120/plates/focus/ri120_grid_align
+	  TargetStage stage = 
+	    new TargetStage(pStageInfo, pContext, pClient, 
+			    submitNodeName, sources); 
+	  addTaskAnnotation(stage, NodePurpose.Submit); 
+	  stage.build(); 
+	  addToQueueList(submitNodeName);
+	  addToCheckInList(submitNodeName);
+	}
+	
 
         /* 
 
@@ -687,7 +723,8 @@ class PlatesBuilder
       String name = pShotNamer.getVfxReferenceNode(purpose); 
 
       TargetStage stage = 
-	new TargetStage(pStageInfo, pContext, pClient, name, pMiscReferenceNodeNames); 
+	new TargetStage(pStageInfo, pContext, pClient, 
+			name, pMiscReferenceNodeNames); 
       addTaskAnnotation(stage, purpose); 
       stage.build(); 
 

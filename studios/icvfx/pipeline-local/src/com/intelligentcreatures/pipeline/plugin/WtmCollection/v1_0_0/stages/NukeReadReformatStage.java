@@ -1,4 +1,4 @@
-// $Id: NukeReadReformatStage.java,v 1.1 2008/02/06 16:29:48 jim Exp $
+// $Id: NukeReadReformatStage.java,v 1.4 2008/02/07 14:14:33 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
 
@@ -62,16 +62,14 @@ class NukeReadReformatStage
   {
     super("NukeReadReformat", 
           "Creates a node which uses the NukeRead action.", 
-          stageInfo, 
-          context, 
-          client, 
-          nodeName, 
-	  sourceImageName, 
+          stageInfo, context, client, 
+          nodeName, sourceImageName, 
 	  new PluginContext("NukeReformat"));
 
     addLink(new LinkMod(resImageName, LinkPolicy.Dependency));
 
     addSingleParamValue("Mode", "Read & Reformat"); 
+    addSingleParamValue("ResizeType", "None"); 
     if(resImageName != null) {
       addSingleParamValue("OutputResSource", resImageName); 
       addSingleParamValue("ProxyResSource", resImageName); 
