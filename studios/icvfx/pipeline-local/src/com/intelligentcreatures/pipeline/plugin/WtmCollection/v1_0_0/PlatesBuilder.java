@@ -1,4 +1,4 @@
-// $Id: PlatesBuilder.java,v 1.1 2008/02/06 07:21:06 jim Exp $
+// $Id: PlatesBuilder.java,v 1.2 2008/02/06 07:43:43 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -183,13 +183,13 @@ class PlatesBuilder
 
     /* create the construct passes */ 
     {
-      // ConstructPass build = new BuildPass();
-      // addConstructPass(build);
+      ConstructPass build = new BuildPass();
+      addConstructPass(build);
       
-      // ConstructPass end = new FinalizePass();
-      // addConstructPass(end);
+      ConstructPass end = new FinalizePass();
+      addConstructPass(end);
       
-      // addPassDependency(build, end);
+      addPassDependency(build, end);
     }
 
     /* specify the layout of the parameters for each pass in the UI */ 
@@ -284,7 +284,7 @@ class PlatesBuilder
     public 
     SetupShotEssentials()
     {
-      super("SetupShotEssentials", 
+      super("Setup Shot Essentials", 
             "Set the common builder properties as well as essential stuff for all shots" + 
             "like project, sequence and shot names.");
     }
@@ -401,8 +401,8 @@ class PlatesBuilder
   {
     public 
     SetupImageParams()
-    {
-      super("SetupImageParams", 
+    { 
+      super("Setup Image Params", 
             "Setup the actual source image parameters.");
     }
 
@@ -416,12 +416,18 @@ class PlatesBuilder
       throws PipelineException
     {
       {
+	Path path = pShotNamer.getPlatesScannedParentPath();
+	ArrayList<String> pnames = findChildNodeNames(path); 
+	if((pnames == null) || pnames.isEmpty()) 
+	  throw new PipelineException
+	    ("Unable to find any scanned image nodes in (" + path + ")!"); 
+
 	EnumUtilityParam param =
           new EnumUtilityParam
           (aBackgroundPlate, 
            "Select the existing scanned images node to use as the background plates for " + 
            "this shot.", 
-           null, findChildNodeNames(pShotNamer.getPlatesScannedParentPath()));
+           pnames.get(0), pnames); 
         
         replaceParam(param);
       }
@@ -434,7 +440,7 @@ class PlatesBuilder
           new ListUtilityParam
           (aReferenceImages, 
            "Which reference images shot on set to include in the shot.", 
-           null, images, null, null);
+	   images, images, null, null);
         
         replaceParam(param);
       }
@@ -453,7 +459,7 @@ class PlatesBuilder
     public 
     GetImageNodeNames()
     {
-      super("GetImageNodeNames", 
+      super("Get Image Node Names", 
             "Get the names of the nodes containing the scanned images for the shot."); 
     }
 
@@ -508,7 +514,7 @@ class PlatesBuilder
     public 
     BuildPass()
     {
-      super("BuildPass", 
+      super("Build Pass", 
             "Creates the nodes which make up the Plates task."); 
     }
     
@@ -593,7 +599,7 @@ class PlatesBuilder
     public 
     FinalizePass()
     {
-      super("FinalizePass", 
+      super("Finalize Pass", 
 	    "The SimpleAssetBuilder pass that cleans everything up.");
     }
     
