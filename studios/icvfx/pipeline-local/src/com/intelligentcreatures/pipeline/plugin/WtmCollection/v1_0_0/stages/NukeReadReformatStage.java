@@ -1,8 +1,8 @@
-// $Id: PFTrackBuildStage.java,v 1.5 2008/02/07 14:14:33 jim Exp $
+// $Id: NukeReadReformatStage.java,v 1.1 2008/02/06 16:29:48 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
 
-import com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.*;
+import com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.*; 
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
@@ -12,15 +12,16 @@ import us.temerity.pipeline.stages.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   P F T R A C K   B U I L D   S T A G E                                                  */
+/*   N U K E   R E A D   R E F O R M A T   S T A G E                                        */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Creates a node which uses the PFTrackBuild action.
+ * Creates a node which uses the NukeReformat action to read one set of images and reformat
+ * them to match the resolution of a second set of images.
  */ 
 public 
-class PFTrackBuildStage 
-  extends StandardStage
+class NukeReadReformatStage 
+  extends NukeReadStage
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -41,41 +42,40 @@ class PFTrackBuildStage
    * @param nodeName
    *   The name of the node that is to be created.
    * 
-   * @param gridName
-   *   The name of the original grid node.
+   * @param sourceImageName
+   *   The name of source image node.
    * 
-   * @param platesName
-   *   The name of the scanned plates node.
-   * 
-   * @param vfxDataName
-   *   The name of VFX lens data node. 
+   * @param resImageName
+   *   The name of resolution source image node.
    */
   public
-  PFTrackBuildStage
+  NukeReadReformatStage
   (
    StageInformation stageInfo,
    UtilContext context,
    MasterMgrClient client, 
    String nodeName, 
-   String gridName, 
-   String platesName, 
-   String vfxDataName 
+   String sourceImageName, 
+   String resImageName
   )
     throws PipelineException
   {
-    super("PFTrackBuild", 
-          "Creates a node which uses the PFTrackBuild action.", 
+    super("NukeReadReformat", 
+          "Creates a node which uses the NukeRead action.", 
           stageInfo, 
           context, 
           client, 
           nodeName, 
-          "pts", 
-          null, 
-          new PluginContext("Touch"));   // new PluginContext("PFTrackBuild", "ICVFX")
+	  sourceImageName, 
+	  new PluginContext("NukeReformat"));
 
-    addLink(new LinkMod(gridName, LinkPolicy.Dependency));
-    addLink(new LinkMod(platesName, LinkPolicy.Dependency));
-    addLink(new LinkMod(vfxDataName, LinkPolicy.Association, LinkRelationship.None, null));
+    addLink(new LinkMod(resImageName, LinkPolicy.Dependency));
+
+    addSingleParamValue("Mode", "Read & Reformat"); 
+    if(resImageName != null) {
+      addSingleParamValue("OutputResSource", resImageName); 
+      addSingleParamValue("ProxyResSource", resImageName); 
+    }
   }
   
 
@@ -91,15 +91,15 @@ class PFTrackBuildStage
   public String 
   getStageFunction()
   {
-    return ICStageFunction.aPFTrackScene;
+    return ICStageFunction.aNukeScript;
   }
 
 
-
+   
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
  
-  private static final long serialVersionUID = -3670238520255972952L;
+  private static final long serialVersionUID = -2470341421601450474L;
 
 }

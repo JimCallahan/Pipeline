@@ -1,4 +1,4 @@
-// $Id: ShotNamer.java,v 1.3 2008/02/06 13:30:47 jim Exp $
+// $Id: ShotNamer.java,v 1.4 2008/02/06 16:29:48 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -184,7 +184,7 @@ class ShotNamer
   }
   
   /**
-   * Returns the fully resolved node name of the grouping node for all existing miscellanous 
+   * Returns the fully resolved name of the grouping node for all existing miscellanous 
    * on-set reference images. 
    * 
    * @param purpose
@@ -213,7 +213,7 @@ class ShotNamer
   }
     
   /**
-   * Returns the fully resolved node name of the node containing lens and other data
+   * Returns the fully resolved name of the node containing lens and other data
    * collected on-set about the shot.
    */
   public String
@@ -225,7 +225,7 @@ class ShotNamer
   }
 
   /**
-   * Returns the fully resolved node name of the node for the PFTrack scene which 
+   * Returns the fully resolved name of the node for the PFTrack scene which 
    * is used to specify the lens distortion by undistorting a reference grid.
    */ 
   public String
@@ -237,11 +237,63 @@ class ShotNamer
     return path.toString(); 
   }
 
+  /**
+   * Returns the fully resolved name of the node containing the distorted reference 
+   * grid image exported from the PFTrack scene. 
+   */ 
+  public String
+  getDistortedGridNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Prepare), 
+			 joinNames(getFullShotName(), "distorted_grid")); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node containing a Nuke script fragment 
+   * that will read the distorted reference grid image.
+   */ 
+  public String
+  getReadDistortedNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Prepare), 
+			 new Path(AppDirs.Nuke.toDirPath(), 
+				  joinNames(getFullShotName(), "read_distorted"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node containing a Nuke script fragment 
+   * that will read the original reference grid and reformatting it to match the resolution
+   * of the distorted grid image.
+   */ 
+  public String
+  getReformatOriginalNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Prepare), 
+			 new Path(AppDirs.Nuke.toDirPath(), 
+				  joinNames(getFullShotName(), "reformat_original"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node containing a Nuke script used by
+   * artists to manually match the distortion of the PFTrack exported grid with the 
+   * original reference grid.
+   */ 
+  public String
+  getGridAlignNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Edit), 
+			 new Path(AppDirs.Nuke.toDirPath(), 
+				  joinNames(getFullShotName(), "grid_align"))); 
+    return path.toString(); 
+  }
+
+  
+  
 
 
-
-
-   
   /*----------------------------------------------------------------------------------------*/
   /*   T R A C K I N G                                                                      */
   /*----------------------------------------------------------------------------------------*/

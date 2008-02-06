@@ -1,4 +1,4 @@
-// $Id: ProjectNamer.java,v 1.3 2008/02/06 13:30:47 jim Exp $
+// $Id: ProjectNamer.java,v 1.5 2008/02/06 18:17:43 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -119,6 +119,32 @@ class ProjectNamer
     return path.toString();
   }
   
+  /**
+   * Returns the fully resolved name of the node containing a Nuke script fragment 
+   * that will grade and warp the original reference grid images.
+   */ 
+  public String
+  getGridGradeWarpNode() 
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Plates), 
+			 new Path(AppDirs.Nuke.toDirPath(), "grid_grade_warp"));
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node containing a Nuke script fragment 
+   * that will grade the distorted reference grid images and diff them against the graded
+   * and warped original reference grid images.
+   */ 
+  public String
+  getGridGradeDiffNode() 
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Plates), 
+			 new Path(AppDirs.Nuke.toDirPath(), "grid_grade_diff"));
+    return path.toString(); 
+  }
+
+
 
   
   

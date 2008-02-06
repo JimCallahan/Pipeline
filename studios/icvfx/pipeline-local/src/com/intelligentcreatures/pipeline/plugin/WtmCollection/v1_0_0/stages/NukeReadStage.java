@@ -1,8 +1,8 @@
-// $Id: PFTrackBuildStage.java,v 1.5 2008/02/07 14:14:33 jim Exp $
+// $Id: NukeReadStage.java,v 1.1 2008/02/06 16:29:48 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
 
-import com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.*;
+import com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.*; 
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
@@ -12,20 +12,74 @@ import us.temerity.pipeline.stages.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   P F T R A C K   B U I L D   S T A G E                                                  */
+/*   N U K E   R E A D   S T A G E                                                          */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Creates a node which uses the PFTrackBuild action.
+ * Creates a node which uses the NukeRead action.
  */ 
 public 
-class PFTrackBuildStage 
+class NukeReadStage 
   extends StandardStage
-{
+{ 
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * Construct a new stage.
+   * 
+   * @param name
+   *   The name of the stage.
+   * 
+   * @param desc
+   *   A description of what the stage should do.
+   * 
+   * @param stageInfo
+   *   Class containing basic information shared among all stages.
+   * 
+   * @param context
+   *   The {@link UtilContext} that this stage acts in.
+   * 
+   * @param client
+   *   The instance of Master Manager that the stage performs all its actions in.
+   * 
+   * @param nodeName
+   *   The name of the node that is to be created.
+   * 
+   * @param imageName
+   *   The name of source image node.
+   */
+  protected
+  NukeReadStage
+  (
+   String name, 
+   String desc,
+   StageInformation stageInfo,
+   UtilContext context,
+   MasterMgrClient client, 
+   String nodeName, 
+   String imageName,
+   PluginContext action
+  )
+    throws PipelineException
+  {
+    super(name, 
+	  desc,
+          stageInfo, 
+          context, 
+          client, 
+          nodeName, 
+          "nk", 
+          null, 
+	  action); 
+
+    addLink(new LinkMod(imageName, LinkPolicy.Dependency));
+
+    if(imageName != null) 
+      addSingleParamValue("ImageSource", imageName); 
+  }
+
   /**
    * Construct a new stage.
    * 
@@ -41,41 +95,28 @@ class PFTrackBuildStage
    * @param nodeName
    *   The name of the node that is to be created.
    * 
-   * @param gridName
-   *   The name of the original grid node.
-   * 
-   * @param platesName
-   *   The name of the scanned plates node.
-   * 
-   * @param vfxDataName
-   *   The name of VFX lens data node. 
+   * @param imageName
+   *   The name of source image node.
    */
   public
-  PFTrackBuildStage
+  NukeReadStage
   (
    StageInformation stageInfo,
    UtilContext context,
    MasterMgrClient client, 
    String nodeName, 
-   String gridName, 
-   String platesName, 
-   String vfxDataName 
+   String imageName
   )
     throws PipelineException
   {
-    super("PFTrackBuild", 
-          "Creates a node which uses the PFTrackBuild action.", 
-          stageInfo, 
-          context, 
-          client, 
-          nodeName, 
-          "pts", 
-          null, 
-          new PluginContext("Touch"));   // new PluginContext("PFTrackBuild", "ICVFX")
-
-    addLink(new LinkMod(gridName, LinkPolicy.Dependency));
-    addLink(new LinkMod(platesName, LinkPolicy.Dependency));
-    addLink(new LinkMod(vfxDataName, LinkPolicy.Association, LinkRelationship.None, null));
+    this("NukeRead", 
+	 "Creates a node which uses the NukeRead action.", 
+	 stageInfo, 
+	 context, 
+	 client, 
+	 nodeName, 
+	 imageName, 
+	 new PluginContext("NukeRead"));
   }
   
 
@@ -91,15 +132,15 @@ class PFTrackBuildStage
   public String 
   getStageFunction()
   {
-    return ICStageFunction.aPFTrackScene;
+    return ICStageFunction.aNukeScript;
   }
 
 
-
+   
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
  
-  private static final long serialVersionUID = -3670238520255972952L;
+  private static final long serialVersionUID = 7286056856278936588L;
 
 }

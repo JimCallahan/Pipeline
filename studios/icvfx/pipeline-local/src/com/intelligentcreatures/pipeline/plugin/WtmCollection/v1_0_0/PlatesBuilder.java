@@ -1,4 +1,4 @@
-// $Id: PlatesBuilder.java,v 1.4 2008/02/06 13:30:47 jim Exp $
+// $Id: PlatesBuilder.java,v 1.5 2008/02/06 16:29:48 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -102,8 +102,10 @@ class PlatesBuilder
 	pProjectNamer = new ProjectNamer(mclient, qclient, pStudioDefs);	
       pShotNamer = shotNamer;
 
-      pRequiredNodeNames = new TreeSet<String>();
+      pRequiredNodeNames = new TreeSet<String>(); 
       pMiscReferenceNodeNames = new TreeSet<String>(); 
+
+      pFinalStages = new ArrayList<FinalizableStage>(); 
 
       // ... 
     }
@@ -166,10 +168,13 @@ class PlatesBuilder
       setDefaultEditor(ICStageFunction.aNone, null);
 
       setDefaultEditor(ICStageFunction.aMayaScene, new PluginContext("MayaProject"));
+
       setDefaultEditor(ICStageFunction.aTextFile, new PluginContext("NEdit"));
       setDefaultEditor(ICStageFunction.aScriptFile, new PluginContext("NEdit"));
+
       setDefaultEditor(ICStageFunction.aRenderedImage, new PluginContext("NukeViewer"));
       setDefaultEditor(ICStageFunction.aSourceImage, new PluginContext("NukeViewer"));
+      setDefaultEditor(ICStageFunction.aNukeScript, new PluginContext("Nuke"));
 
       setDefaultEditor(ICStageFunction.aPFTrackScene, new PluginContext("PFTrack", "ICVFX"));
     }
@@ -496,6 +501,15 @@ class PlatesBuilder
       /* the original undistored grid node */ 
       pPlatesOriginalGridNodeName = pProjectNamer.getPlatesOriginalGridNode();
       pRequiredNodeNames.add(pPlatesOriginalGridNodeName); 
+
+      /* misc Nuke script fragements */ 
+      {
+	pGridGradeWarpNodeName = pProjectNamer.getGridGradeWarpNode();
+	pRequiredNodeNames.add(pGridGradeWarpNodeName); 
+	
+	pGridGradeDiffNodeName = pProjectNamer.getGridGradeDiffNode();
+	pRequiredNodeNames.add(pGridGradeDiffNodeName); 
+      }
     }
 
     private static final long serialVersionUID = 7830642124642481656L;
@@ -554,25 +568,75 @@ class PlatesBuilder
 	String vfxShotDataNodeName = pShotNamer.getVfxShotDataNode(); 
 	{
 	  LensInfoStage stage = 
-	    new LensInfoStage(pStageInfo, pContext, pClient, 
-			      vfxShotDataNodeName); 
+	    new LensInfoStage(pStageInfo, pContext, pClient, vfxShotDataNodeName); 
 	  addTaskAnnotation(stage, NodePurpose.Edit); 
 	  stage.build(); 
 	}
 
-	String solveDistortion = pShotNamer.getSolveDistortionNode(); 
+	String solveDistortionNodeName = pShotNamer.getSolveDistortionNode(); 
 	{
 	  PFTrackBuildStage stage = 
 	    new PFTrackBuildStage(pStageInfo, pContext, pClient, 
-				  solveDistortion, pPlatesOriginalGridNodeName, 
+				  solveDistortionNodeName, pPlatesOriginalGridNodeName, 
 				  pBackgroundPlateNodeName, vfxShotDataNodeName); 
 	  addTaskAnnotation(stage, NodePurpose.Edit); 
 	  stage.build();  
-	  addToQueueList(solveDistortion);
-	  addToDisableList(solveDistortion);
+	  addToQueueList(solveDistortionNodeName);
+	  addToDisableList(solveDistortionNodeName);
 	}
 	
+	String distortedGridNodeName = pShotNamer.getDistortedGridNode(); 
+	{
+	  DistortedGridStage stage = 
+	    new DistortedGridStage(pStageInfo, pContext, pClient, 
+				   distortedGridNodeName, pPlatesOriginalGridNodeName, 
+				   solveDistortionNodeName);
+	  addTaskAnnotation(stage, NodePurpose.Prepare); 
+	  stage.build();  
+	  pFinalStages.add(stage);
+	}
+
+	String readDistortedNodeName = pShotNamer.getReadDistortedNode(); 
+	{
+	  NukeReadStage stage = 
+	    new NukeReadStage(pStageInfo, pContext, pClient, 
+			      readDistortedNodeName, distortedGridNodeName); 
+	  addTaskAnnotation(stage, NodePurpose.Prepare); 
+	  stage.build();  
+	}
 	
+	String reformatOriginalNodeName = pShotNamer.getReformatOriginalNode(); 
+	{
+	  NukeReadReformatStage stage = 
+	    new NukeReadReformatStage(pStageInfo, pContext, pClient, 
+				      reformatOriginalNodeName, 
+				      pPlatesOriginalGridNodeName, distortedGridNodeName); 
+	  addTaskAnnotation(stage, NodePurpose.Prepare); 
+	  stage.build();  
+	}
+
+	String gridAlignNodeName = pShotNamer.getGridAlignNode();
+	{
+	  LinkedList<String> sources = new LinkedList<String>(); 
+	  sources.add(reformatOriginalNodeName); 
+	  sources.add(pGridGradeWarpNodeName); 
+	  sources.add(readDistortedNodeName); 
+	  sources.add(pGridGradeDiffNodeName); 
+ 
+	  NukeCatStage stage = 
+	    new NukeCatStage(pStageInfo, pContext, pClient, gridAlignNodeName, sources); 
+	  stage.addLink(new LinkMod(pPlatesOriginalGridNodeName, LinkPolicy.Reference));
+	  stage.addLink(new LinkMod(distortedGridNodeName, LinkPolicy.Reference));
+	  addTaskAnnotation(stage, NodePurpose.Edit); 
+	  stage.build();  
+	  addToQueueList(solveDistortionNodeName);
+	  addToDisableList(solveDistortionNodeName);
+	}
+
+
+
+	// /prod/wtm/ri/120/plates/focus/ri120_grid_align
+
         /* 
 
         Stage stage = new Stage(...  rigSource); 
@@ -648,26 +712,36 @@ class PlatesBuilder
 	    "The SimpleAssetBuilder pass that cleans everything up.");
     }
     
+    /**
+     * Returns a set of nodes that have to be in a Finished queue state before the
+     * buildPhase() method is called.
+     */ 
     @Override
     public TreeSet<String> 
     preBuildPhase()
     {
-      TreeSet<String> toReturn = new TreeSet<String>(getDisableList());
-//       toReturn.addAll(getDisableList());
-//       for (AssetBuilderModelStage stage : pModelStages) {
-// 	toReturn.add(stage.getNodeName());
-//       }
-      return toReturn;
+      TreeSet<String> regenerate = new TreeSet<String>();
+
+      regenerate.addAll(getDisableList());
+      for(FinalizableStage stage : pFinalStages) 
+ 	regenerate.add(stage.getNodeName());
+
+      return regenerate;
     }
     
+    /**
+     * Remove any placeholders and temporary settings used during construction and 
+     * prepare the nodes for final check-in. 
+     */ 
     @Override
     public void 
     buildPhase() 
       throws PipelineException
     {
-  //     for (AssetBuilderModelStage stage : pModelStages)
-// 	stage.finalizeStage();
-//       disableActions();
+      for(FinalizableStage stage : pFinalStages) 
+	stage.finalizeStage();
+
+      disableActions();
     }
     
     private static final long serialVersionUID = 2931899251798393266L;
@@ -715,6 +789,11 @@ class PlatesBuilder
   private TreeSet<String> pRequiredNodeNames;
 
   /**
+   * The stages which require running a finalizeStage() method before check-in.
+   */ 
+  private ArrayList<FinalizableStage> pFinalStages; 
+
+  /**
    * Whether all nodes should be checked-in at the end of execution. <P> 
    * 
    * If set to (false), node locking will not be peformed.
@@ -722,7 +801,7 @@ class PlatesBuilder
   private boolean pCheckInWhenDone;
 
 
-  /*-- PLATES ------------------------------------------------------------------------------*/
+  /*-- PLATE PREREQUISITES -----------------------------------------------------------------*/
 
   /**
    * The fully resolved name of background plates node.
@@ -738,6 +817,12 @@ class PlatesBuilder
    * The fully resolved name of the original undistored grid node.
    */ 
   private String pPlatesOriginalGridNodeName; 
+
+  /**
+   * Miscellaneous Nuke script fragements used in the undistort process.
+   */ 
+  private String pGridGradeWarpNodeName; 
+  private String pGridGradeDiffNodeName; 
 
 
   // ... 

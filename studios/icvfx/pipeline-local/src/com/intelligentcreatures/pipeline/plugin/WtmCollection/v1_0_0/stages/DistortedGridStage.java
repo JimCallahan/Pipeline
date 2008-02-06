@@ -1,4 +1,4 @@
-// $Id: PFTrackBuildStage.java,v 1.5 2008/02/07 14:14:33 jim Exp $
+// $Id: DistortedGridStage.java,v 1.1 2008/02/06 16:29:48 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
 
@@ -12,15 +12,17 @@ import us.temerity.pipeline.stages.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   P F T R A C K   B U I L D   S T A G E                                                  */
+/*   D I S T O R T E D   G R I D   S T A G E                                                */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Creates a node which uses the PFTrackBuild action.
+ * Creates a placeholder image for the post-PFTrack distored grid by copying the original
+ * grid image. 
  */ 
 public 
-class PFTrackBuildStage 
+class DistortedGridStage 
   extends StandardStage
+  implements FinalizableStage
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -44,22 +46,18 @@ class PFTrackBuildStage
    * @param gridName
    *   The name of the original grid node.
    * 
-   * @param platesName
-   *   The name of the scanned plates node.
-   * 
-   * @param vfxDataName
-   *   The name of VFX lens data node. 
+   * @param pftrackName
+   *   The name of the PFTrack scene node.
    */
   public
-  PFTrackBuildStage
+  DistortedGridStage
   (
    StageInformation stageInfo,
    UtilContext context,
    MasterMgrClient client, 
    String nodeName, 
    String gridName, 
-   String platesName, 
-   String vfxDataName 
+   String pftrackName
   )
     throws PipelineException
   {
@@ -69,16 +67,16 @@ class PFTrackBuildStage
           context, 
           client, 
           nodeName, 
-          "pts", 
+          "tif", 
           null, 
-          new PluginContext("Touch"));   // new PluginContext("PFTrackBuild", "ICVFX")
+          new PluginContext("Copy"));   
 
+    pOriginalGridNodeName = gridName;
     addLink(new LinkMod(gridName, LinkPolicy.Dependency));
-    addLink(new LinkMod(platesName, LinkPolicy.Dependency));
-    addLink(new LinkMod(vfxDataName, LinkPolicy.Association, LinkRelationship.None, null));
+    addLink(new LinkMod(pftrackName, LinkPolicy.Association, LinkRelationship.None, null));
   }
-  
 
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   O V E R R I D E S                                                                    */
@@ -91,7 +89,25 @@ class PFTrackBuildStage
   public String 
   getStageFunction()
   {
-    return ICStageFunction.aPFTrackScene;
+    return ICStageFunction.aRenderedImage;
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   F I N A L I Z A B L E   S T A G E                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Finishes off the work of the stage after it has been queued.
+   */
+  public void 
+  finalizeStage() 
+    throws PipelineException
+  {
+    removeAction(pRegisteredNodeName);
+    if(pRegisteredNodeMod.getSourceNames().contains(pOriginalGridNodeName)) 
+      pClient.unlink(getAuthor(), getView(), pRegisteredNodeName, pOriginalGridNodeName);
   }
 
 
@@ -100,6 +116,17 @@ class PFTrackBuildStage
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
  
-  private static final long serialVersionUID = -3670238520255972952L;
+  private static final long serialVersionUID = 7065661211422289862L;
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * The name of the original grid node.
+   */ 
+  private String pOriginalGridNodeName; 
 
 }
