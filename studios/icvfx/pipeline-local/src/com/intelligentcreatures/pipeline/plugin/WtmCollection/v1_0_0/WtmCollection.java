@@ -1,4 +1,4 @@
-// $Id: WtmCollection.java,v 1.1 2008/02/04 12:05:12 jim Exp $
+// $Id: WtmCollection.java,v 1.2 2008/02/06 07:21:06 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -54,7 +54,7 @@ class WtmCollection
     String pkg = "com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.";
 
     TreeMap<String, String> toReturn = new TreeMap<String, String>();
-    //toReturn.put("Plates", pkg + "PlatesBuilder");
+    toReturn.put("Plates", pkg + "PlatesBuilder");
     
     return toReturn;
   }
@@ -65,6 +65,6 @@ class WtmCollection
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  //private static final long serialVersionUID =
+  private static final long serialVersionUID = -112789036519024010L;
 
 }

@@ -1,4 +1,4 @@
-// $Id: StudioDefinitions.java,v 1.2 2008/02/05 03:03:07 jim Exp $
+// $Id: StudioDefinitions.java,v 1.3 2008/02/06 07:21:06 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -13,12 +13,17 @@ import us.temerity.pipeline.builder.UtilContext;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Provides information about the top-level organization at the studio for all builders 
- * in this collection.<P> 
+ * Provides a set of convienence methods used by virtually all Namers and Builders to lookup
+ * or generate the common node name path components related to projects, sequences, shots 
+ * and assets. <P> 
  * 
- * The structure is based off the WTM project, but some or all of the builders in this 
- * collection could be reused and modified for other future projects by subclassing and 
- * overriding methods in this class.
+ * Instances of this class are passed to the constructors of Builders and by these builder
+ * instances on to their internal sub-builders and namer instances. <P> 
+ * 
+ * NOTE: The node directory structure provided is based off the WTM project, but some or 
+ * all of the builders in this collection could be reused and modified for other future 
+ * projects with completely different conventions by subclassing and overriding methods 
+ * in this class.
  */ 
 public 
 class StudioDefinitions 
@@ -36,16 +41,16 @@ class StudioDefinitions
    * 
    * @param qclient
    *   The instance of the Queue Manager that the utility will use to execute.
-   * 
+   *
    * @param context
-   *   The {@link UtilContext} that this utility is going to operate in.
+   *   The working area author|view and toolset environment.
    */
   public 
   StudioDefinitions
   (
-    MasterMgrClient mclient,
-    QueueMgrClient qclient,
-    UtilContext context
+   MasterMgrClient mclient,
+   QueueMgrClient qclient,
+   UtilContext context
   ) 
     throws PipelineException 
   {
@@ -79,7 +84,7 @@ class StudioDefinitions
   public static Path
   getProjectPath
   (
-    String project    
+   String project    
   )
   {
     return new Path(getProjectsParentPath(), project);
@@ -108,7 +113,7 @@ class StudioDefinitions
   public static Path
   getSequencesParentPath
   (
-    String project
+   String project
   )
   {
     return new Path(getProjectPath(project), aSequencesParent);
@@ -178,7 +183,7 @@ class StudioDefinitions
 
   /**
    * Returns the fully resolved node directory path to the root directory of the given 
-   * shots within a sequence in a project.
+   * shot within a sequence in a project.
    * 
    * @param project
    *   The short name of the project.
@@ -192,9 +197,9 @@ class StudioDefinitions
   public static Path
   getShotPath
   (
-    String project,
-    String sequence, 
-    String shot
+   String project,
+   String sequence, 
+   String shot
   )
   {
     return new Path(getShotsParentPath(project, sequence), shot); 
@@ -262,7 +267,8 @@ class StudioDefinitions
   }
 
   /** 
-   * Returns the short names of the root directories of all existing assets for the given project.
+   * Returns the short names of the root directories of all existing assets for the given 
+   * project.
    * 
    * @param project
    *   The short name of the project.
@@ -302,9 +308,9 @@ class StudioDefinitions
    * Returns a table of the short names of all existing projects, sequences and shots 
    * suitable for use when initializing the DoubleMapUtilityParam of builders. <P> 
    * 
-   * This method preppends a "[[NEW]]" emtrie to the existing project, sequence and shot 
-   * entries to provide the user of the builder the opportunity to either reuse or create 
-   * each of these entities when running the builder.
+   * This method preppends a "[[NEW]]" entrie to the existing sequence and shot entries 
+   * to provide the user of the builder the opportunity to either reuse or create each of 
+   * these entities when running the builder.
    */ 
   public DoubleMap<String, String, ArrayList<String>>
   getAllProjectsAllNamesForParam() 
@@ -313,8 +319,8 @@ class StudioDefinitions
     DoubleMap<String, String, ArrayList<String>> toReturn = 
       new DoubleMap<String, String, ArrayList<String>>();
 
-    for (String project : getProjectsList()) {
-      for (String seq : getSequencesList(project)) {
+    for(String project : getProjectsList()) {
+      for(String seq : getSequencesList(project)) {
         ArrayList<String> shots = new ArrayList<String>(); 
         shots.add(aNEW);
 	shots.addAll(getShotsList(project, seq));
@@ -327,14 +333,10 @@ class StudioDefinitions
       toReturn.put(project, aNEW, shots);
     }
 
-    ArrayList<String> shots = new ArrayList<String>();
-    shots.add(aNEW);
-    toReturn.put(aNEW, aNEW, shots);
-    
     return toReturn;
   }
-
   
+
   
   /*----------------------------------------------------------------------------------------*/
   /*   O V E R R I D E S                                                                    */
@@ -354,15 +356,25 @@ class StudioDefinitions
 
 
   /*----------------------------------------------------------------------------------------*/
+  /*   P U B L I C   S T A T I C S                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  public final static String aProjectName  = "ProjectName";
+  public final static String aSequenceName = "SequenceName";
+  public final static String aShotName     = "ShotName";
+
+  public final static String aNEW = "[[NEW]]";
+  
+
+
+  /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
   private static final long serialVersionUID = -8108986071922344646L;
 
-  public static String aProjectsParent  = "projects";
-  public static String aSequencesParent = "shots";
-  public static String aAssetsParent    = "assets"; 
-  
-  public static String aNEW = "[[NEW]]";
+  private final static String aProjectsParent  = "projects";
+  private final static String aSequencesParent = "shots";
+  private final static String aAssetsParent    = "assets"; 
   
 }

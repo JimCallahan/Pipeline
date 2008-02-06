@@ -11,5 +11,12 @@ sourceroot = @ROOT_INST_PARENT_DIR@/pipeline-local/src
 javadir = $(sourceroot)/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0
 
 java_DATA = \
-  StudioDefinitions.java
-
+  AppDirs.java \
+  ICTaskBuilder.java \
+  NodePurpose.java \
+  PlatesBuilder.java \
+  ProjectNamer.java \
+  ShotNamer.java \
+  StudioDefinitions.java \
+  TaskTypes.java \
+  WtmCollection.java
