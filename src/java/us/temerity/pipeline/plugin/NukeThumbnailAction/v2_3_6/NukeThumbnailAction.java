@@ -181,21 +181,22 @@ class NukeThumbnailAction
 	throw new PipelineException
           ("The NukeThumbnail Action only accepts a single source node.");
 
-      if(!fseq.hasFrameNumbers())
-	throw new PipelineException
-	("The NukeThumbnail Action requires that the source file sequence " + 
-	  "(" + fseq + ") has frame numbers!");
+      Path fpath = null;
+      if(fseq.hasFrameNumbers()) {
+        int frame = getSingleIntegerParamValue(aImageNumber, new Range<Integer>(0, null));
+        if(!range.isValid(frame))
+          throw new PipelineException
+            ("The specified Image Number (" + frame + ") does not exist in the source " + 
+             "file sequence (" + fseq + ")!"); 
 
-      int frame = getSingleIntegerParamValue(aImageNumber, new Range<Integer>(0, null));
+        fpath = fseq.getPath(range.frameToIndex(frame));
+      }
+      else {
+        fpath = fseq.getPath(0);
+      }
 
-      if(!range.isValid(frame))
-	throw new PipelineException
-	("The specified Image Number (" + frame + ") does not exist in the source file " + 
-	  "sequence (" + fseq + ")!"); 
-
-      int index = range.frameToIndex(frame);
       Path spath = new Path("WORKING" + sname);
-      sourcePath = new Path(spath.getParentPath(), fseq.getPath(index));
+      sourcePath = new Path(spath.getParentPath(), fpath); 
     }
 
     /* the target thumbnail image path */
