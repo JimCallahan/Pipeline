@@ -1,4 +1,4 @@
-// $Id: ShotNamer.java,v 1.2 2008/02/06 11:29:28 jim Exp $
+// $Id: ShotNamer.java,v 1.3 2008/02/06 13:30:47 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -215,15 +215,25 @@ class ShotNamer
   /**
    * Returns the fully resolved node name of the node containing lens and other data
    * collected on-set about the shot.
-   * 
-   * @param purpose
-   *   The purpose of the node within the task.  Only supports: Prepare or Product.
    */
   public String
   getVfxShotDataNode() 
   {
     Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Edit), 
 			 joinNames(getFullShotName(), "vfx_shot_data")); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved node name of the node for the PFTrack scene which 
+   * is used to specify the lens distortion by undistorting a reference grid.
+   */ 
+  public String
+  getSolveDistortionNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Edit), 
+			 new Path(AppDirs.PFTrack.toDirPath(), 
+				  joinNames(getFullShotName(), "solve_distortion"))); 
     return path.toString(); 
   }
 

@@ -1,4 +1,4 @@
-// $Id: PlatesBuilder.java,v 1.3 2008/02/06 11:29:28 jim Exp $
+// $Id: PlatesBuilder.java,v 1.4 2008/02/06 13:30:47 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -163,16 +163,15 @@ class PlatesBuilder
     
     /* setup the default editors */ 
     {
-      // StageFunction.X is just a static string key to the editors table
-      // looked up based on the value of a stages getStageFunction() method.
+      setDefaultEditor(ICStageFunction.aNone, null);
 
-//       setDefaultEditor(StageFunction.aMayaScene, new PluginContext("MayaProject"));
-//       setDefaultEditor(StageFunction.aNone, new PluginContext("Emacs"));
-//       setDefaultEditor(StageFunction.aTextFile, new PluginContext("Emacs"));
-//       setDefaultEditor(StageFunction.aScriptFile, new PluginContext("Emacs"));
-//       setDefaultEditor(StageFunction.aRenderedImage, new PluginContext("Shake"));
-//       setDefaultEditor(StageFunction.aSourceImage, new PluginContext("Gimp"));
-//       setDefaultEditor(StageFunction.aMotionBuilderScene, null);
+      setDefaultEditor(ICStageFunction.aMayaScene, new PluginContext("MayaProject"));
+      setDefaultEditor(ICStageFunction.aTextFile, new PluginContext("NEdit"));
+      setDefaultEditor(ICStageFunction.aScriptFile, new PluginContext("NEdit"));
+      setDefaultEditor(ICStageFunction.aRenderedImage, new PluginContext("NukeViewer"));
+      setDefaultEditor(ICStageFunction.aSourceImage, new PluginContext("NukeViewer"));
+
+      setDefaultEditor(ICStageFunction.aPFTrackScene, new PluginContext("PFTrack", "ICVFX"));
     }
 
     /* create the construct passes */ 
@@ -555,11 +554,24 @@ class PlatesBuilder
 	String vfxShotDataNodeName = pShotNamer.getVfxShotDataNode(); 
 	{
 	  LensInfoStage stage = 
-	    new LensInfoStage(pStageInfo, pContext, pClient, vfxShotDataNodeName); 
+	    new LensInfoStage(pStageInfo, pContext, pClient, 
+			      vfxShotDataNodeName); 
 	  addTaskAnnotation(stage, NodePurpose.Edit); 
 	  stage.build(); 
 	}
 
+	String solveDistortion = pShotNamer.getSolveDistortionNode(); 
+	{
+	  PFTrackBuildStage stage = 
+	    new PFTrackBuildStage(pStageInfo, pContext, pClient, 
+				  solveDistortion, pPlatesOriginalGridNodeName, 
+				  pBackgroundPlateNodeName, vfxShotDataNodeName); 
+	  addTaskAnnotation(stage, NodePurpose.Edit); 
+	  stage.build();  
+	  addToQueueList(solveDistortion);
+	  addToDisableList(solveDistortion);
+	}
+	
 	
         /* 
 

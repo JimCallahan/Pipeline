@@ -1,6 +1,8 @@
-// $Id: LensInfoStage.java,v 1.3 2008/02/06 16:29:48 jim Exp $
+// $Id: PFTrackBuildStage.java,v 1.1 2008/02/06 13:30:47 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
+
+import com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
@@ -10,14 +12,14 @@ import us.temerity.pipeline.stages.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   L E N S   D A T A   S T A G E                                                          */
+/*   P F T R A C K   B U I L D   S T A G E                                                  */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Creates a node which uses the LensInfo action.
+ * Creates a node which uses the PFTrackBuild action.
  */ 
 public 
-class LensInfoStage 
+class PFTrackBuildStage 
   extends StandardStage
 {
   /*----------------------------------------------------------------------------------------*/
@@ -38,26 +40,42 @@ class LensInfoStage
    * 
    * @param nodeName
    *   The name of the node that is to be created.
+   * 
+   * @param gridName
+   *   The name of the original grid node.
+   * 
+   * @param platesName
+   *   The name of the scanned plates node.
+   * 
+   * @param vfxDataName
+   *   The name of VFX lens data node. 
    */
   public
-  LensInfoStage
+  PFTrackBuildStage
   (
    StageInformation stageInfo,
    UtilContext context,
    MasterMgrClient client, 
-   String nodeName
+   String nodeName, 
+   String gridName, 
+   String platesName, 
+   String vfxDataName 
   )
     throws PipelineException
   {
-    super("LensInfo", 
-          "Creates a node which uses the LensInfo action.", 
+    super("PFTrackBuild", 
+          "Creates a node which uses the PFTrackBuild action.", 
           stageInfo, 
           context, 
           client, 
           nodeName, 
+          "pts", 
           null, 
-          null, 
-          new PluginContext("LensInfo", "ICVFX"));
+          new PluginContext("Touch"));   // new PluginContext("PFTrackBuild", "ICVFX")
+
+    addLink(new LinkMod(gridName, LinkPolicy.Dependency));
+    addLink(new LinkMod(platesName, LinkPolicy.Dependency));
+    addLink(new LinkMod(vfxDataName, LinkPolicy.Association));
   }
   
 
@@ -73,7 +91,7 @@ class LensInfoStage
   public String 
   getStageFunction()
   {
-    return StageFunction.aNone;
+    return ICStageFunction.aPFTrackScene;
   }
 
 
@@ -82,6 +100,6 @@ class LensInfoStage
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
  
-  private static final long serialVersionUID = -1458573679042030943L;
+  private static final long serialVersionUID = -3670238520255972952L;
 
 }
