@@ -1,4 +1,4 @@
-// $Id: JNodeAnnotationsPanel.java,v 1.11 2007/12/16 11:03:59 jim Exp $
+// $Id: JNodeAnnotationsPanel.java,v 1.12 2008/02/06 02:38:12 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -87,19 +87,19 @@ class JNodeAnnotationsPanel
 	item.setActionCommand("apply");
 	item.addActionListener(this);
 	pWorkingPopup.add(item);
-
-	item = new JMenuItem("Add Annotation...");
-	pAddAnnotationItem = item;
-	item.setActionCommand("add-annotation");
-	item.addActionListener(this);
-	pWorkingPopup.add(item);
-
-	pWorkingPopup.addSeparator();
       }
 
       JPopupMenu menus[] = { pWorkingPopup, pCheckedInPopup };
       int wk;
       for(wk=0; wk<menus.length; wk++) {
+	item = new JMenuItem("Add Annotation...");
+	pAddAnnotationItem = item;
+	item.setActionCommand("add-annotation");
+	item.addActionListener(this);
+	menus[wk].add(item);
+
+	menus[wk].addSeparator();
+
 	item = new JMenuItem((wk == 1) ? "View" : "Edit");
 	pEditItems[wk] = item;
 	item.setActionCommand("edit");
