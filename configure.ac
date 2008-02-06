@@ -9,7 +9,7 @@ AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(Pipeline, 2.4.1b2)
+AM_INIT_AUTOMAKE(Pipeline, 2.4.1b3)
                            
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
@@ -1857,6 +1857,15 @@ AC_CONFIG_FILES([
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/Makefile
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/Makefile
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/Makefile
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/ApproveTaskAnnotation/Makefile
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/ApproveTaskAnnotation/v1_0_0/Makefile
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/ApproveTaskAnnotation/v1_0_0/Makefile.local
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/CommonTaskAnnotation/Makefile
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/CommonTaskAnnotation/v1_0_0/Makefile
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/CommonTaskAnnotation/v1_0_0/Makefile.local
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/SubmitTaskAnnotation/Makefile
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/SubmitTaskAnnotation/v1_0_0/Makefile
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/SubmitTaskAnnotation/v1_0_0/Makefile.local
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/LensInfoAction/Makefile
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/LensInfoAction/v1_0_0/Makefile
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/LensInfoAction/v1_0_0/Makefile.local
@@ -1902,6 +1911,21 @@ AC_CONFIG_FILES([
   studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ModelReplaceAction/Makefile
   studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ModelReplaceAction/v1_2_0/Makefile
   studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ModelReplaceAction/v1_2_0/Makefile.local
+
+  studios/TheO/Makefile
+  studios/TheO/pipeline-local/.classpath
+  studios/TheO/pipeline-local/.project 
+  studios/TheO/pipeline-local/ant.xml
+  studios/TheO/pipeline-local/Makefile
+  studios/TheO/pipeline-local/src/Makefile
+  studios/TheO/pipeline-local/src/Makefile.local
+  studios/TheO/pipeline-local/src/com/Makefile
+  studios/TheO/pipeline-local/src/com/theorphanage/Makefile
+  studios/TheO/pipeline-local/src/com/theorphanage/pipeline/Makefile
+  studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/Makefile
+  studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/ZohanCollection/Makefile
+  studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/ZohanCollection/v1_0_0/Makefile
+  studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/ZohanCollection/v1_0_0/Makefile.local
 
   rpm/Makefile
   rpm/pipeline.spec.A
