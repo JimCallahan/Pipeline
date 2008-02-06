@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.BaseUtil;
+import us.temerity.pipeline.builder.UtilContext;
 
 public 
 class StudioDefinitions 
@@ -14,14 +15,16 @@ class StudioDefinitions
   StudioDefinitions
   (
     MasterMgrClient mclient,
-    QueueMgrClient qclient
+    QueueMgrClient qclient,
+    UtilContext context
   ) 
     throws PipelineException 
   {
     super("StudioDefinitions",
           "Provides basic information about where things are located in the default Orphanage Pipeline setup.",
           mclient,
-          qclient);
+          qclient,
+          context);
   }
   
   /**

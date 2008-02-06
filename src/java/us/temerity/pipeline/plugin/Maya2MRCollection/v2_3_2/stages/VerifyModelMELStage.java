@@ -3,8 +3,8 @@ package us.temerity.pipeline.plugin.Maya2MRCollection.v2_3_2.stages;
 
 import us.temerity.pipeline.MasterMgrClient;
 import us.temerity.pipeline.PipelineException;
+import us.temerity.pipeline.builder.StageFunction;
 import us.temerity.pipeline.builder.UtilContext;
-import us.temerity.pipeline.builder.BaseBuilder.StageFunction;
 import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
 import us.temerity.pipeline.stages.FileWriterStage;
 

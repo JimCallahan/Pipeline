@@ -11,11 +11,9 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.*;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.builder.BaseBuilder;
-import us.temerity.pipeline.builder.BaseNames;
+import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.builder.BaseBuilder.ConstructPass;
 import us.temerity.pipeline.builder.BaseBuilder.SetupPass;
-import us.temerity.pipeline.builder.BaseUtil.PrefixedName;
 import us.temerity.pipeline.ui.*;
 
 /*------------------------------------------------------------------------------------------*/

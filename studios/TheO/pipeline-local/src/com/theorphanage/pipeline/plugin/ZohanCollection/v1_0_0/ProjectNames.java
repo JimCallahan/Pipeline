@@ -3,8 +3,7 @@ package com.theorphanage.pipeline.plugin.ZohanCollection.v1_0_0;
 import java.util.TreeMap;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.builder.BaseNames;
-import us.temerity.pipeline.builder.UtilContext;
+import us.temerity.pipeline.builder.*;
 
 
 public 
@@ -15,7 +14,8 @@ extends BaseNames
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
   
-  public ProjectNames
+  public 
+  ProjectNames
   (
     MasterMgrClient mclient,
     QueueMgrClient qclient
@@ -81,6 +81,7 @@ extends BaseNames
 
   private static final long serialVersionUID = 6275876096707928367L;
 
+
   
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
@@ -89,6 +90,4 @@ extends BaseNames
   protected String pProject;
   
   private TreeMap<Discipline, Path> pStartPaths;
-  
-
 }

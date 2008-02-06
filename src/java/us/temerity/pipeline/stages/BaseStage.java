@@ -1,4 +1,4 @@
-// $Id: BaseStage.java,v 1.23 2008/01/30 06:35:07 jim Exp $
+// $Id: BaseStage.java,v 1.24 2008/02/06 05:11:27 jesse Exp $
 
 package us.temerity.pipeline.stages;
 
@@ -9,7 +9,6 @@ import us.temerity.pipeline.LogMgr.Kind;
 import us.temerity.pipeline.LogMgr.Level;
 import us.temerity.pipeline.NodeTreeComp.State;
 import us.temerity.pipeline.builder.*;
-import us.temerity.pipeline.builder.BaseBuilder.StageFunction;
 import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
 import us.temerity.pipeline.math.Range;
 
@@ -988,7 +987,8 @@ class BaseStage
   }
   
   /**
-   * Gets the list of all the annotations that are going to be added to the registered node.
+   * Gets the list of all the annotations that are going to be added 
+   * to the registered node.
    */
   public Map<String, BaseAnnotation>
   getAnnotations()

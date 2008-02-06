@@ -1,10 +1,9 @@
-// $Id: MayaFileStage.java,v 1.8 2008/01/30 06:35:07 jim Exp $
+// $Id: MayaFileStage.java,v 1.9 2008/02/06 05:11:28 jesse Exp $
 
 package us.temerity.pipeline.stages;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
-import us.temerity.pipeline.builder.BaseBuilder.StageFunction;
 import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
 
 /**

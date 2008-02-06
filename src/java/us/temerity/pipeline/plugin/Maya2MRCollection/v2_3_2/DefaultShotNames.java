@@ -4,8 +4,7 @@ import java.util.ArrayList;
 import java.util.TreeMap;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.builder.BaseNames;
-import us.temerity.pipeline.builder.UtilContext;
+import us.temerity.pipeline.builder.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   D E F A U L T   S H O T   N A M E S                                                    */
@@ -131,9 +130,9 @@ public class DefaultShotNames
     if (pExistingDirs) {
       if (pUseMovie) {
 	pMovieName = 
-	  getStringParamValue(new ParamMapping(aLocation, ComplexParam.listFromObject(aMovieName)));
+	  getStringParamValue(new ParamMapping(aLocation, aMovieName));
 	pSeqName = 
-	  getStringParamValue(new ParamMapping(aLocation, ComplexParam.listFromObject(aSequenceName)), false);
+	  getStringParamValue(new ParamMapping(aLocation, aSequenceName), false);
       }
       else
 	pSeqName = getStringParamValue(new ParamMapping(aSequenceName));

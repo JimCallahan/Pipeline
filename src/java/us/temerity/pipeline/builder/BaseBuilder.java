@@ -1,4 +1,4 @@
-// $Id: BaseBuilder.java,v 1.38 2008/02/05 08:37:29 jesse Exp $
+// $Id: BaseBuilder.java,v 1.39 2008/02/06 05:11:27 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -16,6 +16,7 @@ import us.temerity.pipeline.builder.ui.JBuilderParamDialog;
 import us.temerity.pipeline.math.Range;
 import us.temerity.pipeline.plugin.Maya2MRCollection.v2_3_2.ModelPiecesBuilder;
 import us.temerity.pipeline.stages.BaseStage;
+import us.temerity.pipeline.stages.StandardStage;
 import us.temerity.pipeline.ui.UIFactory;
 import us.temerity.pipeline.ui.core.UIMaster;
 
@@ -1755,31 +1756,6 @@ class BaseBuilder
   }
   
   /**
-   *  Defines the use of a node in a particular builder setup.
-   *  <P>
-   *  This enumeration is meant to be used with {@link BaseStage#getStageFunction()}, which
-   *  can cast any of its values to a string and with the get
-   *  This list is not complete and should not be considered limiting.  It will be 
-   *  added to as 
-   */
-  public static
-  class StageFunction
-  {
-    public final static String aNone               = "None";
-    public final static String aMayaScene          = "MayaScene";
-    public final static String aRenderedImage      = "RenderedImage";
-    public final static String aTextFile           = "TextFile";
-    public final static String aSourceImage        = "SourceImage";
-    public final static String aScriptFile         = "ScriptFile";
-    public final static String aMotionBuilderScene = "MotionBuilderScene";
-  }
-  
-  
-  /*----------------------------------------------------------------------------------------*/
-  /*  P A S S   S U B C L A S S E S                                                         */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
    * A pass which is responsible for gathering input from the user, checking that the input
    * is correct and makes sense, and creating any new Sub-Builders which may need to be run
    * as a result of the input.
@@ -1852,6 +1828,9 @@ class BaseBuilder
       throws PipelineException
     {}
 
+    /**
+     * Executes the pass.
+     */
     public final void
     run()
       throws PipelineException
@@ -1917,6 +1896,19 @@ class BaseBuilder
       super(name, desc);
     }
     
+    /**
+     * Returns a set of nodes that have to be in a Finished queue state before the
+     * build() method is called.
+     * <p>
+     * All the nodes that are in this list will be queued and the Builder will wait for
+     * them to finish executing.  Once they finish executing, it will do a status update
+     * on the nodes and make sure that they are in a Finished state.  If they are not,
+     * a {@link PipelineException} will be thrown and execution will stop.
+     * 
+     * @return This method should never return <code>null</code>.  If there are no nodes
+     * that need to be queued, it should just return an empty TreeSet.
+     * @throws PipelineException
+     */
     @SuppressWarnings("unused")
     public TreeSet<String>
     preBuildPhase()
@@ -1925,6 +1917,16 @@ class BaseBuilder
       return new TreeSet<String>();
     }
     
+    /**
+     * Constructs or modifies nodes.
+     * <p>
+     * This method is responsible for the meat of Builder execution.  In it, Stages should
+     * be created and their build methods should be called.
+     * 
+     * @see BaseStage
+     * @see StandardStage
+     * @throws PipelineException  If something goes wrong while building nodes.
+     */
     @SuppressWarnings("unused")
     public void
     buildPhase()
@@ -1935,7 +1937,7 @@ class BaseBuilder
      * A list of nodes which have to exist before this Pass is run.
      * <p>
      * The Builder will search for each of these nodes and makes sure that it exists in the
-     * current working area. If the nodes does not exist in the current area, then it will
+     * current working area. If the node does not exist in the current area, then it will
      * check out the node. If the node does exist, then it will not check it out, unless the
      * {@link ActionOnExistence} is set to {@link ActionOnExistence#CheckOut CheckOut}. If
      * the node does not exist or cannot be checked-out (so if it is Pending in a different
@@ -1958,6 +1960,9 @@ class BaseBuilder
       return new TreeSet<String>();
     }
     
+    /**
+     * Executes the stage.
+     */
     public final void
     run()
       throws PipelineException
@@ -1978,12 +1983,20 @@ class BaseBuilder
       buildPhase();
     }
     
+    /**
+     * Gets the name of the Builder which created this pass.
+     * @return
+     */
     public PrefixedName
     getParentBuilderName()
     {
       return pBuilderInformation.getBuilderFromPass(this).getPrefixedName();
     }
     
+    /**
+     * Gets the instance of BaseBuilder which created this pass.
+     * @return
+     */
     private BaseBuilder
     getParentBuilder()
     {
@@ -2004,6 +2017,14 @@ class BaseBuilder
       return message;
     }
     
+    /**
+     * Equals is calculated in the strictest sense of the two objects being the
+     * exact same object.  This is because it is completely possible for there to
+     * be two instances of the same Builder running (say two Shot Builders which are
+     * Sub Builders of a Sequence Builder) which have the same Construct Passes.  From
+     * any comparison of parameters, they would be completely identical.  So in order
+     * to be able to differentiate between those two, it has to use the actual equals. 
+     */
     @Override
     public boolean
     equals
@@ -2023,112 +2044,6 @@ class BaseBuilder
   /*  P U B L I C   S U B C L A S S E S                                                     */
   /*----------------------------------------------------------------------------------------*/
 
-  public static
-  class PassName
-  {
-    public
-    PassName
-    (
-      String passName,
-      PrefixedName builderName
-    )
-    {
-      pPassName = passName;
-      pBuilderName = new PrefixedName(builderName);
-    }
-    
-    public String
-    getPassName()
-    {
-      return pPassName;
-    }
-    
-    public PrefixedName
-    getBuilderPath()
-    {
-      return new PrefixedName(pBuilderName);
-    }
-    
-    private String pPassName;
-    private PrefixedName pBuilderName;
-  }
-  
-  
-  public static 
-  class PassDependency
-  {
-    public
-    PassDependency
-    (
-      ConstructPass target,
-      LinkedList<ConstructPass> source
-    )
-    {
-      pTarget = target;
-      if (source != null) {
-	for (ConstructPass pass : source)
-	  addSource(pass);
-      }
-      else
-	pSources = new LinkedList<ConstructPass>(); 
-    }
-    
-    public boolean
-    hasSources()
-    {
-      if (pSources == null || pSources.isEmpty())
-	return false;
-      return true;
-    }
-    
-    public ConstructPass 
-    getTarget()
-    {
-      return pTarget;
-    }
-
-    public LinkedList<ConstructPass> 
-    getSources()
-    {
-      return pSources;
-    }
-    
-    public void 
-    addSource
-    (
-      ConstructPass pass
-    )
-    {
-      if (pSources == null)
-	pSources = new LinkedList<ConstructPass>();
-      if (!pSources.contains(pass))
-	pSources.add(pass);
-    }
-    
-    @Override
-    public String
-    toString()
-    {
-      String message = pTarget.toString() + " Depends on: {";
-      for (ConstructPass pass :  pSources) {
-	message += pass.toString();
-	if (!pSources.getLast().equals(pass))
-	  message += ", ";
-      }
-      message += "}";
-      return message;
-    }
-    
-    private ConstructPass pTarget;
-    private LinkedList<ConstructPass> pSources;
-  }
-
-  
-  
-  /*----------------------------------------------------------------------------------------*/
-  /*  G U I   T H R E A D   C L A S S E S                                                   */
-  /*----------------------------------------------------------------------------------------*/
-  
   private
   class BuilderGuiThread
     extends Thread

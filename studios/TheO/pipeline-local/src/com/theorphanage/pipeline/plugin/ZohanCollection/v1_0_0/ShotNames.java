@@ -1,8 +1,7 @@
 package com.theorphanage.pipeline.plugin.ZohanCollection.v1_0_0;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.builder.BaseNames;
-import us.temerity.pipeline.builder.UtilContext;
+import us.temerity.pipeline.builder.*;
 
 public 
 class ShotNames 
@@ -86,11 +85,13 @@ class ShotNames
     }
   }
   
+  
+  
   /*----------------------------------------------------------------------------------------*/
   /*   G L O B A L S                                                                        */
   /*----------------------------------------------------------------------------------------*/
   
-  public String
+  private String
   getSubmitNode
   (
     Path path
@@ -99,7 +100,7 @@ class ShotNames
     return new Path(path, "submitForQC").toString();
   }
   
-  public String
+  private String
   getApprovalNode
   (
     Path path
@@ -108,7 +109,7 @@ class ShotNames
     return new Path(path, "approve").toString();
   }
   
-  public String
+  private String
   getApprovalNode
   (
     Path path,
@@ -117,6 +118,7 @@ class ShotNames
   {
     return new Path(path, join ("approve", name)).toString();
   }
+  
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -256,6 +258,7 @@ class ShotNames
   }
   
   
+  
   /*----------------------------------------------------------------------------------------*/
   /*   C O M P                                                                              */
   /*----------------------------------------------------------------------------------------*/
@@ -296,6 +299,8 @@ class ShotNames
   {
     return a + "_" + b;
   }
+  
+  
   
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */

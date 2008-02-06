@@ -2,7 +2,6 @@ package com.radar.pipeline.plugin.RadarMaya2MRCollection.v2_3_2;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
-import us.temerity.pipeline.builder.BaseBuilder.StageFunction;
 import us.temerity.pipeline.plugin.Maya2MRCollection.v2_3_2.SimpleAssetBuilder;
 
 /*------------------------------------------------------------------------------------------*/

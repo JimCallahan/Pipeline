@@ -9,7 +9,7 @@ import javax.swing.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.BaseUtil;
-import us.temerity.pipeline.builder.BaseUtil.ParamMapping;
+import us.temerity.pipeline.builder.ParamMapping;
 import us.temerity.pipeline.ui.*;
 
 /*------------------------------------------------------------------------------------------*/

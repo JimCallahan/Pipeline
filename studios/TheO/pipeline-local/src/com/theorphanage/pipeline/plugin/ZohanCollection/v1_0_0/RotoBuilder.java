@@ -27,7 +27,7 @@ class RotoBuilder
     throws PipelineException
   {
     this(mclient, qclient, info, 
-        new StudioDefinitions(mclient, qclient),
+        new StudioDefinitions(mclient, qclient, UtilContext.getDefaultUtilContext(mclient)),
         new ProjectNames(mclient, qclient),
         null);
   }
@@ -89,15 +89,12 @@ class RotoBuilder
     addSetupPass(new SecondInfoPass());
     addSetupPass(new ThirdInfoPass());
     
+    PassLayoutGroup finalLayout = 
+      new PassLayoutGroup("Pass Layout", "Layout for all the passes");
     {
-      AdvancedLayoutGroup layout = 
-        new AdvancedLayoutGroup
-          ("Builder Information", 
-           "The pass where all the basic StageInformation about the shot is collected " +
-           "from the user.", 
-           "BuilderSettings", 
-           true);
       {
+      AdvancedLayoutGroup layout = 
+        new AdvancedLayoutGroup("BuilderSettings", true);
         layout.addEntry(1, aUtilContext);
         layout.addEntry(1, null);
         layout.addEntry(1, aCheckinWhenDone);
@@ -106,10 +103,10 @@ class RotoBuilder
         layout.addEntry(1, aDoAnnotations);
         layout.addEntry(1, null);
         layout.addEntry(1, aLocation);
+        finalLayout.addPass(layout.getName(), layout);
         
       }
       
-      PassLayoutGroup finalLayout = new PassLayoutGroup(layout.getName(), layout);
       {
         AdvancedLayoutGroup empty = new AdvancedLayoutGroup("None", true);
         finalLayout.addPass(empty.getName(), empty);
@@ -126,6 +123,13 @@ class RotoBuilder
   
   
   @Override
+  protected boolean 
+  performCheckIn()
+  {
+    return pCheckInWhenDone;
+  }
+  
+  @Override
   protected LinkedList<String> 
   getNodesToCheckIn() 
   {
@@ -139,7 +143,7 @@ class RotoBuilder
     public 
     FirstInfoPass()
     {
-      super("First Info Pass", 
+      super("FirstInfoPass", 
             "The First Information pass for the RotoBuilder");
     }
     
@@ -168,6 +172,8 @@ class RotoBuilder
           new ParamMapping(aLocation, aShotName);
         pShotName = getStringParamValue(mapping);
       }
+      
+      pCheckInWhenDone = getBooleanParamValue(new ParamMapping(aCheckinWhenDone));
       
       boolean annot = getBooleanParamValue(new ParamMapping(aDoAnnotations));
       pStageInfo.setDoAnnotations(annot);
@@ -218,7 +224,7 @@ class RotoBuilder
     public 
     SecondInfoPass()
     {
-      super("Second Info Pass", 
+      super("SecondInfoPass", 
       "Get name info for the RotoBuilder");
     }
 
@@ -245,20 +251,24 @@ class RotoBuilder
     public 
     ThirdInfoPass()
     {
-      super("Third Info Pass", 
+      super("ThirdInfoPass", 
             "Get plate info for the RotoBuilder");
     }
     
+    @SuppressWarnings("unchecked")
     @Override
     public void 
     validatePhase() 
       throws PipelineException 
     {
       ComparableTreeSet<String> plates = (ComparableTreeSet<String>) getParamValue(aPlates);
+      if (plates.isEmpty())
+        throw new PipelineException
+          ("At least one plate must be selected for the Roto Builder " +
+           "to actually make nodes.");
       pPlatePaths = new ArrayList<String>();
-      Path plateStart = pShotNamer.getPlatePath();
       for (String plate : plates) {
-        pPlatePaths.add(new Path(plateStart, plate).toString());
+        pPlatePaths.add(pShotNamer.getPlateName(plate));
       }
     }
     private static final long serialVersionUID = 6265724310033372952L;
@@ -268,6 +278,7 @@ class RotoBuilder
   class FirstConstructPass
     extends ConstructPass
   {
+
     public 
     FirstConstructPass()
     {
@@ -282,6 +293,7 @@ class RotoBuilder
       return new TreeSet<String>(pPlatePaths);
     }
     
+    private static final long serialVersionUID = 2650600966182944088L;
   }
 
   private static final long serialVersionUID = 6680062424812172450L;
@@ -291,8 +303,10 @@ class RotoBuilder
   public final static String aSequenceName = "SequenceName";
   public final static String aShotName = "ShotName";
   public final static String aPlates  = "Plates";
-
   
+  
+
+  private boolean pCheckInWhenDone;
   private StudioDefinitions pDefs;
   private ShotNames pShotNamer;
   private ProjectNames pProjectNamer;

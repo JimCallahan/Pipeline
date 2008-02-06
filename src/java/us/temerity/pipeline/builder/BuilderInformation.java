@@ -1,4 +1,4 @@
-// $Id: BuilderInformation.java,v 1.14 2008/02/05 09:36:28 jesse Exp $
+// $Id: BuilderInformation.java,v 1.15 2008/02/06 05:11:27 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -6,7 +6,6 @@ import java.util.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.BaseBuilder.ConstructPass;
-import us.temerity.pipeline.builder.BaseBuilder.PassDependency;
 import us.temerity.pipeline.stages.*;
 
 /*------------------------------------------------------------------------------------------*/
@@ -19,7 +18,8 @@ import us.temerity.pipeline.stages.*;
  * Only one of these should exist for an given invocation of a Builder. Users should never
  * need to create one of these on their own, unless it is being used in a call to
  * {@link BaseBuilderCollection#instantiateBuilder(String, MasterMgrClient, QueueMgrClient, 
- * BuilderInformation)) instantiateBuilder}.
+ * BuilderInformation)) instantiateBuilder}.  If the same instance of BuilderInformation
+ * is not passed to all Sub-Builders, unexpected and wrong behavior may occur.
  */
 public 
 class BuilderInformation
@@ -167,7 +167,7 @@ class BuilderInformation
     }
     else {
       PassDependency pd = 
-	new PassDependency(targetPass, ComplexParam.listFromObject(sourcePass));
+	new PassDependency(targetPass, sourcePass);
       pPassDependencies.put(targetPass, pd);
     }
   }

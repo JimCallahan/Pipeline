@@ -1,11 +1,11 @@
-// $Id: PlaceholderCameraStage.java,v 1.1 2008/01/30 09:28:47 jim Exp $
+// $Id: PlaceholderCameraStage.java,v 1.2 2008/02/06 05:11:29 jesse Exp $
 
 package us.temerity.pipeline.plugin.Maya2MRCollection.v2_3_2.stages;
 
 import us.temerity.pipeline.MasterMgrClient;
 import us.temerity.pipeline.PipelineException;
+import us.temerity.pipeline.builder.StageFunction;
 import us.temerity.pipeline.builder.UtilContext;
-import us.temerity.pipeline.builder.BaseBuilder.StageFunction;
 import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
 import us.temerity.pipeline.stages.FileWriterStage;
 

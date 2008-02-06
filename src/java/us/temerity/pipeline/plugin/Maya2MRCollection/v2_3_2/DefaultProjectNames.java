@@ -1,6 +1,7 @@
 package us.temerity.pipeline.plugin.Maya2MRCollection.v2_3_2;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.builder.ParamMapping;
 import us.temerity.pipeline.builder.UtilContext;
 
 /*------------------------------------------------------------------------------------------*/

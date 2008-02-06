@@ -3,8 +3,8 @@ package us.temerity.pipeline.stages;
 import java.io.*;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.builder.StageFunction;
 import us.temerity.pipeline.builder.UtilContext;
-import us.temerity.pipeline.builder.BaseBuilder.StageFunction;
 import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
 
 public 

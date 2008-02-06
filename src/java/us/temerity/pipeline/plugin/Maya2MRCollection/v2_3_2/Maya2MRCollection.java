@@ -1,4 +1,4 @@
-// $Id: Maya2MRCollection.java,v 1.2 2008/02/04 12:12:48 jim Exp $
+// $Id: Maya2MRCollection.java,v 1.3 2008/02/06 05:11:29 jesse Exp $
 
 package us.temerity.pipeline.plugin.Maya2MRCollection.v2_3_2;
 
@@ -9,7 +9,7 @@ import us.temerity.pipeline.VersionID;
 import us.temerity.pipeline.builder.BaseBuilderCollection;
 
 /*------------------------------------------------------------------------------------------*/
-/*   m a y a 2 m r                                                                          */
+/*   M A Y A 2 M R   C O L L E C T I O N                                                    */
 /*------------------------------------------------------------------------------------------*/
 
 /**
