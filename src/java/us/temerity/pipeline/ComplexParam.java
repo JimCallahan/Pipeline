@@ -654,7 +654,7 @@ class ComplexParam<E>
   /**
    * Creates a {@link LinkedList} from a single item.
    */
-  public static <E> LinkedList<E>
+  private static <E> LinkedList<E>
   listFromObject
   (
     E key
