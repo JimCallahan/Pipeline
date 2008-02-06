@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.47 2008/02/06 07:57:20 jesse Exp $
+// $Id: JManagerPanel.java,v 1.48 2008/02/06 08:00:36 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2119,8 +2119,10 @@ class JManagerPanel
         master.showDefaultEditorsDialog(); 
       else if(cmd.equals("update-plugins"))
         master.clearPluginCache();
-      else if(cmd.startsWith("launch-builder:"))
+      else if(cmd.startsWith("launch-builder:")) {
         doLaunchBuilder(cmd.substring(15));
+        UIMaster.getInstance().showLogsDialog(true); 
+      }
 
       else if(cmd.equals("manage-privileges"))
         master.showManagePrivilegesDialog();
@@ -3721,7 +3723,6 @@ class JManagerPanel
          keys.addFirst(pBuilderName);
          params.putValue(keys, value, true);
        }
-        UIMaster.getInstance().showLogsDialog(); 
         collection.instantiateBuilder(pBuilderName, null, null, true, true, false, false, params);
       } catch(Exception ex)
       {

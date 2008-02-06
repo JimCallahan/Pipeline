@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.105 2008/02/06 07:57:21 jesse Exp $
+// $Id: JNodeViewerPanel.java,v 1.106 2008/02/06 08:00:36 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -3392,8 +3392,10 @@ class JNodeViewerPanel
       doPackBundle();
     else if(cmd.equals("unpack-bundle"))
       doUnpackBundle();
-    else if (cmd.startsWith("launch-builder:"))
+    else if (cmd.startsWith("launch-builder:")) {
       doLaunchBuilder(cmd.substring(15));
+      UIMaster.getInstance().showLogsDialog(true);
+    }
     else if(cmd.equals("restore"))
       doRestore();
 
@@ -7082,7 +7084,6 @@ class JNodeViewerPanel
          keys.addFirst(pBuilderName);
          params.putValue(keys, value, true);
        }
-        UIMaster.getInstance().showLogsDialog(); 
         collection.instantiateBuilder(pBuilderName, null, null, true, true, false, false, params);
       } catch(Exception ex)
       {
