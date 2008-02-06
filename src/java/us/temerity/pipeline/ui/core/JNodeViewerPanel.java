@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.104 2008/01/31 00:33:13 jesse Exp $
+// $Id: JNodeViewerPanel.java,v 1.105 2008/02/06 07:57:21 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -7082,7 +7082,8 @@ class JNodeViewerPanel
          keys.addFirst(pBuilderName);
          params.putValue(keys, value, true);
        }
-        collection.instantiateBuilder(pBuilderName, null, null, true, true, false, params);
+        UIMaster.getInstance().showLogsDialog(); 
+        collection.instantiateBuilder(pBuilderName, null, null, true, true, false, false, params);
       } catch(Exception ex)
       {
         UIMaster.getInstance().showErrorDialog(ex);

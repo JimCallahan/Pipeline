@@ -59,12 +59,15 @@ class JBuilderTopPanel
 	pLogArea.setWrapStyleWord(true);
 	pLogArea.setEditable(false);
 	pLogArea.setLineWrap(true);
-	LogMgr.getInstance().logToTextArea(pLogArea);
+	if (pBuilder.useBuilderLogging())
+	  LogMgr.getInstance().logToTextArea(pLogArea);
       }
       
-      JScrollPane scroll = new JScrollPane(pLogArea);
-      scroll.addComponentListener(this);
-      pSecondSplitPane.setBottomComponent(scroll);
+      if (pBuilder.useBuilderLogging()) {
+        JScrollPane scroll = new JScrollPane(pLogArea);
+        scroll.addComponentListener(this);
+        pSecondSplitPane.setBottomComponent(scroll);
+      }
     }
     {
       pTreeCardPanel = new JPanel();

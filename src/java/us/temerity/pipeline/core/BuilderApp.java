@@ -1,4 +1,4 @@
-// $Id: BuilderApp.java,v 1.24 2008/01/30 09:04:13 jesse Exp $
+// $Id: BuilderApp.java,v 1.25 2008/02/06 07:53:23 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -97,7 +97,7 @@ public class BuilderApp
       }
       
       BuilderInformation info = 
-        new BuilderInformation(pGui, pAbortOnBadParam, pCommandLineParams);
+        new BuilderInformation(pGui, pAbortOnBadParam, true, pCommandLineParams);
       
       if (pBuilderName != null && pCollectionName != null) {
         BaseBuilderCollection collection = 

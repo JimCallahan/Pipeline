@@ -1,4 +1,4 @@
-// $Id: BaseBuilderCollection.java,v 1.7 2008/02/06 07:44:19 jim Exp $
+// $Id: BaseBuilderCollection.java,v 1.8 2008/02/06 07:53:23 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -7,6 +7,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.LogMgr.Kind;
+import us.temerity.pipeline.LogMgr.Level;
 import us.temerity.pipeline.glue.GlueDecoder;
 
 /*------------------------------------------------------------------------------------------*/
@@ -230,6 +232,11 @@ class BaseBuilderCollection
    *   that needs to continue running after the builder has completed.  If this is set
    *   to false, then whatever program invokes the builder is responsible for making sure
    *   the jvm is terminated.
+   *   
+   * @param useBuilderLogging
+   *   Should the builder use its own internal log panel or should it use the built in
+   *   Log History panel in plui.  Setting this to false when not running the builder
+   *   through plui will result in no logging output.
    *
    * @throws PipelineException whenever anything goes wrong with instantiating the builder.
    *   This can be for a variety of reasons, including a misnamed builder, bad parameters,
@@ -239,12 +246,13 @@ class BaseBuilderCollection
   instantiateBuilder
   (
     String builderName,
-    boolean terminateOnQuit
+    boolean terminateOnQuit,
+    boolean useBuilderLogging
   )
     throws PipelineException
   {
     BuilderInformation info = 
-      new BuilderInformation(true, terminateOnQuit, true, new MultiMap<String, String>());
+      new BuilderInformation(true, terminateOnQuit, true, useBuilderLogging, new MultiMap<String, String>());
     instantiateBuilder(builderName, null, null, info);
   }
 
@@ -290,11 +298,14 @@ class BaseBuilderCollection
     boolean useGui,
     boolean abortOnBadParam,
     boolean terminateOnQuit,
+    boolean useBuilderLogging,
     MultiMap<String, String> paramValues
   )
     throws PipelineException
   {
-    BuilderInformation info = new BuilderInformation(useGui, terminateOnQuit, abortOnBadParam, paramValues);
+    BuilderInformation info = 
+      new BuilderInformation(useGui, terminateOnQuit, abortOnBadParam, 
+                             useBuilderLogging, paramValues);
     instantiateBuilder(builderName, mclient, qclient, info);
   }
   
@@ -349,7 +360,9 @@ class BaseBuilderCollection
     if (qclient == null)
       qclient = new QueueMgrClient();
     if (info == null)
-      info = new BuilderInformation(true, true, new MultiMap<String, String>());
+      info = new BuilderInformation(true, false, true, false, new MultiMap<String, String>());
+    
+    LogMgr.getInstance().setLevel(Kind.Ops, Level.Fine);
     
     try {
       ClassLoader loader = this.getClass().getClassLoader();

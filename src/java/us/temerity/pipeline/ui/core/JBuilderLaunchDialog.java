@@ -1,4 +1,4 @@
-// $Id: JBuilderLaunchDialog.java,v 1.1 2008/01/28 11:58:51 jesse Exp $
+// $Id: JBuilderLaunchDialog.java,v 1.2 2008/02/06 07:57:20 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -313,7 +313,7 @@ public class JBuilderLaunchDialog
          keys.addFirst(pBuilderName);
          params.putValue(keys, value, true);
        }
-        collection.instantiateBuilder(pBuilderName, null, null, true, true, false, params);
+        collection.instantiateBuilder(pBuilderName, null, null, true, true, false, false, params);
       } catch(Exception ex)
       {
         UIMaster.getInstance().showErrorDialog(ex);

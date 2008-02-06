@@ -1,4 +1,4 @@
-// $Id: BaseBuilder.java,v 1.40 2008/02/06 07:44:19 jim Exp $
+// $Id: BaseBuilder.java,v 1.41 2008/02/06 07:53:23 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -1624,6 +1624,12 @@ class BaseBuilder
   terminateAppOnQuit()
   {
     return pBuilderInformation.terminateAppOnQuit();
+  }
+  
+  public final boolean
+  useBuilderLogging()
+  {
+    return pBuilderInformation.useBuilderLogging();
   }
   
   public final void

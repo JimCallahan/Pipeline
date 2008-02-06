@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.46 2008/01/31 00:33:13 jesse Exp $
+// $Id: JManagerPanel.java,v 1.47 2008/02/06 07:57:20 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -3721,7 +3721,8 @@ class JManagerPanel
          keys.addFirst(pBuilderName);
          params.putValue(keys, value, true);
        }
-        collection.instantiateBuilder(pBuilderName, null, null, true, true, false, params);
+        UIMaster.getInstance().showLogsDialog(); 
+        collection.instantiateBuilder(pBuilderName, null, null, true, true, false, false, params);
       } catch(Exception ex)
       {
         UIMaster.getInstance().showErrorDialog(ex);

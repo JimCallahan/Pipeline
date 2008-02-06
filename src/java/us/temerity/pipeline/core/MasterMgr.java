@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.232 2008/01/28 11:58:52 jesse Exp $
+// $Id: MasterMgr.java,v 1.233 2008/02/06 07:53:22 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -11892,7 +11892,7 @@ class MasterMgr
           ckeys.removeLast(); 
         }
         
-        BuilderInformation info = new BuilderInformation(false, false, cparams);
+        BuilderInformation info = new BuilderInformation(false, false, false, cparams);
         MasterMgrClient mclient = new MasterMgrClient();  // MAKE THIS DIRECT!!
 
         BaseBuilder builder = 
