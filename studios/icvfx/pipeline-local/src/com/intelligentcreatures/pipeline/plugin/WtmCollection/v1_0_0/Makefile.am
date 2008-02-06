@@ -18,5 +18,5 @@ java_DATA = \
   ProjectNamer.java \
   ShotNamer.java \
   StudioDefinitions.java \
-  TaskTypes.java \
+  TaskType.java \
   WtmCollection.java
