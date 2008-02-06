@@ -124,11 +124,14 @@ class JBuilderTopPanel
       //pFirstPassPanel.setPreferredSize(size);
       //pFirstPassPanel.setMaximumSize(new Dimension(size.width, Integer.MAX_VALUE ));      
     }
-    {  
+    { 
       pSecondSplitPane.setTopComponent(pFirstPassPanel);
     }
     {
-      pSplitPane.setRightComponent(pSecondSplitPane);
+      if (builder.useBuilderLogging())
+        pSplitPane.setRightComponent(pSecondSplitPane);
+      else
+        pSplitPane.setRightComponent(pFirstPassPanel);
     }
     {
       BaseBuilder theBuilder = pBuilder.getCurrentBuilder();
