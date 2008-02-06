@@ -1,6 +1,8 @@
-// $Id: PlatesBuilder.java,v 1.2 2008/02/06 07:43:43 jim Exp $
+// $Id: PlatesBuilder.java,v 1.3 2008/02/06 11:29:28 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
+
+import com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
@@ -52,8 +54,7 @@ class PlatesBuilder
   {
     this(mclient, qclient, info, 
          new StudioDefinitions(mclient, qclient, UtilContext.getDefaultUtilContext(mclient)),
-         new ProjectNamer(mclient, qclient), 
-         null);
+         null, null);
   }
   
   /**
@@ -93,14 +94,15 @@ class PlatesBuilder
           "Builder to construct basic  network.",
           mclient, qclient, builderInfo);
 
-    /* initialize the namers */ 
+    /* initialize fields */ 
     {
-      pStudioDefs   = studioDefs;
+      pStudioDefs = studioDefs;
       pProjectNamer = projectNamer;
-      pShotNamer    = shotNamer;
+      if(pProjectNamer == null) 
+	pProjectNamer = new ProjectNamer(mclient, qclient, pStudioDefs);	
+      pShotNamer = shotNamer;
 
       pRequiredNodeNames = new TreeSet<String>();
-
       pMiscReferenceNodeNames = new TreeSet<String>(); 
 
       // ... 
@@ -133,27 +135,19 @@ class PlatesBuilder
         addParam(param);
       }
 
-      {
-        UtilityParam param = 
-          new PlaceholderUtilityParam
-          (aReferenceImages, 
-           "Which reference images shot on set to include in the shot."); 
-        addParam(param);
-      }
-      
       addCheckinWhenDoneParam();
     }
      
     /* if no parent builder has already generated the names for ProjectNamer, 
          this builder should take over control of naming the project */ 
-    if(!projectNamer.isGenerated()) {
+    if(!pProjectNamer.isGenerated()) {
 
       /* add the ProjectNamer as a sub-builder */  
       addSubBuilder(pProjectNamer);
 
       /* link the nested ProjectName parameter inside the complex parameter Location
            (of this builder) with the simple parameter ProjectName of the ProjectNamer */ 
-      addMappedParam(projectNamer.getName(), 
+      addMappedParam(pProjectNamer.getName(), 
                      new ParamMapping(StudioDefinitions.aProjectName), 
                      new ParamMapping(aLocation, StudioDefinitions.aProjectName)); 
       
@@ -164,7 +158,7 @@ class PlatesBuilder
     {
       addSetupPass(new SetupShotEssentials());
       addSetupPass(new SetupImageParams());
-      addSetupPass(new GetImageNodeNames());
+      addSetupPass(new GetPrerequisites());
     }
     
     /* setup the default editors */ 
@@ -216,9 +210,8 @@ class PlatesBuilder
       }
       
       {
-        AdvancedLayoutGroup sub = new AdvancedLayoutGroup("GetImageNodeNames", true);
+        AdvancedLayoutGroup sub = new AdvancedLayoutGroup("GetPrerequisites", true);
         sub.addEntry(1, aBackgroundPlate);
-        sub.addEntry(1, aReferenceImages);
 
         layout.addPass(sub.getName(), sub);
       }
@@ -249,8 +242,8 @@ class PlatesBuilder
   /*----------------------------------------------------------------------------------------*/
  
   /** 
-   * Adds the SubmitTask annotation to the set of annotation plugins which will be added 
-   * to the node created by the given stage.<P> 
+   * Adds a SubmitTask, ApproveTask or CommonTask annotation to the set of annotation 
+   * plugins which will be added to the node built by the given Stage.<P> 
    * 
    * @param stage
    *   The stage to be modified.
@@ -267,6 +260,29 @@ class PlatesBuilder
     throws PipelineException
   {
     addTaskAnnotation(stage, purpose, 
+                      pShotNamer.getProjectName(), pShotNamer.getFullShotName(),
+                      TaskType.Plates.toString()); 
+  }
+
+  /** 
+   * Adds a SubmitTask, ApproveTask or CommonTask annotation to the set of annotation 
+   * plugins on the given node. <P> 
+   * 
+   * @param nodeName
+   *   The fully resolved name of the node to be annotated. 
+   * 
+   * @param purpose
+   *   The purpose of the node within the task.
+   */ 
+  protected void
+  addTaskAnnotation
+  (
+   String nodeName, 
+   NodePurpose purpose
+  )
+    throws PipelineException
+  {
+    addTaskAnnotation(nodeName, purpose, 
                       pShotNamer.getProjectName(), pShotNamer.getFullShotName(),
                       TaskType.Plates.toString()); 
   }
@@ -431,19 +447,6 @@ class PlatesBuilder
         
         replaceParam(param);
       }
-
-      {  
-        TreeSet<String> images = new TreeSet<String>(); 
-        images.addAll(findChildNodeNames(pShotNamer.getPlatesMiscReferenceParentPath()));
-
-        ListUtilityParam param =
-          new ListUtilityParam
-          (aReferenceImages, 
-           "Which reference images shot on set to include in the shot.", 
-	   images, images, null, null);
-        
-        replaceParam(param);
-      }
     }
 
     private static final long serialVersionUID = 5742118589827518495L;
@@ -453,14 +456,14 @@ class PlatesBuilder
   /*----------------------------------------------------------------------------------------*/
 
   private
-  class GetImageNodeNames
+  class GetPrerequisites
   extends SetupPass
   {
     public 
-    GetImageNodeNames()
+    GetPrerequisites()
     {
-      super("Get Image Node Names", 
-            "Get the names of the nodes containing the scanned images for the shot."); 
+      super("Get Prerequisites", 
+            "Get the names of the prerequitsite nodes."); 
     }
 
     @SuppressWarnings("unchecked")
@@ -482,17 +485,18 @@ class PlatesBuilder
 
       /* the miscellaneous reference images */ 
       {
-        ComparableTreeSet<String> refNames = 
-          (ComparableTreeSet<String>) getParamValue(aReferenceImages); 
-
         Path mpath = pShotNamer.getPlatesMiscReferenceParentPath(); 
-        for(String rname : refNames) {
+        for(String rname : findChildNodeNames(mpath)) {
           Path path = new Path(mpath, rname);
           String nodeName = path.toString();
           pMiscReferenceNodeNames.add(nodeName); 
           pRequiredNodeNames.add(nodeName); 
         }
       }
+
+      /* the original undistored grid node */ 
+      pPlatesOriginalGridNodeName = pProjectNamer.getPlatesOriginalGridNode();
+      pRequiredNodeNames.add(pPlatesOriginalGridNodeName); 
     }
 
     private static final long serialVersionUID = 7830642124642481656L;
@@ -519,16 +523,6 @@ class PlatesBuilder
     }
     
     /**
-     * Nodes required to exist for this builder to work!
-     */ 
-    @Override
-    public TreeSet<String> 
-    nodesDependedOn()
-    {
-      return pRequiredNodeNames;
-    }
-    
-    /**
      * 
      */ 
     @Override
@@ -536,21 +530,37 @@ class PlatesBuilder
     buildPhase() 
       throws PipelineException
     {
-      LockBundle bundle = new LockBundle();
+      /* lock the latest version of all of the prerequisites */ 
+      for(String name : pRequiredNodeNames) {
+	if(!nodeExists(name)) 
+	  throw new PipelineException
+	    ("The required prerequisite node (" + name + ") does not exist!"); 
+	lockLatest(name); 
+      }
 
+      /* add Edit annotations to all reference images and plates */ 
+      {
+	addTaskAnnotation(pBackgroundPlateNodeName, NodePurpose.Edit); 
+	for(String name : pMiscReferenceNodeNames) 
+	  addTaskAnnotation(name, NodePurpose.Edit); 
+      }
+      
+
+      LockBundle bundle = new LockBundle();
       
       /* the submit network */ 
       {
-        {
-          TargetStage stage = 
-            new TargetStage(pStageInfo, pContext, pClient, 
-                            pShotNamer.getVfxReferenceNode(), pMiscReferenceNodeNames); 
-          
-          addTaskAnnotation(stage, NodePurpose.Edit); 
-          addTaskAnnotation(stage, NodePurpose.Product); 
-          stage.build(); 
-        }
+	String vfxRefNodeName = buildVfxReference(NodePurpose.Prepare); 
 
+	String vfxShotDataNodeName = pShotNamer.getVfxShotDataNode(); 
+	{
+	  LensInfoStage stage = 
+	    new LensInfoStage(pStageInfo, pContext, pClient, vfxShotDataNodeName); 
+	  addTaskAnnotation(stage, NodePurpose.Edit); 
+	  stage.build(); 
+	}
+
+	
         /* 
 
         Stage stage = new Stage(...  rigSource); 
@@ -578,6 +588,8 @@ class PlatesBuilder
 
       /* the approve network */ 
       {
+	String vfxRefNodeName = buildVfxReference(NodePurpose.Product); 
+
         
 
 
@@ -585,6 +597,27 @@ class PlatesBuilder
 
       addLockBundle(bundle);
     }
+
+
+    /*-- STAGE HELPERS ---------------------------------------------------------------------*/
+
+    private String
+    buildVfxReference
+    (
+     NodePurpose purpose
+    ) 
+      throws PipelineException
+    {
+      String name = pShotNamer.getVfxReferenceNode(purpose); 
+
+      TargetStage stage = 
+	new TargetStage(pStageInfo, pContext, pClient, name, pMiscReferenceNodeNames); 
+      addTaskAnnotation(stage, purpose); 
+      stage.build(); 
+
+      return name;
+    }
+
 
     private static final long serialVersionUID = -5216068758078265108L;
   }
@@ -677,7 +710,7 @@ class PlatesBuilder
   private boolean pCheckInWhenDone;
 
 
-  /*----------------------------------------------------------------------------------------*/
+  /*-- PLATES ------------------------------------------------------------------------------*/
 
   /**
    * The fully resolved name of background plates node.
@@ -689,7 +722,12 @@ class PlatesBuilder
    */ 
   private TreeSet<String> pMiscReferenceNodeNames; 
 
-  
+  /**
+   * The fully resolved name of the original undistored grid node.
+   */ 
+  private String pPlatesOriginalGridNodeName; 
+
+
   // ... 
 
 

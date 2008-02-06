@@ -1,4 +1,4 @@
-// $Id: ICTaskBuilder.java,v 1.1 2008/02/06 07:21:06 jim Exp $
+// $Id: ICTaskBuilder.java,v 1.5 2008/02/06 18:17:43 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -93,8 +93,8 @@ class ICTaskBuilder
   /*----------------------------------------------------------------------------------------*/
   
   /** 
-   * Adds the SubmitTask annotation to the set of annotation plugins which will be added 
-   * to the node created by the given stage.<P> 
+   * Adds a SubmitTask, ApproveTask or CommonTask annotation to the set of annotation 
+   * plugins which will be added to the node built by the given Stage.<P> 
    * 
    * @param stage
    *   The stage to be modified.
@@ -115,6 +115,105 @@ class ICTaskBuilder
   addTaskAnnotation
   (
    BaseStage stage,
+   NodePurpose purpose, 
+   String projectName, 
+   String taskName, 
+   String taskType
+  )
+    throws PipelineException
+  {
+    BaseAnnotation annot = getNewTaskAnnotation(purpose, projectName, taskName, taskType); 
+
+    /* find a unique name for this annotation, 
+         the convention is to call the primary purpose task annotation "Task" and 
+         any secondary task annotations "AltTask1", "AltTask2" ... "AltTaskN"  */ 
+    String annotName = "Task";
+    {
+      Map<String, BaseAnnotation> exist = stage.getAnnotations();
+      int wk;
+      for(wk=1; true; wk++) {
+        if(!exist.containsKey(annotName)) {
+          stage.addAnnotation(annotName, annot); 
+          break;
+        }
+
+        annotName = ("AltTask" + wk);
+      }
+    }
+  }
+
+  /** 
+   * Adds a SubmitTask, ApproveTask or CommonTask annotation to the set of annotation 
+   * plugins on the given node. <P> 
+   * 
+   * @param nodeName
+   *   The fully resolved name of the node to be annotated. 
+   * 
+   * @param purpose
+   *   The purpose of the node within the task.
+   * 
+   * @param projectName
+   *   The value to give the ProjectName parameter of the annotation.
+   * 
+   * @param taskName
+   *   The value to give the ProjectName parameter of the annotation.
+   * 
+   * @param taskType
+   *   The value to give the TaskType/CustomTaskType parameter(s) of the annotation.
+   */ 
+  protected void
+  addTaskAnnotation
+  (
+   String nodeName, 
+   NodePurpose purpose, 
+   String projectName, 
+   String taskName, 
+   String taskType
+  )
+    throws PipelineException
+  {
+    BaseAnnotation annot = getNewTaskAnnotation(purpose, projectName, taskName, taskType); 
+
+    /* find a unique name for this annotation, 
+         the convention is to call the primary purpose task annotation "Task" and 
+         any secondary task annotations "AltTask1", "AltTask2" ... "AltTaskN"  */ 
+    String annotName = "Task";
+    {
+      TreeMap<String, BaseAnnotation> exist = pClient.getAnnotations(nodeName);
+      int wk;
+      for(wk=1; true; wk++) {
+        if(!exist.containsKey(annotName)) {
+	  pClient.addAnnotation(nodeName, annotName, annot);
+          break;
+        }
+
+        annotName = ("AltTask" + wk);
+      }
+    }
+  }
+
+  /** 
+   * Return a new SubmitTask, ApproveTask or CommonTask annotation instance appropriate
+   * to be added to the set of annotation plugins on the given node. <P> 
+   * 
+   * @param nodeName
+   *   The fully resolved name of the node to be annotated. 
+   * 
+   * @param purpose
+   *   The purpose of the node within the task.
+   * 
+   * @param projectName
+   *   The value to give the ProjectName parameter of the annotation.
+   * 
+   * @param taskName
+   *   The value to give the ProjectName parameter of the annotation.
+   * 
+   * @param taskType
+   *   The value to give the TaskType/CustomTaskType parameter(s) of the annotation.
+   */ 
+  protected BaseAnnotation
+  getNewTaskAnnotation
+  (
    NodePurpose purpose, 
    String projectName, 
    String taskName, 
@@ -152,25 +251,10 @@ class ICTaskBuilder
     default:
       annot.setParamValue(aAnnotPurpose, purpose.toString());
     }
-    
-    /* find a unique name for this annotation, 
-         the convention is to call the primary purpose task annotation "Task" and 
-         any secondary task annotations "AltTask1", "AltTask2" ... "AltTaskN"  */ 
-    String annotName = "Task";
-    {
-      Map<String, BaseAnnotation> exist = stage.getAnnotations();
-      int wk;
-      for(wk=1; true; wk++) {
-        if(!exist.containsKey(annotName)) {
-          stage.addAnnotation(annotName, annot); 
-          break;
-        }
 
-        annotName = ("AltTask" + wk);
-      }
-    }
+    return annot; 
   }
-
+  
   
 
   /*----------------------------------------------------------------------------------------*/

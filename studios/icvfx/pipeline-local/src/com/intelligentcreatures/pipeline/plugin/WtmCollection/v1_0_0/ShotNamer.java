@@ -1,13 +1,11 @@
-// $Id: ShotNamer.java,v 1.1 2008/02/06 07:21:06 jim Exp $
+// $Id: ShotNamer.java,v 1.2 2008/02/06 11:29:28 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
 import java.util.ArrayList;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.builder.BaseNames;
-import us.temerity.pipeline.builder.UtilContext;
-import us.temerity.pipeline.builder.BaseUtil.ParamMapping;
+import us.temerity.pipeline.builder.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   S H O T   N A M E R                                                                    */
@@ -49,6 +47,7 @@ class ShotNamer
           mclient, qclient);
     
     pStudioDefs = studioDefs;
+    pBasePaths  = new DoubleMap<TaskType, NodePurpose, Path>(); 
     
     {
       UtilityParam param =
@@ -104,7 +103,6 @@ class ShotNamer
     /* initialize the cached fully resolved node directory paths for all combinations 
          of task type and node purpose for this shot. */ 
     {
-      pBasePaths = new DoubleMap<TaskType, NodePurpose, Path>(); 
       Path spath = StudioDefinitions.getShotPath(pProjectName, pSeqName, pShotName);
       for(TaskType type : TaskType.values()) {
         for(NodePurpose purpose : NodePurpose.values()) {
@@ -176,7 +174,7 @@ class ShotNamer
   
   /**
    * Returns the fully resolved node directory path to the parent directory of all 
-   * miscellanous reference images from the set for this shot. 
+   * miscellanous on-set reference images.
    */
   public Path
   getPlatesMiscReferenceParentPath() 
@@ -186,18 +184,51 @@ class ShotNamer
   }
   
   /**
-   * Returns the fully resolved node names of all existing checked-in miscellanous 
-   * reference images from the set for this shot. 
+   * Returns the fully resolved node name of the grouping node for all existing miscellanous 
+   * on-set reference images. 
+   * 
+   * @param purpose
+   *   The purpose of the node within the task.  Only supports: Prepare or Product.
    */
   public String
-  getVfxReferenceNode() 
+  getVfxReferenceNode
+  (
+   NodePurpose purpose
+  ) 
+    throws PipelineException 
   {
-    Path path = new Path(getPlatesMiscReferenceParentPath(), 
-                         joinNames(getFullShotName(), "vfx_reference"));
+    switch(purpose) {
+    case Prepare:
+    case Product:
+      {
+	Path path = new Path(pBasePaths.get(TaskType.Plates, purpose), 
+			     joinNames(getFullShotName(), "vfx_reference"));
+	return path.toString(); 
+      }
+      
+    default:
+      throw new PipelineException
+	("The " + purpose + " purpose is not supported for the VfxReference node!"); 
+    }
+  }
+    
+  /**
+   * Returns the fully resolved node name of the node containing lens and other data
+   * collected on-set about the shot.
+   * 
+   * @param purpose
+   *   The purpose of the node within the task.  Only supports: Prepare or Product.
+   */
+  public String
+  getVfxShotDataNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Edit), 
+			 joinNames(getFullShotName(), "vfx_shot_data")); 
     return path.toString(); 
   }
-  
-  
+
+
+
 
 
    

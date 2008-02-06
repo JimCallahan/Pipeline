@@ -1,4 +1,4 @@
-// $Id: TaskType.java,v 1.1 2008/02/06 07:21:06 jim Exp $
+// $Id: TaskType.java,v 1.5 2008/02/06 18:17:43 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -28,6 +28,21 @@ enum TaskType
    *
    */ 
   Track,
+  
+  /**
+   *
+   */ 
+  Modeling, 
+
+  /**
+   *
+   */ 
+  Rigging, 
+
+  /**
+   *
+   */ 
+  LookDev, 
 
   /**
    *
@@ -71,17 +86,29 @@ enum TaskType
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Return the conventional name for a directory containing nodes with this purpose.
+   * Return the conventional name for a directory containing nodes for this type of task. 
    */ 
   public String 
   toDirName() 
   {
-    return super.toString().toLowerCase(); 
+    switch(this) {
+    case Modeling:
+      return "model";
+      
+    case Rigging:
+      return "rig"; 
+
+    case LookDev:
+      return "shade";
+	
+    default:
+      return super.toString().toLowerCase(); 
+    }
   }
 
   /**
-   * Return the conventional name (as a Path) for a directory containing nodes with 
-   * this purpose.
+   * Return the conventional name (as a Path) for a directory containing nodes for
+   * this type of task. 
    */ 
   public Path 
   toDirPath() 
