@@ -1924,9 +1924,24 @@ AC_CONFIG_FILES([
   studios/TheO/pipeline-local/src/com/theorphanage/Makefile
   studios/TheO/pipeline-local/src/com/theorphanage/pipeline/Makefile
   studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/Makefile
+  studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/AfterFXAddTypedSourceTool/Makefile
+  studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/AfterFXAddTypedSourceTool/v1_0_0/Makefile
+  studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/AfterFXAddTypedSourceTool/v1_0_0/Makefile.local
+  studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/AfterFXTemplateAction/Makefile
+  studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/AfterFXTemplateAction/v1_0_0/Makefile
+  studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/AfterFXTemplateAction/v1_0_0/Makefile.local
+  studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/FrameCyclerEditor/Makefile
+  studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/FrameCyclerEditor/v1_0_0/Makefile
+  studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/FrameCyclerEditor/v1_0_0/Makefile.local
+  studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/SilhouetteEditor/Makefile
+  studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/SilhouetteEditor/v1_0_0/Makefile
+  studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/SilhouetteEditor/v1_0_0/Makefile.local
+  studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/SilhouetteEditor/v1_1_0/Makefile
+  studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/SilhouetteEditor/v1_1_0/Makefile.local
   studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/ZohanCollection/Makefile
   studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/ZohanCollection/v1_0_0/Makefile
   studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/ZohanCollection/v1_0_0/Makefile.local
+  studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/ZohanCollection/v1_0_0/stages/Makefile
 
   rpm/Makefile
   rpm/pipeline.spec.A
