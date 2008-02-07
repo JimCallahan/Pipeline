@@ -497,7 +497,7 @@ class ComplexParam<E>
     if(needsUpdating() == true)
       return true;
     for (E param : pParams.values()) {
-      if(!(param instanceof SimpleParamAccess)) {
+      if((param instanceof ComplexParamAccess)) {
 	ComplexParamAccess<E> complex = (ComplexParamAccess<E>) param;
 	if (complex.requiresUpdating() == true)
 	  return true;
