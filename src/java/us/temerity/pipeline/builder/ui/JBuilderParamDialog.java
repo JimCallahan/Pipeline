@@ -54,7 +54,7 @@ class JBuilderParamDialog
   initUI()
     throws PipelineException
   {
-    String header = pBuilder.getNameUI();
+    String header = "Node Builder:  " + pBuilder.getNameUI();
     String cancel = "Abort";
     String[][] extras = new String[3][2];
     extras[0][0] = "Next";
