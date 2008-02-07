@@ -1,4 +1,4 @@
-// $Id: CompositeAction.java,v 1.1 2007/06/17 15:34:38 jim Exp $
+// $Id: CompositeAction.java,v 1.2 2008/02/07 10:17:54 jesse Exp $
 
 package us.temerity.pipeline.plugin.CompositeAction.v2_2_1;
 
@@ -24,7 +24,7 @@ import java.io.*;
  * a corresponing image file to the target, the compositing operation will be skipped for 
  * that frame.  <P> 
  * 
- * The background, source and target images are assumed to have the same image resultion.   
+ * The background, source and target images are assumed to have the same image resolution.   
  * However, no checking is done to insure this is the case. <P> 
  * 
  * All compositing operations are performed using the ImageMagick composite(1) command line 

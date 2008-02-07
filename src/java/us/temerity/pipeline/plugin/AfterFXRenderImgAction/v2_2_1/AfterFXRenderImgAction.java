@@ -128,6 +128,7 @@ class AfterFXRenderImgAction
    *   If unable to prepare a SubProcess due to illegal, missing or imcompatable 
    *   information in the action agenda or a general failure of the prep method code.
    */
+  @Override
   public SubProcessHeavy
   prep
   (
@@ -154,6 +155,7 @@ class AfterFXRenderImgAction
       extensions.add("bmp");
       extensions.add("iff");
       extensions.add("jpeg");
+      extensions.add("jpg");
       extensions.add("exr");
       extensions.add("png");
       extensions.add("psd");

@@ -1,4 +1,4 @@
-// $Id: TaskAnnotation.java,v 1.3 2007/08/20 04:45:17 jim Exp $
+// $Id: TaskAnnotation.java,v 1.4 2008/02/07 10:17:54 jesse Exp $
 
 package us.temerity.pipeline.plugin.TaskAnnotation.v2_3_2;
 
@@ -170,7 +170,10 @@ class TaskAnnotation
   public static final String aAnimation   = "Animation";       
   public static final String aEffects     = "Effects";         
   public static final String aLighting    = "Lighting";        
-  public static final String aCompositing = "Compositing";  
+  public static final String aCompositing = "Compositing";
+  public static final String aRoto        = "Roto";
+  public static final String aPlates      = "Plates";
+  
 
   public static final String aEdit      = "Edit";
   public static final String aPrepare   = "Prepare";
