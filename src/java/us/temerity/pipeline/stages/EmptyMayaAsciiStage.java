@@ -6,8 +6,10 @@ import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
 
 
-public class EmptyMayaAsciiStage
+public 
+class EmptyMayaAsciiStage
   extends MayaBuildStage
+  implements FinalizableStage
 {
   public EmptyMayaAsciiStage
   (

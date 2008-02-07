@@ -59,7 +59,7 @@ class CopyStage
           range,
           padding,
           suffix, 
-          new PluginContext("Emacs"), 
+          null, 
           new PluginContext("Copy"));
     addLink(new LinkMod(source, LinkPolicy.Dependency));
   }

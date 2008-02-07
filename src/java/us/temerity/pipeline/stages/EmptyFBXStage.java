@@ -1,9 +1,3 @@
-/*
- * Created on Jul 8, 2007
- * Created by jesse
- * For Use in us.temerity.pipeline.stages
- * 
- */
 package us.temerity.pipeline.stages;
 
 import us.temerity.pipeline.MasterMgrClient;
@@ -11,9 +5,10 @@ import us.temerity.pipeline.PipelineException;
 import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
 
-public class 
-EmptyFBXStage 
+public 
+class EmptyFBXStage 
   extends StandardStage
+  implements FinalizableStage
 {
   public
   EmptyFBXStage

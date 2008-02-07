@@ -38,5 +38,37 @@ class TargetStage
           sources);
   }
   
+  public
+  TargetStage
+  (
+    StageInformation stageInformation,
+    UtilContext context,
+    MasterMgrClient client, 
+    String nodeName,
+    String source
+  )
+    throws PipelineException
+  {
+    super("Target Stage", 
+          "Any stage that is a dummy node that is used as a grouping point for other nodes.", 
+          stageInformation, 
+          context, 
+          client, 
+          nodeName, 
+          null, 
+          listFromObject(source));
+  }
+  
+  private static TreeSet<String>
+  listFromObject
+  (
+    String s
+  )
+  {
+    TreeSet<String> toReturn = new TreeSet<String>();
+    toReturn.add(s);
+    return toReturn;
+  }
+  
   private static final long serialVersionUID = 5221589449119679847L;
 }

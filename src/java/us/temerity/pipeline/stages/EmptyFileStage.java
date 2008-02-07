@@ -13,6 +13,7 @@ import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
  */
 public class EmptyFileStage
   extends StandardStage
+  implements FinalizableStage
 {
   public
   EmptyFileStage

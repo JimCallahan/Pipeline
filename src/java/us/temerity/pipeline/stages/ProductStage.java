@@ -6,8 +6,7 @@
  */
 package us.temerity.pipeline.stages;
 
-import us.temerity.pipeline.MasterMgrClient;
-import us.temerity.pipeline.PipelineException;
+import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.UtilContext;
 import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
 
@@ -34,6 +33,34 @@ class ProductStage
           context, 
           client, 
           nodeName, 
+          suffix, 
+          source);
+    pStageFunction = stageFunction;
+  }
+  
+  public 
+  ProductStage
+  (
+    StageInformation stageInformation,
+    UtilContext context,
+    MasterMgrClient client, 
+    String nodeName,
+    FrameRange range,
+    Integer padding,
+    String suffix,
+    String source, 
+    String stageFunction
+  )
+    throws PipelineException
+  {
+    super("ProductStage", 
+          "Any stage which uses a copy action to make a product node.", 
+          stageInformation, 
+          context, 
+          client, 
+          nodeName,
+          range,
+          padding,
           suffix, 
           source);
     pStageFunction = stageFunction;
