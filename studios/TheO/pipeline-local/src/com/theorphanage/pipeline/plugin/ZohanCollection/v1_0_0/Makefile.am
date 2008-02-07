@@ -19,3 +19,6 @@ java_DATA = \
   SubDir.java \
   ZohanCollection.java
 
+
+SUBDIRS = \
+  stages

@@ -10,6 +10,6 @@ javadir = $(sourceroot)/com/theorphanage/pipeline/plugin/ZohanCollection/v1_0_0/
 java_DATA = \
   MatteStage.java \
   MatteTestRenderStage.java \
-  MatteTestStage.java
-
+  MatteTestStage.java \
+  AfterFXTemplateStage.java
 
