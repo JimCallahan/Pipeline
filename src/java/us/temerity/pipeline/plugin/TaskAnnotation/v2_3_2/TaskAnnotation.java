@@ -1,4 +1,4 @@
-// $Id: TaskAnnotation.java,v 1.4 2008/02/07 10:17:54 jesse Exp $
+// $Id: TaskAnnotation.java,v 1.5 2008/02/07 13:17:59 jesse Exp $
 
 package us.temerity.pipeline.plugin.TaskAnnotation.v2_3_2;
 
@@ -110,7 +110,10 @@ class TaskAnnotation
       choices.add(aAnimation);       
       choices.add(aEffects);         
       choices.add(aLighting);        
-      choices.add(aCompositing);  
+      choices.add(aCompositing);
+      choices.add(aRoto);
+      choices.add(aPlates);
+      
 
       AnnotationParam param = 
 	new EnumAnnotationParam

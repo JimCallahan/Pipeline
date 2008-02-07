@@ -1,4 +1,4 @@
-// $Id: SubmitNodeAnnotation.java,v 1.6 2007/11/04 20:45:02 jesse Exp $
+// $Id: SubmitNodeAnnotation.java,v 1.7 2008/02/07 13:17:59 jesse Exp $
 
 package us.temerity.pipeline.plugin.SubmitNodeAnnotation.v2_3_2;
 
@@ -81,7 +81,9 @@ class SubmitNodeAnnotation
       choices.add(aAnimation);       
       choices.add(aEffects);         
       choices.add(aLighting);        
-      choices.add(aCompositing);  
+      choices.add(aCompositing);
+      choices.add(aRoto);
+      choices.add(aPlates);
 
       AnnotationParam param = 
 	new EnumAnnotationParam
@@ -150,5 +152,7 @@ class SubmitNodeAnnotation
   public static final String aEffects     = "Effects";         
   public static final String aLighting    = "Lighting";        
   public static final String aCompositing = "Compositing";  
+  public static final String aRoto        = "Roto";
+  public static final String aPlates      = "Plates";
   
 }
