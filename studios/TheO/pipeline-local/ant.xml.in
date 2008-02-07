@@ -14,7 +14,7 @@
           description="Builds the plugin JAR file.">
 
     <jar destfile="bin/${ZohanCollection}/v1_0_0/ZohanCollection.jar" 
-         includes="${ZohanCollection}/v1_0_0/*.class", "${ZohanCollection}/v1_0_0/stages/*.class"
+         includes="${ZohanCollection}/v1_0_0/*.class, ${ZohanCollection}/v1_0_0/stages/*.class"
          basedir="bin">
     </jar>
   </target>
@@ -28,7 +28,7 @@
     </jar>
   </target>
   
-  <target name="Make-AfterFXTemplateAction-v1.0.0" 
+   <target name="Make-AfterFXTemplateAction-v1.0.0" 
           description="Builds the plugin JAR file.">
 
     <jar destfile="bin/${Plugins}/AfterFXTemplateAction/v1_0_0/AfterFXTemplateAction.jar" 
@@ -36,38 +36,44 @@
          basedir="bin">
     </jar>
   </target>
+	
+    <target name="Make-FrameCyclerEditor-v1.0.0" 
+            description="Builds the plugin JAR file.">
+
+      <jar destfile="bin/${Plugins}/FrameCyclerEditor/v1_0_0/FrameCyclerEditor.jar" 
+            includes="${Plugins}/FrameCyclerEditor/v1_0_0/*.class"
+            basedir="bin">
+      </jar>
+    </target>
+	
+    <target name="Make-SilhouetteEditor-v1.0.0" 
+            description="Builds the plugin JAR file.">
+
+      <jar destfile="bin/${Plugins}/SilhouetteEditor/v1_0_0/SilhouetteEditor.jar" 
+            includes="${Plugins}/SilhouetteEditor/v1_0_0/*.class"
+            basedir="bin">
+      </jar>
+    </target>
+	
+    <target name="Make-SilhouetteEditor-v1.1.0" 
+                      description="Builds the plugin JAR file.">
+
+        <jar destfile="bin/${Plugins}/SilhouetteEditor/v1_1_0/SilhouetteEditor.jar" 
+                      includes="${Plugins}/SilhouetteEditor/v1_1_0/*.class"
+                      basedir="bin">
+        </jar>
+    </target>
+
+
   
-  <target name="Make-AfterFXTemplateAction-v1.0.0" 
-          description="Builds the plugin JAR file.">
-
-    <jar destfile="bin/${Plugins}/AfterFXTemplateAction/v1_0_0/AfterFXTemplateAction.jar" 
-         includes="${Plugins}/AfterFXTemplateAction/v1_0_0/*.class"
-         basedir="bin">
-    </jar>
-  </target>
-
-
-  <target name="Install-ZohanCollection-v1.0.0" 
-          description="Installs the plugin JAR."
-          depends="Make-ZohanCollection-v1.0.0">
-
-    <exec executable="${PipelineLatest}/Unix-x86-Opt/bin/plplugin" 
-          dir="bin" failonerror="true">
-      <arg value="--install"/>
-      <arg value="${ZohanCollection}/v1_0_0/ZohanCollection.jar"/>
-    </exec>
-  </target>
-
-
-  <target name="MakePlugins" 
-          description="Make all Pipeline plugins." 
-          depends="Make-ZohanCollection-v1.0.0"> 
-  </target>
-
-
-  <target name="InstallPlugins" 
-          description="Installs all Pipeline plugins." 
-          depends="MakePlugins"> 
-  </target>
+    <target name="MakePlugins" 
+            description="Make all Pipeline plugins." 
+            depends="Make-ZohanCollection-v1.0.0, 
+                        Make-AfterFXAddTypedSourceTool-v1.0.0, 
+                        Make-AfterFXTemplateAction-v1.0.0,
+                        Make-FrameCyclerEditor-v1.0.0, 
+                        Make-SilhouetteEditor-v1.0.0, 
+                        Make-SilhouetteEditor-v1.1.0"> 
+    </target>
 
 </project> 
