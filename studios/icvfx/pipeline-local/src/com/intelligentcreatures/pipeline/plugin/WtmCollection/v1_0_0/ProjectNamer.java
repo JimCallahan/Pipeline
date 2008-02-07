@@ -1,4 +1,4 @@
-// $Id: ProjectNamer.java,v 1.5 2008/02/06 18:17:43 jim Exp $
+// $Id: ProjectNamer.java,v 1.6 2008/02/07 14:14:33 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -115,7 +115,8 @@ class ProjectNamer
   public String
   getPlatesOriginalGridNode() 
   {
-    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Plates), "original_grid");
+    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Plates), 
+			 new Path(AppDirs.Images.toDirPath(), "original_grid"));
     return path.toString();
   }
   
@@ -144,7 +145,17 @@ class ProjectNamer
     return path.toString(); 
   }
 
-
+  /**
+   * Returns the fully resolved name of the node containing a Nuke script fragment 
+   * that adds a generic BlackOutside Nuke node.
+   */ 
+  public String
+  getBlackOutsideNode() 
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Plates), 
+			 new Path(AppDirs.Nuke.toDirPath(), "black_outside"));
+    return path.toString(); 
+  }
 
   
   

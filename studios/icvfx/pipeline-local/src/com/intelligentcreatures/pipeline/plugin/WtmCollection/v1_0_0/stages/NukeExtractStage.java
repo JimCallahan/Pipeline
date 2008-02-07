@@ -1,4 +1,4 @@
-// $Id: NukeThumbnailStage.java,v 1.3 2008/02/07 14:14:33 jim Exp $
+// $Id: NukeExtractStage.java,v 1.1 2008/02/07 14:14:33 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
 
@@ -13,18 +13,24 @@ import us.temerity.pipeline.stages.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   N U K E   T H U M B N A I L   S T A G E                                                */
+/*   N U K E   E X T R A C T   S T A G E                                                    */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Generates a thumbnail image using the NukeThumbnail action.
+ * Extracts script fragments containing Nuke nodes from a larger Nuke script.
  */ 
 public 
-class NukeThumbnailStage
+class NukeExtractStage
   extends StandardStage
 {
   /**
    * Construct a new stage.
+   * 
+   * @param name
+   *   The name of the stage.
+   * 
+   * @param desc
+   *   A description of what the stage should do.
    * 
    * @param stageInfo
    *   Class containing basic information shared among all stages.
@@ -38,58 +44,44 @@ class NukeThumbnailStage
    * @param nodeName
    *   The name of the node that is to be created.
    * 
-   * @param suffix
-   *   The suffix for the created node.
+   * @param nukeScript
+   *   The source node which contains the Nuke script to scan.
    * 
-   * @param source
-   *   The name of source images.
+   * @param typePattern
+   *   The regular expression to use to match the types of Nuke nodes to extract.
    * 
-   * @param imageNumber 
-   *   Specifies the frame number of image from the source sequence to process.
+   * @param namePattern
+   *   The regular expression to use to match the names of Nuke nodes to extract.  
    * 
-   * @param thumbnailSize
-   *   The image resolution of the generated thumbnail. 
-   * 
-   * @param addAlpha
-   *   Whether to add an solid alpha channel to the input image before resizing and/or
-   *   compositing over the optional background layer.
-   * 
-   * @param overBackground
-   *   Whether to composite the thumbnail images over a constant colored background layer.
-   * 
-   * @param backgroundColor
-   *   The thumbnail is composited over a background layer of this constant color.
+   * @param matchUnnamed
+   *   Whether to match node's which do not have a name. 
    */
   public
-  NukeThumbnailStage
+  NukeExtractStage
   (
    StageInformation stageInfo,
    UtilContext context,
    MasterMgrClient client,
    String nodeName, 
-   String suffix,
-   String source,
-   int imageNumber, 
-   int thumbnailSize, 
-   boolean addAlpha, 
-   boolean overBackground, 
-   Color3d backgroundColor
+   String nukeScript,
+   String typePattern,
+   String namePattern, 
+   boolean matchUnnamed
   )
     throws PipelineException
   {
-    super("NukeThumbnailStage",
-          "Generates a thumbnail image using the NukeThumbnail action.", 
+    super("NukeExtractStage",
+          "Extracts script fragments containing Nuke nodes from a larger Nuke script.", 
           stageInfo, context, client,
-          nodeName, suffix,
+          nodeName, "nk",
           null,
-          new PluginContext("NukeThumbnail"));
+          new PluginContext("NukeExtract"));
 
-    addLink(new LinkMod(source, LinkPolicy.Dependency));
-    addSingleParamValue("ImageNumber", imageNumber);
-    addSingleParamValue("ThumbnailSize", thumbnailSize);
-    addSingleParamValue("AddAlpha", addAlpha);
-    addSingleParamValue("OverBackground", overBackground);
-    addSingleParamValue("BackgroundColor", backgroundColor);
+    addLink(new LinkMod(nukeScript, LinkPolicy.Dependency));
+    addSingleParamValue("NukeScript", nukeScript); 
+    addSingleParamValue("TypePattern", typePattern);
+    addSingleParamValue("NamePattern", namePattern);
+    addSingleParamValue("MatchUnnamed", matchUnnamed);
   }
   
 
@@ -105,7 +97,7 @@ class NukeThumbnailStage
   public String 
   getStageFunction()
   {
-    return ICStageFunction.aRenderedImage;
+    return ICStageFunction.aNukeScript;
   }
 
 
@@ -114,6 +106,6 @@ class NukeThumbnailStage
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
  
-  private static final long serialVersionUID = 4435149474061655258L;
+  private static final long serialVersionUID = 1635196799864718863L;
 
 }

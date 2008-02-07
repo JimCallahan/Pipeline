@@ -1,4 +1,4 @@
-// $Id: NukeThumbnailStage.java,v 1.3 2008/02/07 14:14:33 jim Exp $
+// $Id: NukeQtStage.java,v 1.1 2008/02/07 14:14:33 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
 
@@ -13,14 +13,14 @@ import us.temerity.pipeline.stages.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   N U K E   T H U M B N A I L   S T A G E                                                */
+/*   N U K E   Q U I C K T I M E   S T A G E                                                */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Generates a thumbnail image using the NukeThumbnail action.
+ * Generates a QuickTime movie from a set of images using the NukeQt action.
  */ 
 public 
-class NukeThumbnailStage
+class NukeQtStage
   extends StandardStage
 {
   /**
@@ -61,35 +61,26 @@ class NukeThumbnailStage
    *   The thumbnail is composited over a background layer of this constant color.
    */
   public
-  NukeThumbnailStage
+  NukeQtStage
   (
    StageInformation stageInfo,
    UtilContext context,
    MasterMgrClient client,
    String nodeName, 
-   String suffix,
    String source,
-   int imageNumber, 
-   int thumbnailSize, 
-   boolean addAlpha, 
-   boolean overBackground, 
-   Color3d backgroundColor
+   double fps
   )
     throws PipelineException
   {
-    super("NukeThumbnailStage",
-          "Generates a thumbnail image using the NukeThumbnail action.", 
+    super("NukeQtStage",
+          "Generates a thumbnail image using the NukeQt action.", 
           stageInfo, context, client,
-          nodeName, suffix,
+          nodeName, "qt",
           null,
-          new PluginContext("NukeThumbnail"));
+          new PluginContext("NukeQt"));
 
     addLink(new LinkMod(source, LinkPolicy.Dependency));
-    addSingleParamValue("ImageNumber", imageNumber);
-    addSingleParamValue("ThumbnailSize", thumbnailSize);
-    addSingleParamValue("AddAlpha", addAlpha);
-    addSingleParamValue("OverBackground", overBackground);
-    addSingleParamValue("BackgroundColor", backgroundColor);
+    addSingleParamValue("FPS", fps);
   }
   
 
@@ -105,7 +96,7 @@ class NukeThumbnailStage
   public String 
   getStageFunction()
   {
-    return ICStageFunction.aRenderedImage;
+    return ICStageFunction.aQuickTime; 
   }
 
 

@@ -1,4 +1,4 @@
-// $Id: AppDirs.java,v 1.1 2008/02/06 07:21:06 jim Exp $
+// $Id: AppDirs.java,v 1.2 2008/02/07 14:14:33 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -58,6 +58,11 @@ enum AppDirs
   /*-- IMAGES ------------------------------------------------------------------------------*/
 
   /**
+   * Generic images. 
+   */ 
+  Images, 
+
+  /**
    * Images of roughly 2048x1556 resolution.
    */ 
   Image2k, 
@@ -66,6 +71,11 @@ enum AppDirs
    * Images of roughly 1024x778 resolution.
    */ 
   Image1k, 
+
+  /**
+   * QuickTime movies.
+   */ 
+  QuickTime, 
 
 
   /*-- MISC MODELS -------------------------------------------------------------------------*/
@@ -136,6 +146,9 @@ enum AppDirs
 
     case Image1k:
       return "1k";
+      
+    case QuickTime:
+      return "qt";
       
     case Source:
       return "src";

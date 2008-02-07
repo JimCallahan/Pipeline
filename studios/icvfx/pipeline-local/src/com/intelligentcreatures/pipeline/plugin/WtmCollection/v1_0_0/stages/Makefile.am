@@ -9,10 +9,10 @@ javadir = $(sourceroot)/com/intelligentcreatures/pipeline/plugin/WtmCollection/v
 
 java_DATA = \
   DistortedGridStage.java \
-  FinalizableStage.java \
   LensInfoStage.java \
   NukeCatCompStage.java \
   NukeCatStage.java \
+  NukeExtractStage.java \
   NukeReadReformatStage.java \
   NukeReadStage.java \
   NukeThumbnailStage.java \

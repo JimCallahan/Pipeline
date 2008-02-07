@@ -1,16 +1,15 @@
-// $Id: PlatesBuilder.java,v 1.8 2008/02/07 10:22:54 jesse Exp $
+// $Id: PlatesBuilder.java,v 1.9 2008/02/07 14:14:33 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
-import java.util.*;
+import com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages.*;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.math.*;
+import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.stages.*;
 
-import com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages.*;
-import com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages.FinalizableStage;
+import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   P L A T E S   D E F I N I T I O N S                                                    */
@@ -107,8 +106,8 @@ class PlatesBuilder
       pRequiredNodeNames = new TreeSet<String>(); 
       pMiscReferenceNodeNames = new TreeSet<String>(); 
 
-      pFirstStages  = new ArrayList<BaseStage>(); 
-      pSecondStages = new ArrayList<BaseStage>(); 
+      pFirstStages  = new ArrayList<FinalizableStage>(); 
+      //pSecondStages = new ArrayList<FinalizableStage>(); 
 
       // ... 
     }
@@ -146,8 +145,6 @@ class PlatesBuilder
     /* if no parent builder has already generated the names for ProjectNamer, 
          this builder should take over control of naming the project */ 
     if(!pProjectNamer.isGenerated()) {
-
-      /* add the ProjectNamer as a sub-builder */  
       addSubBuilder(pProjectNamer);
 
       /* link the nested ProjectName parameter inside the complex parameter Location
@@ -155,9 +152,7 @@ class PlatesBuilder
       addMappedParam(pProjectNamer.getName(), 
                      new ParamMapping(StudioDefinitions.aProjectName), 
                      new ParamMapping(aLocation, StudioDefinitions.aProjectName)); 
-      
     }
-    
     
     /* create the setup passes */ 
     {
@@ -179,12 +174,14 @@ class PlatesBuilder
       setDefaultEditor(ICStageFunction.aSourceImage, new PluginContext("NukeViewer"));
       setDefaultEditor(ICStageFunction.aNukeScript, new PluginContext("Nuke"));
 
+      setDefaultEditor(ICStageFunction.aQuickTime, new PluginContext("QuickTime")); 
+
       setDefaultEditor(ICStageFunction.aPFTrackScene, new PluginContext("PFTrack", "ICVFX"));
     }
 
     /* create the construct passes */ 
     {
-      ConstructPass build = new BuildPass();
+      ConstructPass build = new BuildNodesPass();
       addConstructPass(build);
       
       ConstructPass first = new FirstQueueDisablePass(); 
@@ -237,15 +234,39 @@ class PlatesBuilder
   /*----------------------------------------------------------------------------------------*/
  
   /**
-   * Returns the names of nodes that this Builder will check-in.
+   * Returns a list of Actions required by this Builder, indexed by the toolset that
+   * needs to contain them.
+   * <p>
+   * Builders should override this method to provide their own requirements.  This
+   * validation gets performed after all the Setup Passes have been run but before
+   * any Construct Passes are run.
    */
+  @SuppressWarnings("unchecked")
   @Override
-  protected LinkedList<String> 
-  getNodesToCheckIn() 
+  protected MappedArrayList<String, PluginContext> 
+  getNeededActions()
   {
-    return getCheckInList();
+    ArrayList<PluginContext> plugins = new ArrayList<PluginContext>();	
+    plugins.add(new PluginContext("LensInfo", "ICVFX"));	
+    //plugins.add(new PluginContext("PFTrackBuild", "ICVFX"));	
+    plugins.add(new PluginContext("Touch")); 
+    plugins.add(new PluginContext("Copy"));   		
+    plugins.add(new PluginContext("NukeCatComp")); 		
+    plugins.add(new PluginContext("NukeExtract"));		
+    plugins.add(new PluginContext("NukeQt"));			
+    plugins.add(new PluginContext("NukeThumbnail"));		
+    plugins.add(new PluginContext("NukeReformat"));		
+    plugins.add(new PluginContext("NukeRead"));			
+    plugins.add(new PluginContext("NukeRescale")); 		
+    plugins.add(new PluginContext("NukeThumbnail"));          
+
+    MappedArrayList<String, PluginContext> toReturn = 
+      new MappedArrayList<String, PluginContext>();
+    toReturn.put(getToolset(), plugins);
+
+    return toReturn;
   }
-  
+
   
   /*----------------------------------------------------------------------------------------*/
   /*  T A S K   A N N O T A T I O N S                                                       */
@@ -324,39 +345,39 @@ class PlatesBuilder
     validatePhase()
       throws PipelineException
     {
-      /* sets up the built-in parameters common to all builders,
-           TODO: shouldn't this be in BaseBuilder itself?! */ 
+      /* sets up the built-in parameters common to all builders */ 
       validateBuiltInParams();
 
-      /**
-       * NOTE: This is commented because the UtilContext is not actually needed by 
-       * StudioDefinitions as currently written.  However, if StudioDefinitions did require 
-       * access to the UtilContext it will have to be initialized here! 
-       */ 
+      /* setup the StudioDefinitions version of the UtilContext */ 
       pStudioDefs.setContext(pContext);  
       
-      /* lookup the name of the selected project, sequence and shot from the 
-           builder's Location parameter */ 
+      /* lookup the selected sequence/shot from the builder's Location parameter, 
+	   we'll need this in the initPhase() to initialize the ShotNamer */ 
       {
-        ParamMapping mapping = 
+        ParamMapping seqMapping = 
           new ParamMapping(aLocation, StudioDefinitions.aSequenceName);
-        pSequenceName = getStringParamValue(mapping);
-      }
-      
-      {
-        ParamMapping mapping = 
+        pSequenceName = getStringParamValue(seqMapping);
+
+        ParamMapping shotMapping = 
           new ParamMapping(aLocation, StudioDefinitions.aShotName);
-        pShotName = getStringParamValue(mapping);
+        pShotName = getStringParamValue(shotMapping);
       }
 
-      /* add any required placeholders or other common shared stuff here.. */ 
+      /* register the project-wide required nodes */ 
       {
-        //pRequiredNodes.add(/* full node name */); 
+	pPlatesOriginalGridNodeName = pProjectNamer.getPlatesOriginalGridNode();
+	pRequiredNodeNames.add(pPlatesOriginalGridNodeName); 
+
+	pGridGradeWarpNodeName = pProjectNamer.getGridGradeWarpNode();
+	pRequiredNodeNames.add(pGridGradeWarpNodeName); 
+	
+	pGridGradeDiffNodeName = pProjectNamer.getGridGradeDiffNode();
+	pRequiredNodeNames.add(pGridGradeDiffNodeName); 
+	
+	pBlackOutsideNodeName = pProjectNamer.getBlackOutsideNode();
+	pRequiredNodeNames.add(pBlackOutsideNodeName); 
       }
 
-      /* lookup whether we should check-in the nodes we've created at the end */ 
-      pCheckInWhenDone = getBooleanParamValue(new ParamMapping(aCheckinWhenDone));
-    
       /* turn on the DoAnnotations flag for the StageInformation shared by all 
          of the Stages created by this builder since we always want task annotations */
       pStageInfo.setDoAnnotations(true);
@@ -374,21 +395,20 @@ class PlatesBuilder
       if(pShotNamer == null) 
         pShotNamer = new ShotNamer(pClient, pQueue, pStudioDefs);
 
-      /* if no parent builder as already generated the shot names... */ 
+      /* if no parent builder as already generated and initialized the ShotNamer, 
+	   lets create one ourselves... */ 
       if(!pShotNamer.isGenerated()) {
-
-        /* add the ShotNamer as a sub-builder */ 
         addSubBuilder(pShotNamer);
         
         /* always link the nested ProjectName parameter inside the complex parameter 
              Location (of this builder) with the simple ProjectName parameter of the 
-             ShotNamer */
+	     ShotNamer */
         addMappedParam
           (pShotNamer.getName(), 
            new ParamMapping(StudioDefinitions.aProjectName), 
            new ParamMapping(aLocation, StudioDefinitions.aProjectName));
 
-        /* if we are not creating a new shot, 
+        /* if we are NOT creating a new shot, 
              then link the nested SequenceName parameter inside the complex parameter 
              Location (of this builder) with the simple SequenceName parameter of the 
              ShotNamer */ 
@@ -399,7 +419,7 @@ class PlatesBuilder
              new ParamMapping(aLocation, StudioDefinitions.aSequenceName));
         }
 
-        /* if we are not creating a new shot, 
+        /* if we are NOT creating a new shot, 
              then link the nested ShotName parameter inside the complex parameter 
              Location (of this builder) with the simple ShotName parameter of the 
              ShotNamer */ 
@@ -489,7 +509,16 @@ class PlatesBuilder
           throw new PipelineException
             ("No " + aBackgroundPlate + " image node was selected!"); 
         Path path = new Path(pShotNamer.getPlatesScannedParentPath(), bgName); 
-        pBackgroundPlateNodeName = path.toString(); 
+	
+	NodeVersion vsn = pClient.getCheckedInVersion(path.toString(), null); 
+	if(vsn == null) 
+	  throw new PipelineException
+	    ("Somehow no checked-in version of the " + aBackgroundPlate + " node " + 
+	     "(" + path + ") exists!"); 
+
+	pFrameRange = vsn.getPrimarySequence().getFrameRange(); 
+
+        pBackgroundPlateNodeName = vsn.getName(); 
         pRequiredNodeNames.add(pBackgroundPlateNodeName); 
       }
 
@@ -502,19 +531,6 @@ class PlatesBuilder
           pMiscReferenceNodeNames.add(nodeName); 
           pRequiredNodeNames.add(nodeName); 
         }
-      }
-
-      /* the original undistored grid node */ 
-      pPlatesOriginalGridNodeName = pProjectNamer.getPlatesOriginalGridNode();
-      pRequiredNodeNames.add(pPlatesOriginalGridNodeName); 
-
-      /* misc Nuke script fragements */ 
-      {
-	pGridGradeWarpNodeName = pProjectNamer.getGridGradeWarpNode();
-	pRequiredNodeNames.add(pGridGradeWarpNodeName); 
-	
-	pGridGradeDiffNodeName = pProjectNamer.getGridGradeDiffNode();
-	pRequiredNodeNames.add(pGridGradeDiffNodeName); 
       }
     }
 
@@ -531,13 +547,13 @@ class PlatesBuilder
    *
    */ 
   protected 
-  class BuildPass
+  class BuildNodesPass
     extends ConstructPass
   {
     public 
-    BuildPass()
+    BuildNodesPass()
     {
-      super("Build Pass", 
+      super("Build Nodes Pass", 
             "Creates the nodes which make up the Plates task."); 
     }
     
@@ -563,13 +579,17 @@ class PlatesBuilder
 	for(String name : pMiscReferenceNodeNames) 
 	  addTaskAnnotation(name, NodePurpose.Edit); 
       }
-      
 
-      LockBundle bundle = new LockBundle();
-      
-      /* the submit network */ 
+      /* the submit network */
       {
-	String vfxRefNodeName = buildVfxReference(NodePurpose.Prepare); 
+	String vfxRefNodeName = pShotNamer.getVfxReferenceNode(NodePurpose.Prepare); 
+	{
+	  TargetStage stage = 
+	    new TargetStage(pStageInfo, pContext, pClient, 
+			    vfxRefNodeName, pMiscReferenceNodeNames); 
+	  addTaskAnnotation(stage, NodePurpose.Prepare); 
+	  stage.build(); 
+	}
 
 	String vfxShotDataNodeName = pShotNamer.getVfxShotDataNode(); 
 	{
@@ -591,11 +611,11 @@ class PlatesBuilder
 	  addToDisableList(solveDistortionNodeName);
 	}
 	
-	String distortedGridNodeName = pShotNamer.getDistortedGridNode(); 
+	pDistortedGridNodeName = pShotNamer.getDistortedGridNode(); 
 	{
 	  DistortedGridStage stage = 
 	    new DistortedGridStage(pStageInfo, pContext, pClient, 
-				   distortedGridNodeName, pPlatesOriginalGridNodeName, 
+				   pDistortedGridNodeName, pPlatesOriginalGridNodeName, 
 				   solveDistortionNodeName);
 	  addTaskAnnotation(stage, NodePurpose.Prepare); 
 	  stage.build();  
@@ -606,7 +626,7 @@ class PlatesBuilder
 	{
 	  NukeReadStage stage = 
 	    new NukeReadStage(pStageInfo, pContext, pClient, 
-			      readDistortedNodeName, distortedGridNodeName); 
+			      readDistortedNodeName, pDistortedGridNodeName); 
 	  addTaskAnnotation(stage, NodePurpose.Prepare); 
 	  stage.build();  
 	}
@@ -616,7 +636,7 @@ class PlatesBuilder
 	  NukeReadReformatStage stage = 
 	    new NukeReadReformatStage(pStageInfo, pContext, pClient, 
 				      reformatOriginalNodeName, 
-				      pPlatesOriginalGridNodeName, distortedGridNodeName); 
+				      pPlatesOriginalGridNodeName, pDistortedGridNodeName); 
 	  addTaskAnnotation(stage, NodePurpose.Prepare); 
 	  stage.build();  
 	}
@@ -633,20 +653,19 @@ class PlatesBuilder
 	    new NukeCatStage(pStageInfo, pContext, pClient, 
 			     pGridAlignNodeName, sources); 
 	  stage.addLink(new LinkMod(pPlatesOriginalGridNodeName, LinkPolicy.Reference));
-	  stage.addLink(new LinkMod(distortedGridNodeName, LinkPolicy.Reference));
+	  stage.addLink(new LinkMod(pDistortedGridNodeName, LinkPolicy.Reference));
 	  addTaskAnnotation(stage, NodePurpose.Edit); 
 	  stage.build(); 
-	  pSecondStages.add(stage); 
 	}
 	
 	String gridAlignImageNodeName = pShotNamer.getGridAlignImageNode();
 	{
-	  LinkedList<String> sources = new LinkedList<String>(); 
-	  sources.add(pGridAlignNodeName); 
+	  LinkedList<String> nukeScripts = new LinkedList<String>(); 
+	  nukeScripts.add(pGridAlignNodeName); 
 
 	  NukeCatCompStage stage = 
 	    new NukeCatCompStage(pStageInfo, pContext, pClient,
-				 gridAlignImageNodeName, "tif", sources);
+				 gridAlignImageNodeName, "tif", nukeScripts);  
 	  addTaskAnnotation(stage, NodePurpose.Focus); 
 	  stage.build(); 
 	}
@@ -675,66 +694,98 @@ class PlatesBuilder
 	  addToQueueList(submitNodeName);
 	  addToCheckInList(submitNodeName);
 	}
-	
-
-        /* 
-
-        Stage stage = new Stage(...  rigSource); 
-        addPrepareAnnotation(stage, taskType);
-        stage.build();
-        addToQueueList(rigSource);
-        addToCheckInList(rigSource);
-        bundle.addNodeToLock(rigSource);
-        
-        
-        Stage stage = new Stage(...  rigSubmit); 
-        addSubmitAnnotation(stage, taskType);
-        stage.build();
-        addToQueueList(rigSubmit);
-        addToCheckInList(rigSubmit);
-        bundle.addNodeToCheckin(rigSubmit);
-        
-        
-        ....
-
-        */ 
-
-
       }
 
       /* the approve network */ 
       {
-	String vfxRefNodeName = buildVfxReference(NodePurpose.Product); 
+	String vfxRefNodeName = pShotNamer.getVfxReferenceNode(NodePurpose.Product); 
+	{
+	  TargetStage stage = 
+	    new TargetStage(pStageInfo, pContext, pClient, 
+			    vfxRefNodeName, pMiscReferenceNodeNames); 
+	  addTaskAnnotation(stage, NodePurpose.Product); 
+	  stage.build(); 
+	}
 
+	String lensWarpNodeName = pShotNamer.getLensWarpNode(); 
+	{
+	  NukeExtractStage stage = 
+	    new NukeExtractStage(pStageInfo, pContext, pClient, 
+				 lensWarpNodeName, pGridAlignNodeName, 
+				 "GridWarp", ".*", false); 
+	  addTaskAnnotation(stage, NodePurpose.Product); 
+	  stage.build(); 
+	}
         
+	String reformatBgNodeName = pShotNamer.getReformatBgNode(); 
+	{
+	  NukeReadReformatStage stage = 
+	    new NukeReadReformatStage(pStageInfo, pContext, pClient, 
+				      reformatBgNodeName, 
+				      pBackgroundPlateNodeName, pDistortedGridNodeName); 
+	  addTaskAnnotation(stage, NodePurpose.Prepare); 
+	  stage.build();  
+	}
+	
+	String undistorted2kPlateNodeName = pShotNamer.getUndistorted2kPlateNode(); 
+	{
+	  LinkedList<String> nukeScripts = new LinkedList<String>(); 
+	  nukeScripts.add(reformatBgNodeName); 
+	  nukeScripts.add(pBlackOutsideNodeName); 
+	  nukeScripts.add(lensWarpNodeName); 
 
+	  LinkedList<String> inputImages = new LinkedList<String>(); 
+	  inputImages.add(pBackgroundPlateNodeName); 
 
+	  NukeCatCompStage stage = 
+	    new NukeCatCompStage(pStageInfo, pContext, pClient,
+				 undistorted2kPlateNodeName, pFrameRange, 4, "tif", 
+				 nukeScripts, inputImages);
+	  addTaskAnnotation(stage, NodePurpose.Product); 
+	  stage.build(); 
+	}
+
+	String undistorted1kPlateNodeName = pShotNamer.getUndistorted1kPlateNode(); 
+	{
+	  NukeRescaleStage stage = 
+	    new NukeRescaleStage(pStageInfo, pContext, pClient,
+				 undistorted1kPlateNodeName, pFrameRange, 4, "tif",
+				 undistorted2kPlateNodeName, 0.5);
+	  addTaskAnnotation(stage, NodePurpose.Product); 
+	  stage.build(); 
+	}
+
+	String undistorted1kQuickTimeNodeName = pShotNamer.getUndistorted1kQuickTimeNode(); 
+	{
+	  NukeQtStage stage = 
+	    new NukeQtStage(pStageInfo, pContext, pClient,
+			    undistorted1kQuickTimeNodeName, undistorted1kPlateNodeName, 24.0);
+	  addTaskAnnotation(stage, NodePurpose.Product); 
+	  stage.build(); 
+	}
+
+	String vfxShotDataNodeName = pShotNamer.getVfxShotDataNode(); 
+	{
+	  addTaskAnnotation(vfxShotDataNodeName, NodePurpose.Product);   
+	}
+	
+	String approveNodeName = pShotNamer.getPlateApproveNode();
+	{
+	  TreeSet<String> sources = new TreeSet<String>();
+	  sources.add(undistorted1kQuickTimeNodeName);
+	  sources.add(vfxRefNodeName);
+	  sources.add(vfxShotDataNodeName);
+
+	  TargetStage stage = 
+	    new TargetStage(pStageInfo, pContext, pClient, 
+			    approveNodeName, sources); 
+	  addTaskAnnotation(stage, NodePurpose.Approve); 
+	  stage.build(); 
+	  addToQueueList(approveNodeName);
+	  addToCheckInList(approveNodeName);
+	}
       }
-
-      addLockBundle(bundle);
     }
-
-
-    /*-- HELPERS --*/
-
-    private String
-    buildVfxReference
-    (
-     NodePurpose purpose
-    ) 
-      throws PipelineException
-    {
-      String name = pShotNamer.getVfxReferenceNode(purpose); 
-
-      TargetStage stage = 
-	new TargetStage(pStageInfo, pContext, pClient, 
-			name, pMiscReferenceNodeNames); 
-      addTaskAnnotation(stage, purpose); 
-      stage.build(); 
-
-      return name;
-    }
-
 
     private static final long serialVersionUID = -5216068758078265108L;
   }
@@ -763,7 +814,7 @@ class PlatesBuilder
       TreeSet<String> regenerate = new TreeSet<String>();
 
       regenerate.addAll(getDisableList());
-      for(BaseStage stage : pFirstStages) 
+      for(FinalizableStage stage : pFirstStages) 
  	regenerate.add(stage.getNodeName());
 
       return regenerate;
@@ -773,7 +824,7 @@ class PlatesBuilder
      * Remove any placeholders and temporary settings used during second level 
      * construction and prepare the nodes for check-in.<P> 
      * 
-     * Then second level nodes to be queued and disabled... 
+     * Then register the second level nodes to be queued and disabled... 
      */ 
     @Override
     public void 
@@ -781,16 +832,14 @@ class PlatesBuilder
       throws PipelineException
     {
       /* process first level nodes */ 
-      for(BaseStage stage : pFirstStages) {
-	if(stage instanceof FinalizableStage) 
-	  ((FinalizableStage) stage).finalizeStage();
-      }
+      for(FinalizableStage stage : pFirstStages) 
+	stage.finalizeStage();
       disableActions();
       
       /* reset the disable list to clear out first pass nodes */ 
       clearDisableList();
 
-      /* add second level nodes to be disabled */ 
+      /* register second level nodes to be disabled */ 
       addToDisableList(pGridAlignNodeName);
     }
     
@@ -818,37 +867,18 @@ class PlatesBuilder
     public TreeSet<String> 
     preBuildPhase()
     {
-      TreeSet<String> regenerate = new TreeSet<String>();
-
-      regenerate.addAll(getDisableList());
-      for(BaseStage stage : pSecondStages) 
- 	regenerate.add(stage.getNodeName());
-
-      return regenerate;
+      return getDisableList();
     }
     
     /**
-     * Remove any placeholders and temporary settings used during second level 
-     * construction and prepare the nodes for check-in. 
+     * Disable the second level actions.
      */ 
     @Override
     public void 
     buildPhase() 
       throws PipelineException
     {
-      /* process second level nodes */ 
-      for(BaseStage stage : pSecondStages) {
-	if(stage instanceof FinalizableStage) 
-	  ((FinalizableStage) stage).finalizeStage();
-      }
       disableActions();
-
-
-
-      // ...
-
-
-
     }
     
     private static final long serialVersionUID = 6643366544737486251L;
@@ -898,23 +928,16 @@ class PlatesBuilder
   /**
    * The stages which require running a finalizeStage() method before check-in.
    */ 
-  private ArrayList<BaseStage> pFirstStages; 
-  private ArrayList<BaseStage> pSecondStages; 
-
-  /**
-   * Whether all nodes should be checked-in at the end of execution. <P> 
-   * 
-   * If set to (false), node locking will not be peformed.
-   */ 
-  private boolean pCheckInWhenDone;
+  private ArrayList<FinalizableStage> pFirstStages; 
 
 
   /*-- PLATE PREREQUISITES -----------------------------------------------------------------*/
 
   /**
-   * The fully resolved name of background plates node.
+   * The fully resolved name and frame range of background plates node. 
    */ 
-  private String pBackgroundPlateNodeName; 
+  private String pBackgroundPlateNodeName;
+  private FrameRange pFrameRange; 
   
   /**
    * The fully resolved names of all reference image nodes.
@@ -927,15 +950,24 @@ class PlatesBuilder
   private String pPlatesOriginalGridNodeName; 
 
   /**
+   * The fully resolved name of the node containing the distorted reference 
+   * grid image exported from the PFTrack scene. 
+   */ 
+  private String pDistortedGridNodeName; 
+
+  /**
    * Miscellaneous Nuke script fragements used in the undistort process.
    */ 
   private String pGridGradeWarpNodeName; 
-  private String pGridGradeDiffNodeName; 
+  private String pGridGradeDiffNodeName;
+  private String pBlackOutsideNodeName; 
 
-
+  /**
+   * The fully resolved name of the node containing a Nuke script used by
+   * artists to manually match the distortion of the PFTrack exported grid with the 
+   * original reference grid.
+   */ 
   private String pGridAlignNodeName;
-
-  // ... 
 
 
 }

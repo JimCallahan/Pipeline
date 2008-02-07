@@ -1,4 +1,4 @@
-// $Id: ShotNamer.java,v 1.5 2008/02/06 18:17:43 jim Exp $
+// $Id: ShotNamer.java,v 1.6 2008/02/07 14:14:33 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -323,23 +323,98 @@ class ShotNamer
   getPlateSubmitNode()
   {
     Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Submit), 
-			 joinNames(getFullShotName(), "grid_align")); 
+			 joinNames(getFullShotName(), "plates_submit")); 
     return path.toString(); 
   }
   
   
   /*----------------------------------------------------------------------------------------*/
   
-  // ..
+  /**
+   * Returns the fully resolved name of the node containing the GridWarp Nuke script 
+   * fragment which will be used to undistort the plates and redistort the rendering images. 
+   */ 
+  public String
+  getLensWarpNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Product), 
+			 new Path(AppDirs.Nuke.toDirPath(), 
+				  joinNames(getFullShotName(), "lens_warp"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node containing a Nuke script fragment that 
+   * will read the original scanned plates and reformatting them to match the resolution
+   * of the distorted grid image.
+   */ 
+  public String
+  getReformatBgNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Prepare), 
+			 new Path(AppDirs.Nuke.toDirPath(), 
+				  joinNames(getFullShotName(), "reformat_bg"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node containing the undistorted/linearized
+   * ~2k plate images.
+   */ 
+  public String
+  getUndistorted2kPlateNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Product), 
+			 new Path(AppDirs.Image2k.toDirPath(), 
+				  joinNames(getFullShotName(), "bg_ud_2k"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node containing the undistorted/linearized
+   * ~1k plate images.
+   */ 
+  public String
+  getUndistorted1kPlateNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Product), 
+			 new Path(AppDirs.Image1k.toDirPath(), 
+				  joinNames(getFullShotName(), "bg_ud_1k"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node containing the undistorted/linearized
+   * ~1k QuickTime movie.
+   */ 
+  public String
+  getUndistorted1kQuickTimeNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Product), 
+			 new Path(AppDirs.Image1k.toDirPath(), 
+				  new Path(AppDirs.QuickTime.toDirPath(), 
+					   joinNames(getFullShotName(), "bg_ud_1k")))); 
+    return path.toString(); 
+  }
+  
+  /**
+   * Returns the fully resolved name of the approve node for the Plates task.
+   */ 
+  public String
+  getPlateApproveNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Approve), 
+			 joinNames(getFullShotName(), "plates_approve")); 
+    return path.toString(); 
+  }
 
   
-
-
 
   /*----------------------------------------------------------------------------------------*/
   /*   T R A C K I N G                                                                      */
   /*----------------------------------------------------------------------------------------*/
 
+  // ... 
 
 
 

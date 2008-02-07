@@ -1,6 +1,8 @@
-// $Id: LensInfoStage.java,v 1.5 2008/02/06 21:33:22 jim Exp $
+// $Id: LensInfoStage.java,v 1.6 2008/02/07 14:14:33 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
+
+import com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
@@ -70,7 +72,7 @@ class LensInfoStage
   public String 
   getStageFunction()
   {
-    return StageFunction.aNone;
+    return ICStageFunction.aNone;
   }
 
 

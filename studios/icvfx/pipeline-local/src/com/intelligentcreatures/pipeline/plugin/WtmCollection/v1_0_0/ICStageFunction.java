@@ -1,4 +1,4 @@
-// $Id: ICStageFunction.java,v 1.3 2008/02/06 18:17:43 jim Exp $
+// $Id: ICStageFunction.java,v 1.4 2008/02/07 14:14:33 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -20,4 +20,5 @@ class ICStageFunction
 {
   public final static String aPFTrackScene = "PFTrackScene";
   public final static String aNukeScript   = "NukeScript";
+  public final static String aQuickTime    = "QuickTime";
 }
