@@ -1,4 +1,4 @@
-// $Id: NukeQtStage.java,v 1.1 2008/02/07 14:14:33 jim Exp $
+// $Id: NukeQtStage.java,v 1.2 2008/02/07 15:46:42 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
 
@@ -80,6 +80,7 @@ class NukeQtStage
           new PluginContext("NukeQt"));
 
     addLink(new LinkMod(source, LinkPolicy.Dependency));
+    addSingleParamValue("ImageSource", source);
     addSingleParamValue("FPS", fps);
   }
   
