@@ -2,14 +2,12 @@ package com.theorphanage.pipeline.plugin.ZohanCollection.v1_0_0;
 
 import java.util.*;
 
-import com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages.FinalizableStage;
-import com.sony.scea.pipeline.plugins.v1_0_0.*;
-import com.theorphanage.pipeline.plugin.ZohanCollection.v1_0_0.stages.*;
-
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.math.*;
 import us.temerity.pipeline.stages.*;
+
+import com.theorphanage.pipeline.plugin.ZohanCollection.v1_0_0.stages.*;
 
 /**
  * Roto Builder
@@ -25,6 +23,22 @@ public
 class RotoBuilder 
   extends TaskBuilder 
 {
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O N S T R U C T O R                                                                */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Required constructor for to launch the builder.
+   * 
+   * @param mclient 
+   *   The master manager connection.
+   * 
+   * @param qclient 
+   *   The queue manager connection.
+   * 
+   * @param info
+   *   Information that is shared among all builders in a given invocation.
+   */ 
   public 
   RotoBuilder
   (
@@ -40,12 +54,34 @@ class RotoBuilder
         null);
   }
   
+  /**
+   * Provided to allow parent builders to create instances and share.
+   * 
+   * @param mclient 
+   *   The master manager connection.
+   * 
+   * @param qclient 
+   *   The queue manager connection.
+   * 
+   * @param info
+   *   Information that is shared among all builders in a given invocation.
+   * 
+   * @param defs 
+   *   Provides a set of studio-wide helpers for project, sequence and shot naming.
+   * 
+   * @param projectNamer
+   *   Provides project-wide names of nodes and node directories.
+   * 
+   * @param shotNamer
+   *   Provides the names of nodes and node directories which are shot specific.
+   * 
+   */ 
   public 
   RotoBuilder
   (
     MasterMgrClient mclient,
     QueueMgrClient qclient,
-    BuilderInformation builderInformation, 
+    BuilderInformation info, 
     StudioDefinitions defs,
     ProjectNames projectNamer,
     ShotNames shotNamer
@@ -56,14 +92,17 @@ class RotoBuilder
         "Builder to construct basic roto network.",
         mclient,
         qclient,
-        builderInformation);
+        info);
     
+    /* initialize fields */ 
     pDefs = defs;
     pProjectNamer = projectNamer;
     pShotNamer = shotNamer;
     pFinalizeStages = new ArrayList<FinalizableStage>();
 
+    /* setup builder parameters */ 
     {
+      /* select the project, sequence and shot for the task */ 
       UtilityParam param = 
         new DoubleMapUtilityParam(
             aLocation, 
@@ -102,19 +141,48 @@ class RotoBuilder
     addCheckinWhenDoneParam();
     addDoAnnotationParam();
     
+    /* if no parent builder has already generated the names for ProjectNamer, 
+    this builder should take over control of naming the project */ 
     if (!projectNamer.isGenerated()) {
+      
+      /* add the ProjectNamer as a sub-builder */  
       addSubBuilder(projectNamer);
-      ParamMapping mapping = 
-        new ParamMapping(aLocation, aProjectName);
-      addMappedParam(projectNamer.getName(), new ParamMapping(ProjectNames.aProjectName), mapping);
+
+      /* link the nested ProjectName parameter inside the complex parameter Location
+      (of this builder) with the simple parameter ProjectName of the ProjectNamer */
+      addMappedParam(projectNamer.getName(), 
+                     new ParamMapping(ProjectNames.aProjectName), 
+                     new ParamMapping(aLocation, aProjectName));
     }
     
-    addSetupPass(new FirstInfoPass());
-    addSetupPass(new SecondInfoPass());
-    addSetupPass(new ThirdInfoPass());
-    addConstructPass(new FirstConstructPass());
-    addConstructPass(new SecondConstructPass());
+    {
+      /* create the setup passes */ 
+      addSetupPass(new FirstInfoPass());
+      addSetupPass(new SecondInfoPass());
+      addSetupPass(new ThirdInfoPass());
+
+      /* create the construct passes */ 
+      ConstructPass first = new FirstConstructPass();
+      ConstructPass second = new SecondConstructPass();
+      addConstructPass(first);
+      addConstructPass(second);
+
+      /* makes the second pass dependent on the first*/ 
+      addPassDependency(first, second);
+    }
     
+    /* setup the default editors */ 
+    {
+      setDefaultEditor(StageFunction.aNone, new PluginContext("WordPad"));
+      setDefaultEditor(StageFunction.aAfterFXScene, new PluginContext("AfterFX"));
+      setDefaultEditor(StageFunction.aTextFile, new PluginContext("WordPad"));
+      setDefaultEditor(StageFunction.aScriptFile, new PluginContext("WordPad"));
+      setDefaultEditor(StageFunction.aSilhouetteScene, new PluginContext("Silhouette", "TheO"));
+      setDefaultEditor(StageFunction.aRenderedImage, new PluginContext("FrameCycler", "TheO"));
+      setDefaultEditor(StageFunction.aSourceImage, new PluginContext("NukeViewer"));
+    }
+
+    /* specify the layout of the parameters for each pass in the UI */ 
     PassLayoutGroup finalLayout = 
       new PassLayoutGroup("Pass Layout", "Layout for all the passes");
     {
@@ -150,7 +218,12 @@ class RotoBuilder
     }
   }
   
+ 
   
+  /*----------------------------------------------------------------------------------------*/
+  /*  O V E R R I D E S                                                                     */
+  /*----------------------------------------------------------------------------------------*/
+ 
   @Override
   protected boolean 
   performCheckIn()
@@ -182,6 +255,11 @@ class RotoBuilder
     return toReturn;
   }
   
+  /*----------------------------------------------------------------------------------------*/
+  /*   S E T U P   P A S S E S                                                              */
+  /*----------------------------------------------------------------------------------------*/
+
+  
   protected
   class FirstInfoPass
     extends SetupPass
@@ -193,14 +271,22 @@ class RotoBuilder
             "The First Information pass for the RotoBuilder");
     }
     
+    /**
+     * Phase in which parameter values should be extracted from parameters and checked
+     * for consistency and applicability.
+     */
     @Override
     public void 
     validatePhase()
       throws PipelineException
     {
+      /* sets up the built-in parameters common to all builders */
       validateBuiltInParams();
+      /* Now that we know what the correct Context is, tell the Studio Definitions. */
       pDefs.setContext(pContext);
       
+      /* lookup the name of the selected project, sequence and shot from the 
+          builder's Location parameter */ 
       {
         ParamMapping mapping = 
           new ParamMapping(aLocation, aProjectName);
@@ -219,21 +305,29 @@ class RotoBuilder
         pShotName = getStringParamValue(mapping);
       }
       
+      /* lookup whether we should check-in the nodes we've created at the end */ 
       pCheckInWhenDone = getBooleanParamValue(new ParamMapping(aCheckinWhenDone));
       
+      /* turn on the DoAnnotations flag for the StageInformation shared by all 
+          of the Stages created by this builder since we always want task annotations */
       boolean annot = getBooleanParamValue(new ParamMapping(aDoAnnotations));
       pStageInfo.setDoAnnotations(annot);
     }
     
+    /**
+     * Phase in which new Sub-Builders should be created and added to the current Builder.
+     */ 
     @Override
     public void 
     initPhase() 
       throws PipelineException 
     {
+      /* if we haven't been passed in a ShotNamer from a parent builder, make one now */
       if (pShotNamer == null) {
         pShotNamer = new ShotNames(pClient, pQueue, pDefs);
       }
       
+      /* if no parent builder has already generated the shot names... */ 
       if (!pShotNamer.isGenerated()) {
         addSubBuilder(pShotNamer);
 
@@ -242,11 +336,19 @@ class RotoBuilder
                          new ParamMapping(ShotNames.aProjectName),
                          new ParamMapping(aLocation,aProjectName));
         }
+        /* if we are not creating a new sequence, 
+            then link the nested SequenceName parameter inside the complex parameter 
+            Location (of this builder) with the simple SequenceName parameter of the 
+            ShotNamer */ 
         if (!pSequenceName.equals(StudioDefinitions.aNEW))  {
           addMappedParam(pShotNamer.getName(), 
                          new ParamMapping(ShotNames.aSequenceName),
                          new ParamMapping(aLocation, aSequenceName));
         }
+        /* if we are not creating a new shot, 
+            then link the nested ShotName parameter inside the complex parameter 
+            Location (of this builder) with the simple ShotName parameter of the 
+            ShotNamer */ 
         if (!pShotName.equals(StudioDefinitions.aNEW))  {
           addMappedParam(pShotNamer.getName(), 
                          new ParamMapping(ShotNames.aShotName),
@@ -262,6 +364,8 @@ class RotoBuilder
     private String pShotName;
 
   }
+  
+  /*----------------------------------------------------------------------------------------*/
   
   protected
   class SecondInfoPass
@@ -313,6 +417,10 @@ class RotoBuilder
     private static final long serialVersionUID = 8499139999589586806L;
   }
   
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  
   protected
   class ThirdInfoPass
     extends SetupPass
@@ -337,11 +445,18 @@ class RotoBuilder
            "to actually make nodes.");
       pPlatePaths = new ArrayList<String>();
       for (String plate : plates) {
-        pPlatePaths.add(pPlateMapping.get(pShotNamer.getPlateName(plate)));
+        pPlatePaths.add(new Path(pShotNamer.getPlatePath(), pPlateMapping.get(plate)).toString());
       }
     }
     private static final long serialVersionUID = 6265724310033372952L;
   }
+
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O N S T R U C T   P A S S E S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
   
   protected
   class FirstConstructPass
@@ -422,7 +537,7 @@ class RotoBuilder
                                        matteTestRender, range, matteTest, sources );
             addFocusAnnotation(stage, taskType);
             stage.build();
-            submitSources.add(matteTest);
+            submitSources.add(matteTestRender);
           }
         }
       }
@@ -474,6 +589,8 @@ class RotoBuilder
     private static final long serialVersionUID = 2650600966182944088L;
   }
   
+  /*----------------------------------------------------------------------------------------*/
+  
   protected
   class SecondConstructPass
     extends ConstructPass
@@ -520,6 +637,10 @@ class RotoBuilder
     private static final long serialVersionUID = -5276816389494648592L;
   }
 
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
   private static final long serialVersionUID = 6680062424812172450L;
   
   public final static String aLocation = "Location";
@@ -529,7 +650,12 @@ class RotoBuilder
   public final static String aPlates  = "Plates";
   public final static String aMattes  = "Mattes";
   public final static String aNumOfMattes  = "NumOfMattes";
+
   
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
 
   private int pNumMattes;
   private boolean pCheckInWhenDone;

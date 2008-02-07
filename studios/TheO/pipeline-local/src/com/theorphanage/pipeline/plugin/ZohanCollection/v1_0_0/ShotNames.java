@@ -161,7 +161,7 @@ class ShotNames
     String plateName
   )
   {
-    return new Path(getPlatePath(), pFullName + plateName).toString();
+    return new Path(getPlatePath(), join(pFullName, plateName)).toString();
   }
   
   /**

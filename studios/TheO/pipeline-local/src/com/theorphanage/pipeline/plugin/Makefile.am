@@ -8,4 +8,8 @@ makefile_DATA = \
 
 
 SUBDIRS = \
+  AfterFXAddTypedSourceTool \
+  AfterFXTemplateAction \
+  FrameCyclerEditor \
+  SilhouetteEditor \
   ZohanCollection

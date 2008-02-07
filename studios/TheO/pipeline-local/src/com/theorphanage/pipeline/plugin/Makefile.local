@@ -1,4 +1,8 @@
 #--- RULES -----------------------------------------------------------------------------------
 
 %: 
+	$(MAKE) -f Makefile.local -C AfterFXAddTypedSourceTool $@ 
+	$(MAKE) -f Makefile.local -C AfterFXTemplateAction $@ 
+	$(MAKE) -f Makefile.local -C FrameCyclerEditor $@ 
+	$(MAKE) -f Makefile.local -C SilhouetteEditor $@ 
 	$(MAKE) -f Makefile.local -C ZohanCollection $@ 

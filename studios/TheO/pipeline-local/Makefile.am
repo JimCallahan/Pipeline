@@ -1,4 +1,4 @@
-eclipsedir = @ROOT_INST_PARENT_DIR@/pipeline-local/build/eclipse/icvfx
+eclipsedir = @ROOT_INST_PARENT_DIR@/pipeline-local/build/eclipse/TheO
 
 eclipse_DATA = \
   .project \
@@ -7,7 +7,7 @@ eclipse_DATA = \
 
 
 
-makefiledir = @ROOT_INST_PARENT_DIR@/pipeline-local/build/make/icvfx
+makefiledir = @ROOT_INST_PARENT_DIR@/pipeline-local/build/make/TheO
 
 makefile_SCRIPTS = \
   make-local

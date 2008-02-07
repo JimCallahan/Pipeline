@@ -11,9 +11,11 @@ sourceroot = @ROOT_INST_PARENT_DIR@/pipeline-local/src
 javadir = $(sourceroot)/com/theorphanage/pipeline/plugin/ZohanCollection/v1_0_0
 
 java_DATA = \
+  Discipline.java \
   ProjectNames.java \
   RotoBuilder.java \
   ShotNames.java \
   StudioDefinitions.java \
+  SubDir.java \
   ZohanCollection.java
 

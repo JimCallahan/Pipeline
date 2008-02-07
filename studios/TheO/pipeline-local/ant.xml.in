@@ -5,13 +5,43 @@
 
   <property name="ZohanCollection" 
             value="com/theorphanage/pipeline/plugin/ZohanCollection"/>
+            
+  <property name="Plugins" 
+            value="com/theorphanage/pipeline/plugin"/>
 
   
   <target name="Make-ZohanCollection-v1.0.0" 
           description="Builds the plugin JAR file.">
 
     <jar destfile="bin/${ZohanCollection}/v1_0_0/ZohanCollection.jar" 
-         includes="${ZohanCollection}/v1_0_0/*.class" 
+         includes="${ZohanCollection}/v1_0_0/*.class", "${ZohanCollection}/v1_0_0/stages/*.class"
+         basedir="bin">
+    </jar>
+  </target>
+  
+  <target name="Make-AfterFXAddTypedSourceTool-v1.0.0" 
+          description="Builds the plugin JAR file.">
+
+    <jar destfile="bin/${Plugins}/AfterFXAddTypedSourceTool/v1_0_0/AfterFXAddTypedSourceTool.jar" 
+         includes="${Plugins}/AfterFXAddTypedSourceTool/v1_0_0/*.class"
+         basedir="bin">
+    </jar>
+  </target>
+  
+  <target name="Make-AfterFXTemplateAction-v1.0.0" 
+          description="Builds the plugin JAR file.">
+
+    <jar destfile="bin/${Plugins}/AfterFXTemplateAction/v1_0_0/AfterFXTemplateAction.jar" 
+         includes="${Plugins}/AfterFXTemplateAction/v1_0_0/*.class"
+         basedir="bin">
+    </jar>
+  </target>
+  
+  <target name="Make-AfterFXTemplateAction-v1.0.0" 
+          description="Builds the plugin JAR file.">
+
+    <jar destfile="bin/${Plugins}/AfterFXTemplateAction/v1_0_0/AfterFXTemplateAction.jar" 
+         includes="${Plugins}/AfterFXTemplateAction/v1_0_0/*.class"
          basedir="bin">
     </jar>
   </target>

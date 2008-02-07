@@ -2,10 +2,10 @@
 
     CLASS_ROOT = ../../../../../..
 
-  JAVA_PACKAGE = com/theorphanage/pipeline/plugin/ZohanCollection/v1_0_0
+  JAVA_PACKAGE = com/theorphanage/pipeline/plugin/AfterFXAddTypedSourceTool/v1_0_0
   JAVA_SOURCES = $(shell find $(CLASS_ROOT)/../src/$(JAVA_PACKAGE) -type f -name "*.java")
 
-        TARGET = ZohanCollection.jar
+        TARGET = AfterFXAddTypedSourceTool.jar
 
 
 
