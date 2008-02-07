@@ -406,8 +406,8 @@ class JBuilderParamDialog
 	pBuilder.runNextSetupPass();
 	pMorePasses = pBuilder.getNextSetupPass(false);
       }
-      catch (PipelineException ex) {
-	handleException(ex);
+      catch (Exception ex) {
+	handleException(new PipelineException(ex));
       }
       if (pMorePasses)
 	SwingUtilities.invokeLater(new NextParameterPassTask());
@@ -427,9 +427,14 @@ class JBuilderParamDialog
     public void 
     run()
     {
-      pExecutionOrder = new LinkedList<ConstructPass>(pBuilder.getExecutionOrder());
-      pTopPanel.prepareConstructLoop(pExecutionOrder);
-      constructPhaseEnableButtons();
+      try {
+        pExecutionOrder = new LinkedList<ConstructPass>(pBuilder.getExecutionOrder());
+        pTopPanel.prepareConstructLoop(pExecutionOrder);
+        constructPhaseEnableButtons();
+      }
+      catch (Exception ex) {
+        handleException(new PipelineException(ex));
+      }
     }
   }
   
@@ -477,7 +482,12 @@ class JBuilderParamDialog
     public void 
     run()
     {
-      pTopPanel.makeNextActive();
+      try {
+        pTopPanel.makeNextActive();
+      }
+      catch (Exception ex) {
+        handleException(new PipelineException(ex));
+      }
     }
   }
   
@@ -489,8 +499,13 @@ class JBuilderParamDialog
     public void 
     run()
     {
-      queuePrep();
-      doQueue();
+      try {
+        queuePrep();
+        doQueue();
+      }
+      catch (Exception ex) {
+        handleException(new PipelineException(ex));
+      }
     }
   }
   
@@ -525,14 +540,20 @@ class JBuilderParamDialog
     public void 
     run()
     {
-      if (pAbort)
-	handleException(new PipelineException("Execution halted by user!"));
-      pRunning = false;
-      pTopPanel.makeNextActive();
-      if (!pExecutionOrder.isEmpty())
-	constructPhaseEnableButtons();
-      else
-	queuePrep();
+      try
+      {
+        if (pAbort)
+          handleException(new PipelineException("Execution halted by user!"));
+        pRunning = false;
+        pTopPanel.makeNextActive();
+        if (!pExecutionOrder.isEmpty())
+          constructPhaseEnableButtons();
+        else
+          queuePrep();
+      }
+      catch (Exception ex) {
+        handleException(new PipelineException(ex));
+      }
     }
   }
   
@@ -550,8 +571,8 @@ class JBuilderParamDialog
 	pTopPanel.releaseNodes();
 	SwingUtilities.invokeLater(new AfterReleaseNodesTask());
       }
-      catch (PipelineException ex) {
-	SwingUtilities.invokeLater(new ProblemReleaseNodesTask(ex));
+      catch (Exception ex) {
+	SwingUtilities.invokeLater(new ProblemReleaseNodesTask(new PipelineException(ex)));
       }    
     }
   }
