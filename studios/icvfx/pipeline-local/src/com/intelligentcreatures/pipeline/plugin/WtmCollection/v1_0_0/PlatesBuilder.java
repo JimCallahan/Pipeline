@@ -1,15 +1,16 @@
-// $Id: PlatesBuilder.java,v 1.7 2008/02/06 21:33:22 jim Exp $
+// $Id: PlatesBuilder.java,v 1.8 2008/02/07 10:22:54 jesse Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
-import com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages.*;
+import java.util.*;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.math.*;
 import us.temerity.pipeline.builder.*;
+import us.temerity.pipeline.math.*;
 import us.temerity.pipeline.stages.*;
 
-import java.util.*;
+import com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages.*;
+import com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages.FinalizableStage;
 
 /*------------------------------------------------------------------------------------------*/
 /*   P L A T E S   D E F I N I T I O N S                                                    */
