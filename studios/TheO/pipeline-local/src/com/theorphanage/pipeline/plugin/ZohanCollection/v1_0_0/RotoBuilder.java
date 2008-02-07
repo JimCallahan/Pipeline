@@ -225,21 +225,6 @@ class RotoBuilder
   /*----------------------------------------------------------------------------------------*/
  
   @Override
-  protected boolean 
-  performCheckIn()
-  {
-    return pCheckInWhenDone;
-  }
-  
-  @Override
-  protected LinkedList<String> 
-  getNodesToCheckIn() 
-  {
-    return getCheckInList();
-  }
-  
-  @SuppressWarnings("unchecked")
-  @Override
   protected MappedArrayList<String, PluginContext> 
   getNeededActions()
   {
@@ -304,9 +289,6 @@ class RotoBuilder
           new ParamMapping(aLocation, aShotName);
         pShotName = getStringParamValue(mapping);
       }
-      
-      /* lookup whether we should check-in the nodes we've created at the end */ 
-      pCheckInWhenDone = getBooleanParamValue(new ParamMapping(aCheckinWhenDone));
       
       /* turn on the DoAnnotations flag for the StageInformation shared by all 
           of the Stages created by this builder since we always want task annotations */
@@ -658,7 +640,6 @@ class RotoBuilder
   /*----------------------------------------------------------------------------------------*/
 
   private int pNumMattes;
-  private boolean pCheckInWhenDone;
   private StudioDefinitions pDefs;
   private ShotNames pShotNamer;
   private ProjectNames pProjectNamer;
