@@ -1,22 +1,36 @@
 #--- VARIABLES -------------------------------------------------------------------------------
 
-         MAKE = /usr/bin/make
-
-    JAVA_HOME = @UNIX_JAVA_HOME@/..
-          JAR = $(JAVA_HOME)/bin/jar
-        JAVAC = $(JAVA_HOME)/bin/javac
-   JAVAC_OPTS = -g -source 1.5 -Xlint:all -J-Xms64m -J-Xmx256m
-      JAVADOC = $(JAVA_HOME)/bin/javadoc
- JAVADOC_OPTS = -sourcepath . 
-      API_JAR = @ROOT_INST_PARENT_DIR@/pipeline-latest/lib/api.jar
+           MAKE = /usr/bin/make
 
 
+      JAVA_HOME = @UNIX_JAVA_HOME@/..
+            JAR = $(JAVA_HOME)/bin/jar
 
 
-     PLPLUGIN = @ROOT_INST_PARENT_DIR@/pipeline-latest/Unix-x86-Opt/bin/plplugin
+      JAVA_OPTS = -source 1.5
+        API_JAR = @ROOT_INST_PARENT_DIR@/pipeline-latest/lib/api.jar
 
 
-        export JAVA_HOME JAR JAVAC JAVAC_OPTS API_JAR PLPLUGIN
+          JAVAC = $(JAVA_HOME)/bin/javac
+     JAVAC_OPTS = -g $(JAVA_OPTS) -Xlint:all -J-Xms64m -J-Xmx256m
+
+        JAVADOC = $(JAVA_HOME)/bin/javadoc
+   JAVADOC_OPTS = -sourcepath ../src -classpath $(API_JAR):. -d ../javadoc $(JAVA_OPTS) \
+                  -stylesheetfile @ROOT_INST_PARENT_DIR@/pipeline-latest/share/docs/javadoc/stylesheet.css
+
+    PLUGIN_DIRS = $(shell find ../src/com/intelligentcreatures/pipeline/plugin/*/v*_*_* \
+                               -maxdepth 1 -type d -not -name CVS)
+
+       PACKAGES = $(subst /,.,$(patsubst ../src/%,%,$(PLUGIN_DIRS)))
+
+ EXTERNAL_LINKS = -linkoffline http://java.sun.com/j2se/1.5.0/docs/api \
+                    ../src/package-lists/jdk \
+                  -linkoffline http://temerity.us/products/pipeline/docs/javadoc \
+                    @ROOT_INST_PARENT_DIR@/pipeline-latest/share/docs/javadoc
+
+       PLPLUGIN = @ROOT_INST_PARENT_DIR@/pipeline-latest/Unix-x86-Opt/bin/plplugin
+
+              export JAVA_HOME JAR JAVAC JAVAC_OPTS API_JAR PLPLUGIN
 
 
 #--- RULES -----------------------------------------------------------------------------------
@@ -25,4 +39,14 @@
 	$(MAKE) -f Makefile.local -C com $@
 
 
-javadoc: 
+javadoc: all
+	$(JAVADOC) $(JAVADOC_OPTS) -use $(EXTERNAL_LINKS) $(PACKAGES)
+
+
+
+
+
+
+
+
+
