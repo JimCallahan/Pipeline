@@ -75,7 +75,7 @@ class ShotNames
     
     pFullName = pSequenceName + pShotName;  
     
-    Path startPath = StudioDefinitions.getShotPath(aProjectName, aSequenceName, aShotName);
+    Path startPath = StudioDefinitions.getShotPath(pProject, pSequenceName, pShotName);
     for (Discipline discipline : Discipline.values()) {
       Path disPath = new Path(startPath, discipline.toString() );
       for (SubDir dir : SubDir.values()) {
@@ -90,6 +90,30 @@ class ShotNames
   /*----------------------------------------------------------------------------------------*/
   /*   G L O B A L S                                                                        */
   /*----------------------------------------------------------------------------------------*/
+  
+  public String
+  getProjectName()
+  {
+    return pProject;
+  }
+  
+  public String
+  getSequenceName()
+  {
+    return pSequenceName;
+  }
+  
+  public String
+  getShotName()
+  {
+    return pShotName;
+  }
+  
+  public String
+  getTaskName()
+  {
+    return join(pProject, pFullName);
+  }
   
   private String
   getSubmitNode

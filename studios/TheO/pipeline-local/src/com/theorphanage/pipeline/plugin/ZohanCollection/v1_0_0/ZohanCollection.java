@@ -1,4 +1,4 @@
-// $Id: ZohanCollection.java,v 1.2 2008/02/04 12:12:48 jim Exp $
+// $Id: ZohanCollection.java,v 1.3 2008/02/07 10:11:19 jesse Exp $
 
 package com.theorphanage.pipeline.plugin.ZohanCollection.v1_0_0;
 
@@ -26,9 +26,9 @@ class ZohanCollection
   getBuildersProvided()
   {
     TreeMap<String, String> toReturn = new TreeMap<String, String>();
-    toReturn.put("Roto", "com.theorphanage.pipeline.plugin.zohan.v1_0_0.RotoBuilder");
+    toReturn.put("Roto", "com.theorphanage.pipeline.plugin.ZohanCollection.v1_0_0.RotoBuilder");
     
     return toReturn;
   }
-  private static final long serialVersionUID = -6297879651395440948L;
+  private static final long serialVersionUID = -6297879651395440947L;
 }

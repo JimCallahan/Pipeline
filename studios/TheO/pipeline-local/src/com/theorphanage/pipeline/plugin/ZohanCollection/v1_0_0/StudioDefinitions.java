@@ -107,7 +107,12 @@ class StudioDefinitions
   )
     throws PipelineException
   {
-    return findChildBranchNames(getSequencePath(project, sequence));
+    ArrayList<String> shots = findChildBranchNames(getSequencePath(project, sequence));
+    ArrayList<String> toReturn = new ArrayList<String>();
+    for (String shot : shots) {
+      toReturn.add(shot.replaceFirst(sequence, ""));
+    }
+    return toReturn;
   }
   
   public DoubleMap<String, String, ArrayList<String>>

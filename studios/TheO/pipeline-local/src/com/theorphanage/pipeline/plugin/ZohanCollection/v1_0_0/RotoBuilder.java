@@ -2,8 +2,14 @@ package com.theorphanage.pipeline.plugin.ZohanCollection.v1_0_0;
 
 import java.util.*;
 
+import com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages.FinalizableStage;
+import com.sony.scea.pipeline.plugins.v1_0_0.*;
+import com.theorphanage.pipeline.plugin.ZohanCollection.v1_0_0.stages.*;
+
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
+import us.temerity.pipeline.math.*;
+import us.temerity.pipeline.stages.*;
 
 /**
  * Roto Builder
@@ -12,6 +18,8 @@ import us.temerity.pipeline.builder.*;
  * <ul>
  * <li> Location - The Project, Sequence, and Shot name, or [[NEW]] to create something new. 
  * <li> Plates - which existing plates should be used to build this roto.
+ * <li> NumOfMattes - how many matte passes need to be created.
+ * <li> Mattes - The names of the mattes that are going to be created.
  */
 public 
 class RotoBuilder 
@@ -53,6 +61,7 @@ class RotoBuilder
     pDefs = defs;
     pProjectNamer = projectNamer;
     pShotNamer = shotNamer;
+    pFinalizeStages = new ArrayList<FinalizableStage>();
 
     {
       UtilityParam param = 
@@ -75,6 +84,21 @@ class RotoBuilder
       addParam(param);
     }
     
+    {
+      UtilityParam param = 
+        new PlaceholderUtilityParam(aMattes, "What mattes should be created.");
+      addParam(param);
+    }
+    
+    {
+      UtilityParam param = 
+        new IntegerUtilityParam
+          (aNumOfMattes, 
+           "How many mattes should be created?",
+           1);
+      addParam(param);
+    }
+    
     addCheckinWhenDoneParam();
     addDoAnnotationParam();
     
@@ -88,6 +112,8 @@ class RotoBuilder
     addSetupPass(new FirstInfoPass());
     addSetupPass(new SecondInfoPass());
     addSetupPass(new ThirdInfoPass());
+    addConstructPass(new FirstConstructPass());
+    addConstructPass(new SecondConstructPass());
     
     PassLayoutGroup finalLayout = 
       new PassLayoutGroup("Pass Layout", "Layout for all the passes");
@@ -103,6 +129,7 @@ class RotoBuilder
         layout.addEntry(1, aDoAnnotations);
         layout.addEntry(1, null);
         layout.addEntry(1, aLocation);
+        layout.addEntry(1, aNumOfMattes);
         finalLayout.addPass(layout.getName(), layout);
         
       }
@@ -115,6 +142,8 @@ class RotoBuilder
       {
         AdvancedLayoutGroup group = new AdvancedLayoutGroup("Plates", true);
         group.addEntry(1, aPlates);
+        group.addSeparator(1);
+        group.addEntry(1, aMattes);
         finalLayout.addPass(group.getName(), group);
       }
       setLayout(finalLayout);
@@ -134,6 +163,23 @@ class RotoBuilder
   getNodesToCheckIn() 
   {
     return getCheckInList();
+  }
+  
+  @SuppressWarnings("unchecked")
+  @Override
+  protected MappedArrayList<String, PluginContext> 
+  getNeededActions()
+  {
+    ArrayList<PluginContext> plugins = new ArrayList<PluginContext>();
+    plugins.add(new PluginContext("AfterFXTemplate", "TheO"));
+    plugins.add(new PluginContext("SilhouetteBuild"));
+    plugins.add(new PluginContext("AfterFXRenderImg"));
+    plugins.add(new PluginContext("Touch"));
+    plugins.add(new PluginContext("Copy"));
+    
+    MappedArrayList<String, PluginContext> toReturn = new MappedArrayList<String, PluginContext>();
+    toReturn.put(getToolset(), plugins);
+    return toReturn;
   }
   
   protected
@@ -234,10 +280,33 @@ class RotoBuilder
       throws PipelineException
     {
       TreeSet<String> plates = new TreeSet<String>(findChildNodeNames(pShotNamer.getPlatePath()));
+      if (plates.isEmpty())
+        throw new PipelineException
+          ("At least one plate must exist for the Roto Builder " +
+           "to actually make nodes.");
+      
+      pPlateMapping = new TreeMap<String, String>();
+      for (String plate : plates) {
+        StringBuffer newString = new StringBuffer();
+        for (char c : plate.toCharArray()) {
+          if (Character.isLetterOrDigit(c))
+            newString.append(c);
+        }
+        pPlateMapping.put(newString.toString(), plate);
+      }
       {
         ListUtilityParam param =
-          new ListUtilityParam(aPlates, "A list of plates to potentially include in the roto", null, plates, null, null);
+          new ListUtilityParam(aPlates, "A list of plates to potentially include in the roto", new TreeSet<String>(), pPlateMapping.keySet(), null, null);
         
+        replaceParam(param);
+      }
+      pNumMattes = getIntegerParamValue(new ParamMapping(aNumOfMattes), 
+                                        new Range<Integer>(0, null));
+      if (pNumMattes < 1)
+        disableParam(new ParamMapping(aMattes));
+      else {
+        StringListUtilityParam param =
+          new StringListUtilityParam(aMattes, "The name of each Matte to create", pNumMattes, null);
         replaceParam(param);
       }
     }
@@ -268,7 +337,7 @@ class RotoBuilder
            "to actually make nodes.");
       pPlatePaths = new ArrayList<String>();
       for (String plate : plates) {
-        pPlatePaths.add(pShotNamer.getPlateName(plate));
+        pPlatePaths.add(pPlateMapping.get(pShotNamer.getPlateName(plate)));
       }
     }
     private static final long serialVersionUID = 6265724310033372952L;
@@ -290,10 +359,165 @@ class RotoBuilder
     public TreeSet<String> 
     nodesDependedOn()
     {
-      return new TreeSet<String>(pPlatePaths);
+      TreeSet<String> depends = new TreeSet<String>();
+      depends.add(pProjectNamer.getRotoCompTemplateName());
+      return depends;
+    }
+    
+    @Override
+    public void 
+    buildPhase()
+      throws PipelineException
+    {
+      pTaskName = pShotNamer.getTaskName();
+      String taskType = "Roto";
+      
+      FrameRange range = null;
+      
+      for (String plate : pPlatePaths) {
+        lockLatest(plate);
+        NodeMod mod = pClient.getWorkingVersion(getAuthor(), getView(), plate);
+        range = mod.getPrimarySequence().getFrameRange();
+      }
+      
+      String rotoScene = pShotNamer.getRotoScene();
+      {
+        SilhouetteBuildStage stage = 
+          new SilhouetteBuildStage(pStageInfo, pContext, pClient, rotoScene, "HDTV 24p (1920x1080)", pPlatePaths );
+        stage.build();
+        addEditAnnotation(stage, taskType);
+        addToDisableList(rotoScene);
+      }
+      
+      TreeSet<String> submitSources = new TreeSet<String>();
+      if (pNumMattes == 0)
+        submitSources.add(rotoScene);
+      else {
+        StringListUtilityParam param = (StringListUtilityParam) getParam(aMattes);
+        String template = pProjectNamer.getRotoCompTemplateName();
+        for (String matte : param.getStringValues()) {
+          String matteRender = pShotNamer.getMatteName(matte);
+          String matteTest = pShotNamer.getMatteTestCompScene(matte);
+          String matteTestRender = pShotNamer.getMatteTestRenderName(matte);
+          {
+            BaseStage stage =
+              new MatteStage(pStageInfo, pContext, pClient, 
+                             matteRender, range, rotoScene);
+            addPrepareAnnotation(stage, taskType);
+            stage.build();
+            pFinalizeStages.add((FinalizableStage) stage);
+          }
+          {
+            BaseStage stage = 
+              new MatteTestStage(pStageInfo, pContext, pClient, 
+                                 matteTest, template, pPlatePaths, matteRender);
+            addPrepareAnnotation(stage, taskType);
+            stage.build();
+          }
+          {
+            ArrayList<String> sources = new ArrayList<String>(pPlatePaths);
+            sources.add(matteRender);
+            BaseStage stage = 
+              new MatteTestRenderStage(pStageInfo, pContext, pClient, 
+                                       matteTestRender, range, matteTest, sources );
+            addFocusAnnotation(stage, taskType);
+            stage.build();
+            submitSources.add(matteTest);
+          }
+        }
+      }
+      String submitNode = pShotNamer.getRotoSubmitName();
+      {
+        TargetStage stage = 
+          new TargetStage(pStageInfo, pContext, pClient, submitNode, submitSources);
+        addSubmitAnnotation(stage, taskType);
+        stage.build();
+        addToQueueList(submitNode);
+        addToCheckInList(submitNode);
+      }
+      TreeSet<String> approveSources = new TreeSet<String>();
+      if (pNumMattes > 0) {
+        StringListUtilityParam param = (StringListUtilityParam) getParam(aMattes);
+        for (String matte : param.getStringValues()) {
+          String matteRender = pShotNamer.getMatteName(matte);
+          String matteFinal = pShotNamer.getFinalMatteName(matte);
+          {
+            ProductStage stage = 
+              new ProductStage
+              (pStageInfo, pContext, pClient, 
+               matteFinal, range, 4, "exr", 
+               matteRender, StageFunction.aRenderedImage);
+            addProductAnnotation(stage, taskType);
+            stage.build();
+          }
+          {
+            String eachApproval = pShotNamer.getRotoApprovalName(matte);
+            TargetStage stage = 
+              new TargetStage(pStageInfo, pContext, pClient, eachApproval, matteFinal);
+            addApproveAnnotation(stage, taskType);
+            stage.build();
+            approveSources.add(eachApproval);
+          }
+        }
+      }
+      String rotoApprove = pShotNamer.getRotoApprovalName();
+      {
+        TargetStage stage = 
+          new TargetStage(pStageInfo, pContext, pClient, rotoApprove, approveSources);
+        addApproveAnnotation(stage, taskType);
+        stage.build();
+        addToQueueList(rotoApprove);
+        addToCheckInList(rotoApprove);
+      }
     }
     
     private static final long serialVersionUID = 2650600966182944088L;
+  }
+  
+  protected
+  class SecondConstructPass
+    extends ConstructPass
+  {
+    public 
+    SecondConstructPass()
+    {
+      super("SecondConstructPass",
+            "Finalizes the RotoBuilder nodes.");
+    }
+    
+    /**
+     * Returns a set of nodes that have to be in a Finished queue state before the
+     * buildPhase() method is called.
+     */ 
+    @SuppressWarnings("unused")
+    @Override
+    public TreeSet<String> 
+    preBuildPhase()
+      throws PipelineException
+    {
+      TreeSet<String> regenerate = new TreeSet<String>();
+
+      regenerate.addAll(getDisableList());
+      for(FinalizableStage stage : pFinalizeStages) 
+        regenerate.add(stage.getNodeName());
+
+      return regenerate;
+    }
+    
+    /**
+     * Fix all the links and temporary settings used during construction, disable the
+     * appropriate actions and prepare the nodes for final check-in. 
+     */ 
+    @Override
+    public void 
+    buildPhase() 
+      throws PipelineException
+    {
+      for (FinalizableStage stage : pFinalizeStages)
+        stage.finalizeStage();
+      disableActions();
+    }
+    private static final long serialVersionUID = -5276816389494648592L;
   }
 
   private static final long serialVersionUID = 6680062424812172450L;
@@ -303,13 +527,18 @@ class RotoBuilder
   public final static String aSequenceName = "SequenceName";
   public final static String aShotName = "ShotName";
   public final static String aPlates  = "Plates";
-  
+  public final static String aMattes  = "Mattes";
+  public final static String aNumOfMattes  = "NumOfMattes";
   
 
+  private int pNumMattes;
   private boolean pCheckInWhenDone;
   private StudioDefinitions pDefs;
   private ShotNames pShotNamer;
   private ProjectNames pProjectNamer;
   private ArrayList<String> pPlatePaths;
+  private TreeMap<String, String> pPlateMapping;
+  private ArrayList<FinalizableStage> pFinalizeStages;
   
+ 
 }
