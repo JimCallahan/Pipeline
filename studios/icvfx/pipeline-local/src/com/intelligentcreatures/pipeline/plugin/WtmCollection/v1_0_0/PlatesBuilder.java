@@ -1,4 +1,4 @@
-// $Id: PlatesBuilder.java,v 1.9 2008/02/07 14:14:33 jim Exp $
+// $Id: PlatesBuilder.java,v 1.10 2008/02/07 15:46:15 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -123,10 +123,10 @@ class PlatesBuilder
            StudioDefinitions.aProjectName,
            "Select the name of the project.",
            StudioDefinitions.aSequenceName,
-           "Select the name of the shot sequence or [[NEW]] to create a new sequence.",
+           "Select the name of the shot sequence.",
            StudioDefinitions.aShotName,
-           "Select the name of the shot or [[NEW]] to create a new shot.",
-           pStudioDefs.getAllProjectsAllNamesForParam());
+           "Select the name of the shot.",
+           pStudioDefs.getAllProjectsAllNames());
         addParam(param);
       }
       
