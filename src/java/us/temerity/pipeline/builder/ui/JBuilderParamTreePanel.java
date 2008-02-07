@@ -33,11 +33,16 @@ public class JBuilderParamTreePanel
   /*----------------------------------------------------------------------------------------*/
 
   public 
-  JBuilderParamTreePanel()
+  JBuilderParamTreePanel
+  (
+    JBuilderParamDialog parent  
+  )
   {
     super();
     this.setName("MainDialogPanel");
     this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+    
+    pParent = parent;
 
     {
       JPanel panel = new JPanel();
@@ -168,7 +173,7 @@ public class JBuilderParamTreePanel
     int pass = builder.getCurrentPass();
     
     createTreeNodes(treeName);
-    JBuilderParamPanel panel = new JBuilderParamPanel(builder, pass);
+    JBuilderParamPanel panel = new JBuilderParamPanel(builder, pass, pParent);
     pCardPanel.add(panel, panelName);
     for(BaseBuilder hbp : builder.getSubBuilders().values()) {
       uiHelper(hbp, treeName, panelName);
@@ -189,7 +194,7 @@ public class JBuilderParamTreePanel
     int pass = hbp.getCurrentPass();
 
     createTreeNodes(newTreeName);
-    JBuilderParamPanel panel = new JBuilderParamPanel(hbp, pass);
+    JBuilderParamPanel panel = new JBuilderParamPanel(hbp, pass, pParent);
     pCardPanel.add(panel, newPanelName);
     BaseBuilder builder = hbp;
     for(BaseBuilder hbp2 : builder.getSubBuilders().values()) {
@@ -314,4 +319,6 @@ public class JBuilderParamTreePanel
    * The collection of builder panels.
    */ 
   protected JPanel pCardPanel;
+  
+  private JBuilderParamDialog pParent;
 }

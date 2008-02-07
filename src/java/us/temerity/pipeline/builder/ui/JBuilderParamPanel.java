@@ -19,7 +19,8 @@ import us.temerity.pipeline.ui.*;
 /**
  *
  */
-public class JBuilderParamPanel
+public 
+class JBuilderParamPanel
   extends JPanel
   implements ComponentListener, ActionListener
 {
@@ -32,12 +33,15 @@ public class JBuilderParamPanel
   JBuilderParamPanel
   (
     BaseUtil builder,
-    int pass
+    int pass,
+    JBuilderParamDialog parent
   ) 
     throws PipelineException
   {
     super();
     this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+    
+    pParent = parent;
     
     pStorage = new DoubleMap<String, ParamMapping, Component>();
     pCompToParam = new ListMap<Component, ParamMapping>();
@@ -703,4 +707,6 @@ public class JBuilderParamPanel
    * displayed in the panel).
    */
   private Set<ParamMapping> pMappedParams;
+  
+  private JBuilderParamDialog pParent;
 }

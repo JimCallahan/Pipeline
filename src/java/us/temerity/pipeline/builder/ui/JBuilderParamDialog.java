@@ -64,7 +64,7 @@ class JBuilderParamDialog
     extras[2][0] = "Run All";
     extras[2][1] = "run-all-passes";
     
-    pTopPanel = new JBuilderTopPanel(pBuilder);
+    pTopPanel = new JBuilderTopPanel(pBuilder, this);
     JButton buttons[] = super.initUI(header, pTopPanel, null, null, extras, cancel);
     pNextButton = buttons[0];
     pNextActionButton = buttons[1];

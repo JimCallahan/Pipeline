@@ -29,14 +29,17 @@ class JBuilderTopPanel
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
   
-  public JBuilderTopPanel
+  public 
+  JBuilderTopPanel
   (
-    BaseBuilder builder
+    BaseBuilder builder,
+    JBuilderParamDialog parent
   ) 
     throws PipelineException
   {
     super();
     pBuilder = builder;
+    pParent = parent;
     
     pViewedYet = new ListMap<DefaultMutableTreeNode, Boolean>();
     pPanels = new ListMap<DefaultMutableTreeNode, JBuilderParamPanel>();
@@ -139,7 +142,7 @@ class JBuilderTopPanel
       PrefixedName prefixName = new PrefixedName(theBuilder.getPrefixedName(), pass.getName());
       int passNum = theBuilder.getCurrentPass();
       
-      JBuilderParamPanel paramPanel = new JBuilderParamPanel(theBuilder, passNum);
+      JBuilderParamPanel paramPanel = new JBuilderParamPanel(theBuilder, passNum, pParent);
       pActiveNode = createTreeNodes(prefixName.toString());
       ((BuilderTreeNodeInfo) pActiveNode.getUserObject()).setActive();
       pFirstPassPanel.add(paramPanel, prefixName.toString());
@@ -149,7 +152,7 @@ class JBuilderTopPanel
 	for (String name : namers.keySet()) {
 	  BaseNames baseName = namers.get(name);
 	  PrefixedName prefixName2 = new PrefixedName(theBuilder.getPrefixedName(), name);
-	  JBuilderParamPanel namerPanel = new JBuilderParamPanel(baseName, 1);
+	  JBuilderParamPanel namerPanel = new JBuilderParamPanel(baseName, 1, pParent);
 	  if (namerPanel.numberOfParameters() > 0) {
 	    DefaultMutableTreeNode node = createTreeNodes(prefixName2.toString());
 	    ((BuilderTreeNodeInfo) node.getUserObject()).setActive();
@@ -196,7 +199,7 @@ class JBuilderTopPanel
     SetupPass pass = pBuilder.getCurrentSetupPass();
     PrefixedName prefixName = new PrefixedName(theBuilder.getPrefixedName(), pass.getName());
     int passNum = theBuilder.getCurrentPass();
-    JBuilderParamPanel paramPanel = new JBuilderParamPanel(theBuilder, passNum);
+    JBuilderParamPanel paramPanel = new JBuilderParamPanel(theBuilder, passNum, pParent);
     
     pActiveNode = createTreeNodes(prefixName.toString());
     ((BuilderTreeNodeInfo) pActiveNode.getUserObject()).setActive();
@@ -206,7 +209,7 @@ class JBuilderTopPanel
       for (String name : namers.keySet()) {
 	BaseNames baseName = namers.get(name);
 	PrefixedName prefixName2 = new PrefixedName(theBuilder.getPrefixedName(), name);
-	JBuilderParamPanel namerPanel = new JBuilderParamPanel(baseName, 1);
+	JBuilderParamPanel namerPanel = new JBuilderParamPanel(baseName, 1, pParent);
 	if (namerPanel.numberOfParameters() > 0) {
 	  DefaultMutableTreeNode node = createTreeNodes(prefixName2.toString());
 	  ((BuilderTreeNodeInfo) node.getUserObject()).setActive();
@@ -484,7 +487,10 @@ class JBuilderTopPanel
   private ListMap<DefaultMutableTreeNode, JBuilderParamPanel> pPanels;
   private LinkedList<JBuilderParamPanel> pNeverViewed;
   
+  private JBuilderParamDialog pParent;
+  
   private static final String aConstructPasses = "ConstructPasses";
   private static final String aSetupPasses = "SetupPasses";
   private static final String aEmpty = "Empty";
+  
 }

@@ -1,4 +1,4 @@
-// $Id: BaseBuilder.java,v 1.41 2008/02/06 07:53:23 jesse Exp $
+// $Id: BaseBuilder.java,v 1.42 2008/02/07 13:17:33 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -1061,11 +1061,19 @@ class BaseBuilder
   }
 
   /**
-   * This method needs to be overriden to return a list of nodes that this Builder will
-   * check-in.
+   * Returns a list of nodes to be checked-in.
+   * <p>
+   * By default, this returns the list from {@link #getNodesToCheckIn()} that Builders  
+   * can add to using the {@link #addToCheckInList(String)}.
+   * <p>
+   * This method can be overriden to return a different list of nodes if the Builder is
+   * using some other method of determining what should be checked-in.
    */
-  protected abstract LinkedList<String>
-  getNodesToCheckIn();
+  protected LinkedList<String>
+  getNodesToCheckIn()
+  {
+    return getCheckInList();
+  }
   
   /**
    * Should this builder check-in the nodes that it has specified with
