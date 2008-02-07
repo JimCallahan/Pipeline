@@ -4,6 +4,16 @@ import us.temerity.pipeline.VersionID;
 import us.temerity.pipeline.glue.*;
 import us.temerity.pipeline.math.Range;
 
+/*------------------------------------------------------------------------------------------*/
+/*   P L U G I N   C O N T E X T                                                            */
+/*------------------------------------------------------------------------------------------*/
+
+/**
+ * Defines a set of boundaries that can be used for searching for a plugin.
+ * <p>
+ * The Plugin Context represents a specific Plugin Name and Plugin Vendor and a {@link Range}
+ * of Versions. 
+ */
 public 
 class PluginContext
   implements Glueable
@@ -21,6 +31,17 @@ class PluginContext
     pRange = null;
   }
   
+  /**
+   * Creates a new Plugin Context.
+   * <p>
+   * @param pluginName
+   *   The name of the plugin.
+   * @param pluginVendor
+   *   The vendor who provided the plugin
+   * @param range
+   *   The range of {@link VersionID VersionIDs} which are acceptable in this context or
+   *   <code>null</code> to create an all-inclusive range.
+   */
   public 
   PluginContext
   (
@@ -43,6 +64,14 @@ class PluginContext
       pRange = range;
   }
   
+  /**
+   * Creates a new Plugin Context with an all inclusive range.
+   * <p>
+   * @param pluginName
+   *   The name of the plugin.
+   * @param pluginVendor
+   *   The vendor who provided the plugin
+   */
   public 
   PluginContext
   (
@@ -53,6 +82,12 @@ class PluginContext
     this(pluginName, pluginVendor, null); 
   }
 
+  /**
+   * Creates a new Plugin Context with an all inclusive range and the Vendor set to Temerity.
+   * <p>
+   * @param pluginName
+   *   The name of the plugin.
+   */
   public 
   PluginContext
   (
@@ -80,6 +115,9 @@ class PluginContext
     return pPluginVendor;
   }
   
+  /**
+   * Returns the range of acceptable verisons.
+   */
   public Range<VersionID>
   getRange()
   {
@@ -87,7 +125,8 @@ class PluginContext
   }
 
   @Override
-  public String toString()
+  public String 
+  toString()
   {
     return("[Plugin Name: " + pPluginName + ", Vendor: " + 
            pPluginVendor + ", Range: " + pRange.toString() + "]");
