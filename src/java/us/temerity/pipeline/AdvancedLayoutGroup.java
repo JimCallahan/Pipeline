@@ -218,7 +218,8 @@ class AdvancedLayoutGroup
    * @return
    * 	An Integer that represents the column, needed for the getter and setter methods.
    */
-  public Integer addColumn
+  public Integer 
+  addColumn
   (
     String colName,
     boolean isOpen
@@ -236,7 +237,8 @@ class AdvancedLayoutGroup
   /**
    * @return a map of all the entries in all the columns
    */
-  public SortedMap<Integer, LinkedList<String>> getAllEntries()
+  public SortedMap<Integer, LinkedList<String>> 
+  getAllEntries()
   {
     return Collections.unmodifiableSortedMap(pEntries);
   }
@@ -244,7 +246,8 @@ class AdvancedLayoutGroup
   /**
    * @return a map of all the subgroups in all the columns
    */
-  public SortedMap<Integer, LinkedList<LayoutGroup>> getAllSubGroups()
+  public SortedMap<Integer, LinkedList<LayoutGroup>> 
+  getAllSubGroups()
   {
     return Collections.unmodifiableSortedMap(pSubGroups);
   }
@@ -252,7 +255,8 @@ class AdvancedLayoutGroup
   /**
    * @return a map of all the isOpen parameters for all the columns
    */
-  public SortedMap<Integer, Boolean> getAllIsOpen()
+  public SortedMap<Integer, Boolean> 
+  getAllIsOpen()
   {
     return Collections.unmodifiableSortedMap(pIsOpen);
   }
@@ -260,7 +264,8 @@ class AdvancedLayoutGroup
   /**
    * @return a map of the column names for all the columns
    */
-  public SortedMap<Integer, String> getAllColumnNames()
+  public SortedMap<Integer, String> 
+  getAllColumnNames()
   {
     return Collections.unmodifiableSortedMap(pColumnNames);
   }
@@ -268,7 +273,8 @@ class AdvancedLayoutGroup
   /**
    * @return a map of all the columns
    */
-  public SortedSet<Integer> getAllColumns()
+  public SortedSet<Integer> 
+  getAllColumns()
   {
     return Collections.unmodifiableSortedSet(new TreeSet<Integer>(pIsOpen.keySet()));
   }
@@ -276,12 +282,14 @@ class AdvancedLayoutGroup
   /**
    * @return the number of columns that have been initialized.
    */
-  public int getNumberOfColumns()
+  public int 
+  getNumberOfColumns()
   {
     return pIsOpen.size();
   }
   
-  public boolean hasEntries()
+  public boolean 
+  hasEntries()
   {
     Integer count = 0;
     for (LinkedList<String> params : pEntries.values())
@@ -625,19 +633,23 @@ class AdvancedLayoutGroup
   {
     super.fromGlue(decoder);
     
-    TreeMap<Integer, LinkedList<String>> names = (TreeMap<Integer, LinkedList<String>>) decoder.decode("Entries");
+    TreeMap<Integer, LinkedList<String>> names = 
+      (TreeMap<Integer, LinkedList<String>>) decoder.decode("Entries");
     if(names != null) 
       pEntries = names;
 
-    TreeMap<Integer, LinkedList<LayoutGroup>> groups = (TreeMap<Integer, LinkedList<LayoutGroup>>) decoder.decode("SubGroups");
+    TreeMap<Integer, LinkedList<LayoutGroup>> groups = 
+      (TreeMap<Integer, LinkedList<LayoutGroup>>) decoder.decode("SubGroups");
     if(groups != null) 
       pSubGroups = groups;
     
-    TreeMap<Integer, String> columnNames = (TreeMap<Integer, String>) decoder.decode("ColumnNames");
+    TreeMap<Integer, String> columnNames = 
+      (TreeMap<Integer, String>) decoder.decode("ColumnNames");
     if(columnNames != null)
       pColumnNames = columnNames;
     
-    TreeMap<Integer, Boolean> isOpen = (TreeMap<Integer, Boolean>) decoder.decode("IsOpen");
+    TreeMap<Integer, Boolean> isOpen = 
+      (TreeMap<Integer, Boolean>) decoder.decode("IsOpen");
     if(isOpen != null)
       pIsOpen = isOpen;
   }
