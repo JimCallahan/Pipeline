@@ -1,12 +1,11 @@
-// $Id: Maya2MRCollection.java,v 1.4 2008/02/06 07:44:19 jim Exp $
+// $Id: Maya2MRCollection.java,v 1.5 2008/02/10 05:34:24 jim Exp $
 
 package us.temerity.pipeline.plugin.Maya2MRCollection.v2_3_2;
 
-import java.util.TreeMap;
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.builder.*; 
 
-import us.temerity.pipeline.LayoutGroup;
-import us.temerity.pipeline.VersionID;
-import us.temerity.pipeline.builder.BaseBuilderCollection;
+import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   M A Y A 2 M R   C O L L E C T I O N                                                    */
