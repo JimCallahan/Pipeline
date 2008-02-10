@@ -1,4 +1,4 @@
-// $Id: AfterFXSceneStage.java,v 1.1 2008/02/07 10:20:03 jesse Exp $
+// $Id: AfterFXSceneStage.java,v 1.2 2008/02/10 05:34:51 jim Exp $
 
 package us.temerity.pipeline.stages;
 
@@ -63,6 +63,8 @@ class AfterFXSceneStage
   {
     return StageFunction.aAfterFXScene;
   }
-  
+
+  static final long serialVersionUID = -7039790058064568645L;
+
   private TreeSet<String> pSources; 
 }
