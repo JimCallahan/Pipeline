@@ -1,4 +1,4 @@
-// $Id: CommonTaskAnnotation.java,v 1.1 2008/02/05 03:02:13 jim Exp $
+// $Id: CommonTaskAnnotation.java,v 1.2 2008/02/11 03:17:39 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.CommonTaskAnnotation.v1_0_0;
 
@@ -196,7 +196,6 @@ class CommonTaskAnnotation
       layout.add(aTaskName);
       layout.add(aTaskType);
       layout.add(aCustomTaskType);
-      layout.add(null); 
       layout.add(aPurpose); 
 
       setLayout(layout);      

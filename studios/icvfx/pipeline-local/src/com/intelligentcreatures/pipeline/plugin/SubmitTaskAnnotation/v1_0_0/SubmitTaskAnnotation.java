@@ -1,4 +1,4 @@
-// $Id: SubmitTaskAnnotation.java,v 1.1 2008/02/05 03:02:13 jim Exp $
+// $Id: SubmitTaskAnnotation.java,v 1.2 2008/02/11 03:17:39 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.SubmitTaskAnnotation.v1_0_0;
 
@@ -124,6 +124,15 @@ class SubmitTaskAnnotation
 
     {
       AnnotationParam param = 
+	new StringAnnotationParam
+	(aPurpose, 
+	 "The way this node is intended to be used.  Always set to \"Submit\".", 
+	 aSubmit); 
+      addConstantParam(param);   
+    }
+
+    {
+      AnnotationParam param = 
 	new WorkGroupAnnotationParam
 	(aAssignedTo, 
 	 "The name of the WorkGroup or specific artist assigned to complete the task " + 
@@ -138,6 +147,7 @@ class SubmitTaskAnnotation
       layout.add(aTaskName);
       layout.add(aTaskType);
       layout.add(aCustomTaskType);
+      layout.add(aPurpose);
       layout.add(null); 
       layout.add(aAssignedTo);
 
@@ -176,4 +186,6 @@ class SubmitTaskAnnotation
   public static final String aCompositing   = "Compositing";  
   public static final String aCUSTOM        = "[[CUSTOM]]";  
   
+  public static final String aPurpose = "Purpose";
+  public static final String aSubmit  = "Submit";
 }

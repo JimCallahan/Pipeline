@@ -1,4 +1,4 @@
-// $Id: ApproveTaskAnnotation.java,v 1.1 2008/02/05 03:02:13 jim Exp $
+// $Id: ApproveTaskAnnotation.java,v 1.2 2008/02/11 03:17:39 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.ApproveTaskAnnotation.v1_0_0;
 
@@ -43,6 +43,11 @@ import us.temerity.pipeline.*;
  *     TaskType parameter should be set to [[CUSTOM]].
  *   </DIV> <BR> 
  *   
+ *   Purpose <BR>
+ *   <DIV style="margin-left: 40px;">
+ *     The way this node is intended to be used.  Always set to "Approve".
+ *   </DIV> <BR> 
+ * 
  *   Supervised By <BR>
  *   <DIV style="margin-left: 40px;">
  *     The name of the Pipeline work group or specific artist assigned to review the 
@@ -131,6 +136,15 @@ class ApproveTaskAnnotation
 
     {
       AnnotationParam param = 
+	new StringAnnotationParam
+	(aPurpose, 
+	 "The way this node is intended to be used.  Always set to \"Approve\".", 
+	 aApprove); 
+      addConstantParam(param);   
+    }
+
+    {
+      AnnotationParam param = 
 	new WorkGroupAnnotationParam
 	(aSupervisedBy, 
 	 "The name of the Pipeline work group or specific artist assigned to review the " + 
@@ -141,16 +155,17 @@ class ApproveTaskAnnotation
       addParam(param);
     }
     
-//     {
-//       AnnotationParam param = 
-// 	new BuilderAnnotationParam
-// 	(aApprovalBuilder, 
-//          "If specified, the custom approval builder to run after the task has been " + 
-//          "approved in order to update and check-in this node.  If not given, the approval " + 
-//          "network will need to be manually updated and checked-in.", 
-//          null, null, null, null); 
-//       addParam(param);
-//     }
+    {
+      AnnotationParam param = 
+ 	new BuilderIDAnnotationParam
+ 	(aApprovalBuilder, 
+         "If specified, the name of a custom approval builder within a specific builder " + 
+         "collection to run after the task has been approved in order to update and " + 
+         "check-in this node.  If not given, the approval network will need to be " + 
+         "manually updated and checked-in.", 
+         null); 
+      addParam(param);
+    }
 
     {
       ArrayList<String> layout = new ArrayList<String>();
@@ -158,9 +173,11 @@ class ApproveTaskAnnotation
       layout.add(aTaskName);
       layout.add(aTaskType);
       layout.add(aCustomTaskType);
+      layout.add(aPurpose);
       layout.add(null); 
       layout.add(aSupervisedBy);
-//       layout.add(aApprovalBuilder);
+      layout.add(null); 
+      layout.add(aApprovalBuilder);
 
       setLayout(layout);
     }
@@ -198,4 +215,6 @@ class ApproveTaskAnnotation
   public static final String aCompositing   = "Compositing";  
   public static final String aCUSTOM        = "[[CUSTOM]]";  
   
+  public static final String aPurpose = "Purpose";
+  public static final String aApprove = "Approve";
 }
