@@ -1,4 +1,4 @@
-// $Id: ApproveTaskBuilder.java,v 1.1 2008/02/11 22:57:19 jim Exp $
+// $Id: ApproveTaskBuilder.java,v 1.2 2008/02/11 23:10:25 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -142,7 +142,7 @@ class ApproveTaskBuilder
       UtilityParam param = 
 	new EnumUtilityParam
 	(aCheckInLevel,
-	 "The level of the check-in for the approve node.,
+	 "The level of the check-in for the approve node.",
 	 VersionID.Level.Minor.toString(), 
 	 choices);
       addParam(param);
