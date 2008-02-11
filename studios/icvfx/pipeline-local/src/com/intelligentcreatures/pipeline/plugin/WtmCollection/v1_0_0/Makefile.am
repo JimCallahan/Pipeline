@@ -12,6 +12,7 @@ javadir = $(sourceroot)/com/intelligentcreatures/pipeline/plugin/WtmCollection/v
 
 java_DATA = \
   AppDirs.java \
+  ApproveTaskBuilder.java \
   AssetType.java \
   ICStageFunction.java \
   ICTaskBuilder.java \
