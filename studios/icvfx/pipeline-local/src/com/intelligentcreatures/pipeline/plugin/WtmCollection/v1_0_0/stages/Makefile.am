@@ -13,8 +13,10 @@ java_DATA = \
   NukeCatCompStage.java \
   NukeCatStage.java \
   NukeExtractStage.java \
+  NukeQtStage.java \
   NukeReadReformatStage.java \
   NukeReadStage.java \
+  NukeRescaleStage.java \
   NukeThumbnailStage.java \
   PFTrackBuildStage.java
 
