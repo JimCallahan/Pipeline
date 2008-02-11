@@ -1,4 +1,4 @@
-// $Id: PlatesBuilder.java,v 1.10 2008/02/07 15:46:15 jim Exp $
+// $Id: PlatesBuilder.java,v 1.11 2008/02/11 22:59:23 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -45,21 +45,22 @@ class PlatesBuilder
    * @param builderInfo
    *   Information that is shared among all builders in a given invocation.
    */ 
-  public PlatesBuilder
+  public 
+  PlatesBuilder
   (
    MasterMgrClient mclient,
    QueueMgrClient qclient,
-   BuilderInformation info
+   BuilderInformation builderInfo
   )
     throws PipelineException
   {
-    this(mclient, qclient, info, 
+    this(mclient, qclient, builderInfo, 
          new StudioDefinitions(mclient, qclient, UtilContext.getDefaultUtilContext(mclient)),
          null, null);
   }
   
   /**
-   * Provided to allow parent builders to create instances and share.
+   * Provided to allow parent builders to create instances and share namers. 
    * 
    * @param mclient 
    *   The master manager connection.
@@ -78,9 +79,9 @@ class PlatesBuilder
    * 
    * @param shotNamer
    *   Provides the names of nodes and node directories which are shot specific.
-   * 
    */ 
-  public PlatesBuilder
+  public 
+  PlatesBuilder
   (
    MasterMgrClient mclient,
    QueueMgrClient qclient,
@@ -106,10 +107,7 @@ class PlatesBuilder
       pRequiredNodeNames = new TreeSet<String>(); 
       pMiscReferenceNodeNames = new TreeSet<String>(); 
 
-      pFirstStages  = new ArrayList<FinalizableStage>(); 
-      //pSecondStages = new ArrayList<FinalizableStage>(); 
-
-      // ... 
+      pFinalStages  = new ArrayList<FinalizableStage>(); 
     }
 
     /* setup builder parameters */ 
@@ -184,13 +182,13 @@ class PlatesBuilder
       ConstructPass build = new BuildNodesPass();
       addConstructPass(build);
       
-      ConstructPass first = new FirstQueueDisablePass(); 
-      addConstructPass(first); 
-      addPassDependency(build, first);
+      ConstructPass qdc = new QueueDisableCleanupPass(); 
+      addConstructPass(qdc); 
+      addPassDependency(build, qdc);
 
-      ConstructPass second = new SecondQueueDisablePass(); 
-      addConstructPass(second); 
-      addPassDependency(first, second);
+      ConstructPass qd = new QueueDisablePass(); 
+      addConstructPass(qd); 
+      addPassDependency(qdc, qd);
     }
 
     /* specify the layout of the parameters for each pass in the UI */ 
@@ -272,6 +270,29 @@ class PlatesBuilder
   /*  T A S K   A N N O T A T I O N S                                                       */
   /*----------------------------------------------------------------------------------------*/
  
+  /** 
+   * Adds a SubmitTask, ApproveTask or CommonTask annotation to the set of annotation 
+   * plugins which will be added to the node built by the given Stage.<P> 
+   * 
+   * @param stage
+   *   The stage to be modified.
+   * 
+   * @param builderID
+   *   The unique ID of the approval builder.
+   */ 
+  protected void
+  addAproveTaskAnnotation
+  (
+   BaseStage stage, 
+   BuilderID builderID
+  )
+    throws PipelineException
+  {
+    addApproveTaskAnnotation(stage,
+			     pShotNamer.getProjectName(), pShotNamer.getFullShotName(),
+			     TaskType.Plates.toString(), builderID);
+  }
+
   /** 
    * Adds a SubmitTask, ApproveTask or CommonTask annotation to the set of annotation 
    * plugins which will be added to the node built by the given Stage.<P> 
@@ -543,9 +564,6 @@ class PlatesBuilder
   /*   C O N S T R U C T   P A S S E S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  /** 
-   *
-   */ 
   protected 
   class BuildNodesPass
     extends ConstructPass
@@ -553,12 +571,12 @@ class PlatesBuilder
     public 
     BuildNodesPass()
     {
-      super("Build Nodes Pass", 
+      super("Build Submit/Approve Nodes", 
             "Creates the nodes which make up the Plates task."); 
     }
     
     /**
-     * 
+     * Create the plates node networks.
      */ 
     @Override
     public void 
@@ -619,7 +637,7 @@ class PlatesBuilder
 				   solveDistortionNodeName);
 	  addTaskAnnotation(stage, NodePurpose.Prepare); 
 	  stage.build();  
-	  pFirstStages.add(stage);
+	  pFinalStages.add(stage);
 	}
 
 	String readDistortedNodeName = pShotNamer.getReadDistortedNode(); 
@@ -794,18 +812,19 @@ class PlatesBuilder
   /*----------------------------------------------------------------------------------------*/
 
   protected 
-  class FirstQueueDisablePass
+  class QueueDisableCleanupPass
     extends ConstructPass
   {
     public 
-    FirstQueueDisablePass()
+    QueueDisableCleanupPass()
     {
-      super("First Queue/Disable Pass", 
+      super("Queue, Disable Actions and Cleanup", 
 	    "");
     }
     
     /**
-     * Return first level nodes to be queued.
+     * Return both finalizable stage nodes and nodes which will have their actions
+     * disabled to be queued now.
      */ 
     @Override
     public TreeSet<String> 
@@ -814,25 +833,25 @@ class PlatesBuilder
       TreeSet<String> regenerate = new TreeSet<String>();
 
       regenerate.addAll(getDisableList());
-      for(FinalizableStage stage : pFirstStages) 
+      for(FinalizableStage stage : pFinalStages) 
  	regenerate.add(stage.getNodeName());
 
       return regenerate;
     }
     
     /**
-     * Remove any placeholders and temporary settings used during second level 
-     * construction and prepare the nodes for check-in.<P> 
+     * Cleanup any temporary node structures used setup the network and 
+     * disable the actions of the newly regenerated nodes.
      * 
-     * Then register the second level nodes to be queued and disabled... 
+     * Then register the second pass nodes to be queued and disabled... 
      */ 
     @Override
     public void 
     buildPhase() 
       throws PipelineException
     {
-      /* process first level nodes */ 
-      for(FinalizableStage stage : pFirstStages) 
+      /* process first pass nodes first */ 
+      for(FinalizableStage stage : pFinalStages) 
 	stage.finalizeStage();
       disableActions();
       
@@ -850,18 +869,18 @@ class PlatesBuilder
   /*----------------------------------------------------------------------------------------*/
 
   protected 
-  class SecondQueueDisablePass
+  class QueueDisablePass
     extends ConstructPass
   {
     public 
-    SecondQueueDisablePass() 
+    QueueDisablePass() 
     {
-      super("Second Queue/Disable Pass", 
+      super("Queue and Disable Actions", 
 	    "");
     }
     
     /**
-     * Return second level nodes to be queued.
+     * Return nodes which will have their actions disabled to be queued now.
      */ 
     @Override
     public TreeSet<String> 
@@ -871,7 +890,7 @@ class PlatesBuilder
     }
     
     /**
-     * Disable the second level actions.
+     * Disable the actions for the second pass nodes. 
      */ 
     @Override
     public void 
@@ -926,9 +945,9 @@ class PlatesBuilder
   private TreeSet<String> pRequiredNodeNames;
 
   /**
-   * The stages which require running a finalizeStage() method before check-in.
+   * The stages which require running their finalizeStage() method before check-in.
    */ 
-  private ArrayList<FinalizableStage> pFirstStages; 
+  private ArrayList<FinalizableStage> pFinalStages; 
 
 
   /*-- PLATE PREREQUISITES -----------------------------------------------------------------*/
