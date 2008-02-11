@@ -11,6 +11,7 @@ SUBDIRS = \
   SubmitTaskAnnotation \
   ApproveTaskAnnotation \
   CommonTaskAnnotation \
+  ApproveTaskTool \
   LensInfoAction \
   PFTrackBuildAction \
   PFTrackEditor \
