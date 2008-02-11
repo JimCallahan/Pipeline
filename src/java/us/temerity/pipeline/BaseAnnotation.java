@@ -1,4 +1,4 @@
-// $Id: BaseAnnotation.java,v 1.3 2008/01/28 12:06:09 jesse Exp $
+// $Id: BaseAnnotation.java,v 1.4 2008/02/11 03:14:41 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -49,7 +49,8 @@ class BaseAnnotation
   BaseAnnotation() 
   {
     super();
-    pParams = new TreeMap<String,AnnotationParam>();
+    pParams    = new TreeMap<String,AnnotationParam>();
+    pConstants = new TreeSet<String>(); 
   }
 
   /** 
@@ -77,7 +78,8 @@ class BaseAnnotation
   ) 
   {
     super(name, vid, vendor, desc);
-    pParams = new TreeMap<String,AnnotationParam>();
+    pParams    = new TreeMap<String,AnnotationParam>();
+    pConstants = new TreeSet<String>(); 
   }
 
   /**
@@ -93,7 +95,8 @@ class BaseAnnotation
   ) 
   {
     super(annot.pName, annot.pVersionID, annot.pVendor, annot.pDescription);
-    pParams = annot.pParams;
+    pParams    = annot.pParams;
+    pConstants = annot.pConstants;
   }
 
 
@@ -227,6 +230,29 @@ class BaseAnnotation
   /*----------------------------------------------------------------------------------------*/
   
   /**
+   * Add a constant valued parameter to this Annotation. <P>
+   *
+   * A constant parameter always has the default value given to the parameter at the
+   * time it was created and cannot be changed after being created. <P> 
+   * 
+   * This method is used by subclasses in their constructors initialize the set of 
+   * parameters that they support.
+   *
+   * @param param  
+   *   The parameter to add.
+   */
+  protected final void 
+  addConstantParam
+  (
+   AnnotationParam param 
+  ) 
+  {
+    addParam(param);
+    pConstants.add(param.getName());
+  }
+
+
+  /**
    * Add a parameter to this Annotation. <P>
    *
    * This method is used by subclasses in their constructors initialize the set of 
@@ -315,6 +341,24 @@ class BaseAnnotation
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Whether the parameter with the given name has a read-only constant value. <P> 
+   * 
+   * A constant parameter always has the default value given to the parameter at the
+   * time it was created and cannot be changed after being created. 
+   * 
+   * @param name  
+   *   The name of the parameter. 
+   */ 
+  public final boolean 
+  isParamConstant
+  (
+   String name
+  ) 
+  {
+    return pConstants.contains(name); 
+  }
+
+  /**
    * Whether a given user is allowed to modify a specific annotation parameter. <P> 
    * 
    * The default implementation only grants users with Annotator privileges the right to 
@@ -366,6 +410,9 @@ class BaseAnnotation
     if(name == null)
       throw new IllegalArgumentException("The parameter name cannot be (null)!");
 
+    if(isParamConstant(name)) 
+      throw new IllegalArgumentException("Cannot set constant parameter (" + name + ")!");
+
     AnnotationParam param = pParams.get(name);
     if(param == null) 
       throw new IllegalArgumentException
@@ -379,6 +426,8 @@ class BaseAnnotation
    * 
    * Note that there is no requirement that the given annotation be the same plugin type or 
    * version.  Any incompatible parameters will simply be ignored by the copy operation.
+   * Any constant parameters will not be set and will ignore parameters with the same name
+   * from the source annotation.
    * 
    * @param annotation  
    *   The annotation to use as the source of parameter values.
@@ -390,17 +439,19 @@ class BaseAnnotation
   ) 
   {
     for(String name : pParams.keySet()) {
-      AnnotationParam aparam = annotation.getParam(name);
-      if(aparam != null) {
-	AnnotationParam param = pParams.get(name);
-	try {
-	  param.setValue(aparam.getValue());
-	}
-	catch(IllegalArgumentException ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Ops, LogMgr.Level.Warning,
-	     ex.getMessage());
-	}
+      if(!isParamConstant(name)) {
+        AnnotationParam aparam = annotation.getParam(name);
+        if(aparam != null) {
+          AnnotationParam param = pParams.get(name);
+          try {
+            param.setValue(aparam.getValue());
+          }
+          catch(IllegalArgumentException ex) {
+            LogMgr.getInstance().log
+              (LogMgr.Kind.Ops, LogMgr.Level.Warning,
+               ex.getMessage());
+          }
+        }
       }
     }
   }
@@ -410,7 +461,9 @@ class BaseAnnotation
    * privileges for each parameter.<P> 
    * 
    * Note that there is no requirement that the given annotation be the same plugin type or 
-   * version.  Any incompatible parameters will simply be ignored by the copy operation. <P> 
+   * version.  Any incompatible parameters will simply be ignored by the copy operation.
+   * Any constant parameters will not be set and will ignore parameters with the same name
+   * from the source annotation. <P> 
    * 
    * The {@link BaseAnnotation#isParamModifiable BaseAnnotation.isParamModifiable} method
    * of this annotation will be used to determine whether the user has permission to modify
@@ -440,28 +493,30 @@ class BaseAnnotation
     throws PipelineException
   {
     for(String pname : pParams.keySet()) {
-      AnnotationParam aparam = annotation.getParam(pname);
-      if(aparam != null) {
-	AnnotationParam param = pParams.get(pname);
-	try {
-          Comparable ovalue = param.getValue(); 
-          Comparable nvalue = aparam.getValue();          
-          if(((ovalue == null) && (nvalue != null)) ||  
-             ((ovalue != null) && !ovalue.equals(nvalue))) {
-
-            if(!isParamModifiable(pname, user, privileges) && !privileges.isAnnotator()) 
-              throw new PipelineException
-                ("You do not have sufficient privileges to modify the parameter named " + 
-                 "(" + pname + ") for the annotation (" + getName() + ")!"); 
-
-            param.setValue(nvalue); 
+      if(!isParamConstant(pname)) {
+        AnnotationParam aparam = annotation.getParam(pname);
+        if(aparam != null) {
+          AnnotationParam param = pParams.get(pname);
+          try {
+            Comparable ovalue = param.getValue(); 
+            Comparable nvalue = aparam.getValue();          
+            if(((ovalue == null) && (nvalue != null)) ||  
+               ((ovalue != null) && !ovalue.equals(nvalue))) {
+              
+              if(!isParamModifiable(pname, user, privileges) && !privileges.isAnnotator()) 
+                throw new PipelineException
+                  ("You do not have sufficient privileges to modify the parameter named " + 
+                   "(" + pname + ") for the annotation (" + getName() + ")!"); 
+              
+              param.setValue(nvalue); 
+            }
           }
-	}
-	catch(IllegalArgumentException ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Ops, LogMgr.Level.Warning,
-	     ex.getMessage());
-	}
+          catch(IllegalArgumentException ex) {
+            LogMgr.getInstance().log
+              (LogMgr.Kind.Ops, LogMgr.Level.Warning,
+               ex.getMessage());
+          }
+        }
       }
     }
   }
@@ -605,6 +660,8 @@ class BaseAnnotation
       clone.pParams.put(pclone.getName(), pclone);
     }
 
+    clone.pConstants = new TreeSet<String>(pConstants);
+
     return clone;
   }
 
@@ -624,8 +681,16 @@ class BaseAnnotation
   {
     super.toGlue(encoder);
     
-    if(!pParams.isEmpty()) 
-      encoder.encode("Params", pParams);
+    {
+      TreeMap<String,AnnotationParam> params = new TreeMap<String,AnnotationParam>(); 
+      for(String pname : pParams.keySet()) {
+        if(!isParamConstant(pname)) 
+          params.put(pname, pParams.get(pname));
+      }
+
+      if(!params.isEmpty()) 
+        encoder.encode("Params", params);
+    }
   }
   
   @Override
@@ -638,11 +703,13 @@ class BaseAnnotation
   {
     super.fromGlue(decoder);
 
-    TreeMap<String,AnnotationParam> single = 
+    TreeMap<String,AnnotationParam> params = 
       (TreeMap<String,AnnotationParam>) decoder.decode("Params");   
-    if(single != null) {
-      for(AnnotationParam param : single.values()) 
-	pParams.put(param.getName(), param); 
+    if(params != null) {
+      for(String pname : params.keySet()) {
+        if(!isParamConstant(pname)) 
+          pParams.put(pname, params.get(pname));
+      }
     }
   }
 
@@ -664,6 +731,11 @@ class BaseAnnotation
    * The table of annotation parameters.
    */
   private TreeMap<String,AnnotationParam>  pParams;    
+
+  /** 
+   * The names of constant valued annotation parameters.
+   */
+  private TreeSet<String>  pConstants; 
 
   /**
    * Used to determine the order and grouping of parameters in the graphical user interface. 
