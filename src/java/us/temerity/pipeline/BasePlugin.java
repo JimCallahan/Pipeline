@@ -1,4 +1,4 @@
-// $Id: BasePlugin.java,v 1.11 2007/03/28 19:07:45 jim Exp $
+// $Id: BasePlugin.java,v 1.12 2008/02/11 03:16:25 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -21,7 +21,7 @@ import java.io.*;
  */
 public 
 class BasePlugin
-  extends Described
+  extends PluginID
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -65,18 +65,33 @@ class BasePlugin
    String desc
   ) 
   {
-    super(name, desc);
+    this(new PluginID(name, vid, vendor), desc); 
+  }
+
+  /** 
+   * Construct with the given plugin ID and description. 
+   * 
+   * @param pluginID 
+   *    The unique ID of the plugin. 
+   * 
+   * @param desc 
+   *   A short description of the plugin.
+   */ 
+  protected
+  BasePlugin
+  (
+   PluginID pluginID, 
+   String desc
+  ) 
+  {
+    super(pluginID); 
 
     pSupports = new TreeSet<OsType>();
     addSupport(OsType.Unix);
 
-    if(vid == null) 
-      throw new IllegalArgumentException("The plugin version cannot be (null)");
-    pVersionID = vid;
-
-    if(vendor == null) 
-      throw new IllegalArgumentException("The plugin vendor cannot be (null)");
-    pVendor = vendor;
+    if(desc == null) 
+      throw new IllegalArgumentException("The description cannot be (null)!");
+    pDescription = desc;
   }
 
 
@@ -86,23 +101,14 @@ class BasePlugin
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the revision number of the plugin. 
+   * Gets the description text. 
    */ 
-  public final VersionID
-  getVersionID()
+  public String
+  getDescription()
   {
-    return pVersionID;
+    return pDescription;
   }
-  
-  /**
-   * Get the name of the plugin vendor. 
-   */ 
-  public final String
-  getVendor()
-  {
-    return pVendor; 
-  }
-  
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -215,6 +221,15 @@ class BasePlugin
     return null;
   }
     
+  /**
+   * Get the unique plugin identifier.
+   */ 
+  public PluginID
+  getPluginID()
+  {
+    return new PluginID(this);
+  }
+    
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -236,8 +251,7 @@ class BasePlugin
     if((obj != null) && (obj instanceof BasePlugin)) {
       BasePlugin plg = (BasePlugin) obj;
       return (super.equals(obj) && 
-	      pVersionID.equals(plg.pVersionID) && 
-	      pVendor.equals(plg.pVendor));
+	      pDescription.equals(plg.pDescription));
     }
     return false;
   }
@@ -271,42 +285,38 @@ class BasePlugin
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O M P A R A B L E                                                                  */
+  /*----------------------------------------------------------------------------------------*/
 
-  /*----------------------------------------------------------------------------------------*/
-  /*   G L U E A B L E                                                                      */
-  /*----------------------------------------------------------------------------------------*/
-  
-  public void 
-  toGlue
-  ( 
-   GlueEncoder encoder  
-  ) 
-    throws GlueException
-  {
-    super.toGlue(encoder);
-    
-    encoder.encode("VersionID", pVersionID);
-    encoder.encode("Vendor", pVendor);
-  }
-  
-  public void 
-  fromGlue
+  /**
+   * Compares this object with the specified object for order.
+   * 
+   * @param obj 
+   *   The <CODE>Object</CODE> to be compared.
+   */
+  public int
+  compareTo
   (
-   GlueDecoder decoder  
-  ) 
-    throws GlueException
+   Object obj
+  )
   {
-    super.fromGlue(decoder);
+    throw new IllegalArgumentException("Plugins do not support comparison!");
+  }
 
-    VersionID vid = (VersionID) decoder.decode("VersionID");
-    if(vid == null) 
-      throw new GlueException("The \"VersionID\" was missing!");
-    pVersionID = vid; 
-    
-    String vendor = (String)  decoder.decode("Vendor");
-    if(vendor == null) 
-      throw new GlueException("The \"Vendor\" was missing!");
-    pVendor = vendor;     
+  /**
+   * Compares this <CODE>PluginID</CODE> with the given <CODE>PluginID</CODE> for order.
+   * 
+   * @param pluginID 
+   *   The <CODE>PluginID</CODE> to be compared.
+   */
+  public int
+  compareTo
+  (
+   PluginID pluginID 
+  )
+  {
+    throw new IllegalArgumentException("Plugins do not support comparison!");
   }
 
 
@@ -424,15 +434,10 @@ class BasePlugin
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The revision number of the plugin. 
-   */ 
-  protected VersionID  pVersionID;
-
-  /**
-   * The name of the plugin vendor.
-   */ 
-  protected String  pVendor; 
-
+   * A short message which describes the plugin. 
+   */     
+  protected String  pDescription;  
+  
   /**
    * The set of operating system types supported by this plugin. 
    */ 

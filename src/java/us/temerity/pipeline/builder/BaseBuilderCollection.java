@@ -1,4 +1,4 @@
-// $Id: BaseBuilderCollection.java,v 1.8 2008/02/06 07:53:23 jesse Exp $
+// $Id: BaseBuilderCollection.java,v 1.9 2008/02/11 03:16:53 jim Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -43,10 +43,10 @@ class BaseBuilderCollection
    * Construct with the given name, version, vendor and description. 
    * 
    * @param name 
-   *   The short name of the selection key.  
+   *   The short name of the plugin. 
    * 
    * @param vid
-   *   The action plugin revision number.
+   *   The plugin revision number.
    * 
    * @param vendor
    *   The name of the plugin vendor.
@@ -66,6 +66,25 @@ class BaseBuilderCollection
     super(name, vid, vendor, desc);
   }
   
+  /** 
+   * Construct with the given name, version, vendor and description. 
+   * 
+   * @param pluginID 
+   *    The unique ID of the plugin. 
+   * 
+   * @param desc 
+   *   A short description of the action.
+   */ 
+  protected
+  BaseBuilderCollection
+  (
+   PluginID pluginID, 
+   String desc
+  ) 
+  {
+    super(pluginID, desc); 
+  }
+  
   /**
    * Copy constructor. 
    * <P> 
@@ -73,7 +92,7 @@ class BaseBuilderCollection
    * should not be used in end user code! 
    * <P> 
    * @param collect
-   *   The source to copy from 
+   *   The builder collection to copy.
    */ 
   public 
   BaseBuilderCollection

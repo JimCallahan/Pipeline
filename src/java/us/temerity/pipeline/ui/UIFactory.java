@@ -1,4 +1,4 @@
-// $Id: UIFactory.java,v 1.22 2007/09/07 18:52:38 jim Exp $
+// $Id: UIFactory.java,v 1.23 2008/02/11 03:16:25 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -1126,6 +1126,43 @@ class UIFactory
   ) 
   {
     JPluginSelectionField field = new JPluginSelectionField(layout, plugins);
+
+    Dimension size = new Dimension(width, 19);
+    field.setMinimumSize(size);
+    field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+    field.setPreferredSize(size);
+
+    return field;
+  }
+
+  /**
+   * Create a builder ID selection field.
+   * 
+   * @param layout
+   *   The builder collection plugin menu layout.
+   * 
+   * @param builderLayouts
+   *   The layout of builders within a specific builder collection 
+   *   indexed by builder collection vendors, names, revision numbers.
+   * 
+   * @param plugins
+   *   The legal builder collection plugin vendors, names, revision numbers and
+   *   supported operating systems.
+   * 
+   * @param width
+   *   The minimum and preferred width of the field.
+   */ 
+  public static JBuilderIDSelectionField
+  createBuilderIDSelectionField
+  (
+   PluginMenuLayout layout, 
+   TripleMap<String,String,VersionID,LayoutGroup> builderLayouts,
+   TripleMap<String,String,VersionID,TreeSet<OsType>> plugins,
+   int width
+  ) 
+  {
+    JBuilderIDSelectionField field = 
+      new JBuilderIDSelectionField(layout, builderLayouts, plugins);
 
     Dimension size = new Dimension(width, 19);
     field.setMinimumSize(size);
@@ -3196,6 +3233,110 @@ class UIFactory
     tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT, tooltip));
 
     JPluginSelectionField field = createPluginSelectionField(layout, plugins, vwidth);
+    vpanel.add(field);
+
+    return field;
+  }
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Create a BuilderIDSelection field with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param title
+   *   The title text.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param layout
+   *   The builder collection plugin menu layout.
+   * 
+   * @param builderLayouts
+   *   The layout of builders within a specific builder collection 
+   *   indexed by builder collection vendors, names, revision numbers.
+   * 
+   * @param plugins
+   *   The legal builder collection plugin vendors, names, revision numbers and
+   *   supported operating systems.
+   * 
+   * @param vwidth
+   *   The minimum and preferred width of the value field.
+   */ 
+  public static JBuilderIDSelectionField
+  createTitledBuilderIDSelectionField
+  (
+   JPanel tpanel, 
+   String title, 
+   int twidth,
+   JPanel vpanel,
+   PluginMenuLayout layout, 
+   TripleMap<String,String,VersionID,LayoutGroup> builderLayouts,
+   TripleMap<String,String,VersionID,TreeSet<OsType>> plugins,
+   int vwidth
+  ) 
+  {
+    return createTitledBuilderIDSelectionField(tpanel, title, twidth, 
+                                               vpanel, layout, builderLayouts, plugins, 
+                                               vwidth, null);
+  }
+
+  /**
+   * Create a BuilderIDSelection field with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param title
+   *   The title text.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param layout
+   *   The builder collection plugin menu layout.
+   * 
+   * @param builderLayouts
+   *   The layout of builders within a specific builder collection 
+   *   indexed by builder collection vendors, names, revision numbers.
+   * 
+   * @param plugins
+   *   The legal builder collection plugin vendors, names, revision numbers and
+   *   supported operating systems.
+   * 
+   * @param vwidth
+   *   The minimum and preferred width of the value field.
+   * 
+   * @param tooltip
+   *   The tooltip text.
+   */ 
+  public static JBuilderIDSelectionField
+  createTitledBuilderIDSelectionField
+  (
+   JPanel tpanel, 
+   String title, 
+   int twidth,
+   JPanel vpanel,
+   PluginMenuLayout layout, 
+   TripleMap<String,String,VersionID,LayoutGroup> builderLayouts,
+   TripleMap<String,String,VersionID,TreeSet<OsType>> plugins,
+   int vwidth, 
+   String tooltip
+  ) 
+  {
+    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT, tooltip));
+
+    JBuilderIDSelectionField field = 
+      createBuilderIDSelectionField(layout, builderLayouts, plugins, vwidth);
     vpanel.add(field);
 
     return field;

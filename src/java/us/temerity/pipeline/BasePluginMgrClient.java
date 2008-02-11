@@ -1,4 +1,4 @@
-// $Id: BasePluginMgrClient.java,v 1.16 2008/01/31 22:54:25 jesse Exp $
+// $Id: BasePluginMgrClient.java,v 1.17 2008/02/11 03:16:25 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -202,7 +202,10 @@ class BasePluginMgrClient
   {
     return pBuilderCollections.getPlugins();
   }
-  
+
+   
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Get the Layout Group of all available Builder Collection plugins. <P> 
    */ 
@@ -220,7 +223,7 @@ class BasePluginMgrClient
   {
     return new TripleMap<String,String,VersionID,AnnotationPermissions>(pAnnotationPermissions);
   }
-
+ 
 
   
   /*----------------------------------------------------------------------------------------*/
@@ -258,6 +261,25 @@ class BasePluginMgrClient
   }
 
   /**
+   * Create a new editor plugin instance. <P> 
+   * 
+   * @param pluginID
+   *   The unique plugin identifier. 
+   * 
+   * @throws PipelineException
+   *   If no editor plugin can be found or instantiation fails for some reason.
+   */
+  public synchronized BaseEditor
+  newEditor
+  (
+   PluginID pluginID
+  ) 
+    throws PipelineException
+  {
+    return newEditor(pluginID.getName(), pluginID.getVersionID(), pluginID.getVendor());
+  }
+
+  /**
    * Create a new action plugin instance. <P> 
    * 
    * Note that the <CODE>name</CODE> argument is not the name of the class, but rather the 
@@ -287,6 +309,25 @@ class BasePluginMgrClient
     throws PipelineException
   {
     return (BaseAction) pActions.newPlugin(name, vid, vendor);
+  }
+
+  /**
+   * Create a new action plugin instance. <P> 
+   * 
+   * @param pluginID
+   *   The unique plugin identifier. 
+   * 
+   * @throws PipelineException
+   *   If no action plugin can be found or instantiation fails for some reason.
+   */
+  public synchronized BaseAction
+  newAction
+  (
+   PluginID pluginID
+  ) 
+    throws PipelineException
+  {
+    return newAction(pluginID.getName(), pluginID.getVersionID(), pluginID.getVendor());
   }
 
   /**
@@ -322,6 +363,25 @@ class BasePluginMgrClient
   }
 
   /**
+   * Create a new comparator plugin instance. <P> 
+   * 
+   * @param pluginID
+   *   The unique plugin identifier. 
+   * 
+   * @throws PipelineException
+   *   If no comparator plugin can be found or instantiation fails for some reason.
+   */
+  public synchronized BaseComparator
+  newComparator
+  (
+   PluginID pluginID
+  ) 
+    throws PipelineException
+  {
+    return newComparator(pluginID.getName(), pluginID.getVersionID(), pluginID.getVendor());
+  }
+
+  /**
    * Create a new tool plugin instance. <P> 
    * 
    * Note that the <CODE>name</CODE> argument is not the name of the class, but rather the 
@@ -351,6 +411,25 @@ class BasePluginMgrClient
     throws PipelineException
   {
     return (BaseTool) pTools.newPlugin(name, vid, vendor);
+  }
+
+  /**
+   * Create a new tool plugin instance. <P> 
+   * 
+   * @param pluginID
+   *   The unique plugin identifier. 
+   * 
+   * @throws PipelineException
+   *   If no tool plugin can be found or instantiation fails for some reason.
+   */
+  public synchronized BaseTool
+  newTool
+  (
+   PluginID pluginID
+  ) 
+    throws PipelineException
+  {
+    return newTool(pluginID.getName(), pluginID.getVersionID(), pluginID.getVendor());
   }
 
   /**
@@ -386,6 +465,25 @@ class BasePluginMgrClient
   }
 
   /**
+   * Create a new annotation plugin instance. <P> 
+   * 
+   * @param pluginID
+   *   The unique plugin identifier. 
+   * 
+   * @throws PipelineException
+   *   If no annotation plugin can be found or instantiation fails for some reason.
+   */
+  public synchronized BaseAnnotation
+  newAnnotation
+  (
+   PluginID pluginID
+  ) 
+    throws PipelineException
+  {
+    return newAnnotation(pluginID.getName(), pluginID.getVersionID(), pluginID.getVendor());
+  }
+
+  /**
    * Create a new archiver plugin instance. <P> 
    * 
    * Note that the <CODE>name</CODE> argument is not the name of the class, but rather the 
@@ -417,6 +515,25 @@ class BasePluginMgrClient
     return (BaseArchiver) pArchivers.newPlugin(name, vid, vendor);
   }
   
+  /**
+   * Create a new archiver plugin instance. <P> 
+   * 
+   * @param pluginID
+   *   The unique plugin identifier. 
+   * 
+   * @throws PipelineException
+   *   If no archiver plugin can be found or instantiation fails for some reason.
+   */
+  public synchronized BaseArchiver
+  newArchiver
+  (
+   PluginID pluginID
+  ) 
+    throws PipelineException
+  {
+    return newArchiver(pluginID.getName(), pluginID.getVersionID(), pluginID.getVendor());
+  }
+
   /**
    * Create a new master extension plugin instance. <P> 
    * 
@@ -450,6 +567,25 @@ class BasePluginMgrClient
   }
   
   /**
+   * Create a new master extension plugin instance. <P> 
+   * 
+   * @param pluginID
+   *   The unique plugin identifier. 
+   * 
+   * @throws PipelineException
+   *   If no master extension plugin can be found or instantiation fails for some reason.
+   */
+  public synchronized BaseMasterExt
+  newMasterExt
+  (
+   PluginID pluginID
+  ) 
+    throws PipelineException
+  {
+    return newMasterExt(pluginID.getName(), pluginID.getVersionID(), pluginID.getVendor());
+  }
+
+  /**
    * Create a new queue extension plugin instance. <P> 
    * 
    * Note that the <CODE>name</CODE> argument is not the name of the class, but rather the 
@@ -481,6 +617,25 @@ class BasePluginMgrClient
     return (BaseQueueExt) pQueueExts.newPlugin(name, vid, vendor);
   }
   
+  /**
+   * Create a new queue extension plugin instance. <P> 
+   * 
+   * @param pluginID
+   *   The unique plugin identifier. 
+   * 
+   * @throws PipelineException
+   *   If no queue extension plugin can be found or instantiation fails for some reason.
+   */
+  public synchronized BaseQueueExt
+  newQueueExt
+  (
+   PluginID pluginID
+  ) 
+    throws PipelineException
+  {
+    return newQueueExt(pluginID.getName(), pluginID.getVersionID(), pluginID.getVendor());
+  }
+
   /**
    * Create a new key chooser plugin instance. <P> 
    * 
@@ -514,6 +669,25 @@ class BasePluginMgrClient
   }
   
   /**
+   * Create a new key chooser plugin instance. <P> 
+   * 
+   * @param pluginID
+   *   The unique plugin identifier. 
+   * 
+   * @throws PipelineException
+   *   If no key chooser plugin can be found or instantiation fails for some reason.
+   */
+  public synchronized BaseKeyChooser
+  newKeyChooser
+  (
+   PluginID pluginID
+  ) 
+    throws PipelineException
+  {
+    return newKeyChooser(pluginID.getName(), pluginID.getVersionID(), pluginID.getVendor());
+  }
+
+  /**
    * Create a new builder collection plugin instance. <P> 
    * 
    * Note that the <CODE>name</CODE> argument is not the name of the class, but rather the 
@@ -545,6 +719,28 @@ class BasePluginMgrClient
     return (BaseBuilderCollection) pBuilderCollections.newPlugin(name, vid, vendor);
   }
   
+  /**
+   * Create a new builder collection plugin instance. <P> 
+   * 
+   * @param pluginID
+   *   The unique plugin identifier. 
+   * 
+   * @throws PipelineException
+   *   If no builder collection plugin can be found or instantiation fails for some reason.
+   */
+  public synchronized BaseBuilderCollection
+  newBuilderCollection
+  (
+   PluginID pluginID
+  ) 
+    throws PipelineException
+  {
+    return newBuilderCollection(pluginID.getName(), pluginID.getVersionID(), pluginID.getVendor());
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+ 
   /**
    * Gets the LayoutGroup of builder names for the builder collection. <P> 
    * 

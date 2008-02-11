@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.78 2008/02/06 07:37:59 jim Exp $
+// $Id: UIMaster.java,v 1.79 2008/02/11 03:16:25 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -116,8 +116,9 @@ class UIMaster
     pBuilderCollectionPlugins = 
       new TreeMap<String,TripleMap<String,String,VersionID,TreeSet<OsType>>>();
     
-    pBuilderLayouts = new TripleMap<String, String, VersionID, LayoutGroup>();
-    pAnnotationPermissions = new TripleMap<String, String, VersionID, AnnotationPermissions>();
+    pBuilderLayoutGroups = new TripleMap<String, String, VersionID, LayoutGroup>();
+    pAnnotationPermissions = 
+      new TripleMap<String, String, VersionID, AnnotationPermissions>();
     
     pEditorLayouts            = new TreeMap<String,PluginMenuLayout>();                   
     pComparatorLayouts        = new TreeMap<String,PluginMenuLayout>();                  
@@ -939,8 +940,8 @@ class UIMaster
     synchronized(pAnnotationPermissions) {
       pAnnotationPermissions.clear();
     }
-    synchronized (pBuilderLayouts) {
-      pBuilderLayouts.clear();
+    synchronized (pBuilderLayoutGroups) {
+      pBuilderLayoutGroups.clear();
     }
   }
 
@@ -983,8 +984,8 @@ class UIMaster
     synchronized(pBuilderCollectionLayouts) {
       pBuilderCollectionLayouts.clear();
     }
-    synchronized (pBuilderLayouts) {
-      pBuilderLayouts.clear();
+    synchronized (pBuilderLayoutGroups) {
+      pBuilderLayoutGroups.clear();
     }
   }
 
@@ -1514,8 +1515,8 @@ class UIMaster
   ) 
   {
     PluginMenuLayout layout = null;
-    TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
     TripleMap<String, String, VersionID, LayoutGroup> builderLayouts = null;
+    TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
     try {
       MasterMgrClient client = getMasterMgrClient(channel);
       String tname = client.getDefaultToolsetName();
@@ -1549,12 +1550,14 @@ class UIMaster
           pBuilderCollectionLayouts.put(tname, layout);
         }
       }
-      synchronized(pBuilderLayouts) {
-        if(pBuilderLayouts.isEmpty()) {
-          pBuilderLayouts = PluginMgrClient.getInstance().getBuilderCollectionLayouts();
+
+      synchronized(pBuilderLayoutGroups) {
+        if(pBuilderLayoutGroups.isEmpty()) {
+          PluginMgrClient pclient = PluginMgrClient.getInstance();
+          pBuilderLayoutGroups.putAll(pclient.getBuilderCollectionLayouts());
         }
         builderLayouts = 
-          new TripleMap<String, String, VersionID, LayoutGroup>(pBuilderLayouts);
+          new TripleMap<String, String, VersionID, LayoutGroup>(pBuilderLayoutGroups);
       }
     }
     catch(PipelineException ex) {
@@ -2576,18 +2579,19 @@ class UIMaster
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Create a new builder collection plugin selection field based on the default toolset.
+   * Create a new builder ID selection field based on the default toolset.
    * 
    * @param width
    *   The minimum and preferred width of the field.
    */ 
-  public JPluginSelectionField
-  createBuilderCollectionSelectionField
+  public JBuilderIDSelectionField
+  createBuilderIDSelectionField
   (
-   int width  
+   int width
   ) 
   {
     PluginMenuLayout layout = null;
+    TripleMap<String,String,VersionID,LayoutGroup> builderLayouts = null;
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
     try {
       MasterMgrClient client = getMasterMgrClient();
@@ -2614,13 +2618,22 @@ class UIMaster
           pBuilderCollectionPlugins.put(tname, plugins);
         }
       }
-      
+
       synchronized(pBuilderCollectionLayouts) {
         layout = pBuilderCollectionLayouts.get(tname);
         if(layout == null) {
           layout = client.getBuilderCollectionMenuLayout(tname);
           pBuilderCollectionLayouts.put(tname, layout);
         }
+      }
+
+      synchronized(pBuilderLayoutGroups) {
+        if(pBuilderLayoutGroups.isEmpty()) {
+          PluginMgrClient pclient = PluginMgrClient.getInstance();
+          pBuilderLayoutGroups.putAll(pclient.getBuilderCollectionLayouts());
+        }
+        builderLayouts = 
+          new TripleMap<String, String, VersionID, LayoutGroup>(pBuilderLayoutGroups);
       }
     }
     catch(PipelineException ex) {
@@ -2630,19 +2643,112 @@ class UIMaster
       plugins = new TripleMap<String,String,VersionID,TreeSet<OsType>>();
     }
 
-    return UIFactory.createPluginSelectionField(layout, plugins, width);
+    return UIFactory.createBuilderIDSelectionField(layout, builderLayouts, plugins, width);
   }
 
   /**
-   * Update the contents of a builder collection plugin field.
+   * Create a new set of builder ID related fields based on the default toolset with a 
+   * title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param builderID
+   *   The initial builder ID. 
+   * 
+   * @param vwidth
+   *   The minimum and preferred width of the text field.
+   * 
+   * @param tooltip
+   *   The tooltip text.
+   */ 
+  public JBuilderIDSelectionField
+  createTitledBuilderIDSelectionField
+  (
+   JPanel tpanel, 
+   String title,  
+   int twidth,
+   JPanel vpanel, 
+   BuilderID builderID, 
+   int vwidth, 
+   String tooltip
+  ) 
+  { 
+    tpanel.add(UIFactory.createFixedLabel(title, twidth, JLabel.RIGHT, tooltip));
+    JBuilderIDSelectionField bfield = createBuilderIDSelectionField(vwidth);
+    vpanel.add(bfield);
+
+    UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+
+    {
+      JLabel label = 
+        UIFactory.createFixedLabel
+        ("Version:", twidth, JLabel.RIGHT, 
+         "The revision number of the builder collection."); 
+      tpanel.add(label); 
+
+      JTextField field = bfield.createVersionField(vwidth); 
+      vpanel.add(field);
+    }
+
+    UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+
+    {
+      JLabel label = 
+        UIFactory.createFixedLabel
+        ("Vendor:", twidth, JLabel.RIGHT, 
+         "The vendor of the builder collection."); 
+      tpanel.add(label); 
+      JTextField field = bfield.createVendorField(vwidth); 
+      vpanel.add(field);
+    }
+    
+    UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+
+    {
+      JLabel label = 
+        UIFactory.createFixedLabel
+        ("OS Support:", twidth, JLabel.RIGHT, 
+         "The operating systems supported by the builer collection."); 
+      tpanel.add(label); 
+      JOsSupportField field = bfield.createOsSupportField(vwidth); 
+      vpanel.add(field);
+    }
+
+    UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+
+    {
+      JLabel label = 
+        UIFactory.createFixedLabel
+        ("Builder Name:", twidth, JLabel.RIGHT, 
+         "The name of the selected builder within the builder collection."); 
+      tpanel.add(label); 
+      JTextField field = bfield.createBuilderNameField(vwidth); 
+      vpanel.add(field);
+    }
+
+    bfield.setBuilderID(builderID); 
+
+    return bfield;
+  }
+
+  /**
+   * Update the contents of a builder ID selection field.
    */ 
   public void 
-  updateBuilderCollectionPluginField
+  updateBuilderIDSelectionField
   (
-   JPluginSelectionField field
+   JBuilderIDSelectionField field
   ) 
   {
     PluginMenuLayout layout = null;
+    TripleMap<String,String,VersionID,LayoutGroup> builderLayouts = null;
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
     try {
       MasterMgrClient client = getMasterMgrClient();
@@ -2677,15 +2783,23 @@ class UIMaster
           pBuilderCollectionLayouts.put(tname, layout);
         }
       }
+
+      synchronized(pBuilderLayoutGroups) {
+        if(pBuilderLayoutGroups.isEmpty()) {
+          PluginMgrClient pclient = PluginMgrClient.getInstance();
+          pBuilderLayoutGroups.putAll(pclient.getBuilderCollectionLayouts());
+        }
+        builderLayouts = 
+          new TripleMap<String, String, VersionID, LayoutGroup>(pBuilderLayoutGroups);
+      }
     }
     catch(PipelineException ex) {
       showErrorDialog(ex);
       return;
     }
 
-    field.updatePlugins(layout, plugins);
+    field.updatePlugins(layout, builderLayouts, plugins);
   }
-
 
 
 
@@ -3066,43 +3180,6 @@ class UIMaster
     pManageToolsetsDialog.setVisible(true);
   }
   
-  /**
-   * Shows the launch builder dialog.
-   */
-  public void
-  showBuilderLaunchDialog()
-  {
-    pBuilderLaunchDialog.updateAll();
-    pBuilderLaunchDialog.setParams(null, null);
-    pBuilderLaunchDialog.setVisible(true);
-  }
-  
-  /**
-   * Shows the launch builder dialog.
-   */
-  public void
-  showBuilderLaunchDialog
-  (
-    String author,
-    String view
-  )
-  {
-    pBuilderLaunchDialog.updateAll();
-    ListMap<LinkedList<String>, String> params = new ListMap<LinkedList<String>, String>();
-    {
-      String array[] = {BaseUtil.aUtilContext, UtilContextUtilityParam.aAuthor};
-      LinkedList<String> authorKeys = new LinkedList<String>(Arrays.asList(array));
-      params.put(authorKeys, author);
-    }
-    {
-      String array[] = {BaseUtil.aUtilContext, UtilContextUtilityParam.aView};
-      LinkedList<String> viewKeys = new LinkedList<String>(Arrays.asList(array));
-      params.put(viewKeys, view);
-    }
-    pBuilderLaunchDialog.setParams(params, null);
-    pBuilderLaunchDialog.setVisible(true);
-  }
-
   /**
    * If unfrozen Toolsets/Packages exist, 
    *   show a confirmation dialog for discarding the unsaved changes.
@@ -4469,8 +4546,6 @@ class UIMaster
 
         pWorkingSelectDialog = new JWorkingSelectDialog(pFrame);
         
-        pBuilderLaunchDialog = new JBuilderLaunchDialog();
-
 	JToolDialog.initRootFrame(pFrame);
       }
 
@@ -6209,32 +6284,41 @@ class UIMaster
    * Caches of plugin vendor, names, revision number and supported operating systems
    * indexed by toolset name.
    */ 
-  private TreeMap<String,
-		  TripleMap<String,String,VersionID,TreeSet<OsType>>>  pEditorPlugins;
-  private TreeMap<String,
-		  TripleMap<String,String,VersionID,TreeSet<OsType>>>  pComparatorPlugins;
-  private TreeMap<String,
-		  TripleMap<String,String,VersionID,TreeSet<OsType>>>  pActionPlugins;
-  private TreeMap<String,
-		  TripleMap<String,String,VersionID,TreeSet<OsType>>>  pToolPlugins;
-  private TreeMap<String,
-		  TripleMap<String,String,VersionID,TreeSet<OsType>>>  pArchiverPlugins;
-  private TreeMap<String,
-		  TripleMap<String,String,VersionID,TreeSet<OsType>>>  pMasterExtPlugins;
-  private TreeMap<String,
-		  TripleMap<String,String,VersionID,TreeSet<OsType>>>  pQueueExtPlugins;
-  private TreeMap<String,
-		  TripleMap<String,String,VersionID,TreeSet<OsType>>>  pAnnotationPlugins;
-  private TreeMap<String,
-		  TripleMap<String,String,VersionID,TreeSet<OsType>>>  pKeyChooserPlugins;
-  private TreeMap<String,
-                  TripleMap<String,String,VersionID,TreeSet<OsType>>>  pBuilderCollectionPlugins;
+  private TreeMap<String,TripleMap<String,String,VersionID,TreeSet<OsType>>>  
+            pEditorPlugins;
+
+  private TreeMap<String,TripleMap<String,String,VersionID,TreeSet<OsType>>>  
+            pComparatorPlugins;
+
+  private TreeMap<String,TripleMap<String,String,VersionID,TreeSet<OsType>>>  
+            pActionPlugins;
+
+  private TreeMap<String,TripleMap<String,String,VersionID,TreeSet<OsType>>>  
+            pToolPlugins;
+
+  private TreeMap<String,TripleMap<String,String,VersionID,TreeSet<OsType>>>  
+            pArchiverPlugins;
+
+  private TreeMap<String,TripleMap<String,String,VersionID,TreeSet<OsType>>>  
+            pMasterExtPlugins;
+
+  private TreeMap<String,TripleMap<String,String,VersionID,TreeSet<OsType>>>  
+            pQueueExtPlugins;
+
+  private TreeMap<String,TripleMap<String,String,VersionID,TreeSet<OsType>>>  
+            pAnnotationPlugins;
+
+  private TreeMap<String,TripleMap<String,String,VersionID,TreeSet<OsType>>>  
+            pKeyChooserPlugins;
+
+  private TreeMap<String,TripleMap<String,String,VersionID,TreeSet<OsType>>>  
+            pBuilderCollectionPlugins;
   
   
   /**
    * Caches of plugins specific options, indexed by name, vendor, and revision number.
    */
-  private TripleMap<String,String,VersionID,LayoutGroup> pBuilderLayouts;
+  private TripleMap<String,String,VersionID,LayoutGroup> pBuilderLayoutGroups;
   private TripleMap<String,String,VersionID,AnnotationPermissions> pAnnotationPermissions;
 
 
@@ -6251,6 +6335,7 @@ class UIMaster
   private TreeMap<String,PluginMenuLayout>  pAnnotationLayouts; 
   private TreeMap<String,PluginMenuLayout>  pKeyChooserLayouts;
   private TreeMap<String,PluginMenuLayout>  pBuilderCollectionLayouts;
+
 
 
 
@@ -6407,9 +6492,4 @@ class UIMaster
    * The remote working node selection dialog.
    */
   private JWorkingSelectDialog  pWorkingSelectDialog;
-  
-  /**
-   * The builder launch dialog
-   */
-  private JBuilderLaunchDialog pBuilderLaunchDialog;
 }

@@ -1,4 +1,4 @@
-// $Id: JNodeAnnotationsPanel.java,v 1.12 2008/02/06 02:38:12 jim Exp $
+// $Id: JNodeAnnotationsPanel.java,v 1.13 2008/02/11 03:16:25 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1722,60 +1722,66 @@ class JNodeAnnotationsPanel
     {
       if(pAnnotation != null) {
         for(AnnotationParam aparam : pAnnotation.getParams()) {
-          Component comp = pParamComponents.get(aparam.getName()); 
-          Comparable value = null;
-          if(aparam instanceof BooleanAnnotationParam) {
-            JBooleanField field = (JBooleanField) comp;
-            value = field.getValue();
-          }
-          else if(aparam instanceof DoubleAnnotationParam) {
-            JDoubleField field = (JDoubleField) comp;
-            value = field.getValue();
-          }
-          else if(aparam instanceof EnumAnnotationParam) {
-            JCollectionField field = (JCollectionField) comp;
-            EnumAnnotationParam eparam = (EnumAnnotationParam) aparam;
-            value = eparam.getValueOfIndex(field.getSelectedIndex());
-          }
-          else if(aparam instanceof IntegerAnnotationParam) {
-            JIntegerField field = (JIntegerField) comp;
-            value = field.getValue();
-          }
-          else if(aparam instanceof TextAreaAnnotationParam) {
-            JTextArea field = (JTextArea) comp;
-            value = field.getText();	  
-          }
-          else if(aparam instanceof StringAnnotationParam) {
-            JTextField field = (JTextField) comp;
-            value = field.getText();	  
-          }
-          else if(aparam instanceof PathAnnotationParam) {
-            JPathField field = (JPathField) comp;
-            value = field.getPath();	  
-          }
-          else if(aparam instanceof ToolsetAnnotationParam) {
-            JCollectionField field = (JCollectionField) comp;
-            String toolset = field.getSelected();
-            if(toolset.equals("-") || (toolset.length() == 0))
-              value = null;
-            else 
-              value = toolset;
-          }
-          else if(aparam instanceof WorkGroupAnnotationParam) {
-            JCollectionField field = (JCollectionField) comp;
-            String ugname = field.getSelected(); 
-            if(ugname.equals("-") || (ugname.length() == 0))
-              value = null;
-            else if(ugname.startsWith("[") && ugname.endsWith("]"))
-              value = ugname.substring(1, ugname.length()-1);
-            else 
-              value = ugname;
-          }
-          else {
-            assert(false) : "Unknown annotation parameter type!";
-          }
+          if(!pAnnotation.isParamConstant(aparam.getName())) {
+            Component comp = pParamComponents.get(aparam.getName()); 
+            Comparable value = null;
+            if(aparam instanceof BooleanAnnotationParam) {
+              JBooleanField field = (JBooleanField) comp;
+              value = field.getValue();
+            }
+            else if(aparam instanceof DoubleAnnotationParam) {
+              JDoubleField field = (JDoubleField) comp;
+              value = field.getValue();
+            }
+            else if(aparam instanceof EnumAnnotationParam) {
+              JCollectionField field = (JCollectionField) comp;
+              EnumAnnotationParam eparam = (EnumAnnotationParam) aparam;
+              value = eparam.getValueOfIndex(field.getSelectedIndex());
+            }
+            else if(aparam instanceof IntegerAnnotationParam) {
+              JIntegerField field = (JIntegerField) comp;
+              value = field.getValue();
+            }
+            else if(aparam instanceof TextAreaAnnotationParam) {
+              JTextArea field = (JTextArea) comp;
+              value = field.getText();	  
+            }
+            else if(aparam instanceof StringAnnotationParam) {
+              JTextField field = (JTextField) comp;
+              value = field.getText();	  
+            }
+            else if(aparam instanceof PathAnnotationParam) {
+              JPathField field = (JPathField) comp;
+              value = field.getPath();	  
+            }
+            else if(aparam instanceof ToolsetAnnotationParam) {
+              JCollectionField field = (JCollectionField) comp;
+              String toolset = field.getSelected();
+              if(toolset.equals("-") || (toolset.length() == 0))
+                value = null;
+              else 
+                value = toolset;
+            }
+            else if(aparam instanceof WorkGroupAnnotationParam) {
+              JCollectionField field = (JCollectionField) comp;
+              String ugname = field.getSelected(); 
+              if(ugname.equals("-") || (ugname.length() == 0))
+                value = null;
+              else if(ugname.startsWith("[") && ugname.endsWith("]"))
+                value = ugname.substring(1, ugname.length()-1);
+              else 
+                value = ugname;
+            }
+            else if(aparam instanceof BuilderIDAnnotationParam) {
+              JBuilderIDSelectionField field = (JBuilderIDSelectionField) comp;
+              value = field.getBuilderID();
+            }
+            else {
+              assert(false) : "Unknown annotation parameter type!";
+            }
 
-          pAnnotation.setParamValue(aparam.getName(), value);
+            pAnnotation.setParamValue(aparam.getName(), value);
+          }
         }
       }
       
@@ -1922,8 +1928,9 @@ class JNodeAnnotationsPanel
             AnnotationParam aparam = pAnnotation.getParam(pname);
 
             boolean paramEnabled = 
-              pPrivilegeDetails.isAnnotator() ||
-              pAnnotation.isParamModifiable(pname, PackageInfo.sUser, pPrivilegeDetails);
+              (!pAnnotation.isParamConstant(pname) && 
+               (pPrivilegeDetails.isAnnotator() ||
+                pAnnotation.isParamModifiable(pname, PackageInfo.sUser, pPrivilegeDetails))); 
 
             if(aparam != null) {
               if(aparam instanceof BooleanAnnotationParam) {
@@ -2100,6 +2107,21 @@ class JNodeAnnotationsPanel
                 field.setEnabled(paramEnabled); 
 
                 pParamComponents.put(pname, field);	                      
+              }
+              else if(aparam instanceof BuilderIDAnnotationParam) {
+                BuilderID value = (BuilderID) aparam.getValue();
+                JBuilderIDSelectionField field = 
+                  UIMaster.getInstance().createTitledBuilderIDSelectionField
+                  (tpanel, aparam.getNameUI() + ":", sTSize-7, 
+                   vpanel, value, sVSize, 
+                   aparam.getDescription());
+                   
+                field.setActionCommand("param-changed:" + pName + ":" + pname);
+                field.addActionListener(pParent);
+
+                field.setEnabled(paramEnabled); 
+
+                pParamComponents.put(pname, field);	    
               }
               else {
                 assert(false) : 
