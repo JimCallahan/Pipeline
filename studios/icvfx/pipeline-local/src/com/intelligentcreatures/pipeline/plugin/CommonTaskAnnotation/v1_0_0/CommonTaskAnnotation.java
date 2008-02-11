@@ -1,4 +1,4 @@
-// $Id: CommonTaskAnnotation.java,v 1.2 2008/02/11 03:17:39 jim Exp $
+// $Id: CommonTaskAnnotation.java,v 1.3 2008/02/11 22:56:30 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.CommonTaskAnnotation.v1_0_0;
 
@@ -8,7 +8,7 @@ import java.util.*;
 import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   T A S K   A N N O T A T I O N                                                          */
+/*   C O M M O N   T A S K   A N N O T A T I O N                                            */
 /*------------------------------------------------------------------------------------------*/
 
 /** 

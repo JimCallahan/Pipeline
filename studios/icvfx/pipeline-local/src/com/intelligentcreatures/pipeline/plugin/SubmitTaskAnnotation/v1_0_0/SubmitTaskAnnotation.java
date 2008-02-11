@@ -1,4 +1,4 @@
-// $Id: SubmitTaskAnnotation.java,v 1.2 2008/02/11 03:17:39 jim Exp $
+// $Id: SubmitTaskAnnotation.java,v 1.3 2008/02/11 22:56:30 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.SubmitTaskAnnotation.v1_0_0;
 
@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import us.temerity.pipeline.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   S U B M I T   T A S K  A N N O T A T I O N                                             */
+/*   S U B M I T   T A S K   A N N O T A T I O N                                            */
 /*------------------------------------------------------------------------------------------*/
 
 /**
