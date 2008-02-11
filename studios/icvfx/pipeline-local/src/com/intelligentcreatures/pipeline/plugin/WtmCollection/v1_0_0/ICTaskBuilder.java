@@ -1,4 +1,4 @@
-// $Id: ICTaskBuilder.java,v 1.5 2008/02/06 18:17:43 jim Exp $
+// $Id: ICTaskBuilder.java,v 1.6 2008/02/11 22:58:22 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -123,23 +123,7 @@ class ICTaskBuilder
     throws PipelineException
   {
     BaseAnnotation annot = getNewTaskAnnotation(purpose, projectName, taskName, taskType); 
-
-    /* find a unique name for this annotation, 
-         the convention is to call the primary purpose task annotation "Task" and 
-         any secondary task annotations "AltTask1", "AltTask2" ... "AltTaskN"  */ 
-    String annotName = "Task";
-    {
-      Map<String, BaseAnnotation> exist = stage.getAnnotations();
-      int wk;
-      for(wk=1; true; wk++) {
-        if(!exist.containsKey(annotName)) {
-          stage.addAnnotation(annotName, annot); 
-          break;
-        }
-
-        annotName = ("AltTask" + wk);
-      }
-    }
+    addTaskAnnotationToStage(stage, annot); 
   }
 
   /** 
@@ -173,24 +157,84 @@ class ICTaskBuilder
     throws PipelineException
   {
     BaseAnnotation annot = getNewTaskAnnotation(purpose, projectName, taskName, taskType); 
-
-    /* find a unique name for this annotation, 
-         the convention is to call the primary purpose task annotation "Task" and 
-         any secondary task annotations "AltTask1", "AltTask2" ... "AltTaskN"  */ 
-    String annotName = "Task";
-    {
-      TreeMap<String, BaseAnnotation> exist = pClient.getAnnotations(nodeName);
-      int wk;
-      for(wk=1; true; wk++) {
-        if(!exist.containsKey(annotName)) {
-	  pClient.addAnnotation(nodeName, annotName, annot);
-          break;
-        }
-
-        annotName = ("AltTask" + wk);
-      }
-    }
+    addTaskAnnotationToNode(nodeName, annot);
   }
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /** 
+   * Adds an ApproveTask with a specific approval builder to the set of annotation 
+   * plugins which will be added to the node built by the given Stage.<P> 
+   * 
+   * @param stage
+   *   The stage to be modified.
+   * 
+   * @param projectName
+   *   The value to give the ProjectName parameter of the annotation.
+   * 
+   * @param taskName
+   *   The value to give the ProjectName parameter of the annotation.
+   * 
+   * @param taskType
+   *   The value to give the TaskType/CustomTaskType parameter(s) of the annotation.
+   * 
+   * @param builderID
+   *   The unique ID of the approval builder.
+   */ 
+  protected void
+  addApproveTaskAnnotation
+  (
+   BaseStage stage,
+   String projectName, 
+   String taskName, 
+   String taskType, 
+   BuilderID builderID
+  )
+    throws PipelineException
+  {
+    BaseAnnotation annot = 
+      getNewTaskAnnotation(NodePurpose.Approve, projectName, taskName, taskType); 
+    annot.setParamValue("ApprovalBuilder", builderID);
+    addTaskAnnotationToStage(stage, annot); 
+  }
+
+  /** 
+   * Adds a SubmitTask, ApproveTask or CommonTask annotation to the set of annotation 
+   * plugins on the given node. <P> 
+   * 
+   * @param nodeName
+   *   The fully resolved name of the node to be annotated. 
+   * 
+   * @param projectName
+   *   The value to give the ProjectName parameter of the annotation.
+   * 
+   * @param taskName
+   *   The value to give the ProjectName parameter of the annotation.
+   * 
+   * @param taskType
+   *   The value to give the TaskType/CustomTaskType parameter(s) of the annotation.
+   * 
+   * @param builderID
+   *   The unique ID of the approval builder.
+   */ 
+  protected void
+  addApproveTaskAnnotation
+  (
+   String nodeName, 
+   String projectName, 
+   String taskName, 
+   String taskType, 
+   BuilderID builderID
+  )
+    throws PipelineException
+  {
+    BaseAnnotation annot = 
+      getNewTaskAnnotation(NodePurpose.Approve, projectName, taskName, taskType); 
+    addTaskAnnotationToNode(nodeName, annot);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /** 
    * Return a new SubmitTask, ApproveTask or CommonTask annotation instance appropriate
@@ -254,7 +298,80 @@ class ICTaskBuilder
 
     return annot; 
   }
-  
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Add the given task annotation to a stage.
+   * 
+   * @param stage
+   *   The stage to be modified.
+   * 
+   * @param annot
+   *   The annotation to add.
+   */ 
+  protected void 
+  addTaskAnnotationToStage
+  (
+   BaseStage stage,
+   BaseAnnotation annot
+  ) 
+    throws PipelineException
+  {
+    /* find a unique name for this annotation, 
+         the convention is to call the primary purpose task annotation "Task" and 
+         any secondary task annotations "AltTask1", "AltTask2" ... "AltTaskN"  */ 
+    String annotName = "Task";
+    {
+      Map<String, BaseAnnotation> exist = stage.getAnnotations();
+      int wk;
+      for(wk=1; true; wk++) {
+        if(!exist.containsKey(annotName)) {
+          stage.addAnnotation(annotName, annot); 
+          break;
+        }
+
+        annotName = ("AltTask" + wk);
+      }
+    }
+  }
+
+  /**
+   * Add the given task annotation to a stage.
+   * 
+   * @param nodeName
+   *   The fully resolved name of the node to be annotated. 
+   * 
+   * @param annot
+   *   The annotation to add.
+   */ 
+  protected void 
+  addTaskAnnotationToNode
+  (
+   String nodeName, 
+   BaseAnnotation annot
+  ) 
+    throws PipelineException
+  {
+    /* find a unique name for this annotation, 
+         the convention is to call the primary purpose task annotation "Task" and 
+         any secondary task annotations "AltTask1", "AltTask2" ... "AltTaskN"  */ 
+    String annotName = "Task";
+    {
+      TreeMap<String, BaseAnnotation> exist = pClient.getAnnotations(nodeName);
+      int wk;
+      for(wk=1; true; wk++) {
+        if(!exist.containsKey(annotName)) {
+	  pClient.addAnnotation(nodeName, annotName, annot);
+          break;
+        }
+
+        annotName = ("AltTask" + wk);
+      }
+    }
+  }
+
   
 
   /*----------------------------------------------------------------------------------------*/
