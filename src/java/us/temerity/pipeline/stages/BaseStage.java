@@ -1,4 +1,4 @@
-// $Id: BaseStage.java,v 1.25 2008/02/07 10:20:04 jesse Exp $
+// $Id: BaseStage.java,v 1.26 2008/02/11 19:22:10 jesse Exp $
 
 package us.temerity.pipeline.stages;
 
@@ -17,9 +17,36 @@ import us.temerity.pipeline.math.Range;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * The class that provides the basis for all the stage builders in Pipeline
- * <P>
- * This class contains all the information and helper methods that will be used by stages.
+ * Base class for all stages used in Builders and other plugins.
+ * <p>
+ * A stage is a class that makes or edits a node.  The most common use of stages is in 
+ * Builders, which create and invoke stages during the buildPhase of their Construct Passes.
+ * All stages follow the same basic form.  Information about the node is set, usually 
+ * entirely by the constructor.  Then, the {@link #build()} method is caused, which causes all
+ * the information that has been set to be turned into an actuality as the node is created.
+ * <p>
+ * It is completely possible for Builders to do much of the same information setting that
+ * stages do in their constructors, however that is usually not a preferable way to work.  As
+ * long as stages remain a black box to the Builder that is instantiating them, it becomes easy
+ * to shader functionality between many different Builders.  A need to change how a certain
+ * type of node functions is as simple as changing the stage that is being used to make the
+ * node regardless of how many Builders are using it.  However, if information about what the
+ * stage is building is being controlled at the Builder level and not in the stage, then 
+ * making changes to functionality necessitates making changes to similar code in multiple 
+ * files.
+ * <p>
+ * Along the same lines, it is considered better form to extend an existing stage to add
+ * functionality to it, rather than placing that extended functionality into the class that is
+ * invoking the stage.  By making the changes at the stage level, a single point of entry for
+ * editing is retained and a new stage has been created which now has the potential to be 
+ * reused. 
+ * <p>
+ * BaseStage does not contain any actual functionality in terms of actually creating a node.
+ * It does contain all the information that will be needed to create a node as well as helper
+ * methods which can put together that information, but there are no implementations of
+ * {@link #build()} and {@link #conform()}.  A generic implementation of these methods is 
+ * provided in the {@link StandardStage} class, which should be adequate in almost all cases.
+ * In cases where it is not, it is possible to subclass BaseStage directly.
  */
 public abstract 
 class BaseStage
@@ -76,21 +103,29 @@ class BaseStage
   /**
    * Attempts to release all the nodes that have been added so far.
    * <P>
-   * This method is intended to be used to clean-up a builder that did not succesfully
+   * This method is intended to be used to clean-up a builder that did not successfully
    * complete. It uses the added node information to go through and attempt to release each
    * node. If an exception is encountered while releasing a node, it is caught and the method
    * continues to execute. Once the method has attempted to remove all the nodes in the added
-   * nodes list, then a {@link PipelineException} will be thrown (if an error had occured
+   * nodes list, then a {@link PipelineException} will be thrown (if an error had occurred
    * during execution) that contains the exception messages for all the exceptions that had
    * been thrown.
    * 
+   * @param mclient
+   *   The instance of the Master Manager to use to release the nodes.
+   * 
+   * @param info
+   *   The Stage Information class that contains the information about which nodes have
+   *   been added.
+   * 
    * @throws PipelineException
+   *   After all nodes have been released, if any of the release operations failed.
    */
   public static void 
   cleanUpAddedNodes
   (
     MasterMgrClient mclient,
-    StageState info
+    StageInformation info
   ) 
     throws PipelineException
   {
@@ -118,13 +153,16 @@ class BaseStage
    * Returns the default editor for the given suffix.
    * 
    * @param client
-   *        The instance of the Master Manager used to perform the lookup.
+   *   The instance of the Master Manager used to perform the lookup.
    * 
    * @param suffix
-   *        The suffix to find the editor for.
+   *   The suffix to find the editor for.
+   *        
+   * @return
+   *   The Plugin Context that is associated with a given suffix.
    */
   public static PluginContext
-  getDefaultEditor
+  getDefaultSuffixEditor
   (
     MasterMgrClient client,
     String suffix
@@ -149,19 +187,41 @@ class BaseStage
 
   /**
    * Method that every stage needs to override to perform its function.
+   * <p>
+   * The build() method is what outside programs call in order to get a stage to make 
+   * the node it has been setup to make.  There is a default implementation of this 
+   * functionality provided in the {@link StandardStage} class which should be adequate
+   * for almost all situations.  An example of how this might be extended is present in the
+   * {@link FileWriterStage}.
    * 
-   * @return A boolean representing whether the build process completed successfully.
+   * @return 
+   *   A boolean representing whether the build process completed successfully.
+   * 
    * @throws PipelineException
+   *   If node creation fails for any reason.
    */
   public abstract boolean 
   build() 
     throws PipelineException;
   
   /**
-   * Method that every stage needs to override to perform its function.
+   * The method that is called when a stage needs to edit an existing node rather than 
+   * construct a new one.
+   * <p>
+   * This method should be amenable to being called directly.  However, in the
+   * {@link StandardStage} implementation, it is actually most commonly called from the
+   * build() method, depending on the value of the Action On Existence parameter.  If that
+   * parameter value is set to Conform and the node exists, the build() method will call the
+   * conform() method itself.  This behavior is not required and does not have to be
+   * implemented in this fashion in classes that extend {@link BaseStage} directly.  This
+   * implementation makes it easy for Builders to use stages without having to worry about node
+   * existence.
    * 
-   * @return A boolean representing whether the build process completed successfully.
+   * @return 
+   *   A boolean representing whether the conform process completed successfully.
+   *   
    * @throws PipelineException
+   *   If node editing fails for any reason
    */
   public abstract boolean 
   conform() 
@@ -236,20 +296,18 @@ class BaseStage
    * Takes the {@link BaseAction} stored in the pAction variable and adds it to the node
    * being constructed. For use in the {@link #build()} method.
    * 
-   * @return <code>true</code> if the method completed correctly.
    * @throws PipelineException
    */
-  protected final boolean 
+  protected final void 
   setAction() 
     throws PipelineException
   {
     pRegisteredNodeMod.setAction(pAction);
-    return true;
   }
   
   /**
-   *  Takes all the selection and license keys and applies them to the Job Requirements
-   *  for the registered node.
+   *  Takes all the selection, hardware, and license keys and applies them to the 
+   *  Job Requirements of the registered node.
    */
   protected final void
   setKeys() 
@@ -289,7 +347,7 @@ class BaseStage
   }
   
   /**
-   * Takes all the Job Requirements (not counting the Selection and License keys) and applies
+   * Takes all the Job Requirements (not counting the keys) and applies
    * them to the registered node.
    */
   protected void
@@ -340,12 +398,14 @@ class BaseStage
   /**
    * Removes the registered node's Action.
    * <p>
-   * Takes the name of a node and removes any Action that the node
-   * might have. Throws a {@link PipelineException} if there is a problem removing the
-   * action.
+   * Takes the name of a node and removes any Action that the node might have.  This method
+   * calls modifyProperties() to immediately apply its changes. 
    * 
    * @param name
-   *        The full name of the node to have its Action removed.
+   *   The full name of the node to have its Action removed.
+   *        
+   * @throws PipelineException 
+   *   If there is a problem removing the action.
    */
   public void 
   removeAction
@@ -361,12 +421,13 @@ class BaseStage
   }
   
   /**
-   * Removes the registered node's Action.
+   * Disables the registered node's Action.
    * <p>
-   * Takes the name of a node and removes any Action that the node
-   * might have. Throws a {@link PipelineException} if there is a problem removing the
-   * action.
+   * Takes the name of a node and disables any Action that the node might have.  This method
+   * calls modifyProperties() to immediately apply its changes. 
    * 
+   * @throws PipelineException
+   *   If there is a problem disabling the node's action.
    */
   public void 
   disableAction
@@ -384,8 +445,7 @@ class BaseStage
    * <P>
    * Registers a node in Pipeline and returns a {@link NodeMod} representing the newly
    * created node. The node will be a single file without frame numbering. Use the
-   * registerSequence method if you need a single file with a frame number. Throws a
-   * {@link PipelineException} if it cannot register the node successfully.
+   * registerSequence method if you need a single file with a frame number. 
    * 
    * @param name
    *        The full node name of the new node.
@@ -393,7 +453,11 @@ class BaseStage
    *        The filename suffix for the new node.
    * @param editor
    *        The Editor for the new node.
-   * @return The {@link NodeMod} representing the newly registered node.
+   * @return 
+   *   The {@link NodeMod} representing the newly registered node.
+   *   
+   * @throws PipelineException
+   *   If it cannot register the node successfully.
    */
   public NodeMod 
   registerNode
@@ -420,19 +484,30 @@ class BaseStage
    * 
    * @param name
    *        The full node name of the new node.
+   * 
    * @param pad
    *        The amount of padding for the frame numbering
+   * 
    * @param suffix
-   *        The filename extention for the new node.
+   *        The filename extension for the new node.
+   * 
    * @param editor
    *        The Editor for the new node.
+   * 
    * @param startFrame
    *        The starting frame for the sequence.
+   * 
    * @param endFrame
    *        The ending frame for the sequence.
+   * 
    * @param step
    *        The step for the sequence.
-   * @return The {@link NodeMod} representing the newly registered node.
+   * 
+   * @return 
+   *   The {@link NodeMod} representing the newly registered node.
+   * 
+   * @throws PipelineException
+   *   If it cannot register the node successfully.
    */
   public NodeMod 
   registerSequence
@@ -461,17 +536,25 @@ class BaseStage
    * files to the new node.
    * <P>
    * This does not allow for any of the fine grained control that the GUI version of clone
-   * node does. Throws a {@link PipelineException} if anything goes wrong.
+   * node does.
    * 
    * @param oldName
-   *        The node to be cloned.
+   *   The node to be cloned.
+   * 
    * @param newName
-   *        The new node to be created.
+   *   The new node to be created.
+   * 
    * @param cloneLinks
-   *        Should the links of the old node be copied to the new node.
+   *   Should the links of the old node be copied to the new node.
+   * 
    * @param cloneAction
-   *        Should the action of the old node be copied to the new node.
-   * @return a {@link NodeMod} representing the newly created node.
+   *   Should the action of the old node be copied to the new node.
+   *   
+   * @param copyFiles
+   *   Should the files of the old node be copied to the new node.
+   * 
+   * @return 
+   *   The {@link NodeMod} representing the newly created node.
    */
   public NodeMod 
   cloneNode
@@ -552,12 +635,12 @@ class BaseStage
   }
   
   /**
-   * Returns a {@link BaseAction}.
+   * Finds a version of an Action plugin from a specified vendor in the given toolset.
    * <p>
-   * Finds the latest version of a plugin from a specified vendor in the given toolset.
    * 
    * @param pluginUtil
-   *        Contains the name and the vendor the the plugin 
+   *        Contains the name, vendor, and version number of the plugin 
+   * 
    * @param toolset
    *        The toolset from which the version of the Action will be extracted.
    */
@@ -606,12 +689,11 @@ class BaseStage
   }
 
   /**
-   * Returns a {@link BaseEditor}.
-   * <p>
-   * Finds the latest version of a plugin from a specified vendor in the given toolset.
-   * 
+   * Finds a version of an Editor plugin from a specified vendor in the given toolset.
+
    * @param pluginUtil
-   *        Contains the name and the vendor the the plugin
+   *        Contains the name, vendor and version number of the plugin
+   * 
    * @param toolset
    *        The toolset from which the version of the Editor will be extracted.
    */

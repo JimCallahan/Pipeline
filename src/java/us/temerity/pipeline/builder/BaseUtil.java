@@ -1,4 +1,4 @@
-// $Id: BaseUtil.java,v 1.29 2008/02/06 07:44:19 jim Exp $
+// $Id: BaseUtil.java,v 1.30 2008/02/11 19:22:10 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -1844,7 +1844,7 @@ class BaseUtil
   /**
    * The table of Builder parameters.
    */
-  protected TreeMap<String, UtilityParam> pParams;
+  private  TreeMap<String, UtilityParam> pParams;
   
   /**
    * Specifies the grouping of parameters used to layout components which 

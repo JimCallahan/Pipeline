@@ -1,4 +1,4 @@
-// $Id: BuilderInformation.java,v 1.17 2008/02/06 07:53:23 jesse Exp $
+// $Id: BuilderInformation.java,v 1.18 2008/02/11 19:22:10 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -28,6 +28,28 @@ class BuilderInformation
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * Make a new Builder Information.
+   * <p>
+   * Sets the terminateAppWithGui value to <code>true</code>.
+   * 
+   * @param usingGui
+   *   Should the Builder execute in GUI mode.  Setting this to <code>false</code> will cause
+   *   the Builder to execute in batch mode. 
+   * @param abortOnBadParam
+   *   Should the Builder terminate execution if an attempt is made to assign a command-line
+   *   value to a parameter which cannot accept such a value. 
+   * @param useBuilderLogging
+   *   Should the Builder use its own builder logging panel or should it disable it and allow 
+   *   the plui instance that is running the builder to log to its own Logging Panel? 
+   * @param commandLineParams
+   *   A MultiMap of parameter values to assign to the Builders, in which the first keys is the
+   *   full {@link PrefixedName} of the the Builder or Namer the value is for and the remaining
+   *   keys are the parameter names, while the leaf values are the actual values to be 
+   *   assigned. In command line execution, this data structure is built automatically from 
+   *   the command line flags.  When Builders are being invoked in other contexts, preset
+   *   values can be passed into the Builder using this parameter.
+   */
   public
   BuilderInformation
   (
@@ -39,8 +61,30 @@ class BuilderInformation
   {
     this(usingGui, true, abortOnBadParam, useBuilderLogging, commandLineParams);
   }
-
   
+  /**
+   * Make a new Builder Information.
+   * 
+   * @param usingGui
+   *   Should the Builder execute in GUI mode.  Setting this to <code>false</code> will cause
+   *   the Builder to execute in batch mode. 
+   * @param terminateAppWithGui
+   *   Should the instance of the JVM that is running the Builder be terminated when this
+   *   Builder finishes execution?
+   * @param abortOnBadParam
+   *   Should the Builder terminate execution if an attempt is made to assign a command-line
+   *   value to a parameter which cannot accept such a value. 
+   * @param useBuilderLogging
+   *   Should the Builder use its own builder logging panel or should it disable it and allow 
+   *   the plui instance that is running the builder to log to its own Logging Panel? 
+   * @param commandLineParams
+   *   A MultiMap of parameter values to assign to the Builders, in which the first keys is the
+   *   full {@link PrefixedName} of the the Builder or Namer the value is for and the remaining
+   *   keys are the parameter names, while the leaf values are the actual values to be 
+   *   assigned. In command line execution, this data structure is built automatically from 
+   *   the command line flags.  When Builders are being invoked in other contexts, preset
+   *   values can be passed into the Builder using this parameter.
+   */
   public
   BuilderInformation
   (
@@ -72,7 +116,13 @@ class BuilderInformation
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Adds a node to the list of things to be queued at the end of the builder run.
+   * Add a node to the list of things to be queued at the end of the builder run.
+   * <p>
+   * This method is wrapped by the BaseBuilder method 
+   * {@link BaseBuilder#addToQueueList(String) addToQueueList()}.
+   * 
+   * @param nodeName
+   *   The name of the node to add.
    */
   public final void 
   addToQueueList
@@ -84,7 +134,13 @@ class BuilderInformation
   }
 
   /**
-   * Removes a node from the list of things to be queued at the end of the builder run.
+   * Remove a node from the list of things to be queued at the end of the builder run.
+   * <p>
+   * This method is wrapped by the BaseBuilder method 
+   * {@link BaseBuilder#removeFromQueueList(String) removeFromQueueList()}.
+   * 
+   * @param nodeName
+   *   The name of the node to add.
    */
   public final void 
   removeFromQueueList
@@ -96,7 +152,13 @@ class BuilderInformation
   }
   
   /**
-   * Clears the list of things to be queued at the end of the builder run.
+   * Clear the list of things to be queued at the end of the builder run.
+   *  <p>
+   * This method is wrapped by the BaseBuilder method 
+   * {@link BaseBuilder#clearQueueList() clearQueueList()}.
+   * <p>
+   * This method will affect all Builders.  After it is run, none of the nodes that have been
+   * added to the queue list will actually be queued.  It should only be used in extreme cases.
    */
   public final void 
   clearQueueList()
@@ -119,6 +181,25 @@ class BuilderInformation
   /*   C O N S T R U C T   P A S S E S                                                      */
   /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * Add a new pass to the list of Construct Passes that will be executed by the Builder.
+   * <p>
+   * This method does not need to be called directly.  Calling 
+   * {@link BaseBuilder#addConstructPass(ConstructPass)} is a better method to call, since it
+   * handles this step as well as other Builder internals.
+   * 
+   * @param pass
+   *   The Construct Pass to add.
+   * 
+   * @param builder
+   *   The Builder which is adding the Construct Pass.  This is needed for doing reverse 
+   *   lookups from Construct Passes back to Builders.
+   * 
+   * @return <code>True</code> if the pass was successfully added or <code>false</code> if 
+   *  there if the pass has been added already.
+   *  
+   *  @see BaseBuilder#addConstructPass(ConstructPass)
+   */
   public final boolean
   addConstructPass
   (
@@ -134,7 +215,13 @@ class BuilderInformation
   }
   
   /**
-   * Gets the Builder that is associated with a given ConstructPass.
+   * Get the Builder that is associated with a given ConstructPass.
+   * 
+   * @param pass
+   *   The Construct Pass whose creator is being found.
+   * 
+   * @return
+   *   The Builder which created the Construct Pass. 
    */
   public final BaseBuilder
   getBuilderFromPass
@@ -145,6 +232,11 @@ class BuilderInformation
     return pPassToBuilderMap.get(pass);
   }
   
+  /**
+   * Get a list of all the Construct Passes that Builders have created.
+   * @return
+   *   The list of passes.
+   */
   public final LinkedList<ConstructPass>
   getAllConstructPasses()
   {
@@ -152,10 +244,20 @@ class BuilderInformation
   }
   
   /**
-   * Creates a dependency between two ConstructPasses.
+   * Create a dependency between two ConstructPasses.
    * <p>
    * The target ConstructPass will not be run until the source ConstructPass has completed.
    * This allows for Builders to specify the order in which their passes run.
+   * <p>
+   * This method is wrapped by the 
+   * {@link BaseBuilder#addPassDependency(ConstructPass, ConstructPass)} method for
+   * convenience.  It is irrelevant which one is used.
+   * 
+   * @param sourcePass
+   *   The source Construct Pass which will be run earlier.
+   *   
+   * @param targetPass
+   *   The target Construct pass which will not be run until the source pass has finished.
    */
   protected final void
   addPassDependency
@@ -182,10 +284,20 @@ class BuilderInformation
   }
   
   
+  
   /*----------------------------------------------------------------------------------------*/
   /*   C H E C K - I N   L I S T                                                            */
   /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * Add a Builder to the list that controls the order in which nodes are checked-in.
+   * <p>
+   * The addition of Builders to this list is handled internally by Builders and this method
+   * should not be called in user code.
+   * 
+   * @param builder
+   *   The Builder to add.
+   */
   public void
   addToCheckinList
   (
@@ -195,6 +307,12 @@ class BuilderInformation
     pCheckInOrder.add(builder);
   }
   
+  /**
+   * Get the list of Builders in the order in which they will check-in nodes.
+   * 
+   * @return
+   *   The list of Builders.
+   */
   public List<BaseBuilder>
   getCheckinList()
   {
@@ -208,11 +326,14 @@ class BuilderInformation
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Returns a {@link MultiMap} of all the command line parameters.
+   * Return a {@link MultiMap} of all the command line parameters.
    * <p>
    * The first level in the MultiMap is made up of the names of all the builders, the second
    * level is all the parameter names, and every level after that (if they exist) are keys
-   * into Complex Parameters.  Values are stored in the leaf nodes.
+   * into Complex Parameters.  Values are stored as map values on the leaf nodes.
+   * 
+   * @return 
+   *   The map of params.
    */
   public final MultiMap<String, String>
   getCommandLineParams()
@@ -225,19 +346,46 @@ class BuilderInformation
   /*----------------------------------------------------------------------------------------*/
   /*  C A L L   H I E R A R C H Y                                                           */
   /*----------------------------------------------------------------------------------------*/
-  
+
+  /**
+   * Used in GUI code to determine how many Builders remain to be called during Setup Pass
+   * execution.
+   * <p>
+   * This method should not be called from user code.
+   * 
+   * @return
+   *   The number of Builders still to run their Setup Passes.
+   */
   public int
   getCallHierarchySize()
   {
     return pCallHierarchy.size();
   }
   
+  /**
+   * Used in GUI code to get the next Builder to run its Setup Passes.
+   * <p>
+   * Calling this method in user code <b>WILL</b> cause Builder execution to behave
+   * incorrectly and should be avoided.
+   * 
+   * @return
+   *   The next Builder.
+   */
   public BaseBuilder
   pollCallHierarchy()
   {
     return pCallHierarchy.poll();
   }
   
+  /**
+   * Adds a Builder to the list of Builders waiting to run their Setup Passes.
+   * <p>
+   * Calling this method in user code <b>WILL</b> cause Builder execution to behave
+   * incorrectly and should be avoided.
+   * 
+   * @param builder
+   *   The Builder to add.
+   */
   public void
   addToCallHierarchy
   (
@@ -253,84 +401,60 @@ class BuilderInformation
   /*  A C C E S S                                                                           */
   /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * Is the Builder executing in GUI mode?
+   */
   public final boolean
   usingGui()
   {
     return pUsingGUI;
   }
   
+  /**
+   * Will the Builder abort when attempting to set a command line value for a parameter which
+   * does not implement the {@link SimpleParamAccess} interface?
+   */
   public final boolean
   abortOnBadParam()
   {
     return pAbortOnBadParam;
   }
   
+  /**
+   * Is the Builder using its own logging code.
+   */
   public final boolean
   useBuilderLogging()
   {
     return pUseBuilderLogging;
   }
   
+  /**
+   * Is the Builder terminating its JVM when it finished execution.
+   */
   public final boolean
   terminateAppOnQuit()
   {
     return pTerminateAppOnQuit;
   }
-  
+
+  /**
+   * Gets a new instance of {@link StageInformation}, initialized with the correct
+   * {@link StageState}.
+   * <p>
+   * This is done automatically during Builder initialization and user code should only
+   * need to call this method if there is a pressing need for a discrete instance of a
+   * Stage Information class, potentially if radically different Selection Key settings
+   * are needed.
+   * 
+   * @return
+   *   The new instance of Stage Information, initialized with the global StageState.
+   */
   public final StageInformation
   getNewStageInformation()
   {
     return new StageInformation(pStageState);
   }
-  
-  public final StageState
-  getStageState()
-  {
-    return pStageState;
-  }
-  
-  
-  
-  /*----------------------------------------------------------------------------------------*/
-  /*  I N T E R N A L S                                                                     */
-  /*----------------------------------------------------------------------------------------*/
-  
-  /**
-   * A list of all the ConstructPasses 
-   */
-  private LinkedList<ConstructPass> pAllConstructPasses; 
-  
-  /**
-   * A mapping of each ConstructPass to the BaseBuilder that created it.
-   */
-  private ListMap<ConstructPass, BaseBuilder> pPassToBuilderMap; 
-
-  /**
-   * A list of nodes names that need to be queued.
-   */
-  private TreeSet<String> pNodesToQueue;
-  
-  private MultiMap<String, String> pCommandLineParams; 
-  
-  /**
-   * Is this Builder in GUI mode.
-   */
-  private boolean pUsingGUI = false;
-  
-  private boolean pAbortOnBadParam = false;
-  
-  private boolean pUseBuilderLogging = false;
-  
-  private boolean pTerminateAppOnQuit;
-  
-  private LinkedList<BaseBuilder> pCheckInOrder;
-  
-  private LinkedList<BaseBuilder> pCallHierarchy;
-  
-  private StageState pStageState;
-  
-  private ListMap<ConstructPass, PassDependency> pPassDependencies; 
-
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -348,6 +472,9 @@ class BuilderInformation
     /*   C O N S T R U C T O R                                                              */
     /*--------------------------------------------------------------------------------------*/
     
+    /**
+     * Private constructor to prevent people from being too clever.
+     */
     private 
     StageInformation
     (
@@ -373,6 +500,12 @@ class BuilderInformation
     /*   A C C E S S                                                                        */
     /*--------------------------------------------------------------------------------------*/
     
+    /**
+     * Replace the current list of default Selection Keys with a new list.
+     * 
+     * @param keys
+     *   The new list of keys or <code>null</code> to clear the list.
+     */
     public void
     setDefaultSelectionKeys
     (
@@ -385,6 +518,12 @@ class BuilderInformation
         pDefaultSelectionKeys = new TreeSet<String>(keys);
     }
     
+    /**
+     * Adds a Selection Key to the existing list of default Selection Keys.
+     * 
+     * @param key
+     *   The key to add.
+     */
     public void
     addDefaultSelectionKey
     (
@@ -394,6 +533,12 @@ class BuilderInformation
       pDefaultSelectionKeys.add(key);
     }
     
+    /**
+     * Replace the current list of default License Keys with a new list.
+     * 
+     * @param keys
+     *   The new list of keys or <code>null</code> to clear the list.
+     */
     public void
     setDefaultLicenseKeys
     (
@@ -406,6 +551,12 @@ class BuilderInformation
         pDefaultLicenseKeys = new TreeSet<String>(keys);
     }
     
+    /**
+     * Adds a License Key to the existing list of default License Keys.
+     * 
+     * @param key
+     *   The key to add.
+     */
     public void
     addDefaultLicenseKey
     (
@@ -415,6 +566,12 @@ class BuilderInformation
       pDefaultLicenseKeys.add(key);
     }
     
+    /**
+     * Replace the current list of default Hardware Keys with a new list.
+     * 
+     * @param keys
+     *   The new list of keys or <code>null</code> to clear the list.
+     */
     public void
     setDefaultHardwareKeys
     (
@@ -427,6 +584,12 @@ class BuilderInformation
         pDefaultHardwareKeys = new TreeSet<String>(keys);
     }
     
+    /**
+     * Adds a Hardware Key to the existing list of default Hardware Keys.
+     * 
+     * @param key
+     *   The key to add.
+     */
     public void
     addDefaultHardwareKey
     (
@@ -436,6 +599,15 @@ class BuilderInformation
       pDefaultHardwareKeys.add(key);
     }
     
+    /**
+     * Gets all the default Selection Keys at the current instant.
+     * <p>
+     * This includes all the keys on the default Selection Key list and all the Selection Keys
+     * currently in the stack.
+     * 
+     * @return
+     *   The list of keys.
+     */
     public TreeSet<String> 
     getDefaultSelectionKeys()
     {
@@ -449,6 +621,15 @@ class BuilderInformation
       return toReturn;
     }
     
+    /**
+     * Gets all the default License Keys at the current instant.
+     * <p>
+     * This includes all the keys on the default License Key list and all the License Keys
+     * currently in the stack.
+     * 
+     * @return
+     *   The list of keys.
+     */
     public TreeSet<String> 
     getDefaultLicenseKeys()
     {
@@ -462,6 +643,15 @@ class BuilderInformation
       return toReturn;
     }
     
+    /**
+     * Gets all the default Hardware Keys at the current instant.
+     * <p>
+     * This includes all the keys on the default Hardware Key list and all the Hardware Keys
+     * currently in the stack.
+     * 
+     * @return
+     *   The list of keys.
+     */
     public TreeSet<String> 
     getDefaultHardwareKeys()
     {
@@ -475,6 +665,9 @@ class BuilderInformation
       return toReturn;
     }
     
+    /**
+     * Set whether the default Selection Keys should be assigned to nodes.
+     */
     public void 
     setUseDefaultSelectionKeys
     (
@@ -484,12 +677,18 @@ class BuilderInformation
       pUseDefaultSelectionKeys = value;
     }
     
+    /**
+     * Whether the default Selection Keys should be assigned to nodes.
+     */
     public boolean 
     useDefaultSelectionKeys()
     {
       return pUseDefaultSelectionKeys; 
     }
 
+    /**
+     * Set whether the default License Keys should be assigned to nodes.
+     */
     public void 
     setUseDefaultLicenseKeys
     (
@@ -499,12 +698,18 @@ class BuilderInformation
       pUseDefaultLicenseKeys = value;
     }
     
+    /**
+     * Whether the default License Keys should be assigned to nodes.
+     */
     public boolean 
     useDefaultLicenseKeys()
     {
       return pUseDefaultLicenseKeys; 
     }
     
+    /**
+     * Set whether the default Hardware Keys should be assigned to nodes.
+     */
     public void 
     setUseDefaultHardwareKeys
     (
@@ -514,12 +719,41 @@ class BuilderInformation
       pUseDefaultHardwareKeys = value;
     }
     
+    /**
+     * Whether the default Hardware Keys should be assigned to nodes.
+     */
     public boolean 
     useDefaultHardwareKeys()
     {
       return pUseDefaultHardwareKeys; 
     }
     
+    /**
+     * Add a group of Selection Keys to the top of the stack.
+     * <p>
+     * This functionality allows for Selection Keys to be temporarily added to the list of 
+     * default keys without having to manage what has been added and when.  Keys can be 
+     * pushed onto the stack when they are needed and then popped off when they are no 
+     * longer needed.  All the keys that are added in an invocation of push() are treated
+     * as a single entitiy and will all be removed from the stack when pop() is called.
+     * <p>
+     * One example of this might be with a Builder that creates nodes for multiple departments.
+     * There would be a set of default Selection Keys which would represent settings for the 
+     * project.  Then, as the nodes for each department were created, different Selection Keys
+     * would be pushed on to the stack and then popped off once all the nodes for that 
+     * department were created.  Since it is a stack, it is possible to nest these calls.
+     * As an example, say nodes are being created for the Animation department.  Before node
+     * creation begins, the Animation Selection Key is pushed on to the stack.  Then, the User 
+     * key is pushed, indicating that the nodes being built are going to be queued by a user
+     * who will probably want quick feedback.  These settings are used to create a Submit
+     * network.  Once that is done, pop() is called, which removes the User key, but leaves
+     * the Animation key on the stack.  The Auto key is then pushed onto the stack for the 
+     * building of the Approval network.  Once that is complete, pop() is called twice to 
+     * remove the Auto key and then the Animation key.
+     * 
+     * @param keys
+     *   The list of keys to put on the stack.
+     */
     public void
     pushSelectionKeys
     (
@@ -529,12 +763,25 @@ class BuilderInformation
       pSelectionKeyStack.addFirst(keys);
     }
     
+    /**
+     * Remove the top group of Selection Keys from the stack.
+     * 
+     * @see #pushSelectionKeys(TreeSet)
+     */
     public void
     popSelectionKeys()
     {
       pSelectionKeyStack.poll();
     }
     
+    /**
+     * Add a group of License Keys to the top of the stack.
+     * <p>
+     * See the #pushSelectionKeys(TreeSet) for an explanation of how key stacks work.
+     * 
+     * @param keys
+     *  The list of keys.
+     */
     public void
     pushLicenseKeys
     (
@@ -544,12 +791,25 @@ class BuilderInformation
       pLicenseKeyStack.addFirst(keys);
     }
     
+    /**
+     * Remove the top group of License Keys from the stack.
+     * 
+     * @see #pushSelectionKeys(TreeSet)
+     */
     public void
     popLicenseKeys()
     {
       pLicenseKeyStack.poll();
     }
     
+    /**
+     * Add a group of Hardware Keys to the top of the stack.
+     * <p>
+     * See the #pushSelectionKeys(TreeSet) for an explanation of how key stacks work.
+     * 
+     * @param keys
+     *  The list of keys.
+     */
     public void
     pushHardwareKeys
     (
@@ -559,18 +819,33 @@ class BuilderInformation
       pHardwareKeyStack.addFirst(keys);
     }
     
+    /**
+     * Remove the top group of Hardware Keys from the stack.
+     * 
+     * @see #pushSelectionKeys(TreeSet)
+     */
     public void
     popHardwareKeys()
     {
       pHardwareKeyStack.poll();
     }
     
+    /**
+     * Should stages add annotations to the nodes that they are building?
+     * <p>
+     * This is a global setting and will effect all nodes that are being built.
+     */
     public boolean 
     doAnnotations()
     {
       return pDoAnnotations;
     }
     
+    /**
+     * Sets whether stages should add annotations to the nodes that they are building.
+     * <p>
+     * This is a global setting and will effect all nodes that are being built.
+     */
     public void 
     setDoAnnotations
     (
@@ -580,6 +855,14 @@ class BuilderInformation
       pDoAnnotations = doAnnotations;
     }
     
+    /**
+     * Sets what stages should do when they encounter a node that already exists.
+     * 
+     * @param aoe
+     *   The Action
+     *  
+     * @see ActionOnExistence 
+     */
     public void
     setActionOnExistence
     (
@@ -589,6 +872,11 @@ class BuilderInformation
       pActionOnExistence = aoe;
     }
     
+    /**
+     * What stages should do when they encounter a node that already exists.
+     *  
+     * @see ActionOnExistence 
+     */
     public ActionOnExistence
     getActionOnExistence()
     {
@@ -695,6 +983,11 @@ class BuilderInformation
      * <code>initializeAddedNodes</code> method was not called before calling this method.
      * 
      * @param name
+     *   The name of the node
+     * @param author
+     *   The author whose working area the node was created in.
+     * @param view
+     *   The working area where the node was created.
      * @throws PipelineException
      * @see #initializeAddedNodes()
      */
@@ -908,5 +1201,46 @@ class BuilderInformation
     private boolean pDoAnnotations;
     
     private ActionOnExistence pActionOnExistence;
-  }
+  }  //Stage Information
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*  I N T E R N A L S                                                                     */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * A list of all the ConstructPasses 
+   */
+  private LinkedList<ConstructPass> pAllConstructPasses; 
+  
+  /**
+   * A mapping of each ConstructPass to the BaseBuilder that created it.
+   */
+  private ListMap<ConstructPass, BaseBuilder> pPassToBuilderMap; 
+
+  /**
+   * A list of nodes names that need to be queued.
+   */
+  private TreeSet<String> pNodesToQueue;
+  
+  private MultiMap<String, String> pCommandLineParams; 
+  
+  /**
+   * Is this Builder in GUI mode.
+   */
+  private boolean pUsingGUI = false;
+  
+  private boolean pAbortOnBadParam = false;
+  
+  private boolean pUseBuilderLogging = false;
+  
+  private boolean pTerminateAppOnQuit;
+  
+  private LinkedList<BaseBuilder> pCheckInOrder;
+  
+  private LinkedList<BaseBuilder> pCallHierarchy;
+  
+  private StageState pStageState;
+  
+  private ListMap<ConstructPass, PassDependency> pPassDependencies; 
 }

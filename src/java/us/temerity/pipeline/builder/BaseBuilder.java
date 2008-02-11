@@ -1,24 +1,22 @@
-// $Id: BaseBuilder.java,v 1.42 2008/02/07 13:17:33 jesse Exp $
+// $Id: BaseBuilder.java,v 1.43 2008/02/11 19:22:10 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
 import java.util.*;
 
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.LogMgr.Kind;
-import us.temerity.pipeline.LogMgr.Level;
-import us.temerity.pipeline.MultiMap.MultiMapNamedEntry;
-import us.temerity.pipeline.NodeTreeComp.State;
-import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
-import us.temerity.pipeline.builder.ui.JBuilderParamDialog;
-import us.temerity.pipeline.math.Range;
-import us.temerity.pipeline.plugin.Maya2MRCollection.v2_3_2.ModelPiecesBuilder;
-import us.temerity.pipeline.stages.BaseStage;
-import us.temerity.pipeline.stages.StandardStage;
-import us.temerity.pipeline.ui.UIFactory;
-import us.temerity.pipeline.ui.core.UIMaster;
+import us.temerity.pipeline.LogMgr.*;
+import us.temerity.pipeline.MultiMap.*;
+import us.temerity.pipeline.NodeTreeComp.*;
+import us.temerity.pipeline.builder.BuilderInformation.*;
+import us.temerity.pipeline.builder.ui.*;
+import us.temerity.pipeline.math.*;
+import us.temerity.pipeline.plugin.Maya2MRCollection.v2_3_2.*;
+import us.temerity.pipeline.stages.*;
+import us.temerity.pipeline.ui.*;
+import us.temerity.pipeline.ui.core.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   B A S E   B U I L D E R                                                                */
@@ -28,11 +26,12 @@ import us.temerity.pipeline.ui.core.UIMaster;
  * The parent class of all Builders.
  * <p>
  * <h2>Introduction</h2>
+ * 
  * Builders are Utilities designed to make creating applications that interact with Pipeline
  * node networks simpler to write and maintain. The primary focus of Builders is
  * programatically creating large and complicated node networks while needing minimal
  * information and intervention from a user. However, that is not the only use for Builders
- * which can be used in an situation that requires a framework for complicated access to node
+ * which can be used in any situation that requires a framework for complicated access to node
  * networks.
  * <p>
  * Builders are designed to function in either command-line or graphical mode, with all UI
@@ -41,36 +40,46 @@ import us.temerity.pipeline.ui.core.UIMaster;
  * builders quickly and easily.
  * <p>
  * <h2>Parameters</h2>
- * <p>
+ * 
  * BaseBuilder declares two parameters in its constructor. Any class which inherits from
  * BaseBaseBuilder that is using parameters and parameter layouts will need to have a way to
  * account for these parameters as well as the parameters which come from {@link BaseUtil}.
- * <ul>
  * 
- * <li> ActionOnExistence - This parameter is used to control the behavior of the Builder when
- * a node it is supposed to build already exists.
+ * <DIV style="margin-left: 40px;">
+ *   ActionOnExistence <br>
+ *   <DIV style="margin-left: 40px;">
+ *     This parameter is used to control the behavior of the Builder when
+ *     a node it is supposed to build already exists.
+ *     </DIV><br>
  * 
- * <li> ReleaseOnError - This parameter controls the behavior of the Builder if it encounters
- * an error during the course of its execution. If this parameter is set to <code>true</code>,
- * an error will cause the Builder to release all the nodes that have been created during its
- * run.
- * 
- * </ul>
+ *   ReleaseOnError <br>
+ *   <DIV style="margin-left: 40px;">
+ *     This parameter controls the behavior of the Builder if it encounters an error during 
+ *     the course of its execution. If this parameter is set to <code>true</code>, an error 
+ *     will cause the Builder to release all the nodes that have been created during its
+ *     run.
+ *   </DIV><br>
+ * </DIV>
  * 
  * BaseBuilder also contains utility methods for creating two other parameters that a majority
  * of Builders may want to implement.
- * <ul>
  * 
- * <li> CheckinWhenDone - This parameter can be used to specify whether the Builder should
- * check in nodes it has created when it finishes execution. By default this parameter's value
- * is used in the {@link #performCheckIn()} method.
+ * <DIV style="margin-left: 40px;">
+ *   CheckinWhenDone <br>
+ *   <DIV style="margin-left: 40px;">
+ *     This parameter can be used to specify whether the Builder should check in nodes it has 
+ *     created when it finishes execution. By default this parameter's value is used in the 
+ *     {@link #performCheckIn()} method.
+ *   </DIV><br>
+ *   
+ *   SelectionKeys
+ *   <DIV style="margin-left: 40px;"> 
+ *     This parameter is a list of all the Selection Keys that exist in the Pipeline install, 
+ *     allowing the user of the Builder to specify a subset of them for some purpose.  Usually 
+ *     this parameter is used to specify a list of keys that all nodes being built will have.
+ *   </DIV>
+ * </DIV>
  * 
- * <li> SelectionKeys - This parameter is a list of all the Selection Keys that exist in the
- * Pipeline install, allowing the user of the Builder to specify a subset of them for some
- * purpose.  Usually this parameter is used to specify a list of keys that all nodes being
- * built will contain.
- * 
- * </ul>
  * <p>
  * <h2>Terminology used within these java docs.</h2>
  * <dl>
@@ -102,8 +111,172 @@ import us.temerity.pipeline.ui.core.UIMaster;
  * <dt>Second Loop
  *   <dd>The period of Builder execution during with all the ConstructPasses are run.
  * </dl>
- * <h2>Requirements</h2>
+ * 
+ * <h2>Passes</h2>
+ * Builders contain two different sorts of passes, which are executed at different times.
+ * {@link SetupPass Setup Passes} are run at the start of builder execution and are used
+ * to gather information from the user and from existing files/node structure in order to
+ * figure out what sorts of networks needs to be built or modified.  Once all 
+ * {@link SetupPass Setup Passes} have executed, {@link ConstructPass Construct Passes} are
+ * run.  These passes do the actual heavy lifting of manipulating and creating node networks.
+ * There are rules which govern the order in which these passes execute and how the different
+ * Phases inside each Pass are run.
+ * <br>
+ * <h3>The Passes</h3>
  * <p>
+ * <dl>
+ * <dt>SetupPasses
+ *   <dd>A pass which is responsible for gathering input from the user, checking that the input
+ *       is correct and makes sense, and creating any new Sub-Builders which may need to be run
+ *       as a result of the input. <br>
+ *       Each Setup Pass is broken down into three phases.  The distinction between these three
+ *       phases is purely cosmetic, as there is no difference in how any of them are invoked.  
+ *       They exists to make sub-classing easy, allowing specific sorts of functionality to be
+ *       overridden without having to change other parts and to provide a clear delineation for 
+ *       people reading the code. <br>
+ *       Builders execute Setup Passes in the order that they were added to the Builder.  All
+ *       Setup Passes should be added in the Builder's constructor, prior to 
+ *       {@link #setLayout(PassLayoutGroup) setLayout()} being called.
+ *     <p>
+ *     <dl>
+ *     <dt>validatePhase
+ *       <dd>Phase in which parameter values should be extracted from parameters and checked
+ *           for consistency and applicability. This Phase is when any class variables that 
+ *           need to be set from Parameter values should be set.  It is also a good time to 
+ *           start constructing lists of nodes which will be needed by the builder, based upon 
+ *           which parameters are set.  These lists can be used in the 
+ *           {@link ConstructPass#nodesDependedOn() nodesDependedOn()} method of later 
+ *           ConstructPasses.
+ *     
+ *     <dt>gatherPhase
+ *       <dd>Phase in which outside sources of information can be consulted to ascertain information.
+ *           Examples might include talking to an SQL database or opening up a Maya scene to extract
+ *           information about which characters are in a shot or which characters should be in a shot
+ *           as compared to which characters actually are in a shot.
+ *     
+ *     <dt>initPhase
+ *       <dd>Phase in which new Sub-Builders should be created and added to the current Builder
+ *           and in which PlaceHolder Parameters should have their values adjusted to be actual
+ *           parameters. The logic on whether or not a Sub-Builder should be added is probably 
+ *           properly done in either the validate or the gather Phase.  The init phase should 
+ *           be solely devoted to creating the new instances and adjusting parameters.
+ *     </dl>
+ * <dt>ConstructPasses
+ *   <dd>A pass which is responsible for building and/or modifying a group of nodes.
+ *       Construct passes are run after all the {@link SetupPass SetupPasses} have been run.
+ *       The execution path of a Construct Pass is as follows.
+ *       <ol>
+ *       
+ *       <li> Check for all the nodes that the Pass depends on (as set by the
+ *            {@link ConstructPass#nodesDependedOn() nodesDependedOn} method) and make sure 
+ *            they are all in the current working area. Abort Builder execution if any of 
+ *            those nodes are missing.
+ *       
+ *       <li> Queue all the nodes that are specified by the 
+ *            {@link ConstructPass#preBuildPhase() preBuildPhase} method.  Wait for these jobs 
+ *            to finish before continuing.  If all the jobs do not successfully complete, 
+ *            terminate Builder execution.
+ *       
+ *       <li> Run the build method to construct/modify nodes.
+ *       
+ *       </ol>
+ *     Builders can create dependencies between any two Construct Passes that exist.  It might
+ *     be something as simple as having two Construct Passes, one which builds nodes and one
+ *     which finalizes nodes, and the finalize pass depends on the build pass.  Or it could be
+ *     something more complicated, where a Construct Pass in one child Builder has to wait to
+ *     run until another child Builder's Construct Pass has run.   
+ *     <p>
+ *     <dl>
+ *     <dt>prebuildPhase
+ *       <dd>Returns a set of nodes that have to be in a Finished queue state before the
+ *           build method is called. All the nodes that are in this list will be queued and 
+ *           the Builder will wait for them to finish executing.  Once they finish executing, 
+ *           it will perform a status update on the nodes and make sure that they are in the 
+ *           Finished state.  If they are not, a {@link PipelineException} will be thrown and 
+ *           execution will stop.
+ *           
+ *     <dt>buildPhase
+ *       <dd>Constructs or modifies nodes. This method is responsible for the meat of Builder 
+ *       execution.  In it, {@link BaseStage stages} should be created and their build methods 
+ *       should be called.
+ *       
+ *     </dl> 
+ * </dl>
+ * <h2>Execution</h2>
+ * The execution path of builder is rather involved and complicated.  The following will attempt 
+ * to layout, without too much explanation of what each step is, the steps that are followed. 
+ * Further discussion of what each step is and how it works is available in other parts of the
+ * Javadocs.
+ * <ul>
+ * <li> The first Setup Pass of the top level Builder is run.  It performs the following actions.
+ *   <ol>
+ *   <li> Assign any command-line parameters that are applicable to the current layout pass of the
+ *        Builder and any Namers which have been added to the current Builder as Sub-Builders.  If
+ *        there are any Namers who have had their parameter values mapped to parent values, assign
+ *        the parent values to the child Namer's params.
+ *   <li> If the Builder is executing in GUI mode, allow the user to input values for parameters
+ *        in the current layout which accept user values as well as any Namers which the Builder
+ *        has added as Sub-Builders.  Namers which do not have an exposed parameters will not be
+ *        displayed in the GUI, but will have their generateNames() method called.
+ *   <li> Run the {@link BaseNames#generateNames() generateNames()} method of each Namer that
+ *   <li> Run the {@link SetupPass#validatePhase() validatePhase()}.
+ *   <li> Run the {@link SetupPass#gatherPhase() gatherPhase()}.
+ *   <li> Run the {@link SetupPass#initPhase() initPhase()}.
+ *   <li> Loop through all the Builders that have been added to the current Builder as child
+ *        Builders.  Find all the parameters whose values have had their values mapped to parent
+ *        values and assign the parent values to the child Builder's params. 
+ *   <li> Run the child Builder's SetupPasses (which follows the same pattern as the current 
+ *        Builder).
+ *   </ol>
+ * <li> Once all existing Sub-Builders have run all of their Setup Passes run the next Setup
+ *      Pass in the current Builder.
+ * <li> Continue until all Setup Passes in all Builders have been run.
+ * <li> Using the {@link #getNeededActions()} method of each Builder, determine if there are
+ *      any Actions needed for Builder execution which are not part of the chosen toolsets.
+ *      If there are any Actions missing, then an Exception will be thrown and execution
+ *      will be halted.
+ * <li> Examine all the Construct Passes and, based upon which passes depend on which other 
+ *      passes generate an execution order that guarantees that no passes are executed before
+ *      a pass which they depend on.  If it is impossible to generate such and order due to
+ *      circular dependencies, an Exception will be thrown and execution will be halted.
+ * <li> Using the order generated by the proceeding step, execute each Construct Pass.  They
+ *      perform the following actions
+ *   <ol>
+ *   <li> Run the {@link ConstructPass#preBuildPhase() preBuildPhase()} and wait for the jobs
+ *        that is generates to complete successfully.  If the jobs do not all complete 
+ *        successfully, an Exception will be thrown and execution will be halted.
+ *   <li> Using the list of nodes returned by 
+ *        {@link ConstructPass#nodesDependedOn() nodesDependedOn()}, search for all of the 
+ *        nodes and make sure that copies exist in the local working area.  If any of 
+ *        these nodes does not exist in the local working area, check it out.  If, for 
+ *        some reason, it is impossible to acquire a local copy of one of the nodes (either 
+ *        because the node does not exist or it has never been checked-in, an error will
+ *        be thrown and execution will be halted.
+ *   <li> Run the {@link ConstructPass#buildPhase() buildPhase()}
+ *   </ol>
+ * <li> Queue all of the nodes which have been added to the queue list using the 
+ *      {@link #addToQueueList(String)} method and wait until the jobs finish.  Once the jobs
+ *      have finished, do a status update on each of the queued nodes and check to make sure
+ *      that the entire tree is in the Finished queue state.  If all the trees are not, an
+ *      error is thrown and execution is aborted.
+ * <li> For each builder, the {@link #performCheckIn()} method is consulted to see if the nodes
+ *      that were created should be checked-in.  If they should be, the 
+ *      {@link #getNodesToCheckIn()} method is used to generate the list of nodes that should 
+ *      be checked-in.  Additionally, the {@link #getCheckInMessage()} and 
+ *      {@link #getCheckinLevel()} can be overridden to provide custom check-in messages and
+ *      check-in {@link us.temerity.pipeline.VersionID.Level Levels}.  Check-in (and Lock
+ *      Bundles, discussed next) are executed in the same order as SetupPasses finished
+ *      executing.  Therefore, the lowest level Sub-Builder will always check-in its nodes
+ *      first and the top level Builder will always check-in its nodes last.
+ * <li> Lock Bundles are executed to correctly setup networks that need to have portions of
+ *      then locked.  Lock Bundles contain two lists of nodes, a list of nodes to lock and a
+ *      list of nodes to check-in.  First, all the nodes in the lock list are locked to the 
+ *      latest version.  Then, all the nodes that need to be checked-in are queued.  If any jobs
+ *      are generated, the Builder waits for them to finish and then checks-in all of the 
+ *      nodes. 
+ * </ul>
+ * 
+ * <h2>Requirements</h2>
  * Builder operate under the following conditions.
  * <ul>
  * <li> Any Builder which is going to be run as a standalone builder (i.e., it can be launched
@@ -130,6 +303,21 @@ class BaseBuilder
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * The default constructor for all Builders. 
+   * 
+   * @param name
+   *   The name of the Builder.
+   * @param desc
+   *   A brief description of what the Builder is supposed to do.
+   * @param mclient
+   *   The instance of the Master Manager that the Builder is going to use.
+   * @param qclient
+   *   The instance of the Queue Manager that the Builder is going to use
+   * @param builderInformation
+   *   The instance of the global information class used to share information between all the
+   *   Builders that are invoked.
+   */
   protected
   BaseBuilder
   (
@@ -179,6 +367,20 @@ class BaseBuilder
   /*   L A Y O U T                                                                          */
   /*----------------------------------------------------------------------------------------*/
   
+
+  /**
+   * Sets the hierarchical grouping of builder names which determine the layout of UI 
+   * components. 
+   * <P> 
+   * The given layouts must contain exactly one entry for each builder name.  All 
+   * <CODE>null</CODE> entries will cause additional space to be added between the menu items. 
+   * Each layout subgroup will be represented by its own submenu off the main layout group. 
+   * 
+   * This method should be called by subclasses in their constructor.
+   * 
+   * @param layout
+   *   The layout group.
+   */
   @Override
   protected final void
   setLayout
@@ -246,10 +448,18 @@ class BaseBuilder
   /**
    * Adds a Sub-Builder to the current Builder, with the given Builder Parameter mapping.
    * <p>
-   * Should never be called in a Builder constructor.  
+   * @param subBuilder
+   *   The instance of BaseUtil that is being added as a Sub-Builder. 
+   * @param defaultMapping 
+   *   Should the Sub-Builder be setup with the default parameter mappings.  This means that
+   *   all the parameters which are defined as part of the BaseUtil and BaseBuilder will
+   *   be mapped from the parent to this child Builder.
+   * @param paramMapping 
+   *   A TreeMap containing a set of parameter mappings to make between the child Builder's 
+   *   parameters and the parent Builder. 
    * @throws PipelineException
-   *         If an attempt is made to add a Sub-Builder with the same name as one that already
-   *         exists.
+   *   If an attempt is made to add a Sub-Builder with the same name as one that already
+   *   exists.
    */
   public final void 
   addSubBuilder
@@ -295,10 +505,15 @@ class BaseBuilder
   /**
    * Adds a Sub-Builder to the current Builder.
    * <p>
-   * Should never be called in a Builder constructor.  
+   * @param subBuilder
+   *   The instance of BaseUtil that is being added as a Sub-Builder. 
+   * @param defaultMapping 
+   *   Should the Sub-Builder be setup with the default parameter mappings.  This means that
+   *   all the parameters which are defined as part of the BaseUtil and BaseBuilder will
+   *   be mapped from the parent to this child Builder.
    * @throws PipelineException
-   *         If an attempt is made to add a Sub-Builder with the same name as on that already
-   *         exists.
+   *   If an attempt is made to add a Sub-Builder with the same name as one that already
+   *   exists.
    */
   public final void 
   addSubBuilder
@@ -314,10 +529,11 @@ class BaseBuilder
   /**
    * Adds a Sub-Builder to the current Builder.
    * <p>
-   * Should never be called in a Builder constructor.   
+   * @param subBuilder
+   *   The instance of BaseUtil that is being added as a Sub-Builder. 
    * @throws PipelineException
-   *         If an attempt is made to add a Sub-Builder with the same name as on that already
-   *         exists.
+   *   If an attempt is made to add a Sub-Builder with the same name as one that already
+   *   exists.
    */
   public final void 
   addSubBuilder
@@ -331,7 +547,12 @@ class BaseBuilder
 
   
   /**
-   * Gets a mapping of all the Sub-Builders, keyed by the names of the Sub-Builders.
+   * Gets a mapping of all the child Builders, keyed by the names of the Sub-Builders.
+   * <p>
+   * This includes Builders which have been prepped already and all of them which haven't.
+   * This does not include any Namers.
+   * 
+   * @return A TreeMap containing all the child Builders indexed by their name.
    */
   public final TreeMap<String, BaseBuilder>
   getSubBuilders()
@@ -347,10 +568,16 @@ class BaseBuilder
    * <p>
    * It is assumed that a Builder actually knows what all its Sub-Builders are named.
    * Therefore this method throws an {@link IllegalArgumentException} if this contract is
-   * violated. If code is properly writen, this exception should never be thrown, since a
-   * parent Builder should never ask for a non-existant Sub-Builder. If some sort of
-   * verification of existance is needed, the {@link #getSubBuilders()} method can be used to
-   * get a Map of all the Sub-Builder which can be queried to determine existance.
+   * violated. If code is properly written, this exception should never be thrown, since a
+   * parent Builder should never ask for a non-existent Sub-Builder. If some sort of
+   * verification of existence is needed, the {@link #getSubBuilders()} method can be used to
+   * get a Map of all the Sub-Builder which can be queried to determine existence.
+   * 
+   * @param instanceName
+   *   The name of the Sub-Builder.
+   *   
+   * @return
+   *   Either the BaseNamer or the BaseBuilder that is identified with this name.
    * 
    * @throws IllegalArgumentException
    *         If the instance name passed in does not correspond to an existing Sub-Builder.
@@ -374,6 +601,12 @@ class BaseBuilder
         ("This builder does not contain a Sub-Builder with the name (" + instanceName + ").");
   }
   
+  /**
+   * Gets a list of all the child Namers which have not have their generateNames()
+   * method run yet.
+   * @return
+   *   The Map of BaseNames indexed by name.
+   */
   public final Map<String, BaseNames>
   getNamers()
   {
@@ -405,11 +638,15 @@ class BaseBuilder
    * Creates a mapping between a parameter in the named Sub-Builder and a parameter
    * in the parent Builder. 
    * <p>
-   * Error checking will cover the existance of both parameters and their implementation
+   * Error checking will cover the existence of both parameters and their implementation
    * of {@link SimpleParamAccess}.  It does not cover that the values in the parameters are
    * of similar types, so it is completely possible that the mapping may fail during
    * execution.  It is up to the authors of Builders to ensure that they are only mapping
    * parameters with identical values.
+   * <p>
+   * Note that it is not possible to create mappings for parameters which do not have an
+   * established type when the mapping is established.  Attempts to make a mapping of 
+   * this sort may result in unpredictable results.
    *
    * @param subBuilderName
    * 	The subBuilder the mapping is being created in.
@@ -459,11 +696,15 @@ class BaseBuilder
    * Creates a mapping between a parameter in the named Sub-Builder and a parameter
    * in the parent Builder. 
    * <p>
-   * Error checking will cover the existance of both parameters and their implementation
+   * Error checking will cover the existence of both parameters and their implementation
    * of {@link SimpleParamAccess}.  It does not cover that the values in the parameters are
    * of similar types, so it is completely possible that the mapping may fail during
    * execution.  It is up to the authors of Builders to ensure that they are only mapping
    * parameters with identical values.
+   * <p>
+   * Note that it is not possible to create mappings for parameters which do not have an
+   * established type when the mapping is established.  Attempts to make a mapping of 
+   * this sort may result in unpredictable results.
    *
    * @param subBuilderName
    * 	The subBuilder the mapping is being created in.
@@ -491,7 +732,25 @@ class BaseBuilder
   }
   
   /**
-   * Adds a group of Parameter mappings to a Sub-Builder.
+   * Creates a mapping between parameters in the named Sub-Builder and the parameters
+   * in the parent Builder. 
+   * <p>
+   * Error checking will cover the existence of both parameters and their implementation
+   * of {@link SimpleParamAccess}.  It does not cover that the values in the parameters are
+   * of similar types, so it is completely possible that the mapping may fail during
+   * execution.  It is up to the authors of Builders to ensure that they are only mapping
+   * parameters with identical values.
+   * <p>
+   * Note that it is not possible to create mappings for parameters which do not have an
+   * established type when the mapping is established.  Attempts to make a mapping of 
+   * this sort may result in unpredictable results.
+   * 
+   * @param subBuilderName
+   *   The subBuilder the mapping is being created in.
+   * @param mapping
+   *   A map of parameter mappings.  The keys are the names of the Sub-Builder parameters 
+   *   that are being driven.  The values are the names of the Sub-Builder parameters that 
+   *   are being driven
    */
   public final void
   addMappedParams
@@ -509,7 +768,10 @@ class BaseBuilder
   
   /**
    * Sets a null mapping for a parameter that will keep it from being displayed in the 
-   * gui or from accepting a commandline value.
+   * gui or from accepting a command line value.
+   * 
+   * @param param
+   *   The name of the parameter that is to be disabled.
    */
   public final void
   disableParam
@@ -531,7 +793,10 @@ class BaseBuilder
    *         passed in.
    */
   private void
-  initializeSubBuilder(String name)
+  initializeSubBuilder
+  (
+    String name
+  )
     throws PipelineException
   {
     BaseUtil subBuilder = getNewSubBuilder(name);
@@ -565,6 +830,15 @@ class BaseBuilder
     }
   }
   
+  /**
+   * Assigns all the command-line params for a given pass of a Utility.
+   * 
+   * @param utility
+   *   The instance of BaseUtil that is having its parameter values set.
+   * @throws PipelineException
+   *   If an attempt is made to set a command line parameter which does not implement the
+   *   {@link SimpleParamAccess} interface and the --abort command line flag has been set.
+   */
   @SuppressWarnings("unchecked")
   private final void
   assignCommandLineParams(BaseUtil utility)
@@ -687,7 +961,7 @@ class BaseBuilder
 	logMessage += "All the nodes that were registered will now be released.";
 
       if (pReleaseOnError)
-	BaseStage.cleanUpAddedNodes(pClient, pBuilderInformation.getStageState());
+	BaseStage.cleanUpAddedNodes(pClient, pStageInfo);
 
       throw new PipelineException(logMessage);
     }
@@ -697,6 +971,9 @@ class BaseBuilder
       throw new PipelineException("Execution halted.  Jobs didn't finish correctly");
   }
   
+  /**
+   * Runs the GUI mode of the Builder.
+   */
   private final void
   runGUI()
   {
@@ -705,6 +982,12 @@ class BaseBuilder
     SwingUtilities.invokeLater(new BuilderGuiThread(this));
   }
 
+  /**
+   * Test method needed for simulating Builder UI implementations while not actually running
+   * a Builder.
+   * <p>
+   * Probably not needed for anyone except core developers.
+   */
   public void
   testGuiInit()
   {
@@ -724,6 +1007,14 @@ class BaseBuilder
    * <p>
    * It is highly advised that all Builders call this as the first action in the validate
    * method in their first {@link SetupPass}.  Otherwise there may be unpredictable behavior.
+   * <p>
+   * This takes care of the following parameters.
+   * <ul>
+   * <li> UtilContext - Extracts the Util Context value and sets the Builder's context from it.
+   * <li> ReleaseOnError - Extracts the Release On Error value and sets the pReleaseOnError 
+   *      variable from it.
+   * <li> ActionOnExistence - Extracts the Action on Existance value and sets the correct 
+   *      value in the Stage Information for the Builder. 
    * @throws PipelineException 
    */
   public final void 
@@ -811,6 +1102,11 @@ class BaseBuilder
    * <p>
    * The target ConstructPass will not be run until the source ConstructPass has completed.
    * This allows for Builders to specify the order in which their passes run.
+   * 
+   * @param sourcePass
+   *   The source pass.  This is the pass that will be run first.
+   * @param targetPass
+   *   The Target Pass.  This is the pass that will be run after the source path.
    */
   protected final void
   addPassDependency
@@ -822,6 +1118,17 @@ class BaseBuilder
     pBuilderInformation.addPassDependency(sourcePass, targetPass);
   }
   
+  /**
+   * Get a Construct pass with the given name.
+   * <p>
+   * This can be used to get a Construct Pass from a Sub-Builder which can be used to
+   * setup Pass dependencies.  
+   * 
+   * @param name
+   *   The name of the Construct pass.
+   * @return
+   *   The Construct pass.
+   */
   public ConstructPass
   getConstructPass
   (
@@ -868,6 +1175,10 @@ class BaseBuilder
     pBuilderInformation.addToCheckinList(this);
   }
   
+  /**
+   * Verifies that all the needed Actions for all Builders are actually part of 
+   * the appropriate toolsets.
+   */
   private final void
   checkActions()
     throws PipelineException
@@ -885,7 +1196,10 @@ class BaseBuilder
         ("The following required plugins are missing from the toolsets.\n\n" + msg.toString());
     }
   }
-  
+
+  /**
+   * A recursive helper for checking all the actions.
+   */
   private final void
   checkActionsHelper
   (
@@ -928,9 +1242,6 @@ class BaseBuilder
    * Loops through all the ConstructPasses that have been registered. Those that have
    * dependencies as set by {@link #addPassDependency(ConstructPass, ConstructPass)} will be
    * deferred until their dependencies have run.
-   * <p>
-   * Users should never need to call this method.  It is only public to facilitate GUI
-   * interaction.
    * 
    * @throws PipelineException
    *         If there is no way to resolve the execution order due to unresolvable
@@ -990,6 +1301,14 @@ class BaseBuilder
     }
   }
   
+  /**
+   * Gets a list of Construct Passes in the order in which they will be executed.
+   * <p>
+   * This method should only be called after the Execution Order has been established,
+   * after all the Setup Passes have been run and before the Construct Passes have been
+   * run.
+   * @return
+   */
   public final List<ConstructPass>
   getExecutionOrder()
   {
@@ -1118,6 +1437,14 @@ class BaseBuilder
   /*   B U I L D E R   U T I L I T I E S                                                    */
   /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * Searches for a node in the current working area.
+   * <p>
+   * If the node exists in the current working area, no action is taken.  If the node does
+   * not exist in the current working area, but does exist in the repository, it will be 
+   * checked-out.  If the node does not exist anywhere that is accessible or if no node exists
+   * with the given name, then a {@link PipelineException} will be thrown.
+   */
   private final void
   neededNode
   (
@@ -1161,6 +1488,9 @@ class BaseBuilder
   /**
    * Disable the Actions for all the nodes that have been specified for disabling by the
    * {@link #addToDisableList(String)}.
+   * <p>
+   * Users may want to call {@link #clearDisableList()} after calls to this method in 
+   * order to clear the data structure for future use.
    */
   protected final void 
   disableActions() 
@@ -1171,12 +1501,26 @@ class BaseBuilder
     }
   }
 
+  /**
+   * Queues all the nodes that all Builder has specified for queuing using the 
+   * {@link #addToQueueList(String)} method.
+   * @return
+   */
   private final LinkedList<QueueJobGroup> 
   queueJobs() 
   {
     return queueNodes(pBuilderInformation.getQueueList());
   }
 
+  /**
+   * Queues a group of nodes and returns the job groups that were created for all of the nodes.
+   * <p>
+   * Any nodes which do not need jobs generated for them will be skipped.
+   * @param nodes
+   *  The list of node names to be queued
+   * @return
+   *  The Job Groups that were created for the nodes that were queued.
+   */
   protected final LinkedList<QueueJobGroup>
   queueNodes
   (
@@ -1197,6 +1541,24 @@ class BaseBuilder
     return toReturn;
   }
   
+  /**
+   * Return the current status of a group of queue jobs as relates to Builder
+   * execution.
+   * <p>
+   * There are only three states which this can return.
+   * <ul>
+   * <li> Complete - Indicates that all jobs in all the job groups have been successfully
+   * completed.
+   * <li> In Progress - Indicates that the jobs are still running, but that none of them have
+   * encountered any problems.
+   * <li> Problem - Indicates that at least one of the jobs which was running encountered an 
+   * error.
+   * 
+   * @param queueJobs
+   *   The list of Job Groups to search for progress.
+   * @return
+   *   The state of the job groups.
+   */
   protected final JobProgress 
   getJobProgress
   (
@@ -1251,16 +1613,25 @@ class BaseBuilder
     return JobProgress.Complete;
   }
   
+  /**
+   * Causes the current thread to wait for a group of job groups to finish execution.
+   * <p>
+   * The thread will check if all the jobs have completed.  If they have not, it will
+   * sleep for 7 seconds and check again until all the jobs in the job groups have
+   * completed.
+   * @param jobGroups
+   *   The list of job groups to wait on.
+   */
   protected final void
   waitForJobs
   (
-    LinkedList<QueueJobGroup> jobs
+    LinkedList<QueueJobGroup> jobGroups
   ) 
     throws PipelineException
   {
     pLog.log(Kind.Ops, Level.Fine, "Waiting for the jobs to finish");
     do {
-      JobProgress state = getJobProgress(jobs);
+      JobProgress state = getJobProgress(jobGroups);
       if(state.equals(JobProgress.InProgress)) {
         try {
           pLog.log(Kind.Ops, Level.Finer, 
@@ -1308,6 +1679,15 @@ class BaseBuilder
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * Adds a node to the global queue list.
+   * <p>
+   * This is the list of nodes which will be queued after all the Construct Passes have been
+   * executed.  This is a global list which is added to by all builders.
+   * 
+   * @param nodeName
+   *   The name of the node.
+   */
   protected final void 
   addToQueueList
   (
@@ -1319,6 +1699,16 @@ class BaseBuilder
       "Adding node (" + nodeName + ") to queue list in Builder (" + getPrefixedName() + ").");
   }
 
+  /**
+   * Removes a node from the global queue list.
+   * <p>
+   * Since this is a global list, this has the potential of affecting other Builders which may
+   * have added the node to the this list.  This may have the result of causing their check-ins
+   * to fail, so it should be used with caution.
+   * 
+   * @param nodeName
+   *   The name of the node.
+   */
   protected final void 
   removeFromQueueList
   (
@@ -1331,6 +1721,18 @@ class BaseBuilder
       "Builder (" + getPrefixedName() + ").");
   }
 
+  /**
+   * Adds a node to the Builder's disable list.
+   * <p>
+   * This is a Builder specific list, so adding and removing nodes will not effect
+   * other Builders.
+   * <p>
+   * All nodes in this list will have their Actions disabled when the 
+   * {@link #disableActions()} method is called.
+   * 
+   * @param nodeName
+   *   The name of the node.
+   */
   protected final void 
   addToDisableList
   (
@@ -1343,6 +1745,17 @@ class BaseBuilder
       "Builder (" + getPrefixedName() + ").");
   }
 
+  /**
+   * Removes a node from the Builder's disable list.
+   * <p>
+   * This is a Builder specific list, so adding and removing nodes will not effect
+   * other Builders.
+   * 
+   * @param nodeName
+   *   The name of the node.
+   *   
+   * @see #clearDisableList()
+   */
   protected final void 
   removeFromDisableList
   (
@@ -1355,6 +1768,18 @@ class BaseBuilder
       "Builder (" + getPrefixedName() + ").");
   }
   
+  /**
+   * Adds a node to the Builder's check-in list.
+   * <p>
+   * This is a Builder specific list, so adding and removing nodes will not effect
+   * other Builders.
+   * <p>
+   * By default, the {@link #getNodesToCheckIn()} method returns this list when it is
+   * called.
+   * 
+   * @param nodeName
+   *   The name of the node.
+   */
   protected final void 
   addToCheckInList
   (
@@ -1367,6 +1792,15 @@ class BaseBuilder
       "Builder (" + getPrefixedName() + ").");
   }
 
+  /**
+   * Removes a node from the Builder's check-in list.
+   * <p>
+   * This is a Builder specific list, so adding and removing nodes will not effect
+   * other Builders.
+   * 
+   * @param nodeName
+   *   The name of the node.
+   */
   protected final void 
   removeFromCheckInList
   (
@@ -1379,6 +1813,12 @@ class BaseBuilder
       "Builder (" + getPrefixedName() + ").");
   }
 
+  /**
+   * Clears the global queue list.
+   * <p>
+   * This method will affect all Builders.  After it is run, none of the nodes that have been
+   * added to the queue list will actually be queued.  It should only be used in extreme cases.
+   */
   protected final void 
   clearQueueList()
   {
@@ -1387,6 +1827,9 @@ class BaseBuilder
       "Clearing queue list in Builder (" + getPrefixedName() + ").");
   }
 
+  /**
+   * Clears the builder disable list.
+   */
   protected final void 
   clearDisableList()
   {
@@ -1395,18 +1838,27 @@ class BaseBuilder
       "Clearing disable list in Builder (" + getPrefixedName() + ").");
   }
 
+  /**
+   * Gets the list of all the nodes currently in the disable list.
+   */
   protected final TreeSet<String> 
   getDisableList()
   {
     return new TreeSet<String>(pNodesToDisable);
   }
-  
+
+  /**
+   * Gets a list of all the nodes currently in the check-in list. 
+   */
   protected final LinkedList<String> 
   getCheckInList()
   {
     return new LinkedList<String>(pNodesToCheckIn);
   }
   
+  /**
+   * Gets the current pass of the builder.
+   */
   @Override
   public final int
   getCurrentPass()
@@ -1436,7 +1888,7 @@ class BaseBuilder
     PluginContext plugin
   )
   {
-    pBuilderInformation.getStageState().setDefaultEditor(function, plugin);
+    pStageInfo.setDefaultEditor(function, plugin);
   }
   
   /**
@@ -1461,7 +1913,7 @@ class BaseBuilder
     TreeSet<String> keys
   )
   {
-    pBuilderInformation.getStageState().setStageFunctionSelectionKeys(function, keys);
+    pStageInfo.setStageFunctionSelectionKeys(function, keys);
   }
   
   /**
@@ -1486,7 +1938,7 @@ class BaseBuilder
     TreeSet<String> keys
   )
   {
-    pBuilderInformation.getStageState().setStageFunctionLicenseKeys(function, keys);
+    pStageInfo.setStageFunctionLicenseKeys(function, keys);
   }
   
   
@@ -1508,6 +1960,7 @@ class BaseBuilder
   {
     return null;
   }
+  
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -1580,6 +2033,13 @@ class BaseBuilder
     return (pNextSetupPass != null);
   }
 
+  /**
+   * Gets the next Builder ready to run.
+   * <p>
+   * Assigns it command line params and runs its initialize method.  Sets the 
+   * {@link #pNextBuilder} variable to be builder that is has found to run next.
+   * @throws PipelineException
+   */
   private void 
   initNextBuilder()
     throws PipelineException
@@ -1596,6 +2056,11 @@ class BaseBuilder
     }
   }
   
+  /**
+   * Runs the next setup pass.
+   * <p>
+   * This method should not be called by users. 
+   */
   public final synchronized void
   runNextSetupPass() 
     throws PipelineException
@@ -1604,18 +2069,28 @@ class BaseBuilder
     pCurrentBuilder.pCurrentPass++;
   }
   
+  /**
+   * Get the Builder which is currently being executed.
+   */
   public final BaseBuilder
   getCurrentBuilder()
   {
     return pCurrentBuilder;
   }
   
+  /**
+   * Gets the Setup Pass that is about to be run.
+   */
   public final SetupPass
   getCurrentSetupPass()
   {
     return pNextSetupPass;
   }
   
+  /**
+   * What is the value of the Release On Error variable set to.
+   * @return
+   */
   public boolean
   releaseOnError()
   {
@@ -1628,18 +2103,29 @@ class BaseBuilder
   /*   S H U T D O W N                                                                      */
   /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * Should the instance of the JVM that is running the Builder be terminated when this
+   * Builder finishes execution?
+   */
   public final boolean
   terminateAppOnQuit()
   {
     return pBuilderInformation.terminateAppOnQuit();
   }
   
+  /**
+   * Should the Builder use its own builder logging panel or should it disable it and allow 
+   * the plui instance that is running the builder to log to its own Logging Panel?
+   */
   public final boolean
   useBuilderLogging()
   {
     return pBuilderInformation.useBuilderLogging();
   }
   
+  /**
+   * Disconnect all the instances of the server clients that the Builder has been using.
+   */
   public final void
   disconnectClients()
   {
@@ -1648,11 +2134,14 @@ class BaseBuilder
     LogMgr.getInstance().cleanup();
   }
   
+  /**
+   * Releases all the nodes that were created during Builder execution.
+   */
   public final void
   releaseNodes() 
     throws PipelineException
   {
-    BaseStage.cleanUpAddedNodes(pClient, pBuilderInformation.getStageState());
+    BaseStage.cleanUpAddedNodes(pClient, pStageInfo);
   }
 
 
@@ -1660,7 +2149,18 @@ class BaseBuilder
   /*----------------------------------------------------------------------------------------*/
   /*   U T I L I T Y   M E T H O D S                                                        */
   /*----------------------------------------------------------------------------------------*/
-  
+
+  /**
+   * Utility method for adding a value to a Set only if it isn't <code>null</code>.
+   * 
+   * @param value
+   *   The value being added if it is not null. 
+   * @param set 
+   *   The set to add the value to.
+   * @return 
+   *   A boolean which indicates if the value was added.  A value of <code>false</code> means
+   *   the value passed in was <code>null</code>.
+   */
   public <E> boolean
   addNonNullValue
   (
@@ -1674,99 +2174,31 @@ class BaseBuilder
   }
   
 
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   S T A T I C   I N T E R N A L S                                                      */
-  /*----------------------------------------------------------------------------------------*/
-
-  /*
-   * Parameter names.
-   */
-  public final static String aReleaseOnError = "ReleaseOnError";
-  public final static String aActionOnExistence = "ActionOnExistence";
-  public final static String aSelectionKeys = "SelectionKeys";
-  public final static String aCheckinWhenDone = "CheckinWhenDone";
-  
-
-  
-  /*----------------------------------------------------------------------------------------*/
-  /*  I N T E R N A L S                                                                     */
-  /*----------------------------------------------------------------------------------------*/
-
-  protected BuilderInformation pBuilderInformation;
-  
-  /**
-   * Should the builder release all the registered nodes if it fails.
-   */
-  private boolean pReleaseOnError;
-  
-  /**
-   * A list of node names whose actions need to be disabled. 
-   */
-  private TreeSet<String> pNodesToDisable = new TreeSet<String>();
-  
-  /**
-   * A list of nodes which need to be checked in.
-   */
-  private LinkedList<String> pNodesToCheckIn = new LinkedList<String>();
-
-  /**
-   * The list of all associated subBuilders
-   */
-  private TreeMap<String, BaseBuilder> pSubBuilders;
-  
-  private TreeMap<String, BaseBuilder> pPreppedBuilders;
-  
-  private TreeMap<String, BaseNames> pSubNames;
-  
-  private TreeMap<String, BaseNames> pGeneratedNames;
-  
-  private ArrayList<SetupPass> pFirstLoopPasses;
-  
-  private ArrayList<ConstructPass> pSecondLoopPasses;
-  
-  private ArrayList<LockBundle> pLockBundles;
-
-  private int pCurrentPass;
-  
-  private ActionOnExistence pActionOnExistence;
-  
-  private ArrayList<ConstructPass> pExecutionOrder;
-  
-  protected StageInformation pStageInfo; 
-  
-  
-  /*----------------------------------------------------------------------------------------*/
-  /*  G U I   S P E C I F I C   I N T E R N A L S                                           */
-  /*----------------------------------------------------------------------------------------*/
-
-  private BaseBuilder pCurrentBuilder;
-  
-  private BaseBuilder pNextBuilder;
-  
-  private boolean pInitialized;
-  
-  /**
-   * List of {@link SetupPass SetupPasses} which have not been run yet. 
-   */
-  private LinkedList<SetupPass> pRemainingFirstLoopPasses;
-  
-  private SetupPass pNextSetupPass;
-  
-  private JBuilderParamDialog pGuiDialog;
-
-  private boolean pJobsFinishedCorrectly;
-  
-  
   
   /*----------------------------------------------------------------------------------------*/
   /*  E N U M E R A T I O N S                                                               */
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * Enum that represents the different states a group of Job Groups can be in.
+   */
   protected 
   enum JobProgress
   {
-    Complete, Problem, InProgress
+    /**
+     * All the jobs in the job groups have completed successfully.
+     */
+    Complete, 
+    /**
+     * At least one job in the job groups has failed.
+     */
+    Problem, 
+    
+    /**
+     * At least one job in the job groups is still running or waiting to run, but no
+     * jobs have failed yet. 
+     */
+    InProgress
   }
   
   /**
@@ -1777,7 +2209,7 @@ class BaseBuilder
    * Each Setup Pass is broken down into three phases.  The distinction between these three
    * phases is purely cosmetic, as there is no difference in how any of them are invoked.  It
    * exists to make sub-classing easy, allowing specific sorts of functionality to be
-   * overriden without having to change other parts. 
+   * overridden without having to change other parts. 
    */
   public 
   class SetupPass
@@ -2056,6 +2488,11 @@ class BaseBuilder
   /*  P U B L I C   S U B C L A S S E S                                                     */
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * Thread for use with the Builder GUI code.
+   * <p>
+   * Users should never need to call this and unpredicatable results may occur if it is used.
+   */
   private
   class BuilderGuiThread
     extends Thread
@@ -2108,6 +2545,11 @@ class BaseBuilder
     private BaseBuilder pBuilder;
   }
   
+  /**
+   * Thread for use with the Builder GUI code.
+   * <p>
+   * Users should never need to call this and unpredicatable results may occur if it is used.
+   */
   public class
   ExecutionOrderThread
     extends Thread
@@ -2127,6 +2569,11 @@ class BaseBuilder
     }
   }
   
+  /**
+   * Thread for use with the Builder GUI code.
+   * <p>
+   * Users should never need to call this and unpredicatable results may occur if it is used.
+   */
   public 
   class CheckinTask
     extends Thread
@@ -2145,6 +2592,11 @@ class BaseBuilder
     }
   }
   
+  /**
+   * Thread for use with the Builder GUI code.
+   * <p>
+   * Users should never need to call this and unpredicatable results may occur if it is used.
+   */
   public
   class QueueThread
     extends Thread
@@ -2165,6 +2617,11 @@ class BaseBuilder
     }
   }
   
+  /**
+   * Thread for use with the Builder GUI code.
+   * <p>
+   * Users should never need to call this and unpredicatable results may occur if it is used.
+   */
   public
   class AfterCheckinTask
     extends Thread
@@ -2177,6 +2634,11 @@ class BaseBuilder
     }
   }
   
+  /**
+   * Thread for use with the Builder GUI code.
+   * <p>
+   * Users should never need to call this and unpredicatable results may occur if it is used.
+   */
   public class AfterQueueTask
   extends Thread
   {
@@ -2187,4 +2649,89 @@ class BaseBuilder
       pGuiDialog.afterQueue(pJobsFinishedCorrectly); 
     }
   }
+  
+
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  /*
+   * Parameter names.
+   */
+  public final static String aReleaseOnError = "ReleaseOnError";
+  public final static String aActionOnExistence = "ActionOnExistence";
+  public final static String aSelectionKeys = "SelectionKeys";
+  public final static String aCheckinWhenDone = "CheckinWhenDone";
+  
+
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*  I N T E R N A L S                                                                     */
+  /*----------------------------------------------------------------------------------------*/
+
+  protected BuilderInformation pBuilderInformation;
+  
+  /**
+   * Should the builder release all the registered nodes if it fails.
+   */
+  private boolean pReleaseOnError;
+  
+  /**
+   * A list of node names whose actions need to be disabled. 
+   */
+  private TreeSet<String> pNodesToDisable = new TreeSet<String>();
+  
+  /**
+   * A list of nodes which need to be checked in.
+   */
+  private LinkedList<String> pNodesToCheckIn = new LinkedList<String>();
+
+  /**
+   * The list of all associated subBuilders
+   */
+  private TreeMap<String, BaseBuilder> pSubBuilders;
+  
+  private TreeMap<String, BaseBuilder> pPreppedBuilders;
+  
+  private TreeMap<String, BaseNames> pSubNames;
+  
+  private TreeMap<String, BaseNames> pGeneratedNames;
+  
+  private ArrayList<SetupPass> pFirstLoopPasses;
+  
+  private ArrayList<ConstructPass> pSecondLoopPasses;
+  
+  private ArrayList<LockBundle> pLockBundles;
+
+  private int pCurrentPass;
+  
+  private ActionOnExistence pActionOnExistence;
+  
+  private ArrayList<ConstructPass> pExecutionOrder;
+  
+  protected StageInformation pStageInfo; 
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*  G U I   S P E C I F I C   I N T E R N A L S                                           */
+  /*----------------------------------------------------------------------------------------*/
+
+  private BaseBuilder pCurrentBuilder;
+  
+  private BaseBuilder pNextBuilder;
+  
+  private boolean pInitialized;
+  
+  /**
+   * List of {@link SetupPass SetupPasses} which have not been run yet. 
+   */
+  private LinkedList<SetupPass> pRemainingFirstLoopPasses;
+  
+  private SetupPass pNextSetupPass;
+  
+  private JBuilderParamDialog pGuiDialog;
+
+  private boolean pJobsFinishedCorrectly;
+
 }
