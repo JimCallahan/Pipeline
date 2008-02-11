@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.106 2008/02/06 08:00:36 jesse Exp $
+// $Id: JNodeViewerPanel.java,v 1.107 2008/02/11 22:21:18 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -147,9 +147,7 @@ class JNodeViewerPanel
       pPanelPopup.addSeparator();
       
       JMenu menu = new JMenu("Launch Builder");
-      pLaunchBuilderMenu= menu;
-      //item.setActionCommand("launch-builder");
-      //item.addActionListener(this);
+      pLaunchBuilderMenu = menu;
       pPanelPopup.add(menu);
       
       pPanelPopup.addSeparator();
@@ -1534,8 +1532,8 @@ class JNodeViewerPanel
   {
     if(pRefreshDefaultToolMenu) {
       UIMaster master = UIMaster.getInstance();
-      master.rebuildDefaultBuilderCollectionMenu(pPanelPopup, pGroupID, pLaunchBuilderMenu, this, !isLocked());
-      
+      master.rebuildDefaultBuilderCollectionMenu(pPanelPopup, pGroupID, pLaunchBuilderMenu, 
+                                                 this, !isLocked());
       pRefreshDefaultToolMenu = false; 
     }    
   }
