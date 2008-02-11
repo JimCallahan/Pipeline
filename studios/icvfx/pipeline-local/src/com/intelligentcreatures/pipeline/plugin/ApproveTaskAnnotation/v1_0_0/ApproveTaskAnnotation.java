@@ -1,4 +1,4 @@
-// $Id: ApproveTaskAnnotation.java,v 1.2 2008/02/11 03:17:39 jim Exp $
+// $Id: ApproveTaskAnnotation.java,v 1.3 2008/02/11 22:56:00 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.ApproveTaskAnnotation.v1_0_0;
 
@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import us.temerity.pipeline.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   A P P R O V E   T A S K  A N N O T A T I O N                                           */
+/*   A P P R O V E   T A S K   A N N O T A T I O N                                          */
 /*------------------------------------------------------------------------------------------*/
 
 /**
@@ -163,7 +163,7 @@ class ApproveTaskAnnotation
          "collection to run after the task has been approved in order to update and " + 
          "check-in this node.  If not given, the approval network will need to be " + 
          "manually updated and checked-in.", 
-         null); 
+          new BuilderID("WtmBuilders", new VersionID("1.0.0"), "ICVFX", "ApproveTask")); 
       addParam(param);
     }
 
