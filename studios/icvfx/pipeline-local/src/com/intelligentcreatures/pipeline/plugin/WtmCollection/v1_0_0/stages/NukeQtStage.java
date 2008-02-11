@@ -1,4 +1,4 @@
-// $Id: NukeQtStage.java,v 1.2 2008/02/07 15:46:42 jim Exp $
+// $Id: NukeQtStage.java,v 1.3 2008/02/11 23:00:52 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
 
@@ -38,27 +38,11 @@ class NukeQtStage
    * @param nodeName
    *   The name of the node that is to be created.
    * 
-   * @param suffix
-   *   The suffix for the created node.
-   * 
-   * @param source
+   * @param imageSource
    *   The name of source images.
    * 
-   * @param imageNumber 
-   *   Specifies the frame number of image from the source sequence to process.
-   * 
-   * @param thumbnailSize
-   *   The image resolution of the generated thumbnail. 
-   * 
-   * @param addAlpha
-   *   Whether to add an solid alpha channel to the input image before resizing and/or
-   *   compositing over the optional background layer.
-   * 
-   * @param overBackground
-   *   Whether to composite the thumbnail images over a constant colored background layer.
-   * 
-   * @param backgroundColor
-   *   The thumbnail is composited over a background layer of this constant color.
+   * @param fps
+   *   The frames per second of generated movie.
    */
   public
   NukeQtStage
@@ -67,7 +51,7 @@ class NukeQtStage
    UtilContext context,
    MasterMgrClient client,
    String nodeName, 
-   String source,
+   String imageSource,
    double fps
   )
     throws PipelineException
@@ -79,8 +63,8 @@ class NukeQtStage
           null,
           new PluginContext("NukeQt"));
 
-    addLink(new LinkMod(source, LinkPolicy.Dependency));
-    addSingleParamValue("ImageSource", source);
+    addLink(new LinkMod(imageSource, LinkPolicy.Dependency));
+    addSingleParamValue("ImageSource", imageSource);
     addSingleParamValue("FPS", fps);
   }
   
