@@ -1,4 +1,4 @@
-// $Id: PythonApp.java,v 1.1 2007/05/06 05:57:03 jim Exp $
+// $Id: PythonApp.java,v 1.2 2008/02/11 03:18:35 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -75,6 +75,25 @@ class PythonApp
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
 	 ex.getMessage()); 
+    }    
+    catch (PyException pye) {
+      if(Py.matchException(pye, Py.SystemExit)) {
+        PyObject value = pye.value;
+        if(value instanceof PyInstance) {
+          PyObject pycode = value.__findattr__("code");
+          if(pycode instanceof PyInteger) {
+            PyInteger code = (PyInteger) pycode;
+            System.exit(code.getValue());
+          }
+          else if(pycode instanceof PyNone) {
+            System.exit(0);
+          } 
+        }
+      }
+
+      LogMgr.getInstance().log
+        (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+         getFullMessage(pye));      
     }
     catch(Exception ex) {
       LogMgr.getInstance().log

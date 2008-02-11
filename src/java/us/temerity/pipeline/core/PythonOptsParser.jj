@@ -255,7 +255,7 @@ CommandLine()
       if((pScriptPath != null) && pReadFromStdin)
         throw new ParseException
           ("The --file and --stdin options are mutually exclusive!");
-      
+
       if(pScriptPath != null) 
         pApp.executeScript(pScriptPath, pPythonArgs);
       else if(pReadFromStdin) 
