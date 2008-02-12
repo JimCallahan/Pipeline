@@ -1,4 +1,4 @@
-// $Id: ApproveTaskBuilder.java,v 1.2 2008/02/11 23:10:25 jim Exp $
+// $Id: ApproveTaskBuilder.java,v 1.3 2008/02/12 00:11:36 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -355,7 +355,7 @@ class ApproveTaskBuilder
            and change the util context to use it instead for all future operations */
       { 
 	String tempView = 
-	  (getName() + "-" + pProjectName + "-" + pTaskName + "-" + pTaskType); 
+	  ("ApproveTask" + "-" + pProjectName + "-" + pTaskName + "-" + pTaskType); 
         tempView = tempView.replaceAll(" ", "_");
 	
 	setContext(new UtilContext(pContext.getAuthor(), tempView, pContext.getToolset()));
