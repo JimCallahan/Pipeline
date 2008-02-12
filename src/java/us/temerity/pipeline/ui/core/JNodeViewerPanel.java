@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.108 2008/02/12 00:10:35 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.109 2008/02/12 07:42:58 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -6954,7 +6954,9 @@ class JNodeViewerPanel
   {
     public 
     ToolShowLogsTask() 
-    {}
+    {
+      super("JNodeViewerPanel:ToolShowLogsTask");
+    }
 
     
     public void 
