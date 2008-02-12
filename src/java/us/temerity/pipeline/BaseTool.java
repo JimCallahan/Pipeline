@@ -1,4 +1,4 @@
-// $Id: BaseTool.java,v 1.16 2007/07/03 01:38:12 jim Exp $
+// $Id: BaseTool.java,v 1.17 2008/02/12 00:10:35 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -297,7 +297,7 @@ class BaseTool
   /**
    * Whether to perform a node status update upon successfully executing the tool. <P> 
    * 
-   * By default this method returns <CODE>true</CODE>.  Subclasses which which to skip
+   * By default this method returns <CODE>true</CODE>.  Subclasses which wish to skip
    * node status update should override this method to return <CODE>false</CODE>.
    */ 
   public boolean
@@ -309,7 +309,7 @@ class BaseTool
   /**
    * The fully resolved names of the root nodes to display on exit.
    * 
-   * By default this method returns <CODE>pRoots</CODE>.  Subclasses which which to modify
+   * By default this method returns <CODE>pRoots</CODE>.  Subclasses which wish to modify
    * the set of nodes updated when the tool exits should modify the contents of 
    * <CODE>pRoots</CODE> or override this method to return the specific root nodes they wish 
    * to be displayed. 
@@ -318,6 +318,22 @@ class BaseTool
   rootsOnExit() 
   {
     return pRoots; 
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether to display the Log History dialog when running this tool.
+   * 
+   * By default this method returns <CODE>false</CODE>.  Subclasses which wish to display
+   * verbose progress messages in the log should override this method to return 
+   * <CODE>true</CODE>.
+   */ 
+  public boolean 
+  showLogHistory() 
+  {
+    return false;
   }
 
 

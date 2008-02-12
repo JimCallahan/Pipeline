@@ -1,4 +1,4 @@
-// $Id: ApproveTaskTool.java,v 1.1 2008/02/11 23:02:22 jim Exp $
+// $Id: ApproveTaskTool.java,v 1.2 2008/02/12 00:11:00 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.ApproveTaskTool.v1_0_0;
 
@@ -46,14 +46,26 @@ class ApproveTaskTool
   /*   T O O L   O V E R R I D E S                                                          */
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * Whether to perform a node status update upon successfully executing the tool. <P> 
+   */ 
   @Override
   public boolean 
   updateOnExit()
   {
     return false;
   }
-
   
+  /**
+   * Whether to display the Log History dialog when running this tool.
+   */ 
+  public boolean 
+  showLogHistory() 
+  {
+    return true;
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   P H A S E S                                                                          */

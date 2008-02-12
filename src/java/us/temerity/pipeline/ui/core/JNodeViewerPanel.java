@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.107 2008/02/11 22:21:18 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.108 2008/02/12 00:10:35 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -6914,6 +6914,9 @@ class JNodeViewerPanel
       try {
 	SwingUtilities.invokeLater(new ToolInputTask(pTool, pGID, this));
 
+        if(pTool.showLogHistory()) 
+          SwingUtilities.invokeLater(new ToolShowLogsTask());
+
 	synchronized(pLock) {
 	  while(pSuccess == null) {
 	    pLock.wait();
@@ -6940,6 +6943,26 @@ class JNodeViewerPanel
     private Object    pLock; 
     private Boolean   pSuccess;
     private String    pMessage; 
+  }
+
+  /** 
+   * Show the Log History dialog with tool output enabled.
+   */ 
+  private
+  class ToolShowLogsTask
+    extends Thread
+  {
+    public 
+    ToolShowLogsTask() 
+    {}
+
+    
+    public void 
+    run() 
+    {	
+      UIMaster master = UIMaster.getInstance();
+      master.showLogsDialog(true);
+    }
   }
 
   /** 
