@@ -1,4 +1,4 @@
-// $Id: PlatesBuilder.java,v 1.11 2008/02/11 22:59:23 jim Exp $
+// $Id: PlatesBuilder.java,v 1.12 2008/02/12 01:23:36 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -386,8 +386,11 @@ class PlatesBuilder
 
       /* register the project-wide required nodes */ 
       {
-	pPlatesOriginalGridNodeName = pProjectNamer.getPlatesOriginalGridNode();
-	pRequiredNodeNames.add(pPlatesOriginalGridNodeName); 
+	pPlatesRedCheckerNodeName = pProjectNamer.getPlatesRedCheckerNode();
+	pRequiredNodeNames.add(pPlatesRedCheckerNodeName); 
+
+	pPlatesGreenCheckerNodeName = pProjectNamer.getPlatesGreenCheckerNode();
+	pRequiredNodeNames.add(pPlatesGreenCheckerNodeName); 
 
 	pGridGradeWarpNodeName = pProjectNamer.getGridGradeWarpNode();
 	pRequiredNodeNames.add(pGridGradeWarpNodeName); 
@@ -622,7 +625,7 @@ class PlatesBuilder
 	{
 	  PFTrackBuildStage stage = 
 	    new PFTrackBuildStage(pStageInfo, pContext, pClient, 
-				  solveDistortionNodeName, pPlatesOriginalGridNodeName, 
+				  solveDistortionNodeName, pPlatesRedCheckerNodeName, 
 				  pBackgroundPlateNodeName, vfxShotDataNodeName); 
 	  addTaskAnnotation(stage, NodePurpose.Edit); 
 	  stage.build();  
@@ -633,7 +636,7 @@ class PlatesBuilder
 	{
 	  DistortedGridStage stage = 
 	    new DistortedGridStage(pStageInfo, pContext, pClient, 
-				   pDistortedGridNodeName, pPlatesOriginalGridNodeName, 
+				   pDistortedGridNodeName, pPlatesRedCheckerNodeName, 
 				   solveDistortionNodeName);
 	  addTaskAnnotation(stage, NodePurpose.Prepare); 
 	  stage.build();  
@@ -654,7 +657,7 @@ class PlatesBuilder
 	  NukeReadReformatStage stage = 
 	    new NukeReadReformatStage(pStageInfo, pContext, pClient, 
 				      reformatOriginalNodeName, 
-				      pPlatesOriginalGridNodeName, pDistortedGridNodeName); 
+				      pPlatesGreenCheckerNodeName, pDistortedGridNodeName); 
 	  addTaskAnnotation(stage, NodePurpose.Prepare); 
 	  stage.build();  
 	}
@@ -670,7 +673,7 @@ class PlatesBuilder
 	  NukeCatStage stage = 
 	    new NukeCatStage(pStageInfo, pContext, pClient, 
 			     pGridAlignNodeName, sources); 
-	  stage.addLink(new LinkMod(pPlatesOriginalGridNodeName, LinkPolicy.Reference));
+	  stage.addLink(new LinkMod(pPlatesGreenCheckerNodeName, LinkPolicy.Reference));
 	  stage.addLink(new LinkMod(pDistortedGridNodeName, LinkPolicy.Reference));
 	  addTaskAnnotation(stage, NodePurpose.Edit); 
 	  stage.build(); 
@@ -964,9 +967,10 @@ class PlatesBuilder
   private TreeSet<String> pMiscReferenceNodeNames; 
 
   /**
-   * The fully resolved name of the original undistored grid node.
+   * The fully resolved name of the original undistored checkerboard nodes.
    */ 
-  private String pPlatesOriginalGridNodeName; 
+  private String pPlatesRedCheckerNodeName; 
+  private String pPlatesGreenCheckerNodeName; 
 
   /**
    * The fully resolved name of the node containing the distorted reference 

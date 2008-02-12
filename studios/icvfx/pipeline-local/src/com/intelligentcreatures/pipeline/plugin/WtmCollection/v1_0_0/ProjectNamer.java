@@ -1,4 +1,4 @@
-// $Id: ProjectNamer.java,v 1.6 2008/02/07 14:14:33 jim Exp $
+// $Id: ProjectNamer.java,v 1.7 2008/02/12 01:23:36 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -109,14 +109,26 @@ class ProjectNamer
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Returns the fully resolved node name of the original undistored reference grid for
-   * use in calibrating lens distortion.
+   * Returns the fully resolved node name of the original undistored red checkerboard 
+   * reference image for use in calibrating lens distortion.
    */ 
   public String
-  getPlatesOriginalGridNode() 
+  getPlatesRedCheckerNode() 
   {
     Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Plates), 
-			 new Path(AppDirs.Images.toDirPath(), "original_grid"));
+			 new Path(AppDirs.Images.toDirPath(), "red_checker"));
+    return path.toString();
+  }
+  
+  /**
+   * Returns the fully resolved node name of the original undistored green checkerboard 
+   * reference image for use in calibrating lens distortion.
+   */ 
+  public String
+  getPlatesGreenCheckerNode() 
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Plates), 
+			 new Path(AppDirs.Images.toDirPath(), "green_checker"));
     return path.toString();
   }
   
