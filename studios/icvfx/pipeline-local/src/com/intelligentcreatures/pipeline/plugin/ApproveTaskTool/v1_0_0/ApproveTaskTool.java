@@ -1,4 +1,4 @@
-// $Id: ApproveTaskTool.java,v 1.2 2008/02/12 00:11:00 jim Exp $
+// $Id: ApproveTaskTool.java,v 1.3 2008/02/12 07:42:10 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.ApproveTaskTool.v1_0_0;
 
@@ -267,6 +267,21 @@ class ApproveTaskTool
              vpanel, "", sVSize, 5, true, 
              "The check-in message describing the reason for approving this task.");
         }
+
+	UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
+
+	{
+	  pWaitOnBuilderField = 
+            UIFactory.createTitledBooleanField
+	    (tpanel, "Wait on Builder:", sTSize, 
+	     vpanel, sVSize,
+	     "Whether to have the tool wait for the builder to complete before returning " + 
+	     "control back to the user.  If set to (NO), then the builder will be run in " + 
+	     "the background.  In either case, builder progress can be monitored in the " + 
+	     "Log History dialog."); 
+
+	  pWaitOnBuilderField.setValue(true); 
+	}
       }
       
       JToolDialog diag = 
@@ -274,7 +289,7 @@ class ApproveTaskTool
 
       diag.setVisible(true);
       if(diag.wasConfirmed()) 
-	return " : Running Approval Builder";
+	return " : Approval Builder Started";
 
       return null;
     }
@@ -289,92 +304,153 @@ class ApproveTaskTool
     )
       throws PipelineException
     {
-      /* construct the builder parameters */ 
-      MultiMap<String, String> params = new MultiMap<String, String>();
-      {
-        LinkedList<String> bkey = new LinkedList<String>();  
-        bkey.add(pApproveBuilderID.getBuilderName());
-
-        {
-          LinkedList<String> keys = new LinkedList<String>(bkey); 
-          keys.add(BaseUtil.aUtilContext);
-          keys.add(UtilContextUtilityParam.aAuthor); 
-          
-          params.putValue(keys, getAuthor(), true);
-        }
-        
-        {
-          LinkedList<String> keys = new LinkedList<String>(bkey); 
-          keys.add(BaseUtil.aUtilContext);
-          keys.add(UtilContextUtilityParam.aView); 
-          
-          params.putValue(keys, getView(), true);
-        }
-
-        {
-          LinkedList<String> keys = new LinkedList<String>(bkey); 
-          keys.add(aApproveNode);
-
-          params.putValue(keys, pApproveNode, true);
-        }
-
-        {
-          LinkedList<String> keys = new LinkedList<String>(bkey); 
-          keys.add(aSubmitNode);
-
-          params.putValue(keys, pSubmitNode, true);
-        }
-
-        {
-          LinkedList<String> keys = new LinkedList<String>(bkey); 
-          keys.add(aSubmitVersion);
-
-          VersionID vid = pSubmitVersionIDs.get(pSubmitVersionField.getSelectedIndex());
-
-          params.putValue(keys, vid.toString(), true);
-        }
-
-        {
-          LinkedList<String> keys = new LinkedList<String>(bkey); 
-          keys.add(aCheckInLevel);
-
-          VersionID.Level level = 
-            VersionID.Level.all().get(pCheckInLevelField.getSelectedIndex());
-
-          params.putValue(keys, level.toString(), true);
-        }
-
-        {
-          LinkedList<String> keys = new LinkedList<String>(bkey); 
-          keys.add(aApprovalMessage);
-
-          String msg = pApprovalMessageArea.getText();
-
-          params.putValue(keys, msg, true);
-        }
+      if(pWaitOnBuilderField.getValue()) {
+	try {
+	  runBuilder(mclient, qclient); 
+	} 
+	catch(PipelineException ex) {
+	  throw ex; 
+	}
+	catch(Exception ex) {
+	  throw new PipelineException(getFullMessage(ex));
+	}
       }
-
-      /* run the builder... */ 
-      try {
-        BaseBuilderCollection collection = 
-          PluginMgrClient.getInstance().newBuilderCollection
-          (pApproveBuilderID.getName(), 
-           pApproveBuilderID.getVersionID(), 
-           pApproveBuilderID.getVendor()); 
-        
-        collection.instantiateBuilder
-          (pApproveBuilderID.getBuilderName(), mclient, qclient, 
-           false, true, false, false, params);  
-      } 
-      catch(Exception ex) {
-        throw new PipelineException(ex); 
+      else {
+	RunBuilderTask task = new RunBuilderTask();
+	task.start(); 
       }
-
+      
       return NextPhase.Finish;
     }
   }
 
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   B U I L D E R   E X E C U T I O N                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Instantiate and run the builder.
+   */ 
+  private void 
+  runBuilder
+  (
+   MasterMgrClient mclient,
+   QueueMgrClient qclient
+  ) 
+    throws PipelineException
+  {	
+    /* construct the builder parameters */ 
+    MultiMap<String, String> params = new MultiMap<String, String>();
+    {
+      LinkedList<String> bkey = new LinkedList<String>();  
+      bkey.add(pApproveBuilderID.getBuilderName());
+
+      {
+	LinkedList<String> keys = new LinkedList<String>(bkey); 
+	keys.add(BaseUtil.aUtilContext);
+	keys.add(UtilContextUtilityParam.aAuthor); 
+          
+	params.putValue(keys, getAuthor(), true);
+      }
+        
+      {
+	LinkedList<String> keys = new LinkedList<String>(bkey); 
+	keys.add(BaseUtil.aUtilContext);
+	keys.add(UtilContextUtilityParam.aView); 
+          
+	params.putValue(keys, getView(), true);
+      }
+
+      {
+	LinkedList<String> keys = new LinkedList<String>(bkey); 
+	keys.add(aApproveNode);
+
+	params.putValue(keys, pApproveNode, true);
+      }
+
+      {
+	LinkedList<String> keys = new LinkedList<String>(bkey); 
+	keys.add(aSubmitNode);
+
+	params.putValue(keys, pSubmitNode, true);
+      }
+
+      {
+	LinkedList<String> keys = new LinkedList<String>(bkey); 
+	keys.add(aSubmitVersion);
+
+	VersionID vid = pSubmitVersionIDs.get(pSubmitVersionField.getSelectedIndex());
+
+	params.putValue(keys, vid.toString(), true);
+      }
+
+      {
+	LinkedList<String> keys = new LinkedList<String>(bkey); 
+	keys.add(aCheckInLevel);
+
+	VersionID.Level level = 
+	  VersionID.Level.all().get(pCheckInLevelField.getSelectedIndex());
+
+	params.putValue(keys, level.toString(), true);
+      }
+
+      {
+	LinkedList<String> keys = new LinkedList<String>(bkey); 
+	keys.add(aApprovalMessage);
+
+	String msg = pApprovalMessageArea.getText();
+
+	params.putValue(keys, msg, true);
+      }
+    }
+
+    /* create a new builder collection */ 
+    BaseBuilderCollection collection = 
+      PluginMgrClient.getInstance().newBuilderCollection
+      (pApproveBuilderID.getName(), 
+       pApproveBuilderID.getVersionID(), 
+       pApproveBuilderID.getVendor()); 
+    
+    /* instantiate and run the builder... */ 
+    collection.instantiateBuilder
+      (pApproveBuilderID.getBuilderName(), null, null, 
+       false, true, false, false, params);  
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Generate a string containing both the exception message and stack trace. 
+   * 
+   * @param ex 
+   *   The thrown exception.   
+   */ 
+  protected String 
+  getFullMessage
+  (
+   Throwable ex
+  ) 
+  {
+    StringBuilder buf = new StringBuilder();
+     
+    if(ex.getMessage() != null) 
+      buf.append(ex.getMessage() + "\n\n"); 	
+    else if(ex.toString() != null) 
+      buf.append(ex.toString() + "\n\n"); 	
+      
+    buf.append("Stack Trace:\n");
+    StackTraceElement stack[] = ex.getStackTrace();
+    int wk;
+    for(wk=0; wk<stack.length; wk++) 
+      buf.append("  " + stack[wk].toString() + "\n");
+   
+    return (buf.toString());
+  }
   
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   H E L P E R S  (these should become part of a CommonTaskUtils eventually)            */
@@ -509,7 +585,46 @@ class ApproveTaskTool
     return purpose;
   }
 
- 
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L   C L A S S E S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /** 
+   * Run the builder in a seperate thread so control can be returned to plui(1).
+   */ 
+  private
+  class RunBuilderTask
+    extends Thread
+  {
+    public 
+    RunBuilderTask() 
+    {
+      super("ApproveTaskTool:RunBuilderTask");
+    }
+    
+    public void 
+    run() 
+    {	
+      try {
+	runBuilder(null, null); 
+      } 
+      catch(PipelineException ex) {
+        LogMgr.getInstance().log
+	  (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+	   ex.getMessage());
+      }
+      catch(Exception ex) {
+        LogMgr.getInstance().log
+	  (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+	   getFullMessage(ex));
+      }
+    }
+  }
+
+
   
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
@@ -579,5 +694,10 @@ class ApproveTaskTool
    * The check-in message text area.
    */ 
   private JTextArea pApprovalMessageArea;
+
+  /**
+   * Whether the tool should wait on the builder to complete.
+   */ 
+  private JBooleanField  pWaitOnBuilderField; 
 
 }
