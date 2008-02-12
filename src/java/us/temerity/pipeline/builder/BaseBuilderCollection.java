@@ -1,4 +1,4 @@
-// $Id: BaseBuilderCollection.java,v 1.9 2008/02/11 03:16:53 jim Exp $
+// $Id: BaseBuilderCollection.java,v 1.10 2008/02/12 19:51:02 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -304,6 +304,10 @@ class BaseBuilderCollection
    *   that needs to continue running after the builder has completed.  If this is set
    *   to false, then whatever program invokes the builder is responsible for making sure
    *   the jvm is terminated.
+   * @param useBuilderLogging
+   *   Should the builder use its own internal log panel or should it use the built in
+   *   Log History panel in plui.  Setting this to false when not running the builder
+   *   through plui will result in no logging output.
    * @throws PipelineException whenever anything goes wrong with instantiating the builder.
    *   This can be for a variety of reasons, including a misnamed builder, bad parameters,
    *   missing classes, etc.
@@ -398,6 +402,8 @@ class BaseBuilderCollection
       LogMgr.getInstance().log
         (LogMgr.Kind.Ops, LogMgr.Level.Severe,
          ex.getMessage());
+      if (!info.useBuilderLogging() && !info.usingGui())
+        throw ex; 
     }
     catch (NoSuchMethodException ex) {
       String message = 
@@ -409,6 +415,8 @@ class BaseBuilderCollection
         (LogMgr.Kind.Ops, LogMgr.Level.Severe,
          message);
       ex.printStackTrace();
+      if (!info.useBuilderLogging() && !info.usingGui())
+        throw new PipelineException(message); 
     }
     catch (InvocationTargetException ex) {
       Throwable th = ex.getTargetException();
@@ -420,14 +428,20 @@ class BaseBuilderCollection
       LogMgr.getInstance().log
         (LogMgr.Kind.Ops, LogMgr.Level.Severe,
          message);
+      if (!info.useBuilderLogging() && !info.usingGui())
+        throw new PipelineException(message); 
     }
     catch(Exception ex) {
       LogMgr.getInstance().log
         (LogMgr.Kind.Ops, LogMgr.Level.Severe,
          getFullMessage(ex));
         ex.printStackTrace();
+        if (!info.useBuilderLogging() && !info.usingGui())
+          throw new PipelineException(ex); 
     }
   }
+  
+  
   
 
   
