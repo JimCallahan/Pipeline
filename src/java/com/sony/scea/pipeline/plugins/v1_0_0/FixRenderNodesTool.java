@@ -72,7 +72,7 @@ public class FixRenderNodesTool extends BaseTool
       select.add("Lair");
       select.add("MentalRay");
       lic.add("MentalRay");
-      JobReqs reqs = new JobReqs(50, 15, 4.5f, 1024, 1024, lic, select);
+      JobReqs reqs = new JobReqs(50, 15, 4.5f, 1024, 1024, lic, select, null);
       reqs.setMinMemory(3221225472l);
       reqs.setMinDisk(536870912l);
       mod.setJobRequirements(reqs);

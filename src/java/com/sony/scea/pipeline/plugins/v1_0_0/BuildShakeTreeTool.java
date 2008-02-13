@@ -254,7 +254,7 @@ public class BuildShakeTreeTool extends BaseTool {
 		NodeMod compMod = null;
 		{
 			String compName = compFolder+ "/" + filePrefix+"comp";
-			mclient.clone(pUser, pView, pPrimary, compName, false, true, true); 
+			mclient.clone(pUser, pView, pPrimary, compName, false, true, true, true); 
 			compMod = mclient.getWorkingVersion(pUser, pView, compName);	
 			compMod.setAction(null);
 		}

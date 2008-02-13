@@ -33,7 +33,12 @@ public class DeleteManyTool extends BaseTool
    {
       for (String s : pSelected.keySet())
       {
-	 mclient.delete(s, false);
+	 try {
+	  mclient.delete(s, false);
+	}
+	catch (PipelineException ex) {
+	  ex.printStackTrace();
+	}
       }
       return false;
    }

@@ -46,10 +46,13 @@ public class SonyConstants
       ArrayList<String> globalMel = Globals.getChildrenNodes(w, PATH_globalMelPath);
 
       TreeMap<String, String> toReturn = new TreeMap<String, String>();
-      for (String path : globalMel)
-      {
-	 Path p = new Path(path);
-	 toReturn.put("global-" + p.getName(), PATH_globalMelPath + "/" + path);
+      
+      if (globalMel  != null ) {
+	for (String path : globalMel)
+	{
+	  Path p = new Path(path);
+	  toReturn.put("global-" + p.getName(), PATH_globalMelPath + "/" + path);
+	}
       }
       if ( project != null )
       {

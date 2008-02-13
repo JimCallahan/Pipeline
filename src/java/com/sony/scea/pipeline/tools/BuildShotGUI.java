@@ -1179,20 +1179,20 @@ public class BuildShotGUI extends BootApp implements ActionListener
 
       logLine("Queuing the jobs now.");
       if ( advancedRender )
-	 queueJobs.add(client.submitJobs(user, view, sh.geoTopGroup, null));
+	 queueJobs.addAll(client.submitJobs(user, view, sh.geoTopGroup, null));
       if ( buildTestImages )
-	 queueJobs.add(client.submitJobs(user, view, sh.initialImages, null));
+	 queueJobs.addAll(client.submitJobs(user, view, sh.initialImages, null));
       if ( buildLight && ( ( buildSwitch && buildPreLight ) || !buildTestImages ) )
-	 queueJobs.add(client.submitJobs(user, view, sh.lightScene, null));
+	 queueJobs.addAll(client.submitJobs(user, view, sh.lightScene, null));
       if ( !buildTestImages && buildLight && buildSwitch && buildPreLight )
-	 queueJobs.add(client.submitJobs(user, view, sh.testLightScene, null));
+	 queueJobs.addAll(client.submitJobs(user, view, sh.testLightScene, null));
       if ( !advancedRender && !buildLight && buildPreLight )
-	 queueJobs.add(client.submitJobs(user, view, sh.preLightScene, null));
+	 queueJobs.addAll(client.submitJobs(user, view, sh.preLightScene, null));
       if ( !advancedRender && !buildLight && buildSwitch )
-	 queueJobs.add(client.submitJobs(user, view, sh.switchLightScene, null));
+	 queueJobs.addAll(client.submitJobs(user, view, sh.switchLightScene, null));
       if ( !buildTestImages && !advancedRender && !buildLight && !buildPreLight
 	    && !buildSwitch )
-	 queueJobs.add(client.submitJobs(user, view, sh.animScene, null));
+	 queueJobs.addAll(client.submitJobs(user, view, sh.animScene, null));
 
       boolean done = false;
       boolean error = false;
@@ -1433,7 +1433,7 @@ public class BuildShotGUI extends BootApp implements ActionListener
 	 JPanel tpanel = (JPanel) comps[0];
 	 JPanel vpanel = (JPanel) comps[1];
 
-	 TreeSet<String> keys = queue.getSelectionKeyNames();
+	 TreeSet<String> keys = queue.getSelectionKeyNames(true);
 	 for (String key : keys)
 	 {
 	    JBooleanField field = UIFactory.createTitledBooleanField(tpanel, key + ":",

@@ -645,7 +645,7 @@ public class BuildAssetGUI extends BootApp implements ActionListener
       {
 	 try
 	 {
-	    queueJobs.add(client.submitJobs(user, view, as.shdExport, null));
+	    queueJobs.addAll(client.submitJobs(user, view, as.shdExport, null));
 	 } catch ( PipelineException ex )
 	 {
 	    System.err.println("No New Shade Jobs");
@@ -655,7 +655,7 @@ public class BuildAssetGUI extends BootApp implements ActionListener
       {
 	 try
 	 {
-	    queueJobs.add(client.submitJobs(user, view, as.finalScene, null));
+	    queueJobs.addAll(client.submitJobs(user, view, as.finalScene, null));
 	 } catch ( PipelineException ex )
 	 {
 	    System.err.println("No New Final Jobs");
@@ -663,14 +663,14 @@ public class BuildAssetGUI extends BootApp implements ActionListener
       }
       try
       {
-	 queueJobs.add(client.submitJobs(user, view, as.lr_finalScene, null));
+	 queueJobs.addAll(client.submitJobs(user, view, as.lr_finalScene, null));
       } catch ( PipelineException ex )
       {
 	 System.err.println("No New Low Rez Final Jobs");
       }
       try
       {
-	 queueJobs.add(client.submitJobs(user, view, as.lr_matScene, null));
+	 queueJobs.addAll(client.submitJobs(user, view, as.lr_matScene, null));
       } catch ( PipelineException ex )
       {
 	 System.err.println("No New Low Rez Material Jobs");
@@ -879,7 +879,7 @@ public class BuildAssetGUI extends BootApp implements ActionListener
 	 JPanel tpanel = (JPanel) comps[0];
 	 JPanel vpanel = (JPanel) comps[1];
 
-	 TreeSet<String> keys = queue.getSelectionKeyNames();
+	 TreeSet<String> keys = queue.getSelectionKeyNames(true);
 	 for (String key : keys)
 	 {
 	    JBooleanField field = UIFactory.createTitledBooleanField(tpanel, key + ":",

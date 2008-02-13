@@ -310,7 +310,7 @@ public class BuildShakePreCompTool extends BaseTool {
 			BaseAction tchAction = plug.newAction("Touch", tVer, "Temerity");		
 			preMod.setAction(tchAction);
 			mclient.modifyProperties(pUser, pView, preMod);
-			QueueJobGroup jobGroup = mclient.submitJobs(pUser, pView, preMod.getName(), null);
+			QueueJobGroup jobGroup = mclient.submitJobs(pUser, pView, preMod.getName(), null).getFirst();
 			
 			boolean next = false;
 			while (!next)

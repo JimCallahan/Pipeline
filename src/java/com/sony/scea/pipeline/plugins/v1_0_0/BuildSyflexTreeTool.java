@@ -728,7 +728,7 @@ public class BuildSyflexTreeTool extends BaseTool
       mclient.modifyProperties(pAuthor, pView, syflexEndMod);
     }
 
-    jobGroup = mclient.submitJobs(pAuthor, pView, syflexEndName, null);
+    jobGroup = mclient.submitJobs(pAuthor, pView, syflexEndName, null).getFirst();
 
     boolean next = false;
     while (!next)
@@ -1156,7 +1156,7 @@ public class BuildSyflexTreeTool extends BaseTool
     // Now queue everything
     for (String simNode : simNodesToQueue)
     {
-      jobGroups.add(mclient.submitJobs(pAuthor, pView, simNode, null));
+      jobGroups.add(mclient.submitJobs(pAuthor, pView, simNode, null).getFirst());
     }
   }
 

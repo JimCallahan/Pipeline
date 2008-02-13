@@ -239,7 +239,7 @@ public class PropagateLightRigTool extends BaseTool{
 		if(doesNodeExists(mclient, lightRigName)){
 			System.err.println("The node "+lightRigName+ " already exists. Now do something with it.");
 		} else {
-			mclient.clone(pUser,pView, pPrimary, lightRigName, false, false, true);
+			mclient.clone(pUser,pView, pPrimary, lightRigName, false, false, true, true);
 		}
 
 		try
