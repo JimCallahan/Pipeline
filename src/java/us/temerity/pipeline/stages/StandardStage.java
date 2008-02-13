@@ -5,6 +5,7 @@ import us.temerity.pipeline.LogMgr.Kind;
 import us.temerity.pipeline.LogMgr.Level;
 import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
+import us.temerity.pipeline.plugin.EnableCompTool.v2_4_1.*;
 
 import java.util.*;
 
@@ -406,6 +407,7 @@ class StandardStage
       pRegisteredNodeMod.setEditor(pEditor);
 
       setAction();
+      
       if(pAction != null) {
         pRegisteredNodeMod.setJobRequirements(new JobReqs());
         setJobSettings();

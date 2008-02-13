@@ -1,4 +1,4 @@
-// $Id: BaseStage.java,v 1.26 2008/02/11 19:22:10 jesse Exp $
+// $Id: BaseStage.java,v 1.27 2008/02/13 19:39:47 jesse Exp $
 
 package us.temerity.pipeline.stages;
 
@@ -303,6 +303,7 @@ class BaseStage
     throws PipelineException
   {
     pRegisteredNodeMod.setAction(pAction);
+    pRegisteredNodeMod.setActionEnabled(true);
   }
   
   /**
