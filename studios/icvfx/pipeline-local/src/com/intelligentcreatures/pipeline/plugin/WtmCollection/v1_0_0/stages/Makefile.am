@@ -8,6 +8,7 @@ sourceroot = @ROOT_INST_PARENT_DIR@/pipeline-local/src
 javadir = $(sourceroot)/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/stages
 
 java_DATA = \
+  BashCompStage.java \
   BuildTrackingVerifyStage.java \
   DistortedGridStage.java \
   LensInfoStage.java \
@@ -20,4 +21,6 @@ java_DATA = \
   NukeRescaleStage.java \
   NukeThumbnailStage.java \
   PFTrackBuildStage.java \
-  PFTrackExportMayaStage.java
+  PFTrackExportMayaStage.java \
+  RenderTrackingVerifyStage.java
+

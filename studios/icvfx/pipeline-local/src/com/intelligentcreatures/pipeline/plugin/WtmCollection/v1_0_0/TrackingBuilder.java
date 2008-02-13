@@ -1,4 +1,4 @@
-// $Id: TrackingBuilder.java,v 1.1 2008/02/13 10:47:29 jim Exp $
+// $Id: TrackingBuilder.java,v 1.2 2008/02/13 18:56:27 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -291,7 +291,7 @@ class TrackingBuilder
       }
     }
     
-    //private static final long serialVersionUID = 2821815874355053699L;
+    private static final long serialVersionUID = 3499087100113059674L; 
   }
 
 
@@ -372,15 +372,46 @@ class TrackingBuilder
 	  stage.build();  
 	}
 
+	String verifyImagesNodeName = pShotNamer.getTrackingVerifyImagesNode(); 
+	{
+	  RenderTrackingVerifyStage stage = 
+	    new RenderTrackingVerifyStage
+	    (pStageInfo, pContext, pClient, 
+	     verifyImagesNodeName, pFrameRange, verifyNodeName, 
+	     "track:camera01", pTrackVerifyRenderNodeName); 
+	  addTaskAnnotation(stage, NodePurpose.Focus); 
+	  stage.build();  
+	}
 
-	// ...
-	
+	String verifyCompNodeName = pShotNamer.getTrackingVerifyCompNode(); 
+	{
+	  BashCompStage stage = 
+	    new BashCompStage(pStageInfo, pContext, pClient, 
+			      verifyCompNodeName, pFrameRange, 
+			      verifyImagesNodeName, pUndistorted2kPlateNodeName); 
+	  stage.build();	  
+	}
 
+	String submitNodeName = pShotNamer.getTrackingSubmitNode();
+	{
+	  TreeSet<String> sources = new TreeSet<String>();
+	  sources.add(verifyCompNodeName); 
+
+	  TargetStage stage = 
+	    new TargetStage(pStageInfo, pContext, pClient, 
+			    submitNodeName, sources); 
+	  addTaskAnnotation(stage, NodePurpose.Submit); 
+	  stage.build(); 
+	  addToQueueList(submitNodeName);
+	  addToCheckInList(submitNodeName);
+	}
       }
 
       /* the approve network */ 
       {
 	
+	// ... 
+
       }
     }
 
@@ -440,8 +471,6 @@ class TrackingBuilder
    * The fully resolved name of the node containing a Maya scene which provides the
    * test lights used in the tracking verification test renders.
    */ 
-  private String pRorschachTestLightsNodeName
-
-;  
+  private String pRorschachTestLightsNodeName;  
 
 }

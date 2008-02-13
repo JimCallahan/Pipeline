@@ -1,12 +1,12 @@
-// $Id: WtmCollection.java,v 1.4 2008/02/13 10:47:29 jim Exp $
+// $Id: WtmCollection.java,v 1.5 2008/02/13 18:56:27 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
-import java.util.TreeMap;
-
-import us.temerity.pipeline.VersionID;
+import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.BaseBuilderCollection;
+import us.temerity.pipeline.builder.*; 
 
+import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   W T M   C O L L E C T I O N                                                            */
@@ -25,7 +25,31 @@ class WtmCollection
   {
     super("WtmBuilders", new VersionID("1.0.0"), "ICVFX", 
           "A collection of builders to make networks related to the WTM project.");
+
+    {    
+      LayoutGroup group = new LayoutGroup(true);
+
+      {
+	LayoutGroup sub = 
+	  new LayoutGroup("Task Builders", "Builders each production task.", true);
+	sub.addEntry("Plates");
+	sub.addEntry("InternalTracking");
+	sub.addEntry("Tracking");
+
+	group.addSubGroup(sub);
+      }
+      
+      {
+	LayoutGroup sub = 
+	  new LayoutGroup("Approval Builders", "Builders for approving tasks.", true);
+	sub.addEntry("ApproveTask");
+
+	group.addSubGroup(sub);
+      }
     
+      setLayout(group);
+    }
+
     underDevelopment();
   }
   

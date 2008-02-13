@@ -1,4 +1,4 @@
-// $Id: ShotNamer.java,v 1.7 2008/02/13 10:47:29 jim Exp $
+// $Id: ShotNamer.java,v 1.8 2008/02/13 18:56:27 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -453,9 +453,47 @@ class ShotNamer
     return path.toString(); 
   }
 
-  
-  
+  /**
+   * Returns the fully resolved name of the node containing the rendered tracking 
+   * verification images.
+   */ 
+  public String
+  getTrackingVerifyImagesNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Focus), 
+			 new Path(AppDirs.Images.toDirPath(), 
+				  joinNames(getFullShotName(), "verify"))); 
+    return path.toString(); 
+  }
 
+  /**
+   * Returns the fully resolved name of the node containing the composited tracking 
+   * verification images over the undistored 2k plates.
+   */ 
+  public String
+  getTrackingVerifyCompNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Focus), 
+			 new Path(AppDirs.Images.toDirPath(), 
+				  joinNames(getFullShotName(), "comp_verify"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the submit node for the Tracking task.
+   */ 
+  public String
+  getTrackingSubmitNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Submit), 
+			 joinNames(getFullShotName(), "tracking_submit")); 
+    return path.toString(); 
+  }
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  // approve nodes... 
 
 
   /*----------------------------------------------------------------------------------------*/
