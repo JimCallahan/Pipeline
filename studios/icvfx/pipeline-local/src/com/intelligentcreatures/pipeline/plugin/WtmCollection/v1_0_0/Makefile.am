@@ -14,16 +14,19 @@ java_DATA = \
   AppDirs.java \
   ApproveTaskBuilder.java \
   AssetType.java \
+  BaseShotBuilder.java \
+  BaseTaskBuilder.java \
+  BaseTrackingBuilder.java \
   ICStageFunction.java \
-  ICTaskBuilder.java \
+  InternalTrackingBuilder.java \
   NodePurpose.java \
   PlatesBuilder.java \
   ProjectNamer.java \
   ShotNamer.java \
   StudioDefinitions.java \
   TaskType.java \
+  TrackingBuilder.java \
   WtmCollection.java
-
 
 
 SUBDIRS = \
