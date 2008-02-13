@@ -1,4 +1,4 @@
-// $Id: PFTrackBuildStage.java,v 1.6 2008/02/13 10:47:29 jim Exp $
+// $Id: PFTrackBuildStage.java,v 1.7 2008/02/13 21:31:57 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
 
@@ -16,7 +16,10 @@ import java.util.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Creates a node which uses the PFTrackBuild action.
+ * Creates a node which uses the PFTrackBuild action.<P> 
+ * 
+ * Actually, right now it just touches the file since we don't yet have a working 
+ * PFTrackBuild action.
  */ 
 public 
 class PFTrackBuildStage 
