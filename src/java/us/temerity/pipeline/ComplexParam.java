@@ -8,6 +8,8 @@ import us.temerity.pipeline.glue.GlueDecoder;
 /*   C O M P L E X   P A R A M                                                              */
 /*------------------------------------------------------------------------------------------*/
 
+//TODO is not GLUEABLE.  THIS SHOULD BE GLUABLE!!!!
+
 /**
  * Parameter that can contain other parameters.
  * <p>

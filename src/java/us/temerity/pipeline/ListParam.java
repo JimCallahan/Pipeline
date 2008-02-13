@@ -1,4 +1,4 @@
-// $Id: ListParam.java,v 1.5 2007/08/24 17:28:33 jesse Exp $
+// $Id: ListParam.java,v 1.6 2008/02/13 19:26:03 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -74,9 +74,13 @@ class ListParam<E>
   {
     super(name, desc);
 
-    if((values == null) || values.isEmpty())
+    if((values == null) || (value == null) )
       throw new IllegalArgumentException
-        ("The values parameter must contain at least one value.");
+        ("The value and the values parameter cannot be null.");
+    
+    if ( (values.isEmpty() && (!value.isEmpty())))
+      throw new IllegalArgumentException
+        ("Cannot have an empty values parameter if the value parameter is not empty.");
     
     verifyValues(value, values);
     
