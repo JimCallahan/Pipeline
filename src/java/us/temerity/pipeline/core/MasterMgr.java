@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.233 2008/02/06 07:53:22 jesse Exp $
+// $Id: MasterMgr.java,v 1.234 2008/02/13 21:29:07 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -11910,7 +11910,7 @@ class MasterMgr
       }
           
       /* determine which nodes have files which should NOT be unpacked: 
-          if there are nodes which where just checked-out upstream or left unaltered, 
+          if there are nodes which were just checked-out upstream or left unaltered, 
             then the files associated with unpacked nodes with enabled actions should 
             be skipped since they will need to be regenerated anyway */
       TreeSet<String> skipUnpack = new TreeSet<String>();
@@ -11922,10 +11922,12 @@ class MasterMgr
           if((mod.getAction() != null) && mod.isActionEnabled()) {
             String nname = mod.getName();
             NodeStatus nstatus = status.findUpstreamNamed(nname);
-            for(String uname : unconformed) {
-              if(nstatus.hasUpstreamNamed(uname)) {
-                skipUnpack.add(nname);
-                break;
+            if(nstatus != null) {
+              for(String uname : unconformed) {
+                if(nstatus.hasUpstreamNamed(uname)) {
+                  skipUnpack.add(nname);
+                  break;
+                }
               }
             }
           }
