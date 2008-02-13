@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.79 2008/02/11 03:16:25 jim Exp $
+// $Id: UIMaster.java,v 1.80 2008/02/13 19:21:18 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -6,6 +6,7 @@ import us.temerity.pipeline.*;
 import us.temerity.pipeline.ui.*;
 import us.temerity.pipeline.glue.*;
 import us.temerity.pipeline.math.*;
+import us.temerity.pipeline.LogMgr.*;
 import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.core.RemoteServer;
 import us.temerity.pipeline.core.JobMgrPlgControlClient;
@@ -1503,6 +1504,10 @@ class UIMaster
    * 
    * @param listener
    *   The listener for menu selection events.
+   *   
+   * @param enabled
+   *   Should the menu entries be enabled?  This is false whenever the Node Viewer Builder
+   *   menu is used in a working area where the user does not have Node Manager permissions.
    */ 
   public void
   rebuildDefaultBuilderCollectionMenu
@@ -1517,9 +1522,21 @@ class UIMaster
     PluginMenuLayout layout = null;
     TripleMap<String, String, VersionID, LayoutGroup> builderLayouts = null;
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
+    
+    String tname = null;
     try {
       MasterMgrClient client = getMasterMgrClient(channel);
-      String tname = client.getDefaultToolsetName();
+      tname = client.getDefaultToolsetName();
+    } catch (PipelineException ex) {
+      menu.removeAll();
+      LogMgr.getInstance().log
+        (Kind.Ops, Level.Warning, 
+         "Unable to retrieve a default toolset when trying to create the Builder menus.");
+      return;
+    }
+    
+    try {
+      MasterMgrClient client = getMasterMgrClient(channel);
 
       synchronized(pBuilderCollectionPlugins) {
         plugins = pBuilderCollectionPlugins.get(tname);
