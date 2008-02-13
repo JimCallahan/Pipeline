@@ -1,4 +1,4 @@
-// $Id: PlatesBuilder.java,v 1.13 2008/02/13 10:47:29 jim Exp $
+// $Id: PlatesBuilder.java,v 1.14 2008/02/13 21:31:31 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -538,7 +538,8 @@ class PlatesBuilder
 	    new PFTrackBuildStage(pStageInfo, pContext, pClient, 
 				  solveDistortionNodeName, pBackgroundPlateNodeName, 
 				  vfxShotDataNodeName); 
-	  stage.addLink(new LinkMod(pPlatesRedCheckerNodeName, LinkPolicy.Dependency));
+	  stage.addLink(new LinkMod(pPlatesRedCheckerNodeName, 
+				    LinkPolicy.Association, LinkRelationship.None, null));
 	  addTaskAnnotation(stage, NodePurpose.Edit); 
 	  stage.build();  
 	  addToDisableList(solveDistortionNodeName);
