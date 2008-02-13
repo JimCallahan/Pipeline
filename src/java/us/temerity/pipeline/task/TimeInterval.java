@@ -1,4 +1,4 @@
-// $Id: TimeInterval.java,v 1.1 2004/10/18 04:00:00 jim Exp $
+// $Id: TimeInterval.java,v 1.2 2008/02/13 19:22:34 jesse Exp $
 
 package us.temerity.pipeline.task;
 
@@ -34,8 +34,8 @@ class TimeInterval
   public
   TimeInterval
   (
-   Date startDate, 
-   Date endDate
+    Long startDate, 
+    Long endDate
   ) 
   {
     if(startDate == null) 
@@ -46,10 +46,10 @@ class TimeInterval
       throw new IllegalArgumentException
 	("The end date cannot be (null)!");
 
-    if(startDate.compareTo(endDate) >= 0) 
+    if(startDate < endDate) 
       throw new IllegalArgumentException
-	("The start date (" + Dates.format(startDate) + ") must be earlier than the " + 
-	 "end date (" + Dates.format(endDate) + ")!"); 
+	("The start date (" + startDate + ") must be earlier than the " + 
+	 "end date (" + endDate + ")!"); 
 
     pStart = startDate;
     pEnd   = endDate;
@@ -77,19 +77,19 @@ class TimeInterval
   /**
    * Get the beginning of the time interval.
    */ 
-  public Date
+  public Long
   getStart() 
   {
-    return (Date) pStart.clone();
+    return pStart;
   }
 
   /**
    * Get the ending of the time interval.
    */ 
-  public Date
+  public Long
   getEnd() 
   {
-    return (Date) pEnd.clone();
+    return pEnd;
   }
 
 
@@ -157,12 +157,12 @@ class TimeInterval
   ) 
     throws GlueException
   {
-    Date startDate = (Date) decoder.decode("Start");
+    Long startDate = (Long) decoder.decode("Start");
     if(startDate == null) 
       throw new GlueException("The \"Start\" was missing or (null)!");
     pStart = startDate;
 
-    Date endDate = (Date) decoder.decode("End");
+    Long endDate = (Long) decoder.decode("End");
     if(endDate == null) 
       throw new GlueException("The \"End\" was missing or (null)!");
     pEnd = endDate;
@@ -185,11 +185,11 @@ class TimeInterval
   /**
    * The beginning of the time interval.
    */ 
-  private Date  pStart; 
+  private Long  pStart; 
 
   /**
    * The ending of the time interval.
    */ 
-  private Date  pEnd; 
+  private Long  pEnd; 
 
 }

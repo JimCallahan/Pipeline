@@ -1,4 +1,4 @@
-// $Id: TaskStatus.java,v 1.2 2004/10/18 04:00:00 jim Exp $
+// $Id: TaskStatus.java,v 1.3 2008/02/13 19:22:34 jesse Exp $
 
 package us.temerity.pipeline.task;
 
@@ -45,8 +45,8 @@ class TaskStatus
     // pConstraints = new TreeMap<String,TaskConstraint>();
     pNodes = new TreeMap<String,VersionID>();
 
-    pCompletionHistory = new TreeMap<Date,CompletionState>();
-    pActivityHistory   = new TreeMap<Date,ActivityState>();
+    pCompletionHistory = new TreeMap<Long,CompletionState>();
+    pActivityHistory   = new TreeMap<Long,ActivityState>();
 
     for(BaseEvent event : task.getEvents()) 
       update(event);
@@ -201,7 +201,7 @@ class TaskStatus
    * Get the timestamps of when the {@link CompletionState CompletionState} of the task
    * has changed.
    */ 
-  public Set<Date>
+  public Set<Long>
   getCompletionStamps() 
   {
     return Collections.unmodifiableSet(pCompletionHistory.keySet());
@@ -213,7 +213,7 @@ class TaskStatus
   public CompletionState
   getCompletionState
   (
-   Date stamp
+    Long stamp
   ) 
   {
     if(stamp == null) 
@@ -221,8 +221,8 @@ class TaskStatus
 	("The timestamp cannot be (null)!");
 
     CompletionState state = pCompletionHistory.get(pCompletionHistory.firstKey());
-    for(Date key : pCompletionHistory.keySet()) {
-      if(key.compareTo(stamp) > 0) 
+    for(Long key : pCompletionHistory.keySet()) {
+      if(key > stamp) 
 	break;
       state = pCompletionHistory.get(key);
     }
@@ -246,7 +246,7 @@ class TaskStatus
    * Get the timestamps of when the {@link ActivityState ActivityState} of the task
    * has changed.
    */ 
-  public Set<Date>
+  public Set<Long>
   getActivityStamps() 
   {
     return Collections.unmodifiableSet(pActivityHistory.keySet());
@@ -258,7 +258,7 @@ class TaskStatus
   public ActivityState
   getActivityState
   (
-   Date stamp
+    Long stamp
   ) 
   {
     if(stamp == null) 
@@ -266,8 +266,8 @@ class TaskStatus
 	("The timestamp cannot be (null)!");
 
     ActivityState state = pActivityHistory.get(pActivityHistory.firstKey());
-    for(Date key : pActivityHistory.keySet()) {
-      if(key.compareTo(stamp) > 0) 
+    for(Long key : pActivityHistory.keySet()) {
+      if(key > stamp) 
 	break;
       state = pActivityHistory.get(key);
     }
@@ -404,11 +404,11 @@ class TaskStatus
   /**
    * The history of changes to the completion state of the task. 
    */ 
-  private TreeMap<Date,CompletionState>  pCompletionHistory; 
+  private TreeMap<Long,CompletionState>  pCompletionHistory; 
 
   /**
    * The history of changes to the activity state of the task. 
    */ 
-  private TreeMap<Date,ActivityState>  pActivityHistory; 
+  private TreeMap<Long,ActivityState>  pActivityHistory; 
 
 }

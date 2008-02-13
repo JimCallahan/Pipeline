@@ -1,4 +1,4 @@
-// $Id: Task.java,v 1.3 2004/10/22 04:56:11 jim Exp $
+// $Id: Task.java,v 1.4 2008/02/13 19:22:34 jesse Exp $
 
 package us.temerity.pipeline.task;
 
@@ -44,7 +44,7 @@ class Task
   {
     super(name);
     
-    pEvents = new TreeMap<Date,BaseEvent>();
+    pEvents = new TreeMap<Long,BaseEvent>();
     pEvents.put(event.getTimeStamp(), event);
   }
 
@@ -56,7 +56,7 @@ class Task
   /**
    * Get the timestamps of when task events have occurred.
    */ 
-  public Set<Date>
+  public Set<Long>
   getEventTimeStamps() 
   {
     return Collections.unmodifiableSet(pEvents.keySet());
@@ -119,7 +119,7 @@ class Task
   ) 
     throws PipelineException 
   {
-    if(event.getTimeStamp().compareTo(pEvents.lastKey()) <= 0) 
+    if(event.getTimeStamp() <= (pEvents.lastKey())) 
       throw new PipelineException
 	("The new task event must be newer than all previous task events!");
 
@@ -159,8 +159,8 @@ class Task
   {
     super.fromGlue(decoder);
 
-    TreeMap<Date,BaseEvent> events = 
-      (TreeMap<Date,BaseEvent>) decoder.decode("Events");
+    TreeMap<Long,BaseEvent> events = 
+      (TreeMap<Long,BaseEvent>) decoder.decode("Events");
     if(events == null) 
       throw new GlueException("The \"Events\" was missing or (null)!");
     pEvents = events;
@@ -183,6 +183,6 @@ class Task
   /**
    * The events in the life of the task.
    */ 
-  private TreeMap<Date,BaseEvent>  pEvents;
+  private TreeMap<Long,BaseEvent>  pEvents;
   
 }
