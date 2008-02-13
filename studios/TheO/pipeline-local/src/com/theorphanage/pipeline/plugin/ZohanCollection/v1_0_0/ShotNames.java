@@ -1,5 +1,7 @@
 package com.theorphanage.pipeline.plugin.ZohanCollection.v1_0_0;
 
+import java.util.*;
+
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
 
@@ -15,8 +17,7 @@ class ShotNames
   ShotNames
   (
     MasterMgrClient mclient,
-    QueueMgrClient qclient,
-    StudioDefinitions defs
+    QueueMgrClient qclient
   )
     throws PipelineException
   {
@@ -24,8 +25,6 @@ class ShotNames
         "The basic naming class for shots in Zohan",
         mclient,
         qclient);
-    
-    pDefs = defs;
     
     {
       UtilityParam param =
@@ -325,6 +324,55 @@ class ShotNames
   }
   
   
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   U T I L I T I E S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Static method to turn a node name into a ShotNames class that represents the shot
+   * that the node is from.
+   * <p>
+   * The method will return <code>null</code> if the nodeName that is passed in is not a 
+   * valid name of a node in a shot.
+   */
+  public static ShotNames
+  getNamesFromNode
+  (
+    String nodeName,
+    MasterMgrClient mclient,
+    QueueMgrClient qclient
+  )
+  {
+    Path p = new Path(nodeName);
+    ArrayList<String> pieces = p.getComponents();
+    if (pieces.size() < 5)
+      return null;
+    String start = pieces.remove(0);
+    if (!new Path("/" + start).equals(StudioDefinitions.aProjectStartPath))
+      return null;
+    String project = pieces.remove(0);
+    String seqStart = pieces.remove(0);
+    if (!seqStart.equals(StudioDefinitions.aSequenceStart))
+      return null;
+    String sequence = pieces.remove(0);
+    String shot = pieces.remove(0).replaceFirst(sequence, "");
+    ShotNames namer = null;
+    try {
+      namer = new ShotNames(mclient, qclient);
+      namer.setParamValue(aProjectName, project);
+      namer.setParamValue(aSequenceName, sequence);
+      namer.setParamValue(aShotName, shot);
+      namer.run();
+    }
+    catch (PipelineException ex) {
+      ex.printStackTrace();
+    }
+    catch (Exception ex) {
+      ex.printStackTrace();
+    }
+    return namer;
+  }
   
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */

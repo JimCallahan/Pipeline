@@ -13,21 +13,27 @@ public class Test {
    */
   public static void main(String[] args) throws PipelineException {
     
+//    MasterMgrClient client = new MasterMgrClient();
+//    QueueMgrClient queue = new QueueMgrClient();
+//    UtilContext util = new UtilContext("jesse_clemens", "default", "test3");
+//    StudioDefinitions defs = new StudioDefinitions(client, queue, util);
+//    DoubleMap<String, String, ArrayList<String>> toReturn = defs.getAllProjectsAllNamesForParam();
+//    for (String p : toReturn.keySet()) {
+//      System.out.println("Project: " +  p);
+//      for (String s : toReturn.keySet(p)) {
+//        System.out.println("\tSequence: " +  s);
+//        ArrayList<String> shots = toReturn.get(p, s);
+//        for (String shot : shots)
+//          System.out.println("\t\tShot: " +  shot);
+//      }
+//    }
+
     MasterMgrClient client = new MasterMgrClient();
     QueueMgrClient queue = new QueueMgrClient();
-    UtilContext util = new UtilContext("jesse_clemens", "default", "test3");
-    StudioDefinitions defs = new StudioDefinitions(client, queue, util);
-    DoubleMap<String, String, ArrayList<String>> toReturn = defs.getAllProjectsAllNamesForParam();
-    for (String p : toReturn.keySet()) {
-      System.out.println("Project: " +  p);
-      for (String s : toReturn.keySet(p)) {
-        System.out.println("\tSequence: " +  s);
-        ArrayList<String> shots = toReturn.get(p, s);
-        for (String shot : shots)
-          System.out.println("\t\tShot: " +  shot);
-      }
-    }
-
+    String node = "/Projects/NEXUS/VFX/ZT/ZT138_040/Source/work/ZT138_040_bg1";
+    ShotNames namer = ShotNames.getNamesFromNode(node, client, queue);
+    System.out.println(namer.getRotoScene());
+    
   }
 
 }

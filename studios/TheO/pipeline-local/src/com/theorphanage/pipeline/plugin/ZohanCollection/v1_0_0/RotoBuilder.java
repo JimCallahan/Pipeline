@@ -55,7 +55,7 @@ class RotoBuilder
   }
   
   /**
-   * Provided to allow parent builders to create instances and share.
+   * Provided to allow parent builders to create instances and share Namer classes.
    * 
    * @param mclient 
    *   The master manager connection.
@@ -306,7 +306,7 @@ class RotoBuilder
     {
       /* if we haven't been passed in a ShotNamer from a parent builder, make one now */
       if (pShotNamer == null) {
-        pShotNamer = new ShotNames(pClient, pQueue, pDefs);
+        pShotNamer = new ShotNames(pClient, pQueue);
       }
       
       /* if no parent builder has already generated the shot names... */ 
