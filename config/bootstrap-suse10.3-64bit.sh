@@ -31,10 +31,11 @@ pushd debug
   time \
   JAVA_HOME=/usr/java/jdk1.5.0_14-x86_64 \
   PATH="$JAVA_HOME/bin:$PATH" \
-  CC="/usr/bin/gcc-4.1" \
-  CXX="/usr/bin/g++-4.1" \
+  CC="/usr/bin/gcc-4.2" \
+  CXX="/usr/bin/g++-4.2" \
   $plsrcdir/configure \
     --enable-foundation \
+    --enable-x86-subpass \
     --disable-opt \
     --with-debug-base=$debug_base \
     --with-prof-base=$prof_base \
@@ -45,6 +46,29 @@ pushd debug
 popd
 
 
+echo 
+echo "---------------------------------------------------------------------------------------"
+echo "  CONFIGURING (native): $HOSTNAME"
+echo "---------------------------------------------------------------------------------------"
+
+rm -rf debug-native
+mkdir  debug-native
+
+pushd debug-native
+  time \
+  JAVA_HOME=/usr/java/jdk1.5.0_14-x86 \
+  PATH="$JAVA_HOME/bin:$PATH" \
+  CC="/usr/bin/gcc-4.2" \
+  CXX="/usr/bin/g++-4.2" \
+  $plsrcdir/configure \
+    --disable-opt \
+    --with-target-archtype=x86 \
+    --with-debug-base=$debug_base \
+    --with-prof-base=$prof_base \
+    --with-crypto-app=$plsrcdir/plconfig \
+    --with-customer=$customer \
+    --with-customer-profile=$plprofile
+popd
 
 
 JAVA_HOME=/usr/java/jdk1.5.0_14-x86
