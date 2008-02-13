@@ -1,4 +1,4 @@
-// $Id: ShotNamer.java,v 1.6 2008/02/07 14:14:33 jim Exp $
+// $Id: ShotNamer.java,v 1.7 2008/02/13 10:47:29 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -414,7 +414,47 @@ class ShotNamer
   /*   T R A C K I N G                                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  // ... 
+  /**
+   * Returns the fully resolved name of the node for the PFTrack scene which 
+   * is used to track the shot.
+   */ 
+  public String
+  getPFTrackNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Edit), 
+			 new Path(AppDirs.PFTrack.toDirPath(), 
+				  joinNames(getFullShotName(), "pftrack"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node for the Maya scene containing 
+   * the camera/model tracking data.
+   */ 
+  public String
+  getTrackNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Prepare), 
+			 new Path(AppDirs.Maya.toDirPath(), 
+				  joinNames(getFullShotName(), "track"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node for the Maya scene containing 
+   * tracking verification render scene.
+   */ 
+  public String
+  getTrackingVerifyNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Prepare), 
+			 new Path(AppDirs.Maya.toDirPath(), 
+				  joinNames(getFullShotName(), "verify"))); 
+    return path.toString(); 
+  }
+
+  
+  
 
 
 

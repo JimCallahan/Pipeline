@@ -1,4 +1,4 @@
-// $Id: ICTaskBuilder.java,v 1.6 2008/02/11 22:58:22 jim Exp $
+// $Id: BaseTaskBuilder.java,v 1.1 2008/02/13 10:47:29 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -12,7 +12,7 @@ import java.util.*;
  * Abstract builder base class that provides the task annotation functionality. 
  */
 public abstract 
-class ICTaskBuilder
+class BaseTaskBuilder
   extends BaseBuilder
 {
   /*----------------------------------------------------------------------------------------*/
@@ -38,7 +38,7 @@ class ICTaskBuilder
    *   Information that is shared among all builders in a given invocation.
    */
   protected 
-  ICTaskBuilder
+  BaseTaskBuilder
   (
     String name,
     String desc,
@@ -67,26 +67,6 @@ class ICTaskBuilder
   }
 
   
-  
-  /*----------------------------------------------------------------------------------------*/
-  /*   P A R A M E T E R S                                                                  */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Helper method for adding the DoAnnotatons parameter to the current builder.
-   */ 
-  protected final void
-  addDoAnnotationParam()
-  {
-    UtilityParam param = 
-      new BooleanUtilityParam
-      (aDoAnnotations, 
-       "Should Task related annotations be added to all created nodes.", 
-       true); 
-    addParam(param);
-  }
-
-
 
   /*----------------------------------------------------------------------------------------*/
   /*  T A S K   A N N O T A T I O N S                                                       */
@@ -371,14 +351,6 @@ class ICTaskBuilder
       }
     }
   }
-
-  
-
-  /*----------------------------------------------------------------------------------------*/
-  /*  P U B L I C   S T A T I C S                                                           */
-  /*----------------------------------------------------------------------------------------*/
-  
-  public static final String aDoAnnotations = "DoAnnotations";
 
   
 

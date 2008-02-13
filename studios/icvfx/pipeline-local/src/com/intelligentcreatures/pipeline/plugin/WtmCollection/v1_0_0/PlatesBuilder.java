@@ -1,4 +1,4 @@
-// $Id: PlatesBuilder.java,v 1.12 2008/02/12 01:23:36 jim Exp $
+// $Id: PlatesBuilder.java,v 1.13 2008/02/13 10:47:29 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -12,7 +12,7 @@ import us.temerity.pipeline.stages.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   P L A T E S   D E F I N I T I O N S                                                    */
+/*   P L A T E S   B U I L D E R                                                            */
 /*------------------------------------------------------------------------------------------*/
 
 /**
@@ -23,11 +23,38 @@ import java.util.*;
  * linearized.  A GridWarp Nuke node is produced which can be used to redistort rendered
  * images later along with a MEL script to set the undistored image resolution for renders.
  * Finally, the undistored plates are resized down to 1k, a QuickTime movie is built and 
- * a thumbnail image is extracted. 
+ * a thumbnail image is extracted. <P> 
+ * 
+ * Besides the common parameters shared by all builders, this builder defines the following
+ * additional parameters: <BR>
+ * 
+ * <DIV style="margin-left: 40px;">
+ *   Project Name <BR>
+ *   <DIV style="margin-left: 40px;">
+ *     The short name of the overall project.
+ *   </DIV> <BR>
+ * 
+ *   Sequence Name <BR>
+ *   <DIV style="margin-left: 40px;">
+ *     The short name of the shot sequence.
+ *   </DIV> <BR>
+ * 
+ *   Shot Name <BR>
+ *   <DIV style="margin-left: 40px;">
+ *     The short name of the shot within a sequence.
+ *   </DIV> <BR>
+ *   <P> 
+ * 
+ *   Background Plate<BR> 
+ *   <DIV style="margin-left: 40px;">
+ *     The prefix of the existing scanned images node to use as the background plates for
+ *     this shot.
+ *   </DIV> <BR>
+ * </DIV> 
  */
 public 
 class PlatesBuilder 
-  extends ICTaskBuilder 
+  extends BaseShotBuilder 
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -93,41 +120,23 @@ class PlatesBuilder
     throws PipelineException
   {
     super("Plates",
-          "Builder to construct basic  network.",
-          mclient, qclient, builderInfo);
+          "A builder for constructing the nodes associated with the Plates task.", 
+          mclient, qclient, builderInfo, studioDefs, projectNamer, shotNamer);
 
     /* initialize fields */ 
     {
-      pStudioDefs = studioDefs;
-      pProjectNamer = projectNamer;
-      if(pProjectNamer == null) 
-	pProjectNamer = new ProjectNamer(mclient, qclient, pStudioDefs);	
-      pShotNamer = shotNamer;
-
       pRequiredNodeNames = new TreeSet<String>(); 
       pMiscReferenceNodeNames = new TreeSet<String>(); 
 
-      pFinalStages  = new ArrayList<FinalizableStage>(); 
+      pFinalStages = new ArrayList<FinalizableStage>(); 
     }
 
     /* setup builder parameters */ 
     {
-      /* select the project, sequence and shot for the task */ 
-      {
-        UtilityParam param = 
-          new DoubleMapUtilityParam
-          (aLocation, 
-           "The Project, Sequence, and Shot names.",
-           StudioDefinitions.aProjectName,
-           "Select the name of the project.",
-           StudioDefinitions.aSequenceName,
-           "Select the name of the shot sequence.",
-           StudioDefinitions.aShotName,
-           "Select the name of the shot.",
-           pStudioDefs.getAllProjectsAllNames());
-        addParam(param);
-      }
-      
+      /* selects the project, sequence and shot for the task */ 
+      addLocationParam(); 
+
+      /* the background plate images */ 
       {
         UtilityParam param = 
           new PlaceholderUtilityParam
@@ -136,46 +145,20 @@ class PlatesBuilder
            "this shot."); 
         addParam(param);
       }
-
-      addCheckinWhenDoneParam();
     }
      
-    /* if no parent builder has already generated the names for ProjectNamer, 
-         this builder should take over control of naming the project */ 
-    if(!pProjectNamer.isGenerated()) {
-      addSubBuilder(pProjectNamer);
-
-      /* link the nested ProjectName parameter inside the complex parameter Location
-           (of this builder) with the simple parameter ProjectName of the ProjectNamer */ 
-      addMappedParam(pProjectNamer.getName(), 
-                     new ParamMapping(StudioDefinitions.aProjectName), 
-                     new ParamMapping(aLocation, StudioDefinitions.aProjectName)); 
-    }
+    /* initialize the project namer */ 
+    initProjectNamer(); 
     
     /* create the setup passes */ 
     {
-      addSetupPass(new SetupShotEssentials());
+      addSetupPass(new PlatesSetupShotEssentials());
       addSetupPass(new SetupImageParams());
       addSetupPass(new GetPrerequisites());
     }
-    
+
     /* setup the default editors */ 
-    {
-      setDefaultEditor(ICStageFunction.aNone, null);
-
-      setDefaultEditor(ICStageFunction.aMayaScene, new PluginContext("MayaProject"));
-
-      setDefaultEditor(ICStageFunction.aTextFile, new PluginContext("NEdit"));
-      setDefaultEditor(ICStageFunction.aScriptFile, new PluginContext("NEdit"));
-
-      setDefaultEditor(ICStageFunction.aRenderedImage, new PluginContext("NukeViewer"));
-      setDefaultEditor(ICStageFunction.aSourceImage, new PluginContext("NukeViewer"));
-      setDefaultEditor(ICStageFunction.aNukeScript, new PluginContext("Nuke"));
-
-      setDefaultEditor(ICStageFunction.aQuickTime, new PluginContext("QuickTime")); 
-
-      setDefaultEditor(ICStageFunction.aPFTrackScene, new PluginContext("PFTrack", "ICVFX"));
-    }
+    setCommonDefaultEditors(); 
 
     /* create the construct passes */ 
     {
@@ -193,7 +176,7 @@ class PlatesBuilder
 
     /* specify the layout of the parameters for each pass in the UI */ 
     {
-      PassLayoutGroup layout = new PassLayoutGroup();
+      PassLayoutGroup layout = new PassLayoutGroup("Root", "Root Layout");
 
       {
         AdvancedLayoutGroup sub = new AdvancedLayoutGroup("ShotEssentials", true);
@@ -266,6 +249,7 @@ class PlatesBuilder
   }
 
   
+
   /*----------------------------------------------------------------------------------------*/
   /*  T A S K   A N N O T A T I O N S                                                       */
   /*----------------------------------------------------------------------------------------*/
@@ -346,15 +330,13 @@ class PlatesBuilder
   /*----------------------------------------------------------------------------------------*/
 
   private
-  class SetupShotEssentials
-  extends SetupPass
+  class PlatesSetupShotEssentials
+    extends BaseSetupShotEssentials
   {
     public 
-    SetupShotEssentials()
+    PlatesSetupShotEssentials()
     {
-      super("Setup Shot Essentials", 
-            "Set the common builder properties as well as essential stuff for all shots" + 
-            "like project, sequence and shot names.");
+      super(); 
     }
    
     /**
@@ -366,32 +348,16 @@ class PlatesBuilder
     validatePhase()
       throws PipelineException
     {
-      /* sets up the built-in parameters common to all builders */ 
-      validateBuiltInParams();
+      super.validatePhase();
 
-      /* setup the StudioDefinitions version of the UtilContext */ 
-      pStudioDefs.setContext(pContext);  
-      
-      /* lookup the selected sequence/shot from the builder's Location parameter, 
-	   we'll need this in the initPhase() to initialize the ShotNamer */ 
-      {
-        ParamMapping seqMapping = 
-          new ParamMapping(aLocation, StudioDefinitions.aSequenceName);
-        pSequenceName = getStringParamValue(seqMapping);
-
-        ParamMapping shotMapping = 
-          new ParamMapping(aLocation, StudioDefinitions.aShotName);
-        pShotName = getStringParamValue(shotMapping);
-      }
-
-      /* register the project-wide required nodes */ 
+      /* register the required (locked) nodes */ 
       {
 	pPlatesRedCheckerNodeName = pProjectNamer.getPlatesRedCheckerNode();
 	pRequiredNodeNames.add(pPlatesRedCheckerNodeName); 
-
+	
 	pPlatesGreenCheckerNodeName = pProjectNamer.getPlatesGreenCheckerNode();
 	pRequiredNodeNames.add(pPlatesGreenCheckerNodeName); 
-
+	
 	pGridGradeWarpNodeName = pProjectNamer.getGridGradeWarpNode();
 	pRequiredNodeNames.add(pGridGradeWarpNodeName); 
 	
@@ -401,65 +367,9 @@ class PlatesBuilder
 	pBlackOutsideNodeName = pProjectNamer.getBlackOutsideNode();
 	pRequiredNodeNames.add(pBlackOutsideNodeName); 
       }
-
-      /* turn on the DoAnnotations flag for the StageInformation shared by all 
-         of the Stages created by this builder since we always want task annotations */
-      pStageInfo.setDoAnnotations(true);
     }
     
-    /**
-     * Phase in which new Sub-Builders should be created and added to the current Builder.
-     */ 
-    @Override
-    public void 
-    initPhase() 
-      throws PipelineException 
-    {
-      /* if we haven't been passed in a ShotNamer from a parent builder, make one now */ 
-      if(pShotNamer == null) 
-        pShotNamer = new ShotNamer(pClient, pQueue, pStudioDefs);
-
-      /* if no parent builder as already generated and initialized the ShotNamer, 
-	   lets create one ourselves... */ 
-      if(!pShotNamer.isGenerated()) {
-        addSubBuilder(pShotNamer);
-        
-        /* always link the nested ProjectName parameter inside the complex parameter 
-             Location (of this builder) with the simple ProjectName parameter of the 
-	     ShotNamer */
-        addMappedParam
-          (pShotNamer.getName(), 
-           new ParamMapping(StudioDefinitions.aProjectName), 
-           new ParamMapping(aLocation, StudioDefinitions.aProjectName));
-
-        /* if we are NOT creating a new shot, 
-             then link the nested SequenceName parameter inside the complex parameter 
-             Location (of this builder) with the simple SequenceName parameter of the 
-             ShotNamer */ 
-        if(!pSequenceName.equals(StudioDefinitions.aNEW))  {
-          addMappedParam
-            (pShotNamer.getName(), 
-             new ParamMapping(StudioDefinitions.aSequenceName), 
-             new ParamMapping(aLocation, StudioDefinitions.aSequenceName));
-        }
-
-        /* if we are NOT creating a new shot, 
-             then link the nested ShotName parameter inside the complex parameter 
-             Location (of this builder) with the simple ShotName parameter of the 
-             ShotNamer */ 
-        if(!pShotName.equals(StudioDefinitions.aNEW))  {
-          addMappedParam
-            (pShotNamer.getName(), 
-             new ParamMapping(StudioDefinitions.aShotName), 
-             new ParamMapping(aLocation, StudioDefinitions.aShotName));
-        }
-      }
-    }
-    
-    private static final long serialVersionUID = -3841709462425715524L;
-
-    private String pSequenceName;
-    private String pShotName;
+    private static final long serialVersionUID = -6691101175651749909L;
   }
 
     
@@ -534,16 +444,17 @@ class PlatesBuilder
             ("No " + aBackgroundPlate + " image node was selected!"); 
         Path path = new Path(pShotNamer.getPlatesScannedParentPath(), bgName); 
 	
-	NodeVersion vsn = pClient.getCheckedInVersion(path.toString(), null); 
-	if(vsn == null) 
+	try {
+	  NodeVersion vsn = pClient.getCheckedInVersion(path.toString(), null); 
+	  pFrameRange = vsn.getPrimarySequence().getFrameRange(); 
+	  pBackgroundPlateNodeName = vsn.getName(); 
+	  pRequiredNodeNames.add(pBackgroundPlateNodeName); 
+	}
+	catch(PipelineException ex) {
 	  throw new PipelineException
 	    ("Somehow no checked-in version of the " + aBackgroundPlate + " node " + 
 	     "(" + path + ") exists!"); 
-
-	pFrameRange = vsn.getPrimarySequence().getFrameRange(); 
-
-        pBackgroundPlateNodeName = vsn.getName(); 
-        pRequiredNodeNames.add(pBackgroundPlateNodeName); 
+	}
       }
 
       /* the miscellaneous reference images */ 
@@ -625,8 +536,9 @@ class PlatesBuilder
 	{
 	  PFTrackBuildStage stage = 
 	    new PFTrackBuildStage(pStageInfo, pContext, pClient, 
-				  solveDistortionNodeName, pPlatesRedCheckerNodeName, 
-				  pBackgroundPlateNodeName, vfxShotDataNodeName); 
+				  solveDistortionNodeName, pBackgroundPlateNodeName, 
+				  vfxShotDataNodeName); 
+	  stage.addLink(new LinkMod(pPlatesRedCheckerNodeName, LinkPolicy.Dependency));
 	  addTaskAnnotation(stage, NodePurpose.Edit); 
 	  stage.build();  
 	  addToDisableList(solveDistortionNodeName);
@@ -914,30 +826,19 @@ class PlatesBuilder
 
   private static final long serialVersionUID = 4601321412376464762L;
   
-  public final static String aLocation        = "Location";
   public final static String aReferenceImages = "ReferenceImages";
   public final static String aBackgroundPlate = "BackgroundPlate";
 
   
 
   /*----------------------------------------------------------------------------------------*/
-  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Provides a set of studio-wide helpers for project, sequence and shot naming.
+   * The stages which require running their finalizeStage() method before check-in.
    */ 
-  private StudioDefinitions pStudioDefs;
-
-  /**
-   * Provides project-wide names of nodes and node directories.
-   */ 
-  private ProjectNamer pProjectNamer;
-
-  /**
-   * Provides the names of nodes and node directories which are shot specific.
-   */
-  private ShotNamer pShotNamer;
+  private ArrayList<FinalizableStage> pFinalStages; 
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -946,14 +847,6 @@ class PlatesBuilder
    * The fully resolved names of nodes required to exist for this builder to run. 
    */ 
   private TreeSet<String> pRequiredNodeNames;
-
-  /**
-   * The stages which require running their finalizeStage() method before check-in.
-   */ 
-  private ArrayList<FinalizableStage> pFinalStages; 
-
-
-  /*-- PLATE PREREQUISITES -----------------------------------------------------------------*/
 
   /**
    * The fully resolved name and frame range of background plates node. 

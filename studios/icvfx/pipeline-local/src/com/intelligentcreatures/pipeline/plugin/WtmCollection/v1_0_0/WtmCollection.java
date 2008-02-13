@@ -1,4 +1,4 @@
-// $Id: WtmCollection.java,v 1.3 2008/02/11 22:59:48 jim Exp $
+// $Id: WtmCollection.java,v 1.4 2008/02/13 10:47:29 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -54,8 +54,10 @@ class WtmCollection
     String pkg = "com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.";
 
     TreeMap<String, String> toReturn = new TreeMap<String, String>();
-    toReturn.put("Plates", pkg + "PlatesBuilder");
-    toReturn.put("ApproveTask", pkg + "ApproveTaskBuilder");
+    toReturn.put("Plates",           pkg + "PlatesBuilder");
+    toReturn.put("InternalTracking", pkg + "InternalTrackingBuilder");
+    toReturn.put("Tracking",         pkg + "TrackingBuilder");
+    toReturn.put("ApproveTask",      pkg + "ApproveTaskBuilder");
     
     return toReturn;
   } 

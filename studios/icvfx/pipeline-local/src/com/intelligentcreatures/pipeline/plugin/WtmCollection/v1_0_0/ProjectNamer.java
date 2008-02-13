@@ -1,4 +1,4 @@
-// $Id: ProjectNamer.java,v 1.7 2008/02/12 01:23:36 jim Exp $
+// $Id: ProjectNamer.java,v 1.8 2008/02/13 10:47:29 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -169,8 +169,161 @@ class ProjectNamer
     return path.toString(); 
   }
 
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   T R A C K I N G   A S S E T S                                                        */
+  /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * Returns the fully resolved name of the node containing the combined MEL scripts to 
+   * attach shaders and verify the tracking test render Maya scene.
+   */ 
+  public String
+  getTrackPrepNode() 
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Tracking), 
+			 new Path(AppDirs.MEL.toDirPath(), "track_prep"));
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node containing a MEL script which verifies the 
+   * contents of the Maya scene containing tracking data exported from PFTrack.
+   */ 
+  public String
+  getTrackVerifyNode() 
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Tracking), 
+			 new Path(AppDirs.MEL.toDirPath(), "track_verify"));
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node containing a MEL script which used to set
+   * the Maya render globals for tracking verification test renders.
+   */ 
+  public String
+  getTrackVerifyGlobalsNode() 
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Tracking), 
+			 new Path(AppDirs.MEL.toDirPath(), "track_verify_globals"));
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node containing the combined pre-render MEL 
+   * script for the tracking verification test renders.
+   */ 
+  public String
+  getTrackVerifyRenderNode() 
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Tracking), 
+			 new Path(AppDirs.MEL.toDirPath(), "track_verify_render"));
+    return path.toString(); 
+  }
+
+
   
+  /*----------------------------------------------------------------------------------------*/
+  /*   R O R S C H A C H   A S S E T S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Returns the fully resolved name of the node containing a Maya scene which provides the 
+   * test rig used in the tracking verification test renders.
+   */ 
+  public String
+  getRorschachVerifyModelNode() 
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Rorschach, TaskType.Modeling), 
+			 "ror_mdl_verify");
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node containing a Maya scene which provides the
+   * test shaders used in the tracking verification test renders.
+   */ 
+  public String
+  getRorschachTestShadersNode() 
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Rorschach, TaskType.LookDev), 
+			 "ror_shd_test");
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node containing a Maya scene which provides the
+   * test lights used in the tracking verification test renders.
+   */ 
+  public String
+  getRorschachTestLightsNode() 
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Rorschach, TaskType.LookDev), 
+			 "ror_lts_test");
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node containing a MEL script used to attach the
+   * test shaders to the test rig for the tracking verification test renders.
+   */ 
+  public String
+  getRorschachAttachShadersNode() 
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Rorschach, TaskType.LookDev), 
+			 "attach_ror_shd_test");
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node containing a placeholder Maya scene which 
+   * will eventually contain the camera/model tracking data exported from PFTrack.
+   */ 
+  public String
+  getRorschachTrackPlaceholderNode() 
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Rorschach, TaskType.Placeholder), 
+			 "ror_track");
+    return path.toString(); 
+  }
+
+  
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   M I S C   A S S E T S                                                                */
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Returns the fully resolved name of the node containing the definition of a MEL procedure 
+   * which attached an arbitrary material to an object.
+   */ 
+  public String 
+  getAttachShaderNode() 
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Misc), 
+			 new Path(AppDirs.MEL.toDirPath(), "attach_shader"));
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node containing a MEL script to hide all camera
+   * image planes from view before rendering.
+   */ 
+  public String 
+  getHideCameraPlaneNode() 
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Misc), 
+			 new Path(AppDirs.MEL.toDirPath(), "hide_camera_plane"));
+    return path.toString(); 
+  }
+
+  
+
+
+
+
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/

@@ -1,4 +1,4 @@
-// $Id: AppDirs.java,v 1.2 2008/02/07 14:14:33 jim Exp $
+// $Id: AppDirs.java,v 1.3 2008/02/13 10:47:29 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -15,6 +15,11 @@ public
 enum AppDirs
 {
   /*-- MAYA --------------------------------------------------------------------------------*/
+
+  /**
+   * Maya scenes. 
+   */ 
+  Maya, 
 
   /**
    * General purpose MEL scripts.
@@ -127,19 +132,19 @@ enum AppDirs
   {
     switch(this) {
     case ShadeMEL:
-      return "mel/shade"; 
+      return "shade/mel"; 
 
     case RigMEL:
-      return "mel/rig"; 
+      return "rig/mel"; 
       
     case MatchMEL:
-      return "mel/match"; 
+      return "match/mel"; 
       
     case RenderSetupMEL:
-      return "mel/render_setup"; 
+      return "render_setup/mel"; 
 
     case MiscMEL:
-      return "mel/misc"; 
+      return "misc/mel"; 
 
     case Image2k:
       return "2k";

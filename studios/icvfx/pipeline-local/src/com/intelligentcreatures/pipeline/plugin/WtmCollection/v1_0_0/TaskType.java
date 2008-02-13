@@ -1,4 +1,4 @@
-// $Id: TaskType.java,v 1.5 2008/02/06 18:17:43 jim Exp $
+// $Id: TaskType.java,v 1.6 2008/02/13 10:47:29 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -27,7 +27,7 @@ enum TaskType
   /**
    *
    */ 
-  Track,
+  Tracking,
   
   /**
    *
@@ -77,7 +77,18 @@ enum TaskType
   /**
    *
    */ 
-  Comp; 
+  Comp, 
+
+  /**
+   *
+   */ 
+  Placeholder, 
+
+  /**
+   *
+   */ 
+  Misc; 
+
 
 
 

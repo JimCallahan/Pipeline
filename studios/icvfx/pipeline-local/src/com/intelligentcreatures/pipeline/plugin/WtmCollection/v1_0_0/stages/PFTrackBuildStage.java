@@ -1,4 +1,4 @@
-// $Id: PFTrackBuildStage.java,v 1.5 2008/02/07 14:14:33 jim Exp $
+// $Id: PFTrackBuildStage.java,v 1.6 2008/02/13 10:47:29 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
 
@@ -41,9 +41,6 @@ class PFTrackBuildStage
    * @param nodeName
    *   The name of the node that is to be created.
    * 
-   * @param gridName
-   *   The name of the original grid node.
-   * 
    * @param platesName
    *   The name of the scanned plates node.
    * 
@@ -57,7 +54,6 @@ class PFTrackBuildStage
    UtilContext context,
    MasterMgrClient client, 
    String nodeName, 
-   String gridName, 
    String platesName, 
    String vfxDataName 
   )
@@ -71,10 +67,9 @@ class PFTrackBuildStage
           nodeName, 
           "pts", 
           null, 
-          new PluginContext("Touch"));   // new PluginContext("PFTrackBuild", "ICVFX")
+          new PluginContext("Touch"));  
 
-    addLink(new LinkMod(gridName, LinkPolicy.Dependency));
-    addLink(new LinkMod(platesName, LinkPolicy.Dependency));
+    addLink(new LinkMod(platesName, LinkPolicy.Association, LinkRelationship.None, null));
     addLink(new LinkMod(vfxDataName, LinkPolicy.Association, LinkRelationship.None, null));
   }
   
