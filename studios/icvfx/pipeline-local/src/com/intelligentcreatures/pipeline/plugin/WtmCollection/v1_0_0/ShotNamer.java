@@ -1,4 +1,4 @@
-// $Id: ShotNamer.java,v 1.8 2008/02/13 18:56:27 jim Exp $
+// $Id: ShotNamer.java,v 1.9 2008/02/13 21:32:24 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -461,7 +461,7 @@ class ShotNamer
   getTrackingVerifyImagesNode() 
   {
     Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Focus), 
-			 new Path(AppDirs.Images.toDirPath(), 
+			 new Path(AppDirs.Render.toDirPath(), 
 				  joinNames(getFullShotName(), "verify"))); 
     return path.toString(); 
   }
@@ -474,7 +474,7 @@ class ShotNamer
   getTrackingVerifyCompNode() 
   {
     Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Focus), 
-			 new Path(AppDirs.Images.toDirPath(), 
+			 new Path(AppDirs.Comp.toDirPath(), 
 				  joinNames(getFullShotName(), "comp_verify"))); 
     return path.toString(); 
   }
