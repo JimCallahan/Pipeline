@@ -1,4 +1,4 @@
-// $Id: TrackingBuilder.java,v 1.3 2008/02/14 05:16:57 jim Exp $
+// $Id: TrackingBuilder.java,v 1.4 2008/02/14 05:43:44 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -395,7 +395,8 @@ class TrackingBuilder
 	    new BashCompStage(pStageInfo, pContext, pClient, 
 			      verifyCompNodeName, pFrameRange, 
 			      verifyImagesNodeName, pUndistorted2kPlateNodeName); 
-	  stage.build();	  
+	  addTaskAnnotation(stage, NodePurpose.Focus); 	 
+	  stage.build(); 
 	}
 
 	String submitNodeName = pShotNamer.getTrackingSubmitNode();
