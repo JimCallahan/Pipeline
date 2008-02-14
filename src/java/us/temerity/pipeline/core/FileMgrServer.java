@@ -1,4 +1,4 @@
-// $Id: FileMgrServer.java,v 1.36 2007/10/23 02:29:58 jim Exp $
+// $Id: FileMgrServer.java,v 1.37 2008/02/14 20:26:29 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -114,21 +114,21 @@ class FileMgrServer
     catch (IOException ex) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Severe,
-	 "IO problems on port (" + PackageInfo.sFilePort + "):\n" + 
-	 getFullMessage(ex));
+         Exceptions.getFullMessage
+	 ("IO problems on port (" + PackageInfo.sFilePort + "):", ex)); 
       LogMgr.getInstance().flush();
     }
     catch (SecurityException ex) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Severe,
-	 "The Security Manager doesn't allow listening to sockets!\n" + 
-	 getFullMessage(ex));
+         Exceptions.getFullMessage
+	 ("The Security Manager doesn't allow listening to sockets!", ex)); 
       LogMgr.getInstance().flush();
     }
     catch (Exception ex) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Severe,
-	 getFullMessage(ex));
+	 Exceptions.getFullMessage(ex));
     }
     finally {
       if(schannel != null) {
@@ -452,19 +452,19 @@ class FileMgrServer
       catch (IOException ex) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
-	   "IO problems on port (" + PackageInfo.sFilePort + "):\n" + 
-	   getFullMessage(ex));
+           Exceptions.getFullMessage
+	   ("IO problems on port (" + PackageInfo.sFilePort + "):", ex)); 
       }
       catch(ClassNotFoundException ex) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
-	   "Illegal object encountered on port (" + PackageInfo.sFilePort + "):\n" + 
-	   getFullMessage(ex));
+           Exceptions.getFullMessage
+	   ("Illegal object encountered on port (" + PackageInfo.sFilePort + "):", ex)); 
       }
       catch (Exception ex) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
-	   getFullMessage(ex));
+	   Exceptions.getFullMessage(ex));
       }
       finally {
 	closeConnection();

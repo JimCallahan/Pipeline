@@ -1,4 +1,4 @@
-// $Id: BaseSubProcess.java,v 1.26 2008/01/16 20:15:49 jim Exp $
+// $Id: BaseSubProcess.java,v 1.27 2008/02/14 20:26:29 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -621,34 +621,6 @@ class BaseSubProcess
       for(Integer cpid : children) 
 	buildHitListHelper(cpid, PIDs, dead);
     }
-  }
-
-  /** 
-   * Generate a string containing both the exception message and stack trace. 
-   * 
-   * @param ex 
-   *   The thrown exception.   
-   */ 
-  protected String 
-  getFullMessage
-  (
-   Throwable ex
-  ) 
-  {
-    StringBuilder buf = new StringBuilder();
-     
-    if(ex.getMessage() != null) 
-      buf.append(ex.getMessage() + "\n\n"); 	
-    else if(ex.toString() != null) 
-      buf.append(ex.toString() + "\n\n"); 	
-      
-    buf.append("Stack Trace:\n");
-    StackTraceElement stack[] = ex.getStackTrace();
-    int wk;
-    for(wk=0; wk<stack.length; wk++) 
-      buf.append("  " + stack[wk].toString() + "\n");
-   
-    return (buf.toString());
   }
 
   

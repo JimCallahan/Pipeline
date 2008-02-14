@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.83 2008/01/28 11:58:53 jesse Exp $
+// $Id: MasterMgrServer.java,v 1.84 2008/02/14 20:26:29 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -197,21 +197,21 @@ class MasterMgrServer
     catch (IOException ex) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Severe,
-	 "IO problems on port (" + PackageInfo.sMasterPort + "):\n" + 
-	 getFullMessage(ex));
+         Exceptions.getFullMessage
+	 ("IO problems on port (" + PackageInfo.sMasterPort + "):", ex)); 
       LogMgr.getInstance().flush();
     }
     catch (SecurityException ex) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Severe,
-	 "The Security Manager doesn't allow listening to sockets!\n" + 
-	 getFullMessage(ex));
+         Exceptions.getFullMessage
+	 ("The Security Manager doesn't allow listening to sockets!", ex)); 
       LogMgr.getInstance().flush();
     }
     catch (Exception ex) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Severe,
-	 getFullMessage(ex));
+	 Exceptions.getFullMessage(ex));
     }
     finally {
       if(schannel != null) {
@@ -1731,9 +1731,9 @@ class MasterMgrServer
 
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
-	   "IO problems on connection from " + 
-	   "(" + host + ":" + PackageInfo.sMasterPort + "):\n" + 
-	   getFullMessage(ex));
+           Exceptions.getFullMessage
+           ("IO problems on connection from " + 
+            "(" + host + ":" + PackageInfo.sMasterPort + "):", ex)); 
       }
       catch(ClassNotFoundException ex) {
 	InetAddress addr = pSocket.getInetAddress(); 
@@ -1743,14 +1743,14 @@ class MasterMgrServer
 
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
-	   "Illegal object encountered on connection from " + 
-	   "(" + host + ":" + PackageInfo.sMasterPort + "):\n" + 
-	   getFullMessage(ex));
+           Exceptions.getFullMessage
+	   ("Illegal object encountered on connection from " + 
+            "(" + host + ":" + PackageInfo.sMasterPort + "):", ex)); 
       }
       catch (Exception ex) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
-	   getFullMessage(ex));
+	   Exceptions.getFullMessage(ex));
       }
       finally {
 	closeConnection();
@@ -1820,7 +1820,7 @@ class MasterMgrServer
       catch (Exception ex) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Mem, LogMgr.Level.Severe,
-	   "Node Garbage Collector Failed: " + getFullMessage(ex));	
+           Exceptions.getFullMessage("Node Garbage Collector Failed:", ex)); 
 	LogMgr.getInstance().flush();	
       }
       finally {
@@ -1862,7 +1862,7 @@ class MasterMgrServer
       catch (Exception ex) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Ops, LogMgr.Level.Severe,
-	   "Event Writer Failed: " + getFullMessage(ex));	
+	   Exceptions.getFullMessage("Event Writer Failed:", ex)); 
 	LogMgr.getInstance().flush();
       }
       finally {

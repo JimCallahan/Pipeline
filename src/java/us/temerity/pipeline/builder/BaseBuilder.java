@@ -1,4 +1,4 @@
-// $Id: BaseBuilder.java,v 1.44 2008/02/14 00:57:35 jesse Exp $
+// $Id: BaseBuilder.java,v 1.45 2008/02/14 20:26:29 jim Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -2534,15 +2534,18 @@ class BaseBuilder
     {
       LogMgr.getInstance().log
       (LogMgr.Kind.Ops, LogMgr.Level.Severe,
-       getFullMessage(ex));
+       Exceptions.getFullMessage(ex));
+
       if (pBuilder.terminateAppOnQuit()) {
         System.err.println("Problem initializing builder in gui mode.\n" + ex.getMessage());
         System.exit(exitCode);
-      } else {
+      } 
+      else {
         pGuiDialog.setVisible(false);
         UIMaster.getInstance().showErrorDialog(ex);
       }
     }
+
     private BaseBuilder pBuilder;
   }
   

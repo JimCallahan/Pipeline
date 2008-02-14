@@ -1,4 +1,4 @@
-// $Id: SubProcessLight.java,v 1.18 2007/04/30 20:51:40 jim Exp $
+// $Id: SubProcessLight.java,v 1.19 2008/02/14 20:26:29 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -754,7 +754,7 @@ class SubProcessLight
       catch(Exception ex) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Sub, LogMgr.Level.Severe,
-	   getName() + " [internal error]: " + getFullMessage(ex));
+           Exceptions.getFullMessage(getName() + " [internal error]:", ex)); 
 	LogMgr.getInstance().flush();
 
 	pExitCode = -2;

@@ -1,4 +1,4 @@
-// $Id: PythonApp.java,v 1.2 2008/02/11 03:18:35 jim Exp $
+// $Id: PythonApp.java,v 1.3 2008/02/14 20:26:29 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -93,12 +93,12 @@ class PythonApp
 
       LogMgr.getInstance().log
         (LogMgr.Kind.Ops, LogMgr.Level.Severe,
-         getFullMessage(pye));      
+         Exceptions.getFullMessage(pye));      
     }
     catch(Exception ex) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
-	 getFullMessage(ex));
+	 Exceptions.getFullMessage(ex));
     }
     finally {
       LogMgr.getInstance().cleanup();

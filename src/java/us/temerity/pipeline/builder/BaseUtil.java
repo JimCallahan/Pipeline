@@ -1,4 +1,4 @@
-// $Id: BaseUtil.java,v 1.30 2008/02/11 19:22:10 jesse Exp $
+// $Id: BaseUtil.java,v 1.31 2008/02/14 20:26:29 jim Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -1775,35 +1775,28 @@ class BaseUtil
     return getStringParamValue(mapping, true);
   }
 
+
   /*----------------------------------------------------------------------------------------*/
 
   /** 
    * Generate a string containing both the exception message and stack trace. 
    * 
+   * @deprecated 
+   *   The static method {@link Exceptions.getFullMessage} should be used instead.
+   * 
    * @param ex 
    *   The thrown exception.   
    */ 
+  @Deprecated
   protected String 
   getFullMessage
   (
    Throwable ex
   ) 
   {
-    StringBuilder buf = new StringBuilder();
-     
-    if(ex.getMessage() != null) 
-      buf.append(ex.getMessage() + "\n\n");     
-    else if(ex.toString() != null) 
-      buf.append(ex.toString() + "\n\n");       
-      
-    buf.append("Stack Trace:\n");
-    StackTraceElement stack[] = ex.getStackTrace();
-    int wk;
-    for(wk=0; wk<stack.length; wk++) 
-      buf.append("  " + stack[wk].toString() + "\n");
-   
-    return (buf.toString());
+    return Exceptions.getFullMessage(ex); 
   }
+
   
   
   /*----------------------------------------------------------------------------------------*/

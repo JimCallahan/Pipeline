@@ -1,4 +1,4 @@
-// $Id: PluginApp.java,v 1.12 2007/12/15 07:41:15 jesse Exp $
+// $Id: PluginApp.java,v 1.13 2008/02/14 20:26:29 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -39,7 +39,7 @@ class PluginApp
     catch(IOException ex) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
-	 getFullMessage(ex));
+	 Exceptions.getFullMessage(ex));
       System.exit(1);
     }
   }
@@ -85,7 +85,7 @@ class PluginApp
     catch(Exception ex) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
-	 getFullMessage(ex));
+	 Exceptions.getFullMessage(ex));
     }
     finally {
       LogMgr.getInstance().cleanup();

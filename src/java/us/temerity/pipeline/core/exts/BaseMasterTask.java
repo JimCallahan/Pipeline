@@ -1,4 +1,4 @@
-// $Id: BaseMasterTask.java,v 1.1 2006/10/11 22:45:40 jim Exp $
+// $Id: BaseMasterTask.java,v 1.2 2008/02/14 20:26:29 jim Exp $
 
 package us.temerity.pipeline.core.exts;
 
@@ -74,7 +74,7 @@ class BaseMasterTask
     catch(Exception ex) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ext, LogMgr.Level.Severe,
-	 getFullMessage(ex));
+	 Exceptions.getFullMessage(ex));
     }
     finally {
       taskFinished();

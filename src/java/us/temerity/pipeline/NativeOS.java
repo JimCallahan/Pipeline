@@ -1,4 +1,4 @@
-// $Id: NativeOS.java,v 1.8 2007/09/24 08:10:16 jim Exp $
+// $Id: NativeOS.java,v 1.9 2008/02/14 20:26:29 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -109,7 +109,7 @@ class NativeOS
 	catch(NumberFormatException ex) {
 	  throw new IOException
 	    ("Incomprehensible output from sysctl(8):\n" + 
-	     getFullMessage(ex));
+	     Exceptions.getFullMessage(ex));
 	}
       }
       break;
@@ -241,7 +241,7 @@ class NativeOS
 	catch(Exception ex) {
 	  throw new IOException
 	    ("Incomprehensible output from vm_stat(1):\n" + 
-	     getFullMessage(ex));
+	     Exceptions.getFullMessage(ex));
 	}
       }
       break;  
@@ -252,34 +252,6 @@ class NativeOS
     }
 
     return memory;
-  }
-
-  /** 
-   * Generate a string containing both the exception message and stack trace. 
-   * 
-   * @param ex 
-   *   The thrown exception.   
-   */ 
-  private static String 
-  getFullMessage
-  (
-   Throwable ex
-  ) 
-  {
-    StringBuilder buf = new StringBuilder();
-     
-    if(ex.getMessage() != null) 
-      buf.append(ex.getMessage() + "\n\n"); 	
-    else if(ex.toString() != null) 
-      buf.append(ex.toString() + "\n\n"); 	
-      
-    buf.append("Stack Trace:\n");
-    StackTraceElement stack[] = ex.getStackTrace();
-    int wk;
-    for(wk=0; wk<stack.length; wk++) 
-      buf.append("  " + stack[wk].toString() + "\n");
-   
-    return (buf.toString());
   }
 
      
@@ -367,7 +339,7 @@ class NativeOS
 	catch(NumberFormatException ex) {
 	  throw new IOException
 	    ("Incomprehensible output from sysctl(8):\n" + 
-	     getFullMessage(ex));
+	     Exceptions.getFullMessage(ex));
 	}
       }
       break;
@@ -448,7 +420,7 @@ class NativeOS
 	catch(NumberFormatException ex) {
 	  throw new IOException
 	    ("Incomprehensible output from sysctl(8):\n" + 
-	     getFullMessage(ex));
+	     Exceptions.getFullMessage(ex));
 	}
       }
       break;

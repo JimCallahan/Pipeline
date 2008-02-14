@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.85 2008/01/16 21:15:00 jim Exp $
+// $Id: ScriptApp.java,v 1.86 2008/02/14 20:26:29 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -79,7 +79,7 @@ class ScriptApp
     catch(Exception ex) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
-	 getFullMessage(ex));
+	 Exceptions.getFullMessage(ex));
     }
     finally {
       if(parser != null)

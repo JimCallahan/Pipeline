@@ -1,4 +1,4 @@
-// $Id: MasterApp.java,v 1.20 2008/01/16 21:15:00 jim Exp $
+// $Id: MasterApp.java,v 1.21 2008/02/14 20:26:29 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -39,7 +39,7 @@ class MasterApp
     catch(IOException ex) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
-	 getFullMessage(ex));
+	 Exceptions.getFullMessage(ex));
       System.exit(1);
     }
   }
@@ -94,7 +94,7 @@ class MasterApp
     catch(Exception ex) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
-	 getFullMessage(ex));
+	 Exceptions.getFullMessage(ex));
     }
     finally {
       LogMgr.getInstance().cleanup();

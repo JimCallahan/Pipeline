@@ -1,4 +1,4 @@
-// $Id: FileMgrApp.java,v 1.18 2008/01/16 21:15:00 jim Exp $
+// $Id: FileMgrApp.java,v 1.19 2008/02/14 20:26:29 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -39,7 +39,7 @@ class FileMgrApp
     catch(IOException ex) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
-	 getFullMessage(ex));
+	 Exceptions.getFullMessage(ex));
       System.exit(1);
     }
   }
@@ -94,7 +94,7 @@ class FileMgrApp
     catch(Exception ex) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
-	 getFullMessage(ex));
+	 Exceptions.getFullMessage(ex));
     }
     finally {
       LogMgr.getInstance().cleanup();

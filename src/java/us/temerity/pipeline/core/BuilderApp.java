@@ -1,4 +1,4 @@
-// $Id: BuilderApp.java,v 1.25 2008/02/06 07:53:23 jesse Exp $
+// $Id: BuilderApp.java,v 1.26 2008/02/14 20:26:29 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -200,8 +200,7 @@ public class BuilderApp
     catch(Exception ex) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
-	 getFullMessage(ex));
-      	ex.printStackTrace();
+	 Exceptions.getFullMessage(ex));
     }
     finally {
       if (!pGui)

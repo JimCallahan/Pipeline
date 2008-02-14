@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.50 2007/12/15 07:14:57 jesse Exp $
+// $Id: QueueMgrServer.java,v 1.51 2008/02/14 20:26:29 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -169,21 +169,21 @@ class QueueMgrServer
     catch (IOException ex) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Severe,
-	 "IO problems on port (" + PackageInfo.sQueuePort + "):\n" + 
-	 getFullMessage(ex));
+         Exceptions.getFullMessage
+	 ("IO problems on port (" + PackageInfo.sQueuePort + "):", ex)); 
       LogMgr.getInstance().flush();
     }
     catch (SecurityException ex) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Severe,
-	 "The Security Manager doesn't allow listening to sockets!\n" + 
-	 getFullMessage(ex));
+         Exceptions.getFullMessage
+	 ("The Security Manager doesn't allow listening to sockets!", ex)); 
       LogMgr.getInstance().flush();
     }
     catch (Exception ex) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Severe,
-	 getFullMessage(ex));
+	 Exceptions.getFullMessage(ex));
       LogMgr.getInstance().flush();
     }
     finally {
@@ -916,9 +916,9 @@ class QueueMgrServer
 
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
-	   "IO problems on connection from " + 
-	   "(" + host + ":" + PackageInfo.sQueuePort + "):\n" + 
-	   getFullMessage(ex));
+           Exceptions.getFullMessage
+	   ("IO problems on connection from " + 
+            "(" + host + ":" + PackageInfo.sQueuePort + "):", ex)); 
       }
       catch(ClassNotFoundException ex) {
 	InetAddress addr = pSocket.getInetAddress(); 
@@ -928,14 +928,14 @@ class QueueMgrServer
 
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
-	   "Illegal object encountered on connection from " + 
-	   "(" + host + ":" + PackageInfo.sQueuePort + "):\n" + 
-	   getFullMessage(ex));
+           Exceptions.getFullMessage
+	   ("Illegal object encountered on connection from " + 
+            "(" + host + ":" + PackageInfo.sQueuePort + "):", ex)); 
       }
       catch (Exception ex) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
-	   getFullMessage(ex));
+	   Exceptions.getFullMessage(ex));
       }
       finally {
 	closeConnection();
@@ -1019,7 +1019,7 @@ class QueueMgrServer
       catch (Exception ex) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
-	   "Master Connector Failed: " + getFullMessage(ex));	
+	   Exceptions.getFullMessage("Master Connector Failed:", ex)); 
 	LogMgr.getInstance().flush();
       }
     }
@@ -1059,7 +1059,7 @@ class QueueMgrServer
       catch (Exception ex) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Col, LogMgr.Level.Severe,
-	   "Collector Failed: " + getFullMessage(ex));	
+	   Exceptions.getFullMessage("Collector Failed:", ex)); 
 	LogMgr.getInstance().flush();	
       }
       finally {
@@ -1103,7 +1103,7 @@ class QueueMgrServer
       catch (Exception ex) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Dsp, LogMgr.Level.Severe,
-	   "Dispatcher Failed: " + getFullMessage(ex));	
+	   Exceptions.getFullMessage("Dispatcher Failed:", ex)); 
 	LogMgr.getInstance().flush();
       }
       finally {
@@ -1145,7 +1145,7 @@ class QueueMgrServer
       catch (Exception ex) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Ops, LogMgr.Level.Severe,
-	   "Scheduler Failed: " + getFullMessage(ex));	
+	   Exceptions.getFullMessage("Scheduler Failed:", ex)); 
 	LogMgr.getInstance().flush();
       }
       finally {
@@ -1187,7 +1187,7 @@ class QueueMgrServer
       catch (Exception ex) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Mem, LogMgr.Level.Severe,
-	   "JVM Memory Statistics Failed: " + getFullMessage(ex));	
+	   Exceptions.getFullMessage("JVM Memory Statistics Failed:", ex)); 
 	LogMgr.getInstance().flush();	
       }
       finally {

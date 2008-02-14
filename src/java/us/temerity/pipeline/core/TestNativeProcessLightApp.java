@@ -1,4 +1,4 @@
-// $Id: TestNativeProcessLightApp.java,v 1.3 2007/02/07 21:15:33 jim Exp $
+// $Id: TestNativeProcessLightApp.java,v 1.4 2008/02/14 20:26:29 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -115,7 +115,7 @@ class TestNativeProcessLightApp
     catch(Exception ex) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
-	 getFullMessage(ex));
+	 Exceptions.getFullMessage(ex));
     }
     finally {
       LogMgr.getInstance().cleanup();

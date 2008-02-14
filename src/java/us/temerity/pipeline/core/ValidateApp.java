@@ -1,4 +1,4 @@
-// $Id: ValidateApp.java,v 1.1 2006/12/11 21:57:12 jim Exp $
+// $Id: ValidateApp.java,v 1.2 2008/02/14 20:26:29 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -81,7 +81,7 @@ class ValidateApp
     catch(Exception ex) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
-	 getFullMessage(ex));
+	 Exceptions.getFullMessage(ex));
     }
     finally {
       LogMgr.getInstance().cleanup();

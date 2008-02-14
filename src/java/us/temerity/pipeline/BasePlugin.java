@@ -1,4 +1,4 @@
-// $Id: BasePlugin.java,v 1.12 2008/02/11 03:16:25 jim Exp $
+// $Id: BasePlugin.java,v 1.13 2008/02/14 20:26:29 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -394,29 +394,20 @@ class BasePlugin
   /** 
    * Generate a string containing both the exception message and stack trace. 
    * 
+   * @deprecated 
+   *   The static method {@link Exceptions.getFullMessage} should be used instead.
+   * 
    * @param ex 
    *   The thrown exception.   
    */ 
+  @Deprecated
   protected String 
   getFullMessage
   (
    Throwable ex
   ) 
   {
-    StringBuilder buf = new StringBuilder();
-     
-    if(ex.getMessage() != null) 
-      buf.append(ex.getMessage() + "\n\n"); 	
-    else if(ex.toString() != null) 
-      buf.append(ex.toString() + "\n\n"); 	
-      
-    buf.append("Stack Trace:\n");
-    StackTraceElement stack[] = ex.getStackTrace();
-    int wk;
-    for(wk=0; wk<stack.length; wk++) 
-      buf.append("  " + stack[wk].toString() + "\n");
-   
-    return (buf.toString());
+    return Exceptions.getFullMessage(ex); 
   }
 
 

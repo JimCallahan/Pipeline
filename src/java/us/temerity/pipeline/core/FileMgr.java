@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.72 2008/02/04 07:58:24 jim Exp $
+// $Id: FileMgr.java,v 1.73 2008/02/14 20:26:29 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -246,10 +246,10 @@ class FileMgr
     catch(Exception ex) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
-	 getFullMessage(ex));
+	 Exceptions.getFullMessage(ex));
       LogMgr.getInstance().flush();
 
-      throw new PipelineException(getFullMessage(ex));
+      throw new PipelineException(null, ex, true, true); 
     }
   }
 
@@ -3206,7 +3206,7 @@ class FileMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     catch(Exception ex) {
-      return new FailureRsp(timer, getFullMessage(ex));
+      return new FailureRsp(timer, Exceptions.getFullMessage(ex));
     }
     finally {
       while(!locks.isEmpty()) {
@@ -3806,7 +3806,7 @@ class FileMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     catch(Exception ex) {
-      return new FailureRsp(timer, getFullMessage(ex));
+      return new FailureRsp(timer, Exceptions.getFullMessage(ex));
     }
   }
 
@@ -4015,7 +4015,7 @@ class FileMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     catch(Exception ex) {
-      return new FailureRsp(timer, getFullMessage(ex));
+      return new FailureRsp(timer, Exceptions.getFullMessage(ex));
     }
     finally {
       checkedInLock.writeLock().unlock();
@@ -4077,7 +4077,7 @@ class FileMgr
       return new SuccessRsp(timer);      
     }
     catch(Exception ex) {
-      return new FailureRsp(timer, getFullMessage(ex));
+      return new FailureRsp(timer, Exceptions.getFullMessage(ex));
     }
   }
 
@@ -4085,37 +4085,6 @@ class FileMgr
 
   /*----------------------------------------------------------------------------------------*/
   /*   H E L P E R S                                                                        */
-  /*----------------------------------------------------------------------------------------*/
-
-  /** 
-   * Generate a string containing both the exception message and stack trace. 
-   * 
-   * @param ex 
-   *   The thrown exception.   
-   */ 
-  private String 
-  getFullMessage
-  (
-   Throwable ex
-  ) 
-  {
-    StringBuilder buf = new StringBuilder();
-     
-    if(ex.getMessage() != null) 
-      buf.append(ex.getMessage() + "\n\n"); 	
-    else if(ex.toString() != null) 
-      buf.append(ex.toString() + "\n\n"); 	
-      
-    buf.append("Stack Trace:\n");
-    StackTraceElement stack[] = ex.getStackTrace();
-    int wk;
-    for(wk=0; wk<stack.length; wk++) 
-      buf.append("  " + stack[wk].toString() + "\n");
-   
-    return (buf.toString());
-  }
-  
-
   /*----------------------------------------------------------------------------------------*/
 
   /** 

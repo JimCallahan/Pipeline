@@ -1,4 +1,4 @@
-// $Id: JobMgr.java,v 1.41 2007/03/29 19:45:50 jim Exp $
+// $Id: JobMgr.java,v 1.42 2008/02/14 20:26:29 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1115,7 +1115,7 @@ class JobMgr
 	  }
 
 	  {
-	    String msg = ("Job Prep Failed!\n\n" + getFullMessage(ex));
+	    String msg = Exceptions.getFullMessage("Job Prep Failed!", ex); 
 	    
 	    {
 	      LogMgr.getInstance().log
@@ -1213,30 +1213,8 @@ class JobMgr
       catch(Exception ex2) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Ops, LogMgr.Level.Severe,
-	   getFullMessage(ex2));
+	   Exceptions.getFullMessage(ex2));
       }
-    }
-
-    private String 
-    getFullMessage
-    (
-     Throwable ex
-    ) 
-    {
-      StringBuilder buf = new StringBuilder();
-      
-      if(ex.getMessage() != null) 
-	buf.append(ex.getMessage() + "\n\n"); 	
-      else if(ex.toString() != null) 
-      buf.append(ex.toString() + "\n\n"); 	
-      
-      buf.append("Stack Trace:\n");
-      StackTraceElement stack[] = ex.getStackTrace();
-      int wk;
-      for(wk=0; wk<stack.length; wk++) 
-	buf.append("  " + stack[wk].toString() + "\n");
-      
-      return (buf.toString());
     }
 
     private synchronized void 

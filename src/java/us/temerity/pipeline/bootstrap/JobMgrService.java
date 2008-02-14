@@ -1,6 +1,8 @@
-// $Id: JobMgrService.java,v 1.2 2007/02/13 02:49:31 jim Exp $
+// $Id: JobMgrService.java,v 1.3 2008/02/14 20:26:29 jim Exp $
 
 package us.temerity.pipeline.bootstrap;
+
+import us.temerity.pipeline.Exceptions;
 
 import java.io.*;
 import java.util.*;
@@ -52,7 +54,7 @@ class JobMgrService
 	  file.delete();
 	
 	FileWriter out = new FileWriter(file);
-	out.write(getFullMessage(ex));
+	out.write(Exceptions.getFullMessage(ex));
 	out.close();
       }
       catch(Exception ex2) {
@@ -82,7 +84,7 @@ class JobMgrService
 	  file.delete();
 	
 	FileWriter out = new FileWriter(file);
-	out.write(getFullMessage(ex));
+	out.write(Exceptions.getFullMessage(ex));
 	out.close();
       }
       catch(Exception ex2) {
@@ -91,40 +93,6 @@ class JobMgrService
       System.exit(1);
     }
   }  
-  
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   H E L P E R S                                                                        */
-  /*----------------------------------------------------------------------------------------*/
- 
-  /** 
-   * Generate a string containing both the exception message and stack trace. 
-   * 
-   * @param ex 
-   *   The thrown exception.   
-   */ 
-  protected static String 
-  getFullMessage
-  (
-   Throwable ex
-  ) 
-  {
-    StringBuilder buf = new StringBuilder();
-     
-    if(ex.getMessage() != null) 
-      buf.append(ex.getMessage() + "\n\n"); 	
-    else if(ex.toString() != null) 
-      buf.append(ex.toString() + "\n\n"); 	
-      
-    buf.append("Stack Trace:\n");
-    StackTraceElement stack[] = ex.getStackTrace();
-    int wk;
-    for(wk=0; wk<stack.length; wk++) 
-      buf.append("  " + stack[wk].toString() + "\n");
-   
-    return (buf.toString());
-  }
   
 
   

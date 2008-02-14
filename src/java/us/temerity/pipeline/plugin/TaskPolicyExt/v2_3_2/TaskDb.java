@@ -1,4 +1,4 @@
-// $Id: TaskDb.java,v 1.8 2007/08/20 07:41:49 jim Exp $
+// $Id: TaskDb.java,v 1.9 2008/02/14 20:26:29 jim Exp $
 
 package us.temerity.pipeline.plugin.TaskPolicyExt.v2_3_2;
 
@@ -1909,7 +1909,7 @@ class TaskDb
     {
       SQLException e = ex; 
       while(e != null) {
-        buf.append("\n\n" + getFullMessage(e)); 
+        buf.append("\n\n" + Exceptions.getFullMessage(e)); 
         e = ex.getNextException();
       }
     }
@@ -1921,35 +1921,6 @@ class TaskDb
 
     throw new PipelineException(buf.toString());
   }
-
-  /** 
-   * Generate a string containing both the exception message and stack trace. 
-   * 
-   * @param ex 
-   *   The thrown exception.   
-   */ 
-  private String 
-  getFullMessage
-  (
-   Throwable ex
-  ) 
-  {
-    StringBuilder buf = new StringBuilder();
-     
-    if(ex.getMessage() != null) 
-      buf.append(ex.getMessage() + "\n\n"); 	
-    else if(ex.toString() != null) 
-      buf.append(ex.toString() + "\n\n"); 	
-      
-    buf.append("Stack Trace:\n");
-    StackTraceElement stack[] = ex.getStackTrace();
-    int wk;
-    for(wk=0; wk<stack.length; wk++) 
-      buf.append("  " + stack[wk].toString() + "\n");
-   
-    return (buf.toString());
-  }
-
 
 
   /*----------------------------------------------------------------------------------------*/

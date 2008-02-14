@@ -1,4 +1,4 @@
-// $Id: BaseMgrServer.java,v 1.3 2007/03/23 23:14:53 jim Exp $
+// $Id: BaseMgrServer.java,v 1.4 2008/02/14 20:26:29 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -71,37 +71,6 @@ class BaseMgrServer
          "clock on this server by (" + deltaT + ") milliseconds!\n" + 
          "This is likely a symptom a broken or misconfigured NTP service and should be " + 
          "fixed immediately!");
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /** 
-   * Generate a string containing both the exception message and stack trace. 
-   * 
-   * @param ex 
-   *   The thrown exception.   
-   */ 
-  protected String 
-  getFullMessage
-  (
-   Throwable ex
-  ) 
-  {
-    StringBuilder buf = new StringBuilder();
-     
-    if(ex.getMessage() != null) 
-      buf.append(ex.getMessage() + "\n\n"); 	
-    else if(ex.toString() != null) 
-      buf.append(ex.toString() + "\n\n"); 	
-      
-    buf.append("Stack Trace:\n");
-    StackTraceElement stack[] = ex.getStackTrace();
-    int wk;
-    for(wk=0; wk<stack.length; wk++) 
-      buf.append("  " + stack[wk].toString() + "\n");
-   
-    return (buf.toString());
   }
 
 

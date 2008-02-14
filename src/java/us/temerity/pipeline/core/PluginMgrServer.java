@@ -1,4 +1,4 @@
-// $Id: PluginMgrServer.java,v 1.11 2007/03/28 19:51:04 jim Exp $
+// $Id: PluginMgrServer.java,v 1.12 2008/02/14 20:26:29 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -118,21 +118,21 @@ class PluginMgrServer
     catch (IOException ex) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Severe,
-	 "IO problems on port (" + PackageInfo.sPluginPort + "):\n" + 
-	 getFullMessage(ex));
+         Exceptions.getFullMessage
+	 ("IO problems on port (" + PackageInfo.sPluginPort + "):", ex)); 
       LogMgr.getInstance().flush();
     }
     catch (SecurityException ex) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Severe,
-	 "The Security Manager doesn't allow listening to sockets!\n" + 
-	 getFullMessage(ex));
+         Exceptions.getFullMessage
+	 ("The Security Manager doesn't allow listening to sockets!", ex)); 
       LogMgr.getInstance().flush();
     }
     catch (Exception ex) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Severe,
-	 getFullMessage(ex));
+	 Exceptions.getFullMessage(ex));
     }
     finally {
       if(schannel != null) {
@@ -287,19 +287,19 @@ class PluginMgrServer
       catch (IOException ex) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
-	   "IO problems on port (" + PackageInfo.sPluginPort + "):\n" + 
-	   getFullMessage(ex));
+           Exceptions.getFullMessage
+	   ("IO problems on port (" + PackageInfo.sPluginPort + "):", ex)); 
       }
       catch(ClassNotFoundException ex) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
-	   "Illegal object encountered on port (" + PackageInfo.sPluginPort + "):\n" + 
-	   getFullMessage(ex));	
+           Exceptions.getFullMessage
+	   ("Illegal object encountered on port (" + PackageInfo.sPluginPort + "):", ex)); 
       }
       catch (Exception ex) {
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
-	   getFullMessage(ex));
+	   Exceptions.getFullMessage(ex));
       }
       finally {
 	closeConnection();

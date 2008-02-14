@@ -1,4 +1,4 @@
-// $Id: QueueStatsExt.java,v 1.1 2007/06/17 15:34:45 jim Exp $
+// $Id: QueueStatsExt.java,v 1.2 2008/02/14 20:26:29 jim Exp $
 
 package us.temerity.pipeline.plugin.QueueStatsExt.v2_1_1;
 
@@ -170,7 +170,7 @@ QueueStatsExt
     catch(Exception ex) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ext, LogMgr.Level.Warning, 
-	 getFullMessage(ex));
+	 Exceptions.getFullMessage(ex));
     }
   }
  
@@ -204,7 +204,7 @@ QueueStatsExt
     catch(Exception ex) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ext, LogMgr.Level.Warning, 
-	 getFullMessage(ex));
+	 Exceptions.getFullMessage(ex));
     }
   }
  
@@ -257,7 +257,7 @@ QueueStatsExt
     catch(Exception ex) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ext, LogMgr.Level.Warning, 
-	 getFullMessage(ex));
+	 Exceptions.getFullMessage(ex));
     }    
   }
   
@@ -295,7 +295,7 @@ QueueStatsExt
     catch(Exception ex) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ext, LogMgr.Level.Warning, 
-	 getFullMessage(ex));
+	 Exceptions.getFullMessage(ex));
     }    
   }
 
@@ -338,7 +338,7 @@ QueueStatsExt
     catch(Exception ex) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ext, LogMgr.Level.Warning, 
-	 getFullMessage(ex));
+	 Exceptions.getFullMessage(ex));
     }        
   }
 

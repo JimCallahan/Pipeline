@@ -137,7 +137,7 @@ class TaskPolicyExt
     catch(Exception ex) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ext, LogMgr.Level.Severe, 
-	 getFullMessage(ex));
+	 Exceptions.getFullMessage(ex));
     }
   }
  
@@ -171,7 +171,7 @@ class TaskPolicyExt
     catch(Exception ex) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Ext, LogMgr.Level.Severe, 
-	 getFullMessage(ex));
+	 Exceptions.getFullMessage(ex));
     }
   }
  
