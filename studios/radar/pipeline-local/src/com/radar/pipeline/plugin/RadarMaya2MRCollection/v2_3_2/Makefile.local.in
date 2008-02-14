@@ -7,7 +7,7 @@
   JAVA_PACKAGE = com/radar/pipeline/plugin/RadarMaya2MRCollection/v2_3_2
   JAVA_SOURCES = $(shell find $(CLASS_ROOT)/../src/$(JAVA_PACKAGE) -type f -name "*.java")
 
-        TARGET = Maya2MRCollection.jar
+        TARGET = RadarMaya2MRCollection.jar
 
 
 
