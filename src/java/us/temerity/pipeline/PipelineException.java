@@ -1,4 +1,4 @@
-// $Id: PipelineException.java,v 1.3 2004/03/23 07:40:37 jim Exp $
+// $Id: PipelineException.java,v 1.4 2008/02/14 00:57:35 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -95,7 +95,46 @@ class PipelineException
   {
     super(cause);
   }
+  
 
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   M E T H O D S                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Constructs a new exception from the specified cause that builds a detailed error message, 
+   * including the stack trace.
+   * 
+   * @param cause  
+   *   The cause (which is saved for later retrieval by the {@link #getCause() getCause} 
+   *   method). 
+   *   
+   *  @return
+   *    A Pipeline Exception that contains a detailed message about why the cause was thrown
+   *    including a stack trace.
+   */
+  public static PipelineException
+  getDetailedException
+  (
+    Throwable cause
+  )
+  {
+    StringBuilder buf = new StringBuilder();
+    
+    if(cause.getMessage() != null) 
+      buf.append(cause.getMessage() + "\n\n");     
+    else if(cause.toString() != null) 
+      buf.append(cause.toString() + "\n\n");       
+      
+    buf.append("Stack Trace:\n");
+    StackTraceElement stack[] = cause.getStackTrace();
+    int wk;
+    for(wk=0; wk<stack.length; wk++) 
+      buf.append("  " + stack[wk].toString() + "\n");
+    
+    return new PipelineException(buf.toString(), cause);
+  }
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */

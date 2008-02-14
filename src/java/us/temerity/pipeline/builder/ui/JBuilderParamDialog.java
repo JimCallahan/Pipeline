@@ -391,6 +391,9 @@ class JBuilderParamDialog
       catch (PipelineException ex) {
 	handleException(ex);
       }
+      catch (Exception ex) {
+        handleException(PipelineException.getDetailedException(ex));
+      }
     }
   }
   
@@ -407,7 +410,7 @@ class JBuilderParamDialog
 	pMorePasses = pBuilder.getNextSetupPass(false);
       }
       catch (Exception ex) {
-	handleException(new PipelineException(ex));
+        handleException(PipelineException.getDetailedException(ex));
       }
       if (pMorePasses)
 	SwingUtilities.invokeLater(new NextParameterPassTask());
@@ -433,7 +436,7 @@ class JBuilderParamDialog
         constructPhaseEnableButtons();
       }
       catch (Exception ex) {
-        handleException(new PipelineException(ex));
+        handleException(PipelineException.getDetailedException(ex));
       }
     }
   }
@@ -464,7 +467,7 @@ class JBuilderParamDialog
 	}
 	catch (Exception ex) {
 	  ex.printStackTrace();
-	  handleException(new PipelineException(ex));
+	  handleException(PipelineException.getDetailedException(ex));
 	  error = true;
 	}
       }
@@ -486,7 +489,7 @@ class JBuilderParamDialog
         pTopPanel.makeNextActive();
       }
       catch (Exception ex) {
-        handleException(new PipelineException(ex));
+        handleException(PipelineException.getDetailedException(ex));
       }
     }
   }
@@ -504,7 +507,7 @@ class JBuilderParamDialog
         doQueue();
       }
       catch (Exception ex) {
-        handleException(new PipelineException(ex));
+        handleException(PipelineException.getDetailedException(ex));
       }
     }
   }
@@ -527,7 +530,7 @@ class JBuilderParamDialog
 	  handleException(ex);
 	}
 	catch (Exception ex) {
-	  handleException(new PipelineException(ex));
+	  handleException(PipelineException.getDetailedException(ex));
 	}
     }
   }
@@ -552,7 +555,7 @@ class JBuilderParamDialog
           queuePrep();
       }
       catch (Exception ex) {
-        handleException(new PipelineException(ex));
+        handleException(PipelineException.getDetailedException(ex));
       }
     }
   }

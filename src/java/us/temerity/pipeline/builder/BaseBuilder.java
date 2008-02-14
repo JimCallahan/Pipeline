@@ -1,4 +1,4 @@
-// $Id: BaseBuilder.java,v 1.43 2008/02/11 19:22:10 jesse Exp $
+// $Id: BaseBuilder.java,v 1.44 2008/02/14 00:57:35 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -955,8 +955,9 @@ class BaseBuilder
       finish = areAllFinished(pBuilderInformation.getQueueList());
     }
     catch (Exception ex) {
+      PipelineException toThrow = PipelineException.getDetailedException(ex);
       String logMessage = "An Exception was thrown during the course of execution.\n";
-      logMessage += ex.getMessage() + "\n";
+      logMessage += toThrow.getMessage() + "\n";
       if (pReleaseOnError) 
 	logMessage += "All the nodes that were registered will now be released.";
 
@@ -2520,7 +2521,7 @@ class BaseBuilder
 	quit(ex, 1);
       }
       catch(Exception ex) {
-	quit(ex, 1);
+	quit(PipelineException.getDetailedException(ex), 1);
       }
     }
     
@@ -2566,6 +2567,9 @@ class BaseBuilder
       catch (PipelineException ex) {
 	pGuiDialog.handleException(ex);
       }
+      catch (Exception ex) {
+        pGuiDialog.handleException(PipelineException.getDetailedException(ex));
+      }
     }
   }
   
@@ -2588,6 +2592,9 @@ class BaseBuilder
       }
       catch (PipelineException ex) {
 	pGuiDialog.handleException(ex);
+      }
+      catch (Exception ex) {
+        pGuiDialog.handleException(PipelineException.getDetailedException(ex));
       }
     }
   }
@@ -2613,7 +2620,9 @@ class BaseBuilder
       catch (PipelineException ex) {
 	pGuiDialog.handleException(ex);
       }
-      
+      catch (Exception ex) {
+        pGuiDialog.handleException(PipelineException.getDetailedException(ex));
+      }
     }
   }
   
