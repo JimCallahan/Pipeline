@@ -1,4 +1,4 @@
-// $Id: ShotNamer.java,v 1.9 2008/02/13 21:32:24 jim Exp $
+// $Id: ShotNamer.java,v 1.10 2008/02/14 05:16:57 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -486,14 +486,48 @@ class ShotNamer
   getTrackingSubmitNode()
   {
     Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Submit), 
-			 joinNames(getFullShotName(), "tracking_submit")); 
+			 joinNames(getFullShotName(), "track_submit")); 
     return path.toString(); 
   }
   
   
   /*----------------------------------------------------------------------------------------*/
 
-  // approve nodes... 
+  /**
+   * Returns the fully resolved name of the node containing 
+   */ 
+  public String
+  getTrackingExtractedCameraNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Product), 
+			 new Path(AppDirs.Maya.toDirPath(), 
+				  joinNames(getFullShotName(), "camera"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node containing 
+   */ 
+  public String
+  getTrackingExtractedTrackNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Product), 
+			 new Path(AppDirs.Maya.toDirPath(), 
+				  joinNames(getFullShotName(), "track"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the approve node for the Tracking task.
+   */ 
+  public String
+  getTrackingApproveNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Approve), 
+			 joinNames(getFullShotName(), "track_approve")); 
+    return path.toString(); 
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/

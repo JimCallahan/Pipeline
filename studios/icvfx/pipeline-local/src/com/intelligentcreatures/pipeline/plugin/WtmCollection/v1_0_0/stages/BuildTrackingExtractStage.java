@@ -1,4 +1,4 @@
-// $Id: BuildTrackingVerifyStage.java,v 1.2 2008/02/14 05:16:57 jim Exp $
+// $Id: BuildTrackingExtractStage.java,v 1.2 2008/02/14 14:22:51 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
 
@@ -12,14 +12,14 @@ import us.temerity.pipeline.stages.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   B U I L D   T R A C K I N G   V E R I F Y   S T A G E                                  */
+/*   B U I L D   T R A C K I N G   E X T R A C T   S T A G E                                */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Creates the tracking verification render Maya scene.
+ * Creates the baked camera or tracking locator data scenes.
  */ 
 public 
-class BuildTrackingVerifyStage
+class BuildTrackingExtractStage
   extends MayaBuildStage
 {
   /*----------------------------------------------------------------------------------------*/
@@ -43,40 +43,28 @@ class BuildTrackingVerifyStage
    * 
    * @param trackName
    *   The name of the node containg the tracking data Maya scene.
-   * 
-   * @param modelName
-   *   The name of the node containg the test model Maya scene.
-   * 
-   * @param shaderName
-   *   The name of the node containg the test shaders Maya scene.
-   * 
-   * @param lightsName
-   *   The name of the node containg the test lights Maya scene.
-   * 
-   * @param modelMEL
-   *   The name of the MEL script to use as the ModelMel parameter.
+
+   * @param extractMEL
+   *   The name of the MEL script which bakes and extracts the camera/locators.
    * 
    * @param range
    *   The frame range to give the newly created scene.
    */
   public
-  BuildTrackingVerifyStage
+  BuildTrackingExtractStage
   (
     StageInformation stageInfo,
     UtilContext context,
     MasterMgrClient client, 
     String nodeName,
     String trackName, 
-    String modelName, 
-    String shaderName, 
-    String lightsName, 
-    String modelMEL, 
+    String extractMEL, 
     FrameRange range
   ) 
     throws PipelineException
   {
-    super("BuildTrackingVerify", 
-      	  "Stage to build the tracking verification render Maya scene.", 
+    super("BuildTrackingExtract", 
+      	  "Creates the baked camera or tracking locator data scenes.", 
       	  stageInfo, context, client,
           new MayaContext(), nodeName, true);
     
@@ -85,39 +73,13 @@ class BuildTrackingVerifyStage
 
     setUnits();
 
-    setupLink(trackName, "track");
-    setupLink(modelName, "mdl");
-    setupLink(shaderName, "shd");
-    setupLink(lightsName, "lts");
+    addLink(new LinkMod(trackName, LinkPolicy.Dependency)); 
+    addSourceParamValue(trackName, "PrefixName", "track");
+    addSourceParamValue(trackName, "BuildType", "Reference");
+    addSourceParamValue(trackName, "NameSpace", true);
 
-    if(modelMEL != null) {
-      addLink(new LinkMod(modelMEL, LinkPolicy.Dependency)); 
-      addSingleParamValue("ModelMEL", modelMEL);
-    }    
-  }
-
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   H E L P E R S                                                                        */
-  /*----------------------------------------------------------------------------------------*/
- 
-  /**
-   * Setup a link.
-   */ 
-  private void 
-  setupLink
-  (
-   String sourceName, 
-   String nspace
-  )
-    throws PipelineException
-  {
-    addLink(new LinkMod(sourceName, LinkPolicy.Dependency)); 
-
-    addSourceParamValue(sourceName, "PrefixName", nspace);
-    addSourceParamValue(sourceName, "BuildType", "Reference");
-    addSourceParamValue(sourceName, "NameSpace", true);
+    addLink(new LinkMod(extractMEL, LinkPolicy.Dependency)); 
+    addSingleParamValue("ModelMEL", extractMEL);
   }
 
 
@@ -126,6 +88,6 @@ class BuildTrackingVerifyStage
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
  
-  private static final long serialVersionUID = 7089145821834900454L;
+  private static final long serialVersionUID = 2668988706480167666L;
 
 }

@@ -1,4 +1,4 @@
-// $Id: ProjectNamer.java,v 1.8 2008/02/13 10:47:29 jim Exp $
+// $Id: ProjectNamer.java,v 1.9 2008/02/14 05:16:57 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -223,8 +223,33 @@ class ProjectNamer
     return path.toString(); 
   }
 
+  /**
+   * Returns the fully resolved name of the node containing a MEL script which creates a 
+   * worldspace duplicate of the tracked camera with baked animation and saves it into 
+   * a clean scene.
+   */ 
+  public String
+  getTrackExtractCameraNode() 
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Tracking), 
+			 new Path(AppDirs.MEL.toDirPath(), "extract_camera"));
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node containing a MEL script which creates a 
+   * worldspace locator with baked animation and saves it into a clean scene.
+   */ 
+  public String
+  getTrackExtractTrackingNode() 
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Tracking), 
+			 new Path(AppDirs.MEL.toDirPath(), "extract_tracking"));
+    return path.toString(); 
+  }
 
   
+
   /*----------------------------------------------------------------------------------------*/
   /*   R O R S C H A C H   A S S E T S                                                      */
   /*----------------------------------------------------------------------------------------*/
@@ -318,9 +343,6 @@ class ProjectNamer
 			 new Path(AppDirs.MEL.toDirPath(), "hide_camera_plane"));
     return path.toString(); 
   }
-
-  
-
 
 
 
