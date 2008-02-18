@@ -1,4 +1,4 @@
-// $Id: NukeReadAction.java,v 1.1 2008/02/14 18:46:22 jim Exp $
+// $Id: NukeReadAction.java,v 1.2 2008/02/18 22:58:17 jim Exp $
 
 package us.temerity.pipeline.plugin.NukeReadAction.v2_4_2;
 
@@ -148,8 +148,6 @@ class NukeReadAction
 
     addSupport(OsType.MacOS);
     addSupport(OsType.Windows);
-
-    underDevelopment(); 
   }
   
   
