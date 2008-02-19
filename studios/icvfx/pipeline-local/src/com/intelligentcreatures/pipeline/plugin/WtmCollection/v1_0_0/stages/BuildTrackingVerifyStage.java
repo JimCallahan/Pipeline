@@ -1,4 +1,4 @@
-// $Id: BuildTrackingVerifyStage.java,v 1.2 2008/02/14 05:16:57 jim Exp $
+// $Id: BuildTrackingVerifyStage.java,v 1.3 2008/02/19 09:37:11 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
 
@@ -50,9 +50,6 @@ class BuildTrackingVerifyStage
    * @param shaderName
    *   The name of the node containg the test shaders Maya scene.
    * 
-   * @param lightsName
-   *   The name of the node containg the test lights Maya scene.
-   * 
    * @param modelMEL
    *   The name of the MEL script to use as the ModelMel parameter.
    * 
@@ -69,7 +66,6 @@ class BuildTrackingVerifyStage
     String trackName, 
     String modelName, 
     String shaderName, 
-    String lightsName, 
     String modelMEL, 
     FrameRange range
   ) 
@@ -88,7 +84,6 @@ class BuildTrackingVerifyStage
     setupLink(trackName, "track");
     setupLink(modelName, "mdl");
     setupLink(shaderName, "shd");
-    setupLink(lightsName, "lts");
 
     if(modelMEL != null) {
       addLink(new LinkMod(modelMEL, LinkPolicy.Dependency)); 

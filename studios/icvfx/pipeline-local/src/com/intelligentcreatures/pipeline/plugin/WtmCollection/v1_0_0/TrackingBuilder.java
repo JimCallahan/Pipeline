@@ -1,4 +1,4 @@
-// $Id: TrackingBuilder.java,v 1.4 2008/02/14 05:43:44 jim Exp $
+// $Id: TrackingBuilder.java,v 1.5 2008/02/19 09:37:11 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -252,9 +252,6 @@ class TrackingBuilder
 
 	pRorschachTestShadersNodeName = pProjectNamer.getRorschachTestShadersNode(); 
 	pRequiredNodeNames.add(pRorschachTestShadersNodeName); 
-
-	pRorschachTestLightsNodeName = pProjectNamer.getRorschachTestLightsNode(); 
-	pRequiredNodeNames.add(pRorschachTestLightsNodeName); 
       }
     }
     
@@ -372,8 +369,7 @@ class TrackingBuilder
 	    new BuildTrackingVerifyStage
 	    (pStageInfo, pContext, pClient, 
 	     verifyNodeName, pTrackNodeName, pRorschachVerifyModelNodeName, 
-	     pRorschachTestShadersNodeName, pRorschachTestLightsNodeName, 
-	     pTrackPrepNodeName, pFrameRange); 
+	     pRorschachTestShadersNodeName, pTrackPrepNodeName, pFrameRange); 
 	  addTaskAnnotation(stage, NodePurpose.Prepare); 
 	  stage.build();  
 	}
