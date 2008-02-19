@@ -1,4 +1,4 @@
-// $Id: NukeMakeHDRAction.java,v 1.1 2008/02/19 01:33:18 jim Exp $
+// $Id: NukeMakeHDRAction.java,v 1.2 2008/02/19 02:13:01 jim Exp $
 
 package us.temerity.pipeline.plugin.NukeMakeHDRAction.v2_4_2;
 
@@ -579,17 +579,17 @@ class NukeMakeHDRAction
     double blackPoint = getSingleDoubleParamValue(aBlackPoint, drange); 
     double whitePoint = getSingleDoubleParamValue(aWhitePoint, drange); 
 
-    /* lookup/compute image resolutions */ 
+    /* compute common image resolutions */ 
     int size     = getSingleIntegerParamValue(aOutputSize, new Range<Integer>(1, null));
-    float qwidth = ((float) size) * (2.0f/3.0f);
+    int dsize    = size * 2; 
+    float qwidth = ((float) dsize) * (2.0f/3.0f);
     int hwidth   = Math.round(qwidth * 2.0f); 
     int fwidth   = hwidth * 2;
-    int height   = size * 2; 
 
     /* Nuke format lines for the common image resolutions */ 
-    String format  = ("\"" + size + " " + size + " 0 0 " + size + " " + size + " 1 \"");
-    String hformat = ("\"" + hwidth + " " + size + " 0 0 " + hwidth + " " + size + " 1 \"");
-    String fformat = ("\"" + fwidth + " " + size + " 0 0 " + fwidth + " " + size + " 1 \"");
+    String sformat = ("\"" + dsize + " " + dsize + " 0 0 " + dsize + " " + dsize + " 1 \"");
+    String hformat = ("\"" + hwidth + " " + dsize + " 0 0 " + hwidth + " " + dsize + " 1 \"");
+    String fformat = ("\"" + fwidth + " " + dsize + " 0 0 " + fwidth + " " + dsize + " 1 \"");
 
     /* create a temporary Nuke script */ 
     Path script = new Path(createTemp(agenda, "nk"));
@@ -625,7 +625,7 @@ class NukeMakeHDRAction
              " name LatLon" + tag + "\n" +
              "}\n" +
              "Crop {\n" +
-             " box {0 0 " + hwidth + " " + size + "}\n" +
+             " box {0 0 " + hwidth + " " + dsize + "}\n" +
              " reformat true\n" +
              " crop false\n" +
              " name Crop" + tag + "\n" +
@@ -807,13 +807,13 @@ class NukeMakeHDRAction
         ("Constant {\n" + 
          " inputs 0\n" + 
          " channels rgb\n" + 
-         " full_format " + format + "\n" +
-         " proxy_format " + format + "\n" +
+         " full_format " + sformat + "\n" +
+         " proxy_format " + sformat + "\n" +
          " name ConstantBlackSquare\n" + 
          "}\n" + 
          "Radial {\n" + 
          " cliptype format\n" + 
-         " area {0 0 " + size + " " + size + "}\n" + 
+         " area {0 0 " + dsize + " " + dsize + "}\n" + 
          " softness 0.2\n" + 
          " name RadialMask\n" + 
          "}\n" + 
@@ -926,7 +926,7 @@ class NukeMakeHDRAction
            " name CombineCombos\n" + 
            "}\n" + 
            "Crop {\n" + 
-           " box {0 0 " + (size*2) + " " + size + "}\n" + 
+           " box {0 0 " + (size*4) + " " + (size*2) + "}\n" + 
            " reformat true\n" + 
            " crop false\n" + 
            " name FinalLatLon\n" + 
@@ -982,6 +982,9 @@ class NukeMakeHDRAction
           deltas.add(new Tuple2i(size, 0));
           deltas.add(new Tuple2i(size, size*2));
 
+          String format = 
+            ("\"" + size + " " + size + " 0 0 " + size + " " + size + " 1 \"");
+    
           int wk; 
           for(wk=0; wk<6; wk++) {
             String face = faces.get(wk);
