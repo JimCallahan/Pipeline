@@ -1,4 +1,4 @@
-// $Id: NukeMakeHDRAction.java,v 1.2 2008/02/19 02:13:01 jim Exp $
+// $Id: NukeMakeHDRAction.java,v 1.3 2008/02/19 02:55:05 jim Exp $
 
 package us.temerity.pipeline.plugin.NukeMakeHDRAction.v2_4_2;
 
@@ -15,7 +15,7 @@ import java.util.regex.*;
 /*------------------------------------------------------------------------------------------*/
 
 /** 
- * Converts a series of varying exposure raw digital images into a single high dynamica 
+ * Converts a series of varying exposure raw digital images into a single high dynamic 
  * range (HDR) environment map.<P> 
  * 
  * The raw input images are supplied as source nodes.  Each of these source node's primary 
@@ -197,7 +197,7 @@ class NukeMakeHDRAction
   {
     super("NukeMakeHDR", new VersionID("2.4.2"), "Temerity", 
 	  "Converts a series of varying exposure raw digital images into a single " + 
-          "high dynamica range (HDR) environment map."); 
+          "high dynamic range (HDR) environment map."); 
   
     {
       ArrayList<String> choices = new ArrayList<String>();
@@ -296,8 +296,6 @@ class NukeMakeHDRAction
 
     addSupport(OsType.MacOS);
     addSupport(OsType.Windows);
-
-    underDevelopment(); 
   }
   
   
