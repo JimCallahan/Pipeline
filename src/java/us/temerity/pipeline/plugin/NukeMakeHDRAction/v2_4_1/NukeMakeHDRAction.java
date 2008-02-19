@@ -1,4 +1,4 @@
-// $Id: NukeMakeHDRAction.java,v 1.3 2008/02/19 02:55:05 jim Exp $
+// $Id: NukeMakeHDRAction.java,v 1.4 2008/02/19 10:00:15 jim Exp $
 
 package us.temerity.pipeline.plugin.NukeMakeHDRAction.v2_4_2;
 
@@ -560,17 +560,6 @@ class NukeMakeHDRAction
             ("No exposure times found for input raw exposure images in source file " +
              "sequence (" + fseq + ")!"); 
       }
-
-      // DEBUG 
-      System.out.print("Exposure Times:\n"); 
-      for(FileSeq fseq : exposures.keySet()) {  
-        System.out.print("  " + fseq + ":\n"); 
-        ArrayList<Double> times = exposures.get(fseq);
-        int wk;
-        for(wk=0; wk<fseq.numFrames(); wk++) 
-          System.out.print("    " + fseq.getPath(wk) + " = " + times.get(wk) + "\n"); 
-      }
-      // DEBUG 
     }
 
     /* black/white points */ 
