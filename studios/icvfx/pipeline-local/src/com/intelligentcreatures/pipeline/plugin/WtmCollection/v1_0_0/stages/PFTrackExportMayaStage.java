@@ -1,4 +1,4 @@
-// $Id: PFTrackExportMayaStage.java,v 1.1 2008/02/13 10:47:29 jim Exp $
+// $Id: PFTrackExportMayaStage.java,v 1.2 2008/02/19 03:34:22 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
 
@@ -45,7 +45,7 @@ class PFTrackExportMayaStage
    * @param nodeName
    *   The name of the node that is to be created.
    * 
-   * @param nodeName
+   * @param placeholder
    *   The name of the placeholder Maya scene node. 
    * 
    * @param pftrackName

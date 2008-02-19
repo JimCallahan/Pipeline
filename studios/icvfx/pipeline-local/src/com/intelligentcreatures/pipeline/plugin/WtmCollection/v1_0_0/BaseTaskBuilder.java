@@ -1,4 +1,4 @@
-// $Id: BaseTaskBuilder.java,v 1.1 2008/02/13 10:47:29 jim Exp $
+// $Id: BaseTaskBuilder.java,v 1.2 2008/02/19 03:34:22 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -218,10 +218,7 @@ class BaseTaskBuilder
 
   /** 
    * Return a new SubmitTask, ApproveTask or CommonTask annotation instance appropriate
-   * to be added to the set of annotation plugins on the given node. <P> 
-   * 
-   * @param nodeName
-   *   The fully resolved name of the node to be annotated. 
+   * to be added to the set of annotation plugins for a node. <P> 
    * 
    * @param purpose
    *   The purpose of the node within the task.

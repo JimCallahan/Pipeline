@@ -1,4 +1,4 @@
-// $Id: WtmCollection.java,v 1.5 2008/02/13 18:56:27 jim Exp $
+// $Id: WtmCollection.java,v 1.6 2008/02/19 03:34:22 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -65,7 +65,7 @@ class WtmCollection
    * 
    * All builder collections should override this method to return information about 
    * the specific builders they provide.  The key in the same should be identical to that 
-   * returned by the {@link BaseBuilder.getName() BaseBuilder#getName} method.
+   * returned by the BaseBuilder.getName() method.
    * 
    * @return
    *   The mapping of short builder names to the full class name of the builder.  By default

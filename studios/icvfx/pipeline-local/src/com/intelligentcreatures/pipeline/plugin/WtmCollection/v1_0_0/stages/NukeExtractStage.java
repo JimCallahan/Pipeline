@@ -1,4 +1,4 @@
-// $Id: NukeExtractStage.java,v 1.1 2008/02/07 14:14:33 jim Exp $
+// $Id: NukeExtractStage.java,v 1.2 2008/02/19 03:34:22 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
 
@@ -25,12 +25,6 @@ class NukeExtractStage
 {
   /**
    * Construct a new stage.
-   * 
-   * @param name
-   *   The name of the stage.
-   * 
-   * @param desc
-   *   A description of what the stage should do.
    * 
    * @param stageInfo
    *   Class containing basic information shared among all stages.
