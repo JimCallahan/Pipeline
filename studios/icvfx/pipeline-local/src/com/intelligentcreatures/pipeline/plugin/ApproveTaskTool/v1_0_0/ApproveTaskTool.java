@@ -1,4 +1,4 @@
-// $Id: ApproveTaskTool.java,v 1.3 2008/02/12 07:42:10 jim Exp $
+// $Id: ApproveTaskTool.java,v 1.4 2008/02/19 03:33:45 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.ApproveTaskTool.v1_0_0;
 
@@ -312,7 +312,7 @@ class ApproveTaskTool
 	  throw ex; 
 	}
 	catch(Exception ex) {
-	  throw new PipelineException(getFullMessage(ex));
+	  throw new PipelineException(null, ex, true, true); 
 	}
       }
       else {
@@ -419,38 +419,7 @@ class ApproveTaskTool
        false, true, false, false, params);  
   }
 
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /** 
-   * Generate a string containing both the exception message and stack trace. 
-   * 
-   * @param ex 
-   *   The thrown exception.   
-   */ 
-  protected String 
-  getFullMessage
-  (
-   Throwable ex
-  ) 
-  {
-    StringBuilder buf = new StringBuilder();
-     
-    if(ex.getMessage() != null) 
-      buf.append(ex.getMessage() + "\n\n"); 	
-    else if(ex.toString() != null) 
-      buf.append(ex.toString() + "\n\n"); 	
-      
-    buf.append("Stack Trace:\n");
-    StackTraceElement stack[] = ex.getStackTrace();
-    int wk;
-    for(wk=0; wk<stack.length; wk++) 
-      buf.append("  " + stack[wk].toString() + "\n");
-   
-    return (buf.toString());
-  }
-  
-
+ 
 
   /*----------------------------------------------------------------------------------------*/
   /*   H E L P E R S  (these should become part of a CommonTaskUtils eventually)            */
@@ -619,7 +588,7 @@ class ApproveTaskTool
       catch(Exception ex) {
         LogMgr.getInstance().log
 	  (LogMgr.Kind.Ops, LogMgr.Level.Severe,
-	   getFullMessage(ex));
+	   Exceptions.getFullMessage(ex));
       }
     }
   }
