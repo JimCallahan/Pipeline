@@ -17,6 +17,7 @@ java_DATA = \
   BaseShotBuilder.java \
   BaseTaskBuilder.java \
   BaseTrackingBuilder.java \
+  HdriBuilder.java \
   ICStageFunction.java \
   InternalTrackingBuilder.java \
   NodePurpose.java \

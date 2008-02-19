@@ -16,6 +16,7 @@ java_DATA = \
   NukeCatCompStage.java \
   NukeCatStage.java \
   NukeExtractStage.java \
+  NukeMakeHDRStage.java \
   NukeQtStage.java \
   NukeReadReformatStage.java \
   NukeReadStage.java \
@@ -23,6 +24,7 @@ java_DATA = \
   NukeThumbnailStage.java \
   PFTrackBuildStage.java \
   PFTrackExportMayaStage.java \
+  PrimaryHDRStage.java \
   RenderTrackingVerifyStage.java
 
 
