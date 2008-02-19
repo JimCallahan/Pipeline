@@ -1,4 +1,4 @@
-// $Id: AppDirs.java,v 1.4 2008/02/13 21:30:53 jim Exp $
+// $Id: AppDirs.java,v 1.5 2008/02/19 09:26:36 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -76,6 +76,16 @@ enum AppDirs
    * Images of roughly 1024x778 resolution.
    */ 
   Image1k, 
+
+  /**
+   * Raw digital camera images.
+   */ 
+  Raw, 
+
+  /**
+   * High dynamic range (HDR) images. 
+   */ 
+  HDR, 
 
   /**
    * Generic rendered images. 

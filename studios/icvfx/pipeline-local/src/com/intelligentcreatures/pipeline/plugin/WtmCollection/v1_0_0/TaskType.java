@@ -1,4 +1,4 @@
-// $Id: TaskType.java,v 1.6 2008/02/13 10:47:29 jim Exp $
+// $Id: TaskType.java,v 1.7 2008/02/19 09:26:36 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -14,6 +14,11 @@ import us.temerity.pipeline.*;
 public  
 enum TaskType
 {
+  /**
+   * 
+   */ 
+  HDRI, 
+
   /**
    * Contains the scanned plate images, camera data and any other reference images shot on 
    * set.  Any required painting fixes are applied and then the images are undistored and 

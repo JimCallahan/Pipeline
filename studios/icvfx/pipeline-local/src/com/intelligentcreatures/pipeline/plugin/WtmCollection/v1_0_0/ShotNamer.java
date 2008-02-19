@@ -1,4 +1,4 @@
-// $Id: ShotNamer.java,v 1.10 2008/02/14 05:16:57 jim Exp $
+// $Id: ShotNamer.java,v 1.11 2008/02/19 09:26:36 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -157,6 +157,115 @@ class ShotNamer
 
   
   
+  /*----------------------------------------------------------------------------------------*/
+  /*   H D R I                                                                              */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Returns the fully resolved names of the (3) nodes containing the A series of varying 
+   * exposure raw digital images used to construct the single high dynamic range (HDR) 
+   * environment map.
+   */
+  public ArrayList<String> 
+  getRawExposuresNodes() 
+  {
+    ArrayList<String> names = new ArrayList<String>(); 
+    names.add(getRawExposuresNodeHelper("A")); 
+    names.add(getRawExposuresNodeHelper("B")); 
+    names.add(getRawExposuresNodeHelper("C")); 
+
+    return names; 
+  }
+
+  private String 
+  getRawExposuresNodeHelper
+  (
+   String letter
+  ) 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.HDRI, NodePurpose.Edit), 
+			 new Path(AppDirs.Raw.toDirPath(), 
+				  joinNames(getFullShotName(), "raw" + letter))); 
+    return path.toString(); 
+  }
+  
+  /**
+   * Returns the fully resolved name of the node containing the plain text exposure times.
+   */
+  public String
+  getExposureTimesNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.HDRI, NodePurpose.Edit), 
+			 joinNames(getFullShotName(), "exp_times")); 
+    return path.toString(); 
+  }
+  
+  /**
+   * Returns the fully resolved name of the node containing the combined LatLon format 
+   * HDR environment map and diagnostic images.
+   */ 
+  public String
+  getDiagnosticHdrImageNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.HDRI, NodePurpose.Focus), 
+			 new Path(AppDirs.HDR.toDirPath(), 
+				  joinNames(getFullShotName(), "env"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the submit node for the HDRI task.
+   */ 
+  public String
+  getHdriSubmitNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.HDRI, NodePurpose.Submit), 
+			 joinNames(getFullShotName(), "hdri_submit")); 
+    return path.toString(); 
+  }
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Returns the fully resolved name of the node containing the final combined LatLon format 
+   * HDR environment map. 
+   */ 
+  public String
+  getFinalHdrImageNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.HDRI, NodePurpose.Product), 
+			 new Path(AppDirs.HDR.toDirPath(), 
+				  joinNames(getFullShotName(), "env"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node containing the Maya scene that will 
+   * load the final combined LatLon format HDR environment map.
+   */ 
+  public String
+  getFinalHdrMayaNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.HDRI, NodePurpose.Product), 
+			 new Path(AppDirs.Maya.toDirPath(), 
+				  joinNames(getFullShotName(), "hdr_env"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the approve node for the HDRI task.
+   */ 
+  public String
+  getHdriApproveNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.HDRI, NodePurpose.Approve), 
+			 joinNames(getFullShotName(), "hdri_approve")); 
+    return path.toString(); 
+  }
+
+
+
   /*----------------------------------------------------------------------------------------*/
   /*   P L A T E S                                                                          */
   /*----------------------------------------------------------------------------------------*/
