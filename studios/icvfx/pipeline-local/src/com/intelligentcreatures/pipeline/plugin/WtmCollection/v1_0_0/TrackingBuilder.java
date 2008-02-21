@@ -1,4 +1,4 @@
-// $Id: TrackingBuilder.java,v 1.5 2008/02/19 09:37:11 jim Exp $
+// $Id: TrackingBuilder.java,v 1.6 2008/02/21 23:28:54 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -196,6 +196,7 @@ class TrackingBuilder
     plugins.add(new PluginContext("Composite"));   		
     plugins.add(new PluginContext("MayaBuild"));  		
     plugins.add(new PluginContext("MayaRender")); 		
+    plugins.add(new PluginContext("NukeThumbnail"));		
 
     MappedArrayList<String, PluginContext> toReturn = 
       new MappedArrayList<String, PluginContext>();
@@ -395,10 +396,20 @@ class TrackingBuilder
 	  stage.build(); 
 	}
 
+	String verifyThumbNodeName = pShotNamer.getTrackingVerifyThumbNode();
+	{
+	  NukeThumbnailStage stage = 
+	    new NukeThumbnailStage(pStageInfo, pContext, pClient,
+				   verifyThumbNodeName, "tif", verifyCompNodeName, 
+				   1, 150, true, true, new Color3d()); 
+	  addTaskAnnotation(stage, NodePurpose.Thumbnail); 
+	  stage.build(); 
+	}
+
 	String submitNodeName = pShotNamer.getTrackingSubmitNode();
 	{
 	  TreeSet<String> sources = new TreeSet<String>();
-	  sources.add(verifyCompNodeName); 
+	  sources.add(verifyThumbNodeName); 
 
 	  TargetStage stage = 
 	    new TargetStage(pStageInfo, pContext, pClient, 

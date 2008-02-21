@@ -1,4 +1,4 @@
-// $Id: ShotNamer.java,v 1.11 2008/02/19 09:26:36 jim Exp $
+// $Id: ShotNamer.java,v 1.12 2008/02/21 23:28:54 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -413,7 +413,7 @@ class ShotNamer
   }
 
   /**
-   * Returns the fully resolved name of the node containing a thumbnail images extracted
+   * Returns the fully resolved name of the node containing a thumbnail image extracted
    * from the grid align images. 
    */ 
   public String
@@ -585,6 +585,18 @@ class ShotNamer
     Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Focus), 
 			 new Path(AppDirs.Comp.toDirPath(), 
 				  joinNames(getFullShotName(), "comp_verify"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node containing a thumbnail image extracted
+   * from the composited tracking verification images.
+   */ 
+  public String
+  getTrackingVerifyThumbNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Thumbnail), 
+                         joinNames(getFullShotName(), "comp_verify")); 
     return path.toString(); 
   }
 
