@@ -1,4 +1,4 @@
-// $Id: PlatesBuilder.java,v 1.14 2008/02/13 21:31:31 jim Exp $
+// $Id: PlatesBuilder.java,v 1.15 2008/02/21 23:25:43 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -235,7 +235,6 @@ class PlatesBuilder
     plugins.add(new PluginContext("NukeCatComp")); 		
     plugins.add(new PluginContext("NukeExtract"));		
     plugins.add(new PluginContext("NukeQt"));			
-    plugins.add(new PluginContext("NukeThumbnail"));		
     plugins.add(new PluginContext("NukeReformat"));		
     plugins.add(new PluginContext("NukeRead"));			
     plugins.add(new PluginContext("NukeRescale")); 		
