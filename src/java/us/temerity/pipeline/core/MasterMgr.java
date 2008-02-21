@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.234 2008/02/13 21:29:07 jim Exp $
+// $Id: MasterMgr.java,v 1.235 2008/02/21 22:19:27 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -10171,7 +10171,7 @@ class MasterMgr
    *   The unique working version identifier.
    * 
    * @param vid 
-   *   The revision number of the node to check-out.
+   *   The revision number of the node to check-out or <CODE>null</CODE> for latest.
    * 
    * @param isLocked
    *   Whether the current node should be checked-out locked.
@@ -10350,7 +10350,7 @@ class MasterMgr
 	  rvids = new TreeSet<VersionID>();
 	  requiredVersions.put(name, rvids);
 	}
-	rvids.add(vid);
+	rvids.add(vsn.getVersionID()); 
       }
     }
     finally {
