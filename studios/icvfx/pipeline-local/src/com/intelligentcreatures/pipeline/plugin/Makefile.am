@@ -13,6 +13,7 @@ SUBDIRS = \
   CommonTaskAnnotation \
   ApproveTaskTool \
   LensInfoAction \
+  NotMiniKeyChooser \
   PFTrackBuildAction \
   PFTrackEditor \
   WtmCollection

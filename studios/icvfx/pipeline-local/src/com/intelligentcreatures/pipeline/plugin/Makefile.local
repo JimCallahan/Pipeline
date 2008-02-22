@@ -6,6 +6,7 @@
 	$(MAKE) -f Makefile.local -C CommonTaskAnnotation $@ 
 	$(MAKE) -f Makefile.local -C ApproveTaskTool $@ 
 	$(MAKE) -f Makefile.local -C LensInfoAction $@ 
+	$(MAKE) -f Makefile.local -C NotMiniKeyChooser $@ 
 	$(MAKE) -f Makefile.local -C PFTrackBuildAction $@ 
 	$(MAKE) -f Makefile.local -C PFTrackEditor $@
 	$(MAKE) -f Makefile.local -C WtmCollection $@
