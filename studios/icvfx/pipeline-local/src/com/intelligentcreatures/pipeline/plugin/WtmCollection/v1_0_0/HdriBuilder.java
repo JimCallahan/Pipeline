@@ -1,4 +1,4 @@
-// $Id: HdriBuilder.java,v 1.1 2008/02/19 09:26:36 jim Exp $
+// $Id: HdriBuilder.java,v 1.2 2008/02/22 06:01:50 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -217,6 +217,7 @@ class HdriBuilder
     plugins.add(new PluginContext("MayaFTNBuild"));  		
     plugins.add(new PluginContext("NukeMakeHDR")); 		
     plugins.add(new PluginContext("NukeExtract"));		
+    plugins.add(new PluginContext("NukeThumbnail"));		
 
     MappedArrayList<String, PluginContext> toReturn = 
       new MappedArrayList<String, PluginContext>();
@@ -397,10 +398,21 @@ class HdriBuilder
 	  stage.build(); 
 	}
 
+	String diagnosticHdrThumbNodeName = pShotNamer.getDiagnosticHdrThumbNode();
+	{
+	  NukeThumbnailStage stage = 
+	    new NukeThumbnailStage(pStageInfo, pContext, pClient,
+				   diagnosticHdrThumbNodeName, "tif", 
+				   pDiagnosticHdrImageNodeName, 
+				   1, 150, 0.1, true, true, new Color3d()); 
+	  addTaskAnnotation(stage, NodePurpose.Thumbnail); 
+	  stage.build(); 
+	}
+
 	String submitNodeName = pShotNamer.getHdriSubmitNode();
 	{
 	  TreeSet<String> sources = new TreeSet<String>();
-	  sources.add(pDiagnosticHdrImageNodeName); 
+	  sources.add(diagnosticHdrThumbNodeName); 
 
 	  TargetStage stage = 
 	    new TargetStage(pStageInfo, pContext, pClient, 
