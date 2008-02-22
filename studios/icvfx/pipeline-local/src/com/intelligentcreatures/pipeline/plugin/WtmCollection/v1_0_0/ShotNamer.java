@@ -1,4 +1,4 @@
-// $Id: ShotNamer.java,v 1.13 2008/02/22 06:02:46 jim Exp $
+// $Id: ShotNamer.java,v 1.14 2008/02/22 09:22:29 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -626,7 +626,8 @@ class ShotNamer
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Returns the fully resolved name of the node containing 
+   * Returns the fully resolved name of the node containing the extracted world space camera 
+   * with all tracking animation baked.
    */ 
   public String
   getTrackingExtractedCameraNode() 
@@ -638,7 +639,8 @@ class ShotNamer
   }
 
   /**
-   * Returns the fully resolved name of the node containing 
+   * Returns the fully resolved name of the node containing the extracted world space 
+   * locators with all tracking animation baked.
    */ 
   public String
   getTrackingExtractedTrackNode() 
@@ -656,6 +658,121 @@ class ShotNamer
   getTrackingApproveNode()
   {
     Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Approve), 
+			 joinNames(getFullShotName(), "track_approve")); 
+    return path.toString(); 
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   M A T C H                                                                            */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Returns the fully resolved name of the node for the Maya scene used to perform the 
+   * final head and facial matching animation.
+   */ 
+  public String
+  getMatchAnimNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Match, NodePurpose.Edit), 
+			 new Path(AppDirs.Maya.toDirPath(), 
+				  joinNames(getFullShotName(), "match"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node for the Maya scene containing the full
+   * match animation rig to be animated.
+   */ 
+  public String
+  getPreMatchAnimNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Match, NodePurpose.Prepare), 
+			 new Path(AppDirs.Maya.toDirPath(), 
+				  joinNames(getFullShotName(), "prematch"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node for the Maya scene containing 
+   * match animation verification render scene.
+   */ 
+  public String
+  getMatchVerifyNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Match, NodePurpose.Prepare), 
+			 new Path(AppDirs.Maya.toDirPath(), 
+				  joinNames(getFullShotName(), "match_verify"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node containing the rendered match animation 
+   * verification images.
+   */ 
+  public String
+  getMatchVerifyImagesNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Match, NodePurpose.Focus), 
+			 new Path(AppDirs.Render.toDirPath(), 
+				  joinNames(getFullShotName(), "match"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node containing the composited match animation 
+   * verification images over the undistored 2k plates.
+   */ 
+  public String
+  getMatchVerifyCompNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Match, NodePurpose.Focus), 
+			 new Path(AppDirs.Comp.toDirPath(), 
+				  joinNames(getFullShotName(), "comp_match"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node containing a thumbnail image extracted
+   * from the composited match animation verification images.
+   */ 
+  public String
+  getMatchVerifyThumbNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Match, NodePurpose.Thumbnail), 
+			 joinNames(getFullShotName(), "comp_match")); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the submit node for the Match task.
+   */ 
+  public String
+  getMatchSubmitNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Match, NodePurpose.Submit), 
+			 joinNames(getFullShotName(), "match_submit")); 
+    return path.toString(); 
+  }
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+
+
+
+
+
+
+  
+
+
+  /**
+   * Returns the fully resolved name of the approve node for the Match task.
+   */ 
+  public String
+  getMatchApproveNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Match, NodePurpose.Approve), 
 			 joinNames(getFullShotName(), "track_approve")); 
     return path.toString(); 
   }

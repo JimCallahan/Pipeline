@@ -1,4 +1,4 @@
-// $Id: RenderTrackingVerifyStage.java,v 1.1 2008/02/13 18:56:27 jim Exp $
+// $Id: RenderTaskVerifyStage.java,v 1.1 2008/02/22 09:22:29 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
 
@@ -12,14 +12,14 @@ import us.temerity.pipeline.stages.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   R E N D E R   T R A C K I N G   V E R I F Y   S T A G E                                */
+/*   R E N D E R   T A S K   V E R I F Y   S T A G E                                        */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Renders the tracking verification images using Maya.
+ * Renders task verification images using Maya.
  */ 
 public 
-class RenderTrackingVerifyStage
+class RenderTaskVerifyStage
   extends MayaRenderStage
 {
   /*----------------------------------------------------------------------------------------*/
@@ -51,7 +51,7 @@ class RenderTrackingVerifyStage
    *   The name of the MEL script to use as the PreRenderMel parameter.
    */
   public
-  RenderTrackingVerifyStage
+  RenderTaskVerifyStage
   (
     StageInformation stageInfo,
     UtilContext context,
@@ -64,8 +64,8 @@ class RenderTrackingVerifyStage
   ) 
     throws PipelineException
   {
-    super("RenderTrackingVerify", 
-      	  "Renders the tracking verification images using Maya.", 
+    super("RenderTaskVerify", 
+      	  "Renders the task verification images using Maya.", 
       	  stageInfo, context, client,
           nodeName, range, 4, "tif", 
 	  mayaScene); 
@@ -83,6 +83,6 @@ class RenderTrackingVerifyStage
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
  
-  private static final long serialVersionUID = -4952867921495925004L;
+  private static final long serialVersionUID = 6998822677517338351L;
 
 }

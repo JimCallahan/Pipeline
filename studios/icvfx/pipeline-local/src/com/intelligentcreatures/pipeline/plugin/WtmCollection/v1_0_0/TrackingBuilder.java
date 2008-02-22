@@ -1,4 +1,4 @@
-// $Id: TrackingBuilder.java,v 1.7 2008/02/22 06:02:31 jim Exp $
+// $Id: TrackingBuilder.java,v 1.8 2008/02/22 09:22:29 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -377,8 +377,8 @@ class TrackingBuilder
 
 	String verifyImagesNodeName = pShotNamer.getTrackingVerifyImagesNode(); 
 	{
-	  RenderTrackingVerifyStage stage = 
-	    new RenderTrackingVerifyStage
+	  RenderTaskVerifyStage stage = 
+	    new RenderTaskVerifyStage
 	    (pStageInfo, pContext, pClient, 
 	     verifyImagesNodeName, pFrameRange, verifyNodeName, 
 	     "track:camera01", pTrackVerifyRenderNodeName); 

@@ -20,6 +20,7 @@ java_DATA = \
   HdriBuilder.java \
   ICStageFunction.java \
   InternalTrackingBuilder.java \
+  MatchBuilder.java \
   NodePurpose.java \
   PlatesBuilder.java \
   ProjectNamer.java \

@@ -9,6 +9,9 @@ javadir = $(sourceroot)/com/intelligentcreatures/pipeline/plugin/WtmCollection/v
 
 java_DATA = \
   BashCompStage.java \
+  BuildMatchStage.java \
+  BuildMatchVerifyStage.java \
+  BuildPreMatchStage.java \
   BuildTrackingExtractStage.java \
   BuildTrackingVerifyStage.java \
   DistortedGridStage.java \
@@ -25,6 +28,7 @@ java_DATA = \
   PFTrackBuildStage.java \
   PFTrackExportMayaStage.java \
   PrimaryHDRStage.java \
-  RenderTrackingVerifyStage.java
+  RenderTaskVerifyStage.java
+
 
 

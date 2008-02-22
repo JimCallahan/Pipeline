@@ -1,4 +1,4 @@
-// $Id: TaskType.java,v 1.7 2008/02/19 09:26:36 jim Exp $
+// $Id: TaskType.java,v 1.8 2008/02/22 09:22:29 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -15,7 +15,7 @@ public
 enum TaskType
 {
   /**
-   * 
+   * A builder for constructing the nodes associated with the HDRI task.
    */ 
   HDRI, 
 
@@ -30,34 +30,17 @@ enum TaskType
   Plates, 
 
   /**
-   *
+   * Primarily used to validate the a Maya scene containing the tracked camera and head 
+   * model. The validation process includes performing MEL based tests on the scene as well 
+   * as rendering/comping the shot using a rig and shaders designed to show flaws in the 
+   * tracking data.
    */ 
   Tracking,
   
   /**
    *
-   */ 
-  Modeling, 
-
-  /**
-   *
-   */ 
-  Rigging, 
-
-  /**
-   *
-   */ 
-  LookDev, 
-
-  /**
-   *
    */  
   Match, 
-
-  /**
-   *
-   */ 
-  Anim, 
 
   /**
    *
@@ -84,17 +67,18 @@ enum TaskType
    */ 
   Comp, 
 
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
-   *
+   * Miscelaneous task-like components.
    */ 
+  Modeling, 
+  Rigging, 
+  LookDev, 
+  Anim, 
   Placeholder, 
-
-  /**
-   *
-   */ 
   Misc; 
-
-
 
 
   /*----------------------------------------------------------------------------------------*/

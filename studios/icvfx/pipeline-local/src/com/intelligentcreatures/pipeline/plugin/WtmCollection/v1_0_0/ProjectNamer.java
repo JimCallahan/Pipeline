@@ -1,4 +1,4 @@
-// $Id: ProjectNamer.java,v 1.9 2008/02/14 05:16:57 jim Exp $
+// $Id: ProjectNamer.java,v 1.10 2008/02/22 09:22:29 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -248,6 +248,26 @@ class ProjectNamer
     return path.toString(); 
   }
 
+
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   M A T C H   A S S E T S                                                              */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Returns the fully resolved name of the node containing the combined MEL scripts to 
+   * attach shaders and verify the match test render Maya scene.
+   */ 
+  public String
+  getMatchPrepNode() 
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Match), 
+			 new Path(AppDirs.MEL.toDirPath(), "match_prep"));
+    return path.toString(); 
+  }
+  
+  
+
   
 
   /*----------------------------------------------------------------------------------------*/
@@ -291,18 +311,6 @@ class ProjectNamer
   }
 
   /**
-   * Returns the fully resolved name of the node containing a MEL script used to attach the
-   * test shaders to the test rig for the tracking verification test renders.
-   */ 
-  public String
-  getRorschachAttachShadersNode() 
-  {
-    Path path = new Path(pBasePaths.get(AssetType.Rorschach, TaskType.LookDev), 
-			 "attach_ror_shd_test");
-    return path.toString(); 
-  }
-
-  /**
    * Returns the fully resolved name of the node containing a placeholder Maya scene which 
    * will eventually contain the camera/model tracking data exported from PFTrack.
    */ 
@@ -311,6 +319,29 @@ class ProjectNamer
   {
     Path path = new Path(pBasePaths.get(AssetType.Rorschach, TaskType.Placeholder), 
 			 "ror_track");
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node containing a MEL script used to add head 
+   * and neck constraints to the match rig.
+   */ 
+  public String
+  getConstrainRigNode() 
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Rorschach, TaskType.Rigging), 
+			 new Path(AppDirs.MEL.toDirPath(), "constrain_rig"));
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node containing the match rig Maya scene.
+   */ 
+  public String
+  getRorschachRigNode() 
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Rorschach, TaskType.Rigging), 
+			 "ror_rig");
     return path.toString(); 
   }
 
