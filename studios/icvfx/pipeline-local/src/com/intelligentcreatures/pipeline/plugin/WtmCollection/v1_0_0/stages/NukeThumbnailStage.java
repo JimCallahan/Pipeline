@@ -1,4 +1,4 @@
-// $Id: NukeThumbnailStage.java,v 1.3 2008/02/07 14:14:33 jim Exp $
+// $Id: NukeThumbnailStage.java,v 1.4 2008/02/22 06:01:31 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
 
@@ -50,6 +50,9 @@ class NukeThumbnailStage
    * @param thumbnailSize
    *   The image resolution of the generated thumbnail. 
    * 
+   * @param pixelGain
+   *   Multiplier of input pixel value intensity to produce thumbnail pixel values.
+   * 
    * @param addAlpha
    *   Whether to add an solid alpha channel to the input image before resizing and/or
    *   compositing over the optional background layer.
@@ -70,7 +73,8 @@ class NukeThumbnailStage
    String suffix,
    String source,
    int imageNumber, 
-   int thumbnailSize, 
+   int thumbnailSize,
+   double pixelGain, 
    boolean addAlpha, 
    boolean overBackground, 
    Color3d backgroundColor
@@ -87,6 +91,7 @@ class NukeThumbnailStage
     addLink(new LinkMod(source, LinkPolicy.Dependency));
     addSingleParamValue("ImageNumber", imageNumber);
     addSingleParamValue("ThumbnailSize", thumbnailSize);
+    addSingleParamValue("PixelGain", pixelGain); 
     addSingleParamValue("AddAlpha", addAlpha);
     addSingleParamValue("OverBackground", overBackground);
     addSingleParamValue("BackgroundColor", backgroundColor);

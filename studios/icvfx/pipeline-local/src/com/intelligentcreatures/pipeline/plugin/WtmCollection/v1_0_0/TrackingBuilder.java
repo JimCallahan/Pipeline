@@ -1,4 +1,4 @@
-// $Id: TrackingBuilder.java,v 1.6 2008/02/21 23:28:54 jim Exp $
+// $Id: TrackingBuilder.java,v 1.7 2008/02/22 06:02:31 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -401,7 +401,7 @@ class TrackingBuilder
 	  NukeThumbnailStage stage = 
 	    new NukeThumbnailStage(pStageInfo, pContext, pClient,
 				   verifyThumbNodeName, "tif", verifyCompNodeName, 
-				   1, 150, true, true, new Color3d()); 
+				   1, 150, 1.0, true, true, new Color3d()); 
 	  addTaskAnnotation(stage, NodePurpose.Thumbnail); 
 	  stage.build(); 
 	}

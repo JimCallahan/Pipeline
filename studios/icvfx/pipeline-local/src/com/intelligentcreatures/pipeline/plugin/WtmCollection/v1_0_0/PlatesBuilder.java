@@ -1,4 +1,4 @@
-// $Id: PlatesBuilder.java,v 1.15 2008/02/21 23:25:43 jim Exp $
+// $Id: PlatesBuilder.java,v 1.16 2008/02/22 06:02:11 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -608,7 +608,7 @@ class PlatesBuilder
 	  NukeThumbnailStage stage = 
 	    new NukeThumbnailStage(pStageInfo, pContext, pClient,
 				   gridAlignThumbNodeName, "tif", gridAlignImageNodeName, 
-				   1, 150, true, true, new Color3d()); 
+				   1, 150, 1.0, true, true, new Color3d()); 
 	  addTaskAnnotation(stage, NodePurpose.Thumbnail); 
 	  stage.build(); 
 	}
