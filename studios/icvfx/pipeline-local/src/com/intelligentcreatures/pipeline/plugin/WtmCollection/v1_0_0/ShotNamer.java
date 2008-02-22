@@ -1,4 +1,4 @@
-// $Id: ShotNamer.java,v 1.12 2008/02/21 23:28:54 jim Exp $
+// $Id: ShotNamer.java,v 1.13 2008/02/22 06:02:46 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -214,6 +214,18 @@ class ShotNamer
   }
 
   /**
+   * Returns the fully resolved name of the node containing a thumbnail image extracted
+   * from the LatLon format HDR environment map.
+   */ 
+  public String
+  getDiagnosticHdrThumbNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.HDRI, NodePurpose.Thumbnail), 
+			 joinNames(getFullShotName(), "env")); 
+    return path.toString(); 
+  }
+
+  /**
    * Returns the fully resolved name of the submit node for the HDRI task.
    */ 
   public String
@@ -407,7 +419,7 @@ class ShotNamer
   getGridAlignImageNode() 
   {
     Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Focus), 
-			 new Path(AppDirs.Nuke.toDirPath(), 
+			 new Path(AppDirs.Render.toDirPath(), 
 				  joinNames(getFullShotName(), "grid_align"))); 
     return path.toString(); 
   }
@@ -420,8 +432,7 @@ class ShotNamer
   getGridAlignThumbNode() 
   {
     Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Thumbnail), 
-			 new Path(AppDirs.Nuke.toDirPath(), 
-				  joinNames(getFullShotName(), "grid_align"))); 
+			 joinNames(getFullShotName(), "grid_align")); 
     return path.toString(); 
   }
 
@@ -596,7 +607,7 @@ class ShotNamer
   getTrackingVerifyThumbNode() 
   {
     Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Thumbnail), 
-                         joinNames(getFullShotName(), "comp_verify")); 
+			 joinNames(getFullShotName(), "comp_verify")); 
     return path.toString(); 
   }
 
