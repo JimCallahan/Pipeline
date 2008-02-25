@@ -1,4 +1,4 @@
-// $Id: UIFactory.java,v 1.23 2008/02/11 03:16:25 jim Exp $
+// $Id: UIFactory.java,v 1.24 2008/02/25 06:07:43 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -1082,7 +1082,7 @@ class UIFactory
    *   The initial collection values.
    * 
    * @param parent
-   *   The parent dialog or <CODE>null</CODE> the field is not a child of a dialog.
+   *   The parent dialog or <CODE>null</CODE> to use a shared hidden frame as the parent.
    * 
    * @param width
    *   The minimum and preferred width of the field.
@@ -1092,6 +1092,36 @@ class UIFactory
   (
    Collection<String> values,
    JDialog parent, 
+   int width
+  ) 
+  {
+    JCollectionField field = new JCollectionField(values, parent);
+
+    Dimension size = new Dimension(width, 19);
+    field.setMinimumSize(size);
+    field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+    field.setPreferredSize(size);
+
+    return field;
+  }
+
+  /**
+   * Create a collection field.
+   * 
+   * @param values
+   *   The initial collection values.
+   * 
+   * @param parent
+   *   The parent frame or <CODE>null</CODE> to use a shared hidden frame as the parent. 
+   * 
+   * @param width
+   *   The minimum and preferred width of the field.
+   */ 
+  public static JCollectionField
+  createCollectionField
+  (
+   Collection<String> values,
+   JFrame parent, 
    int width
   ) 
   {
@@ -3118,7 +3148,7 @@ class UIFactory
    *   The initial collection values.
    * 
    * @param parent
-   *   The parent dialog or <CODE>null</CODE> the field is not a child of a dialog.
+   *   The parent dialog or <CODE>null</CODE> to use a shared hidden frame as the parent.
    * 
    * @param vwidth
    *   The minimum and preferred width of the value field.
@@ -3135,6 +3165,54 @@ class UIFactory
    JPanel vpanel,
    Collection<String> values,
    JDialog parent, 
+   int vwidth, 
+   String tooltip
+  ) 
+  {
+    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT, tooltip));
+    
+    JCollectionField field = createCollectionField(values, parent, vwidth);
+    vpanel.add(field);
+
+    return field;
+  }
+
+  /**
+   * Create a collection field with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param title
+   *   The title text.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param values
+   *   The initial collection values.
+   * 
+   * @param parent
+   *   The parent frame or <CODE>null</CODE> to use a shared hidden frame as the parent.
+   * 
+   * @param vwidth
+   *   The minimum and preferred width of the value field.
+   * 
+   * @param tooltip
+   *   The tooltip text.
+   */ 
+  public static JCollectionField
+  createTitledCollectionField
+  (
+   JPanel tpanel, 
+   String title, 
+   int twidth,
+   JPanel vpanel,
+   Collection<String> values,
+   JFrame parent, 
    int vwidth, 
    String tooltip
   ) 

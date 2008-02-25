@@ -1,4 +1,4 @@
-// $Id: JCollectionField.java,v 1.17 2007/09/07 18:52:38 jim Exp $
+// $Id: JCollectionField.java,v 1.18 2008/02/25 06:07:43 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -28,6 +28,9 @@ class JCollectionField
 
   /**
    * Construct a new field.
+   * 
+   * @param values
+   *   The possible choices the field selects among.
    */ 
   public 
   JCollectionField
@@ -40,6 +43,38 @@ class JCollectionField
 
   /**
    * Construct a new field.
+   * 
+   * @param values
+   *   The possible choices the field selects among.
+   * 
+   * @para parent
+   *   The parent frame containing this field.
+   */ 
+  public 
+  JCollectionField
+  (
+   Collection<String> values, 
+   JFrame parent
+  )
+  {
+    super();  
+
+    if(parent != null) 
+      pDialog = new JDialog(parent);
+    else 
+      pDialog = new JDialog();
+    
+    initUI(values);
+  }
+    
+  /**
+   * Construct a new field.
+   * 
+   * @param values
+   *   The possible choices the field selects among.
+   * 
+   * @para parent
+   *   The parent dialog containing this field.
    */ 
   public 
   JCollectionField
@@ -49,6 +84,32 @@ class JCollectionField
   )
   {
     super();  
+
+    if(parent != null) 
+      pDialog = new JDialog(parent);
+    else 
+      pDialog = new JDialog();
+    
+    initUI(values);
+  }
+    
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Initialize the common user interface components. <P> 
+   *
+   * @param values
+   *   The possible choices the field selects among.
+   */ 
+  private void 
+  initUI
+  (
+   Collection<String> values
+  )
+  {
+    pDialog = selectDialog;
+
     setName("CollectionField");
 
     setAlignmentY(0.5f);
@@ -86,11 +147,6 @@ class JCollectionField
     pPopup.addPopupMenuListener(this);
 
     {
-      if(parent != null) 
-	pDialog = new JDialog(parent);
-      else 
-	pDialog = new JDialog();
-    
       pDialog.setUndecorated(true);
       pDialog.setResizable(false);
       pDialog.setAlwaysOnTop(true);
