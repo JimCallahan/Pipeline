@@ -1,4 +1,4 @@
-// $Id: BuilderInformation.java,v 1.19 2008/02/25 05:03:05 jesse Exp $
+// $Id: BuilderInformation.java,v 1.20 2008/02/25 06:19:50 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -99,7 +99,7 @@ class BuilderInformation
     pAbortOnBadParam = abortOnBadParam;
     pUseBuilderLogging = useBuilderLogging;
     pTerminateAppOnQuit = terminateAppWithGui;
-    pCommandLineParams = commandLineParams;
+    pCommandLineParams = new MultiMap<String, String>(commandLineParams);
     pAllConstructPasses = new LinkedList<ConstructPass>();
     pPassToBuilderMap = new ListMap<ConstructPass, BaseBuilder>();
     pNodesToQueue = new TreeSet<String>();

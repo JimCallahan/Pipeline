@@ -1,4 +1,4 @@
-// $Id: BaseBuilder.java,v 1.46 2008/02/25 05:03:05 jesse Exp $
+// $Id: BaseBuilder.java,v 1.47 2008/02/25 06:19:50 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -387,6 +387,13 @@ class BaseBuilder
         ("There are more passes in the layout than SetupPasses exist for " +
          "builder (" + getName() + ").");
     super.setLayout(layout);
+  }
+  
+  @Override
+  public final PassLayoutGroup
+  getLayout()
+  {
+    return getActualLayout();
   }
   
   /**

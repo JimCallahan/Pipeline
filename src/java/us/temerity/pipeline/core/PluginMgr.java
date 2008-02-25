@@ -1,17 +1,15 @@
-// $Id: PluginMgr.java,v 1.18 2008/01/30 09:04:13 jesse Exp $
+// $Id: PluginMgr.java,v 1.19 2008/02/25 06:19:50 jesse Exp $
 
 package us.temerity.pipeline.core;
 
 import java.io.*;
 import java.util.*;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.*;
 import java.util.jar.*;
-import java.util.zip.ZipEntry;
-
-import javatests.AnonInner;
+import java.util.zip.*;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.builder.BaseBuilderCollection;
+import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.message.*;
 
 /*------------------------------------------------------------------------------------------*/
@@ -634,6 +632,16 @@ class PluginMgr
         LayoutGroup group = collection.getLayout();
         pBuilderCollectionLayouts.put
           (plg.getVendor(), plg.getName(), plg.getVersionID(), group);
+        for (String builderName : collection.getBuildersProvided().keySet()) {
+          BaseBuilder builder = 
+            collection.instantiateBuilder(builderName, null, null, false, true, 
+                                          false, false, new MultiMap<String, String>());
+          PassLayoutGroup bLayout = builder.getLayout();
+          if (bLayout == null)
+            throw new PipelineException
+              ("The builder (" + builderName + ") in collection " +
+               "(" + collection.getName() + ") does not contain a valid parameter layout.");
+        }
       }
       else 
 	throw new PipelineException

@@ -1,4 +1,4 @@
-// $Id: BaseUtil.java,v 1.32 2008/02/25 05:03:05 jesse Exp $
+// $Id: BaseUtil.java,v 1.33 2008/02/25 06:19:50 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -1382,6 +1382,17 @@ class BaseUtil
       pLayout = 
 	new PassLayoutGroup("BuilderParams", "The BuilderParams", layout.getName(), layout );
     }
+    return pLayout; 
+  }
+  
+  /**
+   * Get the grouping of parameters used to layout components which represent 
+   * the parameters in the user interface. <P> 
+   * 
+   */ 
+  protected PassLayoutGroup
+  getActualLayout()
+  {
     return pLayout; 
   }
   
