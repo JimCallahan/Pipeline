@@ -1,4 +1,4 @@
-// $Id: PluginMgr.java,v 1.19 2008/02/25 06:19:50 jesse Exp $
+// $Id: PluginMgr.java,v 1.20 2008/02/25 23:59:36 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -9,6 +9,7 @@ import java.util.jar.*;
 import java.util.zip.*;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.LogMgr.*;
 import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.message.*;
 
@@ -627,21 +628,36 @@ class PluginMgr
       else if(plg instanceof BaseKeyChooser)
         pKeyChoosers.addPlugin(plg, cname, contents);
       else if(plg instanceof BaseBuilderCollection) {
-        pBuilderCollection.addPlugin(plg, cname, contents);
         BaseBuilderCollection collection = (BaseBuilderCollection) plg;
+        boolean isConnected = true;
+        try {
+        MasterMgrClient client = new MasterMgrClient();
+          client.verifyConnection();
+        }
+        catch (PipelineException ex) {
+          isConnected = false;
+        }
+        if (isConnected) {
+          for (String builderName : collection.getBuildersProvided().keySet()) {
+            BaseBuilder builder = 
+              collection.instantiateBuilder(builderName, null, null, false, true, 
+                false, false, new MultiMap<String, String>());
+            PassLayoutGroup bLayout = builder.getLayout();
+            if (bLayout == null)
+              throw new PipelineException
+              ("The builder (" + builderName + ") in collection " +
+                "(" + collection.getName() + ") does not contain a valid parameter layout.");
+          }
+        }
+        else
+          LogMgr.getInstance().logAndFlush(Kind.Plg, Level.Warning, 
+            "MasterMgr is currently not running which made it impossible to test the " +
+            "builders in Collection (" + plg.getName() + ") from vendor " +
+            "(" + plg.getVendor() + "), verison (" + plg.getVersionID() + ").");
+        pBuilderCollection.addPlugin(plg, cname, contents);
         LayoutGroup group = collection.getLayout();
         pBuilderCollectionLayouts.put
           (plg.getVendor(), plg.getName(), plg.getVersionID(), group);
-        for (String builderName : collection.getBuildersProvided().keySet()) {
-          BaseBuilder builder = 
-            collection.instantiateBuilder(builderName, null, null, false, true, 
-                                          false, false, new MultiMap<String, String>());
-          PassLayoutGroup bLayout = builder.getLayout();
-          if (bLayout == null)
-            throw new PipelineException
-              ("The builder (" + builderName + ") in collection " +
-               "(" + collection.getName() + ") does not contain a valid parameter layout.");
-        }
       }
       else 
 	throw new PipelineException
