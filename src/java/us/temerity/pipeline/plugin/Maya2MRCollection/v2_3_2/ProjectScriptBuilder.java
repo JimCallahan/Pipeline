@@ -4,6 +4,7 @@ import java.util.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
+import us.temerity.pipeline.builder.BuilderInformation.*;
 import us.temerity.pipeline.plugin.Maya2MRCollection.v2_3_2.DefaultProjectNames.GlobalsType;
 import us.temerity.pipeline.plugin.Maya2MRCollection.v2_3_2.stages.*;
 import us.temerity.pipeline.stages.*;
@@ -184,7 +185,7 @@ class ProjectScriptBuilder
       AdvancedLayoutGroup layout = 
         new AdvancedLayoutGroup
           ("Builder Information", 
-           "The pass where all the basic pStageInformation about the asset is collected " +
+           "The pass where all the basic stageInformation about the asset is collected " +
            "from the user.", 
            "BuilderSettings", 
            true);
@@ -285,26 +286,7 @@ class ProjectScriptBuilder
     setDefaultEditor(StageFunction.aSourceImage, new PluginContext("Gimp"));
     setDefaultEditor(StageFunction.aMotionBuilderScene, null);
   }
-  
-  
-  
-  /*----------------------------------------------------------------------------------------*/
-  /*   C H E C K - I N                                                                      */
-  /*----------------------------------------------------------------------------------------*/
-  
-  @Override
-  protected LinkedList<String>
-  getNodesToCheckIn()
-  {
-    return getCheckInList();
-  }
-  
-  @Override
-  protected boolean performCheckIn()
-  {
-    return pCheckInWhenDone;
-  }
-  
+
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -392,9 +374,11 @@ class ProjectScriptBuilder
       pPlaceholder = getBooleanParamValue(new ParamMapping(aPlaceholder));
       pAssetVerification = getBooleanParamValue(new ParamMapping(aAssetVerification));
       
+      StageInformation stageInfo = getStageInformation();
+      
       TreeSet<String> keys = (TreeSet<String>) getParamValue(aSelectionKeys);
-      pStageInfo.setDefaultSelectionKeys(keys);
-      pStageInfo.setUseDefaultSelectionKeys(true);
+      stageInfo.setDefaultSelectionKeys(keys);
+      stageInfo.setUseDefaultSelectionKeys(true);
       
       pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, "Validation complete.");
     }
@@ -423,10 +407,11 @@ class ProjectScriptBuilder
     buildPhase() 
       throws PipelineException
     {
+      StageInformation stageInfo = getStageInformation();
       if (pCopyShading) {
 	String script = pProjectNames.getShaderCopyScriptName();
 	MELFileStage stage = 
-	  new MELFileStage(pStageInfo, pContext, pClient, script, "MayaShdCopyMEL");
+	  new MELFileStage(stageInfo, pContext, pClient, script, "MayaShdCopyMEL");
 	boolean build = stage.build();
 	if (build) {
 	  addToCheckInList(script);
@@ -436,7 +421,7 @@ class ProjectScriptBuilder
       if (pCopyRigging) {
 	String script = pProjectNames.getRigCopyScriptName();
 	MELFileStage stage = 
-	  new MELFileStage(pStageInfo, pContext, pClient, script, "MayaReRigMEL");
+	  new MELFileStage(stageInfo, pContext, pClient, script, "MayaReRigMEL");
 	boolean build = stage.build();
 	if (build) {
 	  addToCheckInList(script);
@@ -446,7 +431,7 @@ class ProjectScriptBuilder
       {
 	String script = pProjectNames.getRemoveReferenceScriptName();
 	MELFileStage stage = 
-	  new MELFileStage(pStageInfo, pContext, pClient, script, "MayaRemoveRefMEL");
+	  new MELFileStage(stageInfo, pContext, pClient, script, "MayaRemoveRefMEL");
 	boolean build = stage.build();
 	if (build) {
 	  addToCheckInList(script);
@@ -456,7 +441,7 @@ class ProjectScriptBuilder
       if (pMRayInit) {
 	String script = pProjectNames.getMRayInitScriptName();
 	MELFileStage stage =
-	  new MELFileStage(pStageInfo, pContext, pClient, script, "MayaMRayInitMEL");
+	  new MELFileStage(stageInfo, pContext, pClient, script, "MayaMRayInitMEL");
 	boolean build = stage.build();
 	if (build) {
 	  addToCheckInList(script);
@@ -469,7 +454,7 @@ class ProjectScriptBuilder
 	  boolean build = false;
 	  if (!pDefaultScripts) {
 	    EmptyFileStage stage = 
-	      new EmptyFileStage(pStageInfo, pContext, pClient, script, "mel");
+	      new EmptyFileStage(stageInfo, pContext, pClient, script, "mel");
 	    stage.build();
 	    build = stage.build();
 	    if (build) {
@@ -479,7 +464,7 @@ class ProjectScriptBuilder
 	  }
 	  else {
 	    PlaceholderMELStage stage = 
-	      new PlaceholderMELStage(pStageInfo, pContext, pClient, script);
+	      new PlaceholderMELStage(stageInfo, pContext, pClient, script);
 	    build = stage.build();
 	  }
 	  if (build)
@@ -490,7 +475,7 @@ class ProjectScriptBuilder
 	  boolean build = false;
 	  if (!pDefaultScripts) {
 	    EmptyFileStage stage = 
-	      new EmptyFileStage(pStageInfo, pContext, pClient, script, "mel");
+	      new EmptyFileStage(stageInfo, pContext, pClient, script, "mel");
 	    build = stage.build();
 	    if (build) {
 	      pEmptyFiles.add(stage);
@@ -499,7 +484,7 @@ class ProjectScriptBuilder
 	  }
 	  else {
 	    PlaceholderSkelMELStage stage = 
-	      new PlaceholderSkelMELStage(pStageInfo, pContext, pClient, script);
+	      new PlaceholderSkelMELStage(stageInfo, pContext, pClient, script);
 	    build = stage.build();
 	  }
 	  if (build)
@@ -515,7 +500,7 @@ class ProjectScriptBuilder
 	for (String type : types) {
 	  String script = pProjectNames.getFinalizeScriptName(null, type);
 	  CatFilesStage stage = 
-	    new CatFilesStage(pStageInfo, pContext, pClient, script, "mel", collectedScripts);
+	    new CatFilesStage(stageInfo, pContext, pClient, script, "mel", collectedScripts);
 	  boolean build = stage.build();
 	  if (build) {
 	    addToCheckInList(script);
@@ -528,7 +513,7 @@ class ProjectScriptBuilder
 	for (String type : types) {
 	  String script = pProjectNames.getLowRezFinalizeScriptName(null, type);
 	  EmptyFileStage stage = 
-	    new EmptyFileStage(pStageInfo, pContext, pClient, script, "mel");
+	    new EmptyFileStage(stageInfo, pContext, pClient, script, "mel");
 	  boolean build = stage.build();
 	  if (build) {
 	    addToCheckInList(script);
@@ -545,7 +530,7 @@ class ProjectScriptBuilder
 	scripts.add(pProjectNames.getAssetVerificationScriptName());
 	for (String script : scripts) {
 	  EmptyFileStage stage = 
-	    new EmptyFileStage(pStageInfo, pContext, pClient, script, "mel");
+	    new EmptyFileStage(stageInfo, pContext, pClient, script, "mel");
 	  boolean build = stage.build();
 	  if (build) {
 	    addToCheckInList(script);
@@ -555,7 +540,7 @@ class ProjectScriptBuilder
 	}
 	if (pDefaultScripts) {
 	  String script = pProjectNames.getModelVerificationScriptName();
-	  VerifyModelMELStage stage = new VerifyModelMELStage(pStageInfo, pContext, pClient, script);
+	  VerifyModelMELStage stage = new VerifyModelMELStage(stageInfo, pContext, pClient, script);
 	  boolean build = stage.build();
 	  if (build)
 	   addToCheckInList(script);
@@ -570,7 +555,7 @@ class ProjectScriptBuilder
 	if (pAssetVerification)
 	  collectedScripts.add(pProjectNames.getRigVerificationScriptName());
 	CatFilesStage stage = 
-	  new CatFilesStage(pStageInfo, pContext, pClient, script, "mel", collectedScripts);
+	  new CatFilesStage(stageInfo, pContext, pClient, script, "mel", collectedScripts);
 	boolean build = stage.build();
 	if (build) {
 	  addToCheckInList(script);
@@ -580,7 +565,7 @@ class ProjectScriptBuilder
       if (pGlobals) {
 	String script = pProjectNames.getAssetModelTTGlobals();
 	MELFileStage stage =
-	  new MELFileStage(pStageInfo, pContext, pClient, script, "MayaRenderGlobals");
+	  new MELFileStage(stageInfo, pContext, pClient, script, "MayaRenderGlobals");
 	boolean build = stage.build();
 	if (build) {
 	  addToCheckInList(script);
@@ -590,7 +575,7 @@ class ProjectScriptBuilder
       if (pGlobals) {
 	String script = pProjectNames.getAssetRigAnimGlobals();
 	MELFileStage stage =
-	  new MELFileStage(pStageInfo, pContext, pClient, script, "MayaRenderGlobals");
+	  new MELFileStage(stageInfo, pContext, pClient, script, "MayaRenderGlobals");
 	boolean build = stage.build();
 	if (build) {
 	  addToCheckInList(script);
@@ -600,7 +585,7 @@ class ProjectScriptBuilder
       if (pGlobals) {
 	String script = pProjectNames.getAssetShaderTTGlobals(GlobalsType.Maya2MR);
 	MELFileStage stage =
-	  new MELFileStage(pStageInfo, pContext, pClient, script, "MRayRenderGlobals");
+	  new MELFileStage(stageInfo, pContext, pClient, script, "MRayRenderGlobals");
 	boolean build = stage.build();
 	if (build) {
 	  addToCheckInList(script);
@@ -610,7 +595,7 @@ class ProjectScriptBuilder
       if (pGlobals) {
 	String script = pProjectNames.getAssetShaderTTGlobals(GlobalsType.Standalone);
 	MRayOptionsStage stage =
-	  new MRayOptionsStage(pStageInfo, pContext, pClient, script);
+	  new MRayOptionsStage(stageInfo, pContext, pClient, script);
 	boolean build = stage.build();
 	if (build) {
 	  addToCheckInList(script);
@@ -620,7 +605,7 @@ class ProjectScriptBuilder
       if (pGlobals) {
 	String script = pProjectNames.getAnimGlobals();
 	MELFileStage stage =
-	  new MELFileStage(pStageInfo, pContext, pClient, script, "MayaRenderGlobals");
+	  new MELFileStage(stageInfo, pContext, pClient, script, "MayaRenderGlobals");
 	boolean build = stage.build();
 	if (build) {
 	  addToCheckInList(script);
@@ -630,7 +615,7 @@ class ProjectScriptBuilder
       if (pGlobals) {
 	String script = pProjectNames.getLgtGlobals();
 	MELFileStage stage =
-	  new MELFileStage(pStageInfo, pContext, pClient, script, "MRayRenderGlobals");
+	  new MELFileStage(stageInfo, pContext, pClient, script, "MRayRenderGlobals");
 	boolean build = stage.build();
 	if (build) {
 	  addToCheckInList(script);

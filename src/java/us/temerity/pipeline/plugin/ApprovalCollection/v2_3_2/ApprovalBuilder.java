@@ -140,7 +140,7 @@ class ApprovalBuilder
   /*----------------------------------------------------------------------------------------*/
   
   @Override
-  protected LinkedList<String> 
+  public LinkedList<String> 
   getNodesToCheckIn()
   {
     return getCheckInList();
@@ -163,14 +163,14 @@ class ApprovalBuilder
   }
   
   @Override
-  protected boolean 
+  public boolean 
   performCheckIn()
   {
     return true;
   }
   
   @Override
-  protected String 
+  public String 
   getCheckInMessage()
   {
     String toReturn = "Submitted by: " + pSubmitVsn.getAuthor() + "\n";

@@ -4,6 +4,7 @@ import java.util.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
+import us.temerity.pipeline.builder.BuilderInformation.*;
 import us.temerity.pipeline.plugin.Maya2MRCollection.v2_3_2.stages.ShotBuilderAnimStage;
 import us.temerity.pipeline.plugin.Maya2MRCollection.v2_3_2.stages.ShotMayaCurvesExportStage;
 
@@ -158,7 +159,7 @@ class ShotBuilder
       AdvancedLayoutGroup layout = 
         new AdvancedLayoutGroup
           ("Builder Information", 
-           "The pass where all the basic pStageInformation about the shot is collected " +
+           "The pass where all the basic stageInformation about the shot is collected " +
            "from the user.", 
            "BuilderSettings", 
            true);
@@ -195,7 +196,7 @@ class ShotBuilder
 	AdvancedLayoutGroup layout2 = 
 	  new AdvancedLayoutGroup
 	  ("Asset Information", 
-	   "The pass where all the basic pStageInformation about what assets are in the shot" +
+	   "The pass where all the basic stageInformation about what assets are in the shot" +
 	   "is collected from the user.", 
 	   "Assets", 
 	   true);
@@ -219,13 +220,6 @@ class ShotBuilder
       }
     }
 
-  }
-  
-  @Override
-  protected LinkedList<String> 
-  getNodesToCheckIn()
-  {
-    return null;
   }
   
   
@@ -524,13 +518,14 @@ class ShotBuilder
     doLayout()
       throws PipelineException
     {
+      StageInformation stageInfo = getStageInformation();
       String taskType = pProjectNames.getLayoutTaskName();
       
       String layoutScene = pShotNames.getLayoutEditNodeName();
       {
 	ShotBuilderAnimStage stage = 
 	  new ShotBuilderAnimStage
-	  (pStageInfo,
+	  (stageInfo,
 	   pContext,
 	   pClient,
 	   pMayaContext,
@@ -556,7 +551,7 @@ class ShotBuilder
 	{
 	  ShotMayaCurvesExportStage stage = 
 	    new ShotMayaCurvesExportStage
-	    (pStageInfo,
+	    (stageInfo,
 	     pContext,
 	     pClient,
 	     anim,

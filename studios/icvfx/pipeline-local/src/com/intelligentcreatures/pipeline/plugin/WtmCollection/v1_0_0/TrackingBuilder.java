@@ -1,4 +1,4 @@
-// $Id: TrackingBuilder.java,v 1.8 2008/02/22 09:22:29 jim Exp $
+// $Id: TrackingBuilder.java,v 1.9 2008/02/25 05:03:07 jesse Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -7,6 +7,7 @@ import com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages.*;
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.math.*;
 import us.temerity.pipeline.builder.*;
+import us.temerity.pipeline.builder.BuilderInformation.*;
 import us.temerity.pipeline.stages.*;
 
 import java.util.*;
@@ -186,7 +187,7 @@ class TrackingBuilder
    */
   @SuppressWarnings("unchecked")
   @Override
-  protected MappedArrayList<String, PluginContext> 
+  public MappedArrayList<String, PluginContext> 
   getNeededActions()
   {
     ArrayList<PluginContext> plugins = new ArrayList<PluginContext>();	
@@ -323,6 +324,7 @@ class TrackingBuilder
     buildPhase() 
       throws PipelineException
     {
+      StageInformation stageInfo = getStageInformation();
       /* lock the latest version of all of the prerequisites */ 
       lockNodePrerequitites(); 
 
@@ -368,7 +370,7 @@ class TrackingBuilder
 	{
 	  BuildTrackingVerifyStage stage = 
 	    new BuildTrackingVerifyStage
-	    (pStageInfo, pContext, pClient, 
+	    (stageInfo, pContext, pClient, 
 	     verifyNodeName, pTrackNodeName, pRorschachVerifyModelNodeName, 
 	     pRorschachTestShadersNodeName, pTrackPrepNodeName, pFrameRange); 
 	  addTaskAnnotation(stage, NodePurpose.Prepare); 
@@ -379,7 +381,7 @@ class TrackingBuilder
 	{
 	  RenderTaskVerifyStage stage = 
 	    new RenderTaskVerifyStage
-	    (pStageInfo, pContext, pClient, 
+	    (stageInfo, pContext, pClient, 
 	     verifyImagesNodeName, pFrameRange, verifyNodeName, 
 	     "track:camera01", pTrackVerifyRenderNodeName); 
 	  addTaskAnnotation(stage, NodePurpose.Focus); 
@@ -389,7 +391,7 @@ class TrackingBuilder
 	String verifyCompNodeName = pShotNamer.getTrackingVerifyCompNode(); 
 	{
 	  BashCompStage stage = 
-	    new BashCompStage(pStageInfo, pContext, pClient, 
+	    new BashCompStage(stageInfo, pContext, pClient, 
 			      verifyCompNodeName, pFrameRange, 
 			      verifyImagesNodeName, pUndistorted2kPlateNodeName); 
 	  addTaskAnnotation(stage, NodePurpose.Focus); 	 
@@ -399,7 +401,7 @@ class TrackingBuilder
 	String verifyThumbNodeName = pShotNamer.getTrackingVerifyThumbNode();
 	{
 	  NukeThumbnailStage stage = 
-	    new NukeThumbnailStage(pStageInfo, pContext, pClient,
+	    new NukeThumbnailStage(stageInfo, pContext, pClient,
 				   verifyThumbNodeName, "tif", verifyCompNodeName, 
 				   1, 150, 1.0, true, true, new Color3d()); 
 	  addTaskAnnotation(stage, NodePurpose.Thumbnail); 
@@ -412,7 +414,7 @@ class TrackingBuilder
 	  sources.add(verifyThumbNodeName); 
 
 	  TargetStage stage = 
-	    new TargetStage(pStageInfo, pContext, pClient, 
+	    new TargetStage(stageInfo, pContext, pClient, 
 			    submitNodeName, sources); 
 	  addTaskAnnotation(stage, NodePurpose.Submit); 
 	  stage.build(); 
@@ -427,7 +429,7 @@ class TrackingBuilder
 	{
 	  BuildTrackingExtractStage stage = 
 	    new BuildTrackingExtractStage
-	    (pStageInfo, pContext, pClient, 
+	    (stageInfo, pContext, pClient, 
 	     extractedCameraNodeName, pTrackNodeName, pTrackExtractCameraNodeName, 
 	     pFrameRange); 
 	  addTaskAnnotation(stage, NodePurpose.Product); 
@@ -438,7 +440,7 @@ class TrackingBuilder
 	{
 	  BuildTrackingExtractStage stage = 
 	    new BuildTrackingExtractStage
-	    (pStageInfo, pContext, pClient, 
+	    (stageInfo, pContext, pClient, 
 	     extractedTrackNodeName, pTrackNodeName, pTrackExtractTrackingNodeName, 
 	     pFrameRange); 
 	  addTaskAnnotation(stage, NodePurpose.Product); 
@@ -452,7 +454,7 @@ class TrackingBuilder
 	  sources.add(extractedTrackNodeName); 
 
 	  TargetStage stage = 
-	    new TargetStage(pStageInfo, pContext, pClient, 
+	    new TargetStage(stageInfo, pContext, pClient, 
 			    approveNodeName, sources); 
 	  addTaskAnnotation(stage, NodePurpose.Approve); 
 	  stage.build(); 

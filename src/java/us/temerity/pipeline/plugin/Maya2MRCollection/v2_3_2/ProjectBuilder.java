@@ -5,6 +5,7 @@ import java.util.LinkedList;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
+import us.temerity.pipeline.builder.BuilderInformation.*;
 import us.temerity.pipeline.stages.EmptyFileStage;
 
 /*------------------------------------------------------------------------------------------*/
@@ -104,7 +105,7 @@ class ProjectBuilder
       AdvancedLayoutGroup layout = 
         new AdvancedLayoutGroup
           ("Project Information", 
-           "The pass where all the basic pStageInformation about the asset is collected " +
+           "The pass where all the basic stageInformation about the asset is collected " +
            "from the user.", 
            "BuilderSettings", 
            true);
@@ -191,22 +192,6 @@ class ProjectBuilder
   }
   
   
-  @Override
-  protected LinkedList<String> 
-  getNodesToCheckIn()
-  {
-    if (pBuildDummy)
-      return getCheckInList();
-    return null;
-  }
-  
-  @Override
-  protected boolean 
-  performCheckIn()
-  {
-    return true;
-  }
-  
   protected String pProjectName;
   
   protected BuildsProjectNames pProjectNames;
@@ -272,16 +257,19 @@ class ProjectBuilder
     {
       pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
         "Starting the init phase in the Information Pass.");
+      
       if (pBuildMelScripts) {
 	ProjectScriptBuilder builder = 
-	  new ProjectScriptBuilder(pClient, pQueue, (BaseNames) pProjectNames, pBuilderInfo, pBuilderInformation);
+	  new ProjectScriptBuilder(pClient, pQueue, (BaseNames) pProjectNames, 
+	                           pBuilderInfo, getBuilderInformation());
 	addSubBuilder(builder);
 	addMappedParam(builder.getName(), DefaultProjectNames.aProjectName, aProjectName);
 	addMappedParam(builder.getName(), aSelectionKeys, aSelectionKeys);
       }
       if (pBuildTurntables) {
 	ProjectTurntableBuilder builder = 
-	  new ProjectTurntableBuilder(pClient, pQueue, (BaseNames) pProjectNames, pBuilderInfo, pBuilderInformation);
+	  new ProjectTurntableBuilder(pClient, pQueue, (BaseNames) pProjectNames, 
+	                              pBuilderInfo, getBuilderInformation());
 	addSubBuilder(builder);
 	addMappedParam(builder.getName(), DefaultProjectNames.aProjectName, aProjectName);
 	addMappedParam(builder.getName(), aSelectionKeys, aSelectionKeys);
@@ -307,9 +295,11 @@ class ProjectBuilder
     buildPhase() 
       throws PipelineException
     {
+      StageInformation stageInfo = getStageInformation();
+      
       if (pBuildDummy) {
 	String node = pProjectNames.getDummyFile();
-	EmptyFileStage stage = new EmptyFileStage(pStageInfo, pContext, pClient, node);
+	EmptyFileStage stage = new EmptyFileStage(stageInfo, pContext, pClient, node);
 	stage.build();
 	addToCheckInList(node);
       }

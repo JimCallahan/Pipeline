@@ -4,6 +4,7 @@ import java.util.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
+import us.temerity.pipeline.builder.BuilderInformation.*;
 import us.temerity.pipeline.plugin.Maya2MRCollection.v2_3_2.DefaultProjectNames.GlobalsType;
 import us.temerity.pipeline.plugin.Maya2MRCollection.v2_3_2.stages.*;
 import us.temerity.pipeline.stages.*;
@@ -266,14 +267,14 @@ class SimpleAssetBuilder
   }
 
   @Override
-  protected LinkedList<String> 
+  public LinkedList<String> 
   getNodesToCheckIn()
   {
     return getCheckInList();
   }
   
   @Override
-  protected boolean 
+  public boolean 
   performCheckIn()
   {
     return pCheckInWhenDone;
@@ -386,12 +387,14 @@ class SimpleAssetBuilder
       
       pMayaContext = (MayaContext) getParamValue(aMayaContext);
 
+      StageInformation stageInfo = getStageInformation();
+      
       TreeSet<String> keys = (TreeSet<String>) getParamValue(aSelectionKeys);
-      pStageInfo.setDefaultSelectionKeys(keys);
-      pStageInfo.setUseDefaultSelectionKeys(true);
+      stageInfo.setDefaultSelectionKeys(keys);
+      stageInfo.setUseDefaultSelectionKeys(true);
       
       boolean annot = getBooleanParamValue(new ParamMapping(aDoAnnotations));
-      pStageInfo.setDoAnnotations(annot);
+      stageInfo.setDoAnnotations(annot);
       
       pTaskName = pProjectNames.getTaskName(pAssetName, pAssetType);
       
@@ -427,6 +430,7 @@ class SimpleAssetBuilder
     buildPhase() 
       throws PipelineException
     {
+      StageInformation stageInfo = getStageInformation();
       String taskType = pProjectNames.getModelingTaskName();
       
       if (pBuildTextureNode) {
@@ -438,7 +442,7 @@ class SimpleAssetBuilder
       {
 	AssetBuilderModelStage stage = 
 	  new AssetBuilderModelStage
-	  (pStageInfo,
+	  (stageInfo,
 	   pContext,
 	   pClient,
 	   pMayaContext, 
@@ -453,7 +457,7 @@ class SimpleAssetBuilder
 	edit.put("mod", editAsset);
 	ModelPiecesVerifyStage stage =
 	  new ModelPiecesVerifyStage
-	  (pStageInfo,
+	  (stageInfo,
 	   pContext,
 	   pClient,
 	   pMayaContext,
@@ -469,7 +473,7 @@ class SimpleAssetBuilder
       else {
 	AssetModelExportStage stage = 
 	  new AssetModelExportStage
-	  (pStageInfo,
+	  (stageInfo,
 	   pContext,
 	   pClient,
 	   verifyAsset,
@@ -491,7 +495,7 @@ class SimpleAssetBuilder
             pProjectNames.getAssetShaderTTSetup(pAssetName, pAssetType);
           AdvAssetBuilderTTStage stage =
             new AdvAssetBuilderTTStage
-            (pStageInfo,
+            (stageInfo,
              pContext,
              pClient,
              pMayaContext,
@@ -506,7 +510,7 @@ class SimpleAssetBuilder
           String globals = pProjectNames.getAssetShaderTTGlobals(GlobalsType.Maya2MR);
           AdvAssetBuilderTTImgStage stage =
             new AdvAssetBuilderTTImgStage
-            (pStageInfo, 
+            (stageInfo, 
              pContext, 
              pClient, 
              assetTTImg, 
@@ -519,7 +523,7 @@ class SimpleAssetBuilder
         if (pBuildThumbnail) {
           thumb = pAssetNames.getAssetThumbNodeName();
           ThumbnailStage stage = 
-            new ThumbnailStage(pStageInfo, pContext, pClient, thumb, "png", assetTTImg, 160);
+            new ThumbnailStage(stageInfo, pContext, pClient, thumb, "png", assetTTImg, 160);
           addThumbnailAnnotation(stage, taskType);
           stage.build();
         }
@@ -533,7 +537,7 @@ class SimpleAssetBuilder
           sources.add(assetTTImg);
         else
           sources.add(verifyAsset);
-        TargetStage stage = new TargetStage(pStageInfo, pContext, pClient, assetSubmit, sources);
+        TargetStage stage = new TargetStage(stageInfo, pContext, pClient, assetSubmit, sources);
         addSubmitAnnotation(stage, taskType);
         stage.build();
         addToQueueList(assetSubmit);
@@ -543,14 +547,14 @@ class SimpleAssetBuilder
       String assetApprove = pAssetNames.getAssetApproveNodeName();
       {
         ProductStage stage = 
-          new ProductStage(pStageInfo, pContext, pClient, assetFinal, "ma", verifyAsset, StageFunction.aMayaScene);
+          new ProductStage(stageInfo, pContext, pClient, assetFinal, "ma", verifyAsset, StageFunction.aMayaScene);
         addProductAnnotation(stage, taskType);
         stage.build();
       }
       {
         TreeSet<String> sources = new TreeSet<String>();
         sources.add(assetFinal);
-        TargetStage stage = new TargetStage(pStageInfo, pContext, pClient, assetApprove, sources);
+        TargetStage stage = new TargetStage(stageInfo, pContext, pClient, assetApprove, sources);
         addApproveAnnotation(stage, taskType);
         stage.build();
         addToQueueList(assetApprove);

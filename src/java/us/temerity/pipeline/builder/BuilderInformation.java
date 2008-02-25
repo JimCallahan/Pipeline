@@ -1,4 +1,4 @@
-// $Id: BuilderInformation.java,v 1.18 2008/02/11 19:22:10 jesse Exp $
+// $Id: BuilderInformation.java,v 1.19 2008/02/25 05:03:05 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -277,7 +277,7 @@ class BuilderInformation
     }
   }
   
-  protected final Map<ConstructPass, PassDependency>
+  public final Map<ConstructPass, PassDependency>
   getPassDependencies()
   {
     return Collections.unmodifiableMap(pPassDependencies);
@@ -1202,6 +1202,7 @@ class BuilderInformation
     
     private ActionOnExistence pActionOnExistence;
   }  //Stage Information
+  
   
   
   /*----------------------------------------------------------------------------------------*/

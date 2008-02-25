@@ -4,6 +4,7 @@ import java.util.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
+import us.temerity.pipeline.builder.BuilderInformation.*;
 import us.temerity.pipeline.math.*;
 import us.temerity.pipeline.stages.*;
 
@@ -102,6 +103,11 @@ class RotoBuilder
 
     /* setup builder parameters */ 
     {
+      DoubleMap<String, String, ArrayList<String>> projects = 
+        pDefs.getAllProjectsAllNamesForParam();
+      if (projects.isEmpty())
+        throw new PipelineException
+          ("No projects exist.  A project must exist for the RotoBuilder to be run.");
       /* select the project, sequence and shot for the task */ 
       UtilityParam param = 
         new DoubleMapUtilityParam(
@@ -113,7 +119,7 @@ class RotoBuilder
             "Select the name of the sequence or [[NEW]] to create a new sequence",
             aShotName,
             "Select the name of the shot or [[NEW]] to create a new shot",
-            pDefs.getAllProjectsAllNamesForParam());
+            projects);
       addParam(param);
     }
     
@@ -225,7 +231,7 @@ class RotoBuilder
   /*----------------------------------------------------------------------------------------*/
  
   @Override
-  protected MappedArrayList<String, PluginContext> 
+  public MappedArrayList<String, PluginContext> 
   getNeededActions()
   {
     ArrayList<PluginContext> plugins = new ArrayList<PluginContext>();
@@ -293,7 +299,7 @@ class RotoBuilder
       /* turn on the DoAnnotations flag for the StageInformation shared by all 
           of the Stages created by this builder since we always want task annotations */
       boolean annot = getBooleanParamValue(new ParamMapping(aDoAnnotations));
-      pStageInfo.setDoAnnotations(annot);
+      getStageInformation().setDoAnnotations(annot);
     }
     
     /**
@@ -466,6 +472,7 @@ class RotoBuilder
     buildPhase()
       throws PipelineException
     {
+      StageInformation stageInfo = getStageInformation();
       pTaskName = pShotNamer.getTaskName();
       String taskType = "Roto";
       
@@ -480,7 +487,7 @@ class RotoBuilder
       String rotoScene = pShotNamer.getRotoScene();
       {
         SilhouetteBuildStage stage = 
-          new SilhouetteBuildStage(pStageInfo, pContext, pClient, rotoScene, "HDTV 24p (1920x1080)", pPlatePaths );
+          new SilhouetteBuildStage(stageInfo, pContext, pClient, rotoScene, "HDTV 24p (1920x1080)", pPlatePaths );
         stage.build();
         addEditAnnotation(stage, taskType);
         addToDisableList(rotoScene);
@@ -498,7 +505,7 @@ class RotoBuilder
           String matteTestRender = pShotNamer.getMatteTestRenderName(matte);
           {
             BaseStage stage =
-              new MatteStage(pStageInfo, pContext, pClient, 
+              new MatteStage(stageInfo, pContext, pClient, 
                              matteRender, range, rotoScene);
             addPrepareAnnotation(stage, taskType);
             stage.build();
@@ -506,7 +513,7 @@ class RotoBuilder
           }
           {
             BaseStage stage = 
-              new MatteTestStage(pStageInfo, pContext, pClient, 
+              new MatteTestStage(stageInfo, pContext, pClient, 
                                  matteTest, template, pPlatePaths, matteRender);
             addPrepareAnnotation(stage, taskType);
             stage.build();
@@ -515,7 +522,7 @@ class RotoBuilder
             ArrayList<String> sources = new ArrayList<String>(pPlatePaths);
             sources.add(matteRender);
             BaseStage stage = 
-              new MatteTestRenderStage(pStageInfo, pContext, pClient, 
+              new MatteTestRenderStage(stageInfo, pContext, pClient, 
                                        matteTestRender, range, matteTest, sources );
             addFocusAnnotation(stage, taskType);
             stage.build();
@@ -526,7 +533,7 @@ class RotoBuilder
       String submitNode = pShotNamer.getRotoSubmitName();
       {
         TargetStage stage = 
-          new TargetStage(pStageInfo, pContext, pClient, submitNode, submitSources);
+          new TargetStage(stageInfo, pContext, pClient, submitNode, submitSources);
         addSubmitAnnotation(stage, taskType);
         stage.build();
         addToQueueList(submitNode);
@@ -541,7 +548,7 @@ class RotoBuilder
           {
             ProductStage stage = 
               new ProductStage
-              (pStageInfo, pContext, pClient, 
+              (stageInfo, pContext, pClient, 
                matteFinal, range, 4, "exr", 
                matteRender, StageFunction.aRenderedImage);
             addProductAnnotation(stage, taskType);
@@ -550,7 +557,7 @@ class RotoBuilder
           {
             String eachApproval = pShotNamer.getRotoApprovalName(matte);
             TargetStage stage = 
-              new TargetStage(pStageInfo, pContext, pClient, eachApproval, matteFinal);
+              new TargetStage(stageInfo, pContext, pClient, eachApproval, matteFinal);
             addApproveAnnotation(stage, taskType);
             stage.build();
             approveSources.add(eachApproval);
@@ -560,7 +567,7 @@ class RotoBuilder
       String rotoApprove = pShotNamer.getRotoApprovalName();
       {
         TargetStage stage = 
-          new TargetStage(pStageInfo, pContext, pClient, rotoApprove, approveSources);
+          new TargetStage(stageInfo, pContext, pClient, rotoApprove, approveSources);
         addApproveAnnotation(stage, taskType);
         stage.build();
         addToQueueList(rotoApprove);

@@ -4,6 +4,7 @@ import java.util.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
+import us.temerity.pipeline.builder.BuilderInformation.*;
 import us.temerity.pipeline.plugin.Maya2MRCollection.v2_3_2.stages.*;
 import us.temerity.pipeline.plugin.Maya2MRCollection.v2_3_2.stages.PlaceholderTTStage.TTType;
 import us.temerity.pipeline.stages.EmptyMayaAsciiStage;
@@ -118,7 +119,7 @@ class ProjectTurntableBuilder
       AdvancedLayoutGroup layout = 
         new AdvancedLayoutGroup
           ("Builder Information", 
-           "The pass where all the basic pStageInformation about the asset is collected " +
+           "The pass where all the basic stageInformation about the asset is collected " +
            "from the user.", 
            "BuilderSettings", 
            true);
@@ -208,20 +209,6 @@ class ProjectTurntableBuilder
   }
   
   
-  @Override
-  protected LinkedList<String> 
-  getNodesToCheckIn()
-  {
-    return getCheckInList();
-  }
-  
-  @Override
-  protected boolean 
-  performCheckIn()
-  {
-    return pCheckInWhenDone;
-  }
-  
   
   /*----------------------------------------------------------------------------------------*/
   /*  I N T E R N A L S                                                                     */
@@ -288,9 +275,11 @@ class ProjectTurntableBuilder
       
       pMayaContext = (MayaContext) getParamValue(aMayaContext);
       
+      StageInformation stageInfo = getStageInformation();
+      
       TreeSet<String> keys = (TreeSet<String>) getParamValue(aSelectionKeys);
-      pStageInfo.setDefaultSelectionKeys(keys);
-      pStageInfo.setUseDefaultSelectionKeys(true);
+      stageInfo.setDefaultSelectionKeys(keys);
+      stageInfo.setUseDefaultSelectionKeys(true);
       
       pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, "Validation complete.");
     }
@@ -317,6 +306,8 @@ class ProjectTurntableBuilder
     buildPhase() 
       throws PipelineException
     {
+      StageInformation stageInfo = getStageInformation();
+      
       String modSetup = pProjectNames.getAssetModelTTSetup(null, "character");
       String modSetSetup = pProjectNames.getAssetModelTTSetup(null, "set");
       String rigSetup = pProjectNames.getAssetRigAnimSetup(null, "character");
@@ -336,7 +327,7 @@ class ProjectTurntableBuilder
 	all.addAll(pCenter);
 	for (String node : all ) {
 	  EmptyMayaAsciiStage stage = 
-	    new EmptyMayaAsciiStage(pStageInfo, pContext, pClient, pMayaContext, node);
+	    new EmptyMayaAsciiStage(stageInfo, pContext, pClient, pMayaContext, node);
 	  stage.build();
 	  pEmptyMayaStages.add(stage);
 	  addToCheckInList(node);
@@ -346,13 +337,13 @@ class ProjectTurntableBuilder
 	String circleMel = pProjectNames.getPlaceholderTTCircleScriptName();
 	{
 	  PlaceholderTTStage stage = 
-	    new PlaceholderTTStage(pStageInfo, pContext, pClient, circleMel, TTType.Circle);
+	    new PlaceholderTTStage(stageInfo, pContext, pClient, circleMel, TTType.Circle);
 	  stage.build();
 	  addToCheckInList(circleMel);
 	}
 	for (String circles : pCircles) {
 	  AssetBuilderModelStage stage = 
-	    new AssetBuilderModelStage(pStageInfo, pContext, pClient, pMayaContext, circles, circleMel);
+	    new AssetBuilderModelStage(stageInfo, pContext, pClient, pMayaContext, circles, circleMel);
 	  stage.build();
 	  pModelStages.add(stage);
 	  addToCheckInList(circles);
@@ -360,13 +351,13 @@ class ProjectTurntableBuilder
 	String centerMel = pProjectNames.getPlaceholderTTCenterScriptName();
 	{
 	  PlaceholderTTStage stage = 
-	    new PlaceholderTTStage(pStageInfo, pContext, pClient, centerMel, TTType.Center);
+	    new PlaceholderTTStage(stageInfo, pContext, pClient, centerMel, TTType.Center);
 	  stage.build();
 	  addToCheckInList(centerMel);
 	}
 	for (String centers : pCenter) {
 	  AssetBuilderModelStage stage = 
-	    new AssetBuilderModelStage(pStageInfo, pContext, pClient, pMayaContext, centers, centerMel);
+	    new AssetBuilderModelStage(stageInfo, pContext, pClient, pMayaContext, centers, centerMel);
 	  stage.build();
 	  pModelStages.add(stage);
 	  addToCheckInList(centers);
@@ -375,7 +366,7 @@ class ProjectTurntableBuilder
       String cameraMel = pProjectNames.getPlaceholderCameraScriptName();
       {
 	PlaceholderCameraStage stage = 
-	  new PlaceholderCameraStage(pStageInfo, pContext, pClient, cameraMel);
+	  new PlaceholderCameraStage(stageInfo, pContext, pClient, cameraMel);
 	stage.build();
 	addToCheckInList(cameraMel);
       }

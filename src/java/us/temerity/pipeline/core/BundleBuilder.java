@@ -51,6 +51,11 @@ class BundleBuilder
    *   A table mapping the names of license keys associated with the nodes in the node 
    *   bundle to license keys at the local site.  Any license keys not found in this 
    *   table will be ignored.
+   *   
+   * @param hardwareKeyRemap
+   *   A table mapping the names of hardware keys associated with the nodes in the node 
+   *   bundle to hardware keys at the local site.  Any hardware keys not found in this 
+   *   table will be ignored.
    */ 
   public
   BundleBuilder
@@ -119,7 +124,7 @@ class BundleBuilder
    * No check-ins required.
    */
   @Override
-  protected LinkedList<String>
+  public LinkedList<String>
   getNodesToCheckIn()
   {
     return new LinkedList<String>();
@@ -183,7 +188,7 @@ class BundleBuilder
         }
 
         BundleStage stage = 
-          new BundleStage(pStageInfo, pContext, pClient, mod, annots, pToolsetRemap, 
+          new BundleStage(getStageInformation(), pContext, pClient, mod, annots, pToolsetRemap, 
                           pSelectionKeyRemap, pLicenseKeyRemap, pHardwareKeyRemap);
 	stage.build();
 

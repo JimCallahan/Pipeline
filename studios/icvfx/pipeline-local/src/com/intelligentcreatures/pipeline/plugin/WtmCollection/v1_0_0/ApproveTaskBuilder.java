@@ -1,4 +1,4 @@
-// $Id: ApproveTaskBuilder.java,v 1.3 2008/02/12 00:11:36 jim Exp $
+// $Id: ApproveTaskBuilder.java,v 1.4 2008/02/25 05:03:07 jesse Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -168,7 +168,7 @@ class ApproveTaskBuilder
    * Returns a list of nodes to be checked-in.
    */ 
   @Override
-  protected LinkedList<String> 
+  public LinkedList<String> 
   getNodesToCheckIn()
   {
     return getCheckInList();
@@ -178,14 +178,14 @@ class ApproveTaskBuilder
    * Level of check-in that the builder should perform.
    */ 
   @Override
-  protected VersionID.Level
+  public VersionID.Level
   getCheckinLevel()
   {
     return pCheckInLevel;
   }
   
   @Override
-  protected boolean 
+  public boolean 
   performCheckIn()
   {
     return true;
@@ -195,7 +195,7 @@ class ApproveTaskBuilder
    * The check-in message that is associated with this Builder.
    */
   @Override
-  protected String 
+  public String 
   getCheckInMessage()
   {
     return 

@@ -1,4 +1,4 @@
-// $Id: HdriBuilder.java,v 1.2 2008/02/22 06:01:50 jim Exp $
+// $Id: HdriBuilder.java,v 1.3 2008/02/25 05:03:07 jesse Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -7,6 +7,7 @@ import com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages.*;
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.math.*;
 import us.temerity.pipeline.builder.*;
+import us.temerity.pipeline.builder.BuilderInformation.*;
 import us.temerity.pipeline.stages.*;
 
 import java.util.*;
@@ -207,7 +208,7 @@ class HdriBuilder
    */
   @SuppressWarnings("unchecked")
   @Override
-  protected MappedArrayList<String, PluginContext> 
+  public MappedArrayList<String, PluginContext> 
   getNeededActions()
   {
     ArrayList<PluginContext> plugins = new ArrayList<PluginContext>();	
@@ -369,6 +370,7 @@ class HdriBuilder
     buildPhase() 
       throws PipelineException
     {
+      StageInformation stageInfo = getStageInformation();
       /* lock the latest version of all of the prerequisites */ 
       for(String name : pRequiredNodeNames) {
 	if(!nodeExists(name)) 
@@ -391,7 +393,7 @@ class HdriBuilder
 	pDiagnosticHdrImageNodeName = pShotNamer.getDiagnosticHdrImageNode();
 	{
 	  NukeMakeHDRStage stage = 
-	    new NukeMakeHDRStage(pStageInfo, pContext, pClient, 
+	    new NukeMakeHDRStage(stageInfo, pContext, pClient, 
 				 pDiagnosticHdrImageNodeName, pExposureTimesNodeName, 
 				 pRawExposuresNodeNames); 
 	  addTaskAnnotation(stage, NodePurpose.Focus); 
@@ -401,7 +403,7 @@ class HdriBuilder
 	String diagnosticHdrThumbNodeName = pShotNamer.getDiagnosticHdrThumbNode();
 	{
 	  NukeThumbnailStage stage = 
-	    new NukeThumbnailStage(pStageInfo, pContext, pClient,
+	    new NukeThumbnailStage(stageInfo, pContext, pClient,
 				   diagnosticHdrThumbNodeName, "tif", 
 				   pDiagnosticHdrImageNodeName, 
 				   1, 150, 0.1, true, true, new Color3d()); 
@@ -415,7 +417,7 @@ class HdriBuilder
 	  sources.add(diagnosticHdrThumbNodeName); 
 
 	  TargetStage stage = 
-	    new TargetStage(pStageInfo, pContext, pClient, 
+	    new TargetStage(stageInfo, pContext, pClient, 
 			    submitNodeName, sources); 
 	  addTaskAnnotation(stage, NodePurpose.Submit); 
 	  stage.build(); 
@@ -429,7 +431,7 @@ class HdriBuilder
 	String finalHdrImageNodeName = pShotNamer.getFinalHdrImageNode();
 	{
 	  PrimaryHDRStage stage = 
-	    new PrimaryHDRStage(pStageInfo, pContext, pClient, 
+	    new PrimaryHDRStage(stageInfo, pContext, pClient, 
 				finalHdrImageNodeName, pDiagnosticHdrImageNodeName); 
 	  addTaskAnnotation(stage, NodePurpose.Product); 
 	  stage.build(); 
@@ -438,7 +440,7 @@ class HdriBuilder
 	String finalHdrMayaNodeName = pShotNamer.getFinalHdrMayaNode(); 
 	{
 	  MayaFTNBuildStage stage = 
-	    new MayaFTNBuildStage(pStageInfo, pContext, pClient, 
+	    new MayaFTNBuildStage(stageInfo, pContext, pClient, 
 				  new MayaContext(), finalHdrMayaNodeName, true); 
 	  stage.addLink(new LinkMod(finalHdrImageNodeName, LinkPolicy.Dependency));
 	  addTaskAnnotation(stage, NodePurpose.Product); 
@@ -451,7 +453,7 @@ class HdriBuilder
 	  sources.add(finalHdrMayaNodeName);
 
 	  TargetStage stage = 
-	    new TargetStage(pStageInfo, pContext, pClient, 
+	    new TargetStage(stageInfo, pContext, pClient, 
 			    approveNodeName, sources); 
 	  addTaskAnnotation(stage, NodePurpose.Approve); 
 	  stage.build(); 

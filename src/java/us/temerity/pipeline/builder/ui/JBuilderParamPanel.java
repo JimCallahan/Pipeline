@@ -1,15 +1,14 @@
 package us.temerity.pipeline.builder.ui;
 
-import java.awt.Component;
-import java.awt.Dimension;
+import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
 
 import javax.swing.*;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.builder.BaseUtil;
-import us.temerity.pipeline.builder.ParamMapping;
+import us.temerity.pipeline.builder.*;
+import us.temerity.pipeline.builder.execution.GUIExecution.*;
 import us.temerity.pipeline.ui.*;
 
 /*------------------------------------------------------------------------------------------*/
@@ -34,7 +33,7 @@ class JBuilderParamPanel
   (
     BaseUtil builder,
     int pass,
-    JBuilderParamDialog parent
+    JBuilderDialog parent
   ) 
     throws PipelineException
   {
@@ -708,5 +707,5 @@ class JBuilderParamPanel
    */
   private Set<ParamMapping> pMappedParams;
   
-  private JBuilderParamDialog pParent;
+  private JBuilderDialog pParent;
 }

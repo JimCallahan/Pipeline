@@ -1,21 +1,20 @@
-// $Id: JManagerPanel.java,v 1.48 2008/02/06 08:00:36 jesse Exp $
+// $Id: JManagerPanel.java,v 1.49 2008/02/25 05:03:07 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.io.File;
+import java.io.*;
 import java.util.*;
 
 import javax.swing.*;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
+import javax.swing.event.*;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.builder.BaseBuilderCollection;
-import us.temerity.pipeline.core.BaseApp;
+import us.temerity.pipeline.builder.*;
+import us.temerity.pipeline.core.*;
 import us.temerity.pipeline.glue.*;
-import us.temerity.pipeline.laf.LookAndFeelLoader;
+import us.temerity.pipeline.laf.*;
 import us.temerity.pipeline.ui.*;
 
 /*------------------------------------------------------------------------------------------*/
@@ -2119,10 +2118,8 @@ class JManagerPanel
         master.showDefaultEditorsDialog(); 
       else if(cmd.equals("update-plugins"))
         master.clearPluginCache();
-      else if(cmd.startsWith("launch-builder:")) {
+      else if(cmd.startsWith("launch-builder:")) 
         doLaunchBuilder(cmd.substring(15));
-        UIMaster.getInstance().showLogsDialog(true); 
-      }
 
       else if(cmd.equals("manage-privileges"))
         master.showManagePrivilegesDialog();
@@ -3101,6 +3098,7 @@ class JManagerPanel
     LaunchBuilderTask task = 
       new LaunchBuilderTask(collectionInfo[0], id, collectionInfo[2], 
                             collectionInfo[3], params);
+    UIMaster.getInstance().showLogsDialog(true); 
     task.start();
   }
 
@@ -3723,7 +3721,9 @@ class JManagerPanel
          keys.addFirst(pBuilderName);
          params.putValue(keys, value, true);
        }
-        collection.instantiateBuilder(pBuilderName, null, null, true, true, false, false, params);
+        BaseBuilder builder = collection.instantiateBuilder(pBuilderName, null, null, true, true, false, false, params);
+        if (builder != null)
+          builder.run();
       } catch(Exception ex)
       {
         UIMaster.getInstance().showErrorDialog(ex);

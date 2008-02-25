@@ -1,15 +1,13 @@
-// $Id: BuilderApp.java,v 1.26 2008/02/14 20:26:29 jim Exp $
+// $Id: BuilderApp.java,v 1.27 2008/02/25 05:03:06 jesse Exp $
 
 package us.temerity.pipeline.core;
 
-import java.io.StringReader;
+import java.io.*;
 import java.util.*;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.LogMgr.Kind;
-import us.temerity.pipeline.LogMgr.Level;
-import us.temerity.pipeline.builder.BaseBuilderCollection;
-import us.temerity.pipeline.builder.BuilderInformation;
+import us.temerity.pipeline.LogMgr.*;
+import us.temerity.pipeline.builder.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   B U I L D E R   A P P                                                                  */
@@ -79,8 +77,6 @@ public class BuilderApp
     MasterMgrClient mclient = new MasterMgrClient();
     QueueMgrClient qclient = new QueueMgrClient();
     
-    LogMgr.getInstance().setLevel(Kind.Ops, Level.Fine);
-    
     LogMgr.getInstance().log(Kind.Ops, Level.Info, "Starting Builder Execution!");
     
     try {
@@ -104,7 +100,9 @@ public class BuilderApp
           PluginMgrClient.getInstance().newBuilderCollection
           (pCollectionName, pCollectionVersion, pCollectionVendor);
 
-        collection.instantiateBuilder(pBuilderName, mclient, qclient, info);
+        BaseBuilder builder = 
+          collection.instantiateBuilder(pBuilderName, mclient, qclient, info);
+        builder.run();
       } 
       else if (pBuilderName != null) {
         DoubleMap<String, String, TreeSet<VersionID>> toPrint = 
@@ -238,7 +236,9 @@ public class BuilderApp
      "  pl" + wrapper + " --license\n" + 
      "\n" + 
      "INVOCATION: \n" +
-     "--collection=CollectionName(:VersionID)(,VendorName)\n" +
+     "--collection=CollectionName\n" +
+     "--versionid=VersionID\n" +
+     "--vendor=VendorName\n" +
      "--builder-name=BuilderName\n" + 
      "GLOBAL OPTIONS:\n" +
      "  [--log=...] \n" + 

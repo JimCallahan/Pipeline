@@ -1,4 +1,4 @@
-// $Id: BaseBuilderCollection.java,v 1.11 2008/02/14 20:26:29 jim Exp $
+// $Id: BaseBuilderCollection.java,v 1.12 2008/02/25 05:03:05 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -261,7 +261,7 @@ class BaseBuilderCollection
    *   This can be for a variety of reasons, including a misnamed builder, bad parameters,
    *   missing classes.
    */
-  public final void
+  public final BaseBuilder
   instantiateBuilder
   (
     String builderName,
@@ -272,7 +272,7 @@ class BaseBuilderCollection
   {
     BuilderInformation info = 
       new BuilderInformation(true, terminateOnQuit, true, useBuilderLogging, new MultiMap<String, String>());
-    instantiateBuilder(builderName, null, null, info);
+    return instantiateBuilder(builderName, null, null, info);
   }
 
   /**
@@ -312,7 +312,7 @@ class BaseBuilderCollection
    *   This can be for a variety of reasons, including a misnamed builder, bad parameters,
    *   missing classes, etc.
    */
-  public final void
+  public final BaseBuilder
   instantiateBuilder
   (
     String builderName,
@@ -329,7 +329,7 @@ class BaseBuilderCollection
     BuilderInformation info = 
       new BuilderInformation(useGui, terminateOnQuit, abortOnBadParam, 
                              useBuilderLogging, paramValues);
-    instantiateBuilder(builderName, mclient, qclient, info);
+    return instantiateBuilder(builderName, mclient, qclient, info);
   }
   
   /**
@@ -350,12 +350,15 @@ class BaseBuilderCollection
    * @param info
    *   The instance of {@link BuilderInformation} for the builder to use or <code>null</code>
    *   if a new information class should be created.
-   * @throws PipelineException whenever anything goes wrong with instantiating the builder.
-   *   This can be for a variety of reasons, including a misnamed builder, bad parameters,
-   *   missing classes.
+   * @return
+   *   The instance of the specified Builder or <code>null</code> if an error occurred while
+   *   creating the Builder, but an Exception was not thrown (due to internal error handling).
+   * @throws PipelineException 
+   *   Only if the builder is being called in a context where the error message will never make
+   *   it to the log.
    */
   @SuppressWarnings("unchecked")
-  public final void
+  public final BaseBuilder
   instantiateBuilder
   (
     String builderName,
@@ -365,6 +368,7 @@ class BaseBuilderCollection
   )
     throws PipelineException
   {
+    
     TreeMap<String, String> list = getBuildersProvided();
     if (!list.keySet().contains(builderName))
       throw new PipelineException
@@ -385,7 +389,14 @@ class BaseBuilderCollection
     if (info == null)
       info = new BuilderInformation(true, false, true, false, new MultiMap<String, String>());
     
-    LogMgr.getInstance().setLevel(Kind.Ops, Level.Fine);
+    Level opLevel = LogMgr.getInstance().getLevel(Kind.Ops);
+    switch(opLevel) {
+    case Info:
+    case Warning:
+    case Severe:
+      LogMgr.getInstance().setLevel(Kind.Ops, Level.Fine);
+      break;
+    }
     
     try {
       ClassLoader loader = this.getClass().getClassLoader();
@@ -396,25 +407,17 @@ class BaseBuilderCollection
           QueueMgrClient.class, 
           BuilderInformation.class);
       BaseBuilder builder = (BaseBuilder) construct.newInstance(mclient, qclient, info);
-      builder.run();
-    }
-    catch (PipelineException ex) {
-      LogMgr.getInstance().log
-        (LogMgr.Kind.Ops, LogMgr.Level.Severe,
-         ex.getMessage());
-      if (!info.useBuilderLogging() && !info.usingGui())
-        throw ex; 
+      return builder;
     }
     catch (NoSuchMethodException ex) {
-      String message = 
+      String header = 
         "Was unable to instantiate the constructor for the specified Builder.  " +
         "This most likely means that the Builder was not meant to be run as a " +
         "standalone builder.\n";
-      message += ex.getMessage();
+      String message = Exceptions.getFullMessage(header, ex);
       LogMgr.getInstance().log
         (LogMgr.Kind.Ops, LogMgr.Level.Severe,
          message);
-      ex.printStackTrace();
       if (!info.useBuilderLogging() && !info.usingGui())
         throw new PipelineException(message); 
     }
@@ -432,12 +435,15 @@ class BaseBuilderCollection
         throw new PipelineException(message); 
     }
     catch(Exception ex) {
+      String message = Exceptions.getFullMessage
+        ("An error has occured while instantiating the Builder", ex);
       LogMgr.getInstance().log
         (LogMgr.Kind.Ops, LogMgr.Level.Severe,
-         Exceptions.getFullMessage(ex));
+         message);
       if (!info.useBuilderLogging() && !info.usingGui())
-        throw new PipelineException(null, ex, true, true); 
+        throw new PipelineException(message); 
     }
+    return null;
   }
   
   

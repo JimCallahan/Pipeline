@@ -6,6 +6,7 @@ import java.util.TreeSet;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
+import us.temerity.pipeline.builder.BuilderInformation.*;
 import us.temerity.pipeline.plugin.Maya2MRCollection.v2_3_2.AssetBuilder;
 import us.temerity.pipeline.plugin.Maya2MRCollection.v2_3_2.stages.AssetModelExportStage;
 import us.temerity.pipeline.math.Range;
@@ -89,7 +90,7 @@ class RadarAssetBuilder
   
   @SuppressWarnings("unchecked")
   @Override
-  protected MappedArrayList<String, PluginContext> 
+  public MappedArrayList<String, PluginContext> 
   getNeededActions()
   {
     ArrayList<PluginContext> plugins = new ArrayList<PluginContext>();
@@ -144,6 +145,7 @@ class RadarAssetBuilder
     doBlends()
       throws PipelineException
     {
+      StageInformation stageInfo = getStageInformation();
       pLog.log(LogMgr.Kind.Ops, LogMgr.Level.Finer, 
       "Custom radar blend shape settings");
       String editBlend = pRadarNames.getBlendShapeEditModelNodeName();
@@ -151,7 +153,7 @@ class RadarAssetBuilder
       {
         EmptyMayaAsciiStage stage = 
           new EmptyMayaAsciiStage
-          (pStageInfo,
+          (stageInfo,
            pContext,
            pClient,
            pMayaContext,
@@ -162,7 +164,7 @@ class RadarAssetBuilder
       {
 	AssetModelExportStage stage = 
 	  new AssetModelExportStage
-	  (pStageInfo,
+	  (stageInfo,
 	   pContext,
 	   pClient,
 	   finalBlend,

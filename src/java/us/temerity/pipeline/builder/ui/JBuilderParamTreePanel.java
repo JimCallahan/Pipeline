@@ -4,18 +4,17 @@
 package us.temerity.pipeline.builder.ui;
 
 import java.awt.*;
-import java.util.Enumeration;
+import java.util.*;
 
 import javax.swing.*;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
+import javax.swing.event.*;
 import javax.swing.tree.*;
 
-import us.temerity.pipeline.PipelineException;
-import us.temerity.pipeline.builder.BaseBuilder;
-import us.temerity.pipeline.ui.JFancyTree;
-import us.temerity.pipeline.ui.UIFactory;
-import us.temerity.pipeline.ui.core.JUserPrefsTreeCellRenderer;
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.builder.*;
+import us.temerity.pipeline.builder.execution.GUIExecution.*;
+import us.temerity.pipeline.ui.*;
+import us.temerity.pipeline.ui.core.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   B U I L D E R   P A R A M   T R E E   P A N E L                                        */
@@ -35,7 +34,7 @@ public class JBuilderParamTreePanel
   public 
   JBuilderParamTreePanel
   (
-    JBuilderParamDialog parent  
+    JBuilderDialog parent  
   )
   {
     super();
@@ -320,5 +319,5 @@ public class JBuilderParamTreePanel
    */ 
   protected JPanel pCardPanel;
   
-  private JBuilderParamDialog pParent;
+  private JBuilderDialog pParent;
 }

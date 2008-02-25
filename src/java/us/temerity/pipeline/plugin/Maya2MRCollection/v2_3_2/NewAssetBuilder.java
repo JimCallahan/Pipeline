@@ -4,6 +4,7 @@ import java.util.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
+import us.temerity.pipeline.builder.BuilderInformation.*;
 import us.temerity.pipeline.plugin.Maya2MRCollection.v2_3_2.stages.*;
 import us.temerity.pipeline.stages.EmptyFileStage;
 import us.temerity.pipeline.stages.EmptyMayaAsciiStage;
@@ -141,7 +142,7 @@ class NewAssetBuilder
       AdvancedLayoutGroup layout = 
 	new AdvancedLayoutGroup
 	  ("Builder Information", 
-	   "The pass where all the basic pStageInformation about the asset is collected " +
+	   "The pass where all the basic stageInformation about the asset is collected " +
 	   "from the user.", 
 	   "BuilderSettings", 
 	   true);
@@ -250,24 +251,6 @@ class NewAssetBuilder
   }
   
   
-  
-  /*----------------------------------------------------------------------------------------*/
-  /*   C H E C K - I N                                                                      */
-  /*----------------------------------------------------------------------------------------*/
-  
-  @Override
-  protected LinkedList<String>
-  getNodesToCheckIn()
-  {
-    return getCheckInList();
-  }
-  
-  @Override
-  protected boolean performCheckIn()
-  {
-    return pCheckInWhenDone;
-  }
-
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -378,9 +361,11 @@ class NewAssetBuilder
       
       pMayaContext = (MayaContext) getParamValue(aMayaContext);
       
+      StageInformation stageInfo = getStageInformation();
+      
       TreeSet<String> keys = (TreeSet<String>) getParamValue(aSelectionKeys);
-      pStageInfo.setDefaultSelectionKeys(keys);
-      pStageInfo.setUseDefaultSelectionKeys(true);
+      stageInfo.setDefaultSelectionKeys(keys);
+      stageInfo.setUseDefaultSelectionKeys(true);
       
       pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, "Validation complete.");
     }
@@ -409,11 +394,12 @@ class NewAssetBuilder
     buildPhase() 
       throws PipelineException
     {
+      StageInformation stageInfo = getStageInformation();
       String modelName = pAssetNames.getModelNodeName(); 
       {
 	AssetBuilderModelStage stage = 
 	  new AssetBuilderModelStage
-	  (pStageInfo,
+	  (stageInfo,
 	   pContext,
 	   pClient,
 	   pMayaContext, 
@@ -432,7 +418,7 @@ class NewAssetBuilder
 	{
 	  EmptyMayaAsciiStage stage = 
 	    new EmptyMayaAsciiStage
-	    (pStageInfo,
+	    (stageInfo,
 	     pContext,
 	     pClient, 
 	     pMayaContext,
@@ -444,7 +430,7 @@ class NewAssetBuilder
 	{
 	  EmptyMayaAsciiStage stage = 
 	    new EmptyMayaAsciiStage
-	    (pStageInfo,
+	    (stageInfo,
 	     pContext,
 	     pClient,
 	     pMayaContext,
@@ -465,7 +451,7 @@ class NewAssetBuilder
 	if (skeleton != null) {
 	  EmptyMayaAsciiStage stage = 
 	    new EmptyMayaAsciiStage
-	    (pStageInfo,
+	    (stageInfo,
 	     pContext,
 	     pClient,
 	     pMayaContext,
@@ -477,7 +463,7 @@ class NewAssetBuilder
 	if (rigInfo != null) {
 	  EmptyFileStage stage = 
 	    new EmptyFileStage
-	    (pStageInfo,
+	    (stageInfo,
 	     pContext,
 	     pClient,
 	     rigInfo);
@@ -490,7 +476,7 @@ class NewAssetBuilder
       {
 	NewAssetBuilderRigStage stage = 
 	  new NewAssetBuilderRigStage
-	  (pStageInfo,
+	  (stageInfo,
 	   pContext, 
 	   pClient,
 	   pMayaContext,
@@ -504,7 +490,7 @@ class NewAssetBuilder
       {
 	NewAssetBuilderMaterialStage stage =
 	  new NewAssetBuilderMaterialStage
-	  (pStageInfo,
+	  (stageInfo,
 	   pContext, 
 	   pClient,
 	   pMayaContext,
@@ -518,7 +504,7 @@ class NewAssetBuilder
       {
 	NewAssetBuilderMaterialExportStage stage = 
 	  new NewAssetBuilderMaterialExportStage
-	  (pStageInfo, 
+	  (stageInfo, 
 	   pContext,
 	   pClient,
 	   matExportName, 
@@ -530,7 +516,7 @@ class NewAssetBuilder
       {
 	NewAssetBuilderFinalStage stage = 
 	  new NewAssetBuilderFinalStage
-	  (pStageInfo,
+	  (stageInfo,
 	   pContext, 
 	   pClient,
 	   pMayaContext,
@@ -546,7 +532,7 @@ class NewAssetBuilder
       if (pBuildLowRez) {
 	NewAssetBuilderFinalStage stage =
 	  new NewAssetBuilderFinalStage
-	  (pStageInfo,
+	  (stageInfo,
 	   pContext, 
 	   pClient,
 	   pMayaContext,
@@ -567,28 +553,30 @@ class NewAssetBuilder
     buildTextureNode() 
       throws PipelineException
     {
+      StageInformation stageInfo = getStageInformation();
       String textureNodeName = pAssetNames.getTextureNodeName();
       String parentName = pBuildAdvancedShadingNetwork ? pAssetNames.getShaderNodeName() : pAssetNames
         .getMaterialNodeName();
-      new AssetBuilderTextureStage(pStageInfo, pContext, pClient, textureNodeName, parentName).build();
+      new AssetBuilderTextureStage(stageInfo, pContext, pClient, textureNodeName, parentName).build();
     }
 
     protected void 
     buildShadingNetwork() 
       throws PipelineException
     {
+      StageInformation stageInfo = getStageInformation();
       {
-        new AssetBuilderShaderIncludeStage(pStageInfo, pContext, pClient, pAssetNames.getShaderIncludeNodeName(),
+        new AssetBuilderShaderIncludeStage(stageInfo, pContext, pClient, pAssetNames.getShaderIncludeNodeName(),
           pAssetNames.getShaderIncludeGroupSecSeq()).build();
       }
       {
-        new AssetBuilderShaderStage(pStageInfo, pContext, pClient, pMayaContext, pAssetNames.getShaderNodeName(),
+        new AssetBuilderShaderStage(stageInfo, pContext, pClient, pMayaContext, pAssetNames.getShaderNodeName(),
           pAssetNames.getFinalNodeName(), pAssetNames.getShaderIncludeNodeName(), pMRInitMEL).build();
         addToDisableList(pAssetNames.getShaderNodeName());
       }
       {
         new AssetBuilderShaderExportStage
-        (pStageInfo, 
+        (stageInfo, 
          pContext, 
          pClient, 
          pAssetNames.getShaderExportNodeName(), 

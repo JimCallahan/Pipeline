@@ -1,4 +1,4 @@
-// $Id: BaseShotBuilder.java,v 1.2 2008/02/19 09:26:36 jim Exp $
+// $Id: BaseShotBuilder.java,v 1.3 2008/02/25 05:03:07 jesse Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -213,7 +213,7 @@ class BaseShotBuilder
 
       /* turn on the DoAnnotations flag for the StageInformation shared by all 
          of the Stages created by this builder since we always want task annotations */
-      pStageInfo.setDoAnnotations(true);
+      getStageInformation().setDoAnnotations(true);
     }
     
     /**

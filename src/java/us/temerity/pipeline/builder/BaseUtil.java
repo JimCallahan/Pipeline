@@ -1,4 +1,4 @@
-// $Id: BaseUtil.java,v 1.31 2008/02/14 20:26:29 jim Exp $
+// $Id: BaseUtil.java,v 1.32 2008/02/25 05:03:05 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -691,6 +691,37 @@ class BaseUtil
   {
     return pContext.getToolset();
   }
+  
+  /**
+   * Has the utility been locked, meaning no further parameters or other sensitive data
+   * structures can be added.
+   * <p>
+   * Locking occurs upon calling the {@link #setLayout(PassLayoutGroup)} method.
+   * @return
+   */
+  public boolean
+  isLocked()
+  {
+    return pLocked;
+  }
+  
+  /**
+   * Get the instance of {@link MasterMgrClient} being used by this utility.
+   */
+  public MasterMgrClient
+  getMasterMgrClient()
+  {
+    return pClient;
+  }
+  
+  /**
+   * Get the instance of {@link QueueMgrClient} being used by this utility.
+   */
+  public QueueMgrClient
+  getQueueMgrClient()
+  {
+    return pQueue;
+  }
 
   
   
@@ -724,6 +755,14 @@ class BaseUtil
     UtilityParam param
   )
   {
+    if (param == null)
+      throw new IllegalArgumentException("Unable to add a (null) param to a builder.");
+    
+    if (isLocked())
+      throw new IllegalStateException
+        ("Illegal attempt to add a parameter (" + param.getName() + ") after " +
+         "the Utility has been locked.");
+    
     if ( pParams.containsKey(param.getName()) )
       throw new IllegalArgumentException
         ("A parameter named (" + param.getName() + ") already exists!");
@@ -1257,6 +1296,7 @@ class BaseUtil
 	   "specified by any the parameter layout group!");
     }
     pLayout = layout;
+    pLocked = true;
   }
   
   /**
@@ -1873,4 +1913,11 @@ class BaseUtil
    * Instance of the log manager for builder logging purposes.
    */
   protected final LogMgr pLog = LogMgr.getInstance();
+  
+  /**
+   * Boolean which signals that no more params or other volatile parts can be added to the Util.
+   * <p>
+   * Locking is triggered by calling setLayout.
+   */
+  private boolean pLocked;
 }

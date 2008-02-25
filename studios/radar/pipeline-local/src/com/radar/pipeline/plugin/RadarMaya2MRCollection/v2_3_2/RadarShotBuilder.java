@@ -4,6 +4,7 @@ import java.util.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
+import us.temerity.pipeline.builder.BuilderInformation.*;
 import us.temerity.pipeline.math.Range;
 import us.temerity.pipeline.plugin.Maya2MRCollection.v2_3_2.*;
 import us.temerity.pipeline.plugin.Maya2MRCollection.v2_3_2.stages.*;
@@ -147,7 +148,7 @@ class RadarShotBuilder
       AdvancedLayoutGroup layout = 
         new AdvancedLayoutGroup
           ("Builder Information", 
-           "The pass where all the basic pStageInformation about the shot is collected " +
+           "The pass where all the basic stageInformation about the shot is collected " +
            "from the user.", 
            "BuilderSettings", 
            true);
@@ -187,7 +188,7 @@ class RadarShotBuilder
 	AdvancedLayoutGroup layout2 = 
 	  new AdvancedLayoutGroup
 	  ("Asset Information", 
-	   "The pass where all the basic pStageInformation about what assets are in the shot" +
+	   "The pass where all the basic stageInformation about what assets are in the shot" +
 	   "is collected from the user.", 
 	   "Assets", 
 	   true);
@@ -232,7 +233,7 @@ class RadarShotBuilder
   }
   
   @Override
-  protected LinkedList<String> 
+  public LinkedList<String> 
   getNodesToCheckIn()
   {
     return null;
@@ -328,6 +329,7 @@ class RadarShotBuilder
     validatePhase()
       throws PipelineException
     {
+      StageInformation stageInfo = getStageInformation();
       validateBuiltInParams();
       pBuilderQueries.setContext(pContext);
       
@@ -336,11 +338,11 @@ class RadarShotBuilder
       pMayaContext = (MayaContext) getParamValue(aMayaContext);
       
       TreeSet<String> keys = (TreeSet<String>) getParamValue(aSelectionKeys);
-      pStageInfo.setDefaultSelectionKeys(keys);
-      pStageInfo.setUseDefaultSelectionKeys(true);
+      stageInfo.setDefaultSelectionKeys(keys);
+      stageInfo.setUseDefaultSelectionKeys(true);
       
       boolean annot = getBooleanParamValue(new ParamMapping(aDoAnnotations));
-      pStageInfo.setDoAnnotations(annot);
+      stageInfo.setDoAnnotations(annot);
       
       pProject = getStringParamValue(new ParamMapping(aProjectName));
     }
@@ -516,11 +518,12 @@ class RadarShotBuilder
     doRenderCam()
       throws PipelineException
     {
+      StageInformation stageInfo = getStageInformation();
       String camMel = pProjectNames.getPlaceholderCameraScriptName();
       String renderCam = pCameraNames.getAssetFinalNodeName();
       AssetBuilderModelStage stage = 
 	new AssetBuilderModelStage
-	(pStageInfo,
+	(stageInfo,
 	 pContext,
 	 pClient,
 	 pMayaContext,
@@ -536,6 +539,7 @@ class RadarShotBuilder
     doLayout()
       throws PipelineException
     {
+      StageInformation stageInfo = getStageInformation();
       @SuppressWarnings("unused")
       String taskType = pProjectNames.getLayoutTaskName();
       
@@ -543,7 +547,7 @@ class RadarShotBuilder
       {
 	EmptyMayaAsciiStage stage =
 	  new EmptyMayaAsciiStage
-	  (pStageInfo, pContext, pClient, pMayaContext, layoutCameraAnimation);
+	  (stageInfo, pContext, pClient, pMayaContext, layoutCameraAnimation);
 	stage.build();
 	pEmptyMayaScenes.add(stage);
       }
@@ -553,6 +557,7 @@ class RadarShotBuilder
     doAnimation()
       throws PipelineException
     {
+      StageInformation stageInfo = getStageInformation();
       String taskType = pProjectNames.getAnimTaskName();
       
       String layoutCameraAnimation = pShotNames.getLayoutExportPrepareNodeName("cam");
@@ -582,7 +587,7 @@ class RadarShotBuilder
       {
 	RadarAnimEditStage stage = 
 	  new RadarAnimEditStage
-	  (pStageInfo,
+	  (stageInfo,
 	   pContext,
 	   pClient,
 	   pMayaContext,
@@ -611,7 +616,7 @@ class RadarShotBuilder
 	{
 	  ShotMayaCurvesExportStage stage = 
 	    new ShotMayaCurvesExportStage
-	    (pStageInfo,
+	    (stageInfo,
 	     pContext,
 	     pClient,
 	     animPrepare,
@@ -624,7 +629,7 @@ class RadarShotBuilder
 	{
 	  ProductStage stage = 
 	    new ProductStage
-	    (pStageInfo, 
+	    (stageInfo, 
 	     pContext, 
 	     pClient, 
 	     animProduct, 
@@ -641,7 +646,7 @@ class RadarShotBuilder
       {
 	ShotAnimBuildStage stage = 
 	  new ShotAnimBuildStage
-	  (pStageInfo,
+	  (stageInfo,
 	   pContext,
 	   pClient,
 	   pMayaContext,
@@ -661,7 +666,7 @@ class RadarShotBuilder
 	    pProjectNames.getAnimGlobals();
 	ShotImgStage stage =
 	    new ShotImgStage
-	    (pStageInfo, 
+	    (stageInfo, 
 	     pContext, 
 	     pClient, 
 	     animRender,
@@ -675,14 +680,14 @@ class RadarShotBuilder
       }
       {
 	ThumbnailStage stage = 
-	  new ThumbnailStage(pStageInfo, pContext, pClient, animThumb, "png", animRender, 160);
+	  new ThumbnailStage(stageInfo, pContext, pClient, animThumb, "png", animRender, 160);
 	isThumbnailNode(stage, taskType);
 	stage.build();
       }
       {
         TreeSet<String> sources = new TreeSet<String>();
         sources.add(animThumb);
-        TargetStage stage = new TargetStage(pStageInfo, pContext, pClient, animSubmit, sources);
+        TargetStage stage = new TargetStage(stageInfo, pContext, pClient, animSubmit, sources);
         isSubmitNode(stage, taskType);
         stage.build();
         addToQueueList(animSubmit);
@@ -693,7 +698,7 @@ class RadarShotBuilder
       String preLight = pShotNames.getPreLightNodeName();
       String preMEL = pShotNames.getPreLightMELNodeName();
       {
-	EmptyFileStage stage = new EmptyFileStage(pStageInfo, pContext, pClient, preMEL, "mel");
+	EmptyFileStage stage = new EmptyFileStage(stageInfo, pContext, pClient, preMEL, "mel");
 	stage.build();
       }
       TreeMap<String, String> finalAssets = new TreeMap<String, String>();
@@ -727,7 +732,7 @@ class RadarShotBuilder
       {
 	ShotAnimBuildStage stage = 
 	  new ShotAnimBuildStage
-	  (pStageInfo,
+	  (stageInfo,
 	   pContext,
 	   pClient,
 	   pMayaContext,
@@ -742,7 +747,7 @@ class RadarShotBuilder
       {
         TreeSet<String> sources = new TreeSet<String>();
         sources.add(preLight);
-        TargetStage stage = new TargetStage(pStageInfo, pContext, pClient, animApprove, sources);
+        TargetStage stage = new TargetStage(stageInfo, pContext, pClient, animApprove, sources);
         isApproveNode(stage, taskType);
         stage.build();
         addToQueueList(animApprove);
@@ -754,6 +759,7 @@ class RadarShotBuilder
     doLighting()
       throws PipelineException
     {
+      StageInformation stageInfo = getStageInformation();
       String taskType = pProjectNames.getLightingTaskName();
       
       String preLight = pShotNames.getPreLightNodeName();
@@ -761,7 +767,7 @@ class RadarShotBuilder
       {
 	ShotBuilderLightStage stage = 
 	  new ShotBuilderLightStage
-	  (pStageInfo,
+	  (stageInfo,
 	   pContext,
 	   pClient,
 	   pMayaContext,
@@ -782,7 +788,7 @@ class RadarShotBuilder
 	    pProjectNames.getLgtGlobals();
 	ShotImgStage stage =
 	    new ShotImgStage
-	    (pStageInfo, 
+	    (stageInfo, 
 	     pContext, 
 	     pClient, 
 	     lgtRender,
@@ -796,14 +802,14 @@ class RadarShotBuilder
       }
       {
 	ThumbnailStage stage = 
-	  new ThumbnailStage(pStageInfo, pContext, pClient, lgtThumb, "png", lgtRender, 160);
+	  new ThumbnailStage(stageInfo, pContext, pClient, lgtThumb, "png", lgtRender, 160);
 	isThumbnailNode(stage, taskType);
 	stage.build();
       }
       {
         TreeSet<String> sources = new TreeSet<String>();
         sources.add(lgtThumb);
-        TargetStage stage = new TargetStage(pStageInfo, pContext, pClient, lightSubmit, sources);
+        TargetStage stage = new TargetStage(stageInfo, pContext, pClient, lightSubmit, sources);
         isSubmitNode(stage, taskType);
         stage.build();
         addToQueueList(lightSubmit);
@@ -815,7 +821,7 @@ class RadarShotBuilder
       {
 	ProductStage stage = 
 	  new ProductStage
-	  (pStageInfo, 
+	  (stageInfo, 
 	   pContext, 
 	   pClient, 
 	   lightFinal, 
@@ -829,7 +835,7 @@ class RadarShotBuilder
       {
         TreeSet<String> sources = new TreeSet<String>();
         sources.add(lightFinal);
-        TargetStage stage = new TargetStage(pStageInfo, pContext, pClient, lgtApprove, sources);
+        TargetStage stage = new TargetStage(stageInfo, pContext, pClient, lgtApprove, sources);
         isApproveNode(stage, taskType);
         stage.build();
         addToQueueList(lgtApprove);

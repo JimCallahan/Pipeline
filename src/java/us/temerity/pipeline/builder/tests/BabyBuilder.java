@@ -1,7 +1,6 @@
 package us.temerity.pipeline.builder.tests;
 
-import java.util.LinkedList;
-import java.util.TreeSet;
+import java.util.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
@@ -78,7 +77,7 @@ public class BabyBuilder
   }
   
   @Override
-  protected LinkedList<String> getNodesToCheckIn()
+  public LinkedList<String> getNodesToCheckIn()
   {
     return null;
   }
@@ -116,7 +115,7 @@ public class BabyBuilder
 	"Starting the init phase in " + this.toString());
       if (pMakeChild)
       {
-	BabyBuilder builder = new BabyBuilder("FirstChild", pClient, pQueue, pBuilderInformation);
+	BabyBuilder builder = new BabyBuilder("FirstChild", pClient, pQueue, getBuilderInformation());
 	builder.disableParam(new ParamMapping(aMakeChild));
 	addSubBuilder(builder);
       }
@@ -157,7 +156,7 @@ public class BabyBuilder
       pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
 	"Starting the init phase in " + this.toString());
       if (pMakeLaterChild)
-	addSubBuilder(new BabyBuilder("SecondChild", pClient, pQueue, pBuilderInformation));
+	addSubBuilder(new BabyBuilder("SecondChild", pClient, pQueue, getBuilderInformation()));
       pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
 	"Finished the init phase.");
     }
@@ -195,7 +194,7 @@ public class BabyBuilder
       pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
 	"Starting the init phase in " + this.toString());
       if (pMakeThirdChild)
-	addSubBuilder(new BabyBuilder("ThirdChild", pClient, pQueue, pBuilderInformation));
+	addSubBuilder(new BabyBuilder("ThirdChild", pClient, pQueue, getBuilderInformation()));
       pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
 	"Finished the init phase.");
     }

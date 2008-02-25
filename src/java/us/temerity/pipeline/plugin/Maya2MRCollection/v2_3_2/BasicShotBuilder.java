@@ -48,12 +48,6 @@ class BasicShotBuilder
     pBuilderInfo = builderInfo;
   }
   
-  @Override
-  protected LinkedList<String> 
-  getNodesToCheckIn()
-  {
-    return null;
-  }
   
   
   /*----------------------------------------------------------------------------------------*/

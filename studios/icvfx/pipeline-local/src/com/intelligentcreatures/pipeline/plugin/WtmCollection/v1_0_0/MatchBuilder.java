@@ -1,4 +1,4 @@
-// $Id: MatchBuilder.java,v 1.1 2008/02/22 09:22:29 jim Exp $
+// $Id: MatchBuilder.java,v 1.2 2008/02/25 05:03:07 jesse Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -7,6 +7,7 @@ import com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages.*;
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.math.*;
 import us.temerity.pipeline.builder.*;
+import us.temerity.pipeline.builder.BuilderInformation.*;
 import us.temerity.pipeline.stages.*;
 
 import java.util.*;
@@ -189,7 +190,7 @@ class MatchBuilder
    */
   @SuppressWarnings("unchecked")
   @Override
-  protected MappedArrayList<String, PluginContext> 
+  public MappedArrayList<String, PluginContext> 
   getNeededActions()
   {
     ArrayList<PluginContext> plugins = new ArrayList<PluginContext>();	
@@ -407,6 +408,8 @@ class MatchBuilder
     buildPhase() 
       throws PipelineException
     {
+      StageInformation stageInfo = getStageInformation();
+      
       /* lock the latest version of all of the prerequisites */ 
       for(String name : pRequiredNodeNames) {
 	if(!nodeExists(name)) 
@@ -421,7 +424,7 @@ class MatchBuilder
 	{
 	  BuildPreMatchStage stage = 
 	    new BuildPreMatchStage
-	    (pStageInfo, pContext, pClient, 
+	    (stageInfo, pContext, pClient, 
 	     preMatchAnimNodeName, pConstrainRigNodeName, 
 	     pRorschachRigNodeName, pExtractedCameraNodeName, pExtractedTrackNodeName, 
 	     pFrameRange); 
@@ -432,7 +435,7 @@ class MatchBuilder
 	String matchAnimNodeName = pShotNamer.getMatchAnimNode(); 
 	{
 	  BuildMatchStage stage = 
-	    new BuildMatchStage(pStageInfo, pContext, pClient, 
+	    new BuildMatchStage(stageInfo, pContext, pClient, 
 				matchAnimNodeName, preMatchAnimNodeName, pFrameRange); 
 	  addTaskAnnotation(stage, NodePurpose.Edit); 
 	  stage.build(); 
@@ -443,7 +446,7 @@ class MatchBuilder
 	{
 	  BuildMatchVerifyStage stage = 
 	    new BuildMatchVerifyStage
-	    (pStageInfo, pContext, pClient, 
+	    (stageInfo, pContext, pClient, 
 	     verifyNodeName, matchAnimNodeName, pRorschachTestShadersNodeName, 
 	     pMatchPrepNodeName, pFrameRange); 
 	  addTaskAnnotation(stage, NodePurpose.Prepare); 
@@ -454,7 +457,7 @@ class MatchBuilder
 	{
 	  RenderTaskVerifyStage stage = 
 	    new RenderTaskVerifyStage
-	    (pStageInfo, pContext, pClient, 
+	    (stageInfo, pContext, pClient, 
 	     verifyImagesNodeName, pFrameRange, verifyNodeName, 
 	     "match:prep:cam:camera01", pTrackVerifyRenderNodeName); 
 	  addTaskAnnotation(stage, NodePurpose.Focus); 
@@ -464,7 +467,7 @@ class MatchBuilder
 	String verifyCompNodeName = pShotNamer.getMatchVerifyCompNode(); 
 	{
 	  BashCompStage stage = 
-	    new BashCompStage(pStageInfo, pContext, pClient, 
+	    new BashCompStage(stageInfo, pContext, pClient, 
 			      verifyCompNodeName, pFrameRange, 
 			      verifyImagesNodeName, pUndistorted2kPlateNodeName); 
 	  addTaskAnnotation(stage, NodePurpose.Focus); 	 
@@ -474,7 +477,7 @@ class MatchBuilder
 	String verifyThumbNodeName = pShotNamer.getTrackingVerifyThumbNode();
 	{
 	  NukeThumbnailStage stage = 
-	    new NukeThumbnailStage(pStageInfo, pContext, pClient,
+	    new NukeThumbnailStage(stageInfo, pContext, pClient,
 				   verifyThumbNodeName, "tif", verifyCompNodeName, 
 				   1, 150, 1.0, true, true, new Color3d()); 
 	  addTaskAnnotation(stage, NodePurpose.Thumbnail); 
@@ -487,7 +490,7 @@ class MatchBuilder
 	  sources.add(verifyThumbNodeName);
 
 	  TargetStage stage = 
-	    new TargetStage(pStageInfo, pContext, pClient, 
+	    new TargetStage(stageInfo, pContext, pClient, 
 			    submitNodeName, sources); 
 	  addTaskAnnotation(stage, NodePurpose.Submit); 
 	  stage.build(); 
@@ -509,7 +512,7 @@ class MatchBuilder
 // 	  sources.add();
 
  	  TargetStage stage = 
- 	    new TargetStage(pStageInfo, pContext, pClient, 
+ 	    new TargetStage(stageInfo, pContext, pClient, 
  			    approveNodeName, sources); 
  	  addTaskAnnotation(stage, NodePurpose.Approve); 
  	  stage.build(); 

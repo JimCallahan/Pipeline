@@ -1,4 +1,4 @@
-// $Id: AssetBuilder.java,v 1.2 2008/02/04 08:34:16 jim Exp $
+// $Id: AssetBuilder.java,v 1.3 2008/02/25 05:03:06 jesse Exp $
 
 package us.temerity.pipeline.plugin.Maya2MRCollection.v2_3_2;
 
@@ -6,6 +6,7 @@ import java.util.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
+import us.temerity.pipeline.builder.BuilderInformation.*;
 import us.temerity.pipeline.plugin.Maya2MRCollection.v2_3_2.DefaultProjectNames.GlobalsType;
 import us.temerity.pipeline.plugin.Maya2MRCollection.v2_3_2.stages.*;
 import us.temerity.pipeline.stages.*;
@@ -223,7 +224,7 @@ class AssetBuilder
       AdvancedLayoutGroup layout = 
         new AdvancedLayoutGroup
           ("Builder Information", 
-           "The pass where all the basic pStageInformation about the asset is collected " +
+           "The pass where all the basic stageInformation about the asset is collected " +
            "from the user.", 
            "BuilderSettings", 
            true);
@@ -344,25 +345,6 @@ class AssetBuilder
   }
   
   
-  /*----------------------------------------------------------------------------------------*/
-  /*   C H E C K - I N                                                                      */
-  /*----------------------------------------------------------------------------------------*/
-  
-  @Override
-  protected LinkedList<String>
-  getNodesToCheckIn()
-  {
-    return getCheckInList();
-  }
-  
-  @Override
-  protected boolean 
-  performCheckIn()
-  {
-    return pCheckInWhenDone;
-  }
-
-
   
   /*----------------------------------------------------------------------------------------*/
   /*  I N T E R N A L S                                                                     */
@@ -561,12 +543,14 @@ class AssetBuilder
       
       pMayaContext = (MayaContext) getParamValue(aMayaContext);
 
+      StageInformation stageInfo = getStageInformation();
+      
       TreeSet<String> keys = (TreeSet<String>) getParamValue(aSelectionKeys);
-      pStageInfo.setDefaultSelectionKeys(keys);
-      pStageInfo.setUseDefaultSelectionKeys(true);
+      stageInfo.setDefaultSelectionKeys(keys);
+      stageInfo.setUseDefaultSelectionKeys(true);
       
       boolean annot = getBooleanParamValue(new ParamMapping(aDoAnnotations));
-      pStageInfo.setDoAnnotations(annot);
+      stageInfo.setDoAnnotations(annot);
       
       pTaskName = pProjectNames.getTaskName(pAssetName, pAssetType);
       
@@ -614,6 +598,7 @@ class AssetBuilder
     doModel()
       throws PipelineException
     {
+      StageInformation stageInfo = getStageInformation();
       String taskType = pProjectNames.getModelingTaskName();
       
       String editModel = pAssetNames.getModelEditNodeName();
@@ -621,7 +606,7 @@ class AssetBuilder
       {
 	AssetBuilderModelStage stage = 
 	  new AssetBuilderModelStage
-	  (pStageInfo,
+	  (stageInfo,
 	   pContext,
 	   pClient,
 	   pMayaContext, 
@@ -636,7 +621,7 @@ class AssetBuilder
 	edit.put("mod", editModel);
 	ModelPiecesVerifyStage stage =
 	  new ModelPiecesVerifyStage
-	  (pStageInfo,
+	  (stageInfo,
 	   pContext,
 	   pClient,
 	   pMayaContext,
@@ -652,7 +637,7 @@ class AssetBuilder
       else {
 	AssetModelExportStage stage = 
 	  new AssetModelExportStage
-	  (pStageInfo,
+	  (stageInfo,
 	   pContext,
 	   pClient,
 	   verifyModel,
@@ -674,7 +659,7 @@ class AssetBuilder
             pProjectNames.getAssetModelTTSetup(pAssetName, pAssetType);
           AdvAssetBuilderTTStage stage =
             new AdvAssetBuilderTTStage
-            (pStageInfo,
+            (stageInfo,
              pContext,
              pClient,
              pMayaContext,
@@ -689,7 +674,7 @@ class AssetBuilder
           String globals = pProjectNames.getAssetModelTTGlobals();
           AdvAssetBuilderTTImgStage stage =
             new AdvAssetBuilderTTImgStage
-            (pStageInfo, 
+            (stageInfo, 
              pContext, 
              pClient, 
              modelTTImg, 
@@ -703,7 +688,7 @@ class AssetBuilder
           thumb = pAssetNames.getModelThumbNodeName();
           {
             ThumbnailStage stage = 
-              new ThumbnailStage(pStageInfo, pContext, pClient, thumb, "png", modelTTImg, 160);
+              new ThumbnailStage(stageInfo, pContext, pClient, thumb, "png", modelTTImg, 160);
             addThumbnailAnnotation(stage, taskType);
             stage.build();
           }
@@ -718,7 +703,7 @@ class AssetBuilder
           sources.add(modelTTImg);
         else
           sources.add(verifyModel);
-        TargetStage stage = new TargetStage(pStageInfo, pContext, pClient, modelSubmit, sources);
+        TargetStage stage = new TargetStage(stageInfo, pContext, pClient, modelSubmit, sources);
         addSubmitAnnotation(stage, taskType);
         stage.build();
         addToQueueList(modelSubmit);
@@ -728,14 +713,14 @@ class AssetBuilder
       String modelApprove = pAssetNames.getModelApproveNodeName();
       {
         ProductStage stage = 
-          new ProductStage(pStageInfo, pContext, pClient, modelFinal, "ma", verifyModel, StageFunction.aMayaScene.toString());
+          new ProductStage(stageInfo, pContext, pClient, modelFinal, "ma", verifyModel, StageFunction.aMayaScene.toString());
         addProductAnnotation(stage, taskType);
         stage.build();
       }
       {
         TreeSet<String> sources = new TreeSet<String>();
         sources.add(modelFinal);
-        TargetStage stage = new TargetStage(pStageInfo, pContext, pClient, modelApprove, sources);
+        TargetStage stage = new TargetStage(stageInfo, pContext, pClient, modelApprove, sources);
         addApproveAnnotation(stage, taskType);
         stage.build();
         addToQueueList(modelApprove);
@@ -747,6 +732,7 @@ class AssetBuilder
     doRig()
       throws PipelineException
     {
+      StageInformation stageInfo = getStageInformation();
       LockBundle bundle = new LockBundle();
       String taskType = pProjectNames.getRiggingTaskName();
       
@@ -758,7 +744,7 @@ class AssetBuilder
         {
           EmptyMayaAsciiStage stage = 
             new EmptyMayaAsciiStage
-            (pStageInfo,
+            (stageInfo,
              pContext,
              pClient,
              pMayaContext,
@@ -773,14 +759,14 @@ class AssetBuilder
       if (skeleton != null) {
 	if (skelMel == null) {
 	  EmptyMayaAsciiStage stage = 
-	    new EmptyMayaAsciiStage(pStageInfo, pContext, pClient, pMayaContext, skeleton);
+	    new EmptyMayaAsciiStage(stageInfo, pContext, pClient, pMayaContext, skeleton);
 	  addEditAnnotation(stage, taskType);
 	  stage.build();
 	  pEmptyMayaScenes.add(stage);
 	}
 	else {
 	  AssetBuilderModelStage stage =
-	    new AssetBuilderModelStage(pStageInfo, pContext, pClient, pMayaContext, skeleton, skelMel);
+	    new AssetBuilderModelStage(stageInfo, pContext, pClient, pMayaContext, skeleton, skelMel);
 	  addEditAnnotation(stage, taskType);
 	  stage.build();
 	  pModelStages.add(stage);
@@ -792,7 +778,7 @@ class AssetBuilder
 	texNode = pAssetNames.getAnimTextureNodeName();
 	{
 	  MayaFTNBuildStage stage = 
-	    new MayaFTNBuildStage(pStageInfo, pContext, pClient, pMayaContext, texNode, true);
+	    new MayaFTNBuildStage(stageInfo, pContext, pClient, pMayaContext, texNode, true);
 	  addEditAnnotation(stage, taskType);
 	  stage.build();
 	}
@@ -802,7 +788,7 @@ class AssetBuilder
       {
         NewAssetBuilderRigStage stage = 
           new NewAssetBuilderRigStage
-          (pStageInfo,
+          (stageInfo,
            pContext, 
            pClient,
            pMayaContext,
@@ -824,7 +810,7 @@ class AssetBuilder
 	{
 	  NewAssetBuilderMaterialExportStage stage = 
 	    new NewAssetBuilderMaterialExportStage
-	    (pStageInfo, 
+	    (stageInfo, 
 	     pContext,
 	     pClient,
 	     rigMatExp, 
@@ -838,7 +824,7 @@ class AssetBuilder
 	{
 	  AdvAssetBuilderReRigStage stage = 
 	    new AdvAssetBuilderReRigStage
-	    (pStageInfo, 
+	    (stageInfo, 
 	      pContext, 
 	      pClient, 
 	      pMayaContext, 
@@ -862,7 +848,7 @@ class AssetBuilder
 	if (!pReRigSetup && !pImportModel) {
 	  AssetModelExportStage stage = 
 	    new AssetModelExportStage
-	    (pStageInfo,
+	    (stageInfo,
 	     pContext,
 	     pClient,
 	     rigFinal,
@@ -878,7 +864,7 @@ class AssetBuilder
 	else {
 	  NewAssetBuilderFinalStage stage = 
 	    new NewAssetBuilderFinalStage
-	    (pStageInfo,
+	    (stageInfo,
 	     pContext, 
 	     pClient,
 	     pMayaContext,
@@ -901,7 +887,7 @@ class AssetBuilder
       String thumb = pAssetNames.getRigThumbNodeName();
       if (pRigTT) {
 	if (pMakeFBX) {
-	  EmptyFBXStage stage = new EmptyFBXStage(pStageInfo, pContext, pClient, animFBX);
+	  EmptyFBXStage stage = new EmptyFBXStage(stageInfo, pContext, pClient, animFBX);
 	  stage.build();
 	}
 	if (pMakeCurves ) {
@@ -909,7 +895,7 @@ class AssetBuilder
 	  if (pMakeFBX) {
 	    stage = 
 	      new AdvAssetBuilderCurvesStage
-	      (pStageInfo, 
+	      (stageInfo, 
 	       pContext, 
 	       pClient, 
 	       pMayaContext, 
@@ -919,14 +905,14 @@ class AssetBuilder
 	  }
 	  else {
 	    stage = 
-	      new EmptyMayaAsciiStage(pStageInfo, pContext, pClient, pMayaContext, animCurves);
+	      new EmptyMayaAsciiStage(stageInfo, pContext, pClient, pMayaContext, animCurves);
 	    pEmptyMayaScenes.add((EmptyMayaAsciiStage) stage);
 	  }
 	  stage.build();
 	}
 	if (pMakeDkAnim ) {
 	  EmptyFileStage stage = 
-	    new EmptyFileStage(pStageInfo, pContext, pClient, animCurves, "dkAnim");
+	    new EmptyFileStage(stageInfo, pContext, pClient, animCurves, "dkAnim");
 	  stage.build();
 	  pEmptyFileStages.add(stage);
 	}
@@ -937,7 +923,7 @@ class AssetBuilder
 	  if (pMakeCurves) {
 	    stage = 
 	      new AdvAssetBuilderAnimStage
-	      (pStageInfo,
+	      (stageInfo,
 	       pContext, 
 	       pClient,
 	       pMayaContext,
@@ -952,7 +938,7 @@ class AssetBuilder
 	  }
 	  else {
 	    stage = new AdvAssetBuilderTTStage
-	      (pStageInfo, 
+	      (stageInfo, 
 	       pContext, 
 	       pClient, 
 	       pMayaContext, 
@@ -969,7 +955,7 @@ class AssetBuilder
 	    pProjectNames.getAssetRigAnimGlobals();
 	  AdvAssetBuilderTTImgStage stage =
 	    new AdvAssetBuilderTTImgStage
-	    (pStageInfo, 
+	    (stageInfo, 
 	     pContext, 
 	     pClient, 
 	     rigImages, 
@@ -981,7 +967,7 @@ class AssetBuilder
 	}
 	if (pBuildThumbnails) {
 	  ThumbnailStage stage = 
-	    new ThumbnailStage(pStageInfo, pContext, pClient, thumb, "png", rigImages, 160);
+	    new ThumbnailStage(stageInfo, pContext, pClient, thumb, "png", rigImages, 160);
 	  addThumbnailAnnotation(stage, taskType);
 	  stage.build();
         }
@@ -995,7 +981,7 @@ class AssetBuilder
           sources.add(rigImages);
         else
           sources.add(rigFinal);
-        TargetStage stage = new TargetStage(pStageInfo, pContext, pClient, rigSubmit, sources);
+        TargetStage stage = new TargetStage(stageInfo, pContext, pClient, rigSubmit, sources);
         addSubmitAnnotation(stage, taskType);
         stage.build();
         addToQueueList(rigSubmit);
@@ -1006,7 +992,7 @@ class AssetBuilder
       String rigApprove = pAssetNames.getRigApproveNodeName();
       {
         ProductStage stage = 
-          new ProductStage(pStageInfo, pContext, pClient, assetFinal, "ma", rigFinal, StageFunction.aMayaScene.toString());
+          new ProductStage(stageInfo, pContext, pClient, assetFinal, "ma", rigFinal, StageFunction.aMayaScene.toString());
         addProductAnnotation(stage, taskType);
         stage.build();
       }
@@ -1016,7 +1002,7 @@ class AssetBuilder
         {
           TreeSet<String> sources = new TreeSet<String>();
           sources.add(texNode);
-          TargetStage stage = new TargetStage(pStageInfo, pContext, pClient, texFinalNode, sources);
+          TargetStage stage = new TargetStage(stageInfo, pContext, pClient, texFinalNode, sources);
           addProductAnnotation(stage, taskType);
           stage.build();
         }
@@ -1025,7 +1011,7 @@ class AssetBuilder
         TreeSet<String> sources = new TreeSet<String>();
         sources.add(assetFinal);
         addNonNullValue(texFinalNode, sources);
-        TargetStage stage = new TargetStage(pStageInfo, pContext, pClient, rigApprove, sources);
+        TargetStage stage = new TargetStage(stageInfo, pContext, pClient, rigApprove, sources);
         addApproveAnnotation(stage, taskType);
         stage.build();
         addToQueueList(rigApprove);
@@ -1039,6 +1025,7 @@ class AssetBuilder
     doMaterials()
       throws PipelineException
     {
+      StageInformation stageInfo = getStageInformation();
       String modelFinal = pAssetNames.getModelFinalNodeName();
       String taskType = pProjectNames.getShadingTaskName();
       
@@ -1049,7 +1036,7 @@ class AssetBuilder
 	texNode = pAssetNames.getTextureNodeName();
 	{
 	  MayaFTNBuildStage stage = 
-	    new MayaFTNBuildStage(pStageInfo, pContext, pClient, pMayaContext, texNode, true);
+	    new MayaFTNBuildStage(stageInfo, pContext, pClient, pMayaContext, texNode, true);
 	  addEditAnnotation(stage, taskType);
 	  stage.build();
 	}
@@ -1059,7 +1046,7 @@ class AssetBuilder
       {
         AdvAssetMaterialStage stage =
           new AdvAssetMaterialStage
-          (pStageInfo,
+          (stageInfo,
            pContext, 
            pClient,
            pMayaContext,
@@ -1075,7 +1062,7 @@ class AssetBuilder
       {
         AssetBuilderShaderExportStage stage = 
           new AssetBuilderShaderExportStage
-          (pStageInfo, 
+          (stageInfo, 
            pContext,
            pClient,
            matExportName, 
@@ -1094,7 +1081,7 @@ class AssetBuilder
       {
         NewAssetBuilderFinalStage stage = 
           new NewAssetBuilderFinalStage
-          (pStageInfo,
+          (stageInfo,
            pContext, 
            pClient,
            pMayaContext,
@@ -1116,7 +1103,7 @@ class AssetBuilder
             pProjectNames.getAssetShaderTTSetup(pAssetName, pAssetType);
           AdvAssetBuilderTTStage stage =
             new AdvAssetBuilderTTStage
-            (pStageInfo,
+            (stageInfo,
              pContext,
              pClient,
              pMayaContext,
@@ -1131,7 +1118,7 @@ class AssetBuilder
           String globals = pProjectNames.getAssetShaderTTGlobals(GlobalsType.Maya2MR);
           AdvAssetBuilderTTImgStage stage =
             new AdvAssetBuilderTTImgStage
-            (pStageInfo, 
+            (stageInfo, 
              pContext, 
              pClient, 
              matTTImg, 
@@ -1144,7 +1131,7 @@ class AssetBuilder
         if (pBuildThumbnails) {
           thumb = pAssetNames.getMaterialThumbNodeName();
           ThumbnailStage stage = 
-            new ThumbnailStage(pStageInfo, pContext, pClient, thumb, "png", matTTImg, 160);
+            new ThumbnailStage(stageInfo, pContext, pClient, thumb, "png", matTTImg, 160);
           addThumbnailAnnotation(stage, taskType);
           stage.build();
         }
@@ -1158,7 +1145,7 @@ class AssetBuilder
           sources.add(matTTImg);
         else
           sources.add(matVerify);
-        TargetStage stage = new TargetStage(pStageInfo, pContext, pClient, matSubmit, sources);
+        TargetStage stage = new TargetStage(stageInfo, pContext, pClient, matSubmit, sources);
         addSubmitAnnotation(stage, taskType);
         stage.build();
         addToQueueList(matSubmit);
@@ -1169,7 +1156,7 @@ class AssetBuilder
       String finalTex = null;
       if (pBuildTextureNode) {
 	finalTex = pAssetNames.getTextureFinalNodeName();
-	EmptyFileStage stage = new EmptyFileStage(pStageInfo, pContext, pClient, finalTex);
+	EmptyFileStage stage = new EmptyFileStage(stageInfo, pContext, pClient, finalTex);
 	addProductAnnotation(stage, taskType);
 	stage.build();
 	pEmptyFileStages.add(stage);
@@ -1178,7 +1165,7 @@ class AssetBuilder
       String matApprove = pAssetNames.getMaterialApproveNodeName();
       {
         ProductStage stage = 
-          new ProductStage(pStageInfo, pContext, pClient, matFinal, "ma", matVerify, StageFunction.aMayaScene.toString());
+          new ProductStage(stageInfo, pContext, pClient, matFinal, "ma", matVerify, StageFunction.aMayaScene.toString());
         addProductAnnotation(stage, taskType);
         stage.build();
       }
@@ -1187,7 +1174,7 @@ class AssetBuilder
         sources.add(matFinal);
 	if (pBuildTextureNode)
 	  sources.add(finalTex);
-        TargetStage stage = new TargetStage(pStageInfo, pContext, pClient, matApprove, sources);
+        TargetStage stage = new TargetStage(stageInfo, pContext, pClient, matApprove, sources);
         addApproveAnnotation(stage, taskType);
         stage.build();
         addToQueueList(matApprove);

@@ -1,4 +1,4 @@
-// $Id: InternalTrackingBuilder.java,v 1.1 2008/02/13 10:47:29 jim Exp $
+// $Id: InternalTrackingBuilder.java,v 1.2 2008/02/25 05:03:07 jesse Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -7,6 +7,7 @@ import com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages.*;
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.math.*;
 import us.temerity.pipeline.builder.*;
+import us.temerity.pipeline.builder.BuilderInformation.*;
 import us.temerity.pipeline.stages.*;
 
 import java.util.*;
@@ -187,7 +188,7 @@ class InternalTrackingBuilder
    */
   @SuppressWarnings("unchecked")
   @Override
-  protected MappedArrayList<String, PluginContext> 
+  public MappedArrayList<String, PluginContext> 
   getNeededActions()
   {
     ArrayList<PluginContext> plugins = new ArrayList<PluginContext>();	
@@ -299,6 +300,7 @@ class InternalTrackingBuilder
     buildPhase() 
       throws PipelineException
     {
+      StageInformation stageInfo = getStageInformation();
       /* lock the latest version of all of the prerequisites */ 
       lockNodePrerequitites(); 
 
@@ -307,7 +309,7 @@ class InternalTrackingBuilder
 	String pftrackNodeName = pShotNamer.getPFTrackNode(); 
 	{
 	  PFTrackBuildStage stage = 
-	    new PFTrackBuildStage(pStageInfo, pContext, pClient, 
+	    new PFTrackBuildStage(stageInfo, pContext, pClient, 
 				  pftrackNodeName, pUndistorted2kPlateNodeName, 
 				  pVfxShotDataNodeName); 
 	  addTaskAnnotation(stage, NodePurpose.Edit); 
@@ -318,7 +320,7 @@ class InternalTrackingBuilder
 	String trackNodeName = pShotNamer.getTrackNode(); 
 	{
 	  PFTrackExportMayaStage stage = 
-	    new PFTrackExportMayaStage(pStageInfo, pContext, pClient, 
+	    new PFTrackExportMayaStage(stageInfo, pContext, pClient, 
 				       trackNodeName, pRorschachTrackPlaceholderNodeName, 
 				       pftrackNodeName, pUndistorted1kPlateNodeName); 
 	  addTaskAnnotation(stage, NodePurpose.Edit); 

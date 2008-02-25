@@ -1,4 +1,4 @@
-// $Id: PlatesBuilder.java,v 1.16 2008/02/22 06:02:11 jim Exp $
+// $Id: PlatesBuilder.java,v 1.17 2008/02/25 05:03:07 jesse Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -7,6 +7,7 @@ import com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages.*;
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.math.*;
 import us.temerity.pipeline.builder.*;
+import us.temerity.pipeline.builder.BuilderInformation.*;
 import us.temerity.pipeline.stages.*;
 
 import java.util.*;
@@ -224,7 +225,7 @@ class PlatesBuilder
    */
   @SuppressWarnings("unchecked")
   @Override
-  protected MappedArrayList<String, PluginContext> 
+  public MappedArrayList<String, PluginContext> 
   getNeededActions()
   {
     ArrayList<PluginContext> plugins = new ArrayList<PluginContext>();	
@@ -496,6 +497,7 @@ class PlatesBuilder
     buildPhase() 
       throws PipelineException
     {
+      StageInformation stageInfo = getStageInformation();
       /* lock the latest version of all of the prerequisites */ 
       for(String name : pRequiredNodeNames) {
 	if(!nodeExists(name)) 
@@ -516,7 +518,7 @@ class PlatesBuilder
 	String vfxRefNodeName = pShotNamer.getVfxReferenceNode(NodePurpose.Prepare); 
 	{
 	  TargetStage stage = 
-	    new TargetStage(pStageInfo, pContext, pClient, 
+	    new TargetStage(stageInfo, pContext, pClient, 
 			    vfxRefNodeName, pMiscReferenceNodeNames); 
 	  addTaskAnnotation(stage, NodePurpose.Prepare); 
 	  stage.build(); 
@@ -525,7 +527,7 @@ class PlatesBuilder
 	String vfxShotDataNodeName = pShotNamer.getVfxShotDataNode(); 
 	{
 	  LensInfoStage stage = 
-	    new LensInfoStage(pStageInfo, pContext, pClient, 
+	    new LensInfoStage(stageInfo, pContext, pClient, 
 			      vfxShotDataNodeName); 
 	  addTaskAnnotation(stage, NodePurpose.Edit); 
 	  stage.build(); 
@@ -534,7 +536,7 @@ class PlatesBuilder
 	String solveDistortionNodeName = pShotNamer.getSolveDistortionNode(); 
 	{
 	  PFTrackBuildStage stage = 
-	    new PFTrackBuildStage(pStageInfo, pContext, pClient, 
+	    new PFTrackBuildStage(stageInfo, pContext, pClient, 
 				  solveDistortionNodeName, pBackgroundPlateNodeName, 
 				  vfxShotDataNodeName); 
 	  stage.addLink(new LinkMod(pPlatesRedCheckerNodeName, 
@@ -547,7 +549,7 @@ class PlatesBuilder
 	pDistortedGridNodeName = pShotNamer.getDistortedGridNode(); 
 	{
 	  DistortedGridStage stage = 
-	    new DistortedGridStage(pStageInfo, pContext, pClient, 
+	    new DistortedGridStage(stageInfo, pContext, pClient, 
 				   pDistortedGridNodeName, pPlatesRedCheckerNodeName, 
 				   solveDistortionNodeName);
 	  addTaskAnnotation(stage, NodePurpose.Prepare); 
@@ -558,7 +560,7 @@ class PlatesBuilder
 	String readDistortedNodeName = pShotNamer.getReadDistortedNode(); 
 	{
 	  NukeReadStage stage = 
-	    new NukeReadStage(pStageInfo, pContext, pClient, 
+	    new NukeReadStage(stageInfo, pContext, pClient, 
 			      readDistortedNodeName, pDistortedGridNodeName); 
 	  addTaskAnnotation(stage, NodePurpose.Prepare); 
 	  stage.build();  
@@ -567,7 +569,7 @@ class PlatesBuilder
 	String reformatOriginalNodeName = pShotNamer.getReformatOriginalNode(); 
 	{
 	  NukeReadReformatStage stage = 
-	    new NukeReadReformatStage(pStageInfo, pContext, pClient, 
+	    new NukeReadReformatStage(stageInfo, pContext, pClient, 
 				      reformatOriginalNodeName, 
 				      pPlatesGreenCheckerNodeName, pDistortedGridNodeName); 
 	  addTaskAnnotation(stage, NodePurpose.Prepare); 
@@ -583,7 +585,7 @@ class PlatesBuilder
 	  sources.add(pGridGradeDiffNodeName); 
  
 	  NukeCatStage stage = 
-	    new NukeCatStage(pStageInfo, pContext, pClient, 
+	    new NukeCatStage(stageInfo, pContext, pClient, 
 			     pGridAlignNodeName, sources); 
 	  stage.addLink(new LinkMod(pPlatesGreenCheckerNodeName, LinkPolicy.Reference));
 	  stage.addLink(new LinkMod(pDistortedGridNodeName, LinkPolicy.Reference));
@@ -597,7 +599,7 @@ class PlatesBuilder
 	  nukeScripts.add(pGridAlignNodeName); 
 
 	  NukeCatCompStage stage = 
-	    new NukeCatCompStage(pStageInfo, pContext, pClient,
+	    new NukeCatCompStage(stageInfo, pContext, pClient,
 				 gridAlignImageNodeName, "tif", nukeScripts);  
 	  addTaskAnnotation(stage, NodePurpose.Focus); 
 	  stage.build(); 
@@ -606,7 +608,7 @@ class PlatesBuilder
 	String gridAlignThumbNodeName = pShotNamer.getGridAlignThumbNode();
 	{
 	  NukeThumbnailStage stage = 
-	    new NukeThumbnailStage(pStageInfo, pContext, pClient,
+	    new NukeThumbnailStage(stageInfo, pContext, pClient,
 				   gridAlignThumbNodeName, "tif", gridAlignImageNodeName, 
 				   1, 150, 1.0, true, true, new Color3d()); 
 	  addTaskAnnotation(stage, NodePurpose.Thumbnail); 
@@ -620,7 +622,7 @@ class PlatesBuilder
 	  sources.add(vfxRefNodeName);
 
 	  TargetStage stage = 
-	    new TargetStage(pStageInfo, pContext, pClient, 
+	    new TargetStage(stageInfo, pContext, pClient, 
 			    submitNodeName, sources); 
 	  addTaskAnnotation(stage, NodePurpose.Submit); 
 	  stage.build(); 
@@ -634,7 +636,7 @@ class PlatesBuilder
 	String vfxRefNodeName = pShotNamer.getVfxReferenceNode(NodePurpose.Product); 
 	{
 	  TargetStage stage = 
-	    new TargetStage(pStageInfo, pContext, pClient, 
+	    new TargetStage(stageInfo, pContext, pClient, 
 			    vfxRefNodeName, pMiscReferenceNodeNames); 
 	  addTaskAnnotation(stage, NodePurpose.Product); 
 	  stage.build(); 
@@ -643,7 +645,7 @@ class PlatesBuilder
 	String lensWarpNodeName = pShotNamer.getLensWarpNode(); 
 	{
 	  NukeExtractStage stage = 
-	    new NukeExtractStage(pStageInfo, pContext, pClient, 
+	    new NukeExtractStage(stageInfo, pContext, pClient, 
 				 lensWarpNodeName, pGridAlignNodeName, 
 				 "GridWarp", ".*", false); 
 	  addTaskAnnotation(stage, NodePurpose.Product); 
@@ -653,7 +655,7 @@ class PlatesBuilder
 	String reformatBgNodeName = pShotNamer.getReformatBgNode(); 
 	{
 	  NukeReadReformatStage stage = 
-	    new NukeReadReformatStage(pStageInfo, pContext, pClient, 
+	    new NukeReadReformatStage(stageInfo, pContext, pClient, 
 				      reformatBgNodeName, 
 				      pBackgroundPlateNodeName, pDistortedGridNodeName); 
 	  addTaskAnnotation(stage, NodePurpose.Prepare); 
@@ -671,7 +673,7 @@ class PlatesBuilder
 	  inputImages.add(pBackgroundPlateNodeName); 
 
 	  NukeCatCompStage stage = 
-	    new NukeCatCompStage(pStageInfo, pContext, pClient,
+	    new NukeCatCompStage(stageInfo, pContext, pClient,
 				 undistorted2kPlateNodeName, pFrameRange, 4, "tif", 
 				 nukeScripts, inputImages);
 	  addTaskAnnotation(stage, NodePurpose.Product); 
@@ -681,7 +683,7 @@ class PlatesBuilder
 	String undistorted1kPlateNodeName = pShotNamer.getUndistorted1kPlateNode(); 
 	{
 	  NukeRescaleStage stage = 
-	    new NukeRescaleStage(pStageInfo, pContext, pClient,
+	    new NukeRescaleStage(stageInfo, pContext, pClient,
 				 undistorted1kPlateNodeName, pFrameRange, 4, "tif",
 				 undistorted2kPlateNodeName, 0.5);
 	  addTaskAnnotation(stage, NodePurpose.Product); 
@@ -691,7 +693,7 @@ class PlatesBuilder
 	String undistorted1kQuickTimeNodeName = pShotNamer.getUndistorted1kQuickTimeNode(); 
 	{
 	  NukeQtStage stage = 
-	    new NukeQtStage(pStageInfo, pContext, pClient,
+	    new NukeQtStage(stageInfo, pContext, pClient,
 			    undistorted1kQuickTimeNodeName, undistorted1kPlateNodeName, 24.0);
 	  addTaskAnnotation(stage, NodePurpose.Product); 
 	  stage.build(); 
@@ -710,7 +712,7 @@ class PlatesBuilder
 	  sources.add(vfxShotDataNodeName);
 
 	  TargetStage stage = 
-	    new TargetStage(pStageInfo, pContext, pClient, 
+	    new TargetStage(stageInfo, pContext, pClient, 
 			    approveNodeName, sources); 
 	  addTaskAnnotation(stage, NodePurpose.Approve); 
 	  stage.build(); 

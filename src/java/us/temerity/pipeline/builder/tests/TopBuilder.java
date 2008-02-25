@@ -1,11 +1,10 @@
 package us.temerity.pipeline.builder.tests;
 
-import java.util.LinkedList;
-import java.util.TreeSet;
+import java.util.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
-import us.temerity.pipeline.math.Range;
+import us.temerity.pipeline.math.*;
 
 
 public class TopBuilder
@@ -42,7 +41,7 @@ public class TopBuilder
   }
   
   @Override
-  protected LinkedList<String> getNodesToCheckIn()
+  public LinkedList<String> getNodesToCheckIn()
   {
     return null;
   }
@@ -80,7 +79,7 @@ public class TopBuilder
       pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
 	"Starting the init phase in " + this.toString());
       for (int i = 0; i < pNumberOfChildren ; i ++) 
-	addSubBuilder(new BabyBuilder("LittleBaby" + i, pClient, pQueue, pBuilderInformation));
+	addSubBuilder(new BabyBuilder("LittleBaby" + i, pClient, pQueue, getBuilderInformation()));
       pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Fine, 
 	"Finished the init phase in the Information Pass.");
     }

@@ -10,6 +10,7 @@ import java.util.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
+import us.temerity.pipeline.builder.BuilderInformation.*;
 import us.temerity.pipeline.plugin.Maya2MRCollection.v2_3_2.stages.*;
 
 /**
@@ -128,24 +129,6 @@ class ModelPiecesBuilder
   }
   
   
-  /*----------------------------------------------------------------------------------------*/
-  /*   C H E C K - I N                                                                      */
-  /*----------------------------------------------------------------------------------------*/
-
-  @Override
-  protected LinkedList<String> 
-  getNodesToCheckIn()
-  {
-    return getCheckInList();
-  }
-  
-  @Override
-  protected boolean performCheckIn()
-  {
-    return pCheckInWhenDone;
-  }
-  
-
   
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
@@ -249,6 +232,7 @@ class ModelPiecesBuilder
     buildPhase() 
       throws PipelineException
     {
+      StageInformation stageInfo = getStageInformation();
       String taskType = pProjectNames.getModelingTaskName();
       
       TreeMap<String, String> pieceNodes = new TreeMap<String, String>();
@@ -259,7 +243,7 @@ class ModelPiecesBuilder
         {
           AssetBuilderModelStage stage = 
             new AssetBuilderModelStage
-            (pStageInfo,
+            (stageInfo,
              pContext,
              pClient,
              pMayaContext, 
@@ -274,7 +258,7 @@ class ModelPiecesBuilder
       {
         ModelPiecesEditStage stage = 
           new ModelPiecesEditStage
-          (pStageInfo,
+          (stageInfo,
            pContext,
            pClient,
            pMayaContext,
@@ -288,7 +272,7 @@ class ModelPiecesBuilder
       {
         ModelPiecesVerifyStage stage = 
           new ModelPiecesVerifyStage
-          (pStageInfo,
+          (stageInfo,
            pContext,
            pClient,
            pMayaContext,
