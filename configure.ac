@@ -1869,6 +1869,9 @@ AC_CONFIG_FILES([
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/ApproveTaskTool/Makefile
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/ApproveTaskTool/v1_0_0/Makefile
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/ApproveTaskTool/v1_0_0/Makefile.local
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/NotMiniKeyChooser/Makefile
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/NotMiniKeyChooser/v1_0_0/Makefile
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/NotMiniKeyChooser/v1_0_0/Makefile.local
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/LensInfoAction/Makefile
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/LensInfoAction/v1_0_0/Makefile
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/LensInfoAction/v1_0_0/Makefile.local
