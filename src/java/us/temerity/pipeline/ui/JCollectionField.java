@@ -1,4 +1,4 @@
-// $Id: JCollectionField.java,v 1.18 2008/02/25 06:07:43 jim Exp $
+// $Id: JCollectionField.java,v 1.19 2008/02/25 22:22:36 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -38,7 +38,7 @@ class JCollectionField
    Collection<String> values
   )
   {
-    this(values, null);
+    this(values, (JFrame) null);
   }
 
   /**
@@ -108,8 +108,6 @@ class JCollectionField
    Collection<String> values
   )
   {
-    pDialog = selectDialog;
-
     setName("CollectionField");
 
     setAlignmentY(0.5f);

@@ -1,4 +1,4 @@
-// $Id: UIFactory.java,v 1.24 2008/02/25 06:07:43 jim Exp $
+// $Id: UIFactory.java,v 1.25 2008/02/25 22:22:36 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -1072,7 +1072,7 @@ class UIFactory
    int width
   ) 
   {
-    return createCollectionField(values, null, width);
+    return createCollectionField(values, (JFrame) null, width);
   }
 
   /**
@@ -3125,7 +3125,7 @@ class UIFactory
   ) 
   {
     return createTitledCollectionField(tpanel, title, twidth, 
-				       vpanel, values, null, vwidth, 
+				       vpanel, values, (JFrame) null, vwidth, 
 				       tooltip);
   }
 
