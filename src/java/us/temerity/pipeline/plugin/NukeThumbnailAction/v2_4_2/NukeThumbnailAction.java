@@ -132,8 +132,6 @@ class NukeThumbnailAction
 
     addSupport(OsType.MacOS);
     addSupport(OsType.Windows); 
-
-    underDevelopment(); 
   }
   
   
