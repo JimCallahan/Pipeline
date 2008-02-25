@@ -1,6 +1,6 @@
-// $Id: NukeMakeHDRAction.java,v 1.4 2008/02/19 10:00:15 jim Exp $
+// $Id: NukeMakeHDRAction.java,v 1.5 2008/02/25 01:06:40 jim Exp $
 
-package us.temerity.pipeline.plugin.NukeMakeHDRAction.v2_4_2;
+package us.temerity.pipeline.plugin.NukeMakeHDRAction.v2_4_1;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.math.*;
@@ -195,7 +195,7 @@ class NukeMakeHDRAction
   public
   NukeMakeHDRAction() 
   {
-    super("NukeMakeHDR", new VersionID("2.4.2"), "Temerity", 
+    super("NukeMakeHDR", new VersionID("2.4.1"), "Temerity", 
 	  "Converts a series of varying exposure raw digital images into a single " + 
           "high dynamic range (HDR) environment map."); 
   
