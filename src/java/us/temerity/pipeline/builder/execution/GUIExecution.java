@@ -1,4 +1,4 @@
-// $Id: GUIExecution.java,v 1.1 2008/02/25 05:03:05 jesse Exp $
+// $Id: GUIExecution.java,v 1.2 2008/02/26 20:27:59 jim Exp $
 
 package us.temerity.pipeline.builder.execution;
 
@@ -598,7 +598,7 @@ class GUIExecution
      {
        try {
          disableAllButtons();
-         pConfirmButton.setText("Quit");
+         pCancelButton.setText("Quit");   
          JConfirmDialog dialog = new JConfirmDialog(pDialog, "Release Nodes", pMessage);
          dialog.setVisible(true);
          if (dialog.wasConfirmed())
@@ -633,7 +633,7 @@ class GUIExecution
      {
        try {
          disableAllButtons();
-         pConfirmButton.setText("Quit");
+         pCancelButton.setText("Quit");
          JErrorDialog dialog = new JErrorDialog(pDialog);
          dialog.setMessage("Error Dialog", pMessage);
          dialog.setVisible(true);
