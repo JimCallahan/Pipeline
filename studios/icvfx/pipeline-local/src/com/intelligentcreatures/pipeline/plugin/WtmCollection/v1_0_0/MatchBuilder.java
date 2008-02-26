@@ -1,4 +1,4 @@
-// $Id: MatchBuilder.java,v 1.4 2008/02/26 13:22:05 jim Exp $
+// $Id: MatchBuilder.java,v 1.5 2008/02/26 20:26:35 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -510,7 +510,7 @@ class MatchBuilder
 	  stage.build(); 
 	}
 
-	String verifyThumbNodeName = pShotNamer.getTrackingVerifyThumbNode();
+	String verifyThumbNodeName = pShotNamer.getMatchVerifyThumbNode();
 	{
 	  NukeThumbnailStage stage = 
 	    new NukeThumbnailStage(stageInfo, pContext, pClient,
@@ -520,7 +520,7 @@ class MatchBuilder
 	  stage.build(); 
 	}
 
-	String submitNodeName = pShotNamer.getPlatesSubmitNode();
+	String submitNodeName = pShotNamer.getMatchSubmitNode();
 	{
 	  TreeSet<String> sources = new TreeSet<String>();
 	  sources.add(verifyThumbNodeName);
