@@ -1,4 +1,4 @@
-// $Id: PlatesBuilder.java,v 1.19 2008/02/26 11:34:49 jim Exp $
+// $Id: PlatesBuilder.java,v 1.20 2008/02/26 13:22:05 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -126,9 +126,7 @@ class PlatesBuilder
 
     /* initialize fields */ 
     {
-      pRequiredNodeNames = new TreeSet<String>(); 
       pMiscReferenceNodeNames = new TreeSet<String>(); 
-
       pFinalStages = new ArrayList<FinalizableStage>(); 
     }
 
@@ -868,11 +866,6 @@ class PlatesBuilder
 
 
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * The fully resolved names of nodes required to exist for this builder to run. 
-   */ 
-  private TreeSet<String> pRequiredNodeNames;
 
   /**
    * The fully resolved name and frame range of background plates node. 

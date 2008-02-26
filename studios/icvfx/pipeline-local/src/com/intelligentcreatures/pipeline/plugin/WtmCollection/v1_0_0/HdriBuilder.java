@@ -1,4 +1,4 @@
-// $Id: HdriBuilder.java,v 1.3 2008/02/25 05:03:07 jesse Exp $
+// $Id: HdriBuilder.java,v 1.4 2008/02/26 13:22:05 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -133,9 +133,6 @@ class HdriBuilder
     super("HDRI",
           "A builder for constructing the nodes associated with the HDRI task.", 
           mclient, qclient, builderInfo, studioDefs, projectNamer, shotNamer);
-
-    /* initialize fields */ 
-    pRequiredNodeNames = new TreeSet<String>(); 
 
     /* setup builder parameters */ 
     {
@@ -371,12 +368,25 @@ class HdriBuilder
       throws PipelineException
     {
       StageInformation stageInfo = getStageInformation();
-      /* lock the latest version of all of the prerequisites */ 
-      for(String name : pRequiredNodeNames) {
-	if(!nodeExists(name)) 
-	  throw new PipelineException
-	    ("The required prerequisite node (" + name + ") does not exist!"); 
-	lockLatest(name); 
+
+      /* stage prerequisites */ 
+      {
+	/* lock the latest version of all of the prerequisites */ 
+	lockNodePrerequisites(); 
+
+	String prereqNodeName = pShotNamer.getHdriPrereqNode();
+	{
+	  TreeSet<String> sources = new TreeSet<String>();
+	  sources.addAll(pRequiredNodeNames); 
+
+	  TargetStage stage = 
+	    new TargetStage(stageInfo, pContext, pClient, 
+			    prereqNodeName, sources); 
+	  addTaskAnnotation(stage, NodePurpose.Prereq); 
+	  stage.build(); 
+	  addToQueueList(prereqNodeName);
+	  addToCheckInList(prereqNodeName);
+	}
       }
 
       /* add Edit annotations to all raw exposure images and times */ 
@@ -518,11 +528,6 @@ class HdriBuilder
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * The fully resolved names of nodes required to exist for this builder to run. 
-   */ 
-  private TreeSet<String> pRequiredNodeNames;
 
   /** 
    * The fully resolved names of the nodes containing the series of varying exposure 

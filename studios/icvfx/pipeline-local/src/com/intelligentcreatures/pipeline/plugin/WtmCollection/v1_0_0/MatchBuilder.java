@@ -1,4 +1,4 @@
-// $Id: MatchBuilder.java,v 1.3 2008/02/26 11:34:49 jim Exp $
+// $Id: MatchBuilder.java,v 1.4 2008/02/26 13:22:05 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -114,7 +114,6 @@ class MatchBuilder
 
     /* initialize fields */ 
     {
-      pRequiredNodeNames = new TreeSet<String>(); 
 //       pFinalStages = new ArrayList<FinalizableStage>(); 
     }
 
@@ -315,6 +314,10 @@ class MatchBuilder
 
       /* register the required (locked) nodes */ 
       {
+	/* tracking assets */ 
+	pTrackVerifyGlobalsNodeName = pProjectNamer.getTrackVerifyGlobalsNode(); 
+	pRequiredNodeNames.add(pTrackVerifyGlobalsNodeName); 
+
 	/* match assets */ 
 	pConstrainRigNodeName = pProjectNamer.getConstrainRigNode(); 
 	pRequiredNodeNames.add(pConstrainRigNodeName); 
@@ -649,11 +652,6 @@ class MatchBuilder
 
 
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * The fully resolved names of nodes required to exist for this builder to run. 
-   */ 
-  private TreeSet<String> pRequiredNodeNames;
 
   /**
    * The fully resolved name of the node containing a MEL script used to add head 
