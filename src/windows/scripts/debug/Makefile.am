@@ -2,6 +2,7 @@
 instbindir = @ROOT_INST_DIR@/@NATIVE_OSTYPE@-@NATIVE_ARCHTYPE@-Debug/bin
 
 instbin_SCRIPTS = \
+  plplugin.bat \
   pltestheavy.bat \
   pltestlight.bat \
   pltestnative.bat \

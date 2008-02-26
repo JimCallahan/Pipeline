@@ -1817,6 +1817,7 @@ AC_CONFIG_FILES([
   src/windows/services/PipelineJobManager/PipelineJobManager/ProjectInstaller.h
 
   src/windows/scripts/Makefile
+  src/windows/scripts/plplugin.bat.src
   src/windows/scripts/plremote.bat.src
   src/windows/scripts/plscript.bat.src
   src/windows/scripts/plscript-batch.bat.src
@@ -1825,6 +1826,7 @@ AC_CONFIG_FILES([
   src/windows/scripts/pljobmgr.bat.src
 
   src/windows/scripts/debug/Makefile
+  src/windows/scripts/debug/plplugin.bat.src
   src/windows/scripts/debug/pltestheavy.bat.src
   src/windows/scripts/debug/pltestlight.bat.src
   src/windows/scripts/debug/pltestnative.bat.src

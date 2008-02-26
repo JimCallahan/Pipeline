@@ -1,4 +1,4 @@
-// $Id: PluginApp.java,v 1.13 2008/02/14 20:26:29 jim Exp $
+// $Id: PluginApp.java,v 1.14 2008/02/26 09:01:59 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -33,15 +33,15 @@ class PluginApp
   {
     super("plplugin");
 
-    try {
-      NativeFileSys.umask(022);
-    }
-    catch(IOException ex) {
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
-	 Exceptions.getFullMessage(ex));
-      System.exit(1);
-    }
+//     try {
+//       NativeFileSys.umask(022);
+//     }
+//     catch(IOException ex) {
+//       LogMgr.getInstance().log
+// 	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
+// 	 Exceptions.getFullMessage(ex));
+//       System.exit(1);
+//     }
   }
 
   

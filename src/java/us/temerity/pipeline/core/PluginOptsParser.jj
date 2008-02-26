@@ -125,8 +125,8 @@ TOKEN :
 | <INSTALL:      "--install">    
 
   /* plugin files */
-| <PLUGIN_FILE:   ("/")* ("../")* <PLUGIN_COMP> 
-                 ("/" (".." | (<PLUGIN_COMP>)+)?)* (".jar" | ".class")>  
+| <PLUGIN_FILE:   (["/","\\"])* ("../" | "..\\")* <PLUGIN_COMP> 
+                 (["/","\\"] (".." | (<PLUGIN_COMP>)+)?)* (".jar" | ".class")>  
 | <#PLUGIN_COMP:  (["a"-"z","A"-"Z","0"-"9","_","-","."])*>
 
   /* seperators */ 

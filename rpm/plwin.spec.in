@@ -23,6 +23,7 @@ plconfig(1) during Pipeline configuration process.
 %files
 
 %defattr(555,root,root)
+@ROOT_INST_DIR@/Windows-x86-Opt/bin/plplugin.bat
 @ROOT_INST_DIR@/Windows-x86-Opt/bin/plremote.bat
 @ROOT_INST_DIR@/Windows-x86-Opt/bin/plscript.bat
 @ROOT_INST_DIR@/Windows-x86-Opt/bin/plscript-batch.bat
@@ -32,6 +33,7 @@ plconfig(1) during Pipeline configuration process.
 
 @ROOT_INST_DIR@/Windows-x86-Opt/sbin/pljobmgr.bat
 
+@ROOT_INST_DIR@/Windows-x86-Debug/bin/plplugin.bat
 @ROOT_INST_DIR@/Windows-x86-Debug/bin/plremote.bat
 @ROOT_INST_DIR@/Windows-x86-Debug/bin/plscript.bat
 @ROOT_INST_DIR@/Windows-x86-Debug/bin/plscript-batch.bat

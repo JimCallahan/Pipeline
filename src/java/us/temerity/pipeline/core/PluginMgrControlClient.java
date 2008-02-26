@@ -1,4 +1,4 @@
-// $Id: PluginMgrControlClient.java,v 1.5 2006/08/20 05:46:51 jim Exp $
+// $Id: PluginMgrControlClient.java,v 1.6 2008/02/26 09:01:59 jim Exp $
   
 package us.temerity.pipeline.core;
 
@@ -94,12 +94,13 @@ class PluginMgrControlClient
     throws PipelineException 
   {
     /* the canonical class directory */ 
-    File cdir = null;
+    Path cdir = null;
     try {
-      cdir = classdir.getCanonicalFile();
-
-      if(!cdir.isDirectory()) 
+      File dir = classdir.getCanonicalFile();
+      if(!dir.isDirectory()) 
 	throw new IOException();
+
+      cdir = new Path(dir);
     }
     catch(IOException ex) {
       throw new PipelineException 
@@ -107,12 +108,13 @@ class PluginMgrControlClient
     }
 
     /* the canonical class file */ 
-    File cfile = null;
+    Path cpath = null;
     try {
-      cfile = pluginfile.getCanonicalFile();
-
-      if(!cfile.isFile()) 
+      File file = pluginfile.getCanonicalFile();
+      if(!file.isFile()) 
 	throw new IOException();
+
+      cpath = new Path(file);
     }
     catch(IOException ex) {
       throw new PipelineException 
@@ -120,25 +122,25 @@ class PluginMgrControlClient
     }
 
     /* the class file relative to the class directory */ 
-    File rfile = null;
+    Path rpath = null;
     {
-      String fpath = cfile.getPath();
-      String dpath = cdir.getPath();
+      String fpath = cpath.toString();
+      String dpath = cdir.toString(); 
 
       if(!fpath.startsWith(dpath)) 
 	throw new PipelineException 
-	  ("The plugin file (" + cfile + ") was not located under the " + 
+	  ("The plugin file (" + cpath + ") was not located under the " + 
 	   "plugin directory (" + cdir + ")!");
       
-      rfile = new File(fpath.substring(dpath.length()));
+      rpath = new Path(fpath.substring(dpath.length()));
     }
 
     /* the Java package name and plugin revision number */ 
     String pkgName = null; 
     VersionID pkgID = null;
     try {
-      File parent = rfile.getParentFile();
-      pkgName = parent.getPath().substring(1).replace('/', '.'); 
+      Path parent = rpath.getParentPath();
+      pkgName = parent.toString().substring(1).replace('/', '.'); 
       
       String vstr = parent.getName();
       if(!vstr.startsWith("v")) 
@@ -156,7 +158,7 @@ class PluginMgrControlClient
     String cname = null;
     boolean isJar = false;
     {
-      String parts[] = cfile.getName().split("\\.");
+      String parts[] = cpath.getName().split("\\.");
       if((parts.length == 2) && (parts[1].equals("class") || parts[1].equals("jar"))) {
 	isJar = parts[1].equals("jar");
 	cname = (pkgName + "." + parts[0]);
@@ -170,6 +172,7 @@ class PluginMgrControlClient
     /* load, instantiate and validate the plugin class or JAR file */ 
     {
       TreeMap<String,byte[]> contents = new TreeMap<String,byte[]>(); 
+      File cfile = cpath.toFile(); 
       if(isJar) {
 	try {
 	  JarInputStream in = new JarInputStream(new FileInputStream(cfile)); 
@@ -203,16 +206,17 @@ class PluginMgrControlClient
 	}
 	catch(IOException ex) {
 	  throw new PipelineException
-	    ("Unable to read the plugin JAR file (" + cfile + ")!");
+	    ("Unable to read the plugin JAR file (" + cpath + ")!");
 	}
 	
 	if(!contents.containsKey(cname)) 
 	  throw new PipelineException
-	    ("The plugin JAR file (" + cfile + ") did not contain the required " + 
+	    ("The plugin JAR file (" + cpath + ") did not contain the required " + 
 	     "plugin class (" + cname + ")!");
       }
       else {
-	byte[] bytes = new byte[(int) cfile.length()];
+        int size = (int) cfile.length();
+	byte[] bytes = new byte[size];
 
 	try {
 	  FileInputStream in = new FileInputStream(cfile);
@@ -221,7 +225,7 @@ class PluginMgrControlClient
 	}
 	catch(IOException ex) {
 	  throw new PipelineException
-	    ("Unable to read the plugin class file (" + cfile + ")!");
+	    ("Unable to read the plugin class file (" + cpath + ")!");
 	}
 
 	contents.put(cname, bytes);
