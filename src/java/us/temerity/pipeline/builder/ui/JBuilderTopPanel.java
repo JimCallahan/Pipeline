@@ -121,10 +121,11 @@ class JBuilderTopPanel
       pFirstPassPanel.setLayout(pFirstPassLayouts);
       pFirstPassPanel.setAlignmentX(LEFT_ALIGNMENT);
       pFirstPassPanel.setAlignmentY(TOP_ALIGNMENT);
-      //Dimension size = new Dimension(JBuilderParamPanel.returnWidth() * 3, 100);
-      //pFirstPassPanel.setMinimumSize(size);
-      //pFirstPassPanel.setPreferredSize(size);
-      //pFirstPassPanel.setMaximumSize(new Dimension(size.width, Integer.MAX_VALUE ));      
+
+      Dimension size = new Dimension(JBuilderParamPanel.returnWidth(), 100);
+      pFirstPassPanel.setMinimumSize(size);
+      pFirstPassPanel.setPreferredSize(size);
+      pFirstPassPanel.setMaximumSize(new Dimension(size.width, Integer.MAX_VALUE ));      
     }
     { 
       pSecondSplitPane.setTopComponent(pFirstPassPanel);
