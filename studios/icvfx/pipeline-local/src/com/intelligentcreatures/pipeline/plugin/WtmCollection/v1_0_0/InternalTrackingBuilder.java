@@ -1,4 +1,4 @@
-// $Id: InternalTrackingBuilder.java,v 1.2 2008/02/25 05:03:07 jesse Exp $
+// $Id: InternalTrackingBuilder.java,v 1.3 2008/02/26 11:34:48 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -301,8 +301,26 @@ class InternalTrackingBuilder
       throws PipelineException
     {
       StageInformation stageInfo = getStageInformation();
-      /* lock the latest version of all of the prerequisites */ 
-      lockNodePrerequitites(); 
+
+      /* stage prerequisites */ 
+      {
+	/* lock the latest version of all of the prerequisites */ 
+	lockNodePrerequisites(); 
+
+	String prereqNodeName = pShotNamer.getInternalTrackingPrereqNode();
+	{
+	  TreeSet<String> sources = new TreeSet<String>();
+	  sources.addAll(pRequiredNodeNames); 
+
+	  TargetStage stage = 
+	    new TargetStage(stageInfo, pContext, pClient, 
+			    prereqNodeName, sources); 
+	  addTaskAnnotation(stage, NodePurpose.Prereq); 
+	  stage.build(); 
+	  addToQueueList(prereqNodeName);
+	  addToCheckInList(prereqNodeName);
+	}
+      }
 
       /* the node network */
       {

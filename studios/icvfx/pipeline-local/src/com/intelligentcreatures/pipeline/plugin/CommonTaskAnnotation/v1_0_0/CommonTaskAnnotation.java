@@ -1,4 +1,4 @@
-// $Id: CommonTaskAnnotation.java,v 1.3 2008/02/11 22:56:30 jim Exp $
+// $Id: CommonTaskAnnotation.java,v 1.4 2008/02/26 11:34:48 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.CommonTaskAnnotation.v1_0_0;
 
@@ -176,6 +176,7 @@ class CommonTaskAnnotation
   
     {
       ArrayList<String> choices = new ArrayList<String>(); 
+      choices.add(aPrereq); 
       choices.add(aEdit); 
       choices.add(aPrepare); 
       choices.add(aFocus); 

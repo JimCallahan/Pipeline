@@ -1,4 +1,4 @@
-// $Id: BaseShotBuilder.java,v 1.3 2008/02/25 05:03:07 jesse Exp $
+// $Id: BaseShotBuilder.java,v 1.4 2008/02/26 11:34:48 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -281,7 +281,7 @@ class BaseShotBuilder
    * Lock the latest version of all of the prerequisite nodes.
    */
   protected void 
-  lockNodePrerequitites() 
+  lockNodePrerequisites() 
     throws PipelineException
   {
     for(String name : pRequiredNodeNames) {

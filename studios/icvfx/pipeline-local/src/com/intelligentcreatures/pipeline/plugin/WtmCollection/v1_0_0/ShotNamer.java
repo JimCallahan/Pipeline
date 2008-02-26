@@ -1,4 +1,4 @@
-// $Id: ShotNamer.java,v 1.15 2008/02/26 09:00:16 jim Exp $
+// $Id: ShotNamer.java,v 1.16 2008/02/26 11:34:49 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -162,6 +162,20 @@ class ShotNamer
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Returns the fully resolved name of the prerequisites node for the HDRI task.
+   */ 
+  public String
+  getHdriPrereqNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.HDRI, NodePurpose.Prereq), 
+			 joinNames(getFullShotName(), "hdri_prereq")); 
+    return path.toString(); 
+  }
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * Returns the fully resolved names of the (3) nodes containing the A series of varying 
    * exposure raw digital images used to construct the single high dynamic range (HDR) 
    * environment map.
@@ -282,6 +296,20 @@ class ShotNamer
   /*   P L A T E S                                                                          */
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * Returns the fully resolved name of the prereq node for the Plates task.
+   */ 
+  public String
+  getPlatesPrereqNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Prereq), 
+			 joinNames(getFullShotName(), "plates_prereq")); 
+    return path.toString(); 
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
   /**
    * Returns the fully resolved node directory path to the parent directory of all existing
    * scanned 2k images for this shot. 
@@ -440,7 +468,7 @@ class ShotNamer
    * Returns the fully resolved name of the submit node for the Plates task.
    */ 
   public String
-  getPlateSubmitNode()
+  getPlatesSubmitNode()
   {
     Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Submit), 
 			 joinNames(getFullShotName(), "plates_submit")); 
@@ -534,7 +562,7 @@ class ShotNamer
    * Returns the fully resolved name of the approve node for the Plates task.
    */ 
   public String
-  getPlateApproveNode()
+  getPlatesApproveNode()
   {
     Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Approve), 
 			 joinNames(getFullShotName(), "plates_approve")); 
@@ -545,6 +573,31 @@ class ShotNamer
 
   /*----------------------------------------------------------------------------------------*/
   /*   T R A C K I N G                                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Returns the fully resolved name of the prerequisites node for the Tracking task.
+   */ 
+  public String
+  getTrackingPrereqNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Prereq), 
+			 joinNames(getFullShotName(), "track_prereq")); 
+    return path.toString(); 
+  }
+  
+  /**
+   * Returns the fully resolved name of the prerequisites node for the InternalTracking task.
+   */ 
+  public String
+  getInternalTrackingPrereqNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Prereq), 
+			 joinNames(getFullShotName(), "internal_track_prereq")); 
+    return path.toString(); 
+  }
+  
+  
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -583,6 +636,19 @@ class ShotNamer
     Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Prepare), 
 			 new Path(AppDirs.Maya.toDirPath(), 
 				  joinNames(getFullShotName(), "verify"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node for the pre-render MEL script used
+   * to render the tracking verification images.
+   */ 
+  public String
+  getTrackingPreRenderScriptNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Prepare), 
+			 new Path(AppDirs.MEL.toDirPath(), 
+				  joinNames(getFullShotName(), "render"))); 
     return path.toString(); 
   }
 
@@ -676,8 +742,23 @@ class ShotNamer
   }
 
 
+
   /*----------------------------------------------------------------------------------------*/
   /*   M A T C H                                                                            */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Returns the fully resolved name of the prerequisites node for the Match task.
+   */ 
+  public String
+  getMatchPrereqNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Match, NodePurpose.Prereq), 
+			 joinNames(getFullShotName(), "match_prereq")); 
+    return path.toString(); 
+  }
+  
+  
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -716,6 +797,19 @@ class ShotNamer
     Path path = new Path(pBasePaths.get(TaskType.Match, NodePurpose.Prepare), 
 			 new Path(AppDirs.Maya.toDirPath(), 
 				  joinNames(getFullShotName(), "match_verify"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node for the pre-render MEL script used
+   * to render the match animation verification images.
+   */ 
+  public String
+  getMatchPreRenderScriptNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Match, NodePurpose.Prepare), 
+			 new Path(AppDirs.MEL.toDirPath(), 
+				  joinNames(getFullShotName(), "render"))); 
     return path.toString(); 
   }
 

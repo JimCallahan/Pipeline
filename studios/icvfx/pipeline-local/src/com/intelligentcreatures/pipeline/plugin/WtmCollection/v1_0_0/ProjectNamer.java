@@ -1,4 +1,4 @@
-// $Id: ProjectNamer.java,v 1.10 2008/02/22 09:22:29 jim Exp $
+// $Id: ProjectNamer.java,v 1.11 2008/02/26 11:34:49 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -208,18 +208,6 @@ class ProjectNamer
   {
     Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Tracking), 
 			 new Path(AppDirs.MEL.toDirPath(), "track_verify_globals"));
-    return path.toString(); 
-  }
-
-  /**
-   * Returns the fully resolved name of the node containing the combined pre-render MEL 
-   * script for the tracking verification test renders.
-   */ 
-  public String
-  getTrackVerifyRenderNode() 
-  {
-    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Tracking), 
-			 new Path(AppDirs.MEL.toDirPath(), "track_verify_render"));
     return path.toString(); 
   }
 

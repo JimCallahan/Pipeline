@@ -1,4 +1,4 @@
-// $Id: PlatesBuilder.java,v 1.18 2008/02/26 09:00:16 jim Exp $
+// $Id: PlatesBuilder.java,v 1.19 2008/02/26 11:34:49 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -499,12 +499,25 @@ class PlatesBuilder
       throws PipelineException
     {
       StageInformation stageInfo = getStageInformation();
-      /* lock the latest version of all of the prerequisites */ 
-      for(String name : pRequiredNodeNames) {
-	if(!nodeExists(name)) 
-	  throw new PipelineException
-	    ("The required prerequisite node (" + name + ") does not exist!"); 
-	lockLatest(name); 
+
+      /* stage prerequisites */ 
+      {
+	/* lock the latest version of all of the prerequisites */ 
+	lockNodePrerequisites(); 
+
+	String prereqNodeName = pShotNamer.getPlatesPrereqNode();
+	{
+	  TreeSet<String> sources = new TreeSet<String>();
+	  sources.addAll(pRequiredNodeNames); 
+
+	  TargetStage stage = 
+	    new TargetStage(stageInfo, pContext, pClient, 
+			    prereqNodeName, sources); 
+	  addTaskAnnotation(stage, NodePurpose.Prereq); 
+	  stage.build(); 
+	  addToQueueList(prereqNodeName);
+	  addToCheckInList(prereqNodeName);
+	}
       }
 
       /* add Edit annotations to all reference images and plates */ 
@@ -616,7 +629,7 @@ class PlatesBuilder
 	  stage.build(); 
 	}
 
-	String submitNodeName = pShotNamer.getPlateSubmitNode();
+	String submitNodeName = pShotNamer.getPlatesSubmitNode();
 	{
 	  TreeSet<String> sources = new TreeSet<String>();
 	  sources.add(gridAlignThumbNodeName);
@@ -714,7 +727,7 @@ class PlatesBuilder
 	  stage.build(); 
 	}
 
-	String approveNodeName = pShotNamer.getPlateApproveNode();
+	String approveNodeName = pShotNamer.getPlatesApproveNode();
 	{
 	  TreeSet<String> sources = new TreeSet<String>();
 	  sources.add(undistorted1kQuickTimeNodeName);

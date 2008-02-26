@@ -1,4 +1,4 @@
-// $Id: MatchBuilder.java,v 1.2 2008/02/25 05:03:07 jesse Exp $
+// $Id: MatchBuilder.java,v 1.3 2008/02/26 11:34:49 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -315,6 +315,7 @@ class MatchBuilder
 
       /* register the required (locked) nodes */ 
       {
+	/* match assets */ 
 	pConstrainRigNodeName = pProjectNamer.getConstrainRigNode(); 
 	pRequiredNodeNames.add(pConstrainRigNodeName); 
 
@@ -324,11 +325,13 @@ class MatchBuilder
 	pMatchPrepNodeName = pProjectNamer.getMatchPrepNode(); 
 	pRequiredNodeNames.add(pMatchPrepNodeName); 
 
-	pTrackVerifyRenderNodeName = pProjectNamer.getTrackVerifyRenderNode(); 
-	pRequiredNodeNames.add(pTrackVerifyRenderNodeName); 
-
+	/* rorschach assets */ 
 	pRorschachTestShadersNodeName = pProjectNamer.getRorschachTestShadersNode(); 
 	pRequiredNodeNames.add(pRorschachTestShadersNodeName); 
+
+	/* misc assets */ 
+	pHideCameraPlaneNodeName = pProjectNamer.getHideCameraPlaneNode(); 
+	pRequiredNodeNames.add(pHideCameraPlaneNodeName); 
       }
     }
     
@@ -355,6 +358,10 @@ class MatchBuilder
     validatePhase() 
       throws PipelineException 
     {
+      /* get the render resolution MEL script */ 
+      pResolutionNodeName = pShotNamer.getResolutionNode(); 
+      pRequiredNodeNames.add(pResolutionNodeName); 
+      
       /* extracted camera/track nodes */ 
       {
 	pExtractedCameraNodeName = pShotNamer.getTrackingExtractedCameraNode();
@@ -410,12 +417,24 @@ class MatchBuilder
     {
       StageInformation stageInfo = getStageInformation();
       
-      /* lock the latest version of all of the prerequisites */ 
-      for(String name : pRequiredNodeNames) {
-	if(!nodeExists(name)) 
-	  throw new PipelineException
-	    ("The required prerequisite node (" + name + ") does not exist!"); 
-	lockLatest(name); 
+      /* stage prerequisites */ 
+      {
+	/* lock the latest version of all of the prerequisites */ 
+	lockNodePrerequisites(); 
+
+	String prereqNodeName = pShotNamer.getMatchPrereqNode();
+	{
+	  TreeSet<String> sources = new TreeSet<String>();
+	  sources.addAll(pRequiredNodeNames); 
+
+	  TargetStage stage = 
+	    new TargetStage(stageInfo, pContext, pClient, 
+			    prereqNodeName, sources); 
+	  addTaskAnnotation(stage, NodePurpose.Prereq); 
+	  stage.build(); 
+	  addToQueueList(prereqNodeName);
+	  addToCheckInList(prereqNodeName);
+	}
       }
 
       /* the submit network */
@@ -453,13 +472,27 @@ class MatchBuilder
 	  stage.build();  
 	}
 
+	String matchPreRenderScriptNodeName = pShotNamer.getMatchPreRenderScriptNode();
+	{
+	  LinkedList<String> sources = new LinkedList<String>(); 
+	  sources.add(pHideCameraPlaneNodeName); 
+	  sources.add(pTrackVerifyGlobalsNodeName); 
+	  sources.add(pResolutionNodeName); 
+
+	  CatMelStage stage = 
+	    new CatMelStage(stageInfo, pContext, pClient, 
+			    matchPreRenderScriptNodeName, sources);
+	  addTaskAnnotation(stage, NodePurpose.Prepare); 
+	  stage.build();  
+	}
+
 	String verifyImagesNodeName = pShotNamer.getMatchVerifyImagesNode(); 
 	{
 	  RenderTaskVerifyStage stage = 
 	    new RenderTaskVerifyStage
 	    (stageInfo, pContext, pClient, 
 	     verifyImagesNodeName, pFrameRange, verifyNodeName, 
-	     "match:prep:cam:camera01", pTrackVerifyRenderNodeName); 
+	     "match:prep:cam:camera01", matchPreRenderScriptNodeName); 
 	  addTaskAnnotation(stage, NodePurpose.Focus); 
 	  stage.build();  
 	}
@@ -484,7 +517,7 @@ class MatchBuilder
 	  stage.build(); 
 	}
 
-	String submitNodeName = pShotNamer.getPlateSubmitNode();
+	String submitNodeName = pShotNamer.getPlatesSubmitNode();
 	{
 	  TreeSet<String> sources = new TreeSet<String>();
 	  sources.add(verifyThumbNodeName);
@@ -586,6 +619,12 @@ class MatchBuilder
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * The fully resolved name of the node containing a MEL script used to set 
+   * render resolutions which match that of the undistorted plates.
+   */ 
+  private String pResolutionNodeName; 
+
+  /**
    * The fully resolved name of the node containing the extracted world space camera 
    * with all tracking animation baked.
    */ 
@@ -634,15 +673,24 @@ class MatchBuilder
   private String pMatchPrepNodeName;
 
   /**
-   * The fully resolved name of the node containing a MEL script which verifies the 
-   * contents of the Maya scene containing tracking data exported from PFTrack.
+   * The fully resolved name of the node containing a MEL script which used to set
+   * the Maya render globals for tracking verification test renders.
    */ 
-  private String pTrackVerifyRenderNodeName;
+  private String pTrackVerifyGlobalsNodeName;  
 
   /**
    * The fully resolved name of the node containing a Maya scene which provides the
    * test shaders used in the tracking verification test renders.
    */ 
   private String pRorschachTestShadersNodeName;
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The fully resolved name of the node containing a MEL script to hide all camera
+   * image planes from view before rendering.
+   */ 
+  private String pHideCameraPlaneNodeName;  
 
 }

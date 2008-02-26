@@ -1,4 +1,4 @@
-// $Id: TrackingBuilder.java,v 1.9 2008/02/25 05:03:07 jesse Exp $
+// $Id: TrackingBuilder.java,v 1.10 2008/02/26 11:34:49 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -239,8 +239,8 @@ class TrackingBuilder
 	pTrackPrepNodeName = pProjectNamer.getTrackPrepNode(); 
 	pRequiredNodeNames.add(pTrackPrepNodeName); 
 
-	pTrackVerifyRenderNodeName = pProjectNamer.getTrackVerifyRenderNode(); 
-	pRequiredNodeNames.add(pTrackVerifyRenderNodeName); 
+	pTrackVerifyGlobalsNodeName = pProjectNamer.getTrackVerifyGlobalsNode(); 
+	pRequiredNodeNames.add(pTrackVerifyGlobalsNodeName); 
 
 	pTrackExtractCameraNodeName = pProjectNamer.getTrackExtractCameraNode(); 
 	pRequiredNodeNames.add(pTrackExtractCameraNodeName); 
@@ -254,6 +254,10 @@ class TrackingBuilder
 
 	pRorschachTestShadersNodeName = pProjectNamer.getRorschachTestShadersNode(); 
 	pRequiredNodeNames.add(pRorschachTestShadersNodeName); 
+
+	/* misc assets */ 
+	pHideCameraPlaneNodeName = pProjectNamer.getHideCameraPlaneNode(); 
+	pRequiredNodeNames.add(pHideCameraPlaneNodeName); 
       }
     }
     
@@ -284,6 +288,10 @@ class TrackingBuilder
     { 
       super.validatePhase(); 
 
+      /* get the render resolution MEL script */ 
+      pResolutionNodeName = pShotNamer.getResolutionNode(); 
+      pRequiredNodeNames.add(pResolutionNodeName); 
+      
       /* lookup the frame range of the shot by looking at the undistorted 2k plates node */ 
       {
 	NodeVersion vsn = pClient.getCheckedInVersion(pUndistorted2kPlateNodeName, null); 
@@ -325,8 +333,26 @@ class TrackingBuilder
       throws PipelineException
     {
       StageInformation stageInfo = getStageInformation();
-      /* lock the latest version of all of the prerequisites */ 
-      lockNodePrerequitites(); 
+
+      /* stage prerequisites */ 
+      {
+	/* lock the latest version of all of the prerequisites */ 
+	lockNodePrerequisites(); 
+
+	String prereqNodeName = pShotNamer.getTrackingPrereqNode();
+	{
+	  TreeSet<String> sources = new TreeSet<String>();
+	  sources.addAll(pRequiredNodeNames); 
+
+	  TargetStage stage = 
+	    new TargetStage(stageInfo, pContext, pClient, 
+			    prereqNodeName, sources); 
+	  addTaskAnnotation(stage, NodePurpose.Prereq); 
+	  stage.build(); 
+	  addToQueueList(prereqNodeName);
+	  addToCheckInList(prereqNodeName);
+	}
+      }
 
       /* the submit network */
       {
@@ -377,13 +403,27 @@ class TrackingBuilder
 	  stage.build();  
 	}
 
+	String trackingPreRenderScriptNodeName = pShotNamer.getTrackingPreRenderScriptNode();
+	{
+	  LinkedList<String> sources = new LinkedList<String>(); 
+	  sources.add(pHideCameraPlaneNodeName); 
+	  sources.add(pTrackVerifyGlobalsNodeName); 
+	  sources.add(pResolutionNodeName); 
+
+	  CatMelStage stage = 
+	    new CatMelStage(stageInfo, pContext, pClient, 
+			    trackingPreRenderScriptNodeName, sources);
+	  addTaskAnnotation(stage, NodePurpose.Prepare); 
+	  stage.build();  
+	}
+
 	String verifyImagesNodeName = pShotNamer.getTrackingVerifyImagesNode(); 
 	{
 	  RenderTaskVerifyStage stage = 
 	    new RenderTaskVerifyStage
 	    (stageInfo, pContext, pClient, 
 	     verifyImagesNodeName, pFrameRange, verifyNodeName, 
-	     "track:camera01", pTrackVerifyRenderNodeName); 
+	     "track:camera01", trackingPreRenderScriptNodeName); 
 	  addTaskAnnotation(stage, NodePurpose.Focus); 
 	  stage.build();  
 	}
@@ -486,6 +526,12 @@ class TrackingBuilder
    */ 
   private FrameRange pFrameRange; 
 
+  /**
+   * The fully resolved name of the node containing a MEL script used to set 
+   * render resolutions which match that of the undistorted plates.
+   */ 
+  private String pResolutionNodeName; 
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -496,10 +542,10 @@ class TrackingBuilder
   private String pTrackPrepNodeName;  
 
   /**
-   * The fully resolved name of the node containing the combined pre-render MEL 
-   * script for the tracking verification test renders.
+   * The fully resolved name of the node containing a MEL script which used to set
+   * the Maya render globals for tracking verification test renders.
    */ 
-  private String pTrackVerifyRenderNodeName;  
+  private String pTrackVerifyGlobalsNodeName;  
 
   /**
    * The fully resolved name of the node for the Maya scene containing 
@@ -543,5 +589,14 @@ class TrackingBuilder
    * test lights used in the tracking verification test renders.
    */ 
   private String pRorschachTestLightsNodeName;  
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The fully resolved name of the node containing a MEL script to hide all camera
+   * image planes from view before rendering.
+   */ 
+  private String pHideCameraPlaneNodeName;  
 
 }

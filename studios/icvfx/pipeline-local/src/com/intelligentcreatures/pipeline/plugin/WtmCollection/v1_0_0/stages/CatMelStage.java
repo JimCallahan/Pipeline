@@ -1,4 +1,4 @@
-// $Id: MayaResolutionStage.java,v 1.2 2008/02/26 11:34:49 jim Exp $
+// $Id: CatMelStage.java,v 1.1 2008/02/26 11:34:49 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
 
@@ -12,16 +12,16 @@ import us.temerity.pipeline.stages.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   M A Y A   R E S O L U T I O N   S T A G E                                              */
+/*   C A T   M E L   S T A G E                                                              */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Creates a node which uses the MayaResolution action
+ * Creates a node which concatenates several MEL scripts together.
  */ 
 public 
-class MayaResolutionStage 
-  extends MELFileStage
-{ 
+class CatMelStage 
+  extends CatFilesStage
+{
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
@@ -41,43 +41,49 @@ class MayaResolutionStage
    * @param nodeName
    *   The name of the node that is to be created.
    * 
-   * @param imageSource
-   *   The name of source image node. 
-   * 
-   * @param ratio 
-   *   The pixel aspect ratio of the source image.
+   * @param sources
+   *   The name of source MEL scripts. 
    */
   public
-  MayaResolutionStage
+  CatMelStage
   (
    StageInformation stageInfo,
    UtilContext context,
    MasterMgrClient client, 
    String nodeName, 
-   String imageSource, 
-   Double ratio
+   LinkedList<String> sources
   )
     throws PipelineException
   {
-    super("MayaResolution", 
-	  "Creates a node which uses the MayaResolution action.", 
+    super("CatMel", 
+	  "Creates a node which concatenates several MEL scripts together.", 
 	  stageInfo, context, client, 
-	  nodeName, 
-	  null, 
-	  new PluginContext("MayaResolution")); 
+	  nodeName, "mel", 
+	  sources); 
+  }
+  
 
-    addLink(new LinkMod(imageSource, LinkPolicy.Dependency));
 
-    addSingleParamValue("ImageSource", imageSource); 
-    addSingleParamValue("PixelAspectRatio", ratio);
+  /*----------------------------------------------------------------------------------------*/
+  /*   O V E R R I D E S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * See {@link BaseStage#getStageFunction()}
+   */
+  @Override
+  public String 
+  getStageFunction()
+  {
+    return StageFunction.aScriptFile;
   }
 
 
-
+   
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
  
-  private static final long serialVersionUID = 6390239619384340286L;
+  private static final long serialVersionUID = -7941261016428850996L;
 
 }
