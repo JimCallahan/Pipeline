@@ -14,6 +14,7 @@ java_DATA = \
   BuildPreMatchStage.java \
   BuildTrackingExtractStage.java \
   BuildTrackingVerifyStage.java \
+  CatMelStage.java \
   DistortedGridStage.java \
   LensInfoStage.java \
   MayaResolutionStage.java \
