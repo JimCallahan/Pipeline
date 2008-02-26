@@ -1,4 +1,4 @@
-// $Id: ShotNamer.java,v 1.14 2008/02/22 09:22:29 jim Exp $
+// $Id: ShotNamer.java,v 1.15 2008/02/26 09:00:16 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -381,7 +381,7 @@ class ShotNamer
 			 new Path(AppDirs.Nuke.toDirPath(), 
 				  joinNames(getFullShotName(), "read_distorted"))); 
     return path.toString(); 
-  }
+  }  
 
   /**
    * Returns the fully resolved name of the node containing a Nuke script fragment 
@@ -517,6 +517,19 @@ class ShotNamer
     return path.toString(); 
   }
   
+  /**
+   * Returns the fully resolved name of the node containing a MEL script used to set 
+   * render resolutions which match that of the undistorted plates.
+   */ 
+  public String
+  getResolutionNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Product), 
+			 new Path(AppDirs.MEL.toDirPath(), 
+				  joinNames(getFullShotName(), "resolution"))); 
+    return path.toString(); 
+  }
+
   /**
    * Returns the fully resolved name of the approve node for the Plates task.
    */ 

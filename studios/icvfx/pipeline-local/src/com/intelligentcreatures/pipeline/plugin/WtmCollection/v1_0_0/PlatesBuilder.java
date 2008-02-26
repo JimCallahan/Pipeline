@@ -1,4 +1,4 @@
-// $Id: PlatesBuilder.java,v 1.17 2008/02/25 05:03:07 jesse Exp $
+// $Id: PlatesBuilder.java,v 1.18 2008/02/26 09:00:16 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -233,6 +233,7 @@ class PlatesBuilder
     //plugins.add(new PluginContext("PFTrackBuild", "ICVFX"));	
     plugins.add(new PluginContext("Touch")); 
     plugins.add(new PluginContext("Copy"));   		
+    plugins.add(new PluginContext("MayaResolution"));  
     plugins.add(new PluginContext("NukeCatComp")); 		
     plugins.add(new PluginContext("NukeExtract"));		
     plugins.add(new PluginContext("NukeQt"));			
@@ -704,12 +705,22 @@ class PlatesBuilder
 	  addTaskAnnotation(vfxShotDataNodeName, NodePurpose.Product);   
 	}
 	
+	String resolutionNodeName = pShotNamer.getResolutionNode();
+	{
+	  MayaResolutionStage stage = 
+	    new MayaResolutionStage(stageInfo, pContext, pClient,
+				    resolutionNodeName, pDistortedGridNodeName, 1.0); 
+	  addTaskAnnotation(stage, NodePurpose.Product); 
+	  stage.build(); 
+	}
+
 	String approveNodeName = pShotNamer.getPlateApproveNode();
 	{
 	  TreeSet<String> sources = new TreeSet<String>();
 	  sources.add(undistorted1kQuickTimeNodeName);
 	  sources.add(vfxRefNodeName);
 	  sources.add(vfxShotDataNodeName);
+	  sources.add(resolutionNodeName);
 
 	  TargetStage stage = 
 	    new TargetStage(stageInfo, pContext, pClient, 

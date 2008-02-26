@@ -16,6 +16,7 @@ java_DATA = \
   BuildTrackingVerifyStage.java \
   DistortedGridStage.java \
   LensInfoStage.java \
+  MayaResolutionStage.java \
   NukeCatCompStage.java \
   NukeCatStage.java \
   NukeExtractStage.java \
