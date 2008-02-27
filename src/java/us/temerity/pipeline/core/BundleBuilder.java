@@ -87,6 +87,22 @@ class BundleBuilder
 
     addSetupPass(new InformationPass());
     addConstructPass(new BuildPass());
+
+    {
+      PassLayoutGroup layout = new PassLayoutGroup("Root", "Root Layout");
+
+      {
+        AdvancedLayoutGroup sub = new AdvancedLayoutGroup("Essentials", true);
+
+        sub.addEntry(1, aUtilContext);
+        sub.addEntry(1, aActionOnExistence);
+        sub.addEntry(1, aReleaseOnError);
+
+        layout.addPass(sub.getName(), sub); 
+      }
+      
+      setLayout(layout);
+    }
   }
   
   
@@ -176,7 +192,7 @@ class BundleBuilder
       throws PipelineException
     {
       pLog.log(LogMgr.Kind.Ops, LogMgr.Level.Fine, 
-        "Starting the build phase in the Build Pass");
+               "Starting the build phase in the Build Pass");
       
       /* unpack the nodes */ 
       for(NodeMod mod : pBundle.getWorkingVersions()) {
@@ -188,7 +204,8 @@ class BundleBuilder
         }
 
         BundleStage stage = 
-          new BundleStage(getStageInformation(), pContext, pClient, mod, annots, pToolsetRemap, 
+          new BundleStage(getStageInformation(), pContext, pClient, 
+                          mod, annots, pToolsetRemap, 
                           pSelectionKeyRemap, pLicenseKeyRemap, pHardwareKeyRemap);
 	stage.build();
 
