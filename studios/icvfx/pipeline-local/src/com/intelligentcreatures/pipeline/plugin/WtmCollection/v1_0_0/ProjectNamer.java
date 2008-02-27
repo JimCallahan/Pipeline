@@ -1,4 +1,4 @@
-// $Id: ProjectNamer.java,v 1.11 2008/02/26 11:34:49 jim Exp $
+// $Id: ProjectNamer.java,v 1.12 2008/02/27 20:22:22 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -254,7 +254,41 @@ class ProjectNamer
     return path.toString(); 
   }
   
-  
+  /**
+   * Returns the fully resolved name of the node containing the MEL script which transfers
+   * animation from a rigged head to the clean non-rigged version.
+   */ 
+  public String
+  getMatchPrebakeNode() 
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Match), 
+			 new Path(AppDirs.MEL.toDirPath(), "match_prebake"));
+    return path.toString(); 
+  }
+    
+  /**
+   * Returns the fully resolved name of the node containing the MEL script which bakes
+   * the rig/tracking animation into the geometry.
+   */ 
+  public String
+  getMatchBakeNode() 
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Match), 
+			 new Path(AppDirs.MEL.toDirPath(), "match_bake"));
+    return path.toString(); 
+  }
+    
+  /**
+   * Returns the fully resolved name of the node containing the MEL script which exports
+   * per-frame OBJ models for use in Houdini.
+   */ 
+  public String
+  getExportMaskObjsNode() 
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Match), 
+			 new Path(AppDirs.MEL.toDirPath(), "export_mask_objs"));
+    return path.toString(); 
+  }
 
   
 
@@ -271,6 +305,18 @@ class ProjectNamer
   {
     Path path = new Path(pBasePaths.get(AssetType.Rorschach, TaskType.Modeling), 
 			 "ror_mdl_verify");
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node containing a Maya scene which provides a
+   * clean unrigged model.
+   */ 
+  public String
+  getRorschachHiresModelNode() 
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Rorschach, TaskType.Modeling), 
+			 "ror_mdl_hires");
     return path.toString(); 
   }
 

@@ -1,4 +1,4 @@
-// $Id: MatchBuilder.java,v 1.5 2008/02/26 20:26:35 jim Exp $
+// $Id: MatchBuilder.java,v 1.6 2008/02/27 20:22:22 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -112,11 +112,6 @@ class MatchBuilder
           "A builder for constructing the nodes associated with the Match task.", 
           mclient, qclient, builderInfo, studioDefs, projectNamer, shotNamer);
 
-    /* initialize fields */ 
-    {
-//       pFinalStages = new ArrayList<FinalizableStage>(); 
-    }
-
     /* setup builder parameters */ 
     {
       /* selects the project, sequence and shot for the task */ 
@@ -193,15 +188,13 @@ class MatchBuilder
   getNeededActions()
   {
     ArrayList<PluginContext> plugins = new ArrayList<PluginContext>();	
-//     plugins.add(new PluginContext("Touch")); 
-//     plugins.add(new PluginContext("Copy"));   		
-//     plugins.add(new PluginContext("NukeCatComp")); 		
-//     plugins.add(new PluginContext("NukeExtract"));		
-//     plugins.add(new PluginContext("NukeQt"));			
-//     plugins.add(new PluginContext("NukeReformat"));		
-//     plugins.add(new PluginContext("NukeRead"));			
-//     plugins.add(new PluginContext("NukeRescale")); 		
-//     plugins.add(new PluginContext("NukeThumbnail"));          
+    plugins.add(new PluginContext("Touch")); 
+    plugins.add(new PluginContext("CatFiles"));	
+    plugins.add(new PluginContext("Composite")); 	
+    plugins.add(new PluginContext("MayaBuild")); 		
+    plugins.add(new PluginContext("MayaMEL")); 			
+    plugins.add(new PluginContext("MayaRender")); 		
+    plugins.add(new PluginContext("NukeThumbnail"));			
 
     MappedArrayList<String, PluginContext> toReturn = 
       new MappedArrayList<String, PluginContext>();
@@ -319,16 +312,28 @@ class MatchBuilder
 	pRequiredNodeNames.add(pTrackVerifyGlobalsNodeName); 
 
 	/* match assets */ 
+	pMatchPrepNodeName = pProjectNamer.getMatchPrepNode(); 
+	pRequiredNodeNames.add(pMatchPrepNodeName); 
+
+	pMatchPrebakeNodeName = pProjectNamer.getMatchPrebakeNode(); 
+	pRequiredNodeNames.add(pMatchPrebakeNodeName); 
+
+	pMatchBakeNodeName = pProjectNamer.getMatchBakeNode(); 
+	pRequiredNodeNames.add(pMatchBakeNodeName); 
+
+	pExportMaskObjsNodeName = pProjectNamer.getExportMaskObjsNode(); 
+	pRequiredNodeNames.add(pExportMaskObjsNodeName); 
+
+	/* rorschach assets */ 
 	pConstrainRigNodeName = pProjectNamer.getConstrainRigNode(); 
 	pRequiredNodeNames.add(pConstrainRigNodeName); 
+
+	pRorschachHiresModelNodeName = pProjectNamer.getRorschachHiresModelNode(); 
+	pRequiredNodeNames.add(pRorschachHiresModelNodeName); 
 
 	pRorschachRigNodeName = pProjectNamer.getRorschachRigNode(); 
 	pRequiredNodeNames.add(pRorschachRigNodeName); 
 
-	pMatchPrepNodeName = pProjectNamer.getMatchPrepNode(); 
-	pRequiredNodeNames.add(pMatchPrepNodeName); 
-
-	/* rorschach assets */ 
 	pRorschachTestShadersNodeName = pProjectNamer.getRorschachTestShadersNode(); 
 	pRequiredNodeNames.add(pRorschachTestShadersNodeName); 
 
@@ -454,11 +459,11 @@ class MatchBuilder
 	  stage.build();  
 	}
 
-	String matchAnimNodeName = pShotNamer.getMatchAnimNode(); 
+	pMatchAnimNodeName = pShotNamer.getMatchAnimNode(); 
 	{
 	  BuildMatchStage stage = 
 	    new BuildMatchStage(stageInfo, pContext, pClient, 
-				matchAnimNodeName, preMatchAnimNodeName, pFrameRange); 
+				pMatchAnimNodeName, preMatchAnimNodeName, pFrameRange); 
 	  addTaskAnnotation(stage, NodePurpose.Edit); 
 	  stage.build(); 
 	  addToDisableList(preMatchAnimNodeName); 	  
@@ -469,7 +474,7 @@ class MatchBuilder
 	  BuildMatchVerifyStage stage = 
 	    new BuildMatchVerifyStage
 	    (stageInfo, pContext, pClient, 
-	     verifyNodeName, matchAnimNodeName, pRorschachTestShadersNodeName, 
+	     verifyNodeName, pMatchAnimNodeName, pRorschachTestShadersNodeName, 
 	     pMatchPrepNodeName, pFrameRange); 
 	  addTaskAnnotation(stage, NodePurpose.Prepare); 
 	  stage.build();  
@@ -537,15 +542,43 @@ class MatchBuilder
 
       /* the approve network */ 
       {
+	String matchPrebakeSceneNodeName = pShotNamer.getMatchPrebakeSceneNode();
+	{
+	  BuildMatchPrebakeStage stage = 
+	    new BuildMatchPrebakeStage(stageInfo, pContext, pClient, 
+				       matchPrebakeSceneNodeName, 
+				       pMatchAnimNodeName, pRorschachHiresModelNodeName, 
+				       pMatchPrebakeNodeName, pFrameRange); 
+	  addTaskAnnotation(stage, NodePurpose.Prepare); 
+	  stage.build(); 
+	}
 
+	String matchGeoCacheNodeName = pShotNamer.getMatchGeoCacheNode();
+	{
+	  MatchGeoCacheStage stage = 
+	    new MatchGeoCacheStage(stageInfo, pContext, pClient, 
+				   matchGeoCacheNodeName, 
+				   matchPrebakeSceneNodeName, pMatchBakeNodeName);
+	  addTaskAnnotation(stage, NodePurpose.Product); 
+	  stage.build(); 
+	}
 
+	String matchMaskGeoNodeName = pShotNamer.getMatchMaskGeoNode();
+	{
+	  MatchMaskGeoStage stage = 
+	    new MatchMaskGeoStage(stageInfo, pContext, pClient, 
+				  matchMaskGeoNodeName, 
+				  matchPrebakeSceneNodeName, pExportMaskObjsNodeName, 
+				  pFrameRange); 
+	  addTaskAnnotation(stage, NodePurpose.Product); 
+	  stage.build(); 
+	}
 
  	String approveNodeName = pShotNamer.getMatchApproveNode();
  	{
  	  TreeSet<String> sources = new TreeSet<String>();
-// 	  sources.add();
-// 	  sources.add();
-// 	  sources.add();
+ 	  sources.add(matchGeoCacheNodeName);
+ 	  sources.add(matchMaskGeoNodeName);
 
  	  TargetStage stage = 
  	    new TargetStage(stageInfo, pContext, pClient, 
@@ -614,9 +647,72 @@ class MatchBuilder
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The stages which require running their finalizeStage() method before check-in.
+   * The fully resolved name of the node containing a MEL script which used to set
+   * the Maya render globals for tracking verification test renders.
    */ 
-//   private ArrayList<FinalizableStage> pFinalStages; 
+  private String pTrackVerifyGlobalsNodeName;  
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The fully resolved name of the node containing the combined MEL scripts to 
+   * attach shaders and verify the match test render Maya scene.
+   */ 
+  private String pMatchPrepNodeName;
+
+  /**
+   * The fully resolved name of the node containing the MEL script which transfers
+   * animation from a rigged head to the clean non-rigged version.
+   */ 
+  private String pMatchPrebakeNodeName;
+
+  /**
+   * The fully resolved name of the node containing the MEL script which bakes
+   * the rig/tracking animation into the geometry.
+   */ 
+  private String pMatchBakeNodeName;
+
+  /**
+   * The fully resolved name of the node containing the MEL script which exports
+   * per-frame OBJ models for use in Houdini.
+   */ 
+  private String pExportMaskObjsNodeName;
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The fully resolved name of the node containing a MEL script used to add head 
+   * and neck constraints to the match rig.
+   */ 
+  private String pConstrainRigNodeName;
+
+  /**
+   * The fully resolved name of the node containing a Maya scene which provides a
+   * clean unrigged model.
+   */ 
+  private String pRorschachHiresModelNodeName;
+
+  /**
+   * The fully resolved name of the node containing the match rig Maya scene.
+   */ 
+  private String pRorschachRigNodeName;
+
+  /**
+   * The fully resolved name of the node containing a Maya scene which provides the
+   * test shaders used in the tracking verification test renders.
+   */ 
+  private String pRorschachTestShadersNodeName;
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The fully resolved name of the node containing a MEL script to hide all camera
+   * image planes from view before rendering.
+   */ 
+  private String pHideCameraPlaneNodeName;  
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -654,41 +750,8 @@ class MatchBuilder
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The fully resolved name of the node containing a MEL script used to add head 
-   * and neck constraints to the match rig.
+   * The fully resolved name of the node for the Maya scene used to perform the 
+   * final head and facial matching animation.
    */ 
-  private String pConstrainRigNodeName;
-
-  /**
-   * The fully resolved name of the node containing the match rig Maya scene.
-   */ 
-  private String pRorschachRigNodeName;
-
-  /**
-   * The fully resolved name of the node containing the combined MEL scripts to 
-   * attach shaders and verify the match test render Maya scene.
-   */ 
-  private String pMatchPrepNodeName;
-
-  /**
-   * The fully resolved name of the node containing a MEL script which used to set
-   * the Maya render globals for tracking verification test renders.
-   */ 
-  private String pTrackVerifyGlobalsNodeName;  
-
-  /**
-   * The fully resolved name of the node containing a Maya scene which provides the
-   * test shaders used in the tracking verification test renders.
-   */ 
-  private String pRorschachTestShadersNodeName;
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * The fully resolved name of the node containing a MEL script to hide all camera
-   * image planes from view before rendering.
-   */ 
-  private String pHideCameraPlaneNodeName;  
-
+  private String pMatchAnimNodeName; 
 }

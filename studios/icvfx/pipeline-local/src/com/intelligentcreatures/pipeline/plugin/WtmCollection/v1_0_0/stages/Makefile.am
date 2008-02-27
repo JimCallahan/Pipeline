@@ -9,6 +9,7 @@ javadir = $(sourceroot)/com/intelligentcreatures/pipeline/plugin/WtmCollection/v
 
 java_DATA = \
   BashCompStage.java \
+  BuildMatchPrebakeStage.java \
   BuildMatchStage.java \
   BuildMatchVerifyStage.java \
   BuildPreMatchStage.java \
@@ -17,6 +18,8 @@ java_DATA = \
   CatMelStage.java \
   DistortedGridStage.java \
   LensInfoStage.java \
+  MatchGeoCacheStage.java \
+  MatchMaskGeoStage.java \
   MayaResolutionStage.java \
   NukeCatCompStage.java \
   NukeCatStage.java \

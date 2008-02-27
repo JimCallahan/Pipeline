@@ -1,4 +1,4 @@
-// $Id: ShotNamer.java,v 1.16 2008/02/26 11:34:49 jim Exp $
+// $Id: ShotNamer.java,v 1.17 2008/02/27 20:22:22 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -865,13 +865,43 @@ class ShotNamer
   
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * Returns the fully resolved name of the node containing the pre-bake Maya scene.
+   */ 
+  public String
+  getMatchPrebakeSceneNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Match, NodePurpose.Prepare), 
+			 new Path(AppDirs.Maya.toDirPath(), 
+				  joinNames(getFullShotName(), "prebake"))); 
+    return path.toString(); 
+  }
 
-
-
-
-
+  /**
+   * Returns the fully resolved name of the node containing the baked geometry 
+   * cache. 
+   */ 
+  public String
+  getMatchGeoCacheNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Match, NodePurpose.Product), 
+			 new Path(AppDirs.Maya.toDirPath(), 
+				  joinNames(getFullShotName(), "geo_cache"))); 
+    return path.toString(); 
+  }
   
-
+  /**
+   * Returns the fully resolved name of the node containing the per-frame baked
+   * OBJ models.
+   */ 
+  public String
+  getMatchMaskGeoNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Match, NodePurpose.Product), 
+			 new Path(AppDirs.Maya.toDirPath(), 
+				  joinNames(getFullShotName(), "mask_geo"))); 
+    return path.toString(); 
+  }
 
   /**
    * Returns the fully resolved name of the approve node for the Match task.
@@ -880,7 +910,7 @@ class ShotNamer
   getMatchApproveNode()
   {
     Path path = new Path(pBasePaths.get(TaskType.Match, NodePurpose.Approve), 
-			 joinNames(getFullShotName(), "track_approve")); 
+			 joinNames(getFullShotName(), "match_approve")); 
     return path.toString(); 
   }
 
