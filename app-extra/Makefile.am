@@ -1,2 +1,4 @@
-SUBDIRS = nuke
+SUBDIRS = \
+  nuke \
+  maya
 
