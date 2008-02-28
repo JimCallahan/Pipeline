@@ -1,4 +1,5 @@
 #!/bin/sh
 
-../../src/pipeline/config/bootstrap.sh jlee 071102 43000 43100
+time ../../src/pipeline/config/bootstrap-suse10.1-32bit.sh \
+  jlee 080223 43000 43100
 
