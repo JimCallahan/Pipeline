@@ -1,26 +1,29 @@
 # import maya
-# maya.cmds.loadPlugin("evalEnvNode.py")
-# maya.cmds.createNode("spEvalEnvNode")
+# maya.cmds.loadPlugin("plEvalEnvNode.py")
+# maya.cmds.createNode("plEvalEnvNode")
 
 import math, sys, os
 
+import maya
 import maya.OpenMaya as OpenMaya
 import maya.OpenMayaMPx as OpenMayaMPx
 
-kPluginNodeTypeName = "spEvalEnvNode"
+kPluginNodeTypeName = "plEvalEnvNode"
+kPluginNodeVendor   = "TemeritySoftware"
+kPluginNodeVersion  = "1.0.0"
 
-evalEnvNodeId = OpenMaya.MTypeId(0x87000)
+plEvalEnvNodeId = OpenMaya.MTypeId(0xffff0)  # FIX THIS!!!!
 
 # Node definition
-class evalEnvNode(OpenMayaMPx.MPxNode):
+class plEvalEnvNode(OpenMayaMPx.MPxNode):
 	# class variables
 	input = OpenMaya.MObject()
 	output = OpenMaya.MObject()
 	def __init__(self):
 		OpenMayaMPx.MPxNode.__init__(self)
 	def compute(self,plug,dataBlock):
-		if ( plug == evalEnvNode.output ):
-			inputHandle = dataBlock.inputValue( evalEnvNode.input )
+		if ( plug == plEvalEnvNode.output ):
+			inputHandle = dataBlock.inputValue( plEvalEnvNode.input )
 
                         inType = inputHandle.type()
                         print('inputHandle.type = ' + str(inType))
@@ -41,7 +44,7 @@ class evalEnvNode(OpenMayaMPx.MPxNode):
                                 expanded = '/'.join(ncomps)
 
                         
-                        outputHandle = dataBlock.outputValue( evalEnvNode.output )
+                        outputHandle = dataBlock.outputValue( plEvalEnvNode.output )
 
                         outType = outputHandle.type()
                         print('outputHandle.type = ' + str(outType))
@@ -56,38 +59,41 @@ class evalEnvNode(OpenMayaMPx.MPxNode):
 
 # creator
 def nodeCreator():
-	return OpenMayaMPx.asMPxPtr( evalEnvNode() )
+        node = plEvalEnvNode()
+	return OpenMayaMPx.asMPxPtr( plEvalEnvNode() ) 
 
 # initializer
 def nodeInitializer():
 	# input
 	nAttr = OpenMaya.MFnTypedAttribute()
-	evalEnvNode.input = nAttr.create( "input", "in", OpenMaya.MFnStringData.kString)
-	nAttr.setStorable(1)
-	# output
-	nAttr = OpenMaya.MFnTypedAttribute()
-        evalEnvNode.output = nAttr.create( "output", "out", OpenMaya.MFnStringData.kString)
+	plEvalEnvNode.input = nAttr.create( "input", "in", OpenMaya.MFnStringData.kString)
 	nAttr.setStorable(1)
 	nAttr.setWritable(1)
+	# output
+	nAttr = OpenMaya.MFnTypedAttribute()
+        plEvalEnvNode.output = nAttr.create( "output", "out", OpenMaya.MFnStringData.kString)
+	nAttr.setStorable(0)
+        nAttr.setWritable(1)
 	# add attributes
-	evalEnvNode.addAttribute( evalEnvNode.input )
-	evalEnvNode.addAttribute( evalEnvNode.output )
-	evalEnvNode.attributeAffects( evalEnvNode.input, evalEnvNode.output )
+	plEvalEnvNode.addAttribute( plEvalEnvNode.input )
+	plEvalEnvNode.addAttribute( plEvalEnvNode.output )
+	plEvalEnvNode.attributeAffects( plEvalEnvNode.input, plEvalEnvNode.output )
+        
 	
 # initialize the script plug-in
 def initializePlugin(mobject):
-	mplugin = OpenMayaMPx.MFnPlugin(mobject)
+	mplugin = OpenMayaMPx.MFnPlugin(mobject, kPluginNodeVendor, kPluginNodeVersion)
 	try:
-		mplugin.registerNode( kPluginNodeTypeName, evalEnvNodeId, nodeCreator, nodeInitializer )
+		mplugin.registerNode( kPluginNodeTypeName, plEvalEnvNodeId, nodeCreator, nodeInitializer )
 	except:
 		sys.stderr.write( "Failed to register node: %s" % kPluginNodeTypeName )
 		raise
 
 # uninitialize the script plug-in
 def uninitializePlugin(mobject):
-	mplugin = OpenMayaMPx.MFnPlugin(mobject)
+	mplugin = OpenMayaMPx.MFnPlugin(mobject, kPluginNodeVendor, kPluginNodeVersion)
 	try:
-		mplugin.deregisterNode( evalEnvNodeId )
+		mplugin.deregisterNode( plEvalEnvNodeId )
 	except:
 		sys.stderr.write( "Failed to deregister node: %s" % kPluginNodeTypeName )
 		raise
