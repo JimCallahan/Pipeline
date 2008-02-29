@@ -12,7 +12,7 @@ kPluginNodeTypeName = "plEvalEnvNode"
 kPluginNodeVendor   = "TemeritySoftware"
 kPluginNodeVersion  = "1.0.0"
 
-plEvalEnvNodeId = OpenMaya.MTypeId(0xffff0)  # FIX THIS!!!!
+plEvalEnvNodeId = OpenMaya.MTypeId(0x00112C40) 
 
 # Node definition
 class plEvalEnvNode(OpenMayaMPx.MPxNode):
