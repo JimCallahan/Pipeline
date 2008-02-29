@@ -9,7 +9,7 @@ AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(Pipeline, 2.4.1b7)
+AM_INIT_AUTOMAKE(Pipeline, 2.4.1b8)
                            
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
@@ -1674,6 +1674,7 @@ AC_CONFIG_FILES([
   
   app-extra/Makefile
   app-extra/nuke/Makefile
+  app-extra/maya/Makefile
 
   docs/Makefile 
   docs/images/Makefile
