@@ -1,4 +1,4 @@
-// $Id: NativeOS.java,v 1.9 2008/02/14 20:26:29 jim Exp $
+// $Id: NativeOS.java,v 1.10 2008/03/02 08:50:10 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -404,23 +404,35 @@ class NativeOS
 	    ("Unable to determine the number of processors:\n" + 
 	     proc.getStdErr());
 	
-	String output[] = proc.getStdOut().split("\\n");
+        String outstr = proc.getStdOut();
+	String output[] = outstr.split("\\n");
 	if(output.length < 1)
 	  throw new IOException
 	    ("Missing output from sysctl(8)!");
 
-	String values[] = output[0].split("\\s");
-	if(values.length < 3)
-	  throw new IOException
-	    ("Missing output from sysctl(8)!");
-
 	try {
-	  load = Float.valueOf(values[0]);
+          String values[] = output[0].split("\\s");
+          switch(values.length) {
+          case 3:
+            load = Float.valueOf(values[0]);
+            break;
+
+          case 5:
+            if(output[0].equals("{") && output[4].equals("}")) 
+              load = Float.valueOf(values[1]);
+            break;
+
+          default:
+            throw new IOException
+              ("Illegal output from sysctl(8):\n" + 
+               outstr);
+          }
 	}
 	catch(NumberFormatException ex) {
 	  throw new IOException
 	    ("Incomprehensible output from sysctl(8):\n" + 
-	     Exceptions.getFullMessage(ex));
+	     outstr + "\n\n" + 
+             Exceptions.getFullMessage(ex));
 	}
       }
       break;
