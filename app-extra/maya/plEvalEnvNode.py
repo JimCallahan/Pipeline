@@ -24,9 +24,7 @@ class plEvalEnvNode(OpenMayaMPx.MPxNode):
 	def compute(self,plug,dataBlock):
 		if ( plug == plEvalEnvNode.output ):
 			inputHandle = dataBlock.inputValue( plEvalEnvNode.input )
-
                         inType = inputHandle.type()
-                        print('inputHandle.type = ' + str(inType))
                         if inType == 4:
                                 inData = inputHandle.data()
                                 inStringData = OpenMaya.MFnStringData(inData)
@@ -43,11 +41,8 @@ class plEvalEnvNode(OpenMayaMPx.MPxNode):
                                                 ncomps.append(comp)
                                 expanded = '/'.join(ncomps)
 
-                        
                         outputHandle = dataBlock.outputValue( plEvalEnvNode.output )
-
                         outType = outputHandle.type()
-                        print('outputHandle.type = ' + str(outType))
                         if outType == 4:
                                 outData = outputHandle.data()
                                 outStringData = OpenMaya.MFnStringData(outData)
@@ -60,18 +55,23 @@ class plEvalEnvNode(OpenMayaMPx.MPxNode):
 # creator
 def nodeCreator():
         node = plEvalEnvNode()
-	return OpenMayaMPx.asMPxPtr( plEvalEnvNode() ) 
+        
+	return OpenMayaMPx.asMPxPtr(node) 
 
 # initializer
 def nodeInitializer():
 	# input
+        strData = OpenMaya.MFnStringData();
+        strObj = strData.create("");
 	nAttr = OpenMaya.MFnTypedAttribute()
-	plEvalEnvNode.input = nAttr.create( "input", "in", OpenMaya.MFnStringData.kString)
+	plEvalEnvNode.input = nAttr.create( "input", "in", OpenMaya.MFnStringData.kString, strObj);
 	nAttr.setStorable(1)
 	nAttr.setWritable(1)
 	# output
+        strData = OpenMaya.MFnStringData();
+        strObj = strData.create("");
 	nAttr = OpenMaya.MFnTypedAttribute()
-        plEvalEnvNode.output = nAttr.create( "output", "out", OpenMaya.MFnStringData.kString)
+        plEvalEnvNode.output = nAttr.create( "output", "out", OpenMaya.MFnStringData.kString, strObj)
 	nAttr.setStorable(0)
         nAttr.setWritable(1)
 	# add attributes
