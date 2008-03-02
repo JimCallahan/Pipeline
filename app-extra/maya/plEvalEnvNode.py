@@ -54,9 +54,7 @@ class plEvalEnvNode(OpenMayaMPx.MPxNode):
 
 # creator
 def nodeCreator():
-        node = plEvalEnvNode()
-        
-	return OpenMayaMPx.asMPxPtr(node) 
+	return OpenMayaMPx.asMPxPtr(plEvalEnvNode()) 
 
 # initializer
 def nodeInitializer():
