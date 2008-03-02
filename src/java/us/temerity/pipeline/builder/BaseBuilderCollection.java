@@ -1,4 +1,4 @@
-// $Id: BaseBuilderCollection.java,v 1.12 2008/02/25 05:03:05 jesse Exp $
+// $Id: BaseBuilderCollection.java,v 1.13 2008/03/02 03:56:26 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -387,7 +387,7 @@ class BaseBuilderCollection
     if (qclient == null)
       qclient = new QueueMgrClient();
     if (info == null)
-      info = new BuilderInformation(true, false, true, false, new MultiMap<String, String>());
+      info = new BuilderInformation(true, true, true, true, new MultiMap<String, String>());
     
     Level opLevel = LogMgr.getInstance().getLevel(Kind.Ops);
     switch(opLevel) {
@@ -407,6 +407,12 @@ class BaseBuilderCollection
           QueueMgrClient.class, 
           BuilderInformation.class);
       BaseBuilder builder = (BaseBuilder) construct.newInstance(mclient, qclient, info);
+      PassLayoutGroup layout = builder.getLayout();
+      if (layout == null)
+        throw new PipelineException
+          ("The instantiated Builder (" + builderName + ") from collection " +
+           "("+ getName() + "), version (" + getVersionID() +") provided by vendor " +
+           "(" + getVendor() + ") does not have a valid layout.");
       return builder;
     }
     catch (NoSuchMethodException ex) {
@@ -433,6 +439,15 @@ class BaseBuilderCollection
          message);
       if (!info.useBuilderLogging() && !info.usingGui())
         throw new PipelineException(message); 
+    }
+    catch (PipelineException ex) {
+      String message = "An error has occured while instantiating the Builder\n" + 
+        ex.getMessage();
+      LogMgr.getInstance().log
+        (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+         message);
+      if (!info.useBuilderLogging() && !info.usingGui())
+        throw ex; 
     }
     catch(Exception ex) {
       String message = Exceptions.getFullMessage

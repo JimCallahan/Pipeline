@@ -5,10 +5,12 @@ import java.awt.event.*;
 import java.util.*;
 
 import javax.swing.*;
+import javax.swing.event.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.builder.execution.GUIExecution.*;
+import us.temerity.pipeline.laf.*;
 import us.temerity.pipeline.ui.*;
 
 /*------------------------------------------------------------------------------------------*/
@@ -20,8 +22,8 @@ import us.temerity.pipeline.ui.*;
  */
 public 
 class JBuilderParamPanel
-  extends JPanel
-  implements ComponentListener, ActionListener
+  extends JTabbedPane
+  implements ComponentListener, ActionListener, ChangeListener
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -33,17 +35,17 @@ class JBuilderParamPanel
   (
     BaseUtil builder,
     int pass,
-    JBuilderDialog parent
+    JBuilderDialog parentDialog
   ) 
     throws PipelineException
   {
     super();
-    this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-    
-    pParent = parent;
+    pParentDialog = parentDialog;
     
     pStorage = new DoubleMap<String, ParamMapping, Component>();
+    pMappedStorage = new DoubleMap<String, ParamMapping, Component>();
     pCompToParam = new ListMap<Component, ParamMapping>();
+    pViewedPanels = new TreeMap<Integer, Boolean>();
     
     pBuilder = builder;
     AdvancedLayoutGroup layout = builder.getPassLayout(pass);
@@ -52,11 +54,10 @@ class JBuilderParamPanel
     layout = compactLayout(layout);
     
     if (layout.hasEntries()) {
-      int numCol = layout.getNumberOfColumns();
-      boolean multiColumn = ( numCol > 1) ? true : false; 
       
       for(int col : layout.getAllColumns()) {
-        Box finalBox = new Box(BoxLayout.Y_AXIS);
+        JPanel finalBox = new JPanel();
+        finalBox.setLayout(new BoxLayout(finalBox, BoxLayout.PAGE_AXIS));
         String columnName = layout.getColumnNameUI(col);
         boolean isOpen = layout.isOpen(col);
         
@@ -87,20 +88,23 @@ class JBuilderParamPanel
           buildSubGroup(params, group, hbox, 1);
           finalBox.add(hbox);
         }
-
+        
         finalBox.add(UIFactory.createFiller(sTSize + sVSize));
+
+        JScrollPane scroll =
+          UIFactory.createVertScrollPane(finalBox);
+          //makeInternalScrollPane(finalBox, new Dimension(sTSize + sVSize + 50, 600));
         
-        JDrawer colDraw = new JDrawer(columnName, finalBox, isOpen);
-        
-        JScrollPane scroll = 
-          makeInternalScrollPane(colDraw, new Dimension(sTSize + sVSize + 50, 100));
-        
-        this.add(scroll);
-        if(multiColumn && col < numCol)
-          this.add(UIFactory.createSidebar());
+        this.addTab(null, sTabIcon, scroll, layout.getDescription());
+        pViewedPanels.put(col, false);
       }
     }
-    this.add(UIFactory.createFiller(5));
+    if (getTabCount() > 0)
+      pViewedPanels.put(1, true);
+    
+    this.setMinimumSize(new Dimension(sTSize + sVSize+50, 500));
+    this.setPreferredSize(new Dimension(sTSize + sVSize+50, 500));
+    this.setMaximumSize(new Dimension(sTSize + sVSize+50, Integer.MAX_VALUE));
   }
   
   @SuppressWarnings("unchecked")
@@ -118,8 +122,15 @@ class JBuilderParamPanel
   ) 
     throws PipelineException
   {
-    if (pMappedParams.contains(mapping))
+    if (pMappedParams.contains(mapping)) {
+      if (rightSortOfParam(bparam)) {
+        Component field = 
+          parameterToComponent(bparam, tpanel, vpanel, tSize, vSize, prefix, "mapped");
+          field.setEnabled(false);
+        pMappedStorage.put(mapping.getParamName(), mapping, field);
+      }      
       return;
+    }
     if (bparam instanceof ComplexParamAccess) {
       ComplexParamAccess<UtilityParam> cparam = (ComplexParamAccess<UtilityParam>) bparam;
       if (prefix == null)
@@ -480,18 +491,31 @@ class JBuilderParamPanel
       comp.setEnabled(false);
   }
   
-  public static int
-  returnWidth()
-  {
-    return sTSize + sVSize + 50;
-  }
-
   public int
   numberOfParameters()
   {
     return pCompToParam.size();
   }
   
+  public boolean
+  allViewed()
+  {
+    for (Boolean val : pViewedPanels.values()) {
+      if (!val )
+        return false;
+    }
+    return true;
+  }
+  
+  /**
+   * Build a new layout group by removing all mapped params from the old
+   * layout group.
+   * 
+   * @param oldGroup
+   *   The old layout group
+   * @return
+   *   The new group with all the mapped params removed.
+   */
   private AdvancedLayoutGroup
   compactLayout
   (
@@ -614,33 +638,27 @@ class JBuilderParamPanel
     this.validate();
   }
 
-
+  /*-- CHANGE LISTENER METHODS -------------------------------------------------------------*/
+  
+  public void 
+  stateChanged
+  (
+    ChangeEvent e
+  )
+  {
+    int selected = this.getModel().getSelectedIndex();
+    if (selected > 0)
+      pViewedPanels.put(selected + 1, true);
+  }
   
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   M E T H O D S                                                          */
   /*----------------------------------------------------------------------------------------*/
 
-  private static JScrollPane
-  makeInternalScrollPane
-  (
-    Component content,
-    Dimension size
-  )
+  public static int
+  returnWidth()
   {
-    JScrollPane scroll = new JScrollPane(content);
-    
-    scroll.setHorizontalScrollBarPolicy
-    			(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-    scroll.setVerticalScrollBarPolicy
-    			(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-    
-    scroll.setMinimumSize(size);
-    scroll.setPreferredSize(size);
-    scroll.setMaximumSize(new Dimension(size.width, Integer.MAX_VALUE ));
-
-    scroll.getViewport().setScrollMode(JViewport.BACKINGSTORE_SCROLL_MODE);
-    
-    return scroll;
+    return sTSize + sVSize + 50;
   }
   
   @SuppressWarnings("unchecked")
@@ -707,5 +725,16 @@ class JBuilderParamPanel
    */
   private Set<ParamMapping> pMappedParams;
   
-  private JBuilderDialog pParent;
+  private TreeMap<Integer, Boolean> pViewedPanels;
+  
+  /**
+   * A map of all the components in a builder pass indexed by the name of the parameters.
+   */
+  private DoubleMap<String, ParamMapping, Component> pMappedStorage;
+  
+  private JBuilderDialog pParentDialog;
+  
+  private static final Icon sTabIcon = 
+    new ImageIcon(LookAndFeelLoader.class.getResource("TabIcon.png"));
+
 }

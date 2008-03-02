@@ -1,4 +1,4 @@
-// $Id: BaseBuilder.java,v 1.47 2008/02/25 06:19:50 jesse Exp $
+// $Id: BaseBuilder.java,v 1.48 2008/03/02 03:56:26 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -486,7 +486,12 @@ class BaseBuilder
     if (subBuilder instanceof BaseNames)
       pSubNames.put(instanceName, (BaseNames) subBuilder);
     else {
-      pSubBuilders.put(instanceName, (BaseBuilder) subBuilder);
+      BaseBuilder sub = (BaseBuilder) subBuilder;
+      PassLayoutGroup layout = sub.getLayout();
+      if (layout == null)
+        throw new PipelineException
+          ("The child Builder (" + subBuilder.getName() + ") does not have a valid layout.");
+      pSubBuilders.put(instanceName, sub);
       pSubBuildersByPass.put(getCurrentPass(), instanceName);
     }
     
