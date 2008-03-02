@@ -22,7 +22,6 @@
 %defattr(444,root,root)
 @ROOT_INST_DIR@/app-extra/nuke/init.tcl
 @ROOT_INST_DIR@/app-extra/maya/plugins/plEvalEnvNode.py
-@ROOT_INST_DIR@/app-extra/maya/plugins/plEvalEnvAttrCmd.py
 
 %changelog
 * @RPM_DATE@ Temerity Support <support@temerity.us>
