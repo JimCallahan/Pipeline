@@ -7,4 +7,5 @@ makefile_DATA = \
 
 
 SUBDIRS = \
-  com
+  com \
+  python

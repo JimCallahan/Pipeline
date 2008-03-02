@@ -1890,6 +1890,7 @@ AC_CONFIG_FILES([
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/Makefile
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/Makefile.local
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/stages/Makefile
+  studios/icvfx/pipeline-local/src/python/Makefile
 
   studios/radar/Makefile
   studios/radar/pipeline-local/.classpath
