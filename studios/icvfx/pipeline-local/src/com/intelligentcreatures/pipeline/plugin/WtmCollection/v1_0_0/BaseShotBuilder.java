@@ -1,4 +1,4 @@
-// $Id: BaseShotBuilder.java,v 1.5 2008/02/27 20:22:22 jim Exp $
+// $Id: BaseShotBuilder.java,v 1.6 2008/03/03 11:18:59 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -152,7 +152,7 @@ class BaseShotBuilder
     setDefaultEditor(ICStageFunction.aSourceImage,   new PluginContext("NukeViewer"));
     setDefaultEditor(ICStageFunction.aNukeScript,    new PluginContext("Nuke"));
     setDefaultEditor(ICStageFunction.aHDRImage,      new PluginContext("XImage")); 
-    setDefaultEditor(ICStageFunction.aQuickTime,     new PluginContext("QuickTime")); 
+    setDefaultEditor(ICStageFunction.aQuickTime,     new PluginContext("DjvView")); 
     setDefaultEditor(ICStageFunction.aObjModel,      new PluginContext("GPlay")); 
     setDefaultEditor(ICStageFunction.aPFTrackScene,  new PluginContext("PFTrack", "ICVFX"));
   }

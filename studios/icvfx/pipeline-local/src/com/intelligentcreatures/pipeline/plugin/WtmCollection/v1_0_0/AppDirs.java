@@ -1,4 +1,4 @@
-// $Id: AppDirs.java,v 1.5 2008/02/19 09:26:36 jim Exp $
+// $Id: AppDirs.java,v 1.6 2008/03/03 11:18:59 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -20,6 +20,11 @@ enum AppDirs
    * Maya scenes. 
    */ 
   Maya, 
+
+  /**
+   * Maya geometry caches. 
+   */ 
+  Cache, 
 
   /**
    * General purpose MEL scripts.

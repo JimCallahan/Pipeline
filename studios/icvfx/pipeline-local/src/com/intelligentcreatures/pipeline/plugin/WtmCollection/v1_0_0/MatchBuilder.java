@@ -1,4 +1,4 @@
-// $Id: MatchBuilder.java,v 1.6 2008/02/27 20:22:22 jim Exp $
+// $Id: MatchBuilder.java,v 1.7 2008/03/03 11:18:59 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -18,8 +18,6 @@ import java.util.*;
 
 /**
  * A builder for constructing the nodes associated with the Match task.<P> 
- * 
- * 
  * 
  * Besides the common parameters shared by all builders, this builder defines the following
  * additional parameters: <BR>
@@ -193,6 +191,8 @@ class MatchBuilder
     plugins.add(new PluginContext("Composite")); 	
     plugins.add(new PluginContext("MayaBuild")); 		
     plugins.add(new PluginContext("MayaMEL")); 			
+    plugins.add(new PluginContext("MayaMakeGeoCache")); 		
+    plugins.add(new PluginContext("MayaObjExport")); 		
     plugins.add(new PluginContext("MayaRender")); 		
     plugins.add(new PluginContext("NukeThumbnail"));			
 
@@ -317,12 +317,6 @@ class MatchBuilder
 
 	pMatchPrebakeNodeName = pProjectNamer.getMatchPrebakeNode(); 
 	pRequiredNodeNames.add(pMatchPrebakeNodeName); 
-
-	pMatchBakeNodeName = pProjectNamer.getMatchBakeNode(); 
-	pRequiredNodeNames.add(pMatchBakeNodeName); 
-
-	pExportMaskObjsNodeName = pProjectNamer.getExportMaskObjsNode(); 
-	pRequiredNodeNames.add(pExportMaskObjsNodeName); 
 
 	/* rorschach assets */ 
 	pConstrainRigNodeName = pProjectNamer.getConstrainRigNode(); 
@@ -557,8 +551,8 @@ class MatchBuilder
 	{
 	  MatchGeoCacheStage stage = 
 	    new MatchGeoCacheStage(stageInfo, pContext, pClient, 
-				   matchGeoCacheNodeName, 
-				   matchPrebakeSceneNodeName, pMatchBakeNodeName);
+				   matchGeoCacheNodeName, matchPrebakeSceneNodeName, 
+                                   "rorHead_GEOShape"); 
 	  addTaskAnnotation(stage, NodePurpose.Product); 
 	  stage.build(); 
 	}
@@ -567,9 +561,8 @@ class MatchBuilder
 	{
 	  MatchMaskGeoStage stage = 
 	    new MatchMaskGeoStage(stageInfo, pContext, pClient, 
-				  matchMaskGeoNodeName, 
-				  matchPrebakeSceneNodeName, pExportMaskObjsNodeName, 
-				  pFrameRange); 
+				  matchMaskGeoNodeName, matchPrebakeSceneNodeName, 
+                                  "rorHead_GEO", pFrameRange); 
 	  addTaskAnnotation(stage, NodePurpose.Product); 
 	  stage.build(); 
 	}
@@ -666,18 +659,6 @@ class MatchBuilder
    * animation from a rigged head to the clean non-rigged version.
    */ 
   private String pMatchPrebakeNodeName;
-
-  /**
-   * The fully resolved name of the node containing the MEL script which bakes
-   * the rig/tracking animation into the geometry.
-   */ 
-  private String pMatchBakeNodeName;
-
-  /**
-   * The fully resolved name of the node containing the MEL script which exports
-   * per-frame OBJ models for use in Houdini.
-   */ 
-  private String pExportMaskObjsNodeName;
 
 
   /*----------------------------------------------------------------------------------------*/

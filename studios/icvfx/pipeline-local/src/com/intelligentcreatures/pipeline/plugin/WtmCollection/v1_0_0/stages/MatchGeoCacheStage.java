@@ -1,4 +1,4 @@
-// $Id: MatchGeoCacheStage.java,v 1.1 2008/02/27 20:22:22 jim Exp $
+// $Id: MatchGeoCacheStage.java,v 1.2 2008/03/03 11:18:59 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
 
@@ -44,8 +44,8 @@ class MatchGeoCacheStage
    * @param prebakeName
    *   The name of the node containing the pre-baked Maya scene.
    * 
-   * @param bakeMEL
-   *   The name of the node containing the geo-cache baking MEL script.
+   * @param geometryName
+   *   The name of the geometry shape node to cache. 
    */
   public
   MatchGeoCacheStage
@@ -55,30 +55,19 @@ class MatchGeoCacheStage
     MasterMgrClient client, 
     String nodeName,
     String prebakeName, 
-    String bakeMEL
+    String geometryName
   ) 
     throws PipelineException
   {
     super("MatchGeoCache", 
       	  "Creates the match animation Maya geometry cache.", 
       	  stageInfo, context, client,
-	  nodeName, "mc", null, new PluginContext("MayaMEL")); 
+	  nodeName, "mc", null, new PluginContext("MayaMakeGeoCache")); 
 
     addLink(new LinkMod(prebakeName, LinkPolicy.Dependency));
     addSingleParamValue("MayaScene", prebakeName); 
-
-    addSingleParamValue("SaveResult", false); 
     
-    MayaContext mayaContext = new MayaContext();
-    if(mayaContext.getLinearUnit() != null)
-      addSingleParamValue("LinearUnits", mayaContext.getLinearUnit());
-    if(mayaContext.getAngularUnit() != null)
-      addSingleParamValue("AngularUnits", mayaContext.getAngularUnit());
-    if(mayaContext.getTimeUnit() != null)
-      addSingleParamValue("TimeUnits", mayaContext.getTimeUnit());
-
-    addLink(new LinkMod(bakeMEL, LinkPolicy.Dependency));
-    addSourceParamValue(bakeMEL, "Order", 100);
+    addSingleParamValue("GeometryName", geometryName); 
   }
 
 

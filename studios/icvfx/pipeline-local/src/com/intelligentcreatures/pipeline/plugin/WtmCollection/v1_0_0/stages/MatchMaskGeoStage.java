@@ -1,4 +1,4 @@
-// $Id: MatchMaskGeoStage.java,v 1.1 2008/02/27 20:22:22 jim Exp $
+// $Id: MatchMaskGeoStage.java,v 1.2 2008/03/03 11:18:59 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
 
@@ -44,8 +44,8 @@ class MatchMaskGeoStage
    * @param prebakeName
    *   The name of the node containing the pre-baked Maya scene.
    * 
-   * @param exportMEL
-   *   The name of the node containing the MEL script to export the OBJ files.
+   * @param exportSet
+   *   The name of the Maya Set (or geometry node) to be exported. 
    * 
    * @param range
    *   The frame range of the exported OBJs.
@@ -58,7 +58,7 @@ class MatchMaskGeoStage
     MasterMgrClient client, 
     String nodeName,
     String prebakeName, 
-    String exportMEL, 
+    String exportSet, 
     FrameRange range 
   ) 
     throws PipelineException
@@ -66,23 +66,12 @@ class MatchMaskGeoStage
     super("MatchMaskGeo", 
       	  "Exports per-frame baked OBJ files of the match animation.", 
       	  stageInfo, context, client,
-	  nodeName, range, 4, "obj", null, new PluginContext("MayaMEL")); 
+	  nodeName, range, 4, "obj", null, new PluginContext("MayaObjExport")); 
 
     addLink(new LinkMod(prebakeName, LinkPolicy.Dependency));
     addSingleParamValue("MayaScene", prebakeName); 
 
-    addSingleParamValue("SaveResult", false); 
-    
-    MayaContext mayaContext = new MayaContext();
-    if(mayaContext.getLinearUnit() != null)
-      addSingleParamValue("LinearUnits", mayaContext.getLinearUnit());
-    if(mayaContext.getAngularUnit() != null)
-      addSingleParamValue("AngularUnits", mayaContext.getAngularUnit());
-    if(mayaContext.getTimeUnit() != null)
-      addSingleParamValue("TimeUnits", mayaContext.getTimeUnit());
-
-    addLink(new LinkMod(exportMEL, LinkPolicy.Dependency));
-    addSourceParamValue(exportMEL, "Order", 100);
+    addSingleParamValue("ExportSet", exportSet); 
   }
 
 

@@ -1,4 +1,4 @@
-// $Id: ShotNamer.java,v 1.17 2008/02/27 20:22:22 jim Exp $
+// $Id: ShotNamer.java,v 1.18 2008/03/03 11:18:59 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -885,7 +885,7 @@ class ShotNamer
   getMatchGeoCacheNode()
   {
     Path path = new Path(pBasePaths.get(TaskType.Match, NodePurpose.Product), 
-			 new Path(AppDirs.Maya.toDirPath(), 
+			 new Path(AppDirs.Cache.toDirPath(), 
 				  joinNames(getFullShotName(), "geo_cache"))); 
     return path.toString(); 
   }
@@ -898,7 +898,7 @@ class ShotNamer
   getMatchMaskGeoNode()
   {
     Path path = new Path(pBasePaths.get(TaskType.Match, NodePurpose.Product), 
-			 new Path(AppDirs.Maya.toDirPath(), 
+			 new Path(AppDirs.Obj.toDirPath(), 
 				  joinNames(getFullShotName(), "mask_geo"))); 
     return path.toString(); 
   }

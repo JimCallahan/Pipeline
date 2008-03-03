@@ -1,4 +1,4 @@
-// $Id: ProjectNamer.java,v 1.12 2008/02/27 20:22:22 jim Exp $
+// $Id: ProjectNamer.java,v 1.13 2008/03/03 11:18:59 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -265,32 +265,8 @@ class ProjectNamer
 			 new Path(AppDirs.MEL.toDirPath(), "match_prebake"));
     return path.toString(); 
   }
-    
-  /**
-   * Returns the fully resolved name of the node containing the MEL script which bakes
-   * the rig/tracking animation into the geometry.
-   */ 
-  public String
-  getMatchBakeNode() 
-  {
-    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Match), 
-			 new Path(AppDirs.MEL.toDirPath(), "match_bake"));
-    return path.toString(); 
-  }
-    
-  /**
-   * Returns the fully resolved name of the node containing the MEL script which exports
-   * per-frame OBJ models for use in Houdini.
-   */ 
-  public String
-  getExportMaskObjsNode() 
-  {
-    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Match), 
-			 new Path(AppDirs.MEL.toDirPath(), "export_mask_objs"));
-    return path.toString(); 
-  }
-
   
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   R O R S C H A C H   A S S E T S                                                      */
