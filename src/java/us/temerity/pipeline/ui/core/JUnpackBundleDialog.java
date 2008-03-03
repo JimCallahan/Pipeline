@@ -1,4 +1,4 @@
-// $Id: JUnpackBundleDialog.java,v 1.6 2007/12/16 06:29:14 jesse Exp $
+// $Id: JUnpackBundleDialog.java,v 1.7 2008/03/03 21:05:32 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -60,7 +60,7 @@ class JUnpackBundleDialog
       pToolsetFields      = new TreeMap<String,JCollectionField>();
       pSelectionKeyFields = new TreeMap<String,JCollectionField>();
       pLicenseKeyFields   = new TreeMap<String,JCollectionField>();
-      pHardwareKeyFields   = new TreeMap<String,JCollectionField>();
+      pHardwareKeyFields  = new TreeMap<String,JCollectionField>();
     }
 
     /* create dialog body components */ 
@@ -88,10 +88,15 @@ class JUnpackBundleDialog
             JPanel vpanel = (JPanel) comps[1];
 
             {
+              Path path = null;
+              synchronized(sStartPathLock) {
+                path = new Path(sStartPath);
+              }
+
               JPathField field = 
                 UIFactory.createTitledPathField
                   (tpanel, "Node Bundle File:", sTSize, 
-                   vpanel, (Path) null, sVSize, 
+                   vpanel, path, sVSize, 
                    "The path to the node bundle file to unpack.");
               pBundleField = field;
 
@@ -265,9 +270,14 @@ class JUnpackBundleDialog
     }  
 
     {
+      Path path = null;
+      synchronized(sStartPathLock) {
+        path = new Path(sStartPath);
+      }
+
       pFileSelectDialog = new JFileSelectDialog(this, "Node Bundle", "Select Node Bundle:", 
                                                 "Node Bundle File:", 100, "Select"); 
-      pFileSelectDialog.setRootDir(new File("/"));
+      pFileSelectDialog.setRootDir(path.toFile()); 
 
       pToolsetCompareDialog = new JToolsetCompareDialog(this);
     }
@@ -483,19 +493,19 @@ class JUnpackBundleDialog
 
     /* rebuild the toolsets drawer */
     updateNameMap(pToolsetBox, pToolsetFields, getToolsetRemap(), 
-                  toolsets, tsets, "toolset", true);
+                  toolsets, defaultToolset, tsets, "toolset", true);
 
     /* rebuild the selection keys drawer */
     updateNameMap(pSelectionKeyBox, pSelectionKeyFields, getSelectionKeyRemap(), 
-                  selectionKeys, skeys, "selection key", false);
+                  selectionKeys, null, skeys, "selection key", false);
     
     /* rebuild the license keys drawer */
     updateNameMap(pLicenseKeyBox, pLicenseKeyFields, getLicenseKeyRemap(), 
-                  licenseKeys, lkeys, "license key", false);
+                  licenseKeys, null, lkeys, "license key", false);
     
     /* rebuild the hardware keys drawer */
     updateNameMap(pHardwareKeyBox, pHardwareKeyFields, getHardwareKeyRemap(), 
-                  hardwareKeys, hkeys, "hardware key", false);
+                  hardwareKeys, null, hkeys, "hardware key", false);
     
     /* whether the bundle is valid */ 
     pConfirmButton.setEnabled((bundlePath != null) && (pNodeBundle != null));
@@ -511,6 +521,7 @@ class JUnpackBundleDialog
    TreeMap<String,JCollectionField> mapFields, 
    TreeMap<String,String> oldRemap, 
    TreeSet<String> localValues, 
+   String localDefault, 
    TreeSet<String> bundledValues, 
    String title, 
    boolean toolsetCompare
@@ -576,6 +587,8 @@ class JUnpackBundleDialog
           field.setSelected(old);
         else if(localValues.contains(name)) 
           field.setSelected(name);
+        else if((localDefault != null) && localValues.contains(localDefault))
+          field.setSelected(localDefault);
 
         mapFields.put(name, field);
           
@@ -645,13 +658,23 @@ class JUnpackBundleDialog
   doBrowse()
   {
     Path bundlePath = pBundleField.getPath();
-    if(bundlePath == null)
-      bundlePath = new Path(PackageInfo.sWorkPath, pAuthor + "/" + pView);
-    pFileSelectDialog.updateTargetFile(bundlePath.toFile());
+    if(bundlePath != null)
+      pFileSelectDialog.updateTargetFile(bundlePath.toFile());
 
     pFileSelectDialog.setVisible(true);
-    if(pFileSelectDialog.wasConfirmed()) 
-      pBundleField.setPath(new Path(pFileSelectDialog.getSelectedFile()));
+    if(pFileSelectDialog.wasConfirmed()) {
+      Path selected = new Path(pFileSelectDialog.getSelectedFile());
+      pBundleField.setPath(selected); 
+
+      if(selected != null) {
+        synchronized(sStartPathLock) {
+          if(selected.toFile().isDirectory()) 
+            sStartPath = selected;
+          else 
+            sStartPath = selected.getParentPath();
+        }
+      }
+    }
     doBundleChanged();
   }
 
@@ -841,6 +864,12 @@ class JUnpackBundleDialog
   private static final int sTSize = 180;
   private static final int sVSize = 240;
   private static final int sNSize = 480;
+
+  /**
+   * The path browsing starts in.
+   */ 
+  private static Object sStartPathLock = new Object(); 
+  private static Path sStartPath = new Path("/"); 
 
 
   /*----------------------------------------------------------------------------------------*/
