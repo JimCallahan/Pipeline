@@ -1,4 +1,4 @@
-// $Id: CpioFileArchiver.java,v 1.1 2007/06/17 15:34:38 jim Exp $
+// $Id: CpioFileArchiver.java,v 1.2 2008/03/04 19:13:51 jim Exp $
 
 package us.temerity.pipeline.plugin.CpioFileArchiver.v2_0_0;
 
@@ -47,7 +47,7 @@ class CpioFileArchiver
 	new DirectoryArchiverParam
 	("ArchiveDirectory", 
 	 "The location where archive files are stored.",
-	 PackageInfo.sTempDir.getPath());
+	 PackageInfo.sTempPath.toString());
       addParam(param);
     }
 
