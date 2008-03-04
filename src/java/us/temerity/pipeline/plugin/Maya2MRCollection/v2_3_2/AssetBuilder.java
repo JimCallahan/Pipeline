@@ -1,4 +1,4 @@
-// $Id: AssetBuilder.java,v 1.3 2008/02/25 05:03:06 jesse Exp $
+// $Id: AssetBuilder.java,v 1.4 2008/03/04 08:15:15 jesse Exp $
 
 package us.temerity.pipeline.plugin.Maya2MRCollection.v2_3_2;
 
@@ -320,7 +320,6 @@ class AssetBuilder
     addConstructPass(build);
     ConstructPass end = new FinalizePass();
     addConstructPass(end);
-    addPassDependency(build, end);
   }
   
   

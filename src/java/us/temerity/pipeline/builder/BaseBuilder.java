@@ -1,4 +1,4 @@
-// $Id: BaseBuilder.java,v 1.48 2008/03/02 03:56:26 jesse Exp $
+// $Id: BaseBuilder.java,v 1.49 2008/03/04 08:15:14 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -327,10 +327,11 @@ class BaseBuilder
     pBuilderInformation = builderInformation;
     pStageInfo = builderInformation.getNewStageInformation();
     pSubBuilders = new TreeMap<String, BaseBuilder>();
+    pOrderedSubBuilders = new TreeMap<Integer, BaseBuilder>();
     pSubNames = new TreeMap<String, BaseNames>();
     pGeneratedNames = new TreeMap<String, BaseNames>();
     pSetupPasses = new ArrayList<SetupPass>();
-    pConstructPasses = new ArrayList<ConstructPass>();
+    pConstructPasses = new ArrayList<BaseConstructPass>();
     pLockBundles = new ArrayList<LockBundle>();
     pSubBuildersByPass = new MappedArrayList<Integer, String>();
     {
@@ -386,6 +387,16 @@ class BaseBuilder
       throw new IllegalArgumentException
         ("There are more passes in the layout than SetupPasses exist for " +
          "builder (" + getName() + ").");
+    try {
+      addConstructPass(new QueueConstructPass());
+      addConstructPass(new CheckInConstructPass());
+    }
+    catch (PipelineException ex) {
+      throw new IllegalStateException
+        ("Problem adding built in Construct Passes to the Builder.  " +
+         "There must be an existing Construct Pass named (CheckInPass) or (QueuePass)." +
+         "This needs to be renamed before continuing.");
+    }
     super.setLayout(layout);
   }
   
@@ -456,16 +467,20 @@ class BaseBuilder
    * @param paramMapping 
    *   A TreeMap containing a set of parameter mappings to make between the child Builder's 
    *   parameters and the parent Builder. 
+   * @param order
+   *   The execution order of the child Builder.  The lower the order, the sooner the child
+   *   Builder will run.
    * @throws PipelineException
    *   If an attempt is made to add a Sub-Builder with the same name as one that already
-   *   exists.
+   *   exists or with an order that is already being used.
    */
   public final void 
   addSubBuilder
   (
     BaseUtil subBuilder,
     boolean defaultMapping,
-    TreeMap<ParamMapping, ParamMapping> paramMapping
+    TreeMap<ParamMapping, ParamMapping> paramMapping,
+    int order
   ) 
     throws PipelineException
   {
@@ -475,6 +490,12 @@ class BaseBuilder
       throw new PipelineException
         ("Cannot add a SubBuilder with the same name ("+ instanceName+") " +
          "as one that already exists.");
+    
+    if (pOrderedSubBuilders.containsKey(order))
+      throw new PipelineException
+        ("Cannot add a child builder with order (" + order + ").  " +
+         "The child Builder (" + pOrderedSubBuilders.get(order).getPrefixedName() + ") " +
+         "already uses that order.");
     
     PrefixedName prefixed = new PrefixedName(getPrefixedName(), instanceName);
     subBuilder.setPrefixedName(prefixed);
@@ -492,6 +513,7 @@ class BaseBuilder
         throw new PipelineException
           ("The child Builder (" + subBuilder.getName() + ") does not have a valid layout.");
       pSubBuilders.put(instanceName, sub);
+      pOrderedSubBuilders.put(order, sub);
       pSubBuildersByPass.put(getCurrentPass(), instanceName);
     }
     
@@ -516,24 +538,31 @@ class BaseBuilder
    *   Should the Sub-Builder be setup with the default parameter mappings.  This means that
    *   all the parameters which are defined as part of the BaseUtil and BaseBuilder will
    *   be mapped from the parent to this child Builder.
+   * @param order
+   *   The execution order of the child Builder.  The lower the order, the sooner the child
+   *   Builder will run.
    * @throws PipelineException
    *   If an attempt is made to add a Sub-Builder with the same name as one that already
-   *   exists.
+   *   exists or with an order that is already being used.
    */
   public final void 
   addSubBuilder
   (
     BaseUtil subBuilder,
-    boolean defaultMapping
+    boolean defaultMapping,
+    int order
   ) 
     throws PipelineException
   {
-    addSubBuilder(subBuilder, defaultMapping, new TreeMap<ParamMapping, ParamMapping>());
+    addSubBuilder(subBuilder, defaultMapping, new TreeMap<ParamMapping, ParamMapping>(), order);
   }
 
   /**
    * Adds a Sub-Builder to the current Builder.
    * <p>
+   * If there are no existing child Builders, it sets a value of 50 for the child Builder's 
+   * order.  If there are other existing child Builders, it adds the Builder to the end of
+   * the execution order, incrementing the largest current order by 50.
    * @param subBuilder
    *   The instance of BaseUtil that is being added as a Sub-Builder. 
    * @throws PipelineException
@@ -547,7 +576,11 @@ class BaseBuilder
   ) 
     throws PipelineException
   {
-    addSubBuilder(subBuilder, true, new TreeMap<ParamMapping, ParamMapping>());
+    
+    int order = 50;
+    if (!pOrderedSubBuilders.isEmpty())
+      order = pOrderedSubBuilders.lastKey() + 50;
+    addSubBuilder(subBuilder, true, new TreeMap<ParamMapping, ParamMapping>(), order);
   }
 
   
@@ -565,6 +598,12 @@ class BaseBuilder
     TreeMap<String, BaseBuilder> toReturn = new TreeMap<String, BaseBuilder>();
     toReturn.putAll(pSubBuilders);
     return toReturn;
+  }
+  
+  public final ArrayList<BaseBuilder>
+  getOrderedSubBuilders()
+  {
+    return new ArrayList<BaseBuilder>(pOrderedSubBuilders.values());
   }
   
   /**
@@ -671,6 +710,9 @@ class BaseBuilder
   
   /**
    * Get all the Setup Passes for the Builder.
+   * 
+   * @return
+   *   An unmodifiable list of passes
    */
   public final List<SetupPass> 
   getSetupPasses()
@@ -680,11 +722,26 @@ class BaseBuilder
   
   /**
    * Get all the Lock Bundles for the Builder.
+   * 
+   * @return
+   *   An unmodifiable list of bundles.
    */
   public final List<LockBundle> 
   getLockBundles()
   {
     return Collections.unmodifiableList(pLockBundles);
+  }
+  
+  /**
+   * Get all the Construct Passes for the Builder.
+   * 
+   * @return
+   *   An unmodifiable list of passes
+   */
+  public final List<BaseConstructPass>
+  getConstructPasses()
+  {
+    return Collections.unmodifiableList(pConstructPasses);
   }
 
   /**
@@ -926,7 +983,7 @@ class BaseBuilder
   public final void
   addConstructPass
   (
-    ConstructPass pass
+    BaseConstructPass pass
   ) 
     throws PipelineException
   {
@@ -937,11 +994,7 @@ class BaseBuilder
         ("Illegal attempt to add a Setup Pass(" + pass.getName() + ") after " +
          "the Builder has been locked.");
     pConstructPasses.add(pass);
-    if (!pBuilderInformation.addConstructPass(pass, this))
-      throw new PipelineException
-        ("The attempt to add the Construct Pass (" + pass.getName() + ") to " +
-         "the Builder identified with (" + this.getPrefixedName() + ") was invalid.  " +
-         "That exact pass already existed in the table");
+    pass.setParentBuilder(this);
     
     pLog.log(Kind.Bld, Level.Fine, 
       "Adding a ConstructPass named (" + pass.getName() + ") to the " +
@@ -966,26 +1019,6 @@ class BaseBuilder
     pLockBundles.add(bundle);
   }
 
-  /**
-   * Creates a dependency between two ConstructPasses.
-   * <p>
-   * The target ConstructPass will not be run until the source ConstructPass has completed.
-   * This allows for Builders to specify the order in which their passes run.
-   * 
-   * @param sourcePass
-   *   The source pass.  This is the pass that will be run first.
-   * @param targetPass
-   *   The Target Pass.  This is the pass that will be run after the source path.
-   */
-  protected final void
-  addPassDependency
-  (
-    ConstructPass sourcePass,
-    ConstructPass targetPass
-  )
-  {
-    pBuilderInformation.addPassDependency(sourcePass, targetPass);
-  }
   
   /**
    * Get a Construct pass with the given name.
@@ -998,14 +1031,14 @@ class BaseBuilder
    * @return
    *   The Construct pass.
    */
-  public ConstructPass
+  public BaseConstructPass
   getConstructPass
   (
     String name  
   )
   {
-    ConstructPass toReturn = null;
-    for (ConstructPass pass : pConstructPasses) {
+    BaseConstructPass toReturn = null;
+    for (BaseConstructPass pass : pConstructPasses) {
       if (pass.getName().equals(name)) {
 	toReturn = pass;
 	break;
@@ -1357,7 +1390,7 @@ class BaseBuilder
     String nodeName
   )
   {
-    pBuilderInformation.addToQueueList(nodeName);
+    pNodesToQueue.add(nodeName);
     pLog.log(Kind.Bld, Level.Finest, 
       "Adding node (" + nodeName + ") to queue list in Builder (" + getPrefixedName() + ").");
   }
@@ -1378,7 +1411,7 @@ class BaseBuilder
     String nodeName
   )
   {
-    pBuilderInformation.removeFromQueueList(nodeName);
+    pNodesToQueue.remove(nodeName);
     pLog.log(Kind.Bld, Level.Finest, 
       "Removing node (" + nodeName + ") from queue list in " +
       "Builder (" + getPrefixedName() + ").");
@@ -1485,7 +1518,7 @@ class BaseBuilder
   protected final void 
   clearQueueList()
   {
-    pBuilderInformation.clearQueueList();
+    pNodesToQueue.clear();
     pLog.log(Kind.Bld, Level.Finest, 
       "Clearing queue list in Builder (" + getPrefixedName() + ").");
   }
@@ -1508,6 +1541,15 @@ class BaseBuilder
   getDisableList()
   {
     return new TreeSet<String>(pNodesToDisable);
+  }
+  
+  /**
+   * Gets the list of all the nodes currently in the queue list.
+   */
+  protected final TreeSet<String> 
+  getQueueList()
+  {
+    return new TreeSet<String>(pNodesToQueue);
   }
 
   /**
@@ -1868,6 +1910,125 @@ class BaseBuilder
   }
   
   /**
+   *  An abstract parent class for Construct Passes.
+   *  <p>
+   *  This allows shared functionality between the different sorts of Construct
+   *  Passes (only one of which is publicly available to users).  It also allows
+   *  users to add their own implementation of Construct Passes, if they want to adjust
+   *  how Builders execute.  It is not advised to attempt to add new Construct Passes that 
+   *  mirror the functionality provided by the {@link ConstructPass} class (creating nodes
+   *  using stages).  There are numerous internal variables that that class manipulates 
+   *  inside the Builder structure to ensure proper behavior that are not accessible from
+   *  outside this class.  
+   */
+  public abstract
+  class BaseConstructPass
+    extends Described
+  {
+    public 
+    BaseConstructPass
+    (
+      String name,
+      String desc
+    )
+    {
+      super(name, desc);
+    }
+    
+    /**
+     * The method that will be called when the Construct Pass is run.
+     * <p>
+     * This needs to be implemented to provide the unique functionality that the 
+     * Construct Pass type will provide.
+     * 
+     * @throws PipelineException
+     *   If an error occurs during execution of the pass.
+     */
+    public abstract void
+    run()
+      throws PipelineException;
+    
+    /**
+     * What phase of execution does this pass represent.
+     * 
+     * @return
+     *   The phase.
+     */
+    public ExecutionPhase
+    getExecutionPhase()
+    {
+      return ExecutionPhase.ConstructPass;
+    }
+    
+    private void
+    setParentBuilder
+    (
+      BaseBuilder parent  
+    )
+    {
+      pParent = parent; 
+    }
+
+    /**
+     * Gets the name of the Builder which created this pass.
+     * 
+     * @return
+     *   The fully prefixed name of the Builder.
+     */
+    public final PrefixedName
+    getParentBuilderName()
+    {
+      return pParent.getPrefixedName();
+    }
+    
+    /**
+     * Gets the Builder which created this pass.
+     * 
+     * @return
+     *   The fully prefixed name of the Builder.
+     */
+    public final BaseBuilder
+    getParentBuilder()
+    {
+      return pParent;
+    }
+    
+    @Override
+    public final String
+    toString()
+    {
+      String message = "";
+      if (pParent != null)
+        message += pParent.getPrefixedName() + " : ";
+      message += getName();
+      
+      return message;
+    }
+    
+    /**
+     * Equals is calculated in the strictest sense of the two objects being the exact same
+     * object.
+     * <p>
+     * This is because it is completely possible for there to be two instances of the same
+     * Builder running (say two Shot Builders which are Sub Builders of a Sequence Builder)
+     * which have the same Construct Passes. From any comparison of parameters, they would be
+     * completely identical. So in order to be able to differentiate between those two, it has
+     * to use the actual equals.
+     */
+    @Override
+    public final boolean
+    equals
+    (
+      Object that
+    )
+    {
+      return this == that; 
+    }
+    
+    private BaseBuilder pParent;
+  }
+  
+  /**
    * A pass which is responsible for building and/or modifying a group of nodes.
    * <p>
    * Construct passes are run after all the {@link SetupPass SetupPasses} have been run.
@@ -1887,7 +2048,7 @@ class BaseBuilder
    */
   public 
   class ConstructPass
-    extends Described
+    extends BaseConstructPass
   {
     public 
     ConstructPass
@@ -1966,6 +2127,7 @@ class BaseBuilder
     /**
      * Executes the stage.
      */
+    @Override
     public final void
     run()
       throws PipelineException
@@ -1986,58 +2148,118 @@ class BaseBuilder
       buildPhase();
     }
     
-    /**
-     * Gets the name of the Builder which created this pass.
-     */
-    public PrefixedName
-    getParentBuilderName()
-    {
-      return pBuilderInformation.getBuilderFromPass(this).getPrefixedName();
-    }
-    
-    /**
-     * Gets the instance of BaseBuilder which created this pass.
-     */
-    private BaseBuilder
-    getParentBuilder()
-    {
-      return pBuilderInformation.getBuilderFromPass(this);
-    }
-    
-    @Override
-    public String
-    toString()
-    {
-      BaseBuilder builder = getParentBuilder();
-      
-      String message = "";
-      if (builder != null)
-	message += builder.getPrefixedName() + " : ";
-      message += getName();
-      
-      return message;
-    }
-    
-    /**
-     * Equals is calculated in the strictest sense of the two objects being the
-     * exact same object.  This is because it is completely possible for there to
-     * be two instances of the same Builder running (say two Shot Builders which are
-     * Sub Builders of a Sequence Builder) which have the same Construct Passes.  From
-     * any comparison of parameters, they would be completely identical.  So in order
-     * to be able to differentiate between those two, it has to use the actual equals. 
-     */
-    @Override
-    public boolean
-    equals
-    (
-      Object that
-    )
-    {
-      return this == that; 
-    }
-    
     private static final long serialVersionUID = 2397375949761850587L;
   }
+  
+  private 
+  class QueueConstructPass
+    extends BaseConstructPass
+  {
+    public 
+    QueueConstructPass()
+    {
+      super("QueuePass", "Pass which will queue all the nodes add to the queue list, wait" +
+      		"for them to finish and then check the networks for correctness.");
+    }
+    
+    @Override
+    public void 
+    run()
+      throws PipelineException
+    {
+      LinkedList<QueueJobGroup> jobs = queueNodes(getQueueList());
+      if (jobs.size() > 0)
+        waitForJobs(jobs);
+      boolean allFinished = areAllFinished(getQueueList());
+      if (!allFinished)
+        throw new PipelineException
+          ("The queue jobs in queue pass (" + toString() + ") did not finish correctly.");
+   }
+    
+    @Override
+    public ExecutionPhase
+    getExecutionPhase()
+    {
+      return ExecutionPhase.Queue;
+    }
+
+    private static final long serialVersionUID = -5972737857562423668L;
+  }
+  
+  private 
+  class CheckInConstructPass
+    extends BaseConstructPass
+  {
+    public 
+    CheckInConstructPass()
+    {
+      super("CheckInPass", 
+            "Pass which checks in all the nodes which were scheduled for checkin");
+    }
+    
+    @Override
+    public void 
+    run()
+      throws PipelineException
+    {
+      if (performCheckIn()) {
+        pLog.log(Kind.Ops, Level.Fine, 
+          "Beginning check-in for builder ("+ getPrefixedName() + ").");
+        checkInNodes(getNodesToCheckIn(), getCheckinLevel(), getCheckInMessage());
+        if (getLockBundles().size() > 0) {
+          pLog.log(Kind.Ops, Level.Fine, 
+            "Locking appropriate nodes for builder ("+ getPrefixedName() + ").");
+          for (LockBundle bundle : getLockBundles()) {
+            for (String node : bundle.getNodesToLock())
+              lockLatest(node);
+            TreeSet<String> neededNodes = new TreeSet<String>(bundle.getNodesToCheckin());
+            boolean finished = queueAndWait(neededNodes);
+            if (!finished)
+              throw new PipelineException("The jobs did not finish correctly");
+            checkInNodes(bundle.getNodesToCheckin(), VersionID.Level.Micro, "The tree is now properly locked.");
+          }
+        }
+      }
+      else
+        pLog.log(Kind.Ops, Level.Fine, 
+          "Check-in was not activated for builder (" + getPrefixedName() + ").");
+    }
+    
+    @Override
+    public ExecutionPhase
+    getExecutionPhase()
+    {
+      return ExecutionPhase.Checkin;
+    }
+    
+    /**
+     * Queue and wait for the specified nodes.
+     * 
+     * @param toQueue
+     *   The list of nodes to queue.
+     * 
+     * @return
+     *   Whether or not all the nodes in a finished state.
+     *   
+     * @throws PipelineException
+     *   If there is an error while waiting for the jobs to finish.
+     */
+    private final boolean
+    queueAndWait
+    (
+      TreeSet<String> toQueue
+    )
+      throws PipelineException
+    {
+      LinkedList<QueueJobGroup> jobs = queueNodes(toQueue);
+      if (jobs.size() > 0)
+        waitForJobs(jobs);
+      return areAllFinished(toQueue);
+    }  
+
+    private static final long serialVersionUID = -8784882749410198882L;
+  }
+
 
   
   
@@ -2075,11 +2297,18 @@ class BaseBuilder
    * A list of nodes which need to be checked in.
    */
   private LinkedList<String> pNodesToCheckIn = new LinkedList<String>();
+  
+  /**
+   * A list of nodes names that need to be queued.
+   */
+  private TreeSet<String> pNodesToQueue = new TreeSet<String>();
 
   /**
    * The list of all associated subBuilders
    */
   private TreeMap<String, BaseBuilder> pSubBuilders;
+  
+  private TreeMap<Integer, BaseBuilder> pOrderedSubBuilders;
   
   private MappedArrayList<Integer, String> pSubBuildersByPass;
   
@@ -2089,7 +2318,7 @@ class BaseBuilder
   
   private ArrayList<SetupPass> pSetupPasses;
   
-  private ArrayList<ConstructPass> pConstructPasses;
+  private ArrayList<BaseConstructPass> pConstructPasses;
   
   private ArrayList<LockBundle> pLockBundles;
 

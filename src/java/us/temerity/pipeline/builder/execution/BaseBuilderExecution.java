@@ -1,4 +1,4 @@
-// $Id: BaseBuilderExecution.java,v 1.1 2008/02/25 05:03:05 jesse Exp $
+// $Id: BaseBuilderExecution.java,v 1.2 2008/03/04 08:15:15 jesse Exp $
 
 package us.temerity.pipeline.builder.execution;
 
@@ -10,7 +10,6 @@ import us.temerity.pipeline.MultiMap.*;
 import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.builder.BaseBuilder.*;
 import us.temerity.pipeline.math.*;
-import us.temerity.pipeline.stages.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   B A S E   B U I L D E R   E X E C U T I O N                                            */
@@ -43,9 +42,11 @@ class BaseBuilderExecution
       throw new PipelineException("The builder param cannot be (null");
     
     pBuilder = builder;
+    pRunningBuilder = null;
+    pRunBuilders = new LinkedList<BaseBuilder>();
     
     pSetupPassQueue = new LinkedList<SetupPassBundle>();
-    pExecutionOrder = new LinkedList<ConstructPass>();
+    pExecutionOrder = new LinkedList<BaseConstructPass>();
     pExecutionOrderNames = new LinkedList<String>();
     
     pLog = LogMgr.getInstance();
@@ -155,7 +156,6 @@ class BaseBuilderExecution
     
     SetupPass pass = bundle.getPass();
     BaseBuilder builder = bundle.getOwningBuilder();
-    BuilderInformation info = builder.getBuilderInformation();
     
     pass.run();
     
@@ -167,9 +167,6 @@ class BaseBuilderExecution
       for (SetupPass initialPass: initialPasses)
         pSetupPassQueue.addFirst(new SetupPassBundle(initialPass, child));
     }
-    
-    if (builder.isSetupFinished())
-      info.addToCheckinList(pBuilder);
   }
   
   /**
@@ -198,62 +195,31 @@ class BaseBuilderExecution
    */
   protected final void
   buildSecondLoopExecutionOrder() 
-    throws PipelineException
   {
     pLog.log(Kind.Bld, Level.Finer, "Building the Second Loop Execution Order.");
-    
-    BuilderInformation info = pBuilder.getBuilderInformation();
-    
-    ArrayList<PassDependency> dependencies = new ArrayList<PassDependency>();
-    
-    Map<ConstructPass, PassDependency> passDependencies = 
-      info.getPassDependencies();
-    
-    for (ConstructPass pass : info.getAllConstructPasses()) {
-      if (!passDependencies.containsKey(pass)) {
-        pExecutionOrder.add(pass);
-        pExecutionOrderNames.add(pass.toString());
-        pLog.log(Kind.Bld, Level.Finest, 
-          "Adding (" + pass.toString() + ") to the execution order.");
-      }
-      else
-        dependencies.add(passDependencies.get(pass));
-    }
-    
-    int number = dependencies.size();
-    while (number > 0) {
-      Iterator<PassDependency> iter = dependencies.iterator();
-      while (iter.hasNext()) {
-        PassDependency pd = iter.next();
-        boolean ready = true; 
-        LinkedList<ConstructPass> depends = pd.getSources();
-        for (ConstructPass depend : depends) {
-          if (!pExecutionOrder.contains(depend)) {
-            ready = false;
-            continue;
-          }
-        }
-        if (ready) {
-          pExecutionOrder.add(pd.getTarget());
-          pExecutionOrderNames.add(pd.getTarget().toString());
-          iter.remove();
-          pLog.log(Kind.Bld, Level.Finest, 
-            "Adding (" + pd.toString() + ") to the execution order.");
-        }
-      }
-      int newNumber = dependencies.size();
-      if (newNumber >= number) {
-        String message = "Unable to proceed, due to conflicts in builder dependencies.  " +
-                         "None of the following passes can be scheduled to run due to " +
-                         "conflicts:\n";
-        for (PassDependency pd : dependencies)
-          message += pd.toString() + "\n"; 
-        throw new PipelineException(message);
-      }
-      number = newNumber;
+    pExecutionOrder = new LinkedList<BaseConstructPass>();
+    for (BaseBuilder subBuilder : pBuilder.getOrderedSubBuilders())
+      collectConstructPasses(subBuilder);
+    for (BaseConstructPass pass : pBuilder.getConstructPasses()) {
+      pExecutionOrder.add(pass);
+      pExecutionOrderNames.add(pass.toString());
     }
   }
   
+  private void 
+  collectConstructPasses
+  (
+    BaseBuilder builder
+  )
+  {
+    for (BaseBuilder subBuilder : builder.getOrderedSubBuilders())
+      collectConstructPasses(subBuilder);
+    for (BaseConstructPass pass : builder.getConstructPasses()) {
+      pExecutionOrder.add(pass);
+      pExecutionOrderNames.add(pass.toString());
+    }
+  }
+
   /**
    * Runs all the ConstructPasses in the order that was determined by
    * {@link #buildSecondLoopExecutionOrder()}.
@@ -265,10 +231,10 @@ class BaseBuilderExecution
   executeSecondLoop()
     throws PipelineException
   {
-    setPhase(ExecutionPhase.ConstructPass);
     pLog.log(Kind.Ops, Level.Fine, "Beginning execution of ConstructPasses.");
-    for (ConstructPass pass : pExecutionOrder)
-      pass.run();
+    while (!pExecutionOrder.isEmpty()) {
+      executeNextConstructPass();
+    }
   }
   
   /**
@@ -278,7 +244,7 @@ class BaseBuilderExecution
    *   The Next ConstructPassto run or <code>null</code> if there are no more Passes
    *   to be run.
    */
-  protected final ConstructPass
+  protected final BaseConstructPass
   peekNextConstructPass()
   {
     return pExecutionOrder.peek();
@@ -293,15 +259,16 @@ class BaseBuilderExecution
   executeNextConstructPass()
     throws PipelineException
   {
-    ConstructPass pass = pExecutionOrder.poll();
+    BaseConstructPass pass = pExecutionOrder.poll();
     if (pass == null)
       throw new PipelineException
         ("A call was made to executeNextConstructPass() when there were no passes " +
          "in the queue to be executed.");
-    if (getPhase() != ExecutionPhase.ConstructPass)
-      throw new PipelineException
-        ("Illegal attempt to execute a Construct Pass when the Builder Executor is not in the " +
-         "appropriate phase.  The current phase is (" + getPhase() + ")");
+    BaseBuilder oldBuilder = pRunningBuilder;
+    pRunningBuilder = pass.getParentBuilder();
+    if (oldBuilder != pRunningBuilder)
+      pRunBuilders.add(oldBuilder);
+    setPhase(pass.getExecutionPhase());
     pass.run();
   }
   
@@ -319,119 +286,28 @@ class BaseBuilderExecution
   }
   
   /**
-   * Queue and wait for all the nodes that all Builders have specified for queuing using the 
-   * {@link #addToQueueList(String)} method.
-   * 
-   * @return
-   *   Whether or not all the nodes in a finished state.
-   *   
-   * @throws PipelineException
-   *   If there is an error while waiting for the jobs to finish.
-   */
-  protected final boolean
-  queueAndWait()
-    throws PipelineException
-  {
-    setPhase(ExecutionPhase.Queue);
-    TreeSet<String> toQueue = pBuilder.getBuilderInformation().getQueueList();
-    return queueAndWait(toQueue);
-  }  
-  
-  /**
-   * Queue and wait for the specified nodes.
-   * 
-   * @param toQueue
-   *   The list of nodes to queue.
-   * 
-   * @return
-   *   Whether or not all the nodes in a finished state.
-   *   
-   * @throws PipelineException
-   *   If there is an error while waiting for the jobs to finish.
-   */
-  protected final boolean
-  queueAndWait
-  (
-    TreeSet<String> toQueue
-  )
-    throws PipelineException
-  {
-    LinkedList<QueueJobGroup> jobs = pBuilder.queueNodes(toQueue);
-    if (jobs.size() > 0)
-      pBuilder.waitForJobs(jobs);
-    return pBuilder.areAllFinished(toQueue);
-  }  
-  
-  /**
-   * Check-in all the nodes that have been mentioned for check-in, then execute any 
-   * Lock Bundles.
-   * <p>
-   * The order used is the order that builders finished their Setup Passes.  So the first
-   * Builder to finish its Setup Passes (a leaf child Builder) will check-in first, while 
-   * the Builder which was initially instantiated will be last.
-   * 
-   * @throws PipelineException
-   *   If there in an error during check-in or if there is an error attempting to execute
-   *   the Lock Bundle.
-   * 
-   */
-  protected final void 
-  executeCheckIn()
-    throws PipelineException
-  {
-    setPhase(ExecutionPhase.Checkin);
-    try {
-      pLog.log(Kind.Ops, Level.Info, "Beginning execution of the check-ins.");
-      BuilderInformation info = pBuilder.getBuilderInformation();
-      for (BaseBuilder builder : info.getCheckinList()) {
-        if (builder.performCheckIn()) {
-          pLog.log(Kind.Ops, Level.Fine, 
-            "Beginning check-in for builder ("+ builder.getPrefixedName() + ").");
-          builder.checkInNodes(builder.getNodesToCheckIn(), builder.getCheckinLevel(), builder.getCheckInMessage());
-          if (builder.getLockBundles().size() > 0) {
-            pLog.log(Kind.Ops, Level.Fine, 
-              "Locking appropriate nodes for builder ("+ builder.getPrefixedName() + ").");
-            for (LockBundle bundle : builder.getLockBundles()) {
-              for (String node : bundle.getNodesToLock())
-                builder.lockLatest(node);
-              TreeSet<String> neededNodes = new TreeSet<String>(bundle.getNodesToCheckin());
-              boolean finished = queueAndWait(neededNodes);
-              if (!finished)
-                throw new PipelineException("The jobs did not finish correctly");
-              builder.checkInNodes(bundle.getNodesToCheckin(), VersionID.Level.Micro, "The tree is now properly locked.");
-            }
-          }
-        }
-        else
-          pLog.log(Kind.Ops, Level.Fine, 
-            "Check-in was not activated for builder (" + builder.getPrefixedName() + ").");
-      }
-      pLog.log(Kind.Ops, Level.Info, "Execution of the check-ins is now finished.");
-    } catch (Exception ex) {
-      handleException(ex);
-    }
-  }
-  
-  
-  /**
    * Releases any registered nodes.
    * <p>
    * This catches and deals with any exceptions that occur while releasing the nodes.  These
-   * are reported in the log, but the exception does not escape. 
+   * are reported in the log, but the exception does not escape.
+   * 
+   * @param builder
+   *   The builder whose nodes need to be released.
    * 
    * @throws PipelineException
    *   May be thrown depending on the behavior of {@link #handleException(Exception)}.
    *   
    */
   protected void
-  releaseNodes()
+  releaseNodes
+  (
+    BaseBuilder builder  
+  )
     throws PipelineException
   {
     try {
       setPhase(ExecutionPhase.Release);
-      BaseStage.cleanUpAddedNodes
-      (pBuilder.getMasterMgrClient(), 
-       pBuilder.getBuilderInformation().getNewStageInformation());
+      builder.releaseNodes();
     }
     catch(Exception ex) {
       handleException(ex);
@@ -646,7 +522,7 @@ class BaseBuilderExecution
    *   Otherwise, returns a boolean depending on whether the attempt at releasing the nodes
    *   was successful.
    */
-  public Boolean
+  protected Boolean
   didNodesReleaseCorrectly()
   {
     return pDidNodesReleaseCorrectly;
@@ -656,6 +532,22 @@ class BaseBuilderExecution
   getBuilder()
   {
     return pBuilder;
+  }
+  
+  protected BaseBuilder
+  getRunningBuilder()
+  {
+    return pRunningBuilder; 
+  }
+  
+  /**
+   * Gets a list of Builders 
+   * @return
+   */
+  protected List<BaseBuilder>
+  getRunBuilders()
+  {
+    return Collections.unmodifiableList(pRunBuilders);
   }
   
   protected synchronized final ExecutionPhase 
@@ -700,13 +592,13 @@ class BaseBuilderExecution
       pOwningBuilder = builder;
     }
     
-    public SetupPass 
+    protected SetupPass 
     getPass()
     {
       return pPass;
     }
     
-    public BaseBuilder 
+    protected BaseBuilder 
     getOwningBuilder()
     {
       return pOwningBuilder;
@@ -730,12 +622,25 @@ class BaseBuilderExecution
   
   private BaseBuilder pBuilder;
   
-  private LinkedList<ConstructPass> pExecutionOrder;
+  private LinkedList<BaseConstructPass> pExecutionOrder;
   private LinkedList<String> pExecutionOrderNames;
   
   private Boolean pDidNodesReleaseCorrectly;
   
+  /**
+   * The currently executing builder
+   */
   private ExecutionPhase pPhase;
+  
+  /**
+   * The currently running builder.
+   */
+  private BaseBuilder pRunningBuilder;
+  
+  /**
+   * List of builders that have already run.
+   */
+  private LinkedList<BaseBuilder> pRunBuilders;
 
   
   

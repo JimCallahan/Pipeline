@@ -1,11 +1,10 @@
-// $Id: BuilderInformation.java,v 1.20 2008/02/25 06:19:50 jesse Exp $
+// $Id: BuilderInformation.java,v 1.21 2008/03/04 08:15:14 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
 import java.util.*;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.builder.BaseBuilder.ConstructPass;
 import us.temerity.pipeline.stages.*;
 
 /*------------------------------------------------------------------------------------------*/
@@ -100,223 +99,7 @@ class BuilderInformation
     pUseBuilderLogging = useBuilderLogging;
     pTerminateAppOnQuit = terminateAppWithGui;
     pCommandLineParams = new MultiMap<String, String>(commandLineParams);
-    pAllConstructPasses = new LinkedList<ConstructPass>();
-    pPassToBuilderMap = new ListMap<ConstructPass, BaseBuilder>();
-    pNodesToQueue = new TreeSet<String>();
-    pCheckInOrder = new LinkedList<BaseBuilder>();
-    pCallHierarchy = new LinkedList<BaseBuilder>();
     pStageState = new StageState();
-    pPassDependencies = new ListMap<ConstructPass, PassDependency>();
-  }
-  
-  
-  
-  /*----------------------------------------------------------------------------------------*/
-  /*   Q U E U E   L I S T                                                                  */
-  /*----------------------------------------------------------------------------------------*/
-  
-  /**
-   * Add a node to the list of things to be queued at the end of the builder run.
-   * <p>
-   * This method is wrapped by the BaseBuilder method 
-   * {@link BaseBuilder#addToQueueList(String) addToQueueList()}.
-   * 
-   * @param nodeName
-   *   The name of the node to add.
-   */
-  public final void 
-  addToQueueList
-  (
-    String nodeName
-  )
-  {
-    pNodesToQueue.add(nodeName);
-  }
-
-  /**
-   * Remove a node from the list of things to be queued at the end of the builder run.
-   * <p>
-   * This method is wrapped by the BaseBuilder method 
-   * {@link BaseBuilder#removeFromQueueList(String) removeFromQueueList()}.
-   * 
-   * @param nodeName
-   *   The name of the node to add.
-   */
-  public final void 
-  removeFromQueueList
-  (
-    String nodeName
-  )
-  {
-    pNodesToQueue.remove(nodeName);
-  }
-  
-  /**
-   * Clear the list of things to be queued at the end of the builder run.
-   *  <p>
-   * This method is wrapped by the BaseBuilder method 
-   * {@link BaseBuilder#clearQueueList() clearQueueList()}.
-   * <p>
-   * This method will affect all Builders.  After it is run, none of the nodes that have been
-   * added to the queue list will actually be queued.  It should only be used in extreme cases.
-   */
-  public final void 
-  clearQueueList()
-  {
-    pNodesToQueue.clear();
-  }
-
-  /**
-   * Returns the list of things to be queued at the end of the builder run.
-   */
-  public final TreeSet<String> 
-  getQueueList()
-  {
-    return new TreeSet<String>(pNodesToQueue);
-  }
-  
-  
-  
-  /*----------------------------------------------------------------------------------------*/
-  /*   C O N S T R U C T   P A S S E S                                                      */
-  /*----------------------------------------------------------------------------------------*/
-  
-  /**
-   * Add a new pass to the list of Construct Passes that will be executed by the Builder.
-   * <p>
-   * This method does not need to be called directly.  Calling 
-   * {@link BaseBuilder#addConstructPass(ConstructPass)} is a better method to call, since it
-   * handles this step as well as other Builder internals.
-   * 
-   * @param pass
-   *   The Construct Pass to add.
-   * 
-   * @param builder
-   *   The Builder which is adding the Construct Pass.  This is needed for doing reverse 
-   *   lookups from Construct Passes back to Builders.
-   * 
-   * @return <code>True</code> if the pass was successfully added or <code>false</code> if 
-   *  there if the pass has been added already.
-   *  
-   *  @see BaseBuilder#addConstructPass(ConstructPass)
-   */
-  public final boolean
-  addConstructPass
-  (
-    ConstructPass pass,
-    BaseBuilder builder
-  )
-  {
-    if (pPassToBuilderMap.containsKey(pass))
-      return false;
-    pPassToBuilderMap.put(pass, builder);
-    pAllConstructPasses.add(pass);
-    return true;
-  }
-  
-  /**
-   * Get the Builder that is associated with a given ConstructPass.
-   * 
-   * @param pass
-   *   The Construct Pass whose creator is being found.
-   * 
-   * @return
-   *   The Builder which created the Construct Pass. 
-   */
-  public final BaseBuilder
-  getBuilderFromPass
-  (
-    ConstructPass pass
-  ) 
-  {
-    return pPassToBuilderMap.get(pass);
-  }
-  
-  /**
-   * Get a list of all the Construct Passes that Builders have created.
-   * @return
-   *   The list of passes.
-   */
-  public final LinkedList<ConstructPass>
-  getAllConstructPasses()
-  {
-    return new LinkedList<ConstructPass>(pAllConstructPasses);
-  }
-  
-  /**
-   * Create a dependency between two ConstructPasses.
-   * <p>
-   * The target ConstructPass will not be run until the source ConstructPass has completed.
-   * This allows for Builders to specify the order in which their passes run.
-   * <p>
-   * This method is wrapped by the 
-   * {@link BaseBuilder#addPassDependency(ConstructPass, ConstructPass)} method for
-   * convenience.  It is irrelevant which one is used.
-   * 
-   * @param sourcePass
-   *   The source Construct Pass which will be run earlier.
-   *   
-   * @param targetPass
-   *   The target Construct pass which will not be run until the source pass has finished.
-   */
-  protected final void
-  addPassDependency
-  (
-    ConstructPass sourcePass,
-    ConstructPass targetPass
-  )
-  {
-    if (pPassDependencies.containsKey(targetPass)) {
-      PassDependency pd = pPassDependencies.get(targetPass);
-      pd.addSource(sourcePass);
-    }
-    else {
-      PassDependency pd = 
-	new PassDependency(targetPass, sourcePass);
-      pPassDependencies.put(targetPass, pd);
-    }
-  }
-  
-  public final Map<ConstructPass, PassDependency>
-  getPassDependencies()
-  {
-    return Collections.unmodifiableMap(pPassDependencies);
-  }
-  
-  
-  
-  /*----------------------------------------------------------------------------------------*/
-  /*   C H E C K - I N   L I S T                                                            */
-  /*----------------------------------------------------------------------------------------*/
-  
-  /**
-   * Add a Builder to the list that controls the order in which nodes are checked-in.
-   * <p>
-   * The addition of Builders to this list is handled internally by Builders and this method
-   * should not be called in user code.
-   * 
-   * @param builder
-   *   The Builder to add.
-   */
-  public void
-  addToCheckinList
-  (
-    BaseBuilder builder
-  )
-  {
-    pCheckInOrder.add(builder);
-  }
-  
-  /**
-   * Get the list of Builders in the order in which they will check-in nodes.
-   * 
-   * @return
-   *   The list of Builders.
-   */
-  public List<BaseBuilder>
-  getCheckinList()
-  {
-    return Collections.unmodifiableList(pCheckInOrder);
   }
   
   
@@ -339,60 +122,6 @@ class BuilderInformation
   getCommandLineParams()
   {
     return pCommandLineParams;
-  }
-  
-  
-  
-  /*----------------------------------------------------------------------------------------*/
-  /*  C A L L   H I E R A R C H Y                                                           */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Used in GUI code to determine how many Builders remain to be called during Setup Pass
-   * execution.
-   * <p>
-   * This method should not be called from user code.
-   * 
-   * @return
-   *   The number of Builders still to run their Setup Passes.
-   */
-  public int
-  getCallHierarchySize()
-  {
-    return pCallHierarchy.size();
-  }
-  
-  /**
-   * Used in GUI code to get the next Builder to run its Setup Passes.
-   * <p>
-   * Calling this method in user code <b>WILL</b> cause Builder execution to behave
-   * incorrectly and should be avoided.
-   * 
-   * @return
-   *   The next Builder.
-   */
-  public BaseBuilder
-  pollCallHierarchy()
-  {
-    return pCallHierarchy.poll();
-  }
-  
-  /**
-   * Adds a Builder to the list of Builders waiting to run their Setup Passes.
-   * <p>
-   * Calling this method in user code <b>WILL</b> cause Builder execution to behave
-   * incorrectly and should be avoided.
-   * 
-   * @param builder
-   *   The Builder to add.
-   */
-  public void
-  addToCallHierarchy
-  (
-    BaseBuilder builder
-  )
-  {
-    pCallHierarchy.addFirst(builder);
   }
   
   
@@ -492,6 +221,11 @@ class BuilderInformation
       pLicenseKeyStack = new LinkedList<TreeSet<String>>();
       pDoAnnotations = false;
       pActionOnExistence = ActionOnExistence.Continue;
+      pAddedNodes = new TreeMap<String, NodeID>();
+      
+      pConformedNodes = new TreeSet<String>();
+      pCheckedOutNodes = new TreeSet<String>();
+      pSkippedNodes = new TreeSet<String>();
     }
 
     
@@ -890,26 +624,41 @@ class BuilderInformation
     /*--------------------------------------------------------------------------------------*/
     
     /**
-     * Clears all added nodes that are currently being kept track of.
-     */
-    public void 
-    initializeAddedNodes()
-    {
-      pStageState.initializeAddedNodes();
-    }
-    
-    /**
      * Gets a list of all the nodes that have been conformed by a stage.
      */
     public TreeSet<String>
-    getConformedNodes()
+    getAllConformedNodes()
     {
       return pStageState.getConformedNodes();
     }
     
     /**
+     * Gets a list of all the nodes that have been conformed by a stage in this builder.
+     */
+    public TreeSet<String>
+    getConformedNodes()
+    {
+      return new TreeSet<String>(pConformedNodes);
+    }
+    
+    /**
      * Gets a list of all the nodes that have been checked out using the
      * {@link BaseStage#checkOut(VersionID, CheckOutMode, CheckOutMethod)} method.
+     * <p>
+     * This does not include nodes that were checked out as part of the neededNode
+     * functionality in Builders.
+     */
+    public TreeSet<String>
+    getAllCheckedOutNodes()
+    {
+      return pStageState.getCheckedOutNodes();
+    }
+    
+
+    /**
+     * Gets a list of all the nodes that have been checked out using the
+     * {@link BaseStage#checkOut(VersionID, CheckOutMode, CheckOutMethod)} method
+     * in the current Builder.
      * <p>
      * This does not include nodes that were checked out as part of the neededNode
      * functionality in Builders.
@@ -917,70 +666,64 @@ class BuilderInformation
     public TreeSet<String>
     getCheckedOutNodes()
     {
-      return pStageState.getCheckedOutNodes();
+      return new TreeSet<String>(pCheckedOutNodes);
     }
     
     /**
-     * Gets a list of all the nodes that have been checked out using the
-     * {@link BaseStage#checkOut(VersionID, CheckOutMode, CheckOutMethod)} method.
-     * <p>
-     * This does not include nodes that were checked out as part of the neededNode
-     * functionality in Builders.
+     * Gets a list of all the nodes that have been skipped by the build() method
+     * of their stage
      */
     public TreeSet<String>
-    getSkippedNodes()
+    getAllSkippedNodes()
     {
       return pStageState.getSkippedNodes();
     }
     
+
     /**
-     * Gets a list that contains the names of all the nodes that have been built by stages.
-     * 
-     * @return The {@link TreeSet} containing the node names.
-     * @see #getAddedNodesUserMap()
-     * @see #getAddedNodesViewMap()
+     * Gets a list of all the nodes in the current Builder that have been skipped 
+     * by the build() method of their stage
      */
-    public TreeSet<String> 
-    getAddedNodes()
+    public TreeSet<String>
+    getSkippedNodes()
+    {
+      return new TreeSet<String>(pSkippedNodes);
+    }
+    
+    /**
+     * Gets a map that contains the NodeIDs of all the nodes that have been built by stages
+     * indexed by node name.
+     * 
+     * @return The map containing the node names.
+     */
+    public TreeMap<String, NodeID> 
+    getAllAddedNodes()
     {
       return pStageState.getAddedNodes();
     }
-
-    /**
-     * Gets a mapping of each added node to the user in whose working area the node was
-     * added.
-     * 
-     * @return The {@link TreeMap} containing the user names.
-     * @see #getAddedNodes()
-     * @see #getAddedNodesViewMap()
-     */
-    public TreeMap<String, String> 
-    getAddedNodesUserMap()
-    {
-      return pStageState.getAddedNodesUserMap();
-    }
-
-    /**
-     * Gets a mapping of each added node to the working area where the node was added.
-     * 
-     * @return The {@link TreeMap} containing the working area names.
-     * @see #getAddedNodes()
-     * @see #getAddedNodesUserMap()
-     */
-    public TreeMap<String, String> 
-    getAddedNodesViewMap()
-    {
-      return pStageState.getAddedNodesViewMap();
-    }
     
+    /**
+     * Gets a map that contains the NodeIDs of all the nodes that have been built by stages in
+     * the current Builder indexed by node name.
+     * 
+     * @return The map containing the node names.
+     */
+    public TreeMap<String, NodeID> 
+    getAddedNodes()
+    {
+      return new TreeMap<String, NodeID>(pAddedNodes);
+    }
+
     /**
      * Adds a node name to the list of nodes created during the session.
      * <P>
      * The method will return a boolean based on whether the node already existed in the
      * current list. A return value of <code>false</code> indicates that the name was not
      * added to the list since it already existed then. A return value of <code>true</code>
-     * indicates that the add was successful.  A PipelineException is thrown if the
-     * <code>initializeAddedNodes</code> method was not called before calling this method.
+     * indicates that the add was successful.
+     * <p>
+     * Note that if another Builder executed in the same invocation has already registered 
+     * the node, it will not be marked as having been created by this Builder.
      * 
      * @param name
      *   The name of the node
@@ -989,7 +732,6 @@ class BuilderInformation
      * @param view
      *   The working area where the node was created.
      * @throws PipelineException
-     * @see #initializeAddedNodes()
      */
     public final boolean 
     addNode
@@ -1000,7 +742,10 @@ class BuilderInformation
     ) 
       throws PipelineException
     {
-      return pStageState.addNode(name, author, view);
+      boolean built = pStageState.addNode(name, author, view);
+      if (built)
+        pAddedNodes.put(name, new NodeID(author, view, name));
+      return built;
     }
     
     /**
@@ -1013,6 +758,7 @@ class BuilderInformation
     )
     {
       pStageState.addCheckedOutNode(name);
+      pCheckedOutNodes.add(name);
     }
     
     /**
@@ -1025,6 +771,7 @@ class BuilderInformation
     )
     {
       pStageState.addSkippedNode(name);
+      pSkippedNodes.add(name);
     }
     
     /**
@@ -1037,6 +784,7 @@ class BuilderInformation
     )
     {
       pStageState.addConformedNode(name);
+      pConformedNodes.add(name);
     }
     
     public PluginContext 
@@ -1180,6 +928,21 @@ class BuilderInformation
     /*   I N T E R N A L S                                                                  */
     /*--------------------------------------------------------------------------------------*/
     
+    /**
+     * A map containing all the NodeIDs for nodes that that have been added by stages in the
+     * current builder, indexed by node name.
+     * <p>
+     * All stages are responsible for ensuring that all created nodes end up in this data
+     * structure.
+     */
+    private TreeMap<String, NodeID> pAddedNodes;
+
+    
+    private TreeSet<String> pConformedNodes;
+    private TreeSet<String> pCheckedOutNodes;
+    private TreeSet<String> pSkippedNodes;
+
+    
     private TreeSet<String> pDefaultSelectionKeys = new TreeSet<String>();
     
     private TreeSet<String> pDefaultLicenseKeys = new TreeSet<String>();
@@ -1209,21 +972,6 @@ class BuilderInformation
   /*  I N T E R N A L S                                                                     */
   /*----------------------------------------------------------------------------------------*/
   
-  /**
-   * A list of all the ConstructPasses 
-   */
-  private LinkedList<ConstructPass> pAllConstructPasses; 
-  
-  /**
-   * A mapping of each ConstructPass to the BaseBuilder that created it.
-   */
-  private ListMap<ConstructPass, BaseBuilder> pPassToBuilderMap; 
-
-  /**
-   * A list of nodes names that need to be queued.
-   */
-  private TreeSet<String> pNodesToQueue;
-  
   private MultiMap<String, String> pCommandLineParams; 
   
   /**
@@ -1237,11 +985,5 @@ class BuilderInformation
   
   private boolean pTerminateAppOnQuit;
   
-  private LinkedList<BaseBuilder> pCheckInOrder;
-  
-  private LinkedList<BaseBuilder> pCallHierarchy;
-  
   private StageState pStageState;
-  
-  private ListMap<ConstructPass, PassDependency> pPassDependencies; 
 }

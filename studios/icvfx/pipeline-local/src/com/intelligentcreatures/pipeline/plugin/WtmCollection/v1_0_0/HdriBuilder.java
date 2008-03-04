@@ -1,4 +1,4 @@
-// $Id: HdriBuilder.java,v 1.4 2008/02/26 13:22:05 jim Exp $
+// $Id: HdriBuilder.java,v 1.5 2008/03/04 08:15:16 jesse Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -159,7 +159,6 @@ class HdriBuilder
       
       ConstructPass qd = new QueueDisablePass(); 
       addConstructPass(qd); 
-      addPassDependency(build, qd);
     }
 
     /* specify the layout of the parameters for each pass in the UI */ 

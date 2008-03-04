@@ -1,13 +1,13 @@
-// $Id: PassDependency.java,v 1.1 2008/02/06 05:11:27 jesse Exp $
+// $Id: PassDependency.java,v 1.2 2008/03/04 08:15:14 jesse Exp $
 
 /**
  * 
  */
 package us.temerity.pipeline.builder;
 
-import java.util.LinkedList;
+import java.util.*;
 
-import us.temerity.pipeline.builder.BaseBuilder.ConstructPass;
+import us.temerity.pipeline.builder.BaseBuilder.*;
 
 public 
 class PassDependency
@@ -15,24 +15,24 @@ class PassDependency
   public
   PassDependency
   (
-    ConstructPass target,
-    LinkedList<ConstructPass> source
+    BaseConstructPass target,
+    LinkedList<BaseConstructPass> source
   )
   {
     pTarget = target;
     if (source != null) {
-      for (ConstructPass pass : source)
+      for (BaseConstructPass pass : source)
         addSource(pass);
     }
     else
-      pSources = new LinkedList<ConstructPass>(); 
+      pSources = new LinkedList<BaseConstructPass>(); 
   }
   
   public
   PassDependency
   (
-    ConstructPass target,
-    ConstructPass source
+    BaseConstructPass target,
+    BaseConstructPass source
   )
   {
     pTarget = target;
@@ -48,13 +48,13 @@ class PassDependency
     return true;
   }
   
-  public ConstructPass 
+  public BaseConstructPass 
   getTarget()
   {
     return pTarget;
   }
 
-  public LinkedList<ConstructPass> 
+  public LinkedList<BaseConstructPass> 
   getSources()
   {
     return pSources;
@@ -63,11 +63,11 @@ class PassDependency
   public void 
   addSource
   (
-    ConstructPass pass
+    BaseConstructPass pass
   )
   {
     if (pSources == null)
-      pSources = new LinkedList<ConstructPass>();
+      pSources = new LinkedList<BaseConstructPass>();
     if (!pSources.contains(pass))
       pSources.add(pass);
   }
@@ -77,7 +77,7 @@ class PassDependency
   toString()
   {
     String message = pTarget.toString() + " Depends on: {";
-    for (ConstructPass pass :  pSources) {
+    for (BaseConstructPass pass :  pSources) {
       message += pass.toString();
       if (!pSources.getLast().equals(pass))
         message += ", ";
@@ -86,6 +86,6 @@ class PassDependency
     return message;
   }
   
-  private ConstructPass pTarget;
-  private LinkedList<ConstructPass> pSources;
+  private BaseConstructPass pTarget;
+  private LinkedList<BaseConstructPass> pSources;
 }

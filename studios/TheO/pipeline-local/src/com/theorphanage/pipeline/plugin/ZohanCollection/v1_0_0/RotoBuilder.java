@@ -172,9 +172,6 @@ class RotoBuilder
       ConstructPass second = new SecondConstructPass();
       addConstructPass(first);
       addConstructPass(second);
-
-      /* makes the second pass dependent on the first*/ 
-      addPassDependency(first, second);
     }
     
     /* setup the default editors */ 

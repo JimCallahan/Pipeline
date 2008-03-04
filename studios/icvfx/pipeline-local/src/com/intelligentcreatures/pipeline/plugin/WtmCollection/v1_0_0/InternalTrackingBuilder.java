@@ -1,4 +1,4 @@
-// $Id: InternalTrackingBuilder.java,v 1.3 2008/02/26 11:34:48 jim Exp $
+// $Id: InternalTrackingBuilder.java,v 1.4 2008/03/04 08:15:16 jesse Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -142,7 +142,6 @@ class InternalTrackingBuilder
 
       ConstructPass qdc = new QueueDisableCleanupPass(); 
       addConstructPass(qdc); 
-      addPassDependency(build, qdc);
     }
 
     /* specify the layout of the parameters for each pass in the UI */ 

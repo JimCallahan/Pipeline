@@ -1,4 +1,4 @@
-// $Id: GUIExecution.java,v 1.3 2008/03/02 03:55:32 jesse Exp $
+// $Id: GUIExecution.java,v 1.4 2008/03/04 08:15:15 jesse Exp $
 
 package us.temerity.pipeline.builder.execution;
 
@@ -7,7 +7,6 @@ import java.util.*;
 
 import javax.swing.*;
 import javax.swing.event.*;
-import javax.swing.tree.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.LogMgr.*;
@@ -48,6 +47,7 @@ class GUIExecution
     throws PipelineException
   {
     super(builder);
+    pRunning = false;
   }
 
   @Override
@@ -60,14 +60,16 @@ class GUIExecution
     ExecutionPhase phase = getPhase();
     if (phase != ExecutionPhase.Release && phase != ExecutionPhase.Error) {
       String header = "An error occured during Builder Execution.";
-      
-      if (getBuilder().releaseOnError()) {
-        if (phase.haveNodesBeenMade())
-          header += "\nAll registered nodes are scheduled to be released and " +
-          	    "will be if Confirm is pressed.";
-        else if (phase.isEndingPhase())
-          header += "\nSince the check-in operation began, the Builder will not attempt to " +
-          "release registered nodes.";
+    
+      if (getRunningBuilder() != null) {
+        if (getRunningBuilder().releaseOnError()) {
+          if (phase.haveNodesBeenMade())
+            header += "\nAll registered nodes are scheduled to be released and " +
+                      "will be if (Yes) is pressed.";
+          else if (phase.isEndingPhase())
+            header += "\nSince the check-in operation has begun, the Builder will not attempt to " +
+                      "release registered nodes.";
+        }
       }
       
       else
@@ -134,8 +136,7 @@ class GUIExecution
     DisableQuit,
     EnableQuit,
     SetupPhaseEnable,
-    ConstructPhaseEnable,
-    CheckInPhaseEnable
+    ConstructPhaseEnable
   }
   
   /**
@@ -161,7 +162,6 @@ class GUIExecution
 
     public void
     initUI()
-    throws PipelineException
     {
       String header = "Node Builder:  " + getBuilder().getNameUI();
       String cancel = "Abort";
@@ -181,7 +181,6 @@ class GUIExecution
 
       pTopPanel.setupListeners();
 
-      /* What does this do?  Why is this here?*/
       if (pTopPanel.allParamsReady())
         setupPhaseEnableButtons();
       else
@@ -189,7 +188,6 @@ class GUIExecution
 
       this.validate();
       this.pack();
-      //this.setSize(getWidth(), 640);
     }
 
 
@@ -207,15 +205,21 @@ class GUIExecution
     }
 
     private void
-    disableQuitButton()
+    disableCancelButton()
     {
       pCancelButton.setEnabled(false);
     }
 
     private void
-    enableQuitButton()
+    enableCancelButton()
     {
       pCancelButton.setEnabled(true); 
+    }
+    
+    private void
+    makeQuitButton()
+    {
+      pCancelButton.setText("Quit"); 
     }
 
     private void
@@ -232,26 +236,6 @@ class GUIExecution
       pNextButton.setEnabled(false);
       pNextActionButton.setEnabled(true);
       pRunAllButton.setEnabled(true);
-    }
-
-    private void
-    queuePhaseEnableButtons()
-    {
-      pNextActionButton.setText("Queue");
-      pNextActionButton.setActionCommand("queue");
-      pNextButton.setEnabled(false);
-      pNextActionButton.setEnabled(true);
-      pRunAllButton.setEnabled(false);
-    }
-
-    private void
-    checkinPhaseEnableButtons()
-    {
-      pNextActionButton.setText("Finalize");
-      pNextActionButton.setActionCommand("check-in");
-      pNextButton.setEnabled(false);
-      pNextActionButton.setEnabled(true);
-      pRunAllButton.setEnabled(false);
     }
 
 
@@ -297,10 +281,6 @@ class GUIExecution
         runAllPasses();
       else if(cmd.equals("cancel")) 
         doCancel();
-      else if(cmd.equals("queue"))
-        doQueue();
-      else if(cmd.equals("check-in"))
-        doCheckin();
     }
 
     /*-- TREE SELECTION LISTENER METHODS ---------------------------------------------------*/
@@ -325,6 +305,7 @@ class GUIExecution
     public void 
     stateChanged
     (
+      @SuppressWarnings("unused")
       ChangeEvent e
     )
     {
@@ -350,10 +331,12 @@ class GUIExecution
         quit(0);
       else if (phase == ExecutionPhase.SetupPass || phase == ExecutionPhase.Error)
         quit(1);
-      else if (phase == ExecutionPhase.Queue || phase == ExecutionPhase.Checkin)
+      else if (!pRunning)
         handleException(new PipelineException("Execution halted by user!"));
-      else
+      else {
+        disableCancelButton();
         pAbort = true;
+      }
     }
 
     /**
@@ -402,45 +385,6 @@ class GUIExecution
       }
     }
 
-    private void
-    doQueue()
-    {
-      disableAllButtons();
-      new QueueThread().start();
-    }
-
-    private void
-    doCheckin()
-    {
-      disableAllButtons();
-      pCancelButton.setText("Quit");
-      new CheckinTask().start();
-    }
-
-    public void
-    afterQueue
-    (
-      boolean didJobsFinish
-    )
-    {
-      if (didJobsFinish) {
-        checkinPhaseEnableButtons();
-        enableQuitButton();
-      }
-      else
-        handleException(new PipelineException("The jobs did not complete successfully."));
-      //TODO this should really be another handler that allows you to retry queuing or try the afterQueue method again.
-
-    }
-
-    private void
-    queuePrep()
-    {
-      LogMgr.getInstance().logAndFlush(Kind.Ops, Level.Info, "Node Construction is now complete.");
-      queuePhaseEnableButtons();
-      disableQuitButton();
-    }
-
     private
     class AdjustButtonsTask
     extends Thread
@@ -459,9 +403,6 @@ class GUIExecution
       run()
       {
         switch(pButtonState) {
-        case CheckInPhaseEnable:
-          checkinPhaseEnableButtons();
-          break;
         case ConstructPhaseEnable:
           constructPhaseEnableButtons();
           break;
@@ -469,10 +410,10 @@ class GUIExecution
           disableAllButtons();
           break;
         case DisableQuit:
-          disableQuitButton();
+          disableCancelButton();
           break;
         case EnableQuit:
-          enableQuitButton();
+          enableCancelButton();
           break;
         case SetupPhaseEnable:
           setupPhaseEnableButtons();
@@ -495,7 +436,6 @@ class GUIExecution
           initNextSetupPass();
           SetupPassBundle bundle = peekNextSetupPass();
           pTopPanel.addNextSetupPass(bundle.getPass(), bundle.getOwningBuilder());
-          // TODO figure out what I'm doing here.
           if (pTopPanel.allParamsReady())
             setupPhaseEnableButtons();
           else
@@ -519,13 +459,12 @@ class GUIExecution
         {
           if (pAbort)
             throw new PipelineException("Execution halted by user!");
-          pRunning = false;
           if (peekNextConstructPass() != null) {
             pTopPanel.makeNextActive();
             constructPhaseEnableButtons();
           }
           else
-            queuePrep();
+            SwingUtilities.invokeLater(new FinishedTask());
         }
         catch (Exception ex) {
           handleException(ex);
@@ -533,27 +472,17 @@ class GUIExecution
       }
     }
 
-    private class 
-    AfterQueueTask
-    extends Thread
-    {
-      @Override
-      public void 
-      run()
-      {
-        afterQueue(pJobsFinishedCorrectly); 
-      }
-    }
-
     private
-    class AfterCheckinTask
+    class FinishedTask
     extends Thread
     {
       @Override
       public void
       run()
       {
+        setPhase(ExecutionPhase.Finished);
         disableAllButtons();
+        makeQuitButton();
         pLog.logAndFlush(Kind.Ops, Level.Info, "Execution is now complete");
       }
     }
@@ -594,28 +523,11 @@ class GUIExecution
     }
 
     private
-    class AfterAllConstructPassTask
-    extends Thread
-    {
-      @Override
-      public void 
-      run()
-      {
-        try {
-          queuePrep();
-          doQueue();
-        }
-        catch (Exception ex) {
-          handleException(ex);
-        }
-      }
-    }
-
-    private
     class AskAboutReleaseTask
     extends Thread
     {
-      private AskAboutReleaseTask
+      private 
+      AskAboutReleaseTask
       (
         String message  
       )
@@ -629,11 +541,14 @@ class GUIExecution
       {
         try {
           disableAllButtons();
-          pCancelButton.setText("Quit");
-          JConfirmDialog dialog = new JConfirmDialog(pDialog, "Release Nodes", pMessage);
+          makeQuitButton();
+          JConfirmDialog dialog = 
+            new JConfirmDialog(pDialog, "Release Nodes", pMessage);
           dialog.setVisible(true);
-          if (dialog.wasConfirmed())
+          if (dialog.wasConfirmed()) {
+            disableCancelButton();
             new ReleaseNodesTask().start();
+          }
           else
             pLog.logAndFlush(Kind.Ops, Level.Severe, 
               "Builder execution has ended with an error.  " +
@@ -664,7 +579,8 @@ class GUIExecution
       {
         try {
           disableAllButtons();
-          pCancelButton.setText("Quit");
+          makeQuitButton();
+          enableCancelButton();
           JErrorDialog dialog = new JErrorDialog(pDialog);
           dialog.setMessage("Error Dialog", pMessage);
           dialog.setVisible(true);
@@ -694,13 +610,9 @@ class GUIExecution
     private JButton pNextActionButton;
     private JButton pRunAllButton;
 
-    private boolean pMorePasses;
-
     private boolean pAbort;
 
     private JBuilderTopPanel pTopPanel;
-
-    private boolean pRunning;
   }
 
   /**
@@ -775,52 +687,6 @@ class GUIExecution
     }
   }
 
-
-  /**
-   * Thread for use with the Builder GUI code.
-   * <p>
-   */
-  private
-  class CheckinTask
-  extends Thread
-  {
-    @Override
-    public void
-    run()
-    {
-      try {
-        executeCheckIn();
-        setPhase(ExecutionPhase.Finished);
-        SwingUtilities.invokeLater(pDialog.new AfterCheckinTask());
-      }
-      catch (Exception ex) {
-        handleException(ex);
-      }
-    }
-  }
-
-  /**
-   * Thread for use with the Builder GUI code.
-   * <p>
-   */
-  private
-  class QueueThread
-  extends Thread
-  {
-    @Override
-    public void
-    run()
-    {
-      try {
-        pJobsFinishedCorrectly = queueAndWait();
-        SwingUtilities.invokeLater(pDialog.new AfterQueueTask());
-      }
-      catch (Exception ex) {
-        handleException(ex);
-      }
-    }
-  }
-
   private 
   class RunAllConstructPassTask
   extends Thread
@@ -830,12 +696,13 @@ class GUIExecution
     run()
     {
       boolean error = false;
-      setPhase(ExecutionPhase.ConstructPass);
       while (peekNextConstructPass() != null) {
         if (error)
           break;
         try {
+          pRunning = true;
           executeNextConstructPass();
+          pRunning = false;
           SwingUtilities.invokeAndWait(pDialog.new DuringAllConstructPassTask());
         }
         catch (Exception ex) {
@@ -844,7 +711,7 @@ class GUIExecution
         }
       }
       if (!error)
-        SwingUtilities.invokeLater(pDialog.new AfterAllConstructPassTask());
+        SwingUtilities.invokeLater(pDialog.new FinishedTask());
     }
   }
 
@@ -858,11 +725,12 @@ class GUIExecution
     public void 
     run()
     {
-      setPhase(ExecutionPhase.ConstructPass);
-      ConstructPass pass = peekNextConstructPass();
+      BaseConstructPass pass = peekNextConstructPass();
       if (pass != null)
         try {
+          pRunning = true;
           executeNextConstructPass();
+          pRunning = false;
           SwingUtilities.invokeLater(pDialog.new AfterOneConstructPassTask());
         }
       catch (Exception ex) {
@@ -884,7 +752,7 @@ class GUIExecution
       try {
         LogMgr.getInstance().log(Kind.Ops, Level.Warning, 
         "All the nodes that were registered will now be released.");
-        getBuilder().releaseNodes();
+        getRunningBuilder().releaseNodes();
         LogMgr.getInstance().log
         (Kind.Ops, Level.Info, "Finished releasing all the nodes.");
         SwingUtilities.invokeAndWait(pDialog.new AdjustButtonsTask(ButtonState.EnableQuit));
@@ -916,5 +784,5 @@ class GUIExecution
 
 
  private JBuilderDialog pDialog;
- private boolean pJobsFinishedCorrectly;
+ private boolean pRunning;
 }

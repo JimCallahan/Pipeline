@@ -1,4 +1,4 @@
-// $Id: AdvAssetBuilder.java,v 1.3 2008/02/25 05:03:06 jesse Exp $
+// $Id: AdvAssetBuilder.java,v 1.4 2008/03/04 08:15:15 jesse Exp $
 
 package us.temerity.pipeline.plugin.Maya2MRCollection.v2_3_2;
 
@@ -326,11 +326,8 @@ class AdvAssetBuilder
   addConstructPasses()
     throws PipelineException
   {
-    ConstructPass build = new BuildPass();
-    addConstructPass(build);
-    ConstructPass end = new FinalizePass();
-    addConstructPass(end);
-    addPassDependency(build, end);
+    addConstructPass(new BuildPass());
+    addConstructPass(new FinalizePass());
   }
   
  
@@ -643,7 +640,6 @@ class AdvAssetBuilder
           new ModelPiecesBuilder(pClient, pQueue, pAssetNames, pProjectNames, getBuilderInformation(), pNumberOfModels, pModelTT);
         addSubBuilder(builder);
         addMappedParam(builder.getName(), ModelPiecesBuilder.aMayaContext, aMayaContext);
-        addPassDependency(builder.getConstructPass("Build Pass"), getConstructPass("Build Pass")); 
       }
     }
 

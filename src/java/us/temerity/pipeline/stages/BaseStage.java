@@ -1,4 +1,4 @@
-// $Id: BaseStage.java,v 1.28 2008/02/27 20:26:27 jim Exp $
+// $Id: BaseStage.java,v 1.29 2008/03/04 08:15:15 jesse Exp $
 
 package us.temerity.pipeline.stages;
 
@@ -131,12 +131,9 @@ class BaseStage
   {
     StringBuilder buf = new StringBuilder();
     boolean exception = false;
-    TreeMap<String, String> users = info.getAddedNodesUserMap();
-    TreeMap<String, String> views = info.getAddedNodesViewMap();
-    for(String s : info.getAddedNodes()) {
-      String user = users.get(s);
-      String view = views.get(s);
-      NodeID id = new NodeID(user, view, s);
+    TreeMap<String, NodeID> addedNodes = info.getAddedNodes(); 
+    for(String s : addedNodes.keySet()) {
+      NodeID id = addedNodes.get(s);
       try {
 	mclient.release(id, true);
       }

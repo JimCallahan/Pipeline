@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.235 2008/02/21 22:19:27 jim Exp $
+// $Id: MasterMgr.java,v 1.236 2008/03/04 08:18:28 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -11904,7 +11904,7 @@ class MasterMgr
         switch(actOnExist) {
         case CheckOut:
         case Continue:
-          unconformed.addAll(info.getNewStageInformation().getCheckedOutNodes());
+          unconformed.addAll(info.getNewStageInformation().getAllCheckedOutNodes());
           unconformed.addAll(info.getNewStageInformation().getSkippedNodes());
         }
       }

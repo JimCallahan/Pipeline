@@ -148,11 +148,11 @@ class StudioDefinitions
   }
   
 
-  public static Path aProjectStartPath = new Path("/Projects");
-  public static String aSequenceStart  = "VFX";
-  public static String aStandardsStart  = "Standards";
+  public static final Path aProjectStartPath = new Path("/Projects");
+  public static final String aSequenceStart  = "VFX";
+  public static final String aStandardsStart  = "Standards";
   
-  public static String aNEW  = "[[NEW]]";
+  public static final String aNEW  = "[[NEW]]";
   private static final long serialVersionUID = -6164301048865508539L;
 
   

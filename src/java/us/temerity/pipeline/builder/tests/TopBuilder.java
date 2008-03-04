@@ -37,7 +37,6 @@ public class TopBuilder
     ConstructPass build2 = new ConstructPass("Build2", "Doesn't build anything");
     addConstructPass(build1);
     addConstructPass(build2);
-    addPassDependency(build1, build2);
   }
   
   @Override

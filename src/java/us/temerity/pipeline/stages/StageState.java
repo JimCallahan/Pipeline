@@ -15,9 +15,7 @@ class StageState
   public
   StageState()
   {
-    pAddedNodes = new TreeSet<String>();
-    pAddedNodesUserMap = new TreeMap<String, String>();
-    pAddedNodesViewMap = new TreeMap<String, String>();
+    pAddedNodes = new TreeMap<String, NodeID>();
     pDefaultEditors = new TreeMap<String, PluginContext>();
     pStageFunctionLicenseKeys = new MappedSet<String, String>();
     pStageFunctionSelectionKeys = new MappedSet<String, String>();
@@ -26,6 +24,7 @@ class StageState
     pConformedNodes = new TreeSet<String>();
     pCheckedOutNodes = new TreeSet<String>();
     pSkippedNodes = new TreeSet<String>();
+    
   }
   
   /*----------------------------------------------------------------------------------------*/
@@ -33,54 +32,15 @@ class StageState
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Clears all added nodes that are currently being kept track of.
-   */
-  public void 
-  initializeAddedNodes()
-  {
-    pAddedNodes = new TreeSet<String>();
-    pAddedNodesUserMap = new TreeMap<String, String>();
-    pAddedNodesViewMap = new TreeMap<String, String>();
-  }
-  
-  /**
-   * Gets a list that contains the names of all the nodes that have been built by stages.
+   * Gets a map that contains the NodeIDs of all the nodes that have been built by stages
+   * indexed by node name.
    * 
-   * @return The {@link TreeSet} containing the node names.
-   * @see #getAddedNodesUserMap()
-   * @see #getAddedNodesViewMap()
+   * @return The map containing the node names.
    */
-  public TreeSet<String> 
+  public TreeMap<String, NodeID> 
   getAddedNodes()
   {
-    return new TreeSet<String>(pAddedNodes);
-  }
-
-  /**
-   * Gets a mapping of each added node to the user in whose working area the node was
-   * added.
-   * 
-   * @return The {@link TreeMap} containing the user names.
-   * @see #getAddedNodes()
-   * @see #getAddedNodesViewMap()
-   */
-  public TreeMap<String, String> 
-  getAddedNodesUserMap()
-  {
-    return new TreeMap<String, String>(pAddedNodesUserMap);
-  }
-
-  /**
-   * Gets a mapping of each added node to the working area where the node was added.
-   * 
-   * @return The {@link TreeMap} containing the working area names.
-   * @see #getAddedNodes()
-   * @see #getAddedNodesUserMap()
-   */
-  public TreeMap<String, String> 
-  getAddedNodesViewMap()
-  {
-    return new TreeMap<String, String>(pAddedNodesViewMap);
+    return new TreeMap<String, NodeID>(pAddedNodes);
   }
   
   /**
@@ -119,15 +79,19 @@ class StageState
   }
   
   /**
-   * Adds a node name to the list of nodes created duing the session.
+   * Adds a node name to the list of nodes created during the session.
    * <P>
    * The method will return a boolean based on whether the node already existed in the
    * current list. A return value of <code>false</code> indicates that the name was not
    * added to the list since it already existed then. A return value of <code>true</code>
-   * indicates that the add was succesful. A PipelineException is thrown if the
-   * <code>initializeAddedNodes</code> method was not called before calling this method.
+   * indicates that the add was successful. 
    * 
    * @param name
+   *   The name of the node
+   * @param author
+   *   The user who created the node
+   * @param view
+   *   The working area the node was created in.
    * @throws PipelineException
    * @see #initializeAddedNodes()
    */
@@ -143,11 +107,9 @@ class StageState
     if(pAddedNodes == null)
       throw new PipelineException(
       "It appears that initializeAddedNodes() was never called, leading to an error");
-    if(pAddedNodes.contains(name))
+    if(pAddedNodes.keySet().contains(name))
       return false;
-    pAddedNodes.add(name);
-    pAddedNodesUserMap.put(name, author);
-    pAddedNodesViewMap.put(name, view);
+    pAddedNodes.put(name, new NodeID(author, view, name));
     return true;
   }
   
@@ -351,21 +313,14 @@ class StageState
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * A list containing all the nodes that have been added by stages. All stages are
-   * responsible for ensuring that all created nodes end up in this data structure.
+   * A list containing the nodeIDs for all the nodes that have been added by stages, indexed
+   * by their node name.
+   * <p>
+   * All stages are responsible for ensuring that all created nodes end up in this data
+   * structure.
    */
-  private TreeSet<String> pAddedNodes;
+  private TreeMap<String, NodeID> pAddedNodes;
 
-  /**
-   * A mapping of added nodes to the user who added them.
-   */
-  private TreeMap<String, String> pAddedNodesUserMap;
-
-  /**
-   * A mapping of added nodes to the working area they were added in.
-   */
-  private TreeMap<String, String> pAddedNodesViewMap;
-  
   private TreeSet<String> pConformedNodes;
   private TreeSet<String> pCheckedOutNodes;
   private TreeSet<String> pSkippedNodes;

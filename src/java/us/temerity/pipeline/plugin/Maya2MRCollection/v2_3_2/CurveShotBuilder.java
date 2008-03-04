@@ -139,7 +139,6 @@ class CurveShotBuilder
     addConstructPass(build);
     ConstructPass end = new FinalizePass();
     addConstructPass(end);
-    addPassDependency(build, end);
 
     {
       AdvancedLayoutGroup layout = 

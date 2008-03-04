@@ -1,4 +1,4 @@
-// $Id: CommandLineExecution.java,v 1.1 2008/02/25 05:03:05 jesse Exp $
+// $Id: CommandLineExecution.java,v 1.2 2008/03/04 08:15:15 jesse Exp $
 
 package us.temerity.pipeline.builder.execution;
 
@@ -34,16 +34,6 @@ class CommandLineExecution
       checkActions();
       buildSecondLoopExecutionOrder();
       executeSecondLoop();
-      finish = queueAndWait();
-      if (!finish)
-        throw new PipelineException("Execution halted.  Jobs didn't finish correctly");
-    }
-    catch (Exception ex) {
-      handleException(ex);
-    }
-    try {
-      if (finish)
-        executeCheckIn();
     }
     catch (Exception ex) {
       handleException(ex);
@@ -79,7 +69,7 @@ class CommandLineExecution
 
       if (getBuilder().releaseOnError()) {
         if (phase.haveNodesBeenMade())
-          header += "\nAll registered nodes will now be released.";
+          header += "\nAll nodes registered in the current builder will now be released.";
         else if (phase.isEndingPhase())
           header += "\nSince the check-in operation began, the Builder will not attempt to " +
           "release registered nodes.";
@@ -89,8 +79,8 @@ class CommandLineExecution
 
       String message = Exceptions.getFullMessage(header, ex);
       pLog.logAndFlush(Kind.Ops, Level.Severe, message);
-      if (getBuilder().releaseOnError() && phase.haveNodesBeenMade()) {
-        releaseNodes();
+      if (getRunningBuilder().releaseOnError() && phase.haveNodesBeenMade()) {
+        releaseNodes(getRunningBuilder());
       }
       if (!getBuilder().useBuilderLogging())
         throw new PipelineException(message);

@@ -1,4 +1,4 @@
-// $Id: MatchBuilder.java,v 1.7 2008/03/03 11:18:59 jim Exp $
+// $Id: MatchBuilder.java,v 1.8 2008/03/04 08:18:28 jesse Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -135,7 +135,6 @@ class MatchBuilder
       
       ConstructPass qd = new QueueDisablePass(); 
       addConstructPass(qd); 
-      addPassDependency(build, qd);
     }
 
     /* specify the layout of the parameters for each pass in the UI */ 

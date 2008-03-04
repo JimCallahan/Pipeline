@@ -1,4 +1,4 @@
-// $Id: ExecutionPhase.java,v 1.1 2008/02/25 05:03:05 jesse Exp $
+// $Id: ExecutionPhase.java,v 1.2 2008/03/04 08:15:15 jesse Exp $
 
 package us.temerity.pipeline.builder.execution;
 
@@ -9,6 +9,7 @@ package us.temerity.pipeline.builder.execution;
  * to provide context appropriate handling of errors. 
  *
  */
+public
 enum ExecutionPhase
 {
   /**

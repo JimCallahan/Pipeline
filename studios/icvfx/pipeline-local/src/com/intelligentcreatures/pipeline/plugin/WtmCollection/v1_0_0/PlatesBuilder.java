@@ -1,4 +1,4 @@
-// $Id: PlatesBuilder.java,v 1.20 2008/02/26 13:22:05 jim Exp $
+// $Id: PlatesBuilder.java,v 1.21 2008/03/04 08:15:16 jesse Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -166,11 +166,9 @@ class PlatesBuilder
       
       ConstructPass qdc = new QueueDisableCleanupPass(); 
       addConstructPass(qdc); 
-      addPassDependency(build, qdc);
 
       ConstructPass qd = new QueueDisablePass(); 
       addConstructPass(qd); 
-      addPassDependency(qdc, qd);
     }
 
     /* specify the layout of the parameters for each pass in the UI */ 
