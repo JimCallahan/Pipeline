@@ -1,4 +1,4 @@
-// $Id: MayaBuildAction.java,v 1.3 2007/11/01 19:16:55 jesse Exp $
+// $Id: MayaBuildAction.java,v 1.4 2008/03/04 08:44:55 jim Exp $
 
 package us.temerity.pipeline.plugin.MayaBuildAction.v2_3_5;
 
@@ -263,11 +263,6 @@ class MayaBuildAction
   )
     throws PipelineException
   {
-    /* MEL script paths */ 
-    //Path initialMEL = getMelScriptSourcePath(aInitialMEL, agenda);
-    //Path modelMEL   = getMelScriptSourcePath(aModelMEL, agenda);
-    //Path finalMEL   = getMelScriptSourcePath(aFinalMEL, agenda);
-    
     boolean deferReferences = getSingleBooleanParamValue(aDeferReferences);
 
     /* model filenames */ 
