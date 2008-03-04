@@ -1,4 +1,4 @@
-// $Id: MayaRenderGlobalsAction.java,v 1.1 2008/02/26 20:49:12 jim Exp $
+// $Id: MayaRenderGlobalsAction.java,v 1.2 2008/03/04 19:17:48 jim Exp $
 
 package us.temerity.pipeline.plugin.MayaRenderGlobalsAction.v2_4_1;
 
@@ -28,8 +28,7 @@ import java.io.*;
  *   Resolution Source <BR>
  *   <DIV style="margin-left: 40px;">
  *     The source node which contains MEL code responsible for setting the render 
- *     resolution.  If specified, the ImageWidth, ImageHeight and PixelAspectRatio
- *     parameters will be ignored.
+ *     resolution.  If specified, the ImageWidth and ImageHeight parameters will be ignored.
  *   </DIV> <BR>
  *  
  *   Image Width <BR>
@@ -216,8 +215,8 @@ class MayaRenderGlobalsAction
           new LinkActionParam
           (aResolutionSource,
            "The source node which contains MEL code responsible for setting the render " + 
-           "resolution.  If specified, the ImageWidth, ImageHeight and PixelAspectRatio " + 
-           "parameters will be ignored.", 
+           "resolution.  If specified, the ImageWidth and ImageHeight parameters will be " + 
+           "ignored.", 
            null);
         addSingleParam(param);
       } 
@@ -904,8 +903,6 @@ class MayaRenderGlobalsAction
 
     addSupport(OsType.MacOS);
     addSupport(OsType.Windows);
-
-    underDevelopment(); 
   }
 
   

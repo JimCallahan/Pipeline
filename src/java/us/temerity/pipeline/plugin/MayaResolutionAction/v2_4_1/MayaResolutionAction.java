@@ -1,4 +1,4 @@
-// $Id: MayaResolutionAction.java,v 1.1 2008/02/26 20:32:08 jim Exp $
+// $Id: MayaResolutionAction.java,v 1.2 2008/03/04 19:16:54 jim Exp $
 
 package us.temerity.pipeline.plugin.MayaResolution.v2_4_1;
 
@@ -60,7 +60,8 @@ class MayaResolutionAction
       ActionParam param = 
 	new LinkActionParam
 	(aImageSource,
-	 "", 
+	 "The name of the source node containing the image who's size will determine the " + 
+         "render resolution.", 
 	 null);
       addSingleParam(param);
     } 
