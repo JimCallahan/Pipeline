@@ -1,4 +1,4 @@
-// $Id: PluginApp.java,v 1.14 2008/02/26 09:01:59 jim Exp $
+// $Id: PluginApp.java,v 1.15 2008/03/04 19:14:09 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -32,16 +32,6 @@ class PluginApp
   PluginApp() 
   {
     super("plplugin");
-
-//     try {
-//       NativeFileSys.umask(022);
-//     }
-//     catch(IOException ex) {
-//       LogMgr.getInstance().log
-// 	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
-// 	 Exceptions.getFullMessage(ex));
-//       System.exit(1);
-//     }
   }
 
   
@@ -289,7 +279,7 @@ class PluginApp
         for(String vendor : versions.keySet()) {
           for(String name : versions.get(vendor).keySet()) {
             for(VersionID vid : versions.get(vendor).get(name).keySet()) {
-              BaseQueueExt plg = client.newQueueExt(name, vid, vendor);
+              BaseKeyChooser plg = client.newKeyChooser(name, vid, vendor);
               LogMgr.getInstance().log
                 (LogMgr.Kind.Ops, LogMgr.Level.Info,
                  bar(80) + "\n\n" + plg + "\n");
@@ -298,7 +288,6 @@ class PluginApp
         }
       }
     }
-
 
     LogMgr.getInstance().flush();
   }
