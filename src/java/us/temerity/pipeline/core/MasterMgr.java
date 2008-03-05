@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.236 2008/03/04 08:18:28 jesse Exp $
+// $Id: MasterMgr.java,v 1.237 2008/03/05 00:05:42 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -17399,7 +17399,6 @@ class MasterMgr
 
               switch(overallNodeState) {
               case Identical:
-              case NeedsCheckOut:
               case ModifiedLocks:
                 ignoreStamps[wk] = true;
                 break;
