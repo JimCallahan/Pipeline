@@ -105,9 +105,9 @@ class MayaAnimBuildAction
   MayaAnimBuildAction() 
   {
     super("MayaAnimBuild", new VersionID("2.3.14"), "Temerity",
-	  "Extends the MayaBuild Action to now allow for the referencing of Maya files that only " + 
-      	  "contain curves, which are then hooked up to models which have either been " +
-      	  "Imported or Referenced.");
+	  "Extends the MayaBuild Action to now allow for the referencing of Maya files " + 
+          "that only contain curves, which are then hooked up to models which have either " + 
+          "been Imported or Referenced.");
     
     addUnitsParams();
 
