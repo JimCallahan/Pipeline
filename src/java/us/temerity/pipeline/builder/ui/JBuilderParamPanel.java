@@ -315,7 +315,7 @@ class JBuilderParamPanel
 	JCollectionField field = 
 	  UIFactory.createTitledCollectionField
 	  (tpanel, displayName, tsize, 
-	   vpanel, eparam.getValues(), vsize, 
+	   vpanel, eparam.getValues(), pParentDialog, vsize, 
 	   bparam.getDescription());
 	
 	field.setSelected((String) eparam.getValue());
@@ -407,7 +407,7 @@ class JBuilderParamPanel
 	JCollectionField field = 
 	  UIFactory.createTitledCollectionField
 	  (tpanel, displayName, tsize, 
-	   vpanel, eparam.getValues(), vsize, 
+	   vpanel, eparam.getValues(), pParentDialog, vsize, 
 	   bparam.getDescription());
 
 	field.setSelected((String) eparam.getValue());
