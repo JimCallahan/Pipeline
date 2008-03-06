@@ -1,4 +1,4 @@
-// $Id: MayaBuildUtils.java,v 1.1 2007/11/01 19:16:55 jesse Exp $
+// $Id: MayaBuildUtils.java,v 1.2 2008/03/06 13:01:35 jim Exp $
 
 package us.temerity.pipeline.plugin;
 
@@ -46,6 +46,12 @@ public class MayaBuildUtils
     super(name, vid, vendor, desc);
   }
   
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O M M O N   P A R A M E T E R S                                                    */
+  /*----------------------------------------------------------------------------------------*/
+  
   /**
    * Adds a Start Frame Integer param to the Action.
    * <p>
@@ -61,7 +67,8 @@ public class MayaBuildUtils
     ActionParam param = 
       new IntegerActionParam
       (aStartFrame,
-       "The start frame of the generated Maya scene.", 
+       "The start frame of the generated Maya scene.  Accessible as $plStartFrame in " + 
+       "optional MEL scripts.", 
        1);
     addSingleParam(param);
   }
@@ -81,11 +88,67 @@ public class MayaBuildUtils
     ActionParam param = 
       new IntegerActionParam
       (aEndFrame,
-       "The end frame of the generated Maya scene.", 
+       "The end frame of the generated Maya scene.  Accessible as $plEndFrame in " + 
+       "optional MEL scripts.", 
        1);
     addSingleParam(param);
   }
-  
+
+  /**
+   * Provide StartFrame and EndFrame parameter values as MEL variables 
+   * $plStartFrame and $plEndFrame.
+   */ 
+  protected String
+  genFrameRangeVarsMEL()
+    throws PipelineException
+  {
+    StringBuilder buf = new StringBuilder(); 
+    
+    buf.append("// ACTION PARAMETERS: StartFrame, EndFrame\n"); 
+
+    Integer startFrame = (Integer) getSingleParamValue(aStartFrame);
+    if(startFrame != null) 
+      buf.append("float $plStartFrame = " + startFrame + ";\n");
+    
+    Integer endFrame = (Integer) getSingleParamValue(aEndFrame);
+    if(endFrame != null) 
+      buf.append("float $plEndFrame = " + endFrame + ";\n"); 
+
+    return buf.toString(); 
+  }
+        
+  /**
+   * Set the scene time range based on the StartFrame and EndFrame parameters.
+   */
+  protected String
+  genPlaybackOptionsMEL() 
+    throws PipelineException
+  {
+    StringBuilder buf = new StringBuilder(); 
+
+    buf.append("// TIME RANGE\n");
+    
+    Integer start = (Integer) getSingleParamValue(aStartFrame);
+    if(start != null) {
+      buf.append("playbackOptions -e -min " + start + ";\n");
+      buf.append("playbackOptions -e -ast " + start + ";\n");
+    }
+    
+    Integer end = (Integer) getSingleParamValue(aEndFrame);
+    if(end != null) {
+      buf.append("playbackOptions -e -max " + end + ";\n");
+      buf.append("playbackOptions -e -aet " + end + ";\n");
+    }
+    
+    buf.append("\n"); 
+
+    return buf.toString(); 
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Adds an Enum Source Parameter called BuildType to the Action.
    * <p>
@@ -212,12 +275,12 @@ public class MayaBuildUtils
    * Adds a String Source Parameter called Proxy Name to the Action.
    * <p>
    * <DIV style="margin-left: 40px;">
- *   Proxy Name <BR>
- *   <DIV style="margin-left: 40px;">
- *     The proxy name to be used for the referenced Maya scene.  If Build Type is set
- *     to Reference, this will be the proxy tag for the reference.  If Build Type is set
- *     to Import than this field will be ignored.
- *   </DIV> <BR>
+   *   Proxy Name <BR>
+   *   <DIV style="margin-left: 40px;">
+   *     The proxy name to be used for the referenced Maya scene.  If Build Type is set
+   *     to Reference, this will be the proxy tag for the reference.  If Build Type is set
+   *     to Import than this field will be ignored.
+   *   </DIV> <BR>
    */
   protected void
   addProxyNameSourceParam  
