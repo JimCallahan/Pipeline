@@ -1,4 +1,4 @@
-// $Id: BlotBuilder.java,v 1.1 2008/03/06 06:14:49 jim Exp $
+// $Id: BlotBuilder.java,v 1.2 2008/03/06 11:05:59 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -119,6 +119,9 @@ class BlotBuilder
     /* initialize the project namer */ 
     initProjectNamer(); 
     
+    /* initialize fields */ 
+    pFinalStages = new ArrayList<FinalizableStage>(); 
+
     /* create the setup passes */ 
     {
       addSetupPass(new BlotSetupShotEssentials());
@@ -133,8 +136,8 @@ class BlotBuilder
       ConstructPass build = new BuildNodesPass();
       addConstructPass(build);
       
-      ConstructPass qd = new QueueDisablePass(); 
-      addConstructPass(qd); 
+      ConstructPass qdc = new QueueDisableCleanupPass(); 
+      addConstructPass(qdc); 
     }
 
     /* specify the layout of the parameters for each pass in the UI */ 
@@ -186,9 +189,9 @@ class BlotBuilder
   {
     ArrayList<PluginContext> plugins = new ArrayList<PluginContext>();	
     plugins.add(new PluginContext("Touch")); 
-    plugins.add(new PluginContext("CatFiles"));	
     plugins.add(new PluginContext("MayaBuild")); 		
     plugins.add(new PluginContext("MayaAttachGeoCache")); 	
+    plugins.add(new PluginContext("MayaAttachSound")); 	
     plugins.add(new PluginContext("MayaFTNBuild")); 		
     plugins.add(new PluginContext("MayaRender")); 		
     plugins.add(new PluginContext("NukeThumbnail"));		
@@ -354,6 +357,34 @@ class BlotBuilder
     validatePhase() 
       throws PipelineException 
     {
+      /* soundtrack */ 
+      pSoundtrackNodeName = pShotNamer.getSoundtrackNode(); 
+      if(!nodeExists(pSoundtrackNodeName)) {
+	SoundBuilder builder = new SoundBuilder(pClient, pQueue, getBuilderInformation(), 
+						pStudioDefs, pProjectNamer, pShotNamer);
+	addSubBuilder(builder);
+
+	/* map the CheckInWhenDone parameter from this builder to the Sound builder */
+	addMappedParam(builder.getName(), aCheckinWhenDone, aCheckinWhenDone); 
+
+	/* map the ProjectName, SequenceName and ShotName parameters from this builder 
+	     to the Sound builder */ 
+        addMappedParam
+          (builder.getName(), 
+           new ParamMapping(aLocation, StudioDefinitions.aProjectName), 
+           new ParamMapping(aLocation, StudioDefinitions.aProjectName));
+	
+	addMappedParam
+	  (builder.getName(), 
+	   new ParamMapping(aLocation, StudioDefinitions.aSequenceName), 
+	   new ParamMapping(aLocation, StudioDefinitions.aSequenceName));
+	
+	addMappedParam
+	  (builder.getName(), 
+	   new ParamMapping(aLocation, StudioDefinitions.aShotName), 
+	   new ParamMapping(aLocation, StudioDefinitions.aShotName));
+      }
+
       /* the geometry cache */ 
       pMatchGeoCacheNodeName = pShotNamer.getMatchGeoCacheNode();
       pRequiredNodeNames.add(pMatchGeoCacheNodeName); 
@@ -429,99 +460,145 @@ class BlotBuilder
       }
 
       /* the submit network */
-      {
-	//	pSoundTrackNodeName = pShotNamer.getSoundTrackNode(); 
+      {	
+	pAttachSoundtrackNodeName = pShotNamer.getAttachSoundtrackNode(); 
+	{
+	  if(!nodeExists(pAttachSoundtrackNodeName)) 
+	    throw new PipelineException
+	      ("Somehow the required attach soundtrack MEL script node " + 
+	       "(" + pAttachSoundtrackNodeName + ") does not exist!"); 
 
+	  try {
+	    checkOutLatest(pAttachSoundtrackNodeName, 
+			   CheckOutMode.KeepModified, CheckOutMethod.Modifiable);
+	  }
+	  catch(PipelineException ex) {
+	    try {
+	      /* if it already exists in the working area, just leave it alone */ 
+	      pClient.getWorkingVersion(getAuthor(), getView(), pAttachSoundtrackNodeName); 
+	    }
+	    catch(PipelineException ex2) {
+	      throw new PipelineException
+		("Somehow no working version of the required attach soundtrack MEL " + 
+		 "script node (" + pAttachSoundtrackNodeName + ") exists in the current " + 
+		 "working area (" + getAuthor() + "|" + getView() + " and it has never " + 
+		 "been checked-in!");
+	    }
+	  }
+	}
 
+	String blotAnimSceneNodeName = pShotNamer.getBlotAnimSceneNode();
+	{
+	  BuildBlotAnimStage stage = 
+	    new BuildBlotAnimStage
+	      (stageInfo, pContext, pClient, 
+	       blotAnimSceneNodeName, pRorschachBlotAnimPlaceholderNodeName, 
+	       pRorschachGuidelinesNodeName, pAttachSoundtrackNodeName, pFrameRange); 
+	  addTaskAnnotation(stage, NodePurpose.Edit); 
+	  stage.build(); 
+	  pFinalStages.add(stage);
+	}
 
+	String blotAnimTexturesNodeName = pShotNamer.getBlotAnimTexturesNode();
+	{
+	  RenderTaskVerifyStage stage = 
+	    new RenderTaskVerifyStage
+	    (stageInfo, pContext, pClient, 
+	     blotAnimTexturesNodeName, pFrameRange, blotAnimSceneNodeName, 
+	     "camera01", pBlotAnimPrepNodeName); 
+	  addTaskAnnotation(stage, NodePurpose.Focus); 
+	  stage.build();  
+	}
 
+	String blotAnimQuickTimeNodeName = pShotNamer.getBlotAnimQuickTimeNode();
+	{
+	  NukeQtStage stage = 
+	    new NukeQtStage(stageInfo, pContext, pClient,
+			    blotAnimQuickTimeNodeName, blotAnimTexturesNodeName, 24.0);
+	  addTaskAnnotation(stage, NodePurpose.Product); 
+	  stage.build(); 
+	}
 
+	String blotAnimThumbNodeName = pShotNamer.getBlotAnimThumbNode();
+	{
+	  NukeThumbnailStage stage = 
+	    new NukeThumbnailStage(stageInfo, pContext, pClient,
+				   blotAnimThumbNodeName, "tif", blotAnimTexturesNodeName, 
+				   1, 150, 1.0, true, true, new Color3d()); 
+	  addTaskAnnotation(stage, NodePurpose.Thumbnail); 
+	  stage.build(); 
+	}
+	
+ 	String blotTextureSceneNodeName = pShotNamer.getBlotTextureSceneNode();
+ 	{
+	  MayaFTNBuildStage stage = 
+	    new MayaFTNBuildStage(stageInfo, pContext, pClient, 
+				  new MayaContext(), blotTextureSceneNodeName, true);
+	  stage.addLink(new LinkMod(blotAnimTexturesNodeName, LinkPolicy.Dependency)); 
+	  addTaskAnnotation(stage, NodePurpose.Prepare); 
+	  stage.build();  
+	}
 
-// 	String preBlotAnimNodeName = pShotNamer.getPreBlotAnimNode(); 
-// 	{
-// 	  BuildPreBlotStage stage = 
-// 	    new BuildPreBlotStage
-// 	    (stageInfo, pContext, pClient, 
-// 	     preBlotAnimNodeName, pConstrainRigNodeName, 
-// 	     pRorschachRigNodeName, pExtractedCameraNodeName, pExtractedTrackNodeName, 
-// 	     pFrameRange); 
-// 	  addTaskAnnotation(stage, NodePurpose.Prepare); 
-// 	  stage.build();  
-// 	}
+	String blotAttachCacheNodeName = pShotNamer.getBlotAttachCacheNode();
+	{
+	  AttachGeoCacheStage stage = 
+	    new AttachGeoCacheStage(stageInfo, pContext, pClient, 
+				    blotAttachCacheNodeName, pMatchGeoCacheNodeName, 
+				    "mdl:rorHead_GEOShape", pBlotAttachPreviewNode); 
+	  addTaskAnnotation(stage, NodePurpose.Prepare); 
+	  stage.build();  
+	}
 
-// 	pBlotAnimNodeName = pShotNamer.getBlotAnimNode(); 
-// 	{
-// 	  BuildBlotStage stage = 
-// 	    new BuildBlotStage(stageInfo, pContext, pClient, 
-// 				pBlotAnimNodeName, preBlotAnimNodeName, pFrameRange); 
-// 	  addTaskAnnotation(stage, NodePurpose.Edit); 
-// 	  stage.build(); 
-// 	  addToDisableList(preBlotAnimNodeName); 	  
-// 	}
+ 	String blotTestSceneNodeName = pShotNamer.getBlotTestSceneNode();
+ 	{ 
+	  BuildBlotTestStage stage = 
+	    new BuildBlotTestStage
+	      (stageInfo, pContext, pClient, 
+	       blotTestSceneNodeName, pRorschachHiresModelNodeName, 
+	       pRorschachPreviewShadersNodeName, blotTextureSceneNodeName, 
+	       pExtractedCameraNodeName, pUndistorted1kPlateNodeName,
+	       blotAttachCacheNodeName, pFrameRange);
+	  addTaskAnnotation(stage, NodePurpose.Prepare); 
+	  stage.build();  
+ 	}
 
-// 	String verifyNodeName = pShotNamer.getBlotVerifyNode(); 
-// 	{
-// 	  BuildBlotVerifyStage stage = 
-// 	    new BuildBlotVerifyStage
-// 	    (stageInfo, pContext, pClient, 
-// 	     verifyNodeName, pBlotAnimNodeName, pRorschachTestShadersNodeName, 
-// 	     pBlotPrepNodeName, pFrameRange); 
-// 	  addTaskAnnotation(stage, NodePurpose.Prepare); 
-// 	  stage.build();  
-// 	}
+ 	String blotTestImagesNodeName = pShotNamer.getBlotTestImagesNode();
+ 	{
+	  RenderTaskVerifyStage stage = 
+	    new RenderTaskVerifyStage
+	      (stageInfo, pContext, pClient, 
+	       blotTestImagesNodeName, pFrameRange, blotTestSceneNodeName, 
+	       "cam:camera01", pBlotTestPrepNodeName); 
+	  addTaskAnnotation(stage, NodePurpose.Focus); 
+	  stage.build();  
+ 	}
 
-// 	String matchPreRenderScriptNodeName = pShotNamer.getBlotPreRenderScriptNode();
-// 	{
-// 	  LinkedList<String> sources = new LinkedList<String>(); 
-// 	  sources.add(pHideCameraPlaneNodeName); 
-// 	  sources.add(pTrackVerifyGlobalsNodeName); 
-// 	  sources.add(pResolutionNodeName); 
-
-// 	  CatMelStage stage = 
-// 	    new CatMelStage(stageInfo, pContext, pClient, 
-// 			    matchPreRenderScriptNodeName, sources);
-// 	  addTaskAnnotation(stage, NodePurpose.Prepare); 
-// 	  stage.build();  
-// 	}
-
-// 	String verifyImagesNodeName = pShotNamer.getBlotVerifyImagesNode(); 
-// 	{
-// 	  RenderTaskVerifyStage stage = 
-// 	    new RenderTaskVerifyStage
-// 	    (stageInfo, pContext, pClient, 
-// 	     verifyImagesNodeName, pFrameRange, verifyNodeName, 
-// 	     "match:prep:cam:camera01", matchPreRenderScriptNodeName); 
-// 	  addTaskAnnotation(stage, NodePurpose.Focus); 
-// 	  stage.build();  
-// 	}
-
-// 	String verifyCompNodeName = pShotNamer.getBlotVerifyCompNode(); 
-// 	{
-// 	  BashCompStage stage = 
-// 	    new BashCompStage(stageInfo, pContext, pClient, 
-// 			      verifyCompNodeName, pFrameRange, 
-// 			      verifyImagesNodeName, pUndistorted2kPlateNodeName); 
-// 	  addTaskAnnotation(stage, NodePurpose.Focus); 	 
-// 	  stage.build(); 
-// 	}
-
-// 	String verifyThumbNodeName = pShotNamer.getBlotVerifyThumbNode();
-// 	{
-// 	  NukeThumbnailStage stage = 
-// 	    new NukeThumbnailStage(stageInfo, pContext, pClient,
-// 				   verifyThumbNodeName, "tif", verifyCompNodeName, 
-// 				   1, 150, 1.0, true, true, new Color3d()); 
-// 	  addTaskAnnotation(stage, NodePurpose.Thumbnail); 
-// 	  stage.build(); 
-// 	}
+	String blotTestQuickTimeNodeName = pShotNamer.getBlotTestQuickTimeNode(); 
+	{
+	  NukeQtStage stage = 
+	    new NukeQtStage(stageInfo, pContext, pClient,
+			    blotTestQuickTimeNodeName, blotTestImagesNodeName, 24.0);
+	  addTaskAnnotation(stage, NodePurpose.Product); 
+	  stage.build(); 	  
+	}
+	
+	String blotTestThumbNodeName = pShotNamer.getBlotTestThumbNode();
+	{
+	  NukeThumbnailStage stage = 
+	    new NukeThumbnailStage(stageInfo, pContext, pClient,
+				   blotTestThumbNodeName, "tif", blotTestImagesNodeName, 
+				   1, 150, 1.0, true, true, new Color3d()); 
+	  addTaskAnnotation(stage, NodePurpose.Thumbnail); 
+	  stage.build(); 
+	}
 
 	String submitNodeName = pShotNamer.getBlotSubmitNode();
 	{
 	  TreeSet<String> sources = new TreeSet<String>();
-// 	  sources.add();
-// 	  sources.add();
-// 	  sources.add();
-// 	  sources.add();
+	  sources.add(blotAnimQuickTimeNodeName);
+	  sources.add(blotAnimThumbNodeName);
+	  sources.add(blotTestQuickTimeNodeName);
+	  sources.add(blotTestThumbNodeName);
 
 	  TargetStage stage = 
 	    new TargetStage(stageInfo, pContext, pClient, 
@@ -535,51 +612,23 @@ class BlotBuilder
 
       /* the approve network */ 
       {
-// 	String matchPrebakeSceneNodeName = pShotNamer.getBlotPrebakeSceneNode();
-// 	{
-// 	  BuildBlotPrebakeStage stage = 
-// 	    new BuildBlotPrebakeStage(stageInfo, pContext, pClient, 
-// 				       matchPrebakeSceneNodeName, 
-// 				       pBlotAnimNodeName, pRorschachHiresModelNodeName, 
-// 				       pBlotPrebakeNodeName, pFrameRange); 
-// 	  addTaskAnnotation(stage, NodePurpose.Prepare); 
-// 	  stage.build(); 
-// 	}
 
-// 	String matchGeoCacheNodeName = pShotNamer.getBlotGeoCacheNode();
-// 	{
-// 	  BlotGeoCacheStage stage = 
-// 	    new BlotGeoCacheStage(stageInfo, pContext, pClient, 
-// 				   matchGeoCacheNodeName, matchPrebakeSceneNodeName, 
-//                                    "rorHead_GEOShape"); 
-// 	  addTaskAnnotation(stage, NodePurpose.Product); 
-// 	  stage.build(); 
-// 	}
 
-// 	String matchMaskGeoNodeName = pShotNamer.getBlotMaskGeoNode();
-// 	{
-// 	  BlotMaskGeoStage stage = 
-// 	    new BlotMaskGeoStage(stageInfo, pContext, pClient, 
-// 				  matchMaskGeoNodeName, matchPrebakeSceneNodeName, 
-//                                   "rorHead_GEO", pFrameRange); 
-// 	  addTaskAnnotation(stage, NodePurpose.Product); 
-// 	  stage.build(); 
-// 	}
 
- 	String approveNodeName = pShotNamer.getBlotApproveNode();
- 	{
- 	  TreeSet<String> sources = new TreeSet<String>();
+//  	String approveNodeName = pShotNamer.getBlotApproveNode();
+//  	{
+//  	  TreeSet<String> sources = new TreeSet<String>();
 //  	  sources.add();
 //  	  sources.add();
 
- 	  TargetStage stage = 
- 	    new TargetStage(stageInfo, pContext, pClient, 
- 			    approveNodeName, sources); 
- 	  addTaskAnnotation(stage, NodePurpose.Approve); 
- 	  stage.build(); 
- 	  addToQueueList(approveNodeName);
- 	  addToCheckInList(approveNodeName);
- 	}
+//  	  TargetStage stage = 
+//  	    new TargetStage(stageInfo, pContext, pClient, 
+//  			    approveNodeName, sources); 
+//  	  addTaskAnnotation(stage, NodePurpose.Approve); 
+//  	  stage.build(); 
+//  	  addToQueueList(approveNodeName);
+//  	  addToCheckInList(approveNodeName);
+//  	}
       }
     }
 
@@ -590,34 +639,44 @@ class BlotBuilder
   /*----------------------------------------------------------------------------------------*/
 
   protected 
-  class QueueDisablePass
+  class QueueDisableCleanupPass
     extends ConstructPass
   {
     public 
-    QueueDisablePass() 
+    QueueDisableCleanupPass()
     {
-      super("Queue and Disable Actions", 
+      super("Queue, Disable Actions and Cleanup", 
 	    "");
     }
     
     /**
-     * Return nodes which will have their actions disabled to be queued now.
+     * Return both finalizable stage nodes and nodes which will have their actions
+     * disabled to be queued now.
      */ 
     @Override
     public TreeSet<String> 
     preBuildPhase()
     {
-      return getDisableList();
+      TreeSet<String> regenerate = new TreeSet<String>();
+
+      regenerate.addAll(getDisableList());
+      for(FinalizableStage stage : pFinalStages) 
+ 	regenerate.add(stage.getNodeName());
+
+      return regenerate;
     }
     
     /**
-     * Disable the actions for the second pass nodes. 
+     * Cleanup any temporary node structures used setup the network and 
+     * disable the actions of the newly regenerated nodes.
      */ 
     @Override
     public void 
     buildPhase() 
       throws PipelineException
     {
+      for(FinalizableStage stage : pFinalStages) 
+	stage.finalizeStage();
       disableActions();
     }
     
@@ -636,6 +695,14 @@ class BlotBuilder
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The stages which require running their finalizeStage() method before check-in.
+   */ 
+  private ArrayList<FinalizableStage> pFinalStages; 
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -686,9 +753,14 @@ class BlotBuilder
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Returns the fully resolved name of the MEL script used to load the soundtrack.
+   */ 
+  private String pAttachSoundtrackNodeName; 
+
+  /**
    * The fully resolved name of the shot soundtrack node.
    */ 
-  private String pSoundTrackNodeName; 
+  private String pSoundtrackNodeName; 
 
   /**
    * The fully resolved name of the node containing the baked Maya geometry cache. 

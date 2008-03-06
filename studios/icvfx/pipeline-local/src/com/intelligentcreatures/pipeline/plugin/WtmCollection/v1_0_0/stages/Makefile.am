@@ -8,8 +8,11 @@ sourceroot = @ROOT_INST_PARENT_DIR@/pipeline-local/src
 javadir = $(sourceroot)/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/stages
 
 java_DATA = \
+  AttachGeoCacheStage.java \
   AttachSoundtrackStage.java \
   BashCompStage.java \
+  BuildBlotAnimStage.java \
+  BuildBlotTestStage.java \
   BuildMatchPrebakeStage.java \
   BuildMatchStage.java \
   BuildMatchVerifyStage.java \

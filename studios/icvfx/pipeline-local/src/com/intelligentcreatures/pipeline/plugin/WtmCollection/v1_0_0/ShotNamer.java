@@ -1,4 +1,4 @@
-// $Id: ShotNamer.java,v 1.19 2008/03/06 06:14:49 jim Exp $
+// $Id: ShotNamer.java,v 1.20 2008/03/06 11:05:59 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -222,8 +222,7 @@ class ShotNamer
     return path.toString(); 
   }
 
-
-
+  
   
   /*----------------------------------------------------------------------------------------*/
   /*   H D R I                                                                              */
@@ -984,7 +983,7 @@ class ShotNamer
 
 
   /*----------------------------------------------------------------------------------------*/
-  /*   M A T C H                                                                            */
+  /*   B L O T                                                                              */
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -1001,9 +1000,128 @@ class ShotNamer
   
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * Returns the fully resolved name of the blot animation Maya scene node.
+   */ 
+  public String
+  getBlotAnimSceneNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Blot, NodePurpose.Edit), 
+			 new Path(AppDirs.Maya.toDirPath(), 
+				  joinNames(getFullShotName(), "blot_anim"))); 
+    return path.toString(); 
+  }
 
-  // ...
+  /**
+   * Returns the fully resolved name of the rendered blot textures node.
+   */ 
+  public String
+  getBlotAnimTexturesNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Blot, NodePurpose.Focus), 
+			 new Path(AppDirs.Render.toDirPath(), 
+				  joinNames(getFullShotName(), "blot_anim"))); 
+    return path.toString(); 
+  }
 
+  /**
+   * Returns the fully resolved name of the blot textures QuickTime movie.
+   */ 
+  public String
+  getBlotAnimQuickTimeNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Blot, NodePurpose.Focus), 
+			 new Path(AppDirs.Render.toDirPath(), 
+				  new Path(AppDirs.QuickTime.toDirPath(), 
+					   joinNames(getFullShotName(), "blot_anim")))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node containing a thumbnail image extracted
+   * from the blot textures. 
+   */ 
+  public String
+  getBlotAnimThumbNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Blot, NodePurpose.Thumbnail), 
+			 joinNames(getFullShotName(), "blot_anim")); 
+    return path.toString(); 
+  }
+  
+  /**
+   * Returns the fully resolved name of the blot texture loading Maya scene.
+   */ 
+  public String
+  getBlotTextureSceneNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Blot, NodePurpose.Prepare), 
+			 new Path(AppDirs.Maya.toDirPath(), 
+				  joinNames(getFullShotName(), "blot_tex"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the MEL script which attaches the geometry 
+   * cache to the clean unrigged model.
+   */ 
+  public String
+  getBlotAttachCacheNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Blot, NodePurpose.Prepare), 
+			 new Path(AppDirs.MEL.toDirPath(), 
+				  joinNames(getFullShotName(), "attach_cache"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the blot test render Maya scene.
+   */ 
+  public String
+  getBlotTestSceneNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Blot, NodePurpose.Prepare), 
+			 new Path(AppDirs.Maya.toDirPath(), 
+				  joinNames(getFullShotName(), "blot_test"))); 
+    return path.toString(); 
+  }
+  
+  /**
+   * Returns the fully resolved name of the blot test render images.
+   */ 
+  public String
+  getBlotTestImagesNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Blot, NodePurpose.Focus), 
+			 new Path(AppDirs.Render.toDirPath(), 
+				  joinNames(getFullShotName(), "blot_test"))); 
+    return path.toString(); 
+  }
+  
+  /**
+   * Returns the fully resolved name of the blot test render QuickTime movie.
+   */ 
+  public String
+  getBlotTestQuickTimeNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Blot, NodePurpose.Focus), 
+			 new Path(AppDirs.Render.toDirPath(), 
+				  new Path(AppDirs.QuickTime.toDirPath(), 
+					   joinNames(getFullShotName(), "blot_test")))); 
+    return path.toString(); 
+  }
+  
+  /**
+   * Returns the fully resolved name of the node containing a thumbnail image extracted
+   * from the blot test render images.
+   */ 
+  public String
+  getBlotTestThumbNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Blot, NodePurpose.Thumbnail), 
+			 joinNames(getFullShotName(), "blot_test")); 
+    return path.toString(); 
+  }
 
   /**
    * Returns the fully resolved name of the submit node for the Blot task.
