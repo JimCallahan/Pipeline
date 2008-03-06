@@ -1,4 +1,4 @@
-// $Id: WtmCollection.java,v 1.8 2008/02/26 13:22:05 jim Exp $
+// $Id: WtmCollection.java,v 1.9 2008/03/06 06:14:49 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -32,11 +32,13 @@ class WtmCollection
       {
 	LayoutGroup sub = 
 	  new LayoutGroup("Task Builders", "Builders each production task.", true);
+	sub.addEntry("Sound");
 	sub.addEntry("HDRI");
 	sub.addEntry("Plates");
 	sub.addEntry("InternalTracking");
 	sub.addEntry("Tracking");
 	sub.addEntry("Match");
+	sub.addEntry("Blot");
 
 	group.addSubGroup(sub);
       }
@@ -80,11 +82,14 @@ class WtmCollection
     String pkg = "com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.";
 
     TreeMap<String, String> toReturn = new TreeMap<String, String>();
+    toReturn.put("Sound",            pkg + "SoundBuilder");
     toReturn.put("HDRI",             pkg + "HdriBuilder");
     toReturn.put("Plates",           pkg + "PlatesBuilder");
     toReturn.put("InternalTracking", pkg + "InternalTrackingBuilder");
     toReturn.put("Tracking",         pkg + "TrackingBuilder");
     toReturn.put("Match",            pkg + "MatchBuilder");
+    toReturn.put("Blot",             pkg + "BlotBuilder");
+
     toReturn.put("ApproveTask",      pkg + "ApproveTaskBuilder");
     
     return toReturn;

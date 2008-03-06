@@ -1,4 +1,4 @@
-// $Id: ICStageFunction.java,v 1.6 2008/02/27 20:22:22 jim Exp $
+// $Id: ICStageFunction.java,v 1.7 2008/03/06 06:14:49 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -22,5 +22,6 @@ class ICStageFunction
   public final static String aNukeScript   = "NukeScript";
   public final static String aQuickTime    = "QuickTime";
   public final static String aHDRImage     = "HDRImage";
-  public final static String aObjModel     = "ObjModel"; 
+  public final static String aObjModel     = "ObjModel";
+  public final static String aSoundFile    = "SoundFile";
 }

@@ -17,6 +17,7 @@ java_DATA = \
   BaseShotBuilder.java \
   BaseTaskBuilder.java \
   BaseTrackingBuilder.java \
+  BlotBuilder.java \
   HdriBuilder.java \
   ICStageFunction.java \
   InternalTrackingBuilder.java \
@@ -25,6 +26,7 @@ java_DATA = \
   PlatesBuilder.java \
   ProjectNamer.java \
   ShotNamer.java \
+  SoundBuilder.java \
   StudioDefinitions.java \
   TaskType.java \
   TrackingBuilder.java \

@@ -1,4 +1,4 @@
-// $Id: ProjectNamer.java,v 1.13 2008/03/03 11:18:59 jim Exp $
+// $Id: ProjectNamer.java,v 1.14 2008/03/06 06:14:49 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -103,6 +103,23 @@ class ProjectNamer
   }
 
    
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S O U N D   A S S E T S                                                              */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Returns the fully resolved node name of the placeholder sound file.
+   */ 
+  public String
+  getMissingSoundtrackNode() 
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Sound), 
+			 new Path(AppDirs.Placeholder.toDirPath(), "soundtrack")); 
+    return path.toString();
+  }
+  
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   P L A T E   A S S E T S                                                              */
@@ -266,6 +283,47 @@ class ProjectNamer
     return path.toString(); 
   }
   
+ 
+  /*----------------------------------------------------------------------------------------*/
+  /*   B L O T   A S S E T S                                                                */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Returns the fully resolved name of the node containing the combined MEL scripts to 
+   * attach the blot textures and shaders in the animation test render scene.
+   */ 
+  public String
+  getBlotAttachPreviewNode() 
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Blot), 
+			 new Path(AppDirs.MEL.toDirPath(), "attach_preview"));
+    return path.toString(); 
+  }
+  
+  /**
+   * Returns the fully resolved name of the node containing the combined MEL scripts to 
+   * attach shaders the shaders for the blot animation scene.
+   */ 
+  public String
+  getBlotAnimPrepNode() 
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Blot), 
+			 new Path(AppDirs.MEL.toDirPath(), "blot_anim_prep"));
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node containing the combined MEL scripts to 
+   * attach shaders the shaders for the blot animation test render scene.
+   */ 
+  public String
+  getBlotTestPrepNode() 
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Blot), 
+			 new Path(AppDirs.MEL.toDirPath(), "blot_test_prep"));
+    return path.toString(); 
+  }
+  
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -352,6 +410,41 @@ class ProjectNamer
   {
     Path path = new Path(pBasePaths.get(AssetType.Rorschach, TaskType.Rigging), 
 			 "ror_rig");
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node containing a Maya scene which provides the
+   * test shaders used in the blot animation verification test renders.
+   */ 
+  public String
+  getRorschachPreviewShadersNode() 
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Rorschach, TaskType.LookDev), 
+			 "ror_shd_preview");
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node containing a placeholder Maya scene which 
+   * will eventually contain the blot animation.
+   */ 
+  public String
+  getRorschachBlotAnimPlaceholderNode() 
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Rorschach, TaskType.Placeholder), 
+			 "ror_blot_anim");
+    return path.toString(); 
+  }
+  
+  /**
+   * Returns the fully resolved name of the node containing the face guidelines image. 
+   */ 
+  public String
+  getRorschachGuidelinesNode() 
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Rorschach, TaskType.Misc), 
+			 "guidelines");
     return path.toString(); 
   }
 

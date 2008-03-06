@@ -1,4 +1,4 @@
-// $Id: AppDirs.java,v 1.6 2008/03/03 11:18:59 jim Exp $
+// $Id: AppDirs.java,v 1.7 2008/03/06 06:14:49 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -137,6 +137,11 @@ enum AppDirs
    * Source code for various compiled formats such as shaders, VEX operators, etc... 
    */ 
   Source, 
+
+  /**
+   * Placeholder files.
+   */ 
+  Placeholder, 
 
   /**
    * Miscellaneous data files not easily catagorized.

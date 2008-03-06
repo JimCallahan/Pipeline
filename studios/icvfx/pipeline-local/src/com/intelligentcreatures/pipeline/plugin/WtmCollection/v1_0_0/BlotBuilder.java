@@ -1,4 +1,4 @@
-// $Id: MatchBuilder.java,v 1.9 2008/03/06 06:14:49 jim Exp $
+// $Id: BlotBuilder.java,v 1.1 2008/03/06 06:14:49 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -13,11 +13,11 @@ import us.temerity.pipeline.stages.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   M A T C H   B U I L D E R                                                              */
+/*   B L O T   B U I L D E R                                                                */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A builder for constructing the nodes associated with the Match task.<P> 
+ * A builder for constructing the nodes associated with the Blot task.<P> 
  * 
  * Besides the common parameters shared by all builders, this builder defines the following
  * additional parameters: <BR>
@@ -40,7 +40,7 @@ import java.util.*;
  * </DIV> 
  */
 public 
-class MatchBuilder 
+class BlotBuilder 
   extends BaseShotBuilder 
 {
   /*----------------------------------------------------------------------------------------*/
@@ -60,7 +60,7 @@ class MatchBuilder
    *   Information that is shared among all builders in a given invocation.
    */ 
   public 
-  MatchBuilder
+  BlotBuilder
   (
    MasterMgrClient mclient,
    QueueMgrClient qclient,
@@ -95,7 +95,7 @@ class MatchBuilder
    *   Provides the names of nodes and node directories which are shot specific.
    */ 
   public 
-  MatchBuilder
+  BlotBuilder
   (
    MasterMgrClient mclient,
    QueueMgrClient qclient,
@@ -106,8 +106,8 @@ class MatchBuilder
   )
     throws PipelineException
   {
-    super("Match",
-          "A builder for constructing the nodes associated with the Match task.", 
+    super("Blot",
+          "A builder for constructing the nodes associated with the Blot task.", 
           mclient, qclient, builderInfo, studioDefs, projectNamer, shotNamer);
 
     /* setup builder parameters */ 
@@ -121,7 +121,7 @@ class MatchBuilder
     
     /* create the setup passes */ 
     {
-      addSetupPass(new MatchSetupShotEssentials());
+      addSetupPass(new BlotSetupShotEssentials());
       addSetupPass(new GetPrerequisites());
     }
 
@@ -187,13 +187,12 @@ class MatchBuilder
     ArrayList<PluginContext> plugins = new ArrayList<PluginContext>();	
     plugins.add(new PluginContext("Touch")); 
     plugins.add(new PluginContext("CatFiles"));	
-    plugins.add(new PluginContext("Composite")); 	
     plugins.add(new PluginContext("MayaBuild")); 		
-    plugins.add(new PluginContext("MayaMEL")); 			
-    plugins.add(new PluginContext("MayaMakeGeoCache")); 		
-    plugins.add(new PluginContext("MayaObjExport")); 		
+    plugins.add(new PluginContext("MayaAttachGeoCache")); 	
+    plugins.add(new PluginContext("MayaFTNBuild")); 		
     plugins.add(new PluginContext("MayaRender")); 		
-    plugins.add(new PluginContext("NukeThumbnail"));			
+    plugins.add(new PluginContext("NukeThumbnail"));		
+    plugins.add(new PluginContext("NukeQt"));			
 
     MappedArrayList<String, PluginContext> toReturn = 
       new MappedArrayList<String, PluginContext>();
@@ -228,7 +227,7 @@ class MatchBuilder
   {
     addApproveTaskAnnotation(stage,
 			     pShotNamer.getProjectName(), pShotNamer.getFullShotName(),
-			     TaskType.Match.toString(), builderID);
+			     TaskType.Blot.toString(), builderID);
   }
 
   /** 
@@ -251,7 +250,7 @@ class MatchBuilder
   {
     addTaskAnnotation(stage, purpose, 
                       pShotNamer.getProjectName(), pShotNamer.getFullShotName(),
-                      TaskType.Match.toString()); 
+                      TaskType.Blot.toString()); 
   }
 
   /** 
@@ -274,7 +273,7 @@ class MatchBuilder
   {
     addTaskAnnotation(nodeName, purpose, 
                       pShotNamer.getProjectName(), pShotNamer.getFullShotName(),
-                      TaskType.Match.toString()); 
+                      TaskType.Blot.toString()); 
   }
 
 
@@ -284,11 +283,11 @@ class MatchBuilder
   /*----------------------------------------------------------------------------------------*/
 
   private
-  class MatchSetupShotEssentials
+  class BlotSetupShotEssentials
     extends BaseSetupShotEssentials
   {
     public 
-    MatchSetupShotEssentials()
+    BlotSetupShotEssentials()
     {
       super(); 
     }
@@ -306,37 +305,33 @@ class MatchBuilder
 
       /* register the required (locked) nodes */ 
       {
-	/* tracking assets */ 
-	pTrackVerifyGlobalsNodeName = pProjectNamer.getTrackVerifyGlobalsNode(); 
-	pRequiredNodeNames.add(pTrackVerifyGlobalsNodeName); 
+        /* blot assets */ 
+        pBlotAttachPreviewNode = pProjectNamer.getBlotAttachPreviewNode();
+	pRequiredNodeNames.add(pBlotAttachPreviewNode); 
 
-	/* match assets */ 
-	pMatchPrepNodeName = pProjectNamer.getMatchPrepNode(); 
-	pRequiredNodeNames.add(pMatchPrepNodeName); 
-
-	pMatchPrebakeNodeName = pProjectNamer.getMatchPrebakeNode(); 
-	pRequiredNodeNames.add(pMatchPrebakeNodeName); 
+        pBlotAnimPrepNodeName = pProjectNamer.getBlotAnimPrepNode(); 
+	pRequiredNodeNames.add(pBlotAnimPrepNodeName); 
+        
+        pBlotTestPrepNodeName = pProjectNamer.getBlotTestPrepNode(); 
+	pRequiredNodeNames.add(pBlotTestPrepNodeName); 
 
 	/* rorschach assets */ 
-	pConstrainRigNodeName = pProjectNamer.getConstrainRigNode(); 
-	pRequiredNodeNames.add(pConstrainRigNodeName); 
-
 	pRorschachHiresModelNodeName = pProjectNamer.getRorschachHiresModelNode(); 
 	pRequiredNodeNames.add(pRorschachHiresModelNodeName); 
+        
+        pRorschachPreviewShadersNodeName = pProjectNamer.getRorschachPreviewShadersNode();
+	pRequiredNodeNames.add(pRorschachPreviewShadersNodeName);    
 
-	pRorschachRigNodeName = pProjectNamer.getRorschachRigNode(); 
-	pRequiredNodeNames.add(pRorschachRigNodeName); 
+        pRorschachBlotAnimPlaceholderNodeName = 
+          pProjectNamer.getRorschachBlotAnimPlaceholderNode();
+        pRequiredNodeNames.add(pRorschachBlotAnimPlaceholderNodeName);        
 
-	pRorschachTestShadersNodeName = pProjectNamer.getRorschachTestShadersNode(); 
-	pRequiredNodeNames.add(pRorschachTestShadersNodeName); 
-
-	/* misc assets */ 
-	pHideCameraPlaneNodeName = pProjectNamer.getHideCameraPlaneNode(); 
-	pRequiredNodeNames.add(pHideCameraPlaneNodeName); 
+	pRorschachGuidelinesNodeName = pProjectNamer.getRorschachGuidelinesNode(); 
+	pRequiredNodeNames.add(pRorschachGuidelinesNodeName); 
       }
     }
     
-    private static final long serialVersionUID = -4398882102667402411L; 
+    private static final long serialVersionUID = -8173445067750517854L;
   }
 
   
@@ -359,36 +354,31 @@ class MatchBuilder
     validatePhase() 
       throws PipelineException 
     {
-      /* get the render resolution MEL script */ 
-      pResolutionNodeName = pShotNamer.getResolutionNode(); 
-      pRequiredNodeNames.add(pResolutionNodeName); 
-      
-      /* extracted camera/track nodes */ 
-      {
-	pExtractedCameraNodeName = pShotNamer.getTrackingExtractedCameraNode();
-	pRequiredNodeNames.add(pExtractedCameraNodeName); 
-	
-	pExtractedTrackNodeName = pShotNamer.getTrackingExtractedTrackNode();
-	pRequiredNodeNames.add(pExtractedTrackNodeName); 
-      }
+      /* the geometry cache */ 
+      pMatchGeoCacheNodeName = pShotNamer.getMatchGeoCacheNode();
+      pRequiredNodeNames.add(pMatchGeoCacheNodeName); 
+
+      /* extracted camera */ 
+      pExtractedCameraNodeName = pShotNamer.getTrackingExtractedCameraNode();
+      pRequiredNodeNames.add(pExtractedCameraNodeName); 
 
       /* the background plates node */ 
-      pUndistorted2kPlateNodeName = pShotNamer.getUndistorted2kPlateNode(); 
-      pRequiredNodeNames.add(pUndistorted2kPlateNodeName); 
+      pUndistorted1kPlateNodeName = pShotNamer.getUndistorted1kPlateNode(); 
+      pRequiredNodeNames.add(pUndistorted1kPlateNodeName); 
 
-      /* lookup the frame range of the shot by looking at the undistorted 2k plates node */ 
+      /* lookup the frame range of the shot by looking at the undistorted 1k plates node */ 
       {
-	NodeVersion vsn = pClient.getCheckedInVersion(pUndistorted2kPlateNodeName, null); 
+	NodeVersion vsn = pClient.getCheckedInVersion(pUndistorted1kPlateNodeName, null); 
 	if(vsn == null) 
 	  throw new PipelineException
-	    ("Somehow no checked-in version of the undistorted 2k plates node " + 
-	     "(" + pUndistorted2kPlateNodeName + ") exists!"); 	
+	    ("Somehow no checked-in version of the undistorted 1k plates node " + 
+	     "(" + pUndistorted1kPlateNodeName + ") exists!"); 	
 
 	pFrameRange = vsn.getPrimarySequence().getFrameRange(); 
       }
     }
 
-    private static final long serialVersionUID = 1589975630815370641L;
+    private static final long serialVersionUID = -4286766691223998369L;
   }
 
 
@@ -405,7 +395,7 @@ class MatchBuilder
     BuildNodesPass()
     {
       super("Build Submit/Approve Nodes", 
-            "Creates the nodes which make up the Match task."); 
+            "Creates the nodes which make up the Blot task."); 
     }
     
     /**
@@ -423,7 +413,7 @@ class MatchBuilder
 	/* lock the latest version of all of the prerequisites */ 
 	lockNodePrerequisites(); 
 
-	String prereqNodeName = pShotNamer.getMatchPrereqNode();
+	String prereqNodeName = pShotNamer.getBlotPrereqNode();
 	{
 	  TreeSet<String> sources = new TreeSet<String>();
 	  sources.addAll(pRequiredNodeNames); 
@@ -440,88 +430,98 @@ class MatchBuilder
 
       /* the submit network */
       {
-	String preMatchAnimNodeName = pShotNamer.getPreMatchAnimNode(); 
-	{
-	  BuildPreMatchStage stage = 
-	    new BuildPreMatchStage
-	    (stageInfo, pContext, pClient, 
-	     preMatchAnimNodeName, pConstrainRigNodeName, 
-	     pRorschachRigNodeName, pExtractedCameraNodeName, pExtractedTrackNodeName, 
-	     pFrameRange); 
-	  addTaskAnnotation(stage, NodePurpose.Prepare); 
-	  stage.build();  
-	}
+	//	pSoundTrackNodeName = pShotNamer.getSoundTrackNode(); 
 
-	pMatchAnimNodeName = pShotNamer.getMatchAnimNode(); 
-	{
-	  BuildMatchStage stage = 
-	    new BuildMatchStage(stageInfo, pContext, pClient, 
-				pMatchAnimNodeName, preMatchAnimNodeName, pFrameRange); 
-	  addTaskAnnotation(stage, NodePurpose.Edit); 
-	  stage.build(); 
-	  addToDisableList(pMatchAnimNodeName); 	  
-	}
 
-	String verifyNodeName = pShotNamer.getMatchVerifyNode(); 
-	{
-	  BuildMatchVerifyStage stage = 
-	    new BuildMatchVerifyStage
-	    (stageInfo, pContext, pClient, 
-	     verifyNodeName, pMatchAnimNodeName, pRorschachTestShadersNodeName, 
-	     pMatchPrepNodeName, pFrameRange); 
-	  addTaskAnnotation(stage, NodePurpose.Prepare); 
-	  stage.build();  
-	}
 
-	String matchPreRenderScriptNodeName = pShotNamer.getMatchPreRenderScriptNode();
-	{
-	  LinkedList<String> sources = new LinkedList<String>(); 
-	  sources.add(pHideCameraPlaneNodeName); 
-	  sources.add(pTrackVerifyGlobalsNodeName); 
-	  sources.add(pResolutionNodeName); 
 
-	  CatMelStage stage = 
-	    new CatMelStage(stageInfo, pContext, pClient, 
-			    matchPreRenderScriptNodeName, sources);
-	  addTaskAnnotation(stage, NodePurpose.Prepare); 
-	  stage.build();  
-	}
 
-	String verifyImagesNodeName = pShotNamer.getMatchVerifyImagesNode(); 
-	{
-	  RenderTaskVerifyStage stage = 
-	    new RenderTaskVerifyStage
-	    (stageInfo, pContext, pClient, 
-	     verifyImagesNodeName, pFrameRange, verifyNodeName, 
-	     "match:prep:cam:camera01", matchPreRenderScriptNodeName); 
-	  addTaskAnnotation(stage, NodePurpose.Focus); 
-	  stage.build();  
-	}
 
-	String verifyCompNodeName = pShotNamer.getMatchVerifyCompNode(); 
-	{
-	  BashCompStage stage = 
-	    new BashCompStage(stageInfo, pContext, pClient, 
-			      verifyCompNodeName, pFrameRange, 
-			      verifyImagesNodeName, pUndistorted2kPlateNodeName); 
-	  addTaskAnnotation(stage, NodePurpose.Focus); 	 
-	  stage.build(); 
-	}
+// 	String preBlotAnimNodeName = pShotNamer.getPreBlotAnimNode(); 
+// 	{
+// 	  BuildPreBlotStage stage = 
+// 	    new BuildPreBlotStage
+// 	    (stageInfo, pContext, pClient, 
+// 	     preBlotAnimNodeName, pConstrainRigNodeName, 
+// 	     pRorschachRigNodeName, pExtractedCameraNodeName, pExtractedTrackNodeName, 
+// 	     pFrameRange); 
+// 	  addTaskAnnotation(stage, NodePurpose.Prepare); 
+// 	  stage.build();  
+// 	}
 
-	String verifyThumbNodeName = pShotNamer.getMatchVerifyThumbNode();
-	{
-	  NukeThumbnailStage stage = 
-	    new NukeThumbnailStage(stageInfo, pContext, pClient,
-				   verifyThumbNodeName, "tif", verifyCompNodeName, 
-				   1, 150, 1.0, true, true, new Color3d()); 
-	  addTaskAnnotation(stage, NodePurpose.Thumbnail); 
-	  stage.build(); 
-	}
+// 	pBlotAnimNodeName = pShotNamer.getBlotAnimNode(); 
+// 	{
+// 	  BuildBlotStage stage = 
+// 	    new BuildBlotStage(stageInfo, pContext, pClient, 
+// 				pBlotAnimNodeName, preBlotAnimNodeName, pFrameRange); 
+// 	  addTaskAnnotation(stage, NodePurpose.Edit); 
+// 	  stage.build(); 
+// 	  addToDisableList(preBlotAnimNodeName); 	  
+// 	}
 
-	String submitNodeName = pShotNamer.getMatchSubmitNode();
+// 	String verifyNodeName = pShotNamer.getBlotVerifyNode(); 
+// 	{
+// 	  BuildBlotVerifyStage stage = 
+// 	    new BuildBlotVerifyStage
+// 	    (stageInfo, pContext, pClient, 
+// 	     verifyNodeName, pBlotAnimNodeName, pRorschachTestShadersNodeName, 
+// 	     pBlotPrepNodeName, pFrameRange); 
+// 	  addTaskAnnotation(stage, NodePurpose.Prepare); 
+// 	  stage.build();  
+// 	}
+
+// 	String matchPreRenderScriptNodeName = pShotNamer.getBlotPreRenderScriptNode();
+// 	{
+// 	  LinkedList<String> sources = new LinkedList<String>(); 
+// 	  sources.add(pHideCameraPlaneNodeName); 
+// 	  sources.add(pTrackVerifyGlobalsNodeName); 
+// 	  sources.add(pResolutionNodeName); 
+
+// 	  CatMelStage stage = 
+// 	    new CatMelStage(stageInfo, pContext, pClient, 
+// 			    matchPreRenderScriptNodeName, sources);
+// 	  addTaskAnnotation(stage, NodePurpose.Prepare); 
+// 	  stage.build();  
+// 	}
+
+// 	String verifyImagesNodeName = pShotNamer.getBlotVerifyImagesNode(); 
+// 	{
+// 	  RenderTaskVerifyStage stage = 
+// 	    new RenderTaskVerifyStage
+// 	    (stageInfo, pContext, pClient, 
+// 	     verifyImagesNodeName, pFrameRange, verifyNodeName, 
+// 	     "match:prep:cam:camera01", matchPreRenderScriptNodeName); 
+// 	  addTaskAnnotation(stage, NodePurpose.Focus); 
+// 	  stage.build();  
+// 	}
+
+// 	String verifyCompNodeName = pShotNamer.getBlotVerifyCompNode(); 
+// 	{
+// 	  BashCompStage stage = 
+// 	    new BashCompStage(stageInfo, pContext, pClient, 
+// 			      verifyCompNodeName, pFrameRange, 
+// 			      verifyImagesNodeName, pUndistorted2kPlateNodeName); 
+// 	  addTaskAnnotation(stage, NodePurpose.Focus); 	 
+// 	  stage.build(); 
+// 	}
+
+// 	String verifyThumbNodeName = pShotNamer.getBlotVerifyThumbNode();
+// 	{
+// 	  NukeThumbnailStage stage = 
+// 	    new NukeThumbnailStage(stageInfo, pContext, pClient,
+// 				   verifyThumbNodeName, "tif", verifyCompNodeName, 
+// 				   1, 150, 1.0, true, true, new Color3d()); 
+// 	  addTaskAnnotation(stage, NodePurpose.Thumbnail); 
+// 	  stage.build(); 
+// 	}
+
+	String submitNodeName = pShotNamer.getBlotSubmitNode();
 	{
 	  TreeSet<String> sources = new TreeSet<String>();
-	  sources.add(verifyThumbNodeName);
+// 	  sources.add();
+// 	  sources.add();
+// 	  sources.add();
+// 	  sources.add();
 
 	  TargetStage stage = 
 	    new TargetStage(stageInfo, pContext, pClient, 
@@ -535,42 +535,42 @@ class MatchBuilder
 
       /* the approve network */ 
       {
-	String matchPrebakeSceneNodeName = pShotNamer.getMatchPrebakeSceneNode();
-	{
-	  BuildMatchPrebakeStage stage = 
-	    new BuildMatchPrebakeStage(stageInfo, pContext, pClient, 
-				       matchPrebakeSceneNodeName, 
-				       pMatchAnimNodeName, pRorschachHiresModelNodeName, 
-				       pMatchPrebakeNodeName, pFrameRange); 
-	  addTaskAnnotation(stage, NodePurpose.Prepare); 
-	  stage.build(); 
-	}
+// 	String matchPrebakeSceneNodeName = pShotNamer.getBlotPrebakeSceneNode();
+// 	{
+// 	  BuildBlotPrebakeStage stage = 
+// 	    new BuildBlotPrebakeStage(stageInfo, pContext, pClient, 
+// 				       matchPrebakeSceneNodeName, 
+// 				       pBlotAnimNodeName, pRorschachHiresModelNodeName, 
+// 				       pBlotPrebakeNodeName, pFrameRange); 
+// 	  addTaskAnnotation(stage, NodePurpose.Prepare); 
+// 	  stage.build(); 
+// 	}
 
-	String matchGeoCacheNodeName = pShotNamer.getMatchGeoCacheNode();
-	{
-	  MatchGeoCacheStage stage = 
-	    new MatchGeoCacheStage(stageInfo, pContext, pClient, 
-				   matchGeoCacheNodeName, matchPrebakeSceneNodeName, 
-                                   "rorHead_GEOShape"); 
-	  addTaskAnnotation(stage, NodePurpose.Product); 
-	  stage.build(); 
-	}
+// 	String matchGeoCacheNodeName = pShotNamer.getBlotGeoCacheNode();
+// 	{
+// 	  BlotGeoCacheStage stage = 
+// 	    new BlotGeoCacheStage(stageInfo, pContext, pClient, 
+// 				   matchGeoCacheNodeName, matchPrebakeSceneNodeName, 
+//                                    "rorHead_GEOShape"); 
+// 	  addTaskAnnotation(stage, NodePurpose.Product); 
+// 	  stage.build(); 
+// 	}
 
-	String matchMaskGeoNodeName = pShotNamer.getMatchMaskGeoNode();
-	{
-	  MatchMaskGeoStage stage = 
-	    new MatchMaskGeoStage(stageInfo, pContext, pClient, 
-				  matchMaskGeoNodeName, matchPrebakeSceneNodeName, 
-                                  "rorHead_GEO", pFrameRange); 
-	  addTaskAnnotation(stage, NodePurpose.Product); 
-	  stage.build(); 
-	}
+// 	String matchMaskGeoNodeName = pShotNamer.getBlotMaskGeoNode();
+// 	{
+// 	  BlotMaskGeoStage stage = 
+// 	    new BlotMaskGeoStage(stageInfo, pContext, pClient, 
+// 				  matchMaskGeoNodeName, matchPrebakeSceneNodeName, 
+//                                   "rorHead_GEO", pFrameRange); 
+// 	  addTaskAnnotation(stage, NodePurpose.Product); 
+// 	  stage.build(); 
+// 	}
 
- 	String approveNodeName = pShotNamer.getMatchApproveNode();
+ 	String approveNodeName = pShotNamer.getBlotApproveNode();
  	{
  	  TreeSet<String> sources = new TreeSet<String>();
- 	  sources.add(matchGeoCacheNodeName);
- 	  sources.add(matchMaskGeoNodeName);
+//  	  sources.add();
+//  	  sources.add();
 
  	  TargetStage stage = 
  	    new TargetStage(stageInfo, pContext, pClient, 
@@ -583,7 +583,7 @@ class MatchBuilder
       }
     }
 
-    private static final long serialVersionUID = 1327196062674500407L;
+    private static final long serialVersionUID = -6819376171666233045L;
   }
    
 
@@ -621,7 +621,7 @@ class MatchBuilder
       disableActions();
     }
     
-    private static final long serialVersionUID = 6063704518254978295L;
+    private static final long serialVersionUID = 6212862876117764637L;
   }
 
 
@@ -630,7 +630,7 @@ class MatchBuilder
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 881301831541481949L;
+  private static final long serialVersionUID = -4882006094499927504L;
 
   
 
@@ -639,34 +639,25 @@ class MatchBuilder
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The fully resolved name of the node containing a MEL script which used to set
-   * the Maya render globals for tracking verification test renders.
+   * The fully resolved name of the node containing the combined MEL scripts to 
+   * attach the blot textures and shaders in the animation test render scene.
    */ 
-  private String pTrackVerifyGlobalsNodeName;  
-
-
-  /*----------------------------------------------------------------------------------------*/
+  private String pBlotAttachPreviewNode; 
 
   /**
    * The fully resolved name of the node containing the combined MEL scripts to 
-   * attach shaders and verify the match test render Maya scene.
+   * attach shaders the shaders for the blot animation scene.
    */ 
-  private String pMatchPrepNodeName;
+  private String pBlotAnimPrepNodeName;
 
   /**
-   * The fully resolved name of the node containing the MEL script which transfers
-   * animation from a rigged head to the clean non-rigged version.
+   * The fully resolved name of the node containing the combined MEL scripts to 
+   * attach shaders the shaders for the blot animation test render scene.
    */ 
-  private String pMatchPrebakeNodeName;
+  private String pBlotTestPrepNodeName;
 
 
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * The fully resolved name of the node containing a MEL script used to add head 
-   * and neck constraints to the match rig.
-   */ 
-  private String pConstrainRigNodeName;
 
   /**
    * The fully resolved name of the node containing a Maya scene which provides a
@@ -675,33 +666,34 @@ class MatchBuilder
   private String pRorschachHiresModelNodeName;
 
   /**
-   * The fully resolved name of the node containing the match rig Maya scene.
-   */ 
-  private String pRorschachRigNodeName;
-
-  /**
    * The fully resolved name of the node containing a Maya scene which provides the
-   * test shaders used in the tracking verification test renders.
+   * test shaders used in the blot animation verification test renders.
    */ 
-  private String pRorschachTestShadersNodeName;
+  private String pRorschachPreviewShadersNodeName; 
+  
+  /**
+   * The fully resolved name of the node containing a placeholder Maya scene which 
+   * will eventually contain the blot animation.
+   */ 
+  private String pRorschachBlotAnimPlaceholderNodeName; 
+
+  /**
+   * The fully resolved name of the node containing the face guidelines image. 
+   */ 
+  private String pRorschachGuidelinesNodeName; 
 
 
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The fully resolved name of the node containing a MEL script to hide all camera
-   * image planes from view before rendering.
+   * The fully resolved name of the shot soundtrack node.
    */ 
-  private String pHideCameraPlaneNodeName;  
-
-
-  /*----------------------------------------------------------------------------------------*/
+  private String pSoundTrackNodeName; 
 
   /**
-   * The fully resolved name of the node containing a MEL script used to set 
-   * render resolutions which match that of the undistorted plates.
+   * The fully resolved name of the node containing the baked Maya geometry cache. 
    */ 
-  private String pResolutionNodeName; 
+  private String pMatchGeoCacheNodeName; 
 
   /**
    * The fully resolved name of the node containing the extracted world space camera 
@@ -710,16 +702,10 @@ class MatchBuilder
   private String pExtractedCameraNodeName; 
 
   /**
-   * The fully resolved name of the node containing the extracted world space 
-   * locators with all tracking animation baked.
-   */ 
-  private String pExtractedTrackNodeName; 
-
-  /**
    * The fully resolved name of the node containing the undistorted/linearized
-   * ~2k plate images.
+   * ~1k plate images.
    */ 
-  private String pUndistorted2kPlateNodeName; 
+  private String pUndistorted1kPlateNodeName; 
 
   /**
    * The frame range of the shot.
@@ -727,11 +713,4 @@ class MatchBuilder
   private FrameRange pFrameRange; 
 
 
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * The fully resolved name of the node for the Maya scene used to perform the 
-   * final head and facial matching animation.
-   */ 
-  private String pMatchAnimNodeName; 
 }

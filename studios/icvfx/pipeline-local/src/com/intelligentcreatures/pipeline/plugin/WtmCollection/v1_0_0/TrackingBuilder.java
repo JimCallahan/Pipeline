@@ -1,4 +1,4 @@
-// $Id: TrackingBuilder.java,v 1.10 2008/02/26 11:34:49 jim Exp $
+// $Id: TrackingBuilder.java,v 1.11 2008/03/06 06:14:49 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -321,7 +321,7 @@ class TrackingBuilder
     BuildNodesPass()
     {
       super("Build Submit/Approve Nodes", 
-            "Creates the nodes which make up the Plates task."); 
+            "Creates the nodes which make up the Tracking task."); 
     }
     
     /**

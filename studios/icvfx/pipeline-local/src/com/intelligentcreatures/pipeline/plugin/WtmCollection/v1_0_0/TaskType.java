@@ -1,4 +1,4 @@
-// $Id: TaskType.java,v 1.8 2008/02/22 09:22:29 jim Exp $
+// $Id: TaskType.java,v 1.9 2008/03/06 06:14:49 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -14,6 +14,11 @@ import us.temerity.pipeline.*;
 public  
 enum TaskType
 {
+  /**
+   *
+   */
+  Sound, 
+  
   /**
    * A builder for constructing the nodes associated with the HDRI task.
    */ 

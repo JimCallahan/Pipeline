@@ -1,8 +1,8 @@
-// $Id: MatchGeoCacheStage.java,v 1.3 2008/03/06 06:14:49 jim Exp $
+// $Id: AttachSoundtrackStage.java,v 1.1 2008/03/06 06:14:49 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
 
-import com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.*;
+import com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.*; 
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
@@ -12,16 +12,16 @@ import us.temerity.pipeline.stages.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   M A T C H   G E O   C A C H E   S T A G E                                              */
+/*   A T T A C H   S O U N D T R A C K   S T A G E                                          */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Creates the match animation Maya geometry cache.
+ * Creates a node which uses the MayaAttachSound action
  */ 
 public 
-class MatchGeoCacheStage
-  extends StandardStage
-{
+class AttachSoundtrackStage 
+  extends MELFileStage
+{ 
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
@@ -41,43 +41,38 @@ class MatchGeoCacheStage
    * @param nodeName
    *   The name of the node that is to be created.
    * 
-   * @param prebakeName
-   *   The name of the node containing the pre-baked Maya scene.
-   * 
-   * @param geometryName
-   *   The name of the geometry shape node to cache. 
+   * @param imageSource
+   *   The name of the sound file node to attach.
    */
   public
-  MatchGeoCacheStage
+  AttachSoundtrackStage
   (
-    StageInformation stageInfo,
-    UtilContext context,
-    MasterMgrClient client, 
-    String nodeName,
-    String prebakeName, 
-    String geometryName
-  ) 
+   StageInformation stageInfo,
+   UtilContext context,
+   MasterMgrClient client, 
+   String nodeName, 
+   String soundFile
+  )
     throws PipelineException
   {
-    super("MatchGeoCache", 
-      	  "Creates the match animation Maya geometry cache.", 
-      	  stageInfo, context, client,
-	  nodeName, "mc", null, new PluginContext("MayaMakeGeoCache")); 
+    super("AttachSoundtrack", 
+	  "Creates a node which uses the MayaAttachSound action.", 
+	  stageInfo, context, client, 
+	  nodeName, 
+	  null, 
+	  new PluginContext("MayaAttachSound")); 
 
-    addLink(new LinkMod(prebakeName, LinkPolicy.Dependency));
-    addSingleParamValue("MayaScene", prebakeName); 
-    
-    addSingleParamValue("GeometryName", geometryName); 
+    addLink(new LinkMod(soundFile, LinkPolicy.Dependency));
 
-    Path path = new Path(nodeName);
-    addSecondarySequence(new FileSeq(path.getName(), "xml"));
+    addSingleParamValue("SoundFile", soundFile); 
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
  
-  private static final long serialVersionUID = 484783363550959037L;
+  private static final long serialVersionUID = 2176572446083383918L;
 
 }

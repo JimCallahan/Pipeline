@@ -1,4 +1,4 @@
-// $Id: ShotNamer.java,v 1.18 2008/03/03 11:18:59 jim Exp $
+// $Id: ShotNamer.java,v 1.19 2008/03/06 06:14:49 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -155,7 +155,75 @@ class ShotNamer
     return (pSeqName + pShotName); 
   }
 
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S O U N D                                                                            */
+  /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * Returns the fully resolved name of the prerequisites node for the Sound task.
+   */ 
+  public String
+  getSoundPrereqNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Sound, NodePurpose.Prereq), 
+			 joinNames(getFullShotName(), "sound_prereq")); 
+    return path.toString(); 
+  }
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Returns the fully resolved name of the shot soundtrack node.
+   */ 
+  public String
+  getSoundtrackNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Sound, NodePurpose.Edit), 
+			 joinNames(getFullShotName(), "soundtrack")); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the submit node for the Sound task.
+   */ 
+  public String
+  getSoundSubmitNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Sound, NodePurpose.Submit), 
+			 joinNames(getFullShotName(), "sound_submit")); 
+    return path.toString(); 
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Returns the fully resolved name of the MEL script used to load the soundtrack.
+   */ 
+  public String
+  getAttachSoundtrackNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Sound, NodePurpose.Product), 
+			 joinNames(getFullShotName(), "attach_soundtrack")); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the approve node for the Sound task.
+   */ 
+  public String
+  getSoundApproveNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Sound, NodePurpose.Approve), 
+			 joinNames(getFullShotName(), "sound_approve")); 
+    return path.toString(); 
+  }
+
+
+
   
   /*----------------------------------------------------------------------------------------*/
   /*   H D R I                                                                              */
@@ -289,6 +357,7 @@ class ShotNamer
 			 joinNames(getFullShotName(), "hdri_approve")); 
     return path.toString(); 
   }
+
 
 
 
@@ -878,8 +947,7 @@ class ShotNamer
   }
 
   /**
-   * Returns the fully resolved name of the node containing the baked geometry 
-   * cache. 
+   * Returns the fully resolved name of the node containing the baked Maya geometry cache. 
    */ 
   public String
   getMatchGeoCacheNode()
@@ -913,6 +981,59 @@ class ShotNamer
 			 joinNames(getFullShotName(), "match_approve")); 
     return path.toString(); 
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   M A T C H                                                                            */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Returns the fully resolved name of the prerequisites node for the Blot task.
+   */ 
+  public String
+  getBlotPrereqNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Blot, NodePurpose.Prereq), 
+			 joinNames(getFullShotName(), "blot_prereq")); 
+    return path.toString(); 
+  }
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+
+
+  // ...
+
+
+  /**
+   * Returns the fully resolved name of the submit node for the Blot task.
+   */ 
+  public String
+  getBlotSubmitNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Blot, NodePurpose.Submit), 
+			 joinNames(getFullShotName(), "blot_submit")); 
+    return path.toString(); 
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+
+  // ...
+
+
+  /**
+   * Returns the fully resolved name of the approve node for the Blot task.
+   */ 
+  public String
+  getBlotApproveNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Blot, NodePurpose.Approve), 
+			 joinNames(getFullShotName(), "blot_approve")); 
+    return path.toString(); 
+  }
+
 
 
 
