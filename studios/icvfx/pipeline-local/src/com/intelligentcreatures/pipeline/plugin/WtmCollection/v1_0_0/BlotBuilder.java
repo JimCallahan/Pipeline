@@ -1,4 +1,4 @@
-// $Id: BlotBuilder.java,v 1.3 2008/03/06 14:06:48 jim Exp $
+// $Id: BlotBuilder.java,v 1.4 2008/03/06 15:00:49 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -620,7 +620,7 @@ class BlotBuilder
 	    new ProductStage
 	      (stageInfo, pContext, pClient, 
 	       blotApprovedTexturesNodeName, pFrameRange, 4, "tif", 
-	       pBlotAnimTexturesNodeName, StageFunction.aRenderedImage);  
+	       pBlotAnimTexturesNodeName, ICStageFunction.aRenderedImage);  
 	  addTaskAnnotation(stage, NodePurpose.Product); 
 	  stage.build(); 
 	}
