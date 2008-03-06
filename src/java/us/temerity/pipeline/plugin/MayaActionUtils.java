@@ -1,4 +1,4 @@
-// $Id: MayaActionUtils.java,v 1.6 2007/11/01 19:16:55 jesse Exp $
+// $Id: MayaActionUtils.java,v 1.7 2008/03/06 13:00:30 jim Exp $
 
 package us.temerity.pipeline.plugin;
 
@@ -313,7 +313,10 @@ class MayaActionUtils
     }
     return toReturn;
   }
- 
+
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Adds Maya units parameters to the action.<P> 
    * 
