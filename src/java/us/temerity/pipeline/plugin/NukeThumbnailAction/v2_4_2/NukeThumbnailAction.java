@@ -230,7 +230,7 @@ class NukeThumbnailAction
         out.write("Constant {\n" + 
                   " inputs 0\n" + 
                   " channels rgb\n" + 
-                  " color {0.576754 0.719033 0.821674 0}\n" + 
+                  " color {" + bg.r() + " " + bg.g() + " " + bg.b() + " 0}\n" + 
                   " name BG\n" + 
                   "}\n");
 
