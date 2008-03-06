@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.237 2008/03/05 00:05:42 jim Exp $
+// $Id: MasterMgr.java,v 1.238 2008/03/06 13:00:01 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -17398,7 +17398,13 @@ class MasterMgr
                 fileStamps[wk] = critical;
 
               switch(overallNodeState) {
+              /**
+               * This is a fundamentally unsound solution to limiting staleness propogation
+               * when there have not been changes to upstream nodes.  See the proper solution
+               * will be provided by the [699 - Skip Unchanged Flag] feature.
               case Identical:
+              case NeedsCheckOut:
+              */ 
               case ModifiedLocks:
                 ignoreStamps[wk] = true;
                 break;
