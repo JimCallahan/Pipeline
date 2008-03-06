@@ -1,4 +1,4 @@
-// $Id: AppDirs.java,v 1.7 2008/03/06 06:14:49 jim Exp $
+// $Id: AppDirs.java,v 1.8 2008/03/06 14:06:48 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -91,6 +91,11 @@ enum AppDirs
    * High dynamic range (HDR) images. 
    */ 
   HDR, 
+
+  /**
+   * Generic texture images.
+   */ 
+  Texture, 
 
   /**
    * Generic rendered images. 

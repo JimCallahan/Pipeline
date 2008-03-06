@@ -1,4 +1,4 @@
-// $Id: ShotNamer.java,v 1.20 2008/03/06 11:05:59 jim Exp $
+// $Id: ShotNamer.java,v 1.21 2008/03/06 14:06:48 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -1137,9 +1137,30 @@ class ShotNamer
 
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * Returns the fully resolved name of the rendered blot textures node.
+   */ 
+  public String
+  getBlotApprovedTexturesNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Blot, NodePurpose.Product), 
+			 new Path(AppDirs.Texture.toDirPath(), 
+				  joinNames(getFullShotName(), "blot_anim"))); 
+    return path.toString(); 
+  }
 
-  // ...
-
+  /**
+   * Returns the fully resolved name of the baked IGES curves exported from the blot 
+   * animation Maya scene.
+   */ 
+  public String
+  getBlotCurveGeoNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Blot, NodePurpose.Product), 
+			 new Path(AppDirs.Iges.toDirPath(), 
+				  joinNames(getFullShotName(), "blot_curves"))); 
+    return path.toString(); 
+  }
 
   /**
    * Returns the fully resolved name of the approve node for the Blot task.
@@ -1151,7 +1172,6 @@ class ShotNamer
 			 joinNames(getFullShotName(), "blot_approve")); 
     return path.toString(); 
   }
-
 
 
 

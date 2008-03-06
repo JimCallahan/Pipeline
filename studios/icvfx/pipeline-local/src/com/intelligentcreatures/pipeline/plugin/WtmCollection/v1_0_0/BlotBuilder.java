@@ -1,4 +1,4 @@
-// $Id: BlotBuilder.java,v 1.2 2008/03/06 11:05:59 jim Exp $
+// $Id: BlotBuilder.java,v 1.3 2008/03/06 14:06:48 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -189,10 +189,12 @@ class BlotBuilder
   {
     ArrayList<PluginContext> plugins = new ArrayList<PluginContext>();	
     plugins.add(new PluginContext("Touch")); 
+    plugins.add(new PluginContext("Copy")); 
     plugins.add(new PluginContext("MayaBuild")); 		
     plugins.add(new PluginContext("MayaAttachGeoCache")); 	
     plugins.add(new PluginContext("MayaAttachSound")); 	
-    plugins.add(new PluginContext("MayaFTNBuild")); 		
+    plugins.add(new PluginContext("MayaFTNBuild")); 	
+    plugins.add(new PluginContext("MayaIgesExport")); 			
     plugins.add(new PluginContext("MayaRender")); 		
     plugins.add(new PluginContext("NukeThumbnail"));		
     plugins.add(new PluginContext("NukeQt"));			
@@ -487,24 +489,24 @@ class BlotBuilder
 	  }
 	}
 
-	String blotAnimSceneNodeName = pShotNamer.getBlotAnimSceneNode();
+	pBlotAnimSceneNodeName = pShotNamer.getBlotAnimSceneNode();
 	{
 	  BuildBlotAnimStage stage = 
 	    new BuildBlotAnimStage
 	      (stageInfo, pContext, pClient, 
-	       blotAnimSceneNodeName, pRorschachBlotAnimPlaceholderNodeName, 
+	       pBlotAnimSceneNodeName, pRorschachBlotAnimPlaceholderNodeName, 
 	       pRorschachGuidelinesNodeName, pAttachSoundtrackNodeName, pFrameRange); 
 	  addTaskAnnotation(stage, NodePurpose.Edit); 
 	  stage.build(); 
 	  pFinalStages.add(stage);
 	}
 
-	String blotAnimTexturesNodeName = pShotNamer.getBlotAnimTexturesNode();
+	pBlotAnimTexturesNodeName = pShotNamer.getBlotAnimTexturesNode();
 	{
 	  RenderTaskVerifyStage stage = 
 	    new RenderTaskVerifyStage
 	    (stageInfo, pContext, pClient, 
-	     blotAnimTexturesNodeName, pFrameRange, blotAnimSceneNodeName, 
+	     pBlotAnimTexturesNodeName, pFrameRange, pBlotAnimSceneNodeName, 
 	     "camera01", pBlotAnimPrepNodeName); 
 	  addTaskAnnotation(stage, NodePurpose.Focus); 
 	  stage.build();  
@@ -514,7 +516,7 @@ class BlotBuilder
 	{
 	  NukeQtStage stage = 
 	    new NukeQtStage(stageInfo, pContext, pClient,
-			    blotAnimQuickTimeNodeName, blotAnimTexturesNodeName, 24.0);
+			    blotAnimQuickTimeNodeName, pBlotAnimTexturesNodeName, 24.0);
 	  addTaskAnnotation(stage, NodePurpose.Product); 
 	  stage.build(); 
 	}
@@ -523,7 +525,7 @@ class BlotBuilder
 	{
 	  NukeThumbnailStage stage = 
 	    new NukeThumbnailStage(stageInfo, pContext, pClient,
-				   blotAnimThumbNodeName, "tif", blotAnimTexturesNodeName, 
+				   blotAnimThumbNodeName, "tif", pBlotAnimTexturesNodeName, 
 				   1, 150, 1.0, true, true, new Color3d()); 
 	  addTaskAnnotation(stage, NodePurpose.Thumbnail); 
 	  stage.build(); 
@@ -534,7 +536,7 @@ class BlotBuilder
 	  MayaFTNBuildStage stage = 
 	    new MayaFTNBuildStage(stageInfo, pContext, pClient, 
 				  new MayaContext(), blotTextureSceneNodeName, true);
-	  stage.addLink(new LinkMod(blotAnimTexturesNodeName, LinkPolicy.Dependency)); 
+	  stage.addLink(new LinkMod(pBlotAnimTexturesNodeName, LinkPolicy.Dependency)); 
 	  addTaskAnnotation(stage, NodePurpose.Prepare); 
 	  stage.build();  
 	}
@@ -612,23 +614,41 @@ class BlotBuilder
 
       /* the approve network */ 
       {
+	String blotApprovedTexturesNodeName = pShotNamer.getBlotApprovedTexturesNode();
+	{
+	  ProductStage stage = 
+	    new ProductStage
+	      (stageInfo, pContext, pClient, 
+	       blotApprovedTexturesNodeName, pFrameRange, 4, "tif", 
+	       pBlotAnimTexturesNodeName, StageFunction.aRenderedImage);  
+	  addTaskAnnotation(stage, NodePurpose.Product); 
+	  stage.build(); 
+	}
 
+	String blotCurveGeoNodeName = pShotNamer.getBlotCurveGeoNode(); 
+	{
+	  BlotCurveGeoStage stage = 
+	    new BlotCurveGeoStage(stageInfo, pContext, pClient,
+				  blotCurveGeoNodeName, pBlotAnimSceneNodeName, 
+				  "CURVES", pFrameRange);
+	  addTaskAnnotation(stage, NodePurpose.Product); 
+	  stage.build(); 
+	}
+	
+ 	String approveNodeName = pShotNamer.getBlotApproveNode();
+ 	{
+ 	  TreeSet<String> sources = new TreeSet<String>();
+ 	  sources.add(blotApprovedTexturesNodeName);
+ 	  sources.add(blotCurveGeoNodeName); 
 
-
-//  	String approveNodeName = pShotNamer.getBlotApproveNode();
-//  	{
-//  	  TreeSet<String> sources = new TreeSet<String>();
-//  	  sources.add();
-//  	  sources.add();
-
-//  	  TargetStage stage = 
-//  	    new TargetStage(stageInfo, pContext, pClient, 
-//  			    approveNodeName, sources); 
-//  	  addTaskAnnotation(stage, NodePurpose.Approve); 
-//  	  stage.build(); 
-//  	  addToQueueList(approveNodeName);
-//  	  addToCheckInList(approveNodeName);
-//  	}
+ 	  TargetStage stage = 
+ 	    new TargetStage(stageInfo, pContext, pClient, 
+ 			    approveNodeName, sources); 
+ 	  addTaskAnnotation(stage, NodePurpose.Approve); 
+ 	  stage.build(); 
+ 	  addToQueueList(approveNodeName);
+ 	  addToCheckInList(approveNodeName);
+ 	}
       }
     }
 
@@ -716,6 +736,16 @@ class BlotBuilder
    * attach shaders the shaders for the blot animation scene.
    */ 
   private String pBlotAnimPrepNodeName;
+
+  /**
+   * The fully resolved name of the blot animation Maya scene node.
+   */ 
+  private String pBlotAnimSceneNodeName; 
+
+  /**
+   * The  fully resolved name of the rendered blot textures node.
+   */ 
+  private String pBlotAnimTexturesNodeName; 
 
   /**
    * The fully resolved name of the node containing the combined MEL scripts to 

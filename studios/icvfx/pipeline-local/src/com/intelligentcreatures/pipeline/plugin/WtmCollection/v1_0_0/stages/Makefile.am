@@ -11,6 +11,7 @@ java_DATA = \
   AttachGeoCacheStage.java \
   AttachSoundtrackStage.java \
   BashCompStage.java \
+  BlotCurveGeoStage.java \
   BuildBlotAnimStage.java \
   BuildBlotTestStage.java \
   BuildMatchPrebakeStage.java \
