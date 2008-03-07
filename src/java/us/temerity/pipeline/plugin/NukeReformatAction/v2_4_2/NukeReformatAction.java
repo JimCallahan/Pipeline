@@ -1,4 +1,4 @@
-// $Id: NukeReformatAction.java,v 1.1 2008/02/14 18:46:01 jim Exp $
+// $Id: NukeReformatAction.java,v 1.2 2008/03/07 02:12:34 jim Exp $
 
 package us.temerity.pipeline.plugin.NukeReformatAction.v2_4_2;
 
@@ -875,8 +875,8 @@ class NukeReformatAction
       
       String suffix = fpat.getSuffix();
       if((suffix != null) && (suffix.equals("tif") || suffix.equals("tiff"))) {
-        writeNode.add(" file_type tiff\n");
-        writeNode.add(" compression LZW\n");
+        writeNode.add(" file_type tiff");
+        writeNode.add(" compression LZW");
       }
 
       writeNode.add("}");
