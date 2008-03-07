@@ -1,4 +1,4 @@
-// $Id: JCollectionField.java,v 1.19 2008/02/25 22:22:36 jim Exp $
+// $Id: JCollectionField.java,v 1.20 2008/03/07 09:58:27 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -47,7 +47,7 @@ class JCollectionField
    * @param values
    *   The possible choices the field selects among.
    * 
-   * @para parent
+   * @param parent
    *   The parent frame containing this field.
    */ 
   public 
@@ -73,7 +73,7 @@ class JCollectionField
    * @param values
    *   The possible choices the field selects among.
    * 
-   * @para parent
+   * @param parent
    *   The parent dialog containing this field.
    */ 
   public 

@@ -1,4 +1,4 @@
-// $Id: Exceptions.java,v 1.1 2008/02/14 20:26:29 jim Exp $
+// $Id: Exceptions.java,v 1.2 2008/03/07 09:58:28 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -34,7 +34,7 @@ class Exceptions
    *   Whether to append the complete stack trace of when the exception occured to the 
    *   returned message.
    * 
-   * @param return 
+   * @return 
    *   The full message text. 
    */ 
   public static String 
@@ -85,7 +85,7 @@ class Exceptions
    *   The exception being explained.  A <CODE>null</CODE> value is permitted and 
    *   indicates that the cause is nonexistent or unknown.
    * 
-   * @param return 
+   * @return 
    *   The full message text. 
    */ 
   public static String 
@@ -108,7 +108,7 @@ class Exceptions
    *   The exception being explained.  A <CODE>null</CODE> value is permitted and 
    *   indicates that the cause is nonexistent or unknown.
    * 
-   * @param return 
+   * @return 
    *   The full message text. 
    */ 
   public static String 
