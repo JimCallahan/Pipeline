@@ -1,21 +1,18 @@
-// $Id: QueueGetHardwareKeyNamesReq.java,v 1.1 2007/12/15 07:26:24 jesse Exp $
+// $Id: QueueGetKeyNamesReq.java,v 1.1 2008/03/07 13:25:21 jim Exp $
 
 package us.temerity.pipeline.message;
 
 import java.io.Serializable;
 
 /*------------------------------------------------------------------------------------------*/
-/*   Q U E U E   G E T   H A R D W A R E   K E Y   N A M E S   R E Q                        */
+/*   Q U E U E   G E T   K E Y   N A M E S   R E Q                                          */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A request to get the names of hardware keys.
- * <p>
- * The request can either be for all the names or just the names of the keys that users can 
- * set. 
+ * A request to get the names of selection, license or hardware keys.
  */
 public 
-class QueueGetHardwareKeyNamesReq
+class QueueGetKeyNamesReq
   implements Serializable
 {
   /*----------------------------------------------------------------------------------------*/
@@ -26,10 +23,10 @@ class QueueGetHardwareKeyNamesReq
    * Constructs a new request. <P> 
    * 
    * @param userSettableOnly
-   *   Whether to only return a list of the hardware key names that the user can set.
+   *   Whether to only return the keys that the user can set.
    */
   public
-  QueueGetHardwareKeyNamesReq
+  QueueGetKeyNamesReq
   (
     boolean userSettableOnly
   )
@@ -44,7 +41,7 @@ class QueueGetHardwareKeyNamesReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the user settable flag.
+   * Whether to only return the keys that the user can set.
    */ 
   public boolean
   getUserSettableOnly() 
@@ -58,7 +55,7 @@ class QueueGetHardwareKeyNamesReq
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -687670747863043741L;
+  private static final long serialVersionUID = 6232344716104916105L;
 
   
 

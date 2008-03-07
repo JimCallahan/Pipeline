@@ -99,6 +99,16 @@ class ListUtilityParam
   /*   S T A T I C   H E L P E R S                                                          */
   /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * Create a list param containing the currently user choosable Selection Keys.
+   * 
+   * @deprecated
+   *   The practice of setting selection keys in a Builder has largely been made 
+   *   obsolete by the creation of KeyChooser plugins which are able to determine 
+   *   the settings for keys at runtime rather than when the node is created by the 
+   *   builder.  
+   */ 
+  @Deprecated
   public static ListUtilityParam
   createSelectionKeyParam
   (
@@ -109,21 +119,25 @@ class ListUtilityParam
   )
     throws PipelineException
   {
-    ArrayList<SelectionKey> keys = qclient.getSelectionKeys();
+    TreeSet<String> initial = new TreeSet<String>();
+    if(value != null) 
+      initial.addAll(value); 
     
-    TreeSet<String> values = new TreeSet<String>();
-    TreeMap<String, String> tooltips = new TreeMap<String, String>();
-    
-    if (value == null)
-      value = new TreeSet<String>();
-    
-    for (SelectionKey key : keys) {
-       values.add(key.getName());
-       tooltips.put(key.getName(), key.getDescription());
-    }
-    return new ListUtilityParam(name, desc, value, values, null, tooltips);
+    TreeMap<String,String> table = qclient.getSelectionKeyDescriptions(true); 
+
+    return new ListUtilityParam(name, desc, initial, table.keySet(), null, table); 
   }
   
+  /**
+   * Create a list param containing the currently user choosable Hardware Keys.
+   * 
+   * @deprecated
+   *   The practice of setting hardware keys in a Builder has largely been made 
+   *   obsolete by the creation of KeyChooser plugins which are able to determine 
+   *   the settings for keys at runtime rather than when the node is created by the 
+   *   builder.  
+   */ 
+  @Deprecated
   public static ListUtilityParam
   createHardwareKeyParam
   (
@@ -134,21 +148,25 @@ class ListUtilityParam
   )
     throws PipelineException
   {
-    ArrayList<HardwareKey> keys = qclient.getHardwareKeys();
+    TreeSet<String> initial = new TreeSet<String>();
+    if(value != null) 
+      initial.addAll(value); 
     
-    TreeSet<String> values = new TreeSet<String>();
-    TreeMap<String, String> tooltips = new TreeMap<String, String>();
-    
-    if (value == null)
-      value = new TreeSet<String>();
-    
-    for (HardwareKey key : keys) {
-       values.add(key.getName());
-       tooltips.put(key.getName(), key.getDescription());
-    }
-    return new ListUtilityParam(name, desc, value, values, null, tooltips);
+    TreeMap<String,String> table = qclient.getHardwareKeyDescriptions(true); 
+
+    return new ListUtilityParam(name, desc, initial, table.keySet(), null, table); 
   }
   
+  /**
+   * Create a list param containing the currently user choosable License Keys.
+   * 
+   * @deprecated
+   *   The practice of setting license keys in a Builder has largely been made 
+   *   obsolete by the creation of KeyChooser plugins which are able to determine 
+   *   the settings for keys at runtime rather than when the node is created by the 
+   *   builder.  
+   */ 
+  @Deprecated
   public static ListUtilityParam
   createLicenseKeyParam
   (
@@ -159,19 +177,13 @@ class ListUtilityParam
   )
     throws PipelineException
   {
-    ArrayList<LicenseKey> keys = qclient.getLicenseKeys();
+    TreeSet<String> initial = new TreeSet<String>();
+    if(value != null) 
+      initial.addAll(value); 
     
-    TreeSet<String> values = new TreeSet<String>();
-    TreeMap<String, String> tooltips = new TreeMap<String, String>();
-    
-    if (value == null)
-      value = new TreeSet<String>();
-    
-    for (LicenseKey key : keys) {
-       values.add(key.getName());
-       tooltips.put(key.getName(), key.getDescription());
-    }
-    return new ListUtilityParam(name, desc, value, values, null, tooltips);
+    TreeMap<String,String> table = qclient.getLicenseKeyDescriptions(true); 
+
+    return new ListUtilityParam(name, desc, initial, table.keySet(), null, table); 
   }
   
   

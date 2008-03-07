@@ -1,21 +1,19 @@
-// $Id: QueueGetLicenseKeyNamesReq.java,v 1.1 2007/12/15 07:26:24 jesse Exp $
+// $Id: QueueGetKeyDescriptionsReq.java,v 1.1 2008/03/07 13:25:21 jim Exp $
 
 package us.temerity.pipeline.message;
 
 import java.io.Serializable;
 
 /*------------------------------------------------------------------------------------------*/
-/*   Q U E U E   G E T   L I C E N S E   K E Y   N A M E S   R E Q                          */
+/*   Q U E U E   G E T   K E Y   D E S C R I P T I O N S   R E Q                            */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A request to get the names of license keys.
- * <p>
- * The request can either be for all the names or just the names of the keys that users can 
- * set. 
+ * A request to get the names and descriptions of the currently defined selection, license 
+ * or hardware keys.
  */
 public 
-class QueueGetLicenseKeyNamesReq
+class QueueGetKeyDescriptionsReq
   implements Serializable
 {
   /*----------------------------------------------------------------------------------------*/
@@ -26,10 +24,10 @@ class QueueGetLicenseKeyNamesReq
    * Constructs a new request. <P> 
    * 
    * @param userSettableOnly
-   *   Whether to only return a list of the license key names that the user can set.
+   *   Whether to only return the keys that the user can set.
    */
   public
-  QueueGetLicenseKeyNamesReq
+  QueueGetKeyDescriptionsReq
   (
     boolean userSettableOnly
   )
@@ -44,7 +42,7 @@ class QueueGetLicenseKeyNamesReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the user settable flag.
+   * Whether to only return the keys that the user can set.
    */ 
   public boolean
   getUserSettableOnly() 
@@ -58,7 +56,7 @@ class QueueGetLicenseKeyNamesReq
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 6816845447774059412L;
+  private static final long serialVersionUID = 5515420256497769092L;
 
   
 
@@ -67,7 +65,8 @@ class QueueGetLicenseKeyNamesReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Whether to return only the names of keys that are settable by users..
+   * Whether to only return the keys that the user can set.
    */ 
   private boolean pUserSettableOnly; 
+
 }

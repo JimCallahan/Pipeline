@@ -1,22 +1,21 @@
-// $Id: QueueGetSelectionKeyNamesRsp.java,v 1.3 2005/01/22 06:10:10 jim Exp $
+// $Id: QueueGetKeyNamesRsp.java,v 1.1 2008/03/07 13:25:21 jim Exp $
 
 package us.temerity.pipeline.message;
 
-import us.temerity.pipeline.*; 
-import us.temerity.pipeline.core.*; 
+import java.util.TreeSet;
 
-import java.io.*;
-import java.util.*;
+import us.temerity.pipeline.LogMgr;
+import us.temerity.pipeline.TaskTimer;
 
 /*------------------------------------------------------------------------------------------*/
-/*   Q U E U E   G E T   S E L E C T I O N   K E Y   N A M E S   R S P                      */
+/*   Q U E U E   G E T   K E Y   N A M E S   R S P                                          */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Get the names of the currently defined selection keys. 
+ * Get the names of the currently defined selection, license or hardware keys. 
  */
 public
-class QueueGetSelectionKeyNamesRsp
+class QueueGetKeyNamesRsp
   extends TimedRsp
 {
   /*----------------------------------------------------------------------------------------*/
@@ -30,10 +29,10 @@ class QueueGetSelectionKeyNamesRsp
    *   The timing statistics for a task.
    * 
    * @param names
-   *   The selection key names
+   *   The hardware key names
    */ 
   public
-  QueueGetSelectionKeyNamesRsp
+  QueueGetKeyNamesRsp
   (
    TaskTimer timer, 
    TreeSet<String> names
@@ -42,12 +41,12 @@ class QueueGetSelectionKeyNamesRsp
     super(timer);
 
     if(names == null) 
-      throw new IllegalArgumentException("The selection key names cannot be (null)!");
+      throw new IllegalArgumentException("The key names cannot be (null)!");
     pKeyNames = names;
 
     LogMgr.getInstance().log
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
-       "QueueMgr.getSelectionKeyNames():\n  " + getTimer());
+       "QueueMgr.getKeyNames():\n  " + getTimer());
     if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
       LogMgr.getInstance().flush();
   }
@@ -59,7 +58,7 @@ class QueueGetSelectionKeyNamesRsp
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Gets the selection key names.
+   * Gets the key names.
    */
   public TreeSet<String>
   getKeyNames() 
@@ -73,7 +72,7 @@ class QueueGetSelectionKeyNamesRsp
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -854318957164973902L;
+  private static final long serialVersionUID = 3674289882026123612L;
 
   
 
@@ -82,7 +81,7 @@ class QueueGetSelectionKeyNamesRsp
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The selection key names.
+   * The key names.
    */ 
   private TreeSet<String>  pKeyNames; 
 

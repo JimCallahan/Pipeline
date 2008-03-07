@@ -1,4 +1,4 @@
-// $Id: QueueRequest.java,v 1.26 2007/12/15 07:52:02 jesse Exp $
+// $Id: QueueRequest.java,v 1.27 2008/03/07 13:25:21 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -60,6 +60,11 @@ enum QueueRequest
   GetLicenseKeyNames,
 
   /**
+   * Get the names and descriptions of the license keys.
+   */ 
+  GetLicenseKeyDescriptions,
+
+  /**
    * Get the license keys.
    */ 
   GetLicenseKeys,
@@ -86,6 +91,11 @@ enum QueueRequest
    * Get the names of the selection keys.
    */ 
   GetSelectionKeyNames,
+
+  /**
+   * Get the names and descriptions of the selection keys.
+   */ 
+  GetSelectionKeyDescriptions,
 
   /**
    * Get the selection keys.
@@ -165,6 +175,11 @@ enum QueueRequest
    * Get the names of the hardware keys.
    */ 
   GetHardwareKeyNames,
+
+  /**
+   * Get the names and descriptions of the hardware keys.
+   */ 
+  GetHardwareKeyDescriptions,
 
   /**
    * Get the hardware keys.

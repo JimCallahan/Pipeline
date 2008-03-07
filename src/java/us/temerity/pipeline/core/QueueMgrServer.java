@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.51 2008/02/14 20:26:29 jim Exp $
+// $Id: QueueMgrServer.java,v 1.52 2008/03/07 13:25:21 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -351,9 +351,20 @@ class QueueMgrServer
 	    /*-- LICENSE KEYS --------------------------------------------------------------*/
 	    case GetLicenseKeyNames:
 	      {
-	        QueueGetLicenseKeyNamesReq req = 
-                  (QueueGetLicenseKeyNamesReq) objIn.readObject();
-		objOut.writeObject(pQueueMgr.getLicenseKeyNames(req.getUserSettableOnly()));
+	        QueueGetKeyNamesReq req = 
+                  (QueueGetKeyNamesReq) objIn.readObject();
+                boolean settable = req.getUserSettableOnly();
+		objOut.writeObject(pQueueMgr.getLicenseKeyNames(settable));
+		objOut.flush(); 
+	      }
+	      break;
+
+            case GetLicenseKeyDescriptions:
+	      {
+	        QueueGetKeyDescriptionsReq req = 
+                  (QueueGetKeyDescriptionsReq) objIn.readObject();
+                boolean settable = req.getUserSettableOnly();
+		objOut.writeObject(pQueueMgr.getLicenseKeyDescriptions(settable)); 
 		objOut.flush(); 
 	      }
 	      break;
@@ -394,11 +405,22 @@ class QueueMgrServer
 
 
 	    /*-- SELECTION KEYS ------------------------------------------------------------*/
-	    case GetSelectionKeyNames:
+            case GetSelectionKeyNames:
 	      {
-	        QueueGetSelectionKeyNamesReq req = 
-                   (QueueGetSelectionKeyNamesReq) objIn.readObject();
-		objOut.writeObject(pQueueMgr.getSelectionKeyNames(req.getUserSettableOnly()));
+	        QueueGetKeyNamesReq req = 
+                  (QueueGetKeyNamesReq) objIn.readObject();
+                boolean settable = req.getUserSettableOnly();
+		objOut.writeObject(pQueueMgr.getSelectionKeyNames(settable));
+		objOut.flush(); 
+	      }
+	      break;
+
+            case GetSelectionKeyDescriptions:
+	      {
+	        QueueGetKeyDescriptionsReq req = 
+                  (QueueGetKeyDescriptionsReq) objIn.readObject();
+                boolean settable = req.getUserSettableOnly();
+		objOut.writeObject(pQueueMgr.getSelectionKeyDescriptions(settable)); 
 		objOut.flush(); 
 	      }
 	      break;
@@ -515,11 +537,22 @@ class QueueMgrServer
 	      break;
 	      
 	    /*-- HARDWARE KEYS -------------------------------------------------------------*/
-	    case GetHardwareKeyNames:
+            case GetHardwareKeyNames:
 	      {
-	        QueueGetHardwareKeyNamesReq req = 
-                  (QueueGetHardwareKeyNamesReq) objIn.readObject();
-		objOut.writeObject(pQueueMgr.getHardwareKeyNames(req.getUserSettableOnly()));
+	        QueueGetKeyNamesReq req = 
+                  (QueueGetKeyNamesReq) objIn.readObject();
+                boolean settable = req.getUserSettableOnly();
+		objOut.writeObject(pQueueMgr.getHardwareKeyNames(settable));
+		objOut.flush(); 
+	      }
+	      break;
+
+            case GetHardwareKeyDescriptions:
+	      {
+	        QueueGetKeyDescriptionsReq req = 
+                  (QueueGetKeyDescriptionsReq) objIn.readObject();
+                boolean settable = req.getUserSettableOnly();
+		objOut.writeObject(pQueueMgr.getHardwareKeyDescriptions(settable)); 
 		objOut.flush(); 
 	      }
 	      break;

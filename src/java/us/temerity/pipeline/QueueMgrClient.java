@@ -1,4 +1,4 @@
-// $Id: QueueMgrClient.java,v 1.44 2007/12/16 09:10:46 jim Exp $
+// $Id: QueueMgrClient.java,v 1.45 2008/03/07 13:25:21 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -151,7 +151,7 @@ class QueueMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the names of the currently defined license keys. <P>  
+   * Get the names of the currently defined license keys. <P>
    * 
    * @param userChoosableOnly
    *   Whether to exclude the names of the license keys currently controlled by a KeyChooser
@@ -169,12 +169,43 @@ class QueueMgrClient
   {
     verifyConnection();
 
-    QueueGetLicenseKeyNamesReq req = new QueueGetLicenseKeyNamesReq(userChoosableOnly);
-
+    QueueGetKeyNamesReq req = new QueueGetKeyNamesReq(userChoosableOnly);
     Object obj = performTransaction(QueueRequest.GetLicenseKeyNames, req);
-    if(obj instanceof QueueGetLicenseKeyNamesRsp) {
-      QueueGetLicenseKeyNamesRsp rsp = (QueueGetLicenseKeyNamesRsp) obj;
+    if(obj instanceof QueueGetKeyNamesRsp) {
+      QueueGetKeyNamesRsp rsp = (QueueGetKeyNamesRsp) obj;
       return rsp.getKeyNames();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }        
+  }
+
+  /**
+   * Get a table containing the descriptions of the currently defined license keys
+   * indexed by license key name.<P>
+   * 
+   * @param userChoosableOnly
+   *   Whether to exclude the names of the license keys currently controlled by a KeyChooser
+   *   plugin.
+   * 
+   * @throws PipelineException
+   *   If unable to retrieve the names of the license keys.
+   */
+  public synchronized TreeMap<String,String>
+  getLicenseKeyDescriptions
+  (
+    boolean userChoosableOnly  
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    QueueGetKeyDescriptionsReq req = new QueueGetKeyDescriptionsReq(userChoosableOnly);
+    Object obj = performTransaction(QueueRequest.GetLicenseKeyDescriptions, req);
+    if(obj instanceof QueueGetKeyDescriptionsRsp) {
+      QueueGetKeyDescriptionsRsp rsp = (QueueGetKeyDescriptionsRsp) obj;
+      return rsp.getKeyDescriptions();
     }
     else {
       handleFailure(obj);
@@ -329,11 +360,43 @@ class QueueMgrClient
   {
     verifyConnection();
 
-    QueueGetSelectionKeyNamesReq req = new QueueGetSelectionKeyNamesReq(userChoosableOnly);
+    QueueGetKeyNamesReq req = new QueueGetKeyNamesReq(userChoosableOnly);
     Object obj = performTransaction(QueueRequest.GetSelectionKeyNames, req);
-    if(obj instanceof QueueGetSelectionKeyNamesRsp) {
-      QueueGetSelectionKeyNamesRsp rsp = (QueueGetSelectionKeyNamesRsp) obj;
+    if(obj instanceof QueueGetKeyNamesRsp) {
+      QueueGetKeyNamesRsp rsp = (QueueGetKeyNamesRsp) obj;
       return rsp.getKeyNames();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }        
+  }
+
+  /**
+   * Get a table containing the descriptions of the currently defined selection keys
+   * indexed by selection key name.<P>
+   * 
+   * @param userChoosableOnly
+   *   Whether to exclude the names of the selection keys currently controlled by a KeyChooser
+   *   plugin.
+   * 
+   * @throws PipelineException
+   *   If unable to retrieve the names of the selection keys.
+   */
+  public synchronized TreeMap<String,String>
+  getSelectionKeyDescriptions
+  (
+    boolean userChoosableOnly  
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    QueueGetKeyDescriptionsReq req = new QueueGetKeyDescriptionsReq(userChoosableOnly);
+    Object obj = performTransaction(QueueRequest.GetSelectionKeyDescriptions, req);
+    if(obj instanceof QueueGetKeyDescriptionsRsp) {
+      QueueGetKeyDescriptionsRsp rsp = (QueueGetKeyDescriptionsRsp) obj;
+      return rsp.getKeyDescriptions();
     }
     else {
       handleFailure(obj);
@@ -764,7 +827,7 @@ class QueueMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the names of the currently defined hardware keys. <P>  
+   * Get the names of the currently defined hardware keys. <P>
    * 
    * @param userChoosableOnly
    *   Whether to exclude the names of the hardware keys currently controlled by a KeyChooser
@@ -776,17 +839,49 @@ class QueueMgrClient
   public synchronized TreeSet<String>
   getHardwareKeyNames
   (
-    boolean userChoosableOnly    
+    boolean userChoosableOnly  
   ) 
     throws PipelineException  
   {
     verifyConnection();
 
-    QueueGetHardwareKeyNamesReq req = new QueueGetHardwareKeyNamesReq(userChoosableOnly);
+    QueueGetKeyNamesReq req = new QueueGetKeyNamesReq(userChoosableOnly);
     Object obj = performTransaction(QueueRequest.GetHardwareKeyNames, req);
-    if(obj instanceof QueueGetHardwareKeyNamesRsp) {
-      QueueGetHardwareKeyNamesRsp rsp = (QueueGetHardwareKeyNamesRsp) obj;
+    if(obj instanceof QueueGetKeyNamesRsp) {
+      QueueGetKeyNamesRsp rsp = (QueueGetKeyNamesRsp) obj;
       return rsp.getKeyNames();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }        
+  }
+
+  /**
+   * Get a table containing the descriptions of the currently defined hardware keys
+   * indexed by hardware key name.<P>
+   * 
+   * @param userChoosableOnly
+   *   Whether to exclude the names of the hardware keys currently controlled by a KeyChooser
+   *   plugin.
+   * 
+   * @throws PipelineException
+   *   If unable to retrieve the names of the hardware keys.
+   */
+  public synchronized TreeMap<String,String>
+  getHardwareKeyDescriptions
+  (
+    boolean userChoosableOnly  
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    QueueGetKeyDescriptionsReq req = new QueueGetKeyDescriptionsReq(userChoosableOnly);
+    Object obj = performTransaction(QueueRequest.GetHardwareKeyDescriptions, req);
+    if(obj instanceof QueueGetKeyDescriptionsRsp) {
+      QueueGetKeyDescriptionsRsp rsp = (QueueGetKeyDescriptionsRsp) obj;
+      return rsp.getKeyDescriptions();
     }
     else {
       handleFailure(obj);

@@ -1,22 +1,21 @@
-// $Id: QueueGetLicenseKeyNamesRsp.java,v 1.3 2005/01/22 06:10:10 jim Exp $
+// $Id: QueueGetKeyDescriptionsRsp.java,v 1.1 2008/03/07 13:25:21 jim Exp $
 
 package us.temerity.pipeline.message;
 
-import us.temerity.pipeline.*; 
-import us.temerity.pipeline.core.*; 
+import us.temerity.pipeline.*;
 
-import java.io.*;
 import java.util.*;
 
+
 /*------------------------------------------------------------------------------------------*/
-/*   Q U E U E   G E T   L I C E N S E   K E Y   N A M E S   R S P                          */
+/*   Q U E U E   G E T   K E Y   D E S C R I P T I O N S   R S P                            */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Get the names of the currently defined license keys. 
+ * The names and descriptions of the currently defined selection, license or hardware keys. 
  */
 public
-class QueueGetLicenseKeyNamesRsp
+class QueueGetKeyDescriptionsRsp
   extends TimedRsp
 {
   /*----------------------------------------------------------------------------------------*/
@@ -29,25 +28,25 @@ class QueueGetLicenseKeyNamesRsp
    * @param timer 
    *   The timing statistics for a task.
    * 
-   * @param names
-   *   The license key names
+   * @param desc
+   *   The key descriptions indexed by key name.
    */ 
   public
-  QueueGetLicenseKeyNamesRsp
+  QueueGetKeyDescriptionsRsp
   (
    TaskTimer timer, 
-   TreeSet<String> names
+   TreeMap<String,String> desc
   )
   { 
     super(timer);
 
-    if(names == null) 
-      throw new IllegalArgumentException("The license key names cannot be (null)!");
-    pKeyNames = names;
+    if(desc == null) 
+      throw new IllegalArgumentException("The key descriptions cannot be (null)!");
+    pKeyDescriptions = desc;
 
     LogMgr.getInstance().log
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
-       "QueueMgr.getLicenseKeyNames():\n  " + getTimer());
+       "QueueMgr.getKeyDescriptions():\n  " + getTimer());
     if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
       LogMgr.getInstance().flush();
   }
@@ -59,12 +58,12 @@ class QueueGetLicenseKeyNamesRsp
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Gets the license key names.
+   * Gets the key descriptions indexed by key name.
    */
-  public TreeSet<String>
-  getKeyNames() 
+  public TreeMap<String,String>
+  getKeyDescriptions() 
   {
-    return pKeyNames;
+    return pKeyDescriptions;
   }
   
 
@@ -73,7 +72,7 @@ class QueueGetLicenseKeyNamesRsp
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -7054406944510148971L;
+  private static final long serialVersionUID = 4624550580818694848L;
 
   
 
@@ -82,9 +81,9 @@ class QueueGetLicenseKeyNamesRsp
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The license key names.
+   * The key descriptions indexed by key name.
    */ 
-  private TreeSet<String>  pKeyNames; 
+  private TreeMap<String,String>  pKeyDescriptions; 
 
 }
   

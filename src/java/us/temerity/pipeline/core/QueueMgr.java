@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.101 2008/01/30 09:06:08 jesse Exp $
+// $Id: QueueMgr.java,v 1.102 2008/03/07 13:25:21 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -931,7 +931,7 @@ class QueueMgr
    *   Only return the names of the keys that the user can set.
    *   
    * @return
-   *   <CODE>QueueGetLicenseKeyNamesRsp</CODE> if successful or 
+   *   <CODE>QueueGetKeyNamesRsp</CODE> if successful or 
    *   <CODE>FailureRsp</CODE> if unable to get the key names.
    */
   public Object
@@ -955,7 +955,39 @@ class QueueMgr
             names.add(name);
       }
       
-      return new QueueGetLicenseKeyNamesRsp(timer, names);
+      return new QueueGetKeyNamesRsp(timer, names);
+    }
+  }
+
+  /**
+   * Get the names and descriptions of the currently defined license keys. <P>  
+   *
+   * @param userSettableOnly
+   *   Only return the names of the keys that the user can set.
+   *   
+   * @return
+   *   <CODE>QueueGetKeyDescriptionsRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to get the key names.
+   */
+  public Object
+  getLicenseKeyDescriptions
+  (
+    boolean userSettableOnly  
+  )  
+  {
+    TaskTimer timer = new TaskTimer();
+    timer.aquire();
+    synchronized(pLicenseKeys) {
+      timer.resume();
+      
+      TreeMap<String,String> results = new TreeMap<String,String>();
+      for (String name : pLicenseKeys.keySet()) {
+        LicenseKey key = pLicenseKeys.get(name); 
+        if(!userSettableOnly || !key.hasKeyChooser())
+          results.put(name, key.getDescription());
+      }
+      
+      return new QueueGetKeyDescriptionsRsp(timer, results);
     }
   }
 
@@ -1142,20 +1174,20 @@ class QueueMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the names of the currently defined selection keys. <P>
-   * 
+   * Get the names of the currently defined selection keys. <P>  
+   *
    * @param userSettableOnly
    *   Only return the names of the keys that the user can set.
-   * 
+   *   
    * @return
-   *   <CODE>QueueGetSelectionKeyNamesRsp</CODE> if successful or 
+   *   <CODE>QueueGetKeyNamesRsp</CODE> if successful or 
    *   <CODE>FailureRsp</CODE> if unable to get the key names.
    */
   public Object
   getSelectionKeyNames
   (
     boolean userSettableOnly  
-  ) 
+  )  
   {
     TaskTimer timer = new TaskTimer();
     timer.aquire();
@@ -1172,7 +1204,39 @@ class QueueMgr
             names.add(name);
       }
       
-      return new QueueGetSelectionKeyNamesRsp(timer, names);
+      return new QueueGetKeyNamesRsp(timer, names);
+    }
+  }
+
+  /**
+   * Get the names and descriptions of the currently defined selection keys. <P>  
+   *
+   * @param userSettableOnly
+   *   Only return the names of the keys that the user can set.
+   *   
+   * @return
+   *   <CODE>QueueGetKeyDescriptionsRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to get the key names.
+   */
+  public Object
+  getSelectionKeyDescriptions
+  (
+    boolean userSettableOnly  
+  )  
+  {
+    TaskTimer timer = new TaskTimer();
+    timer.aquire();
+    synchronized(pSelectionKeys) {
+      timer.resume();
+      
+      TreeMap<String,String> results = new TreeMap<String,String>();
+      for (String name : pSelectionKeys.keySet()) {
+        SelectionKey key = pSelectionKeys.get(name); 
+        if(!userSettableOnly || !key.hasKeyChooser())
+          results.put(name, key.getDescription());
+      }
+      
+      return new QueueGetKeyDescriptionsRsp(timer, results);
     }
   }
 
@@ -1701,19 +1765,19 @@ class QueueMgr
 
   /**
    * Get the names of the currently defined hardware keys. <P>  
-   * 
+   *
    * @param userSettableOnly
    *   Only return the names of the keys that the user can set.
-   * 
+   *   
    * @return
-   *   <CODE>QueueGetHardwareKeyNamesRsp</CODE> if successful or 
+   *   <CODE>QueueGetKeyNamesRsp</CODE> if successful or 
    *   <CODE>FailureRsp</CODE> if unable to get the key names.
    */
   public Object
   getHardwareKeyNames
   (
     boolean userSettableOnly  
-  ) 
+  )  
   {
     TaskTimer timer = new TaskTimer();
     timer.aquire();
@@ -1730,10 +1794,42 @@ class QueueMgr
             names.add(name);
       }
       
-      return new QueueGetHardwareKeyNamesRsp(timer, names);
+      return new QueueGetKeyNamesRsp(timer, names);
     }
   }
-  
+
+  /**
+   * Get the names and descriptions of the currently defined hardware keys. <P>  
+   *
+   * @param userSettableOnly
+   *   Only return the names of the keys that the user can set.
+   *   
+   * @return
+   *   <CODE>QueueGetKeyDescriptionsRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to get the key names.
+   */
+  public Object
+  getHardwareKeyDescriptions
+  (
+    boolean userSettableOnly  
+  )  
+  {
+    TaskTimer timer = new TaskTimer();
+    timer.aquire();
+    synchronized(pHardwareKeys) {
+      timer.resume();
+      
+      TreeMap<String,String> results = new TreeMap<String,String>();
+      for (String name : pHardwareKeys.keySet()) {
+        HardwareKey key = pHardwareKeys.get(name); 
+        if(!userSettableOnly || !key.hasKeyChooser())
+          results.put(name, key.getDescription());
+      }
+      
+      return new QueueGetKeyDescriptionsRsp(timer, results);
+    }
+  }
+
   /**
    * Get the current hardware keys. 
    * 
@@ -4382,9 +4478,9 @@ class QueueMgr
           msg += each + "\n\n";
         
         throw new PipelineException
-          ("While updating job keys was successful, the following errors occured " +
-           "during KeyChooser execution.  These errors may effect the ability of the jobs on" +
-           "the queue to run.\n\n" + msg);
+          ("While updating job keys was successful, the following errors occured during " + 
+           "KeyChooser execution.  These errors may effect the ability of the jobs on the " + 
+           "queue to run.\n\n" + msg);
       }
 
       return new SuccessRsp(timer);

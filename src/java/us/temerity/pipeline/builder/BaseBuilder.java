@@ -1,4 +1,4 @@
-// $Id: BaseBuilder.java,v 1.49 2008/03/04 08:15:14 jesse Exp $
+// $Id: BaseBuilder.java,v 1.50 2008/03/07 13:25:21 jim Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -415,7 +415,15 @@ class BaseBuilder
    * this parameter is used to specify a list of keys that all nodes being built will contain.
    * 
    * @throws PipelineException
+   * 
+   * @deprecated
+   *   The practice of setting selection keys in a Builder has largely been made 
+   *   obsolete by the creation of KeyChooser plugins which are able to determine 
+   *   the settings for keys at runtime rather than when the node is created by the 
+   *   builder.  
    */
+  @Deprecated
+  @SuppressWarnings("deprecated")
   protected final void
   addSelectionKeyParam()
     throws PipelineException

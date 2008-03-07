@@ -1,8 +1,9 @@
-// $Id: BasePlugin.java,v 1.13 2008/02/14 20:26:29 jim Exp $
+// $Id: BasePlugin.java,v 1.14 2008/03/07 13:25:21 jim Exp $
 
 package us.temerity.pipeline;
 
-import  us.temerity.pipeline.glue.*;
+import us.temerity.pipeline.glue.*;
+import us.temerity.pipeline.Exceptions;
 
 import java.util.*;
 import java.io.*;

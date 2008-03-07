@@ -1,4 +1,4 @@
-// $Id: PluginMgr.java,v 1.20 2008/02/25 23:59:36 jesse Exp $
+// $Id: PluginMgr.java,v 1.21 2008/03/07 13:25:21 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -631,12 +631,16 @@ class PluginMgr
         BaseBuilderCollection collection = (BaseBuilderCollection) plg;
         boolean isConnected = true;
         try {
-        MasterMgrClient client = new MasterMgrClient();
-          client.verifyConnection();
+          MasterMgrClient mclient = new MasterMgrClient();
+          mclient.verifyConnection();
+
+          QueueMgrClient qclient = new QueueMgrClient();
+          qclient.verifyConnection();
         }
         catch (PipelineException ex) {
           isConnected = false;
         }
+
         if (isConnected) {
           for (String builderName : collection.getBuildersProvided().keySet()) {
             BaseBuilder builder = 
@@ -649,19 +653,24 @@ class PluginMgr
                 "(" + collection.getName() + ") does not contain a valid parameter layout.");
           }
         }
-        else
-          LogMgr.getInstance().logAndFlush(Kind.Plg, Level.Warning, 
-            "MasterMgr is currently not running which made it impossible to test the " +
-            "builders in Collection (" + plg.getName() + ") from vendor " +
-            "(" + plg.getVendor() + "), verison (" + plg.getVersionID() + ").");
+        else {
+          LogMgr.getInstance().logAndFlush
+            (Kind.Plg, Level.Warning, 
+             "BuilderCollection plugin (" + plg.getName() + " v" + plg.getVersionID() + ") " +
+             "from vendor (" + plg.getVendor() + ") cannot be instantiated to perform the " + 
+             "full suite of validation checks while the Master Manager or Queue Manager " + 
+             "daemons are not running."); 
+        }
+
         pBuilderCollection.addPlugin(plg, cname, contents);
         LayoutGroup group = collection.getLayout();
         pBuilderCollectionLayouts.put
           (plg.getVendor(), plg.getName(), plg.getVersionID(), group);
       }
-      else 
+      else {
 	throw new PipelineException
 	  ("The class file (" + pluginfile + ") does not contain a Pipeline plugin!");
+      }
     }
     catch(LinkageError ex) {
       throw new PipelineException
