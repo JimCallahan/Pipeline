@@ -1,45 +1,70 @@
+Organization of the JOGL source tree
+------------------------------------
 
-Java (TM) Binding for the OpenGL (r) API, version 1.1.0
--------------------------------------------------------
+doc/   Build and user documentation
+make/  Ant build scripts
+       Configuration files for glue code generation
+       Header files for glue code generation
+       See top of build.xml for brief invocation instructions
+src/   Java and native source code for JOGL
+       (Currently also contains source code for GlueGen tool; in
+        process of being split into its own project)
+www/   Web pages and older Java Web Start binaries for JOGL
 
-This software is licensed by Sun Microsystems, as specified
-in the LICENSE-JOGL-1.1.0.txt file.  You must use this software 
-in accordance with the terms under which the code is licensed.
+Acknowledgments
+---------------
 
+Sun Microsystems, Inc. gratefully acknowledges that the initial
+version of JOGL was authored and developed by Kenneth Bradley Russell
+and Christopher John Kline.
 
+Sun and the JOGL development team are grateful for the contributions
+of all of the individuals who have advanced the project. Please
+contact the project owners if your name is missing from this list.
 
-Instructions for unzipping Java Binding for the OpenGL API, version 1.1.0
---------------------------------------------------------------------
+Gerard Ziemski contributed the original port of JOGL to Mac OS X.
 
-After downloading and unzipping the zip file containing the 
-JOGL release for your target platform, you will see the 
-following files in the top directory:
-  
-  COPYRIGHT.txt
-  LICENSE-JOGL-1.1.0.txt
-  Userguide.html
-  README.txt                  README file (you are reading it now)
+Rob Grzywinski and Artur Biesiadowski contributed the Ant build
+support. Alex Radeski contributed the cpptasks support in the build
+process.
 
-and the following subdirectory:
+Pepijn Van Eeckhoudt and Nathan Parker Burg contributed the Java port
+of the GLU tessellator. Pepijn also contributed the initial version of
+the FPSAnimator utility class.
 
-  lib                         contains JOGL implementation
+User GKW on the javagaming.org forums contributed the substantial port
+of the GLU mipmap generation code to Java, as well as robustness fixes
+in the Windows implementation and other areas.
 
-All of the JOGL implementation files (jar files and native 
-libraries) are in the lib subdirectory.  For instructions on 
-how to use these implementation files to build or run a JOGL 
-program see the enclosed JOGL user guide (Userguide.html).
+The JSR-231 expert group as a whole provided valuable discussions and
+guidance in the design of the current APIs. In particular, Kevin
+Rushforth, Daniel Rice and Travis Bryson were instrumental in the
+design of the current APIs.
 
+Travis Bryson did extensive work on the GlueGen tool to make it
+conform to the desired API design. He also shepherded JSR-231 through
+the standardization process, doing extensive cross-validation of the
+APIs and implementation along the way, and authored JOGL's nightly
+build system.
 
+Lilian Chamontin contributed the JOGLAppletLauncher, opening new ways
+of deploying 3D over the web.
 
-Project source code and getting assistance
-------------------------------------------
+Christopher Campbell collaborated closely with the JOGL development
+team to enable interoperability between Sun's OpenGL pipeline for
+Java2D and JOGL in Java SE 6, and also co-authored the TextureIO
+subsystem.
 
-JOGL source code and project information can be found at:
+The following individuals made significant contributions to various
+areas of the project:
 
-  https://jogl.dev.java.net/
+Alban Cousinié
+Athomas Goldberg
+Yuri Vladimir Gushchin
+Gregory Pierce
+Carsten Weisse
 
-
-Numerous answers to common questions can be found on the JOGL
-forum:
-
-  http://www.javagaming.org/forums/index.php?board=25.0
+Sun and the JOGL development team are grateful for the support of the
+javagaming.org community, from where dozens, if not hundreds, of
+individuals have contributed discussions, bug reports, bug fixes, and
+other forms of support.
