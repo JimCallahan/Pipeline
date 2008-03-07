@@ -151,8 +151,6 @@ class MayaFTNBuildAction
 
     addSupport(OsType.Windows);
     addSupport(OsType.MacOS);
-
-    underDevelopment(); 
   }
   
   
