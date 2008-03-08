@@ -23,6 +23,7 @@ java_DATA = \
   InternalTrackingBuilder.java \
   MatchBuilder.java \
   NodePurpose.java \
+  NoiseBuilder.java \
   PlatesBuilder.java \
   ProjectNamer.java \
   ShotNamer.java \

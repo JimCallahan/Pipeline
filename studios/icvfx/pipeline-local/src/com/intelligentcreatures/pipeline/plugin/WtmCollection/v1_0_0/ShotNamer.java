@@ -1,4 +1,4 @@
-// $Id: ShotNamer.java,v 1.21 2008/03/06 14:06:48 jim Exp $
+// $Id: ShotNamer.java,v 1.22 2008/03/08 12:27:12 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -1170,6 +1170,186 @@ class ShotNamer
   {
     Path path = new Path(pBasePaths.get(TaskType.Blot, NodePurpose.Approve), 
 			 joinNames(getFullShotName(), "blot_approve")); 
+    return path.toString(); 
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   N O I S E                                                                            */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Returns the fully resolved name of the prerequisites node for the Noise task.
+   */ 
+  public String
+  getNoisePrereqNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Prereq), 
+			 joinNames(getFullShotName(), "noise_prereq")); 
+    return path.toString(); 
+  }
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Returns the fully resolved name of the Nuke script used to read in the blot animation
+   * textures.
+   */ 
+  public String
+  getBlotAnimNukeNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Prepare), 
+			 new Path(AppDirs.Nuke.toDirPath(), 
+				  joinNames(getFullShotName(), "blot_anim"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the rendered noise textures node.
+   */ 
+  public String
+  getNoiseTexturesNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Focus), 
+			 new Path(AppDirs.Render.toDirPath(), 
+				  joinNames(getFullShotName(), "noise"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the noise textures QuickTime movie.
+   */ 
+  public String
+  getNoiseQuickTimeNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Focus), 
+			 new Path(AppDirs.Render.toDirPath(), 
+				  new Path(AppDirs.QuickTime.toDirPath(), 
+					   joinNames(getFullShotName(), "noise")))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node containing a thumbnail image extracted
+   * from the noise textures. 
+   */ 
+  public String
+  getNoiseThumbNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Thumbnail), 
+			 joinNames(getFullShotName(), "noise")); 
+    return path.toString(); 
+  }
+  
+  /**
+   * Returns the fully resolved name of the noise texture loading Maya scene.
+   */ 
+  public String
+  getNoiseTextureSceneNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Prepare), 
+			 new Path(AppDirs.Maya.toDirPath(), 
+				  joinNames(getFullShotName(), "noise_tex"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the MEL script which attaches the geometry 
+   * cache to the clean unrigged model.
+   */ 
+  public String
+  getNoiseAttachCacheNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Prepare), 
+			 new Path(AppDirs.MEL.toDirPath(), 
+				  joinNames(getFullShotName(), "attach_cache"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the noise test render Maya scene.
+   */ 
+  public String
+  getNoiseTestSceneNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Prepare), 
+			 new Path(AppDirs.Maya.toDirPath(), 
+				  joinNames(getFullShotName(), "noise_test"))); 
+    return path.toString(); 
+  }
+  
+  /**
+   * Returns the fully resolved name of the noise test render images.
+   */ 
+  public String
+  getNoiseTestImagesNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Focus), 
+			 new Path(AppDirs.Render.toDirPath(), 
+				  joinNames(getFullShotName(), "noise_test"))); 
+    return path.toString(); 
+  }
+  
+  /**
+   * Returns the fully resolved name of the noise test render QuickTime movie.
+   */ 
+  public String
+  getNoiseTestQuickTimeNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Focus), 
+			 new Path(AppDirs.Render.toDirPath(), 
+				  new Path(AppDirs.QuickTime.toDirPath(), 
+					   joinNames(getFullShotName(), "noise_test")))); 
+    return path.toString(); 
+  }
+  
+  /**
+   * Returns the fully resolved name of the node containing a thumbnail image extracted
+   * from the noise test render images.
+   */ 
+  public String
+  getNoiseTestThumbNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Thumbnail), 
+			 joinNames(getFullShotName(), "noise_test")); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the submit node for the Noise task.
+   */ 
+  public String
+  getNoiseSubmitNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Submit), 
+			 joinNames(getFullShotName(), "noise_submit")); 
+    return path.toString(); 
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Returns the fully resolved name of the rendered noise textures node.
+   */ 
+  public String
+  getNoiseApprovedTexturesNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Product), 
+			 new Path(AppDirs.Texture.toDirPath(), 
+				  joinNames(getFullShotName(), "noise"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the approve node for the Noise task.
+   */ 
+  public String
+  getNoiseApproveNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Approve), 
+			 joinNames(getFullShotName(), "noise_approve")); 
     return path.toString(); 
   }
 

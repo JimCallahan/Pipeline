@@ -1,4 +1,4 @@
-// $Id: ProjectNamer.java,v 1.14 2008/03/06 06:14:49 jim Exp $
+// $Id: ProjectNamer.java,v 1.15 2008/03/08 12:27:12 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -323,6 +323,26 @@ class ProjectNamer
 			 new Path(AppDirs.MEL.toDirPath(), "blot_test_prep"));
     return path.toString(); 
   }
+  
+
+ 
+  /*----------------------------------------------------------------------------------------*/
+  /*   N O I S E   A S S E T S                                                              */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Returns the fully resolved name of the node containing the Nuke script used to noise
+   * up the blot animation textures.
+   */ 
+  public String
+  getAddNoiseNukeNode() 
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Noise), 
+			 new Path(AppDirs.Nuke.toDirPath(), "add_noise"));
+    return path.toString(); 
+  }
+
+  
   
 
 

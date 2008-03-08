@@ -1,4 +1,4 @@
-// $Id: WtmCollection.java,v 1.9 2008/03/06 06:14:49 jim Exp $
+// $Id: WtmCollection.java,v 1.10 2008/03/08 12:27:12 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -39,6 +39,7 @@ class WtmCollection
 	sub.addEntry("Tracking");
 	sub.addEntry("Match");
 	sub.addEntry("Blot");
+	sub.addEntry("Noise");
 
 	group.addSubGroup(sub);
       }
@@ -89,6 +90,7 @@ class WtmCollection
     toReturn.put("Tracking",         pkg + "TrackingBuilder");
     toReturn.put("Match",            pkg + "MatchBuilder");
     toReturn.put("Blot",             pkg + "BlotBuilder");
+    toReturn.put("Noise",            pkg + "NoiseBuilder");
 
     toReturn.put("ApproveTask",      pkg + "ApproveTaskBuilder");
     
