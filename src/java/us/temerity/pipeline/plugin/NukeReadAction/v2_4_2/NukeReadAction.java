@@ -1,4 +1,4 @@
-// $Id: NukeReadAction.java,v 1.2 2008/02/18 22:58:17 jim Exp $
+// $Id: NukeReadAction.java,v 1.3 2008/03/09 12:43:21 jim Exp $
 
 package us.temerity.pipeline.plugin.NukeReadAction.v2_4_2;
 
@@ -70,11 +70,11 @@ class NukeReadAction
   
     {
       ActionParam param = 
-	new LinkActionParam
-	(aImageSource,
-	 "Specifies the source node containing the images to read in by the created " + 
+        new LinkActionParam
+        (aImageSource,
+         "Specifies the source node containing the images to read in by the created " + 
          "Nuke Read node.", 
-	 null);
+         null);
       addSingleParam(param);
     } 
 
@@ -87,9 +87,9 @@ class NukeReadAction
       choices.add(aNearestFrame);
 
       ActionParam param = 
-	new EnumActionParam
-	(aMissingFrames,
-	 "What to do when there is an error reading the file (by Nuke).",
+        new EnumActionParam
+        (aMissingFrames,
+         "What to do when there is an error reading the file (by Nuke).",
          aError, choices);
       addSingleParam(param);
     } 
@@ -103,9 +103,9 @@ class NukeReadAction
       choices.add(aCineon); 
 
       ActionParam param = 
-	new EnumActionParam
-	(aColorspace,
-	 "Lookup table (LUT) used by Nuke to convert file pixel data to the internal " + 
+        new EnumActionParam
+        (aColorspace,
+         "Lookup table (LUT) used by Nuke to convert file pixel data to the internal " + 
          "data representation used by Nuke.", 
          aDefault, choices);
       addSingleParam(param);
@@ -113,9 +113,9 @@ class NukeReadAction
     
     {
       ActionParam param = 
-	new BooleanActionParam
-	(aPremultiplied,
-	 "If there is in alpha channel, divide color data by the alpha before converting " + 
+        new BooleanActionParam
+        (aPremultiplied,
+         "If there is in alpha channel, divide color data by the alpha before converting " + 
          "from the colorspace, and then multiply by the alpha afterwards.  This will " + 
          "correct the color of the partially-trasparent pixels produced by most renderers.", 
          false); 
@@ -124,9 +124,9 @@ class NukeReadAction
     
     {
       ActionParam param = 
-	new BooleanActionParam
-	(aRaw,
-	 "Do no convert the data.  For most file formats this is the same as Linear " + 
+        new BooleanActionParam
+        (aRaw,
+         "Do no convert the data.  For most file formats this is the same as Linear " + 
          "colorspace, but for some it may disable other processing, such as conversion " + 
          "from YUV.", 
          false); 
