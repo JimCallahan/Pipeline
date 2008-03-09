@@ -1,4 +1,4 @@
-// $Id: NoiseBuilder.java,v 1.1 2008/03/08 12:27:12 jim Exp $
+// $Id: NoiseBuilder.java,v 1.2 2008/03/09 12:10:16 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -552,11 +552,11 @@ class NoiseBuilder
       {
 	String noiseApprovedTexturesNodeName = pShotNamer.getNoiseApprovedTexturesNode();
 	{
-	  ProductStage stage = 
-	    new ProductStage
+	  CopyImagesStage stage = 
+	    new CopyImagesStage
 	      (stageInfo, pContext, pClient, 
 	       noiseApprovedTexturesNodeName, pFrameRange, 4, "tif", 
-	       pNoiseTexturesNodeName, ICStageFunction.aRenderedImage);  
+	       pNoiseTexturesNodeName);
 	  addTaskAnnotation(stage, NodePurpose.Product); 
 	  stage.build(); 
 	}

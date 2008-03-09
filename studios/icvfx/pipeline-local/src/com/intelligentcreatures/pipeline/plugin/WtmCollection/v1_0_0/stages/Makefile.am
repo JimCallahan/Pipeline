@@ -22,6 +22,7 @@ java_DATA = \
   BuildTrackingExtractStage.java \
   BuildTrackingVerifyStage.java \
   CatMelStage.java \
+  CopyImagesStage.java \
   DistortedGridStage.java \
   LensInfoStage.java \
   MatchGeoCacheStage.java \
