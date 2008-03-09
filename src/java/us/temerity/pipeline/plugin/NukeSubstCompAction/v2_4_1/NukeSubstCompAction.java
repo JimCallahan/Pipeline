@@ -1,4 +1,4 @@
-// $Id: NukeSubstCompAction.java,v 1.1 2008/03/08 22:24:51 jim Exp $
+// $Id: NukeSubstCompAction.java,v 1.2 2008/03/09 12:43:45 jim Exp $
 
 package us.temerity.pipeline.plugin.NukeSubstCompAction.v2_4_1;
 
@@ -29,7 +29,7 @@ import java.io.*;
  * This action defines the following single valued parameters: <BR>
  * 
  * <DIV style="margin-left: 40px;">
- *   Mater Script <BR>
+ *   Master Script <BR>
  *   <DIV style="margin-left: 40px;">
  *     The source node which contains the master Nuke script which will be modified by 
  *     replacing some of its Nuke nodes with script fragments from the other source nodes.
@@ -124,8 +124,6 @@ class NukeSubstCompAction
 
     addSupport(OsType.MacOS);
     addSupport(OsType.Windows);
-
-    underDevelopment(); 
   }
 
 
