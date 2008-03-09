@@ -1,4 +1,4 @@
-// $Id: MayaRenderAction.java,v 1.1 2008/03/08 23:28:46 jim Exp $
+// $Id: MayaRenderAction.java,v 1.2 2008/03/09 12:40:20 jim Exp $
 
 package us.temerity.pipeline.plugin.MayaRenderAction.v2_3_10;
 
@@ -119,30 +119,30 @@ class MayaRenderAction
     
     {
       ActionParam param =
-	new StringActionParam
-	(aCameraOverride,
-	 "Overrides the render camera (if set).",
-	 null);
-      addSingleParam(param);
-    }
-
-    {
-      ActionParam param =
-	new StringActionParam
-	(aRenderLayer,
-	 "The Render Layer in the maya scene that should be rendered.  " +
-	 "Leave this blank to ignore renderlayers.",
-	 null);
+        new StringActionParam
+        (aCameraOverride,
+         "Overrides the render camera (if set).",
+         null);
       addSingleParam(param);
     }
     
     {
       ActionParam param =
-	new LinkActionParam
-	(aParticleCache,
-	 "A place to link in a MayaPartCacheGroup node that will set the particle cache " + 
+        new StringActionParam
+        (aRenderLayer,
+         "The Render Layer in the maya scene that should be rendered.  " +
+         "Leave this blank to ignore renderlayers.",
+         null);
+      addSingleParam(param);
+    }
+    
+    {
+      ActionParam param =
+        new LinkActionParam
+        (aParticleCache,
+         "A place to link in a MayaPartCacheGroup node that will set the particle cache " + 
          "directories.",
-	 null);
+         null);
       addSingleParam(param);
     }
 
@@ -189,55 +189,55 @@ class MayaRenderAction
     
     {
       ActionParam param =
-	new LinkActionParam
-	(aPreRenderMEL,
-	 "The MEL script to sourced before rendering begins.",
-	 null);
+        new LinkActionParam
+        (aPreRenderMEL,
+         "The MEL script to sourced before rendering begins.",
+         null);
+      addSingleParam(param);
+    }
+    
+    {
+      ActionParam param =
+        new LinkActionParam
+        (aPostRenderMEL,
+         "The MEL script to sourced after rendering ends.",
+         null);
+      addSingleParam(param);
+    }
+    
+    {
+      ActionParam param =
+        new LinkActionParam
+        (aPreLayerMEL,
+         "The MEL script to sourced before rendering each layer.",
+         null);
+      addSingleParam(param);
+    }
+    
+    {
+      ActionParam param =
+        new LinkActionParam
+        (aPostLayerMEL,
+         "The MEL script to sourced after rendering each layer.",
+         null);
+      addSingleParam(param);
+    }
+    
+    {
+      ActionParam param =
+        new LinkActionParam
+        (aPreFrameMEL,
+         "The MEL script to sourced before rendering each frame.",
+         null);
       addSingleParam(param);
     }
 
     {
       ActionParam param =
-	new LinkActionParam
-	(aPostRenderMEL,
-	 "The MEL script to sourced after rendering ends.",
-	 null);
-      addSingleParam(param);
-    }
-
-    {
-      ActionParam param =
-	new LinkActionParam
-	(aPreLayerMEL,
-	 "The MEL script to sourced before rendering each layer.",
-	 null);
-      addSingleParam(param);
-    }
-
-    {
-      ActionParam param =
-	new LinkActionParam
-	(aPostLayerMEL,
-	 "The MEL script to sourced after rendering each layer.",
-	 null);
-      addSingleParam(param);
-    }
-
-    {
-      ActionParam param =
-	new LinkActionParam
-	(aPreFrameMEL,
-	 "The MEL script to sourced before rendering each frame.",
-	 null);
-      addSingleParam(param);
-    }
-
-    {
-      ActionParam param =
-	new LinkActionParam
-	(aPostFrameMEL,
-	 "The MEL script to sourced after rendering each frame.",
-	 null);
+        new LinkActionParam
+        (aPostFrameMEL,
+         "The MEL script to sourced after rendering each frame.",
+         null);
       addSingleParam(param);
     }
     
@@ -256,30 +256,28 @@ class MayaRenderAction
       addExtraOptionsParamToLayout(layout);
       
       {
-	LayoutGroup sub =
+        LayoutGroup sub =
           new LayoutGroup
-	  ("MEL Scripts",
-	   "MEL scripts run at various stages of the rendering process.",
-	   true);
-	sub.addEntry(aPreRenderMEL);
-	sub.addEntry(aPostRenderMEL);
-	sub.addSeparator();
-	sub.addEntry(aPreLayerMEL);
-	sub.addEntry(aPostLayerMEL);
-	sub.addSeparator();
-	sub.addEntry(aPreFrameMEL);
-	sub.addEntry(aPostFrameMEL);
-
-	layout.addSubGroup(sub);
+          ("MEL Scripts",
+           "MEL scripts run at various stages of the rendering process.",
+           true);
+        sub.addEntry(aPreRenderMEL);
+        sub.addEntry(aPostRenderMEL);
+        sub.addSeparator();
+        sub.addEntry(aPreLayerMEL);
+        sub.addEntry(aPostLayerMEL);
+        sub.addSeparator();
+        sub.addEntry(aPreFrameMEL);
+        sub.addEntry(aPostFrameMEL);
+        
+        layout.addSubGroup(sub);
       }
-
+      
       setSingleLayout(layout);
     }
-
+    
     addSupport(OsType.MacOS);
     addSupport(OsType.Windows);
-
-    underDevelopment();    
   }
 
 

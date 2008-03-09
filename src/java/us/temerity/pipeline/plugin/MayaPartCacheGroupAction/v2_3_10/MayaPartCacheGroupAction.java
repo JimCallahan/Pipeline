@@ -31,8 +31,6 @@ class MayaPartCacheGroupAction
     
     addSupport(OsType.Windows);
     addSupport(OsType.MacOS);
-
-    underDevelopment();    
   }
   
 
@@ -78,8 +76,8 @@ class MayaPartCacheGroupAction
       FileSeq sSeq = agenda.getPrimarySource(s);
       String suffix = sSeq.getFilePattern().getSuffix();
       if (!suffix.equals("pdc") || !sSeq.hasFrameNumbers())
-	throw new PipelineException
-	  ("The MayaPartCacheGroup Action only takes .pdc sequences as source nodes.");
+        throw new PipelineException
+          ("The MayaPartCacheGroup Action only takes .pdc sequences as source nodes.");
       Path p = getWorkingNodeFilePath(agenda, s, sSeq).getParentPath();
       particleDir.add(p);
     }
@@ -91,7 +89,7 @@ class MayaPartCacheGroupAction
     if (particleDir.size() > 1) {
       String badPaths = "";
       for (Path p : particleDir)
-	badPaths += p + "\n";
+        badPaths += p + "\n";
       throw new PipelineException
         ("Due to the restrictions of Maya's particle caching setup, only one directory " +
          "can be specified as a cache directory.  The following directories were" + 
@@ -115,9 +113,9 @@ class MayaPartCacheGroupAction
     }
     catch(IOException ex) {
       throw new PipelineException
-	("Unable to write temporary MEL script file (" + script + ") for Job " + 
-	 "(" + agenda.getJobID() + ")!\n" +
-	 ex.getMessage());
+        ("Unable to write temporary MEL script file (" + script + ") for Job " + 
+         "(" + agenda.getJobID() + ")!\n" +
+         ex.getMessage());
     }
       
     /* create the process to run the action */ 
