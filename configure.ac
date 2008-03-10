@@ -1863,29 +1863,32 @@ AC_CONFIG_FILES([
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/ApproveTaskAnnotation/Makefile
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/ApproveTaskAnnotation/v1_0_0/Makefile
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/ApproveTaskAnnotation/v1_0_0/Makefile.local
-  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/CommonTaskAnnotation/Makefile
-  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/CommonTaskAnnotation/v1_0_0/Makefile
-  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/CommonTaskAnnotation/v1_0_0/Makefile.local
-  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/SubmitTaskAnnotation/Makefile
-  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/SubmitTaskAnnotation/v1_0_0/Makefile
-  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/SubmitTaskAnnotation/v1_0_0/Makefile.local
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/ApproveTaskTool/Makefile
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/ApproveTaskTool/v1_0_0/Makefile
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/ApproveTaskTool/v1_0_0/Makefile.local
-  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/NotMiniKeyChooser/Makefile
-  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/NotMiniKeyChooser/v1_0_0/Makefile
-  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/NotMiniKeyChooser/v1_0_0/Makefile.local
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/CommonTaskAnnotation/Makefile
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/CommonTaskAnnotation/v1_0_0/Makefile
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/CommonTaskAnnotation/v1_0_0/Makefile.local
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/LensInfoAction/Makefile
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/LensInfoAction/v1_0_0/Makefile
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/LensInfoAction/v1_0_0/Makefile.local
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/LensInfoAction/v1_0_1/Makefile
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/LensInfoAction/v1_0_1/Makefile.local
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/NotMiniKeyChooser/Makefile
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/NotMiniKeyChooser/v1_0_0/Makefile
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/NotMiniKeyChooser/v1_0_0/Makefile.local
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/PFTrackBuildAction/Makefile
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/PFTrackBuildAction/v1_0_0/Makefile
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/PFTrackBuildAction/v1_0_0/Makefile.local
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/PFTrackEditor/Makefile
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/PFTrackEditor/v1_0_0/Makefile
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/PFTrackEditor/v1_0_0/Makefile.local
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/SlateSubstAction/Makefile
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/SlateSubstAction/v1_0_0/Makefile
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/SlateSubstAction/v1_0_0/Makefile.local
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/SubmitTaskAnnotation/Makefile
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/SubmitTaskAnnotation/v1_0_0/Makefile
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/SubmitTaskAnnotation/v1_0_0/Makefile.local
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/Makefile
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/Makefile
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/Makefile.local
