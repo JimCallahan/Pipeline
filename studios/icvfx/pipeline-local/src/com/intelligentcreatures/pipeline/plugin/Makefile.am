@@ -8,13 +8,13 @@ makefile_DATA = \
 
 
 SUBDIRS = \
-  SubmitTaskAnnotation \
   ApproveTaskAnnotation \
-  CommonTaskAnnotation \
   ApproveTaskTool \
+  CommonTaskAnnotation \
   LensInfoAction \
   NotMiniKeyChooser \
   PFTrackBuildAction \
   PFTrackEditor \
+  SlateSubstAction \
+  SubmitTaskAnnotation \
   WtmCollection
-
