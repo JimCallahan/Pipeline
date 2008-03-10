@@ -1,4 +1,4 @@
-// $Id: CatFilesAction.java,v 1.1 2007/06/17 15:34:38 jim Exp $
+// $Id: CatFilesAction.java,v 1.2 2008/03/10 05:55:48 jim Exp $
 
 package us.temerity.pipeline.plugin.CatFilesAction.v2_2_1;
 
@@ -127,26 +127,26 @@ class CatFilesAction
     {
       int numFrames = agenda.getPrimaryTarget().numFrames();
       for(String sname : agenda.getSourceNames()) {
-	if(hasSourceParams(sname)) {
-	  FileSeq fseq = agenda.getPrimarySource(sname);
-	  Integer order = (Integer) getSourceParamValue(sname, aOrder);
-	  addSourcePaths(agenda, numFrames, sname, fseq, order, sourcePaths);
-	}
-
-	for(FileSeq fseq : agenda.getSecondarySources(sname)) {
-	  FilePattern fpat = fseq.getFilePattern();
-	  if(hasSecondarySourceParams(sname, fpat)) {
-	    Integer order = (Integer) getSecondarySourceParamValue(sname, fpat, aOrder);
-	    addSourcePaths(agenda, numFrames, sname, fseq, order, sourcePaths);
-	  }
-	}
+        if(hasSourceParams(sname)) {
+          FileSeq fseq = agenda.getPrimarySource(sname);
+          Integer order = (Integer) getSourceParamValue(sname, aOrder);
+          addSourcePaths(agenda, numFrames, sname, fseq, order, sourcePaths);
+        }
+        
+        for(FileSeq fseq : agenda.getSecondarySources(sname)) {
+          FilePattern fpat = fseq.getFilePattern();
+          if(hasSecondarySourceParams(sname, fpat)) {
+            Integer order = (Integer) getSecondarySourceParamValue(sname, fpat, aOrder);
+            addSourcePaths(agenda, numFrames, sname, fseq, order, sourcePaths);
+          }
+        }
       }
 
       if(sourcePaths.isEmpty()) 
-	throw new PipelineException
-	  ("No source files where specified using the per-source Order parameter!");
+        throw new PipelineException
+          ("No source files where specified using the per-source Order parameter!");
     }
-
+    
     /* create the process to run the action */ 
     try {     
       String program = null;
@@ -242,8 +242,8 @@ class CatFilesAction
     }
     catch(Exception ex) {
       throw new PipelineException
-	("Unable to generate the SubProcess to perform this Action!\n" +
-	 ex.getMessage());
+        ("Unable to generate the SubProcess to perform this Action!\n" +
+         ex.getMessage());
     }
   }
 
@@ -278,14 +278,14 @@ class CatFilesAction
     
     if((fseq.numFrames() != 1) && (fseq.numFrames() != numFrames))
       throw new PipelineException
-	("The file sequence (" + fseq + ") associated with source node (" + sname + ") " + 
-	 "must have the contain the same number of files as the target sequence or " + 
-	 "exactly one file.");
+        ("The file sequence (" + fseq + ") associated with source node (" + sname + ") " + 
+         "must have the contain the same number of files as the target sequence or " + 
+         "exactly one file.");
     
     for(Path path : getWorkingNodeFilePaths(agenda, sname, fseq))
       sourcePaths.put(order, path);
   }
-
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */

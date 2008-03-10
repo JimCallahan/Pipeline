@@ -1,4 +1,4 @@
-// $Id: BaseAppleScriptEditor.java,v 1.8 2007/02/15 08:41:03 jim Exp $
+// $Id: BaseAppleScriptEditor.java,v 1.9 2008/03/10 05:55:48 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -135,9 +135,9 @@ class BaseAppleScriptEditor
       args.add("tell application \"" + getProgram() + "\"");
       
       for(File file : fseq.getFiles()) {
-	String macpath = file.getPath().substring(1).replace("/",":");
-	args.add("-e");
-	args.add("open file \"" + macpath + "\"");
+        String macpath = file.getPath().substring(1).replace("/",":");
+        args.add("-e");
+        args.add("open file \"" + macpath + "\"");
       }
       
       args.add("-e");
@@ -147,8 +147,8 @@ class BaseAppleScriptEditor
     }
     catch(Exception ex) {
       throw new PipelineException
-	("Unable to generate the SubProcess to launch this Editor!\n" +
-	 ex.getMessage());
+        ("Unable to generate the SubProcess to launch this Editor!\n" +
+         ex.getMessage());
     }    
   }
 

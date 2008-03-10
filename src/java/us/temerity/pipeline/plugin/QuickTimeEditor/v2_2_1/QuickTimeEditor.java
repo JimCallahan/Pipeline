@@ -1,4 +1,4 @@
-// $Id: QuickTimeEditor.java,v 1.2 2007/07/24 04:23:00 jim Exp $
+// $Id: QuickTimeEditor.java,v 1.3 2008/03/10 05:55:48 jim Exp $
 
 package us.temerity.pipeline.plugin.QuickTimeEditor.v2_2_1;
 
@@ -82,8 +82,8 @@ class QuickTimeEditor
     {
       FrameRange range = fseq.getFrameRange(); 
       if((range != null) && (!range.isSingle()))
-	throw new PipelineException
-	  ("The " + getName() + " Editor can only view a single movie at a time!");
+        throw new PipelineException
+          ("The " + getName() + " Editor can only view a single movie at a time!");
 
       movie = fseq.getPath(0).toString().replace("/", "\\\\");      
     }
