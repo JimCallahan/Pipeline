@@ -73,6 +73,10 @@ class ProductStage
   public String 
   getStageFunction()
   {
+    // THIS DOESN'T WORK!!!
+    // This method gets called by StandardStage (line 69) during construction BEFORE 
+    // pStageFunction be set.  Since pStageFunction is (null) when this happens, the 
+    // pEditor is not set!   Lots of code uses this, but I don't know if it ever worked.
     if (pStageFunction != null)
       return pStageFunction;
     return super.getStageFunction();
