@@ -1,4 +1,4 @@
-// $Id: PrivilegeDetails.java,v 1.3 2007/06/15 00:27:31 jim Exp $
+// $Id: PrivilegeDetails.java,v 1.4 2008/03/11 12:54:59 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -60,9 +60,9 @@ class PrivilegeDetails
 
     if(!pIsMasterAdmin && ((!pIsQueueAdmin && pIsQueueManager) || pIsNodeManager)) {
       if(sharedUsers == null) 
-	throw new IllegalArgumentException
-	  ("The shared users cannot be (null) when either Queue Manager or Node Manager " +
-	   "privileges have been granted.");
+        throw new IllegalArgumentException
+          ("The shared users cannot be (null) when either Queue Manager or Node Manager " +
+           "privileges have been granted.");
       pManagedUsers = Collections.unmodifiableSet(sharedUsers);
     }
   }

@@ -1,4 +1,4 @@
-// $Id: WorkGroups.java,v 1.4 2006/11/06 00:58:33 jim Exp $
+// $Id: WorkGroups.java,v 1.5 2008/03/11 12:54:59 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -121,13 +121,13 @@ class WorkGroups
     TreeSet<Integer> gids = pUserGroups.remove(uid);
     if(gids != null) {
       for(Integer gid : gids) {
-	int sign = (gid > 0) ? 1 : -1; 
-
-	TreeSet<Integer> uids = pGroupUsers.get(sign * gid);
-	uids.remove(sign * uid);
-
-	if(uids.isEmpty()) 
-	  pGroupUsers.remove(sign * gid); 
+        int sign = (gid > 0) ? 1 : -1; 
+        
+        TreeSet<Integer> uids = pGroupUsers.get(sign * gid);
+        uids.remove(sign * uid);
+        
+        if(uids.isEmpty()) 
+          pGroupUsers.remove(sign * gid); 
       }
     }
   }
@@ -202,13 +202,13 @@ class WorkGroups
     TreeSet<Integer> uids = pGroupUsers.remove(gid);
     if(uids != null) {
       for(Integer uid : uids) {
-	int sign = (uid > 0) ? 1 : -1; 
-
-	TreeSet<Integer> gids = pUserGroups.get(sign * uid);
-	gids.remove(sign * gid);
-
-	if(gids.isEmpty()) 
-	  pUserGroups.remove(sign * uid); 
+        int sign = (uid > 0) ? 1 : -1; 
+        
+        TreeSet<Integer> gids = pUserGroups.get(sign * uid);
+        gids.remove(sign * gid);
+        
+        if(gids.isEmpty()) 
+          pUserGroups.remove(sign * uid); 
       }
     }
   }
@@ -247,9 +247,9 @@ class WorkGroups
     TreeSet<Integer> gids = pUserGroups.get(uid);
     if(gids != null) {
       if(gids.contains(gid)) 
-	return false;
+        return false;
       else if(gids.contains(-gid))
-	return true;
+        return true;
     }
     
     return null;	
@@ -288,48 +288,48 @@ class WorkGroups
     TreeSet<Integer> uids = pGroupUsers.get(gid);
     if(isMemberOrManager != null) {
       if(gids == null) {
-	gids = new TreeSet<Integer>(); 
-	pUserGroups.put(uid, gids);
+        gids = new TreeSet<Integer>(); 
+        pUserGroups.put(uid, gids);
       }
       
       if(isMemberOrManager) {
-	gids.add(-gid);
-	gids.remove(gid);
+        gids.add(-gid);
+        gids.remove(gid);
       }
       else {
-	gids.add(gid);
-	gids.remove(-gid);
+        gids.add(gid);
+        gids.remove(-gid);
       }
       
       if(uids == null) {
-	uids = new TreeSet<Integer>();
-	pGroupUsers.put(gid, uids);
+        uids = new TreeSet<Integer>();
+        pGroupUsers.put(gid, uids);
       }
 
       if(isMemberOrManager) {
-	uids.add(-uid);
-	uids.remove(uid);
+        uids.add(-uid);
+        uids.remove(uid);
       }
       else {
-	uids.add(uid);
-	uids.remove(-uid);
+        uids.add(uid);
+        uids.remove(-uid);
       }
     }
     else {
       if(gids != null) {
-	gids.remove(gid); 
-	gids.remove(-gid); 
+        gids.remove(gid); 
+        gids.remove(-gid); 
 
-	if(gids.isEmpty()) 
-	  pUserGroups.remove(uid);
+        if(gids.isEmpty()) 
+          pUserGroups.remove(uid);
       }
       
       if(uids != null) {
-	uids.remove(uid); 
-	uids.remove(-uid); 
+        uids.remove(uid); 
+        uids.remove(-uid); 
 
-	if(uids.isEmpty()) 
-	  pGroupUsers.remove(gid);
+        if(uids.isEmpty()) 
+          pGroupUsers.remove(gid);
       }      
     }
   }
@@ -365,13 +365,13 @@ class WorkGroups
     if((uid1 != null) && (uid2 != null)) {
       TreeSet<Integer> gids = pUserGroups.get(uid1);
       if(gids != null) {
-	for(Integer gid : gids) {
-	  if(gid < 0) {
-	    TreeSet<Integer> uids2 = pGroupUsers.get(-gid);
-	    if(uids2.contains(uid2) || uids2.contains(-uid2))
-	      return true; 
-	  }
-	}
+        for(Integer gid : gids) {
+          if(gid < 0) {
+            TreeSet<Integer> uids2 = pGroupUsers.get(-gid);
+            if(uids2.contains(uid2) || uids2.contains(-uid2))
+              return true; 
+          }
+        }
       }
     }
 
@@ -401,17 +401,17 @@ class WorkGroups
       TreeSet<Integer> suids = new TreeSet<Integer>(); 
       TreeSet<Integer> gids = pUserGroups.get(uid);
       if(gids != null) {
-	for(Integer gid : gids) {
-	  if(gid < 0) {
-	    for(Integer suid : pGroupUsers.get(-gid))
-	      suids.add(Math.abs(suid));
-	  }
-	}
+        for(Integer gid : gids) {
+          if(gid < 0) {
+            for(Integer suid : pGroupUsers.get(-gid))
+              suids.add(Math.abs(suid));
+          }
+        }
       }
       
       for(Integer suid : suids) {
-	if(!suid.equals(uid)) 
-	  users.add(pUserNames.get(suid));
+        if(!suid.equals(uid)) 
+          users.add(pUserNames.get(suid));
       }
     }
     
@@ -453,46 +453,46 @@ class WorkGroups
     {
       TreeMap<String,Integer> ids = (TreeMap<String,Integer>) decoder.decode("UserIDs"); 
       if(ids != null) {
-	pUserIDs = ids;
+        pUserIDs = ids;
 
-	for(String uname : pUserIDs.keySet())
-	  pUserNames.put(pUserIDs.get(uname), uname);
+        for(String uname : pUserIDs.keySet())
+          pUserNames.put(pUserIDs.get(uname), uname);
 
-	pNextUserID = pUserNames.lastKey() + 1;
+        pNextUserID = pUserNames.lastKey() + 1;
       }
     }
 
     {
       TreeMap<String,Integer> ids = (TreeMap<String,Integer>) decoder.decode("GroupIDs"); 
       if(ids != null) {
-	pGroupIDs = ids;
+        pGroupIDs = ids;
 
-	for(String gname : pGroupIDs.keySet())
-	  pGroupNames.put(pGroupIDs.get(gname), gname);
+        for(String gname : pGroupIDs.keySet())
+          pGroupNames.put(pGroupIDs.get(gname), gname);
 
-	pNextGroupID = pGroupNames.lastKey() + 1;
+        pNextGroupID = pGroupNames.lastKey() + 1;
       }
     }
 
     {
       TreeMap<Integer,TreeSet<Integer>> ugs = 
-	(TreeMap<Integer,TreeSet<Integer>>) decoder.decode("UserGroups");
+        (TreeMap<Integer,TreeSet<Integer>>) decoder.decode("UserGroups");
       if(ugs != null) {
-	pUserGroups = ugs;
+        pUserGroups = ugs;
 
-	for(Integer uid : pUserGroups.keySet()) {
-	  for(Integer gid : pUserGroups.get(uid)) {
-	    int sign = (gid > 0) ? 1 : -1; 
+        for(Integer uid : pUserGroups.keySet()) {
+          for(Integer gid : pUserGroups.get(uid)) {
+            int sign = (gid > 0) ? 1 : -1; 
 
-	    TreeSet<Integer> uids = pGroupUsers.get(sign * gid); 
-	    if(uids == null) {
-	      uids = new TreeSet<Integer>();
-	      pGroupUsers.put(sign * gid, uids);
-	    }
+            TreeSet<Integer> uids = pGroupUsers.get(sign * gid); 
+            if(uids == null) {
+              uids = new TreeSet<Integer>();
+              pGroupUsers.put(sign * gid, uids);
+            }
 
-	    uids.add(sign * uid);
-	  }
-	}
+            uids.add(sign * uid);
+          }
+        }
       }
     }    
 
@@ -520,10 +520,10 @@ class WorkGroups
       pNextUserID = 1; 
       pUserNames.clear();
       for(String uname : pUserIDs.keySet()) {
-	uidMap.put(pUserIDs.get(uname), pNextUserID);
-	pUserIDs.put(uname, pNextUserID);
-	pUserNames.put(pNextUserID, uname);
-	pNextUserID++;
+        uidMap.put(pUserIDs.get(uname), pNextUserID);
+        pUserIDs.put(uname, pNextUserID);
+        pUserNames.put(pNextUserID, uname);
+        pNextUserID++;
       }
     }
 
@@ -532,10 +532,10 @@ class WorkGroups
       pNextGroupID = 1; 
       pGroupNames.clear();
       for(String gname : pGroupIDs.keySet()) {
-	gidMap.put(pGroupIDs.get(gname), pNextGroupID);
-	pGroupIDs.put(gname, pNextGroupID);
-	pGroupNames.put(pNextGroupID, gname);
-	pNextGroupID++;
+        gidMap.put(pGroupIDs.get(gname), pNextGroupID);
+        pGroupIDs.put(gname, pNextGroupID);
+        pGroupNames.put(pNextGroupID, gname);
+        pNextGroupID++;
       }
     }
 
@@ -543,15 +543,15 @@ class WorkGroups
       TreeMap<Integer,TreeSet<Integer>> oldUGs = pUserGroups; 
       pUserGroups = new TreeMap<Integer,TreeSet<Integer>>();
       for(Integer ouid : oldUGs.keySet()) {
-	Integer uid = uidMap.get(ouid);
+        Integer uid = uidMap.get(ouid);
 
-	TreeSet<Integer> ogids = oldUGs.get(ouid);
+        TreeSet<Integer> ogids = oldUGs.get(ouid);
 
-	TreeSet<Integer> gids = new TreeSet<Integer>();
-	pUserGroups.put(uid, gids);
+        TreeSet<Integer> gids = new TreeSet<Integer>();
+        pUserGroups.put(uid, gids);
 
-	for(Integer ogid : ogids) 
-	  gids.add(gidMap.get(ogid) * ((ogid > 0) ? 1 : -1));
+        for(Integer ogid : ogids) 
+          gids.add(gidMap.get(ogid) * ((ogid > 0) ? 1 : -1));
       }
     }
 
@@ -559,15 +559,15 @@ class WorkGroups
       TreeMap<Integer,TreeSet<Integer>> oldGUs = pGroupUsers; 
       pGroupUsers = new TreeMap<Integer,TreeSet<Integer>>();
       for(Integer ogid : oldGUs.keySet()) {
-	Integer gid = gidMap.get(ogid);
+        Integer gid = gidMap.get(ogid);
 
-	TreeSet<Integer> ouids = oldGUs.get(ogid);
+        TreeSet<Integer> ouids = oldGUs.get(ogid);
 
-	TreeSet<Integer> uids = new TreeSet<Integer>();
-	pGroupUsers.put(gid, uids);
+        TreeSet<Integer> uids = new TreeSet<Integer>();
+        pGroupUsers.put(gid, uids);
 
-	for(Integer ouid : ouids) 
-	  uids.add(uidMap.get(ouid) * ((ouid > 0) ? 1 : -1));
+        for(Integer ouid : ouids) 
+          uids.add(uidMap.get(ouid) * ((ouid > 0) ? 1 : -1));
       }
     }
   }
