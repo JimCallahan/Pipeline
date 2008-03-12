@@ -1,4 +1,4 @@
-// $Id: BlotBuilder.java,v 1.6 2008/03/09 12:10:16 jim Exp $
+// $Id: BlotBuilder.java,v 1.7 2008/03/12 09:02:32 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -360,8 +360,8 @@ class BlotBuilder
       throws PipelineException 
     {
       /* soundtrack */ 
-      pSoundtrackNodeName = pShotNamer.getSoundtrackNode(); 
-      if(!nodeExists(pSoundtrackNodeName)) {
+      pAttachSoundtrackNodeName = pShotNamer.getAttachSoundtrackNode(); 
+      if(!nodeExists(pAttachSoundtrackNodeName)) {
 	SoundBuilder builder = new SoundBuilder(pClient, pQueue, getBuilderInformation(), 
 						pStudioDefs, pProjectNamer, pShotNamer);
 	addSubBuilder(builder);
@@ -786,11 +786,6 @@ class BlotBuilder
    * Returns the fully resolved name of the MEL script used to load the soundtrack.
    */ 
   private String pAttachSoundtrackNodeName; 
-
-  /**
-   * The fully resolved name of the shot soundtrack node.
-   */ 
-  private String pSoundtrackNodeName; 
 
   /**
    * The fully resolved name of the node containing the baked Maya geometry cache. 
