@@ -17,4 +17,5 @@ SUBDIRS = \
   PFTrackEditor \
   SlateSubstAction \
   SubmitTaskAnnotation \
+  TaskGuardExt \
   WtmCollection

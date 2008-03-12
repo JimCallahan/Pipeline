@@ -9,5 +9,6 @@
 	$(MAKE) -f Makefile.local -C PFTrackBuildAction $@ 
 	$(MAKE) -f Makefile.local -C PFTrackEditor $@
 	$(MAKE) -f Makefile.local -C SlateSubstAction $@
-	$(MAKE) -f Makefile.local -C SubmitTaskAnnotation $@ 
+	$(MAKE) -f Makefile.local -C SubmitTaskAnnotation $@
+	$(MAKE) -f Makefile.local -C TaskGuardExt $@ 
 	$(MAKE) -f Makefile.local -C WtmCollection $@
