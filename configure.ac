@@ -9,7 +9,7 @@ AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(Pipeline, 2.4.1b9)
+AM_INIT_AUTOMAKE(Pipeline, 2.4.1b10)
                            
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
@@ -1889,6 +1889,9 @@ AC_CONFIG_FILES([
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/SubmitTaskAnnotation/Makefile
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/SubmitTaskAnnotation/v1_0_0/Makefile
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/SubmitTaskAnnotation/v1_0_0/Makefile.local
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/TaskGuardExt/Makefile
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/TaskGuardExt/v1_0_0/Makefile
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/TaskGuardExt/v1_0_0/Makefile.local
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/Makefile
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/Makefile
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/Makefile.local
