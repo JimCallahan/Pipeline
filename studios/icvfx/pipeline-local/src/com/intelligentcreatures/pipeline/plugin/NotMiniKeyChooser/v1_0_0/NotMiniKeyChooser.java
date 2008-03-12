@@ -1,4 +1,4 @@
-// $Id: NotMiniKeyChooser.java,v 1.1 2008/02/22 06:00:48 jim Exp $
+// $Id: NotMiniKeyChooser.java,v 1.2 2008/03/12 09:01:21 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.NotMiniKeyChooser.v1_0_0;
 
@@ -68,8 +68,9 @@ class NotMiniKeyChooser
   {
     String aname = job.getAction().getName(); 
 
-    /* just NukeQt will be allowed to run on the Mac Mini for now... */ 
-    if(aname.equals("NukeQt")) 
+    /* just QuickTime related actions will be allowed to run on the Mac Mini for now... */ 
+    if(aname.equals("NukeQt") || 
+       aname.equals("NukeAvidQt"))
       return false;
 
     return true; 
