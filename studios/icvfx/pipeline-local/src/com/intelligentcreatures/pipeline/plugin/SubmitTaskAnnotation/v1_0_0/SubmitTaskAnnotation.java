@@ -1,10 +1,10 @@
-// $Id: SubmitTaskAnnotation.java,v 1.3 2008/02/11 22:56:30 jim Exp $
+// $Id: SubmitTaskAnnotation.java,v 1.4 2008/03/12 06:36:31 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.SubmitTaskAnnotation.v1_0_0;
 
-import java.util.ArrayList;
-
 import us.temerity.pipeline.*;
+
+import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   S U B M I T   T A S K   A N N O T A T I O N                                            */
@@ -69,20 +69,20 @@ class SubmitTaskAnnotation
     
     {
       AnnotationParam param = 
-	new StringAnnotationParam
-	(aProjectName, 
-	 "The name of the project this task part of achieving.", 
-	 null); 
+        new StringAnnotationParam
+        (aProjectName, 
+         "The name of the project this task part of achieving.", 
+         null); 
       addParam(param);
     }
  
     {
       AnnotationParam param = 
-	new StringAnnotationParam
-	(aTaskName, 
-	 "The name of the overall production goal this node is used to achieve.  " + 
+        new StringAnnotationParam
+        (aTaskName, 
+         "The name of the overall production goal this node is used to achieve.  " + 
          "Typically, this is the name of a shot or the asset name.",
-	 null); 
+         null); 
       addParam(param);
     }
 
@@ -104,40 +104,40 @@ class SubmitTaskAnnotation
       choices.add(aCUSTOM);  
 
       AnnotationParam param = 
-	new EnumAnnotationParam
-	(aTaskType, 
-	 "The standard type of production goal this node is used to achieve.", 
+        new EnumAnnotationParam
+        (aTaskType, 
+         "The standard type of production goal this node is used to achieve.", 
          aSimpleAsset, choices); 
       addParam(param);
     }
 
     {
       AnnotationParam param = 
-	new StringAnnotationParam
-	(aCustomTaskType, 
-	 "A unique type of production goal this node is used to achieve which is not one " +
+        new StringAnnotationParam
+        (aCustomTaskType, 
+         "A unique type of production goal this node is used to achieve which is not one " +
          "of the standard type available in TaskType.  If a custom type is specified, the " +
          "TaskType parameter should be set to [[CUSTOM]].",
-	 null); 
+         null); 
       addParam(param);
     }
 
     {
       AnnotationParam param = 
-	new StringAnnotationParam
-	(aPurpose, 
-	 "The way this node is intended to be used.  Always set to \"Submit\".", 
-	 aSubmit); 
+        new StringAnnotationParam
+        (aPurpose, 
+         "The way this node is intended to be used.  Always set to \"Submit\".", 
+         aSubmit); 
       addConstantParam(param);   
     }
 
     {
       AnnotationParam param = 
-	new WorkGroupAnnotationParam
-	(aAssignedTo, 
-	 "The name of the WorkGroup or specific artist assigned to complete the task " + 
+        new WorkGroupAnnotationParam
+        (aAssignedTo, 
+         "The name of the WorkGroup or specific artist assigned to complete the task " + 
          "involving this node.", 
-	 true, true, null); 
+         true, true, null); 
       addParam(param);
     }
     

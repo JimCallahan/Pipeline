@@ -1,4 +1,4 @@
-// $Id: CommonTaskAnnotation.java,v 1.4 2008/02/26 11:34:48 jim Exp $
+// $Id: CommonTaskAnnotation.java,v 1.5 2008/03/12 06:36:31 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.CommonTaskAnnotation.v1_0_0;
 
@@ -121,20 +121,20 @@ class CommonTaskAnnotation
 
     {
       AnnotationParam param = 
-	new StringAnnotationParam
-	(aProjectName, 
-	 "The name of the project this task part of achieving.", 
-	 null); 
+        new StringAnnotationParam
+        (aProjectName, 
+         "The name of the project this task part of achieving.", 
+         null); 
       addParam(param);
     }
  
     {
       AnnotationParam param = 
-	new StringAnnotationParam
-	(aTaskName, 
-	 "The name of the overall production goal this node is used to achieve.  " + 
+        new StringAnnotationParam
+        (aTaskName, 
+         "The name of the overall production goal this node is used to achieve.  " + 
          "Typically, this is the name of a shot or the asset name.",
-	 null); 
+         null); 
       addParam(param);
     }
 
@@ -156,21 +156,21 @@ class CommonTaskAnnotation
       choices.add(aCUSTOM);  
 
       AnnotationParam param = 
-	new EnumAnnotationParam
-	(aTaskType, 
-	 "The standard type of production goal this node is used to achieve.", 
+        new EnumAnnotationParam
+        (aTaskType, 
+         "The standard type of production goal this node is used to achieve.", 
          aSimpleAsset, choices); 
       addParam(param);
     }
 
     {
       AnnotationParam param = 
-	new StringAnnotationParam
-	(aCustomTaskType, 
-	 "A unique type of production goal this node is used to achieve which is not one " +
+        new StringAnnotationParam
+        (aCustomTaskType, 
+         "A unique type of production goal this node is used to achieve which is not one " +
          "of the standard type available in TaskType.  If a custom type is specified, the " +
          "TaskType parameter should be set to [[CUSTOM]].",
-	 null); 
+         null); 
       addParam(param);
     }
   
@@ -184,10 +184,10 @@ class CommonTaskAnnotation
       choices.add(aProduct); 
 
       AnnotationParam param = 
-	new EnumAnnotationParam
-	(aPurpose, 
-	 "The way this node is intended to be used.", 
-	 "Edit", choices); 
+        new EnumAnnotationParam
+        (aPurpose, 
+         "The way this node is intended to be used.", 
+         "Edit", choices); 
       addParam(param);
     }
 
