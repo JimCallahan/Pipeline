@@ -1,4 +1,4 @@
-// $Id: AppDirs.java,v 1.8 2008/03/06 14:06:48 jim Exp $
+// $Id: AppDirs.java,v 1.9 2008/03/13 16:26:27 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -86,6 +86,11 @@ enum AppDirs
    * Raw digital camera images.
    */ 
   Raw, 
+
+  /**
+   * Roto generated matte images. 
+   */ 
+  Mattes, 
 
   /**
    * High dynamic range (HDR) images. 

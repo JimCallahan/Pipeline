@@ -1,4 +1,4 @@
-// $Id: WtmCollection.java,v 1.10 2008/03/08 12:27:12 jim Exp $
+// $Id: WtmCollection.java,v 1.11 2008/03/13 16:26:27 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -35,6 +35,7 @@ class WtmCollection
 	sub.addEntry("Sound");
 	sub.addEntry("HDRI");
 	sub.addEntry("Plates");
+	sub.addEntry("Mattes");
 	sub.addEntry("InternalTracking");
 	sub.addEntry("Tracking");
 	sub.addEntry("Match");
@@ -86,6 +87,7 @@ class WtmCollection
     toReturn.put("Sound",            pkg + "SoundBuilder");
     toReturn.put("HDRI",             pkg + "HdriBuilder");
     toReturn.put("Plates",           pkg + "PlatesBuilder");
+    toReturn.put("Mattes",           pkg + "MattesBuilder");
     toReturn.put("InternalTracking", pkg + "InternalTrackingBuilder");
     toReturn.put("Tracking",         pkg + "TrackingBuilder");
     toReturn.put("Match",            pkg + "MatchBuilder");

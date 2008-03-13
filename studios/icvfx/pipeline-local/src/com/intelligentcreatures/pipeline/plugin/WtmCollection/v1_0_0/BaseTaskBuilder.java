@@ -1,4 +1,4 @@
-// $Id: BaseTaskBuilder.java,v 1.2 2008/02/19 03:34:22 jim Exp $
+// $Id: BaseTaskBuilder.java,v 1.3 2008/03/13 16:26:27 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -61,7 +61,7 @@ class BaseTaskBuilder
     pAnnotTaskTypeChoices.add(aAnnotLighting);  
     pAnnotTaskTypeChoices.add(aAnnotPlates);        
     pAnnotTaskTypeChoices.add(aAnnotTracking);     
-    pAnnotTaskTypeChoices.add(aAnnotRoto);         
+    pAnnotTaskTypeChoices.add(aAnnotMattes);         
     pAnnotTaskTypeChoices.add(aAnnotMattePainting);            
     pAnnotTaskTypeChoices.add(aAnnotCompositing);  
   }
@@ -378,7 +378,7 @@ class BaseTaskBuilder
   private static final String aAnnotLighting      = "Lighting"; 
   private static final String aAnnotPlates        = "Plates"; 
   private static final String aAnnotTracking      = "Tracking"; 
-  private static final String aAnnotRoto          = "Roto"; 
+  private static final String aAnnotMattes        = "Mattes"; 
   private static final String aAnnotMattePainting = "MattePainting"; 
   private static final String aAnnotCompositing   = "Compositing";  
   private static final String aAnnotCUSTOM        = "[[CUSTOM]]";  

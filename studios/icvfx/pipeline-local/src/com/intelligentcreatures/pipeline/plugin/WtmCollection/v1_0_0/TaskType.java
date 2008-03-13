@@ -1,4 +1,4 @@
-// $Id: TaskType.java,v 1.9 2008/03/06 06:14:49 jim Exp $
+// $Id: TaskType.java,v 1.10 2008/03/13 16:26:27 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -33,6 +33,11 @@ enum TaskType
    * a thumbnail image is extracted. 
    */ 
   Plates, 
+
+  /**
+   *
+   */ 
+  Mattes, 
 
   /**
    * Primarily used to validate the a Maya scene containing the tracked camera and head 

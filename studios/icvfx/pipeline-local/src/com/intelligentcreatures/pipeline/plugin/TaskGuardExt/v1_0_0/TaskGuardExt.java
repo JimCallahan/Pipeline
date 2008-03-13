@@ -1,4 +1,4 @@
-// $Id: TaskGuardExt.java,v 1.1 2008/03/12 09:02:55 jim Exp $
+// $Id: TaskGuardExt.java,v 1.2 2008/03/13 16:26:27 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.TaskGuardExt.v1_0_0;
 
@@ -427,7 +427,7 @@ class TaskGuardExt
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
   
-  // private static final long serialVersionUID = 
+  private static final long serialVersionUID = 2482193624556360878L;
   
   public static final String aProjectName     = "ProjectName";
   public static final String aTaskName        = "TaskName";
@@ -447,7 +447,7 @@ class TaskGuardExt
   public static final String aLighting      = "Lighting"; 
   public static final String aPlates        = "Plates"; 
   public static final String aTracking      = "Tracking"; 
-  public static final String aRoto          = "Roto"; 
+  public static final String aMattes        = "Mattes"; 
   public static final String aMattePainting = "MattePainting"; 
   public static final String aCompositing   = "Compositing"; 
   public static final String aCUSTOM        = "[[CUSTOM]]";   

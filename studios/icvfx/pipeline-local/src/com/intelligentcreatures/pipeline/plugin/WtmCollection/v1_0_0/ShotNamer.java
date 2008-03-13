@@ -1,4 +1,4 @@
-// $Id: ShotNamer.java,v 1.22 2008/03/08 12:27:12 jim Exp $
+// $Id: ShotNamer.java,v 1.23 2008/03/13 16:26:27 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -634,6 +634,143 @@ class ShotNamer
   {
     Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Approve), 
 			 joinNames(getFullShotName(), "plates_approve")); 
+    return path.toString(); 
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   M A T T E S                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Returns the fully resolved name of the prerequisites node for the Mattes task.
+   */ 
+  public String
+  getMattesPrereqNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Mattes, NodePurpose.Prereq), 
+			 joinNames(getFullShotName(), "mattes_prereq")); 
+    return path.toString(); 
+  }
+
+
+
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Returns the fully resolved name of the node for containing the Nuke script edited 
+   * by artists to generate the matte images.
+   */ 
+  public String
+  getMattesNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Mattes, NodePurpose.Edit), 
+			 new Path(AppDirs.Nuke.toDirPath(), 
+				  joinNames(getFullShotName(), "mattes"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node contaning the Nuke script fragment
+   * use to read in the raw cineon plates.
+   */ 
+  public String
+  getMattesReadPlatesNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Mattes, NodePurpose.Prepare), 
+			 new Path(AppDirs.Nuke.toDirPath(), 
+				  joinNames(getFullShotName(), "plates"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node containing the generated RGB channel 
+   * encoded matte images.
+   */ 
+  public String
+  getMattesImagesNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Mattes, NodePurpose.Focus), 
+			 new Path(AppDirs.Mattes.toDirPath(), 
+				  joinNames(getFullShotName(), "mattes_rgb"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node contaning the Nuke script fragment
+   * use to read in the generated RGB channel encoded matte images.
+   */ 
+  public String
+  getMattesReadImagesNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Mattes, NodePurpose.Prepare), 
+			 new Path(AppDirs.Nuke.toDirPath(), 
+				  joinNames(getFullShotName(), "mattes_rgb"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node containing the composited matte images 
+   * over the raw cineon plates. 
+   */ 
+  public String
+  getMattesVerifyCompNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Mattes, NodePurpose.Focus), 
+			 new Path(AppDirs.Comp.toDirPath(), 
+				  joinNames(getFullShotName(), "mattes_verify"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node containing a thumbnail image extracted
+   * from the composited mattes verification images.
+   */ 
+  public String
+  getMattesVerifyThumbNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Mattes, NodePurpose.Thumbnail), 
+			 joinNames(getFullShotName(), "mattes_verify")); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the submit node for the Mattes task.
+   */ 
+  public String
+  getMattesSubmitNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Mattes, NodePurpose.Submit), 
+			 joinNames(getFullShotName(), "mattes_submit")); 
+    return path.toString(); 
+  }
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Returns the fully resolved name of the node containing the approved copy of the 
+   * generated RGB channel encoded matte images.
+   */ 
+  public String
+  getMattesApprovedImagesNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Mattes, NodePurpose.Product), 
+			 new Path(AppDirs.Mattes.toDirPath(), 
+				  joinNames(getFullShotName(), "mattes_rgb"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the approve node for the Mattes task.
+   */ 
+  public String
+  getMattesApproveNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Mattes, NodePurpose.Approve), 
+			 joinNames(getFullShotName(), "mattes_approve")); 
     return path.toString(); 
   }
 

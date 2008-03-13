@@ -27,6 +27,7 @@ java_DATA = \
   LensInfoStage.java \
   MatchGeoCacheStage.java \
   MatchMaskGeoStage.java \
+  MattesScriptStage.java \
   MayaResolutionStage.java \
   NukeCatCompStage.java \
   NukeCatStage.java \
@@ -36,6 +37,7 @@ java_DATA = \
   NukeReadReformatStage.java \
   NukeReadStage.java \
   NukeRescaleStage.java \
+  NukeSubstCompStage.java \
   NukeThumbnailStage.java \
   PFTrackBuildStage.java \
   PFTrackExportMayaStage.java \

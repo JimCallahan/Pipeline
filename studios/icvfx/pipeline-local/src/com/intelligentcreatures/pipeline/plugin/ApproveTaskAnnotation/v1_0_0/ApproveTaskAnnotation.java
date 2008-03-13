@@ -1,4 +1,4 @@
-// $Id: ApproveTaskAnnotation.java,v 1.3 2008/02/11 22:56:00 jim Exp $
+// $Id: ApproveTaskAnnotation.java,v 1.4 2008/03/13 16:26:27 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.ApproveTaskAnnotation.v1_0_0;
 
@@ -110,7 +110,7 @@ class ApproveTaskAnnotation
       choices.add(aLighting);  
       choices.add(aPlates);        
       choices.add(aTracking);     
-      choices.add(aRoto);         
+      choices.add(aMattes);         
       choices.add(aMattePainting);            
       choices.add(aCompositing);            
       choices.add(aCUSTOM);  
@@ -210,7 +210,7 @@ class ApproveTaskAnnotation
   public static final String aLighting      = "Lighting"; 
   public static final String aPlates        = "Plates"; 
   public static final String aTracking      = "Tracking"; 
-  public static final String aRoto          = "Roto"; 
+  public static final String aMattes        = "Mattes"; 
   public static final String aMattePainting = "MattePainting"; 
   public static final String aCompositing   = "Compositing";  
   public static final String aCUSTOM        = "[[CUSTOM]]";  

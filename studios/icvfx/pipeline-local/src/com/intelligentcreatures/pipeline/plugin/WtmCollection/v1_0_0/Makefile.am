@@ -22,6 +22,7 @@ java_DATA = \
   ICStageFunction.java \
   InternalTrackingBuilder.java \
   MatchBuilder.java \
+  MattesBuilder.java \
   NodePurpose.java \
   NoiseBuilder.java \
   PlatesBuilder.java \

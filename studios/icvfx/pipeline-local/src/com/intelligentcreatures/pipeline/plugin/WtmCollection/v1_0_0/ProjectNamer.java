@@ -1,4 +1,4 @@
-// $Id: ProjectNamer.java,v 1.15 2008/03/08 12:27:12 jim Exp $
+// $Id: ProjectNamer.java,v 1.16 2008/03/13 16:26:27 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -189,6 +189,37 @@ class ProjectNamer
 
 
   /*----------------------------------------------------------------------------------------*/
+  /*   M A T T E S   A S S E T S                                                            */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Returns the fully resolved name of the node containing the placeholder matte 
+   * creating Nuke scene.
+   */ 
+  public String
+  getMattesPlaceholderNode() 
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Mattes), 
+			 new Path(TaskType.Placeholder.toDirPath(), "mattes"));
+    return path.toString(); 
+  }
+  
+  /**
+   * Returns the fully resolved name of the node containing the Nuke script used to 
+   * verify the matte images. 
+   */ 
+  public String
+  getMattesVerifyNode() 
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Mattes), 
+			 new Path(AppDirs.Nuke.toDirPath(), "verify_mattes"));
+    return path.toString(); 
+  }
+  
+  
+
+  
+  /*----------------------------------------------------------------------------------------*/
   /*   T R A C K I N G   A S S E T S                                                        */
   /*----------------------------------------------------------------------------------------*/
   
@@ -341,8 +372,6 @@ class ProjectNamer
 			 new Path(AppDirs.Nuke.toDirPath(), "add_noise"));
     return path.toString(); 
   }
-
-  
   
 
 
