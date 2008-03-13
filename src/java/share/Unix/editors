@@ -32,7 +32,7 @@ EditorMenuLayout <PluginMenuLayout> #1 {
           Title <String> #26 { "FrameCycler (Nuke)" }
           Name <String> #27 { "NukeFrameCycler" }
           VersionID <VersionID> #28 {
-            RevisionNumber <String> #29 { "2.2.1" }
+            RevisionNumber <String> #29 { "2.4.1" }
           }
           Vendor <String> #30 { "Temerity" }
         }
