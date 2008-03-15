@@ -1,4 +1,4 @@
-// $Id: SlateSubstAction.java,v 1.2 2008/03/15 18:18:04 jim Exp $
+// $Id: SlateSubstAction.java,v 1.3 2008/03/15 22:55:57 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.SlateSubstAction.v1_0_0; 
 
@@ -172,11 +172,11 @@ class SlateSubstAction
 
     {
       ActionParam param = 
-        new StringActionParam
+        new TextAreaActionParam
         (aNotes,
 	 "A short description of the Deliverable.  This value will be substituted for all " + 
 	 "instances of \"@IC_NOTES@\" in the template Nuke script.", 
-         null);
+         null, 8);
       addSingleParam(param);
     }
 
@@ -289,7 +289,7 @@ class SlateSubstAction
 
     int slateHold = getSingleIntegerParamValue(aSlateHold); 
 
-    /* escape any unprintable characters in the notes */ 
+    /* escape unprintable characters in the notes */ 
     String notes = null; 
     {
       StringBuilder buf = new StringBuilder(); 
@@ -301,31 +301,21 @@ class SlateSubstAction
 	for(wk=0; wk<cs.length; wk++) {
 	  switch(cs[wk]) {
 	  case '\\':
-	    buf.append("\\\\");
+	    buf.append("\\\\\\\\");
 	    break;
 
 	  case '\t':
-	    buf.append("\\t");
+	    buf.append("        ");
 	    break;
 
 	  case '\n':
-	    buf.append("\\n");
-	    break;
-
 	  case '\r':
-	    buf.append("\\r");
-	    break;
-
 	  case '\f':
-	    buf.append("\\f");
+	    buf.append("\\\\n");
 	    break;
 	    
 	  case '\"':
-	    buf.append("\\\"");
-	    break;
-	    
-	  case '\'':
-	    buf.append("\\\'");
+	    buf.append("\\\\\"");
 	    break;
 	    
 	  default:
