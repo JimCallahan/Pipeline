@@ -1,4 +1,4 @@
-// $Id: SlateSubstAction.java,v 1.1 2008/03/10 05:54:44 jim Exp $
+// $Id: SlateSubstAction.java,v 1.2 2008/03/15 18:18:04 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.SlateSubstAction.v1_0_0; 
 
@@ -19,9 +19,15 @@ import java.io.*;
  * by performing string replacements on a template slate Nuke script.<P> 
  * 
  * The strings in the template Nuke script that will be replaced correspond to one of the
- * following parameters.  Each parameter list the exact string that will be replaced.  If 
+ * following parameters.  Each parameter lists the exact string that will be replaced.  If 
  * no matching string is found in the template Nuke script for a parameter, it will be 
  * ignored.<P> 
+ * 
+ * The TemplateScript should be project specific and contain all constant information such
+ * as the project name, IC logos and titles hardcoded into the Nuke script.  Information 
+ * such as shot lengths and frame counters can be built into this template Nuke script using
+ * Nuke expressions.  For best results, the template script should be written with expressions
+ * that make it adaptive to the resolution of the source images. <P> 
  * 
  * This action defines the following single valued parameters: <BR>
  * 
@@ -29,6 +35,12 @@ import java.io.*;
  *   Template Script <BR>
  *   <DIV style="margin-left: 40px;">
  *     The source node which contains the template slate Nuke script. 
+ *   </DIV> <BR>
+ * 
+ *   Delivery Type <BR>
+ *   <DIV style="margin-left: 40px;">
+ *     The reason the deliverable was created. The value of this parameter will be 
+ *     substituted for all instances of "@IC_DELIVERY_TYPE@" in the template Nuke script.
  *   </DIV> <BR>
  * 
  *   Deliverable <BR>
@@ -48,6 +60,12 @@ import java.io.*;
  *   </DIV> 
  *   <P> 
  * 
+ *   Created On <BR>
+ *   <DIV style="margin-left: 40px;">
+ *     The date when the Deliverable was created. This value will be substituted for all 
+ *     instances of "@IC_CREATED_ON@" in the template Nuke script.
+ *   </DIV> 
+ * 
  *   Created By <BR>
  *   <DIV style="margin-left: 40px;">
  *     The name of the artist responsible for the creating the images being reviewed. This 
@@ -55,13 +73,20 @@ import java.io.*;
  *     Nuke script.
  *   </DIV> 
  * 
- *   Supervisor <BR>
+ *   Notes <BR>
  *   <DIV style="margin-left: 40px;">
- *     The name of the supervisor resposible for the images being reviewed. This value
- *     will be substituted for all instances of "@IC_SUPERVISOR@" in the template 
- *     Nuke script.
+ *     A short description of the Deliverable.  This value will be substituted for all 
+ *     instances of "@IC_NOTES@" in the template Nuke script.
  *   </DIV> 
- * </DIV> 
+ *   <P> 
+ * 
+ *   Slate Hold <BR> 
+ *   <DIV style="margin-left: 40px;">
+ *     The number of frames to hold the constant slate image before the images being 
+ *     reviewed begin animating.  This value will be substituted for all instances of 
+ *     "@IC_SLATE_HOLD@" in the template Nuke script.
+ *   </DIV> 
+ * </DIV> <P> 
  */
 public
 class SlateSubstAction
@@ -90,6 +115,17 @@ class SlateSubstAction
     {
       ActionParam param = 
         new StringActionParam
+        (aDeliveryType,
+	 "The reason the deliverable was created. The value of this parameter will be " + 
+	 "substituted for all instances of \"@IC_DELIVERY_TYPE@\" in the template Nuke " + 
+	 "script.",
+	 null);
+      addSingleParam(param);
+    }
+
+    {
+      ActionParam param = 
+        new StringActionParam
         (aDeliverable,
 	 "The name for the content of the images being delivered to the client. Typically " + 
 	 "this will be based on a combination of the shot (or asset) and Pipeline task " + 
@@ -112,6 +148,17 @@ class SlateSubstAction
       addSingleParam(param);
     }
 
+
+    {
+      ActionParam param = 
+        new StringActionParam
+        (aCreatedOn,
+	 "The date when the Deliverable was created.  This value will be substituted for " + 
+	 "all instances of \"@IC_CREATED_ON@\" in the template Nuke script.", 
+         null);
+      addSingleParam(param);
+    }
+
     {
       ActionParam param = 
         new StringActionParam
@@ -126,10 +173,21 @@ class SlateSubstAction
     {
       ActionParam param = 
         new StringActionParam
-        (aSupervisor,
-	 "The name of the supervisor resposible for the images being reviewed. This value " +
-	 "will be substituted for all instances of \"@IC_SUPERVISOR@\" in the template " + 
-	 "Nuke script.", 
+        (aNotes,
+	 "A short description of the Deliverable.  This value will be substituted for all " + 
+	 "instances of \"@IC_NOTES@\" in the template Nuke script.", 
+         null);
+      addSingleParam(param);
+    }
+
+
+    {
+      ActionParam param = 
+        new IntegerActionParam
+        (aSlateHold,
+	 "The number of frames to hold the constant slate image before the images being " +
+	 "reviewed begin animating.  This value will be substituted for all instances of " + 
+	 "\"@IC_SLATE_HOLD@\" in the template Nuke script.", 
          null);
       addSingleParam(param);
     }
@@ -137,12 +195,16 @@ class SlateSubstAction
     {  
       LayoutGroup layout = new LayoutGroup(true);
       layout.addEntry(aTemplateScript);     
-      layout.addSeparator();
-      layout.addEntry(aDeliverable);     
+      layout.addSeparator(); 
+      layout.addEntry(aDeliveryType);  
+      layout.addEntry(aDeliverable);      
       layout.addEntry(aClientVersion);     
       layout.addSeparator();     
+      layout.addEntry(aCreatedOn);  
       layout.addEntry(aCreatedBy);  
-      layout.addEntry(aSupervisor);  
+      layout.addEntry(aNotes);    
+      layout.addSeparator();      
+      layout.addEntry(aSlateHold);    
 
       setSingleLayout(layout);  
     }
@@ -205,10 +267,76 @@ class SlateSubstAction
     }
 
     /* replacement values */ 
-    String deliverable   = getSingleStringParamValue(aDeliverable); 
+    String deliveryType  = getSingleStringParamValue(aDeliveryType); 
+    if(deliveryType == null) 
+      deliveryType = "";
+
+    String deliverable = getSingleStringParamValue(aDeliverable); 
+    if(deliverable == null) 
+      deliverable = "";
+
     String clientVersion = getSingleStringParamValue(aClientVersion); 
-    String createdBy     = getSingleStringParamValue(aCreatedBy); 
-    String supervisor    = getSingleStringParamValue(aSupervisor); 
+    if(clientVersion == null) 
+      clientVersion = "";
+
+    String createdBy = getSingleStringParamValue(aCreatedBy); 
+    if(createdBy == null) 
+      createdBy = "";
+
+    String createdOn = getSingleStringParamValue(aCreatedOn); 
+    if(createdOn == null) 
+      createdOn = "";
+
+    int slateHold = getSingleIntegerParamValue(aSlateHold); 
+
+    /* escape any unprintable characters in the notes */ 
+    String notes = null; 
+    {
+      StringBuilder buf = new StringBuilder(); 
+
+      String value = getSingleStringParamValue(aNotes); 
+      if(value != null) {
+	char[] cs = value.toCharArray();
+	int wk;
+	for(wk=0; wk<cs.length; wk++) {
+	  switch(cs[wk]) {
+	  case '\\':
+	    buf.append("\\\\");
+	    break;
+
+	  case '\t':
+	    buf.append("\\t");
+	    break;
+
+	  case '\n':
+	    buf.append("\\n");
+	    break;
+
+	  case '\r':
+	    buf.append("\\r");
+	    break;
+
+	  case '\f':
+	    buf.append("\\f");
+	    break;
+	    
+	  case '\"':
+	    buf.append("\\\"");
+	    break;
+	    
+	  case '\'':
+	    buf.append("\\\'");
+	    break;
+	    
+	  default:
+	    buf.append(cs[wk]);
+	  }
+	}
+	
+	notes = buf.toString();
+      }
+    }
+
 
     /* create a temporary Nuke script by string replacing the template script */  
     File script = createTemp(agenda, "nk");
@@ -221,18 +349,14 @@ class SlateSubstAction
 	  if(line == null) 
 	    break;
 
-	  if(deliverable != null) 
-	    line = sDeliverable.matcher(line).replaceAll(deliverable);
-
-	  if(clientVersion != null) 
-	    line = sClientVersion.matcher(line).replaceAll(clientVersion);
+	  line = sDeliveryType.matcher(line).replaceAll(deliveryType);
+	  line = sDeliverable.matcher(line).replaceAll(deliverable);
+	  line = sClientVersion.matcher(line).replaceAll(clientVersion);
+	  line = sCreatedBy.matcher(line).replaceAll(createdBy);
+	  line = sCreatedOn.matcher(line).replaceAll(createdOn);
+	  line = sNotes.matcher(line).replaceAll(notes);
+	  line = sSlateHold.matcher(line).replaceAll(Integer.toString(slateHold));
 	  
-	  if(createdBy != null) 
-	    line = sCreatedBy.matcher(line).replaceAll(createdBy);
-
-	  if(supervisor != null) 
-	    line = sSupervisor.matcher(line).replaceAll(supervisor);
-
 	  out.write(line + "\n"); 
 	}
       }
@@ -258,18 +382,24 @@ class SlateSubstAction
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
+  private static Pattern sDeliveryType  = Pattern.compile("@IC_DELIVERY_TYPE@"); 
   private static Pattern sDeliverable   = Pattern.compile("@IC_DELIVERABLE@"); 
   private static Pattern sClientVersion = Pattern.compile("@IC_CLIENT_VERSION@"); 
+  private static Pattern sCreatedOn     = Pattern.compile("@IC_CREATED_ON@"); 
   private static Pattern sCreatedBy     = Pattern.compile("@IC_CREATED_BY@"); 
-  private static Pattern sSupervisor    = Pattern.compile("@IC_SUPERVISOR@"); 
+  private static Pattern sNotes         = Pattern.compile("@IC_NOTES@"); 
+  private static Pattern sSlateHold     = Pattern.compile("@IC_SLATE_HOLD@"); 
 
   private static final long serialVersionUID = 4067697635457036452L;
 
   public static final String aTemplateScript = "TemplateScript"; 
+  public static final String aDeliveryType   = "DeliveryType"; 
   public static final String aDeliverable    = "Deliverable"; 
   public static final String aClientVersion  = "ClientVersion"; 
+  public static final String aCreatedOn      = "CreatedOn"; 
   public static final String aCreatedBy      = "CreatedBy"; 
-  public static final String aSupervisor     = "Supervisor"; 
+  public static final String aNotes          = "Notes"; 
+  public static final String aSlateHold      = "SlateHold"; 
 
 }
 
