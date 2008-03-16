@@ -1,4 +1,4 @@
-// $Id: JNodeAnnotationsPanel.java,v 1.13 2008/02/11 03:16:25 jim Exp $
+// $Id: JNodeAnnotationsPanel.java,v 1.14 2008/03/16 13:02:34 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1121,7 +1121,7 @@ class JNodeAnnotationsPanel
 
       JAnnotationPanel panel = pAnnotationsPanels.get(name);
       if(panel != null) 
-        panel.annotationParamChanged(aname); 
+        panel.annotationParamChanged(name, aname); 
     }
   }
   
@@ -1137,7 +1137,7 @@ class JNodeAnnotationsPanel
     String name = pDocToAnnotation.get(doc);
     JAnnotationPanel panel = pAnnotationsPanels.get(name);
     if(panel != null) 
-      panel.annotationParamChanged(doc); 
+      panel.annotationParamChanged(name, doc); 
   }
 
  
@@ -1556,7 +1556,7 @@ class JNodeAnnotationsPanel
 	pAnnotation = annot; 
         pParent = parent; 
         pParamComponents = new TreeMap<String,Component>();
-        pDocToParam = new ListMap<Document, String>();
+        pDocToParamName = new ListMap<Document, String>();
       }
 
       /* panel components */ 
@@ -1809,10 +1809,11 @@ class JNodeAnnotationsPanel
     public void 
     annotationParamChanged
     (
+     String name, 
      String aname
     ) 
     {
-      unsavedChange("Parameter Changed: " + aname + " (" + aname + ")"); 
+      unsavedChange("Parameter Changed: " + name + " (" + aname + ")"); 
       pIsModified = true;
     }
     
@@ -1822,11 +1823,12 @@ class JNodeAnnotationsPanel
     public void 
     annotationParamChanged
     (
+     String name,
      Document doc
     ) 
     {
-      String aname = pDocToParam.get(doc);
-      unsavedChange("Parameter Changed: " + aname + " (" + aname + ")"); 
+      String aname = pDocToParamName.get(doc);
+      unsavedChange("Parameter Changed: " + name + " (" + aname + ")"); 
       pIsModified = true;
     }
 
@@ -2000,16 +2002,15 @@ class JNodeAnnotationsPanel
               else if(aparam instanceof TextAreaAnnotationParam) {
         	TextAreaAnnotationParam bparam = (TextAreaAnnotationParam) aparam; 
                 String value = (String) aparam.getValue();
-                int rows = bparam.getRows();
                 JTextArea field = 
                   UIFactory.createTitledEditableTextArea
                   (tpanel, aparam.getNameUI() + ":", sTSize-7, 
-                   vpanel, value, sVSize, rows, true,
+                   vpanel, value, sVSize, bparam.getRows(), true,
                    aparam.getDescription());
                 
                 Document doc = field.getDocument();
                 doc.addDocumentListener(pParent);
-                pDocToParam.put(doc, pname);
+                pDocToParamName.put(doc, pname);
                 pDocToAnnotation.put(doc, pName);
 
                 field.setEnabled(paramEnabled); 
@@ -2202,7 +2203,7 @@ class JNodeAnnotationsPanel
     private JDrawer                    pParamsDrawer; 
     private TreeMap<String,Component>  pParamComponents; 
     
-    private ListMap<Document, String> pDocToParam;
+    private ListMap<Document, String> pDocToParamName;
   }
 
 
@@ -2591,5 +2592,8 @@ class JNodeAnnotationsPanel
    */ 
   private JScrollPane  pScroll;
   
+  /**
+   * The annotation names indexed by the TextArea parameter documents.
+   */ 
   private ListMap<Document, String> pDocToAnnotation;
 }

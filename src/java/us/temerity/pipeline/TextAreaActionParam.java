@@ -1,18 +1,20 @@
-// $Id: TextAreaAnnotationParam.java,v 1.3 2008/03/16 13:02:34 jim Exp $
+// $Id: TextAreaActionParam.java,v 1.1 2008/03/16 13:02:33 jim Exp $
 
 package us.temerity.pipeline;
 
+import us.temerity.pipeline.glue.*;
+
 /*------------------------------------------------------------------------------------------*/
-/*   T E X T   A R E A   A N N O T A T I O N   P A R A M                                    */
+/*   T E X T   A R E A   A C T I O N   P A R A M                                            */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * An annotation parameter with a long multi-line String value. <P> 
+ * An action parameter with a long multi-line String value. <P> 
  */
 public 
-class TextAreaAnnotationParam
+class TextAreaActionParam
   extends TextAreaParam
-  implements AnnotationParam
+  implements ActionParam
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -24,7 +26,7 @@ class TextAreaAnnotationParam
    * from user code.
    */    
   public 
-  TextAreaAnnotationParam() 
+  TextAreaActionParam() 
   {
     super();
   }
@@ -42,7 +44,7 @@ class TextAreaAnnotationParam
    *   The default value for this parameter.
    */ 
   public
-  TextAreaAnnotationParam
+  TextAreaActionParam
   (
    String name,  
    String desc, 
@@ -68,7 +70,7 @@ class TextAreaAnnotationParam
    *   The number of rows that should be displayed at one time in the user interface.
    */ 
   public
-  TextAreaAnnotationParam
+  TextAreaActionParam
   (
    String name,  
    String desc, 
@@ -85,6 +87,6 @@ class TextAreaAnnotationParam
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
   
-  private static final long serialVersionUID = 8664266546304408658L;
+  private static final long serialVersionUID = 8178627501964482406L;
   
 }

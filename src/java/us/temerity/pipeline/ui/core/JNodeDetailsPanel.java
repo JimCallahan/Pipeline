@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.46 2007/11/30 20:14:25 jesse Exp $
+// $Id: JNodeDetailsPanel.java,v 1.47 2008/03/16 13:02:34 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -16,6 +16,7 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.tree.*;
+import javax.swing.text.*; 
 
 /*------------------------------------------------------------------------------------------*/
 /*   N O D E   D E T A I L S   P A N E L                                                    */
@@ -39,7 +40,7 @@ import javax.swing.tree.*;
 public  
 class JNodeDetailsPanel
   extends JTopLevelPanel
-  implements MouseListener, KeyListener, ComponentListener, ActionListener
+  implements MouseListener, KeyListener, ComponentListener, ActionListener, DocumentListener
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -83,6 +84,8 @@ class JNodeDetailsPanel
 
       pActionParamComponents = new TreeMap<String,Component[]>();
       pActionParamGroupsOpen = new TreeMap<String,Boolean>();
+
+      pDocToParamName = new ListMap<Document, String>();
 
       pLinkActionParamValues    = new ArrayList<String>();
       pLinkActionParamNodeNames = new ArrayList<String>();
@@ -2645,6 +2648,30 @@ class JNodeDetailsPanel
 
 		    hbox.add(field);
 		  }
+		  else if(aparam instanceof TextAreaActionParam) {
+                    TextAreaActionParam bparam = (TextAreaActionParam) aparam; 
+		    String value = (String) aparam.getValue();
+                    int rows = bparam.getRows(); 
+                    JTextArea area = UIFactory.createEditableTextArea(value, rows);
+		    pcomps[1] = area;
+
+                    int height = 19*rows + 3*(rows-1);
+                    Dimension size = new Dimension(sVSize, height);
+                    area.setMinimumSize(size);
+                    area.setMaximumSize(new Dimension(Integer.MAX_VALUE, height)); 
+                    area.setPreferredSize(size);
+                    
+                    Document doc = area.getDocument(); 
+                    doc.addDocumentListener(this);
+                    pDocToParamName.put(doc, pname);
+
+                    area.setEnabled(!isLocked() && !pIsFrozen);
+
+		    hbox.add(area);
+
+                    /* pad below the title */ 
+                    tpanel.add(Box.createRigidArea(new Dimension(0, height-19)));
+		  }
 		  else if(aparam instanceof StringActionParam) {
 		    String value = (String) aparam.getValue();
 		    JTextField field = 
@@ -2818,6 +2845,23 @@ class JNodeDetailsPanel
 
 		    hbox.add(field);
 		  }
+		  else if(aparam instanceof TextAreaActionParam) {
+                    TextAreaActionParam bparam = (TextAreaActionParam) aparam; 
+                    String value = (String) aparam.getValue();
+                    int rows = bparam.getRows();
+                    JTextArea area = UIFactory.createTextArea(value, rows);
+		    pcomps[3] = area;
+                    
+                    int height = 19*rows + 3*(rows-1);
+                    Dimension size = new Dimension(sVSize, height);
+                    area.setMinimumSize(size);
+                    area.setMaximumSize(new Dimension(Integer.MAX_VALUE, height)); 
+                    area.setPreferredSize(size);
+
+		    area.setEnabled(false); 
+
+		    hbox.add(area);
+                  }
                   else {
                     String text = "-";
                     {
@@ -3697,6 +3741,10 @@ class JNodeDetailsPanel
 	    if(field.getValue() != null) 
 	      wtext = field.getValue().toString();  
 	  }
+	  else if(aparam instanceof TextAreaActionParam) {
+	    JTextArea area = (JTextArea) pcomps[1];
+	    wtext = area.getText();
+	  }
 	  else if(aparam instanceof StringActionParam) {
 	    JTextField field = (JTextField) pcomps[1];
 	    wtext = field.getText();
@@ -4270,6 +4318,37 @@ class JNodeDetailsPanel
   }
 
 
+  /*-- DOCUMENT LISTENER METHODS -----------------------------------------------------------*/
+
+  public void 
+  changedUpdate
+  (
+    DocumentEvent e
+  )
+  {}
+
+  public void 
+  insertUpdate
+  (
+    DocumentEvent e
+  )
+  {
+    Document doc = e.getDocument();
+    doActionParamChanged(doc);
+  }
+
+  public void 
+  removeUpdate
+  (
+    DocumentEvent e
+  )
+  {
+    Document doc = e.getDocument();
+    doActionParamChanged(doc);
+  } 
+
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   A C T I O N S                                                                        */
@@ -4365,6 +4444,10 @@ class JNodeDetailsPanel
 		  JTuple4dField field = (JTuple4dField) pcomps[1];
 		  value = field.getValue();
 		}
+                else if(aparam instanceof TextAreaActionParam) {
+                  JTextArea area = (JTextArea) pcomps[1];
+                  value = area.getText();
+                }
 		else if(aparam instanceof StringActionParam) {
 		  JTextField field = (JTextField) pcomps[1];
 		  value = field.getText();
@@ -4638,6 +4721,7 @@ class JNodeDetailsPanel
     pWorkingActionField.addActionListener(this);
 
     pActionParamComponents.clear();
+    pDocToParamName.clear();
 
     updateActionFields();
     updateActionParams(true);
@@ -4669,6 +4753,7 @@ class JNodeDetailsPanel
 
 	pActionParamComponents.clear();
 	pActionParamGroupsOpen.clear();
+        pDocToParamName.clear();
       }
       else {
 	VersionID vid = pWorkingActionField.getPluginVersionID();
@@ -4704,6 +4789,7 @@ class JNodeDetailsPanel
 
 	  pActionParamComponents.clear();
 	  pActionParamGroupsOpen.clear();
+          pDocToParamName.clear();
 	}
       }
 
@@ -4800,6 +4886,13 @@ class JNodeDetailsPanel
 	  JTuple4dField field = (JTuple4dField) pcomps[1];
 	  field.setValue((Tuple4d) value);
 	}
+        else if(wparam instanceof TextAreaActionParam) {
+          JTextArea area = (JTextArea) pcomps[1];
+	  if(value != null) 
+	    area.setText(value.toString());
+	  else 
+	    area.setText(null);
+        }
 	else if(wparam instanceof StringActionParam) {
 	  JTextField field = (JTextField) pcomps[1];
 	  if(value != null) 
@@ -4833,6 +4926,20 @@ class JNodeDetailsPanel
    String pname
   ) 
   {
+    unsavedChange("Action Parameter: " + pname);
+    updateActionParamColor(pname, null);
+  }
+
+  /**
+   * Update the appearance of the action parameter fields after a change of parameter value.
+   */ 
+  private void 
+  doActionParamChanged
+  (
+   Document doc
+  ) 
+  {
+    String pname = pDocToParamName.get(doc);
     unsavedChange("Action Parameter: " + pname);
     updateActionParamColor(pname, null);
   }
@@ -5964,6 +6071,11 @@ class JNodeDetailsPanel
 		field.setValue((Tuple4d) value);
 		doActionParamChanged(pname);
 	      }
+              else if(aparam instanceof TextAreaActionParam) {
+                JTextArea area = (JTextArea) comps[1];
+                area.setText((String) value);
+		doActionParamChanged(area.getDocument());
+              }
 	      else if(aparam instanceof StringActionParam) {
 		JTextField field = (JTextField) comps[1];
 		field.setText((String) value);
@@ -6613,6 +6725,11 @@ class JNodeDetailsPanel
    * open indexed by parameter group name.
    */ 
   private TreeMap<String,Boolean>  pActionParamGroupsOpen; 
+
+  /**
+   * The action parameter names indexed by the TextArea documents editing the parameter.
+   */ 
+  private ListMap<Document, String> pDocToParamName;
 
   /**
    * The JCollectionField values and corresponding fully resolved names of the 
