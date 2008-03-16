@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.102 2008/03/07 13:25:21 jim Exp $
+// $Id: QueueMgr.java,v 1.103 2008/03/16 13:14:13 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1551,8 +1551,6 @@ class QueueMgr
 	    for(String key : sg.getKeys()) {
 	      if(!pSelectionKeys.containsKey(key)) 
 		dead.add(key);
-	      else if (pSelectionKeys.get(key).hasKeyChooser())
-	        dead.add(key);
 	    }
 	    for(String key : dead) 
 	      sg.removeBias(key);
@@ -4519,6 +4517,7 @@ class QueueMgr
     TreeMap<String, BaseAnnotation> annots = null;
     PipelineException toThrow = null;
     NodeID nodeID = job.getNodeID();
+
     /* Selection Keys */
     {
       ArrayList<SelectionKey> allKeys = null;
@@ -4553,6 +4552,7 @@ class QueueMgr
       jreqs.removeAllSelectionKeys();
       jreqs.addSelectionKeys(finalKeys);
     }
+
     /* License Keys */
     {
       ArrayList<LicenseKey> allKeys = null;
@@ -4587,6 +4587,7 @@ class QueueMgr
       jreqs.removeAllLicenseKeys();
       jreqs.addLicenseKeys(finalKeys);
     }
+
     /* Hardware Keys */
     {
       ArrayList<HardwareKey> allKeys = null;
