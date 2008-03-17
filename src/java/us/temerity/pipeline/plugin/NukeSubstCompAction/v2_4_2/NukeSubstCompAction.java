@@ -1,4 +1,4 @@
-// $Id: NukeSubstCompAction.java,v 1.1 2008/03/13 17:16:01 jim Exp $
+// $Id: NukeSubstCompAction.java,v 1.2 2008/03/17 23:00:21 jim Exp $
 
 package us.temerity.pipeline.plugin.NukeSubstCompAction.v2_4_2;
 
@@ -136,8 +136,6 @@ class NukeSubstCompAction
 
     addSupport(OsType.MacOS);
     addSupport(OsType.Windows);
-
-    underDevelopment(); 
   }
 
 
