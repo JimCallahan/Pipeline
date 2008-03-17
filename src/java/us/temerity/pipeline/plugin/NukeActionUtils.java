@@ -1,10 +1,11 @@
-// $Id: NukeActionUtils.java,v 1.4 2008/02/04 04:01:33 jim Exp $
+// $Id: NukeActionUtils.java,v 1.5 2008/03/17 22:57:30 jim Exp $
 
 package us.temerity.pipeline.plugin;
 
 import  us.temerity.pipeline.*;
 
 import java.util.*;
+import java.util.regex.*;
 import java.io.*;
 
 
@@ -174,6 +175,67 @@ class NukeActionUtils
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the version number component of the Nuke binary.
+   *
+   * @param agenda
+   *   The agenda to be accomplished by the Action.
+   */
+  public static double
+  getNukeProgramVersion
+  (
+   ActionAgenda agenda   
+  ) 
+    throws PipelineException
+  {
+    return getNukeProgramVersion(agenda.getEnvironment()); 
+  }
+
+  /**
+   * Get the version number component of the Nuke binary.
+   * 
+   * @param env  
+   *   The environment used to lookup NUKE_BINARY.
+   * 
+   * @return 
+   *   The version as a double value.
+   */ 
+  public static double
+  getNukeProgramVersion
+  (
+   Map<String,String> env
+  ) 
+    throws PipelineException
+  {
+    double nukeVersion = 4.6;
+
+    String nuke = getNukeProgram(env);
+    if(nuke != null) {
+      try {
+        if(PackageInfo.sOsType == OsType.Windows) {
+          Matcher m = sWindowsNukeBinary.matcher(nuke); 
+          if(m.matches()) 
+            nukeVersion = new Double(m.group(1));
+        }
+        else {
+          Matcher m = sNukeBinary.matcher(nuke); 
+          if(m.matches()) 
+            nukeVersion = new Double(m.group(1));
+        }
+      }
+      catch(NumberFormatException ex) {
+        throw new PipelineException
+          ("Unable to determine the version of Nuke being used from the binary name " +
+           "(" + nuke + ")!"); 
+      }
+    }
+
+    return nukeVersion;
+  }
+
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
@@ -181,6 +243,12 @@ class NukeActionUtils
 
   private static final long serialVersionUID = -4490194607844089876L;
   
+  private static Pattern sWindowsNukeBinary = 
+    Pattern.compile("nuke([0-9]+[.][0-9]+).exe"); 
+
+  private static Pattern sNukeBinary = 
+    Pattern.compile("Nuke([0-9]+[.][0-9]+)"); 
+
 }
 
 
