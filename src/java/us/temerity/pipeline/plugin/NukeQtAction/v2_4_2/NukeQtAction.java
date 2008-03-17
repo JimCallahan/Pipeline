@@ -1,4 +1,4 @@
-// $Id: NukeQtAction.java,v 1.1 2008/01/26 23:31:57 jim Exp $
+// $Id: NukeQtAction.java,v 1.2 2008/03/17 22:57:58 jim Exp $
 
 package us.temerity.pipeline.plugin.NukeQtAction.v2_4_2;
 
@@ -120,7 +120,7 @@ class NukeQtAction
     ArrayList<String> suffixes = new ArrayList<String>();
     suffixes.add("qt");
     suffixes.add("mov");
-    Path targetPath = getPrimaryTargetPath(agenda, suffixes, "QuickTime movie file (.mov)");
+    Path targetPath = getPrimaryTargetPath(agenda, suffixes, "QuickTime Movie");
 
     /* source images */ 
     Path sourcePath = null;

@@ -1,4 +1,4 @@
-// $Id: NukeQtAction.java,v 1.2 2008/01/23 16:25:59 jim Exp $
+// $Id: NukeQtAction.java,v 1.3 2008/03/17 22:57:58 jim Exp $
 
 package us.temerity.pipeline.plugin.NukeQtAction.v2_4_1;
 
@@ -117,7 +117,7 @@ class NukeQtAction
     throws PipelineException
   {
     /* target quicktime movie */ 
-    Path targetPath = getPrimaryTargetPath(agenda, "mov", "QuickTime movie file (.mov)");
+    Path targetPath = getPrimaryTargetPath(agenda, "mov", "QuickTime Movie");
 
     /* source images */ 
     Path sourcePath = null;

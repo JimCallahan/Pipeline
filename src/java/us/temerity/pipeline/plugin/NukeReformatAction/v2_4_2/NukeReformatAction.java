@@ -1,4 +1,4 @@
-// $Id: NukeReformatAction.java,v 1.2 2008/03/07 02:12:34 jim Exp $
+// $Id: NukeReformatAction.java,v 1.3 2008/03/17 23:00:04 jim Exp $
 
 package us.temerity.pipeline.plugin.NukeReformatAction.v2_4_2;
 
@@ -226,7 +226,7 @@ class NukeReformatAction
       ActionParam param = 
 	new DoubleActionParam
 	(aOutputAspect,
-	 "The pixel aspect ration of the output images when Nuke's proxy mode is OFF.", 
+	 "The pixel aspect ratio of the output images when Nuke's proxy mode is OFF.", 
 	 1.0);
       addSingleParam(param);
     } 
