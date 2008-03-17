@@ -1,8 +1,9 @@
-// $Id: DjvViewEditor.java,v 1.1 2008/02/26 20:49:12 jim Exp $
+// $Id: DjvViewEditor.java,v 1.2 2008/03/17 22:56:25 jim Exp $
 
 package us.temerity.pipeline.plugin.DjvViewEditor.v2_4_1;
 
 import us.temerity.pipeline.*; 
+import us.temerity.pipeline.plugin.DjvActionUtils; 
 
 import java.util.*;
 import java.io.*;
@@ -31,8 +32,6 @@ class DjvViewEditor
 
     addSupport(OsType.MacOS); 
     addSupport(OsType.Windows); 
-
-    underDevelopment(); 
   }
 
 
@@ -75,20 +74,8 @@ class DjvViewEditor
   ) 
     throws PipelineException
   {   
-
-    ArrayList<String> args = new ArrayList<String>();    
-    if(fseq.isSingle()) {
-      args.add(fseq.getPath(0).toOsString());
-    }
-    else {
-      FilePattern fpat = fseq.getFilePattern(); 
-      String suffix = fpat.getSuffix();
-      FrameRange range = fseq.getFrameRange();
-      args.add(fpat.getPrefix() + "." + 
-               pad(range.getStart(), fpat.getPadding()) + "-" + 
-               pad(range.getEnd(), fpat.getPadding()) + 
-               ((suffix != null) ? ("." + suffix) : ""));
-    }
+    ArrayList<String> args = new ArrayList<String>();  
+    args.add(DjvActionUtils.toDjvFileSeq(fseq)); 
     
     return new SubProcessLight(author, getName(), getProgram(), args, env, dir);
   }
@@ -128,29 +115,6 @@ class DjvViewEditor
        "a non-null SubProcessLight instance!");
   }
 
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   H E L P E R S                                                                        */
-  /*----------------------------------------------------------------------------------------*/
-
-  private String
-  pad
-  (
-   int value,
-   int padding
-  ) 
-  {
-    StringBuilder buf = new StringBuilder(); 
-
-    String str = String.valueOf(value);
-    int wk;
-    for(wk=str.length(); wk<padding; wk++) 
-      buf.append("0");
-    buf.append(str);
-
-    return buf.toString();
-  }
 
   
 
