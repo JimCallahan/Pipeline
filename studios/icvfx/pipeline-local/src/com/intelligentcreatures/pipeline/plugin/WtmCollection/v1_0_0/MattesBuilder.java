@@ -1,4 +1,4 @@
-// $Id: MattesBuilder.java,v 1.1 2008/03/13 16:26:27 jim Exp $
+// $Id: MattesBuilder.java,v 1.2 2008/03/17 19:23:38 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -534,18 +534,18 @@ class MattesBuilder
 	  NukeSubstCompStage stage = 
 	    new NukeSubstCompStage
 	    (stageInfo, pContext, pClient, 
-	     mattesVerifyCompNodeName, pFrameRange, 4, "sgi", 
-	     "Append & Process", pMattesVerifyNodeName, subst);
+	     mattesVerifyCompNodeName, pFrameRange, 4, "jpg", 
+	     "Append & Process", pMattesVerifyNodeName, subst, new PluginContext("DjvView"));
 	  addTaskAnnotation(stage, NodePurpose.Focus); 
 	  stage.build(); 
 	}
 
-	String mattesVerifyThumbNodeNamex = pShotNamer.getMattesVerifyThumbNode();
+	String mattesVerifyThumbNodeNames = pShotNamer.getMattesVerifyThumbNode();
 	{
 	  NukeThumbnailStage stage = 
 	    new NukeThumbnailStage
 	      (stageInfo, pContext, pClient,
-	       mattesVerifyThumbNodeNamex, "tif", mattesVerifyCompNodeName, 
+	       mattesVerifyThumbNodeNames, "tif", mattesVerifyCompNodeName, 
 	       1, 150, 1.0, true, true, new Color3d()); 
 	  addTaskAnnotation(stage, NodePurpose.Thumbnail); 
 	  stage.build(); 
@@ -554,7 +554,7 @@ class MattesBuilder
 	String submitNodeName = pShotNamer.getMattesSubmitNode();
 	{
 	  TreeSet<String> sources = new TreeSet<String>();
-	  sources.add(mattesVerifyThumbNodeNamex);
+	  sources.add(mattesVerifyThumbNodeNames);
 
 	  TargetStage stage = 
 	    new TargetStage(stageInfo, pContext, pClient, 
