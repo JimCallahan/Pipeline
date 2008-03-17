@@ -1,4 +1,4 @@
-// $Id: DjvUnixQtStage.java,v 1.1 2008/03/17 17:49:15 jim Exp $
+// $Id: DjvUnixQtStage.java,v 1.2 2008/03/17 19:38:43 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
 
@@ -90,6 +90,6 @@ class DjvUnixQtStage
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
  
-  // private static final long serialVersionUID = 
+  private static final long serialVersionUID = -8605825130002847029L;
 
 }
