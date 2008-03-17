@@ -1,4 +1,4 @@
-// $Id: NukeSubstCompStage.java,v 1.1 2008/03/13 16:26:27 jim Exp $
+// $Id: NukeSubstCompStage.java,v 1.2 2008/03/17 19:26:33 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
 
@@ -79,11 +79,71 @@ class NukeSubstCompStage
   )
     throws PipelineException
   {
+    this(stageInfo, context, client, nodeName, range, padding, suffix, 
+         mode, masterNuke, substitutions, null); 
+  }
+
+  /**
+   * Construct a new stage.
+   * 
+   * @param stageInfo
+   *   Class containing basic information shared among all stages.
+   * 
+   * @param context
+   *   The {@link UtilContext} that this stage acts in.
+   * 
+   * @param client
+   *   The instance of Master Manager that the stage performs all its actions in.
+   * 
+   * @param nodeName
+   *   The name of the node that is to be created.
+   * 
+   * @param range
+   *   The frame range to render.
+   * 
+   * @param padding
+   *   The padding for the file numbers. If this is set to <code>null</code>, a
+   *   padding of 4 will be used.
+   * 
+   * @param suffix 
+   *   The filename suffix of the create node.
+   * 
+   * @param mode
+   *   The mode of operation: "Append & Process" or "Process".
+   * 
+   * @param masterNuke
+   *   The name of source master Nuke script.
+   * 
+   * @param substitutions
+   *   The values for the per-source "ReplaceName" parameter indexed by source image
+   *   node name containing the Nuke script fragments to replace with.
+   * 
+   * @param editor
+   *   The editor plugin specification.
+   */ 
+  @SuppressWarnings("unchecked")
+  public
+  NukeSubstCompStage
+  (
+   StageInformation stageInfo,
+   UtilContext context,
+   MasterMgrClient client, 
+   String nodeName, 
+   FrameRange range, 
+   int padding, 
+   String suffix, 
+   String mode, 
+   String masterNuke,
+   TreeMap<String,String> substitutions, 
+   PluginContext editor
+  )
+    throws PipelineException
+  {
     super("NukeSubstComp", 
 	 "Creates a node which uses the NukeSubstComp action.", 
           stageInfo, context, client, 
           nodeName, range, padding, suffix, 
-          null, 
+          editor, 
 	  new PluginContext("NukeSubstComp", "Temerity", 
 			    new Range<VersionID>(new VersionID("2.4.2"), null)));  
 
