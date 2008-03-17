@@ -1,4 +1,4 @@
-// $Id: NukeSubstCompStage.java,v 1.2 2008/03/17 19:26:33 jim Exp $
+// $Id: NukeSubstCompStage.java,v 1.3 2008/03/17 19:33:35 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
 
@@ -157,6 +157,9 @@ class NukeSubstCompStage
       addLink(new LinkMod(sname, LinkPolicy.Dependency));
       addSourceParamValue(sname, "ReplaceName", replaceName); 
     }
+
+    setExecutionMethod(ExecutionMethod.Parallel);
+    setBatchSize(5);
   }
 
   
