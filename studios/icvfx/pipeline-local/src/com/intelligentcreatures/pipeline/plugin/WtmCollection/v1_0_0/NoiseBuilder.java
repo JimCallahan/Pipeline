@@ -1,4 +1,4 @@
-// $Id: NoiseBuilder.java,v 1.2 2008/03/09 12:10:16 jim Exp $
+// $Id: NoiseBuilder.java,v 1.3 2008/03/17 17:49:15 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -192,7 +192,7 @@ class NoiseBuilder
     plugins.add(new PluginContext("MayaFTNBuild")); 			
     plugins.add(new PluginContext("MayaRender")); 		
     plugins.add(new PluginContext("NukeThumbnail"));		
-    plugins.add(new PluginContext("NukeQt"));			
+    plugins.add(new PluginContext("DjvUnixQt"));			
 
     MappedArrayList<String, PluginContext> toReturn = 
       new MappedArrayList<String, PluginContext>();
@@ -450,9 +450,9 @@ class NoiseBuilder
 
 	String noiseQuickTimeNodeName = pShotNamer.getNoiseQuickTimeNode();
 	{
-	  NukeQtStage stage = 
-	    new NukeQtStage(stageInfo, pContext, pClient,
-			    noiseQuickTimeNodeName, pNoiseTexturesNodeName, 24.0);
+	  DjvUnixQtStage stage = 
+	    new DjvUnixQtStage(stageInfo, pContext, pClient,
+			       noiseQuickTimeNodeName, pNoiseTexturesNodeName, "24");
 	  addTaskAnnotation(stage, NodePurpose.Focus); 
 	  stage.build(); 
 	}
@@ -513,9 +513,9 @@ class NoiseBuilder
 
 	String noiseTestQuickTimeNodeName = pShotNamer.getNoiseTestQuickTimeNode(); 
 	{
-	  NukeQtStage stage = 
-	    new NukeQtStage(stageInfo, pContext, pClient,
-			    noiseTestQuickTimeNodeName, noiseTestImagesNodeName, 24.0);
+	  DjvUnixQtStage stage = 
+	    new DjvUnixQtStage(stageInfo, pContext, pClient,
+			       noiseTestQuickTimeNodeName, noiseTestImagesNodeName, "24");
 	  addTaskAnnotation(stage, NodePurpose.Focus); 
 	  stage.build(); 	  
 	}

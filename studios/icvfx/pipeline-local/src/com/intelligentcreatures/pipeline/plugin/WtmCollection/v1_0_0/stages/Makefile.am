@@ -24,6 +24,7 @@ java_DATA = \
   CatMelStage.java \
   CopyImagesStage.java \
   DistortedGridStage.java \
+  DjvUnixQtStage.java \
   LensInfoStage.java \
   MatchGeoCacheStage.java \
   MatchMaskGeoStage.java \

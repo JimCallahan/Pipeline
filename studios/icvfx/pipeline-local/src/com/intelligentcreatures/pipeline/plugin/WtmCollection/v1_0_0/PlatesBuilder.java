@@ -1,4 +1,4 @@
-// $Id: PlatesBuilder.java,v 1.21 2008/03/04 08:15:16 jesse Exp $
+// $Id: PlatesBuilder.java,v 1.22 2008/03/17 17:49:15 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -232,11 +232,11 @@ class PlatesBuilder
     plugins.add(new PluginContext("MayaResolution"));  
     plugins.add(new PluginContext("NukeCatComp")); 		
     plugins.add(new PluginContext("NukeExtract"));		
-    plugins.add(new PluginContext("NukeQt"));			
     plugins.add(new PluginContext("NukeReformat"));		
     plugins.add(new PluginContext("NukeRead"));			
     plugins.add(new PluginContext("NukeRescale")); 		
     plugins.add(new PluginContext("NukeThumbnail"));          
+    plugins.add(new PluginContext("DjvUnixQt"));			
 
     MappedArrayList<String, PluginContext> toReturn = 
       new MappedArrayList<String, PluginContext>();
@@ -702,9 +702,10 @@ class PlatesBuilder
 
 	String undistorted1kQuickTimeNodeName = pShotNamer.getUndistorted1kQuickTimeNode(); 
 	{
-	  NukeQtStage stage = 
-	    new NukeQtStage(stageInfo, pContext, pClient,
-			    undistorted1kQuickTimeNodeName, undistorted1kPlateNodeName, 24.0);
+	  DjvUnixQtStage stage = 
+	    new DjvUnixQtStage
+	      (stageInfo, pContext, pClient,
+	       undistorted1kQuickTimeNodeName, undistorted1kPlateNodeName, "24.");
 	  addTaskAnnotation(stage, NodePurpose.Product); 
 	  stage.build(); 
 	}

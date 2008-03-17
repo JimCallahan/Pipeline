@@ -1,4 +1,4 @@
-// $Id: BlotBuilder.java,v 1.7 2008/03/12 09:02:32 jim Exp $
+// $Id: BlotBuilder.java,v 1.8 2008/03/17 17:49:15 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -190,6 +190,7 @@ class BlotBuilder
     ArrayList<PluginContext> plugins = new ArrayList<PluginContext>();	
     plugins.add(new PluginContext("Touch")); 
     plugins.add(new PluginContext("Copy")); 
+    plugins.add(new PluginContext("DjvUnixQt"));			
     plugins.add(new PluginContext("MayaBuild")); 		
     plugins.add(new PluginContext("MayaAttachGeoCache")); 	
     plugins.add(new PluginContext("MayaAttachSound")); 	
@@ -197,7 +198,7 @@ class BlotBuilder
     plugins.add(new PluginContext("MayaIgesExport")); 			
     plugins.add(new PluginContext("MayaRender")); 		
     plugins.add(new PluginContext("NukeThumbnail"));		
-    plugins.add(new PluginContext("NukeQt"));			
+
 
     MappedArrayList<String, PluginContext> toReturn = 
       new MappedArrayList<String, PluginContext>();
@@ -514,9 +515,9 @@ class BlotBuilder
 
 	String blotAnimQuickTimeNodeName = pShotNamer.getBlotAnimQuickTimeNode();
 	{
-	  NukeQtStage stage = 
-	    new NukeQtStage(stageInfo, pContext, pClient,
-			    blotAnimQuickTimeNodeName, pBlotAnimTexturesNodeName, 24.0);
+	  DjvUnixQtStage stage = 
+	    new DjvUnixQtStage(stageInfo, pContext, pClient,
+			       blotAnimQuickTimeNodeName, pBlotAnimTexturesNodeName, "24");
 	  addTaskAnnotation(stage, NodePurpose.Focus); 
 	  stage.build(); 
 	}
@@ -577,9 +578,9 @@ class BlotBuilder
 
 	String blotTestQuickTimeNodeName = pShotNamer.getBlotTestQuickTimeNode(); 
 	{
-	  NukeQtStage stage = 
-	    new NukeQtStage(stageInfo, pContext, pClient,
-			    blotTestQuickTimeNodeName, blotTestImagesNodeName, 24.0);
+	  DjvUnixQtStage stage = 
+	    new DjvUnixQtStage(stageInfo, pContext, pClient,
+			       blotTestQuickTimeNodeName, blotTestImagesNodeName, "24");
 	  addTaskAnnotation(stage, NodePurpose.Focus); 
 	  stage.build(); 	  
 	}
