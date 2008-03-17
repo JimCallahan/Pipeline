@@ -1,4 +1,4 @@
-// $Id: NukeFrameCyclerEditor.java,v 1.1 2008/03/12 20:36:36 jim Exp $
+// $Id: NukeFrameCyclerEditor.java,v 1.2 2008/03/17 22:59:43 jim Exp $
 
 package us.temerity.pipeline.plugin.NukeFrameCyclerEditor.v2_4_1;
 
@@ -6,7 +6,6 @@ import us.temerity.pipeline.*;
 import us.temerity.pipeline.plugin.*; 
 
 import java.util.*;
-import java.util.regex.*; 
 import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
@@ -133,49 +132,20 @@ class NukeFrameCyclerEditor
 
       /* Nuke-5.0 and later requires some special handling... */ 
       Path script = tclScript;
-      {
-        Double nukeVersion = null;
-
-        String nuke = env.get("NUKE_BINARY");
-        if(nuke != null) {
-          if(PackageInfo.sOsType == OsType.Windows) {
-            Matcher m = sWindowsNukeBinary.matcher(nuke); 
-            if(m.matches()) {
-              try {
-                nukeVersion = new Double(m.group(1));
-              }
-              catch(NumberFormatException ex) {
-              }
-            }
-          }
-          else {
-            Matcher m = sNukeBinary.matcher(nuke); 
-            if(m.matches()) {
-              try {
-                nukeVersion = new Double(m.group(1));
-              }
-              catch(NumberFormatException ex) {
-              }
-            }            
-          }
-        }
-        
-        /* create a temporary Python script to load the TCL script! (sigh) */ 
-        if((nukeVersion != null) && (nukeVersion >= 5.0)) {
-          script = new Path(createTemp("py"));
-          try {
-            FileWriter out = new FileWriter(script.toFile()); 
-
-            out.write("nuke.tcl(\"source " + tclScript + "\")\n"); 
-
-            out.close();
-          } 
-          catch (IOException ex) {
-            throw new PipelineException
-              ("Unable to write temporary Python script (" + script + ") required by " + 
-               "the " + getName() + " Editor!\n" + 
-               ex.getMessage());
-          }
+      if(NukeActionUtils.getNukeProgramVersion(env) >= 5.0) {
+        script = new Path(createTemp("py"));
+        try {
+          FileWriter out = new FileWriter(script.toFile()); 
+          
+          out.write("nuke.tcl(\"source " + tclScript + "\")\n"); 
+          
+          out.close();
+        } 
+        catch (IOException ex) {
+          throw new PipelineException
+            ("Unable to write temporary Python script (" + script + ") required by " + 
+             "the " + getName() + " Editor!\n" + 
+             ex.getMessage());
         }
       }
 
@@ -257,11 +227,6 @@ class NukeFrameCyclerEditor
 
   private static final long serialVersionUID = -8089782668211357049L;
 
-  private static Pattern sWindowsNukeBinary = 
-    Pattern.compile("nuke([0-9]+[.][0-9]+).exe"); 
-
-  private static Pattern sNukeBinary = 
-    Pattern.compile("Nuke([0-9]+[.][0-9]+)"); 
 
 }
 
