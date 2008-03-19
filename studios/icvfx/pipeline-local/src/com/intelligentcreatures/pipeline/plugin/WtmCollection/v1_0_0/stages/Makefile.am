@@ -23,6 +23,7 @@ java_DATA = \
   BuildTrackingVerifyStage.java \
   CatMelStage.java \
   CopyImagesStage.java \
+  CopyTrackingMarkersStage.java \
   DistortedGridStage.java \
   DjvUnixQtStage.java \
   LensInfoStage.java \
