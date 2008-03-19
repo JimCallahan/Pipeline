@@ -1,4 +1,4 @@
-// $Id: MatchBuilder.java,v 1.9 2008/03/06 06:14:49 jim Exp $
+// $Id: MatchBuilder.java,v 1.10 2008/03/19 22:36:49 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -370,6 +370,9 @@ class MatchBuilder
 	
 	pExtractedTrackNodeName = pShotNamer.getTrackingExtractedTrackNode();
 	pRequiredNodeNames.add(pExtractedTrackNodeName); 
+
+	pApprovedTrackingMarkersNodeName = pShotNamer.getApprovedTrackingMarkersNode(); 
+	pRequiredNodeNames.add(pApprovedTrackingMarkersNodeName); 
       }
 
       /* the background plates node */ 
@@ -456,7 +459,10 @@ class MatchBuilder
 	{
 	  BuildMatchStage stage = 
 	    new BuildMatchStage(stageInfo, pContext, pClient, 
-				pMatchAnimNodeName, preMatchAnimNodeName, pFrameRange); 
+				pMatchAnimNodeName, preMatchAnimNodeName, 
+				pApprovedTrackingMarkersNodeName, pResolutionNodeName, 
+				pFrameRange); 
+
 	  addTaskAnnotation(stage, NodePurpose.Edit); 
 	  stage.build(); 
 	  addToDisableList(pMatchAnimNodeName); 	  
@@ -643,6 +649,12 @@ class MatchBuilder
    * the Maya render globals for tracking verification test renders.
    */ 
   private String pTrackVerifyGlobalsNodeName;  
+
+  /**
+   * Returns the fully resolved name of the node containing the approved copy of the 
+   * 2D tracking data exported from PFTrack.
+   */ 
+  private String pApprovedTrackingMarkersNodeName;
 
 
   /*----------------------------------------------------------------------------------------*/

@@ -1,4 +1,4 @@
-// $Id: BuildMatchStage.java,v 1.1 2008/02/22 09:22:29 jim Exp $
+// $Id: BuildMatchStage.java,v 1.2 2008/03/19 22:38:16 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
 
@@ -44,6 +44,12 @@ class BuildMatchStage
    * @param preMatchName
    *   The name of the node containing the pre-match Maya scene.
    * 
+   * @param markersName
+   *   The name of the node containing the approved 2D tracking markers data.
+   * 
+   * @param resolutionMEL
+   *   The name of the plate resolution MEL script.
+   * 
    * @param range
    *   The frame range to give the newly created scene.
    */
@@ -55,6 +61,8 @@ class BuildMatchStage
     MasterMgrClient client, 
     String nodeName,
     String preMatchName, 
+    String markersName, 
+    String resolutionMEL, 
     FrameRange range
   ) 
     throws PipelineException
@@ -74,6 +82,11 @@ class BuildMatchStage
     addSourceParamValue(preMatchName, "PrefixName", "prep");
     addSourceParamValue(preMatchName, "BuildType", "Reference");
     addSourceParamValue(preMatchName, "NameSpace", true);
+
+    addLink(new LinkMod(markersName, LinkPolicy.Association, LinkRelationship.None, null));
+
+    addLink(new LinkMod(resolutionMEL, LinkPolicy.Dependency)); 
+    addSingleParamValue("ModelMEL", resolutionMEL); 
   }
 
 
