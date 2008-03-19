@@ -1,4 +1,4 @@
-// $Id: BaseBuilder.java,v 1.50 2008/03/07 13:25:21 jim Exp $
+// $Id: BaseBuilder.java,v 1.51 2008/03/19 15:15:48 jim Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -1843,11 +1843,12 @@ class BaseBuilder
     {}
     
     /**
-     * Phase in which outside sources of information can be consulted to ascertain information.
+     * Phase in which outside sources of information can be consulted to ascertain 
+     * information.
      * <p>
-     * Examples might include talking to an SQL database or opening up a Maya scene to extract
-     * information about which characters are in a shot or which characters should be in a shot
-     * as compared to which characters actually are in a shot.
+     * Examples might include talking to an SQL database or opening up a Maya scene to 
+     * extract information about which characters are in a shot or which characters should 
+     * be in a shot as compared to which characters actually are in a shot.
      * 
      * @throws PipelineException  If there is an error involved while invoking the outside
      * source of information.
