@@ -1,4 +1,4 @@
-// $Id: ProjectNamer.java,v 1.16 2008/03/13 16:26:27 jim Exp $
+// $Id: ProjectNamer.java,v 1.17 2008/03/19 22:41:41 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -498,6 +498,36 @@ class ProjectNamer
   }
 
   
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   Q U I C K T I M E   A S S E T S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Returns the fully resolved node directory path to the parent directory of all existing
+   * Nuke scripts for adding slates and per-frame overlays to the source images for a 
+   * deliverable QuickTime movie.
+   */ 
+  public Path
+  getSlateNukeScriptsParentPath() 
+  {
+    return new Path(pBasePaths.get(AssetType.Common, TaskType.Misc), 
+                    new Path(AppDirs.Nuke.toDirPath(), "slates"));
+  }
+
+  /**
+   * Returns the fully resolved node directory path to the parent directory of all existing
+   * Nuke scripts for performing and final image reformatting before encoding the deliverable
+   * images into a QuickTime movie.
+   */ 
+  public Path
+  getFormatNukeScriptsParentPath() 
+  {
+    return new Path(pBasePaths.get(AssetType.Common, TaskType.Misc), 
+                    new Path(AppDirs.Nuke.toDirPath(), "formats"));
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   M I S C   A S S E T S                                                                */
