@@ -1,4 +1,4 @@
-// $Id: Range.java,v 1.1 2007/04/05 08:37:49 jim Exp $
+// $Id: Range.java,v 1.2 2008/03/19 15:11:11 jim Exp $
 
 package us.temerity.pipeline.math;
 
@@ -29,7 +29,7 @@ class Range<T>
    *   The lower bounds or <CODE>null</CODE> for no lower bounds.
    * 
    * @param upper
-   *   The upper bounds or <CODE>null</CODE> for no lower bounds.
+   *   The upper bounds or <CODE>null</CODE> for no upper bounds.
    */ 
   public 
   Range
@@ -48,7 +48,7 @@ class Range<T>
    *   The lower bounds or <CODE>null</CODE> for no lower bounds.
    * 
    * @param upper
-   *   The upper bounds or <CODE>null</CODE> for no lower bounds.
+   *   The upper bounds or <CODE>null</CODE> for no upper bounds.
    * 
    * @param inc
    *   Whether both upper and lower bounds are inclusive (true) or exclusive (false).
@@ -71,7 +71,7 @@ class Range<T>
    *   The lower bounds or <CODE>null</CODE> for no lower bounds.
    * 
    * @param upper
-   *   The upper bounds or <CODE>null</CODE> for no lower bounds.
+   *   The upper bounds or <CODE>null</CODE> for no upper bounds.
    * 
    * @param incLower
    *   Whether the lower bounds is inclusive (true) or exclusive (false).
