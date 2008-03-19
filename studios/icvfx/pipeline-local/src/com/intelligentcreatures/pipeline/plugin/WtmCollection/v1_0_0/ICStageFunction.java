@@ -1,4 +1,4 @@
-// $Id: ICStageFunction.java,v 1.8 2008/03/06 14:06:48 jim Exp $
+// $Id: ICStageFunction.java,v 1.9 2008/03/19 22:36:09 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -18,11 +18,12 @@ public
 class ICStageFunction
   extends StageFunction
 {
-  public final static String aPFTrackScene = "PFTrackScene";
-  public final static String aNukeScript   = "NukeScript";
-  public final static String aQuickTime    = "QuickTime";
-  public final static String aHDRImage     = "HDRImage";
-  public final static String aObjModel     = "ObjModel";
-  public final static String aIgesModel    = "IgesModel";
-  public final static String aSoundFile    = "SoundFile";
+  public final static String aPFTrackScene   = "PFTrackScene";
+  public final static String aNukeScript     = "NukeScript";
+  public final static String aQuickTime      = "QuickTime";
+  public final static String aQuickTimeSound = "QuickTimeSound";
+  public final static String aHDRImage       = "HDRImage";
+  public final static String aObjModel       = "ObjModel";
+  public final static String aIgesModel      = "IgesModel";
+  public final static String aSoundFile      = "SoundFile";
 }
