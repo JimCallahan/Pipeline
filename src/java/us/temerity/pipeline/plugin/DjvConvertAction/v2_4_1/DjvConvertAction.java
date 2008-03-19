@@ -1,4 +1,4 @@
-// $Id: DjvConvertAction.java,v 1.1 2008/03/17 23:19:15 jim Exp $
+// $Id: DjvConvertAction.java,v 1.2 2008/03/19 15:11:30 jim Exp $
 
 package us.temerity.pipeline.plugin.DjvConvertAction.v2_4_1;
 
@@ -183,7 +183,7 @@ class DjvConvertAction
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  //private static final long serialVersionUID = 
+  private static final long serialVersionUID = -1262738351929884343L;
 
 }
 
