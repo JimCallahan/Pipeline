@@ -1,4 +1,4 @@
-// $Id: NodePathUtilityParam.java,v 1.1 2007/06/15 22:29:47 jesse Exp $
+// $Id: NodePathUtilityParam.java,v 1.2 2008/03/19 15:15:11 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -76,7 +76,7 @@ class NodePathUtilityParam
     IllegalArgumentException ex = 
       new IllegalArgumentException("Path (" + value + ") is not a valid node name");
     
-    if(value== null || !(value instanceof Path))
+    if((value == null) || !(value instanceof Path))
       throw ex;
     
     Path p = (Path) value;
