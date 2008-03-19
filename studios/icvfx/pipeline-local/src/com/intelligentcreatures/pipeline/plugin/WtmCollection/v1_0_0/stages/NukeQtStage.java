@@ -1,4 +1,4 @@
-// $Id: NukeQtStage.java,v 1.3 2008/02/11 23:00:52 jim Exp $
+// $Id: NukeQtStage.java,v 1.4 2008/03/19 22:39:33 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
 
@@ -41,9 +41,13 @@ class NukeQtStage
    * @param imageSource
    *   The name of source images.
    * 
+   * @param audioSource
+   *   The name of source audio soundtrack. 
+   * 
    * @param fps
    *   The frames per second of generated movie.
    */
+  @SuppressWarnings("unchecked")
   public
   NukeQtStage
   (
@@ -52,6 +56,7 @@ class NukeQtStage
    MasterMgrClient client,
    String nodeName, 
    String imageSource,
+   String audioSource, 
    double fps
   )
     throws PipelineException
@@ -61,11 +66,20 @@ class NukeQtStage
           stageInfo, context, client,
           nodeName, "qt",
           null,
-          new PluginContext("NukeQt"));
+          new PluginContext("NukeQt", "Temerity", 
+			    new Range<VersionID>(new VersionID("2.4.3"), null)));
 
     addLink(new LinkMod(imageSource, LinkPolicy.Dependency));
     addSingleParamValue("ImageSource", imageSource);
+    //addSingleParamValue("Codec", "Motion JPEG A"); 
+    //addSingleParamValue("Quality", "Normal");    
+    //addSingleParamValue("KeyframeRate", 1);    
     addSingleParamValue("FPS", fps);
+    
+    if(audioSource != null) {
+      addLink(new LinkMod(audioSource, LinkPolicy.Dependency));
+      addSingleParamValue("AudioSource", audioSource);
+    }
   }
   
 
@@ -81,7 +95,7 @@ class NukeQtStage
   public String 
   getStageFunction()
   {
-    return ICStageFunction.aQuickTime; 
+    return ICStageFunction.aQuickTimeSound; 
   }
 
 
