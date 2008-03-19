@@ -1,4 +1,4 @@
-// $Id: CopyImagesStage.java,v 1.1 2008/03/09 12:10:16 jim Exp $
+// $Id: CopyImagesStage.java,v 1.2 2008/03/19 22:38:33 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
 
@@ -16,7 +16,7 @@ import java.util.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Creates the Maya scene used to animate the blot textures. 
+ * Just copy some images.
  */ 
 public 
 class CopyImagesStage 
