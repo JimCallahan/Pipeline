@@ -1,4 +1,4 @@
-// $Id: ApproveTaskBuilder.java,v 1.4 2008/02/25 05:03:07 jesse Exp $
+// $Id: ApproveTaskBuilder.java,v 1.5 2008/03/19 22:34:17 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -15,7 +15,37 @@ import java.util.*;
  * A builder which implements a generic task approval operation. <P> 
  * 
  * This builder relies on the ApproveTask, SubmitTask and CommonTask annotation plugins
- * to be associated with the proper node in order for it to function properly.
+ * to be associated with the proper node in order for it to function properly. <P> 
+ * 
+ * This builder defines the following parameters: <BR>
+ * 
+ * <DIV style="margin-left: 40px;">
+ *   Approve Node <BR>
+ *   <DIV style="margin-left: 40px;">
+ *     The fully resolved name of the approve node for the task.
+ *   </DIV> <BR>
+ * 
+ *   Submit Node <BR>
+ *   <DIV style="margin-left: 40px;">
+ *     The fully resolved name of the submit node for the task.
+ *   </DIV> <BR>
+ * 
+ *   Submit Version <BR>
+ *   <DIV style="margin-left: 40px;">
+ *     The revision number of the submit node being approved.  If unset, the latest 
+ *     checked-in version will be approved.
+ *   </DIV> <BR>
+ * 
+ *   Check In Level <BR>
+ *   <DIV style="margin-left: 40px;">
+ *     The level of the check-in for the approve node.
+ *   </DIV> <BR>
+ * 
+ *   Approval Message <BR>
+ *   <DIV style="margin-left: 40px;">
+ *     The check-in message given by the user approving this task.
+ *   </DIV> <BR>
+ * </DIV>
  */
 public 
 class ApproveTaskBuilder
@@ -49,30 +79,6 @@ class ApproveTaskBuilder
     this("ApproveTask",
          "A builder which implements a generic task approval operation.", 
          mclient, qclient, builderInfo);
-    
-    /* not really applicable to this builder, so hide it from the users */ 
-    disableParam(new ParamMapping(aActionOnExistence));
-
-    addSetupPass(new LookupAndValidate());
-    addConstructPass(new CheckOutNetworks());
-    
-    {
-      LayoutGroup layout = new LayoutGroup(true);
-      layout.addEntry(aUtilContext);
-      layout.addSeparator();
-      layout.addEntry(aActionOnExistence);  
-      layout.addEntry(aReleaseOnError);     
-      layout.addSeparator();
-      layout.addEntry(aSubmitNode);
-      layout.addEntry(aSubmitVersion);
-      layout.addSeparator();
-      layout.addEntry(aApproveNode);
-      layout.addEntry(aCheckInLevel);
-      layout.addEntry(aApprovalMessage);
-      
-      PassLayoutGroup finalLayout = new PassLayoutGroup(layout.getName(), layout);
-      setLayout(finalLayout);
-    }
   }
 
   /**
@@ -93,7 +99,7 @@ class ApproveTaskBuilder
    * @param builderInfo
    *   Information that is shared among all builders in a given invocation.
    */
-  protected 
+  public
   ApproveTaskBuilder
   (
     String name,
@@ -106,55 +112,85 @@ class ApproveTaskBuilder
   {
     super(name, desc, mclient, qclient, builderInfo);
     
+    /* setup builder parameters */ 
     {
-      UtilityParam param = 
-	new StringUtilityParam
-	(aApproveNode,
-	 "The fully resolved name of the approve node for the task.",
-	 null);
-      addParam(param);
+      /* not really applicable to this builder, so hide it from the users */ 
+      disableParam(new ParamMapping(aActionOnExistence));
+      
+      {
+	UtilityParam param = 
+	  new StringUtilityParam
+	  (aApproveNode,
+	   "The fully resolved name of the approve node for the task.",
+	   null);
+	addParam(param);
+      }
+
+      {
+	UtilityParam param = 
+	  new StringUtilityParam
+	  (aSubmitNode,
+	   "The fully resolved name of the submit node for the task.",
+	   null);
+	addParam(param);
+      }
+
+      {
+	UtilityParam param = 
+	  new StringUtilityParam
+	  (aSubmitVersion, 
+	   "The revision number of the submit node being approved.  If unset, the latest " + 
+	   "checked-in version will be approved.", 
+	   null);
+	addParam(param);
+      }
+
+      {
+	ArrayList<String> choices = new ArrayList<String>(); 
+	for(VersionID.Level level : VersionID.Level.all()) 
+	  choices.add(level.toString()); 
+
+	UtilityParam param = 
+	  new EnumUtilityParam
+	  (aCheckInLevel,
+	   "The level of the check-in for the approve node.",
+	   VersionID.Level.Minor.toString(), 
+	   choices);
+	addParam(param);
+      }
+
+      {
+	UtilityParam param = 
+	  new StringUtilityParam
+	  (aApprovalMessage,
+	   "The check-in message given by the user approving this task.", 
+	   null);
+	addParam(param);
+      }
     }
 
-    {
-      UtilityParam param = 
-	new StringUtilityParam
-	(aSubmitNode,
-	 "The fully resolved name of the submit node for the task.",
-	 null);
-      addParam(param);
-    }
+    /* create the setup passes */ 
+    addSetupPass(new LookupAndValidate());
 
+    /* create the construct passes */ 
+    addConstructPass(new CheckOutNetworks());
+    
     {
-      UtilityParam param = 
-	new StringUtilityParam
-	(aSubmitVersion, 
-	 "The revision number of the submit node being approved.  If unset, the latest " + 
-	 "checked-in version will be approved.", 
-	 null);
-      addParam(param);
-    }
-
-    {
-      ArrayList<String> choices = new ArrayList<String>(); 
-      for(VersionID.Level level : VersionID.Level.all()) 
-	choices.add(level.toString()); 
-
-      UtilityParam param = 
-	new EnumUtilityParam
-	(aCheckInLevel,
-	 "The level of the check-in for the approve node.",
-	 VersionID.Level.Minor.toString(), 
-	 choices);
-      addParam(param);
-    }
-
-    {
-      UtilityParam param = 
-	new StringUtilityParam
-	(aApprovalMessage,
-	 "The check-in message given by the user approving this task.", 
-	 null);
-      addParam(param);
+      LayoutGroup layout = new LayoutGroup(true);
+      layout.addEntry(aUtilContext);
+      layout.addSeparator();
+      layout.addEntry(aActionOnExistence);  
+      layout.addEntry(aReleaseOnError);     
+      layout.addSeparator();
+      layout.addEntry(aSubmitNode);
+      layout.addEntry(aSubmitVersion);
+      layout.addSeparator();
+      layout.addEntry(aApproveNode);
+      layout.addEntry(aCheckInLevel);
+      layout.addEntry(aApprovalMessage);
+      
+      PassLayoutGroup finalLayout = new PassLayoutGroup(layout.getName(), layout);
+      setLayout(finalLayout);
     }
   }
   
@@ -236,7 +272,6 @@ class ApproveTaskBuilder
     {
       /* sets up the built-in parameters common to all builders */    
       validateBuiltInParams();
-
 
       /* make sure the approve node exists and has a valid task annotation */ 
       {
