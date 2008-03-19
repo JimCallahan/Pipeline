@@ -1,4 +1,4 @@
-// $Id: TaskGuardExt.java,v 1.2 2008/03/13 16:26:27 jim Exp $
+// $Id: TaskGuardExt.java,v 1.3 2008/03/19 22:33:35 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.TaskGuardExt.v1_0_0;
 
@@ -25,7 +25,7 @@ class TaskGuardExt
   public 
   TaskGuardExt()
   {
-    super("TaskGuard", new VersionID("1.1.1"), "Temerity",
+    super("TaskGuard", new VersionID("1.0.0"), "ICVFX",
           "Restricts access to node operations based on the SubmitTask, ApproveTask and " + 
           "CommonTask annotations."); 
     
