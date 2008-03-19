@@ -1,4 +1,4 @@
-// $Id: ShotNamer.java,v 1.23 2008/03/13 16:26:27 jim Exp $
+// $Id: ShotNamer.java,v 1.24 2008/03/19 22:42:23 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -154,6 +154,7 @@ class ShotNamer
   {
     return (pSeqName + pShotName); 
   }
+
 
 
 
@@ -896,6 +897,19 @@ class ShotNamer
   }
 
   /**
+   * Returns the fully resolved name of the node containing 2D tracking data exported
+   * from PFTrack.
+   */ 
+  public String
+  getTrackingMarkersNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Edit), 
+			 new Path(AppDirs.PFTrack.toDirPath(), 
+				  joinNames(getFullShotName(), "tracking_markers"))); 
+    return path.toString(); 
+  }
+
+  /**
    * Returns the fully resolved name of the submit node for the Tracking task.
    */ 
   public String
@@ -932,6 +946,19 @@ class ShotNamer
     Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Product), 
 			 new Path(AppDirs.Maya.toDirPath(), 
 				  joinNames(getFullShotName(), "track"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node containing the approved copy of the 
+   * 2D tracking data exported from PFTrack.
+   */ 
+  public String
+  getApprovedTrackingMarkersNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Product), 
+			 new Path(AppDirs.PFTrack.toDirPath(), 
+				  joinNames(getFullShotName(), "tracking_markers"))); 
     return path.toString(); 
   }
 
@@ -1491,6 +1518,25 @@ class ShotNamer
   }
 
 
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   Q U I C T I M E   D E L I V E R Y                                                    */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the default QuickTime deliverable name for a given task.
+   */ 
+  public String
+  getDeliverable
+  (
+   TaskType task
+  ) 
+  {
+    return (getFullShotName() + "_" + task); 
+  }
+
+  
+ 
 
   /*----------------------------------------------------------------------------------------*/
   /*   U T I L I T I E S                                                                    */
