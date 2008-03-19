@@ -1,4 +1,4 @@
-// $Id: TrackingBuilder.java,v 1.11 2008/03/06 06:14:49 jim Exp $
+// $Id: TrackingBuilder.java,v 1.12 2008/03/19 22:37:26 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -142,6 +142,9 @@ class TrackingBuilder
     {
       ConstructPass build = new BuildNodesPass();
       addConstructPass(build);
+      
+      ConstructPass qd = new QueueDisablePass(); 
+      addConstructPass(qd); 
     }
 
     /* specify the layout of the parameters for each pass in the UI */ 
@@ -192,6 +195,7 @@ class TrackingBuilder
   {
     ArrayList<PluginContext> plugins = new ArrayList<PluginContext>();	
     //plugins.add(new PluginContext("PFTrackBuild", "ICVFX"));		
+    plugins.add(new PluginContext("Copy")); 		
     plugins.add(new PluginContext("Touch")); 
     plugins.add(new PluginContext("CatFiles"));  
     plugins.add(new PluginContext("Composite"));   		
@@ -448,10 +452,22 @@ class TrackingBuilder
 	  stage.build(); 
 	}
 
+	pTrackingMarkersNodeName = pShotNamer.getTrackingMarkersNode();
+	{
+	  TouchStage stage = 
+	    new TouchStage("TrackingMarkers", "Create an empty tracking markers file.", 
+			   stageInfo, pContext, pClient, 
+			   pTrackingMarkersNodeName, "2dt", new TreeSet<String>());
+	  addTaskAnnotation(stage, NodePurpose.Edit); 
+	  stage.build(); 
+	  addToDisableList(pTrackingMarkersNodeName); 
+	}
+
 	String submitNodeName = pShotNamer.getTrackingSubmitNode();
 	{
 	  TreeSet<String> sources = new TreeSet<String>();
 	  sources.add(verifyThumbNodeName); 
+	  sources.add(pTrackingMarkersNodeName); 
 
 	  TargetStage stage = 
 	    new TargetStage(stageInfo, pContext, pClient, 
@@ -487,11 +503,22 @@ class TrackingBuilder
 	  stage.build(); 
 	}
 
+	String approvedTrackingMarkersNodeName = pShotNamer.getApprovedTrackingMarkersNode();
+	{
+	  CopyTrackingMarkersStage stage = 
+	    new CopyTrackingMarkersStage
+	      (stageInfo, pContext, pClient, 
+	       approvedTrackingMarkersNodeName, pTrackingMarkersNodeName); 
+	  addTaskAnnotation(stage, NodePurpose.Product); 
+	  stage.build(); 
+	}
+
 	String approveNodeName = pShotNamer.getTrackingApproveNode();
 	{
 	  TreeSet<String> sources = new TreeSet<String>();
 	  sources.add(extractedCameraNodeName); 
 	  sources.add(extractedTrackNodeName); 
+	  sources.add(approvedTrackingMarkersNodeName); 
 
 	  TargetStage stage = 
 	    new TargetStage(stageInfo, pContext, pClient, 
@@ -507,6 +534,44 @@ class TrackingBuilder
     private static final long serialVersionUID = -3481579311780824310L; 
   }
    
+
+  /*----------------------------------------------------------------------------------------*/
+
+  protected 
+  class QueueDisablePass
+    extends ConstructPass
+  {
+    public 
+    QueueDisablePass() 
+    {
+      super("Queue and Disable Actions", 
+	    "");
+    }
+    
+    /**
+     * Return nodes which will have their actions disabled to be queued now.
+     */ 
+    @Override
+    public TreeSet<String> 
+    preBuildPhase()
+    {
+      return getDisableList();
+    }
+    
+    /**
+     * Disable the actions for the second pass nodes. 
+     */ 
+    @Override
+    public void 
+    buildPhase() 
+      throws PipelineException
+    {
+      disableActions();
+    }
+    
+    private static final long serialVersionUID = -2641506858911279542L;
+  }
+
   
 
   /*----------------------------------------------------------------------------------------*/
@@ -552,6 +617,11 @@ class TrackingBuilder
    * the camera/model tracking data.
    */ 
   private String pTrackNodeName; 
+
+  /**
+   * The fully resolved name of the node containing 2D tracking data exported from PFTrack.
+   */ 
+  private String pTrackingMarkersNodeName; 
 
 
   /*----------------------------------------------------------------------------------------*/
