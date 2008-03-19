@@ -1,4 +1,4 @@
-// $Id: BlotBuilder.java,v 1.8 2008/03/17 17:49:15 jim Exp $
+// $Id: BlotBuilder.java,v 1.9 2008/03/19 22:35:53 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -190,7 +190,8 @@ class BlotBuilder
     ArrayList<PluginContext> plugins = new ArrayList<PluginContext>();	
     plugins.add(new PluginContext("Touch")); 
     plugins.add(new PluginContext("Copy")); 
-    plugins.add(new PluginContext("DjvUnixQt"));			
+    plugins.add(new PluginContext("NukeQt", "Temerity", 
+				  new Range<VersionID>(new VersionID("2.4.3"), null)));
     plugins.add(new PluginContext("MayaBuild")); 		
     plugins.add(new PluginContext("MayaAttachGeoCache")); 	
     plugins.add(new PluginContext("MayaAttachSound")); 	
@@ -388,6 +389,9 @@ class BlotBuilder
 	   new ParamMapping(aLocation, StudioDefinitions.aShotName));
       }
 
+      pSoundtrackNodeName = pShotNamer.getSoundtrackNode(); 
+      pRequiredNodeNames.add(pSoundtrackNodeName);
+
       /* the geometry cache */ 
       pMatchGeoCacheNodeName = pShotNamer.getMatchGeoCacheNode();
       pRequiredNodeNames.add(pMatchGeoCacheNodeName); 
@@ -515,9 +519,10 @@ class BlotBuilder
 
 	String blotAnimQuickTimeNodeName = pShotNamer.getBlotAnimQuickTimeNode();
 	{
-	  DjvUnixQtStage stage = 
-	    new DjvUnixQtStage(stageInfo, pContext, pClient,
-			       blotAnimQuickTimeNodeName, pBlotAnimTexturesNodeName, "24");
+	  NukeQtStage stage = 
+	    new NukeQtStage(stageInfo, pContext, pClient,
+			    blotAnimQuickTimeNodeName, pBlotAnimTexturesNodeName, 
+			    pSoundtrackNodeName, 24.0);
 	  addTaskAnnotation(stage, NodePurpose.Focus); 
 	  stage.build(); 
 	}
@@ -578,9 +583,10 @@ class BlotBuilder
 
 	String blotTestQuickTimeNodeName = pShotNamer.getBlotTestQuickTimeNode(); 
 	{
-	  DjvUnixQtStage stage = 
-	    new DjvUnixQtStage(stageInfo, pContext, pClient,
-			       blotTestQuickTimeNodeName, blotTestImagesNodeName, "24");
+	  NukeQtStage stage = 
+	    new NukeQtStage(stageInfo, pContext, pClient,
+			    blotTestQuickTimeNodeName, blotTestImagesNodeName, 
+			    pSoundtrackNodeName, 24.0);
 	  addTaskAnnotation(stage, NodePurpose.Focus); 
 	  stage.build(); 	  
 	}
@@ -787,6 +793,11 @@ class BlotBuilder
    * Returns the fully resolved name of the MEL script used to load the soundtrack.
    */ 
   private String pAttachSoundtrackNodeName; 
+  
+  /**
+   * The fully resolved name of the shot soundtrack node.
+   */ 
+  private String pSoundtrackNodeName; 
 
   /**
    * The fully resolved name of the node containing the baked Maya geometry cache. 
