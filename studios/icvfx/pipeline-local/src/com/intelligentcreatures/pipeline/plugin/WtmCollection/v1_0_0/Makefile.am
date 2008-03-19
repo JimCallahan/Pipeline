@@ -27,6 +27,7 @@ java_DATA = \
   NoiseBuilder.java \
   PlatesBuilder.java \
   ProjectNamer.java \
+  QuickTimeBuilder.java \
   ShotNamer.java \
   SoundBuilder.java \
   StudioDefinitions.java \
