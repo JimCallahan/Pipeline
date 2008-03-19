@@ -1,4 +1,4 @@
-// $Id: SlateSubstAction.java,v 1.4 2008/03/15 22:57:26 jim Exp $
+// $Id: SlateSubstAction.java,v 1.5 2008/03/19 22:43:30 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.SlateSubstAction.v1_0_0; 
 
@@ -54,11 +54,34 @@ import java.io.*;
  * 
  *   Client Version <BR>
  *   <DIV style="margin-left: 40px;">
- *     The client revision number.  This revision number is unrelated to Pipeline's VersionID
- *     for the source images and is purely for external client use.  This value will be 
- *     substituted for all instances of "@IC_CLIENT_VERSION@" in the template Nuke script.
+ *     The client revision number.  This revision number is unrelated to Pipeline's revision
+ *     number for the source images and is purely for external client use.  This value will 
+ *     be substituted for all instances of "@IC_CLIENT_VERSION@" in the template Nuke script.
  *   </DIV> 
  *   <P> 
+ * 
+ * 
+ *   Source Images <BR>
+ *   <DIV style="margin-left: 40px;">
+ *     The file sequence name (prefix.#.suffix,1-10x1) of the source images being delivered. 
+ *     This value will be substituted for all instances of "@IC_SOURCE_IMAGES@" in the 
+ *     template Nuke script.
+ *   </DIV> <BR>
+ * 
+ *   Source Node <BR>
+ *   <DIV style="margin-left: 40px;">
+ *     The fully resolved node name of the source images being delivered.  This value will 
+ *     be substituted for all instances of "@IC_SOURCE_NODE@" in the template Nuke script.
+ *   </DIV> <BR>
+ * 
+ *   Source Version <BR>
+ *   <DIV style="margin-left: 40px;">
+ *     The revision number of the source images node being delivered.  This value will 
+ *     be substituted for all instances of "@IC_SOURCE_VERSION@" in the template Nuke
+ *     script.
+ *   </DIV> <BR>
+ *   <P> 
+ * 
  * 
  *   Created On <BR>
  *   <DIV style="margin-left: 40px;">
@@ -141,13 +164,45 @@ class SlateSubstAction
         new StringActionParam
         (aClientVersion,
 	 "The client revision number.  This revision number is unrelated to Pipeline's " + 
-	 "VersionID for the source images and is purely for external client use.  This " + 
-	 "value will be substituted for all instances of \"@IC_CLIENT_VERSION@\" in the " + 
-	 "template Nuke script.", 
+	 "revision number for the source images and is purely for external client use. " + 
+	 "This value will be substituted for all instances of \"@IC_CLIENT_VERSION@\" in " + 
+	 "the template Nuke script.", 
          null);
       addSingleParam(param);
     }
 
+    {
+      ActionParam param = 
+        new StringActionParam
+        (aSourceImages, 
+	 "The file sequence name (prefix.#.suffix,1-10x1) of the source images being " + 
+	 "delivered. This value will be substituted for all instances of " + 
+	 "\"@IC_SOURCE_IMAGES@\" in the template Nuke script.", 
+         null);
+      addSingleParam(param);
+    }
+
+    {
+      ActionParam param = 
+        new StringActionParam
+	(aSourceNode,
+	 "The fully resolved node name of the source images being delivered.  This value " + 
+	 "will be substituted for all instances of \"@IC_SOURCE_NODE@\" in the template " +
+	 "Nuke script.", 
+         null);
+      addSingleParam(param);
+    }
+
+    {
+      ActionParam param = 
+        new StringActionParam
+        (aSourceVersion,
+	 "The revision number of the source images node being delivered.  This value will " + 
+	 "be substituted for all instances of \"@IC_SOURCE_VERSION@\" in the template Nuke " +
+	 "script.", 
+         null);
+      addSingleParam(param);
+    }
 
     {
       ActionParam param = 
@@ -198,8 +253,12 @@ class SlateSubstAction
       layout.addSeparator(); 
       layout.addEntry(aDeliveryType);  
       layout.addEntry(aDeliverable);      
-      layout.addEntry(aClientVersion);     
-      layout.addSeparator();     
+      layout.addEntry(aClientVersion);    
+      layout.addSeparator();       
+      layout.addEntry(aSourceImages); 
+      layout.addEntry(aSourceNode); 
+      layout.addEntry(aSourceVersion);     
+      layout.addSeparator();    
       layout.addEntry(aCreatedOn);  
       layout.addEntry(aCreatedBy);  
       layout.addEntry(aNotes);    
@@ -211,6 +270,8 @@ class SlateSubstAction
 
     addSupport(OsType.MacOS);
     addSupport(OsType.Windows);
+
+    underDevelopment();
   }
 
 
@@ -277,6 +338,18 @@ class SlateSubstAction
     if(clientVersion == null) 
       clientVersion = "";
 
+    String sourceImages = getSingleStringParamValue(aSourceImages); 
+    if(sourceImages == null) 
+      sourceImages = "";
+
+    String sourceNode = getSingleStringParamValue(aSourceNode); 
+    if(sourceNode == null) 
+      sourceNode = "";
+
+    String sourceVersion = getSingleStringParamValue(aSourceVersion); 
+    if(sourceVersion == null) 
+      sourceVersion = "";
+
     String createdBy = getSingleStringParamValue(aCreatedBy); 
     if(createdBy == null) 
       createdBy = "";
@@ -340,6 +413,9 @@ class SlateSubstAction
 	  line = sDeliveryType.matcher(line).replaceAll(deliveryType);
 	  line = sDeliverable.matcher(line).replaceAll(deliverable);
 	  line = sClientVersion.matcher(line).replaceAll(clientVersion);
+	  line = sSourceImages.matcher(line).replaceAll(sourceImages);
+	  line = sSourceNode.matcher(line).replaceAll(sourceNode);
+	  line = sSourceVersion.matcher(line).replaceAll(sourceVersion);
 	  line = sCreatedBy.matcher(line).replaceAll(createdBy);
 	  line = sCreatedOn.matcher(line).replaceAll(createdOn);
 	  line = sNotes.matcher(line).replaceAll(notes);
@@ -373,6 +449,9 @@ class SlateSubstAction
   private static Pattern sDeliveryType  = Pattern.compile("@IC_DELIVERY_TYPE@"); 
   private static Pattern sDeliverable   = Pattern.compile("@IC_DELIVERABLE@"); 
   private static Pattern sClientVersion = Pattern.compile("@IC_CLIENT_VERSION@"); 
+  private static Pattern sSourceImages  = Pattern.compile("@IC_SOURCE_IMAGES@"); 
+  private static Pattern sSourceNode    = Pattern.compile("@IC_SOURCE_NODE@"); 
+  private static Pattern sSourceVersion = Pattern.compile("@IC_SOURCE_VERSION@"); 
   private static Pattern sCreatedOn     = Pattern.compile("@IC_CREATED_ON@"); 
   private static Pattern sCreatedBy     = Pattern.compile("@IC_CREATED_BY@"); 
   private static Pattern sNotes         = Pattern.compile("@IC_NOTES@"); 
@@ -384,6 +463,9 @@ class SlateSubstAction
   public static final String aDeliveryType   = "DeliveryType"; 
   public static final String aDeliverable    = "Deliverable"; 
   public static final String aClientVersion  = "ClientVersion"; 
+  public static final String aSourceImages   = "SourceImages"; 
+  public static final String aSourceNode     = "SourceNode"; 
+  public static final String aSourceVersion  = "SourceVersion"; 
   public static final String aCreatedOn      = "CreatedOn"; 
   public static final String aCreatedBy      = "CreatedBy"; 
   public static final String aNotes          = "Notes"; 
