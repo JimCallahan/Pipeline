@@ -1,4 +1,4 @@
-// $Id: HfsRenderAction.java,v 1.1 2008/03/20 21:26:14 jim Exp $
+// $Id: HfsRenderAction.java,v 1.2 2008/03/20 21:50:02 jim Exp $
 
 package us.temerity.pipeline.plugin.HfsRenderAction.v2_4_1;
 
@@ -123,8 +123,6 @@ class HfsRenderAction
     }
 
     //addSupport(OsType.Windows);
-
-    underDevelopment(); 
   }
 
   
@@ -174,7 +172,7 @@ class HfsRenderAction
     try {      
       FileWriter out = new FileWriter(hscript.toFile());
     
-      String opname = ("out/" + getSingleStringParamValue(aOutputOperator, false));
+      String opname = ("/out/" + getSingleStringParamValue(aOutputOperator, false));
 
       writeCameraOverrideOpparm(opname, agenda, out);
 

@@ -1,4 +1,4 @@
-// $Id: HfsReadCmdAction.java,v 1.1 2008/03/20 21:25:13 jim Exp $
+// $Id: HfsReadCmdAction.java,v 1.2 2008/03/20 21:50:01 jim Exp $
 
 package us.temerity.pipeline.plugin.HfsReadCmdAction.v2_4_1;
 
@@ -100,8 +100,6 @@ class HfsReadCmdAction
     }
 
     //addSupport(OsType.Windows);
-
-    underDevelopment(); 
   }
 
   
