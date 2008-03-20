@@ -1,4 +1,4 @@
-// $Id: WtmCollection.java,v 1.12 2008/03/19 22:42:49 jim Exp $
+// $Id: WtmCollection.java,v 1.13 2008/03/20 15:57:21 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -48,7 +48,7 @@ class WtmCollection
       {
 	LayoutGroup sub = 
 	  new LayoutGroup("Internal", "Builders used internally by Tools.", true);
-	sub.addEntry("QuickTime"); 
+// 	sub.addEntry("QuickTime"); 
 	sub.addEntry("ApproveTask");
 
 	group.addSubGroup(sub);
@@ -95,7 +95,7 @@ class WtmCollection
     toReturn.put("Blot",             pkg + "BlotBuilder");
     toReturn.put("Noise",            pkg + "NoiseBuilder");
 
-    toReturn.put("QuickTime",        pkg + "QuickTimeBuilder");
+//     toReturn.put("QuickTime",        pkg + "QuickTimeBuilder");
     toReturn.put("ApproveTask",      pkg + "ApproveTaskBuilder");
     
     return toReturn;
