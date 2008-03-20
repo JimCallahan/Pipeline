@@ -1869,6 +1869,15 @@ AC_CONFIG_FILES([
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/CommonTaskAnnotation/Makefile
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/CommonTaskAnnotation/v1_0_0/Makefile
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/CommonTaskAnnotation/v1_0_0/Makefile.local
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/DJVEditor/Makefile
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/DJVEditor/v1_0_0/Makefile
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/DJVEditor/v1_0_0/Makefile.local
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/Kdiff3Comparator/Makefile
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/Kdiff3Comparator/v1_0_0/Makefile
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/Kdiff3Comparator/v1_0_0/Makefile.local
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/KritaEditor/Makefile
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/KritaEditor/v1_0_0/Makefile
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/KritaEditor/v1_0_0/Makefile.local
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/LensInfoAction/Makefile
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/LensInfoAction/v1_0_0/Makefile
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/LensInfoAction/v1_0_0/Makefile.local
@@ -1883,6 +1892,12 @@ AC_CONFIG_FILES([
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/PFTrackEditor/Makefile
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/PFTrackEditor/v1_0_0/Makefile
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/PFTrackEditor/v1_0_0/Makefile.local
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/SMplayerEditor/Makefile
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/SMplayerEditor/v1_0_0/Makefile
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/SMplayerEditor/v1_0_0/Makefile.local
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/ShakeQtDeliveryAction/Makefile
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/ShakeQtDeliveryAction/v1_0_0/Makefile
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/ShakeQtDeliveryAction/v1_0_0/Makefile.local
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/SlateSubstAction/Makefile
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/SlateSubstAction/v1_0_0/Makefile
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/SlateSubstAction/v1_0_0/Makefile.local
