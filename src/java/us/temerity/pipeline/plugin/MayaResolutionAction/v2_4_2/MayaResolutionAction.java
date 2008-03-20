@@ -1,6 +1,6 @@
-// $Id: MayaResolutionAction.java,v 1.1 2008/03/04 19:16:54 jim Exp $
+// $Id: MayaResolutionAction.java,v 1.2 2008/03/20 21:08:39 jim Exp $
 
-package us.temerity.pipeline.plugin.MayaResolution.v2_4_2;
+package us.temerity.pipeline.plugin.MayaResolutionAction.v2_4_2;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.math.*;
