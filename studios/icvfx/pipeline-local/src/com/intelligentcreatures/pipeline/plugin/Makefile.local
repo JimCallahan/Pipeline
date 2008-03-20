@@ -4,11 +4,16 @@
 	$(MAKE) -f Makefile.local -C ApproveTaskAnnotation $@ 
 	$(MAKE) -f Makefile.local -C ApproveTaskTool $@ 
 	$(MAKE) -f Makefile.local -C CommonTaskAnnotation $@ 
+	$(MAKE) -f Makefile.local -C DJVEditor $@ 
+	$(MAKE) -f Makefile.local -C Kdiff3Comparator $@ 
+	$(MAKE) -f Makefile.local -C KritaEditor $@ 
 	$(MAKE) -f Makefile.local -C LensInfoAction $@ 
 	$(MAKE) -f Makefile.local -C NotMiniKeyChooser $@ 
 	$(MAKE) -f Makefile.local -C PFTrackBuildAction $@ 
 	$(MAKE) -f Makefile.local -C PFTrackEditor $@
+	$(MAKE) -f Makefile.local -C SMplayerEditor $@ 
+	$(MAKE) -f Makefile.local -C ShakeQtDeliveryAction $@ 
 	$(MAKE) -f Makefile.local -C SlateSubstAction $@
 	$(MAKE) -f Makefile.local -C SubmitTaskAnnotation $@
-	$(MAKE) -f Makefile.local -C TaskGuardExt $@ 
+# 	$(MAKE) -f Makefile.local -C TaskGuardExt $@ 
 	$(MAKE) -f Makefile.local -C WtmCollection $@

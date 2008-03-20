@@ -11,11 +11,18 @@ SUBDIRS = \
   ApproveTaskAnnotation \
   ApproveTaskTool \
   CommonTaskAnnotation \
+  DJVEditor \
+  Kdiff3Comparator \
+  KritaEditor \
   LensInfoAction \
   NotMiniKeyChooser \
   PFTrackBuildAction \
   PFTrackEditor \
+  SMplayerEditor \
+  ShakeQtDeliveryAction \
   SlateSubstAction \
   SubmitTaskAnnotation \
-  TaskGuardExt \
-  WtmCollection
+  WtmCollection \
+
+
+#  TaskGuardExt
