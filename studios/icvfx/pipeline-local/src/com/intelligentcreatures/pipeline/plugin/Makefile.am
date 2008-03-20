@@ -21,7 +21,7 @@ SUBDIRS = \
   SMplayerEditor \
   ShakeQtDeliveryAction \
   SubmitTaskAnnotation \
-  WtmCollection \
+  WtmCollection
 
 
 #  SlateSubstAction
