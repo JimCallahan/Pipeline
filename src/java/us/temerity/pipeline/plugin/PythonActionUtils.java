@@ -1,4 +1,4 @@
-// $Id: PythonActionUtils.java,v 1.5 2007/05/14 13:13:10 jim Exp $
+// $Id: PythonActionUtils.java,v 1.6 2008/03/20 21:28:47 jim Exp $
 
 package us.temerity.pipeline.plugin;
 
@@ -135,8 +135,8 @@ class PythonActionUtils
   /**
    * Generate a "launch" Python function declaration.<P> 
    * 
-   * This launch function uses Python's os.spawn function to start an OS subprocess and 
-   * wait for it complete.  If the subprocess returns an non-zero exit code, the launch
+   * This launch function uses Python's subprocess.call() function to start an OS subprocess 
+   * and wait for it complete.  If the subprocess returns an non-zero exit code, the launch
    * function calls sys.exit with an appropriate error message.<P> 
    * 
    * This method is provided as a convienence for writing dynamically generated Python 
@@ -166,6 +166,46 @@ class PythonActionUtils
        "  result = subprocess.call(a)\n" +
        "  if result != 0:\n" +
        "    sys.exit('  FAILED: Exit Code = ' + str(result));\n\n");
+  }
+  
+  /**
+   * Generate a "lauchPipe" Python function declaration.<P> 
+   * 
+   * This launchPipe function uses Python's suprocess.Popen function to start an OS 
+   * subprocess feeding it input from STDIN and then wait for it complete.  If the 
+   * subprocess returns an non-zero exit code, the launch function calls sys.exit with an 
+   * appropriate error message.<P> 
+   * 
+   * This method is provided as a convienence for writing dynamically generated Python 
+   * scripts in a subclasses {@link #prep prep} method which run multiple subprocesses or
+   * require piping from STDIN.  By using "launchPipe", you get standardized progress 
+   * messages and error handling for free. <P> 
+   * 
+   * The usage is: <P> 
+   * <CODE>
+   *   launchPipe(<I>infile</I>, <I>program</I>, <I>args</I>)
+   * </CODE><P> 
+   * 
+   * Where <I>infile</I> is the name of the file that sould be fed to the STDIN of the 
+   * program launched, <I>program</I> is the executable name and <I>args</I> is the list of 
+   * command line arguments.  The program will be found using PATH from the Toolset 
+   * environment used to launch the Python interpretor.
+   */ 
+  public static final String 
+  getPythonLaunchPipeHeader() 
+  {
+    return 
+      ("import subprocess;\n" +
+       "import sys;\n\n" +
+       "def launchPipe(infile, program, args):\n" +
+       "  inf = open(infile, 'r')\n" + 
+       "  a = [program] + args\n" +
+       "  print('RUNNING: ' + infile + ' | ' + ' '.join(a))\n" +
+       "  sys.stdout.flush()\n" + 
+       "  p = subprocess.Popen(a, stdin=inf)\n" +
+       "  p.communicate()\n" + 
+       "  if p.returncode != 0:\n" +
+       "    sys.exit('  FAILED: Exit Code = ' + str(p.returncode));\n\n");
   }
   
   
