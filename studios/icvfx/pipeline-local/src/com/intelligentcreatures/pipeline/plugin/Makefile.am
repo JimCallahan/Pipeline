@@ -20,9 +20,9 @@ SUBDIRS = \
   PFTrackEditor \
   SMplayerEditor \
   ShakeQtDeliveryAction \
-  SlateSubstAction \
   SubmitTaskAnnotation \
   WtmCollection \
 
 
+#  SlateSubstAction
 #  TaskGuardExt
