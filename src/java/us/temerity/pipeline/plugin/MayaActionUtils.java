@@ -1,4 +1,4 @@
-// $Id: MayaActionUtils.java,v 1.7 2008/03/06 13:00:30 jim Exp $
+// $Id: MayaActionUtils.java,v 1.8 2008/03/20 20:26:00 jim Exp $
 
 package us.temerity.pipeline.plugin;
 
@@ -263,8 +263,8 @@ class MayaActionUtils
     Path finalMEL = getMelScriptSourcePath(aFinalMEL, agenda);
     if (finalMEL != null) 
       out.write
-	("// ANIM SCRIPT\n" + 
-         "print \"Anim Script: " + finalMEL + "\\n\";\n" +
+	("// FINAL SCRIPT\n" + 
+         "print \"Final Script: " + finalMEL + "\\n\";\n" +
          "source \"" + finalMEL + "\";\n\n");
   }
   
@@ -942,9 +942,9 @@ class MayaActionUtils
   public static final String aTimeUnits    = "TimeUnits";
   
   public static final String aInitialMEL = "InitialMEL";
-  public static final String aModelMEL = "ModelMEL";
-  public static final String aAnimMEL = "AnimMEL";
-  public static final String aFinalMEL = "FinalMEL";
+  public static final String aModelMEL   = "ModelMEL";
+  public static final String aAnimMEL    = "AnimMEL";
+  public static final String aFinalMEL   = "FinalMEL";
   
   public static final String aMayaScene = "MayaScene";
 
