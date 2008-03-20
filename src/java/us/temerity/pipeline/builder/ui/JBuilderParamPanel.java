@@ -356,7 +356,8 @@ class JBuilderParamPanel
 
 	return field;     
       }
-      else if(bparam instanceof PathUtilityParam) {
+      else if((bparam instanceof PathUtilityParam) ||
+              (bparam instanceof NodePathUtilityParam)) {
 	Path value = (Path) sparam.getValue();
 	JPathField field = 
 	  UIFactory.createTitledPathField
@@ -370,21 +371,6 @@ class JBuilderParamPanel
 	}
 
 	return field; 
-      }
-      else if(bparam instanceof NodePathUtilityParam) {
-	String value = (String) sparam.getValue();
-	JNodeIdentifierField field = 
-	  UIFactory.createTitledNodeIdentifierField
-	  (tpanel, displayName, tsize, 
-	   vpanel, value, vsize, 
-	   bparam.getDescription());
-	
-	if (actionCommand != null) {
-	  field.addActionListener(this);
-	  field.setActionCommand(actionCommand);
-	}
-
-	return field;     
       }
       else if(bparam instanceof IdentifierUtilityParam) {
 	String value = (String) sparam.getValue();
@@ -445,12 +431,6 @@ class JBuilderParamPanel
       ((JIntegerField) comp).setValue(value);
       ((JIntegerField) comp).addActionListener(this);
     }
-    else if (comp instanceof JTextField) {
-      String value = (String) ((SimpleParamAccess) param).getValue();
-      ((JTextField) comp).removeActionListener(this);
-      ((JTextField) comp).setText(value);
-      ((JTextField) comp).addActionListener(this);
-    }
     else if (comp instanceof JPathField) {
       Path value = (Path) ((SimpleParamAccess) param).getValue();
       ((JPathField) comp).removeActionListener(this);
@@ -468,6 +448,12 @@ class JBuilderParamPanel
       ((JIdentifierField) comp).removeActionListener(this);
       ((JIdentifierField) comp).setText(value);
       ((JIdentifierField) comp).addActionListener(this);
+    }
+    else if (comp instanceof JTextField) {
+      String value = (String) ((SimpleParamAccess) param).getValue();
+      ((JTextField) comp).removeActionListener(this);
+      ((JTextField) comp).setText(value);
+      ((JTextField) comp).addActionListener(this);
     }
   }
 
@@ -540,10 +526,10 @@ class JBuilderParamPanel
   /**
    * Invoked when the component has been made invisible.
    */ 
+  @SuppressWarnings("unused")
   public void 	
   componentHidden
   (
-    @SuppressWarnings("unused")
     ComponentEvent e
   ) 
   {} 
@@ -551,10 +537,10 @@ class JBuilderParamPanel
   /**
    * Invoked when the component's position changes.
    */ 
+  @SuppressWarnings("unused")
   public void 
   componentMoved
   (
-    @SuppressWarnings("unused")
     ComponentEvent e
   ) 
   {} 
@@ -562,11 +548,11 @@ class JBuilderParamPanel
   /**
    * Invoked when the component's size changes.
    */ 
+  @SuppressWarnings("unused")
   public void 
   componentResized
   (
-   @SuppressWarnings("unused")
-  ComponentEvent e
+   ComponentEvent e
   )
   {
     Box box = (Box) e.getComponent();
@@ -582,10 +568,10 @@ class JBuilderParamPanel
   /**
    * Invoked when the component has been made visible.
    */
+  @SuppressWarnings("unused")
   public void 
   componentShown
   (
-    @SuppressWarnings("unused")
     ComponentEvent e
   ) 
   {}
@@ -676,14 +662,14 @@ class JBuilderParamPanel
       return ((JCollectionField) field).getSelected();
     else if (field instanceof JIntegerField) 
       return ((JIntegerField) field).getValue();
-    else if (field instanceof JTextField) 
-      return ((JTextField) field).getText();
     else if (field instanceof JPathField) 
       return ((JPathField) field).getPath();
     else if (field instanceof JNodeIdentifierField) 
       return ((JNodeIdentifierField) field).getText();
     else if (field instanceof JIdentifierField) 
       return ((JIdentifierField) field).getText();
+    else if (field instanceof JTextField) 
+      return ((JTextField) field).getText();
     else
       assert(false) : "Unknown Component Type has been created.  This should be impossible.";
     return null;
