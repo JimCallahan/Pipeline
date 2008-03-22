@@ -96,7 +96,7 @@ Privileges<br>
  style="font-weight: normal;">|</span><span style="font-weight: normal;"><span
  style="font-weight: bold;"> --queue-admin</span> | <span
  style="font-weight: bold;">--queue-manager</span> | <span
- style="font-weight: bold;">--node-mananger</span><br>
+ style="font-weight: bold;">--node-manager</span><br>
           </span></li>
         <li style="font-weight: bold;"><a href="#privilege_--revoke"><span
  style="font-weight: normal;"><span style="font-weight: bold;">--revoke</span></span></a><span
@@ -107,7 +107,7 @@ Privileges<br>
           </span></span><span style="font-weight: normal;">|</span><span
  style="font-weight: normal;"> <span style="font-weight: bold;">--queue-admin</span>
 | <span style="font-weight: bold;">--queue-manager</span> | <span
- style="font-weight: bold;">--node-mananger</span></span><span
+ style="font-weight: bold;">--node-manager</span></span><span
  style="font-weight: normal;"><span style="font-weight: bold;"></span><span
  style="font-style: italic;"><br>
           </span></span></li>
@@ -2195,7 +2195,7 @@ all users.<br>
 </span></span><span style="font-weight: normal;">| </span><span
  style="font-weight: normal;"><span style="font-weight: bold;">--queue-admin</span>
 | <span style="font-weight: bold;">--queue-manager</span> | <span
- style="font-weight: bold;">--node-mananger</span></span><br>
+ style="font-weight: bold;">--node-manager</span></span><br>
 <span style="font-weight: normal;"><span style="font-weight: bold;"><a
  name="privilege_--revoke"></a>privilege</span></span><span
  style="font-weight: normal;"><span style="font-weight: bold;"> </span></span><span
@@ -2209,7 +2209,7 @@ all users.<br>
  style="font-weight: normal;"><span style="font-weight: bold;"></span></span><span
  style="font-weight: normal;"> <span style="font-weight: bold;">--queue-admin</span>
 | <span style="font-weight: bold;">--queue-manager</span> | <span
- style="font-weight: bold;">--node-mananger</span></span><br>
+ style="font-weight: bold;">--node-manager</span></span><br>
 </div>
 <br>
 <div style="margin-left: 80px;"><span style="font-weight: normal;"><span
