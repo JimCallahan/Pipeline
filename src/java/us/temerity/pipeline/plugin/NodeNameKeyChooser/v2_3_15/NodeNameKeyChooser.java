@@ -1,4 +1,4 @@
-// $Id: NodeNameKeyChooser.java,v 1.1 2007/12/16 11:11:34 jesse Exp $
+// $Id: NodeNameKeyChooser.java,v 1.2 2008/03/23 19:06:25 jim Exp $
 
 package us.temerity.pipeline.plugin.NodeNameKeyChooser.v2_3_15;
 
@@ -14,7 +14,16 @@ import us.temerity.pipeline.param.key.StringKeyParam;
 
 /**
  * Key Chooser that uses a regular expression match against the node name to determine
- * whether the key should be on.
+ * whether the key should be on.<P> 
+ * 
+ * This key chooser defines the following parameters: <BR>
+ * 
+ * <DIV style="margin-left: 40px;">
+ *   Node Pattern <BR>
+ *   <DIV style="margin-left: 40px;">
+ *     The regular expression to match against the node name.
+ *   </DIV> <BR>
+ * </DIV> <BR>
  */
 public 
 class NodeNameKeyChooser

@@ -1,4 +1,4 @@
-// $Id: TaskTypeKeyChooser.java,v 1.2 2008/01/28 12:10:46 jesse Exp $
+// $Id: TaskTypeKeyChooser.java,v 1.3 2008/03/23 19:06:26 jim Exp $
 
 package us.temerity.pipeline.plugin.TaskTypeKeyChooser.v2_3_15;
 
@@ -16,6 +16,15 @@ import us.temerity.pipeline.param.key.KeyParam;
 /**
  * Key Chooser that matches against the TaskType field on the TaskAnnotation to determine
  * whether the key should be on.
+ * 
+ * This key chooser defines the following parameters: <BR>
+ * 
+ * <DIV style="margin-left: 40px;">
+ *   Task Type<BR>
+ *   <DIV style="margin-left: 40px;">
+ *     The type of production goal the node is used to achieve.
+ *   </DIV> <BR>
+ * </DIV> <BR>
  */
 public 
 class TaskTypeKeyChooser
