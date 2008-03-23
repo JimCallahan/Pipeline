@@ -1,4 +1,4 @@
-// $Id: TrackingBuilder.java,v 1.12 2008/03/19 22:37:26 jim Exp $
+// $Id: TrackingBuilder.java,v 1.13 2008/03/23 05:09:58 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -126,7 +126,7 @@ class TrackingBuilder
   {
     super("Tracking",
           "A builder for constructing the nodes associated with the Tracking task.", 
-          mclient, qclient, builderInfo, studioDefs, projectNamer, shotNamer);
+          mclient, qclient, builderInfo, studioDefs, projectNamer, shotNamer); 
 
     /* initialize the project namer */ 
     initProjectNamer(); 
@@ -414,9 +414,9 @@ class TrackingBuilder
 	  sources.add(pTrackVerifyGlobalsNodeName); 
 	  sources.add(pResolutionNodeName); 
 
-	  CatMelStage stage = 
-	    new CatMelStage(stageInfo, pContext, pClient, 
-			    trackingPreRenderScriptNodeName, sources);
+	  CatScriptStage stage = 
+	    new CatScriptStage(stageInfo, pContext, pClient, 
+			       trackingPreRenderScriptNodeName, "mel", sources);
 	  addTaskAnnotation(stage, NodePurpose.Prepare); 
 	  stage.build();  
 	}

@@ -1,8 +1,8 @@
-// $Id: DistortedGridStage.java,v 1.4 2008/02/07 14:14:33 jim Exp $
+// $Id: HfsReadCmdStage.java,v 1.1 2008/03/23 05:09:58 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
 
-import com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.*;
+import com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.*; 
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
@@ -12,18 +12,16 @@ import us.temerity.pipeline.stages.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   D I S T O R T E D   G R I D   S T A G E                                                */
+/*   H F S   R E A D   C M D   S T A G E                                                    */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Creates a placeholder image for the post-PFTrack distored grid by copying the original
- * grid image. 
+ * Creates a node which uses the HfsReadCmd action.
  */ 
 public 
-class DistortedGridStage 
+class HfsReadCmdStage 
   extends StandardStage
-  implements FinalizableStage
-{
+{ 
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
@@ -43,36 +41,44 @@ class DistortedGridStage
    * @param nodeName
    *   The name of the node that is to be created.
    * 
-   * @param gridName
-   *   The name of the original grid node.
+   * @param fileSource
+   *   The name of the node to read in.
    * 
-   * @param pftrackName
-   *   The name of the PFTrack scene node.
+   * @param operatorName
+   *   The name of the Houdini operator who's parameter which will be set by the generated
+   *   command file.
+   * 
+   * @param parameterName
+   *   The name of the Houdini operator's parameter which will be set by the generated
+   *   command file.
    */
   public
-  DistortedGridStage
+  HfsReadCmdStage
   (
    StageInformation stageInfo,
    UtilContext context,
    MasterMgrClient client, 
    String nodeName, 
-   String gridName, 
-   String pftrackName
+   String fileSource, 
+   String operatorName,
+   String parameterName
   )
     throws PipelineException
   {
-    super("PFTrackBuild", 
-          "Creates a node which uses the PFTrackBuild action.", 
+    super("HfsReadCmd", 
+	 "Creates a node which uses the HfsReadCmd action.", 
           stageInfo, context, client, 
-          nodeName, "tif", 
+          nodeName, "cmd", 
           null, 
-          new PluginContext("Copy"));   
+	  new PluginContext("HfsReadCmd"));
 
-    pOriginalGridNodeName = gridName;
-    addLink(new LinkMod(gridName, LinkPolicy.Dependency));
-    addLink(new LinkMod(pftrackName, LinkPolicy.Association, LinkRelationship.None, null));
+    addLink(new LinkMod(fileSource, LinkPolicy.Dependency));
+    addSingleParamValue("FileSource", fileSource); 
+    
+    addSingleParamValue("OperatorName", operatorName); 
+    addSingleParamValue("ParameterName", parameterName); 
   }
-
+  
   
 
   /*----------------------------------------------------------------------------------------*/
@@ -86,44 +92,15 @@ class DistortedGridStage
   public String 
   getStageFunction()
   {
-    return ICStageFunction.aRenderedImage;
+    return StageFunction.aScriptFile;
   }
 
 
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   F I N A L I Z A B L E   S T A G E                                                    */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Finishes off the work of the stage after it has been queued.
-   */
-  public void 
-  finalizeStage() 
-    throws PipelineException
-  {
-    removeAction(pRegisteredNodeName);
-    if(pRegisteredNodeMod.getSourceNames().contains(pOriginalGridNodeName)) 
-      pClient.unlink(getAuthor(), getView(), pRegisteredNodeName, pOriginalGridNodeName);
-  }
-
-
-
+   
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
  
-  private static final long serialVersionUID = 7065661211422289862L;
-
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   I N T E R N A L S                                                                    */
-  /*----------------------------------------------------------------------------------------*/
- 
-  /**
-   * The name of the original grid node.
-   */ 
-  private String pOriginalGridNodeName; 
+  private static final long serialVersionUID = -6641623862137648357L;
 
 }

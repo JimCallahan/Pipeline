@@ -1,4 +1,4 @@
-// $Id: PlatesBuilder.java,v 1.22 2008/03/17 17:49:15 jim Exp $
+// $Id: PlatesBuilder.java,v 1.23 2008/03/23 05:09:58 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -122,12 +122,12 @@ class PlatesBuilder
   {
     super("Plates",
           "A builder for constructing the nodes associated with the Plates task.", 
-          mclient, qclient, builderInfo, studioDefs, projectNamer, shotNamer);
+          mclient, qclient, builderInfo, studioDefs, 
+	  projectNamer, shotNamer, TaskType.Plates); 
 
     /* initialize fields */ 
     {
       pMiscReferenceNodeNames = new TreeSet<String>(); 
-      pFinalStages = new ArrayList<FinalizableStage>(); 
     }
 
     /* setup builder parameters */ 
@@ -164,9 +164,6 @@ class PlatesBuilder
       ConstructPass build = new BuildNodesPass();
       addConstructPass(build);
       
-      ConstructPass qdc = new QueueDisableCleanupPass(); 
-      addConstructPass(qdc); 
-
       ConstructPass qd = new QueueDisablePass(); 
       addConstructPass(qd); 
     }
@@ -226,16 +223,16 @@ class PlatesBuilder
   {
     ArrayList<PluginContext> plugins = new ArrayList<PluginContext>();	
     plugins.add(new PluginContext("LensInfo", "ICVFX"));	
-    //plugins.add(new PluginContext("PFTrackBuild", "ICVFX"));	
     plugins.add(new PluginContext("Touch")); 
     plugins.add(new PluginContext("Copy"));   		
     plugins.add(new PluginContext("MayaResolution"));  
-    plugins.add(new PluginContext("NukeCatComp")); 		
-    plugins.add(new PluginContext("NukeExtract"));		
-    plugins.add(new PluginContext("NukeReformat"));		
+    plugins.add(new PluginContext("NukeSubstComp")); 		
     plugins.add(new PluginContext("NukeRead"));			
     plugins.add(new PluginContext("NukeRescale")); 		
-    plugins.add(new PluginContext("NukeThumbnail"));          
+    plugins.add(new PluginContext("NukeThumbnail"));   		
+    plugins.add(new PluginContext("HfsRender", "Temerity", 
+				  new Range<VersionID>(new VersionID("2.4.1"), null))); 
+    plugins.add(new PluginContext("HfsReadCmd"));          
     plugins.add(new PluginContext("DjvUnixQt"));			
 
     MappedArrayList<String, PluginContext> toReturn = 
@@ -246,81 +243,6 @@ class PlatesBuilder
   }
 
   
-
-  /*----------------------------------------------------------------------------------------*/
-  /*  T A S K   A N N O T A T I O N S                                                       */
-  /*----------------------------------------------------------------------------------------*/
- 
-  /** 
-   * Adds a SubmitTask, ApproveTask or CommonTask annotation to the set of annotation 
-   * plugins which will be added to the node built by the given Stage.<P> 
-   * 
-   * @param stage
-   *   The stage to be modified.
-   * 
-   * @param builderID
-   *   The unique ID of the approval builder.
-   */ 
-  protected void
-  addAproveTaskAnnotation
-  (
-   BaseStage stage, 
-   BuilderID builderID
-  )
-    throws PipelineException
-  {
-    addApproveTaskAnnotation(stage,
-			     pShotNamer.getProjectName(), pShotNamer.getFullShotName(),
-			     TaskType.Plates.toString(), builderID);
-  }
-
-  /** 
-   * Adds a SubmitTask, ApproveTask or CommonTask annotation to the set of annotation 
-   * plugins which will be added to the node built by the given Stage.<P> 
-   * 
-   * @param stage
-   *   The stage to be modified.
-   * 
-   * @param purpose
-   *   The purpose of the node within the task.
-   */ 
-  protected void
-  addTaskAnnotation
-  (
-   BaseStage stage,
-   NodePurpose purpose
-  )
-    throws PipelineException
-  {
-    addTaskAnnotation(stage, purpose, 
-                      pShotNamer.getProjectName(), pShotNamer.getFullShotName(),
-                      TaskType.Plates.toString()); 
-  }
-
-  /** 
-   * Adds a SubmitTask, ApproveTask or CommonTask annotation to the set of annotation 
-   * plugins on the given node. <P> 
-   * 
-   * @param nodeName
-   *   The fully resolved name of the node to be annotated. 
-   * 
-   * @param purpose
-   *   The purpose of the node within the task.
-   */ 
-  protected void
-  addTaskAnnotation
-  (
-   String nodeName, 
-   NodePurpose purpose
-  )
-    throws PipelineException
-  {
-    addTaskAnnotation(nodeName, purpose, 
-                      pShotNamer.getProjectName(), pShotNamer.getFullShotName(),
-                      TaskType.Plates.toString()); 
-  }
-
-
 
   /*----------------------------------------------------------------------------------------*/
   /*   S E T U P   P A S S E S                                                              */
@@ -349,20 +271,14 @@ class PlatesBuilder
 
       /* register the required (locked) nodes */ 
       {
-	pPlatesRedCheckerNodeName = pProjectNamer.getPlatesRedCheckerNode();
-	pRequiredNodeNames.add(pPlatesRedCheckerNodeName); 
-	
-	pPlatesGreenCheckerNodeName = pProjectNamer.getPlatesGreenCheckerNode();
-	pRequiredNodeNames.add(pPlatesGreenCheckerNodeName); 
-	
-	pGridGradeWarpNodeName = pProjectNamer.getGridGradeWarpNode();
-	pRequiredNodeNames.add(pGridGradeWarpNodeName); 
-	
-	pGridGradeDiffNodeName = pProjectNamer.getGridGradeDiffNode();
-	pRequiredNodeNames.add(pGridGradeDiffNodeName); 
-	
-	pBlackOutsideNodeName = pProjectNamer.getBlackOutsideNode();
-	pRequiredNodeNames.add(pBlackOutsideNodeName); 
+	pPlatesCameraGridNodeName = pProjectNamer.getPlatesCameraGridNode();
+	pRequiredNodeNames.add(pPlatesCameraGridNodeName); 
+
+	pPlatesUndistortNukeNodeName = pProjectNamer.getPlatesUndistortNukeNode();
+	pRequiredNodeNames.add(pPlatesUndistortNukeNodeName); 
+
+	pPlatesUndistortHipNodeName = pProjectNamer.getPlatesUndistortHipNode();
+	pRequiredNodeNames.add(pPlatesUndistortHipNodeName); 
       }
     }
     
@@ -464,6 +380,56 @@ class PlatesBuilder
           pRequiredNodeNames.add(nodeName); 
         }
       }
+
+      /* get the required lens distortion images exported from PFTrack 
+          and validate the frame range of these images */ 
+      { 
+	FrameRange dotGridRange = null;
+	{
+	  String nname = pShotNamer.getDotGridImageNode(); 
+	  try {
+	    NodeVersion vsn = pClient.getCheckedInVersion(nname, null); 
+	    dotGridRange = vsn.getPrimarySequence().getFrameRange(); 
+	    pDotGridImageNodeName = vsn.getName(); 
+	    pRequiredNodeNames.add(pDotGridImageNodeName); 
+	  }
+	  catch(PipelineException ex) {
+	    throw new PipelineException
+	      ("Somehow no checked-in version of the Dot Grid images node " + 
+	       "(" + nname + ") exported from PFTrack exists!"); 
+	  }
+	}
+
+	FrameRange uvWedgeRange = null;
+	{
+	  String nname = pShotNamer.getUvWedgeImageNode(); 
+	  try {
+	    NodeVersion vsn = pClient.getCheckedInVersion(nname, null); 
+	    uvWedgeRange = vsn.getPrimarySequence().getFrameRange(); 
+	    pUvWedgeImageNodeName = vsn.getName(); 
+	    pRequiredNodeNames.add(pUvWedgeImageNodeName); 
+	  }
+	  catch(PipelineException ex) {
+	    throw new PipelineException
+	      ("Somehow no checked-in version of the UV Wedge images node " + 
+	       "(" + nname + ") exported from PFTrack exists!"); 
+	  }
+	}
+	
+	if(!dotGridRange.equals(uvWedgeRange)) 
+	  throw new PipelineException
+	    ("Somehow the frame range of the Dot Grid images (" + dotGridRange + ") was " + 
+	     "not consistent with the frame range of the UV Wedge images " + 
+	     "(" + uvWedgeRange + ")!"); 
+
+	if(!dotGridRange.isSingle() && !dotGridRange.equals(pFrameRange)) 
+	  throw new PipelineException
+	    ("Somehow the frame range of the Dot Grid and UV Wedge images " + 
+	     "(" + dotGridRange + ") was more than a single frame, but is not consistent " + 
+	     "with the frame range of the plates (" + pFrameRange + ")!"); 
+
+	pDistortRange = dotGridRange; 
+      }
     }
 
     private static final long serialVersionUID = 7830642124642481656L;
@@ -516,11 +482,13 @@ class PlatesBuilder
 	}
       }
 
-      /* add Edit annotations to all reference images and plates */ 
+      /* add Edit annotations to all undistort images, reference images and plates */ 
       {
-	addTaskAnnotation(pBackgroundPlateNodeName, NodePurpose.Edit); 
+	addMissingTaskAnnotation(pDotGridImageNodeName, NodePurpose.Edit); 
+	addMissingTaskAnnotation(pUvWedgeImageNodeName, NodePurpose.Edit); 
+	addMissingTaskAnnotation(pBackgroundPlateNodeName, NodePurpose.Edit); 
 	for(String name : pMiscReferenceNodeNames) 
-	  addTaskAnnotation(name, NodePurpose.Edit); 
+	  addMissingTaskAnnotation(name, NodePurpose.Edit); 
       }
 
       /* the submit network */
@@ -543,84 +511,92 @@ class PlatesBuilder
 	  stage.build(); 
 	}
 
-	String solveDistortionNodeName = pShotNamer.getSolveDistortionNode(); 
+	String dotGridCommandNodeName = pShotNamer.getDotGridCommandNode();
 	{
-	  PFTrackBuildStage stage = 
-	    new PFTrackBuildStage(stageInfo, pContext, pClient, 
-				  solveDistortionNodeName, pBackgroundPlateNodeName, 
-				  vfxShotDataNodeName); 
-	  stage.addLink(new LinkMod(pPlatesRedCheckerNodeName, 
-				    LinkPolicy.Association, LinkRelationship.None, null));
-	  addTaskAnnotation(stage, NodePurpose.Edit); 
-	  stage.build();  
-	  addToDisableList(solveDistortionNodeName);
-	}
-	
-	pDistortedGridNodeName = pShotNamer.getDistortedGridNode(); 
-	{
-	  DistortedGridStage stage = 
-	    new DistortedGridStage(stageInfo, pContext, pClient, 
-				   pDistortedGridNodeName, pPlatesRedCheckerNodeName, 
-				   solveDistortionNodeName);
+	  HfsReadCmdStage stage = 
+	    new HfsReadCmdStage(stageInfo, pContext, pClient,
+				dotGridCommandNodeName, pDotGridImageNodeName, 
+				"/img/IMAGES_FROM_PFTRACK/UNDISTORTED_GRID", "filename"); 
 	  addTaskAnnotation(stage, NodePurpose.Prepare); 
-	  stage.build();  
-	  pFinalStages.add(stage);
+	  stage.build(); 
 	}
 
-	String readDistortedNodeName = pShotNamer.getReadDistortedNode(); 
+	String uvWedgeCommandNodeName = pShotNamer.getUvWedgeCommandNode(); 
+	{
+	  HfsReadCmdStage stage = 
+	    new HfsReadCmdStage(stageInfo, pContext, pClient,
+				uvWedgeCommandNodeName, pUvWedgeImageNodeName, 
+				"/img/IMAGES_FROM_PFTRACK/UNDISTORTED_WEDGE", "filename"); 
+	  addTaskAnnotation(stage, NodePurpose.Prepare); 
+	  stage.build(); 
+	}
+
+	pRenderUvCommandNodeName = pShotNamer.getRenderUvCommandNode();
+	{
+	  LinkedList<String> sources = new LinkedList<String>();  
+	  sources.add(dotGridCommandNodeName); 
+	  sources.add(uvWedgeCommandNodeName); 
+	  
+	  CatScriptStage stage = 
+	    new CatScriptStage(stageInfo, pContext, pClient, 
+			       pRenderUvCommandNodeName, "cmd", sources);
+	  addTaskAnnotation(stage, NodePurpose.Prepare); 
+	  stage.build();  
+	}
+
+	String undistortUvImageNodeName = pShotNamer.getUndistortUvImageNode();
+	{
+	  HfsRenderStage stage = 
+	    new HfsRenderStage(stageInfo, pContext, pClient,
+			       undistortUvImageNodeName, pDistortRange, 4, "tif", 
+			       pPlatesUndistortHipNodeName, "undistort_uv_map", null, true, 
+			       pRenderUvCommandNodeName, null, null, null); 
+	  stage.addLink(new LinkMod(pPlatesCameraGridNodeName, LinkPolicy.Dependency));  
+	  addTaskAnnotation(stage, NodePurpose.Product); 
+	  stage.build(); 
+	}
+
+	String readUndistortUvImageNodeName = pShotNamer.getReadUndistortUvImageNode();
 	{
 	  NukeReadStage stage = 
 	    new NukeReadStage(stageInfo, pContext, pClient, 
-			      readDistortedNodeName, pDistortedGridNodeName); 
-	  addTaskAnnotation(stage, NodePurpose.Prepare); 
-	  stage.build();  
-	}
-	
-	String reformatOriginalNodeName = pShotNamer.getReformatOriginalNode(); 
-	{
-	  NukeReadReformatStage stage = 
-	    new NukeReadReformatStage(stageInfo, pContext, pClient, 
-				      reformatOriginalNodeName, 
-				      pPlatesGreenCheckerNodeName, pDistortedGridNodeName); 
+			      readUndistortUvImageNodeName, undistortUvImageNodeName, 
+			      "Nearest Frame"); 
 	  addTaskAnnotation(stage, NodePurpose.Prepare); 
 	  stage.build();  
 	}
 
-	pGridAlignNodeName = pShotNamer.getGridAlignNode();
+	String readPlatesNodeName = pShotNamer.getReadPlatesNode(); 
 	{
-	  LinkedList<String> sources = new LinkedList<String>(); 
-	  sources.add(reformatOriginalNodeName); 
-	  sources.add(pGridGradeWarpNodeName); 
-	  sources.add(readDistortedNodeName); 
-	  sources.add(pGridGradeDiffNodeName); 
- 
-	  NukeCatStage stage = 
-	    new NukeCatStage(stageInfo, pContext, pClient, 
-			     pGridAlignNodeName, sources); 
-	  stage.addLink(new LinkMod(pPlatesGreenCheckerNodeName, LinkPolicy.Reference));
-	  stage.addLink(new LinkMod(pDistortedGridNodeName, LinkPolicy.Reference));
-	  addTaskAnnotation(stage, NodePurpose.Edit); 
-	  stage.build(); 
+	  NukeReadStage stage = 
+	    new NukeReadStage(stageInfo, pContext, pClient, 
+			      readPlatesNodeName, pBackgroundPlateNodeName); 
+	  addTaskAnnotation(stage, NodePurpose.Prepare); 
+	  stage.build();  
 	}
 	
-	String gridAlignImageNodeName = pShotNamer.getGridAlignImageNode();
+	pUndistorted2kPlateNodeName = pShotNamer.getUndistorted2kPlateNode(); 
 	{
-	  LinkedList<String> nukeScripts = new LinkedList<String>(); 
-	  nukeScripts.add(pGridAlignNodeName); 
+	  TreeMap<String,String> subst = new TreeMap<String,String>(); 
+	  subst.put(readUndistortUvImageNodeName, "uvImage"); 
+	  subst.put(readPlatesNodeName, "plate"); 
 
-	  NukeCatCompStage stage = 
-	    new NukeCatCompStage(stageInfo, pContext, pClient,
-				 gridAlignImageNodeName, "tif", nukeScripts);  
+	  NukeSubstCompStage stage = 
+	    new NukeSubstCompStage
+	    (stageInfo, pContext, pClient, 
+	     pUndistorted2kPlateNodeName, pFrameRange, 4, "tif", 
+	     "Append & Process", pPlatesUndistortNukeNodeName, subst); 
 	  addTaskAnnotation(stage, NodePurpose.Focus); 
 	  stage.build(); 
 	}
 
-	String gridAlignThumbNodeName = pShotNamer.getGridAlignThumbNode();
+	String undistorted2kPlateThumbNodeName = pShotNamer.getUndistorted2kPlateThumbNode();
 	{
 	  NukeThumbnailStage stage = 
-	    new NukeThumbnailStage(stageInfo, pContext, pClient,
-				   gridAlignThumbNodeName, "tif", gridAlignImageNodeName, 
-				   1, 150, 1.0, true, true, new Color3d()); 
+	    new NukeThumbnailStage
+	      (stageInfo, pContext, pClient,
+	       undistorted2kPlateThumbNodeName, "tif", pUndistorted2kPlateNodeName, 
+	       1, 150, 1.0, true, true, new Color3d()); 
 	  addTaskAnnotation(stage, NodePurpose.Thumbnail); 
 	  stage.build(); 
 	}
@@ -628,8 +604,9 @@ class PlatesBuilder
 	String submitNodeName = pShotNamer.getPlatesSubmitNode();
 	{
 	  TreeSet<String> sources = new TreeSet<String>();
-	  sources.add(gridAlignThumbNodeName);
 	  sources.add(vfxRefNodeName);
+	  sources.add(vfxShotDataNodeName);
+	  sources.add(undistorted2kPlateThumbNodeName);
 
 	  TargetStage stage = 
 	    new TargetStage(stageInfo, pContext, pClient, 
@@ -652,40 +629,14 @@ class PlatesBuilder
 	  stage.build(); 
 	}
 
-	String lensWarpNodeName = pShotNamer.getLensWarpNode(); 
+	String approvedUndistorted2kPlateNodeName = 
+	  pShotNamer.getApprovedUndistorted2kPlateNode(); 
 	{
-	  NukeExtractStage stage = 
-	    new NukeExtractStage(stageInfo, pContext, pClient, 
-				 lensWarpNodeName, pGridAlignNodeName, 
-				 "GridWarp", ".*", false); 
-	  addTaskAnnotation(stage, NodePurpose.Product); 
-	  stage.build(); 
-	}
-        
-	String reformatBgNodeName = pShotNamer.getReformatBgNode(); 
-	{
-	  NukeReadReformatStage stage = 
-	    new NukeReadReformatStage(stageInfo, pContext, pClient, 
-				      reformatBgNodeName, 
-				      pBackgroundPlateNodeName, pDistortedGridNodeName); 
-	  addTaskAnnotation(stage, NodePurpose.Prepare); 
-	  stage.build();  
-	}
-	
-	String undistorted2kPlateNodeName = pShotNamer.getUndistorted2kPlateNode(); 
-	{
-	  LinkedList<String> nukeScripts = new LinkedList<String>(); 
-	  nukeScripts.add(reformatBgNodeName); 
-	  nukeScripts.add(pBlackOutsideNodeName); 
-	  nukeScripts.add(lensWarpNodeName); 
-
-	  LinkedList<String> inputImages = new LinkedList<String>(); 
-	  inputImages.add(pBackgroundPlateNodeName); 
-
-	  NukeCatCompStage stage = 
-	    new NukeCatCompStage(stageInfo, pContext, pClient,
-				 undistorted2kPlateNodeName, pFrameRange, 4, "tif", 
-				 nukeScripts, inputImages);
+	  CopyImagesStage stage = 
+	    new CopyImagesStage
+	      (stageInfo, pContext, pClient, 
+	       approvedUndistorted2kPlateNodeName, pFrameRange, 4, "tif", 
+	       pUndistorted2kPlateNodeName);  
 	  addTaskAnnotation(stage, NodePurpose.Product); 
 	  stage.build(); 
 	}
@@ -695,7 +646,7 @@ class PlatesBuilder
 	  NukeRescaleStage stage = 
 	    new NukeRescaleStage(stageInfo, pContext, pClient,
 				 undistorted1kPlateNodeName, pFrameRange, 4, "tif",
-				 undistorted2kPlateNodeName, 0.5);
+				 approvedUndistorted2kPlateNodeName, 0.5);
 	  addTaskAnnotation(stage, NodePurpose.Product); 
 	  stage.build(); 
 	}
@@ -705,7 +656,7 @@ class PlatesBuilder
 	  DjvUnixQtStage stage = 
 	    new DjvUnixQtStage
 	      (stageInfo, pContext, pClient,
-	       undistorted1kQuickTimeNodeName, undistorted1kPlateNodeName, "24.");
+	       undistorted1kQuickTimeNodeName, undistorted1kPlateNodeName, "24");
 	  addTaskAnnotation(stage, NodePurpose.Product); 
 	  stage.build(); 
 	}
@@ -719,7 +670,19 @@ class PlatesBuilder
 	{
 	  MayaResolutionStage stage = 
 	    new MayaResolutionStage(stageInfo, pContext, pClient,
-				    resolutionNodeName, pDistortedGridNodeName, 1.0); 
+				    resolutionNodeName, pUndistorted2kPlateNodeName, 1.0); 
+	  addTaskAnnotation(stage, NodePurpose.Product); 
+	  stage.build(); 
+	}
+
+	String redistortUvImageNodeName = pShotNamer.getRedistortUvImageNode();
+	{
+	  HfsRenderStage stage = 
+	    new HfsRenderStage(stageInfo, pContext, pClient,
+			       redistortUvImageNodeName, pDistortRange, 4, "tif", 
+			       pPlatesUndistortHipNodeName, "redistort_uv_map", null, true, 
+			       pRenderUvCommandNodeName, null, null, null); 
+	  stage.addLink(new LinkMod(pPlatesCameraGridNodeName, LinkPolicy.Dependency));  
 	  addTaskAnnotation(stage, NodePurpose.Product); 
 	  stage.build(); 
 	}
@@ -728,9 +691,10 @@ class PlatesBuilder
 	{
 	  TreeSet<String> sources = new TreeSet<String>();
 	  sources.add(undistorted1kQuickTimeNodeName);
+	  sources.add(resolutionNodeName);
 	  sources.add(vfxRefNodeName);
 	  sources.add(vfxShotDataNodeName);
-	  sources.add(resolutionNodeName);
+	  sources.add(redistortUvImageNodeName);
 
 	  TargetStage stage = 
 	    new TargetStage(stageInfo, pContext, pClient, 
@@ -746,62 +710,6 @@ class PlatesBuilder
     private static final long serialVersionUID = -5216068758078265108L;
   }
    
-
-  /*----------------------------------------------------------------------------------------*/
-
-  protected 
-  class QueueDisableCleanupPass
-    extends ConstructPass
-  {
-    public 
-    QueueDisableCleanupPass()
-    {
-      super("Queue, Disable Actions and Cleanup", 
-	    "");
-    }
-    
-    /**
-     * Return both finalizable stage nodes and nodes which will have their actions
-     * disabled to be queued now.
-     */ 
-    @Override
-    public TreeSet<String> 
-    preBuildPhase()
-    {
-      TreeSet<String> regenerate = new TreeSet<String>();
-
-      regenerate.addAll(getDisableList());
-      for(FinalizableStage stage : pFinalStages) 
- 	regenerate.add(stage.getNodeName());
-
-      return regenerate;
-    }
-    
-    /**
-     * Cleanup any temporary node structures used setup the network and 
-     * disable the actions of the newly regenerated nodes.
-     * 
-     * Then register the second pass nodes to be queued and disabled... 
-     */ 
-    @Override
-    public void 
-    buildPhase() 
-      throws PipelineException
-    {
-      /* process first pass nodes first */ 
-      for(FinalizableStage stage : pFinalStages) 
-	stage.finalizeStage();
-      disableActions();
-      
-      /* reset the disable list to clear out first pass nodes */ 
-      clearDisableList();
-
-      /* register second level nodes to be disabled */ 
-      addToDisableList(pGridAlignNodeName);
-    }
-    
-    private static final long serialVersionUID = 4574894365632367362L;
-  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -859,9 +767,22 @@ class PlatesBuilder
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The stages which require running their finalizeStage() method before check-in.
+   * The fully resolved name of the node containing the undistorted camera grid geometry 
+   * file.
    */ 
-  private ArrayList<FinalizableStage> pFinalStages; 
+  private String pPlatesCameraGridNodeName; 
+
+  /**
+   * The fully resolved name of the node containing the master Nuke script used to 
+   * undistort the plates. 
+   */ 
+  private String pPlatesUndistortNukeNodeName; 
+
+  /**
+   * The fully resolved name of the node containing Houdini scene which generates the
+   * undistored UV map used by the master undistort Nuke script.
+   */ 
+  private String pPlatesUndistortHipNodeName; 
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -870,7 +791,8 @@ class PlatesBuilder
    * The fully resolved name and frame range of background plates node. 
    */ 
   private String pBackgroundPlateNodeName;
-  private FrameRange pFrameRange; 
+  private FrameRange pFrameRange;
+  private FrameRange pDistortRange; 
   
   /**
    * The fully resolved names of all reference image nodes.
@@ -878,30 +800,32 @@ class PlatesBuilder
   private TreeSet<String> pMiscReferenceNodeNames; 
 
   /**
-   * The fully resolved name of the original undistored checkerboard nodes.
+   * The fully resolved name of the node containing the undistorted grid dots image
+   * exported from PFTrack and the Houdini command file which imports it.
    */ 
-  private String pPlatesRedCheckerNodeName; 
-  private String pPlatesGreenCheckerNodeName; 
+  private String pDotGridImageNodeName;
+  private String pDotGridCommandNodeName;
 
   /**
-   * The fully resolved name of the node containing the distorted reference 
-   * grid image exported from the PFTrack scene. 
+   * The fully resolved name of the node containing the undistorted UV map image
+   * exported from PFTrack and the Houdini command file which imports it.
    */ 
-  private String pDistortedGridNodeName; 
+  private String pUvWedgeImageNodeName;
+  private String pUvWedgeCommandNodeName;
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Miscellaneous Nuke script fragements used in the undistort process.
+   * The fully resolved name of the node containing combined pre-render Houdini
+   * command script which loads the undistorted UV wedge and grid dots images.
    */ 
-  private String pGridGradeWarpNodeName; 
-  private String pGridGradeDiffNodeName;
-  private String pBlackOutsideNodeName; 
+  private String pRenderUvCommandNodeName; 
 
   /**
-   * The fully resolved name of the node containing a Nuke script used by
-   * artists to manually match the distortion of the PFTrack exported grid with the 
-   * original reference grid.
+   * The fully resolved name of the node containing the undistorted/linearized
+   * ~2k plate images.
    */ 
-  private String pGridAlignNodeName;
-
+  private String pUndistorted2kPlateNodeName; 
 
 }

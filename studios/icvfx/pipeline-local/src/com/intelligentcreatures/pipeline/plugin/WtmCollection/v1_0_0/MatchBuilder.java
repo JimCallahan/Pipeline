@@ -1,4 +1,4 @@
-// $Id: MatchBuilder.java,v 1.10 2008/03/19 22:36:49 jim Exp $
+// $Id: MatchBuilder.java,v 1.11 2008/03/23 05:09:58 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -108,7 +108,8 @@ class MatchBuilder
   {
     super("Match",
           "A builder for constructing the nodes associated with the Match task.", 
-          mclient, qclient, builderInfo, studioDefs, projectNamer, shotNamer);
+          mclient, qclient, builderInfo, studioDefs, 
+	  projectNamer, shotNamer, TaskType.Match); 
 
     /* setup builder parameters */ 
     {
@@ -203,81 +204,6 @@ class MatchBuilder
   }
 
   
-
-  /*----------------------------------------------------------------------------------------*/
-  /*  T A S K   A N N O T A T I O N S                                                       */
-  /*----------------------------------------------------------------------------------------*/
- 
-  /** 
-   * Adds a SubmitTask, ApproveTask or CommonTask annotation to the set of annotation 
-   * plugins which will be added to the node built by the given Stage.<P> 
-   * 
-   * @param stage
-   *   The stage to be modified.
-   * 
-   * @param builderID
-   *   The unique ID of the approval builder.
-   */ 
-  protected void
-  addAproveTaskAnnotation
-  (
-   BaseStage stage, 
-   BuilderID builderID
-  )
-    throws PipelineException
-  {
-    addApproveTaskAnnotation(stage,
-			     pShotNamer.getProjectName(), pShotNamer.getFullShotName(),
-			     TaskType.Match.toString(), builderID);
-  }
-
-  /** 
-   * Adds a SubmitTask, ApproveTask or CommonTask annotation to the set of annotation 
-   * plugins which will be added to the node built by the given Stage.<P> 
-   * 
-   * @param stage
-   *   The stage to be modified.
-   * 
-   * @param purpose
-   *   The purpose of the node within the task.
-   */ 
-  protected void
-  addTaskAnnotation
-  (
-   BaseStage stage,
-   NodePurpose purpose
-  )
-    throws PipelineException
-  {
-    addTaskAnnotation(stage, purpose, 
-                      pShotNamer.getProjectName(), pShotNamer.getFullShotName(),
-                      TaskType.Match.toString()); 
-  }
-
-  /** 
-   * Adds a SubmitTask, ApproveTask or CommonTask annotation to the set of annotation 
-   * plugins on the given node. <P> 
-   * 
-   * @param nodeName
-   *   The fully resolved name of the node to be annotated. 
-   * 
-   * @param purpose
-   *   The purpose of the node within the task.
-   */ 
-  protected void
-  addTaskAnnotation
-  (
-   String nodeName, 
-   NodePurpose purpose
-  )
-    throws PipelineException
-  {
-    addTaskAnnotation(nodeName, purpose, 
-                      pShotNamer.getProjectName(), pShotNamer.getFullShotName(),
-                      TaskType.Match.toString()); 
-  }
-
-
 
   /*----------------------------------------------------------------------------------------*/
   /*   S E T U P   P A S S E S                                                              */
@@ -486,9 +412,9 @@ class MatchBuilder
 	  sources.add(pTrackVerifyGlobalsNodeName); 
 	  sources.add(pResolutionNodeName); 
 
-	  CatMelStage stage = 
-	    new CatMelStage(stageInfo, pContext, pClient, 
-			    matchPreRenderScriptNodeName, sources);
+	  CatScriptStage stage = 
+	    new CatScriptStage(stageInfo, pContext, pClient, 
+			       matchPreRenderScriptNodeName, "mel", sources);
 	  addTaskAnnotation(stage, NodePurpose.Prepare); 
 	  stage.build();  
 	}

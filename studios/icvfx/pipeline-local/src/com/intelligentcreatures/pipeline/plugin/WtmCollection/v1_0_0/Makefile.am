@@ -20,7 +20,6 @@ java_DATA = \
   BlotBuilder.java \
   HdriBuilder.java \
   ICStageFunction.java \
-  InternalTrackingBuilder.java \
   MatchBuilder.java \
   MattesBuilder.java \
   NodePurpose.java \

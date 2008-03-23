@@ -1,4 +1,4 @@
-// $Id: ApproveTaskBuilder.java,v 1.5 2008/03/19 22:34:17 jim Exp $
+// $Id: ApproveTaskBuilder.java,v 1.6 2008/03/23 05:09:58 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -49,7 +49,7 @@ import java.util.*;
  */
 public 
 class ApproveTaskBuilder
-  extends BaseBuilder
+  extends BaseTaskBuilder
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -282,11 +282,12 @@ class ApproveTaskBuilder
 	     "does not exist!"); 
 
         boolean validated = false;
+	String approvePurpose = NodePurpose.Approve.toString();
         TreeMap<String,BaseAnnotation> annotations = pClient.getAnnotations(pApproveNode); 
         for(String aname : annotations.keySet()) {
 	  if(aname.equals("Task") || aname.startsWith("AltTask")) {
 	    BaseAnnotation annot = annotations.get(aname);
-	    if(lookupPurpose(pApproveNode, aname, annot).equals(aApprove)) { 
+	    if(lookupPurpose(pApproveNode, aname, annot).equals(approvePurpose)) { 
 	      
 	      /* save the task information */ 
 	      pProjectName = lookupProjectName(pApproveNode, aname, annot);
@@ -295,7 +296,7 @@ class ApproveTaskBuilder
 
 	      /* determine if the user running the builder should be allowed to 
 	           approve the task */ 	     
-	      String vised = (String) annot.getParamValue(aSupervisedBy);
+	      String vised = (String) annot.getParamValue(aAnnotSupervisedBy);
 	      if((vised != null) && (vised.length() > 0)) {
 		WorkGroups wgroups = pClient.getWorkGroups();
 		boolean isGroup = wgroups.isGroup(vised); 
@@ -303,8 +304,8 @@ class ApproveTaskBuilder
 		if((!isGroup && !vised.equals(author)) || 
 		   (isGroup && wgroups.isMemberOrManager(author, vised) == null)) 
 		  throw new PipelineException
-		    ("The " + aSupervisedBy + " parameter for the " + aApproveNode + " " +
-		     "(" + pApproveNode + ") is assigned to the " + 
+		    ("The " + aAnnotSupervisedBy + " parameter for the " + aApproveNode + 
+		     " (" + pApproveNode + ") is assigned to the " + 
 		     (isGroup ? "Pipeline work group [" + vised + "]" : 
 		      "user (" + vised + ")") + 
 		     ".  The (" + author + ") user is not allowed to approve the task!");
@@ -340,23 +341,24 @@ class ApproveTaskBuilder
 	    String projectName = lookupProjectName(pSubmitNode, aname, annot); 
 	    if(!projectName.equals(pProjectName)) 
 	      throw new PipelineException
-		("The " + aProjectName + " parameter supplied for the (" + aname + ") " + 
-		 "annotation on the submit node (" + pSubmitNode + ") does not match the " + 
-		 aProjectName + " parameter (" + pProjectName + ") of the approve node!"); 
+		("The " + aAnnotProjectName + " parameter supplied for the " + 
+		 "(" + aname + ") annotation on the submit node (" + pSubmitNode + ") " + 
+		 "does not match the " + aAnnotProjectName + " parameter " + 
+		 "(" + pProjectName + ") of the approve node!"); 
 
 	    String taskName = lookupTaskName(pSubmitNode, aname, annot); 
 	    if(!taskName.equals(pTaskName)) 
 	      throw new PipelineException
-		("The " + aTaskName + " parameter supplied for the (" + aname + ") " + 
+		("The " + aAnnotTaskName + " parameter supplied for the (" + aname + ") " + 
 		 "annotation on the submit node (" + pSubmitNode + ") does not match the " + 
-		 aTaskName + " parameter (" + pTaskName + ") of the approve node!"); 
+		 aAnnotTaskName + " parameter (" + pTaskName + ") of the approve node!"); 
 	    
 	    String taskType = lookupTaskType(pSubmitNode, aname, annot); 
 	    if(!taskType.equals(pTaskType)) 
 	      throw new PipelineException
-		("The " + aTaskType + " parameter supplied for the (" + aname + ") " + 
+		("The " + aAnnotTaskType + " parameter supplied for the (" + aname + ") " + 
 		 "annotation on the submit node (" + pSubmitNode + ") does not match the " + 
-		 aTaskType + " parameter (" + pTaskType + ") of the approve node!"); 
+		 aAnnotTaskType + " parameter (" + pTaskType + ") of the approve node!"); 
 	    
 	    validated = true;
 	    break;
@@ -458,140 +460,6 @@ class ApproveTaskBuilder
   }
 
 
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   H E L P E R S  (these should become part of a CommonTaskUtils eventually)            */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Lookup the value of the ProjectName annotation parameter.
-   * 
-   * @param name
-   *   The fully resolved name of the node having the given annotation.
-   * 
-   * @param aname
-   *   The name of the annotation instance.
-   * 
-   * @param annot
-   *   The annotation instance.
-   */ 
-  private String
-  lookupProjectName
-  (
-   String name, 
-   String aname, 
-   BaseAnnotation annot   
-  ) 
-    throws PipelineException
-  {
-    String projectName = (String) annot.getParamValue(aProjectName);
-    if(projectName == null) 
-      throw new PipelineException
-        ("No " + aProjectName + " parameter was specified for the (" + aname + ") " + 
-	 "annotation on the node (" + name + ")!"); 
-    
-    return projectName;
-  }
-
-  /**
-   * Lookup the value of the TaskName annotation parameter.
-   * 
-   * @param name
-   *   The fully resolved name of the node having the given annotation.
-   * 
-   * @param aname
-   *   The name of the annotation instance.
-   * 
-   * @param annot
-   *   The annotation instance.
-   */ 
-  private String
-  lookupTaskName
-  (
-   String name, 
-   String aname, 
-   BaseAnnotation annot   
-  ) 
-    throws PipelineException
-  {
-    String taskName = (String) annot.getParamValue(aTaskName);
-    if(taskName == null) 
-      throw new PipelineException
-        ("No " + aTaskName + " parameter was specified for the (" + aname + ") " + 
-	 "annotation on the node (" + name + ")!"); 
-
-    return taskName;
-  }
-
-  /**
-   * Lookup the value of the (Custom)TaskType annotation parameter.
-   * 
-   * @param name
-   *   The fully resolved name of the node having the given annotation.
-   * 
-   * @param aname
-   *   The name of the annotation instance.
-   * 
-   * @param annot
-   *   The annotation instance.
-   */ 
-  private String
-  lookupTaskType
-  (
-   String name, 
-   String aname, 
-   BaseAnnotation annot   
-  ) 
-    throws PipelineException
-  {
-    String taskType = (String) annot.getParamValue(aTaskType);
-    if(taskType == null) 
-      throw new PipelineException
-        ("No " + aTaskType + " parameter was specified for the (" + aname + ") " + 
-	 "annotation on the node (" + name + ")!"); 
-
-    if(taskType.equals(aCUSTOM)) {
-      taskType = (String) annot.getParamValue(aCustomTaskType);
-      if(taskType == null) 
-	throw new PipelineException
-	  ("No " + aCustomTaskType + " parameter was specified for the (" + aname + ") " + 
-	   "annotation on the node (" + name + ") even though the " + aTaskType + " " + 
-	   "parameter was set to (" + aCUSTOM + ")!"); 
-    }
-
-    return taskType;
-  }
-
-  /**
-   * Lookup the value of the TaskName annotation parameter.
-   * 
-   * @param name
-   *   The fully resolved name of the node having the given annotation.
-   * 
-   * @param aname
-   *   The name of the annotation instance.
-   * 
-   * @param annot
-   *   The annotation instance.
-   */ 
-  private String
-  lookupPurpose
-  (
-   String name, 
-   String aname, 
-   BaseAnnotation annot   
-  ) 
-    throws PipelineException
-  {
-    String purpose = (String) annot.getParamValue(aPurpose);
-    if(purpose == null) 
-      throw new PipelineException
-        ("No " + aPurpose + " parameter was specified for the (" + aname + ") " + 
-	 "annotation on the node (" + name + ")!"); 
-
-    return purpose;
-  }
-
  
 
   /*----------------------------------------------------------------------------------------*/
@@ -606,18 +474,7 @@ class ApproveTaskBuilder
   public static final String aApprovalMessage = "ApprovalMessage";
   public static final String aCheckInLevel    = "CheckInLevel";
 
-  public static final String aProjectName    = "ProjectName";
-  public static final String aTaskName       = "TaskName";
-  public static final String aTaskType       = "TaskType";
-  public static final String aCustomTaskType = "CustomTaskType";
-  public static final String aCUSTOM         = "[[CUSTOM]]";  
-  public static final String aSupervisedBy   = "SupervisedBy";
-
-  public static final String aPurpose   = "Purpose";
-  public static final String aSubmit    = "Submit";
-  public static final String aApprove   = "Approve";
-
-
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */

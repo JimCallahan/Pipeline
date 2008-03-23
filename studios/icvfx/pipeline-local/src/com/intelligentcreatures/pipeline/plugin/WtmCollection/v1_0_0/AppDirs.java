@@ -1,4 +1,4 @@
-// $Id: AppDirs.java,v 1.9 2008/03/13 16:26:27 jim Exp $
+// $Id: AppDirs.java,v 1.10 2008/03/23 05:09:58 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -64,6 +64,16 @@ enum AppDirs
    */ 
   Geo, 
 
+  /**
+   * Houdini's HIP scene files. 
+   */ 
+  Hip, 
+
+  /**
+   * Houdini's command file.
+   */ 
+  Cmd, 
+
 
   /*-- IMAGES ------------------------------------------------------------------------------*/
 
@@ -96,6 +106,16 @@ enum AppDirs
    * High dynamic range (HDR) images. 
    */ 
   HDR, 
+
+  /**
+   * Images used to compute the lens distortion.
+   */ 
+  Grids, 
+
+  /**
+   * Images containing UV values used in the lens distortion process.
+   */ 
+  UV, 
 
   /**
    * Generic texture images.

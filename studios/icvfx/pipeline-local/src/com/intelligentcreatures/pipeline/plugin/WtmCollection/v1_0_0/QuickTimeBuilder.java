@@ -1,4 +1,4 @@
-// $Id: QuickTimeBuilder.java,v 1.1 2008/03/19 22:42:41 jim Exp $
+// $Id: QuickTimeBuilder.java,v 1.2 2008/03/23 05:09:58 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -117,7 +117,7 @@ class QuickTimeBuilder
 	  "for delivery to the client or for internal review.", 
           mclient, qclient, builderInfo, 
 	  new StudioDefinitions(mclient, qclient, UtilContext.getDefaultUtilContext(mclient)),
-	  null, null); 
+	  null, null, null); 
    
     /* setup builder parameters */ 
     {
@@ -321,216 +321,6 @@ class QuickTimeBuilder
   }
 
   
-
-  /*----------------------------------------------------------------------------------------*/
-  /*  T A S K   A N N O T A T I O N S                                                       */
-  /*----------------------------------------------------------------------------------------*/
- 
-  /** 
-   * Adds a SubmitTask, ApproveTask or CommonTask annotation to the set of annotation 
-   * plugins which will be added to the node built by the given Stage.<P> 
-   * 
-   * @param stage
-   *   The stage to be modified.
-   * 
-   * @param builderID
-   *   The unique ID of the approval builder.
-   */ 
-//   protected void
-//   addAproveTaskAnnotation
-//   (
-//    BaseStage stage, 
-//    BuilderID builderID
-//   )
-//     throws PipelineException
-//   {
-//     addApproveTaskAnnotation(stage,
-// 			     pShotNamer.getProjectName(), pShotNamer.getFullShotName(),
-// 			     TaskType.QuickTime.toString(), builderID);
-//   }
-
-  /** 
-   * Adds a SubmitTask, ApproveTask or CommonTask annotation to the set of annotation 
-   * plugins which will be added to the node built by the given Stage.<P> 
-   * 
-   * @param stage
-   *   The stage to be modified.
-   * 
-   * @param purpose
-   *   The purpose of the node within the task.
-   */ 
-//   protected void
-//   addTaskAnnotation
-//   (
-//    BaseStage stage,
-//    NodePurpose purpose
-//   )
-//     throws PipelineException
-//   {
-//     addTaskAnnotation(stage, purpose, 
-//                       pShotNamer.getProjectName(), pShotNamer.getFullShotName(),
-//                       TaskType.QuickTime.toString()); 
-//   }
-
-  /** 
-   * Adds a SubmitTask, ApproveTask or CommonTask annotation to the set of annotation 
-   * plugins on the given node. <P> 
-   * 
-   * @param nodeName
-   *   The fully resolved name of the node to be annotated. 
-   * 
-   * @param purpose
-   *   The purpose of the node within the task.
-   */ 
-//   protected void
-//   addTaskAnnotation
-//   (
-//    String nodeName, 
-//    NodePurpose purpose
-//   )
-//     throws PipelineException
-//   {
-//     addTaskAnnotation(nodeName, purpose, 
-//                       pShotNamer.getProjectName(), pShotNamer.getFullShotName(),
-//                       TaskType.QuickTime.toString()); 
-//   }
-
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   H E L P E R S  (these should become part of a CommonTaskUtils eventually)            */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Lookup the value of the ProjectName annotation parameter.
-   * 
-   * @param name
-   *   The fully resolved name of the node having the given annotation.
-   * 
-   * @param aname
-   *   The name of the annotation instance.
-   * 
-   * @param annot
-   *   The annotation instance.
-   */ 
-  private String
-  lookupProjectName
-  (
-   String name, 
-   String aname, 
-   BaseAnnotation annot   
-  ) 
-    throws PipelineException
-  {
-    String projectName = (String) annot.getParamValue(aProjectName);
-    if(projectName == null) 
-      throw new PipelineException
-        ("No " + aProjectName + " parameter was specified for the (" + aname + ") " + 
-	 "annotation on the node (" + name + ")!"); 
-    
-    return projectName;
-  }
-
-  /**
-   * Lookup the value of the TaskName annotation parameter.
-   * 
-   * @param name
-   *   The fully resolved name of the node having the given annotation.
-   * 
-   * @param aname
-   *   The name of the annotation instance.
-   * 
-   * @param annot
-   *   The annotation instance.
-   */ 
-  private String
-  lookupTaskName
-  (
-   String name, 
-   String aname, 
-   BaseAnnotation annot   
-  ) 
-    throws PipelineException
-  {
-    String taskName = (String) annot.getParamValue(aTaskName);
-    if(taskName == null) 
-      throw new PipelineException
-        ("No " + aTaskName + " parameter was specified for the (" + aname + ") " + 
-	 "annotation on the node (" + name + ")!"); 
-
-    return taskName;
-  }
-
-  /**
-   * Lookup the value of the (Custom)TaskType annotation parameter.
-   * 
-   * @param name
-   *   The fully resolved name of the node having the given annotation.
-   * 
-   * @param aname
-   *   The name of the annotation instance.
-   * 
-   * @param annot
-   *   The annotation instance.
-   */ 
-  private String
-  lookupTaskType
-  (
-   String name, 
-   String aname, 
-   BaseAnnotation annot   
-  ) 
-    throws PipelineException
-  {
-    String taskType = (String) annot.getParamValue(aTaskType);
-    if(taskType == null) 
-      throw new PipelineException
-        ("No " + aTaskType + " parameter was specified for the (" + aname + ") " + 
-	 "annotation on the node (" + name + ")!"); 
-
-    if(taskType.equals(aCUSTOM)) {
-      taskType = (String) annot.getParamValue(aCustomTaskType);
-      if(taskType == null) 
-	throw new PipelineException
-	  ("No " + aCustomTaskType + " parameter was specified for the (" + aname + ") " + 
-	   "annotation on the node (" + name + ") even though the " + aTaskType + " " + 
-	   "parameter was set to (" + aCUSTOM + ")!"); 
-    }
-
-    return taskType;
-  }
-
-  /**
-   * Lookup the value of the TaskName annotation parameter.
-   * 
-   * @param name
-   *   The fully resolved name of the node having the given annotation.
-   * 
-   * @param aname
-   *   The name of the annotation instance.
-   * 
-   * @param annot
-   *   The annotation instance.
-   */ 
-  private String
-  lookupPurpose
-  (
-   String name, 
-   String aname, 
-   BaseAnnotation annot   
-  ) 
-    throws PipelineException
-  {
-    String purpose = (String) annot.getParamValue(aPurpose);
-    if(purpose == null) 
-      throw new PipelineException
-        ("No " + aPurpose + " parameter was specified for the (" + aname + ") " + 
-	 "annotation on the node (" + name + ")!"); 
-
-    return purpose;
-  }
-
-
 
   /*----------------------------------------------------------------------------------------*/
   /*   S E T U P   P A S S E S                                                              */
@@ -934,7 +724,6 @@ class QuickTimeBuilder
   private String pProjectName; 
   private String pSeqName;
   private String pShotName;
-  private TaskType pTaskType; 
 
   /**
    * The reason the deliverable was created.

@@ -1,8 +1,8 @@
-// $Id: PFTrackBuildStage.java,v 1.7 2008/02/13 21:31:57 jim Exp $
+// $Id: CatScriptStage.java,v 1.1 2008/03/23 05:09:58 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
 
-import com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.*;
+import com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.*; 
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
@@ -12,18 +12,15 @@ import us.temerity.pipeline.stages.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   P F T R A C K   B U I L D   S T A G E                                                  */
+/*   C A T   S C R I P T   S T A G E                                                        */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Creates a node which uses the PFTrackBuild action.<P> 
- * 
- * Actually, right now it just touches the file since we don't yet have a working 
- * PFTrackBuild action.
+ * Creates a node which concatenates several scripts together.
  */ 
 public 
-class PFTrackBuildStage 
-  extends StandardStage
+class CatScriptStage 
+  extends CatFilesStage
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -44,36 +41,28 @@ class PFTrackBuildStage
    * @param nodeName
    *   The name of the node that is to be created.
    * 
-   * @param platesName
-   *   The name of the scanned plates node.
+   * @param suffix
+   *   The target script file suffix. 
    * 
-   * @param vfxDataName
-   *   The name of VFX lens data node. 
+   * @param sources
+   *   The name of source MEL scripts. 
    */
   public
-  PFTrackBuildStage
+  CatScriptStage
   (
    StageInformation stageInfo,
    UtilContext context,
    MasterMgrClient client, 
    String nodeName, 
-   String platesName, 
-   String vfxDataName 
+   String suffix, 
+   LinkedList<String> sources
   )
     throws PipelineException
   {
-    super("PFTrackBuild", 
-          "Creates a node which uses the PFTrackBuild action.", 
-          stageInfo, 
-          context, 
-          client, 
-          nodeName, 
-          "pts", 
-          null, 
-          new PluginContext("Touch"));  
-
-    addLink(new LinkMod(platesName, LinkPolicy.Association, LinkRelationship.None, null));
-    addLink(new LinkMod(vfxDataName, LinkPolicy.Association, LinkRelationship.None, null));
+    super("CatScript", 
+	  "Creates a node which concatenates several scripts together.", 
+	  stageInfo, context, client, 
+	  nodeName, suffix, sources); 
   }
   
 
@@ -89,15 +78,15 @@ class PFTrackBuildStage
   public String 
   getStageFunction()
   {
-    return ICStageFunction.aPFTrackScene;
+    return StageFunction.aScriptFile;
   }
 
 
-
+   
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
  
-  private static final long serialVersionUID = -3670238520255972952L;
+  private static final long serialVersionUID = -3615496839409116232L;
 
 }

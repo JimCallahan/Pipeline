@@ -21,11 +21,12 @@ java_DATA = \
   BuildPreMatchStage.java \
   BuildTrackingExtractStage.java \
   BuildTrackingVerifyStage.java \
-  CatMelStage.java \
   CopyImagesStage.java \
+  CatScriptStage.java \
   CopyTrackingMarkersStage.java \
-  DistortedGridStage.java \
   DjvUnixQtStage.java \
+  HfsReadCmdStage.java \
+  HfsRenderStage.java \
   LensInfoStage.java \
   MatchGeoCacheStage.java \
   MatchMaskGeoStage.java \
@@ -41,8 +42,6 @@ java_DATA = \
   NukeRescaleStage.java \
   NukeSubstCompStage.java \
   NukeThumbnailStage.java \
-  PFTrackBuildStage.java \
-  PFTrackExportMayaStage.java \
   PrimaryHDRStage.java \
   RenderTaskVerifyStage.java \
   SoundtrackStage.java

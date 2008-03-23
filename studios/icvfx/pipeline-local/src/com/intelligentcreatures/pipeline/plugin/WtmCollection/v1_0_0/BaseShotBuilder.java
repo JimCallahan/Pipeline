@@ -1,4 +1,4 @@
-// $Id: BaseShotBuilder.java,v 1.9 2008/03/20 15:57:03 jim Exp $
+// $Id: BaseShotBuilder.java,v 1.10 2008/03/23 05:09:58 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -50,6 +50,9 @@ class BaseShotBuilder
    * 
    * @param shotNamer
    *   Provides the names of nodes and node directories which are shot specific.
+   * 
+   * @param taskType
+   *   The type of task this builder is constructing.
    */
   protected 
   BaseShotBuilder
@@ -61,7 +64,8 @@ class BaseShotBuilder
     BuilderInformation builderInfo, 
     StudioDefinitions studioDefs,
     ProjectNamer projectNamer, 
-    ShotNamer shotNamer
+    ShotNamer shotNamer, 
+    TaskType taskType
   )
     throws PipelineException
   {
@@ -74,6 +78,7 @@ class BaseShotBuilder
       if(pProjectNamer == null) 
 	pProjectNamer = new ProjectNamer(mclient, qclient, pStudioDefs);	
       pShotNamer = shotNamer;
+      pTaskType = taskType; 
 
       pRequiredNodeNames = new TreeSet<String>(); 
     }
@@ -161,6 +166,98 @@ class BaseShotBuilder
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+  /*  T A S K   A N N O T A T I O N S                                                       */
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /** 
+   * Adds an ApproveTask with a specific approval builder to the set of annotation 
+   * plugins which will be added to the node built by the given Stage.<P> 
+   * 
+   * @param stage
+   *   The stage to be modified.
+   * 
+   * @param builderID
+   *   The unique ID of the approval builder.
+   */ 
+  protected void
+  addAproveTaskAnnotation
+  (
+   BaseStage stage, 
+   BuilderID builderID
+  )
+    throws PipelineException
+  {
+    addApproveTaskAnnotation(stage,
+			     pShotNamer.getProjectName(), pShotNamer.getFullShotName(),
+			     pTaskType.toString(), builderID);
+  }
+
+  /** 
+   * Adds a SubmitTask, ApproveTask or CommonTask annotation to the set of annotation 
+   * plugins which will be added to the node built by the given Stage.<P> 
+   * 
+   * @param stage
+   *   The stage to be modified.
+   * 
+   * @param purpose
+   *   The purpose of the node within the task.
+   */ 
+  protected void
+  addTaskAnnotation
+  (
+   BaseStage stage,
+   NodePurpose purpose
+  )
+    throws PipelineException
+  {
+    addTaskAnnotation(stage, purpose, 
+                      pShotNamer.getProjectName(), pShotNamer.getFullShotName(),
+                      pTaskType.toString()); 
+  }
+
+  /** 
+   * Adds a SubmitTask, ApproveTask or CommonTask annotation to the set of annotation 
+   * plugins on the given node. 
+   * 
+   * @param nodeName
+   *   The fully resolved name of the node to be annotated. 
+   * 
+   * @param purpose
+   *   The purpose of the node within the task.
+   */ 
+  protected void
+  addTaskAnnotation
+  (
+   String nodeName, 
+   NodePurpose purpose
+  )
+    throws PipelineException
+  {
+    addTaskAnnotation(nodeName, purpose, 
+                      pShotNamer.getProjectName(), pShotNamer.getFullShotName(),
+                      pTaskType.toString()); 
+  }
+
+  
+  /** 
+   * Adds a SubmitTask, ApproveTask or CommonTask annotation to the set of annotation 
+   * plugins on the given node if it doesn't already exist. <P> 
+   */ 
+  protected void 
+  addMissingTaskAnnotation
+  (
+   String nodeName, 
+   NodePurpose purpose
+  ) 
+    throws PipelineException
+  {
+    addMissingTaskAnnotation(nodeName, purpose, 
+			     pShotNamer.getProjectName(), pShotNamer.getFullShotName(),
+			     pTaskType.toString()); 
+  }
+   
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   S E T U P   P A S S E S                                                              */
@@ -324,6 +421,11 @@ class BaseShotBuilder
    * Provides the names of nodes and node directories which are shot specific.
    */
   protected ShotNamer pShotNamer;
+
+  /**
+   * The type of task this builder is constructing.
+   */ 
+  protected TaskType pTaskType; 
 
 
   /*----------------------------------------------------------------------------------------*/

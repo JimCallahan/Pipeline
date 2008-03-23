@@ -1,4 +1,4 @@
-// $Id: HdriBuilder.java,v 1.5 2008/03/04 08:15:16 jesse Exp $
+// $Id: HdriBuilder.java,v 1.6 2008/03/23 05:09:58 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -132,7 +132,8 @@ class HdriBuilder
   {
     super("HDRI",
           "A builder for constructing the nodes associated with the HDRI task.", 
-          mclient, qclient, builderInfo, studioDefs, projectNamer, shotNamer);
+          mclient, qclient, builderInfo, studioDefs, 
+	  projectNamer, shotNamer, TaskType.HDRI); 
 
     /* setup builder parameters */ 
     {
@@ -221,81 +222,6 @@ class HdriBuilder
     toReturn.put(getToolset(), plugins);
 
     return toReturn;
-  }
-
-  
-
-  /*----------------------------------------------------------------------------------------*/
-  /*  T A S K   A N N O T A T I O N S                                                       */
-  /*----------------------------------------------------------------------------------------*/
- 
-  /** 
-   * Adds a SubmitTask, ApproveTask or CommonTask annotation to the set of annotation 
-   * plugins which will be added to the node built by the given Stage.<P> 
-   * 
-   * @param stage
-   *   The stage to be modified.
-   * 
-   * @param builderID
-   *   The unique ID of the approval builder.
-   */ 
-  protected void
-  addAproveTaskAnnotation
-  (
-   BaseStage stage, 
-   BuilderID builderID
-  )
-    throws PipelineException
-  {
-    addApproveTaskAnnotation(stage,
-			     pShotNamer.getProjectName(), pShotNamer.getFullShotName(),
-			     TaskType.HDRI.toString(), builderID);
-  }
-
-  /** 
-   * Adds a SubmitTask, ApproveTask or CommonTask annotation to the set of annotation 
-   * plugins which will be added to the node built by the given Stage.<P> 
-   * 
-   * @param stage
-   *   The stage to be modified.
-   * 
-   * @param purpose
-   *   The purpose of the node within the task.
-   */ 
-  protected void
-  addTaskAnnotation
-  (
-   BaseStage stage,
-   NodePurpose purpose
-  )
-    throws PipelineException
-  {
-    addTaskAnnotation(stage, purpose, 
-                      pShotNamer.getProjectName(), pShotNamer.getFullShotName(),
-                      TaskType.HDRI.toString()); 
-  }
-
-  /** 
-   * Adds a SubmitTask, ApproveTask or CommonTask annotation to the set of annotation 
-   * plugins on the given node. <P> 
-   * 
-   * @param nodeName
-   *   The fully resolved name of the node to be annotated. 
-   * 
-   * @param purpose
-   *   The purpose of the node within the task.
-   */ 
-  protected void
-  addTaskAnnotation
-  (
-   String nodeName, 
-   NodePurpose purpose
-  )
-    throws PipelineException
-  {
-    addTaskAnnotation(nodeName, purpose, 
-                      pShotNamer.getProjectName(), pShotNamer.getFullShotName(),
-                      TaskType.HDRI.toString()); 
   }
 
 

@@ -1,4 +1,4 @@
-// $Id: ProjectNamer.java,v 1.17 2008/03/19 22:41:41 jim Exp $
+// $Id: ProjectNamer.java,v 1.18 2008/03/23 05:09:58 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -126,66 +126,42 @@ class ProjectNamer
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Returns the fully resolved node name of the original undistored red checkerboard 
-   * reference image for use in calibrating lens distortion.
+   * Returns the fully resolved name of the node containing the undistorted camera grid 
+   * geometry file. 
    */ 
   public String
-  getPlatesRedCheckerNode() 
+  getPlatesCameraGridNode() 
   {
     Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Plates), 
-			 new Path(AppDirs.Images.toDirPath(), "red_checker"));
+			 new Path(AppDirs.Geo.toDirPath(), "cameraGrid"));
     return path.toString();
   }
-  
+
   /**
-   * Returns the fully resolved node name of the original undistored green checkerboard 
-   * reference image for use in calibrating lens distortion.
+   * Returns the fully resolved name of the node containing the master Nuke script used to 
+   * undistort the plates. 
    */ 
   public String
-  getPlatesGreenCheckerNode() 
+  getPlatesUndistortNukeNode() 
   {
     Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Plates), 
-			 new Path(AppDirs.Images.toDirPath(), "green_checker"));
+			 new Path(AppDirs.Nuke.toDirPath(), "plateUndistort"));
     return path.toString();
   }
+
+  /**
+   * Returns the fully resolved name of the node containing Houdini scene which generates the
+   * undistored UV map used by the master undistort Nuke script.
+   */ 
+  public String
+  getPlatesUndistortHipNode() 
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Plates), 
+			 new Path(AppDirs.Hip.toDirPath(), "plateUndistort"));
+    return path.toString();
+  }
+
   
-  /**
-   * Returns the fully resolved name of the node containing a Nuke script fragment 
-   * that will grade and warp the original reference grid images.
-   */ 
-  public String
-  getGridGradeWarpNode() 
-  {
-    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Plates), 
-			 new Path(AppDirs.Nuke.toDirPath(), "grid_grade_warp"));
-    return path.toString(); 
-  }
-
-  /**
-   * Returns the fully resolved name of the node containing a Nuke script fragment 
-   * that will grade the distorted reference grid images and diff them against the graded
-   * and warped original reference grid images.
-   */ 
-  public String
-  getGridGradeDiffNode() 
-  {
-    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Plates), 
-			 new Path(AppDirs.Nuke.toDirPath(), "grid_grade_diff"));
-    return path.toString(); 
-  }
-
-  /**
-   * Returns the fully resolved name of the node containing a Nuke script fragment 
-   * that adds a generic BlackOutside Nuke node.
-   */ 
-  public String
-  getBlackOutsideNode() 
-  {
-    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Plates), 
-			 new Path(AppDirs.Nuke.toDirPath(), "black_outside"));
-    return path.toString(); 
-  }
-
 
 
   /*----------------------------------------------------------------------------------------*/

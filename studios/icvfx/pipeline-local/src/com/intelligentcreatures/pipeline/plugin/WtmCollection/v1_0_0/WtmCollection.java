@@ -1,4 +1,4 @@
-// $Id: WtmCollection.java,v 1.14 2008/03/22 14:39:50 jim Exp $
+// $Id: WtmCollection.java,v 1.15 2008/03/23 05:09:58 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -36,7 +36,6 @@ class WtmCollection
 	sub.addEntry("HDRI");
 	sub.addEntry("Plates");
 	sub.addEntry("Mattes");
-	sub.addEntry("InternalTracking");
 	sub.addEntry("Tracking");
 	sub.addEntry("Match");
 	sub.addEntry("Blot");

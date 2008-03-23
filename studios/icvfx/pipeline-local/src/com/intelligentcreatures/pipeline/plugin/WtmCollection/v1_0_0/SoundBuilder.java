@@ -1,4 +1,4 @@
-// $Id: SoundBuilder.java,v 1.1 2008/03/06 06:14:49 jim Exp $
+// $Id: SoundBuilder.java,v 1.2 2008/03/23 05:09:58 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -108,7 +108,8 @@ class SoundBuilder
   {
     super("Sound",
           "A builder for constructing the nodes associated with the Sound task.", 
-          mclient, qclient, builderInfo, studioDefs, projectNamer, shotNamer);
+          mclient, qclient, builderInfo, studioDefs, 
+	  projectNamer, shotNamer, TaskType.Sound); 
 
     /* setup builder parameters */ 
     {
@@ -198,81 +199,6 @@ class SoundBuilder
   }
 
   
-
-  /*----------------------------------------------------------------------------------------*/
-  /*  T A S K   A N N O T A T I O N S                                                       */
-  /*----------------------------------------------------------------------------------------*/
- 
-  /** 
-   * Adds a SubmitTask, ApproveTask or CommonTask annotation to the set of annotation 
-   * plugins which will be added to the node built by the given Stage.<P> 
-   * 
-   * @param stage
-   *   The stage to be modified.
-   * 
-   * @param builderID
-   *   The unique ID of the approval builder.
-   */ 
-  protected void
-  addAproveTaskAnnotation
-  (
-   BaseStage stage, 
-   BuilderID builderID
-  )
-    throws PipelineException
-  {
-    addApproveTaskAnnotation(stage,
-			     pShotNamer.getProjectName(), pShotNamer.getFullShotName(),
-			     TaskType.Sound.toString(), builderID);
-  }
-
-  /** 
-   * Adds a SubmitTask, ApproveTask or CommonTask annotation to the set of annotation 
-   * plugins which will be added to the node built by the given Stage.<P> 
-   * 
-   * @param stage
-   *   The stage to be modified.
-   * 
-   * @param purpose
-   *   The purpose of the node within the task.
-   */ 
-  protected void
-  addTaskAnnotation
-  (
-   BaseStage stage,
-   NodePurpose purpose
-  )
-    throws PipelineException
-  {
-    addTaskAnnotation(stage, purpose, 
-                      pShotNamer.getProjectName(), pShotNamer.getFullShotName(),
-                      TaskType.Sound.toString()); 
-  }
-
-  /** 
-   * Adds a SubmitTask, ApproveTask or CommonTask annotation to the set of annotation 
-   * plugins on the given node. <P> 
-   * 
-   * @param nodeName
-   *   The fully resolved name of the node to be annotated. 
-   * 
-   * @param purpose
-   *   The purpose of the node within the task.
-   */ 
-  protected void
-  addTaskAnnotation
-  (
-   String nodeName, 
-   NodePurpose purpose
-  )
-    throws PipelineException
-  {
-    addTaskAnnotation(nodeName, purpose, 
-                      pShotNamer.getProjectName(), pShotNamer.getFullShotName(),
-                      TaskType.Sound.toString()); 
-  }
-
-
 
   /*----------------------------------------------------------------------------------------*/
   /*   S E T U P   P A S S E S                                                              */

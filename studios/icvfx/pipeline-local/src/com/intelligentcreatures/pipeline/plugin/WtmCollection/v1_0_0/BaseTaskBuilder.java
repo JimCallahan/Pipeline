@@ -1,4 +1,4 @@
-// $Id: BaseTaskBuilder.java,v 1.3 2008/03/13 16:26:27 jim Exp $
+// $Id: BaseTaskBuilder.java,v 1.4 2008/03/23 05:09:58 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -140,6 +140,55 @@ class BaseTaskBuilder
     addTaskAnnotationToNode(nodeName, annot);
   }
 
+  /** 
+   * Adds a SubmitTask, ApproveTask or CommonTask annotation to the set of annotation 
+   * plugins on the given node if it doesn't already exist. <P> 
+   * 
+   * @param nodeName
+   *   The fully resolved name of the node to be annotated. 
+   * 
+   * @param purpose
+   *   The purpose of the node within the task.
+   * 
+   * @param projectName
+   *   The value to give the ProjectName parameter of the annotation.
+   * 
+   * @param taskName
+   *   The value to give the ProjectName parameter of the annotation.
+   * 
+   * @param taskType
+   *   The value to give the TaskType/CustomTaskType parameter(s) of the annotation.
+   */ 
+  protected void
+  addMissingTaskAnnotation
+  (
+   String nodeName, 
+   NodePurpose purpose, 
+   String projectName, 
+   String taskName, 
+   String taskType
+  )
+    throws PipelineException
+  {
+    boolean found = false;
+    TreeMap<String,BaseAnnotation> annotations = pClient.getAnnotations(nodeName);
+    for(String aname : annotations.keySet()) {
+      if(aname.equals("Task") || aname.startsWith("AltTask")) {
+	BaseAnnotation annot = annotations.get(aname);
+	if(lookupPurpose(nodeName, aname, annot).equals(purpose.toString())) { 
+	  String proj = lookupProjectName(nodeName, aname, annot);
+	  String task = lookupTaskName(nodeName, aname, annot);
+	  if(proj.equals(projectName) && task.equals(taskName)) 
+	    found = true;
+	}
+      }
+    }
+
+    if(!found) 
+      addTaskAnnotation(nodeName, purpose, projectName, taskName, taskType); 
+  }
+
+
   /*----------------------------------------------------------------------------------------*/
   
   /** 
@@ -179,7 +228,7 @@ class BaseTaskBuilder
   }
 
   /** 
-   * Adds a SubmitTask, ApproveTask or CommonTask annotation to the set of annotation 
+   * Adds an ApproveTask with a specific approval builder to the set of annotation 
    * plugins on the given node. <P> 
    * 
    * @param nodeName
@@ -210,6 +259,7 @@ class BaseTaskBuilder
   {
     BaseAnnotation annot = 
       getNewTaskAnnotation(NodePurpose.Approve, projectName, taskName, taskType); 
+    annot.setParamValue("ApprovalBuilder", builderID);
     addTaskAnnotationToNode(nodeName, annot);
   }
 
@@ -350,6 +400,143 @@ class BaseTaskBuilder
   }
 
   
+  
+
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   A N N O T A T I O N   P A R A M E T E R   L O O K U P                                */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Lookup the value of the ProjectName annotation parameter.
+   * 
+   * @param name
+   *   The fully resolved name of the node having the given annotation.
+   * 
+   * @param aname
+   *   The name of the annotation instance.
+   * 
+   * @param annot
+   *   The annotation instance.
+   */ 
+  protected String
+  lookupProjectName
+  (
+   String name, 
+   String aname, 
+   BaseAnnotation annot   
+  ) 
+    throws PipelineException
+  {
+    String projectName = (String) annot.getParamValue(aAnnotProjectName);
+    if(projectName == null) 
+      throw new PipelineException
+        ("No " + aAnnotProjectName + " parameter was specified for the (" + aname + ") " + 
+	 "annotation on the node (" + name + ")!"); 
+    
+    return projectName;
+  }
+
+  /**
+   * Lookup the value of the TaskName annotation parameter.
+   * 
+   * @param name
+   *   The fully resolved name of the node having the given annotation.
+   * 
+   * @param aname
+   *   The name of the annotation instance.
+   * 
+   * @param annot
+   *   The annotation instance.
+   */ 
+  protected String
+  lookupTaskName
+  (
+   String name, 
+   String aname, 
+   BaseAnnotation annot   
+  ) 
+    throws PipelineException
+  {
+    String taskName = (String) annot.getParamValue(aAnnotTaskName);
+    if(taskName == null) 
+      throw new PipelineException
+        ("No " + aAnnotTaskName + " parameter was specified for the (" + aname + ") " + 
+	 "annotation on the node (" + name + ")!"); 
+
+    return taskName;
+  }
+
+  /**
+   * Lookup the value of the (Custom)TaskType annotation parameter.
+   * 
+   * @param name
+   *   The fully resolved name of the node having the given annotation.
+   * 
+   * @param aname
+   *   The name of the annotation instance.
+   * 
+   * @param annot
+   *   The annotation instance.
+   */ 
+  protected String
+  lookupTaskType
+  (
+   String name, 
+   String aname, 
+   BaseAnnotation annot   
+  ) 
+    throws PipelineException
+  {
+    String taskType = (String) annot.getParamValue(aAnnotTaskType);
+    if(taskType == null) 
+      throw new PipelineException
+        ("No " + aAnnotTaskType + " parameter was specified for the (" + aname + ") " + 
+	 "annotation on the node (" + name + ")!"); 
+
+    if(taskType.equals(aAnnotCUSTOM)) {
+      taskType = (String) annot.getParamValue(aAnnotCustomTaskType);
+      if(taskType == null) 
+	throw new PipelineException
+	  ("No " + aAnnotCustomTaskType + " parameter was specified for the " + 
+	   "(" + aname + ") annotation on the node (" + name + ") even though the " + 
+	   aAnnotTaskType + " " + "parameter was set to (" + aAnnotCUSTOM + ")!"); 
+    }
+
+    return taskType;
+  }
+
+  /**
+   * Lookup the value of the TaskName annotation parameter.
+   * 
+   * @param name
+   *   The fully resolved name of the node having the given annotation.
+   * 
+   * @param aname
+   *   The name of the annotation instance.
+   * 
+   * @param annot
+   *   The annotation instance.
+   */ 
+  protected String
+  lookupPurpose
+  (
+   String name, 
+   String aname, 
+   BaseAnnotation annot   
+  ) 
+    throws PipelineException
+  {
+    String purpose = (String) annot.getParamValue(aAnnotPurpose);
+    if(purpose == null) 
+      throw new PipelineException
+        ("No " + aAnnotPurpose + " parameter was specified for the (" + aname + ") " + 
+	 "annotation on the node (" + name + ")!"); 
+
+    return purpose;
+  }
+
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*  S T A T I C   I N T E R N A L S                                                       */
@@ -358,12 +545,15 @@ class BaseTaskBuilder
   /**
    * The names of parameters supported by SubmitTask, ApproveTask and CommonTask annotations.
    */ 
-  private static final String aAnnotProjectName    = "ProjectName";
-  private static final String aAnnotTaskName       = "TaskName";
-  private static final String aAnnotTaskType       = "TaskType";
-  private static final String aAnnotCustomTaskType = "CustomTaskType";
-  private static final String aAnnotPurpose        = "Purpose"; 
+  public static final String aAnnotProjectName    = "ProjectName";
+  public static final String aAnnotTaskName       = "TaskName";
+  public static final String aAnnotTaskType       = "TaskType";
+  public static final String aAnnotCustomTaskType = "CustomTaskType";
+  public static final String aAnnotPurpose        = "Purpose"; 
+  public static final String aAnnotAssignedTo     = "AssignedTo";
+  public static final String aAnnotSupervisedBy   = "SupervisedBy";
 
+    
   /**
    * The names of the built-in TaskTypes supported by the SubmitTask, ApproveTask and 
    * CommonTask annotations.

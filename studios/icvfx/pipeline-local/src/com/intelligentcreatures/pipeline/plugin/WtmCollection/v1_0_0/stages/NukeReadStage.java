@@ -1,4 +1,4 @@
-// $Id: NukeReadStage.java,v 1.4 2008/02/07 14:14:33 jim Exp $
+// $Id: NukeReadStage.java,v 1.5 2008/03/23 05:09:58 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
 
@@ -71,9 +71,7 @@ class NukeReadStage
 	  action); 
 
     addLink(new LinkMod(imageName, LinkPolicy.Dependency));
-
-    if(imageName != null) 
-      addSingleParamValue("ImageSource", imageName); 
+    addSingleParamValue("ImageSource", imageName); 
   }
 
   /**
@@ -112,7 +110,47 @@ class NukeReadStage
 	 new PluginContext("NukeRead"));
   }
   
+  /**
+   * Construct a new stage.
+   * 
+   * @param stageInfo
+   *   Class containing basic information shared among all stages.
+   * 
+   * @param context
+   *   The {@link UtilContext} that this stage acts in.
+   * 
+   * @param client
+   *   The instance of Master Manager that the stage performs all its actions in.
+   * 
+   * @param nodeName
+   *   The name of the node that is to be created.
+   * 
+   * @param imageName
+   *   The name of source image node.
+   * 
+   * @param missingFrames
+   *   How to handle missing frames. 
+   */
+  public
+  NukeReadStage
+  (
+   StageInformation stageInfo,
+   UtilContext context,
+   MasterMgrClient client, 
+   String nodeName, 
+   String imageName, 
+   String missingFrames 
+  )
+    throws PipelineException
+  {
+    this(stageInfo, context, client, 
+	 nodeName, imageName); 
+    
+    if(missingFrames != null) 
+      addSingleParamValue("MissingFrames", missingFrames); 
+  }
 
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   O V E R R I D E S                                                                    */
