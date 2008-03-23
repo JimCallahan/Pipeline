@@ -121,8 +121,9 @@ class SimpleAssetBuilder
         new EnumUtilityParam
         (aModelDelivery, 
          "How is model data being passed from the edit to the verify stage.  In the Import" +
-         "method, the entire model scene is imported.  In the Export setup a top level group is" +
-         "selected and only geometry under that group is exported in to the verify scene.", 
+         "method, the entire model scene is imported.  In the Export setup a top level " + 
+         "group is selected and only geometry under that group is exported in to the " +
+         "verify scene.", 
          "Import",
          choices); 
       addParam(param);
