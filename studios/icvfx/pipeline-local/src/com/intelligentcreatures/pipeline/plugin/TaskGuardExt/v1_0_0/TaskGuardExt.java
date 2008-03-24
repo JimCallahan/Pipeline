@@ -1,4 +1,4 @@
-// $Id: TaskGuardExt.java,v 1.3 2008/03/19 22:33:35 jim Exp $
+// $Id: TaskGuardExt.java,v 1.4 2008/03/24 07:32:06 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.TaskGuardExt.v1_0_0;
 
@@ -187,7 +187,7 @@ class TaskGuardExt
       }
       else {
         throw new PipelineException
-          ("Check-in aborted for node (" + nname + ") because it the root node of " + 
+          ("Check-in aborted for node (" + nname + ") because the root node of " + 
            "the check-in operation (" + rname + ") does not have a " + aPurpose + " of " + 
            "either " + aPrereq + ", " + aEdit + ", " + aSubmit + " or " + aApprove + "! " + 
            "Only nodes with these type of " + aPurpose + " may be used as the root node " + 
@@ -212,36 +212,48 @@ class TaskGuardExt
          " (" + nodeTaskName + ")!");  
     
     /* compare the Purpose of the root and current node */ 
-    for(String purpose : nodeAnnots.keySet()) {
-      if(purpose.equals(aFocus) || purpose.equals(aThumbnail)) {
-        if(!rootAnnots.containsKey(aApprove)) 
-          throw new PipelineException
-            ("Check-in aborted for node (" + nname + ") because nodes with a " + aPurpose + 
-             "of (" + aFocus + " | " + aThumbnail + ") can only be checked-in when the " + 
-             "root node of the check-in operation has a " + aPurpose + " of " + 
-             "(" + aApprove + ")!"); 
+    {
+      boolean isAlsoEdit = false;
+      String productError = null;
+      for(String purpose : nodeAnnots.keySet()) {
+	if(purpose.equals(aFocus) || purpose.equals(aThumbnail)) {
+	  if(!rootAnnots.containsKey(aApprove)) 
+	    throw new PipelineException
+	      ("Check-in aborted for node (" + nname + ") because nodes with a " + aPurpose + 
+	       " of (" + aFocus + " | " + aThumbnail + ") can only be checked-in when the " + 
+	       "root node of the check-in operation has a " + aPurpose + " of " + 
+	       "(" + aApprove + ")!"); 
+	}
+	else if(purpose.equals(aPrepare)) {
+	  if(!rootAnnots.containsKey(aSubmit) && !rootAnnots.containsKey(aApprove)) 
+	    throw new PipelineException
+	      ("Check-in aborted for node (" + nname + ") because nodes with a " + aPurpose + 
+	       " of (" + aPrepare + ") can only be checked-in when the root node of the " + 
+	       "check-in operation has a " + aPurpose + " of (" + aSubmit + " | " + 
+	       aApprove + ")!"); 
+	}
+	else if(purpose.equals(aProduct)) {
+	  if(!rootAnnots.containsKey(aApprove)) 
+	    productError = 
+	      ("Check-in aborted for node (" + nname + ") because nodes with a " + aPurpose + 
+	       " of (" + aProduct + ") can only be checked-in when the root node of the " + 
+	       "check-in operation has a " + aPurpose + " of (" + aApprove + ")!"); 
+	}
+	else if(purpose.equals(aSubmit) || purpose.equals(aApprove)) {  
+	  if(!nname.equals(rname)) 
+	    throw new PipelineException
+	      ("Check-in aborted for node (" + nname + ") unless it is the root node of " + 
+	       "the check-in operation because it has a " + aPurpose + " of " + 
+	       "(" + purpose + ")!"); 
+	}
+	else if(purpose.equals(aEdit)) {
+	  if(nname.equals(rname) || rootAnnots.containsKey(aSubmit))
+	    isAlsoEdit = true;
+	}
       }
-      else if(purpose.equals(aPrepare)) {
-        if(!rootAnnots.containsKey(aSubmit) || !rootAnnots.containsKey(aApprove)) 
-          throw new PipelineException
-            ("Check-in aborted for node (" + nname + ") because nodes with a " + aPurpose + 
-             "of (" + aPrepare + ") can only be checked-in when the root node of the " + 
-             "check-in operation has a " + aPurpose + " of (" + aSubmit + " | " + 
-             aApprove + ")!"); 
-      }
-      else if(purpose.equals(aProduct)) {
-        if(!rootAnnots.containsKey(aApprove)) 
-          throw new PipelineException
-            ("Check-in aborted for node (" + nname + ") because nodes with a " + aPurpose + 
-             "of (" + aProduct + ") can only be checked-in when the root node of the " + 
-             "check-in operation has a " + aPurpose + " of (" + aApprove + ")!"); 
-      }
-      else if(purpose.equals(aSubmit) || purpose.equals(aApprove)) {  
-        if(!nname.equals(rname)) 
-          throw new PipelineException
-            ("Check-in aborted for node (" + nname + ") unless it is the root node of the " + 
-             "check-in operation because it has a " + aPurpose + " of (" + purpose + ")!"); 
-      }
+
+      if((productError != null) && !isAlsoEdit)
+	throw new PipelineException(productError);
     }
   }
 
@@ -302,6 +314,8 @@ class TaskGuardExt
               ("The " + aProjectName + " was set in multiple Task annotations on node " + 
                "(" + name + "), but the did not match!  Both (" + projectName + ") and " + 
                "(" + pname + ") where given as the " + aProjectName + ".");
+
+          projectName = pname;
         }
 
         {
@@ -316,6 +330,8 @@ class TaskGuardExt
               ("The " + aTaskName + " was set in multiple Task annotations on node " + 
                "(" + name + "), but the did not match!  Both (" + taskName + ") and " + 
                "(" + tname + ") where given as the " + aTaskName + ".");
+
+          taskName = tname; 
         }
 
         {
@@ -330,6 +346,8 @@ class TaskGuardExt
               ("The " + aTaskType + " was set in multiple Task annotations on node " + 
                "(" + name + "), but the did not match!  Both (" + taskType + ") and " + 
                "(" + ttype + ") where given as the " + aTaskType + ".");
+
+          taskType = ttype;
         }
 
         byPurpose.put(purpose, an); 
