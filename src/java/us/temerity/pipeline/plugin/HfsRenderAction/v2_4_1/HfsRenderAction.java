@@ -1,4 +1,4 @@
-// $Id: HfsRenderAction.java,v 1.2 2008/03/20 21:50:02 jim Exp $
+// $Id: HfsRenderAction.java,v 1.3 2008/03/24 07:13:13 jim Exp $
 
 package us.temerity.pipeline.plugin.HfsRenderAction.v2_4_1;
 
@@ -38,6 +38,11 @@ import java.io.*;
  * This action defines the following single valued parameters: <BR>
  * 
  * <DIV style="margin-left: 40px;">
+ *   Houdini Scene <BR>
+ *   <DIV style="margin-left: 40px;">
+ *     The source node which contains the Houdini scene file to render. <BR> 
+ *   </DIV> <BR>
+ * 
  *   Output Operator <BR>
  *   <DIV style="margin-left: 40px;">
  *     The name of the render output operator. <BR>
@@ -48,11 +53,22 @@ import java.io.*;
  *     Overrides the render camera (if set). <BR> 
  *   </DIV> <BR>
  * 
- *   Houdini Scene <BR>
+ *   Use Graphical License<BR> 
  *   <DIV style="margin-left: 40px;">
- *     The source node which contains the Houdini scene file to render. <BR> 
+ *     Whether to use an interactive graphical Houdini license when running hbatch(1).  
+ *     Normally, hbatch(1) is run using a non-graphical license (-R option).  A graphical 
+ *     license may be required if the site has not obtained any non-graphical licenses.
  *   </DIV> <BR>
  * 
+ *   <DIV style="margin-left: 40px;">
+ *     Extra Options <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       Additional hbatch(1) command-line arguments. <BR> 
+ *     </DIV> <BR>
+ *   </DIV> <P> 
+ *   <P> 
+ * 
+ *   
  *   Pre Render Script <BR>
  *   <DIV style="margin-left: 40px;">
  *     The source node which contains the command script to evaluate before rendering 
@@ -77,12 +93,6 @@ import java.io.*;
  *     frame. <BR>
  *   </DIV> <BR>
  * 
- *   Use Graphical License<BR> 
- *   <DIV style="margin-left: 40px;">
- *     Whether to use an interactive graphical Houdini license when running hbatch(1).  
- *     Normally, hbatch(1) is run using a non-graphical license (-R option).  A graphical 
- *     license may be required if the site has not obtained any non-graphical licenses.
- *   </DIV> 
  * </DIV> <P> 
  */
 public
@@ -103,6 +113,7 @@ class HfsRenderAction
     addOutputOperatorParam("mantra1"); 
     addCameraOverrideParam(); 
     addUseGraphicalLicenseParam();
+    addExtraOptionsParam();
 
     addPreRenderScriptParam();
     addPostRenderScriptParam();
@@ -116,6 +127,7 @@ class HfsRenderAction
       layout.addEntry(aCameraOverride);
       layout.addSeparator();
       layout.addEntry(aUseGraphicalLicense);
+      addExtraOptionsParamToLayout(layout);
 
       addScriptParamsToLayout(layout); 
       
@@ -167,6 +179,9 @@ class HfsRenderAction
     /* houdini scene */ 
     Path source = getHoudiniSceneSourcePath(aHoudiniScene, agenda);
 
+    /* houdini version */ 
+    VersionID hvid = getHoudiniVersion(agenda); 
+
     /* create the temporary Houdini command script */ 
     Path hscript = new Path(createTemp(agenda, "cmd"));
     try {      
@@ -177,7 +192,6 @@ class HfsRenderAction
       writeCameraOverrideOpparm(opname, agenda, out);
 
       String picture = "picture";
-      VersionID hvid = getHoudiniVersion(agenda); 
       if((hvid != null) && (hvid.compareTo(new VersionID("9.0.0")) >= 0))
         picture = "vm_picture";
 
@@ -219,16 +233,20 @@ class HfsRenderAction
 
     /* create the process to run the action */ 
     {
+      String program = "hscript";
+      if((hvid != null) && (hvid.compareTo(new VersionID("8.1.0")) >= 0))
+        program = "hbatch";
+
       ArrayList<String> args = new ArrayList<String>(); 
-      args.add("-v"); 
-
-      if(getSingleBooleanParamValue(aUseGraphicalLicense)) 
+      if(!getSingleBooleanParamValue(aUseGraphicalLicense)) 
         args.add("-R"); 
-
+      args.add("-i"); 
+      args.add("-v"); 
+      args.addAll(getExtraOptionsArgs()); 
       args.add(source.toOsString());
       args.add(hscript.toOsString());
 
-      return createSubProcess(agenda, "hbatch", args, outFile, errFile);
+      return createSubProcess(agenda, program, args, outFile, errFile);
     }
   }
     
