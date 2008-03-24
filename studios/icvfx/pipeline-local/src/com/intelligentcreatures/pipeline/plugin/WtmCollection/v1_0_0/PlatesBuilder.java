@@ -1,4 +1,4 @@
-// $Id: PlatesBuilder.java,v 1.23 2008/03/23 05:09:58 jim Exp $
+// $Id: PlatesBuilder.java,v 1.24 2008/03/24 07:11:12 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -556,21 +556,21 @@ class PlatesBuilder
 	  stage.build(); 
 	}
 
-	String readUndistortUvImageNodeName = pShotNamer.getReadUndistortUvImageNode();
+	pReadUndistortUvImageNodeName = pShotNamer.getReadUndistortUvImageNode();
 	{
 	  NukeReadStage stage = 
 	    new NukeReadStage(stageInfo, pContext, pClient, 
-			      readUndistortUvImageNodeName, undistortUvImageNodeName, 
+			      pReadUndistortUvImageNodeName, undistortUvImageNodeName, 
 			      "Nearest Frame"); 
 	  addTaskAnnotation(stage, NodePurpose.Prepare); 
 	  stage.build();  
 	}
 
-	String readPlatesNodeName = pShotNamer.getReadPlatesNode(); 
+	pReadPlatesNodeName = pShotNamer.getReadPlatesNode(); 
 	{
 	  NukeReadStage stage = 
 	    new NukeReadStage(stageInfo, pContext, pClient, 
-			      readPlatesNodeName, pBackgroundPlateNodeName); 
+			      pReadPlatesNodeName, pBackgroundPlateNodeName); 
 	  addTaskAnnotation(stage, NodePurpose.Prepare); 
 	  stage.build();  
 	}
@@ -578,8 +578,8 @@ class PlatesBuilder
 	pUndistorted2kPlateNodeName = pShotNamer.getUndistorted2kPlateNode(); 
 	{
 	  TreeMap<String,String> subst = new TreeMap<String,String>(); 
-	  subst.put(readUndistortUvImageNodeName, "uvImage"); 
-	  subst.put(readPlatesNodeName, "plate"); 
+	  subst.put(pReadUndistortUvImageNodeName, "uvImage"); 
+	  subst.put(pReadPlatesNodeName, "plate"); 
 
 	  NukeSubstCompStage stage = 
 	    new NukeSubstCompStage
@@ -629,6 +629,22 @@ class PlatesBuilder
 	  stage.build(); 
 	}
 
+	String approvedUndistorted2kCineonPlateNodeName = 
+	  pShotNamer.getApprovedUndistorted2kCineonPlateNode(); 
+	{
+	  TreeMap<String,String> subst = new TreeMap<String,String>(); 
+	  subst.put(pReadUndistortUvImageNodeName, "uvImage"); 
+	  subst.put(pReadPlatesNodeName, "plate"); 
+
+	  NukeSubstCompStage stage = 
+	    new NukeSubstCompStage
+	    (stageInfo, pContext, pClient, 
+	     approvedUndistorted2kCineonPlateNodeName, pFrameRange, 4, "cin", 
+	     "Append & Process", pPlatesUndistortNukeNodeName, subst); 
+	  addTaskAnnotation(stage, NodePurpose.Product); 
+	  stage.build(); 
+	}
+
 	String approvedUndistorted2kPlateNodeName = 
 	  pShotNamer.getApprovedUndistorted2kPlateNode(); 
 	{
@@ -640,6 +656,7 @@ class PlatesBuilder
 	  addTaskAnnotation(stage, NodePurpose.Product); 
 	  stage.build(); 
 	}
+
 
 	String undistorted1kPlateNodeName = pShotNamer.getUndistorted1kPlateNode(); 
 	{
@@ -690,6 +707,7 @@ class PlatesBuilder
 	String approveNodeName = pShotNamer.getPlatesApproveNode();
 	{
 	  TreeSet<String> sources = new TreeSet<String>();
+	  sources.add(approvedUndistorted2kCineonPlateNodeName);
 	  sources.add(undistorted1kQuickTimeNodeName);
 	  sources.add(resolutionNodeName);
 	  sources.add(vfxRefNodeName);
@@ -827,5 +845,17 @@ class PlatesBuilder
    * ~2k plate images.
    */ 
   private String pUndistorted2kPlateNodeName; 
+
+  /**
+   * The fully resolved name of the node containing Nuke script to read the 
+   * undistorted UV image.
+   */ 
+  private String pReadUndistortUvImageNodeName; 
+
+  /**
+   * The fully resolved name of the node contaning the Nuke script fragment
+   * use to read in the raw cineon plates.
+   */ 
+  private String pReadPlatesNodeName;
 
 }

@@ -1,4 +1,4 @@
-// $Id: ShotNamer.java,v 1.25 2008/03/23 05:09:58 jim Exp $
+// $Id: ShotNamer.java,v 1.26 2008/03/24 07:11:12 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -595,6 +595,20 @@ class ShotNamer
     Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Product), 
 			 new Path(AppDirs.UV.toDirPath(), 
 				  joinNames(getFullShotName(), "rd_uv_2k"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node containing the approved 
+   * undistorted/linearized ~2k Cineon format plate images.
+   */ 
+  public String
+  getApprovedUndistorted2kCineonPlateNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Product), 
+			 new Path(AppDirs.Image2k.toDirPath(), 
+				  new Path(AppDirs.Cin.toDirPath(), 
+					   joinNames(getFullShotName(), "bg_ud_2k")))); 
     return path.toString(); 
   }
 
