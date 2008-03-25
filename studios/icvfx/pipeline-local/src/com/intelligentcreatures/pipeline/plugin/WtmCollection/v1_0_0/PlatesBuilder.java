@@ -1,4 +1,4 @@
-// $Id: PlatesBuilder.java,v 1.24 2008/03/24 07:11:12 jim Exp $
+// $Id: PlatesBuilder.java,v 1.25 2008/03/25 14:51:46 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -549,7 +549,7 @@ class PlatesBuilder
 	  HfsRenderStage stage = 
 	    new HfsRenderStage(stageInfo, pContext, pClient,
 			       undistortUvImageNodeName, pDistortRange, 4, "tif", 
-			       pPlatesUndistortHipNodeName, "undistort_uv_map", null, true, 
+			       pPlatesUndistortHipNodeName, "undistort_uv_map", null, false, 
 			       pRenderUvCommandNodeName, null, null, null); 
 	  stage.addLink(new LinkMod(pPlatesCameraGridNodeName, LinkPolicy.Dependency));  
 	  addTaskAnnotation(stage, NodePurpose.Product); 
@@ -697,7 +697,7 @@ class PlatesBuilder
 	  HfsRenderStage stage = 
 	    new HfsRenderStage(stageInfo, pContext, pClient,
 			       redistortUvImageNodeName, pDistortRange, 4, "tif", 
-			       pPlatesUndistortHipNodeName, "redistort_uv_map", null, true, 
+			       pPlatesUndistortHipNodeName, "redistort_uv_map", null, false, 
 			       pRenderUvCommandNodeName, null, null, null); 
 	  stage.addLink(new LinkMod(pPlatesCameraGridNodeName, LinkPolicy.Dependency));  
 	  addTaskAnnotation(stage, NodePurpose.Product); 
