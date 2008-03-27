@@ -1,4 +1,4 @@
-// $Id: BaseBuilderCollection.java,v 1.13 2008/03/02 03:56:26 jesse Exp $
+// $Id: BaseBuilderCollection.java,v 1.14 2008/03/27 22:07:45 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -428,12 +428,11 @@ class BaseBuilderCollection
         throw new PipelineException(message); 
     }
     catch (InvocationTargetException ex) {
-      Throwable th = ex.getTargetException();
       String message = 
         Exceptions.getFullMessage
         ("An Invocation Target Exception has occured.  This most likely indicates that " +
          "the name of the builder being passed to BuilderApp is specified incorrectly or " +
-         "that an error occured in the Builder's constructor.", th);
+         "that an error occured in the Builder's constructor.", ex);
       LogMgr.getInstance().log
         (LogMgr.Kind.Ops, LogMgr.Level.Severe,
          message);

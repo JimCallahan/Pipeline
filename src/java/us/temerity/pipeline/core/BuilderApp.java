@@ -1,4 +1,4 @@
-// $Id: BuilderApp.java,v 1.27 2008/02/25 05:03:06 jesse Exp $
+// $Id: BuilderApp.java,v 1.28 2008/03/27 22:07:45 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -102,7 +102,10 @@ public class BuilderApp
 
         BaseBuilder builder = 
           collection.instantiateBuilder(pBuilderName, mclient, qclient, info);
-        builder.run();
+        if (builder != null)
+          builder.run();
+        else
+          throw new PipelineException("Unable to instanstiate the builder.");
       } 
       else if (pBuilderName != null) {
         DoubleMap<String, String, TreeSet<VersionID>> toPrint = 
