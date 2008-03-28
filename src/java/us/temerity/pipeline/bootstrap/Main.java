@@ -1,6 +1,9 @@
-// $Id: Main.java,v 1.5 2004/07/07 13:21:17 jim Exp $
+// $Id: Main.java,v 1.6 2008/03/28 21:09:01 jim Exp $
 
 package us.temerity.pipeline.bootstrap;
+
+import us.temerity.pipeline.Exceptions;
+import us.temerity.pipeline.HostConfigException;
 
 import java.io.*;
 import java.util.*;
@@ -66,33 +69,57 @@ class Main
    String[] args 
   )
   {
-    if(args.length == 0) {
-      System.out.print("Application name was missing!\n");
+    try {
+      if(args.length == 0) {
+        System.out.print("Application name was missing!\n");
+        System.exit(1);
+      }
+      
+      String appArgs[] = null;
+      {
+        appArgs = new String[args.length-1];
+        int wk;
+        for(wk=0; wk<appArgs.length; wk++) 
+          appArgs[wk] = args[wk+1];
+      }
+      
+      try {
+        BootStrapLoader loader = new BootStrapLoader();
+        Class cls = loader.loadClass(args[0]);
+        BootApp app = (BootApp) cls.newInstance();
+        app.run(appArgs);
+      }
+      catch(LicenseException ex) {
+        System.out.print("Unable to start Pipeline.\n" + 
+                         ex.getMessage());
+        System.exit(1);
+      }
+    }
+    catch(HostConfigException ex) {
+      System.out.print(cause.getMessage()); 
       System.exit(1);
     }
+    catch(ExceptionInInitializerError ex) {
+      /* intercept if a HostConfigException is the root cause */ 
+      {
+        Throwable cause = ex;
+        while(true) {
+          cause = cause.getCause();
+          if(cause == null) 
+            break;
+          
+          if(cause instanceof HostConfigException) {
+            System.out.print(cause.getMessage()); 
+            System.exit(1);
+          }
+        }
+      }
 
-    String appArgs[] = null;
-    {
-      appArgs = new String[args.length-1];
-      int wk;
-      for(wk=0; wk<appArgs.length; wk++) 
-	appArgs[wk] = args[wk+1];
-    }
-      
-    try {
-      BootStrapLoader loader = new BootStrapLoader();
-      Class cls = loader.loadClass(args[0]);
-      BootApp app = (BootApp) cls.newInstance();
-      app.run(appArgs);
-    }
-    catch(LicenseException ex) {
-      System.out.print("Unable to start Pipeline.\n" + 
-		       ex.getMessage());
+      System.out.print(Exceptions.getFullMessage("INTERNAL-ERROR:", ex));
       System.exit(1);
     }
     catch(Exception ex) {
-      System.out.print("INTERNAL-ERROR:\n");
-      ex.printStackTrace(System.out);
+      System.out.print(Exceptions.getFullMessage("INTERNAL-ERROR:", ex));
       System.exit(1);
     }
   }
