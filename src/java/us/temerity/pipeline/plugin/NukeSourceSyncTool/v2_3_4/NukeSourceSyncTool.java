@@ -1,4 +1,4 @@
-// $Id: NukeSourceSyncTool.java,v 1.2 2008/01/20 06:42:17 jim Exp $
+// $Id: NukeSourceSyncTool.java,v 1.3 2008/03/28 21:26:42 jim Exp $
 
 package us.temerity.pipeline.plugin.NukeSourceSyncTool.v2_3_4;
 
@@ -97,16 +97,16 @@ class NukeSourceSyncTool
     case 1:
       
       // change this to true to enable debugging log
-      if (false)
-	try
-	{
+      if (false) {
+	try {
 	  File tempFile = File.createTempFile("NukeSourceSyncTool-DebugInfo.", ".txt", 
 	     PackageInfo.sTempPath.toFile());
 	  tempOutput = new PrintWriter(new BufferedWriter(new FileWriter(tempFile)));
-	} catch ( IOException e )
-	{
-	  e.printStackTrace();
+	} 
+        catch ( IOException e ) {
+	  throw new PipelineException(e); 
 	}
+      }
 	
       return collectFirstPhaseInput();
 
