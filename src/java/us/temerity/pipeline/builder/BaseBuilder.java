@@ -1,4 +1,4 @@
-// $Id: BaseBuilder.java,v 1.51 2008/03/19 15:15:48 jim Exp $
+// $Id: BaseBuilder.java,v 1.52 2008/03/28 21:14:37 jim Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -1340,7 +1340,7 @@ class BaseBuilder
           Thread.sleep(7000);
         }
 	catch(InterruptedException e) {
-          e.printStackTrace();
+          throw new PipelineException(e); 
         }
       }
       else

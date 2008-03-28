@@ -1,4 +1,4 @@
-// $Id: SilhouetteBuildAction.java,v 1.1 2008/02/04 03:41:23 jesse Exp $
+// $Id: SilhouetteBuildAction.java,v 1.2 2008/03/28 21:16:15 jim Exp $
 
 package us.temerity.pipeline.plugin.SilhouetteBuildAction.v2_3_15;
 
@@ -11,17 +11,7 @@ import java.util.TreeMap;
 
 import com.sun.org.apache.bcel.internal.generic.GETSTATIC;
 
-import us.temerity.pipeline.ActionAgenda;
-import us.temerity.pipeline.ActionParam;
-import us.temerity.pipeline.EnumActionParam;
-import us.temerity.pipeline.FilePattern;
-import us.temerity.pipeline.FileSeq;
-import us.temerity.pipeline.FrameRange;
-import us.temerity.pipeline.OsType;
-import us.temerity.pipeline.Path;
-import us.temerity.pipeline.PipelineException;
-import us.temerity.pipeline.SubProcessHeavy;
-import us.temerity.pipeline.VersionID;
+import us.temerity.pipeline.*;
 import us.temerity.pipeline.plugin.CommonActionUtils;
 
 public 
@@ -286,8 +276,9 @@ class SilhouetteBuildAction
       		"</Project>");
       
       out.close();
-    } catch (IOException e) {
-      e.printStackTrace();
+    } 
+    catch (IOException e) {
+      throw new PipelineException(e); 
     }
     
     return createTempCopySubProcess(agenda, sfxFile, targetPath, outFile, errFile);

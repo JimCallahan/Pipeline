@@ -1,4 +1,4 @@
-// $Id: MayaTextureSyncTool.java,v 1.1 2007/06/19 18:24:51 jim Exp $
+// $Id: MayaTextureSyncTool.java,v 1.2 2008/03/28 21:15:48 jim Exp $
 
 package us.temerity.pipeline.plugin.MayaTextureSyncTool.v2_0_11;
 
@@ -106,16 +106,15 @@ class MayaTextureSyncTool
   {
     switch(pPhase) {
     case 1:
-      try
-	{
+      try {
 	// TODO remove debug stuff
-	  File tempFile = File.createTempFile("MayaTextureSyncTool-DebugInfo.", ".txt", 
-	     PackageInfo.sTempPath.toFile());
-	  tempOutput = new PrintWriter(new BufferedWriter(new FileWriter(tempFile)));
-	} catch ( IOException e )
-	{
-	  e.printStackTrace();
-	}
+        File tempFile = File.createTempFile("MayaTextureSyncTool-DebugInfo.", ".txt", 
+                                            PackageInfo.sTempPath.toFile());
+        tempOutput = new PrintWriter(new BufferedWriter(new FileWriter(tempFile)));
+      } 
+      catch (IOException ex) {
+        throw new PipelineException(ex); 
+      }
 
       return collectFirstPhaseInput();
 
