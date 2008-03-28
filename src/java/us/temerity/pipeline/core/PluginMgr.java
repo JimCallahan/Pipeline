@@ -1,4 +1,4 @@
-// $Id: PluginMgr.java,v 1.21 2008/03/07 13:25:21 jim Exp $
+// $Id: PluginMgr.java,v 1.22 2008/03/28 21:15:15 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -644,8 +644,10 @@ class PluginMgr
         if (isConnected) {
           for (String builderName : collection.getBuildersProvided().keySet()) {
             BaseBuilder builder = 
-              collection.instantiateBuilder(builderName, null, null, false, true, 
-                false, false, new MultiMap<String, String>());
+              collection.instantiateBuilder(builderName, null, null, 
+                                            false, true, false, false, 
+                                            new MultiMap<String, String>());
+
             PassLayoutGroup bLayout = builder.getLayout();
             if (bLayout == null)
               throw new PipelineException
