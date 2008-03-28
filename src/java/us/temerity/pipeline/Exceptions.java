@@ -1,4 +1,4 @@
-// $Id: Exceptions.java,v 1.2 2008/03/07 09:58:28 jim Exp $
+// $Id: Exceptions.java,v 1.3 2008/03/28 21:25:40 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -65,6 +65,10 @@ class Exceptions
         int wk;
         for(wk=0; wk<stack.length; wk++) 
           buf.append("  " + stack[wk].toString() + "\n");
+
+        Throwable chained = cause.getCause();
+        if(chained != null) 
+          buf.append(getFullMessage("\n--- Caused By ---", chained, true, true) + "\n");
       }
     }	
       
