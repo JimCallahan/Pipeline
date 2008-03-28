@@ -1,4 +1,4 @@
-// $Id: BaseBuilderCollection.java,v 1.14 2008/03/27 22:07:45 jesse Exp $
+// $Id: BaseBuilderCollection.java,v 1.15 2008/03/28 21:09:01 jim Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -271,44 +271,54 @@ class BaseBuilderCollection
     throws PipelineException
   {
     BuilderInformation info = 
-      new BuilderInformation(true, terminateOnQuit, true, useBuilderLogging, new MultiMap<String, String>());
+      new BuilderInformation(true, terminateOnQuit, true, 
+                             useBuilderLogging, new MultiMap<String, String>());
     return instantiateBuilder(builderName, null, null, info);
   }
 
   /**
-   * Creates and runs an instance of the named builder.
-   * <p>
+   * Creates and runs an instance of the named builder.<p>
+   * 
    * The Builder Collection will create a new connection to the MasterMgr and QueueMgr and
    * provide a new {@link BuilderInformation} for this Builder to use. 
    * 
    * @param builderName
    *   The short name of the Builder to instantiate.  This needs to be one of the names
    *   in the keySet of the TreeMap returned by the {@link #getBuildersProvided()} method.
+   *   
    * @param mclient
    *   The instance of {@link MasterMgrClient} for the builder to use or <code>null</code>
    *   if a new connection should be created.
+   *   
    * @param qclient
    *   The instance of {@link QueueMgrClient} the builder to use or <code>null</code> if
    *   a new connection should be created.
+   *   
    * @param useGui
    *   Should the builder be instantiated in GUI mode.
+   *   
    * @param abortOnBadParam
    *   Should the builder abort when it contains a command line param value that does
    *   not match any existing parameters.
+   *   
    * @param paramValues
    *   A MultiMap that consists of BuilderName, parameter key names and finally parameter
    *   values.  Each level into a Complex Parameter is a separate key into the multimap.
+   *   
    * @param terminateOnQuit
    *   Should be entire app quit when the builder execution ends.  This needs to be false
    *   if the builder is being launched from inside plui or from some other external app
    *   that needs to continue running after the builder has completed.  If this is set
    *   to false, then whatever program invokes the builder is responsible for making sure
    *   the jvm is terminated.
+   *   
    * @param useBuilderLogging
    *   Should the builder use its own internal log panel or should it use the built in
    *   Log History panel in plui.  Setting this to false when not running the builder
    *   through plui will result in no logging output.
-   * @throws PipelineException whenever anything goes wrong with instantiating the builder.
+   *   
+   * @throws PipelineException 
+   *   Whenever anything goes wrong with instantiating the builder.
    *   This can be for a variety of reasons, including a misnamed builder, bad parameters,
    *   missing classes, etc.
    */
@@ -333,29 +343,34 @@ class BaseBuilderCollection
   }
   
   /**
-   * Creates and runs an instance of the named builder.
-   * <p>
+   * Creates and runs an instance of the named builder.<p>
+   *
    * The Builder Collection will create a new connection to the MasterMgr and QueueMgr and
    * provide a new {@link BuilderInformation} for this Builder to use. 
    * 
    * @param builderName
    *   The short name of the Builder to instantiate.  This needs to be one of the names
    *   in the keySet of the TreeMap returned by the {@link #getBuildersProvided()} method.
+   *
    * @param mclient
    *   The instance of {@link MasterMgrClient} for the builder to use or <code>null</code>
    *   if a new connection should be created.
+   *
    * @param qclient
    *   The instance of {@link QueueMgrClient} the builder to use or <code>null</code> if
    *   a new connection should be created.
+   *
    * @param info
    *   The instance of {@link BuilderInformation} for the builder to use or <code>null</code>
    *   if a new information class should be created.
+   *
    * @return
    *   The instance of the specified Builder or <code>null</code> if an error occurred while
    *   creating the Builder, but an Exception was not thrown (due to internal error handling).
+   *
    * @throws PipelineException 
-   *   Only if the builder is being called in a context where the error message will never make
-   *   it to the log.
+   *   Only if the builder is being called in a context where the error message will never 
+   *   make it to the log.
    */
   @SuppressWarnings("unchecked")
   public final BaseBuilder
@@ -428,6 +443,19 @@ class BaseBuilderCollection
         throw new PipelineException(message); 
     }
     catch (InvocationTargetException ex) {
+      /* intercept if a HostConfigException is the root cause */ 
+      {
+        Throwable cause = ex;
+        while(true) {
+          cause = cause.getCause();
+          if(cause == null) 
+            break;
+          
+          if(cause instanceof HostConfigException) 
+            throw new PipelineException(cause); 
+        }
+      }
+
       String message = 
         Exceptions.getFullMessage
         ("An Invocation Target Exception has occured.  This most likely indicates that " +

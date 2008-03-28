@@ -1,4 +1,4 @@
-// $Id: JErrorDialog.java,v 1.12 2007/09/07 18:52:38 jim Exp $
+// $Id: JErrorDialog.java,v 1.13 2008/03/28 21:09:01 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -132,41 +132,24 @@ class JErrorDialog
       pHeaderLabel.setText("Error:");
       pMessageArea.setText(ex.getMessage());
     }
-    else if(ex instanceof GlueException) {
-      pHeaderLabel.setText("Glue Error:");
-      pMessageArea.setText(getStackTrace(ex));
-    }
     else if(ex instanceof IOException) {
       pHeaderLabel.setText("I/O Error:");
       pMessageArea.setText(ex.getMessage());
     }
+    else if(ex instanceof HostConfigException) {
+      pHeaderLabel.setText("Host Configuration Error:");
+      pMessageArea.setText(ex.getMessage());
+    }
+    else if(ex instanceof GlueException) {
+      pHeaderLabel.setText("Glue Error:");
+      pMessageArea.setText(Exceptions.getFullMessage(ex));
+    }
     else {
       pHeaderLabel.setText("Internal Error:");
-      pMessageArea.setText(getStackTrace(ex));
+      pMessageArea.setText(Exceptions.getFullMessage(ex));
     }
   }
 
-  private String
-  getStackTrace
-  (
-   Exception ex
-  ) 
-  {
-    StringBuilder buf = new StringBuilder();
-
-    if(ex.getMessage() != null) 
-      buf.append(ex.getMessage() + "\n\n"); 	
-    else if(ex.toString() != null) 
-      buf.append(ex.toString() + "\n\n"); 	
-    
-    buf.append("Stack Trace:\n");
-    StackTraceElement stack[] = ex.getStackTrace();
-    int wk;
-    for(wk=0; wk<stack.length; wk++) 
-      buf.append("  " + stack[wk].toString() + "\n");
-
-    return buf.toString();
-  }
 
 
 

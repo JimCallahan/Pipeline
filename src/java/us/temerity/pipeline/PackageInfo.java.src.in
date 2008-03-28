@@ -1,4 +1,4 @@
-// $Id: PackageInfo.java.src.in,v 1.40 2008/01/23 16:26:46 jim Exp $
+// $Id: PackageInfo.java.src.in,v 1.41 2008/03/28 21:10:44 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -45,7 +45,7 @@ class PackageInfo
     OsType os = null;
     try {
       if(plOsType == null) 
-        throw new IllegalStateException
+        throw new HostConfigException
           ("Unable to find (pipeline.ostype) in the Java environment used to determine " + 
            "the current OsType!"); 
 
@@ -55,14 +55,14 @@ class PackageInfo
       switch(os) {
       case Unix: 
         if(!osName.equals("Linux")) 
-          throw new IllegalStateException
+          throw new HostConfigException
             ("Attempting to run the (Unix) version on the (" + osName + ") " + 
              "operating system!");
         break;
 
       case MacOS:
         if(!osName.equals("Mac OS X")) 
-          throw new IllegalStateException
+          throw new HostConfigException
             ("Attempting to run the (MacOS) version on a the (" + osName + ") " + 
              "operating system!");
         break;
@@ -70,13 +70,13 @@ class PackageInfo
       case Windows: 
         if(!osName.equals("Windows XP") && !osName.equals("Windows 2000") &&
            !osName.equals("Windows 2003") && !osName.equals("Windows NT"))
-          throw new IllegalStateException
+          throw new HostConfigException
             ("Attempting to run the (Windows) version on a the (" + osName + ") " + 
              "operating system!");
       }
     }
     catch(IllegalArgumentException ex) {
-      throw new IllegalStateException("Unsupported OsType (" + plOsType + ")!");
+      throw new HostConfigException("Unsupported OsType (" + plOsType + ")!");
     }
     sOsType = os;
 
@@ -84,7 +84,7 @@ class PackageInfo
     ArchType arch = null;
     try {
       if(plArchType == null)         
-        throw new IllegalStateException
+        throw new HostConfigException
           ("Unable to find (pipeline.archtype) in the Java environment used to determine " + 
            "the current ArchType!"); 
 
@@ -93,28 +93,30 @@ class PackageInfo
       switch (arch) {
       case x86:
         if(!osArch.equals("x86") && !osArch.equals("i386"))
-          throw new IllegalStateException
+          throw new HostConfigException
             ("Attempting to run the (x86) version on a machine with a (" + osArch + ") " + 
              "CPU architecture!");
         break;
         
       case x86_64:
         if(!osArch.equals("amd64")) 
-          throw new IllegalStateException
+          throw new HostConfigException
             ("Attempting to run the (x86_64) version on a machine with a (" + osArch + ") " + 
              "CPU architecture!");
         break;
         
       case UnivBin:
+      case UnivBin64:
+//        System.err.print("os.arch = " + osArch + "\n");
 //      if(!osArch.equals("ppc") && !osArch.equals("???") ... ) 
-//        throw new IllegalStateException
+//        throw new HostConfigException
 //         ("Attempting to run the (UnivBin) version on a machine with a (" + osArch + ") " +
 //          "CPU architecture!");
         break;
       }
     }
     catch(IllegalArgumentException ex) {
-      throw new IllegalStateException("Unsupported ArchType (" + plArchType + ")!");
+      throw new HostConfigException("Unsupported ArchType (" + plArchType + ")!");
     }
     sArchType = arch;
 
@@ -122,14 +124,14 @@ class PackageInfo
     BuildType build = null;
     try {
       if(plBuildType == null) 
-        throw new IllegalStateException
+        throw new HostConfigException
           ("Unable to find (pipeline.buildtype) in the Java environment used to determine " + 
            "the current BuildType!"); 
 
       build = BuildType.valueOf(BuildType.class, plBuildType);
     }
     catch(IllegalArgumentException ex) {
-      throw new IllegalStateException("Unsupported BuildType (" + plBuildType + ")!");
+      throw new HostConfigException("Unsupported BuildType (" + plBuildType + ")!");
     }
     sBuildType = build;
 
@@ -252,7 +254,7 @@ class PackageInfo
       return ";";
 
     default:
-      throw new IllegalStateException();
+      throw new HostConfigException();
     }
   }
 

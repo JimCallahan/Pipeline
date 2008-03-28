@@ -1,4 +1,4 @@
-// $Id: Main.java,v 1.6 2008/03/28 21:09:01 jim Exp $
+// $Id: Main.java,v 1.7 2008/03/28 21:09:46 jim Exp $
 
 package us.temerity.pipeline.bootstrap;
 
@@ -96,7 +96,7 @@ class Main
       }
     }
     catch(HostConfigException ex) {
-      System.out.print(cause.getMessage()); 
+      System.out.print(ex.getMessage()); 
       System.exit(1);
     }
     catch(ExceptionInInitializerError ex) {
