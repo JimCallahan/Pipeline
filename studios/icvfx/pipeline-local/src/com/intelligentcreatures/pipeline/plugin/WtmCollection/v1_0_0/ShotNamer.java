@@ -1,4 +1,4 @@
-// $Id: ShotNamer.java,v 1.26 2008/03/24 07:11:12 jim Exp $
+// $Id: ShotNamer.java,v 1.27 2008/03/30 01:43:10 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -587,7 +587,7 @@ class ShotNamer
   
   /**
    * Returns the fully resolved name of the node containing redistorted UV image rendered
-   * by Houdni.
+   * by Houdini.
    */
   public String
   getRedistortUvImageNode()
@@ -843,26 +843,13 @@ class ShotNamer
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Returns the fully resolved name of the node for the PFTrack scene which 
-   * is used to track the shot.
-   */ 
-  public String
-  getPFTrackNode() 
-  {
-    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Edit), 
-			 new Path(AppDirs.PFTrack.toDirPath(), 
-				  joinNames(getFullShotName(), "pftrack"))); 
-    return path.toString(); 
-  }
-
-  /**
    * Returns the fully resolved name of the node for the Maya scene containing 
    * the camera/model tracking data.
    */ 
   public String
   getTrackNode() 
   {
-    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Prepare), 
+    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Edit), 
 			 new Path(AppDirs.Maya.toDirPath(), 
 				  joinNames(getFullShotName(), "track"))); 
     return path.toString(); 
@@ -995,6 +982,44 @@ class ShotNamer
     Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Product), 
 			 new Path(AppDirs.PFTrack.toDirPath(), 
 				  joinNames(getFullShotName(), "tracking_markers"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node for the Maya scene containing 
+   * temp render scene.
+   */ 
+  public String
+  getTrackingTempRenderNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Prepare), 
+			 new Path(AppDirs.Maya.toDirPath(), 
+				  joinNames(getFullShotName(), "temp_render"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node for the Maya scene containing 
+   * temp texture loading scene.
+   */ 
+  public String
+  getTrackingTempTextureNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Prepare), 
+			 new Path(AppDirs.Maya.toDirPath(), 
+				  joinNames(getFullShotName(), "temp_tex"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of node containig the inkblot temp render images. 
+   */ 
+  public String
+  getTrackingInkblotNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Product), 
+			 new Path(AppDirs.Render.toDirPath(), 
+				  joinNames(getFullShotName(), "inkblot"))); 
     return path.toString(); 
   }
 
@@ -1554,9 +1579,180 @@ class ShotNamer
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+  /*   T E M P   C O M P                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Returns the fully resolved name of the prerequisites node for the TempComp task.
+   */ 
+  public String
+  getTempCompPrereqNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.TempComp, NodePurpose.Prereq), 
+			 joinNames(getFullShotName(), "temp_comp_prereq")); 
+    return path.toString(); 
+  }
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Returns the fully resolved name of the node containing the outsourcer generated
+   * temporary inkblot renders.
+   */ 
+  public String
+  getTempCompInkblotNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.TempComp, NodePurpose.Edit), 
+			 new Path(AppDirs.Render.toDirPath(), 
+				  joinNames(getFullShotName(), "inkblot"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node containing the Nuke script to read 
+   * the temporary inkblot renders.
+   */ 
+  public String
+  getTempCompReadInkblotNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.TempComp, NodePurpose.Prepare), 
+			 new Path(AppDirs.Nuke.toDirPath(), 
+				  joinNames(getFullShotName(), "inkblot"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node containing the Nuke script to read 
+   * the redistorted UV image.
+   */ 
+  public String
+  getTempCompReadRedistortNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.TempComp, NodePurpose.Prepare), 
+			 new Path(AppDirs.Nuke.toDirPath(), 
+				  joinNames(getFullShotName(), "rd_uv_2k"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node containing the redisorted temporary
+   * inkblot rendered images.
+   */ 
+  public String
+  getTempCompInkblotRedistortedNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.TempComp, NodePurpose.Prepare), 
+			 new Path(AppDirs.Comp.toDirPath(), 
+				  joinNames(getFullShotName(), "inkblot_rd"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node containing the Nuke script to read 
+   * the redisorted temporary inkblot renders.
+   */ 
+  public String
+  getTempCompReadInkblotRedistortedNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.TempComp, NodePurpose.Prepare), 
+			 new Path(AppDirs.Nuke.toDirPath(), 
+				  joinNames(getFullShotName(), "inkblot_rd"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node contaning the Nuke script fragment
+   * use to read in the raw cineon plates.
+   */ 
+  public String
+  getTempCompReadPlatesNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.TempComp, NodePurpose.Prepare), 
+			 new Path(AppDirs.Nuke.toDirPath(), 
+				  joinNames(getFullShotName(), "plates"))); 
+    return path.toString(); 
+  }
+  
+  /**
+   * Returns the fully resolved name of the node contaning the Nuke script which 
+   * performs the temporary comp.
+   */ 
+  public String
+  getTempCompNukeEditNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.TempComp, NodePurpose.Edit), 
+			 new Path(AppDirs.Nuke.toDirPath(), 
+				  joinNames(getFullShotName(), "temp_comp"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node containing the temp composited images.
+   */ 
+  public String
+  getTempCompNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.TempComp, NodePurpose.Focus), 
+			 new Path(AppDirs.Comp.toDirPath(), 
+				  joinNames(getFullShotName(), "temp_comp"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node containing a thumbnail image extracted
+   * from the temp composited images.
+   */ 
+  public String
+  getTempCompThumbNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.TempComp, NodePurpose.Thumbnail), 
+			 joinNames(getFullShotName(), "temp_comp")); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the submit node for the TempComp task.
+   */ 
+  public String
+  getTempCompSubmitNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.TempComp, NodePurpose.Submit), 
+			 joinNames(getFullShotName(), "temp_comp_submit")); 
+    return path.toString(); 
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
-  /*   Q U I C T I M E   D E L I V E R Y                                                    */
+
+  /**
+   * Returns the fully resolved name of the node containing the temp composited images.
+   */ 
+  public String
+  getApprovedTempCompNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.TempComp, NodePurpose.Product), 
+			 new Path(AppDirs.Comp.toDirPath(), 
+				  joinNames(getFullShotName(), "temp_comp"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the approve node for the TempComp task.
+   */ 
+  public String
+  getTempCompApproveNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.TempComp, NodePurpose.Approve), 
+			 joinNames(getFullShotName(), "temp_comp_approve")); 
+    return path.toString(); 
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   Q U I C K T I M E   D E L I V E R Y                                                  */
   /*----------------------------------------------------------------------------------------*/
   
   /**

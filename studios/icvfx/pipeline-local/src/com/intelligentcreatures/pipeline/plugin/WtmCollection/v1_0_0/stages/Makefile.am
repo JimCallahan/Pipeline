@@ -19,6 +19,7 @@ java_DATA = \
   BuildMatchStage.java \
   BuildMatchVerifyStage.java \
   BuildPreMatchStage.java \
+  BuildTestRenderStage.java \
   BuildTrackingExtractStage.java \
   BuildTrackingVerifyStage.java \
   CopyImagesStage.java \
@@ -42,6 +43,8 @@ java_DATA = \
   NukeRescaleStage.java \
   NukeSubstCompStage.java \
   NukeThumbnailStage.java \
+  PlaceholderStage.java \
+  PlaceholderMayaSceneStage.java \
   PrimaryHDRStage.java \
   RenderTaskVerifyStage.java \
   SoundtrackStage.java

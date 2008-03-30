@@ -1,4 +1,4 @@
-// $Id: TrackingBuilder.java,v 1.13 2008/03/23 05:09:58 jim Exp $
+// $Id: TrackingBuilder.java,v 1.14 2008/03/30 01:43:10 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -54,12 +54,18 @@ import java.util.*;
  *   Shot Name <BR>
  *   <DIV style="margin-left: 40px;">
  *     The short name of the shot within a sequence.
+ *   </DIV> <P>
+ * 
+ *   Temp Render <BR>
+ *   <DIV style="margin-left: 40px;">
+ *     Whether to add nodes require to create the temp render using a static inkblot texture
+ *     and the tracking data.
  *   </DIV> <BR>
  * </DIV> 
  */
 public 
 class TrackingBuilder 
-  extends BaseTrackingBuilder 
+  extends BaseShotBuilder 
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -126,10 +132,31 @@ class TrackingBuilder
   {
     super("Tracking",
           "A builder for constructing the nodes associated with the Tracking task.", 
-          mclient, qclient, builderInfo, studioDefs, projectNamer, shotNamer); 
+          mclient, qclient, builderInfo, studioDefs, 
+	  projectNamer, shotNamer, TaskType.Tracking);  
+
+    /* setup builder parameters */ 
+    {
+      /* selects the project, sequence and shot for the task */ 
+      addLocationParam(); 
+
+      /* optional temp render pass */ 
+      {
+	UtilityParam param = 
+	  new BooleanUtilityParam
+	    (aTempRender, 
+	     "Whether to add nodes require to create the temp render using a static " + 
+	     "inkblot texture and the tracking data.",
+	     false);	   
+        addParam(param);
+      }
+    }
 
     /* initialize the project namer */ 
     initProjectNamer(); 
+
+    /* initialize fields */ 
+    pFinalStages = new ArrayList<FinalizableStage>(); 
 
     /* create the setup passes */ 
     addSetupPass(new TrackingSetupShotEssentials());
@@ -143,8 +170,8 @@ class TrackingBuilder
       ConstructPass build = new BuildNodesPass();
       addConstructPass(build);
       
-      ConstructPass qd = new QueueDisablePass(); 
-      addConstructPass(qd); 
+      ConstructPass qdc = new QueueDisableCleanupPass(); 
+      addConstructPass(qdc); 
     }
 
     /* specify the layout of the parameters for each pass in the UI */ 
@@ -161,6 +188,8 @@ class TrackingBuilder
         sub.addEntry(1, aReleaseOnError);
         sub.addEntry(1, null);
         sub.addEntry(1, aLocation);
+        sub.addEntry(1, null);
+        sub.addEntry(1, aTempRender);
 
         layout.addPass(sub.getName(), sub); 
       }
@@ -253,6 +282,13 @@ class TrackingBuilder
 	pRequiredNodeNames.add(pTrackExtractTrackingNodeName); 
 
 	/* rorschach assets */ 
+        pRorschachTrackPlaceholderNodeName = 
+          pProjectNamer.getRorschachTrackPlaceholderNode(); 
+        pRequiredNodeNames.add(pRorschachTrackPlaceholderNodeName); 
+
+	pRorschachHatRigNodeName = pProjectNamer.getRorschachHatRigNode();
+	pRequiredNodeNames.add(pRorschachHatRigNodeName); 
+	
 	pRorschachVerifyModelNodeName = pProjectNamer.getRorschachVerifyModelNode(); 
 	pRequiredNodeNames.add(pRorschachVerifyModelNodeName); 
 
@@ -263,6 +299,28 @@ class TrackingBuilder
 	pHideCameraPlaneNodeName = pProjectNamer.getHideCameraPlaneNode(); 
 	pRequiredNodeNames.add(pHideCameraPlaneNodeName); 
       }
+
+      /* are we doing temp renders? */ 
+      {
+	Boolean tf = (Boolean) getParamValue(aTempRender);
+	pDoTempRender = ((tf != null) && tf);
+      }
+
+      /* optional temp render related prerequisites */ 
+      if(pDoTempRender) {
+	pTrackTempPrepNodeName = pProjectNamer.getTrackTempPrepNode(); 
+	pRequiredNodeNames.add(pTrackTempPrepNodeName); 
+
+	pTrackTempRenderNodeName = pProjectNamer.getTrackTempRenderNode(); 
+	pRequiredNodeNames.add(pTrackTempRenderNodeName); 
+
+	pRorschachTempModelNodeName = pProjectNamer.getRorschachTempModelNode(); 
+	pRequiredNodeNames.add(pRorschachTempModelNodeName); 
+
+	pRorschachTempTextureNodeName = pProjectNamer.getRorschachTempTextureNode(); 
+	pRequiredNodeNames.add(pRorschachTempTextureNodeName);       
+      }
+
     }
     
     private static final long serialVersionUID = -7271559542044510237L;
@@ -273,12 +331,13 @@ class TrackingBuilder
     
   protected
   class SetupTrackingEssentials
-    extends BaseSetupTrackingEssentials
+    extends SetupPass
   {
     public 
     SetupTrackingEssentials()
     {
-      super(); 
+      super("Setup Tracking Essentials", 
+	    "Lookup the names of nodes required by the tracking task."); 
     }
 
     /**
@@ -290,7 +349,12 @@ class TrackingBuilder
     validatePhase()
       throws PipelineException
     { 
-      super.validatePhase(); 
+      /* get the 1k/2k plates */ 
+      pUndistorted1kPlateNodeName = pShotNamer.getUndistorted1kPlateNode(); 
+      pRequiredNodeNames.add(pUndistorted1kPlateNodeName); 
+
+      pUndistorted2kPlateNodeName = pShotNamer.getApprovedUndistorted2kPlateNode(); 
+      pRequiredNodeNames.add(pUndistorted2kPlateNodeName); 
 
       /* get the render resolution MEL script */ 
       pResolutionNodeName = pShotNamer.getResolutionNode(); 
@@ -361,39 +425,22 @@ class TrackingBuilder
       /* the submit network */
       {
 	pTrackNodeName = pShotNamer.getTrackNode(); 
-	{
-	  if(!nodeExists(pTrackNodeName)) 
-	    throw new PipelineException
-	      ("Somehow the required camera/model tracking data node " + 
-	       "(" + pTrackNodeName + ") does not exist!"); 
-
-	  try {
-	    NodeVersion vsn = pClient.getCheckedInVersion(pTrackNodeName, null); 
-	    if(!vsn.hasSources()) {
-	      /* lock it if it was generated by an outsourcer */ 
-	      lockLatest(pTrackNodeName); 
-	    }
-	    else {
-	      /* otherwise, it was probably generated internally so we should make sure
-	  	   its up-to-date and modifiable so tracking can continue to be adjusted 
-		   while doing tracking verification test renders */ 
-	      checkOutLatest(pTrackNodeName, 
-			     CheckOutMode.KeepModified, CheckOutMethod.Modifiable);
-	    }
-	  }
-	  catch(PipelineException ex) {
-	    try {
-	      /* if it already exists in the working area, just leave it alone */ 
-	      pClient.getWorkingVersion(getAuthor(), getView(), pTrackNodeName); 
-	    }
-	    catch(PipelineException ex2) {
-	      throw new PipelineException
-		("Somehow no working version of the required camera/model tracking data " + 
-		 "node (" + pTrackNodeName + ") exists in the current working area " + 
-		 "(" + getAuthor() + "|" + getView() + " and it has never been " + 
-		 "checked-in!");
-	    }
-	  }
+	if(nodeExists(pTrackNodeName)) {
+	  lockLatest(pTrackNodeName); 
+	  addTaskAnnotation(pTrackNodeName, NodePurpose.Edit); 
+	}
+	else {
+	  PlaceholderMayaSceneStage stage = 
+	    new PlaceholderMayaSceneStage
+	      (stageInfo, pContext, pClient, 
+	       pTrackNodeName, pRorschachTrackPlaceholderNodeName);
+	  stage.addLink(new LinkMod(pUndistorted1kPlateNodeName, 
+				    LinkPolicy.Association, LinkRelationship.None, null));
+	  stage.addLink(new LinkMod(pRorschachHatRigNodeName,  
+				    LinkPolicy.Association, LinkRelationship.None, null));
+	  addTaskAnnotation(stage, NodePurpose.Edit); 
+	  stage.build(); 
+	  pFinalStages.add(stage);
 	}
 
 	String verifyNodeName = pShotNamer.getTrackingVerifyNode(); 
@@ -513,12 +560,49 @@ class TrackingBuilder
 	  stage.build(); 
 	}
 
+	if(pDoTempRender) {
+	  String trackingTempTextureNodeName = pShotNamer.getTrackingTempTextureNode();
+	  {
+	    MayaFTNBuildStage stage = 
+	      new MayaFTNBuildStage(stageInfo, pContext, pClient, 
+				    new MayaContext(), trackingTempTextureNodeName, true);
+	    stage.addLink(new LinkMod(pRorschachTempTextureNodeName, LinkPolicy.Dependency)); 
+	    addTaskAnnotation(stage, NodePurpose.Prepare); 
+	    stage.build();  
+	  }
+ 
+	  String trackingTempRenderNodeName = pShotNamer.getTrackingTempRenderNode();
+	  {
+	    BuildTestRenderStage stage = 
+	      new BuildTestRenderStage
+	        (stageInfo, pContext, pClient, 
+		 trackingTempRenderNodeName, pRorschachTempModelNodeName, pTrackNodeName, 
+		 trackingTempTextureNodeName, pTrackTempPrepNodeName, pFrameRange); 
+	    addTaskAnnotation(stage, NodePurpose.Prepare); 
+	    stage.build();  
+	  }
+	  
+	  pTrackingInkblotNodeName = pShotNamer.getTrackingInkblotNode(); 
+	  {
+	    RenderTaskVerifyStage stage = 
+	      new RenderTaskVerifyStage
+	        (stageInfo, pContext, pClient, 
+		 pTrackingInkblotNodeName, pFrameRange, "sgi", 
+		 trackingTempRenderNodeName, "camera01", pTrackTempRenderNodeName); 
+	    addTaskAnnotation(stage, NodePurpose.Product); 
+	    stage.build();  
+	  }
+	}
+
 	String approveNodeName = pShotNamer.getTrackingApproveNode();
 	{
 	  TreeSet<String> sources = new TreeSet<String>();
 	  sources.add(extractedCameraNodeName); 
 	  sources.add(extractedTrackNodeName); 
 	  sources.add(approvedTrackingMarkersNodeName); 
+
+	  if(pDoTempRender) 
+	    sources.add(pTrackingInkblotNodeName); 
 
 	  TargetStage stage = 
 	    new TargetStage(stageInfo, pContext, pClient, 
@@ -538,34 +622,44 @@ class TrackingBuilder
   /*----------------------------------------------------------------------------------------*/
 
   protected 
-  class QueueDisablePass
+  class QueueDisableCleanupPass
     extends ConstructPass
   {
     public 
-    QueueDisablePass() 
+    QueueDisableCleanupPass()
     {
-      super("Queue and Disable Actions", 
+      super("Queue, Disable Actions and Cleanup", 
 	    "");
     }
     
     /**
-     * Return nodes which will have their actions disabled to be queued now.
+     * Return both finalizable stage nodes and nodes which will have their actions
+     * disabled to be queued now.
      */ 
     @Override
     public TreeSet<String> 
     preBuildPhase()
     {
-      return getDisableList();
+      TreeSet<String> regenerate = new TreeSet<String>();
+
+      regenerate.addAll(getDisableList());
+      for(FinalizableStage stage : pFinalStages) 
+ 	regenerate.add(stage.getNodeName());
+
+      return regenerate;
     }
     
     /**
-     * Disable the actions for the second pass nodes. 
+     * Cleanup any temporary node structures used setup the network and 
+     * disable the actions of the newly regenerated nodes.
      */ 
     @Override
     public void 
     buildPhase() 
       throws PipelineException
     {
+      for(FinalizableStage stage : pFinalStages) 
+	stage.finalizeStage();
       disableActions();
     }
     
@@ -580,11 +674,32 @@ class TrackingBuilder
 
   private static final long serialVersionUID = -2163808030372775045L; 
 
-  
+  public static final String aTempRender = "TempRender"; 
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The stages which require running their finalizeStage() method before check-in.
+   */ 
+  private ArrayList<FinalizableStage> pFinalStages; 
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The fully resolved name of the node containing the undistorted/linearized
+   * ~1k plate images.
+   */ 
+  protected String pUndistorted1kPlateNodeName; 
+
+  /**
+   * The fully resolved name of the node containing the undistorted/linearized
+   * ~2k plate images.
+   */ 
+  protected String pUndistorted2kPlateNodeName; 
 
   /**
    * The frame range of the shot.
@@ -597,6 +712,11 @@ class TrackingBuilder
    */ 
   private String pResolutionNodeName; 
 
+  /** 
+   * Whether to add the nodes required for a temp render.
+   */ 
+  private boolean pDoTempRender; 
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -605,6 +725,18 @@ class TrackingBuilder
    * attach shaders and verify the tracking test render Maya scene.
    */ 
   private String pTrackPrepNodeName;  
+
+  /**
+   * The fully resolved name of the node containing the combined MEL scripts to 
+   * attach shaders and setup the tracking temp render Maya scene.
+   */ 
+  private String pTrackTempPrepNodeName;  
+
+  /**
+   * The fully resolved name of the node containing a MEL script which used to set
+   * the Maya render globals for tracking temp renders.
+   */ 
+  private String pTrackTempRenderNodeName;  
 
   /**
    * The fully resolved name of the node containing a MEL script which used to set
@@ -639,14 +771,36 @@ class TrackingBuilder
    */ 
   private String pTrackExtractTrackingNodeName;  
 
+  /**
+   * The fully resolved name of node containig the inkblot temp render images. 
+   */ 
+  private String pTrackingInkblotNodeName; 
+
 
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The fully resolved name of the node containing a placeholder Maya scene which will 
+   * eventually contain the camera/model tracking data exported from PFTrack.
+   */ 
+  private String pRorschachTrackPlaceholderNodeName; 
+
+  /**
+   * The fully resolved name of the node containing the hat rig Maya scene.
+   */ 
+  private String pRorschachHatRigNodeName; 
 
   /**
    * The fully resolved name of the node containing a Maya scene which provides the 
    * test rig used in the tracking verification test renders.
    */ 
   private String pRorschachVerifyModelNodeName;  
+
+  /**
+   * The fully resolved name of the node containing a Maya scene which provides the 
+   * rig used in the tracking temp renders.
+   */ 
+  private String pRorschachTempModelNodeName;  
 
   /**
    * The fully resolved name of the node containing a Maya scene which provides the
@@ -659,6 +813,11 @@ class TrackingBuilder
    * test lights used in the tracking verification test renders.
    */ 
   private String pRorschachTestLightsNodeName;  
+
+  /**
+   * The fully resolved name of the node containing the temp inkblot texture.
+   */ 
+  private String pRorschachTempTextureNodeName;  
 
 
   /*----------------------------------------------------------------------------------------*/

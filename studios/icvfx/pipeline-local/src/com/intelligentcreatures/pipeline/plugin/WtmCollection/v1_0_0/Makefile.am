@@ -16,7 +16,6 @@ java_DATA = \
   AssetType.java \
   BaseShotBuilder.java \
   BaseTaskBuilder.java \
-  BaseTrackingBuilder.java \
   BlotBuilder.java \
   HdriBuilder.java \
   ICStageFunction.java \
@@ -31,6 +30,7 @@ java_DATA = \
   SoundBuilder.java \
   StudioDefinitions.java \
   TaskType.java \
+  TempCompBuilder.java \
   TrackingBuilder.java \
   WtmCollection.java
 

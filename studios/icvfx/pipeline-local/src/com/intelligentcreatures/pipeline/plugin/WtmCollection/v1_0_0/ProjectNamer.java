@@ -1,4 +1,4 @@
-// $Id: ProjectNamer.java,v 1.18 2008/03/23 05:09:58 jim Exp $
+// $Id: ProjectNamer.java,v 1.19 2008/03/30 01:43:10 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -236,6 +236,30 @@ class ProjectNamer
   }
 
   /**
+   * Returns the fully resolved name of the node containing the combined MEL scripts to 
+   * attach shaders and setup the tracking temp render Maya scene.
+   */ 
+  public String
+  getTrackTempPrepNode() 
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Tracking), 
+			 new Path(AppDirs.MEL.toDirPath(), "track_temp_prep"));
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node containing a MEL script which used to set
+   * the Maya render globals for tracking temp renders.
+   */ 
+  public String
+  getTrackTempRenderNode() 
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Tracking), 
+			 new Path(AppDirs.MEL.toDirPath(), "track_temp_render"));
+    return path.toString(); 
+  }
+
+  /**
    * Returns the fully resolved name of the node containing a MEL script which creates a 
    * worldspace duplicate of the tracked camera with baked animation and saves it into 
    * a clean scene.
@@ -368,6 +392,18 @@ class ProjectNamer
   }
 
   /**
+   * Returns the fully resolved name of the node containing a Maya scene which provides the 
+   * rig used in the tracking temp renders.
+   */ 
+  public String
+  getRorschachTempModelNode() 
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Rorschach, TaskType.Modeling), 
+			 "ror_mdl_temp");
+    return path.toString(); 
+  }
+
+  /**
    * Returns the fully resolved name of the node containing a Maya scene which provides a
    * clean unrigged model.
    */ 
@@ -439,6 +475,17 @@ class ProjectNamer
   }
 
   /**
+   * Returns the fully resolved name of the node containing the hat rig Maya scene.
+   */ 
+  public String
+  getRorschachHatRigNode() 
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Rorschach, TaskType.Rigging), 
+			 "hat_rig");
+    return path.toString(); 
+  }
+
+  /**
    * Returns the fully resolved name of the node containing a Maya scene which provides the
    * test shaders used in the blot animation verification test renders.
    */ 
@@ -473,7 +520,47 @@ class ProjectNamer
     return path.toString(); 
   }
 
+  /**
+   * Returns the fully resolved name of the node containing the temp inkblot texture.
+   */ 
+  public String
+  getRorschachTempTextureNode() 
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Rorschach, TaskType.Texture), 
+			 "ror_tex_temp");
+    return path.toString(); 
+  }
   
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   T E M P   C O M P   A S S E T S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Returns the fully resolved name of the node containing Nuke script used to redistort
+   * CG elements to match the original plates.
+   */ 
+  public String
+  getTempCompRedistortNukeNode() 
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Comp), 
+			 new Path(AppDirs.Nuke.toDirPath(), "cg_redistort"));
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node containing Nuke script used to perform
+   * the temp comp.
+   */ 
+  public String
+  getTempCompNukeNode() 
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Comp), 
+			 new Path(AppDirs.Nuke.toDirPath(), "temp_comp"));
+    return path.toString(); 
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   Q U I C K T I M E   A S S E T S                                                      */
@@ -502,7 +589,6 @@ class ProjectNamer
     return new Path(pBasePaths.get(AssetType.Common, TaskType.Misc), 
                     new Path(AppDirs.Nuke.toDirPath(), "formats"));
   }
-
 
 
   /*----------------------------------------------------------------------------------------*/

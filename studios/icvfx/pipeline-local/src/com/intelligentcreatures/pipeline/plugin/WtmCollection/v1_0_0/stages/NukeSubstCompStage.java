@@ -1,4 +1,4 @@
-// $Id: NukeSubstCompStage.java,v 1.3 2008/03/17 19:33:35 jim Exp $
+// $Id: NukeSubstCompStage.java,v 1.4 2008/03/30 01:43:10 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
 
@@ -27,6 +27,61 @@ class NukeSubstCompStage
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * Construct a new stage which generates a Nuke script using the "Substitute" mode.
+   * 
+   * @param stageInfo
+   *   Class containing basic information shared among all stages.
+   * 
+   * @param context
+   *   The {@link UtilContext} that this stage acts in.
+   * 
+   * @param client
+   *   The instance of Master Manager that the stage performs all its actions in.
+   * 
+   * @param nodeName
+   *   The name of the node that is to be created.
+   * 
+   * @param masterNuke
+   *   The name of source master Nuke script.
+   * 
+   * @param substitutions
+   *   The values for the per-source "ReplaceName" parameter indexed by source image
+   *   node name containing the Nuke script fragments to replace with.
+   */ 
+  @SuppressWarnings("unchecked")
+  public
+  NukeSubstCompStage
+  (
+   StageInformation stageInfo,
+   UtilContext context,
+   MasterMgrClient client, 
+   String nodeName, 
+   String masterNuke,
+   TreeMap<String,String> substitutions
+  )
+    throws PipelineException
+  {
+    super("NukeSubstComp", 
+	 "Creates a node which uses the NukeSubstComp action.", 
+          stageInfo, context, client, 
+          nodeName, "nk", 
+          new PluginContext("Nuke"), 
+	  new PluginContext("NukeSubstComp", "Temerity", 
+			    new Range<VersionID>(new VersionID("2.4.2"), null)));  
+
+    addSingleParamValue("Mode", "Substitute"); 
+
+    addLink(new LinkMod(masterNuke, LinkPolicy.Dependency));
+    addSingleParamValue("MasterScript", masterNuke); 
+
+    for(String sname : substitutions.keySet()) {
+      String replaceName = substitutions.get(sname);
+      addLink(new LinkMod(sname, LinkPolicy.Dependency));
+      addSourceParamValue(sname, "ReplaceName", replaceName); 
+    }
+  }
+
   /**
    * Construct a new stage.
    * 

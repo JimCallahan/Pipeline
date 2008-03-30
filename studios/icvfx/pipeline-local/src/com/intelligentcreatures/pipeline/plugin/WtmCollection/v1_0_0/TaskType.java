@@ -1,4 +1,4 @@
-// $Id: TaskType.java,v 1.10 2008/03/13 16:26:27 jim Exp $
+// $Id: TaskType.java,v 1.11 2008/03/30 01:43:10 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -75,6 +75,11 @@ enum TaskType
   /**
    *
    */ 
+  TempComp, 
+
+  /**
+   *
+   */ 
   Comp, 
 
 
@@ -86,6 +91,7 @@ enum TaskType
   Modeling, 
   Rigging, 
   LookDev, 
+  Texture, 
   Anim, 
   Placeholder, 
   Misc; 
@@ -110,6 +116,9 @@ enum TaskType
 
     case LookDev:
       return "shade";
+	
+    case TempComp:
+      return "temp_comp";
 	
     default:
       return super.toString().toLowerCase(); 
