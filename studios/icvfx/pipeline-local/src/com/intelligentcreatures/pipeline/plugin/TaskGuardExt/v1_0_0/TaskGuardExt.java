@@ -1,4 +1,4 @@
-// $Id: TaskGuardExt.java,v 1.4 2008/03/24 07:32:06 jim Exp $
+// $Id: TaskGuardExt.java,v 1.5 2008/03/30 00:50:29 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.TaskGuardExt.v1_0_0;
 
@@ -217,12 +217,12 @@ class TaskGuardExt
       String productError = null;
       for(String purpose : nodeAnnots.keySet()) {
 	if(purpose.equals(aFocus) || purpose.equals(aThumbnail)) {
-	  if(!rootAnnots.containsKey(aApprove)) 
+	  if(!rootAnnots.containsKey(aSubmit)) 
 	    throw new PipelineException
 	      ("Check-in aborted for node (" + nname + ") because nodes with a " + aPurpose + 
 	       " of (" + aFocus + " | " + aThumbnail + ") can only be checked-in when the " + 
 	       "root node of the check-in operation has a " + aPurpose + " of " + 
-	       "(" + aApprove + ")!"); 
+	       "(" + aSubmit + ")!"); 
 	}
 	else if(purpose.equals(aPrepare)) {
 	  if(!rootAnnots.containsKey(aSubmit) && !rootAnnots.containsKey(aApprove)) 
