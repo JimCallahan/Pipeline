@@ -1,4 +1,4 @@
-// $Id: NoiseBuilder.java,v 1.4 2008/03/23 05:09:58 jim Exp $
+// $Id: NoiseBuilder.java,v 1.5 2008/03/30 00:50:52 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -13,7 +13,7 @@ import us.temerity.pipeline.stages.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   B L O T   B U I L D E R                                                                */
+/*   N O I S E   B U I L D E R                                                              */
 /*------------------------------------------------------------------------------------------*/
 
 /**
