@@ -1,6 +1,6 @@
 
 if IS_MAC_OS
-  SUBDIRS = java utils native mac-apps
+  SUBDIRS = java utils native etc mac-apps
 else !IS_MAC_OS
 
 if IS_WINDOWS 
