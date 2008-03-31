@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC -//Apple Computer//DTD PLIST 1.0//EN
+http://www.apple.com/DTDs/PropertyList-1.0.dtd >
+<plist version="1.0">
+<dict>
+     <key>Label</key>
+     <string>us.temerity.pipeline.pljobmgr</string>
+     <key>UserName</key>
+     <string>@PIPELINE_USER@</string>
+     <key>GroupName</key>
+     <string>@PIPELINE_GROUP@</string>
+     <key>Program</key>
+     <string>@ROOT_INST_PARENT_DIR@/pipeline-latest/@NATIVE_OSTYPE@-@NATIVE_ARCHTYPE@-Opt/sbin/pljobmgr</string>
+     <key>ProgramArguments</key>
+     <array>
+          <string>pljobmgr</string>
+          <string>--standard-log-file</string>
+          <string>--fail-fast</string>
+     </array>
+     <key>OnDemand</key>
+     <false/>
+     <key>RunAtLoad</key>
+     <true/>
+</dict>
+</plist>
