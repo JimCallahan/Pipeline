@@ -1,4 +1,4 @@
-// $Id: NukeCatCompAction.java,v 1.1 2008/03/31 04:39:39 jim Exp $
+// $Id: NukeCatCompAction.java,v 1.2 2008/03/31 07:20:23 jim Exp $
 
 package us.temerity.pipeline.plugin.NukeCatCompAction.v2_4_3;
 
@@ -118,8 +118,6 @@ class NukeCatCompAction
 
     addSupport(OsType.MacOS);
     addSupport(OsType.Windows);
-
-    underDevelopment(); 
   }
 
 
