@@ -9,7 +9,7 @@ AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(Pipeline, 2.4.1b12)
+AM_INIT_AUTOMAKE(Pipeline, 2.4.1b13)
                            
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
@@ -1792,6 +1792,8 @@ AC_CONFIG_FILES([
   src/etc/init.d/Makefile
   src/etc/init.d/pljobmgr-redhat
   src/etc/init.d/pljobmgr-suse
+  src/etc/launchd/Makefile
+  src/etc/launchd/pljobmgr.plist
   src/etc/python/Makefile
   src/etc/python/plremote.py
   src/etc/winopts/Makefile

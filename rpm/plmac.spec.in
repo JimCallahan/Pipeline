@@ -73,6 +73,8 @@ Pipeline configuration process.
 @ROOT_INST_DIR@/jogl/lib/MacOS-UnivBin-Opt/libjogl_cg.jnilib
 @ROOT_INST_DIR@/jogl/lib/MacOS-UnivBin-Opt/libjogl.jnilib
 
+@ROOT_INST_DIR@/etc/launchd/MacOS-UnivBin-Opt/pljobmgr.plist
+
 %defattr(555,root,root)
 @ROOT_INST_DIR@/jython/MacOS-UnivBin-Opt/jython
 @ROOT_INST_DIR@/jython/MacOS-UnivBin-Opt/jythonc
