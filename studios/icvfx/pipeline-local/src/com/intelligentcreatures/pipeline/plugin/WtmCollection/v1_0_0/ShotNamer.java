@@ -1,4 +1,4 @@
-// $Id: ShotNamer.java,v 1.27 2008/03/30 01:43:10 jim Exp $
+// $Id: ShotNamer.java,v 1.28 2008/04/01 20:52:11 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -1605,8 +1605,7 @@ class ShotNamer
   getTempCompInkblotNode() 
   {
     Path path = new Path(pBasePaths.get(TaskType.TempComp, NodePurpose.Edit), 
-			 new Path(AppDirs.Render.toDirPath(), 
-				  joinNames(getFullShotName(), "inkblot"))); 
+                         joinNames(getFullShotName(), "inkblot")); 
     return path.toString(); 
   }
 
