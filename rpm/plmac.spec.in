@@ -59,6 +59,7 @@ Pipeline configuration process.
 %defattr(4550,root,@PIPELINE_GROUP@)
 @ROOT_INST_DIR@/MacOS-UnivBin-Opt/sbin/plrun
 
+%defattr(550,root,@PIPELINE_GROUP@)
 @ROOT_INST_DIR@/MacOS-UnivBin-Opt/sbin/pljobmgr
 @ROOT_INST_DIR@/MacOS-UnivBin-Debug/sbin/pljobmgr
 @ROOT_INST_DIR@/MacOS-UnivBin-Profile/sbin/pljobmgr
