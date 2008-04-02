@@ -1,4 +1,4 @@
-// $Id: ProjectNamer.java,v 1.19 2008/03/30 01:43:10 jim Exp $
+// $Id: ProjectNamer.java,v 1.20 2008/04/02 20:56:16 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -589,6 +589,18 @@ class ProjectNamer
     return new Path(pBasePaths.get(AssetType.Common, TaskType.Misc), 
                     new Path(AppDirs.Nuke.toDirPath(), "formats"));
   }
+
+  /**
+   * Returns the fully resolved node directory path to the parent directory of all existing
+   * QuickTime codec settings files.
+   */ 
+  public Path
+  getQtCodecSettingsParentPath() 
+  {
+    return new Path(pBasePaths.get(AssetType.Common, TaskType.Misc), 
+                    new Path(AppDirs.QuickTime.toDirPath(), "codecs")); 
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/

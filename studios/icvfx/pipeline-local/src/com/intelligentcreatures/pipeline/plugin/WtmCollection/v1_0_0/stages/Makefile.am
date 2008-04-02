@@ -47,6 +47,7 @@ java_DATA = \
   PlaceholderMayaSceneStage.java \
   PrimaryHDRStage.java \
   RenderTaskVerifyStage.java \
+  SlateSubstStage.java \
   SoundtrackStage.java
 
 

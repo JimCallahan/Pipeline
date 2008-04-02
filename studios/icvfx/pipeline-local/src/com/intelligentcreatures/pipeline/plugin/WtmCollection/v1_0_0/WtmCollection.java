@@ -1,4 +1,4 @@
-// $Id: WtmCollection.java,v 1.17 2008/03/30 01:43:10 jim Exp $
+// $Id: WtmCollection.java,v 1.18 2008/04/02 20:56:16 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -48,7 +48,7 @@ class WtmCollection
       {
 	LayoutGroup sub = 
 	  new LayoutGroup("Internal", "Builders used internally by Tools.", true);
-  	sub.addEntry("QuickTime"); 
+  	sub.addEntry("Deliver"); 
 	sub.addEntry("ApproveTask");
 
 	group.addSubGroup(sub);
@@ -85,18 +85,18 @@ class WtmCollection
     String pkg = "com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.";
 
     TreeMap<String, String> toReturn = new TreeMap<String, String>();
-    toReturn.put("Sound",            pkg + "SoundBuilder");
-    toReturn.put("HDRI",             pkg + "HdriBuilder");
-    toReturn.put("Plates",           pkg + "PlatesBuilder");
-    toReturn.put("Mattes",           pkg + "MattesBuilder");
-    toReturn.put("Tracking",         pkg + "TrackingBuilder");
-    toReturn.put("Match",            pkg + "MatchBuilder");
-    toReturn.put("Blot",             pkg + "BlotBuilder");
-    toReturn.put("Noise",            pkg + "NoiseBuilder");
-    toReturn.put("TempComp",         pkg + "TempCompBuilder");
+    toReturn.put("Sound",     pkg + "SoundBuilder");
+    toReturn.put("HDRI",      pkg + "HdriBuilder");
+    toReturn.put("Plates",    pkg + "PlatesBuilder");
+    toReturn.put("Mattes",    pkg + "MattesBuilder");
+    toReturn.put("Tracking",  pkg + "TrackingBuilder");
+    toReturn.put("Match",     pkg + "MatchBuilder");
+    toReturn.put("Blot",      pkg + "BlotBuilder");
+    toReturn.put("Noise",     pkg + "NoiseBuilder");
+    toReturn.put("TempComp",  pkg + "TempCompBuilder");
 
-    toReturn.put("QuickTime",        pkg + "QuickTimeBuilder");
-    toReturn.put("ApproveTask",      pkg + "ApproveTaskBuilder");
+    toReturn.put("Deliver",      pkg + "DeliverBuilder");
+    toReturn.put("ApproveTask",  pkg + "ApproveTaskBuilder");
     
     return toReturn;
   } 

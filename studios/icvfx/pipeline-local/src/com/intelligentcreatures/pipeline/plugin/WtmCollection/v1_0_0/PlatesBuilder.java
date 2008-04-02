@@ -1,4 +1,4 @@
-// $Id: PlatesBuilder.java,v 1.25 2008/03/25 14:51:46 jim Exp $
+// $Id: PlatesBuilder.java,v 1.26 2008/04/02 20:56:16 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -163,9 +163,6 @@ class PlatesBuilder
     {
       ConstructPass build = new BuildNodesPass();
       addConstructPass(build);
-      
-      ConstructPass qd = new QueueDisablePass(); 
-      addConstructPass(qd); 
     }
 
     /* specify the layout of the parameters for each pass in the UI */ 
@@ -727,47 +724,8 @@ class PlatesBuilder
 
     private static final long serialVersionUID = -5216068758078265108L;
   }
-   
 
-
-  /*----------------------------------------------------------------------------------------*/
-
-  protected 
-  class QueueDisablePass
-    extends ConstructPass
-  {
-    public 
-    QueueDisablePass() 
-    {
-      super("Queue and Disable Actions", 
-	    "");
-    }
-    
-    /**
-     * Return nodes which will have their actions disabled to be queued now.
-     */ 
-    @Override
-    public TreeSet<String> 
-    preBuildPhase()
-    {
-      return getDisableList();
-    }
-    
-    /**
-     * Disable the actions for the second pass nodes. 
-     */ 
-    @Override
-    public void 
-    buildPhase() 
-      throws PipelineException
-    {
-      disableActions();
-    }
-    
-    private static final long serialVersionUID = 6643366544737486251L;
-  }
-
-
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */

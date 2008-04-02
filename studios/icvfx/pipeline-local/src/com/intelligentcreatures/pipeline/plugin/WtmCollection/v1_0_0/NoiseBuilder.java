@@ -1,4 +1,4 @@
-// $Id: NoiseBuilder.java,v 1.5 2008/03/30 00:50:52 jim Exp $
+// $Id: NoiseBuilder.java,v 1.6 2008/04/02 20:56:16 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -133,9 +133,6 @@ class NoiseBuilder
     {
       ConstructPass build = new BuildNodesPass();
       addConstructPass(build);
-      
-      ConstructPass qd = new QueueDisablePass(); 
-      addConstructPass(qd); 
     }
 
     /* specify the layout of the parameters for each pass in the UI */ 
@@ -506,45 +503,6 @@ class NoiseBuilder
     private static final long serialVersionUID = 8483012262557814886L;
   }
    
-
-  /*----------------------------------------------------------------------------------------*/
-
-  protected 
-  class QueueDisablePass
-    extends ConstructPass
-  {
-    public 
-    QueueDisablePass() 
-    {
-      super("Queue and Disable Actions", 
-	    "");
-    }
-    
-    /**
-     * Return nodes which will have their actions disabled to be queued now.
-     */ 
-    @Override
-    public TreeSet<String> 
-    preBuildPhase()
-    {
-      return getDisableList();
-    }
-    
-    /**
-     * Disable the actions for the second pass nodes. 
-     */ 
-    @Override
-    public void 
-    buildPhase() 
-      throws PipelineException
-    {
-      disableActions();
-    }
- 
-    private static final long serialVersionUID = 3260739941337787344L;
-  }
-
-
 
 
   /*----------------------------------------------------------------------------------------*/

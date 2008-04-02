@@ -1,4 +1,4 @@
-// $Id: ShotNamer.java,v 1.28 2008/04/01 20:52:11 jim Exp $
+// $Id: ShotNamer.java,v 1.29 2008/04/02 20:56:16 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -23,7 +23,13 @@ class ShotNamer
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Create a new shot namer.
+   * Create a new namer.
+   * 
+   * @param name
+   *    The name of the namer. 
+   * 
+   * @param desc
+   *    A description of what the namer does. 
    * 
    * @param mclient 
    *   The master manager connection.
@@ -34,17 +40,18 @@ class ShotNamer
    * @param studioDefs 
    *   Provides a set of studio-wide helpers for project, sequence and shot naming.
    */ 
-  public ShotNamer
+  protected 
+  ShotNamer
   (
-    MasterMgrClient mclient,
-    QueueMgrClient qclient,
-    StudioDefinitions studioDefs
+   String name, 
+   String desc, 
+   MasterMgrClient mclient,
+   QueueMgrClient qclient,
+   StudioDefinitions studioDefs
   )
     throws PipelineException
   {
-    super("ShotNamer", 
-          "Provides the names of nodes and node directories which are shot specific.", 
-          mclient, qclient);
+    super(name, desc, mclient, qclient);
     
     pStudioDefs = studioDefs;
     pBasePaths  = new DoubleMap<TaskType, NodePurpose, Path>(); 
@@ -75,6 +82,32 @@ class ShotNamer
          null);
       addParam(param);
     }
+  }
+
+  /**
+   * Create a new namer.
+   * 
+   * @param mclient 
+   *   The master manager connection.
+   * 
+   * @param qclient 
+   *   The queue manager connection.
+   * 
+   * @param studioDefs 
+   *   Provides a set of studio-wide helpers for project, sequence and shot naming.
+   */ 
+  public 
+  ShotNamer
+  (
+   MasterMgrClient mclient,
+   QueueMgrClient qclient,
+   StudioDefinitions studioDefs
+  )
+    throws PipelineException
+  {
+    this("ShotNamer", 
+	 "Provides the names of nodes and node directories which are shot specific.", 
+	 mclient, qclient, studioDefs);
   }
 
 
@@ -155,7 +188,7 @@ class ShotNamer
     return (pSeqName + pShotName); 
   }
 
-
+  
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -1748,26 +1781,7 @@ class ShotNamer
     return path.toString(); 
   }
 
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   Q U I C K T I M E   D E L I V E R Y                                                  */
-  /*----------------------------------------------------------------------------------------*/
   
-  /**
-   * Get the default QuickTime deliverable name for a given task.
-   */ 
-  public String
-  getDeliverable
-  (
-   TaskType task
-  ) 
-  {
-    return (getFullShotName() + "_" + task); 
-  }
-
-  
- 
 
   /*----------------------------------------------------------------------------------------*/
   /*   U T I L I T I E S                                                                    */
@@ -1792,7 +1806,7 @@ class ShotNamer
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
   
-  static final long serialVersionUID = -5674419897754929249L; 
+  private static final long serialVersionUID = -5674419897754929249L; 
 
 
 
@@ -1803,7 +1817,7 @@ class ShotNamer
   /**
    * Provides a set of studio-wide helpers for project, sequence and shot naming.
    */ 
-  private StudioDefinitions pStudioDefs;
+  protected StudioDefinitions pStudioDefs;
 
   
   /*-- GENERATED ---------------------------------------------------------------------------*/
@@ -1811,14 +1825,14 @@ class ShotNamer
   /**
    * Cached short names of the current project, shot sequence, shot and combined seqshot.
    */ 
-  private String pProjectName;
-  private String pSeqName;
-  private String pShotName;
+  protected String pProjectName;
+  protected String pSeqName;
+  protected String pShotName;
   
   /**
    * Cached fully resolved node directory paths for all combinations of task type and
    * node purpose for this shot.
    */ 
-  private DoubleMap<TaskType, NodePurpose, Path>  pBasePaths;
+  protected DoubleMap<TaskType, NodePurpose, Path>  pBasePaths;
   
 }

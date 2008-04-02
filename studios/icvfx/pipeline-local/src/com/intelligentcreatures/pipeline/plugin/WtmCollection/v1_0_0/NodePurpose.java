@@ -1,4 +1,4 @@
-// $Id: NodePurpose.java,v 1.1 2008/02/06 07:21:06 jim Exp $
+// $Id: NodePurpose.java,v 1.2 2008/04/02 20:56:16 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -59,7 +59,12 @@ enum NodePurpose
   /**
    * A node that should be checked-in to signal that the task has been approved.
    */ 
-  Approve; 
+  Approve, 
+
+  /**
+   * A node containing QuickTime movies delivered for client or internal dailies.
+   */ 
+  Deliver; 
 
 
 
