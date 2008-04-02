@@ -1,4 +1,4 @@
-// $Id: CommonTaskAnnotation.java,v 1.6 2008/03/13 16:26:27 jim Exp $
+// $Id: CommonTaskAnnotation.java,v 1.7 2008/04/02 20:56:29 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.CommonTaskAnnotation.v1_0_0;
 
@@ -65,6 +65,9 @@ import java.io.*;
  *                 process which will generates one or more of the other procedural types 
  *                 of nodes in the task but which has no direct utility to either artists 
  *                 or supervisors.
+ * 
+ *       Deliver - A node representing a QuickTime movie delivered to clients or a DDR 
+ *                 for internal dailies. 
  *     </DIV> <BR> 
  *   </DIV> <BR> 
  * </DIV> <P>
@@ -182,6 +185,7 @@ class CommonTaskAnnotation
       choices.add(aFocus); 
       choices.add(aThumbnail); 
       choices.add(aProduct); 
+      choices.add(aDeliver); 
 
       AnnotationParam param = 
         new EnumAnnotationParam
@@ -240,6 +244,7 @@ class CommonTaskAnnotation
   public static final String aFocus     = "Focus";
   public static final String aThumbnail = "Thumbnail";
   public static final String aProduct   = "Product";
+  public static final String aDeliver   = "Deliver";
 }
 
 

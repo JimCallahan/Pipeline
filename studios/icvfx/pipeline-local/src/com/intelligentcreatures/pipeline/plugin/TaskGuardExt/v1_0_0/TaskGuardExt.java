@@ -1,4 +1,4 @@
-// $Id: TaskGuardExt.java,v 1.5 2008/03/30 00:50:29 jim Exp $
+// $Id: TaskGuardExt.java,v 1.6 2008/04/02 20:56:29 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.TaskGuardExt.v1_0_0;
 
@@ -142,7 +142,7 @@ class TaskGuardExt
              "parameter set to " + aPrereq + " will be considered a task prerequisites " + 
              "node."); 
       }
-      else if(rootAnnots.containsKey(aEdit)) {
+      else if(rootAnnots.containsKey(aEdit) || rootAnnots.containsKey(aDeliver)) {
         /* okay, let everyone do this... */ 
       }
       else if(rootAnnots.containsKey(aSubmit)) {
@@ -189,9 +189,9 @@ class TaskGuardExt
         throw new PipelineException
           ("Check-in aborted for node (" + nname + ") because the root node of " + 
            "the check-in operation (" + rname + ") does not have a " + aPurpose + " of " + 
-           "either " + aPrereq + ", " + aEdit + ", " + aSubmit + " or " + aApprove + "! " + 
-           "Only nodes with these type of " + aPurpose + " may be used as the root node " + 
-           "of a check-in operation."); 
+           "either " + aPrereq + ", " + aEdit + ", " + aSubmit + ", " + aApprove + " or " + 
+	   aDeliver + "! Only nodes with these type of " + aPurpose + " may be used as " + 
+	   "the root node of a check-in operation."); 
       }
     }
     
@@ -225,12 +225,14 @@ class TaskGuardExt
 	       "(" + aSubmit + ")!"); 
 	}
 	else if(purpose.equals(aPrepare)) {
-	  if(!rootAnnots.containsKey(aSubmit) && !rootAnnots.containsKey(aApprove)) 
+	  if(!rootAnnots.containsKey(aSubmit) && 
+	     !rootAnnots.containsKey(aApprove) && 
+	     !rootAnnots.containsKey(aDeliver)) 
 	    throw new PipelineException
 	      ("Check-in aborted for node (" + nname + ") because nodes with a " + aPurpose + 
 	       " of (" + aPrepare + ") can only be checked-in when the root node of the " + 
-	       "check-in operation has a " + aPurpose + " of (" + aSubmit + " | " + 
-	       aApprove + ")!"); 
+	       "check-in operation has a " + aPurpose + " of " + aSubmit + ", " + aApprove + 
+	       " or " + aDeliver + ")!"); 
 	}
 	else if(purpose.equals(aProduct)) {
 	  if(!rootAnnots.containsKey(aApprove)) 
@@ -239,7 +241,9 @@ class TaskGuardExt
 	       " of (" + aProduct + ") can only be checked-in when the root node of the " + 
 	       "check-in operation has a " + aPurpose + " of (" + aApprove + ")!"); 
 	}
-	else if(purpose.equals(aSubmit) || purpose.equals(aApprove)) {  
+	else if(purpose.equals(aSubmit) || 
+		purpose.equals(aApprove) || 
+		purpose.equals(aDeliver)) {  
 	  if(!nname.equals(rname)) 
 	    throw new PipelineException
 	      ("Check-in aborted for node (" + nname + ") unless it is the root node of " + 
@@ -478,6 +482,7 @@ class TaskGuardExt
   public static final String aThumbnail = "Thumbnail";
   public static final String aSubmit    = "Submit";
   public static final String aProduct   = "Product";
+  public static final String aDeliver   = "Deliver";
   public static final String aApprove   = "Approve";
       
 }
