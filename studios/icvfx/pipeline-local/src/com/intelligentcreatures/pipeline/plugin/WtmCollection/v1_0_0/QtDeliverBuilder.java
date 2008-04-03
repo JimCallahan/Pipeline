@@ -1,4 +1,4 @@
-// $Id: QtDeliverBuilder.java,v 1.1 2008/04/03 01:34:28 jim Exp $
+// $Id: QtDeliverBuilder.java,v 1.2 2008/04/03 06:04:59 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -129,8 +129,8 @@ class QtDeliverBuilder
     {
       /* hide and set parameters which shouldn't be visible to the user */ 
       {
-	disableParam(new ParamMapping(aCheckinWhenDone));
-	//setParamValue(new ParamMapping(aCheckInWhenDone), true);
+	//disableParam(new ParamMapping(aCheckinWhenDone));
+	setParamValue(new ParamMapping(aCheckInWhenDone), true);
 
 	disableParam(new ParamMapping(aActionOnExistence));
 	setParamValue(new ParamMapping(aActionOnExistence), 
