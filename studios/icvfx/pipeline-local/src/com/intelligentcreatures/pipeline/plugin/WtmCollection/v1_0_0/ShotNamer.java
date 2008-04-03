@@ -1,4 +1,4 @@
-// $Id: ShotNamer.java,v 1.29 2008/04/02 20:56:16 jim Exp $
+// $Id: ShotNamer.java,v 1.30 2008/04/03 10:30:47 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -640,7 +640,7 @@ class ShotNamer
   {
     Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Product), 
 			 new Path(AppDirs.Image2k.toDirPath(), 
-				  new Path(AppDirs.Cin.toDirPath(), 
+				  new Path(AppDirs.Cineon.toDirPath(), 
 					   joinNames(getFullShotName(), "bg_ud_2k")))); 
     return path.toString(); 
   }
@@ -1757,18 +1757,6 @@ class ShotNamer
 
 
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Returns the fully resolved name of the node containing the temp composited images.
-   */ 
-  public String
-  getApprovedTempCompNode() 
-  {
-    Path path = new Path(pBasePaths.get(TaskType.TempComp, NodePurpose.Product), 
-			 new Path(AppDirs.Comp.toDirPath(), 
-				  joinNames(getFullShotName(), "temp_comp"))); 
-    return path.toString(); 
-  }
 
   /**
    * Returns the fully resolved name of the approve node for the TempComp task.

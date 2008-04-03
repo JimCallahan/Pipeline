@@ -1,4 +1,4 @@
-// $Id: QtDeliverBuilder.java,v 1.3 2008/04/03 10:30:47 jim Exp $
+// $Id: CineonDeliverBuilder.java,v 1.1 2008/04/03 10:30:47 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -14,15 +14,14 @@ import us.temerity.pipeline.stages.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   Q T   D E L I V E R   B U I L D E R                                                    */
+/*   C I N E O N   D E L I V E R   B U I L D E R                                            */
 /*------------------------------------------------------------------------------------------*/
 
 /**
  * A builder for constructing the nodes required to prepare an image sequence for delivery 
  * to the client or for internal review. <P> 
  * 
- * This includes generating slates, adding per-frame overlays, reformatting the images to 
- * a specific resolution and converting to a QuickTime movie.<P> 
+ * In this case, generating a single slate image is all that is required.<P> 
  * 
  * Besides the common parameters shared by all builders, this builder defines the following
  * additional parameters: <BR>
@@ -71,26 +70,10 @@ import java.util.*;
  *   <DIV style="margin-left: 40px;">
  *     The node name prefix of the master slate creation Nuke script to use.
  *   </DIV> <BR>
- * 
- *   Slate Hold <BR> 
- *   <DIV style="margin-left: 40px;">
- *     The number of frames to hold the constant slate image before the images being 
- *     reviewed begin animating. 
- *   </DIV> <BR>
- * 
- *   Format Script <BR> 
- *   <DIV style="margin-left: 40px;">
- *     The node name prefix of the final image formatting Nuke script to use.");  
- *   </DIV> <BR>
- * 
- *   Codec Settings<BR> 
- *   <DIV style="margin-left: 40px;">
- *     The QuickTime codec settings to encode the final movie.
- *   </DIV> <BR>
  * </DIV> 
  */
 public 
-class QtDeliverBuilder 
+class CineonDeliverBuilder 
   extends BaseShotBuilder
 {
   /*----------------------------------------------------------------------------------------*/
@@ -110,7 +93,7 @@ class QtDeliverBuilder
    *   Information that is shared among all builders in a given invocation.
    */ 
   public 
-  QtDeliverBuilder
+  CineonDeliverBuilder
   (
    MasterMgrClient mclient,
    QueueMgrClient qclient,
@@ -118,7 +101,7 @@ class QtDeliverBuilder
   )
     throws PipelineException
   {
-    super("QtDeliver",
+    super("CineonDeliver",
           "A builder for constructing the nodes required to prepare an image sequence " + 
 	  "for delivery to the client or for internal review.", 
           mclient, qclient, builderInfo, 
@@ -222,37 +205,11 @@ class QtDeliverBuilder
            "Select the master slate creation Nuke script to use."); 
         addParam(param);
       }
-
-      {
-        UtilityParam param = 
-          new IntegerUtilityParam
-	  (aSlateHold, 
-	   "The number of frames to hold the constant slate image before the images being " +
-	   "reviewed begin animating.", 
-	   1);
-        addParam(param);
-      }
-
-      {
-        UtilityParam param = 
-          new PlaceholderUtilityParam
-          (aFormatScript, 
-           "Select the final image formatting Nuke script to use.");  
-        addParam(param);
-      }
-
-      {	
-	UtilityParam param = 
-          new PlaceholderUtilityParam
-          (aCodecSettings, 
-           "Select the QuickTime codec settings to encode the final movie.");
-	addParam(param);
-      }
     }
  
     /* create the setup passes */ 
     {
-      addSetupPass(new QuickTimeEssentials());
+      addSetupPass(new CineonEssentials());
       addSetupPass(new SetupDeliveryParams());
       addSetupPass(new GetPrerequisites());
     }
@@ -271,7 +228,7 @@ class QtDeliverBuilder
       PassLayoutGroup layout = new PassLayoutGroup("Root", "Root Layout");
 
       {
-        AdvancedLayoutGroup sub = new AdvancedLayoutGroup("QuickTimeEssentials", true);
+        AdvancedLayoutGroup sub = new AdvancedLayoutGroup("CineonEssentials", true);
 
         sub.addEntry(1, aUtilContext);
         sub.addEntry(1, null);
@@ -298,10 +255,6 @@ class QtDeliverBuilder
 	sub.addEntry(1, aNotes); 
         sub.addEntry(1, null);
         sub.addEntry(1, aSlateScript);
-	sub.addEntry(1, aSlateHold); 
-        sub.addEntry(1, null);
-        sub.addEntry(1, aFormatScript);
-	sub.addEntry(1, aCodecSettings); 
 
         layout.addPass(sub.getName(), sub);
       }
@@ -333,7 +286,6 @@ class QtDeliverBuilder
     plugins.add(new PluginContext("Touch")); 			
     plugins.add(new PluginContext("NukeRead"));	
     plugins.add(new PluginContext("NukeSubstComp")); 		
-    plugins.add(new PluginContext("DjvUnixQt"));			
     plugins.add(new PluginContext("SlateSubst", "ICVFX"));	
 
     MappedArrayList<String, PluginContext> toReturn = 
@@ -350,13 +302,13 @@ class QtDeliverBuilder
   /*----------------------------------------------------------------------------------------*/
 
   private
-  class QuickTimeEssentials
+  class CineonEssentials
     extends SetupPass
   {
     public 
-    QuickTimeEssentials()
+    CineonEssentials()
     {
-      super("QuickTime Essentials", 
+      super("Cineon Essentials", 
             "Setup the common builder properties as well as looking up essential source " + 
 	    "node information."); 
     }
@@ -483,7 +435,7 @@ class QtDeliverBuilder
       /* generate a temporary working area where the approval process will take place
            and change the util context to use it instead for all future operations */
       { 
-	String tempView = ("QtDeliver" + "-" + 
+	String tempView = ("CineonDeliver" + "-" + 
 			   pProjectName + "-" + pSeqName + pShotName + "-" + 
 			   pSourcePrefix); 
         tempView = tempView.replaceAll(" ", "_");
@@ -503,7 +455,7 @@ class QtDeliverBuilder
       }
     }
 
-    private static final long serialVersionUID = -8543166852752126981L;
+    //    private static final long serialVersionUID = 
   }
 
 
@@ -536,8 +488,7 @@ class QtDeliverBuilder
       setParamValue
 	(new ParamMapping(aClientVersion), pSourceVersion.getVersionID().toString()); 
 
-      /* replace placeholder parameters with the names of the available 
-	   slate script, format script and codec settings nodes */ 
+      /* replace placeholder parameters with the names of the available slate script nodes */ 
       {	
 	Path path = pProjectNamer.getSlateNukeScriptsParentPath();
 	ArrayList<String> pnames = findChildNodeNames(path); 
@@ -552,39 +503,9 @@ class QtDeliverBuilder
 	   pnames.get(0), pnames); 
         replaceParam(param);
       }
-
-      {
-	Path path = pProjectNamer.getFormatNukeScriptsParentPath();
-	ArrayList<String> pnames = findChildNodeNames(path); 
-	if((pnames == null) || pnames.isEmpty()) 
-	  throw new PipelineException
-	    ("Unable to find any image formatting Nuke script nodes in (" + path + ")!"); 
-
-	UtilityParam param =
-          new EnumUtilityParam
-          (aFormatScript, 
-	   "Select final image formatting Nuke script to use.", 
-	   pnames.get(0), pnames); 
-        replaceParam(param);
-      }
-
-      {
-	Path path = pProjectNamer.getQtCodecSettingsParentPath();
-	ArrayList<String> pnames = findChildNodeNames(path); 
-	if((pnames == null) || pnames.isEmpty()) 
-	  throw new PipelineException
-	    ("Unable to find any QuickTime codec settings nodes in (" + path + ")!"); 
-
-	UtilityParam param =
-	  new EnumUtilityParam
-	  (aCodecSettings, 
-	   "Select the QuickTime codec settings to encode the final movie.", 
-	   pnames.get(0), pnames); 
-        replaceParam(param);
-      }
     }
 
-    private static final long serialVersionUID = 1137715625182689459L;
+    //    private static final long serialVersionUID = 
   }
 
 
@@ -617,40 +538,11 @@ class QtDeliverBuilder
 	pRequiredNodeNames.add(pSlateNodeName);
       }
 
-      String formatPrefix = null;
-      {
-        String script = getStringParamValue(new ParamMapping(aFormatScript), false);
-        Path path = new Path(pProjectNamer.getFormatNukeScriptsParentPath(), script); 
-	pFormatNodeName = path.toString(); 
-	formatPrefix = path.getName();
-	pRequiredNodeNames.add(pFormatNodeName);
-      }
-
-      /* the final QuickTime codec settings */ 
-      String codecPrefix = null;
-      {
-        String settings = getStringParamValue(new ParamMapping(aCodecSettings), false);
-        Path path = new Path(pProjectNamer.getQtCodecSettingsParentPath(), settings); 
-	pCodecNodeName = path.toString(); 
-	codecPrefix = path.getName();
-	pRequiredNodeNames.add(pCodecNodeName);
-      }
-
       /* lookup the rest of the parameters */ 
       pDeliveryType = getStringParamValue(new ParamMapping(aDeliveryType));
       pDeliverable = getStringParamValue(new ParamMapping(DeliverNamer.aDeliverable), false);
       pClientVersion = getStringParamValue(new ParamMapping(aClientVersion));
       pNotes = getStringParamValue(new ParamMapping(aNotes));
-      pSlateHold = getIntegerParamValue(new ParamMapping(aSlateHold), 
-					    new Range<Integer>(0, null));
-
-      /* compute the full frame range with slate holds added */ 
-      FrameRange range = pSourceVersion.getPrimarySequence().getFrameRange();
-      if(range.getBy() != 1) 
-	throw new PipelineException
-	  ("The source images node (" + pSourceVersion.getName() + " v" + 
-	   pSourceVersion.getVersionID() + ") must have a frame step increment of (1)!"); 
-      pFrameRange = new FrameRange(range.getStart(), range.getEnd()+pSlateHold, 1); 
 
       /* initialize internal Deliver (Shot) namer */ 
       {
@@ -669,16 +561,12 @@ class QtDeliverBuilder
 	  (new ParamMapping(DeliverNamer.aTaskType), pTaskType.toString()); 
 	pDeliverNamer.setParamValue
 	  (new ParamMapping(DeliverNamer.aSlatePrefix), slatePrefix); 
-	pDeliverNamer.setParamValue
-	  (new ParamMapping(DeliverNamer.aFormatPrefix), formatPrefix); 
-	pDeliverNamer.setParamValue
-	  (new ParamMapping(DeliverNamer.aCodecPrefix), codecPrefix); 
 
 	pDeliverNamer.generateNames();
       }
     }
 
-    private static final long serialVersionUID = 876194378918748661L;
+    //    private static final long serialVersionUID =
   }
 
 
@@ -695,7 +583,7 @@ class QtDeliverBuilder
     BuildNodesPass()
     {
       super("Build Submit/Approve Nodes", 
-            "Creates the nodes which make up the QuickTime task."); 
+            "Creates the nodes which make up the Cineon task."); 
     }
     
     /**
@@ -720,71 +608,48 @@ class QtDeliverBuilder
 
       /* the delivery network */ 
       { 
-	String readQtDeliverableImagesNodeName = 
-	  pDeliverNamer.getReadQtDeliverableImagesNode();
+	String readCineonDeliverableImagesNodeName = 
+	  pDeliverNamer.getReadCineonDeliverableImagesNode();
 	{
 	  NukeReadStage stage = 
 	    new NukeReadStage
 	      (stageInfo, pContext, pClient, 
-	       readQtDeliverableImagesNodeName, pSourceVersion.getName()); 
+	       readCineonDeliverableImagesNodeName, pSourceVersion.getName()); 
 	  stage.addSingleParamValue("ReadName", "Images"); 
 	  addTaskAnnotation(stage, NodePurpose.Prepare); 
 	  stage.build();  
 	}
 
-	String qtDeliverSlateNukeNodeName = pDeliverNamer.getQtDeliverSlateNukeNode();
+	String cineonDeliverSlateNukeNodeName = pDeliverNamer.getCineonDeliverSlateNukeNode();
 	{
 	  SlateSubstStage stage = 
 	    new SlateSubstStage(stageInfo, pContext, pClient, 
-				qtDeliverSlateNukeNodeName, pSlateNodeName, 
+				cineonDeliverSlateNukeNodeName, pSlateNodeName, 
 				pDeliveryType, pDeliverable, pClientVersion, 
-				pSourceVersion, pNotes, pSlateHold); 
+				pSourceVersion, pNotes, 1); 
 	  addTaskAnnotation(stage, NodePurpose.Prepare); 
 	  stage.build();  
 	}
 
-	String qtDeliverSlatedImagesNodeName = pDeliverNamer.getQtDeliverSlatedImagesNode(); 
+	String cineonDeliverableNodeName = pDeliverNamer.getCineonDeliverableNode();
 	{
 	  TreeMap<String,String> subst = new TreeMap<String,String>(); 
-	  subst.put(readQtDeliverableImagesNodeName, "Images"); 
-	  subst.put(pFormatNodeName, "FinalFormat"); 
-
-
+	  subst.put(readCineonDeliverableImagesNodeName, "Images"); 
 
 	  NukeSubstCompStage stage = 
 	    new NukeSubstCompStage
 	      (stageInfo, pContext, pClient, 
-	       qtDeliverSlatedImagesNodeName, pFrameRange, 4, "jpg", 
-	       "Append & Process", qtDeliverSlateNukeNodeName, subst);
-	  addTaskAnnotation(stage, NodePurpose.Prepare); 
-	  stage.build(); 
-	}
-
-	String qtDeliverSlatedMovieNodeName = pDeliverNamer.getQtDeliverSlatedMovieNode();
-	{
-	  DjvUnixQtStage stage = 
-	    new DjvUnixQtStage
-	      (stageInfo, pContext, pClient,
-	       qtDeliverSlatedMovieNodeName, qtDeliverSlatedImagesNodeName, "24");
-	  addTaskAnnotation(stage, NodePurpose.Prepare); 
-	  stage.build(); 
-	}
-
-	String qtDeliverableNodeName = pDeliverNamer.getQtDeliverableNode();
-	{
-	  QtEncodeStage stage = 
-	    new QtEncodeStage
-	      (stageInfo, pContext, pClient, 
-	       qtDeliverableNodeName, qtDeliverSlatedMovieNodeName, pCodecNodeName); 
+	       cineonDeliverableNodeName, new FrameRange(0, 0, 1), 6, "cin", 
+	       "Append & Process", cineonDeliverSlateNukeNodeName, subst);
  	  addTaskAnnotation(stage, NodePurpose.Deliver); 
  	  stage.build(); 
- 	  addToQueueList(qtDeliverableNodeName);
- 	  addToCheckInList(qtDeliverableNodeName);
+ 	  addToQueueList(cineonDeliverableNodeName);
+ 	  addToCheckInList(cineonDeliverableNodeName);
 	}
       }
     }
 
-    private static final long serialVersionUID = -8206152183341505182L;
+    //    private static final long serialVersionUID = 
   }
    
   
@@ -795,7 +660,7 @@ class QtDeliverBuilder
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -1915755291666458793L;
+  //  private static final long serialVersionUID = 
   
   public static final String aSourceNode    = "SourceNode";  
   public static final String aSourceVersion = "SourceVersion";  
@@ -804,9 +669,6 @@ class QtDeliverBuilder
   public static final String aClientVersion = "ClientVersion";  
   public static final String aNotes         = "Notes";  
   public static final String aSlateScript   = "SlateScript"; 
-  public static final String aSlateHold     = "SlateHold";  
-  public static final String aFormatScript  = "FormatScript";
-  public static final String aCodecSettings = "CodecSettings"; 
 
   public static final String aTaskName = "TaskName";
   public static final String aEdit     = "Edit";
@@ -825,11 +687,6 @@ class QtDeliverBuilder
   private NodeVersion pSourceVersion; 
   private String      pSourcePrefix; 
 
-  /**
-   * The frame range of the images with slate hold frames added.
-   */
-  private FrameRange pFrameRange; 
- 
   /**
    * The information extracted from the task annotation on the source images node.
    */ 
@@ -861,22 +718,6 @@ class QtDeliverBuilder
    * The node name of the master slate creation Nuke script to use.
    */ 
   private String pSlateNodeName; 
-
-  /**
-   * The node name of the final image formatting Nuke script to use.
-   */ 
-  private String pFormatNodeName; 
-
-  /**
-   * The node name of the QuickTime codec settings node.
-   */ 
-  private String pCodecNodeName;
-
-  /**
-   * The number of frames to hold the constant slate image before the images being 
-   * reviewed begin animating.
-   */ 
-  private Integer pSlateHold;     
 
   /**
    * Provides the names of nodes and node directories which are deliverable and shot specific.

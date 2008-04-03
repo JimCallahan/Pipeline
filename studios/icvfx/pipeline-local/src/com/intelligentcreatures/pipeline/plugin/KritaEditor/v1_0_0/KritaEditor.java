@@ -23,9 +23,6 @@ class KritaEditor
     super("Krita", new VersionID("1.0.0"), "ICVFX", 
 	  "The Krita image editor.", 
 	  "krita");
-
-    underDevelopment();
-
   }
 
 

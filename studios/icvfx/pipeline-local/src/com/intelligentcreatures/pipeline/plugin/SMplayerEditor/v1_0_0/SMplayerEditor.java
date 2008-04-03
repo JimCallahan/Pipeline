@@ -20,9 +20,6 @@ class SMplayerEditor
     super("smplayer", new VersionID("1.0.0"), "ICVFX",
           "The smplayer media player.",
           "smplayer");
-
-    underDevelopment();
-
   }
 
 

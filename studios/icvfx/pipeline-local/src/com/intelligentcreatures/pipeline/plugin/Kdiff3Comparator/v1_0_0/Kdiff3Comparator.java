@@ -24,9 +24,6 @@ class Kdiff3Comparator
     super("Kdiff3", new VersionID("1.0.0"), "ICVFX",
 	  "A graphical text file comparator and merge tool.",
 	  "kdiff3");
-
-    underDevelopment();
-
   }
 
   

@@ -1,4 +1,4 @@
-// $Id: QtEncodeAction.java,v 1.2 2008/04/03 01:34:28 jim Exp $
+// $Id: QtEncodeAction.java,v 1.3 2008/04/03 10:30:47 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.QtEncodeAction.v1_0_0; 
 
@@ -82,8 +82,6 @@ class QtEncodeAction
 
     addSupport(OsType.MacOS);
     removeSupport(OsType.Unix);
-
-    underDevelopment();
   }
 
 
@@ -196,7 +194,8 @@ class QtEncodeAction
       
       out.write
 	("rm -f " + moviePath + "\n" +
-	 "sudo -u pipeline /usr/bin/osascript " + appleScript + "\n" + 
+	 "sudo -u " + PackageInfo.sPipelineUser + 
+	          " /usr/bin/osascript " + appleScript + "\n" + 
 	 "cp " + moviePath + " " + targetPath + "\n" + 
 	 "rm -f " + moviePath + "\n");
     

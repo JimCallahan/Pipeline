@@ -24,8 +24,6 @@ class DJVEditor
           "The djv_view image viewer.",
           "djv_view");
 
-    underDevelopment();
-
     addSupport(OsType.Windows);
   }
 

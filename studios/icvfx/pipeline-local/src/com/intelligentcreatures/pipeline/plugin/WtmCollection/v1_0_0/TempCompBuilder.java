@@ -1,4 +1,4 @@
-// $Id: TempCompBuilder.java,v 1.1 2008/03/30 01:43:10 jim Exp $
+// $Id: TempCompBuilder.java,v 1.2 2008/04/03 10:30:47 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -571,21 +571,10 @@ class TempCompBuilder
 
       /* the approve network */ 
       {
-	String approvedTempCompNode = pShotNamer.getApprovedTempCompNode();
-	{
-	  CopyImagesStage stage = 
-	    new CopyImagesStage
-	      (stageInfo, pContext, pClient, 
-	       approvedTempCompNode, pFrameRange, 6, "cin", 
-	       pTempCompNodeName);
-	  addTaskAnnotation(stage, NodePurpose.Product); 
-	  stage.build(); 
-	}
-
  	String approveNodeName = pShotNamer.getTempCompApproveNode();
  	{
  	  TreeSet<String> sources = new TreeSet<String>();
- 	  sources.add(approvedTempCompNode);
+ 	  sources.add(pTempCompNodeName);
 
  	  TargetStage stage = 
  	    new TargetStage(stageInfo, pContext, pClient, 

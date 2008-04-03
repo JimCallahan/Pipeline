@@ -1,4 +1,4 @@
-// $Id: DeliverNamer.java,v 1.2 2008/04/03 01:34:28 jim Exp $
+// $Id: DeliverNamer.java,v 1.3 2008/04/03 10:30:47 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -123,9 +123,14 @@ class DeliverNamer
     pCodecPrefix  = getStringParamValue(new ParamMapping(aCodecPrefix));
 
     {
-      Path path = new Path(pBasePaths.get(pTaskType, NodePurpose.Prepare), 
-			   new Path(AppDirs.QuickTime.toDirPath(), "deliver"));
-      pQtDeliverablePrepPath = new Path(path, pDeliverable); 
+      Path dpath = new Path(pBasePaths.get(pTaskType, NodePurpose.Prepare), "deliver"); 
+
+      pQtDeliverablePrepPath = 
+	new Path(dpath, new Path(AppDirs.QuickTime.toDirPath(), pDeliverable)); 
+      pDpxDeliverablePrepPath = 
+	new Path(dpath, new Path(AppDirs.DPX.toDirPath(), pDeliverable)); 
+      pCineonDeliverablePrepPath = 
+	new Path(dpath, new Path(AppDirs.Cineon.toDirPath(), pDeliverable)); 
     }
   }
   
@@ -236,6 +241,95 @@ class DeliverNamer
 
   
   /*----------------------------------------------------------------------------------------*/
+  /*   D P X   D E L I V E R                                                                */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Returns the fully resolved name of the node containing the Nuke script to read the 
+   * images being delivered. 
+   */ 
+  public String
+  getReadDpxDeliverableImagesNode() 
+  {
+    Path path = new Path(pDpxDeliverablePrepPath, "read_images"); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node containing the slate Nuke script with all
+   * shot and deliverable substitutions applied.
+   */ 
+  public String
+  getDpxDeliverSlateNukeNode() 
+  {
+    Path path = new Path(pDpxDeliverablePrepPath, joinNames(pSlateFormat, "slate")); 
+    return path.toString(); 
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * The QuickTime movie of the deliverable images encoded with client specific codec 
+   * settings.
+   */ 
+  public String 
+  getDpxDeliverableNode() 
+  {
+    Path path = new Path(pBasePaths.get(pTaskType, NodePurpose.Deliver), 
+			 new Path(AppDirs.DPX.toDirPath(), 
+				  new Path(new Path(new Path(pSlatePrefix), 
+						    pFormatPrefix), 
+					   pDeliverable))); 
+    return path.toString(); 
+  }
+  
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   C I N E O N   D E L I V E R                                                          */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Returns the fully resolved name of the node containing the Nuke script to read the 
+   * images being delivered. 
+   */ 
+  public String
+  getReadCineonDeliverableImagesNode() 
+  {
+    Path path = new Path(pCineonDeliverablePrepPath, "read_images"); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node containing the slate Nuke script with all
+   * shot and deliverable substitutions applied.
+   */ 
+  public String
+  getCineonDeliverSlateNukeNode() 
+  {
+    Path path = new Path(pCineonDeliverablePrepPath, joinNames(pSlateFormat, "slate")); 
+    return path.toString(); 
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * The QuickTime movie of the deliverable images encoded with client specific codec 
+   * settings.
+   */ 
+  public String 
+  getCineonDeliverableNode() 
+  {
+    Path path = new Path(pBasePaths.get(pTaskType, NodePurpose.Deliver), 
+			 new Path(AppDirs.Cineon.toDirPath(), 
+				  new Path(new Path(pSlatePrefix), pDeliverable))); 
+    return path.toString(); 
+  }
+  
+
+  
+  /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
   
@@ -277,8 +371,11 @@ class DeliverNamer
   private String pCodecPrefix;
 
   /**
-   * The path to the root node directory for all QuickTime deliverable related prepare nodes.
+   * The path to the root node directory for all QuickTime, DPX and Cineon deliverable 
+   * related prepare nodes.
    */ 
   private Path pQtDeliverablePrepPath; 
+  private Path pDpxDeliverablePrepPath; 
+  private Path pCineonDeliverablePrepPath; 
 
 }

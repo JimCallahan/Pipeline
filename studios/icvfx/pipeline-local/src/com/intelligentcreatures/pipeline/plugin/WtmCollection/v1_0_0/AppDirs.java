@@ -1,4 +1,4 @@
-// $Id: AppDirs.java,v 1.11 2008/03/24 07:11:12 jim Exp $
+// $Id: AppDirs.java,v 1.12 2008/04/03 10:30:47 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -95,7 +95,12 @@ enum AppDirs
   /**
    * Cineon format images.
    */ 
-  Cin, 
+  Cineon, 
+
+  /**
+   * DPX format images.
+   */ 
+  DPX, 
 
   /**
    * Raw digital camera images.
@@ -217,6 +222,9 @@ enum AppDirs
     case Image1k:
       return "1k";
       
+    case Cineon:
+      return "cin";
+
     case QuickTime:
       return "qt";
       

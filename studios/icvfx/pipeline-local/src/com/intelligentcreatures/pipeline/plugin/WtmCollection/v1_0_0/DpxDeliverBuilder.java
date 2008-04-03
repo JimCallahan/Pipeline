@@ -1,4 +1,4 @@
-// $Id: QtDeliverBuilder.java,v 1.3 2008/04/03 10:30:47 jim Exp $
+// $Id: DpxDeliverBuilder.java,v 1.1 2008/04/03 10:30:47 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -14,7 +14,7 @@ import us.temerity.pipeline.stages.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   Q T   D E L I V E R   B U I L D E R                                                    */
+/*   D P X   D E L I V E R   B U I L D E R                                                  */
 /*------------------------------------------------------------------------------------------*/
 
 /**
@@ -22,7 +22,7 @@ import java.util.*;
  * to the client or for internal review. <P> 
  * 
  * This includes generating slates, adding per-frame overlays, reformatting the images to 
- * a specific resolution and converting to a QuickTime movie.<P> 
+ * a specific resolution and converting to DPX format.<P> 
  * 
  * Besides the common parameters shared by all builders, this builder defines the following
  * additional parameters: <BR>
@@ -72,25 +72,14 @@ import java.util.*;
  *     The node name prefix of the master slate creation Nuke script to use.
  *   </DIV> <BR>
  * 
- *   Slate Hold <BR> 
- *   <DIV style="margin-left: 40px;">
- *     The number of frames to hold the constant slate image before the images being 
- *     reviewed begin animating. 
- *   </DIV> <BR>
- * 
  *   Format Script <BR> 
  *   <DIV style="margin-left: 40px;">
  *     The node name prefix of the final image formatting Nuke script to use.");  
  *   </DIV> <BR>
- * 
- *   Codec Settings<BR> 
- *   <DIV style="margin-left: 40px;">
- *     The QuickTime codec settings to encode the final movie.
- *   </DIV> <BR>
  * </DIV> 
  */
 public 
-class QtDeliverBuilder 
+class DpxDeliverBuilder 
   extends BaseShotBuilder
 {
   /*----------------------------------------------------------------------------------------*/
@@ -110,7 +99,7 @@ class QtDeliverBuilder
    *   Information that is shared among all builders in a given invocation.
    */ 
   public 
-  QtDeliverBuilder
+  DpxDeliverBuilder
   (
    MasterMgrClient mclient,
    QueueMgrClient qclient,
@@ -118,7 +107,7 @@ class QtDeliverBuilder
   )
     throws PipelineException
   {
-    super("QtDeliver",
+    super("DpxDeliver",
           "A builder for constructing the nodes required to prepare an image sequence " + 
 	  "for delivery to the client or for internal review.", 
           mclient, qclient, builderInfo, 
@@ -225,34 +214,16 @@ class QtDeliverBuilder
 
       {
         UtilityParam param = 
-          new IntegerUtilityParam
-	  (aSlateHold, 
-	   "The number of frames to hold the constant slate image before the images being " +
-	   "reviewed begin animating.", 
-	   1);
-        addParam(param);
-      }
-
-      {
-        UtilityParam param = 
           new PlaceholderUtilityParam
           (aFormatScript, 
            "Select the final image formatting Nuke script to use.");  
         addParam(param);
       }
-
-      {	
-	UtilityParam param = 
-          new PlaceholderUtilityParam
-          (aCodecSettings, 
-           "Select the QuickTime codec settings to encode the final movie.");
-	addParam(param);
-      }
     }
  
     /* create the setup passes */ 
     {
-      addSetupPass(new QuickTimeEssentials());
+      addSetupPass(new DpxEssentials());
       addSetupPass(new SetupDeliveryParams());
       addSetupPass(new GetPrerequisites());
     }
@@ -271,7 +242,7 @@ class QtDeliverBuilder
       PassLayoutGroup layout = new PassLayoutGroup("Root", "Root Layout");
 
       {
-        AdvancedLayoutGroup sub = new AdvancedLayoutGroup("QuickTimeEssentials", true);
+        AdvancedLayoutGroup sub = new AdvancedLayoutGroup("DpxEssentials", true);
 
         sub.addEntry(1, aUtilContext);
         sub.addEntry(1, null);
@@ -298,10 +269,8 @@ class QtDeliverBuilder
 	sub.addEntry(1, aNotes); 
         sub.addEntry(1, null);
         sub.addEntry(1, aSlateScript);
-	sub.addEntry(1, aSlateHold); 
         sub.addEntry(1, null);
         sub.addEntry(1, aFormatScript);
-	sub.addEntry(1, aCodecSettings); 
 
         layout.addPass(sub.getName(), sub);
       }
@@ -333,7 +302,6 @@ class QtDeliverBuilder
     plugins.add(new PluginContext("Touch")); 			
     plugins.add(new PluginContext("NukeRead"));	
     plugins.add(new PluginContext("NukeSubstComp")); 		
-    plugins.add(new PluginContext("DjvUnixQt"));			
     plugins.add(new PluginContext("SlateSubst", "ICVFX"));	
 
     MappedArrayList<String, PluginContext> toReturn = 
@@ -350,13 +318,13 @@ class QtDeliverBuilder
   /*----------------------------------------------------------------------------------------*/
 
   private
-  class QuickTimeEssentials
+  class DpxEssentials
     extends SetupPass
   {
     public 
-    QuickTimeEssentials()
+    DpxEssentials()
     {
-      super("QuickTime Essentials", 
+      super("DPX Essentials", 
             "Setup the common builder properties as well as looking up essential source " + 
 	    "node information."); 
     }
@@ -483,7 +451,7 @@ class QtDeliverBuilder
       /* generate a temporary working area where the approval process will take place
            and change the util context to use it instead for all future operations */
       { 
-	String tempView = ("QtDeliver" + "-" + 
+	String tempView = ("DpxDeliver" + "-" + 
 			   pProjectName + "-" + pSeqName + pShotName + "-" + 
 			   pSourcePrefix); 
         tempView = tempView.replaceAll(" ", "_");
@@ -503,7 +471,7 @@ class QtDeliverBuilder
       }
     }
 
-    private static final long serialVersionUID = -8543166852752126981L;
+    private static final long serialVersionUID = -4284489437860306018L;
   }
 
 
@@ -537,7 +505,7 @@ class QtDeliverBuilder
 	(new ParamMapping(aClientVersion), pSourceVersion.getVersionID().toString()); 
 
       /* replace placeholder parameters with the names of the available 
-	   slate script, format script and codec settings nodes */ 
+	   slate script and format script nodes */ 
       {	
 	Path path = pProjectNamer.getSlateNukeScriptsParentPath();
 	ArrayList<String> pnames = findChildNodeNames(path); 
@@ -567,24 +535,9 @@ class QtDeliverBuilder
 	   pnames.get(0), pnames); 
         replaceParam(param);
       }
-
-      {
-	Path path = pProjectNamer.getQtCodecSettingsParentPath();
-	ArrayList<String> pnames = findChildNodeNames(path); 
-	if((pnames == null) || pnames.isEmpty()) 
-	  throw new PipelineException
-	    ("Unable to find any QuickTime codec settings nodes in (" + path + ")!"); 
-
-	UtilityParam param =
-	  new EnumUtilityParam
-	  (aCodecSettings, 
-	   "Select the QuickTime codec settings to encode the final movie.", 
-	   pnames.get(0), pnames); 
-        replaceParam(param);
-      }
     }
 
-    private static final long serialVersionUID = 1137715625182689459L;
+    private static final long serialVersionUID = 790112567863455817L;
   }
 
 
@@ -626,23 +579,11 @@ class QtDeliverBuilder
 	pRequiredNodeNames.add(pFormatNodeName);
       }
 
-      /* the final QuickTime codec settings */ 
-      String codecPrefix = null;
-      {
-        String settings = getStringParamValue(new ParamMapping(aCodecSettings), false);
-        Path path = new Path(pProjectNamer.getQtCodecSettingsParentPath(), settings); 
-	pCodecNodeName = path.toString(); 
-	codecPrefix = path.getName();
-	pRequiredNodeNames.add(pCodecNodeName);
-      }
-
       /* lookup the rest of the parameters */ 
       pDeliveryType = getStringParamValue(new ParamMapping(aDeliveryType));
       pDeliverable = getStringParamValue(new ParamMapping(DeliverNamer.aDeliverable), false);
       pClientVersion = getStringParamValue(new ParamMapping(aClientVersion));
       pNotes = getStringParamValue(new ParamMapping(aNotes));
-      pSlateHold = getIntegerParamValue(new ParamMapping(aSlateHold), 
-					    new Range<Integer>(0, null));
 
       /* compute the full frame range with slate holds added */ 
       FrameRange range = pSourceVersion.getPrimarySequence().getFrameRange();
@@ -650,7 +591,7 @@ class QtDeliverBuilder
 	throw new PipelineException
 	  ("The source images node (" + pSourceVersion.getName() + " v" + 
 	   pSourceVersion.getVersionID() + ") must have a frame step increment of (1)!"); 
-      pFrameRange = new FrameRange(range.getStart(), range.getEnd()+pSlateHold, 1); 
+      pFrameRange = new FrameRange(range.getStart()-1, range.getEnd(), 1); 
 
       /* initialize internal Deliver (Shot) namer */ 
       {
@@ -671,14 +612,12 @@ class QtDeliverBuilder
 	  (new ParamMapping(DeliverNamer.aSlatePrefix), slatePrefix); 
 	pDeliverNamer.setParamValue
 	  (new ParamMapping(DeliverNamer.aFormatPrefix), formatPrefix); 
-	pDeliverNamer.setParamValue
-	  (new ParamMapping(DeliverNamer.aCodecPrefix), codecPrefix); 
 
 	pDeliverNamer.generateNames();
       }
     }
 
-    private static final long serialVersionUID = 876194378918748661L;
+    private static final long serialVersionUID = 6616058253061278194L;
   }
 
 
@@ -695,7 +634,7 @@ class QtDeliverBuilder
     BuildNodesPass()
     {
       super("Build Submit/Approve Nodes", 
-            "Creates the nodes which make up the QuickTime task."); 
+            "Creates the nodes which make up the DPX task."); 
     }
     
     /**
@@ -720,71 +659,49 @@ class QtDeliverBuilder
 
       /* the delivery network */ 
       { 
-	String readQtDeliverableImagesNodeName = 
-	  pDeliverNamer.getReadQtDeliverableImagesNode();
+	String readDpxDeliverableImagesNodeName = 
+	  pDeliverNamer.getReadDpxDeliverableImagesNode();
 	{
 	  NukeReadStage stage = 
 	    new NukeReadStage
 	      (stageInfo, pContext, pClient, 
-	       readQtDeliverableImagesNodeName, pSourceVersion.getName()); 
+	       readDpxDeliverableImagesNodeName, pSourceVersion.getName()); 
 	  stage.addSingleParamValue("ReadName", "Images"); 
 	  addTaskAnnotation(stage, NodePurpose.Prepare); 
 	  stage.build();  
 	}
 
-	String qtDeliverSlateNukeNodeName = pDeliverNamer.getQtDeliverSlateNukeNode();
+	String dpxDeliverSlateNukeNodeName = pDeliverNamer.getDpxDeliverSlateNukeNode();
 	{
 	  SlateSubstStage stage = 
 	    new SlateSubstStage(stageInfo, pContext, pClient, 
-				qtDeliverSlateNukeNodeName, pSlateNodeName, 
+				dpxDeliverSlateNukeNodeName, pSlateNodeName, 
 				pDeliveryType, pDeliverable, pClientVersion, 
-				pSourceVersion, pNotes, pSlateHold); 
+				pSourceVersion, pNotes, 1); 
 	  addTaskAnnotation(stage, NodePurpose.Prepare); 
 	  stage.build();  
 	}
 
-	String qtDeliverSlatedImagesNodeName = pDeliverNamer.getQtDeliverSlatedImagesNode(); 
+	String dpxDeliverableNodeName = pDeliverNamer.getDpxDeliverableNode();
 	{
 	  TreeMap<String,String> subst = new TreeMap<String,String>(); 
-	  subst.put(readQtDeliverableImagesNodeName, "Images"); 
+	  subst.put(readDpxDeliverableImagesNodeName, "Images"); 
 	  subst.put(pFormatNodeName, "FinalFormat"); 
-
-
 
 	  NukeSubstCompStage stage = 
 	    new NukeSubstCompStage
 	      (stageInfo, pContext, pClient, 
-	       qtDeliverSlatedImagesNodeName, pFrameRange, 4, "jpg", 
-	       "Append & Process", qtDeliverSlateNukeNodeName, subst);
-	  addTaskAnnotation(stage, NodePurpose.Prepare); 
-	  stage.build(); 
-	}
-
-	String qtDeliverSlatedMovieNodeName = pDeliverNamer.getQtDeliverSlatedMovieNode();
-	{
-	  DjvUnixQtStage stage = 
-	    new DjvUnixQtStage
-	      (stageInfo, pContext, pClient,
-	       qtDeliverSlatedMovieNodeName, qtDeliverSlatedImagesNodeName, "24");
-	  addTaskAnnotation(stage, NodePurpose.Prepare); 
-	  stage.build(); 
-	}
-
-	String qtDeliverableNodeName = pDeliverNamer.getQtDeliverableNode();
-	{
-	  QtEncodeStage stage = 
-	    new QtEncodeStage
-	      (stageInfo, pContext, pClient, 
-	       qtDeliverableNodeName, qtDeliverSlatedMovieNodeName, pCodecNodeName); 
+	       dpxDeliverableNodeName, pFrameRange, 6, "dpx", 
+	       "Append & Process", dpxDeliverSlateNukeNodeName, subst);
  	  addTaskAnnotation(stage, NodePurpose.Deliver); 
  	  stage.build(); 
- 	  addToQueueList(qtDeliverableNodeName);
- 	  addToCheckInList(qtDeliverableNodeName);
+ 	  addToQueueList(dpxDeliverableNodeName);
+ 	  addToCheckInList(dpxDeliverableNodeName);
 	}
       }
     }
 
-    private static final long serialVersionUID = -8206152183341505182L;
+    private static final long serialVersionUID = 9033558246372590383L;
   }
    
   
@@ -795,7 +712,7 @@ class QtDeliverBuilder
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -1915755291666458793L;
+  private static final long serialVersionUID = 1932128583147518482L;
   
   public static final String aSourceNode    = "SourceNode";  
   public static final String aSourceVersion = "SourceVersion";  
@@ -804,9 +721,7 @@ class QtDeliverBuilder
   public static final String aClientVersion = "ClientVersion";  
   public static final String aNotes         = "Notes";  
   public static final String aSlateScript   = "SlateScript"; 
-  public static final String aSlateHold     = "SlateHold";  
   public static final String aFormatScript  = "FormatScript";
-  public static final String aCodecSettings = "CodecSettings"; 
 
   public static final String aTaskName = "TaskName";
   public static final String aEdit     = "Edit";
@@ -866,17 +781,6 @@ class QtDeliverBuilder
    * The node name of the final image formatting Nuke script to use.
    */ 
   private String pFormatNodeName; 
-
-  /**
-   * The node name of the QuickTime codec settings node.
-   */ 
-  private String pCodecNodeName;
-
-  /**
-   * The number of frames to hold the constant slate image before the images being 
-   * reviewed begin animating.
-   */ 
-  private Integer pSlateHold;     
 
   /**
    * Provides the names of nodes and node directories which are deliverable and shot specific.

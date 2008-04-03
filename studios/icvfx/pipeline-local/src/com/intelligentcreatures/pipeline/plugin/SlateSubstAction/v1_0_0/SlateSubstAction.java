@@ -1,4 +1,4 @@
-// $Id: SlateSubstAction.java,v 1.5 2008/03/19 22:43:30 jim Exp $
+// $Id: SlateSubstAction.java,v 1.6 2008/04/03 10:30:47 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.SlateSubstAction.v1_0_0; 
 
@@ -270,8 +270,6 @@ class SlateSubstAction
 
     addSupport(OsType.MacOS);
     addSupport(OsType.Windows);
-
-    underDevelopment();
   }
 
 

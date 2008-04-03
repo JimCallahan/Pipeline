@@ -1,4 +1,4 @@
-// $Id: DeliverTool.java,v 1.1 2008/04/03 06:34:11 jim Exp $
+// $Id: DeliverTool.java,v 1.2 2008/04/03 10:30:47 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.DeliverTool.v1_0_0;
 
@@ -131,6 +131,15 @@ class DeliverTool
         new ArrayList<VersionID>(mclient.getCheckedInVersionIDs(pSourceNode)); 
       Collections.reverse(pSourceVersionIDs);
 
+      try {
+        NodeVersion vsn = mclient.getCheckedInVersion(pSourceNode, null);
+        pSourcePattern = vsn.getPrimarySequence().getFilePattern(); 
+      }
+      catch(PipelineException ex) {
+        throw new PipelineException
+          ("No checked-in versions exist of (" + pSourceNode + ") to deliver!"); 
+      }
+
       return NextPhase.Continue;
     }
   }
@@ -172,36 +181,20 @@ class DeliverTool
 
         {
           ArrayList<String> choices = new ArrayList<String>(); 
-          choices.add(aQtDeliver); 
-          choices.add(aDpxDeliver); 
+          choices.add("QuickTime Movie"); 
+          choices.add("DPX Images"); 
+          choices.add("Cineon Images"); 
           
-          pDeliveryBuilderField = 
+          pDeliveryFormatField = 
             UIFactory.createTitledCollectionField
-            (tpanel, "Delivery Builder:", sTSize, 
+            (tpanel, "Delivery Format:", sTSize, 
              vpanel, choices, sVSize, 
-             "The choice of builder to run to deliver the images."); 
+             "The choice of delivery format."); 
         }
-
-	UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
-
-	{
-	  pWaitOnBuilderField = 
-            UIFactory.createTitledBooleanField
-	    (tpanel, "Wait on Builder:", sTSize, 
-	     vpanel, sVSize,
-	     "Whether to have the tool wait for the builder to complete before returning " + 
-	     "control back to the user.  If set to (NO), then the builder will be run in " + 
-	     "the background.  In either case, builder progress can be monitored in the " + 
-	     "Log History dialog."); 
-
-	  pWaitOnBuilderField.setValue(true); 
-	}
       }
       
-
-      Path snpath = new Path(pSourceNode);
       JToolDialog diag = 
-        new JToolDialog("Deliver Images: " + snpath.getName(), body, "Run Builder");
+        new JToolDialog("Deliver Images:  " + pSourcePattern, body, "Run Builder");
 
       diag.setVisible(true);
       if(diag.wasConfirmed()) 
@@ -220,20 +213,14 @@ class DeliverTool
     )
       throws PipelineException
     {
-      if(pWaitOnBuilderField.getValue()) {
-	try {
-	  runBuilder(mclient, qclient); 
-	} 
-	catch(PipelineException ex) {
-	  throw ex; 
-	}
-	catch(Exception ex) {
-	  throw new PipelineException(null, ex, true, true); 
-	}
+      try {
+	runBuilder(mclient, qclient); 
+      } 
+      catch(PipelineException ex) {
+	throw ex; 
       }
-      else {
-	RunBuilderTask task = new RunBuilderTask();
-	task.start(); 
+      catch(Exception ex) {
+	throw new PipelineException(null, ex, true, true); 
       }
       
       return NextPhase.Finish;
@@ -257,7 +244,15 @@ class DeliverTool
   ) 
     throws PipelineException
   {	
-    String builderName = pDeliverBuilderField.getSelected();
+    String builderName = null;
+    {
+      ArrayList<String> names = new ArrayList<String>();
+      names.add("QtDeliver"); 
+      names.add("DpxDeliver"); 
+      names.add("CineonDeliver"); 
+      
+      builderName = names.get(pDeliveryFormatField.getSelectedIndex());
+    }
 
     /* construct the builder parameters */ 
     MultiMap<String, String> params = new MultiMap<String, String>();
@@ -301,12 +296,12 @@ class DeliverTool
     /* create a new builder collection */ 
     BaseBuilderCollection collection = 
       PluginMgrClient.getInstance().newBuilderCollection
-        ("WtmCollection", null, "ICVFX");
+        ("WtmBuilders", new VersionID("1.0.0"), "ICVFX");
     
     /* instantiate the builder */ 
     BaseBuilder builder = 
       collection.instantiateBuilder(builderName, null, null, 
-                                    false, true, false, false, params);
+                                    true, true, false, false, params);
     if(builder == null)
       throw new PipelineException
         ("Unable to instantiate the builder (" + builderName + ")!"); 
@@ -351,52 +346,13 @@ class DeliverTool
     return purpose;
   }
 
-
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   I N T E R N A L   C L A S S E S                                                      */
-  /*----------------------------------------------------------------------------------------*/
   
-  /** 
-   * Run the builder in a seperate thread so control can be returned to plui(1).
-   */ 
-  private
-  class RunBuilderTask
-    extends Thread
-  {
-    public 
-    RunBuilderTask() 
-    {
-      super("DeliverTool:RunBuilderTask");
-    }
-    
-    public void 
-    run() 
-    {	
-      try {
-	runBuilder(null, null); 
-      } 
-      catch(PipelineException ex) {
-        LogMgr.getInstance().log
-	  (LogMgr.Kind.Ops, LogMgr.Level.Severe,
-	   ex.getMessage());
-      }
-      catch(Exception ex) {
-        LogMgr.getInstance().log
-	  (LogMgr.Kind.Ops, LogMgr.Level.Severe,
-	   Exceptions.getFullMessage(ex));
-      }
-    }
-  }
-
-
   
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
   
-  //private static final long serialVersionUID = -
+  private static final long serialVersionUID = 1008562788581876936L;
 
   private static final int sTSize = 150;
   private static final int sVSize = 300;
@@ -408,8 +364,6 @@ class DeliverTool
   public static final String aFocus   = "Focus";
   public static final String aProduct = "Product"; 
 
-  public static final String aQtDeliver  = "QtDeliver";  
-  public static final String aDpxDeliver = "DpxDeliver";
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -421,7 +375,8 @@ class DeliverTool
    */ 
   private String pSourceNode; 
   private ArrayList<VersionID> pSourceVersionIDs; 
-  
+  private FilePattern pSourcePattern; 
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -431,13 +386,8 @@ class DeliverTool
   private JCollectionField pSourceVersionField; 
 
   /**
-   * The delivery builder selection field.
+   * The delivery format selection field.
    */ 
-  private JCollectionField pDeliveryBuilderField; 
-
-  /**
-   * Whether the tool should wait on the builder to complete.
-   */ 
-  private JBooleanField  pWaitOnBuilderField; 
+  private JCollectionField pDeliveryFormatField; 
 
 }
