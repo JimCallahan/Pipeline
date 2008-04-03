@@ -1,4 +1,4 @@
-// $Id: QtEncodeAction.java,v 1.1 2008/04/02 20:55:34 jim Exp $
+// $Id: QtEncodeAction.java,v 1.2 2008/04/03 01:34:28 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.QtEncodeAction.v1_0_0; 
 
@@ -190,13 +190,15 @@ class QtEncodeAction
     }
 
     /* create a temporary script to run everything */  
-    Path script = new Path(createTemp(agenda, "bash"));
+    File script = createTemp(agenda, "bash");
     try {
-      FileWriter out = new FileWriter(script.toFile()); 
+      FileWriter out = new FileWriter(script); 
       
       out.write
-	("sudo -u pipeline /usr/bin/osascript " + appleScript + "\n" + 
-	 "cp " + appleScript + " " + targetPath + "\n");
+	("rm -f " + moviePath + "\n" +
+	 "sudo -u pipeline /usr/bin/osascript " + appleScript + "\n" + 
+	 "cp " + moviePath + " " + targetPath + "\n" + 
+	 "rm -f " + moviePath + "\n");
     
       out.close();
     }
@@ -207,7 +209,7 @@ class QtEncodeAction
          ex.getMessage());
     }
     
-    /* create the process to run the action */  
+    /* create the process to run the action */ 
     return createScriptSubProcess(agenda, script, outFile, errFile);
   }
 
@@ -217,7 +219,7 @@ class QtEncodeAction
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  //  private static final long serialVersionUID = ;
+  private static final long serialVersionUID = 213653165192978818L;
 
   public static final String aSourceMovie   = "SourceMovie"; 
   public static final String aCodecSettings = "CodecSettings"; 

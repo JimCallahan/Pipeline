@@ -1,4 +1,4 @@
-// $Id: DeliverNamer.java,v 1.1 2008/04/02 20:56:16 jim Exp $
+// $Id: DeliverNamer.java,v 1.2 2008/04/03 01:34:28 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -123,8 +123,9 @@ class DeliverNamer
     pCodecPrefix  = getStringParamValue(new ParamMapping(aCodecPrefix));
 
     {
-      Path path = new Path(pBasePaths.get(pTaskType, NodePurpose.Prepare), "deliver");  
-      pDeliverablePrepPath = new Path(path, pDeliverable); 
+      Path path = new Path(pBasePaths.get(pTaskType, NodePurpose.Prepare), 
+			   new Path(AppDirs.QuickTime.toDirPath(), "deliver"));
+      pQtDeliverablePrepPath = new Path(path, pDeliverable); 
     }
   }
   
@@ -164,7 +165,7 @@ class DeliverNamer
   
 
   /*----------------------------------------------------------------------------------------*/
-  /*   Q U I C K T I M E   D E L I V E R Y                                                  */
+  /*   Q T   D E L I V E R                                                                  */
   /*----------------------------------------------------------------------------------------*/
   
   /**
@@ -172,9 +173,9 @@ class DeliverNamer
    * images being delivered. 
    */ 
   public String
-  getReadDeliverableImagesNode() 
+  getReadQtDeliverableImagesNode() 
   {
-    Path path = new Path(pDeliverablePrepPath, "read_images"); 
+    Path path = new Path(pQtDeliverablePrepPath, "read_images"); 
     return path.toString(); 
   }
 
@@ -183,9 +184,9 @@ class DeliverNamer
    * shot and deliverable substitutions applied.
    */ 
   public String
-  getSlateNukeNode() 
+  getQtDeliverSlateNukeNode() 
   {
-    Path path = new Path(pDeliverablePrepPath, joinNames(pSlateFormat, "slate")); 
+    Path path = new Path(pQtDeliverablePrepPath, joinNames(pSlateFormat, "slate")); 
     return path.toString(); 
   }
 
@@ -194,9 +195,9 @@ class DeliverNamer
    * slates and overlays applied to the deliverable images.
    */ 
   public String
-  getSlatedDeliverableImagesNode() 
+  getQtDeliverSlatedImagesNode() 
   {
-    Path path = new Path(pDeliverablePrepPath, 
+    Path path = new Path(pQtDeliverablePrepPath, 
 			 new Path(AppDirs.Comp.toDirPath(), pSlateFormat));
     return path.toString(); 
   }
@@ -205,9 +206,9 @@ class DeliverNamer
    * The QuickTime movie generated from the individual composited deliverable images.
    */ 
   public String
-  getSlatedDeliverableQtNode() 
+  getQtDeliverSlatedMovieNode() 
   {
-    Path path = new Path(pDeliverablePrepPath, 
+    Path path = new Path(pQtDeliverablePrepPath, 
 			 new Path(AppDirs.Comp.toDirPath(), 
 				  new Path(AppDirs.QuickTime.toDirPath(), pSlateFormat)));
     return path.toString(); 
@@ -221,13 +222,14 @@ class DeliverNamer
    * settings.
    */ 
   public String 
-  getDeliverableNode() 
+  getQtDeliverableNode() 
   {
     Path path = new Path(pBasePaths.get(pTaskType, NodePurpose.Deliver), 
-			 new Path(new Path(new Path(new Path(pSlatePrefix), 
-						    pFormatPrefix), 
-					   pCodecPrefix),
-				  pDeliverable)); 
+			 new Path(AppDirs.QuickTime.toDirPath(), 
+				  new Path(new Path(new Path(new Path(pSlatePrefix), 
+							     pFormatPrefix), 
+						    pCodecPrefix),
+					   pDeliverable))); 
     return path.toString(); 
   }
   
@@ -275,8 +277,8 @@ class DeliverNamer
   private String pCodecPrefix;
 
   /**
-   * The path to the root node directory for all deliverable related prepare nodes.
+   * The path to the root node directory for all QuickTime deliverable related prepare nodes.
    */ 
-  private Path pDeliverablePrepPath; 
+  private Path pQtDeliverablePrepPath; 
 
 }

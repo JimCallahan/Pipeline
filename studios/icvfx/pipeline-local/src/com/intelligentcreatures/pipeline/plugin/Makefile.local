@@ -11,6 +11,7 @@
 	$(MAKE) -f Makefile.local -C NotMiniKeyChooser $@ 
 	$(MAKE) -f Makefile.local -C PFTrackBuildAction $@ 
 	$(MAKE) -f Makefile.local -C PFTrackEditor $@
+	$(MAKE) -f Makefile.local -C QtEncodeAction $@
 	$(MAKE) -f Makefile.local -C SMplayerEditor $@ 
 	$(MAKE) -f Makefile.local -C ShakeQtDeliveryAction $@ 
 	$(MAKE) -f Makefile.local -C SlateSubstAction $@

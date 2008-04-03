@@ -46,6 +46,7 @@ java_DATA = \
   PlaceholderStage.java \
   PlaceholderMayaSceneStage.java \
   PrimaryHDRStage.java \
+  QtEncodeStage.java \
   RenderTaskVerifyStage.java \
   SlateSubstStage.java \
   SoundtrackStage.java

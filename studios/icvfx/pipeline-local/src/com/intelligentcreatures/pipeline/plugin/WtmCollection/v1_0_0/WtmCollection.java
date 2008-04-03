@@ -1,4 +1,4 @@
-// $Id: WtmCollection.java,v 1.18 2008/04/02 20:56:16 jim Exp $
+// $Id: WtmCollection.java,v 1.19 2008/04/03 01:34:28 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -31,7 +31,7 @@ class WtmCollection
 
       {
 	LayoutGroup sub = 
-	  new LayoutGroup("Task Builders", "Builders each production task.", true);
+	  new LayoutGroup("Task Builders", "Builders for each production task.", true);
 	sub.addEntry("Sound");
 	sub.addEntry("HDRI");
 	sub.addEntry("Plates");
@@ -48,8 +48,8 @@ class WtmCollection
       {
 	LayoutGroup sub = 
 	  new LayoutGroup("Internal", "Builders used internally by Tools.", true);
-  	sub.addEntry("Deliver"); 
-	sub.addEntry("ApproveTask");
+  	sub.addEntry("QtDeliver"); 
+ 	sub.addEntry("ApproveTask");
 
 	group.addSubGroup(sub);
       }
@@ -95,7 +95,7 @@ class WtmCollection
     toReturn.put("Noise",     pkg + "NoiseBuilder");
     toReturn.put("TempComp",  pkg + "TempCompBuilder");
 
-    toReturn.put("Deliver",      pkg + "DeliverBuilder");
+    toReturn.put("QtDeliver",    pkg + "QtDeliverBuilder");
     toReturn.put("ApproveTask",  pkg + "ApproveTaskBuilder");
     
     return toReturn;

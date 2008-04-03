@@ -1,4 +1,4 @@
-// $Id: DeliverBuilder.java,v 1.1 2008/04/02 20:56:16 jim Exp $
+// $Id: QtDeliverBuilder.java,v 1.1 2008/04/03 01:34:28 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -14,7 +14,7 @@ import us.temerity.pipeline.stages.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   D E L I V E R   B U I L D E R                                                          */
+/*   Q T   D E L I V E R   B U I L D E R                                                    */
 /*------------------------------------------------------------------------------------------*/
 
 /**
@@ -75,7 +75,7 @@ import java.util.*;
  *   Slate Hold <BR> 
  *   <DIV style="margin-left: 40px;">
  *     The number of frames to hold the constant slate image before the images being 
- *     reviewed begin animating.
+ *     reviewed begin animating. 
  *   </DIV> <BR>
  * 
  *   Format Script <BR> 
@@ -90,7 +90,7 @@ import java.util.*;
  * </DIV> 
  */
 public 
-class DeliverBuilder 
+class QtDeliverBuilder 
   extends BaseShotBuilder
 {
   /*----------------------------------------------------------------------------------------*/
@@ -110,7 +110,7 @@ class DeliverBuilder
    *   Information that is shared among all builders in a given invocation.
    */ 
   public 
-  DeliverBuilder
+  QtDeliverBuilder
   (
    MasterMgrClient mclient,
    QueueMgrClient qclient,
@@ -118,7 +118,7 @@ class DeliverBuilder
   )
     throws PipelineException
   {
-    super("Deliver",
+    super("QtDeliver",
           "A builder for constructing the nodes required to prepare an image sequence " + 
 	  "for delivery to the client or for internal review.", 
           mclient, qclient, builderInfo, 
@@ -221,7 +221,7 @@ class DeliverBuilder
 	  (aSlateHold, 
 	   "The number of frames to hold the constant slate image before the images being " +
 	   "reviewed begin animating.", 
-	   48);
+	   1);
         addParam(param);
       }
 
@@ -632,6 +632,14 @@ class DeliverBuilder
       pSlateHold = getIntegerParamValue(new ParamMapping(aSlateHold), 
 					    new Range<Integer>(0, null));
 
+      /* compute the full frame range with slate holds added */ 
+      FrameRange range = pSourceVersion.getPrimarySequence().getFrameRange();
+      if(range.getBy() != 1) 
+	throw new PipelineException
+	  ("The source images node (" + pSourceVersion.getName() + " v" + 
+	   pSourceVersion.getVersionID() + ") must have a frame step increment of (1)!"); 
+      pFrameRange = new FrameRange(range.getStart(), range.getEnd()+pSlateHold, 1); 
+
       /* initialize internal Deliver (Shot) namer */ 
       {
 	pDeliverNamer = new DeliverNamer(pClient, pQueue, pStudioDefs);
@@ -699,72 +707,67 @@ class DeliverBuilder
       }
 
       /* the delivery network */ 
-      {
-	String readDeliverableImagesNodeName = pDeliverNamer.getReadDeliverableImagesNode();
+      { 
+	String readQtDeliverableImagesNodeName = 
+	  pDeliverNamer.getReadQtDeliverableImagesNode();
 	{
 	  NukeReadStage stage = 
 	    new NukeReadStage
 	      (stageInfo, pContext, pClient, 
-	       readDeliverableImagesNodeName, pSourceVersion.getName()); 
+	       readQtDeliverableImagesNodeName, pSourceVersion.getName()); 
 	  stage.addSingleParamValue("ReadName", "Images"); 
 	  addTaskAnnotation(stage, NodePurpose.Prepare); 
 	  stage.build();  
 	}
 
-	String slateNukeNodeName = pDeliverNamer.getSlateNukeNode();
+	String qtDeliverSlateNukeNodeName = pDeliverNamer.getQtDeliverSlateNukeNode();
 	{
 	  SlateSubstStage stage = 
 	    new SlateSubstStage(stageInfo, pContext, pClient, 
-				slateNukeNodeName, pSlateNodeName, 
+				qtDeliverSlateNukeNodeName, pSlateNodeName, 
 				pDeliveryType, pDeliverable, pClientVersion, 
 				pSourceVersion, pNotes, pSlateHold); 
 	  addTaskAnnotation(stage, NodePurpose.Prepare); 
 	  stage.build();  
 	}
 
-	String slatedDeliverableImagesNodeName = 
-	  pDeliverNamer.getSlatedDeliverableImagesNode(); 
+	String qtDeliverSlatedImagesNodeName = pDeliverNamer.getQtDeliverSlatedImagesNode(); 
 	{
 	  TreeMap<String,String> subst = new TreeMap<String,String>(); 
-	  subst.put(readDeliverableImagesNodeName, "Images"); 
+	  subst.put(readQtDeliverableImagesNodeName, "Images"); 
 	  subst.put(pFormatNodeName, "FinalFormat"); 
 
-	  FrameRange range = pSourceVersion.getPrimarySequence().getFrameRange();
-	  FrameRange fullRange = 
-	    new FrameRange(range.getStart(), range.getEnd()+pSlateHold, range.getBy());
+
 
 	  NukeSubstCompStage stage = 
 	    new NukeSubstCompStage
 	      (stageInfo, pContext, pClient, 
-	       slatedDeliverableImagesNodeName, fullRange, 4, "jpg", 
-	       "Append & Process", slateNukeNodeName, subst);
+	       qtDeliverSlatedImagesNodeName, pFrameRange, 4, "jpg", 
+	       "Append & Process", qtDeliverSlateNukeNodeName, subst);
 	  addTaskAnnotation(stage, NodePurpose.Prepare); 
 	  stage.build(); 
 	}
 
-	String slatedDeliverableQtNodeName = pDeliverNamer.getSlatedDeliverableQtNode();
+	String qtDeliverSlatedMovieNodeName = pDeliverNamer.getQtDeliverSlatedMovieNode();
 	{
 	  DjvUnixQtStage stage = 
 	    new DjvUnixQtStage
 	      (stageInfo, pContext, pClient,
-	       slatedDeliverableQtNodeName, slatedDeliverableImagesNodeName, "24");
+	       qtDeliverSlatedMovieNodeName, qtDeliverSlatedImagesNodeName, "24");
 	  addTaskAnnotation(stage, NodePurpose.Prepare); 
 	  stage.build(); 
 	}
 
-	String deliverableNodeName = pDeliverNamer.getDeliverableNode();
+	String qtDeliverableNodeName = pDeliverNamer.getQtDeliverableNode();
 	{
-	  TreeSet<String> sources = new TreeSet<String>();
-	  sources.add(slatedDeliverableQtNodeName);
-	  sources.add(pCodecNodeName);
-
-	  TargetStage stage = 
- 	    new TargetStage(stageInfo, pContext, pClient, 
- 			    deliverableNodeName, sources); 
+	  QtEncodeStage stage = 
+	    new QtEncodeStage
+	      (stageInfo, pContext, pClient, 
+	       qtDeliverableNodeName, qtDeliverSlatedMovieNodeName, pCodecNodeName); 
  	  addTaskAnnotation(stage, NodePurpose.Deliver); 
  	  stage.build(); 
- 	  addToQueueList(deliverableNodeName);
- 	  addToCheckInList(deliverableNodeName);
+ 	  addToQueueList(qtDeliverableNodeName);
+ 	  addToCheckInList(qtDeliverableNodeName);
 	}
       }
     }
@@ -809,6 +812,11 @@ class DeliverBuilder
   private NodeVersion pSourceVersion; 
   private String      pSourcePrefix; 
 
+  /**
+   * The frame range of the images with slate hold frames added.
+   */
+  private FrameRange pFrameRange; 
+ 
   /**
    * The information extracted from the task annotation on the source images node.
    */ 
