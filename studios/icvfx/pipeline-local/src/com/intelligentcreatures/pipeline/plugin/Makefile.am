@@ -18,6 +18,7 @@ SUBDIRS = \
   NotMiniKeyChooser \
   PFTrackBuildAction \
   PFTrackEditor \
+  QtDeliverTool \
   QtEncodeAction \
   SMplayerEditor \
   ShakeQtDeliveryAction \

@@ -1894,6 +1894,12 @@ AC_CONFIG_FILES([
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/PFTrackEditor/Makefile
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/PFTrackEditor/v1_0_0/Makefile
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/PFTrackEditor/v1_0_0/Makefile.local
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/QtDeliverTool/Makefile
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/QtDeliverTool/v1_0_0/Makefile
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/QtDeliverTool/v1_0_0/Makefile.local
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/QtEncodeAction/Makefile
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/QtEncodeAction/v1_0_0/Makefile
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/QtEncodeAction/v1_0_0/Makefile.local
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/SMplayerEditor/Makefile
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/SMplayerEditor/v1_0_0/Makefile
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/SMplayerEditor/v1_0_0/Makefile.local

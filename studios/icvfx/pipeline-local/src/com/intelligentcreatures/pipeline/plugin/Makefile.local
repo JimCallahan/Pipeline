@@ -1,20 +1,53 @@
 #--- RULES -----------------------------------------------------------------------------------
 
 %: 
+        @echo
+        @echo "---------------------------------------------------------------------------"
+        @echo "  A N N O T A T I O N S"
+        @echo "---------------------------------------------------------------------------"
 	$(MAKE) -f Makefile.local -C ApproveTaskAnnotation $@ 
-	$(MAKE) -f Makefile.local -C ApproveTaskTool $@ 
 	$(MAKE) -f Makefile.local -C CommonTaskAnnotation $@ 
+	$(MAKE) -f Makefile.local -C SubmitTaskAnnotation $@
+        @echo
+        @echo "---------------------------------------------------------------------------"
+        @echo "  E D I T O R S"
+        @echo "---------------------------------------------------------------------------"
 	$(MAKE) -f Makefile.local -C DJVEditor $@ 
-	$(MAKE) -f Makefile.local -C Kdiff3Comparator $@ 
 	$(MAKE) -f Makefile.local -C KritaEditor $@ 
-	$(MAKE) -f Makefile.local -C LensInfoAction $@ 
-	$(MAKE) -f Makefile.local -C NotMiniKeyChooser $@ 
-	$(MAKE) -f Makefile.local -C PFTrackBuildAction $@ 
 	$(MAKE) -f Makefile.local -C PFTrackEditor $@
-	$(MAKE) -f Makefile.local -C QtEncodeAction $@
 	$(MAKE) -f Makefile.local -C SMplayerEditor $@ 
+        @echo
+        @echo "---------------------------------------------------------------------------"
+        @echo "  C O M P A R A T O R S"
+        @echo "---------------------------------------------------------------------------"
+	$(MAKE) -f Makefile.local -C Kdiff3Comparator $@ 
+        @echo
+        @echo "---------------------------------------------------------------------------"
+        @echo "  A C T I O N S"
+        @echo "---------------------------------------------------------------------------"
+	$(MAKE) -f Makefile.local -C LensInfoAction $@ 
+	$(MAKE) -f Makefile.local -C PFTrackBuildAction $@ 
+	$(MAKE) -f Makefile.local -C QtEncodeAction $@
 	$(MAKE) -f Makefile.local -C ShakeQtDeliveryAction $@ 
 	$(MAKE) -f Makefile.local -C SlateSubstAction $@
-	$(MAKE) -f Makefile.local -C SubmitTaskAnnotation $@
+        @echo
+        @echo "---------------------------------------------------------------------------"
+        @echo "  T O O L S" 
+        @echo "---------------------------------------------------------------------------"
+	$(MAKE) -f Makefile.local -C ApproveTaskTool $@ 
+	$(MAKE) -f Makefile.local -C QtDeliverTool @
+        @echo
+        @echo "---------------------------------------------------------------------------"
+        @echo "  K E Y   C H O O S E R S" 
+        @echo "---------------------------------------------------------------------------"
+	$(MAKE) -f Makefile.local -C NotMiniKeyChooser $@ 
+        @echo
+        @echo "---------------------------------------------------------------------------"
+        @echo "  M A S T E R   E X T E N S I O N S"
+        @echo "---------------------------------------------------------------------------"
 	$(MAKE) -f Makefile.local -C TaskGuardExt $@ 
+        @echo
+        @echo "---------------------------------------------------------------------------"
+        @echo "  B U I L D E R   C O L L E C T I O N S" 
+        @echo "---------------------------------------------------------------------------"
 	$(MAKE) -f Makefile.local -C WtmCollection $@
