@@ -11,6 +11,7 @@ SUBDIRS = \
   ApproveTaskAnnotation \
   ApproveTaskTool \
   CommonTaskAnnotation \
+  DeliverTool \
   DJVEditor \
   Kdiff3Comparator \
   KritaEditor \
@@ -18,7 +19,6 @@ SUBDIRS = \
   NotMiniKeyChooser \
   PFTrackBuildAction \
   PFTrackEditor \
-  QtDeliverTool \
   QtEncodeAction \
   SMplayerEditor \
   ShakeQtDeliveryAction \

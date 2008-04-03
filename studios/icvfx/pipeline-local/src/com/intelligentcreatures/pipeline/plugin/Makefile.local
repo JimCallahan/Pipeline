@@ -35,7 +35,7 @@
         @echo "  T O O L S" 
         @echo "---------------------------------------------------------------------------"
 	$(MAKE) -f Makefile.local -C ApproveTaskTool $@ 
-	$(MAKE) -f Makefile.local -C QtDeliverTool @
+	$(MAKE) -f Makefile.local -C DeliverTool @
         @echo
         @echo "---------------------------------------------------------------------------"
         @echo "  K E Y   C H O O S E R S" 
