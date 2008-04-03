@@ -17,7 +17,6 @@ java_DATA = \
   BaseShotBuilder.java \
   BaseTaskBuilder.java \
   BlotBuilder.java \
-  DeliverBuilder.java \
   DeliverNamer.java \
   HdriBuilder.java \
   ICStageFunction.java \
@@ -27,6 +26,7 @@ java_DATA = \
   NoiseBuilder.java \
   PlatesBuilder.java \
   ProjectNamer.java \
+  QtDeliverBuilder.java \
   ShotNamer.java \
   SoundBuilder.java \
   StudioDefinitions.java \
