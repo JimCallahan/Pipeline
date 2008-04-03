@@ -1,4 +1,4 @@
-// $Id: ApproveTaskTool.java,v 1.5 2008/02/25 05:03:07 jesse Exp $
+// $Id: ApproveTaskTool.java,v 1.6 2008/04/03 06:04:17 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.ApproveTaskTool.v1_0_0;
 
@@ -86,7 +86,7 @@ class ApproveTaskTool
     {
       if(pPrimary == null || pSelected.size() > 1) 
 	throw new PipelineException
-          ("Please select the submit node and only the submit node for the you " + 
+          ("Please select the submit node and only the submit node for the task you " + 
            "wish the approve!"); 
 
       return " : Validating Task";
@@ -124,7 +124,7 @@ class ApproveTaskTool
       if(pSubmitNode == null) 
         throw new PipelineException
           ("The selected node (" + pPrimary + ") does not have the appropriate " + 
-           "annotations to be a task submit node!");
+           "annotations to be a task " + aSubmit + " node!");
 
       {
         pSubmitVersionIDs = 
@@ -413,14 +413,18 @@ class ApproveTaskTool
        pApproveBuilderID.getVersionID(), 
        pApproveBuilderID.getVendor()); 
     
-    /* instantiate and run the builder... */ 
-    BaseBuilder builder = collection.instantiateBuilder
-      (pApproveBuilderID.getBuilderName(), null, null, 
-       false, true, false, false, params);
-    if (builder != null)
-      builder.run();
-    else
-      ;//Insert error handling code for a failed invocation.
+    /* instantiate the builder */ 
+    BaseBuilder builder = 
+      collection.instantiateBuilder(pApproveBuilderID.getBuilderName(), null, null, 
+                                    false, true, false, false, params);
+    if(builder == null)
+      throw new PipelineException
+        ("Unable to instantiate the builder " + pApproveBuilderID.getBuilderName() + " " + 
+         "(v" + pApproveBuilderID.getVersionID() + ") from Vendor " + 
+         "(" + pApproveBuilderID.getVendor() + ")!"); 
+
+    /* run it! */ 
+    builder.run();
   }
 
  
