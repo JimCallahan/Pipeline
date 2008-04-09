@@ -1,4 +1,4 @@
-// $Id: CineonDeliverBuilder.java,v 1.1 2008/04/03 10:30:47 jim Exp $
+// $Id: CineonDeliverBuilder.java,v 1.2 2008/04/09 20:15:41 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -455,7 +455,7 @@ class CineonDeliverBuilder
       }
     }
 
-    //    private static final long serialVersionUID = 
+    private static final long serialVersionUID = -3747872717789525113L;
   }
 
 
@@ -505,7 +505,7 @@ class CineonDeliverBuilder
       }
     }
 
-    //    private static final long serialVersionUID = 
+    private static final long serialVersionUID = -5928155896503318703L;
   }
 
 
@@ -566,7 +566,7 @@ class CineonDeliverBuilder
       }
     }
 
-    //    private static final long serialVersionUID =
+    private static final long serialVersionUID = -2525908233226926848L;
   }
 
 
@@ -649,7 +649,7 @@ class CineonDeliverBuilder
       }
     }
 
-    //    private static final long serialVersionUID = 
+    private static final long serialVersionUID = 9146902073925896668L;
   }
    
   
@@ -660,7 +660,7 @@ class CineonDeliverBuilder
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  //  private static final long serialVersionUID = 
+  private static final long serialVersionUID = -5932583310803067979L;
   
   public static final String aSourceNode    = "SourceNode";  
   public static final String aSourceVersion = "SourceVersion";  
