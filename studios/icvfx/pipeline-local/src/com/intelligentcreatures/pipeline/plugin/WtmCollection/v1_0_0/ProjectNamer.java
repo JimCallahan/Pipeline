@@ -1,4 +1,4 @@
-// $Id: ProjectNamer.java,v 1.20 2008/04/02 20:56:16 jim Exp $
+// $Id: ProjectNamer.java,v 1.21 2008/04/09 20:16:18 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -236,6 +236,18 @@ class ProjectNamer
   }
 
   /**
+   * Returns the fully resolved name of the node containing a MEL script which used to set
+   * the Maya render globals for tracking temp renders.
+   */ 
+  public String
+  getTrackTempGlobalsNode() 
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Tracking), 
+			 new Path(AppDirs.MEL.toDirPath(), "track_temp_globals"));
+    return path.toString(); 
+  }
+
+  /**
    * Returns the fully resolved name of the node containing the combined MEL scripts to 
    * attach shaders and setup the tracking temp render Maya scene.
    */ 
@@ -244,18 +256,6 @@ class ProjectNamer
   {
     Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Tracking), 
 			 new Path(AppDirs.MEL.toDirPath(), "track_temp_prep"));
-    return path.toString(); 
-  }
-
-  /**
-   * Returns the fully resolved name of the node containing a MEL script which used to set
-   * the Maya render globals for tracking temp renders.
-   */ 
-  public String
-  getTrackTempRenderNode() 
-  {
-    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Tracking), 
-			 new Path(AppDirs.MEL.toDirPath(), "track_temp_render"));
     return path.toString(); 
   }
 

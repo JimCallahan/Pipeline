@@ -1,4 +1,4 @@
-// $Id: TrackingBuilder.java,v 1.14 2008/03/30 01:43:10 jim Exp $
+// $Id: TrackingBuilder.java,v 1.15 2008/04/09 20:16:18 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -311,14 +311,14 @@ class TrackingBuilder
 	pTrackTempPrepNodeName = pProjectNamer.getTrackTempPrepNode(); 
 	pRequiredNodeNames.add(pTrackTempPrepNodeName); 
 
-	pTrackTempRenderNodeName = pProjectNamer.getTrackTempRenderNode(); 
-	pRequiredNodeNames.add(pTrackTempRenderNodeName); 
-
 	pRorschachTempModelNodeName = pProjectNamer.getRorschachTempModelNode(); 
 	pRequiredNodeNames.add(pRorschachTempModelNodeName); 
 
 	pRorschachTempTextureNodeName = pProjectNamer.getRorschachTempTextureNode(); 
-	pRequiredNodeNames.add(pRorschachTempTextureNodeName);       
+	pRequiredNodeNames.add(pRorschachTempTextureNodeName); 
+
+	pTrackTempGlobalsNodeName = pProjectNamer.getTrackTempGlobalsNode(); 
+	pRequiredNodeNames.add(pTrackTempGlobalsNodeName); 
       }
 
     }
@@ -571,24 +571,37 @@ class TrackingBuilder
 	    stage.build();  
 	  }
  
-	  String trackingTempRenderNodeName = pShotNamer.getTrackingTempRenderNode();
+	  String trackingTempRenderMayaNodeName = pShotNamer.getTrackingTempRenderMayaNode();
 	  {
 	    BuildTestRenderStage stage = 
 	      new BuildTestRenderStage
 	        (stageInfo, pContext, pClient, 
-		 trackingTempRenderNodeName, pRorschachTempModelNodeName, pTrackNodeName, 
+		 trackingTempRenderMayaNodeName, pRorschachTempModelNodeName, pTrackNodeName, 
 		 trackingTempTextureNodeName, pTrackTempPrepNodeName, pFrameRange); 
 	    addTaskAnnotation(stage, NodePurpose.Prepare); 
 	    stage.build();  
 	  }
 	  
+	  String trackingTempRenderNodeName = pShotNamer.getTrackingTempRenderNode();
+	  {
+	    LinkedList<String> sources = new LinkedList<String>();
+	    sources.add(pTrackTempGlobalsNodeName); 
+	    sources.add(pResolutionNodeName); 
+
+	    CatScriptStage stage = 
+	      new CatScriptStage(stageInfo, pContext, pClient, 
+				 trackingTempRenderNodeName, "mel", sources);
+	    addTaskAnnotation(stage, NodePurpose.Prepare); 
+	    stage.build();  
+	  }
+
 	  pTrackingInkblotNodeName = pShotNamer.getTrackingInkblotNode(); 
 	  {
 	    RenderTaskVerifyStage stage = 
 	      new RenderTaskVerifyStage
 	        (stageInfo, pContext, pClient, 
 		 pTrackingInkblotNodeName, pFrameRange, "sgi", 
-		 trackingTempRenderNodeName, "camera01", pTrackTempRenderNodeName); 
+		 trackingTempRenderMayaNodeName, "camera01", trackingTempRenderNodeName); 
 	    addTaskAnnotation(stage, NodePurpose.Product); 
 	    stage.build();  
 	  }
@@ -734,12 +747,6 @@ class TrackingBuilder
 
   /**
    * The fully resolved name of the node containing a MEL script which used to set
-   * the Maya render globals for tracking temp renders.
-   */ 
-  private String pTrackTempRenderNodeName;  
-
-  /**
-   * The fully resolved name of the node containing a MEL script which used to set
    * the Maya render globals for tracking verification test renders.
    */ 
   private String pTrackVerifyGlobalsNodeName;  
@@ -775,6 +782,12 @@ class TrackingBuilder
    * The fully resolved name of node containig the inkblot temp render images. 
    */ 
   private String pTrackingInkblotNodeName; 
+
+  /** 
+   * The fully resolved name of the node containing a MEL script which used to set
+   * the Maya render globals for tracking temp renders.
+   */ 
+  private String pTrackTempGlobalsNodeName; 
 
 
   /*----------------------------------------------------------------------------------------*/
