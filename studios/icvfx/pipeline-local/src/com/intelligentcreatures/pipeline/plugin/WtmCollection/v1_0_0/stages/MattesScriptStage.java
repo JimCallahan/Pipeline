@@ -1,4 +1,4 @@
-// $Id: MattesScriptStage.java,v 1.1 2008/03/13 16:26:27 jim Exp $
+// $Id: MattesScriptStage.java,v 1.2 2008/04/09 20:16:29 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
 
@@ -30,12 +30,6 @@ class MattesScriptStage
   
   /**
    * Construct a new stage.
-   * 
-   * @param name
-   *   The name of the stage.
-   * 
-   * @param desc
-   *   A description of what the stage should do.
    * 
    * @param stageInfo
    *   Class containing basic information shared among all stages.

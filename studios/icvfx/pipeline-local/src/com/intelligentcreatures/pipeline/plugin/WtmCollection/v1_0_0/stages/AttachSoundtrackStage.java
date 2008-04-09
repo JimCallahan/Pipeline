@@ -1,4 +1,4 @@
-// $Id: AttachSoundtrackStage.java,v 1.1 2008/03/06 06:14:49 jim Exp $
+// $Id: AttachSoundtrackStage.java,v 1.2 2008/04/09 20:16:29 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
 
@@ -41,7 +41,7 @@ class AttachSoundtrackStage
    * @param nodeName
    *   The name of the node that is to be created.
    * 
-   * @param imageSource
+   * @param soundFile
    *   The name of the sound file node to attach.
    */
   public
