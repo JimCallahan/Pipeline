@@ -1,4 +1,4 @@
-// $Id: BaseBuilderExecution.java,v 1.2 2008/03/04 08:15:15 jesse Exp $
+// $Id: BaseBuilderExecution.java,v 1.3 2008/04/11 20:43:57 jesse Exp $
 
 package us.temerity.pipeline.builder.execution;
 
@@ -17,7 +17,6 @@ import us.temerity.pipeline.math.*;
 
 /**
  * Execute a builder.
- *
  */
 public abstract
 class BaseBuilderExecution
@@ -126,7 +125,6 @@ class BaseBuilderExecution
     
     for (BaseNames namer : builder.getNamers().values()) {
       assignCommandLineParams(namer, info);
-      initializeSubBuilder(namer, builder);
     }
 
   }
@@ -156,6 +154,10 @@ class BaseBuilderExecution
     
     SetupPass pass = bundle.getPass();
     BaseBuilder builder = bundle.getOwningBuilder();
+    
+    for (BaseNames namer : builder.getNamers().values()) {
+      initializeSubBuilder(namer, builder);
+    }
     
     pass.run();
     
@@ -206,6 +208,13 @@ class BaseBuilderExecution
     }
   }
   
+  /**
+   * Recursively creates a list of ConstructPasses to run.
+   * 
+   * @param builder
+   *   The builder to start collecting with.  This builder's Passes will be the last ones
+   *   added to the list
+   */
   private void 
   collectConstructPasses
   (
