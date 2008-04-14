@@ -1,4 +1,4 @@
-// $Id: QtDeliverBuilder.java,v 1.3 2008/04/03 10:30:47 jim Exp $
+// $Id: QtDeliverBuilder.java,v 1.4 2008/04/14 01:38:05 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -331,7 +331,8 @@ class QtDeliverBuilder
   {
     ArrayList<PluginContext> plugins = new ArrayList<PluginContext>();	
     plugins.add(new PluginContext("Touch")); 			
-    plugins.add(new PluginContext("NukeRead"));	
+    plugins.add(new PluginContext("NukeRead", "Temertity", 
+                                  new Range<VersionID>(new VersionID("2.4.3"), null)));
     plugins.add(new PluginContext("NukeSubstComp")); 		
     plugins.add(new PluginContext("DjvUnixQt"));			
     plugins.add(new PluginContext("SlateSubst", "ICVFX"));	
