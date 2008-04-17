@@ -1,4 +1,4 @@
-// $Id: BaseBuilder.java,v 1.52 2008/03/28 21:14:37 jim Exp $
+// $Id: BaseBuilder.java,v 1.53 2008/04/17 22:44:49 jim Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -918,7 +918,6 @@ class BaseBuilder
       new GUIExecution(this).run();
     else
       new CommandLineExecution(this).run();
-      
   }
   
 
