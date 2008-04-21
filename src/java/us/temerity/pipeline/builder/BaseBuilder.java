@@ -1,4 +1,4 @@
-// $Id: BaseBuilder.java,v 1.53 2008/04/17 22:44:49 jim Exp $
+// $Id: BaseBuilder.java,v 1.54 2008/04/21 23:12:13 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -334,6 +334,8 @@ class BaseBuilder
     pConstructPasses = new ArrayList<BaseConstructPass>();
     pLockBundles = new ArrayList<LockBundle>();
     pSubBuildersByPass = new MappedArrayList<Integer, String>();
+    pQueuedNodes = new TreeSet<String>();
+    
     {
       UtilityParam param = 
 	new EnumUtilityParam
@@ -1338,8 +1340,10 @@ class BaseBuilder
             "Sleeping for 7 seconds before checking jobs again.");
           Thread.sleep(7000);
         }
-	catch(InterruptedException e) {
-          throw new PipelineException(e); 
+	catch(InterruptedException ex) {
+          throw new PipelineException
+            ("The execution thread was interrupted while waiting for jobs to complete.\n" + 
+             Exceptions.getFullMessage(ex));
         }
       }
       else
@@ -1373,6 +1377,55 @@ class BaseBuilder
       if(!toReturn)
 	break;
     }
+    return toReturn;
+  }
+  
+  public final void
+  killJobs()
+    throws PipelineException
+  {
+    for (String node : pQueuedNodes) {
+      pQueue.killJobs(new NodeID(getAuthor(), getView(), node));
+    }
+  }
+
+  
+  /**
+   * Collects a list of all the nodes whose jobs have not completed successfully from
+   * a list of roots and then kills all remaining jobs.
+   * 
+   * @param queuedNodes
+   *   The list of node names which were queued.
+   * @param jobGroups
+   *   The list of jobGroups which were created when the nodes in the list above were queued.
+   * @return
+   *   The list of nodes which did not finish correctly
+   * @throws PipelineException
+   *   If anything bad happens when talking to the queue.
+   */
+  private TreeSet<String>
+  collectNamesAndKill
+  (
+    TreeSet<String> queuedNodes,
+    LinkedList<QueueJobGroup> jobGroups
+  ) 
+    throws PipelineException
+  {
+    pLog.log(Kind.Ops, Level.Finest, 
+      "Collecting the names of nodes which did not finish correctly.");
+    TreeSet<String> toReturn = new TreeSet<String>();
+    for(String nodeName : queuedNodes) {
+      NodeStatus status = pClient.status(getAuthor(), getView(), nodeName);
+      findBadNodes(toReturn, status);
+    }
+    TreeSet<Long> jobs = new TreeSet<Long>();
+    for (QueueJobGroup group : jobGroups) {
+      for (Long id : group.getAllJobIDs()) {
+        jobs.add(id);
+      }
+    }
+    pQueue.killJobs(jobs);
+
     return toReturn;
   }
 
@@ -1553,7 +1606,7 @@ class BaseBuilder
   /**
    * Gets the list of all the nodes currently in the queue list.
    */
-  protected final TreeSet<String> 
+  public final TreeSet<String> 
   getQueueList()
   {
     return new TreeSet<String>(pNodesToQueue);
@@ -2143,12 +2196,20 @@ class BaseBuilder
       pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Finer, 
         "Starting the pre-build phase in the (" + getName() + ").");
       TreeSet<String> neededNodes = preBuildPhase();
+      pQueuedNodes.clear();
       if (neededNodes.size() > 0) {
 	LinkedList<QueueJobGroup> jobs = queueNodes(neededNodes);
+	pQueuedNodes.addAll(neededNodes);
 	waitForJobs(jobs);
-	if (!areAllFinished(neededNodes))
-	  throw new PipelineException("The jobs did not finish correctly");
+	if (!areAllFinished(neededNodes)) {
+	  TreeSet<String> badNodes = collectNamesAndKill(neededNodes, jobs);
+	  throw new PipelineException
+	    ("The queue jobs in prebuild phase of  pass (" + toString() + ") did not finish correctly.\n" +
+	     "The following nodes reported failure: " + badNodes.toString() + "\n" +
+	     "All remaining jobs have been terminated.");
+	}
       }
+      pQueuedNodes.clear();
       for (String needed : this.nodesDependedOn())
 	neededNode(needed);
       pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Finer, 
@@ -2175,13 +2236,19 @@ class BaseBuilder
     run()
       throws PipelineException
     {
-      LinkedList<QueueJobGroup> jobs = queueNodes(getQueueList());
-      if (jobs.size() > 0)
-        waitForJobs(jobs);
+      LinkedList<QueueJobGroup> jobGroups = queueNodes(getQueueList());
+      pQueuedNodes.addAll(getQueueList());
+      if (jobGroups.size() > 0)
+        waitForJobs(jobGroups);
       boolean allFinished = areAllFinished(getQueueList());
-      if (!allFinished)
+      if (!allFinished) {
+        TreeSet<String> badNodes = collectNamesAndKill(getQueueList(), jobGroups);
         throw new PipelineException
-          ("The queue jobs in queue pass (" + toString() + ") did not finish correctly.");
+          ("The queue jobs in queue pass (" + toString() + ") did not finish correctly.\n" +
+           "The following nodes reported failure: " + badNodes.toString() + "\n" +
+           "All remaining jobs have been terminated.");
+      }
+      pQueuedNodes.clear();
    }
     
     @Override
@@ -2221,9 +2288,17 @@ class BaseBuilder
             for (String node : bundle.getNodesToLock())
               lockLatest(node);
             TreeSet<String> neededNodes = new TreeSet<String>(bundle.getNodesToCheckin());
-            boolean finished = queueAndWait(neededNodes);
-            if (!finished)
-              throw new PipelineException("The jobs did not finish correctly");
+            LinkedList<QueueJobGroup> jobs = queueNodes(neededNodes);
+            if (jobs.size() > 0)
+              waitForJobs(jobs);
+            boolean finished =  areAllFinished(neededNodes);
+            if (!finished) {
+              TreeSet<String> badNodes = collectNamesAndKill(neededNodes, jobs);
+              throw new PipelineException
+                ("The queue jobs in pass (" + toString() + ") did not finish correctly.\n" +
+                 "The following nodes reported failure: " + badNodes.toString() + "\n" +
+                 "All remaining jobs have been terminated.");
+            }
             checkInNodes(bundle.getNodesToCheckin(), VersionID.Level.Micro, "The tree is now properly locked.");
           }
         }
@@ -2240,31 +2315,6 @@ class BaseBuilder
       return ExecutionPhase.Checkin;
     }
     
-    /**
-     * Queue and wait for the specified nodes.
-     * 
-     * @param toQueue
-     *   The list of nodes to queue.
-     * 
-     * @return
-     *   Whether or not all the nodes in a finished state.
-     *   
-     * @throws PipelineException
-     *   If there is an error while waiting for the jobs to finish.
-     */
-    private final boolean
-    queueAndWait
-    (
-      TreeSet<String> toQueue
-    )
-      throws PipelineException
-    {
-      LinkedList<QueueJobGroup> jobs = queueNodes(toQueue);
-      if (jobs.size() > 0)
-        waitForJobs(jobs);
-      return areAllFinished(toQueue);
-    }  
-
     private static final long serialVersionUID = -8784882749410198882L;
   }
 
@@ -2334,5 +2384,12 @@ class BaseBuilder
   
   private ActionOnExistence pActionOnExistence;
   
-  private StageInformation pStageInfo; 
+  private StageInformation pStageInfo;
+  
+  /**
+   * A list of nodes that the builder knows have been queued (either in a preBuild phase or
+   * a {@link QueueConstructPass}.  This list is used when an error has occurred and jobs
+   * need to be killed.
+   */
+  private TreeSet<String> pQueuedNodes;
 }

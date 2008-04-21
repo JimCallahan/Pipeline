@@ -1,3 +1,5 @@
+// $Id: JBuilderTopPanel.java,v 1.20 2008/04/21 23:12:14 jesse Exp $
+
 package us.temerity.pipeline.builder.ui;
 
 import java.awt.*;
@@ -51,7 +53,8 @@ class JBuilderTopPanel
     
 
     {
-      pTreeTabPanel = new JTabbedPane();
+      pTreePanel = new JPanel();
+      pTreePanel.setLayout(new BoxLayout(pTreePanel, BoxLayout.LINE_AXIS));
       
       /* Creates the setup pass tree and adds it to the tab panel*/
       {
@@ -72,11 +75,29 @@ class JBuilderTopPanel
           (pSetupTree, 
             ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED, 
             ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, 
-            new Dimension(300, 100), new Dimension(600, 250), null);
-      
-        pTreeTabPanel.insertTab(null, sTabIcon, scroll, 
-          "Tree containing all the setup passes to be run.", pTreeTabPanel.getTabCount());
+            new Dimension(300, 100), new Dimension(300, 250), null);
+        
+        JPanel topPanel = new JPanel();
+        topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.PAGE_AXIS));
+        topPanel.add(Box.createRigidArea(new Dimension(0, 4)));
+        
+        {
+          JPanel topBox = new JPanel();
+          topBox.setLayout(new BoxLayout(topBox, BoxLayout.LINE_AXIS));
+          JTextField field = UIFactory.createTextField("Setup Passes", 40, JLabel.CENTER);
+          topBox.add(Box.createRigidArea(new Dimension(5, 0)));
+          topBox.add(field);
+          topBox.add(Box.createRigidArea(new Dimension(5, 0)));
+          topPanel.add(topBox);
+        }
+        
+        topPanel.add(Box.createRigidArea(new Dimension(0, 4)));
+        topPanel.add(scroll);
+        
+        pTreePanel.add(topPanel);
       }
+      
+      pTreePanel.add(UIFactory.createSidebar());
       
       /* Creates the construct pass tree and adds it to the tab panel*/
       {
@@ -96,12 +117,29 @@ class JBuilderTopPanel
           (pConstructTree, 
             ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED, 
             ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, 
-            new Dimension(300, 100), new Dimension(600, 250), null);
-        pTreeTabPanel.insertTab(null, sTabIcon, scroll, 
-          "Tree containing all the construct passes to be run.", pTreeTabPanel.getTabCount());
+            new Dimension(300, 100), new Dimension(300, 250), null);
+        
+        JPanel topPanel = new JPanel();
+        topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.PAGE_AXIS));
+        topPanel.add(Box.createRigidArea(new Dimension(0, 4)));
+        
+        {
+          JPanel topBox = new JPanel();
+          topBox.setLayout(new BoxLayout(topBox, BoxLayout.LINE_AXIS));
+          JTextField field = UIFactory.createTextField("Construct Passes", 40, JLabel.CENTER);
+          topBox.add(Box.createRigidArea(new Dimension(5, 0)));
+          topBox.add(field);
+          topBox.add(Box.createRigidArea(new Dimension(5, 0)));
+          topPanel.add(topBox);
+        }
+        
+        topPanel.add(Box.createRigidArea(new Dimension(0, 4)));
+        topPanel.add(scroll);
+        
+        pTreePanel.add(topPanel);
+        
       }
-      rightPanel.add(pTreeTabPanel);
-      
+      rightPanel.add(pTreePanel);
     }
 
     {
@@ -149,13 +187,13 @@ class JBuilderTopPanel
       pFirstPassLayouts = firstLayout;
     }
 
+    this.add(UIFactory.createSidebar());
     
-    this.add(Box.createHorizontalStrut(14));
 
     if (builder.useBuilderLogging())
       this.add(rightPanel);
     else
-      this.add(pTreeTabPanel);
+      this.add(pTreePanel);
   }
   
   /**
@@ -197,8 +235,8 @@ class JBuilderTopPanel
     throws PipelineException
   {
     /* Marks the current panel as being done (which changes how it is displayed.*/
-    if (pActiveNode != null)
-      ((BuilderTreeNodeInfo) pActiveNode.getUserObject()).setDone();
+    //if (pActiveNode != null)
+      //((BuilderTreeNodeInfo) pActiveNode.getUserObject()).setDone();
     
     /* Marks the namer panels as done as well and clears the lists that were keeping
      * track of them.
@@ -213,21 +251,26 @@ class JBuilderTopPanel
     
     /* Gets the name and the pass number of the builder; uses that to make the param panel */
     PrefixedName prefixName = new PrefixedName(builder.getPrefixedName(), pass.getName());
+    PrefixedName realPrefixName = new PrefixedName(prefixName, pass.getName());
     int passNum = builder.getCurrentPass();
     JBuilderParamPanel paramPanel = new JBuilderParamPanel(builder, passNum, pParent);
     
-    /* Creates the tree node and marks it as active.*/
-    pActiveNode = createTreeNodes(prefixName.toString());
-    ((BuilderTreeNodeInfo) pActiveNode.getUserObject()).setActive();
+    /* Creates the tree node and marks it as active, but only if there are any params*/
+    pActiveNode = createTreeNodes(realPrefixName.toString());
+    if (paramPanel.numberOfParameters() > 0 && !paramPanel.allViewed())
+      ((BuilderTreeNodeInfo) pActiveNode.getUserObject()).setActive();
     pPanels.put(pActiveNode, paramPanel);
+    
     /* Creates panels for all the namers that have parameters. (actually we go ahead and make 
      * panels for all of them and just discard the ones that we aren't going to use.  A little
-     * wasteful and it should probably actually be done here, but such is life. */
+     * wasteful but such is life. */
     {
       Map<String, BaseNames> namers = builder.getNamers();
       for (String name : namers.keySet()) {
 	BaseNames baseName = namers.get(name);
-	PrefixedName prefixName2 = new PrefixedName(builder.getPrefixedName(), name);
+	//Making a crazy change here.  If it doesn't work, revert.
+	//PrefixedName prefixName2 = new PrefixedName(builder.getPrefixedName(), name);
+	PrefixedName prefixName2 = new PrefixedName(prefixName, name);
 	JBuilderParamPanel namerPanel = new JBuilderParamPanel(baseName, 1, pParent);
 	if (namerPanel.numberOfParameters() > 0) {
 	  DefaultMutableTreeNode node = createTreeNodes(prefixName2.toString());
@@ -245,13 +288,19 @@ class JBuilderTopPanel
 	  pNeverViewed.add(namerPanel);
       }
     }
-    /* Makes sure the newly added node is the selection in the tree.*/
+    /* Makes sure the newly added node is the selection in the tree.
+     * Actually, this needs to be a bit more complicated.  It should actually check
+     * if the active node has any params, and if it doesn't, then you need to skip to
+     * one of its children.  Finally, if there is nothing to select, you need to return
+     * a signal that this pass should be skipped and the executor should advance to the
+     * next pass.
+     */
     {
       TreePath treePath = new TreePath(pActiveNode.getPath());
       pSetupTree.setSelectionPath(treePath);
     }
-    pFirstPassPanel.add(paramPanel, prefixName.toString());
-    pFirstPassLayouts.show(pFirstPassPanel, prefixName.toString());
+    pFirstPassPanel.add(paramPanel, realPrefixName.toString());
+    pFirstPassLayouts.show(pFirstPassPanel, realPrefixName.toString());
     pViewedYet.put(pActiveNode, paramPanel.allViewed());
     
     /* Got to add them in the right order or it don't work*/
@@ -330,10 +379,13 @@ class JBuilderTopPanel
   }
   
   /**
-   * What does this do?  It looks wrong to me.
-   * @return
+   * Determines if the user has looked at everything they're supposed to before advancing
+   * to the next pass.
+   * <p>
+   * Looks at all the panels in the viewed yet data structure and checks if they have been
+   * viewed.  As soon as it finds one that has not been viewed yet, it returns 
+   * <code>false</code>.  Otherwise, it returns <code>true</code>.
    */
-  //TODO figure this out
   public boolean
   allParamsReady()
   {
@@ -341,6 +393,22 @@ class JBuilderTopPanel
       if (!bool)
 	return bool;
     return true;
+  }
+  
+  /**
+   * Does the current set of panels have any parameters.
+   * @return
+   *   <code>true</code> if there are any parameters in the current set of panels.
+   */
+  public boolean
+  hasParams()
+  {
+    for (DefaultMutableTreeNode node : pViewedYet.keySet() ) {
+      JBuilderParamPanel panel = pPanels.get(node);
+      if (panel.numberOfParameters() > 0)
+        return true;
+    }
+    return false;
   }
   
   /*-- CONSTRUCT PASSES --------------------------------------------------------------------*/
@@ -351,7 +419,7 @@ class JBuilderTopPanel
     List<String> executionOrder
   )
   {
-    pFirstPassLayouts.show(pFirstPassPanel, aEmpty);
+    //pFirstPassLayouts.show(pFirstPassPanel, aEmpty);
     DefaultTreeModel model = (DefaultTreeModel) pConstructTree.getModel();
     DefaultMutableTreeNode parent = (DefaultMutableTreeNode) model.getRoot();
     
@@ -360,7 +428,6 @@ class JBuilderTopPanel
 	new DefaultMutableTreeNode(new BuilderTreeNodeInfo(name), false);
       model.insertNodeInto(node, parent, parent.getChildCount());
     }
-    pTreeTabPanel.getModel().setSelectedIndex(1);
     pActiveNode = (DefaultMutableTreeNode) model.getChild(parent, 0);
     ((BuilderTreeNodeInfo) pActiveNode.getUserObject()).setActive();
   }
@@ -475,9 +542,13 @@ class JBuilderTopPanel
 	LinkedList<DefaultMutableTreeNode> list = 
 	  new LinkedList<DefaultMutableTreeNode>(pViewedYet.keySet()); 
 	for (DefaultMutableTreeNode node : list) {
-	  if (node.equals(newNode))
-	    if (pPanels.get(newNode).allViewed())
+	  if (node.equals(newNode)) {
+	    JBuilderParamPanel panel = pPanels.get(newNode); 
+	    if (panel.allViewed()) {
 	      pViewedYet.put(node, true);
+	      ( (BuilderTreeNodeInfo) node.getUserObject()).setDone();
+	    }
+	  }
 	}
 	return;
       }
@@ -490,16 +561,19 @@ class JBuilderTopPanel
   public void 
   stateChanged
   (
+    @SuppressWarnings("unused")
     ChangeEvent e
   )
   {
-    ListMap<DefaultMutableTreeNode, Boolean> copy = 
-      new ListMap<DefaultMutableTreeNode, Boolean>(pViewedYet);
-    for (DefaultMutableTreeNode node : copy.keySet()) {
-      JBuilderParamPanel panel = pPanels.get(node);
-      pViewedYet.put(node, panel.allViewed());
+    JBuilderParamPanel panel = pPanels.get(pActiveNode);
+    pViewedYet.put(pActiveNode, panel.allViewed());
+    if (panel.allViewed()) {
+      ((BuilderTreeNodeInfo) pActiveNode.getUserObject()).setDone();
+      pSetupTree.repaint();
     }
   }
+  
+  
   
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
@@ -519,9 +593,9 @@ class JBuilderTopPanel
   private BaseBuilder pBuilder;
 
   /**
-   * The Tabbed Pane that contains the two trees displaying the execution order information.
+   * The Panel that contains the two trees displaying the execution order information.
    */
-  private JTabbedPane pTreeTabPanel;
+  private JPanel pTreePanel;
   
   /**
    * The panel which all the JBuilderParamPanels are added to.

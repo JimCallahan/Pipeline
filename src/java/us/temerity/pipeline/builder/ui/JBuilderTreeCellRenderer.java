@@ -42,9 +42,6 @@ class JBuilderTreeCellRenderer
   /*   R E N D E R I N G                                                                    */
   /*----------------------------------------------------------------------------------------*/
 
-  /**
-   * Generates the component which renders the cell.. 
-   */ 
   public Component 
   getTreeCellRendererComponent
   (
@@ -66,6 +63,8 @@ class JBuilderTreeCellRenderer
     boolean isActive = info.isActive();
 
     setText(info.getText());
+    
+    //boolean realLeaf = info.isLeaf();
 
     if(isLeaf) {
       if (isActive) {

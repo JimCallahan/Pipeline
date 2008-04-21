@@ -4,23 +4,13 @@ package us.temerity.pipeline.builder.ui;
 public 
 class BuilderTreeNodeInfo
 {
-  public BuilderTreeNodeInfo
+  public 
+  BuilderTreeNodeInfo
   (
     String text  
   )
   {
     pActive = false;
-    pDone = false;
-    pText = text;
-  }
-  
-  public BuilderTreeNodeInfo
-  (
-    boolean active,
-    String text
-  )
-  {
-    pActive = active;
     pDone = false;
     pText = text;
   }
@@ -55,6 +45,13 @@ class BuilderTreeNodeInfo
   getText()
   {
     return pText;
+  }
+  
+  @Override
+  public String 
+  toString()
+  {
+    return getText();
   }
   
   private boolean pActive;

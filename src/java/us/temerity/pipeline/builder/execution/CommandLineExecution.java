@@ -1,4 +1,4 @@
-// $Id: CommandLineExecution.java,v 1.2 2008/03/04 08:15:15 jesse Exp $
+// $Id: CommandLineExecution.java,v 1.3 2008/04/21 23:12:14 jesse Exp $
 
 package us.temerity.pipeline.builder.execution;
 
@@ -65,7 +65,7 @@ class CommandLineExecution
   {
     ExecutionPhase phase = getPhase();
     if (phase != ExecutionPhase.Release && phase != ExecutionPhase.Error) {
-      String header = "An error occured during Builder Execution.";
+      String header = "An error occurred during Builder Execution.";
 
       if (getBuilder().releaseOnError()) {
         if (phase.haveNodesBeenMade())
@@ -89,7 +89,7 @@ class CommandLineExecution
     }
     else if (phase == ExecutionPhase.Release) {
       String header = 
-        "Additionally, an error occured while attempting to release the nodes";
+        "Additionally, an error occurred while attempting to release the nodes";
       String message = Exceptions.getFullMessage(header, ex);
       pLog.logAndFlush(Kind.Ops, Level.Severe, message);
     }

@@ -1,4 +1,4 @@
-// $Id: BaseUtil.java,v 1.33 2008/02/25 06:19:50 jesse Exp $
+// $Id: BaseUtil.java,v 1.34 2008/04/21 23:12:14 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -591,6 +591,40 @@ class BaseUtil
       default:
         return false;
     }
+  }
+  
+  /**
+   * Returns a list of nodes in the given tree that do not have an {@link OverallQueueState} of
+   * Finished.
+   * <p>
+   * Starts at the node specified in the node status passed in and descends down the tree,
+   * checking the {@link OverallQueueState} of each node.
+   * 
+   * @param nodeNames
+   *   The TreeSet to add the names too.
+   * 
+   * @param status
+   *        The status of the root node of the tree to be searched.
+   */
+  public void 
+  findBadNodes
+  (
+    TreeSet<String> nodeNames,
+    NodeStatus status
+  )
+  {
+    OverallQueueState state = status.getDetails().getOverallQueueState();
+    Collection<NodeStatus> stati = status.getSources();
+    switch (state) {
+    case Aborted:
+    case Failed:
+    case Stale:
+      nodeNames.add(status.getName());
+      break;
+    }
+    if(stati != null)
+      for (NodeStatus stat : stati)
+        findBadNodes(nodeNames, stat);
   }
 
   /**

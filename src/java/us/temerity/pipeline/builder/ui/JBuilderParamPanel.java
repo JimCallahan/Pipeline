@@ -1,3 +1,5 @@
+// $Id: JBuilderParamPanel.java,v 1.21 2008/04/21 23:12:14 jesse Exp $
+
 package us.temerity.pipeline.builder.ui;
 
 import java.awt.*;
@@ -56,10 +58,20 @@ class JBuilderParamPanel
     if (layout.hasEntries()) {
       
       for(int col : layout.getAllColumns()) {
+        JPanel topBox = new JPanel();
         JPanel finalBox = new JPanel();
         finalBox.setLayout(new BoxLayout(finalBox, BoxLayout.PAGE_AXIS));
-        String columnName = layout.getColumnNameUI(col);
-        boolean isOpen = layout.isOpen(col);
+        {
+          topBox.setLayout(new BoxLayout(topBox, BoxLayout.PAGE_AXIS));
+          String columnName = layout.getColumnNameUI(col);
+          JTextField field = UIFactory.createTextField(columnName, 40, JLabel.CENTER);
+          field.setMaximumSize(new Dimension(sVSize + sTSize+40, 100));
+          topBox.add(Box.createRigidArea(new Dimension(0, 4)));
+          topBox.add(field);
+          topBox.add(Box.createRigidArea(new Dimension(0, 4)));
+        }
+
+        //boolean isOpen = layout.isOpen(col);
         
         Component comps[] = UIFactory.createTitledPanels();
         JPanel tpanel = (JPanel) comps[0];
@@ -94,8 +106,9 @@ class JBuilderParamPanel
         JScrollPane scroll =
           UIFactory.createVertScrollPane(finalBox);
           //makeInternalScrollPane(finalBox, new Dimension(sTSize + sVSize + 50, 600));
+        topBox.add(scroll);
         
-        this.addTab(null, sTabIcon, scroll, layout.getDescription());
+        this.addTab(null, sTabIcon, topBox, layout.getDescription());
         pViewedPanels.put(col, false);
       }
     }
@@ -106,7 +119,7 @@ class JBuilderParamPanel
     this.setPreferredSize(new Dimension(sTSize + sVSize+50, 500));
     this.setMaximumSize(new Dimension(sTSize + sVSize+50, Integer.MAX_VALUE));
   }
-  
+
   @SuppressWarnings("unchecked")
   private void
   doParam

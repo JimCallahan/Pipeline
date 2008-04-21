@@ -1,4 +1,4 @@
-// $Id: GUIExecution.java,v 1.4 2008/03/04 08:15:15 jesse Exp $
+// $Id: GUIExecution.java,v 1.5 2008/04/21 23:12:14 jesse Exp $
 
 package us.temerity.pipeline.builder.execution;
 
@@ -59,32 +59,33 @@ class GUIExecution
   {
     ExecutionPhase phase = getPhase();
     if (phase != ExecutionPhase.Release && phase != ExecutionPhase.Error) {
-      String header = "An error occured during Builder Execution.";
-    
-      if (getRunningBuilder() != null) {
-        if (getRunningBuilder().releaseOnError()) {
-          if (phase.haveNodesBeenMade())
-            header += "\nAll registered nodes are scheduled to be released and " +
-                      "will be if (Yes) is pressed.";
-          else if (phase.isEndingPhase())
-            header += "\nSince the check-in operation has begun, the Builder will not attempt to " +
-                      "release registered nodes.";
-        }
-      }
+      String header = "An error occurred during Builder Execution.";
       
-      else
-        if (phase.haveNodesBeenMade())
-          header +=
-            "\nThe registered nodes are not scheduled to be released.  " +
-            "Do you wish to release them anyway?";
-      
-      setPhase(ExecutionPhase.Error);
-
       String message;
       if (ex instanceof PipelineException)
         message = header + "\n" + ex.getMessage();
       else
         message = Exceptions.getFullMessage(header, ex);
+
+    
+      if (getRunningBuilder() != null) {
+        if (getRunningBuilder().releaseOnError()) {
+          if (phase.haveNodesBeenMade())
+            message+= "\nAll registered nodes are scheduled to be released and " +
+                      "will be if (Yes) is pressed.";
+          else if (phase.isEndingPhase())
+            message += "\nSince the check-in operation has begun, the Builder will not attempt to " +
+                      "release registered nodes.";
+        }
+      }
+      else
+        if (phase.haveNodesBeenMade())
+          message +=
+            "\nThe registered nodes are not scheduled to be released.  " +
+            "Do you wish to release them anyway?";
+      
+      setPhase(ExecutionPhase.Error);
+
       pLog.logAndFlush(Kind.Ops, Level.Severe, message);
       if (getBuilder().releaseOnError() && phase.haveNodesBeenMade()) {
         SwingUtilities.invokeLater(pDialog.new AskAboutReleaseTask(message));
@@ -94,13 +95,13 @@ class GUIExecution
     }
     else if (phase == ExecutionPhase.Release) {
       String header = 
-        "Additionally, an error occured while attempting to release the nodes";
+        "Additionally, an error occurred while attempting to release the nodes";
       String message = Exceptions.getFullMessage(header, ex);
       pLog.logAndFlush(Kind.Ops, Level.Severe, message);
     }
     else if (phase == ExecutionPhase.Error) {
       String header = 
-        "Additionally, another error while dealing with the first error. ";
+        "Additionally, another error occurred while dealing with the first error. ";
       String message = Exceptions.getFullMessage(header, ex);
       pLog.logAndFlush(Kind.Ops, Level.Severe, message);
     }
@@ -285,9 +286,6 @@ class GUIExecution
 
     /*-- TREE SELECTION LISTENER METHODS ---------------------------------------------------*/
 
-    /**
-     * Called whenever the value of the selection changes.
-     */ 
     public void 
     valueChanged
     (
@@ -314,6 +312,7 @@ class GUIExecution
         setupPhaseEnableButtons();
     }
 
+    
 
     /*---------------------------------------------------------------------------------------*/
     /*   A C T I O N S                                                                       */
@@ -335,6 +334,7 @@ class GUIExecution
         handleException(new PipelineException("Execution halted by user!"));
       else {
         disableCancelButton();
+        new KillQueueJobsTask().run();
         pAbort = true;
       }
     }
@@ -436,7 +436,15 @@ class GUIExecution
           initNextSetupPass();
           SetupPassBundle bundle = peekNextSetupPass();
           pTopPanel.addNextSetupPass(bundle.getPass(), bundle.getOwningBuilder());
-          if (pTopPanel.allParamsReady())
+          
+          /*
+           * If all the params are ready to go immediately, just run the pass and 
+           * keep going.
+           */
+          if (!pTopPanel.hasParams()) {
+            new RunSetupPassTask().run();
+          }
+          else if (pTopPanel.allParamsReady())
             setupPhaseEnableButtons();
           else
             disableAllButtons();
@@ -500,7 +508,7 @@ class GUIExecution
           constructPhaseEnableButtons();
         }
         catch (Exception ex) {
-          handleException(PipelineException.getDetailedException(ex));
+          handleException(ex);
         }
       }
     }
@@ -543,7 +551,7 @@ class GUIExecution
           disableAllButtons();
           makeQuitButton();
           JConfirmDialog dialog = 
-            new JConfirmDialog(pDialog, "Release Nodes", pMessage);
+            new JConfirmDialog(pDialog, "Builder Error: Release Nodes?", pMessage);
           dialog.setVisible(true);
           if (dialog.wasConfirmed()) {
             disableCancelButton();
@@ -734,7 +742,7 @@ class GUIExecution
           SwingUtilities.invokeLater(pDialog.new AfterOneConstructPassTask());
         }
       catch (Exception ex) {
-        handleException(PipelineException.getDetailedException(ex));
+        handleException(ex);
       }
     }
   }
@@ -766,7 +774,7 @@ class GUIExecution
 
   private
   class InitialSetupTask
-  extends Thread
+    extends Thread
   {
     @Override
     public void 
@@ -779,6 +787,24 @@ class GUIExecution
       catch (Exception ex) {
         handleException(ex);
       }    
+    }
+  }
+  
+  private
+  class KillQueueJobsTask
+    extends Thread
+  {
+    @Override
+    public void 
+    run()
+    {
+      try {
+        BaseBuilder current = getRunningBuilder();
+        current.killJobs();
+      }
+      catch (Exception ex) {
+        handleException(ex);
+      }
     }
   }
 
