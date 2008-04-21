@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.80 2008/02/13 19:21:18 jesse Exp $
+// $Id: UIMaster.java,v 1.81 2008/04/21 23:20:16 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1684,9 +1684,10 @@ class UIMaster
       JMenu sub = new JMenu(layout.getName());
       LayoutGroup group = 
         builderLayouts.get(layout.getVendor(), layout.getName(), layout.getVersionID());
-      rebuildMenuFromLayoutGroup(topmenu, sub, prefix + ":" + layout.getName() + ":" + 
-                                 layout.getVersionID() + ":" + layout.getVendor(), group, 
-                                 listener, enabled);
+      if (group != null)
+        rebuildMenuFromLayoutGroup(topmenu, sub, prefix + ":" + layout.getName() + ":" + 
+                                   layout.getVersionID() + ":" + layout.getVendor(), group, 
+                                   listener, enabled);
       item = sub;
     }
     else {
