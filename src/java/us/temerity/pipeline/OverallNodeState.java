@@ -1,4 +1,4 @@
-// $Id: OverallNodeState.java,v 1.15 2007/04/02 21:38:55 jim Exp $
+// $Id: OverallNodeState.java,v 1.16 2008/04/21 06:15:10 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -61,20 +61,20 @@ enum OverallNodeState
    * The working version of the node exists, is based on the latest checked-in version 
    * and is identical to that version. <P>
    * 
-   * The <CODE>VersionState</CODE>, <CODE>PropertyState</CODE>, <CODE>LinkState</CODE> 
-   * and individual <CODE>FileState</CODE> of each file associated with the node are all 
-   * <CODE>Identical</CODE>.  However, the IsLocked property of one or more of the upstream
-   * working versions is different than the IsLocked property of the base checked-in link to 
-   * the node. This means that one of the nodes upstream has been Locked or Unlocked since
-   * the current node was checked-out. <P> 
+   * The <CODE>VersionState</CODE> and individual <CODE>FileState</CODE> of each file 
+   * associated with the node are all <CODE>Identical</CODE>.  However, one or both of the 
+   * <CODE>PropertyState</CODE> and <CODE>LinkState</CODE> of the node are 
+   * <CODE>TrivialMod</CODE> indicating a modification which does not directly affect how the 
+   * contents of files associated with the node are generated.  If both of these states are 
+   * not <CODE>TrivialMod</CODE>, the other must be <CODE>Identical</CODE>.  <P> 
    * 
    * Alternatively, one or more of the upstream nodes has an <CODE>OverallNodeState</CODE> 
-   * state of <CODE>Modified Locks</CODE>. <P> 
+   * state of <CODE>TrivialMod</CODE>. <P> 
    * 
    * This state has lower precendence than <CODE>Modified</CODE> or 
    * <CODE>ModifiedLinks</CODE>.
    */
-  ModifiedLocks, 
+  TrivialMod, 
 
   /**
    * The working version of the node exists, is based on the latest checked-in version 
@@ -206,7 +206,7 @@ enum OverallNodeState
     "Pending", 
     "Checked-In", 
     "Identical", 
-    "Modified Locks",
+    "Trivial Mod",
     "Modified Links",
     "Modified", 
     "Needs Check-Out", 
@@ -219,7 +219,7 @@ enum OverallNodeState
     "P", 
     "I", 
     "=", 
-    "K",
+    "T",
     "L",
     "M", 
     "O",

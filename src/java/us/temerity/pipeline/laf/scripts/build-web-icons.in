@@ -18,7 +18,7 @@ anynewer=0
 frame=0
 for nstate in Pending CheckedIn Identical NeedsCheckOut Modified \
               Conflicted ModifiedLinks Missing Added Obsolete \
-              NeedsCheckOutMicro NeedsCheckOutMajor MissingNewer ModifiedLocks
+              NeedsCheckOutMicro NeedsCheckOutMajor MissingNewer TrivialMod
 do
   for qstate in Stale Queued Running Aborted Failed Finished Paused Undefined
   do

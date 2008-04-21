@@ -1,4 +1,4 @@
-// $Id: TextureMgr.java,v 1.7 2007/08/17 20:21:24 jim Exp $
+// $Id: TextureMgr.java,v 1.8 2008/04/21 06:15:11 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -716,7 +716,7 @@ class TextureMgr
                 case Missing:
                 case MissingNewer:
                 case ModifiedLinks:
-                case ModifiedLocks:
+                case TrivialMod:
                 case Conflicted: 
                 case NeedsCheckOut: 
                   switch(qstate) {

@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.56 2007/12/15 07:37:32 jesse Exp $
+// $Id: NodeMod.java,v 1.57 2008/04/21 06:15:10 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -205,7 +205,7 @@ class NodeMod
       pSources.put(link.getName(), new LinkMod(link));
     }
 
-    pTimeStamp       = TimeStamps.now();
+    pTimeStamp       = timestamp;
     pLastMod         = timestamp;
     pLastCriticalMod = timestamp;
   }
@@ -324,6 +324,15 @@ class NodeMod
   }
 
 
+  /**
+   * Have there been any modifications to this working version since the time it was created.
+   */ 
+  public boolean 
+  hasMod() 
+  {
+    return (pLastMod > pTimeStamp); 
+  }
+
   /** 
    * Get the timestamp (milliseconds since midnight, January 1, 1970 UTC) of the last 
    * modification of this working version.
@@ -343,6 +352,16 @@ class NodeMod
     pLastMod = TimeStamps.now();
   }
 
+
+  /**
+   * Have there been modifications to this working version since the time it was created 
+   * which could invalidate the up-to-date status of the files associated with the node.
+   */ 
+  public boolean 
+  hasCriticalMod() 
+  {
+    return (pLastCriticalMod > pTimeStamp); 
+  }
 
   /** 
    * Get the timestamp (milliseconds since midnight, January 1, 1970 UTC) of the last 
@@ -364,6 +383,7 @@ class NodeMod
     pLastMod         = TimeStamps.now();
     pLastCriticalMod = pLastMod;
   }
+
 
 
   /** 

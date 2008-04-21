@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.238 2008/03/06 13:00:01 jim Exp $
+// $Id: MasterMgr.java,v 1.239 2008/04/21 06:15:10 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -987,14 +987,14 @@ class MasterMgr
 	  if(!views[vk].isDirectory())
 	    throw new IllegalStateException
 	      ("Non-directory file found in the user (" + author + ") root working " + 
-	     "area directory!"); 
+               "area directory!"); 
 	  String view = views[vk].getName();
 	  
 	  synchronized(pWorkingAreaViews) {
 	    TreeSet<String> vs = pWorkingAreaViews.get(author);
 	    if(vs == null) {
 	      vs = new TreeSet<String>();
-	    pWorkingAreaViews.put(author, vs);
+              pWorkingAreaViews.put(author, vs);
 	    }
 	    vs.add(view);
 	  }
@@ -5757,7 +5757,8 @@ class MasterMgr
     try {
       if(!pAdminPrivileges.isDeveloper(req)) 
         throw new PipelineException
-          ("Only a user with Developer privileges may set the builder collection menu layout!");
+          ("Only a user with Developer privileges may set the builder collection " + 
+           "menu layout!");
 
       synchronized(pBuilderCollectionMenuLayouts) {
         timer.resume(); 
@@ -5883,7 +5884,8 @@ class MasterMgr
       synchronized(pPackageBuilderCollectionPlugins) {
         timer.resume();
         
-        PluginSet plugins = pPackageBuilderCollectionPlugins.get(req.getName(), req.getVersionID());
+        PluginSet plugins = 
+          pPackageBuilderCollectionPlugins.get(req.getName(), req.getVersionID());
         if(plugins == null)
           plugins = new PluginSet(); 
 
@@ -5918,8 +5920,8 @@ class MasterMgr
     try {
       if(!pAdminPrivileges.isDeveloper(req)) 
         throw new PipelineException
-          ("Only a user with Developer privileges may change the builder collection plugins " + 
-           "associated with a toolset package!"); 
+          ("Only a user with Developer privileges may change the builder collection " + 
+           "plugins associated with a toolset package!"); 
 
       synchronized(pPackageBuilderCollectionPlugins) {
         timer.resume();
@@ -5927,7 +5929,8 @@ class MasterMgr
         if(req.getPlugins() == null)
           pPackageBuilderCollectionPlugins.remove(req.getName(), req.getVersionID());
         else 
-          pPackageBuilderCollectionPlugins.put(req.getName(), req.getVersionID(), req.getPlugins());
+          pPackageBuilderCollectionPlugins.put
+            (req.getName(), req.getVersionID(), req.getPlugins());
 
         writePackagePlugins(req.getName(), req.getVersionID(), 
                             "builder collection", pPackageBuilderCollectionPlugins);
@@ -10601,7 +10604,7 @@ class MasterMgr
 	    else {
 	      switch(details.getOverallNodeState()) {
 	      case Identical:
-	      case ModifiedLocks:
+	      case TrivialMod:
 	      case NeedsCheckOut:
 		break;
 
@@ -16364,8 +16367,10 @@ class MasterMgr
       if(root == null)
 	throw new IllegalStateException(); 
 
-      if(nodeOp != null) 
-        validateStaleLinks(root);
+      if(nodeOp != null) {
+        OverallQueueState qstate = root.getDetails().getOverallQueueState();
+        validateStaleLinks(root, qstate == OverallQueueState.Finished);
+      }
     }
 
     {
@@ -16429,6 +16434,7 @@ class MasterMgr
     throws PipelineException
   {
     String name = nodeID.getName();
+    boolean isLightweight = (nodeOp == null);
 
     /* check for circularity */ 
     checkBranchForCircularity(name, branch);
@@ -16467,7 +16473,7 @@ class MasterMgr
     ReentrantReadWriteLock workingLock = getWorkingLock(nodeID);
     workingLock.writeLock().lock();
     ReentrantReadWriteLock checkedInLock = getCheckedInLock(name);
-    if((nodeOp != null) && nodeOp.writesCheckedIn())
+    if(!isLightweight && nodeOp.writesCheckedIn())
       checkedInLock.writeLock().lock();
     else 
       checkedInLock.readLock().lock();
@@ -16567,7 +16573,10 @@ class MasterMgr
 	else {
 	  switch(versionState) {
 	  case Identical:
-	    propertyState = PropertyState.Modified;
+            if(work.hasCriticalMod()) 
+              propertyState = PropertyState.Modified;
+            else 
+              propertyState = PropertyState.TrivialMod;               
 	    break;
 
 	  case NeedsCheckOut:
@@ -16624,12 +16633,8 @@ class MasterMgr
 	}
       }
 
-      /* compute link state, 
-	 whether the source node can be ignored when propogating staleness and 
-	 whether the locked state of any of the common source nodes have changed */ 
+      /* compute link state */ 
       LinkState linkState = null;
-      TreeSet<String> nonIgnoredSources = new TreeSet<String>();
-      boolean modifiedLocks = false;
       switch(versionState) {
       case Pending:
 	linkState = LinkState.Pending;
@@ -16641,69 +16646,209 @@ class MasterMgr
 	
       case Identical:
       case NeedsCheckOut:
-	{
-	  boolean workEqBase   = work.identicalLinks(base);
-	  boolean workEqLatest = work.identicalLinks(latest);
-	  if(!workIsLocked) {
-	    for(LinkMod link : work.getSources()) {
-	      String lname = link.getName(); 
+        /* if locked, then the only difference can be whether there is a newer version */ 
+        if(workIsLocked) {
+          switch(versionState) {
+          case Identical:
+            linkState = LinkState.Identical;
+            break;
 
-	      LinkVersion blink = base.getSource(lname); 
-	      LinkVersion llink = latest.getSource(lname); 
+          case NeedsCheckOut:
+            linkState = LinkState.NeedsCheckOut;
+          }
+        }
+        else {
+          /* are the base and latest versions actually different? */ 
+          boolean needsCheckOut = (versionState == VersionState.NeedsCheckOut);
 
-	      NodeDetails sdetails = table.get(lname).getDetails();
-	      VersionID svid = sdetails.getWorkingVersion().getWorkingID();
-	   
-	      if((blink == null) || 
-		 !link.equals(blink) || 
-		 !blink.getVersionID().equals(svid)) {
-		workEqBase = false;
+          /*
+            The relationship between work version and base version links: 
+             - TrivialMod: 
+               + Assoc link exists on work, but doesn't exist on base.
+               + Assoc link exists on base, but doesn't exist on work.
+               + Common Assoc link is not LinkCommon.equal()
+               + Common Assoc base link version is different from upstream work version.
+               + Common base link isLocked() different from upstream work version isLocked().
+               
+             - Modified: 
+               + Non-Assoc link exists on work, but doesn't exist on base.
+               + Non-Assoc link exists on base, but doesn't exist on work.
+               + Common Non-Assoc link is not LinkCommon.equal()
+               + Common Non-Assoc base link version is different from upstream work version. 
 
-                if(nodeOp != null)
-                  nonIgnoredSources.add(lname);
-	      }
-	     
-	      if((llink == null) || 
-		 !link.equals(llink) || 
-		 !llink.getVersionID().equals(svid)) {
-		workEqLatest = false;
-	      }
+             - Identical: 
+               + All links on work exist on base and are LinkCommon.equal().
+               + All base link versions are identical to upstream work versions. 
+               + All base link isLocked() identical to upstream work version isLocked().
+          */
+          LinkState baseLinkState = LinkState.Identical; 
+        
+          /* 
+             The relationship between work version and latest version links.  
+               Same as baseLinkState above, but for latest links and is only computed 
+               when VersionState is NeedsCheckOut since they are actually the same
+               checked-in version when VersionState is Identical. 
+          */ 
+          LinkState latestLinkState = (needsCheckOut ? LinkState.Identical : null);
+                    
+          /* check working links */ 
+          for(LinkMod link : work.getSources()) {
+            String lname = link.getName(); 
+            NodeDetails sdetails = table.get(lname).getDetails();
+            VersionID svid = sdetails.getWorkingVersion().getWorkingID();
 
-              /* we only need to do this if its heavyweight... */ 
-              if(nodeOp != null) {
-                if(sdetails.getOverallNodeState() == OverallNodeState.ModifiedLocks) 
-                  nonIgnoredSources.remove(lname);
-	      
-                if(((blink != null) && 
-                    (sdetails.getWorkingVersion().isLocked() != blink.isLocked())) ||
-                   (sdetails.getOverallNodeState() == OverallNodeState.ModifiedLocks))
-                  modifiedLocks = true;
+            /* compare with base version links (skip if locked since it can't be different) */
+            if(!workIsLocked) {
+              LinkVersion blink = base.getSource(lname); 
+
+              /* are there additional, different or different version working links */ 
+              if((blink == null) ||
+                 !link.equals(blink) || 
+                 !blink.getVersionID().equals(svid)) {
+                
+                switch(link.getPolicy()) {
+                case Dependency:
+                case Reference:
+                  baseLinkState = LinkState.Modified;
+                  if(!isLightweight && !needsCheckOut)
+                    status.addStaleLink(lname); 
+                  break;
+                  
+                case Association:
+                  switch(baseLinkState) {
+                  case Identical:
+                    baseLinkState = LinkState.TrivialMod;
+                  }
+                }
+              }
+              
+              /* has locking changed for any comon links? */
+              switch(baseLinkState) {
+              case Identical:
+                if((blink != null) && 
+                   (sdetails.getWorkingVersion().isLocked() != blink.isLocked()))
+                  baseLinkState = LinkState.TrivialMod;
               }
             }
-	  }
 
-	  if(workEqLatest) {
-	    linkState = LinkState.Identical;    
-	  }
-	  else {
-	    switch(versionState) {
-	    case Identical:
-	      linkState = LinkState.Modified;
-	      break;
-	    
-	    case NeedsCheckOut:
-	      if(workEqBase) 
-		linkState = LinkState.NeedsCheckOut;
-	      else 
-		linkState = LinkState.Conflicted;
-	    }
-	  }
-	}
+            /* compare with latest version links */ 
+            if(needsCheckOut) {
+              LinkVersion llink = latest.getSource(lname); 
+
+              /* are there additional, different or different version working links */ 
+              if((llink == null) || 
+                 !link.equals(llink) || 
+                 !llink.getVersionID().equals(svid)) {
+             
+                switch(link.getPolicy()) {
+                case Dependency:
+                case Reference:
+                  latestLinkState = LinkState.Modified;
+                  if(!isLightweight) 
+                    status.addStaleLink(lname); 
+                  break;
+                  
+                case Association:
+                  switch(latestLinkState) {
+                  case Identical:
+                    latestLinkState = LinkState.TrivialMod;
+                  }
+                }
+              }
+
+              /* has locking changed for any comon links? */
+              switch(latestLinkState) {
+              case Identical:
+                if((llink != null) && 
+                   (sdetails.getWorkingVersion().isLocked() != llink.isLocked()))
+                  latestLinkState = LinkState.TrivialMod;
+              }
+            }
+          }
+
+          /* check for links on checked-in version not on working version */ 
+          {
+            Set<String> workSourceNames = work.getSourceNames();
+
+            /* check for additional base links */ 
+            for(LinkVersion link : base.getSources()) {
+              String lname = link.getName(); 
+              if(!workSourceNames.contains(lname)) {
+                switch(link.getPolicy()) {
+                case Dependency:
+                case Reference:
+                  baseLinkState = LinkState.Modified;
+                  break;
+
+                case Association:
+                  switch(baseLinkState) {
+                  case Identical:
+                    baseLinkState = LinkState.TrivialMod;
+                  }
+                }
+              }
+            }
+
+            /* check for additional latest links */ 
+            if(needsCheckOut) {
+              for(LinkVersion link : latest.getSources()) {
+                String lname = link.getName(); 
+                if(!workSourceNames.contains(lname)) {
+                  switch(link.getPolicy()) {
+                  case Dependency:
+                  case Reference:
+                    latestLinkState = LinkState.Modified;
+                    break;
+                    
+                  case Association:
+                    switch(latestLinkState) {
+                    case Identical:
+                      latestLinkState = LinkState.TrivialMod;
+                    }
+                  }
+                }
+              }
+            }
+          }
+
+          /* compute the combined link state */ 
+          if(needsCheckOut) {
+            switch(latestLinkState) {
+            case Identical:
+              linkState = LinkState.Identical;
+              break;
+
+            case Modified:
+            case TrivialMod:
+              switch(baseLinkState) {
+              case Identical:
+                linkState = LinkState.NeedsCheckOut;
+                break;
+
+              case Modified:
+              case TrivialMod:
+                linkState = LinkState.Conflicted;
+                break;
+
+              default:
+                throw new PipelineException
+                  ("This BaseLinkState (" + baseLinkState + ") should never be possible!"); 
+              }
+              break;
+
+            default:
+              throw new PipelineException
+                ("This LatestLinkState (" + latestLinkState + ") should never be possible!"); 
+            }
+          }
+          else {
+            linkState = baseLinkState;            
+          }
+        }
       }
 
-
       /* if only lightweight node status details are required this time... */ 
-      if(nodeOp == null) {
+      if(isLightweight) {
         NodeDetails details = 
           new NodeDetails(name, annotations, work, base, latest, versionIDs, 
                           versionState, propertyState, linkState); 
@@ -16882,6 +17027,10 @@ class MasterMgr
                (linkState == LinkState.NeedsCheckOut) || 
                anyNeedsCheckOutFs);
 
+            boolean anyTrivialMod = 
+              ((propertyState == PropertyState.TrivialMod) || 
+               (linkState == LinkState.TrivialMod)); 
+
             boolean anyModified = 
               ((propertyState == PropertyState.Modified) || 
                (linkState == LinkState.Modified) || 
@@ -16895,15 +17044,22 @@ class MasterMgr
             if(anyMissingFs) 	    
               overallNodeState = 
                 (anyNeedsCheckOut ? OverallNodeState.MissingNewer : OverallNodeState.Missing);
-            else if(anyConflicted || (anyNeedsCheckOut && (anyModified || modifiedLocks)))
+            else if(anyConflicted || (anyNeedsCheckOut && (anyModified || anyTrivialMod)))
               overallNodeState = OverallNodeState.Conflicted;
             else if(anyModified) {
-              if((propertyState == PropertyState.Identical) &&
-                 (linkState == LinkState.Modified) &&
-                 !anyModifiedFs)
-                overallNodeState = OverallNodeState.ModifiedLinks;
-              else 
+              if((linkState == LinkState.Modified) && !anyModifiedFs) {
+                switch(propertyState) {
+                case Identical:
+                case TrivialMod:
+                  overallNodeState = OverallNodeState.ModifiedLinks;
+                }
+              }
+
+              if(overallNodeState == null) 
                 overallNodeState = OverallNodeState.Modified;
+            } 
+            else if(anyTrivialMod) {
+              overallNodeState = OverallNodeState.TrivialMod;
             }
             else if(anyNeedsCheckOut) {
               if(!workIsLocked) {
@@ -16911,7 +17067,7 @@ class MasterMgr
                   NodeDetails ldetails = table.get(link.getName()).getDetails();
 
                   switch(ldetails.getOverallNodeState()) {
-                  case ModifiedLocks:
+                  case TrivialMod:
                   case ModifiedLinks:
                   case Modified:		  
                   case Conflicted:	
@@ -16940,6 +17096,11 @@ class MasterMgr
                   VersionID lvid = ldetails.getWorkingVersion().getWorkingID();
 
                   switch(ldetails.getOverallNodeState()) {
+                  case TrivialMod:
+                    if(overallNodeState == null) 
+                      overallNodeState = OverallNodeState.TrivialMod;
+                    break;
+
                   case Modified:
                   case ModifiedLinks:
                   case Conflicted:	
@@ -16947,42 +17108,16 @@ class MasterMgr
                   case MissingNewer:
                     overallNodeState = OverallNodeState.ModifiedLinks;
                     break;
-
-                  case Identical:
-                  case NeedsCheckOut:
-                    if(!link.getVersionID().equals(lvid)) {
-                      overallNodeState = OverallNodeState.ModifiedLinks;
-                      LogMgr.getInstance().log
-                        (LogMgr.Kind.Ops, LogMgr.Level.Warning, 
-                         "This test should never be reached since LinkState should have " + 
-                         "been Modified if this is true and the (anyModified) test " + 
-                         "above should have been selected instead of this section!");
-                    }
                   }
                 }
               }
 
-              if(overallNodeState == null) {
-                if(modifiedLocks) 
-                  overallNodeState = OverallNodeState.ModifiedLocks;
-                else
-                  overallNodeState = OverallNodeState.Identical;
-              }
+              if(overallNodeState == null)
+                overallNodeState = OverallNodeState.Identical;
             }
           }
         }
-
-        /* if the node is modified, don't ignore any timestamps from upstream files */ 
-        switch(overallNodeState) {
-        case Modified:
-        case ModifiedLinks:
-        case Conflicted:
-          for(LinkMod link : work.getSources()) {
-            String lname = link.getName(); 
-            nonIgnoredSources.add(lname);
-          }
-        }
-
+      
         /* determine per-file QueueStates */  
         Long jobIDs[] = null;
         QueueState queueStates[] = null;
@@ -17073,7 +17208,7 @@ class MasterMgr
                 if(queueStates[wk] == null) {
                   switch(overallNodeState) {
                   case Identical: 
-                  case ModifiedLocks: 
+                  case TrivialMod: 
                     queueStates[wk] = QueueState.Finished;
                     break;
 
@@ -17093,7 +17228,7 @@ class MasterMgr
                           NodeDetails ldetails = lstatus.getDetails();
 
                           switch(ldetails.getOverallNodeState()) {
-                          case ModifiedLocks: 
+                          case TrivialMod: 
                             break;
 
                           default:
@@ -17101,8 +17236,6 @@ class MasterMgr
                               QueueState lqs[]   = ldetails.getQueueState();
                               long lstamps[]     = ldetails.getFileTimeStamps();
                               boolean lignored[] = ldetails.ignoreTimeStamps();
-
-                              boolean nonIgnored = nonIgnoredSources.contains(link.getName());
 
                               boolean lanyMissing[] = null;
                               for(FileSeq lfseq : ldetails.getFileStateSequences()) {
@@ -17126,8 +17259,7 @@ class MasterMgr
                                   if(((idx >= 0) && (idx < lqs.length)) &&
                                      ((lqs[idx] != QueueState.Finished) || 
                                       lanyMissing[idx] || 
-                                      ((!lignored[idx] || nonIgnored) &&
-                                       (oldestStamps[wk] < lstamps[idx]))))
+                                      (!lignored[idx] && (oldestStamps[wk] < lstamps[idx]))))
                                     queueStates[wk] = QueueState.Stale;
                                 }
                                 break;
@@ -17138,8 +17270,7 @@ class MasterMgr
                                   for(fk=0; fk<lqs.length; fk++) {
                                     if((lqs[fk] != QueueState.Finished) || 
                                        lanyMissing[fk] || 
-                                       ((!lignored[fk] || nonIgnored) &&
-                                        (oldestStamps[wk] < lstamps[fk]))) {
+                                       (!lignored[fk] && (oldestStamps[wk] < lstamps[fk]))) {
                                       queueStates[wk] = QueueState.Stale;
                                       break;
                                     }
@@ -17222,19 +17353,18 @@ class MasterMgr
           else 
             overallQueueState = OverallQueueState.Finished;
         }
-
+        
         /**
          * Before updating the timestamps of the files associated with this node, determine 
          * if staleness will be propogated from each upstream link. <P> 
          * 
-         * Staleness is propgated if the timestamp of any upstream file upon which any of this
-         * node's files depend (through a Reference/Dependency link) is newer than the 
-         * dependent files.  Timestamps for these upstream nodes will be ignore if the ignore 
-         * timestamp flag is set for the upstream file and the upstream node is not a member 
-         * of the nonIgnoredSources set. <P> 
+         * Staleness is propgated if the timestamp of any upstream file depended on by this 
+         * node's files (through a Reference/Dependency link) is newer than the dependent 
+         * files.  Timestamps from the upstream node files will be ignored if the 
+         * IgnoreTimestamp flag is set for the particular upstream file.<P> 
          *        
-         * These upstream timestamp have been previously modified to propogate staleness
-         * of those nodes further upstream.
+         * These upstream timestamp have been previously modified to propagate staleness
+         * from nodes further upstream.
          */ 
         switch(versionState) {
         case CheckedIn:
@@ -17268,8 +17398,6 @@ class MasterMgr
                             long lstamps[]     = ldetails.getFileTimeStamps();
                             boolean lignored[] = ldetails.ignoreTimeStamps();
                             
-                            boolean nonIgnored = nonIgnoredSources.contains(link.getName());
-                            
                             boolean lanyMissing[] = null;
                             for(FileSeq lfseq : ldetails.getFileStateSequences()) {
                               FileState lfs[] = ldetails.getFileState(lfseq);
@@ -17291,8 +17419,7 @@ class MasterMgr
                                 int idx = wk+offset;
                                 if((idx >= 0) && (idx < lqs.length)) {
                                   if(anyMissing[wk] || lanyMissing[idx] || 
-                                     ((!lignored[idx] || nonIgnored) && 
-                                      (oldestStamps[wk] < lstamps[idx])))
+                                     (!lignored[idx] && (oldestStamps[wk] < lstamps[idx])))
                                     staleLink = true;
                                 }
                               }
@@ -17303,8 +17430,7 @@ class MasterMgr
                                 int fk;
                                 for(fk=0; fk<lqs.length; fk++) {
                                   if(anyMissing[wk] || lanyMissing[fk] || 
-                                     ((!lignored[fk] || nonIgnored) && 
-                                      (oldestStamps[wk] < lstamps[fk])))
+                                     (!lignored[fk] && (oldestStamps[wk] < lstamps[fk])))
                                     staleLink = true;
                                 }
                               }
@@ -17323,33 +17449,10 @@ class MasterMgr
                       }
                     }
                     
-                    if(staleLink) 
+                    if(!isLightweight && staleLink) 
                       status.addStaleLink(link.getName());
                   }
                 }
-              }
-            }
-          }
-        }
-
-        /**
-         * Also mark the changed links as propogating staleness, even though no timestamps 
-         * will be propogated, so that it is clear which of the existing links have been 
-         * modified from the base version.
-         */ 
-        switch(linkState) {
-        case Pending:
-        case CheckedIn:
-          break;
-
-        default:
-          for(LinkMod link : work.getSources()) {
-            LinkVersion blink = base.getSource(link.getName());
-            if((blink == null) || !link.equals(blink)) {
-              switch(link.getPolicy()) {
-              case Reference:
-              case Dependency:
-                status.addStaleLink(link.getName());
               }
             }
           }
@@ -17398,14 +17501,7 @@ class MasterMgr
                 fileStamps[wk] = critical;
 
               switch(overallNodeState) {
-              /**
-               * This is a fundamentally unsound solution to limiting staleness propogation
-               * when there have not been changes to upstream nodes.  See the proper solution
-               * will be provided by the [699 - Skip Unchanged Flag] feature.
-              case Identical:
-              case NeedsCheckOut:
-              */ 
-              case ModifiedLocks:
+              case TrivialMod:  
                 ignoreStamps[wk] = true;
                 break;
               }
@@ -17424,8 +17520,6 @@ class MasterMgr
                     long lstamps[]     = ldetails.getFileTimeStamps();
                     boolean lignored[] = ldetails.ignoreTimeStamps();
                     
-                    boolean nonIgnored = nonIgnoredSources.contains(link.getName());
-                    
                     switch(link.getRelationship()) {
                     case OneToOne:
                       {
@@ -17433,7 +17527,7 @@ class MasterMgr
                         int idx = wk+offset;
                         
                         if((idx >= 0) && (idx < lqs.length)) {
-                          if(!lignored[idx] || nonIgnored) {
+                          if(!lignored[idx]) {
                             ignoreStamps[wk] = false;
                             if(lstamps[idx] > fileStamps[wk])
                               fileStamps[wk] = lstamps[idx];
@@ -17446,7 +17540,7 @@ class MasterMgr
                       {
                         int fk;
                         for(fk=0; fk<lqs.length; fk++) {
-                          if(!lignored[fk] || nonIgnored) {
+                          if(!lignored[fk]) {
                             ignoreStamps[wk] = false;
                             if(lstamps[fk] > fileStamps[wk])
                               fileStamps[wk] = lstamps[fk];
@@ -17465,7 +17559,7 @@ class MasterMgr
             }
           }
         }
-
+        
         /* create the node details */
         NodeDetails details = 
           new NodeDetails(name, annotations,
@@ -17483,7 +17577,7 @@ class MasterMgr
       }
     }
     finally {
-      if((nodeOp != null) && nodeOp.writesCheckedIn())
+      if(!isLightweight && nodeOp.writesCheckedIn())
 	checkedInLock.writeLock().unlock();
       else 
 	checkedInLock.readLock().unlock();
@@ -17502,40 +17596,70 @@ class MasterMgr
    * 
    * @param status
    *   The status of the current node.
+   * 
+   * @param finishedRoot
+   *   Whether the root node of the state operation is in a Finished queue state.
    */ 
   private void 
   validateStaleLinks
   (
-   NodeStatus status
+   NodeStatus status, 
+   boolean finishedRoot
   )
   {
     String name = status.getName();
 
-    boolean nonStale = false;
-    for(NodeStatus tstatus : status.getTargets()) {
-      if(!tstatus.isStaleLink(name)) {
-	NodeDetails tdetails = tstatus.getDetails();
-	if(tdetails != null) {
-	  NodeMod tmod = tdetails.getWorkingVersion(); 
-	  if(tmod != null) {
-            LinkMod link = tmod.getSource(name);
-            switch(link.getPolicy()) {
-            case Reference:
-            case Dependency:
-              nonStale = true;
+    /* whether there are downstream links which are stale, 
+         no need to check if the root is Finished */ 
+    boolean staleDownstream = false;
+    if(!finishedRoot) {
+      for(NodeStatus tstatus : status.getTargets()) {
+        if(!tstatus.isStaleLink(name)) {
+          NodeDetails tdetails = tstatus.getDetails();
+          if(tdetails != null) {
+            NodeMod tmod = tdetails.getWorkingVersion(); 
+            if(tmod != null) {
+              LinkMod link = tmod.getSource(name);
+              switch(link.getPolicy()) {
+              case Reference:
+              case Dependency:
+                staleDownstream = true;
+              }
             }
           }
-	}
-      }
+        }
 
-      if(nonStale)
-	break;
+        if(staleDownstream)
+          break;
+      }
     }
 
+    /* process the upstream links... */ 
+    NodeMod mod = status.getDetails().getWorkingVersion(); 
     for(NodeStatus lstatus : status.getSources()) {
-      if(nonStale) 
-	status.removeStaleLink(lstatus.getName());
-      validateStaleLinks(lstatus);
+      boolean linkProcessed = false;
+      if(mod != null) {
+        LinkMod link = mod.getSource(lstatus.getName());
+        switch(link.getPolicy()) {
+        case Reference:
+        case Dependency:
+          {
+            /* supress the link staleness if the root node is Finished 
+               or if there are no downstream links which stale */ 
+            if(finishedRoot || staleDownstream) 
+              status.removeStaleLink(lstatus.getName());
+            validateStaleLinks(lstatus, finishedRoot);
+            linkProcessed = true;
+          }
+        }
+      }
+
+      /* an Association link or CheckedIn source node starts a new tree with its 
+           own Finished root flag... */ 
+      if(!linkProcessed) {
+        OverallQueueState qstate = lstatus.getDetails().getOverallQueueState();  
+        validateStaleLinks(lstatus, qstate == OverallQueueState.Finished);
+      }
     }
   }
 
@@ -21615,7 +21739,7 @@ class MasterMgr
       case Pending:
       case Modified:
       case ModifiedLinks:
-      case ModifiedLocks:
+      case TrivialMod:
 	{	
 	  NodeID nodeID  = status.getNodeID();
           NodeID rnodeID = pRequest.getNodeID();
@@ -22051,7 +22175,7 @@ class MasterMgr
    * The master database lock. <P> 
    * 
    * All operations which will access any data which is backed by the filesystem should 
-   * be protected this lock in read lock mode.  Any operation which require that the entire
+   * be protected by this lock in read lock mode.  Any operation which require that the entire
    * contents of the database remain constant during the operation should aquire the write
    * mode lock. The scope of this lock should enclose all other locks for an operation. <P> 
    * 

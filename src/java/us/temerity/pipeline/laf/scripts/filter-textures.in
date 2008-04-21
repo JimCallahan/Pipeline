@@ -82,7 +82,7 @@ frame=1
 for name in Ring Core InstRing InstCore \
             Pending CheckedIn Identical Conflicted \
             NeedsCheckOut NeedsCheckOutMicro NeedsCheckOutMajor \
-            Modified ModifiedLinks ModifiedLocks \
+            Modified ModifiedLinks TrivialMod \
             Missing MissingNewer
 do	
   mkmipmaps $frame Node-$name
