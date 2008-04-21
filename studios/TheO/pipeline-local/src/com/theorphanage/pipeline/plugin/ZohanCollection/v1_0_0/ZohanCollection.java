@@ -1,10 +1,10 @@
-// $Id: ZohanCollection.java,v 1.3 2008/02/07 10:11:19 jesse Exp $
+// $Id: ZohanCollection.java,v 1.4 2008/04/21 23:16:30 jesse Exp $
 
 package com.theorphanage.pipeline.plugin.ZohanCollection.v1_0_0;
 
 import java.util.TreeMap;
 
-import us.temerity.pipeline.VersionID;
+import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.BaseBuilderCollection;
 
 
@@ -17,6 +17,10 @@ class ZohanCollection
   {
     super("ZohanBuilders", new VersionID("1.0.0"), "TheO", 
           "A collection of builders to make networks related to the ZohanCollection project");
+    
+    LayoutGroup group = new LayoutGroup(true);
+    group.addEntry("Roto");
+    setLayout(group);
     
     underDevelopment();
   }
