@@ -1,4 +1,4 @@
-// $Id: Maya2MRCollection.java,v 1.5 2008/02/10 05:34:24 jim Exp $
+// $Id: Maya2MRCollection.java,v 1.6 2008/04/21 23:15:44 jesse Exp $
 
 package us.temerity.pipeline.plugin.Maya2MRCollection.v2_3_2;
 
@@ -67,7 +67,7 @@ class Maya2MRCollection
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Returns a table of the fullly resolved node builder class names indexed by the short 
+   * Returns a table of the fully resolved node builder class names indexed by the short 
    * names of the builders provided by this collection.<P> 
    * 
    * All builder collections should override this method to return information about 
