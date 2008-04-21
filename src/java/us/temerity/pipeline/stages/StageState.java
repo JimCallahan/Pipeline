@@ -1,3 +1,5 @@
+// $Id: StageState.java,v 1.9 2008/04/21 23:15:06 jesse Exp $
+
 package us.temerity.pipeline.stages;
 
 import java.util.*;
