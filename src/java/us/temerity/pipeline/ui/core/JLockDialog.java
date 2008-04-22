@@ -1,4 +1,4 @@
-// $Id: JLockDialog.java,v 1.4 2007/09/07 18:52:38 jim Exp $
+// $Id: JLockDialog.java,v 1.5 2008/04/22 20:35:54 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -187,14 +187,7 @@ class JLockDialog
 	       vpanel, values, this, sVSize, 
 	       "The revision number of the checked-in versions which is the target " + 
 	       "of the lock.");
-	    
-	    {
-	      ArrayList<VersionID> avids = new ArrayList<VersionID>(vids);
-	      int idx = 0; 
-	      if(bvid != null) 
-		idx = avids.indexOf(bvid);
-	      field.setSelectedIndex(idx);
-	    }
+            field.setSelectedIndex(0);
 
 	    pVersionFields.put(name, field);
 	  }
