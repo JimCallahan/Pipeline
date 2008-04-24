@@ -1,4 +1,4 @@
-// $Id: FileMgrServer.java,v 1.37 2008/02/14 20:26:29 jim Exp $
+// $Id: FileMgrServer.java,v 1.38 2008/04/24 08:08:42 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -225,220 +225,238 @@ class FileMgrServer
 	       "Request [" + pSocket.getInetAddress() + "]: " + kind.name());	  
 	    LogMgr.getInstance().flush();
 
-	    switch(kind) {
-	    /*-- WORKING VERSIONS ----------------------------------------------------------*/
-	    case ValidateScratchDir: 
-	      {
-		objOut.writeObject(pFileMgr.validateScratchDir());
-		objOut.flush(); 
-	      }
-	      break;
+            try {
+              switch(kind) {
+              /*-- WORKING VERSIONS --------------------------------------------------------*/
+              case ValidateScratchDir: 
+                {
+                  objOut.writeObject(pFileMgr.validateScratchDir());
+                  objOut.flush(); 
+                }
+                break;
 
-	    /*-- WORKING VERSIONS ----------------------------------------------------------*/
-	    case CreateWorkingArea:
-	      {
-		FileCreateWorkingAreaReq req = (FileCreateWorkingAreaReq) objIn.readObject();
-		objOut.writeObject(pFileMgr.createWorkingArea(req));
-		objOut.flush(); 
-	      }
-	      break;
+              /*-- WORKING VERSIONS --------------------------------------------------------*/
+              case CreateWorkingArea:
+                {
+                  FileCreateWorkingAreaReq req = 
+                    (FileCreateWorkingAreaReq) objIn.readObject();
+                  objOut.writeObject(pFileMgr.createWorkingArea(req));
+                  objOut.flush(); 
+                }
+                break;
 
-	    case RemoveWorkingArea:
-	      {
-		FileRemoveWorkingAreaReq req = (FileRemoveWorkingAreaReq) objIn.readObject();
-		objOut.writeObject(pFileMgr.removeWorkingArea(req));
-		objOut.flush(); 
-	      }
-	      break;
+              case RemoveWorkingArea:
+                {
+                  FileRemoveWorkingAreaReq req = 
+                    (FileRemoveWorkingAreaReq) objIn.readObject();
+                  objOut.writeObject(pFileMgr.removeWorkingArea(req));
+                  objOut.flush(); 
+                }
+                break;
 
-            /*-- REVISION CONTROL ----------------------------------------------------------*/
-	    case CheckIn:
-	      {
-		FileCheckInReq req = (FileCheckInReq) objIn.readObject();
-		objOut.writeObject(pFileMgr.checkIn(req));
-		objOut.flush(); 
-	      }
-	      break;
+              /*-- REVISION CONTROL --------------------------------------------------------*/
+              case CheckIn:
+                {
+                  FileCheckInReq req = (FileCheckInReq) objIn.readObject();
+                  objOut.writeObject(pFileMgr.checkIn(req));
+                  objOut.flush(); 
+                }
+                break;
 
-	    case CheckOut:
-	      {
-		FileCheckOutReq req = (FileCheckOutReq) objIn.readObject();
-		objOut.writeObject(pFileMgr.checkOut(req));
-		objOut.flush(); 
-	      }
-	      break;
+              case CheckOut:
+                {
+                  FileCheckOutReq req = (FileCheckOutReq) objIn.readObject();
+                  objOut.writeObject(pFileMgr.checkOut(req));
+                  objOut.flush(); 
+                }
+                break;
 
-	    case Revert:
-	      {
-		FileRevertReq req = (FileRevertReq) objIn.readObject();
-		objOut.writeObject(pFileMgr.revert(req));
-		objOut.flush(); 
-	      }
-	      break;
+              case Revert:
+                {
+                  FileRevertReq req = (FileRevertReq) objIn.readObject();
+                  objOut.writeObject(pFileMgr.revert(req));
+                  objOut.flush(); 
+                }
+                break;
 
-	    case Clone:
-	      {
-		FileCloneReq req = (FileCloneReq) objIn.readObject();
-		objOut.writeObject(pFileMgr.clone(req));
-		objOut.flush(); 
-	      }
-	      break;
+              case Clone:
+                {
+                  FileCloneReq req = (FileCloneReq) objIn.readObject();
+                  objOut.writeObject(pFileMgr.clone(req));
+                  objOut.flush(); 
+                }
+                break;
 	    
-	    case State:
-	      {
-		FileStateReq req = (FileStateReq) objIn.readObject();
-		objOut.writeObject(pFileMgr.states(req));
-		objOut.flush(); 
-	      }
-	      break;
+              case State:
+                {
+                  FileStateReq req = (FileStateReq) objIn.readObject();
+                  objOut.writeObject(pFileMgr.states(req));
+                  objOut.flush(); 
+                }
+                break;
 	    
-	    case Remove:
-	      {
-		FileRemoveReq req = (FileRemoveReq) objIn.readObject();
-		objOut.writeObject(pFileMgr.remove(req));
-		objOut.flush(); 
-	      }
-	      break;
+              case Remove:
+                {
+                  FileRemoveReq req = (FileRemoveReq) objIn.readObject();
+                  objOut.writeObject(pFileMgr.remove(req));
+                  objOut.flush(); 
+                }
+                break;
 	    
-	    case RemoveAll:
-	      {
-		FileRemoveAllReq req = (FileRemoveAllReq) objIn.readObject();
-		objOut.writeObject(pFileMgr.removeAll(req));
-		objOut.flush(); 
-	      }
-	      break;
+              case RemoveAll:
+                {
+                  FileRemoveAllReq req = (FileRemoveAllReq) objIn.readObject();
+                  objOut.writeObject(pFileMgr.removeAll(req));
+                  objOut.flush(); 
+                }
+                break;
 	    
-	    case Rename:
-	      {
-		FileRenameReq req = (FileRenameReq) objIn.readObject();
-		objOut.writeObject(pFileMgr.rename(req));
-		objOut.flush(); 
-	      }
-	      break;
+              case Rename:
+                {
+                  FileRenameReq req = (FileRenameReq) objIn.readObject();
+                  objOut.writeObject(pFileMgr.rename(req));
+                  objOut.flush(); 
+                }
+                break;
 
-	    case ChangeMode:
-	      {
-		FileChangeModeReq req = (FileChangeModeReq) objIn.readObject();
-		objOut.writeObject(pFileMgr.changeMode(req));
-		objOut.flush(); 
-	      }
-	      break;
+              case ChangeMode:
+                {
+                  FileChangeModeReq req = (FileChangeModeReq) objIn.readObject();
+                  objOut.writeObject(pFileMgr.changeMode(req));
+                  objOut.flush(); 
+                }
+                break;
 
-	    case DeleteCheckedIn:
-	      {
-		FileDeleteCheckedInReq req = (FileDeleteCheckedInReq) objIn.readObject();
-		objOut.writeObject(pFileMgr.deleteCheckedIn(req));
-		objOut.flush(); 
-	      }
-	      break;
+              case DeleteCheckedIn:
+                {
+                  FileDeleteCheckedInReq req = (FileDeleteCheckedInReq) objIn.readObject();
+                  objOut.writeObject(pFileMgr.deleteCheckedIn(req));
+                  objOut.flush(); 
+                }
+                break;
 
-            /*-- NODE BUNDLES --------------------------------------------------------------*/
-	    case PackNodes:
-	      {
-		FilePackNodesReq req = (FilePackNodesReq) objIn.readObject();
-		objOut.writeObject(pFileMgr.packNodes(req));
-		objOut.flush(); 
-	      }
-	      break;  
+              /*-- NODE BUNDLES ------------------------------------------------------------*/
+              case PackNodes:
+                {
+                  FilePackNodesReq req = (FilePackNodesReq) objIn.readObject();
+                  objOut.writeObject(pFileMgr.packNodes(req));
+                  objOut.flush(); 
+                }
+                break;  
 
-            case ExtractBundle:
-	      {
-		FileExtractBundleReq req = (FileExtractBundleReq) objIn.readObject();
-		objOut.writeObject(pFileMgr.extractBundle(req));
-		objOut.flush(); 
-	      }
-	      break;
+              case ExtractBundle:
+                {
+                  FileExtractBundleReq req = (FileExtractBundleReq) objIn.readObject();
+                  objOut.writeObject(pFileMgr.extractBundle(req));
+                  objOut.flush(); 
+                }
+                break;
 
-            case UnpackNodes:
-	      {
-		FileUnpackNodesReq req = (FileUnpackNodesReq) objIn.readObject();
-		objOut.writeObject(pFileMgr.unpackNodes(req));
-		objOut.flush(); 
-	      }
-	      break;
+              case UnpackNodes:
+                {
+                  FileUnpackNodesReq req = (FileUnpackNodesReq) objIn.readObject();
+                  objOut.writeObject(pFileMgr.unpackNodes(req));
+                  objOut.flush(); 
+                }
+                break;
 
-	    /*-- ARCHIVE -------------------------------------------------------------------*/
-	    case GetArchiveSizes:
-	      {
-		FileGetArchiveSizesReq req = (FileGetArchiveSizesReq) objIn.readObject();
-		objOut.writeObject(pFileMgr.getArchiveSizes(req));
-		objOut.flush(); 
-	      }
-	      break;
+              /*-- ARCHIVE -----------------------------------------------------------------*/
+              case GetArchiveSizes:
+                {
+                  FileGetArchiveSizesReq req = (FileGetArchiveSizesReq) objIn.readObject();
+                  objOut.writeObject(pFileMgr.getArchiveSizes(req));
+                  objOut.flush(); 
+                }
+                break;
 	    
-	    case Archive:
-	      {
-		FileArchiveReq req = (FileArchiveReq) objIn.readObject();
-		objOut.writeObject(pFileMgr.archive(req));
-		objOut.flush(); 
-	      }
-	      break;
+              case Archive:
+                {
+                  FileArchiveReq req = (FileArchiveReq) objIn.readObject();
+                  objOut.writeObject(pFileMgr.archive(req));
+                  objOut.flush(); 
+                }
+                break;
 
-	    /*-- OFFLINE -------------------------------------------------------------------*/
-	    case GetOfflineSizes:
-	      {
-		FileGetOfflineSizesReq req = (FileGetOfflineSizesReq) objIn.readObject();
-		objOut.writeObject(pFileMgr.getOfflineSizes(req));
-		objOut.flush(); 
-	      }
-	      break;
+              /*-- OFFLINE -----------------------------------------------------------------*/
+              case GetOfflineSizes:
+                {
+                  FileGetOfflineSizesReq req = (FileGetOfflineSizesReq) objIn.readObject();
+                  objOut.writeObject(pFileMgr.getOfflineSizes(req));
+                  objOut.flush(); 
+                }
+                break;
 
-	    case Offline:
-	      {
-		FileOfflineReq req = (FileOfflineReq) objIn.readObject();
-		objOut.writeObject(pFileMgr.offline(req));
-		objOut.flush(); 
-	      }
-	      break;
+              case Offline:
+                {
+                  FileOfflineReq req = (FileOfflineReq) objIn.readObject();
+                  objOut.writeObject(pFileMgr.offline(req));
+                  objOut.flush(); 
+                }
+                break;
 
-	    case GetOfflined:
-	      {
-		objOut.writeObject(pFileMgr.getOfflined());
-		objOut.flush(); 
-	      }
-	      break;
+              case GetOfflined:
+                {
+                  objOut.writeObject(pFileMgr.getOfflined());
+                  objOut.flush(); 
+                }
+                break;
 
-            /*-- RESTORE -------------------------------------------------------------------*/
-	    case Extract:
-	      {
-		FileExtractReq req = (FileExtractReq) objIn.readObject();
-		objOut.writeObject(pFileMgr.extract(req));
-		objOut.flush(); 
-	      }
-	      break;
+              /*-- RESTORE -----------------------------------------------------------------*/
+              case Extract:
+                {
+                  FileExtractReq req = (FileExtractReq) objIn.readObject();
+                  objOut.writeObject(pFileMgr.extract(req));
+                  objOut.flush(); 
+                }
+                break;
 
-	    case Restore:
-	      {
-		FileRestoreReq req = (FileRestoreReq) objIn.readObject();
-		objOut.writeObject(pFileMgr.restore(req));
-		objOut.flush(); 
-	      }
-	      break;
+              case Restore:
+                {
+                  FileRestoreReq req = (FileRestoreReq) objIn.readObject();
+                  objOut.writeObject(pFileMgr.restore(req));
+                  objOut.flush(); 
+                }
+                break;
 
-	    case ExtractCleanup:
-	      {
-		FileExtractCleanupReq req = (FileExtractCleanupReq) objIn.readObject();
-		objOut.writeObject(pFileMgr.extractCleanup(req));
-		objOut.flush(); 
-	      }
-	      break;
+              case ExtractCleanup:
+                {
+                  FileExtractCleanupReq req = (FileExtractCleanupReq) objIn.readObject();
+                  objOut.writeObject(pFileMgr.extractCleanup(req));
+                  objOut.flush(); 
+                }
+                break;
 
-            /*-- NETWORK CONNECTION --------------------------------------------------------*/
-	    case Disconnect:
-	      live = false;
-	      break;
+              /*-- NETWORK CONNECTION ------------------------------------------------------*/
+              case Disconnect:
+                live = false;
+                break;
 
-	    case Shutdown:
-	      LogMgr.getInstance().log
-		(LogMgr.Kind.Net, LogMgr.Level.Warning,
-		 "Shutdown Request Received: " + pSocket.getInetAddress());
-	      LogMgr.getInstance().flush();
-	      pShutdown.set(true);
-	      break;	    
+              case Shutdown:
+                LogMgr.getInstance().log
+                  (LogMgr.Kind.Net, LogMgr.Level.Warning,
+                   "Shutdown Request Received: " + pSocket.getInetAddress());
+                LogMgr.getInstance().flush();
+                pShutdown.set(true);
+                break;	    
 
-	    default:
-	      throw new IllegalStateException("Unknown request ID (" + kind + ")!"); 
-	    }
+              default:
+                throw new IllegalStateException("Unknown request ID (" + kind + ")!"); 
+              }
+            }
+            catch(Exception opex) {
+              String msg = ("Internal Error while performing: " + kind.name() + "\n\n" + 
+                            Exceptions.getFullMessage(opex)); 
+
+              LogMgr.getInstance().log
+                (LogMgr.Kind.Net, LogMgr.Level.Severe, msg);
+              
+              if(objOut != null) {
+                TaskTimer timer = new TaskTimer();
+                timer.aquire();
+                objOut.writeObject(new FailureRsp(timer, msg));
+                objOut.flush(); 
+              }
+            }
 	  }
 	}
       }

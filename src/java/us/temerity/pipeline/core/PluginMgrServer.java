@@ -1,4 +1,4 @@
-// $Id: PluginMgrServer.java,v 1.12 2008/02/14 20:26:29 jim Exp $
+// $Id: PluginMgrServer.java,v 1.13 2008/04/24 08:08:42 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -231,49 +231,65 @@ class PluginMgrServer
 	       "Request [" + pSocket.getInetAddress() + "]: " + kind.name());	  
 	    LogMgr.getInstance().flush();
 	      
-	    switch(kind) {
-	    /*-- ADMINISTRATIVE PRIVILEGES -------------------------------------------------*/
-	    case UpdateAdminPrivileges: 
-	      {
-		MiscUpdateAdminPrivilegesReq req = 
-		  (MiscUpdateAdminPrivilegesReq) objIn.readObject();
-		objOut.writeObject(pPluginMgr.updateAdminPrivileges(req));
-		objOut.flush(); 
-	      }
-	      break;
+            try {
+              switch(kind) {
+              /*-- ADMINISTRATIVE PRIVILEGES -----------------------------------------------*/
+              case UpdateAdminPrivileges: 
+                {
+                  MiscUpdateAdminPrivilegesReq req = 
+                    (MiscUpdateAdminPrivilegesReq) objIn.readObject();
+                  objOut.writeObject(pPluginMgr.updateAdminPrivileges(req));
+                  objOut.flush(); 
+                }
+                break;
 
-	    /*-- PLUGINS -------------------------------------------------------------------*/
-	    case Update:
-	      {
-		PluginUpdateReq req = (PluginUpdateReq) objIn.readObject();
-		objOut.writeObject(pPluginMgr.update(req));
-		objOut.flush(); 
-	      }
-	      break;
+              /*-- PLUGINS -----------------------------------------------------------------*/
+              case Update:
+                {
+                  PluginUpdateReq req = (PluginUpdateReq) objIn.readObject();
+                  objOut.writeObject(pPluginMgr.update(req));
+                  objOut.flush(); 
+                }
+                break;
 		
-	    case Install:
-	      {
-		PluginInstallReq req = (PluginInstallReq) objIn.readObject();
-		objOut.writeObject(pPluginMgr.install(req));
-		objOut.flush(); 
-	      }
-	      break;
+              case Install:
+                {
+                  PluginInstallReq req = (PluginInstallReq) objIn.readObject();
+                  objOut.writeObject(pPluginMgr.install(req));
+                  objOut.flush(); 
+                }
+                break;
 		
-	    case Disconnect:
-	      live = false;
-	      break;
+              case Disconnect:
+                live = false;
+                break;
 		
-	    case Shutdown:
-	      LogMgr.getInstance().log
-		(LogMgr.Kind.Net, LogMgr.Level.Warning,
-		 "Shutdown Request Received: " + pSocket.getInetAddress());
-	      LogMgr.getInstance().flush();
-	      pShutdown.set(true);
-	      break;	    
+              case Shutdown:
+                LogMgr.getInstance().log
+                  (LogMgr.Kind.Net, LogMgr.Level.Warning,
+                   "Shutdown Request Received: " + pSocket.getInetAddress());
+                LogMgr.getInstance().flush();
+                pShutdown.set(true);
+                break;	    
 		
-	    default:
-	      throw new IllegalStateException("Unknown request ID (" + kind + ")!"); 
-	    }
+              default:
+                throw new IllegalStateException("Unknown request ID (" + kind + ")!"); 
+              }
+            }
+            catch(Exception opex) {
+              String msg = ("Internal Error while performing: " + kind.name() + "\n\n" + 
+                            Exceptions.getFullMessage(opex)); 
+
+              LogMgr.getInstance().log
+                (LogMgr.Kind.Net, LogMgr.Level.Severe, msg);
+              
+              if(objOut != null) {
+                TaskTimer timer = new TaskTimer();
+                timer.aquire();
+                objOut.writeObject(new FailureRsp(timer, msg));
+                objOut.flush(); 
+              }
+            }
 	  }
 	}
       }

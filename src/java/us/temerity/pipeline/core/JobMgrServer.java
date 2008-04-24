@@ -1,4 +1,4 @@
-// $Id: JobMgrServer.java,v 1.31 2008/02/14 20:26:29 jim Exp $
+// $Id: JobMgrServer.java,v 1.32 2008/04/24 08:08:42 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -254,176 +254,192 @@ class JobMgrServer
 	       "Request [" + pSocket.getInetAddress() + "]: " + kind.name());	  
 	    LogMgr.getInstance().flush();
 
-	    switch(kind) {
-	    /*-- EDITING -------------------------------------------------------------------*/
-	    case EditAs:           
-	      {
-		JobEditAsReq req = (JobEditAsReq) objIn.readObject();
-		objOut.writeObject(pJobMgr.editAs(req));
-		objOut.flush(); 
-	      }
-	      break;
+            try {
+              switch(kind) {
+              /*-- EDITING -----------------------------------------------------------------*/
+              case EditAs:           
+                {
+                  JobEditAsReq req = (JobEditAsReq) objIn.readObject();
+                  objOut.writeObject(pJobMgr.editAs(req));
+                  objOut.flush(); 
+                }
+                break;
 
 
-	    /*-- HOST RESOURCES ------------------------------------------------------------*/
-	    case GetResources:
-	      {
-		objOut.writeObject(pJobMgr.getResources());
-		objOut.flush(); 
-	      }
-	      break;
+              /*-- HOST RESOURCES ----------------------------------------------------------*/
+              case GetResources:
+                {
+                  objOut.writeObject(pJobMgr.getResources());
+                  objOut.flush(); 
+                }
+                break;
 
-	    case GetOsType:
-	      {
-		objOut.writeObject(pJobMgr.getOsType());
-		objOut.flush(); 
-	      }
-	      break;
+              case GetOsType:
+                {
+                  objOut.writeObject(pJobMgr.getOsType());
+                  objOut.flush(); 
+                }
+                break;
 
-	    case GetNumProcessors:
-	      {
-		objOut.writeObject(pJobMgr.getNumProcessors());
-		objOut.flush(); 
-	      }
-	      break;
+              case GetNumProcessors:
+                {
+                  objOut.writeObject(pJobMgr.getNumProcessors());
+                  objOut.flush(); 
+                }
+                break;
 
-	    case GetTotalMemory:
-	      {
-		objOut.writeObject(pJobMgr.getTotalMemory());
-		objOut.flush(); 
-	      }
-	      break;
+              case GetTotalMemory:
+                {
+                  objOut.writeObject(pJobMgr.getTotalMemory());
+                  objOut.flush(); 
+                }
+                break;
 
-	    case GetTotalDisk:
-	      {
-		objOut.writeObject(pJobMgr.getTotalDisk());
-		objOut.flush(); 
-	      }
-	      break;
-
-	    
-	    /*-- JOB EXECUTION -------------------------------------------------------------*/
-	    case Start:
-	      {
-		JobStartReq req = (JobStartReq) objIn.readObject();
-		objOut.writeObject(pJobMgr.jobStart(req));
-		objOut.flush(); 
-	      }
-	      break;
-
-	    case Kill:
-	      {
-		JobKillReq req = (JobKillReq) objIn.readObject();
-		objOut.writeObject(pJobMgr.jobKill(req));
-		objOut.flush(); 
-	      }
-	      break;
-
-	    case Wait:
-	      {
-		JobWaitReq req = (JobWaitReq) objIn.readObject();
-		objOut.writeObject(pJobMgr.jobWait(req));
-		objOut.flush(); 
-	      }
-	      break;
-
-
-	    /*-- JOB MANAGEMENT ------------------------------------------------------------*/
-	    case CleanupResources:
-	      {
-		JobCleanupResourcesReq req = (JobCleanupResourcesReq) objIn.readObject();
-		objOut.writeObject(pJobMgr.cleanupResources(req));
-		objOut.flush(); 
-	      }
-	      break;
-
-	    case CleanupPreemptedResources:
-	      {
-		JobCleanupPreemptedResourcesReq req = 
-		  (JobCleanupPreemptedResourcesReq) objIn.readObject();
-		objOut.writeObject(pJobMgr.cleanupPreemptedResources(req));
-		objOut.flush(); 
-	      }
-	      break;
+              case GetTotalDisk:
+                {
+                  objOut.writeObject(pJobMgr.getTotalDisk());
+                  objOut.flush(); 
+                }
+                break;
 
 	    
-	    /*-- EXEC DETAILS --------------------------------------------------------------*/
-	    case GetExecDetails:
-	      {
-		JobGetExecDetailsReq req = (JobGetExecDetailsReq) objIn.readObject();
-		objOut.writeObject(pJobMgr.getExecDetails(req));
-		objOut.flush(); 
-	      }
-	      break;
+              /*-- JOB EXECUTION -----------------------------------------------------------*/
+              case Start:
+                {
+                  JobStartReq req = (JobStartReq) objIn.readObject();
+                  objOut.writeObject(pJobMgr.jobStart(req));
+                  objOut.flush(); 
+                }
+                break;
+
+              case Kill:
+                {
+                  JobKillReq req = (JobKillReq) objIn.readObject();
+                  objOut.writeObject(pJobMgr.jobKill(req));
+                  objOut.flush(); 
+                }
+                break;
+
+              case Wait:
+                {
+                  JobWaitReq req = (JobWaitReq) objIn.readObject();
+                  objOut.writeObject(pJobMgr.jobWait(req));
+                  objOut.flush(); 
+                }
+                break;
 
 
-	    /*-- JOB OUTPUT ----------------------------------------------------------------*/
-	    case GetNumStdOutLines:
-	      {
-		JobGetNumStdOutLinesReq req = (JobGetNumStdOutLinesReq) objIn.readObject();
-		objOut.writeObject(pJobMgr.getNumStdOutLines(req));
-		objOut.flush(); 
-	      }
-	      break;
+              /*-- JOB MANAGEMENT ----------------------------------------------------------*/
+              case CleanupResources:
+                {
+                  JobCleanupResourcesReq req = (JobCleanupResourcesReq) objIn.readObject();
+                  objOut.writeObject(pJobMgr.cleanupResources(req));
+                  objOut.flush(); 
+                }
+                break;
 
-	    case GetStdOutLines:
-	      {
-		JobGetStdOutLinesReq req = (JobGetStdOutLinesReq) objIn.readObject();
-		objOut.writeObject(pJobMgr.getStdOutLines(req));
-		objOut.flush(); 
-	      }
-	      break;
-
-	    case CloseStdOut:
-	      {
-		JobCloseStdOutReq req = (JobCloseStdOutReq) objIn.readObject();
-		objOut.writeObject(pJobMgr.closeStdOut(req));
-		objOut.flush(); 
-	      }
-	      break;
-
-
-	    case GetNumStdErrLines:
-	      {
-		JobGetNumStdErrLinesReq req = (JobGetNumStdErrLinesReq) objIn.readObject();
-		objOut.writeObject(pJobMgr.getNumStdErrLines(req));
-		objOut.flush(); 
-	      }
-	      break;
-
-	    case GetStdErrLines:
-	      {
-		JobGetStdErrLinesReq req = (JobGetStdErrLinesReq) objIn.readObject();
-		objOut.writeObject(pJobMgr.getStdErrLines(req));
-		objOut.flush(); 
-	      }
-	      break;
-
-	    case CloseStdErr:
-	      {
-		JobCloseStdErrReq req = (JobCloseStdErrReq) objIn.readObject();
-		objOut.writeObject(pJobMgr.closeStdErr(req));
-		objOut.flush(); 
-	      }
-	      break;
+              case CleanupPreemptedResources:
+                {
+                  JobCleanupPreemptedResourcesReq req = 
+                    (JobCleanupPreemptedResourcesReq) objIn.readObject();
+                  objOut.writeObject(pJobMgr.cleanupPreemptedResources(req));
+                  objOut.flush(); 
+                }
+                break;
 
 	    
-	    /*-- NETWORK CONNECTION --------------------------------------------------------*/
-	    case Disconnect:
-	      live = false;
-	      break;
+              /*-- EXEC DETAILS ------------------------------------------------------------*/
+              case GetExecDetails:
+                {
+                  JobGetExecDetailsReq req = (JobGetExecDetailsReq) objIn.readObject();
+                  objOut.writeObject(pJobMgr.getExecDetails(req));
+                  objOut.flush(); 
+                }
+                break;
 
-	    case Shutdown:
-	      LogMgr.getInstance().log
-		(LogMgr.Kind.Net, LogMgr.Level.Warning,
-		 "Shutdown Request Received: " + pSocket.getInetAddress());
-	      LogMgr.getInstance().flush();
-	      pShutdown.set(true);
-	      break;	    
 
-	    default:
-	      throw new IllegalStateException("Unknown request ID (" + kind + ")!"); 
-	    }
+              /*-- JOB OUTPUT --------------------------------------------------------------*/
+              case GetNumStdOutLines:
+                {
+                  JobGetNumStdOutLinesReq req = (JobGetNumStdOutLinesReq) objIn.readObject();
+                  objOut.writeObject(pJobMgr.getNumStdOutLines(req));
+                  objOut.flush(); 
+                }
+                break;
+
+              case GetStdOutLines:
+                {
+                  JobGetStdOutLinesReq req = (JobGetStdOutLinesReq) objIn.readObject();
+                  objOut.writeObject(pJobMgr.getStdOutLines(req));
+                  objOut.flush(); 
+                }
+                break;
+
+              case CloseStdOut:
+                {
+                  JobCloseStdOutReq req = (JobCloseStdOutReq) objIn.readObject();
+                  objOut.writeObject(pJobMgr.closeStdOut(req));
+                  objOut.flush(); 
+                }
+                break;
+
+
+              case GetNumStdErrLines:
+                {
+                  JobGetNumStdErrLinesReq req = (JobGetNumStdErrLinesReq) objIn.readObject();
+                  objOut.writeObject(pJobMgr.getNumStdErrLines(req));
+                  objOut.flush(); 
+                }
+                break;
+
+              case GetStdErrLines:
+                {
+                  JobGetStdErrLinesReq req = (JobGetStdErrLinesReq) objIn.readObject();
+                  objOut.writeObject(pJobMgr.getStdErrLines(req));
+                  objOut.flush(); 
+                }
+                break;
+
+              case CloseStdErr:
+                {
+                  JobCloseStdErrReq req = (JobCloseStdErrReq) objIn.readObject();
+                  objOut.writeObject(pJobMgr.closeStdErr(req));
+                  objOut.flush(); 
+                }
+                break;
+
+	    
+              /*-- NETWORK CONNECTION ------------------------------------------------------*/
+              case Disconnect:
+                live = false;
+                break;
+
+              case Shutdown:
+                LogMgr.getInstance().log
+                  (LogMgr.Kind.Net, LogMgr.Level.Warning,
+                   "Shutdown Request Received: " + pSocket.getInetAddress());
+                LogMgr.getInstance().flush();
+                pShutdown.set(true);
+                break;	    
+
+              default:
+                throw new IllegalStateException("Unknown request ID (" + kind + ")!"); 
+              }
+            }
+            catch(Exception opex) {
+              String msg = ("Internal Error while performing: " + kind.name() + "\n\n" + 
+                            Exceptions.getFullMessage(opex)); 
+
+              LogMgr.getInstance().log
+                (LogMgr.Kind.Net, LogMgr.Level.Severe, msg);
+              
+              if(objOut != null) {
+                TaskTimer timer = new TaskTimer();
+                timer.aquire();
+                objOut.writeObject(new FailureRsp(timer, msg));
+                objOut.flush(); 
+              }
+            }
 	  }
 	}
       }
