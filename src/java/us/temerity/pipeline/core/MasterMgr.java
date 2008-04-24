@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.239 2008/04/21 06:15:10 jim Exp $
+// $Id: MasterMgr.java,v 1.240 2008/04/24 18:34:29 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -16858,6 +16858,15 @@ class MasterMgr
       /* otherwise, we need to go on and compute the heavyweight per-file and queue 
            related node status information... */ 
       else {
+        /* have any of the critical node properties or links been modified since the 
+           last time the node's OverallQueueState was Finished? */ 
+        boolean modifiedPropsSinceFinished = false; 
+        boolean modifiedLinksSinceFinished = false;
+        if((work != null) && !(workIsLocked || workIsFrozen)) {
+          modifiedPropsSinceFinished = work.hasModifiedPropertiesSinceLastFinished();
+          modifiedLinksSinceFinished = work.hasModifiedLinksSinceLastFinished(table); 
+        }
+
         /* get per-file FileStates and timestamps */ 
         TreeMap<FileSeq, FileState[]> fileStates = new TreeMap<FileSeq, FileState[]>(); 
         boolean[] anyMissing = null;
@@ -17058,9 +17067,6 @@ class MasterMgr
               if(overallNodeState == null) 
                 overallNodeState = OverallNodeState.Modified;
             } 
-            else if(anyTrivialMod) {
-              overallNodeState = OverallNodeState.TrivialMod;
-            }
             else if(anyNeedsCheckOut) {
               if(!workIsLocked) {
                 for(LinkMod link : work.getSources()) {
@@ -17082,33 +17088,46 @@ class MasterMgr
                 overallNodeState = OverallNodeState.NeedsCheckOut;
             }
             else {
-              if((versionState != VersionState.Identical) ||
-                 (propertyState != PropertyState.Identical) ||
-                 (linkState != LinkState.Identical) ||
-                 anyNeedsCheckOutFs || anyModifiedFs || anyConflictedFs)
-                throw new IllegalStateException(); 
-
-              /* the work and latest version have the same set of links 
-                   because (linkState == Identical) */
+              if(anyTrivialMod) 
+                overallNodeState = OverallNodeState.TrivialMod;
+           
               if(!workIsLocked) {
-                for(LinkVersion link : latest.getSources()) {
-                  NodeDetails ldetails = table.get(link.getName()).getDetails();
-                  VersionID lvid = ldetails.getWorkingVersion().getWorkingID();
+                switch(linkState) {
+                case Identical:
+                case TrivialMod:
+                  for(LinkMod link : work.getSources()) {
+                    NodeDetails ldetails = table.get(link.getName()).getDetails();
+                    VersionID lvid = ldetails.getWorkingVersion().getWorkingID();
 
-                  switch(ldetails.getOverallNodeState()) {
-                  case TrivialMod:
-                    if(overallNodeState == null) 
-                      overallNodeState = OverallNodeState.TrivialMod;
-                    break;
+                    switch(ldetails.getOverallNodeState()) {
+                    case TrivialMod:
+                      if(overallNodeState == null) 
+                        overallNodeState = OverallNodeState.TrivialMod;
+                      break;
+                      
+                    case Modified:
+                    case ModifiedLinks:
+                    case Conflicted:	
+                    case Missing:
+                    case MissingNewer:
+                      switch(link.getPolicy()) {
+                      case Dependency:
+                      case Reference:
+                        overallNodeState = OverallNodeState.ModifiedLinks;
+                        break;
 
-                  case Modified:
-                  case ModifiedLinks:
-                  case Conflicted:	
-                  case Missing:
-                  case MissingNewer:
-                    overallNodeState = OverallNodeState.ModifiedLinks;
-                    break;
+                      case Association:
+                        if(overallNodeState == null) 
+                          overallNodeState = OverallNodeState.TrivialMod;
+                      }
+                      break;
+                    }
                   }
+                  break;
+
+                default:
+                  throw new IllegalStateException
+                    ("A LinkState of (" + linkState + ") should not be possible here!");
                 }
               }
 
@@ -17135,22 +17154,37 @@ class MasterMgr
           break;
 
         default:
-          if(workIsLocked || workIsFrozen) {
-            int numFrames = work.getPrimarySequence().numFrames();
-            jobIDs      = new Long[numFrames];
-            queueStates = new QueueState[numFrames];
+          {
+            boolean alwaysFinished = false;
+            if(workIsLocked) {
+              alwaysFinished = true;
+            }
+            else if(workIsFrozen) {
+              switch(overallNodeState) {
+              case Identical:
+              case TrivialMod: 
+                alwaysFinished = true;
+              }
+            }
 
-            int wk;
-            for(wk=0; wk<queueStates.length; wk++) 
-              queueStates[wk] = QueueState.Finished;
+            if(alwaysFinished) {
+              int numFrames = work.getPrimarySequence().numFrames();
+              jobIDs      = new Long[numFrames];
+              queueStates = new QueueState[numFrames];
+              
+              int wk;
+              for(wk=0; wk<queueStates.length; wk++) 
+                queueStates[wk] = QueueState.Finished;
+            }
           }
-          else {
+          
+          if(queueStates == null) {
             int numFrames = work.getPrimarySequence().numFrames();
             jobIDs      = new Long[numFrames];
             queueStates = new QueueState[numFrames];
 
             JobState js[] = new JobState[numFrames];
-            {
+            if(!workIsFrozen) {
               ArrayList<Long> jIDs          = new ArrayList<Long>();
               ArrayList<JobState> jobStates = new ArrayList<JobState>();
 
@@ -17213,14 +17247,18 @@ class MasterMgr
                     break;
 
                   default:
-                    /* check for missing files or if the working version has been modified 
-                       since the oldest of the primary/secondary files were created */ 
-                    if(anyMissing[wk] ||
-                       (oldestStamps[wk] < work.getLastCriticalModification())) {
+                    /* the file is Stale if: 
+                       + the file is missing
+                       + the working version properties have been modified since the oldest 
+                         of the primary/secondary files were created and the changes are 
+                         different than when the node's OverallNodeState was last Finished */
+                    if(anyMissing[wk] || 
+                       ((oldestStamps[wk] < work.getLastCriticalModification()) && 
+                        modifiedPropsSinceFinished)) {
                       queueStates[wk] = QueueState.Stale;
                     }
 
-                    /* check upstream per-file dependencies */ 
+                    /* check upstream per-file dependencies... */ 
                     else {
                       for(LinkMod link : work.getSources()) {
                         if(link.getPolicy() == LinkPolicy.Dependency) {
@@ -17259,7 +17297,8 @@ class MasterMgr
                                   if(((idx >= 0) && (idx < lqs.length)) &&
                                      ((lqs[idx] != QueueState.Finished) || 
                                       lanyMissing[idx] || 
-                                      (!lignored[idx] && (oldestStamps[wk] < lstamps[idx]))))
+                                      ((!lignored[idx] || modifiedLinksSinceFinished) && 
+                                       (oldestStamps[wk] < lstamps[idx]))))
                                     queueStates[wk] = QueueState.Stale;
                                 }
                                 break;
@@ -17270,7 +17309,8 @@ class MasterMgr
                                   for(fk=0; fk<lqs.length; fk++) {
                                     if((lqs[fk] != QueueState.Finished) || 
                                        lanyMissing[fk] || 
-                                       (!lignored[fk] && (oldestStamps[wk] < lstamps[fk]))) {
+                                       ((!lignored[fk] || modifiedLinksSinceFinished) && 
+                                        (oldestStamps[wk] < lstamps[fk]))) {
                                       queueStates[wk] = QueueState.Stale;
                                       break;
                                     }
@@ -17350,8 +17390,58 @@ class MasterMgr
             overallQueueState = OverallQueueState.Queued;
           else if(anyStale) 
             overallQueueState = OverallQueueState.Stale;
-          else 
+          else {
             overallQueueState = OverallQueueState.Finished;
+
+            /* update the cache of working version properties and links used as long
+                 as none of the upstream nodes have modified files */ 
+            {
+              boolean clearCache = false;
+              TreeMap<String,VersionID> lvids = null;
+
+              if(workIsLocked) {
+                clearCache = true; 
+              }
+              else {
+                lvids = new TreeMap<String,VersionID>();
+                for(String lname : work.getSourceNames()) {
+                  NodeDetails sdetails = table.get(lname).getDetails();
+                  for(FileSeq sfseq : sdetails.getFileStateSequences()) {
+                    FileState sfs[] = sdetails.getFileState(sfseq);  
+                    int fk;
+                    for(fk=0; fk<sfs.length && !clearCache; fk++) {
+                      switch(sfs[fk]) {
+                      case Pending:
+                      case Modified:
+                      case Conflicted:
+                        clearCache = true;
+                        break;
+                      }
+                    }
+                    
+                    if(clearCache) 
+                      break;
+                  }
+                  
+                  if(clearCache) 
+                    break;
+                  
+                  lvids.put(lname, sdetails.getWorkingVersion().getWorkingID());
+                }
+              }
+
+              if(clearCache) 
+                work.clearLastFinshedCache();
+              else 
+                work.updateLastFinshedCache(lvids); 
+
+              /* write the updated working version to disk */ 
+              writeWorkingVersion(nodeID, work);
+              
+              /* update the bundle */ 
+              working.setVersion(work);
+            }
+          }
         }
         
         /**
@@ -17419,7 +17509,8 @@ class MasterMgr
                                 int idx = wk+offset;
                                 if((idx >= 0) && (idx < lqs.length)) {
                                   if(anyMissing[wk] || lanyMissing[idx] || 
-                                     (!lignored[idx] && (oldestStamps[wk] < lstamps[idx])))
+                                     ((!lignored[idx] || modifiedLinksSinceFinished) && 
+                                      (oldestStamps[wk] < lstamps[idx])))
                                     staleLink = true;
                                 }
                               }
@@ -17430,7 +17521,8 @@ class MasterMgr
                                 int fk;
                                 for(fk=0; fk<lqs.length; fk++) {
                                   if(anyMissing[wk] || lanyMissing[fk] || 
-                                     (!lignored[fk] && (oldestStamps[wk] < lstamps[fk])))
+                                     ((!lignored[fk] || modifiedLinksSinceFinished) && 
+                                      (oldestStamps[wk] < lstamps[fk])))
                                     staleLink = true;
                                 }
                               }
@@ -17506,6 +17598,9 @@ class MasterMgr
                 break;
               }
 
+              if(workIsFrozen) 
+                ignoreStamps[wk] = true;
+
               for(LinkMod link : work.getSources()) { 
                 switch(link.getPolicy()) {
                 case Reference:
@@ -17527,7 +17622,7 @@ class MasterMgr
                         int idx = wk+offset;
                         
                         if((idx >= 0) && (idx < lqs.length)) {
-                          if(!lignored[idx]) {
+                          if(!lignored[idx] || modifiedLinksSinceFinished) {
                             ignoreStamps[wk] = false;
                             if(lstamps[idx] > fileStamps[wk])
                               fileStamps[wk] = lstamps[idx];
@@ -17540,7 +17635,7 @@ class MasterMgr
                       {
                         int fk;
                         for(fk=0; fk<lqs.length; fk++) {
-                          if(!lignored[fk]) {
+                          if(!lignored[fk] || modifiedLinksSinceFinished) {
                             ignoreStamps[wk] = false;
                             if(lstamps[fk] > fileStamps[wk])
                               fileStamps[wk] = lstamps[fk];

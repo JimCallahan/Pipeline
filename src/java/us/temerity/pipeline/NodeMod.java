@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.57 2008/04/21 06:15:10 jim Exp $
+// $Id: NodeMod.java,v 1.58 2008/04/24 18:34:29 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -32,6 +32,7 @@ class NodeMod
   {
     pSources = new TreeMap<String,LinkMod>();
     updateLastCriticalMod();
+    pLastFinishedSources = new TreeMap<String,VersionID>();
   }
 
   /**
@@ -110,6 +111,8 @@ class NodeMod
 
     pTimeStamp = TimeStamps.now();
     updateLastCriticalMod();
+
+    pLastFinishedSources = new TreeMap<String,VersionID>();
   }
 
   /**
@@ -154,6 +157,8 @@ class NodeMod
 
     pTimeStamp = TimeStamps.now();
     updateLastCriticalMod();
+
+    pLastFinishedSources = new TreeMap<String,VersionID>();
   }
 
   /** 
@@ -208,6 +213,8 @@ class NodeMod
     pTimeStamp       = timestamp;
     pLastMod         = timestamp;
     pLastCriticalMod = timestamp;
+
+    pLastFinishedSources = new TreeMap<String,VersionID>();
   }
 
 
@@ -237,6 +244,13 @@ class NodeMod
     pLastMod         = mod.getLastModification();
     pLastCriticalMod = mod.getLastCriticalModification();
     pLastCTimeUpdate = mod.getLastCTimeUpdate(); 
+
+    if(mod.pLastFinishedVersion != null) 
+      pLastFinishedVersion = new NodeMod(mod.pLastFinishedVersion);
+
+    pLastFinishedSources = new TreeMap<String,VersionID>();
+    if(mod.pLastFinishedSources != null) 
+      pLastFinishedSources.putAll(mod.pLastFinishedSources);
   }
 
 
@@ -1369,6 +1383,165 @@ class NodeMod
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+  /*   N O D E    S T A T U S   C A C H I N G                                               */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Clear the contents of the cached copy of the working version properties and links 
+   * recorded at the last time when the OverallNodeState of the node was Finished.<P>
+   * 
+   * This method is used internally by the Master Manager to compute node status and should
+   * not ever be called from user code!
+   */ 
+  public void 
+  clearLastFinshedCache() 
+  {
+    pLastFinishedVersion = null;
+    pLastFinishedSources.clear();
+  }
+
+  /**
+   * Create a cached copy of the current working version properties and links to record the
+   * their value at the last time when the OverallNodeState of the node was Finished.<P> 
+   * 
+   * A cache will only be built if this working version has a currently enable action 
+   * since node's without actions are always Finished and the particulars of properties and 
+   * links to not contribute to making the node Finished.<P> 
+   * 
+   * This method is used internally by the Master Manager to compute node status and should
+   * not ever be called from user code!
+   * 
+   * @param vids
+   *   The current base revision numbers of the source nodes for all links.
+   */ 
+  public void 
+  updateLastFinshedCache
+  (
+   TreeMap<String,VersionID> vids
+  ) 
+  {
+    clearLastFinshedCache();
+
+    /* must have an enable action and 
+         at least one Dependency link (if there are any links) to be cached */ 
+    {
+      if(!isActionEnabled()) 
+        return;
+
+      if(!pSources.isEmpty()) {
+        boolean hasDependency = false;
+        for(LinkMod link : pSources.values()) {
+          switch(link.getPolicy()) {
+          case Dependency:
+            hasDependency = true;
+            break;
+          }
+        }
+        
+        if(!hasDependency) 
+          return;
+      }
+    }
+
+    pLastFinishedVersion = new NodeMod(this); 
+    pLastFinishedSources.putAll(vids);
+  }
+
+  /**
+   * Determine if the working version's critical properties have been modified since the
+   * last time the node's OverallQueueState was Finished. <P> 
+   * 
+   * This method is used internally by the Master Manager to compute node status and should
+   * not ever be called from user code!
+   * 
+   * @returns
+   *   Whether the properties have changed or if there is no cache to compare against.
+   */ 
+  public boolean 
+  hasModifiedPropertiesSinceLastFinished() 
+  {
+    /* if the node has never been Finished */ 
+    if(pLastFinishedVersion == null)
+      return true;
+
+    /* if there has been a critical modification of node properties
+         and the current state of the node properties is different than when last Finished */ 
+    if((pLastCriticalMod > pLastFinishedVersion.getLastCriticalModification()) &&
+       !identicalProperties(pLastFinishedVersion)) 
+      return true; 
+
+    return false;
+  }
+
+  /**
+   * Determine if the working version's links have been modified in a way which should cause
+   * the files associated with the node to become Stale since the last time the node's 
+   * OverallQueueState was Finished.<P> 
+   * 
+   * Modifications of links which would not affect the regeneration of the files associated 
+   * with the node are ignored by this method.  Examples of such trivial modifications 
+   * include locking/unlocking source nodes, freezing/unfreezing source nodes, adding or 
+   * removing Association links and changing the version of Association links.<P> 
+   * 
+   * This method is used internally by the Master Manager to compute node status and should
+   * not ever be called from user code!
+   * 
+   * @param table
+   *   The previously computed node status indexed by node name.
+   * 
+   * @returns
+   *   Whether the links have changed or if there is no cache to compare against.
+   */ 
+  public boolean
+  hasModifiedLinksSinceLastFinished
+  (
+   HashMap<String,NodeStatus> states
+  ) 
+  {
+    /* if the node has never been Finished */ 
+    if(pLastFinishedVersion == null)
+      return true;
+
+    /* check for new links or links to different version of one of the sources */
+    for(String lname : pSources.keySet()) {
+      LinkMod link = pSources.get(lname); 
+
+      NodeDetails sdetails = states.get(lname).getDetails();
+      VersionID svid = sdetails.getWorkingVersion().getWorkingID();
+
+      LinkMod clink = pLastFinishedVersion.getSource(lname);
+      VersionID cvid = pLastFinishedSources.get(lname); 
+      if((clink == null) || 
+         !link.equals(clink) || 
+         (((cvid == null) && (svid != null)) ||
+          ((cvid != null) && !cvid.equals(svid)))) {
+        
+        switch(link.getPolicy()) {
+        case Dependency:
+        case Reference:
+          return true; 
+        }
+      }
+    }
+    
+    /* check for links which existed at last Finished state but no longer exist now */ 
+    for(LinkMod link : pLastFinishedVersion.getSources()) {
+      String lname = link.getName(); 
+      if(!pSources.containsKey(lname)) {
+        switch(link.getPolicy()) {
+        case Dependency:
+        case Reference:
+          return true; 
+        }
+      }
+    }
+
+    /* nothing important appears to have changed since the last time the node was Finished */
+    return false;
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   C O M P A R I S O N                                                                  */
@@ -1481,6 +1654,12 @@ class NodeMod
     
     if(!pSources.isEmpty())
       encoder.encode("Sources", pSources);
+
+    if(pLastFinishedVersion != null) {
+      encoder.encode("LastFinishedVersion", pLastFinishedVersion);
+      if(!pLastFinishedSources.isEmpty())
+        encoder.encode("LastFinishedSources", pLastFinishedSources);
+    }
   }
 
   @Override
@@ -1534,10 +1713,24 @@ class NodeMod
 	pLastCTimeUpdate = stamp;
     }
     
-    TreeMap<String,LinkMod> sources = 
-      (TreeMap<String,LinkMod>) decoder.decode("Sources"); 
-    if(sources != null) 
-      pSources = sources;
+    {
+      TreeMap<String,LinkMod> sources = 
+        (TreeMap<String,LinkMod>) decoder.decode("Sources"); 
+      if(sources != null) 
+        pSources = sources;
+    }
+
+    {
+      NodeMod mod = (NodeMod) decoder.decode("LastFinshedVersion"); 
+      if(mod != null) {
+        pLastFinishedVersion = mod; 
+
+        TreeMap<String,VersionID> vids = 
+          (TreeMap<String,VersionID>) decoder.decode("LastFinshedSources"); 
+        if(vids != null) 
+          pLastFinishedSources = vids; 
+      }      
+    }
   }
 
 
@@ -1606,6 +1799,21 @@ class NodeMod
    */ 
   private TreeMap<String,LinkMod>  pSources;
  
- 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * A cached copy of the current working version properties and links to record the
+   * their value at the last time when the OverallNodeState of Finished or <CODE>null</CODE> 
+   * if not yet cached.
+   */ 
+  private NodeMod  pLastFinishedVersion;
+  
+  /**
+   * The cache of the base revision numbers of the source nodes for all links at the last 
+   * time when the OverallNodeState of Finished.
+   */ 
+  private TreeMap<String,VersionID>  pLastFinishedSources; 
+
 }
 
