@@ -1,4 +1,4 @@
-package com.intelligentcreatures.pipeline.plugin.Farchiver.v1_0_0;
+package com.intelligentcreatures.pipeline.plugin.FArchiver.v1_0_0;
 
 import us.temerity.pipeline.*; 
 
