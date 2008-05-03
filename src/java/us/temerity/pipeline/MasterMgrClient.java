@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.117 2008/01/28 12:00:51 jesse Exp $
+// $Id: MasterMgrClient.java,v 1.118 2008/05/03 20:31:27 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -3778,7 +3778,7 @@ class MasterMgrClient
 
     NodeRemoveWorkingAreaReq req = new NodeRemoveWorkingAreaReq(author, view);
 
-    Object obj = performTransaction(MasterRequest.RemoveWorkingArea, req);
+    Object obj = performLongTransaction(MasterRequest.RemoveWorkingArea, req, 15000, 60000);  
     handleSimpleResponse(obj);
   }
 
@@ -5485,7 +5485,7 @@ class MasterMgrClient
 
     NodeReleaseReq req = new NodeReleaseReq(author, view, names, removeFiles);
 
-    Object obj = performTransaction(MasterRequest.Release, req);
+    Object obj = performLongTransaction(MasterRequest.Release, req, 15000, 60000); 
     handleSimpleResponse(obj);
   } 
 
@@ -5520,7 +5520,7 @@ class MasterMgrClient
 
     NodeDeleteReq req = new NodeDeleteReq(name, removeFiles);
 
-    Object obj = performTransaction(MasterRequest.Delete, req);
+    Object obj = performLongTransaction(MasterRequest.Delete, req, 15000, 60000); 
     handleSimpleResponse(obj);
   } 
 
@@ -6547,7 +6547,8 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {
-    return submitJobs(new NodeID(author, view, name), indices, null, null, null, null, null, null, null, null, null);
+    return submitJobs(new NodeID(author, view, name), indices, 
+                      null, null, null, null, null, null, null, null, null);
   }
 
   /**
