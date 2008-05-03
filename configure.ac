@@ -9,7 +9,7 @@ AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(Pipeline, 2.4.1b13)
+AM_INIT_AUTOMAKE(Pipeline, 2.4.1b14)
                            
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
@@ -1877,6 +1877,11 @@ AC_CONFIG_FILES([
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/DJVEditor/Makefile
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/DJVEditor/v1_0_0/Makefile
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/DJVEditor/v1_0_0/Makefile.local
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/FArchiver/Makefile
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/FArchiver/v1_0_0/Makefile
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/FArchiver/v1_0_0/Makefile.local
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/FArchiver/v1_1_0/Makefile
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/FArchiver/v1_1_0/Makefile.local
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/Kdiff3Comparator/Makefile
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/Kdiff3Comparator/v1_0_0/Makefile
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/Kdiff3Comparator/v1_0_0/Makefile.local
@@ -1891,6 +1896,9 @@ AC_CONFIG_FILES([
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/NotMiniKeyChooser/Makefile
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/NotMiniKeyChooser/v1_0_0/Makefile
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/NotMiniKeyChooser/v1_0_0/Makefile.local
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/NukeQtAction/Makefile
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/NukeQtAction/v1_0_0/Makefile
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/NukeQtAction/v1_0_0/Makefile.local
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/PFTrackBuildAction/Makefile
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/PFTrackBuildAction/v1_0_0/Makefile
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/PFTrackBuildAction/v1_0_0/Makefile.local
@@ -1909,6 +1917,12 @@ AC_CONFIG_FILES([
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/SlateSubstAction/Makefile
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/SlateSubstAction/v1_0_0/Makefile
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/SlateSubstAction/v1_0_0/Makefile.local
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/SlateSubstAction/v1_1_0/Makefile
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/SlateSubstAction/v1_1_0/Makefile.local
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/SlateSubstAction/v1_2_0/Makefile
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/SlateSubstAction/v1_2_0/Makefile.local
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/SlateSubstAction/v1_3_0/Makefile
+  studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/SlateSubstAction/v1_3_0/Makefile.local
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/SubmitTaskAnnotation/Makefile
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/SubmitTaskAnnotation/v1_0_0/Makefile
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/SubmitTaskAnnotation/v1_0_0/Makefile.local

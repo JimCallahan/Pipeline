@@ -1,4 +1,4 @@
-// $Id: QtDeliverBuilder.java,v 1.5 2008/05/02 17:24:46 jim Exp $
+// $Id: QtDeliverBuilder.java,v 1.6 2008/05/03 07:38:57 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -56,6 +56,11 @@ import java.util.*;
  *   <DIV style="margin-left: 40px;">
  *     The client revision number.  This revision number is unrelated to Pipeline's revision
  *     number for the source images and is purely for external client use.  
+ *   </DIV> <BR>a
+ *
+ *   Client ShotName<BR>
+ *   <DIV style="margin-left: 40px;">
+ *     The shot code
  *   </DIV> <BR>
  * 
  *   Notes <BR>
@@ -202,6 +207,15 @@ class QtDeliverBuilder
 	   null); 
         addParam(param);	
       }
+
+      {
+        UtilityParam param =
+          new StringUtilityParam
+          (aClientShotName,
+           "The filename of the sequence delivered to the client.",
+           null);
+        addParam(param);
+      }
       
       {
         UtilityParam param = 
@@ -295,6 +309,7 @@ class QtDeliverBuilder
 	sub.addEntry(1, aDeliveryType);
 	sub.addEntry(1, DeliverNamer.aDeliverable); 
 	sub.addEntry(1, aClientVersion); 
+	sub.addEntry(1, aClientShotName); 
 	sub.addEntry(1, aNotes); 
         sub.addEntry(1, null);
         sub.addEntry(1, aSlateScript);
@@ -331,8 +346,7 @@ class QtDeliverBuilder
   {
     ArrayList<PluginContext> plugins = new ArrayList<PluginContext>();	
     plugins.add(new PluginContext("Touch")); 			
-    plugins.add(new PluginContext("NukeRead", "Temerity", 
-                                  new Range<VersionID>(new VersionID("2.4.3"), null)));
+    plugins.add(new PluginContext("NukeRead"));	
     plugins.add(new PluginContext("NukeSubstComp")); 		
     plugins.add(new PluginContext("DjvUnixQt"));			
     plugins.add(new PluginContext("SlateSubst", "ICVFX"));	
@@ -536,6 +550,8 @@ class QtDeliverBuilder
 	(new ParamMapping(aNotes), pSourceVersion.getMessage());
       setParamValue
 	(new ParamMapping(aClientVersion), pSourceVersion.getVersionID().toString()); 
+      setParamValue
+	(new ParamMapping(aClientShotName), pSourcePrefix); 
 
       /* replace placeholder parameters with the names of the available 
 	   slate script, format script and codec settings nodes */ 
@@ -641,6 +657,7 @@ class QtDeliverBuilder
       pDeliveryType = getStringParamValue(new ParamMapping(aDeliveryType));
       pDeliverable = getStringParamValue(new ParamMapping(DeliverNamer.aDeliverable), false);
       pClientVersion = getStringParamValue(new ParamMapping(aClientVersion));
+      pClientShotName = getStringParamValue(new ParamMapping(aClientShotName));
       pNotes = getStringParamValue(new ParamMapping(aNotes));
       pSlateHold = getIntegerParamValue(new ParamMapping(aSlateHold), 
 					    new Range<Integer>(0, null));
@@ -739,7 +756,7 @@ class QtDeliverBuilder
 	    new SlateSubstStage(stageInfo, pContext, pClient, 
 				qtDeliverSlateNukeNodeName, pSlateNodeName, 
 				pDeliveryType, pDeliverable, pClientVersion, 
-				pSourceVersion, pNotes, pSlateHold); 
+				pClientShotName,pSourceVersion, pNotes, pSlateHold); 
 	  addTaskAnnotation(stage, NodePurpose.Prepare); 
 	  stage.build();  
 	}
@@ -803,6 +820,7 @@ class QtDeliverBuilder
   
   public static final String aDeliveryType  = "DeliveryType";  
   public static final String aClientVersion = "ClientVersion";  
+  public static final String aClientShotName      = "ClientShotName";  
   public static final String aNotes         = "Notes";  
   public static final String aSlateScript   = "SlateScript"; 
   public static final String aSlateHold     = "SlateHold";  
@@ -852,6 +870,11 @@ class QtDeliverBuilder
    * The client revision number. 
    */ 
   private String pClientVersion; 
+
+  /**
+   * The sequence filename
+   */
+  private String pClientShotName;
 
   /**
    * A short description of the Deliverable to be included in the image slates.

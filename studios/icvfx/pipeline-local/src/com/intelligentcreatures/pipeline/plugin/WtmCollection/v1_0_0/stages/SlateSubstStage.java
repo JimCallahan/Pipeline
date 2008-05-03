@@ -1,4 +1,4 @@
-// $Id: SlateSubstStage.java,v 1.1 2008/04/02 20:56:16 jim Exp $
+// $Id: SlateSubstStage.java,v 1.2 2008/05/03 07:38:57 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
 
@@ -51,6 +51,9 @@ class SlateSubstStage
    * @param deliverable
    *   The name of the deliverable.
    * 
+   * @param clientShotName
+   *   The shot code
+   * 
    * @param sourceVersion
    *   The source images node checked-in version being delivered.
    * 
@@ -72,6 +75,7 @@ class SlateSubstStage
    String deliveryType, 
    String deliverable, 
    String clientVersion, 
+   String clientShotName, 
    NodeVersion sourceVersion, 
    String notes, 
    int slateHold
@@ -89,6 +93,7 @@ class SlateSubstStage
     addSingleParamValue("TemplateScript", templateScript); 
 
     addSingleParamValue("DeliveryType", deliveryType); 
+    addSingleParamValue("ClientShotName", clientShotName); 
     addSingleParamValue("Deliverable", deliverable); 
     addSingleParamValue("ClientVersion", clientVersion); 
     addSingleParamValue("SourceImages", sourceVersion.getPrimarySequence().toString()); 

@@ -1,0 +1,31 @@
+#--- VARIABLES -------------------------------------------------------------------------------
+
+    CLASS_ROOT = ../../../../../..
+
+  JAVA_PACKAGE = com/intelligentcreatures/pipeline/plugin/FArchiver/v1_0_0
+  JAVA_SOURCES = $(shell find $(CLASS_ROOT)/../src/$(JAVA_PACKAGE) -type f -name "*.java")
+
+        TARGET = FArchiver.class
+
+
+
+
+#--- RULES -----------------------------------------------------------------------------------
+
+install: $(TARGET)
+	(cd $(CLASS_ROOT); \
+         $(PLPLUGIN) --install $(JAVA_PACKAGE)/$(TARGET))
+
+all: $(TARGET)
+
+$(TARGET): java-all
+	@echo "This is just a single class plugin, no JAR required..."
+
+java-all: $(JAVA_SOURCES)
+	$(JAVAC) $(JAVAC_OPTS) -classpath $(API_JAR):. -d $(CLASS_ROOT) \
+          $(JAVA_SOURCES)
+
+
+clean:
+	find . -type f -name "*.class" -exec rm -f {} \; -print
+	rm -f $(TARGET)

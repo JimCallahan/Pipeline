@@ -13,10 +13,12 @@ SUBDIRS = \
   CommonTaskAnnotation \
   DeliverTool \
   DJVEditor \
+  FArchiver \
   Kdiff3Comparator \
   KritaEditor \
   LensInfoAction \
   NotMiniKeyChooser \
+  NukeQtAction \
   PFTrackBuildAction \
   PFTrackEditor \
   QtEncodeAction \
