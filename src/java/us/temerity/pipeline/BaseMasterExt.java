@@ -1,4 +1,4 @@
-// $Id: BaseMasterExt.java,v 1.9 2007/12/16 06:33:59 jesse Exp $
+// $Id: BaseMasterExt.java,v 1.10 2008/05/04 00:40:16 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -1766,6 +1766,58 @@ class BaseMasterExt
   (
    NodeID sourceID, 
    NodeID targetID
+  ) 
+  {}
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether to test before vouching for the working area files associated with a node.
+   */  
+  public boolean
+  hasPreVouchTest() 
+  {
+    return false;
+  }
+
+  /**
+   * Test to perform before vouching for the working area files associated with a node.
+   * 
+   * @param nodeID 
+   *   The unique working version identifier. 
+   * 
+   * @throws PipelineException
+   *   To abort the operation.
+   */  
+  public void
+  preVouchTest
+  (
+   NodeID nodeID
+  ) 
+    throws PipelineException
+  {}
+
+
+  /**
+   * Whether to run a tesk after vouching for the working area files associated with a node.
+   */  
+  public boolean
+  hasPostVouchTask() 
+  {
+    return false;
+  }
+  
+  /**
+   * The task to perform after vouching for the working area files associated with a node.
+   * 
+   * @param nodeID 
+   *   The unique working version identifier. 
+   */  
+  public void
+  postVouchTask
+  (
+   NodeID nodeID
   ) 
   {}
 

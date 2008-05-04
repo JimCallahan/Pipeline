@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.58 2008/04/24 18:34:29 jim Exp $
+// $Id: NodeMod.java,v 1.59 2008/05/04 00:40:16 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -111,6 +111,7 @@ class NodeMod
 
     pTimeStamp = TimeStamps.now();
     updateLastCriticalMod();
+    pLastVouched = pTimeStamp;
 
     pLastFinishedSources = new TreeMap<String,VersionID>();
   }
@@ -157,6 +158,7 @@ class NodeMod
 
     pTimeStamp = TimeStamps.now();
     updateLastCriticalMod();
+    pLastVouched = pTimeStamp;
 
     pLastFinishedSources = new TreeMap<String,VersionID>();
   }
@@ -213,6 +215,7 @@ class NodeMod
     pTimeStamp       = timestamp;
     pLastMod         = timestamp;
     pLastCriticalMod = timestamp;
+    pLastVouched     = timestamp; 
 
     pLastFinishedSources = new TreeMap<String,VersionID>();
   }
@@ -244,6 +247,7 @@ class NodeMod
     pLastMod         = mod.getLastModification();
     pLastCriticalMod = mod.getLastCriticalModification();
     pLastCTimeUpdate = mod.getLastCTimeUpdate(); 
+    pLastVouched     = mod.getLastVouched();
 
     if(mod.pLastFinishedVersion != null) 
       pLastFinishedVersion = new NodeMod(mod.pLastFinishedVersion);
@@ -337,6 +341,8 @@ class NodeMod
     return pTimeStamp;
   }
 
+ 
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Have there been any modifications to this working version since the time it was created.
@@ -366,6 +372,8 @@ class NodeMod
     pLastMod = TimeStamps.now();
   }
 
+ 
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Have there been modifications to this working version since the time it was created 
@@ -398,7 +406,8 @@ class NodeMod
     pLastCriticalMod = pLastMod;
   }
 
-
+ 
+  /*----------------------------------------------------------------------------------------*/
 
   /** 
    * Get the timestamp (milliseconds since midnight, January 1, 1970 UTC) of the last update 
@@ -421,6 +430,60 @@ class NodeMod
     pLastCTimeUpdate = TimeStamps.now();
   }
 
+ 
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether the Vouch operation can have any effect on the node.<P> 
+   * 
+   * Users can Vouch for nodes without an enabled action and at least one Dependency link.
+   */ 
+  public boolean
+  canBeVouched() 
+  {
+    if(!isActionEnabled()) {
+      for(LinkMod link : pSources.values()) {
+        switch(link.getPolicy()) {
+        case Dependency:
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Update the last vouched timestamp to now. <P> 
+   * 
+   * For nodes without an enabled action and at least one Dependency link, this signifies 
+   * that any relevant changes present in the file upstream of the Dependency have been 
+   * considered and all appropriate manual modifications have been made to the files 
+   * associated with this node to reflect these changes.<P> 
+   * 
+   * Nodes with an enabled action or without Dependency links cannot be Vouched for and 
+   * are siliently ignored by this method.
+   */ 
+  public void 
+  vouch() 
+  {
+    if(canBeVouched()) {
+      updateLastMod();
+      pLastVouched = pLastMod;
+    }
+  }
+
+  /** 
+   * Get the timestamp (milliseconds since midnight, January 1, 1970 UTC) of the last time
+   * a Vouch operation was performed on the node.
+   */
+  public long
+  getLastVouched() 
+  {
+    return pLastVouched; 
+  }
+
+  
   
   /*----------------------------------------------------------------------------------------*/
 
@@ -1522,6 +1585,14 @@ class NodeMod
         case Reference:
           return true; 
         }
+
+        if(clink != null) {
+          switch(clink.getPolicy()) {
+          case Dependency:
+          case Reference:
+            return true; 
+          }
+        }
       }
     }
     
@@ -1648,6 +1719,7 @@ class NodeMod
     encoder.encode("TimeStamp", pTimeStamp);
     encoder.encode("LastModification", pLastMod);
     encoder.encode("LastCriticalModification", pLastCriticalMod);
+    encoder.encode("LastVouched", pLastVouched);
 
     if(pLastCTimeUpdate != null) 
       encoder.encode("LastCTimeUpdate", pLastCTimeUpdate);
@@ -1713,6 +1785,14 @@ class NodeMod
 	pLastCTimeUpdate = stamp;
     }
     
+    {
+      Long stamp = (Long) decoder.decode("LastVouched");
+      if(stamp != null) 
+        pLastVouched = stamp;
+      else 
+        pLastVouched = pTimeStamp;
+    }
+
     {
       TreeMap<String,LinkMod> sources = 
         (TreeMap<String,LinkMod>) decoder.decode("Sources"); 
@@ -1791,6 +1871,12 @@ class NodeMod
    * of the change time (ctime) for any file associated with the node.
    */
   private Long  pLastCTimeUpdate; 
+
+  /** 
+   * The timestamp (milliseconds since midnight, January 1, 1970 UTC) of the last time
+   * a Vouch operation was performed on the node.
+   */
+  private Long  pLastVouched; 
 
 
   /**

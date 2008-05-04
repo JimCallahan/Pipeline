@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.111 2008/03/28 21:16:57 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.112 2008/05/04 00:40:22 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -445,6 +445,14 @@ class JNodeViewerPanel
           item.addActionListener(this);
           sub.add(item);
           
+          sub.addSeparator();
+
+          item = new JPopupMenuItem(menus[wk], "Vouch");
+          pVouchItem = item;
+          item.setActionCommand("vouch");
+          item.addActionListener(this);
+          sub.add(item);
+
           sub.addSeparator();
 
           item = new JPopupMenuItem(menus[wk], "Pause Jobs");
@@ -1171,6 +1179,11 @@ class JNodeViewerPanel
       (pQueueJobsSpecialItem, prefs.getQueueJobsSpecial(), 
        "Submit jobs to the queue for the current primary selection with special job " + 
        "requirements.");
+
+    updateMenuToolTip
+      (pVouchItem, prefs.getVouch(), 
+       "Vouch for the files associated with the current primary selection.");
+
     updateMenuToolTip
       (pPauseJobsItem, prefs.getPauseJobs(), 
        "Pause all jobs associated with the selected nodes.");
@@ -1183,6 +1196,7 @@ class JNodeViewerPanel
     updateMenuToolTip
       (pKillJobsItem, prefs.getKillJobs(), 
        "Kill all jobs associated with the selected nodes.");
+
     updateMenuToolTip
       (pCheckInItem, prefs.getNodeViewerCheckIn(), 
        "Check-in the current primary selection.");
@@ -1362,10 +1376,13 @@ class JNodeViewerPanel
     pQueueJobsItem.setEnabled(queuePrivileged);
     pQueueJobsSpecialItem.setEnabled(queuePrivileged);
 
+    pVouchItem.setEnabled(queuePrivileged);  
+
     pPauseJobsItem.setEnabled(queuePrivileged);
     pResumeJobsItem.setEnabled(queuePrivileged);
     pPreemptJobsItem.setEnabled(queuePrivileged);
     pKillJobsItem.setEnabled(queuePrivileged);
+
     pRemoveFilesItem.setEnabled(nodePrivileged); 
 
     pCheckInItem.setEnabled(nodePrivileged);
@@ -3081,6 +3098,9 @@ class JNodeViewerPanel
       else if((prefs.getQueueJobsSpecial() != null) &&
 	      prefs.getQueueJobsSpecial().wasPressed(e))
 	doQueueJobsSpecial();
+      else if((prefs.getVouch() != null) &&
+	      prefs.getVouch().wasPressed(e))
+	doVouch();
       else if((prefs.getPauseJobs() != null) &&
 	      prefs.getPauseJobs().wasPressed(e))
 	doPauseJobs();
@@ -3369,6 +3389,10 @@ class JNodeViewerPanel
       doQueueJobs();
     else if(cmd.equals("queue-jobs-special"))
       doQueueJobsSpecial();
+
+    else if(cmd.equals("vouch"))
+      doVouch();
+
     else if(cmd.equals("pause-jobs"))
       doPauseJobs();
     else if(cmd.equals("resume-jobs"))
@@ -4359,6 +4383,35 @@ class JNodeViewerPanel
 
     clearSelection();
     refresh(); 
+  }
+
+  /**
+   * Vouch for the files associated with the selected nodes.
+   */ 
+  private synchronized void 
+  doVouch() 
+  {
+    if(warnUnsavedDetailPanelChangesBeforeOp("Vouch")) 
+      return; 
+    
+    TreeSet<String> names = new TreeSet<String>();
+    for(ViewerNode vnode : pSelected.values()) {
+      NodeStatus status = vnode.getNodeStatus();
+      NodeDetails details = status.getDetails();
+      if(details != null) {
+	NodeMod mod = details.getWorkingVersion();
+	if((mod != null) && mod.canBeVouched()) 
+          names.add(mod.getName());
+      }
+    }
+
+    if(!names.isEmpty()) {
+      VouchTask task = new VouchTask(names);
+      task.start();
+    }
+
+    clearSelection();
+    refresh();     
   }
 
   /**
@@ -6231,6 +6284,30 @@ class JNodeViewerPanel
   }
 
   /** 
+   * Vouch for the working area files associated with the given nodes.
+   */ 
+  private
+  class VouchTask
+    extends UIMaster.VouchTask
+  {
+    public 
+    VouchTask
+    (
+     TreeSet<String> names
+    ) 
+    {
+      UIMaster.getInstance().super(pGroupID, names, pAuthor, pView);
+      setName("JNodeViewerPanel:VouchTask");
+    }
+    
+    protected void
+    postOp() 
+    {
+      updateRoots();
+    }    
+  }
+
+  /** 
    * Pause the given jobs.
    */ 
   private
@@ -7336,6 +7413,7 @@ class JNodeViewerPanel
   private JPopupMenuItem  pAddSecondaryItem;
   private JPopupMenuItem  pQueueJobsItem;
   private JPopupMenuItem  pQueueJobsSpecialItem;
+  private JPopupMenuItem  pVouchItem;
   private JPopupMenuItem  pPauseJobsItem;
   private JPopupMenuItem  pResumeJobsItem;
   private JPopupMenuItem  pPreemptJobsItem;

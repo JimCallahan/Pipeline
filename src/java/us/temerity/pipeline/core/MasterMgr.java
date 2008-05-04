@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.240 2008/04/24 18:34:29 jim Exp $
+// $Id: MasterMgr.java,v 1.241 2008/05/04 00:40:17 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -12659,6 +12659,14 @@ class MasterMgr
     if(work.isLocked()) 
       return;
 
+    switch(details.getOverallQueueState()) {
+    case Dubious:
+      throw new PipelineException
+        ("Cannot generate jobs for the node (" + status + ") while it is in a Dubious " + 
+         "state!  You must Vouch for this node or those upstream originating the " + 
+         "Dubious state before any jobs can be queued.");
+    }
+
     /* collect upstream jobs for:
        + nodes without an action or with a disabled action
        + finished nodes with an enabled action and at least one upstream link which is 
@@ -12728,11 +12736,20 @@ class MasterMgr
 	      finished = false;
 	      break;
 	      
-	    default:
+            case Stale:
+            case Aborted:
+            case Failed:
 	      finished = false;
 	      running  = false;
-	    }
-	  }
+              break;
+
+            default:
+              throw new PipelineException
+                ("Somehow a per-frame QueueState of index (" + idx + ") of node " + 
+                 "(" + nodeID + ") was " + queueStates[idx] + " even though the " + 
+                 "OverallQueueState was " + details.getOverallQueueState() + "!"); 
+            }
+          }
 	}
 
 
@@ -12801,9 +12818,12 @@ class MasterMgr
 		regen.add(idx);
 		break;
 
-	      case Undefined:
-		throw new IllegalStateException(); 
-	      }
+              default:
+                throw new PipelineException
+                  ("Somehow a per-frame QueueState of index (" + idx + ") of node " + 
+                   "(" + nodeID + ") was " + queueStates[idx] + " even though the " + 
+                   "OverallQueueState was " + details.getOverallQueueState() + "!"); 
+              }
 	    }
 	  }
 	}
@@ -13130,7 +13150,7 @@ class MasterMgr
 	  QueueJob job = new QueueJob(agenda, action, jreqs, sourceIDs);
 
           if (first) {
-            /* Perform all serverside key calculations*/
+            /* perform all server-side key calculations */
             TaskTimer subTimer = new TaskTimer("MasterMgr.adjustJobRequirements()");
             timer.suspend();
             try {
@@ -13598,6 +13618,94 @@ class MasterMgr
   }
 
     
+  /*----------------------------------------------------------------------------------------*/
+   
+  /**
+   * Vouch for the up-to-date status of the working area files associated with a node. <P>  
+   * 
+   * @param req 
+   *   The submit jobs request.
+   * 
+   * @return 
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to kill the jobs.
+   */ 
+  public Object
+  vouch
+  (
+   NodeVouchReq req
+  ) 
+  {
+    NodeID nodeID = req.getNodeID();
+
+    TaskTimer timer = new TaskTimer("MasterMgr.vouch(): " + nodeID);
+   
+    /* pre-op tests */
+    VouchExtFactory factory = new VouchExtFactory(nodeID);
+    try {
+      performExtensionTests(timer, factory);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    ReentrantReadWriteLock lock = getWorkingLock(nodeID);
+    lock.writeLock().lock();
+    try {
+      timer.resume();
+      
+      if(!pAdminPrivileges.isQueueManaged(req, nodeID))
+	throw new PipelineException
+	  ("Only a user with Queue Manager privileges may vouch for files associated with " +
+	   "nodes in working areas owned by another user!");
+
+      /* get the working version */ 
+      WorkingBundle bundle = getWorkingBundle(nodeID);
+      NodeMod mod = new NodeMod(bundle.getVersion());
+      if(mod.isFrozen()) 
+	throw new PipelineException
+	  ("You cannot vouch for a frozen node (" + nodeID + ")!"); 
+      
+      /* make sure the node can be vouched for... */ 
+      if(!mod.canBeVouched()) {
+        if(mod.isActionEnabled()) 
+          throw new PipelineException
+            ("You cannot vouch for a node (" + nodeID + ") with an enabled action!"); 
+        
+        if(mod.isActionEnabled()) 
+          throw new PipelineException
+            ("You cannot vouch for a node (" + nodeID + ") without any Dependency links!"); 
+      }
+       
+      /* vouch for the files */ 
+      mod.vouch();
+
+      /* write the new working version to disk */ 
+      writeWorkingVersion(nodeID, mod);
+      
+      /* update the bundle */ 
+      bundle.setVersion(mod);
+
+      /* record event */ 
+      pPendingEvents.add(new VouchedNodeEvent(nodeID));
+
+      /* post-op tasks */ 
+      startExtensionTasks(timer, factory);
+
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+    finally {
+      lock.writeLock().unlock();
+      pDatabaseLock.readLock().unlock();
+    }      
+  }
+
+ 
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -16715,8 +16823,19 @@ class MasterMgr
                   break;
                   
                 case Association:
-                  switch(baseLinkState) {
-                  case Identical:
+                  if(blink != null) {
+                    switch(blink.getPolicy()) {    
+                    case Dependency:
+                    case Reference:
+                      baseLinkState = LinkState.Modified;
+                      break;
+
+                    case Association:
+                      if(baseLinkState == LinkState.Identical) 
+                        baseLinkState = LinkState.TrivialMod;
+                    }
+                  }
+                  else if(baseLinkState == LinkState.Identical) {
                     baseLinkState = LinkState.TrivialMod;
                   }
                 }
@@ -16749,8 +16868,19 @@ class MasterMgr
                   break;
                   
                 case Association:
-                  switch(latestLinkState) {
-                  case Identical:
+                  if(llink != null) {
+                    switch(llink.getPolicy()) {    
+                    case Dependency:
+                    case Reference:
+                      latestLinkState = LinkState.Modified;
+                      break;
+
+                    case Association:
+                      if(latestLinkState == LinkState.Identical) 
+                        latestLinkState = LinkState.TrivialMod;
+                    }
+                  }
+                  else if(latestLinkState == LinkState.Identical) {
                     latestLinkState = LinkState.TrivialMod;
                   }
                 }
@@ -16780,11 +16910,9 @@ class MasterMgr
                   baseLinkState = LinkState.Modified;
                   break;
 
-                case Association:
-                  switch(baseLinkState) {
-                  case Identical:
+                case Association:  
+                  if(baseLinkState == LinkState.Identical) 
                     baseLinkState = LinkState.TrivialMod;
-                  }
                 }
               }
             }
@@ -16801,10 +16929,8 @@ class MasterMgr
                     break;
                     
                   case Association:
-                    switch(latestLinkState) {
-                    case Identical:
+                    if(latestLinkState == LinkState.Identical) 
                       latestLinkState = LinkState.TrivialMod;
-                    }
                   }
                 }
               }
@@ -16858,14 +16984,7 @@ class MasterMgr
       /* otherwise, we need to go on and compute the heavyweight per-file and queue 
            related node status information... */ 
       else {
-        /* have any of the critical node properties or links been modified since the 
-           last time the node's OverallQueueState was Finished? */ 
-        boolean modifiedPropsSinceFinished = false; 
-        boolean modifiedLinksSinceFinished = false;
-        if((work != null) && !(workIsLocked || workIsFrozen)) {
-          modifiedPropsSinceFinished = work.hasModifiedPropertiesSinceLastFinished();
-          modifiedLinksSinceFinished = work.hasModifiedLinksSinceLastFinished(table); 
-        }
+        boolean canBeVouched = ((work != null) && work.canBeVouched()); 
 
         /* get per-file FileStates and timestamps */ 
         TreeMap<FileSeq, FileState[]> fileStates = new TreeMap<FileSeq, FileState[]>(); 
@@ -16951,9 +17070,14 @@ class MasterMgr
                    ((ts[wk] != null) && (ts[wk] > newestStamps[wk])))
                   newestStamps[wk] = ts[wk];
 
-                /* the oldest among the primary/secondary files for the index */ 
-                if((oldestStamps[wk] == null) || 
-                   ((ts[wk] != null) && (ts[wk] < oldestStamps[wk])))
+                /* if the node can be Vouched for, 
+                     the last vouched timestamp takes precedence over the actual files */ 
+                if(canBeVouched) {
+                  oldestStamps[wk] = work.getLastVouched();
+                }
+                /* otherwise, the oldest among the primary/secondary files for the index */ 
+                else if((oldestStamps[wk] == null) || 
+                        ((ts[wk] != null) && (ts[wk] < oldestStamps[wk])))
                   oldestStamps[wk] = ts[wk];
               }
             }
@@ -17137,6 +17261,15 @@ class MasterMgr
           }
         }
       
+        /* have any of the critical node properties or links been modified since the 
+           last time the node's OverallQueueState was Finished? */ 
+        boolean modifiedPropsSinceFinished = false; 
+        boolean modifiedLinksSinceFinished = false;
+        if((work != null) && !(workIsLocked || workIsFrozen)) {
+          modifiedPropsSinceFinished = work.hasModifiedPropertiesSinceLastFinished();
+          modifiedLinksSinceFinished = work.hasModifiedLinksSinceLastFinished(table); 
+        }
+    
         /* determine per-file QueueStates */  
         Long jobIDs[] = null;
         QueueState queueStates[] = null;
@@ -17202,15 +17335,8 @@ class MasterMgr
 
             int wk;
             for(wk=0; wk<queueStates.length; wk++) {
-              /* there is no regeneration action or it is disabled, 
-                   therefore QueueState is always Finished */ 
-              if(!work.isActionEnabled()) {
-                queueStates[wk] = QueueState.Finished;
-              }
-
-              /* there IS an enabled regeneration action */ 
-              else {
-                /* check for active jobs */ 
+              /* if there is an enabled action, check for active jobs */ 
+              if(work.isActionEnabled()) {
                 if(js[wk] != null) {
                   switch(js[wk]) {
                   case Queued:
@@ -17232,108 +17358,119 @@ class MasterMgr
 
                   case Failed:
                     queueStates[wk] = QueueState.Failed;
-                    break;
-
-                  case Finished:
-                    break;
                   }
                 }
+              }
 
-                if(queueStates[wk] == null) {
-                  switch(overallNodeState) {
-                  case Identical: 
-                  case TrivialMod: 
-                    queueStates[wk] = QueueState.Finished;
-                    break;
+              if(queueStates[wk] == null) {
+                switch(overallNodeState) {
+                case Identical: 
+                case TrivialMod: 
+                  queueStates[wk] = QueueState.Finished;
+                  break;
 
-                  default:
-                    /* the file is Stale if: 
-                       + the file is missing
-                       + the working version properties have been modified since the oldest 
-                         of the primary/secondary files were created and the changes are 
-                         different than when the node's OverallNodeState was last Finished */
-                    if(anyMissing[wk] || 
-                       ((oldestStamps[wk] < work.getLastCriticalModification()) && 
-                        modifiedPropsSinceFinished)) {
+                default:
+                  /* the file is Stale/Dubious if: 
+                     + the file is missing or
+                     + the critical working version properties/links have been modified 
+                       since the oldest of the primary/secondary files were created and the 
+                       changes are different than when the node's OverallNodeState was last 
+                       Finished */
+                  if(anyMissing[wk] || 
+                     ((oldestStamps[wk] < work.getLastCriticalModification()) && 
+                      (modifiedPropsSinceFinished || modifiedLinksSinceFinished))) {
+                    if(canBeVouched) 
+                      queueStates[wk] = QueueState.Dubious;
+                    else if(work.isActionEnabled())
                       queueStates[wk] = QueueState.Stale;
-                    }
+                  }
 
-                    /* check upstream per-file dependencies... */ 
-                    else {
-                      for(LinkMod link : work.getSources()) {
-                        if(link.getPolicy() == LinkPolicy.Dependency) {
-                          NodeStatus lstatus = status.getSource(link.getName());
-                          NodeDetails ldetails = lstatus.getDetails();
+                  /* otherwise, we need to check upstream per-file dependencies... */ 
+                  if((queueStates[wk] == null) && 
+                     (canBeVouched || work.isActionEnabled())) {
+                    for(LinkMod link : work.getSources()) {
+                      if(link.getPolicy() == LinkPolicy.Dependency) {
+                        NodeStatus lstatus = status.getSource(link.getName());
+                        NodeDetails ldetails = lstatus.getDetails();
 
-                          switch(ldetails.getOverallNodeState()) {
-                          case TrivialMod: 
-                            break;
+                        switch(ldetails.getOverallNodeState()) {
+                        case TrivialMod: 
+                          break;
 
-                          default:
-                            {
-                              QueueState lqs[]   = ldetails.getQueueState();
-                              long lstamps[]     = ldetails.getFileTimeStamps();
-                              boolean lignored[] = ldetails.ignoreTimeStamps();
+                        default:
+                          {
+                            QueueState lqs[]   = ldetails.getQueueState();
+                            long lstamps[]     = ldetails.getFileTimeStamps();
+                            boolean lignored[] = ldetails.ignoreTimeStamps();
 
-                              boolean lanyMissing[] = null;
-                              for(FileSeq lfseq : ldetails.getFileStateSequences()) {
-                                FileState lfs[] = ldetails.getFileState(lfseq);
+                            boolean lanyMissing[] = null;
+                            for(FileSeq lfseq : ldetails.getFileStateSequences()) {
+                              FileState lfs[] = ldetails.getFileState(lfseq);
 
-                                if(lanyMissing == null) 
-                                  lanyMissing = new boolean[lfs.length];
+                              if(lanyMissing == null) 
+                                lanyMissing = new boolean[lfs.length];
 
-                                int mk;
-                                for(mk=0; mk<lanyMissing.length; mk++) {
-                                  if(lfs[mk] == FileState.Missing) 
-                                    lanyMissing[mk] = true;
-                                }
+                              int mk;
+                              for(mk=0; mk<lanyMissing.length; mk++) {
+                                if(lfs[mk] == FileState.Missing) 
+                                  lanyMissing[mk] = true;
                               }
+                            }
 
-                              switch(link.getRelationship()) {
-                              case OneToOne:
-                                {
-                                  Integer offset = link.getFrameOffset();
-                                  int idx = wk+offset;
-                                  if(((idx >= 0) && (idx < lqs.length)) &&
-                                     ((lqs[idx] != QueueState.Finished) || 
-                                      lanyMissing[idx] || 
-                                      ((!lignored[idx] || modifiedLinksSinceFinished) && 
-                                       (oldestStamps[wk] < lstamps[idx]))))
+                            switch(link.getRelationship()) {
+                            case OneToOne:
+                              {
+                                Integer offset = link.getFrameOffset();
+                                int idx = wk+offset;
+                                if(((idx >= 0) && (idx < lqs.length)) &&
+                                   ((lqs[idx] != QueueState.Finished) || 
+                                    lanyMissing[idx] || 
+                                    ((!lignored[idx] || modifiedLinksSinceFinished) && 
+                                     (oldestStamps[wk] < lstamps[idx])))) {
+
+                                  if(canBeVouched) 
+                                    queueStates[wk] = QueueState.Dubious; 
+                                  else 
                                     queueStates[wk] = QueueState.Stale;
                                 }
-                                break;
+                              }
+                              break;
 
-                              case All:
-                                {
-                                  int fk;
-                                  for(fk=0; fk<lqs.length; fk++) {
-                                    if((lqs[fk] != QueueState.Finished) || 
-                                       lanyMissing[fk] || 
-                                       ((!lignored[fk] || modifiedLinksSinceFinished) && 
-                                        (oldestStamps[wk] < lstamps[fk]))) {
+                            case All:
+                              {
+                                int fk;
+                                for(fk=0; fk<lqs.length; fk++) {
+                                  if((lqs[fk] != QueueState.Finished) || 
+                                     lanyMissing[fk] || 
+                                     ((!lignored[fk] || modifiedLinksSinceFinished) && 
+                                      (oldestStamps[wk] < lstamps[fk]))) {
+
+                                    if(canBeVouched) 
+                                      queueStates[wk] = QueueState.Dubious; 
+                                    else 
                                       queueStates[wk] = QueueState.Stale;
-                                      break;
-                                    }
+
+                                    break;
                                   }
                                 }
-                                break;
+                              }
+                              break;
 
-                              case None: 
-                                throw new PipelineException
-                                  ("Somehow a Depenency link has a None relationship!");
-                              }		    
-                            }
+                            case None: 
+                              throw new PipelineException
+                                ("Somehow a Depenency link has a None relationship!");
+                            }		    
                           }
                         }
-
-                        if(queueStates[wk] != null) 
-                          break;
                       }
 
-                      if(queueStates[wk] == null) 
-                        queueStates[wk] = QueueState.Finished;
+                      if(queueStates[wk] != null) 
+                        break;
                     }
                   }
+
+                  if(queueStates[wk] == null) 
+                    queueStates[wk] = QueueState.Finished;
                 }
               }
             }
@@ -17349,6 +17486,7 @@ class MasterMgr
           boolean anyRunning = false; 
           boolean anyAborted = false;
           boolean anyFailed = false;
+          boolean anyDubious = false;
 
           int wk;
           for(wk=0; wk<queueStates.length; wk++) {
@@ -17375,10 +17513,16 @@ class MasterMgr
 
             case Failed:
               anyFailed = true;
+              break;
+
+            case Dubious:
+              anyDubious = true;
             }
           }
 
-          if(anyFailed) 
+          if(anyDubious) 
+            overallQueueState = OverallQueueState.Dubious;
+          else if(anyFailed) 
             overallQueueState = OverallQueueState.Failed;
           else if(anyAborted) 
             overallQueueState = OverallQueueState.Aborted;

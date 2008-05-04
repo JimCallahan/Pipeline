@@ -1,4 +1,4 @@
-// $Id: NodeEventOp.java,v 1.2 2007/10/23 02:29:58 jim Exp $
+// $Id: NodeEventOp.java,v 1.3 2008/05/04 00:40:18 jim Exp $
 
 package us.temerity.pipeline.event;
 
@@ -63,6 +63,12 @@ enum NodeEventOp
   SeqsModified, 
   
   /**
+   * The vouching for the up-to-date status of files associated with a working version 
+   * of a node.
+   */ 
+  Vouched, 
+
+  /**
    * The period of time in which an Editor plugin was launched which was capable of modifying
    * the files associated with a working version of a node.
    */ 
@@ -119,6 +125,7 @@ enum NodeEventOp
     "Props Modified", 
     "Links Modified", 
     "Seqs Modified", 
+    "Vouched", 
     "Edited"
   };
 }

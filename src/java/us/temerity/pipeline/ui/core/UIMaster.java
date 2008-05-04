@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.81 2008/04/21 23:20:16 jesse Exp $
+// $Id: UIMaster.java,v 1.82 2008/05/04 00:40:22 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -5942,6 +5942,72 @@ class UIMaster
     {
       qclient.killJobs(jobIDs);
     }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Vouch for the working area files associated with the given nodes.
+   */ 
+  public 
+  class VouchTask
+    extends BaseNodeTask
+  {
+    public 
+    VouchTask
+    (
+     int channel, 
+     String name,
+     String author, 
+     String view
+    ) 
+    {
+      super("UIMaster:VouchTask", channel, author, view);
+
+      pNames = new TreeSet<String>();
+      pNames.add(name);
+    }
+
+    public 
+    VouchTask
+    (
+     int channel, 
+     TreeSet<String> names,
+     String author, 
+     String view
+    ) 
+    {
+      super("UIMaster:VouchTask", channel, author, view);
+
+      pNames = names; 
+    }
+
+    public void 
+    run() 
+    {
+      UIMaster master = UIMaster.getInstance();
+      if(master.beginPanelOp(pChannel)) {
+	try {
+	  for(String name : pNames) {
+	    master.updatePanelOp(pChannel, "Vouching for: " + name);
+	    MasterMgrClient client = master.getMasterMgrClient(pChannel);
+	    client.vouch(pAuthorName, pViewName, name);
+	  }
+	}
+	catch(PipelineException ex) {
+	  master.showErrorDialog(ex);
+	  return;
+	}
+	finally {
+	  master.endPanelOp(pChannel, "Done.");
+	}
+
+	postOp();
+      }
+    }
+
+    private TreeSet<String>  pNames; 
   }
 
 

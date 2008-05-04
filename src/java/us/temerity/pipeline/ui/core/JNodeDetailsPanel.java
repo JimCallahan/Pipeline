@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.47 2008/03/16 13:02:34 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.48 2008/05/04 00:40:21 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -158,6 +158,16 @@ class JNodeDetailsPanel
 	item.addActionListener(this);
 	pWorkingPopup.add(item);
 	
+	pWorkingPopup.addSeparator();
+
+	item = new JMenuItem("Vouch"); 
+	pVouchItem = item;
+	item.setActionCommand("vouch");
+	item.addActionListener(this);
+	pWorkingPopup.add(item);
+      
+	pWorkingPopup.addSeparator();
+
 	item = new JMenuItem("Pause Jobs");
 	pPauseJobsItem = item;
 	item.setActionCommand("pause-jobs");
@@ -3810,6 +3820,8 @@ class JNodeDetailsPanel
     pQueueJobsItem.setEnabled(queuePrivileged);
     pQueueJobsSpecialItem.setEnabled(queuePrivileged);
 
+    pVouchItem.setEnabled(queuePrivileged);
+
     pPauseJobsItem.setEnabled(queuePrivileged);
     pResumeJobsItem.setEnabled(queuePrivileged);
     pPreemptJobsItem.setEnabled(queuePrivileged);
@@ -3911,6 +3923,11 @@ class JNodeDetailsPanel
       (pQueueJobsSpecialItem, prefs.getQueueJobsSpecial(), 
        "Submit jobs to the queue for the current primary selection with special job " + 
        "requirements.");
+
+    updateMenuToolTip
+      (pVouchItem, prefs.getVouch(), 
+       "Vouch for the files associated with the current primary selection.");
+
     updateMenuToolTip
       (pPauseJobsItem, prefs.getPauseJobs(), 
        "Pause all jobs associated with the selected nodes.");
@@ -4124,6 +4141,9 @@ class JNodeDetailsPanel
     else if((prefs.getQueueJobsSpecial() != null) &&
 	    prefs.getQueueJobsSpecial().wasPressed(e))
       doQueueJobsSpecial();
+    else if((prefs.getVouch() != null) &&
+            prefs.getVouch().wasPressed(e))
+      doVouch();
     else if((prefs.getPauseJobs() != null) &&
 	    prefs.getPauseJobs().wasPressed(e))
 	doPauseJobs();
@@ -4304,6 +4324,10 @@ class JNodeDetailsPanel
       doQueueJobs();
     else if(cmd.equals("queue-jobs-special"))
       doQueueJobsSpecial();
+
+    else if(cmd.equals("vouch"))
+      doVouch();
+
     else if(cmd.equals("pause-jobs"))
       doPauseJobs();
     else if(cmd.equals("resume-jobs"))
@@ -5749,6 +5773,24 @@ class JNodeDetailsPanel
   }
 
   /**
+   * Vouch for the files associated with the current node.
+   */ 
+  private synchronized void 
+  doVouch() 
+  {
+    if(pIsFrozen) 
+      return;
+
+    if(pStatus != null) {
+      NodeDetails details = pStatus.getDetails();
+      if(details != null) {	 
+        VouchTask task = new VouchTask(pStatus.getName());
+	task.start();
+      }
+    }
+  }
+
+  /**
    * Pause all waiting jobs associated with the current node.
    */ 
   private void 
@@ -6237,6 +6279,30 @@ class JNodeDetailsPanel
   }
 
   /** 
+   * Vouch for the working area files associated with the given nodes.
+   */ 
+  private
+  class VouchTask
+    extends UIMaster.VouchTask
+  {
+    public 
+    VouchTask
+    (
+     String name
+    ) 
+    {
+      UIMaster.getInstance().super(pGroupID, name, pAuthor, pView);
+      setName("JNodeDetailsPanel:VouchTask");
+    }
+    
+    protected void
+    postOp() 
+    {
+      updatePanels(); 
+    }    
+  }
+
+  /** 
    * Pause the given jobs.
    */ 
   private
@@ -6432,6 +6498,7 @@ class JNodeDetailsPanel
   private JMenuItem  pApplyItem;
   private JMenuItem  pQueueJobsItem;
   private JMenuItem  pQueueJobsSpecialItem;
+  private JMenuItem  pVouchItem;
   private JMenuItem  pPauseJobsItem;
   private JMenuItem  pResumeJobsItem;
   private JMenuItem  pPreemptJobsItem;

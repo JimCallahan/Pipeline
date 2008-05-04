@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.118 2008/05/03 20:31:27 jim Exp $
+// $Id: MasterMgrClient.java,v 1.119 2008/05/04 00:40:16 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -6860,6 +6860,66 @@ class MasterMgrClient
       handleFailure(obj);
       return null;
     }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Vouch for the up-to-date status of the working area files associated with a node. <P>  
+   * 
+   * If the <CODE>author</CODE> argument is different than the current user, this method 
+   * will fail unless the current user has privileged access status.
+   * 
+   * @param author 
+   *   The name of the user which owns the working version.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param name 
+   *   The fully resolved node name.
+   * 
+   * @throws PipelineException 
+   *   If unable to vouch for the files.
+   */ 
+  public synchronized void
+  vouch
+  (
+   String author,  
+   String view, 
+   String name
+  ) 
+    throws PipelineException
+  {
+    vouch(new NodeID(author, view, name)); 
+  }
+
+  /**
+   * Vouch for the up-to-date status of the working area files associated with a node. <P>  
+   * 
+   * If the <CODE>nodeID</CODE> argument is different than the current user, this method 
+   * will fail unless the current user has privileged access status.
+   * 
+   * @param nodeID 
+   *   The unique working version identifier. 
+   * 
+   * @throws PipelineException 
+   *   If unable to vouch for the files.
+   */ 
+  public synchronized void
+  vouch
+  (
+   NodeID nodeID
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+
+    NodeVouchReq req = new NodeVouchReq(nodeID);
+
+    Object obj = performTransaction(MasterRequest.Vouch, req);
+    handleSimpleResponse(obj);    
   }
 
 

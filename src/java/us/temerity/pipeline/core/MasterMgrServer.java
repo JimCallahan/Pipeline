@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.85 2008/04/24 08:08:42 jim Exp $
+// $Id: MasterMgrServer.java,v 1.86 2008/05/04 00:40:17 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1509,6 +1509,14 @@ class MasterMgrServer
                   objOut.flush(); 
                 }
                 break;  
+
+              case Vouch: 
+                {
+                  NodeVouchReq req = (NodeVouchReq) objIn.readObject();
+                  objOut.writeObject(pMasterMgr.vouch(req));
+                  objOut.flush(); 
+                }
+                break;
 
               /*-- ADMIN -----------------------------------------------------------------*/
               case BackupDatabase: 

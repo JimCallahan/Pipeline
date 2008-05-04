@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.64 2008/01/28 11:58:51 jesse Exp $
+// $Id: GenUserPrefsApp.java,v 1.65 2008/05/04 00:40:22 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -559,6 +559,10 @@ class GenUserPrefsApp
 	 "FailedCoreColor", "Failed Core Color:", new Color(0.83f, 0.0f, 0.0f)), 
 
 	new ColorPref
+	("The color to use for the core of nodes/jobs with a Queue State of Dubious.", 
+	 "DubiousCoreColor", "Dubious Core Color:", new Color(0.15f, 0.15f, 0.15f)), 
+
+	new ColorPref
 	("The color to use for the core of jobs with a Queue State of Preempted.", 
 	 "PreemptedCoreColor", "Preempted Core Color:", new Color(1.0f, 0.0f, 0.75f))
       };
@@ -736,6 +740,12 @@ class GenUserPrefsApp
 	 "requirements.",
 	 "QueueJobsSpecial", "Queue Jobs Special:", 
 	 true, false, false, 81),  /* SHIFT-Q */ 
+
+	new HotKeyPref
+	("Vouch for the up-to-date status of the files associated with the currently " + 
+         "selected nodes.",
+	 "Vouch", "Vouch:", 
+	 false, false, false, 86),  /* V */ 
 
 	new HotKeyPref
 	("Pause all jobs associated with the selected nodes.",
@@ -1158,6 +1168,10 @@ class GenUserPrefsApp
 	 "NodeDetailsQueueJobsSpecial", "Queue Jobs Special:", "QueueJobsSpecial"),  
 
 	new DuplicateHotKeyPref
+	("Vouch for the up-to-date status of the files associated with the current node.",
+	 "NodeDetailsVouch", "Vouch:", "Vouch"), 
+
+	new DuplicateHotKeyPref
 	("Pause all jobs associated with the current node.",
 	 "NodeDetailsPauseJobs", "Pause Jobs:", "PauseJobs"), 
 
@@ -1214,6 +1228,10 @@ class GenUserPrefsApp
 	new DuplicateHotKeyPref
 	("Submit jobs to the queue for the current node with special job requirements.",
 	 "NodeFilesQueueJobsSpecial", "Queue Jobs Special:", "QueueJobsSpecial"),  
+
+	new DuplicateHotKeyPref
+	("Vouch for the up-to-date status of the files associated with the current node.",
+	 "NodeFilesVouch", "Vouch:", "Vouch"), 
 
 	new DuplicateHotKeyPref
 	("Pause all jobs associated with the current node.",
@@ -1274,6 +1292,10 @@ class GenUserPrefsApp
 	 "NodeLinksQueueJobsSpecial", "Queue Jobs Special:", "QueueJobsSpecial"),  
 
 	new DuplicateHotKeyPref
+	("Vouch for the up-to-date status of the files associated with the current node.",
+	 "NodeLinksVouch", "Vouch:", "Vouch"), 
+
+	new DuplicateHotKeyPref
 	("Pause all jobs associated with the current node.",
 	 "NodeLinksPauseJobs", "Pause Jobs:", "PauseJobs"), 
 
@@ -1324,6 +1346,10 @@ class GenUserPrefsApp
 	new DuplicateHotKeyPref
 	("Submit jobs to the queue for the current node with special job requirements.",
 	 "NodeHistoryQueueJobsSpecial", "Queue Jobs Special:", "QueueJobsSpecial"),  
+
+	new DuplicateHotKeyPref
+	("Vouch for the up-to-date status of the files associated with the current node.",
+	 "NodeHistoryVouch", "Vouch:", "Vouch"), 
 
 	new DuplicateHotKeyPref
 	("Pause all jobs associated with the current node.",
@@ -2242,6 +2268,7 @@ class GenUserPrefsApp
       String editDefault  = "EditWithDefault";
       String editAsOwner  = "EditAsOwner";
       String applyChanges = "ApplyChanges";
+      String vouch        = "Vouch";
       String removeFiles  = "RemoveFiles";
       String showNode     = "ShowNode"; 
       String hideAll      = "HideAll"; 
@@ -2295,6 +2322,8 @@ class GenUserPrefsApp
 	group.add("NodeViewerUnlink");
 	group.add("NodeViewerAddSecondary");
 	group.addAll(jobs);
+	group.add(vouch);
+	group.add(removeFiles);
 	group.add("NodeViewerCheckIn");
 	group.add("NodeViewerCheckOut");
 	group.add("NodeViewerLock");
@@ -2303,7 +2332,6 @@ class GenUserPrefsApp
 	group.add("NodeViewerClone");
 	group.add("NodeViewerRelease");
 	group.add("NodeViewerReleaseView");
-	group.add(removeFiles);
 	group.add("NodeViewerExport");
 	group.add("NodeViewerRename");
 	group.add("NodeViewerRenumber");
@@ -2329,6 +2357,7 @@ class GenUserPrefsApp
 	group.add(editDefault);
 	group.add(editAsOwner);
 	group.addAll(jobs);
+	group.add(vouch);
 	group.add(removeFiles);
       }
     
@@ -2342,6 +2371,7 @@ class GenUserPrefsApp
 	group.add(editDefault);
 	group.add(editAsOwner);
 	group.addAll(jobs);
+	group.add(vouch);
 	group.add(removeFiles);
       }
     
@@ -2367,6 +2397,7 @@ class GenUserPrefsApp
 	group.add(editDefault);
 	group.add(editAsOwner);
 	group.addAll(jobs);
+	group.add(vouch);
 	group.add(removeFiles);
       }
     
@@ -2380,6 +2411,7 @@ class GenUserPrefsApp
 	group.add(editDefault);
 	group.add(editAsOwner);
 	group.addAll(jobs);
+	group.add(vouch);
 	group.add(removeFiles);
       }
     
@@ -2583,7 +2615,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.64 2008/01/28 11:58:51 jesse Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.65 2008/05/04 00:40:22 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -2838,7 +2870,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.64 2008/01/28 11:58:51 jesse Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.65 2008/05/04 00:40:22 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -4195,7 +4227,7 @@ class GenUserPrefsApp
 
       StringBuilder buf = new StringBuilder();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.64 2008/01/28 11:58:51 jesse Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.65 2008/05/04 00:40:22 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 

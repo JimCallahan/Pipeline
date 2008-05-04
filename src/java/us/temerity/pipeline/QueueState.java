@@ -1,4 +1,4 @@
-// $Id: QueueState.java,v 1.12 2005/12/31 20:42:58 jim Exp $
+// $Id: QueueState.java,v 1.13 2008/05/04 00:40:16 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -112,9 +112,36 @@ enum QueueState
    * of <CODE>Failed</CODE> means that no job has been resubmitted for the file since the 
    * time of the job that failed.
    */
-  Failed;
+  Failed, 
 
+  /**
+   * One or more of the primary/secondary files associated with this node may require manual 
+   * updating. <P> 
+   * 
+   * Files require manual updating when a node does not have an enabled action but does have
+   * one or more Dependency links which are newer than the files associated with the working
+   * version of the node.  This indicates that there are changes to the upstream files which 
+   * have not been manually taken into consideration.  Files may also become 
+   * <CODE>Dubious</CODE> if one or more of the upstream files upon which they depend (through
+   * a Dependency link) have a <CODE>QueueState</CODE> of <CODE>Dubious</CODE> regardless of 
+   * whether or not they have an enabled action.<P> 
+   * 
+   * After performing any manuall updates, you can change the most upstream node with a 
+   * <CODE>Dubious</CODE> state to the <CODE>Finished</CODE> state by performing a Vouch 
+   * operation on the node.  This indicates that you have manually vouched that the files 
+   * associated with the current node properly take into consideration the changes upstream 
+   * of all Dependency links.<P> 
+   * 
+   * Files can also be dubious if they have no enabled regeneration action but have a 
+   * <CODE>FileState</CODE> of <CODE>Missing</CODE>.  In this case, Vouching has no effect.
+   * The files must be manually created in order to change their state to 
+   * <CODE>Finished</CODE>.
+   * 
+   * This state has precedence over all other states. 
+   */
+  Dubious; 
 
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */

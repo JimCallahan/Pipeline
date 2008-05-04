@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.45 2007/11/30 20:14:25 jesse Exp $
+// $Id: JNodeFilesPanel.java,v 1.46 2008/05/04 00:40:22 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -137,6 +137,8 @@ class JNodeFilesPanel
 	item.addActionListener(this);
 	pWorkingPopup.add(item);
 	
+	pWorkingPopup.addSeparator();
+
 	item = new JMenuItem("Pause Jobs");
 	pPauseJobsItem = item;
 	item.setActionCommand("pause-jobs");

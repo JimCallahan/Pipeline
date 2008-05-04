@@ -1,4 +1,4 @@
-// $Id: NodeStyles.java,v 1.4 2007/06/26 05:18:57 jim Exp $
+// $Id: NodeStyles.java,v 1.5 2008/05/04 00:40:22 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -103,6 +103,9 @@ class NodeStyles
           
     case Failed:
       return prefs.getFailedCoreColor();
+
+    case Dubious:
+      return prefs.getDubiousCoreColor();
 
     default:
       assert(false) : ("Somehow the OverallQueueState (" + state + ") was not handled!");
@@ -221,7 +224,8 @@ class NodeStyles
     "yellow",    /* Paused */ 
     "green",     /* Running */ 
     "orange",    /* Aborted */ 
-    "red"        /* Failed */ 
+    "red",       /* Failed */ 
+    "black"      /* Dubious */ 
   };
 
 }

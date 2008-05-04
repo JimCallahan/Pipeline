@@ -1,4 +1,4 @@
-// $Id: MasterRequest.java,v 1.61 2008/01/28 11:58:52 jesse Exp $
+// $Id: MasterRequest.java,v 1.62 2008/05/04 00:40:18 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -779,6 +779,11 @@ enum MasterRequest
    * An instance of {@link NodeResubmitJobsReq} is next.
    */
   ResubmitJobs, 
+
+  /**
+   * An instance of {@link NodeVouchReq} is next.
+   */
+  Vouch, 
 
 
   /*----------------------------------------------------------------------------------------*/

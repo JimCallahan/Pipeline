@@ -1,4 +1,4 @@
-// $Id: OverallQueueState.java,v 1.12 2005/12/31 20:42:58 jim Exp $
+// $Id: OverallQueueState.java,v 1.13 2008/05/04 00:40:16 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -80,10 +80,19 @@ enum OverallQueueState
    * One or more of the files associated with the node have a <CODE>QueueState<CODE> of 
    * {@link QueueState#Failed Failed}. <P> 
    * 
+   * This state has precedence over the <CODE>Finished</CODE>, <CODE>Stale</CODE>, 
+   * <CODE>Queued</CODE>, <CODE>Paused</CODE>, <CODE>Running</CODE> and 
+   * <CODE>Aborted</CODE> states.
+   */ 
+  Failed, 
+
+  /**
+   * One or more of the files associated with the node have a <CODE>QueueState<CODE> of 
+   * {@link QueueState#Dubious Dubious}. <P>
+   * 
    * This state has precedence over all other states.
    */
-  Failed;
-
+  Dubious;
 
 
 
@@ -142,6 +151,7 @@ enum OverallQueueState
     "P", 
     "R",
     "A",
-    "E"
+    "E", 
+    "D"
   };
 }
