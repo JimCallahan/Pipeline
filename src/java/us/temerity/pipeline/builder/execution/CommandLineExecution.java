@@ -1,4 +1,4 @@
-// $Id: CommandLineExecution.java,v 1.4 2008/05/06 16:51:02 jesse Exp $
+// $Id: CommandLineExecution.java,v 1.5 2008/05/07 22:00:50 jesse Exp $
 
 package us.temerity.pipeline.builder.execution;
 
@@ -7,6 +7,9 @@ import us.temerity.pipeline.LogMgr.*;
 import us.temerity.pipeline.builder.*;
 
 
+/**
+ * Executes a builder without displaying a GUI or accepting user input.
+ */
 public 
 class CommandLineExecution
   extends BaseBuilderExecution
