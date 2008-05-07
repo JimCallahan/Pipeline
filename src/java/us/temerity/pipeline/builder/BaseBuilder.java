@@ -1,4 +1,4 @@
-// $Id: BaseBuilder.java,v 1.54 2008/04/21 23:12:13 jesse Exp $
+// $Id: BaseBuilder.java,v 1.55 2008/05/07 22:01:12 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -2238,8 +2238,18 @@ class BaseBuilder
     {
       LinkedList<QueueJobGroup> jobGroups = queueNodes(getQueueList());
       pQueuedNodes.addAll(getQueueList());
-      if (jobGroups.size() > 0)
+      if (jobGroups.size() > 0) {
         waitForJobs(jobGroups);
+        /* Sleep for 3 seconds to give nfs caching a chance to catch up */
+        try {
+          Thread.sleep(3000);
+        }
+        catch(InterruptedException ex) {
+          throw new PipelineException
+            ("The execution thread was interrupted while waiting for jobs to complete.\n" + 
+             Exceptions.getFullMessage(ex));
+        }
+      }
       boolean allFinished = areAllFinished(getQueueList());
       if (!allFinished) {
         TreeSet<String> badNodes = collectNamesAndKill(getQueueList(), jobGroups);
@@ -2252,7 +2262,7 @@ class BaseBuilder
    }
     
     @Override
-    public ExecutionPhase
+    public final ExecutionPhase
     getExecutionPhase()
     {
       return ExecutionPhase.Queue;
@@ -2309,7 +2319,7 @@ class BaseBuilder
     }
     
     @Override
-    public ExecutionPhase
+    public final ExecutionPhase
     getExecutionPhase()
     {
       return ExecutionPhase.Checkin;
