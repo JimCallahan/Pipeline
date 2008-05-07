@@ -1,4 +1,4 @@
-// $Id: PluginMgr.java,v 1.22 2008/03/28 21:15:15 jim Exp $
+// $Id: PluginMgr.java,v 1.23 2008/05/07 05:08:34 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -629,16 +629,27 @@ class PluginMgr
         pKeyChoosers.addPlugin(plg, cname, contents);
       else if(plg instanceof BaseBuilderCollection) {
         BaseBuilderCollection collection = (BaseBuilderCollection) plg;
-        boolean isConnected = true;
-        try {
-          MasterMgrClient mclient = new MasterMgrClient();
-          mclient.verifyConnection();
 
-          QueueMgrClient qclient = new QueueMgrClient();
-          qclient.verifyConnection();
-        }
-        catch (PipelineException ex) {
-          isConnected = false;
+        boolean isConnected = true;
+        {
+          MasterMgrClient mclient = null;
+          QueueMgrClient qclient = null;
+          try {
+            mclient = new MasterMgrClient();
+            mclient.verifyConnection();
+            
+            qclient = new QueueMgrClient();
+            qclient.verifyConnection();
+          }
+          catch (PipelineException ex) {
+            isConnected = false;
+          }
+          finally {
+            if(mclient != null) 
+              mclient.disconnect();
+            if(qclient != null) 
+              qclient.disconnect();
+          }
         }
 
         if (isConnected) {
