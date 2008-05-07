@@ -1,4 +1,4 @@
-// $Id: BaseBuilder.java,v 1.55 2008/05/07 22:01:12 jesse Exp $
+// $Id: BaseBuilder.java,v 1.56 2008/05/07 22:03:31 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -2200,7 +2200,18 @@ class BaseBuilder
       if (neededNodes.size() > 0) {
 	LinkedList<QueueJobGroup> jobs = queueNodes(neededNodes);
 	pQueuedNodes.addAll(neededNodes);
-	waitForJobs(jobs);
+	if (jobs.size() > 0) {
+	  waitForJobs(jobs);
+	  /* Sleep for 3 seconds to give nfs caching a chance to catch up */
+	  try {
+	    Thread.sleep(3000);
+	  }
+	  catch(InterruptedException ex) {
+	    throw new PipelineException
+	    ("The execution thread was interrupted while waiting for jobs to complete.\n" + 
+	     Exceptions.getFullMessage(ex));
+	  }
+	}
 	if (!areAllFinished(neededNodes)) {
 	  TreeSet<String> badNodes = collectNamesAndKill(neededNodes, jobs);
 	  throw new PipelineException
@@ -2299,8 +2310,18 @@ class BaseBuilder
               lockLatest(node);
             TreeSet<String> neededNodes = new TreeSet<String>(bundle.getNodesToCheckin());
             LinkedList<QueueJobGroup> jobs = queueNodes(neededNodes);
-            if (jobs.size() > 0)
+            if (jobs.size() > 0) {
               waitForJobs(jobs);
+              /* Sleep for 3 seconds to give nfs caching a chance to catch up */
+              try {
+                Thread.sleep(3000);
+              }
+              catch(InterruptedException ex) {
+                throw new PipelineException
+                ("The execution thread was interrupted while waiting for jobs to complete.\n" + 
+                 Exceptions.getFullMessage(ex));
+              }
+            }
             boolean finished =  areAllFinished(neededNodes);
             if (!finished) {
               TreeSet<String> badNodes = collectNamesAndKill(neededNodes, jobs);
