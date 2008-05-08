@@ -4390,7 +4390,7 @@ JobServerRemove()
   String hname = null;
 }
 {
-  <JOB_REMOVE> EQ() hname=KeyName() AE()
+  <JOB_REMOVE> EQ() hname=HostName() AE()
   {
     pApp.removeHost(hname, pQueueMgrClient);
 
