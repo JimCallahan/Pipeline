@@ -4,11 +4,11 @@ if FOUNDATION
 else !FOUNDATION
 
 if IS_UNIX
-  SUBDIRS = init.d
+  SUBDIRS = init.d python
 else !IS_UNIX
 
 if IS_MAC_OS
-  SUBDIRS = launchd
+  SUBDIRS = launchd python
 endif 
 
 endif !IS_UNIX

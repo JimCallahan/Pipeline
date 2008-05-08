@@ -1,4 +1,4 @@
-// $Id: JArchiveDialog.java,v 1.11 2006/09/25 12:11:44 jim Exp $
+// $Id: JArchiveDialog.java,v 1.12 2008/05/08 22:46:42 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -67,37 +67,21 @@ class JArchiveDialog
 	  hbox.add(Box.createRigidArea(new Dimension(10, 0)));
 	  
 	  {
-	    JButton btn = new JButton("Search...");
-	    btn.setName("RaisedButton");
-	    
-	    Dimension size = btn.getPreferredSize();
-	    btn.setMinimumSize(new Dimension(108, 31));
-	    btn.setMaximumSize(new Dimension(size.width, 31));
-	    
-	    btn.setActionCommand("candidate-search");
-	    btn.addActionListener(this);
-	    
-	    btn.setToolTipText(UIFactory.formatToolTip
-	      ("Search for new candidate checked-in versions to archive."));
-
+	    JButton btn = 
+              UIFactory.createDialogButton
+                ("Search...", "candidate-search", this, 
+                 "Search for new candidate checked-in versions to archive.");
+            
 	    hbox.add(btn);
 	  }
 
 	  hbox.add(Box.createRigidArea(new Dimension(20, 0)));
 			      
 	  {
-	    JButton btn = new JButton("Clear");
-	    btn.setName("RaisedButton");
-	    
-	    Dimension size = btn.getPreferredSize();
-	    btn.setMinimumSize(new Dimension(108, 31));
-	    btn.setMaximumSize(new Dimension(size.width, 31));
-	    
-	    btn.setActionCommand("clear-candidate");
-	    btn.addActionListener(this);
-	    
-	    btn.setToolTipText(UIFactory.formatToolTip
-	      ("Clear the displayed candidate checked-in versions."));
+	    JButton btn = 
+              UIFactory.createDialogButton
+                ("Clear", "clear-candidate", this, 
+                 "Clear the displayed candidate checked-in versions.");
 
 	    hbox.add(btn);	  
 	  }
@@ -160,18 +144,11 @@ class JArchiveDialog
 	  hbox.add(Box.createRigidArea(new Dimension(10, 0)));
 	  
 	  {
-	    JButton btn = new JButton("Add");
-	    btn.setName("RaisedButton");
-	    
-	    Dimension size = btn.getPreferredSize();
-	    btn.setMinimumSize(new Dimension(108, 31));
-	    btn.setMaximumSize(new Dimension(size.width, 31));
-	    
-	    btn.setActionCommand("add-archive");
-	    btn.addActionListener(this);
-	    
-	    btn.setToolTipText(UIFactory.formatToolTip
-	     ("Add the selected candidate versions to the list of versions to be archived."));
+	    JButton btn = 
+              UIFactory.createDialogButton
+                ("Add", "add-archive", this, 
+                 "Add the selected candidate versions to the list of versions to be " + 
+                 "archived.");
 
 	    hbox.add(btn);
 	  }
@@ -179,18 +156,10 @@ class JArchiveDialog
 	  hbox.add(Box.createRigidArea(new Dimension(10, 0)));
 	  
 	  {
-	    JButton btn = new JButton("Add All");
-	    btn.setName("RaisedButton");
-	    
-	    Dimension size = btn.getPreferredSize();
-	    btn.setMinimumSize(new Dimension(108, 31));
-	    btn.setMaximumSize(new Dimension(size.width, 31));
-	    
-	    btn.setActionCommand("add-all-archive");
-	    btn.addActionListener(this);
-	    
-	    btn.setToolTipText(UIFactory.formatToolTip
-	      ("Add all candidate versions to the list of versions to be archived."));
+	    JButton btn =
+              UIFactory.createDialogButton
+                ("Add All", "add-all-archive", this, 
+                 "Add all candidate versions to the list of versions to be archived.");
 
 	    hbox.add(btn);
 	  }
@@ -198,18 +167,10 @@ class JArchiveDialog
 	  hbox.add(Box.createRigidArea(new Dimension(20, 0)));
 	  
 	  {
-	    JButton btn = new JButton("Remove");
-	    btn.setName("RaisedButton");
-	    
-	    Dimension size = btn.getPreferredSize();
-	    btn.setMinimumSize(new Dimension(108, 31));
-	    btn.setMaximumSize(new Dimension(size.width, 31));
-	    
-	    btn.setActionCommand("remove-archive");
-	    btn.addActionListener(this);
-	    
-	    btn.setToolTipText(UIFactory.formatToolTip
-	      ("Remove the selected versions from the list of versions to be archived."));
+	    JButton btn = 
+              UIFactory.createDialogButton
+                ("Remove", "remove-archive", this, 
+                 "Remove the selected versions from the list of versions to be archived.");
 
 	    hbox.add(btn);
 	  }
@@ -217,18 +178,10 @@ class JArchiveDialog
 	  hbox.add(Box.createRigidArea(new Dimension(10, 0)));
 	  
 	  {
-	    JButton btn = new JButton("Clear");
-	    btn.setName("RaisedButton");
-	    
-	    Dimension size = btn.getPreferredSize();
-	    btn.setMinimumSize(new Dimension(108, 31));
-	    btn.setMaximumSize(new Dimension(size.width, 31));
-	    
-	    btn.setActionCommand("remove-all-archive");
-	    btn.addActionListener(this);
-	    
-	    btn.setToolTipText(UIFactory.formatToolTip
-	      ("Clear the list of versions to be archived."));
+	    JButton btn = 
+              UIFactory.createDialogButton
+                ("Clear", "remove-all-archive", this, 
+                 "Clear the list of versions to be archived.");
 
 	    hbox.add(btn);	  
 	  }
@@ -236,19 +189,11 @@ class JArchiveDialog
 	  hbox.add(Box.createRigidArea(new Dimension(20, 0)));
 	  
 	  {
-	    JButton btn = new JButton("Calc Sizes");
-	    btn.setName("RaisedButton");
-	    
-	    Dimension size = btn.getPreferredSize();
-	    btn.setMinimumSize(new Dimension(108, 31));
-	    btn.setMaximumSize(new Dimension(size.width, 31));
-	    
-	    btn.setActionCommand("calc-archive");
-	    btn.addActionListener(this);
-	    
-	    btn.setToolTipText(UIFactory.formatToolTip
-	      ("Calculate the amount of disk space needed to archive the files " +
-	       "associated with the checked-in versions."));
+	    JButton btn =
+              UIFactory.createDialogButton
+                ("Calc Sizes", "calc-archive", this, 
+                 "Calculate the amount of disk space needed to archive the files " +
+                 "associated with the checked-in versions.");
 
 	    hbox.add(btn);
 	  }	  

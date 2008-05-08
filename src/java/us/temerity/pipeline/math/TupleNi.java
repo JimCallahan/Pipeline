@@ -72,7 +72,7 @@ class TupleNi
    int[] values
   ) 
   {
-    pComps = (int[]) values.clone();
+    pComps = values.clone();
   }
 
   /**
@@ -180,7 +180,7 @@ class TupleNi
   {
     if(pComps.length != values.length) 
       throw new TupleSizeMismatchException(pComps.length, values.length);
-    pComps = (int[]) values.clone();
+    pComps = values.clone();
   }
 
   /**
@@ -189,7 +189,7 @@ class TupleNi
   public int[]
   toArray() 
   {
-    return (int[]) pComps.clone();
+    return pComps.clone();
   }
 
    

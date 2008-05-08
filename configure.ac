@@ -8,8 +8,8 @@ AC_INIT
 AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
-AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(Pipeline, 2.4.1b15)
+AC_CONFIG_HEADERS([config.h])
+AM_INIT_AUTOMAKE(Pipeline, 2.4.1b16)
                            
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
@@ -22,6 +22,26 @@ dnl ----------------------------------------------------------------------------
 dnl   Configuration options.
 dnl ------------------------------------------------------------------------------------------
 
+AC_MSG_CHECKING([Build User])
+
+AC_SUBST(BUILD_USER)
+BUILD_USER=$USER
+
+AC_MSG_RESULT([$BUILD_USER])
+
+
+AC_MSG_CHECKING([Build User's Home Directory]) 
+
+AC_SUBST(BUILD_USER_HOME)
+BUILD_USER_HOME=$HOME
+
+AC_MSG_RESULT([$BUILD_USER_HOME])
+
+AC_MSG_RESULT([ ])
+
+
+dnl ------------------------------------------------------------------------------------------
+
 AC_MSG_CHECKING([Native OsType])
 
 AC_SUBST(NATIVE_OSTYPE)
@@ -32,7 +52,7 @@ case $build_os in
     NATIVE_OSTYPE=Unix;
     AC_DEFINE([OS_IS_UNIX], [], [The OsType is a standard UNIX variant.]);;
    
-  (darwin8.*.?)
+  (darwin8.*.* | darwin9.*.*) 
     NATIVE_OSTYPE=MacOS;
     AC_DEFINE([OS_IS_MAC_OS], [], [The OsType is a MacOS (Darwin) system.]);;
 
@@ -102,7 +122,7 @@ case $build_cpu in
   (x86_64) 
     NATIVE_ARCHTYPE=x86_64;;
 
-  (powerpc) 
+  (powerpc | i386) 
     NATIVE_ARCHTYPE=UnivBin;;
 
   (*)
@@ -260,7 +280,7 @@ case "$NATIVE_OSTYPE" in
     JAVA_PATH=$PATH;;
 
   (MacOS) 
-    JAVA_PATH=/System/Library/Frameworks/JavaVM.framework/Versions/1.5.0/Commands;;
+    JAVA_PATH=/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0/Commands;;
 esac
   
 AC_PATH_PROG(JAVA,    java,    java,    $JAVA_PATH)
@@ -840,6 +860,9 @@ MAC_HOMEDIR=""
 AC_SUBST(MAC_TEMPDIR)
 MAC_TEMPDIR=""
 
+AC_SUBST(MAC_SDK)
+MAC_SDK=""
+
 mac_support=`crypto_lookup MacSupport`
 mac_root_inst_dir=`crypto_lookup MacRootInstallDirectory`
 mac_prod_dir=`crypto_lookup MacProductionDirectory`
@@ -869,6 +892,10 @@ then
   AC_MSG_CHECKING([MacOS Temporary Directory])
   MAC_TEMPDIR=$mac_temp_dir
   AC_MSG_RESULT([$MAC_TEMPDIR])
+
+  AC_MSG_CHECKING([MacOS SDK])
+  MAC_SDK=/Developer/SDKs/MacOSX10.5.sdk
+  AC_MSG_RESULT([$MAC_SDK])
 
   has_mac=true
 fi 
@@ -1141,7 +1168,7 @@ AC_SUBST(CLIENT_JAVA_RUNTIME)
 CLIENT_JAVA_RUNTIME="";
 
 AC_SUBST(MAC_JAVA_RUNTIME)
-MAC_JAVA_RUNTIME="/System/Library/Frameworks/JavaVM.framework/Versions/1.5.0/Commands/java"
+MAC_JAVA_RUNTIME="/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0/Commands/java"
 
 AC_SUBST(WIN_JAVA_RUNTIME)
 WIN_JAVA_RUNTIME="${WIN_JAVA_HOME}/bin/java"
@@ -1176,6 +1203,16 @@ PIPELINE_LIBDIR=""
 AC_SUBST(PIPELINE_ARCHDIR) 
 PIPELINE_ARCHDIR=""
 
+AC_SUBST(PIPELINE_PYARCHDIR) 
+PIPELINE_PYARCHDIR=""
+
+
+AC_SUBST(PIPELINE_LICENSE_TXT) 
+PIPELINE_LICENSE_TXT=""
+
+AC_SUBST(PLREMOTE_URL) 
+PLREMOTE_URL=""
+
 
 case "$NATIVE_OSTYPE" in 
   (Unix)  
@@ -1185,6 +1222,9 @@ case "$NATIVE_OSTYPE" in
     PIPELINE_JAR="$ROOT_INST_DIR/lib/api.jar";
     PIPELINE_LIBDIR="$ROOT_INST_DIR/lib";
     PIPELINE_ARCHDIR="$ROOT_INST_DIR/${NATIVE_OSTYPE}-${NATIVE_ARCHTYPE}";
+    PIPELINE_PYARCHDIR="$ROOT_INST_DIR/etc/python/${NATIVE_OSTYPE}-${NATIVE_ARCHTYPE}";
+    PIPELINE_LICENSE_TXT="$ROOT_INST_DIR/share/docs/legal/license.txt";
+    PLREMOTE_URL="file:///$ROOT_INST_DIR/share/docs/man/plremote.html";
     JOGL_JAR="$ROOT_INST_DIR/jogl/lib/jogl.jar";
     GLUEGEN_JAR="$ROOT_INST_DIR/jogl/lib/gluegen-rt.jar";
     JOGL_LIBRARY_PATH="$ROOT_INST_DIR/jogl/lib/${NATIVE_OSTYPE}-${NATIVE_ARCHTYPE}-Opt";
@@ -1192,12 +1232,15 @@ case "$NATIVE_OSTYPE" in
     JYTHON_JAR="$ROOT_INST_DIR/jython/jython.jar";;
 
   (MacOS) 
-    JAVA_RUNTIME="/System/Library/Frameworks/JavaVM.framework/Versions/1.5.0/Commands/java";
+    JAVA_RUNTIME="/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0/Commands/java";
     CLIENT_JAVA_RUNTIME="$JAVA_RUNTIME";
     PIPELINE_LATEST_JAR="$MAC_ROOT_INST_PARENT_DIR/pipeline-latest/lib/api.jar";
     PIPELINE_JAR="$MAC_ROOT_INST_DIR/lib/api.jar";
     PIPELINE_LIBDIR="$MAC_ROOT_INST_DIR/lib";
     PIPELINE_ARCHDIR="$MAC_ROOT_INST_DIR/${NATIVE_OSTYPE}-${NATIVE_ARCHTYPE}";
+    PIPELINE_PYARCHDIR="$MAC_ROOT_INST_DIR/etc/python/${NATIVE_OSTYPE}-${NATIVE_ARCHTYPE}";
+    PIPELINE_LICENSE_TXT="$MAC_ROOT_INST_DIR/share/docs/legal/license.txt";
+    PLREMOTE_URL="file:///$MAC_ROOT_INST_DIR/share/docs/man/plremote.html";
     JOGL_JAR="$MAC_ROOT_INST_DIR/jogl/lib/jogl.jar";
     GLUEGEN_JAR="$MAC_ROOT_INST_DIR/jogl/lib/gluegen-rt.jar";
     JOGL_LIBRARY_PATH="$MAC_ROOT_INST_DIR/jogl/lib/${NATIVE_OSTYPE}-${NATIVE_ARCHTYPE}-Opt";
@@ -1211,6 +1254,9 @@ case "$NATIVE_OSTYPE" in
     PIPELINE_JAR="$WIN_ROOT_INST_DIR/lib/api.jar";
     PIPELINE_LIBDIR="$WIN_ROOT_INST_DIR/lib";
     PIPELINE_ARCHDIR="$WIN_ROOT_INST_DIR/${NATIVE_OSTYPE}-${NATIVE_ARCHTYPE}";
+    PIPELINE_PYARCHDIR="$WIN_ROOT_INST_DIR/etc/python/${NATIVE_OSTYPE}-${NATIVE_ARCHTYPE}";
+    PIPELINE_LICENSE_TXT="$WIN_ROOT_INST_DIR/share/docs/legal/license.txt";
+    PLREMOTE_URL="file:///$WIN_ROOT_INST_DIR/share/docs/man/plremote.html";
     JOGL_JAR="$WIN_ROOT_INST_DIR/jogl/lib/jogl.jar";
     GLUEGEN_JAR="$WIN_ROOT_INST_DIR/jogl/lib/gluegen-rt.jar";
     JOGL_LIBRARY_PATH="$WIN_ROOT_INST_DIR/jogl/lib/${NATIVE_OSTYPE}-${NATIVE_ARCHTYPE}-Opt";
@@ -1795,7 +1841,9 @@ AC_CONFIG_FILES([
   src/etc/launchd/Makefile
   src/etc/launchd/pljobmgr.plist
   src/etc/python/Makefile
-  src/etc/python/plremote.py
+  src/etc/python/plremote.py.src
+  src/etc/python/debug/Makefile
+  src/etc/python/profile/Makefile
   src/etc/winopts/Makefile
 
   src/utils/Makefile
@@ -1845,6 +1893,10 @@ AC_CONFIG_FILES([
   src/windows/launchers/plui.exe4j
   src/windows/launchers/debug/Makefile
   src/windows/launchers/debug/plui.exe4j
+
+  src/windows/etc/Makefile
+  src/windows/etc/python/Makefile
+  src/windows/etc/python/debug/Makefile
 
   src/unix/Makefile
   src/unix/icons/Makefile

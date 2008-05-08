@@ -1,4 +1,4 @@
-// $Id: TimeService.java,v 1.5 2007/06/21 03:36:16 jim Exp $
+// $Id: TimeService.java,v 1.6 2008/05/08 22:46:41 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -149,7 +149,7 @@ class TimeService
     for(wk=0; wk<8; wk++) {
       double base = Math.pow(2, (3-wk)*8);
       buf[idx+wk] = (byte) (dstamp / base);
-      dstamp = dstamp - (double) (ubyteToShort(buf[idx+wk]) * base);
+      dstamp = dstamp - (ubyteToShort(buf[idx+wk]) * base);
     }
 		
     buf[idx+7] = (byte) (Math.random()*255.0);

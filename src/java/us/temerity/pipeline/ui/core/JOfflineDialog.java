@@ -1,4 +1,4 @@
-// $Id: JOfflineDialog.java,v 1.6 2006/09/25 12:11:44 jim Exp $
+// $Id: JOfflineDialog.java,v 1.7 2008/05/08 22:46:42 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -67,18 +67,10 @@ class JOfflineDialog
 	  hbox.add(Box.createRigidArea(new Dimension(10, 0)));
 	  
 	  {
-	    JButton btn = new JButton("Search...");
-	    btn.setName("RaisedButton");
-	    
-	    Dimension size = btn.getPreferredSize();
-	    btn.setMinimumSize(new Dimension(108, 31));
-	    btn.setMaximumSize(new Dimension(size.width, 31));
-	    
-	    btn.setActionCommand("candidate-search");
-	    btn.addActionListener(this);
-	    
-	    btn.setToolTipText(UIFactory.formatToolTip
-	      ("Search for new candidate checked-in versions to offline."));
+	    JButton btn = 
+              UIFactory.createDialogButton
+                ("Search...", "candidate-search", this, 
+                 "Search for new candidate checked-in versions to offline.");
 
 	    hbox.add(btn);
 	  }
@@ -86,18 +78,10 @@ class JOfflineDialog
 	  hbox.add(Box.createRigidArea(new Dimension(20, 0)));
 			      
 	  {
-	    JButton btn = new JButton("Clear");
-	    btn.setName("RaisedButton");
-	    
-	    Dimension size = btn.getPreferredSize();
-	    btn.setMinimumSize(new Dimension(108, 31));
-	    btn.setMaximumSize(new Dimension(size.width, 31));
-	    
-	    btn.setActionCommand("clear-candidate");
-	    btn.addActionListener(this);
-	    
-	    btn.setToolTipText(UIFactory.formatToolTip
-	      ("Clear the displayed candidate checked-in versions."));
+	    JButton btn = 
+              UIFactory.createDialogButton
+                ("Clear", "clear-candidate", this, 
+                 "Clear the displayed candidate checked-in versions.");
 
 	    hbox.add(btn);	  
 	  }
@@ -160,18 +144,11 @@ class JOfflineDialog
 	  hbox.add(Box.createRigidArea(new Dimension(10, 0)));
 	  
 	  {
-	    JButton btn = new JButton("Add");
-	    btn.setName("RaisedButton");
-	    
-	    Dimension size = btn.getPreferredSize();
-	    btn.setMinimumSize(new Dimension(108, 31));
-	    btn.setMaximumSize(new Dimension(size.width, 31));
-	    
-	    btn.setActionCommand("add-offline");
-	    btn.addActionListener(this);
-	    
-	    btn.setToolTipText(UIFactory.formatToolTip
-	     ("Add the selected candidate versions to the list of versions to be offlined."));
+	    JButton btn = 
+              UIFactory.createDialogButton
+                ("Add", "add-offline", this, 
+                 "Add the selected candidate versions to the list of versions to be " + 
+                 "offlined.");
 
 	    hbox.add(btn);
 	  }
@@ -179,18 +156,10 @@ class JOfflineDialog
 	  hbox.add(Box.createRigidArea(new Dimension(10, 0)));
 	  
 	  {
-	    JButton btn = new JButton("Add All");
-	    btn.setName("RaisedButton");
-	    
-	    Dimension size = btn.getPreferredSize();
-	    btn.setMinimumSize(new Dimension(108, 31));
-	    btn.setMaximumSize(new Dimension(size.width, 31));
-	    
-	    btn.setActionCommand("add-all-offline");
-	    btn.addActionListener(this);
-	    
-	    btn.setToolTipText(UIFactory.formatToolTip
-	      ("Add all candidate versions to the list of versions to be offlined."));
+	    JButton btn = 
+              UIFactory.createDialogButton
+                ("Add All", "add-all-offline", this, 
+                 "Add all candidate versions to the list of versions to be offlined.");
 
 	    hbox.add(btn);
 	  }
@@ -198,18 +167,10 @@ class JOfflineDialog
 	  hbox.add(Box.createRigidArea(new Dimension(20, 0)));
 	  
 	  {
-	    JButton btn = new JButton("Remove");
-	    btn.setName("RaisedButton");
-	    
-	    Dimension size = btn.getPreferredSize();
-	    btn.setMinimumSize(new Dimension(108, 31));
-	    btn.setMaximumSize(new Dimension(size.width, 31));
-	    
-	    btn.setActionCommand("remove-offline");
-	    btn.addActionListener(this);
-	    
-	    btn.setToolTipText(UIFactory.formatToolTip
-	      ("Remove the selected versions from the list of versions to be offlined."));
+	    JButton btn = 
+              UIFactory.createDialogButton
+                ("Remove", "remove-offline", this, 
+                 "Remove the selected versions from the list of versions to be offlined.");
 
 	    hbox.add(btn);
 	  }
@@ -217,18 +178,10 @@ class JOfflineDialog
 	  hbox.add(Box.createRigidArea(new Dimension(10, 0)));
 	  
 	  {
-	    JButton btn = new JButton("Clear");
-	    btn.setName("RaisedButton");
-	    
-	    Dimension size = btn.getPreferredSize();
-	    btn.setMinimumSize(new Dimension(108, 31));
-	    btn.setMaximumSize(new Dimension(size.width, 31));
-	    
-	    btn.setActionCommand("remove-all-offline");
-	    btn.addActionListener(this);
-	    
-	    btn.setToolTipText(UIFactory.formatToolTip
-	      ("Clear the list of versions to be offlined."));
+	    JButton btn = 
+              UIFactory.createDialogButton
+                ("Clear", "remove-all-offline", this, 
+                 "Clear the list of versions to be offlined.");
 
 	    hbox.add(btn);	  
 	  }
@@ -236,19 +189,11 @@ class JOfflineDialog
 	  hbox.add(Box.createRigidArea(new Dimension(20, 0)));
 	  
 	  {
-	    JButton btn = new JButton("Calc Sizes");
-	    btn.setName("RaisedButton");
-	    
-	    Dimension size = btn.getPreferredSize();
-	    btn.setMinimumSize(new Dimension(108, 31));
-	    btn.setMaximumSize(new Dimension(size.width, 31));
-	    
-	    btn.setActionCommand("calc-offline");
-	    btn.addActionListener(this);
-	    
-	    btn.setToolTipText(UIFactory.formatToolTip
-	      ("Calculate the amount of disk space that would be freed by offlining " + 
-	       "the files associated with the checked-in versions."));
+	    JButton btn = 
+              UIFactory.createDialogButton
+                ("Calc Sizes", "calc-offline", this, 
+                 "Calculate the amount of disk space that would be freed by offlining " + 
+                 "the files associated with the checked-in versions.");
 
 	    hbox.add(btn);
 	  }	  

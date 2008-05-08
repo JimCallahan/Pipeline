@@ -1,4 +1,4 @@
-// $Id: ArchType.java,v 1.2 2008/01/15 14:50:16 jim Exp $
+// $Id: ArchType.java,v 1.3 2008/05/08 22:46:41 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -25,7 +25,7 @@ enum ArchType
   x86_64, 
 
   /**
-   * Any of the CPU types supported by a Universal Binary.
+   * Any of the CPU types supported by Universal Binary.
    */
   UnivBin;
 
@@ -84,6 +84,7 @@ enum ArchType
   private static String sTitles[] = {
     "x86 (32-bit)", 
     "x86 (65-bit)", 
-    "Universal Binary"
+    "Universal Binary (32-bit)",
+    "Universal Binary (64-bit)"
   };
 }

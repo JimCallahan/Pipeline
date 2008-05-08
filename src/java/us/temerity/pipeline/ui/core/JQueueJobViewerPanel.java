@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.50 2007/11/30 20:14:26 jesse Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.51 2008/05/08 22:46:42 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -362,7 +362,7 @@ class JQueueJobViewerPanel
 
     /* initialize the panel components */ 
     {
-      pCanvas.addKeyListener(this);
+      pGLJPanel.addKeyListener(this);
     }
   }
 
@@ -1331,7 +1331,7 @@ class JQueueJobViewerPanel
     /* compute world coordinates */ 
     Point2d pos = new Point2d(pMousePos);
     {
-      Dimension size = pCanvas.getSize();
+      Dimension size = pGLJPanel.getSize();
       Vector2d half = new Vector2d(size.getWidth()*0.5, size.getHeight()*0.5);
       
       double f = -pCameraPos.z() * pPerspFactor;
@@ -1691,7 +1691,7 @@ class JQueueJobViewerPanel
 	    Point2d rs = new Point2d(pRbStart);
 	    Point2d re = new Point2d(pRbEnd);
 	    
-	    Dimension size = pCanvas.getSize();
+	    Dimension size = pGLJPanel.getSize();
 	    Vector2d half = new Vector2d(size.getWidth()*0.5, size.getHeight()*0.5);
 	    
 	    double f = -pCameraPos.z() * pPerspFactor;
@@ -1737,7 +1737,7 @@ class JQueueJobViewerPanel
    
     /* refresh the view */ 
     if(!isPanelOpInProgress()) 
-      pCanvas.setCursor(Cursor.getDefaultCursor());
+      pGLJPanel.setCursor(Cursor.getDefaultCursor());
     refresh();
   }
 

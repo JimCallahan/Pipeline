@@ -1,4 +1,4 @@
-// $Id: JQueueJobServerStatsPanel.java,v 1.4 2007/05/09 15:27:44 jim Exp $
+// $Id: JQueueJobServerStatsPanel.java,v 1.5 2008/05/08 22:46:42 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -114,7 +114,7 @@ class JQueueJobServerStatsPanel
 
     /* initialize the panel components */ 
     {
-      pCanvas.addKeyListener(this);
+      pGLJPanel.addKeyListener(this);
     }
   }
 
@@ -543,7 +543,7 @@ class JQueueJobServerStatsPanel
 
     Point2d pos = new Point2d(pMousePos);
 
-    Dimension size = pCanvas.getSize();
+    Dimension size = pGLJPanel.getSize();
     Vector2d half = new Vector2d(size.getWidth()*0.5, size.getHeight()*0.5);
     
     double f = -pCameraPos.z() * pPerspFactor;

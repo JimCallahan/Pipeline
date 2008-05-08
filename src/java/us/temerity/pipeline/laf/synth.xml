@@ -563,7 +563,7 @@
                     method="buttonBackground"	
                     sourceInsets="23 21 4 4"/>
     </state>
-    <insets top="8" bottom="8" right="0" left="30"/> 
+    <insets top="8" bottom="8" right="18" left="30"/> 
     <property key="Button.textShiftOffset" type="integer" value="1"/>  
   </style>
   <bind style="RaisedButton" type="name" key="RaisedButton"/>
@@ -585,7 +585,7 @@
                     method="buttonBackground"	
                     sourceInsets="23 21 4 4"/>
     </state>
-    <insets top="8" bottom="8" right="0" left="30"/> 
+    <insets top="8" bottom="8" right="18" left="30"/> 
     <property key="Button.textShiftOffset" type="integer" value="1"/>  
   </style>
   <bind style="RaisedConfirmButton" type="name" key="RaisedConfirmButton"/>
@@ -607,7 +607,7 @@
                     method="buttonBackground"	
                     sourceInsets="23 21 4 4"/>
     </state>
-    <insets top="8" bottom="8" right="0" left="30"/> 
+    <insets top="8" bottom="8" right="18" left="30"/> 
     <property key="Button.textShiftOffset" type="integer" value="1"/>  
   </style>
   <bind style="RaisedCancelButton" type="name" key="RaisedCancelButton"/>

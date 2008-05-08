@@ -10,15 +10,25 @@ instbin_PROGRAMS = \
 pls_SOURCES = FB.cc PackageInfo.cc Pls.cc
 
 if IS_MAC_OS
-  pls_CXXFLAGS = -isysroot /Developer/SDKs/MacOSX10.4u.sdk -arch ppc -arch i386
-  pls_LDFLAGS  = -Wl,-syslibroot,/Developer/SDKs/MacOSX10.4u.sdk -arch ppc -arch i386
+  pls_CXXFLAGS = \
+    -isysroot @MAC_SDK@ \
+    -arch ppc -arch i386 -arch x86_64
+
+  pls_LDFLAGS = \
+    -Wl,-syslibroot,@MAC_SDK@ \
+    -arch ppc -arch i386 -arch x86_64
 endif
 
 realpath_SOURCES = FB.cc PackageInfo.cc RealPath.cc 
 
 if IS_MAC_OS
-  realpath_CXXFLAGS = -isysroot /Developer/SDKs/MacOSX10.4u.sdk -arch ppc -arch i386
-  realpath_LDFLAGS  = -Wl,-syslibroot,/Developer/SDKs/MacOSX10.4u.sdk -arch ppc -arch i386
+  realpath_CXXFLAGS = \
+    -isysroot @MAC_SDK@ \
+    -arch ppc -arch i386 -arch x86_64
+
+  realpath_LDFLAGS = \
+    -Wl,-syslibroot,@MAC_SDK@ \
+    -arch ppc -arch i386 -arch x86_64
 endif
 
 
@@ -32,8 +42,13 @@ instsbin_PROGRAMS = \
 plrun_SOURCES = FB.cc PackageInfo.cc PlRun.cc 
 
 if IS_MAC_OS
-  plrun_CXXFLAGS = -isysroot /Developer/SDKs/MacOSX10.4u.sdk -arch ppc -arch i386
-  plrun_LDFLAGS  = -Wl,-syslibroot,/Developer/SDKs/MacOSX10.4u.sdk -arch ppc -arch i386
+  plrun_CXXFLAGS = \
+    -isysroot @MAC_SDK@ \
+    -arch ppc -arch i386 -arch x86_64
+
+  plrun_LDFLAGS = \
+    -Wl,-syslibroot,@MAC_SDK@ \
+    -arch ppc -arch i386 -arch x86_64
 endif
 
 

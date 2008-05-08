@@ -1,4 +1,4 @@
-// $Id: JQueueJobDetailsPanel.java,v 1.16 2007/11/30 20:14:26 jesse Exp $
+// $Id: JQueueJobDetailsPanel.java,v 1.17 2008/05/08 22:46:42 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1363,14 +1363,14 @@ class JQueueJobDetailsPanel
     }
     else if(secs < 3600.0) {
       int m    = (int) Math.floor(secs / 60.0);
-      double s = secs - ((double) (m * 60.0));
+      double s = secs - (m * 60.0);
 
       return String.format("%1$dm %2$.1fs", m, s);
     }
     else {
       int h    = (int) Math.floor(secs / 3600.0);
-      int m    = (int) Math.floor((secs - ((double) (h * 3600.0))) / 60.0);
-      double s = secs - ((double) (h*3600.0 + m*60.0));
+      int m    = (int) Math.floor((secs - (h * 3600.0)) / 60.0);
+      double s = secs - (h*3600.0 + m*60.0);
      
       return String.format("%1$dh %2$dm %3$.1fs", h, m, s); 
     }

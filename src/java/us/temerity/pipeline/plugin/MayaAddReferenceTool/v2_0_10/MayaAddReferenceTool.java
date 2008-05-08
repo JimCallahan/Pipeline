@@ -302,21 +302,20 @@ class MayaAddReferenceTool
 	mclient.link(pAuthor, pView, pPrimary, sourceName, LinkPolicy.Reference,
 	  LinkRelationship.All, null);
     }
-    {
-       BaseAction act = targetMod.getAction();
-       if (act.getName().equals("MayaBuild"));
-       {
-	  for (String sourceName : pSourceFiles.keySet())
-	  {
-	     String nameSpace =  pNameSpaceMap.get(sourceName).getText();
-	     act.initSourceParams(sourceName);
-	     act.setSourceParamValue(sourceName, "PrefixName", nameSpace);
-	  }
-	  targetMod.setAction(act);
-	  mclient.modifyProperties(pAuthor, pView, targetMod);
-       }
-    }
 
+    {
+      BaseAction act = targetMod.getAction();
+      if (act.getName().equals("MayaBuild")) {
+        for (String sourceName : pSourceFiles.keySet()) {
+          String nameSpace =  pNameSpaceMap.get(sourceName).getText();
+          act.initSourceParams(sourceName);
+          act.setSourceParamValue(sourceName, "PrefixName", nameSpace);
+        }
+        targetMod.setAction(act);
+        mclient.modifyProperties(pAuthor, pView, targetMod);
+      }
+    }
+    
     return false;
   }
 

@@ -1,4 +1,4 @@
-// $Id: NodeTree.java,v 1.8 2007/12/15 07:49:38 jesse Exp $
+// $Id: NodeTree.java,v 1.9 2008/05/08 22:46:41 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -213,7 +213,7 @@ class NodeTree
     NodeTreeEntry parent = pNodeTreeRoot;
     int wk;
     for(wk=1; wk<comps.length; wk++) {
-      NodeTreeEntry entry = (NodeTreeEntry) parent.get(comps[wk]);
+      NodeTreeEntry entry = parent.get(comps[wk]);
       
       if(entry != null) 
         buf.append("/" + entry.getName());
@@ -275,7 +275,7 @@ class NodeTree
     NodeTreeEntry parent = pNodeTreeRoot;
     int wk;
     for(wk=1; wk<(comps.length-1); wk++) {
-      NodeTreeEntry entry = (NodeTreeEntry) parent.get(comps[wk]);
+      NodeTreeEntry entry = parent.get(comps[wk]);
       if(entry == null) {
 	entry = new NodeTreeEntry(comps[wk]);
 	parent.put(entry.getName(), entry);
@@ -284,7 +284,7 @@ class NodeTree
     }
     
     String name = comps[comps.length-1];
-    NodeTreeEntry entry = (NodeTreeEntry) parent.get(name);
+    NodeTreeEntry entry = parent.get(name);
     if(entry == null) {
       entry = new NodeTreeEntry(name, true);
       parent.put(entry.getName(), entry);
@@ -319,7 +319,7 @@ class NodeTree
     NodeTreeEntry parent = pNodeTreeRoot;
     int wk;
     for(wk=1; wk<(comps.length-1); wk++) {
-      NodeTreeEntry entry = (NodeTreeEntry) parent.get(comps[wk]);
+      NodeTreeEntry entry = parent.get(comps[wk]);
       if(entry == null) {
 	entry = new NodeTreeEntry(comps[wk]);
 	parent.put(entry.getName(), entry);
@@ -328,7 +328,7 @@ class NodeTree
     }
     
     String name = comps[comps.length-1];
-    NodeTreeEntry entry = (NodeTreeEntry) parent.get(name);
+    NodeTreeEntry entry = parent.get(name);
     if(entry == null) {
       entry = new NodeTreeEntry(name, false);
       parent.put(entry.getName(), entry);
@@ -525,7 +525,7 @@ class NodeTree
 
     int wk;
     for(wk=1; wk<comps.length; wk++) {
-      NodeTreeEntry entry = (NodeTreeEntry) stack.peek().get(comps[wk]);
+      NodeTreeEntry entry = stack.peek().get(comps[wk]);
       if(entry == null)
 	throw new IllegalStateException(); 
       stack.push(entry);
@@ -578,10 +578,10 @@ class NodeTree
     NodeTreeEntry parent = pNodeTreeRoot;
     int wk;
     for(wk=1; wk<(comps.length-1); wk++) 
-      parent = (NodeTreeEntry) parent.get(comps[wk]);
+      parent = parent.get(comps[wk]);
     
     String name = comps[comps.length-1];
-    NodeTreeEntry entry = (NodeTreeEntry) parent.get(name);
+    NodeTreeEntry entry = parent.get(name);
     entry.removeSequence(fseq);
   }
 
@@ -606,7 +606,7 @@ class NodeTree
     
     int wk;
     for(wk=1; wk<comps.length; wk++) {
-      NodeTreeEntry entry = (NodeTreeEntry) stack.peek().get(comps[wk]);
+      NodeTreeEntry entry = stack.peek().get(comps[wk]);
       if(entry == null)
 	return;
       stack.push(entry);
@@ -685,7 +685,7 @@ class NodeTree
     NodeTreeEntry parent = pNodeTreeRoot;
     int wk;
     for(wk=1; wk<comps.length; wk++) {
-      NodeTreeEntry entry = (NodeTreeEntry) parent.get(comps[wk]);
+      NodeTreeEntry entry = parent.get(comps[wk]);
       if(entry == null) 
 	return views;
       parent = entry;
@@ -738,13 +738,13 @@ class NodeTree
 	  }
 	}
 	
-	NodeTreeEntry entry = (NodeTreeEntry) parentEntry.get(comps[wk]); 
+	NodeTreeEntry entry = parentEntry.get(comps[wk]); 
 	if(entry == null) {
 	  parentEntry = null;
 	  break;
 	    }
 	
-	NodeTreeComp comp = (NodeTreeComp) parentComp.get(comps[wk]);
+	NodeTreeComp comp = parentComp.get(comps[wk]);
 	if(comp == null)
 	  throw new IllegalStateException(); 
 	
@@ -810,7 +810,7 @@ class NodeTree
     NodeTreeEntry parentEntry = pNodeTreeRoot;
     int wk;
     for(wk=1; wk<(comps.length-1); wk++) {
-      NodeTreeEntry entry = (NodeTreeEntry) parentEntry.get(comps[wk]); 
+      NodeTreeEntry entry = parentEntry.get(comps[wk]); 
       if(entry == null) {
 	parentEntry = null;
 	break;

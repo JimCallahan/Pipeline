@@ -72,7 +72,7 @@ class TupleNl
    long[] values
   ) 
   {
-    pComps = (long[]) values.clone();
+    pComps = values.clone();
   }
 
   /**
@@ -180,7 +180,7 @@ class TupleNl
   {
     if(pComps.length != values.length) 
       throw new TupleSizeMismatchException(pComps.length, values.length);
-    pComps = (long[]) values.clone();
+    pComps = values.clone();
   }
 
   /**
@@ -189,7 +189,7 @@ class TupleNl
   public long[]
   toArray() 
   {
-    return (long[]) pComps.clone();
+    return pComps.clone();
   }
 
    

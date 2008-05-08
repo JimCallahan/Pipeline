@@ -1,5 +1,5 @@
 #!/bin/sh
- 
+
 customer=$1
 sitep=$2
 debug_base=$3
@@ -29,7 +29,7 @@ mkdir  debug
 
 pushd debug
   time \
-  JAVA_HOME=/usr/java/jdk1.5.0_14-x86_64 \
+  JAVA_HOME=/usr/java/jdk1.6.0_06 \
   PATH="$JAVA_HOME/bin:$PATH" \
   CC="/usr/bin/gcc-4.2" \
   CXX="/usr/bin/g++-4.2" \
@@ -71,13 +71,13 @@ pushd debug-native
 popd
 
 
-JAVA_HOME=/usr/java/jdk1.5.0_14-x86
+JAVA_HOME=/usr/java/jdk1.6.0_06
 PATH="$JAVA_HOME/bin:$PATH"
 
 mac_support=`java -classpath $plsrcdir/plconfig CryptoApp $plprofile --lookup MacSupport`
 if [ "x$mac_support" == "xtrue" ]
 then
-  MAC_HOSTNAME=tadpole
+  MAC_HOSTNAME=bullfrog
 
   echo 
   echo "-------------------------------------------------------------------------------------"

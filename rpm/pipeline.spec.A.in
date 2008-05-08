@@ -65,6 +65,10 @@ The core features of Pipeline include:
 @ROOT_INST_DIR@/etc/init.d/Unix-@NATIVE_ARCHTYPE@-Opt/pljobmgr-redhat
 @ROOT_INST_DIR@/etc/init.d/Unix-@NATIVE_ARCHTYPE@-Opt/pljobmgr-suse
 
-@ROOT_INST_DIR@/etc/python/plremote.py
+%defattr(444,root,root)
+@ROOT_INST_DIR@/etc/python/Unix-@NATIVE_ARCHTYPE@-Debug/plremote.py
+@ROOT_INST_DIR@/etc/python/Unix-@NATIVE_ARCHTYPE@-Opt/plremote.py
+@ROOT_INST_DIR@/etc/python/Unix-@NATIVE_ARCHTYPE@-Profile/plremote.py
+
 @ROOT_INST_DIR@/etc/winopts/pljobmgr
 

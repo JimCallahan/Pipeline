@@ -93,11 +93,17 @@ else
 endif
 
 
-MAC_SRC_DIR   = $(patsubst $(HOME)/%,/Users/$(USER)/%,$(top_srcdir))
-MAC_BUILD_DIR = $(patsubst $(HOME)/%,/Users/$(USER)/%,$(shell pwd))
+MAC_SRC_DIR = \
+  $(patsubst @BUILD_USER_HOME@/%,/Users/@BUILD_USER@/%,@top_srcdir@)
 
-WIN_SRC_DIR   = $(patsubst $(HOME)/code-$(CUSTOMER)/%,/home/$(USER)/code/%,$(top_srcdir))
-WIN_BUILD_DIR = $(patsubst $(HOME)/code-$(CUSTOMER)/%,/home/$(USER)/code/%,$(shell pwd))
+MAC_BUILD_DIR = \
+  $(patsubst @BUILD_USER_HOME@/%,/Users/@BUILD_USER@/%,@RPM_ROOT@)
+
+WIN_SRC_DIR = \
+  $(patsubst @BUILD_USER_HOME@/code-@CUSTOMER@/%,/home/@BUILD_USER@/code/%,@top_srcdir@)
+
+WIN_BUILD_DIR = \
+  $(patsubst @BUILD_USER_HOME@/code-@CUSTOMER@/%,/home/@BUILD_USER@/code/%,@RPM_ROOT@)
 
 
 
@@ -246,17 +252,17 @@ mac-rpm: clean-mac-rpm RPMS/i686/plmac-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686
 
 RPMS/i686/plmac-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm: \
   SPECS/plmac-@CUSTOMER@-@VERSION@.spec
-	@echo "-----------------------------------------------------------------------------"
-	@echo "  UPDATING: tadpole"
-	@echo "-----------------------------------------------------------------------------"
 	rm -rf DEST/plmac
+	@echo "-----------------------------------------------------------------------------"
+	@echo "  UPDATING: bullfrog"
+	@echo "-----------------------------------------------------------------------------"
 	rsync -av --exclude-from=$(top_srcdir)/config/excluded --delete \
-          $(top_srcdir)/ tadpole:$(MAC_SRC_DIR)
+          $(top_srcdir)/ bullfrog:$(MAC_SRC_DIR)
 	@echo "-----------------------------------------------------------------------------"
-	@echo "  BUILDING: tadpole"
+	@echo "  BUILDING: bullfrog"
 	@echo "-----------------------------------------------------------------------------"
-	ssh tadpole "source .bash_profile; $(MAKE) -C $(MAC_BUILD_DIR) all"
-	rsync -av tadpole:$(MAC_BUILD_DIR)/DEST/plmac DEST
+	ssh bullfrog "source .bash_profile; $(MAKE) -C $(MAC_BUILD_DIR) all"
+	rsync -av bullfrog:$(MAC_BUILD_DIR)/DEST/plmac DEST
 	rpmbuild --rcfile rpmrc -bb SPECS/plmac-@CUSTOMER@-@VERSION@.spec
 
 SPECS/plmac-@CUSTOMER@-@VERSION@.spec: plmac.spec

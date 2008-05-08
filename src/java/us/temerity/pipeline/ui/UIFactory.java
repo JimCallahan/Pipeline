@@ -1,4 +1,4 @@
-// $Id: UIFactory.java,v 1.25 2008/02/25 22:22:36 jim Exp $
+// $Id: UIFactory.java,v 1.26 2008/05/08 22:46:42 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -201,6 +201,146 @@ class UIFactory
     hbox.add(Box.createHorizontalGlue());
     
     return hbox;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Create a new dialog confirm button. <P> 
+   * 
+   * @param text
+   *   The button text.
+   * 
+   * @param actionCommand
+   *    The command to pass to the ActionListener or <CODE>null</CODE> to ignore.
+   * 
+   * @param actionListener
+   *    The listener which will handle the the event of the button being pressed or 
+   *    <CODE>null</CODE> to ignore.
+   * 
+   * @param tooltip
+   *   The tooltip text or <CODE>null</CODE> to ignore.
+   */ 
+  public static JButton
+  createConfirmButton
+  (
+   String text, 
+   String actionCommand, 
+   ActionListener actionListener, 
+   String tooltip
+  )
+  {
+    return createButtonHelper(text, "RaisedConfirmButton", 
+                              actionCommand, actionListener, tooltip);
+  }
+
+  /**
+   * Create a new dialog button. <P> 
+   * 
+   * @param text
+   *   The button text.
+   * 
+   * @param actionCommand
+   *    The command to pass to the ActionListener or <CODE>null</CODE> to ignore.
+   * 
+   * @param actionListener
+   *    The listener which will handle the the event of the button being pressed or 
+   *    <CODE>null</CODE> to ignore.
+   * 
+   * @param tooltip
+   *   The tooltip text or <CODE>null</CODE> to ignore.
+   */ 
+  public static JButton
+  createDialogButton
+  (
+   String text, 
+   String actionCommand, 
+   ActionListener actionListener, 
+   String tooltip
+  )
+  {
+    return createButtonHelper(text, "RaisedButton", 
+                              actionCommand, actionListener, tooltip);
+  }
+
+  /**
+   * Create a new dialog cancel button. <P> 
+   * 
+   * @param text
+   *   The button text.
+   * 
+   * @param actionCommand
+   *    The command to pass to the ActionListener or <CODE>null</CODE> to ignore.
+   * 
+   * @param actionListener
+   *    The listener which will handle the the event of the button being pressed or 
+   *    <CODE>null</CODE> to ignore.
+   * 
+   * @param tooltip
+   *   The tooltip text or <CODE>null</CODE> to ignore.
+   */ 
+  public static JButton
+  createCancelButton
+  (
+   String text, 
+   String actionCommand, 
+   ActionListener actionListener, 
+   String tooltip
+  )
+  {
+    return createButtonHelper(text, "RaisedCancelButton", 
+                              actionCommand, actionListener, tooltip);
+  }
+
+  /**
+   * Create a new raised button suitable for use in dialogs. <P> 
+   * 
+   * @param text
+   *   The button text.
+   * 
+   * @param style
+   *    Name of the synth style to apply to the button.
+   * 
+   * @param actionCommand
+   *    The command to pass to the ActionListener or <CODE>null</CODE> to ignore.
+   * 
+   * @param actionListener
+   *    The listener which will handle the the event of the button being pressed or 
+   *    <CODE>null</CODE> to ignore.
+   * 
+   * @param tooltip
+   *   The tooltip text or <CODE>null</CODE> to ignore.
+   */ 
+  private static JButton
+  createButtonHelper
+  (
+   String text, 
+   String style, 
+   String actionCommand, 
+   ActionListener actionListener, 
+   String tooltip
+  )
+  {
+    JButton btn = new JButton(text);
+    btn.setName(style); 
+    btn.setHorizontalTextPosition(SwingConstants.LEFT);
+
+    Dimension size = btn.getPreferredSize();
+    size.setSize(size.width, 31);
+    btn.setPreferredSize(size);
+    btn.setMinimumSize(size); 
+    btn.setMaximumSize(size); 
+	
+    if((actionCommand != null) && (actionListener != null)) {
+      btn.setActionCommand(actionCommand);
+      btn.addActionListener(actionListener);
+    }
+  
+    if(tooltip != null) 
+      btn.setToolTipText(UIFactory.formatToolTip(tooltip)); 
+
+    return btn;
   }
 
   
@@ -3894,7 +4034,9 @@ class UIFactory
       return buf.toString();
     }
   }
+
   
+
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N I T I A L I Z A T I O N                                            */
   /*----------------------------------------------------------------------------------------*/
@@ -3914,29 +4056,23 @@ class UIFactory
   {
     /* load the look-and-feel */
     {
-      try
-      {
+      try {
 	SynthLookAndFeel synth = new SynthLookAndFeel();
 	synth.load(LookAndFeelLoader.class.getResourceAsStream("synth.xml"),
 	  LookAndFeelLoader.class);
 	UIManager.setLookAndFeel(synth);
-      } catch ( java.text.ParseException ex )
-      {
+      } 
+      catch(java.text.ParseException ex) {
 	LogMgr.getInstance().log(LogMgr.Kind.Ops, LogMgr.Level.Severe,
 	  "Unable to parse the look-and-feel XML file (synth.xml):\n" + "  "
 	  + ex.getMessage());
 	System.exit(1);
-      } catch ( UnsupportedLookAndFeelException ex )
-      {
+      } 
+      catch(UnsupportedLookAndFeelException ex) {
 	LogMgr.getInstance().log(LogMgr.Kind.Ops, LogMgr.Level.Severe,
 	  "Unable to load the Pipeline look-and-feel:\n" + "  " + ex.getMessage());
 	System.exit(1);
       }
-    }
-    /* application wide UI settings */
-    {
-      JPopupMenu.setDefaultLightWeightPopupEnabled(false);
-      ToolTipManager.sharedInstance().setLightWeightPopupEnabled(false);
     }
   }
 

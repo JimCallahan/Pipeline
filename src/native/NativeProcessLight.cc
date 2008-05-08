@@ -1,4 +1,4 @@
-// $Id: NativeProcessLight.cc,v 1.6 2007/03/18 02:17:16 jim Exp $
+// $Id: NativeProcessLight.cc,v 1.7 2008/05/08 22:46:42 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -50,6 +50,10 @@
 
 #ifdef HAVE_UNISTD_H
 #  include <unistd.h>
+#endif
+
+#ifdef HAVE_SIGNAL_H
+#  include <signal.h>
 #endif
 
 #ifdef HAVE_SYS_STAT_H

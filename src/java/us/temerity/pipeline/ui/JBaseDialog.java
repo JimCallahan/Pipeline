@@ -1,4 +1,4 @@
-// $Id: JBaseDialog.java,v 1.15 2007/04/01 22:05:19 jim Exp $
+// $Id: JBaseDialog.java,v 1.16 2008/05/08 22:46:42 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -116,7 +116,7 @@ class JBaseDialog
 	JLabel label = new JLabel(header);
 	pHeaderLabel = label;
 
-	label.setName("DialogHeaderLabel");	
+	label.setName("DialogHeaderLabel");
 
 	panel.add(label);	  
       }
@@ -147,16 +147,8 @@ class JBaseDialog
       panel.add(Box.createRigidArea(new Dimension(20, 0)));
 
       if(confirm != null) {
-	JButton btn = new JButton(confirm);
+	JButton btn = UIFactory.createConfirmButton(confirm, "confirm", this, null); 
 	pConfirmButton = btn;
-	btn.setName("RaisedConfirmButton");
-	
-	Dimension size = btn.getPreferredSize();
-	btn.setMinimumSize(new Dimension(108, 31));
-	btn.setMaximumSize(new Dimension(size.width, 31));
-	
-	btn.setActionCommand("confirm");
-	btn.addActionListener(this);
 	
 	panel.add(btn);	  
       }
@@ -165,17 +157,9 @@ class JBaseDialog
 	panel.add(Box.createRigidArea(new Dimension(20, 0)));
      
       if(apply != null) {
-	JButton btn = new JButton(apply);
+        JButton btn = UIFactory.createDialogButton(apply, "apply", this, null); 
 	pApplyButton = btn;
-	btn.setName("RaisedButton");
-	
-	Dimension size = btn.getPreferredSize();
-	btn.setMinimumSize(new Dimension(108, 31));
-	btn.setMaximumSize(new Dimension(size.width, 31));
-	
-	btn.setActionCommand("apply");
-	btn.addActionListener(this);
-	
+
 	panel.add(btn);	  
       }
 
@@ -188,17 +172,11 @@ class JBaseDialog
 	int wk;
 	for(wk=0; wk<extra.length; wk++) {
 	  if(extra[wk] != null) {
-	    JButton btn = new JButton(extra[wk][0]);
+            JButton btn = 
+              UIFactory.createDialogButton(extra[wk][0], extra[wk][1], this, null); 
+
 	    extraBtns[wk] = btn;
             pExtraButtons.put(extra[wk][0], btn);
-	    btn.setName("RaisedButton");
-	    
-	    Dimension size = btn.getPreferredSize();
-	    btn.setMinimumSize(new Dimension(108, 31));
-	    btn.setMaximumSize(new Dimension(size.width, 31));
-	    
-	    btn.setActionCommand(extra[wk][1]);
-	    btn.addActionListener(this);
 
 	    panel.add(btn);	  
 	  }
@@ -212,16 +190,8 @@ class JBaseDialog
 	panel.add(Box.createRigidArea(new Dimension(40, 0)));
      
       if(cancel != null) {
-	JButton btn = new JButton(cancel);
+	JButton btn = UIFactory.createCancelButton(cancel, "cancel", this, null); 
 	pCancelButton = btn;
-	btn.setName("RaisedCancelButton");
-
-	Dimension size = btn.getPreferredSize();
-	btn.setMinimumSize(new Dimension(108, 31));
-	btn.setMaximumSize(new Dimension(size.width, 31));
-
-	btn.setActionCommand("cancel");
-	btn.addActionListener(this);
 
 	panel.add(btn);	  
       }

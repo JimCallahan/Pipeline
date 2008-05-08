@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.82 2008/05/04 00:40:22 jim Exp $
+// $Id: UIMaster.java,v 1.83 2008/05/08 22:46:42 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -3818,12 +3818,12 @@ class UIMaster
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Create a new OpenGL rendering canvas shared among all GLCanvas instances.
+   * Create a new OpenGL lightweight rendering area.
    */ 
-  public synchronized GLCanvas
-  createGLCanvas() 
+  public synchronized GLJPanel
+  createGLJPanel() 
   {
-    return new GLCanvas(pGLCapabilities, null, pGLCanvas.getContext(), null);
+    return new GLJPanel(pGLCapabilities, null, pGLJPanel.getContext());
   }
 
 
@@ -4280,12 +4280,6 @@ class UIMaster
 	}
       }
       
-      /* application wide UI settings */ 
-      {
-	JPopupMenu.setDefaultLightWeightPopupEnabled(false);
-	ToolTipManager.sharedInstance().setLightWeightPopupEnabled(false);
-      }
-      
       /* show the splash screen and do application startup tasks */ 
       {
 	JFrame frame = new JFrame("plui");
@@ -4323,10 +4317,10 @@ class UIMaster
 	  {
 	    pGLCapabilities = new GLCapabilities();  
 	    pGLCapabilities.setDoubleBuffered(true);
-     	    pGLCanvas = new GLCanvas(pGLCapabilities);
+     	    pGLJPanel = new GLJPanel(pGLCapabilities);
             
 	    JTextureLoaderBar loader = 
- 	      new JTextureLoaderBar(pGLCanvas, new MainFrameTask(pMaster));
+ 	      new JTextureLoaderBar(pGLJPanel, new MainFrameTask(pMaster));
 
  	    panel.add(loader);
 	  }
@@ -6232,15 +6226,15 @@ class UIMaster
   
 
   /** 
-   * The OpenGL capabilities used by all GLCanvas instances.
+   * The OpenGL capabilities used by all GLJPanel instances.
    */ 
   private GLCapabilities  pGLCapabilities;
 
   /**
-   * The template GLCanvas which creates the shared OpenCL context in which textures and 
+   * The template GLJPanel which creates the shared OpenCL context in which textures and 
    * display lists are initialized.
    */ 
-  private GLCanvas  pGLCanvas;
+  private GLJPanel  pGLJPanel;
   
 
   /**
@@ -6249,7 +6243,7 @@ class UIMaster
    * 
    * These display list handles are collected when objects which create OpenGL display 
    * lists are garbage collected.  The display lists where all created in the same OpenGL
-   * context as pGLCanvas. <P> 
+   * context as pGLJPanel. <P> 
    */ 
   private TreeSet<Integer>  pDisplayLists; 
 

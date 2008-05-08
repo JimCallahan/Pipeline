@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;F:\Program Files\Java\jdk1.5.0_14\include&quot;;&quot;F:\Program Files\Java\jdk1.5.0_14\include\win32&quot;;&quot;..\..\..\..\..\..\..\build\pipeline\debug\src\windows\services\PipelineJobManager\PipelineJobManager&quot;"
+				AdditionalIncludeDirectories="&quot;F:\Program Files\Java\jdk1.6.0_06\include&quot;;&quot;F:\Program Files\Java\jdk1.6.0_06\include\win32&quot;;&quot;..\..\..\..\..\..\..\build\pipeline\debug\src\windows\services\PipelineJobManager\PipelineJobManager&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="2"
@@ -61,7 +61,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="jvm.lib $(NoInherit)"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="F:\Program Files\Java\jdk1.5.0_14\lib"
+				AdditionalLibraryDirectories="F:\Program Files\Java\jdk1.6.0_06\lib"
 				GenerateDebugInformation="true"
 				AssemblyDebug="1"
 				TargetMachine="1"
@@ -117,7 +117,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="F:\Program Files\Java\jdk1.5.0_14\include;F:\Program Files\Java\jdk1.5.0_14\include\win32"
+				AdditionalIncludeDirectories="F:\Program Files\Java\jdk1.6.0_06\include;F:\Program Files\Java\jdk1.6.0_06\include\win32"
 				PreprocessorDefinitions="WIN32;NDEBUG"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="2"
@@ -137,7 +137,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="jvm.lib $(NoInherit)"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="F:\Program Files\Java\jdk1.5.0_14\lib"
+				AdditionalLibraryDirectories="F:\Program Files\Java\jdk1.6.0_06\lib"
 				GenerateDebugInformation="true"
 				TargetMachine="1"
 			/>

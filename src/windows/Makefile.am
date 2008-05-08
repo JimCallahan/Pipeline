@@ -1,2 +1,2 @@
 
-SUBDIRS = native services scripts launchers
+SUBDIRS = native services scripts launchers etc

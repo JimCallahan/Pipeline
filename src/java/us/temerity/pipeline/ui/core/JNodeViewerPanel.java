@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.112 2008/05/04 00:40:22 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.113 2008/05/08 22:46:42 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -603,7 +603,7 @@ class JNodeViewerPanel
 
     /* initialize components */ 
     {
-      pCanvas.addKeyListener(this);
+      pGLJPanel.addKeyListener(this);
     }
   }
 
@@ -2495,7 +2495,7 @@ class JNodeViewerPanel
     /* compute world coordinates */ 
     Point2d pos = new Point2d(pMousePos);
     {
-      Dimension size = pCanvas.getSize();
+      Dimension size = pGLJPanel.getSize();
       Vector2d half = new Vector2d(size.getWidth()*0.5, size.getHeight()*0.5);
       
       double f = -pCameraPos.z() * pPerspFactor;
@@ -2906,7 +2906,7 @@ class JNodeViewerPanel
 	    Point2d rs = new Point2d(pRbStart);
 	    Point2d re = new Point2d(pRbEnd);
 	    
-	    Dimension size = pCanvas.getSize();
+	    Dimension size = pGLJPanel.getSize();
 	    Vector2d half = new Vector2d(size.getWidth()*0.5, size.getHeight()*0.5);
 	    
 	    double f = -pCameraPos.z() * pPerspFactor;
@@ -2952,7 +2952,7 @@ class JNodeViewerPanel
    
     /* refresh the view */ 
     if(!isPanelOpInProgress()) 
-      pCanvas.setCursor(Cursor.getDefaultCursor());
+      pGLJPanel.setCursor(Cursor.getDefaultCursor());
     refresh();
   }
 

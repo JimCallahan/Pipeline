@@ -1,1 +1,1 @@
-python.exe "@ROOT_INST_DIR@\etc\python\python.py" "%*"
+python.exe "@PIPELINE_PYARCHDIR@-Debug\plremote.py" "%*"

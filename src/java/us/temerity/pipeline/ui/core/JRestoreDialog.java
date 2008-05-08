@@ -1,4 +1,4 @@
-// $Id: JRestoreDialog.java,v 1.10 2006/11/22 09:08:01 jim Exp $
+// $Id: JRestoreDialog.java,v 1.11 2008/05/08 22:46:42 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -73,18 +73,10 @@ class JRestoreDialog
 	  hbox.add(Box.createRigidArea(new Dimension(10, 0)));
 	  
 	  {
-	    JButton btn = new JButton("Update");
-	    btn.setName("RaisedButton");
-	    
-	    Dimension size = btn.getPreferredSize();
-	    btn.setMinimumSize(new Dimension(108, 31));
-	    btn.setMaximumSize(new Dimension(size.width, 31));
-	    
-	    btn.setActionCommand("update-requests");
-	    btn.addActionListener(this);
-
-	    btn.setToolTipText(UIFactory.formatToolTip
-	      ("Update the displayed checked-in version restore requests."));
+	    JButton btn = 
+              UIFactory.createDialogButton
+                ("Update", "update-requests", this, 
+                 "Update the displayed checked-in version restore requests.");
 
 	    hbox.add(btn);
 	  }
@@ -92,20 +84,12 @@ class JRestoreDialog
 	  hbox.add(Box.createRigidArea(new Dimension(20, 0)));
 			      
 	  {
-	    JButton btn = new JButton("Deny Request");
+	    JButton btn = 
+              UIFactory.createDialogButton
+                ("Deny Request", "deny-requests", this, 
+                 "Deny the request to restore the selected checkd-in versions.");
 	    pDenyButton = btn;
-	    btn.setName("RaisedButton");
 	    btn.setEnabled(false);
-	    
-	    Dimension size = btn.getPreferredSize();
-	    btn.setMinimumSize(new Dimension(108, 31));
-	    btn.setMaximumSize(new Dimension(size.width, 31));
-	    
-	    btn.setActionCommand("deny-requests");
-	    btn.addActionListener(this);
-	    
-	    btn.setToolTipText(UIFactory.formatToolTip
-	      ("Deny the request to restore the selected checkd-in versions."));
 
 	    hbox.add(btn);	  
 	  }
@@ -171,19 +155,11 @@ class JRestoreDialog
 	    box.add(Box.createRigidArea(new Dimension(10, 0)));
 
 	    {
-	      JButton btn = new JButton("Add");
-	      btn.setName("RaisedButton");
-
-	      Dimension size = btn.getPreferredSize();
-	      btn.setMinimumSize(new Dimension(108, 31));
-	      btn.setMaximumSize(new Dimension(size.width, 31));
-
-	      btn.setActionCommand("add-restore");
-	      btn.addActionListener(this);
-
-	      btn.setToolTipText(UIFactory.formatToolTip
-		("Add the selected candidate versions to the list of " + 
-		 "versions to be restored."));
+	      JButton btn = 
+                UIFactory.createDialogButton
+                  ("Add", "add-restore", this, 
+                   "Add the selected candidate versions to the list of " + 
+                   "versions to be restored.");
 
 	      box.add(btn);
 	    }
@@ -191,18 +167,10 @@ class JRestoreDialog
 	    box.add(Box.createRigidArea(new Dimension(10, 0)));
 
 	    {
-	      JButton btn = new JButton("Add All");
-	      btn.setName("RaisedButton");
-
-	      Dimension size = btn.getPreferredSize();
-	      btn.setMinimumSize(new Dimension(108, 31));
-	      btn.setMaximumSize(new Dimension(size.width, 31));
-
-	      btn.setActionCommand("add-all-restore");
-	      btn.addActionListener(this);
-
-	      btn.setToolTipText(UIFactory.formatToolTip
-		("Add all candidate versions to the list of versions to be restored."));
+	      JButton btn = 
+                UIFactory.createDialogButton
+                  ("Add All", "add-all-restore", this, 
+                   "Add all candidate versions to the list of versions to be restored.");
 
 	      box.add(btn);
 	    }
@@ -210,18 +178,10 @@ class JRestoreDialog
 	    box.add(Box.createRigidArea(new Dimension(20, 0)));
 
 	    {
-	      JButton btn = new JButton("Remove");
-	      btn.setName("RaisedButton");
-
-	      Dimension size = btn.getPreferredSize();
-	      btn.setMinimumSize(new Dimension(108, 31));
-	      btn.setMaximumSize(new Dimension(size.width, 31));
-
-	      btn.setActionCommand("remove-restore");
-	      btn.addActionListener(this);
-
-	      btn.setToolTipText(UIFactory.formatToolTip
-		("Remove the selected versions from the list of versions to be restored."));
+	      JButton btn = 
+                UIFactory.createDialogButton
+                  ("Remove", "remove-restore", this, 
+                   "Remove the selected versions from the list of versions to be restored.");
 
 	      box.add(btn);
 	    }
@@ -229,18 +189,10 @@ class JRestoreDialog
 	    box.add(Box.createRigidArea(new Dimension(10, 0)));
 
 	    {
-	      JButton btn = new JButton("Clear");
-	      btn.setName("RaisedButton");
-
-	      Dimension size = btn.getPreferredSize();
-	      btn.setMinimumSize(new Dimension(108, 31));
-	      btn.setMaximumSize(new Dimension(size.width, 31));
-
-	      btn.setActionCommand("remove-all-restore");
-	      btn.addActionListener(this);
-
-	      btn.setToolTipText(UIFactory.formatToolTip
-		("Clear the list of versions to be restored."));
+	      JButton btn = 
+                UIFactory.createDialogButton
+                  ("Clear", "remove-all-restore", this, 
+                   "Clear the list of versions to be restored.");
 
 	      box.add(btn);	  
 	    }
@@ -307,19 +259,11 @@ class JRestoreDialog
 	    box.add(Box.createRigidArea(new Dimension(10, 0)));
 
 	    {
-	      JButton btn = new JButton("Use Volume");
-	      btn.setName("RaisedButton");
-
-	      Dimension size = btn.getPreferredSize();
-	      btn.setMinimumSize(new Dimension(108, 31));
-	      btn.setMaximumSize(new Dimension(size.width, 31));
-
-	      btn.setActionCommand("use-volume"); 
-	      btn.addActionListener(this);
-
-	      btn.setToolTipText(UIFactory.formatToolTip
-		("Add the selected archive volumes to set which will be used to " + 
-		 "restore checked-in versions."));
+	      JButton btn = 
+                UIFactory.createDialogButton
+                  ("Use Volume", "use-volume", this, 
+                   "Add the selected archive volumes to set which will be used to " + 
+                   "restore checked-in versions.");
 
 	      box.add(btn);
 	    }
@@ -327,19 +271,11 @@ class JRestoreDialog
 	    box.add(Box.createRigidArea(new Dimension(10, 0)));
 
 	    {
-	      JButton btn = new JButton("Ignore Volume");
-	      btn.setName("RaisedButton");
-
-	      Dimension size = btn.getPreferredSize();
-	      btn.setMinimumSize(new Dimension(108, 31));
-	      btn.setMaximumSize(new Dimension(size.width, 31));
-
-	      btn.setActionCommand("ignore-volume");
-	      btn.addActionListener(this);
-
-	      btn.setToolTipText(UIFactory.formatToolTip
-		("Remove the selected archive volumes to set which will be used to " + 
-		 "restore checked-in versions."));
+	      JButton btn = 
+                UIFactory.createDialogButton
+                  ("Ignore Volume", "ignore-volume", this, 
+                   "Remove the selected archive volumes to set which will be used to " + 
+                   "restore checked-in versions.");
 
 	      box.add(btn);
 	    }

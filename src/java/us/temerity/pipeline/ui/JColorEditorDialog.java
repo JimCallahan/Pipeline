@@ -1,4 +1,4 @@
-// $Id: JColorEditorDialog.java,v 1.12 2007/01/05 23:46:10 jim Exp $
+// $Id: JColorEditorDialog.java,v 1.13 2008/05/08 22:46:42 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -48,7 +48,6 @@ class JColorEditorDialog
    Frame owner
   ) 
   {
-
     super(owner, "Color Editor");
     initUI();
   }
@@ -100,14 +99,18 @@ class JColorEditorDialog
       {
 	GLCapabilities glc = new GLCapabilities();  
 	glc.setDoubleBuffered(true);
-	pCanvas = new GLCanvas(glc);
-	pCanvas.setSize(520, 250);
-	
-	pCanvas.addGLEventListener(this);
-	pCanvas.addMouseListener(this);
-	pCanvas.addMouseMotionListener(this);
+	pGLJPanel = new GLJPanel(glc);
+        
+        Dimension size = new Dimension(520, 250);
+        pGLJPanel.setPreferredSize(size);
+        pGLJPanel.setMinimumSize(size); 
+        pGLJPanel.setMaximumSize(size); 
 
-	body.add(pCanvas);
+	pGLJPanel.addGLEventListener(this);
+	pGLJPanel.addMouseListener(this);
+	pGLJPanel.addMouseMotionListener(this);
+
+	body.add(pGLJPanel);
       }
 
       super.initUI("Color Editor:", body, "Confirm", null, null, "Cancel");
@@ -146,7 +149,7 @@ class JColorEditorDialog
   ) 
   {
     pHSV = color.toHSV();
-    pCanvas.repaint();
+    pGLJPanel.repaint();
   }
 
   /**
@@ -514,12 +517,12 @@ class JColorEditorDialog
       if(!computeSatVal(p)) 
 	return;
 
-      pCanvas.repaint();
+      pGLJPanel.repaint();
       pEditingSatVal = true;
     }
     else if((hr.y() > 1.0) && (hr.y() < (sOuterRadius/sInnerRadius))) {
       pHSV.x(hr.x()); 
-      pCanvas.repaint();
+      pGLJPanel.repaint();
       pEditingHue = true;
     }
   }
@@ -629,11 +632,11 @@ class JColorEditorDialog
 	}
       }
       
-      pCanvas.repaint();
+      pGLJPanel.repaint();
     }
     else if(pEditingHue) {
       pHSV.x(hr.x()); 
-      pCanvas.repaint();
+      pGLJPanel.repaint();
     }
   }
 
@@ -852,7 +855,7 @@ class JColorEditorDialog
   /**
    * The OpenGL rendering canvas.
    */ 
-  private GLCanvas  pCanvas;
+  private GLJPanel  pGLJPanel;
 
   /**
    * The OpenGL display list handle for the hue ring geometry. 

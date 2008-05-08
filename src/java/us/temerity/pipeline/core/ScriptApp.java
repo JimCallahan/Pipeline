@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.86 2008/02/14 20:26:29 jim Exp $
+// $Id: ScriptApp.java,v 1.87 2008/05/08 22:46:41 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2988,9 +2988,8 @@ class ScriptApp
 	    jreqs.setMinDisk(minDisk);
 	  
 	  {
-	    TreeMap<String,Boolean> keys = (TreeMap<String,Boolean>) licenseKeys;
-	    for(String kname : keys.keySet()) {
-	      boolean hasKey = keys.get(kname); 
+	    for(String kname : licenseKeys.keySet()) {
+	      boolean hasKey = licenseKeys.get(kname); 
 	      if(hasKey) 
 		jreqs.addLicenseKey(kname);
 	      else 
@@ -2999,9 +2998,8 @@ class ScriptApp
 	  }
 	  
 	  {
-	    TreeMap<String,Boolean> keys = (TreeMap<String,Boolean>) selectionKeys;
-	    for(String kname : keys.keySet()) {
-	      boolean hasKey = keys.get(kname); 
+	    for(String kname : selectionKeys.keySet()) {
+	      boolean hasKey = selectionKeys.get(kname); 
 	      if(hasKey) 
 		jreqs.addSelectionKey(kname);
 	      else 
@@ -3010,9 +3008,8 @@ class ScriptApp
 	  }
  
 	  {
-	    TreeMap<String,Boolean> keys = (TreeMap<String,Boolean>) hardwareKeys;
-	    for(String kname : keys.keySet()) {
-	      boolean hasKey = keys.get(kname); 
+	    for(String kname : hardwareKeys.keySet()) {
+	      boolean hasKey = hardwareKeys.get(kname); 
 	      if(hasKey) 
 		jreqs.addHardwareKey(kname);
 	      else 

@@ -1,4 +1,4 @@
-// $Id: JEmptyPanel.java,v 1.1 2005/01/03 06:56:24 jim Exp $
+// $Id: JEmptyPanel.java,v 1.2 2008/05/08 22:46:42 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -127,7 +127,7 @@ class JEmptyPanel
   ) 
   {
     /* manager panel popups */ 
-    if(pManagerPanel.handleManagerMouseEvent(e));
+    if(pManagerPanel.handleManagerMouseEvent(e))
       return;
   }
 

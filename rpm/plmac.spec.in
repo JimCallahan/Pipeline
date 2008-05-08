@@ -56,6 +56,11 @@ Pipeline configuration process.
 @ROOT_INST_DIR@/MacOS-UnivBin-Profile/bin/plbuilder
 @ROOT_INST_DIR@/MacOS-UnivBin-Profile/bin/plui
 
+%defattr(444,root,root)
+@ROOT_INST_DIR@/etc/python/MacOS-UnivBin-Debug/plremote.py
+@ROOT_INST_DIR@/etc/python/MacOS-UnivBin-Opt/plremote.py
+@ROOT_INST_DIR@/etc/python/MacOS-UnivBin-Profile/plremote.py
+
 %defattr(4550,root,@PIPELINE_GROUP@)
 @ROOT_INST_DIR@/MacOS-UnivBin-Opt/sbin/plrun
 

@@ -1,4 +1,4 @@
-// $Id: JTextureLoaderBar.java,v 1.15 2007/06/26 19:22:38 jim Exp $
+// $Id: JTextureLoaderBar.java,v 1.16 2008/05/08 22:46:42 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -36,7 +36,7 @@ class JTextureLoaderBar
   public 
   JTextureLoaderBar
   (
-   GLCanvas canvas, 
+   GLJPanel glPanel, 
    Thread finished
   ) 
   {
@@ -44,11 +44,16 @@ class JTextureLoaderBar
     setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 
     {
-      pCanvas = canvas;
-      pCanvas.setSize(499, 4);
-      pCanvas.addGLEventListener(this);
+      pGLJPanel = glPanel;
 
-      add(canvas);
+      Dimension size = new Dimension(580, 6);
+      pGLJPanel.setPreferredSize(size);
+      pGLJPanel.setMinimumSize(size); 
+      pGLJPanel.setMaximumSize(size); 
+
+      pGLJPanel.addGLEventListener(this);
+
+      add(glPanel);
     }
 
     pFinishedTask = finished;
@@ -318,7 +323,7 @@ class JTextureLoaderBar
     public void 
     run() 
     {
-      pCanvas.repaint();
+      pGLJPanel.repaint();
     }
   }
 
@@ -339,7 +344,7 @@ class JTextureLoaderBar
   /**
    * The OpenGL rendering canvas.
    */ 
-  private GLCanvas  pCanvas;
+  private GLJPanel  pGLJPanel;
 
   /**
    * The thread to start once all textures have been loaded.

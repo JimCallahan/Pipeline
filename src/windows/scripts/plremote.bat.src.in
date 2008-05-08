@@ -1,1 +1,1 @@
-python.exe "@WIN_ROOT_INST_DIR@\etc\python\plremote.py" "%*"
+python.exe "@PIPELINE_PYARCHDIR@-Opt\plremote.py" "%*"

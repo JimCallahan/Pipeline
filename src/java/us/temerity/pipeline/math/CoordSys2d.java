@@ -459,8 +459,8 @@ class CoordSys2d
    double theta
   ) 
   {								    
-    double s = (double) Math.sin(theta);
-    double c = (double) Math.cos(theta);
+    double s = Math.sin(theta);
+    double c = Math.cos(theta);
     
     pBasis[0].setComp(0, c); pBasis[0].setComp(1, -s);
     pBasis[1].setComp(0, s); pBasis[1].setComp(1, c);

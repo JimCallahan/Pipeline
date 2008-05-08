@@ -72,7 +72,7 @@ class TupleNd
    double[] values
   ) 
   {
-    pComps = (double[]) values.clone();
+    pComps = values.clone();
   }
 
   /**
@@ -180,7 +180,7 @@ class TupleNd
   {
     if(pComps.length != values.length) 
       throw new TupleSizeMismatchException(pComps.length, values.length);
-    pComps = (double[]) values.clone();
+    pComps = values.clone();
   }
 
   /**
@@ -189,7 +189,7 @@ class TupleNd
   public double[]
   toArray() 
   {
-    return (double[]) pComps.clone();
+    return pComps.clone();
   }
 
    
@@ -895,7 +895,7 @@ class TupleNd
   public double 
   length() 
   {
-    return (double) Math.sqrt(lengthSquared());
+    return Math.sqrt(lengthSquared());
   }
 
 

@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.50 2008/03/28 21:16:57 jim Exp $
+// $Id: JManagerPanel.java,v 1.51 2008/05/08 22:46:42 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1382,6 +1382,8 @@ class JManagerPanel
    ComponentEvent e
   )
   {
+    // IS THIS STILL NEEED AFTER OpenGL ACCELERATED Java2D?
+
     Component body = getContents();
     if(body != null) {
       if(body.isVisible()) {

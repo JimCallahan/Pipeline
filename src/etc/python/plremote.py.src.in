@@ -46,7 +46,7 @@ def copyright():
 
 def license():
     try:
-        f = open('@ROOT_INST_DIR@/share/docs/legal/license.txt', 'rU')
+        f = open('@PIPELINE_LICENSE_TXT@', 'rU')
         for line in f:
             print line,
     except IOError:
@@ -82,7 +82,7 @@ def launchURL(url):
     os.system('firefox ' + url + ' &')
 
 def htmlHelp():
-    showURL('file:///@ROOT_INST_DIR@/share/docs/man/plremote.html') 
+    showURL('@PLREMOTE_URL@') 
     sys.exit(0)
 
 
@@ -136,7 +136,7 @@ try:
 except:
     print 'Unable to connect to a running plui!'
     print 'Starting plui...'
-    os.system('@ROOT_INST_DIR@/Unix/bin/plui --no-layout &')
+    os.system('@PLUI_PATH@ --no-layout &')
     time.sleep(45)
     try:
         s.connect(('localhost', @PL_REMOTE_PORT@))

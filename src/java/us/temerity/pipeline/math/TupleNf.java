@@ -1,4 +1,4 @@
-// $Id: TupleNf.java,v 1.12 2007/07/31 14:33:58 jim Exp $
+// $Id: TupleNf.java,v 1.13 2008/05/08 22:46:41 jim Exp $
 
 package us.temerity.pipeline.math;
 
@@ -72,7 +72,7 @@ class TupleNf
    float[] values
   ) 
   {
-    pComps = (float[]) values.clone();
+    pComps = values.clone();
   }
 
   /**
@@ -180,7 +180,7 @@ class TupleNf
   {
     if(pComps.length != values.length) 
       throw new TupleSizeMismatchException(pComps.length, values.length);
-    pComps = (float[]) values.clone();
+    pComps = values.clone();
   }
 
   /**
@@ -189,7 +189,7 @@ class TupleNf
   public float[]
   toArray() 
   {
-    return (float[]) pComps.clone();
+    return pComps.clone();
   }
 
    

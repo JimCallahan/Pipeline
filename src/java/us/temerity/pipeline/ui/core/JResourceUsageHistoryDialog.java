@@ -1,4 +1,4 @@
-// $Id: JResourceUsageHistoryDialog.java,v 1.21 2007/06/26 05:18:57 jim Exp $
+// $Id: JResourceUsageHistoryDialog.java,v 1.22 2008/05/08 22:46:42 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -283,8 +283,8 @@ class JResourceUsageHistoryDialog
 	Dimension size = new Dimension((int) (pBorder.x()*5.0), (int) (pBorder.y()*5.0));
 
 	{
-	  GLCanvas canvas = UIMaster.getInstance().createGLCanvas(); 
-	  pCanvas = canvas;
+	  GLJPanel canvas = UIMaster.getInstance().createGLJPanel(); 
+	  pGLJPanel = canvas;
 	  
 	  canvas.addGLEventListener(this);
 	  canvas.addMouseListener(this);
@@ -576,7 +576,7 @@ class JResourceUsageHistoryDialog
 
 	pBorder.x(bx + 20.0 + sLabelTickWidth + lx);
 
-	resizeViewport(gl, pCanvas.getWidth(), pCanvas.getHeight());      
+	resizeViewport(gl, pGLJPanel.getWidth(), pGLJPanel.getHeight());      
 
 	pBorderResized = false;
       }
@@ -697,7 +697,7 @@ class JResourceUsageHistoryDialog
 	    Vector2d span = null;
 	    {
 	      double offset = (double) ((first - pMinTime) / 60000);
-	      double range  = (double) ((last - first) / 60000.0);
+	      double range  = (last - first) / 60000.0;
 	      span = new Vector2d(offset, range+deltaX);
 	      pGraphSpans.put(hname, span);
 	    }
@@ -2384,7 +2384,7 @@ class JResourceUsageHistoryDialog
    MouseEvent e
   ) 
   {
-    pCanvas.requestFocusInWindow();
+    pGLJPanel.requestFocusInWindow();
 
     {
       Point p = e.getPoint();
@@ -2465,13 +2465,13 @@ class JResourceUsageHistoryDialog
 
       /* <BUTTON2+ALT>: pan start */ 
       if((mods & (on1 | off1)) == on1) {
-	pCanvas.setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
+	pGLJPanel.setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
 	pDragStart = new Point2d(pMousePos);
       }
 
       /* <BUTTON1+BUTTON2+ALT>: zoom start */ 
       else if((mods & (on2 | off2)) == on2) {
-	pCanvas.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+	pGLJPanel.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
 	pDragStart = new Point2d(pMousePos);
       }
 
@@ -2492,7 +2492,7 @@ class JResourceUsageHistoryDialog
    MouseEvent e
   ) 
   {
-    pCanvas.setCursor(Cursor.getDefaultCursor());
+    pGLJPanel.setCursor(Cursor.getDefaultCursor());
   }
 
 
@@ -2586,7 +2586,7 @@ class JResourceUsageHistoryDialog
     }
 
     if(pan || zoom) 
-      pCanvas.repaint();     
+      pGLJPanel.repaint();     
   }
 
   /**
@@ -2659,7 +2659,7 @@ class JResourceUsageHistoryDialog
       
       default:
 	Toolkit.getDefaultToolkit().beep();
-	pCanvas.repaint();
+	pGLJPanel.repaint();
       }
     }
   }
@@ -2763,7 +2763,7 @@ class JResourceUsageHistoryDialog
     else if(cmd.equals("show-hide-slots-bar")) 
       doToggleSlotsBar();
     else {
-      pCanvas.repaint();
+      pGLJPanel.repaint();
     }
   }
 
@@ -2799,7 +2799,7 @@ class JResourceUsageHistoryDialog
     pRefreshTimeScale = true;
     pRefreshGraph     = true;
       
-    pCanvas.repaint();  
+    pGLJPanel.repaint();  
   }
 
 
@@ -2818,7 +2818,7 @@ class JResourceUsageHistoryDialog
 
       pTranslate.set(0.0, 0.0);
 
-      pCanvas.repaint();   
+      pGLJPanel.repaint();   
     }
   }
 
@@ -3150,7 +3150,7 @@ class JResourceUsageHistoryDialog
   /**
    * The OpenGL rendering canvas.
    */ 
-  private GLCanvas  pCanvas;
+  private GLJPanel  pGLJPanel;
 
  
   /*----------------------------------------------------------------------------------------*/

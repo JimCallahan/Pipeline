@@ -25,10 +25,12 @@ libNative_so_LDADD = \
 if IS_MAC_OS
 
 libNative_so_CXXFLAGS = \
-  -isysroot /Developer/SDKs/MacOSX10.4u.sdk -arch ppc -arch i386
+  -isysroot @MAC_SDK@ \
+  -arch ppc -arch i386 -arch x86_64
 
 libNative_so_LDFLAGS  = \
-  -Wl,-syslibroot,/Developer/SDKs/MacOSX10.4u.sdk -arch ppc -arch i386 \
+  -Wl,-syslibroot,@MAC_SDK@ \
+  -arch ppc -arch i386 -arch x86_64 \
   @JNI_LDFLAGS@
 
 else 

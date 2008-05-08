@@ -27,9 +27,11 @@ endif FOUNDATION
 #---------------------------------------------------------------------------------------------
 
 if IS_MAC_OS
-if IS_UnivBin
+
+if IS_UnivBin 
   SUBDIRS = MacOS-UnivBin-Opt
-endif 
+endif
+
 else !IS_MAC_OS
 
 
