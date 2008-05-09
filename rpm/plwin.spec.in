@@ -48,8 +48,8 @@ plconfig(1) during Pipeline configuration process.
 @ROOT_INST_DIR@/Windows-x86-Debug/sbin/pljobmgr.bat
 
 %defattr(444,root,root)
-@ROOT_INST_DIR@/etc/python/Windows-@NATIVE_ARCHTYPE@-Debug/plremote.py
-@ROOT_INST_DIR@/etc/python/Windows-@NATIVE_ARCHTYPE@-Opt/plremote.py
+@ROOT_INST_DIR@/etc/python/Windows-x86-Debug/plremote.py
+@ROOT_INST_DIR@/etc/python/Windows-x86-Opt/plremote.py
 
 %defattr(555,root,root)
 @ROOT_INST_DIR@/lib/Windows-x86-Opt/libNative.dll
