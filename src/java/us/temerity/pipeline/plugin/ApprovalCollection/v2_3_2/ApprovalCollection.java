@@ -1,11 +1,11 @@
-// $Id: ApprovalCollection.java,v 1.2 2008/02/04 12:12:48 jim Exp $
+// $Id: ApprovalCollection.java,v 1.3 2008/05/10 03:19:33 jesse Exp $
 
 package us.temerity.pipeline.plugin.ApprovalCollection.v2_3_2;
 
-import java.util.TreeMap;
+import java.util.*;
 
-import us.temerity.pipeline.VersionID;
-import us.temerity.pipeline.builder.BaseBuilderCollection;
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.builder.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   A P P R O V A L   C O L L E C T I O N                                                  */
@@ -26,6 +26,10 @@ public class ApprovalCollection
   {
     super("Approval", new VersionID("2.3.2"), "Temerity", 
           "The most simple approval builder.");
+    
+    LayoutGroup layout = new LayoutGroup(true);
+    layout.addEntry("Approval");
+    setLayout(layout);
   }
   
 
