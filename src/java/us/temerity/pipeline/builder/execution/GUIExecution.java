@@ -1,4 +1,4 @@
-// $Id: GUIExecution.java,v 1.5 2008/04/21 23:12:14 jesse Exp $
+// $Id: GUIExecution.java,v 1.6 2008/05/10 03:18:54 jesse Exp $
 
 package us.temerity.pipeline.builder.execution;
 
@@ -334,7 +334,7 @@ class GUIExecution
         handleException(new PipelineException("Execution halted by user!"));
       else {
         disableCancelButton();
-        new KillQueueJobsTask().run();
+        new KillQueueJobsTask().start();
         pAbort = true;
       }
     }
@@ -442,7 +442,8 @@ class GUIExecution
            * keep going.
            */
           if (!pTopPanel.hasParams()) {
-            new RunSetupPassTask().run();
+            disableAllButtons();
+            new RunSetupPassTask().start();
           }
           else if (pTopPanel.allParamsReady())
             setupPhaseEnableButtons();
