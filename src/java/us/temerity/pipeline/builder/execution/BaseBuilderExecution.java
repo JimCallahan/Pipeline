@@ -1,4 +1,4 @@
-// $Id: BaseBuilderExecution.java,v 1.3 2008/04/11 20:43:57 jesse Exp $
+// $Id: BaseBuilderExecution.java,v 1.4 2008/05/10 03:18:00 jesse Exp $
 
 package us.temerity.pipeline.builder.execution;
 
@@ -187,13 +187,6 @@ class BaseBuilderExecution
   /**
    * Creates an execution order for all the ConstructPasses.
    * <p>
-   * Loops through all the ConstructPasses that have been registered. Those that have
-   * dependencies as set by 
-   * {@link BaseBuilder#addPassDependency(ConstructPass, ConstructPass)} will be deferred 
-   * until their dependencies have run.
-   * 
-   * @throws PipelineException
-   *   If there is no way to resolve the execution order due to unresolvable dependencies.
    */
   protected final void
   buildSecondLoopExecutionOrder() 

@@ -1,4 +1,4 @@
-// $Id: VersionID.java,v 1.15 2006/11/22 09:08:00 jim Exp $
+// $Id: VersionID.java,v 1.16 2008/05/10 03:17:35 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -14,16 +14,16 @@ import java.io.*;
 /**
  * A unique identifier for a specific revision of a Pipeline node. <P> 
  * 
- * Revision numbers are composed of four dot seperated non-negative integer valued 
+ * Revision numbers are composed of three dot separated non-negative integer valued 
  * components: <BR> 
  * 
  * <DIV style="margin-left: 40px;">
- *   <I>Mega</I>.<I>Major</I>.<I>Minor</I>.<I>Micro</I> <BR>
+ *   <I>Major</I>.<I>Minor</I>.<I>Micro</I> <BR>
  * </DIV> <BR> 
  * 
- * The component numbers are arranged left-to-right from most-to-least imporant.  The intial
- * revision number of a node is always (1.0.0.0).  The importance of subsequent revisions
- * can be determined by which component have been inremented as compared to the previous 
+ * The component numbers are arranged left-to-right from most-to-least important.  The initial
+ * revision number of a node is always (1.0.0).  The importance of subsequent revisions
+ * can be determined by which component have been incremented as compared to the previous 
  * revision.
  */
 public
@@ -35,7 +35,7 @@ class VersionID
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Construct an initial revision number (1.0.0.0).
+   * Construct an initial revision number (1.0.0).
    */ 
   public 
   VersionID() 
