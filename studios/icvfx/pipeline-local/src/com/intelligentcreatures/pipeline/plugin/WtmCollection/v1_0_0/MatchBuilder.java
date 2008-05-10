@@ -1,4 +1,4 @@
-// $Id: MatchBuilder.java,v 1.11 2008/03/23 05:09:58 jim Exp $
+// $Id: MatchBuilder.java,v 1.12 2008/05/10 23:14:20 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -493,7 +493,7 @@ class MatchBuilder
 	  MatchMaskGeoStage stage = 
 	    new MatchMaskGeoStage(stageInfo, pContext, pClient, 
 				  matchMaskGeoNodeName, matchPrebakeSceneNodeName, 
-                                  "rorHead_GEO", pFrameRange); 
+                                  "ror_GEO", pFrameRange);
 	  addTaskAnnotation(stage, NodePurpose.Product); 
 	  stage.build(); 
 	}
