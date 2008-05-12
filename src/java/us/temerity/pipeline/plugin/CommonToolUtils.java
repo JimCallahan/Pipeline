@@ -1,4 +1,4 @@
-// $Id: CommonToolUtils.java,v 1.1 2008/05/12 16:42:44 jesse Exp $
+// $Id: CommonToolUtils.java,v 1.2 2008/05/12 17:51:23 jesse Exp $
 
 package us.temerity.pipeline.plugin;
 
@@ -6,6 +6,7 @@ import java.io.*;
 import java.util.*;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.NodeTreeComp.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   C O M M O N   T O O L   U T I L S                                                      */
@@ -18,7 +19,7 @@ import us.temerity.pipeline.*;
  * This class provides convenience methods for constructing node related file system paths, 
  * creating subprocesses and other common operations performed in tool Phases.
  */
-public 
+public abstract
 class CommonToolUtils
   extends BaseTool
 {
@@ -274,6 +275,211 @@ class CommonToolUtils
     return new SubProcessLight
       (getName() + "Script", program, args, env, PackageInfo.sTempPath.toFile());
   }
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   N O D E   T R E E   S E A R C H E S                                                  */
+  /*----------------------------------------------------------------------------------------*/
 
-
+  /**
+   * Returns all the paths that are located directly underneath a given path.
+   * 
+   * @param start
+   *   The path to start the search underneath
+   * @param mclient
+   *   The instance of MasterMgrClient used to look up node names.
+   * @return An {@link ArrayList} containing all the paths (both directories and nodes)
+   *         located directly under the given path.
+   */
+  protected ArrayList<String> 
+  findChildNodeNames
+  (
+    Path start,
+    MasterMgrClient mclient
+  ) 
+    throws PipelineException
+  {
+    ArrayList<String> toReturn = new ArrayList<String>();
+    TreeMap<String, Boolean> comps = new TreeMap<String, Boolean>();
+    comps.put(start.toString(), false);
+    NodeTreeComp treeComps = mclient.updatePaths(getAuthor(), getView(), comps);
+    Path p = new Path(start);
+    ArrayList<String> parts = p.getComponents();
+    for(String comp : parts) {
+      if (treeComps == null)
+        break;
+      treeComps = treeComps.get(comp);
+    }
+    if (treeComps != null) {
+      for(String s : treeComps.keySet()) {
+        toReturn.add(s);
+      }
+    }
+    return toReturn;
+  }
+  
+  /**
+   * Returns all the directories that are located directly underneath a given path.
+   * 
+   * @param start
+   *   The path to start the search underneath
+   * @param mclient
+   *   The instance of MasterMgrClient used to look up node names.
+   * @return An {@link ArrayList} containing the names of all the directories located
+   *         directly under the given path.
+   */
+  protected ArrayList<String> 
+  findChildBranchNames
+  (
+    Path start,
+    MasterMgrClient mclient
+  ) 
+  throws PipelineException
+  {
+    ArrayList<String> toReturn = new ArrayList<String>();
+    TreeMap<String, Boolean> comps = new TreeMap<String, Boolean>();
+    comps.put(start.toString(), false);
+    NodeTreeComp treeComps = mclient.updatePaths(getAuthor(), getView(), comps);
+    Path p = new Path(start);
+    ArrayList<String> parts = p.getComponents();
+    for(String comp : parts) {
+      if ( treeComps == null )
+        break;
+      treeComps = treeComps.get(comp);
+    }
+    if(treeComps != null) {
+      for(String s : treeComps.keySet()) {
+        NodeTreeComp comp = treeComps.get(s);
+        if ( comp.getState() == NodeTreeComp.State.Branch )
+          toReturn.add(s);
+      }
+    }
+    return toReturn;
+  }
+  
+  /**
+   * Returns all the fully resolved node names that are located underneath a given path.
+   * 
+   * @param start
+   *   The path to start the search underneath
+   * @param mclient
+   *   The instance of MasterMgrClient used to look up node names.
+   * @return An {@link ArrayList} containing all the node paths located under the given path.
+   */
+  protected ArrayList<String> 
+  findAllChildNodeNames
+  (
+    String start,
+    MasterMgrClient mclient
+  ) 
+  throws PipelineException
+  {
+    TreeMap<String, Boolean> comps = new TreeMap<String, Boolean>();
+    comps.put(start, true);
+    NodeTreeComp treeComps = mclient.updatePaths(getAuthor(), getView(), comps);
+    ArrayList<String> toReturn = new ArrayList<String>();
+    for(String s : treeComps.keySet()) {
+      findNodes(treeComps.get(s), toReturn, "/");
+    }
+    return toReturn;
+  }
+  
+  /**
+   * Recursive function to search for nodes under a given path.
+   * <p>
+   * Starts with the current {@link NodeTreeComp}, travels down the tree, and adds any nodes
+   * it finds to an {@link ArrayList} being passed as a parameter. It is important to note
+   * when using this method that the {@link ArrayList} is being modified inside the method.
+   * The {@link ArrayList} will contain the fully resolved node names for all the nodes.
+   * 
+   * @param treeComps
+   *        A {@link NodeTreeComp} that should contain information about the node name
+   *        specified by scene. The most common way to acquire this data structure is with the
+   *        <code>updatePaths</code> method in {@link MasterMgrClient}.
+   * @param toReturn
+   *        An {@link ArrayList} that will hold every node that is found by this method.
+   * @param path
+   *        The full path that leads up to the current {@link NodeTreeComp}. This is needed
+   *        to build the full node name being stored in the ArrayList.
+   */
+  protected void 
+  findNodes
+  (
+    NodeTreeComp treeComps, 
+    ArrayList<String> toReturn, 
+    String path
+  )
+  {
+    State state = treeComps.getState();
+    if(state.equals(State.Branch))
+      for(String s : treeComps.keySet())
+        findNodes(treeComps.get(s), toReturn, path + treeComps.getName() + "/");
+    else
+      toReturn.add(path + treeComps.getName());
+  }
+  
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   N O D E   E X I S T A N C E                                                          */
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Does a checked-out version of the node exist in the current working area?
+   * 
+   * @param nodeName
+   *   The name of the node.
+   * @param mclient
+   *   The instance of MasterMgrClient to search with.
+   */
+   protected boolean
+   hasLocalWorkingVersion
+   (
+     String nodeName,
+     MasterMgrClient mclient
+   )
+     throws PipelineException
+   {
+     TreeMap<String, Boolean> comps = new TreeMap<String, Boolean>();
+     comps.put(nodeName, true);
+     NodeTreeComp treeComps = mclient.updatePaths(getAuthor(), getView(), comps);
+     State state =  treeComps.getState(nodeName);
+     switch (state) {
+     case WorkingCurrentCheckedInNone:
+     case WorkingCurrentCheckedInSome:
+       return true;
+     default:
+       return false;
+     }
+   }
+   
+   /**
+    * Does a checked-in version of the node exist?
+    * 
+    * @param nodeName
+    *   The name of the node.
+    * @param mclient
+    *   The instance of MasterMgrClient to search with.
+    */
+    protected boolean
+    hasCheckedInVersion
+    (
+      String nodeName,
+      MasterMgrClient mclient
+    )
+      throws PipelineException
+    {
+      TreeMap<String, Boolean> comps = new TreeMap<String, Boolean>();
+      comps.put(nodeName, true);
+      NodeTreeComp treeComps = mclient.updatePaths(getAuthor(), getView(), comps);
+      State state =  treeComps.getState(nodeName);
+      switch (state) {
+      case WorkingCurrentCheckedInSome:
+      case WorkingNoneCheckedInSome:
+      case WorkingOtherCheckedInSome:
+        return true;
+      default:
+        return false;
+      }
+    }
 }
