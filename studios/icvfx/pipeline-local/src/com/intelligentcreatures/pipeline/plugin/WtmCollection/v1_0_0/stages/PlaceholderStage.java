@@ -1,4 +1,4 @@
-// $Id: PlaceholderStage.java,v 1.1 2008/03/30 01:43:10 jim Exp $
+// $Id: PlaceholderStage.java,v 1.2 2008/05/12 16:45:25 jesse Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
 
@@ -133,7 +133,7 @@ class PlaceholderStage
   finalizeStage() 
     throws PipelineException
   {
-    removeAction(pRegisteredNodeName);
+    removeAction();
     if(pRegisteredNodeMod.getSourceNames().contains(pPlaceholderNodeName)) 
       pClient.unlink(getAuthor(), getView(), pRegisteredNodeName, pPlaceholderNodeName); 
   }

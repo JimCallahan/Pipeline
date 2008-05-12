@@ -42,7 +42,7 @@ class EmptyMayaAsciiStage
   finalizeStage() 
     throws PipelineException
   {
-    removeAction(pRegisteredNodeName);
+    removeAction();
   }
   
   /**

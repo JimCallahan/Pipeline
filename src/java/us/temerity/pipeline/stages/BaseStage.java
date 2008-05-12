@@ -1,4 +1,4 @@
-// $Id: BaseStage.java,v 1.29 2008/03/04 08:15:15 jesse Exp $
+// $Id: BaseStage.java,v 1.30 2008/05/12 16:45:24 jesse Exp $
 
 package us.temerity.pipeline.stages;
 
@@ -400,20 +400,14 @@ class BaseStage
    * Takes the name of a node and removes any Action that the node might have.  This method
    * calls modifyProperties() to immediately apply its changes. 
    * 
-   * @param name
-   *   The full name of the node to have its Action removed.
-   *        
    * @throws PipelineException 
    *   If there is a problem removing the action.
    */
   public void 
-  removeAction
-  (
-    String name
-  ) 
+  removeAction() 
     throws PipelineException
   {
-    NodeID nodeID = new NodeID(getAuthor(), getView(), name);
+    NodeID nodeID = new NodeID(getAuthor(), getView(), pRegisteredNodeName);
     NodeMod nodeMod = pClient.getWorkingVersion(nodeID);
     nodeMod.setAction(null);
     pClient.modifyProperties(getAuthor(), getView(), nodeMod);
@@ -437,6 +431,21 @@ class BaseStage
     NodeMod nodeMod = pClient.getWorkingVersion(nodeID);
     nodeMod.setActionEnabled(false);
     pClient.modifyProperties(getAuthor(), getView(), nodeMod);
+  }
+
+  /**
+   * Vouches for the registered node.
+   * 
+   * @throws PipelineException
+   *   If there is a problem vouching for the node.
+   */
+  public void 
+  vouch
+  () 
+    throws PipelineException
+  {
+    NodeID nodeID = new NodeID(getAuthor(), getView(), pRegisteredNodeName);
+    pClient.vouch(nodeID);
   }
   
   /**

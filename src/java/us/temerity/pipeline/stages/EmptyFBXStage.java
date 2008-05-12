@@ -35,7 +35,7 @@ class EmptyFBXStage
   finalizeStage()
     throws PipelineException
   {
-    removeAction(pRegisteredNodeName);
+    removeAction();
   }
   
   /**

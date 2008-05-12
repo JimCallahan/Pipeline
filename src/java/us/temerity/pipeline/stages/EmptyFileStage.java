@@ -95,7 +95,7 @@ public class EmptyFileStage
   finalizeStage() 
     throws PipelineException
   {
-    removeAction(pRegisteredNodeName);
+    removeAction();
   }
   
   /**
