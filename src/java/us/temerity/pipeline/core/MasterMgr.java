@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.241 2008/05/04 00:40:17 jim Exp $
+// $Id: MasterMgr.java,v 1.242 2008/05/12 08:57:40 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -17265,7 +17265,8 @@ class MasterMgr
            last time the node's OverallQueueState was Finished? */ 
         boolean modifiedPropsSinceFinished = false; 
         boolean modifiedLinksSinceFinished = false;
-        if((work != null) && !(workIsLocked || workIsFrozen)) {
+        if((work != null) && !(workIsLocked || workIsFrozen) && 
+           (overallNodeState != OverallNodeState.Identical)) {
           modifiedPropsSinceFinished = work.hasModifiedPropertiesSinceLastFinished();
           modifiedLinksSinceFinished = work.hasModifiedLinksSinceLastFinished(table); 
         }
