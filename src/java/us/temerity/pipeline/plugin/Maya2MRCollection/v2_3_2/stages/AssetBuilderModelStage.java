@@ -76,7 +76,7 @@ class AssetBuilderModelStage
   finalizeStage() 
     throws PipelineException
   {
-    removeAction(pRegisteredNodeName);
+    removeAction();
     if(pPlaceHolderMel != null)
       if (pRegisteredNodeMod.getSourceNames().contains(pPlaceHolderMel))
 	pClient.unlink(getAuthor(), getView(), pRegisteredNodeName, pPlaceHolderMel);
