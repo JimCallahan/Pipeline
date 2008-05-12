@@ -1,4 +1,4 @@
-// $Id: SubmitTaskAnnotation.java,v 1.1 2008/05/12 16:41:49 jesse Exp $
+// $Id: SubmitTaskAnnotation.java,v 1.2 2008/05/12 22:12:22 jim Exp $
 
 package us.temerity.pipeline.plugin.SubmitTaskAnnotation.v2_4_1;
 
@@ -50,8 +50,7 @@ import java.util.*;
  *     The name of the Pipeline wwork group or specific artist assigned to complete the task 
  *     involving this node.  Only a user assigned to a node (or part of the work group 
  *     assigned to the node) is allowed to check-in this node. 
- *   </DIV>   private static final long serialVersionUID = -4878446837381185164L;
-
+ *   </DIV>   
  * </DIV> <P> 
  */
 public 
@@ -148,7 +147,7 @@ class SubmitTaskAnnotation
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
-  
+
   private static final long serialVersionUID = -3034801411821239877L;
 
   public static final String aProjectName    = "ProjectName";
