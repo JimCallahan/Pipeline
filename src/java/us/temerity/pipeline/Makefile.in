@@ -335,7 +335,8 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
  BUILDER_SOURCES = $(shell ls $(srcdir)/stages/*.java) \
                    $(shell ls $(srcdir)/builder/*.java) \
                    $(shell ls $(srcdir)/builder/ui/*.java) \
-                   $(shell ls $(srcdir)/builder/execution/*.java)
+                   $(shell ls $(srcdir)/builder/execution/*.java) \
+                   $(shell ls $(srcdir)/builder/v2_4_1/*.java)
 
     GLUE_SOURCES = $(shell ls $(srcdir)/glue/*.java $(srcdir)/glue/io/*.java) 
 
@@ -455,6 +456,7 @@ $(ALL_JAR): java-all textures fonts
                     us/temerity/pipeline/builder/*.class \
                     us/temerity/pipeline/builder/ui/*.class \
                     us/temerity/pipeline/builder/execution/*.class; \
+                    us/temerity/pipeline/builder/v2_4_1/*.class; \
          $(JAR) uvf us/temerity/pipeline/$(ALL_JAR) \
                     `find us/temerity/pipeline/plugin -type f -name "*.class"` )
 	(bdir=`pwd`; cd $(srcdir)/../../..; \
@@ -483,7 +485,8 @@ $(API_JAR): java-all textures fonts
                     us/temerity/pipeline/stages/*.class \
                     us/temerity/pipeline/builder/*.class \
                     us/temerity/pipeline/builder/ui/*.class \
-                    us/temerity/pipeline/builder/execution/*.class )
+                    us/temerity/pipeline/builder/execution/*.class \
+                    us/temerity/pipeline/builder/v2_4_1/*.class )
 	(bdir=`pwd`; cd $(srcdir)/../../..; \
          $(JAR) uvf $$bdir/$(API_JAR) \
                     us/temerity/pipeline/laf/*.xml us/temerity/pipeline/laf/*.png)
