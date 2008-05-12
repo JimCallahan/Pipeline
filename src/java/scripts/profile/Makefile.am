@@ -8,6 +8,7 @@ instbin_SCRIPTS = \
   plscript-batch \
   plpython \
   plui \
+  plui-j2dgl \
   plbuilder
 
 

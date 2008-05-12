@@ -1,4 +1,4 @@
-// $Id: JTextureLoaderBar.java,v 1.16 2008/05/08 22:46:42 jim Exp $
+// $Id: JTextureLoaderBar.java,v 1.17 2008/05/12 04:07:49 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -36,25 +36,63 @@ class JTextureLoaderBar
   public 
   JTextureLoaderBar
   (
-   GLJPanel glPanel, 
+   GLCanvas canvas, 
    Thread finished
   ) 
   {
+    {
+      pGLDrawable = canvas;
+      pGLDrawable.addGLEventListener(this);
+      
+      pGLComponent = canvas;
+      Dimension size = new Dimension(580, 6);
+      pGLComponent.setPreferredSize(size);
+      pGLComponent.setMinimumSize(size); 
+      pGLComponent.setMaximumSize(size); 
+      
+      add(canvas);
+    }
+
+    initUI(finished);
+  }
+
+  /**
+   * Construct a new panel.
+   */
+  public 
+  JTextureLoaderBar
+  (
+   GLJPanel gpanel, 
+   Thread finished
+  ) 
+  {
+    {
+      pGLDrawable = gpanel;
+      pGLDrawable.addGLEventListener(this);
+      
+      pGLComponent = gpanel;
+      Dimension size = new Dimension(580, 6);
+      pGLComponent.setPreferredSize(size);
+      pGLComponent.setMinimumSize(size); 
+      pGLComponent.setMaximumSize(size); 
+      
+      add(gpanel);
+    }
+    
+    initUI(finished);
+  }
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  private void
+  initUI
+  (
+   Thread finished
+  )
+  {
     setName("TextureLoaderBar");
     setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-
-    {
-      pGLJPanel = glPanel;
-
-      Dimension size = new Dimension(580, 6);
-      pGLJPanel.setPreferredSize(size);
-      pGLJPanel.setMinimumSize(size); 
-      pGLJPanel.setMaximumSize(size); 
-
-      pGLJPanel.addGLEventListener(this);
-
-      add(glPanel);
-    }
 
     pFinishedTask = finished;
     pLaunched = new AtomicBoolean(false);
@@ -323,7 +361,7 @@ class JTextureLoaderBar
     public void 
     run() 
     {
-      pGLJPanel.repaint();
+      pGLDrawable.repaint();
     }
   }
 
@@ -342,9 +380,15 @@ class JTextureLoaderBar
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The OpenGL rendering canvas.
+   * The OpenGL rendering area.<P> 
+   * 
+   * The two fields containg the same underlying instance of either JGLPanel or GLCanvas
+   * depending on whether the Java2d OpenGL rendering pipeline is enabled.  These fields 
+   * provide a common interface to the shared methods of these two types of instances 
+   * even though they do not share any common superclasses.
    */ 
-  private GLJPanel  pGLJPanel;
+  private GLAutoDrawable pGLDrawable;
+  private Component      pGLComponent;
 
   /**
    * The thread to start once all textures have been loaded.

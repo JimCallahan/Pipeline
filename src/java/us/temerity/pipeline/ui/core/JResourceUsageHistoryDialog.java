@@ -1,4 +1,4 @@
-// $Id: JResourceUsageHistoryDialog.java,v 1.22 2008/05/08 22:46:42 jim Exp $
+// $Id: JResourceUsageHistoryDialog.java,v 1.23 2008/05/12 04:07:49 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -282,20 +282,34 @@ class JResourceUsageHistoryDialog
 
 	Dimension size = new Dimension((int) (pBorder.x()*5.0), (int) (pBorder.y()*5.0));
 
-	{
-	  GLJPanel canvas = UIMaster.getInstance().createGLJPanel(); 
-	  pGLJPanel = canvas;
-	  
-	  canvas.addGLEventListener(this);
-	  canvas.addMouseListener(this);
-	  canvas.addMouseMotionListener(this);
-	  canvas.setFocusable(true);	
-	  canvas.addKeyListener(this);
+        if(PackageInfo.sUseJava2dGLPipeline) {
+          GLJPanel gpanel = UIMaster.getInstance().createGLJPanel(); 
 
-	  canvas.setSize(size);
-	  
-	  panel.add(canvas);
-	}
+          pGLDrawable = gpanel;
+          pGLDrawable.addGLEventListener(this);
+
+          pGLComponent = gpanel;
+          pGLComponent.addMouseListener(this);
+          pGLComponent.addMouseMotionListener(this);
+          pGLComponent.setFocusable(true);
+	  pGLComponent.addKeyListener(this);	
+
+          panel.add(gpanel);
+        }
+        else {
+          GLCanvas canvas = UIMaster.getInstance().createGLCanvas(); 
+          
+          pGLDrawable = canvas;
+          pGLDrawable.addGLEventListener(this);
+          
+          pGLComponent = canvas;
+          pGLComponent.addMouseListener(this);
+          pGLComponent.addMouseMotionListener(this);
+          pGLComponent.setFocusable(true);
+	  pGLComponent.addKeyListener(this);		
+          
+          panel.add(canvas);
+        }
 
 	panel.setMinimumSize(size);
 	panel.setPreferredSize(size);
@@ -576,7 +590,7 @@ class JResourceUsageHistoryDialog
 
 	pBorder.x(bx + 20.0 + sLabelTickWidth + lx);
 
-	resizeViewport(gl, pGLJPanel.getWidth(), pGLJPanel.getHeight());      
+	resizeViewport(gl, pGLComponent.getWidth(), pGLComponent.getHeight());      
 
 	pBorderResized = false;
       }
@@ -2384,7 +2398,7 @@ class JResourceUsageHistoryDialog
    MouseEvent e
   ) 
   {
-    pGLJPanel.requestFocusInWindow();
+    pGLComponent.requestFocusInWindow();
 
     {
       Point p = e.getPoint();
@@ -2465,13 +2479,13 @@ class JResourceUsageHistoryDialog
 
       /* <BUTTON2+ALT>: pan start */ 
       if((mods & (on1 | off1)) == on1) {
-	pGLJPanel.setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
+	pGLComponent.setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
 	pDragStart = new Point2d(pMousePos);
       }
 
       /* <BUTTON1+BUTTON2+ALT>: zoom start */ 
       else if((mods & (on2 | off2)) == on2) {
-	pGLJPanel.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+	pGLComponent.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
 	pDragStart = new Point2d(pMousePos);
       }
 
@@ -2492,7 +2506,7 @@ class JResourceUsageHistoryDialog
    MouseEvent e
   ) 
   {
-    pGLJPanel.setCursor(Cursor.getDefaultCursor());
+    pGLComponent.setCursor(Cursor.getDefaultCursor());
   }
 
 
@@ -2586,7 +2600,7 @@ class JResourceUsageHistoryDialog
     }
 
     if(pan || zoom) 
-      pGLJPanel.repaint();     
+      pGLDrawable.repaint();     
   }
 
   /**
@@ -2659,7 +2673,7 @@ class JResourceUsageHistoryDialog
       
       default:
 	Toolkit.getDefaultToolkit().beep();
-	pGLJPanel.repaint();
+	pGLDrawable.repaint();
       }
     }
   }
@@ -2763,7 +2777,7 @@ class JResourceUsageHistoryDialog
     else if(cmd.equals("show-hide-slots-bar")) 
       doToggleSlotsBar();
     else {
-      pGLJPanel.repaint();
+      pGLDrawable.repaint();
     }
   }
 
@@ -2799,7 +2813,7 @@ class JResourceUsageHistoryDialog
     pRefreshTimeScale = true;
     pRefreshGraph     = true;
       
-    pGLJPanel.repaint();  
+    pGLDrawable.repaint();  
   }
 
 
@@ -2818,7 +2832,7 @@ class JResourceUsageHistoryDialog
 
       pTranslate.set(0.0, 0.0);
 
-      pGLJPanel.repaint();   
+      pGLDrawable.repaint();   
     }
   }
 
@@ -3148,9 +3162,15 @@ class JResourceUsageHistoryDialog
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The OpenGL rendering canvas.
+   * The OpenGL rendering area.<P> 
+   * 
+   * The two fields containg the same underlying instance of either JGLPanel or GLCanvas
+   * depending on whether the Java2d OpenGL rendering pipeline is enabled.  These fields 
+   * provide a common interface to the shared methods of these two types of instances 
+   * even though they do not share any common superclasses.
    */ 
-  private GLJPanel  pGLJPanel;
+  private GLAutoDrawable pGLDrawable;
+  private Component      pGLComponent;
 
  
   /*----------------------------------------------------------------------------------------*/

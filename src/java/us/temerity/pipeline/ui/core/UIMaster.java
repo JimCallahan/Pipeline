@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.83 2008/05/08 22:46:42 jim Exp $
+// $Id: UIMaster.java,v 1.84 2008/05/12 04:07:49 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -3819,11 +3819,32 @@ class UIMaster
 
   /**
    * Create a new OpenGL lightweight rendering area.
+   * 
+   * @return 
+   *   The new GLJPanel or 
+   *   <CODE>null</CODE> if the Java2d OpenGL rendering pipeline is disabled.
    */ 
   public synchronized GLJPanel
   createGLJPanel() 
   {
-    return new GLJPanel(pGLCapabilities, null, pGLJPanel.getContext());
+    if(PackageInfo.sUseJava2dGLPipeline) 
+      return new GLJPanel(pGLCapabilities, null, pGLJPanel.getContext());
+    return null;
+  }
+
+  /**
+   * Create a new OpenGL rendering canvas shared among all GLCanvas instances.
+   * 
+   * @return 
+   *   The new GLCanvas or 
+   *   <CODE>null</CODE> if the Java2d OpenGL rendering pipeline is enabled.
+   */ 
+  public synchronized GLCanvas
+  createGLCanvas() 
+  {
+    if(!PackageInfo.sUseJava2dGLPipeline) 
+      return new GLCanvas(pGLCapabilities, null, pGLCanvas.getContext(), null);
+    return null;
   }
 
 
@@ -4280,6 +4301,12 @@ class UIMaster
 	}
       }
       
+      /* application wide UI settings */ 
+      if(!PackageInfo.sUseJava2dGLPipeline) {
+	JPopupMenu.setDefaultLightWeightPopupEnabled(false);
+	ToolTipManager.sharedInstance().setLightWeightPopupEnabled(false);
+      }
+      
       /* show the splash screen and do application startup tasks */ 
       {
 	JFrame frame = new JFrame("plui");
@@ -4317,12 +4344,18 @@ class UIMaster
 	  {
 	    pGLCapabilities = new GLCapabilities();  
 	    pGLCapabilities.setDoubleBuffered(true);
-     	    pGLJPanel = new GLJPanel(pGLCapabilities);
-            
-	    JTextureLoaderBar loader = 
- 	      new JTextureLoaderBar(pGLJPanel, new MainFrameTask(pMaster));
 
- 	    panel.add(loader);
+            MainFrameTask task = new MainFrameTask(pMaster); 
+            
+	    JTextureLoaderBar loader = null;
+            if(PackageInfo.sUseJava2dGLPipeline) {
+              pGLJPanel = new GLJPanel(pGLCapabilities);
+              panel.add(new JTextureLoaderBar(pGLJPanel, task));
+            }
+            else {
+              pGLCanvas = new GLCanvas(pGLCapabilities);
+              panel.add(new JTextureLoaderBar(pGLCanvas, task));
+            }
 	  }
 
 	  frame.setContentPane(panel);
@@ -6231,11 +6264,13 @@ class UIMaster
   private GLCapabilities  pGLCapabilities;
 
   /**
-   * The template GLJPanel which creates the shared OpenCL context in which textures and 
-   * display lists are initialized.
+   * The template GLJPanel or GLCanvas which creates the shared OpenCL context in which 
+   * textures and display lists are initialized.  Only one of the two fields will have a 
+   * non-null value depending on whether the Java2d OpenGL rendering pipeline is enabled.
+   * If OpenGL is enabled for Java2d, the GLJPanel will be used instead of the GLCanvas.
    */ 
   private GLJPanel  pGLJPanel;
-  
+  private GLCanvas  pGLCanvas;
 
   /**
    * The OpenGL display list handles which have been previously allocated with glGenLists() 

@@ -1,4 +1,4 @@
-// $Id: BaseSubProcess.java,v 1.27 2008/02/14 20:26:29 jim Exp $
+// $Id: BaseSubProcess.java,v 1.28 2008/05/12 04:07:49 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -170,19 +170,25 @@ class BaseSubProcess
 	ArrayList<String> cmd = new ArrayList<String>();
 	
 	if(user != null) {
-	  String plrun = 
-            ("/" + PackageInfo.sOsType + "-" + PackageInfo.sArchType + "-Opt/sbin/plrun");
-
-	  switch(PackageInfo.sOsType) {
+          Path path = null; 
+          switch(PackageInfo.sOsType) {
 	  case Unix:
+            path = new Path(PackageInfo.sInstPath, 
+                            PackageInfo.sOsType + "-" + PackageInfo.sArchType + "-Opt" +
+                            "/sbin/plrun");
+            break;
+
 	  case MacOS:
-	    {
-	      Path path = new Path(PackageInfo.sInstPath, plrun); 
-	      cmd.add(path.toOsString()); 
-	      cmd.add(user);
-	      cmd.add(lookupUserID(user).toString());
-	    }
-	  }
+            path = new Path("/Library/Application Support/PipelineJobManager-" + 
+                            PackageInfo.sCustomer + "-" + PackageInfo.sVersion + "-" + 
+                            PackageInfo.sCustomerProfile + "/plrun");
+          }
+
+          if(path != null) {
+            cmd.add(path.toOsString()); 
+            cmd.add(user);
+            cmd.add(lookupUserID(user).toString());
+          }
 	}
 	
 	cmd.add(file.getPath());

@@ -9,7 +9,7 @@ AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
 AC_CONFIG_HEADERS([config.h])
-AM_INIT_AUTOMAKE(Pipeline, 2.4.1b17)
+AM_INIT_AUTOMAKE(Pipeline, 2.4.1b18)
                            
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
@@ -1793,6 +1793,7 @@ AC_CONFIG_FILES([
   src/java/scripts/plscript-batch
   src/java/scripts/plpython
   src/java/scripts/plui
+  src/java/scripts/plui-j2dgl
   src/java/scripts/plvalidate
   src/java/scripts/plrestoreA
   src/java/scripts/plrestoreB
@@ -1811,6 +1812,7 @@ AC_CONFIG_FILES([
   src/java/scripts/debug/plscript-batch
   src/java/scripts/debug/plpython
   src/java/scripts/debug/plui
+  src/java/scripts/debug/plui-j2dgl
   src/java/scripts/debug/pltestnative
   src/java/scripts/debug/pltestlight
   src/java/scripts/debug/pltestheavy
@@ -1829,6 +1831,7 @@ AC_CONFIG_FILES([
   src/java/scripts/profile/plscript-batch
   src/java/scripts/profile/plpython
   src/java/scripts/profile/plui
+  src/java/scripts/profile/plui-j2dgl
 
   src/java/share/Makefile
   src/java/share/Unix/Makefile
@@ -1847,6 +1850,12 @@ AC_CONFIG_FILES([
   src/etc/winopts/Makefile
 
   src/utils/Makefile
+  src/utils/mac-package/Makefile
+  src/utils/mac-package/postinstall
+  src/utils/mac-package/PipelineJobManager.pmdoc/01plrun-contents.xml   
+  src/utils/mac-package/PipelineJobManager.pmdoc/01plrun.xml            
+  src/utils/mac-package/PipelineJobManager.pmdoc/index.xml              
+
   src/utils/src/Makefile
   src/utils/src/PackageInfo.cc.src
   src/utils/src/plshakeio
@@ -1887,12 +1896,15 @@ AC_CONFIG_FILES([
   src/windows/scripts/debug/plpython.bat.src
   src/windows/scripts/debug/plbuilder.bat.src
   src/windows/scripts/debug/plui2.bat.src
+  src/windows/scripts/debug/plui2-j2dgl.bat.src
   src/windows/scripts/debug/pljobmgr.bat.src
 
   src/windows/launchers/Makefile
   src/windows/launchers/plui.exe4j
+  src/windows/launchers/plui-j2dgl.exe4j
   src/windows/launchers/debug/Makefile
   src/windows/launchers/debug/plui.exe4j
+  src/windows/launchers/debug/plui-j2dgl.exe4j
 
   src/windows/etc/Makefile
   src/windows/etc/python/Makefile

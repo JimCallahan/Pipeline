@@ -1,0 +1,10 @@
+<pkmkdoc spec="1.12"><properties><title>PipelineJobManager</title><build>@abs_builddir@/../PipelineJobManager.pkg</build><organization>us.temerity</organization><userSees ui="easy"/><min-target os="3"/><domain system="true"/></properties><distribution><versions min-spec="1.000000"/><scripts></scripts></distribution><description>A simple utility which allows the Pipeline Job Manager daemon to launch processes for jobs on behalf of other users.</description><contents><choice title="plrun" id="choice3" starts_selected="true" starts_enabled="true" starts_hidden="true"><pkgref id="us.temerity.pipelinejobmanager.plrun.pkg"/></choice></contents><resources bg-scale="none" bg-align="topleft"><locale lang="en"><resource mod="true" type="license">@srcdir@/../../../../docs/legal/license.txt</resource><resource mime-type="text/rtf" kind="embedded" type="welcome"><![CDATA[{\rtf1\ansi\ansicpg1252\cocoartf949\cocoasubrtf270
+{\fonttbl\f0\fnil\fcharset0 LucidaGrande;}
+{\colortbl;\red255\green255\blue255;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+
+\f0\fs26 \cf0 You will be guided through the steps necessary to install this software.\
+\
+This installer only installs a small utility binary called "plrun" used by the Pipeline Job Manager to execute jobs on behalf of other users.  The main bulk of Pipeline is installed on a network location by the "pipeline" and "plmac" RPMs.    \
+\
+This package is required on all Mac OS X machines which will participate in running Pipeline jobs.  It is not required in order to run the Pipeline graphical or command-line client programs, although it is recommended to add all machines at a facility to the queue including user workstations.}]]></resource></locale></resources><flags/><item type="file">01plrun.xml</item><mod>properties.title</mod><mod>description</mod><mod>properties.anywhereDomain</mod><mod>properties.systemDomain</mod></pkmkdoc>

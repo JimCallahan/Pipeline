@@ -34,10 +34,19 @@ endif
 
 #--------------------------------------------------------------------------------------------#
 
-instsbindir  = @ROOT_INST_DIR@/@NATIVE_OSTYPE@-@NATIVE_ARCHTYPE@-Opt/sbin
+if IS_MAC_OS
+
+noinst_PROGRAMS = \
+  plrun
+
+else 
+
+instsbindir = @ROOT_INST_DIR@/@NATIVE_OSTYPE@-@NATIVE_ARCHTYPE@-Opt/sbin
 
 instsbin_PROGRAMS = \
   plrun
+
+endif
 
 plrun_SOURCES = FB.cc PackageInfo.cc PlRun.cc 
 

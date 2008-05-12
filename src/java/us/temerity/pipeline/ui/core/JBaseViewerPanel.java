@@ -1,4 +1,4 @@
-// $Id: JBaseViewerPanel.java,v 1.18 2008/05/08 22:46:42 jim Exp $
+// $Id: JBaseViewerPanel.java,v 1.19 2008/05/12 04:07:49 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -93,15 +93,31 @@ class JBaseViewerPanel
       setMinimumSize(new Dimension(50, 50));
       setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
       
-      /* canvas */ 
-      {
-	pGLJPanel = UIMaster.getInstance().createGLJPanel(); 
-	pGLJPanel.addGLEventListener(this);
-	pGLJPanel.addMouseListener(this);
-	pGLJPanel.addMouseMotionListener(this);
-	pGLJPanel.setFocusable(true);	
+      if(PackageInfo.sUseJava2dGLPipeline) {
+        GLJPanel gpanel = UIMaster.getInstance().createGLJPanel(); 
 
-	add(pGLJPanel);
+        pGLDrawable = gpanel;
+	pGLDrawable.addGLEventListener(this);
+
+        pGLComponent = gpanel;
+	pGLComponent.addMouseListener(this);
+	pGLComponent.addMouseMotionListener(this);
+	pGLComponent.setFocusable(true);	
+
+	add(gpanel);
+      }
+      else {
+	GLCanvas canvas = UIMaster.getInstance().createGLCanvas(); 
+        
+        pGLDrawable = canvas;
+        pGLDrawable.addGLEventListener(this);
+
+        pGLComponent = canvas;
+	pGLComponent.addMouseListener(this);
+	pGLComponent.addMouseMotionListener(this);
+	pGLComponent.setFocusable(true);	
+
+	add(canvas);
       }
     }
   }
@@ -180,7 +196,8 @@ class JBaseViewerPanel
   refresh()
   {
     pRefreshScene = true;
-    pGLJPanel.repaint();
+    
+    pGLDrawable.repaint();
   }
 
 
@@ -196,8 +213,8 @@ class JBaseViewerPanel
   {
     super.prePanelOp(); 
   
-    if(pGLJPanel != null) 
-      pGLJPanel.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR)); 
+    if(pGLComponent != null) 
+      pGLComponent.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR)); 
   }
 
   /**
@@ -208,8 +225,8 @@ class JBaseViewerPanel
   public void 
   postPanelOp() 
   {
-    if(pGLJPanel != null) 
-      pGLJPanel.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));  
+    if(pGLComponent != null) 
+      pGLComponent.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));  
     
     super.postPanelOp(); 
   }
@@ -286,7 +303,7 @@ class JBaseViewerPanel
       Point2d rs = new Point2d(pRbStart);
       Point2d re = new Point2d(pRbEnd);
       {
-	Dimension size = pGLJPanel.getSize();
+	Dimension size = pGLComponent.getSize();
 	Vector2d half = new Vector2d(size.getWidth()*0.5, size.getHeight()*0.5);
 	
 	double f = -pCameraPos.z() * pPerspFactor;
@@ -343,7 +360,7 @@ class JBaseViewerPanel
     glu.gluPerspective(pFOV, pAspect, pNear, pFar);
     
     double dist = -pCameraPos.z();
-    dist = Math.max(((double) pGLJPanel.getHeight()) / pMaxFactor, dist); 
+    dist = Math.max(((double) pGLComponent.getHeight()) / pMaxFactor, dist); 
     pCameraPos.z(-dist);
   }
  
@@ -389,7 +406,7 @@ class JBaseViewerPanel
    MouseEvent e
   ) 
   {
-    pGLJPanel.requestFocusInWindow();
+    pGLComponent.requestFocusInWindow();
 
     {
       Point p = e.getPoint();
@@ -531,9 +548,9 @@ class JBaseViewerPanel
     else if(pan || zoom) {
       if(!isPanelOpInProgress()) {
         if(pan) 
-          pGLJPanel.setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
+          pGLComponent.setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
         else 
-          pGLJPanel.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+          pGLComponent.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
       }
       
       pDragStart = new Point2d(pMousePos);
@@ -679,7 +696,7 @@ class JBaseViewerPanel
 	
 	double dist = -pCameraPos.z();
 	dist += pZoomSpeed*zm;
-	dist = Math.max(((double) pGLJPanel.getHeight()) / pMaxFactor, dist); 
+	dist = Math.max(((double) pGLComponent.getHeight()) / pMaxFactor, dist); 
 	pCameraPos.z(-dist);
 
 	pDragStart = pos;
@@ -687,7 +704,7 @@ class JBaseViewerPanel
     }
 
     if(rb || pan || zoom) 
-      pGLJPanel.repaint();     
+      pGLDrawable.repaint();     
   }
 
   /**
@@ -728,14 +745,14 @@ class JBaseViewerPanel
     double ftan = Math.tan(Math.toRadians(pFOV)*0.5);
     double distX = hrange.x() / (pAspect * ftan);
     double distY = hrange.y() / ftan;
-    double z = Math.max(((double) pGLJPanel.getHeight()) / pMaxFactor, 
+    double z = Math.max(((double) pGLComponent.getHeight()) / pMaxFactor, 
                         Math.max(distX, distY));
 
     Point2d center = bbox.getCenter();
     pCameraPos.set(center.x(), center.y(), z);
     pCameraPos.negate();
 
-    pGLJPanel.repaint();
+    pGLDrawable.repaint();
   }
 
 
@@ -817,13 +834,16 @@ class JBaseViewerPanel
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
 
-  /*----------------------------------------------------------------------------------------*/
-
   /**
-   * The OpenGL rendering canvas.
+   * The OpenGL rendering area.<P> 
+   * 
+   * The two fields containg the same underlying instance of either JGLPanel or GLCanvas
+   * depending on whether the Java2d OpenGL rendering pipeline is enabled.  These fields 
+   * provide a common interface to the shared methods of these two types of instances 
+   * even though they do not share any common superclasses.
    */ 
-  protected GLJPanel  pGLJPanel;
-
+  protected GLAutoDrawable pGLDrawable;
+  protected Component      pGLComponent;
 
   /**
    * The OpenGL display list handle for the scene geometry.

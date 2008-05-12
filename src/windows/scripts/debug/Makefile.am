@@ -11,6 +11,7 @@ instbin_SCRIPTS = \
   plscript-batch.bat \
   plpython.bat \
   plui2.bat \
+  plui2-j2dgl.bat \
   plbuilder.bat
 
 

@@ -1,4 +1,4 @@
-// $Id: PackageInfo.java.src.in,v 1.43 2008/05/08 22:46:41 jim Exp $
+// $Id: PackageInfo.java.src.in,v 1.44 2008/05/12 04:07:49 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -218,6 +218,19 @@ class PackageInfo
         sWinAppDataPath      = null;
         sWinAppDataNeedsUser = null;
       }
+    }
+
+    /* determine whether the Java2d OpenGL rendering pipeline is being used */ 
+    {
+      String java2dogl = null;
+      try {
+        java2dogl = System.getProperty("sun.java2d.opengl");
+      }
+      catch(Exception ex) {
+      }
+      
+      sUseJava2dGLPipeline = 
+        ((java2dogl != null) && (java2dogl.compareToIgnoreCase("true") == 0));
     }
   } 
 
@@ -693,7 +706,7 @@ class PackageInfo
   /**
    * The name of the studio customer's site profile.
    */
-  public static final String sCustomerProfile = "@CUSTOMER_PROFILE@";
+  public static final String sCustomerProfile = "@PROFILE_STAMP@";
 
   /**
    * The version identifier of this Pipeline release.
@@ -1189,6 +1202,11 @@ class PackageInfo
 
 
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether to use the Java2d OpenGL rendering pipeline. 
+   */ 
+  public static final boolean sUseJava2dGLPipeline; 
 
   /**
    * The name of the font used for OpenGL textured text.

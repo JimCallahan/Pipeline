@@ -2,9 +2,9 @@
 <exe4j version="3.1.2">
   <directoryPresets config="C:/cygwin@top_srcdir@/src/windows/icons" />
   <application name="plui" distributionSourceDir="C:/cygwin@top_srcdir@/../.." />
-  <executable name="plui" type="1" iconSet="true" iconFile="C:/cygwin@top_srcdir@/src/windows/icons/WindowsLogo.ico" executableDir="./build/pipeline/debug/src/windows/launchers/debug" redirectStderr="true" stderrFile="error.log" redirectStdout="false" stdoutFile="output.log" failOnStderrOutput="true" executableMode="1" changeWorkingDirectory="true" workingDirectory="." singleInstance="false" serviceStartType="2" serviceDependencies="" serviceDescription="" jreLocation="">
+  <executable name="plui-j2dgl" type="1" iconSet="true" iconFile="C:/cygwin@top_srcdir@/src/windows/icons/WindowsLogo.ico" executableDir="./build/pipeline/debug/src/windows/launchers/debug" redirectStderr="true" stderrFile="error.log" redirectStdout="false" stdoutFile="output.log" failOnStderrOutput="true" executableMode="1" changeWorkingDirectory="true" workingDirectory="." singleInstance="false" serviceStartType="2" serviceDependencies="" serviceDescription="" jreLocation="">
     <messageSet language="English" />
-    <versionInfo include="true" fileVersion="" companyName="Temerity Software, Inc." fileDescription="Pipeline User Interface" legalCopyright="Copyright (c) 2002-2008 Temerity Software, Inc." productVersion="2.4.1.0" internalName="" />
+    <versionInfo include="true" fileVersion="" companyName="Temerity Software, Inc." fileDescription="Pipeline User Interface (Java2d OpenGL)" legalCopyright="Copyright (c) 2002-2008 Temerity Software, Inc." productVersion="2.4.1.0" internalName="" />
   </executable>
   <splashScreen show="true" autoOff="true" alwaysOnTop="false" width="592" height="369" bitmapFile="C:/cygwin@top_srcdir@/src/java/us/temerity/pipeline/laf/source/StartingJava.png">
     <text>
@@ -12,7 +12,7 @@
       <versionLine x="35" y="278" text="" font="Arial" fontSize="8" fontColor="0,0,0" fontWeight="500" />
     </text>
   </splashScreen>
-  <java mainClass="us.temerity.pipeline.bootstrap.Main" vmParameters="@JAVA_RUNTIME_OPTS@ @PLUI_GC_OPTS@ @PLUI_DEBUG_OPTS@ @JAVA_OSARCH_TYPE@ @JAVA_BUILD_TYPE@=Debug -Dsun.java2d.noddraw=true -Dsun.java2d.opengl=false" arguments="us.temerity.pipeline.core.GraphicalApp" allowVMPassthroughParameters="true" minVersion="1.6" maxVersion="1.6" preferredVM="server" allowBetaVM="true" jdkOnly="false">
+  <java mainClass="us.temerity.pipeline.bootstrap.Main" vmParameters="@JAVA_RUNTIME_OPTS@ @PLUI_GC_OPTS@ @PLUI_DEBUG_OPTS@ @JAVA_OSARCH_TYPE@ @JAVA_BUILD_TYPE@=Debug -Dsun.java2d.noddraw=true -Dsun.java2d.opengl=true" arguments="us.temerity.pipeline.core.GraphicalApp" allowVMPassthroughParameters="true" minVersion="1.6" maxVersion="1.6" preferredVM="server" allowBetaVM="true" jdkOnly="false">
     <searchSequence>
       <directory location="@WIN_JAVA_HOME@" />
     </searchSequence>

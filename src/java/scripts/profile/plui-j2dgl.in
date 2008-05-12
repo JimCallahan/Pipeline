@@ -5,7 +5,7 @@ exec "@CLIENT_JAVA_RUNTIME@" @JAVA_RUNTIME_OPTS@ \
   @PLUI_GC_OPTS@ @PLUI_PROFILE_OPTS@ \
   -Djava.library.path=@JOGL_LIBRARY_PATH@ \
   @JAVA_OSARCH_TYPE@ @JAVA_BUILD_TYPE@=Profile \
-  -Dsun.java2d.opengl=false \
+  -Dsun.java2d.opengl=true \
   -cp @PIPELINE_JAR@:@JOGL_JAR@:@GLUEGEN_JAR@ \
   us/temerity/pipeline/bootstrap/Main us.temerity.pipeline.core.GraphicalApp "$@"
 

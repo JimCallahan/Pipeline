@@ -133,16 +133,22 @@ if input:
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 try:
     s.connect(('localhost', @PL_REMOTE_PORT@))
+    s.send(req)
+    s.close()
 except:
+    s.close()
     print 'Unable to connect to a running plui!'
-    print 'Starting plui...'
-    os.system('@PLUI_PATH@ --no-layout &')
-    time.sleep(45)
+    print 'Starting plui and trying again...'
+    os.system('@PLUI_PATH@ --no-selections &')
+    time.sleep(60)
+
+    s2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
-        s.connect(('localhost', @PL_REMOTE_PORT@))
+        s2.connect(('localhost', @PL_REMOTE_PORT@))
+        s2.send(req)
+        s2.close()
     except:
+        s2.close()
         print 'Unable to start plui!'
         sys.exit(1)
         
-s.send(req)
-s.close()

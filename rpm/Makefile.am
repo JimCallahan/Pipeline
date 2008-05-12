@@ -263,13 +263,23 @@ RPMS/i686/plmac-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm: \
 	@echo "-----------------------------------------------------------------------------"
 	ssh bullfrog "source .bash_profile; $(MAKE) -C $(MAC_BUILD_DIR) all"
 	rsync -av bullfrog:$(MAC_BUILD_DIR)/DEST/plmac DEST
+	mv DEST/plmac/PipelineJobManager.pkg \
+           PipelineJobManager-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.pkg
 	rpmbuild --rcfile rpmrc -bb SPECS/plmac-@CUSTOMER@-@VERSION@.spec
 
 SPECS/plmac-@CUSTOMER@-@VERSION@.spec: plmac.spec
 	cp -f plmac.spec $@
 
-endif HAS_MAC
+install-mac-package:
+	$(INSTALL_DATA) \
+          @RPM_ROOT@/PipelineJobManager-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.pkg \
+          ../../../../releases/pipeline
 
+else !HAS_MAC
+
+install-mac-package:
+
+endif !HAS_MAC
 
 if HAS_WINDOWS
 
@@ -308,7 +318,7 @@ endif !HAS_WINDOWS
 
 
 
-install: all install-win-service 
+install: all install-win-service install-mac-package
 	mkdir -p ../../../../releases/pipeline
 	$(INSTALL_PROGRAM) pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.bin \
           ../../../../releases/pipeline

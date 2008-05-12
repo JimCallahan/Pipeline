@@ -1,4 +1,4 @@
-// $Id: JConfigDialog.java,v 1.8 2007/09/07 18:52:38 jim Exp $
+// $Id: JConfigDialog.java,v 1.9 2008/05/12 04:07:49 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -44,14 +44,14 @@ class JConfigDialog
 
 	{
 	  UIFactory.createTitledTextField(tpanel, "License Valid Until:", sTSize, 
-					 vpanel, PackageInfo.sLicenseEnd, sVSize);
+                                          vpanel, PackageInfo.sLicenseEnd, sVSize);
 	}
 
 	UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
 
 	{
 	  UIFactory.createTitledTextField(tpanel, "Master Server Hostname:", sTSize, 
-					 vpanel, PackageInfo.sMasterServer, sVSize);
+                                          vpanel, PackageInfo.sMasterServer, sVSize);
 	  
 	  UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
 	  
@@ -62,14 +62,14 @@ class JConfigDialog
 	  UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
 	  
 	  UIFactory.createTitledTextField(tpanel, "Node Directory:", sTSize, 
-					 vpanel, PackageInfo.sNodePath.toString(), sVSize);
+                                          vpanel, PackageInfo.sNodePath.toString(), sVSize);
 	}
 
 	UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
 
 	{
 	  UIFactory.createTitledTextField(tpanel, "File Server Hostname:", sTSize, 
-					 vpanel, PackageInfo.sFileServer, sVSize);
+                                          vpanel, PackageInfo.sFileServer, sVSize);
 	  
 	  UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
 	  
@@ -87,7 +87,7 @@ class JConfigDialog
 
 	{
 	  UIFactory.createTitledTextField(tpanel, "Queue Server Hostname:", sTSize, 
-					 vpanel, PackageInfo.sQueueServer, sVSize);
+                                          vpanel, PackageInfo.sQueueServer, sVSize);
 	  
 	  UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
 	  
@@ -104,7 +104,7 @@ class JConfigDialog
 	  UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
 	  
 	  UIFactory.createTitledTextField(tpanel, "Queue Directory:", sTSize, 
-					 vpanel, PackageInfo.sQueuePath.toString(), sVSize);
+                                          vpanel, PackageInfo.sQueuePath.toString(), sVSize);
 	}
 
 	UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
@@ -144,6 +144,12 @@ class JConfigDialog
 					  vpanel, PackageInfo.sTempPath.toString(), sVSize);
 	}
 
+	UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
+
+        UIFactory.createTitledTextField
+          (tpanel, "Java2d OpenGL Rendering:", sTSize, 
+           vpanel, PackageInfo.sUseJava2dGLPipeline ? "Enabled" : "Disabled", sVSize, 
+           "Whether the Java2d OpenGL rendering pipeline is currently enabled.");
 	
 	UIFactory.addVerticalGlue(tpanel, vpanel);
       }

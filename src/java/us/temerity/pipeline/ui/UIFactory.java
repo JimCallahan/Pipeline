@@ -1,4 +1,4 @@
-// $Id: UIFactory.java,v 1.26 2008/05/08 22:46:42 jim Exp $
+// $Id: UIFactory.java,v 1.27 2008/05/12 04:07:49 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -4073,6 +4073,12 @@ class UIFactory
 	  "Unable to load the Pipeline look-and-feel:\n" + "  " + ex.getMessage());
 	System.exit(1);
       }
+    }
+
+    /* application wide UI settings */
+    if(!PackageInfo.sUseJava2dGLPipeline) {
+      JPopupMenu.setDefaultLightWeightPopupEnabled(false);
+      ToolTipManager.sharedInstance().setLightWeightPopupEnabled(false);
     }
   }
 

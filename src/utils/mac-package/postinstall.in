@@ -1,0 +1,4 @@
+#!/bin/bash
+chgrp @PIPELINE_GROUP@ "/Library/Application Support/PipelineJobManager-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@/plrun"
+chmod 4550 "/Library/Application Support/PipelineJobManager-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@/plrun"
+
