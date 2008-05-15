@@ -54,6 +54,16 @@ BuilderOptsParser
   private VersionID pVersionID = null;
   private String pVendor = null;
   private String pBuilderName = null;
+  
+  /**
+   * The name of the log file.
+   */ 
+  private Path pLogFile; 
+
+  /**
+   * The number of backup to maintain of the log file.
+   */ 
+  private int  pLogBackups;
 }
   
 PARSER_END(BuilderOptsParser)
@@ -78,6 +88,10 @@ TOKEN :
 | <VENDOR:         "--vendor">       : VENDOR_SEP
 | <BUILDERNAME:    "--builder-name"> : BUILDERNAME_SEP
 | <PARAM:          "--">             : PARAM_NAME_STATE
+|  <LOG_FILE:          "--log-file">                : PATH_SEP
+| <STANDARD_LOG_DIR:  "--standard-log-dir">        : PATH_SEP
+| <STANDARD_LOG_FILE: "--standard-log-file"> 
+| <LOG_BACKUPS:       "--log-backups">             : INTEGER_SEP
 
 
   /* separators */ 
@@ -246,6 +260,40 @@ TOKEN :
 | <ILLEGAL_LOG_LEVEL: (~["\0",","])+>  : IGNORE_STATE
 }
 
+/* integer arguments */ 
+<INTEGER_SEP> 
+TOKEN :
+{
+  <EQ9:                   "=">   : INTEGER_STATE
+| <MISSING_INTEGER_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<INTEGER_STATE> 
+TOKEN :
+{
+  <INTEGER:         (["0"-"9"])+>    : DEFAULT
+| <MISSING_INTEGER: ["\0"]>      : IGNORE_STATE
+| <ILLEGAL_INTEGER: (~["\0"])+>  : IGNORE_STATE
+}
+
+/* filesystem path arguments */ 
+<PATH_SEP> 
+TOKEN :
+{
+  <EQ10:                "=">   : PATH_STATE
+| <MISSING_PATH_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<PATH_STATE> 
+TOKEN :
+{
+  <PATH_ARG:       ("/")* ("../")* <PATH_ARG_COMP> 
+		     ("/" (".." | (<PATH_ARG_COMP>)+)?)*>      : DEFAULT
+| <#PATH_ARG_COMP: (["a"-"z","A"-"Z","0"-"9","_","-","."])*>
+| <MISSING_PATH:   ["\0"]>                                     : IGNORE_STATE
+| <ILLEGAL_PATH:   (~["\0"])+>                                 : IGNORE_STATE
+}
+
 
 
 /*------------------------------------------------------------------------------------------*/
@@ -255,10 +303,23 @@ TOKEN :
 void
 CommandLine()
   throws PipelineException :
-{}
+{
+  pLogBackups = 10;
+}
 {
   (InformationOpts() | Commands()) <EOF>
-  {}
+   {
+     /* setup the log files */ 
+     if(pLogFile != null) {
+       try {
+         LogMgr.getInstance().logToFile(pLogFile, pLogBackups, 10485760L);
+       }
+       catch(Exception ex) {
+         System.out.print("Unable to setup log file: " + ex.getMessage());
+         System.exit(1);
+       }
+     }
+   }
 }
 
 
@@ -348,7 +409,8 @@ GlobalOpts()
   throws PipelineException :
 {}
 {
-  (CollectionVersion() | CollectionName() | CollectionVendor() | BuilderName() | Log() | 
+  (CollectionVersion() | CollectionName() | CollectionVendor() | BuilderName() | 
+   Log() | LogFile() | StandardLogFile() | StandardLogDir() | LogBackups() | 
    Batch() | Abort() | Builder() | Param())
   {}
 }
@@ -671,6 +733,50 @@ LogMgr.Level FinestLevel() :
   }
 }
 
+void LogFile() : 
+{
+  Token t;
+}
+{
+  <LOG_FILE> EQ() t=<PATH_ARG>
+  { 
+    pLogFile = new Path(t.image);
+  }
+}
+
+void StandardLogDir() :
+{
+  Token t;
+}
+{
+  <STANDARD_LOG_DIR> EQ() t=<PATH_ARG>
+  { 
+    pLogFile = new Path(new Path(t.image), "plbuilder.log");
+  }
+}
+
+void StandardLogFile() : 
+{}
+{
+  <STANDARD_LOG_FILE>
+  { 
+    pLogFile = new Path(PackageInfo.sTempPath, "/logs/plbuilder.log");
+  }
+}
+
+void LogBackups() : 
+{
+  Token t;
+}
+{
+  <LOG_BACKUPS> EQ() t=<INTEGER>
+  { 
+    pLogBackups = Integer.parseInt(t.image);
+  }
+}
+
+
+
 
 
 
@@ -708,7 +814,7 @@ EQ() :
   Token t;
 }
 {
-  (t=<EQ1> | t=<EQ2> | t=<EQ3> | t= <EQ4> | t= <EQ5> | t= <EQ6> | t= <EQ7> | t= <EQ8>)
+  (t=<EQ1> | t=<EQ2> | t=<EQ3> | t= <EQ4> | t= <EQ5> | t= <EQ6> | t= <EQ7> | t= <EQ8> | t= <EQ9> | t= <EQ10>)
   { 
     return t; 
   }
