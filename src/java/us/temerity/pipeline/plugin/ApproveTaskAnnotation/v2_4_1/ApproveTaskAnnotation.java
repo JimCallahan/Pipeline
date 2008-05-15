@@ -1,8 +1,8 @@
-// $Id: ApproveTaskAnnotation.java,v 1.1 2008/05/12 16:41:49 jesse Exp $
+// $Id: ApproveTaskAnnotation.java,v 1.2 2008/05/15 22:38:33 jesse Exp $
 
 package us.temerity.pipeline.plugin.ApproveTaskAnnotation.v2_4_1;
 
-import java.util.ArrayList;
+import java.util.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.v2_4_1.*;
@@ -42,6 +42,11 @@ import us.temerity.pipeline.builder.v2_4_1.*;
  *     A unique type of production goal this node is used to achieve which is not one 
  *     of the standard type available in TaskType.  If a custom type is specified, the
  *     TaskType parameter should be set to [[CUSTOM]].
+ *   </DIV> <BR> 
+ *   
+ *   Entity Type <BR>
+ *   <DIV style="margin-left: 40px;">
+ *     The Shotgun entity type that this task is part of.  
  *   </DIV> <BR> 
  *   
  *   Purpose <BR>
@@ -127,6 +132,17 @@ class ApproveTaskAnnotation
          NodePurpose.Approve.toTitle()); 
       addConstantParam(param);   
     }
+    
+    {
+      String choices[] = {"Shot", "Asset"};
+      AnnotationParam param = 
+        new EnumAnnotationParam
+        (aEntityType, 
+         "The Shotgun entity type that this task represents.  " +
+         "Can be ignored if this task is not being used with Shotgun.", 
+         "Asset", new ArrayList<String>(Arrays.asList(choices))); 
+      addParam(param);
+    }
 
     {
       AnnotationParam param = 
@@ -181,6 +197,7 @@ class ApproveTaskAnnotation
   public static final String aProjectName     = "ProjectName";
   public static final String aTaskName        = "TaskName";
   public static final String aTaskType        = "TaskType";
+  public static final String aEntityType      = "EntityType";
   public static final String aCustomTaskType  = "CustomTaskType";
   public static final String aSupervisedBy    = "SupervisedBy";
   public static final String aApprovalBuilder = "ApprovalBuilder";

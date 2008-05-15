@@ -1,4 +1,4 @@
-// $Id: SubmitTaskAnnotation.java,v 1.2 2008/05/12 22:12:22 jim Exp $
+// $Id: SubmitTaskAnnotation.java,v 1.3 2008/05/15 22:38:17 jesse Exp $
 
 package us.temerity.pipeline.plugin.SubmitTaskAnnotation.v2_4_1;
 
@@ -36,6 +36,11 @@ import java.util.*;
  *   Task Type <BR>
  *   <DIV style="margin-left: 40px;">
  *     The standard type of production goal this node is used to achieve.
+ *   </DIV> <BR> 
+ *   
+ *   Entity Type <BR>
+ *   <DIV style="margin-left: 40px;">
+ *     The Shotgun entity type that this task is part of.  
  *   </DIV> <BR> 
  *   
  *   Custom Task Type <BR>
@@ -127,12 +132,25 @@ class SubmitTaskAnnotation
     }
     
     {
+      String choices[] = {"Shot", "Asset"};
+      AnnotationParam param = 
+        new EnumAnnotationParam
+        (aEntityType, 
+         "The Shotgun entity type that this task represents.  " +
+         "Can be ignored if this task is not being used with Shotgun.", 
+         "Asset", new ArrayList<String>(Arrays.asList(choices))); 
+      addParam(param);
+    }
+    
+    {
       ArrayList<String> layout = new ArrayList<String>();
       layout.add(aProjectName);
       layout.add(aTaskName);
       layout.add(aTaskType);
       layout.add(aCustomTaskType);
       layout.add(aPurpose);
+      layout.add(null);
+      layout.add(aEntityType);
       layout.add(null); 
       layout.add(aAssignedTo);
 
@@ -153,6 +171,7 @@ class SubmitTaskAnnotation
   public static final String aProjectName    = "ProjectName";
   public static final String aTaskName       = "TaskName";
   public static final String aTaskType       = "TaskType";
+  public static final String aEntityType     = "EntityType";
   public static final String aCustomTaskType = "CustomTaskType";
   public static final String aAssignedTo     = "AssignedTo";
   

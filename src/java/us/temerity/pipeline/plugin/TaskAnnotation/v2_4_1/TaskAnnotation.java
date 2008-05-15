@@ -1,4 +1,4 @@
-// $Id: TaskAnnotation.java,v 1.1 2008/05/12 16:41:50 jesse Exp $
+// $Id: TaskAnnotation.java,v 1.2 2008/05/15 22:38:17 jesse Exp $
 
 package us.temerity.pipeline.plugin.TaskAnnotation.v2_4_1;
 
@@ -31,6 +31,11 @@ import us.temerity.pipeline.builder.v2_4_1.*;
  *   Task Type <BR>
  *   <DIV style="margin-left: 40px;">
  *     The standard type of production goal this node is used to achieve.
+ *   </DIV> <BR> 
+ *   
+ *   Entity Type <BR>
+ *   <DIV style="margin-left: 40px;">
+ *     The Shotgun entity type that this task is part of.  
  *   </DIV> <BR> 
  *   
  *   Custom Task Type <BR>
@@ -160,6 +165,17 @@ class TaskAnnotation
          null); 
       addParam(param);
     }
+    
+    {
+      String choices[] = {"Shot", "Asset"};
+      AnnotationParam param = 
+        new EnumAnnotationParam
+        (aEntityType, 
+         "The Shotgun entity type that this task represents.  " +
+         "Can be ignored if this task is not being used with Shotgun.", 
+         "Asset", new ArrayList<String>(Arrays.asList(choices))); 
+      addParam(param);
+    }
   
     {
       AnnotationParam param = 
@@ -195,6 +211,7 @@ class TaskAnnotation
   public static final String aProjectName    = "ProjectName";
   public static final String aTaskName       = "TaskName";
   public static final String aTaskType       = "TaskType";
+  public static final String aEntityType     = "EntityType";
   public static final String aCustomTaskType = "CustomTaskType";
   public static final String aPurpose        = "Purpose";
 }

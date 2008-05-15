@@ -1,4 +1,4 @@
-// $Id: TaskBuilder.java,v 1.1 2008/05/10 03:23:22 jesse Exp $
+// $Id: TaskBuilder.java,v 1.2 2008/05/15 22:38:17 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_1;
 
@@ -23,7 +23,6 @@ class TaskBuilder
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
-  
   /**
    * Constructor.
    * 
@@ -38,6 +37,9 @@ class TaskBuilder
    * @param builderInformation
    *   The instance of the global information class used to share information between all the
    *   Builders that are invoked.
+   * @param entityType
+   *   The Shotgun entity type that the Tasks this Builder is making will be.  This can be
+   *   set to <code>null</code> if no entity type is desired.
    */
   protected 
   TaskBuilder
@@ -46,13 +48,16 @@ class TaskBuilder
     String desc,
     MasterMgrClient mclient,
     QueueMgrClient qclient,
-    BuilderInformation builderInformation
+    BuilderInformation builderInformation,
+    String entityType
   )
     throws PipelineException
   {
     super(name, desc, mclient, qclient, builderInformation);
     
     pAnnotTaskTypeChoices = TaskType.titles(); 
+    
+    pEntityType = entityType;
   }
   
   
@@ -300,14 +305,12 @@ class TaskBuilder
    BaseStage stage,
    String projectName, 
    String taskName, 
-   String taskType, 
-   String approveNode
+   String taskType
   )
     throws PipelineException
   {
     BaseAnnotation annot = 
       getNewTaskAnnotation(NodePurpose.Submit, projectName, taskName, taskType); 
-    annot.setParamValue("ApproveNode", new Path(approveNode));
     addTaskAnnotationToStage(stage, annot); 
   }
 
@@ -336,14 +339,12 @@ class TaskBuilder
    String nodeName, 
    String projectName, 
    String taskName, 
-   String taskType, 
-   String approveNode
+   String taskType
   )
     throws PipelineException
   {
     BaseAnnotation annot = 
       getNewTaskAnnotation(NodePurpose.Submit, projectName, taskName, taskType); 
-    annot.setParamValue("ApproveNode", new Path(approveNode));
     addTaskAnnotationToNode(nodeName, annot);
   }
   
@@ -405,6 +406,9 @@ class TaskBuilder
     default:
       annot.setParamValue(aAnnotPurpose, purpose.toString());
     }
+    
+    if (pEntityType != null)
+      annot.setParamValue(aAnnotEntityType, pEntityType);
 
     return annot; 
   }
@@ -622,6 +626,7 @@ class TaskBuilder
   public static final String aAnnotProjectName    = "ProjectName";
   public static final String aAnnotTaskName       = "TaskName";
   public static final String aAnnotTaskType       = "TaskType";
+  public static final String aAnnotEntityType     = "EntityType";
   public static final String aAnnotCustomTaskType = "CustomTaskType";
   public static final String aAnnotPurpose        = "Purpose"; 
   public static final String aAnnotAssignedTo     = "AssignedTo";
@@ -629,6 +634,8 @@ class TaskBuilder
 
     
   public static final String aDoAnnotations = "DoAnnotations";
+  
+  private static final long serialVersionUID = 486953128847968229L;
   
   
   
@@ -641,5 +648,7 @@ class TaskBuilder
    * Task annotations.
    */ 
   private ArrayList<String> pAnnotTaskTypeChoices;
+  
+  private String pEntityType;
   
 }
