@@ -1,4 +1,4 @@
-// $Id: ApproveTaskTool.java,v 1.1 2008/05/12 16:41:49 jesse Exp $
+// $Id: ApproveTaskTool.java,v 1.2 2008/05/15 08:54:46 jim Exp $
 
 package us.temerity.pipeline.plugin.ApproveTaskTool.v2_4_1;
 
@@ -133,7 +133,9 @@ class ApproveTaskTool
 
       {
         /* lookup the approval builder */ 
-        TreeMap<String, BaseAnnotation> annotations = getTaskAnnotation(pApproveNode, mclient);
+        TreeMap<String, BaseAnnotation> annotations = 
+          getTaskAnnotation(pApproveNode, mclient);
+
         for(String aname : annotations.keySet()) {
           if(aname.equals("Task") || aname.startsWith("AltTask")) {
             BaseAnnotation annot = annotations.get(aname);
@@ -606,7 +608,7 @@ class ApproveTaskTool
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
   
-  private static final long serialVersionUID = -6776461288910423614L;
+  private static final long serialVersionUID = -340798787084943636L;
 
   private static final int sTSize = 150;
   private static final int sVSize = 300;

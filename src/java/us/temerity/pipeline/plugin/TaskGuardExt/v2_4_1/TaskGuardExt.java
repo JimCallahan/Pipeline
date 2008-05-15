@@ -1,4 +1,4 @@
-// $Id: TaskGuardExt.java,v 1.1 2008/05/12 16:41:49 jesse Exp $
+// $Id: TaskGuardExt.java,v 1.2 2008/05/15 08:54:46 jim Exp $
 
 package us.temerity.pipeline.plugin.TaskGuardExt.v2_4_1;
 
@@ -449,7 +449,7 @@ class TaskGuardExt
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
   
-  private static final long serialVersionUID = 2482193624556360878L;
+  private static final long serialVersionUID = -7220177428359011686L;
   
   public static final String aProjectName     = "ProjectName";
   public static final String aTaskName        = "TaskName";
