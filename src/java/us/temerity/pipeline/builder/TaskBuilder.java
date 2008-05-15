@@ -1,4 +1,4 @@
-// $Id: TaskBuilder.java,v 1.4 2008/02/06 07:44:19 jim Exp $
+// $Id: TaskBuilder.java,v 1.5 2008/05/15 22:51:54 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -18,12 +18,19 @@ class TaskBuilder
   /*----------------------------------------------------------------------------------------*/
   
   /**
+   * Constructor.
+   * 
    * @param name
+   *   The name of the Builder.
    * @param desc
+   *   A brief description of what the Builder is supposed to do.
    * @param mclient
+   *   The instance of the Master Manager that the Builder is going to use.
    * @param qclient
+   *   The instance of the Queue Manager that the Builder is going to use
    * @param builderInformation
-   * @throws PipelineException
+   *   The instance of the global information class used to share information between all the
+   *   Builders that are invoked.
    */
   protected 
   TaskBuilder
