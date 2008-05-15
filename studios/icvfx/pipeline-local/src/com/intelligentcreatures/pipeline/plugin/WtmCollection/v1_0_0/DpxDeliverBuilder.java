@@ -1,4 +1,4 @@
-// $Id: DpxDeliverBuilder.java,v 1.2 2008/05/03 07:38:57 jim Exp $
+// $Id: DpxDeliverBuilder.java,v 1.3 2008/05/15 08:55:37 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -696,7 +696,7 @@ class DpxDeliverBuilder
 	    new SlateSubstStage(stageInfo, pContext, pClient, 
 				dpxDeliverSlateNukeNodeName, pSlateNodeName, 
 				pDeliveryType, pDeliverable, pClientVersion, 
-				pClientShotName,pSourceVersion, pNotes, 1); 
+				pClientShotName, pSourceVersion, pNotes, 1); 
 	  addTaskAnnotation(stage, NodePurpose.Prepare); 
 	  stage.build();  
 	}
