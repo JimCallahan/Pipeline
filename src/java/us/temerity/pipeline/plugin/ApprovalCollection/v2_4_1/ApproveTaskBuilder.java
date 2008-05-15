@@ -1,4 +1,4 @@
-// $Id: ApproveTaskBuilder.java,v 1.1 2008/05/12 16:41:49 jesse Exp $
+// $Id: ApproveTaskBuilder.java,v 1.2 2008/05/15 08:54:25 jim Exp $
 
 package us.temerity.pipeline.plugin.ApprovalCollection.v2_4_1;
 
@@ -79,8 +79,8 @@ class ApproveTaskBuilder
     throws PipelineException
   {
     super("ApproveTask",
-         "A builder which implements a generic task approval operation.", 
-         mclient, qclient, builderInfo);
+          "A builder which implements a generic task approval operation.", 
+          mclient, qclient, builderInfo);
     
     addDefaultParams();
     
@@ -99,9 +99,9 @@ class ApproveTaskBuilder
    * This does not setup any of the parameters or layouts that the ApprovalBuilder normally
    * has.  These are available in two methods, the {@link #addDefaultParams()} method to add
    * the parameters and the {@link #getDefaultLayoutGroup()} method to get the default layout
-   * group for those parameters.  The SetupPass functionality can be added by adding an instance
-   * of the {@link LookupAndValidate} class.  The ConstructPass functionality can be added
-   * by adding an instance of the {@link CheckOutNetworks} class.
+   * group for those parameters.  The SetupPass functionality can be added by adding an 
+   * instance of the {@link LookupAndValidate} class.  The ConstructPass functionality can 
+   * be added by adding an instance of the {@link CheckOutNetworks} class.
    * 
    * @param name
    *   Name of the builder.
