@@ -14,6 +14,7 @@ html_DATA = \
   pls.html \
   plscript.html \
   plui.html \
+  plversion.html \
   plvalidate.html \
   realpath.html
 

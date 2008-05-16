@@ -29,35 +29,38 @@ Pipeline configuration process.
 @ROOT_INST_DIR@/MacOS-UnivBin-Opt/bin/realpath
 @ROOT_INST_DIR@/MacOS-UnivBin-Opt/bin/pls
 
+@ROOT_INST_DIR@/MacOS-UnivBin-Opt/bin/plbuilder
 @ROOT_INST_DIR@/MacOS-UnivBin-Opt/bin/plplugin
+@ROOT_INST_DIR@/MacOS-UnivBin-Opt/bin/plpython
 @ROOT_INST_DIR@/MacOS-UnivBin-Opt/bin/plremote
 @ROOT_INST_DIR@/MacOS-UnivBin-Opt/bin/plscript
 @ROOT_INST_DIR@/MacOS-UnivBin-Opt/bin/plscript-batch
-@ROOT_INST_DIR@/MacOS-UnivBin-Opt/bin/plpython
-@ROOT_INST_DIR@/MacOS-UnivBin-Opt/bin/plbuilder
 @ROOT_INST_DIR@/MacOS-UnivBin-Opt/bin/plui
 @ROOT_INST_DIR@/MacOS-UnivBin-Opt/bin/plui-j2dgl
+@ROOT_INST_DIR@/MacOS-UnivBin-Opt/bin/plversion
 
+@ROOT_INST_DIR@/MacOS-UnivBin-Debug/bin/plbuilder
 @ROOT_INST_DIR@/MacOS-UnivBin-Debug/bin/plplugin
+@ROOT_INST_DIR@/MacOS-UnivBin-Debug/bin/plpython
 @ROOT_INST_DIR@/MacOS-UnivBin-Debug/bin/plremote
 @ROOT_INST_DIR@/MacOS-UnivBin-Debug/bin/plscript
 @ROOT_INST_DIR@/MacOS-UnivBin-Debug/bin/plscript-batch
-@ROOT_INST_DIR@/MacOS-UnivBin-Debug/bin/plpython
-@ROOT_INST_DIR@/MacOS-UnivBin-Debug/bin/plbuilder
-@ROOT_INST_DIR@/MacOS-UnivBin-Debug/bin/plui
-@ROOT_INST_DIR@/MacOS-UnivBin-Debug/bin/plui-j2dgl
 @ROOT_INST_DIR@/MacOS-UnivBin-Debug/bin/pltestnative
 @ROOT_INST_DIR@/MacOS-UnivBin-Debug/bin/pltestlight
 @ROOT_INST_DIR@/MacOS-UnivBin-Debug/bin/pltestheavy
+@ROOT_INST_DIR@/MacOS-UnivBin-Debug/bin/plui
+@ROOT_INST_DIR@/MacOS-UnivBin-Debug/bin/plui-j2dgl
+@ROOT_INST_DIR@/MacOS-UnivBin-Debug/bin/plversion
 
+@ROOT_INST_DIR@/MacOS-UnivBin-Profile/bin/plbuilder
 @ROOT_INST_DIR@/MacOS-UnivBin-Profile/bin/plplugin
+@ROOT_INST_DIR@/MacOS-UnivBin-Profile/bin/plpython
 @ROOT_INST_DIR@/MacOS-UnivBin-Profile/bin/plremote
 @ROOT_INST_DIR@/MacOS-UnivBin-Profile/bin/plscript
 @ROOT_INST_DIR@/MacOS-UnivBin-Profile/bin/plscript-batch
-@ROOT_INST_DIR@/MacOS-UnivBin-Profile/bin/plpython
-@ROOT_INST_DIR@/MacOS-UnivBin-Profile/bin/plbuilder
 @ROOT_INST_DIR@/MacOS-UnivBin-Profile/bin/plui
 @ROOT_INST_DIR@/MacOS-UnivBin-Profile/bin/plui-j2dgl
+@ROOT_INST_DIR@/MacOS-UnivBin-Profile/bin/plversion
 
 %defattr(444,root,root)
 @ROOT_INST_DIR@/etc/python/MacOS-UnivBin-Debug/plremote.py

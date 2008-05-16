@@ -34,11 +34,14 @@
 @ROOT_INST_DIR@/share/docs/man/plpython.html 
 @ROOT_INST_DIR@/share/docs/man/plui.html 
 @ROOT_INST_DIR@/share/docs/man/plvalidate.html 
+@ROOT_INST_DIR@/share/docs/man/plversion.html 
 
 @ROOT_INST_DIR@/share/docs/man/pls.html
 @ROOT_INST_DIR@/share/docs/man/realpath.html
 
 @ROOT_INST_DIR@/share/icons/plui.png
+
+@ROOT_INST_DIR@/share/splash/PlVersionSplash.png
 
 @ROOT_INST_DIR@/share/www
 

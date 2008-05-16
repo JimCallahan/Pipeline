@@ -1213,6 +1213,9 @@ PIPELINE_LICENSE_TXT=""
 AC_SUBST(PLREMOTE_URL) 
 PLREMOTE_URL=""
 
+AC_SUBST(SPLASH_DIR) 
+SPLASH_DIR=""
+
 
 case "$NATIVE_OSTYPE" in 
   (Unix)  
@@ -1225,6 +1228,7 @@ case "$NATIVE_OSTYPE" in
     PIPELINE_PYARCHDIR="$ROOT_INST_DIR/etc/python/${NATIVE_OSTYPE}-${NATIVE_ARCHTYPE}";
     PIPELINE_LICENSE_TXT="$ROOT_INST_DIR/share/docs/legal/license.txt";
     PLREMOTE_URL="file:///$ROOT_INST_DIR/share/docs/man/plremote.html";
+    SPLASH_DIR="$ROOT_INST_DIR/share/splash/";
     JOGL_JAR="$ROOT_INST_DIR/jogl/lib/jogl.jar";
     GLUEGEN_JAR="$ROOT_INST_DIR/jogl/lib/gluegen-rt.jar";
     JOGL_LIBRARY_PATH="$ROOT_INST_DIR/jogl/lib/${NATIVE_OSTYPE}-${NATIVE_ARCHTYPE}-Opt";
@@ -1241,6 +1245,7 @@ case "$NATIVE_OSTYPE" in
     PIPELINE_PYARCHDIR="$MAC_ROOT_INST_DIR/etc/python/${NATIVE_OSTYPE}-${NATIVE_ARCHTYPE}";
     PIPELINE_LICENSE_TXT="$MAC_ROOT_INST_DIR/share/docs/legal/license.txt";
     PLREMOTE_URL="file:///$MAC_ROOT_INST_DIR/share/docs/man/plremote.html";
+    SPLASH_DIR="$MAC_ROOT_INST_DIR/share/splash/";
     JOGL_JAR="$MAC_ROOT_INST_DIR/jogl/lib/jogl.jar";
     GLUEGEN_JAR="$MAC_ROOT_INST_DIR/jogl/lib/gluegen-rt.jar";
     JOGL_LIBRARY_PATH="$MAC_ROOT_INST_DIR/jogl/lib/${NATIVE_OSTYPE}-${NATIVE_ARCHTYPE}-Opt";
@@ -1257,6 +1262,7 @@ case "$NATIVE_OSTYPE" in
     PIPELINE_PYARCHDIR="$WIN_ROOT_INST_DIR/etc/python/${NATIVE_OSTYPE}-${NATIVE_ARCHTYPE}";
     PIPELINE_LICENSE_TXT="$WIN_ROOT_INST_DIR/share/docs/legal/license.txt";
     PLREMOTE_URL="file:///$WIN_ROOT_INST_DIR/share/docs/man/plremote.html";
+    SPLASH_DIR="$WIN_ROOT_INST_DIR/share/splash/";
     JOGL_JAR="$WIN_ROOT_INST_DIR/jogl/lib/jogl.jar";
     GLUEGEN_JAR="$WIN_ROOT_INST_DIR/jogl/lib/gluegen-rt.jar";
     JOGL_LIBRARY_PATH="$WIN_ROOT_INST_DIR/jogl/lib/${NATIVE_OSTYPE}-${NATIVE_ARCHTYPE}-Opt";
@@ -1396,6 +1402,12 @@ AC_SUBST(PLTESTNATIVE_GC_OPTS)
 PLTESTNATIVE_GC_OPTS="${java_gc_opts} -Xms8M -Xmx128M"
 AC_MSG_RESULT([$PLTESTNATIVE_GC_OPTS])
 
+AC_MSG_CHECKING([plversion])
+AC_SUBST(PLVERSION_GC_OPTS)
+PLVERSION_GC_OPTS="${java_gc_opts} -Xms8M -Xmx256M"
+AC_MSG_RESULT([$PLVERSION_GC_OPTS])
+
+
 AC_MSG_RESULT([ ])
 
 
@@ -1471,6 +1483,10 @@ AC_SUBST(PLBUILDER_DEBUG_OPTS)
 PLBUILDER_DEBUG_OPTS=${java_debug_opts}$(($debug_base+11))
 AC_MSG_RESULT([$PLBUILDER_DEBUG_OPTS])
 
+AC_MSG_CHECKING([plversion])
+AC_SUBST(PLVERSION_DEBUG_OPTS)
+PLVERSION_DEBUG_OPTS=${java_debug_opts}$(($debug_base+12))
+AC_MSG_RESULT([$PLVERSION_DEBUG_OPTS])
 
 AC_MSG_RESULT([ ])
 
@@ -1535,6 +1551,11 @@ AC_MSG_CHECKING([plbuilder])
 AC_SUBST(PLBUILDER_PROFILE_OPTS)
 PLBUILDER_PROFILE_OPTS=${java_prof_opts}$(($prof_base+10))${java_prof_dir}"plbuilder"
 AC_MSG_RESULT([$PLBUILDER_PROFILE_OPTS])
+
+AC_MSG_CHECKING([plversion])
+AC_SUBST(PLVERSION_PROFILE_OPTS)
+PLVERSION_PROFILE_OPTS=${java_prof_opts}$(($prof_base+11))${java_prof_dir}"plscript"
+AC_MSG_RESULT([$PLVERSION_PROFILE_OPTS])
 
 AC_MSG_RESULT([ ])
 
@@ -1742,7 +1763,8 @@ AC_CONFIG_FILES([
   docs/man/plrestore.src.html
   docs/man/plscript.src.html  
   docs/man/plpython.src.html
-  docs/man/plui.src.html
+  docs/man/plui.src.html  
+  docs/man/plversion.src.html
   docs/man/plvalidate.src.html
   docs/manuals/Makefile
 
@@ -1795,6 +1817,7 @@ AC_CONFIG_FILES([
   src/java/scripts/plui
   src/java/scripts/plui-j2dgl
   src/java/scripts/plvalidate
+  src/java/scripts/plversion
   src/java/scripts/plrestoreA
   src/java/scripts/plrestoreB
   src/java/scripts/upgrade-hosts-file
@@ -1817,6 +1840,7 @@ AC_CONFIG_FILES([
   src/java/scripts/debug/pltestlight
   src/java/scripts/debug/pltestheavy
   src/java/scripts/debug/plvalidate
+  src/java/scripts/debug/plversion
 
   src/java/scripts/profile/Makefile
   src/java/scripts/profile/plbuilder
@@ -1832,6 +1856,7 @@ AC_CONFIG_FILES([
   src/java/scripts/profile/plpython
   src/java/scripts/profile/plui
   src/java/scripts/profile/plui-j2dgl
+  src/java/scripts/profile/plversion
 
   src/java/share/Makefile
   src/java/share/Unix/Makefile
@@ -1884,6 +1909,7 @@ AC_CONFIG_FILES([
   src/windows/scripts/plpython.bat.src
   src/windows/scripts/plbuilder.bat.src
   src/windows/scripts/pljobmgr.bat.src
+  src/windows/scripts/plversion.bat.src
 
   src/windows/scripts/debug/Makefile
   src/windows/scripts/debug/plplugin.bat.src
@@ -1898,6 +1924,7 @@ AC_CONFIG_FILES([
   src/windows/scripts/debug/plui2.bat.src
   src/windows/scripts/debug/plui2-j2dgl.bat.src
   src/windows/scripts/debug/pljobmgr.bat.src
+  src/windows/scripts/debug/plversion.bat.src
 
   src/windows/launchers/Makefile
   src/windows/launchers/plui.exe4j
@@ -1912,6 +1939,7 @@ AC_CONFIG_FILES([
 
   src/unix/Makefile
   src/unix/icons/Makefile
+  src/unix/splash/Makefile
 
   studios/Makefile
 
