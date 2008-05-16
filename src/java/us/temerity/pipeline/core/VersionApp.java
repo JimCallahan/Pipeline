@@ -1,4 +1,4 @@
-// $Id: VersionApp.java,v 1.1 2008/05/16 01:10:13 jim Exp $
+// $Id: VersionApp.java,v 1.2 2008/05/16 06:39:22 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -104,6 +104,21 @@ class VersionApp
   /*----------------------------------------------------------------------------------------*/
   /*   U S E R   I N T E R F A C E                                                          */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Show an error message dialog with the given title and message.
+   */ 
+  public void 
+  showErrorDialog
+  (
+   String title, 
+   String msg, 
+   boolean quitOnClose
+  ) 
+  {
+    pErrorDialog.setMessage(title, msg);
+    SwingUtilities.invokeLater(new ShowErrorDialogTask(quitOnClose));
+  }
 
   /**
    * Show an error message dialog for the given exception.
@@ -373,6 +388,13 @@ class VersionApp
           }
         }
 
+        /* hide the splash screen */ 
+        {
+          SplashScreen splash = SplashScreen.getSplashScreen(); 
+          if(splash.isVisible())
+            splash.close(); 
+        }
+
         /* if its an Edit node or there aren't any annotations, 
              then proceed with the check-in */ 
         if(purposes.isEmpty() || purposes.contains(aEdit)) {
@@ -404,9 +426,10 @@ class VersionApp
              "operation can be properly evaluated.\n\n");
 
           buf.append
-            ("Note that studio policies may even prevent this node from being the root " + 
-             "node of a check-in operation and only allow it to be versioned as part of " + 
-             "the check-in of the Submit node for the task containing the node."); 
+            ("Note that studio policies may prevent this node from being checked-in " + 
+             "even inside of Pipeline, except as part of the check-in of a (Submit) node. " +
+             "When Task Annotation are being used, usually only (Edit) or (Submit) nodes " +
+             "may be checked-in directly."); 
 
           SwingUtilities.invokeLater(new InspectTask(status, buf.toString()));
         }
@@ -436,7 +459,6 @@ class VersionApp
       super("CheckInQueryTask");
       pStatus = status; 
     }
-
 
     public void 
     run() 
@@ -535,6 +557,13 @@ class VersionApp
     public void 
     run() 
     {
+      /* hide the splash screen */ 
+      {
+        SplashScreen splash = SplashScreen.getSplashScreen(); 
+        if(splash.isVisible())
+          splash.close(); 
+      }
+      
       pErrorDialog.setVisible(true);      
 
       if(pQuitOnClose)
@@ -548,7 +577,7 @@ class VersionApp
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Create the dialog giving the user the ability to inspect nodes in plui(1). 
+   * Create the dialog giving the choice of inspecting related nodes in plui(1). 
    */ 
   private
   class InspectTask
@@ -565,7 +594,6 @@ class VersionApp
       pMessage = msg; 
     }
 
-
     public void 
     run() 
     {  
@@ -575,9 +603,8 @@ class VersionApp
 
         diag.setVisible(true);   
         if(diag.wasConfirmed()) {
-          
-          // plremote stuff here.. 
-          
+          RemoteTask task = new RemoteTask(pStatus.getName());
+          task.start();          
         }
         else {
           doQuit(); 
@@ -587,6 +614,118 @@ class VersionApp
 
     private NodeStatus pStatus;
     private String     pMessage; 
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Attempt to communicate with plui, directing it to inspect the node.
+   */ 
+  private
+  class RemoteTask
+    extends Thread
+  { 
+    RemoteTask
+    (
+     String name
+    ) 
+    {
+      super("RemoteTask");
+      pNodeName = name; 
+    }
+
+    public void 
+    run() 
+    {  
+      if(!sendViewCommand()) {   
+        try {
+          Path plui = null;
+          {
+            String osarch = (PackageInfo.sOsType + "-" + PackageInfo.sArchType + "-Debug");
+
+            String extra = "";
+            switch(PackageInfo.sOsType) {
+            case MacOS:
+              extra = "-j2dgl";
+              break;
+              
+            case Windows:
+              extra = "-j2dgl.bat";
+            }
+
+            plui = new Path(PackageInfo.sInstPath, osarch + "/bin/plui" + extra);
+          }
+
+          ArrayList<String> args = new ArrayList<String>(); 
+          args.add("--no-selections"); 
+
+          LogMgr.getInstance().log
+            (LogMgr.Kind.Ops, LogMgr.Level.Info,
+             "Starting plui..."); 
+
+          SubProcessLight proc = new SubProcessLight("plui", plui.toFile(), args);
+          proc.start();
+
+          {
+            Thread.sleep(10000);
+
+            boolean success = false;
+            int wk;
+            for(wk=0; wk<15; wk++) {
+              if(sendViewCommand()) {
+                success = true;
+                break;
+              }
+
+              Thread.sleep(5000);
+            }
+
+            if(!success) 
+              throw new Exception(); 
+          }
+
+          doQuit(); 
+        }
+        catch(Exception ex) {
+          showErrorDialog("Error:", "Unable to contact or start plui!", true); 
+        }
+      }
+    }
+
+    private boolean 
+    sendViewCommand() 
+    {  
+      try {
+        InetSocketAddress addr = new InetSocketAddress("localhost", PackageInfo.sRemotePort);
+
+        Socket s = new Socket();
+        s.connect(addr, 10000);
+      
+        String cmd = ("working --select=" + pNodeName); 
+        byte[] bytes = cmd.getBytes("US-ASCII");
+
+        OutputStream out = s.getOutputStream();
+        out.write(bytes);
+        out.flush();
+        out.close(); 
+
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Ops, LogMgr.Level.Info,
+           "Told plui to view the node: " + pNodeName); 
+
+        return true;
+      } 
+      catch(IOException ex) {
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Ops, LogMgr.Level.Warning,
+           "Unable to contact plui!\n  " + ex.getMessage()); 
+
+        return false;
+      }
+    }
+
+    private String pNodeName; 
   }
 
 
