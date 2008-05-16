@@ -2,12 +2,13 @@
 instbindir = @ROOT_INST_DIR@/@NATIVE_OSTYPE@-@NATIVE_ARCHTYPE@-Opt/bin
 
 instbin_SCRIPTS = \
+  plbuilder.bat \
   plplugin.bat \
+  plpython.bat \
   plremote.bat \
   plscript.bat \
   plscript-batch.bat \
-  plpython.bat \
-  plbuilder.bat
+  plversion.bat
 
 
 instsbindir = @ROOT_INST_DIR@/@NATIVE_OSTYPE@-@NATIVE_ARCHTYPE@-Opt/sbin

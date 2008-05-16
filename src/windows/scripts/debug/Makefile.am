@@ -2,17 +2,18 @@
 instbindir = @ROOT_INST_DIR@/@NATIVE_OSTYPE@-@NATIVE_ARCHTYPE@-Debug/bin
 
 instbin_SCRIPTS = \
+  plbuilder.bat \
   plplugin.bat \
-  pltestheavy.bat \
-  pltestlight.bat \
-  pltestnative.bat \
+  plpython.bat \
   plremote.bat \
   plscript.bat \
   plscript-batch.bat \
-  plpython.bat \
+  pltestheavy.bat \
+  pltestlight.bat \
+  pltestnative.bat \
   plui2.bat \
   plui2-j2dgl.bat \
-  plbuilder.bat
+  plversion.bat 
 
 
 instsbindir = @ROOT_INST_DIR@/@NATIVE_OSTYPE@-@NATIVE_ARCHTYPE@-Debug/sbin
@@ -28,6 +29,7 @@ WIN_JYTHON_JAR = $(shell echo '@JYTHON_JAR@' | sed -e 's|/|\\\\\\\\|g')
 WIN_GLUEGEN_JAR = $(shell echo '@GLUEGEN_JAR@' | sed -e 's|/|\\\\\\\\|g')
 WIN_JOGL_LIBRARY_PATH = $(shell echo '@JOGL_LIBRARY_PATH@' | sed -e 's|/|\\\\\\\\|g')
 WIN_PIPELINE_PYARCHDIR = $(shell echo '@PIPELINE_PYARCHDIR@' | sed -e 's|/|\\\\\\\\|g')
+WIN_SPLASH_DIR = $(shell echo '@SPLASH_DIR@' | sed -e 's|/|\\\\\\\\|g')
 
 
 %.bat: %.bat.src
@@ -38,4 +40,5 @@ WIN_PIPELINE_PYARCHDIR = $(shell echo '@PIPELINE_PYARCHDIR@' | sed -e 's|/|\\\\\
          | sed -e "s|@JYTHON_JAR@|$(WIN_JYTHON_JAR)|g" \
          | sed -e "s|@GLUEGEN_JAR@|$(WIN_GLUEGEN_JAR)|g" \
          | sed -e "s|@JOGL_LIBRARY_PATH@|$(WIN_JOGL_LIBRARY_PATH)|g" \
-         | sed -e "s|@PIPELINE_PYARCHDIR@|$(WIN_PIPELINE_PYARCHDIR)|g" > $@) 
+         | sed -e "s|@PIPELINE_PYARCHDIR@|$(WIN_PIPELINE_PYARCHDIR)|g" \
+         | sed -e "s|@SPLASH_DIR@|$(WIN_SPLASH_DIR)|g" > $@) 

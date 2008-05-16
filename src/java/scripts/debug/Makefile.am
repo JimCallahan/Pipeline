@@ -2,17 +2,18 @@
 instbindir = @ROOT_INST_DIR@/@NATIVE_OSTYPE@-@NATIVE_ARCHTYPE@-Debug/bin
 
 instbin_SCRIPTS = \
+  plbuilder \
   plplugin \
+  plpython \
   plremote \
   plscript \
   plscript-batch \
-  plpython \
-  plui \
-  plui-j2dgl \
   pltestnative \
   pltestheavy \
   pltestlight \
-  plbuilder
+  plui \
+  plui-j2dgl \
+  plversion
 
 
 instsbindir = @ROOT_INST_DIR@/@NATIVE_OSTYPE@-@NATIVE_ARCHTYPE@-Debug/sbin

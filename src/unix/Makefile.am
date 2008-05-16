@@ -1,2 +1,4 @@
 
-SUBDIRS = icons
+SUBDIRS = \
+  icons \
+  splash
