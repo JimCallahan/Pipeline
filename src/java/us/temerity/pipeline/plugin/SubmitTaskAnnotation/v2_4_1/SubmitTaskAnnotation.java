@@ -1,4 +1,4 @@
-// $Id: SubmitTaskAnnotation.java,v 1.3 2008/05/15 22:38:17 jesse Exp $
+// $Id: SubmitTaskAnnotation.java,v 1.4 2008/05/16 04:53:54 jim Exp $
 
 package us.temerity.pipeline.plugin.SubmitTaskAnnotation.v2_4_1;
 
@@ -27,6 +27,11 @@ import java.util.*;
  *     The name of the project this task part of achieving.
  *   </DIV> <BR> 
  * 
+ *   Entity Type <BR>
+ *   <DIV style="margin-left: 40px;">
+ *     The Shotgun entity type owning this task or [[IGNORE]] if not using Shotgun.
+ *   </DIV> <BR> 
+ *   
  *   Task Name <BR>
  *   <DIV style="margin-left: 40px;">
  *     The name of the overall production goal this node is used to achieve.  Typically, this
@@ -36,11 +41,6 @@ import java.util.*;
  *   Task Type <BR>
  *   <DIV style="margin-left: 40px;">
  *     The standard type of production goal this node is used to achieve.
- *   </DIV> <BR> 
- *   
- *   Entity Type <BR>
- *   <DIV style="margin-left: 40px;">
- *     The Shotgun entity type that this task is part of.  
  *   </DIV> <BR> 
  *   
  *   Custom Task Type <BR>
@@ -82,6 +82,16 @@ class SubmitTaskAnnotation
       addParam(param);
     }
  
+    {
+      String choices[] = {"Shot", "Asset", "[[IGNORE]]"};
+      AnnotationParam param = 
+        new EnumAnnotationParam
+        (aEntityType, 
+         "The Shotgun entity type owning this task or [[IGNORE]] if not using Shotgun.", 
+         "[[IGNORE]]", new ArrayList<String>(Arrays.asList(choices))); 
+      addParam(param);
+    }
+
     {
       AnnotationParam param = 
         new StringAnnotationParam
@@ -132,26 +142,14 @@ class SubmitTaskAnnotation
     }
     
     {
-      String choices[] = {"Shot", "Asset"};
-      AnnotationParam param = 
-        new EnumAnnotationParam
-        (aEntityType, 
-         "The Shotgun entity type that this task represents.  " +
-         "Can be ignored if this task is not being used with Shotgun.", 
-         "Asset", new ArrayList<String>(Arrays.asList(choices))); 
-      addParam(param);
-    }
-    
-    {
       ArrayList<String> layout = new ArrayList<String>();
       layout.add(aProjectName);
+      layout.add(aEntityType);
       layout.add(aTaskName);
       layout.add(aTaskType);
       layout.add(aCustomTaskType);
       layout.add(aPurpose);
       layout.add(null);
-      layout.add(aEntityType);
-      layout.add(null); 
       layout.add(aAssignedTo);
 
       setLayout(layout);
@@ -169,11 +167,10 @@ class SubmitTaskAnnotation
   private static final long serialVersionUID = -3034801411821239877L;
 
   public static final String aProjectName    = "ProjectName";
+  public static final String aEntityType     = "EntityType";
   public static final String aTaskName       = "TaskName";
   public static final String aTaskType       = "TaskType";
-  public static final String aEntityType     = "EntityType";
   public static final String aCustomTaskType = "CustomTaskType";
   public static final String aAssignedTo     = "AssignedTo";
-  
-  public static final String aPurpose = "Purpose";
+  public static final String aPurpose        = "Purpose";
 }

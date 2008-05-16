@@ -1,4 +1,4 @@
-// $Id: ApproveTaskAnnotation.java,v 1.2 2008/05/15 22:38:33 jesse Exp $
+// $Id: ApproveTaskAnnotation.java,v 1.3 2008/05/16 04:53:53 jim Exp $
 
 package us.temerity.pipeline.plugin.ApproveTaskAnnotation.v2_4_1;
 
@@ -26,6 +26,11 @@ import us.temerity.pipeline.builder.v2_4_1.*;
  *     The name of the project this task part of achieving.
  *   </DIV> <BR> 
  * 
+ *   Entity Type <BR>
+ *   <DIV style="margin-left: 40px;">
+ *     The Shotgun entity type owning this task or [[IGNORE]] if not using Shotgun.
+ *   </DIV> <BR> 
+ *   
  *   Task Name <BR>
  *   <DIV style="margin-left: 40px;">
  *     The name of the overall production goal this node is used to achieve.  Typically, this
@@ -42,11 +47,6 @@ import us.temerity.pipeline.builder.v2_4_1.*;
  *     A unique type of production goal this node is used to achieve which is not one 
  *     of the standard type available in TaskType.  If a custom type is specified, the
  *     TaskType parameter should be set to [[CUSTOM]].
- *   </DIV> <BR> 
- *   
- *   Entity Type <BR>
- *   <DIV style="margin-left: 40px;">
- *     The Shotgun entity type that this task is part of.  
  *   </DIV> <BR> 
  *   
  *   Purpose <BR>
@@ -95,6 +95,16 @@ class ApproveTaskAnnotation
     }
  
     {
+      String choices[] = {"Shot", "Asset", "[[IGNORE]]"};
+      AnnotationParam param = 
+        new EnumAnnotationParam
+        (aEntityType, 
+         "The Shotgun entity type owning this task or [[IGNORE]] if not using Shotgun.", 
+         "[[IGNORE]]", new ArrayList<String>(Arrays.asList(choices))); 
+      addParam(param);
+    }
+    
+    {
       AnnotationParam param = 
         new StringAnnotationParam
         (aTaskName, 
@@ -134,17 +144,6 @@ class ApproveTaskAnnotation
     }
     
     {
-      String choices[] = {"Shot", "Asset"};
-      AnnotationParam param = 
-        new EnumAnnotationParam
-        (aEntityType, 
-         "The Shotgun entity type that this task represents.  " +
-         "Can be ignored if this task is not being used with Shotgun.", 
-         "Asset", new ArrayList<String>(Arrays.asList(choices))); 
-      addParam(param);
-    }
-
-    {
       AnnotationParam param = 
         new WorkGroupAnnotationParam
         (aSupervisedBy, 
@@ -171,6 +170,7 @@ class ApproveTaskAnnotation
     {
       ArrayList<String> layout = new ArrayList<String>();
       layout.add(aProjectName);
+      layout.add(aEntityType);
       layout.add(aTaskName);
       layout.add(aTaskType);
       layout.add(aCustomTaskType);
@@ -195,12 +195,11 @@ class ApproveTaskAnnotation
   private static final long serialVersionUID = -4878446837381185164L;
 
   public static final String aProjectName     = "ProjectName";
+  public static final String aEntityType      = "EntityType";
   public static final String aTaskName        = "TaskName";
   public static final String aTaskType        = "TaskType";
-  public static final String aEntityType      = "EntityType";
   public static final String aCustomTaskType  = "CustomTaskType";
   public static final String aSupervisedBy    = "SupervisedBy";
   public static final String aApprovalBuilder = "ApprovalBuilder";
-  
-  public static final String aPurpose = "Purpose";
+  public static final String aPurpose         = "Purpose";
 }
