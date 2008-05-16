@@ -93,7 +93,9 @@ def htmlHelp():
 if len(sys.argv) != 2:
     usage()
 
+checkedIn = False
 input = None
+
 opt = sys.argv[1]
 if opt == '-':
     input = sys.stdin
@@ -109,7 +111,10 @@ elif opt == '--copyright':
     copyright()
 elif opt == '--license':
     license()
-elif opt.startswith('checked-in') or opt.startswith('working'):
+elif opt.startswith('checked-in'):
+    req = opt
+    checkedIn = True
+elif opt.startswith('working'):
     req = opt
 else:
     try:
@@ -138,17 +143,21 @@ try:
 except:
     s.close()
     print 'Unable to connect to a running plui!'
-    print 'Starting plui and trying again...'
-    os.system('@PLUI_PATH@ --no-selections &')
-    time.sleep(60)
+    if checkedIn: 
+        print 'Running plscript instead...'
+        os.system('@PLSCRIPT_PATH@ ' + req)
+    else:
+        print 'Starting plui and trying again...'
+        os.system('@PLUI_PATH@ --no-selections &')
+        time.sleep(60) 
 
-    s2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    try:
-        s2.connect(('localhost', @PL_REMOTE_PORT@))
-        s2.send(req)
-        s2.close()
-    except:
-        s2.close()
-        print 'Unable to start plui!'
-        sys.exit(1)
+        s2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        try:
+            s2.connect(('localhost', @PL_REMOTE_PORT@))
+            s2.send(req)
+            s2.close()
+        except:
+            s2.close()
+            print 'Unable to start plui!'
+            sys.exit(1)
         
