@@ -1,4 +1,4 @@
-// $Id: FileMgrDirectClient.java,v 1.9 2007/10/30 06:06:48 jim Exp $
+// $Id: FileMgrDirectClient.java,v 1.10 2008/05/16 01:11:40 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -440,6 +440,31 @@ class FileMgrDirectClient
       new FileChangeModeReq(id, mod.getSequences(), writeable);
 
     Object obj = pFileMgr.changeMode(req);
+    handleSimpleResponse(obj);
+  }
+
+  /**
+   * Update the last modification time stamp of all files associated with the given 
+   * working version.
+   * 
+   * @param id 
+   *   The unique working version identifier.
+   * 
+   * @param mod 
+   *   The working version of the node.
+   */ 
+  public void 
+  touchAll 
+  (
+   NodeID id, 
+   NodeMod mod
+  ) 
+    throws PipelineException
+  {
+    FileTouchAllReq req = 
+      new FileTouchAllReq(id, mod.getSequences());
+
+    Object obj = pFileMgr.touchAll(req);
     handleSimpleResponse(obj);
   }
 

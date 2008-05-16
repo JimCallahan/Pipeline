@@ -1,4 +1,4 @@
-// $Id: FileMgrClient.java,v 1.42 2007/10/30 06:06:48 jim Exp $
+// $Id: FileMgrClient.java,v 1.43 2008/05/16 01:11:40 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -111,7 +111,7 @@ interface FileMgrClient
    * @param latest 
    *   The revision number of the latest checked-in version.
    * 
-   * @param critical
+   * @param ctime
    *   The last legitimate change time (ctime) of the file.
    * 
    * @param states
@@ -135,7 +135,7 @@ interface FileMgrClient
    VersionState vstate, 
    boolean isFrozen, 
    VersionID latest, 
-   long critical, 
+   long ctime, 
    TreeMap<FileSeq, FileState[]> states, 
    TreeMap<FileSeq, Long[]> timestamps
   ) 
@@ -336,6 +336,24 @@ interface FileMgrClient
    NodeID id, 
    NodeMod mod, 
    boolean writeable
+  ) 
+    throws PipelineException;
+
+  /**
+   * Update the last modification time stamp of all files associated with the given 
+   * working version.
+   * 
+   * @param id 
+   *   The unique working version identifier.
+   * 
+   * @param mod 
+   *   The working version of the node.
+   */ 
+  public void 
+  touchAll 
+  (
+   NodeID id, 
+   NodeMod mod
   ) 
     throws PipelineException;
 

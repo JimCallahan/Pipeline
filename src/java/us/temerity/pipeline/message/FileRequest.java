@@ -1,4 +1,4 @@
-// $Id: FileRequest.java,v 1.23 2007/10/23 02:29:58 jim Exp $
+// $Id: FileRequest.java,v 1.24 2008/05/16 01:11:41 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -84,6 +84,11 @@ enum FileRequest
    * An instance of {@link FileChangeModeReq} is next.
    */
   ChangeMode,
+
+  /**
+   * An instance of {@link FileTouchAllReq} is next.
+   */
+  TouchAll,
 
   /**
    * An instance of {@link FileDeleteCheckedInReq} is next.

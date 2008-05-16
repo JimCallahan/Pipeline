@@ -1,4 +1,4 @@
-// $Id: FileStateReq.java,v 1.7 2007/03/28 19:56:42 jim Exp $
+// $Id: FileStateReq.java,v 1.8 2008/05/16 01:11:41 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -47,7 +47,7 @@ class FileStateReq
    * @param latest 
    *   The revision number of the latest checked-in version.
    * 
-   * @param critical
+   * @param ctime
    *   The last legitimate change time (ctime) of the file.
    * 
    * @param fseqs 
@@ -61,7 +61,7 @@ class FileStateReq
    boolean isFrozen, 
    VersionID working, 
    VersionID latest, 
-   long critical, 
+   long ctime, 
    TreeSet<FileSeq> fseqs
   )
   { 
@@ -107,7 +107,7 @@ class FileStateReq
     pWorkingVersionID = working;
     pLatestVersionID  = latest;
 
-    pCriticalStamp = critical;
+    pChangeStamp = ctime;
 
     if(fseqs == null) 
       throw new IllegalArgumentException("The working file sequences cannot (null)!");
@@ -171,9 +171,9 @@ class FileStateReq
    * Gets the last legitimate change time (ctime) of the file.
    */
   public long
-  getCriticalStamp() 
+  getChangeStamp() 
   {
-    return pCriticalStamp;
+    return pChangeStamp;
   }
   
   /**
@@ -232,7 +232,7 @@ class FileStateReq
   /**
    * The last legitimate change time (ctime) of the file.
    */ 
-  private long  pCriticalStamp; 
+  private long  pChangeStamp; 
 
   /** 
    * The primary and secondary file sequences associated with the working version. 

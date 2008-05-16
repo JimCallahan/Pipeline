@@ -1,4 +1,4 @@
-// $Id: FileMgrServer.java,v 1.38 2008/04/24 08:08:42 jim Exp $
+// $Id: FileMgrServer.java,v 1.39 2008/05/16 01:11:40 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -323,6 +323,14 @@ class FileMgrServer
                 {
                   FileChangeModeReq req = (FileChangeModeReq) objIn.readObject();
                   objOut.writeObject(pFileMgr.changeMode(req));
+                  objOut.flush(); 
+                }
+                break;
+
+              case TouchAll:
+                {
+                  FileTouchAllReq req = (FileTouchAllReq) objIn.readObject();
+                  objOut.writeObject(pFileMgr.touchAll(req));
                   objOut.flush(); 
                 }
                 break;

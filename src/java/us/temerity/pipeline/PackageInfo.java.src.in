@@ -1,4 +1,4 @@
-// $Id: PackageInfo.java.src.in,v 1.44 2008/05/12 04:07:49 jim Exp $
+// $Id: PackageInfo.java.src.in,v 1.45 2008/05/16 01:11:40 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -106,11 +106,10 @@ class PackageInfo
         break;
         
       case UnivBin:
-        System.err.print("os.arch = " + osArch + "\n");
-//      if(!osArch.equals("ppc") && !osArch.equals("???")) 
-//        throw new HostConfigException
-//          ("Attempting to run the (UnivBin) version on a machine with a (" + osArch + ") " +
-//           "CPU architecture!");
+        if(!osArch.equals("ppc") && !osArch.equals("x86") && !osArch.equals("x86_64"))
+          throw new HostConfigException
+            ("Attempting to run the (UnivBin) version on a machine with a (" + osArch + ") " +
+             "CPU architecture!");
         break;
       }
     }

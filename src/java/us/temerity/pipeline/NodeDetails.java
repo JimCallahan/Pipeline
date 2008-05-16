@@ -1,4 +1,4 @@
-// $Id: NodeDetails.java,v 1.19 2007/06/15 00:27:31 jim Exp $
+// $Id: NodeDetails.java,v 1.20 2008/05/16 01:11:40 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -138,16 +138,8 @@ class NodeDetails
    * The <CODE>fileTimeStamps</CODE> argument contains the timestamp which is most relevant
    * (newest) for determining when each file index was last modified.  This timestamp may be
    * the last modification date for the primary/secondary file sequence, the timestamp of 
-   * when the last critical modification of node properties occurred or when the node state
-   * was computed in the case of missing files. <P> 
-   * 
-   * If the <CODE>ignoreTimeStamps</CODE> argument is <CODE>true</CODE> for a file index, 
-   * then the timestamp stored in <CODE>fileTimeStamps</CODE> should usually be ignored when 
-   * computing whether downstream nodes are {@link OverallQueueState#Stale Stale} due to this
-   * node being newer.  However, if the working revision number of this node does not match
-   * the revision number of the link from the downstream node who's 
-   * {@link OverallQueueState OverallQueueState} is being computed, the timestamp should 
-   * be considered regardless of the value of <CODE>ignoreTimeStamps</CODE>. <P> 
+   * when the last critical modification of node properties or links occurred.  For missing
+   * files, this timestamp will be when the node state was computed last computed.<P> 
    * 
    * @param name 
    *   The fully resolved node name.
@@ -189,15 +181,14 @@ class NodeDetails
    *   The newest timestamp which needs to be considered when computing whether each file 
    *   index is {@link QueueState#Stale Stale}.
    * 
-   * @param ignoreTimeStamps
-   *   Whether the timestamp stored in <CODE>fileTimeStamps</CODE> should be ignored
-   *   when computing whether each file index is {@link QueueState#Stale Stale}.
-   * 
    * @param jobIDs
    *   The unique job identifiers associated with all file sequences. 
    * 
    * @param queueStates
    *   The queue states associated with all file sequences. 
+   * 
+   * @param updateStates
+   *   The update states associated with all file sequences. 
    */
   public 
   NodeDetails
@@ -215,9 +206,9 @@ class NodeDetails
    LinkState linkState, 
    TreeMap<FileSeq,FileState[]> fileStates, 
    long[] fileTimeStamps, 
-   boolean[] ignoreTimeStamps, 
    Long[] jobIDs, 
-   QueueState[] queueStates
+   QueueState[] queueStates, 
+   UpdateState[] updateStates
   ) 
   {
     if(name == null) 
@@ -261,11 +252,12 @@ class NodeDetails
     for(FileSeq fseq : fileStates.keySet())
       pFileStates.put(fseq, fileStates.get(fseq).clone());
 
-    pFileTimeStamps   = fileTimeStamps.clone();
-    pIgnoreTimeStamps = ignoreTimeStamps.clone();
+    pFileTimeStamps = fileTimeStamps.clone();
 
     pJobIDs      = jobIDs.clone();
     pQueueStates = queueStates.clone();
+
+    pUpdateStates = updateStates.clone();
   }
 
 
@@ -506,23 +498,6 @@ class NodeDetails
   }
 
   /**
-   * Whether the timestamps returned by {@link #getFileTimeStamps getFileTimeStamps} should 
-   * be ignored when computing whether each file index is {@link QueueState#Stale Stale}.
-   * 
-   * @throws 
-   *   IllegalStateException if this node details are lightweight. 
-   *   See {@link #isLightweight} for details.
-   */ 
-  public boolean[] 
-  ignoreTimeStamps() 
-  {
-    if(pIsLightweight)
-      throw new IllegalStateException
-        ("This operation is not supported for lightweight NodeDetails!");
-    return pIgnoreTimeStamps;
-  }
-
-  /**
    * Get the unique job identifiers associated with the file sequences.
    * 
    * @throws 
@@ -552,6 +527,22 @@ class NodeDetails
       throw new IllegalStateException
         ("This operation is not supported for lightweight NodeDetails!");
     return pQueueStates;
+  }
+
+  /**
+   * Get the update states associated with the file sequences.
+   * 
+   * @throws 
+   *   IllegalStateException if this node details are lightweight. 
+   *   See {@link #isLightweight} for details.
+   */ 
+  public UpdateState[]
+  getUpdateState() 
+  {
+    if(pIsLightweight)
+      throw new IllegalStateException
+        ("This operation is not supported for lightweight NodeDetails!");
+    return pUpdateStates;
   }
 
 
@@ -619,9 +610,9 @@ class NodeDetails
     out.writeObject(pOverallQueueState);
     out.writeObject(pFileStates);
     out.writeObject(pFileTimeStamps);
-    out.writeObject(pIgnoreTimeStamps);
     out.writeObject(pJobIDs);
     out.writeObject(pQueueStates);
+    out.writeObject(pUpdateStates);
   }
 
   /**
@@ -679,9 +670,9 @@ class NodeDetails
      pOverallQueueState = (OverallQueueState) in.readObject();
      pFileStates = (TreeMap<FileSeq,FileState[]>) in.readObject();
      pFileTimeStamps = (long[]) in.readObject();
-     pIgnoreTimeStamps = (boolean[]) in.readObject();
      pJobIDs = (Long[]) in.readObject();
      pQueueStates = (QueueState[]) in.readObject();
+     pUpdateStates = (UpdateState[]) in.readObject();
   }
   
 
@@ -724,9 +715,9 @@ class NodeDetails
       encoder.encode("OverallQueueState", pOverallQueueState);
       encoder.encode("FileStates", pFileStates);
       encoder.encode("FileTimeStamps", pFileTimeStamps);
-      encoder.encode("IgnoreTimeStamps", pIgnoreTimeStamps);
       encoder.encode("JobIDs", pJobIDs);
       encoder.encode("QueueStates", pQueueStates);
+      encoder.encode("UpdateStates", pUpdateStates);
     }
   }
   
@@ -843,16 +834,10 @@ class NodeDetails
   private TreeMap<FileSeq,FileState[]> pFileStates;
   
   /**
-   * The newest timestamp which needs to be considered when computing wheter each file 
-   * index is {@link QueueState#Stale Stale}. <P> 
+   * The newest timestamp which needs to be considered when computing whether each file 
+   * index is up-to-date.  
    */
   private long[] pFileTimeStamps;
-
-  /**
-   * Whether the timestamps returned by {@link #getFileTimeStamps getFileTimeStamps} should 
-   * be ignored when computing whether each file index is {@link QueueState#Stale Stale}.
-   */
-  private boolean[] pIgnoreTimeStamps;
 
   /** 
    * The unique job identifiers of the job which generates individual files associated with 
@@ -865,6 +850,12 @@ class NodeDetails
    * which generate them. 
    */   
   private QueueState pQueueStates[];
+
+  /** 
+   * A cache of the reasons that individual files associated with a node might not be 
+   * up-to-date based on the QueueStates of upstream file dependencies. 
+   */   
+  private UpdateState pUpdateStates[];
   
 }
 

@@ -1,4 +1,4 @@
-// $Id: FileMgrNetClient.java,v 1.11 2007/10/30 06:06:48 jim Exp $
+// $Id: FileMgrNetClient.java,v 1.12 2008/05/16 01:11:40 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -471,6 +471,33 @@ class FileMgrNetClient
       new FileChangeModeReq(id, mod.getSequences(), writeable);
 
     Object obj = performLongTransaction(FileRequest.ChangeMode, req, 15000, 60000);  
+    handleSimpleResponse(obj);
+  }
+
+  /**
+   * Update the last modification time stamp of all files associated with the given 
+   * working version.
+   * 
+   * @param id 
+   *   The unique working version identifier.
+   * 
+   * @param mod 
+   *   The working version of the node.
+   */ 
+  public void 
+  touchAll 
+  (
+   NodeID id, 
+   NodeMod mod
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+
+    FileTouchAllReq req = 
+      new FileTouchAllReq(id, mod.getSequences());
+
+    Object obj = performLongTransaction(FileRequest.TouchAll, req, 15000, 60000);  
     handleSimpleResponse(obj);
   }
 

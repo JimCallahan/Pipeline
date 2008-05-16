@@ -381,6 +381,7 @@ PLG_UTIL_SOURCES = $(shell ls $(srcdir)/plugin/*.java)
                    PluginMgrOptsParser \
                    QueueMgrOptsParser \
                    ScriptOptsParser \
+                   VersionOptsParser \
                    TestNativeOptsParser \
                    ValidateOptsParser \
                    GlueParser \

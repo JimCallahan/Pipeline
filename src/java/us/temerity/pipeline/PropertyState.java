@@ -1,4 +1,4 @@
-// $Id: PropertyState.java,v 1.7 2008/04/21 06:15:10 jim Exp $
+// $Id: PropertyState.java,v 1.8 2008/05/16 01:11:40 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -68,19 +68,7 @@ enum PropertyState
   /**
    * The working version and latest checked-in version of the node have different node
    * properties, yet these differences are entirely due to changes to the working version 
-   * since the time it was checked-out.  However, the changes are limited to properties 
-   * which do not directly affect how the contents of files associated with the node are 
-   * generated.  For example, changing the Editor plugin property.  The 
-   * <CODE>VersionState</CODE> must be {@link VersionState#Identical Identical}.
-   */
-  TrivialMod, 
-
-  /**
-   * The working version and latest checked-in version of the node have different node
-   * properties, yet these differences are entirely due to changes to the working version 
-   * since the time it was checked-out.  The changes include properties which do affect the 
-   * how the contents of files associated with the node are generated.  For example, changing
-   * a parameter of an enabled Action plugin. The <CODE>VersionState</CODE> must be 
+   * since the time it was checked-out.  The <CODE>VersionState</CODE> must be 
    * {@link VersionState#Identical Identical}.
    */
   Modified, 
@@ -149,7 +137,6 @@ enum PropertyState
     "Pending", 
     "Checked-In", 
     "Identical", 
-    "Trivial Mod", 
     "Modified", 
     "Needs Check-Out", 
     "Conflicted"

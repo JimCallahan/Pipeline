@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.84 2008/05/12 04:07:49 jim Exp $
+// $Id: UIMaster.java,v 1.85 2008/05/16 01:11:41 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -3111,6 +3111,20 @@ class UIMaster
   }
 
   /**
+   * Show an error message dialog with the given title and message.
+   */ 
+  public void 
+  showErrorDialog
+  (
+   String title, 
+   String msg
+  ) 
+  {
+    pErrorDialog.setMessage(title, msg);
+    SwingUtilities.invokeLater(new ShowErrorDialogTask());
+  }
+
+  /**
    * Show a short generic message dialog. 
    */ 
   public void 
@@ -3135,20 +3149,6 @@ class UIMaster
   ) 
   {
     SwingUtilities.invokeLater(new ShowInfoDialogTask(owner, title, msg));
-  }
-
-  /**
-   * Show an error message dialog with the given title and message.
-   */ 
-  public void 
-  showErrorDialog
-  (
-   String title, 
-   String msg
-  ) 
-  {
-    pErrorDialog.setMessage(title, msg);
-    SwingUtilities.invokeLater(new ShowErrorDialogTask());
   }
 
   /**

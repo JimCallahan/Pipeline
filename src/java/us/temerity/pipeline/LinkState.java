@@ -1,4 +1,4 @@
-// $Id: LinkState.java,v 1.7 2008/04/21 06:15:10 jim Exp $
+// $Id: LinkState.java,v 1.8 2008/05/16 01:11:40 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -62,20 +62,8 @@ enum LinkState
   /**
    * The working version and latest checked-in version of the node have different 
    * upstream node links, yet these differences are entirely due to changes to the working 
-   * version since the time it was checked-out.  However, the changes to the upstream links
-   * do not not directly affect how the contents of files associated with the node are 
-   * generated.  For example, adding or removing an Association link.  The 
-   * <CODE>VersionState</CODE> must be {@link VersionState#Identical Identical}. 
-   */
-  TrivialMod, 
-
-  /**
-   * The working version and latest checked-in version of the node have different 
-   * upstream node links, yet these differences are entirely due to changes to the working 
-   * version since the time it was checked-out.  The changes to the upstream links do affect 
-   * how the contents of files associated with the node are generated.  For example, 
-   * adding a new Dependency link or changing the version of the upstream node of such a 
-   * link.  The <CODE>VersionState</CODE> must be {@link VersionState#Identical Identical}. 
+   * version since the time it was checked-out.  The <CODE>VersionState</CODE> must be 
+   * {@link VersionState#Identical Identical}. 
    */
   Modified, 
 
@@ -143,7 +131,6 @@ enum LinkState
     "Pending", 
     "Checked-In", 
     "Identical",   
-    "Trivial Mod", 
     "Modified", 
     "Needs Check-Out", 
     "Conflicted"

@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.59 2008/05/04 00:40:16 jim Exp $
+// $Id: NodeMod.java,v 1.60 2008/05/16 01:11:40 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -31,8 +31,7 @@ class NodeMod
   NodeMod()
   {
     pSources = new TreeMap<String,LinkMod>();
-    updateLastCriticalMod();
-    pLastFinishedSources = new TreeMap<String,VersionID>();
+    initTimeStamps(); 
   }
 
   /**
@@ -108,12 +107,7 @@ class NodeMod
 	  toolset, editor, action, isActionEnabled, jobReqs, overflow, execution, batchSize);
     
     pSources = new TreeMap<String,LinkMod>();
-
-    pTimeStamp = TimeStamps.now();
-    updateLastCriticalMod();
-    pLastVouched = pTimeStamp;
-
-    pLastFinishedSources = new TreeMap<String,VersionID>();
+    initTimeStamps(); 
   }
 
   /**
@@ -155,12 +149,7 @@ class NodeMod
 	  toolset, editor);
     
     pSources = new TreeMap<String,LinkMod>();
-
-    pTimeStamp = TimeStamps.now();
-    updateLastCriticalMod();
-    pLastVouched = pTimeStamp;
-
-    pLastFinishedSources = new TreeMap<String,VersionID>();
+    initTimeStamps();
   }
 
   /** 
@@ -212,12 +201,10 @@ class NodeMod
       pSources.put(link.getName(), new LinkMod(link));
     }
 
-    pTimeStamp       = timestamp;
-    pLastMod         = timestamp;
-    pLastCriticalMod = timestamp;
-    pLastVouched     = timestamp; 
-
-    pLastFinishedSources = new TreeMap<String,VersionID>();
+    pTimeStamp             = timestamp;
+    pLastMod               = timestamp;
+    pLastCriticalMod       = timestamp;
+    pLastCriticalSourceMod = timestamp;
   }
 
 
@@ -243,21 +230,149 @@ class NodeMod
     for(LinkMod link : mod.getSources()) 
       pSources.put(link.getName(), new LinkMod(link));
 
-    pTimeStamp       = mod.getTimeStamp();
-    pLastMod         = mod.getLastModification();
-    pLastCriticalMod = mod.getLastCriticalModification();
-    pLastCTimeUpdate = mod.getLastCTimeUpdate(); 
-    pLastVouched     = mod.getLastVouched();
-
-    if(mod.pLastFinishedVersion != null) 
-      pLastFinishedVersion = new NodeMod(mod.pLastFinishedVersion);
-
-    pLastFinishedSources = new TreeMap<String,VersionID>();
-    if(mod.pLastFinishedSources != null) 
-      pLastFinishedSources.putAll(mod.pLastFinishedSources);
+    pTimeStamp             = mod.getTimeStamp();
+    pLastMod               = mod.getLastModification();
+    pLastCriticalMod       = mod.getLastCriticalModification();
+    pLastCriticalSourceMod = mod.getLastCriticalSourceModification();
+    pLastCTimeUpdate       = mod.getLastCTimeUpdate(); 
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+  /*   T I M E S T A M P S                                                                  */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Initialize the value of all timestamps to now.
+   */ 
+  private void
+  initTimeStamps()
+  {
+    long now = TimeStamps.now();
+
+    pTimeStamp             = now; 
+    pLastMod               = now; 
+    pLastCriticalMod       = now; 
+    pLastCriticalSourceMod = now; 
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get timestamp (milliseconds since midnight, January 1, 1970 UTC) of when the working 
+   * version was created.
+   */ 
+  public long
+  getTimeStamp() 
+  {
+    return pTimeStamp;
+  }
+
+ 
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Have there been any modifications to this working version since the time it was created.
+   */ 
+  public boolean 
+  hasModication() 
+  {
+    return (pLastMod > pTimeStamp); 
+  }
+
+  /** 
+   * Get the timestamp (milliseconds since midnight, January 1, 1970 UTC) of the last 
+   * modification to any property or link of this working version.
+   */
+  public long
+  getLastModification() 
+  {
+    return pLastMod;
+  }
+
+  /**
+   * Update the last modification timestamp.
+   */
+  private void 
+  updateLastMod()
+  {
+    pLastMod = TimeStamps.now();
+  }
+
+ 
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Get the timestamp (milliseconds since midnight, January 1, 1970 UTC) of the last 
+   * modification of the properties of this working version which could invalidate the 
+   * up-to-date status of the files associated with the node.
+   */
+  public long
+  getLastCriticalModification() 
+  {
+    return pLastCriticalMod;
+  }
+
+  /**
+   * Update the last critical modification timestamp.
+   */
+  private void 
+  updateLastCriticalMod()
+  {
+    updateLastMod(); 
+    pLastCriticalMod = pLastMod;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Get the timestamp (milliseconds since midnight, January 1, 1970 UTC) of the last 
+   * modification of the sources of this working version which could invalidate the 
+   * up-to-date status of the files associated with the node.
+   */
+  public long
+  getLastCriticalSourceModification() 
+  {
+    return pLastCriticalSourceMod;
+  }
+
+  /**
+   * Update the last critical source modification timestamp.
+   */
+  private void 
+  updateLastCriticalSourceMod()
+  {
+    updateLastMod(); 
+    pLastCriticalSourceMod = pLastMod;
+  }
+
+ 
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Get the timestamp (milliseconds since midnight, January 1, 1970 UTC) of the last update 
+   * of the change time (ctime) for any file associated with the node. 
+   */
+  public long
+  getLastCTimeUpdate() 
+  {
+    if(pLastCTimeUpdate != null) 
+      return pLastCTimeUpdate;
+    return Math.max(pLastCriticalMod, pLastCriticalSourceMod); 
+  }
+
+  /**
+   * Update the last critical modification timestamp.
+   */
+  public void 
+  updateLastCTimeUpdate() 
+  {
+    pLastCTimeUpdate = TimeStamps.now();
+  }
+  
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
@@ -284,6 +399,28 @@ class NodeMod
     return pIsLocked;
   }
   
+  /**
+   * Whether the OverallNodeState of this node has the potential to become Dubious. <P> 
+   * 
+   * A node may become Dubious if it does not have an enabled action and has at least one 
+   * Dependency/Reference link.
+   */ 
+  public boolean
+  canBeDubious() 
+  {
+    if(!isActionEnabled()) {
+      for(LinkMod link : pSources.values()) {
+        switch(link.getPolicy()) {
+        case Dependency:
+        case Reference:
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -329,161 +466,6 @@ class NodeMod
   }
   
 
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Get timestamp (milliseconds since midnight, January 1, 1970 UTC) of when the working 
-   * version was created.
-   */ 
-  public long
-  getTimeStamp() 
-  {
-    return pTimeStamp;
-  }
-
- 
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Have there been any modifications to this working version since the time it was created.
-   */ 
-  public boolean 
-  hasMod() 
-  {
-    return (pLastMod > pTimeStamp); 
-  }
-
-  /** 
-   * Get the timestamp (milliseconds since midnight, January 1, 1970 UTC) of the last 
-   * modification of this working version.
-   */
-  public long
-  getLastModification() 
-  {
-    return pLastMod;
-  }
-
-  /**
-   * Update the last modification timestamp.
-   */
-  private void 
-  updateLastMod()
-  {
-    pLastMod = TimeStamps.now();
-  }
-
- 
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Have there been modifications to this working version since the time it was created 
-   * which could invalidate the up-to-date status of the files associated with the node.
-   */ 
-  public boolean 
-  hasCriticalMod() 
-  {
-    return (pLastCriticalMod > pTimeStamp); 
-  }
-
-  /** 
-   * Get the timestamp (milliseconds since midnight, January 1, 1970 UTC) of the last 
-   * modification of this working version which invalidates the up-to-date status of the 
-   * files associated with the node.
-   */
-  public long
-  getLastCriticalModification() 
-  {
-    return pLastCriticalMod;
-  }
-
-  /**
-   * Update the last critical modification timestamp.
-   */
-  private void 
-  updateLastCriticalMod()
-  {
-    pLastMod         = TimeStamps.now();
-    pLastCriticalMod = pLastMod;
-  }
-
- 
-  /*----------------------------------------------------------------------------------------*/
-
-  /** 
-   * Get the timestamp (milliseconds since midnight, January 1, 1970 UTC) of the last update 
-   * of the change time (ctime) for any file associated with the node. 
-   */
-  public long
-  getLastCTimeUpdate() 
-  {
-    if(pLastCTimeUpdate != null) 
-      return pLastCTimeUpdate;
-    return pLastCriticalMod;
-  }
-
-  /**
-   * Update the last critical modification timestamp.
-   */
-  public void 
-  updateLastCTimeUpdate() 
-  {
-    pLastCTimeUpdate = TimeStamps.now();
-  }
-
- 
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Whether the Vouch operation can have any effect on the node.<P> 
-   * 
-   * Users can Vouch for nodes without an enabled action and at least one Dependency link.
-   */ 
-  public boolean
-  canBeVouched() 
-  {
-    if(!isActionEnabled()) {
-      for(LinkMod link : pSources.values()) {
-        switch(link.getPolicy()) {
-        case Dependency:
-          return true;
-        }
-      }
-    }
-
-    return false;
-  }
-
-  /**
-   * Update the last vouched timestamp to now. <P> 
-   * 
-   * For nodes without an enabled action and at least one Dependency link, this signifies 
-   * that any relevant changes present in the file upstream of the Dependency have been 
-   * considered and all appropriate manual modifications have been made to the files 
-   * associated with this node to reflect these changes.<P> 
-   * 
-   * Nodes with an enabled action or without Dependency links cannot be Vouched for and 
-   * are siliently ignored by this method.
-   */ 
-  public void 
-  vouch() 
-  {
-    if(canBeVouched()) {
-      updateLastMod();
-      pLastVouched = pLastMod;
-    }
-  }
-
-  /** 
-   * Get the timestamp (milliseconds since midnight, January 1, 1970 UTC) of the last time
-   * a Vouch operation was performed on the node.
-   */
-  public long
-  getLastVouched() 
-  {
-    return pLastVouched; 
-  }
-
-  
   
   /*----------------------------------------------------------------------------------------*/
 
@@ -1358,7 +1340,7 @@ class NodeMod
     pSources.put(link.getName(), new LinkMod(link));
 
     if(critical)
-      updateLastCriticalMod();
+      updateLastCriticalSourceMod();
   }
 
   /** 
@@ -1408,7 +1390,7 @@ class NodeMod
     }
 
     if(critical)
-      updateLastCriticalMod();
+      updateLastCriticalSourceMod();
   }
   
   /** 
@@ -1442,177 +1424,10 @@ class NodeMod
     }
 
     if(critical)
-      updateLastCriticalMod();
+      updateLastCriticalSourceMod();
   }
 
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   N O D E    S T A T U S   C A C H I N G                                               */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Clear the contents of the cached copy of the working version properties and links 
-   * recorded at the last time when the OverallNodeState of the node was Finished.<P>
-   * 
-   * This method is used internally by the Master Manager to compute node status and should
-   * not ever be called from user code!
-   */ 
-  public void 
-  clearLastFinshedCache() 
-  {
-    pLastFinishedVersion = null;
-    pLastFinishedSources.clear();
-  }
-
-  /**
-   * Create a cached copy of the current working version properties and links to record the
-   * their value at the last time when the OverallNodeState of the node was Finished.<P> 
-   * 
-   * A cache will only be built if this working version has a currently enable action 
-   * since node's without actions are always Finished and the particulars of properties and 
-   * links to not contribute to making the node Finished.<P> 
-   * 
-   * This method is used internally by the Master Manager to compute node status and should
-   * not ever be called from user code!
-   * 
-   * @param vids
-   *   The current base revision numbers of the source nodes for all links.
-   */ 
-  public void 
-  updateLastFinshedCache
-  (
-   TreeMap<String,VersionID> vids
-  ) 
-  {
-    clearLastFinshedCache();
-
-    /* must have an enable action and 
-         at least one Dependency link (if there are any links) to be cached */ 
-    {
-      if(!isActionEnabled()) 
-        return;
-
-      if(!pSources.isEmpty()) {
-        boolean hasDependency = false;
-        for(LinkMod link : pSources.values()) {
-          switch(link.getPolicy()) {
-          case Dependency:
-            hasDependency = true;
-            break;
-          }
-        }
-        
-        if(!hasDependency) 
-          return;
-      }
-    }
-
-    pLastFinishedVersion = new NodeMod(this); 
-    pLastFinishedSources.putAll(vids);
-  }
-
-  /**
-   * Determine if the working version's critical properties have been modified since the
-   * last time the node's OverallQueueState was Finished. <P> 
-   * 
-   * This method is used internally by the Master Manager to compute node status and should
-   * not ever be called from user code!
-   * 
-   * @returns
-   *   Whether the properties have changed or if there is no cache to compare against.
-   */ 
-  public boolean 
-  hasModifiedPropertiesSinceLastFinished() 
-  {
-    /* if the node has never been Finished */ 
-    if(pLastFinishedVersion == null)
-      return true;
-
-    /* if there has been a critical modification of node properties
-         and the current state of the node properties is different than when last Finished */ 
-    if((pLastCriticalMod > pLastFinishedVersion.getLastCriticalModification()) &&
-       !identicalProperties(pLastFinishedVersion)) 
-      return true; 
-
-    return false;
-  }
-
-  /**
-   * Determine if the working version's links have been modified in a way which should cause
-   * the files associated with the node to become Stale since the last time the node's 
-   * OverallQueueState was Finished.<P> 
-   * 
-   * Modifications of links which would not affect the regeneration of the files associated 
-   * with the node are ignored by this method.  Examples of such trivial modifications 
-   * include locking/unlocking source nodes, freezing/unfreezing source nodes, adding or 
-   * removing Association links and changing the version of Association links.<P> 
-   * 
-   * This method is used internally by the Master Manager to compute node status and should
-   * not ever be called from user code!
-   * 
-   * @param table
-   *   The previously computed node status indexed by node name.
-   * 
-   * @returns
-   *   Whether the links have changed or if there is no cache to compare against.
-   */ 
-  public boolean
-  hasModifiedLinksSinceLastFinished
-  (
-   HashMap<String,NodeStatus> states
-  ) 
-  {
-    /* if the node has never been Finished */ 
-    if(pLastFinishedVersion == null)
-      return true;
-
-    /* check for new links or links to different version of one of the sources */
-    for(String lname : pSources.keySet()) {
-      LinkMod link = pSources.get(lname); 
-
-      NodeDetails sdetails = states.get(lname).getDetails();
-      VersionID svid = sdetails.getWorkingVersion().getWorkingID();
-
-      LinkMod clink = pLastFinishedVersion.getSource(lname);
-      VersionID cvid = pLastFinishedSources.get(lname); 
-      if((clink == null) || 
-         !link.equals(clink) || 
-         (((cvid == null) && (svid != null)) ||
-          ((cvid != null) && !cvid.equals(svid)))) {
-        
-        switch(link.getPolicy()) {
-        case Dependency:
-        case Reference:
-          return true; 
-        }
-
-        if(clink != null) {
-          switch(clink.getPolicy()) {
-          case Dependency:
-          case Reference:
-            return true; 
-          }
-        }
-      }
-    }
-    
-    /* check for links which existed at last Finished state but no longer exist now */ 
-    for(LinkMod link : pLastFinishedVersion.getSources()) {
-      String lname = link.getName(); 
-      if(!pSources.containsKey(lname)) {
-        switch(link.getPolicy()) {
-        case Dependency:
-        case Reference:
-          return true; 
-        }
-      }
-    }
-
-    /* nothing important appears to have changed since the last time the node was Finished */
-    return false;
-  }
-
-
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   C O M P A R I S O N                                                                  */
@@ -1719,19 +1534,13 @@ class NodeMod
     encoder.encode("TimeStamp", pTimeStamp);
     encoder.encode("LastModification", pLastMod);
     encoder.encode("LastCriticalModification", pLastCriticalMod);
-    encoder.encode("LastVouched", pLastVouched);
+    encoder.encode("LastCriticalSourceModification", pLastCriticalSourceMod);
 
     if(pLastCTimeUpdate != null) 
       encoder.encode("LastCTimeUpdate", pLastCTimeUpdate);
     
     if(!pSources.isEmpty())
       encoder.encode("Sources", pSources);
-
-    if(pLastFinishedVersion != null) {
-      encoder.encode("LastFinishedVersion", pLastFinishedVersion);
-      if(!pLastFinishedSources.isEmpty())
-        encoder.encode("LastFinishedSources", pLastFinishedSources);
-    }
   }
 
   @Override
@@ -1780,36 +1589,23 @@ class NodeMod
     }
 
     {
+      Long stamp = (Long) decoder.decode("LastCriticalSourceModification");
+      if(stamp != null) 
+        pLastCriticalSourceMod = stamp;
+      else 
+        pLastCriticalSourceMod = pLastCriticalMod;  /* backward compatibility */ 
+    }
+
+    {
       Long stamp = (Long) decoder.decode("LastCTimeUpdate");
       if(stamp != null) 
 	pLastCTimeUpdate = stamp;
     }
     
     {
-      Long stamp = (Long) decoder.decode("LastVouched");
-      if(stamp != null) 
-        pLastVouched = stamp;
-      else 
-        pLastVouched = pTimeStamp;
-    }
-
-    {
-      TreeMap<String,LinkMod> sources = 
-        (TreeMap<String,LinkMod>) decoder.decode("Sources"); 
+      TreeMap<String,LinkMod> sources = (TreeMap<String,LinkMod>) decoder.decode("Sources"); 
       if(sources != null) 
         pSources = sources;
-    }
-
-    {
-      NodeMod mod = (NodeMod) decoder.decode("LastFinshedVersion"); 
-      if(mod != null) {
-        pLastFinishedVersion = mod; 
-
-        TreeMap<String,VersionID> vids = 
-          (TreeMap<String,VersionID>) decoder.decode("LastFinshedSources"); 
-        if(vids != null) 
-          pLastFinishedSources = vids; 
-      }      
     }
   }
 
@@ -1846,7 +1642,9 @@ class NodeMod
    */ 
   private VersionID  pWorkingID;       
 
-  
+
+  /*----------------------------------------------------------------------------------------*/
+
   /** 
    * The timestamp (milliseconds since midnight, January 1, 1970 UTC) of when the version 
    * was created.
@@ -1861,10 +1659,17 @@ class NodeMod
 
   /** 
    * The timestamp (milliseconds since midnight, January 1, 1970 UTC) of the last 
-   * modification of this working version which invalidates the up-to-date status of the 
-   * files associated with the node.
+   * modification of this working version's properties which invalidate the up-to-date 
+   * status of the files associated with the node.
    */
   private long  pLastCriticalMod;
+
+  /** 
+   * The timestamp (milliseconds since midnight, January 1, 1970 UTC) of the last 
+   * modification of this working version's properties which invalidate the up-to-date 
+   * status of the files associated with the node.
+   */
+  private long  pLastCriticalSourceMod;
 
   /** 
    * The timestamp (milliseconds since midnight, January 1, 1970 UTC) of the last update 
@@ -1872,12 +1677,8 @@ class NodeMod
    */
   private Long  pLastCTimeUpdate; 
 
-  /** 
-   * The timestamp (milliseconds since midnight, January 1, 1970 UTC) of the last time
-   * a Vouch operation was performed on the node.
-   */
-  private Long  pLastVouched; 
 
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * A table of link relationship information associated with all nodes upstream of this 
@@ -1885,21 +1686,5 @@ class NodeMod
    */ 
   private TreeMap<String,LinkMod>  pSources;
  
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * A cached copy of the current working version properties and links to record the
-   * their value at the last time when the OverallNodeState of Finished or <CODE>null</CODE> 
-   * if not yet cached.
-   */ 
-  private NodeMod  pLastFinishedVersion;
-  
-  /**
-   * The cache of the base revision numbers of the source nodes for all links at the last 
-   * time when the OverallNodeState of Finished.
-   */ 
-  private TreeMap<String,VersionID>  pLastFinishedSources; 
-
 }
 

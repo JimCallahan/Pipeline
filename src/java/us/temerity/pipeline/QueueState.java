@@ -1,4 +1,4 @@
-// $Id: QueueState.java,v 1.13 2008/05/04 00:40:16 jim Exp $
+// $Id: QueueState.java,v 1.14 2008/05/16 01:11:40 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -115,8 +115,7 @@ enum QueueState
   Failed, 
 
   /**
-   * One or more of the primary/secondary files associated with this node may require manual 
-   * updating. <P> 
+   * The file associated with the working node may require manual updating. <P> 
    * 
    * Files require manual updating when a node does not have an enabled action but does have
    * one or more Dependency links which are newer than the files associated with the working

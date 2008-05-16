@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.73 2008/02/14 20:26:29 jim Exp $
+// $Id: FileMgr.java,v 1.74 2008/05/16 01:11:40 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -641,7 +641,7 @@ class FileMgr
 	  /* lookup the last modification timestamps */ 
 	  timestamps = new TreeMap<FileSeq, Long[]>();
 	  {
-            long critical = req.getCriticalStamp();
+            long ctime = req.getChangeStamp();
 	    for(FileSeq fseq : states.keySet()) {
 	      Long stamps[] = new Long[fseq.numFrames()];
 
@@ -650,7 +650,7 @@ class FileMgr
 		File work = new File(pProdDir, 
 				     req.getNodeID().getWorkingParent() + "/" + file);
 
-		long when = NativeFileSys.lastCriticalChange(work, critical); 
+		long when = NativeFileSys.lastCriticalChange(work, ctime); 
 		if(when > 0) 
 		  stamps[wk] = when; 
 
@@ -2966,6 +2966,91 @@ class FileMgr
 	    throw new PipelineException
 	      ("Interrupted while changing the write access permission of  the files for " + 
 	       "the working version (" + req.getNodeID() + ")!");
+	  }
+	}
+      }
+
+      return new SuccessRsp(timer);
+    }
+    catch(PipelineException ex) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Severe, 
+	 ex.getMessage());
+      return new FailureRsp(timer, ex.getMessage());
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Update the last modification time stamp of all files associated with the given 
+   * working version.
+   * 
+   * @param req 
+   *   The change mode request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to change the permissions of the files.
+   */
+  public Object
+  touchAll
+  (
+   FileTouchAllReq req
+  ) 
+  {
+    TaskTimer timer = null;
+    {
+      StringBuilder buf = new StringBuilder();
+      buf.append("FileMgr.touchAll(): " + req.getNodeID() + " ");
+      for(FileSeq fseq : req.getFileSequences()) 
+	buf.append("[" + fseq + "]");
+      timer = new TaskTimer(buf.toString());
+    }
+
+    timer.aquire(); 
+    Object workingLock = getWorkingLock(req.getNodeID());
+    try {
+      synchronized(workingLock) {
+	timer.resume();	
+
+	Map<String,String> env = System.getenv();
+	File wdir = new File(pProdDir, 
+			     req.getNodeID().getWorkingParent().toString());
+
+	ArrayList<String> preOpts = new ArrayList<String>();
+
+	ArrayList<String> args = new ArrayList<String>();
+	for(FileSeq fseq : req.getFileSequences()) {
+	  for(File file : fseq.getFiles()) {
+	    File path = new File(wdir, file.getPath());
+	    if(path.isFile()) 
+	      args.add(file.getPath());
+	  }
+	}
+      
+	if(!args.isEmpty()) {
+	  LinkedList<SubProcessLight> procs = 
+	    SubProcessLight.createMultiSubProcess
+	    (req.getNodeID().getAuthor(), 
+	     "TouchAll", "touch", preOpts, args, env, wdir);
+	  
+	  try { 
+	    for(SubProcessLight proc : procs) {
+	      proc.start();
+	      proc.join();
+	      if(!proc.wasSuccessful()) 
+		throw new PipelineException
+		  ("Unable to update the last modification time stamp for all files " + 
+		   "associated with the working version (" + req.getNodeID() + "):\n\n" + 
+		   proc.getStdErr());	
+	    }
+	  }
+	  catch(InterruptedException ex) {
+	    throw new PipelineException
+	      ("Interrupted while update the last modification time stamp for all files " + 
+               "associated with the working version (" + req.getNodeID() + ")!");
 	  }
 	}
       }
