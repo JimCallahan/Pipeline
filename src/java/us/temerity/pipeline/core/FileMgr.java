@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.74 2008/05/16 01:11:40 jim Exp $
+// $Id: FileMgr.java,v 1.75 2008/05/17 01:29:08 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2984,15 +2984,15 @@ class FileMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Update the last modification time stamp of all files associated with the given 
-   * working version.
+   * Update the last modification time stamp of all existing files associated with the given 
+   * working version.  
    * 
    * @param req 
    *   The change mode request.
    * 
    * @return
    *   <CODE>SuccessRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to change the permissions of the files.
+   *   <CODE>FailureRsp</CODE> if unable to change the time stamps of the files.
    */
   public Object
   touchAll
@@ -3020,6 +3020,7 @@ class FileMgr
 			     req.getNodeID().getWorkingParent().toString());
 
 	ArrayList<String> preOpts = new ArrayList<String>();
+        preOpts.add("--no-create"); 
 
 	ArrayList<String> args = new ArrayList<String>();
 	for(FileSeq fseq : req.getFileSequences()) {

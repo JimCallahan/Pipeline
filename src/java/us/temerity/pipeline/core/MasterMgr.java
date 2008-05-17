@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.243 2008/05/16 01:11:40 jim Exp $
+// $Id: MasterMgr.java,v 1.244 2008/05/17 01:29:09 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -13697,17 +13697,9 @@ class MasterMgr
       if(mod.isFrozen()) 
 	throw new PipelineException
 	  ("You cannot vouch for a frozen node (" + nodeID + ")!"); 
-      
-      /* make sure the node can be Dubious before trying to Vouch for it... */ 
-      if(!mod.canBeDubious()) {
-        if(mod.isActionEnabled()) 
-          throw new PipelineException
-            ("You cannot vouch for a node (" + nodeID + ") with an enabled action!"); 
-        
+      if(mod.isActionEnabled()) 
         throw new PipelineException
-          ("You cannot vouch for a node (" + nodeID + ") without any Dependency/Reference " + 
-           "links!"); 
-      }
+          ("You cannot vouch for a node (" + nodeID + ") with an enabled action!"); 
        
       /* touch the files */ 
       {
@@ -16911,8 +16903,8 @@ class MasterMgr
       /* otherwise, we need to go on and compute the heavyweight per-file and queue 
            related node status information... */ 
       else {
-        boolean canBeStale   = ((work != null) && work.isActionEnabled()); 
-        boolean canBeDubious = ((work != null) && work.canBeDubious()); 
+//         boolean canBeStale   = ((work != null) && work.isActionEnabled()); 
+//         boolean canBeDubious = ((work != null) && !work.isActionEnabled()); 
 
         /* get per-file FileStates and timestamps */ 
         TreeMap<FileSeq, FileState[]> fileStates = new TreeMap<FileSeq, FileState[]>(); 
@@ -17228,7 +17220,7 @@ class MasterMgr
             for(wk=0; wk<queueStates.length; wk++) {
 
               /* if there is an enabled action, check for any jobs which are not Finished */ 
-              if(canBeStale) {
+              if(work.isActionEnabled()) {
                 if(js[wk] != null) {
                   switch(js[wk]) {
                   case Queued:
@@ -17256,17 +17248,17 @@ class MasterMgr
 
               /* are any of the primary/secondary files missing? */ 
               if((queueStates[wk] == null) && anyMissing[wk]) {
-                if(canBeDubious) 
-                  queueStates[wk] = QueueState.Dubious;
-                else if(canBeStale)
+                if(work.isActionEnabled())
                   queueStates[wk] = QueueState.Stale;
+                else 
+                  queueStates[wk] = QueueState.Dubious;
               }
 
               /* have any critical changes to the node properties been made since the 
                    primary/secondary files were created? */ 
               if((queueStates[wk] == null) && 
                  (oldestStamps[wk] < work.getLastCriticalModification())) { 
-                if(canBeStale)
+                if(work.isActionEnabled())
                   queueStates[wk] = QueueState.Stale;
               }
 
@@ -17274,18 +17266,20 @@ class MasterMgr
                    primary/secondary files were created? */ 
               if((queueStates[wk] == null) && 
                  (oldestStamps[wk] < work.getLastCriticalSourceModification())) { 
-                if(canBeDubious) 
-                  queueStates[wk] = QueueState.Dubious;
-                else if(canBeStale)
+                if(work.isActionEnabled())
                   queueStates[wk] = QueueState.Stale;
+                else 
+                  queueStates[wk] = QueueState.Dubious;
               }
 
               /* otherwise, we need to check individual upstream per-file dependencies... */ 
-              if((queueStates[wk] == null) && (canBeDubious || canBeStale)) { 
+              if(queueStates[wk] == null) { 
                 for(LinkMod link : work.getSources()) {
-                  if((canBeDubious && (link.getPolicy() == LinkPolicy.Dependency)) ||
-                     (canBeStale && (link.getPolicy() != LinkPolicy.Association))) {
-
+                  if((!work.isActionEnabled() && 
+                      (link.getPolicy() == LinkPolicy.Dependency)) ||
+                     (work.isActionEnabled() && 
+                      (link.getPolicy() != LinkPolicy.Association))) {
+    
                     NodeStatus lstatus = status.getSource(link.getName());
                     NodeDetails ldetails = lstatus.getDetails();
                     
@@ -17302,10 +17296,10 @@ class MasterMgr
                              (lus[idx] == UpdateState.Dubious) ||
                              (oldestStamps[wk] < lstamps[idx])) {
 
-                            if(canBeDubious) 
-                              queueStates[wk] = QueueState.Dubious; 
-                            else /* canBeStale == true */ 
+                            if(work.isActionEnabled())
                               queueStates[wk] = QueueState.Stale;
+                            else 
+                              queueStates[wk] = QueueState.Dubious;
                           }
                         }
                       }
@@ -17319,10 +17313,10 @@ class MasterMgr
                              (lus[fk] == UpdateState.Dubious) ||
                              (oldestStamps[wk] < lstamps[fk])) {
                               
-                            if(canBeDubious) 
-                              queueStates[wk] = QueueState.Dubious; 
-                            else /* canBeStale == true */ 
+                            if(work.isActionEnabled())
                               queueStates[wk] = QueueState.Stale;
+                            else 
+                              queueStates[wk] = QueueState.Dubious;
                           }
                         }
                       }

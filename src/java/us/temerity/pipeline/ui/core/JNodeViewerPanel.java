@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.115 2008/05/16 01:11:41 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.116 2008/05/17 01:29:10 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -4400,7 +4400,7 @@ class JNodeViewerPanel
       NodeDetails details = status.getDetails();
       if(details != null) {
 	NodeMod mod = details.getWorkingVersion();
-	if((mod != null) && mod.canBeDubious()) 
+	if((mod != null) && !mod.isActionEnabled())
           names.add(mod.getName());
       }
     }

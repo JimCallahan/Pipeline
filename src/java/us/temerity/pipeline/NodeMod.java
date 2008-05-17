@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.60 2008/05/16 01:11:40 jim Exp $
+// $Id: NodeMod.java,v 1.61 2008/05/17 01:29:08 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -399,28 +399,6 @@ class NodeMod
     return pIsLocked;
   }
   
-  /**
-   * Whether the OverallNodeState of this node has the potential to become Dubious. <P> 
-   * 
-   * A node may become Dubious if it does not have an enabled action and has at least one 
-   * Dependency/Reference link.
-   */ 
-  public boolean
-  canBeDubious() 
-  {
-    if(!isActionEnabled()) {
-      for(LinkMod link : pSources.values()) {
-        switch(link.getPolicy()) {
-        case Dependency:
-        case Reference:
-          return true;
-        }
-      }
-    }
-
-    return false;
-  }
-
 
   /*----------------------------------------------------------------------------------------*/
 
