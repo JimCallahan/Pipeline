@@ -1,4 +1,4 @@
-// $Id: VersionApp.java,v 1.3 2008/05/18 22:04:35 jim Exp $
+// $Id: VersionApp.java,v 1.4 2008/05/18 23:23:47 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -331,7 +331,8 @@ class VersionApp
         String view   = null;
         String name   = null;
         try {
-          File file = NativeFileSys.realpath(pCheckInFile); 
+          //File file = NativeFileSys.realpath(pCheckInFile); 
+          File file = pCheckInFile.getCanonicalFile();
           Path cpath = new Path(file); 
           String cstr = cpath.toString(); 
 
@@ -391,7 +392,7 @@ class VersionApp
         /* hide the splash screen */ 
         {
           SplashScreen splash = SplashScreen.getSplashScreen(); 
-          if(splash.isVisible())
+          if((splash != null) && splash.isVisible())
             splash.close(); 
         }
 
@@ -560,7 +561,7 @@ class VersionApp
       /* hide the splash screen */ 
       {
         SplashScreen splash = SplashScreen.getSplashScreen(); 
-        if(splash.isVisible())
+        if((splash != null) && splash.isVisible())
           splash.close(); 
       }
       
