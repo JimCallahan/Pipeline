@@ -1,0 +1,126 @@
+#! /base/apps/Unix-x86-Opt/Nuke5.0v1/Nuke5.0 -nx
+version 5.0100
+define_window_layout_xml {<?xml version="1.0" encoding="UTF-8"?>
+<layout version="1.0">
+    <window x="46" y="32" w="1688" h="1053" screen="0">
+        <splitter orientation="1">
+            <split size="1063"></split>
+            <splitter orientation="1">
+                <split size="40"></split>
+                <dock id="" hideTitles="1" activePageId="Toolbar.1">
+                    <page id="Toolbar.1"></page>
+                </dock>
+                <split size="1021"></split>
+                <splitter orientation="2">
+                    <split size="497"></split>
+                    <dock id="" activePageId="Viewer.1">
+                        <page id="Viewer.1"></page>
+                    </dock>
+                    <split size="497"></split>
+                    <dock id="" activePageId="DAG.1">
+                        <page id="DAG.1"></page>
+                        <page id="Curve Editor.1"></page>
+                    </dock>
+                </splitter>
+            </splitter>
+            <split size="615"></split>
+            <dock id="" activePageId="Properties.1">
+                <page id="Properties.1"></page>
+            </dock>
+        </splitter>
+    </window>
+</layout>
+}
+Root {
+ inputs 0
+ name @srcdir@/Splash.nk
+ frame 36
+ last_frame 36
+ format "640 480 0 0 640 480 1 PC_Video"
+ proxy_type scale
+ proxy_format "640 480 0 0 640 480 1 PC_Video"
+}
+Read {
+ inputs 0
+ file @srcdir@/Splash-vsn.png
+ format "311 111 0 0 311 111 1 "
+ name Read3
+ xpos 64
+ ypos -176
+}
+Transform {
+ translate {1642 58}
+ center {155.5 55.5}
+ name Transform2
+ xpos 64
+ ypos -100
+}
+Read {
+ inputs 0
+ file @srcdir@/Splash-progress.tif
+ format "575 575 0 0 575 575 1 "
+ premultiplied true
+ name Read2
+ xpos -190
+ ypos -219
+}
+Transform {
+ translate {118 74}
+ rotate {{-(frame-1)*5 i -0 x2 2 x12 60}}
+ center {287.5 287.5}
+ name Transform1
+ xpos -190
+ ypos -143
+}
+Read {
+ inputs 0
+ file @srcdir@/Splash-bg.png
+ format "2092 721 0 0 2092 721 1 "
+ premultiplied true
+ name Read1
+ xpos -65
+ ypos -220
+}
+Merge2 {
+ inputs 2
+ maskFrom input
+ name Merge1
+ xpos -166
+ ypos -73
+}
+Merge2 {
+ inputs 2
+ name Merge2
+ xpos -79
+ ypos -11
+}
+Reformat {
+ type scale
+ scale 0.2
+ name Reformat1
+ xpos -79
+ ypos 18
+}
+Grade {
+ channels {-rgba.red -rgba.green -rgba.blue rgba.alpha}
+ blackpoint 0.5
+ name Grade1
+ xpos -79
+ ypos 47
+}
+Write {
+ channels rgba
+ file @abs_builddir@/Splash.%04d.png
+ views {main}
+ file_type png
+ name Write1
+ selected true
+ xpos -79
+ ypos 90
+}
+Viewer {
+ input_process false
+ name Viewer1
+ xpos -317
+ ypos 33
+}

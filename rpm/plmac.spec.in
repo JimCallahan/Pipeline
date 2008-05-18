@@ -34,7 +34,7 @@ Pipeline configuration process.
 @ROOT_INST_DIR@/MacOS-UnivBin-Opt/bin/plpython
 @ROOT_INST_DIR@/MacOS-UnivBin-Opt/bin/plremote
 @ROOT_INST_DIR@/MacOS-UnivBin-Opt/bin/plscript
-@ROOT_INST_DIR@/MacOS-UnivBin-Opt/bin/plscript-batch
+@ROOT_INST_DIR@/MacOS-UnivBin-Opt/bin/plscript-splash
 @ROOT_INST_DIR@/MacOS-UnivBin-Opt/bin/plui
 @ROOT_INST_DIR@/MacOS-UnivBin-Opt/bin/plui-j2dgl
 @ROOT_INST_DIR@/MacOS-UnivBin-Opt/bin/plversion
@@ -44,7 +44,7 @@ Pipeline configuration process.
 @ROOT_INST_DIR@/MacOS-UnivBin-Debug/bin/plpython
 @ROOT_INST_DIR@/MacOS-UnivBin-Debug/bin/plremote
 @ROOT_INST_DIR@/MacOS-UnivBin-Debug/bin/plscript
-@ROOT_INST_DIR@/MacOS-UnivBin-Debug/bin/plscript-batch
+@ROOT_INST_DIR@/MacOS-UnivBin-Debug/bin/plscript-splash
 @ROOT_INST_DIR@/MacOS-UnivBin-Debug/bin/pltestnative
 @ROOT_INST_DIR@/MacOS-UnivBin-Debug/bin/pltestlight
 @ROOT_INST_DIR@/MacOS-UnivBin-Debug/bin/pltestheavy
@@ -57,7 +57,7 @@ Pipeline configuration process.
 @ROOT_INST_DIR@/MacOS-UnivBin-Profile/bin/plpython
 @ROOT_INST_DIR@/MacOS-UnivBin-Profile/bin/plremote
 @ROOT_INST_DIR@/MacOS-UnivBin-Profile/bin/plscript
-@ROOT_INST_DIR@/MacOS-UnivBin-Profile/bin/plscript-batch
+@ROOT_INST_DIR@/MacOS-UnivBin-Profile/bin/plscript-splash
 @ROOT_INST_DIR@/MacOS-UnivBin-Profile/bin/plui
 @ROOT_INST_DIR@/MacOS-UnivBin-Profile/bin/plui-j2dgl
 @ROOT_INST_DIR@/MacOS-UnivBin-Profile/bin/plversion

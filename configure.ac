@@ -9,7 +9,7 @@ AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
 AC_CONFIG_HEADERS([config.h])
-AM_INIT_AUTOMAKE(Pipeline, 2.4.1b20)
+AM_INIT_AUTOMAKE(Pipeline, 2.4.1b21)
                            
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
@@ -1812,7 +1812,7 @@ AC_CONFIG_FILES([
   src/java/scripts/plqueuemgr
   src/java/scripts/plremote
   src/java/scripts/plscript
-  src/java/scripts/plscript-batch
+  src/java/scripts/plscript-splash
   src/java/scripts/plpython
   src/java/scripts/plui
   src/java/scripts/plui-j2dgl
@@ -1832,7 +1832,7 @@ AC_CONFIG_FILES([
   src/java/scripts/debug/plqueuemgr
   src/java/scripts/debug/plremote
   src/java/scripts/debug/plscript
-  src/java/scripts/debug/plscript-batch
+  src/java/scripts/debug/plscript-splash
   src/java/scripts/debug/plpython
   src/java/scripts/debug/plui
   src/java/scripts/debug/plui-j2dgl
@@ -1852,7 +1852,7 @@ AC_CONFIG_FILES([
   src/java/scripts/profile/plqueuemgr
   src/java/scripts/profile/plremote
   src/java/scripts/profile/plscript
-  src/java/scripts/profile/plscript-batch
+  src/java/scripts/profile/plscript-splash
   src/java/scripts/profile/plpython
   src/java/scripts/profile/plui
   src/java/scripts/profile/plui-j2dgl
@@ -1871,7 +1871,9 @@ AC_CONFIG_FILES([
   src/etc/python/Makefile
   src/etc/python/plremote.py.src
   src/etc/python/debug/Makefile
+  src/etc/python/debug/plremote.py.src
   src/etc/python/profile/Makefile
+  src/etc/python/profile/plremote.py.src
   src/etc/winopts/Makefile
 
   src/utils/Makefile
@@ -1905,10 +1907,12 @@ AC_CONFIG_FILES([
   src/windows/scripts/plplugin.bat.src
   src/windows/scripts/plremote.bat.src
   src/windows/scripts/plscript.bat.src
-  src/windows/scripts/plscript-batch.bat.src
+  src/windows/scripts/plscript-splash.bat.src
   src/windows/scripts/plpython.bat.src
   src/windows/scripts/plbuilder.bat.src
-  src/windows/scripts/pljobmgr.bat.src
+  src/windows/scripts/pljobmgr.bat.src  
+  src/windows/scripts/plui2.bat.src
+  src/windows/scripts/plui2-j2dgl.bat.src
   src/windows/scripts/plversion.bat.src
 
   src/windows/scripts/debug/Makefile
@@ -1918,7 +1922,7 @@ AC_CONFIG_FILES([
   src/windows/scripts/debug/pltestnative.bat.src
   src/windows/scripts/debug/plremote.bat.src
   src/windows/scripts/debug/plscript.bat.src
-  src/windows/scripts/debug/plscript-batch.bat.src
+  src/windows/scripts/debug/plscript-splash.bat.src
   src/windows/scripts/debug/plpython.bat.src
   src/windows/scripts/debug/plbuilder.bat.src
   src/windows/scripts/debug/plui2.bat.src
@@ -1934,12 +1938,15 @@ AC_CONFIG_FILES([
   src/windows/launchers/debug/plui-j2dgl.exe4j
 
   src/windows/etc/Makefile
-  src/windows/etc/python/Makefile
+  src/windows/etc/python/Makefile  
+  src/windows/etc/python/plremote.py.src
   src/windows/etc/python/debug/Makefile
+  src/windows/etc/python/debug/plremote.py.src
 
   src/unix/Makefile
   src/unix/icons/Makefile
   src/unix/splash/Makefile
+  src/unix/splash/Splash.nk
 
   studios/Makefile
 

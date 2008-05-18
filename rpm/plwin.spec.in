@@ -28,7 +28,9 @@ plconfig(1) during Pipeline configuration process.
 @ROOT_INST_DIR@/Windows-x86-Opt/bin/plpython.bat
 @ROOT_INST_DIR@/Windows-x86-Opt/bin/plremote.bat
 @ROOT_INST_DIR@/Windows-x86-Opt/bin/plscript.bat
-@ROOT_INST_DIR@/Windows-x86-Opt/bin/plscript-batch.bat
+@ROOT_INST_DIR@/Windows-x86-Opt/bin/plscript-splash.bat
+@ROOT_INST_DIR@/Windows-x86-Opt/bin/plui2.bat
+@ROOT_INST_DIR@/Windows-x86-Opt/bin/plui2-j2dgl.bat
 @ROOT_INST_DIR@/Windows-x86-Opt/bin/plui.exe
 @ROOT_INST_DIR@/Windows-x86-Opt/bin/plui-j2dgl.exe
 @ROOT_INST_DIR@/Windows-x86-Opt/bin/plversion.bat
@@ -40,7 +42,7 @@ plconfig(1) during Pipeline configuration process.
 @ROOT_INST_DIR@/Windows-x86-Debug/bin/plpython.bat
 @ROOT_INST_DIR@/Windows-x86-Debug/bin/plremote.bat
 @ROOT_INST_DIR@/Windows-x86-Debug/bin/plscript.bat
-@ROOT_INST_DIR@/Windows-x86-Debug/bin/plscript-batch.bat
+@ROOT_INST_DIR@/Windows-x86-Debug/bin/plscript-splash.bat
 @ROOT_INST_DIR@/Windows-x86-Debug/bin/pltestnative.bat
 @ROOT_INST_DIR@/Windows-x86-Debug/bin/pltestheavy.bat
 @ROOT_INST_DIR@/Windows-x86-Debug/bin/pltestlight.bat

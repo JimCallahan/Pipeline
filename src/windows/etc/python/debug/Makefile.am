@@ -5,7 +5,7 @@ dbg_SCRIPTS = \
   plremote.py
 
 
-WIN_PLUI = $(shell echo '@PIPELINE_ARCHDIR@-Opt/bin/plui.exe' | sed -e 's|/|\\\\\\\\|g')
-
-plremote.py: ../../../../etc/python/plremote.py.src
-	(cat $< | sed -e "s|@PLUI_PATH@|$(WIN_PLUI)|g" > $@)
+plremote.py: plremote.py.src
+	(cat $< \
+         | sed -e "s|@PLUI_PATH@|@PIPELINE_ARCHDIR@-Debug/bin/plui-j2dgl.exe|g" \
+         | sed -e "s|@PLSCRIPT_PATH@|@PIPELINE_ARCHDIR@-Debug/bin/plscript-splash.bat|g" > $@)

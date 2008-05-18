@@ -1,4 +1,4 @@
-// $Id: VersionApp.java,v 1.2 2008/05/16 06:39:22 jim Exp $
+// $Id: VersionApp.java,v 1.3 2008/05/18 22:04:35 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -642,7 +642,9 @@ class VersionApp
         try {
           Path plui = null;
           {
-            String osarch = (PackageInfo.sOsType + "-" + PackageInfo.sArchType + "-Debug");
+            String osarch = (PackageInfo.sOsType + "-" + 
+                             PackageInfo.sArchType + "-" + 
+                             PackageInfo.sBuildType);
 
             String extra = "";
             switch(PackageInfo.sOsType) {
@@ -651,7 +653,7 @@ class VersionApp
               break;
               
             case Windows:
-              extra = "-j2dgl.bat";
+              extra = "-j2dgl.exe";
             }
 
             plui = new Path(PackageInfo.sInstPath, osarch + "/bin/plui" + extra);

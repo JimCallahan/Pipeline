@@ -1,1 +1,1 @@
-"@JAVA_RUNTIME@" @JAVA_RUNTIME_OPTS@ @PLVERSION_GC_OPTS@ @JAVA_OSARCH_TYPE@ @JAVA_BUILD_TYPE@=Opt -splash:@SPLASH_DIR@PlVersionSplash.png -cp @PIPELINE_JAR@ us/temerity/pipeline/bootstrap/Main us.temerity.pipeline.core.VersionApp %*
+"@JAVA_RUNTIME@" @JAVA_RUNTIME_OPTS@ @PLVERSION_GC_OPTS@ @JAVA_OSARCH_TYPE@ @JAVA_BUILD_TYPE@=Opt -splash:@SPLASH_DIR@Splash.gif -cp @PIPELINE_JAR@ us/temerity/pipeline/bootstrap/Main us.temerity.pipeline.core.VersionApp %*

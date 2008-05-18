@@ -7,7 +7,9 @@ instbin_SCRIPTS = \
   plpython.bat \
   plremote.bat \
   plscript.bat \
-  plscript-batch.bat \
+  plscript-splash.bat \
+  plui2.bat \
+  plui2-j2dgl.bat \
   plversion.bat
 
 

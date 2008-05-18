@@ -7,6 +7,7 @@
   -Djava.library.path=@JOGL_LIBRARY_PATH@ \
   @JAVA_OSARCH_TYPE@ @JAVA_BUILD_TYPE@=Opt \
   -Dsun.java2d.opengl=true \
+  -splash:@SPLASH_DIR@Splash.gif \
   -cp @PIPELINE_JAR@:@JOGL_JAR@:@GLUEGEN_JAR@ \
   us/temerity/pipeline/bootstrap/Main us.temerity.pipeline.core.GraphicalApp
 

@@ -41,7 +41,7 @@
 
 @ROOT_INST_DIR@/share/icons/plui.png
 
-@ROOT_INST_DIR@/share/splash/PlVersionSplash.png
+@ROOT_INST_DIR@/share/splash/Splash.gif
 
 @ROOT_INST_DIR@/share/www
 

@@ -1,12 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <exe4j version="3.1.2">
   <directoryPresets config="C:/cygwin@top_srcdir@/src/windows/icons" />
-  <application name="plui" distributionSourceDir="C:/cygwin@top_srcdir@/../.." />
-  <executable name="plui" type="1" iconSet="true" iconFile="C:/cygwin@top_srcdir@/src/windows/icons/WindowsLogo.ico" executableDir="./build/pipeline/debug/src/windows/launchers" redirectStderr="true" stderrFile="error.log" redirectStdout="false" stdoutFile="output.log" failOnStderrOutput="true" executableMode="1" changeWorkingDirectory="true" workingDirectory="." singleInstance="false" serviceStartType="2" serviceDependencies="" serviceDescription="" jreLocation="">
+  <application name="plui" distributionSourceDir="C:/cygwin@top_srcdir@/../..">
+    <languages>
+      <principalLanguage id="en" customLocalizationFile="" />
+    </languages>
+  </application>
+  <executable name="plui" type="1" iconSet="true" iconFile="C:/cygwin@top_srcdir@/src/windows/icons/WindowsLogo.ico" executableDir="./build/pipeline/debug/src/windows/launchers" redirectStderr="true" stderrFile="error.log" redirectStdout="false" stdoutFile="output.log" failOnStderrOutput="true" executableMode="1" changeWorkingDirectory="true" workingDirectory="." singleInstance="false" serviceStartType="2" serviceDependencies="" serviceDescription="" jreLocation="" executionLevel="asInvoker" amd64="false">
     <messageSet language="English" />
     <versionInfo include="true" fileVersion="" companyName="Temerity Software, Inc." fileDescription="Pipeline User Interface" legalCopyright="Copyright (c) 2002-2008 Temerity Software, Inc." productVersion="2.4.1.0" internalName="" />
   </executable>
-  <splashScreen show="true" autoOff="true" alwaysOnTop="false" width="592" height="369" bitmapFile="C:/cygwin@top_srcdir@/src/java/us/temerity/pipeline/laf/source/StartingJava.png">
+  <splashScreen show="true" autoOff="true" alwaysOnTop="false" width="592" height="369" bitmapFile="C:/cygwin@top_srcdir@/src/unix/splash/Splash.gif" java6SplashScreen="true">
     <text>
       <statusLine x="35" y="319" text="" font="Arial" fontSize="8" fontColor="0,0,0" fontWeight="500" />
       <versionLine x="35" y="278" text="" font="Arial" fontSize="8" fontColor="0,0,0" fontWeight="500" />
@@ -26,5 +30,6 @@
     </nativeLibraryDirectories>
   </java>
   <includedFiles />
+  <unextractableFiles />
 </exe4j>
 

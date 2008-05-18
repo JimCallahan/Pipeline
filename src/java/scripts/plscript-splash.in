@@ -4,6 +4,7 @@ cd `pwd`
 exec "@CLIENT_JAVA_RUNTIME@" @JAVA_RUNTIME_OPTS@ \
   @PLSCRIPT_GC_OPTS@ \
   @JAVA_OSARCH_TYPE@ @JAVA_BUILD_TYPE@=Opt \
+  -splash:@SPLASH_DIR@Splash.gif \
   -cp @PIPELINE_JAR@ \
-  us/temerity/pipeline/bootstrap/Main us.temerity.pipeline.core.ScriptApp --batch="$1"
+  us/temerity/pipeline/bootstrap/Main us.temerity.pipeline.core.ScriptApp "$@"
 

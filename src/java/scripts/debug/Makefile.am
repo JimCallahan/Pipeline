@@ -7,7 +7,7 @@ instbin_SCRIPTS = \
   plpython \
   plremote \
   plscript \
-  plscript-batch \
+  plscript-splash \
   pltestnative \
   pltestheavy \
   pltestlight \
