@@ -159,6 +159,8 @@ TOKEN :
 {
   <PATH_ARG:       ("/")* ("../")* <PATH_ARG_COMP> 
 		     ("/" (".." | (<PATH_ARG_COMP>)+)?)*>      : DEFAULT
+| <WIN_PATH_ARG:   ("\\")* ("..\\")* <PATH_ARG_COMP> 
+		     ("\\" (".." | (<PATH_ARG_COMP>)+)?)*>     : DEFAULT
 | <#PATH_ARG_COMP: (["a"-"z","A"-"Z","0"-"9","_","-","."])*>
 | <MISSING_PATH:   ["\0"]>                                     : IGNORE_STATE
 | <ILLEGAL_PATH:   (~["\0"])+>                                 : IGNORE_STATE
@@ -252,7 +254,7 @@ CheckIn() :
   Token t;
 }
 {
-  <CHECK_IN> EQ() t=<PATH_ARG> AE()
+  <CHECK_IN> EQ() (t=<PATH_ARG> | t=<WIN_PATH_ARG>) AE()
   { 
     pCheckInFile = new File(t.image);
   }
@@ -352,7 +354,7 @@ void LogFile() :
   Token t;
 }
 {
-  <LOG_FILE> EQ() t=<PATH_ARG>
+  <LOG_FILE> EQ() (t=<PATH_ARG> | t=<WIN_PATH_ARG>)
   { 
     pLogFile = new Path(t.image);
   }

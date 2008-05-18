@@ -1,4 +1,4 @@
-// $Id: VersionApp.java,v 1.4 2008/05/18 23:23:47 jim Exp $
+// $Id: VersionApp.java,v 1.5 2008/05/18 23:24:58 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -331,9 +331,7 @@ class VersionApp
         String view   = null;
         String name   = null;
         try {
-          //File file = NativeFileSys.realpath(pCheckInFile); 
-          File file = pCheckInFile.getCanonicalFile();
-          Path cpath = new Path(file); 
+          Path cpath = new Path(pCheckInFile.getCanonicalFile()); 
           String cstr = cpath.toString(); 
 
           Path working = new Path(PackageInfo.sProdPath, "working");
