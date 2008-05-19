@@ -12,9 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
- * Modified by Jesse Clemens for Temerity Software.
- * Changed to work with the non-standard responses that Shotgun provides.
  */
 package us.temerity.pipeline.plugin.ShotgunConnectionExt.v2_4_1;
 
@@ -24,7 +21,11 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
 
-/** A {@link TypeSerializer} for null values.
+/** 
+ * A {@link TypeSerializer} for null values.<P> 
+ * 
+ * Modified by Jesse Clemens for Temerity Software from the original Apache sources to 
+ * work with the non-standard responses that Shotgun provides.
  */
 public class TemerityNullSerializer extends TypeSerializerImpl {
 	/** Tag name of a nil value.

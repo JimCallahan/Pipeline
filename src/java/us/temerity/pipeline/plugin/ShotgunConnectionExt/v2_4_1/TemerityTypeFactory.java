@@ -12,10 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
- * Modified by Jesse Clemens for Temerity Software.
- * Changed to load our own version of the NullSerializer to work with the
- * non-standard responses that Shotgun provides.
  */
 package us.temerity.pipeline.plugin.ShotgunConnectionExt.v2_4_1;
 
@@ -33,7 +29,11 @@ import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
 
-/** Default implementation of a type factory.
+/** 
+ * Default implementation of a type factory.<P> 
+ * 
+ * Modified by Jesse Clemens for Temerity Software from the original Apache sources to 
+ * work with the non-standard responses that Shotgun provides.
  */
 public class TemerityTypeFactory implements TypeFactory {
 	private static final TypeSerializer NULL_SERIALIZER = new TemerityNullSerializer();

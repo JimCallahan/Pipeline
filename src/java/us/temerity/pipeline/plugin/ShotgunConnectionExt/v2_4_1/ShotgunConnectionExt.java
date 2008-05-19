@@ -13,11 +13,29 @@ import us.temerity.pipeline.builder.v2_4_1.TaskType;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Extension for communicating Pipeline Task v2.4.1 information with Shotgun.
- * <p>
+ * Extension for communicating Pipeline Task information with Shotgun.<p>
+ * 
+ * Nodes used with this extension should have one of the Task, SubmitTask or ApproveTask 
+ * Annotations (v2.4.1) which provide a source for the information transmitted to Shotgun.<P>
+ * 
  * Requires the <code>curl</code> application to be installed on MasterMgrClient and 
  * accessible through the default toolset.  This is for uploading thumbnails to the 
- * Shotgun server.
+ * Shotgun server.<P> 
+ * 
+ * This plugin makes use of the 
+ * <A HREF="http://ws.apache.org/xmlrpc/xmlrpc2/">Apache XML-RPC</A> package from the Apache 
+ * Software Foundation.  The JAR file which packages this plugin contains a copies of the 
+ * class files making up the following packages from Apache: <BR> 
+ * <DIV style="margin-left: 40px;">
+ *   xmlrpc-client<BR>
+ *   xmlrpc-common<BR>
+ *   ws-commons<BR>
+ * </DIV><BR>
+ * We've extended the functionality of the TypeSerializerImpl and TypeFactory classes in 
+ * order to make this plugin work with the non-standard responses that Shotgun provides. 
+ * The required Apache 2.0 "LICENSE.txt" and "NOTICE" files are also included in the plugin
+ * JAR file and all Apache copyright notices have been retained in source files derrived 
+ * from Apache sources.
  */
 public 
 class ShotgunConnectionExt 
@@ -28,7 +46,7 @@ class ShotgunConnectionExt
   ShotgunConnectionExt()
   {
     super("ShotgunConnection", new VersionID("2.4.1"), "Temerity",
-          "Communicates Pipeline Task v2.4.1 information with Shotgun.");
+          "Communicates Pipeline Task information with Shotgun.");
     
     {
       ExtensionParam param = 

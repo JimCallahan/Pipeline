@@ -421,8 +421,9 @@ PLUGINS2 = $(shell find $(srcdir)/plugin -type f -regex '@srcdir@/plugin/[^/]*/v
 PLUGINS3 = $(shell find $(srcdir)/plugin -type f -regex '@srcdir@/plugin/[^/]*/v2_0_[7-9]/[^.]*\.java') \
            $(shell find $(srcdir)/plugin -type f -regex '@srcdir@/plugin/[^/]*/v2_0_1[0-9]/[^.]*\.java')
 PLUGINS4 = $(shell find $(srcdir)/plugin -type f -regex '@srcdir@/plugin/[^/]*/v2_[1-2]_1?[0-9]+/[^.]*\.java')
-PLUGINS5 = $(shell find $(srcdir)/plugin -type f -regex '@srcdir@/plugin/[^/]*/v2_[3-9]_1?[0-9]+/[^.]*\.java')
-
+PLUGINS5_ALL = $(shell find $(srcdir)/plugin -type f -regex '@srcdir@/plugin/[^/]*/v2_[3-9]_1?[0-9]+/[^.]*\.java')
+SHOTGUN_PLUGINS = $(shell find $(srcdir)/plugin -type f -regex '@srcdir@/plugin/ShotgunConnectionExt/v2_4_1/[^.]*\.java')
+PLUGINS5 = $(filter-out $(SHOTGUN_PLUGINS),$(PLUGINS5_ALL))
 
 
 
@@ -492,8 +493,17 @@ $(API_JAR): java-all textures fonts
          $(JAR) uvf $$bdir/$(API_JAR) \
                     us/temerity/pipeline/laf/*.xml us/temerity/pipeline/laf/*.png)
 
-plugin/plugin-all: java-all java-plugins
-	(cd plugin; $(srcdir)/plugin/archive-plugins $(JAR)) 
+plugin/plugin-all: java-all java-plugins java-shotgun-plugins
+	(cd plugin; $(srcdir)/plugin/archive-plugins $(JAR))
+	@echo "--- PACKING APACHE XML/RPM into SHOTGUN PLUGIN JARs ------------------"
+	(cd plugin/ShotgunConnectionExt/v2_4_1; \
+         rm -rf EXTRA; mkdir EXTRA; cd EXTRA; \
+         $(JAR) xvf $(srcdir)/plugin/ShotgunConnectionExt/v2_4_1/EXTRA/xmlrpc.jar; \
+         cp $(srcdir)/plugin/ShotgunConnectionExt/v2_4_1/EXTRA/LICENSE.txt .; \
+         cp $(srcdir)/plugin/ShotgunConnectionExt/v2_4_1/EXTRA/NOTICE .; \
+	 $(JAR) uvf ../ShotgunConnectionExt.jar LICENSE.txt NOTICE `find org -type f`; \
+         cd ..; rm -rf EXTRA)
+	@echo
 
 bootstrap-jar: bootstrap-all
 	(cd ../../..; \
@@ -558,6 +568,13 @@ java-plugins4: $(PLUGINS4)
 
 java-plugins5: $(PLUGINS5)
 	$(JAVA_C) $(JAVA_C_FLAGS) $(JAVA_PATHS) $(PLUGINS5)
+	@(rm -f $@; touch $@; for p in $(PLUGINS5); do echo $$p >> $@; done)
+
+java-shotgun-plugins: $(SHOTGUN_PLUGINS) \
+  $(srcdir)/plugin/ShotgunConnectionExt/v2_4_1/EXTRA/xmlrpc.jar \
+  $(srcdir)/plugin/ShotgunConnectionExt/v2_4_1/EXTRA/LICENSE.txt \
+  $(srcdir)/plugin/ShotgunConnectionExt/v2_4_1/EXTRA/NOTICE
+	$(JAVA_C) $(JAVA_C_FLAGS) $(JAVA_PATHS):$(srcdir)/plugin/ShotgunConnectionExt/v2_4_1/EXTRA/xmlrpc.jar $(SHOTGUN_PLUGINS)
 	@(rm -f $@; touch $@; for p in $(PLUGINS5); do echo $$p >> $@; done)
 
 

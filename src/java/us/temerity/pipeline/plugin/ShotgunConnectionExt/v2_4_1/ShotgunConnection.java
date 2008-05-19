@@ -51,7 +51,7 @@ import us.temerity.pipeline.*;
  *       <li>TM VersionID = A Text Field that holds the VersionID
  *       <li>TM Proxy File Path - A Text Field with the full linux path to the proxy files
  *   </ul>
- * </ul>
+ * </ul><P> 
  */
 public 
 class ShotgunConnection
@@ -182,7 +182,7 @@ class ShotgunConnection
     Object tokenParam[] = new Object[1];
     tokenParam[0] = new Object[]{userName, apiKey};
     try {
-      pToken = (Object)pClient.execute("getSessionToken", tokenParam);
+      pToken = pClient.execute("getSessionToken", tokenParam);
     }
     catch(Exception e) {
       throw new PipelineException
