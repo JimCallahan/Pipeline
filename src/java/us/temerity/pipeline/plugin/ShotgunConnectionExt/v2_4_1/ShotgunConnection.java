@@ -50,6 +50,7 @@ import us.temerity.pipeline.*;
  *       <li>TM Edit Nodes - A Text Field (that will hold multiple node names and versions)
  *       <li>TM VersionID = A Text Field that holds the VersionID
  *       <li>TM Proxy File Path - A Text Field with the full linux path to the proxy files
+ *     </ul>
  *   </ul>
  * </ul><P> 
  */
