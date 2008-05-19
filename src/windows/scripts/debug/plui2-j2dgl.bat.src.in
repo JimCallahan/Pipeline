@@ -1,2 +1,2 @@
 set PATH=@JOGL_LIBRARY_PATH@;%PATH%
-"@JAVA_RUNTIME@" @JAVA_RUNTIME_OPTS@ @PLUI_GC_OPTS@ @PLUI_DEBUG_OPTS@ -Dsun.java2d.noddraw=true @JAVA_OSARCH_TYPE@ @JAVA_BUILD_TYPE@=Debug -Dsun.java2d.opengl=true -cp @PIPELINE_JAR@;@JOGL_JAR@;@GLUEGEN_JAR@ us/temerity/pipeline/bootstrap/Main us.temerity.pipeline.core.GraphicalApp %*
+"@JAVA_RUNTIME@" @JAVA_RUNTIME_OPTS@ @PLUI_GC_OPTS@ @PLUI_DEBUG_OPTS@ -Dsun.java2d.noddraw=true @JAVA_OSARCH_TYPE@ @JAVA_BUILD_TYPE@=Debug -Dsun.java2d.opengl=true -splash:@SPLASH_DIR@Splash.gif -cp @PIPELINE_JAR@;@JOGL_JAR@;@GLUEGEN_JAR@ us/temerity/pipeline/bootstrap/Main us.temerity.pipeline.core.GraphicalApp %*

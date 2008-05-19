@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.85 2008/05/16 01:11:41 jim Exp $
+// $Id: UIMaster.java,v 1.86 2008/05/19 06:39:24 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -160,7 +160,8 @@ class UIMaster
     pTraceGL = traceGL; 
     pDisplayLists = new TreeSet<Integer>();
 
-    SwingUtilities.invokeLater(new SplashFrameTask(this));
+    SwingUtilities.invokeLater(new SplashFrameTask(this));  // Does this need to be run 
+                                                            // in the event thread???
   }
 
 
@@ -3828,7 +3829,7 @@ class UIMaster
   createGLJPanel() 
   {
     if(PackageInfo.sUseJava2dGLPipeline) 
-      return new GLJPanel(pGLCapabilities, null, pGLJPanel.getContext());
+      return new GLJPanel(pGLCapabilities, null, pTextureLoader.getContext());
     return null;
   }
 
@@ -3843,7 +3844,7 @@ class UIMaster
   createGLCanvas() 
   {
     if(!PackageInfo.sUseJava2dGLPipeline) 
-      return new GLCanvas(pGLCapabilities, null, pGLCanvas.getContext(), null);
+      return new GLCanvas(pGLCapabilities, null, pTextureLoader.getContext(), null);
     return null;
   }
 
@@ -4307,70 +4308,79 @@ class UIMaster
 	ToolTipManager.sharedInstance().setLightWeightPopupEnabled(false);
       }
       
-      /* show the splash screen and do application startup tasks */ 
+      /* create an offscreen pbuffer to load the textures */ 
       {
-	JFrame frame = new JFrame("plui");
-	pSplashFrame = frame;
+        pGLCapabilities = new GLCapabilities();  
+        pGLCapabilities.setDoubleBuffered(true);
 
-	frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-	frame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-	frame.setResizable(false);
-	frame.setUndecorated(true);
-	
-	{
-	  JPanel panel = new JPanel();
-	  
-	  panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));   
-	
-	  /* splash image */ 
-	  {
-	    Box hbox = new Box(BoxLayout.X_AXIS);   
-
-	    hbox.add(Box.createHorizontalGlue());
-
-	    {
-	      JLabel label = new JLabel(sSplashIcon);
-	      label.setName("Splash");
-	    
-	      hbox.add(label);
-	    }
-
-	    hbox.add(Box.createHorizontalGlue());
-	    
-	    panel.add(hbox);
-	  }
-
-	  /* texture loader bar */ 
-	  {
-	    pGLCapabilities = new GLCapabilities();  
-	    pGLCapabilities.setDoubleBuffered(true);
-
-            MainFrameTask task = new MainFrameTask(pMaster); 
-            
-	    JTextureLoaderBar loader = null;
-            if(PackageInfo.sUseJava2dGLPipeline) {
-              pGLJPanel = new GLJPanel(pGLCapabilities);
-              panel.add(new JTextureLoaderBar(pGLJPanel, task));
-            }
-            else {
-              pGLCanvas = new GLCanvas(pGLCapabilities);
-              panel.add(new JTextureLoaderBar(pGLCanvas, task));
-            }
-	  }
-
-	  frame.setContentPane(panel);
-	}
-
-	frame.pack();
-
-	{
-	  Rectangle bounds = frame.getGraphicsConfiguration().getBounds();
-	  frame.setLocation(bounds.x + bounds.width/2 - frame.getWidth()/2, 
-			    bounds.y + bounds.height/2 - frame.getHeight()/2);
-	}
-
-	frame.setVisible(true);
+        pTextureLoader = new TextureLoader(pGLCapabilities, new MainFrameTask(pMaster));
       }
+
+
+      /* show the splash screen and do application startup tasks */ 
+//       {
+// 	JFrame frame = new JFrame("plui");
+// 	pSplashFrame = frame;
+
+// 	frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+// 	frame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+// 	frame.setResizable(false);
+// 	frame.setUndecorated(true);
+	
+// 	{
+// 	  JPanel panel = new JPanel();
+	  
+// 	  panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));   
+	
+// 	  /* splash image */ 
+// 	  {
+// 	    Box hbox = new Box(BoxLayout.X_AXIS);   
+
+// 	    hbox.add(Box.createHorizontalGlue());
+
+// 	    {
+// 	      JLabel label = new JLabel(sSplashIcon);
+// 	      label.setName("Splash");
+	    
+// 	      hbox.add(label);
+// 	    }
+
+// 	    hbox.add(Box.createHorizontalGlue());
+	    
+// 	    panel.add(hbox);
+// 	  }
+
+// 	  /* texture loader bar */ 
+// 	  {
+// 	    pGLCapabilities = new GLCapabilities();  
+// 	    pGLCapabilities.setDoubleBuffered(true);
+
+            
+// 	    JTextureLoaderBar loader = null;
+//             if(PackageInfo.sUseJava2dGLPipeline) {
+//               pGLJPanel = new GLJPanel(pGLCapabilities);
+//               panel.add(new JTextureLoaderBar(pGLJPanel, task));
+//             }
+//             else {
+//               pGLCanvas = new GLCanvas(pGLCapabilities);
+//               panel.add(new JTextureLoaderBar(pGLCanvas, task));
+//             }
+// 	  }
+
+// 	  frame.setContentPane(panel);
+// 	}
+
+// 	frame.pack();
+
+// 	{
+// 	  Rectangle bounds = frame.getGraphicsConfiguration().getBounds();
+// 	  frame.setLocation(bounds.x + bounds.width/2 - frame.getWidth()/2, 
+// 			    bounds.y + bounds.height/2 - frame.getHeight()/2);
+// 	}
+
+// 	frame.setVisible(true);
+//       }
+
 
       /* create the restore layout splash screen */ 
       {
@@ -4594,7 +4604,8 @@ class UIMaster
 	JToolDialog.initRootFrame(pFrame);
       }
 
-      pSplashFrame.setVisible(false);
+      /* hide any onscreen windows created during the texture loading process. */ 
+      pTextureLoader.hide(); 
 
       {
 	Path layoutPath = null;
@@ -6259,18 +6270,14 @@ class UIMaster
   
 
   /** 
-   * The OpenGL capabilities used by all GLJPanel instances.
+   * The OpenGL capabilities used by all OpenGL drawable instances.
    */ 
   private GLCapabilities  pGLCapabilities;
 
   /**
-   * The template GLJPanel or GLCanvas which creates the shared OpenCL context in which 
-   * textures and display lists are initialized.  Only one of the two fields will have a 
-   * non-null value depending on whether the Java2d OpenGL rendering pipeline is enabled.
-   * If OpenGL is enabled for Java2d, the GLJPanel will be used instead of the GLCanvas.
+   * Manages loading the shared textures and display lists used by all OpenGL drawables. 
    */ 
-  private GLJPanel  pGLJPanel;
-  private GLCanvas  pGLCanvas;
+  private TextureLoader pTextureLoader; 
 
   /**
    * The OpenGL display list handles which have been previously allocated with glGenLists() 
@@ -6278,7 +6285,7 @@ class UIMaster
    * 
    * These display list handles are collected when objects which create OpenGL display 
    * lists are garbage collected.  The display lists where all created in the same OpenGL
-   * context as pGLJPanel. <P> 
+   * context as pTexLoader.getContext(). <P> 
    */ 
   private TreeSet<Integer>  pDisplayLists; 
 
@@ -6289,14 +6296,8 @@ class UIMaster
   /**
    * The splash screen frame.
    */ 
-  private JFrame  pSplashFrame;
+  //  private JFrame  pSplashFrame;
 
-  /**
-   * The splash screen progress bar;
-   */ 
-  private JProgressBar  pSplashProgress;
-  
-  
   /**
    * The restore layout splash frame.
    */ 

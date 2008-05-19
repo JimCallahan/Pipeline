@@ -11,5 +11,5 @@ SUBDIRS = \
 
 
 
-%.exe: %.exe4j
+%.exe: %.exe4j @top_srcdir@/src/unix/splash/Splash.gif
 	exe4jc --verbose $<

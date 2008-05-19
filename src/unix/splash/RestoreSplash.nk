@@ -1,0 +1,82 @@
+#! /base/apps/Unix-x86-Opt/Nuke5.0v1/Nuke5.0 -nx
+version 5.0100
+define_window_layout_xml {<?xml version="1.0" encoding="UTF-8"?>
+<layout version="1.0">
+    <window x="43" y="24" w="1688" h="1053" screen="0">
+        <splitter orientation="1">
+            <split size="1063"></split>
+            <splitter orientation="1">
+                <split size="40"></split>
+                <dock id="" hideTitles="1" activePageId="Toolbar.1">
+                    <page id="Toolbar.1"></page>
+                </dock>
+                <split size="1021"></split>
+                <splitter orientation="2">
+                    <split size="497"></split>
+                    <dock id="" activePageId="Viewer.1">
+                        <page id="Viewer.1"></page>
+                    </dock>
+                    <split size="497"></split>
+                    <dock id="" activePageId="DAG.1">
+                        <page id="DAG.1"></page>
+                        <page id="Curve Editor.1"></page>
+                    </dock>
+                </splitter>
+            </splitter>
+            <split size="615"></split>
+            <dock id="" activePageId="Properties.1">
+                <page id="Properties.1"></page>
+            </dock>
+        </splitter>
+    </window>
+</layout>
+}
+Root {
+ inputs 0
+ name /crypt/home/jim/code-dimetrodon/src/pipeline/src/unix/splash/RestoreSplash.nk
+ last_frame 1
+ format "640 480 0 0 640 480 1 PC_Video"
+ proxy_type scale
+ proxy_format "640 480 0 0 640 480 1 PC_Video"
+}
+Read {
+ inputs 0
+ file /crypt/home/jim/code-dimetrodon/src/pipeline/src/unix/splash/Splash-restore.png
+ format "2092 721 0 0 2092 721 1 "
+ version 2
+ premultiplied true
+ name Read1
+ selected true
+ xpos -96
+ ypos -277
+}
+Reformat {
+ type scale
+ scale 0.2
+ name Reformat1
+ xpos -96
+ ypos -201
+}
+Grade {
+ channels {-rgba.red -rgba.green -rgba.blue rgba.alpha}
+ blackpoint 0.5
+ name Grade1
+ xpos -96
+ ypos -172
+}
+Write {
+ channels rgba
+ file /crypt/home/jim/code-dimetrodon/src/pipeline/src/java/us/temerity/pipeline/laf/RestoreSplash.png
+ views {main}
+ file_type png
+ name Write1
+ xpos -96
+ ypos -129
+}
+Viewer {
+ frame 1
+ input_process false
+ name Viewer1
+ xpos -96
+ ypos -54
+}
