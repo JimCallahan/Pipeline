@@ -315,7 +315,10 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
         $(srcdir)/package-lists/jai \
       -linkoffline \
         ../../../jogl/docs \
-        $(srcdir)/package-lists/jogl
+        $(srcdir)/package-lists/jogl \
+      -linkoffline \
+        http://ws.apache.org/xmlrpc/xmlrpc2/apidocs/index.html \
+        $(srcdir)/package-lists/xmlrpc2 \
 
 
      LOCAL_DIRS = /usr/java/jdk1.5.0/docs/api
@@ -323,10 +326,10 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
      LOCAL_URLS = $(patsubst %,-link file://%,$(LOCAL_DIRS))
 
     LEGACY_DIRS = $(shell find $(top_srcdir)/src/java/us/temerity/pipeline/plugin/*/v1_*_* \
-                               -maxdepth 1 -type d -not -name CVS)
+                               -maxdepth 1 -type d -not \( -name CVS -o -name EXTRA \) )
 
     MODERN_DIRS = $(shell find $(top_srcdir)/src/java/us/temerity/pipeline/plugin/*/v2_*_* \
-                               -maxdepth 1 -type d -not -name CVS)
+                               -maxdepth 1 -type d -not \( -name CVS -o -name EXTRA \) )
 
 LEGACY_PACKAGES = $(subst /,.,$(patsubst $(top_srcdir)/src/java/%,%,$(LEGACY_DIRS)))
 MODERN_PACKAGES = $(subst /,.,$(patsubst $(top_srcdir)/src/java/%,%,$(MODERN_DIRS)))
@@ -354,7 +357,7 @@ PLUGIN_PACKAGES = $(MODERN_PACKAGES) $(BUILD_LEGACY_PLUGINS_FALSE) $(LEGACY_PACK
 
    JAVADOC_OPTS = -J-Xmx512m \
                   -sourcepath $(top_srcdir)/src/java \
-                  -classpath $(top_builddir)/src/java:$(srcdir)/../../src/java/jogl/jogl.jar \
+                  -classpath $(top_builddir)/src/java:$(srcdir)/../../src/java/jogl/jogl.jar:$(top_srcdir)/src/java/us/temerity/pipeline/plugin/ShotgunConnectionExt/v2_4_1/EXTRA/xmlrpc.jar \
                   -d javadoc -source 1.5 -use $(EXTERNAL_URLS) \
                   -header '</EM><BIG><A href="http://www.temerity.us" target="_top"><SPAN style="color: \#ffffff;"><B>TEMERITY</B></SPAN></A></BIG><EM>' \
                   -stylesheetfile $(srcdir)/stylesheet.css

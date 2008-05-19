@@ -1,0 +1,8 @@
+This software uses the following libraries developed at 
+The Apache Software Foundation (http://www.apache.org/).
+
+xmlrpc-client
+xmlrpc-common
+ws-commons
+
+http://ws.apache.org/xmlrpc/xmlrpc2/
