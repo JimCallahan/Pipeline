@@ -1,4 +1,4 @@
-// $Id: SilhouetteBuildAction.java,v 1.2 2008/03/28 21:16:15 jim Exp $
+// $Id: SilhouetteBuildAction.java,v 1.3 2008/05/19 11:10:17 jim Exp $
 
 package us.temerity.pipeline.plugin.SilhouetteBuildAction.v2_3_15;
 
@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.TreeMap;
 
-import com.sun.org.apache.bcel.internal.generic.GETSTATIC;
+//import com.sun.org.apache.bcel.internal.generic.GETSTATIC;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.plugin.CommonActionUtils;
