@@ -122,7 +122,7 @@ enum NodePurpose
   titles()
   {
     ArrayList<String> toReturn = new ArrayList<String>();
-    for (TaskType type : TaskType.values()) {
+    for (NodePurpose type : values()) {
       toReturn.add(type.toTitle());
     }
     return toReturn;
