@@ -1,4 +1,4 @@
-// $Id: QueueJobGroupsTableModel.java,v 1.7 2007/03/28 20:07:15 jim Exp $
+// $Id: QueueJobGroupsTableModel.java,v 1.8 2008/05/20 21:33:02 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -68,7 +68,7 @@ class QueueJobGroupsTableModel
       }
 
       {
-	int widths[] = { 80, 140, 270, 180, 180, 540, 180 };
+	int widths[] = { 80, 140, 300, 180, 180, 540, 180 };
 	pColumnWidths = widths;
       }
 
@@ -132,7 +132,7 @@ class QueueJobGroupsTableModel
 	break;
 
       case 2:
-	value = group.getRootPattern();
+	value = group.getRootSequence().toString();
 	break;
 
       case 3: 
