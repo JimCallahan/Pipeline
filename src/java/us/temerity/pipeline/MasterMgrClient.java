@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.119 2008/05/04 00:40:16 jim Exp $
+// $Id: MasterMgrClient.java,v 1.120 2008/05/20 21:32:24 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -245,9 +245,9 @@ class MasterMgrClient
    * Each time the privileges are obtained from the server they are cached.  If the cache 
    * has not been invalidated since the last communication with the server, this method 
    * returns the last cached value instead. If the cache has been invalidated, this method 
-   * behaves identically to {@link #getPrivilegeDetails getPrivilegeDetails}.  This means that
-   * the privileges returned by this method are not guarenteed to be up-to-date and 
-   * operations relying on these privlegea may still fail due to a change in privileges 
+   * behaves identically to {@link #getPrivilegeDetails() getPrivilegeDetails}.  This means 
+   * that the privileges returned by this method are not guaranteed to be up-to-date and 
+   * operations relying on these privileges may still fail due to a change in privileges 
    * since the cache was last updated. <P> 
    * 
    * @return 
