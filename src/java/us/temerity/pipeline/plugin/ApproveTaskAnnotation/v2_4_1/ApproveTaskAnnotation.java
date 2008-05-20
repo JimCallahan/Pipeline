@@ -1,4 +1,4 @@
-// $Id: ApproveTaskAnnotation.java,v 1.3 2008/05/16 04:53:53 jim Exp $
+// $Id: ApproveTaskAnnotation.java,v 1.4 2008/05/20 21:29:14 jesse Exp $
 
 package us.temerity.pipeline.plugin.ApproveTaskAnnotation.v2_4_1;
 
@@ -163,7 +163,7 @@ class ApproveTaskAnnotation
          "collection to run after the task has been approved in order to update and " + 
          "check-in this node.  If not given, the approval network will need to be " + 
          "manually updated and checked-in.", 
-          new BuilderID("WtmBuilders", new VersionID("1.0.0"), "ICVFX", "ApproveTask")); 
+          new BuilderID("Approval", new VersionID("2.4.1"), "Temerity", "ApproveTask")); 
       addParam(param);
     }
 
