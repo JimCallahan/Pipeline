@@ -1,4 +1,4 @@
-// $Id: TaskBuilder.java,v 1.2 2008/05/15 22:38:17 jesse Exp $
+// $Id: TaskBuilder.java,v 1.3 2008/05/20 22:44:23 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_1;
 
@@ -49,7 +49,7 @@ class TaskBuilder
     MasterMgrClient mclient,
     QueueMgrClient qclient,
     BuilderInformation builderInformation,
-    String entityType
+    EntityType entityType
   )
     throws PipelineException
   {
@@ -408,7 +408,7 @@ class TaskBuilder
     }
     
     if (pEntityType != null)
-      annot.setParamValue(aAnnotEntityType, pEntityType);
+      annot.setParamValue(aAnnotEntityType, pEntityType.toTitle());
 
     return annot; 
   }
@@ -649,6 +649,6 @@ class TaskBuilder
    */ 
   private ArrayList<String> pAnnotTaskTypeChoices;
   
-  private String pEntityType;
+  private EntityType pEntityType;
   
 }

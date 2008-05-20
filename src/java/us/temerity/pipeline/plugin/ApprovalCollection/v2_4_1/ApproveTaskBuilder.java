@@ -1,4 +1,4 @@
-// $Id: ApproveTaskBuilder.java,v 1.3 2008/05/15 22:43:22 jesse Exp $
+// $Id: ApproveTaskBuilder.java,v 1.4 2008/05/20 22:44:23 jesse Exp $
 
 package us.temerity.pipeline.plugin.ApprovalCollection.v2_4_1;
 
@@ -80,7 +80,7 @@ class ApproveTaskBuilder
   {
     super("ApproveTask",
          "A builder which implements a generic task approval operation.", 
-         mclient, qclient, builderInfo, "Asset");
+         mclient, qclient, builderInfo, EntityType.Ignore);
     
     addDefaultParams();
     
