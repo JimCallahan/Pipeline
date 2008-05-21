@@ -80,6 +80,7 @@ class AssetBuilderModelStage
     if(pPlaceHolderMel != null)
       if (pRegisteredNodeMod.getSourceNames().contains(pPlaceHolderMel))
 	pClient.unlink(getAuthor(), getView(), pRegisteredNodeName, pPlaceHolderMel);
+    vouch();
   }
   
   private String pPlaceHolderMel;
