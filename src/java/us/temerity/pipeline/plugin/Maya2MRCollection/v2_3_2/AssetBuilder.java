@@ -1,4 +1,4 @@
-// $Id: AssetBuilder.java,v 1.4 2008/03/04 08:15:15 jesse Exp $
+// $Id: AssetBuilder.java,v 1.5 2008/05/21 21:51:57 jesse Exp $
 
 package us.temerity.pipeline.plugin.Maya2MRCollection.v2_3_2;
 
@@ -68,7 +68,7 @@ class AssetBuilder
         ("The project naming class that was passed in does not implement " +
          "the BuildsProjectNames interface");
       
-    // Globabl parameters
+    // Global parameters
     {
       ArrayList<String> projects = pBuilderQueries.getProjectList();
       UtilityParam param = 

@@ -166,33 +166,30 @@ public class DefaultShotNames
     String thumb = getThumbnailDirectory();
     String source = getSourceDirectory();
     
-    if (pApprovalMode);
-    {
-      pLayStart    = new Path(pShotPath, "anim");
-      pLayEdit     = new Path(pLayStart, edit);
-      pLaySubmit   = new Path(pLayStart, submit);
-      pLayPrepare  = new Path(pLaySubmit, prepare);
-      pLayApprove  = new Path(pLayStart, approve);
-      pLayProduct  = new Path(pLayApprove, product);
-      pLayThumb    = new Path(pLaySubmit, thumb);
-      
-      pAnimStart   = new Path(pShotPath, "anim");
-      pAnimEdit    = new Path(pAnimStart, edit);
-      pAnimSource  = new Path(pAnimStart, source);
-      pAnimSubmit  = new Path(pAnimStart, submit);
-      pAnimPrepare = new Path(pAnimSubmit, prepare);
-      pAnimApprove = new Path(pAnimStart, approve);
-      pAnimProduct = new Path(pAnimApprove, product);
-      pAnimThumb   = new Path(pAnimSubmit, thumb);
-      
-      pLgtStart    = new Path(pShotPath, "lgt");
-      pLgtEdit     = new Path(pLgtStart, edit);
-      pLgtSubmit   = new Path(pLgtStart, submit);
-      pLgtPrepare  = new Path(pLgtSubmit, prepare);
-      pLgtApprove  = new Path(pLgtStart, approve);
-      pLgtProduct  = new Path(pLgtApprove, product);
-      pLgtThumb    = new Path(pLgtSubmit, thumb);
-    }
+    pLayStart    = new Path(pShotPath, "anim");
+    pLayEdit     = new Path(pLayStart, edit);
+    pLaySubmit   = new Path(pLayStart, submit);
+    pLayPrepare  = new Path(pLaySubmit, prepare);
+    pLayApprove  = new Path(pLayStart, approve);
+    pLayProduct  = new Path(pLayApprove, product);
+    pLayThumb    = new Path(pLaySubmit, thumb);
+
+    pAnimStart   = new Path(pShotPath, "anim");
+    pAnimEdit    = new Path(pAnimStart, edit);
+    pAnimSource  = new Path(pAnimStart, source);
+    pAnimSubmit  = new Path(pAnimStart, submit);
+    pAnimPrepare = new Path(pAnimSubmit, prepare);
+    pAnimApprove = new Path(pAnimStart, approve);
+    pAnimProduct = new Path(pAnimApprove, product);
+    pAnimThumb   = new Path(pAnimSubmit, thumb);
+
+    pLgtStart    = new Path(pShotPath, "lgt");
+    pLgtEdit     = new Path(pLgtStart, edit);
+    pLgtSubmit   = new Path(pLgtStart, submit);
+    pLgtPrepare  = new Path(pLgtSubmit, prepare);
+    pLgtApprove  = new Path(pLgtStart, approve);
+    pLgtProduct  = new Path(pLgtApprove, product);
+    pLgtThumb    = new Path(pLgtSubmit, thumb);
   }
 
   /*----------------------------------------------------------------------------------------*/
