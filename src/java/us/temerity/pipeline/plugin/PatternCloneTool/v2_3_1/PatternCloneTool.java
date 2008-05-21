@@ -52,6 +52,7 @@ class PatternCloneTool
    * @throws PipelineException 
    *   If unable to validate the given user input.
    */  
+  @Override
   public synchronized String
   collectPhaseInput() 
     throws PipelineException 
@@ -161,6 +162,7 @@ class PatternCloneTool
    * @throws PipelineException 
    *   If unable to sucessfully execute this phase of the tool.
    */ 
+  @Override
   public boolean 
   executePhase
   (
