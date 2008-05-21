@@ -1,4 +1,4 @@
-// $Id: TaskGuardExt.java,v 1.2 2008/05/15 08:54:46 jim Exp $
+// $Id: TaskGuardExt.java,v 1.3 2008/05/21 21:23:19 jesse Exp $
 
 package us.temerity.pipeline.plugin.TaskGuardExt.v2_4_1;
 
@@ -297,64 +297,73 @@ class TaskGuardExt
     String taskName    = null; 
     String taskType    = null; 
     for(String aname : annots.keySet()) {
-      BaseAnnotation an = annots.get(aname);
-      
-      String purpose = lookupPurpose(an); 
-      if(purpose != null) {
-        if(byPurpose.containsKey(purpose)) 
-	  throw new PipelineException
-	    ("More than one Task related annotation with a " + aPurpose + " of " + 
-	     purpose + " was found on node (" + name + ")!"); 
-
-        {
-          String pname = lookupProjectName(an); 
-          if(pname == null) 
-            throw new PipelineException
-              ("The " + aProjectName + " was not set for Task annotation on node " + 
-               "(" + name + ")!"); 
-          
-          if((projectName != null) && !projectName.equals(pname)) 
-            throw new PipelineException 
-              ("The " + aProjectName + " was set in multiple Task annotations on node " + 
-               "(" + name + "), but the did not match!  Both (" + projectName + ") and " + 
-               "(" + pname + ") where given as the " + aProjectName + ".");
-
-          projectName = pname;
+      if(aname.equals("Task") || aname.startsWith("AltTask")) {
+        BaseAnnotation an = annots.get(aname);
+        
+        /* Skip old annotation plugins*/
+        if (an.getVendor().equals("Temerity") && 
+            an.getVersionID().equals(new VersionID("2.3.2")) &&
+            an.getName().equals("Task"))
+          continue;
+            
+        
+        String purpose = lookupPurpose(an); 
+        if(purpose != null) {
+          if(byPurpose.containsKey(purpose)) 
+  	  throw new PipelineException
+  	    ("More than one Task related annotation with a " + aPurpose + " of " + 
+  	     purpose + " was found on node (" + name + ")!"); 
+  
+          {
+            String pname = lookupProjectName(an); 
+            if(pname == null) 
+              throw new PipelineException
+                ("The " + aProjectName + " was not set for Task annotation on node " + 
+                 "(" + name + ")!"); 
+            
+            if((projectName != null) && !projectName.equals(pname)) 
+              throw new PipelineException 
+                ("The " + aProjectName + " was set in multiple Task annotations on node " + 
+                 "(" + name + "), but the did not match!  Both (" + projectName + ") and " + 
+                 "(" + pname + ") where given as the " + aProjectName + ".");
+  
+            projectName = pname;
+          }
+  
+          {
+            String tname = lookupTaskName(an);  
+            if(tname == null) 
+              throw new PipelineException
+                ("The " + aTaskName + " was not set for Task annotation on node " + 
+                 "(" + name + ")!"); 
+            
+            if((taskName != null) && !taskName.equals(tname)) 
+              throw new PipelineException 
+                ("The " + aTaskName + " was set in multiple Task annotations on node " + 
+                 "(" + name + "), but the did not match!  Both (" + taskName + ") and " + 
+                 "(" + tname + ") where given as the " + aTaskName + ".");
+  
+            taskName = tname; 
+          }
+  
+          {
+            String ttype = lookupTaskType(an);  
+            if(ttype == null) 
+              throw new PipelineException
+                ("The " + aTaskType + " was not set for Task annotation on node " + 
+                 "(" + name + ")!"); 
+            
+            if((taskType != null) && !taskType.equals(ttype)) 
+              throw new PipelineException 
+                ("The " + aTaskType + " was set in multiple Task annotations on node " + 
+                 "(" + name + "), but the did not match!  Both (" + taskType + ") and " + 
+                 "(" + ttype + ") where given as the " + aTaskType + ".");
+  
+            taskType = ttype;
+          }
+  
+          byPurpose.put(purpose, an); 
         }
-
-        {
-          String tname = lookupTaskName(an);  
-          if(tname == null) 
-            throw new PipelineException
-              ("The " + aTaskName + " was not set for Task annotation on node " + 
-               "(" + name + ")!"); 
-          
-          if((taskName != null) && !taskName.equals(tname)) 
-            throw new PipelineException 
-              ("The " + aTaskName + " was set in multiple Task annotations on node " + 
-               "(" + name + "), but the did not match!  Both (" + taskName + ") and " + 
-               "(" + tname + ") where given as the " + aTaskName + ".");
-
-          taskName = tname; 
-        }
-
-        {
-          String ttype = lookupTaskType(an);  
-          if(ttype == null) 
-            throw new PipelineException
-              ("The " + aTaskType + " was not set for Task annotation on node " + 
-               "(" + name + ")!"); 
-          
-          if((taskType != null) && !taskType.equals(ttype)) 
-            throw new PipelineException 
-              ("The " + aTaskType + " was set in multiple Task annotations on node " + 
-               "(" + name + "), but the did not match!  Both (" + taskType + ") and " + 
-               "(" + ttype + ") where given as the " + aTaskType + ".");
-
-          taskType = ttype;
-        }
-
-        byPurpose.put(purpose, an); 
       }
     }
 
