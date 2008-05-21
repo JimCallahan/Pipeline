@@ -1,4 +1,4 @@
-// $Id: RadarMaya2MRCollection.java,v 1.3 2008/02/04 12:12:48 jim Exp $
+// $Id: RadarMaya2MRCollection.java,v 1.4 2008/05/21 22:07:58 jesse Exp $
 
 package com.radar.pipeline.plugin.RadarMaya2MRCollection.v2_3_2;
 
@@ -61,7 +61,7 @@ class RadarMaya2MRCollection
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Returns a table of the fullly resolved node builder class names indexed by the short 
+   * Returns a table of the fully resolved node builder class names indexed by the short 
    * names of the builders provided by this collection.<P> 
    * 
    * All builder collections should override this method to return information about 
