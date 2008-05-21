@@ -330,7 +330,7 @@ class ShotNames
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Static method to turn a node name into a ShotNames class that represents the shot
+   * Static method to turn a node name into a ShotNamer class that represents the shot
    * that the node is from.
    * <p>
    * The method will return <code>null</code> if the nodeName that is passed in is not a 
