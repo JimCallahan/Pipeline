@@ -1,4 +1,4 @@
-// $Id: QueueJobGroupsTableModel.java,v 1.8 2008/05/20 21:33:02 jesse Exp $
+// $Id: QueueJobGroupsTableModel.java,v 1.9 2008/05/22 00:10:47 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -310,7 +310,7 @@ class QueueJobGroupsTableModel
       return pStateCounts.get(group.getGroupID());
 
     case 2:
-      return group.getRootPattern();
+      return group.getRootSequence().toString();
       
     case 3:
       return TimeStamps.format(group.getSubmittedStamp());
