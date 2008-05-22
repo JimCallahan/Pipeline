@@ -2,16 +2,12 @@ package us.temerity.pipeline.builder;
 
 import java.util.*;
 
-import us.temerity.pipeline.ComplexParam;
-import us.temerity.pipeline.ComplexUtilityParam;
+import us.temerity.pipeline.*;
 
 /**
- * A key into a parameter contained in a Utility.  It consists of a mandatory name, which
- * specifies the parameter name, and an optional list of keys which specify the path
- * to descend if the parameter is in question is a {@link ComplexUtilityParam}.
- * <P>
- * If Complex Parameters are extended to other parts of the Pipeline API, this class will
- * most likely be converted into a standalone class. 
+ * A key into a parameter containing a mandatory name, which specifies the parameter name, and
+ * an optional list of keys which specify the path to descend if the parameter is in question
+ * is a {@link ComplexParam}.
  */
 public
 class ParamMapping
@@ -43,6 +39,11 @@ class ParamMapping
   
   /**
    * Constructs a {@link ParamMapping} which has just a name and a single key. 
+   * 
+   * @param paramName
+   *   The name of the parameter.
+   * @param firstKey
+   *   The first key for in the mapping.
    */
   public
   ParamMapping
@@ -55,7 +56,14 @@ class ParamMapping
   }
   
   /**
-   * Constructs a {@link ParamMapping} which has just a name and a single key. 
+   * Constructs a {@link ParamMapping} which has just a name and two keys.
+   * 
+   * @param paramName
+   *   The name of the parameter.
+   * @param firstKey
+   *   The first key for in the mapping.
+   * @param secondKey
+   *   The second key in the mapping.
    */
   public
   ParamMapping
@@ -69,7 +77,16 @@ class ParamMapping
   }
   
   /**
-   * Constructs a {@link ParamMapping} which has just a name and a single key. 
+   * Constructs a {@link ParamMapping} which has just a name and three keys.
+   * 
+   * @param paramName
+   *   The name of the parameter.
+   * @param firstKey
+   *   The first key for in the mapping.
+   * @param secondKey
+   *   The second key in the mapping.
+   * @param thirdKey
+   *   The third key in the mapping.
    */
   public
   ParamMapping
@@ -85,6 +102,11 @@ class ParamMapping
   
   /**
    * Constructs a {@link ParamMapping} which has a name and a list of keys.
+   * 
+   * @param paramName
+   *   The name of the parameter.
+   * @param keys
+   *   The list of keys.
    */
   public
   ParamMapping
@@ -222,7 +244,7 @@ class ParamMapping
   }
   
   /**
-   * Creates a {@link LinkedList} from a single item.
+   * Creates a {@link LinkedList} from two items.
    */
   private static <E> LinkedList<E>
   listFromObject
@@ -238,7 +260,7 @@ class ParamMapping
   }
   
   /**
-   * Creates a {@link LinkedList} from a single item.
+   * Creates a {@link LinkedList} from three items.
    */
   private static <E> LinkedList<E>
   listFromObject
