@@ -1,4 +1,4 @@
-// $Id: BaseBuilder.java,v 1.56 2008/05/07 22:03:31 jesse Exp $
+// $Id: BaseBuilder.java,v 1.57 2008/05/22 20:34:30 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -1224,7 +1224,7 @@ class BaseBuilder
   public final LinkedList<QueueJobGroup>
   queueNodes
   (
-     TreeSet<String> nodes
+     List<String> nodes
   )
   {
     pLog.log(Kind.Ops, Level.Fine, "Queuing the following nodes " + nodes );
@@ -1365,7 +1365,7 @@ class BaseBuilder
   public final boolean 
   areAllFinished
   (
-    TreeSet<String> queuedNodes
+    List<String> queuedNodes
   ) 
     throws PipelineException
   {
@@ -1406,7 +1406,7 @@ class BaseBuilder
   private TreeSet<String>
   collectNamesAndKill
   (
-    TreeSet<String> queuedNodes,
+    List<String> queuedNodes,
     LinkedList<QueueJobGroup> jobGroups
   ) 
     throws PipelineException
@@ -1606,10 +1606,10 @@ class BaseBuilder
   /**
    * Gets the list of all the nodes currently in the queue list.
    */
-  public final TreeSet<String> 
+  public final LinkedList<String> 
   getQueueList()
   {
-    return new TreeSet<String>(pNodesToQueue);
+    return new LinkedList<String>(pNodesToQueue);
   }
 
   /**
@@ -2135,11 +2135,11 @@ class BaseBuilder
      * @throws PipelineException
      */
     @SuppressWarnings("unused")
-    public TreeSet<String>
+    public LinkedList<String>
     preBuildPhase()
       throws PipelineException
     {
-      return new TreeSet<String>();
+      return new LinkedList<String>();
     }
     
     /**
@@ -2195,7 +2195,7 @@ class BaseBuilder
     {
       pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Finer, 
         "Starting the pre-build phase in the (" + getName() + ").");
-      TreeSet<String> neededNodes = preBuildPhase();
+      LinkedList<String> neededNodes = preBuildPhase();
       pQueuedNodes.clear();
       if (neededNodes.size() > 0) {
 	LinkedList<QueueJobGroup> jobs = queueNodes(neededNodes);
@@ -2308,7 +2308,7 @@ class BaseBuilder
           for (LockBundle bundle : getLockBundles()) {
             for (String node : bundle.getNodesToLock())
               lockLatest(node);
-            TreeSet<String> neededNodes = new TreeSet<String>(bundle.getNodesToCheckin());
+            List<String> neededNodes = bundle.getNodesToCheckin();
             LinkedList<QueueJobGroup> jobs = queueNodes(neededNodes);
             if (jobs.size() > 0) {
               waitForJobs(jobs);
@@ -2390,7 +2390,7 @@ class BaseBuilder
   /**
    * A list of nodes names that need to be queued.
    */
-  private TreeSet<String> pNodesToQueue = new TreeSet<String>();
+  private LinkedList<String> pNodesToQueue = new LinkedList<String>();
 
   /**
    * The list of all associated subBuilders

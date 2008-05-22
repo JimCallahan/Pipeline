@@ -1,4 +1,4 @@
-// $Id: TrackingBuilder.java,v 1.15 2008/04/09 20:16:18 jim Exp $
+// $Id: TrackingBuilder.java,v 1.16 2008/05/22 20:34:31 jesse Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -217,7 +217,6 @@ class TrackingBuilder
    * validation gets performed after all the Setup Passes have been run but before
    * any Construct Passes are run.
    */
-  @SuppressWarnings("unchecked")
   @Override
   public MappedArrayList<String, PluginContext> 
   getNeededActions()
@@ -650,10 +649,10 @@ class TrackingBuilder
      * disabled to be queued now.
      */ 
     @Override
-    public TreeSet<String> 
+    public LinkedList<String> 
     preBuildPhase()
     {
-      TreeSet<String> regenerate = new TreeSet<String>();
+      LinkedList<String> regenerate = new LinkedList<String>();
 
       regenerate.addAll(getDisableList());
       for(FinalizableStage stage : pFinalStages) 

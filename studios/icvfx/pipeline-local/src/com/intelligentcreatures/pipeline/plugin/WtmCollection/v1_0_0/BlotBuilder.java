@@ -1,4 +1,4 @@
-// $Id: BlotBuilder.java,v 1.10 2008/03/23 05:09:58 jim Exp $
+// $Id: BlotBuilder.java,v 1.11 2008/05/22 20:34:31 jesse Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -607,10 +607,10 @@ class BlotBuilder
      * disabled to be queued now.
      */ 
     @Override
-    public TreeSet<String> 
+    public LinkedList<String> 
     preBuildPhase()
     {
-      TreeSet<String> regenerate = new TreeSet<String>();
+      LinkedList<String> regenerate = new LinkedList<String>();
 
       regenerate.addAll(getDisableList());
       for(FinalizableStage stage : pFinalStages) 

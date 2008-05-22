@@ -1,4 +1,4 @@
-// $Id: MatchBuilder.java,v 1.12 2008/05/10 23:14:20 jim Exp $
+// $Id: MatchBuilder.java,v 1.13 2008/05/22 20:34:31 jesse Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -536,10 +536,10 @@ class MatchBuilder
      * Return nodes which will have their actions disabled to be queued now.
      */ 
     @Override
-    public TreeSet<String> 
+    public LinkedList<String> 
     preBuildPhase()
     {
-      return getDisableList();
+      return new LinkedList<String>(getDisableList());
     }
     
     /**

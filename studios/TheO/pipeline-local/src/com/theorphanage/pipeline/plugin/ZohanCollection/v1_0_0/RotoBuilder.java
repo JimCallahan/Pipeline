@@ -594,11 +594,11 @@ class RotoBuilder
      */ 
     @SuppressWarnings("unused")
     @Override
-    public TreeSet<String> 
+    public LinkedList<String> 
     preBuildPhase()
       throws PipelineException
     {
-      TreeSet<String> regenerate = new TreeSet<String>();
+      LinkedList<String> regenerate = new LinkedList<String>();
 
       regenerate.addAll(getDisableList());
       for(FinalizableStage stage : pFinalizeStages) 

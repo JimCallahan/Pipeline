@@ -1,4 +1,4 @@
-// $Id: TempCompBuilder.java,v 1.2 2008/04/03 10:30:47 jim Exp $
+// $Id: TempCompBuilder.java,v 1.3 2008/05/22 20:34:31 jesse Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -608,10 +608,10 @@ class TempCompBuilder
      * Return nodes which will have their actions disabled to be queued now.
      */ 
     @Override
-    public TreeSet<String> 
+    public LinkedList<String> 
     preBuildPhase()
     {
-      return getDisableList();
+      return new LinkedList<String>(getDisableList());
     }
     
     /**

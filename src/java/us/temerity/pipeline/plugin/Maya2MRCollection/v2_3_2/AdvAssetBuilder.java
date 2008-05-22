@@ -1,4 +1,4 @@
-// $Id: AdvAssetBuilder.java,v 1.4 2008/03/04 08:15:15 jesse Exp $
+// $Id: AdvAssetBuilder.java,v 1.5 2008/05/22 20:34:31 jesse Exp $
 
 package us.temerity.pipeline.plugin.Maya2MRCollection.v2_3_2;
 
@@ -1310,10 +1310,10 @@ class AdvAssetBuilder
     }
     
     @Override
-    public TreeSet<String> 
+    public LinkedList<String> 
     preBuildPhase()
     {
-      TreeSet<String> toReturn = new TreeSet<String>(getDisableList());
+      LinkedList<String> toReturn = new LinkedList<String>(getDisableList());
       toReturn.addAll(getDisableList());
       for (EmptyMayaAsciiStage stage : pEmptyMayaScenes) {
 	toReturn.add(stage.getNodeName());

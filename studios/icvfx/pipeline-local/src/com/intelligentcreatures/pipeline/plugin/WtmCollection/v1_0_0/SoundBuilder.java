@@ -1,4 +1,4 @@
-// $Id: SoundBuilder.java,v 1.2 2008/03/23 05:09:58 jim Exp $
+// $Id: SoundBuilder.java,v 1.3 2008/05/22 20:34:31 jesse Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -361,10 +361,10 @@ class SoundBuilder
      * disabled to be queued now.
      */ 
     @Override
-    public TreeSet<String> 
+    public LinkedList<String> 
     preBuildPhase()
     {
-      TreeSet<String> regenerate = new TreeSet<String>();
+      LinkedList<String> regenerate = new LinkedList<String>();
 
       regenerate.addAll(getDisableList());
       for(FinalizableStage stage : pFinalStages) 

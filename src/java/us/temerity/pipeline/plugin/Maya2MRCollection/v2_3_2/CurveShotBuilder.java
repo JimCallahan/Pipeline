@@ -868,10 +868,10 @@ class CurveShotBuilder
     }
     
     @Override
-    public TreeSet<String> 
+    public LinkedList<String> 
     preBuildPhase()
     {
-      TreeSet<String> toReturn = new TreeSet<String>(getDisableList());
+      LinkedList<String> toReturn = new LinkedList<String>(getDisableList());
       toReturn.addAll(getDisableList());
       for (EmptyMayaAsciiStage stage : pEmptyMayaScenes) {
 	toReturn.add(stage.getNodeName());

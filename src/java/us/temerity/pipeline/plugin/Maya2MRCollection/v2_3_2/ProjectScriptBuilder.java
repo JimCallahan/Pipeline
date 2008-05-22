@@ -637,10 +637,10 @@ class ProjectScriptBuilder
     }
     
     @Override
-    public TreeSet<String> 
+    public LinkedList<String> 
     preBuildPhase()
     {
-      TreeSet<String> toReturn = new TreeSet<String>(getDisableList());
+      LinkedList<String> toReturn = new LinkedList<String>(getDisableList());
       for (EmptyFileStage stage : pEmptyFiles) 
 	toReturn.add(stage.getNodeName());
       return toReturn;

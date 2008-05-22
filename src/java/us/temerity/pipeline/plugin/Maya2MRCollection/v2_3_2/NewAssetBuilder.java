@@ -619,10 +619,10 @@ class NewAssetBuilder
     }
     
     @Override
-    public TreeSet<String> 
+    public LinkedList<String> 
     preBuildPhase()
     {
-      TreeSet<String> toReturn = new TreeSet<String>(getDisableList());
+      LinkedList<String> toReturn = new LinkedList<String>(getDisableList());
       if (pBuildSeparateHead)
 	toReturn.add(pAssetNames.getBlendShapeModelNodeName());
       if (pAutoRigSetup) {

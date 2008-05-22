@@ -385,10 +385,10 @@ class ProjectTurntableBuilder
     }
     
     @Override
-    public TreeSet<String> 
+    public LinkedList<String> 
     preBuildPhase()
     {
-      TreeSet<String> toReturn = new TreeSet<String>();
+      LinkedList<String> toReturn = new LinkedList<String>();
       for (EmptyMayaAsciiStage stage : pEmptyMayaStages)
 	toReturn.add(stage.getNodeName());
       for (AssetBuilderModelStage stage : pModelStages)
