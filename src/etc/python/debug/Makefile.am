@@ -1,5 +1,5 @@
 
-dbgdir = @PIPELINE_PYARCHDIR@-Debug
+dbgdir = @ROOT_INST_DIR@/etc/python/@NATIVE_OSTYPE@-@NATIVE_ARCHTYPE@-Debug
 
 dbg_SCRIPTS = \
   plremote.py

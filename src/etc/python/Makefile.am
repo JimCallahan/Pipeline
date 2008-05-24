@@ -1,5 +1,5 @@
 
-optdir = @PIPELINE_PYARCHDIR@-Opt
+optdir = @ROOT_INST_DIR@/etc/python/@NATIVE_OSTYPE@-@NATIVE_ARCHTYPE@-Opt
 
 opt_SCRIPTS = \
   plremote.py
