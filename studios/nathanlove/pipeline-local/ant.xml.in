@@ -1,0 +1,29 @@
+<project name="NathanLove" default="MakePlugins" basedir=".">
+
+  <property name="PipelineLatest" 
+            value="@ROOT_INST_PARENT_DIR@/pipeline-latest"/>
+
+  <property name="BaseCollection" 
+            value="com/nathanlove/pipeline/plugin/BaseCollection"/>
+            
+  <property name="Plugins" 
+            value="com/nathanlove/pipeline/plugin"/>
+
+  
+  <target name="Make-BaseCollection-v1.0.0" 
+          description="Builds the plugin JAR file.">
+
+    <jar destfile="bin/${BaseCollection}/v1_0_0/BaseCollection.jar" 
+         includes="${BaseCollection}/v1_0_0/*.class, ${BaseCollection}/v1_0_0/stages/*.class"
+         basedir="bin">
+    </jar>
+  </target>
+  
+
+  
+    <target name="MakePlugins" 
+            description="Make all Pipeline plugins." 
+            depends="Make-BaseCollection-v1.0.0"> 
+    </target>
+
+</project> 

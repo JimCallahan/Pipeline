@@ -2034,6 +2034,23 @@ AC_CONFIG_FILES([
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/stages/Makefile
   studios/icvfx/pipeline-local/src/python/Makefile
 
+
+  studios/nathanlove/Makefile
+  studios/nathanlove/pipeline-local/.classpath
+  studios/nathanlove/pipeline-local/.project 
+  studios/nathanlove/pipeline-local/ant.xml
+  studios/nathanlove/pipeline-local/Makefile
+  studios/nathanlove/pipeline-local/src/Makefile
+  studios/nathanlove/pipeline-local/src/Makefile.local
+  studios/nathanlove/pipeline-local/src/com/Makefile
+  studios/nathanlove/pipeline-local/src/com/nathanlove/Makefile
+  studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/Makefile
+  studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/Makefile
+  studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/Makefile
+  studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/Makefile
+  studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/Makefile.local
+  studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/stages/Makefile
+
   studios/radar/Makefile
   studios/radar/pipeline-local/.classpath
   studios/radar/pipeline-local/.project 
