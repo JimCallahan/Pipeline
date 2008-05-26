@@ -1,4 +1,4 @@
-// $Id: BaseBuilder.java,v 1.57 2008/05/22 20:34:30 jesse Exp $
+// $Id: BaseBuilder.java,v 1.58 2008/05/26 03:20:59 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -425,7 +425,6 @@ class BaseBuilder
    *   builder.  
    */
   @Deprecated
-  @SuppressWarnings("deprecated")
   protected final void
   addSelectionKeyParam()
     throws PipelineException
@@ -1888,7 +1887,6 @@ class BaseBuilder
      * @throws PipelineException  If any of the parameter values do not make sense or 
      * result in conflicting circumstances.
      */
-    @SuppressWarnings("unused")
     public void 
     validatePhase() 
       throws PipelineException
@@ -1905,7 +1903,6 @@ class BaseBuilder
      * @throws PipelineException  If there is an error involved while invoking the outside
      * source of information.
      */
-    @SuppressWarnings("unused")
     public void 
     gatherPhase() 
       throws PipelineException
@@ -1920,7 +1917,6 @@ class BaseBuilder
      * 
      * @throws PipelineException
      */
-    @SuppressWarnings("unused")
     public void
     initPhase()
       throws PipelineException
@@ -2086,6 +2082,8 @@ class BaseBuilder
       return this == that; 
     }
     
+    private static final long serialVersionUID = -8439662271370924857L;
+
     private BaseBuilder pParent;
   }
   
@@ -2134,7 +2132,6 @@ class BaseBuilder
      * that need to be queued, it should just return an empty TreeSet.
      * @throws PipelineException
      */
-    @SuppressWarnings("unused")
     public LinkedList<String>
     preBuildPhase()
       throws PipelineException
@@ -2152,7 +2149,6 @@ class BaseBuilder
      * @see StandardStage
      * @throws PipelineException  If something goes wrong while building nodes.
      */
-    @SuppressWarnings("unused")
     public void
     buildPhase()
       throws PipelineException
@@ -2363,6 +2359,8 @@ class BaseBuilder
   public final static String aActionOnExistence = "ActionOnExistence";
   public final static String aSelectionKeys = "SelectionKeys";
   public final static String aCheckinWhenDone = "CheckinWhenDone";
+  
+  private static final long serialVersionUID = 1157778379895394547L;
   
 
   

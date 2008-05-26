@@ -1,4 +1,4 @@
-// $Id: MayaFileStage.java,v 1.9 2008/02/06 05:11:28 jesse Exp $
+// $Id: MayaFileStage.java,v 1.10 2008/05/26 03:22:42 jesse Exp $
 
 package us.temerity.pipeline.stages;
 
@@ -192,7 +192,7 @@ class MayaFileStage
   }
 
   /**
-   * Utility method for linking a node ande setting the <code>AnimMEL</code> single
+   * Utility method for linking a node anda setting the <code>AnimMEL</code> single
    * parameter value that many Maya Actions share.
    * <p>
    * The name of a MEL script is passed to this method. That MEL script is then added as a

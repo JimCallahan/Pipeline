@@ -1,3 +1,5 @@
+// $Id: MayaRenderStage.java,v 1.7 2008/05/26 03:22:42 jesse Exp $
+
 package us.temerity.pipeline.stages;
 
 import us.temerity.pipeline.*;
@@ -202,11 +204,25 @@ class MayaRenderStage
     Software, Hardware, MentalRay, Vector;
 
     @Override
-    public String toString()
+    public String 
+    toString()
     {
       if (this == MentalRay)
 	return "Mental Ray";
       return super.toString();
+    }
+    
+    public static Renderer
+    fromString
+    (
+      String renderString  
+    )
+    {
+      for (Renderer renderer : values()) {
+       if (renderer.toString().equals(renderString)) 
+         return renderer;
+      }
+      return null;
     }
   }
   
