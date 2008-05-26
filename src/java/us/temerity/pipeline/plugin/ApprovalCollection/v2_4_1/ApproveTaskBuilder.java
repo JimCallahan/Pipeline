@@ -1,4 +1,4 @@
-// $Id: ApproveTaskBuilder.java,v 1.4 2008/05/20 22:44:23 jesse Exp $
+// $Id: ApproveTaskBuilder.java,v 1.5 2008/05/26 03:23:30 jesse Exp $
 
 package us.temerity.pipeline.plugin.ApprovalCollection.v2_4_1;
 
@@ -247,8 +247,9 @@ class ApproveTaskBuilder
         addParam(param);
       }
     }
-
   }
+  
+  
   
   /*----------------------------------------------------------------------------------------*/
   /*   C H E C K - I N   O V E R R I D E S                                                  */
@@ -298,6 +299,50 @@ class ApproveTaskBuilder
   
   
   
+  /*----------------------------------------------------------------------------------------*/
+  /*   H E L P E R   M E T H O D S                                                          */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Validates an annotation's param values against the values extracted from the Approve
+   * Node.
+   * <p>
+   * This method should only be called after the validatePhase() method of the 
+   * {@link LookupAndValidate} pass has been called.  If that method is not being used, then 
+   * {@link #pProjectName}, {@link #pTaskName}, and {@link #pTaskType} all need to have valid,
+   * non-null values before this method is called.
+   */
+  protected void
+  validateTaskAnnotation
+  (
+    String aname,
+    String projectName,
+    String taskName,
+    String taskType
+  )
+    throws PipelineException
+  {
+    if(!projectName.equals(pProjectName)) 
+      throw new PipelineException
+        ("The " + aAnnotProjectName + " parameter supplied for the " + 
+         "(" + aname + ") annotation on the submit node (" + pSubmitNode + ") " + 
+         "does not match the " + aAnnotProjectName + " parameter " + 
+         "(" + pProjectName + ") of the approve node!"); 
+
+    if(!taskName.equals(pTaskName)) 
+      throw new PipelineException
+        ("The " + aAnnotTaskName + " parameter supplied for the (" + aname + ") " + 
+         "annotation on the submit node (" + pSubmitNode + ") does not match the " + 
+         aAnnotTaskName + " parameter (" + pTaskName + ") of the approve node!"); 
+    
+    if(!taskType.equals(pTaskType)) 
+      throw new PipelineException
+        ("The " + aAnnotTaskType + " parameter supplied for the (" + aname + ") " + 
+         "annotation on the submit node (" + pSubmitNode + ") does not match the " + 
+         aAnnotTaskType + " parameter (" + pTaskType + ") of the approve node!"); 
+    
+  }
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   S E T U P   P A S S E S                                                              */
@@ -337,9 +382,8 @@ class ApproveTaskBuilder
 
         boolean validated = false;
 	String approvePurpose = NodePurpose.Approve.toString();
-        TreeMap<String,BaseAnnotation> annotations = pClient.getAnnotations(pApproveNode); 
+        TreeMap<String,BaseAnnotation> annotations = getTaskAnnotations(pApproveNode);
         for(String aname : annotations.keySet()) {
-	  if(aname.equals("Task") || aname.startsWith("AltTask")) {
 	    BaseAnnotation annot = annotations.get(aname);
 	    if(lookupPurpose(pApproveNode, aname, annot).equals(approvePurpose)) { 
 	      
@@ -368,7 +412,6 @@ class ApproveTaskBuilder
 	      validated = true;
 	      break;
 	    }
-	  }
 	}
 
         if(!validated) 
@@ -387,36 +430,17 @@ class ApproveTaskBuilder
 	     "does not exist!"); 
 
         boolean validated = false;
-        TreeMap<String,BaseAnnotation> annotations = pClient.getAnnotations(pSubmitNode); 
+        TreeMap<String,BaseAnnotation> annotations = getTaskAnnotations(pSubmitNode); 
         for(String aname : annotations.keySet()) {
-	  if(aname.equals("Task") || aname.startsWith("AltTask")) {
 	    BaseAnnotation annot = annotations.get(aname);
 
 	    String projectName = lookupProjectName(pSubmitNode, aname, annot); 
-	    if(!projectName.equals(pProjectName)) 
-	      throw new PipelineException
-		("The " + aAnnotProjectName + " parameter supplied for the " + 
-		 "(" + aname + ") annotation on the submit node (" + pSubmitNode + ") " + 
-		 "does not match the " + aAnnotProjectName + " parameter " + 
-		 "(" + pProjectName + ") of the approve node!"); 
-
 	    String taskName = lookupTaskName(pSubmitNode, aname, annot); 
-	    if(!taskName.equals(pTaskName)) 
-	      throw new PipelineException
-		("The " + aAnnotTaskName + " parameter supplied for the (" + aname + ") " + 
-		 "annotation on the submit node (" + pSubmitNode + ") does not match the " + 
-		 aAnnotTaskName + " parameter (" + pTaskName + ") of the approve node!"); 
-	    
 	    String taskType = lookupTaskType(pSubmitNode, aname, annot); 
-	    if(!taskType.equals(pTaskType)) 
-	      throw new PipelineException
-		("The " + aAnnotTaskType + " parameter supplied for the (" + aname + ") " + 
-		 "annotation on the submit node (" + pSubmitNode + ") does not match the " + 
-		 aAnnotTaskType + " parameter (" + pTaskType + ") of the approve node!"); 
 	    
+	    validateTaskAnnotation(aname, projectName, taskName, taskType);
 	    validated = true;
 	    break;
-          }
         }
 
         if(!validated) 
