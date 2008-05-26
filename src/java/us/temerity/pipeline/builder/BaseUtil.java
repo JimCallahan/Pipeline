@@ -1,4 +1,4 @@
-// $Id: BaseUtil.java,v 1.34 2008/04/21 23:12:14 jesse Exp $
+// $Id: BaseUtil.java,v 1.35 2008/05/26 03:21:16 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -405,16 +405,19 @@ class BaseUtil
    * <p>
    * Checks the current version ID of a node against the newest checked-in version. If the
    * ID's are the same, it does nothing. If ID is older it checks out the node, using the
-   * CheckOutMode and CheckOutMethod passed in. Throws a {@link PipelineException} if no
-   * checked-in versions of the node exist.
+   * CheckOutMode and CheckOutMethod passed in.
    * 
    * @param name
-   *        The name of the node node to checkout.
+   *    The name of the node node to checkout.
    * @param mode
-   *        The {@link CheckOutMode} to use.
+   *    The {@link CheckOutMode} to use.
    * @param method
-   *        The {@link CheckOutMethod} to use.
-   * @see #checkOutLatest(String, CheckOutMode, CheckOutMethod)
+   *    The {@link CheckOutMethod} to use.
+   * 
+   * @see #checkOutLatest(String, CheckOutMode, CheckOutMethod) checkOutLatest
+   * @see #frozenStomp(String) frozenStomp
+   * 
+   * @throws PipelineException If no checked-in versions of the node exist.
    */
   public void 
   checkOutNewer
@@ -455,18 +458,21 @@ class BaseUtil
   }
 
   /**
-   * Check-outs the latest version of a node.
+   * Check-out the latest version of a node.
    * <p>
-   * Check-outs the latest version of the node using the CheckOutMode and CheckOutMethod
-   * passed in. Throws a {@link PipelineException} if the check-out fails.
+   * Check-out the latest version of the node using the CheckOutMode and CheckOutMethod
+   * passed in.
    * 
    * @param name
-   *        The name of the node node to checkout.
+   *    The name of the node node to checkout.
    * @param mode
-   *        The {@link CheckOutMode} to use.
+   *    The {@link CheckOutMode} to use.
    * @param method
-   *        The {@link CheckOutMethod} to use.
-   * @see #checkOutNewer(String, CheckOutMode, CheckOutMethod)
+   *    The {@link CheckOutMethod} to use.
+   * @see #checkOutNewer(String, CheckOutMode, CheckOutMethod) checkOutNewer
+   * @see #frozenStomp(String) frozenStomp
+   * 
+   * @throws PipelineException If no checked-in versions of the node exist.
    */
   public void 
   checkOutLatest
@@ -479,14 +485,35 @@ class BaseUtil
   {
     pClient.checkOut(getAuthor(), getView(), name, null, mode, method);
   }
+  
+  /**
+   * Check-out the latest version of a node using the Overwrite All and All Frozen options.
+   * 
+   * @param name
+   *    The name of the node node to checkout.
+   * 
+   * @see #checkOutNewer(String, CheckOutMode, CheckOutMethod) checkOutNewer
+   * @see #checkOutLatest(String, CheckOutMode, CheckOutMethod) checkOutLatest
+   * 
+   * @throws PipelineException If no checked-in versions of the node exist.
+   */
+  public void 
+  frozenStomp
+  (
+    String name
+  )
+    throws PipelineException
+  {
+    pClient.checkOut(getAuthor(), getView(), name, null, 
+                     CheckOutMode.OverwriteAll, CheckOutMethod.AllFrozen);
+  }
 
   /**
    * Locks the latest version of the node.
-   * <p>
-   * Throws a {@link PipelineException} if no checked-in versions of the node exist.
    * 
    * @param name
    *        The name of the node node to checkout.
+   * @throws PipelineException If no checked-in versions of the node exist.
    */
   public void 
   lockLatest
