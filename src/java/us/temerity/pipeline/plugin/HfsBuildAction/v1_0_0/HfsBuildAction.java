@@ -1,4 +1,4 @@
-// $Id: HfsBuildAction.java,v 1.1 2007/06/17 15:34:40 jim Exp $
+// $Id: HfsBuildAction.java,v 1.2 2008/05/29 10:50:04 jim Exp $
 
 package us.temerity.pipeline.plugin.HfsBuildAction.v1_0_0;
 
@@ -294,7 +294,7 @@ class HfsBuildAction
 	       "source nodes!");
 	  
 	  String suffix = fseq.getFilePattern().getSuffix();
-	  if(!fseq.isSingle() || (suffix == null) || !(suffix.equals("mel"))) 
+	  if(!fseq.isSingle() || (suffix == null) || !(suffix.equals("cmd"))) 
 	    throw new PipelineException
 	      ("The HfsBuild Action requires that the source node specified by the Pre " +
 	       "Build Script parameter (" + sname + ") must have a single command " +

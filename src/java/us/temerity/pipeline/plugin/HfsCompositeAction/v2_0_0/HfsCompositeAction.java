@@ -1,4 +1,4 @@
-// $Id: HfsCompositeAction.java,v 1.1 2007/06/17 15:34:40 jim Exp $
+// $Id: HfsCompositeAction.java,v 1.2 2008/05/29 10:50:05 jim Exp $
 
 package us.temerity.pipeline.plugin.HfsCompositeAction.v2_0_0;
 
@@ -273,7 +273,7 @@ class HfsCompositeAction
 	       "source nodes!");
 	  
 	  String suffix = fseq.getFilePattern().getSuffix();
-	  if(!fseq.isSingle() || (suffix == null) || !(suffix.equals("mel"))) 
+	  if(!fseq.isSingle() || (suffix == null) || !(suffix.equals("cmd"))) 
 	    throw new PipelineException
 	      ("The HfsComposite Action requires that the source node specified by the Pre " +
 	       "Render Script parameter (" + sname + ") must have a single command script " + 

@@ -1,4 +1,4 @@
-// $Id: HfsGenerateAction.java,v 1.1 2007/06/17 15:34:41 jim Exp $
+// $Id: HfsGenerateAction.java,v 1.2 2008/05/29 10:50:06 jim Exp $
 
 package us.temerity.pipeline.plugin.HfsGenerateAction.v2_0_0;
 
@@ -315,7 +315,7 @@ class HfsGenerateAction
 	       "source nodes!");
 	  
 	  String suffix = fseq.getFilePattern().getSuffix();
-	  if(!fseq.isSingle() || (suffix == null) || !(suffix.equals("mel"))) 
+	  if(!fseq.isSingle() || (suffix == null) || !(suffix.equals("cmd"))) 
 	    throw new PipelineException
 	      ("The HfsGenerate Action requires that the source node specified by the Pre " +
 	       "Generate Script parameter (" + sname + ") must have a single command " +
