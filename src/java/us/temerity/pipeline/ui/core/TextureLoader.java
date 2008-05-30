@@ -1,4 +1,4 @@
-// $Id: TextureLoader.java,v 1.1 2008/05/19 06:39:24 jim Exp $
+// $Id: TextureLoader.java,v 1.2 2008/05/30 08:08:50 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -49,14 +49,21 @@ class TextureLoader
   {
     pFinishedTask = finished;
         
-    /* if PBuffers are supported... */ 
+    /* if pbuffers are supported... */ 
+    pDrawable = null;
     GLDrawableFactory factory = GLDrawableFactory.getFactory();
     if(factory.canCreateGLPbuffer()) {
-      GLCapabilitiesChooser chooser = new DefaultGLCapabilitiesChooser(); 
-      pDrawable = factory.createGLPbuffer(capabilities, chooser, 1, 1, null); 
+      try {
+        GLCapabilitiesChooser chooser = new DefaultGLCapabilitiesChooser(); 
+        pDrawable = factory.createGLPbuffer(capabilities, chooser, 1, 1, null); 
+      }
+      catch(GLException ex) {
+        /* the pbuffer couldn't be allocated for some reason... */ 
+      }
     }
-    /* create a visible window during the load */ 
-    else {
+
+    /* if pbuffers are not supported, create a visible window during the load */ 
+    if(pDrawable == null) {
       LogMgr.getInstance().log
         (LogMgr.Kind.Ops, LogMgr.Level.Warning,
          "Unable to create the OpenGL PBuffer needed to load the textures offscreen."); 
