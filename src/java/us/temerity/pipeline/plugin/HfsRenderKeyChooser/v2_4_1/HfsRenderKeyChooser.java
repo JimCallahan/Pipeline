@@ -1,4 +1,4 @@
-// $Id: HfsRenderKeyChooser.java,v 1.1 2008/03/24 07:14:32 jim Exp $
+// $Id: HfsRenderKeyChooser.java,v 1.2 2008/05/30 09:06:01 jim Exp $
 
 package us.temerity.pipeline.plugin.HfsRenderKeyChooser.v2_4_1;
 
@@ -30,8 +30,6 @@ class HfsRenderKeyChooser
     super("HfsRender", new VersionID("2.4.1"), "Temerity", 
           "Used to turn the \"HfsRender\" license key on for jobs who's Action plugin " + 
           "requires a Houdini \"Render\" license."); 
-
-    underDevelopment(); 
   }
 
   

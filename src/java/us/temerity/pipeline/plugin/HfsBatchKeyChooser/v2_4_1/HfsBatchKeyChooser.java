@@ -1,4 +1,4 @@
-// $Id: HfsBatchKeyChooser.java,v 1.1 2008/03/24 07:14:32 jim Exp $
+// $Id: HfsBatchKeyChooser.java,v 1.2 2008/05/30 09:06:01 jim Exp $
 
 package us.temerity.pipeline.plugin.HfsBatchKeyChooser.v2_4_1;
 
@@ -57,8 +57,6 @@ class HfsBatchKeyChooser
          aHoudiniBatch, choices); 
       addParam(param);
     }
-
-    underDevelopment(); 
   }
 
   
