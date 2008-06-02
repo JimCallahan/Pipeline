@@ -1,4 +1,4 @@
-// $Id: MattesScriptStage.java,v 1.3 2008/05/12 16:45:25 jesse Exp $
+// $Id: MattesScriptStage.java,v 1.4 2008/06/02 20:47:05 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
 
@@ -117,8 +117,11 @@ class MattesScriptStage
     throws PipelineException
   {
     removeAction();
+
     pClient.unlink(getAuthor(), getView(), pRegisteredNodeName, pMasterNuke);
     pClient.unlink(getAuthor(), getView(), pRegisteredNodeName, pPlatesNuke); 
+
+    vouch(); 
   }
 
   

@@ -1,4 +1,4 @@
-// $Id: BuildBlotAnimStage.java,v 1.2 2008/05/12 16:45:25 jesse Exp $
+// $Id: BuildBlotAnimStage.java,v 1.3 2008/06/02 20:47:05 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
 
@@ -112,6 +112,8 @@ class BuildBlotAnimStage
     
     pClient.link(getAuthor(), getView(), pRegisteredNodeName, pAttachMEL, 
 		 LinkPolicy.Association, LinkRelationship.None, null); 
+
+    vouch(); 
   }
 
 
