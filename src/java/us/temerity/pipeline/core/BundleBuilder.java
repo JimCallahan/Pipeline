@@ -37,6 +37,10 @@ class BundleBuilder
    * @param bundlePath
    *   The abstract file system path to the node bundle file.
    * 
+   * @param lockedVersions
+   *   The revision numbers for local checked-in node versions to use for specific nodes
+   *   locked in the bundle. 
+   * 
    * @param toolsetRemap
    *   A table mapping the names of toolsets associated with the nodes in the node bundle
    *   to toolsets at the local site.  Toolsets not found in this table will be remapped 
@@ -65,6 +69,7 @@ class BundleBuilder
     BuilderInformation builderInformation, 
     NodeBundle bundle, 
     Path bundlePath, 
+    TreeMap<String,VersionID> lockedVersions, 
     TreeMap<String,String> toolsetRemap, 
     TreeMap<String,String> selectionKeyRemap,
     TreeMap<String,String> licenseKeyRemap,
@@ -80,6 +85,7 @@ class BundleBuilder
     
     pBundle            = bundle; 
     pBundlePath        = bundlePath; 
+    pLockedVersions    = lockedVersions; 
     pToolsetRemap      = toolsetRemap;      
     pSelectionKeyRemap = selectionKeyRemap; 
     pLicenseKeyRemap   = licenseKeyRemap;   
@@ -194,23 +200,39 @@ class BundleBuilder
       pLog.log(LogMgr.Kind.Ops, LogMgr.Level.Fine, 
                "Starting the build phase in the Build Pass");
       
-      /* unpack the nodes */ 
+      /* unpack unlocked nodes */ 
       for(NodeMod mod : pBundle.getWorkingVersions()) {
-        TreeMap<String,BaseAnnotation> annots = new TreeMap<String,BaseAnnotation>();
-        for(String aname : pBundle.getAnnotationNames(mod.getName())) {
-          BaseAnnotation annot = pBundle.getAnnotation(mod.getName(), aname);
-          if(annot != null) 
-            annots.put(aname, annot);
+        if(!mod.isLocked()) {
+          TreeMap<String,BaseAnnotation> annots = new TreeMap<String,BaseAnnotation>();
+          for(String aname : pBundle.getAnnotationNames(mod.getName())) {
+            BaseAnnotation annot = pBundle.getAnnotation(mod.getName(), aname);
+            if(annot != null) 
+              annots.put(aname, annot);
+          }
+          
+          BundleStage stage = 
+            new BundleStage(getStageInformation(), pContext, pClient, 
+                            mod, annots, pToolsetRemap, 
+                            pSelectionKeyRemap, pLicenseKeyRemap, pHardwareKeyRemap);
+          stage.build();
+
+          if((mod.getAction() != null) && !mod.isActionEnabled()) 
+            addToDisableList(mod.getName());
         }
+      }
 
-        BundleStage stage = 
-          new BundleStage(getStageInformation(), pContext, pClient, 
-                          mod, annots, pToolsetRemap, 
-                          pSelectionKeyRemap, pLicenseKeyRemap, pHardwareKeyRemap);
-	stage.build();
+      /* lock to local versions nodes which are locked in the bundle */ 
+      for(NodeMod mod : pBundle.getWorkingVersions()) {
+        if(mod.isLocked()) {
+          String name = mod.getName(); 
+          VersionID vid = pLockedVersions.get(name); 
+          if(vid == null) 
+            throw new PipelineException
+              ("No local checked-in version specified for the locked node " + 
+               "(" + name + ") contained in the bundle!"); 
 
-        if((mod.getAction() != null) && !mod.isActionEnabled()) 
-          addToDisableList(mod.getName());
+          pClient.lock(getAuthor(), getView(), name, vid);
+        }
       }
       
       /* disable the ones we've registered */
@@ -243,6 +265,12 @@ class BundleBuilder
    * The abstract file system path to the node bundle file.
    */ 
   private Path  pBundlePath;  
+
+  /** 
+   * Get the revision numbers for local checked-in node versions to use for specific nodes
+   * locked in the bundle.
+   */
+  private TreeMap<String,VersionID>  pLockedVersions; 
 
   /**
    * A table mapping the names of toolsets associated with the nodes in the node bundle

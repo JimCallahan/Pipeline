@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.244 2008/05/17 01:29:09 jim Exp $
+// $Id: MasterMgr.java,v 1.245 2008/06/03 17:47:00 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -11842,7 +11842,7 @@ class MasterMgr
 
     boolean releaseOnError = req.getReleaseOnError();
     ActionOnExistence actOnExist = req.getActionOnExistence();
-
+    TreeMap<String,VersionID> lockedVersions = req.getLockedVersions(); 
     TreeMap<String,String> toolsetRemap      = req.getToolsetRemap();
     TreeMap<String,String> selectionKeyRemap = req.getSelectionKeyRemap();
     TreeMap<String,String> licenseKeyRemap   = req.getLicenseKeyRemap();
@@ -11930,7 +11930,7 @@ class MasterMgr
 
         BaseBuilder builder = 
           new BundleBuilder(mclient, pQueueMgrClient, info, bundle, bundlePath, 
-                            toolsetRemap, 
+                            lockedVersions, toolsetRemap, 
                             selectionKeyRemap, licenseKeyRemap, hardwareKeyRemap);
         builder.run();
 
@@ -11940,6 +11940,8 @@ class MasterMgr
           unconformed.addAll(info.getNewStageInformation().getAllCheckedOutNodes());
           unconformed.addAll(info.getNewStageInformation().getSkippedNodes());
         }
+
+        unconformed.addAll(lockedVersions.keySet());
       }
           
       /* determine which nodes have files which should NOT be unpacked: 

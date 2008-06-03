@@ -1,4 +1,4 @@
-// $Id: JUnpackBundleDialog.java,v 1.7 2008/03/03 21:05:32 jim Exp $
+// $Id: JUnpackBundleDialog.java,v 1.8 2008/06/03 17:47:01 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -37,7 +37,11 @@ class JUnpackBundleDialog
    * @param owner
    *   The parent frame.
    * 
-
+   * @param author
+   *   The user owning the working area.
+   * 
+   * @param view
+   *   The name of the working area view.
    */ 
   public 
   JUnpackBundleDialog
@@ -150,21 +154,16 @@ class JUnpackBundleDialog
           
           vbox.add(Box.createRigidArea(new Dimension(0, 4)));
           
-          {
-            JPanel panel = new JPanel();
-            panel.setName("ValuePanel");
-            panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-            
-            pNodeBox = new Box(BoxLayout.Y_AXIS);
-            panel.add(pNodeBox);
+	  {
+	    PackedNodeTableModel model = new PackedNodeTableModel();
+	    pNodesTableModel = model;
+	    
+	    JTablePanel tpanel = new JTablePanel(model);
+	    pNodesTablePanel = tpanel;
+	  
+	    vbox.add(tpanel);
+	  }
 
-            panel.add(Box.createVerticalGlue());
-
-            JScrollPane scroll = 
-              UIFactory.createVertScrollPane(panel, sNSize+52, 250);
-            vbox.add(scroll);
-          }
-          
           hbox.add(vbox);
         }
 
@@ -208,7 +207,8 @@ class JUnpackBundleDialog
                    this, sVSize, 
                    "What steps to take when encountering previously existing local " + 
                    "versions of nodes being unpacked.");
-              
+              pActionOnExistField.setSelected(ActionOnExistence.Conform.toTitle());
+
               sbox.add(comps[2]);
             }
             
@@ -275,6 +275,9 @@ class JUnpackBundleDialog
         path = new Path(sStartPath);
       }
 
+      if(!path.toFile().isDirectory()) 
+        path = new Path("/");
+
       pFileSelectDialog = new JFileSelectDialog(this, "Node Bundle", "Select Node Bundle:", 
                                                 "Node Bundle File:", 100, "Select"); 
       pFileSelectDialog.setRootDir(path.toFile()); 
@@ -327,6 +330,16 @@ class JUnpackBundleDialog
   {
     return ActionOnExistence.valueOf(ActionOnExistence.class,
                                      pActionOnExistField.getSelected());     
+  }
+
+  /**
+   * Get the table mapping the names of toolsets associated with the nodes in the node bundle
+   * to toolsets at the local site.
+   */ 
+  public TreeMap<String,VersionID> 
+  getLockedVersions() 
+  {
+    return pNodesTableModel.getAllLockedIDs();
   }
 
   /**
@@ -439,17 +452,31 @@ class JUnpackBundleDialog
 
     /* bundled nodes */
     {
-      pNodeBox.removeAll();
-
+      TreeSet<String> names = new TreeSet<String>(); 
+      TreeSet<String> locked = new TreeSet<String>();
+      TreeMap<String,TreeSet<VersionID>> versionIDs = 
+        new TreeMap<String,TreeSet<VersionID>>();
+      
       if(pNodeBundle != null) {
         for(NodeMod mod : pNodeBundle.getWorkingVersions()) {
-          pNodeBox.add(UIFactory.createTextField(mod.getName(), sNSize, JLabel.LEFT));
-          pNodeBox.add(Box.createRigidArea(new Dimension(0, 3)));
+          String name = mod.getName(); 
+          names.add(name);
+
+          if(mod.isLocked()) {
+            locked.add(name); 
+            try {
+              UIMaster master = UIMaster.getInstance();
+              MasterMgrClient mclient = master.getMasterMgrClient(pChannel);
+              TreeSet<VersionID> vids = mclient.getCheckedInVersionIDs(name);  
+              versionIDs.put(name, vids); 
+            }
+            catch(PipelineException ex) {
+            }
+          }
         }
       }
-      
-      pNodeBox.revalidate();
-      pNodeBox.repaint();
+
+      pNodesTableModel.setData(names, locked, versionIDs); 
     }
 
     /* lookup all used selection and license keys in the bundle */
@@ -903,9 +930,10 @@ class JUnpackBundleDialog
   private JTextField  pPipelineVersionField;
 
   /**
-   * Bundled node components.
+   * Bundled nodes table. 
    */ 
-  private Box pNodeBox;
+  private PackedNodeTableModel  pNodesTableModel;
+  private JTablePanel           pNodesTablePanel; 
 
   /**
    * Unpacking options.

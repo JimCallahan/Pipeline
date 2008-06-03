@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.116 2008/05/17 01:29:10 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.117 2008/06/03 17:47:01 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -4869,6 +4869,7 @@ class JNodeViewerPanel
         UnpackBundleTask task = 
           new UnpackBundleTask(bundlePath, bundle.getRootNodeID().getName(), 
                                diag.getReleaseOnError(), diag.getActionOnExistence(), 
+                               diag.getLockedVersions(), 
                                diag.getToolsetRemap(), diag.getSelectionKeyRemap(), 
                                diag.getLicenseKeyRemap(), diag.getHardwareKeyRemap());
         task.start();
@@ -6744,6 +6745,7 @@ class JNodeViewerPanel
      String rootName, 
      boolean releaseOnError, 
      ActionOnExistence actOnExist,
+     TreeMap<String,VersionID> lockedVersions, 
      TreeMap<String,String> toolsetRemap,
      TreeMap<String,String> selectionKeyRemap,
      TreeMap<String,String> licenseKeyRemap,
@@ -6755,7 +6757,8 @@ class JNodeViewerPanel
       pBundlePath = bundlePath;
       pRootName = rootName;
       pReleaseOnError = releaseOnError;
-      pActOnExist = actOnExist;
+      pActOnExist = actOnExist; 
+      pLockedVersions = lockedVersions;
       pToolsetRemap = toolsetRemap;
       pSelectionKeyRemap = selectionKeyRemap;
       pLicenseKeyRemap = licenseKeyRemap;
@@ -6773,7 +6776,7 @@ class JNodeViewerPanel
  	  MasterMgrClient client = master.getMasterMgrClient(pGroupID);
           client.unpackNodes(pBundlePath, pAuthor, pView, 
                              pReleaseOnError, pActOnExist, 
-                             pToolsetRemap, 
+                             pLockedVersions, pToolsetRemap, 
                              pSelectionKeyRemap, pLicenseKeyRemap, pHardwareKeyRemap);
 
           rootName = pRootName;
@@ -6797,6 +6800,7 @@ class JNodeViewerPanel
     private String  pRootName; 
     private boolean  pReleaseOnError; 
     private ActionOnExistence  pActOnExist;
+    private TreeMap<String,VersionID>  pLockedVersions; 
     private TreeMap<String,String>  pToolsetRemap;
     private TreeMap<String,String>  pSelectionKeyRemap;
     private TreeMap<String,String>  pLicenseKeyRemap;

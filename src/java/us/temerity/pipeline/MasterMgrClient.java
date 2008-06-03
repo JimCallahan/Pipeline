@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.120 2008/05/20 21:32:24 jesse Exp $
+// $Id: MasterMgrClient.java,v 1.121 2008/06/03 17:47:00 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -6305,6 +6305,11 @@ class MasterMgrClient
    *   What steps to take when encountering previously existing local versions of nodes
    *   being unpacked.
    * 
+   * @param lockedVersions
+   *   The revision numbers for local checked-in node versions to use for specific nodes
+   *   locked in the bundle.  A valid checked-in version must exist for each locked node 
+   *   in the bundle or a PipelineException wil be thrown.
+   * 
    * @param toolsetRemap
    *   A table mapping the names of toolsets associated with the nodes in the node bundle
    *   to toolsets at the local site.  Toolsets not found in this table will be remapped 
@@ -6334,6 +6339,7 @@ class MasterMgrClient
    String view,    
    boolean releaseOnError, 
    ActionOnExistence actOnExist,
+   TreeMap<String,VersionID> lockedVersions, 
    TreeMap<String,String> toolsetRemap,
    TreeMap<String,String> selectionKeyRemap,
    TreeMap<String,String> licenseKeyRemap,
@@ -6344,7 +6350,7 @@ class MasterMgrClient
     verifyConnection();
 
     NodeUnpackReq req = 
-      new NodeUnpackReq(bundlePath, author, view, releaseOnError, actOnExist, 
+      new NodeUnpackReq(bundlePath, author, view, releaseOnError, actOnExist, lockedVersions,
                         toolsetRemap, selectionKeyRemap, licenseKeyRemap, hardwareKeyRemap);
     
     Object obj = performLongTransaction(MasterRequest.Unpack, req, 15000, 60000); 

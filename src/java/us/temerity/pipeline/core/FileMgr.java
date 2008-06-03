@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.75 2008/05/17 01:29:08 jim Exp $
+// $Id: FileMgr.java,v 1.76 2008/06/03 17:47:00 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2505,12 +2505,14 @@ class FileMgr
 
           ArrayList<String> args = new ArrayList<String>();
           for(NodeMod mod : bundle.getWorkingVersions()) {
-            Path npath = new Path(mod.getName());
-            Path parent = npath.getParentPath();
-            for(FileSeq fseq : mod.getSequences()) {
-              for(Path path : fseq.getPaths()) {
-                Path fpath = new Path(parent, path); 
-                args.add("." + fpath.toOsString());
+            if(!mod.isLocked()) {
+              Path npath = new Path(mod.getName());
+              Path parent = npath.getParentPath();
+              for(FileSeq fseq : mod.getSequences()) {
+                for(Path path : fseq.getPaths()) {
+                  Path fpath = new Path(parent, path); 
+                  args.add("." + fpath.toOsString());
+                }
               }
             }
           }

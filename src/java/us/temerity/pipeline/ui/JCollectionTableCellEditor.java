@@ -1,4 +1,4 @@
-// $Id: JCollectionTableCellEditor.java,v 1.5 2006/01/02 20:45:23 jim Exp $
+// $Id: JCollectionTableCellEditor.java,v 1.6 2008/06/03 17:47:01 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -163,6 +163,6 @@ class JCollectionTableCellEditor
   /**
    * The collection field editor.
    */ 
-  private JCollectionField  pField;
+  protected JCollectionField  pField;
 
 }

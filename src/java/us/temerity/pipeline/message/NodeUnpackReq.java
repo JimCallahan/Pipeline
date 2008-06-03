@@ -1,4 +1,4 @@
-// $Id: NodeUnpackReq.java,v 1.3 2007/12/16 12:22:09 jesse Exp $
+// $Id: NodeUnpackReq.java,v 1.4 2008/06/03 17:47:00 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -47,6 +47,10 @@ class NodeUnpackReq
    *   What steps to take when encountering previously existing local versions of nodes
    *   being unpacked.
    * 
+   * @param lockedVersions
+   *   The revision numbers for local checked-in node versions to use for specific nodes
+   *   locked in the bundle. 
+   * 
    * @param toolsetRemap
    *   A table mapping the names of toolsets associated with the nodes in the JAR archive
    *   to toolsets at the local site.  Toolsets not found in this table will be remapped 
@@ -75,6 +79,7 @@ class NodeUnpackReq
    String view,   
    boolean releaseOnError, 
    ActionOnExistence actOnExist, 
+   TreeMap<String,VersionID> lockedVersions, 
    TreeMap<String,String> toolsetRemap,
    TreeMap<String,String> selectionKeyRemap,
    TreeMap<String,String> licenseKeyRemap,
@@ -101,6 +106,10 @@ class NodeUnpackReq
     if(actOnExist == null) 
       throw new IllegalArgumentException("The actOnExist cannot be (null)!");
     pActionOnExistence = actOnExist;
+
+    if(lockedVersions == null) 
+      pLockedVersions = new TreeMap<String,VersionID>();
+    pLockedVersions = lockedVersions;
 
     if(toolsetRemap == null) 
       pToolsetRemap = new TreeMap<String,String>();
@@ -172,6 +181,16 @@ class NodeUnpackReq
     return pActionOnExistence;
   }
   
+  /** 
+   * Get the revision numbers for local checked-in node versions to use for specific nodes
+   * locked in the bundle.
+   */
+  public TreeMap<String,VersionID>
+  getLockedVersions()
+  {
+    return pLockedVersions; 
+  }
+
   /** 
    * Get the table mapping the names of toolsets associated with the nodes in the JAR archive
    * to toolsets at the local site.
@@ -252,6 +271,12 @@ class NodeUnpackReq
    * being unpacked.
    */
   private ActionOnExistence  pActionOnExistence;
+
+  /** 
+   * Get the revision numbers for local checked-in node versions to use for specific nodes
+   * locked in the bundle.
+   */
+  private TreeMap<String,VersionID>  pLockedVersions; 
 
   /**
    * The table mapping the names of toolsets associated with the nodes in the JAR archive
