@@ -256,57 +256,57 @@ ActionMenuLayout <PluginMenuLayout> #1 {
               Title <String> #184 { "HfsClip" }
               Name <String> #185 { "HfsClip" }
               VersionID <VersionID> #186 {
-                RevisionNumber <String> #187 { "2.0.0" }
+                RevisionNumber <String> #187 { "2.4.3" }
+              }
+              Vendor <String> #188 { "Temerity" }
+            }
+            <PluginMenuLayout> #189 {
+              Title <String> #190 { "HfsGEO" }
+              Name <String> #191 { "HfsGEO" }
+              VersionID <VersionID> #192 {
+                RevisionNumber <String> #193 { "2.4.3" }
+              }
+              Vendor <REF> #188
+            }
+            <PluginMenuLayout> #194 {
+              Title <String> #195 { "HfsGConvert" }
+              Name <String> #196 { "HfsGConvert" }
+              VersionID <VersionID> #197 {
+                RevisionNumber <String> #198 { "2.0.0" }
               }
               Vendor <REF> #150
             }
-            <PluginMenuLayout> #188 {
-              Title <String> #189 { "HfsGEO" }
-              Name <String> #190 { "HfsGEO" }
-              VersionID <VersionID> #191 {
-                RevisionNumber <String> #192 { "2.0.0" }
+            <PluginMenuLayout> #199 {
+              Title <String> #200 { "HfsEnvCube" }
+              Name <String> #201 { "HfsEnvCube" }
+              VersionID <VersionID> #202 {
+                RevisionNumber <String> #203 { "2.0.0" }
               }
               Vendor <REF> #150
             }
-            <PluginMenuLayout> #193 {
-              Title <String> #194 { "HfsGConvert" }
-              Name <String> #195 { "HfsGConvert" }
-              VersionID <VersionID> #196 {
-                RevisionNumber <String> #197 { "2.0.0" }
+            <PluginMenuLayout> #204 {
+              Title <String> #205 { "HfsEnvMap" }
+              Name <String> #206 { "HfsEnvMap" }
+              VersionID <VersionID> #207 {
+                RevisionNumber <String> #208 { "2.0.0" }
               }
               Vendor <REF> #150
             }
-            <PluginMenuLayout> #198 {
-              Title <String> #199 { "HfsEnvCube" }
-              Name <String> #200 { "HfsEnvCube" }
-              VersionID <VersionID> #201 {
-                RevisionNumber <String> #202 { "2.0.0" }
+            <PluginMenuLayout> #209 {
+              Title <String> #210 { "HfsRender" }
+              Name <String> #211 { "HfsRender" }
+              VersionID <VersionID> #212 {
+                RevisionNumber <String> #213 { "2.4.3" }
               }
-              Vendor <REF> #150
-            }
-            <PluginMenuLayout> #203 {
-              Title <String> #204 { "HfsEnvMap" }
-              Name <String> #205 { "HfsEnvMap" }
-              VersionID <VersionID> #206 {
-                RevisionNumber <String> #207 { "2.0.0" }
-              }
-              Vendor <REF> #150
-            }
-            <PluginMenuLayout> #208 {
-              Title <String> #209 { "HfsRender" }
-              Name <String> #210 { "HfsRender" }
-              VersionID <VersionID> #211 {
-                RevisionNumber <String> #212 { "2.4.1" }
-              }
-              Vendor <String> #213 { "Temerity" }
+              Vendor <REF> #188
             }
             <PluginMenuLayout> #214 {
               Title <String> #215 { "HfsGenerate" }
               Name <String> #216 { "HfsGenerate" }
               VersionID <VersionID> #217 {
-                RevisionNumber <String> #218 { "2.0.0" }
+                RevisionNumber <String> #218 { "2.4.3" }
               }
-              Vendor <REF> #150
+              Vendor <REF> #188
             }
             <PluginMenuLayout> #219 {
               Title <String> #220 { "HfsMantra" }
@@ -328,9 +328,9 @@ ActionMenuLayout <PluginMenuLayout> #1 {
               Title <String> #232 { "HfsComposite" }
               Name <String> #233 { "HfsComposite" }
               VersionID <VersionID> #234 {
-                RevisionNumber <String> #235 { "2.0.0" }
+                RevisionNumber <String> #235 { "2.4.3" }
               }
-              Vendor <REF> #150
+              Vendor <REF> #188
             }
           }
         }
