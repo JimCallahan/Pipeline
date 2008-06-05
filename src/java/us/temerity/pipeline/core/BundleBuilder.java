@@ -200,6 +200,22 @@ class BundleBuilder
       pLog.log(LogMgr.Kind.Ops, LogMgr.Level.Fine, 
                "Starting the build phase in the Build Pass");
       
+      /* initially lock nodes which are locked in the bundle, 
+           this need to be done first so that the nodes will exist in the working area 
+           when links are created to them by other unlocked nodes */ 
+      for(NodeMod mod : pBundle.getWorkingVersions()) { 
+        if(mod.isLocked()) {
+          String name = mod.getName(); 
+          VersionID vid = pLockedVersions.get(name); 
+          if(vid == null) 
+            throw new PipelineException
+              ("No local checked-in version specified for the locked node " + 
+               "(" + name + ") contained in the bundle!"); 
+          
+          pClient.lock(getAuthor(), getView(), name, vid);
+        }
+      }
+
       /* unpack unlocked nodes */ 
       for(NodeMod mod : pBundle.getWorkingVersions()) {
         if(!mod.isLocked()) {
@@ -221,7 +237,9 @@ class BundleBuilder
         }
       }
 
-      /* lock to local versions nodes which are locked in the bundle */ 
+      /* perform a final lock on nodes which are locked in the bundle, 
+           this is done again in case the check-outs for the unlocked nodes had the
+           side effect of changing any of the lock versions */ 
       for(NodeMod mod : pBundle.getWorkingVersions()) {
         if(mod.isLocked()) {
           String name = mod.getName(); 
