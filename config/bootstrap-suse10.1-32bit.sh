@@ -1,5 +1,11 @@
 #!/bin/sh
 
+if [ `hostname` != "dimetrodon" ]
+then
+  echo "This configuration should only be run from dimetrodon!"
+  exit 1
+fi
+
 customer=$1
 sitep=$2
 debug_base=$3

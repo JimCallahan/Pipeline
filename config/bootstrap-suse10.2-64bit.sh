@@ -1,5 +1,11 @@
 #!/bin/sh
 
+if [ `hostname` != "archelon" ]
+then
+  echo "This configuration should only be run from archelon!"
+  exit 1
+fi
+
 customer=$1
 sitep=$2
 debug_base=$3
