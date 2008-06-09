@@ -1,4 +1,4 @@
-// $Id: SlateSubstStage.java,v 1.2 2008/05/03 07:38:57 jim Exp $
+// $Id: SlateSubstStage.java,v 1.3 2008/06/09 22:35:02 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
 
@@ -53,7 +53,13 @@ class SlateSubstStage
    * 
    * @param clientShotName
    *   The shot code
-   * 
+   *
+   * @param lensInfo
+   *   The shot code
+   *
+   * @param takeInfo
+   *   The take
+   *
    * @param sourceVersion
    *   The source images node checked-in version being delivered.
    * 
@@ -72,12 +78,14 @@ class SlateSubstStage
    MasterMgrClient client, 
    String nodeName, 
    String templateScript,
-   String deliveryType, 
-   String deliverable, 
-   String clientVersion, 
-   String clientShotName, 
-   NodeVersion sourceVersion, 
-   String notes, 
+   String deliveryType,
+   String deliverable,
+   String clientVersion,
+   String clientShotName,
+   String lensInfo,
+   String takeInfo,
+   NodeVersion sourceVersion,
+   String notes,
    int slateHold
   )
     throws PipelineException
@@ -92,17 +100,19 @@ class SlateSubstStage
     addLink(new LinkMod(templateScript, LinkPolicy.Dependency));
     addSingleParamValue("TemplateScript", templateScript); 
 
-    addSingleParamValue("DeliveryType", deliveryType); 
-    addSingleParamValue("ClientShotName", clientShotName); 
-    addSingleParamValue("Deliverable", deliverable); 
-    addSingleParamValue("ClientVersion", clientVersion); 
-    addSingleParamValue("SourceImages", sourceVersion.getPrimarySequence().toString()); 
-    addSingleParamValue("SourceNode", sourceVersion.getName()); 
-    addSingleParamValue("SourceVersion", sourceVersion.getVersionID().toString()); 
-    addSingleParamValue("CreatedOn", TimeStamps.format(sourceVersion.getTimeStamp())); 
-    addSingleParamValue("CreatedBy", sourceVersion.getAuthor()); 
-    addSingleParamValue("Notes", notes); 
-    addSingleParamValue("SlateHold", slateHold); 
+    addSingleParamValue("DeliveryType", deliveryType);
+    addSingleParamValue("ClientShotName", clientShotName);
+    addSingleParamValue("LensInfo", lensInfo);
+    addSingleParamValue("TakeInfo", takeInfo);
+    addSingleParamValue("Deliverable", deliverable);
+    addSingleParamValue("ClientVersion", clientVersion);
+    addSingleParamValue("SourceImages", sourceVersion.getPrimarySequence().toString());
+    addSingleParamValue("SourceNode", sourceVersion.getName());
+    addSingleParamValue("SourceVersion", sourceVersion.getVersionID().toString());
+    addSingleParamValue("CreatedOn", TimeStamps.format(sourceVersion.getTimeStamp()));
+    addSingleParamValue("CreatedBy", sourceVersion.getAuthor());
+    addSingleParamValue("Notes", notes);
+    addSingleParamValue("SlateHold", slateHold);
   }
 
   

@@ -1,4 +1,4 @@
-// $Id: DpxDeliverBuilder.java,v 1.3 2008/05/15 08:55:37 jim Exp $
+// $Id: DpxDeliverBuilder.java,v 1.4 2008/06/09 22:35:02 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -63,7 +63,16 @@ import java.util.*;
  *     The shot code
  *   </DIV> <BR>
  *
- * 
+ *   LensInfo<BR>
+ *   <DIV style="margin-left: 40px;">
+ *     The lens used in the shot
+ *   </DIV> <BR>
+ *
+ *   TakeInfo<BR>
+ *   <DIV style="margin-left: 40px;">
+ *     The take
+ *   </DIV> <BR>
+ *
  *   Notes <BR>
  *   <DIV style="margin-left: 40px;">
  *     A short description of the Deliverable to be included in the image slates.  If not
@@ -206,7 +215,25 @@ class DpxDeliverBuilder
            null);
         addParam(param);
       }
- 
+
+      {
+        UtilityParam param =
+          new StringUtilityParam
+          (aLensInfo,
+           "The lens used in the shot.",
+           null);
+        addParam(param);
+      }
+
+      {
+          UtilityParam param =
+            new StringUtilityParam
+            (aTakeInfo,
+             "The take.",
+             null);
+          addParam(param);
+        }
+
       {
         UtilityParam param = 
           new StringUtilityParam
@@ -279,10 +306,12 @@ class DpxDeliverBuilder
       {
         AdvancedLayoutGroup sub = new AdvancedLayoutGroup("DeliveryDetails", true);
 	sub.addEntry(1, aDeliveryType);
-	sub.addEntry(1, DeliverNamer.aDeliverable); 
-	sub.addEntry(1, aClientVersion); 
-	sub.addEntry(1, aClientShotName); 
-	sub.addEntry(1, aNotes); 
+	sub.addEntry(1, DeliverNamer.aDeliverable);
+	sub.addEntry(1, aClientVersion);
+	sub.addEntry(1, aClientShotName);
+	sub.addEntry(1, aLensInfo);
+	sub.addEntry(1, aTakeInfo);
+	sub.addEntry(1, aNotes);
         sub.addEntry(1, null);
         sub.addEntry(1, aSlateScript);
         sub.addEntry(1, null);
@@ -518,9 +547,13 @@ class DpxDeliverBuilder
       setParamValue
 	(new ParamMapping(aNotes), pSourceVersion.getMessage());
       setParamValue
-	(new ParamMapping(aClientVersion), pSourceVersion.getVersionID().toString()); 
+	(new ParamMapping(aClientVersion), pSourceVersion.getVersionID().toString());
       setParamValue
-	(new ParamMapping(aClientShotName), pSourcePrefix); 
+	(new ParamMapping(aClientShotName), pSourcePrefix);
+      setParamValue
+	(new ParamMapping(aLensInfo), pSourcePrefix);
+      setParamValue
+  	(new ParamMapping(aTakeInfo), pSourcePrefix);
 
       /* replace placeholder parameters with the names of the available 
 	   slate script and format script nodes */ 
@@ -602,6 +635,8 @@ class DpxDeliverBuilder
       pDeliverable = getStringParamValue(new ParamMapping(DeliverNamer.aDeliverable), false);
       pClientVersion = getStringParamValue(new ParamMapping(aClientVersion));
       pClientShotName = getStringParamValue(new ParamMapping(aClientShotName), false);
+      pLensInfo = getStringParamValue(new ParamMapping(aLensInfo), false);
+      pTakeInfo = getStringParamValue(new ParamMapping(aTakeInfo), false);
       pNotes = getStringParamValue(new ParamMapping(aNotes));
 
       /* compute the full frame range with slate holds added */ 
@@ -692,13 +727,13 @@ class DpxDeliverBuilder
 
 	String dpxDeliverSlateNukeNodeName = pDeliverNamer.getDpxDeliverSlateNukeNode();
 	{
-	  SlateSubstStage stage = 
-	    new SlateSubstStage(stageInfo, pContext, pClient, 
-				dpxDeliverSlateNukeNodeName, pSlateNodeName, 
-				pDeliveryType, pDeliverable, pClientVersion, 
-				pClientShotName, pSourceVersion, pNotes, 1); 
-	  addTaskAnnotation(stage, NodePurpose.Prepare); 
-	  stage.build();  
+	  SlateSubstStage stage =
+	    new SlateSubstStage(stageInfo, pContext, pClient,
+				dpxDeliverSlateNukeNodeName, pSlateNodeName,
+				pDeliveryType, pDeliverable, pClientVersion,
+				pClientShotName,pLensInfo,pTakeInfo,pSourceVersion, pNotes, 1);
+	  addTaskAnnotation(stage, NodePurpose.Prepare);
+	  stage.build();
 	}
 
 	String dpxDeliverableNodeName = pDeliverNamer.getDpxDeliverableNode();
@@ -732,15 +767,17 @@ class DpxDeliverBuilder
   /*----------------------------------------------------------------------------------------*/
 
   private static final long serialVersionUID = 1932128583147518482L;
-  
-  public static final String aSourceNode    = "SourceNode";  
-  public static final String aSourceVersion = "SourceVersion";  
-  
-  public static final String aDeliveryType  = "DeliveryType";  
-  public static final String aClientVersion = "ClientVersion";  
-  public static final String aClientShotName      = "ClientShotName";  
-  public static final String aNotes         = "Notes";  
-  public static final String aSlateScript   = "SlateScript"; 
+
+  public static final String aSourceNode    = "SourceNode";
+  public static final String aSourceVersion = "SourceVersion";
+
+  public static final String aDeliveryType  = "DeliveryType";
+  public static final String aClientVersion = "ClientVersion";
+  public static final String aClientShotName      = "ClientShotName";
+  public static final String aLensInfo      = "LensInfo";
+  public static final String aTakeInfo      = "TakeInfo";
+  public static final String aNotes         = "Notes";
+  public static final String aSlateScript   = "SlateScript";
   public static final String aFormatScript  = "FormatScript";
 
   public static final String aTaskName = "TaskName";
@@ -789,8 +826,19 @@ class DpxDeliverBuilder
 
   /**
    * The sequence filename.
-   */ 
-  private String pClientShotName; 
+   */
+  private String pClientShotName;
+
+  /**
+   * The lens used in the shot
+   */
+  private String pLensInfo;
+
+  /**
+   * The take
+   */
+  private String pTakeInfo;
+
 
   /**
    * A short description of the Deliverable to be included in the image slates.
