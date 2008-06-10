@@ -1,4 +1,4 @@
-// $Id: QtDeliverBuilder.java,v 1.6 2008/05/03 07:38:57 jim Exp $
+// $Id: QtDeliverBuilder.java,v 1.7 2008/06/10 11:26:40 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -658,6 +658,8 @@ class QtDeliverBuilder
       pDeliverable = getStringParamValue(new ParamMapping(DeliverNamer.aDeliverable), false);
       pClientVersion = getStringParamValue(new ParamMapping(aClientVersion));
       pClientShotName = getStringParamValue(new ParamMapping(aClientShotName));
+      pLensInfo = getStringParamValue(new ParamMapping(aLensInfo), false);
+      pTakeInfo = getStringParamValue(new ParamMapping(aTakeInfo), false);
       pNotes = getStringParamValue(new ParamMapping(aNotes));
       pSlateHold = getIntegerParamValue(new ParamMapping(aSlateHold), 
 					    new Range<Integer>(0, null));
@@ -756,7 +758,8 @@ class QtDeliverBuilder
 	    new SlateSubstStage(stageInfo, pContext, pClient, 
 				qtDeliverSlateNukeNodeName, pSlateNodeName, 
 				pDeliveryType, pDeliverable, pClientVersion, 
-				pClientShotName,pSourceVersion, pNotes, pSlateHold); 
+				pClientShotName, pLensInfo, pTakeInfo, 
+                                pSourceVersion, pNotes, pSlateHold); 
 	  addTaskAnnotation(stage, NodePurpose.Prepare); 
 	  stage.build();  
 	}
@@ -818,14 +821,16 @@ class QtDeliverBuilder
   public static final String aSourceNode    = "SourceNode";  
   public static final String aSourceVersion = "SourceVersion";  
   
-  public static final String aDeliveryType  = "DeliveryType";  
-  public static final String aClientVersion = "ClientVersion";  
-  public static final String aClientShotName      = "ClientShotName";  
-  public static final String aNotes         = "Notes";  
-  public static final String aSlateScript   = "SlateScript"; 
-  public static final String aSlateHold     = "SlateHold";  
-  public static final String aFormatScript  = "FormatScript";
-  public static final String aCodecSettings = "CodecSettings"; 
+  public static final String aDeliveryType   = "DeliveryType";  
+  public static final String aClientVersion  = "ClientVersion";  
+  public static final String aClientShotName = "ClientShotName";  
+  public static final String aLensInfo       = "LensInfo";
+  public static final String aTakeInfo       = "TakeInfo";
+  public static final String aNotes          = "Notes";  
+  public static final String aSlateScript    = "SlateScript"; 
+  public static final String aSlateHold      = "SlateHold";  
+  public static final String aFormatScript   = "FormatScript";
+  public static final String aCodecSettings  = "CodecSettings"; 
 
   public static final String aTaskName = "TaskName";
   public static final String aEdit     = "Edit";
@@ -875,6 +880,16 @@ class QtDeliverBuilder
    * The sequence filename
    */
   private String pClientShotName;
+
+  /**
+   * The lens used in the shot
+   */
+  private String pLensInfo;
+
+  /**
+   * The take
+   */
+  private String pTakeInfo;
 
   /**
    * A short description of the Deliverable to be included in the image slates.

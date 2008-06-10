@@ -1,4 +1,4 @@
-// $Id: CineonDeliverBuilder.java,v 1.4 2008/06/09 22:35:02 jim Exp $
+// $Id: CineonDeliverBuilder.java,v 1.5 2008/06/10 11:26:40 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -680,7 +680,8 @@ class CineonDeliverBuilder
 	    new SlateSubstStage(stageInfo, pContext, pClient,
 				cineonDeliverSlateNukeNodeName, pSlateNodeName,
 				pDeliveryType, pDeliverable, pClientVersion,
-				pClientShotName,pLensInfo,pTakeInfo,pSourceVersion, pNotes, 1);
+				pClientShotName, pLensInfo, pTakeInfo,
+                                pSourceVersion, pNotes, 1);
 	  addTaskAnnotation(stage, NodePurpose.Prepare);
 	  stage.build();
 	}
@@ -719,13 +720,13 @@ class CineonDeliverBuilder
   public static final String aSourceNode    = "SourceNode";
   public static final String aSourceVersion = "SourceVersion";
 
-  public static final String aDeliveryType  = "DeliveryType";
-  public static final String aClientVersion = "ClientVersion";
-  public static final String aClientShotName  = "ClientShotName";
-  public static final String aLensInfo  = "LensInfo";
-  public static final String aTakeInfo  = "TakeInfo";
-  public static final String aNotes         = "Notes";
-  public static final String aSlateScript   = "SlateScript";
+  public static final String aDeliveryType   = "DeliveryType";
+  public static final String aClientVersion  = "ClientVersion";
+  public static final String aClientShotName = "ClientShotName";
+  public static final String aLensInfo       = "LensInfo";
+  public static final String aTakeInfo       = "TakeInfo";
+  public static final String aNotes          = "Notes";
+  public static final String aSlateScript    = "SlateScript";
 
   public static final String aTaskName = "TaskName";
   public static final String aEdit     = "Edit";

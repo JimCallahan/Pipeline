@@ -524,7 +524,7 @@ class SlateSubstAction
   private static Pattern sNotes          = Pattern.compile("@IC_NOTES@");
   private static Pattern sSlateHold      = Pattern.compile("@IC_SLATE_HOLD@");
 
-  //  private static final long serialVersionUID = 
+  private static final long serialVersionUID = -7437122104547985120L;
 
   public static final String aTemplateScript = "TemplateScript";
   public static final String aDeliveryType   = "DeliveryType";
