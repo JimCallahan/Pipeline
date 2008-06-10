@@ -1,4 +1,4 @@
-// $Id: JArchiveParamsDialog.java,v 1.8 2007/09/07 18:52:38 jim Exp $
+// $Id: JArchiveParamsDialog.java,v 1.9 2008/06/10 09:37:20 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -84,7 +84,7 @@ class JArchiveParamsDialog
 	  JCollectionField field = 
 	    UIFactory.createTitledCollectionField
 	    (tpanel, "Toolset:", sTSize, 
-	     vpanel, values, sVSize, 
+	     vpanel, values, this, sVSize, 
 	     "The name of the shell environment under which the Archiver plugin is run.");
 	  pToolsetField = field;
 
@@ -402,7 +402,7 @@ class JArchiveParamsDialog
 	      JCollectionField field = 
 		UIFactory.createTitledCollectionField
 		(tpanel, aparam.getNameUI() + ":", sTSize, 
-		 vpanel, eparam.getValues(), sVSize, 
+		 vpanel, eparam.getValues(), this, sVSize, 
 		 aparam.getDescription());
 	      
 	      field.setSelected((String) eparam.getValue());

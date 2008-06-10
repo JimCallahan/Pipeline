@@ -1,4 +1,4 @@
-// $Id: JBaseExtensionConfigDialog.java,v 1.4 2007/09/07 18:52:38 jim Exp $
+// $Id: JBaseExtensionConfigDialog.java,v 1.5 2008/06/10 09:37:20 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -447,7 +447,7 @@ class JBaseExtensionConfigDialog
 	      JCollectionField field = 
 		UIFactory.createTitledCollectionField
 		(tpanel, aparam.getNameUI() + ":", tsize, 
-		 vpanel, eparam.getValues(), sVSize, 
+		 vpanel, eparam.getValues(), this, sVSize, 
 		 aparam.getDescription());
 	      
 	      field.setSelected((String) eparam.getValue());

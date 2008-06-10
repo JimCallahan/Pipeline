@@ -1,4 +1,4 @@
-// $Id: JKeyChooserConfigDialog.java,v 1.5 2008/01/28 11:41:07 jesse Exp $
+// $Id: JKeyChooserConfigDialog.java,v 1.6 2008/06/10 09:37:20 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -404,7 +404,7 @@ class JKeyChooserConfigDialog
               JCollectionField field = 
                 UIFactory.createTitledCollectionField
                 (tpanel, aparam.getNameUI() + ":", tsize, 
-                 vpanel, eparam.getValues(), sVSize, 
+                 vpanel, eparam.getValues(), this, sVSize, 
                  aparam.getDescription());
               field.addActionListener(this);
               field.setActionCommand("value-changed");
@@ -465,7 +465,7 @@ class JKeyChooserConfigDialog
               JCollectionField field = 
                 UIFactory.createTitledCollectionField
                 (tpanel, aparam.getNameUI() + ":", sTSize-7, 
-                 vpanel, values, sVSize, 
+                 vpanel, values, this, sVSize, 
                  aparam.getDescription());
               field.addActionListener(this);
               field.setActionCommand("value-changed");

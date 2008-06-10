@@ -1,4 +1,4 @@
-// $Id: DeliverTool.java,v 1.2 2008/04/03 10:30:47 jim Exp $
+// $Id: DeliverTool.java,v 1.3 2008/06/10 09:37:31 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.DeliverTool.v1_0_0;
 
@@ -158,12 +158,15 @@ class DeliverTool
     collectInput()
       throws PipelineException
     {
+      JToolDialog diag = null;
       Box body = null;
       {
 	Component comps[] = UIFactory.createTitledPanels();
 	JPanel tpanel = (JPanel) comps[0];
 	JPanel vpanel = (JPanel) comps[1];
 	body = (Box) comps[2];
+
+	diag = new JToolDialog("Deliver Images:  " + pSourcePattern, body, "Run Builder");
 
         {
           ArrayList<String> choices = new ArrayList<String>(); 
@@ -173,7 +176,7 @@ class DeliverTool
           pSourceVersionField = 
             UIFactory.createTitledCollectionField
             (tpanel, "Source Version:", sTSize, 
-             vpanel, choices, sVSize, 
+             vpanel, choices, diag, sVSize, 
              "The revision number of the source images node to deliver."); 
         }
 
@@ -188,13 +191,12 @@ class DeliverTool
           pDeliveryFormatField = 
             UIFactory.createTitledCollectionField
             (tpanel, "Delivery Format:", sTSize, 
-             vpanel, choices, sVSize, 
+             vpanel, choices, diag, sVSize, 
              "The choice of delivery format."); 
         }
+
+        diag.pack();
       }
-      
-      JToolDialog diag = 
-        new JToolDialog("Deliver Images:  " + pSourcePattern, body, "Run Builder");
 
       diag.setVisible(true);
       if(diag.wasConfirmed()) 
