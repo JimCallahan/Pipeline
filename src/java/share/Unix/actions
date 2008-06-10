@@ -131,7 +131,7 @@ ActionMenuLayout <PluginMenuLayout> #1 {
               Title <String> #97 { "MayaAttachGeoCache" }
               Name <String> #98 { "MayaAttachGeoCache" }
               VersionID <VersionID> #99 {
-                RevisionNumber <String> #100 { "2.4.2" }
+                RevisionNumber <String> #100 { "2.4.3" }
               }
               Vendor <String> #101 { "Temerity" }
             }
@@ -181,92 +181,92 @@ ActionMenuLayout <PluginMenuLayout> #1 {
               VersionID <VersionID> #135 {
                 RevisionNumber <String> #136 { "2.4.2" }
               }
-              Vendor <REF> #101
+              Vendor <String> #137 { "Temerity" }
             }
-            <PluginMenuLayout> #137 {
-              Title <String> #138 { "MayaPartCacheGroup" }
-              Name <String> #139 { "MayaPartCacheGroup" }
-              VersionID <VersionID> #140 {
-                RevisionNumber <String> #141 { "2.3.10" }
+            <PluginMenuLayout> #138 {
+              Title <String> #139 { "MayaPartCacheGroup" }
+              Name <String> #140 { "MayaPartCacheGroup" }
+              VersionID <VersionID> #141 {
+                RevisionNumber <String> #142 { "2.3.10" }
               }
               Vendor <REF> #119
             }
           }
         }
-        <PluginMenuLayout> #142 {
-          Title <String> #143 { "Houdini" }
-          Children <LinkedList> #144 {
-            <PluginMenuLayout> #145 {
-              Title <String> #146 { "HfsVEX" }
-              Name <String> #147 { "HfsVEX" }
-              VersionID <VersionID> #148 {
-                RevisionNumber <String> #149 { "2.0.0" }
+        <PluginMenuLayout> #143 {
+          Title <String> #144 { "Houdini" }
+          Children <LinkedList> #145 {
+            <PluginMenuLayout> #146 {
+              Title <String> #147 { "HfsVEX" }
+              Name <String> #148 { "HfsVEX" }
+              VersionID <VersionID> #149 {
+                RevisionNumber <String> #150 { "2.0.0" }
               }
-              Vendor <String> #150 { "Temerity" }
+              Vendor <String> #151 { "Temerity" }
             }
-            <PluginMenuLayout> #151 {
-              Title <String> #152 { "HfsOTLMerge" }
-              Name <String> #153 { "HfsOTLMerge" }
-              VersionID <VersionID> #154 {
-                RevisionNumber <String> #155 { "2.0.0" }
+            <PluginMenuLayout> #152 {
+              Title <String> #153 { "HfsOTLMerge" }
+              Name <String> #154 { "HfsOTLMerge" }
+              VersionID <VersionID> #155 {
+                RevisionNumber <String> #156 { "2.0.0" }
               }
-              Vendor <REF> #150
+              Vendor <REF> #151
             }
-            <PluginMenuLayout> #156 {
-              Title <String> #157 { "HfsOPLibs" }
-              Name <String> #158 { "HfsOPLibs" }
-              VersionID <VersionID> #159 {
-                RevisionNumber <String> #160 { "2.3.14" }
+            <PluginMenuLayout> #157 {
+              Title <String> #158 { "HfsOPLibs" }
+              Name <String> #159 { "HfsOPLibs" }
+              VersionID <VersionID> #160 {
+                RevisionNumber <String> #161 { "2.3.14" }
               }
-              Vendor <String> #161 { "Temerity" }
+              Vendor <String> #162 { "Temerity" }
             }
-            <PluginMenuLayout> #162 {
-              Title <String> #163 { "HfsOPLibsMerge" }
-              Name <String> #164 { "HfsOPLibsMerge" }
-              VersionID <VersionID> #165 {
-                RevisionNumber <String> #166 { "2.3.14" }
+            <PluginMenuLayout> #163 {
+              Title <String> #164 { "HfsOPLibsMerge" }
+              Name <String> #165 { "HfsOPLibsMerge" }
+              VersionID <VersionID> #166 {
+                RevisionNumber <String> #167 { "2.3.14" }
               }
-              Vendor <REF> #161
+              Vendor <REF> #162
             }
-            <PluginMenuLayout> #167 {
-              Title <String> #168 { "HfsBuild" }
-              Name <String> #169 { "HfsBuild" }
-              VersionID <VersionID> #170 {
-                RevisionNumber <String> #171 { "2.0.0" }
+            <PluginMenuLayout> #168 {
+              Title <String> #169 { "HfsBuild" }
+              Name <String> #170 { "HfsBuild" }
+              VersionID <VersionID> #171 {
+                RevisionNumber <String> #172 { "2.0.0" }
               }
-              Vendor <REF> #150
+              Vendor <REF> #151
             }
-            <PluginMenuLayout> #172 {
-              Title <String> #173 { "HfsReadCmd" }
-              Name <String> #174 { "HfsReadCmd" }
-              VersionID <VersionID> #175 {
-                RevisionNumber <String> #176 { "2.4.1" }
+            <PluginMenuLayout> #173 {
+              Title <String> #174 { "HfsReadCmd" }
+              Name <String> #175 { "HfsReadCmd" }
+              VersionID <VersionID> #176 {
+                RevisionNumber <String> #177 { "2.4.1" }
               }
-              Vendor <String> #177 { "Temerity" }
+              Vendor <String> #178 { "Temerity" }
             }
-            <PluginMenuLayout> #178 {
-              Title <String> #179 { "HfsScript" }
-              Name <String> #180 { "HfsScript" }
-              VersionID <VersionID> #181 {
-                RevisionNumber <String> #182 { "2.0.0" }
+            <PluginMenuLayout> #179 {
+              Title <String> #180 { "HfsScript" }
+              Name <String> #181 { "HfsScript" }
+              VersionID <VersionID> #182 {
+                RevisionNumber <String> #183 { "2.0.0" }
               }
-              Vendor <REF> #150
+              Vendor <REF> #151
             }
-            <PluginMenuLayout> #183 {
-              Title <String> #184 { "HfsClip" }
-              Name <String> #185 { "HfsClip" }
-              VersionID <VersionID> #186 {
-                RevisionNumber <String> #187 { "2.4.3" }
+            <PluginMenuLayout> #184 {
+              Title <String> #185 { "HfsClip" }
+              Name <String> #186 { "HfsClip" }
+              VersionID <VersionID> #187 {
+                RevisionNumber <String> #188 { "2.0.0" }
               }
-              Vendor <String> #188 { "Temerity" }
+              Vendor <REF> #151
             }
             <PluginMenuLayout> #189 {
               Title <String> #190 { "HfsGEO" }
               Name <String> #191 { "HfsGEO" }
               VersionID <VersionID> #192 {
-                RevisionNumber <String> #193 { "2.4.3" }
+                RevisionNumber <String> #193 { "2.0.0" }
               }
-              Vendor <REF> #188
+              Vendor <REF> #151
             }
             <PluginMenuLayout> #194 {
               Title <String> #195 { "HfsGConvert" }
@@ -274,7 +274,7 @@ ActionMenuLayout <PluginMenuLayout> #1 {
               VersionID <VersionID> #197 {
                 RevisionNumber <String> #198 { "2.0.0" }
               }
-              Vendor <REF> #150
+              Vendor <REF> #151
             }
             <PluginMenuLayout> #199 {
               Title <String> #200 { "HfsEnvCube" }
@@ -282,7 +282,7 @@ ActionMenuLayout <PluginMenuLayout> #1 {
               VersionID <VersionID> #202 {
                 RevisionNumber <String> #203 { "2.0.0" }
               }
-              Vendor <REF> #150
+              Vendor <REF> #151
             }
             <PluginMenuLayout> #204 {
               Title <String> #205 { "HfsEnvMap" }
@@ -290,1085 +290,1085 @@ ActionMenuLayout <PluginMenuLayout> #1 {
               VersionID <VersionID> #207 {
                 RevisionNumber <String> #208 { "2.0.0" }
               }
-              Vendor <REF> #150
+              Vendor <REF> #151
             }
             <PluginMenuLayout> #209 {
               Title <String> #210 { "HfsRender" }
               Name <String> #211 { "HfsRender" }
               VersionID <VersionID> #212 {
-                RevisionNumber <String> #213 { "2.4.3" }
+                RevisionNumber <String> #213 { "2.4.1" }
               }
-              Vendor <REF> #188
+              Vendor <String> #214 { "Temerity" }
             }
-            <PluginMenuLayout> #214 {
-              Title <String> #215 { "HfsGenerate" }
-              Name <String> #216 { "HfsGenerate" }
-              VersionID <VersionID> #217 {
-                RevisionNumber <String> #218 { "2.4.3" }
+            <PluginMenuLayout> #215 {
+              Title <String> #216 { "HfsGenerate" }
+              Name <String> #217 { "HfsGenerate" }
+              VersionID <VersionID> #218 {
+                RevisionNumber <String> #219 { "2.0.0" }
               }
-              Vendor <REF> #188
+              Vendor <REF> #151
             }
-            <PluginMenuLayout> #219 {
-              Title <String> #220 { "HfsMantra" }
-              Name <String> #221 { "HfsMantra" }
-              VersionID <VersionID> #222 {
-                RevisionNumber <String> #223 { "2.0.4" }
+            <PluginMenuLayout> #220 {
+              Title <String> #221 { "HfsMantra" }
+              Name <String> #222 { "HfsMantra" }
+              VersionID <VersionID> #223 {
+                RevisionNumber <String> #224 { "2.0.4" }
               }
-              Vendor <String> #224 { "Temerity" }
+              Vendor <String> #225 { "Temerity" }
             }
-            <PluginMenuLayout> #225 {
-              Title <String> #226 { "HfsIConvert" }
-              Name <String> #227 { "HfsIConvert" }
-              VersionID <VersionID> #228 {
-                RevisionNumber <String> #229 { "2.2.1" }
+            <PluginMenuLayout> #226 {
+              Title <String> #227 { "HfsIConvert" }
+              Name <String> #228 { "HfsIConvert" }
+              VersionID <VersionID> #229 {
+                RevisionNumber <String> #230 { "2.2.1" }
               }
-              Vendor <String> #230 { "Temerity" }
+              Vendor <String> #231 { "Temerity" }
             }
-            <PluginMenuLayout> #231 {
-              Title <String> #232 { "HfsComposite" }
-              Name <String> #233 { "HfsComposite" }
-              VersionID <VersionID> #234 {
-                RevisionNumber <String> #235 { "2.4.3" }
+            <PluginMenuLayout> #232 {
+              Title <String> #233 { "HfsComposite" }
+              Name <String> #234 { "HfsComposite" }
+              VersionID <VersionID> #235 {
+                RevisionNumber <String> #236 { "2.0.0" }
               }
-              Vendor <REF> #188
-            }
-          }
-        }
-        <PluginMenuLayout> #236 {
-          Title <String> #237 { "Syflex" }
-          Children <LinkedList> #238 {
-            <PluginMenuLayout> #239 {
-              Title <String> #240 { "SyflexApplyCache" }
-              Name <String> #241 { "SyflexApplyCache" }
-              VersionID <VersionID> #242 {
-                RevisionNumber <String> #243 { "2.0.9" }
-              }
-              Vendor <String> #244 { "Temerity" }
-            }
-            <PluginMenuLayout> #245 {
-              Title <String> #246 { "SyflexCache" }
-              Name <String> #247 { "SyflexCache" }
-              VersionID <VersionID> #248 {
-                RevisionNumber <String> #249 { "2.0.9" }
-              }
-              Vendor <REF> #244
-            }
-            <PluginMenuLayout> #250 {
-              Title <String> #251 { "SyflexCacheCopy" }
-              Name <String> #252 { "SyflexCacheCopy" }
-              VersionID <VersionID> #253 {
-                RevisionNumber <String> #254 { "2.0.9" }
-              }
-              Vendor <REF> #244
+              Vendor <REF> #151
             }
           }
         }
-        <PluginMenuLayout> #255 {
-          Title <String> #256 { "3D Studio Max" }
-          Children <LinkedList> #257 {
-            <PluginMenuLayout> #258 {
-              Title <String> #259 { "MaxScript" }
-              Name <String> #260 { "MaxScript" }
-              VersionID <VersionID> #261 {
-                RevisionNumber <String> #262 { "2.2.1" }
+        <PluginMenuLayout> #237 {
+          Title <String> #238 { "Syflex" }
+          Children <LinkedList> #239 {
+            <PluginMenuLayout> #240 {
+              Title <String> #241 { "SyflexApplyCache" }
+              Name <String> #242 { "SyflexApplyCache" }
+              VersionID <VersionID> #243 {
+                RevisionNumber <String> #244 { "2.0.9" }
               }
-              Vendor <String> #263 { "Temerity" }
+              Vendor <String> #245 { "Temerity" }
             }
-            <PluginMenuLayout> #264 {
-              Title <String> #265 { "MaxRender" }
-              Name <String> #266 { "MaxRender" }
-              VersionID <VersionID> #267 {
-                RevisionNumber <String> #268 { "2.2.1" }
+            <PluginMenuLayout> #246 {
+              Title <String> #247 { "SyflexCache" }
+              Name <String> #248 { "SyflexCache" }
+              VersionID <VersionID> #249 {
+                RevisionNumber <String> #250 { "2.0.9" }
               }
-              Vendor <String> #269 { "Temerity" }
+              Vendor <REF> #245
+            }
+            <PluginMenuLayout> #251 {
+              Title <String> #252 { "SyflexCacheCopy" }
+              Name <String> #253 { "SyflexCacheCopy" }
+              VersionID <VersionID> #254 {
+                RevisionNumber <String> #255 { "2.0.9" }
+              }
+              Vendor <REF> #245
             }
           }
         }
-        <PluginMenuLayout> #270 {
-          Title <String> #271 { "RealFlow" }
-          Children <LinkedList> #272 {
-            <PluginMenuLayout> #273 {
-              Title <String> #274 { "HfsSdExport" }
-              Name <String> #275 { "HfsSdExport" }
-              VersionID <VersionID> #276 {
-                RevisionNumber <String> #277 { "2.0.0" }
+        <PluginMenuLayout> #256 {
+          Title <String> #257 { "3D Studio Max" }
+          Children <LinkedList> #258 {
+            <PluginMenuLayout> #259 {
+              Title <String> #260 { "MaxScript" }
+              Name <String> #261 { "MaxScript" }
+              VersionID <VersionID> #262 {
+                RevisionNumber <String> #263 { "2.2.1" }
               }
-              Vendor <String> #278 { "Temerity" }
+              Vendor <String> #264 { "Temerity" }
             }
-            <PluginMenuLayout> #279 {
-              Title <String> #280 { "MayaSdExport" }
-              Name <String> #281 { "MayaSdExport" }
-              VersionID <VersionID> #282 {
-                RevisionNumber <String> #283 { "2.0.0" }
+            <PluginMenuLayout> #265 {
+              Title <String> #266 { "MaxRender" }
+              Name <String> #267 { "MaxRender" }
+              VersionID <VersionID> #268 {
+                RevisionNumber <String> #269 { "2.2.1" }
               }
-              Vendor <String> #284 { "Temerity" }
+              Vendor <String> #270 { "Temerity" }
             }
-            <PluginMenuLayout> #285 {
-              Title <String> #286 { "RealFlowSim" }
-              Name <String> #287 { "RealFlowSim" }
-              VersionID <VersionID> #288 {
-                RevisionNumber <String> #289 { "2.0.0" }
+          }
+        }
+        <PluginMenuLayout> #271 {
+          Title <String> #272 { "RealFlow" }
+          Children <LinkedList> #273 {
+            <PluginMenuLayout> #274 {
+              Title <String> #275 { "HfsSdExport" }
+              Name <String> #276 { "HfsSdExport" }
+              VersionID <VersionID> #277 {
+                RevisionNumber <String> #278 { "2.0.0" }
               }
-              Vendor <String> #290 { "Temerity" }
+              Vendor <String> #279 { "Temerity" }
+            }
+            <PluginMenuLayout> #280 {
+              Title <String> #281 { "MayaSdExport" }
+              Name <String> #282 { "MayaSdExport" }
+              VersionID <VersionID> #283 {
+                RevisionNumber <String> #284 { "2.0.0" }
+              }
+              Vendor <String> #285 { "Temerity" }
+            }
+            <PluginMenuLayout> #286 {
+              Title <String> #287 { "RealFlowSim" }
+              Name <String> #288 { "RealFlowSim" }
+              VersionID <VersionID> #289 {
+                RevisionNumber <String> #290 { "2.0.0" }
+              }
+              Vendor <String> #291 { "Temerity" }
             }
           }
         }
       }
     }
-    <PluginMenuLayout> #291 {
-      Title <String> #292 { "2D Apps" }
-      Children <LinkedList> #293 {
-        <PluginMenuLayout> #294 {
-          Title <String> #295 { "Shake" }
-          Children <LinkedList> #296 {
-            <PluginMenuLayout> #297 {
-              Title <String> #298 { "ShakeThumbnail" }
-              Name <String> #299 { "ShakeThumbnail" }
-              VersionID <VersionID> #300 {
-                RevisionNumber <String> #301 { "2.4.1" }
+    <PluginMenuLayout> #292 {
+      Title <String> #293 { "2D Apps" }
+      Children <LinkedList> #294 {
+        <PluginMenuLayout> #295 {
+          Title <String> #296 { "Shake" }
+          Children <LinkedList> #297 {
+            <PluginMenuLayout> #298 {
+              Title <String> #299 { "ShakeThumbnail" }
+              Name <String> #300 { "ShakeThumbnail" }
+              VersionID <VersionID> #301 {
+                RevisionNumber <String> #302 { "2.4.1" }
               }
-              Vendor <String> #302 { "Temerity" }
+              Vendor <String> #303 { "Temerity" }
             }
-            <PluginMenuLayout> #303 {
-              Title <String> #304 { "ShakeComp" }
-              Name <String> #305 { "ShakeComp" }
-              VersionID <VersionID> #306 {
-                RevisionNumber <String> #307 { "2.2.1" }
+            <PluginMenuLayout> #304 {
+              Title <String> #305 { "ShakeComp" }
+              Name <String> #306 { "ShakeComp" }
+              VersionID <VersionID> #307 {
+                RevisionNumber <String> #308 { "2.2.1" }
               }
-              Vendor <String> #308 { "Temerity" }
+              Vendor <String> #309 { "Temerity" }
             }
-            <PluginMenuLayout> #309 {
-              Title <String> #310 { "ShakeQt" }
-              Name <String> #311 { "ShakeQt" }
-              VersionID <VersionID> #312 {
-                RevisionNumber <String> #313 { "2.2.1" }
+            <PluginMenuLayout> #310 {
+              Title <String> #311 { "ShakeQt" }
+              Name <String> #312 { "ShakeQt" }
+              VersionID <VersionID> #313 {
+                RevisionNumber <String> #314 { "2.2.1" }
               }
-              Vendor <String> #314 { "Temerity" }
-            }
-          }
-        }
-        <PluginMenuLayout> #315 {
-          Title <String> #316 { "Nuke" }
-          Children <LinkedList> #317 {
-            <PluginMenuLayout> #318 {
-              Title <String> #319 { "NukeThumbnail" }
-              Name <String> #320 { "NukeThumbnail" }
-              VersionID <VersionID> #321 {
-                RevisionNumber <String> #322 { "2.4.3" }
-              }
-              Vendor <String> #323 { "Temerity" }
-            }
-            <PluginMenuLayout> #324 {
-              Title <String> #325 { "NukeBuild" }
-              Name <String> #326 { "NukeBuild" }
-              VersionID <VersionID> #327 {
-                RevisionNumber <String> #328 { "2.3.4" }
-              }
-              Vendor <String> #329 { "Temerity" }
-            }
-            <PluginMenuLayout> #330 {
-              Title <String> #331 { "NukeExtract" }
-              Name <String> #332 { "NukeExtract" }
-              VersionID <VersionID> #333 {
-                RevisionNumber <String> #334 { "2.4.1" }
-              }
-              Vendor <String> #335 { "Temerity" }
-            }
-            <PluginMenuLayout> #336 {
-              Title <String> #337 { "NukeRead" }
-              Name <String> #338 { "NukeRead" }
-              VersionID <VersionID> #339 {
-                RevisionNumber <String> #340 { "2.4.3" }
-              }
-              Vendor <String> #341 { "Temerity" }
-            }
-            <PluginMenuLayout> #342 {
-              Title <String> #343 { "NukeReformat" }
-              Name <String> #344 { "NukeReformat" }
-              VersionID <VersionID> #345 {
-                RevisionNumber <String> #346 { "2.4.2" }
-              }
-              Vendor <String> #347 { "Temerity" }
-            }
-            <PluginMenuLayout> #348 {
-              Title <String> #349 { "NukeRescale" }
-              Name <String> #350 { "NukeRescale" }
-              VersionID <VersionID> #351 {
-                RevisionNumber <String> #352 { "2.4.2" }
-              }
-              Vendor <REF> #347
-            }
-            <PluginMenuLayout> #353 {
-              Title <String> #354 { "NukeMakeHDR" }
-              Name <String> #355 { "NukeMakeHDR" }
-              VersionID <VersionID> #356 {
-                RevisionNumber <String> #357 { "2.4.2" }
-              }
-              Vendor <String> #358 { "Temerity" }
-            }
-            <PluginMenuLayout> #359 {
-              Title <String> #360 { "NukeCatComp" }
-              Name <String> #361 { "NukeCatComp" }
-              VersionID <VersionID> #362 {
-                RevisionNumber <String> #363 { "2.4.3" }
-              }
-              Vendor <String> #364 { "Temerity" }
-            }
-            <PluginMenuLayout> #365 {
-              Title <String> #366 { "NukeSubstComp" }
-              Name <String> #367 { "NukeSubstComp" }
-              VersionID <VersionID> #368 {
-                RevisionNumber <String> #369 { "2.4.3" }
-              }
-              Vendor <String> #370 { "Temerity" }
-            }
-            <PluginMenuLayout> #371 {
-              Title <String> #372 { "NukeComp" }
-              Name <String> #373 { "NukeComp" }
-              VersionID <VersionID> #374 {
-                RevisionNumber <String> #375 { "2.2.1" }
-              }
-              Vendor <String> #376 { "Temerity" }
-            }
-            <PluginMenuLayout> #377 {
-              Title <String> #378 { "NukeQt" }
-              Name <String> #379 { "NukeQt" }
-              VersionID <VersionID> #380 {
-                RevisionNumber <String> #381 { "2.4.3" }
-              }
-              Vendor <String> #382 { "Temerity" }
+              Vendor <String> #315 { "Temerity" }
             }
           }
         }
-        <PluginMenuLayout> #383 {
-          Title <String> #384 { "DJV Imaging" }
-          Children <LinkedList> #385 {
-            <PluginMenuLayout> #386 {
-              Title <String> #387 { "DJV Convert" }
-              Name <String> #388 { "DjvConvert" }
-              VersionID <VersionID> #389 {
-                RevisionNumber <String> #390 { "2.4.1" }
+        <PluginMenuLayout> #316 {
+          Title <String> #317 { "Nuke" }
+          Children <LinkedList> #318 {
+            <PluginMenuLayout> #319 {
+              Title <String> #320 { "NukeThumbnail" }
+              Name <String> #321 { "NukeThumbnail" }
+              VersionID <VersionID> #322 {
+                RevisionNumber <String> #323 { "2.4.3" }
               }
-              Vendor <String> #391 { "Temerity" }
+              Vendor <String> #324 { "Temerity" }
             }
-            <PluginMenuLayout> #392 {
-              Title <String> #393 { "DJV UnixQt" }
-              Name <String> #394 { "DjvUnixQt" }
-              VersionID <VersionID> #395 {
-                RevisionNumber <String> #396 { "2.4.1" }
+            <PluginMenuLayout> #325 {
+              Title <String> #326 { "NukeBuild" }
+              Name <String> #327 { "NukeBuild" }
+              VersionID <VersionID> #328 {
+                RevisionNumber <String> #329 { "2.3.4" }
               }
-              Vendor <String> #397 { "Temerity" }
+              Vendor <String> #330 { "Temerity" }
             }
-            <PluginMenuLayout> #398 {
-              Title <String> #399 { "DJV Qt" }
-              Name <String> #400 { "DjvQt" }
-              VersionID <VersionID> #401 {
-                RevisionNumber <String> #402 { "2.4.1" }
+            <PluginMenuLayout> #331 {
+              Title <String> #332 { "NukeExtract" }
+              Name <String> #333 { "NukeExtract" }
+              VersionID <VersionID> #334 {
+                RevisionNumber <String> #335 { "2.4.1" }
               }
-              Vendor <REF> #397
+              Vendor <String> #336 { "Temerity" }
+            }
+            <PluginMenuLayout> #337 {
+              Title <String> #338 { "NukeRead" }
+              Name <String> #339 { "NukeRead" }
+              VersionID <VersionID> #340 {
+                RevisionNumber <String> #341 { "2.4.3" }
+              }
+              Vendor <String> #342 { "Temerity" }
+            }
+            <PluginMenuLayout> #343 {
+              Title <String> #344 { "NukeReformat" }
+              Name <String> #345 { "NukeReformat" }
+              VersionID <VersionID> #346 {
+                RevisionNumber <String> #347 { "2.4.2" }
+              }
+              Vendor <String> #348 { "Temerity" }
+            }
+            <PluginMenuLayout> #349 {
+              Title <String> #350 { "NukeRescale" }
+              Name <String> #351 { "NukeRescale" }
+              VersionID <VersionID> #352 {
+                RevisionNumber <String> #353 { "2.4.2" }
+              }
+              Vendor <REF> #348
+            }
+            <PluginMenuLayout> #354 {
+              Title <String> #355 { "NukeMakeHDR" }
+              Name <String> #356 { "NukeMakeHDR" }
+              VersionID <VersionID> #357 {
+                RevisionNumber <String> #358 { "2.4.2" }
+              }
+              Vendor <String> #359 { "Temerity" }
+            }
+            <PluginMenuLayout> #360 {
+              Title <String> #361 { "NukeCatComp" }
+              Name <String> #362 { "NukeCatComp" }
+              VersionID <VersionID> #363 {
+                RevisionNumber <String> #364 { "2.4.3" }
+              }
+              Vendor <String> #365 { "Temerity" }
+            }
+            <PluginMenuLayout> #366 {
+              Title <String> #367 { "NukeSubstComp" }
+              Name <String> #368 { "NukeSubstComp" }
+              VersionID <VersionID> #369 {
+                RevisionNumber <String> #370 { "2.4.3" }
+              }
+              Vendor <String> #371 { "Temerity" }
+            }
+            <PluginMenuLayout> #372 {
+              Title <String> #373 { "NukeComp" }
+              Name <String> #374 { "NukeComp" }
+              VersionID <VersionID> #375 {
+                RevisionNumber <String> #376 { "2.2.1" }
+              }
+              Vendor <String> #377 { "Temerity" }
+            }
+            <PluginMenuLayout> #378 {
+              Title <String> #379 { "NukeQt" }
+              Name <String> #380 { "NukeQt" }
+              VersionID <VersionID> #381 {
+                RevisionNumber <String> #382 { "2.4.3" }
+              }
+              Vendor <String> #383 { "Temerity" }
             }
           }
         }
-        <PluginMenuLayout> #403 {
-          Title <String> #404 { "AdobeCS3" }
-          Children <LinkedList> #405 {
-            <PluginMenuLayout> #406 {
-              Title <String> #407 { "AfterFXBuild" }
-              Name <String> #408 { "AfterFXBuild" }
-              VersionID <VersionID> #409 {
-                RevisionNumber <String> #410 { "2.4.1" }
+        <PluginMenuLayout> #384 {
+          Title <String> #385 { "DJV Imaging" }
+          Children <LinkedList> #386 {
+            <PluginMenuLayout> #387 {
+              Title <String> #388 { "DJV Convert" }
+              Name <String> #389 { "DjvConvert" }
+              VersionID <VersionID> #390 {
+                RevisionNumber <String> #391 { "2.4.1" }
               }
-              Vendor <String> #411 { "Temerity" }
+              Vendor <String> #392 { "Temerity" }
             }
-            <PluginMenuLayout> #412 {
-              Title <String> #413 { "AfterFXRenderImg" }
-              Name <String> #414 { "AfterFXRenderImg" }
-              VersionID <VersionID> #415 {
-                RevisionNumber <String> #416 { "2.2.1" }
+            <PluginMenuLayout> #393 {
+              Title <String> #394 { "DJV UnixQt" }
+              Name <String> #395 { "DjvUnixQt" }
+              VersionID <VersionID> #396 {
+                RevisionNumber <String> #397 { "2.4.1" }
               }
-              Vendor <REF> #411
+              Vendor <String> #398 { "Temerity" }
             }
-            <PluginMenuLayout> #417 {
-              Title <String> #418 { "AfterFXRenderMov" }
-              Name <String> #419 { "AfterFXRenderMov" }
-              VersionID <VersionID> #420 {
-                RevisionNumber <String> #421 { "2.2.1" }
+            <PluginMenuLayout> #399 {
+              Title <String> #400 { "DJV Qt" }
+              Name <String> #401 { "DjvQt" }
+              VersionID <VersionID> #402 {
+                RevisionNumber <String> #403 { "2.4.1" }
               }
-              Vendor <REF> #411
+              Vendor <REF> #398
             }
           }
         }
-        <PluginMenuLayout> #422 {
-          Title <String> #423 { "Composite" }
-          Name <String> #424 { "Composite" }
-          VersionID <VersionID> #425 {
-            RevisionNumber <String> #426 { "2.2.1" }
+        <PluginMenuLayout> #404 {
+          Title <String> #405 { "AdobeCS3" }
+          Children <LinkedList> #406 {
+            <PluginMenuLayout> #407 {
+              Title <String> #408 { "AfterFXBuild" }
+              Name <String> #409 { "AfterFXBuild" }
+              VersionID <VersionID> #410 {
+                RevisionNumber <String> #411 { "2.4.1" }
+              }
+              Vendor <String> #412 { "Temerity" }
+            }
+            <PluginMenuLayout> #413 {
+              Title <String> #414 { "AfterFXRenderImg" }
+              Name <String> #415 { "AfterFXRenderImg" }
+              VersionID <VersionID> #416 {
+                RevisionNumber <String> #417 { "2.2.1" }
+              }
+              Vendor <REF> #412
+            }
+            <PluginMenuLayout> #418 {
+              Title <String> #419 { "AfterFXRenderMov" }
+              Name <String> #420 { "AfterFXRenderMov" }
+              VersionID <VersionID> #421 {
+                RevisionNumber <String> #422 { "2.2.1" }
+              }
+              Vendor <REF> #412
+            }
           }
-          Vendor <String> #427 { "Temerity" }
         }
-        <PluginMenuLayout> #428 {
-          Title <String> #429 { "Thumbnail" }
-          Name <String> #430 { "Thumbnail" }
-          VersionID <VersionID> #431 {
-            RevisionNumber <String> #432 { "2.3.3" }
+        <PluginMenuLayout> #423 {
+          Title <String> #424 { "Composite" }
+          Name <String> #425 { "Composite" }
+          VersionID <VersionID> #426 {
+            RevisionNumber <String> #427 { "2.2.1" }
           }
-          Vendor <String> #433 { "Temerity" }
+          Vendor <String> #428 { "Temerity" }
         }
-        <PluginMenuLayout> #434 {
-          Title <String> #435 { "EnvCrossToSeq" }
-          Name <String> #436 { "EnvCrossToSeq" }
-          VersionID <VersionID> #437 {
-            RevisionNumber <String> #438 { "2.2.1" }
+        <PluginMenuLayout> #429 {
+          Title <String> #430 { "Thumbnail" }
+          Name <String> #431 { "Thumbnail" }
+          VersionID <VersionID> #432 {
+            RevisionNumber <String> #433 { "2.3.3" }
           }
-          Vendor <String> #439 { "Temerity" }
+          Vendor <String> #434 { "Temerity" }
         }
-        <PluginMenuLayout> #440 {
-          Title <String> #441 { "DebugTexture" }
-          Name <String> #442 { "DebugTexture" }
-          VersionID <VersionID> #443 {
-            RevisionNumber <String> #444 { "2.2.1" }
+        <PluginMenuLayout> #435 {
+          Title <String> #436 { "EnvCrossToSeq" }
+          Name <String> #437 { "EnvCrossToSeq" }
+          VersionID <VersionID> #438 {
+            RevisionNumber <String> #439 { "2.2.1" }
           }
-          Vendor <String> #445 { "Temerity" }
+          Vendor <String> #440 { "Temerity" }
+        }
+        <PluginMenuLayout> #441 {
+          Title <String> #442 { "DebugTexture" }
+          Name <String> #443 { "DebugTexture" }
+          VersionID <VersionID> #444 {
+            RevisionNumber <String> #445 { "2.2.1" }
+          }
+          Vendor <String> #446 { "Temerity" }
         }
       }
     }
-    <PluginMenuLayout> #446 {
-      Title <String> #447 { "Render" }
-      Children <LinkedList> #448 {
-        <PluginMenuLayout> #449 {
-          Title <String> #450 { "Mental Ray" }
-          Children <LinkedList> #451 {
-            <PluginMenuLayout> #452 {
-              Title <String> #453 { "MRayTexture" }
-              Name <String> #454 { "MRayTexture" }
-              VersionID <VersionID> #455 {
-                RevisionNumber <String> #456 { "2.2.1" }
+    <PluginMenuLayout> #447 {
+      Title <String> #448 { "Render" }
+      Children <LinkedList> #449 {
+        <PluginMenuLayout> #450 {
+          Title <String> #451 { "Mental Ray" }
+          Children <LinkedList> #452 {
+            <PluginMenuLayout> #453 {
+              Title <String> #454 { "MRayTexture" }
+              Name <String> #455 { "MRayTexture" }
+              VersionID <VersionID> #456 {
+                RevisionNumber <String> #457 { "2.2.1" }
               }
-              Vendor <String> #457 { "Temerity" }
+              Vendor <String> #458 { "Temerity" }
             }
-            <PluginMenuLayout> #458 {
-              Title <String> #459 { "MRayTexturePack" }
-              Name <String> #460 { "MRayTexturePack" }
-              VersionID <VersionID> #461 {
-                RevisionNumber <String> #462 { "2.2.1" }
+            <PluginMenuLayout> #459 {
+              Title <String> #460 { "MRayTexturePack" }
+              Name <String> #461 { "MRayTexturePack" }
+              VersionID <VersionID> #462 {
+                RevisionNumber <String> #463 { "2.2.1" }
               }
-              Vendor <REF> #445
+              Vendor <REF> #446
             }
-            <PluginMenuLayout> #463 {
-              Title <String> #464 { "MRayTextureUnpack" }
-              Name <String> #465 { "MRayTextureUnpack" }
-              VersionID <VersionID> #466 {
-                RevisionNumber <String> #467 { "2.2.1" }
+            <PluginMenuLayout> #464 {
+              Title <String> #465 { "MRayTextureUnpack" }
+              Name <String> #466 { "MRayTextureUnpack" }
+              VersionID <VersionID> #467 {
+                RevisionNumber <String> #468 { "2.2.1" }
               }
-              Vendor <REF> #445
+              Vendor <REF> #446
             }
-            <PluginMenuLayout> #468 {
-              Title <String> #469 { "MayaMiExport" }
-              Name <String> #470 { "MayaMiExport" }
-              VersionID <VersionID> #471 {
-                RevisionNumber <String> #472 { "2.2.1" }
+            <PluginMenuLayout> #469 {
+              Title <String> #470 { "MayaMiExport" }
+              Name <String> #471 { "MayaMiExport" }
+              VersionID <VersionID> #472 {
+                RevisionNumber <String> #473 { "2.2.1" }
               }
-              Vendor <String> #473 { "Temerity" }
+              Vendor <String> #474 { "Temerity" }
             }
-            <PluginMenuLayout> #474 {
-              Title <String> #475 { "MRayInstGroup" }
-              Name <String> #476 { "MRayInstGroup" }
-              VersionID <VersionID> #477 {
-                RevisionNumber <String> #478 { "2.3.2" }
+            <PluginMenuLayout> #475 {
+              Title <String> #476 { "MRayInstGroup" }
+              Name <String> #477 { "MRayInstGroup" }
+              VersionID <VersionID> #478 {
+                RevisionNumber <String> #479 { "2.3.2" }
               }
-              Vendor <String> #479 { "Temerity" }
+              Vendor <String> #480 { "Temerity" }
             }
-            <PluginMenuLayout> #480 {
-              Title <String> #481 { "MRayCamOverride" }
-              Name <String> #482 { "MRayCamOverride" }
-              VersionID <VersionID> #483 {
-                RevisionNumber <String> #484 { "2.2.1" }
+            <PluginMenuLayout> #481 {
+              Title <String> #482 { "MRayCamOverride" }
+              Name <String> #483 { "MRayCamOverride" }
+              VersionID <VersionID> #484 {
+                RevisionNumber <String> #485 { "2.2.1" }
               }
-              Vendor <String> #485 { "Temerity" }
+              Vendor <String> #486 { "Temerity" }
             }
-            <PluginMenuLayout> #486 {
-              Title <String> #487 { "MRayRenderGlobals" }
-              Name <String> #488 { "MRayRenderGlobals" }
-              VersionID <VersionID> #489 {
-                RevisionNumber <String> #490 { "2.4.1" }
+            <PluginMenuLayout> #487 {
+              Title <String> #488 { "MRayRenderGlobals" }
+              Name <String> #489 { "MRayRenderGlobals" }
+              VersionID <VersionID> #490 {
+                RevisionNumber <String> #491 { "2.4.1" }
               }
               Vendor <REF> #113
             }
-            <PluginMenuLayout> #491 {
-              Title <String> #492 { "MRayRender" }
-              Name <String> #493 { "MRayRender" }
-              VersionID <VersionID> #494 {
-                RevisionNumber <String> #495 { "2.2.1" }
+            <PluginMenuLayout> #492 {
+              Title <String> #493 { "MRayRender" }
+              Name <String> #494 { "MRayRender" }
+              VersionID <VersionID> #495 {
+                RevisionNumber <String> #496 { "2.2.1" }
               }
-              Vendor <String> #496 { "Temerity" }
+              Vendor <String> #497 { "Temerity" }
             }
-            <PluginMenuLayout> #497 {
-              Title <String> #498 { "MayaMRayRender" }
-              Name <String> #499 { "MayaMRayRender" }
-              VersionID <VersionID> #500 {
-                RevisionNumber <String> #501 { "2.2.1" }
+            <PluginMenuLayout> #498 {
+              Title <String> #499 { "MayaMRayRender" }
+              Name <String> #500 { "MayaMRayRender" }
+              VersionID <VersionID> #501 {
+                RevisionNumber <String> #502 { "2.2.1" }
               }
-              Vendor <REF> #496
+              Vendor <REF> #497
             }
-            <PluginMenuLayout> #502 {
-              Title <String> #503 { "MayaMRayInitMEL" }
-              Name <String> #504 { "MayaMRayInitMEL" }
-              VersionID <VersionID> #505 {
-                RevisionNumber <String> #506 { "2.3.5" }
+            <PluginMenuLayout> #503 {
+              Title <String> #504 { "MayaMRayInitMEL" }
+              Name <String> #505 { "MayaMRayInitMEL" }
+              VersionID <VersionID> #506 {
+                RevisionNumber <String> #507 { "2.3.5" }
               }
-              Vendor <String> #507 { "Temerity" }
+              Vendor <String> #508 { "Temerity" }
             }
-            <PluginMenuLayout> #508 {
-              Title <String> #509 { "MayaOccMEL" }
-              Name <String> #510 { "MayaOccMEL" }
-              VersionID <VersionID> #511 {
-                RevisionNumber <String> #512 { "2.3.4" }
-              }
-              Vendor <REF> #33
-            }
-            <PluginMenuLayout> #513 {
-              Title <String> #514 { "MRayMakeShader" }
-              Name <String> #515 { "MRayMakeShader" }
-              VersionID <VersionID> #516 {
-                RevisionNumber <String> #517 { "2.2.1" }
-              }
-              Vendor <String> #518 { "Temerity" }
-            }
-            <PluginMenuLayout> #519 {
-              Title <String> #520 { "MRayShaderInclude" }
-              Name <String> #521 { "MRayShaderInclude" }
-              VersionID <VersionID> #522 {
-                RevisionNumber <String> #523 { "2.2.1" }
-              }
-              Vendor <String> #524 { "Temerity" }
-            }
-            <PluginMenuLayout> #525 {
-              Title <String> #526 { "MRayShader" }
-              Name <String> #527 { "MRayShader" }
-              VersionID <VersionID> #528 {
-                RevisionNumber <String> #529 { "2.2.1" }
-              }
-              Vendor <REF> #518
-            }
-            <PluginMenuLayout> #530 {
-              Title <String> #531 { "MRayOptions" }
-              Name <String> #532 { "MRayOptions" }
-              VersionID <VersionID> #533 {
-                RevisionNumber <String> #534 { "2.3.5" }
-              }
-              Vendor <String> #535 { "Temerity" }
-            }
-            <PluginMenuLayout> #536 {
-              Title <String> #537 { "MayaMiShader" }
-              Name <String> #538 { "MayaMiShader" }
-              VersionID <VersionID> #539 {
-                RevisionNumber <String> #540 { "2.3.4" }
+            <PluginMenuLayout> #509 {
+              Title <String> #510 { "MayaOccMEL" }
+              Name <String> #511 { "MayaOccMEL" }
+              VersionID <VersionID> #512 {
+                RevisionNumber <String> #513 { "2.3.4" }
               }
               Vendor <REF> #33
             }
-          }
-        }
-        <PluginMenuLayout> #541 {
-          Title <String> #542 { "PRMan" }
-          Children <LinkedList> #543 {
-            <PluginMenuLayout> #544 {
-              Title <String> #545 { "PRTexture" }
-              Name <String> #546 { "PRTexture" }
-              VersionID <VersionID> #547 {
-                RevisionNumber <String> #548 { "2.0.0" }
+            <PluginMenuLayout> #514 {
+              Title <String> #515 { "MRayMakeShader" }
+              Name <String> #516 { "MRayMakeShader" }
+              VersionID <VersionID> #517 {
+                RevisionNumber <String> #518 { "2.2.1" }
               }
-              Vendor <String> #549 { "Temerity" }
+              Vendor <String> #519 { "Temerity" }
             }
-            <PluginMenuLayout> #550 {
-              Title <String> #551 { "PRShadow" }
-              Name <String> #552 { "PRShadow" }
-              VersionID <VersionID> #553 {
-                RevisionNumber <String> #554 { "2.0.0" }
+            <PluginMenuLayout> #520 {
+              Title <String> #521 { "MRayShaderInclude" }
+              Name <String> #522 { "MRayShaderInclude" }
+              VersionID <VersionID> #523 {
+                RevisionNumber <String> #524 { "2.2.1" }
               }
-              Vendor <String> #555 { "Temerity" }
+              Vendor <String> #525 { "Temerity" }
             }
-            <PluginMenuLayout> #556 {
-              Title <String> #557 { "PREnvMap" }
-              Name <String> #558 { "PREnvMap" }
-              VersionID <VersionID> #559 {
-                RevisionNumber <String> #560 { "2.0.0" }
+            <PluginMenuLayout> #526 {
+              Title <String> #527 { "MRayShader" }
+              Name <String> #528 { "MRayShader" }
+              VersionID <VersionID> #529 {
+                RevisionNumber <String> #530 { "2.2.1" }
               }
-              Vendor <REF> #555
+              Vendor <REF> #519
             }
-            <PluginMenuLayout> #561 {
-              Title <String> #562 { "PREnvCube" }
-              Name <String> #563 { "PREnvCube" }
-              VersionID <VersionID> #564 {
-                RevisionNumber <String> #565 { "2.0.0" }
+            <PluginMenuLayout> #531 {
+              Title <String> #532 { "MRayOptions" }
+              Name <String> #533 { "MRayOptions" }
+              VersionID <VersionID> #534 {
+                RevisionNumber <String> #535 { "2.3.5" }
               }
-              Vendor <REF> #555
+              Vendor <String> #536 { "Temerity" }
             }
-            <PluginMenuLayout> #566 {
-              Title <String> #567 { "PRShader" }
-              Name <String> #568 { "PRShader" }
-              VersionID <VersionID> #569 {
-                RevisionNumber <String> #570 { "2.0.0" }
+            <PluginMenuLayout> #537 {
+              Title <String> #538 { "MayaMiShader" }
+              Name <String> #539 { "MayaMiShader" }
+              VersionID <VersionID> #540 {
+                RevisionNumber <String> #541 { "2.3.4" }
               }
-              Vendor <String> #571 { "Temerity" }
-            }
-            <PluginMenuLayout> #572 {
-              Title <String> #573 { "PRPhotonMap" }
-              Name <String> #574 { "PRPhotonMap" }
-              VersionID <VersionID> #575 {
-                RevisionNumber <String> #576 { "2.0.0" }
-              }
-              Vendor <REF> #555
-            }
-            <PluginMenuLayout> #577 {
-              Title <String> #578 { "PRSubSurfDiffA" }
-              Name <String> #579 { "PRSubSurfDiffA" }
-              VersionID <VersionID> #580 {
-                RevisionNumber <String> #581 { "2.0.0" }
-              }
-              Vendor <REF> #555
-            }
-            <PluginMenuLayout> #582 {
-              Title <String> #583 { "PRSubSurfDiffB" }
-              Name <String> #584 { "PRSubSurfDiffB" }
-              VersionID <VersionID> #585 {
-                RevisionNumber <String> #586 { "2.0.0" }
-              }
-              Vendor <REF> #555
-            }
-            <PluginMenuLayout> #587 {
-              Title <String> #588 { "PRSubSurfDiffC" }
-              Name <String> #589 { "PRSubSurfDiffC" }
-              VersionID <VersionID> #590 {
-                RevisionNumber <String> #591 { "2.0.0" }
-              }
-              Vendor <String> #592 { "Temerity" }
-            }
-            <PluginMenuLayout> #593 {
-              Title <String> #594 { "PRBrickMake" }
-              Name <String> #595 { "PRBrickMake" }
-              VersionID <VersionID> #596 {
-                RevisionNumber <String> #597 { "2.0.0" }
-              }
-              Vendor <String> #598 { "Temerity" }
-            }
-            <PluginMenuLayout> #599 {
-              Title <String> #600 { "PRCatRIB" }
-              Name <String> #601 { "PRCatRIB" }
-              VersionID <VersionID> #602 {
-                RevisionNumber <String> #603 { "2.0.0" }
-              }
-              Vendor <String> #604 { "Temerity" }
-            }
-            <PluginMenuLayout> #605 {
-              Title <String> #606 { "PRRender" }
-              Name <String> #607 { "PRRender" }
-              VersionID <VersionID> #608 {
-                RevisionNumber <String> #609 { "2.0.0" }
-              }
-              Vendor <String> #610 { "Temerity" }
+              Vendor <REF> #33
             }
           }
         }
-        <PluginMenuLayout> #611 {
-          Title <String> #612 { "3Delight" }
-          Children <LinkedList> #613 {
-            <PluginMenuLayout> #614 {
-              Title <String> #615 { "DLTexture" }
-              Name <String> #616 { "DLTexture" }
-              VersionID <VersionID> #617 {
-                RevisionNumber <String> #618 { "2.2.1" }
+        <PluginMenuLayout> #542 {
+          Title <String> #543 { "PRMan" }
+          Children <LinkedList> #544 {
+            <PluginMenuLayout> #545 {
+              Title <String> #546 { "PRTexture" }
+              Name <String> #547 { "PRTexture" }
+              VersionID <VersionID> #548 {
+                RevisionNumber <String> #549 { "2.0.0" }
               }
-              Vendor <String> #619 { "Temerity" }
+              Vendor <String> #550 { "Temerity" }
             }
-            <PluginMenuLayout> #620 {
-              Title <String> #621 { "DLEnvCube" }
-              Name <String> #622 { "DLEnvCube" }
-              VersionID <VersionID> #623 {
-                RevisionNumber <String> #624 { "2.2.1" }
+            <PluginMenuLayout> #551 {
+              Title <String> #552 { "PRShadow" }
+              Name <String> #553 { "PRShadow" }
+              VersionID <VersionID> #554 {
+                RevisionNumber <String> #555 { "2.0.0" }
               }
-              Vendor <String> #625 { "Temerity" }
+              Vendor <String> #556 { "Temerity" }
             }
-            <PluginMenuLayout> #626 {
-              Title <String> #627 { "DLShadow" }
-              Name <String> #628 { "DLShadow" }
-              VersionID <VersionID> #629 {
-                RevisionNumber <String> #630 { "2.2.1" }
+            <PluginMenuLayout> #557 {
+              Title <String> #558 { "PREnvMap" }
+              Name <String> #559 { "PREnvMap" }
+              VersionID <VersionID> #560 {
+                RevisionNumber <String> #561 { "2.0.0" }
               }
-              Vendor <String> #631 { "Temerity" }
+              Vendor <REF> #556
             }
-            <PluginMenuLayout> #632 {
-              Title <String> #633 { "DLShader" }
-              Name <String> #634 { "DLShader" }
-              VersionID <VersionID> #635 {
-                RevisionNumber <String> #636 { "2.2.1" }
+            <PluginMenuLayout> #562 {
+              Title <String> #563 { "PREnvCube" }
+              Name <String> #564 { "PREnvCube" }
+              VersionID <VersionID> #565 {
+                RevisionNumber <String> #566 { "2.0.0" }
               }
-              Vendor <REF> #631
+              Vendor <REF> #556
             }
-            <PluginMenuLayout> #637 {
-              Title <String> #638 { "MayaDLShaderExport" }
-              Name <String> #639 { "MayaDLShaderExport" }
-              VersionID <VersionID> #640 {
-                RevisionNumber <String> #641 { "2.2.1" }
+            <PluginMenuLayout> #567 {
+              Title <String> #568 { "PRShader" }
+              Name <String> #569 { "PRShader" }
+              VersionID <VersionID> #570 {
+                RevisionNumber <String> #571 { "2.0.0" }
               }
-              Vendor <String> #642 { "Temerity" }
+              Vendor <String> #572 { "Temerity" }
             }
-            <PluginMenuLayout> #643 {
-              Title <String> #644 { "DLCatRib" }
-              Name <String> #645 { "DLCatRIB" }
-              VersionID <VersionID> #646 {
-                RevisionNumber <String> #647 { "2.2.1" }
+            <PluginMenuLayout> #573 {
+              Title <String> #574 { "PRPhotonMap" }
+              Name <String> #575 { "PRPhotonMap" }
+              VersionID <VersionID> #576 {
+                RevisionNumber <String> #577 { "2.0.0" }
               }
-              Vendor <String> #648 { "Temerity" }
+              Vendor <REF> #556
             }
-            <PluginMenuLayout> #649 {
-              Title <String> #650 { "DLRender" }
-              Name <String> #651 { "DLRender" }
-              VersionID <VersionID> #652 {
-                RevisionNumber <String> #653 { "2.2.1" }
+            <PluginMenuLayout> #578 {
+              Title <String> #579 { "PRSubSurfDiffA" }
+              Name <String> #580 { "PRSubSurfDiffA" }
+              VersionID <VersionID> #581 {
+                RevisionNumber <String> #582 { "2.0.0" }
               }
-              Vendor <REF> #631
+              Vendor <REF> #556
             }
-            <PluginMenuLayout> #654 {
-              Title <String> #655 { "MayaDLRender" }
-              Name <String> #656 { "MayaDLRender" }
-              VersionID <VersionID> #657 {
-                RevisionNumber <String> #658 { "2.2.1" }
+            <PluginMenuLayout> #583 {
+              Title <String> #584 { "PRSubSurfDiffB" }
+              Name <String> #585 { "PRSubSurfDiffB" }
+              VersionID <VersionID> #586 {
+                RevisionNumber <String> #587 { "2.0.0" }
               }
-              Vendor <REF> #619
+              Vendor <REF> #556
             }
-            <PluginMenuLayout> #659 {
-              Title <String> #660 { "DsmToTif" }
-              Name <String> #661 { "DsmToTif" }
-              VersionID <VersionID> #662 {
-                RevisionNumber <String> #663 { "2.2.1" }
+            <PluginMenuLayout> #588 {
+              Title <String> #589 { "PRSubSurfDiffC" }
+              Name <String> #590 { "PRSubSurfDiffC" }
+              VersionID <VersionID> #591 {
+                RevisionNumber <String> #592 { "2.0.0" }
               }
-              Vendor <REF> #631
+              Vendor <String> #593 { "Temerity" }
             }
-            <PluginMenuLayout> #664 {
-              Title <String> #665 { "HdrToTif" }
-              Name <String> #666 { "HdrToTif" }
-              VersionID <VersionID> #667 {
-                RevisionNumber <String> #668 { "2.2.1" }
+            <PluginMenuLayout> #594 {
+              Title <String> #595 { "PRBrickMake" }
+              Name <String> #596 { "PRBrickMake" }
+              VersionID <VersionID> #597 {
+                RevisionNumber <String> #598 { "2.0.0" }
               }
-              Vendor <REF> #631
+              Vendor <String> #599 { "Temerity" }
             }
-          }
-        }
-        <PluginMenuLayout> #669 {
-          Title <String> #670 { "AIR" }
-          Children <LinkedList> #671 {
-            <PluginMenuLayout> #672 {
-              Title <String> #673 { "AirTexture" }
-              Name <String> #674 { "AirTexture" }
-              VersionID <VersionID> #675 {
-                RevisionNumber <String> #676 { "2.0.0" }
+            <PluginMenuLayout> #600 {
+              Title <String> #601 { "PRCatRIB" }
+              Name <String> #602 { "PRCatRIB" }
+              VersionID <VersionID> #603 {
+                RevisionNumber <String> #604 { "2.0.0" }
               }
-              Vendor <REF> #150
+              Vendor <String> #605 { "Temerity" }
             }
-            <PluginMenuLayout> #677 {
-              Title <String> #678 { "AirShadow" }
-              Name <String> #679 { "AirShadow" }
-              VersionID <VersionID> #680 {
-                RevisionNumber <String> #681 { "2.0.0" }
+            <PluginMenuLayout> #606 {
+              Title <String> #607 { "PRRender" }
+              Name <String> #608 { "PRRender" }
+              VersionID <VersionID> #609 {
+                RevisionNumber <String> #610 { "2.0.0" }
               }
-              Vendor <REF> #150
-            }
-            <PluginMenuLayout> #682 {
-              Title <String> #683 { "AirEnvMap" }
-              Name <String> #684 { "AirEnvMap" }
-              VersionID <VersionID> #685 {
-                RevisionNumber <String> #686 { "2.0.0" }
-              }
-              Vendor <REF> #150
-            }
-            <PluginMenuLayout> #687 {
-              Title <String> #688 { "AirEnvCube" }
-              Name <String> #689 { "AirEnvCube" }
-              VersionID <VersionID> #690 {
-                RevisionNumber <String> #691 { "2.0.0" }
-              }
-              Vendor <REF> #150
-            }
-            <PluginMenuLayout> #692 {
-              Title <String> #693 { "AirShader" }
-              Name <String> #694 { "AirShader" }
-              VersionID <VersionID> #695 {
-                RevisionNumber <String> #696 { "2.0.0" }
-              }
-              Vendor <REF> #150
-            }
-            <PluginMenuLayout> #697 {
-              Title <String> #698 { "AirShaderDS" }
-              Name <String> #699 { "AirShaderDS" }
-              VersionID <VersionID> #700 {
-                RevisionNumber <String> #701 { "2.0.0" }
-              }
-              Vendor <REF> #150
-            }
-            <PluginMenuLayout> #702 {
-              Title <String> #703 { "AirShaderLIF" }
-              Name <String> #704 { "AirShaderLIF" }
-              VersionID <VersionID> #705 {
-                RevisionNumber <String> #706 { "2.0.0" }
-              }
-              Vendor <REF> #150
-            }
-            <PluginMenuLayout> #707 {
-              Title <String> #708 { "AirShaderRIB" }
-              Name <String> #709 { "AirShaderRIB" }
-              VersionID <VersionID> #710 {
-                RevisionNumber <String> #711 { "2.0.0" }
-              }
-              Vendor <REF> #150
-            }
-            <PluginMenuLayout> #712 {
-              Title <String> #713 { "AirLightdome" }
-              Name <String> #714 { "AirLightdome" }
-              VersionID <VersionID> #715 {
-                RevisionNumber <String> #716 { "2.0.0" }
-              }
-              Vendor <String> #717 { "Temerity" }
-            }
-            <PluginMenuLayout> #718 {
-              Title <String> #719 { "AirBake" }
-              Name <String> #720 { "AirBake" }
-              VersionID <VersionID> #721 {
-                RevisionNumber <String> #722 { "2.0.0" }
-              }
-              Vendor <String> #723 { "Temerity" }
-            }
-            <PluginMenuLayout> #724 {
-              Title <String> #725 { "AirRender" }
-              Name <String> #726 { "AirRender" }
-              VersionID <VersionID> #727 {
-                RevisionNumber <String> #728 { "2.0.4" }
-              }
-              Vendor <REF> #717
+              Vendor <String> #611 { "Temerity" }
             }
           }
         }
-        <PluginMenuLayout> #729 {
-          Title <String> #730 { "Gelato" }
-          Children <LinkedList> #731 {
-            <PluginMenuLayout> #732 {
-              Title <String> #733 { "MayaPygExport" }
-              Name <String> #734 { "MayaPygExport" }
-              VersionID <VersionID> #735 {
-                RevisionNumber <String> #736 { "2.0.0" }
+        <PluginMenuLayout> #612 {
+          Title <String> #613 { "3Delight" }
+          Children <LinkedList> #614 {
+            <PluginMenuLayout> #615 {
+              Title <String> #616 { "DLTexture" }
+              Name <String> #617 { "DLTexture" }
+              VersionID <VersionID> #618 {
+                RevisionNumber <String> #619 { "2.2.1" }
               }
-              Vendor <String> #737 { "Temerity" }
+              Vendor <String> #620 { "Temerity" }
             }
-            <PluginMenuLayout> #738 {
-              Title <String> #739 { "GelTexture" }
-              Name <String> #740 { "GelTexture" }
-              VersionID <VersionID> #741 {
-                RevisionNumber <String> #742 { "2.0.0" }
+            <PluginMenuLayout> #621 {
+              Title <String> #622 { "DLEnvCube" }
+              Name <String> #623 { "DLEnvCube" }
+              VersionID <VersionID> #624 {
+                RevisionNumber <String> #625 { "2.2.1" }
               }
-              Vendor <String> #743 { "Temerity" }
+              Vendor <String> #626 { "Temerity" }
             }
-            <PluginMenuLayout> #744 {
-              Title <String> #745 { "GelShadow" }
-              Name <String> #746 { "GelShadow" }
-              VersionID <VersionID> #747 {
-                RevisionNumber <String> #748 { "2.0.0" }
+            <PluginMenuLayout> #627 {
+              Title <String> #628 { "DLShadow" }
+              Name <String> #629 { "DLShadow" }
+              VersionID <VersionID> #630 {
+                RevisionNumber <String> #631 { "2.2.1" }
               }
-              Vendor <String> #749 { "Temerity" }
+              Vendor <String> #632 { "Temerity" }
             }
-            <PluginMenuLayout> #750 {
-              Title <String> #751 { "GelShadowCube" }
-              Name <String> #752 { "GelShadowCube" }
-              VersionID <VersionID> #753 {
-                RevisionNumber <String> #754 { "2.0.0" }
+            <PluginMenuLayout> #633 {
+              Title <String> #634 { "DLShader" }
+              Name <String> #635 { "DLShader" }
+              VersionID <VersionID> #636 {
+                RevisionNumber <String> #637 { "2.2.1" }
               }
-              Vendor <String> #755 { "Temerity" }
+              Vendor <REF> #632
             }
-            <PluginMenuLayout> #756 {
-              Title <String> #757 { "GelVolShadow" }
-              Name <String> #758 { "GelVolShadow" }
-              VersionID <VersionID> #759 {
-                RevisionNumber <String> #760 { "2.0.0" }
+            <PluginMenuLayout> #638 {
+              Title <String> #639 { "MayaDLShaderExport" }
+              Name <String> #640 { "MayaDLShaderExport" }
+              VersionID <VersionID> #641 {
+                RevisionNumber <String> #642 { "2.2.1" }
               }
-              Vendor <String> #761 { "Temerity" }
+              Vendor <String> #643 { "Temerity" }
             }
-            <PluginMenuLayout> #762 {
-              Title <String> #763 { "GelEnvMap" }
-              Name <String> #764 { "GelEnvMap" }
-              VersionID <VersionID> #765 {
-                RevisionNumber <String> #766 { "2.0.0" }
+            <PluginMenuLayout> #644 {
+              Title <String> #645 { "DLCatRib" }
+              Name <String> #646 { "DLCatRIB" }
+              VersionID <VersionID> #647 {
+                RevisionNumber <String> #648 { "2.2.1" }
               }
-              Vendor <String> #767 { "Temerity" }
+              Vendor <String> #649 { "Temerity" }
             }
-            <PluginMenuLayout> #768 {
-              Title <String> #769 { "GelEnvCube" }
-              Name <String> #770 { "GelEnvCube" }
-              VersionID <VersionID> #771 {
-                RevisionNumber <String> #772 { "2.0.0" }
+            <PluginMenuLayout> #650 {
+              Title <String> #651 { "DLRender" }
+              Name <String> #652 { "DLRender" }
+              VersionID <VersionID> #653 {
+                RevisionNumber <String> #654 { "2.2.1" }
               }
-              Vendor <REF> #767
+              Vendor <REF> #632
             }
-            <PluginMenuLayout> #773 {
-              Title <String> #774 { "GelEnvProbe" }
-              Name <String> #775 { "GelEnvProbe" }
-              VersionID <VersionID> #776 {
-                RevisionNumber <String> #777 { "2.0.0" }
+            <PluginMenuLayout> #655 {
+              Title <String> #656 { "MayaDLRender" }
+              Name <String> #657 { "MayaDLRender" }
+              VersionID <VersionID> #658 {
+                RevisionNumber <String> #659 { "2.2.1" }
               }
-              Vendor <REF> #767
+              Vendor <REF> #620
             }
-            <PluginMenuLayout> #778 {
-              Title <String> #779 { "GelShader" }
-              Name <String> #780 { "GelShader" }
-              VersionID <VersionID> #781 {
-                RevisionNumber <String> #782 { "2.0.0" }
+            <PluginMenuLayout> #660 {
+              Title <String> #661 { "DsmToTif" }
+              Name <String> #662 { "DsmToTif" }
+              VersionID <VersionID> #663 {
+                RevisionNumber <String> #664 { "2.2.1" }
               }
-              Vendor <String> #783 { "Temerity" }
+              Vendor <REF> #632
             }
-            <PluginMenuLayout> #784 {
-              Title <String> #785 { "GelRender" }
-              Name <String> #786 { "GelRender" }
-              VersionID <VersionID> #787 {
-                RevisionNumber <String> #788 { "2.0.0" }
+            <PluginMenuLayout> #665 {
+              Title <String> #666 { "HdrToTif" }
+              Name <String> #667 { "HdrToTif" }
+              VersionID <VersionID> #668 {
+                RevisionNumber <String> #669 { "2.2.1" }
               }
-              Vendor <String> #789 { "Temerity" }
-            }
-          }
-        }
-        <PluginMenuLayout> #790 {
-          Title <String> #791 { "Pixie" }
-          Children <LinkedList> #792 {
-            <PluginMenuLayout> #793 {
-              Title <String> #794 { "PxTexture" }
-              Name <String> #795 { "PxTexture" }
-              VersionID <VersionID> #796 {
-                RevisionNumber <String> #797 { "2.0.0" }
-              }
-              Vendor <String> #798 { "Temerity" }
-            }
-            <PluginMenuLayout> #799 {
-              Title <String> #800 { "PxShadow" }
-              Name <String> #801 { "PxShadow" }
-              VersionID <VersionID> #802 {
-                RevisionNumber <String> #803 { "2.0.0" }
-              }
-              Vendor <REF> #798
-            }
-            <PluginMenuLayout> #804 {
-              Title <String> #805 { "PxEnvMap" }
-              Name <String> #806 { "PxEnvMap" }
-              VersionID <VersionID> #807 {
-                RevisionNumber <String> #808 { "2.0.0" }
-              }
-              Vendor <REF> #798
-            }
-            <PluginMenuLayout> #809 {
-              Title <String> #810 { "PxEnvCube" }
-              Name <String> #811 { "PxEnvCube" }
-              VersionID <VersionID> #812 {
-                RevisionNumber <String> #813 { "2.0.0" }
-              }
-              Vendor <REF> #798
-            }
-            <PluginMenuLayout> #814 {
-              Title <String> #815 { "PxShader" }
-              Name <String> #816 { "PxShader" }
-              VersionID <VersionID> #817 {
-                RevisionNumber <String> #818 { "2.0.0" }
-              }
-              Vendor <REF> #798
-            }
-            <PluginMenuLayout> #819 {
-              Title <String> #820 { "PxRender" }
-              Name <String> #821 { "PxRender" }
-              VersionID <VersionID> #822 {
-                RevisionNumber <String> #823 { "2.0.0" }
-              }
-              Vendor <REF> #798
+              Vendor <REF> #632
             }
           }
         }
-        <PluginMenuLayout> #824 {
-          Title <String> #825 { "Maxwell" }
-          Children <LinkedList> #826 {
-            <PluginMenuLayout> #827 {
-              Title <String> #828 { "MaxwellGlobals" }
-              Name <String> #829 { "MaxwellGlobals" }
-              VersionID <VersionID> #830 {
-                RevisionNumber <String> #831 { "2.0.0" }
+        <PluginMenuLayout> #670 {
+          Title <String> #671 { "AIR" }
+          Children <LinkedList> #672 {
+            <PluginMenuLayout> #673 {
+              Title <String> #674 { "AirTexture" }
+              Name <String> #675 { "AirTexture" }
+              VersionID <VersionID> #676 {
+                RevisionNumber <String> #677 { "2.0.0" }
               }
-              Vendor <String> #832 { "Temerity" }
+              Vendor <REF> #151
             }
-            <PluginMenuLayout> #833 {
-              Title <String> #834 { "MayaMxsExport" }
-              Name <String> #835 { "MayaMxsExport" }
-              VersionID <VersionID> #836 {
-                RevisionNumber <String> #837 { "2.0.0" }
+            <PluginMenuLayout> #678 {
+              Title <String> #679 { "AirShadow" }
+              Name <String> #680 { "AirShadow" }
+              VersionID <VersionID> #681 {
+                RevisionNumber <String> #682 { "2.0.0" }
               }
-              Vendor <REF> #284
+              Vendor <REF> #151
             }
-            <PluginMenuLayout> #838 {
-              Title <String> #839 { "MaxwellRender" }
-              Name <String> #840 { "MaxwellRender" }
-              VersionID <VersionID> #841 {
-                RevisionNumber <String> #842 { "2.0.0" }
+            <PluginMenuLayout> #683 {
+              Title <String> #684 { "AirEnvMap" }
+              Name <String> #685 { "AirEnvMap" }
+              VersionID <VersionID> #686 {
+                RevisionNumber <String> #687 { "2.0.0" }
               }
-              Vendor <REF> #832
+              Vendor <REF> #151
+            }
+            <PluginMenuLayout> #688 {
+              Title <String> #689 { "AirEnvCube" }
+              Name <String> #690 { "AirEnvCube" }
+              VersionID <VersionID> #691 {
+                RevisionNumber <String> #692 { "2.0.0" }
+              }
+              Vendor <REF> #151
+            }
+            <PluginMenuLayout> #693 {
+              Title <String> #694 { "AirShader" }
+              Name <String> #695 { "AirShader" }
+              VersionID <VersionID> #696 {
+                RevisionNumber <String> #697 { "2.0.0" }
+              }
+              Vendor <REF> #151
+            }
+            <PluginMenuLayout> #698 {
+              Title <String> #699 { "AirShaderDS" }
+              Name <String> #700 { "AirShaderDS" }
+              VersionID <VersionID> #701 {
+                RevisionNumber <String> #702 { "2.0.0" }
+              }
+              Vendor <REF> #151
+            }
+            <PluginMenuLayout> #703 {
+              Title <String> #704 { "AirShaderLIF" }
+              Name <String> #705 { "AirShaderLIF" }
+              VersionID <VersionID> #706 {
+                RevisionNumber <String> #707 { "2.0.0" }
+              }
+              Vendor <REF> #151
+            }
+            <PluginMenuLayout> #708 {
+              Title <String> #709 { "AirShaderRIB" }
+              Name <String> #710 { "AirShaderRIB" }
+              VersionID <VersionID> #711 {
+                RevisionNumber <String> #712 { "2.0.0" }
+              }
+              Vendor <REF> #151
+            }
+            <PluginMenuLayout> #713 {
+              Title <String> #714 { "AirLightdome" }
+              Name <String> #715 { "AirLightdome" }
+              VersionID <VersionID> #716 {
+                RevisionNumber <String> #717 { "2.0.0" }
+              }
+              Vendor <String> #718 { "Temerity" }
+            }
+            <PluginMenuLayout> #719 {
+              Title <String> #720 { "AirBake" }
+              Name <String> #721 { "AirBake" }
+              VersionID <VersionID> #722 {
+                RevisionNumber <String> #723 { "2.0.0" }
+              }
+              Vendor <String> #724 { "Temerity" }
+            }
+            <PluginMenuLayout> #725 {
+              Title <String> #726 { "AirRender" }
+              Name <String> #727 { "AirRender" }
+              VersionID <VersionID> #728 {
+                RevisionNumber <String> #729 { "2.0.4" }
+              }
+              Vendor <REF> #718
             }
           }
         }
-      }
-    }
-    <PluginMenuLayout> #843 {
-      Title <String> #844 { "Utils" }
-      Children <LinkedList> #845 {
-        <PluginMenuLayout> #846 {
-          Title <String> #847 { "Script" }
-          Name <String> #848 { "Script" }
-          VersionID <VersionID> #849 {
-            RevisionNumber <String> #850 { "2.2.1" }
+        <PluginMenuLayout> #730 {
+          Title <String> #731 { "Gelato" }
+          Children <LinkedList> #732 {
+            <PluginMenuLayout> #733 {
+              Title <String> #734 { "MayaPygExport" }
+              Name <String> #735 { "MayaPygExport" }
+              VersionID <VersionID> #736 {
+                RevisionNumber <String> #737 { "2.0.0" }
+              }
+              Vendor <String> #738 { "Temerity" }
+            }
+            <PluginMenuLayout> #739 {
+              Title <String> #740 { "GelTexture" }
+              Name <String> #741 { "GelTexture" }
+              VersionID <VersionID> #742 {
+                RevisionNumber <String> #743 { "2.0.0" }
+              }
+              Vendor <String> #744 { "Temerity" }
+            }
+            <PluginMenuLayout> #745 {
+              Title <String> #746 { "GelShadow" }
+              Name <String> #747 { "GelShadow" }
+              VersionID <VersionID> #748 {
+                RevisionNumber <String> #749 { "2.0.0" }
+              }
+              Vendor <String> #750 { "Temerity" }
+            }
+            <PluginMenuLayout> #751 {
+              Title <String> #752 { "GelShadowCube" }
+              Name <String> #753 { "GelShadowCube" }
+              VersionID <VersionID> #754 {
+                RevisionNumber <String> #755 { "2.0.0" }
+              }
+              Vendor <String> #756 { "Temerity" }
+            }
+            <PluginMenuLayout> #757 {
+              Title <String> #758 { "GelVolShadow" }
+              Name <String> #759 { "GelVolShadow" }
+              VersionID <VersionID> #760 {
+                RevisionNumber <String> #761 { "2.0.0" }
+              }
+              Vendor <String> #762 { "Temerity" }
+            }
+            <PluginMenuLayout> #763 {
+              Title <String> #764 { "GelEnvMap" }
+              Name <String> #765 { "GelEnvMap" }
+              VersionID <VersionID> #766 {
+                RevisionNumber <String> #767 { "2.0.0" }
+              }
+              Vendor <String> #768 { "Temerity" }
+            }
+            <PluginMenuLayout> #769 {
+              Title <String> #770 { "GelEnvCube" }
+              Name <String> #771 { "GelEnvCube" }
+              VersionID <VersionID> #772 {
+                RevisionNumber <String> #773 { "2.0.0" }
+              }
+              Vendor <REF> #768
+            }
+            <PluginMenuLayout> #774 {
+              Title <String> #775 { "GelEnvProbe" }
+              Name <String> #776 { "GelEnvProbe" }
+              VersionID <VersionID> #777 {
+                RevisionNumber <String> #778 { "2.0.0" }
+              }
+              Vendor <REF> #768
+            }
+            <PluginMenuLayout> #779 {
+              Title <String> #780 { "GelShader" }
+              Name <String> #781 { "GelShader" }
+              VersionID <VersionID> #782 {
+                RevisionNumber <String> #783 { "2.0.0" }
+              }
+              Vendor <String> #784 { "Temerity" }
+            }
+            <PluginMenuLayout> #785 {
+              Title <String> #786 { "GelRender" }
+              Name <String> #787 { "GelRender" }
+              VersionID <VersionID> #788 {
+                RevisionNumber <String> #789 { "2.0.0" }
+              }
+              Vendor <String> #790 { "Temerity" }
+            }
           }
-          Vendor <String> #851 { "Temerity" }
         }
-        <PluginMenuLayout> #852 {
-          Title <String> #853 { "Python" }
-          Name <String> #854 { "Python" }
-          VersionID <VersionID> #855 {
-            RevisionNumber <String> #856 { "2.2.1" }
+        <PluginMenuLayout> #791 {
+          Title <String> #792 { "Pixie" }
+          Children <LinkedList> #793 {
+            <PluginMenuLayout> #794 {
+              Title <String> #795 { "PxTexture" }
+              Name <String> #796 { "PxTexture" }
+              VersionID <VersionID> #797 {
+                RevisionNumber <String> #798 { "2.0.0" }
+              }
+              Vendor <String> #799 { "Temerity" }
+            }
+            <PluginMenuLayout> #800 {
+              Title <String> #801 { "PxShadow" }
+              Name <String> #802 { "PxShadow" }
+              VersionID <VersionID> #803 {
+                RevisionNumber <String> #804 { "2.0.0" }
+              }
+              Vendor <REF> #799
+            }
+            <PluginMenuLayout> #805 {
+              Title <String> #806 { "PxEnvMap" }
+              Name <String> #807 { "PxEnvMap" }
+              VersionID <VersionID> #808 {
+                RevisionNumber <String> #809 { "2.0.0" }
+              }
+              Vendor <REF> #799
+            }
+            <PluginMenuLayout> #810 {
+              Title <String> #811 { "PxEnvCube" }
+              Name <String> #812 { "PxEnvCube" }
+              VersionID <VersionID> #813 {
+                RevisionNumber <String> #814 { "2.0.0" }
+              }
+              Vendor <REF> #799
+            }
+            <PluginMenuLayout> #815 {
+              Title <String> #816 { "PxShader" }
+              Name <String> #817 { "PxShader" }
+              VersionID <VersionID> #818 {
+                RevisionNumber <String> #819 { "2.0.0" }
+              }
+              Vendor <REF> #799
+            }
+            <PluginMenuLayout> #820 {
+              Title <String> #821 { "PxRender" }
+              Name <String> #822 { "PxRender" }
+              VersionID <VersionID> #823 {
+                RevisionNumber <String> #824 { "2.0.0" }
+              }
+              Vendor <REF> #799
+            }
           }
-          Vendor <String> #857 { "Temerity" }
         }
-        <PluginMenuLayout> #858 {
-          Title <String> #859 { "Touch" }
-          Name <String> #860 { "Touch" }
-          VersionID <VersionID> #861 {
-            RevisionNumber <String> #862 { "2.2.1" }
+        <PluginMenuLayout> #825 {
+          Title <String> #826 { "Maxwell" }
+          Children <LinkedList> #827 {
+            <PluginMenuLayout> #828 {
+              Title <String> #829 { "MaxwellGlobals" }
+              Name <String> #830 { "MaxwellGlobals" }
+              VersionID <VersionID> #831 {
+                RevisionNumber <String> #832 { "2.0.0" }
+              }
+              Vendor <String> #833 { "Temerity" }
+            }
+            <PluginMenuLayout> #834 {
+              Title <String> #835 { "MayaMxsExport" }
+              Name <String> #836 { "MayaMxsExport" }
+              VersionID <VersionID> #837 {
+                RevisionNumber <String> #838 { "2.0.0" }
+              }
+              Vendor <REF> #285
+            }
+            <PluginMenuLayout> #839 {
+              Title <String> #840 { "MaxwellRender" }
+              Name <String> #841 { "MaxwellRender" }
+              VersionID <VersionID> #842 {
+                RevisionNumber <String> #843 { "2.0.0" }
+              }
+              Vendor <REF> #833
+            }
           }
-          Vendor <String> #863 { "Temerity" }
-        }
-        <PluginMenuLayout> #864 {
-          Title <String> #865 { "Copy" }
-          Name <String> #866 { "Copy" }
-          VersionID <VersionID> #867 {
-            RevisionNumber <String> #868 { "2.3.2" }
-          }
-          Vendor <String> #869 { "Temerity" }
-        }
-        <PluginMenuLayout> #870 {
-          Title <String> #871 { "Switch" }
-          Name <String> #872 { "Switch" }
-          VersionID <VersionID> #873 {
-            RevisionNumber <String> #874 { "2.2.1" }
-          }
-          Vendor <String> #875 { "Temerity" }
-        }
-        <PluginMenuLayout> #876 {
-          Title <String> #877 { "ListSources" }
-          Name <String> #878 { "ListSources" }
-          VersionID <VersionID> #879 {
-            RevisionNumber <String> #880 { "2.2.1" }
-          }
-          Vendor <String> #881 { "Temerity" }
-        }
-        <PluginMenuLayout> #882 {
-          Title <String> #883 { "ExtractSeq" }
-          Name <String> #884 { "ExtractSeq" }
-          VersionID <VersionID> #885 {
-            RevisionNumber <String> #886 { "2.2.1" }
-          }
-          Vendor <String> #887 { "Temerity" }
-        }
-        <PluginMenuLayout> #888 {
-          Title <String> #889 { "Splice" }
-          Name <String> #890 { "Splice" }
-          VersionID <VersionID> #891 {
-            RevisionNumber <String> #892 { "2.2.1" }
-          }
-          Vendor <String> #893 { "Temerity" }
-        }
-        <PluginMenuLayout> #894 {
-          Title <String> #895 { "CatFiles" }
-          Name <String> #896 { "CatFiles" }
-          VersionID <VersionID> #897 {
-            RevisionNumber <String> #898 { "2.2.1" }
-          }
-          Vendor <String> #899 { "Temerity" }
-        }
-        <PluginMenuLayout> #900 {
-          Title <String> #901 { "Test" }
-          Name <String> #902 { "Test" }
-          VersionID <VersionID> #903 {
-            RevisionNumber <String> #904 { "1.2.0" }
-          }
-          Vendor <String> #905 { "Temerity" }
         }
       }
     }
-    <PluginMenuLayout> #906 {
-      Title <String> #907 { "TeX" }
-      Children <LinkedList> #908 {
-        <PluginMenuLayout> #909 {
-          Title <String> #910 { "LyxExport" }
-          Name <String> #911 { "LyxExport" }
-          VersionID <VersionID> #912 {
-            RevisionNumber <String> #913 { "2.0.9" }
+    <PluginMenuLayout> #844 {
+      Title <String> #845 { "Utils" }
+      Children <LinkedList> #846 {
+        <PluginMenuLayout> #847 {
+          Title <String> #848 { "Script" }
+          Name <String> #849 { "Script" }
+          VersionID <VersionID> #850 {
+            RevisionNumber <String> #851 { "2.2.1" }
           }
-          Vendor <String> #914 { "Temerity" }
+          Vendor <String> #852 { "Temerity" }
+        }
+        <PluginMenuLayout> #853 {
+          Title <String> #854 { "Python" }
+          Name <String> #855 { "Python" }
+          VersionID <VersionID> #856 {
+            RevisionNumber <String> #857 { "2.2.1" }
+          }
+          Vendor <String> #858 { "Temerity" }
+        }
+        <PluginMenuLayout> #859 {
+          Title <String> #860 { "Touch" }
+          Name <String> #861 { "Touch" }
+          VersionID <VersionID> #862 {
+            RevisionNumber <String> #863 { "2.2.1" }
+          }
+          Vendor <String> #864 { "Temerity" }
+        }
+        <PluginMenuLayout> #865 {
+          Title <String> #866 { "Copy" }
+          Name <String> #867 { "Copy" }
+          VersionID <VersionID> #868 {
+            RevisionNumber <String> #869 { "2.3.2" }
+          }
+          Vendor <String> #870 { "Temerity" }
+        }
+        <PluginMenuLayout> #871 {
+          Title <String> #872 { "Switch" }
+          Name <String> #873 { "Switch" }
+          VersionID <VersionID> #874 {
+            RevisionNumber <String> #875 { "2.2.1" }
+          }
+          Vendor <String> #876 { "Temerity" }
+        }
+        <PluginMenuLayout> #877 {
+          Title <String> #878 { "ListSources" }
+          Name <String> #879 { "ListSources" }
+          VersionID <VersionID> #880 {
+            RevisionNumber <String> #881 { "2.2.1" }
+          }
+          Vendor <String> #882 { "Temerity" }
+        }
+        <PluginMenuLayout> #883 {
+          Title <String> #884 { "ExtractSeq" }
+          Name <String> #885 { "ExtractSeq" }
+          VersionID <VersionID> #886 {
+            RevisionNumber <String> #887 { "2.2.1" }
+          }
+          Vendor <String> #888 { "Temerity" }
+        }
+        <PluginMenuLayout> #889 {
+          Title <String> #890 { "Splice" }
+          Name <String> #891 { "Splice" }
+          VersionID <VersionID> #892 {
+            RevisionNumber <String> #893 { "2.2.1" }
+          }
+          Vendor <String> #894 { "Temerity" }
+        }
+        <PluginMenuLayout> #895 {
+          Title <String> #896 { "CatFiles" }
+          Name <String> #897 { "CatFiles" }
+          VersionID <VersionID> #898 {
+            RevisionNumber <String> #899 { "2.2.1" }
+          }
+          Vendor <String> #900 { "Temerity" }
+        }
+        <PluginMenuLayout> #901 {
+          Title <String> #902 { "Test" }
+          Name <String> #903 { "Test" }
+          VersionID <VersionID> #904 {
+            RevisionNumber <String> #905 { "1.2.0" }
+          }
+          Vendor <String> #906 { "Temerity" }
         }
       }
     }
-    <PluginMenuLayout> #915 {
-      Title <String> #916 { "Java" }
-      Children <LinkedList> #917 {
-        <PluginMenuLayout> #918 {
-          Title <String> #919 { "JavaBuild" }
-          Name <String> #920 { "JavaBuild" }
-          VersionID <VersionID> #921 {
-            RevisionNumber <String> #922 { "2.0.15" }
+    <PluginMenuLayout> #907 {
+      Title <String> #908 { "TeX" }
+      Children <LinkedList> #909 {
+        <PluginMenuLayout> #910 {
+          Title <String> #911 { "LyxExport" }
+          Name <String> #912 { "LyxExport" }
+          VersionID <VersionID> #913 {
+            RevisionNumber <String> #914 { "2.0.9" }
           }
-          Vendor <String> #923 { "Temerity" }
-        }
-        <PluginMenuLayout> #924 {
-          Title <String> #925 { "JavaUtility" }
-          Name <String> #926 { "JavaUtility" }
-          VersionID <VersionID> #927 {
-            RevisionNumber <String> #928 { "2.0.15" }
-          }
-          Vendor <String> #929 { "Temerity" }
+          Vendor <String> #915 { "Temerity" }
         }
       }
     }
-    <PluginMenuLayout> #930 {
-      Title <String> #931 { "ICVFX" }
-      Children <LinkedList> #932 {
-        <PluginMenuLayout> #933 {
-          Title <String> #934 { "LensInfo" }
-          Name <String> #935 { "LensInfo" }
-          VersionID <VersionID> #936 {
-            RevisionNumber <String> #937 { "1.0.1" }
+    <PluginMenuLayout> #916 {
+      Title <String> #917 { "Java" }
+      Children <LinkedList> #918 {
+        <PluginMenuLayout> #919 {
+          Title <String> #920 { "JavaBuild" }
+          Name <String> #921 { "JavaBuild" }
+          VersionID <VersionID> #922 {
+            RevisionNumber <String> #923 { "2.0.15" }
           }
-          Vendor <String> #938 { "ICVFX" }
+          Vendor <String> #924 { "Temerity" }
         }
-        <PluginMenuLayout> #939 {
-          Title <String> #940 { "PFTrackBuild" }
-          Name <String> #941 { "PFTrackBuild" }
-          VersionID <VersionID> #942 {
-            RevisionNumber <String> #943 { "1.0.0" }
+        <PluginMenuLayout> #925 {
+          Title <String> #926 { "JavaUtility" }
+          Name <String> #927 { "JavaUtility" }
+          VersionID <VersionID> #928 {
+            RevisionNumber <String> #929 { "2.0.15" }
           }
-          Vendor <String> #944 { "ICVFX" }
+          Vendor <String> #930 { "Temerity" }
         }
-        <PluginMenuLayout> #945 {
-          Title <String> #946 { "SlateSubst" }
-          Name <String> #947 { "SlateSubst" }
-          VersionID <VersionID> #948 {
-            RevisionNumber <String> #949 { "1.0.0" }
+      }
+    }
+    <PluginMenuLayout> #931 {
+      Title <String> #932 { "ICVFX" }
+      Children <LinkedList> #933 {
+        <PluginMenuLayout> #934 {
+          Title <String> #935 { "LensInfo" }
+          Name <String> #936 { "LensInfo" }
+          VersionID <VersionID> #937 {
+            RevisionNumber <String> #938 { "1.0.1" }
           }
-          Vendor <String> #950 { "ICVFX" }
+          Vendor <String> #939 { "ICVFX" }
         }
-        <PluginMenuLayout> #951 {
-          Title <String> #952 { "QtEncode" }
-          Name <String> #953 { "QtEncode" }
-          VersionID <VersionID> #954 {
-            RevisionNumber <String> #955 { "1.0.0" }
+        <PluginMenuLayout> #940 {
+          Title <String> #941 { "PFTrackBuild" }
+          Name <String> #942 { "PFTrackBuild" }
+          VersionID <VersionID> #943 {
+            RevisionNumber <String> #944 { "1.0.0" }
           }
-          Vendor <String> #956 { "ICVFX" }
+          Vendor <String> #945 { "ICVFX" }
+        }
+        <PluginMenuLayout> #946 {
+          Title <String> #947 { "SlateSubst" }
+          Name <String> #948 { "SlateSubst" }
+          VersionID <VersionID> #949 {
+            RevisionNumber <String> #950 { "1.0.0" }
+          }
+          Vendor <String> #951 { "ICVFX" }
+        }
+        <PluginMenuLayout> #952 {
+          Title <String> #953 { "QtEncode" }
+          Name <String> #954 { "QtEncode" }
+          VersionID <VersionID> #955 {
+            RevisionNumber <String> #956 { "1.0.0" }
+          }
+          Vendor <String> #957 { "ICVFX" }
         }
       }
     }
