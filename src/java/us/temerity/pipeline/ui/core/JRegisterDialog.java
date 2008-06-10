@@ -1,4 +1,4 @@
-// $Id: JRegisterDialog.java,v 1.19 2008/01/29 20:44:07 jim Exp $
+// $Id: JRegisterDialog.java,v 1.20 2008/06/10 09:07:32 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -73,7 +73,7 @@ class JRegisterDialog
 	  values.add("File Sequence");
 	  JCollectionField field = 
 	    UIFactory.createTitledCollectionField(tpanel, "File Mode:", sTSize, 
-						 vpanel, values, sVSize);
+                                                  vpanel, values, sVSize);
 	  pFileModeField = field;
 
 	  field.addActionListener(this);
