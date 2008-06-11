@@ -1,4 +1,8 @@
 #--- RULES -----------------------------------------------------------------------------------
 
 %:
+	$(MAKE) -f Makefile.local -C MayaAnimInstanceBuildAction $@
 	$(MAKE) -f Makefile.local -C ModelReplaceAction $@
+	$(MAKE) -f Makefile.local -C ProjectSetterUpper $@
+	$(MAKE) -f Makefile.local -C ShakeQuickTimeAction $@
+	$(MAKE) -f Makefile.local -C ShakeQuickTimeThumbnailAction $@

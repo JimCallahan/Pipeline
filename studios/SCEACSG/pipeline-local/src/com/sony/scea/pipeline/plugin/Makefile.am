@@ -7,4 +7,8 @@ makefile_DATA = \
 
 
 SUBDIRS = \
-  ModelReplaceAction
+  MayaAnimInstanceBuildAction \
+  ModelReplaceAction \
+  ProjectSetterUpper \
+  ShakeQuickTimeAction \
+  ShakeQuickTimeThumbnailAction
