@@ -88,6 +88,7 @@ try:
         editor = pclient.newEditor("NukeViewer", None, None)
         mod = NodeMod(tname, primary, None, toolset, editor)
         mclient.register(tnodeID.getAuthor(), tnodeID.getView(), mod)
+        mclient.vouch(tnodeID)
 
         print('Checking-In Node: ' + tname)
         mclient.checkIn(tnodeID, "Initial revision.", VersionID.Level.Minor)
