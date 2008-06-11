@@ -1948,7 +1948,7 @@ AC_CONFIG_FILES([
   src/unix/splash/Makefile
   src/unix/splash/Splash.nk
 
-  studios/Makefile
+  studios/Makefile  
 
   studios/icvfx/Makefile
   studios/icvfx/pipeline-local/.classpath
@@ -2036,7 +2036,6 @@ AC_CONFIG_FILES([
   studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/stages/Makefile
   studios/icvfx/pipeline-local/src/python/Makefile
 
-
   studios/nathanlove/Makefile
   studios/nathanlove/pipeline-local/.classpath
   studios/nathanlove/pipeline-local/.project 
@@ -2080,9 +2079,22 @@ AC_CONFIG_FILES([
   studios/SCEACSG/pipeline-local/src/com/sony/scea/Makefile
   studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/Makefile
   studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/Makefile
-  studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ModelReplaceAction/Makefile
-  studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ModelReplaceAction/v1_2_0/Makefile
-  studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ModelReplaceAction/v1_2_0/Makefile.local
+  studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/MayaAnimInstanceBuildAction/Makefile                
+  studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/MayaAnimInstanceBuildAction/v1_0_0/Makefile         
+  studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/MayaAnimInstanceBuildAction/v1_0_0/Makefile.local
+  studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/Makefile                         
+  studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/Makefile                  
+  studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/Makefile.local                 
+  studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/stages/Makefile           
+  studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ModelReplaceAction/Makefile                         
+  studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ModelReplaceAction/v1_2_0/Makefile                   
+  studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ModelReplaceAction/v1_2_0/Makefile.local                 
+  studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ShakeQuickTimeAction/Makefile         
+  studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ShakeQuickTimeAction/v1_3_0/Makefile        
+  studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ShakeQuickTimeAction/v1_3_0/Makefile.local                     
+  studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ShakeQuickTimeThumbnailAction/Makefile         
+  studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ShakeQuickTimeThumbnailAction/v1_0_0/Makefile        
+  studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ShakeQuickTimeThumbnailAction/v1_0_0/Makefile.local      
 
   studios/TheO/Makefile
   studios/TheO/pipeline-local/.classpath
