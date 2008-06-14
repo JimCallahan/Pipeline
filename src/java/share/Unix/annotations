@@ -5,33 +5,75 @@ AnnotationMenuLayout <PluginMenuLayout> #1 {
       Title <String> #5 { "TaskPolicy" }
       Children <LinkedList> #6 {
         <PluginMenuLayout> #7 {
-          Title <String> #8 { "Submit" }
-          Name <String> #9 { "SubmitNode" }
+          Title <String> #8 { "Task" }
+          Name <String> #9 { "Task" }
           VersionID <VersionID> #10 {
-            RevisionNumber <String> #11 { "2.3.2" }
+            RevisionNumber <String> #11 { "2.4.1" }
           }
           Vendor <String> #12 { "Temerity" }
         }
         <PluginMenuLayout> #13 {
-          Title <String> #14 { "Task" }
-          Name <String> #15 { "Task" }
+          Title <String> #14 { "Submit" }
+          Name <String> #15 { "SubmitTask" }
           VersionID <VersionID> #16 {
-            RevisionNumber <String> #17 { "2.3.2" }
+            RevisionNumber <String> #17 { "2.4.1" }
+          }
+          Vendor <REF> #12
+        }
+        <PluginMenuLayout> #18 {
+          Title <String> #19 { "Approve" }
+          Name <String> #20 { "ApproveTask" }
+          VersionID <VersionID> #21 {
+            RevisionNumber <String> #22 { "2.4.1" }
           }
           Vendor <REF> #12
         }
       }
     }
-    <PluginMenuLayout> #18 {
-      Title <String> #19 { "Util" }
-      Children <LinkedList> #20 {
-        <PluginMenuLayout> #21 {
-          Title <String> #22 { "NodeNote" }
-          Name <String> #23 { "NodeNote" }
-          VersionID <VersionID> #24 {
-            RevisionNumber <String> #25 { "2.3.14" }
+    <PluginMenuLayout> #23 {
+      Title <String> #24 { "Util" }
+      Children <LinkedList> #25 {
+        <PluginMenuLayout> #26 {
+          Title <String> #27 { "NodeNote" }
+          Name <String> #28 { "NodeNote" }
+          VersionID <VersionID> #29 {
+            RevisionNumber <String> #30 { "2.3.14" }
           }
-          Vendor <REF> #12
+          Vendor <String> #31 { "Temerity" }
+        }
+      }
+    }
+    <PluginMenuLayout> #32 {
+      Title <String> #33 { "Studio" }
+      Children <LinkedList> #34 {
+        <PluginMenuLayout> #35 {
+          Title <String> #36 { "ICVFX" }
+          Children <LinkedList> #37 {
+            <PluginMenuLayout> #38 {
+              Title <String> #39 { "SubmitTask" }
+              Name <String> #40 { "SubmitTask" }
+              VersionID <VersionID> #41 {
+                RevisionNumber <String> #42 { "1.0.0" }
+              }
+              Vendor <String> #43 { "ICVFX" }
+            }
+            <PluginMenuLayout> #44 {
+              Title <String> #45 { "ApproveTask" }
+              Name <String> #46 { "ApproveTask" }
+              VersionID <VersionID> #47 {
+                RevisionNumber <String> #48 { "1.0.0" }
+              }
+              Vendor <REF> #43
+            }
+            <PluginMenuLayout> #49 {
+              Title <String> #50 { "CommonTask" }
+              Name <String> #51 { "CommonTask" }
+              VersionID <VersionID> #52 {
+                RevisionNumber <String> #53 { "1.0.0" }
+              }
+              Vendor <REF> #43
+            }
+          }
         }
       }
     }

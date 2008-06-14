@@ -482,31 +482,65 @@ EditorMenuLayout <PluginMenuLayout> #1 {
       }
     }
     <PluginMenuLayout> #343 {
-      Title <String> #344 { "ICVFX" }
+      Title <String> #344 { "Studio" }
       Children <LinkedList> #345 {
         <PluginMenuLayout> #346 {
-          Title <String> #347 { "PFTrack" }
-          Name <String> #348 { "PFTrack" }
-          VersionID <VersionID> #349 {
-            RevisionNumber <String> #350 { "1.0.0" }
+          Title <String> #347 { "TheO" }
+          Children <LinkedList> #348 {
+            <PluginMenuLayout> #349 {
+              Title <String> #350 { "FrameCycler" }
+              Name <String> #351 { "FrameCycler" }
+              VersionID <VersionID> #352 {
+                RevisionNumber <String> #353 { "1.0.0" }
+              }
+              Vendor <String> #354 { "TheO" }
+            }
+            <PluginMenuLayout> #355 {
+              Title <String> #356 { "Silhouette" }
+              Name <String> #357 { "Silhouette" }
+              VersionID <VersionID> #358 {
+                RevisionNumber <String> #359 { "1.1.0" }
+              }
+              Vendor <REF> #354
+            }
           }
-          Vendor <String> #351 { "ICVFX" }
         }
-        <PluginMenuLayout> #352 {
-          Title <String> #353 { "Krita" }
-          Name <String> #354 { "Krita" }
-          VersionID <VersionID> #355 {
-            RevisionNumber <String> #356 { "1.0.0" }
+        <PluginMenuLayout> #360 {
+          Title <String> #361 { "ICVFX" }
+          Children <LinkedList> #362 {
+            <PluginMenuLayout> #363 {
+              Title <String> #364 { "PFTrack" }
+              Name <String> #365 { "PFTrack" }
+              VersionID <VersionID> #366 {
+                RevisionNumber <String> #367 { "1.0.0" }
+              }
+              Vendor <String> #368 { "ICVFX" }
+            }
+            <PluginMenuLayout> #369 {
+              Title <String> #370 { "Krita" }
+              Name <String> #371 { "Krita" }
+              VersionID <VersionID> #372 {
+                RevisionNumber <String> #373 { "1.0.0" }
+              }
+              Vendor <String> #374 { "ICVFX" }
+            }
+            <PluginMenuLayout> #375 {
+              Title <String> #376 { "SM Player" }
+              Name <String> #377 { "smplayer" }
+              VersionID <VersionID> #378 {
+                RevisionNumber <String> #379 { "1.0.0" }
+              }
+              Vendor <REF> #374
+            }
+            <PluginMenuLayout> #380 {
+              Title <String> #381 { "DJV View" }
+              Name <String> #382 { "djv_view" }
+              VersionID <VersionID> #383 {
+                RevisionNumber <String> #384 { "1.0.0" }
+              }
+              Vendor <String> #385 { "ICVFX" }
+            }
           }
-          Vendor <String> #357 { "ICVFX" }
-        }
-        <PluginMenuLayout> #358 {
-          Title <String> #359 { "SM Player" }
-          Name <String> #360 { "smplayer" }
-          VersionID <VersionID> #361 {
-            RevisionNumber <String> #362 { "1.0.0" }
-          }
-          Vendor <REF> #357
         }
       }
     }

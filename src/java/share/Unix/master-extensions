@@ -2,12 +2,46 @@ MasterExtensionMenuLayout <PluginMenuLayout> #1 {
   Title <String> #2 { "Plugin Menu" }
   Children <LinkedList> #3 {
     <PluginMenuLayout> #4 {
-      Title <String> #5 { "TaskPolicy" }
-      Name <String> #6 { "TaskPolicy" }
+      Title <String> #5 { "TaskGuard" }
+      Name <String> #6 { "TaskGuard" }
       VersionID <VersionID> #7 {
-        RevisionNumber <String> #8 { "2.3.2" }
+        RevisionNumber <String> #8 { "2.4.1" }
       }
       Vendor <String> #9 { "Temerity" }
+    }
+    <PluginMenuLayout> #10 {
+      Title <String> #11 { "TaskPolicy" }
+      Name <String> #12 { "TaskPolicy" }
+      VersionID <VersionID> #13 {
+        RevisionNumber <String> #14 { "2.3.2" }
+      }
+      Vendor <String> #15 { "Temerity" }
+    }
+    <PluginMenuLayout> #16 {
+      Title <String> #17 { "LogMasterActivity" }
+      Name <String> #18 { "LogMasterActivity" }
+      VersionID <VersionID> #19 {
+        RevisionNumber <String> #20 { "2.1.1" }
+      }
+      Vendor <String> #21 { "Temerity" }
+    }
+    <PluginMenuLayout> #22 {
+      Title <String> #23 { "Studio" }
+      Children <LinkedList> #24 {
+        <PluginMenuLayout> #25 {
+          Title <String> #26 { "ICVFX" }
+          Children <LinkedList> #27 {
+            <PluginMenuLayout> #28 {
+              Title <String> #29 { "TaskGuard" }
+              Name <String> #30 { "TaskGuard" }
+              VersionID <VersionID> #31 {
+                RevisionNumber <String> #32 { "1.0.0" }
+              }
+              Vendor <String> #33 { "ICVFX" }
+            }
+          }
+        }
+      }
     }
   }
 }

@@ -47,44 +47,115 @@ ToolMenuLayout <PluginMenuLayout> #1 {
       Title <String> #34 { "Utils" }
       Children <LinkedList> #35 {
         <PluginMenuLayout> #36 {
-          Title <String> #37 { "NodeNote" }
-          Name <String> #38 { "NodeNote" }
+          Title <String> #37 { "ApproveTask" }
+          Name <String> #38 { "ApproveTask" }
           VersionID <VersionID> #39 {
-            RevisionNumber <String> #40 { "2.3.14" }
+            RevisionNumber <String> #40 { "2.4.1" }
           }
           Vendor <String> #41 { "Temerity" }
         }
         <PluginMenuLayout> #42 {
-          Title <String> #43 { "Renumber" }
-          Name <String> #44 { "Renumber" }
+          Title <String> #43 { "NodeNote" }
+          Name <String> #44 { "NodeNote" }
           VersionID <VersionID> #45 {
-            RevisionNumber <String> #46 { "2.2.1" }
+            RevisionNumber <String> #46 { "2.3.14" }
           }
           Vendor <String> #47 { "Temerity" }
         }
         <PluginMenuLayout> #48 {
-          Title <String> #49 { "DisableAction" }
-          Name <String> #50 { "DisableAction" }
+          Title <String> #49 { "Renumber" }
+          Name <String> #50 { "Renumber" }
           VersionID <VersionID> #51 {
             RevisionNumber <String> #52 { "2.2.1" }
           }
           Vendor <String> #53 { "Temerity" }
         }
         <PluginMenuLayout> #54 {
-          Title <String> #55 { "Pattern Clone" }
-          Name <String> #56 { "PatternClone" }
+          Title <String> #55 { "MultipleLink" }
+          Name <String> #56 { "MultipleLink" }
           VersionID <VersionID> #57 {
-            RevisionNumber <String> #58 { "2.3.1" }
+            RevisionNumber <String> #58 { "2.3.15" }
           }
           Vendor <String> #59 { "Temerity" }
         }
         <PluginMenuLayout> #60 {
-          Title <String> #61 { "ImportExternal" }
-          Name <String> #62 { "ImportExternal" }
+          Title <String> #61 { "DisableAction" }
+          Name <String> #62 { "DisableAction" }
           VersionID <VersionID> #63 {
-            RevisionNumber <String> #64 { "2.3.15" }
+            RevisionNumber <String> #64 { "2.2.1" }
           }
           Vendor <String> #65 { "Temerity" }
+        }
+        <PluginMenuLayout> #66 {
+          Title <String> #67 { "Pattern Clone" }
+          Name <String> #68 { "PatternClone" }
+          VersionID <VersionID> #69 {
+            RevisionNumber <String> #70 { "2.3.1" }
+          }
+          Vendor <String> #71 { "Temerity" }
+        }
+        <PluginMenuLayout> #72 {
+          Title <String> #73 { "ImportExternal" }
+          Name <String> #74 { "ImportExternal" }
+          VersionID <VersionID> #75 {
+            RevisionNumber <String> #76 { "2.3.15" }
+          }
+          Vendor <String> #77 { "Temerity" }
+        }
+        <PluginMenuLayout> #78 {
+          Title <String> #79 { "DeleteAll" }
+          Name <String> #80 { "DeleteAll" }
+          VersionID <VersionID> #81 {
+            RevisionNumber <String> #82 { "2.4.1" }
+          }
+          Vendor <REF> #59
+        }
+        <PluginMenuLayout> #83 {
+          Title <String> #84 { "CheckOutSources" }
+          Name <String> #85 { "CheckOutSources" }
+          VersionID <VersionID> #86 {
+            RevisionNumber <String> #87 { "2.3.15" }
+          }
+          Vendor <REF> #41
+        }
+      }
+    }
+    <PluginMenuLayout> #88 {
+      Title <String> #89 { "Studio" }
+      Children <LinkedList> #90 {
+        <PluginMenuLayout> #91 {
+          Title <String> #92 { "ICVFX" }
+          Children <LinkedList> #93 {
+            <PluginMenuLayout> #94 {
+              Title <String> #95 { "ApproveTask" }
+              Name <String> #96 { "ApproveTask" }
+              VersionID <VersionID> #97 {
+                RevisionNumber <String> #98 { "1.0.0" }
+              }
+              Vendor <String> #99 { "ICVFX" }
+            }
+            <PluginMenuLayout> #100 {
+              Title <String> #101 { "Deliver" }
+              Name <String> #102 { "Deliver" }
+              VersionID <VersionID> #103 {
+                RevisionNumber <String> #104 { "1.0.0" }
+              }
+              Vendor <String> #105 { "ICVFX" }
+            }
+          }
+        }
+        <PluginMenuLayout> #106 {
+          Title <String> #107 { "TheO" }
+          Children <LinkedList> #108 {
+            <PluginMenuLayout> #109 {
+              Title <String> #110 { "AfterFXAddTypedSource" }
+              Name <String> #111 { "AfterFXAddTypedSource" }
+              VersionID <VersionID> #112 {
+                RevisionNumber <String> #113 { "1.0.0" }
+              }
+              Vendor <String> #114 { "TheO" }
+            }
+          }
         }
       }
     }

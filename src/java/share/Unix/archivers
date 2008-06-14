@@ -2,12 +2,67 @@ ArchiverMenuLayout <PluginMenuLayout> #1 {
   Title <String> #2 { "Plugin Menu" }
   Children <LinkedList> #3 {
     <PluginMenuLayout> #4 {
-      Title <String> #5 { "TarFile" }
-      Name <String> #6 { "TarFile" }
-      VersionID <VersionID> #7 {
-        RevisionNumber <String> #8 { "2.0.0" }
+      Title <String> #5 { "Nearline" }
+      Children <LinkedList> #6 {
+        <PluginMenuLayout> #7 {
+          Title <String> #8 { "TarFile" }
+          Name <String> #9 { "TarFile" }
+          VersionID <VersionID> #10 {
+            RevisionNumber <String> #11 { "2.0.0" }
+          }
+          Vendor <String> #12 { "Temerity" }
+        }
+        <PluginMenuLayout> #13 {
+          Title <String> #14 { "CpioFile" }
+          Name <String> #15 { "CpioFile" }
+          VersionID <VersionID> #16 {
+            RevisionNumber <String> #17 { "2.0.0" }
+          }
+          Vendor <String> #18 { "Temerity" }
+        }
       }
-      Vendor <String> #9 { "Temerity" }
+    }
+    <PluginMenuLayout> #19 {
+      Title <String> #20 { "Tape" }
+      Children <LinkedList> #21 {
+        <PluginMenuLayout> #22 {
+          Title <String> #23 { "TarTape" }
+          Name <String> #24 { "TarTape" }
+          VersionID <VersionID> #25 {
+            RevisionNumber <String> #26 { "2.0.0" }
+          }
+          Vendor <REF> #18
+        }
+        <PluginMenuLayout> #27 {
+          Title <String> #28 { "CpioTape" }
+          Name <String> #29 { "CpioTape" }
+          VersionID <VersionID> #30 {
+            RevisionNumber <String> #31 { "2.0.0" }
+          }
+          Vendor <REF> #18
+        }
+      }
+    }
+    <PluginMenuLayout> #32 {
+      Title <String> #33 { "Misc" }
+      Children <LinkedList> #34 {
+        <PluginMenuLayout> #35 {
+          Title <String> #36 { "BlackHole" }
+          Name <String> #37 { "BlackHole" }
+          VersionID <VersionID> #38 {
+            RevisionNumber <String> #39 { "2.4.1" }
+          }
+          Vendor <String> #40 { "Temerity" }
+        }
+        <PluginMenuLayout> #41 {
+          Title <String> #42 { "CD-ROM" }
+          Name <String> #43 { "CD-ROM" }
+          VersionID <VersionID> #44 {
+            RevisionNumber <String> #45 { "2.0.0" }
+          }
+          Vendor <REF> #18
+        }
+      }
     }
   }
 }

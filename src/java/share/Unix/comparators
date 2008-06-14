@@ -31,12 +31,35 @@ ComparatorMenuLayout <PluginMenuLayout> #1 {
       }
     }
     <PluginMenuLayout> #25 {
-      Title <String> #26 { "TextDiff" }
-      Name <String> #27 { "TextDiff" }
-      VersionID <VersionID> #28 {
-        RevisionNumber <String> #29 { "2.2.1" }
+      Title <String> #26 { "Text Files" }
+      Children <LinkedList> #27 {
+        <PluginMenuLayout> #28 {
+          Title <String> #29 { "TextDiff" }
+          Name <String> #30 { "TextDiff" }
+          VersionID <VersionID> #31 {
+            RevisionNumber <String> #32 { "2.2.1" }
+          }
+          Vendor <String> #33 { "Temerity" }
+        }
       }
-      Vendor <String> #30 { "Temerity" }
+    }
+    <PluginMenuLayout> #34 {
+      Title <String> #35 { "Studio" }
+      Children <LinkedList> #36 {
+        <PluginMenuLayout> #37 {
+          Title <String> #38 { "ICVFX" }
+          Children <LinkedList> #39 {
+            <PluginMenuLayout> #40 {
+              Title <String> #41 { "KDiff3" }
+              Name <String> #42 { "Kdiff3" }
+              VersionID <VersionID> #43 {
+                RevisionNumber <String> #44 { "1.0.0" }
+              }
+              Vendor <String> #45 { "ICVFX" }
+            }
+          }
+        }
+      }
     }
   }
 }

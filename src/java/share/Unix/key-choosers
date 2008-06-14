@@ -17,5 +17,47 @@ KeyChooserMenuLayout <PluginMenuLayout> #1 {
       }
       Vendor <REF> #9
     }
+    <PluginMenuLayout> #15 {
+      Title <String> #16 { "TaskType" }
+      Name <String> #17 { "TaskType" }
+      VersionID <VersionID> #18 {
+        RevisionNumber <String> #19 { "2.3.15" }
+      }
+      Vendor <String> #20 { "Temerity" }
+    }
+    <PluginMenuLayout> #21 {
+      Title <String> #22 { "HfsRender" }
+      Name <String> #23 { "HfsRender" }
+      VersionID <VersionID> #24 {
+        RevisionNumber <String> #25 { "2.4.1" }
+      }
+      Vendor <String> #26 { "Temerity" }
+    }
+    <PluginMenuLayout> #27 {
+      Title <String> #28 { "HfsBatch" }
+      Name <String> #29 { "HfsBatch" }
+      VersionID <VersionID> #30 {
+        RevisionNumber <String> #31 { "2.4.1" }
+      }
+      Vendor <REF> #26
+    }
+    <PluginMenuLayout> #32 {
+      Title <String> #33 { "Studio" }
+      Children <LinkedList> #34 {
+        <PluginMenuLayout> #35 {
+          Title <String> #36 { "ICVFX" }
+          Children <LinkedList> #37 {
+            <PluginMenuLayout> #38 {
+              Title <String> #39 { "NotMini" }
+              Name <String> #40 { "NotMini" }
+              VersionID <VersionID> #41 {
+                RevisionNumber <String> #42 { "1.0.0" }
+              }
+              Vendor <String> #43 { "ICVFX" }
+            }
+          }
+        }
+      }
+    }
   }
 }
