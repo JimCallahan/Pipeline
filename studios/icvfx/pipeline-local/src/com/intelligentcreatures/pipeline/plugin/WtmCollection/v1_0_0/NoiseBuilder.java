@@ -1,4 +1,4 @@
-// $Id: NoiseBuilder.java,v 1.7 2008/06/15 17:31:10 jim Exp $
+// $Id: NoiseBuilder.java,v 1.8 2008/06/15 21:51:25 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -654,6 +654,15 @@ class NoiseBuilder
 	  stage.build();  
 	}
 
+	String noiseReadTestImagesNodeName = pShotNamer.getNoiseReadTestImagesNode(); 
+	{
+	  NukeReadStage stage = 
+	    new NukeReadStage(stageInfo, pContext, pClient, 
+			      noiseReadTestImagesNodeName, noiseTestImagesNodeName); 
+	  addTaskAnnotation(stage, NodePurpose.Prepare); 
+	  stage.build();  
+	}
+
 	String noiseReadMattesNodeName = pShotNamer.getNoiseReadMattesNode(); 
 	{
 	  NukeReadStage stage = 
@@ -668,7 +677,7 @@ class NoiseBuilder
 	  TreeMap<String,String> subst = new TreeMap<String,String>(); 
 	  subst.put(noiseReadRedistortNodeName, "RD_UV_Map"); 
 	  subst.put(noiseReadPlatesNodeName, "Plate"); 
-	  subst.put(noiseTestImagesNodeName, "TestRender"); 
+	  subst.put(noiseReadTestImagesNodeName, "TestRender"); 
 	  subst.put(noiseReadMattesNodeName, "Mattes"); 
 
 	  NukeSubstCompStage stage = 
