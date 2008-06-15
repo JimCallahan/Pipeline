@@ -1,4 +1,4 @@
-// $Id: HfsRenderStage.java,v 1.2 2008/06/15 17:31:10 jim Exp $
+// $Id: HfsCompositeStage.java,v 1.2 2008/06/16 17:01:35 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
 
@@ -13,14 +13,14 @@ import us.temerity.pipeline.stages.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   H F S   R E N D E R   S T A G E                                                        */
+/*   H F S   C O M P O S I T E   S T A G E                                                  */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Creates a node which Renders a Houdini scene.
+ * Creates a node which renders a compositing network from a Houdini scene.
  */ 
 public 
-class HfsRenderStage 
+class HfsCompositeStage 
   extends StandardStage
 {
   /*----------------------------------------------------------------------------------------*/
@@ -48,14 +48,8 @@ class HfsRenderStage
    * @param houdiniScene
    *   The name of the Houdini scene to render. 
    * 
-   * @param renderer
-   *   The specific render output OP type being used.
-   * 
    * @param outputOperator
    *   The name of the render output operator.
-   * 
-   * @param cameraOverride
-   *   Overrides the render camera (if set).
    * 
    * @param useGraphicalLicense
    *   Whether to use an interactive graphical Houdini license when running hbatch(1).  
@@ -78,7 +72,7 @@ class HfsRenderStage
    *   frame.
    */
   public
-  HfsRenderStage
+  HfsCompositeStage
   (
    StageInformation stageInfo,
    UtilContext context,
@@ -86,9 +80,7 @@ class HfsRenderStage
    String nodeName, 
    String suffix,
    String houdiniScene, 
-   String renderer, 
    String outputOperator, 
-   String cameraOverride, 
    boolean useGraphicalLicense, 
    String preRenderScript, 
    String postRenderScript, 
@@ -97,15 +89,15 @@ class HfsRenderStage
   ) 
     throws PipelineException
   {
-    super("HfsRender", 
-	  "Creates a node which Renders a Houdini scene.", 
+    super("HfsComposite", 
+	  "Creates a node which renders a compositing network from a Houdini scene.", 
 	  stageInfo, context, client, 
 	  nodeName, suffix, 
 	  null, 
-	  new PluginContext("HfsRender", "Temerity", 
+	  new PluginContext("HfsComposite", "Temerity", 
 			    new Range<VersionID>(new VersionID("2.4.3"), null))); 
     
-    initStage(houdiniScene, renderer, outputOperator, cameraOverride, useGraphicalLicense, 
+    initStage(houdiniScene, outputOperator, useGraphicalLicense, 
 	      preRenderScript, postRenderScript, preFrameScript, postFrameScript); 
   }
   
@@ -137,14 +129,8 @@ class HfsRenderStage
    * @param houdiniScene
    *   The name of the Houdini scene to render. 
    * 
-   * @param renderer
-   *   The specific render output OP type being used.
-   * 
    * @param outputOperator
    *   The name of the render output operator.
-   * 
-   * @param cameraOverride
-   *   Overrides the render camera (if set).
    * 
    * @param useGraphicalLicense
    *   Whether to use an interactive graphical Houdini license when running hbatch(1).  
@@ -167,7 +153,7 @@ class HfsRenderStage
    *   frame.
    */
   public
-  HfsRenderStage
+  HfsCompositeStage
   (
    StageInformation stageInfo,
    UtilContext context,
@@ -177,9 +163,7 @@ class HfsRenderStage
    Integer padding,
    String suffix,
    String houdiniScene, 
-   String renderer, 
    String outputOperator, 
-   String cameraOverride, 
    boolean useGraphicalLicense, 
    String preRenderScript, 
    String postRenderScript, 
@@ -188,15 +172,15 @@ class HfsRenderStage
   )
     throws PipelineException
   {
-    super("HfsRender", 
-	  "Creates a node which Renders a Houdini scene.", 
+    super("HfsComposite", 
+	  "Creates a node which renders a compositing network from a Houdini scene.", 
 	  stageInfo, context, client, 
 	  nodeName, range, padding, suffix, 
 	  null, 
-	  new PluginContext("HfsRender", "Temerity", 
+	  new PluginContext("HfsComposite", "Temerity", 
 			    new Range<VersionID>(new VersionID("2.4.3"), null))); 
 
-    initStage(houdiniScene, renderer, outputOperator, cameraOverride, useGraphicalLicense, 
+    initStage(houdiniScene, outputOperator, useGraphicalLicense, 
 	      preRenderScript, postRenderScript, preFrameScript, postFrameScript); 
 
     setExecutionMethod(ExecutionMethod.Parallel);
@@ -213,9 +197,7 @@ class HfsRenderStage
   initStage
   (
    String houdiniScene, 
-   String renderer, 
    String outputOperator, 
-   String cameraOverride, 
    boolean useGraphicalLicense, 
    String preRenderScript, 
    String postRenderScript, 
@@ -227,13 +209,8 @@ class HfsRenderStage
     addLink(new LinkMod(houdiniScene, LinkPolicy.Dependency)); 
     addSingleParamValue("HoudiniScene", houdiniScene); 
 
-    addSingleParamValue("Renderer", renderer); 
-
     if(outputOperator != null) 
       addSingleParamValue("OutputOperator", outputOperator); 
-
-    if(cameraOverride != null) 
-      addSingleParamValue("CameraOverride", cameraOverride); 
 
     addSingleParamValue("UseGraphicalLicense", useGraphicalLicense); 
 
@@ -280,6 +257,6 @@ class HfsRenderStage
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
  
-  private static final long serialVersionUID = 6922282482755257796L;
+  private static final long serialVersionUID = -7779138039343840323L;
 
 }

@@ -1,4 +1,4 @@
-// $Id: TrackingBuilder.java,v 1.16 2008/05/22 20:34:31 jesse Exp $
+// $Id: TrackingBuilder.java,v 1.17 2008/06/15 17:31:10 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -228,8 +228,9 @@ class TrackingBuilder
     plugins.add(new PluginContext("CatFiles"));  
     plugins.add(new PluginContext("Composite"));   		
     plugins.add(new PluginContext("MayaBuild"));  		
-    plugins.add(new PluginContext("MayaRender")); 		
-    plugins.add(new PluginContext("NukeThumbnail"));		
+    plugins.add(new PluginContext("MayaRender")); 	
+    plugins.add(new PluginContext("NukeThumbnail", "Temerity", 
+				  new Range<VersionID>(new VersionID("2.4.3"), null)));
 
     MappedArrayList<String, PluginContext> toReturn = 
       new MappedArrayList<String, PluginContext>();
@@ -491,9 +492,10 @@ class TrackingBuilder
 	String verifyThumbNodeName = pShotNamer.getTrackingVerifyThumbNode();
 	{
 	  NukeThumbnailStage stage = 
-	    new NukeThumbnailStage(stageInfo, pContext, pClient,
-				   verifyThumbNodeName, "tif", verifyCompNodeName, 
-				   1, 150, 1.0, true, true, new Color3d()); 
+	    new NukeThumbnailStage
+	      (stageInfo, pContext, pClient,
+	       verifyThumbNodeName, "tif", verifyCompNodeName, 
+	       pFrameRange.getStart(), 150, 1.0, true, true, new Color3d()); 
 	  addTaskAnnotation(stage, NodePurpose.Thumbnail); 
 	  stage.build(); 
 	}
@@ -527,12 +529,25 @@ class TrackingBuilder
 
       /* the approve network */ 
       {
+        String finalCameraScriptNodeName = pShotNamer.getTrackingFinalCameraScriptNode();
+        {
+	  LinkedList<String> sources = new LinkedList<String>(); 
+          sources.add(pResolutionNodeName);
+          sources.add(pTrackExtractCameraNodeName);
+
+	  CatScriptStage stage = 
+	    new CatScriptStage(stageInfo, pContext, pClient, 
+			       finalCameraScriptNodeName, "mel", sources);
+	  addTaskAnnotation(stage, NodePurpose.Prepare); 
+	  stage.build();  
+        }
+
 	String extractedCameraNodeName = pShotNamer.getTrackingExtractedCameraNode();
 	{
 	  BuildTrackingExtractStage stage = 
 	    new BuildTrackingExtractStage
 	    (stageInfo, pContext, pClient, 
-	     extractedCameraNodeName, pTrackNodeName, pTrackExtractCameraNodeName, 
+	     extractedCameraNodeName, pTrackNodeName, finalCameraScriptNodeName, 
 	     pFrameRange); 
 	  addTaskAnnotation(stage, NodePurpose.Product); 
 	  stage.build(); 

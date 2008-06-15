@@ -1,4 +1,4 @@
-// $Id: NukeThumbnailStage.java,v 1.5 2008/06/15 17:31:10 jim Exp $
+// $Id: HfsThumbnailStage.java,v 1.2 2008/06/16 17:01:35 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
 
@@ -13,14 +13,14 @@ import us.temerity.pipeline.stages.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   N U K E   T H U M B N A I L   S T A G E                                                */
+/*   H F S   T H U M B N A I L   S T A G E                                                  */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Generates a thumbnail image using the NukeThumbnail action.
+ * Generates a thumbnail image using the HfsThumbnail action.
  */ 
 public 
-class NukeThumbnailStage
+class HfsThumbnailStage
   extends StandardStage
 {
   /**
@@ -64,7 +64,7 @@ class NukeThumbnailStage
    *   The thumbnail is composited over a background layer of this constant color.
    */
   public
-  NukeThumbnailStage
+  HfsThumbnailStage
   (
    StageInformation stageInfo,
    UtilContext context,
@@ -81,13 +81,12 @@ class NukeThumbnailStage
   )
     throws PipelineException
   {
-    super("NukeThumbnailStage",
-          "Generates a thumbnail image using the NukeThumbnail action.", 
+    super("HfsThumbnailStage",
+          "Generates a thumbnail image using the HfsThumbnail action.", 
           stageInfo, context, client,
           nodeName, suffix,
           null,
-          new PluginContext("NukeThumbnail", "Temerity", 
-			    new Range<VersionID>(new VersionID("2.4.3"), null)));  
+          new PluginContext("HfsThumbnail"));
 
     addLink(new LinkMod(source, LinkPolicy.Dependency));
     addSingleParamValue("ImageNumber", imageNumber);
@@ -120,6 +119,6 @@ class NukeThumbnailStage
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
  
-  private static final long serialVersionUID = 4435149474061655258L;
+  private static final long serialVersionUID = -4663719599812425763L;
 
 }

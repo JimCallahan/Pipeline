@@ -1,4 +1,4 @@
-// $Id: BlotBuilder.java,v 1.11 2008/05/22 20:34:31 jesse Exp $
+// $Id: BlotBuilder.java,v 1.12 2008/06/15 17:31:10 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -194,12 +194,14 @@ class BlotBuilder
     plugins.add(new PluginContext("NukeQt", "Temerity", 
 				  new Range<VersionID>(new VersionID("2.4.3"), null)));
     plugins.add(new PluginContext("MayaBuild")); 		
-    plugins.add(new PluginContext("MayaAttachGeoCache")); 	
+    plugins.add(new PluginContext("MayaAttachGeoCache", "Temerity", 
+				  new Range<VersionID>(new VersionID("2.4.3"), null)));
     plugins.add(new PluginContext("MayaAttachSound")); 	
     plugins.add(new PluginContext("MayaFTNBuild")); 	
     plugins.add(new PluginContext("MayaIgesExport")); 			
     plugins.add(new PluginContext("MayaRender")); 		
-    plugins.add(new PluginContext("NukeThumbnail"));		
+    plugins.add(new PluginContext("NukeThumbnail", "Temerity", 
+				  new Range<VersionID>(new VersionID("2.4.3"), null)));
 
 
     MappedArrayList<String, PluginContext> toReturn = 
@@ -288,8 +290,8 @@ class BlotBuilder
       throws PipelineException 
     {
       /* soundtrack */ 
-      pAttachSoundtrackNodeName = pShotNamer.getAttachSoundtrackNode(); 
-      if(!nodeExists(pAttachSoundtrackNodeName)) {
+      pSoundtrackNodeName = pShotNamer.getSoundtrackNode(); 
+      if(!nodeExists(pSoundtrackNodeName)) {
 	SoundBuilder builder = new SoundBuilder(pClient, pQueue, getBuilderInformation(), 
 						pStudioDefs, pProjectNamer, pShotNamer);
 	addSubBuilder(builder);
@@ -314,8 +316,6 @@ class BlotBuilder
 	   new ParamMapping(aLocation, StudioDefinitions.aShotName), 
 	   new ParamMapping(aLocation, StudioDefinitions.aShotName));
       }
-
-      pSoundtrackNodeName = pShotNamer.getSoundtrackNode(); 
       pRequiredNodeNames.add(pSoundtrackNodeName);
 
       /* the geometry cache */ 
@@ -394,39 +394,22 @@ class BlotBuilder
 
       /* the submit network */
       {	
-	pAttachSoundtrackNodeName = pShotNamer.getAttachSoundtrackNode(); 
-	{
-	  if(!nodeExists(pAttachSoundtrackNodeName)) 
-	    throw new PipelineException
-	      ("Somehow the required attach soundtrack MEL script node " + 
-	       "(" + pAttachSoundtrackNodeName + ") does not exist!"); 
-
-	  try {
-	    checkOutLatest(pAttachSoundtrackNodeName, 
-			   CheckOutMode.KeepModified, CheckOutMethod.Modifiable);
-	  }
-	  catch(PipelineException ex) {
-	    try {
-	      /* if it already exists in the working area, just leave it alone */ 
-	      pClient.getWorkingVersion(getAuthor(), getView(), pAttachSoundtrackNodeName); 
-	    }
-	    catch(PipelineException ex2) {
-	      throw new PipelineException
-		("Somehow no working version of the required attach soundtrack MEL " + 
-		 "script node (" + pAttachSoundtrackNodeName + ") exists in the current " + 
-		 "working area (" + getAuthor() + "|" + getView() + " and it has never " + 
-		 "been checked-in!");
-	    }
-	  }
-	}
-
+	String blotAttachSoundtrackNodeName = pShotNamer.getBlotAttachSoundtrackNode();
+ 	{
+ 	  AttachSoundtrackStage stage = 
+ 	    new AttachSoundtrackStage(stageInfo, pContext, pClient, 
+ 				      blotAttachSoundtrackNodeName, pSoundtrackNodeName);
+ 	  addTaskAnnotation(stage, NodePurpose.Prepare); 
+ 	  stage.build(); 
+ 	}
+	  
 	pBlotAnimSceneNodeName = pShotNamer.getBlotAnimSceneNode();
 	{
 	  BuildBlotAnimStage stage = 
 	    new BuildBlotAnimStage
 	      (stageInfo, pContext, pClient, 
 	       pBlotAnimSceneNodeName, pRorschachBlotAnimPlaceholderNodeName, 
-	       pRorschachGuidelinesNodeName, pAttachSoundtrackNodeName, pFrameRange); 
+	       pRorschachGuidelinesNodeName, blotAttachSoundtrackNodeName, pFrameRange); 
 	  addTaskAnnotation(stage, NodePurpose.Edit); 
 	  stage.build(); 
 	  pFinalStages.add(stage);
@@ -456,9 +439,10 @@ class BlotBuilder
 	String blotAnimThumbNodeName = pShotNamer.getBlotAnimThumbNode();
 	{
 	  NukeThumbnailStage stage = 
-	    new NukeThumbnailStage(stageInfo, pContext, pClient,
-				   blotAnimThumbNodeName, "tif", pBlotAnimTexturesNodeName, 
-				   1, 150, 1.0, true, true, new Color3d()); 
+	    new NukeThumbnailStage
+	      (stageInfo, pContext, pClient,
+	       blotAnimThumbNodeName, "tif", pBlotAnimTexturesNodeName, 
+	       pFrameRange.getStart(), 150, 1.0, true, true, new Color3d()); 
 	  addTaskAnnotation(stage, NodePurpose.Thumbnail); 
 	  stage.build(); 
 	}
@@ -478,7 +462,8 @@ class BlotBuilder
 	  AttachGeoCacheStage stage = 
 	    new AttachGeoCacheStage(stageInfo, pContext, pClient, 
 				    blotAttachCacheNodeName, pMatchGeoCacheNodeName, 
-				    "mdl:rorHead_GEOShape", pBlotAttachPreviewNodeName); 
+				    "rorHead_GEOShape", "mdl:rorHead_GEOShape", 
+				    pBlotAttachPreviewNodeName); 
 	  addTaskAnnotation(stage, NodePurpose.Prepare); 
 	  stage.build();  
 	}
@@ -520,9 +505,10 @@ class BlotBuilder
 	String blotTestThumbNodeName = pShotNamer.getBlotTestThumbNode();
 	{
 	  NukeThumbnailStage stage = 
-	    new NukeThumbnailStage(stageInfo, pContext, pClient,
-				   blotTestThumbNodeName, "tif", blotTestImagesNodeName, 
-				   1, 150, 1.0, true, true, new Color3d()); 
+	    new NukeThumbnailStage
+	      (stageInfo, pContext, pClient,
+	       blotTestThumbNodeName, "tif", blotTestImagesNodeName, 
+	       pFrameRange.getStart(), 150, 1.0, true, true, new Color3d()); 
 	  addTaskAnnotation(stage, NodePurpose.Thumbnail); 
 	  stage.build(); 
 	}
@@ -715,11 +701,6 @@ class BlotBuilder
 
   /*----------------------------------------------------------------------------------------*/
 
-  /**
-   * Returns the fully resolved name of the MEL script used to load the soundtrack.
-   */ 
-  private String pAttachSoundtrackNodeName; 
-  
   /**
    * The fully resolved name of the shot soundtrack node.
    */ 

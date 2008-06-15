@@ -1,4 +1,4 @@
-// $Id: CopyImagesStage.java,v 1.2 2008/03/19 22:38:33 jim Exp $
+// $Id: CopyImagesStage.java,v 1.3 2008/06/15 17:31:10 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
 
@@ -20,7 +20,7 @@ import java.util.*;
  */ 
 public 
 class CopyImagesStage 
-  extends CopyStage
+  extends StandardStage
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -62,7 +62,13 @@ class CopyImagesStage
     super("CopyImages", 
           "Just copy some images.", 
           stageInfo, context, client, 
-          nodeName, suffix, source);
+          nodeName, suffix, 
+          null, new PluginContext("Copy"));
+
+    addLink(new LinkMod(source, LinkPolicy.Dependency, LinkRelationship.OneToOne, 0));
+    
+    setExecutionMethod(ExecutionMethod.Parallel);
+    setBatchSize(10);   
   }
   
   /**
@@ -110,7 +116,13 @@ class CopyImagesStage
     super("CopyImages", 
           "Just copy some images.", 
           stageInfo, context, client, 
-          nodeName, range, padding, suffix, source);
+          nodeName, range, padding, suffix, 
+          null, new PluginContext("Copy"));
+
+    addLink(new LinkMod(source, LinkPolicy.Dependency, LinkRelationship.OneToOne, 0));
+
+    setExecutionMethod(ExecutionMethod.Parallel);
+    setBatchSize(10);   
   }
   
 

@@ -1,10 +1,11 @@
-// $Id: AddNoiseStage.java,v 1.2 2008/03/09 12:10:16 jim Exp $
+// $Id: AddNoiseStage.java,v 1.3 2008/06/15 17:31:10 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
 
 import com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.*;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.math.*;
 import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
 import us.temerity.pipeline.stages.*;
@@ -66,7 +67,9 @@ class AddNoiseStage
     super("AddNoise", 
       	  "Creates the noised up blot textures.", 
       	  stageInfo, context, client,
-	  nodeName, range, 4, "tif", null, new PluginContext("NukeSubstComp")); 
+	  nodeName, range, 4, "tif", null, 
+	  new PluginContext("NukeSubstComp", "Temerity", 
+			    new Range<VersionID>(new VersionID("2.4.3"), null)));
 
     addLink(new LinkMod(addNoiseName, LinkPolicy.Dependency));
     addSingleParamValue("MasterScript", addNoiseName); 

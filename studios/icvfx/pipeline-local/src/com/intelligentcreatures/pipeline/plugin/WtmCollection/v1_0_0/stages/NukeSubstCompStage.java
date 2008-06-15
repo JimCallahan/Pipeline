@@ -1,4 +1,4 @@
-// $Id: NukeSubstCompStage.java,v 1.4 2008/03/30 01:43:10 jim Exp $
+// $Id: NukeSubstCompStage.java,v 1.5 2008/06/15 17:31:10 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
 
@@ -68,7 +68,7 @@ class NukeSubstCompStage
           nodeName, "nk", 
           new PluginContext("Nuke"), 
 	  new PluginContext("NukeSubstComp", "Temerity", 
-			    new Range<VersionID>(new VersionID("2.4.2"), null)));  
+			    new Range<VersionID>(new VersionID("2.4.3"), null)));  
 
     addSingleParamValue("Mode", "Substitute"); 
 
@@ -200,7 +200,7 @@ class NukeSubstCompStage
           nodeName, range, padding, suffix, 
           editor, 
 	  new PluginContext("NukeSubstComp", "Temerity", 
-			    new Range<VersionID>(new VersionID("2.4.2"), null)));  
+			    new Range<VersionID>(new VersionID("2.4.3"), null)));  
 
     addSingleParamValue("Mode", mode); 
 

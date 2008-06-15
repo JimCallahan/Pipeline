@@ -1,4 +1,4 @@
-// $Id: SoundBuilder.java,v 1.3 2008/05/22 20:34:31 jesse Exp $
+// $Id: SoundBuilder.java,v 1.4 2008/06/15 17:31:10 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -313,19 +313,10 @@ class SoundBuilder
 
       /* the approve network */ 
       {
-	String attachSoundtrackNodeName = pShotNamer.getAttachSoundtrackNode();
-	{
-	  AttachSoundtrackStage stage = 
-	    new AttachSoundtrackStage(stageInfo, pContext, pClient, 
-				      attachSoundtrackNodeName, pSoundtrackNodeName);
-	  addTaskAnnotation(stage, NodePurpose.Product); 
-	  stage.build(); 
-	}
-
 	String approveNodeName = pShotNamer.getSoundApproveNode();
 	{
 	  TreeSet<String> sources = new TreeSet<String>();
-	  sources.add(attachSoundtrackNodeName); 
+	  sources.add(pSoundtrackNodeName); 
 
 	  TargetStage stage = 
 	    new TargetStage(stageInfo, pContext, pClient, 

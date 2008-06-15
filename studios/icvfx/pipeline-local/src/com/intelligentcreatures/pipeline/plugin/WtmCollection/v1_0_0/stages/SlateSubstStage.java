@@ -1,4 +1,4 @@
-// $Id: SlateSubstStage.java,v 1.3 2008/06/09 22:35:02 jim Exp $
+// $Id: SlateSubstStage.java,v 1.4 2008/06/15 17:31:10 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
 
@@ -95,7 +95,8 @@ class SlateSubstStage
           stageInfo, context, client, 
           nodeName, "nk", 
           new PluginContext("Nuke"), 
-	  new PluginContext("SlateSubst", "ICVFX")); 
+	  new PluginContext("SlateSubst", "ICVFX",
+			    new Range<VersionID>(new VersionID("1.5.0"), null)));
 
     addLink(new LinkMod(templateScript, LinkPolicy.Dependency));
     addSingleParamValue("TemplateScript", templateScript); 

@@ -1,4 +1,4 @@
-// $Id: ProjectNamer.java,v 1.21 2008/04/09 20:16:18 jim Exp $
+// $Id: ProjectNamer.java,v 1.23 2008/06/15 21:51:25 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -355,6 +355,18 @@ class ProjectNamer
     return path.toString(); 
   }
   
+  /**
+   * Returns the fully resolved name of the node containing the Maya render globals 
+   * settings for blot test renders.
+   */ 
+  public String
+  getBlotTestGlobalsNode() 
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Blot), 
+			 new Path(AppDirs.MEL.toDirPath(), "blot_test_globals"));
+    return path.toString(); 
+  }
+  
 
  
   /*----------------------------------------------------------------------------------------*/
@@ -370,6 +382,18 @@ class ProjectNamer
   {
     Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Noise), 
 			 new Path(AppDirs.Nuke.toDirPath(), "add_noise"));
+    return path.toString(); 
+  }
+  
+  /**
+   * Returns the fully resolved name of the node containing the Houdini scene used to 
+   * generate the noise displacement textures.
+   */ 
+  public String
+  getNoiseDisplaceHipNode() 
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Noise), 
+			 new Path(AppDirs.Hip.toDirPath(), "displace"));
     return path.toString(); 
   }
   
@@ -543,7 +567,7 @@ class ProjectNamer
   public String
   getTempCompRedistortNukeNode() 
   {
-    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Comp), 
+    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Compositing), 
 			 new Path(AppDirs.Nuke.toDirPath(), "cg_redistort"));
     return path.toString(); 
   }
@@ -555,7 +579,7 @@ class ProjectNamer
   public String
   getTempCompNukeNode() 
   {
-    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Comp), 
+    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Compositing), 
 			 new Path(AppDirs.Nuke.toDirPath(), "temp_comp"));
     return path.toString(); 
   }
@@ -631,6 +655,45 @@ class ProjectNamer
     return path.toString(); 
   }
 
+  /**
+   * Returns the fully resolved name of the node containing a MEL script to key the file 
+   * texture sequence for animated textures. 
+   */ 
+  public String 
+  getSetFiletexSeqNode() 
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Misc), 
+			 new Path(AppDirs.MEL.toDirPath(), "set_filetex_seq"));
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node containing a MEL script to half the 
+   * currently set renderresolution.
+   */ 
+  public String 
+  getHalfResRenderNode() 
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Misc), 
+			 new Path(AppDirs.MEL.toDirPath(), "half_res_render"));
+    return path.toString(); 
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Returns the fully resolved name of the node containing the master Nuke script used 
+   * to perform test comps.
+   */ 
+  public String 
+  getTestCompNukeNode() 
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Misc), 
+			 new Path(AppDirs.Nuke.toDirPath(), "test_comp"));
+    return path.toString(); 
+  }
+  
 
 
   /*----------------------------------------------------------------------------------------*/

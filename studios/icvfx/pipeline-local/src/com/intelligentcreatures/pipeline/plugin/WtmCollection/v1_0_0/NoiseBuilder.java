@@ -1,4 +1,4 @@
-// $Id: NoiseBuilder.java,v 1.6 2008/04/02 20:56:16 jim Exp $
+// $Id: NoiseBuilder.java,v 1.7 2008/06/15 17:31:10 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -114,7 +114,17 @@ class NoiseBuilder
     /* setup builder parameters */ 
     {
       /* selects the project, sequence and shot for the task */ 
-      addLocationParam(); 
+      addLocationParam();  
+      
+      /* the background plate images */ 
+      {
+        UtilityParam param = 
+          new PlaceholderUtilityParam
+          (aBackgroundPlate, 
+           "Select the existing scanned images node to use as the background plates for " + 
+           "this shot."); 
+        addParam(param);
+      }
     }
      
     /* initialize the project namer */ 
@@ -123,6 +133,7 @@ class NoiseBuilder
     /* create the setup passes */ 
     {
       addSetupPass(new NoiseSetupShotEssentials());
+      addSetupPass(new SetupImageParams());
       addSetupPass(new GetPrerequisites());
     }
 
@@ -154,7 +165,13 @@ class NoiseBuilder
       }
       
       {
+        AdvancedLayoutGroup sub = new AdvancedLayoutGroup("None", true);
+        layout.addPass(sub.getName(), sub);
+      }
+      
+      {
 	AdvancedLayoutGroup sub = new AdvancedLayoutGroup("GetPrerequisites", true);
+        sub.addEntry(1, aBackgroundPlate);
 	
 	layout.addPass(sub.getName(), sub);
       }
@@ -185,11 +202,18 @@ class NoiseBuilder
     ArrayList<PluginContext> plugins = new ArrayList<PluginContext>();	
     plugins.add(new PluginContext("Touch")); 
     plugins.add(new PluginContext("Copy")); 
-    plugins.add(new PluginContext("MayaBuild")); 		
-    plugins.add(new PluginContext("MayaAttachGeoCache")); 
+    plugins.add(new PluginContext("MayaBuild")); 	
+    plugins.add(new PluginContext("MayaAttachGeoCache", "Temerity", 
+				  new Range<VersionID>(new VersionID("2.4.3"), null)));
     plugins.add(new PluginContext("MayaFTNBuild")); 			
     plugins.add(new PluginContext("MayaRender")); 		
-    plugins.add(new PluginContext("NukeThumbnail"));		
+    plugins.add(new PluginContext("NukeSubstComp", "Temerity", 
+				  new Range<VersionID>(new VersionID("2.4.3"), null)));  
+    plugins.add(new PluginContext("NukeThumbnail", "Temerity", 
+				  new Range<VersionID>(new VersionID("2.4.3"), null)));   
+    plugins.add(new PluginContext("HfsReadCmd"));  	
+    plugins.add(new PluginContext("HfsComposite", "Temerity", 
+				  new Range<VersionID>(new VersionID("2.4.3"), null))); 
     plugins.add(new PluginContext("DjvUnixQt"));			
 
     MappedArrayList<String, PluginContext> toReturn = 
@@ -232,19 +256,35 @@ class NoiseBuilder
 	pAddNoiseNukeNodeName = pProjectNamer.getAddNoiseNukeNode();
 	pRequiredNodeNames.add(pAddNoiseNukeNodeName); 
 
+	pNoiseDisplaceHipNodeName = pProjectNamer.getNoiseDisplaceHipNode();
+	pRequiredNodeNames.add(pNoiseDisplaceHipNodeName); 
+
         /* blot assets */ 
         pBlotAttachPreviewNodeName = pProjectNamer.getBlotAttachPreviewNode();
 	pRequiredNodeNames.add(pBlotAttachPreviewNodeName); 
 
-        pBlotTestPrepNodeName = pProjectNamer.getBlotTestPrepNode(); 
-	pRequiredNodeNames.add(pBlotTestPrepNodeName); 
+        pBlotTestGlobalsNodeName = pProjectNamer.getBlotTestGlobalsNode(); 
+	pRequiredNodeNames.add(pBlotTestGlobalsNodeName); 
 	
 	/* rorschach assets */ 
 	pRorschachHiresModelNodeName = pProjectNamer.getRorschachHiresModelNode(); 
 	pRequiredNodeNames.add(pRorschachHiresModelNodeName); 
         
         pRorschachPreviewShadersNodeName = pProjectNamer.getRorschachPreviewShadersNode();
-	pRequiredNodeNames.add(pRorschachPreviewShadersNodeName);    
+	pRequiredNodeNames.add(pRorschachPreviewShadersNodeName); 
+
+	/* misc assets */ 
+	pHideCameraPlaneNodeName = pProjectNamer.getHideCameraPlaneNode(); 
+	pRequiredNodeNames.add(pHideCameraPlaneNodeName); 
+
+	pSetFiletexSeqNodeName = pProjectNamer.getSetFiletexSeqNode(); 
+	pRequiredNodeNames.add(pSetFiletexSeqNodeName); 
+	
+	pHalfResRenderNodeName = pProjectNamer.getHalfResRenderNode(); 
+	pRequiredNodeNames.add(pHalfResRenderNodeName); 
+
+	pTestCompNukeNodeName = pProjectNamer.getTestCompNukeNode(); 
+	pRequiredNodeNames.add(pTestCompNukeNodeName); 
       }
     }
 
@@ -252,6 +292,50 @@ class NoiseBuilder
   }
 
   
+  /*----------------------------------------------------------------------------------------*/
+
+  private
+  class SetupImageParams
+  extends SetupPass
+  {
+    public 
+    SetupImageParams()
+    { 
+      super("Setup Image Params", 
+            "Setup the actual source image parameters.");
+    }
+
+    /**
+     * Replace the placeholder ReferenceImages and BackgroundPlate parameters with a 
+     * real ones.
+     */ 
+    @Override
+    public void 
+    initPhase()
+      throws PipelineException
+    {
+      {
+	Path path = pShotNamer.getPlatesScannedParentPath();
+	ArrayList<String> pnames = findChildNodeNames(path); 
+	if((pnames == null) || pnames.isEmpty()) 
+	  throw new PipelineException
+	    ("Unable to find any scanned image nodes in (" + path + ")!"); 
+
+	EnumUtilityParam param =
+          new EnumUtilityParam
+          (aBackgroundPlate, 
+           "Select the existing scanned images node to use as the background plates for " + 
+           "this shot.", 
+           pnames.get(0), pnames); 
+        
+        replaceParam(param);
+      }
+    }
+
+    private static final long serialVersionUID = 3897345314400900933L;
+  }
+
+
   /*----------------------------------------------------------------------------------------*/
 
   private
@@ -271,6 +355,39 @@ class NoiseBuilder
     validatePhase() 
       throws PipelineException 
     {
+      /* the original background plates node */ 
+      {
+        String bgName = (String) getParamValue(aBackgroundPlate);
+        if(bgName == null) 
+          throw new PipelineException
+            ("No " + aBackgroundPlate + " image node was selected!"); 
+        Path path = new Path(pShotNamer.getPlatesScannedParentPath(), bgName); 
+	
+	try {
+	  NodeVersion vsn = pClient.getCheckedInVersion(path.toString(), null); 
+	  pFrameRange = vsn.getPrimarySequence().getFrameRange(); 
+	  pBackgroundPlateNodeName = vsn.getName(); 
+	  pRequiredNodeNames.add(pBackgroundPlateNodeName); 
+	}
+	catch(PipelineException ex) {
+	  throw new PipelineException
+	    ("Somehow no checked-in version of the " + aBackgroundPlate + " node " + 
+	     "(" + path + ") exists!"); 
+	}
+      }
+
+      /* the background undistored 1k plates node */ 
+      pUndistorted1kPlateNodeName = pShotNamer.getUndistorted1kPlateNode(); 
+      pRequiredNodeNames.add(pUndistorted1kPlateNodeName); 
+
+      /* redistorted UV image */ 
+      pRedistortUvImageNodeName = pShotNamer.getRedistortUvImageNode(); 
+      pRequiredNodeNames.add(pRedistortUvImageNodeName); 
+
+      /* get the render resolution MEL script */ 
+      pResolutionNodeName = pShotNamer.getResolutionNode(); 
+      pRequiredNodeNames.add(pResolutionNodeName); 
+
       /* blot textures */ 
       pBlotApprovedTexturesNodeName = pShotNamer.getBlotApprovedTexturesNode(); 
       pRequiredNodeNames.add(pBlotApprovedTexturesNodeName); 
@@ -281,22 +398,11 @@ class NoiseBuilder
 
       /* extracted camera */ 
       pExtractedCameraNodeName = pShotNamer.getTrackingExtractedCameraNode();
-      pRequiredNodeNames.add(pExtractedCameraNodeName); 
+      pRequiredNodeNames.add(pExtractedCameraNodeName);  
 
-      /* the background plates node */ 
-      pUndistorted1kPlateNodeName = pShotNamer.getUndistorted1kPlateNode(); 
-      pRequiredNodeNames.add(pUndistorted1kPlateNodeName); 
-
-      /* lookup the frame range of the shot by looking at the undistorted 1k plates node */ 
-      {
-	NodeVersion vsn = pClient.getCheckedInVersion(pUndistorted1kPlateNodeName, null); 
-	if(vsn == null) 
-	  throw new PipelineException
-	    ("Somehow no checked-in version of the undistorted 1k plates node " + 
-	     "(" + pUndistorted1kPlateNodeName + ") exists!"); 	
-
-	pFrameRange = vsn.getPrimarySequence().getFrameRange(); 
-      }
+      /* matte images */ 
+      pMattesImagesNodeName = pShotNamer.getMattesImagesNode();
+      pRequiredNodeNames.add(pMattesImagesNodeName);  
     }
 
     private static final long serialVersionUID = 5628655760654846839L;
@@ -371,31 +477,99 @@ class NoiseBuilder
 	  stage.build();  
 	}
 
-	String noiseQuickTimeNodeName = pShotNamer.getNoiseQuickTimeNode();
-	{
-	  DjvUnixQtStage stage = 
-	    new DjvUnixQtStage(stageInfo, pContext, pClient,
-			       noiseQuickTimeNodeName, pNoiseTexturesNodeName, "24");
-	  addTaskAnnotation(stage, NodePurpose.Focus); 
-	  stage.build(); 
-	}
-
 	String noiseThumbNodeName = pShotNamer.getNoiseThumbNode();
 	{
 	  NukeThumbnailStage stage = 
-	    new NukeThumbnailStage(stageInfo, pContext, pClient,
-				   noiseThumbNodeName, "tif", pNoiseTexturesNodeName, 
-				   1, 150, 1.0, true, true, new Color3d()); 
+	    new NukeThumbnailStage
+	      (stageInfo, pContext, pClient,
+	       noiseThumbNodeName, "tif", pNoiseTexturesNodeName, 
+	       pFrameRange.getStart(), 150, 1.0, true, true, new Color3d()); 
 	  addTaskAnnotation(stage, NodePurpose.Thumbnail); 
 	  stage.build(); 
 	}
 	
+	String noiseTextureCmdNodeName = pShotNamer.getNoiseTextureCmdNode();
+	{
+	  HfsReadCmdStage stage = 
+	    new HfsReadCmdStage(stageInfo, pContext, pClient,
+				noiseTextureCmdNodeName, pNoiseTexturesNodeName, 
+				"/img/inkblot/inkblotFill", "filename"); 
+	  addTaskAnnotation(stage, NodePurpose.Prepare); 
+	  stage.build();
+	}
+
+	pNoiseDisplaceANodeName = pShotNamer.getNoiseDisplaceANode();
+	{
+	  HfsCompositeStage stage = 
+	    new HfsCompositeStage(stageInfo, pContext, pClient,
+				  pNoiseDisplaceANodeName, pFrameRange, 4, "rat", 
+				  pNoiseDisplaceHipNodeName, "/out/disp_a", false, 
+				  noiseTextureCmdNodeName, null, null, null); 
+	  addTaskAnnotation(stage, NodePurpose.Prepare); 
+	  stage.build(); 
+	}
+
+	String noiseDisplaceAThumbNodeName = pShotNamer.getNoiseDisplaceAThumbNode();
+	{
+	  HfsThumbnailStage stage = 
+	    new HfsThumbnailStage
+	      (stageInfo, pContext, pClient,
+	       noiseDisplaceAThumbNodeName, "tif", pNoiseDisplaceANodeName,
+	       pFrameRange.getStart(), 150, 1.0, true, true, new Color3d()); 
+	  addTaskAnnotation(stage, NodePurpose.Thumbnail); 
+	  stage.build(); 
+	}
+	
+	pNoiseDisplaceBNodeName = pShotNamer.getNoiseDisplaceBNode();
+	{
+	  HfsCompositeStage stage = 
+	    new HfsCompositeStage(stageInfo, pContext, pClient,
+				  pNoiseDisplaceBNodeName, pFrameRange, 4, "rat", 
+				  pNoiseDisplaceHipNodeName, "/out/disp_b", false, 
+				  noiseTextureCmdNodeName, null, null, null); 
+	  addTaskAnnotation(stage, NodePurpose.Prepare); 
+	  stage.build(); 
+	}
+
+	String noiseDisplaceBThumbNodeName = pShotNamer.getNoiseDisplaceBThumbNode();
+	{
+	  HfsThumbnailStage stage = 
+	    new HfsThumbnailStage
+	      (stageInfo, pContext, pClient,
+	       noiseDisplaceBThumbNodeName, "tif", pNoiseDisplaceBNodeName,
+	       pFrameRange.getStart(), 150, 1.0, true, true, new Color3d()); 
+	  addTaskAnnotation(stage, NodePurpose.Thumbnail); 
+	  stage.build(); 
+	}
+
+	String noiseDisplaceAllNodeName = pShotNamer.getNoiseDisplaceAllNode();
+	{
+	  HfsCompositeStage stage = 
+	    new HfsCompositeStage(stageInfo, pContext, pClient,
+				  noiseDisplaceAllNodeName, pFrameRange, 4, "jpg", 
+				  pNoiseDisplaceHipNodeName, "/out/disp_all", false, 
+				  noiseTextureCmdNodeName, null, null, null); 
+	  addTaskAnnotation(stage, NodePurpose.Prepare); 
+	  stage.build(); 
+	}
+
+	String noiseDisplaceAllThumbNodeName = pShotNamer.getNoiseDisplaceAllThumbNode();
+	{
+	  NukeThumbnailStage stage = 
+	    new NukeThumbnailStage
+	      (stageInfo, pContext, pClient,
+	       noiseDisplaceAllThumbNodeName, "tif", noiseDisplaceAllNodeName, 
+	       pFrameRange.getStart(), 150, 1.0, true, true, new Color3d()); 
+	  addTaskAnnotation(stage, NodePurpose.Thumbnail); 
+	  stage.build(); 
+	}
+
  	String noiseTextureSceneNodeName = pShotNamer.getNoiseTextureSceneNode();
  	{
 	  MayaFTNBuildStage stage = 
 	    new MayaFTNBuildStage(stageInfo, pContext, pClient, 
 				  new MayaContext(), noiseTextureSceneNodeName, true);
-	  stage.addLink(new LinkMod(pNoiseTexturesNodeName, LinkPolicy.Dependency)); 
+	  stage.addLink(new LinkMod(noiseDisplaceAllNodeName, LinkPolicy.Dependency)); 
 	  addTaskAnnotation(stage, NodePurpose.Prepare); 
 	  stage.build();  
 	}
@@ -405,7 +579,8 @@ class NoiseBuilder
 	  AttachGeoCacheStage stage = 
 	    new AttachGeoCacheStage(stageInfo, pContext, pClient, 
 				    noiseAttachCacheNodeName, pMatchGeoCacheNodeName, 
-				    "mdl:rorHead_GEOShape", pBlotAttachPreviewNodeName); 
+				    "rorHead_GEOShape", "mdl:rorHead_GEOShape", 
+				    pBlotAttachPreviewNodeName); 
 	  addTaskAnnotation(stage, NodePurpose.Prepare); 
 	  stage.build();  
 	}
@@ -423,32 +598,95 @@ class NoiseBuilder
 	  stage.build();  
  	}
 
+	String noiseTestPrepNodeName = pShotNamer.getNoiseTestPrepNode(); 
+	{
+	  LinkedList<String> sources = new LinkedList<String>(); 
+	  sources.add(pHideCameraPlaneNodeName);
+	  sources.add(pSetFiletexSeqNodeName);
+	  sources.add(pBlotTestGlobalsNodeName);
+	  sources.add(pResolutionNodeName);
+	  sources.add(pHalfResRenderNodeName);
+
+	  CatScriptStage stage = 
+	    new CatScriptStage(stageInfo, pContext, pClient, 
+			       noiseTestPrepNodeName, "mel", sources);
+	  addTaskAnnotation(stage, NodePurpose.Prepare); 
+	  stage.build();  
+	}
+
  	String noiseTestImagesNodeName = pShotNamer.getNoiseTestImagesNode();
  	{
 	  RenderTaskVerifyStage stage = 
 	    new RenderTaskVerifyStage
 	      (stageInfo, pContext, pClient, 
 	       noiseTestImagesNodeName, pFrameRange, noiseTestSceneNodeName, 
-	       "cam:camera01", pBlotTestPrepNodeName); 
+	       "cam:camera01", noiseTestPrepNodeName); 
 	  addTaskAnnotation(stage, NodePurpose.Focus); 
 	  stage.build();  
  	}
 
-	String noiseTestQuickTimeNodeName = pShotNamer.getNoiseTestQuickTimeNode(); 
-	{
-	  DjvUnixQtStage stage = 
-	    new DjvUnixQtStage(stageInfo, pContext, pClient,
-			       noiseTestQuickTimeNodeName, noiseTestImagesNodeName, "24");
-	  addTaskAnnotation(stage, NodePurpose.Focus); 
-	  stage.build(); 	  
-	}
-	
 	String noiseTestThumbNodeName = pShotNamer.getNoiseTestThumbNode();
 	{
 	  NukeThumbnailStage stage = 
-	    new NukeThumbnailStage(stageInfo, pContext, pClient,
-				   noiseTestThumbNodeName, "tif", noiseTestImagesNodeName, 
-				   1, 150, 1.0, true, true, new Color3d()); 
+	    new NukeThumbnailStage
+	      (stageInfo, pContext, pClient,
+	       noiseTestThumbNodeName, "tif", noiseTestImagesNodeName, 
+	       pFrameRange.getStart(), 150, 1.0, true, true, new Color3d()); 
+	  addTaskAnnotation(stage, NodePurpose.Thumbnail); 
+	  stage.build(); 
+	}
+
+	String noiseReadRedistortNodeName = pShotNamer.getNoiseReadRedistortNode(); 
+	{
+	  NukeReadStage stage = 
+	    new NukeReadStage(stageInfo, pContext, pClient, 
+			      noiseReadRedistortNodeName, pRedistortUvImageNodeName); 
+	  addTaskAnnotation(stage, NodePurpose.Prepare); 
+	  stage.build();  
+	}
+
+	String noiseReadPlatesNodeName = pShotNamer.getNoiseReadPlatesNode(); 
+	{
+	  NukeReadStage stage = 
+	    new NukeReadStage(stageInfo, pContext, pClient, 
+			      noiseReadPlatesNodeName, pBackgroundPlateNodeName); 
+	  addTaskAnnotation(stage, NodePurpose.Prepare); 
+	  stage.build();  
+	}
+
+	String noiseReadMattesNodeName = pShotNamer.getNoiseReadMattesNode(); 
+	{
+	  NukeReadStage stage = 
+	    new NukeReadStage(stageInfo, pContext, pClient, 
+			      noiseReadMattesNodeName, pMattesImagesNodeName); 
+	  addTaskAnnotation(stage, NodePurpose.Prepare); 
+	  stage.build();  
+	}
+
+	String noiseTestCompImagesNodeName = pShotNamer.getNoiseTestCompImagesNode();
+	{
+	  TreeMap<String,String> subst = new TreeMap<String,String>(); 
+	  subst.put(noiseReadRedistortNodeName, "RD_UV_Map"); 
+	  subst.put(noiseReadPlatesNodeName, "Plate"); 
+	  subst.put(noiseTestImagesNodeName, "TestRender"); 
+	  subst.put(noiseReadMattesNodeName, "Mattes"); 
+
+	  NukeSubstCompStage stage = 
+	    new NukeSubstCompStage
+	      (stageInfo, pContext, pClient, 
+	       noiseTestCompImagesNodeName, pFrameRange, 4, "jpg", 
+	       "Append & Process", pTestCompNukeNodeName, subst);
+ 	  addTaskAnnotation(stage, NodePurpose.Focus); 
+ 	  stage.build(); 
+	}
+
+	String noiseTestCompThumbNodeName = pShotNamer.getNoiseTestCompThumbNode();
+	{
+	  NukeThumbnailStage stage = 
+	    new NukeThumbnailStage
+	      (stageInfo, pContext, pClient,
+	       noiseTestCompThumbNodeName, "tif", noiseTestCompImagesNodeName, 
+	       pFrameRange.getStart(), 150, 1.0, true, true, new Color3d()); 
 	  addTaskAnnotation(stage, NodePurpose.Thumbnail); 
 	  stage.build(); 
 	}
@@ -456,10 +694,12 @@ class NoiseBuilder
 	String submitNodeName = pShotNamer.getNoiseSubmitNode();
 	{
 	  TreeSet<String> sources = new TreeSet<String>();
-	  sources.add(noiseQuickTimeNodeName);
 	  sources.add(noiseThumbNodeName);
-	  sources.add(noiseTestQuickTimeNodeName);
+	  sources.add(noiseDisplaceAThumbNodeName); 
+	  sources.add(noiseDisplaceBThumbNodeName); 
+	  sources.add(noiseDisplaceAllThumbNodeName); 
 	  sources.add(noiseTestThumbNodeName);
+	  sources.add(noiseTestCompThumbNodeName);
 
 	  TargetStage stage = 
 	    new TargetStage(stageInfo, pContext, pClient, 
@@ -484,10 +724,34 @@ class NoiseBuilder
 	  stage.build(); 
 	}
 
+	String noiseApprovedDisplaceANodeName = pShotNamer.getNoiseApprovedDisplaceANode();
+	{
+	  CopyImagesStage stage = 
+	    new CopyImagesStage
+	      (stageInfo, pContext, pClient, 
+	       noiseApprovedDisplaceANodeName, pFrameRange, 4, "rat", 
+	       pNoiseDisplaceANodeName);
+	  addTaskAnnotation(stage, NodePurpose.Product); 
+	  stage.build(); 
+	}
+
+	String noiseApprovedDisplaceBNodeName = pShotNamer.getNoiseApprovedDisplaceBNode();
+	{
+	  CopyImagesStage stage = 
+	    new CopyImagesStage
+	      (stageInfo, pContext, pClient, 
+	       noiseApprovedDisplaceBNodeName, pFrameRange, 4, "rat", 
+	       pNoiseDisplaceBNodeName);
+	  addTaskAnnotation(stage, NodePurpose.Product); 
+	  stage.build(); 
+	}
+
  	String approveNodeName = pShotNamer.getNoiseApproveNode();
  	{
  	  TreeSet<String> sources = new TreeSet<String>();
  	  sources.add(noiseApprovedTexturesNodeName);
+ 	  sources.add(noiseApprovedDisplaceANodeName);
+ 	  sources.add(noiseApprovedDisplaceBNodeName);
 
  	  TargetStage stage = 
  	    new TargetStage(stageInfo, pContext, pClient, 
@@ -511,6 +775,7 @@ class NoiseBuilder
 
   private static final long serialVersionUID = 3788746046365936548L;
 
+  public final static String aBackgroundPlate = "BackgroundPlate";
   
 
   /*----------------------------------------------------------------------------------------*/
@@ -522,6 +787,12 @@ class NoiseBuilder
    * up the blot textures.
    */ 
   private String pAddNoiseNukeNodeName; 
+
+  /**
+   * The fully resolved name of the node containing the Houdini scene used to 
+   * generate the noise displacement textures.
+   */ 
+  private String pNoiseDisplaceHipNodeName; 
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -536,12 +807,22 @@ class NoiseBuilder
    * The fully resolved name of the rendered noised textures node.
    */ 
   private String pNoiseTexturesNodeName; 
+  
+  /**
+   * Returns the fully resolved name of the composited displace A textures.
+   */ 
+  private String pNoiseDisplaceANodeName; 
 
   /**
-   * The fully resolved name of the node containing the combined MEL scripts to 
-   * attach shaders the shaders for the blot animation test render scene.
+   * Returns the fully resolved name of the composited displace B textures.
    */ 
-  private String pBlotTestPrepNodeName;
+  private String pNoiseDisplaceBNodeName; 
+
+  /**
+   * The fully resolved name of the node containing the Maya render globals 
+   * settings for blot test renders.
+   */ 
+  private String pBlotTestGlobalsNodeName;
 
   /**
    * The fully resolved name of the rendered blot textures node.
@@ -562,9 +843,42 @@ class NoiseBuilder
    * test shaders used in the blot animation verification test renders.
    */ 
   private String pRorschachPreviewShadersNodeName; 
+
   
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The fully resolved name of the node containing a MEL script to hide all camera
+   * image planes from view before rendering.
+   */ 
+  private String pHideCameraPlaneNodeName;  
+
+  /**
+   * The fully resolved name of the node containing a MEL script to key the file 
+   * texture sequence for animated textures.
+   */ 
+  private String pSetFiletexSeqNodeName;  
+
+  /**
+   * The fully resolved name of the node containing a MEL script to half the 
+   * currently set renderresolution.
+   */ 
+  private String pHalfResRenderNodeName;  
+
+  /**
+   * The fully resolved name of the node containing the master Nuke script used 
+   * to perform test comps.
+   */ 
+  private String pTestCompNukeNodeName;  
+
 
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The fully resolved name of the node containing a MEL script used to set 
+   * render resolutions which match that of the undistorted plates.
+   */ 
+  private String pResolutionNodeName; 
 
   /**
    * The fully resolved name of the node containing the baked Maya geometry cache. 
@@ -578,6 +892,11 @@ class NoiseBuilder
   private String pExtractedCameraNodeName; 
 
   /**
+   * The fully resolved name and frame range of background plates node. 
+   */ 
+  private String pBackgroundPlateNodeName;
+
+  /**
    * The fully resolved name of the node containing the undistorted/linearized
    * ~1k plate images.
    */ 
@@ -588,5 +907,16 @@ class NoiseBuilder
    */ 
   private FrameRange pFrameRange; 
 
+  /**
+   * The fully resolved name of the node containing the generated RGB channel 
+   * encoded matte images.
+   */ 
+  private String pMattesImagesNodeName; 
+  
+  /**
+   * The fully resolved name of the node containing redistorted UV image rendered
+   * by Houdini.
+   */
+  private String pRedistortUvImageNodeName; 
 
 }

@@ -1,4 +1,4 @@
-// $Id: MattesBuilder.java,v 1.4 2008/05/22 20:34:31 jesse Exp $
+// $Id: MattesBuilder.java,v 1.5 2008/06/15 17:31:10 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -220,9 +220,10 @@ class MattesBuilder
     plugins.add(new PluginContext("Touch")); 
     plugins.add(new PluginContext("Copy"));   		
     plugins.add(new PluginContext("NukeSubstComp", "Temerity", 
-				  new Range<VersionID>(new VersionID("2.4.2"), null)));
-    plugins.add(new PluginContext("NukeRead"));			
-    plugins.add(new PluginContext("NukeThumbnail"));          
+				  new Range<VersionID>(new VersionID("2.4.3"), null)));
+    plugins.add(new PluginContext("NukeRead"));		
+    plugins.add(new PluginContext("NukeThumbnail", "Temerity", 
+				  new Range<VersionID>(new VersionID("2.4.3"), null)));
 
     MappedArrayList<String, PluginContext> toReturn = 
       new MappedArrayList<String, PluginContext>();
@@ -472,7 +473,7 @@ class MattesBuilder
 	    new NukeThumbnailStage
 	      (stageInfo, pContext, pClient,
 	       mattesVerifyThumbNodeNames, "tif", mattesVerifyCompNodeName, 
-	       1, 150, 1.0, true, true, new Color3d()); 
+	       pFrameRange.getStart(), 150, 1.0, true, true, new Color3d()); 
 	  addTaskAnnotation(stage, NodePurpose.Thumbnail); 
 	  stage.build(); 
 	}

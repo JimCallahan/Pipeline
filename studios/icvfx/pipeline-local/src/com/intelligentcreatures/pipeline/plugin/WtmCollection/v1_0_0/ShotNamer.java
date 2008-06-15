@@ -1,4 +1,4 @@
-// $Id: ShotNamer.java,v 1.31 2008/04/09 20:16:18 jim Exp $
+// $Id: ShotNamer.java,v 1.32 2008/06/15 17:31:10 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -233,17 +233,6 @@ class ShotNamer
 
 
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Returns the fully resolved name of the MEL script used to load the soundtrack.
-   */ 
-  public String
-  getAttachSoundtrackNode() 
-  {
-    Path path = new Path(pBasePaths.get(TaskType.Sound, NodePurpose.Product), 
-			 joinNames(getFullShotName(), "attach_soundtrack")); 
-    return path.toString(); 
-  }
 
   /**
    * Returns the fully resolved name of the approve node for the Sound task.
@@ -980,6 +969,19 @@ class ShotNamer
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Returns the fully resolved name of the node for the MEL script which combines
+   * render resolution and camera extraction scripts. 
+   */ 
+  public String
+  getTrackingFinalCameraScriptNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Prepare), 
+			 new Path(AppDirs.MEL.toDirPath(), 
+				  joinNames(getFullShotName(), "final_camera"))); 
+    return path.toString(); 
+  }
+
+  /**
    * Returns the fully resolved name of the node containing the extracted world space camera 
    * with all tracking animation baked.
    */ 
@@ -1333,6 +1335,18 @@ class ShotNamer
   }
 
   /**
+   * Returns the fully resolved name of the MEL script used to load the soundtrack.
+   */ 
+  public String
+  getBlotAttachSoundtrackNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Blot, NodePurpose.Prepare), 
+			 new Path(AppDirs.MEL.toDirPath(), 
+				  joinNames(getFullShotName(), "attach_soundtrack"))); 
+    return path.toString(); 
+  }
+
+  /**
    * Returns the fully resolved name of the MEL script which attaches the geometry 
    * cache to the clean unrigged model.
    */ 
@@ -1480,24 +1494,11 @@ class ShotNamer
    * Returns the fully resolved name of the rendered noise textures node.
    */ 
   public String
-  getNoiseTexturesNode()
+  getNoiseTexturesNode() 
   {
     Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Focus), 
 			 new Path(AppDirs.Render.toDirPath(), 
 				  joinNames(getFullShotName(), "noise"))); 
-    return path.toString(); 
-  }
-
-  /**
-   * Returns the fully resolved name of the noise textures QuickTime movie.
-   */ 
-  public String
-  getNoiseQuickTimeNode() 
-  {
-    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Focus), 
-			 new Path(AppDirs.Render.toDirPath(), 
-				  new Path(AppDirs.QuickTime.toDirPath(), 
-					   joinNames(getFullShotName(), "noise")))); 
     return path.toString(); 
   }
 
@@ -1510,6 +1511,90 @@ class ShotNamer
   {
     Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Thumbnail), 
 			 joinNames(getFullShotName(), "noise")); 
+    return path.toString(); 
+  }
+  
+  /**
+   * Returns the fully resolved name of the noise texture loading Houdini command script.
+   */ 
+  public String
+  getNoiseTextureCmdNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Prepare), 
+			 new Path(AppDirs.Cmd.toDirPath(), 
+				  joinNames(getFullShotName(), "noise"))); 
+    return path.toString(); 
+  }
+  
+  /**
+   * Returns the fully resolved name of the composited displace A textures.
+   */ 
+  public String
+  getNoiseDisplaceANode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Focus), 
+			 new Path(AppDirs.Render.toDirPath(), 
+				  joinNames(getFullShotName(), "disp_a"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node containing a thumbnail image extracted
+   * from the displace A textures.
+   */ 
+  public String
+  getNoiseDisplaceAThumbNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Thumbnail), 
+			 joinNames(getFullShotName(), "disp_a")); 
+    return path.toString(); 
+  }
+  
+  /**
+   * Returns the fully resolved name of the composited displace B textures.
+   */ 
+  public String
+  getNoiseDisplaceBNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Focus), 
+			 new Path(AppDirs.Render.toDirPath(), 
+				  joinNames(getFullShotName(), "disp_b"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node containing a thumbnail image extracted
+   * from the displace B textures.
+   */ 
+  public String
+  getNoiseDisplaceBThumbNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Thumbnail), 
+			 joinNames(getFullShotName(), "disp_b")); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the composited displace All textures.
+   */ 
+  public String
+  getNoiseDisplaceAllNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Focus), 
+			 new Path(AppDirs.Render.toDirPath(), 
+				  joinNames(getFullShotName(), "disp_all"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node containing a thumbnail image extracted
+   * from the displace All textures.
+   */ 
+  public String
+  getNoiseDisplaceAllThumbNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Thumbnail), 
+			 joinNames(getFullShotName(), "disp_all")); 
     return path.toString(); 
   }
   
@@ -1551,6 +1636,19 @@ class ShotNamer
   }
   
   /**
+   * Returns the fully resolved name of the MEL script which combines all pre-render
+   * settings for the noise test render.
+   */ 
+  public String
+  getNoiseTestPrepNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Prepare), 
+			 new Path(AppDirs.MEL.toDirPath(), 
+				  joinNames(getFullShotName(), "noise_test_prep"))); 
+    return path.toString(); 
+  }
+
+  /**
    * Returns the fully resolved name of the noise test render images.
    */ 
   public String
@@ -1561,20 +1659,7 @@ class ShotNamer
 				  joinNames(getFullShotName(), "noise_test"))); 
     return path.toString(); 
   }
-  
-  /**
-   * Returns the fully resolved name of the noise test render QuickTime movie.
-   */ 
-  public String
-  getNoiseTestQuickTimeNode() 
-  {
-    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Focus), 
-			 new Path(AppDirs.Render.toDirPath(), 
-				  new Path(AppDirs.QuickTime.toDirPath(), 
-					   joinNames(getFullShotName(), "noise_test")))); 
-    return path.toString(); 
-  }
-  
+
   /**
    * Returns the fully resolved name of the node containing a thumbnail image extracted
    * from the noise test render images.
@@ -1584,6 +1669,69 @@ class ShotNamer
   {
     Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Thumbnail), 
 			 joinNames(getFullShotName(), "noise_test")); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node contaning the Nuke script fragment
+   * use to read in the raw cineon plates.
+   */ 
+  public String
+  getNoiseReadPlatesNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Prepare), 
+			 new Path(AppDirs.Nuke.toDirPath(), 
+				  joinNames(getFullShotName(), "plate"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node containing the Nuke script to read 
+   * the redistorted UV image.
+   */ 
+  public String
+  getNoiseReadRedistortNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Prepare), 
+			 new Path(AppDirs.Nuke.toDirPath(), 
+				  joinNames(getFullShotName(), "rd_uv_2k"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node contaning the Nuke script fragment
+   * use to read in the generated RGB channel encoded matte images.
+   */ 
+  public String
+  getNoiseReadMattesNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Prepare), 
+			 new Path(AppDirs.Nuke.toDirPath(), 
+				  joinNames(getFullShotName(), "mattes"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the noise test composite images.
+   */ 
+  public String
+  getNoiseTestCompImagesNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Focus), 
+			 new Path(AppDirs.Comp.toDirPath(), 
+				  joinNames(getFullShotName(), "noise_test_comp"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node containing a thumbnail image extracted
+   * from the noise test comp images.
+   */ 
+  public String
+  getNoiseTestCompThumbNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Thumbnail), 
+			 joinNames(getFullShotName(), "noise_test_comp")); 
     return path.toString(); 
   }
 
@@ -1610,6 +1758,30 @@ class ShotNamer
     Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Product), 
 			 new Path(AppDirs.Texture.toDirPath(), 
 				  joinNames(getFullShotName(), "noise"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the composited displace A textures.
+   */ 
+  public String
+  getNoiseApprovedDisplaceANode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Product), 
+			 new Path(AppDirs.Texture.toDirPath(), 
+				  joinNames(getFullShotName(), "disp_a"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the composited displace B textures.
+   */ 
+  public String
+  getNoiseApprovedDisplaceBNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Product), 
+			 new Path(AppDirs.Texture.toDirPath(), 
+				  joinNames(getFullShotName(), "disp_b"))); 
     return path.toString(); 
   }
 

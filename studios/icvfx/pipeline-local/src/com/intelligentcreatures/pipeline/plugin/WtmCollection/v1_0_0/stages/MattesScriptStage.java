@@ -1,4 +1,4 @@
-// $Id: MattesScriptStage.java,v 1.4 2008/06/02 20:47:05 jim Exp $
+// $Id: MattesScriptStage.java,v 1.5 2008/06/15 17:31:10 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
 
@@ -72,7 +72,7 @@ class MattesScriptStage
           nodeName, "nk", 
           null, 
 	  new PluginContext("NukeSubstComp", "Temerity", 
-			    new Range<VersionID>(new VersionID("2.4.2"), null)));  
+			    new Range<VersionID>(new VersionID("2.4.3"), null)));  
 
     addSingleParamValue("Mode", "Substitute"); 
 

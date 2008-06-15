@@ -1,4 +1,4 @@
-// $Id: PlatesBuilder.java,v 1.26 2008/04/02 20:56:16 jim Exp $
+// $Id: PlatesBuilder.java,v 1.27 2008/06/15 17:31:10 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -223,12 +223,14 @@ class PlatesBuilder
     plugins.add(new PluginContext("Touch")); 
     plugins.add(new PluginContext("Copy"));   		
     plugins.add(new PluginContext("MayaResolution"));  
-    plugins.add(new PluginContext("NukeSubstComp")); 		
+    plugins.add(new PluginContext("NukeSubstComp", "Temerity", 
+				  new Range<VersionID>(new VersionID("2.4.3"), null))); 
     plugins.add(new PluginContext("NukeRead"));			
     plugins.add(new PluginContext("NukeRescale")); 		
-    plugins.add(new PluginContext("NukeThumbnail"));   		
+    plugins.add(new PluginContext("NukeThumbnail", "Temerity", 
+				  new Range<VersionID>(new VersionID("2.4.3"), null)));
     plugins.add(new PluginContext("HfsRender", "Temerity", 
-				  new Range<VersionID>(new VersionID("2.4.1"), null))); 
+				  new Range<VersionID>(new VersionID("2.4.3"), null))); 
     plugins.add(new PluginContext("HfsReadCmd"));          
     plugins.add(new PluginContext("DjvUnixQt"));			
 
@@ -546,10 +548,11 @@ class PlatesBuilder
 	  HfsRenderStage stage = 
 	    new HfsRenderStage(stageInfo, pContext, pClient,
 			       undistortUvImageNodeName, pDistortRange, 4, "tif", 
-			       pPlatesUndistortHipNodeName, "undistort_uv_map", null, false, 
+			       pPlatesUndistortHipNodeName, 
+			       "Mantra", "/out/undistort_uv_map", null, false, 
 			       pRenderUvCommandNodeName, null, null, null); 
 	  stage.addLink(new LinkMod(pPlatesCameraGridNodeName, LinkPolicy.Dependency));  
-	  addTaskAnnotation(stage, NodePurpose.Product); 
+	  addTaskAnnotation(stage, NodePurpose.Prepare); 
 	  stage.build(); 
 	}
 
@@ -593,7 +596,7 @@ class PlatesBuilder
 	    new NukeThumbnailStage
 	      (stageInfo, pContext, pClient,
 	       undistorted2kPlateThumbNodeName, "tif", pUndistorted2kPlateNodeName, 
-	       1, 150, 1.0, true, true, new Color3d()); 
+	       pFrameRange.getStart(), 150, 1.0, true, true, new Color3d()); 
 	  addTaskAnnotation(stage, NodePurpose.Thumbnail); 
 	  stage.build(); 
 	}
@@ -694,7 +697,8 @@ class PlatesBuilder
 	  HfsRenderStage stage = 
 	    new HfsRenderStage(stageInfo, pContext, pClient,
 			       redistortUvImageNodeName, pDistortRange, 4, "tif", 
-			       pPlatesUndistortHipNodeName, "redistort_uv_map", null, false, 
+			       pPlatesUndistortHipNodeName, 
+			       "Mantra", "/out/redistort_uv_map", null, false, 
 			       pRenderUvCommandNodeName, null, null, null); 
 	  stage.addLink(new LinkMod(pPlatesCameraGridNodeName, LinkPolicy.Dependency));  
 	  addTaskAnnotation(stage, NodePurpose.Product); 

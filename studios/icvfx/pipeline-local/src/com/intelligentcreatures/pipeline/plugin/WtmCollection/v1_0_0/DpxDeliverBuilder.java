@@ -1,4 +1,4 @@
-// $Id: DpxDeliverBuilder.java,v 1.5 2008/06/10 11:26:40 jim Exp $
+// $Id: DpxDeliverBuilder.java,v 1.6 2008/06/15 17:31:10 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -346,8 +346,10 @@ class DpxDeliverBuilder
     ArrayList<PluginContext> plugins = new ArrayList<PluginContext>();	
     plugins.add(new PluginContext("Touch")); 			
     plugins.add(new PluginContext("NukeRead"));	
-    plugins.add(new PluginContext("NukeSubstComp")); 		
-    plugins.add(new PluginContext("SlateSubst", "ICVFX"));	
+    plugins.add(new PluginContext("NukeSubstComp", "Temerity", 
+				  new Range<VersionID>(new VersionID("2.4.3"), null)));
+    plugins.add(new PluginContext("SlateSubst", "ICVFX",
+				  new Range<VersionID>(new VersionID("1.5.0"), null)));
 
     MappedArrayList<String, PluginContext> toReturn = 
       new MappedArrayList<String, PluginContext>();

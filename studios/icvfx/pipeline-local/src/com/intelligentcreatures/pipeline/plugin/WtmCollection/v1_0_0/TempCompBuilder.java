@@ -1,4 +1,4 @@
-// $Id: TempCompBuilder.java,v 1.3 2008/05/22 20:34:31 jesse Exp $
+// $Id: TempCompBuilder.java,v 1.4 2008/06/15 17:31:10 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -227,7 +227,8 @@ class TempCompBuilder
     plugins.add(new PluginContext("NukeRead"));		
     plugins.add(new PluginContext("NukeSubstComp", "Temerity", 
 				  new Range<VersionID>(new VersionID("2.4.3"), null)));
-    plugins.add(new PluginContext("NukeThumbnail"));		
+    plugins.add(new PluginContext("NukeThumbnail", "Temerity", 
+				  new Range<VersionID>(new VersionID("2.4.3"), null)));    
 
     MappedArrayList<String, PluginContext> toReturn = 
       new MappedArrayList<String, PluginContext>();
@@ -547,9 +548,10 @@ class TempCompBuilder
 	String tempCompThumbNodeName = pShotNamer.getTempCompThumbNode();
 	{
 	  NukeThumbnailStage stage = 
-	    new NukeThumbnailStage(stageInfo, pContext, pClient,
-				   tempCompThumbNodeName, "tif", pTempCompNodeName, 
-				   1, 150, 1.0, true, true, new Color3d()); 
+	    new NukeThumbnailStage
+	      (stageInfo, pContext, pClient,
+	       tempCompThumbNodeName, "tif", pTempCompNodeName, 
+	       pFrameRange.getStart(), 150, 1.0, true, true, new Color3d()); 
 	  addTaskAnnotation(stage, NodePurpose.Thumbnail); 
 	  stage.build(); 
 	}
