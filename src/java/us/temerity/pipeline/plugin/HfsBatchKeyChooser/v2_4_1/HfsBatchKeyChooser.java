@@ -1,4 +1,4 @@
-// $Id: HfsBatchKeyChooser.java,v 1.2 2008/05/30 09:06:01 jim Exp $
+// $Id: HfsBatchKeyChooser.java,v 1.3 2008/06/15 03:46:39 jim Exp $
 
 package us.temerity.pipeline.plugin.HfsBatchKeyChooser.v2_4_1;
 
@@ -106,7 +106,8 @@ class HfsBatchKeyChooser
        aname.equals("HfsComposite") || 
        aname.equals("HfsGenerateAction") || 
        aname.equals("HfsSdExport") || 
-       aname.equals("HfsRender")) {
+       aname.equals("HfsRender")  ||
+       aname.equals("HfsThumbnail")) {
 
       boolean useGL = false;
       {
