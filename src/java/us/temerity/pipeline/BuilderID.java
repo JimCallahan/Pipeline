@@ -1,4 +1,4 @@
-// $Id: BuilderID.java,v 1.1 2008/02/11 03:16:25 jim Exp $
+// $Id: BuilderID.java,v 1.2 2008/06/15 01:59:49 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -150,28 +150,6 @@ class BuilderID
   /*----------------------------------------------------------------------------------------*/
   /*   C O M P A R A B L E                                                                  */
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Compares this object with the specified object for order.
-   * 
-   * @param obj 
-   *   The <CODE>Object</CODE> to be compared.
-   */
-  public int
-  compareTo
-  (
-   Object obj
-  )
-  {
-    if(obj == null) 
-      throw new NullPointerException();
-    
-    if(!(obj instanceof BuilderID))
-      throw new IllegalArgumentException("The object to compare was NOT a BuilderID!");
-
-    return compareTo((BuilderID) obj);
-  }
-
 
   /**
    * Compares this <CODE>BuilderID</CODE> with the given <CODE>BuilderID</CODE> for order.

@@ -1,4 +1,4 @@
-// $Id: HistogramRange.java,v 1.1 2006/12/05 18:23:30 jim Exp $
+// $Id: HistogramRange.java,v 1.2 2008/06/15 01:59:49 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -21,7 +21,7 @@ import java.io.*;
  */
 public
 class HistogramRange
-  implements ComparableRange, Glueable, Serializable
+  implements ComparableRange<HistogramRange>, Glueable, Serializable
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -228,28 +228,6 @@ class HistogramRange
   /*----------------------------------------------------------------------------------------*/
   /*   C O M P A R A B L E                                                                  */
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Compares this object with the specified object for order.
-   * 
-   * @param obj 
-   *   The <CODE>Object</CODE> to be compared.
-   */
-  public int
-  compareTo
-  (
-   Object obj
-  )
-  {
-    if(obj == null) 
-      throw new NullPointerException();
-    
-    if(!(obj instanceof HistogramRange))
-      throw new IllegalArgumentException
-	("The object to compare was NOT a HistogramRange!");
-
-    return compareTo((HistogramRange) obj);
-  }
 
   /**
    * Compares this <CODE>HistogramRange</CODE> with the given 

@@ -1,4 +1,4 @@
-// $Id: TupleNf.java,v 1.13 2008/05/08 22:46:41 jim Exp $
+// $Id: TupleNf.java,v 1.14 2008/06/15 01:59:49 jim Exp $
 
 package us.temerity.pipeline.math;
 
@@ -16,7 +16,7 @@ import java.util.*;
  */
 public 
 class TupleNf
-  implements Comparable, Glueable, Serializable
+  implements Comparable<TupleNf>, Glueable, Serializable
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -1117,27 +1117,6 @@ class TupleNf
   /*----------------------------------------------------------------------------------------*/
   /*   C O M P A R A B L E                                                                  */
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Compares this object with the specified object for order.
-   * 
-   * @param obj 
-   *   The <CODE>Object</CODE> to be compared.
-   */
-  public int
-  compareTo
-  (
-   Object obj
-  )
-  {
-    if(obj == null) 
-      throw new NullPointerException();
-    
-    if(!(obj instanceof TupleNf))
-      throw new IllegalArgumentException("The object to compare was NOT a TupleNf!");
-
-    return compareTo((TupleNf) obj);
-  }
 
   /**
    * Compares this <CODE>TupleNf</CODE> with the given <CODE>TupleNf</CODE> for order.

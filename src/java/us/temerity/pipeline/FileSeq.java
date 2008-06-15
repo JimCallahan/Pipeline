@@ -1,4 +1,4 @@
-// $Id: FileSeq.java,v 1.22 2007/06/19 22:05:03 jim Exp $
+// $Id: FileSeq.java,v 1.23 2008/06/15 01:59:49 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -22,7 +22,7 @@ import java.io.*;
  */
 public
 class FileSeq
-  implements Comparable, Cloneable, Glueable, Serializable
+  implements Comparable<FileSeq>, Cloneable, Glueable, Serializable
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -433,27 +433,6 @@ class FileSeq
   /*----------------------------------------------------------------------------------------*/
   /*   C O M P A R A B L E                                                                  */
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Compares this object with the specified object for order.
-   * 
-   * @param obj 
-   *   The <CODE>Object</CODE> to be compared.
-   */
-  public int
-  compareTo
-  (
-   Object obj
-  )
-  {
-    if(obj == null) 
-      throw new NullPointerException();
-    
-    if(!(obj instanceof FileSeq))
-      throw new IllegalArgumentException("The object to compare was NOT a FileSeq!");
-
-    return compareTo((FileSeq) obj);
-  }
 
   /**
    * Compares this <CODE>FileSeq</CODE> with the given <CODE>FileSeq</CODE> for order.

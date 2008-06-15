@@ -1,4 +1,4 @@
-// $Id: ComparableRange.java,v 1.1 2006/12/05 18:23:30 jim Exp $
+// $Id: ComparableRange.java,v 1.2 2008/06/15 01:59:49 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -15,8 +15,8 @@ import java.io.*;
  * A ranges of comparable values. 
  */
 public
-interface ComparableRange 
-  extends Comparable
+interface ComparableRange<T>
+  extends Comparable<T>
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   P R E D I C A T E S                                                                  */
@@ -28,7 +28,7 @@ interface ComparableRange
   public boolean 
   isInsideRange
   (
-   Comparable value
+   Comparable<T> value
   );
 
 }

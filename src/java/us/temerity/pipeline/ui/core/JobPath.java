@@ -1,4 +1,4 @@
-// $Id: JobPath.java,v 1.2 2006/11/22 09:08:01 jim Exp $
+// $Id: JobPath.java,v 1.3 2008/06/15 01:59:50 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -17,7 +17,7 @@ import java.io.*;
  */
 public
 class JobPath
-  implements Cloneable, Comparable
+  implements Cloneable, Comparable<JobPath>
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -170,28 +170,6 @@ class JobPath
   /*----------------------------------------------------------------------------------------*/
   /*   C O M P A R A B L E                                                                  */
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Compares this object with the specified object for order.
-   * 
-   * @param obj 
-   *   The <CODE>Object</CODE> to be compared.
-   */
-  public int
-  compareTo
-  (
-   Object obj
-  )
-  {
-    if(obj == null) 
-      throw new NullPointerException();
-    
-    if(!(obj instanceof JobPath))
-      throw new IllegalArgumentException("The object to compare was NOT a JobPath!");
-
-    return compareTo((JobPath) obj);
-  }
-
 
   /**
    * Compares this <CODE>JobPath</CODE> with the given <CODE>JobPath</CODE> for order.

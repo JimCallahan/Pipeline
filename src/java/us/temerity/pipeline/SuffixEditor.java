@@ -1,4 +1,4 @@
-// $Id: SuffixEditor.java,v 1.6 2006/09/29 03:03:21 jim Exp $
+// $Id: SuffixEditor.java,v 1.7 2008/06/15 01:59:49 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -16,7 +16,7 @@ import java.util.*;
  */
 public
 class SuffixEditor
-  implements Comparable, Glueable, Serializable
+  implements Comparable<SuffixEditor>, Glueable, Serializable
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -181,28 +181,6 @@ class SuffixEditor
   /*----------------------------------------------------------------------------------------*/
   /*   C O M P A R A B L E                                                                  */
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Compares this object with the specified object for order.
-   * 
-   * @param obj 
-   *   The <CODE>Object</CODE> to be compared.
-   */
-  public int
-  compareTo
-  (
-   Object obj
-  )
-  {
-    if(obj == null) 
-      throw new NullPointerException();
-    
-    if(!(obj instanceof SuffixEditor))
-      throw new IllegalArgumentException("The object to compare was NOT a SuffixEditor!");
-
-    return compareTo((SuffixEditor) obj);
-  }
-
 
   /**
    * Compares this <CODE>SuffixEditor</CODE> with the given <CODE>SuffixEditor</CODE> for 

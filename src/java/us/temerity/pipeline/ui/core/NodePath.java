@@ -1,4 +1,4 @@
-// $Id: NodePath.java,v 1.4 2007/04/20 18:07:18 jim Exp $
+// $Id: NodePath.java,v 1.5 2008/06/15 01:59:50 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -17,7 +17,7 @@ import java.io.*;
  */
 public
 class NodePath
-  implements Cloneable, Comparable
+  implements Cloneable, Comparable<NodePath>
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -223,28 +223,6 @@ class NodePath
   /*----------------------------------------------------------------------------------------*/
   /*   C O M P A R A B L E                                                                  */
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Compares this object with the specified object for order.
-   * 
-   * @param obj 
-   *   The <CODE>Object</CODE> to be compared.
-   */
-  public int
-  compareTo
-  (
-   Object obj
-  )
-  {
-    if(obj == null) 
-      throw new NullPointerException();
-    
-    if(!(obj instanceof NodePath))
-      throw new IllegalArgumentException("The object to compare was NOT a NodePath!");
-
-    return compareTo((NodePath) obj);
-  }
-
 
   /**
    * Compares this <CODE>NodePath</CODE> with the given <CODE>NodePath</CODE> for order.

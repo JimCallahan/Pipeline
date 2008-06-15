@@ -1,4 +1,4 @@
-// $Id: VersionID.java,v 1.16 2008/05/10 03:17:35 jesse Exp $
+// $Id: VersionID.java,v 1.17 2008/06/15 01:59:49 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -28,7 +28,7 @@ import java.io.*;
  */
 public
 class VersionID 
-  implements Comparable, Cloneable, Glueable, Serializable
+  implements Comparable<VersionID>, Cloneable, Glueable, Serializable
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -255,28 +255,6 @@ class VersionID
   /*----------------------------------------------------------------------------------------*/
   /*   C O M P A R A B L E                                                                  */
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Compares this object with the specified object for order.
-   * 
-   * @param obj 
-   *   The <CODE>Object</CODE> to be compared.
-   */
-  public int
-  compareTo
-  (
-   Object obj
-  )
-  {
-    if(obj == null) 
-      throw new NullPointerException();
-    
-    if(!(obj instanceof VersionID))
-      throw new IllegalArgumentException("The object to compare was NOT a VersionID!");
-
-    return compareTo((VersionID) obj);
-  }
-
 
   /**
    * Compares this <CODE>VersionID</CODE> with the given <CODE>VersionID</CODE> for order.

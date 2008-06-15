@@ -1,4 +1,4 @@
-// $Id: FilePattern.java,v 1.14 2006/11/22 09:08:00 jim Exp $
+// $Id: FilePattern.java,v 1.15 2008/06/15 01:59:49 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -40,7 +40,7 @@ import java.io.*;
  */
 public
 class FilePattern
-  implements Comparable, Cloneable, Glueable, Serializable
+  implements Comparable<FilePattern>, Cloneable, Glueable, Serializable
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -443,27 +443,6 @@ class FilePattern
   /*----------------------------------------------------------------------------------------*/
   /*   C O M P A R A B L E                                                                  */
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Compares this object with the specified object for order.
-   * 
-   * @param obj 
-   *   The <CODE>Object</CODE> to be compared.
-   */
-  public int
-  compareTo
-  (
-   Object obj
-  )
-  {
-    if(obj == null) 
-      throw new NullPointerException();
-    
-    if(!(obj instanceof FilePattern))
-      throw new IllegalArgumentException("The object to compare was NOT a FilePattern!");
-
-    return compareTo((FilePattern) obj);
-  }
 
   /**
    * Compares this <CODE>FilePattern</CODE> with the given <CODE>FilePattern</CODE> for order.

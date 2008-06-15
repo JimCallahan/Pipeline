@@ -16,7 +16,7 @@ import java.util.*;
  */
 public 
 class TupleNl
-  implements Comparable, Glueable, Serializable
+  implements Comparable<TupleNl>, Glueable, Serializable
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -1074,27 +1074,6 @@ class TupleNl
   /*----------------------------------------------------------------------------------------*/
   /*   C O M P A R A B L E                                                                  */
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Compares this object with the specified object for order.
-   * 
-   * @param obj 
-   *   The <CODE>Object</CODE> to be compared.
-   */
-  public int
-  compareTo
-  (
-   Object obj
-  )
-  {
-    if(obj == null) 
-      throw new NullPointerException();
-    
-    if(!(obj instanceof TupleNl))
-      throw new IllegalArgumentException("The object to compare was NOT a TupleNl!");
-
-    return compareTo((TupleNl) obj);
-  }
 
   /**
    * Compares this <CODE>TupleNl</CODE> with the given <CODE>TupleNl</CODE> for order.

@@ -1,4 +1,4 @@
-// $Id: PluginID.java,v 1.1 2008/02/11 03:16:25 jim Exp $
+// $Id: PluginID.java,v 1.2 2008/06/15 01:59:49 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -17,7 +17,7 @@ import java.io.*;
 public
 class PluginID
   extends Named
-  implements Comparable
+  implements Comparable<PluginID>
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -136,27 +136,6 @@ class PluginID
   /*----------------------------------------------------------------------------------------*/
   /*   C O M P A R A B L E                                                                  */
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Compares this object with the specified object for order.
-   * 
-   * @param obj 
-   *   The <CODE>Object</CODE> to be compared.
-   */
-  public int
-  compareTo
-  (
-   Object obj
-  )
-  {
-    if(obj == null) 
-      throw new NullPointerException();
-    
-    if(!(obj instanceof PluginID))
-      throw new IllegalArgumentException("The object to compare was NOT a PluginID!");
-
-    return compareTo((PluginID) obj);
-  }
 
   /**
    * Compares this <CODE>PluginID</CODE> with the given <CODE>PluginID</CODE> for order.

@@ -1,4 +1,4 @@
-// $Id: NodeID.java,v 1.13 2007/03/18 02:42:09 jim Exp $
+// $Id: NodeID.java,v 1.14 2008/06/15 01:59:49 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -18,7 +18,7 @@ import java.io.*;
 public
 class NodeID
   extends Named
-  implements Comparable
+  implements Comparable<NodeID>
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -245,28 +245,6 @@ class NodeID
   /*----------------------------------------------------------------------------------------*/
   /*   C O M P A R A B L E                                                                  */
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Compares this object with the specified object for order.
-   * 
-   * @param obj 
-   *   The <CODE>Object</CODE> to be compared.
-   */
-  public int
-  compareTo
-  (
-   Object obj
-  )
-  {
-    if(obj == null) 
-      throw new NullPointerException();
-    
-    if(!(obj instanceof NodeID))
-      throw new IllegalArgumentException("The object to compare was NOT a NodeID!");
-
-    return compareTo((NodeID) obj);
-  }
-
 
   /**
    * Compares this <CODE>NodeID</CODE> with the given <CODE>NodeID</CODE> for order.

@@ -1,4 +1,4 @@
-// $Id: BasePlugin.java,v 1.14 2008/03/07 13:25:21 jim Exp $
+// $Id: BasePlugin.java,v 1.15 2008/06/15 01:59:49 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -289,21 +289,6 @@ class BasePlugin
   /*----------------------------------------------------------------------------------------*/
   /*   C O M P A R A B L E                                                                  */
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Compares this object with the specified object for order.
-   * 
-   * @param obj 
-   *   The <CODE>Object</CODE> to be compared.
-   */
-  public int
-  compareTo
-  (
-   Object obj
-  )
-  {
-    throw new IllegalArgumentException("Plugins do not support comparison!");
-  }
 
   /**
    * Compares this <CODE>PluginID</CODE> with the given <CODE>PluginID</CODE> for order.
