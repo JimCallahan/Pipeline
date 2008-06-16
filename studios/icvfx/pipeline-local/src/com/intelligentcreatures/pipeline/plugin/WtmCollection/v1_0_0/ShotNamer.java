@@ -1,4 +1,4 @@
-// $Id: ShotNamer.java,v 1.33 2008/06/16 02:59:27 jim Exp $
+// $Id: ShotNamer.java,v 1.34 2008/06/16 16:36:22 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -1043,19 +1043,6 @@ class ShotNamer
     Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Prepare), 
 			 new Path(AppDirs.Maya.toDirPath(), 
 				  joinNames(getFullShotName(), "temp_tex"))); 
-    return path.toString(); 
-  }
-
-  /**
-   * Returns the fully resolved name of the node for the MEL script containing the 
-   * temp render globals settings.
-   */ 
-  public String
-  getTrackingTempRenderNode() 
-  {
-    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Prepare), 
-			 new Path(AppDirs.MEL.toDirPath(), 
-				  joinNames(getFullShotName(), "temp_render"))); 
     return path.toString(); 
   }
 
