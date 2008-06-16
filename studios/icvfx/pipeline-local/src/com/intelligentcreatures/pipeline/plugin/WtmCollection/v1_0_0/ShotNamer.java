@@ -1,4 +1,4 @@
-// $Id: ShotNamer.java,v 1.32 2008/06/15 17:31:10 jim Exp $
+// $Id: ShotNamer.java,v 1.33 2008/06/16 02:59:27 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -1695,6 +1695,19 @@ class ShotNamer
     Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Prepare), 
 			 new Path(AppDirs.Nuke.toDirPath(), 
 				  joinNames(getFullShotName(), "rd_uv_2k"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node contaning the Nuke script fragment
+   * use to read in the generated RGB channel encoded matte images.
+   */ 
+  public String
+  getNoiseReadTestImagesNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Prepare), 
+			 new Path(AppDirs.Nuke.toDirPath(), 
+				  joinNames(getFullShotName(), "noise_test"))); 
     return path.toString(); 
   }
 
