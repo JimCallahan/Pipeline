@@ -1,4 +1,4 @@
-// $Id: TrackingBuilder.java,v 1.17 2008/06/15 17:31:10 jim Exp $
+// $Id: TrackingBuilder.java,v 1.18 2008/06/16 16:37:26 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -596,26 +596,13 @@ class TrackingBuilder
 	    stage.build();  
 	  }
 	  
-	  String trackingTempRenderNodeName = pShotNamer.getTrackingTempRenderNode();
-	  {
-	    LinkedList<String> sources = new LinkedList<String>();
-	    sources.add(pTrackTempGlobalsNodeName); 
-	    sources.add(pResolutionNodeName); 
-
-	    CatScriptStage stage = 
-	      new CatScriptStage(stageInfo, pContext, pClient, 
-				 trackingTempRenderNodeName, "mel", sources);
-	    addTaskAnnotation(stage, NodePurpose.Prepare); 
-	    stage.build();  
-	  }
-
 	  pTrackingInkblotNodeName = pShotNamer.getTrackingInkblotNode(); 
 	  {
 	    RenderTaskVerifyStage stage = 
 	      new RenderTaskVerifyStage
 	        (stageInfo, pContext, pClient, 
 		 pTrackingInkblotNodeName, pFrameRange, "sgi", 
-		 trackingTempRenderMayaNodeName, "camera01", trackingTempRenderNodeName); 
+		 trackingTempRenderMayaNodeName, "camera01", pTrackTempGlobalsNodeName); 
 	    addTaskAnnotation(stage, NodePurpose.Product); 
 	    stage.build();  
 	  }
