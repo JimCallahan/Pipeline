@@ -22,12 +22,14 @@ java_DATA = \
   BuildTestRenderStage.java \
   BuildTrackingExtractStage.java \
   BuildTrackingVerifyStage.java \
-  CopyImagesStage.java \
   CatScriptStage.java \
+  CopyImagesStage.java \
   CopyTrackingMarkersStage.java \
   DjvUnixQtStage.java \
+  HfsCompositeStage.java \
   HfsReadCmdStage.java \
   HfsRenderStage.java \
+  HfsThumbnailStage.java \
   LensInfoStage.java \
   MatchGeoCacheStage.java \
   MatchMaskGeoStage.java \
@@ -43,14 +45,10 @@ java_DATA = \
   NukeRescaleStage.java \
   NukeSubstCompStage.java \
   NukeThumbnailStage.java \
-  PlaceholderStage.java \
   PlaceholderMayaSceneStage.java \
+  PlaceholderStage.java \
   PrimaryHDRStage.java \
   QtEncodeStage.java \
   RenderTaskVerifyStage.java \
   SlateSubstStage.java \
   SoundtrackStage.java
-
-
-
-

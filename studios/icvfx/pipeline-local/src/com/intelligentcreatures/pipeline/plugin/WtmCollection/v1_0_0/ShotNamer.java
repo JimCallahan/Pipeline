@@ -1,4 +1,4 @@
-// $Id: ShotNamer.java,v 1.34 2008/06/16 16:36:22 jim Exp $
+// $Id: ShotNamer.java,v 1.35 2008/06/16 17:01:35 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -969,19 +969,6 @@ class ShotNamer
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Returns the fully resolved name of the node for the MEL script which combines
-   * render resolution and camera extraction scripts. 
-   */ 
-  public String
-  getTrackingFinalCameraScriptNode() 
-  {
-    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Prepare), 
-			 new Path(AppDirs.MEL.toDirPath(), 
-				  joinNames(getFullShotName(), "final_camera"))); 
-    return path.toString(); 
-  }
-
-  /**
    * Returns the fully resolved name of the node containing the extracted world space camera 
    * with all tracking animation baked.
    */ 
@@ -1043,6 +1030,19 @@ class ShotNamer
     Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Prepare), 
 			 new Path(AppDirs.Maya.toDirPath(), 
 				  joinNames(getFullShotName(), "temp_tex"))); 
+    return path.toString(); 
+  }
+
+  /**
+   * Returns the fully resolved name of the node for the MEL script containing the 
+   * temp render globals settings.
+   */ 
+  public String
+  getTrackingTempRenderNode() 
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Prepare), 
+			 new Path(AppDirs.MEL.toDirPath(), 
+				  joinNames(getFullShotName(), "temp_render"))); 
     return path.toString(); 
   }
 
@@ -1418,19 +1418,6 @@ class ShotNamer
     Path path = new Path(pBasePaths.get(TaskType.Blot, NodePurpose.Product), 
 			 new Path(AppDirs.Texture.toDirPath(), 
 				  joinNames(getFullShotName(), "blot_anim"))); 
-    return path.toString(); 
-  }
-
-  /**
-   * Returns the fully resolved name of the baked IGES curves exported from the blot 
-   * animation Maya scene.
-   */ 
-  public String
-  getBlotCurveGeoNode()
-  {
-    Path path = new Path(pBasePaths.get(TaskType.Blot, NodePurpose.Product), 
-			 new Path(AppDirs.Iges.toDirPath(), 
-				  joinNames(getFullShotName(), "blot_curves"))); 
     return path.toString(); 
   }
 

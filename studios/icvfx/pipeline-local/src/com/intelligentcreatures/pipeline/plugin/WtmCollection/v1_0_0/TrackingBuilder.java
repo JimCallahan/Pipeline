@@ -1,4 +1,4 @@
-// $Id: TrackingBuilder.java,v 1.18 2008/06/16 16:37:26 jim Exp $
+// $Id: TrackingBuilder.java,v 1.19 2008/06/16 17:01:35 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -529,25 +529,12 @@ class TrackingBuilder
 
       /* the approve network */ 
       {
-        String finalCameraScriptNodeName = pShotNamer.getTrackingFinalCameraScriptNode();
-        {
-	  LinkedList<String> sources = new LinkedList<String>(); 
-          sources.add(pResolutionNodeName);
-          sources.add(pTrackExtractCameraNodeName);
-
-	  CatScriptStage stage = 
-	    new CatScriptStage(stageInfo, pContext, pClient, 
-			       finalCameraScriptNodeName, "mel", sources);
-	  addTaskAnnotation(stage, NodePurpose.Prepare); 
-	  stage.build();  
-        }
-
 	String extractedCameraNodeName = pShotNamer.getTrackingExtractedCameraNode();
 	{
 	  BuildTrackingExtractStage stage = 
 	    new BuildTrackingExtractStage
 	    (stageInfo, pContext, pClient, 
-	     extractedCameraNodeName, pTrackNodeName, finalCameraScriptNodeName, 
+	     extractedCameraNodeName, pTrackNodeName, pTrackExtractCameraNodeName, 
 	     pFrameRange); 
 	  addTaskAnnotation(stage, NodePurpose.Product); 
 	  stage.build(); 
@@ -596,13 +583,26 @@ class TrackingBuilder
 	    stage.build();  
 	  }
 	  
+	  String trackingTempRenderNodeName = pShotNamer.getTrackingTempRenderNode();
+	  {
+	    LinkedList<String> sources = new LinkedList<String>();
+	    sources.add(pTrackTempGlobalsNodeName); 
+	    sources.add(pResolutionNodeName); 
+
+	    CatScriptStage stage = 
+	      new CatScriptStage(stageInfo, pContext, pClient, 
+				 trackingTempRenderNodeName, "mel", sources);
+	    addTaskAnnotation(stage, NodePurpose.Prepare); 
+	    stage.build();  
+	  }
+
 	  pTrackingInkblotNodeName = pShotNamer.getTrackingInkblotNode(); 
 	  {
 	    RenderTaskVerifyStage stage = 
 	      new RenderTaskVerifyStage
 	        (stageInfo, pContext, pClient, 
 		 pTrackingInkblotNodeName, pFrameRange, "sgi", 
-		 trackingTempRenderMayaNodeName, "camera01", pTrackTempGlobalsNodeName); 
+		 trackingTempRenderMayaNodeName, "camera01", trackingTempRenderNodeName); 
 	    addTaskAnnotation(stage, NodePurpose.Product); 
 	    stage.build();  
 	  }

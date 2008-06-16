@@ -1,4 +1,4 @@
-// $Id: BlotBuilder.java,v 1.12 2008/06/15 17:31:10 jim Exp $
+// $Id: BlotBuilder.java,v 1.13 2008/06/16 17:01:35 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -198,7 +198,6 @@ class BlotBuilder
 				  new Range<VersionID>(new VersionID("2.4.3"), null)));
     plugins.add(new PluginContext("MayaAttachSound")); 	
     plugins.add(new PluginContext("MayaFTNBuild")); 	
-    plugins.add(new PluginContext("MayaIgesExport")); 			
     plugins.add(new PluginContext("MayaRender")); 		
     plugins.add(new PluginContext("NukeThumbnail", "Temerity", 
 				  new Range<VersionID>(new VersionID("2.4.3"), null)));
@@ -544,21 +543,10 @@ class BlotBuilder
 	  stage.build(); 
 	}
 
-	String blotCurveGeoNodeName = pShotNamer.getBlotCurveGeoNode(); 
-	{
-	  BlotCurveGeoStage stage = 
-	    new BlotCurveGeoStage(stageInfo, pContext, pClient,
-				  blotCurveGeoNodeName, pBlotAnimSceneNodeName, 
-				  "CURVES", pFrameRange);
-	  addTaskAnnotation(stage, NodePurpose.Product); 
-	  stage.build(); 
-	}
-	
  	String approveNodeName = pShotNamer.getBlotApproveNode();
  	{
  	  TreeSet<String> sources = new TreeSet<String>();
  	  sources.add(blotApprovedTexturesNodeName);
- 	  sources.add(blotCurveGeoNodeName); 
 
  	  TargetStage stage = 
  	    new TargetStage(stageInfo, pContext, pClient, 
