@@ -1,5 +1,7 @@
 #!/bin/sh
 
+unset JAVA_JVM_VERSION
+
 cd `pwd`
 exec "@CLIENT_JAVA_RUNTIME@" @JAVA_RUNTIME_OPTS@ \
   @PLTESTNATIVE_GC_OPTS@ \

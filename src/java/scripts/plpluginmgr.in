@@ -8,6 +8,8 @@ then
   exit 1
 fi
 
+unset JAVA_JVM_VERSION
+
 cd `pwd`
 exec "@JAVA_RUNTIME@" @JAVA_RUNTIME_OPTS@ \
   @PLPLUGINMGR_GC_OPTS@ \

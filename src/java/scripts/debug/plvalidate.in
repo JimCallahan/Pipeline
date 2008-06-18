@@ -1,5 +1,7 @@
 #!/bin/sh
 
+unset JAVA_JVM_VERSION
+
 cd `pwd`
 exec "@JAVA_RUNTIME@" @JAVA_RUNTIME_OPTS@ \
   @PLSCRIPT_GC_OPTS@ \
