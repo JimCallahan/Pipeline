@@ -2,7 +2,7 @@ package com.radar.pipeline.plugin.RadarMaya2MRCollection.v2_3_2;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
-import us.temerity.pipeline.plugin.Maya2MRCollection.v2_3_2.SimpleAssetBuilder;
+import us.temerity.pipeline.plugin.Maya2MRCollection.v2_3_2.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   R A D A R   S I M P L E   A S S E T   B U I L D E R                                    */
@@ -47,7 +47,6 @@ class RadarSimpleAssetBuilder
     setDefaultEditor(StageFunction.aSourceImage, new PluginContext("Gimp"));
     setDefaultEditor(StageFunction.aMotionBuilderScene, new PluginContext("Jedit", "Radar"));
   }
-
   
   private static final long serialVersionUID = 5771734469057685916L;
 }

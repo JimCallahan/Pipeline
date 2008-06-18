@@ -1,11 +1,10 @@
 package com.radar.pipeline.plugin.RadarMaya2MRCollection.v2_3_2;
 
-import java.util.ArrayList;
+import java.util.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
-import us.temerity.pipeline.plugin.Maya2MRCollection.v2_3_2.AnswersBuilderQueries;
-import us.temerity.pipeline.plugin.Maya2MRCollection.v2_3_2.BuildsShotNames;
+import us.temerity.pipeline.plugin.Maya2MRCollection.v2_3_2.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   R A D A R   S H O T   N A M E S                                                        */

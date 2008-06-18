@@ -3,7 +3,7 @@ package com.radar.pipeline.plugin.RadarMaya2MRCollection.v2_3_2;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
-import us.temerity.pipeline.plugin.Maya2MRCollection.v2_3_2.ProjectScriptBuilder;
+import us.temerity.pipeline.plugin.Maya2MRCollection.v2_3_2.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   R A D A R   P R O J E C T   S C R I P T   B U I L D E R                                */
@@ -41,14 +41,13 @@ class RadarProjectScriptBuilder
   setDefaultEditors()
   {
     setDefaultEditor(StageFunction.aMayaScene, new PluginContext("MayaProject"));
-    setDefaultEditor(StageFunction.aNone, new PluginContext("Jedit", "Radar"));
-    setDefaultEditor(StageFunction.aTextFile, new PluginContext("Jedit", "Radar"));
-    setDefaultEditor(StageFunction.aScriptFile, new PluginContext("Jedit", "Radar"));
+    setDefaultEditor(StageFunction.aNone, new PluginContext("JEdit", "Radar"));
+    setDefaultEditor(StageFunction.aTextFile, new PluginContext("JEdit", "Radar"));
+    setDefaultEditor(StageFunction.aScriptFile, new PluginContext("JEdit", "Radar"));
     setDefaultEditor(StageFunction.aRenderedImage, new PluginContext("ImfDisp"));
     setDefaultEditor(StageFunction.aSourceImage, new PluginContext("Gimp"));
-    setDefaultEditor(StageFunction.aMotionBuilderScene, new PluginContext("Jedit", "Radar"));
+    setDefaultEditor(StageFunction.aMotionBuilderScene, new PluginContext("JEdit", "Radar"));
   }
-
   
   private static final long serialVersionUID = 6620502540702923973L;
 }

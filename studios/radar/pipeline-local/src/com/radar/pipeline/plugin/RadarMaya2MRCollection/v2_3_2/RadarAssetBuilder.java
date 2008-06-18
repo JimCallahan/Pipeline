@@ -6,9 +6,8 @@ import java.util.TreeSet;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
-import us.temerity.pipeline.builder.BuilderInformation.*;
-import us.temerity.pipeline.plugin.Maya2MRCollection.v2_3_2.AssetBuilder;
-import us.temerity.pipeline.plugin.Maya2MRCollection.v2_3_2.stages.AssetModelExportStage;
+import us.temerity.pipeline.plugin.Maya2MRCollection.v2_3_2.*;
+import us.temerity.pipeline.plugin.Maya2MRCollection.v2_3_2.stages.*;
 import us.temerity.pipeline.math.Range;
 import us.temerity.pipeline.stages.EmptyMayaAsciiStage;
 
@@ -20,7 +19,7 @@ import us.temerity.pipeline.stages.EmptyMayaAsciiStage;
  * The Radar Films Asset Builder
  * <p>
  * Note, due to how the blend shape nodes are being generated, using this builder with
- * ActionOnExistence set to Conform will result in undesirable behavior.  So don't do it.
+ * ActionOnExistance set to Conform will result in undesirable behavior.  So don't do it.
  */
 public 
 class RadarAssetBuilder
@@ -77,6 +76,7 @@ class RadarAssetBuilder
     setDefaultEditor(StageFunction.aMotionBuilderScene, new PluginContext("Jedit", "Radar"));
   }
   
+   
   protected void
   addConstructPasses()
     throws PipelineException
@@ -93,7 +93,7 @@ class RadarAssetBuilder
   getNeededActions()
   {
     ArrayList<PluginContext> plugins = new ArrayList<PluginContext>();
-    plugins.add(new PluginContext("MayaExport", "Temerity", new Range<VersionID>(new VersionID("2.3.10"), null)));
+    plugins.add(new PluginContext("MayaExport", "Temerity", new Range<VersionID>(new VersionID("2.3.11"), null)));
     MappedArrayList<String, PluginContext> toReturn = new MappedArrayList<String, PluginContext>();
     toReturn.put(getToolset(), plugins);
     return toReturn;
@@ -144,7 +144,6 @@ class RadarAssetBuilder
     doBlends()
       throws PipelineException
     {
-      StageInformation stageInfo = getStageInformation();
       pLog.log(LogMgr.Kind.Ops, LogMgr.Level.Finer, 
       "Custom radar blend shape settings");
       String editBlend = pRadarNames.getBlendShapeEditModelNodeName();
@@ -152,7 +151,7 @@ class RadarAssetBuilder
       {
         EmptyMayaAsciiStage stage = 
           new EmptyMayaAsciiStage
-          (stageInfo,
+          (getStageInformation(),
            pContext,
            pClient,
            pMayaContext,
@@ -163,7 +162,7 @@ class RadarAssetBuilder
       {
 	AssetModelExportStage stage = 
 	  new AssetModelExportStage
-	  (stageInfo,
+	  (getStageInformation(),
 	   pContext,
 	   pClient,
 	   finalBlend,
