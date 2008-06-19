@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.121 2008/06/03 17:47:00 jim Exp $
+// $Id: MasterMgrClient.java,v 1.122 2008/06/19 03:30:36 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -6386,7 +6386,7 @@ class MasterMgrClient
    * @throws PipelineException
    *   If unable to retrieve the events.
    */ 
-  public synchronized TreeMap<Long,BaseNodeEvent>
+  public synchronized MappedLinkedList<Long,BaseNodeEvent>
   getNodeEvents
   (
    TreeSet<String> names, 
@@ -6409,6 +6409,7 @@ class MasterMgrClient
       return null;
     }
   }
+
 
   /*----------------------------------------------------------------------------------------*/
 

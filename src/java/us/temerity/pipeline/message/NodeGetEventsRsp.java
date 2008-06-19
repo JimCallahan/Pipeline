@@ -1,4 +1,4 @@
-// $Id: NodeGetEventsRsp.java,v 1.2 2007/03/28 19:56:42 jim Exp $
+// $Id: NodeGetEventsRsp.java,v 1.3 2008/06/19 03:30:36 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -37,7 +37,7 @@ class NodeGetEventsRsp
   NodeGetEventsRsp
   (
    TaskTimer timer, 
-   TreeMap<Long,BaseNodeEvent> events
+   MappedLinkedList<Long,BaseNodeEvent> events
   )
   { 
     super(timer);
@@ -63,7 +63,7 @@ class NodeGetEventsRsp
   /**
    * The events indexed by the timestamp at which the events occurred.
    */
-  public TreeMap<Long,BaseNodeEvent>
+  public MappedLinkedList<Long,BaseNodeEvent>
   getEvents()
   {
     return pEvents;
@@ -86,7 +86,7 @@ class NodeGetEventsRsp
   /**
    * The events indexed by the timestamp at which the events occurred.
    */
-  private TreeMap<Long,BaseNodeEvent>  pEvents;
+  private MappedLinkedList<Long,BaseNodeEvent>  pEvents;
 
 }
   

@@ -1,4 +1,4 @@
-// $Id: MasterMgrDirectLightClient.java,v 1.1 2007/07/08 01:18:16 jim Exp $
+// $Id: MasterMgrDirectLightClient.java,v 1.2 2008/06/19 03:30:36 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1291,7 +1291,7 @@ class MasterMgrDirectLightClient
    * @throws PipelineException
    *   If unable to retrieve the events.
    */ 
-  public TreeMap<Long,BaseNodeEvent>
+  public MappedLinkedList<Long,BaseNodeEvent>
   getNodeEvents
   (
    TreeSet<String> names, 

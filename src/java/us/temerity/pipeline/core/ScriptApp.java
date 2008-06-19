@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.87 2008/05/08 22:46:41 jim Exp $
+// $Id: ScriptApp.java,v 1.88 2008/06/19 03:30:36 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -4511,7 +4511,7 @@ class ScriptApp
   ) 
     throws PipelineException
   {
-    TreeMap<Long,BaseNodeEvent> events = null;
+    MappedLinkedList<Long,BaseNodeEvent> events = null;
     {
       TreeSet<String> names2 = null;
       if(!names.isEmpty()) 
@@ -4537,87 +4537,90 @@ class ScriptApp
       (tbar(80) + "\n" +
        "N O D E   E V E N T   H I S T O R Y"); 
     
-    for(BaseNodeEvent event : events.values()) {
-      printBaseNodeEvent(buf, event);
-      switch(event.getNodeOp()) {
-      case Registered: 
-      case Released: 
-      case PropsModified: 
-      case LinksModified: 
-      case SeqsModified: 
-	{
-	  BaseWorkingNodeEvent e = (BaseWorkingNodeEvent) event;
-	  printBaseWorkingNodeEvent(buf, e);
-	}
-	break;
-	
-      case CheckedIn: 	
-	{
-	  CheckedInNodeEvent e = (CheckedInNodeEvent) event;
-	  printBaseRepoNodeEvent(buf, e);
+    for(Long stamp : events.keySet()) {
+      for(BaseNodeEvent event : events.get(stamp)) {
+        printBaseNodeEvent(buf, event);
+        switch(event.getNodeOp()) {
+        case Registered: 
+        case Released: 
+        case PropsModified: 
+        case LinksModified: 
+        case SeqsModified: 
+          {
+            BaseWorkingNodeEvent e = (BaseWorkingNodeEvent) event;
+            printBaseWorkingNodeEvent(buf, e);
+          }
+          break;
+          
+        case CheckedIn: 	
+          {
+            CheckedInNodeEvent e = (CheckedInNodeEvent) event;
+            printBaseRepoNodeEvent(buf, e);
 	  
-	  String lstr = "(initial revision)";
-	  if(e.getLevel() != null) 
-	    lstr = e.getLevel().toString();
-
-	  buf.append
-	    ("\n" + 
-	     "Level        : " + lstr); 
-	}
-	break;
-
-      case CheckedOut:  	
-	{
-	  CheckedOutNodeEvent e = (CheckedOutNodeEvent) event;
-	  printBaseRepoNodeEvent(buf, e);
-	  
-	  buf.append
-	    ("\n" + 
-	     "Method       : "); 
-
-	  if(e.isFrozen()) {
-	    if(e.isLocked()) 
-	      buf.append("Locked");
-	    else 
-	      buf.append("Frozen");
-	  }
-	  else {
-	    buf.append("Modifiable");
-	  }
-	}
-	break;
-
-      case Evolved: 
-	{  
-	  EvolvedNodeEvent e = (EvolvedNodeEvent) event;
-	  printBaseRepoNodeEvent(buf, e);
-	}
-	break;
-    
-      case Edited:
-	{
-	  EditedNodeEvent	 e = (EditedNodeEvent) event;
-	  printBaseWorkingNodeEvent(buf, e);
-	  
-	  buf.append
-	    ("\n" + 
-	     "Done Editing : " + TimeStamps.format(e.getFinishedStamp()) + "\n" +
-	     "Hostname     : " + e.getHostname() + "\n" +
-	     "Impostor     : " + ((e.getImposter() != null) ? e.getImposter() : "-") + "\n" +
-	     "\n" + 
-	     "Editor       : " + e.getEditorName() + "\n" +
-	     "Version      : " + e.getEditorVersionID() + "\n" +
-	     "Vendor       : " + e.getEditorVendor());
-	}
+            String lstr = "(initial revision)";
+            if(e.getLevel() != null) 
+              lstr = e.getLevel().toString();
+            
+            buf.append
+              ("\n" + 
+               "Level        : " + lstr); 
+          }
+          break;
+          
+        case CheckedOut:  	
+          {
+            CheckedOutNodeEvent e = (CheckedOutNodeEvent) event;
+            printBaseRepoNodeEvent(buf, e);
+            
+            buf.append
+              ("\n" + 
+               "Method       : "); 
+            
+            if(e.isFrozen()) {
+              if(e.isLocked()) 
+                buf.append("Locked");
+              else 
+                buf.append("Frozen");
+            }
+            else {
+              buf.append("Modifiable");
+            }
+          }
+          break;
+          
+        case Evolved: 
+          {  
+            EvolvedNodeEvent e = (EvolvedNodeEvent) event;
+            printBaseRepoNodeEvent(buf, e);
+          }
+          break;
+          
+        case Edited:
+          {
+            EditedNodeEvent	 e = (EditedNodeEvent) event;
+            printBaseWorkingNodeEvent(buf, e);
+            
+            buf.append
+              ("\n" + 
+               "Done Editing : " + TimeStamps.format(e.getFinishedStamp()) + "\n" +
+               "Hostname     : " + e.getHostname() + "\n" +
+               "Impostor     : " + 
+                 ((e.getImposter() != null) ? e.getImposter() : "-") + "\n" +
+               "\n" + 
+               "Editor       : " + e.getEditorName() + "\n" +
+               "Version      : " + e.getEditorVersionID() + "\n" +
+               "Vendor       : " + e.getEditorVendor());
+          }
+        }
       }
     }
-
+    
     LogMgr.getInstance().log
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
        buf.toString());
     LogMgr.getInstance().flush();  
   }
-
+    
   private void
   printBaseNodeEvent
   (

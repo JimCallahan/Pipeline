@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.245 2008/06/03 17:47:00 jim Exp $
+// $Id: MasterMgr.java,v 1.246 2008/06/19 03:30:36 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -12023,7 +12023,7 @@ class MasterMgr
     TaskTimer timer = new TaskTimer();
 
     try {
-      TreeMap<Long,BaseNodeEvent> events = 
+      MappedLinkedList<Long,BaseNodeEvent> events = 
 	readNodeEvents(timer, req.getNames(), req.getUsers(), req.getInterval());
       return new NodeGetEventsRsp(timer, events);
     }
@@ -20601,18 +20601,32 @@ class MasterMgr
 	  throw new PipelineException
 	    ("Unable to create the directory (" + ndir + ")!");
     }
-    
-    String stamp = String.valueOf(event.getTimeStamp()); 
 
-    File nfile = new File(ndir, stamp);
-    if(nfile.isFile()) 
-      throw new PipelineException
-	("The node event file (" + nfile + ") already exists!");
+    /* find a unique event filename */ 
+    String fname = null;
+    File afile = null; 
+    File nfile = null;
+    {
+      String stamp = String.valueOf(event.getTimeStamp()); 
 
-    File afile = new File(adir, stamp);
-    if(afile.isFile()) 
-      throw new PipelineException
-	("The node event file (" + afile + ") already exists!");
+      int unique; 
+      for(unique=0; unique<100; unique++) {
+        fname = (stamp + "." + unique);
+        afile = new File(adir, fname);
+        nfile = new File(ndir, fname); 
+        
+        if(!nfile.isFile() && !afile.isFile())
+          break;
+
+        fname = null;
+      }
+
+      if(fname == null) 
+        throw new PipelineException
+          ("Unable to determine a unique filename for the node event in the " + 
+           "(" + adir + ") and (" + ndir + ") directories for an event on (" + stamp + ") " + 
+           "after trying 100 suffixes!"); 
+    }
 
     LogMgr.getInstance().log
       (LogMgr.Kind.Glu, LogMgr.Level.Finer,
@@ -20649,7 +20663,7 @@ class MasterMgr
       }
       
       try {
-	File rel = new File("../../../nodes" + event.getNodeName() + "/" + stamp);
+	File rel = new File("../../../nodes" + event.getNodeName() + "/" + fname); 
 	NativeFileSys.symlink(rel, afile);
       }
       catch(IOException ex) {
@@ -20683,7 +20697,7 @@ class MasterMgr
    * @throws PipelineException
    *   If unable to read the node event files.
    */ 
-  private TreeMap<Long,BaseNodeEvent> 
+  private MappedLinkedList<Long,BaseNodeEvent> 
   readNodeEvents
   (
    TaskTimer timer, 
@@ -20700,16 +20714,16 @@ class MasterMgr
       finish = interval.getEndStamp();
     }
 
-    TreeMap<Long,BaseNodeEvent> events = new TreeMap<Long,BaseNodeEvent>();
+    MappedLinkedList<Long,BaseNodeEvent> events = new MappedLinkedList<Long,BaseNodeEvent>();
 
     timer.aquire();
     synchronized(pNodeEventFileLock) {
       timer.resume();
 
       /* get the node files within the interval for the given nodes */ 
-      TreeMap<Long,File> nameFiles = null; 
+      MappedSet<Long,File> nameFiles = null; 
       if(names != null) {
-	nameFiles = new TreeMap<Long,File>();
+	nameFiles = new MappedSet<Long,File>();
 	for(String name : names) {
 	  File dir = new File(pNodeDir, "events/nodes" + name);
 	  scanNodeEventDir(dir, start, finish, nameFiles);
@@ -20717,19 +20731,19 @@ class MasterMgr
       }
 
       /* get the user files within the interval for the given users */ 
-      TreeMap<Long,File> userFiles = null; 
+      MappedSet<Long,File> userFiles = null; 
       if(users != null) {
-	userFiles = new TreeMap<Long,File>();
+	userFiles = new MappedSet<Long,File>();
 	for(String user : users) 
 	  scanUserNodeEventDirs(user, start, finish, userFiles);
       }
 
       /* determine the event files to read */ 
-      TreeMap<Long,File> eventFiles = null;
+      MappedSet<Long,File> eventFiles = null;
       if(nameFiles == null) {
 	/* all events within the interval */ 
 	if(userFiles == null) {
-	  eventFiles = new TreeMap<Long,File>();
+	  eventFiles = new MappedSet<Long,File>();
 
 	  File dir = new File(pNodeDir, "events/authors");
 	  File subdirs[] = dir.listFiles();
@@ -20754,35 +20768,39 @@ class MasterMgr
 
 	/* all events included in both the given nodes and users within the interval */ 
 	else {
-	  eventFiles = new TreeMap<Long,File>();
+	  eventFiles = new MappedSet<Long,File>();
 	  for(Long stamp : userFiles.keySet()) {
-	    if(nameFiles.containsKey(stamp))
-	      eventFiles.put(stamp, nameFiles.get(stamp));
+	    if(nameFiles.containsKey(stamp)) {
+              for(File nfile : nameFiles.get(stamp))
+                eventFiles.put(stamp, nfile); 
+            }
 	  }
 	}
       }
       
       /* read the matching event files */ 
-      for(File nfile : eventFiles.values()) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
-	   "Reading Node Event File: " + nfile); 
-
-	BaseNodeEvent e = null;
-	try {
-	  GlueDecoder gd = new GlueDecoderImpl(nfile);
-	  e = (BaseNodeEvent) gd.getObject();
-	}
-	catch(Exception ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	     "The node event file (" + nfile + ") appears to be corrupted:\n" + 
-	     "  " + ex.getMessage());
-	  LogMgr.getInstance().flush();
-	}
-
-	if(e != null) 
-	  events.put(e.getTimeStamp(), e);
+      for(Long stamp : eventFiles.keySet()) {
+        for(File nfile : eventFiles.get(stamp)) {
+          LogMgr.getInstance().log
+            (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+             "Reading Node Event File: " + nfile); 
+          
+          BaseNodeEvent e = null;
+          try {
+            GlueDecoder gd = new GlueDecoderImpl(nfile);
+            e = (BaseNodeEvent) gd.getObject();
+          }
+          catch(Exception ex) {
+            LogMgr.getInstance().log
+              (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+               "The node event file (" + nfile + ") appears to be corrupted:\n" + 
+               "  " + ex.getMessage());
+            LogMgr.getInstance().flush();
+          }
+          
+          if(e != null) 
+            events.put(e.getTimeStamp(), e);
+        }
       }
     }
 
@@ -20799,7 +20817,7 @@ class MasterMgr
    String user,
    long start, 
    long finish, 
-   TreeMap<Long,File> found
+   MappedSet<Long,File> found
   )  
   {
     GregorianCalendar calendar = new GregorianCalendar();
@@ -20852,7 +20870,7 @@ class MasterMgr
    File dir, 
    long start, 
    long finish, 
-   TreeMap<Long,File> found
+   MappedSet<Long,File> found
   )
   {
     File files[] = dir.listFiles();
@@ -20860,17 +20878,28 @@ class MasterMgr
     for(wk=0; wk<files.length; wk++) {
       File file = files[wk];
       if(file.isFile()) {
-	Long stamp = null;
-	try {
-	  stamp = Long.parseLong(file.getName());		
-	}
-	catch(NumberFormatException ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Glu, LogMgr.Level.Warning,
-	     "Illegal node event file (" + file + ") encountered:\n" + 
-	     "  " + ex.getMessage());
-	  LogMgr.getInstance().flush();
-	}
+        String fname = file.getName();
+        String parts[] = fname.split("\\.");
+
+        Long stamp = null;
+        if(parts.length >= 1) {
+          try {
+            stamp = Long.parseLong(parts[0]); 
+          }
+          catch(NumberFormatException ex) {
+            LogMgr.getInstance().log
+              (LogMgr.Kind.Glu, LogMgr.Level.Warning,
+               "Illegal node event file (" + file + ") encountered:\n" + 
+               "  " + ex.getMessage());
+            LogMgr.getInstance().flush();
+          }
+        }
+        else {
+          LogMgr.getInstance().log
+            (LogMgr.Kind.Glu, LogMgr.Level.Warning,
+             "Illegal node event file (" + file + ") encountered:"); 
+          LogMgr.getInstance().flush();
+        }
 	
 	if((stamp != null) && (stamp >= start) && (stamp <= finish)) 
 	  found.put(stamp, file);
