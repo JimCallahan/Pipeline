@@ -1,5 +1,5 @@
 #--- RULES -----------------------------------------------------------------------------------
 
-%:
-	$(MAKE) -f Makefile.local -C radar $@
-	$(MAKE) -f Makefile.local -C radarfilm $@
+%: 
+	$(MAKE) -f Makefile.local -C v2_3_10 $@ 
+	$(MAKE) -f Makefile.local -C v2_3_13 $@

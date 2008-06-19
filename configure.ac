@@ -2067,6 +2067,43 @@ AC_CONFIG_FILES([
   studios/radar/pipeline-local/src/com/radar/pipeline/plugin/RadarMaya2MRCollection/v2_3_2/Makefile
   studios/radar/pipeline-local/src/com/radar/pipeline/plugin/RadarMaya2MRCollection/v2_3_2/Makefile.local
 
+  studios/radar/pipeline-local/src/com/radarfilm/Makefile                                                                   
+  studios/radar/pipeline-local/src/com/radarfilm/pipeline/Makefile       
+  studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/Makefile                                                   
+  studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/CurveExportSyncTool/Makefile                               
+  studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/CurveExportSyncTool/v2_3_4/Makefile.local                  
+  studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/CurveExportSyncTool/v2_3_4/Makefile                        
+  studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/WavGeneratorAction/Makefile                                
+  studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/WavGeneratorAction/v2_3_13/Makefile.local                  
+  studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/WavGeneratorAction/v2_3_13/Makefile                        
+  studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/JeditEditor/Makefile                                       
+  studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/JeditEditor/v2_3_4/Makefile.local                          
+  studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/JeditEditor/v2_3_4/Makefile                                
+  studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/MencoderEncodeAction/Makefile                              
+  studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/MencoderEncodeAction/v2_3_10/Makefile.local                
+  studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/MencoderEncodeAction/v2_3_10/Makefile                      
+  studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/MencoderEncodeAction/v2_3_14/Makefile.local                
+  studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/MencoderEncodeAction/v2_3_14/Makefile                      
+  studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/ShakeImgConvert/Makefile                                   
+  studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/ShakeImgConvert/v2_3_14/Makefile.local                     
+  studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/ShakeImgConvert/v2_3_14/Makefile                           
+  studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/ShakeImgConvert/v2_3_15/Makefile.local                     
+  studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/ShakeImgConvert/v2_3_15/Makefile                           
+  studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/SeqRapportGeneratorAction/Makefile                         
+  studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/SeqRapportGeneratorAction/v2_3_13/Makefile.local           
+  studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/SeqRapportGeneratorAction/v2_3_13/Makefile                 
+  studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/NukeOutputQuicktimeAction/Makefile                         
+  studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/NukeOutputQuicktimeAction/v2_3_10/Makefile.local           
+  studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/NukeOutputQuicktimeAction/v2_3_10/Makefile                 
+  studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/NukeOutputQuicktimeAction/v2_3_13/Makefile.local           
+  studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/NukeOutputQuicktimeAction/v2_3_13/Makefile                 
+  studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/KonquerorEditor/Makefile                                   
+  studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/KonquerorEditor/v2_3_5/Makefile.local                      
+  studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/KonquerorEditor/v2_3_5/Makefile                            
+  studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/BlackHoleArchiver/Makefile                                 
+  studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/BlackHoleArchiver/v2_3_14/Makefile.local                   
+  studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/BlackHoleArchiver/v2_3_14/Makefile                         
+
   studios/SCEACSG/Makefile
   studios/SCEACSG/pipeline-local/.classpath
   studios/SCEACSG/pipeline-local/.project 

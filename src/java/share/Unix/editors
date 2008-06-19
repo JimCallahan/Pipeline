@@ -542,6 +542,27 @@ EditorMenuLayout <PluginMenuLayout> #1 {
             }
           }
         }
+        <PluginMenuLayout> #386 {
+          Title <String> #387 { "Radar" }
+          Children <LinkedList> #388 {
+            <PluginMenuLayout> #389 {
+              Title <String> #390 { "Jedit" }
+              Name <String> #391 { "Jedit" }
+              VersionID <VersionID> #392 {
+                RevisionNumber <String> #393 { "2.3.4" }
+              }
+              Vendor <String> #394 { "Radar" }
+            }
+            <PluginMenuLayout> #395 {
+              Title <String> #396 { "Konqueror" }
+              Name <String> #397 { "Konqueror" }
+              VersionID <VersionID> #398 {
+                RevisionNumber <String> #399 { "2.3.5" }
+              }
+              Vendor <REF> #394
+            }
+          }
+        }
       }
     }
   }

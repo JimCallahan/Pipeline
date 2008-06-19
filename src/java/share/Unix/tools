@@ -157,6 +157,19 @@ ToolMenuLayout <PluginMenuLayout> #1 {
             }
           }
         }
+        <PluginMenuLayout> #115 {
+          Title <String> #116 { "Radar" }
+          Children <LinkedList> #117 {
+            <PluginMenuLayout> #118 {
+              Title <String> #119 { "CurveExportSync" }
+              Name <String> #120 { "CurveExportSync" }
+              VersionID <VersionID> #121 {
+                RevisionNumber <String> #122 { "2.3.4" }
+              }
+              Vendor <String> #123 { "Radar" }
+            }
+          }
+        }
       }
     }
   }

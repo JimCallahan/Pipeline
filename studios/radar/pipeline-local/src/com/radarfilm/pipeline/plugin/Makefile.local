@@ -1,0 +1,13 @@
+#--- RULES -----------------------------------------------------------------------------------
+
+%: 
+	$(MAKE) -f Makefile.local -C BlackHoleArchiver $@
+	$(MAKE) -f Makefile.local -C CurveExportSyncTool $@
+	$(MAKE) -f Makefile.local -C JeditEditor $@
+	$(MAKE) -f Makefile.local -C KonquerorEditor $@
+	$(MAKE) -f Makefile.local -C MencoderEncodeAction $@
+	$(MAKE) -f Makefile.local -C NukeOutputQuicktimeAction $@
+	$(MAKE) -f Makefile.local -C SeqRapportGeneratorAction $@
+	$(MAKE) -f Makefile.local -C ShakeImgConvert $@
+	$(MAKE) -f Makefile.local -C WavGeneratorAction $@
+

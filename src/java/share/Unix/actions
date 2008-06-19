@@ -1433,6 +1433,51 @@ ActionMenuLayout <PluginMenuLayout> #1 {
             }
           }
         }
+        <PluginMenuLayout> #1000 {
+          Title <String> #1001 { "Radar" }
+          Children <LinkedList> #1002 {
+            <PluginMenuLayout> #1003 {
+              Title <String> #1004 { "MencoderEncode" }
+              Name <String> #1005 { "MencoderEncodeAction" }
+              VersionID <VersionID> #1006 {
+                RevisionNumber <String> #1007 { "2.3.14" }
+              }
+              Vendor <String> #1008 { "Radar" }
+            }
+            <PluginMenuLayout> #1009 {
+              Title <String> #1010 { "NukeOutput" }
+              Name <String> #1011 { "NukeOutputQuicktime" }
+              VersionID <VersionID> #1012 {
+                RevisionNumber <String> #1013 { "2.3.13" }
+              }
+              Vendor <REF> #1008
+            }
+            <PluginMenuLayout> #1014 {
+              Title <String> #1015 { "SeqRapportGenerator" }
+              Name <String> #1016 { "SeqRapportGeneratorAction" }
+              VersionID <VersionID> #1017 {
+                RevisionNumber <String> #1018 { "2.3.13" }
+              }
+              Vendor <REF> #1008
+            }
+            <PluginMenuLayout> #1019 {
+              Title <String> #1020 { "ShakeImgConvert" }
+              Name <String> #1021 { "ShakeImgConvert" }
+              VersionID <VersionID> #1022 {
+                RevisionNumber <String> #1023 { "2.3.15" }
+              }
+              Vendor <REF> #1008
+            }
+            <PluginMenuLayout> #1024 {
+              Title <String> #1025 { "WavGenerator" }
+              Name <String> #1026 { "WavGeneratorAction" }
+              VersionID <VersionID> #1027 {
+                RevisionNumber <String> #1028 { "2.3.13" }
+              }
+              Vendor <REF> #1008
+            }
+          }
+        }
       }
     }
   }
