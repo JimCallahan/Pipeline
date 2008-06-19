@@ -3,7 +3,7 @@ FileHostname = temerity.radar.local
 FilePort = 53136
 HomeDirectory = /nisusers
 HostIDs = 
-    temerity.radar.local          67273364097299496834168836746315016772
+    temerity.radar.local          -137332902725157864590685998602987627968
 JavaClassVersion = 50.0
 JavaHome = /usr/java/jdk1.6.0_06/jre
 JavaName = Java HotSpot(TM) Server VM
@@ -11,10 +11,10 @@ JavaVendor = Sun Microsystems Inc.
 JavaVersion = 1.6.0_06
 JobPort = 53140
 LegacyPlugins = false
-LicenseEnd = Wed Oct 01 01:06:36 EDT 2008
-LicenseEndStamp = 1222837596358
-LicenseStart = Thu Jun 19 01:06:31 EDT 2008
-LicenseStartStamp = 1213851991865
+LicenseEnd = Wed Oct 01 02:25:15 EDT 2008
+LicenseEndStamp = 1222842315158
+LicenseStart = Thu Jun 19 02:25:10 EDT 2008
+LicenseStartStamp = 1213856710068
 LicenseType = Limited
 MacHomeDirectory = /nisusers
 MacProductionDirectory = /base/prod
