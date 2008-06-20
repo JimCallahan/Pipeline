@@ -1,4 +1,4 @@
-// $Id: QueueSlotsTableModel.java,v 1.10 2007/04/28 22:43:21 jim Exp $
+// $Id: QueueSlotsTableModel.java,v 1.11 2008/06/20 22:44:58 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -181,7 +181,7 @@ class QueueSlotsTableModel
 	  value = status.getNodeID().getName();
 	else 
 	  value = "";
-	
+	break;
       case 7:
 	if(status != null) 
 	  value = (status.getNodeID().getAuthor() + "|" + status.getNodeID().getView());
