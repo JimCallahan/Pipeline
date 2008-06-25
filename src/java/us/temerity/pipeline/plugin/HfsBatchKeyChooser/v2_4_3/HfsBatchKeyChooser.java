@@ -1,6 +1,6 @@
-// $Id: HfsBatchKeyChooser.java,v 1.4 2008/06/25 20:44:44 jim Exp $
+// $Id: HfsBatchKeyChooser.java,v 1.1 2008/06/25 20:44:44 jim Exp $
 
-package us.temerity.pipeline.plugin.HfsBatchKeyChooser.v2_4_1;
+package us.temerity.pipeline.plugin.HfsBatchKeyChooser.v2_4_3;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.param.key.*;
@@ -41,7 +41,7 @@ class HfsBatchKeyChooser
   public 
   HfsBatchKeyChooser() 
   {
-    super("HfsBatch", new VersionID("2.4.1"), "Temerity", 
+    super("HfsBatch", new VersionID("2.4.3"), "Temerity", 
           "Used to turn the \"HfsBatch\" or \"HfsMaster\" license key on for jobs who's " + 
           "Action plugin requires a Houdini \"Batch\" or \"Master\" license."); 
 
@@ -129,7 +129,7 @@ class HfsBatchKeyChooser
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 2712263122914872814L;
+  private static final long serialVersionUID = -1302740159579433022L;
 
   public static final String aKeyType             = "KeyType";
   public static final String aHoudiniMaster       = "Houdini Master";
