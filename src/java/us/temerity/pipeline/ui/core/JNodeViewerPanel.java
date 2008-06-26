@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.117 2008/06/03 17:47:01 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.118 2008/06/26 22:43:16 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -92,6 +92,7 @@ class JNodeViewerPanel
       pViewerNodes = new TreeMap<NodePath,ViewerNode>();
       pViewerLinks = new ViewerLinks();
       pSelected = new TreeMap<NodePath,ViewerNode>();
+      pPostUpdateSelected = new TreeSet<String>();
 
       pRemoveSecondarySeqs = new TreeMap<String,FileSeq>();
 
@@ -750,6 +751,30 @@ class JNodeViewerPanel
    * 
    * @param names
    *   The fully resolved names of the root nodes.
+   * 
+   * @param postUpdateSelected
+   *   The names of the nodes which should be selected after an update.
+   */
+  public synchronized void 
+  setRoots
+  (
+   TreeSet<String> names, 
+   TreeSet<String> postUpdateSelected   
+  )
+  {
+    pRoots.clear();
+    for(String name : names) 
+      pRoots.put(name, null);
+    
+    PanelUpdater pu = new PanelUpdater(this, postUpdateSelected);
+    pu.execute();
+  }
+
+  /**
+   * Set the root nodes displayed by the viewer. <P> 
+   * 
+   * @param names
+   *   The fully resolved names of the root nodes.
    */
   public synchronized void 
   setRoots
@@ -757,12 +782,7 @@ class JNodeViewerPanel
    TreeSet<String> names
   )
   {
-    pRoots.clear();
-    for(String name : names) 
-      pRoots.put(name, null);
-    
-    PanelUpdater pu = new PanelUpdater(this);
-    pu.execute();
+    setRoots(names, null);
   }
 
   /**
@@ -794,6 +814,28 @@ class JNodeViewerPanel
    * 
    * @param name
    *   The fully resolved node name.
+   * 
+   * @param postUpdateSelected
+   *   The names of the nodes which should be selected after an update.
+   */
+  public synchronized void 
+  addRoot
+  (
+   String name, 
+   TreeSet<String> postUpdateSelected   
+  )
+  {
+    TreeSet<String> roots = new TreeSet<String>(pRoots.keySet());
+    roots.add(name);
+    
+    setRoots(roots, postUpdateSelected);
+  }
+
+  /**
+   * Add the given node name to the root nodes displayed by the viewer. <P> 
+   * 
+   * @param name
+   *   The fully resolved node name.
    */
   public synchronized void 
   addRoot
@@ -801,10 +843,7 @@ class JNodeViewerPanel
    String name
   )
   {
-    TreeSet<String> roots = new TreeSet<String>(pRoots.keySet());
-    roots.add(name);
-    
-    setRoots(roots);
+    addRoot(name, null);
   }
 
   /**
@@ -952,13 +991,17 @@ class JNodeViewerPanel
    * 
    * @param roots
    *   The current status for all root nodes.
+   * 
+   * @param postUpdateSelected
+   *   The names of nodes to select after updating the node layout.
    */
   public synchronized void 
   applyPanelUpdates
   (
    String author, 
    String view,
-   TreeMap<String,NodeStatus> roots
+   TreeMap<String,NodeStatus> roots, 
+   TreeSet<String> postUpdateSelected
   )
   {
     if(!pAuthor.equals(author) || !pView.equals(view)) 
@@ -967,6 +1010,9 @@ class JNodeViewerPanel
     pRoots.clear();
     pRoots.putAll(roots); 
     
+    pPostUpdateSelected.clear(); 
+    pPostUpdateSelected.addAll(postUpdateSelected);
+
     updateUniverse();
   }
 
@@ -1849,6 +1895,15 @@ class JNodeViewerPanel
       /* preserve the current layout */ 
       pExpandDepth  = null; 
       pLayoutPolicy = LayoutPolicy.Preserve;
+    }
+
+    /* reselect any viewer nodes marked for post-update selection */ 
+    if(!pPostUpdateSelected.isEmpty()) {
+      for(ViewerNode vnode : pViewerNodes.values()) {
+        String vname = vnode.getNodePath().getCurrentName();
+        if(pPostUpdateSelected.contains(vname))
+          addSelect(vnode);
+      }
     }
 
     /* render the changes */ 
@@ -7315,6 +7370,11 @@ class JNodeViewerPanel
    * The currently selected link.
    */
   private LinkCommon  pSelectedLink;
+
+  /**
+   * The names of nodes which should be selected after an update.
+   */ 
+  private TreeSet<String> pPostUpdateSelected; 
 
 
   /**

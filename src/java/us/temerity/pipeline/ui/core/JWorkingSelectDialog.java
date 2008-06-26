@@ -1,4 +1,4 @@
-// $Id: JWorkingSelectDialog.java,v 1.1 2007/08/27 08:41:32 jim Exp $
+// $Id: JWorkingSelectDialog.java,v 1.2 2008/06/26 22:43:16 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -162,7 +162,8 @@ class JWorkingSelectDialog
   public void 
   updateSelection
   (
-   String name, 
+   String name,
+   TreeSet<String> postUpdateSelected,
    PanelGroup<JNodeBrowserPanel> browsers, 
    PanelGroup<JNodeViewerPanel> viewers 
   )
@@ -172,6 +173,8 @@ class JWorkingSelectDialog
 
     pNodeNameField.setText(name); 
     pChannelField.setSelectedIndex(0);
+
+    pPostUpdateSelected = postUpdateSelected;
   }
 
 
@@ -257,7 +260,7 @@ class JWorkingSelectDialog
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   *
+   * 
    */ 
   private void 
   doAddSelection() 
@@ -268,7 +271,7 @@ class JWorkingSelectDialog
     int channel = pChannelField.getSelectedIndex();
     JNodeViewerPanel viewer = pNodeViewers.getPanel(channel); 
     if(viewer != null) 
-      viewer.addRoot(pNodeNameField.getText());
+      viewer.addRoot(pNodeNameField.getText(), pPostUpdateSelected);
     else 
       doCreateNewWindow(channel);
   }
@@ -285,9 +288,9 @@ class JWorkingSelectDialog
     int channel = pChannelField.getSelectedIndex();
     JNodeViewerPanel viewer = pNodeViewers.getPanel(channel); 
     if(viewer != null) {
-      TreeSet<String> selected = new TreeSet<String>(); 
-      selected.add(pNodeNameField.getText());
-      viewer.setRoots(selected);
+      TreeSet<String> roots = new TreeSet<String>(); 
+      roots.add(pNodeNameField.getText());
+      viewer.setRoots(roots, pPostUpdateSelected);
     }
     else {
       doCreateNewWindow(channel);
@@ -335,9 +338,9 @@ class JWorkingSelectDialog
       frame.repaint();
     }
 
-    TreeSet<String> selected = new TreeSet<String>(); 
-    selected.add(pNodeNameField.getText());
-    viewer.setRoots(selected);
+    TreeSet<String> roots = new TreeSet<String>(); 
+    roots.add(pNodeNameField.getText());
+    viewer.setRoots(roots, pPostUpdateSelected);
   }
 
   
@@ -362,6 +365,11 @@ class JWorkingSelectDialog
    */ 
   private PanelGroup<JNodeBrowserPanel>  pNodeBrowsers; 
   private PanelGroup<JNodeViewerPanel>   pNodeViewers; 
+
+  /**
+   * The names of the nodes which should be selected in the NodeViewer panel after an update.
+   */ 
+  private TreeSet<String>  pPostUpdateSelected; 
 
 
   /*----------------------------------------------------------------------------------------*/

@@ -25,7 +25,7 @@ def help():
     print
     print '  Commands:'
     print '    checked-in --view=... [--version=...]'
-    print '    working --select=...'
+    print '    working --select=... [--highlight=... ...]'
     sys.exit(0)
 
 def usage():

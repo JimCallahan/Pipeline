@@ -30,8 +30,8 @@ Client program (plui) <br>
 <blockquote>Directs a locally running <span style="font-weight: bold;">plui</span>(1)
 to perform a limited set
 of operations.&nbsp; This is provides a way for external tools, such as
-production tracking applications, to benefit from the features of
-  <span style="font-weight: bold;">plui</span>(1) and to coordinate the
+production tracking applications, to benefit from the features of <span
+ style="font-weight: bold;">plui</span>(1) and to coordinate the
 usage of such tools by the artist with
 Pipeline.<br>
   <br>
@@ -127,17 +127,27 @@ specified, the latest checked-in version will be viewed.<br>
 </div>
 <blockquote><span style="font-weight: bold;">working</span> <span
  style="font-weight: bold;">--select</span>=<span
- style="font-style: italic;">node-name</span><span
+ style="font-style: italic;">node-name </span>[<span
+ style="font-weight: bold;">--highlight</span>=<span
+ style="font-style: italic;">node-name ...</span>]<span
  style="font-weight: bold;"></span><br>
 </blockquote>
 <div style="margin-left: 80px;">Directs <span
  style="font-weight: bold;">plui</span>(1)
-to add the given node (node-name) to the node's selected in the Node
-Browser and Node Viewer panels sharing an update channel.&nbsp; This
-command
-will cause a dialog to be displayed by <span style="font-weight: bold;">plui</span>(1)
+to add the given node (node-name) to the root nodes selected in the
+Node
+Browser and therefore displayed in any Node Viewer panel sharing an
+update channel.&nbsp; Depending on the user's preferences, this
+command may cause a dialog to be displayed by <span
+ style="font-weight: bold;">plui</span>(1)
 which allows the user to decide which specific panels will have their
-node selection modified.<br>
+node selection modified.&nbsp;&nbsp; <br>
+<br>
+The optional <span style="font-weight: bold;">--highlight</span>
+options will cause the specified nodes (if visible) to be highlighted
+as if they had been selected interactively in the Node Viewer
+panel.&nbsp; This can be useful for brining certain nodes to the user's
+attention such as Edit nodes in the node network used for a task.<br>
 <br>
 </div>
 <h3><a name="See_Also"></a>See Also</h3>

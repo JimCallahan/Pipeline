@@ -1,4 +1,4 @@
-// $Id: PanelUpdater.java,v 1.25 2007/12/16 06:31:50 jesse Exp $
+// $Id: PanelUpdater.java,v 1.26 2008/06/26 22:43:16 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -86,6 +86,22 @@ class PanelUpdater
   ) 
   {
     this(panel, false, true, null);
+  }
+
+  /**
+   * A lightweight panel update originating from the Node Viewer panel. <P> 
+   */ 
+  public
+  PanelUpdater
+  (
+   JNodeViewerPanel panel, 
+   TreeSet<String> postUpdateSelected   
+  ) 
+  {
+    this(panel, false, true, null);
+
+    if(postUpdateSelected != null) 
+      pNodeViewerPostUpdateSelected.addAll(postUpdateSelected);
   }
 
   /**
@@ -284,6 +300,8 @@ class PanelUpdater
     
     pAuthor = panel.getAuthor();
     pView   = panel.getView();
+
+    pNodeViewerPostUpdateSelected = new TreeSet<String>(); 
 
     pGroupID = panel.getGroupID();
     if(pGroupID > 0) {
@@ -737,14 +755,16 @@ class PanelUpdater
 	  /* node viewer */ 
 	  if(pNodeViewerPanel != null) {
 	    if(pNodeViewerRoots != null) 
-	      pNodeViewerPanel.applyPanelUpdates(pAuthor, pView, pNodeViewerRoots);
+	      pNodeViewerPanel.applyPanelUpdates
+                (pAuthor, pView, pNodeViewerRoots, pNodeViewerPostUpdateSelected); 
 	  }
 	}
 	
 	/* node details */ 
 	if(pNodeDetailsPanel != null) 
 	  pNodeDetailsPanel.applyPanelUpdates
-	    (pAuthor, pView, pDetailedNode, pUserLicenseKeys, pUserSelectionKeys, pUserHardwareKeys);
+	    (pAuthor, pView, pDetailedNode, 
+             pUserLicenseKeys, pUserSelectionKeys, pUserHardwareKeys);
 	
 	/* node files */ 
 	if(pNodeFilesPanel != null) 
@@ -908,6 +928,12 @@ class PanelUpdater
   private TreeSet<String>  pNodeViewerRootsToUpdate;
 
   /**
+   * The names of the nodes which should be selected in the NodeViewer after an update.
+   */ 
+  private TreeSet<String>  pNodeViewerPostUpdateSelected; 
+
+
+  /**
    * Whether to update only the node details panels.
    */
   private boolean  pNodeDetailsOnly; 
@@ -978,6 +1004,7 @@ class PanelUpdater
    * The current license keys that a user can set
    */
   private ArrayList<HardwareKey>  pUserHardwareKeys; 
+
 
   /*----------------------------------------------------------------------------------------*/
 

@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.86 2008/05/19 06:39:24 jim Exp $
+// $Id: UIMaster.java,v 1.87 2008/06/26 22:43:16 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2836,18 +2836,22 @@ class UIMaster
    * 
    * @param name
    *   The fully resolved node name.
-   */ 
+   * 
+   * @param postUpdateSelected
+   *   The names of the nodes which should be selected in the NodeViewer after an update.
+   */
   public void
   remoteWorkingSelect
   (
-   String name
+   String name, 
+   TreeSet<String> postUpdateSelected
   ) 
   {
     LogMgr.getInstance().log
       (LogMgr.Kind.Ops, LogMgr.Level.Finer,
        "Selecting Working Version: " + name); 
 
-    SwingUtilities.invokeLater(new ShowWorkingSelectDialogTask(name));
+    SwingUtilities.invokeLater(new ShowWorkingSelectDialogTask(name, postUpdateSelected));
   }
     
   /**
@@ -6169,23 +6173,26 @@ class UIMaster
     public 
     ShowWorkingSelectDialogTask
     (
-     String name
+     String name, 
+     TreeSet<String> postUpdateSelected
     ) 
     {
       super("UIMaster:ShowWorkingSelectDialogTask");
       pNodeName = name;
+      pPostUpdateSelected = postUpdateSelected;
     }
 
     public void 
     run() 
     {
       pWorkingSelectDialog.updateSelection
-        (pNodeName, getNodeBrowserPanels(), getNodeViewerPanels());
+        (pNodeName, pPostUpdateSelected, getNodeBrowserPanels(), getNodeViewerPanels());
 
       pWorkingSelectDialog.setVisible(true);	
     }
 
-    private String  pNodeName; 
+    private String           pNodeName; 
+    private TreeSet<String>  pPostUpdateSelected; 
   }
 
 
