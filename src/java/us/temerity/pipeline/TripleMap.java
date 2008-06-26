@@ -1,4 +1,4 @@
-// $Id: TripleMap.java,v 1.5 2006/10/23 18:29:31 jim Exp $
+// $Id: TripleMap.java,v 1.6 2008/06/26 21:49:34 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -234,6 +234,42 @@ class TripleMap<A,B,C,V>
 
     return tableC.get(keyC);    
   }
+  
+  /**
+   * Returns the TreeMap which this map maps the specified set of keys.
+   * 
+   * @param keyA
+   *   The first key.
+   * 
+   * @param keyB
+   *   The second key. 
+   * 
+   * @return
+   *   The value or <CODE>null</CODE> if no entry exists.
+   */ 
+  public TreeMap<C, V>
+  get
+  (
+   A keyA,
+   B keyB
+  ) 
+  {
+    if(keyA == null) 
+      throw new IllegalArgumentException("The first key cannot be (null)!");
+
+    if(keyB == null) 
+      throw new IllegalArgumentException("The second key cannot be (null)!");
+
+
+    TreeMap<B,TreeMap<C,V>> tableB = super.get(keyA);
+    if(tableB == null) 
+      return null;
+
+    TreeMap<C,V> tableC = tableB.get(keyB);
+
+    return tableC;    
+  }
+
 
   /**
    * Removes the mapping for the specified set of keys if present.
