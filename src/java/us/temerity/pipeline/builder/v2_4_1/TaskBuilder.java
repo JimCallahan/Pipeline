@@ -1,4 +1,4 @@
-// $Id: TaskBuilder.java,v 1.4 2008/05/26 03:21:49 jesse Exp $
+// $Id: TaskBuilder.java,v 1.5 2008/06/26 21:30:12 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_1;
 
@@ -277,11 +277,11 @@ class TaskBuilder
     annot.setParamValue("ApprovalBuilder", builderID);
     addTaskAnnotationToNode(nodeName, annot);
   }
-
+  
   /*----------------------------------------------------------------------------------------*/
   
   /** 
-   * Adds a SubmitTask with a specific approval node to the set of annotation 
+   * Adds an SynchTask with a specific synch builder to the set of annotation 
    * plugins which will be added to the node built by the given Stage.<P> 
    * 
    * @param stage
@@ -296,8 +296,80 @@ class TaskBuilder
    * @param taskType
    *   The value to give the TaskType/CustomTaskType parameter(s) of the annotation.
    * 
-   * @param approveNode
-   *   The name of the approve node which corresponds to this approve node.
+   * @param builderID
+   *   The unique ID of the synch builder.
+   */ 
+  protected void
+  addSynchTaskAnnotation
+  (
+   BaseStage stage,
+   String projectName, 
+   String taskName, 
+   String taskType, 
+   BuilderID builderID
+  )
+    throws PipelineException
+  {
+    BaseAnnotation annot = 
+      getNewTaskAnnotation(NodePurpose.Synch, projectName, taskName, taskType); 
+    annot.setParamValue("SynchBuilder", builderID);
+    addTaskAnnotationToStage(stage, annot); 
+  }
+
+  /** 
+   * Adds an SynchTask with a specific approval builder to the set of annotation 
+   * plugins on the given node. <P> 
+   * 
+   * @param nodeName
+   *   The fully resolved name of the node to be annotated. 
+   * 
+   * @param projectName
+   *   The value to give the ProjectName parameter of the annotation.
+   * 
+   * @param taskName
+   *   The value to give the ProjectName parameter of the annotation.
+   * 
+   * @param taskType
+   *   The value to give the TaskType/CustomTaskType parameter(s) of the annotation.
+   * 
+   * @param builderID
+   *   The unique ID of the synch builder.
+   */ 
+  protected void
+  addSynchTaskAnnotation
+  (
+   String nodeName, 
+   String projectName, 
+   String taskName, 
+   String taskType, 
+   BuilderID builderID
+  )
+    throws PipelineException
+  {
+    BaseAnnotation annot = 
+      getNewTaskAnnotation(NodePurpose.Synch, projectName, taskName, taskType); 
+    annot.setParamValue("SynchBuilder", builderID);
+    addTaskAnnotationToNode(nodeName, annot);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /** 
+   * Adds a SubmitTask to the set of annotation plugins which will be added to the node 
+   * built by the given Stage.<P> 
+   * 
+   * @param stage
+   *   The stage to be modified.
+   * 
+   * @param projectName
+   *   The value to give the ProjectName parameter of the annotation.
+   * 
+   * @param taskName
+   *   The value to give the ProjectName parameter of the annotation.
+   * 
+   * @param taskType
+   *   The value to give the TaskType/CustomTaskType parameter(s) of the annotation.
    */ 
   protected void
   addSubmitTaskAnnotation
@@ -315,8 +387,7 @@ class TaskBuilder
   }
 
   /** 
-   * Adds a SubmitTask with a specific approval node  to the set of annotation 
-   * plugins on the given node. <P> 
+   * Adds a SubmitTask to the set of annotation plugins on the given node. <P> 
    * 
    * @param nodeName
    *   The fully resolved name of the node to be annotated. 
@@ -330,8 +401,6 @@ class TaskBuilder
    * @param taskType
    *   The value to give the TaskType/CustomTaskType parameter(s) of the annotation.
    * 
-   * @param approveNode
-   *   The name of the approve node which corresponds to this approve node.
    */ 
   protected void
   addSubmitTaskAnnotation
@@ -351,11 +420,11 @@ class TaskBuilder
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Return a new SubmitTask, ApproveTask or Task annotation instance appropriate
-   * to be added to the set of annotation plugins for a node. <P> 
+   * Adds a FocusTask to the set of annotation plugins which will be added to the node 
+   * built by the given Stage.<P> 
    * 
-   * @param purpose
-   *   The purpose of the node within the task.
+   * @param stage
+   *   The stage to be modified.
    * 
    * @param projectName
    *   The value to give the ProjectName parameter of the annotation.
@@ -366,10 +435,79 @@ class TaskBuilder
    * @param taskType
    *   The value to give the TaskType/CustomTaskType parameter(s) of the annotation.
    */ 
+  protected void
+  addMasterFocusTaskAnnotation
+  (
+   BaseStage stage,
+   String projectName, 
+   String taskName, 
+   String taskType
+  )
+    throws PipelineException
+  {
+    BaseAnnotation annot = 
+      getNewTaskAnnotation(NodePurpose.Focus, true, projectName, taskName, taskType); 
+    addTaskAnnotationToStage(stage, annot); 
+  }
+
+  /** 
+   * Adds a FocusTask to the set of annotation plugins on the given node. <P> 
+   * 
+   * @param nodeName
+   *   The fully resolved name of the node to be annotated. 
+   * 
+   * @param projectName
+   *   The value to give the ProjectName parameter of the annotation.
+   * 
+   * @param taskName
+   *   The value to give the ProjectName parameter of the annotation.
+   * 
+   * @param taskType
+   *   The value to give the TaskType/CustomTaskType parameter(s) of the annotation.
+   */ 
+  protected void
+  addMasterFocusTaskAnnotation
+  (
+   String nodeName, 
+   String projectName, 
+   String taskName, 
+   String taskType
+  )
+    throws PipelineException
+  {
+    BaseAnnotation annot = 
+      getNewTaskAnnotation(NodePurpose.Focus, true, projectName, taskName, taskType); 
+    addTaskAnnotationToNode(nodeName, annot);
+  }
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /** 
+   * Return a new SubmitTask, ApproveTask, SynchTask, FocusTask or Task annotation instance 
+   * appropriate to be added to the set of annotation plugins for a node. <P> 
+   * 
+   * @param purpose
+   *   The purpose of the node within the task.
+   *   
+   * @param master
+   *   If the purpose is Focus, this will make it a Master Focus Node using the 
+   *   FocusTask annotation.  Otherwise it has no effect.
+   * 
+   * @param projectName
+   *   The value to give the ProjectName parameter of the annotation.
+   * 
+   * @param taskName
+   *   The value to give the ProjectName parameter of the annotation.
+   * 
+   * @param taskType
+   *   The value to give the TaskType/CustomTaskType parameter(s) of the annotation.
+   */ 
+  @SuppressWarnings("fallthrough")
   protected BaseAnnotation
   getNewTaskAnnotation
   (
    NodePurpose purpose, 
+   boolean master,
    String projectName, 
    String taskName, 
    String taskType
@@ -380,8 +518,15 @@ class TaskBuilder
     switch(purpose) {
     case Submit:
     case Approve:
+    case Synch:
       annot = pPlug.newAnnotation(purpose + "Task", new VersionID("2.4.1"), "Temerity");
       break;
+      
+    case Focus:
+      if (master) {
+        annot = pPlug.newAnnotation(purpose + "Task", new VersionID("2.4.1"), "Temerity");
+        break;
+      }
 
     default:
       annot = pPlug.newAnnotation("Task", new VersionID("2.4.1"), "Temerity");
@@ -401,6 +546,7 @@ class TaskBuilder
     switch(purpose) {
     case Submit:
     case Approve:
+    case Synch:
       break;
 
     default:
@@ -411,6 +557,35 @@ class TaskBuilder
       annot.setParamValue(aAnnotEntityType, pEntityType.toTitle());
 
     return annot; 
+  }
+  
+  /** 
+   * Return a new SubmitTask, ApproveTask, SynchTask, FocusTask or Task annotation instance 
+   * appropriate to be added to the set of annotation plugins for a node. <P> 
+   * 
+   * @param purpose
+   *   The purpose of the node within the task.
+   *   
+   * @param projectName
+   *   The value to give the ProjectName parameter of the annotation.
+   * 
+   * @param taskName
+   *   The value to give the ProjectName parameter of the annotation.
+   * 
+   * @param taskType
+   *   The value to give the TaskType/CustomTaskType parameter(s) of the annotation.
+   */ 
+  protected BaseAnnotation
+  getNewTaskAnnotation
+  (
+   NodePurpose purpose, 
+   String projectName, 
+   String taskName, 
+   String taskType
+  )
+    throws PipelineException
+  {
+    return getNewTaskAnnotation(purpose, projectName, taskName, taskType);
   }
 
   /*----------------------------------------------------------------------------------------*/
@@ -757,7 +932,8 @@ class TaskBuilder
   
 
   /**
-   * The names of parameters supported by SubmitTask, ApproveTask and Task annotations.
+   * The names of parameters supported by SubmitTask, ApproveTask, SynchTask, 
+   * and Task annotations.
    */ 
   public static final String aAnnotProjectName    = "ProjectName";
   public static final String aAnnotTaskName       = "TaskName";
@@ -767,6 +943,7 @@ class TaskBuilder
   public static final String aAnnotPurpose        = "Purpose"; 
   public static final String aAnnotAssignedTo     = "AssignedTo";
   public static final String aAnnotSupervisedBy   = "SupervisedBy";
+  public static final String aAnnotControlledBy   = "ControlledBy";
 
     
   public static final String aDoAnnotations = "DoAnnotations";
