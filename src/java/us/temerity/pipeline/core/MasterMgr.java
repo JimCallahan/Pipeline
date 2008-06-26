@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.246 2008/06/19 03:30:36 jim Exp $
+// $Id: MasterMgr.java,v 1.247 2008/06/26 17:09:09 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1648,7 +1648,7 @@ class MasterMgr
     timer.aquire();
     pDatabaseLock.readLock().lock();
     try {
-      return pAdminPrivileges.getWorkGroups(timer);
+      return pAdminPrivileges.getWorkGroupsRsp(timer);
     }
     finally {
       pDatabaseLock.readLock().unlock();
@@ -1688,7 +1688,7 @@ class MasterMgr
     timer.aquire();
     pDatabaseLock.readLock().lock();
     try {
-      pAdminPrivileges.setWorkGroups(timer, req);
+      pAdminPrivileges.setWorkGroupsFromReq(timer, req);
       updateAdminPrivileges();
 
       /* post-op tasks */ 
@@ -1722,7 +1722,7 @@ class MasterMgr
     timer.aquire();
     pDatabaseLock.readLock().lock();
     try {
-      return pAdminPrivileges.getPrivileges(timer);
+      return pAdminPrivileges.getPrivilegesRsp(timer);
     }
     finally {
       pDatabaseLock.readLock().unlock();
@@ -1752,7 +1752,7 @@ class MasterMgr
     timer.aquire();
     pDatabaseLock.readLock().lock();
     try {
-      pAdminPrivileges.editPrivileges(timer, req);
+      pAdminPrivileges.editPrivilegesFromReq(timer, req);
       updateAdminPrivileges();
       return new SuccessRsp(timer);
     }
@@ -1788,7 +1788,7 @@ class MasterMgr
     timer.aquire();
     pDatabaseLock.readLock().lock();
     try {
-      return pAdminPrivileges.getPrivilegeDetails(timer, req);
+      return pAdminPrivileges.getPrivilegeDetailsRsp(timer, req);
     }
     finally {
       pDatabaseLock.readLock().unlock();
@@ -6595,6 +6595,14 @@ class MasterMgr
     try {
       timer.resume();	
 
+      /* add the owner as a user if not already added */ 
+      if(pAdminPrivileges.addMissingUser(author)) {
+        updateAdminPrivileges();
+        
+        WorkGroups groups = pAdminPrivileges.getWorkGroups();
+        startExtensionTasks(timer, new SetWorkGroupsExtFactory(groups)); 
+      }
+
       if(!pAdminPrivileges.isNodeManaged(req, author)) 
 	throw new PipelineException
 	  ("Only a user with Node Manager privileges may create working areas owned " +
@@ -7222,7 +7230,7 @@ class MasterMgr
       }
       else {
         tannot.setParamValues(annot, req.getRequestor(), 
-                              pAdminPrivileges.getPrivilegeDetails(req));
+                              pAdminPrivileges.getPrivilegeDetailsFromReq(req));
       }
 
       writeAnnotations(name, table);
@@ -11866,6 +11874,14 @@ class MasterMgr
     pDatabaseLock.readLock().lock();
     try {
       timer.resume();	
+
+      /* add the owner as a user if not already added */ 
+      if(pAdminPrivileges.addMissingUser(author)) {
+        updateAdminPrivileges();
+        
+        WorkGroups groups = pAdminPrivileges.getWorkGroups();
+        startExtensionTasks(timer, new SetWorkGroupsExtFactory(groups)); 
+      }
 
       if(!pAdminPrivileges.isNodeManaged(req, author)) 
 	throw new PipelineException

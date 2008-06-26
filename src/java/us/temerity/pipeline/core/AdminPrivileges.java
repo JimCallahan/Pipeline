@@ -1,4 +1,4 @@
-// $Id: AdminPrivileges.java,v 1.7 2007/06/22 01:26:09 jim Exp $
+// $Id: AdminPrivileges.java,v 1.8 2008/06/26 17:09:09 jim Exp $
  
 package us.temerity.pipeline.core;
 
@@ -270,6 +270,119 @@ class AdminPrivileges
   }
 
 
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   A C C E S S                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get a deep copy of the work groups used to determine the scope of administrative 
+   * privileges.
+   */
+  public synchronized WorkGroups
+  getWorkGroups() 
+  {
+    return new WorkGroups(pWorkGroups);
+  }
+
+  /**
+   * Get the privileges granted to a specific user with respect to all other users. 
+   * 
+   * @param uname
+   *   The name of the user who's privileges are being requested.
+   * 
+   * @return
+   *   The privilege details.
+   */ 
+  public synchronized PrivilegeDetails
+  getPrivilegeDetails
+  (
+   String uname
+  )
+  {
+    PrivilegeDetails details = null;
+
+    if(uname.equals(PackageInfo.sPipelineUser)) {
+      Privileges privs = new Privileges();
+      privs.setMasterAdmin(true);
+      details = new PrivilegeDetails(privs, null);
+    }
+    else {
+      Privileges privs = pPrivileges.get(uname);
+      if(privs == null) 
+        details = new PrivilegeDetails();
+      else {
+        Set<String> managed = null;
+        if(privs.isQueueManager() || privs.isNodeManager()) 
+          managed = pWorkGroups.getManagedUsers(uname);
+        details = new PrivilegeDetails(privs, managed);
+      }
+    }
+
+    return details;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get work group memberships for the given user.
+   * 
+   * @return 
+   *   The table of membership information indexed by the names of the work groups of which 
+   *   the user is a member. A value of <CODE>false</CODE>, means that the user is a member. 
+   *   If the value is <CODE>true</CODE>, then the user is a manager.  If the value is 
+   *   <CODE>null</CODE> or if the group is missing from the table, then the user is neither
+   *   a member or manager of the group.
+   */ 
+  public synchronized TreeMap<String,Boolean>
+  getWorkGroupMemberships
+  (
+   String user
+  ) 
+  {
+    if(user == null) 
+      throw new IllegalArgumentException
+        ("The user name cannot be (null)!");
+
+    TreeMap<String,Boolean> memberships = new TreeMap<String,Boolean>(); 
+    for(String gname : pWorkGroups.getGroups()) {
+      Boolean isManager = pWorkGroups.isMemberOrManager(user, gname);
+      if(isManager != null) 
+        memberships.put(gname, isManager);
+    }
+
+    return memberships;
+  }
+   
+  /**
+   * Make sure the given user has been added and if not create one with default permissions. 
+   * 
+   * @return 
+   *   Whether a new user was created.
+   */ 
+  public synchronized boolean
+  addMissingUser
+  (
+   String user
+  ) 
+    throws PipelineException
+  {
+    if(user == null) 
+      throw new IllegalArgumentException
+        ("The user name cannot be (null)!");
+
+    if(pWorkGroups.isUser(user)) 
+      return false; 
+
+    pWorkGroups.addUser(user);
+    writeWorkGroups();
+
+    return true;
+  }
+   
+
+
   /*----------------------------------------------------------------------------------------*/
   /*   R E Q U E S T S                                                                      */
   /*----------------------------------------------------------------------------------------*/
@@ -321,13 +434,13 @@ class AdminPrivileges
    *   <CODE>FailureRsp</CODE> if unable to determine the work groups.
    */ 
   public synchronized Object
-  getWorkGroups
+  getWorkGroupsRsp
   (
    TaskTimer timer 
   )
   {
     timer.resume();	
-    return new MiscGetWorkGroupsRsp(timer, pWorkGroups);
+    return new MiscGetWorkGroupsRsp(timer, getWorkGroups());
   }
   
   /**
@@ -346,7 +459,7 @@ class AdminPrivileges
    *   If unable to set the work groups.
    */ 
   public synchronized void
-  setWorkGroups
+  setWorkGroupsFromReq
   (
    TaskTimer timer,
    MiscSetWorkGroupsReq req
@@ -376,37 +489,6 @@ class AdminPrivileges
       writePrivileges();
   }
 
-  /**
-   * Get work group memberships for the given user.
-   * 
-   * @return 
-   *   The table of membership information indexed by the names of the work groups of which 
-   *   the user is a member. A value of <CODE>false</CODE>, means that the user is a member. 
-   *   If the value is <CODE>true</CODE>, then the user is a manager.  If the value is 
-   *   <CODE>null</CODE> or if the group is missing from the table, then the user is neither
-   *   a member or manager of the group.
-   */ 
-  public synchronized TreeMap<String,Boolean>
-  getWorkGroupMemberships
-  (
-   String user
-  ) 
-  {
-    if(user == null) 
-      throw new IllegalArgumentException
-        ("The user name cannot be (null)!");
-
-    TreeMap<String,Boolean> memberships = new TreeMap<String,Boolean>(); 
-    for(String gname : pWorkGroups.getGroups()) {
-      Boolean isManager = pWorkGroups.isMemberOrManager(user, gname);
-      if(isManager != null) 
-        memberships.put(gname, isManager);
-    }
-
-    return memberships;
-  }
-   
-
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -421,7 +503,7 @@ class AdminPrivileges
    *   <CODE>FailureRsp</CODE> if unable to determine the privileges.
    */ 
   public synchronized Object
-  getPrivileges
+  getPrivilegesRsp
   (
    TaskTimer timer 
   )
@@ -446,7 +528,7 @@ class AdminPrivileges
    *   If unable to set the privileges.
    */ 
   public synchronized void 
-  editPrivileges
+  editPrivilegesFromReq
   (
    TaskTimer timer,
    MiscEditPrivilegesReq req
@@ -488,7 +570,7 @@ class AdminPrivileges
    *   <CODE>FailureRsp</CODE> if unable to determine the privileges.
    */ 
   public synchronized Object
-  getPrivilegeDetails
+  getPrivilegeDetailsRsp
   (
    TaskTimer timer, 
    MiscGetPrivilegeDetailsReq req   
@@ -509,51 +591,13 @@ class AdminPrivileges
    *   The request.
    */ 
   public synchronized PrivilegeDetails
-  getPrivilegeDetails
+  getPrivilegeDetailsFromReq
   (
    PrivilegedReq req
   )
   {	
     return getPrivilegeDetails(req.getRequestor());
   }
-
-  /**
-   * Get the privileges granted to a specific user with respect to all other users. 
-   * 
-   * @param uname
-   *   The name of the user who's privileges are being requested.
-   * 
-   * @return
-   *   The privilege details.
-   */ 
-  public synchronized PrivilegeDetails
-  getPrivilegeDetails
-  (
-   String uname
-  )
-  {
-    PrivilegeDetails details = null;
-
-    if(uname.equals(PackageInfo.sPipelineUser)) {
-      Privileges privs = new Privileges();
-      privs.setMasterAdmin(true);
-      details = new PrivilegeDetails(privs, null);
-    }
-    else {
-      Privileges privs = pPrivileges.get(uname);
-      if(privs == null) 
-        details = new PrivilegeDetails();
-      else {
-        Set<String> managed = null;
-        if(privs.isQueueManager() || privs.isNodeManager()) 
-          managed = pWorkGroups.getManagedUsers(uname);
-        details = new PrivilegeDetails(privs, managed);
-      }
-    }
-
-    return details;
-  }
-
 
   
   /*----------------------------------------------------------------------------------------*/

@@ -1,4 +1,4 @@
-// $Id: WorkGroups.java,v 1.5 2008/03/11 12:54:59 jim Exp $
+// $Id: WorkGroups.java,v 1.6 2008/06/26 17:09:09 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -48,6 +48,28 @@ class WorkGroups
     pUserGroups = new TreeMap<Integer,TreeSet<Integer>>();
     pGroupUsers = new TreeMap<Integer,TreeSet<Integer>>();
   }
+
+  /**
+   * Copy constructor.
+   */ 
+  public 
+  WorkGroups
+  (
+   WorkGroups groups
+  ) 
+  {
+    pUserIDs    = new TreeMap<String,Integer>(groups.pUserIDs);
+    pUserNames  = new TreeMap<Integer,String>(groups.pUserNames);
+    pNextUserID = groups.pNextUserID; 
+ 
+    pGroupIDs    = new TreeMap<String,Integer>(groups.pGroupIDs);
+    pGroupNames  = new TreeMap<Integer,String>(groups.pGroupNames);
+    pNextGroupID = groups.pNextGroupID; 
+
+    pUserGroups = new TreeMap<Integer,TreeSet<Integer>>(groups.pUserGroups);
+    pGroupUsers = new TreeMap<Integer,TreeSet<Integer>>(groups.pGroupUsers);
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
