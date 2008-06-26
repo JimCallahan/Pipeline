@@ -1,4 +1,4 @@
-// $Id: TaskBuilder.java,v 1.5 2008/06/26 21:30:12 jesse Exp $
+// $Id: TaskBuilder.java,v 1.6 2008/06/26 21:31:34 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_1;
 
@@ -585,7 +585,7 @@ class TaskBuilder
   )
     throws PipelineException
   {
-    return getNewTaskAnnotation(purpose, projectName, taskName, taskType);
+    return getNewTaskAnnotation(purpose, false, projectName, taskName, taskType);
   }
 
   /*----------------------------------------------------------------------------------------*/
