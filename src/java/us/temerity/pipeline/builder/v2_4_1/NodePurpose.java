@@ -64,7 +64,19 @@ enum NodePurpose
   /**
    * A node containing QuickTime movies delivered for client or internal dailies.
    */ 
-  Deliver; 
+  Deliver,
+  
+  /**
+   * A node that should be checked-in when the Unify nodes for a task have been updated.
+   */ 
+  Synch,
+  
+  /**
+   * A node which may be procedurally or manually generated that has as sources 
+   * product nodes from multiple tasks which need to be carefully coordinated to ensure
+   * correctness.
+   */ 
+  Unify; 
 
 
 
@@ -136,6 +148,7 @@ enum NodePurpose
       switch(type) {
       case Approve:
       case Submit:
+      case Synch:
         break;
       default:
         toReturn.add(type.toTitle());
