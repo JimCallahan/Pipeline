@@ -1,4 +1,4 @@
-// $Id: AppDirs.java,v 1.13 2008/06/26 05:34:29 jim Exp $
+// $Id: AppDirs.java,v 1.14 2008/06/26 21:07:14 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -63,6 +63,11 @@ enum AppDirs
    * Houdini's GEO/BGEO format model files. 
    */ 
   Geo, 
+
+  /**
+   * Houdini's GEO/BGEO format model files. 
+   */ 
+  Bgeo, 
 
   /**
    * Houdini's HIP scene files. 
