@@ -1,4 +1,4 @@
-// $Id: AppDirs.java,v 1.12 2008/04/03 10:30:47 jim Exp $
+// $Id: AppDirs.java,v 1.13 2008/06/26 05:34:29 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -71,8 +71,29 @@ enum AppDirs
 
   /**
    * Houdini's command file.
-   */ 
-  Cmd, 
+   */
+  Cmd,
+
+  /**
+   * Houdini's OTL file.
+   */
+  Otl,
+
+  /**
+   * Exported Houdini channels.
+   */
+  Chan,
+
+  /**
+   * Houdini render input files. 
+   */
+  Ifd,
+
+  /**
+   * Houdini RAT format texture/image files.
+   */
+  Rat,
+
 
 
   /*-- IMAGES ------------------------------------------------------------------------------*/
@@ -144,8 +165,13 @@ enum AppDirs
 
   /**
    * QuickTime movies.
-   */ 
-  QuickTime, 
+   */
+  QuickTime,
+
+  /**
+   * EXR image format files. 
+   */
+  Exr,
 
 
   /*-- MISC MODELS -------------------------------------------------------------------------*/
@@ -185,9 +211,8 @@ enum AppDirs
 
   /**
    * Miscellaneous data files not easily catagorized.
-   */ 
-  Misc; 
-
+   */
+  Misc;
 
 
   /*----------------------------------------------------------------------------------------*/

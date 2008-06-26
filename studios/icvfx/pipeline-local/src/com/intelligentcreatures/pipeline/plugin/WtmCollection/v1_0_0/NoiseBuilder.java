@@ -1,4 +1,4 @@
-// $Id: NoiseBuilder.java,v 1.8 2008/06/15 21:51:25 jim Exp $
+// $Id: NoiseBuilder.java,v 1.9 2008/06/26 05:34:29 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -199,22 +199,23 @@ class NoiseBuilder
   public MappedArrayList<String, PluginContext> 
   getNeededActions()
   {
-    ArrayList<PluginContext> plugins = new ArrayList<PluginContext>();	
-    plugins.add(new PluginContext("Touch")); 
-    plugins.add(new PluginContext("Copy")); 
-    plugins.add(new PluginContext("MayaBuild")); 	
-    plugins.add(new PluginContext("MayaAttachGeoCache", "Temerity", 
+    ArrayList<PluginContext> plugins = new ArrayList<PluginContext>();
+    plugins.add(new PluginContext("Touch"));
+    plugins.add(new PluginContext("Copy"));
+    plugins.add(new PluginContext("MayaBuild"));
+    plugins.add(new PluginContext("MayaAttachGeoCache", "Temerity",
 				  new Range<VersionID>(new VersionID("2.4.3"), null)));
-    plugins.add(new PluginContext("MayaFTNBuild")); 			
-    plugins.add(new PluginContext("MayaRender")); 		
-    plugins.add(new PluginContext("NukeSubstComp", "Temerity", 
-				  new Range<VersionID>(new VersionID("2.4.3"), null)));  
-    plugins.add(new PluginContext("NukeThumbnail", "Temerity", 
-				  new Range<VersionID>(new VersionID("2.4.3"), null)));   
-    plugins.add(new PluginContext("HfsReadCmd"));  	
-    plugins.add(new PluginContext("HfsComposite", "Temerity", 
-				  new Range<VersionID>(new VersionID("2.4.3"), null))); 
-    plugins.add(new PluginContext("DjvUnixQt"));			
+    plugins.add(new PluginContext("MayaFTNBuild"));
+    plugins.add(new PluginContext("MayaRender"));
+    plugins.add(new PluginContext("NukeSubstComp", "Temerity",
+				  new Range<VersionID>(new VersionID("2.4.3"), null)));
+    plugins.add(new PluginContext("NukeThumbnail", "Temerity",
+				  new Range<VersionID>(new VersionID("2.4.3"), null)));
+    plugins.add(new PluginContext("HfsReadCmd"));
+    plugins.add(new PluginContext("HfsComposite", "Temerity",
+				  new Range<VersionID>(new VersionID("2.4.3"), null)));
+    plugins.add(new PluginContext("DjvUnixQt"));
+    plugins.add(new PluginContext("HfsIConvert"));
 
     MappedArrayList<String, PluginContext> toReturn = 
       new MappedArrayList<String, PluginContext>();
@@ -261,27 +262,27 @@ class NoiseBuilder
 
         /* blot assets */ 
         pBlotAttachPreviewNodeName = pProjectNamer.getBlotAttachPreviewNode();
-	pRequiredNodeNames.add(pBlotAttachPreviewNodeName); 
+	pRequiredNodeNames.add(pBlotAttachPreviewNodeName);
 
-        pBlotTestGlobalsNodeName = pProjectNamer.getBlotTestGlobalsNode(); 
-	pRequiredNodeNames.add(pBlotTestGlobalsNodeName); 
-	
-	/* rorschach assets */ 
-	pRorschachHiresModelNodeName = pProjectNamer.getRorschachHiresModelNode(); 
-	pRequiredNodeNames.add(pRorschachHiresModelNodeName); 
-        
+        pBlotTestGlobalsNodeName = pProjectNamer.getBlotTestGlobalsNode();
+	pRequiredNodeNames.add(pBlotTestGlobalsNodeName);
+
+	/* rorschach assets */
+	pRorschachHiresModelNodeName = pProjectNamer.getRorschachHiresModelNode();
+	pRequiredNodeNames.add(pRorschachHiresModelNodeName);
+
         pRorschachPreviewShadersNodeName = pProjectNamer.getRorschachPreviewShadersNode();
-	pRequiredNodeNames.add(pRorschachPreviewShadersNodeName); 
+	pRequiredNodeNames.add(pRorschachPreviewShadersNodeName);
 
-	/* misc assets */ 
-	pHideCameraPlaneNodeName = pProjectNamer.getHideCameraPlaneNode(); 
-	pRequiredNodeNames.add(pHideCameraPlaneNodeName); 
+	/* misc assets */
+	pHideCameraPlaneNodeName = pProjectNamer.getHideCameraPlaneNode();
+	pRequiredNodeNames.add(pHideCameraPlaneNodeName);
 
-	pSetFiletexSeqNodeName = pProjectNamer.getSetFiletexSeqNode(); 
-	pRequiredNodeNames.add(pSetFiletexSeqNodeName); 
-	
-	pHalfResRenderNodeName = pProjectNamer.getHalfResRenderNode(); 
-	pRequiredNodeNames.add(pHalfResRenderNodeName); 
+	pSetFiletexSeqNodeName = pProjectNamer.getSetFiletexSeqNode();
+	pRequiredNodeNames.add(pSetFiletexSeqNodeName);
+
+	pHalfResRenderNodeName = pProjectNamer.getHalfResRenderNode();
+	pRequiredNodeNames.add(pHalfResRenderNodeName);
 
 	pTestCompNukeNodeName = pProjectNamer.getTestCompNukeNode(); 
 	pRequiredNodeNames.add(pTestCompNukeNodeName); 
@@ -492,76 +493,42 @@ class NoiseBuilder
 	{
 	  HfsReadCmdStage stage = 
 	    new HfsReadCmdStage(stageInfo, pContext, pClient,
-				noiseTextureCmdNodeName, pNoiseTexturesNodeName, 
-				"/img/inkblot/inkblotFill", "filename"); 
-	  addTaskAnnotation(stage, NodePurpose.Prepare); 
+				noiseTextureCmdNodeName, pNoiseTexturesNodeName,
+				"/img/inkblot/noise_in", "filename");
+	  addTaskAnnotation(stage, NodePurpose.Prepare);
 	  stage.build();
 	}
 
-	pNoiseDisplaceANodeName = pShotNamer.getNoiseDisplaceANode();
+	pNoiseDisplaceNodeName = pShotNamer.getNoiseDisplaceNode();
 	{
 	  HfsCompositeStage stage = 
 	    new HfsCompositeStage(stageInfo, pContext, pClient,
-				  pNoiseDisplaceANodeName, pFrameRange, 4, "rat", 
-				  pNoiseDisplaceHipNodeName, "/out/disp_a", false, 
-				  noiseTextureCmdNodeName, null, null, null); 
-	  addTaskAnnotation(stage, NodePurpose.Prepare); 
-	  stage.build(); 
+				  pNoiseDisplaceNodeName, pFrameRange, 4, "rat",
+				  pNoiseDisplaceHipNodeName, "/out/disp", false,
+				  noiseTextureCmdNodeName, null, null, null);
+	  addTaskAnnotation(stage, NodePurpose.Prepare);
+	  stage.build();
 	}
 
-	String noiseDisplaceAThumbNodeName = pShotNamer.getNoiseDisplaceAThumbNode();
+	String noiseDisplaceThumbNodeName = pShotNamer.getNoiseDisplaceThumbNode();
 	{
 	  HfsThumbnailStage stage = 
 	    new HfsThumbnailStage
 	      (stageInfo, pContext, pClient,
-	       noiseDisplaceAThumbNodeName, "tif", pNoiseDisplaceANodeName,
-	       pFrameRange.getStart(), 150, 1.0, true, true, new Color3d()); 
-	  addTaskAnnotation(stage, NodePurpose.Thumbnail); 
-	  stage.build(); 
-	}
-	
-	pNoiseDisplaceBNodeName = pShotNamer.getNoiseDisplaceBNode();
-	{
-	  HfsCompositeStage stage = 
-	    new HfsCompositeStage(stageInfo, pContext, pClient,
-				  pNoiseDisplaceBNodeName, pFrameRange, 4, "rat", 
-				  pNoiseDisplaceHipNodeName, "/out/disp_b", false, 
-				  noiseTextureCmdNodeName, null, null, null); 
-	  addTaskAnnotation(stage, NodePurpose.Prepare); 
-	  stage.build(); 
-	}
-
-	String noiseDisplaceBThumbNodeName = pShotNamer.getNoiseDisplaceBThumbNode();
-	{
-	  HfsThumbnailStage stage = 
-	    new HfsThumbnailStage
-	      (stageInfo, pContext, pClient,
-	       noiseDisplaceBThumbNodeName, "tif", pNoiseDisplaceBNodeName,
-	       pFrameRange.getStart(), 150, 1.0, true, true, new Color3d()); 
-	  addTaskAnnotation(stage, NodePurpose.Thumbnail); 
-	  stage.build(); 
+	       noiseDisplaceThumbNodeName, "tif", pNoiseDisplaceNodeName,
+	       pFrameRange.getStart(), 150, 1.0, true, true, new Color3d());
+	  addTaskAnnotation(stage, NodePurpose.Thumbnail);
+	  stage.build();
 	}
 
 	String noiseDisplaceAllNodeName = pShotNamer.getNoiseDisplaceAllNode();
 	{
-	  HfsCompositeStage stage = 
-	    new HfsCompositeStage(stageInfo, pContext, pClient,
-				  noiseDisplaceAllNodeName, pFrameRange, 4, "jpg", 
-				  pNoiseDisplaceHipNodeName, "/out/disp_all", false, 
-				  noiseTextureCmdNodeName, null, null, null); 
-	  addTaskAnnotation(stage, NodePurpose.Prepare); 
-	  stage.build(); 
-	}
-
-	String noiseDisplaceAllThumbNodeName = pShotNamer.getNoiseDisplaceAllThumbNode();
-	{
-	  NukeThumbnailStage stage = 
-	    new NukeThumbnailStage
-	      (stageInfo, pContext, pClient,
-	       noiseDisplaceAllThumbNodeName, "tif", noiseDisplaceAllNodeName, 
-	       pFrameRange.getStart(), 150, 1.0, true, true, new Color3d()); 
-	  addTaskAnnotation(stage, NodePurpose.Thumbnail); 
-	  stage.build(); 
+		HfsIConvertStage stage =
+	    new HfsIConvertStage(stageInfo, pContext, pClient,
+	    		noiseDisplaceAllNodeName, pNoiseDisplaceNodeName,
+	    		pFrameRange, 4, "jpg", "Natural");
+	  addTaskAnnotation(stage, NodePurpose.Prepare);
+	  stage.build();
 	}
 
  	String noiseTextureSceneNodeName = pShotNamer.getNoiseTextureSceneNode();
@@ -704,9 +671,7 @@ class NoiseBuilder
 	{
 	  TreeSet<String> sources = new TreeSet<String>();
 	  sources.add(noiseThumbNodeName);
-	  sources.add(noiseDisplaceAThumbNodeName); 
-	  sources.add(noiseDisplaceBThumbNodeName); 
-	  sources.add(noiseDisplaceAllThumbNodeName); 
+	  sources.add(noiseDisplaceThumbNodeName);
 	  sources.add(noiseTestThumbNodeName);
 	  sources.add(noiseTestCompThumbNodeName);
 
@@ -733,34 +698,22 @@ class NoiseBuilder
 	  stage.build(); 
 	}
 
-	String noiseApprovedDisplaceANodeName = pShotNamer.getNoiseApprovedDisplaceANode();
+	String noiseApprovedDisplaceNodeName = pShotNamer.getNoiseApprovedDisplaceNode();
 	{
 	  CopyImagesStage stage = 
 	    new CopyImagesStage
-	      (stageInfo, pContext, pClient, 
-	       noiseApprovedDisplaceANodeName, pFrameRange, 4, "rat", 
-	       pNoiseDisplaceANodeName);
-	  addTaskAnnotation(stage, NodePurpose.Product); 
-	  stage.build(); 
-	}
-
-	String noiseApprovedDisplaceBNodeName = pShotNamer.getNoiseApprovedDisplaceBNode();
-	{
-	  CopyImagesStage stage = 
-	    new CopyImagesStage
-	      (stageInfo, pContext, pClient, 
-	       noiseApprovedDisplaceBNodeName, pFrameRange, 4, "rat", 
-	       pNoiseDisplaceBNodeName);
-	  addTaskAnnotation(stage, NodePurpose.Product); 
-	  stage.build(); 
+	      (stageInfo, pContext, pClient,
+	       noiseApprovedDisplaceNodeName, pFrameRange, 4, "rat",
+	       pNoiseDisplaceNodeName);
+	  addTaskAnnotation(stage, NodePurpose.Product);
+	  stage.build();
 	}
 
  	String approveNodeName = pShotNamer.getNoiseApproveNode();
  	{
  	  TreeSet<String> sources = new TreeSet<String>();
  	  sources.add(noiseApprovedTexturesNodeName);
- 	  sources.add(noiseApprovedDisplaceANodeName);
- 	  sources.add(noiseApprovedDisplaceBNodeName);
+ 	  sources.add(noiseApprovedDisplaceNodeName);
 
  	  TargetStage stage = 
  	    new TargetStage(stageInfo, pContext, pClient, 
@@ -819,13 +772,8 @@ class NoiseBuilder
   
   /**
    * Returns the fully resolved name of the composited displace A textures.
-   */ 
-  private String pNoiseDisplaceANodeName; 
-
-  /**
-   * Returns the fully resolved name of the composited displace B textures.
-   */ 
-  private String pNoiseDisplaceBNodeName; 
+   */
+  private String pNoiseDisplaceNodeName;
 
   /**
    * The fully resolved name of the node containing the Maya render globals 

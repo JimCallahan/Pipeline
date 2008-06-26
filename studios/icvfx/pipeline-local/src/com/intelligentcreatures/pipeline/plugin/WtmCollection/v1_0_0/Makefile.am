@@ -22,6 +22,7 @@ java_DATA = \
   DpxDeliverBuilder.java \
   HdriBuilder.java \
   ICStageFunction.java \
+  LightingBuilder.java \
   MatchBuilder.java \
   MattesBuilder.java \
   NodePurpose.java \

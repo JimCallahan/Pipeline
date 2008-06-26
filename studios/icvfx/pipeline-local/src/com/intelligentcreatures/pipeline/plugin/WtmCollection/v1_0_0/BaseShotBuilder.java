@@ -1,4 +1,4 @@
-// $Id: BaseShotBuilder.java,v 1.10 2008/03/23 05:09:58 jim Exp $
+// $Id: BaseShotBuilder.java,v 1.11 2008/06/26 05:34:29 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -153,16 +153,19 @@ class BaseShotBuilder
     setDefaultEditor(ICStageFunction.aMayaScene,     new PluginContext("MayaProject"));
     setDefaultEditor(ICStageFunction.aTextFile,      new PluginContext("NEdit"));
     setDefaultEditor(ICStageFunction.aScriptFile,    new PluginContext("NEdit"));
-    setDefaultEditor(ICStageFunction.aRenderedImage, new PluginContext("NukeViewer"));
-    setDefaultEditor(ICStageFunction.aSourceImage,   new PluginContext("NukeViewer"));
+    setDefaultEditor(ICStageFunction.aRenderedImage, new PluginContext("NukeFrameCycler"));
+    setDefaultEditor(ICStageFunction.aSourceImage,   new PluginContext("NukeFrameCycler"));
     setDefaultEditor(ICStageFunction.aNukeScript,    new PluginContext("Nuke"));
-    setDefaultEditor(ICStageFunction.aHDRImage,      new PluginContext("XImage")); 
-    setDefaultEditor(ICStageFunction.aQuickTime,     new PluginContext("DjvView")); 
-    setDefaultEditor(ICStageFunction.aQuickTimeSound, 
-		     new PluginContext("smplayer", "ICVFX")); 
-    setDefaultEditor(ICStageFunction.aObjModel,      new PluginContext("GPlay")); 
-    setDefaultEditor(ICStageFunction.aIgesModel,     new PluginContext("GPlay")); 
+    setDefaultEditor(ICStageFunction.aHDRImage,      new PluginContext("XImage"));
+    setDefaultEditor(ICStageFunction.aQuickTime,     new PluginContext("DjvView"));
+    setDefaultEditor(ICStageFunction.aQuickTimeSound,
+		     new PluginContext("smplayer", "ICVFX"));
+    setDefaultEditor(ICStageFunction.aObjModel,      new PluginContext("GPlay"));
+    setDefaultEditor(ICStageFunction.aIgesModel,     new PluginContext("GPlay"));
+    setDefaultEditor(ICStageFunction.aBgeoModel,     new PluginContext("GPlay"));
+    setDefaultEditor(StageFunction.aHoudiniScene,    new PluginContext("HoudiniEscape"));
     setDefaultEditor(ICStageFunction.aPFTrackScene,  new PluginContext("PFTrack", "ICVFX"));
+    setDefaultEditor(ICStageFunction.aRatImage,      new PluginContext("MPlay"));
   }
 
 

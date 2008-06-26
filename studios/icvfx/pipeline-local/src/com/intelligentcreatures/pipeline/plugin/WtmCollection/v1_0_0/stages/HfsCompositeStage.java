@@ -1,4 +1,4 @@
-// $Id: HfsCompositeStage.java,v 1.2 2008/06/16 17:01:35 jim Exp $
+// $Id: HfsCompositeStage.java,v 1.3 2008/06/26 05:34:29 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
 
@@ -184,7 +184,11 @@ class HfsCompositeStage
 	      preRenderScript, postRenderScript, preFrameScript, postFrameScript); 
 
     setExecutionMethod(ExecutionMethod.Parallel);
-    setBatchSize(5);   
+    setBatchSize(5);
+
+    JobReqs jr = JobReqs.defaultJobReqs();
+    jr.setRampUp(2);
+    setJobReqs(jr);
   }
 
   
@@ -248,7 +252,7 @@ class HfsCompositeStage
   public String 
   getStageFunction()
   {
-    return ICStageFunction.aRenderedImage;
+    return ICStageFunction.aRatImage;
   }
 
 

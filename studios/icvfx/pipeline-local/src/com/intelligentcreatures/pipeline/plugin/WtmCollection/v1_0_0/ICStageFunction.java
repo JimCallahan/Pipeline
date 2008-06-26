@@ -1,4 +1,4 @@
-// $Id: ICStageFunction.java,v 1.9 2008/03/19 22:36:09 jim Exp $
+// $Id: ICStageFunction.java,v 1.10 2008/06/26 05:34:29 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -26,4 +26,6 @@ class ICStageFunction
   public final static String aObjModel       = "ObjModel";
   public final static String aIgesModel      = "IgesModel";
   public final static String aSoundFile      = "SoundFile";
+  public final static String aBgeoModel      = "BgeoModel";
+  public final static String aRatImage       = "RatImage";
 }

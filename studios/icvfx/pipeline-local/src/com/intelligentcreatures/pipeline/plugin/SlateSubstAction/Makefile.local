@@ -5,4 +5,5 @@
 	$(MAKE) -f Makefile.local -C v1_1_0 $@ 
 	$(MAKE) -f Makefile.local -C v1_2_0 $@ 
 	$(MAKE) -f Makefile.local -C v1_3_0 $@
+	$(MAKE) -f Makefile.local -C v1_4_0 $@
 	$(MAKE) -f Makefile.local -C v1_5_0 $@

@@ -1,4 +1,4 @@
-// $Id: ProjectNamer.java,v 1.23 2008/06/15 21:51:25 jim Exp $
+// $Id: ProjectNamer.java,v 1.24 2008/06/26 05:34:29 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -284,6 +284,29 @@ class ProjectNamer
     return path.toString(); 
   }
 
+  public String
+  getTrackCameraChanNode()
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Tracking),
+			 new Path(AppDirs.MEL.toDirPath(), "camera_chan"));
+    return path.toString();
+  }
+
+  public String
+  getTrackHatChanNode()
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Tracking),
+			 new Path(AppDirs.MEL.toDirPath(), "hat_chan"));
+    return path.toString();
+  }
+
+  public String
+  getTrackMayaCamNode()
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Tracking),
+			 new Path(AppDirs.Otl.toDirPath(), "maya_cam"));
+    return path.toString();
+  }
 
   
   /*----------------------------------------------------------------------------------------*/
@@ -398,11 +421,159 @@ class ProjectNamer
   }
   
 
+  /**
+   * Returns the fully resolved name of the node containing the combined MEL scripts to
+   * attach shaders for the noise animation test render scene.
+   */
+  public String
+  getNoiseTestPrepNode()
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Noise),
+			 new Path(AppDirs.MEL.toDirPath(), "noise_test_prep"));
+    return path.toString();
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   L I G H T I N G   A S S E T S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Returns the fully resolved name of the node containing the Houdini script for lighting
+   * assembly creation.
+   */
+  public String
+  getLightingAssemblyPrepNode()
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Lighting),
+			 new Path(AppDirs.Cmd.toDirPath(), "assembly_prep"));
+    return path.toString();
+  }
+
+  public String
+  getLightingRigNode()
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Lighting),
+			 new Path(AppDirs.Hip.toDirPath(), "light_rig"));
+    return path.toString();
+  }
+
+  public String
+  getLightingPreAmbOccCmdNode()
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Lighting),
+			 new Path(AppDirs.Cmd.toDirPath(), "pre_ambOcc"));
+    return path.toString();
+  }
+
+  public String
+  getLightingRorAmbOccRenderNode()
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Lighting),
+			 new Path(AppDirs.Otl.toDirPath(), "ror_ambOcc_render"));
+    return path.toString();
+  }
+
+  public String
+  getLightingRorBeautyRenderNode()
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Lighting),
+			 new Path(AppDirs.Otl.toDirPath(), "ror_beauty_render"));
+    return path.toString();
+  }
+
+  public String
+  getLightingPreBeautyCmdNode()
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Lighting),
+			 new Path(AppDirs.Cmd.toDirPath(), "pre_beauty"));
+    return path.toString();
+  }
+
+  public String
+  getLightingPreInkConstCmdNode()
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Lighting),
+			 new Path(AppDirs.Cmd.toDirPath(), "pre_ink_const"));
+    return path.toString();
+  }
+
+  public String
+  getLightingRorInkblotRenderNode()
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Lighting),
+			 new Path(AppDirs.Otl.toDirPath(), "ror_inkblot_render"));
+    return path.toString();
+  }
 
   /*----------------------------------------------------------------------------------------*/
   /*   R O R S C H A C H   A S S E T S                                                      */
   /*----------------------------------------------------------------------------------------*/
- 
+
+  public String
+  getRorschachMaskInkShaderNode()
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Rorschach, TaskType.Shade),
+			 new Path(AppDirs.Otl.toDirPath(), "mask_ink_shader"));
+    return path.toString();
+  }
+
+  public String
+  getRorschachMaskColNode()
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Rorschach, TaskType.Texture),
+			 new Path(AppDirs.Rat.toDirPath(), "mask_col"));
+    return path.toString();
+  }
+
+  public String
+  getRorschachNeckBlendNode()
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Rorschach, TaskType.Texture),
+			 new Path(AppDirs.Rat.toDirPath(), "neck_blend"));
+    return path.toString();
+  }
+
+  public String
+  getRorschachMaskFluffShaderNode()
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Rorschach, TaskType.Shade),
+			 new Path(AppDirs.Otl.toDirPath(), "mask_fluff_shader"));
+    return path.toString();
+  }
+
+  public String
+  getRorschachMaskShaderNode()
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Rorschach, TaskType.Shade),
+			 new Path(AppDirs.Otl.toDirPath(), "mask_shader"));
+    return path.toString();
+  }
+
+  public String
+  getRorschachMaskAoShaderNode()
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Rorschach, TaskType.Shade),
+			 new Path(AppDirs.Otl.toDirPath(), "mask_ao_shader"));
+    return path.toString();
+  }
+
+  public String
+  getRorschachClothBmpNode()
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Rorschach, TaskType.Texture),
+			 new Path(AppDirs.Rat.toDirPath(), "cloth_bmp"));
+    return path.toString();
+  }
+
+  public String
+  getRorschachPaintBmpNode()
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Rorschach, TaskType.Texture),
+			 new Path(AppDirs.Rat.toDirPath(), "paint_bmp"));
+    return path.toString();
+  }
+
   /**
    * Returns the fully resolved name of the node containing a Maya scene which provides the 
    * test rig used in the tracking verification test renders.
@@ -552,7 +723,40 @@ class ProjectNamer
   {
     Path path = new Path(pBasePaths.get(AssetType.Rorschach, TaskType.Texture), 
 			 "ror_tex_temp");
-    return path.toString(); 
+    return path.toString();
+  }
+
+  /**
+   * Returns the fully resolved name of the node containing the inkblot UVs
+   */
+  public String
+  getRorschachInkblotUvNode()
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Rorschach, TaskType.Geometry),
+    		new Path(AppDirs.Obj.toDirPath(), "lo_head_inkblot_uv"));
+    return path.toString();
+  }
+
+  /**
+   * Returns the fully resolved name of the node containing the mask UVs
+   */
+  public String
+  getRorschachMaskUvNode()
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Rorschach, TaskType.Geometry),
+    		new Path(AppDirs.Obj.toDirPath(), "lo_head_mask_uv"));
+    return path.toString();
+  }
+
+  /**
+   * Returns the fully resolved name of the node containing Rorschach's geo in OTL format
+   */
+  public String
+  getRorschachGeoOtlNode()
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Rorschach, TaskType.Geometry),
+    		new Path(AppDirs.Otl.toDirPath(), "ror_geo"));
+    return path.toString();
   }
   
 
@@ -656,13 +860,24 @@ class ProjectNamer
   }
 
   /**
-   * Returns the fully resolved name of the node containing a MEL script to key the file 
-   * texture sequence for animated textures. 
-   */ 
-  public String 
-  getSetFiletexSeqNode() 
+  * TODO: Find out purpose
+  */
+  public String
+  getGetChanFilePathNode()
   {
-    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Misc), 
+  	Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Misc),
+			new Path(AppDirs.MEL.toDirPath(), "getChanFilePath"));
+ 	return path.toString();
+  }
+
+  /**
+   * Returns the fully resolved name of the node containing a MEL script to key the file
+   * texture sequence for animated textures.
+   */
+  public String
+  getSetFiletexSeqNode()
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Misc),
 			 new Path(AppDirs.MEL.toDirPath(), "set_filetex_seq"));
     return path.toString(); 
   }

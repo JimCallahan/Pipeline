@@ -1,4 +1,4 @@
-// $Id: TaskType.java,v 1.12 2008/06/15 17:31:10 jim Exp $
+// $Id: TaskType.java,v 1.13 2008/06/26 05:34:29 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -87,14 +87,16 @@ enum TaskType
 
   /**
    * Miscelaneous task-like components.
-   */ 
-  Modeling, 
-  Rigging, 
-  LookDev, 
-  Texture, 
-  Anim, 
-  Placeholder, 
-  Misc; 
+   */
+  Modeling,
+  Rigging,
+  LookDev,
+  Texture,
+  Anim,
+  Placeholder,
+  Geometry,
+  Shade,
+  Misc;
 
 
   /*----------------------------------------------------------------------------------------*/

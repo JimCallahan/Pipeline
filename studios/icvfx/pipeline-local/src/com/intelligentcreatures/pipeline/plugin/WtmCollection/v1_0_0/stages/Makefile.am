@@ -15,6 +15,7 @@ java_DATA = \
   BlotCurveGeoStage.java \
   BuildBlotAnimStage.java \
   BuildBlotTestStage.java \
+  BuildLightingAssemblyStage.java \
   BuildMatchPrebakeStage.java \
   BuildMatchStage.java \
   BuildMatchVerifyStage.java \
@@ -26,7 +27,10 @@ java_DATA = \
   CopyImagesStage.java \
   CopyTrackingMarkersStage.java \
   DjvUnixQtStage.java \
+  DoCopyStage.java \
   HfsCompositeStage.java \
+  HfsGConvertStage.java \
+  HfsIConvertStage.java \
   HfsReadCmdStage.java \
   HfsRenderStage.java \
   HfsThumbnailStage.java \
@@ -34,6 +38,7 @@ java_DATA = \
   MatchGeoCacheStage.java \
   MatchMaskGeoStage.java \
   MattesScriptStage.java \
+  MayaMelStage.java \
   MayaResolutionStage.java \
   NukeCatCompStage.java \
   NukeCatStage.java \
@@ -51,4 +56,5 @@ java_DATA = \
   QtEncodeStage.java \
   RenderTaskVerifyStage.java \
   SlateSubstStage.java \
-  SoundtrackStage.java
+  SoundtrackStage.java \
+  WriteFileStage.java
