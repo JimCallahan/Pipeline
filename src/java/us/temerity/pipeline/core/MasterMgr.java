@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.247 2008/06/26 17:09:09 jim Exp $
+// $Id: MasterMgr.java,v 1.248 2008/06/26 20:45:34 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -21834,6 +21834,8 @@ class MasterMgr
 	    vid = new VersionID(latestID, level);
 	  }
 
+	  
+	  //TODO need a toolset under development as well.
 	  /* make sure the action is NOT under development */ 
 	  {
 	    work.updateAction();

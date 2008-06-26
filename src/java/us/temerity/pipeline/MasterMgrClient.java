@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.122 2008/06/19 03:30:36 jim Exp $
+// $Id: MasterMgrClient.java,v 1.123 2008/06/26 20:45:34 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -5926,7 +5926,10 @@ class MasterMgrClient
    *   Whether to clone the links of the source node as well.
    * @param cloneFiles
    *   Whether to copy the files of source node as well.
-   * @param cloneAnnotations TODO
+   * @param cloneAnnotations
+   *   Whether to copy of the annotations of the source node as well. If the user doing the 
+   *   clone does not have Annotator privileges, this may call the clone to error out at
+   *   the end.  However, all proceding steps will not be undone.
    * 
    * @return 
    *   A {@link NodeMod} representing the newly cloned node.
