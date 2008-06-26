@@ -1,4 +1,4 @@
-// $Id: FocusTaskAnnotation.java,v 1.1 2008/06/26 05:26:33 jim Exp $
+// $Id: FocusTaskAnnotation.java,v 1.2 2008/06/26 05:43:32 jim Exp $
 
 package us.temerity.pipeline.plugin.FocusTaskAnnotation.v2_4_1;
 
@@ -152,7 +152,7 @@ class FocusTaskAnnotation
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  //private static final long serialVersionUID = 
+  private static final long serialVersionUID = 820517377970207299L;
 
   public static final String aProjectName    = "ProjectName";
   public static final String aEntityType     = "EntityType";
