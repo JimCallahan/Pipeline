@@ -1,4 +1,4 @@
-// $Id: ApproveTaskBuilder.java,v 1.5 2008/05/26 03:23:30 jesse Exp $
+// $Id: ApproveTaskBuilder.java,v 1.6 2008/06/26 20:39:25 jesse Exp $
 
 package us.temerity.pipeline.plugin.ApprovalCollection.v2_4_1;
 
@@ -454,6 +454,7 @@ class ApproveTaskBuilder
 	  if((vstr != null) && (vstr.length() > 0)) {
 	    try {
 	      vid = new VersionID(vstr);
+	      pSubmitVersionID = vid;
 	    }
 	    catch(IllegalArgumentException ex) {
 	      throw new PipelineException
@@ -522,7 +523,7 @@ class ApproveTaskBuilder
       throws PipelineException
     {
       pLog.log(LogMgr.Kind.Ops, LogMgr.Level.Fine, "Checking Out: " + pSubmitNode);
-      pClient.checkOut(getAuthor(), getView(), pSubmitNode, null, 
+      pClient.checkOut(getAuthor(), getView(), pSubmitNode, pSubmitVersionID, 
                        CheckOutMode.OverwriteAll, CheckOutMethod.AllFrozen);
 
       pLog.log(LogMgr.Kind.Ops, LogMgr.Level.Fine, "Checking Out: " + pApproveNode);
@@ -565,7 +566,7 @@ class ApproveTaskBuilder
    * submit node being approved.
    */ 
   protected String pSubmitNode;
-  protected NodeVersion pSubmitVersionID;
+  protected VersionID pSubmitVersionID;
   protected NodeVersion pSubmitVsn;
 
   /**
