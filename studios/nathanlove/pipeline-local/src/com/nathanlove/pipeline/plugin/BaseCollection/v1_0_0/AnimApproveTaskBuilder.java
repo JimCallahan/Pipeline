@@ -1,4 +1,4 @@
-// $Id: AnimApproveTaskBuilder.java,v 1.1 2008/05/26 03:19:49 jesse Exp $
+// $Id: AnimApproveTaskBuilder.java,v 1.2 2008/06/26 20:45:55 jesse Exp $
 
 package com.nathanlove.pipeline.plugin.BaseCollection.v1_0_0;
 
@@ -52,6 +52,8 @@ class AnimApproveTaskBuilder
     
     addSetupPass(new ApprovalSetup());
     addConstructPass(new UpdateNetworks());
+    
+    setDefaultEditors(StudioDefinitions.getDefaultEditors());
     
     setLayout(getDefaultLayoutGroup());
   }

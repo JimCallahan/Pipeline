@@ -1,4 +1,4 @@
-// $Id: CameraAssetBuilder.java,v 1.1 2008/05/26 03:19:49 jesse Exp $
+// $Id: CameraAssetBuilder.java,v 1.2 2008/06/26 20:45:55 jesse Exp $
 
 package com.nathanlove.pipeline.plugin.BaseCollection.v1_0_0;
 
@@ -81,13 +81,25 @@ class CameraAssetBuilder
     
     addMappedParam(pAssetNames.getName(), 
                    ParamNames.aAssetName, 
+                   ParamNames.aAssetName);
+    
+    addMappedParam(pAssetNames.getName(), 
+                   ParamNames.aAssetType, 
                    ParamNames.aAssetType);
     
     addSetupPass(new InformationPass());
     addConstructPass(new BuildPass());
     addConstructPass(new FinalizePass());
     
-    setLayout(getBuilderLayout());
+    setDefaultEditors(StudioDefinitions.getDefaultEditors());
+    
+    PassLayoutGroup layout = getBuilderLayout();
+    AdvancedLayoutGroup group = layout.getPassLayout(1);
+    group.addEntry(1, ParamNames.aAssetName);
+    group.addEntry(1, ParamNames.aAssetType);
+    
+    
+    setLayout(layout);
   }
   
   
@@ -191,9 +203,11 @@ class CameraAssetBuilder
         addTaskAnnotation(stage, NodePurpose.Product, pProjectName, pTaskName, type);
         stage.build();
       }
+      String finalTex = pAssetNames.getTextureProductNode();
       {
         TreeSet<String> sources = new TreeSet<String>();
         sources.add(camFinal);
+        sources.add(finalTex);
         TargetStage stage = 
           new TargetStage(pStageInfo, pContext, pClient, camApprove, sources);
         addApproveTaskAnnotation(stage, pProjectName, pTaskName, type, 

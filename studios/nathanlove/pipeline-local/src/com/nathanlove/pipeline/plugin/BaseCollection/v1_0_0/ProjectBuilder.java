@@ -1,4 +1,4 @@
-// $Id: ProjectBuilder.java,v 1.1 2008/05/26 03:19:50 jesse Exp $
+// $Id: ProjectBuilder.java,v 1.2 2008/06/26 20:45:55 jesse Exp $
 
 package com.nathanlove.pipeline.plugin.BaseCollection.v1_0_0;
 
@@ -101,6 +101,8 @@ class ProjectBuilder
     
     addSetupPass(new SetupEssentialsPass());
     addConstructPass(new MakeNodesPass());
+    
+    setDefaultEditors(StudioDefinitions.getDefaultEditors());
     
     {
       AdvancedLayoutGroup layout = 

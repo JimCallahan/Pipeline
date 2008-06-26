@@ -1,4 +1,4 @@
-// $Id: ParamNames.java,v 1.1 2008/05/26 03:19:50 jesse Exp $
+// $Id: ParamNames.java,v 1.2 2008/06/26 20:45:55 jesse Exp $
 
 package com.nathanlove.pipeline.plugin.BaseCollection.v1_0_0;
 
@@ -25,4 +25,5 @@ class ParamNames
   public static final String aRenderer    = "Renderer";
   public static final String aMentalRay   = "Mental Ray";
   public static final String aSoftware    = "Software";
+  public static final String aPassName    = "PassName";
 }

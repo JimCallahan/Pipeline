@@ -1,4 +1,4 @@
-// $Id: ShotNamer.java,v 1.1 2008/05/26 03:19:50 jesse Exp $
+// $Id: ShotNamer.java,v 1.2 2008/06/26 20:45:55 jesse Exp $
 
 package com.nathanlove.pipeline.plugin.BaseCollection.v1_0_0;
 
@@ -58,6 +58,13 @@ class ShotNamer
          null);
       addParam(param);
     }
+    
+    LayoutGroup group = new LayoutGroup("AssetInfo", "Information about the asset.", true);
+    group.addEntry(ParamNames.aProjectName);
+    group.addEntry(ParamNames.aSpotName);
+    group.addEntry(ParamNames.aShotName);
+    PassLayoutGroup layout = new PassLayoutGroup("AssetInfo", group);
+    setLayout(layout);
   }
 
   
@@ -494,6 +501,39 @@ class ShotNamer
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   U T I L I T I E S                                                      */
   /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Build a generated ShotNamer with the pieces passed in.
+   * 
+   * @param mclient
+   *   The Master manager instance to build the Namer with.
+   * @param qclient
+   *   The Queue manager instance to build the Namer with.
+   * @param project
+   *   The name of the project
+   * @param spotName
+   *   The name of the spot.
+   * @param shotName
+   *   The name of the shot.
+   */
+  public static ShotNamer
+  getGeneratedNamer
+  (
+    MasterMgrClient mclient,
+    QueueMgrClient qclient,
+    String project,
+    String spotName,
+    String shotName
+  )
+    throws PipelineException
+  {
+    ShotNamer namer = new ShotNamer(mclient, qclient);
+    namer.setParamValue(ParamNames.aProjectName, project);
+    namer.setParamValue(ParamNames.aSpotName, spotName);
+    namer.setParamValue(ParamNames.aShotName, shotName);
+    namer.run();
+    return namer;
+  }
   
   /**
    * Static method to turn a node name into a ShotNamer class that represents the shot

@@ -1,4 +1,4 @@
-// $Id: BaseCollection.java,v 1.1 2008/05/26 03:19:49 jesse Exp $
+// $Id: BaseCollection.java,v 1.2 2008/06/26 20:45:55 jesse Exp $
 
 package com.nathanlove.pipeline.plugin.BaseCollection.v1_0_0;
 
@@ -33,7 +33,11 @@ class BaseCollection
     group.addEntry("Asset");
     group.addEntry("SimpleAsset");
     group.addSeparator();
+    group.addEntry("CurveShot");
+    group.addSeparator();
     group.addEntry("ShadeApproveTask");
+    group.addEntry("AnimApproveTask");
+    group.addEntry("LgtApproveTask");
     
     setLayout(group);
     
@@ -49,6 +53,9 @@ class BaseCollection
     toReturn.put("Asset", "com.nathanlove.pipeline.plugin.BaseCollection.v1_0_0.AssetBuilder");
     toReturn.put("SimpleAsset", "com.nathanlove.pipeline.plugin.BaseCollection.v1_0_0.SimpleAssetBuilder");
     toReturn.put("ShadeApproveTask", "com.nathanlove.pipeline.plugin.BaseCollection.v1_0_0.ShadeApproveTaskBuilder");
+    toReturn.put("CurveShot", "com.nathanlove.pipeline.plugin.BaseCollection.v1_0_0.CurveShotBuilder");
+    toReturn.put("LgtApproveTask", "com.nathanlove.pipeline.plugin.BaseCollection.v1_0_0.LgtApproveTaskBuilder");
+    toReturn.put("AnimApproveTask", "com.nathanlove.pipeline.plugin.BaseCollection.v1_0_0.AnimApproveTaskBuilder");
     
     return toReturn;
   }

@@ -1,4 +1,4 @@
-// $Id: CurveShotBuilder.java,v 1.1 2008/05/26 03:19:49 jesse Exp $
+// $Id: CurveShotBuilder.java,v 1.2 2008/06/26 20:45:55 jesse Exp $
 
 package com.nathanlove.pipeline.plugin.BaseCollection.v1_0_0;
 
@@ -31,6 +31,13 @@ class CurveShotBuilder
   
   /**
    * Default Constructor for standalone invocation.
+   * @param mclient
+   *   The instance of Master Manager the builder will use. 
+   * @param qclient 
+   *   The instance of the Queue Manager the builder will use.
+   * @param builderInformation 
+   *   The globally shared builder information.
+   * 
    */
   public
   CurveShotBuilder
@@ -62,7 +69,9 @@ class CurveShotBuilder
           "Nathan Love Base Collection.",
           mclient, qclient, builderInformation, EntityType.Shot);
     
-    ArrayList<String> projects = studioDefinitions.getProjectList();
+    pStudioDefinitions = studioDefinitions;
+    
+    ArrayList<String> projects = pStudioDefinitions.getProjectList();
     if (projects.isEmpty())
       throw new PipelineException
         ("Please create a project before running the shot builder.");
@@ -82,7 +91,7 @@ class CurveShotBuilder
         UtilityParam param = 
           new DoubleMapUtilityParam(
               ParamNames.aLocation, 
-              "The Project, Sequence, and Shot to put the Roto in.",
+              "The Project, Sequence, and Shot to put the Shot in.",
               ParamNames.aProjectName,
               "Select the name of the project",
               ParamNames.aSpotName,
@@ -108,7 +117,7 @@ class CurveShotBuilder
           new EnumUtilityParam
           (ParamNames.aRenderer,
            "Which Maya rendering engine should be used for this shot.",
-           "ParamNames.aMentalRay",
+           ParamNames.aMentalRay,
            new ArrayList<String>(Arrays.asList(choices))); 
         addParam(param);
       }
@@ -167,11 +176,12 @@ class CurveShotBuilder
       
       pProjectNamer = new ProjectNamer(mclient, qclient);
       addSubBuilder(pProjectNamer);
-      addMappedParam(pProjectNamer.getName(), ParamNames.aProjectName, ParamNames.aProjectName);
+      addMappedParam(pProjectNamer.getName(), new ParamMapping(ParamNames.aProjectName), 
+                     aProjectMapping);
       
     }
     
-    
+    setDefaultEditors(StudioDefinitions.getDefaultEditors());
     
     {
       AdvancedLayoutGroup layout = 
@@ -318,6 +328,8 @@ class CurveShotBuilder
         pStudioDefinitions.getAssetList(pProject, AssetType.titles());
       {
         ArrayList<String> chars = assets.get(AssetType.character.toTitle());
+        if (chars == null)
+          chars = new ArrayList<String>();
         UtilityParam param =
           new ListUtilityParam
           (aChars, 
@@ -331,6 +343,8 @@ class CurveShotBuilder
       
       {
         ArrayList<String> props = assets.get(AssetType.prop.toTitle());
+        if (props == null)
+          props = new ArrayList<String>();
         UtilityParam param =
           new ListUtilityParam
           (aProps, 
@@ -344,6 +358,8 @@ class CurveShotBuilder
       
       {
         ArrayList<String> envs = assets.get(AssetType.env.toTitle());
+        if (envs == null)
+          envs = new ArrayList<String>();
         UtilityParam param =
           new ListUtilityParam
           (aEnvs, 
@@ -788,6 +804,7 @@ class CurveShotBuilder
   private static final ParamMapping aShotMapping = 
     new ParamMapping(ParamNames.aLocation, ParamNames.aShotName); 
   
+  private static final long serialVersionUID = 1179249256087253761L;
 
   
   
@@ -801,7 +818,7 @@ class CurveShotBuilder
   private MayaContext pMayaContext;
   private FrameRange  pFrameRange;
   
-  protected String pTaskName;
+  private String pTaskName;
   
   private TreeSet<String> pRequiredNodes;
   
@@ -815,5 +832,5 @@ class CurveShotBuilder
   
   private String pRenderer;
   
-  protected LinkedList<FinalizableStage> pFinalizeStages;
+  private LinkedList<FinalizableStage> pFinalizeStages;
 }
