@@ -1,4 +1,4 @@
-// $Id: SelectionRulesTableModel.java,v 1.3 2007/11/20 05:42:07 jesse Exp $
+// $Id: SelectionRulesTableModel.java,v 1.4 2008/06/26 20:41:13 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -551,6 +551,7 @@ class SelectionRulesTableModel
   /**
    * Sets the value in the cell at columnIndex and rowIndex to aValue.
    */ 
+  @Override
   public void 
   setValueAt
   (
@@ -568,7 +569,9 @@ class SelectionRulesTableModel
       for(wk=0; wk<selected.length; wk++) {
 	int srow = pRowToIndex[selected[wk]];
 	if(srow != vrow)
-	  setValueAtHelper(value, srow, col);
+          if (setValueAtHelper(value, srow, col))
+            edited = true;
+
       }
     }
       

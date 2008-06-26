@@ -1,4 +1,4 @@
-// $Id: QueueHostsTableModel.java,v 1.21 2007/12/15 07:51:30 jesse Exp $
+// $Id: QueueHostsTableModel.java,v 1.22 2008/06/26 20:41:13 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -965,7 +965,8 @@ class QueueHostsTableModel
       for(wk=0; wk<selected.length; wk++) {
 	int srow = pRowToIndex[selected[wk]];
 	if(srow != vrow)
-	  setValueAtHelper(value, srow, col);
+	  if (setValueAtHelper(value, srow, col))
+	    edited = true;
       }
     }
       

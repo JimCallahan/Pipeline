@@ -1,4 +1,4 @@
-// $Id: SelectionGroupsTableModel.java,v 1.4 2006/12/14 02:39:05 jim Exp $
+// $Id: SelectionGroupsTableModel.java,v 1.5 2008/06/26 20:41:13 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -481,6 +481,7 @@ class SelectionGroupsTableModel
   /**
    * Sets the value in the cell at columnIndex and rowIndex to aValue.
    */ 
+  @Override
   public void 
   setValueAt
   (
@@ -498,7 +499,9 @@ class SelectionGroupsTableModel
       for(wk=0; wk<selected.length; wk++) {
 	int srow = pRowToIndex[selected[wk]];
 	if(srow != vrow)
-	  setValueAtHelper(value, srow, col);
+          if (setValueAtHelper(value, srow, col))
+            edited = true;
+
       }
     }
       

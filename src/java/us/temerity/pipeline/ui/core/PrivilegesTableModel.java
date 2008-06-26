@@ -1,4 +1,4 @@
-// $Id: PrivilegesTableModel.java,v 1.3 2007/06/15 00:27:31 jim Exp $
+// $Id: PrivilegesTableModel.java,v 1.4 2008/06/26 20:41:13 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -523,7 +523,9 @@ class PrivilegesTableModel
     for(wk=0; wk<selected.length; wk++) {
       int srow = pRowToIndex[selected[wk]];
       if(srow != vrow)
-	  setValueAtHelper(value, srow, col);
+        if (setValueAtHelper(value, srow, col))
+          edited = true;
+
     }
       
     if(edited) {

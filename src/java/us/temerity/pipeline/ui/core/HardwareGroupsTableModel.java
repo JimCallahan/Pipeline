@@ -1,4 +1,4 @@
-// $Id: HardwareGroupsTableModel.java,v 1.1 2007/11/30 20:06:25 jesse Exp $
+// $Id: HardwareGroupsTableModel.java,v 1.2 2008/06/26 20:41:13 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -434,7 +434,9 @@ class HardwareGroupsTableModel
       for(wk=0; wk<selected.length; wk++) {
 	int srow = pRowToIndex[selected[wk]];
 	if(srow != vrow)
-	  setValueAtHelper(value, srow, col);
+          if (setValueAtHelper(value, srow, col))
+            edited = true;
+
       }
     }
       
