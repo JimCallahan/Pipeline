@@ -1,4 +1,4 @@
-// $Id: JWorkingSelectDialog.java,v 1.2 2008/06/26 22:43:16 jim Exp $
+// $Id: JWorkingSelectDialog.java,v 1.3 2008/06/27 00:12:13 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -47,6 +47,13 @@ class JWorkingSelectDialog
   ) 
   {
     super(owner, "Remote Select");
+
+    /* initialize fields */ 
+    {
+      pPostUpdateSelected  = new TreeSet<String>();
+      pNodeBrowserChannels = new TreeSet<Integer>();
+      pNodeViewerChannels  = new TreeSet<Integer>();
+    }
 
     /* create dialog body components */ 
     {
@@ -158,23 +165,44 @@ class JWorkingSelectDialog
 
   /**
    * Update the panel.
+   * 
+   * @param channel 
+   *   The default update channel index.
+   *
+   * @param name
+   *   The fully resolved node name.
+   * 
+   * @param postUpdateSelected
+   *   The names of the nodes which should be selected in the NodeViewer after an update.
+   * 
+   * @param browserChannels
+   *   The update channel indices for all existing Node Browser panels.
+   * 
+   * @param viewerChannels
+   *   The update channel indices for all existing Node Viewer panels.
    */ 
   public void 
   updateSelection
   (
+   int channel, 
    String name,
    TreeSet<String> postUpdateSelected,
-   PanelGroup<JNodeBrowserPanel> browsers, 
-   PanelGroup<JNodeViewerPanel> viewers 
+   TreeSet<Integer> browserChannels, 
+   TreeSet<Integer> viewerChannels
   )
   {
-    pNodeBrowsers = browsers;
-    pNodeViewers  = viewers;
-
     pNodeNameField.setText(name); 
-    pChannelField.setSelectedIndex(0);
 
-    pPostUpdateSelected = postUpdateSelected;
+    pPostUpdateSelected.clear();
+    pPostUpdateSelected.addAll(postUpdateSelected);
+
+    pNodeBrowserChannels.clear();
+    pNodeBrowserChannels.addAll(browserChannels);
+
+    pNodeViewerChannels.clear();
+    pNodeViewerChannels.addAll(viewerChannels);
+
+    pChannelField.setSelectedIndex(channel);
   }
 
 
@@ -230,28 +258,27 @@ class JWorkingSelectDialog
 
     default:
       {
-        JNodeBrowserPanel browser = pNodeBrowsers.getPanel(idx); 
-        JNodeViewerPanel viewer   = pNodeViewers.getPanel(idx); 
+        boolean hasBrowser = pNodeBrowserChannels.contains(idx);
+        boolean hasViewer  = pNodeViewerChannels.contains(idx);
 
-        if((browser == null) && (viewer == null)) {
+        if(!hasBrowser && !hasViewer) {
           pBrowserField.setText("Create"); 
           pViewerField.setText("Create"); 
           pReplaceButton.setEnabled(true);
           pAddButton.setEnabled(false);
         }
-        else if((browser != null) && (viewer != null)) {
+        else if(hasBrowser && hasViewer) {
           pBrowserField.setText("Found"); 
           pViewerField.setText("Found"); 
           pReplaceButton.setEnabled(true);
           pAddButton.setEnabled(true);
         }
         else {
-          pBrowserField.setText((browser != null) ? "Found" : "Missing");
-          pViewerField.setText((viewer != null) ? "Found" : "Missing");
+          pBrowserField.setText(hasBrowser ? "Found" : "Missing");
+          pViewerField.setText(hasViewer ? "Found" : "Missing");
           pReplaceButton.setEnabled(false);
           pAddButton.setEnabled(false);
         }
-
       }
     }
   }
@@ -260,90 +287,32 @@ class JWorkingSelectDialog
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * 
+   * Performs the update the of Node Browser/Viewer panels to display a node network 
+   * rooted at the given root by adding it to the current selection.
    */ 
   private void 
   doAddSelection() 
   {
-    System.out.print("Add Selection:" + pChannelField.getSelectedIndex());
     setVisible(false);
-
-    int channel = pChannelField.getSelectedIndex();
-    JNodeViewerPanel viewer = pNodeViewers.getPanel(channel); 
-    if(viewer != null) 
-      viewer.addRoot(pNodeNameField.getText(), pPostUpdateSelected);
-    else 
-      doCreateNewWindow(channel);
+    
+    UIMaster.getInstance().remoteAddSelection
+      (pChannelField.getSelectedIndex(), pNodeNameField.getText(), pPostUpdateSelected);
   }
 
   /**
-   *
+   * Performs the update the of Node Browser/Viewer panels to display a node network 
+   * rooted at the given root by replacing the current selection.
    */ 
   private void 
   doReplaceSelection() 
   {
-    System.out.print("Replace Selection:" + pChannelField.getSelectedIndex());
     setVisible(false);
 
-    int channel = pChannelField.getSelectedIndex();
-    JNodeViewerPanel viewer = pNodeViewers.getPanel(channel); 
-    if(viewer != null) {
-      TreeSet<String> roots = new TreeSet<String>(); 
-      roots.add(pNodeNameField.getText());
-      viewer.setRoots(roots, pPostUpdateSelected);
-    }
-    else {
-      doCreateNewWindow(channel);
-    }
+    UIMaster.getInstance().remoteReplaceSelection
+      (pChannelField.getSelectedIndex(), pNodeNameField.getText(), pPostUpdateSelected);
   }
 
 
-  /** 
-   * Create a new top-level window containing a new Node Browser/Viewer panel.
-   */ 
-  private void 
-  doCreateNewWindow
-  (
-   int channel
-  ) 
-  {
-    JNodeViewerPanel viewer = null;
-    {
-      JPanelFrame frame = UIMaster.getInstance().createWindow();
-      frame.setSize(900, 600);
-
-      JManagerPanel mgr = frame.getManagerPanel();
-
-      JManagerPanel left = null;
-      {
-        left = new JManagerPanel();
-        mgr.doGroup(channel);
-        JNodeBrowserPanel panel = new JNodeBrowserPanel();
-        left.setContents(panel); 
-        left.doGroup(channel);
-      }
-      
-      JManagerPanel right = null;
-      {    
-        right = new JManagerPanel();
-        viewer = new JNodeViewerPanel();
-        right.setContents(viewer); 
-        right.doGroup(channel);
-      }
-      
-      mgr.setContents(new JHorzSplitPanel(left, right));
-      mgr.refocusOnChildPanel();
-      
-      frame.validate();
-      frame.repaint();
-    }
-
-    TreeSet<String> roots = new TreeSet<String>(); 
-    roots.add(pNodeNameField.getText());
-    viewer.setRoots(roots, pPostUpdateSelected);
-  }
-
-  
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
@@ -363,8 +332,8 @@ class JWorkingSelectDialog
   /**
    * The existing Node Browser/Viewer panels.
    */ 
-  private PanelGroup<JNodeBrowserPanel>  pNodeBrowsers; 
-  private PanelGroup<JNodeViewerPanel>   pNodeViewers; 
+  private TreeSet<Integer>  pNodeBrowserChannels; 
+  private TreeSet<Integer>  pNodeViewerChannels; 
 
   /**
    * The names of the nodes which should be selected in the NodeViewer panel after an update.

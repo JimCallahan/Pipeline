@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.65 2008/05/04 00:40:22 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.66 2008/06/27 00:12:13 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -499,6 +499,46 @@ class GenUserPrefsApp
     }
 
     {
+      LinkedList<String> settings = new LinkedList();
+      settings.add("Display Dialog");
+      settings.add("From Preferences");
+      
+      LinkedList<String> channel = new LinkedList();
+      channel.add("1");
+      channel.add("2");
+      channel.add("3");
+      channel.add("4");
+      channel.add("5");
+      channel.add("6");
+      channel.add("7");
+      channel.add("8");
+      channel.add("9");
+
+      LinkedList<String> method = new LinkedList();
+      method.add("Add to Selection");
+      method.add("Replace Selecion");
+
+      BasePref prefs[] = {
+	new ChoicePref
+	("The source for settings used during a remote node selection initiated by " +
+         "plremote(1).", 
+	 "RemoteSettings", "Remote Settings:", settings, "Display Dialog"), 
+        
+	new ChoicePref
+	("The update channel to use during a remote node selection initiated by " +
+         "plremote(1).", 
+	 "RemoteUpdateChannel", "Update Channel:", channel, "1"), 
+
+        new ChoicePref
+	("How new selections initiated by plremote(1) are combined with the current node " +
+         "selections.", 
+	 "RemoteUpdateMethod", "Update Method:", method, "Add to Selection"), 
+      };
+
+      pPrefs.put("Panels|Remote Node Select", prefs);
+    }
+
+    {
       BasePref prefs[] = {
 	new BooleanPref
 	("Whether to warn about unsaved panel changes which would be lost during an update.", 
@@ -915,6 +955,11 @@ class GenUserPrefsApp
       looks.add("Rounded");
       looks.add("Square");
 
+      LinkedList<String> autoframe = new LinkedList();
+      autoframe.add("Disabled");
+      autoframe.add("New/Added Roots");
+      autoframe.add("Changed Roots");
+      
       BasePref prefs[] = {
 	new BooleanPref
 	("Whether to always perform heavyweight node status updates.  Heavyweight status " + 
@@ -941,6 +986,10 @@ class GenUserPrefsApp
 	new BoundedDoublePref
 	("The distance between node trees.", 
 	 "NodeTreeSpace", "Node Tree Space:", 1.0, 3.0, 1.0),
+
+        new ChoicePref
+	("Whether to automatically frame nodes after the root selection changes.", 
+	 "AutoFrameNodes", "Automatic Frame:", autoframe, "Disabled"),
 
 	new BasePref(),
 
@@ -2105,8 +2154,10 @@ class GenUserPrefsApp
       pPrefPanels.add("Main Menu|Panel Type|Hot Keys");
       pPrefPanels.add("Main Menu|Panel Layout|Hot Keys");
 
+      pPrefPanels.add("Panels|Remote Node Select");
       pPrefPanels.add("Panels|Appearance");
       pPrefPanels.add("Panels|Hot Keys");
+
       pPrefPanels.add("Panels|Node Browser|Hot Keys");
 
       pPrefPanels.add("Panels|Node Viewer|Appearance");
@@ -2615,7 +2666,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.65 2008/05/04 00:40:22 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.66 2008/06/27 00:12:13 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -2870,7 +2921,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.65 2008/05/04 00:40:22 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.66 2008/06/27 00:12:13 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -4227,7 +4278,7 @@ class GenUserPrefsApp
 
       StringBuilder buf = new StringBuilder();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.65 2008/05/04 00:40:22 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.66 2008/06/27 00:12:13 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 

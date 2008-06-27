@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.87 2008/06/26 22:43:16 jim Exp $
+// $Id: UIMaster.java,v 1.88 2008/06/27 00:12:13 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2827,12 +2827,12 @@ class UIMaster
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Add the given node to the node's selected in one of the Node Browser/Viewer panels 
-   * sharing an update channel.<P> 
+   * Handle the request from plremote(1) to display a node network rooted at the given root 
+   * node in one of the Node Browser/Viewer panels. <P> 
    * 
-   * This command will cause a dialog to be displayed by which queries the user for which 
-   * specific panels will have their node selection modified.  May create new top-level 
-   * windows or replace/add the node to the seleciton of existing panels.
+   * Depending on user preferences, this command will either automatically update or 
+   * create new Node Browser/Viewer panels or cause a dialog to be displayed by which 
+   * queries the user for which specific panels will have their node selection modified.  
    * 
    * @param name
    *   The fully resolved node name.
@@ -2851,9 +2851,147 @@ class UIMaster
       (LogMgr.Kind.Ops, LogMgr.Level.Finer,
        "Selecting Working Version: " + name); 
 
-    SwingUtilities.invokeLater(new ShowWorkingSelectDialogTask(name, postUpdateSelected));
+    UserPrefs prefs = UserPrefs.getInstance();
+
+    int channel = 1; 
+    try {
+      channel = new Integer(prefs.getRemoteUpdateChannel());
+    }
+    catch(NumberFormatException ex) {
+    }
+
+    Thread task = null;
+    if(prefs.getRemoteSettings().equals("Display Dialog")) 
+      task = new ShowRemoteWorkingSelectDialogTask(channel, name, postUpdateSelected);
+    else {
+      boolean replace = prefs.getRemoteUpdateMethod().equals("Replace Selecion");
+      task = new RemoteWorkingSelectTask(channel, name, replace, postUpdateSelected);
+    }
+
+    SwingUtilities.invokeLater(task); 
   }
-    
+  
+  /**
+   * Performs the actual update the of Node Browser/Viewer panels to display a node network 
+   * rooted at the given root by adding it to the current selection.
+   *
+   * @param channel 
+   *   The update channel index.
+   *
+   * @param name
+   *   The fully resolved node name.
+   * 
+   * @param postUpdateSelected
+   *   The names of the nodes which should be selected in the NodeViewer after an update.
+   */ 
+  public void 
+  remoteAddSelection
+  (
+   int channel, 
+   String name, 
+   TreeSet<String> postUpdateSelected
+  ) 
+  {
+    JNodeViewerPanel viewer = pNodeViewerPanels.getPanel(channel); 
+    if(viewer != null) 
+      viewer.addRoot(name, postUpdateSelected);
+    else 
+      remoteCreateNewSelectionWindow(channel, name, postUpdateSelected);
+  }
+   
+  /**
+   * Performs the actual update the of Node Browser/Viewer panels to display a node network 
+   * rooted at the given root by replacing the current selection.
+   *
+   * @param channel 
+   *   The update channel index.
+   *
+   * @param name
+   *   The fully resolved node name.
+   * 
+   * @param postUpdateSelected
+   *   The names of the nodes which should be selected in the NodeViewer after an update.
+   */ 
+  public void 
+  remoteReplaceSelection
+  (
+   int channel, 
+   String name, 
+   TreeSet<String> postUpdateSelected
+  ) 
+  {
+    JNodeViewerPanel viewer = pNodeViewerPanels.getPanel(channel); 
+    if(viewer != null) {  
+      TreeSet<String> roots = new TreeSet<String>(); 
+      roots.add(name);
+      viewer.setRoots(roots, postUpdateSelected);
+    }
+    else {
+      remoteCreateNewSelectionWindow(channel, name, postUpdateSelected);
+    }
+  }
+   
+  /**
+   * Performs the actual update the of Node Browser/Viewer panels to display a node network 
+   * rooted at the given root by creating a new top-level window containing a Node 
+   * Browser/Viewer pair of panels.
+   *
+   * @param channel 
+   *   The update channel index.
+   *
+   * @param name
+   *   The fully resolved node name.
+   * 
+   * @param postUpdateSelected
+   *   The names of the nodes which should be selected in the NodeViewer after an update.
+   */ 
+  public void 
+  remoteCreateNewSelectionWindow
+  (
+   int channel, 
+   String name, 
+   TreeSet<String> postUpdateSelected
+  ) 
+  {
+    JNodeViewerPanel viewer = null;
+    {
+      JPanelFrame frame = createWindow();
+      frame.setSize(900, 600);
+
+      JManagerPanel mgr = frame.getManagerPanel();
+
+      JManagerPanel left = null;
+      {
+        left = new JManagerPanel();
+        mgr.doGroup(channel);
+        JNodeBrowserPanel panel = new JNodeBrowserPanel();
+        left.setContents(panel); 
+        left.doGroup(channel);
+      }
+      
+      JManagerPanel right = null;
+      {    
+        right = new JManagerPanel();
+        viewer = new JNodeViewerPanel();
+        right.setContents(viewer); 
+        right.doGroup(channel);
+      }
+      
+      mgr.setContents(new JHorzSplitPanel(left, right));
+      mgr.refocusOnChildPanel();
+      
+      frame.validate();
+      frame.repaint();
+    }
+
+    TreeSet<String> roots = new TreeSet<String>(); 
+    roots.add(name);
+    viewer.setRoots(roots, postUpdateSelected);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Launch the Editor associated with the given checked-in node version in response
    * to a request from plremote(1).
@@ -6167,17 +6305,20 @@ class UIMaster
    * Show the remote working node selection dialog. 
    */ 
   public 
-  class ShowWorkingSelectDialogTask
+  class ShowRemoteWorkingSelectDialogTask
     extends Thread
   {
     public 
-    ShowWorkingSelectDialogTask
+    ShowRemoteWorkingSelectDialogTask
     (
+     int channel, 
      String name, 
      TreeSet<String> postUpdateSelected
     ) 
     {
-      super("UIMaster:ShowWorkingSelectDialogTask");
+      super("UIMaster:ShowRemoteWorkingSelectDialogTask");
+
+      pChannel = channel;
       pNodeName = name;
       pPostUpdateSelected = postUpdateSelected;
     }
@@ -6185,13 +6326,81 @@ class UIMaster
     public void 
     run() 
     {
-      pWorkingSelectDialog.updateSelection
-        (pNodeName, pPostUpdateSelected, getNodeBrowserPanels(), getNodeViewerPanels());
+     int idx;
+
+     TreeSet<Integer> browserChannels = new TreeSet<Integer>();
+     for(idx=1; idx<10; idx++) {
+       if(!pNodeBrowserPanels.isGroupUnused(idx))
+         browserChannels.add(idx);
+     }
+
+     TreeSet<Integer> viewerChannels = new TreeSet<Integer>();
+     for(idx=1; idx<10; idx++) {
+       if(!pNodeViewerPanels.isGroupUnused(idx))
+         viewerChannels.add(idx);
+     }
+
+     pWorkingSelectDialog.updateSelection
+       (pChannel, pNodeName, pPostUpdateSelected, browserChannels, viewerChannels);
 
       pWorkingSelectDialog.setVisible(true);	
     }
 
+    private int              pChannel; 
     private String           pNodeName; 
+    private TreeSet<String>  pPostUpdateSelected; 
+  }
+
+  /** 
+   * Perform the remote working node selection. 
+   */ 
+  public 
+  class RemoteWorkingSelectTask
+    extends Thread
+  {
+    public 
+    RemoteWorkingSelectTask
+    (
+     int channel, 
+     String name, 
+     boolean replace, 
+     TreeSet<String> postUpdateSelected
+    ) 
+    {
+      super("UIMaster:RemoteWorkingSelectTask");
+
+      pChannel = channel;
+      pNodeName = name;
+      pReplace = replace; 
+      pPostUpdateSelected = postUpdateSelected;
+    }
+
+    public void 
+    run() 
+    {
+      boolean hasBrowser = !pNodeBrowserPanels.isGroupUnused(pChannel);
+      boolean hasViewer  = !pNodeViewerPanels.isGroupUnused(pChannel);
+
+      if(!hasBrowser && !hasViewer) {
+        remoteCreateNewSelectionWindow(pChannel, pNodeName, pPostUpdateSelected);
+      }
+      else if(hasBrowser && hasViewer) {
+        if(pReplace) 
+          remoteReplaceSelection(pChannel, pNodeName, pPostUpdateSelected);
+        else 
+          remoteAddSelection(pChannel, pNodeName, pPostUpdateSelected);
+      }
+      else { 
+        /* nothing valid, have to show dialog... */ 
+        Thread task = 
+          new ShowRemoteWorkingSelectDialogTask(pChannel, pNodeName, pPostUpdateSelected);
+        SwingUtilities.invokeLater(task); 
+      }
+    }
+
+    private int              pChannel; 
+    private String           pNodeName; 
+    private boolean          pReplace; 
     private TreeSet<String>  pPostUpdateSelected; 
   }
 
