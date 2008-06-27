@@ -1,4 +1,4 @@
-// $Id: VersionApp.java,v 1.5 2008/05/18 23:24:58 jim Exp $
+// $Id: VersionApp.java,v 1.6 2008/06/27 08:44:54 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -441,6 +441,7 @@ class VersionApp
     private File pCheckInFile; 
   }
 
+
   /*----------------------------------------------------------------------------------------*/
 
   /** 
@@ -637,14 +638,17 @@ class VersionApp
     public void 
     run() 
     {  
-      if(!sendViewCommand()) {   
+      try {
+        if(sendViewCommand()) 
+          return;
+
         try {
           Path plui = null;
           {
             String osarch = (PackageInfo.sOsType + "-" + 
                              PackageInfo.sArchType + "-" + 
                              PackageInfo.sBuildType);
-
+            
             String extra = "";
             switch(PackageInfo.sOsType) {
             case MacOS:
@@ -654,23 +658,23 @@ class VersionApp
             case Windows:
               extra = "-j2dgl.exe";
             }
-
+            
             plui = new Path(PackageInfo.sInstPath, osarch + "/bin/plui" + extra);
           }
-
+          
           ArrayList<String> args = new ArrayList<String>(); 
           args.add("--no-selections"); 
-
+          
           LogMgr.getInstance().log
             (LogMgr.Kind.Ops, LogMgr.Level.Info,
              "Starting plui..."); 
-
+          
           SubProcessLight proc = new SubProcessLight("plui", plui.toFile(), args);
           proc.start();
-
+          
           {
             Thread.sleep(10000);
-
+            
             boolean success = false;
             int wk;
             for(wk=0; wk<15; wk++) {
@@ -685,31 +689,36 @@ class VersionApp
             if(!success) 
               throw new Exception(); 
           }
-
-          doQuit(); 
         }
         catch(Exception ex) {
           showErrorDialog("Error:", "Unable to contact or start plui!", true); 
         }
       }
+      finally {
+        doQuit(); 
+      }
     }
 
     private boolean 
     sendViewCommand() 
-    {  
+    { 
+      Socket s = null;
       try {
+        s = new Socket();
+
         InetSocketAddress addr = new InetSocketAddress("localhost", PackageInfo.sRemotePort);
+        s.connect(addr, 5000);
 
-        Socket s = new Socket();
-        s.connect(addr, 10000);
-      
-        String cmd = ("working --select=" + pNodeName); 
-        byte[] bytes = cmd.getBytes("US-ASCII");
+        s.setSoTimeout(5000);
 
-        OutputStream out = s.getOutputStream();
-        out.write(bytes);
-        out.flush();
-        out.close(); 
+        {
+          String cmd = ("working --select=" + pNodeName + " --highlight=" + pNodeName); 
+          byte[] bytes = cmd.getBytes("US-ASCII");
+          
+          OutputStream out = s.getOutputStream();
+          out.write(bytes);
+          out.flush();
+        }
 
         LogMgr.getInstance().log
           (LogMgr.Kind.Ops, LogMgr.Level.Info,
@@ -720,10 +729,30 @@ class VersionApp
       catch(IOException ex) {
         LogMgr.getInstance().log
           (LogMgr.Kind.Ops, LogMgr.Level.Warning,
-           "Unable to contact plui!\n  " + ex.getMessage()); 
-
-        return false;
+           "Unable to contact plui:\n  " + 
+           ex.getMessage()); 
       }
+      catch(SecurityException ex) {
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+           "The Security Manager doesn't allow socket connections:\n  " + 
+           ex.getMessage());
+      }
+      finally {
+        if(s != null) {
+          try {
+            s.close();
+          }
+          catch(IOException ex) {
+            LogMgr.getInstance().log
+              (LogMgr.Kind.Ops, LogMgr.Level.Warning,
+               "Unable close connection to plui:\n  " + 
+               ex.getMessage()); 
+          }
+        }
+      }
+
+      return false;
     }
 
     private String pNodeName; 
