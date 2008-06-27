@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.66 2008/06/27 00:12:13 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.67 2008/06/27 01:39:35 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -955,11 +955,6 @@ class GenUserPrefsApp
       looks.add("Rounded");
       looks.add("Square");
 
-      LinkedList<String> autoframe = new LinkedList();
-      autoframe.add("Disabled");
-      autoframe.add("New/Added Roots");
-      autoframe.add("Changed Roots");
-      
       BasePref prefs[] = {
 	new BooleanPref
 	("Whether to always perform heavyweight node status updates.  Heavyweight status " + 
@@ -987,9 +982,21 @@ class GenUserPrefsApp
 	("The distance between node trees.", 
 	 "NodeTreeSpace", "Node Tree Space:", 1.0, 3.0, 1.0),
 
-        new ChoicePref
-	("Whether to automatically frame nodes after the root selection changes.", 
-	 "AutoFrameNodes", "Automatic Frame:", autoframe, "Disabled"),
+	new BasePref(),
+
+        new BooleanPref
+	("Whether to automatically reframe nodes after changing the root nodes displayed.", 
+	 "AutoFrameRoots", "Auto-Frame Roots:", true), 
+
+        new BooleanPref
+	("Whether to automatically reframe nodes after toggling the orientation of the " + 
+         "displayed node trees.",
+	 "AutoFrameOrientation", "Auto-Frame Orientation:", true), 
+
+        new BooleanPref
+	("Whether to automatically reframe nodes after toggling the display of downstream " + 
+         "nodes.", 
+	 "AutoFrameDownstream", "Auto-Frame Downstream:", true), 
 
 	new BasePref(),
 
@@ -2666,7 +2673,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.66 2008/06/27 00:12:13 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.67 2008/06/27 01:39:35 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -2921,7 +2928,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.66 2008/06/27 00:12:13 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.67 2008/06/27 01:39:35 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -4278,7 +4285,7 @@ class GenUserPrefsApp
 
       StringBuilder buf = new StringBuilder();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.66 2008/06/27 00:12:13 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.67 2008/06/27 01:39:35 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 

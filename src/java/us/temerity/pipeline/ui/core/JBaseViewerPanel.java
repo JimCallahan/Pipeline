@@ -1,4 +1,4 @@
-// $Id: JBaseViewerPanel.java,v 1.19 2008/05/12 04:07:49 jim Exp $
+// $Id: JBaseViewerPanel.java,v 1.20 2008/06/27 01:39:34 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -685,6 +685,8 @@ class JBaseViewerPanel
 	
 	pCameraPos.add(new Vector3d(delta.x(), delta.y(), 0.0));
 
+        pCameraMovedSinceFramed = true;
+
 	pDragStart = pos;
       }
       else if(zoom) {
@@ -698,6 +700,8 @@ class JBaseViewerPanel
 	dist += pZoomSpeed*zm;
 	dist = Math.max(((double) pGLComponent.getHeight()) / pMaxFactor, dist); 
 	pCameraPos.z(-dist);
+
+        pCameraMovedSinceFramed = true;
 
 	pDragStart = pos;
       } 
@@ -751,6 +755,8 @@ class JBaseViewerPanel
     Point2d center = bbox.getCenter();
     pCameraPos.set(center.x(), center.y(), z);
     pCameraPos.negate();
+
+    pCameraMovedSinceFramed = false;
 
     pGLDrawable.repaint();
   }
@@ -879,6 +885,12 @@ class JBaseViewerPanel
    * The camera position in world space coordinates.
    */ 
   protected Point3d  pCameraPos; 
+
+  /** 
+   * Whether the camera has been manually moved since the last time a doFramBound() operation
+   * was performed.
+   */ 
+  protected boolean  pCameraMovedSinceFramed; 
 
   /** 
    * The vertical field-of-view in degrees.

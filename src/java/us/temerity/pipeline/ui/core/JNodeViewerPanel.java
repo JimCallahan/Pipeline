@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.118 2008/06/26 22:43:16 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.119 2008/06/27 01:39:35 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -761,11 +761,14 @@ class JNodeViewerPanel
    TreeSet<String> names, 
    TreeSet<String> postUpdateSelected   
   )
-  {
+  {  
+    if(UserPrefs.getInstance().getAutoFrameRoots()) 
+      pAutoframeOnUpdate = true;
+
     pRoots.clear();
     for(String name : names) 
       pRoots.put(name, null);
-    
+  
     PanelUpdater pu = new PanelUpdater(this, postUpdateSelected);
     pu.execute();
   }
@@ -880,6 +883,9 @@ class JNodeViewerPanel
    String name
   )
   {
+    if(UserPrefs.getInstance().getAutoFrameRoots()) 
+      pAutoframeOnUpdate = true; 
+
     pRoots.remove(name);
     
     PanelUpdater pu = new PanelUpdater(this);
@@ -900,6 +906,9 @@ class JNodeViewerPanel
    TreeSet<String> names
   )
   {
+    if(UserPrefs.getInstance().getAutoFrameRoots()) 
+      pAutoframeOnUpdate = true; 
+
     for(String name : names) 
       pRoots.remove(name);
     
@@ -1006,6 +1015,13 @@ class JNodeViewerPanel
   {
     if(!pAuthor.equals(author) || !pView.equals(view)) 
       super.setAuthorView(author, view);    
+
+    if(UserPrefs.getInstance().getAutoFrameRoots()) {
+      TreeSet<String> onames = new TreeSet<String>(pRoots.keySet());
+      TreeSet<String> nnames = new TreeSet<String>(roots.keySet());
+      if(!onames.equals(nnames)) 
+        pAutoframeOnUpdate = true;
+    }
 
     pRoots.clear();
     pRoots.putAll(roots); 
@@ -1908,6 +1924,11 @@ class JNodeViewerPanel
 
     /* render the changes */ 
     refresh();
+
+    /* automatically reframe nodes? */ 
+    if(pAutoframeOnUpdate && !pCameraMovedSinceFramed) 
+      doFrameAll();
+    pAutoframeOnUpdate = false;
   }
   
   /**
@@ -5216,6 +5237,10 @@ class JNodeViewerPanel
   {
     clearSelection();
     pHorizontalOrientation = !pHorizontalOrientation;
+
+    if(UserPrefs.getInstance().getAutoFrameOrientation()) 
+      pAutoframeOnUpdate = true; 
+
     updateUniverse();
   }
 
@@ -5227,6 +5252,10 @@ class JNodeViewerPanel
   {
     clearSelection();
     pShowDownstream = !pShowDownstream;
+
+    if(UserPrefs.getInstance().getAutoFrameDownstream()) 
+      pAutoframeOnUpdate = true; 
+
     updateUniverse();
   }
 
@@ -7375,6 +7404,11 @@ class JNodeViewerPanel
    * The names of nodes which should be selected after an update.
    */ 
   private TreeSet<String> pPostUpdateSelected; 
+
+  /**
+   * Whether to FrameAll after the next updateUniverse(). 
+   */ 
+  private boolean pAutoframeOnUpdate; 
 
 
   /**
