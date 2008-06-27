@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.52 2008/05/12 04:07:49 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.53 2008/06/27 02:12:25 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -557,6 +557,13 @@ class JQueueJobViewerPanel
 
     updatePrivileges();
     
+    if(UserPrefs.getInstance().getJobAutoFrameGroups()) {
+      TreeSet<Long> oids = new TreeSet<Long>(pJobGroups.keySet());
+      TreeSet<Long> nids = new TreeSet<Long>(groups.keySet());
+      if(!oids.equals(nids)) 
+        pAutoframeOnUpdate = true;
+    }
+
     /* update the job groups and status tables */ 
     {
       pDetailedJobID = detailedID; 
@@ -901,6 +908,11 @@ class JQueueJobViewerPanel
    
     /* render the changes */ 
     refresh();
+
+    /* automatically reframe nodes? */ 
+    if(pAutoframeOnUpdate && !pCameraMovedSinceFramed) 
+      doFrameAll();
+    pAutoframeOnUpdate = false;
   }
   
   /**
@@ -2192,6 +2204,10 @@ class JQueueJobViewerPanel
   ) 
   {
     pExpandDepth = depth;
+
+    if(UserPrefs.getInstance().getJobAutoFrameExpandCollapse()) 
+      pAutoframeOnUpdate = true; 
+
     updateUniverse();
   }
 
@@ -2204,6 +2220,10 @@ class JQueueJobViewerPanel
     clearSelection();
     pExpandDepth  = null;
     pLayoutPolicy = LayoutPolicy.AutomaticExpand;
+
+    if(UserPrefs.getInstance().getJobAutoFrameExpandCollapse()) 
+      pAutoframeOnUpdate = true; 
+
     updateUniverse();
   }
 
@@ -2216,6 +2236,10 @@ class JQueueJobViewerPanel
     clearSelection();
     pExpandDepth  = null;
     pLayoutPolicy = LayoutPolicy.ExpandAll;
+
+    if(UserPrefs.getInstance().getJobAutoFrameExpandCollapse()) 
+      pAutoframeOnUpdate = true; 
+
     updateUniverse();
   }
 
@@ -2228,6 +2252,10 @@ class JQueueJobViewerPanel
     clearSelection();
     pExpandDepth  = null;
     pLayoutPolicy = LayoutPolicy.CollapseAll;
+
+    if(UserPrefs.getInstance().getJobAutoFrameExpandCollapse()) 
+      pAutoframeOnUpdate = true; 
+
     updateUniverse();
   }
 
@@ -2320,6 +2348,10 @@ class JQueueJobViewerPanel
   {
     clearSelection();
     pHorizontalOrientation = !pHorizontalOrientation;
+
+    if(UserPrefs.getInstance().getJobAutoFrameOrientation()) 
+      pAutoframeOnUpdate = true; 
+
     updateUniverse();
   }
 
@@ -3493,6 +3525,12 @@ class JQueueJobViewerPanel
    * The ID of job displayed in the job details panel.
    */ 
   private Long  pDetailedJobID; 
+
+
+  /**
+   * Whether to FrameAll after the next updateUniverse(). 
+   */ 
+  private boolean pAutoframeOnUpdate; 
 
 
   /*----------------------------------------------------------------------------------------*/

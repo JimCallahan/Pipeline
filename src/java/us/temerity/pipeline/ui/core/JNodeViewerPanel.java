@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.119 2008/06/27 01:39:35 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.120 2008/06/27 02:12:25 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -5125,6 +5125,10 @@ class JNodeViewerPanel
   ) 
   {
     pExpandDepth = depth;
+
+    if(UserPrefs.getInstance().getAutoFrameExpandCollapse()) 
+      pAutoframeOnUpdate = true; 
+
     updateUniverse();
   }
 
@@ -5137,6 +5141,10 @@ class JNodeViewerPanel
     clearSelection();
     pExpandDepth  = null;
     pLayoutPolicy = LayoutPolicy.AutomaticExpand;
+
+    if(UserPrefs.getInstance().getAutoFrameExpandCollapse()) 
+      pAutoframeOnUpdate = true; 
+
     updateUniverse();
   }
 
@@ -5149,6 +5157,10 @@ class JNodeViewerPanel
     clearSelection();
     pExpandDepth  = null;
     pLayoutPolicy = LayoutPolicy.ExpandAll;
+
+    if(UserPrefs.getInstance().getAutoFrameExpandCollapse()) 
+      pAutoframeOnUpdate = true; 
+
     updateUniverse();
   }
 
@@ -5161,6 +5173,10 @@ class JNodeViewerPanel
     clearSelection();
     pExpandDepth  = null;
     pLayoutPolicy = LayoutPolicy.CollapseAll;
+
+    if(UserPrefs.getInstance().getAutoFrameExpandCollapse()) 
+      pAutoframeOnUpdate = true; 
+
     updateUniverse();
   }
 
