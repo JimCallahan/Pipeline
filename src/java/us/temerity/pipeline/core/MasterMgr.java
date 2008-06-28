@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.248 2008/06/26 20:45:34 jesse Exp $
+// $Id: MasterMgr.java,v 1.249 2008/06/28 22:15:34 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -16525,7 +16525,7 @@ class MasterMgr
 
       if(nodeOp != null) {
         OverallQueueState qstate = root.getDetails().getOverallQueueState();
-        //validateStaleLinks(root, qstate == OverallQueueState.Finished);
+        validateStaleLinks(root, qstate == OverallQueueState.Finished);
       }
     }
 
@@ -16921,9 +16921,6 @@ class MasterMgr
       /* otherwise, we need to go on and compute the heavyweight per-file and queue 
            related node status information... */ 
       else {
-//         boolean canBeStale   = ((work != null) && work.isActionEnabled()); 
-//         boolean canBeDubious = ((work != null) && !work.isActionEnabled()); 
-
         /* get per-file FileStates and timestamps */ 
         TreeMap<FileSeq, FileState[]> fileStates = new TreeMap<FileSeq, FileState[]>(); 
         boolean[] anyMissing = null;
@@ -17171,6 +17168,7 @@ class MasterMgr
         /* determine per-file QueueStates */  
         Long jobIDs[] = null;
         QueueState queueStates[] = null;
+        TreeSet<String> staleLinks = new TreeSet<String>(); 
         switch(versionState) {
         case CheckedIn:
           {
@@ -17288,6 +17286,14 @@ class MasterMgr
                   queueStates[wk] = QueueState.Stale;
                 else 
                   queueStates[wk] = QueueState.Dubious;
+                
+                for(LinkMod link : work.getSources()) { 
+                  switch(link.getPolicy()) {
+                  case Reference:
+                  case Dependency:
+                    staleLinks.add(link.getName());
+                  }
+                }                
               }
 
               /* otherwise, we need to check individual upstream per-file dependencies... */ 
@@ -17304,6 +17310,7 @@ class MasterMgr
                     long lstamps[]    = ldetails.getFileTimeStamps();
                     UpdateState lus[] = ldetails.getUpdateState();
                       
+                    boolean foundStaleLink = false;
                     switch(link.getRelationship()) {
                     case OneToOne:
                       {
@@ -17318,6 +17325,8 @@ class MasterMgr
                               queueStates[wk] = QueueState.Stale;
                             else 
                               queueStates[wk] = QueueState.Dubious;
+
+                            foundStaleLink = true;
                           }
                         }
                       }
@@ -17335,6 +17344,8 @@ class MasterMgr
                               queueStates[wk] = QueueState.Stale;
                             else 
                               queueStates[wk] = QueueState.Dubious;
+                            
+                            foundStaleLink = true;
                           }
                         }
                       }
@@ -17344,7 +17355,10 @@ class MasterMgr
                       throw new PipelineException
                         ("Somehow a " + link.getPolicy() + " link has a None " + 
                          "relationship!");
-                    }		    
+                    }
+		    
+                    if(foundStaleLink)
+                      staleLinks.add(link.getName());
                   }
                 }
               }
@@ -17432,7 +17446,7 @@ class MasterMgr
          * + The LastCriticalSourceModification timestamp of the current node.
          * 
          * + The time stamp of any upstream file upon which the file depends via a 
-         *   Dependency/Reference link. 
+         *   Reference link or any non-Finshed file depended on via a Dependency link.
          * 
          * ---------------------------------------------------------------------------------
          * Set the per-file UpdateState of each file to: 
@@ -17470,8 +17484,6 @@ class MasterMgr
             }
           }
           else {
-            TreeSet<String> staleLinks = new TreeSet<String>(); 
-
             int wk;
             for(wk=0; wk<queueStates.length; wk++) {
               /* initial UpdateState */ 
@@ -17502,29 +17514,24 @@ class MasterMgr
                 fileStamps[wk] = criticalProps;
 
               long criticalLinks = work.getLastCriticalSourceModification();
-              if(criticalLinks > fileStamps[wk]) {
+              if(criticalLinks > fileStamps[wk]) 
                 fileStamps[wk] = criticalLinks;
-                 
-                for(LinkMod link : work.getSources()) { 
-                  switch(link.getPolicy()) {
-                  case Reference:
-                  case Dependency:
-                    staleLinks.add(link.getName());
-                  }
-                }                
-              }
-              
+                    
               /* process upstream per-file dependencies... */ 
               for(LinkMod link : work.getSources()) { 
+                boolean isDepend = false;
                 switch(link.getPolicy()) {
-                case Reference:
                 case Dependency:
+                  isDepend = true;
+
+                case Reference:
                   {
                     NodeStatus lstatus = status.getSource(link.getName());
                     NodeDetails ldetails = lstatus.getDetails();
                     
                     long lstamps[]    = ldetails.getFileTimeStamps();
                     UpdateState lus[] = ldetails.getUpdateState();
+                    QueueState lqs[]  = ldetails.getQueueState();
 
                     boolean foundStaleLink = false;
                     switch(link.getRelationship()) {
@@ -17533,9 +17540,12 @@ class MasterMgr
                         Integer offset = link.getFrameOffset();
                         int idx = wk+offset;
                         if((idx >= 0) && (idx < lus.length)) {
-                          if(lstamps[idx] > fileStamps[wk])
+                          if((lstamps[idx] > fileStamps[wk]) &&
+                             (!isDepend || (isDepend && (lqs[idx] != QueueState.Finished)))) {
                             fileStamps[wk] = lstamps[idx];
-                          
+                            foundStaleLink = true;
+                          }
+
                           switch(lus[idx]) {
                           case Stale:
                             if(updateStates[wk] != UpdateState.Dubious) 
@@ -17555,8 +17565,11 @@ class MasterMgr
                       {
                         int fk;
                         for(fk=0; fk<lus.length; fk++) {
-                          if(lstamps[fk] > fileStamps[wk])
+                          if((lstamps[fk] > fileStamps[wk]) &&
+                             (!isDepend || (isDepend && (lqs[fk] != QueueState.Finished)))) {
                             fileStamps[wk] = lstamps[fk];
+                            foundStaleLink = true;
+                          }
 
                           switch(lus[fk]) {
                           case Stale:
