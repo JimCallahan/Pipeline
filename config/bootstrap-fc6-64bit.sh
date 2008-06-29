@@ -1,6 +1,6 @@
 #!/bin/sh
 
-if [ `hostname` != "triceratops" ]
+if [ `hostname` != "triceratops.temeritysoftware.com" ]
 then
   echo "This configuration should only be run from triceratops!"
   exit 1
@@ -37,6 +37,8 @@ pushd debug
   time \
   JAVA_HOME=/usr/java/jdk1.6.0_06-x86_64 \
   PATH="$JAVA_HOME/bin:$PATH" \
+  CC="/usr/bin/gcc" \
+  CXX="/usr/bin/g++" \
   $plsrcdir/configure \
     --enable-foundation \
     --enable-x86-subpass \
@@ -62,6 +64,8 @@ pushd debug-native
   time \
   JAVA_HOME=/usr/java/jdk1.6.0_06-x86 \
   PATH="$JAVA_HOME/bin:$PATH" \
+  CC="/usr/bin/gcc" \
+  CXX="/usr/bin/g++" \
   $plsrcdir/configure \
     --disable-opt \
     --with-target-archtype=x86 \
