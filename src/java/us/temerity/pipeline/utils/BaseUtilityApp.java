@@ -1,4 +1,4 @@
-// $Id: BaseUtilityApp.java,v 1.4 2008/02/14 20:26:29 jim Exp $
+// $Id: BaseUtilityApp.java,v 1.5 2008/06/29 17:46:16 jim Exp $
 
 package us.temerity.pipeline.utils;  
 
@@ -99,18 +99,16 @@ class BaseUtilityApp
 	 "name of the input GLUE file.  This application had (" + args.length + ") " + 
 	 "arguments!\n");
 
-    String file = args[0];
+    String fileName = args[0];
     try {
-      GlueDecoderImpl decode = new GlueDecoderImpl(file);
+      TreeMap<String, Object> table = 
+        (TreeMap<String, Object>) GlueDecoderImpl.decodeFile("agenda", new File(fileName));
 
-      TreeMap<String, Object> fromGlue = (TreeMap<String, Object>) decode.getObject();
-      pAction = (BaseAction) fromGlue.get("Action");
-      pAgenda = (ActionAgenda) fromGlue.get("Agenda");
+      pAction = (BaseAction) table.get("Action");
+      pAgenda = (ActionAgenda) table.get("Agenda");
     }
-    catch(GlueException e) {
-      throw new PipelineException
-	("Unable to parse the input GLUE file (" + file + "):\n" + 
-	 e.getMessage());
+    catch(GlueException ex) {
+      throw new PipelineException(ex);
     }
   }
 

@@ -1,10 +1,9 @@
-// $Id: FileMgr.java,v 1.76 2008/06/03 17:47:00 jim Exp $
+// $Id: FileMgr.java,v 1.77 2008/06/29 17:46:16 jim Exp $
 
 package us.temerity.pipeline.core;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.glue.*;
-import us.temerity.pipeline.glue.io.*;
 import us.temerity.pipeline.message.*;
 
 import java.io.*;
@@ -2440,33 +2439,10 @@ class FileMgr
            "Writing Node Bundle Metadata: " + bname);
         
         try {
-          String glue = null;
-          try {
-            GlueEncoder ge = new GlueEncoderImpl("NodeBundle", bundle);
-            glue = ge.getText();
-          }
-          catch(GlueException ex) {
-            LogMgr.getInstance().log
-              (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-               "Unable to generate a Glue format representation of the node metadata for " + 
-               "the node bundle (" + bname + ")!");
-            LogMgr.getInstance().flush();
-            
-            throw new IOException(ex.getMessage());
-          }
-	  
-          {
-            FileWriter out = new FileWriter(file);
-            out.write(glue);
-            out.flush();
-            out.close();
-          }
+          GlueEncoderImpl.encodeFile("NodeBundle", bundle, file);
         }
-        catch(IOException ex) {
-          throw new PipelineException
-            ("I/O ERROR: \n" + 
-             "  While attempting to write the node metadata file (" + file + ")...\n" +
-             "    " + ex.getMessage());
+        catch(GlueException ex) {
+          throw new PipelineException(ex);
         }
       }
       
@@ -2646,16 +2622,13 @@ class FileMgr
         throw new PipelineException
           ("Unable to find the GLUE file (" + glueName + ") in the node bundle " +
            "file (" + bundlePath + ")!");
-      
-      /* decode the GLUE raw bytes */ 
+
+      PluginMgrClient.getInstance().update();
       try {
-        PluginMgrClient.getInstance().update();
-        GlueDecoder gd = new GlueDecoderImpl(new ByteArrayInputStream(glueBytes));
-        bundle = (NodeBundle) gd.getObject();
-      }
-      catch(Exception ex) {
-        throw new PipelineException
-          ("Unable to read the GLUE file (" + glueName + "):\n" + ex.getMessage());
+        bundle = (NodeBundle) GlueDecoderImpl.decodeBytes("NodeBundle", glueBytes);
+      }	
+      catch(GlueException ex) {
+        throw new PipelineException(ex);
       }
     }
 

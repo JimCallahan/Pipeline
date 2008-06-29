@@ -1,4 +1,4 @@
-// $Id: JavaUtilityAction.java,v 1.2 2008/01/20 01:38:05 jim Exp $
+// $Id: JavaUtilityAction.java,v 1.3 2008/06/29 17:46:16 jim Exp $
 
 package us.temerity.pipeline.plugin.JavaUtilityAction.v2_0_15;
 
@@ -278,23 +278,14 @@ JavaUtilityAction
       TreeMap<String, Object> table = new TreeMap<String, Object>();
       table.put("Agenda", agenda);
       table.put("Action", new BaseAction(this));
-      
-      GlueEncoderImpl encode = new GlueEncoderImpl("agenda", table);
-      FileWriter out = new FileWriter(glueFile);
-      out.write(encode.getText());
-      out.close();
+            
+      GlueEncoderImpl.encodeFile("agenda", table, glueFile);
     } 
     catch (GlueException e) {
       throw new PipelineException
 	("Unable to encode the GLUE input file for Job (" + agenda.getJobID() + ")!\n" + 
 	 e.getMessage());
     } 
-    catch (IOException e) {
-      throw new PipelineException
-	("Unable to write the intput GLUE file (" + glueFile + ") for Job " + 
-	 "(" + agenda.getJobID() + ")!\n" +
-	 e.getMessage());
-    }
 
     try {
       ArrayList<String> args = new ArrayList<String>();

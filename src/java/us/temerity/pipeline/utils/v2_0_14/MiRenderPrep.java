@@ -1,4 +1,4 @@
-// $Id: MiRenderPrep.java,v 1.4 2006/12/20 15:10:44 jim Exp $
+// $Id: MiRenderPrep.java,v 1.5 2008/06/29 17:46:16 jim Exp $
 
 package us.temerity.pipeline.utils.v2_0_14;
 
@@ -570,9 +570,9 @@ public class MiRenderPrep
     ArrayList<String> output;
     BaseAction action;
     try {
-      GlueDecoderImpl decode = new GlueDecoderImpl(new File(fileName));
+      TreeMap<String, Object> fromGlue = 
+        (TreeMap<String, Object>) GlueDecoderImpl.decodeFile("agenda", new File(fileName));
 
-      TreeMap<String, Object> fromGlue = (TreeMap<String, Object>) decode.getObject();
       agenda = (ActionAgenda) fromGlue.get("agenda");
       output = (ArrayList<String>) fromGlue.get("file");
       action = (BaseAction) fromGlue.get("action");

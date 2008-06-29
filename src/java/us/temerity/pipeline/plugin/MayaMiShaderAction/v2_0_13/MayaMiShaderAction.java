@@ -1,4 +1,4 @@
-// $Id: MayaMiShaderAction.java,v 1.1 2007/06/19 18:24:50 jim Exp $
+// $Id: MayaMiShaderAction.java,v 1.2 2008/06/29 17:46:16 jim Exp $
 
 package us.temerity.pipeline.plugin.MayaMiShaderAction.v2_0_13;
 
@@ -707,32 +707,23 @@ MayaMiShaderAction
       File glueFile = createTemp(agenda, 0644, "glue");
       ArrayList<String> scenes = null;
       {
-	try {
-	  scenes = new ArrayList<String>();
-	  for (Path p : target.getPaths()) {
-	    File tempscene = createTemp(agenda, 0666, "mi");
-	    scenes.add(tempscene.getPath());
-	  }
-	  TreeMap<String, Object> toGlue = new TreeMap<String, Object>();
-	  BaseAction act = new BaseAction(this);
-	  toGlue.put("file", scenes);
-	  toGlue.put("agenda", agenda);
-	  toGlue.put("action", act);
-	  GlueEncoderImpl encode = new GlueEncoderImpl("agenda", toGlue);
-	  FileWriter out = new FileWriter(glueFile);
-	  out.write(encode.getText());
-	  out.close();
-	} 
-	catch (GlueException e) {
-	  throw new PipelineException
-	    ("Error converting the agenda to Glue for Job "
-	     + "(" + agenda.getJobID() + ")!\n" + e.getMessage());
-	} 
-	catch (IOException e) {
-	  throw new PipelineException
-	    ("Unable to write the temporary GLUE script file (" + glueFile.getPath() + ") " + 
-	     "for Job " + "(" + agenda.getJobID() + ")!\n" + e.getMessage());
-	}
+        scenes = new ArrayList<String>();
+        for (Path p : target.getPaths()) {
+          File tempscene = createTemp(agenda, 0666, "mi");
+          scenes.add(tempscene.getPath());
+        }
+        TreeMap<String, Object> toGlue = new TreeMap<String, Object>();
+        BaseAction act = new BaseAction(this);
+        toGlue.put("file", scenes);
+        toGlue.put("agenda", agenda);
+        toGlue.put("action", act);
+        
+        try {
+          GlueEncoderImpl.encodeFile("agenda", toGlue, glueFile); 
+        }
+        catch(GlueException ex) {
+          throw new PipelineException(ex);
+        }
       }
       
       String pipelineUtilPath = env.get("PIPELINE_UTILS_LIB");

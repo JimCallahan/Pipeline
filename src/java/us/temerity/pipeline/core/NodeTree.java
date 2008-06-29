@@ -1,10 +1,9 @@
-// $Id: NodeTree.java,v 1.9 2008/05/08 22:46:41 jim Exp $
+// $Id: NodeTree.java,v 1.10 2008/06/29 17:46:16 jim Exp $
 
 package us.temerity.pipeline.core;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.glue.*;
-import us.temerity.pipeline.glue.io.*;
 
 import java.io.*;
 import java.util.*;
@@ -1149,37 +1148,15 @@ class NodeTree
   ) 
     throws PipelineException
   {
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+       "Writing Node Tree Cache...");
+    
     try {
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
-	 "Writing Node Tree Cache...");
-      
-      String glue = null;
-      try {
-	GlueEncoder ge = new GlueEncoderImpl("NodeTree", pNodeTreeRoot);
-	glue = ge.getText();
-      }
-      catch(GlueException ex) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	   "Unable to generate a Glue format representation of the node tree!");
-	LogMgr.getInstance().flush();
-	
-	throw new IOException(ex.getMessage());
-      }
-      
-      {
-	FileWriter out = new FileWriter(file);
-	out.write(glue);
-	out.flush();
-	out.close();
-      }
+      GlueEncoderImpl.encodeFile("NodeTree", pNodeTreeRoot, file);
     }
-    catch(IOException ex) {
-      throw new PipelineException
-	("I/O ERROR: \n" + 
-	 "  While attempting to write the node tree cache...\n" +
-	 "    " + ex.getMessage());
+    catch(GlueException ex) {
+      throw new PipelineException(ex);
     }
   }
 
@@ -1196,30 +1173,15 @@ class NodeTree
   ) 
     throws PipelineException
   {
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+       "Reading Node Tree Cache...");
+    
     try {
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
-	 "Reading Node Tree Cache...");
-      
-      try {
-	GlueDecoder gd = new GlueDecoderImpl(file); 
-	pNodeTreeRoot = (NodeTreeEntry) gd.getObject();
-      }
-      catch(Exception ex) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Glu, LogMgr.Level.Severe,  
-	   "The node tree cache file (" + file + ") appears to be corrupted:\n" + 
-	   "  " + ex.getMessage());
-	LogMgr.getInstance().flush();
-	
-	throw ex;
-      }
-    }
-    catch(Exception ex) {
-      throw new PipelineException
-	("I/O ERROR: \n" + 
-	 "  While attempting to read the node tree cache file...\n" +
-	 "    " + ex.getMessage());
+      pNodeTreeRoot = (NodeTreeEntry) GlueDecoderImpl.decodeFile("NodeTree", file);
+    }	
+    catch(GlueException ex) {
+      throw new PipelineException(ex);
     }
   }
 

@@ -1,7 +1,8 @@
-// $Id: LockedGlueFile.java,v 1.4 2008/03/28 21:15:24 jim Exp $
+// $Id: LockedGlueFile.java,v 1.5 2008/06/29 17:46:16 jim Exp $
 
 package us.temerity.pipeline.core;
 
+import us.temerity.pipeline.*;
 import us.temerity.pipeline.glue.*;
 
 import java.util.*;
@@ -48,20 +49,37 @@ class LockedGlueFile
       FileLock lock = chan.tryLock();
       if(lock == null) 
 	throw new GlueLockException("Unable to aquire lock for Glue file (" + file + ")!");
+
       try {
 	long size = chan.size();
 	ByteBuffer buf = ByteBuffer.allocate((int) size);
 	int read = chan.read(buf);
-	GlueDecoder decoder = new GlueDecoderImpl(new String(buf.array()));
-	return decoder.getObject();	
+        
+        return GlueDecoderImpl.decodeString("???", new String(buf.array()));
       }
       finally {
 	lock.release();
 	chan.close();
       }
     }
+    catch(GlueException ex) {
+      throw ex;
+    }
+    catch(GlueLockException ex) {
+      throw ex;
+    }
+    catch(IOException ex) {
+      String msg = 
+        ("I/O ERROR: \n" + 
+         "  While reading from file (" + file + ").\n" +
+         "    " + ex.getMessage());
+      LogMgr.getInstance().log(LogMgr.Kind.Glu, LogMgr.Level.Severe, msg); 
+      throw new GlueException(msg);
+    }
     catch (Exception ex) {
-      throw new GlueException("Unable to load Glue file (" + file + ")!", ex);
+      String msg = Exceptions.getFullMessage("INTERNAL ERROR:", ex, true, true);
+      LogMgr.getInstance().log(LogMgr.Kind.Glu, LogMgr.Level.Severe, msg); 
+      throw new GlueException(msg);  
     }
   }
 
@@ -98,9 +116,10 @@ class LockedGlueFile
       FileLock lock = chan.tryLock();
       if(lock == null) 
 	throw new GlueLockException("Unable to aquire lock for Glue file (" + file + ")!");
+
       try {
-	GlueEncoder ge = new GlueEncoderImpl(title, obj);	
-	ByteBuffer buf = ByteBuffer.wrap(ge.getText().getBytes());
+        String text = GlueEncoderImpl.encodeString(title, obj);
+	ByteBuffer buf = ByteBuffer.wrap(text.getBytes());
 	chan.write(buf);
       }
       finally {
@@ -108,9 +127,24 @@ class LockedGlueFile
 	chan.close();
       }
     }
+    catch(GlueException ex) {
+      throw ex;
+    }
+    catch(GlueLockException ex) {
+      throw ex;
+    }
+    catch(IOException ex) {
+      String msg = 
+        ("I/O ERROR: \n" + 
+         "  While writing to file (" + file + ").\n" +
+         "    " + ex.getMessage());
+      LogMgr.getInstance().log(LogMgr.Kind.Glu, LogMgr.Level.Severe, msg); 
+      throw new GlueException(msg);
+    }
     catch (Exception ex) {
-      throw new GlueException("Unable to save Glue file (" + file + "):\n" + 
-			      "  " + ex);
+      String msg = Exceptions.getFullMessage("INTERNAL ERROR:", ex, true, true);
+      LogMgr.getInstance().log(LogMgr.Kind.Glu, LogMgr.Level.Severe, msg); 
+      throw new GlueException(msg);  
     }
   }
 }

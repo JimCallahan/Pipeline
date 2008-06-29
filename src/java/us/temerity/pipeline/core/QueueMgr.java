@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.103 2008/03/16 13:14:13 jim Exp $
+// $Id: QueueMgr.java,v 1.104 2008/06/29 17:46:16 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -6901,35 +6901,13 @@ class QueueMgr
 	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
 	   "Writing License Keys.");
 
-	try {
-	  String glue = null;
-	  try {
-	    ArrayList<LicenseKey> keys = 
-	      new ArrayList<LicenseKey>(pLicenseKeys.values());
-	    GlueEncoder ge = new GlueEncoderImpl("LicenseKeys", keys);
-	    glue = ge.getText();
-	  }
-	  catch(GlueException ex) {
-	    LogMgr.getInstance().log
-	      (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	       "Unable to generate a Glue format representation of the license keys!");
-	    
-	    throw new IOException(ex.getMessage());
-	  }
-	  
-	  {
-	    FileWriter out = new FileWriter(file);
-	    out.write(glue);
-	    out.flush();
-	    out.close();
-	  }
-	}
-	catch(IOException ex) {
-	  throw new PipelineException
-	    ("I/O ERROR: \n" + 
-	     "  While attempting to write the license keys file (" + file + ")...\n" + 
-	     "    " + ex.getMessage());
-	}
+        try { 
+          ArrayList<LicenseKey> keys = new ArrayList<LicenseKey>(pLicenseKeys.values());
+          GlueEncoderImpl.encodeFile("LicenseKeys", keys, file);
+        }
+	catch(GlueException ex) {
+	  throw new PipelineException(ex);
+        }
       }
     }
   }
@@ -6955,20 +6933,12 @@ class QueueMgr
 
 	ArrayList<LicenseKey> keys = null;
 	try {
-	  GlueDecoder gd = new GlueDecoderImpl(file); 
-	  keys = (ArrayList<LicenseKey>) gd.getObject();
-	}
-	catch(Exception ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	     "The license keys file (" + file + ") appears to be corrupted:\n" + 
-	     "  " + ex.getMessage());
-	  
-	  throw new PipelineException
-	    ("I/O ERROR: \n" + 
-	     "  While attempting to read the license keys file (" + file + ")...\n" + 
-	     "    " + ex.getMessage());
-	}	  
+          keys = (ArrayList<LicenseKey>) GlueDecoderImpl.decodeFile("LicenseKeys", file);
+        }
+        catch(GlueException ex) {
+          throw new PipelineException(ex);
+        }
+
 	if(keys == null) 
 	  throw new IllegalStateException("The license keys cannot be (null)!");
 
@@ -6977,6 +6947,7 @@ class QueueMgr
       }
     }
   }
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -7003,35 +6974,14 @@ class QueueMgr
 	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
 	   "Writing Hardware Keys.");
 
-	try {
-	  String glue = null;
-	  try {
-	    ArrayList<HardwareKey> keys = 
-	      new ArrayList<HardwareKey>(pHardwareKeys.values());
-	    GlueEncoder ge = new GlueEncoderImpl("HardwareKeys", keys);
-	    glue = ge.getText();
-	  }
-	  catch(GlueException ex) {
-	    LogMgr.getInstance().log
-	      (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	       "Unable to generate a Glue format representation of the hardware keys!");
-	    
-	    throw new IOException(ex.getMessage());
-	  }
-	  
-	  {
-	    FileWriter out = new FileWriter(file);
-	    out.write(glue);
-	    out.flush();
-	    out.close();
-	  }
-	}
-	catch(IOException ex) {
-	  throw new PipelineException
-	    ("I/O ERROR: \n" + 
-	     "  While attempting to write the hardware keys file (" + file + ")...\n" + 
-	     "    " + ex.getMessage());
-	}
+        try {
+          ArrayList<HardwareKey> keys = 
+            new ArrayList<HardwareKey>(pHardwareKeys.values());
+          GlueEncoderImpl.encodeFile("HardwareKeys", keys, file);
+        }
+        catch(GlueException ex) {
+          throw new PipelineException(ex);
+        }
       }
     }
   }
@@ -7055,30 +7005,23 @@ class QueueMgr
 	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
 	   "Reading Hardware Keys.");
 
-	ArrayList<HardwareKey> keys = null;
-	try {
-	  GlueDecoder gd = new GlueDecoderImpl(file);
-	  keys = (ArrayList<HardwareKey>) gd.getObject();
-	}
-	catch(Exception ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	     "The hardware keys file (" + file + ") appears to be corrupted:\n" + 
-	     "  " + ex.getMessage());
-	  
-	  throw new PipelineException
-	    ("I/O ERROR: \n" + 
-	     "  While attempting to read the hardware keys file (" + file + ")...\n" + 
-	     "    " + ex.getMessage());
-	}
+        ArrayList<HardwareKey> keys = null;
+        try {
+          keys = (ArrayList<HardwareKey>) GlueDecoderImpl.decodeFile("HardwareKeys", file);
+        }	
+        catch(GlueException ex) {
+          throw new PipelineException(ex);
+        }
+        
 	if(keys == null) 
 	  throw new IllegalStateException("The hardware keys cannot be (null)!");
-	
+
 	for(HardwareKey key : keys) 
 	  pHardwareKeys.put(key.getName(), key);
       }
     }
   }
+
   
   /*----------------------------------------------------------------------------------------*/
 
@@ -7105,35 +7048,14 @@ class QueueMgr
 	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
 	   "Writing Hardware Groups.");
 
-	try {
-	  String glue = null;
-	  try {
-	    ArrayList<HardwareGroup> groups = 
-	      new ArrayList<HardwareGroup>(pHardwareGroups.values());
-	    GlueEncoder ge = new GlueEncoderImpl("HardwareGroups", groups);
-	    glue = ge.getText();
-	  }
-	  catch(GlueException ex) {
-	    LogMgr.getInstance().log
-	      (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	       "Unable to generate a Glue format representation of the hardware groups!");
-	    
-	    throw new IOException(ex.getMessage());
-	  }
-	  
-	  {
-	    FileWriter out = new FileWriter(file);
-	    out.write(glue);
-	    out.flush();
-	    out.close();
-	  }
-	}
-	catch(IOException ex) {
-	  throw new PipelineException
-	    ("I/O ERROR: \n" + 
-	     "  While attempting to write the hardware groups file (" + file + ")...\n" + 
-	     "    " + ex.getMessage());
-	}
+        try {
+          ArrayList<HardwareGroup> groups = 
+            new ArrayList<HardwareGroup>(pHardwareGroups.values());
+          GlueEncoderImpl.encodeFile("HardwareGroups", groups, file);
+        }
+        catch(GlueException ex) {
+          throw new PipelineException(ex);
+        }
       }
     }
   }
@@ -7158,21 +7080,14 @@ class QueueMgr
 	   "Reading Selection Groups.");
 
 	ArrayList<HardwareGroup> groups = null;
-	try {
-	  GlueDecoder gd = new GlueDecoderImpl(file);
-	  groups = (ArrayList<HardwareGroup>) gd.getObject();
-	}
-	catch(Exception ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	     "The hardware groups file (" + file + ") appears to be corrupted:\n" + 
-	     "  " + ex.getMessage());
-	  
-	  throw new PipelineException
-	    ("I/O ERROR: \n" + 
-	     "  While attempting to read the hardware groups file (" + file + ")...\n" + 
-	     "    " + ex.getMessage());
-	}
+        try {
+          groups = 
+            (ArrayList<HardwareGroup>) GlueDecoderImpl.decodeFile("HardwareGroups", file);
+        }	
+        catch(GlueException ex) {
+          throw new PipelineException(ex);
+        }
+        
 	if(groups == null) 
 	  throw new IllegalStateException("The hardware groups cannot be (null)!");
 
@@ -7208,35 +7123,14 @@ class QueueMgr
 	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
 	   "Writing Selection Keys.");
 
-	try {
-	  String glue = null;
-	  try {
-	    ArrayList<SelectionKey> keys = 
-	      new ArrayList<SelectionKey>(pSelectionKeys.values());
-	    GlueEncoder ge = new GlueEncoderImpl("SelectionKeys", keys);
-	    glue = ge.getText();
-	  }
-	  catch(GlueException ex) {
-	    LogMgr.getInstance().log
-	      (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	       "Unable to generate a Glue format representation of the selection keys!");
-	    
-	    throw new IOException(ex.getMessage());
-	  }
-	  
-	  {
-	    FileWriter out = new FileWriter(file);
-	    out.write(glue);
-	    out.flush();
-	    out.close();
-	  }
-	}
-	catch(IOException ex) {
-	  throw new PipelineException
-	    ("I/O ERROR: \n" + 
-	     "  While attempting to write the selection keys file (" + file + ")...\n" + 
-	     "    " + ex.getMessage());
-	}
+        try {
+          ArrayList<SelectionKey> keys = 
+            new ArrayList<SelectionKey>(pSelectionKeys.values());
+          GlueEncoderImpl.encodeFile("SelectionKeys", keys, file);
+        }
+        catch(GlueException ex) {
+          throw new PipelineException(ex);
+        }
       }
     }
   }
@@ -7261,21 +7155,13 @@ class QueueMgr
 	   "Reading Selection Keys.");
 
 	ArrayList<SelectionKey> keys = null;
-	try {
-	  GlueDecoder gd = new GlueDecoderImpl(file);
-	  keys = (ArrayList<SelectionKey>) gd.getObject();
-	}
-	catch(Exception ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	     "The selection keys file (" + file + ") appears to be corrupted:\n" + 
-	     "  " + ex.getMessage());
-	  
-	  throw new PipelineException
-	    ("I/O ERROR: \n" + 
-	     "  While attempting to read the selection keys file (" + file + ")...\n" + 
-	     "    " + ex.getMessage());
-	}
+        try {
+          keys = (ArrayList<SelectionKey>) GlueDecoderImpl.decodeFile("SelectionKeys", file);
+        }	
+        catch(GlueException ex) {
+          throw new PipelineException(ex);
+        }
+
 	if(keys == null) 
 	  throw new IllegalStateException("The selection keys cannot be (null)!");
 	
@@ -7311,35 +7197,14 @@ class QueueMgr
 	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
 	   "Writing Selection Groups.");
 
-	try {
-	  String glue = null;
-	  try {
-	    ArrayList<SelectionGroup> groups = 
-	      new ArrayList<SelectionGroup>(pSelectionGroups.values());
-	    GlueEncoder ge = new GlueEncoderImpl("SelectionGroups", groups);
-	    glue = ge.getText();
-	  }
-	  catch(GlueException ex) {
-	    LogMgr.getInstance().log
-	      (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	       "Unable to generate a Glue format representation of the selection groups!");
-	    
-	    throw new IOException(ex.getMessage());
-	  }
-	  
-	  {
-	    FileWriter out = new FileWriter(file);
-	    out.write(glue);
-	    out.flush();
-	    out.close();
-	  }
-	}
-	catch(IOException ex) {
-	  throw new PipelineException
-	    ("I/O ERROR: \n" + 
-	     "  While attempting to write the selection groups file (" + file + ")...\n" + 
-	     "    " + ex.getMessage());
-	}
+        try {
+          ArrayList<SelectionGroup> groups = 
+            new ArrayList<SelectionGroup>(pSelectionGroups.values());
+          GlueEncoderImpl.encodeFile("SelectionGroups", groups, file);
+        }
+        catch(GlueException ex) {
+          throw new PipelineException(ex);
+        }
       }
     }
   }
@@ -7364,21 +7229,14 @@ class QueueMgr
 	   "Reading Selection Groups.");
 
 	ArrayList<SelectionGroup> groups = null;
-	try {
-	  GlueDecoder gd = new GlueDecoderImpl(file);
-	  groups = (ArrayList<SelectionGroup>) gd.getObject();
-	}
-	catch(Exception ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	     "The selection groups file (" + file + ") appears to be corrupted:\n" + 
-	     "  " + ex.getMessage());
-	  
-	  throw new PipelineException
-	    ("I/O ERROR: \n" + 
-	     "  While attempting to read the selection groups file (" + file + ")...\n" + 
-	     "    " + ex.getMessage());
-	}
+        try {
+          groups = 
+            (ArrayList<SelectionGroup>) GlueDecoderImpl.decodeFile("SelectionGroups", file);
+        }	
+        catch(GlueException ex) {
+          throw new PipelineException(ex);
+        }
+
 	if(groups == null) 
 	  throw new IllegalStateException("The selection groups cannot be (null)!");
 
@@ -7414,35 +7272,14 @@ class QueueMgr
 	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
 	   "Writing Selection Schedules.");
 
-	try {
-	  String glue = null;
-	  try {
-	    ArrayList<SelectionSchedule> schedules = 
-	      new ArrayList<SelectionSchedule>(pSelectionSchedules.values());
-	    GlueEncoder ge = new GlueEncoderImpl("SelectionSchedules", schedules);
-	    glue = ge.getText();
-	  }
-	  catch(GlueException ex) {
-	    LogMgr.getInstance().log
-	      (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	       "Unable to generate a Glue format representation of the selection schedules!");
-	    
-	    throw new IOException(ex.getMessage());
-	  }
-	  
-	  {
-	    FileWriter out = new FileWriter(file);
-	    out.write(glue);
-	    out.flush();
-	    out.close();
-	  }
-	}
-	catch(IOException ex) {
-	  throw new PipelineException
-	    ("I/O ERROR: \n" + 
-	     "  While attempting to write the selection schedules file (" + file + ")...\n" + 
-	     "    " + ex.getMessage());
-	}
+        try {
+          ArrayList<SelectionSchedule> schedules = 
+            new ArrayList<SelectionSchedule>(pSelectionSchedules.values());
+          GlueEncoderImpl.encodeFile("SelectionSchedules", schedules, file);
+        }
+        catch(GlueException ex) {
+          throw new PipelineException(ex);
+        }
       }
     }
   }
@@ -7467,21 +7304,15 @@ class QueueMgr
 	   "Reading Selection Schedules.");
 
 	ArrayList<SelectionSchedule> schedules = null;
-	try {
-	  GlueDecoder gd = new GlueDecoderImpl(file);
-	  schedules = (ArrayList<SelectionSchedule>) gd.getObject();
-	}
-	catch(Exception ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	     "The selection schedules file (" + file + ") appears to be corrupted:\n" + 
-	     "  " + ex.getMessage());
-	  
-	  throw new PipelineException
-	    ("I/O ERROR: \n" + 
-	     "  While attempting to read the selection schedules file (" + file + ")...\n" + 
-	     "    " + ex.getMessage());
-	}
+        try {
+          schedules = 
+            (ArrayList<SelectionSchedule>) 
+            GlueDecoderImpl.decodeFile("SelectionSchedules", file);
+        }	
+        catch(GlueException ex) {
+          throw new PipelineException(ex);
+        }
+
 	if(schedules == null) 
 	  throw new IllegalStateException("The selection schedules cannot be (null)!");
 
@@ -7518,34 +7349,12 @@ class QueueMgr
 	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
 	   "Writing Queue Extensions.");
 
-	try {
-	  String glue = null;
-	  try {
-	    GlueEncoder ge = new GlueEncoderImpl("QueueExtensions", pQueueExtensions);
-	    glue = ge.getText();
-	  }
-	  catch(GlueException ex) {
-	    LogMgr.getInstance().log
-	      (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	       "Unable to generate a Glue format representation of the queue extensions!");
-	    LogMgr.getInstance().flush();
-	    
-	    throw new IOException(ex.getMessage());
-	  }
-	  
-	  {
-	    FileWriter out = new FileWriter(file);
-	    out.write(glue);
-	    out.flush();
-	    out.close();
-	  }
-	}
-	catch(IOException ex) {
-	  throw new PipelineException
-	    ("I/O ERROR: \n" + 
-	     "  While attempting to write the queue extensions file (" + file + ")...\n" + 
-	     "    " + ex.getMessage());
-	}
+        try {
+          GlueEncoderImpl.encodeFile("QueueExtensions", pQueueExtensions, file);
+        }
+        catch(GlueException ex) {
+          throw new PipelineException(ex);
+        }
       }
     }
   }
@@ -7570,22 +7379,14 @@ class QueueMgr
 	   "Reading Queue Extensions.");
 
 	TreeMap<String,QueueExtensionConfig> exts = null;
-	try {
-	  GlueDecoder gd = new GlueDecoderImpl(file);
-	  exts = (TreeMap<String,QueueExtensionConfig>) gd.getObject();
-	}
-	catch(Exception ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	     "The default toolset file (" + file + ") appears to be corrupted:\n" + 
-	     "  " + ex.getMessage());
-	  LogMgr.getInstance().flush();
-	  
-	  throw new PipelineException
-	    ("I/O ERROR: \n" + 
-	     "  While attempting to read the default toolset file (" + file + ")...\n" + 
-	     "    " + ex.getMessage());
-	}
+        try {
+          exts = 
+            (TreeMap<String,QueueExtensionConfig>) 
+            GlueDecoderImpl.decodeFile("QueueExtensions", file);
+        }	
+        catch(GlueException ex) {
+          throw new PipelineException(ex);
+        }
 
 	if(exts != null)
 	  pQueueExtensions.putAll(exts);
@@ -7619,37 +7420,15 @@ class QueueMgr
 	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
 	   "Writing Hosts.");
 
-	try {
-	  String glue = null;
-	  try {
-	    TreeMap<String,QueueHostInfo> infos = new TreeMap<String,QueueHostInfo>();
-	    for(QueueHost host : pHosts.values()) 
-	      infos.put(host.getName(), host.toInfo());
-
-	    GlueEncoder ge = new GlueEncoderImpl("Hosts", infos);
-	    glue = ge.getText();
-	  }
-	  catch(GlueException ex) {
-	    LogMgr.getInstance().log
-	      (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	       "Unable to generate a Glue format representation of the hosts!");
-	    
-	    throw new IOException(ex.getMessage());
-	  }
-	  
-	  {
-	    FileWriter out = new FileWriter(file);
-	    out.write(glue);
-	    out.flush();
-	    out.close();
-	  }
-	}
-	catch(IOException ex) {
-	  throw new PipelineException
-	    ("I/O ERROR: \n" + 
-	     "  While attempting to write the hosts file (" + file + ")...\n" + 
-	     "    " + ex.getMessage());
-	}
+        try {
+          TreeMap<String,QueueHostInfo> infos = new TreeMap<String,QueueHostInfo>();
+          for(QueueHost host : pHosts.values()) 
+            infos.put(host.getName(), host.toInfo());
+          GlueEncoderImpl.encodeFile("Hosts", infos, file);
+        }
+        catch(GlueException ex) {
+          throw new PipelineException(ex);
+        }
       }
     }
   }
@@ -7674,21 +7453,13 @@ class QueueMgr
 	   "Reading Hosts.");
 
 	TreeMap<String,QueueHostInfo> infos = null;
-	try {
-	  GlueDecoder gd = new GlueDecoderImpl(file);
-	  infos = (TreeMap<String,QueueHostInfo>) gd.getObject();
-	}
-	catch(Exception ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	     "The hosts file (" + file + ") appears to be corrupted:\n" + 
-	     "  " + ex.getMessage());
-	  
-	  throw new PipelineException
-	    ("I/O ERROR: \n" + 
-	     "  While attempting to read the hosts file (" + file + ")...\n" + 
-	     "    " + ex.getMessage());
-	}
+        try {
+          infos = (TreeMap<String,QueueHostInfo>) GlueDecoderImpl.decodeFile("Hosts", file);
+        }	
+        catch(GlueException ex) {
+          throw new PipelineException(ex);
+        }
+
 	if(infos == null) 
 	  throw new IllegalStateException("The host info cannot be (null)!");
 	
@@ -7779,35 +7550,12 @@ class QueueMgr
 	      throw new PipelineException
 		("Somehow the host resource samples file (" + file + ") already exists!"); 
 	    
-	    try {
-	      String glue = null;
-	      try {
-		GlueEncoder ge = new GlueEncoderImpl("Samples", gcache);
-		glue = ge.getText();
-	      }
-	      catch(GlueException ex) {
-		LogMgr.getInstance().log
-		  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-		   "Unable to generate a Glue format representation of the " + 
-		   "resource samples!");
-		
-		throw new IOException(ex.getMessage());
-	      }
-	      
-	      {
-		FileWriter out = new FileWriter(file);
-		out.write(glue);
-		out.flush();
-		out.close();
-	      }
-	    }
-	    catch(IOException ex) {
-	      throw new PipelineException
-		("I/O ERROR: \n" + 
-		 "  While attempting to write the resource samples file " + 
-		 "(" + file + ")...\n" + 
-		 "    " + ex.getMessage());
-	    }
+            try {
+              GlueEncoderImpl.encodeFile("Samples", gcache, file);
+            }
+            catch(GlueException ex) {
+              throw new PipelineException(ex);
+            }
 	  }
 	}
       }
@@ -7897,19 +7645,14 @@ class QueueMgr
 	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
 	   "Reading Resource Samples: " + 
 	   hostname + " [" + file.getName() + "]");
-	  
+
 	ResourceSampleCache cache = null; 
-	try {
-	  GlueDecoder gd = new GlueDecoderImpl(file);
-	  cache = (ResourceSampleCache) gd.getObject();
-	}
-	catch(Exception ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	     "Ignoring corrupted resource sample file (" + file + "):\n" + 
-	     "  " + ex.getMessage());
-	}
-	
+        try {
+          cache = (ResourceSampleCache) GlueDecoderImpl.decodeFile("Samples", file);
+        }	
+        catch(GlueException ex) {
+        }
+      
 	if(cache != null) 
 	  tcache.addAllSamples(cache); 
       }
@@ -8033,31 +7776,10 @@ class QueueMgr
 	 "Writing Job: " + jobID);
       
       try {
-	String glue = null;
-	try {
-	  GlueEncoder ge = new GlueEncoderImpl("Job", job);
-	  glue = ge.getText();
-	}
-	catch(GlueException ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	    "Unable to generate a Glue format representation of the job!");
-	  
-	  throw new IOException(ex.getMessage());
-	}
-	
-	{
-	  FileWriter out = new FileWriter(file);
-	  out.write(glue);
-	  out.flush();
-	  out.close();
-	}
+        GlueEncoderImpl.encodeFile("Job", job, file);
       }
-      catch(IOException ex) {
-	throw new PipelineException
-	  ("I/O ERROR: \n" + 
-	   "  While attempting to write the job file (" + file + ")...\n" + 
-	   "    " + ex.getMessage());
+      catch(GlueException ex) {
+        throw new PipelineException(ex);
       }
     }
   }
@@ -8088,25 +7810,13 @@ class QueueMgr
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
 	   "Reading Job: " + jobID);
-	
-	QueueJob job = null;
-	try {
-	  GlueDecoder gd = new GlueDecoderImpl(file);
-	  job = (QueueJob) gd.getObject();
-	}
-	catch(Exception ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	     "The job file (" + file + ") appears to be corrupted:\n" + 
-	     "  " + ex.getMessage());
-	  
-	  throw new PipelineException
-	    ("I/O ERROR: \n" + 
-	     "  While attempting to read the job file (" + file + ")...\n" + 
-	     "    " + ex.getMessage());
-	}
-	
-	return job;
+
+        try {
+          return ((QueueJob) GlueDecoderImpl.decodeFile("Job", file));
+        }	
+        catch(GlueException ex) {
+          throw new PipelineException(ex);
+        }
       }
       else {
 	throw new PipelineException
@@ -8201,31 +7911,10 @@ class QueueMgr
 	 "Writing Job Information: " + jobID);
       
       try {
-	String glue = null;
-	try {
-	  GlueEncoder ge = new GlueEncoderImpl("JobInfo", info);
-	  glue = ge.getText();
-	}
-	catch(GlueException ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	     "Unable to generate a Glue format representation of the job information!");
-	  
-	  throw new IOException(ex.getMessage());
-	}
-	
-	{
-	  FileWriter out = new FileWriter(file);
-	  out.write(glue);
-	  out.flush();
-	  out.close();
-	}
+        GlueEncoderImpl.encodeFile("JobInfo", info, file);
       }
-      catch(IOException ex) {
-	throw new PipelineException
-	  ("I/O ERROR: \n" + 
-	   "  While attempting to write the job information file (" + file + ")...\n" + 
-	   "    " + ex.getMessage());
+      catch(GlueException ex) {
+        throw new PipelineException(ex);
       }
     }
   }
@@ -8256,25 +7945,13 @@ class QueueMgr
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
 	   "Reading Job Information: " + jobID);
-	
-	QueueJobInfo info = null;
-	try {
-	  GlueDecoder gd = new GlueDecoderImpl(file);
-	  info = (QueueJobInfo) gd.getObject();
-	}
-	catch(Exception ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	     "The job information file (" + file + ") appears to be corrupted:\n" + 
-	     "  " + ex.getMessage());
-	  
-	  throw new PipelineException
-	    ("I/O ERROR: \n" + 
-	     "  While attempting to read the job information file (" + file + ")...\n" + 
-	     "    " + ex.getMessage());
-	}
-	
-	return info;
+
+        try {
+          return((QueueJobInfo) GlueDecoderImpl.decodeFile("JobInfo", file));
+        }	
+        catch(GlueException ex) {
+          throw new PipelineException(ex);
+        }
       }
       else {
 	throw new PipelineException
@@ -8367,31 +8044,10 @@ class QueueMgr
 	 "Writing Job Group: " + groupID);
       
       try {
-	String glue = null;
-	try {
-	  GlueEncoder ge = new GlueEncoderImpl("JobGroup", group);
-	  glue = ge.getText();
-	}
-	catch(GlueException ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	     "Unable to generate a Glue format representation of the job group!");
-	  
-	  throw new IOException(ex.getMessage());
-	}
-	
-	{
-	  FileWriter out = new FileWriter(file);
-	  out.write(glue);
-	  out.flush();
-	  out.close();
-	}
+        GlueEncoderImpl.encodeFile("JobGroup", group, file);
       }
-      catch(IOException ex) {
-	throw new PipelineException
-	  ("I/O ERROR: \n" + 
-	   "  While attempting to write the job group file (" + file + ")...\n" + 
-	   "    " + ex.getMessage());
+      catch(GlueException ex) {
+        throw new PipelineException(ex);
       }
     }
   }
@@ -8420,24 +8076,12 @@ class QueueMgr
 	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
 	   "Reading Job Group: " + groupID);
 	
-	QueueJobGroup group = null; 
-	try {
-	  GlueDecoder gd = new GlueDecoderImpl(file);
-	  group = (QueueJobGroup) gd.getObject();
-	}
-	catch(Exception ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	     "The job group file (" + file + ") appears to be corrupted:\n" + 
-	     "  " + ex.getMessage());
-	  
-	  throw new PipelineException
-	    ("I/O ERROR: \n" + 
-	     "  While attempting to read the job group file (" + file + ")...\n" + 
-	     "    " + ex.getMessage());
-	}
-	
-	return group; 
+        try {
+          return ((QueueJobGroup) GlueDecoderImpl.decodeFile("JobGroup", file));
+        }	
+        catch(GlueException ex) {
+          throw new PipelineException(ex);
+        }
       }
     }
 

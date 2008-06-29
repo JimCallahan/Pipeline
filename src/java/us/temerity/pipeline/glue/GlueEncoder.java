@@ -1,4 +1,4 @@
-// $Id: GlueEncoder.java,v 1.3 2004/05/08 23:28:49 jim Exp $
+// $Id: GlueEncoder.java,v 1.4 2008/06/29 17:46:16 jim Exp $
 
 package us.temerity.pipeline.glue;
 
@@ -20,18 +20,6 @@ package us.temerity.pipeline.glue;
 public
 interface GlueEncoder
 {     
-  /*----------------------------------------------------------------------------------------*/
-  /*   A C C E S S                                                                          */
-  /*----------------------------------------------------------------------------------------*/
-
-  /** 
-   * Gets a <CODE>String</CODE> containing the Glue representation of the encoded objects.
-   */
-  public String 
-  getText();
-
-
-
   /*----------------------------------------------------------------------------------------*/
   /*   I / O                                                                                */
   /*----------------------------------------------------------------------------------------*/

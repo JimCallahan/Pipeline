@@ -1,7 +1,8 @@
-// $Id: GlueDecoderImpl.java,v 1.2 2006/12/20 15:10:44 jim Exp $
+// $Id: GlueDecoderImpl.java,v 1.3 2008/06/29 17:46:16 jim Exp $
 
 package us.temerity.pipeline.glue.io;
 
+import us.temerity.pipeline.*;
 import us.temerity.pipeline.glue.*;
 
 import java.lang.reflect.*;
@@ -32,7 +33,28 @@ class GlueDecoderImpl
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Decode objects from a <CODE>String</CODE> containing Glue text.
+   * Initialize a new Glue decoder.
+   */
+  private  
+  GlueDecoderImpl() 
+  {
+    pState = new GlueParserState();
+  }
+
+  
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   M E T H O D S                                                          */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /** 
+   * A static convience method for decoding an object from a String.<P> 
+   * 
+   * All exceptions are logged using LogMgr internally and then rethrown as GlueException
+   * with the same message as written to the log.
+   * 
+   * @param title 
+   *   The name to be given to the object when decoded.
    * 
    * @param text 
    *   The Glue format text to be decoded.
@@ -40,161 +62,185 @@ class GlueDecoderImpl
    * @throws GlueException 
    *   If unable to decode the string.
    */
-  public 
-  GlueDecoderImpl
+  public static Object
+  decodeString
   (
-   String text   
+   String title,  
+   String text
   ) 
     throws GlueException
   {
-    pState = new GlueParserState();
-
-    StringReader in = null;
     try {
-      in = new StringReader(text);
-      GlueParser parser = new GlueParser(in);
-      pRoot = parser.Decode(this, pState);
-    }
-    catch(Exception ex) {
-      throw new GlueException(ex);
-    }
-    finally {
-      in.close();
-    }
-  }
-
-  /** 
-   * Decode objects from an input stream of bytes containing Glue text.
-   * 
-   * @param stream 
-   *   The input stream of bytes containing the Glue text to be decoded.
-   * 
-   * @throws GlueException 
-   *   If unable to decode the stream.
-   */
-  public 
-  GlueDecoderImpl
-  (
-   InputStream stream
-  ) 
-    throws GlueException
-  {
-    pState = new GlueParserState();
-
-    try {
-      GlueParser parser = new GlueParser(stream, "UTF-8");
-      pRoot = parser.Decode(this, pState);
-    }
-    catch(Exception ex) {
-      throw new GlueException(ex);
-    }
-    finally {
+      GlueDecoderImpl gd = new GlueDecoderImpl();
+      StringReader in = null;
       try {
-	stream.close(); 
+        in = new StringReader(text);
+        GlueParser parser = new GlueParser(in);
+        return parser.Decode(gd, gd.getState());
       }
-      catch(IOException ex) {
-	throw new GlueException(ex);
+      catch(ParseException ex) {
+        throw new GlueException(ex);
       }
+      finally {
+        in.close();
+      }
+    }
+    catch(GlueException ex) {
+      String msg = 
+        ("Unable to Glue decode: " + title + "\n" + 
+         "  " + ex.getMessage());
+      LogMgr.getInstance().log(LogMgr.Kind.Glu, LogMgr.Level.Severe, msg); 
+      throw new GlueException(msg);
+    }
+    catch(Exception ex) {
+      String msg = Exceptions.getFullMessage("INTERNAL ERROR:", ex, true, true);
+      LogMgr.getInstance().log(LogMgr.Kind.Glu, LogMgr.Level.Severe, msg); 
+      throw new GlueException(msg);      
     }
   }
 
   /** 
-   * Decode objects read from a file containing Glue text.
+   * A static convience method for decoding an object from a String.<P> 
    * 
-   * @param file 
-   *   The file to read. 
+   * All exceptions are logged using LogMgr internally and then rethrown as GlueException
+   * with the same message as written to the log.
+   * 
+   * @param title 
+   *   The name to be given to the object when decoded.
+   * 
+   * @param bytes
+   *   The Glue formated data to be decoded.
    * 
    * @throws GlueException 
-   *   If unable to decode the file.
+   *   If unable to decode the string.
    */
-  public 
-  GlueDecoderImpl
+  public static Object
+  decodeBytes
   (
+   String title,  
+   byte bytes[]
+  ) 
+    throws GlueException
+  {
+    try {
+      GlueDecoderImpl gd = new GlueDecoderImpl();
+      InputStream in = null;
+      try {
+        in = new ByteArrayInputStream(bytes);
+        GlueParser parser = new GlueParser(in);
+        return parser.Decode(gd, gd.getState());
+      }
+      catch(ParseException ex) {
+        throw new GlueException(ex);
+      }
+      finally {
+        in.close();
+      }
+    }
+    catch(GlueException ex) {
+      String msg = 
+        ("Unable to Glue decode: " + title + "\n" + 
+         "  " + ex.getMessage());
+      LogMgr.getInstance().log(LogMgr.Kind.Glu, LogMgr.Level.Severe, msg); 
+      throw new GlueException(msg);
+    }
+    catch(Exception ex) {
+      String msg = Exceptions.getFullMessage("INTERNAL ERROR:", ex, true, true);
+      LogMgr.getInstance().log(LogMgr.Kind.Glu, LogMgr.Level.Severe, msg); 
+      throw new GlueException(msg);      
+    }
+  }
+
+  /** 
+   * A static convience method for decoding an object from the given file.<P> 
+   * 
+   * All exceptions are logged using LogMgr internally and then rethrown as GlueException
+   * with the same message as written to the log.
+   * 
+   * @param title 
+   *   The name to be given to the object when decoded.
+   * 
+   * @param file
+   *   The Glue format file to be decoded.
+   * 
+   * @throws GlueException 
+   *   If unable to decode the string.
+   */
+  public static Object
+  decodeFile
+  (
+   String title,  
    File file
   ) 
     throws GlueException
   {
-    pState = new GlueParserState();
-
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Glu, LogMgr.Level.Finest,
+       "Reading " + title + ": " + file); 
+    
     try {
-      FileInputStream in = new FileInputStream(file);
+      InputStream in = null;
+      try {
+        in = new BufferedInputStream(new FileInputStream(file));
+      }
+      catch(IOException ex) {
+        String msg = 
+          ("I/O ERROR: \n" + 
+           "  Unable to open file (" + file + ") to decode: " + title + "\n" + 
+           "    " + ex.getMessage());
+        LogMgr.getInstance().log(LogMgr.Kind.Glu, LogMgr.Level.Severe, msg); 
+        throw new GlueException(msg);
+      }
 
       try {
-	GlueParser parser = new GlueParser(in, "UTF-8");
-	pRoot = parser.Decode(this, pState);
+        GlueDecoderImpl gd = new GlueDecoderImpl();
+        GlueParser parser = new GlueParser(in, "UTF-8");
+        return parser.Decode(gd, gd.getState());
       }
       catch(ParseException ex) {
-	throw new GlueException(ex);
+        throw new GlueException(ex);
       }
       finally {
-	in.close();  
+        in.close(); 
       }
     }
     catch(IOException ex) {
-      throw new GlueException(ex);
+      String msg = 
+        ("I/O ERROR: \n" + 
+         "  While reading from file (" + file + ") during Glue decoding of: " + title + "\n" +
+         "    " + ex.getMessage());
+      LogMgr.getInstance().log(LogMgr.Kind.Glu, LogMgr.Level.Severe, msg); 
+      throw new GlueException(msg);
+    }
+    catch(GlueException ex) {
+      String msg = 
+        ("Unable to Glue decode: " + title + "\n" + 
+         "  " + ex.getMessage());
+      LogMgr.getInstance().log(LogMgr.Kind.Glu, LogMgr.Level.Severe, msg); 
+      throw new GlueException(msg);
+    }
+    catch(Exception ex) {
+      String msg = Exceptions.getFullMessage("INTERNAL ERROR:", ex, true, true);
+      LogMgr.getInstance().log(LogMgr.Kind.Glu, LogMgr.Level.Severe, msg); 
+      throw new GlueException(msg);      
     }
   }
-
-  /** 
-   * Decode objects read from a character stream containing Glue text.
-   * 
-   * @param reader 
-   *   The character stream reader providing the Glue text to be decoded.
-   * 
-   * @throws GlueException 
-   *   If unable to decode the text.
-   * 
-   * @deprecated 
-   *   This form does not property handly UTF-8 encoded GLUE files.  Use the constructor
-   *   which takes a {@link File} or {@link InputStream} argument instead when reading 
-   *   GLUE files.
-   */
-  @Deprecated
-  public 
-  GlueDecoderImpl
-  (
-   Reader reader
-  ) 
-    throws GlueException
-  {
-    pState = new GlueParserState();
-    
-    try {
-      GlueParser parser = new GlueParser(reader);
-      pRoot = parser.Decode(this, pState);
-    }
-    catch(ParseException ex) {
-      throw new GlueException(ex);
-    }
-    finally {
-      try {
-	reader.close();  
-      }
-      catch(IOException ex) {
-	throw new GlueException(ex);
-      }
-    }
-  }
-
   
+
   
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the top-level decoded <CODE>Object</CODE>.
-   * 
-   * @return
-   *   The <CODE>Object</CODE> at the highest level scope within the Glue format text.
-   */
-  public Object 
-  getObject() 
+   * Lookup parser state.
+   */ 
+  private GlueParserState
+  getState()
   {
-    return pRoot;
+    return pState;
   }
   
-
   /** 
    * Lookup an decoded <CODE>Object</CODE> with the given title from the current 
    * Glue scope. <P> 
@@ -222,11 +268,6 @@ class GlueDecoderImpl
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
   
-  /**
-   * The root decoded Object. 
-   */ 
-  private Object pRoot;       
-
   /** 
    * The parser helper class which maintains tables of objects used during decoding.  
    */

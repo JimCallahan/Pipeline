@@ -1,11 +1,10 @@
-// $Id: AdminPrivileges.java,v 1.8 2008/06/26 17:09:09 jim Exp $
+// $Id: AdminPrivileges.java,v 1.9 2008/06/29 17:46:15 jim Exp $
  
 package us.temerity.pipeline.core;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.message.*;
 import us.temerity.pipeline.glue.*;
-import us.temerity.pipeline.glue.io.*;
 
 import java.io.*;
 import java.util.*;
@@ -640,38 +639,16 @@ class AdminPrivileges
 	throw new PipelineException
 	  ("Unable to remove the old work groups file (" + file + ")!");
     }
-    
+
     LogMgr.getInstance().log
       (LogMgr.Kind.Glu, LogMgr.Level.Finer,
        "Writing Work Groups.");
-      
-    try {
-      String glue = null;
-      try {
-	GlueEncoder ge = new GlueEncoderImpl("WorkGroups", pWorkGroups);
-	glue = ge.getText();
-      }
-      catch(GlueException ex) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	   "Unable to generate a Glue format representation of the work groups!");
-	LogMgr.getInstance().flush();
-	
-	throw new IOException(ex.getMessage());
-      }
-      
-      {
-	FileWriter out = new FileWriter(file);
-	out.write(glue);
-	out.flush();
-	out.close();
-      }
+    
+    try {     
+      GlueEncoderImpl.encodeFile("WorkGroups", pWorkGroups, file);
     }
-    catch(IOException ex) {
-      throw new PipelineException
-	("I/O ERROR: \n" + 
-	 "  While attempting to write the work groups file (" + file + ")...\n" + 
-	 "    " + ex.getMessage());
+    catch(GlueException ex) {
+      throw new PipelineException(ex);
     }
   }
   
@@ -693,21 +670,10 @@ class AdminPrivileges
 	 "Reading Work Groups.");
       
       try {
-	GlueDecoder gd = new GlueDecoderImpl(file);
-	pWorkGroups = (WorkGroups) gd.getObject();
-      }
-      catch(Exception ex) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	   "The work groups file (" + file + ") appears to be corrupted:\n" + 
-	   "  " + ex.getMessage());
-	LogMgr.getInstance().flush();
-	
-	throw new PipelineException
-	  ("I/O ERROR: \n" + 
-	   "  While attempting to read the work groups " + 
-	   "file (" + file + ")...\n" + 
-	     "    " + ex.getMessage());
+        pWorkGroups = (WorkGroups) GlueDecoderImpl.decodeFile("WorkGroups", file);
+      }	
+      catch(GlueException ex) {
+        throw new PipelineException(ex);
       }
     }
 
@@ -743,34 +709,10 @@ class AdminPrivileges
 	 "Writing Administrative Privileges.");
       
       try {
-	String glue = null;
-	try {
-	  GlueEncoder ge = new GlueEncoderImpl("Privileges", pPrivileges);
-	  glue = ge.getText();
-	}
-	catch(GlueException ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	     "Unable to generate a Glue format representation of the " + 
-	     "adminstrative privileges!");
-	  LogMgr.getInstance().flush();
-	  
-	  throw new IOException(ex.getMessage());
-	}
-	
-	{
-	  FileWriter out = new FileWriter(file);
-	  out.write(glue);
-	  out.flush();
-	  out.close();
-	}
+        GlueEncoderImpl.encodeFile("Privileges", pPrivileges, file);
       }
-      catch(IOException ex) {
-	throw new PipelineException
-	  ("I/O ERROR: \n" + 
-	   "  While attempting to write the adminstrative privileges " + 
-	   "file (" + file + ")...\n" + 
-	   "    " + ex.getMessage());
+      catch(GlueException ex) {
+        throw new PipelineException(ex);
       }
     }
   }
@@ -793,21 +735,11 @@ class AdminPrivileges
 	 "Reading Administrative Privileges.");
       
       try {
-	GlueDecoder gd = new GlueDecoderImpl(file);
-	pPrivileges = (TreeMap<String,Privileges>) gd.getObject();
-      }
-      catch(Exception ex) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	   "The adminstrative privileges file (" + file + ") appears to be corrupted:\n" + 
-	   "  " + ex.getMessage());
-	LogMgr.getInstance().flush();
-	
-	throw new PipelineException
-	  ("I/O ERROR: \n" + 
-	   "  While attempting to read the adminstrative privileges " + 
-	   "file (" + file + ")...\n" + 
-	   "    " + ex.getMessage());
+       pPrivileges = 
+         (TreeMap<String,Privileges>) GlueDecoderImpl.decodeFile("Privileges", file);
+      }	
+      catch(GlueException ex) {
+        throw new PipelineException(ex);
       }
     }
     

@@ -1,10 +1,9 @@
-// $Id: ScriptApp.java,v 1.88 2008/06/19 03:30:36 jim Exp $
+// $Id: ScriptApp.java,v 1.89 2008/06/29 17:46:16 jim Exp $
 
 package us.temerity.pipeline.core;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.glue.*;
-import us.temerity.pipeline.glue.io.*;
 import us.temerity.pipeline.toolset.*;
 import us.temerity.pipeline.event.*;
 
@@ -1858,8 +1857,7 @@ class ScriptApp
     {
       // TEMPORARY
       try {
-	GlueEncoder ge = new GlueEncoderImpl("Histograms", hist);
-	buf.append(ge.getText());
+        buf.append(GlueEncoderImpl.encodeString("Histograms", hist));
       }
       catch(GlueException ex) {
 	buf.append
@@ -4375,8 +4373,7 @@ class ScriptApp
 	 pad("-- GLUE Format ", '-', 80) + "\n");
 
       try {
-	GlueEncoder ge = new GlueEncoderImpl("Status", root);
-	buf.append(ge.getText());
+	buf.append(GlueEncoderImpl.encodeString("Status", root));
       }
       catch(GlueException ex) {
 	buf.append

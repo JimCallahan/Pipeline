@@ -1,4 +1,4 @@
-// $Id: GlueDecoder.java,v 1.3 2004/05/08 23:28:49 jim Exp $
+// $Id: GlueDecoder.java,v 1.4 2008/06/29 17:46:16 jim Exp $
 
 package us.temerity.pipeline.glue;
 
@@ -23,15 +23,6 @@ interface GlueDecoder
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Get the top-level decoded <CODE>Object</CODE>.
-   * 
-   * @return
-   *   The <CODE>Object</CODE> at the highest level scope within the Glue format text.
-   */
-  public Object 
-  getObject();  
 
   /** 
    * Lookup an decoded <CODE>Object</CODE> with the given title from the current 

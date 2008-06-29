@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.249 2008/06/28 22:15:34 jim Exp $
+// $Id: MasterMgr.java,v 1.250 2008/06/29 17:46:16 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -18945,43 +18945,19 @@ class MasterMgr
   {
     synchronized(pArchiveFileLock) {
       File file = new File(pNodeDir, "archives/manifests/" + archive.getName());
-      if(file.exists()) {
+      if(file.exists()) 
 	throw new PipelineException
 	  ("Unable to overrite the existing archive file(" + file + ")!");
-      }
       
       LogMgr.getInstance().log
 	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
 	 "Writing Archive: " + archive.getName());
       
       try {
-	String glue = null;
-	try {
-	  GlueEncoder ge = new GlueEncoderImpl("Archive", archive);
-	  glue = ge.getText();
-	}
-	catch(GlueException ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	     "Unable to generate a Glue format representation of the archive " + 
-	     "(" + archive.getName() + ")!");
-	  LogMgr.getInstance().flush();
-	  
-	  throw new IOException(ex.getMessage());
-	}
-	
-	{
-	  FileWriter out = new FileWriter(file);
-	  out.write(glue);
-	  out.flush();
-	  out.close();
-	}
+        GlueEncoderImpl.encodeFile("Archive", archive, file);
       }
-      catch(IOException ex) {
-	throw new PipelineException
-	("I/O ERROR: \n" + 
-	 "  While attempting to write the archive file (" + file + ")...\n" + 
-	 "    " + ex.getMessage());
+      catch(GlueException ex) {
+        throw new PipelineException(ex);
       }
     }
   }
@@ -19014,21 +18990,12 @@ class MasterMgr
 
       ArchiveVolume archive = null;
       try {
-	GlueDecoder gd = new GlueDecoderImpl(file);
-	archive = (ArchiveVolume) gd.getObject();
+        archive = (ArchiveVolume) GlueDecoderImpl.decodeFile("Archive", file);
+      }	
+      catch(GlueException ex) {
+        throw new PipelineException(ex);
       }
-      catch(Exception ex) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	   "The archive file (" + file + ") appears to be corrupted:\n" + 
-	   "  " + ex.getMessage());
-	LogMgr.getInstance().flush();
-	
-	throw new PipelineException
-	  ("I/O ERROR: \n" + 
-	   "  While attempting to read the archive file (" + file + ")...\n" + 
-	   "    " + ex.getMessage());
-      }
+      
       if((archive == null) || !archive.getName().equals(name))
 	throw new IllegalStateException(); 
 
@@ -19062,32 +19029,10 @@ class MasterMgr
 	 "Writing Archived In Cache...");
       
       try {
-	String glue = null;
-	try {
-	  GlueEncoder ge = new GlueEncoderImpl("ArchivedIn", pArchivedIn);
-	  glue = ge.getText();
-	}
-	catch(GlueException ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	     "Unable to generate a Glue format representation of the archived in cache!");
-	  LogMgr.getInstance().flush();
-	  
-	  throw new IOException(ex.getMessage());
-	}
-	
-	{
-	  FileWriter out = new FileWriter(file);
-	  out.write(glue);
-	  out.flush();
-	  out.close();
-	}
+        GlueEncoderImpl.encodeFile("ArchivedIn", pArchivedIn, file);
       }
-      catch(IOException ex) {
-	throw new PipelineException
-	("I/O ERROR: \n" + 
-	 "  While attempting to write the archive cache file...\n" + 
-	 "    " + ex.getMessage());
+      catch(GlueException ex) {
+        throw new PipelineException(ex);
       }
     }
   }
@@ -19112,22 +19057,14 @@ class MasterMgr
 	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
 	 "Reading Archived In Cache...");
 
+      pArchivedIn.clear();
       try {
-	GlueDecoder gd = new GlueDecoderImpl(file);
-	pArchivedIn.putAll
-	  ((TreeMap<String,TreeMap<VersionID,TreeSet<String>>>) gd.getObject());
-      }
-      catch(Exception ex) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	   "The archived in cache file (" + file + ") appears to be corrupted:\n" + 
-	   "  " + ex.getMessage());
-	LogMgr.getInstance().flush();
-	
-	throw new PipelineException
-	  ("I/O ERROR: \n" + 
-	   "  While attempting to read the archived in cache file...\n" +
-	   "    " + ex.getMessage());
+       	pArchivedIn.putAll
+          ((TreeMap<String,TreeMap<VersionID,TreeSet<String>>>) 
+           GlueDecoderImpl.decodeFile("ArchivedIn", file));
+      }	
+      catch(GlueException ex) {
+        throw new PipelineException(ex);
       }
     }
   }
@@ -19157,36 +19094,14 @@ class MasterMgr
 	 "Writing Archived On Cache...");
       
       try {
-	String glue = null;
-	try {
-	  TreeMap<String,Long> archivedOn = new TreeMap<String,Long>();
-	  for(String aname : pArchivedOn.keySet()) 
-	    archivedOn.put(aname, pArchivedOn.get(aname));
+        TreeMap<String,Long> archivedOn = new TreeMap<String,Long>();
+        for(String aname : pArchivedOn.keySet()) 
+          archivedOn.put(aname, pArchivedOn.get(aname));
 
-	  GlueEncoder ge = new GlueEncoderImpl("ArchivedOn", archivedOn);
-	  glue = ge.getText();
-	}
-	catch(GlueException ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	     "Unable to generate a Glue format representation of the archived on cache!");
-	  LogMgr.getInstance().flush();
-	  
-	  throw new IOException(ex.getMessage());
-	}
-	
-	{
-	  FileWriter out = new FileWriter(file);
-	  out.write(glue);
-	  out.flush();
-	  out.close();
-	}
+        GlueEncoderImpl.encodeFile("ArchivedOn", archivedOn, file);
       }
-      catch(IOException ex) {
-	throw new PipelineException
-	("I/O ERROR: \n" + 
-	 "  While attempting to write the archived on cache file...\n" + 
-	 "    " + ex.getMessage());
+      catch(GlueException ex) {
+        throw new PipelineException(ex);
       }
     }
   }
@@ -19213,20 +19128,11 @@ class MasterMgr
 
       pArchivedOn.clear();
       try {
-	GlueDecoder gd = new GlueDecoderImpl(file);
-        pArchivedOn.putAll((TreeMap<String,Long>) gd.getObject());
-      }
-      catch(Exception ex) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	   "The archived on cache file (" + file + ") appears to be corrupted:\n" + 
-	   "  " + ex.getMessage());
-	LogMgr.getInstance().flush();
-	
-	throw new PipelineException
-	  ("I/O ERROR: \n" + 
-	   "  While attempting to read the archived on cache file...\n" +
-	   "    " + ex.getMessage());
+        pArchivedOn.putAll
+          ((TreeMap<String,Long>) GlueDecoderImpl.decodeFile("ArchivedOn", file));
+      }	
+      catch(GlueException ex) {
+        throw new PipelineException(ex);
       }
     }
   }
@@ -19256,32 +19162,10 @@ class MasterMgr
 	 "Writing Restored On Cache...");
       
       try {
-	String glue = null;
-	try {
-	  GlueEncoder ge = new GlueEncoderImpl("RestoredOn", pRestoredOn);
-	  glue = ge.getText();
-	}
-	catch(GlueException ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	     "Unable to generate a Glue format representation of the restored on cache!");
-	  LogMgr.getInstance().flush();
-	  
-	  throw new IOException(ex.getMessage());
-	}
-	
-	{
-	  FileWriter out = new FileWriter(file);
-	  out.write(glue);
-	  out.flush();
-	  out.close();
-	}
+          GlueEncoderImpl.encodeFile("RestoredOn", pRestoredOn, file);
       }
-      catch(IOException ex) {
-	throw new PipelineException
-	("I/O ERROR: \n" + 
-	 "  While attempting to write the restored on cache file...\n" + 
-	 "    " + ex.getMessage());
+      catch(GlueException ex) {
+        throw new PipelineException(ex);
       }
     }
   }
@@ -19309,20 +19193,11 @@ class MasterMgr
 
       pRestoredOn.clear();
       try {
-	GlueDecoder gd = new GlueDecoderImpl(file);
-        pRestoredOn.putAll((TreeMap<String,TreeSet<Long>>) gd.getObject());
-      }
-      catch(Exception ex) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	   "The restored on cache file (" + file + ") appears to be corrupted:\n" + 
-	   "  " + ex.getMessage());
-	LogMgr.getInstance().flush();
-	
-	throw new PipelineException
-	  ("I/O ERROR: \n" + 
-	   "  While attempting to read the restored on cache file...\n" +
-	   "    " + ex.getMessage());
+        pRestoredOn.putAll
+          ((TreeMap<String,TreeSet<Long>>) GlueDecoderImpl.decodeFile("RestoredOn", file));
+      }	
+      catch(GlueException ex) {
+        throw new PipelineException(ex);
       }
     }
   }
@@ -19352,32 +19227,10 @@ class MasterMgr
 	 "Writing Offlined Cache...");
       
       try {
-	String glue = null;
-	try {
-	  GlueEncoder ge = new GlueEncoderImpl("Offlined", pOfflined);
-	  glue = ge.getText();
-	}
-	catch(GlueException ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	     "Unable to generate a Glue format representation of the offlined cache!");
-	  LogMgr.getInstance().flush();
-	  
-	  throw new IOException(ex.getMessage());
-	}
-	
-	{
-	  FileWriter out = new FileWriter(file);
-	  out.write(glue);
-	  out.flush();
-	  out.close();
-	}
+        GlueEncoderImpl.encodeFile("Offlined", pOfflined, file);
       }
-      catch(IOException ex) {
-	throw new PipelineException
-	("I/O ERROR: \n" + 
-	 "  While attempting to write the offlined cache file...\n" + 
-	 "    " + ex.getMessage());
+      catch(GlueException ex) {
+        throw new PipelineException(ex);
       }
     }
   }
@@ -19402,21 +19255,13 @@ class MasterMgr
 	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
 	 "Reading Offlined Cache...");
 
+      pOfflined.clear();
       try {
-	GlueDecoder gd = new GlueDecoderImpl(file);
-	pOfflined.putAll((TreeMap<String,TreeSet<VersionID>>) gd.getObject());
-      }
-      catch(Exception ex) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	   "The offlined cache file (" + file + ") appears to be corrupted:\n" + 
-	   "  " + ex.getMessage());
-	LogMgr.getInstance().flush();
-	
-	throw new PipelineException
-	  ("I/O ERROR: \n" + 
-	   "  While attempting to read the offlined cache file...\n" +
-	   "    " + ex.getMessage());
+        pOfflined.putAll
+          ((TreeMap<String,TreeSet<VersionID>>) GlueDecoderImpl.decodeFile("Offlined", file));
+      }	
+      catch(GlueException ex) {
+        throw new PipelineException(ex);
       }
     }
   }
@@ -19448,38 +19293,16 @@ class MasterMgr
 	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
 	   "Writing Restore Requests.");
 
-	try {
-	  String glue = null;
-	  try {
-	    GlueEncoder ge = new GlueEncoderImpl("RestoreReqs", pRestoreReqs);
-	    glue = ge.getText();
-	  }
-	  catch(GlueException ex) {
-	    LogMgr.getInstance().log
-	      (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	       "Unable to generate a Glue format representation of the restore requests!");
-	    LogMgr.getInstance().flush();
-	    
-	    throw new IOException(ex.getMessage());
-	  }
-	  
-	  {
-	    FileWriter out = new FileWriter(file);
-	    out.write(glue);
-	    out.flush();
-	    out.close();
-	  }
-	}
-	catch(IOException ex) {
-	  throw new PipelineException
-	    ("I/O ERROR: \n" + 
-	     "  While attempting to write the restore requests file (" + file + ")...\n" + 
-	     "    " + ex.getMessage());
-	}
+        try {
+          GlueEncoderImpl.encodeFile("RestoreReqs", pRestoreReqs, file);
+        }
+        catch(GlueException ex) {
+          throw new PipelineException(ex);
+        }
       }
     }
   }
-  
+
   /**
    * Read the restore requests table from disk.
    * 
@@ -19499,25 +19322,14 @@ class MasterMgr
 	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
 	   "Reading Restore Requests.");
 
-	TreeMap<String,TreeMap<VersionID,RestoreRequest>> requests = null;
-	try {
-	  GlueDecoder gd = new GlueDecoderImpl(file);
-	  requests = (TreeMap<String,TreeMap<VersionID,RestoreRequest>>) gd.getObject();
-	}
-	catch(Exception ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	     "The restore requests file (" + file + ") appears to be corrupted:\n" + 
-	     "  " + ex.getMessage());
-	  LogMgr.getInstance().flush();
-	  
-	  throw new PipelineException
-	    ("I/O ERROR: \n" + 
-	     "  While attempting to read the restore requests file (" + file + ")...\n" + 
-	     "    " + ex.getMessage());
-	}
-
-	pRestoreReqs.putAll(requests);
+        try {
+          pRestoreReqs.putAll
+            ((TreeMap<String,TreeMap<VersionID,RestoreRequest>>)
+             GlueDecoderImpl.decodeFile("RestoreReqs", file));
+        }	
+        catch(GlueException ex) {
+          throw new PipelineException(ex);
+        }
       }
     }
   }
@@ -19548,34 +19360,12 @@ class MasterMgr
 	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
 	   "Writing Default Toolset.");
 
-	try {
-	  String glue = null;
-	  try {
-	    GlueEncoder ge = new GlueEncoderImpl("DefaultToolset", pDefaultToolset);
-	    glue = ge.getText();
-	  }
-	  catch(GlueException ex) {
-	    LogMgr.getInstance().log
-	      (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	       "Unable to generate a Glue format representation of the default toolset!");
-	    LogMgr.getInstance().flush();
-	    
-	    throw new IOException(ex.getMessage());
-	  }
-	  
-	  {
-	    FileWriter out = new FileWriter(file);
-	    out.write(glue);
-	    out.flush();
-	    out.close();
-	  }
-	}
-	catch(IOException ex) {
-	  throw new PipelineException
-	    ("I/O ERROR: \n" + 
-	     "  While attempting to write the default toolset file (" + file + ")...\n" + 
-	     "    " + ex.getMessage());
-	}
+        try {
+          GlueEncoderImpl.encodeFile("DefaultToolset", pDefaultToolset, file);
+        }
+        catch(GlueException ex) {
+          throw new PipelineException(ex);
+        }
       }
     }
   }
@@ -19599,22 +19389,12 @@ class MasterMgr
 	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
 	   "Reading Default Toolset.");
 
-	try {
-	  GlueDecoder gd = new GlueDecoderImpl(file);
-	  pDefaultToolset = (String) gd.getObject();
-	}
-	catch(Exception ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	     "The default toolset file (" + file + ") appears to be corrupted:\n" + 
-	     "  " + ex.getMessage());
-	  LogMgr.getInstance().flush();
-	  
-	  throw new PipelineException
-	    ("I/O ERROR: \n" + 
-	     "  While attempting to read the default toolset file (" + file + ")...\n" + 
-	     "    " + ex.getMessage());
-	}
+        try {
+          pDefaultToolset = (String) GlueDecoderImpl.decodeFile("DefaultToolset", file);
+        }	
+        catch(GlueException ex) {
+          throw new PipelineException(ex);
+        }
       }
     }
   }
@@ -19645,34 +19425,12 @@ class MasterMgr
 	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
 	   "Writing Active Toolsets.");
 
-	try {
-	  String glue = null;
-	  try {
-	    GlueEncoder ge = new GlueEncoderImpl("ActiveToolsets", pActiveToolsets);
-	    glue = ge.getText();
-	  }
-	  catch(GlueException ex) {
-	    LogMgr.getInstance().log
-	      (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	       "Unable to generate a Glue format representation of the active toolsets!");
-	    LogMgr.getInstance().flush();
-	    
-	    throw new IOException(ex.getMessage());
-	  }
-	  
-	  {
-	    FileWriter out = new FileWriter(file);
-	    out.write(glue);
-	    out.flush();
-	    out.close();
-	  }
-	}
-	catch(IOException ex) {
-	  throw new PipelineException
-	    ("I/O ERROR: \n" + 
-	     "  While attempting to write the active toolsets file (" + file + ")...\n" + 
-	     "    " + ex.getMessage());
-	}
+        try {
+          GlueEncoderImpl.encodeFile("ActiveToolsets", pActiveToolsets, file);
+        }
+        catch(GlueException ex) {
+          throw new PipelineException(ex);
+        }
       }
     }
   }
@@ -19695,26 +19453,14 @@ class MasterMgr
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
 	   "Reading Active Toolsets.");
-
-	TreeSet<String> tsets = null;
-	try {
-	  GlueDecoder gd = new GlueDecoderImpl(file);
-	  tsets = (TreeSet<String>) gd.getObject();
-	}
-	catch(Exception ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	     "The active toolsets file (" + file + ") appears to be corrupted:\n" + 
-	     "  " + ex.getMessage());
-	  LogMgr.getInstance().flush();
-	  
-	  throw new PipelineException
-	    ("I/O ERROR: \n" + 
-	     "  While attempting to read the active toolsets file (" + file + ")...\n" + 
-	     "    " + ex.getMessage());
-	}
-
-	pActiveToolsets.addAll(tsets);
+        
+        try {
+          pActiveToolsets.addAll
+            ((TreeSet<String>) GlueDecoderImpl.decodeFile("ActiveToolsets", file));
+        }	
+        catch(GlueException ex) {
+          throw new PipelineException(ex);
+        }
       }
     }
   }
@@ -19762,33 +19508,10 @@ class MasterMgr
 	 "Writing " + os + " Toolset: " + tset.getName());
 
       try {
-	String glue = null;
-	try {
-	  GlueEncoder ge = new GlueEncoderImpl("Toolset", tset);
-	  glue = ge.getText();
-	}
-	catch(GlueException ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	     "Unable to generate a Glue format representation of the toolset " + 
-	     "(" + tset.getName() + ")!");
-	  LogMgr.getInstance().flush();
-	  
-	  throw new IOException(ex.getMessage());
-	}
-	  
-	{
-	  FileWriter out = new FileWriter(file);
-	  out.write(glue);
-	  out.flush();
-	  out.close();
-	}
+        GlueEncoderImpl.encodeFile("Toolset", tset, file);
       }
-      catch(IOException ex) {
-	throw new PipelineException
-	  ("I/O ERROR: \n" + 
-	   "  While attempting to write the toolset file (" + file + ")...\n" + 
-	   "    " + ex.getMessage());
+      catch(GlueException ex) {
+        throw new PipelineException(ex);
       }
     }
   }
@@ -19825,21 +19548,12 @@ class MasterMgr
 
       Toolset tset = null;
       try {
-	GlueDecoder gd = new GlueDecoderImpl(file);
-	tset = (Toolset) gd.getObject();
+        tset = (Toolset) GlueDecoderImpl.decodeFile("Toolset", file);
+      }	
+      catch(GlueException ex) {
+        throw new PipelineException(ex);
       }
-      catch(Exception ex) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	   "The toolset file (" + file + ") appears to be corrupted:\n" + 
-	   "  " + ex.getMessage());
-	LogMgr.getInstance().flush();
-	
-	throw new PipelineException
-	  ("I/O ERROR: \n" + 
-	   "  While attempting to read the toolset file (" + file + ")...\n" + 
-	   "    " + ex.getMessage());
-      }
+
       if((tset == null) || !tset.getName().equals(tname))
 	throw new IllegalStateException(); 
 
@@ -19854,6 +19568,7 @@ class MasterMgr
       return tset;
     }
   }
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -19897,33 +19612,10 @@ class MasterMgr
 	 "Writing " + os + " Toolset Package: " + pkg.getName() + " v" + pkg.getVersionID());
 
       try {
-	String glue = null;
-	try {
-	  GlueEncoder ge = new GlueEncoderImpl("ToolsetPackage", pkg);
-	  glue = ge.getText();
-	}
-	catch(GlueException ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	     "Unable to generate a Glue format representation of the toolset package " + 
-	     "(" + pkg.getName() + " v" + pkg.getVersionID() + ")!");
-	  LogMgr.getInstance().flush();
-	  
-	  throw new IOException(ex.getMessage());
-	}
-	  
-	{
-	  FileWriter out = new FileWriter(file);
-	  out.write(glue);
-	  out.flush();
-	  out.close();
-	}
+        GlueEncoderImpl.encodeFile("ToolsetPackage", pkg, file);
       }
-      catch(IOException ex) {
-	throw new PipelineException
-	  ("I/O ERROR: \n" + 
-	   "  While attempting to write the toolset package file (" + file + ")...\n" + 
-	   "    " + ex.getMessage());
+      catch(GlueException ex) {
+        throw new PipelineException(ex);
       }
     }
   }
@@ -19965,21 +19657,12 @@ class MasterMgr
 
       PackageVersion pkg = null;
       try {
-	GlueDecoder gd = new GlueDecoderImpl(file);
-	pkg = (PackageVersion) gd.getObject();
+       pkg = (PackageVersion) GlueDecoderImpl.decodeFile("ToolsetPackage", file);
+      }	
+      catch(GlueException ex) {
+        throw new PipelineException(ex);
       }
-      catch(Exception ex) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	   "The toolset package file (" + file + ") appears to be corrupted:\n" + 
-	   "  " + ex.getMessage());
-	LogMgr.getInstance().flush();
-	
-	throw new PipelineException
-	  ("I/O ERROR: \n" + 
-	   "  While attempting to read the toolset package file (" + file + ")...\n" + 
-	   "    " + ex.getMessage());
-      }
+
       if((pkg == null) || !pkg.getName().equals(name) || !pkg.getVersionID().equals(vid))
 	throw new IllegalStateException(); 
 
@@ -20015,34 +19698,12 @@ class MasterMgr
 	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
 	   "Writing Master Extensions.");
 
-	try {
-	  String glue = null;
-	  try {
-	    GlueEncoder ge = new GlueEncoderImpl("MasterExtensions", pMasterExtensions);
-	    glue = ge.getText();
-	  }
-	  catch(GlueException ex) {
-	    LogMgr.getInstance().log
-	      (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	       "Unable to generate a Glue format representation of the master extensions!");
-	    LogMgr.getInstance().flush();
-	    
-	    throw new IOException(ex.getMessage());
-	  }
-	  
-	  {
-	    FileWriter out = new FileWriter(file);
-	    out.write(glue);
-	    out.flush();
-	    out.close();
-	  }
-	}
-	catch(IOException ex) {
-	  throw new PipelineException
-	    ("I/O ERROR: \n" + 
-	     "  While attempting to write the master extensions file (" + file + ")...\n" + 
-	     "    " + ex.getMessage());
-	}
+        try {
+          GlueEncoderImpl.encodeFile("MasterExtensions", pMasterExtensions, file);
+        }
+        catch(GlueException ex) {
+          throw new PipelineException(ex);
+        }
       }
     }
   }
@@ -20068,22 +19729,14 @@ class MasterMgr
 	   "Reading Master Extensions.");
 
 	TreeMap<String,MasterExtensionConfig> exts = null;
-	try {
-	  GlueDecoder gd = new GlueDecoderImpl(file);
-	  exts = (TreeMap<String,MasterExtensionConfig>) gd.getObject();
-	}
-	catch(Exception ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	     "The default toolset file (" + file + ") appears to be corrupted:\n" + 
-	     "  " + ex.getMessage());
-	  LogMgr.getInstance().flush();
-	  
-	  throw new PipelineException
-	    ("I/O ERROR: \n" + 
-	     "  While attempting to read the master extensions file (" + file + ")...\n" + 
-	     "    " + ex.getMessage());
-	}
+        try {
+          exts = 
+            (TreeMap<String,MasterExtensionConfig>) 
+            GlueDecoderImpl.decodeFile("MasterExtensions", file);
+        }	
+        catch(GlueException ex) {
+          throw new PipelineException(ex);
+        }
 
 	if(exts != null)
 	  pMasterExtensions.putAll(exts);
@@ -20158,40 +19811,16 @@ class MasterMgr
       String tname = name;
       if(tname == null) 
 	tname = "(default layout)";
-
+      
       LogMgr.getInstance().log
 	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
 	 "Writing Toolset Plugin Menu: " + tname + " " + uptype);
 
       try {
-	String glue = null;
-	try {
-	  GlueEncoder ge = new GlueEncoderImpl(uptype + "MenuLayout", layout);
-	  glue = ge.getText();
-	}
-	catch(GlueException ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	     "Unable to generate a Glue format representation of the " + ptype + 
-	     " plugin menu layout associated with the toolset (" + tname + ")!");
-	  LogMgr.getInstance().flush();
-	  
-	  throw new IOException(ex.getMessage());
-	}
-	  
-	{
-	  FileWriter out = new FileWriter(file);
-	  out.write(glue);
-	  out.flush();
-	  out.close();
-	}
+        GlueEncoderImpl.encodeFile(uptype + "MenuLayout", layout, file);
       }
-      catch(IOException ex) {
-	throw new PipelineException
-	  ("I/O ERROR: \n" + 
-	   "  While attempting to write the toolset plugin menu layout file " + 
-	   "(" + file + ")...\n" + 
-	   "    " + ex.getMessage());
+      catch(GlueException ex) {
+          throw new PipelineException(ex);
       }
     }
   }
@@ -20245,22 +19874,12 @@ class MasterMgr
 	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
 	 "Reading Toolset Plugin Menu: " + tname + " " + uptype);
 
-      PluginMenuLayout layout = null;
+      PluginMenuLayout layout = null;      
       try {
-	GlueDecoder gd = new GlueDecoderImpl(file);
-	layout = (PluginMenuLayout) gd.getObject();
-      }
-      catch(Exception ex) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	   "The toolset plugin menu file (" + file + ") appears to be corrupted:\n" + 
-	   "  " + ex.getMessage());
-	LogMgr.getInstance().flush();
-	
-	throw new PipelineException
-	  ("I/O ERROR: \n" + 
-	   "  While attempting to read the toolset plugin menu file (" + file + ")...\n" + 
-	   "    " + ex.getMessage());
+        layout = (PluginMenuLayout) GlueDecoderImpl.decodeFile(uptype + "MenuLayout", file);
+      }	
+      catch(GlueException ex) {
+        throw new PipelineException(ex);
       }
       if(layout == null)
 	throw new IllegalStateException(); 
@@ -20333,36 +19952,12 @@ class MasterMgr
 	 "Writing Toolset Package Plugins: " + name + " v" + vid + " " + uptype);
 
       try {
-	String glue = null;
-	try {
-	  GlueEncoder ge = 
-	    new GlueEncoderImpl("Package" + uptype + "Plugins", 
-				(DoubleMap<String,String,TreeSet<VersionID>>) plugins);
-	  glue = ge.getText();
-	}
-	catch(GlueException ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	     "Unable to generate a Glue format representation of the " + ptype + 
-	     " plugins associated with the toolset package (" + name + " v" + vid +")!");
-	  LogMgr.getInstance().flush();
-	  
-	  throw new IOException(ex.getMessage());
-	}
-	  
-	{
-	  FileWriter out = new FileWriter(file);
-	  out.write(glue);
-	  out.flush();
-	  out.close();
-	}
+        GlueEncoderImpl.encodeFile
+          ("Package" + uptype + "Plugins", 
+           (DoubleMap<String,String,TreeSet<VersionID>>) plugins, file);
       }
-      catch(IOException ex) {
-	throw new PipelineException
-	  ("I/O ERROR: \n" + 
-	   "  While attempting to write the toolset package plugins file " + 
-	   "(" + file + ")...\n" + 
-	   "    " + ex.getMessage());
+      catch(GlueException ex) {
+        throw new PipelineException(ex);
       }
     }
   }
@@ -20411,8 +20006,7 @@ class MasterMgr
 
       PluginSet plugins = null;
       try {
-	GlueDecoder gd = new GlueDecoderImpl(file);
-	Object data = gd.getObject();
+        Object data = GlueDecoderImpl.decodeFile("Package" + uptype + "Plugins", file);
 
 	if(data instanceof PluginSet) 
 	  plugins = (PluginSet) data;
@@ -20420,18 +20014,9 @@ class MasterMgr
 	  /* backward compatibility for GLUE files written before PluginSet existed */ 
 	  plugins = new PluginSet((DoubleMap<String,String,TreeSet<VersionID>>) data);
 	}
-      }
-      catch(Exception ex) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	   "The package plugins file (" + file + ") appears to be corrupted:\n" + 
-	   "  " + ex.getMessage());
-	LogMgr.getInstance().flush();
-	
-	throw new PipelineException
-	  ("I/O ERROR: \n" + 
-	   "  While attempting to read the package plugins file (" + file + ")...\n" + 
-	   "    " + ex.getMessage());
+      }	
+      catch(GlueException ex) {
+        throw new PipelineException(ex);
       }
 
       table.put(name, vid, plugins);
@@ -20501,39 +20086,16 @@ class MasterMgr
 	  throw new PipelineException
 	    ("Unable to remove the old suffix editors file (" + file + ")!");
       }
-
+      
       LogMgr.getInstance().log
 	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
 	 "Writing Suffix Editors: " + author);
 
       try {
-	String glue = null;
-	try {
-	  GlueEncoder ge = new GlueEncoderImpl("SuffixEditors", editors);
-	  glue = ge.getText();
-	}
-	catch(GlueException ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	     "Unable to generate a Glue format representation of the suffix editors " + 
-	     "for user (" + author + ")!");
-	  LogMgr.getInstance().flush();
-	  
-	  throw new IOException(ex.getMessage());
-	}
-	  
-	{
-	  FileWriter out = new FileWriter(file);
-	  out.write(glue);
-	  out.flush();
-	  out.close();
-	}
+        GlueEncoderImpl.encodeFile("SuffixEditors", editors, file);
       }
-      catch(IOException ex) {
-	throw new PipelineException
-	  ("I/O ERROR: \n" + 
-	   "  While attempting to write the suffix editors file (" + file + ")...\n" + 
-	   "    " + ex.getMessage());
+      catch(GlueException ex) {
+        throw new PipelineException(ex);
       }
     }
   }
@@ -20566,21 +20128,12 @@ class MasterMgr
 
       TreeSet<SuffixEditor> editors = null;
       try {
-	GlueDecoder gd = new GlueDecoderImpl(file);
-	editors = (TreeSet<SuffixEditor>) gd.getObject();
+        editors = (TreeSet<SuffixEditor>) GlueDecoderImpl.decodeFile("SuffixEditors", file);
+      }	
+      catch(GlueException ex) {
+        throw new PipelineException(ex);
       }
-      catch(Exception ex) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	   "The suffix editors file (" + file + ") appears to be corrupted:\n" + 
-	   "  " + ex.getMessage());
-	LogMgr.getInstance().flush();
-	
-	throw new PipelineException
-	  ("I/O ERROR: \n" + 
-	   "  While attempting to read the suffix editors file (" + file + ")...\n" + 
-	   "    " + ex.getMessage());
-      }
+
       if(editors == null)
 	throw new IllegalStateException(); 
 
@@ -20663,32 +20216,10 @@ class MasterMgr
 
     synchronized(pNodeEventFileLock) {
       try {
-	String glue = null;
-	try {
-	  GlueEncoder ge = new GlueEncoderImpl("Event", event);
-	  glue = ge.getText();
-	}
-	catch(GlueException ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	   "Unable to generate a Glue format representation of the node event!");
-	  LogMgr.getInstance().flush();
-	
-	  throw new IOException(ex.getMessage());
-	}
-      
-	{
-	  FileWriter out = new FileWriter(nfile);
-	  out.write(glue);
-	  out.flush();
-	  out.close();
-	}
+        GlueEncoderImpl.encodeFile("Event", event, nfile);
       }
-      catch(IOException ex) {
-	throw new PipelineException
-	  ("I/O ERROR: \n" + 
-	   "  While attempting to write the node event file (" + nfile + ")...\n" + 
-	   "    " + ex.getMessage());
+      catch(GlueException ex) {
+        throw new PipelineException(ex);
       }
       
       try {
@@ -20813,18 +20344,13 @@ class MasterMgr
           LogMgr.getInstance().log
             (LogMgr.Kind.Glu, LogMgr.Level.Finer,
              "Reading Node Event File: " + nfile); 
-          
+
           BaseNodeEvent e = null;
           try {
-            GlueDecoder gd = new GlueDecoderImpl(nfile);
-            e = (BaseNodeEvent) gd.getObject();
-          }
-          catch(Exception ex) {
-            LogMgr.getInstance().log
-              (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-               "The node event file (" + nfile + ") appears to be corrupted:\n" + 
-               "  " + ex.getMessage());
-            LogMgr.getInstance().flush();
+            e = (BaseNodeEvent) GlueDecoderImpl.decodeFile("Event", nfile);
+          }	
+          catch(GlueException ex) {
+            throw new PipelineException(ex);
           }
           
           if(e != null) 
@@ -20955,44 +20481,22 @@ class MasterMgr
 	throw new PipelineException
 	  ("Unable to remove the old job/group IDs file (" + file + ")!");
     }
-    
+
     LogMgr.getInstance().log
       (LogMgr.Kind.Glu, LogMgr.Level.Finer,
        "Writing Next IDs.");
 
     try {
-      String glue = null;
-      try {
-	TreeMap<String,Long> table = new TreeMap<String,Long>();
-	synchronized(pQueueSubmitLock) {
-	  table.put("JobID",      pNextJobID);
-	  table.put("JobGroupID", pNextJobGroupID);
-	}
-
-	GlueEncoder ge = new GlueEncoderImpl("NextIDs", table);
-	glue = ge.getText();
-      }
-      catch(GlueException ex) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	   "Unable to generate a Glue format representation of the job/group IDs!");
-	LogMgr.getInstance().flush();
-	
-	throw new IOException(ex.getMessage());
+      TreeMap<String,Long> table = new TreeMap<String,Long>();
+      synchronized(pQueueSubmitLock) {
+        table.put("JobID",      pNextJobID);
+        table.put("JobGroupID", pNextJobGroupID);
       }
       
-      {
-	FileWriter out = new FileWriter(file);
-	out.write(glue);
-	out.flush();
-	out.close();
-      }
+      GlueEncoderImpl.encodeFile("NextIDs", table, file);
     }
-    catch(IOException ex) {
-      throw new PipelineException
-	("I/O ERROR: \n" + 
-	 "  While attempting to write the job/group IDs file (" + file + ")...\n" + 
-	 "    " + ex.getMessage());
+    catch(GlueException ex) {
+      throw new PipelineException(ex);
     }
   }
   
@@ -21011,29 +20515,20 @@ class MasterMgr
       LogMgr.getInstance().log
 	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
 	 "Reading Next IDs.");
-      
+
       try {
-	GlueDecoder gd = new GlueDecoderImpl(file);
-	TreeMap<String,Long> table = (TreeMap<String,Long>) gd.getObject();
+        TreeMap<String,Long> table =
+          (TreeMap<String,Long>) GlueDecoderImpl.decodeFile("NextIDs", file);
 
 	synchronized(pQueueSubmitLock) {
 	  pNextJobID      = table.get("JobID");
 	  pNextJobGroupID = table.get("JobGroupID");
 	}
-
+        
 	return;
-      }
-      catch(Exception ex) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	   "The job/group IDs file (" + file + ") appears to be corrupted:\n" + 
-	   "  " + ex.getMessage());
-	LogMgr.getInstance().flush();
-	
-	throw new PipelineException
-	  ("I/O ERROR: \n" + 
-	   "  While attempting to read the job/group IDs file (" + file + ")...\n" + 
-	   "    " + ex.getMessage());
+      }	
+      catch(GlueException ex) {
+        throw new PipelineException(ex);
       }
     }
     
@@ -21092,31 +20587,16 @@ class MasterMgr
       
       if(annotations.isEmpty()) 
         return;
-
-      String glue = null;
+      
       try {
         TreeMap<String,BaseAnnotation> table = new TreeMap<String,BaseAnnotation>();
         for(String aname : annotations.keySet()) 
           table.put(aname, new BaseAnnotation(annotations.get(aname)));
-
-	GlueEncoder ge = new GlueEncoderImpl("Annotations", table);
-	glue = ge.getText();
+        
+        GlueEncoderImpl.encodeFile("Annotations", table, file);
       }
       catch(GlueException ex) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	   "Unable to generate a Glue format representation of the annotations for " + 
-	   "node (" + name + ")!");
-	LogMgr.getInstance().flush();
-	
-	throw new IOException(ex.getMessage());
-      }
-      
-      {
-	FileWriter out = new FileWriter(file);
-	out.write(glue);
-	out.flush();
-	out.close();
+        throw new PipelineException(ex);
       }
     }
     catch(IOException ex) {
@@ -21160,20 +20640,11 @@ class MasterMgr
 
     TreeMap<String,BaseAnnotation> table = new TreeMap<String,BaseAnnotation>();
     try {
-      GlueDecoder gd = new GlueDecoderImpl(file);
-      table = (TreeMap<String,BaseAnnotation>) gd.getObject();
-    }
-    catch(Exception ex) {
-      LogMgr.getInstance().log
-        (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-         "The annotations file (" + file + ") appears to be corrupted:\n" + 
-         "  " + ex.getMessage());
-      LogMgr.getInstance().flush();
-      
-      throw new PipelineException
-        ("I/O ERROR: \n" + 
-         "  While attempting to read annotations for node (" + name + ") from file...\n" +
-         "    " + ex.getMessage());
+      table = 
+        (TreeMap<String,BaseAnnotation>) GlueDecoderImpl.decodeFile("Annotations", file);
+    }	
+    catch(GlueException ex) {
+      throw new PipelineException(ex);
     }
     
     TreeMap<String,BaseAnnotation> annotations = new TreeMap<String,BaseAnnotation>();
@@ -21235,26 +20706,11 @@ class MasterMgr
 	throw new IOException
 	  ("Somehow a checked-in version file (" + file + ") already exists!");
       
-      String glue = null;
       try {
-	GlueEncoder ge = new GlueEncoderImpl("NodeVersion", vsn);
-	glue = ge.getText();
+        GlueEncoderImpl.encodeFile("NodeVersion", vsn, file);
       }
       catch(GlueException ex) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	   "Unable to generate a Glue format representation of checked-in " + 
-	   "version (" + vsn.getVersionID() + ") of node (" + vsn.getName() + ")!");
-	LogMgr.getInstance().flush();
-	
-	throw new IOException(ex.getMessage());
-      }
-      
-      {
-	FileWriter out = new FileWriter(file);
-	out.write(glue);
-	out.flush();
-	out.close();
+        throw new PipelineException(ex);
       }
     }
     catch(IOException ex) {
@@ -21310,21 +20766,10 @@ class MasterMgr
 
       NodeVersion vsn = null;
       try {
-	GlueDecoder gd = new GlueDecoderImpl(files[wk]);
-	vsn = (NodeVersion) gd.getObject();
-      }
-      catch(Exception ex) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	   "The checked-in version file (" + files[wk] + ") appears to be corrupted:\n" + 
-	   "  " + ex.getMessage());
-	LogMgr.getInstance().flush();
-	
-	throw new PipelineException
-	  ("I/O ERROR: \n" + 
-	   "  While attempting to read checked-in version (" + files[wk].getName() + ") of " +
-	   "node (" + name + ") from file...\n" +
-	   "    " + ex.getMessage());
+       vsn = (NodeVersion) GlueDecoderImpl.decodeFile("NodeVersion", files[wk]);
+      }	
+      catch(GlueException ex) {
+        throw new PipelineException(ex);
       }
 
       if(table.containsKey(vsn.getVersionID()))
@@ -21390,27 +20835,12 @@ class MasterMgr
 	  throw new IOException
 	    ("Unable to backup the current working version file (" + file + ") to the " + 
 	     "the file (" + backup + ")!");
-      
-      String glue = null;
+            
       try {
-	GlueEncoder ge = new GlueEncoderImpl("NodeMod", mod);
-	glue = ge.getText();
+        GlueEncoderImpl.encodeFile("NodeMod", mod, file);
       }
       catch(GlueException ex) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	   "Unable to generate a Glue format representation of working " + 
-	   "version (" + id + ")!");
-	LogMgr.getInstance().flush();
-	
-	throw new IOException(ex.getMessage());
-      }
-      
-      {
-	FileWriter out = new FileWriter(file);
-	out.write(glue);
-	out.flush();
-	out.close();
+        throw new PipelineException(ex);
       }
     }
     catch(IOException ex) {
@@ -21453,11 +20883,8 @@ class MasterMgr
 	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
 	   "Reading Working Version: " + id);
 
-	try {
-	  GlueDecoder gd = new GlueDecoderImpl(file); 
-	  NodeMod mod = (NodeMod) gd.getObject();
-	  
-	  return mod;
+	try { 
+	  return ((NodeMod) GlueDecoderImpl.decodeFile("NodeMod", file));
 	}
 	catch(Exception ex) {
 	  LogMgr.getInstance().log
@@ -21473,8 +20900,7 @@ class MasterMgr
 
 	    NodeMod mod = null;
 	    try {
-	      GlueDecoder gd = new GlueDecoderImpl(backup);
-	      mod = (NodeMod) gd.getObject();
+	      mod = (NodeMod) GlueDecoderImpl.decodeFile("NodeMod", backup);
 	    }
 	    catch(Exception ex2) {
 	      LogMgr.getInstance().log
@@ -21581,26 +21007,11 @@ class MasterMgr
 	      ("Unable to create downstream links directory (" + dir + ")!");
       } 
 
-      String glue = null;
       try {
-	GlueEncoder ge = new GlueEncoderImpl("DownstreamLinks", links);
-	glue = ge.getText();
+        GlueEncoderImpl.encodeFile("DownstreamLinks", links, file);
       }
       catch(GlueException ex) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	   "Unable to generate a Glue format representation of the downstream links " + 
-	   "for (" + links.getName() + ")!");
-	LogMgr.getInstance().flush();
-	
-	throw new IOException(ex.getMessage());
-      }
-      
-      {
-	FileWriter out = new FileWriter(file);
-	out.write(glue);
-	out.flush();
-	out.close();
+        throw new PipelineException(ex);
       }
     }
     catch(IOException ex) {
@@ -21641,21 +21052,12 @@ class MasterMgr
 	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
 	   "Reading Downstream Links: " + name);
 
-	try {
-	  GlueDecoder gd = new GlueDecoderImpl(file);
-	  DownstreamLinks links = (DownstreamLinks) gd.getObject();
-	  
-	  return links;
-	}
-	catch(Exception ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Glu, LogMgr.Level.Severe,  
-	    "The downstream links file (" + file + ") appears to be corrupted:\n" + 
-	     "  " + ex.getMessage());
-	  LogMgr.getInstance().flush();
-	
-	  throw ex;
-	}
+        try {
+          return ((DownstreamLinks) GlueDecoderImpl.decodeFile("DownstreamLinks", file));
+        }	
+        catch(GlueException ex) {
+          throw new PipelineException(ex);
+        }
       }
 
       return null;

@@ -1,10 +1,12 @@
-// $Id: GlueEncoderImpl.java,v 1.9 2006/11/22 09:08:00 jim Exp $
+// $Id: GlueEncoderImpl.java,v 1.10 2008/06/29 17:46:16 jim Exp $
 
 package us.temerity.pipeline.core;
 
+import us.temerity.pipeline.*;
 import us.temerity.pipeline.glue.*;
 
 import java.lang.reflect.*;
+import java.io.*;
 import java.text.*;
 import java.util.*;
 
@@ -13,7 +15,7 @@ import java.util.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Converts a set of objects into Glue format text files. <P> 
+ * Converts a set of objects into Glue format text. <P> 
  * 
  * The Glue format is flexible enough to handle adding, removing and renaming of fields.  
  * All primitive types and well as most of the classes in java.lang and java.util are 
@@ -32,45 +34,149 @@ class GlueEncoderImpl
   /*----------------------------------------------------------------------------------------*/
   
   /** 
-   * Encode the heirarchy of objects reachable from the given object into Glue format text.
+   * Initialize a new Glue encoder.
+   * 
+   * @param writer 
+   *   The character stream into which the Glue encoded representation is written.
+   */
+  private 
+  GlueEncoderImpl
+  (
+   Writer writer
+  ) 
+  {
+    pNextID  = 1;
+    pObjects = new HashMap<Integer,HashMap<Long,Object>>();  
+    pWriter  = writer;
+    pLevel   = 0;
+  }
+
+  
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   M E T H O D S                                                          */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /** 
+   * A static convience method for encoding an object into a String.<P> 
+   * 
+   * All exceptions are logged using LogMgr internally and then rethrown as GlueException
+   * with the same message as written to the log.
    * 
    * @param title 
    *   The name to be given to the object when encoded.
    * 
    * @param obj 
    *   The <CODE>Object</CODE> to be encoded.
+   * 
+   * @param writer 
+   *   The character stream into which the Glue encoded representation is written.
    */
-  public 
-  GlueEncoderImpl
+  public static String
+  encodeString
   (
    String title,  
-   Object obj   
+   Object obj
   ) 
     throws GlueException
   {
-    pNextID  = 1;
-    pObjects = new HashMap<Integer,HashMap<Long,Object>>();  
-    pBuf     = new StringBuffer();
-    pLevel   = 0;
-
-    encode(title, obj);
+    try {
+      Writer writer = new StringWriter();  
+      GlueEncoderImpl ge = new GlueEncoderImpl(writer); 
+      ge.encode(title, obj);
+      return writer.toString();
+    }
+    catch(GlueException ex) {
+      String msg = 
+        ("Unable to Glue encode: " + title + "\n" + 
+         "  " + ex.getMessage());
+      LogMgr.getInstance().log(LogMgr.Kind.Glu, LogMgr.Level.Severe, msg); 
+      throw new GlueException(msg);
+    }
+    catch(Exception ex) {
+      String msg = Exceptions.getFullMessage("INTERNAL ERROR:", ex, true, true);
+      LogMgr.getInstance().log(LogMgr.Kind.Glu, LogMgr.Level.Severe, msg); 
+      throw new GlueException(msg);      
+    }
   }
-
-  
-  
-  /*----------------------------------------------------------------------------------------*/
-  /*   A C C E S S                                                                          */
-  /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Gets a <CODE>String</CODE> containing the Glue representation of the encoded objects.
+   * A static convience method for encoding an object into the given file.<P> 
+   * 
+   * All exceptions are logged using LogMgr internally and then rethrown as GlueException
+   * with the same message as written to the log.
+   * 
+   * @param title 
+   *   The name to be given to the object when encoded.
+   * 
+   * @param obj 
+   *   The <CODE>Object</CODE> to be encoded.
+   * 
+   * @param file
+   *   The file into which the Glue encoded representation is written.
    */
-  public String 
-  getText() 
+  public static void 
+  encodeFile
+  (
+   String title,  
+   Object obj, 
+   File file
+  ) 
+    throws GlueException
   {
-    return (pBuf.toString());
-  }
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Glu, LogMgr.Level.Finest,
+       "Writing " + title + ": " + file); 
 
+    try {
+      Writer writer = null;
+      try {
+        writer = new BufferedWriter(new FileWriter(file));
+      }
+      catch(IOException ex) {
+        String msg = 
+          ("I/O ERROR: \n" + 
+           "  Unable to open file (" + file + ") used to encode: " + title + "\n" + 
+           "    " + ex.getMessage());
+        LogMgr.getInstance().log(LogMgr.Kind.Glu, LogMgr.Level.Severe, msg); 
+        throw new GlueException(msg);
+      }
+
+      try {
+        try {
+          GlueEncoderImpl ge = new GlueEncoderImpl(writer); 
+          ge.encode(title, obj);
+        }
+        catch(GlueException ex) {
+          String msg = 
+            ("Unable to Glue encode: " + title + "\n" + 
+             "  " + ex.getMessage());
+          LogMgr.getInstance().log(LogMgr.Kind.Glu, LogMgr.Level.Severe, msg); 
+          throw new GlueException(msg);
+        }
+        finally {
+          writer.close();
+        }
+      }
+      catch(IOException ex) {
+        String msg = 
+          ("I/O ERROR: \n" + 
+           "  While writing to file (" + file + ") during Glue encoding of: " + title + "\n" +
+           "    " + ex.getMessage());
+        LogMgr.getInstance().log(LogMgr.Kind.Glu, LogMgr.Level.Severe, msg); 
+        throw new GlueException(msg);
+      }
+    }
+    catch(GlueException ex) {
+      throw ex;
+    }
+    catch(Exception ex) {
+      String msg = Exceptions.getFullMessage("INTERNAL ERROR:", ex, true, true);
+      LogMgr.getInstance().log(LogMgr.Kind.Glu, LogMgr.Level.Severe, msg); 
+      throw new GlueException(msg);      
+    }
+  }
+  
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -98,25 +204,30 @@ class GlueEncoderImpl
   ) 
     throws GlueException
   {
-    if(obj == null) {
-      pBuf.append(indent());
-      if(title.length() > 0) 
-	pBuf.append(title + " "); 
-      pBuf.append("<NULL>\n");
-      return;
+    try {
+      if(obj == null) {
+        pWriter.append(indent());
+        if(title.length() > 0) 
+          pWriter.append(title + " "); 
+        pWriter.append("<NULL>\n");
+        return;
+      }
+      
+      Long objID = lookupID(obj);
+      if(objID != null) {
+        writeRef(title, objID);
+        return;
+      }
+      
+      objID = insertID(obj);
+      writeObject(title, obj, objID);
     }
-
-    Long objID = lookupID(obj);
-    if(objID != null) {
-      writeRef(title, objID);
-      return;
+    catch(IOException ex) {
+      throw new GlueException(ex);
     }
-    
-    objID = insertID(obj);
-    writeObject(title, obj, objID);
   }
 
-
+  
 
   /*-- I/O HELPERS -------------------------------------------------------------------------*/
 
@@ -135,11 +246,12 @@ class GlueEncoderImpl
    String title,  
    Long objID     
   ) 
+    throws IOException
   {
-    pBuf.append(indent());
+    pWriter.append(indent());
     if(title.length() > 0) 
-      pBuf.append(title + " "); 
-    pBuf.append("<REF> #" + objID + "\n");
+      pWriter.append(title + " "); 
+    pWriter.append("<REF> #" + objID + "\n");
   }
 
   /**
@@ -161,13 +273,13 @@ class GlueEncoderImpl
    Object obj,   
    Long objID    
   ) 
-    throws GlueException
+    throws GlueException, IOException
   {
     /* header */ 
-    pBuf.append(indent());
+    pWriter.append(indent());
     if(title.length() > 0) 
-      pBuf.append(title + " "); 
-    pBuf.append("<");
+      pWriter.append(title + " "); 
+    pWriter.append("<");
 
     /* primtive wrapper types */ 
     Class cls = obj.getClass();
@@ -177,34 +289,36 @@ class GlueEncoderImpl
        (cls == sShortClass) ||
        (cls == sIntegerClass) ||
        (cls == sLongClass)) {
-      pBuf.append(cshort + "> #" + objID + " { " + obj + " }\n");
+      pWriter.append(cshort + "> #" + objID + " { " + obj + " }\n");
     }
     else if(cls == sFloatClass) {
-      pBuf.append(cshort + "> #" + objID + " { " + sFloatFormat.format((Float) obj) + " }\n");
+      pWriter.append(cshort + "> #" + objID + 
+                     " { " + sFloatFormat.format((Float) obj) + " }\n");
     }
     else if(cls == sDoubleClass) {
-      pBuf.append(cshort + "> #" + objID + " { " + sDoubleFormat.format((Double) obj) + " }\n");
+      pWriter.append(cshort + "> #" + objID + 
+                     " { " + sDoubleFormat.format((Double) obj) + " }\n");
     }
     else if(cls == sCharacterClass) {
       Character c = (Character) obj;
-      pBuf.append(cshort + "> #" + objID + " { " + ((int) c.charValue()) + " }\n");
+      pWriter.append(cshort + "> #" + objID + " { " + ((int) c.charValue()) + " }\n");
     }
     else if(cls == sStringClass) {
-      pBuf.append(cshort + "> #" + objID + " { \"");
+      pWriter.append(cshort + "> #" + objID + " { \"");
 
       char cs[] = ((String) obj).toCharArray();
       int wk;
       for(wk=0; wk<cs.length; wk++) {
 	if(cs[wk] == '"') 
-	  pBuf.append("\\");
-	pBuf.append(cs[wk]);
+	  pWriter.append("\\");
+	pWriter.append(cs[wk]);
       }
 
-      pBuf.append("\" }\n");
+      pWriter.append("\" }\n");
     }
     else if(cls.isEnum()) {
       Enum e = (Enum) obj;
-      pBuf.append(cshort + "> #" + objID + " { :" + e.name() + ": }\n");
+      pWriter.append(cshort + "> #" + objID + " { :" + e.name() + ": }\n");
     }
       
     /* arrays */ 
@@ -277,13 +391,13 @@ class GlueEncoderImpl
 	    primCls = null;
 	}
 
-	pBuf.append(simple + "[" + dim + "]");
+	pWriter.append(simple + "[" + dim + "]");
 	
 	int wk;
 	for(wk=1; wk<depth; wk++) 
-	  pBuf.append("[]");
+	  pWriter.append("[]");
 
-	pBuf.append("> #" + objID + " {\n");
+	pWriter.append("> #" + objID + " {\n");
       }
 
       /* primitive type members */ 
@@ -295,29 +409,29 @@ class GlueEncoderImpl
 	  if(comp == null)
 	    throw new IllegalStateException();
 
-	  pBuf.append(indent() + wk + " <" + simple + "> { ");
+	  pWriter.append(indent() + wk + " <" + simple + "> { ");
 
 	  if((primCls == Boolean.TYPE) ||
 	     (primCls == Byte.TYPE) ||
 	     (primCls == Short.TYPE) ||
 	     (primCls == Integer.TYPE) ||
 	     (primCls == Long.TYPE)) {
-	    pBuf.append(comp.toString());
+	    pWriter.append(comp.toString());
 	  }
 	  else if(primCls == Float.TYPE) {
-	    pBuf.append(sFloatFormat.format((Float) comp));
+	    pWriter.append(sFloatFormat.format((Float) comp));
 	  }
 	  else if(primCls == Double.TYPE) {
-	    pBuf.append(sDoubleFormat.format((Double) comp));
+	    pWriter.append(sDoubleFormat.format((Double) comp));
 	  }
 	  else if(primCls == Character.TYPE) {
-	    pBuf.append("'" + comp + "'");
+	    pWriter.append("'" + comp + "'");
 	  }
 	  else {
 	    throw new IllegalStateException("Unknown primitive type (" + primCls + ")!");
 	  }
 
-	  pBuf.append(" }\n");
+	  pWriter.append(" }\n");
 	}
       }
 
@@ -331,7 +445,7 @@ class GlueEncoderImpl
       }
       pLevel--;
       
-      pBuf.append(indent() + "}\n");
+      pWriter.append(indent() + "}\n");
     }
     
     /* compound objects */ 
@@ -353,21 +467,21 @@ class GlueEncoderImpl
       if(isGlueable) {
 	pLevel++;
 	{
-	  pBuf.append(cshort + "> #" + objID + " {\n");
+	  pWriter.append(cshort + "> #" + objID + " {\n");
 	  
 	  Glueable gobj = (Glueable) obj;
 	  gobj.toGlue(this);
 	}
 	pLevel--;
 
-	pBuf.append(indent() + "}\n");
+	pWriter.append(indent() + "}\n");
       }
       
       /* Collection objects */ 
       else if(isCollection) {
 	pLevel++;
 	{
-	  pBuf.append(cshort + "> #" + objID + " {\n");
+	  pWriter.append(cshort + "> #" + objID + " {\n");
 	  
 	  Collection col = (Collection) obj;
 	  Iterator iter = col.iterator();
@@ -377,14 +491,14 @@ class GlueEncoderImpl
 	}
 	pLevel--;
 	
-	pBuf.append(indent() + "}\n");
+	pWriter.append(indent() + "}\n");
       }
 
       /* Map objects */ 
       else if(isMap) {
 	pLevel++;
 	{
-	  pBuf.append(cshort + "> #" + objID + " {\n");
+	  pWriter.append(cshort + "> #" + objID + " {\n");
 	  
 	  Map map = (Map) obj;
 	  Iterator iter = map.keySet().iterator();
@@ -392,19 +506,19 @@ class GlueEncoderImpl
 	    Object key = iter.next();
 	    Object val = map.get(key);
 
-	    pBuf.append(indent() + "{\n");
+	    pWriter.append(indent() + "{\n");
 	    pLevel++;
 	    {
 	      encode("Key", key);
 	      encode("Val", val);
 	    }
 	    pLevel--;
-	    pBuf.append(indent() + "}\n");
+	    pWriter.append(indent() + "}\n");
 	  }
 	}
 	pLevel--;
 	
-	pBuf.append(indent() + "}\n");
+	pWriter.append(indent() + "}\n");
       }
     
       /* unsupported */ 
@@ -420,6 +534,7 @@ class GlueEncoderImpl
    */ 
   private String 
   indent() 
+    throws IOException
   {
     if(pLevel < 0)
       throw new IllegalStateException("Indent level (" + pLevel + ") cannot be negative!"); 
@@ -610,9 +725,9 @@ class GlueEncoderImpl
   private HashMap<Integer,HashMap<Long,Object>>  pObjects;    
 
   /**
-   * The string buffer holding the GLUE encoded text. 
+   * The character stream where GLUE encoded text is written. 
    */ 
-  private StringBuffer  pBuf;   
+  private Writer  pWriter;   
  
   /**
    * The current nesting level. 

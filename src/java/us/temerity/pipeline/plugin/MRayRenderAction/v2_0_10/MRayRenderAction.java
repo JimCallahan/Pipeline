@@ -1,4 +1,4 @@
-// $Id: MRayRenderAction.java,v 1.1 2007/06/19 18:24:49 jim Exp $
+// $Id: MRayRenderAction.java,v 1.2 2008/06/29 17:46:16 jim Exp $
 
 package us.temerity.pipeline.plugin.MRayRenderAction.v2_0_10;
 
@@ -434,34 +434,23 @@ MRayRenderAction
 
     ArrayList<String> scenes = null;
     {
+      scenes = new ArrayList<String>();
+      for (Path p : target.getPaths()) {
+        File scene = createTemp(agenda, 0666, "mi");
+        scenes.add(scene.getPath());
+      }
+      
+      TreeMap<String, Object> toGlue = new TreeMap<String, Object>();
+      BaseAction act = new BaseAction(this);
+      toGlue.put("file", scenes);
+      toGlue.put("agenda", agenda);
+      toGlue.put("action", act);
+      
       try {
-	scenes = new ArrayList<String>();
-	for (Path p : target.getPaths()) {
-	  File scene = createTemp(agenda, 0666, "mi");
-	  scenes.add(scene.getPath());
-	}
-
-	TreeMap<String, Object> toGlue = new TreeMap<String, Object>();
-	BaseAction act = new BaseAction(this);
-	toGlue.put("file", scenes);
-	toGlue.put("agenda", agenda);
-	toGlue.put("action", act);
-
-	GlueEncoderImpl encode = new GlueEncoderImpl("agenda", toGlue);
-	FileWriter out = new FileWriter(glueFile);
-	out.write(encode.getText());
-	out.close();
-      } 
-      catch (GlueException e) {
-	throw new PipelineException
-	  ("Error converting the agenda to Glue for Job " + 
-	   "(" + agenda.getJobID() + ")!\n" + e.getMessage());
-      } 
-      catch (IOException e) {
-	throw new PipelineException
-	  ("Unable to write the temporary GLUE script file (" + glueFile.getPath() + ") " + 
-	   "for Job " + "(" + agenda.getJobID() + ")!\n" +
-	   e.getMessage());
+        GlueEncoderImpl.encodeFile("agenda", toGlue, glueFile); 
+      }
+      catch(GlueException ex) {
+        throw new PipelineException(ex);
       }
     }
 

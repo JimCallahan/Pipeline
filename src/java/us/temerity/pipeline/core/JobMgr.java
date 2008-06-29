@@ -1,11 +1,10 @@
-// $Id: JobMgr.java,v 1.42 2008/02/14 20:26:29 jim Exp $
+// $Id: JobMgr.java,v 1.43 2008/06/29 17:46:16 jim Exp $
 
 package us.temerity.pipeline.core;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.message.*;
 import us.temerity.pipeline.glue.*;
-import us.temerity.pipeline.glue.io.*;
 
 import java.io.*;
 import java.util.*;
@@ -416,22 +415,13 @@ class JobMgr
 	  LogMgr.getInstance().log
 	    (LogMgr.Kind.Ops, LogMgr.Level.Finer,
 	     "Reading Job Results: " + req.getJobID());
-	  
-	  try {
-	    GlueDecoder gd = new GlueDecoderImpl(file);
-	    results = (QueueJobResults) gd.getObject();
-	  }
-	  catch(Exception ex) {
-	    LogMgr.getInstance().log
-	      (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	       "The job results file (" + file + ") appears to be corrupted!");
-	    LogMgr.getInstance().flush();
-	  
-	    throw new PipelineException
-	      ("I/O ERROR: \n" + 
-	       "  While attempting to read the job results file (" + file + ")...\n" + 
-	       "    " + ex.getMessage());
-	  }
+
+          try {
+            results = (QueueJobResults) GlueDecoderImpl.decodeFile("Results", file);
+          }	
+          catch(GlueException ex) {
+            throw new PipelineException(ex);
+          }
 	}
 	else {
 	  throw new PipelineException
@@ -698,23 +688,13 @@ class JobMgr
 	  LogMgr.getInstance().log
 	    (LogMgr.Kind.Ops, LogMgr.Level.Finer,
 	     "Reading Job Execution Details: " + req.getJobID());
-	  
-	  try {
-	    GlueDecoder gd = new GlueDecoderImpl(file);
-	    details = (SubProcessExecDetails) gd.getObject();
-	  }
-	  catch(Exception ex) {
-	    LogMgr.getInstance().log
-	      (LogMgr.Kind.Glu, LogMgr.Level.Severe,
-	       "The job execution details file (" + file + ") appears to be corrupted!");
-	    LogMgr.getInstance().flush();
-	  
-	    throw new PipelineException
-	      ("I/O ERROR: \n" + 
-	       "  While attempting to read the job execution details file " + 
-	       "(" + file + ")...\n" + 
-	       "    " + ex.getMessage());
-	  }
+
+          try {
+            details = (SubProcessExecDetails) GlueDecoderImpl.decodeFile("Details", file);
+          }	
+          catch(GlueException ex) {
+            throw new PipelineException(ex);
+          }
 	}
 	else {
 	  throw new PipelineException
@@ -1227,32 +1207,10 @@ class JobMgr
     {
       File file = new File(dir, "details");
       try {
-	String glue = null;
-	try {
-	  GlueEncoder ge = new GlueEncoderImpl("Details", details);
-	  glue = ge.getText();
-	}
-	catch(GlueException ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Glu, LogMgr.Level.Severe, 
-	     "Unable to generate a Glue format representation of the job execution details!");
-	  LogMgr.getInstance().flush();
-	  
-	  throw new IOException(ex.getMessage());
-	}
-	
-	{
-	  FileWriter out = new FileWriter(file);
-	  out.write(glue);
-	  out.flush();
-	  out.close();
-	}
+        GlueEncoderImpl.encodeFile("Details", details, file);
       }
-      catch(IOException ex) {
-	throw new PipelineException
-	  ("I/O ERROR: \n" + 
-	   "  While attempting to write the job execution details file (" + file + ")...\n" + 
-	   "    " + ex.getMessage());
+      catch(GlueException ex) {
+        throw new PipelineException(ex);
       }
       finally {
 	pExecDetails = details; 
@@ -1269,32 +1227,10 @@ class JobMgr
     {
       File file = new File(dir, "results");
       try {
-	String glue = null;
-	try {
-	  GlueEncoder ge = new GlueEncoderImpl("Results", results);
-	  glue = ge.getText();
-	}
-	catch(GlueException ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Glu, LogMgr.Level.Severe, 
-	     "Unable to generate a Glue format representation of the job results!");
-	  LogMgr.getInstance().flush();
-	  
-	  throw new IOException(ex.getMessage());
-	}
-	
-	{
-	  FileWriter out = new FileWriter(file);
-	  out.write(glue);
-	  out.flush();
-	  out.close();
-	}
+        GlueEncoderImpl.encodeFile("Results", results, file);
       }
-      catch(IOException ex) {
-	throw new PipelineException
-	  ("I/O ERROR: \n" + 
-	   "  While attempting to write the job results file (" + file + ")...\n" + 
-	   "    " + ex.getMessage());
+      catch(GlueException ex) {
+        throw new PipelineException(ex);
       }
       finally {
 	pResults = results;
