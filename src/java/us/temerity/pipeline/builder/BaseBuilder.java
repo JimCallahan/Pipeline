@@ -1,4 +1,4 @@
-// $Id: BaseBuilder.java,v 1.58 2008/05/26 03:20:59 jesse Exp $
+// $Id: BaseBuilder.java,v 1.59 2008/07/02 10:11:52 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -1653,6 +1653,33 @@ class BaseBuilder
   )
   {
     pStageInfo.setDefaultEditor(function, plugin);
+  }
+  
+  /**
+   * Sets a default editors for a particular stage function types.
+   * <p>
+   * This is a wrapper function for the
+   * {@link BuilderInformation.StageInformation#setDefaultEditor(String, PluginContext)}
+   * method. If this method is called, it is not necessary to set the same values in the
+   * {@link BuilderInformation.StageInformation}.
+   * <p>
+   * Note that this method is only effective the FIRST time it is called for a particular
+   * function type. This allows high-level builders to override their child builders if they
+   * do not agree on what the default editor should be. It is important to remember this when
+   * writing builders with sub-builder. A Builder should always set its default editors before
+   * instantiating any of its sub-builders. Failure to do so may result in the default editor
+   * values being set by the sub-builder.
+   */
+  public void
+  setDefaultEditors
+  (
+    TreeMap<String, PluginContext> defaultEditors
+  )
+  {
+    for (String function : defaultEditors.keySet()) {
+      PluginContext plugin = defaultEditors.get(function);
+      pStageInfo.setDefaultEditor(function, plugin);
+    }
   }
   
   /**
