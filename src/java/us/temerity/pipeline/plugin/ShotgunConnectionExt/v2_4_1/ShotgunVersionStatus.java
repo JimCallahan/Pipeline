@@ -1,10 +1,9 @@
-// $Id: ShotgunTaskStatus.java,v 1.2 2008/07/03 19:50:45 jesse Exp $
+// $Id: ShotgunVersionStatus.java,v 1.1 2008/07/03 19:50:45 jesse Exp $
 
 package us.temerity.pipeline.plugin.ShotgunConnectionExt.v2_4_1;
 
-
 /*------------------------------------------------------------------------------------------*/
-/*   S H O T G U N   T A S K   S T A T U S                                                  */
+/*   S H O T G U N   V E R S I O N   S T A T U S                                            */
 /*------------------------------------------------------------------------------------------*/
 
 /**
@@ -13,9 +12,9 @@ package us.temerity.pipeline.plugin.ShotgunConnectionExt.v2_4_1;
  * Use the Key value, returned by {@link #toKey()}, to change the status in Shotgun.
  */
 public enum 
-ShotgunTaskStatus
+ShotgunVersionStatus
 {
-  WaitingToStart, ReadyToStart, InProgress, PendingReview, Approved, Final, OnHold;
+  Approved, NotApplicable, PendingReview, Viewed;
   
   /**
    * The Shotgun database code for setting the status value.
@@ -24,20 +23,14 @@ ShotgunTaskStatus
   toKey()
   {
     switch(this) {
-    case WaitingToStart:
-      return "wtg";
-    case ReadyToStart:
-      return "rdy";
-    case InProgress:
-      return "ip";
-    case PendingReview:
-      return "rev";
     case Approved:
       return "apr";
-    case Final:
-      return "fin";
-    case OnHold:
-      return "hld";
+    case NotApplicable:
+      return "na";
+    case Viewed:
+      return "vwd";
+    case PendingReview:
+      return "rev";
     }
     return null;
   }

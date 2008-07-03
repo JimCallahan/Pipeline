@@ -1,3 +1,5 @@
+// $Id: ShotgunConnectionExt.java,v 1.3 2008/07/03 19:50:45 jesse Exp $
+
 package us.temerity.pipeline.plugin.ShotgunConnectionExt.v2_4_1;
 
 import java.util.*;
@@ -88,6 +90,35 @@ class ShotgunConnectionExt
          choices);
       addParam(param);
     }
+    
+    {
+      ExtensionParam param = 
+        new BooleanExtensionParam
+        (aNoteOnTask, 
+         "Should notes for check-ins be added to the task the related version belongs to.", 
+         true);
+      addParam(param);
+    }
+    
+    {
+      ExtensionParam param = 
+        new BooleanExtensionParam
+        (aNoteOnEntity, 
+         "Should notes for check-ins be added to the entity (shot or asset) " +
+         "the related version belongs to.", 
+         true);
+      addParam(param);
+    }
+    
+    {
+      ExtensionParam param = 
+        new BooleanExtensionParam
+        (aThumbOnEntity, 
+         "Should thumbnails be added to the entity (shot or asset) the related " +
+         "version belongs to.", 
+         true);
+      addParam(param);
+    }
 
     LayoutGroup layout = new LayoutGroup(true);
     layout.addEntry(aShotgunServer);
@@ -95,11 +126,16 @@ class ShotgunConnectionExt
     layout.addEntry(aShotgunApiKey);
     layout.addSeparator();
     layout.addEntry(aShotContainer);
+    layout.addEntry(aNoteOnTask);
+    layout.addEntry(aNoteOnEntity);
+    layout.addEntry(aThumbOnEntity);
     
     setLayout(layout);
     
     underDevelopment();
   }
+  
+  
   
   /*----------------------------------------------------------------------------------------*/
   /*  P L U G I N   O P S                                                                   */
@@ -145,7 +181,10 @@ class ShotgunConnectionExt
       
       sConnection.connectToServer(hostname + "api2", user, password);
       LogMgr.getInstance().log(Kind.Ext, Level.Info, "Shotgun Connection has been enabled.");
-
+      
+      sNoteOnEntity = (Boolean) getParamValue(aNoteOnEntity);
+      sNoteOnTask   = (Boolean) getParamValue(aNoteOnTask);
+      sThumbOnEntity = (Boolean) getParamValue(aThumbOnEntity);
     }
     catch(PipelineException ex) {
       LogMgr.getInstance().log
@@ -282,6 +321,9 @@ class ShotgunConnectionExt
     }
     else
       sConnection.setStatusOnTask(taskID, ShotgunTaskStatus.Approved);
+    
+    Integer shotgunVersionID = sConnection.getVersionID(taskID, id);
+
   }
   
   private void
@@ -299,8 +341,24 @@ class ShotgunConnectionExt
     TreeMap<String,NodeVersion> focusNodes = new TreeMap<String,NodeVersion>();
     TreeMap<String,NodeVersion> editNodes  = new TreeMap<String,NodeVersion>();
     TreeMap<String,NodeVersion> deliveryNodes  = new TreeMap<String,NodeVersion>();
+    TreeSet<String> masterFocusNodes = new TreeSet<String>();
     mineSubmitTree(data, vsn, null, thumbToFocus, thumbNodes, focusNodes, editNodes, 
-                   deliveryNodes, mclient);
+                   deliveryNodes, masterFocusNodes, mclient);
+    
+    String approveNode = null;
+    {
+      String editNode = editNodes.firstKey();
+      getApproveNode(editNode, editNodes.get(editNode));
+    }
+    
+    if (masterFocusNodes.size() > 1)
+      throw new PipelineException
+        ("Some how there was more than one master focus node associated with the task.");
+    
+    
+    String masterFocusNode = null;
+    if (masterFocusNodes.size() == 1) 
+      masterFocusNode = masterFocusNodes.first();
     
     String projectName = data[0];
     
@@ -314,39 +372,126 @@ class ShotgunConnectionExt
     sConnection.createProject(projectName);
     
     Integer taskID = null;
+    Integer entityID = null;
+    ShotgunEntity shotgunEntity = null;
+
     if (entityType.equals("Asset")) {
       String pieces[] = taskName.split("_");
       if (pieces.length != 2)
         throw new PipelineException
-          ("The task name (" + taskName + ") is not a valid asset name for " +
-           "Shotgun and Pipeline");
-      sConnection.createAsset(projectName, pieces[0], pieces[1]);
+        ("The task name (" + taskName + ") is not a valid asset name for " +
+         "Shotgun and Pipeline");
+      entityID = sConnection.createAsset(projectName, pieces[0], pieces[1]);
       taskID = sConnection.createTaskOnAsset(projectName, pieces[0], taskType);
-      
+      shotgunEntity = ShotgunEntity.Asset;
     }
     else if (entityType.equals("Shot")) {
       String pieces[] = taskName.split("_");
       if (pieces.length != 2)
         throw new PipelineException
-          ("The task name (" + taskName + ") is not a valid shot name for " +
-           "Shotgun and Pipeline");
-      sConnection.createShot(projectName, pieces[0], pieces[1]);
+        ("The task name (" + taskName + ") is not a valid shot name for " +
+        "Shotgun and Pipeline");
+      entityID = sConnection.createShot(projectName, pieces[0], pieces[1]);
       taskID = sConnection.createTaskOnShot(projectName, pieces[0], pieces[1], taskType);
+      shotgunEntity = ShotgunEntity.Shot;
+    }
+
+    sConnection.setSubmitTaskNodesOnTask(taskID, nodeName, editNodes);
+
+    //get the approve node...
+    //TODO, this all needs to be fixed.
+
+    String approveNodeName = nodeName.replaceAll(sSubmitSuffix, sApproveSuffix);
+    approveNodeName = approveNodeName.replaceAll(sSubmitDir, sApproveDir);
+
+    BaseAnnotation annot = null;
+    try {
+      annot = mclient.getAnnotation(approveNodeName, sTaskAnnotName);
+    }
+    catch (PipelineException pe) {
+    }
+
+    Integer versionID = null;
+
+    //TODO this should never be null, why are we allowing this?
+    if (annot == null) {
+      versionID = sConnection.createTaskVersion
+        (projectName, taskID, vsn.getAuthor(), vsn.getVersionID(), vsn.getMessage(), focusNodes, 
+         editNodes, deliveryNodes);
+    }
+    else {
+      BuilderID builderID = (BuilderID) annot.getParamValue(aApprovalBuilder);
+
+      versionID = sConnection.createTaskVersion
+        (projectName, taskID, vsn.getAuthor(), vsn.getVersionID(), vsn.getMessage(), focusNodes, 
+         editNodes, deliveryNodes, nodeName, approveNodeName, builderID);
     }
     
-    sConnection.setSubmitTaskNodesOnTask(taskID, nodeName, editNodes);
-    Integer versionID = sConnection.createTaskVersion
-      (projectName, taskID, vsn.getAuthor(), vsn.getVersionID(), vsn.getMessage(), focusNodes, 
-       editNodes, deliveryNodes);
+    TreeMap<String, Integer> temerityNodes = 
+      sConnection.createTemerityNodes(versionID, projectName, focusNodes);
     
+    Integer noteID = null;
+    {
+      ArrayList<ShotgunEntityBundle> bundles = new ArrayList<ShotgunEntityBundle>();
+      bundles.add(new ShotgunEntityBundle(ShotgunEntity.Version, versionID));
+      if (sNoteOnEntity)
+        bundles.add(new ShotgunEntityBundle(shotgunEntity, entityID));
+      if (sNoteOnTask)
+        bundles.add(new ShotgunEntityBundle(ShotgunEntity.Task, taskID));
+      
+      String noteTitle = 
+        "Version (" + vsn.getVersionID() + ") of Task (" + taskName + ") in Project " +
+        "(" + projectName + ") submitted for approval.";
+      noteID = sConnection.createNote(projectName, noteTitle, vsn.getMessage(), vsn.getAuthor(), bundles);
+    }
+
+    sConnection.setLatestSubmittedVersion(shotgunEntity, entityID, versionID);
+
     sConnection.setStatusOnTask(taskID, ShotgunTaskStatus.PendingReview);
+
+    if (masterFocusNode == null && !focusNodes.isEmpty())
+      masterFocusNode = focusNodes.firstKey();
     
-//    if (!thumbNodes.isEmpty()) {
-//      String thumbNode = thumbNodes.firstKey();
-//      NodeVersion tVer = thumbNodes.get(thumbNode);
-//      uploadThumbnail(new ShotgunEntityBundle(ShotgunEntity.Version, versionID), tVer, mclient);
-//    }
+    // This should be correct now?
+    if (masterFocusNode != null) {
+      String thumbName = null;
+      for (String each : thumbToFocus.keySet()) {
+        if (thumbToFocus.get(each).equals(masterFocusNode)) {
+          thumbName = each;
+          break;
+        }
+      }
+      
+      NodeVersion focusVer = focusNodes.get(masterFocusNode);
+
+      if (focusVer.getPrimarySequence().getFilePattern().getSuffix().equals("mov") || 
+          focusVer.getPrimarySequence().getFilePattern().getSuffix().equals("avi")) {
+        
+        ShotgunEntityBundle ebundle = new ShotgunEntityBundle(ShotgunEntity.Version, versionID);
+
+        uploadFile(ebundle, focusVer, mclient, "sg_preview_qt", "v"+focusVer.getVersionID().toString());
+      }
+      
+      if (thumbName != null) {
+        NodeVersion thumb = thumbNodes.get(thumbName);
+        ShotgunEntityBundle verBundle = new ShotgunEntityBundle(ShotgunEntity.Version, versionID);
+        uploadThumbnail(verBundle, thumb, mclient);
+
+        if (sThumbOnEntity) {
+          ShotgunEntityBundle submitBundle = new ShotgunEntityBundle(shotgunEntity, entityID);
+          uploadThumbnail(submitBundle, thumb, mclient);
+        }
+      }
+    }
     
+    // This should be correct
+    for (String thumbName : thumbToFocus.keySet() ) {
+      NodeVersion thumb = thumbNodes.get(thumbName);
+      String focusName = thumbToFocus.get(thumbName);
+      Integer nodeID = temerityNodes.get(focusName);
+      ShotgunEntityBundle nodeBundle = new ShotgunEntityBundle(ShotgunEntity.TemerityNode, nodeID);
+      uploadThumbnail(nodeBundle, thumb, mclient);
+    }
   }
   
   
@@ -368,7 +513,8 @@ class ShotgunConnectionExt
     TreeMap<String,NodeVersion> thumbNodes,
     TreeMap<String,NodeVersion> focusNodes, 
     TreeMap<String,NodeVersion> editNodes,
-    TreeMap<String,NodeVersion> deliveryNodes, 
+    TreeMap<String,NodeVersion> deliveryNodes,
+    TreeSet<String> masterFocusNodes,
     MasterMgrLightClient mclient
   )
     throws PipelineException 
@@ -384,7 +530,11 @@ class ShotgunConnectionExt
       focusNodes.put(nodeName, vsn);
       if(currentThumb != null) {
         thumbToFocus.put(currentThumb, nodeName);
-        thumb = null;
+      }
+      BaseAnnotation annot = tAnnots.get(NodePurpose.Focus.toString());
+      if (annot.getParam("Master") != null) {
+        if ((Boolean) annot.getParamValue("Master"))
+          masterFocusNodes.add(nodeName);
       }
     }
     else if (tAnnots.containsKey(NodePurpose.Thumbnail.toString())) {
@@ -410,9 +560,21 @@ class ShotgunConnectionExt
       if(!link.isLocked()) {
         NodeVersion source = mclient.getCheckedInVersion(link.getName(), link.getVersionID());
         mineSubmitTree(submitData, source, thumb, thumbToFocus, thumbNodes, focusNodes, 
-                       editNodes, deliveryNodes, mclient);
+                       editNodes, deliveryNodes, masterFocusNodes, mclient);
       }
     }
+  }
+  
+  private String
+  getApproveNode
+  (
+    String editNode,
+    NodeVersion nodeVersion
+  )
+  {
+    String toReturn = null;
+    
+    return toReturn;
   }
 
   /**
@@ -627,23 +789,23 @@ class ShotgunConnectionExt
   ) 
     throws PipelineException
   {
-    String project = data[0];
+    String project  = data[0];
     String taskName = data[1]; 
     String taskType = data[2]; 
     
     
-    String rootProjectName = data[0];
-    String rootTaskName = data[1];
-    String rootTaskType = data[2];
+    String rootProject  = submitData[0];
+    String rootTaskName = submitData[1];
+    String rootTaskType = submitData[2];
 
 
     if(rootTaskName != null) {
       if(!taskName.equals(rootTaskName) || !taskType.equals(rootTaskType)
-          || !project.equals(rootProjectName)) {
+          || !project.equals(rootProject)) {
         throw new PipelineException
           ("Cannot update Shotgun for task (" + project + ":" + 
             taskName + ":" +  taskType + ") because the root node of the check-in belongs " +
-            "to a different task (" + rootProjectName + ":" + rootTaskName + ":" + 
+            "to a different task (" + rootProject + ":" + rootTaskName + ":" + 
             rootTaskType + ")!  Please limit a check-in operation to nodes which share " +
             "the same task.");
       }
@@ -682,13 +844,60 @@ class ShotgunConnectionExt
     args.add(curlUrl);
     TreeMap<String, String> env = client.getToolsetEnvironment
       (PackageInfo.sPipelineUser, "default", client.getDefaultToolsetName());
+    
+    for (String arg : args) {
+      LogMgr.getInstance().log(Kind.Ext, Level.Info, arg + " ");
+    }
+
     SubProcessLight proc = 
       new SubProcessLight("Curl-Upload", "curl", args, env, 
                           fileName.getParentPath().toFile());
-    proc.start();
+    proc.run();
   }
   
-  
+  private void
+  uploadFile
+  (
+    ShotgunEntityBundle bundle,
+    NodeVersion thumbVsn,
+    MasterMgrLightClient client, 
+    String fieldName,
+    String displayName
+  ) 
+  throws PipelineException
+  {
+    String curlUrl = sHostname + "upload/api2_upload_file";
+    Path fileName = new Path(new Path(new Path(
+      PackageInfo.sRepoPath, 
+      thumbVsn.getName()), 
+      thumbVsn.getVersionID().toString()), 
+      thumbVsn.getPrimarySequence().getPath(0));
+
+    ArrayList<String> args = new ArrayList<String>();
+    args.add("-F");
+    args.add("entity_type=" + bundle.getEntity().toEntity());
+    args.add("-F");
+    args.add("entity_id=" + bundle.getID().toString());
+    args.add("-F");
+    args.add("field_name=" + fieldName);
+    args.add("-F");
+    args.add("display_name=" + displayName);
+    args.add("-F");
+    args.add("file=@" + fileName.toString());
+    args.add(curlUrl);
+    TreeMap<String, String> env = client.getToolsetEnvironment
+    (PackageInfo.sPipelineUser, "default", client.getDefaultToolsetName());
+
+    for (String arg : args) {
+      LogMgr.getInstance().log(Kind.Ext, Level.Info, arg + " ");
+    }
+
+    SubProcessLight proc = 
+      new SubProcessLight("Curl-Upload-File", "curl", args, env, 
+        fileName.getParentPath().toFile());
+    proc.run();
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
@@ -700,6 +909,9 @@ class ShotgunConnectionExt
   public static final String aShotgunUser   = "ShotgunUser";
   public static final String aShotgunApiKey = "ShotgunApiKey";
   public static final String aShotContainer = "ShotContainer";
+  public static final String aNoteOnTask    = "NoteOnTask";
+  public static final String aNoteOnEntity  = "NoteOnEntity";
+  public static final String aThumbOnEntity = "ThumbOnEntity";
   
   public static final String aProjectName     = "ProjectName";
   public static final String aEntityType      = "EntityType";
@@ -718,4 +930,14 @@ class ShotgunConnectionExt
   private static ShotgunConnection sConnection = new ShotgunConnection(false);
   private static String sHostname;
   private static Object sLock = new Object();
+  private static String sSubmitDir = "submit";
+  private static String sApproveDir = "approve";
+  private static String sSubmitSuffix = "_submit";
+  private static String sApproveSuffix = "_approve";
+  private static String sTaskAnnotName = "Task";
+  
+  private static boolean sNoteOnTask;
+  private static boolean sNoteOnEntity;
+  private static boolean sThumbOnEntity;
+
 }

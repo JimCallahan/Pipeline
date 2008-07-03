@@ -1,3 +1,5 @@
+// $Id: TemerityNullSerializer.java,v 1.3 2008/07/03 19:50:45 jesse Exp $
+
 /*
  * Copyright 1999,2005 The Apache Software Foundation.
  * 

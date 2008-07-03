@@ -1,11 +1,12 @@
+// $Id: ShotgunConnection.java,v 1.4 2008/07/03 19:50:45 jesse Exp $
+
 package us.temerity.pipeline.plugin.ShotgunConnectionExt.v2_4_1;
 
-import java.net.URL;
+import java.net.*;
 import java.util.*;
 
-import org.apache.xmlrpc.XmlRpcException;
-import org.apache.xmlrpc.client.XmlRpcClient;
-import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
+import org.apache.xmlrpc.*;
+import org.apache.xmlrpc.client.*;
 
 import us.temerity.pipeline.*;
 
@@ -45,7 +46,7 @@ import us.temerity.pipeline.*;
  *     </ul>
  *     <li>Version Entity
  *     <ul>
- *       <li>TM Task - A Link to a Task.
+ *       <li>Task - A Link to a Task.
  *       <li>TM Focus Nodes - A Text Field (that will hold multiple node names and versions)
  *       <li>TM Edit Nodes - A Text Field (that will hold multiple node names and versions)
  *       <li>TM VersionID = A Text Field that holds the VersionID
@@ -572,7 +573,47 @@ class ShotgunConnection
 
     return toReturn;
   }
+
   
+  public Integer
+  getVersionID
+  (
+    Integer shotgunTaskID,
+    VersionID temerityVersionID
+  )
+  throws PipelineException
+  {
+    checkConnection();
+
+    Integer toReturn = null;
+    String columns[] = {"id"};
+
+    ArrayList<Object[]> filters = new ArrayList<Object[]>();
+    {
+      TreeMap<String, Object> entityMap = new TreeMap<String, Object>();
+      entityMap.put("type", ShotgunEntity.Task.toEntity());
+      entityMap.put("id", shotgunTaskID);
+      Object filter[] = {"sg_task", "is", entityMap};
+      filters.add(filter);
+    }
+    {
+      String filter[] = {"sg_tm_versionid", "is", temerityVersionID.toString()};
+      filters.add(filter);
+    }
+
+    ArrayList<Map<String, Object>> results =
+      getEntity(ShotgunEntity.Version, filters, columns);
+    if (results.size() > 1)
+      throw new PipelineException
+        ("There were multiple versions in Shotgun on the task of id " + shotgunTaskID.toString() + " with the sg_tm_versionid of " + temerityVersionID.toString() + ".  This needs " +
+         "to be corrected if Shotgun is going to be used with Pipeline.");
+    for (Map<String, Object> result : results) {
+      toReturn = (Integer) result.get("id");
+    }
+
+    return toReturn;
+  }
+
   
   
   
@@ -615,7 +656,7 @@ class ShotgunConnection
   }
 
   /**
-   * Get the information about a task entity necessary to add it as a filter or a link.
+   * Get the information about an artist entity necessary to add it as a filter or a link.
    * 
    * @param artist
    *   The artist name.
@@ -732,6 +773,12 @@ class ShotgunConnection
   
   /**
    * Create a new scene, with the given name, in a project.
+   * @param project
+   *   The name of the project. 
+   * @param scene 
+   *   The name of the scene.
+   * @return 
+   *   The Unique ID of the scene.
    */
   public Integer 
   createScene
@@ -794,12 +841,16 @@ class ShotgunConnection
         return toReturn;
     }
     
+    Integer sceneID = getSceneID(project, scene);
+    if (sceneID == null) 
+      sceneID = createScene(project, scene);
+    
     TreeMap <String, Object> someMap = new TreeMap<String, Object>();
     someMap.put("project_names", project);
     {
       TreeMap<String, Object> entityMap = new TreeMap<String, Object>();
       entityMap.put("type", ShotgunEntity.Scene.toEntity());
-      entityMap.put("id", getSceneID(project, scene));
+      entityMap.put("id", sceneID);
       someMap.put("sg_scene", entityMap);
     }
     someMap.put("code", join(scene, shot));
@@ -1004,7 +1055,10 @@ class ShotgunConnection
     String checkinMessage,
     TreeMap<String, NodeVersion> focusNodes,
     TreeMap<String, NodeVersion> editNodes,
-    TreeMap<String, NodeVersion> deliveryNodes
+    TreeMap<String, NodeVersion> deliveryNodes,
+    String submitNode,
+    String approveNode,
+    BuilderID builderID
   )
     throws PipelineException
   {
@@ -1068,6 +1122,27 @@ class ShotgunConnection
       }
       someMap.put(aDeliveryNodesField, deliver);
     }
+    
+    String cmd = "<a class=\"temerity_link\" href=\"javascript:Temerity.bin.plbuilder('--collection=" + builderID.getName();
+    cmd += " --versionid=" + builderID.getVersionID().toString();
+    cmd += " --vendor=" + builderID.getVendor();
+    cmd += " --builder-name=" + builderID.getBuilderName();
+    cmd += " --SubmitNode=" + submitNode;
+    cmd += " --SubmitVersion=" + versionID.toString();
+    cmd += " --ApproveNode=" + approveNode;
+    cmd += "')\">[publish]</a>";
+    
+    someMap.put(aApprovalLinkField, cmd);
+    
+    String builderParam = "--collection=" + builderID.getName();
+    builderParam += " --versionid=" + builderID.getVersionID().toString();
+    builderParam += " --vendor=" + builderID.getVendor();
+    builderParam += " --builder-name=" + builderID.getBuilderName();
+    builderParam += " --SubmitNode=" + submitNode;
+    builderParam += " --SubmitVersion=" + versionID.toString();
+    builderParam += " --ApproveNode=" + approveNode;
+    
+    someMap.put(aBuilderParamField, builderParam);
 
     try {
       toReturn = createEntity(ShotgunEntity.Version, someMap);
@@ -1078,9 +1153,187 @@ class ShotgunConnection
        "named (" + versionName +").\n" + 
        ex.getMessage());
     }
+    
     return toReturn;
   }
   
+  public Integer
+  createTaskVersion
+  (
+    String project,
+    Integer taskID,
+    String artist,
+    VersionID versionID,
+    String checkinMessage,
+    TreeMap<String, NodeVersion> focusNodes,
+    TreeMap<String, NodeVersion> editNodes,
+    TreeMap<String, NodeVersion> deliveryNodes
+  )
+  throws PipelineException
+  {
+    checkConnection();
+    String taskName = getTaskName(taskID);
+    String versionName = join(taskName, versionID.toString());
+
+    Integer toReturn = getTaskVersionID(taskID, versionName);
+
+    if (toReturn != null) {
+      if (pExceptionOnDup)
+        throw new PipelineException
+        ("There is already a version in Shotgun on the task (" + taskID +") with the name " +
+          "(" + versionName +").  Another one cannot be created.");
+      else
+        return toReturn;
+    }
+
+    TreeMap <String, Object> someMap = new TreeMap<String, Object>();
+    someMap.put("project_names", project);
+    {
+      TreeMap<String, Object> entityMap = new TreeMap<String, Object>();
+      entityMap.put("type", ShotgunEntity.Task.toEntity());
+      entityMap.put("id", taskID);
+      someMap.put(aVersionTaskField, entityMap);
+    }
+    {
+      ShotgunEntityBundle entityMap = getTaskEntity(taskID);
+      someMap.put("entity", entityMap.formatForShotgun());
+    }
+    {
+      ShotgunEntityBundle entityMap = getArtistEntity(artist);
+      someMap.put("user", entityMap.formatForShotgun());
+    }
+    someMap.put("code", versionName);
+    someMap.put("description", checkinMessage);
+    someMap.put(aVersionIDField, versionID.toString());
+    String focus = "";
+    for (String node : focusNodes.keySet()) {
+      NodeVersion ver = focusNodes.get(node);
+      focus += createCheckedInLink(node, ver.getPrimarySequence().toString(), ver.getVersionID()) + " ";
+    }
+    someMap.put(aFocusNodesField, focus);
+    String edit= "";
+    for (String node : editNodes.keySet()) {
+      NodeVersion ver = editNodes.get(node);
+      edit += createCheckedInLink(node, ver.getPrimarySequence().toString(), ver.getVersionID()) + " ";
+    }
+    someMap.put(aEditNodesField, edit);
+
+    if (deliveryNodes != null && !deliveryNodes.isEmpty()) {
+      String deliver = "";
+      for (String node : deliveryNodes.keySet()) {
+        NodeVersion ver = deliveryNodes.get(node);
+        Path fileName = new Path(new Path(new Path(
+          PackageInfo.sRepoPath,
+          ver.getName()),
+          ver.getVersionID().toString()),
+          ver.getPrimarySequence().getPath(0));
+        deliver = fileName.toString() + " ";
+      }
+      someMap.put(aDeliveryNodesField, deliver);
+    }
+
+    try {
+      toReturn = createEntity(ShotgunEntity.Version, someMap);
+    }
+    catch ( Exception ex ) {
+      throw new PipelineException
+      ("An error occured while attempting to create a version on the task (" + taskID + ") " +
+        "named (" + versionName +").\n" +
+        ex.getMessage());
+    }
+    
+    return toReturn;
+  }
+  
+  public Integer
+  createNote
+  (
+    String project,
+    String title,
+    String content,
+    String artist,
+    ArrayList<ShotgunEntityBundle> links
+  )
+    throws PipelineException
+  {
+    checkConnection();
+    
+    TreeMap <String, Object> someMap = new TreeMap<String, Object>();
+    someMap.put("project_names", project);
+    someMap.put("subject", title);
+    someMap.put("content", content);
+    {
+      ShotgunEntityBundle entityMap = getArtistEntity(artist);
+      someMap.put("user", entityMap.formatForShotgun());
+    }
+    {
+      ArrayList<Object> noteLinks = new ArrayList<Object>();
+      for (ShotgunEntityBundle seb : links){
+        noteLinks.add(seb.formatForShotgun());
+      }
+      someMap.put("note_links", noteLinks);     
+    }
+
+    
+    Integer toReturn = null;
+    try {
+      toReturn = createEntity(ShotgunEntity.Note, someMap);
+    }
+    catch ( Exception ex ) {
+      throw new PipelineException
+      ("An error occured while attempting to create a note.\n" +
+       ex.getMessage());
+    }
+    return toReturn;
+  }
+  
+  /**
+   * Creates the temerity nodes
+   * @param versionID
+   *   The VersionID the nodes are being created for.
+   * @param projectName
+   *   The name of the project
+   * @param focusNodes
+   *   The focus nodes
+   * @return
+   *   A mapping of the name of the focus node to the Shotgun ID for each Temeruty Node.
+   * @throws PipelineException
+   */
+  public TreeMap<String, Integer>
+  createTemerityNodes
+  (
+    Integer versionID,
+    String projectName,
+    TreeMap<String, NodeVersion> focusNodes
+  )
+    throws PipelineException
+  {
+    TreeMap<String, Integer> toReturn = new TreeMap<String, Integer>();
+    for (String node : focusNodes.keySet()) {
+      NodeVersion ver = focusNodes.get(node);
+      TreeMap <String, Object> someMap = new TreeMap<String, Object>();
+      someMap.put("project_names", projectName);
+      {
+        TreeMap<String, Object> entityMap = new TreeMap<String, Object>();
+        entityMap.put("type", ShotgunEntity.Version.toEntity());
+        entityMap.put("id", versionID);
+        someMap.put(aVersionField, entityMap);
+      }
+      someMap.put("code", createCheckedInLink(node, 
+                                              ver.getPrimarySequence().toString(), 
+                                              ver.getVersionID()) );
+      try {
+        Integer id = createEntity(ShotgunEntity.TemerityNode, someMap);
+        toReturn.put(node, id);
+      }
+      catch ( Exception ex ) {
+        throw new PipelineException
+          ("An error occured while attempting to create a TemerityNode on the version " +
+           "(" + versionID + ") " + ex.getMessage());
+      }
+    }
+    return toReturn;
+  }
 
   
   @SuppressWarnings("unchecked")
@@ -1136,7 +1389,7 @@ class ShotgunConnection
     checkConnection();
     
     TreeMap<String, Object> values = new TreeMap<String, Object>();
-    values.put(aSubmitNodeField, submitNode);
+    values.put(aSubmitNodeField, createWorkingLink(submitNode, editNodes.keySet()));
     String editString = "";
     for (String node : editNodes.keySet()) {
       NodeVersion ver = editNodes.get(node);
@@ -1185,6 +1438,35 @@ class ShotgunConnection
     }
   }
   
+  public void
+  setLatestSubmittedVersion
+  (
+    ShotgunEntity entity,
+    Integer entityID,
+    Integer versionID
+  )
+    throws PipelineException
+  {
+    checkConnection();
+    
+    TreeMap<String, Object> values = new TreeMap<String, Object>();
+
+    TreeMap<String, Object> entityMap = new TreeMap<String, Object>();
+    entityMap.put("type", ShotgunEntity.Version.toEntity());
+    entityMap.put("id", versionID);
+
+    values.put(aLatestSubmittedVerField, entityMap);
+    try {
+      setEntityValues(entity, entityID, values);
+    }
+    catch (Exception ex) {
+      throw new PipelineException
+        ("Error when attempting to set the latest submiited version on the entity " +
+         "(" + entityID+ ") of type (" + entity.toString() + ").\n" + ex.getMessage());
+    }
+
+  }
+  
   /**
    * Sets the approve builder for the specified task.
    * <p>
@@ -1207,7 +1489,7 @@ class ShotgunConnection
   {
     checkConnection();
     String cmd = "--collection=" + builderID.getName();
-    cmd += " --version-id=" + builderID.getVersionID().toString();
+    cmd += " --versionid=" + builderID.getVersionID().toString();
     cmd += " --vendor=" + builderID.getVendor();
     cmd += " --builder-name=" + builderID.getBuilderName();
     
@@ -1254,6 +1536,28 @@ class ShotgunConnection
          ex.getMessage());
     }
   }
+  
+  public void
+  setStatusOnVersion
+  (
+    Integer versionID,
+    ShotgunVersionStatus status
+  )
+  throws PipelineException
+  {
+    checkConnection();
+
+    TreeMap<String, Object> values = new TreeMap<String, Object>();
+    values.put("sg_status_list", status.toKey());
+    try {
+      setEntityValues(ShotgunEntity.Version, versionID, values);
+    } catch ( Exception ex ) {
+      throw new PipelineException
+      ("Error when attempting to set the status on the version (" + versionID + ").\n" +
+        ex.getMessage());
+    }
+  }
+
   
   private void 
   setEntityValues
@@ -1421,6 +1725,33 @@ class ShotgunConnection
     return toReturn;
   }
   
+  public TreeSet<Integer>
+  getVersionTemerityNodes
+  (
+    Integer versionID  
+  )
+    throws PipelineException
+  {
+    checkConnection();
+    
+    TreeSet<Integer> toReturn = new TreeSet<Integer>();
+
+    String columns[] = {"id"};
+    
+    ArrayList<Object[]> filters = new ArrayList<Object[]>();
+    {
+      Object filter[] = {"sg_version", "is", versionID};
+      filters.add(filter);
+    }
+    ArrayList<Map<String, Object>> results = getEntity(ShotgunEntity.TemerityNode, filters, columns);
+    for (Map<String, Object> result : results) {
+      Integer id = (Integer) result.get("id");
+      toReturn.add(id);
+    }
+    
+    return toReturn;
+  }
+  
   @SuppressWarnings("unchecked")
   private ArrayList<Map<String, Object>> 
   getEntity
@@ -1514,7 +1845,23 @@ class ShotgunConnection
   )
   {
     String toReturn = "<a class=\"temerity_link\" href=\"javascript:Temerity.bin.plremote('working --select=" + 
-      nodeName + "')\">" + fileSeq + "</a>";
+      nodeName + " --highlight=" + nodeName + "')\">" + fileSeq + "</a>";
+    return toReturn;
+  }
+  
+  private String
+  createWorkingLink
+  (
+    String nodeName,
+    Set<String> highlight
+  )
+  {
+    String toReturn = "<a class=\"temerity_link\" href=\"javascript:Temerity.bin.plremote('working --select=" + 
+      nodeName;
+    for (String node : highlight) {
+      toReturn += " --highlight=" + node;
+    }
+    toReturn += "')\">" + nodeName + "</a>";
     return toReturn;
   }
   
@@ -1523,15 +1870,20 @@ class ShotgunConnection
   
   private boolean pExceptionOnDup;
   
+  public static final String aVersionField        = "sg_version";
   public static final String aFocusNodesField     = "sg_tm_focus_nodes";
   public static final String aVersionIDField      = "sg_tm_versionid";
   public static final String aSubmitNodeField     = "sg_tm_submit_node";
   public static final String aApproveNodeField    = "sg_tm_approve_node";
   public static final String aApproveBuilderField = "sg_tm_approve_builder";
-  public static final String aVersionTaskField    = "sg_tm_task";
+  public static final String aVersionTaskField    = "sg_task";
   public static final String aEditNodesField      = "sg_tm_edit_nodes";
   public static final String aDeliveryNodesField  = "sg_tm_proxy_file_path";
-  
+  public static final String aApprovalLinkField   = "sg_tm_approval_link";
+  public static final String aLatestSubmittedVerField = "sg_tm_latest_submitted_version";
+  public static final String aLatestApprovedVersionField = "sg_tm_latest_approved_version";
+  public static final String aBuilderParamField   = "sg_tm_builder_params";
+
   private TreeMap<String, Integer> pProjectIDCache;
   
   private DoubleMap<String, String, Integer> pSceneIDCache;

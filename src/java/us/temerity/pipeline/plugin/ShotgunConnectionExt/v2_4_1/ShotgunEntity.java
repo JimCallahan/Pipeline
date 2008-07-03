@@ -1,3 +1,5 @@
+// $Id: ShotgunEntity.java,v 1.2 2008/07/03 19:50:45 jesse Exp $
+
 package us.temerity.pipeline.plugin.ShotgunConnectionExt.v2_4_1;
 
 /*------------------------------------------------------------------------------------------*/
@@ -10,12 +12,14 @@ package us.temerity.pipeline.plugin.ShotgunConnectionExt.v2_4_1;
 public enum 
 ShotgunEntity
 {
-  Project, Shot, Scene, Task, Version, Asset, Sequence, User;
+  Project, Shot, Scene, Task, Version, Asset, Sequence, User, TemerityNode, Note;
   
   @Override
   public String 
   toString()
   {
+    if (this == TemerityNode)
+      return "temerity_node";
     return super.toString().toLowerCase();
   }
   
