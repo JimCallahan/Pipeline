@@ -1,9 +1,6 @@
-// $Id: QueueGetJobReq.java,v 1.1 2004/08/22 22:05:43 jim Exp $
+// $Id: QueueGetJobReq.java,v 1.2 2008/07/03 19:50:02 jesse Exp $
 
 package us.temerity.pipeline.message;
-
-import us.temerity.pipeline.*; 
-import us.temerity.pipeline.core.*; 
 
 import java.io.*;
 import java.util.*;
@@ -13,7 +10,7 @@ import java.util.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A request to get the job with the given ID.
+ * A request to get the jobs with the given IDs.
  */
 public
 class QueueGetJobReq
@@ -26,6 +23,21 @@ class QueueGetJobReq
   /** 
    * Constructs a new request. <P> 
    * 
+   * @param jobIDs
+   *   The list of unique job identifiers.
+   */
+  public
+  QueueGetJobReq
+  (
+   Set<Long> jobIDs
+  )
+  { 
+    pJobIDs = new TreeSet<Long>(jobIDs);
+  }
+  
+  /** 
+   * Constructs a new request. <P> 
+   * 
    * @param jobID
    *   The unique job identifier.
    */
@@ -35,7 +47,8 @@ class QueueGetJobReq
    long jobID
   )
   { 
-    pJobID = jobID;
+    pJobIDs = new TreeSet<Long>();
+    pJobIDs.add(jobID);
   }
 
 
@@ -47,10 +60,10 @@ class QueueGetJobReq
   /**
    * Get the unique job identifier. 
    */
-  public long
-  getJobID() 
+  public Set<Long>
+  getJobIDs() 
   {
-    return pJobID; 
+    return Collections.unmodifiableSet(pJobIDs); 
   }
 
   
@@ -68,9 +81,9 @@ class QueueGetJobReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The unique job identifier. 
+   * The unique job identifiers. 
    */ 
-  private long  pJobID; 
+  private TreeSet<Long>  pJobIDs; 
 
 }
 

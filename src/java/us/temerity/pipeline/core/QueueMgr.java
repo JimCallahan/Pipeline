@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.104 2008/06/29 17:46:16 jim Exp $
+// $Id: QueueMgr.java,v 1.105 2008/07/03 19:50:01 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -3956,7 +3956,7 @@ class QueueMgr
   }
 
   /**
-   * Get the job with the given ID. <P> 
+   * Get the jobs with the given IDs. <P> 
    * 
    * @param req 
    *   The job request.
@@ -3966,7 +3966,7 @@ class QueueMgr
    *   <CODE>FailureRsp</CODE> if unable to lookup the job.
    */ 
   public Object
-  getJob
+  getJobs
   (
    QueueGetJobReq req
   )
@@ -3976,13 +3976,18 @@ class QueueMgr
     synchronized(pJobs) {
       timer.resume();
       try {
-	Long jobID = req.getJobID();
-	QueueJob job = pJobs.get(jobID);	
-	if(job == null) 
-	  throw new PipelineException
-	    ("No job (" + jobID + ") exists!");
-	
-	return new QueueGetJobRsp(timer, job);
+        Set<Long> jobIDs = req.getJobIDs();
+        TreeMap<Long, QueueJob> toReturn = new TreeMap<Long, QueueJob>();
+        for (Long jobID : jobIDs) {
+          QueueJob job = pJobs.get(jobID);
+          if(job == null) 
+            throw new PipelineException
+              ("No job (" + jobID + ") exists!");
+          toReturn.put(jobID, job);
+        }
+	if (toReturn.size() == 1)
+	  return new QueueGetJobRsp(timer, toReturn.get(toReturn.firstKey()));
+	return new QueueGetJobRsp(timer, toReturn);
       }
       catch(PipelineException ex) {
 	return new FailureRsp(timer, ex.getMessage());	  
@@ -3991,7 +3996,7 @@ class QueueMgr
   }
 
   /**
-   * Get information about the current status of a job in the queue. <P> 
+   * Get information about the current status of jobs in the queue. <P> 
    * 
    * @param req 
    *   The job info request.
@@ -4001,7 +4006,7 @@ class QueueMgr
    *   <CODE>FailureRsp</CODE> if unable to lookup the job info.
    */ 
   public Object
-  getJobInfo
+  getJobInfos
   (
    QueueGetJobInfoReq req
   )
@@ -4011,13 +4016,18 @@ class QueueMgr
     synchronized(pJobInfo) {
       timer.resume();
       try {
-	Long jobID = req.getJobID();
-	QueueJobInfo info = pJobInfo.get(jobID);
-	if(info == null) 
-	  throw new PipelineException
-	    ("No information is available for job (" + jobID + ")!");
-
-	return new QueueGetJobInfoRsp(timer, info);
+        Set<Long> jobIDs = req.getJobIDs();
+        TreeMap<Long, QueueJobInfo> toReturn = new TreeMap<Long, QueueJobInfo>();
+        for (Long jobID : jobIDs) {
+          QueueJobInfo info = pJobInfo.get(jobID);
+          if(info == null) 
+            throw new PipelineException
+              ("No information is available for job (" + jobID + ") exists!");
+          toReturn.put(jobID, info);
+        }
+        if (toReturn.size() == 1)
+          return new QueueGetJobInfoRsp(timer, toReturn.get(toReturn.firstKey()));
+        return new QueueGetJobInfoRsp(timer, toReturn);
       }
       catch(PipelineException ex) {
 	return new FailureRsp(timer, ex.getMessage());	  

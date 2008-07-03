@@ -1,4 +1,4 @@
-// $Id: QueueMgrClient.java,v 1.45 2008/03/07 13:25:21 jim Exp $
+// $Id: QueueMgrClient.java,v 1.46 2008/07/03 19:50:01 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -1575,6 +1575,37 @@ class QueueMgrClient
       return null;
     }        
   }
+  
+  /**
+   * Get the jobs with the given IDs.
+   * 
+   * @param jobIDs
+   *   The set of unique job identifiers.
+   * 
+   * @throws PipelineException
+   *   If no jobs exists with the given IDs.
+   */ 
+  public synchronized Map<Long, QueueJob>
+  getJobs
+  (
+   Set<Long> jobIDs
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    QueueGetJobReq req = new QueueGetJobReq(jobIDs);
+
+    Object obj = performTransaction(QueueRequest.GetJob, req);
+    if(obj instanceof QueueGetJobRsp) {
+      QueueGetJobRsp rsp = (QueueGetJobRsp) obj;
+      return rsp.getJobs();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }        
+  }
 
   /**
    * Get information about the current status of a job in the queue. <P> 
@@ -1600,6 +1631,37 @@ class QueueMgrClient
     if(obj instanceof QueueGetJobInfoRsp) {
       QueueGetJobInfoRsp rsp = (QueueGetJobInfoRsp) obj;
       return rsp.getJobInfo();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }        
+  }
+  
+  /**
+   * Get information about the current status of jobs in the queue. <P> 
+   * 
+   * @param jobIDs
+   *   The unique job identifiers.
+   * 
+   * @throws PipelineException
+   *   If no jobs exists with the given IDs.
+   */ 
+  public synchronized Map<Long, QueueJobInfo>
+  getJobInfos
+  (
+    Set<Long> jobIDs
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    QueueGetJobInfoReq req = new QueueGetJobInfoReq(jobIDs);
+
+    Object obj = performTransaction(QueueRequest.GetJobInfo, req);
+    if(obj instanceof QueueGetJobInfoRsp) {
+      QueueGetJobInfoRsp rsp = (QueueGetJobInfoRsp) obj;
+      return rsp.getJobInfos();
     }
     else {
       handleFailure(obj);

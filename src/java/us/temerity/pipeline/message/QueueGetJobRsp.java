@@ -1,12 +1,10 @@
-// $Id: QueueGetJobRsp.java,v 1.3 2005/01/22 06:10:10 jim Exp $
+// $Id: QueueGetJobRsp.java,v 1.4 2008/07/03 19:50:02 jesse Exp $
 
 package us.temerity.pipeline.message;
 
-import us.temerity.pipeline.*; 
-import us.temerity.pipeline.core.*; 
-
-import java.io.*;
 import java.util.*;
+
+import us.temerity.pipeline.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   Q U E U E   G E T   J O B   R S P                                                      */
@@ -29,8 +27,37 @@ class QueueGetJobRsp
    * @param timer 
    *   The timing statistics for a task.
    * 
-   * @param info
-   *   The current status information of a job.
+   * @param jobs
+   *   The list of jobs indexed by jobID.
+   */ 
+  public
+  QueueGetJobRsp
+  (
+   TaskTimer timer, 
+   TreeMap<Long, QueueJob> jobs
+  )
+  { 
+    super(timer);
+
+    if(jobs == null || jobs.isEmpty()) 
+      throw new IllegalArgumentException("The jobs cannot be (null) or empty!");
+    pJobs = new TreeMap<Long, QueueJob>(jobs);
+
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Net, LogMgr.Level.Finest,
+       "QueueMgr.getJobs():\n  " + getTimer());
+    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest))
+      LogMgr.getInstance().flush();
+  }
+  
+  /** 
+   * Constructs a new response.
+   * 
+   * @param timer 
+   *   The timing statistics for a task.
+   * 
+   * @param job
+   *   The queue job.
    */ 
   public
   QueueGetJobRsp
@@ -43,7 +70,8 @@ class QueueGetJobRsp
 
     if(job == null) 
       throw new IllegalArgumentException("The job cannot be (null)!");
-    pJob = job;
+    pJobs = new TreeMap<Long, QueueJob>();
+    pJobs.put(job.getJobID(), job);
 
     LogMgr.getInstance().log
       (LogMgr.Kind.Net, LogMgr.Level.Finest,
@@ -59,12 +87,22 @@ class QueueGetJobRsp
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Gets the queue job. 
+   * Gets the first queue job. 
    */
   public QueueJob
   getJob() 
   {
-    return pJob;
+    Long id = pJobs.firstKey();
+    return pJobs.get(id);
+  }
+  
+  /**
+   * Gets the queue jobs. 
+   */
+  public Map<Long, QueueJob>
+  getJobs() 
+  {
+    return Collections.unmodifiableMap(pJobs);
   }
   
 
@@ -84,7 +122,7 @@ class QueueGetJobRsp
   /**
    * The queue job. 
    */ 
-  private QueueJob  pJob;
+  private TreeMap<Long, QueueJob>  pJobs;
 
 }
   

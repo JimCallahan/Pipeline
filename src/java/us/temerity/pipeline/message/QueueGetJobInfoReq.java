@@ -1,4 +1,4 @@
-// $Id: QueueGetJobInfoReq.java,v 1.1 2004/08/22 22:05:43 jim Exp $
+// $Id: QueueGetJobInfoReq.java,v 1.2 2008/07/03 19:50:01 jesse Exp $
 
 package us.temerity.pipeline.message;
 
@@ -13,7 +13,7 @@ import java.util.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A request to get information about the current status of a job in the queue. <P> 
+ * A request to get information about the current status of jobs in the queue. <P> 
  */
 public
 class QueueGetJobInfoReq
@@ -26,6 +26,21 @@ class QueueGetJobInfoReq
   /** 
    * Constructs a new request. <P> 
    * 
+   * @param jobIDs
+   *   The unique job identifiers.
+   */
+  public
+  QueueGetJobInfoReq
+  (
+    Set<Long> jobIDs
+   )
+   { 
+     pJobIDs = new TreeSet<Long>(jobIDs);
+  }
+  
+  /** 
+   * Constructs a new request. <P> 
+   * 
    * @param jobID
    *   The unique job identifier.
    */
@@ -35,7 +50,8 @@ class QueueGetJobInfoReq
    long jobID
   )
   { 
-    pJobID = jobID;
+    pJobIDs = new TreeSet<Long>();
+    pJobIDs.add(jobID);
   }
 
 
@@ -47,10 +63,10 @@ class QueueGetJobInfoReq
   /**
    * Get the unique job identifier. 
    */
-  public long
-  getJobID() 
+  public Set<Long>
+  getJobIDs() 
   {
-    return pJobID; 
+    return Collections.unmodifiableSet(pJobIDs); 
   }
 
   
@@ -68,9 +84,9 @@ class QueueGetJobInfoReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The unique job identifier. 
+   * The unique job identifiers. 
    */ 
-  private long  pJobID; 
+  private TreeSet<Long>  pJobIDs; 
 
 }
 
