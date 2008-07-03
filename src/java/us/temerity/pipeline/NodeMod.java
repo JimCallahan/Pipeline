@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.61 2008/05/17 01:29:08 jim Exp $
+// $Id: NodeMod.java,v 1.62 2008/07/03 19:46:32 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -472,6 +472,7 @@ class NodeMod
     String nname = pattern.getPrefix();
 
     validateName(nname);
+    validateSuffix(pattern.getSuffix());
     pName = nname;
     
     {
@@ -681,7 +682,7 @@ class NodeMod
 	   ") conflicts with the secondary file sequence (" + sfseq + ") already " + 
 	   "associated with this working version!");
 
-    validatePrefix(fseq);
+    validatePrefixAndSuffix(fseq);
     pSecondarySeqs.add(fseq);
 
     updateLastCriticalMod();

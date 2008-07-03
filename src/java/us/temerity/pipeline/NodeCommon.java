@@ -1,4 +1,4 @@
-// $Id: NodeCommon.java,v 1.30 2006/09/29 03:03:21 jim Exp $
+// $Id: NodeCommon.java,v 1.31 2008/07/03 19:46:32 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -217,6 +217,8 @@ class NodeCommon
 	   "the last component of the node name (" + simple + ")!");
       pPrimarySeq = primary;
     }
+    
+    validateSuffix(primary.getFilePattern().getSuffix());
       
     pSecondarySeqs = new TreeSet<FileSeq>();
     if(secondary != null) {
@@ -225,7 +227,7 @@ class NodeCommon
 	  throw new IllegalArgumentException
 	    ("The secondary file sequence (" + fseq + ") contained a different number " + 
 	     "of files than the primary file sequence (" + pPrimarySeq + ")!");
-	validatePrefix(fseq);
+	validatePrefixAndSuffix(fseq);
 	pSecondarySeqs.add(fseq);
       }
     }
@@ -818,16 +820,39 @@ class NodeCommon
   }
 
   /** 
-   * Verify that the given file sequence has a legal prefix.
+   * Verify that the given suffix is legal.
+   * 
+   * @param suffix
+   *   The suffix.
+   * 
+   * @throws IllegalArgumentException
+   *   If the name is illegal.
+   */
+  public static void 
+  validateSuffix
+  (
+   String suffix
+  )
+  {
+    char cs[] = suffix.toCharArray();
+    for(char each : cs) {
+      if(!(Character.isLetterOrDigit(each)))
+        throw new IllegalArgumentException
+          ("The suffix  (" + suffix + ") contained illegal characters!");
+    }
+  }
+  
+  /** 
+   * Verify that the given file sequence has a legal prefix and a legal suffix
    * 
    * @param fseq 
    *   The file sequence.
    * 
    * @throws IllegalArgumentException
-   *   If the prefix is illegal.
+   *   If the prefix or suffix is illegal.
    */
   public static void 
-  validatePrefix
+  validatePrefixAndSuffix
   (
    FileSeq fseq
   ) 
@@ -846,6 +871,8 @@ class NodeCommon
 	throw new IllegalArgumentException
 	  ("The prefix of the file sequence (" + fseq + ") contained illegal characters!");
     }
+    
+    validateSuffix(fseq.getFilePattern().getSuffix());
   }
   
 

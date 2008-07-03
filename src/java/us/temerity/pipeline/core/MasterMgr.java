@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.250 2008/06/29 17:46:16 jim Exp $
+// $Id: MasterMgr.java,v 1.251 2008/07/03 19:46:32 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -8110,6 +8110,7 @@ class MasterMgr
 
       try {
 	NodeCommon.validateName(nname);
+	NodeCommon.validateSuffix(npat.getSuffix());
       }
       catch(IllegalArgumentException ex) {
 	return new FailureRsp(timer, ex.getMessage());
