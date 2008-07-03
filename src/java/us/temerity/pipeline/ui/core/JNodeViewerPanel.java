@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.120 2008/06/27 02:12:25 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.121 2008/07/03 19:43:51 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -97,6 +97,7 @@ class JNodeViewerPanel
       pRemoveSecondarySeqs = new TreeMap<String,FileSeq>();
 
       pRefreshDefaultToolMenu = true; 
+      pRefreshDefaultBuilderMenu = true;
     }
     
     /* tool popup menu */ 
@@ -1493,6 +1494,7 @@ class JNodeViewerPanel
     pToolMenuToolset = null;
     pToolMenusToolset = null;
     pRefreshDefaultToolMenu = true;
+    pRefreshDefaultBuilderMenu = true;
   }
 
   /**
@@ -1609,11 +1611,11 @@ class JNodeViewerPanel
   private synchronized void 
   updateDefaultBuilderMenu()
   {
-    if(pRefreshDefaultToolMenu) {
+    if(pRefreshDefaultBuilderMenu) {
       UIMaster master = UIMaster.getInstance();
       master.rebuildDefaultBuilderCollectionMenu(pPanelPopup, pGroupID, pLaunchBuilderMenu, 
                                                  this, !isLocked());
-      pRefreshDefaultToolMenu = false; 
+      pRefreshDefaultBuilderMenu = false; 
     }    
   }
 
@@ -7369,7 +7371,12 @@ class JNodeViewerPanel
   /**
    * Whether the default toolset menu needs to be rebuilt.
    */ 
-  private boolean pRefreshDefaultToolMenu; 
+  private boolean pRefreshDefaultToolMenu;
+  
+  /**
+   * Whether the default builder menu needs to be rebuilt.
+   */ 
+  private boolean pRefreshDefaultBuilderMenu; 
 
 
   /*----------------------------------------------------------------------------------------*/
