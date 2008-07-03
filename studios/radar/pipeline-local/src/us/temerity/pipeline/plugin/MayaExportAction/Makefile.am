@@ -1,11 +1,14 @@
 studioroot = @ROOT_INST_PARENT_DIR@/pipeline-local/build/make/radar
 
-makefiledir = $(studioroot)/build
+makefiledir = $(studioroot)/build/us/temerity/pipeline/plugin/MayaExportAction
 
 makefile_DATA = \
   Makefile.local
 
 
 SUBDIRS = \
-  com \
-  us
+  v2_3_11
+
+
+
+

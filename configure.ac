@@ -9,7 +9,7 @@ AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
 AC_CONFIG_HEADERS([config.h])
-AM_INIT_AUTOMAKE(Pipeline, 2.4.3b5)
+AM_INIT_AUTOMAKE(Pipeline, 2.4.3b6)
                            
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
@@ -2104,7 +2104,15 @@ AC_CONFIG_FILES([
   studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/KonquerorEditor/v2_3_5/Makefile                            
   studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/BlackHoleArchiver/Makefile                                 
   studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/BlackHoleArchiver/v2_3_14/Makefile.local                   
-  studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/BlackHoleArchiver/v2_3_14/Makefile                         
+  studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/BlackHoleArchiver/v2_3_14/Makefile           
+
+  studios/radar/pipeline-local/src/us/Makefile
+  studios/radar/pipeline-local/src/us/temerity/Makefile
+  studios/radar/pipeline-local/src/us/temerity/pipeline/Makefile
+  studios/radar/pipeline-local/src/us/temerity/pipeline/plugin/Makefile
+  studios/radar/pipeline-local/src/us/temerity/pipeline/plugin/MayaExportAction/Makefile
+  studios/radar/pipeline-local/src/us/temerity/pipeline/plugin/MayaExportAction/v2_3_11/Makefile.local
+  studios/radar/pipeline-local/src/us/temerity/pipeline/plugin/MayaExportAction/v2_3_11/Makefile
 
   studios/SCEACSG/Makefile
   studios/SCEACSG/pipeline-local/.classpath

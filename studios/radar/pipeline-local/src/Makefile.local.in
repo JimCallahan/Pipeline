@@ -18,3 +18,4 @@
 
 %: 
 	$(MAKE) -f Makefile.local -C com $@
+	$(MAKE) -f Makefile.local -C us $@
