@@ -1,4 +1,4 @@
-// $Id: AssetBuilder.java,v 1.2 2008/06/26 20:45:55 jesse Exp $
+// $Id: AssetBuilder.java,v 1.3 2008/07/03 19:52:48 jesse Exp $
 
 package com.nathanlove.pipeline.plugin.BaseCollection.v1_0_0;
 
@@ -6,6 +6,7 @@ import java.util.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
+import us.temerity.pipeline.builder.BaseBuilder.*;
 import us.temerity.pipeline.builder.BuilderInformation.*;
 import us.temerity.pipeline.builder.v2_4_1.*;
 import us.temerity.pipeline.math.*;
@@ -64,6 +65,7 @@ class AssetBuilder
     addSetupPass(new InformationPass());
     addConstructPass(new BuildPass());
     addConstructPass(new FinalizePass());
+    addConstructPass(new SecondFinalizePass());
     
     setDefaultEditors(StudioDefinitions.getDefaultEditors());
     
@@ -179,6 +181,7 @@ class AssetBuilder
       throws PipelineException
     {
       pFinalizeStages = new LinkedList<FinalizableStage>();
+      pFinalizeStages2 = new LinkedList<FinalizableStage>();
       pStageInfo = getStageInformation();
       buildModel();
       buildRig();
@@ -262,7 +265,7 @@ class AssetBuilder
            modelProduct);
         addTaskAnnotation(stage, NodePurpose.Edit, pProjectName, pTaskName, type);
         if (stage.build()) 
-          pFinalizeStages.add(stage);
+          pFinalizeStages2.add(stage);
       }
       
       String rigVerify = pAssetNames.getRigVerifyScene();
@@ -434,6 +437,38 @@ class AssetBuilder
     private StageInformation pStageInfo;
   }
   
+  protected
+  class SecondFinalizePass
+    extends ConstructPass
+  {
+    public 
+    SecondFinalizePass()
+    {
+      super("SecondFinalizePass", 
+            "The AssetBuilder pass that cleans everything else.");
+    }
+    
+    @Override
+    public LinkedList<String> 
+    preBuildPhase()
+    {
+      LinkedList<String> regenerate = new LinkedList<String>();
+
+      for(FinalizableStage stage : pFinalizeStages2) 
+        regenerate.add(stage.getNodeName());
+
+      return regenerate;
+    }
+    
+    @Override
+    public void 
+    buildPhase() 
+      throws PipelineException
+    {
+      for(FinalizableStage stage : pFinalizeStages2) 
+        stage.finalizeStage();
+    }    
+  }
 
   
   /*----------------------------------------------------------------------------------------*/
@@ -442,4 +477,10 @@ class AssetBuilder
   
   private static final long serialVersionUID = 211203648424077939L;
 
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*  I N T E R N A L S                                                                     */
+  /*----------------------------------------------------------------------------------------*/
+  
+  protected LinkedList<FinalizableStage> pFinalizeStages2;
 }

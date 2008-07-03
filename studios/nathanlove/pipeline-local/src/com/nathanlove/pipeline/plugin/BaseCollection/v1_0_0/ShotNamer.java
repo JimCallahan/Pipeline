@@ -1,4 +1,4 @@
-// $Id: ShotNamer.java,v 1.2 2008/06/26 20:45:55 jesse Exp $
+// $Id: ShotNamer.java,v 1.3 2008/07/03 19:52:48 jesse Exp $
 
 package com.nathanlove.pipeline.plugin.BaseCollection.v1_0_0;
 
@@ -60,6 +60,7 @@ class ShotNamer
     }
     
     LayoutGroup group = new LayoutGroup("AssetInfo", "Information about the asset.", true);
+    group.addEntry(aUtilContext);
     group.addEntry(ParamNames.aProjectName);
     group.addEntry(ParamNames.aSpotName);
     group.addEntry(ParamNames.aShotName);

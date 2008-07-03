@@ -1,4 +1,4 @@
-// $Id: CurveShotBuilder.java,v 1.2 2008/06/26 20:45:55 jesse Exp $
+// $Id: CurveShotBuilder.java,v 1.3 2008/07/03 19:52:48 jesse Exp $
 
 package com.nathanlove.pipeline.plugin.BaseCollection.v1_0_0;
 
@@ -379,7 +379,8 @@ class CurveShotBuilder
         addSubBuilder(camBuilder);
         String name = camBuilder.getName();
         addMappedParam(name, ParamNames.aMayaContext, ParamNames.aMayaContext);
-        addMappedParam(name, aCheckinWhenDone, aCheckinWhenDone);
+        camBuilder.setParamValue(aCheckinWhenDone, true);
+        camBuilder.disableParam(new ParamMapping(aCheckinWhenDone));
         addMappedParam(name, 
                        new ParamMapping(ParamNames.aProjectName), 
                        aProjectMapping);
@@ -424,8 +425,9 @@ class CurveShotBuilder
         String cameraName = (String) getParamValue(aCamera);
         pCameraNames = 
           AssetNamer.getGeneratedNamer(pClient, pQueue, pProject, cameraName, AssetType.cam);
-        pAssets.put(pCameraNames.getNamespace(), new AssetBundle(pCameraNames));
       }
+      pAssets.put(pCameraNames.getNamespace(), new AssetBundle(pCameraNames));
+      
       
       {
         TreeSet<String> chars = (TreeSet<String>) getParamValue(aChars);
