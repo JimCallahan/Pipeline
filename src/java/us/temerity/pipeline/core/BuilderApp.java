@@ -1,4 +1,4 @@
-// $Id: BuilderApp.java,v 1.28 2008/03/27 22:07:45 jesse Exp $
+// $Id: BuilderApp.java,v 1.29 2008/07/03 19:53:22 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -496,7 +496,8 @@ public class BuilderApp
    TreeSet<String> names
   ) 
   {
-    for(String name : group.getEntries()) 
+    for(String name : group.getEntries())
+      if (name != null)
         names.add(name);
 
     for(LayoutGroup sgroup : group.getSubGroups()) 
