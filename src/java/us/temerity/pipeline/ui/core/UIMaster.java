@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.88 2008/06/27 00:12:13 jim Exp $
+// $Id: UIMaster.java,v 1.89 2008/07/03 03:19:02 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -61,6 +61,9 @@ class UIMaster
    * @param remoteServer
    *   Whether to listen for network connections from plremote(1).
    * 
+   * @param usePBuffers
+   *   Whether to attempt to load textures offscreen using OpenGL pbuffers.
+   * 
    * @param debugGL
    *   Whether to check all OpenGL calls for errors.
    * 
@@ -74,6 +77,7 @@ class UIMaster
    boolean restoreLayout,
    boolean restoreSelections, 
    boolean remoteServer, 
+   boolean usePBuffers, 
    boolean debugGL, 
    boolean traceGL
   ) 
@@ -160,6 +164,8 @@ class UIMaster
     pTraceGL = traceGL; 
     pDisplayLists = new TreeSet<Integer>();
 
+    pUsePBuffers = usePBuffers;
+
     SwingUtilities.invokeLater(new SplashFrameTask(this));  // Does this need to be run 
                                                             // in the event thread???
   }
@@ -186,6 +192,9 @@ class UIMaster
    * @param remoteServer
    *   Whether to listen for network connections from plremote(1).
    * 
+   * @param usePBuffers
+   *   Whether to attempt to load textures offscreen using OpenGL pbuffers.
+   * 
    * @param debugGL
    *   Whether to check all OpenGL calls for errors.
    * 
@@ -199,13 +208,14 @@ class UIMaster
    boolean restoreLayout,
    boolean restoreSelections,
    boolean remoteServer, 
+   boolean usePBuffers, 
    boolean debugGL, 
    boolean traceGL
   ) 
   {
     assert(sMaster == null);
     sMaster = new UIMaster(layout, restoreLayout, restoreSelections, remoteServer, 
-                           debugGL, traceGL);
+                           usePBuffers, debugGL, traceGL);
   }
 
 
@@ -4455,74 +4465,9 @@ class UIMaster
         pGLCapabilities = new GLCapabilities();  
         pGLCapabilities.setDoubleBuffered(true);
 
-        pTextureLoader = new TextureLoader(pGLCapabilities, new MainFrameTask(pMaster));
+        pTextureLoader = 
+          new TextureLoader(pUsePBuffers, pGLCapabilities, new MainFrameTask(pMaster));
       }
-
-
-      /* show the splash screen and do application startup tasks */ 
-//       {
-// 	JFrame frame = new JFrame("plui");
-// 	pSplashFrame = frame;
-
-// 	frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-// 	frame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-// 	frame.setResizable(false);
-// 	frame.setUndecorated(true);
-	
-// 	{
-// 	  JPanel panel = new JPanel();
-	  
-// 	  panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));   
-	
-// 	  /* splash image */ 
-// 	  {
-// 	    Box hbox = new Box(BoxLayout.X_AXIS);   
-
-// 	    hbox.add(Box.createHorizontalGlue());
-
-// 	    {
-// 	      JLabel label = new JLabel(sSplashIcon);
-// 	      label.setName("Splash");
-	    
-// 	      hbox.add(label);
-// 	    }
-
-// 	    hbox.add(Box.createHorizontalGlue());
-	    
-// 	    panel.add(hbox);
-// 	  }
-
-// 	  /* texture loader bar */ 
-// 	  {
-// 	    pGLCapabilities = new GLCapabilities();  
-// 	    pGLCapabilities.setDoubleBuffered(true);
-
-            
-// 	    JTextureLoaderBar loader = null;
-//             if(PackageInfo.sUseJava2dGLPipeline) {
-//               pGLJPanel = new GLJPanel(pGLCapabilities);
-//               panel.add(new JTextureLoaderBar(pGLJPanel, task));
-//             }
-//             else {
-//               pGLCanvas = new GLCanvas(pGLCapabilities);
-//               panel.add(new JTextureLoaderBar(pGLCanvas, task));
-//             }
-// 	  }
-
-// 	  frame.setContentPane(panel);
-// 	}
-
-// 	frame.pack();
-
-// 	{
-// 	  Rectangle bounds = frame.getGraphicsConfiguration().getBounds();
-// 	  frame.setLocation(bounds.x + bounds.width/2 - frame.getWidth()/2, 
-// 			    bounds.y + bounds.height/2 - frame.getHeight()/2);
-// 	}
-
-// 	frame.setVisible(true);
-//       }
-
 
       /* create the restore layout splash screen */ 
       {
@@ -6484,6 +6429,10 @@ class UIMaster
    */ 
   private boolean pTraceGL;
   
+  /**
+   * Whether to attempt to load textures offscreen using OpenGL pbuffers.
+   */
+  private boolean pUsePBuffers; 
 
   /** 
    * The OpenGL capabilities used by all OpenGL drawable instances.

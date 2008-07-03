@@ -314,7 +314,17 @@ Whether to print all calls to OpenGL methods and their arguments to
 STDERR.&nbsp;&nbsp; This generates a lot of output and therefore slows
 down all OpenGL rendering.<br>
 <br>
-By default OpenGL tracing is (off).<span style="font-weight: bold;"></span><br>
+By default OpenGL tracing is (off).<br>
+</div>
+<br>
+<span style="font-weight: bold;">--use-pbuffers</span>=on|off<br>
+<div style="margin-left: 40px;"><br>
+Whether to attempt to load textures offscreen using OpenGL
+pbuffers.&nbsp; Some graphics cards and/or drivers do not properly
+support pbuffers, so this option is provided to disable their use in
+these cases.<br>
+<br>
+By default, this option is (on).<br>
 </div>
 <span style="font-weight: bold;"></span></div>
 <h3><a name="See_Also"></a>See

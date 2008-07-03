@@ -57,6 +57,8 @@ GraphicalOptsParser
 
     pDebugGL = true;
     pTraceGL = false;
+
+    pUsePBuffers = true;
   }
  
 
@@ -125,6 +127,11 @@ GraphicalOptsParser
    */ 
   private boolean pTraceGL;
  
+  /**
+   * Whether to attempt to load textures offscreen using OpenGL pbuffers.
+   */ 
+  private boolean pUsePBuffers;
+
 }
 
 
@@ -155,6 +162,8 @@ TOKEN :
 
 | <DEBUG_GL:       "--debug-gl">      : BOOLEAN_SEP
 | <TRACE_GL:       "--trace-gl">      : BOOLEAN_SEP
+
+| <USE_PBUFFERS:  "--use-pbuffers">   : BOOLEAN_SEP
 
   /* seperators */ 
 | <AE1: (["\0"])+> 
@@ -338,7 +347,7 @@ CommandLine() :
       
       /* start the application */ 
       UIMaster.init(pLayout, pRestoreLayout, pRestoreSelections, pRemoteServer, 
-                    pDebugGL, pTraceGL);
+                    pUsePBuffers, pDebugGL, pTraceGL);
     }
   }
 }
@@ -440,7 +449,7 @@ GlobalOpts() :
 {
   (Log() | LogFile() | StandardLogFile() | StandardLogDir() | LogBackups() |
    Layout() | NoLayout() | NoSelections() | NoRemote() | 
-   DebugGL() | TraceGL()) 
+   UsePBuffers() | DebugGL() | TraceGL()) 
   {}
 }
 
@@ -728,6 +737,17 @@ void TraceGL() :
   <TRACE_GL> EQ() tf=Boolean() 
   {
     pTraceGL = tf;
+  }
+}
+
+void UsePBuffers() : 
+{
+  boolean tf;
+}
+{
+  <USE_PBUFFERS> EQ() tf=Boolean() 
+  {
+    pUsePBuffers = tf;
   }
 }
 

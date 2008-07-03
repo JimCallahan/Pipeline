@@ -1,4 +1,4 @@
-// $Id: TextureLoader.java,v 1.2 2008/05/30 08:08:50 jim Exp $
+// $Id: TextureLoader.java,v 1.3 2008/07/03 03:19:02 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -34,6 +34,9 @@ class TextureLoader
   /**
    * Construct a new loader.
    * 
+   * @param usePBuffers
+   *   Whether to attempt to load textures offscreen using OpenGL pbuffers.
+   * 
    * @param capabilties
    *   The OpenGL capabilities to use when creating the shared context.
    * 
@@ -43,6 +46,7 @@ class TextureLoader
   public 
   TextureLoader
   (
+   boolean usePBuffers, 
    GLCapabilities capabilities,
    Thread finished
   ) 
@@ -51,24 +55,33 @@ class TextureLoader
         
     /* if pbuffers are supported... */ 
     pDrawable = null;
-    GLDrawableFactory factory = GLDrawableFactory.getFactory();
-    if(factory.canCreateGLPbuffer()) {
-      try {
-        GLCapabilitiesChooser chooser = new DefaultGLCapabilitiesChooser(); 
-        pDrawable = factory.createGLPbuffer(capabilities, chooser, 1, 1, null); 
+    if(usePBuffers) {
+      GLDrawableFactory factory = GLDrawableFactory.getFactory();
+      if(factory.canCreateGLPbuffer()) {
+        try {
+          GLCapabilitiesChooser chooser = new DefaultGLCapabilitiesChooser(); 
+          pDrawable = factory.createGLPbuffer(capabilities, chooser, 1, 1, null); 
+        }
+        catch(GLException ex) {
+          LogMgr.getInstance().log
+            (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+             "While attempting to create the OpenGL pbuffer needed to load the " + 
+             "textures offscreen:\n  " + ex.getMessage());
+          LogMgr.getInstance().flush();
+        }
       }
-      catch(GLException ex) {
-        /* the pbuffer couldn't be allocated for some reason... */ 
+
+      if(pDrawable == null) {
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Ops, LogMgr.Level.Warning,
+           "Unable to create the OpenGL pbuffer needed to load the textures " + 
+           "offscreen, using an onscreen OpenGL window instead."); 
+        LogMgr.getInstance().flush();
       }
     }
 
-    /* if pbuffers are not supported, create a visible window during the load */ 
+    /* othersiwise, create a visible window during the load... */ 
     if(pDrawable == null) {
-      LogMgr.getInstance().log
-        (LogMgr.Kind.Ops, LogMgr.Level.Warning,
-         "Unable to create the OpenGL PBuffer needed to load the textures offscreen."); 
-      LogMgr.getInstance().flush();
-      
       JFrame frame = new JFrame("plui");
       pRootFrame = frame;
 
