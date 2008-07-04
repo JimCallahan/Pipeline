@@ -2163,6 +2163,12 @@ AC_CONFIG_FILES([
   studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/FrameCyclerEditor/Makefile
   studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/FrameCyclerEditor/v1_0_0/Makefile
   studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/FrameCyclerEditor/v1_0_0/Makefile.local
+  studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/JobRankingTool/Makefile
+  studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/JobRankingTool/v1_0_0/Makefile
+  studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/JobRankingTool/v1_0_0/Makefile.local
+  studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/QueueBalanceTool/Makefile
+  studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/QueueBalanceTool/v1_0_0/Makefile
+  studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/QueueBalanceTool/v1_0_0/Makefile.local
   studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/SilhouetteEditor/Makefile
   studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/SilhouetteEditor/v1_0_0/Makefile
   studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/SilhouetteEditor/v1_0_0/Makefile.local

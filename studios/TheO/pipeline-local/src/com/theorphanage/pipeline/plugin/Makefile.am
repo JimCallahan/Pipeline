@@ -11,5 +11,7 @@ SUBDIRS = \
   AfterFXAddTypedSourceTool \
   AfterFXTemplateAction \
   FrameCyclerEditor \
+  JobRankingTool \
+  QueueBalanceTool \
   SilhouetteEditor \
   ZohanCollection
