@@ -1,4 +1,4 @@
-// $Id: JExportPanel.java,v 1.6 2007/12/15 07:29:10 jesse Exp $
+// $Id: JExportPanel.java,v 1.7 2008/07/04 14:49:08 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -522,17 +522,17 @@ class JExportPanel
    NodeMod mod
   )
   { 
-    pExportAllField.setValue(true);
+    pExportAllField.setValue(false);
 
     /* properties panel */ 
     {
-      pToolsetField.setValue(true);
-      pEditorField.setValue(true);
+      pToolsetField.setValue(false);
+      pEditorField.setValue(false);
     }
 
     /* actions panel */ 
     {
-      pActionField.setValue(true);
+      pActionField.setValue(false);
 
       pActionParamsBox.removeAll();
       
@@ -578,14 +578,14 @@ class JExportPanel
 
     /* job requirements panel */ 
     {
-      pOverflowPolicyField.setValue(true);
-      pExecutionMethodField.setValue(true);
-      pBatchSizeField.setValue(true);
-      pPriorityField.setValue(true);
-      pRampUpField.setValue(true);
-      pMaxLoadField.setValue(true);
-      pMinMemoryField.setValue(true);
-      pMinDiskField.setValue(true);
+      pOverflowPolicyField.setValue(false);
+      pExecutionMethodField.setValue(false);
+      pBatchSizeField.setValue(false);
+      pPriorityField.setValue(false);
+      pRampUpField.setValue(false);
+      pMaxLoadField.setValue(false);
+      pMinMemoryField.setValue(false);
+      pMinDiskField.setValue(false);
     }
 
     /* license keys panel */ 
@@ -622,7 +622,7 @@ class JExportPanel
 	  JBooleanField field = 
 	    UIFactory.createTitledBooleanField(tpanel, kname + ":", pTSize-7,
 					      vpanel, pVSize);
-	  field.setValue(true);
+	  field.setValue(false);
 
 	  pLicenseKeyFields.put(kname, field);
 	}
@@ -665,7 +665,7 @@ class JExportPanel
 	  JBooleanField field = 
 	    UIFactory.createTitledBooleanField(tpanel, kname + ":", pTSize-7,
 					      vpanel, pVSize);
-	  field.setValue(true);
+	  field.setValue(false);
 
 	  pSelectionKeyFields.put(kname, field);
 	}
@@ -708,7 +708,7 @@ class JExportPanel
           JBooleanField field = 
             UIFactory.createTitledBooleanField(tpanel, kname + ":", pTSize-7,
                                               vpanel, pVSize);
-          field.setValue(true);
+          field.setValue(false);
 
           pHardwareKeyFields.put(kname, field);
         }
@@ -753,7 +753,7 @@ class JExportPanel
 	      JBooleanField field = 
 		UIFactory.createTitledBooleanField(tpanel, "Export Link:", pTSize-14, 
 						  vpanel, pVSize);
-	      field.setValue(true);
+	      field.setValue(false);
 
 	      pSourceFields.put(sname, field);
 	    }
@@ -811,7 +811,7 @@ class JExportPanel
 	      JBooleanField field = 
 		UIFactory.createTitledBooleanField(tpanel, "Export Annotation:", pTSize-14, 
 						  vpanel, pVSize);
-	      field.setValue(true);
+	      field.setValue(false);
 
 	      pAnnotationFields.put(sname, field);
 	    }
