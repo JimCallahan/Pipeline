@@ -1,4 +1,4 @@
-// $Id: JBuilderTopPanel.java,v 1.20 2008/04/21 23:12:14 jesse Exp $
+// $Id: JBuilderTopPanel.java,v 1.21 2008/07/04 13:27:54 jesse Exp $
 
 package us.temerity.pipeline.builder.ui;
 
@@ -250,8 +250,9 @@ class JBuilderTopPanel
     }
     
     /* Gets the name and the pass number of the builder; uses that to make the param panel */
+    //TODO, this is where I need to change the naming stuff.
     PrefixedName prefixName = new PrefixedName(builder.getPrefixedName(), pass.getName());
-    PrefixedName realPrefixName = new PrefixedName(prefixName, pass.getName());
+    PrefixedName realPrefixName = new PrefixedName(prefixName, "Pass Parameters");
     int passNum = builder.getCurrentPass();
     JBuilderParamPanel paramPanel = new JBuilderParamPanel(builder, passNum, pParent);
     
@@ -268,8 +269,7 @@ class JBuilderTopPanel
       Map<String, BaseNames> namers = builder.getNamers();
       for (String name : namers.keySet()) {
 	BaseNames baseName = namers.get(name);
-	//Making a crazy change here.  If it doesn't work, revert.
-	//PrefixedName prefixName2 = new PrefixedName(builder.getPrefixedName(), name);
+
 	PrefixedName prefixName2 = new PrefixedName(prefixName, name);
 	JBuilderParamPanel namerPanel = new JBuilderParamPanel(baseName, 1, pParent);
 	if (namerPanel.numberOfParameters() > 0) {
