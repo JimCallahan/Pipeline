@@ -1,4 +1,4 @@
-// $Id: AdminPrivileges.java,v 1.9 2008/06/29 17:46:15 jim Exp $
+// $Id: AdminPrivileges.java,v 1.10 2008/07/07 20:41:07 jesse Exp $
  
 package us.temerity.pipeline.core;
 
@@ -482,7 +482,7 @@ class AdminPrivileges
     }
     
     for(String uname : dead) 
-      pPrivileges.remove(dead);
+      pPrivileges.remove(uname);
     
     if(!dead.isEmpty()) 
       writePrivileges();
