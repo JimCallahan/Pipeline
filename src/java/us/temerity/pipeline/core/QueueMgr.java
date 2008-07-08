@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.105 2008/07/03 19:50:01 jesse Exp $
+// $Id: QueueMgr.java,v 1.106 2008/07/08 17:02:28 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -4380,7 +4380,7 @@ class QueueMgr
 	      try {
 	        TaskTimer subTimer = new TaskTimer("QueueMgr.adjustJobRequirements()");
 	        timer.suspend();
-	        adjustJobRequirements(subTimer, job.queryOnlyCopy(), reqs);
+	        exceptions.addAll(adjustJobRequirements(subTimer, job.queryOnlyCopy(), reqs));
 	        timer.accum(subTimer);
 	      }
 	      catch (PipelineException ex) {
@@ -4458,7 +4458,7 @@ class QueueMgr
             try {
               TaskTimer subTimer = new TaskTimer("QueueMgr.adjustJobRequirements()");
               timer.suspend();
-              adjustJobRequirements(subTimer, job.queryOnlyCopy(), reqs);
+              exceptions.addAll(adjustJobRequirements(subTimer, job.queryOnlyCopy(), reqs));
               timer.accum(subTimer);
             }
             catch (PipelineException ex) {
@@ -4509,12 +4509,17 @@ class QueueMgr
    * 
    * @param timer
    *   An event time.
+   * 
    * @param job
    *   The job that the requirements are being adjusted for.
+   * 
    * @param jreqs
    *   The current job requirements that are going to be modified.
+   * 
+   * @return
+   *   A list of the exceptions thrown during keychooser execution.
    */
-  private void 
+  private ArrayList<String> 
   adjustJobRequirements
   (
     TaskTimer timer,
@@ -4523,6 +4528,8 @@ class QueueMgr
   )
     throws PipelineException
   {
+    ArrayList<String> toReturn = new ArrayList<String>();
+    
     /* Lazily evaluate this only if necessary*/
     TreeMap<String, BaseAnnotation> annots = null;
     PipelineException toThrow = null;
@@ -4551,11 +4558,8 @@ class QueueMgr
             if (key.getKeyChooser().computeIsActive(job, annots))
               finalKeys.add(name);
           }
-          catch (Exception e) {
-            if (toThrow == null)
-              toThrow = new PipelineException(e.getMessage());
-            else
-              toThrow = new PipelineException(e.getMessage() + "\n" + toThrow.getMessage());
+          catch (PipelineException e) {
+            toReturn.add(e.getMessage());
           }
         }
       }
@@ -4586,11 +4590,8 @@ class QueueMgr
             if (key.getKeyChooser().computeIsActive(job, annots))
               finalKeys.add(name);
           }
-          catch (Exception e) {
-            if (toThrow == null)
-              toThrow = new PipelineException(e.getMessage());
-            else
-              toThrow = new PipelineException(e.getMessage() + "\n" + toThrow.getMessage());
+          catch (PipelineException e) {
+            toReturn.add(e.getMessage());
           }
         }
       }
@@ -4621,19 +4622,14 @@ class QueueMgr
             if (key.getKeyChooser().computeIsActive(job, annots))
               finalKeys.add(name);
           }
-          catch (Exception e) {
-            if (toThrow == null)
-              toThrow = new PipelineException(e.getMessage());
-            else
-              toThrow = new PipelineException(e.getMessage() + "\n" + toThrow.getMessage());
-          }
+          catch (PipelineException e) {
+            toReturn.add(e.getMessage());          }
         }
       }
       jreqs.removeAllHardwareKeys();
       jreqs.addHardwareKeys(finalKeys);
     }
-    if (toThrow != null)
-      throw toThrow;
+    return toReturn;
   }
   
 

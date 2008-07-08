@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.251 2008/07/03 19:46:32 jesse Exp $
+// $Id: MasterMgr.java,v 1.252 2008/07/08 17:02:27 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -13203,9 +13203,11 @@ class MasterMgr
             TaskTimer subTimer = new TaskTimer("MasterMgr.adjustJobRequirements()");
             timer.suspend();
             try {
-              adjustJobRequirements(subTimer, job.queryOnlyCopy(), jreqs, 
-                                    allSelectionKeys, allLicenseKeys, allHardwareKeys);
+              ArrayList<String> keyExceptions = 
+                adjustJobRequirements(subTimer, job.queryOnlyCopy(), jreqs, 
+                                      allSelectionKeys, allLicenseKeys, allHardwareKeys);
               job.setJobRequirements(jreqs);
+              exceptions.addAll(keyExceptions);
             } 
             catch(PipelineException ex) {
               exceptions.add(ex.getMessage());
@@ -13263,8 +13265,11 @@ class MasterMgr
    *
    * @param allHardwareKeys
    *   A cache of all currently defined hardware keys.
+   *   
+   * @return 
+   *   A list of all the exceptions thrown during execution.
    */
-  private void 
+  private ArrayList<String> 
   adjustJobRequirements
   (
     TaskTimer timer,
@@ -13272,14 +13277,15 @@ class MasterMgr
     JobReqs jreqs, 
     ArrayList<SelectionKey> allSelectionKeys, 
     ArrayList<LicenseKey> allLicenseKeys, 
-    ArrayList<HardwareKey> allHardwareKeys    
+    ArrayList<HardwareKey> allHardwareKeys
   )
     throws PipelineException
   {
+    ArrayList<String> toReturn = new ArrayList<String>();
+    
     /* lazily evaluate this only if necessary */
     TreeMap<String, BaseAnnotation> annots = null;
     NodeID nodeID = job.getNodeID();
-    PipelineException toThrow = null;
 
     /* selection keys */
     {
@@ -13301,10 +13307,7 @@ class MasterMgr
               finalKeys.add(name);
           }
           catch (Exception e) {
-            if (toThrow == null)
-              toThrow = new PipelineException(e.getMessage());
-            else
-              toThrow = new PipelineException(e.getMessage() + "\n" + toThrow.getMessage());
+            toReturn.add(e.getMessage());
           }
         }
       }
@@ -13332,10 +13335,7 @@ class MasterMgr
               finalKeys.add(name);
           }
           catch (Exception e) {
-            if (toThrow == null)
-              toThrow = new PipelineException(e.getMessage());
-            else
-              toThrow = new PipelineException(e.getMessage() + "\n" + toThrow.getMessage());
+            toReturn.add(e.getMessage());
           }
         }
       }
@@ -13363,19 +13363,14 @@ class MasterMgr
               finalKeys.add(name);
           }
           catch (Exception e) {
-            if (toThrow == null)
-              toThrow = new PipelineException(e.getMessage());
-            else
-              toThrow = new PipelineException(e.getMessage() + "\n" + toThrow.getMessage());
+            toReturn.add(e.getMessage());
           }
         }
       }
       jreqs.removeAllHardwareKeys();
       jreqs.addHardwareKeys(finalKeys);
     }
-
-    if (toThrow != null)
-      throw toThrow;
+    return toReturn;
   }
   
 

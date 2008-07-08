@@ -1,4 +1,4 @@
-// $Id: BaseKeyChooser.java,v 1.3 2007/12/16 12:22:09 jesse Exp $
+// $Id: BaseKeyChooser.java,v 1.4 2008/07/08 17:02:28 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -166,15 +166,19 @@ class BaseKeyChooser
     try {
       return isActive(job, annots);  
     }
-    catch (Exception e) {
+    catch (Throwable e) {
       String msg = "An error occured in KeyChooser (" + getName() + ")  " +
       		   "version (" + getVersionID().toString() + "), " +
-      		   "provided by (" + getVendor() + ").  \n" + e.getMessage();
-      if (e instanceof PipelineException)
-        LogMgr.getInstance().logAndFlush(Kind.Ops, Level.Warning, msg);
-      else
+      		   "provided by (" + getVendor() + ").  \n";
+      if (e instanceof PipelineException) {
         LogMgr.getInstance().logAndFlush(Kind.Ops, Level.Severe, msg);
-      throw new PipelineException(msg);
+        throw new PipelineException(msg + e.getMessage());
+      }
+      else {
+        LogMgr.getInstance().logAndFlush(Kind.Ops, Level.Severe, msg);
+        throw new PipelineException(Exceptions.getFullMessage(msg, e));
+      }
+      
     }
   }
   
