@@ -1,4 +1,4 @@
-// $Id: JManageSelectionKeysDialog.java,v 1.17 2007/12/16 12:22:09 jesse Exp $
+// $Id: JManageSelectionKeysDialog.java,v 1.18 2008/07/08 17:16:50 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -591,6 +591,12 @@ class JManageSelectionKeysDialog
 	
 	pRulesTablePanel.tableStructureChanged();  
       }
+    } 
+    else {
+      pRulesTableModel.setSelectionRules
+      (new LinkedList<SelectionRule>(), pGroupNames, pPrivilegeDetails);
+    
+      pRulesTablePanel.tableStructureChanged();  
     }
   }
 
