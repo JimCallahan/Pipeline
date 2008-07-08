@@ -1,4 +1,4 @@
-// $Id: NativeFileSys.cc,v 1.6 2007/02/10 01:51:49 jim Exp $
+// $Id: NativeFileSys.cc,v 1.7 2008/07/08 10:11:08 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -255,16 +255,10 @@ JNICALL Java_us_temerity_pipeline_NativeFileSys_lastStamps
       return (rtime * 1000L);
     }
 
-  case ENOMEM:
-  case ENAMETOOLONG:
-  case ELOOP:
+  default:
     sprintf(msg, "cannot stat (%s): %s\n", path, strerror(errno));
     env->ReleaseStringUTFChars(jpath, path);
     env->ThrowNew(IOException, msg);  
-    return 0L;
-
-  default:
-    env->ReleaseStringUTFChars(jpath, path);
     return 0L;
   }
 }

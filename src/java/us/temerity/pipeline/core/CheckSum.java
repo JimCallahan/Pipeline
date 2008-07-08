@@ -1,4 +1,4 @@
-// $Id: CheckSum.java,v 1.13 2006/10/25 08:04:23 jim Exp $
+// $Id: CheckSum.java,v 1.14 2008/07/08 10:11:08 jim Exp $
 
 package us.temerity.pipeline.core;
  
@@ -200,10 +200,21 @@ class CheckSum
     /* abort early if the checksum file is up-to-date */ 
     File sfile = checkSumFile(path);    
     if(sfile.isFile()) {
-      long sstamp = NativeFileSys.lastModOrChange(sfile);
-      long stamp  = NativeFileSys.lastModOrChange(file);
-      if(sstamp >= stamp)
-	return; 
+      try {
+        long sstamp = NativeFileSys.lastModOrChange(sfile);
+        long stamp  = NativeFileSys.lastModOrChange(file);
+        if(sstamp >= stamp)
+          return; 
+      }
+      catch(IOException ex) {
+        throw new PipelineException
+          ("Unable to determine the last modification/change timestamps for a production " + 
+           "file (" + file + ") and/or its checksum (" + sfile + ") even though both files " +
+           "appear to exist!  This is likely a symptom of a serious file server and/or file " + 
+           "system configuration problem and you should notify your Systems Administrator " + 
+           "of this error immediately. More specifically:\n\n" + 
+           "  " + ex.getMessage());
+      }
     }
 
     LogMgr.getInstance().log

@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.77 2008/06/29 17:46:16 jim Exp $
+// $Id: FileMgr.java,v 1.78 2008/07/08 10:11:08 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -642,19 +642,32 @@ class FileMgr
 	  {
             long ctime = req.getChangeStamp();
 	    for(FileSeq fseq : states.keySet()) {
+              FileState fs[] = states.get(fseq);
 	      Long stamps[] = new Long[fseq.numFrames()];
 
 	      int wk = 0;
 	      for(File file : fseq.getFiles()) {
-		File work = new File(pProdDir, 
-				     req.getNodeID().getWorkingParent() + "/" + file);
+                if(fs[wk] != FileState.Missing) {
+                  File work = new File(pProdDir, 
+                                       req.getNodeID().getWorkingParent() + "/" + file);
 
-		long when = NativeFileSys.lastCriticalChange(work, ctime); 
-		if(when > 0) 
-		  stamps[wk] = when; 
+                  try {
+                    stamps[wk] = NativeFileSys.lastCriticalChange(work, ctime); 
+                  }
+                  catch(IOException ex) {
+                    throw new PipelineException
+                      ("Unable to determine the last modification/change timestamps for " + 
+                       "the working area file (" + work + ") even though the file " +
+                       "appears to exist!  This is likely a symptom of a serious file " + 
+                       "server and/or file system configuration problem and you should " + 
+                       "notify your Systems Administrator of this error immediately. " + 
+                       "More specifically:\n\n" + 
+                       "  " + ex.getMessage());
+                  }
 
-		wk++;
-	      }
+                  wk++;
+                }
+              }
 
 	      timestamps.put(fseq, stamps);
 	    }

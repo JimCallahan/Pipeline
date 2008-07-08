@@ -1,4 +1,4 @@
-// $Id: NativeFileSys.java,v 1.16 2007/03/28 19:31:03 jim Exp $
+// $Id: NativeFileSys.java,v 1.17 2008/07/08 10:11:08 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -182,25 +182,20 @@ class NativeFileSys
    *   The file to test.
    * 
    * @return
-   *   The modification time or OL if non-existant.
+   *   The modification time.
+   * 
+   * @throws IOException
+   *   If unable to determine the status of the given file.
    */ 
   public static long
   lastModification
   (
    File path
   ) 
+    throws IOException
   {
     loadLibrary();
-
-    try { 
-      return lastStamps(path.getPath(), -1L);
-    }
-    catch(IOException ex) {
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Ops, LogMgr.Level.Warning,
-	 "NativeFileSys.lastModification(): " + ex.getMessage()); 
-      return 0L;
-    }
+    return lastStamps(path.getPath(), -1L);
   }
 
   /**
@@ -214,25 +209,20 @@ class NativeFileSys
    *   The file to test.
    * 
    * @return
-   *   The modification/change time or OL if non-existant.
+   *   The modification/change time.
+   * 
+   * @throws IOException
+   *   If unable to determine the status of the given file.
    */ 
   public static long
   lastModOrChange
   (
    File path
   ) 
+    throws IOException
   {
     loadLibrary();
-
-    try { 
-      return lastStamps(path.getPath(), -2L);
-    }
-    catch(IOException ex) {
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Ops, LogMgr.Level.Warning,
-	 "NativeFileSys.lastModOrChange(): " + ex.getMessage()); 
-      return 0L;
-    }
+    return lastStamps(path.getPath(), -2L);
   }
 
   /** 
@@ -262,7 +252,10 @@ class NativeFileSys
    *   The last legitimate change time (ctime) of the file.
    * 
    * @return
-   *   The modification time or OL if non-existant.
+   *   The modification time.
+   * 
+   * @throws IOException
+   *   If unable to determine the status of the given file.
    */
   public static long
   lastCriticalChange
@@ -270,18 +263,10 @@ class NativeFileSys
    File path, 
    long critical 
   ) 
+    throws IOException
   {
     loadLibrary();
-
-    try { 
-      return lastStamps(path.getPath(), critical);
-    }
-    catch(IOException ex) {
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Ops, LogMgr.Level.Warning,
-	 "NativeFileSys.lastCriticalChange(): " + ex.getMessage()); 
-      return 0L;
-    }
+    return lastStamps(path.getPath(), critical);
   }
 
 
