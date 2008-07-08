@@ -1,4 +1,4 @@
-// $Id: MayaBuildAction.java,v 1.1 2008/03/06 13:04:34 jim Exp $
+// $Id: MayaBuildAction.java,v 1.2 2008/07/08 03:24:29 jim Exp $
 
 package us.temerity.pipeline.plugin.MayaBuildAction.v2_4_1;
 
@@ -308,7 +308,8 @@ class MayaBuildAction
         	throw new PipelineException
         	  ("Two models specify the same Prefix Name (" + prefixName + ") " +
         	   "and Proxy Name (" + proxyName + ")");
-              proxyPaths.put(prefixName, proxyName, new Path(npath.getParentPath(), fseq.getPath(0)));
+              proxyPaths.put(prefixName, proxyName, 
+                             new Path(npath.getParentPath(), fseq.getPath(0)));
             }
             else {
               if (!(buildType.equals(aReference) || buildType.equals(aImport)))
@@ -342,8 +343,8 @@ class MayaBuildAction
       String refProxy = proxyNames.get(model); 
       if (refProxy != null && proxys.contains(refProxy))
 	throw new PipelineException
-	  ("The same Proxy Name cannot be specified for a Reference and a Proxy in the same " +
-	   "namespace (" + nspace + ")");
+	  ("The same Proxy Name cannot be specified for a Reference and a Proxy in the " + 
+           "same namespace (" + nspace + ")");
     }
 
     /* the target Maya scene */
