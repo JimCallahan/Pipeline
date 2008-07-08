@@ -1,4 +1,4 @@
-// $Id: JQueueJobServerStatsPanel.java,v 1.6 2008/05/12 04:07:49 jim Exp $
+// $Id: JQueueJobServerStatsPanel.java,v 1.7 2008/07/08 17:33:30 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -301,6 +301,8 @@ class JQueueJobServerStatsPanel
   {
     if(pNewHistogramSpecs != null) 
       return pNewHistogramSpecs;
+    if (pHistograms == null)
+      pHistograms = new QueueHostHistograms(QueueHostHistogramSpecs.getDefault());
     return new QueueHostHistogramSpecs(pHistograms);
   }
 
