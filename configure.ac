@@ -2102,9 +2102,6 @@ AC_CONFIG_FILES([
   studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/KonquerorEditor/Makefile                                   
   studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/KonquerorEditor/v2_3_5/Makefile.local                      
   studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/KonquerorEditor/v2_3_5/Makefile                            
-  studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/BlackHoleArchiver/Makefile                                 
-  studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/BlackHoleArchiver/v2_3_14/Makefile.local                   
-  studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/BlackHoleArchiver/v2_3_14/Makefile           
 
   studios/radar/pipeline-local/src/us/Makefile
   studios/radar/pipeline-local/src/us/temerity/Makefile

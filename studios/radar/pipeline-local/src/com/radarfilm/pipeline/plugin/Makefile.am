@@ -8,7 +8,6 @@ makefile_DATA = \
 
 
 SUBDIRS = \
-  BlackHoleArchiver \
   CurveExportSyncTool \
   JeditEditor \
   KonquerorEditor \

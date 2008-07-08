@@ -1,7 +1,6 @@
 #--- RULES -----------------------------------------------------------------------------------
 
 %: 
-	$(MAKE) -f Makefile.local -C BlackHoleArchiver $@
 	$(MAKE) -f Makefile.local -C CurveExportSyncTool $@
 	$(MAKE) -f Makefile.local -C JeditEditor $@
 	$(MAKE) -f Makefile.local -C KonquerorEditor $@
