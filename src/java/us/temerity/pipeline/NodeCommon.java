@@ -1,4 +1,4 @@
-// $Id: NodeCommon.java,v 1.31 2008/07/03 19:46:32 jesse Exp $
+// $Id: NodeCommon.java,v 1.32 2008/07/08 09:59:39 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -823,7 +823,7 @@ class NodeCommon
    * Verify that the given suffix is legal.
    * 
    * @param suffix
-   *   The suffix.
+   *   The suffix.  A <CODE>null</CODE> value is legal. 
    * 
    * @throws IllegalArgumentException
    *   If the name is illegal.
@@ -834,6 +834,9 @@ class NodeCommon
    String suffix
   )
   {
+    if(suffix == null) 
+      return; 
+
     char cs[] = suffix.toCharArray();
     for(char each : cs) {
       if(!(Character.isLetterOrDigit(each)))
