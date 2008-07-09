@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.53 2008/06/27 02:12:25 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.54 2008/07/09 09:50:39 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -559,7 +559,11 @@ class JQueueJobViewerPanel
     
     if(UserPrefs.getInstance().getJobAutoFrameGroups()) {
       TreeSet<Long> oids = new TreeSet<Long>(pJobGroups.keySet());
-      TreeSet<Long> nids = new TreeSet<Long>(groups.keySet());
+
+      TreeSet<Long> nids = new TreeSet<Long>(); 
+      if(groups != null) 
+        nids.addAll(groups.keySet());
+
       if(!oids.equals(nids)) 
         pAutoframeOnUpdate = true;
     }
