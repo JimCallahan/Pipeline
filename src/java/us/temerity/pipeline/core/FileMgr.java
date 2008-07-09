@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.78 2008/07/08 10:11:08 jim Exp $
+// $Id: FileMgr.java,v 1.79 2008/07/09 04:11:52 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -664,9 +664,9 @@ class FileMgr
                        "More specifically:\n\n" + 
                        "  " + ex.getMessage());
                   }
-
-                  wk++;
                 }
+
+                wk++;
               }
 
 	      timestamps.put(fseq, stamps);
