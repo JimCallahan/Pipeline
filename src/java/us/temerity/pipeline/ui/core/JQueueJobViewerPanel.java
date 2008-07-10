@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.54 2008/07/09 09:50:39 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.55 2008/07/10 10:12:45 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -82,6 +82,8 @@ class JQueueJobViewerPanel
                           prefs.getShowJobActionHints(), 
                           prefs.getShowJobHostHints(), 
                           prefs.getShowJobTimingHints());
+
+      pNewJobGroupIDs = new TreeSet<Long>();
 
       pJobGroups = new TreeMap<Long,QueueJobGroup>(); 
       pJobStatus = new TreeMap<Long,JobStatus>();
@@ -556,8 +558,10 @@ class JQueueJobViewerPanel
       return;
 
     updatePrivileges();
-    
-    if(UserPrefs.getInstance().getJobAutoFrameGroups()) {
+
+    /* determine whether we should autoframe the jobs */ 
+    UserPrefs prefs = UserPrefs.getInstance();
+    if(prefs.getJobAutoFrameGroups()) {
       TreeSet<Long> oids = new TreeSet<Long>(pJobGroups.keySet());
 
       TreeSet<Long> nids = new TreeSet<Long>(); 
@@ -571,6 +575,14 @@ class JQueueJobViewerPanel
     /* update the job groups and status tables */ 
     {
       pDetailedJobID = detailedID; 
+
+      pNewJobGroupIDs.clear();
+      if(prefs.getJobAutoExpandNew()) {
+        for(Long gid : groups.keySet()) {
+          if(pJobGroups.get(gid) == null) 
+            pNewJobGroupIDs.add(gid);
+        }
+      }
 
       pJobGroups.clear();
       if(groups != null) 
@@ -861,6 +873,11 @@ class JQueueJobViewerPanel
       Point2d ganchor = new Point2d();
       for(QueueJobGroup group : pJobGroups.values()) {
 
+        /* auto-expand newly added groups? */
+        LayoutPolicy groupPolicy = pLayoutPolicy;
+        if(prefs.getJobAutoExpandNew() && pNewJobGroupIDs.contains(group.getGroupID())) 
+          groupPolicy = LayoutPolicy.AutomaticExpand;
+
 	/* layout the jobs */ 
 	int gheight = 0;
 	ArrayList<ViewerJob> created = new ArrayList<ViewerJob>();
@@ -873,7 +890,7 @@ class JQueueJobViewerPanel
 	      JobPath path = new JobPath(jobID);
 	      ViewerJob vjob = layoutJobs(true, status, path, anchor, 
 					  group.getExternalIDs(), created, 
-					  wasCollapsed, seen); 
+					  groupPolicy, wasCollapsed, seen); 
 	      
 	      anchor.y(anchor.y() - vjob.getBounds().getRange().y());
 	      gheight += vjob.getHeight();
@@ -908,6 +925,7 @@ class JQueueJobViewerPanel
       /* preserve the current layout */ 
       pExpandDepth  = null; 
       pLayoutPolicy = LayoutPolicy.Preserve;
+      pNewJobGroupIDs.clear();
     }
    
     /* render the changes */ 
@@ -940,6 +958,9 @@ class JQueueJobViewerPanel
    * @param created
    *   The created viewer jobs. 
    * 
+   * @param groupPolicy
+   *   The node expand/collapse policy for jobs in this group.
+   * 
    * @param wasCollapsed
    *   The job paths of the previously collapsed jobs.
    * 
@@ -958,6 +979,7 @@ class JQueueJobViewerPanel
    Point2d anchor, 
    SortedSet<Long> external, 
    ArrayList<ViewerJob> created, 
+   LayoutPolicy groupPolicy, 
    TreeSet<JobPath> wasCollapsed, 
    TreeSet<Long> seen
   ) 
@@ -971,7 +993,7 @@ class JQueueJobViewerPanel
 	vjob.setCollapsed(path.getNumJobs() >= pExpandDepth);
       }
       else {
-	switch(pLayoutPolicy) {
+	switch(groupPolicy) {
 	case Preserve:
 	  vjob.setCollapsed(wasCollapsed.contains(path));
 	  break;
@@ -999,7 +1021,7 @@ class JQueueJobViewerPanel
 	  JobPath cpath = new JobPath(path, cstatus.getJobID());	 
 	  
 	  ViewerJob cvjob = layoutJobs(false, cstatus, cpath, canchor, 
-				       external, created, wasCollapsed, seen);
+				       external, created, groupPolicy, wasCollapsed, seen);
 	  
 	  canchor.y(canchor.y() - cvjob.getBounds().getRange().y());
 	  cheight += cvjob.getHeight();
@@ -3490,6 +3512,13 @@ class JQueueJobViewerPanel
    * The ID of the job last used to update the job hint.
    */ 
   private Long  pLastJobHintID; 
+
+  
+  /**
+   * The job group IDs of groups newly added during the last update.  Used to determine
+   * what new groups to auto-expand if that preference is active.
+   */ 
+  private TreeSet<Long>  pNewJobGroupIDs; 
 
 
   /**

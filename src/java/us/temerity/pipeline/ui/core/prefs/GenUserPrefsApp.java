@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.68 2008/06/27 02:12:25 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.69 2008/07/10 10:12:45 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -1730,6 +1730,12 @@ class GenUserPrefsApp
 
 	new BasePref(),
 
+        new BooleanPref
+	("Whether to use automatic expand/collapse for jobs in newly added job groups.", 
+	 "JobAutoExpandNew", "Automatic Expand New:", true), 
+
+	new BasePref(),
+
 	new BooleanPref
 	("Whether to show job status detail hints by default.",
 	 "ShowJobDetailHints", "Show Job Detail Hints:", true), 
@@ -2694,7 +2700,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.68 2008/06/27 02:12:25 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.69 2008/07/10 10:12:45 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -2949,7 +2955,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.68 2008/06/27 02:12:25 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.69 2008/07/10 10:12:45 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -4306,7 +4312,7 @@ class GenUserPrefsApp
 
       StringBuilder buf = new StringBuilder();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.68 2008/06/27 02:12:25 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.69 2008/07/10 10:12:45 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 
