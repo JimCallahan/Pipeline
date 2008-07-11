@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.252 2008/07/08 17:02:27 jesse Exp $
+// $Id: MasterMgr.java,v 1.253 2008/07/11 00:40:20 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -17853,7 +17853,6 @@ class MasterMgr
     /* push the current node onto the end of the branch */ 
     branch.addLast(name);
 
-
     /* add the current node */ 
     boolean hasWorking = false;
     timer.aquire();
@@ -17879,26 +17878,31 @@ class MasterMgr
       workingLock.readLock().unlock();
     }
 
-    /* process downstream nodes */ 
     if(hasWorking) {
-      timer.aquire();
-      ReentrantReadWriteLock lock = getDownstreamLock(name);
-      lock.readLock().lock();
-      try {
-	timer.resume();
-	
-	DownstreamLinks dsl = getDownstreamLinks(name); 
-	if(dsl == null)
-	  throw new IllegalStateException(); 
-	
-	TreeSet<String> wlinks = dsl.getWorking(nodeID);
-	if(wlinks != null) {
-	  for(String lname : wlinks) 
-	    getDownstreamWorkingSeqs(new NodeID(nodeID, lname), branch, fseqs, timer);
-	}
+      /* lookup the names of the working nodes downstream */ 
+      TreeSet<String> wlinks = null;
+      {
+        timer.aquire();
+        ReentrantReadWriteLock lock = getDownstreamLock(name);
+        lock.readLock().lock();
+        try {
+          timer.resume();
+          
+          DownstreamLinks dsl = getDownstreamLinks(name); 
+          if(dsl == null)
+            throw new IllegalStateException(); 
+          
+          wlinks = dsl.getWorking(nodeID);
+        }
+        finally {
+          lock.readLock().unlock();
+        }
       }
-      finally {
-	lock.readLock().unlock();
+        
+      /* process any downstream nodes... */ 
+      if(wlinks != null) {
+        for(String lname : wlinks) 
+          getDownstreamWorkingSeqs(new NodeID(nodeID, lname), branch, fseqs, timer);
       }
     }
 
