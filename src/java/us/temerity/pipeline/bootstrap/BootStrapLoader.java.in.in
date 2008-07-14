@@ -1,10 +1,11 @@
-// $Id: BootStrapLoader.java.in.in,v 1.14 2007/04/12 09:21:08 jim Exp $
+// $Id: BootStrapLoader.java.in.in,v 1.15 2008/07/14 15:07:13 jim Exp $
 
 package us.temerity.pipeline.bootstrap;
 
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.math.*;
 import java.security.*;
 import java.security.spec.*;
@@ -169,6 +170,13 @@ class BootStrapLoader
       }
     }
     
+    /* initialize the class tables and locks */ 
+    {
+      pClassBytes  = new HashMap<String,byte[]>(1024);
+      pClasses     = new HashMap<String,Class>(1024);
+      pClassesLock = new ReentrantReadWriteLock(); 
+    }
+
     /* decrypt the class entries */ 
     try {
       byte raw[] = null;
@@ -193,38 +201,38 @@ class BootStrapLoader
 	raw = bout.toByteArray();
       }
 
-      pClasses = new HashMap<String,byte[]>();
-
-      int idx = 0;
-      while(idx < raw.length) {
-	String cname = null;
-	{
-	  int size = new Integer(new String(raw, idx, 9));
-	  if(size <= 0) 
-	    throw new IOException();
-	  idx+=9;
+      synchronized(pClassBytes) {
+        int idx = 0;
+        while(idx < raw.length) {
+          String cname = null;
+          {
+            int size = new Integer(new String(raw, idx, 9));
+            if(size <= 0) 
+              throw new IOException();
+            idx+=9;
 	  
-	  cname = new String(raw, idx, size); 
-	  idx+=size;
-	}
+            cname = new String(raw, idx, size); 
+            idx+=size;
+          }
 	
-	byte cbytes[] = null;
-	{
-	  int size = new Integer(new String(raw, idx, 9));
-	  if(size <= 0) 
-	    throw new IOException();
-	  idx+=9;
+          byte cbytes[] = null;
+          {
+            int size = new Integer(new String(raw, idx, 9));
+            if(size <= 0) 
+              throw new IOException();
+            idx+=9;
 	
-	  cbytes = new byte[size];
-	  int wk;
-	  for(wk=0; wk<cbytes.length; wk++, idx++) 
-	    cbytes[wk] = raw[idx];
-	}
+            cbytes = new byte[size];
+            int wk;
+            for(wk=0; wk<cbytes.length; wk++, idx++) 
+              cbytes[wk] = raw[idx];
+          }
 
-// 	System.out.print("Loaded Class: " + cname + " [" + cbytes.length + "]\n");
-// 	System.out.flush();
+//        System.out.print("Loaded Class: " + cname + " [" + cbytes.length + "]\n");
+//        System.out.flush();
 
-	pClasses.put(cname, cbytes);
+          pClassBytes.put(cname, cbytes);
+        }
       }
     }
     catch(Exception ex) {
@@ -249,19 +257,46 @@ class BootStrapLoader
   ) 
     throws ClassNotFoundException
   {
-    byte cbytes[] = pClasses.get(cname);
+    /* first see if its already been defined */ 
+    pClassesLock.readLock().lock();
+    try {
+      Class cls = pClasses.get(cname);
+      if(cls != null) 
+        return cls;
+    }
+    finally {
+      pClassesLock.readLock().unlock();
+    }
 
-//     System.out.print("Found Class: " + cname + 
-// 		     " [" + ((cbytes != null) ? cbytes.length : -1) + "]\n");
-//     System.out.flush();
+    /* otherwise, try to define it... */ 
+    pClassesLock.writeLock().lock();
+    try {
+      Class cls = pClasses.get(cname);
+      if(cls != null) 
+        return cls;
 
-    if(cbytes == null) 
-      throw new ClassNotFoundException(cname);
-    
-    return defineClass(cname, cbytes, 0, cbytes.length);
+      synchronized(pClassBytes) {
+        byte cbytes[] = pClassBytes.get(cname);
+        if(cbytes == null) 
+          throw new ClassNotFoundException(cname);   
+
+        cls = defineClass(cname, cbytes, 0, cbytes.length);
+        pClasses.put(cname, cls);
+        pClassBytes.remove(cname);
+        
+//      System.out.print("Defined Class: " + cname + "\n");
+//      System.out.flush();      
+        
+        return cls;
+      } 
+    }
+    finally {
+      pClassesLock.writeLock().unlock();
+    }
+
   }
 
-
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
@@ -275,8 +310,26 @@ class BootStrapLoader
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The decrypted raw class bytes indexed by class name. 
+   * The decrypted raw class bytes indexed by class name.  <P> 
+   * 
+   * After being defined, the entry for a class will be removed from this table so that the 
+   * raw bytes can be garbage collected. <P> 
+   * 
+   * Access to this field should be protected by a synchronized block.
    */ 
-  private HashMap<String,byte[]>  pClasses;
+  private HashMap<String,byte[]>  pClassBytes;  
+
+  /**
+   * The defined classes indexed by class name. <P> 
+   * 
+   * If there is no entry in this table for a class, the raw bytes for the class will be 
+   * looked up from pClassBytes and an entry created in this table.  Therefore, over time
+   * this table will contain all classes in the vault and the pClassBytes table be become
+   * empty. <P> 
+   * 
+   * Access to this field should be protected by the read/write lock below.
+   */ 
+  private HashMap<String,Class>   pClasses;
+  private ReentrantReadWriteLock  pClassesLock;
 
 }

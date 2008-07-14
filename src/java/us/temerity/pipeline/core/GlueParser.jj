@@ -54,15 +54,7 @@ GlueParser
     }
   }
 
-  /**
-   * The package prefixes to use when resolving simple class names. 
-   */ 
-  private static final String sPackages[] = {
-    "java.lang", 
-    "java.util", 
-    "us.temerity.pipeline"
-  };
-
+  
   
   /*----------------------------------------------------------------------------------------*/
   /*   H E L P E R S                                                                        */
@@ -836,22 +828,7 @@ AnyClass() :
   {
     if(cls != null) 
       return cls;
-
-    try {
-      return Class.forName(cname);
-    }
-    catch (ClassNotFoundException ex) {
-      int wk;
-      for(wk=0; wk<sPackages.length; wk++) {
-	try {
-	  return Class.forName(sPackages[wk] + "." + cname);
-	}
-	catch (ClassNotFoundException ex2) {
-	}
-      }
-    
-      throw new ParseException("Unable to locate class: " + cname);
-    }
+    return GlueClassCache.getInstance().getClass(cname);
   }
 }
 
@@ -879,22 +856,7 @@ NonPrimClass() :
   {
     if(cls != null) 
       return cls;
-
-    try {
-      return Class.forName(cname);
-    }
-    catch (ClassNotFoundException ex) {
-      int wk;
-      for(wk=0; wk<sPackages.length; wk++) {
-	try {
-	  return Class.forName(sPackages[wk] + "." + cname);
-	}
-	catch (ClassNotFoundException ex2) {
-	}
-      }
-    
-      throw new ParseException("Unable to locate class: " + cname);
-    }
+    return GlueClassCache.getInstance().getClass(cname);
   }
 }
 
