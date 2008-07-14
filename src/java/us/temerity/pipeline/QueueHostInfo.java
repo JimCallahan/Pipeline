@@ -1,4 +1,4 @@
-// $Id: QueueHostInfo.java,v 1.9 2007/11/30 20:14:23 jesse Exp $
+// $Id: QueueHostInfo.java,v 1.10 2008/07/14 15:06:36 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -168,9 +168,10 @@ class QueueHostInfo
   private synchronized void
   initShortName() 
   {
-    Matcher m = sHostPattern.matcher(pName);
-    if(m.find() && (m.group().length() > 0))
-      pShortName = m.group();
+    Matcher n = sNumericHostPattern.matcher(pName);
+    Matcher s = sShortHostPattern.matcher(pName);
+    if(!n.matches() && s.find() && (s.group().length() > 0))
+      pShortName = s.group();
     else 
       pShortName = pName;
   }
@@ -738,9 +739,14 @@ class QueueHostInfo
   private static final long serialVersionUID = 3815152450621478990L;
 
   /**
-   * A regular expression to match the first component of a fully resolved hostname.
+   * A regular expressions used to determine if a hostname is numeric and to match the 
+   * first component (short name) of a non-numeric hostname.
    */ 
-  private static final Pattern sHostPattern = Pattern.compile("([^\\.])+");
+  private static final Pattern sNumericHostPattern = 
+    Pattern.compile("([0-9])+\\.([0-9])+\\.([0-9])+\\.([0-9])+");
+
+  private static final Pattern sShortHostPattern = 
+    Pattern.compile("([^\\.])+");
 
 
 
