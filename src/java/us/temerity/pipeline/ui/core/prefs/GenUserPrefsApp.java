@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.69 2008/07/10 10:12:45 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.70 2008/07/15 17:25:28 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -1703,6 +1703,11 @@ class GenUserPrefsApp
       looks.add("Rounded");
       looks.add("Square");
 
+      LinkedList<String> warn = new LinkedList();
+      warn.add("None");
+      warn.add("Beep");
+      warn.add("Message");
+
       BasePref prefs[] = {
 	new ChoicePref
 	("The initial orientation of job group layout.", 
@@ -1733,6 +1738,12 @@ class GenUserPrefsApp
         new BooleanPref
 	("Whether to use automatic expand/collapse for jobs in newly added job groups.", 
 	 "JobAutoExpandNew", "Automatic Expand New:", true), 
+
+        new ChoicePref
+	("The amount of user feedback to give when an excessive number of visible jobs " + 
+         "within a job group forces all subsequently displayed jobs to be automaticly " +
+         "collapsed.", 
+	 "CollapseWarnings", "Collapse Warnings:", warn, "Message"), 
 
 	new BasePref(),
 
@@ -2700,7 +2711,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.69 2008/07/10 10:12:45 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.70 2008/07/15 17:25:28 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -2955,7 +2966,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.69 2008/07/10 10:12:45 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.70 2008/07/15 17:25:28 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -4312,7 +4323,7 @@ class GenUserPrefsApp
 
       StringBuilder buf = new StringBuilder();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.69 2008/07/10 10:12:45 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.70 2008/07/15 17:25:28 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 

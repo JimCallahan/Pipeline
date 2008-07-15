@@ -1,4 +1,4 @@
-// $Id: QueueJobGroup.java,v 1.13 2007/03/28 19:31:03 jim Exp $
+// $Id: QueueJobGroup.java,v 1.14 2008/07/15 17:25:27 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -190,6 +190,18 @@ class QueueJobGroup
     return Collections.unmodifiableList(pRootIDs);
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the total number of all external jobs associated with the group.
+   */ 
+  public int
+  numExternalJobs()
+  {
+    return pExternalIDs.size(); 
+  }
+
   /**
    * Get the unique identifiers of the external jobs used as sources by jobs associated
    * with the group.
@@ -200,6 +212,18 @@ class QueueJobGroup
     return Collections.unmodifiableSortedSet(pExternalIDs);
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the total number of all member jobs associated with the group.
+   */ 
+  public int
+  numJobs()
+  {
+    return pJobIDs.size(); 
+  }
+
   /**
    * Get the unique identifiers of all member jobs associated with the group.
    */ 
@@ -207,6 +231,18 @@ class QueueJobGroup
   getJobIDs()
   {
     return Collections.unmodifiableSortedSet(pJobIDs);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the total number of all member and external jobs associated with the group.
+   */ 
+  public int
+  numAllJobs()
+  {
+    return numJobs() + numExternalJobs();
   }
 
   /**
@@ -221,6 +257,7 @@ class QueueJobGroup
 
     return jobIDs;
   }
+
 
 
 
