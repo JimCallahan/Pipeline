@@ -28,7 +28,7 @@
                   -linkoffline http://temerity.us/products/pipeline/docs/javadoc \
                     @ROOT_INST_PARENT_DIR@/pipeline-latest/share/docs/javadoc
 
-       PLPLUGIN = @ROOT_INST_PARENT_DIR@/pipeline-latest/Unix-x86-Opt/bin/plplugin
+       PLPLUGIN = @ROOT_INST_PARENT_DIR@/pipeline-latest/Unix-@NATIVE_ARCHTYPE@-Opt/bin/plplugin
 
               export JAVA_HOME JAR JAVAC JAVAC_OPTS API_JAR PLPLUGIN
 
