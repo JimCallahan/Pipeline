@@ -1,4 +1,4 @@
-// $Id: RadarMaya2MRCollection.java,v 1.4 2008/05/21 22:07:58 jesse Exp $
+// $Id: RadarMaya2MRCollection.java,v 1.5 2008/07/15 17:23:38 jim Exp $
 
 package com.radar.pipeline.plugin.RadarMaya2MRCollection.v2_3_2;
 
@@ -75,8 +75,8 @@ class RadarMaya2MRCollection
   @Override
   public TreeMap<String, String> 
   getBuildersProvided()
-  {
-    String pkg = "us.temerity.pipeline.plugin.Maya2MRCollection.v2_3_2.";
+  {              
+    String pkg = "com.radar.pipeline.plugin.RadarMaya2MRCollection.v2_3_2.";
 
     TreeMap<String, String> toReturn = new TreeMap<String, String>();
     toReturn.put("Asset", pkg + "RadarAssetBuilder");
