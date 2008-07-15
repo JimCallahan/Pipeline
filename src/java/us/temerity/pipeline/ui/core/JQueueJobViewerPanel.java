@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.56 2008/07/15 17:25:27 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.57 2008/07/15 18:14:46 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -906,6 +906,9 @@ class JQueueJobViewerPanel
 	    }
 	  }
 	}
+        
+        if(gheight == 0) 
+          gheight = 1;
 
 	ViewerJobGroup vgroup = new ViewerJobGroup(group, created, gheight); 
 	pViewerJobGroups.put(group.getGroupID(), vgroup);
