@@ -24,6 +24,14 @@ $(TARGET): java-all
 	(cd $(CLASS_ROOT); \
          $(JAR) -cvf $(JAVA_PACKAGE)/$(TARGET) \
                 `find $(JAVA_PACKAGE) -type f -name "*.class"`)
+	@rm -rf tmp
+	@mkdir tmp
+	(cd tmp; \
+         $(JAR) -xf $(MAYA2MR_JAR); \
+         $(JAR) -uvf ../$(TARGET) \
+                `find us/temerity/pipeline/plugin/Maya2MRCollection/v2_3_2 -type f -name "*.class"`)
+	@rm -rf tmp
+
 
 java-all: $(JAVA_SOURCES)
 	$(JAVAC) $(JAVAC_OPTS) -classpath $(API_JAR):$(MAYA2MR_JAR):. -d $(CLASS_ROOT) \
