@@ -1,4 +1,4 @@
-// $Id: JResourceUsageHistoryDialog.java,v 1.23 2008/05/12 04:07:49 jim Exp $
+// $Id: JResourceUsageHistoryDialog.java,v 1.24 2008/07/16 12:03:48 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -395,6 +395,8 @@ class JResourceUsageHistoryDialog
     pShowLowDiskBar   = prefs.getShowLowDiskBar();
     pShowJobSlotsBar  = prefs.getShowJobSlotsBar();
 
+    pBorderResized = true; 
+
     doRefresh();
     updateMenuToolTips();
   }
@@ -581,7 +583,15 @@ class JResourceUsageHistoryDialog
       try {
 	double bx = 0.0; 
 	for(String hname : pSamples.keySet()) {
-	  double x = mgr.getTextWidth(PackageInfo.sGLFont, hname, 0.05) * sHostnameSize;
+          String title = hname;
+                
+          if(!prefs.getShowFullHostnames()) {
+            QueueHostInfo info = pHosts.get(hname);
+            if(info != null) 
+              title = info.getShortName(); 
+          }
+
+	  double x = mgr.getTextWidth(PackageInfo.sGLFont, title, 0.05) * sHostnameSize;
 	  bx = Math.max(bx, x);
 	}
 
@@ -1163,15 +1173,47 @@ class JResourceUsageHistoryDialog
 		}
 		
 		if(pMemButton.isSelected() && renderGraphBars(gl, top)) {
-		  
-		  // ...
+                  if(pShowLowMemoryBar) {
+                    double v = prefs.getLowMemoryThreshold();
+
+                    if((v > 0.0) && (v < 1.0)) {
+                      Color3d color = prefs.getLowMemoryColor();
+                      color.mult(0.8);
+                      gl.glColor3d(color.r(), color.g(), color.b());
+                      
+                      gl.glBegin(gl.GL_LINES);
+                      {	
+                        gl.glVertex2d(-pGraphArea.x(), top-1.0+v);
+                        gl.glVertex2d( pGraphArea.x(), top-1.0+v);
+                      }
+                      gl.glEnd();
+                      
+                      gl.glColor3d(0.8, 0.8, 0.8);
+                    }
+                  }
 
 		  top -= 1.0 + sGraphBorder*2.0 + sGraphGap; 
 		}
 		
 		if(pDiskButton.isSelected() && renderGraphBars(gl, top)){
-		  
-		  // ...
+                  if(pShowLowDiskBar) {
+                    double v = prefs.getLowDiskThreshold();
+
+                    if((v > 0.0) && (v < 1.0)) {
+                      Color3d color = prefs.getLowDiskColor();
+                      color.mult(0.8);
+                      gl.glColor3d(color.r(), color.g(), color.b());
+                      
+                      gl.glBegin(gl.GL_LINES);
+                      {	
+                        gl.glVertex2d(-pGraphArea.x(), top-1.0+v);
+                        gl.glVertex2d( pGraphArea.x(), top-1.0+v);
+                      }
+                      gl.glEnd();
+                      
+                      gl.glColor3d(0.8, 0.8, 0.8);
+                    }
+                  }
 
 		  top -= 1.0 + sGraphBorder*2.0 + sGraphGap; 
 		}
@@ -1661,7 +1703,15 @@ class JResourceUsageHistoryDialog
 	    TreeMap<String,Integer> labelDLs = new TreeMap<String,Integer>();
 	    try {
 	      for(String hname : pSamples.keySet()) {
-		int dl = mgr.getTextDL(gl, PackageInfo.sGLFont, hname, 
+                String title = hname;
+                
+                if(!prefs.getShowFullHostnames()) {
+                  QueueHostInfo info = pHosts.get(hname);
+                  if(info != null) 
+                    title = info.getShortName(); 
+                }
+
+		int dl = mgr.getTextDL(gl, PackageInfo.sGLFont, title, 
 				       GeometryMgr.TextAlignment.Right, 0.05);
 		labelDLs.put(hname, dl);
 	      }
@@ -1763,36 +1813,56 @@ class JResourceUsageHistoryDialog
 		  }
 
 		  {
-		    Long totalMem = null; 
+		    Double totalMem = null; 
 		    if(qinfo != null) 
-		      totalMem = qinfo.getTotalMemory();
+		      totalMem = ((double) qinfo.getTotalMemory()) / 1073741824.0;
 
 		    if(totalMem != null) {
-		      String label = 
-			String.format("%1$.1f", ((double) totalMem) / 1073741824.0);
+                      {
+                        String label = String.format("%1$.1f", totalMem);
+                        if(!pDoubleLabelDLs.containsKey(label)) {
+                          int dl = mgr.getTextDL(gl, PackageInfo.sGLFont, label, 
+                                                 GeometryMgr.TextAlignment.Center, 0.05);
+                          pDoubleLabelDLs.put(label, dl);
+                        }
+                      }
 
-		      if(!pDoubleLabelDLs.containsKey(label)) {
-			int dl = mgr.getTextDL(gl, PackageInfo.sGLFont, label, 
-					       GeometryMgr.TextAlignment.Center, 0.05);
-			pDoubleLabelDLs.put(label, dl);
-		      }
+                      {
+                        double thresh = totalMem * prefs.getLowMemoryThreshold();
+                        String label = String.format("%1$.1f", thresh); 
+                        if(!pDoubleLabelDLs.containsKey(label)) {
+                          int dl = mgr.getTextDL(gl, PackageInfo.sGLFont, label, 
+                                                 GeometryMgr.TextAlignment.Center, 0.05);
+                          pDoubleLabelDLs.put(label, dl);
+                        }
+                      }
 		    }
 		  }
 		  
 		  {
-		    Long totalDisk = null; 
+                    Double totalDisk = null; 
 		    if(qinfo != null) 
-		      totalDisk = qinfo.getTotalDisk(); 
+		      totalDisk = ((double) qinfo.getTotalDisk()) / 1073741824.0;
 
 		    if(totalDisk != null) {
-		      String label = 
-			String.format("%1$.1f", ((double) totalDisk) / 1073741824.0);
+                      {
+                        String label = String.format("%1$.1f", totalDisk);
+                        if(!pDoubleLabelDLs.containsKey(label)) {
+                          int dl = mgr.getTextDL(gl, PackageInfo.sGLFont, label, 
+                                                 GeometryMgr.TextAlignment.Center, 0.05);
+                          pDoubleLabelDLs.put(label, dl);
+                        }
+                      }
 
-		      if(!pDoubleLabelDLs.containsKey(label)) {
-			int dl = mgr.getTextDL(gl, PackageInfo.sGLFont, label, 
-					       GeometryMgr.TextAlignment.Center, 0.05);
-			pDoubleLabelDLs.put(label, dl);
-		      }
+                      {
+                        double thresh = totalDisk * prefs.getLowDiskThreshold();
+                        String label = String.format("%1$.1f", thresh);
+                        if(!pDoubleLabelDLs.containsKey(label)) {
+                          int dl = mgr.getTextDL(gl, PackageInfo.sGLFont, label, 
+                                                 GeometryMgr.TextAlignment.Center, 0.05);
+                          pDoubleLabelDLs.put(label, dl);
+                        }
+                      }
 		    }
 		  }
 		}
@@ -1896,8 +1966,8 @@ class JResourceUsageHistoryDialog
 			numProcs = qinfo.getNumProcessors();
 		      
  		      renderGraphTickLabels
- 			(gl, numProcs, prefs.getFullLoadColor(), 
- 			 pShowFullLoadBar, prefs.getSystemLoadRange(), top);
+ 			(gl, numProcs, prefs.getFullLoadColor(), pShowFullLoadBar, 
+                         prefs.getSystemLoadRange(), top);
 
  		      top -= 1.0 + sGraphBorder*2.0 + sGraphGap; 
  		    }
@@ -1910,21 +1980,27 @@ class JResourceUsageHistoryDialog
 			totalMem = qinfo.getTotalMemory();
 		      
 		      if(totalMem != null) 
-			renderGraphTickLabels(gl, (double) totalMem, top);
-
- 		      top -= 1.0 + sGraphBorder*2.0 + sGraphGap; 
- 		    }
-		  
+                        renderGraphTickLabels
+                          (gl,  prefs.getLowMemoryThreshold()*totalMem, 
+                           prefs.getLowMemoryColor(), pShowLowMemoryBar, 
+                           (double) totalMem, top);
+                      
+                      top -= 1.0 + sGraphBorder*2.0 + sGraphGap; 
+                    }
+                    
  		    if(pDiskButton.isSelected()) {
  		      renderGraphLabel(gl, diskDL, top, lx);
 
 		      Long totalDisk = null; 
 		      if(qinfo != null) 
 			totalDisk = qinfo.getTotalDisk(); 
-
-		      if(totalDisk != null) 
-			renderGraphTickLabels(gl, (double) totalDisk, top);
-
+                      
+                      if(totalDisk != null) 
+                        renderGraphTickLabels
+                          (gl, prefs.getLowDiskThreshold()*totalDisk, 
+                           prefs.getLowDiskColor(), pShowLowDiskBar,
+                           (double) totalDisk, top);
+                      
  		      top -= 1.0 + sGraphBorder*2.0 + sGraphGap; 
  		    }
 		  
@@ -1936,8 +2012,8 @@ class JResourceUsageHistoryDialog
 			slots = qinfo.getJobSlots();
 
  		      renderGraphTickLabels
- 			(gl, slots, prefs.getJobSlotsColor(), 
- 			 pShowJobSlotsBar, prefs.getJobCountRange(), top);
+ 			(gl, slots, prefs.getJobSlotsColor(), pShowJobSlotsBar, 
+                         prefs.getJobCountRange(), top);
 
  		      top -= 1.0 + sGraphBorder*2.0 + sGraphGap; 
  		    }
@@ -2303,14 +2379,19 @@ class JResourceUsageHistoryDialog
   renderGraphTickLabels
   (
    GL gl, 
+   Double level, 
+   Color3d lcolor, 
+   boolean drawBar, 
    double range, 
    double top
   ) 
   {
     double x = ExtraMath.lerp(-33.0, -8.0, 0.5);
-    double s = 12.0;
 
     if(pShowGraphBrackets) {
+      double s = 12.0;
+      double sp = s*1.5;
+
       {
 	String text = String.format("%1$.1f", range / 1073741824.0);
 	Integer dl = pDoubleLabelDLs.get(text);
@@ -2343,6 +2424,40 @@ class JResourceUsageHistoryDialog
 	  gl.glPopMatrix();
 	}
       }
+
+      if(level != null) {
+	double y = level / range;
+
+	if(drawBar && ((y*pScale.y()) > sp) && (((1.0-y)*pScale.y()) > sp)) {
+          String text = String.format("%1$.1f", level / 1073741824.0);
+          Integer dl = pDoubleLabelDLs.get(text);
+	  if(dl != null) {
+	    gl.glPushMatrix();
+	    {
+	      gl.glColor3d(lcolor.r(), lcolor.g(), lcolor.b());
+	      
+	      gl.glTranslated(x, top-1.0+y, 0.0);
+	      gl.glScaled(s, s/pScale.y(), 1.0);
+	      gl.glTranslated(0.0, -0.35, 0.0);
+	      gl.glCallList(dl);
+	    }
+	    gl.glPopMatrix();
+	  }
+	}
+      }
+    }
+
+    if((drawBar) && (level != null)) {
+      double y = level / range;
+
+      gl.glBegin(gl.GL_LINES);
+      {
+	gl.glColor3d(lcolor.r(), lcolor.g(), lcolor.b());
+	
+	gl.glVertex2d( 0.0, top-1.0+y);
+	gl.glVertex2d(-6.0, top-1.0+y);
+      }
+      gl.glEnd();    
     }
   }
 	
