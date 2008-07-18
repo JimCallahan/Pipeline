@@ -1,4 +1,4 @@
-// $Id: ShotNamer.java,v 1.36 2008/06/26 05:34:29 jim Exp $
+// $Id: ShotNamer.java,v 1.37 2008/07/18 12:33:14 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -14,37 +14,37 @@ import us.temerity.pipeline.builder.*;
 /**
  * Provides the names of nodes and node directories which are shot specific.
  */
-public 
-class ShotNamer 
-  extends BaseNames 
+public
+class ShotNamer
+  extends BaseNames
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
-  
+
   /**
    * Create a new namer.
-   * 
+   *
    * @param name
-   *    The name of the namer. 
-   * 
+   *    The name of the namer.
+   *
    * @param desc
-   *    A description of what the namer does. 
-   * 
-   * @param mclient 
+   *    A description of what the namer does.
+   *
+   * @param mclient
    *   The master manager connection.
-   * 
-   * @param qclient 
+   *
+   * @param qclient
    *   The queue manager connection.
-   * 
-   * @param studioDefs 
+   *
+   * @param studioDefs
    *   Provides a set of studio-wide helpers for project, sequence and shot naming.
-   */ 
-  protected 
+   */
+  protected
   ShotNamer
   (
-   String name, 
-   String desc, 
+   String name,
+   String desc,
    MasterMgrClient mclient,
    QueueMgrClient qclient,
    StudioDefinitions studioDefs
@@ -52,15 +52,15 @@ class ShotNamer
     throws PipelineException
   {
     super(name, desc, mclient, qclient);
-    
+
     pStudioDefs = studioDefs;
-    pBasePaths  = new DoubleMap<TaskType, NodePurpose, Path>(); 
-    
+    pBasePaths  = new DoubleMap<TaskType, NodePurpose, Path>();
+
     {
       UtilityParam param =
         new StringUtilityParam
         (StudioDefinitions.aProjectName,
-         "The short name of the project.", 
+         "The short name of the project.",
          null);
       addParam(param);
     }
@@ -86,17 +86,17 @@ class ShotNamer
 
   /**
    * Create a new namer.
-   * 
-   * @param mclient 
+   *
+   * @param mclient
    *   The master manager connection.
-   * 
-   * @param qclient 
+   *
+   * @param qclient
    *   The queue manager connection.
-   * 
-   * @param studioDefs 
+   *
+   * @param studioDefs
    *   Provides a set of studio-wide helpers for project, sequence and shot naming.
-   */ 
-  public 
+   */
+  public
   ShotNamer
   (
    MasterMgrClient mclient,
@@ -105,130 +105,130 @@ class ShotNamer
   )
     throws PipelineException
   {
-    this("ShotNamer", 
-	 "Provides the names of nodes and node directories which are shot specific.", 
+    this("ShotNamer",
+	 "Provides the names of nodes and node directories which are shot specific.",
 	 mclient, qclient, studioDefs);
   }
 
 
-  
+
   /*----------------------------------------------------------------------------------------*/
   /*   A C T I O N                                                                          */
   /*----------------------------------------------------------------------------------------*/
-  
+
   /**
    * Intialize any internal datastructures used by the naming methods based on the values
-   * of the namer's parameters. 
-   */ 
+   * of the namer's parameters.
+   */
   @Override
-  public void 
-  generateNames() 
-    throws PipelineException 
+  public void
+  generateNames()
+    throws PipelineException
   {
-    /* initialize the local util context (author, view and toolset) */ 
+    /* initialize the local util context (author, view and toolset) */
     setContext((UtilContext) getParamValue(aUtilContext));
 
-    /* lookup the namer's parameter values */ 
+    /* lookup the namer's parameter values */
     pProjectName = getStringParamValue(new ParamMapping(StudioDefinitions.aProjectName));
     pSeqName     = getStringParamValue(new ParamMapping(StudioDefinitions.aSequenceName));
     pShotName    = getStringParamValue(new ParamMapping(StudioDefinitions.aShotName));
-    
-    /* initialize the cached fully resolved node directory paths for all combinations 
-         of task type and node purpose for this shot. */ 
+
+    /* initialize the cached fully resolved node directory paths for all combinations
+         of task type and node purpose for this shot. */
     {
       Path spath = StudioDefinitions.getShotPath(pProjectName, pSeqName, pShotName);
       for(TaskType type : TaskType.values()) {
         for(NodePurpose purpose : NodePurpose.values()) {
           Path path = new Path(new Path(spath, type.toDirPath()), purpose.toDirPath());
-          pBasePaths.put(type, purpose, path); 
+          pBasePaths.put(type, purpose, path);
         }
       }
     }
   }
-  
+
 
 
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
-  
+
   /**
-   * The short project name. 
-   */ 
-  public String 
-  getProjectName() 
+   * The short project name.
+   */
+  public String
+  getProjectName()
   {
     return pProjectName;
   }
 
   /**
-   * The short shot sequence name. 
-   */ 
-  public String 
-  getSequenceName() 
+   * The short shot sequence name.
+   */
+  public String
+  getSequenceName()
   {
     return pSeqName;
   }
 
   /**
-   * The short shot name. 
-   */ 
-  public String 
-  getShotName() 
+   * The short shot name.
+   */
+  public String
+  getShotName()
   {
     return pShotName;
   }
 
   /**
-   * The short combined sequence/shot name. 
-   */ 
-  public String 
-  getFullShotName() 
+   * The short combined sequence/shot name.
+   */
+  public String
+  getFullShotName()
   {
-    return (pSeqName + pShotName); 
+    return (pSeqName + pShotName);
   }
 
-  
+
 
 
   /*----------------------------------------------------------------------------------------*/
   /*   S O U N D                                                                            */
   /*----------------------------------------------------------------------------------------*/
-  
+
   /**
    * Returns the fully resolved name of the prerequisites node for the Sound task.
-   */ 
+   */
   public String
   getSoundPrereqNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Sound, NodePurpose.Prereq), 
-			 joinNames(getFullShotName(), "sound_prereq")); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Sound, NodePurpose.Prereq),
+			 joinNames(getFullShotName(), "sound_prereq"));
+    return path.toString();
   }
-  
-  
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
    * Returns the fully resolved name of the shot soundtrack node.
-   */ 
+   */
   public String
-  getSoundtrackNode() 
+  getSoundtrackNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Sound, NodePurpose.Edit), 
-			 joinNames(getFullShotName(), "soundtrack")); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Sound, NodePurpose.Edit),
+			 joinNames(getFullShotName(), "soundtrack"));
+    return path.toString();
   }
 
   /**
    * Returns the fully resolved name of the submit node for the Sound task.
-   */ 
+   */
   public String
   getSoundSubmitNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Sound, NodePurpose.Submit), 
-			 joinNames(getFullShotName(), "sound_submit")); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Sound, NodePurpose.Submit),
+			 joinNames(getFullShotName(), "sound_submit"));
+    return path.toString();
   }
 
 
@@ -236,148 +236,148 @@ class ShotNamer
 
   /**
    * Returns the fully resolved name of the approve node for the Sound task.
-   */ 
+   */
   public String
   getSoundApproveNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Sound, NodePurpose.Approve), 
-			 joinNames(getFullShotName(), "sound_approve")); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Sound, NodePurpose.Approve),
+			 joinNames(getFullShotName(), "sound_approve"));
+    return path.toString();
   }
 
-  
-  
+
+
   /*----------------------------------------------------------------------------------------*/
   /*   H D R I                                                                              */
   /*----------------------------------------------------------------------------------------*/
 
   /**
    * Returns the fully resolved name of the prerequisites node for the HDRI task.
-   */ 
+   */
   public String
   getHdriPrereqNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.HDRI, NodePurpose.Prereq), 
-			 joinNames(getFullShotName(), "hdri_prereq")); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.HDRI, NodePurpose.Prereq),
+			 joinNames(getFullShotName(), "hdri_prereq"));
+    return path.toString();
   }
-  
-  
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Returns the fully resolved names of the (3) nodes containing the A series of varying 
-   * exposure raw digital images used to construct the single high dynamic range (HDR) 
+   * Returns the fully resolved names of the (3) nodes containing the A series of varying
+   * exposure raw digital images used to construct the single high dynamic range (HDR)
    * environment map.
    */
-  public ArrayList<String> 
-  getRawExposuresNodes() 
+  public ArrayList<String>
+  getRawExposuresNodes()
   {
-    ArrayList<String> names = new ArrayList<String>(); 
-    names.add(getRawExposuresNodeHelper("A")); 
-    names.add(getRawExposuresNodeHelper("B")); 
-    names.add(getRawExposuresNodeHelper("C")); 
+    ArrayList<String> names = new ArrayList<String>();
+    names.add(getRawExposuresNodeHelper("A"));
+    names.add(getRawExposuresNodeHelper("B"));
+    names.add(getRawExposuresNodeHelper("C"));
 
-    return names; 
+    return names;
   }
 
-  private String 
+  private String
   getRawExposuresNodeHelper
   (
    String letter
-  ) 
+  )
   {
-    Path path = new Path(pBasePaths.get(TaskType.HDRI, NodePurpose.Edit), 
-			 new Path(AppDirs.Raw.toDirPath(), 
-				  joinNames(getFullShotName(), "raw" + letter))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.HDRI, NodePurpose.Edit),
+			 new Path(AppDirs.Raw.toDirPath(),
+				  joinNames(getFullShotName(), "raw" + letter)));
+    return path.toString();
   }
-  
+
   /**
    * Returns the fully resolved name of the node containing the plain text exposure times.
    */
   public String
-  getExposureTimesNode() 
+  getExposureTimesNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.HDRI, NodePurpose.Edit), 
-			 joinNames(getFullShotName(), "exp_times")); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.HDRI, NodePurpose.Edit),
+			 joinNames(getFullShotName(), "exp_times"));
+    return path.toString();
   }
-  
+
   /**
-   * Returns the fully resolved name of the node containing the combined LatLon format 
+   * Returns the fully resolved name of the node containing the combined LatLon format
    * HDR environment map and diagnostic images.
-   */ 
+   */
   public String
-  getDiagnosticHdrImageNode() 
+  getDiagnosticHdrImageNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.HDRI, NodePurpose.Focus), 
-			 new Path(AppDirs.HDR.toDirPath(), 
-				  joinNames(getFullShotName(), "env"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.HDRI, NodePurpose.Focus),
+			 new Path(AppDirs.HDR.toDirPath(),
+				  joinNames(getFullShotName(), "env")));
+    return path.toString();
   }
 
   /**
    * Returns the fully resolved name of the node containing a thumbnail image extracted
    * from the LatLon format HDR environment map.
-   */ 
+   */
   public String
-  getDiagnosticHdrThumbNode() 
+  getDiagnosticHdrThumbNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.HDRI, NodePurpose.Thumbnail), 
-			 joinNames(getFullShotName(), "env")); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.HDRI, NodePurpose.Thumbnail),
+			 joinNames(getFullShotName(), "env"));
+    return path.toString();
   }
 
   /**
    * Returns the fully resolved name of the submit node for the HDRI task.
-   */ 
+   */
   public String
   getHdriSubmitNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.HDRI, NodePurpose.Submit), 
-			 joinNames(getFullShotName(), "hdri_submit")); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.HDRI, NodePurpose.Submit),
+			 joinNames(getFullShotName(), "hdri_submit"));
+    return path.toString();
   }
-  
-  
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Returns the fully resolved name of the node containing the final combined LatLon format 
-   * HDR environment map. 
-   */ 
+   * Returns the fully resolved name of the node containing the final combined LatLon format
+   * HDR environment map.
+   */
   public String
-  getFinalHdrImageNode() 
+  getFinalHdrImageNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.HDRI, NodePurpose.Product), 
-			 new Path(AppDirs.HDR.toDirPath(), 
-				  joinNames(getFullShotName(), "env"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.HDRI, NodePurpose.Product),
+			 new Path(AppDirs.HDR.toDirPath(),
+				  joinNames(getFullShotName(), "env")));
+    return path.toString();
   }
 
   /**
-   * Returns the fully resolved name of the node containing the Maya scene that will 
+   * Returns the fully resolved name of the node containing the Maya scene that will
    * load the final combined LatLon format HDR environment map.
-   */ 
+   */
   public String
-  getFinalHdrMayaNode() 
+  getFinalHdrMayaNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.HDRI, NodePurpose.Product), 
-			 new Path(AppDirs.Maya.toDirPath(), 
-				  joinNames(getFullShotName(), "hdr_env"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.HDRI, NodePurpose.Product),
+			 new Path(AppDirs.Maya.toDirPath(),
+				  joinNames(getFullShotName(), "hdr_env")));
+    return path.toString();
   }
 
   /**
    * Returns the fully resolved name of the approve node for the HDRI task.
-   */ 
+   */
   public String
   getHdriApproveNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.HDRI, NodePurpose.Approve), 
-			 joinNames(getFullShotName(), "hdri_approve")); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.HDRI, NodePurpose.Approve),
+			 joinNames(getFullShotName(), "hdri_approve"));
+    return path.toString();
   }
 
 
@@ -389,44 +389,44 @@ class ShotNamer
 
   /**
    * Returns the fully resolved name of the prereq node for the Plates task.
-   */ 
+   */
   public String
   getPlatesPrereqNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Prereq), 
-			 joinNames(getFullShotName(), "plates_prereq")); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Prereq),
+			 joinNames(getFullShotName(), "plates_prereq"));
+    return path.toString();
   }
 
 
   /*----------------------------------------------------------------------------------------*/
-  
+
   /**
    * Returns the fully resolved node directory path to the parent directory of all existing
-   * scanned 2k images for this shot. 
+   * scanned 2k images for this shot.
    */
   public Path
   getPlatesScannedParentPath()
   {
-    return new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Edit), 
-                    AppDirs.Image2k.toDirPath()); 
+    return new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Edit),
+                    AppDirs.Image2k.toDirPath());
   }
-  
+
   /**
-   * Returns the fully resolved node directory path to the parent directory of all 
+   * Returns the fully resolved node directory path to the parent directory of all
    * miscellanous on-set reference images.
    */
   public Path
-  getPlatesMiscReferenceParentPath() 
+  getPlatesMiscReferenceParentPath()
   {
-    return new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Edit), 
-                    AppDirs.Misc.toDirPath());  
+    return new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Edit),
+                    AppDirs.Misc.toDirPath());
   }
-  
+
   /**
-   * Returns the fully resolved name of the grouping node for all existing miscellanous 
-   * on-set reference images. 
-   * 
+   * Returns the fully resolved name of the grouping node for all existing miscellanous
+   * on-set reference images.
+   *
    * @param purpose
    *   The purpose of the node within the task.  Only supports: Prepare or Product.
    */
@@ -434,34 +434,34 @@ class ShotNamer
   getVfxReferenceNode
   (
    NodePurpose purpose
-  ) 
-    throws PipelineException 
+  )
+    throws PipelineException
   {
     switch(purpose) {
     case Prepare:
     case Product:
       {
-	Path path = new Path(pBasePaths.get(TaskType.Plates, purpose), 
+	Path path = new Path(pBasePaths.get(TaskType.Plates, purpose),
 			     joinNames(getFullShotName(), "vfx_reference"));
-	return path.toString(); 
+	return path.toString();
       }
-      
+
     default:
       throw new PipelineException
-	("The " + purpose + " purpose is not supported for the VfxReference node!"); 
+	("The " + purpose + " purpose is not supported for the VfxReference node!");
     }
   }
-    
+
   /**
    * Returns the fully resolved name of the node containing lens and other data
    * collected on-set about the shot.
    */
   public String
-  getVfxShotDataNode() 
+  getVfxShotDataNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Edit), 
-			 joinNames(getFullShotName(), "vfx_shot_data")); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Edit),
+			 joinNames(getFullShotName(), "vfx_shot_data"));
+    return path.toString();
   }
 
   /**
@@ -469,25 +469,25 @@ class ShotNamer
    * exported from PFTrack.
    */
   public String
-  getDotGridImageNode() 
+  getDotGridImageNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Edit), 
-			 new Path(AppDirs.Grids.toDirPath(), 
-				  joinNames(getFullShotName(), "dotGrid"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Edit),
+			 new Path(AppDirs.Grids.toDirPath(),
+				  joinNames(getFullShotName(), "dotGrid")));
+    return path.toString();
   }
-  
+
   /**
    * Returns the fully resolved name of the node containing the undistorted UV wedge image
    * exported from PFTrack.
    */
   public String
-  getUvWedgeImageNode() 
+  getUvWedgeImageNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Edit), 
-			 new Path(AppDirs.Grids.toDirPath(), 
-				  joinNames(getFullShotName(), "uvWedge"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Edit),
+			 new Path(AppDirs.Grids.toDirPath(),
+				  joinNames(getFullShotName(), "uvWedge")));
+    return path.toString();
   }
 
   /**
@@ -495,40 +495,40 @@ class ShotNamer
    * which loads undistorted grid dots image exported from PFTrack.
    */
   public String
-  getDotGridCommandNode() 
+  getDotGridCommandNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Prepare), 
-			 new Path(AppDirs.Cmd.toDirPath(), 
-				  joinNames(getFullShotName(), "dotGrid"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Prepare),
+			 new Path(AppDirs.Cmd.toDirPath(),
+				  joinNames(getFullShotName(), "dotGrid")));
+    return path.toString();
   }
-  
+
   /**
    * Returns the fully resolved name of the node containing the Houdini command script
    * which loads the undistorted UV wedge image exported from PFTrack.
    */
   public String
-  getUvWedgeCommandNode() 
+  getUvWedgeCommandNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Prepare), 
-			 new Path(AppDirs.Cmd.toDirPath(), 
-				  joinNames(getFullShotName(), "uvWedge"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Prepare),
+			 new Path(AppDirs.Cmd.toDirPath(),
+				  joinNames(getFullShotName(), "uvWedge")));
+    return path.toString();
   }
-    
+
   /**
    * Returns the fully resolved name of the node containing combined pre-render Houdini
    * command script which loads the undistorted UV wedge and grid dots images.
    */
   public String
-  getRenderUvCommandNode() 
+  getRenderUvCommandNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Prepare), 
-			 new Path(AppDirs.Cmd.toDirPath(), 
-				  joinNames(getFullShotName(), "render_uv"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Prepare),
+			 new Path(AppDirs.Cmd.toDirPath(),
+				  joinNames(getFullShotName(), "render_uv")));
+    return path.toString();
   }
-    
+
   /**
    * Returns the fully resolved name of the node containing undistorted UV image rendered
    * by Houdni.
@@ -536,77 +536,77 @@ class ShotNamer
   public String
   getUndistortUvImageNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Prepare), 
-			 new Path(AppDirs.UV.toDirPath(), 
-				  joinNames(getFullShotName(), "ud_uv_2k"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Prepare),
+			 new Path(AppDirs.UV.toDirPath(),
+				  joinNames(getFullShotName(), "ud_uv_2k")));
+    return path.toString();
   }
-    
+
   /**
-   * Returns the fully resolved name of the node containing Nuke script to read the 
+   * Returns the fully resolved name of the node containing Nuke script to read the
    * undistorted UV image.
    */
   public String
   getReadUndistortUvImageNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Prepare), 
-			 new Path(AppDirs.Nuke.toDirPath(), 
-				  joinNames(getFullShotName(), "ud_uv_2k"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Prepare),
+			 new Path(AppDirs.Nuke.toDirPath(),
+				  joinNames(getFullShotName(), "ud_uv_2k")));
+    return path.toString();
   }
- 
+
   /**
    * Returns the fully resolved name of the node contaning the Nuke script fragment
    * use to read in the raw cineon plates.
-   */ 
+   */
   public String
-  getReadPlatesNode() 
+  getReadPlatesNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Prepare), 
-			 new Path(AppDirs.Nuke.toDirPath(), 
-				  joinNames(getFullShotName(), "plates"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Prepare),
+			 new Path(AppDirs.Nuke.toDirPath(),
+				  joinNames(getFullShotName(), "plates")));
+    return path.toString();
   }
 
   /**
    * Returns the fully resolved name of the node containing the undistorted/linearized
    * ~2k plate images.
-   */ 
+   */
   public String
-  getUndistorted2kPlateNode() 
+  getUndistorted2kPlateNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Focus), 
-			 new Path(AppDirs.Image2k.toDirPath(), 
-				  joinNames(getFullShotName(), "bg_ud_2k"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Focus),
+			 new Path(AppDirs.Image2k.toDirPath(),
+				  joinNames(getFullShotName(), "bg_ud_2k")));
+    return path.toString();
   }
 
   /**
    * Returns the fully resolved name of the node containing a thumbnail image extracted
    * from the undistorted/linearized ~2k plate images.
-   */ 
+   */
   public String
-  getUndistorted2kPlateThumbNode() 
+  getUndistorted2kPlateThumbNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Thumbnail), 
-			 joinNames(getFullShotName(), "bg_ud_2k")); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Thumbnail),
+			 joinNames(getFullShotName(), "bg_ud_2k"));
+    return path.toString();
   }
 
   /**
    * Returns the fully resolved name of the submit node for the Plates task.
-   */ 
+   */
   public String
   getPlatesSubmitNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Submit), 
-			 joinNames(getFullShotName(), "plates_submit")); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Submit),
+			 joinNames(getFullShotName(), "plates_submit"));
+    return path.toString();
   }
-  
-  
+
+
   /*----------------------------------------------------------------------------------------*/
-  
+
   /**
    * Returns the fully resolved name of the node containing redistorted UV image rendered
    * by Houdini.
@@ -614,226 +614,234 @@ class ShotNamer
   public String
   getRedistortUvImageNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Product), 
-			 new Path(AppDirs.UV.toDirPath(), 
-				  joinNames(getFullShotName(), "rd_uv_2k"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Product),
+			 new Path(AppDirs.UV.toDirPath(),
+				  joinNames(getFullShotName(), "rd_uv_2k")));
+    return path.toString();
   }
 
   /**
-   * Returns the fully resolved name of the node containing the approved 
+   * Returns the fully resolved name of the node containing the approved
    * undistorted/linearized ~2k Cineon format plate images.
-   */ 
+   */
   public String
-  getApprovedUndistorted2kCineonPlateNode() 
+  getApprovedUndistorted2kCineonPlateNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Product), 
-			 new Path(AppDirs.Image2k.toDirPath(), 
-				  new Path(AppDirs.Cineon.toDirPath(), 
-					   joinNames(getFullShotName(), "bg_ud_2k")))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Product),
+			 new Path(AppDirs.Image2k.toDirPath(),
+				  new Path(AppDirs.Cineon.toDirPath(),
+					   joinNames(getFullShotName(), "bg_ud_2k"))));
+    return path.toString();
   }
 
   /**
-   * Returns the fully resolved name of the node containing the approved 
+   * Returns the fully resolved name of the node containing the approved
    * undistorted/linearized ~2k plate images.
-   */ 
+   */
   public String
-  getApprovedUndistorted2kPlateNode() 
+  getApprovedUndistorted2kPlateNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Product), 
-			 new Path(AppDirs.Image2k.toDirPath(), 
-				  joinNames(getFullShotName(), "bg_ud_2k"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Product),
+			 new Path(AppDirs.Image2k.toDirPath(),
+				  joinNames(getFullShotName(), "bg_ud_2k")));
+    return path.toString();
   }
 
   /**
    * Returns the fully resolved name of the node containing the undistorted/linearized
    * ~1k plate images.
-   */ 
+   */
   public String
-  getUndistorted1kPlateNode() 
+  getUndistorted1kPlateNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Product), 
-			 new Path(AppDirs.Image1k.toDirPath(), 
-				  joinNames(getFullShotName(), "bg_ud_1k"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Product),
+			 new Path(AppDirs.Image1k.toDirPath(),
+				  joinNames(getFullShotName(), "bg_ud_1k")));
+    return path.toString();
   }
 
   /**
    * Returns the fully resolved name of the node containing the undistorted/linearized
    * ~1k QuickTime movie.
-   */ 
+   */
   public String
-  getUndistorted1kQuickTimeNode() 
+  getUndistorted1kQuickTimeNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Product), 
-			 new Path(AppDirs.Image1k.toDirPath(), 
-				  new Path(AppDirs.QuickTime.toDirPath(), 
-					   joinNames(getFullShotName(), "bg_ud_1k")))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Product),
+			 new Path(AppDirs.Image1k.toDirPath(),
+				  new Path(AppDirs.QuickTime.toDirPath(),
+					   joinNames(getFullShotName(), "bg_ud_1k"))));
+    return path.toString();
   }
-  
+
   /**
-   * Returns the fully resolved name of the node containing a MEL script used to set 
+   * Returns the fully resolved name of the node containing a MEL script used to set
    * render resolutions which match that of the undistorted plates.
-   */ 
+   */
   public String
-  getResolutionNode() 
+  getResolutionNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Product), 
-			 new Path(AppDirs.MEL.toDirPath(), 
-				  joinNames(getFullShotName(), "resolution"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Product),
+			 new Path(AppDirs.MEL.toDirPath(),
+				  joinNames(getFullShotName(), "resolution")));
+    return path.toString();
   }
 
   /**
    * Returns the fully resolved name of the approve node for the Plates task.
-   */ 
+   */
   public String
   getPlatesApproveNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Approve), 
-			 joinNames(getFullShotName(), "plates_approve")); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Approve),
+			 joinNames(getFullShotName(), "plates_approve"));
+    return path.toString();
   }
 
+  public String
+  getBackground2kPlateNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Edit),
+			 new Path(AppDirs.Image2k.toDirPath(),
+				  joinNames(getFullShotName(), "bg")));
+    return path.toString();
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
   /*   M A T T E S                                                                          */
   /*----------------------------------------------------------------------------------------*/
-  
+
   /**
    * Returns the fully resolved name of the prerequisites node for the Mattes task.
-   */ 
+   */
   public String
   getMattesPrereqNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Mattes, NodePurpose.Prereq), 
-			 joinNames(getFullShotName(), "mattes_prereq")); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Mattes, NodePurpose.Prereq),
+			 joinNames(getFullShotName(), "mattes_prereq"));
+    return path.toString();
   }
 
-  
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Returns the fully resolved name of the node for containing the Nuke script edited 
+   * Returns the fully resolved name of the node for containing the Nuke script edited
    * by artists to generate the matte images.
-   */ 
+   */
   public String
-  getMattesNode() 
+  getMattesNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Mattes, NodePurpose.Edit), 
-			 new Path(AppDirs.Nuke.toDirPath(), 
-				  joinNames(getFullShotName(), "mattes"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Mattes, NodePurpose.Edit),
+			 new Path(AppDirs.Nuke.toDirPath(),
+				  joinNames(getFullShotName(), "mattes")));
+    return path.toString();
   }
 
   /**
    * Returns the fully resolved name of the node contaning the Nuke script fragment
    * use to read in the raw cineon plates.
-   */ 
+   */
   public String
-  getMattesReadPlatesNode() 
+  getMattesReadPlatesNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Mattes, NodePurpose.Prepare), 
-			 new Path(AppDirs.Nuke.toDirPath(), 
-				  joinNames(getFullShotName(), "plates"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Mattes, NodePurpose.Prepare),
+			 new Path(AppDirs.Nuke.toDirPath(),
+				  joinNames(getFullShotName(), "plates")));
+    return path.toString();
   }
 
   /**
-   * Returns the fully resolved name of the node containing the generated RGB channel 
+   * Returns the fully resolved name of the node containing the generated RGB channel
    * encoded matte images.
-   */ 
+   */
   public String
-  getMattesImagesNode() 
+  getMattesImagesNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Mattes, NodePurpose.Focus), 
-			 new Path(AppDirs.Mattes.toDirPath(), 
-				  joinNames(getFullShotName(), "mattes_rgb"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Mattes, NodePurpose.Focus),
+			 new Path(AppDirs.Mattes.toDirPath(),
+				  joinNames(getFullShotName(), "mattes_rgb")));
+    return path.toString();
   }
 
   /**
    * Returns the fully resolved name of the node contaning the Nuke script fragment
    * use to read in the generated RGB channel encoded matte images.
-   */ 
+   */
   public String
-  getMattesReadImagesNode() 
+  getMattesReadImagesNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Mattes, NodePurpose.Prepare), 
-			 new Path(AppDirs.Nuke.toDirPath(), 
-				  joinNames(getFullShotName(), "mattes_rgb"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Mattes, NodePurpose.Prepare),
+			 new Path(AppDirs.Nuke.toDirPath(),
+				  joinNames(getFullShotName(), "mattes_rgb")));
+    return path.toString();
   }
 
   /**
-   * Returns the fully resolved name of the node containing the composited matte images 
-   * over the raw cineon plates. 
-   */ 
+   * Returns the fully resolved name of the node containing the composited matte images
+   * over the raw cineon plates.
+   */
   public String
-  getMattesVerifyCompNode() 
+  getMattesVerifyCompNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Mattes, NodePurpose.Focus), 
-			 new Path(AppDirs.Comp.toDirPath(), 
-				  joinNames(getFullShotName(), "mattes_verify"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Mattes, NodePurpose.Focus),
+			 new Path(AppDirs.Comp.toDirPath(),
+				  joinNames(getFullShotName(), "mattes_verify")));
+    return path.toString();
   }
 
   /**
    * Returns the fully resolved name of the node containing a thumbnail image extracted
    * from the composited mattes verification images.
-   */ 
+   */
   public String
-  getMattesVerifyThumbNode() 
+  getMattesVerifyThumbNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Mattes, NodePurpose.Thumbnail), 
-			 joinNames(getFullShotName(), "mattes_verify")); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Mattes, NodePurpose.Thumbnail),
+			 joinNames(getFullShotName(), "mattes_verify"));
+    return path.toString();
   }
 
   /**
    * Returns the fully resolved name of the submit node for the Mattes task.
-   */ 
+   */
   public String
   getMattesSubmitNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Mattes, NodePurpose.Submit), 
-			 joinNames(getFullShotName(), "mattes_submit")); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Mattes, NodePurpose.Submit),
+			 joinNames(getFullShotName(), "mattes_submit"));
+    return path.toString();
   }
-  
-  
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Returns the fully resolved name of the node containing the approved copy of the 
+   * Returns the fully resolved name of the node containing the approved copy of the
    * generated RGB channel encoded matte images.
-   */ 
+   */
   public String
-  getMattesApprovedImagesNode() 
+  getMattesApprovedImagesNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Mattes, NodePurpose.Product), 
-			 new Path(AppDirs.Mattes.toDirPath(), 
-				  joinNames(getFullShotName(), "mattes_rgb"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Mattes, NodePurpose.Product),
+			 new Path(AppDirs.Mattes.toDirPath(),
+				  joinNames(getFullShotName(), "mattes_rgb")));
+    return path.toString();
   }
 
   /**
    * Returns the fully resolved name of the approve node for the Mattes task.
-   */ 
+   */
   public String
   getMattesApproveNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Mattes, NodePurpose.Approve), 
-			 joinNames(getFullShotName(), "mattes_approve")); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Mattes, NodePurpose.Approve),
+			 joinNames(getFullShotName(), "mattes_approve"));
+    return path.toString();
   }
 
-  
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   T R A C K I N G                                                                      */
@@ -841,232 +849,232 @@ class ShotNamer
 
   /**
    * Returns the fully resolved name of the prerequisites node for the Tracking task.
-   */ 
+   */
   public String
   getTrackingPrereqNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Prereq), 
-			 joinNames(getFullShotName(), "track_prereq")); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Prereq),
+			 joinNames(getFullShotName(), "track_prereq"));
+    return path.toString();
   }
-  
+
   /**
    * Returns the fully resolved name of the prerequisites node for the InternalTracking task.
-   */ 
+   */
   public String
   getInternalTrackingPrereqNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Prereq), 
-			 joinNames(getFullShotName(), "internal_track_prereq")); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Prereq),
+			 joinNames(getFullShotName(), "internal_track_prereq"));
+    return path.toString();
   }
-  
-  
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Returns the fully resolved name of the node for the Maya scene containing 
+   * Returns the fully resolved name of the node for the Maya scene containing
    * the camera/model tracking data.
-   */ 
+   */
   public String
-  getTrackNode() 
+  getTrackNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Edit), 
-			 new Path(AppDirs.Maya.toDirPath(), 
-				  joinNames(getFullShotName(), "track"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Edit),
+			 new Path(AppDirs.Maya.toDirPath(),
+				  joinNames(getFullShotName(), "track")));
+    return path.toString();
   }
 
   /**
-   * Returns the fully resolved name of the node for the Maya scene containing 
+   * Returns the fully resolved name of the node for the Maya scene containing
    * tracking verification render scene.
-   */ 
+   */
   public String
-  getTrackingVerifyNode() 
+  getTrackingVerifyNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Prepare), 
-			 new Path(AppDirs.Maya.toDirPath(), 
-				  joinNames(getFullShotName(), "verify"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Prepare),
+			 new Path(AppDirs.Maya.toDirPath(),
+				  joinNames(getFullShotName(), "verify")));
+    return path.toString();
   }
 
   /**
    * Returns the fully resolved name of the node for the pre-render MEL script used
    * to render the tracking verification images.
-   */ 
+   */
   public String
-  getTrackingPreRenderScriptNode() 
+  getTrackingPreRenderScriptNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Prepare), 
-			 new Path(AppDirs.MEL.toDirPath(), 
-				  joinNames(getFullShotName(), "render"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Prepare),
+			 new Path(AppDirs.MEL.toDirPath(),
+				  joinNames(getFullShotName(), "render")));
+    return path.toString();
   }
 
   /**
-   * Returns the fully resolved name of the node containing the rendered tracking 
+   * Returns the fully resolved name of the node containing the rendered tracking
    * verification images.
-   */ 
+   */
   public String
-  getTrackingVerifyImagesNode() 
+  getTrackingVerifyImagesNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Focus), 
-			 new Path(AppDirs.Render.toDirPath(), 
-				  joinNames(getFullShotName(), "verify"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Focus),
+			 new Path(AppDirs.Render.toDirPath(),
+				  joinNames(getFullShotName(), "verify")));
+    return path.toString();
   }
 
   /**
-   * Returns the fully resolved name of the node containing the composited tracking 
+   * Returns the fully resolved name of the node containing the composited tracking
    * verification images over the undistored 2k plates.
-   */ 
+   */
   public String
-  getTrackingVerifyCompNode() 
+  getTrackingVerifyCompNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Focus), 
-			 new Path(AppDirs.Comp.toDirPath(), 
-				  joinNames(getFullShotName(), "comp_verify"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Focus),
+			 new Path(AppDirs.Comp.toDirPath(),
+				  joinNames(getFullShotName(), "comp_verify")));
+    return path.toString();
   }
 
   /**
    * Returns the fully resolved name of the node containing a thumbnail image extracted
    * from the composited tracking verification images.
-   */ 
+   */
   public String
-  getTrackingVerifyThumbNode() 
+  getTrackingVerifyThumbNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Thumbnail), 
-			 joinNames(getFullShotName(), "comp_verify")); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Thumbnail),
+			 joinNames(getFullShotName(), "comp_verify"));
+    return path.toString();
   }
 
   /**
    * Returns the fully resolved name of the node containing 2D tracking data exported
    * from PFTrack.
-   */ 
+   */
   public String
-  getTrackingMarkersNode() 
+  getTrackingMarkersNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Edit), 
-			 new Path(AppDirs.PFTrack.toDirPath(), 
-				  joinNames(getFullShotName(), "tracking_markers"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Edit),
+			 new Path(AppDirs.PFTrack.toDirPath(),
+				  joinNames(getFullShotName(), "tracking_markers")));
+    return path.toString();
   }
 
   /**
    * Returns the fully resolved name of the submit node for the Tracking task.
-   */ 
+   */
   public String
   getTrackingSubmitNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Submit), 
-			 joinNames(getFullShotName(), "track_submit")); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Submit),
+			 joinNames(getFullShotName(), "track_submit"));
+    return path.toString();
   }
-  
-  
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Returns the fully resolved name of the node containing the extracted world space camera 
+   * Returns the fully resolved name of the node containing the extracted world space camera
    * with all tracking animation baked.
-   */ 
+   */
   public String
-  getTrackingExtractedCameraNode() 
+  getTrackingExtractedCameraNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Product), 
-			 new Path(AppDirs.Maya.toDirPath(), 
-				  joinNames(getFullShotName(), "camera"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Product),
+			 new Path(AppDirs.Maya.toDirPath(),
+				  joinNames(getFullShotName(), "camera")));
+    return path.toString();
   }
 
   /**
-   * Returns the fully resolved name of the node containing the extracted world space 
+   * Returns the fully resolved name of the node containing the extracted world space
    * locators with all tracking animation baked.
-   */ 
+   */
   public String
-  getTrackingExtractedTrackNode() 
+  getTrackingExtractedTrackNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Product), 
-			 new Path(AppDirs.Maya.toDirPath(), 
-				  joinNames(getFullShotName(), "track"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Product),
+			 new Path(AppDirs.Maya.toDirPath(),
+				  joinNames(getFullShotName(), "track")));
+    return path.toString();
   }
 
   /**
-   * Returns the fully resolved name of the node containing the approved copy of the 
+   * Returns the fully resolved name of the node containing the approved copy of the
    * 2D tracking data exported from PFTrack.
-   */ 
+   */
   public String
-  getApprovedTrackingMarkersNode() 
+  getApprovedTrackingMarkersNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Product), 
-			 new Path(AppDirs.PFTrack.toDirPath(), 
-				  joinNames(getFullShotName(), "tracking_markers"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Product),
+			 new Path(AppDirs.PFTrack.toDirPath(),
+				  joinNames(getFullShotName(), "tracking_markers")));
+    return path.toString();
   }
 
   /**
-   * Returns the fully resolved name of the node for the Maya scene containing 
+   * Returns the fully resolved name of the node for the Maya scene containing
    * temp render scene.
-   */ 
+   */
   public String
-  getTrackingTempRenderMayaNode() 
+  getTrackingTempRenderMayaNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Prepare), 
-			 new Path(AppDirs.Maya.toDirPath(), 
-				  joinNames(getFullShotName(), "temp_render"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Prepare),
+			 new Path(AppDirs.Maya.toDirPath(),
+				  joinNames(getFullShotName(), "temp_render")));
+    return path.toString();
   }
 
   /**
-   * Returns the fully resolved name of the node for the Maya scene containing 
+   * Returns the fully resolved name of the node for the Maya scene containing
    * temp texture loading scene.
-   */ 
+   */
   public String
-  getTrackingTempTextureNode() 
+  getTrackingTempTextureNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Prepare), 
-			 new Path(AppDirs.Maya.toDirPath(), 
-				  joinNames(getFullShotName(), "temp_tex"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Prepare),
+			 new Path(AppDirs.Maya.toDirPath(),
+				  joinNames(getFullShotName(), "temp_tex")));
+    return path.toString();
   }
 
   /**
-   * Returns the fully resolved name of the node for the MEL script containing the 
+   * Returns the fully resolved name of the node for the MEL script containing the
    * temp render globals settings.
-   */ 
+   */
   public String
-  getTrackingTempRenderNode() 
+  getTrackingTempRenderNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Prepare), 
-			 new Path(AppDirs.MEL.toDirPath(), 
-				  joinNames(getFullShotName(), "temp_render"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Prepare),
+			 new Path(AppDirs.MEL.toDirPath(),
+				  joinNames(getFullShotName(), "temp_render")));
+    return path.toString();
   }
 
   /**
-   * Returns the fully resolved name of node containig the inkblot temp render images. 
-   */ 
+   * Returns the fully resolved name of node containig the inkblot temp render images.
+   */
   public String
-  getTrackingInkblotNode() 
+  getTrackingInkblotNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Product), 
-			 new Path(AppDirs.Render.toDirPath(), 
-				  joinNames(getFullShotName(), "inkblot"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Product),
+			 new Path(AppDirs.Render.toDirPath(),
+				  joinNames(getFullShotName(), "inkblot")));
+    return path.toString();
   }
 
   /**
    * Returns the fully resolved name of the approve node for the Tracking task.
-   */ 
+   */
   public String
   getTrackingApproveNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Approve), 
-			 joinNames(getFullShotName(), "track_approve")); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Tracking, NodePurpose.Approve),
+			 joinNames(getFullShotName(), "track_approve"));
+    return path.toString();
   }
 
   /**
@@ -1099,168 +1107,168 @@ class ShotNamer
 
   /**
    * Returns the fully resolved name of the prerequisites node for the Match task.
-   */ 
+   */
   public String
   getMatchPrereqNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Match, NodePurpose.Prereq), 
-			 joinNames(getFullShotName(), "match_prereq")); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Match, NodePurpose.Prereq),
+			 joinNames(getFullShotName(), "match_prereq"));
+    return path.toString();
   }
-  
-  
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Returns the fully resolved name of the node for the Maya scene used to perform the 
+   * Returns the fully resolved name of the node for the Maya scene used to perform the
    * final head and facial matching animation.
-   */ 
+   */
   public String
-  getMatchAnimNode() 
+  getMatchAnimNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Match, NodePurpose.Edit), 
-			 new Path(AppDirs.Maya.toDirPath(), 
-				  joinNames(getFullShotName(), "match"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Match, NodePurpose.Edit),
+			 new Path(AppDirs.Maya.toDirPath(),
+				  joinNames(getFullShotName(), "match")));
+    return path.toString();
   }
 
   /**
    * Returns the fully resolved name of the node for the Maya scene containing the full
    * match animation rig to be animated.
-   */ 
+   */
   public String
-  getPreMatchAnimNode() 
+  getPreMatchAnimNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Match, NodePurpose.Prepare), 
-			 new Path(AppDirs.Maya.toDirPath(), 
-				  joinNames(getFullShotName(), "prematch"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Match, NodePurpose.Prepare),
+			 new Path(AppDirs.Maya.toDirPath(),
+				  joinNames(getFullShotName(), "prematch")));
+    return path.toString();
   }
 
   /**
-   * Returns the fully resolved name of the node for the Maya scene containing 
+   * Returns the fully resolved name of the node for the Maya scene containing
    * match animation verification render scene.
-   */ 
+   */
   public String
-  getMatchVerifyNode() 
+  getMatchVerifyNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Match, NodePurpose.Prepare), 
-			 new Path(AppDirs.Maya.toDirPath(), 
-				  joinNames(getFullShotName(), "match_verify"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Match, NodePurpose.Prepare),
+			 new Path(AppDirs.Maya.toDirPath(),
+				  joinNames(getFullShotName(), "match_verify")));
+    return path.toString();
   }
 
   /**
    * Returns the fully resolved name of the node for the pre-render MEL script used
    * to render the match animation verification images.
-   */ 
+   */
   public String
-  getMatchPreRenderScriptNode() 
+  getMatchPreRenderScriptNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Match, NodePurpose.Prepare), 
-			 new Path(AppDirs.MEL.toDirPath(), 
-				  joinNames(getFullShotName(), "render"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Match, NodePurpose.Prepare),
+			 new Path(AppDirs.MEL.toDirPath(),
+				  joinNames(getFullShotName(), "render")));
+    return path.toString();
   }
 
   /**
-   * Returns the fully resolved name of the node containing the rendered match animation 
+   * Returns the fully resolved name of the node containing the rendered match animation
    * verification images.
-   */ 
+   */
   public String
-  getMatchVerifyImagesNode() 
+  getMatchVerifyImagesNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Match, NodePurpose.Focus), 
-			 new Path(AppDirs.Render.toDirPath(), 
-				  joinNames(getFullShotName(), "match"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Match, NodePurpose.Focus),
+			 new Path(AppDirs.Render.toDirPath(),
+				  joinNames(getFullShotName(), "match")));
+    return path.toString();
   }
 
   /**
-   * Returns the fully resolved name of the node containing the composited match animation 
+   * Returns the fully resolved name of the node containing the composited match animation
    * verification images over the undistored 2k plates.
-   */ 
+   */
   public String
-  getMatchVerifyCompNode() 
+  getMatchVerifyCompNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Match, NodePurpose.Focus), 
-			 new Path(AppDirs.Comp.toDirPath(), 
-				  joinNames(getFullShotName(), "comp_match"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Match, NodePurpose.Focus),
+			 new Path(AppDirs.Comp.toDirPath(),
+				  joinNames(getFullShotName(), "comp_match")));
+    return path.toString();
   }
 
   /**
    * Returns the fully resolved name of the node containing a thumbnail image extracted
    * from the composited match animation verification images.
-   */ 
+   */
   public String
-  getMatchVerifyThumbNode() 
+  getMatchVerifyThumbNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Match, NodePurpose.Thumbnail), 
-			 joinNames(getFullShotName(), "comp_match")); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Match, NodePurpose.Thumbnail),
+			 joinNames(getFullShotName(), "comp_match"));
+    return path.toString();
   }
 
   /**
    * Returns the fully resolved name of the submit node for the Match task.
-   */ 
+   */
   public String
   getMatchSubmitNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Match, NodePurpose.Submit), 
-			 joinNames(getFullShotName(), "match_submit")); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Match, NodePurpose.Submit),
+			 joinNames(getFullShotName(), "match_submit"));
+    return path.toString();
   }
-  
-  
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
    * Returns the fully resolved name of the node containing the pre-bake Maya scene.
-   */ 
+   */
   public String
   getMatchPrebakeSceneNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Match, NodePurpose.Prepare), 
-			 new Path(AppDirs.Maya.toDirPath(), 
-				  joinNames(getFullShotName(), "prebake"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Match, NodePurpose.Prepare),
+			 new Path(AppDirs.Maya.toDirPath(),
+				  joinNames(getFullShotName(), "prebake")));
+    return path.toString();
   }
 
   /**
-   * Returns the fully resolved name of the node containing the baked Maya geometry cache. 
-   */ 
+   * Returns the fully resolved name of the node containing the baked Maya geometry cache.
+   */
   public String
   getMatchGeoCacheNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Match, NodePurpose.Product), 
-			 new Path(AppDirs.Cache.toDirPath(), 
-				  joinNames(getFullShotName(), "geo_cache"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Match, NodePurpose.Product),
+			 new Path(AppDirs.Cache.toDirPath(),
+				  joinNames(getFullShotName(), "geo_cache")));
+    return path.toString();
   }
-  
+
   /**
    * Returns the fully resolved name of the node containing the per-frame baked
    * OBJ models.
-   */ 
+   */
   public String
   getMatchMaskGeoNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Match, NodePurpose.Product), 
-			 new Path(AppDirs.Obj.toDirPath(), 
-				  joinNames(getFullShotName(), "mask_geo"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Match, NodePurpose.Product),
+			 new Path(AppDirs.Obj.toDirPath(),
+				  joinNames(getFullShotName(), "mask_geo")));
+    return path.toString();
   }
 
   /**
    * Returns the fully resolved name of the approve node for the Match task.
-   */ 
+   */
   public String
   getMatchApproveNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Match, NodePurpose.Approve), 
-			 joinNames(getFullShotName(), "match_approve")); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Match, NodePurpose.Approve),
+			 joinNames(getFullShotName(), "match_approve"));
+    return path.toString();
   }
 
   /**
@@ -1282,162 +1290,162 @@ class ShotNamer
 
   /**
    * Returns the fully resolved name of the prerequisites node for the Blot task.
-   */ 
+   */
   public String
   getBlotPrereqNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Blot, NodePurpose.Prereq), 
-			 joinNames(getFullShotName(), "blot_prereq")); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Blot, NodePurpose.Prereq),
+			 joinNames(getFullShotName(), "blot_prereq"));
+    return path.toString();
   }
-  
-  
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
    * Returns the fully resolved name of the blot animation Maya scene node.
-   */ 
+   */
   public String
   getBlotAnimSceneNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Blot, NodePurpose.Edit), 
-			 new Path(AppDirs.Maya.toDirPath(), 
-				  joinNames(getFullShotName(), "blot_anim"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Blot, NodePurpose.Edit),
+			 new Path(AppDirs.Maya.toDirPath(),
+				  joinNames(getFullShotName(), "blot_anim")));
+    return path.toString();
   }
 
   /**
    * Returns the fully resolved name of the rendered blot textures node.
-   */ 
+   */
   public String
   getBlotAnimTexturesNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Blot, NodePurpose.Focus), 
-			 new Path(AppDirs.Render.toDirPath(), 
-				  joinNames(getFullShotName(), "blot_anim"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Blot, NodePurpose.Focus),
+			 new Path(AppDirs.Render.toDirPath(),
+				  joinNames(getFullShotName(), "blot_anim")));
+    return path.toString();
   }
 
   /**
    * Returns the fully resolved name of the blot textures QuickTime movie.
-   */ 
+   */
   public String
-  getBlotAnimQuickTimeNode() 
+  getBlotAnimQuickTimeNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Blot, NodePurpose.Focus), 
-			 new Path(AppDirs.Render.toDirPath(), 
-				  new Path(AppDirs.QuickTime.toDirPath(), 
-					   joinNames(getFullShotName(), "blot_anim")))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Blot, NodePurpose.Focus),
+			 new Path(AppDirs.Render.toDirPath(),
+				  new Path(AppDirs.QuickTime.toDirPath(),
+					   joinNames(getFullShotName(), "blot_anim"))));
+    return path.toString();
   }
 
   /**
    * Returns the fully resolved name of the node containing a thumbnail image extracted
-   * from the blot textures. 
-   */ 
+   * from the blot textures.
+   */
   public String
-  getBlotAnimThumbNode() 
+  getBlotAnimThumbNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Blot, NodePurpose.Thumbnail), 
-			 joinNames(getFullShotName(), "blot_anim")); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Blot, NodePurpose.Thumbnail),
+			 joinNames(getFullShotName(), "blot_anim"));
+    return path.toString();
   }
-  
+
   /**
    * Returns the fully resolved name of the blot texture loading Maya scene.
-   */ 
+   */
   public String
   getBlotTextureSceneNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Blot, NodePurpose.Prepare), 
-			 new Path(AppDirs.Maya.toDirPath(), 
-				  joinNames(getFullShotName(), "blot_tex"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Blot, NodePurpose.Prepare),
+			 new Path(AppDirs.Maya.toDirPath(),
+				  joinNames(getFullShotName(), "blot_tex")));
+    return path.toString();
   }
 
   /**
    * Returns the fully resolved name of the MEL script used to load the soundtrack.
-   */ 
+   */
   public String
-  getBlotAttachSoundtrackNode() 
+  getBlotAttachSoundtrackNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Blot, NodePurpose.Prepare), 
-			 new Path(AppDirs.MEL.toDirPath(), 
-				  joinNames(getFullShotName(), "attach_soundtrack"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Blot, NodePurpose.Prepare),
+			 new Path(AppDirs.MEL.toDirPath(),
+				  joinNames(getFullShotName(), "attach_soundtrack")));
+    return path.toString();
   }
 
   /**
-   * Returns the fully resolved name of the MEL script which attaches the geometry 
+   * Returns the fully resolved name of the MEL script which attaches the geometry
    * cache to the clean unrigged model.
-   */ 
+   */
   public String
   getBlotAttachCacheNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Blot, NodePurpose.Prepare), 
-			 new Path(AppDirs.MEL.toDirPath(), 
-				  joinNames(getFullShotName(), "attach_cache"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Blot, NodePurpose.Prepare),
+			 new Path(AppDirs.MEL.toDirPath(),
+				  joinNames(getFullShotName(), "attach_cache")));
+    return path.toString();
   }
 
   /**
    * Returns the fully resolved name of the blot test render Maya scene.
-   */ 
+   */
   public String
   getBlotTestSceneNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Blot, NodePurpose.Prepare), 
-			 new Path(AppDirs.Maya.toDirPath(), 
-				  joinNames(getFullShotName(), "blot_test"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Blot, NodePurpose.Prepare),
+			 new Path(AppDirs.Maya.toDirPath(),
+				  joinNames(getFullShotName(), "blot_test")));
+    return path.toString();
   }
-  
+
   /**
    * Returns the fully resolved name of the blot test render images.
-   */ 
+   */
   public String
   getBlotTestImagesNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Blot, NodePurpose.Focus), 
-			 new Path(AppDirs.Render.toDirPath(), 
-				  joinNames(getFullShotName(), "blot_test"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Blot, NodePurpose.Focus),
+			 new Path(AppDirs.Render.toDirPath(),
+				  joinNames(getFullShotName(), "blot_test")));
+    return path.toString();
   }
-  
+
   /**
    * Returns the fully resolved name of the blot test render QuickTime movie.
-   */ 
+   */
   public String
-  getBlotTestQuickTimeNode() 
+  getBlotTestQuickTimeNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Blot, NodePurpose.Focus), 
-			 new Path(AppDirs.Render.toDirPath(), 
-				  new Path(AppDirs.QuickTime.toDirPath(), 
-					   joinNames(getFullShotName(), "blot_test")))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Blot, NodePurpose.Focus),
+			 new Path(AppDirs.Render.toDirPath(),
+				  new Path(AppDirs.QuickTime.toDirPath(),
+					   joinNames(getFullShotName(), "blot_test"))));
+    return path.toString();
   }
-  
+
   /**
    * Returns the fully resolved name of the node containing a thumbnail image extracted
    * from the blot test render images.
-   */ 
+   */
   public String
-  getBlotTestThumbNode() 
+  getBlotTestThumbNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Blot, NodePurpose.Thumbnail), 
-			 joinNames(getFullShotName(), "blot_test")); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Blot, NodePurpose.Thumbnail),
+			 joinNames(getFullShotName(), "blot_test"));
+    return path.toString();
   }
 
   /**
    * Returns the fully resolved name of the submit node for the Blot task.
-   */ 
+   */
   public String
   getBlotSubmitNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Blot, NodePurpose.Submit), 
-			 joinNames(getFullShotName(), "blot_submit")); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Blot, NodePurpose.Submit),
+			 joinNames(getFullShotName(), "blot_submit"));
+    return path.toString();
   }
 
 
@@ -1445,25 +1453,25 @@ class ShotNamer
 
   /**
    * Returns the fully resolved name of the rendered blot textures node.
-   */ 
+   */
   public String
   getBlotApprovedTexturesNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Blot, NodePurpose.Product), 
-			 new Path(AppDirs.Texture.toDirPath(), 
-				  joinNames(getFullShotName(), "blot_anim"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Blot, NodePurpose.Product),
+			 new Path(AppDirs.Texture.toDirPath(),
+				  joinNames(getFullShotName(), "blot_anim")));
+    return path.toString();
   }
 
   /**
    * Returns the fully resolved name of the approve node for the Blot task.
-   */ 
+   */
   public String
   getBlotApproveNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Blot, NodePurpose.Approve), 
-			 joinNames(getFullShotName(), "blot_approve")); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Blot, NodePurpose.Approve),
+			 joinNames(getFullShotName(), "blot_approve"));
+    return path.toString();
   }
 
 
@@ -1473,16 +1481,16 @@ class ShotNamer
 
   /**
    * Returns the fully resolved name of the prerequisites node for the Noise task.
-   */ 
+   */
   public String
   getNoisePrereqNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Prereq), 
-			 joinNames(getFullShotName(), "noise_prereq")); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Prereq),
+			 joinNames(getFullShotName(), "noise_prereq"));
+    return path.toString();
   }
-  
-  
+
+
   /*----------------------------------------------------------------------------------------*/
 
   public String
@@ -1497,52 +1505,52 @@ class ShotNamer
   /**
    * Returns the fully resolved name of the Nuke script used to read in the blot animation
    * textures.
-   */ 
+   */
   public String
-  getBlotAnimNukeNode() 
+  getBlotAnimNukeNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Prepare), 
-			 new Path(AppDirs.Nuke.toDirPath(), 
-				  joinNames(getFullShotName(), "blot_anim"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Prepare),
+			 new Path(AppDirs.Nuke.toDirPath(),
+				  joinNames(getFullShotName(), "blot_anim")));
+    return path.toString();
   }
 
   /**
    * Returns the fully resolved name of the rendered noise textures node.
-   */ 
+   */
   public String
-  getNoiseTexturesNode() 
+  getNoiseTexturesNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Focus), 
-			 new Path(AppDirs.Render.toDirPath(), 
-				  joinNames(getFullShotName(), "noise"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Focus),
+			 new Path(AppDirs.Render.toDirPath(),
+				  joinNames(getFullShotName(), "noise")));
+    return path.toString();
   }
 
   /**
    * Returns the fully resolved name of the node containing a thumbnail image extracted
-   * from the noise textures. 
-   */ 
+   * from the noise textures.
+   */
   public String
-  getNoiseThumbNode() 
+  getNoiseThumbNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Thumbnail), 
-			 joinNames(getFullShotName(), "noise")); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Thumbnail),
+			 joinNames(getFullShotName(), "noise"));
+    return path.toString();
   }
-  
+
   /**
    * Returns the fully resolved name of the noise texture loading Houdini command script.
-   */ 
+   */
   public String
   getNoiseTextureCmdNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Prepare), 
-			 new Path(AppDirs.Cmd.toDirPath(), 
-				  joinNames(getFullShotName(), "noise"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Prepare),
+			 new Path(AppDirs.Cmd.toDirPath(),
+				  joinNames(getFullShotName(), "noise")));
+    return path.toString();
   }
-  
+
   /**
    * Returns the fully resolved name of the composited displace textures.
    */
@@ -1569,163 +1577,163 @@ class ShotNamer
 
   /**
    * Returns the fully resolved name of the noise texture loading Maya scene.
-   */ 
+   */
   public String
   getNoiseTextureSceneNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Prepare), 
-			 new Path(AppDirs.Maya.toDirPath(), 
-				  joinNames(getFullShotName(), "noise_tex"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Prepare),
+			 new Path(AppDirs.Maya.toDirPath(),
+				  joinNames(getFullShotName(), "noise_tex")));
+    return path.toString();
   }
 
   /**
-   * Returns the fully resolved name of the MEL script which attaches the geometry 
+   * Returns the fully resolved name of the MEL script which attaches the geometry
    * cache to the clean unrigged model.
-   */ 
+   */
   public String
   getNoiseAttachCacheNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Prepare), 
-			 new Path(AppDirs.MEL.toDirPath(), 
-				  joinNames(getFullShotName(), "attach_cache"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Prepare),
+			 new Path(AppDirs.MEL.toDirPath(),
+				  joinNames(getFullShotName(), "attach_cache")));
+    return path.toString();
   }
 
   /**
    * Returns the fully resolved name of the noise test render Maya scene.
-   */ 
+   */
   public String
   getNoiseTestSceneNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Prepare), 
-			 new Path(AppDirs.Maya.toDirPath(), 
-				  joinNames(getFullShotName(), "noise_test"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Prepare),
+			 new Path(AppDirs.Maya.toDirPath(),
+				  joinNames(getFullShotName(), "noise_test")));
+    return path.toString();
   }
-  
+
   /**
    * Returns the fully resolved name of the MEL script which combines all pre-render
    * settings for the noise test render.
-   */ 
+   */
   public String
-  getNoiseTestPrepNode() 
+  getNoiseTestPrepNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Prepare), 
-			 new Path(AppDirs.MEL.toDirPath(), 
-				  joinNames(getFullShotName(), "noise_test_prep"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Prepare),
+			 new Path(AppDirs.MEL.toDirPath(),
+				  joinNames(getFullShotName(), "noise_test_prep")));
+    return path.toString();
   }
 
   /**
    * Returns the fully resolved name of the noise test render images.
-   */ 
+   */
   public String
   getNoiseTestImagesNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Focus), 
-			 new Path(AppDirs.Render.toDirPath(), 
-				  joinNames(getFullShotName(), "noise_test"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Focus),
+			 new Path(AppDirs.Render.toDirPath(),
+				  joinNames(getFullShotName(), "noise_test")));
+    return path.toString();
   }
 
   /**
    * Returns the fully resolved name of the node containing a thumbnail image extracted
    * from the noise test render images.
-   */ 
+   */
   public String
-  getNoiseTestThumbNode() 
+  getNoiseTestThumbNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Thumbnail), 
-			 joinNames(getFullShotName(), "noise_test")); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Thumbnail),
+			 joinNames(getFullShotName(), "noise_test"));
+    return path.toString();
   }
 
   /**
    * Returns the fully resolved name of the node contaning the Nuke script fragment
    * use to read in the raw cineon plates.
-   */ 
+   */
   public String
-  getNoiseReadPlatesNode() 
+  getNoiseReadPlatesNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Prepare), 
-			 new Path(AppDirs.Nuke.toDirPath(), 
-				  joinNames(getFullShotName(), "plate"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Prepare),
+			 new Path(AppDirs.Nuke.toDirPath(),
+				  joinNames(getFullShotName(), "plate")));
+    return path.toString();
   }
 
   /**
-   * Returns the fully resolved name of the node containing the Nuke script to read 
+   * Returns the fully resolved name of the node containing the Nuke script to read
    * the redistorted UV image.
-   */ 
+   */
   public String
-  getNoiseReadRedistortNode() 
+  getNoiseReadRedistortNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Prepare), 
-			 new Path(AppDirs.Nuke.toDirPath(), 
-				  joinNames(getFullShotName(), "rd_uv_2k"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Prepare),
+			 new Path(AppDirs.Nuke.toDirPath(),
+				  joinNames(getFullShotName(), "rd_uv_2k")));
+    return path.toString();
   }
 
   /**
    * Returns the fully resolved name of the node contaning the Nuke script fragment
    * use to read in the generated RGB channel encoded matte images.
-   */ 
+   */
   public String
-  getNoiseReadTestImagesNode() 
+  getNoiseReadTestImagesNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Prepare), 
-			 new Path(AppDirs.Nuke.toDirPath(), 
-				  joinNames(getFullShotName(), "noise_test"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Prepare),
+			 new Path(AppDirs.Nuke.toDirPath(),
+				  joinNames(getFullShotName(), "noise_test")));
+    return path.toString();
   }
 
   /**
    * Returns the fully resolved name of the node contaning the Nuke script fragment
    * use to read in the generated RGB channel encoded matte images.
-   */ 
+   */
   public String
-  getNoiseReadMattesNode() 
+  getNoiseReadMattesNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Prepare), 
-			 new Path(AppDirs.Nuke.toDirPath(), 
-				  joinNames(getFullShotName(), "mattes"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Prepare),
+			 new Path(AppDirs.Nuke.toDirPath(),
+				  joinNames(getFullShotName(), "mattes")));
+    return path.toString();
   }
 
   /**
    * Returns the fully resolved name of the noise test composite images.
-   */ 
+   */
   public String
   getNoiseTestCompImagesNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Focus), 
-			 new Path(AppDirs.Comp.toDirPath(), 
-				  joinNames(getFullShotName(), "noise_test_comp"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Focus),
+			 new Path(AppDirs.Comp.toDirPath(),
+				  joinNames(getFullShotName(), "noise_test_comp")));
+    return path.toString();
   }
 
   /**
    * Returns the fully resolved name of the node containing a thumbnail image extracted
    * from the noise test comp images.
-   */ 
+   */
   public String
-  getNoiseTestCompThumbNode() 
+  getNoiseTestCompThumbNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Thumbnail), 
-			 joinNames(getFullShotName(), "noise_test_comp")); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Thumbnail),
+			 joinNames(getFullShotName(), "noise_test_comp"));
+    return path.toString();
   }
 
   /**
    * Returns the fully resolved name of the submit node for the Noise task.
-   */ 
+   */
   public String
   getNoiseSubmitNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Submit), 
-			 joinNames(getFullShotName(), "noise_submit")); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Submit),
+			 joinNames(getFullShotName(), "noise_submit"));
+    return path.toString();
   }
 
 
@@ -1733,14 +1741,14 @@ class ShotNamer
 
   /**
    * Returns the fully resolved name of the rendered noise textures node.
-   */ 
+   */
   public String
   getNoiseApprovedTexturesNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Product), 
-			 new Path(AppDirs.Texture.toDirPath(), 
-				  joinNames(getFullShotName(), "noise"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.Noise, NodePurpose.Product),
+			 new Path(AppDirs.Texture.toDirPath(),
+				  joinNames(getFullShotName(), "noise")));
+    return path.toString();
   }
 
   /**
@@ -1876,11 +1884,29 @@ class ShotNamer
   }
 
   public String
+  getLightingAmbOcc2kJpgNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Lighting, NodePurpose.Focus),
+    		new Path(AppDirs.Jpg.toDirPath(),
+  				  joinNames(getFullShotName(), "ambOcc_2k")));
+    return path.toString();
+  }
+
+  public String
   getLightingPreAmbOccHipNode()
   {
     Path path = new Path(pBasePaths.get(TaskType.Lighting, NodePurpose.Prepare),
     		new Path(AppDirs.Hip.toDirPath(),
   				  joinNames(getFullShotName(), "pre_ambOcc")));
+    return path.toString();
+  }
+
+  public String
+  getLightingAmbOccHipNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Lighting, NodePurpose.Edit),
+    		new Path(AppDirs.Hip.toDirPath(),
+  				  joinNames(getFullShotName(), "ambOcc")));
     return path.toString();
   }
 
@@ -1898,6 +1924,15 @@ class ShotNamer
   {
     Path path = new Path(pBasePaths.get(TaskType.Lighting, NodePurpose.Focus),
     		new Path(AppDirs.Exr.toDirPath(),
+  				  joinNames(getFullShotName(), "beauty_2k")));
+    return path.toString();
+  }
+
+  public String
+  getLightingBeauty2kJpgNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Lighting, NodePurpose.Focus),
+    		new Path(AppDirs.Jpg.toDirPath(),
   				  joinNames(getFullShotName(), "beauty_2k")));
     return path.toString();
   }
@@ -1921,6 +1956,15 @@ class ShotNamer
   }
 
   public String
+  getLightingBeautyHipNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Lighting, NodePurpose.Edit),
+    		new Path(AppDirs.Hip.toDirPath(),
+  				  joinNames(getFullShotName(), "beauty")));
+    return path.toString();
+  }
+
+  public String
   getLightingInk2kIfdNode()
   {
     Path path = new Path(pBasePaths.get(TaskType.Lighting, NodePurpose.Prepare),
@@ -1939,11 +1983,29 @@ class ShotNamer
   }
 
   public String
+  getLightingInk2kJpgNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Lighting, NodePurpose.Focus),
+    		new Path(AppDirs.Jpg.toDirPath(),
+  				  joinNames(getFullShotName(), "ink_const_2k")));
+    return path.toString();
+  }
+
+  public String
   getLightingPreInkHipNode()
   {
     Path path = new Path(pBasePaths.get(TaskType.Lighting, NodePurpose.Prepare),
     		new Path(AppDirs.Hip.toDirPath(),
   				  joinNames(getFullShotName(), "pre_ink_const")));
+    return path.toString();
+  }
+
+  public String
+  getLightingInkHipNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Lighting, NodePurpose.Edit),
+    		new Path(AppDirs.Hip.toDirPath(),
+  				  joinNames(getFullShotName(), "ink_const")));
     return path.toString();
   }
 
@@ -1958,6 +2020,15 @@ class ShotNamer
     return path.toString();
   }
 
+  public String
+  getLightingApproveNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Lighting, NodePurpose.Approve),
+			 joinNames(getFullShotName(), "lighting_approve"));
+    return path.toString();
+  }
+
+
   /**
    * Returns the fully resolved name of the prereq node for the Lighting task.
    */
@@ -1969,147 +2040,308 @@ class ShotNamer
     return path.toString();
   }
 
+  public String
+  getLightingCreateShdDirNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Lighting, NodePurpose.Prepare),
+    		new Path(AppDirs.Shd.toDirPath(),
+    				  joinNames(getFullShotName(), "createShdDir")));
+    return path.toString();
+  }
+
+  public String
+  getLightingObjCmdNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Lighting, NodePurpose.Prepare),
+    		new Path(AppDirs.Cmd.toDirPath(),
+  				  joinNames(getFullShotName(), "obj")));
+    return path.toString();
+  }
+
+  public String
+  getLightingGeoBuildCmdNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Lighting, NodePurpose.Prepare),
+    		new Path(AppDirs.Cmd.toDirPath(),
+  				  joinNames(getFullShotName(), "geoBuild")));
+    return path.toString();
+  }
+
+  public String
+  getLightingApprovedAmbOccNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Lighting, NodePurpose.Product),
+			 new Path(AppDirs.Exr.toDirPath(),
+				  joinNames(getFullShotName(), "ambOcc_2k")));
+    return path.toString();
+  }
+
+  public String
+  getLightingApprovedBeautyNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Lighting, NodePurpose.Product),
+			 new Path(AppDirs.Exr.toDirPath(),
+				  joinNames(getFullShotName(), "beauty_2k")));
+    return path.toString();
+  }
+
+  public String
+  getLightingApprovedInkNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Lighting, NodePurpose.Product),
+			 new Path(AppDirs.Exr.toDirPath(),
+				  joinNames(getFullShotName(), "ink_const_2k")));
+    return path.toString();
+  }
+
+  public String
+  getLightingAmbOccTifNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Lighting, NodePurpose.Focus),
+			 new Path(AppDirs.Tif.toDirPath(),
+				  joinNames(getFullShotName(), "ambOcc")));
+    return path.toString();
+  }
+
+  public String
+  getLightingAmbOccSlapCmdNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Lighting, NodePurpose.Prepare),
+			 new Path(AppDirs.Cmd.toDirPath(),
+				  joinNames(getFullShotName(), "ambOcc_slap")));
+    return path.toString();
+  }
+
+  public String
+  getLightingBeautySlapCmdNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Lighting, NodePurpose.Prepare),
+			 new Path(AppDirs.Cmd.toDirPath(),
+				  joinNames(getFullShotName(), "beauty_slap")));
+    return path.toString();
+  }
+
+  public String
+  getLightingMattesSlapCmdNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Lighting, NodePurpose.Prepare),
+			 new Path(AppDirs.Cmd.toDirPath(),
+				  joinNames(getFullShotName(), "mattes_slap")));
+    return path.toString();
+  }
+
+  public String
+  getLightingPlateSlapCmdNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Lighting, NodePurpose.Prepare),
+			 new Path(AppDirs.Cmd.toDirPath(),
+				  joinNames(getFullShotName(), "plate_slap")));
+    return path.toString();
+  }
+
+  public String
+  getLightingRedistortSlapCmdNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Lighting, NodePurpose.Prepare),
+			 new Path(AppDirs.Cmd.toDirPath(),
+				  joinNames(getFullShotName(), "redistort_slap")));
+    return path.toString();
+  }
+
+  public String
+  getLightingSlapcompCmdNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Lighting, NodePurpose.Prepare),
+			 new Path(AppDirs.Cmd.toDirPath(),
+				  joinNames(getFullShotName(), "slapcomp")));
+    return path.toString();
+  }
+
+  public String
+  getLightingBeautySlapPrepHipNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Lighting, NodePurpose.Prepare),
+			 new Path(AppDirs.Comp.toDirPath(),
+				  joinNames(getFullShotName(), "beauty_slap_prep")));
+    return path.toString();
+  }
+
+  public String
+  getLightingBeautyTestCineonNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Lighting, NodePurpose.Focus),
+			 new Path(AppDirs.Cineon.toDirPath(),
+				  joinNames(getFullShotName(), "beauty_test")));
+    return path.toString();
+  }
+
+  public String
+  getLightingBeautySlapcompHipNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Lighting, NodePurpose.Edit),
+			 new Path(AppDirs.Comp.toDirPath(),
+				  joinNames(getFullShotName(), "beauty_slapcomp")));
+    return path.toString();
+  }
+
+  public String
+  getLightingPreviewSubmitNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Lighting, NodePurpose.Submit),
+			 joinNames(getFullShotName(), "preview_submit"));
+    return path.toString();
+  }
+
+  public String
+  getLightingBeautyPreviewPythonNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Lighting, NodePurpose.Prepare),
+			 new Path(AppDirs.Python.toDirPath(),
+					 joinNames(getFullShotName(), "beautyPreview")));
+    return path.toString();
+  }
+
   /*----------------------------------------------------------------------------------------*/
   /*   T E M P   C O M P                                                                    */
   /*----------------------------------------------------------------------------------------*/
-  
+
   /**
    * Returns the fully resolved name of the prerequisites node for the TempComp task.
-   */ 
+   */
   public String
   getTempCompPrereqNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.TempComp, NodePurpose.Prereq), 
-			 joinNames(getFullShotName(), "temp_comp_prereq")); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.TempComp, NodePurpose.Prereq),
+			 joinNames(getFullShotName(), "temp_comp_prereq"));
+    return path.toString();
   }
-  
-  
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
    * Returns the fully resolved name of the node containing the outsourcer generated
    * temporary inkblot renders.
-   */ 
+   */
   public String
-  getTempCompInkblotNode() 
+  getTempCompInkblotNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.TempComp, NodePurpose.Edit), 
-                         joinNames(getFullShotName(), "inkblot")); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.TempComp, NodePurpose.Edit),
+                         joinNames(getFullShotName(), "inkblot"));
+    return path.toString();
   }
 
   /**
-   * Returns the fully resolved name of the node containing the Nuke script to read 
+   * Returns the fully resolved name of the node containing the Nuke script to read
    * the temporary inkblot renders.
-   */ 
+   */
   public String
-  getTempCompReadInkblotNode() 
+  getTempCompReadInkblotNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.TempComp, NodePurpose.Prepare), 
-			 new Path(AppDirs.Nuke.toDirPath(), 
-				  joinNames(getFullShotName(), "inkblot"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.TempComp, NodePurpose.Prepare),
+			 new Path(AppDirs.Nuke.toDirPath(),
+				  joinNames(getFullShotName(), "inkblot")));
+    return path.toString();
   }
 
   /**
-   * Returns the fully resolved name of the node containing the Nuke script to read 
+   * Returns the fully resolved name of the node containing the Nuke script to read
    * the redistorted UV image.
-   */ 
+   */
   public String
-  getTempCompReadRedistortNode() 
+  getTempCompReadRedistortNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.TempComp, NodePurpose.Prepare), 
-			 new Path(AppDirs.Nuke.toDirPath(), 
-				  joinNames(getFullShotName(), "rd_uv_2k"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.TempComp, NodePurpose.Prepare),
+			 new Path(AppDirs.Nuke.toDirPath(),
+				  joinNames(getFullShotName(), "rd_uv_2k")));
+    return path.toString();
   }
 
   /**
    * Returns the fully resolved name of the node containing the redisorted temporary
    * inkblot rendered images.
-   */ 
+   */
   public String
-  getTempCompInkblotRedistortedNode() 
+  getTempCompInkblotRedistortedNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.TempComp, NodePurpose.Prepare), 
-			 new Path(AppDirs.Comp.toDirPath(), 
-				  joinNames(getFullShotName(), "inkblot_rd"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.TempComp, NodePurpose.Prepare),
+			 new Path(AppDirs.Comp.toDirPath(),
+				  joinNames(getFullShotName(), "inkblot_rd")));
+    return path.toString();
   }
 
   /**
-   * Returns the fully resolved name of the node containing the Nuke script to read 
+   * Returns the fully resolved name of the node containing the Nuke script to read
    * the redisorted temporary inkblot renders.
-   */ 
+   */
   public String
-  getTempCompReadInkblotRedistortedNode() 
+  getTempCompReadInkblotRedistortedNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.TempComp, NodePurpose.Prepare), 
-			 new Path(AppDirs.Nuke.toDirPath(), 
-				  joinNames(getFullShotName(), "inkblot_rd"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.TempComp, NodePurpose.Prepare),
+			 new Path(AppDirs.Nuke.toDirPath(),
+				  joinNames(getFullShotName(), "inkblot_rd")));
+    return path.toString();
   }
 
   /**
    * Returns the fully resolved name of the node contaning the Nuke script fragment
    * use to read in the raw cineon plates.
-   */ 
+   */
   public String
-  getTempCompReadPlatesNode() 
+  getTempCompReadPlatesNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.TempComp, NodePurpose.Prepare), 
-			 new Path(AppDirs.Nuke.toDirPath(), 
-				  joinNames(getFullShotName(), "plates"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.TempComp, NodePurpose.Prepare),
+			 new Path(AppDirs.Nuke.toDirPath(),
+				  joinNames(getFullShotName(), "plates")));
+    return path.toString();
   }
-  
+
   /**
-   * Returns the fully resolved name of the node contaning the Nuke script which 
+   * Returns the fully resolved name of the node contaning the Nuke script which
    * performs the temporary comp.
-   */ 
+   */
   public String
-  getTempCompNukeEditNode() 
+  getTempCompNukeEditNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.TempComp, NodePurpose.Edit), 
-			 new Path(AppDirs.Nuke.toDirPath(), 
-				  joinNames(getFullShotName(), "temp_comp"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.TempComp, NodePurpose.Edit),
+			 new Path(AppDirs.Nuke.toDirPath(),
+				  joinNames(getFullShotName(), "temp_comp")));
+    return path.toString();
   }
 
   /**
    * Returns the fully resolved name of the node containing the temp composited images.
-   */ 
+   */
   public String
-  getTempCompNode() 
+  getTempCompNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.TempComp, NodePurpose.Focus), 
-			 new Path(AppDirs.Comp.toDirPath(), 
-				  joinNames(getFullShotName(), "temp_comp"))); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.TempComp, NodePurpose.Focus),
+			 new Path(AppDirs.Comp.toDirPath(),
+				  joinNames(getFullShotName(), "temp_comp")));
+    return path.toString();
   }
 
   /**
    * Returns the fully resolved name of the node containing a thumbnail image extracted
    * from the temp composited images.
-   */ 
+   */
   public String
-  getTempCompThumbNode() 
+  getTempCompThumbNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.TempComp, NodePurpose.Thumbnail), 
-			 joinNames(getFullShotName(), "temp_comp")); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.TempComp, NodePurpose.Thumbnail),
+			 joinNames(getFullShotName(), "temp_comp"));
+    return path.toString();
   }
 
   /**
    * Returns the fully resolved name of the submit node for the TempComp task.
-   */ 
+   */
   public String
   getTempCompSubmitNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.TempComp, NodePurpose.Submit), 
-			 joinNames(getFullShotName(), "temp_comp_submit")); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.TempComp, NodePurpose.Submit),
+			 joinNames(getFullShotName(), "temp_comp_submit"));
+    return path.toString();
   }
 
 
@@ -2117,16 +2349,16 @@ class ShotNamer
 
   /**
    * Returns the fully resolved name of the approve node for the TempComp task.
-   */ 
+   */
   public String
   getTempCompApproveNode()
   {
-    Path path = new Path(pBasePaths.get(TaskType.TempComp, NodePurpose.Approve), 
-			 joinNames(getFullShotName(), "temp_comp_approve")); 
-    return path.toString(); 
+    Path path = new Path(pBasePaths.get(TaskType.TempComp, NodePurpose.Approve),
+			 joinNames(getFullShotName(), "temp_comp_approve"));
+    return path.toString();
   }
 
-  
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   U T I L I T I E S                                                                    */
@@ -2146,12 +2378,12 @@ class ShotNamer
   }
 
 
-  
+
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
-  
-  private static final long serialVersionUID = -5674419897754929249L; 
+
+  private static final long serialVersionUID = -5674419897754929249L;
 
 
 
@@ -2161,23 +2393,24 @@ class ShotNamer
 
   /**
    * Provides a set of studio-wide helpers for project, sequence and shot naming.
-   */ 
+   */
   protected StudioDefinitions pStudioDefs;
 
-  
+
   /*-- GENERATED ---------------------------------------------------------------------------*/
 
   /**
    * Cached short names of the current project, shot sequence, shot and combined seqshot.
-   */ 
+   */
   protected String pProjectName;
   protected String pSeqName;
   protected String pShotName;
-  
+
   /**
    * Cached fully resolved node directory paths for all combinations of task type and
    * node purpose for this shot.
-   */ 
+   */
   protected DoubleMap<TaskType, NodePurpose, Path>  pBasePaths;
-  
+
 }
+

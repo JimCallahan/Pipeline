@@ -1,9 +1,9 @@
-// $Id: ICStageFunction.java,v 1.10 2008/06/26 05:34:29 jim Exp $
+// $Id: ICStageFunction.java,v 1.12 2008/08/01 20:19:14 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
 import us.temerity.pipeline.builder.*;
-import us.temerity.pipeline.stages.*; 
+import us.temerity.pipeline.stages.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   I C   S T A G E   F U N C T I O N                                                      */
@@ -28,4 +28,5 @@ class ICStageFunction
   public final static String aSoundFile      = "SoundFile";
   public final static String aBgeoModel      = "BgeoModel";
   public final static String aRatImage       = "RatImage";
+  public final static String aExrImage       = "ExrImage";
 }

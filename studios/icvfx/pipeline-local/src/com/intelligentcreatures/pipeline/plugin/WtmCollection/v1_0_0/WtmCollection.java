@@ -1,4 +1,4 @@
-// $Id: WtmCollection.java,v 1.21 2008/06/26 05:34:29 jim Exp $
+// $Id: WtmCollection.java,v 1.23 2008/08/01 20:19:15 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -96,7 +96,7 @@ class WtmCollection
     toReturn.put("Match",     pkg + "MatchBuilder");
     toReturn.put("Blot",      pkg + "BlotBuilder");
     toReturn.put("Noise",     pkg + "NoiseBuilder");
-    toReturn.put("Lighting",  pkg + "LightingBuilder");
+    toReturn.put("Lighting",     pkg + "LightingBuilder");
     toReturn.put("TempComp",  pkg + "TempCompBuilder");
 
     toReturn.put("ApproveTask",   pkg + "ApproveTaskBuilder");

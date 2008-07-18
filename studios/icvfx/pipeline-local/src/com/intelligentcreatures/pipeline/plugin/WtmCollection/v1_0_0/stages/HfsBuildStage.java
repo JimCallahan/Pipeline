@@ -10,14 +10,14 @@ import us.temerity.pipeline.stages.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   BuildLightingAssemblyStage		                                                        */
+/*   HfsBuildStage		                                                        */
 /*------------------------------------------------------------------------------------------*/
 
 /**
  * Creates a node which concatenates several scripts together.
  */
 public
-class BuildLightingAssemblyStage
+class HfsBuildStage
   extends StandardStage
 {
   /*----------------------------------------------------------------------------------------*/
@@ -46,7 +46,7 @@ class BuildLightingAssemblyStage
    *   The name of source MEL scripts.
    */
   public
-  BuildLightingAssemblyStage
+  HfsBuildStage
   (
    StageInformation stageInfo,
    UtilContext context,
@@ -54,22 +54,28 @@ class BuildLightingAssemblyStage
    String nodeName,
    ArrayList<String> orderedSources,
    ArrayList<String> unorderedSources,
-   boolean useGraphicalLicense
+   boolean useGraphicalLicense,
+   String preBuildScript,
+   String postBuildScript,
+   String preSceneScript,
+   String postSceneScript
   )
     throws PipelineException
   {
-	    super("HfsScript",
+	    super("HfsBuild",
 	    		  "Creates a node which is a Houdini scene.",
 	    		  stageInfo, context, client,
 	    		  nodeName, "hip",
 	    		  null,
-	    		  new PluginContext("HfsScript"));
+	    		  new PluginContext("HfsBuild"));
 
 	    addSingleParamValue("UseGraphicalLicense", useGraphicalLicense);
 
-	    if(orderedSources.size() < 1)
+	    if(orderedSources.size() < 1 && unorderedSources.size() < 1)
 	        throw new PipelineException
-	  	("At least one source script is required for a HfsScript Action!");
+	  	("At least one source is required for a HfsBuild Action!");
+
+	    addSourceParamValue(orderedSources.get(0), "MergePattern", "*");
 
 	    // Add the scripts
 	    if (orderedSources != null)
@@ -77,7 +83,7 @@ class BuildLightingAssemblyStage
 		    int order = 100;
 		    for (String source : orderedSources)
 		    {
-		    	addLink(new LinkMod(source, LinkPolicy.Reference));
+		    	addLink(new LinkMod(source, LinkPolicy.Dependency));
 		    	addSourceParamValue(source, "Order", order);
 		    	order += 50;
 		    }
@@ -86,9 +92,32 @@ class BuildLightingAssemblyStage
 	    if (unorderedSources != null)
 	    {
 	    	for (String source : unorderedSources)
-	    		addLink(new LinkMod(source, LinkPolicy.Reference));
+	    		addLink(new LinkMod(source, LinkPolicy.Dependency));
 	    }
 
+	    if (preBuildScript != null)
+	    {
+	    	addLink(new LinkMod(preBuildScript, LinkPolicy.Dependency));
+	    	addSingleParamValue("PreBuildScript", preBuildScript);
+	    }
+
+	    if (postBuildScript != null)
+	    {
+	    	addLink(new LinkMod(postBuildScript, LinkPolicy.Dependency));
+	    	addSingleParamValue("PostBuildScript", postBuildScript);
+	    }
+
+	    if (preSceneScript != null)
+	    {
+	    	addLink(new LinkMod(preSceneScript, LinkPolicy.Dependency));
+	    	addSingleParamValue("PreSceneScript", preSceneScript);
+	    }
+
+	    if (postSceneScript != null)
+	    {
+	    	addLink(new LinkMod(postSceneScript, LinkPolicy.Dependency));
+	    	addSingleParamValue("PostSceneScript", postSceneScript);
+	    }
   }
 
 
@@ -113,6 +142,6 @@ class BuildLightingAssemblyStage
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -3615496839409116231L;
+  private static final long serialVersionUID = -3615496839409116201L;
 
 }

@@ -28,9 +28,14 @@ java_DATA = \
   CopyTrackingMarkersStage.java \
   DjvUnixQtStage.java \
   DoCopyStage.java \
+  HfsBuildStage.java \
   HfsCompositeStage.java \
   HfsGConvertStage.java \
+  HfsGenerateStage.java \
+  HfsGeoStage.java \
   HfsIConvertStage.java \
+  HfsMantraStage.java \
+  HfsRatCompositeStage.java \
   HfsReadCmdStage.java \
   HfsRenderStage.java \
   HfsThumbnailStage.java \

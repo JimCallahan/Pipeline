@@ -1,8 +1,8 @@
-// $Id: AppDirs.java,v 1.14 2008/06/26 21:07:14 jim Exp $
+// $Id: AppDirs.java,v 1.16 2008/08/01 20:19:14 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
-import us.temerity.pipeline.*; 
+import us.temerity.pipeline.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   A P P   D I R S                                                                        */
@@ -10,69 +10,64 @@ import us.temerity.pipeline.*;
 
 /**
  * The types of application specific directories used in the production.
- */ 
-public  
+ */
+public
 enum AppDirs
 {
   /*-- MAYA --------------------------------------------------------------------------------*/
 
   /**
-   * Maya scenes. 
-   */ 
-  Maya, 
+   * Maya scenes.
+   */
+  Maya,
 
   /**
-   * Maya geometry caches. 
-   */ 
-  Cache, 
+   * Maya geometry caches.
+   */
+  Cache,
 
   /**
    * General purpose MEL scripts.
-   */ 
-  MEL, 
+   */
+  MEL,
 
   /**
-   * MEL scripts for attaching shaders to geometry. 
-   */ 
-  ShadeMEL, 
+   * MEL scripts for attaching shaders to geometry.
+   */
+  ShadeMEL,
 
   /**
-   * MEL scripts for doing rigging and binding operations. 
-   */ 
-  RigMEL, 
+   * MEL scripts for doing rigging and binding operations.
+   */
+  RigMEL,
 
   /**
    * MEL scripts for ??? (something to do with the Match task).
-   */ 
-  MatchMEL, 
+   */
+  MatchMEL,
 
   /**
-   * Pre-render MEL scripts to setup a scene for rendering a particular pass. 
-   */ 
-  RenderSetupMEL, 
+   * Pre-render MEL scripts to setup a scene for rendering a particular pass.
+   */
+  RenderSetupMEL,
 
   /**
    * Miscellaneous MEL scripts.
-   */ 
-  MiscMEL, 
+   */
+  MiscMEL,
 
 
   /*-- HOUDINI -----------------------------------------------------------------------------*/
-  
-  /**
-   * Houdini's GEO/BGEO format model files. 
-   */ 
-  Geo, 
 
   /**
-   * Houdini's GEO/BGEO format model files. 
-   */ 
-  Bgeo, 
+   * Houdini's GEO/BGEO format model files.
+   */
+  Geo,
 
   /**
-   * Houdini's HIP scene files. 
-   */ 
-  Hip, 
+   * Houdini's HIP scene files.
+   */
+  Hip,
 
   /**
    * Houdini's command file.
@@ -85,88 +80,97 @@ enum AppDirs
   Otl,
 
   /**
-   * Exported Houdini channels.
+   * Rat files.
+   */
+  Rat,
+
+  /**
+   * Houdini bgeo format model files.
+   */
+  Bgeo,
+
+  /**
+   * Exported Camera channels.
    */
   Chan,
 
   /**
-   * Houdini render input files. 
+   * .ifd file
    */
   Ifd,
 
   /**
-   * Houdini RAT format texture/image files.
+   * Shadow map directory (lighting network)
    */
-  Rat,
-
+  Shd,
 
 
   /*-- IMAGES ------------------------------------------------------------------------------*/
 
   /**
-   * Generic images. 
-   */ 
-  Images, 
+   * Generic images.
+   */
+  Images,
 
   /**
    * Images of roughly 2048x1556 resolution.
-   */ 
-  Image2k, 
+   */
+  Image2k,
 
   /**
    * Images of roughly 1024x778 resolution.
-   */ 
-  Image1k, 
+   */
+  Image1k,
 
   /**
    * Cineon format images.
-   */ 
-  Cineon, 
+   */
+  Cineon,
 
   /**
    * DPX format images.
-   */ 
-  DPX, 
+   */
+  DPX,
 
   /**
    * Raw digital camera images.
-   */ 
-  Raw, 
+   */
+  Raw,
 
   /**
-   * Roto generated matte images. 
-   */ 
-  Mattes, 
+   * Roto generated matte images.
+   */
+  Mattes,
 
   /**
-   * High dynamic range (HDR) images. 
-   */ 
-  HDR, 
+   * High dynamic range (HDR) images.
+   */
+  HDR,
 
   /**
    * Images used to compute the lens distortion.
-   */ 
-  Grids, 
+   */
+  Grids,
 
   /**
    * Images containing UV values used in the lens distortion process.
-   */ 
-  UV, 
+   */
+  UV,
 
   /**
    * Generic texture images.
-   */ 
-  Texture, 
+   */
+  Texture,
 
   /**
-   * Generic rendered images. 
-   */ 
-  Render, 
+   * Generic rendered images.
+   */
+  Render,
 
   /**
-   * Generic composited images. 
-   */ 
-  Comp, 
+   * Generic composited images.
+   */
+  Comp,
 
   /**
    * QuickTime movies.
@@ -174,45 +178,58 @@ enum AppDirs
   QuickTime,
 
   /**
-   * EXR image format files. 
+   * .exr file
    */
   Exr,
 
+  /**
+   * JPEG file
+   */
+  Jpg,
+
+  /**
+   * TIF file
+   */
+  Tif,
 
   /*-- MISC MODELS -------------------------------------------------------------------------*/
 
   /**
-   * OBJ format model files. 
-   */ 
-  Obj, 
+   * OBJ format model files.
+   */
+  Obj,
 
   /**
-   * IGES format model files. 
-   */ 
-  Iges, 
-
+   * IGES format model files.
+   */
+  Iges,
 
   /*-- OTHERS ------------------------------------------------------------------------------*/
 
   /**
    * Nuke scripts.
-   */ 
-  Nuke, 
+   */
+  Nuke,
 
   /**
    * PFTrack scenes.
-   */ 
-  PFTrack, 
+   */
+  PFTrack,
 
   /**
-   * Source code for various compiled formats such as shaders, VEX operators, etc... 
-   */ 
-  Source, 
+   * Source code for various compiled formats such as shaders, VEX operators, etc...
+   */
+  Source,
 
   /**
    * Placeholder files.
-   */ 
-  Placeholder, 
+   */
+  Placeholder,
+
+  /**
+   * Python scripts
+   */
+  Python,
 
   /**
    * Miscellaneous data files not easily catagorized.
@@ -220,58 +237,62 @@ enum AppDirs
   Misc;
 
 
+
   /*----------------------------------------------------------------------------------------*/
   /*   C O N V E R S I O N                                                                  */
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Return the conventional name for a directory containing files of this type. 
-   */ 
-  public String 
-  toDirName() 
+   * Return the conventional name for a directory containing files of this type.
+   */
+  public String
+  toDirName()
   {
     switch(this) {
     case ShadeMEL:
-      return "shade/mel"; 
+      return "shade/mel";
 
     case RigMEL:
-      return "rig/mel"; 
-      
+      return "rig/mel";
+
     case MatchMEL:
-      return "match/mel"; 
-      
+      return "match/mel";
+
     case RenderSetupMEL:
-      return "render_setup/mel"; 
+      return "render_setup/mel";
 
     case MiscMEL:
-      return "misc/mel"; 
+      return "misc/mel";
 
     case Image2k:
       return "2k";
 
     case Image1k:
       return "1k";
-      
+
     case Cineon:
       return "cin";
 
     case QuickTime:
       return "qt";
-      
+
     case Source:
       return "src";
-      
+
+    case Python:
+      return "py";
+
     default:
-      return super.toString().toLowerCase(); 
+      return super.toString().toLowerCase();
     }
   }
-  
+
   /**
-   * Return the conventional name (as a Path) for a directory containing files of this type. 
-   */ 
-  public Path 
-  toDirPath() 
+   * Return the conventional name (as a Path) for a directory containing files of this type.
+   */
+  public Path
+  toDirPath()
   {
-    return new Path(toDirName()); 
+    return new Path(toDirName());
   }
 }

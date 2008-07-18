@@ -56,9 +56,8 @@ class HfsIConvertStage
   )
     throws PipelineException
   {
-	  // TODO: This should probably take a suffix as a parameter ..
 	  super("HfsIConvert",
-	    	"Creates a node which converts an .rat sequence into a .jpg sequence.",
+	    	"Creates a node which converts an image sequence to a different type.",
 	    	stageInfo, context, client,
 	    	nodeName, frameRange, padding, suffix,
 	    	null,

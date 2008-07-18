@@ -1,5 +1,3 @@
-// $Id: HfsCompositeStage.java,v 1.5 2008/08/01 20:19:15 jim Exp $
-
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
 
 import com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.*;
@@ -10,17 +8,15 @@ import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
 import us.temerity.pipeline.stages.*;
 
-import java.util.*;
-
 /*------------------------------------------------------------------------------------------*/
-/*   H F S   C O M P O S I T E   S T A G E                                                  */
+/*   H F S   G E N E R A T E   S T A G E                                                        */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Creates a node which renders a compositing network from a Houdini scene.
+ * Creates a node which Renders a Houdini scene.
  */
 public
-class HfsCompositeStage
+class HfsGeoStage
   extends StandardStage
 {
   /*----------------------------------------------------------------------------------------*/
@@ -51,28 +47,18 @@ class HfsCompositeStage
    * @param outputOperator
    *   The name of the render output operator.
    *
+   * @param cameraOverride
+   *   Overrides the render camera (if set).
+   *
    * @param useGraphicalLicense
    *   Whether to use an interactive graphical Houdini license when running hbatch(1).
    *   Normally, hbatch(1) is run using a non-graphical license (-R option).
    *
-   * @param preRenderScript
-   *   The source node which contains the command script to evaluate before rendering
-   *   begins.
-   *
-   * @param postRenderScript
-   *   The source node which contains the command script to evaluate after rendering
-   *   ends.
-   *
-   * @param preFrameScript
-   *   The source node which contains the command script to evaluate before rendering each
-   *   frame.
-   *
-   * @param postFrameScript
-   *   The source node which contains the command script to evaluate after rendering each
-   *   frame.
+   * @param extraOptions
+   *   Additional command-line options.
    */
   public
-  HfsCompositeStage
+  HfsGeoStage
   (
    StageInformation stageInfo,
    UtilContext context,
@@ -82,6 +68,7 @@ class HfsCompositeStage
    String houdiniScene,
    String outputOperator,
    boolean useGraphicalLicense,
+   String extraOptions,
    String preRenderScript,
    String postRenderScript,
    String preFrameScript,
@@ -89,16 +76,16 @@ class HfsCompositeStage
   )
     throws PipelineException
   {
-    super("HfsComposite",
-	  "Creates a node which renders a compositing network from a Houdini scene.",
+    super("HfsGEO",
+      "Creates a node which generates a Houdini geometry files.",
 	  stageInfo, context, client,
 	  nodeName, suffix,
 	  null,
-	  new PluginContext("HfsComposite", "Temerity",
-			    new Range<VersionID>(new VersionID("2.4.3"), null)));
+	  new PluginContext("HfsGEO"));
 
-    initStage(houdiniScene, outputOperator, useGraphicalLicense,
-	      preRenderScript, postRenderScript, preFrameScript, postFrameScript);
+    initStage(houdiniScene, outputOperator, useGraphicalLicense, extraOptions,
+    		preRenderScript, postRenderScript, preFrameScript, postFrameScript);
+
   }
 
   /**
@@ -132,28 +119,18 @@ class HfsCompositeStage
    * @param outputOperator
    *   The name of the render output operator.
    *
+   * @param cameraOverride
+   *   Overrides the render camera (if set).
+   *
    * @param useGraphicalLicense
    *   Whether to use an interactive graphical Houdini license when running hbatch(1).
    *   Normally, hbatch(1) is run using a non-graphical license (-R option).
-   *
-   * @param preRenderScript
-   *   The source node which contains the command script to evaluate before rendering
-   *   begins.
-   *
-   * @param postRenderScript
-   *   The source node which contains the command script to evaluate after rendering
-   *   ends.
-   *
-   * @param preFrameScript
-   *   The source node which contains the command script to evaluate before rendering each
-   *   frame.
-   *
-   * @param postFrameScript
-   *   The source node which contains the command script to evaluate after rendering each
-   *   frame.
+   *HfsGeoStage
+   * @param extraOptions
+   *   Additional command-line options.
    */
   public
-  HfsCompositeStage
+  HfsGeoStage
   (
    StageInformation stageInfo,
    UtilContext context,
@@ -165,6 +142,7 @@ class HfsCompositeStage
    String houdiniScene,
    String outputOperator,
    boolean useGraphicalLicense,
+   String extraOptions,
    String preRenderScript,
    String postRenderScript,
    String preFrameScript,
@@ -172,70 +150,69 @@ class HfsCompositeStage
   )
     throws PipelineException
   {
-    super("HfsComposite",
-	  "Creates a node which renders a compositing network from a Houdini scene.",
+    super("HfsGEO",
+	  "Creates a node which generates a Houdini geometry files.",
 	  stageInfo, context, client,
 	  nodeName, range, padding, suffix,
 	  null,
-	  new PluginContext("HfsComposite", "Temerity",
-			    new Range<VersionID>(new VersionID("2.4.3"), null)));
+	  new PluginContext("HfsGEO"));
 
-    initStage(houdiniScene, outputOperator, useGraphicalLicense,
-	      preRenderScript, postRenderScript, preFrameScript, postFrameScript);
+    initStage(houdiniScene, outputOperator, useGraphicalLicense, extraOptions,
+    		preRenderScript, postRenderScript, preFrameScript, postFrameScript);
 
     setExecutionMethod(ExecutionMethod.Parallel);
     setBatchSize(5);
   }
 
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Initialize common parameters.
-   */
   private void
   initStage
   (
    String houdiniScene,
    String outputOperator,
    boolean useGraphicalLicense,
+   String extraOptions,
    String preRenderScript,
    String postRenderScript,
    String preFrameScript,
    String postFrameScript
   )
-    throws PipelineException
+  throws PipelineException
   {
-    addLink(new LinkMod(houdiniScene, LinkPolicy.Dependency));
-    addSingleParamValue("HoudiniScene", houdiniScene);
+	addLink(new LinkMod(houdiniScene, LinkPolicy.Dependency));
+	addSingleParamValue("HoudiniScene", houdiniScene);
 
-    if(outputOperator != null)
-      addSingleParamValue("OutputOperator", outputOperator);
+	if(outputOperator != null)
+	  addSingleParamValue("OutputOperator", outputOperator);
 
-    addSingleParamValue("UseGraphicalLicense", useGraphicalLicense);
+	addSingleParamValue("UseGraphicalLicense", useGraphicalLicense);
 
-    if(preRenderScript != null) {
-      addLink(new LinkMod(preRenderScript, LinkPolicy.Dependency));
-      addSingleParamValue("PreRenderScript", preRenderScript);
-    }
+	if(extraOptions != null)
+	  addSingleParamValue("ExtraOptions", extraOptions);
 
-    if(postRenderScript != null) {
-      addLink(new LinkMod(postRenderScript, LinkPolicy.Dependency));
-      addSingleParamValue("PostRenderScript", postRenderScript);
-    }
+	if(preRenderScript != null)
+	{
+		addSingleParamValue("PreRenderScript", preRenderScript);
+		addLink(new LinkMod(preRenderScript, LinkPolicy.Dependency));
+	}
 
-    if(preFrameScript != null) {
-      addLink(new LinkMod(preFrameScript, LinkPolicy.Dependency));
-      addSingleParamValue("PreFrameScript", preFrameScript);
-    }
+	if(postRenderScript != null)
+	{
+		addSingleParamValue("PostRenderScript", postRenderScript);
+		addLink(new LinkMod(postRenderScript, LinkPolicy.Dependency));
+	}
 
-    if(postFrameScript != null) {
-      addLink(new LinkMod(postFrameScript, LinkPolicy.Dependency));
-      addSingleParamValue("PostFrameScript", postFrameScript);
-    }
+	if(preFrameScript != null)
+	{
+		addSingleParamValue("PreFrameScript", preFrameScript);
+		addLink(new LinkMod(preFrameScript, LinkPolicy.Dependency));
+	}
+
+	if(postFrameScript != null)
+	{
+		addSingleParamValue("PostFrameScript", postFrameScript);
+		addLink(new LinkMod(postFrameScript, LinkPolicy.Dependency));
+	}
   }
-
-
 
   /*----------------------------------------------------------------------------------------*/
   /*   O V E R R I D E S                                                                    */
@@ -248,15 +225,13 @@ class HfsCompositeStage
   public String
   getStageFunction()
   {
-    return ICStageFunction.aRenderedImage;
+    return ICStageFunction.aHoudiniScene;
   }
-
-
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -7779138039343840323L;
+  private static final long serialVersionUID = 6922282382755257796L;
 
 }

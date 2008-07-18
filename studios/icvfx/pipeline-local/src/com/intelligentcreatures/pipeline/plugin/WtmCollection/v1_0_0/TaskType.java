@@ -1,4 +1,4 @@
-// $Id: TaskType.java,v 1.13 2008/06/26 05:34:29 jim Exp $
+// $Id: TaskType.java,v 1.15 2008/08/01 20:19:14 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -10,77 +10,77 @@ import us.temerity.pipeline.*;
 
 /**
  * The types of tasks for each shot.
- */ 
-public  
+ */
+public
 enum TaskType
 {
   /**
    *
    */
-  Sound, 
-  
+  Sound,
+
   /**
    * A builder for constructing the nodes associated with the HDRI task.
-   */ 
-  HDRI, 
+   */
+  HDRI,
 
   /**
-   * Contains the scanned plate images, camera data and any other reference images shot on 
-   * set.  Any required painting fixes are applied and then the images are undistored and 
+   * Contains the scanned plate images, camera data and any other reference images shot on
+   * set.  Any required painting fixes are applied and then the images are undistored and
    * linearized.  A GridWarp Nuke node is produced which can be used to redistort rendered
    * images later along with a MEL script to set the undistored image resolution for renders.
-   * Finally, the undistored plates are resized down to 1k, a QuickTime movie is built and 
-   * a thumbnail image is extracted. 
-   */ 
-  Plates, 
+   * Finally, the undistored plates are resized down to 1k, a QuickTime movie is built and
+   * a thumbnail image is extracted.
+   */
+  Plates,
 
   /**
    *
-   */ 
-  Mattes, 
+   */
+  Mattes,
 
   /**
-   * Primarily used to validate the a Maya scene containing the tracked camera and head 
-   * model. The validation process includes performing MEL based tests on the scene as well 
-   * as rendering/comping the shot using a rig and shaders designed to show flaws in the 
+   * Primarily used to validate the a Maya scene containing the tracked camera and head
+   * model. The validation process includes performing MEL based tests on the scene as well
+   * as rendering/comping the shot using a rig and shaders designed to show flaws in the
    * tracking data.
-   */ 
+   */
   Tracking,
-  
-  /**
-   *
-   */  
-  Match, 
 
   /**
    *
-   */ 
+   */
+  Match,
+
+  /**
+   *
+   */
   Blot,
 
   /**
    *
-   */  
-  Noise, 
+   */
+  Noise,
 
   /**
    *
-   */ 
-  Sim, 
+   */
+  Sim,
 
   /**
    *
-   */ 
+   */
   Lighting,
 
   /**
    *
-   */ 
-  TempComp, 
+   */
+  TempComp,
 
   /**
    *
-   */ 
-  Compositing, 
+   */
+  Compositing,
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -95,7 +95,6 @@ enum TaskType
   Anim,
   Placeholder,
   Geometry,
-  Shade,
   Misc;
 
 
@@ -104,39 +103,39 @@ enum TaskType
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Return the conventional name for a directory containing nodes for this type of task. 
-   */ 
-  public String 
-  toDirName() 
+   * Return the conventional name for a directory containing nodes for this type of task.
+   */
+  public String
+  toDirName()
   {
     switch(this) {
     case Modeling:
       return "model";
-      
+
     case Rigging:
-      return "rig"; 
+      return "rig";
 
     case LookDev:
       return "shade";
-	
+
     case TempComp:
       return "temp_comp";
-	
-    case Compositing: 
-      return "comp"; 
+
+    case Compositing:
+      return "comp";
 
     default:
-      return super.toString().toLowerCase(); 
+      return super.toString().toLowerCase();
     }
   }
 
   /**
    * Return the conventional name (as a Path) for a directory containing nodes for
-   * this type of task. 
-   */ 
-  public Path 
-  toDirPath() 
+   * this type of task.
+   */
+  public Path
+  toDirPath()
   {
-    return new Path(toDirName()); 
+    return new Path(toDirName());
   }
 }

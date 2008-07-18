@@ -1,6 +1,8 @@
 // LightingBuilder.java
 // Intelligent Creatures
 // Author: Ryan Cameron
+// Version 1.1.0
+// July 4, 2008
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -9,13 +11,17 @@ import com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages.*;
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.math.*;
 import us.temerity.pipeline.builder.*;
+import us.temerity.pipeline.builder.BaseBuilder.SetupPass;
 import us.temerity.pipeline.builder.BuilderInformation.*;
 import us.temerity.pipeline.stages.*;
 
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.File;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   L I G H T I N G   B U I L D E R                                                            */
+/*   L I G H T I N G   B U I L D E R                                                        */
 /*------------------------------------------------------------------------------------------*/
 
 /**
@@ -129,12 +135,23 @@ class LightingBuilder
       addLocationParam();
     }
 
+    /* the background plate images */
+    {
+      UtilityParam param =
+        new PlaceholderUtilityParam
+        (aBackgroundPlate,
+         "Select the existing scanned images node to use as the background plates for " +
+         "this shot.");
+      addParam(param);
+    }
+
     /* initialize the project namer */
     initProjectNamer();
 
     /* create the setup passes */
     {
       addSetupPass(new LightingSetupShotEssentials());
+      addSetupPass(new SetupImageParams());
       addSetupPass(new GetPrerequisites());
     }
 
@@ -170,6 +187,13 @@ class LightingBuilder
         layout.addPass(sub.getName(), sub);
       }
 
+      {
+		AdvancedLayoutGroup sub = new AdvancedLayoutGroup("GetPrerequisites", true);
+	        sub.addEntry(1, aBackgroundPlate);
+
+		layout.addPass(sub.getName(), sub);
+	  }
+
       setLayout(layout);
     }
   }
@@ -195,7 +219,6 @@ class LightingBuilder
   {
     ArrayList<PluginContext> plugins = new ArrayList<PluginContext>();
 
-    // TODO: Update this list
     plugins.add(new PluginContext("MayaMEL"));
     plugins.add(new PluginContext("HfsScript"));
     plugins.add(new PluginContext("HfsReadCmd"));
@@ -269,8 +292,10 @@ class LightingBuilder
     	  pRorGeoOtlNodeName = pProjectNamer.getRorschachGeoOtlNode();
     	  pRequiredNodeNames.add(pRorGeoOtlNodeName);
 
-    	  // AmbOcc
+    	  pGeoBuildNodeName = pProjectNamer.getLightingGeoBuildNode();
+    	  pRequiredNodeNames.add(pGeoBuildNodeName);
 
+    	  // AmbOcc
     	  pPreAmbOccCmdNodeName = pProjectNamer.getLightingPreAmbOccCmdNode();
     	  pRequiredNodeNames.add(pPreAmbOccCmdNodeName);
 
@@ -281,7 +306,6 @@ class LightingBuilder
     	  pRequiredNodeNames.add(pRorMaskAoShaderNodeName);
 
     	  // AmbOcc and Beauty
-
     	  pRorClothBmpNodeName = pProjectNamer.getRorschachClothBmpNode();
     	  pRequiredNodeNames.add(pRorClothBmpNodeName);
 
@@ -289,7 +313,6 @@ class LightingBuilder
     	  pRequiredNodeNames.add(pRorPaintBmpNodeName);
 
     	  // Beauty
-
     	  pRorBeautyRenderNodeName = pProjectNamer.getLightingRorBeautyRenderNode();
     	  pRequiredNodeNames.add(pRorBeautyRenderNodeName);
 
@@ -321,10 +344,56 @@ class LightingBuilder
     	  pRorMaskInkShaderNodeName = pProjectNamer.getRorschachMaskInkShaderNode();
     	  pRequiredNodeNames.add(pRorMaskInkShaderNodeName);
 
+    	  // Preview network nodes
+    	  pSlapcompHip = pProjectNamer.getLightingSlapcompHipNode();
+    	  pRequiredNodeNames.add(pSlapcompHip);
       }
     }
 
     private static final long serialVersionUID = -6691101175651749910L;
+  }
+
+  /*----------------------------------------------------------------------------------------*/
+
+  private
+  class SetupImageParams
+  extends SetupPass
+  {
+    public
+    SetupImageParams()
+    {
+      super("Setup Image Params",
+            "Setup the actual source image parameters.");
+    }
+
+    /**
+     * Replace the placeholder ReferenceImages and BackgroundPlate parameters with a
+     * real ones.
+     */
+    @Override
+    public void
+    initPhase()
+      throws PipelineException
+    {
+      {
+	Path path = pShotNamer.getPlatesScannedParentPath();
+	ArrayList<String> pnames = findChildNodeNames(path);
+	if((pnames == null) || pnames.isEmpty())
+	  throw new PipelineException
+	    ("Unable to find any scanned image nodes in (" + path + ")!");
+
+	EnumUtilityParam param =
+          new EnumUtilityParam
+          (aBackgroundPlate,
+           "Select the existing scanned images node to use as the background plates for " +
+           "this shot.",
+           pnames.get(0), pnames);
+
+        replaceParam(param);
+      }
+    }
+
+    private static final long serialVersionUID = 3897345314400900929L;
   }
 
   /*----------------------------------------------------------------------------------------*/
@@ -346,8 +415,29 @@ class LightingBuilder
     validatePhase()
       throws PipelineException
     {
-    	// This pass ensures that all of the "prereqs" are in place.
+        /* the original background plates node */
 
+		String bgName = (String) getParamValue(aBackgroundPlate);
+		if(bgName == null)
+			throw new PipelineException
+		      ("No " + aBackgroundPlate + " image node was selected!");
+		Path path = new Path(pShotNamer.getPlatesScannedParentPath(), bgName);
+
+	  	try
+	  	{
+	  		NodeVersion vsn = pClient.getCheckedInVersion(path.toString(), null);
+	  		pFrameRange = vsn.getPrimarySequence().getFrameRange();
+	  		pBackgroundPlateNodeName = vsn.getName();
+	  		pRequiredNodeNames.add(pBackgroundPlateNodeName);
+	  	}
+	  	catch(PipelineException ex)
+	  	{
+	  		throw new PipelineException
+	  	    	("Somehow no checked-in version of the " + aBackgroundPlate + " node " +
+	  	    	"(" + path + ") exists!");
+	  	}
+
+    	// This pass ensures that all of the "prereqs" are in place.
   	  	pResolutionMelNodeName = pShotNamer.getResolutionNode();
   	  	pRequiredNodeNames.add(pResolutionMelNodeName);
 
@@ -360,8 +450,23 @@ class LightingBuilder
   	  	pMatchMaskGeoNodeName = pShotNamer.getMatchMaskGeoNode();
   	  	pRequiredNodeNames.add(pMatchMaskGeoNodeName);
 
+  	  	pNoiseDispAllNodeName = pShotNamer.getNoiseDisplaceAllNode();
+  	  	pRequiredNodeNames.add(pNoiseDispAllNodeName);
+
+  	  	pUndistorted1kQuickTimeNodeName = pShotNamer.getUndistorted1kQuickTimeNode();
+  	  	pRequiredNodeNames.add(pUndistorted1kQuickTimeNodeName);
+
   	  	pNoiseDisplaceNodeName = pShotNamer.getNoiseDisplaceNode();
-  	  	// FIXME: pRequiredNodeNames.add(pNoiseDisplaceNodeName);
+  	  	pRequiredNodeNames.add(pNoiseDisplaceNodeName);
+
+  	  	pRedistortUvImageNode = pShotNamer.getRedistortUvImageNode();
+		pRequiredNodeNames.add(pRedistortUvImageNode);
+
+		pMattesApprovedImagesNodeName = pShotNamer.getMattesApprovedImagesNode();
+		pRequiredNodeNames.add(pMattesApprovedImagesNodeName);
+
+		pUndistorted1kQuickTimeNode = pShotNamer.getUndistorted1kQuickTimeNode();
+        pRequiredNodeNames.add(pUndistorted1kQuickTimeNode);
 
         /* the background plates node */
         pUndistorted1kPlateNodeName = pShotNamer.getUndistorted1kPlateNode();
@@ -427,16 +532,9 @@ class LightingBuilder
 	}
       }
 
-//      /* add Edit annotations to all undistort images, reference images and plates */
-//      {
-//	addMissingTaskAnnotation(pDotGridImageNodeName, NodePurpose.Edit);
-//	addMissingTaskAnnotation(pUvWedgeImageNodeName, NodePurpose.Edit);
-//	addMissingTaskAnnotation(pBackgroundPlateNodeName, NodePurpose.Edit);
-//	for(String name : pMiscReferenceNodeNames)
-//	  addMissingTaskAnnotation(name, NodePurpose.Edit);
-//      }
-
-      /* the submit network */
+	  /*
+	   * SUBMIT/APPROVE/PREVIEW NETWORKS
+	   */
       {
     	  // Build node: <vfxno>_camera.chan
     	  // NOTE! The order that these are added to the list determines the order
@@ -473,17 +571,6 @@ class LightingBuilder
     		  stage.build();
     	  }
 
-    	  // Build node: <vfxno>_mask_geo.#.bgeo
-    	  String maskBGeoNodeName = pShotNamer.getMatchMaskBGeoNode();
-    	  {
-    		  HfsGConvertStage stage =
-    			  new HfsGConvertStage(stageInfo, pContext, pClient,
-    					  maskBGeoNodeName, pMatchMaskGeoNodeName, pFrameRange, FRAME_PADDING);
-
-      		  addTaskAnnotation(stage, NodePurpose.Product);
-      		  stage.build();
-    	  }
-
     	  // Build node: <vfxno>_camera.cmd
     	  String rorCamCmdNodeName = pShotNamer.getLightingCamCmdNode();
     	  {
@@ -502,9 +589,49 @@ class LightingBuilder
     		  HfsReadCmdStage stage =
     			  new HfsReadCmdStage(stageInfo, pContext, pClient,
     					  rorHatCmdNodeName, hatChanNodeName,
-    					  "/obj/RORSCHACH", "hatChanFile");
+    					  "/obj/HAT_CHAN/chan_in", "file");
 
       		  addTaskAnnotation(stage, NodePurpose.Prepare);
+      		  stage.build();
+    	  }
+
+    	  // Build node: <vfxno>_obj.cmd
+    	  String rorObjCmdNodeName = pShotNamer.getLightingObjCmdNode();
+    	  {
+    		  HfsReadCmdStage stage =
+    			  new HfsReadCmdStage(stageInfo, pContext, pClient,
+    					  rorObjCmdNodeName, pMatchMaskGeoNodeName,
+    					  "/obj/READ_OBJ/read_obj", "file");
+
+      		  addTaskAnnotation(stage, NodePurpose.Prepare);
+      		  stage.build();
+    	  }
+
+    	  // Build node: <vfxno>_geoBuild.cmd
+    	  String geoBuildCmdNodeName = pShotNamer.getLightingGeoBuildCmdNode();
+    	  {
+    		  LinkedList<String> sources = new LinkedList<String>();
+    		  sources.add(rorObjCmdNodeName);
+    		  sources.add(rorHatCmdNodeName);
+
+    		  CatFilesStage stage =
+    			  new CatFilesStage(stageInfo, pContext, pClient,
+    					  geoBuildCmdNodeName, "cmd", sources);
+
+      		  addTaskAnnotation(stage, NodePurpose.Prepare);
+      		  stage.build();
+    	  }
+
+    	  // Build node: <vfxno>_mask_geo.#.bgeo
+    	  String maskBGeoNodeName = pShotNamer.getMatchMaskBGeoNode();
+    	  {
+    		  HfsGeoStage stage =
+    			  new HfsGeoStage(stageInfo, pContext, pClient,
+    					  maskBGeoNodeName, pFrameRange, FRAME_PADDING,
+    					  "bgeo", pGeoBuildNodeName, "/obj/WRITE_BGEO/write_bgeo",
+    					  false, null, geoBuildCmdNodeName, null, null, null);
+
+      		  addTaskAnnotation(stage, NodePurpose.Product);
       		  stage.build();
     	  }
 
@@ -544,7 +671,6 @@ class LightingBuilder
     		  ordered.add(pMayaCamNodeName);
     		  ordered.add(pAssemblyPrepNodeName);
     		  ordered.add(rorGeoCmdNodeName);
-    		  ordered.add(rorHatCmdNodeName);
     		  ordered.add(rorCamCmdNodeName);
     		  ordered.add(assemblyCreateCmdNodeName);
 
@@ -596,6 +722,63 @@ class LightingBuilder
       		  stage.build();
     	  }
 
+    	  // Build node: <vfxno>_ambOcc.hip
+    	  String ambOccHipNodeName = pShotNamer.getLightingAmbOccHipNode();
+    	  {
+    		  ArrayList<String> ordered = new ArrayList<String>();
+    		  ordered.add(preAmbOccHipNodeName);
+
+    		  HfsBuildStage stage =
+    			  new HfsBuildStage(stageInfo, pContext, pClient,
+    					  ambOccHipNodeName, ordered, null, false,
+    					  null, null, null, null);
+
+      		  addTaskAnnotation(stage, NodePurpose.Edit);
+      		  stage.build();
+    	  }
+
+    	  // Build node: <vfxno>_ambOcc_2k.ifd
+    	  String ambOcc2kIfdNodeName = pShotNamer.getLightingAmbOcc2kIfdNode();
+    	  {
+    		  HfsGenerateStage stage =
+    			  new HfsGenerateStage(stageInfo, pContext, pClient,
+    					  ambOcc2kIfdNodeName, pFrameRange, FRAME_PADDING,
+    					  "ifd", ambOccHipNodeName,
+    					  "/out/ambOcc", null, false, null);
+
+      		  addTaskAnnotation(stage, NodePurpose.Prepare);
+      		  stage.build();
+    	  }
+
+    	  // Build node: <vfxno>_ambOcc_2k.exr
+    	  String ambOcc2kExrNodeName = pShotNamer.getLightingAmbOcc2kExrNode();
+    	  {
+    		  HfsMantraStage stage =
+    			  new HfsMantraStage(stageInfo, pContext, pClient,
+    					  ambOcc2kExrNodeName, pFrameRange, FRAME_PADDING,
+    					  "exr", ambOcc2kIfdNodeName, 1, null, null,
+    					  "Color Image", "Natural", "Full", "-j 0",
+    					  "Mixed", true, "All", true, true, 1.0, null, 1.0,
+    					  "Default", 4096, 10, 1024, 1.0, "0 (None)", "None");
+
+      		  addTaskAnnotation(stage, NodePurpose.Focus);
+      		  stage.build();
+    	  }
+
+    	  String ambOcc2kJpgNodeName = pShotNamer.getLightingAmbOcc2kJpgNode();
+    	  {
+    		  HfsIConvertStage stage =
+    			    new HfsIConvertStage(stageInfo, pContext, pClient,
+    			    		ambOcc2kJpgNodeName, ambOcc2kExrNodeName,
+    			    		pFrameRange, FRAME_PADDING, "jpg", "8-Bit (byte)");
+
+      		  addTaskAnnotation(stage, NodePurpose.Focus);
+      		  stage.build();
+    	  }
+
+    	  // BEAUTY STREAM
+
+
     	  // Build node: beauty_prep.cmd
     	  String beautyPrepCmdNodeName = pShotNamer.getLightingBeautyPrepCmdNode();
     	  {
@@ -610,18 +793,17 @@ class LightingBuilder
     		  stage.build();
     	  }
 
-    	  // TODO: uncomment this when the noise network is fixed
     	  // Build node: _mask_disp.cmd
-//    	  String maskDispCmdNodeName = pShotNamer.getLightingMaskDispCmdNode();
-//    	  {
-//    		  HfsReadCmdStage stage =
-//    			  new HfsReadCmdStage(stageInfo, pContext, pClient,
-//    					  maskDispCmdNodeName, pNoiseDisplaceNodeName,
-//    					  "/shop/mask", "InkblotMap");
-//
-//      		  addTaskAnnotation(stage, NodePurpose.Prepare);
-//      		  stage.build();
-//    	  }
+    	  String maskDispCmdNodeName = pShotNamer.getLightingMaskDispCmdNode();
+    	  {
+    		  HfsReadCmdStage stage =
+    			  new HfsReadCmdStage(stageInfo, pContext, pClient,
+    					  maskDispCmdNodeName, pNoiseDisplaceNodeName,
+    					  "/shop/mask", "InkblotMap");
+
+      		  addTaskAnnotation(stage, NodePurpose.Prepare);
+      		  stage.build();
+    	  }
 
     	  // Note: building ri_preset_lgt.hip node
     	  // We don't build it if it's already in the repository
@@ -641,6 +823,12 @@ class LightingBuilder
       		  addTaskAnnotation(stage, NodePurpose.Edit);
       		  stage.build();
     	  }
+  	  	  // The presets rig is in the repository, so we'll need to check it out
+  	  	  else
+  	  	  {
+  	  		  pClient.checkOut(getAuthor(), getView(), presetLightHipNodeName, null,
+                    CheckOutMode.OverwriteAll, CheckOutMethod.AllFrozen);
+  	  	  }
 
     	  // Build node: <vfxno>_pre_beauty.hip
     	  String preBeautyHipNodeName = pShotNamer.getLightingPreBeautyHipNode();
@@ -654,7 +842,7 @@ class LightingBuilder
     		  ordered.add(pRorMaskFluffShaderNodeName);
     		  ordered.add(pRorBeautyRenderNodeName);
        		  ordered.add(pPreBeautyCmdNodeName);
-    		 // TODO: ordered.add(maskDispCmdNodeName);
+       		  ordered.add(maskDispCmdNodeName);
     		  ordered.add(beautyPrepCmdNodeName);
 
     		  unordered.add(pRorClothBmpNodeName);
@@ -669,6 +857,93 @@ class LightingBuilder
       		  addTaskAnnotation(stage, NodePurpose.Prepare);
       		  stage.build();
     	  }
+    	  // Build node: createShdDir
+    	  String createShdDirNodeName = pShotNamer.getLightingCreateShdDirNode();
+    	  {
+    		  EmptyFileStage stage =
+    			  new EmptyFileStage(stageInfo, pContext, pClient,
+    					  createShdDirNodeName);
+
+      		  addTaskAnnotation(stage, NodePurpose.Prepare);
+      		  stage.build();
+    	  }
+
+    	  // Build node: <vfxno>_beauty.hip
+    	  String beautyHipNodeName = pShotNamer.getLightingBeautyHipNode();
+    	  {
+    		  ArrayList<String> ordered = new ArrayList<String>();
+    		  ArrayList<String> unordered = new ArrayList<String>();
+
+    		  ordered.add(preBeautyHipNodeName);
+    		  unordered.add(createShdDirNodeName);
+
+    		  HfsBuildStage stage =
+    			  new HfsBuildStage(stageInfo, pContext, pClient,
+    					  beautyHipNodeName, ordered, unordered, false,
+    					  null, null, null, null);
+
+      		  addTaskAnnotation(stage, NodePurpose.Edit);
+      		  stage.build();
+    	  }
+
+    	  // Build node: <vfxno>_beauty_2k.ifd
+    	  String beauty2kIfdNodeName = pShotNamer.getLightingBeauty2kIfdNode();
+    	  {
+    		  HfsGenerateStage stage =
+    			  new HfsGenerateStage(stageInfo, pContext, pClient,
+    					  beauty2kIfdNodeName, pFrameRange, FRAME_PADDING,
+    					  "ifd", beautyHipNodeName,
+    					  "/out/beauty", null, false, null);
+
+      		  addTaskAnnotation(stage, NodePurpose.Prepare);
+      		  stage.build();
+    	  }
+
+    	  String beautyPreviewPythonNodeName = pShotNamer.getLightingBeautyPreviewPythonNode();
+    	  {
+       		  WriteFileStage stage =
+    			  new WriteFileStage("CreateBeautyPreviewPython",
+    					  "Creates a Python script which modifies the render resolution at run-time.",
+    					  stageInfo, pContext, pClient,
+    					  beautyPreviewPythonNodeName, "py", "TextFile",
+    					  generateBeautyPreviewPython());
+
+    		  addTaskAnnotation(stage, NodePurpose.Prepare);
+    		  stage.build();
+    	  }
+
+    	  // Build node: <vfxno>_beauty_2k.exr
+    	  String beauty2kExrNodeName = pShotNamer.getLightingBeauty2kExrNode();
+    	  {
+    		  String extraOptions = "-j 0 ";
+    		  extraOptions += "-P $WORKING" + beautyPreviewPythonNodeName + ".py";
+
+    		  HfsMantraStage stage =
+    			  new HfsMantraStage(stageInfo, pContext, pClient,
+    					  beauty2kExrNodeName, pFrameRange, FRAME_PADDING,
+    					  "exr", beauty2kIfdNodeName, 1, null, null,
+    					  "Color Image", "Natural", "Full", extraOptions,
+    					  "Mixed", true, "All", true, true, 1.0, null, 1.0,
+    					  "Default", 4096, 10, 1024, 1.0, "0 (None)", "None");
+
+    		  stage.addLink(new LinkMod(beautyPreviewPythonNodeName,
+    			  		LinkPolicy.Dependency));
+
+      		  addTaskAnnotation(stage, NodePurpose.Focus);
+      		  stage.build();
+    	  }
+
+    	  String beauty2kJpgNodeName = pShotNamer.getLightingBeauty2kJpgNode();
+    	  {
+    		  HfsIConvertStage stage =
+    			    new HfsIConvertStage(stageInfo, pContext, pClient,
+    			    		beauty2kJpgNodeName, beauty2kExrNodeName,
+    			    		pFrameRange, FRAME_PADDING, "jpg", "8-Bit (byte)");
+
+      		  addTaskAnnotation(stage, NodePurpose.Focus);
+      		  stage.build();
+    	  }
+
 
     	  // Build node: ink_prep.cmd
     	  String inkPrepCmdNodeName = pShotNamer.getLightingInkPrepCmdNode();
@@ -694,7 +969,7 @@ class LightingBuilder
     		  ordered.add(pRorInkblotRenderNodeName);
     		  ordered.add(pRorMaskInkShaderNodeName);
     		  ordered.add(pPreInkConstCmdNodeName);
-    		 // TODO: ordered.add(maskDispCmdNodeName);
+    		  ordered.add(maskDispCmdNodeName);
     		  ordered.add(inkPrepCmdNodeName);
 
     		  unordered.add(pRorClothBmpNodeName);
@@ -708,30 +983,290 @@ class LightingBuilder
       		  stage.build();
     	  }
 
-//    	  String submitNodeName = pShotNamer.getLightingSubmitNode();
-//    	  {
-//    		  TreeSet<String> sources = new TreeSet<String>();
-//    		  sources.add(cameraChanNodeName);
-//    		  sources.add(hatChanNodeName);
-//
-//    		  TargetStage stage =
-//    			    new TargetStage(stageInfo, pContext, pClient,
-//    					    submitNodeName, sources);
-//    		  addTaskAnnotation(stage, NodePurpose.Submit);
-//    		  stage.build();
-//    		  addToQueueList(submitNodeName);
-//    		  addToCheckInList(submitNodeName);
-//    	  }
+    	  // Build node: <vfxno>_ink_const.hip
+    	  String inkHipNodeName = pShotNamer.getLightingInkHipNode();
+    	  {
+    		  ArrayList<String> ordered = new ArrayList<String>();
+    		  ordered.add(preInkHipNodeName);
 
+    		  HfsBuildStage stage =
+    			  new HfsBuildStage(stageInfo, pContext, pClient,
+    					  inkHipNodeName, ordered, null, false,
+    					  null, null, null, null);
+
+      		  addTaskAnnotation(stage, NodePurpose.Edit);
+      		  stage.build();
+    	  }
+
+    	  // Build node: <vfxno>_ink_const_2k.ifd
+    	  String ink2kIfdNodeName = pShotNamer.getLightingInk2kIfdNode();
+    	  {
+    		  HfsGenerateStage stage =
+    			  new HfsGenerateStage(stageInfo, pContext, pClient,
+    					  ink2kIfdNodeName, pFrameRange, FRAME_PADDING,
+    					  "ifd", inkHipNodeName,
+    					  "/out/ink_const_2k", null, false, null);
+
+      		  addTaskAnnotation(stage, NodePurpose.Prepare);
+      		  stage.build();
+    	  }
+
+    	  // Build node: <vfxno>_ink_const_2k.exr
+    	  String ink2kExrNodeName = pShotNamer.getLightingInk2kExrNode();
+    	  {
+    		  HfsMantraStage stage =
+    			  new HfsMantraStage(stageInfo, pContext, pClient,
+    					  ink2kExrNodeName, pFrameRange, FRAME_PADDING,
+    					  "exr", ink2kIfdNodeName, 1, null, null,
+    					  "Color Image", "Natural", "Full", "-j 0",
+    					  "Mixed", true, "All", true, true, 1.0, null, 1.0,
+    					  "Default", 4096, 10, 1024, 1.0, "0 (None)", "None");
+
+      		  addTaskAnnotation(stage, NodePurpose.Focus);
+      		  stage.build();
+    	  }
+
+    	  // Build node: <vfxno>_ink_const_2k.jpg
+    	  String ink2kJpgNodeName = pShotNamer.getLightingInk2kJpgNode();
+    	  {
+    		  HfsIConvertStage stage =
+    			    new HfsIConvertStage(stageInfo, pContext, pClient,
+    			    		ink2kJpgNodeName, ink2kExrNodeName,
+    			    		pFrameRange, FRAME_PADDING, "jpg", "8-Bit (byte)");
+
+      		  addTaskAnnotation(stage, NodePurpose.Focus);
+      		  stage.build();
+    	  }
+
+    	  // Build submit root node
+    	  String submitNodeName = pShotNamer.getLightingSubmitNode();
+    	  {
+    		  TreeSet<String> sources = new TreeSet<String>();
+
+    		  sources.add(ambOcc2kJpgNodeName);
+    	  	  sources.add(beauty2kJpgNodeName);
+    	  	  sources.add(ink2kJpgNodeName);
+
+
+    	  	  TargetStage stage =
+    			    new TargetStage(stageInfo, pContext, pClient,
+    					    submitNodeName, sources);
+    		  addTaskAnnotation(stage, NodePurpose.Submit);
+
+    		  stage.addLink(new LinkMod(pNoiseDispAllNodeName,
+    			  		LinkPolicy.Association));
+    		  stage.addLink(new LinkMod(pBackgroundPlateNodeName,
+				  		LinkPolicy.Association));
+    		  stage.addLink(new LinkMod(pUndistorted1kQuickTimeNodeName,
+				  		LinkPolicy.Association));
+
+    		  stage.build();
+    	  }
+
+    	  /*
+    	   * APPROVE NETWORK
+    	   */
+
+    	  String approvedAmbOccNodeName = pShotNamer.getLightingApprovedAmbOccNode();
+    	  {
+    		  CopyImagesStage stage =
+    			  new CopyImagesStage(stageInfo, pContext, pClient,
+    					  approvedAmbOccNodeName, pFrameRange, 4, "exr",
+    					  ambOcc2kExrNodeName);
+
+    		  addTaskAnnotation(stage, NodePurpose.Product);
+    		  stage.build();
+    	  }
+
+    	  String approvedBeautyNodeName = pShotNamer.getLightingApprovedBeautyNode();
+    	  {
+    		  CopyImagesStage stage =
+    			  new CopyImagesStage(stageInfo, pContext, pClient,
+    					  approvedBeautyNodeName, pFrameRange, 4, "exr",
+    					  beauty2kExrNodeName);
+
+    		  addTaskAnnotation(stage, NodePurpose.Product);
+    		  stage.build();
+    	  }
+
+    	  String approvedInkNodeName = pShotNamer.getLightingApprovedInkNode();
+    	  {
+    		  CopyImagesStage stage =
+    			  new CopyImagesStage(stageInfo, pContext, pClient,
+    					  approvedInkNodeName, pFrameRange, 4, "exr",
+    					  ink2kExrNodeName);
+
+    		  addTaskAnnotation(stage, NodePurpose.Product);
+    		  stage.build();
+    	  }
+
+    	  String approveNodeName = pShotNamer.getLightingApproveNode();
+    	  {
+    		  TreeSet<String> sources = new TreeSet<String>();
+
+    		  sources.add(approvedAmbOccNodeName);
+    	  	  sources.add(approvedBeautyNodeName);
+    	  	  sources.add(approvedInkNodeName);
+
+    	  	  TargetStage stage =
+    			    new TargetStage(stageInfo, pContext, pClient,
+    			    		approveNodeName, sources);
+    		  addTaskAnnotation(stage, NodePurpose.Approve);
+    		  stage.build();
+    	  }
+
+    	  /*
+    	   * PREVIEW NETWORK
+    	   */
+
+    	  String ambOccTifNodeName = pShotNamer.getLightingAmbOccTifNode();
+    	  {
+    		  HfsIConvertStage stage =
+  			    new HfsIConvertStage(stageInfo, pContext, pClient,
+  			    		ambOccTifNodeName, ambOcc2kExrNodeName,
+  			    		pFrameRange, FRAME_PADDING, "tif", "Natural");
+
+    		  addTaskAnnotation(stage, NodePurpose.Focus);
+    		  stage.build();
+    	  }
+
+    	  String ambOccSlapCmdNodeName = pShotNamer.getLightingAmbOccSlapCmdNode();
+    	  {
+    		  HfsReadCmdStage stage =
+    			  new HfsReadCmdStage(stageInfo, pContext, pClient,
+    					  ambOccSlapCmdNodeName, ambOccTifNodeName,
+    					  "/img/slapcomp/AMBOCC_IN", "filename");
+
+      		  addTaskAnnotation(stage, NodePurpose.Prepare);
+      		  stage.build();
+    	  }
+
+    	  String beautySlapCmdNodeName = pShotNamer.getLightingBeautySlapCmdNode();
+    	  {
+    		  HfsReadCmdStage stage =
+    			  new HfsReadCmdStage(stageInfo, pContext, pClient,
+    					  beautySlapCmdNodeName, beauty2kExrNodeName,
+    					  "/img/slapcomp/BEAUTY_IN", "filename");
+
+    		  addTaskAnnotation(stage, NodePurpose.Prepare);
+      		  stage.build();
+    	  }
+
+    	  String mattesSlapCmdNodeName = pShotNamer.getLightingMattesSlapCmdNode();
+    	  {
+    		  HfsReadCmdStage stage =
+    			  new HfsReadCmdStage(stageInfo, pContext, pClient,
+    					  mattesSlapCmdNodeName, pMattesApprovedImagesNodeName,
+    					  "/img/slapcomp/MATTES_IN", "filename");
+
+    		  addTaskAnnotation(stage, NodePurpose.Prepare);
+      		  stage.build();
+    	  }
+
+    	  String plateSlapCmdNodeName = pShotNamer.getLightingPlateSlapCmdNode();
+    	  {
+    		  HfsReadCmdStage stage =
+    			  new HfsReadCmdStage(stageInfo, pContext, pClient,
+    					  plateSlapCmdNodeName, pBackgroundPlateNodeName,
+    					  "/img/slapcomp/PLATE_IN", "filename");
+
+    		  addTaskAnnotation(stage, NodePurpose.Prepare);
+      		  stage.build();
+    	  }
+
+    	  String redistortSlapCmdNodeName = pShotNamer.getLightingRedistortSlapCmdNode();
+    	  {
+    		  HfsReadCmdStage stage =
+    			  new HfsReadCmdStage(stageInfo, pContext, pClient,
+    					  redistortSlapCmdNodeName, pRedistortUvImageNode,
+    					  "/img/slapcomp/PLATE_IN", "filename");
+
+    		  addTaskAnnotation(stage, NodePurpose.Prepare);
+      		  stage.build();
+    	  }
+
+    	  String slapcompCmdNodeName = pShotNamer.getLightingSlapcompCmdNode();
+    	  {
+    		  LinkedList<String> sources = new LinkedList<String>();
+    		  sources.add(mattesSlapCmdNodeName);
+    		  sources.add(beautySlapCmdNodeName);
+    		  sources.add(ambOccSlapCmdNodeName);
+    		  sources.add(plateSlapCmdNodeName);
+    		  sources.add(redistortSlapCmdNodeName);
+
+    		  CatFilesStage stage =
+    			  new CatFilesStage(stageInfo, pContext, pClient,
+    					  slapcompCmdNodeName, "cmd", sources);
+
+      		  addTaskAnnotation(stage, NodePurpose.Prepare);
+      		  stage.build();
+    	  }
+
+    	  String beautySlapPrepHipNodeName = pShotNamer.getLightingBeautySlapPrepHipNode();
+    	  {
+    		  ArrayList<String> ordered = new ArrayList<String>();
+    		  ordered.add(pSlapcompHip);
+
+    		  HfsBuildStage stage =
+    			  new HfsBuildStage(stageInfo, pContext, pClient,
+    					  beautySlapPrepHipNodeName, ordered, null, false,
+    					  null, slapcompCmdNodeName, null, null);
+
+      		  addTaskAnnotation(stage, NodePurpose.Prepare);
+      		  stage.build();
+    	  }
+
+    	  String beautySlapcompHipNodeName = pShotNamer.getLightingBeautySlapcompHipNode();
+    	  {
+    		  DoCopyStage stage =
+    			  new DoCopyStage("CopySlapComp", "Copy the prep hip to the edit directory.",
+    					  stageInfo, pContext, pClient,
+    					  beautySlapcompHipNodeName, "hip",
+    					  beautySlapPrepHipNodeName);
+
+      		  addTaskAnnotation(stage, NodePurpose.Edit);
+      		  stage.build();
+    	  }
+
+    	  String beautyTestCineonNodeName = pShotNamer.getLightingBeautyTestCineonNode();
+    	  {
+    		  HfsCompositeStage stage =
+    			    new HfsCompositeStage(stageInfo, pContext, pClient,
+    			    		beautyTestCineonNodeName, pFrameRange, 4, "cin",
+    			    		beautySlapcompHipNodeName, "/out/slapcomp", false,
+    						  null, null, null, null);
+
+    		  stage.addLink(new LinkMod(pBackgroundPlateNodeName, LinkPolicy.Association));
+    		  stage.addLink(new LinkMod(pUndistorted1kQuickTimeNode, LinkPolicy.Association));
+
+      		  addTaskAnnotation(stage, NodePurpose.Edit);
+      		  stage.build();
+    	  }
+
+    	  String previewSubmitNodeName = pShotNamer.getLightingPreviewSubmitNode();
+    	  {
+    		  TreeSet<String> sources = new TreeSet<String>();
+
+    		  sources.add(beautyTestCineonNodeName);
+
+    		  TargetStage stage =
+    			    new TargetStage(stageInfo, pContext, pClient,
+    			    		previewSubmitNodeName, sources);
+    		  addTaskAnnotation(stage, NodePurpose.Submit);
+    		  stage.build();
+    	  }
       }
     }
+
+    // TODO: Proper generation of these .cmd nodes. Builder shouldn't be generating these;
+    // Actions should.
 
     private String generateAmbOccPrepCmd()
     {
     	String script = "";
 
-    	script += "set START = " + pFrameRange.getStart() + "\n";
-    	script += "set END = " + pFrameRange.getEnd() + "\n";
+    	script += "set -g START = " + pFrameRange.getStart() + "\n";
+    	script += "set -g END = " + pFrameRange.getEnd() + "\n";
     	script += "opparm ambOcc soho_diskfile " +
     			"( '$WORKING" + pShotNamer.getLightingAmbOcc2kIfdNode() + ".$F4.ifd' )" + "\n";
     	script += "opparm ambOcc vm_picture " +
@@ -745,10 +1280,10 @@ class LightingBuilder
     {
     	String script = "";
 
-    	script += "set START = " + pFrameRange.getStart() + "\n";
-    	script += "set END = " + pFrameRange.getEnd() + "\n";
-    	script += "set SEQ = " + pShotNamer.getSequenceName() + "\n";
-    	script += "set SHOTNUM = " + pShotNamer.getShotName() + "\n";
+    	script += "set -g START = " + pFrameRange.getStart() + "\n";
+    	script += "set -g END = " + pFrameRange.getEnd() + "\n";
+    	script += "set -g SEQ = " + pShotNamer.getSequenceName() + "\n";
+    	script += "set -g SHOTNUM = " + pShotNamer.getShotName() + "\n";
     	script += "opparm beauty soho_diskfile " +
     			"( '$WORKING" + pShotNamer.getLightingBeauty2kIfdNode() + ".$F4.ifd' )" + "\n";
     	script += "opparm beauty vm_picture " +
@@ -762,10 +1297,10 @@ class LightingBuilder
     {
     	String script = "";
 
-    	script += "set START = " + pFrameRange.getStart() + "\n";
-    	script += "set END = " + pFrameRange.getEnd() + "\n";
-    	script += "set SEQ = " + pShotNamer.getSequenceName() + "\n";
-    	script += "set SHOTNUM = " + pShotNamer.getShotName() + "\n";
+    	script += "set -g START = " + pFrameRange.getStart() + "\n";
+    	script += "set -g END = " + pFrameRange.getEnd() + "\n";
+    	script += "set -g SEQ = " + pShotNamer.getSequenceName() + "\n";
+    	script += "set -g SHOTNUM = " + pShotNamer.getShotName() + "\n";
     	script += "opparm ink_const soho_diskfile " +
     			"( '$WORKING" + pShotNamer.getLightingInk2kIfdNode() + ".$F4.ifd' )" + "\n";
     	script += "opparm ink_const vm_picture " +
@@ -775,16 +1310,57 @@ class LightingBuilder
     	return script;
     }
 
+    private String generateBeautyPreviewPython() throws PipelineException
+    {
+    	String script = "";
+
+    	// FIXME: Working area path hard-coded; next iteration, generate with actions
+    	String resMel = "/prod/working/" + pContext.getAuthor() + "/"
+    				+ pContext.getView() + pShotNamer.getResolutionNode() + ".mel";
+    	try
+    	{
+    		Scanner s = new Scanner(new File(resMel));
+    		s.nextLine();s.nextLine();
+
+    		/*
+    		 Lines are of this form in the resolution.mel file:
+    			setAttr "defaultResolution.width" 2074;
+    			setAttr "defaultResolution.height" 1576;
+    		*/
+
+    		String[] widthLine = s.nextLine().split(" ");
+    		String[] heightLine = s.nextLine().split(" ");
+
+    		Double width = (new Double(widthLine[2].split(";")[0]))*PREVIEW_SCALE;
+    		Double height = (new Double(heightLine[2].split(";")[0]))*PREVIEW_SCALE;
+
+        	script += "import sys, mantra" + "\n\n";
+        	script += "def filterCamera():" + "\n";
+        	script += "\t" + "mantra.setproperty('image:resolution', [" +
+        				width.intValue() + ", " +
+        				height.intValue() + "])" + "\n";
+        	script += "\t" + "mantra.setproperty('renderer:shadingfactor', [0.25])" + "\n";
+
+    	}
+    	catch (FileNotFoundException f)
+    	{
+    		throw new PipelineException("File not found: " + resMel + "\n This is needed to" +
+    				" build the beautyPython script.");
+    	}
+
+    	return script;
+    }
+
     private static final long serialVersionUID = -5216068758078265109L;
   }
-
-
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
   private static final long serialVersionUID = 4601321412376464763L;
+
+  public final static String aBackgroundPlate = "BackgroundPlate";
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -802,6 +1378,7 @@ class LightingBuilder
   private String pTrackExtractedTrackNodeName;
   private String pMatchMaskGeoNodeName;
   private String pUndistorted1kPlateNodeName;
+  private String pGeoBuildNodeName;
 
   private String pAssemblyPrepNodeName;
   private String pMayaCamNodeName;
@@ -814,9 +1391,6 @@ class LightingBuilder
   private String pRorMaskAoShaderNodeName;
   private String pRorClothBmpNodeName;
   private String pRorPaintBmpNodeName;
-
-  private String pNoiseDisplaceNodeName;
-
   private String pRorBeautyRenderNodeName;
   private String pPreBeautyCmdNodeName;
   private String pRorMaskFluffShaderNodeName;
@@ -824,16 +1398,24 @@ class LightingBuilder
   private String pRorNeckBlendNodeName;
   private String pRorMaskColNodeName;
 
-  // Ink
+  private String pNoiseDisplaceNodeName;
+  private String pNoiseDispAllNodeName;
+  private String pUndistorted1kQuickTimeNodeName;
+
   private String pPreInkConstCmdNodeName;
   private String pRorInkblotRenderNodeName;
   private String pRorMaskInkShaderNodeName;
 
   private String pLightRigNodeName;
+  private String pBackgroundPlateNodeName;
+
+  private String pSlapcompHip;
+  private String pRedistortUvImageNode;
+  private String pMattesApprovedImagesNodeName;
+  private String pUndistorted1kQuickTimeNode;
 
   private FrameRange pFrameRange;
   private static final Integer FRAME_PADDING = 4;
+  private static final Double PREVIEW_SCALE = 0.35;
 }
-
-// Ink
 
