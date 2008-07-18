@@ -344,9 +344,9 @@ class LightingBuilder
     	  pRorMaskInkShaderNodeName = pProjectNamer.getRorschachMaskInkShaderNode();
     	  pRequiredNodeNames.add(pRorMaskInkShaderNodeName);
 
-    	  // Preview network nodes
-    	  pSlapcompHip = pProjectNamer.getLightingSlapcompHipNode();
-    	  pRequiredNodeNames.add(pSlapcompHip);
+    	  // Preview network
+    	  pBaseSlapcompNukeNodeName = pProjectNamer.getLightingSlapcompNukeNode();
+    	  pRequiredNodeNames.add(pBaseSlapcompNukeNodeName);
       }
     }
 
@@ -456,7 +456,7 @@ class LightingBuilder
   	  	pUndistorted1kQuickTimeNodeName = pShotNamer.getUndistorted1kQuickTimeNode();
   	  	pRequiredNodeNames.add(pUndistorted1kQuickTimeNodeName);
 
-  	  	pNoiseDisplaceNodeName = pShotNamer.getNoiseDisplaceNode();
+  	  	pNoiseDisplaceNodeName = pShotNamer.getNoiseApprovedDisplaceNode();
   	  	pRequiredNodeNames.add(pNoiseDisplaceNodeName);
 
   	  	pRedistortUvImageNode = pShotNamer.getRedistortUvImageNode();
@@ -1119,125 +1119,89 @@ class LightingBuilder
     	   * PREVIEW NETWORK
     	   */
 
-    	  String ambOccTifNodeName = pShotNamer.getLightingAmbOccTifNode();
+    	  String ambOccSlapNkNodeName = pShotNamer.getLightingAmbOccSlapNkNode();
     	  {
-    		  HfsIConvertStage stage =
-  			    new HfsIConvertStage(stageInfo, pContext, pClient,
-  			    		ambOccTifNodeName, ambOcc2kExrNodeName,
-  			    		pFrameRange, FRAME_PADDING, "tif", "Natural");
-
-    		  addTaskAnnotation(stage, NodePurpose.Focus);
-    		  stage.build();
-    	  }
-
-    	  String ambOccSlapCmdNodeName = pShotNamer.getLightingAmbOccSlapCmdNode();
-    	  {
-    		  HfsReadCmdStage stage =
-    			  new HfsReadCmdStage(stageInfo, pContext, pClient,
-    					  ambOccSlapCmdNodeName, ambOccTifNodeName,
-    					  "/img/slapcomp/AMBOCC_IN", "filename");
+    		  NukeReadStage stage =
+    			  new NukeReadStage(stageInfo, pContext, pClient,
+    					  ambOccSlapNkNodeName, ambOcc2kExrNodeName,
+    					  "Error");
 
       		  addTaskAnnotation(stage, NodePurpose.Prepare);
       		  stage.build();
     	  }
 
-    	  String beautySlapCmdNodeName = pShotNamer.getLightingBeautySlapCmdNode();
+    	  String beautySlapNkNodeName = pShotNamer.getLightingBeautySlapNkNode();
     	  {
-    		  HfsReadCmdStage stage =
-    			  new HfsReadCmdStage(stageInfo, pContext, pClient,
-    					  beautySlapCmdNodeName, beauty2kExrNodeName,
-    					  "/img/slapcomp/BEAUTY_IN", "filename");
+    		  NukeReadStage stage =
+    			  new NukeReadStage(stageInfo, pContext, pClient,
+    					  beautySlapNkNodeName, beauty2kExrNodeName,
+    					  "Error");
 
     		  addTaskAnnotation(stage, NodePurpose.Prepare);
       		  stage.build();
     	  }
 
-    	  String mattesSlapCmdNodeName = pShotNamer.getLightingMattesSlapCmdNode();
+    	  String mattesSlapNkNodeName = pShotNamer.getLightingMattesSlapNkNode();
     	  {
-    		  HfsReadCmdStage stage =
-    			  new HfsReadCmdStage(stageInfo, pContext, pClient,
-    					  mattesSlapCmdNodeName, pMattesApprovedImagesNodeName,
-    					  "/img/slapcomp/MATTES_IN", "filename");
+    		  NukeReadStage stage =
+    			  new NukeReadStage(stageInfo, pContext, pClient,
+    					  mattesSlapNkNodeName, pMattesApprovedImagesNodeName,
+    					  "Error");
 
     		  addTaskAnnotation(stage, NodePurpose.Prepare);
       		  stage.build();
     	  }
 
-    	  String plateSlapCmdNodeName = pShotNamer.getLightingPlateSlapCmdNode();
+    	  String plateSlapNkNodeName = pShotNamer.getLightingPlateSlapNkNode();
     	  {
-    		  HfsReadCmdStage stage =
-    			  new HfsReadCmdStage(stageInfo, pContext, pClient,
-    					  plateSlapCmdNodeName, pBackgroundPlateNodeName,
-    					  "/img/slapcomp/PLATE_IN", "filename");
+    		  NukeReadStage stage =
+    			  new NukeReadStage(stageInfo, pContext, pClient,
+    					  plateSlapNkNodeName, pBackgroundPlateNodeName,
+    					  "Error");
 
     		  addTaskAnnotation(stage, NodePurpose.Prepare);
       		  stage.build();
     	  }
 
-    	  String redistortSlapCmdNodeName = pShotNamer.getLightingRedistortSlapCmdNode();
+    	  String redistortSlapNkNodeName = pShotNamer.getLightingRedistortSlapNkNode();
     	  {
-    		  HfsReadCmdStage stage =
-    			  new HfsReadCmdStage(stageInfo, pContext, pClient,
-    					  redistortSlapCmdNodeName, pRedistortUvImageNode,
-    					  "/img/slapcomp/PLATE_IN", "filename");
+    		  NukeReadStage stage =
+    			  new NukeReadStage(stageInfo, pContext, pClient,
+    					  redistortSlapNkNodeName, pRedistortUvImageNode,
+    					  "Error");
 
     		  addTaskAnnotation(stage, NodePurpose.Prepare);
       		  stage.build();
     	  }
 
-    	  String slapcompCmdNodeName = pShotNamer.getLightingSlapcompCmdNode();
+    	  String slapcompNkNodeName = pShotNamer.getLightingSlapcompNkNode();
     	  {
-    		  LinkedList<String> sources = new LinkedList<String>();
-    		  sources.add(mattesSlapCmdNodeName);
-    		  sources.add(beautySlapCmdNodeName);
-    		  sources.add(ambOccSlapCmdNodeName);
-    		  sources.add(plateSlapCmdNodeName);
-    		  sources.add(redistortSlapCmdNodeName);
+    		  TreeMap<String, String> subst = new TreeMap<String, String>();
+    		  subst.put(mattesSlapNkNodeName, "Mattes");
+    		  subst.put(beautySlapNkNodeName, "Mask");
+    		  subst.put(ambOccSlapNkNodeName, "AmbOcc");
+    		  subst.put(plateSlapNkNodeName, "Plates");
+    		  subst.put(redistortSlapNkNodeName, "Distort");
 
-    		  CatFilesStage stage =
-    			  new CatFilesStage(stageInfo, pContext, pClient,
-    					  slapcompCmdNodeName, "cmd", sources);
+    		  NukeSubstCompStage stage =
+    			    new NukeSubstCompStage
+    			    (stageInfo, pContext, pClient,
+    			     slapcompNkNodeName,
+    			    pBaseSlapcompNukeNodeName,
+    			     subst);
 
       		  addTaskAnnotation(stage, NodePurpose.Prepare);
-      		  stage.build();
-    	  }
-
-    	  String beautySlapPrepHipNodeName = pShotNamer.getLightingBeautySlapPrepHipNode();
-    	  {
-    		  ArrayList<String> ordered = new ArrayList<String>();
-    		  ordered.add(pSlapcompHip);
-
-    		  HfsBuildStage stage =
-    			  new HfsBuildStage(stageInfo, pContext, pClient,
-    					  beautySlapPrepHipNodeName, ordered, null, false,
-    					  null, slapcompCmdNodeName, null, null);
-
-      		  addTaskAnnotation(stage, NodePurpose.Prepare);
-      		  stage.build();
-    	  }
-
-    	  String beautySlapcompHipNodeName = pShotNamer.getLightingBeautySlapcompHipNode();
-    	  {
-    		  DoCopyStage stage =
-    			  new DoCopyStage("CopySlapComp", "Copy the prep hip to the edit directory.",
-    					  stageInfo, pContext, pClient,
-    					  beautySlapcompHipNodeName, "hip",
-    					  beautySlapPrepHipNodeName);
-
-      		  addTaskAnnotation(stage, NodePurpose.Edit);
       		  stage.build();
     	  }
 
     	  String beautyTestCineonNodeName = pShotNamer.getLightingBeautyTestCineonNode();
     	  {
-    		  HfsCompositeStage stage =
-    			    new HfsCompositeStage(stageInfo, pContext, pClient,
-    			    		beautyTestCineonNodeName, pFrameRange, 4, "cin",
-    			    		beautySlapcompHipNodeName, "/out/slapcomp", false,
-    						  null, null, null, null);
-
-    		  stage.addLink(new LinkMod(pBackgroundPlateNodeName, LinkPolicy.Association));
-    		  stage.addLink(new LinkMod(pUndistorted1kQuickTimeNode, LinkPolicy.Association));
+    		 NukeSubstCompStage stage =
+  			    new NukeSubstCompStage
+  			    (stageInfo, pContext, pClient,
+  			     beautyTestCineonNodeName, pFrameRange, 4, "cin",
+  			     "Process", slapcompNkNodeName,
+  			   new TreeMap<String,String>(), new PluginContext("NukeFrameCycler"));
 
       		  addTaskAnnotation(stage, NodePurpose.Edit);
       		  stage.build();
@@ -1413,6 +1377,7 @@ class LightingBuilder
   private String pRedistortUvImageNode;
   private String pMattesApprovedImagesNodeName;
   private String pUndistorted1kQuickTimeNode;
+  private String pBaseSlapcompNukeNodeName;
 
   private FrameRange pFrameRange;
   private static final Integer FRAME_PADDING = 4;

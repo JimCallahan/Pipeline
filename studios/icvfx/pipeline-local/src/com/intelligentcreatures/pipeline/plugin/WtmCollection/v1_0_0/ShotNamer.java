@@ -1,4 +1,4 @@
-// $Id: ShotNamer.java,v 1.37 2008/07/18 12:33:14 jim Exp $
+// $Id: ShotNamer.java,v 1.38 2008/07/18 13:22:57 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -1752,7 +1752,7 @@ class ShotNamer
   }
 
   /**
-   * Returns the fully resolved name of the composited displace A textures.
+   * Returns the fully resolved name of the composited displace textures.
    */
   public String
   getNoiseApprovedDisplaceNode()
@@ -2095,76 +2095,59 @@ class ShotNamer
   }
 
   public String
-  getLightingAmbOccTifNode()
-  {
-    Path path = new Path(pBasePaths.get(TaskType.Lighting, NodePurpose.Focus),
-			 new Path(AppDirs.Tif.toDirPath(),
-				  joinNames(getFullShotName(), "ambOcc")));
-    return path.toString();
-  }
-
-  public String
-  getLightingAmbOccSlapCmdNode()
+  getLightingAmbOccSlapNkNode()
   {
     Path path = new Path(pBasePaths.get(TaskType.Lighting, NodePurpose.Prepare),
-			 new Path(AppDirs.Cmd.toDirPath(),
+			 new Path(AppDirs.Nuke.toDirPath(),
 				  joinNames(getFullShotName(), "ambOcc_slap")));
     return path.toString();
   }
 
   public String
-  getLightingBeautySlapCmdNode()
+  getLightingBeautySlapNkNode()
   {
     Path path = new Path(pBasePaths.get(TaskType.Lighting, NodePurpose.Prepare),
-			 new Path(AppDirs.Cmd.toDirPath(),
+			 new Path(AppDirs.Nuke.toDirPath(),
 				  joinNames(getFullShotName(), "beauty_slap")));
     return path.toString();
   }
 
   public String
-  getLightingMattesSlapCmdNode()
+  getLightingMattesSlapNkNode()
   {
     Path path = new Path(pBasePaths.get(TaskType.Lighting, NodePurpose.Prepare),
-			 new Path(AppDirs.Cmd.toDirPath(),
+			 new Path(AppDirs.Nuke.toDirPath(),
 				  joinNames(getFullShotName(), "mattes_slap")));
     return path.toString();
   }
 
   public String
-  getLightingPlateSlapCmdNode()
+  getLightingPlateSlapNkNode()
   {
     Path path = new Path(pBasePaths.get(TaskType.Lighting, NodePurpose.Prepare),
-			 new Path(AppDirs.Cmd.toDirPath(),
+			 new Path(AppDirs.Nuke.toDirPath(),
 				  joinNames(getFullShotName(), "plate_slap")));
     return path.toString();
   }
 
   public String
-  getLightingRedistortSlapCmdNode()
+  getLightingRedistortSlapNkNode()
   {
     Path path = new Path(pBasePaths.get(TaskType.Lighting, NodePurpose.Prepare),
-			 new Path(AppDirs.Cmd.toDirPath(),
+			 new Path(AppDirs.Nuke.toDirPath(),
 				  joinNames(getFullShotName(), "redistort_slap")));
     return path.toString();
   }
 
   public String
-  getLightingSlapcompCmdNode()
+  getLightingSlapcompNkNode()
   {
     Path path = new Path(pBasePaths.get(TaskType.Lighting, NodePurpose.Prepare),
-			 new Path(AppDirs.Cmd.toDirPath(),
+			 new Path(AppDirs.Nuke.toDirPath(),
 				  joinNames(getFullShotName(), "slapcomp")));
     return path.toString();
   }
 
-  public String
-  getLightingBeautySlapPrepHipNode()
-  {
-    Path path = new Path(pBasePaths.get(TaskType.Lighting, NodePurpose.Prepare),
-			 new Path(AppDirs.Comp.toDirPath(),
-				  joinNames(getFullShotName(), "beauty_slap_prep")));
-    return path.toString();
-  }
 
   public String
   getLightingBeautyTestCineonNode()
@@ -2172,15 +2155,6 @@ class ShotNamer
     Path path = new Path(pBasePaths.get(TaskType.Lighting, NodePurpose.Focus),
 			 new Path(AppDirs.Cineon.toDirPath(),
 				  joinNames(getFullShotName(), "beauty_test")));
-    return path.toString();
-  }
-
-  public String
-  getLightingBeautySlapcompHipNode()
-  {
-    Path path = new Path(pBasePaths.get(TaskType.Lighting, NodePurpose.Edit),
-			 new Path(AppDirs.Comp.toDirPath(),
-				  joinNames(getFullShotName(), "beauty_slapcomp")));
     return path.toString();
   }
 

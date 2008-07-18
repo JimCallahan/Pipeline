@@ -1,4 +1,4 @@
-// $Id: ProjectNamer.java,v 1.25 2008/07/18 12:33:14 jim Exp $
+// $Id: ProjectNamer.java,v 1.26 2008/07/18 13:22:57 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -510,10 +510,10 @@ class ProjectNamer
   }
 
   public String
-  getLightingSlapcompHipNode()
+  getLightingSlapcompNukeNode()
   {
     Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Lighting),
-			 new Path(AppDirs.Hip.toDirPath(), "slapcomp"));
+			 new Path(AppDirs.Nuke.toDirPath(), "slapcomp"));
     return path.toString();
   }
 
