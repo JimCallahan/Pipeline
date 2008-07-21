@@ -1,4 +1,4 @@
-// $Id: PanelUpdater.java,v 1.26 2008/06/26 22:43:16 jim Exp $
+// $Id: PanelUpdater.java,v 1.27 2008/07/21 17:31:10 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -482,7 +482,7 @@ class PanelUpdater
 	    
 	    /* node check-in history */ 
 	    if(pNodeHistoryPanel != null) {
-	      NodeDetails details = pDetailedNode.getDetails();
+	      NodeDetailsLight details = pDetailedNode.getLightDetails();
 	      if((details != null) && (details.getLatestVersion() != null)) {
 		master.updatePanelOp(pGroupID, "Updating Node History...");
 		pNodeHistory = mclient.getHistory(pDetailedNodeName);

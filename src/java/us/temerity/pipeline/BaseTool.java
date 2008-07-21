@@ -1,4 +1,4 @@
-// $Id: BaseTool.java,v 1.17 2008/02/12 00:10:35 jim Exp $
+// $Id: BaseTool.java,v 1.18 2008/07/21 17:31:09 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -117,9 +117,10 @@ class BaseTool
    * (highlighted cyan).  The selected nodes include the primary selected node as well as 
    * any previously selected nodes (highlighted yellow). <P> 
    * 
-   * Selected nodes with the same name are only reported once.  If the 
-   * {@link NodeStatus NodeStatus} associated with selected nodes does not contain a
-   * {@link NodeDetails NodeDetails}, then only downstream (grey) nodes were selected. <P> 
+   * It is possible that the same node may be selected more than once, however the status 
+   * of any particular node will only be reported once.  In choosing among more then one 
+   * selected copy of a node, nodes with heavyweight status details will be favored over 
+   * those with lightweight details or downstream nodes with no details. <P> 
    * 
    * @param author 
    *   The name of the user which owns the working area where the tool is run.

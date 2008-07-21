@@ -1,4 +1,4 @@
-// $Id: NukeSourceSyncTool.java,v 1.3 2008/03/28 21:26:42 jim Exp $
+// $Id: NukeSourceSyncTool.java,v 1.4 2008/07/21 17:31:10 jim Exp $
 
 package us.temerity.pipeline.plugin.NukeSourceSyncTool.v2_3_4;
 
@@ -384,7 +384,8 @@ class NukeSourceSyncTool
 		  nodeNames = nodeNames + " " + nukeNode;
 		}
 		vpanel.add(Box.createRigidArea(new Dimension(0, 3)));
-		vpanel.add(UIFactory.createTextField(nodeNames.trim(), sVSize, JLabel.CENTER));
+		vpanel.add(UIFactory.createTextField
+                            (nodeNames.trim(), sVSize, JLabel.CENTER));
 	      }
 	      
 	      {
@@ -652,7 +653,8 @@ class NukeSourceSyncTool
 		    nodeNames = nodeNames + " " + nukeNode;
 
 		vpanel.add(Box.createRigidArea(new Dimension(0, 3)));
-		vpanel.add(UIFactory.createTextField(nodeNames.trim(), sVSize, JLabel.CENTER));
+		vpanel.add(UIFactory.createTextField
+                            (nodeNames.trim(), sVSize, JLabel.CENTER));
 	      }
 
 	      
@@ -677,7 +679,9 @@ class NukeSourceSyncTool
 		vpanel, status, sVSize2);
 
 	      
-	      if(seqInfo.doRegister || seqInfo.doRenumber || seqInfo.doCheckout || seqInfo.doLink) {
+	      if(seqInfo.doRegister || seqInfo.doRenumber || 
+                 seqInfo.doCheckout || seqInfo.doLink) {
+
 		UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
 		
 		if(seqInfo.doRegister) {
@@ -746,8 +750,8 @@ class NukeSourceSyncTool
 	      }
 	      
 	      processedNodes.add(nodeID);
-	      JDrawer drawer = 
-		new JDrawer("Pipeline Node: " + nodeID.getName(), (JComponent) comps[2], true);
+	      JDrawer drawer = new JDrawer("Pipeline Node: " + nodeID.getName(), 
+                                           (JComponent) comps[2], true);
 	      ibox.add(drawer);
 	    }	
 	  }
@@ -963,7 +967,7 @@ class NukeSourceSyncTool
     {
       pTargetScriptID = new NodeID(PackageInfo.sUser, pView, pTargetScript);
       pTargetScriptStatus = mclient.status(pTargetScriptID);
-      pTargetScriptMod = pTargetScriptStatus.getDetails().getWorkingVersion();
+      pTargetScriptMod = pTargetScriptStatus.getLightDetails().getWorkingVersion();
       if(pTargetScriptMod == null) 
 	throw new PipelineException
 	  ("No working version of the Target Script Node (" + pTargetScript + ") exists " + 
@@ -1149,7 +1153,7 @@ class NukeSourceSyncTool
 	    if(name != null) {
 	      log("pwnd by "+name);
 	      seqInfo.nodeID = new NodeID(PackageInfo.sUser, pView, name);
-	      NodeDetails details = mclient.status(seqInfo.nodeID).getDetails(); 
+	      NodeDetailsHeavy details = mclient.status(seqInfo.nodeID).getHeavyDetails(); 
 	      NodeCommon com = null;
 	      
 	      /* figure out *which* sequence we are within the owning node */
@@ -1282,7 +1286,7 @@ class NukeSourceSyncTool
      */
     for(String name : pTargetScriptMod.getSourceNames()) {
       NodeStatus status = pTargetScriptStatus.getSource(name);
-      NodeDetails details = status.getDetails();
+      NodeDetailsLight details = status.getLightDetails();
       NodeMod mod = details.getWorkingVersion();
       
       /* TODO:  we're testing for hard-coded suffixes in order to determine
@@ -1403,7 +1407,7 @@ class NukeSourceSyncTool
       pSequenceInfo seqInfo = seqs.get(sequence);
       NodeID nodeID = seqInfo.nodeID;
       mclient.checkOut(nodeID, null, CheckOutMode.KeepModified, CheckOutMethod.Modifiable);
-      seqInfo.workingVersion = mclient.status(nodeID).getDetails().getWorkingVersion();
+      seqInfo.workingVersion = mclient.status(nodeID).getLightDetails().getWorkingVersion();
       seqInfo.doFixPath = true;
     }
 

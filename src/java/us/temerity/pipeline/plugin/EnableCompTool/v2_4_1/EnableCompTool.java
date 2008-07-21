@@ -1,4 +1,4 @@
-// $Id: EnableCompTool.java,v 1.1 2008/02/07 10:17:54 jesse Exp $
+// $Id: EnableCompTool.java,v 1.2 2008/07/21 17:31:09 jim Exp $
 
 package us.temerity.pipeline.plugin.EnableCompTool.v2_4_1;
 
@@ -55,10 +55,17 @@ class EnableCompTool
       throw new PipelineException("One node must be selected for this tool to work.");
     
     pStatus = pSelected.get(pPrimary);
-    FileSeq seq = pStatus.getDetails().getWorkingVersion().getPrimarySequence();
+    if((pStatus == null) || !pStatus.hasLightDetails()) 
+      throw new PipelineException
+        ("This tool requires at least lightweight status details on target node " + 
+         "(" + pPrimary + ") to work.");
+
+    FileSeq seq = pStatus.getLightDetails().getWorkingVersion().getPrimarySequence();
     String suffix = seq.getFilePattern().getSuffix();
-    if (suffix == null || !suffix.equals("aep") || suffix.equals("nk") || suffix.equals("shk"))
-      throw new PipelineException("Please select an composite node for this script to run on.");
+    if (suffix == null || 
+       !(suffix.equals("aep") || suffix.equals("nk") || suffix.equals("shk")))
+      throw new PipelineException
+        ("Please select an composite node for this script to run on.");
     
     return ": Enabling Comp . . . ";
   }

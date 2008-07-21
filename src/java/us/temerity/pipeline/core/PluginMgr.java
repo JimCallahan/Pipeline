@@ -1,4 +1,4 @@
-// $Id: PluginMgr.java,v 1.23 2008/05/07 05:08:34 jim Exp $
+// $Id: PluginMgr.java,v 1.24 2008/07/21 17:31:09 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -630,19 +630,49 @@ class PluginMgr
       else if(plg instanceof BaseBuilderCollection) {
         BaseBuilderCollection collection = (BaseBuilderCollection) plg;
 
-        boolean isConnected = true;
+        /* if we can contact the MasterMgr and QueueMgr, 
+             attempt a trial instantiation of each builder... */ 
         {
           MasterMgrClient mclient = null;
           QueueMgrClient qclient = null;
           try {
-            mclient = new MasterMgrClient();
-            mclient.verifyConnection();
+            boolean isConnected = true;
+            try {
+              mclient = new MasterMgrClient();
+              mclient.verifyConnection();
             
-            qclient = new QueueMgrClient();
-            qclient.verifyConnection();
-          }
-          catch (PipelineException ex) {
-            isConnected = false;
+              qclient = new QueueMgrClient();
+              qclient.verifyConnection();
+            }
+            catch (PipelineException ex) {
+              isConnected = false;
+            }
+            
+            if(isConnected) {
+              for (String builderName : collection.getBuildersProvided().keySet()) {
+                BaseBuilder builder = 
+                  collection.instantiateBuilder(builderName, mclient, qclient,
+                                                false, true, false, false, 
+                                                new MultiMap<String, String>());
+                
+                PassLayoutGroup bLayout = builder.getLayout();
+                if (bLayout == null)
+                  throw new PipelineException
+                    ("The builder (" + builderName + ") in collection " +
+                     "(" + collection.getName() + ") does not contain a valid parameter " + 
+                     "layout.");
+              }
+            }
+            else {
+              LogMgr.getInstance().logAndFlush
+                (Kind.Plg, Level.Warning, 
+                 "The Builders provided by the BuilderCollection plugin " + 
+                 "(" + plg.getName() + " v" + plg.getVersionID() + ") from vendor " + 
+                 "(" + plg.getVendor() + ") cannot be instantiated to perform the full " + 
+                 "suite of validation checks at this time.  The Master Manager and Queue " + 
+                 "Manager daemons are required for these tests and do not appear to be " + 
+                 "running currently."); 
+            }
           }
           finally {
             if(mclient != null) 
@@ -650,29 +680,6 @@ class PluginMgr
             if(qclient != null) 
               qclient.disconnect();
           }
-        }
-
-        if (isConnected) {
-          for (String builderName : collection.getBuildersProvided().keySet()) {
-            BaseBuilder builder = 
-              collection.instantiateBuilder(builderName, null, null, 
-                                            false, true, false, false, 
-                                            new MultiMap<String, String>());
-
-            PassLayoutGroup bLayout = builder.getLayout();
-            if (bLayout == null)
-              throw new PipelineException
-              ("The builder (" + builderName + ") in collection " +
-                "(" + collection.getName() + ") does not contain a valid parameter layout.");
-          }
-        }
-        else {
-          LogMgr.getInstance().logAndFlush
-            (Kind.Plg, Level.Warning, 
-             "BuilderCollection plugin (" + plg.getName() + " v" + plg.getVersionID() + ") " +
-             "from vendor (" + plg.getVendor() + ") cannot be instantiated to perform the " + 
-             "full suite of validation checks while the Master Manager or Queue Manager " + 
-             "daemons are not running."); 
         }
 
         pBuilderCollection.addPlugin(plg, cname, contents);

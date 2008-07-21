@@ -29,7 +29,6 @@ class NukeAddSourceTool
   /**
    * 
    */
-
   public NukeAddSourceTool() 
   {
     super("NukeAddSource", new VersionID("2.3.4"), "Temerity",
@@ -97,6 +96,11 @@ class NukeAddSourceTool
           ("The " + getName() + " tool requires a target Nuke script node!"); 
 
       NodeStatus status = pSelected.get(pPrimary);
+      if((status == null) || !status.hasLightDetails()) 
+        throw new PipelineException
+          ("This tool requires at least lightweight status details on target node " + 
+           "(" + pPrimary + ") in order to work.");
+
       NodeID nodeID = status.getNodeID();
 
       if(!nodeID.getAuthor().equals(PackageInfo.sUser)) 
@@ -106,11 +110,11 @@ class NukeAddSourceTool
       pView = nodeID.getView();
       
       {
-        NodeMod mod = status.getDetails().getWorkingVersion();
+        NodeMod mod = status.getLightDetails().getWorkingVersion();
         FileSeq fseq = mod.getPrimarySequence();
         String suffix = fseq.getFilePattern().getSuffix();
-        if(!fseq.isSingle() || (suffix == null)
-           || (!suffix.equals("nk") && !suffix.equals("nuke")))
+        if(!fseq.isSingle() || 
+           (suffix == null) || (!suffix.equals("nk") && !suffix.equals("nuke")))
           throw new PipelineException
             ("The target node (" + pPrimary + ") must be a Nuke script!");
         
@@ -136,12 +140,22 @@ class NukeAddSourceTool
               ("The selected source node (" + sname + ") is already linked to the target " + 
                "node (" + pPrimary + ")!");
           
-          NodeMod sourceMod = pSelected.get(sname).getDetails().getWorkingVersion();
+          NodeStatus sstatus = pSelected.get(pPrimary);
+          if((sstatus == null) || !sstatus.hasLightDetails()) 
+            throw new PipelineException
+              ("This tool requires at least lightweight status details on source node " + 
+               "(" + sname + ") to work.");
+
+          NodeMod sourceMod = sstatus.getLightDetails().getWorkingVersion();
+          if(sourceMod == null) 
+            throw new PipelineException
+              ("The source node (" + sname + ") has no working version!");
+
           for (FileSeq fseq : sourceMod.getSequences()) {
             String suffix = fseq.getFilePattern().getSuffix();
             if((suffix == null) || !pImageFormats.contains(suffix))
               throw new PipelineException
-              ("The source node (" + sname + ") must contain an image sequence!");
+                ("The source node (" + sname + ") must contain an image sequence!");
 
             pSourceSeqs.put(sname, fseq);
           }
@@ -156,52 +170,52 @@ class NukeAddSourceTool
 
       for(String sname : pSourceSeqs.keySet()) {
 
-	  Box hbox = new Box(BoxLayout.X_AXIS);
-	  {
-	    Component comps[] = UIFactory.createTitledPanels();
-	    JPanel tpanel = (JPanel) comps[0];
-	    JPanel vpanel = (JPanel) comps[1];
-
-	    boolean first = true;
-	    for(FileSeq fseq : pSourceSeqs.get(sname)) {
-	      FilePattern fpat = fseq.getFilePattern();
-
-	      if (!first)
-		UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
-	      first = false;
-
-	      UIFactory.createTitledTextField
-	      (tpanel, "Sequence:", sTSize, vpanel,
-		sname + "/" + NukeActionUtils.toNukeFilePattern(fpat), sVSize, 
-	      "The image sequence to be added.");
-
-	      UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
-
-	      JTextField field =
-		UIFactory.createTitledEditableTextField
-		(tpanel, "Nuke Node Name:", sTSize, vpanel,
-		  fpat.getPrefix(), sVSize, 
-		"The name of the Nuke read node to be created.");
-	      
-	      pNodeNameFields.put(sname, field);
-
-	      UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
-		  
-	      JBooleanField bfield = 
-		UIFactory.createTitledBooleanField
-		(tpanel, "Premultiplied:", sTSize-7, 
-		  vpanel, sVSize, 
-		"Whether or not this sequence consists of premultiplied images.");
-	      bfield.setValue(true);
-
-	      pPremultFields.put(fseq, bfield);
-
-	      hbox.add(comps[2]);
-	    }
-	  }
-
-	  JDrawer drawer = new JDrawer("Source Node: " + sname, hbox, true);
-	  vbox.add(drawer);
+        Box hbox = new Box(BoxLayout.X_AXIS);
+        {
+          Component comps[] = UIFactory.createTitledPanels();
+          JPanel tpanel = (JPanel) comps[0];
+          JPanel vpanel = (JPanel) comps[1];
+          
+          boolean first = true;
+          for(FileSeq fseq : pSourceSeqs.get(sname)) {
+            FilePattern fpat = fseq.getFilePattern();
+            
+            if (!first)
+              UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
+            first = false;
+            
+            UIFactory.createTitledTextField
+              (tpanel, "Sequence:", sTSize, vpanel,
+               sname + "/" + NukeActionUtils.toNukeFilePattern(fpat), sVSize, 
+               "The image sequence to be added.");
+            
+            UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+            
+            JTextField field =
+              UIFactory.createTitledEditableTextField
+              (tpanel, "Nuke Node Name:", sTSize, vpanel,
+               fpat.getPrefix(), sVSize, 
+               "The name of the Nuke read node to be created.");
+            
+            pNodeNameFields.put(sname, field);
+            
+            UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+            
+            JBooleanField bfield = 
+              UIFactory.createTitledBooleanField
+              (tpanel, "Premultiplied:", sTSize-7, 
+               vpanel, sVSize, 
+               "Whether or not this sequence consists of premultiplied images.");
+            bfield.setValue(true);
+            
+            pPremultFields.put(fseq, bfield);
+            
+            hbox.add(comps[2]);
+          }
+        }
+        
+        JDrawer drawer = new JDrawer("Source Node: " + sname, hbox, true);
+        vbox.add(drawer);
       }
       
       vbox.add(UIFactory.createFiller(sTSize + sVSize));
@@ -252,7 +266,16 @@ class NukeAddSourceTool
   )
     throws PipelineException
   {
-    NodeMod targetMod = pSelected.get(pPrimary).getDetails().getWorkingVersion();
+    NodeStatus status = pSelected.get(pPrimary);
+    if((status == null) || !status.hasLightDetails()) 
+      throw new PipelineException
+        ("This tool requires at least lightweight status details on primary node " + 
+         "(" + pPrimary + ") in order to work.");
+
+    NodeMod targetMod = status.getLightDetails().getWorkingVersion();
+    if(targetMod == null) 
+      throw new PipelineException
+        ("The target node (" + pPrimary + ") has no working version!");
 
     /* create a temporary TCL script to add the references */ 
     Path tclScript = null; 
@@ -308,10 +331,10 @@ class NukeAddSourceTool
 
       String nukeApp = NukeActionUtils.getNukeProgram(env); 
       out.write
-      ("import subprocess\n" + 
-	"tclScript = open('" + tclScript + "', 'r')\n" + 
-	"p = subprocess.Popen(['" + nukeApp + "', '-t', '-d :0'], stdin=tclScript)\n" + 
-      	"p.communicate()\n");
+        ("import subprocess\n" + 
+         "tclScript = open('" + tclScript + "', 'r')\n" + 
+         "p = subprocess.Popen(['" + nukeApp + "', '-t', '-d :0'], stdin=tclScript)\n" + 
+         "p.communicate()\n");
       out.close();
     } 
     catch (IOException ex) {

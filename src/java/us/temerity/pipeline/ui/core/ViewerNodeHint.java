@@ -1,4 +1,4 @@
-// $Id: ViewerNodeHint.java,v 1.9 2007/06/26 05:18:57 jim Exp $
+// $Id: ViewerNodeHint.java,v 1.10 2008/07/21 17:31:10 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -198,13 +198,10 @@ class ViewerNodeHint
       pViewsEditing.clear();
     }
 
-    /* skip nodes without detailed status */ 
+    /* skip nodes without at least lightweight detailed status */ 
     {
-      if(status == null)
-        return;
-      
-      pDetails = status.getDetails();
-      if(pDetails == null) 
+      pStatus = status;
+      if((pStatus == null) || !pStatus.hasLightDetails()) 
         return;
     }
 
@@ -213,9 +210,10 @@ class ViewerNodeHint
       pBaseVersionDL   = null;
       pLatestVersionDL = null;
       
-      if(!pDetails.isLightweight()) {
-        for(FileSeq fseq : pDetails.getFileStateSequences()) {
-          FileState fs[] = pDetails.getFileState(fseq);
+      if(pStatus.hasHeavyDetails()) {
+        NodeDetailsHeavy details = pStatus.getHeavyDetails();
+        for(FileSeq fseq : details.getFileStateSequences()) {
+          FileState fs[] = details.getFileState(fseq);
           int wk;
           for(wk=0; wk<fs.length; wk++) {
             Integer fcnt = pFileStates.get(fs[wk]);
@@ -226,7 +224,7 @@ class ViewerNodeHint
         }
         
         {
-          QueueState qs[] = pDetails.getQueueState();
+          QueueState qs[] = details.getQueueState();
           int wk;
           for(wk=0; wk<qs.length; wk++) {
             Integer qcnt = pQueueStates.get(qs[wk]);
@@ -239,10 +237,12 @@ class ViewerNodeHint
 
       pCountDLs = null;
       
-      {
-        NodeCommon com = pDetails.getWorkingVersion();
+      if(pStatus.hasLightDetails()) {
+        NodeDetailsLight details = pStatus.getLightDetails();
+
+        NodeCommon com = details.getWorkingVersion();
         if(com == null) 
-          com = pDetails.getLatestVersion();
+          com = details.getLatestVersion();
         
         if(com != null) {
           pToolset = com.getToolset();
@@ -285,10 +285,12 @@ class ViewerNodeHint
 
     GeometryMgr mgr = GeometryMgr.getInstance();
     try {
-      if(pDetails != null) {
+      if((pStatus != null) && pStatus.hasLightDetails()) {
+        NodeDetailsLight details = pStatus.getLightDetails();
+        
 	/* base version */ 
 	if(pBaseVersionDL == null) {
-	  NodeVersion vsn = pDetails.getBaseVersion(); 
+	  NodeVersion vsn = details.getBaseVersion(); 
 	  if(vsn != null) {
 	    VersionID vid = vsn.getVersionID();
 	    pBaseVersionDL = 
@@ -299,7 +301,7 @@ class ViewerNodeHint
 
 	/* latest version */ 
 	if(pLatestVersionDL == null) {
-	  NodeVersion vsn = pDetails.getLatestVersion(); 
+	  NodeVersion vsn = details.getLatestVersion(); 
 	  if(vsn != null) {
 	    VersionID vid = vsn.getVersionID();
 	    pLatestVersionDL = 
@@ -613,7 +615,8 @@ class ViewerNodeHint
     UserPrefs prefs = UserPrefs.getInstance();
     GeometryMgr mgr = GeometryMgr.getInstance();
 
-    if(pDetails != null) {
+    if((pStatus != null) && pStatus.hasLightDetails()) {
+      NodeDetailsLight details = pStatus.getLightDetails();
 
       /* compute the size of the hint box and title/value alignments */ 
       double valueWidth = 0.0;
@@ -621,19 +624,19 @@ class ViewerNodeHint
         if(pVersionStateDLs != null) {
           valueWidth = 
             Math.max(valueWidth, 
-                     pVersionWidths[pDetails.getVersionState().ordinal()]);
+                     pVersionWidths[details.getVersionState().ordinal()]);
         }
 
         if(pPropertyStateDLs != null) {
           valueWidth = 
             Math.max(valueWidth, 
-                     pPropertyWidths[pDetails.getPropertyState().ordinal()]);
+                     pPropertyWidths[details.getPropertyState().ordinal()]);
         }
         
         if(pLinkStateDLs != null) {
           valueWidth = 
             Math.max(valueWidth, 
-                     pLinkWidths[pDetails.getLinkState().ordinal()]);
+                     pLinkWidths[details.getLinkState().ordinal()]);
         }
 
         if(!pFileStates.isEmpty()) {
@@ -857,7 +860,7 @@ class ViewerNodeHint
 	      {
 		gl.glTranslated(0.0, y, 0.0);
 		gl.glScaled(sTextHeight, sTextHeight, sTextHeight);
-		gl.glCallList(pVersionStateDLs[pDetails.getVersionState().ordinal()]);
+		gl.glCallList(pVersionStateDLs[details.getVersionState().ordinal()]);
 	      }
 	      gl.glPopMatrix();
 	    }
@@ -868,7 +871,7 @@ class ViewerNodeHint
 	      {
 		gl.glTranslated(0.0, y, 0.0);
 		gl.glScaled(sTextHeight, sTextHeight, sTextHeight);
-		gl.glCallList(pPropertyStateDLs[pDetails.getPropertyState().ordinal()]);
+		gl.glCallList(pPropertyStateDLs[details.getPropertyState().ordinal()]);
 	      }
 	      gl.glPopMatrix();
 	    }
@@ -879,7 +882,7 @@ class ViewerNodeHint
 	      {
 		gl.glTranslated(0.0, y, 0.0);
 		gl.glScaled(sTextHeight, sTextHeight, sTextHeight);
-		gl.glCallList(pLinkStateDLs[pDetails.getLinkState().ordinal()]);
+		gl.glCallList(pLinkStateDLs[details.getLinkState().ordinal()]);
 	      }
 	      gl.glPopMatrix();
 	    }
@@ -1198,10 +1201,10 @@ class ViewerNodeHint
   /**
    * The node status details. 
    */ 
-  private NodeDetails  pDetails; 
-  private String       pToolset; 
-  private BaseEditor   pEditor; 
-  private BaseAction   pAction; 
+  private NodeStatus  pStatus;
+  private String      pToolset; 
+  private BaseEditor  pEditor; 
+  private BaseAction  pAction; 
 
   /**
    * The node states. 

@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.48 2008/05/04 00:40:21 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.49 2008/07/21 17:31:10 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -39,7 +39,7 @@ import javax.swing.text.*;
  */ 
 public  
 class JNodeDetailsPanel
-  extends JTopLevelPanel
+  extends JSimpleNodeDetailPanel
   implements MouseListener, KeyListener, ComponentListener, ActionListener, DocumentListener
 {
   /*----------------------------------------------------------------------------------------*/
@@ -215,28 +215,10 @@ class JNodeDetailsPanel
       {
 	JPanel panel = new JPanel();	
 
-	panel.setName("DialogHeader");	
-	panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
-	
-	{
-	  JLabel label = new JLabel();
-	  pHeaderIcon = label;
-	  
-	  label.addMouseListener(this); 
-
-	  panel.add(label);	  
-	}
-	
-	panel.add(Box.createRigidArea(new Dimension(3, 0)));
-
-	{
-	  JLabel label = new JLabel("X");
-	  pHeaderLabel = label;
-	  
-	  label.setName("DialogHeaderLabel");	       
-
-	  panel.add(label);	  
-	}
+        {
+          initHeader(panel);
+          pHeaderIcon.addMouseListener(this); 
+        }
 
 	panel.add(Box.createHorizontalGlue());
 
@@ -272,24 +254,10 @@ class JNodeDetailsPanel
 
       /* full node name */ 
       {
-	Box hbox = new Box(BoxLayout.X_AXIS);
-	
-	hbox.add(Box.createRigidArea(new Dimension(4, 0)));
-
-	{
-	  JTextField field = UIFactory.createTextField(null, 100, JLabel.LEFT);
-	  pNodeNameField = field;
-	  
-	  field.setFocusable(true);
-	  field.addKeyListener(this);
-	  field.addMouseListener(this); 
-
-	  hbox.add(field);
-	}
-
-	hbox.add(Box.createRigidArea(new Dimension(4, 0)));
-
-	add(hbox);
+        initNameField(this);
+        pNodeNameField.setFocusable(true);     
+        pNodeNameField.addKeyListener(this);   
+        pNodeNameField.addMouseListener(this); 
       }
 	
       add(Box.createRigidArea(new Dimension(0, 4)));
@@ -1552,8 +1520,8 @@ class JNodeDetailsPanel
   private NodeMod
   getWorkingVersion() 
   {
-    if((pStatus != null) && (pStatus.getDetails() != null))
-      return pStatus.getDetails().getWorkingVersion();
+    if((pStatus != null) && pStatus.hasLightDetails())
+      return pStatus.getLightDetails().getWorkingVersion();
     return null;
   }
 
@@ -1613,8 +1581,8 @@ class JNodeDetailsPanel
   private boolean 
   hasCheckedIn() 
   {
-    return ((pStatus != null) && (pStatus.getDetails() != null) && 
-	    (pStatus.getDetails().getLatestVersion() != null));
+    return ((pStatus != null) && pStatus.hasLightDetails() && 
+	    (pStatus.getLightDetails().getLatestVersion() != null));
   }
 
   /**
@@ -1627,9 +1595,9 @@ class JNodeDetailsPanel
   getCheckedInVersion() 
   {
     NodeVersion vsn = null;
-    if((pStatus != null) && (pStatus.getDetails() != null)) {
-      NodeDetails details = pStatus.getDetails();
-      if(pStatus.getDetails().getLatestVersion() != null) {
+    if((pStatus != null) && pStatus.hasLightDetails()) {
+      NodeDetailsLight details = pStatus.getLightDetails();
+      if(details.getLatestVersion() != null) {
 	ArrayList<VersionID> vids = details.getVersionIDs();
 	Collections.reverse(vids);
 	VersionID vid = vids.get(pCheckedInVersionField.getSelectedIndex());
@@ -1764,7 +1732,7 @@ class JNodeDetailsPanel
    * @param selectionKeys
    *   The current selection keys.
    */
-  private synchronized void 
+  protected synchronized void 
   updateNodeStatus
   (
    NodeStatus status, 
@@ -1773,16 +1741,15 @@ class JNodeDetailsPanel
    ArrayList<HardwareKey> hardwareKeys
   ) 
   {
-    updatePrivileges();
+    super.updateNodeStatus(status);
 
-    pStatus        = status;
     pLicenseKeys   = licenseKeys; 
     pSelectionKeys = selectionKeys;
     pHardwareKeys  = hardwareKeys;
 
-    NodeDetails details = null;
+    NodeDetailsLight details = null;
     if(pStatus != null) 
-      details = pStatus.getDetails();
+      details = pStatus.getLightDetails();
 
     NodeMod work = null;
     NodeVersion base = null;
@@ -1802,67 +1769,6 @@ class JNodeDetailsPanel
       if(latest != null) 
 	pCheckedInVersions.put(latest.getVersionID(), latest);
     }
-
-    /* header */ 
-    {
-      String name = "Blank-Normal";
-      if(pStatus != null) {
-	if(details != null) {
-          if(details.isLightweight()) {
-            switch(details.getVersionState()) {
-            case CheckedIn:
-              name = "CheckedIn-Undefined-Normal"; 
-              break;
-              
-            default:
-              name = "Lightweight-Normal";
-            }
-          }
-          else {
-            if(details.getOverallNodeState() == OverallNodeState.NeedsCheckOut) {
-              VersionID wvid = details.getWorkingVersion().getWorkingID();
-              VersionID lvid = details.getLatestVersion().getVersionID();
-              switch(wvid.compareLevel(lvid)) {
-              case Major:
-                name = ("NeedsCheckOutMajor-" + details.getOverallQueueState());
-                break;
-                
-              case Minor:
-                name = ("NeedsCheckOut-" + details.getOverallQueueState());
-                break;
-                
-              case Micro:
-                name = ("NeedsCheckOutMicro-" + details.getOverallQueueState());
-              }
-            }
-            else {
-              name = (details.getOverallNodeState() + "-" + details.getOverallQueueState());
-            }
-            
-            NodeMod mod = details.getWorkingVersion();
-            if((mod != null) && mod.isFrozen()) 
-              name = (name + "-Frozen-Normal");
-            else 
-              name = (name + "-Normal");
-          }
-        }
-		
-	pHeaderLabel.setText(pStatus.toString());
-	pNodeNameField.setText(pStatus.getName());
-      }
-      else {
-	pHeaderLabel.setText(null);
-	pNodeNameField.setText(null);
-      }
-      
-      try {
-	pHeaderIcon.setIcon(TextureMgr.getInstance().getIcon32(name));
-      }
-      catch(PipelineException ex) {
-        pHeaderIcon.setIcon(null); 
-        UIMaster.getInstance().showErrorDialog(ex);
-      }
-    } 
 
     /* frozen node? */
     {
@@ -2329,7 +2235,7 @@ class JNodeDetailsPanel
 	    ArrayList<FileSeq> sfseqs = new ArrayList<FileSeq>();
 	    
 	    for(String sname : pStatus.getSourceNames()) {
-	      NodeMod lmod = pStatus.getSource(sname).getDetails().getWorkingVersion();
+	      NodeMod lmod = pStatus.getSource(sname).getLightDetails().getWorkingVersion();
 
 	      FileSeq primary = lmod.getPrimarySequence();
 	      String stitle = primary.toString();
@@ -2411,7 +2317,7 @@ class JNodeDetailsPanel
 	    for(String sname : pStatus.getSourceNames()) {
 	      NodeCommon lcom = null;
 	      {
-		NodeDetails ldetails = pStatus.getSource(sname).getDetails();
+		NodeDetailsLight ldetails = pStatus.getSource(sname).getLightDetails();
 		lcom = ldetails.getWorkingVersion();
 		if(lcom == null) 
 		  lcom = ldetails.getLatestVersion();
@@ -3848,14 +3754,12 @@ class JNodeDetailsPanel
   updateEditorMenus()
   {
     String toolset = null;
-    if(pStatus != null) {
-      NodeDetails details = pStatus.getDetails();
-      if(details != null) {
-	if(details.getWorkingVersion() != null) 
-	  toolset = details.getWorkingVersion().getToolset();
-	else if(details.getLatestVersion() != null) 
-	  toolset = details.getLatestVersion().getToolset();
-      }
+    if((pStatus != null) && pStatus.hasLightDetails()) {
+      NodeDetailsLight details = pStatus.getLightDetails();
+      if(details.getWorkingVersion() != null) 
+        toolset = details.getWorkingVersion().getToolset();
+      else if(details.getLatestVersion() != null) 
+        toolset = details.getLatestVersion().getToolset();
     }
 
     if((toolset != null) && !toolset.equals(pEditorMenuToolset)) {
@@ -4075,22 +3979,18 @@ class JNodeDetailsPanel
 
     /* local mouse events */ 
     if(e.getSource() == pHeaderIcon) {
-      if(pStatus == null) 
-	return; 
-
-      NodeDetails details = pStatus.getDetails();
-      if(details == null) 
-	return;
-
-      NodeMod work = details.getWorkingVersion();
-      NodeVersion latest = details.getLatestVersion();
-      if((work != null) && !work.isFrozen()) {
-	updateNodeMenu();
-	pWorkingPopup.show(e.getComponent(), e.getX(), e.getY());
-      }
-      else if(latest != null) {
-	updateNodeMenu();
-	pCheckedInPopup.show(e.getComponent(), e.getX(), e.getY());
+      if((pStatus != null) && pStatus.hasLightDetails()) {
+        NodeDetailsLight details = pStatus.getLightDetails();
+        NodeMod work = details.getWorkingVersion();
+        NodeVersion latest = details.getLatestVersion();
+        if((work != null) && !work.isFrozen()) {
+          updateNodeMenu();
+          pWorkingPopup.show(e.getComponent(), e.getX(), e.getY());
+        }
+        else if(latest != null) {
+          updateNodeMenu();
+          pCheckedInPopup.show(e.getComponent(), e.getX(), e.getY());
+        }
       }
     }
   }
@@ -4324,10 +4224,8 @@ class JNodeDetailsPanel
       doQueueJobs();
     else if(cmd.equals("queue-jobs-special"))
       doQueueJobsSpecial();
-
     else if(cmd.equals("vouch"))
       doVouch();
-
     else if(cmd.equals("pause-jobs"))
       doPauseJobs();
     else if(cmd.equals("resume-jobs"))
@@ -4390,8 +4288,8 @@ class JNodeDetailsPanel
     if(isLocked() || pIsFrozen) 
       return;
 
-    if((pStatus != null) && (pStatus.getDetails() != null)) {
-      NodeMod work = pStatus.getDetails().getWorkingVersion();
+    if((pStatus != null) && pStatus.hasLightDetails()) {
+      NodeMod work = pStatus.getLightDetails().getWorkingVersion();
       if(work != null) {
 	try { 
 	  NodeMod mod = new NodeMod(work);
@@ -5014,7 +4912,7 @@ class JNodeDetailsPanel
 	ArrayList<FileSeq> sfseqs = new ArrayList<FileSeq>();
 	
 	for(String sname : pStatus.getSourceNames()) {
-	  NodeMod lmod = pStatus.getSource(sname).getDetails().getWorkingVersion();
+	  NodeMod lmod = pStatus.getSource(sname).getLightDetails().getWorkingVersion();
 	  
 	  FileSeq primary = lmod.getPrimarySequence();
 	  String stitle = primary.toString();
@@ -5599,17 +5497,16 @@ class JNodeDetailsPanel
   private void 
   doEdit() 
   {
-    if(pStatus != null) {
-      NodeDetails details = pStatus.getDetails();
-      if(details != null) {
-	NodeCommon com = details.getWorkingVersion();
-	if(com == null) 
-	  com = details.getLatestVersion();
+    if((pStatus != null) && pStatus.hasLightDetails()) {
+      NodeDetailsLight details = pStatus.getLightDetails();
 
-	if(com != null) {
-	  EditTask task = new EditTask(com);
-	  task.start();
-	}
+      NodeCommon com = details.getWorkingVersion();
+      if(com == null) 
+        com = details.getLatestVersion();
+      
+      if(com != null) {
+        EditTask task = new EditTask(com);
+        task.start();
       }
     }
   }
@@ -5620,17 +5517,16 @@ class JNodeDetailsPanel
   private void 
   doEditWithDefault() 
   {
-    if(pStatus != null) {
-      NodeDetails details = pStatus.getDetails();
-      if(details != null) {
-	NodeCommon com = details.getWorkingVersion();
-	if(com == null) 
-	  com = details.getLatestVersion();
+    if((pStatus != null) && pStatus.hasLightDetails()) {
+      NodeDetailsLight details = pStatus.getLightDetails();
 
-	if(com != null) {
-	  EditTask task = new EditTask(com, true, false);
-	  task.start();
-	}
+      NodeCommon com = details.getWorkingVersion();
+      if(com == null) 
+        com = details.getLatestVersion();
+      
+      if(com != null) {
+        EditTask task = new EditTask(com, true, false);
+        task.start();
       }
     }
   }
@@ -5651,17 +5547,16 @@ class JNodeDetailsPanel
     VersionID evid = new VersionID(parts[1]);
     String evendor = parts[2];
 
-    if(pStatus != null) {
-      NodeDetails details = pStatus.getDetails();
-      if(details != null) {
-	NodeCommon com = details.getWorkingVersion();
-	if(com == null) 
-	  com = details.getLatestVersion();
+    if((pStatus != null) && pStatus.hasLightDetails()) {
+      NodeDetailsLight details = pStatus.getLightDetails();
 
-	if(com != null) {
-	  EditTask task = new EditTask(com, ename, evid, evendor);
-	  task.start();
-	}
+      NodeCommon com = details.getWorkingVersion();
+      if(com == null) 
+        com = details.getLatestVersion();
+      
+      if(com != null) {
+        EditTask task = new EditTask(com, ename, evid, evendor);
+        task.start();
       }
     }
   }
@@ -5672,20 +5567,19 @@ class JNodeDetailsPanel
   private void 
   doEditAsOwner() 
   {
-    if(pStatus != null) {
-      NodeDetails details = pStatus.getDetails();
-      if(details != null) {
-	boolean isWorking = true;
-	NodeCommon com = details.getWorkingVersion();
-	if(com == null) {
-	  com = details.getLatestVersion();
-	  isWorking = false;
-	}
+    if((pStatus != null) && pStatus.hasLightDetails()) {
+      NodeDetailsLight details = pStatus.getLightDetails();
 
-	if(com != null) {
-	  EditTask task = new EditTask(com, false, isWorking);
-	  task.start();
-	}
+      boolean isWorking = true;
+      NodeCommon com = details.getWorkingVersion();
+      if(com == null) {
+        com = details.getLatestVersion();
+        isWorking = false;
+      }
+
+      if(com != null) {
+        EditTask task = new EditTask(com, false, isWorking);
+        task.start();
       }
     }
   }
@@ -5702,12 +5596,9 @@ class JNodeDetailsPanel
     if(pIsFrozen) 
       return;
 
-    if(pStatus != null) {
-      NodeDetails details = pStatus.getDetails();
-      if(details != null) {	  
-	QueueJobsTask task = new QueueJobsTask(pStatus.getName());
-	task.start();
-      }
+    if((pStatus != null) && pStatus.hasLightDetails()) {
+      QueueJobsTask task = new QueueJobsTask(pStatus.getName());
+      task.start();
     }
   }
 
@@ -5721,53 +5612,50 @@ class JNodeDetailsPanel
     if(pIsFrozen) 
       return;
 
-    if(pStatus != null) {
-      NodeDetails details = pStatus.getDetails();
-      if(details != null) {
-	JQueueJobsDialog diag = UIMaster.getInstance().showQueueJobsDialog();
-	if(diag.wasConfirmed()) {
-	  Integer batchSize = null;
-	  if(diag.overrideBatchSize()) 
-	    batchSize = diag.getBatchSize();
-	  
-	  Integer priority = null;
-	  if(diag.overridePriority()) 
-	    priority = diag.getPriority();
-	  
-	  Integer interval = null;
-	  if(diag.overrideRampUp()) 
-	    interval = diag.getRampUp();
-	  
-	  Float maxLoad = null;
-	  if(diag.overrideMaxLoad())
-	    maxLoad = diag.getMaxLoad();
-
-	  Long minMemory = null;
-	  if(diag.overrideMinMemory())
-	    minMemory = diag.getMinMemory();
-
-	  Long minDisk= null;
-	  if(diag.overrideMinDisk())
-	    minDisk = diag.getMinDisk();
-	  
-	  TreeSet<String> selectionKeys = null;
-	  if(diag.overrideSelectionKeys()) 
-	    selectionKeys = diag.getSelectionKeys();
-
-	  TreeSet<String> licenseKeys = null;
-	  if(diag.overrideLicenseKeys()) 
-	    licenseKeys = diag.getLicenseKeys();
-	  
-	  TreeSet<String> hardwareKeys = null;
-	  if(diag.overrideHardwareKeys()) 
-	    hardwareKeys = diag.getHardwareKeys();
-	  
-	  QueueJobsTask task = 
-	    new QueueJobsTask(pStatus.getName(), batchSize, priority, interval,
-	                      maxLoad, minMemory, minDisk,
-			      selectionKeys, licenseKeys, hardwareKeys);
-	  task.start();
-	}
+    if((pStatus != null) && pStatus.hasLightDetails()) {
+      JQueueJobsDialog diag = UIMaster.getInstance().showQueueJobsDialog();
+      if(diag.wasConfirmed()) {
+        Integer batchSize = null;
+        if(diag.overrideBatchSize()) 
+          batchSize = diag.getBatchSize();
+        
+        Integer priority = null;
+        if(diag.overridePriority()) 
+          priority = diag.getPriority();
+        
+        Integer interval = null;
+        if(diag.overrideRampUp()) 
+          interval = diag.getRampUp();
+        
+        Float maxLoad = null;
+        if(diag.overrideMaxLoad())
+          maxLoad = diag.getMaxLoad();
+        
+        Long minMemory = null;
+        if(diag.overrideMinMemory())
+          minMemory = diag.getMinMemory();
+        
+        Long minDisk= null;
+        if(diag.overrideMinDisk())
+          minDisk = diag.getMinDisk();
+        
+        TreeSet<String> selectionKeys = null;
+        if(diag.overrideSelectionKeys()) 
+          selectionKeys = diag.getSelectionKeys();
+        
+        TreeSet<String> licenseKeys = null;
+        if(diag.overrideLicenseKeys()) 
+          licenseKeys = diag.getLicenseKeys();
+        
+        TreeSet<String> hardwareKeys = null;
+        if(diag.overrideHardwareKeys()) 
+          hardwareKeys = diag.getHardwareKeys();
+        
+        QueueJobsTask task = 
+          new QueueJobsTask(pStatus.getName(), batchSize, priority, interval,
+                            maxLoad, minMemory, minDisk,
+                            selectionKeys, licenseKeys, hardwareKeys);
+        task.start();
       }
     }
   }
@@ -5781,12 +5669,9 @@ class JNodeDetailsPanel
     if(pIsFrozen) 
       return;
 
-    if(pStatus != null) {
-      NodeDetails details = pStatus.getDetails();
-      if(details != null) {	 
-        VouchTask task = new VouchTask(pStatus.getName());
-	task.start();
-      }
+    if((pStatus != null) && pStatus.hasLightDetails()) {	 
+      VouchTask task = new VouchTask(pStatus.getName());
+      task.start();
     }
   }
 
@@ -5799,34 +5684,12 @@ class JNodeDetailsPanel
     if(pIsFrozen) 
       return;
 
-    TreeSet<NodeID> pausedNodes = new TreeSet<NodeID>();
-    TreeSet<Long> pausedJobs    = new TreeSet<Long>();
+    TreeSet<NodeID> nodeIDs = new TreeSet<NodeID>();
+    TreeSet<Long> jobIDs    = new TreeSet<Long>();
+    lookupNodeJobsWithState(nodeIDs, jobIDs, QueueState.Queued);
 
-    if(pStatus != null) {
-      NodeDetails details = pStatus.getDetails();
-      if(details != null) {
-        if(details.isLightweight()) {
-          pausedNodes.add(pStatus.getNodeID());
-        }
-        else {
-          Long[] jobIDs   = details.getJobIDs();
-          QueueState[] qs = details.getQueueState();
-          assert(jobIDs.length == qs.length);
-          
-          int wk;
-          for(wk=0; wk<jobIDs.length; wk++) {
-            switch(qs[wk]) {
-            case Queued:
-              assert(jobIDs[wk] != null);
-              pausedJobs.add(jobIDs[wk]);
-            }
-          }
-        }
-      }
-    }
-
-    if(!pausedNodes.isEmpty() || !pausedJobs.isEmpty()) {
-      PauseJobsTask task = new PauseJobsTask(pausedNodes, pausedJobs);
+    if(!nodeIDs.isEmpty() || !jobIDs.isEmpty()) {
+      PauseJobsTask task = new PauseJobsTask(nodeIDs, jobIDs);
       task.start();
     }
   }
@@ -5840,34 +5703,12 @@ class JNodeDetailsPanel
     if(pIsFrozen) 
       return;
 
-    TreeSet<NodeID> resumedNodes = new TreeSet<NodeID>();
-    TreeSet<Long> resumedJobs    = new TreeSet<Long>();
+    TreeSet<NodeID> nodeIDs = new TreeSet<NodeID>();
+    TreeSet<Long> jobIDs    = new TreeSet<Long>();
+    lookupNodeJobsWithState(nodeIDs, jobIDs, QueueState.Paused);
 
-    if(pStatus != null) {
-      NodeDetails details = pStatus.getDetails();
-      if(details != null) {
-        if(details.isLightweight()) {
-          resumedNodes.add(pStatus.getNodeID());
-        }
-        else {
-          Long[] jobIDs   = details.getJobIDs();
-          QueueState[] qs = details.getQueueState();
-          assert(jobIDs.length == qs.length);
-          
-          int wk;
-          for(wk=0; wk<jobIDs.length; wk++) {
-            switch(qs[wk]) {
-            case Paused:
-              assert(jobIDs[wk] != null);
-              resumedJobs.add(jobIDs[wk]);
-            }
-          }
-        }
-      }
-    }
-
-    if(!resumedNodes.isEmpty() || !resumedJobs.isEmpty()) {
-      ResumeJobsTask task = new ResumeJobsTask(resumedNodes, resumedJobs);
+    if(!nodeIDs.isEmpty() || !jobIDs.isEmpty()) {
+      ResumeJobsTask task = new ResumeJobsTask(nodeIDs, jobIDs);
       task.start();
     }
   }
@@ -5881,36 +5722,12 @@ class JNodeDetailsPanel
     if(pIsFrozen) 
       return;
 
-    TreeSet<NodeID> preemptedNodes = new TreeSet<NodeID>();
-    TreeSet<Long> preemptedJobs    = new TreeSet<Long>();
+    TreeSet<NodeID> nodeIDs = new TreeSet<NodeID>();
+    TreeSet<Long> jobIDs    = new TreeSet<Long>();
+    lookupNodeJobsPending(nodeIDs, jobIDs); 
 
-    if(pStatus != null) {
-      NodeDetails details = pStatus.getDetails();
-      if(details != null) {
-        if(details.isLightweight()) {
-          preemptedNodes.add(pStatus.getNodeID());
-        }
-        else {
-          Long[] jobIDs   = details.getJobIDs();
-          QueueState[] qs = details.getQueueState();
-          assert(jobIDs.length == qs.length);
-          
-          int wk;
-          for(wk=0; wk<jobIDs.length; wk++) {
-            switch(qs[wk]) {
-            case Queued:
-            case Paused:
-            case Running:
-              assert(jobIDs[wk] != null);
-              preemptedJobs.add(jobIDs[wk]);
-            }
-          }
-        }
-      }
-    }
-      
-    if(!preemptedNodes.isEmpty() || !preemptedJobs.isEmpty()) {
-      PreemptJobsTask task = new PreemptJobsTask(preemptedNodes, preemptedJobs);
+    if(!nodeIDs.isEmpty() || !jobIDs.isEmpty()) {
+      PreemptJobsTask task = new PreemptJobsTask(nodeIDs, jobIDs);
       task.start();
     }
   }
@@ -5924,36 +5741,12 @@ class JNodeDetailsPanel
     if(pIsFrozen) 
       return;
 
-    TreeSet<NodeID> killedNodes = new TreeSet<NodeID>();
-    TreeSet<Long> killedJobs    = new TreeSet<Long>();
+    TreeSet<NodeID> nodeIDs = new TreeSet<NodeID>();
+    TreeSet<Long> jobIDs    = new TreeSet<Long>();
+    lookupNodeJobsPending(nodeIDs, jobIDs); 
 
-    if(pStatus != null) {
-      NodeDetails details = pStatus.getDetails();
-      if(details != null) {
-        if(details.isLightweight()) {
-          killedNodes.add(pStatus.getNodeID());
-        }
-        else {
-          Long[] jobIDs   = details.getJobIDs();
-          QueueState[] qs = details.getQueueState();
-          assert(jobIDs.length == qs.length);
-          
-          int wk;
-          for(wk=0; wk<jobIDs.length; wk++) {
-            switch(qs[wk]) {
-            case Queued:
-            case Paused:
-            case Running:
-              assert(jobIDs[wk] != null);
-              killedJobs.add(jobIDs[wk]);              
-            }
-          }
-        }
-      }
-    }
-
-    if(!killedNodes.isEmpty() || !killedJobs.isEmpty()) {
-      KillJobsTask task = new KillJobsTask(killedNodes, killedJobs);
+    if(!nodeIDs.isEmpty() || !jobIDs.isEmpty()) {
+      KillJobsTask task = new KillJobsTask(nodeIDs, jobIDs);
       task.start();
     }
   }
@@ -5970,12 +5763,9 @@ class JNodeDetailsPanel
     if(pIsFrozen) 
       return;
 
-    if(pStatus != null) {
-      NodeDetails details = pStatus.getDetails();
-      if(details != null) {
-	RemoveFilesTask task = new RemoveFilesTask(pStatus.getName());
-	task.start();
-      }
+    if((pStatus != null) && pStatus.hasLightDetails()) {
+      RemoveFilesTask task = new RemoveFilesTask(pStatus.getName());
+      task.start();
     }
   }
 
@@ -6455,11 +6245,6 @@ class JNodeDetailsPanel
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * The current node status.
-   */ 
-  private NodeStatus  pStatus;
-
-  /**
    * Cached checked-in versions associated with the current node.
    */ 
   private TreeMap<VersionID,NodeVersion>  pCheckedInVersions; 
@@ -6527,17 +6312,6 @@ class JNodeDetailsPanel
 
   /*----------------------------------------------------------------------------------------*/
 
-  /**
-   * The node name/state header.
-   */ 
-  private JLabel  pHeaderIcon;
-  private JLabel  pHeaderLabel;
-  
-  /**
-   * The fully resolved node name field.
-   */ 
-  private JTextField pNodeNameField;
-  
   /**
    * An icon which indicates whether the working version is frozen.
    */

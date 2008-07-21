@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.122 2008/07/21 17:27:46 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.123 2008/07/21 17:31:10 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1392,7 +1392,7 @@ class JNodeViewerPanel
   public void 
   updateNodeMenu() 
   {
-    NodeDetails details = pPrimary.getNodeStatus().getDetails();
+    NodeDetailsLight details = pPrimary.getNodeStatus().getLightDetails();
     NodeMod mod = details.getWorkingVersion();
 
     boolean queuePrivileged = 
@@ -1506,14 +1506,12 @@ class JNodeViewerPanel
     String toolset = null;
     if(pPrimary != null) {
       NodeStatus status = pPrimary.getNodeStatus();
-      if(status != null) {
-	NodeDetails details = status.getDetails();
-	if(details != null) {
-	  if(details.getWorkingVersion() != null) 
-	    toolset = details.getWorkingVersion().getToolset();
-	  else if(details.getLatestVersion() != null) 
-	    toolset = details.getLatestVersion().getToolset();
-	}
+      if((status != null) && status.hasLightDetails()) {
+        NodeDetailsLight details = status.getLightDetails();
+        if(details.getWorkingVersion() != null) 
+          toolset = details.getWorkingVersion().getToolset();
+        else if(details.getLatestVersion() != null) 
+          toolset = details.getLatestVersion().getToolset();
       }
     }
     
@@ -1541,14 +1539,12 @@ class JNodeViewerPanel
     String toolset = null;
     if(pPrimary != null) {
       NodeStatus status = pPrimary.getNodeStatus();
-      if(status != null) {
-	NodeDetails details = status.getDetails();
-	if(details != null) {
-	  if(details.getWorkingVersion() != null) 
-	    toolset = details.getWorkingVersion().getToolset();
-	  else if(details.getLatestVersion() != null) 
-	    toolset = details.getLatestVersion().getToolset();
-	}
+      if((status != null) && status.hasLightDetails()) {
+        NodeDetailsLight details = status.getLightDetails();
+        if(details.getWorkingVersion() != null) 
+          toolset = details.getWorkingVersion().getToolset();
+        else if(details.getLatestVersion() != null) 
+          toolset = details.getLatestVersion().getToolset();
       }
     }
     
@@ -1572,14 +1568,12 @@ class JNodeViewerPanel
     String toolset = null;
     if(pPrimary != null) {
       NodeStatus status = pPrimary.getNodeStatus();
-      if(status != null) {
-	NodeDetails details = status.getDetails();
-	if(details != null) {
-	  if(details.getWorkingVersion() != null) 
-	    toolset = details.getWorkingVersion().getToolset();
-	  else if(details.getLatestVersion() != null) 
-	    toolset = details.getLatestVersion().getToolset();
-	}
+      if((status != null) && status.hasLightDetails()) {
+        NodeDetailsLight details = status.getLightDetails();
+        if(details.getWorkingVersion() != null) 
+          toolset = details.getWorkingVersion().getToolset();
+        else if(details.getLatestVersion() != null) 
+          toolset = details.getLatestVersion().getToolset();
       }
     }
 
@@ -2084,7 +2078,7 @@ class JNodeViewerPanel
         if(upstream) {
           LinkCommon link = null;
           {
-            NodeDetails details = status.getDetails();
+            NodeDetailsLight details = status.getLightDetails();
             if(details.getWorkingVersion() != null) 
               link = details.getWorkingVersion().getSource(cstatus.getName());
             else if(details.getLatestVersion() != null)
@@ -2363,7 +2357,7 @@ class JNodeViewerPanel
   getPrimarySelectionName() 
   {
     if(pPrimary != null) 
-      return pPrimary.getNodeStatus().getName();
+      return pPrimary.getName();
     return null;
   }
 
@@ -2389,7 +2383,7 @@ class JNodeViewerPanel
   {
     TreeSet<String> names = new TreeSet<String>();
     for(ViewerNode vnode : pSelected.values()) 
-      names.add(vnode.getNodeStatus().getName());
+      names.add(vnode.getName());
 
     return names;
   }
@@ -2421,11 +2415,11 @@ class JNodeViewerPanel
   {
     TreeSet<String> all = new TreeSet<String>();
     for(ViewerNode vnode : pSelected.values()) 
-      all.add(vnode.getNodeStatus().getName());
+      all.add(vnode.getName());
    
     TreeSet<String> names = new TreeSet<String>();
     for(ViewerNode vnode : pSelected.values()) {
-      String name = vnode.getNodeStatus().getName();
+      String name = vnode.getName();
 
       Collection<String> downstream = vnode.getNodePath().getNames();
       for(String dname : downstream) {
@@ -2830,7 +2824,7 @@ class JNodeViewerPanel
 	      updateWorkingAreaMenus();
 	      updateToolMenus();
 	    
-	      NodeDetails details = pPrimary.getNodeStatus().getDetails();
+	      NodeDetailsLight details = pPrimary.getNodeStatus().getLightDetails();
 	      if(details != null) {
 		if(isLocked()) {
                   updateLockedNodeMenu();
@@ -2859,7 +2853,7 @@ class JNodeViewerPanel
 	      ViewerLinkRelationship lunder = (ViewerLinkRelationship) under;
 	      ViewerNode vunder = lunder.getViewerNode();
 
-	      NodeDetails details = vunder.getNodeStatus().getDetails();
+	      NodeDetailsLight details = vunder.getNodeStatus().getLightDetails();
 	      if(details != null) {
 		NodeMod mod = details.getWorkingVersion();
 		if((mod != null) && !mod.isFrozen()) {
@@ -3060,7 +3054,7 @@ class JNodeViewerPanel
           pLastNodeHintName = status.getName();
           
           TreeMap<String,TreeSet<String>> editing = null;
-          if(status.getDetails() != null) {
+          if(status.hasLightDetails()) {
             UIMaster master = UIMaster.getInstance();
             if(pViewerNodeHint.showEditing())
               editing = master.lookupWorkingAreaEditingMenus(0, pLastNodeHintName);
@@ -3591,9 +3585,8 @@ class JNodeViewerPanel
   { 
     TreeSet<String> branches = new TreeSet<String>();
     for(ViewerNode vnode : pSelected.values()) {
-      NodeDetails details = vnode.getNodeStatus().getDetails();
-      if(details != null) 
-        branches.add(details.getName());
+      if(vnode.getNodeStatus().hasLightDetails()) 
+        branches.add(vnode.getName());
     }
 
     if(branches.isEmpty())
@@ -3618,7 +3611,7 @@ class JNodeViewerPanel
   doDetails()
   {
     if(pPrimary != null) {
-      pLastDetailsName = pPrimary.getNodeStatus().getName();
+      pLastDetailsName = pPrimary.getName();
 
       PanelUpdater pu = new PanelUpdater(this, true, true, null);
       pu.execute();
@@ -3729,7 +3722,7 @@ class JNodeViewerPanel
   doEdit() 
   {
     if(pPrimary != null) {
-      NodeDetails details = pPrimary.getNodeStatus().getDetails();
+      NodeDetailsLight details = pPrimary.getNodeStatus().getLightDetails();
       if(details != null) {
 	NodeCommon com = details.getWorkingVersion();
 	if(com == null) 
@@ -3753,7 +3746,7 @@ class JNodeViewerPanel
   doEditWithDefault() 
   {
     if(pPrimary != null) {
-      NodeDetails details = pPrimary.getNodeStatus().getDetails();
+      NodeDetailsLight details = pPrimary.getNodeStatus().getLightDetails();
       if(details != null) {
 	NodeCommon com = details.getWorkingVersion();
 	if(com == null) 
@@ -3787,7 +3780,7 @@ class JNodeViewerPanel
     String evendor = parts[2];
 
     if(pPrimary != null) {
-      NodeDetails details = pPrimary.getNodeStatus().getDetails();
+      NodeDetailsLight details = pPrimary.getNodeStatus().getLightDetails();
       if(details != null) {
 	NodeCommon com = details.getWorkingVersion();
 	if(com == null) 
@@ -3811,7 +3804,7 @@ class JNodeViewerPanel
   doEditAsOwner() 
   {
     if(pPrimary != null) {
-      NodeDetails details = pPrimary.getNodeStatus().getDetails();
+      NodeDetailsLight details = pPrimary.getNodeStatus().getLightDetails();
       if(details != null) {
 	boolean isWorking = true;
 	NodeCommon com = details.getWorkingVersion();
@@ -3844,17 +3837,17 @@ class JNodeViewerPanel
       return; 
 
     if(pPrimary != null) {
-      NodeDetails details = pPrimary.getNodeStatus().getDetails();
+      NodeDetailsLight details = pPrimary.getNodeStatus().getLightDetails();
       if(details != null) {
 	NodeMod mod = details.getWorkingVersion();
 	if((mod != null) && !mod.isFrozen()) {
 	  TreeSet<String> sources = new TreeSet<String>(); 
 	  for(ViewerNode vnode : pSelected.values()) {
-	    NodeDetails sdetails = vnode.getNodeStatus().getDetails();
+	    NodeDetailsLight sdetails = vnode.getNodeStatus().getLightDetails();
 	    if((sdetails != null) && (sdetails.getWorkingVersion() != null)) 
-	      sources.add(sdetails.getName());
+	      sources.add(vnode.getName());
 	  }
-	  sources.remove(details.getName());
+	  sources.remove(mod.getName());
 	  
 	  if(!sources.isEmpty()) {  
 	    if(pCreateLinkDialog == null) 
@@ -3868,8 +3861,7 @@ class JNodeViewerPanel
 	      LinkRelationship rel = pCreateLinkDialog.getRelationship();
 	      Integer offset       = pCreateLinkDialog.getFrameOffset();
 	      
-	      LinkTask task = 
-		new LinkTask(details.getName(), sources, policy, rel, offset);
+	      LinkTask task = new LinkTask(mod.getName(), sources, policy, rel, offset);
 	      task.start();
 	    }
 	  }
@@ -3891,20 +3883,20 @@ class JNodeViewerPanel
       return; 
 
     if(pPrimary != null) {
-      NodeDetails details = pPrimary.getNodeStatus().getDetails();
+      NodeDetailsLight details = pPrimary.getNodeStatus().getLightDetails();
       if(details != null) {
 	NodeMod mod = details.getWorkingVersion();
 	if((mod != null) && !mod.isFrozen()) {
 	  TreeSet<String> sources = new TreeSet<String>(); 
 	  for(ViewerNode vnode : pSelected.values()) {
-	    NodeDetails sdetails = vnode.getNodeStatus().getDetails();
+	    NodeDetailsLight sdetails = vnode.getNodeStatus().getLightDetails();
 	    if(sdetails.getWorkingVersion() != null) 
-	      sources.add(sdetails.getName());
+	      sources.add(vnode.getName());
 	  }
-	  sources.remove(details.getName());
+	  sources.remove(mod.getName());
 	  
 	  if(!sources.isEmpty()) {    
-	    UnlinkTask task = new UnlinkTask(details.getName(), sources);
+	    UnlinkTask task = new UnlinkTask(mod.getName(), sources);
 	    task.start();
 	  }
 	}
@@ -3928,7 +3920,7 @@ class JNodeViewerPanel
       return; 
 
     if(pPrimary != null) {
-      NodeDetails details = pPrimary.getNodeStatus().getDetails();
+      NodeDetailsLight details = pPrimary.getNodeStatus().getLightDetails();
       if(details != null) {
 	NodeMod mod = details.getWorkingVersion();
 	if((mod != null) && !mod.isFrozen()) {
@@ -3966,13 +3958,14 @@ class JNodeViewerPanel
       return; 
 
     if(pPrimary != null) {
-      NodeDetails details = pPrimary.getNodeStatus().getDetails();
+      NodeDetailsLight details = pPrimary.getNodeStatus().getLightDetails();
       if(details != null) {
 	NodeMod mod = details.getWorkingVersion();
 	if((mod != null) && !mod.isFrozen()) {
 	  FileSeq fseq = pRemoveSecondarySeqs.get(name);
 	  if(fseq != null) {
-	    RemoveSecondaryTask task = new RemoveSecondaryTask(details.getName(), fseq);
+	    RemoveSecondaryTask task = 
+              new RemoveSecondaryTask(mod.getName(), fseq);
 	    task.start();
 	  }
 	}
@@ -3997,19 +3990,19 @@ class JNodeViewerPanel
       return; 
 
     if(pPrimary != null) {
-      NodeDetails details = pPrimary.getNodeStatus().getDetails();
+      NodeDetailsLight details = pPrimary.getNodeStatus().getLightDetails();
       if(details != null) {
 
 	TreeSet<String> targets = new TreeSet<String>(); 
 	for(ViewerNode vnode : pSelected.values()) {
-	  NodeDetails tdetails = vnode.getNodeStatus().getDetails();
+	  NodeDetailsLight tdetails = vnode.getNodeStatus().getLightDetails();
 	  if(tdetails != null) {
 	    NodeMod tmod = tdetails.getWorkingVersion();
 	    if((tmod != null) && !tmod.isFrozen())
-	      targets.add(tdetails.getName());
+	      targets.add(vnode.getName());
 	  }
 	}
-	targets.remove(details.getName());
+	targets.remove(pPrimary.getName());
 	
 	if(!targets.isEmpty()) {
 	  NodeMod mod = details.getWorkingVersion();
@@ -4045,7 +4038,7 @@ class JNodeViewerPanel
       return; 
 
     if(pPrimary != null) {
-      NodeDetails details = pPrimary.getNodeStatus().getDetails();
+      NodeDetailsLight details = pPrimary.getNodeStatus().getLightDetails();
       if(details != null) {
 
 	NodeMod mod = details.getWorkingVersion();
@@ -4086,7 +4079,7 @@ class JNodeViewerPanel
       return; 
 
     if(pPrimary != null) {
-      NodeDetails details = pPrimary.getNodeStatus().getDetails();
+      NodeDetailsLight details = pPrimary.getNodeStatus().getLightDetails();
       if(details != null) {
 
 	NodeMod mod = details.getWorkingVersion();
@@ -4132,7 +4125,7 @@ class JNodeViewerPanel
       return;
 
     if(pPrimary != null) {
-      NodeDetails details = pPrimary.getNodeStatus().getDetails();
+      NodeDetailsLight details = pPrimary.getNodeStatus().getLightDetails();
       if(details != null) {
 
 	NodeMod mod = details.getWorkingVersion();
@@ -4188,7 +4181,7 @@ class JNodeViewerPanel
     TreeSet<String> names = new TreeSet<String>();
     for(ViewerNode vnode : pSelected.values()) {
       NodeStatus status = vnode.getNodeStatus();
-      NodeDetails details = status.getDetails();
+      NodeDetailsLight details = status.getLightDetails();
       if(details != null) {
 	NodeMod mod = details.getWorkingVersion();
 	if(mod != null) {
@@ -4276,7 +4269,7 @@ class JNodeViewerPanel
     boolean confirmed = false;
     for(ViewerNode vnode : pSelected.values()) {
       NodeStatus status = vnode.getNodeStatus();
-      NodeDetails details = status.getDetails();
+      NodeDetailsLight details = status.getLightDetails();
       if(details != null) {
 	NodeMod mod = details.getWorkingVersion();
 	if((mod != null) && !mod.isFrozen()) {
@@ -4315,7 +4308,7 @@ class JNodeViewerPanel
       return;
 
     if(pPrimary != null) {
-      NodeDetails details = pPrimary.getNodeStatus().getDetails();
+      NodeDetailsLight details = pPrimary.getNodeStatus().getLightDetails();
       if(details != null) {
 	
 	String text = null;
@@ -4338,7 +4331,8 @@ class JNodeViewerPanel
 	  JConfirmDialog confirm = new JConfirmDialog(getTopFrame(), "Are you sure?");
 	  confirm.setVisible(true);
 	  if(confirm.wasConfirmed()) {
-	    DeleteTask task = new DeleteTask(details.getName(), pDeleteDialog.removeFiles());
+	    DeleteTask task = 
+              new DeleteTask(pPrimary.getName(), pDeleteDialog.removeFiles());
 	    task.start();
 	  }
 	}
@@ -4366,7 +4360,7 @@ class JNodeViewerPanel
       for(ViewerNode vnode : pSelected.values()) {
 	NodeStatus status = vnode.getNodeStatus();
 	if((status != null) && status.getName().equals(name)) {
-	  NodeDetails details = status.getDetails();
+	  NodeDetailsLight details = status.getLightDetails();
 	  if(details != null) {
 	    NodeMod mod = details.getWorkingVersion();
 	    if((mod != null) && !mod.isFrozen()) 
@@ -4401,7 +4395,7 @@ class JNodeViewerPanel
       for(ViewerNode vnode : pSelected.values()) {
 	NodeStatus status = vnode.getNodeStatus();
 	if((status != null) && status.getName().equals(name)) {
-	  NodeDetails details = status.getDetails();
+	  NodeDetailsLight details = status.getLightDetails();
 	  if(details != null) {
 	    NodeMod mod = details.getWorkingVersion();
 	    if((mod != null) && !mod.isFrozen()) 
@@ -4475,7 +4469,7 @@ class JNodeViewerPanel
     TreeSet<String> names = new TreeSet<String>();
     for(ViewerNode vnode : pSelected.values()) {
       NodeStatus status = vnode.getNodeStatus();
-      NodeDetails details = status.getDetails();
+      NodeDetailsLight details = status.getLightDetails();
       if(details != null) {
 	NodeMod mod = details.getWorkingVersion();
 	if((mod != null) && !mod.isActionEnabled())
@@ -4493,6 +4487,41 @@ class JNodeViewerPanel
   }
 
   /**
+   * Helper for looking up the job IDs for selected nodes which match a given 
+   * QueueState (heavyweight status) and/or the node IDs (lightweight status).
+   */ 
+  private void
+  lookupSelectedNodeJobsWithState
+  (
+   TreeSet<NodeID> nodes,
+   TreeSet<Long> jobs, 
+   QueueState state
+  ) 
+  {
+    for(ViewerNode vnode : pSelected.values()) {
+      NodeStatus status = vnode.getNodeStatus();
+      if(status.hasHeavyDetails()) {
+        NodeDetailsHeavy details = status.getHeavyDetails();
+        
+        Long[] jobIDs   = details.getJobIDs();
+        QueueState[] qs = details.getQueueState();
+        assert(jobIDs.length == qs.length);
+        
+        int wk;
+        for(wk=0; wk<jobIDs.length; wk++) {
+          if(qs[wk] == state) {
+            assert(jobIDs[wk] != null);
+            jobs.add(jobIDs[wk]);
+          }
+        }
+      }
+      else if(status.hasLightDetails()) {
+        nodes.add(status.getNodeID());
+      }
+    }
+  }
+   
+  /**
    * Pause all waiting jobs associated with the selected nodes.
    */ 
   private synchronized void 
@@ -4501,35 +4530,12 @@ class JNodeViewerPanel
     if(warnUnsavedDetailPanelChangesBeforeOp("Pause Jobs")) 
       return; 
 
-    TreeSet<NodeID> pausedNodes = new TreeSet<NodeID>();
-    TreeSet<Long> pausedJobs    = new TreeSet<Long>();
+    TreeSet<NodeID> nodeIDs = new TreeSet<NodeID>();
+    TreeSet<Long> jobIDs    = new TreeSet<Long>();
+    lookupSelectedNodeJobsWithState(nodeIDs, jobIDs, QueueState.Queued);
 
-    for(ViewerNode vnode : pSelected.values()) {
-      NodeStatus status = vnode.getNodeStatus();
-      NodeDetails details = status.getDetails();
-      if(details != null) {
-        if(details.isLightweight()) {
-          pausedNodes.add(status.getNodeID());
-        }
-        else {
-          Long[] jobIDs   = details.getJobIDs();
-          QueueState[] qs = details.getQueueState();
-          assert(jobIDs.length == qs.length);
-
-          int wk;
-          for(wk=0; wk<jobIDs.length; wk++) {
-            switch(qs[wk]) {
-            case Queued:
-              assert(jobIDs[wk] != null);
-              pausedJobs.add(jobIDs[wk]);
-            }
-          }
-        }
-      }
-    }
-
-    if(!pausedNodes.isEmpty() || !pausedJobs.isEmpty()) {
-      PauseJobsTask task = new PauseJobsTask(pausedNodes, pausedJobs);
+    if(!nodeIDs.isEmpty() || !jobIDs.isEmpty()) {
+      PauseJobsTask task = new PauseJobsTask(nodeIDs, jobIDs);
       task.start();
     }
 
@@ -4546,35 +4552,12 @@ class JNodeViewerPanel
     if(warnUnsavedDetailPanelChangesBeforeOp("Resume Jobs")) 
       return;
 
-    TreeSet<NodeID> resumedNodes = new TreeSet<NodeID>();
-    TreeSet<Long> resumedJobs    = new TreeSet<Long>();
+    TreeSet<NodeID> nodeIDs = new TreeSet<NodeID>();
+    TreeSet<Long> jobIDs    = new TreeSet<Long>();
+    lookupSelectedNodeJobsWithState(nodeIDs, jobIDs, QueueState.Paused); 
 
-    for(ViewerNode vnode : pSelected.values()) {
-      NodeStatus status = vnode.getNodeStatus();
-      NodeDetails details = status.getDetails();
-      if(details != null) {
-        if(details.isLightweight()) {
-          resumedNodes.add(status.getNodeID());
-        }
-        else {
-          Long[] jobIDs   = details.getJobIDs();
-          QueueState[] qs = details.getQueueState();
-          assert(jobIDs.length == qs.length);
-
-          int wk;
-          for(wk=0; wk<jobIDs.length; wk++) {
-            switch(qs[wk]) {
-            case Paused:
-              assert(jobIDs[wk] != null);
-              resumedJobs.add(jobIDs[wk]);
-            }
-          }
-        }
-      }
-    }
-
-    if(!resumedNodes.isEmpty() || !resumedJobs.isEmpty()) {
-      ResumeJobsTask task = new ResumeJobsTask(resumedNodes, resumedJobs);
+    if(!nodeIDs.isEmpty() || !jobIDs.isEmpty()) {
+      ResumeJobsTask task = new ResumeJobsTask(nodeIDs, jobIDs);
       task.start();
     }
 
@@ -4582,6 +4565,43 @@ class JNodeViewerPanel
     refresh(); 
   }
 
+  /**
+   * Helper for looking up the job IDs for selected nodes which have a pending 
+   * QueueState (heavyweight status) and/or the node IDs (lightweight status).
+   */ 
+  private void
+  lookupSelectedNodeJobsPending
+  (
+   TreeSet<NodeID> nodes,
+   TreeSet<Long> jobs
+  ) 
+  {
+    for(ViewerNode vnode : pSelected.values()) {
+      NodeStatus status = vnode.getNodeStatus();
+      if(status.hasHeavyDetails()) {
+        NodeDetailsHeavy details = status.getHeavyDetails();
+        
+        Long[] jobIDs   = details.getJobIDs();
+        QueueState[] qs = details.getQueueState();
+        assert(jobIDs.length == qs.length);
+        
+        int wk;
+        for(wk=0; wk<jobIDs.length; wk++) {
+          switch(qs[wk]) {
+          case Queued:
+          case Paused:
+          case Running:
+            assert(jobIDs[wk] != null);
+            jobs.add(jobIDs[wk]);
+          }
+        }
+      }
+      else if(status.hasLightDetails()) {
+        nodes.add(status.getNodeID());
+      }
+    }
+  }
+   
   /**
    * Preempt all jobs associated with the selected nodes.
    */ 
@@ -4591,37 +4611,12 @@ class JNodeViewerPanel
     if(warnUnsavedDetailPanelChangesBeforeOp("Preempt Jobs")) 
       return;
 
-    TreeSet<NodeID> preemptedNodes = new TreeSet<NodeID>();
-    TreeSet<Long> preemptedJobs    = new TreeSet<Long>();
+    TreeSet<NodeID> nodeIDs = new TreeSet<NodeID>();
+    TreeSet<Long> jobIDs    = new TreeSet<Long>();
+    lookupSelectedNodeJobsPending(nodeIDs, jobIDs);
 
-    for(ViewerNode vnode : pSelected.values()) {
-      NodeStatus status = vnode.getNodeStatus();
-      NodeDetails details = status.getDetails();
-      if(details != null) {
-        if(details.isLightweight()) {
-          preemptedNodes.add(status.getNodeID());
-        }
-        else {
-          Long[] jobIDs   = details.getJobIDs();
-          QueueState[] qs = details.getQueueState();
-          assert(jobIDs.length == qs.length);
-
-          int wk;
-          for(wk=0; wk<jobIDs.length; wk++) {
-            switch(qs[wk]) {
-            case Queued:
-            case Paused:
-            case Running:
-              assert(jobIDs[wk] != null);
-              preemptedJobs.add(jobIDs[wk]);
-            }
-          }
-        }
-      }
-    }
-
-    if(!preemptedNodes.isEmpty() || !preemptedJobs.isEmpty()) {
-      PreemptJobsTask task = new PreemptJobsTask(preemptedNodes, preemptedJobs);
+    if(!nodeIDs.isEmpty() || !jobIDs.isEmpty()) {
+      PreemptJobsTask task = new PreemptJobsTask(nodeIDs, jobIDs);
       task.start();
     }
 
@@ -4638,37 +4633,12 @@ class JNodeViewerPanel
     if(warnUnsavedDetailPanelChangesBeforeOp("Kill Jobs")) 
       return;
 
-    TreeSet<NodeID> killedNodes = new TreeSet<NodeID>();
-    TreeSet<Long> killedJobs    = new TreeSet<Long>();
+    TreeSet<NodeID> nodeIDs = new TreeSet<NodeID>();
+    TreeSet<Long> jobIDs    = new TreeSet<Long>();
+    lookupSelectedNodeJobsPending(nodeIDs, jobIDs);
 
-    for(ViewerNode vnode : pSelected.values()) {
-      NodeStatus status = vnode.getNodeStatus();
-      NodeDetails details = status.getDetails();
-      if(details != null) {
-        if(details.isLightweight()) {
-          killedNodes.add(status.getNodeID());
-        }
-        else {
-          Long[] jobIDs   = details.getJobIDs();
-          QueueState[] qs = details.getQueueState();
-          assert(jobIDs.length == qs.length);
-
-          int wk;
-          for(wk=0; wk<jobIDs.length; wk++) {
-            switch(qs[wk]) {
-            case Queued:
-            case Paused:
-            case Running:
-              assert(jobIDs[wk] != null);
-              killedJobs.add(jobIDs[wk]);
-            }
-          }
-        }
-      }
-    }
-
-    if(!killedNodes.isEmpty() || !killedJobs.isEmpty()) {
-      KillJobsTask task = new KillJobsTask(killedNodes, killedJobs);
+    if(!nodeIDs.isEmpty() || !jobIDs.isEmpty()) {
+      KillJobsTask task = new KillJobsTask(nodeIDs, jobIDs);
       task.start();
     }
 
@@ -4701,11 +4671,11 @@ class JNodeViewerPanel
 	}
 	else {
 	  NodeStatus status   = null;
-	  NodeDetails details = null;
+	  NodeDetailsLight details = null;
 	  for(ViewerNode vnode : pSelected.values()) {
 	    status = vnode.getNodeStatus();
 	    if((status != null) && status.getName().equals(roots.first())) {
-	      details = status.getDetails();
+	      details = status.getLightDetails();
 	      break;
 	    }
 	  }
@@ -4859,7 +4829,7 @@ class JNodeViewerPanel
 
     if(pPrimary != null) {
       NodeStatus status = pPrimary.getNodeStatus();
-      NodeDetails details = status.getDetails();
+      NodeDetailsLight details = status.getLightDetails();
       if(details != null) {
 	NodeMod work = details.getWorkingVersion();
 	if((work != null) && !work.isFrozen()) {
@@ -5020,7 +4990,7 @@ class JNodeViewerPanel
       return;
 
     if(pPrimary != null) {
-      NodeDetails details = pPrimary.getNodeStatus().getDetails();
+      NodeDetailsLight details = pPrimary.getNodeStatus().getLightDetails();
       NodeMod mod = details.getWorkingVersion();
       if((mod != null) && !mod.isFrozen()) {
 	if((pSelectedLink != null) && (pSelectedLink instanceof LinkMod)) {
@@ -5039,8 +5009,7 @@ class JNodeViewerPanel
 	    TreeSet<String> sources = new TreeSet<String>();
 	    sources.add(link.getName());
 	    
-	    LinkTask task = 
-	      new LinkTask(details.getName(), sources, policy, rel, offset);
+	    LinkTask task = new LinkTask(mod.getName(), sources, policy, rel, offset);
 	    task.start();
 	  }
 	}
@@ -5061,7 +5030,7 @@ class JNodeViewerPanel
       return;
 
     if(pPrimary != null) {
-      NodeDetails details = pPrimary.getNodeStatus().getDetails(); 
+      NodeDetailsLight details = pPrimary.getNodeStatus().getLightDetails(); 
       NodeMod mod = details.getWorkingVersion();
       if((mod != null) && !mod.isFrozen()) {
 	if((pSelectedLink != null) && (pSelectedLink instanceof LinkMod)) {
@@ -5070,7 +5039,7 @@ class JNodeViewerPanel
 	  TreeSet<String> sources = new TreeSet<String>();
 	  sources.add(link.getName());
 
-	  UnlinkTask task = new UnlinkTask(details.getName(), sources);
+	  UnlinkTask task = new UnlinkTask(mod.getName(), sources);
 	  task.start();
 	}
       }
@@ -5304,13 +5273,15 @@ class JNodeViewerPanel
 
       String primary = null;
       if(pPrimary != null) 
-	primary = pPrimary.getNodeStatus().getName();
+	primary = pPrimary.getName();
       
       TreeMap<String,NodeStatus> selected = new TreeMap<String,NodeStatus>();
       for(ViewerNode vnode : pSelected.values()) {
 	NodeStatus status = vnode.getNodeStatus();
 	NodeStatus ostatus = selected.get(status.getName());
-	if((ostatus == null) || (ostatus.getDetails() == null)) 
+        if((ostatus == null) || 
+           (!ostatus.hasHeavyDetails() && status.hasHeavyDetails()) ||
+           (!ostatus.hasLightDetails() && status.hasLightDetails()))
 	  selected.put(status.getName(), status);
       }
 

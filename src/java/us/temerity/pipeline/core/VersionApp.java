@@ -1,4 +1,4 @@
-// $Id: VersionApp.java,v 1.6 2008/06/27 08:44:54 jim Exp $
+// $Id: VersionApp.java,v 1.7 2008/07/21 17:31:09 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -466,7 +466,7 @@ class VersionApp
       JCheckInDialog diag = new JCheckInDialog((Frame) null);
       
       {
-        NodeDetails details = pStatus.getDetails(); 
+        NodeDetailsLight details = pStatus.getLightDetails(); 
         VersionID latest = null;
         if(details.getLatestVersion() != null) 
           latest = details.getLatestVersion().getVersionID();

@@ -183,11 +183,12 @@ class PatternCloneTool
       if (node.matches(oldP) || node.contains(oldP) ) {
 	String newName = node.replaceAll(oldP, newP);
 	NodeStatus stat = pSelected.get(node);
-	NodeMod mod = stat.getDetails().getWorkingVersion();
+	NodeMod mod = stat.getLightDetails().getWorkingVersion();
 	if (mod.getAction() == null)
 	  cloneAction = false;
 	System.out.println(pUser + "\t" + pView + "\t" + node + "\t" + newName);
-	mclient.clone(pUser, pView, node, newName, cloneAction, cloneLinks, copyFiles, copyAnnotations);
+	mclient.clone(pUser, pView, node, newName, 
+                      cloneAction, cloneLinks, copyFiles, copyAnnotations);
       }
     }
     return false;

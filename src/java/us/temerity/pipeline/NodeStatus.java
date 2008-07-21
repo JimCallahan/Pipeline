@@ -1,4 +1,4 @@
-// $Id: NodeStatus.java,v 1.20 2007/10/28 21:51:16 jim Exp $
+// $Id: NodeStatus.java,v 1.21 2008/07/21 17:31:09 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -47,7 +47,82 @@ class NodeStatus
     pStaleLinks = new TreeSet<String>();
   }
 
+  /**
+   * Copy an existing node status. <P> 
+   * 
+   * @param status
+   *   The original node status to copy.
+   * 
+   * @param ignoreTargets
+   *   Whether to ignore downstream targets when copying.
+   */
+  public 
+  NodeStatus
+  (
+   NodeStatus status,
+   boolean ignoreTargets
+  ) 
+  {
+    pNodeID = status.pNodeID;
 
+    pDetailsCheckedIn = status.pDetailsCheckedIn;
+    pDetailsLight     = status.pDetailsLight;
+    pDetailsHeavy     = status.pDetailsHeavy;
+
+    pSources = new TreeMap<String,NodeStatus>(status.pSources);
+    if(!ignoreTargets) 
+      pTargets = new TreeMap<String,NodeStatus>(status.pTargets);
+
+    pStaleLinks = new TreeSet<String>(status.pStaleLinks);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   P R E D I C A T E S                                                                  */
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Whether only downstream node status information exists for the node.
+   */ 
+  public boolean 
+  hasDownstreamOnly() 
+  {
+    return ((pDetailsCheckedIn == null) && 
+            (pDetailsLight == null) && 
+            (pDetailsHeavy == null));
+  }
+
+  /**
+   * Whether detailed information is available about a specific checked-in version of 
+   * the node. 
+   */
+  public boolean 
+  hasCheckedInDetails() 
+  {
+    return (pDetailsCheckedIn != null);
+  }
+
+  /**
+   * Whether a lightweight collection of node state information is available with respect 
+   * to a particular working area view. 
+   */
+  public boolean 
+  hasLightDetails() 
+  {
+    return (pDetailsLight != null);
+  }
+   
+  /**
+   * Whether a heavyweight collection of node state information is available with respect 
+   * to a particular working area view. 
+   */
+  public boolean 
+  hasHeavyDetails() 
+  {
+    return (pDetailsHeavy != null);
+  }
+  
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
@@ -75,36 +150,127 @@ class NodeStatus
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the detailed status information for this node.
+   * Get the detailed information available about a specific checked-in version of the node. 
    * 
    * @return 
-   *   The node details or <CODE>null</CODE> if this node is downstream of the focus node.
+   *   The checked-in node details or <CODE>null</CODE> if not available.
    */ 
-  public NodeDetails
-  getDetails()
+  public NodeDetailsCheckedIn
+  getCheckedInDetails()
   {
-    return pDetails;
+    return pDetailsCheckedIn;
   }
 
   /**
-   * Set the detailed status information for this node.
+   * Get the lightweight collection of node state information available with respect 
+   * to a particular working area view. 
    * 
-   * @param details 
-   *   The status details.
-   */
-  public void 
-  setDetails
-  (
-   NodeDetails details
-  ) 
+   * @return 
+   *   The lightweight node details or <CODE>null</CODE> if not available.
+   */ 
+  public NodeDetailsLight
+  getLightDetails()
   {
-    if(!details.getName().equals(pNodeID.getName())) 
-      throw new IllegalArgumentException
-	("The node details name (" + details.getName() + ") didn't match the " + 
-	 "node ID name (" + pNodeID.getName() + ")!");      
-    pDetails = details;
+    return pDetailsLight;
   }
 
+  /**
+   * Get the heavyweight collection of node state information available with respect 
+   * to a particular working area view. 
+   * 
+   * @return 
+   *   The heavyweight node details or <CODE>null</CODE> if not available.
+   */ 
+  public NodeDetailsHeavy
+  getHeavyDetails()
+  {
+    return pDetailsHeavy;
+  }
+
+ 
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Set the checked-in node details.
+   * 
+   * @param details 
+   *   The node details.
+   */
+  public void 
+  setCheckedInDetails
+  (
+   NodeDetailsCheckedIn details
+  ) 
+  {
+    pDetailsCheckedIn = details;
+    pDetailsLight     = null;
+    pDetailsHeavy     = null;
+  }
+
+  /**
+   * Set the lightweight node details.
+   * 
+   * @param details 
+   *   The node details.
+   */
+  public void 
+  setLightDetails
+  (
+   NodeDetailsLight details
+  ) 
+  {
+    pDetailsCheckedIn = null;
+    pDetailsLight     = details;
+    pDetailsHeavy     = null;
+  }
+
+  /**
+   * Set the heavyweight node details.
+   * 
+   * @param details 
+   *   The node details.
+   */
+  public void 
+  setHeavyDetails
+  (
+   NodeDetailsHeavy details
+  ) 
+  {
+    pDetailsCheckedIn = null;
+    pDetailsLight     = details;
+    pDetailsHeavy     = details;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the table of node annotation plugin instances indexed by annotation name. 
+   * 
+   * @return
+   *   The annotations (may be empty) or <CODE>null</CODE> if annotations were ignored
+   *   during the status operation.
+   */ 
+  public TreeMap<String,BaseAnnotation>
+  getAnnotations()
+  {
+    return pAnnotations;
+  }
+
+  /**
+   * Set the table of node annotation plugin instances. 
+   * 
+   * @param annotations
+   *   The table of node annotation plugin instances indexed by annotation name. 
+   */ 
+  public void 
+  setAnnotations
+  (
+   TreeMap<String,BaseAnnotation> annotations
+  )
+  {
+    pAnnotations = annotations;
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -408,12 +574,108 @@ class NodeStatus
   public String
   toString() 
   {
-    if(pDetails != null) 
-      return pDetails.toString();
-
-    Path path = new Path(pNodeID.getName());
-    return path.getName();
+    if(hasHeavyDetails()) 
+      return pDetailsHeavy.toString();
+    else if(hasLightDetails())  
+      return pDetailsLight.toString();
+    else if(hasCheckedInDetails())
+      return pDetailsCheckedIn.toString();
+    else {
+      Path path = new Path(pNodeID.getName());
+      return path.getName();
+    }
   }
+
+  
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S E R I A L I Z A B L E                                                              */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Write the serializable fields to the object stream. <P> 
+   * 
+   * This enables the node to convert a dynamically loaded action plugin instance into a 
+   * generic staticly loaded BaseAction instance before serialization.
+   */ 
+  private void 
+  writeObject
+  (
+   java.io.ObjectOutputStream out
+  )
+    throws IOException
+  {
+    out.writeObject(pNodeID);
+    out.writeObject(pSources);
+    out.writeObject(pTargets);
+
+    TreeMap<String,BaseAnnotation> annots = null;
+    if(pAnnotations != null) {
+      annots = new TreeMap<String,BaseAnnotation>(); 
+      
+      for(String name : pAnnotations.keySet()) {
+        BaseAnnotation annot = pAnnotations.get(name);
+        if(annot != null) 
+          annots.put(name, new BaseAnnotation(annot));
+      }
+    }
+    out.writeObject(annots);
+
+    out.writeObject(pDetailsCheckedIn);
+    out.writeObject(pDetailsLight);
+    out.writeObject(pDetailsHeavy);
+
+    out.writeObject(pStaleLinks);
+  }
+
+
+  /**
+   * Read the serializable fields from the object stream. <P> 
+   * 
+   * This enables the node to dynamically instantiate an action plugin instance and copy
+   * its parameters from the generic staticly loaded BaseAction instance in the object 
+   * stream. 
+   */ 
+  private void 
+  readObject
+  (
+    java.io.ObjectInputStream in
+  )
+    throws IOException, ClassNotFoundException
+  {
+     pNodeID  = (NodeID) in.readObject();
+     pSources = (TreeMap<String,NodeStatus>) in.readObject();
+     pTargets = (TreeMap<String,NodeStatus>) in.readObject();
+
+     TreeMap<String,BaseAnnotation> annots = (TreeMap<String,BaseAnnotation>) in.readObject();
+     if(annots != null) {
+       pAnnotations = new TreeMap<String,BaseAnnotation>(); 
+
+       for(String name : annots.keySet()) {
+         BaseAnnotation annot = annots.get(name);
+         if(annot != null) {
+           try {
+             PluginMgrClient client = PluginMgrClient.getInstance();
+             BaseAnnotation nannot = client.newAnnotation(annot.getName(), 
+                                                          annot.getVersionID(), 
+                                                          annot.getVendor());
+             nannot.setParamValues(annot);
+             pAnnotations.put(name, nannot);
+           }
+           catch(PipelineException ex) {
+             throw new IOException(ex.getMessage());
+           }
+         }
+       }
+     }
+
+     pDetailsCheckedIn = (NodeDetailsCheckedIn) in.readObject();
+     pDetailsLight = (NodeDetailsLight) in.readObject();
+     pDetailsHeavy = (NodeDetailsHeavy) in.readObject();
+
+     pStaleLinks = (TreeSet<String>) in.readObject();
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -429,14 +691,21 @@ class NodeStatus
   {
     encoder.encode("NodeID", pNodeID);
 
-    if(pDetails != null) 
-      encoder.encode("NodeDetails", pDetails);
-
     if(!pSources.isEmpty()) 
       encoder.encode("Sources", pSources);
 
     if(!pTargets.isEmpty()) 
       encoder.encode("Targets", pTargets);
+
+    if((pAnnotations != null) && !pAnnotations.isEmpty()) 
+      encoder.encode("Annotations", pAnnotations);       
+
+    if(pDetailsCheckedIn != null) 
+      encoder.encode("NodeDetailsHeavy", pDetailsHeavy);
+    else if(pDetailsLight != null) 
+      encoder.encode("NodeDetailsLight", pDetailsLight);
+    else if(pDetailsCheckedIn != null) 
+      encoder.encode("NodeDetailsCheckedIn", pDetailsCheckedIn);
 
     if(!pStaleLinks.isEmpty()) 
       encoder.encode("StaleLinks", pStaleLinks);
@@ -471,15 +740,6 @@ class NodeStatus
    */ 
   private NodeID  pNodeID;
 
-
-  /**
-   * The detailed status information for this node. <P> 
-   * 
-   * May be <CODE>null</CODE> if this node is downstream of the focus node.
-   */
-  private NodeDetails  pDetails;
-  
-
   /** 
    * The upstream nodes connected to this node.
    */
@@ -489,15 +749,41 @@ class NodeStatus
    * The downstream nodes connected to this node.
    */
   private TreeMap<String,NodeStatus>  pTargets;
+
   
+  /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The names of the upstream nodes connected to this node which propagate staleness. <P> 
+   * The table of node annotation plugin instances indexed by annotation name. 
+   */ 
+  private TreeMap<String,BaseAnnotation>  pAnnotations; 
+
+  /**
+   * The detailed status information for this node. <P>
+   * 
+   * There are four different potential types of status operations: downstream, checked-in, 
+   * lighweight and heavyweight.  For downstream nodes, all of the following fields will 
+   * be <CODE>null</CODE>.  For checked-in and lighweight status, only the respective detail
+   * fields will be non-<CODE>null</CODE>.  For heavyweight status, both the light and heavy 
+   * fields will be set using the same node details since heavyweight status is a superset of 
+   * lightweight status. <P> 
+   * 
+   * Consumers of node detail information can then choose to lookup the appropriate type of 
+   * details which suit their needs without respect to the implementation of these details.
+   */
+  private NodeDetailsCheckedIn  pDetailsCheckedIn;
+  private NodeDetailsLight      pDetailsLight;
+  private NodeDetailsHeavy      pDetailsHeavy;
+  
+  /**
+   * The names of the upstream nodes connected to this node which propagate staleness
+   * for a heavyweight node status. <P> 
    * 
    * Note that this does not mean that all of these nodes are Stale themselves, only that
    * they have timestamps which are newer than this node and which will be propogated 
    * downstream and may eventually cause staleness.
    */ 
-  private TreeSet<String>  pStaleLinks;
+  private TreeSet<String>  pStaleLinks; 
+
 }
 

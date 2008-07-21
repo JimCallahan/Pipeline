@@ -1,4 +1,4 @@
-// $Id: ViewerNode.java,v 1.13 2007/06/26 18:23:32 jim Exp $
+// $Id: ViewerNode.java,v 1.14 2008/07/21 17:31:10 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -66,9 +66,8 @@ class ViewerNode
       throw new IllegalArgumentException("The node status cannot be (null)!");
     pStatus = status;
 
-    NodeDetails details = pStatus.getDetails();
-    if(details != null) {
-      NodeMod mod = details.getWorkingVersion();
+    if(pStatus.hasLightDetails()) {
+      NodeMod mod = pStatus.getLightDetails().getWorkingVersion();
       pIsLocked = ((mod != null) && mod.isLocked());
     }
   }
@@ -79,12 +78,12 @@ class ViewerNode
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the current node status. 
+   * Get the name of the current node.
    */ 
-  public NodeStatus
-  getNodeStatus() 
+  public String
+  getName() 
   {
-    return pStatus;
+    return pStatus.getName(); 
   }
 
   /**
@@ -94,6 +93,15 @@ class ViewerNode
   getNodePath() 
   {
     return pPath;
+  }
+
+  /**
+   * Get the current node status. 
+   */ 
+  public NodeStatus
+  getNodeStatus() 
+  {
+    return pStatus;
   }
 
   
@@ -147,12 +155,9 @@ class ViewerNode
 	    pLabelDLs = new int[1];
 	  }
 	  else if(style.equals("Pattern & Range Below")) {
-	    NodeDetails details = pStatus.getDetails();
-	    if(details == null) {
-	      Path path = new Path(pStatus.getNodeID().getName());
-	      text1 = path.getName();
-	    }
-	    else {
+            if(pStatus.hasLightDetails()) {
+              NodeDetailsLight details = pStatus.getLightDetails();
+
 	      NodeCommon com = details.getWorkingVersion();
 	      if(com == null) 
 		com = details.getLatestVersion();
@@ -164,6 +169,10 @@ class ViewerNode
 		text1 = fseq.getFilePattern().toString();
 		text2 = fseq.getFrameRange().toString();
 	      }
+	    }
+            else {
+	      Path path = new Path(pStatus.getNodeID().getName());
+	      text1 = path.getName();
 	    }
 
 	    pLabelDLs = new int[(text2 != null) ? 2 : 1];
@@ -183,14 +192,10 @@ class ViewerNode
       }
 
       if(pNodeStateDL == null) {
-        NodeDetails details = pStatus.getDetails();
-        if(details != null) {
-          String nstate = null;
-          if(details.isLightweight()) {
-            if(details.getVersionState() == VersionState.CheckedIn) 
-              nstate = "Node-CheckedIn";
-          }
-          else if(details.getOverallNodeState() == OverallNodeState.NeedsCheckOut) {
+        String nstate = null;
+        if(pStatus.hasHeavyDetails()) {
+          NodeDetailsHeavy details = pStatus.getHeavyDetails();
+          if(details.getOverallNodeState() == OverallNodeState.NeedsCheckOut) {
             VersionID wvid = details.getWorkingVersion().getWorkingID();
             VersionID lvid = details.getLatestVersion().getVersionID();
             switch(wvid.compareLevel(lvid)) {
@@ -209,10 +214,15 @@ class ViewerNode
           else {
             nstate = ("Node-" + details.getOverallNodeState()); 
           }
-        
-          if(nstate != null) 
-            pNodeStateDL = mgr.getIconDL(gl, nstate);
         }
+        else if(pStatus.hasLightDetails()) {
+          NodeDetailsLight details = pStatus.getLightDetails();
+          if(details.getVersionState() == VersionState.CheckedIn) 
+            nstate = "Node-CheckedIn";
+        }
+
+        if(nstate != null) 
+          pNodeStateDL = mgr.getIconDL(gl, nstate);
       }
       
       if(pRingDL == null) 
@@ -261,29 +271,26 @@ class ViewerNode
     Color3d modeColor  = NodeStyles.getSelectionColor3d(pMode);
     Color3d queueColor = prefs.getUndefinedCoreColor(); 
     Color3d iconColor  = prefs.getModifiableColor(); 
-    {
-      NodeDetails details = pStatus.getDetails();
-      if(details != null) {
-        if(details.isLightweight()) {
-          if(details.getVersionState() != VersionState.CheckedIn) 
-            queueColor = prefs.getLightweightCoreColor(); 
-        }
-        else {
-          queueColor = NodeStyles.getQueueColor3d(details.getOverallQueueState());
-
-          NodeMod mod = details.getWorkingVersion();
-          if((mod != null) && mod.isFrozen()) {
-            switch(details.getOverallQueueState()) {
-            case Finished: 
-              iconColor = prefs.getFrozenFinishedColor(); 
-              break;
-
-            case Stale: 
-              iconColor = prefs.getFrozenStaleColor(); 
-            }
-          }
+    if(pStatus.hasHeavyDetails()) {
+      NodeDetailsHeavy details = pStatus.getHeavyDetails();      
+      queueColor = NodeStyles.getQueueColor3d(details.getOverallQueueState());
+      
+      NodeMod mod = details.getWorkingVersion();
+      if((mod != null) && mod.isFrozen()) {
+        switch(details.getOverallQueueState()) {
+        case Finished: 
+          iconColor = prefs.getFrozenFinishedColor(); 
+          break;
+          
+        case Stale: 
+          iconColor = prefs.getFrozenStaleColor(); 
         }
       }
+    }
+    else if(pStatus.hasLightDetails()) {
+      NodeDetailsLight details = pStatus.getLightDetails();      
+      if(details.getVersionState() != VersionState.CheckedIn) 
+        queueColor = prefs.getLightweightCoreColor(); 
     }
 
     gl.glPushMatrix();
@@ -309,7 +316,7 @@ class ViewerNode
       }   
 
       {
-	NodeDetails details = pStatus.getDetails();
+	NodeDetailsLight details = pStatus.getLightDetails();
 
         /* extra symbols to the right of the node */ 
 	if(pIsLocked && (pLockedDL != null)) {

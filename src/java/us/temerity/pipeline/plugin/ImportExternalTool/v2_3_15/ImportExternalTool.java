@@ -1,4 +1,4 @@
-// $Id: ImportExternalTool.java,v 1.1 2008/01/22 16:58:55 jim Exp $
+// $Id: ImportExternalTool.java,v 1.2 2008/07/21 17:31:09 jim Exp $
 
 package us.temerity.pipeline.plugin.ImportExternalTool.v2_3_15;
 
@@ -264,18 +264,21 @@ class ImportExternalTool
               vpanel.add(hbox);
             }
           }
+
           UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
           
           pFramePaddingField = 
-            UIFactory.createTitledIntegerField(tpanel, "Frame Padding:", sTSize, 
-                                              vpanel, pSourceSeq.getFilePattern().getPadding(), sVSize);
+            UIFactory.createTitledIntegerField
+              (tpanel, "Frame Padding:", sTSize, 
+               vpanel, pSourceSeq.getFilePattern().getPadding(), sVSize);
 
           UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
 
           {
             JAlphaNumField field = 
-              UIFactory.createTitledAlphaNumField(tpanel, "Filename Suffix:", sTSize, 
-                                                 vpanel, null, sVSize);
+              UIFactory.createTitledAlphaNumField
+                (tpanel, "Filename Suffix:", sTSize, 
+                 vpanel, null, sVSize);
             pSuffixField = field;
             
             field.addActionListener(this);
@@ -286,11 +289,13 @@ class ImportExternalTool
 
           {
             JCollectionField field = 
-              UIFactory.createTitledCollectionField(tpanel, "Toolset:", sTSize, 
-                                                   vpanel, pToolsets, pDialog, sVSize, null);
+              UIFactory.createTitledCollectionField
+                (tpanel, "Toolset:", sTSize, 
+                 vpanel, pToolsets, pDialog, sVSize, null);
+            pToolsetField = field;
+
             if (pDefaultToolset != null)
               field.setSelected(pDefaultToolset);
-            pToolsetField = field;
 
             field.setActionCommand("toolset-changed");
             field.addActionListener(this);          
@@ -407,17 +412,18 @@ class ImportExternalTool
           targetSeq = new FileSeq(new FilePattern(targetPrefix, padding, suffix), 
                                   new FrameRange(start));
       }
-      else 
+      else {
         targetSeq = new FileSeq(new FilePattern(targetPrefix, padding, suffix), 
                                 new FrameRange(start, end, by));
+      }
       
       BaseEditor editor = null;
       {
         String name = pEditorField.getPluginName();
         if (name != null) {
-         String vendor = pEditorField.getPluginVendor();
-         VersionID ver = pEditorField.getPluginVersionID();
-         editor = PluginMgrClient.getInstance().newEditor(name, ver, vendor);
+          String vendor = pEditorField.getPluginVendor();
+          VersionID ver = pEditorField.getPluginVersionID();
+          editor = PluginMgrClient.getInstance().newEditor(name, ver, vendor);
         }
       }
       
@@ -433,8 +439,9 @@ class ImportExternalTool
         File f = File.createTempFile("ImportExternalTool-SymLink.", ".bash", 
           PackageInfo.sTempPath.toFile());
         BufferedWriter out = new BufferedWriter(new FileWriter(f));
-        Path targetParent = new Path(new Path(new Path(PackageInfo.sWorkPath, getAuthor()), getView()), 
-                                                       targetPath.getParentPath());
+        Path targetParent = 
+          new Path(new Path(new Path(PackageInfo.sWorkPath, getAuthor()), getView()), 
+                   targetPath.getParentPath());
         out.write("mkdir -p " + targetParent.toString() + "\n");
         if (targetSeq.hasFrameNumbers()) {
           for (int i = 0; i < targetSeq.getFrameRange().numFrames(); i++) {
@@ -453,19 +460,21 @@ class ImportExternalTool
         
         args.add(f.getAbsolutePath());
         
-      } catch(IOException ex) {
+      } 
+      catch(IOException ex) {
         mclient.release(id, true);
         throw new PipelineException
           ("Unable to create the temporary bash script used to create" + 
            "the symbolic links!");
-    }
+      }
       
       TreeMap<String,String> env = 
         mclient.getToolsetEnvironment
         (getAuthor(), getView(), pDefaultToolset, PackageInfo.sOsType);
      
       SubProcessLight proc = 
-        new SubProcessLight("ImportExternalTool-SymLink", "bash", args, env, PackageInfo.sTempPath.toFile());
+        new SubProcessLight("ImportExternalTool-SymLink", "bash", 
+                            args, env, PackageInfo.sTempPath.toFile());
       try {
         proc.start();
         proc.join();
@@ -481,8 +490,9 @@ class ImportExternalTool
         mclient.release(id, true);
         throw new PipelineException(ex);
       }
+
       NodeStatus status = mclient.status(id);
-      NodeDetails details = status.getDetails();
+      NodeDetailsHeavy details = status.getHeavyDetails();
       if (details.getOverallNodeState() == OverallNodeState.Missing) {
         mclient.release(id, true);
         throw new PipelineException
@@ -493,10 +503,10 @@ class ImportExternalTool
            "Pipeline server machine.");
       }
       
-      mclient.checkIn
-        (id, "Created by the Import External tool from the file sequence " +
-             "(" + pSourceSeq.toString() + ") in the directory " +
-             "(" + pSourcePath.toString() +")", Level.Minor);
+      String msg = 
+        ("Created by the Import External tool from the file sequence " +
+         "(" + pSourceSeq.toString() + ") in the directory (" + pSourcePath.toString() + ")");
+      mclient.checkIn(id, msg, Level.Minor);
       
       mclient.checkOut(id, null, CheckOutMode.OverwriteAll, CheckOutMethod.AllFrozen);
       

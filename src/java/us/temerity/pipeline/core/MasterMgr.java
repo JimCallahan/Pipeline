@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.253 2008/07/11 00:40:20 jim Exp $
+// $Id: MasterMgr.java,v 1.254 2008/07/21 17:31:09 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -9204,8 +9204,8 @@ class MasterMgr
 
         /* do heavyweight status roots first */ 
         for(String name : roots.keySet()) {
-          Boolean lightweight = roots.get(name);
-          if((lightweight != null) && !lightweight) {
+          Boolean isLightweight = roots.get(name);
+          if((isLightweight != null) && !isLightweight) {
             NodeID nodeID = new NodeID(author, view, name);
             NodeStatus status = performNodeOperation(new NodeOp(), nodeID, cache, timer);
             results.put(name, status);
@@ -9213,18 +9213,14 @@ class MasterMgr
             /* replace the cached root node status copy without targets, 
                  this way the orignal's targets won't get stomped on when its looked up 
                  from the cache during future performNodeOperation() calls */ 
-            NodeStatus copy = new NodeStatus(nodeID);
-            copy.setDetails(status.getDetails());
-            for(NodeStatus source : status.getSources())
-              copy.addSource(source);
-            cache.put(name, copy);
+            cache.put(name, new NodeStatus(status, false)); 
           }
         }
 
         /* then add lightweight status roots */ 
         for(String name : roots.keySet()) {
-          Boolean lightweight = roots.get(name);
-          if((lightweight != null) && lightweight) {
+          Boolean isLightweight = roots.get(name);
+          if((isLightweight != null) && isLightweight) {
             NodeID nodeID = new NodeID(author, view, name);
             NodeStatus status = performNodeOperation(null, nodeID, cache, timer);
             results.put(name, status);  
@@ -9232,11 +9228,7 @@ class MasterMgr
             /* replace the cached root node status copy without targets, 
                  this way the orignal's targets won't get stomped on when its looked up 
                  from the cache during future performNodeOperation() calls */ 
-            NodeStatus copy = new NodeStatus(nodeID);
-            copy.setDetails(status.getDetails());
-            for(NodeStatus source : status.getSources())
-              copy.addSource(source);
-            cache.put(name, copy);        
+            cache.put(name, new NodeStatus(status, false)); 
           }
         }
       }
@@ -10244,7 +10236,7 @@ class MasterMgr
     branch.addLast(name);
 
     /* lookup or compute the node status */ 
-    NodeDetails details = null;
+    NodeDetailsHeavy details = null;
     {
       NodeStatus status = stable.get(name);
       if(status == null) {
@@ -10253,7 +10245,7 @@ class MasterMgr
 	status = stable.get(name);
       }
 
-      details = status.getDetails();
+      details = status.getHeavyDetails();
       if(details == null)
 	throw new IllegalStateException(); 
     }
@@ -10457,7 +10449,7 @@ class MasterMgr
     branch.addLast(name);
 
     /* lookup or compute the node status */ 
-    NodeDetails details = null;
+    NodeDetailsHeavy details = null;
     {
       NodeStatus status = stable.get(name);
       if(status == null) {
@@ -10466,7 +10458,7 @@ class MasterMgr
 	status = stable.get(name);
       }
 
-      details = status.getDetails();
+      details = status.getHeavyDetails();
       if(details == null)
 	throw new IllegalStateException(); 
     }
@@ -10953,7 +10945,7 @@ class MasterMgr
             /* if locking it shouldn't make the downstream nodes Stale, 
                  then steal the newest per-file timestamp of the unlocked version */ 
             Long oldStamp = null; 
-            NodeDetails details = status.getDetails(); 
+            NodeDetailsHeavy details = status.getHeavyDetails(); 
             switch(details.getOverallNodeState()) {
             case Identical:
             case NeedsCheckOut:
@@ -11753,7 +11745,7 @@ class MasterMgr
 
     seen.add(status.getName());
 
-    NodeDetails details = status.getDetails();
+    NodeDetailsHeavy details = status.getHeavyDetails();
     if(details == null) 
       throw new PipelineException
         ("Cannot create a node bundle containing a checked-in node " + 
@@ -12344,12 +12336,10 @@ class MasterMgr
         if(indices == null) {
           indices = new TreeSet<Integer>();  
         
-          NodeDetails details = status.getDetails();
-          if(details == null) 
+          NodeMod work = status.getHeavyDetails().getWorkingVersion();
+          if(work == null) 
             throw new PipelineException
               ("Cannot generate jobs for the checked-in node (" + status + ")!");
-          
-          NodeMod work = details.getWorkingVersion();
 
           /* compute the file indices for all of the given target file sequences */ 
           if(targetSeqs != null) {
@@ -12581,7 +12571,7 @@ class MasterMgr
       /* create the job group */ 
       QueueJobGroup group = 
 	new QueueJobGroup(pNextJobGroupID++, status.getNodeID(), 
-			  status.getDetails().getWorkingVersion().getToolset(), 
+			  status.getHeavyDetails().getWorkingVersion().getToolset(), 
 			  targetSeq, orderedRootIDs, externalIDs, 
 			  new TreeSet<Long>(jobs.keySet()));
 
@@ -12698,13 +12688,12 @@ class MasterMgr
     throws PipelineException
   {
     NodeID nodeID = status.getNodeID();
+    NodeDetailsHeavy details = status.getHeavyDetails();
 
-    NodeDetails details = status.getDetails();
-    if(details == null) 
+    NodeMod work = details.getWorkingVersion();
+    if(work == null) 
       throw new PipelineException
 	("Cannot generate jobs for the checked-in node (" + status + ")!");
-    
-    NodeMod work = details.getWorkingVersion();
     if(work.isLocked()) 
       return;
 
@@ -12966,8 +12955,7 @@ class MasterMgr
           case Dependency:
             {
               NodeStatus lstatus = status.getSource(link.getName());
-              NodeDetails ldetails = lstatus.getDetails();
-              NodeMod lwork = ldetails.getWorkingVersion();
+              NodeMod lwork = lstatus.getHeavyDetails().getWorkingVersion();
               int lnumFrames = lwork.getPrimarySequence().numFrames();
               
               switch(link.getRelationship()) {
@@ -13089,8 +13077,7 @@ class MasterMgr
 	    TreeSet<Integer> lindices = sourceIndices.get(sname);
 	    if((lindices != null) && !lindices.isEmpty()) {
 	      NodeStatus lstatus = status.getSource(sname);
-	      NodeDetails ldetails = lstatus.getDetails();
-	      NodeMod lwork = ldetails.getWorkingVersion();
+	      NodeMod lwork = lstatus.getHeavyDetails().getWorkingVersion();
 
 	      {
 		FileSeq fseq = lwork.getPrimarySequence();
@@ -13170,7 +13157,8 @@ class MasterMgr
 	      for(String sname : action.getSecondarySourceNames()) {
 		Set<FilePattern> fpats = action.getSecondarySequences(sname);
 		if(!fpats.isEmpty()) {
-		  NodeMod lmod = status.getSource(sname).getDetails().getWorkingVersion();
+		  NodeMod lmod = 
+                    status.getSource(sname).getHeavyDetails().getWorkingVersion();
 		  
 		  TreeSet<FilePattern> live = new TreeSet<FilePattern>();
 		  for(FileSeq fseq : lmod.getSecondarySequences()) 
@@ -13440,13 +13428,12 @@ class MasterMgr
     throws PipelineException
   {
     NodeID nodeID = status.getNodeID();
-    
-    NodeDetails details = status.getDetails();
-    if(details == null) 
-      throw new PipelineException
-	("Cannot generate jobs for the checked-in node (" + status + ")!");
-    
+    NodeDetailsHeavy details = status.getHeavyDetails();
+
     NodeMod work = details.getWorkingVersion();
+    if(work == null) 
+      throw new PipelineException
+        ("Cannot generate jobs for the checked-in node (" + status + ")!");
     if(work.isLocked()) 
       return;
 
@@ -13535,15 +13522,13 @@ class MasterMgr
   ) 
     throws PipelineException 
   {
-    NodeDetails details = status.getDetails();
-    if(details == null) 
+    NodeMod work = status.getHeavyDetails().getWorkingVersion();
+    if(work == null) 
       throw new PipelineException
 	("Cannot generate jobs for the checked-in node (" + status + ")!");
-    
-    NodeMod work = details.getWorkingVersion();
     if(work.isLocked()) 
       return;
-    
+
     for(LinkMod link : work.getSources()) {
       switch(link.getPolicy()) {
       case Association:
@@ -16520,15 +16505,17 @@ class MasterMgr
 	throw new IllegalStateException(); 
 
       if(nodeOp != null) {
-        OverallQueueState qstate = root.getDetails().getOverallQueueState();
+        OverallQueueState qstate = root.getHeavyDetails().getOverallQueueState();
         validateStaleLinks(root, qstate == OverallQueueState.Finished);
       }
     }
 
     {
+      NodeDetailsLight details = root.getLightDetails();
+
       VersionID vid = null;
-      if(root.getDetails().getWorkingVersion() == null) 
-	vid = root.getDetails().getLatestVersion().getVersionID();
+      if(details.getWorkingVersion() == null) 
+	vid = details.getLatestVersion().getVersionID();
       
       HashMap<String,NodeStatus> table = new HashMap<String,NodeStatus>();
       getDownstreamNodeStatus(root, nodeID, vid, new LinkedList<String>(), table, timer);
@@ -16599,8 +16586,10 @@ class MasterMgr
     branch.addLast(name);
     
     /* node annotations */ 
-    TreeMap<String,BaseAnnotation> annotations = new TreeMap<String,BaseAnnotation>();
+    TreeMap<String,BaseAnnotation> annotations = null;
     if(!ignoreAnnotations) {
+      annotations = new TreeMap<String,BaseAnnotation>();
+
       timer.aquire();
       ReentrantReadWriteLock lock = getAnnotationsLock(name); 
       lock.readLock().lock();
@@ -16818,7 +16807,7 @@ class MasterMgr
           /* check working links */ 
           for(LinkMod link : work.getSources()) {
             String lname = link.getName(); 
-            NodeDetails sdetails = table.get(lname).getDetails();
+            NodeDetailsLight sdetails = table.get(lname).getLightDetails();
             VersionID svid = sdetails.getWorkingVersion().getWorkingID();
 
             /* compare with base version links, 
@@ -16908,10 +16897,11 @@ class MasterMgr
 
       /* if only lightweight node status details are required this time... */ 
       if(isLightweight) {
-        NodeDetails details = 
-          new NodeDetails(name, annotations, work, base, latest, versionIDs, 
-                          versionState, propertyState, linkState); 
-        status.setDetails(details);
+        NodeDetailsLight details = 
+          new NodeDetailsLight(work, base, latest, versionIDs, 
+                               versionState, propertyState, linkState); 
+        status.setLightDetails(details);
+        status.setAnnotations(annotations);
       }
 
       /* otherwise, we need to go on and compute the heavyweight per-file and queue 
@@ -17114,7 +17104,7 @@ class MasterMgr
             else if(anyNeedsCheckOut) {
               if(!workIsLocked) {
                 for(LinkMod link : work.getSources()) {
-                  NodeDetails ldetails = table.get(link.getName()).getDetails();
+                  NodeDetailsHeavy ldetails = table.get(link.getName()).getHeavyDetails();
 
                   switch(ldetails.getOverallNodeState()) {
                   case ModifiedLinks:
@@ -17135,7 +17125,7 @@ class MasterMgr
                 switch(linkState) {
                 case Identical:
                   for(LinkMod link : work.getSources()) {
-                    NodeDetails ldetails = table.get(link.getName()).getDetails();
+                    NodeDetailsHeavy ldetails = table.get(link.getName()).getHeavyDetails();
                     VersionID lvid = ldetails.getWorkingVersion().getWorkingID();
 
                     switch(ldetails.getOverallNodeState()) {                      
@@ -17301,7 +17291,7 @@ class MasterMgr
                       (link.getPolicy() != LinkPolicy.Association))) {
     
                     NodeStatus lstatus = status.getSource(link.getName());
-                    NodeDetails ldetails = lstatus.getDetails();
+                    NodeDetailsHeavy ldetails = lstatus.getHeavyDetails();
                     
                     long lstamps[]    = ldetails.getFileTimeStamps();
                     UpdateState lus[] = ldetails.getUpdateState();
@@ -17523,7 +17513,7 @@ class MasterMgr
                 case Reference:
                   {
                     NodeStatus lstatus = status.getSource(link.getName());
-                    NodeDetails ldetails = lstatus.getDetails();
+                    NodeDetailsHeavy ldetails = lstatus.getHeavyDetails();
                     
                     long lstamps[]    = ldetails.getFileTimeStamps();
                     UpdateState lus[] = ldetails.getUpdateState();
@@ -17599,17 +17589,16 @@ class MasterMgr
           }
         }
         
-        /* create the node details */
-        NodeDetails details = 
-          new NodeDetails(name, annotations,
-                          work, base, latest, versionIDs, 
-                          overallNodeState, overallQueueState, 
-                          versionState, propertyState, linkState, 
-                          fileStates, fileStamps, 
-                          jobIDs, queueStates, updateStates);
+        /* create the node details */ 
+        NodeDetailsHeavy details = 
+          new NodeDetailsHeavy(work, base, latest, versionIDs, 
+                               overallNodeState, overallQueueState, 
+                               versionState, propertyState, linkState, 
+                               fileStates, fileStamps, jobIDs, queueStates, updateStates);
 
-        /* add the details to the node's status */ 
-        status.setDetails(details);
+        /* add details and annotations to the node's status */ 
+        status.setHeavyDetails(details);
+        status.setAnnotations(annotations);
 
         /* peform the node operation -- may alter the status and/or status details */ 
         nodeOp.perform(status, timer);
@@ -17654,7 +17643,7 @@ class MasterMgr
     if(!finishedRoot) {
       for(NodeStatus tstatus : status.getTargets()) {
         if(!tstatus.isStaleLink(name)) {
-          NodeDetails tdetails = tstatus.getDetails();
+          NodeDetailsLight tdetails = tstatus.getLightDetails();
           if(tdetails != null) {
             NodeMod tmod = tdetails.getWorkingVersion(); 
             if(tmod != null) {
@@ -17674,7 +17663,7 @@ class MasterMgr
     }
 
     /* process the upstream links... */ 
-    NodeMod mod = status.getDetails().getWorkingVersion(); 
+    NodeMod mod = status.getLightDetails().getWorkingVersion(); 
     for(NodeStatus lstatus : status.getSources()) {
       boolean linkProcessed = false;
       if(mod != null) {
@@ -17696,7 +17685,7 @@ class MasterMgr
       /* an Association link or CheckedIn source node starts a new tree with its 
            own Finished root flag... */ 
       if(!linkProcessed) {
-        OverallQueueState qstate = lstatus.getDetails().getOverallQueueState();  
+        OverallQueueState qstate = lstatus.getHeavyDetails().getOverallQueueState();  
         validateStaleLinks(lstatus, qstate == OverallQueueState.Finished);
       }
     }
@@ -21174,7 +21163,7 @@ class MasterMgr
       throws PipelineException
     {
       String name = status.getName();
-      NodeDetails details = status.getDetails();
+      NodeDetailsHeavy details = status.getHeavyDetails();
       if(details == null)
 	throw new IllegalStateException(); 
 
@@ -21277,7 +21266,7 @@ class MasterMgr
 	  TreeMap<String,VersionID> lvids = new TreeMap<String,VersionID>();
 	  TreeMap<String,Boolean> locked = new TreeMap<String,Boolean>();
 	  for(NodeStatus lstatus : status.getSources()) {
-	    NodeDetails ldetails = lstatus.getDetails();
+	    NodeDetailsLight ldetails = lstatus.getLightDetails();   
 	    lvids.put(lstatus.getName(), ldetails.getBaseVersion().getVersionID());
 	    locked.put(lstatus.getName(), ldetails.getWorkingVersion().isLocked());
 	  }
@@ -21384,17 +21373,15 @@ class MasterMgr
 	  working.setVersion(nwork);
 
 	  /* update the node status details */ 
-	  NodeDetails ndetails = 
-	    new NodeDetails(name, new TreeMap<String,BaseAnnotation>(), 
-			    nwork, vsn, checkedIn.get(checkedIn.lastKey()).getVersion(),
-			    checkedIn.keySet(), 
-			    OverallNodeState.Identical, OverallQueueState.Finished, 
-			    VersionState.Identical, PropertyState.Identical, 
-                            LinkState.Identical, 
-			    fileStates, details.getFileTimeStamps(), 
-                            jobIDs, queueStates, updateStates);
+	  NodeDetailsHeavy ndetails = 
+	    new NodeDetailsHeavy
+                 (nwork, vsn, checkedIn.get(checkedIn.lastKey()).getVersion(), 
+                  checkedIn.keySet(),
+                  OverallNodeState.Identical, OverallQueueState.Finished, 
+                  VersionState.Identical, PropertyState.Identical, LinkState.Identical, 
+                  fileStates, details.getFileTimeStamps(), jobIDs, queueStates, updateStates);
 
-	  status.setDetails(ndetails);
+	  status.setHeavyDetails(ndetails);
 
 	  /* update the node tree entry */ 
 	  pNodeTree.addCheckedInNodeTreePath(vsn);

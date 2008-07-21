@@ -1,4 +1,4 @@
-// $Id: CheckOutSourcesTool.java,v 1.3 2008/01/28 12:11:33 jesse Exp $
+// $Id: CheckOutSourcesTool.java,v 1.4 2008/07/21 17:31:09 jim Exp $
 
 package us.temerity.pipeline.plugin.CheckOutSourcesTool.v2_3_15;
 
@@ -94,7 +94,7 @@ class CheckOutSourcesTool
     NodeID id = stat.getNodeID();
     for (String source : stat.getSourceNames()) {
       NodeStatus child = stat.getSource(source);
-      NodeDetails det = child.getDetails();
+      NodeDetailsHeavy det = child.getHeavyDetails();
       VersionID base = det.getBaseVersion().getVersionID();
       VersionID latest = det.getLatestVersion().getVersionID();
       NodeMod mod = det.getWorkingVersion();

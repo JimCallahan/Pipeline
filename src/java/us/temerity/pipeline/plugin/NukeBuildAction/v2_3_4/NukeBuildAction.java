@@ -1,4 +1,4 @@
-// $Id: NukeBuildAction.java,v 1.3 2008/01/23 16:25:59 jim Exp $
+// $Id: NukeBuildAction.java,v 1.4 2008/07/21 17:31:10 jim Exp $
 
 package us.temerity.pipeline.plugin.NukeBuildAction.v2_3_4;
 
@@ -312,9 +312,9 @@ class NukeBuildAction
       String nukeApp = getNukeProgram(env); 
       out.write
       ("import subprocess\n" + 
-	"nukeScript = open('" + nukeScript + "', 'r')\n" + 
-	"p = subprocess.Popen(['" + nukeApp + "', '-t', '-d :0'], stdin=nukeScript)\n" + 
-      "p.communicate()\n");
+       "nukeScript = open('" + nukeScript + "', 'r')\n" + 
+       "p = subprocess.Popen(['" + nukeApp + "', '-t', '-d', ':0'], stdin=nukeScript)\n" + 
+       "p.communicate()\n");
       out.close();
     } 
     catch (IOException ex) {

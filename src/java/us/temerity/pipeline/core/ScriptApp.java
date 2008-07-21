@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.89 2008/06/29 17:46:16 jim Exp $
+// $Id: ScriptApp.java,v 1.90 2008/07/21 17:31:09 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -3846,17 +3846,18 @@ class ScriptApp
     boolean first = true;
     for(String name : table.keySet()) {
       NodeStatus status = table.get(name);
-      NodeDetails details = status.getDetails();
+      NodeDetailsLight details  = status.getLightDetails();
+      NodeDetailsHeavy hdetails = status.getHeavyDetails();
       if(briefFormat) {
 	if(!first) 
 	  buf.append("\n");
 	first = false;
 
-        if(details.isLightweight()) 
-          buf.append("- - ");
+        if(status.hasHeavyDetails()) 
+          buf.append(hdetails.getOverallNodeState().toSymbol() + " " + 
+                     hdetails.getOverallQueueState().toSymbol() + " ");
         else 
-          buf.append(details.getOverallNodeState().toSymbol() + " " + 
-                     details.getOverallQueueState().toSymbol() + " ");
+          buf.append("- - ");
 
         buf.append(status.getName()); 
       }
@@ -3908,12 +3909,12 @@ class ScriptApp
 	  }
 	}
 
-	if(!details.isLightweight()) {
+        if(status.hasHeavyDetails()) {
           buf.append
             ("\n\n" + 
              pad("-- Overall State ", '-', 80) + "\n" +
-             "Node State        : " + details.getOverallNodeState().toTitle() + "\n" + 
-             "Queue State       : " + details.getOverallQueueState().toTitle()); 
+             "Node State        : " + hdetails.getOverallNodeState().toTitle() + "\n" + 
+             "Queue State       : " + hdetails.getOverallQueueState().toTitle()); 
         }
 	
 	if(sections.contains("vsn")) {
@@ -4333,19 +4334,19 @@ class ScriptApp
 	  }
 	}
 
-	if(sections.contains("file") && !details.isLightweight()) {
+	if(sections.contains("file") && status.hasHeavyDetails()) {
 	  buf.append
 	    ("\n\n" +
 	     pad("-- File Sequences ", '-', 80));
 
 	  boolean ffirst = true;
-	  QueueState qs[] = details.getQueueState();
-	  for(FileSeq fseq : details.getFileStateSequences()) {
+	  QueueState qs[] = hdetails.getQueueState();
+	  for(FileSeq fseq : hdetails.getFileStateSequences()) {
 	    if(!ffirst) 
 	      buf.append("\n");
 	    ffirst = false;
 
-	    FileState fs[] = details.getFileState(fseq);
+	    FileState fs[] = hdetails.getFileState(fseq);
 	    int wk = 0;
 	    for(File file : fseq.getFiles()) {
 	      buf.append("\n" + 

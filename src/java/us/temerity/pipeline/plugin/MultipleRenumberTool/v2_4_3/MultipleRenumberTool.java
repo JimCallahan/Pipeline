@@ -25,39 +25,49 @@ class MultipleRenumberTool
   /*  C O N S T R U C T O R                                                                 */
   /*----------------------------------------------------------------------------------------*/
 
-
   public 
   MultipleRenumberTool()
   {
     super("MultipleRenumber", new VersionID("2.4.3"), "Temerity",
           "Renumbers a bunch of nodes with the same frame range.");
 
-    underDevelopment();
-
     addSupport(OsType.MacOS);
     addSupport(OsType.Windows);
+
+    underDevelopment();
   }
+
+
    
+  /*----------------------------------------------------------------------------------------*/
+  /*  P H A S E S                                                                           */
+  /*----------------------------------------------------------------------------------------*/
+
   @Override
   public synchronized String 
   collectPhaseInput() 
     throws PipelineException
   {
-    for (NodeStatus stat : pSelected.values()) {
-      NodeMod mod = stat.getDetails().getWorkingVersion();
-      if (mod == null)
-        throw new PipelineException("All selected nodes must have a working version");
-      FileSeq seq = mod.getPrimarySequence();
-      if (!seq.hasFrameNumbers())
-        throw new PipelineException("All selected nodes must have frame numbers");
-      FrameRange range = seq.getFrameRange();
-      if (range == null)
-        throw new PipelineException("All selected nodes must be sequences.");
-      if (pOrigFrameRange == null)
-        pOrigFrameRange = range;
-      else if (!pOrigFrameRange.equals(range))
-        throw new PipelineException("All selected nodes must have the same frame range.");
-
+    pOrigFrameRange = null;
+    for(NodeStatus stat : pSelected.values()) {
+      if(stat.hasLightDetails()) {
+        NodeMod mod = stat.getLightDetails().getWorkingVersion();
+        if(mod == null)
+          throw new PipelineException("All selected nodes must have a working version");
+        
+        FileSeq seq = mod.getPrimarySequence();
+        if (!seq.hasFrameNumbers())
+          throw new PipelineException("All selected nodes must have frame numbers");
+        
+        FrameRange range = seq.getFrameRange();
+        if (range == null)
+          throw new PipelineException("All selected nodes must be sequences.");
+        
+        if (pOrigFrameRange == null)
+          pOrigFrameRange = range;
+        else if (!pOrigFrameRange.equals(range))
+          throw new PipelineException("All selected nodes must have the same frame range.");
+      }
     }
 
     /* create dialog components */
@@ -154,7 +164,7 @@ class MultipleRenumberTool
           Integer frame = pStartFrameField.getValue();
           if(frame == null)
             throw new PipelineException
-            ("Unable to renumber node with an unspecified start frame!");
+              ("Unable to renumber node with an unspecified start frame!");
           pStartFrame = frame;
         }
 
@@ -162,7 +172,7 @@ class MultipleRenumberTool
           Integer frame = pEndFrameField.getValue();
           if(frame == null)
             throw new PipelineException
-            ("Unable to renumber node with an unspecified end frame!");
+              ("Unable to renumber node with an unspecified end frame!");
           pEndFrame = frame;
         }
 
@@ -179,7 +189,7 @@ class MultipleRenumberTool
           Integer frame = pByFrameField.getValue();
           if(frame == null)
             throw new PipelineException
-            ("Unable to renumber node with an unspecified frame increment!");
+              ("Unable to renumber node with an unspecified frame increment!");
           pByFrame = frame;
         }
 
@@ -212,9 +222,9 @@ class MultipleRenumberTool
         && ((((pOrigFrameRange.getStart() - pStartFrame) % pByFrame) != 0) || 
           (((pOrigFrameRange.getStart() - pEndFrame) % pByFrame) != 0)))
         throw new PipelineException
-        ("Unable to renumber node due to misalignment of the new frame range ("
-          + pStartFrame + "-" + pEndFrame + "x" + pByFrame + ") with the original " + 
-          "frame range (" + pOrigFrameRange + ")!");
+          ("Unable to renumber node due to misalignment of the new frame range " + 
+           "(" + pStartFrame + "-" + pEndFrame + "x" + pByFrame + ") with the original " + 
+           "frame range (" + pOrigFrameRange + ")!");
 
       try {
         pTargetFrameRange = new FrameRange(pStartFrame, pEndFrame, pByFrame);
@@ -225,15 +235,17 @@ class MultipleRenumberTool
 
       if(pOrigFrameRange.equals(pTargetFrameRange))
         throw new PipelineException
-        ("Unecessary to renumber node when the frame range (" +
-          pOrigFrameRange + " " + "has not been altered!");
+          ("Unecessary to renumber node when the frame range (" +
+           pOrigFrameRange + " " + "has not been altered!");
     }
-
 
     for(NodeStatus stat: pSelected.values()) {
-      NodeID id = stat.getNodeID();
-      mclient.renumber(id, pTargetFrameRange, pRemoveFiles);
+      if(stat.hasLightDetails()) {
+        NodeID id = stat.getNodeID();
+        mclient.renumber(id, pTargetFrameRange, pRemoveFiles);
+      }
     }
+
     return false;
   }
    
@@ -271,7 +283,7 @@ class MultipleRenumberTool
   private JBooleanField pRemoveFilesField;
   private boolean pRemoveFiles;
 
-  private FrameRange pOrigFrameRange = null;
+  private FrameRange pOrigFrameRange;
 
   /**
    * New frame range.

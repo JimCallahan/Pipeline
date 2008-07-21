@@ -1,4 +1,4 @@
-// $Id: BaseUtil.java,v 1.35 2008/05/26 03:21:16 jesse Exp $
+// $Id: BaseUtil.java,v 1.36 2008/07/21 17:31:09 jim Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -593,15 +593,19 @@ class BaseUtil
    * which is not Finished, then <code>false</code> sis returned.
    * 
    * @param status
-   *        The status of the root node of the tree to be searched.
+   *   The heavyweight status of the root node of the tree to be searched.
    */
   public boolean 
   isTreeFinished
   (
-    NodeStatus status
+   NodeStatus status
   )
   {
-    OverallQueueState state = status.getDetails().getOverallQueueState();
+    if(!status.hasHeavyDetails()) 
+      throw new IllegalArgumentException
+        ("A node status with heavyweight details is required by this method!");
+      
+    OverallQueueState state = status.getHeavyDetails().getOverallQueueState();
     switch(state){
     case Finished: {
       Collection<NodeStatus> stati = status.getSources();
@@ -615,15 +619,15 @@ class BaseUtil
       }
       return true;
     }
-      default:
-        return false;
+    default:
+      return false;
     }
   }
   
   /**
-   * Returns a list of nodes in the given tree that do not have an {@link OverallQueueState} of
-   * Finished.
-   * <p>
+   * Returns a list of nodes in the given tree that do not have an {@link OverallQueueState} 
+   * of Finished. <p>
+   * 
    * Starts at the node specified in the node status passed in and descends down the tree,
    * checking the {@link OverallQueueState} of each node.
    * 
@@ -631,16 +635,20 @@ class BaseUtil
    *   The TreeSet to add the names too.
    * 
    * @param status
-   *        The status of the root node of the tree to be searched.
+   *   The heavyweight status of the root node of the tree to be searched.
    */
   public void 
   findBadNodes
   (
-    TreeSet<String> nodeNames,
-    NodeStatus status
+   TreeSet<String> nodeNames,
+   NodeStatus status
   )
   {
-    OverallQueueState state = status.getDetails().getOverallQueueState();
+    if(!status.hasHeavyDetails()) 
+      throw new IllegalArgumentException
+        ("A node status with heavyweight details is required by this method!");
+
+    OverallQueueState state = status.getHeavyDetails().getOverallQueueState();
     Collection<NodeStatus> stati = status.getSources();
     switch (state) {
     case Aborted:
@@ -655,7 +663,8 @@ class BaseUtil
   }
 
   /**
-   * Static method to return a list of all the selection keys.
+   * Static method to return a list of all the selection keys.<P> 
+   * 
    * @param client
    *   The instance of the Queue Manager to use to extract the information.
    */
@@ -670,7 +679,8 @@ class BaseUtil
   }
 
   /**
-   * Static method to return a list of all the license keys.
+   * Static method to return a list of all the license keys.<P> 
+   * 
    * @param client
    *   The instance of the Queue Manager to use to extract the information.
    */
@@ -683,8 +693,11 @@ class BaseUtil
   {
     return client.getLicenseKeys();
   }
-  
-  // Utility methods for this class.
+   
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   U T I L   H E L P E R S                                                              */
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Recursive function to search for nodes under a given path.
@@ -695,14 +708,16 @@ class BaseUtil
    * The {@link ArrayList} will contain the fully resolved node names for all the nodes.
    * 
    * @param treeComps
-   *        A {@link NodeTreeComp} that should contain information about the node name
-   *        specified by scene. The most common way to acquire this data structure is with the
-   *        <code>updatePaths</code> method in {@link MasterMgrClient}.
+   *   A {@link NodeTreeComp} that should contain information about the node name
+   *   specified by scene. The most common way to acquire this data structure is with the
+   *   <code>updatePaths</code> method in {@link MasterMgrClient}.
+   * 
    * @param toReturn
-   *        An {@link ArrayList} that will hold every node that is found by this method.
+   *   An {@link ArrayList} that will hold every node that is found by this method.
+   * 
    * @param path
-   *        The full path that leads up to the current {@link NodeTreeComp}. This is needed
-   *        to build the full node name being stored in the ArrayList.
+   *   The full path that leads up to the current {@link NodeTreeComp}. This is needed
+   *   to build the full node name being stored in the ArrayList.
    */
   private void 
   findNodes
@@ -787,7 +802,7 @@ class BaseUtil
   
   
   /*----------------------------------------------------------------------------------------*/
-  /* G L O B A L   P A R A M E T E R S                                                      */
+  /*  G L O B A L   P A R A M E T E R S                                                     */
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -865,8 +880,8 @@ class BaseUtil
     int currentPass = getCurrentPass();
     if (paramPass <= currentPass)
       throw new PipelineException
-        ("The attempt to replace parameter ("+ param.getName() +") in pass (" + paramPass + ") " +
-         "failed because the current pass is (" + currentPass + ").");
+        ("The attempt to replace parameter ("+ param.getName() +") in pass " + 
+         "(" + paramPass + ") failed because the current pass is (" + currentPass + ").");
 
     pParams.put(param.getName(), param);
     

@@ -1,4 +1,4 @@
-// $Id: ViewerLinks.java,v 1.9 2007/06/29 04:35:34 jim Exp $
+// $Id: ViewerLinks.java,v 1.10 2008/07/21 17:31:10 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -247,28 +247,27 @@ class ViewerLinks
 		
 		{
 		  NodeStatus status = link.getTargetNode().getNodeStatus(); 
-		  if(status != null) {
-		    NodeDetails details = status.getDetails();
-		    if(details != null) {
-		      NodeCommon com = details.getWorkingVersion();
-		      if(com == null) 
-			com = details.getLatestVersion();
-		      if((com != null) &&  (com.getAction() != null) && 
-			 (!com.isActionEnabled()) && (prefs.getDrawDisabledAction())) {
-			double s = prefs.getDisabledActionSize();
-			
-			Point2d a = new Point2d(tpos.x(), tpos.y()-s);
-			Point2d b = new Point2d(tpos.x(), tpos.y()+s);
-			
-			if(anyStale) 
-			  gl.glColor3d(stale.r(), stale.g(), stale.b());
-			else 
-			  gl.glColor3d(color.r(), color.g(), color.b());
-			  
-			gl.glVertex2d(a.x(), a.y());
-			gl.glVertex2d(b.x(), b.y());
-		      }
-		    }
+		  if((status != null) && status.hasLightDetails()) {
+		    NodeDetailsLight details = status.getLightDetails();
+                    
+                    NodeCommon com = details.getWorkingVersion();
+                    if(com == null) 
+                      com = details.getLatestVersion();
+                    if((com != null) &&  (com.getAction() != null) && 
+                       (!com.isActionEnabled()) && (prefs.getDrawDisabledAction())) {
+                      double s = prefs.getDisabledActionSize();
+                      
+                      Point2d a = new Point2d(tpos.x(), tpos.y()-s);
+                      Point2d b = new Point2d(tpos.x(), tpos.y()+s);
+                      
+                      if(anyStale) 
+                        gl.glColor3d(stale.r(), stale.g(), stale.b());
+                      else 
+                        gl.glColor3d(color.r(), color.g(), color.b());
+                      
+                      gl.glVertex2d(a.x(), a.y());
+                      gl.glVertex2d(b.x(), b.y());
+                    }
 		  }
 		}
 

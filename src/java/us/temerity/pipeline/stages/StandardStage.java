@@ -363,7 +363,7 @@ class StandardStage
     NodeID id = new NodeID(getAuthor(), getView(), pRegisteredNodeName);
     {
       NodeStatus status = pClient.status(id, true);
-      NodeDetails details = status.getDetails();
+      NodeDetailsLight details = status.getLightDetails();
       NodeMod oldMod = details.getWorkingVersion(); 
       boolean hasFrameNumbers = oldMod.getPrimarySequence().hasFrameNumbers();
       if (hasFrameNumbers && pFrameRange == null)
