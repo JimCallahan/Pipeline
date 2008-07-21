@@ -9,7 +9,7 @@ AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
 AC_CONFIG_HEADERS([config.h])
-AM_INIT_AUTOMAKE(Pipeline, 2.4.3b9)
+AM_INIT_AUTOMAKE(Pipeline, 2.4.3b10)
                            
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
@@ -1143,7 +1143,7 @@ AC_MSG_RESULT([$JAVA_INC])
 
 AC_MSG_CHECKING([Javac Flags])
 
-JAVA_C_FLAGS="$JAVA_C_FLAGS -source 1.5 -Xlint:all,deprecation,-unchecked,-fallthrough"
+JAVA_C_FLAGS="$JAVA_C_FLAGS -source 1.6 -Xlint:all,deprecation,-unchecked,-fallthrough"
 JAVA_C_FLAGS="$JAVA_C_FLAGS -J-Xms64m -J-Xmx256m"
 
 AC_MSG_RESULT([$JAVA_C_FLAGS])
@@ -1153,7 +1153,7 @@ AC_MSG_RESULT([ ])
 AC_MSG_CHECKING([Javac (No Deprecation) Flags])
 
 AC_SUBST(JAVA_C_NODEP_FLAGS)
-JAVA_C_NODEP_FLAGS="-source 1.5 -Xlint:all,-deprecation,-unchecked,-fallthrough"
+JAVA_C_NODEP_FLAGS="-source 1.6 -Xlint:all,-deprecation,-unchecked,-fallthrough"
 JAVA_C_NODEP_FLAGS="$JAVA_C_NODEP_FLAGS -J-Xms64m -J-Xmx256m"
 
 AC_MSG_RESULT([$JAVA_C_NODEP_FLAGS])

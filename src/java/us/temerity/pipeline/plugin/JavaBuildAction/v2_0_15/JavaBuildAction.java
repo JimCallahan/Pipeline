@@ -1,4 +1,4 @@
-// $Id: JavaBuildAction.java,v 1.1 2007/06/19 18:24:49 jim Exp $
+// $Id: JavaBuildAction.java,v 1.2 2008/07/21 20:45:24 jim Exp $
 
 package us.temerity.pipeline.plugin.JavaBuildAction.v2_0_15;
 
@@ -308,7 +308,7 @@ JavaBuildAction
 
       {
 	StringBuilder buf = new StringBuilder();
-	buf.append("javac -source 1.5"); 
+	buf.append("javac -source 1.6"); 
 	 
 	String extra = (String) getSingleParamValue(aExtraOptions);
 	if(extra != null) 
