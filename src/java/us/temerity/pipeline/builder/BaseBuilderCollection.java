@@ -1,4 +1,4 @@
-// $Id: BaseBuilderCollection.java,v 1.15 2008/03/28 21:09:01 jim Exp $
+// $Id: BaseBuilderCollection.java,v 1.16 2008/07/21 14:50:44 jim Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -383,7 +383,6 @@ class BaseBuilderCollection
   )
     throws PipelineException
   {
-    
     TreeMap<String, String> list = getBuildersProvided();
     if (!list.keySet().contains(builderName))
       throw new PipelineException
