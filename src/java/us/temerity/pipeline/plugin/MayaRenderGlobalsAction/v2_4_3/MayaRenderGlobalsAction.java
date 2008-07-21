@@ -1,10 +1,11 @@
-// $Id: MayaRenderGlobalsAction.java,v 1.1 2008/07/15 16:57:56 jim Exp $
+// $Id: MayaRenderGlobalsAction.java,v 1.2 2008/07/21 23:28:06 jim Exp $
 
 package us.temerity.pipeline.plugin.MayaRenderGlobalsAction.v2_4_3;
 
 import us.temerity.pipeline.*; 
 import us.temerity.pipeline.plugin.*; 
 import us.temerity.pipeline.math.Range; 
+import us.temerity.pipeline.math.Tuple3d;
 
 import java.lang.*;
 import java.util.*;
@@ -46,6 +47,16 @@ import java.io.*;
  *     Ratio of pixel height to pixel width. <BR>
  *   </DIV> <BR> <BR>
  * 
+ *   Alpha Mask Channel <BR>
+ *   <DIV style="margin-left: 40px;">
+ *     Whether to render images with alpha mask channel. 
+ *   </DIV> <BR>
+ *   
+ *   Z Depth Channel <BR>
+ *   <DIV style="margin-left: 40px;">
+ *     Whether to render images with z depth channel.
+ *   </DIV> <BR>
+ *   
  *   <I>Render Quality Parameters</I> <BR>
  *   <DIV style="margin-left: 40px;">
  *     Edge Anti Aliasing <BR>
@@ -61,6 +72,16 @@ import java.io.*;
  *     Max Shading Samples <BR>
  *     <DIV style="margin-left: 40px;">
  *       The maximum number of shading samples. <BR>
+ *     </DIV> <BR>
+ *     
+ *     3D Blur Visibility <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       The minimum number of visibility samples. <BR>
+ *     </DIV> <BR>
+ *     
+ *     Max Shading Samples <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       The maximum number of visibility samples. <BR>
  *     </DIV> <BR>
  *   
  *     Particle Samples <BR>
@@ -88,24 +109,44 @@ import java.io.*;
  *       The vertical pixel filter width. <BR>
  *     </DIV> <BR>
  *   
- *     Red Threshold <BR>
+ *     Threshold <BR>
  *     <DIV style="margin-left: 40px;">
- *       The red contrast threshold. <BR>
- *     </DIV> <BR>
- *   
- *     Green Threshold <BR>
- *     <DIV style="margin-left: 40px;">
- *       The green contrast threshold. <BR>
- *     </DIV> <BR>
- *   
- *     Blue Threshold <BR>
- *     <DIV style="margin-left: 40px;">
- *       The blue contrast threshold. <BR>
+ *       The contrast threshold. <BR>
  *     </DIV> <BR>
  *   
  *     Coverage Threshold <BR>
  *     <DIV style="margin-left: 40px;">
  *       The alpha coverage threshold. <BR>
+ *     </DIV> <BR>
+ *     
+ *     Render <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       The fields to render. <BR>
+ *     </DIV> <BR>
+ *     
+ *     Field Dominance <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Zeroth Scanline <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       The position of the zeroth scanline. <BR>
+ *     </DIV> <BR>
+ *     
+ *     Field Extension <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Odd Field <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       The custom odd field extension. <BR>
+ *     </DIV> <BR>
+ *     
+ *     Even Field <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       The custom even field extension. <BR>
  *     </DIV> <BR>
  *   </DIV> <BR>
  *   
@@ -188,7 +229,131 @@ import java.io.*;
  *     <DIV style="margin-left: 40px;">
  *       The maximum amount of memory used by the 2d blur operation. <BR>
  *     </DIV> 
- *   </DIV> 
+ *   </DIV>
+ *   
+ *   <I>Render Options Parameters</I> <BR>
+ *   <DIV style="margin-left: 40px;">
+ *     Environment Fog<BR>
+ *     <DIV style="margin-left: 40px;">
+ *       The name of the environment fog node to use. <BR>
+ *     </DIV> 
+ *     
+ *     Apply Fog In Post<BR>
+ *     <DIV style="margin-left: 40px;">
+ *       Whether to apply fog in post. <BR>
+ *     </DIV> 
+ *     
+ *     Post Fog Blur<BR>
+ *     <DIV style="margin-left: 40px;">
+ *       The amount of post fog blur. <BR>
+ *     </DIV>
+ *     
+ *     Ignore Film Gate<BR>
+ *     <DIV style="margin-left: 40px;">
+ *       Whether to ignore film gate. <BR>
+ *     </DIV>
+ *     
+ *     Shadow Linking<BR>
+ *     <DIV style="margin-left: 40px;">
+ *       The shadow linking behavior. <BR>
+ *     </DIV>
+ *     
+ *     Enable Depth Maps<BR>
+ *     <DIV style="margin-left: 40px;">
+ *       Whether to use depth maps. <BR>
+ *     </DIV>
+ *     
+ *     Gamma Correction<BR>
+ *     <DIV style="margin-left: 40px;">
+ *       The amount of gamma correction. <BR>
+ *     </DIV>
+ *     
+ *     Clip Shaded Color<BR>
+ *     <DIV style="margin-left: 40px;">
+ *       Whether to clip shaded color. <BR>
+ *     </DIV>
+ *     
+ *     Jitter Final Color<BR>
+ *     <DIV style="margin-left: 40px;">
+ *       Whether to jitter final color. <BR>
+ *     </DIV>
+ *     
+ *     Premultiply Threshold<BR>
+ *     <DIV style="margin-left: 40px;">
+ *       The amount to premultiply. <BR>
+ *     </DIV>
+ *     
+ *     Use File Cache<BR>
+ *     <DIV style="margin-left: 40px;">
+ *       Whether to optimize instances. <BR>
+ *     </DIV>
+ *     
+ *     Reuse Tessellations<BR>
+ *     <DIV style="margin-left: 40px;">
+ *       Whether to reuse Tessellations. <BR>
+ *     </DIV>
+ *     
+ *     Use Displacement Bounding Box<BR>
+ *     <DIV style="margin-left: 40px;">
+ *       Whether to use displacement bounding box. <BR>
+ *     </DIV>
+ *     
+ *     Recursion Depth<BR>
+ *     <DIV style="margin-left: 40px;">
+ *       The raytracing recursion depth. <BR>
+ *     </DIV>
+ *     
+ *     Leaf Primitives<BR>
+ *     <DIV style="margin-left: 40px;">
+ *       The amount of leaf primitives. <BR>
+ *     </DIV>
+ *     
+ *     Subdivision Power<BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV>
+ *   </DIV>
+ *   
+ *   <I>IPR Options Parameters</I> <BR>
+ *   <DIV style="margin-left: 40px;">
+ *     Render Shading Light and Glow<BR>
+ *     <DIV style="margin-left: 40px;">
+ *       Whether to render shading, lights, and glow. <BR>
+ *     </DIV>
+ *     
+ *     Render Shadow Maps<BR>
+ *     <DIV style="margin-left: 40px;">
+ *       Whether to render shadow maps. <BR>
+ *     </DIV>
+ *     
+ *     Render 2d Motion Blur<BR>
+ *     <DIV style="margin-left: 40px;">
+ *       Whether to render 2d motion blur. <BR>
+ *     </DIV>
+ *   </DIV>
+ *   
+ *   <I>Paint Effects Parameters</I> <BR>
+ *   <DIV style="margin-left: 40px;">
+ *     Enable Stroke Rendering<BR>
+ *     <DIV style="margin-left: 40px;">
+ *       Whether to enable stroke rendering. <BR>
+ *     </DIV>
+ *     
+ *     Oversample<BR>
+ *     <DIV style="margin-left: 40px;">
+ *       Whether to oversample. <BR>
+ *     </DIV>
+ *     
+ *     Oversample Post Filter<BR>
+ *     <DIV style="margin-left: 40px;">
+ *       Whether to oversample post filter. <BR>
+ *     </DIV>
+ *     
+ *     Only Render Strokes<BR>
+ *     <DIV style="margin-left: 40px;">
+ *       Whether to render strokes only. <BR>
+ *     </DIV>
+ *   </DIV>
  * </DIV> <P> 
  * 
  * See the Maya documentation for more details about the meaning of these Render Globals 
@@ -196,9 +361,8 @@ import java.io.*;
  */
 public
 class MayaRenderGlobalsAction
-extends CommonActionUtils
+  extends CommonActionUtils
 {  
-
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
@@ -207,7 +371,7 @@ extends CommonActionUtils
   MayaRenderGlobalsAction() 
   {
     super("MayaRenderGlobals", new VersionID("2.4.3"), "Temerity",
-    "Creates a MEL script which sets the render globals of a Maya scene.");
+          "Creates a MEL script which sets the render globals of a Maya scene.");
 
     /* image resolution */ 
     {
@@ -215,10 +379,10 @@ extends CommonActionUtils
         ActionParam param = 
           new LinkActionParam
           (aResolutionSource,
-            "The source node which contains MEL code responsible for setting the render " + 
-            "resolution.  If specified, the ImageWidth and ImageHeight parameters will be " + 
-            "ignored.", 
-            null);
+           "The source node which contains MEL code responsible for setting the render " + 
+           "resolution.  If specified, the ImageWidth and ImageHeight parameters will be " + 
+           "ignored.", 
+           null);
         addSingleParam(param);
       } 
 
@@ -226,8 +390,8 @@ extends CommonActionUtils
         ActionParam param = 
           new IntegerActionParam
           (aImageWidth,
-            "The horizontal resolution of the output image in pixels.", 
-            640);
+           "The horizontal resolution of the output image in pixels.", 
+           640);
         addSingleParam(param);
       }
 
@@ -235,8 +399,8 @@ extends CommonActionUtils
         ActionParam param = 
           new IntegerActionParam
           (aImageHeight,
-            "The vertical resolution of the output image in pixels.", 
-            480);
+           "The vertical resolution of the output image in pixels.", 
+           480);
         addSingleParam(param);
       }
 
@@ -244,8 +408,8 @@ extends CommonActionUtils
         ActionParam param = 
           new DoubleActionParam
           (aPixelAspectRatio,
-            "Ratio of pixel height to pixel width.", 
-            1.0);
+           "Ratio of pixel height to pixel width.", 
+           1.0);
         addSingleParam(param);
       }
 
@@ -454,6 +618,27 @@ extends CommonActionUtils
       }
     }
 
+    /* additional output channel */ 
+    {
+      {
+        ActionParam param = 
+          new BooleanActionParam
+          (aAlphaMaskChannel,
+           "Whether to render images with alpha mask channel.",
+           true);
+        addSingleParam(param);
+      }
+      
+      {
+        ActionParam param = 
+          new BooleanActionParam
+          (aZDepthChannel,
+           "Whether to render images with z depth channel.",
+           false);
+        addSingleParam(param);
+      }
+    }
+    
     /* render quality */ 
     {
       {
@@ -466,8 +651,8 @@ extends CommonActionUtils
         ActionParam param = 
           new EnumActionParam
           (aEdgeAntiAliasing,
-            "The quality of edge anti-aliasing.", 
-            "Low Quality", choices);
+           "The quality of edge anti-aliasing.", 
+           "Low Quality", choices);
         addSingleParam(param);
       }
 
@@ -475,8 +660,8 @@ extends CommonActionUtils
         ActionParam param = 
           new IntegerActionParam
           (aShadingSamples,
-            "The minimum number of shading samples.", 
-            1);
+           "The minimum number of shading samples.", 
+           1);
         addSingleParam(param);
       }
 
@@ -484,17 +669,35 @@ extends CommonActionUtils
         ActionParam param = 
           new IntegerActionParam
           (aMaxShadingSamples,
-            "The maximum number of shading samples.", 
-            1);
+           "The maximum number of shading samples.", 
+           1);
         addSingleParam(param);
       }
 
       {
         ActionParam param = 
           new IntegerActionParam
+          (a3dBlurVisibility,
+           "The minimum number visibility samples.", 
+           1);
+        addSingleParam(param);
+      }
+      
+      {
+        ActionParam param = 
+          new IntegerActionParam
+          (aMax3dBlurVisibility,
+           "The maximum number visibility samples.", 
+           4);
+        addSingleParam(param);
+      }
+      
+      {
+        ActionParam param = 
+          new IntegerActionParam
           (aParticleSamples,
-            "The number of particle shading samples.", 
-            1);
+           "The number of particle shading samples.", 
+           1);
         addSingleParam(param);
       }
 
@@ -502,8 +705,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aUseMultiPixelFiltering,
-            "Whether to enable multi-pixel filtering.",
-            false);
+           "Whether to enable multi-pixel filtering.",
+           false);
         addSingleParam(param);
       }
 
@@ -518,8 +721,8 @@ extends CommonActionUtils
         ActionParam param = 
           new EnumActionParam
           (aPixelFilterType,
-            "The type of filter used to integrate pixels.", 
-            "Triangle Filter", choices);
+           "The type of filter used to integrate pixels.", 
+           "Triangle Filter", choices);
         addSingleParam(param);
       }
 
@@ -527,8 +730,8 @@ extends CommonActionUtils
         ActionParam param = 
           new DoubleActionParam
           (aPixelFilterWidthX,
-            "The horizontal pixel filter width.", 
-            2.200);
+           "The horizontal pixel filter width.", 
+           2.200);
         addSingleParam(param);
       }
 
@@ -536,35 +739,17 @@ extends CommonActionUtils
         ActionParam param = 
           new DoubleActionParam
           (aPixelFilterWidthY,
-            "The vertical pixel filter width.", 
-            2.200);
+           "The vertical pixel filter width.", 
+           2.200);
         addSingleParam(param);
       }
 
       {
         ActionParam param = 
-          new DoubleActionParam
-          (aRedThreshold,
-            "The red contrast threshold.", 
-            0.400);
-        addSingleParam(param);
-      }
-
-      {
-        ActionParam param = 
-          new DoubleActionParam
-          (aGreenThreshold,
-            "The green contrast threshold.", 
-            0.300);
-        addSingleParam(param);
-      }
-
-      {
-        ActionParam param = 
-          new DoubleActionParam
-          (aBlueThreshold,
-            "The blue contrast threshold.", 
-            0.600);
+          new Tuple3dActionParam
+          (aThreshold,
+           "The contrast threshold.", 
+           new Tuple3d(0.400, 0.300, 0.600));
         addSingleParam(param);
       }
 
@@ -572,8 +757,8 @@ extends CommonActionUtils
         ActionParam param = 
           new DoubleActionParam
           (aCoverageThreshold,
-            "The alpha coverage threshold.", 
-            0.125);
+           "The alpha coverage threshold.", 
+           0.125);
         addSingleParam(param);
       }
 
@@ -583,6 +768,7 @@ extends CommonActionUtils
         choices.add("Intermediate Quality");
         choices.add("Production Quality");
         choices.add("Contrast Sensitive Production");
+        choices.add("3D Motion Blur Production");
 
         addPreset(aQuality, choices);
 
@@ -598,10 +784,8 @@ extends CommonActionUtils
           values.put(aPixelFilterWidthX,      2.200);	
           values.put(aPixelFilterWidthY,      2.200);
 
-          values.put(aRedThreshold,   0.400); 
-          values.put(aGreenThreshold, 0.300);     
-          values.put(aBlueThreshold,  0.600);    
-
+          values.put(aThreshold, new Tuple3d(0.400, 0.300, 0.600));
+  
           addPresetValues(aQuality, "Preview Quality", values);
         }
 
@@ -615,11 +799,9 @@ extends CommonActionUtils
           values.put(aUseMultiPixelFiltering, false);
           values.put(aPixelFilterType,        "Triangle Filter");	
           values.put(aPixelFilterWidthX,      2.200);	
-          values.put(aPixelFilterWidthY,      2.200);
-
-          values.put(aRedThreshold,   0.400); 
-          values.put(aGreenThreshold, 0.300);     
-          values.put(aBlueThreshold,  0.600);    
+          values.put(aPixelFilterWidthY,      2.200); 
+          
+          values.put(aThreshold, new Tuple3d(0.400, 0.300, 0.600));
 
           addPresetValues(aQuality, "Intermediate Quality", values);
         }
@@ -635,10 +817,8 @@ extends CommonActionUtils
           values.put(aPixelFilterType,        "Triangle Filter");	
           values.put(aPixelFilterWidthX,      2.200);	
           values.put(aPixelFilterWidthY,      2.200);
-
-          values.put(aRedThreshold,   0.400); 
-          values.put(aGreenThreshold, 0.300);     
-          values.put(aBlueThreshold,  0.600);    
+          
+          values.put(aThreshold, new Tuple3d(0.400, 0.300, 0.600));
 
           addPresetValues(aQuality, "Production Quality", values);
         }
@@ -654,12 +834,27 @@ extends CommonActionUtils
           values.put(aPixelFilterType,        "Triangle Filter");	
           values.put(aPixelFilterWidthX,      2.200);	
           values.put(aPixelFilterWidthY,      2.200);
-
-          values.put(aRedThreshold,   0.200); 
-          values.put(aGreenThreshold, 0.150);     
-          values.put(aBlueThreshold,  0.300);    
+          
+          values.put(aThreshold, new Tuple3d(0.200, 0.150, 0.300));
 
           addPresetValues(aQuality, "Contrast Sensitive Production", values);
+        }
+        
+        {
+          TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
+          values.put(aEdgeAntiAliasing,  "Highest Quality");
+          values.put(aShadingSamples,    3);
+          values.put(aMaxShadingSamples, 8);
+          values.put(aParticleSamples,   1);
+
+          values.put(aUseMultiPixelFiltering, true);
+          values.put(aPixelFilterType,        "Triangle Filter");       
+          values.put(aPixelFilterWidthX,      2.200);   
+          values.put(aPixelFilterWidthY,      2.200);
+          
+          values.put(aThreshold, new Tuple3d(0.400, 0.300, 0.600));
+
+          addPresetValues(aQuality, "3D Motion Blur Production", values);
         }
       }
     }
@@ -677,8 +872,8 @@ extends CommonActionUtils
         ActionParam param = 
           new EnumActionParam
           (aRender,
-            "The fields to render.", 
-            "Frames", choices);
+           "The fields to render.", 
+           "Frames", choices);
         addSingleParam(param);
       }
       {
@@ -689,8 +884,8 @@ extends CommonActionUtils
         ActionParam param = 
           new EnumActionParam
           (aFieldDominance,
-            "The fields dominance.", 
-            "Odd Field (NTSC)", choices);
+           "The fields dominance.", 
+           "Odd Field (NTSC)", choices);
         addSingleParam(param);
       }
       {
@@ -701,8 +896,8 @@ extends CommonActionUtils
         ActionParam param = 
           new EnumActionParam
           (aZerothScanline,
-            "The zeroth scanline.", 
-            "At Top", choices);
+           "The zeroth scanline.", 
+           "At Top", choices);
         addSingleParam(param);
       }
       {
@@ -714,8 +909,8 @@ extends CommonActionUtils
         ActionParam param = 
           new EnumActionParam
           (aFieldExtension,
-            "The field extension.", 
-            "No Field Extension", choices);
+           "The field extension.", 
+           "No Field Extension", choices);
         addSingleParam(param);
       }
 
@@ -723,8 +918,8 @@ extends CommonActionUtils
         ActionParam param = 
           new StringActionParam
           (aOddField,
-            "The custom odd field extension.", 
-            null);
+           "The custom odd field extension.", 
+           null);
         addSingleParam(param);
       }
 
@@ -732,8 +927,8 @@ extends CommonActionUtils
         ActionParam param = 
           new StringActionParam
           (aEvenField,
-            "The custom even field extension.", 
-            null);
+           "The custom even field extension.", 
+           null);
         addSingleParam(param);
       }
     }		
@@ -744,8 +939,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aUseRaytracing,
-            "Whether to enable raytracing.",
-            false);
+           "Whether to enable raytracing.",
+           false);
         addSingleParam(param);
       }
 
@@ -753,8 +948,8 @@ extends CommonActionUtils
         ActionParam param = 
           new IntegerActionParam
           (aReflections,
-            "The reflection ray depth.", 
-            1);
+           "The reflection ray depth.", 
+           1);
         addSingleParam(param);
       }
 
@@ -762,8 +957,8 @@ extends CommonActionUtils
         ActionParam param = 
           new IntegerActionParam
           (aRefractions,
-            "The refraction ray depth.", 
-            6);
+           "The refraction ray depth.", 
+           6);
         addSingleParam(param);
       }
 
@@ -771,8 +966,8 @@ extends CommonActionUtils
         ActionParam param = 
           new IntegerActionParam
           (aShadows,
-            "The shadow ray depth.", 
-            2);
+           "The shadow ray depth.", 
+           2);
         addSingleParam(param);
       }
 
@@ -780,8 +975,8 @@ extends CommonActionUtils
         ActionParam param = 
           new DoubleActionParam
           (aBias,
-            "Distance a shadow ray travels before testing for intersections.", 
-            0.0);
+           "Distance a shadow ray travels before testing for intersections.", 
+           0.0);
         addSingleParam(param);
       }
     }
@@ -792,8 +987,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aUseMotionBlur,
-            "Whether to enable motion blur.",
-            false);
+           "Whether to enable motion blur.",
+           false);
         addSingleParam(param);
       }
 
@@ -805,8 +1000,8 @@ extends CommonActionUtils
         ActionParam param = 
           new EnumActionParam
           (aMotionBlurType,
-            "The motion blur technique.", 
-            "2D", quality);
+           "The motion blur technique.", 
+           "2D", quality);
         addSingleParam(param);
       }
 
@@ -814,8 +1009,8 @@ extends CommonActionUtils
         ActionParam param = 
           new DoubleActionParam
           (aBlurByFrame,
-            "The amount moving objects are blurred.", 
-            1.0);
+           "The amount moving objects are blurred.", 
+           1.0);
         addSingleParam(param);
       }
 
@@ -823,8 +1018,8 @@ extends CommonActionUtils
         ActionParam param = 
           new DoubleActionParam
           (aBlurLength,
-            "Scales the amount that moving objects are blurred.", 
-            1.0);
+           "Scales the amount that moving objects are blurred.", 
+           1.0);
         addSingleParam(param);
       }
 
@@ -832,8 +1027,8 @@ extends CommonActionUtils
         ActionParam param = 
           new DoubleActionParam
           (aBlurSharpness,
-            "The sharpness of motion blurred objects.", 
-            1.0);
+           "The sharpness of motion blurred objects.", 
+           1.0);
         addSingleParam(param);
       }
 
@@ -845,8 +1040,8 @@ extends CommonActionUtils
         ActionParam param = 
           new EnumActionParam
           (aSmooth,
-            "Anti-aliasing hack.", 
-            "Alpha", quality);
+           "Anti-aliasing hack.", 
+           "Alpha", quality);
         addSingleParam(param);
       }
 
@@ -854,8 +1049,8 @@ extends CommonActionUtils
         ActionParam param = 
           new IntegerActionParam
           (aSmoothValue,
-            "The amount Maya blurs motion blur edges.", 
-            2);
+           "The amount Maya blurs motion blur edges.", 
+           2);
         addSingleParam(param);
       }
 
@@ -872,8 +1067,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aUse2dBlurMemoryLimit,
-            "Whether to limit 2D blur memory.",
-            false);
+           "Whether to limit 2D blur memory.",
+           false);
         addSingleParam(param);
       }
 
@@ -881,8 +1076,8 @@ extends CommonActionUtils
         ActionParam param = 
           new DoubleActionParam
           (a2dBlurMemoryLimit,
-            "The maximum amount of memory used by the 2d blur operation.", 
-            200.0);
+           "The maximum amount of memory used by the 2d blur operation.", 
+           200.0);
         addSingleParam(param);
       }
     }
@@ -894,8 +1089,8 @@ extends CommonActionUtils
         ActionParam param = 
           new StringActionParam
           (aEnvironmentFog,
-            "The environment fog node.", 
-            null);
+           "The environment fog node.", 
+           null);
         addSingleParam(param);
       }
 
@@ -903,8 +1098,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aApplyFogInPost,
-            "Whether to apply fog in post.",
-            false);
+           "Whether to apply fog in post.",
+           false);
         addSingleParam(param);
       }
 
@@ -912,8 +1107,8 @@ extends CommonActionUtils
         ActionParam param = 
           new IntegerActionParam
           (aPostFogBlur,
-            "The amount of post fog blur.", 
-            1);
+           "The amount of post fog blur.", 
+           1);
         addSingleParam(param);
       }
 
@@ -922,8 +1117,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aIgnoreFilmGate,
-            "Whether to ignore film gate.",
-            true);
+           "Whether to ignore film gate.",
+           true);
         addSingleParam(param);
       }
 
@@ -937,8 +1132,8 @@ extends CommonActionUtils
         ActionParam param = 
           new EnumActionParam
           (aShadowLinking,
-            "The shadow linking behavior.", 
-            "Shadows Obey Light Linking", choices);
+           "The shadow linking behavior.", 
+           "Shadows Obey Light Linking", choices);
         addSingleParam(param);
       }
 
@@ -946,8 +1141,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aEnableDepthMaps,
-            "Whether to use depth maps.",
-            true);
+           "Whether to use depth maps.",
+           true);
         addSingleParam(param);
       }
 
@@ -956,8 +1151,8 @@ extends CommonActionUtils
         ActionParam param = 
           new DoubleActionParam
           (aGammaCorrection,
-            "The amount gamma correction.", 
-            1.0);
+           "The amount gamma correction.", 
+           1.0);
         addSingleParam(param);
       }
 
@@ -965,8 +1160,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aClipFinalShadedColor,
-            "Whether to clip final shaded color.",
-            true);
+           "Whether to clip final shaded color.",
+           true);
         addSingleParam(param);
       }
 
@@ -974,16 +1169,16 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aJitterFinalColor,
-            "Whether to jitter final color.",
-            true);
+           "Whether to jitter final color.",
+           true);
         addSingleParam(param);
       }
       {
         ActionParam param = 
           new BooleanActionParam
           (aPremultiply,
-            "Whether to premultiply.",
-            true);
+           "Whether to premultiply.",
+           true);
         addSingleParam(param);
       }
       {
@@ -991,8 +1186,8 @@ extends CommonActionUtils
         ActionParam param = 
           new DoubleActionParam
           (aPremultiplyThreshold,
-            "The amount to premultiply.",
-            0.0);
+           "The amount to premultiply.",
+           0.0);
         addSingleParam(param);
       }
     }
@@ -1004,8 +1199,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aUseFileCache,
-            "Whether to use file cache.",
-            true);
+           "Whether to use file cache.",
+           true);
         addSingleParam(param);
       }
 
@@ -1013,8 +1208,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aOptimizeInstances,
-            "Whether to optimize instances.",
-            true);
+           "Whether to optimize instances.",
+           true);
         addSingleParam(param);
       }
 
@@ -1022,8 +1217,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aReuseTessellations,
-            "Whether to reuse tessellations.",
-            true);
+           "Whether to reuse tessellations.",
+           true);
         addSingleParam(param);
       }
 
@@ -1031,8 +1226,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aUseDisplacementBoundingBox,
-            "Whether to use displacement bounding box.",
-            true);
+           "Whether to use displacement bounding box.",
+           true);
         addSingleParam(param);
       }
 
@@ -1042,8 +1237,8 @@ extends CommonActionUtils
         ActionParam param = 
           new IntegerActionParam
           (aRecursionDepth,
-            "The ray tracing recursion depth.", 
-            2);
+           "The ray tracing recursion depth.", 
+           2);
         addSingleParam(param);
       }
 
@@ -1052,8 +1247,8 @@ extends CommonActionUtils
         ActionParam param = 
           new IntegerActionParam
           (aLeafPrimitives,
-            "The amount of leaf primitives.", 
-            200);
+           "The amount of leaf primitives.", 
+           200);
         addSingleParam(param);
       }
 
@@ -1062,8 +1257,8 @@ extends CommonActionUtils
         ActionParam param = 
           new DoubleActionParam
           (aSubdivisionPower,
-            "The subdivision power.", 
-            0.25);
+           "The subdivision power.", 
+           0.25);
         addSingleParam(param);
       }
 
@@ -1075,8 +1270,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aRenderShadingLightAndGlow,
-            "Whether to render shading, lighting, and glow.",
-            true);
+           "Whether to render shading, lighting, and glow.",
+           true);
         addSingleParam(param);
       }
 
@@ -1084,8 +1279,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aRenderShadowMaps,
-            "Whether to render shadow maps.",
-            true);
+           "Whether to render shadow maps.",
+           true);
         addSingleParam(param);
       }
 
@@ -1093,8 +1288,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aRender2dMotionBlur,
-            "Whether to render 2D motion blur.",
-            true);
+           "Whether to render 2D motion blur.",
+           true);
         addSingleParam(param);
       }
     }
@@ -1105,8 +1300,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aEnableStrokeRendering,
-            "Whether to enable stroke rendering.",
-            true);
+           "Whether to enable stroke rendering.",
+           true);
         addSingleParam(param);
       }
 
@@ -1114,8 +1309,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aOversample,
-            "Whether to oversample.",
-            false);
+           "Whether to oversample.",
+           false);
         addSingleParam(param);
       }
 
@@ -1124,8 +1319,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aOversamplePostFilter,
-            "Whether to use oversample post filter.",
-            false);
+           "Whether to use oversample post filter.",
+           false);
         addSingleParam(param);
       }
 
@@ -1133,8 +1328,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aOnlyRenderStrokes,
-            "Whether to render only strokes.",
-            false);
+           "Whether to render only strokes.",
+           false);
         addSingleParam(param);
       }
     }
@@ -1147,7 +1342,10 @@ extends CommonActionUtils
       layout.addEntry(aImageWidth);
       layout.addEntry(aImageHeight);
       layout.addEntry(aPixelAspectRatio);
-
+      layout.addSeparator();
+      layout.addEntry(aAlphaMaskChannel);
+      layout.addEntry(aZDepthChannel);
+      
       {
         LayoutGroup aaq = new LayoutGroup
         ("AntiAliasingQuality", "Overall anti-aliasing quality controls.", false);
@@ -1159,7 +1357,8 @@ extends CommonActionUtils
           ("NumberOfSamples", "Sampling controls.", true);
           nos.addEntry(aShadingSamples);
           nos.addEntry(aMaxShadingSamples);
-          nos.addSeparator(); 
+          nos.addEntry(a3dBlurVisibility);
+          nos.addEntry(aMax3dBlurVisibility);
           nos.addEntry(aParticleSamples);
 
           aaq.addSubGroup(nos);
@@ -1180,10 +1379,7 @@ extends CommonActionUtils
         { 
           LayoutGroup ct = new LayoutGroup
           ("ContrastThreshold", "Controls of oversampling due to sample contrast.", true);
-          ct.addEntry(aRedThreshold);
-          ct.addEntry(aGreenThreshold);
-          ct.addEntry(aBlueThreshold);
-          ct.addSeparator(); 
+          ct.addEntry(aThreshold);
           ct.addEntry(aCoverageThreshold);
 
           aaq.addSubGroup(ct);
@@ -1393,8 +1589,8 @@ extends CommonActionUtils
         FileSeq fseq = agenda.getPrimarySource(sname);
         if(fseq == null) 
           throw new PipelineException
-          ("Somehow the " + aResolutionSource + " (" + sname + ") was not one of the " + 
-          "source nodes!");
+            ("Somehow the " + aResolutionSource + " (" + sname + ") was not one of the " + 
+             "source nodes!");
 
         NodeID snodeID = new NodeID(agenda.getNodeID(), sname);
         resSourcePath = new Path(PackageInfo.sProdPath, 
@@ -1411,102 +1607,130 @@ extends CommonActionUtils
         Path npath = new Path(agenda.getNodeID().getName());
         Path wpath = new Path(npath.getParentPath(), agenda.getPrimaryTarget().getPath(0)); 
         out.write("print(\"Applying Render Globals: " + 
-          "\" + `getenv \"WORKING\"` + \"" + wpath + "\\n\");\n\n");
+                  "\" + `getenv \"WORKING\"` + \"" + wpath + "\\n\");\n\n");
       }
 
       /* image resolution */ 
       if(resSourcePath != null) {
         out.write("// IMAGE RESOLUTION\n" + 
-          "source \"" + resSourcePath + "\";\n\n");
+                  "source \"" + resSourcePath + "\";\n\n");
       }
       else {
         int width    = getSingleIntegerParamValue(aImageWidth,  new Range(1, null)); 
         int height   = getSingleIntegerParamValue(aImageHeight, new Range(1, null)); 
-        double ratio = getSingleDoubleParamValue(aPixelAspectRatio, new Range(0.0, null, false));
+        double ratio = getSingleDoubleParamValue(aPixelAspectRatio,
+                                                 new Range(0.0, null, false));
+        
         double deviceRatio = (((double) width) / ((double) height)) * ratio;
 
         out.write
-        ("// IMAGE RESOLUTION\n" + 
-          "setAttr \"defaultResolution.aspectLock\" 0;\n" + 
-          "setAttr \"defaultResolution.width\" " + width + ";\n" + 
-          "setAttr \"defaultResolution.height\" " + height + ";\n" + 
-          "setAttr \"defaultResolution.deviceAspectRatio\" " + deviceRatio + ";\n\n");
+          ("// IMAGE RESOLUTION\n" + 
+           "setAttr \"defaultResolution.aspectLock\" 0;\n" + 
+           "setAttr \"defaultResolution.width\" " + width + ";\n" + 
+           "setAttr \"defaultResolution.height\" " + height + ";\n" + 
+           "setAttr \"defaultResolution.deviceAspectRatio\" " + deviceRatio + ";\n\n");
       }
 
+      /* alpha & depth channels */
+      {
+        boolean alpha = getSingleBooleanParamValue(aAlphaMaskChannel);
+        boolean depth = getSingleBooleanParamValue(aZDepthChannel);
+        
+        out.write
+        ("// ALPHA & DEPTH CHANNEL OVERRIDE\n" +
+         "string $cameras[] = `ls -type \"camera\"`;\n" +
+         "string $cam;\n" +
+         "for ($cam in $cameras) {\n" +
+         "\tsetAttr ($cam + \".mask\") " + alpha + ";\n" +
+         "\tsetAttr ($cam + \".depth\") " + depth + ";\n" +
+         "}\n\n");
+      }
+      
       /* render quality */ 
       {
         int edgeAliasing = 3 - getSingleEnumParamIndex(aEdgeAntiAliasing);
 
         out.write
-        ("// RENDER QUALITY\n" + 
-          "setAttr \"defaultRenderQuality.edgeAntiAliasing\" " + edgeAliasing + ";\n\n");
+          ("// RENDER QUALITY\n" + 
+           "setAttr \"defaultRenderQuality.edgeAntiAliasing\" " + edgeAliasing + ";\n\n");
       }
 
       /* number of samples */ 
       { 
         Range range = new Range(1, null);
+        Range vsrange = new Range(1, 32);
+        Range mvsrange = new Range(2, 32);
+        
         int samples  = getSingleIntegerParamValue(aShadingSamples, range); 
-        int msamples = getSingleIntegerParamValue(aMaxShadingSamples, range); 
+        int msamples = getSingleIntegerParamValue(aMaxShadingSamples, range);
+        int visibilitySamples = getSingleIntegerParamValue(a3dBlurVisibility, vsrange);
+        int maxVisibilitySamples = getSingleIntegerParamValue(aMax3dBlurVisibility, mvsrange);
         int psamples = getSingleIntegerParamValue(aParticleSamples, range); 
 
         out.write
-        ("// NUMBER OF SAMPLES\n" + 
-          "setAttr \"defaultRenderQuality.shadingSamples\" " + samples + ";\n" + 
-          "setAttr \"defaultRenderQuality.maxShadingSamples\" " + msamples + ";\n" + 
-          "setAttr \"defaultRenderQuality.particleSamples\" " + psamples + ";\n\n");
+          ("// NUMBER OF SAMPLES\n" + 
+           "setAttr \"defaultRenderQuality.shadingSamples\" " + samples + ";\n" + 
+           "setAttr \"defaultRenderQuality.maxShadingSamples\" " + msamples + ";\n" + 
+           "setAttr \"defaultRenderQuality.visibilitySamples\" " + visibilitySamples + ";\n" + 
+           "setAttr \"defaultRenderQuality.maxVisibilitySamples\" " + maxVisibilitySamples + ";\n" + 
+           "setAttr \"defaultRenderQuality.particleSamples\" " + psamples + ";\n\n");
       }
 
       /* pixel filtering */ 
       {
         boolean useFilter = getSingleBooleanParamValue(aUseMultiPixelFiltering); 
-        int filterType = -1;
         
+        int filterType = -1;
         switch(getSingleEnumParamIndex(aPixelFilterType)) {
         case 0:
           filterType = 0;	// Box
           break;
+          
         case 1:
           filterType = 2;	// Triagle
           break;
+          
         case 2:
           filterType = 4;	// Gaussian
           break;
+          
         case 3:
           filterType = 5;	// Quadratic B-Spline
           break;
+          
         case 4:
-          filterType = 1000;	// Quadratic B-Spline
+          filterType = 1000;	// Filter
           break;
+          
         default:
           throw new PipelineException
-          ("The PixelFilterType was illegal!"); 
+            ("The PixelFilterType was illegal!"); 
         }
 
         double filterX = getSingleDoubleParamValue(aPixelFilterWidthX);
         double filterY = getSingleDoubleParamValue(aPixelFilterWidthY);
 
         out.write
-        ("// PIXEL FILTERING\n" +
-          "setAttr \"defaultRenderQuality.useMultiPixelFilter\" " + useFilter + ";\n" +
-          "setAttr \"defaultRenderQuality.pixelFilterType\" " + filterType + ";\n" + 
-          "setAttr \"defaultRenderQuality.pixelFilterWidthX\" " + filterX + ";\n" + 
-          "setAttr \"defaultRenderQuality.pixelFilterWidthY\" " + filterY + ";\n\n");
+          ("// PIXEL FILTERING\n" +
+           "setAttr \"defaultRenderQuality.useMultiPixelFilter\" " + useFilter + ";\n" +
+           "setAttr \"defaultRenderQuality.pixelFilterType\" " + filterType + ";\n" + 
+           "setAttr \"defaultRenderQuality.pixelFilterWidthX\" " + filterX + ";\n" + 
+           "setAttr \"defaultRenderQuality.pixelFilterWidthY\" " + filterY + ";\n\n");
       }
 
       /* contrast threshold */ 
       {
-        Range range = new Range(0.0, null, false); 
-        double red      = getSingleDoubleParamValue(aRedThreshold, range); 
-        double green    = getSingleDoubleParamValue(aGreenThreshold, range); 
-        double blue     = getSingleDoubleParamValue(aBlueThreshold, range); 
+        Range range3d = new Range(new Tuple3d(0.0, 0.0, 0.0), null, false);
+        Range range = new Range(0.0, null, false);
+        Tuple3d threshold = getSingleTuple3dParamValue(aThreshold, range3d, false);
         double coverage = getSingleDoubleParamValue(aCoverageThreshold, range); 
 
         out.write
-        ("// CONTRAST THRESHOLD\n" +
-          "setAttr \"defaultRenderQuality.redThreshold\" " + red + ";\n" + 
-          "setAttr \"defaultRenderQuality.greenThreshold\" " + green + ";\n" + 
-          "setAttr \"defaultRenderQuality.blueThreshold\" " + blue + ";\n" +
-          "setAttr \"defaultRenderQuality.coverageThreshold\" " + coverage + ";\n\n");
+          ("// CONTRAST THRESHOLD\n" +
+           "setAttr \"defaultRenderQuality.redThreshold\" " + threshold.x() + ";\n" + 
+           "setAttr \"defaultRenderQuality.greenThreshold\" " + threshold.y() + ";\n" + 
+           "setAttr \"defaultRenderQuality.blueThreshold\" " + threshold.z() + ";\n" +
+           "setAttr \"defaultRenderQuality.coverageThreshold\" " + coverage + ";\n\n");
       }
 
       /* field options */
@@ -1518,18 +1742,23 @@ extends CommonActionUtils
         case 0:
           fields = 0;
           break;
+          
         case 1:
           fields = 3;
           break;
+          
         case 2:
           fields = 4;
           break;
+          
         case 3:
           fields = 1;
           break;
+          
         case 4:
           fields = 2;
           break;
+          
         default:
           throw new PipelineException("Invalid Field Option!");
         }
@@ -1560,15 +1789,18 @@ extends CommonActionUtils
           case 0:
             fieldExtControl = 1;
             break;
+            
           case 1:
             fieldExtControl = 0;
             break;
+            
           case 2:
             fieldExtControl = 2;
             break;
+            
           default:
             throw new PipelineException
-            ("The Field Extension selection was illegal!"); 
+              ("The Field Extension selection was illegal!"); 
           }
 
           out.write("setAttr \"defaultRenderGlobals.fieldExtControl\" " + fieldExtControl + ";\n");
@@ -1579,11 +1811,11 @@ extends CommonActionUtils
 
             if (ofield != null)
               out.write("setAttr -type \"string\" \"defaultRenderGlobals.oddFieldExt\" " +
-                ofield.charAt(0) + ";\n");
+                        ofield.charAt(0) + ";\n");
 
             if (efield != null )
               out.write("setAttr -type \"string\" \"defaultRenderGlobals.evenFieldExt\" " +
-                efield.charAt(0) + ";\n");
+                        efield.charAt(0) + ";\n");
           }
         }
 
@@ -1600,22 +1832,24 @@ extends CommonActionUtils
         double bias = getSingleDoubleParamValue(aBias, new Range(0.0, null));
 
         out.write
-        ("// RAYTRACING QUALITY \n" +
-          "setAttr \"defaultRenderQuality.enableRaytracing\" " + useRay + ";\n" +
-          "setAttr \"defaultRenderQuality.reflections\" " + reflect + ";\n" + 
-          "setAttr \"defaultRenderQuality.refractions\" " + refract + ";\n" +
-          "setAttr \"defaultRenderQuality.shadows\" " + shadow + ";\n" +
-          "setAttr \"defaultRenderQuality.rayTraceBias\" " + bias + ";\n\n");
+          ("// RAYTRACING QUALITY \n" +
+            "setAttr \"defaultRenderQuality.enableRaytracing\" " + useRay + ";\n" +
+            "setAttr \"defaultRenderQuality.reflections\" " + reflect + ";\n" + 
+            "setAttr \"defaultRenderQuality.refractions\" " + refract + ";\n" +
+            "setAttr \"defaultRenderQuality.shadows\" " + shadow + ";\n" +
+            "setAttr \"defaultRenderQuality.rayTraceBias\" " + bias + ";\n\n");
       }
 
       /* motion blur */ 
       { 
-        Range range = new Range(0.0, null);
         boolean useBlur = getSingleBooleanParamValue(aUseMotionBlur); 
         int blurType    = getSingleEnumParamIndex(aMotionBlurType); 
+        
+        Range range = new Range(0.0, null);
         double byFrame   = getSingleDoubleParamValue(aBlurByFrame, range); 
         double length    = getSingleDoubleParamValue(aBlurLength, range); 
         double sharpness = getSingleDoubleParamValue(aBlurSharpness, range); 
+        
         int smooth          = getSingleEnumParamIndex(aSmooth); 
         int smoothValue     = getSingleIntegerParamValue(aSmoothValue, new Range(0, null));
         boolean keepVectors = getSingleBooleanParamValue(aKeepMotionVectors); 
@@ -1623,17 +1857,17 @@ extends CommonActionUtils
         double memLimit     = getSingleDoubleParamValue(a2dBlurMemoryLimit, range);
 
         out.write
-        ("// MOTION BLUR \n" +
-          "setAttr \"defaultRenderGlobals.motionBlur\" " + useBlur + ";\n" +
-          "setAttr \"defaultRenderGlobals.motionBlurType\" " + blurType + ";\n" + 
-          "setAttr \"defaultRenderGlobals.motionBlurByFrame\" " + byFrame + ";\n" +
-          "setAttr \"defaultRenderGlobals.blurLength\" " + length + ";\n" +
-          "setAttr \"defaultRenderGlobals.blurSharpness\" " + sharpness + ";\n" +
-          "setAttr \"defaultRenderGlobals.smoothColor\" " + smooth + ";\n" +
-          "setAttr \"defaultRenderGlobals.smoothValue\" " + smoothValue + ";\n" +
-          "setAttr \"defaultRenderGlobals.keepMotionVector\" " + keepVectors + ";\n" +
-          "setAttr \"defaultRenderGlobals.useBlur2DMemoryCap\" " + useMemLimit + ";\n" +
-          "setAttr \"defaultRenderGlobals.blur2DMemoryCap\" " + memLimit + ";\n\n");
+          ("// MOTION BLUR \n" +
+           "setAttr \"defaultRenderGlobals.motionBlur\" " + useBlur + ";\n" +
+           "setAttr \"defaultRenderGlobals.motionBlurType\" " + blurType + ";\n" + 
+           "setAttr \"defaultRenderGlobals.motionBlurByFrame\" " + byFrame + ";\n" +
+           "setAttr \"defaultRenderGlobals.blurLength\" " + length + ";\n" +
+           "setAttr \"defaultRenderGlobals.blurSharpness\" " + sharpness + ";\n" +
+           "setAttr \"defaultRenderGlobals.smoothColor\" " + smooth + ";\n" +
+           "setAttr \"defaultRenderGlobals.smoothValue\" " + smoothValue + ";\n" +
+           "setAttr \"defaultRenderGlobals.keepMotionVector\" " + keepVectors + ";\n" +
+           "setAttr \"defaultRenderGlobals.useBlur2DMemoryCap\" " + useMemLimit + ";\n" +
+           "setAttr \"defaultRenderGlobals.blur2DMemoryCap\" " + memLimit + ";\n\n");
       }
 
       /* render options */
@@ -1648,8 +1882,9 @@ extends CommonActionUtils
         double gamma = getSingleDoubleParamValue(aGammaCorrection); 
         boolean clipFinalShadedColor = getSingleBooleanParamValue(aClipFinalShadedColor);
         boolean jitterFinalColor = getSingleBooleanParamValue(aJitterFinalColor);
+        
         Range compRange = new Range(0.0, 1.0);
-        boolean doPreMult = getSingleBooleanParamValue(aPremultiply);
+        boolean composite = getSingleBooleanParamValue(aPremultiply);
         double compositeThreshold = getSingleDoubleParamValue(aPremultiplyThreshold, compRange);
 
         switch (getSingleEnumParamIndex(aShadowLinking)) {
@@ -1667,24 +1902,26 @@ extends CommonActionUtils
         }
 
         out.write
-        ("// RENDER OPTIONS \n" +
-         "setAttr \"defaultRenderGlobals.applyFogInPost\" " + applyFog + ";\n" +
-         "setAttr \"defaultRenderGlobals.postFogBlur\" " + postFogBlur + ";\n" +
-         "setAttr \"defaultRenderGlobals.ignoreFilmGate\" " + ignoreFilmGate + ";\n" +
-         "setAttr \"defaultRenderGlobals.enableDepthMaps\" " + enableDepthMaps + ";\n" +
-         "setAttr \"defaultRenderGlobals.shadowsObeyShadowLinking\" " + shadowsObeyShadowLinking + ";\n" +
-         "setAttr \"defaultRenderGlobals.shadowsObeyLightLinking\" " + shadowsObeyLightLinking + ";\n" +
-         "setAttr \"defaultRenderGlobals.gammaCorrection\" " + gamma + ";\n" +
-         "setAttr \"defaultRenderGlobals.clipFinalShadedColor\" " + clipFinalShadedColor + ";\n" +
-         "setAttr \"defaultRenderGlobals.jitterFinalColor\" " + jitterFinalColor + ";\n");
+          ("// RENDER OPTIONS \n" +
+           "setAttr \"defaultRenderGlobals.applyFogInPost\" " + applyFog + ";\n" +
+           "setAttr \"defaultRenderGlobals.postFogBlur\" " + postFogBlur + ";\n" +
+           "setAttr \"defaultRenderGlobals.ignoreFilmGate\" " + ignoreFilmGate + ";\n" +
+           "setAttr \"defaultRenderGlobals.enableDepthMaps\" " + enableDepthMaps + ";\n" +
+           "setAttr \"defaultRenderGlobals.shadowsObeyShadowLinking\" " + shadowsObeyShadowLinking + ";\n" +
+           "setAttr \"defaultRenderGlobals.shadowsObeyLightLinking\" " + shadowsObeyLightLinking + ";\n" +
+           "setAttr \"defaultRenderGlobals.gammaCorrection\" " + gamma + ";\n" +
+           "setAttr \"defaultRenderGlobals.clipFinalShadedColor\" " + clipFinalShadedColor + ";\n" +
+           "setAttr \"defaultRenderGlobals.composite\" " + composite + ";\n" +
+           "setAttr \"defaultRenderGlobals.jitterFinalColor\" " + jitterFinalColor + ";\n");
 
         if (envFog != null)
-          out.write ("if ((`objExists " + envFog + "`) &&\n" + 
-            "(`objectType " + envFog + "` == \"environmentFog\") &&\n" +
-            "(!`isConnected " + envFog + ".message defaultRenderGlobals.fogGeometry`))\n" +
-            "\tconnectAttr -f " + envFog +".message defaultRenderGlobals.fogGeometry;\n");
+          out.write
+            ("if ((`objExists " + envFog + "`) &&\n" + 
+             "(`objectType " + envFog + "` == \"environmentFog\") &&\n" +
+             "(!`isConnected " + envFog + ".message defaultRenderGlobals.fogGeometry`))\n" +
+             "\tconnectAttr -f " + envFog +".message defaultRenderGlobals.fogGeometry;\n");
 
-        if (doPreMult)
+        if (composite)
           out.write("setAttr \"defaultRenderGlobals.compositeThreshold\" " + compositeThreshold + ";\n");
 
         out.write("\n");
@@ -1722,7 +1959,7 @@ extends CommonActionUtils
         boolean iprRenderMotionBlur = getSingleBooleanParamValue(aRender2dMotionBlur);
 
         out.write
-        ("// MEMORY AND PERFORMANCE OPTIONS \n" +
+        ("// IPR OPTIONS \n" +
           "setAttr \"defaultRenderGlobals.iprRenderShading\" " + iprRenderShading + ";\n" +
           "setAttr \"defaultRenderGlobals.iprRenderMotionBlur\" " + iprRenderMotionBlur + ";\n");
 
@@ -1775,25 +2012,23 @@ extends CommonActionUtils
 
   private static final long serialVersionUID = 6135126172872209184L;
 
-  public static final String aResolutionSource			= "ResolutionSource";
-  public static final String aImageWidth			= "ImageWidth";
-  public static final String aImageHeight			= "ImageHeight";
-  public static final String aPixelAspectRatio			= "PixelAspectRatio";
-  public static final String aImageResolution			= "ImageResolution";
-  public static final String aEdgeAntiAliasing			= "EdgeAntiAliasing";
-  public static final String aShadingSamples			= "ShadingSamples";
-  public static final String aMaxShadingSamples			= "MaxShadingSamples";
-  public static final String aParticleSamples			= "ParticleSamples";
-  public static final String aUseMultiPixelFiltering		= "UseMultiPixelFiltering";
-  public static final String aPixelFilterType			= "PixelFilterType";
-  public static final String aPixelFilterWidthX			= "PixelFilterWidthX";
-  public static final String aPixelFilterWidthY			= "PixelFilterWidthY";
-  public static final String aRedThreshold                      = "RedThreshold";
-  public static final String aGreenThreshold                    = "GreenThreshold";
-  public static final String aBlueThreshold     		= "BlueThreshold";
-  public static final String aCoverageThreshold			= "CoverageThreshold";
-  public static final String aQuality				= "Quality";
-  public static final String aUseRaytracing			= "UseRaytracing";
+  public static final String aResolutionSource                  = "ResolutionSource";
+  public static final String aImageWidth                        = "ImageWidth";
+  public static final String aImageHeight                       = "ImageHeight";
+  public static final String aPixelAspectRatio                  = "PixelAspectRatio";
+  public static final String aImageResolution                   = "ImageResolution";
+  public static final String aEdgeAntiAliasing                  = "EdgeAntiAliasing";
+  public static final String aShadingSamples                    = "ShadingSamples";
+  public static final String aMaxShadingSamples                 = "MaxShadingSamples";
+  public static final String aParticleSamples                   = "ParticleSamples";
+  public static final String aUseMultiPixelFiltering            = "UseMultiPixelFiltering";
+  public static final String aPixelFilterType                   = "PixelFilterType";
+  public static final String aPixelFilterWidthX                 = "PixelFilterWidthX";
+  public static final String aPixelFilterWidthY                 = "PixelFilterWidthY";
+  public static final String aThreshold                         = "Threshold";
+  public static final String aCoverageThreshold                 = "CoverageThreshold";
+  public static final String aQuality                           = "Quality";
+  public static final String aUseRaytracing                     = "UseRaytracing";
   public static final String aReflections                       = "Reflections";
   public static final String aRefractions                       = "Refractions";
   public static final String aShadows                           = "Shadows";
@@ -1805,9 +2040,9 @@ extends CommonActionUtils
   public static final String aBlurSharpness                     = "BlurSharpness";
   public static final String aSmooth                            = "Smooth";
   public static final String aSmoothValue                       = "SmoothValue";
-  public static final String aKeepMotionVectors			= "KeepMotionVectors";
-  public static final String aUse2dBlurMemoryLimit		= "Use2dBlurMemoryLimit";
-  public static final String a2dBlurMemoryLimit			= "2dBlurMemoryLimit";
+  public static final String aKeepMotionVectors                 = "KeepMotionVectors";
+  public static final String aUse2dBlurMemoryLimit              = "Use2DBlurMemoryLimit";
+  public static final String a2dBlurMemoryLimit                 = "2DBlurMemoryLimit";
   public static final String aRender                            = "Render";
   public static final String aFieldDominance                    = "FieldDominance";
   public static final String aZerothScanline                    = "ZerothScanline";
@@ -1821,12 +2056,12 @@ extends CommonActionUtils
   public static final String aShadowLinking                     = "ShadowLinking";
   public static final String aEnableDepthMaps                   = "EnableDepthMaps";
   public static final String aGammaCorrection                   = "GammaCorrection";
-  public static final String aClipFinalShadedColor		= "ClipFinalShadedColor";
-  public static final String aJitterFinalColor			= "JitterFinalColor";
+  public static final String aClipFinalShadedColor              = "ClipFinalShadedColor";
+  public static final String aJitterFinalColor                  = "JitterFinalColor";
   public static final String aPremultiply                       = "Premultiply";
-  public static final String aPremultiplyThreshold		= "PremultiplyThreshold";
+  public static final String aPremultiplyThreshold              = "PremultiplyThreshold";
   public static final String aUseFileCache                      = "UseFileCache";
-  public static final String aOptimizeInstances			= "OptimizeInstances";
+  public static final String aOptimizeInstances                 = "OptimizeInstances";
   public static final String aReuseTessellations                = "ReuseTessellations";
   public static final String aUseDisplacementBoundingBox        = "UseDisplacementBoundingBox";
   public static final String aRecursionDepth                    = "RecursionDepth";
@@ -1837,9 +2072,12 @@ extends CommonActionUtils
   public static final String aRender2dMotionBlur                = "Render2DMotionBlur";
   public static final String aEnableStrokeRendering             = "EnableStrokeRendering";
   public static final String aOversample                        = "Oversample";
-  public static final String aOversamplePostFilter		= "OversamplePostFilter";
-  public static final String aOnlyRenderStrokes			= "OnlyRenderStrokes";
-  //public static final String aReadThisDepthFile		= "ReadThisDepthFile";
-
+  public static final String aOversamplePostFilter              = "OversamplePostFilter";
+  public static final String aOnlyRenderStrokes                 = "OnlyRenderStrokes";
+  public static final String a3dBlurVisibility                  = "3DBlurVisibility";
+  public static final String aMax3dBlurVisibility               = "Max3DBlurVisibility";
+  public static final String aAlphaMaskChannel                  = "AlphaMaskChannel";
+  public static final String aZDepthChannel                     = "ZDepthChannel";
+  
 }
 

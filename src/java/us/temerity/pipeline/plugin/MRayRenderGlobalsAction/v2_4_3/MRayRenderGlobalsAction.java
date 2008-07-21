@@ -1,10 +1,12 @@
-// $Id: MRayRenderGlobalsAction.java,v 1.1 2008/07/15 16:57:55 jim Exp $
+// $Id: MRayRenderGlobalsAction.java,v 1.2 2008/07/21 23:28:06 jim Exp $
 
 package us.temerity.pipeline.plugin.MRayRenderGlobalsAction.v2_4_3;
 
 import us.temerity.pipeline.*; 
-import us.temerity.pipeline.plugin.*; 
+import us.temerity.pipeline.plugin.*;
 import us.temerity.pipeline.math.Range; 
+import us.temerity.pipeline.math.Tuple2d;
+import us.temerity.pipeline.math.Tuple3d;
 
 import java.lang.*;
 import java.util.*;
@@ -44,7 +46,17 @@ import java.io.*;
  *   Pixel Aspect Ratio <BR>
  *   <DIV style="margin-left: 40px;">
  *     Ratio of pixel height to pixel width. <BR>
- *   </DIV> <BR> <BR>
+ *   </DIV> <BR>
+ *   
+ *   Alpha Mask Channel <BR>
+ *   <DIV style="margin-left: 40px;">
+ *     Whether to render images with alpha mask channel. 
+ *   </DIV> <BR>
+ *   
+ *   Z Depth Channel <BR>
+ *   <DIV style="margin-left: 40px;">
+ *     Whether to render images with z depth channel.
+ *   </DIV> <BR>
  *   
  *   <I>Render Quality Parameters</I> <BR>
  *   <DIV style="margin-left: 40px;">
@@ -73,19 +85,9 @@ import java.io.*;
  *       The vertical pixel filter width. <BR>
  *     </DIV> <BR>
  *   
- *     Red Threshold <BR>
+ *     Threshold <BR>
  *     <DIV style="margin-left: 40px;">
- *       The red contrast threshold. <BR>
- *     </DIV> <BR>
- *   
- *     Green Threshold <BR>
- *     <DIV style="margin-left: 40px;">
- *       The green contrast threshold. <BR>
- *     </DIV> <BR>
- *   
- *     Blue Threshold <BR>
- *     <DIV style="margin-left: 40px;">
- *       The blue contrast threshold. <BR>
+ *       The contrast threshold. <BR>
  *     </DIV> <BR>
  *   
  *     Coverage Threshold <BR>
@@ -95,12 +97,22 @@ import java.io.*;
  * 
  *     Sample Lock <BR>
  *     <DIV style="margin-left: 40px;">
- *       ??? <BR>
+ *       Maintain sample patterns between frames to reduce flickering. <BR>
  *     </DIV> <BR>
  *   
  *     Jitter <BR>
  *     <DIV style="margin-left: 40px;">
  *       Whether to enable ray jittering. <BR>
+ *     </DIV> <BR>
+ *     
+ *     Visibility Samples <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       The rapid samples collect. <BR>
+ *     </DIV> <BR>
+ *     
+ *     Shading Quality <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       The rapid samples shading. <BR>
  *     </DIV> <BR>
  *   </DIV> <BR>
  *   
@@ -116,7 +128,7 @@ import java.io.*;
  *       The reflected ray depth. <BR>
  *     </DIV> <BR>
  *   
- *      Refractions<BR>
+ *     Refractions<BR>
  *     <DIV style="margin-left: 40px;">
  *       The refracted ray depth. <BR>
  *     </DIV> <BR>
@@ -130,6 +142,16 @@ import java.io.*;
  *     <DIV style="margin-left: 40px;">
  *       The shadow ray depth. <BR>
  *     </DIV> <BR>
+ *     
+ *     Reflection Blur Limit <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       The reflection blur trace depth limit. <BR>
+ *     </DIV> <BR>
+ *     
+ *     Refraction Blur Limit <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       The refraction blur trace depth limit. <BR>
+ *     </DIV> <BR>
  *   
  *     Scanline <BR>
  *     <DIV style="margin-left: 40px;">
@@ -142,16 +164,59 @@ import java.io.*;
  *     </DIV> <BR>
  *   </DIV> <BR>
  *   
+ *   <I>Acceleration Parameters</I> <BR>
+ *   <DIV style="margin-left: 40px;">
+ *     Acceleration Method <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       The algorithm used to acceleration ray testing. <BR>
+ *     </DIV> <BR>
+ *     
+ *     BSP Size <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       Maximum number of primitives per BSP tree leaf. <BR>
+ *     </DIV> <BR>
+ *     
+ *     BSP Depth <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       MMaximum levels of the BSP tree. <BR>
+ *     </DIV> <BR>
+ *   
+ *     BSP Shadow <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Grid Resolution <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       The resolution of the 3d hierarchical grid. <BR>
+ *     </DIV> <BR>
+ *     
+ *     Grid Max Size <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       The maximum number of polygons per voxel. <BR>
+ *     </DIV> <BR>
+ *     
+ *     Grid Depth <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       The maximum hiarachy depth of the grid. <BR>
+ *     </DIV> <BR>
+ *   </DIV> <BR>
+ *   
  *   <I>Motion Blur Parameters</I> <BR>
  *   <DIV style="margin-left: 40px;">
  *     Motion Blur <BR>
  *     <DIV style="margin-left: 40px;">
  *       Controls the motion blur technique. <BR>
  *     </DIV> <BR>
+ *     
+ *     Motion Quality Factor <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       Motion quality factor applies to only rasterizer renderer. <BR>
+ *     </DIV> <BR>
  *   
  *     Motion Blur By <BR>
  *     <DIV style="margin-left: 40px;">
- *       ??? <BR>
+ *       Scale factor of the motion blur time interval. <BR>
  *     </DIV> <BR>
  *   
  *     Shutter <BR>
@@ -164,19 +229,9 @@ import java.io.*;
  *       The time when the shutter opens. <BR>
  *     </DIV> <BR>
  *   
- *     Time Contrast Red <BR>
+ *     Time Contrast <BR>
  *     <DIV style="margin-left: 40px;">
- *       The maximum temporal contrast in the red channel. <BR>
- *     </DIV> <BR>
- *   
- *     Time Contrast Green <BR>
- *     <DIV style="margin-left: 40px;">
- *       The maximum temporal contrast in the green channel. <BR>
- *     </DIV> <BR>
- *   
- *     Time Contrast Blue <BR>
- *     <DIV style="margin-left: 40px;">
- *       The maximum temporal contrast in the blue channel. <BR>
+ *       The maximum temporal contrast. <BR>
  *     </DIV> <BR>
  *   
  *     Time Contrast Alpha <BR>
@@ -187,6 +242,21 @@ import java.io.*;
  *     Motion Steps <BR>
  *     <DIV style="margin-left: 40px;">
  *       Approximate instance motion transformations with steps segments. <BR>
+ *     </DIV> <BR>
+ *     
+ *     Custom Motion Offset <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       The custom motion back offset. <BR>
+ *     </DIV> <BR>
+ *     
+ *     Static Object Offset <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       The custom static offset. <BR>
+ *     </DIV> <BR>
+ *     
+ *     Time Samples <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       The number of temporal shading samples per spatial sample. <BR>
  *     </DIV> <BR>
  *   </DIV> <BR>
  *   
@@ -202,14 +272,14 @@ import java.io.*;
  *       The number of photons used to estimate caustics during rendering. <BR>
  *     </DIV> <BR>
  *   
- *      <BR>
+ *     Caustics Radius <BR>
  *     <DIV style="margin-left: 40px;">
  *       The maximum radius to be used when picking up caustic photons. <BR>
  *     </DIV> <BR>
- *   
- *     Caustics Radius <BR>
+ *     
+ *     Caustic Scale <BR>
  *     <DIV style="margin-left: 40px;">
- *        <BR>
+ *       The caustic contribution scale. <BR>
  *     </DIV> <BR>
  *   
  *     Caustic Filter Type <BR>
@@ -238,6 +308,11 @@ import java.io.*;
  *     Global Illum Radius <BR>
  *     <DIV style="margin-left: 40px;">
  *       The maximum radius to be used when reading global illumination photons. <BR>
+ *     </DIV> <BR>
+ *     
+ *     GlobalIllumScale <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       The global illumination contribution scale. <BR>
  *     </DIV> <BR>
  *   
  *     Photon Volume Accuracy <BR>
@@ -282,7 +357,12 @@ import java.io.*;
  *   
  *     Direct Illum Shadow Effects <BR>
  *     <DIV style="margin-left: 40px;">
- *        ??? <BR>
+ *        Enable advanced shadow effects from direct lighting. <BR>
+ *     </DIV> <BR>
+ *     
+ *     Photon Auto Volume <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       enable support for overlapping photon volumes. <BR>
  *     </DIV> <BR>
  *   </DIV> <BR>
  *   
@@ -347,10 +427,226 @@ import java.io.*;
  *     <DIV style="margin-left: 40px;">
  *       The name of the file to save/reuse final gather rays.  <BR>
  *     </DIV> <BR>
+ *     
+ *     Enable Final Gather Map Visualizer <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       Produce a false-color rendering of final gather ray density. <BR>
+ *     </DIV> <BR>
+ *     
+ *     Final Gather Map Rebuild <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       Ignore and overwrite the final gather map file if it exists. <BR>
+ *     </DIV> <BR>
  *   
  *     Preview Final Gather <BR>
  *     <DIV style="margin-left: 40px;">
  *       Shows diagnostic final gathering points in output image <BR>
+ *     </DIV> <BR>
+ *     
+ *     Point Density <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       The number of final gather points when performing final gather tracing. <BR>
+ *     </DIV> <BR>
+ *     
+ *     Point Interpolation <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       The number of final gather points to be considered for interpolation. <BR>
+ *     </DIV> <BR>
+ *     
+ *     Final Gather Scale <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       The final gather contribution scale. <BR>
+ *     </DIV> <BR>
+ *     
+ *     Final Gather View <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       Enable radius values to be given in screen space as pixel diameter. <BR>
+ *     </DIV> <BR>
+ *     
+ *     Final Gather Trace Diffuse <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       Enable final gather secondary diffuse bounces. <BR>
+ *     </DIV> <BR>
+ *     
+ *     Final Gather Bounce Scale <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       The secondary bounce final gather contribution scale. <BR>
+ *     </DIV> <BR>
+ *     
+ *     Optimize for Animation <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       Enable multi-frame final gather mode to reduce flickering. <BR>
+ *     </DIV> <BR>
+ *     
+ *     Use Radius Quality Control <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       Use max and min radius to define final gather quality (backwards compatible). <BR>
+ *     </DIV> <BR>
+ *   </DIV> <BR>
+ *   
+ *   <I>Diagnostics Parameters</I> <BR>
+ *   <DIV style="margin-left: 40px;"> <BR>
+ *     Diagnose Samples <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       Whether to diagnose samples. <BR>
+ *     </DIV> <BR>
+ *     
+ *     Diagnose BSP <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       BSP diagnostic mode options. <BR>
+ *     </DIV> <BR>
+ *     
+ *     Diagnose Grid Size <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Diagnose Photon <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       Photon diagnostic mode options. <BR>
+ *     </DIV> <BR>
+ *     
+ *     Diagnose Photon Density <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Diagnose Final Gather <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       Whether to diagnose final gather. <BR>
+ *     </DIV> <BR>
+ *   </DIV> <BR>
+ *   
+ *   <I> Contours Parameters </I> <BR>
+ *   <DIV style="margin-left: 40px;"> <BR>
+ *     Enable Contour Rendering <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       Whether to enable contour rendering. <BR>
+ *     </DIV> <BR>
+ *     
+ *     Hide Source <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       Whether to hide sources. <BR>
+ *     </DIV> <BR>
+ *     
+ *     Flood Color <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       The flood color. <BR>
+ *     </DIV> <BR>
+ *     
+ *     Over Sample <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Contour Filter Type <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       The contour filter type. <BR>
+ *     </DIV> <BR>
+ *     
+ *     Contour Filter Support <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Around Silhouette <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Around All Polyfaces <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Around Coplanar Faces <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Between Different Instances <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Between Different Materials <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Between Different Labels <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Around Render Tessellation <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Front Vs Back Face Contours <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Enable Color Contrast <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Color Contrast <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Enable Depth Contrast <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Depth Contrast <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Enable Distance Contrast <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Distance Contrast <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Enable Normal Contrast <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Normal Contrast <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Enable UV Contours <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     UV Contours <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Contrast Shader <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       The name of the custom contrast shader for contour rendering. <BR>
+ *     </DIV> <BR>
+ *     
+ *     Distance Contrast <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       The name of the custom store shader for contour rendering. <BR>
  *     </DIV> <BR>
  *   </DIV> <BR>
  *   
@@ -389,6 +685,94 @@ import java.io.*;
  *     Dither <BR>
  *     <DIV style="margin-left: 40px;">
  *       Whether to enable dithering. <BR>
+ *     </DIV> <BR>
+ *   </DIV> <BR>
+ *   
+ *   <I>Render Options Parameters>/I> <BR>
+ *   <DIV style="margin-left: 40px;">
+ *   Export Volume Shader <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Geometry Shaders <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Displacement Shaders <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Output Shaders <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Auto Volume <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Displace Presample <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Merge Surfaces <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Render Fur/Hair <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Render Passes <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Faces <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       Controls which side(s) of triangles are rendered. <BR>
+ *     </DIV> <BR>
+ *     
+ *     Volume Samples <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       Default volume rendering quality in shaders for objects without override settings. <BR>
+ *     </DIV> <BR>
+ *     
+ *     Shadow Map Bias <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       The shadow map bias override. <BR>
+ *     </DIV> <BR>
+ *     
+ *     Surface Approx <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Caustics Generating <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Caustics Receiving <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Global Illum Generating <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Global Illum Receiving <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
  *     </DIV> <BR>
  *   </DIV> <BR>
  *   
@@ -432,17 +816,192 @@ import java.io.*;
  *     Export Post Effects <BR>
  *     <DIV style="margin-left: 40px;">
  *        <BR>
- *     </DIV> 
- *   </DIV> 
+ *     </DIV>
+ *     
+ *     Export Vertex Color <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Export Hair <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       Hair translation mode <BR>
+ *     </DIV> <BR>
+ *     
+ *     Prune Object W/O Material <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Opt Anim Detection <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Opt Vert Sharing <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Opt Raytrace Shadows <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Export Motion Segments <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Export Triangulated Poly <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Export Shape Deformation <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Export Polygon Derivatives <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Maya Derivatives <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Smooth Polygon Derivatives <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Export Objects On Demand <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Performance Threshold <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Render Shaders With Filter <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Export State Shader <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Export Light Linker <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Export Maya Options <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Custom Colors <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Custom Texts <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Custom Data <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Custom Vectors <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *   </DIV>
+ *   
+ *   <I>Preview Parameters</I> <BR>
+ *   <DIV style="margin-left: 40px;">
+ *     Preview Animation <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Preview Motion Blur <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Preview Render Tiles <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Preview Convert Tiles <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Preview Tonemap Tiles <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Preview Tonemap Scale <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *   </DIV>
+ *   
+ *   <I>Custom Globals Parameters</I> <BR>
+ *   <DIV style="margin-left: 40px;">
+ *     Pass Custom Alpha Channel <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Pass Custom Depth Channel <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Pass Custom Label Channel <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Custom Versions <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Custom Links <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *     
+ *     Custom Includes <BR>
+ *     <DIV style="margin-left: 40px;">
+ *       ??? <BR>
+ *     </DIV> <BR>
+ *   </DIV>
  * </DIV><P> 
  * 
  * See the Maya and Mental Ray documentation for more details about the meaning of these 
  * Render Globals parameters.
  */
-
 public
 class MRayRenderGlobalsAction
-extends CommonActionUtils
+  extends CommonActionUtils
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -452,7 +1011,7 @@ extends CommonActionUtils
   MRayRenderGlobalsAction() 
   {
     super("MRayRenderGlobals", new VersionID("2.4.3"), "Temerity",
-    "Creates a MEL script which sets the Mental Ray render globals of a Maya scene.");
+          "Creates a MEL script which sets the Mental Ray render globals of a Maya scene.");
 
     /* create default options node */
     {
@@ -473,10 +1032,10 @@ extends CommonActionUtils
         ActionParam param = 
           new LinkActionParam
           (aResolutionSource,
-            "The source node which contains MEL code responsible for setting the render " + 
-            "resolution.  If specified, the ImageWidth and ImageHeight parameters will be " + 
-            "ignored.", 
-            null);
+           "The source node which contains MEL code responsible for setting the render " + 
+           "resolution.  If specified, the ImageWidth and ImageHeight parameters will be " + 
+           "ignored.", 
+           null);
         addSingleParam(param);
       } 
 
@@ -484,8 +1043,8 @@ extends CommonActionUtils
         ActionParam param = 
           new IntegerActionParam
           (aImageWidth,
-            "The horizontal resolution of the output image in pixels.", 
-            640);
+           "The horizontal resolution of the output image in pixels.", 
+           640);
         addSingleParam(param);
       }
 
@@ -493,8 +1052,8 @@ extends CommonActionUtils
         ActionParam param = 
           new IntegerActionParam
           (aImageHeight,
-            "The vertical resolution of the output image in pixels.", 
-            480);
+           "The vertical resolution of the output image in pixels.", 
+           480);
         addSingleParam(param);
       }
 
@@ -502,8 +1061,8 @@ extends CommonActionUtils
         ActionParam param = 
           new DoubleActionParam
           (aPixelAspectRatio,
-            "Ratio of pixel height to pixel width.", 
-            1.0);
+           "Ratio of pixel height to pixel width.", 
+           1.0);
         addSingleParam(param);
       }
 
@@ -621,7 +1180,7 @@ extends CommonActionUtils
         }
 
         {
-          TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
+          TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();         
           values.put(aResolutionSource, null); 
           values.put(aImageWidth,       1280);
           values.put(aImageHeight,      1024);
@@ -723,19 +1282,40 @@ extends CommonActionUtils
       ActionParam param = 
         new EnumActionParam
         (aScanline,
-          "Controls the use of scanline rendering.", 
-          "Scanline", choices);
+         "Controls the use of scanline rendering.", 
+         "Scanline", choices);
       addSingleParam(param);
     }
 
+    /* additional output channel */ 
+    {
+      {
+        ActionParam param = 
+          new BooleanActionParam
+          (aAlphaMaskChannel,
+           "Whether to render images with alpha mask channel.",
+           true);
+        addSingleParam(param);
+      }
+      
+      {
+        ActionParam param = 
+          new BooleanActionParam
+          (aZDepthChannel,
+           "Whether to render images with z depth channel.",
+           false);
+        addSingleParam(param);
+      }
+    }
+    
     /* render quality */ 
     {
       {
         ActionParam param = 
           new IntegerActionParam
           (aMinSampleLevel,
-            "The minimum sample rate, each pixel is sampled at least 2^(2*rate).", 
-            -2);
+           "The minimum sample rate, each pixel is sampled at least 2^(2*rate).", 
+           -2);
         addSingleParam(param);
       }
 
@@ -743,8 +1323,8 @@ extends CommonActionUtils
         ActionParam param = 
           new IntegerActionParam
           (aMaxSampleLevel,
-            "The maximim sample rate, each pixel is sampled at most 2^(2*rate).", 
-            0);
+           "The maximim sample rate, each pixel is sampled at most 2^(2*rate).", 
+           0);
         addSingleParam(param);
       }
 
@@ -759,8 +1339,8 @@ extends CommonActionUtils
         ActionParam param = 
           new EnumActionParam
           (aPixelFilterType,
-            "The type of filter used to integrate pixels.", 
-            "Triangle Filter", choices);
+           "The type of filter used to integrate pixels.", 
+           "Triangle Filter", choices);
         addSingleParam(param);
       }
 
@@ -768,8 +1348,8 @@ extends CommonActionUtils
         ActionParam param = 
           new DoubleActionParam
           (aPixelFilterWidthX,
-            "The horizontal pixel filter width.", 
-            1.0);
+           "The horizontal pixel filter width.", 
+           1.0);
         addSingleParam(param);
       }
 
@@ -777,44 +1357,26 @@ extends CommonActionUtils
         ActionParam param = 
           new DoubleActionParam
           (aPixelFilterWidthY,
-            "The vertical pixel filter width.", 
-            1.0);
+           "The vertical pixel filter width.", 
+           1.0);
+        addSingleParam(param);
+      }
+     
+      {
+        ActionParam param = 
+          new Tuple3dActionParam
+          (aThreshold,
+           "The contrast threshold.", 
+           new Tuple3d(0.100, 0.100, 0.100));
         addSingleParam(param);
       }
 
       {
         ActionParam param = 
           new DoubleActionParam
-          (aRedThreshold,
-            "The red contrast threshold.", 
-            0.100);
-        addSingleParam(param);
-      }
-
-      {
-        ActionParam param = 
-          new DoubleActionParam
-          (aGreenThreshold,
-            "The green contrast threshold.", 
-            0.100);
-        addSingleParam(param);
-      }
-
-      {
-        ActionParam param = 
-          new DoubleActionParam
-          (aBlueThreshold,
-            "The blue contrast threshold.", 
-            0.100);
-        addSingleParam(param);
-      }
-
-      {
-        ActionParam param = 
-          new DoubleActionParam
-          (aAlphaThreshold,
-            "The alpha coverage threshold.", 
-            0.100);
+          (aCoverageThreshold,
+           "The alpha coverage threshold.", 
+           0.100);
         addSingleParam(param);
       }
     }
@@ -826,8 +1388,8 @@ extends CommonActionUtils
         ActionParam param = 
           new IntegerActionParam
           (aVisibilitySamples,
-            "The rapid samples collect.", 
-            0);
+           "The rapid samples collect.", 
+           0);
         addSingleParam(param);
       }
 
@@ -835,8 +1397,8 @@ extends CommonActionUtils
         ActionParam param = 
           new DoubleActionParam
           (aShadingQuality,
-            "The rapid samples shading.", 
-            1.0);
+           "The rapid samples shading.", 
+           1.0);
         addSingleParam(param);
       }
     }
@@ -847,8 +1409,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aSampleLock,
-            "???",
-            true);
+           "Maintain sample patterns between frames to reduce flickering.",
+           true);
         addSingleParam(param);
       }
 
@@ -856,8 +1418,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aJitter,
-            "Whether to enable ray jittering.",
-            false);
+           "Whether to enable ray jittering.",
+           false);
         addSingleParam(param);
       }
     }
@@ -868,8 +1430,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aUseRaytracing,
-            "Whether to enable raytracing.",
-            true);
+           "Whether to enable raytracing.",
+           true);
         addSingleParam(param);
       }
 
@@ -877,8 +1439,8 @@ extends CommonActionUtils
         ActionParam param = 
           new IntegerActionParam
           (aReflections,
-            "The reflected ray depth.", 
-            1);
+           "The reflected ray depth.", 
+           1);
         addSingleParam(param);
       }
 
@@ -886,8 +1448,8 @@ extends CommonActionUtils
         ActionParam param = 
           new IntegerActionParam
           (aRefractions,
-            "The refracted ray depth.", 
-            1);
+           "The refracted ray depth.", 
+           1);
         addSingleParam(param);
       }
 
@@ -895,8 +1457,8 @@ extends CommonActionUtils
         ActionParam param = 
           new IntegerActionParam
           (aMaxTraceDepth,
-            "The maximum ray depth.", 
-            2);
+           "The maximum ray depth.", 
+           2);
         addSingleParam(param);
       }
 
@@ -904,8 +1466,8 @@ extends CommonActionUtils
         ActionParam param = 
           new IntegerActionParam
           (aShadows,
-            "The shadow ray depth.", 
-            2);
+           "The shadow ray depth.", 
+           2);
         addSingleParam(param);
       }
 
@@ -913,8 +1475,8 @@ extends CommonActionUtils
         ActionParam param = 
           new IntegerActionParam
           (aReflectionBlurLimit,
-            "The reflection blur limit.", 
-            1);
+           "The reflection blur limit.", 
+           1);
         addSingleParam(param);
       }
 
@@ -922,8 +1484,8 @@ extends CommonActionUtils
         ActionParam param = 
           new IntegerActionParam
           (aRefractionBlurLimit,
-            "The refraction blur limit.", 
-            1);
+           "The refraction blur limit.", 
+           1);
         addSingleParam(param);
       }
     }
@@ -940,8 +1502,8 @@ extends CommonActionUtils
         ActionParam param = 
           new EnumActionParam
           (aShadowMethod,
-            "Controls the method of shadow detecting and shader calling.", 
-            "Simple", choices);
+           "Controls the method of shadow detecting and shader calling.", 
+           "Simple", choices);
         addSingleParam(param);
       }
 
@@ -954,8 +1516,8 @@ extends CommonActionUtils
         ActionParam param = 
           new EnumActionParam
           (aShadowLinking,
-            "Controls the method of shadow linking.", 
-            "Obeys Light Linking", choices);
+           "Controls the method of shadow linking.", 
+           "Obeys Light Linking", choices);
         addSingleParam(param);
       }
 
@@ -969,8 +1531,8 @@ extends CommonActionUtils
         ActionParam param = 
           new EnumActionParam
           (aShadowMapsFormat,
-            "Controls the format of the shadow maps.", 
-            "Regular", choices);
+           "Controls the format of the shadow maps.", 
+           "Regular", choices);
         addSingleParam(param);
       }
 
@@ -983,8 +1545,8 @@ extends CommonActionUtils
         ActionParam param = 
           new EnumActionParam
           (aShadowMapsRebuildMode,
-            "Controls the caching and rebuild mode of the shadow maps.", 
-            "Reuse Existing Maps", choices);
+           "Controls the caching and rebuild mode of the shadow maps.", 
+           "Reuse Existing Maps", choices);
         addSingleParam(param);
       }
 
@@ -992,8 +1554,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aMotionBlurShadowMaps,
-            "Whether to do motion blur for shadow maps.",
-            true);
+           "Whether to do motion blur for shadow maps.",
+           true);
         addSingleParam(param);
       }
     }
@@ -1009,8 +1571,8 @@ extends CommonActionUtils
         ActionParam param = 
           new EnumActionParam
           (aMotionBlur,
-            "Controls the motion blur technique.", 
-            "Off", choices);
+           "Controls the motion blur technique.", 
+           "Off", choices);
         addSingleParam(param);
       }
 
@@ -1018,8 +1580,8 @@ extends CommonActionUtils
         ActionParam param = 
           new DoubleActionParam
           (aMotionQualityFactor,
-            "???", 
-            1.0);
+           "Motion Quality Factor applies to rasterizer renderer only.", 
+           1.0);
         addSingleParam(param);
       }
 
@@ -1027,8 +1589,8 @@ extends CommonActionUtils
         ActionParam param = 
           new DoubleActionParam
           (aMotionBlurBy,
-            "???", 
-            1.0);
+           "Scale factor of the motion blur time interval.", 
+           1.0);
         addSingleParam(param);
       }
 
@@ -1036,8 +1598,8 @@ extends CommonActionUtils
         ActionParam param = 
           new DoubleActionParam
           (aShutterClose,
-            "The time when the shutter closes.", 
-            1.0);
+           "The time when the shutter closes.", 
+           1.0);
         addSingleParam(param);
       }
 
@@ -1045,35 +1607,17 @@ extends CommonActionUtils
         ActionParam param = 
           new DoubleActionParam
           (aShutterOpen,
-            "The time when the shutter opens.", 
-            0.0);
+           "The time when the shutter opens.", 
+           0.0);
         addSingleParam(param);
       }
 
       {
         ActionParam param = 
-          new DoubleActionParam
-          (aTimeContrastRed,
-            "The maximum temporal contrast in the red channel.", 
-            0.200);
-        addSingleParam(param);
-      }
-
-      {
-        ActionParam param = 
-          new DoubleActionParam
-          (aTimeContrastGreen,
-            "The maximum temporal contrast in the green channel.", 
-            0.200);
-        addSingleParam(param);
-      }
-
-      {
-        ActionParam param = 
-          new DoubleActionParam
-          (aTimeContrastBlue,
-            "The maximum temporal contrast in the blue channel.", 
-            0.200);
+          new Tuple3dActionParam
+          (aTimeContrast,
+           "The maximum temporal contrast.", 
+           new Tuple3d(0.2, 0.2, 0.2));
         addSingleParam(param);
       }
 
@@ -1090,8 +1634,8 @@ extends CommonActionUtils
         ActionParam param = 
           new IntegerActionParam
           (aMotionSteps,
-            "Approximate instance motion transformations with steps segments.", 
-            1);
+           "Approximate instance motion transformations with steps segments.", 
+           1);
         addSingleParam(param);
       }
 
@@ -1099,8 +1643,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aCustomMotionOffsets,
-            "Whether to use custom motion offsets.",
-            false);
+           "Whether to use custom motion offsets.",
+           false);
         addSingleParam(param);
       }
 
@@ -1109,8 +1653,8 @@ extends CommonActionUtils
         ActionParam param = 
           new DoubleActionParam
           (aMotionBackOffset,
-            "The custom motion back offset.", 
-            0.500);
+           "The custom motion back offset.", 
+           0.500);
         addSingleParam(param);
       }
 
@@ -1119,8 +1663,8 @@ extends CommonActionUtils
         ActionParam param = 
           new DoubleActionParam
           (aStaticObjectOffset,
-            "The custom static object offset.", 
-            0.500);
+           "The custom static object offset.", 
+           0.500);
         addSingleParam(param);
       }
 
@@ -1129,8 +1673,8 @@ extends CommonActionUtils
         ActionParam param = 
           new IntegerActionParam
           (aTimeSamples,
-            "Number of temporal shading samples per spatial sample.", 
-            1);
+           "Number of temporal shading samples per spatial sample.", 
+           1);
         addSingleParam(param);
       }
     }
@@ -1141,8 +1685,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aUseCaustics,
-            "Whether to enable caustics.",
-            false);
+           "Whether to enable caustics.",
+           false);
         addSingleParam(param);
       }
 
@@ -1150,8 +1694,8 @@ extends CommonActionUtils
         ActionParam param = 
           new IntegerActionParam
           (aCausticsAccuracy,
-            "The number of photons used to estimate caustics during rendering.", 
-            100);
+           "The number of photons used to estimate caustics during rendering.", 
+           100);
         addSingleParam(param);
       }
 
@@ -1159,50 +1703,19 @@ extends CommonActionUtils
         ActionParam param = 
           new DoubleActionParam
           (aCausticsRadius,
-            "The maximum radius to be used when picking up caustic photons.", 
-            0.0);
+           "The maximum radius to be used when picking up caustic photons.", 
+           0.0);
         addSingleParam(param);
       }
 
-      //range is 0.0 to 1.0
       {
         ActionParam param = 
-          new DoubleActionParam
-          (aRedCausticScale,
-            "The red component of the caustic contribution scale.", 
-            1.0);
+          new Tuple3dActionParam
+          (aCausticScale,
+           "The caustic contribution scale.", 
+           new Tuple3d(1.0, 1.0, 1.0));
         addSingleParam(param);
       }
-
-      //range is 0.0 to 1.0
-      {
-        ActionParam param = 
-          new DoubleActionParam
-          (aGreenCausticScale,
-            "The green component of the caustic contribution scale.", 
-            1.0);
-        addSingleParam(param);
-      }
-
-      //range is 0.0 to 1.0
-      {
-        ActionParam param = 
-          new DoubleActionParam
-          (aBlueCausticScale,
-            "The blue component of the caustic contribution scale.", 
-            1.0);
-        addSingleParam(param);
-      }
-
-      //range is 0.0 to 1.0
-      //      {
-      //        ActionParam param = 
-      //          new DoubleActionParam
-      //          (aAlphaCausticScale,
-      //            "The alpha component of the caustic contribution scale.", 
-      //            1.0);
-      //        addSingleParam(param);
-      //      }
 
       {
         ArrayList<String> choices = new ArrayList<String>();
@@ -1213,8 +1726,8 @@ extends CommonActionUtils
         ActionParam param = 
           new EnumActionParam
           (aCausticFilterType,
-            "The type of filter used by caustics.", 
-            "Box", choices);
+           "The type of filter used by caustics.", 
+           "Box", choices);
         addSingleParam(param);
       }
 
@@ -1222,8 +1735,8 @@ extends CommonActionUtils
         ActionParam param = 
           new DoubleActionParam
           (aCausticFilterKernel,
-            "The size of the caustics filter kernel.", 
-            1.100);
+           "The size of the caustics filter kernel.", 
+           1.100);
         addSingleParam(param);
       }
     }
@@ -1234,8 +1747,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aUseGlobalIllum,
-            "Whether to enable global illumination.",
-            false);
+           "Whether to enable global illumination.",
+           false);
         addSingleParam(param);
       }
 
@@ -1243,8 +1756,8 @@ extends CommonActionUtils
         ActionParam param = 
           new IntegerActionParam
           (aGlobalIllumAccuracy,
-            "The number of photons used to estimate global illumination during rendering.", 
-            500);
+           "The number of photons used to estimate global illumination during rendering.", 
+           500);
         addSingleParam(param);
       }
 
@@ -1252,57 +1765,26 @@ extends CommonActionUtils
         ActionParam param = 
           new DoubleActionParam
           (aGlobalIllumRadius,
-            "The maximum radius to be used when picking up global illumination photons.",
-            0.0);
+           "The maximum radius to be used when picking up global illumination photons.",
+           0.0);
         addSingleParam(param);
       }
 
-      //range is 0.0 to 1.0
       {
         ActionParam param = 
-          new DoubleActionParam
-          (aRedGlobalIllumScale,
-            "The red component of the global illumination contribution scale.", 
-            1.0);
+          new Tuple3dActionParam
+          (aGlobalIllumScale,
+           "The global illumination contribution scale.", 
+           new Tuple3d(1.0, 1.0, 1.0));
         addSingleParam(param);
       }
-
-      //range is 0.0 to 1.0
-      {
-        ActionParam param = 
-          new DoubleActionParam
-          (aGreenGlobalIllumScale,
-            "The green component of the global illumination contribution scale.", 
-            1.0);
-        addSingleParam(param);
-      }
-
-      //range is 0.0 to 1.0
-      {
-        ActionParam param = 
-          new DoubleActionParam
-          (aBlueGlobalIllumScale,
-            "The blue component of the global illumination contribution scale.", 
-            1.0);
-        addSingleParam(param);
-      }
-
-      //range is 0.0 to 1.0
-      //      {
-      //        ActionParam param = 
-      //          new DoubleActionParam
-      //          (aAlphaGlobalIllumScale,
-      //            "The alpha component of the global illumination contribution scale.", 
-      //            1.0);
-      //        addSingleParam(param);
-      //      }
 
       {
         ActionParam param = 
           new IntegerActionParam
           (aPhotonVolumeAccuracy,
-            "The maximum number of photons to examine in participating media.", 
-            30);
+           "The maximum number of photons to examine in participating media.", 
+           30);
         addSingleParam(param);
       }
 
@@ -1310,8 +1792,8 @@ extends CommonActionUtils
         ActionParam param = 
           new DoubleActionParam
           (aPhotonVolumeRadius,
-            "The maximum radius to search for photons in participating media.", 
-            0.0);
+           "The maximum radius to search for photons in participating media.", 
+           0.0);
         addSingleParam(param);
       }
 
@@ -1319,8 +1801,8 @@ extends CommonActionUtils
         ActionParam param = 
           new IntegerActionParam
           (aMaxReflectionPhotons,
-            "The reflected photon depth.", 
-            5);
+           "The reflected photon depth.", 
+           5);
         addSingleParam(param);
       }
 
@@ -1328,8 +1810,8 @@ extends CommonActionUtils
         ActionParam param = 
           new IntegerActionParam
           (aMaxRefractionPhotons,
-            "The refracted photon depth.", 
-            5);
+           "The refracted photon depth.", 
+           5);
         addSingleParam(param);
       }
 
@@ -1337,8 +1819,8 @@ extends CommonActionUtils
         ActionParam param = 
           new IntegerActionParam
           (aMaxPhotonDepth,
-            "The maximum photon depth.", 
-            5);
+           "The maximum photon depth.", 
+           5);
         addSingleParam(param);
       }
 
@@ -1346,8 +1828,8 @@ extends CommonActionUtils
         ActionParam param = 
           new StringActionParam
           (aPhotonMapFile,
-            "The name of the file to save/reuse photons.", 
-            null);
+           "The name of the file to save/reuse photons.", 
+           "");
         addSingleParam(param);
       }
 
@@ -1355,8 +1837,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aEnableGIMapVisualizer,
-            "Produce a false-color rendering of photon density.",
-            false);
+           "Produce a false-color rendering of photon density.",
+           false);
         addSingleParam(param);
       }
 
@@ -1364,8 +1846,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aPhotonMapRebuild,
-            "Ignore and overwrite the photon map file if it exists.",
-            true);
+           "Ignore and overwrite the photon map file if it exists.",
+           true);
         addSingleParam(param);
       }
 
@@ -1373,8 +1855,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aDirectIllumShadowEffects,
-            "???",
-            false);
+           "Enable advanced shadow effects from direct lighting.",
+           false);
         addSingleParam(param);
       }
 
@@ -1382,8 +1864,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aPhotonAutoVolume,
-            "Enable support for overlapping photon volumes.",
-            false);
+           "Enable support for overlapping photon volumes.",
+           false);
         addSingleParam(param);
       }
     }
@@ -1394,8 +1876,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aUseFinalGather,
-            "Whether to enable final gathering.",
-            false);
+           "Whether to enable final gathering.",
+           false);
         addSingleParam(param);
       }
 
@@ -1403,8 +1885,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aPrecompPhotonLookup,
-            "Whether to store final gather irradiance in photon map.",
-            false);
+           "Whether to store final gather irradiance in photon map.",
+           false);
         addSingleParam(param);
       }
 
@@ -1412,8 +1894,8 @@ extends CommonActionUtils
         ActionParam param = 
           new IntegerActionParam
           (aFinalGatherRays,
-            "The number of final gathering rays to cast.",
-            100);
+           "The number of final gathering rays to cast.",
+           100);
         addSingleParam(param);
       }
 
@@ -1421,8 +1903,8 @@ extends CommonActionUtils
         ActionParam param = 
           new DoubleActionParam
           (aMinRadius,
-            "The minimum distance within which final gather results must be reused.", 
-            0.0);
+           "The minimum distance within which final gather results must be reused.", 
+           0.0);
         addSingleParam(param);
       }
 
@@ -1430,8 +1912,8 @@ extends CommonActionUtils
         ActionParam param = 
           new DoubleActionParam
           (aMaxRadius,
-            "The maximum distance within which a final gather result can be reused.", 
-            0.0);
+           "The maximum distance within which a final gather result can be reused.", 
+           0.0);
         addSingleParam(param);
       }
 
@@ -1439,8 +1921,8 @@ extends CommonActionUtils
         ActionParam param = 
           new IntegerActionParam
           (aFilter,
-            "The number of neighboring samples to include in the speckle elimination filter.", 
-            1);
+           "The number of neighboring samples to include in the speckle elimination filter.", 
+           1);
         addSingleParam(param);
       }
 
@@ -1448,8 +1930,8 @@ extends CommonActionUtils
         ActionParam param = 
           new DoubleActionParam
           (aFalloffStart,
-            "The distance at which final gather rays start blending with the env color.", 
-            0.0);
+           "The distance at which final gather rays start blending with the env color.", 
+           0.0);
         addSingleParam(param);
       }
 
@@ -1457,8 +1939,8 @@ extends CommonActionUtils
         ActionParam param = 
           new DoubleActionParam
           (aFalloffStop,
-            "The distance at which final gather rays completely blend with the env color.", 
-            0.0);
+           "The distance at which final gather rays completely blend with the env color.", 
+           0.0);
         addSingleParam(param);
       }
 
@@ -1466,8 +1948,8 @@ extends CommonActionUtils
         ActionParam param = 
           new IntegerActionParam
           (aTraceDepth,
-            "The maximum final gather ray depth.", 
-            2);
+           "The maximum final gather ray depth.", 
+           2);
         addSingleParam(param);
       }
 
@@ -1475,8 +1957,8 @@ extends CommonActionUtils
         ActionParam param = 
           new IntegerActionParam
           (aTraceReflection,
-            "The reflected final gather ray depth.", 
-            1);
+           "The reflected final gather ray depth.", 
+           1);
         addSingleParam(param);
       }
 
@@ -1484,8 +1966,8 @@ extends CommonActionUtils
         ActionParam param = 
           new IntegerActionParam
           (aTraceRefraction,
-            "The refracted final gather ray depth.", 
-            1);
+           "The refracted final gather ray depth.", 
+           1);
         addSingleParam(param);
       }
 
@@ -1493,8 +1975,8 @@ extends CommonActionUtils
         ActionParam param = 
           new StringActionParam
           (aFinalGatherMapFile,
-            "The name of the file to save/reuse final gather rays.", 
-            null);
+           "The name of the file to save/reuse final gather rays.", 
+           null);
         addSingleParam(param);
       }
 
@@ -1502,8 +1984,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aEnableFGMapVisualizer,
-            "Produce a false-color rendering of final gather ray density.",
-            false);
+           "Produce a false-color rendering of final gather ray density.",
+           false);
         addSingleParam(param);
       }
 
@@ -1516,7 +1998,8 @@ extends CommonActionUtils
         ActionParam param = 
           new EnumActionParam
           (aFinalGatherMapRebuild,
-            "Ignore and overwrite the final gather map file if it exists.", "On", choices);
+           "Ignore and overwrite the final gather map file if it exists.",
+           "On", choices);
         addSingleParam(param);
       }
 
@@ -1524,8 +2007,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aPreviewFinalGather,
-            "Shows diagnostic final gathering points in output image.",
-            true);
+           "Shows diagnostic final gathering points in output image.",
+           true);
         addSingleParam(param);
       }
 
@@ -1533,67 +2016,54 @@ extends CommonActionUtils
         ActionParam param = 
           new DoubleActionParam
           (aPointDensity,
-            "The number of final gather points when performing final gather tracing.", 
-            1.0);
+           "The number of final gather points when performing final gather tracing.", 
+           1.0);
         addSingleParam(param);
       }
 
+      {
+        ActionParam param = 
+          new BooleanActionParam
+          (aOptimizeForAnim,
+            "Enable multi-frame final gather mode to reduce flickering.",
+            false);
+        addSingleParam(param);
+      }
+      
+      {
+        ActionParam param = 
+          new BooleanActionParam
+          (aUseRadiusQualityControl,
+            "Use max and min radius to define final gather quality (backwards compatible).",
+            false);
+        addSingleParam(param);
+      }
+      
       //range is 16-bit integer...
       {
         ActionParam param = 
           new IntegerActionParam
           (aPointInterpolation,
-            "The number of final gather points to be considered for interpolation at a shading sample.", 
-            10);
+           "The number of final gather points to be considered for interpolation at a shading sample.", 
+           10);
         addSingleParam(param);
       }
 
-      //range is 0.0 to 1.0
       {
         ActionParam param = 
-          new DoubleActionParam
-          (aRedFinalGatherScale,
-            "The red component of the final gather contribution scale.", 
-            1.0);
+          new Tuple3dActionParam
+          (aFinalGatherScale,
+           "The final gather contribution scale.", 
+           new Tuple3d(1.0, 1.0, 1.0));
         addSingleParam(param);
       }
-
-      //range is 0.0 to 1.0
-      {
-        ActionParam param = 
-          new DoubleActionParam
-          (aGreenFinalGatherScale,
-            "The green component of the final gather contribution scale.", 
-            1.0);
-        addSingleParam(param);
-      }
-
-      //range is 0.0 to 1.0
-      {
-        ActionParam param = 
-          new DoubleActionParam
-          (aBlueFinalGatherScale,
-            "The blue component of the final gather contribution scale.", 
-            1.0);
-        addSingleParam(param);
-      }
-
-      //range is 0.0 to 1.0
-      //      {
-      //        ActionParam param = 
-      //          new DoubleActionParam
-      //          (aAlphaFinalGatherScale,
-      //            "The alpha component of the final gather contribution scale.", 
-      //            1.0);
-      //        addSingleParam(param);
-      //      }
 
       {
         ActionParam param = 
           new BooleanActionParam
           (aFinalGatherView,
-            "Enable radius values to be given in screen space as pixel diameter.",
-            false);
+           "Enable radius values to be given in screen space as pixel diameter.",
+           false);
         addSingleParam(param);
       }
 
@@ -1601,50 +2071,20 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aFinalGatherTraceDiffuse,
-            "Enable final gather secondary diffuse bounces.",
-            false);
+           "Enable final gather secondary diffuse bounces.",
+           false);
         addSingleParam(param);
       }
 
-      //range is 0.0 to 1.0
       {
         ActionParam param = 
-          new DoubleActionParam
-          (aRedFGBounceScale,
-            "The red component of the secondary bounce final gather contribution scale.", 
-            1.0);
+          new Tuple3dActionParam
+          (aFGBounceScale,
+           "The secondary bounce final gather contribution scale.", 
+           new Tuple3d(1.0, 1.0, 1.0));
         addSingleParam(param);
       }
-
-      //range is 0.0 to 1.0
-      {
-        ActionParam param = 
-          new DoubleActionParam
-          (aGreenFGBounceScale,
-            "The green component of the secondary bounce final gather contribution scale.", 
-            1.0);
-        addSingleParam(param);
-      }
-
-      //range is 0.0 to 1.0
-      {
-        ActionParam param = 
-          new DoubleActionParam
-          (aBlueFGBounceScale,
-            "The blue component of the secondary bounce final gather contribution scale.", 
-            1.0);
-        addSingleParam(param);
-      }
-
-      //range is 0.0 to 1.0
-      //      {
-      //        ActionParam param = 
-      //          new DoubleActionParam
-      //          (aAlphaFGBounceScale,
-      //            "The alpha component of the secondary bounce final gather contribution scale.", 
-      //            1.0);
-      //        addSingleParam(param);
-      //      }
+      
     }
 
     /* diagnostics */
@@ -1653,8 +2093,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aDiagnoseSamples,
-            "Whether to diagnose samples.",
-            false);
+           "Whether to diagnose samples.",
+           false);
         addSingleParam(param);
       }
 
@@ -1667,8 +2107,8 @@ extends CommonActionUtils
         ActionParam param = 
           new EnumActionParam
           (aDiagnoseBsp,
-            "BSP diagnostic mode options.", 
-            "Off", choices);
+           "BSP diagnostic mode options.", 
+           "Off", choices);
         addSingleParam(param);
       }
 
@@ -1682,8 +2122,8 @@ extends CommonActionUtils
         ActionParam param = 
           new EnumActionParam
           (aDiagnoseGrid,
-            "Grid diagnostic mode options.", 
-            "Off", choices);
+           "Grid diagnostic mode options.", 
+           "Off", choices);
         addSingleParam(param);
       }
 
@@ -1691,8 +2131,8 @@ extends CommonActionUtils
         ActionParam param = 
           new DoubleActionParam
           (aDiagnoseGridSize,
-            "???", 
-            1.0);
+           "???", 
+           1.0);
         addSingleParam(param);
       }
 
@@ -1705,8 +2145,8 @@ extends CommonActionUtils
         ActionParam param = 
           new EnumActionParam
           (aDiagnosePhoton,
-            "Photon diagnostic mode options.", 
-            "Off", choices);
+           "Photon diagnostic mode options.", 
+           "Off", choices);
         addSingleParam(param);
       }
 
@@ -1714,8 +2154,8 @@ extends CommonActionUtils
         ActionParam param = 
           new DoubleActionParam
           (aDiagnosePhotonDensity,
-            "???", 
-            0.0);
+           "???", 
+           0.0);
         addSingleParam(param);
       }
 
@@ -1723,8 +2163,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aDiagnoseFinalGather,
-            "Whether to diagnose final gather.",
-            false);
+           "Whether to diagnose final gather.",
+           false);
         addSingleParam(param);
       }
     }
@@ -1755,8 +2195,8 @@ extends CommonActionUtils
         ActionParam param = 
           new EnumActionParam
           (aDataType,
-            "The output data format.", 
-            "RGBA (Byte) 4x8", choices);
+           "The output data format.", 
+           "RGBA (Byte) 4x8", choices);
         addSingleParam(param);
       }
 
@@ -1764,8 +2204,8 @@ extends CommonActionUtils
         ActionParam param = 
           new DoubleActionParam
           (aGamma,
-            "The gamma correction factor.", 
-            1.0);
+           "The gamma correction factor.", 
+           1.0);
         addSingleParam(param);
       }
 
@@ -1778,8 +2218,8 @@ extends CommonActionUtils
         ActionParam param = 
           new EnumActionParam
           (aColorClip,
-            "Pre-quantization color clipping method.", 
-            "Raw", choices);
+           "Pre-quantization color clipping method.", 
+           "Raw", choices);
         addSingleParam(param);
       }
 
@@ -1787,8 +2227,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aInterpSamples,
-            "???",
-            true);
+           "???",
+           true);
         addSingleParam(param);
       }
 
@@ -1796,8 +2236,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aDesaturate,
-            "Bleach out clipped colors to maintain percieved brightness.",
-            false);
+           "Bleach out clipped colors to maintain percieved brightness.",
+           false);
         addSingleParam(param);
       }
 
@@ -1805,8 +2245,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aPremultiply,
-            "Whether to premultiply alpha into color channels.",
-            true);
+           "Whether to premultiply alpha into color channels.",
+           true);
         addSingleParam(param);
       }
 
@@ -1814,8 +2254,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aDither,
-            "Whether to enable dithering.",
-            true);
+           "Whether to enable dithering.",
+           true);
         addSingleParam(param);
       }
     }
@@ -1826,8 +2266,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aEnableContourRendering,
-            "Whether to enable contour renderring.",
-            false);
+           "Whether to enable contour rendering.",
+           false);
         addSingleParam(param);
       }
 
@@ -1835,38 +2275,17 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aHideSource,
-            "Whether to hide sources.",
-            false);
+           "Whether to hide sources.",
+           false);
         addSingleParam(param);
       }
 
-      //range is 0.0 to 1.0
       {
         ActionParam param = 
-          new DoubleActionParam
-          (aRedFloodColor,
-            "The red component of the flood color.", 
-            1.0);
-        addSingleParam(param);
-      }
-
-      //range is 0.0 to 1.0
-      {
-        ActionParam param = 
-          new DoubleActionParam
-          (aGreenFloodColor,
-            "The green component of the flood color.", 
-            1.0);
-        addSingleParam(param);
-      }
-
-      //range is 0.0 to 1.0
-      {
-        ActionParam param = 
-          new DoubleActionParam
-          (aBlueFloodColor,
-            "The blue component of the flood color.", 
-            1.0);
+          new Tuple3dActionParam
+          (aFloodColor,
+           "The flood color.", 
+           new Tuple3d(1.0, 1.0, 1.0));
         addSingleParam(param);
       }
 
@@ -1884,8 +2303,8 @@ extends CommonActionUtils
         ActionParam param = 
           new IntegerActionParam
           (aOverSample,
-            "???", 
-            1);
+           "???", 
+           1);
         addSingleParam(param);
       }
 
@@ -1898,8 +2317,8 @@ extends CommonActionUtils
         ActionParam param = 
           new EnumActionParam
           (aContourFilterType,
-            "The contour filter type.", 
-            "Box Filter", choices);
+           "The contour filter type.", 
+           "Box Filter", choices);
         addSingleParam(param);
       }
 
@@ -1908,8 +2327,8 @@ extends CommonActionUtils
         ActionParam param = 
           new DoubleActionParam
           (aContourFilterSupport,
-            "???", 
-            1.0);
+           "???", 
+           1.0);
         addSingleParam(param);
       }
 
@@ -1917,8 +2336,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aAroundSilhouette,
-            "???",
-            false);
+           "???",
+           false);
         addSingleParam(param);
       }
 
@@ -1926,8 +2345,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aAroundAllPolyFaces,
-            "???",
-            false);
+           "???",
+           false);
         addSingleParam(param);
       }
 
@@ -1935,8 +2354,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aAroundCoplanarFaces,
-            "???",
-            false);
+           "???",
+           false);
         addSingleParam(param);
       }
 
@@ -1944,8 +2363,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aBetweenDiffInstances,
-            "???",
-            false);
+           "???",
+           false);
         addSingleParam(param);
       }
 
@@ -1953,8 +2372,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aBetweenDiffMaterials,
-            "???",
-            false);
+           "???",
+           false);
         addSingleParam(param);
       }
 
@@ -1962,17 +2381,17 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aBetweenDiffLabels,
-            "???",
-            false);
+           "???",
+           false);
         addSingleParam(param);
       }
 
       {
         ActionParam param = 
           new BooleanActionParam
-          (aAroundRenderTesselation,
-            "???",
-            false);
+          (aAroundRenderTessellation,
+           "???",
+           false);
         addSingleParam(param);
       }
 
@@ -1980,8 +2399,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aFrontVsBackFaceContours,
-            "???",
-            false);
+           "???",
+           false);
         addSingleParam(param);
       }
 
@@ -1989,38 +2408,17 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aEnableColorContrast,
-            "???",
-            true);
+           "???",
+           true);
         addSingleParam(param);
       }
 
-      //range is 0.0 to 1.0
       {
         ActionParam param = 
-          new DoubleActionParam
-          (aRedColorContrast,
-            "The red component of the color contrast.", 
-            1.0);
-        addSingleParam(param);
-      }
-
-      //range is 0.0 to 1.0
-      {
-        ActionParam param = 
-          new DoubleActionParam
-          (aGreenColorContrast,
-            "The green component of the color contrast.", 
-            1.0);
-        addSingleParam(param);
-      }
-
-      //range is 0.0 to 1.0
-      {
-        ActionParam param = 
-          new DoubleActionParam
-          (aBlueColorContrast,
-            "The blue component of the color contrast.", 
-            1.0);
+          new Tuple3dActionParam
+          (aColorContrast,
+           "The color contrast.", 
+           new Tuple3d(1.0, 1.0, 1.0));
         addSingleParam(param);
       }
 
@@ -2038,8 +2436,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aEnableDepthContrast,
-            "Whether to enable depth contrast",
-            true);
+           "Whether to enable depth contrast",
+           true);
         addSingleParam(param);
       }
 
@@ -2047,8 +2445,8 @@ extends CommonActionUtils
         ActionParam param = 
           new DoubleActionParam
           (aDepthContrast,
-            "The depth contrast value.", 
-            0.0);
+           "The depth contrast value.", 
+           0.0);
         addSingleParam(param);
       }
 
@@ -2056,8 +2454,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aEnableDistanceContrast,
-            "Whether to enable distance contrast",
-            true);
+           "Whether to enable distance contrast",
+           true);
         addSingleParam(param);
       }
 
@@ -2065,8 +2463,8 @@ extends CommonActionUtils
         ActionParam param = 
           new DoubleActionParam
           (aDistanceContrast,
-            "The distance contrast value.", 
-            0.0);
+           "The distance contrast value.", 
+           0.0);
         addSingleParam(param);
       }
 
@@ -2074,8 +2472,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aEnableNormalContrast,
-            "Whether to enable normal contrast",
-            true);
+           "Whether to enable normal contrast",
+           true);
         addSingleParam(param);
       }
 
@@ -2084,8 +2482,8 @@ extends CommonActionUtils
         ActionParam param = 
           new DoubleActionParam
           (aNormalContrast,
-            "The normal contrast value.", 
-            0.0);
+           "The normal contrast value.", 
+           0.0);
         addSingleParam(param);
       }
 
@@ -2093,26 +2491,17 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aEnableUVContours,
-            "Whether to enable UV Contours",
-            true);
+           "Whether to enable UV Contours",
+           true);
         addSingleParam(param);
       }
 
       {
         ActionParam param = 
-          new DoubleActionParam
-          (aUVContoursU,
-            "The U value of the contours.", 
-            0.0);
-        addSingleParam(param);
-      }
-
-      {
-        ActionParam param = 
-          new DoubleActionParam
-          (aUVContoursV,
-            "The V value of the contours.", 
-            0.0);
+          new Tuple2dActionParam
+          (aUVContours,
+           "The UV value of the contours.", 
+           new Tuple2d(0.0, 0.0));
         addSingleParam(param);
       }
 
@@ -2120,8 +2509,8 @@ extends CommonActionUtils
         ActionParam param = 
           new StringActionParam
           (aContrastShader,
-            "The name of the custom contrast shader to use for contour rendering.", 
-            null);
+           "The name of the custom contrast shader to use for contour rendering.", 
+           null);
         addSingleParam(param);
       }
 
@@ -2129,8 +2518,8 @@ extends CommonActionUtils
         ActionParam param = 
           new StringActionParam
           (aStoreShader,
-            "The name of the custom store shader to use for contour rendering.", 
-            null);
+           "The name of the custom store shader to use for contour rendering.", 
+           null);
         addSingleParam(param);
       }
     }
@@ -2146,8 +2535,8 @@ extends CommonActionUtils
         ActionParam param = 
           new EnumActionParam
           (aAccelerationMethod,
-            "The algorithm used to acceleration ray testing.", 
-            "Regular BSP", choices);
+           "The algorithm used to acceleration ray testing.", 
+           "Regular BSP", choices);
         addSingleParam(param);
       }
 
@@ -2155,8 +2544,8 @@ extends CommonActionUtils
         ActionParam param = 
           new IntegerActionParam
           (aBspSize,
-            "???", 
-            10);
+           "Maximum number of primitives per BSP tree leaf.", 
+           10);
         addSingleParam(param);
       }
 
@@ -2164,8 +2553,8 @@ extends CommonActionUtils
         ActionParam param = 
           new IntegerActionParam
           (aBspDepth,
-            "???", 
-            40);
+           "Maximum levels of the BSP tree.", 
+           40);
         addSingleParam(param);
       }
 
@@ -2173,8 +2562,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aBspShadow,
-            "???", 
-            false);
+           "???", 
+           false);
         addSingleParam(param);
       }
 
@@ -2182,8 +2571,8 @@ extends CommonActionUtils
         ActionParam param = 
           new IntegerActionParam
           (aGridResolution,
-            "???", 
-            2);
+           "The resolution of the 3d hierarchical grid", 
+           2);
         addSingleParam(param);
       }
 
@@ -2191,8 +2580,8 @@ extends CommonActionUtils
         ActionParam param = 
           new IntegerActionParam
           (aGridMaxSize,
-            "???", 
-            128);
+           "The maximum number of polygons per voxel", 
+           128);
         addSingleParam(param);
       }
 
@@ -2200,8 +2589,8 @@ extends CommonActionUtils
         ActionParam param = 
           new IntegerActionParam
           (aGridDepth,
-            "???", 
-            2);
+           "The maximum hierarchy depth of the grid", 
+           2);
         addSingleParam(param);
       }
 
@@ -2209,8 +2598,8 @@ extends CommonActionUtils
         ActionParam param = 
           new IntegerActionParam
           (aTaskSize,
-            "???", 
-            0);
+           "???", 
+           0);
         addSingleParam(param);
       }
 
@@ -2219,8 +2608,8 @@ extends CommonActionUtils
         ActionParam param = 
           new IntegerActionParam
           (aPhysicalMemory,
-            "???", 
-            800);
+           "???", 
+           800);
         addSingleParam(param);
       }
     }
@@ -2231,8 +2620,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aVolumeShaders,
-            "???",
-            true);
+           "???",
+           true);
         addSingleParam(param);
       }
 
@@ -2240,8 +2629,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aGeometryShaders,
-            "???",
-            true);
+           "???",
+           true);
         addSingleParam(param);
       }
 
@@ -2249,8 +2638,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aDisplacementShaders,
-            "???",
-            true);
+           "???",
+           true);
         addSingleParam(param);
       }
 
@@ -2258,8 +2647,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aOutputShaders,
-            "???",
-            true);
+           "???",
+           true);
         addSingleParam(param);
       }
 
@@ -2267,8 +2656,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aAutoVolume,
-            "???",
-            true);
+           "???",
+           true);
         addSingleParam(param);
       }
 
@@ -2276,8 +2665,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aDisplacePresample,
-            "???",
-            true);
+           "???",
+           true);
         addSingleParam(param);
       }
 
@@ -2285,8 +2674,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aMergeSurfaces,
-            "???",
-            true);
+           "???",
+           true);
         addSingleParam(param);
       }
 
@@ -2294,8 +2683,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aRenderFurHair,
-            "???",
-            true);
+           "???",
+           true);
         addSingleParam(param);
       }
 
@@ -2303,8 +2692,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aRenderPasses,
-            "???",
-            true);
+           "???",
+           true);
         addSingleParam(param);
       }
 
@@ -2317,8 +2706,8 @@ extends CommonActionUtils
         ActionParam param = 
           new EnumActionParam
           (aFaces,
-            "Controls which side(s) of triangles are rendered.", 
-            "Both", choices);
+           "Controls which side(s) of triangles are rendered.", 
+           "Both", choices);
         addSingleParam(param);
       }
 
@@ -2326,8 +2715,8 @@ extends CommonActionUtils
         ActionParam param = 
           new IntegerActionParam
           (aVolumeSamples,
-            "Default volume rendering quality in shaders for objects without override settings.", 
-            1);
+           "Default volume rendering quality in shaders for objects without override settings.", 
+           1);
         addSingleParam(param);
       }
 
@@ -2335,8 +2724,8 @@ extends CommonActionUtils
         ActionParam param = 
           new DoubleActionParam
           (aMaxDisplace,
-            "The maximum displacement override.", 
-            0.0);
+           "The maximum displacement override.", 
+           0.0);
         addSingleParam(param);
       }
 
@@ -2344,8 +2733,8 @@ extends CommonActionUtils
         ActionParam param = 
           new DoubleActionParam
           (aShadowMapBias,
-            "The shadow map bias override.", 
-            0.0);
+           "The shadow map bias override.", 
+           0.0);
         addSingleParam(param);
       }
 
@@ -2353,8 +2742,8 @@ extends CommonActionUtils
         ActionParam param = 
           new StringActionParam
           (aSurfaceApprox,
-            "???", 
-            null);
+           "???", 
+           null);
         addSingleParam(param);
       }
 
@@ -2362,8 +2751,8 @@ extends CommonActionUtils
         ActionParam param = 
           new StringActionParam
           (aDisplaceApprox,
-            "???", 
-            null);
+           "???", 
+           null);
         addSingleParam(param);
       }
 
@@ -2376,8 +2765,8 @@ extends CommonActionUtils
         ActionParam param = 
           new EnumActionParam
           (aCausticsGenerating,
-            "???", 
-            "None", choices);
+           "???", 
+           "None", choices);
         addSingleParam(param);
       }
 
@@ -2390,8 +2779,8 @@ extends CommonActionUtils
         ActionParam param = 
           new EnumActionParam
           (aCausticsReceiving,
-            "???", 
-            "None", choices);
+           "???", 
+           "None", choices);
         addSingleParam(param);
       }
 
@@ -2404,8 +2793,8 @@ extends CommonActionUtils
         ActionParam param = 
           new EnumActionParam
           (aGlobalIllumGenerating,
-            "???", 
-            "None", choices);
+           "???", 
+           "None", choices);
         addSingleParam(param);
       }
 
@@ -2418,8 +2807,8 @@ extends CommonActionUtils
         ActionParam param = 
           new EnumActionParam
           (aGlobalIllumReceiving,
-            "???", 
-            "None", choices);
+           "???", 
+           "None", choices);
         addSingleParam(param);
       }
     }
@@ -2439,8 +2828,8 @@ extends CommonActionUtils
         ActionParam param = 
           new EnumActionParam
           (aExportVerbosity,
-            "The verbosity of export messages.", 
-            "Warning Messages", choices);
+           "The verbosity of export messages.", 
+           "Warning Messages", choices);
         addSingleParam(param);
       }
 
@@ -2448,8 +2837,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aExportExactHierarchy,
-            "???",
-            false);
+           "???",
+           false);
         addSingleParam(param);
       }
 
@@ -2457,8 +2846,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aExportFullDagpath,
-            "???",
-            false);
+           "???",
+           false);
         addSingleParam(param);
       }
 
@@ -2466,8 +2855,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aExportTexturesFirst,
-            "???",
-            false);
+           "???",
+           false);
         addSingleParam(param);
       }
 
@@ -2475,8 +2864,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aExportParticles,
-            "???",
-            true);
+           "???",
+           true);
         addSingleParam(param);
       }
 
@@ -2484,8 +2873,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aExportParticleInstances,
-            "???",
-            true);
+           "???",
+           true);
         addSingleParam(param);
       }
 
@@ -2493,8 +2882,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aExportFluids,
-            "???",
-            true);
+           "???",
+           true);
         addSingleParam(param);
       }
 
@@ -2502,8 +2891,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aExportPostEffects,
-            "???",
-            true);
+           "???",
+           true);
         addSingleParam(param);
       }
 
@@ -2511,8 +2900,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aExportVertexColors,
-            "???",
-            false);
+           "???",
+           false);
         addSingleParam(param);
       }
 
@@ -2525,8 +2914,8 @@ extends CommonActionUtils
         ActionParam param = 
           new EnumActionParam
           (aExportHair,
-            "???", 
-            "Hair Primitive", choices);
+           "Hair translation mode.", 
+           "Hair Primitive", choices);
         addSingleParam(param);
       }
 
@@ -2534,8 +2923,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aPruneObjectsWOMaterial,
-            "???",
-            true);
+           "???",
+           true);
         addSingleParam(param);
       }
 
@@ -2543,8 +2932,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aOptNonAnimDisplayVis,
-            "???",
-            true);
+           "???",
+           true);
         addSingleParam(param);
       }
 
@@ -2552,8 +2941,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aOptAnimDetection	,
-            "???",
-            true);
+           "???",
+           true);
         addSingleParam(param);
       }
 
@@ -2561,8 +2950,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aOptVertSharing		,
-            "???",
-            true);
+           "???",
+           true);
         addSingleParam(param);
       }
 
@@ -2570,8 +2959,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aOptRaytraceShadows	,
-            "???",
-            true);
+           "???",
+           true);
         addSingleParam(param);
       }
 
@@ -2579,8 +2968,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aExportMotionSegments,
-            "???",
-            true);
+           "???",
+           true);
         addSingleParam(param);
       }
 
@@ -2588,8 +2977,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aExportTriangulatedPoly,
-            "???",
-            true);
+           "???",
+           true);
         addSingleParam(param);
       }
 
@@ -2597,8 +2986,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aExportShapeDeformation,
-            "???",
-            true);
+           "???",
+           true);
         addSingleParam(param);
       }
 
@@ -2606,16 +2995,16 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aExportPolygonDerivatives,
-            "???",
-            true);
+           "???",
+           true);
         addSingleParam(param);
       }
       {
         ActionParam param = 
           new BooleanActionParam
           (aMayaDerivatives,
-            "???",
-            false);
+           "???",
+           false);
         addSingleParam(param);
       }
 
@@ -2623,8 +3012,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aSmoothPolygonDerivatives,
-            "???",
-            false);
+           "???",
+           false);
         addSingleParam(param);
       }
 
@@ -2632,8 +3021,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aExportNurbsDerivatives,
-            "???",
-            true);
+           "???",
+           true);
         addSingleParam(param);
       }
 
@@ -2641,8 +3030,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aExportObjectsOnDemand,
-            "???",
-            false);
+           "???",
+           false);
         addSingleParam(param);
       }
 
@@ -2650,8 +3039,8 @@ extends CommonActionUtils
         ActionParam param = 
           new IntegerActionParam
           (aPerformanceThreshold,
-            "???",
-            0);
+           "???",
+           0);
         addSingleParam(param);
       }
 
@@ -2659,8 +3048,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aRenderShadersWithFilter,
-            "???",
-            true);
+           "???",
+           true);
         addSingleParam(param);
       }
 
@@ -2668,8 +3057,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aExportStateShader	,
-            "???",
-            true);
+           "???",
+           true);
         addSingleParam(param);
       }
 
@@ -2677,8 +3066,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aExportLightLinker	,
-            "???",
-            false);
+           "???",
+           false);
         addSingleParam(param);
       }
 
@@ -2686,8 +3075,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aExprtMayaOptions	,
-            "???",
-            true);
+           "???",
+           true);
         addSingleParam(param);
       }
 
@@ -2695,8 +3084,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aCustomColors		,
-            "???",
-            true);
+           "???",
+           true);
         addSingleParam(param);
       }
 
@@ -2704,8 +3093,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aCustomTexts			,
-            "???",
-            true);
+           "???",
+           true);
         addSingleParam(param);
       }
 
@@ -2713,8 +3102,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aCustomData			,
-            "???",
-            true);
+           "???",
+           true);
         addSingleParam(param);
       }
 
@@ -2722,8 +3111,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aCustomVectors		,
-            "???",
-            true);
+           "???",
+           true);
         addSingleParam(param);
       }
     }
@@ -2734,8 +3123,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aPreviewAnimation		,
-            "???",
-            false);
+           "???",
+           false);
         addSingleParam(param);
       }
 
@@ -2743,8 +3132,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aPreviewMotionBlur		,
-            "???",
-            true);
+           "???",
+           true);
         addSingleParam(param);
       }
 
@@ -2752,8 +3141,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aPreviewRenderTiles		,
-            "???",
-            true);
+           "???",
+           true);
         addSingleParam(param);
       }
 
@@ -2761,8 +3150,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aPreviewConvertTiles		,
-            "???",
-            true);
+           "???",
+           true);
         addSingleParam(param);
       }
 
@@ -2770,8 +3159,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aPreviewTonemapTiles		,
-            "???",
-            true);
+           "???",
+           true);
         addSingleParam(param);
       }
 
@@ -2779,8 +3168,8 @@ extends CommonActionUtils
         ActionParam param = 
           new DoubleActionParam
           (aTonemapScale,
-            "???",
-            1.0);
+           "???",
+           1.0);
         addSingleParam(param);
       }
     }
@@ -2791,8 +3180,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aPassCustomAlphaChannel,
-            "???",
-            false);
+           "???",
+           false);
         addSingleParam(param);
       }
 
@@ -2800,8 +3189,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aPassCustomDepthChannel,
-            "???",
-            false);
+           "???",
+           false);
         addSingleParam(param);
       }
 
@@ -2809,8 +3198,8 @@ extends CommonActionUtils
         ActionParam param = 
           new BooleanActionParam
           (aPassCustomLabelChannel,
-            "???",
-            false);
+           "???",
+           false);
         addSingleParam(param);
       }
 
@@ -2818,8 +3207,8 @@ extends CommonActionUtils
         ActionParam param = 
           new StringActionParam
           (aCustomVersions,
-            "???",
-            null);
+           "???",
+           null);
         addSingleParam(param);
       }
 
@@ -2827,8 +3216,8 @@ extends CommonActionUtils
         ActionParam param = 
           new StringActionParam
           (aCustomLinks,
-            "???",
-            null);
+           "???",
+           null);
         addSingleParam(param);
       }
 
@@ -2836,8 +3225,8 @@ extends CommonActionUtils
         ActionParam param = 
           new StringActionParam
           (aCustomIncludes,
-            "???",
-            null);
+           "???",
+           null);
         addSingleParam(param);
       }
     }
@@ -2864,642 +3253,582 @@ extends CommonActionUtils
 
       {
         TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
-        values.put(aMinSampleLevel,     -2);
-        values.put(aMaxSampleLevel,     0);
-        values.put(aPixelFilterType,    "Box Filter");
-        values.put(aPixelFilterWidthX,  1.0);
-        values.put(aPixelFilterWidthY,  1.0);
-        values.put(aRedThreshold,       0.1);
-        values.put(aGreenThreshold,     0.1);
-        values.put(aBlueThreshold,      0.1);
-        values.put(aJitter,             false);
+        values.put(aMinSampleLevel,        -2);
+        values.put(aMaxSampleLevel,        0);
+        values.put(aPixelFilterType,       "Box Filter");
+        values.put(aPixelFilterWidthX,     1.0);
+        values.put(aPixelFilterWidthY,     1.0);
+        values.put(aThreshold,             new Tuple3d(0.1, 0.1, 0.1));
+        values.put(aJitter,                false);
 
-        values.put(aReflections,        1);
-        values.put(aRefractions,        1);
-        values.put(aMaxTraceDepth,      2);
+        values.put(aReflections,           1);
+        values.put(aRefractions,           1);
+        values.put(aMaxTraceDepth,         2);
 
-        values.put(aMotionBlur,         "Off");
-        values.put(aTimeContrastRed,    0.2);
-        values.put(aTimeContrastGreen,  0.2);
-        values.put(aTimeContrastBlue,   0.2);
-        values.put(aTimeContrastAlpha,  0.2);
+        values.put(aMotionBlur,            "Off");
+        values.put(aTimeContrast,          new Tuple3d(0.2, 0.2, 0.2));
+        values.put(aTimeContrastAlpha,     0.2);
 
-        values.put(aUseCaustics,        false);
-        values.put(aUseGlobalIllum,     false);
-        values.put(aUseFinalGather,     false);
+        values.put(aUseCaustics,           false);
+        values.put(aUseGlobalIllum,        false);
+        values.put(aUseFinalGather,        false);
 
-        values.put(aScanline,	        "Scanline");
-        values.put(aVisibilitySamples,	0);
-        values.put(aShadingQuality, 	1.0);
-        values.put(aCausticsGenerating,	"None");
-        values.put(aCausticsReceiving, 	"None");
-        values.put(aGlobalIllumGenerating,	"None");
-        values.put(aGlobalIllumReceiving, 	"None");
+        values.put(aScanline,	           "Scanline");
+        values.put(aVisibilitySamples,	   0);
+        values.put(aShadingQuality, 	   1.0);
+        values.put(aCausticsGenerating,	   "None");
+        values.put(aCausticsReceiving, 	   "None");
+        values.put(aGlobalIllumGenerating, "None");
+        values.put(aGlobalIllumReceiving,  "None");
 
-        values.put(aShadowMethod, "Simple");
-        values.put(aShadowMapsFormat, "Regular");
+        values.put(aShadowMethod,          "Simple");
+        values.put(aShadowMapsFormat,      "Regular");
         values.put(aShadowMapsRebuildMode, "Reuse Existing Maps");
-        values.put(aMotionBlurShadowMaps, true);
-        values.put(aShadowMapBias, 0.0);
+        values.put(aMotionBlurShadowMaps,  true);
+        values.put(aShadowMapBias,         0.0);
 
         addPresetValues(aQuality, "Draft", values);
       }
 
       {
         TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
-        values.put(aMinSampleLevel,     -2);
-        values.put(aMaxSampleLevel,     0);
-        values.put(aPixelFilterType,    "Box Filter");
-        values.put(aPixelFilterWidthX,  1.0);
-        values.put(aPixelFilterWidthY,  1.0);
-        values.put(aRedThreshold,       0.1);
-        values.put(aGreenThreshold,     0.1);
-        values.put(aBlueThreshold,      0.1);
-        values.put(aJitter,             false);
+        values.put(aMinSampleLevel,        -2);
+        values.put(aMaxSampleLevel,         0);
+        values.put(aPixelFilterType,       "Box Filter");
+        values.put(aPixelFilterWidthX,     1.0);
+        values.put(aPixelFilterWidthY,     1.0);
+        values.put(aThreshold,             new Tuple3d(0.1, 0.1, 0.1));
+        values.put(aJitter,                false);
 
-        values.put(aReflections,        1);
-        values.put(aRefractions,        1);
-        values.put(aMaxTraceDepth,      2);
+        values.put(aReflections,           1);
+        values.put(aRefractions,           1);
+        values.put(aMaxTraceDepth,         2);
 
-        values.put(aMotionBlur,         "NoDeformation");
-        values.put(aTimeContrastRed,    1.0);
-        values.put(aTimeContrastGreen,  1.0);
-        values.put(aTimeContrastBlue,   1.0);
-        values.put(aTimeContrastAlpha,  1.0);
+        values.put(aMotionBlur,            "NoDeformation");
+        values.put(aTimeContrast,          new Tuple3d(1.0, 1.0, 1.0));
+        values.put(aTimeContrastAlpha,     1.0);
 
-        values.put(aUseCaustics,        false);
-        values.put(aUseGlobalIllum,     false);
-        values.put(aUseFinalGather,     false);
+        values.put(aUseCaustics,           false);
+        values.put(aUseGlobalIllum,        false);
+        values.put(aUseFinalGather,        false);
 
-        values.put(aScanline,	        "Scanline");
-        values.put(aVisibilitySamples,	0);
-        values.put(aShadingQuality, 	1.0);
-        values.put(aCausticsGenerating,	"None");
-        values.put(aCausticsReceiving, 	"None");
-        values.put(aGlobalIllumGenerating,	"None");
-        values.put(aGlobalIllumReceiving, 	"None");
+        values.put(aScanline,	           "Scanline");
+        values.put(aVisibilitySamples,	   0);
+        values.put(aShadingQuality, 	   1.0);
+        values.put(aCausticsGenerating,	   "None");
+        values.put(aCausticsReceiving, 	   "None");
+        values.put(aGlobalIllumGenerating, "None");
+        values.put(aGlobalIllumReceiving,  "None");
 
-        values.put(aShadowMethod, "Simple");
-        values.put(aShadowMapsFormat, "Regular");
+        values.put(aShadowMethod,          "Simple");
+        values.put(aShadowMapsFormat,      "Regular");
         values.put(aShadowMapsRebuildMode, "Reuse Existing Maps");
-        values.put(aMotionBlurShadowMaps, true);
-        values.put(aShadowMapBias, 0.0);
+        values.put(aMotionBlurShadowMaps,  true);
+        values.put(aShadowMapBias,         0.0);
 
         addPresetValues(aQuality, "Draft Motion Blur", values);
       }
 
       {
         TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
-        values.put(aMinSampleLevel,     -2);
-        values.put(aMaxSampleLevel,     0);
-        values.put(aPixelFilterType,    "Box Filter");
-        values.put(aPixelFilterWidthX,  1.0);
-        values.put(aPixelFilterWidthY,  1.0);
-        values.put(aRedThreshold,       0.1);
-        values.put(aGreenThreshold,     0.1);
-        values.put(aBlueThreshold,      0.1);
-        values.put(aJitter,             false);
+        values.put(aMinSampleLevel,        -2);
+        values.put(aMaxSampleLevel,        0);
+        values.put(aPixelFilterType,       "Box Filter");
+        values.put(aPixelFilterWidthX,     1.0);
+        values.put(aPixelFilterWidthY,     1.0);
+        values.put(aThreshold,             new Tuple3d(0.1, 0.1, 0.1));
+        values.put(aJitter,                false);
 
-        values.put(aReflections,        1);
-        values.put(aRefractions,        1);
-        values.put(aMaxTraceDepth,      2);
+        values.put(aReflections,           1);
+        values.put(aRefractions,           1);
+        values.put(aMaxTraceDepth,         2);
 
-        values.put(aMotionBlur,         "NoDeformation");
-        values.put(aTimeContrastRed,    1.0);
-        values.put(aTimeContrastGreen,  1.0);
-        values.put(aTimeContrastBlue,   1.0);
-        values.put(aTimeContrastAlpha,  1.0);
+        values.put(aMotionBlur,            "NoDeformation");
+        values.put(aTimeContrast,          new Tuple3d(1.0, 1.0, 1.0));
+        values.put(aTimeContrastAlpha,     1.0);
 
-        values.put(aUseCaustics,        false);
-        values.put(aUseGlobalIllum,     false);
-        values.put(aUseFinalGather,     false);
+        values.put(aUseCaustics,           false);
+        values.put(aUseGlobalIllum,        false);
+        values.put(aUseFinalGather,        false);
 
-        values.put(aScanline,	        "Rasterizer");
-        values.put(aVisibilitySamples,	1);
-        values.put(aShadingQuality, 	0.25);
-        values.put(aCausticsGenerating,	"None");
-        values.put(aCausticsReceiving, 	"None");
-        values.put(aGlobalIllumGenerating,	"None");
-        values.put(aGlobalIllumReceiving, 	"None");
+        values.put(aScanline,	           "Rasterizer");
+        values.put(aVisibilitySamples,	   1);
+        values.put(aShadingQuality, 	   0.25);
+        values.put(aCausticsGenerating,	   "None");
+        values.put(aCausticsReceiving, 	   "None");
+        values.put(aGlobalIllumGenerating, "None");
+        values.put(aGlobalIllumReceiving,  "None");
 
-        values.put(aShadowMethod, "Simple");
-        values.put(aShadowMapsFormat, "Regular");
+        values.put(aShadowMethod,          "Simple");
+        values.put(aShadowMapsFormat,      "Regular");
         values.put(aShadowMapsRebuildMode, "Reuse Existing Maps");
-        values.put(aMotionBlurShadowMaps, true);
-        values.put(aShadowMapBias, 0.0);
+        values.put(aMotionBlurShadowMaps,  true);
+        values.put(aShadowMapBias,         0.0);
 
         addPresetValues(aQuality, "Draft Rapid Motion", values);
       }
 
       {
         TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
-        values.put(aMinSampleLevel,     -1);
-        values.put(aMaxSampleLevel,     1);
-        values.put(aPixelFilterType,    "Triangle Filter");
-        values.put(aPixelFilterWidthX,  2.0);
-        values.put(aPixelFilterWidthY,  2.0);
-        values.put(aRedThreshold,       0.1);
-        values.put(aGreenThreshold,     0.1);
-        values.put(aBlueThreshold,      0.1);
-        values.put(aJitter,             false);
+        values.put(aMinSampleLevel,        -1);
+        values.put(aMaxSampleLevel,        1);
+        values.put(aPixelFilterType,       "Triangle Filter");
+        values.put(aPixelFilterWidthX,     2.0);
+        values.put(aPixelFilterWidthY,     2.0);
+        values.put(aThreshold,             new Tuple3d(0.1, 0.1, 0.1));
+        values.put(aJitter,                false);
 
-        values.put(aReflections,        2);
-        values.put(aRefractions,        2);
-        values.put(aMaxTraceDepth,      4);
+        values.put(aReflections,           2);
+        values.put(aRefractions,           2);
+        values.put(aMaxTraceDepth,         4);
 
-        values.put(aMotionBlur,         "Off");
-        values.put(aTimeContrastRed,    1.0);
-        values.put(aTimeContrastGreen,  1.0);
-        values.put(aTimeContrastBlue,   1.0);
-        values.put(aTimeContrastAlpha,  1.0);
+        values.put(aTimeContrast,          new Tuple3d(1.0, 1.0, 1.0));
+        values.put(aTimeContrastAlpha,     1.0);
 
-        values.put(aUseCaustics,        false);
-        values.put(aUseGlobalIllum,     false);
-        values.put(aUseFinalGather,     false);
+        values.put(aUseCaustics,           false);
+        values.put(aUseGlobalIllum,        false);
+        values.put(aUseFinalGather,        false);
 
-        values.put(aScanline,	        "Scanline");
-        values.put(aVisibilitySamples,	0);
-        values.put(aShadingQuality, 	1.0);
-        values.put(aCausticsGenerating,	"None");
-        values.put(aCausticsReceiving, 	"None");
-        values.put(aGlobalIllumGenerating,	"None");
-        values.put(aGlobalIllumReceiving, 	"None");
+        values.put(aScanline,	           "Scanline");
+        values.put(aVisibilitySamples,	   0);
+        values.put(aShadingQuality, 	   1.0);
+        values.put(aCausticsGenerating,	   "None");
+        values.put(aCausticsReceiving, 	   "None");
+        values.put(aGlobalIllumGenerating, "None");
+        values.put(aGlobalIllumReceiving,  "None");
 
-        values.put(aShadowMethod, "Simple");
-        values.put(aShadowMapsFormat, "Regular");
+        values.put(aShadowMethod,          "Simple");
+        values.put(aShadowMapsFormat,      "Regular");
         values.put(aShadowMapsRebuildMode, "Reuse Existing Maps");
-        values.put(aMotionBlurShadowMaps, true);
-        values.put(aShadowMapBias, 0.0);
+        values.put(aMotionBlurShadowMaps,  true);
+        values.put(aShadowMapBias,         0.0);
 
         addPresetValues(aQuality, "Preview", values);
       }
 
       {
         TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
-        values.put(aMinSampleLevel,     -1);
-        values.put(aMaxSampleLevel,     1);
-        values.put(aPixelFilterType,    "Triangle Filter");
-        values.put(aPixelFilterWidthX,  2.0);
-        values.put(aPixelFilterWidthY,  2.0);
-        values.put(aJitter,             false);
+        values.put(aMinSampleLevel,        -1);
+        values.put(aMaxSampleLevel,        1);
+        values.put(aPixelFilterType,       "Triangle Filter");
+        values.put(aPixelFilterWidthX,     2.0);
+        values.put(aPixelFilterWidthY,     2.0);
+        values.put(aJitter,                false);
 
-        values.put(aReflections,        2);
-        values.put(aRefractions,        2);
-        values.put(aMaxTraceDepth,      4);
+        values.put(aReflections,           2);
+        values.put(aRefractions,           2);
+        values.put(aMaxTraceDepth,         4);
 
-        values.put(aMotionBlur,         "Off");
-        values.put(aTimeContrastRed,    1.0);
-        values.put(aTimeContrastGreen,  1.0);
-        values.put(aTimeContrastBlue,   1.0);
-        values.put(aTimeContrastAlpha,  1.0);
+        values.put(aMotionBlur,            "Off");
+        values.put(aTimeContrast,          new Tuple3d(1.0, 1.0, 1.0));
+        values.put(aTimeContrastAlpha,     1.0);
 
-        values.put(aUseCaustics,        true);
-        values.put(aUseGlobalIllum,     false);
-        values.put(aUseFinalGather,     false);
+        values.put(aUseCaustics,           true);
+        values.put(aUseGlobalIllum,        false);
+        values.put(aUseFinalGather,        false);
 
-        values.put(aScanline,	        "Scanline");
-        values.put(aVisibilitySamples,	0);
-        values.put(aShadingQuality, 	1.0);
-        values.put(aCausticsGenerating,	"On");
-        values.put(aCausticsReceiving, 	"On");
-        values.put(aGlobalIllumGenerating,	"None");
-        values.put(aGlobalIllumReceiving, 	"None");
+        values.put(aScanline,	           "Scanline");
+        values.put(aVisibilitySamples,	   0);
+        values.put(aShadingQuality, 	   1.0);
+        values.put(aCausticsGenerating,	   "On");
+        values.put(aCausticsReceiving, 	   "On");
+        values.put(aGlobalIllumGenerating, "None");
+        values.put(aGlobalIllumReceiving,  "None");
 
-        values.put(aShadowMethod, "Simple");
-        values.put(aShadowMapsFormat, "Regular");
+        values.put(aShadowMethod,          "Simple");
+        values.put(aShadowMapsFormat,      "Regular");
         values.put(aShadowMapsRebuildMode, "Reuse Existing Maps");
-        values.put(aMotionBlurShadowMaps, true);
-        values.put(aShadowMapBias, 0.0);
+        values.put(aMotionBlurShadowMaps,  true);
+        values.put(aShadowMapBias,         0.0);
 
         addPresetValues(aQuality, "Preview Caustics", values);
       }
 
       {
         TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
-        values.put(aMinSampleLevel,     -1);
-        values.put(aMaxSampleLevel,     1);
-        values.put(aPixelFilterType,    "Triangle Filter");
-        values.put(aPixelFilterWidthX,  2.0);
-        values.put(aPixelFilterWidthY,  2.0);
-        values.put(aRedThreshold,       0.1);
-        values.put(aGreenThreshold,     0.1);
-        values.put(aBlueThreshold,      0.1);
-        values.put(aJitter,             false);
+        values.put(aMinSampleLevel,        -1);
+        values.put(aMaxSampleLevel,        1);
+        values.put(aPixelFilterType,       "Triangle Filter");
+        values.put(aPixelFilterWidthX,     2.0);
+        values.put(aPixelFilterWidthY,     2.0);
+        values.put(aThreshold,             new Tuple3d(0.1, 0.1, 0.1));
+        values.put(aJitter,                false);
 
-        values.put(aReflections,        2);
-        values.put(aRefractions,        2);
-        values.put(aMaxTraceDepth,      4);
+        values.put(aReflections,           2);
+        values.put(aRefractions,           2);
+        values.put(aMaxTraceDepth,         4);
 
-        values.put(aMotionBlur,         "Off");
-        values.put(aTimeContrastRed,    1.0);
-        values.put(aTimeContrastGreen,  1.0);
-        values.put(aTimeContrastBlue,   1.0);
-        values.put(aTimeContrastAlpha,  1.0);
+        values.put(aMotionBlur,            "Off");
+        values.put(aTimeContrast,          new Tuple3d(1.0, 1.0, 1.0));
+        values.put(aTimeContrastAlpha,     1.0);
 
-        values.put(aUseCaustics,        false);
-        values.put(aUseGlobalIllum,     true);
-        values.put(aUseFinalGather,     true);
+        values.put(aUseCaustics,           false);
+        values.put(aUseGlobalIllum,        true);
+        values.put(aUseFinalGather,        true);
 
-        values.put(aScanline,	        "Scanline");
-        values.put(aVisibilitySamples,	0);
-        values.put(aShadingQuality, 	1.0);
-        values.put(aCausticsGenerating,	"None");
-        values.put(aCausticsReceiving, 	"None");
-        values.put(aGlobalIllumGenerating,	"None");
-        values.put(aGlobalIllumReceiving, 	"None");
+        values.put(aScanline,	           "Scanline");
+        values.put(aVisibilitySamples,	   0);
+        values.put(aShadingQuality, 	   1.0);
+        values.put(aCausticsGenerating,	   "None");
+        values.put(aCausticsReceiving, 	   "None");
+        values.put(aGlobalIllumGenerating, "None");
+        values.put(aGlobalIllumReceiving,  "None");
 
-        values.put(aShadowMethod, "Simple");
-        values.put(aShadowMapsFormat, "Regular");
+        values.put(aShadowMethod,          "Simple");
+        values.put(aShadowMapsFormat,      "Regular");
         values.put(aShadowMapsRebuildMode, "Reuse Existing Maps");
-        values.put(aMotionBlurShadowMaps, true);
-        values.put(aShadowMapBias, 0.0);
+        values.put(aMotionBlurShadowMaps,  true);
+        values.put(aShadowMapBias,         0.0);
 
         addPresetValues(aQuality, "Preview Final Gather", values);
       }
 
       {
         TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
-        values.put(aMinSampleLevel,     -1);
-        values.put(aMaxSampleLevel,     1);
-        values.put(aPixelFilterType,    "Triangle Filter");
-        values.put(aPixelFilterWidthX,  2.0);
-        values.put(aPixelFilterWidthY,  2.0);
-        values.put(aRedThreshold,       0.1);
-        values.put(aGreenThreshold,     0.1);
-        values.put(aBlueThreshold,      0.1);
-        values.put(aJitter,             false);
+        values.put(aMinSampleLevel,        -1);
+        values.put(aMaxSampleLevel,        1);
+        values.put(aPixelFilterType,       "Triangle Filter");
+        values.put(aPixelFilterWidthX,     2.0);
+        values.put(aPixelFilterWidthY,     2.0);
+        values.put(aThreshold,             new Tuple3d(0.1, 0.1, 0.1));
+        values.put(aJitter,                false);
 
-        values.put(aReflections,        2);
-        values.put(aRefractions,        2);
-        values.put(aMaxTraceDepth,      4);
+        values.put(aReflections,           2);
+        values.put(aRefractions,           2);
+        values.put(aMaxTraceDepth,         4);
 
-        values.put(aMotionBlur,         "Off");
-        values.put(aTimeContrastRed,    1.0);
-        values.put(aTimeContrastGreen,  1.0);
-        values.put(aTimeContrastBlue,   1.0);
-        values.put(aTimeContrastAlpha,  1.0);
+        values.put(aMotionBlur,            "Off");
+        values.put(aTimeContrast,          new Tuple3d(1.0, 1.0, 1.0));
+        values.put(aTimeContrastAlpha,     1.0);
 
-        values.put(aUseCaustics,        false);
-        values.put(aUseGlobalIllum,     true);
-        values.put(aUseFinalGather,     false);
+        values.put(aUseCaustics,           false);
+        values.put(aUseGlobalIllum,        true);
+        values.put(aUseFinalGather,        false);
 
-        values.put(aScanline,	        "Scanline");
-        values.put(aVisibilitySamples,	0);
-        values.put(aShadingQuality, 	1.0);
-        values.put(aCausticsGenerating,	"None");
-        values.put(aCausticsReceiving, 	"None");
-        values.put(aGlobalIllumGenerating,	"On");
-        values.put(aGlobalIllumReceiving, 	"On");
+        values.put(aScanline,	           "Scanline");
+        values.put(aVisibilitySamples,	   0);
+        values.put(aShadingQuality, 	   1.0);
+        values.put(aCausticsGenerating,	   "None");
+        values.put(aCausticsReceiving, 	   "None");
+        values.put(aGlobalIllumGenerating, "On");
+        values.put(aGlobalIllumReceiving,  "On");
 
-        values.put(aShadowMethod, "Simple");
-        values.put(aShadowMapsFormat, "Regular");
+        values.put(aShadowMethod,          "Simple");
+        values.put(aShadowMapsFormat,      "Regular");
         values.put(aShadowMapsRebuildMode, "Reuse Existing Maps");
-        values.put(aMotionBlurShadowMaps, true);
-        values.put(aShadowMapBias, 0.0);
+        values.put(aMotionBlurShadowMaps,  true);
+        values.put(aShadowMapBias,         0.0);
 
         addPresetValues(aQuality, "Preview Global Illum", values);
       }
 
       {
         TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
-        values.put(aMinSampleLevel,     -1);
-        values.put(aMaxSampleLevel,     1);
-        values.put(aPixelFilterType,    "Triangle Filter");
-        values.put(aPixelFilterWidthX,  2.0);
-        values.put(aPixelFilterWidthY,  2.0);
-        values.put(aRedThreshold,       0.1);
-        values.put(aGreenThreshold,     0.1);
-        values.put(aBlueThreshold,      0.1);
-        values.put(aJitter,             false);
+        values.put(aMinSampleLevel,        -1);
+        values.put(aMaxSampleLevel,        1);
+        values.put(aPixelFilterType,       "Triangle Filter");
+        values.put(aPixelFilterWidthX,     2.0);
+        values.put(aPixelFilterWidthY,     2.0);
+        values.put(aThreshold,             new Tuple3d(0.1, 0.1, 0.1));
+        values.put(aJitter,                false);
 
-        values.put(aReflections,        2);
-        values.put(aRefractions,        2);
-        values.put(aMaxTraceDepth,      4);
+        values.put(aReflections,           2);
+        values.put(aRefractions,           2);
+        values.put(aMaxTraceDepth,         4);
 
-        values.put(aMotionBlur,         "NoDeformation");
-        values.put(aTimeContrastRed,    0.500);
-        values.put(aTimeContrastGreen,  0.500);
-        values.put(aTimeContrastBlue,   0.500);
-        values.put(aTimeContrastAlpha,  0.500);
+        values.put(aMotionBlur,            "NoDeformation");
+        values.put(aTimeContrast,          new Tuple3d(0.500, 0.500, 0.500));
+        values.put(aTimeContrastAlpha,     0.500);
 
-        values.put(aUseCaustics,        false);
-        values.put(aUseGlobalIllum,     false);
-        values.put(aUseFinalGather,     false);	
+        values.put(aUseCaustics,           false);
+        values.put(aUseGlobalIllum,        false);
+        values.put(aUseFinalGather,        false);	
 
-        values.put(aScanline,	        "Scanline");
-        values.put(aVisibilitySamples,	0);
-        values.put(aShadingQuality, 	1.0);
-        values.put(aCausticsGenerating,	"None");
-        values.put(aCausticsReceiving, 	"None");
-        values.put(aGlobalIllumGenerating,	"None");
-        values.put(aGlobalIllumReceiving, 	"None");
+        values.put(aScanline,	           "Scanline");
+        values.put(aVisibilitySamples,	   0);
+        values.put(aShadingQuality, 	   1.0);
+        values.put(aCausticsGenerating,	   "None");
+        values.put(aCausticsReceiving, 	   "None");
+        values.put(aGlobalIllumGenerating, "None");
+        values.put(aGlobalIllumReceiving,  "None");
 
-        values.put(aShadowMethod, "Simple");
-        values.put(aShadowMapsFormat, "Regular");
+        values.put(aShadowMethod,          "Simple");
+        values.put(aShadowMapsFormat,      "Regular");
         values.put(aShadowMapsRebuildMode, "Reuse Existing Maps");
-        values.put(aMotionBlurShadowMaps, true);
-        values.put(aShadowMapBias, 0.0);
+        values.put(aMotionBlurShadowMaps,  true);
+        values.put(aShadowMapBias,         0.0);
 
         addPresetValues(aQuality, "Preview Motion Blur", values);
       }
 
       {
         TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
-        values.put(aMinSampleLevel,     -1);
-        values.put(aMaxSampleLevel,     1);
-        values.put(aPixelFilterType,    "Triangle Filter");
-        values.put(aPixelFilterWidthX,  2.0);
-        values.put(aPixelFilterWidthY,  2.0);
-        values.put(aRedThreshold,       0.1);
-        values.put(aGreenThreshold,     0.1);
-        values.put(aBlueThreshold,      0.1);
-        values.put(aJitter,             false);
+        values.put(aMinSampleLevel,        -1);
+        values.put(aMaxSampleLevel,        1);
+        values.put(aPixelFilterType,       "Triangle Filter");
+        values.put(aPixelFilterWidthX,     2.0);
+        values.put(aPixelFilterWidthY,     2.0);
+        values.put(aThreshold,             new Tuple3d(0.1, 0.1, 0.1));
+        values.put(aJitter,                false);
 
-        values.put(aReflections,        2);
-        values.put(aRefractions,        2);
-        values.put(aMaxTraceDepth,      4);
+        values.put(aReflections,           2);
+        values.put(aRefractions,           2);
+        values.put(aMaxTraceDepth,         4);
 
-        values.put(aMotionBlur,         "NoDeformation");
-        values.put(aTimeContrastRed,    0.500);
-        values.put(aTimeContrastGreen,  0.500);
-        values.put(aTimeContrastBlue,   0.500);
-        values.put(aTimeContrastAlpha,  0.500);
+        values.put(aMotionBlur,            "NoDeformation");
+        values.put(aTimeContrast,          new Tuple3d(0.500, 0.500, 0.500));
+        values.put(aTimeContrastAlpha,     0.500);
 
-        values.put(aUseCaustics,        false);
-        values.put(aUseGlobalIllum,     false);
-        values.put(aUseFinalGather,     false);	
+        values.put(aUseCaustics,           false);
+        values.put(aUseGlobalIllum,        false);
+        values.put(aUseFinalGather,        false);	
 
-        values.put(aScanline,	        "Rasterizer");
-        values.put(aVisibilitySamples,	3);
-        values.put(aShadingQuality, 	1.0);
-        values.put(aCausticsGenerating,	"None");
-        values.put(aCausticsReceiving, 	"None");
-        values.put(aGlobalIllumGenerating,	"None");
-        values.put(aGlobalIllumReceiving, 	"None");
+        values.put(aScanline,	           "Rasterizer");
+        values.put(aVisibilitySamples,	   3);
+        values.put(aShadingQuality, 	   1.0);
+        values.put(aCausticsGenerating,	   "None");
+        values.put(aCausticsReceiving, 	   "None");
+        values.put(aGlobalIllumGenerating, "None");
+        values.put(aGlobalIllumReceiving,  "None");
 
-        values.put(aShadowMethod, "Simple");
-        values.put(aShadowMapsFormat, "Regular");
+        values.put(aShadowMethod,          "Simple");
+        values.put(aShadowMapsFormat,      "Regular");
         values.put(aShadowMapsRebuildMode, "Reuse Existing Maps");
-        values.put(aMotionBlurShadowMaps, true);
-        values.put(aShadowMapBias, 0.0);
+        values.put(aMotionBlurShadowMaps,  true);
+        values.put(aShadowMapBias,         0.0);
 
         addPresetValues(aQuality, "Preview Rapid Motion", values);
       }
 
       {
         TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
-        values.put(aMinSampleLevel,     0);
-        values.put(aMaxSampleLevel,     2);
-        values.put(aPixelFilterType,    "Gaussian Filter");
-        values.put(aPixelFilterWidthX,  3.0);
-        values.put(aPixelFilterWidthY,  3.0);
-        values.put(aRedThreshold,       0.1);
-        values.put(aGreenThreshold,     0.1);
-        values.put(aBlueThreshold,      0.1);
-        values.put(aJitter,             false);
+        values.put(aMinSampleLevel,        0);
+        values.put(aMaxSampleLevel,        2);
+        values.put(aPixelFilterType,       "Gaussian Filter");
+        values.put(aPixelFilterWidthX,     3.0);
+        values.put(aPixelFilterWidthY,     3.0);
+        values.put(aThreshold,             new Tuple3d(0.1, 0.1, 0.1));
+        values.put(aJitter,                false);
 
-        values.put(aReflections,        10);
-        values.put(aRefractions,        10);
-        values.put(aMaxTraceDepth,      20);
+        values.put(aReflections,           10);
+        values.put(aRefractions,           10);
+        values.put(aMaxTraceDepth,         20);
 
-        values.put(aMotionBlur,         "Off");
-        values.put(aTimeContrastRed,    0.200);
-        values.put(aTimeContrastGreen,  0.200);
-        values.put(aTimeContrastBlue,   0.200);
-        values.put(aTimeContrastAlpha,  0.200);
+        values.put(aMotionBlur,            "Off");
+        values.put(aTimeContrast,          new Tuple3d(0.200, 0.200, 0.200));
+        values.put(aTimeContrastAlpha,     0.200);
 
-        values.put(aUseCaustics,        false);
-        values.put(aUseGlobalIllum,     false);
-        values.put(aUseFinalGather,     false);
+        values.put(aUseCaustics,           false);
+        values.put(aUseGlobalIllum,        false);
+        values.put(aUseFinalGather,        false);
 
-        values.put(aScanline,	        "Scanline");
-        values.put(aVisibilitySamples,	0);
-        values.put(aShadingQuality, 	1.0);
-        values.put(aCausticsGenerating,	"None");
-        values.put(aCausticsReceiving, 	"None");
-        values.put(aGlobalIllumGenerating,	"None");
-        values.put(aGlobalIllumReceiving, 	"None");
+        values.put(aScanline,	           "Scanline");
+        values.put(aVisibilitySamples,	   0);
+        values.put(aShadingQuality, 	   1.0);
+        values.put(aCausticsGenerating,	   "None");
+        values.put(aCausticsReceiving, 	   "None");
+        values.put(aGlobalIllumGenerating, "None");
+        values.put(aGlobalIllumReceiving,  "None");
 
-        values.put(aShadowMethod, "Simple");
-        values.put(aShadowMapsFormat, "Regular");
+        values.put(aShadowMethod,          "Simple");
+        values.put(aShadowMapsFormat,      "Regular");
         values.put(aShadowMapsRebuildMode, "Reuse Existing Maps");
-        values.put(aMotionBlurShadowMaps, true);
-        values.put(aShadowMapBias, 0.0);
+        values.put(aMotionBlurShadowMaps,  true);
+        values.put(aShadowMapBias,         0.0);
 
         addPresetValues(aQuality, "Production", values);
       }
 
       {
         TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
-        values.put(aMinSampleLevel,     0);
-        values.put(aMaxSampleLevel,     2);
-        values.put(aPixelFilterType,    "Gaussian Filter");
-        values.put(aPixelFilterWidthX,  3.0);
-        values.put(aPixelFilterWidthY,  3.0);
-        values.put(aRedThreshold,       0.1);
-        values.put(aGreenThreshold,     0.1);
-        values.put(aBlueThreshold,      0.1);
-        values.put(aJitter,             false);
+        values.put(aMinSampleLevel,        0);
+        values.put(aMaxSampleLevel,        2);
+        values.put(aPixelFilterType,       "Gaussian Filter");
+        values.put(aPixelFilterWidthX,     3.0);
+        values.put(aThreshold,             new Tuple3d(0.1, 0.1, 0.1));
+        values.put(aJitter,                false);
 
-        values.put(aReflections,        10);
-        values.put(aRefractions,        10);
-        values.put(aMaxTraceDepth,      20);
+        values.put(aReflections,           10);
+        values.put(aRefractions,           10);
+        values.put(aMaxTraceDepth,         20);
 
-        values.put(aMotionBlur,         "Full");
-        values.put(aTimeContrastRed,    0.200);
-        values.put(aTimeContrastGreen,  0.200);
-        values.put(aTimeContrastBlue,   0.200);
-        values.put(aTimeContrastAlpha,  0.200);
+        values.put(aMotionBlur,            "Full");
+        values.put(aTimeContrast,          new Tuple3d(0.200, 0.200, 0.200));
+        values.put(aTimeContrastAlpha,     0.200);
 
-        values.put(aUseCaustics,        false);
-        values.put(aUseGlobalIllum,     false);
-        values.put(aUseFinalGather,     false);	
+        values.put(aUseCaustics,           false);
+        values.put(aUseGlobalIllum,        false);
+        values.put(aUseFinalGather,        false);	
 
-        values.put(aScanline,	        "Scanline");
-        values.put(aVisibilitySamples,	0);
-        values.put(aShadingQuality, 	1.0);
-        values.put(aCausticsGenerating,	"None");
-        values.put(aCausticsReceiving, 	"None");
-        values.put(aGlobalIllumGenerating,	"None");
-        values.put(aGlobalIllumReceiving, 	"None");
+        values.put(aScanline,	           "Scanline");
+        values.put(aVisibilitySamples,	   0);
+        values.put(aShadingQuality, 	   1.0);
+        values.put(aCausticsGenerating,    "None");
+        values.put(aCausticsReceiving, 	   "None");
+        values.put(aGlobalIllumGenerating, "None");
+        values.put(aGlobalIllumReceiving,  "None");
 
-        values.put(aShadowMethod, "Simple");
-        values.put(aShadowMapsFormat, "Regular");
+        values.put(aShadowMethod,          "Simple");
+        values.put(aShadowMapsFormat,      "Regular");
         values.put(aShadowMapsRebuildMode, "Reuse Existing Maps");
-        values.put(aMotionBlurShadowMaps, true);
-        values.put(aShadowMapBias, 0.0);
+        values.put(aMotionBlurShadowMaps,  true);
+        values.put(aShadowMapBias,         0.0);
 
         addPresetValues(aQuality, "Production Motion Blur", values);
       }
 
       {
         TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
-        values.put(aMinSampleLevel,     0);
-        values.put(aMaxSampleLevel,     2);
-        values.put(aPixelFilterType,    "Triangle Filter");
-        values.put(aPixelFilterWidthX,  2.29);
-        values.put(aPixelFilterWidthY,  2.29);
-        values.put(aRedThreshold,       0.04);
-        values.put(aGreenThreshold,     0.03);
-        values.put(aBlueThreshold,      0.07);
-        values.put(aJitter,             true);
+        values.put(aMinSampleLevel,        0);
+        values.put(aMaxSampleLevel,        2);
+        values.put(aPixelFilterType,       "Triangle Filter");
+        values.put(aPixelFilterWidthX,     2.29);
+        values.put(aPixelFilterWidthY,     2.29);
+        values.put(aThreshold,             new Tuple3d(0.4, 0.3, 0.7));
+        values.put(aJitter,                true);
 
-        values.put(aReflections,        1);
-        values.put(aRefractions,        1);
-        values.put(aMaxTraceDepth,      1);
+        values.put(aReflections,           1);
+        values.put(aRefractions,           1);
+        values.put(aMaxTraceDepth,         1);
 
-        values.put(aMotionBlur,         "Off");
-        values.put(aTimeContrastRed,    0.200);
-        values.put(aTimeContrastGreen,  0.200);
-        values.put(aTimeContrastBlue,   0.200);
-        values.put(aTimeContrastAlpha,  0.200);
+        values.put(aMotionBlur,            "Off");
+        values.put(aTimeContrast,          new Tuple3d(0.200, 0.200, 0.200));
+        values.put(aTimeContrastAlpha,     0.200);
 
-        values.put(aUseCaustics,        false);
-        values.put(aUseGlobalIllum,     false);
-        values.put(aUseFinalGather,     false);	
+        values.put(aUseCaustics,           false);
+        values.put(aUseGlobalIllum,        false);
+        values.put(aUseFinalGather,        false);	
 
-        values.put(aScanline,	        "Rasterizer");
-        values.put(aVisibilitySamples,	3);
-        values.put(aShadingQuality, 	0.25);
-        values.put(aCausticsGenerating,	"None");
-        values.put(aCausticsReceiving, 	"None");
-        values.put(aGlobalIllumGenerating,	"None");
-        values.put(aGlobalIllumReceiving, 	"None");
+        values.put(aScanline,	           "Rasterizer");
+        values.put(aVisibilitySamples,   	3);
+        values.put(aShadingQuality, 	   0.25);
+        values.put(aCausticsGenerating,	   "None");
+        values.put(aCausticsReceiving, 	   "None");
+        values.put(aGlobalIllumGenerating, "None");
+        values.put(aGlobalIllumReceiving,  "None");
 
-        values.put(aShadowMethod, "Segment");
-        values.put(aShadowMapsFormat, "Detail");
+        values.put(aShadowMethod,          "Segment");
+        values.put(aShadowMapsFormat,      "Detail");
         values.put(aShadowMapsRebuildMode, "Rebuild All & Overwrite");
-        values.put(aMotionBlurShadowMaps, false);
-        values.put(aShadowMapBias, 0.02);
+        values.put(aMotionBlurShadowMaps,  false);
+        values.put(aShadowMapBias,         0.02);
 
         addPresetValues(aQuality, "Production Rapid Fur", values);
       }
 
       {
         TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
-        values.put(aMinSampleLevel,     0);
-        values.put(aMaxSampleLevel,     2);
-        values.put(aPixelFilterType,    "Triangle Filter");
-        values.put(aPixelFilterWidthX,  2.29);
-        values.put(aPixelFilterWidthY,  2.29);
-        values.put(aRedThreshold,       0.04);
-        values.put(aGreenThreshold,     0.03);
-        values.put(aBlueThreshold,      0.07);
-        values.put(aJitter,             true);
+        values.put(aMinSampleLevel,        0);
+        values.put(aMaxSampleLevel,        2);
+        values.put(aPixelFilterType,       "Triangle Filter");
+        values.put(aPixelFilterWidthX,     2.29);
+        values.put(aPixelFilterWidthY,     2.29);
+        values.put(aThreshold,             new Tuple3d(0.4, 0.3, 0.7));
+        values.put(aJitter,                true);
 
-        values.put(aReflections,        1);
-        values.put(aRefractions,        1);
-        values.put(aMaxTraceDepth,      1);
+        values.put(aReflections,           1);
+        values.put(aRefractions,           1);
+        values.put(aMaxTraceDepth,         1);
 
-        values.put(aMotionBlur,         "Off");
-        values.put(aTimeContrastRed,    0.200);
-        values.put(aTimeContrastGreen,  0.200);
-        values.put(aTimeContrastBlue,   0.200);
-        values.put(aTimeContrastAlpha,  0.200);
+        values.put(aMotionBlur,            "Off");
+        values.put(aTimeContrast,          new Tuple3d(0.200, 0.200, 0.200));
+        values.put(aTimeContrastAlpha,     0.200);
 
-        values.put(aUseCaustics,        false);
-        values.put(aUseGlobalIllum,     false);
-        values.put(aUseFinalGather,     false);	
+        values.put(aUseCaustics,           false);
+        values.put(aUseGlobalIllum,        false);
+        values.put(aUseFinalGather,        false);	
 
-        values.put(aScanline,	        "Rasterizer");
-        values.put(aVisibilitySamples,	6);
-        values.put(aShadingQuality, 	1.0);
-        values.put(aCausticsGenerating,	"None");
-        values.put(aCausticsReceiving, 	"None");
-        values.put(aGlobalIllumGenerating,	"None");
-        values.put(aGlobalIllumReceiving, 	"None");
+        values.put(aScanline,	           "Rasterizer");
+        values.put(aVisibilitySamples,	   6);
+        values.put(aShadingQuality, 	   1.0);
+        values.put(aCausticsGenerating,	   "None");
+        values.put(aCausticsReceiving, 	   "None");
+        values.put(aGlobalIllumGenerating, "None");
+        values.put(aGlobalIllumReceiving,  "None");
 
-        values.put(aShadowMethod, "Segment");
-        values.put(aShadowMapsFormat, "Detail");
+        values.put(aShadowMethod,          "Segment");
+        values.put(aShadowMapsFormat,      "Detail");
         values.put(aShadowMapsRebuildMode, "Rebuild All & Overwrite");
-        values.put(aMotionBlurShadowMaps, false);
-        values.put(aShadowMapBias, 0.02);
+        values.put(aMotionBlurShadowMaps,  false);
+        values.put(aShadowMapBias,         0.02);
 
         addPresetValues(aQuality, "Production Rapid Fur", values);
       }
 
       {
         TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
-        values.put(aMinSampleLevel,     0);
-        values.put(aMaxSampleLevel,     2);
-        values.put(aPixelFilterType,    "Gaussian Filter");
-        values.put(aPixelFilterWidthX,  3.0);
-        values.put(aPixelFilterWidthY,  3.0);
-        values.put(aRedThreshold,       0.1);
-        values.put(aGreenThreshold,     0.1);
-        values.put(aBlueThreshold,      0.1);
-        values.put(aJitter,             false);
+        values.put(aMinSampleLevel,        0);
+        values.put(aMaxSampleLevel,        2);
+        values.put(aPixelFilterType,       "Gaussian Filter");
+        values.put(aPixelFilterWidthX,     3.0);
+        values.put(aPixelFilterWidthY,     3.0);
+        values.put(aThreshold,             new Tuple3d(0.1, 0.1, 0.1));
+        values.put(aJitter,                false);
 
-        values.put(aReflections,        10);
-        values.put(aRefractions,        10);
-        values.put(aMaxTraceDepth,      20);
+        values.put(aReflections,           10);
+        values.put(aRefractions,           10);
+        values.put(aMaxTraceDepth,         20);
 
-        values.put(aMotionBlur,         "Full");
-        values.put(aTimeContrastRed,    0.200);
-        values.put(aTimeContrastGreen,  0.200);
-        values.put(aTimeContrastBlue,   0.200);
-        values.put(aTimeContrastAlpha,  0.200);
+        values.put(aMotionBlur,            "Full");
+        values.put(aTimeContrast,          new Tuple3d(0.200, 0.200, 0.200));
+        values.put(aTimeContrastAlpha,     0.200);
 
-        values.put(aUseCaustics,        false);
-        values.put(aUseGlobalIllum,     false);
-        values.put(aUseFinalGather,     false);
+        values.put(aUseCaustics,           false);
+        values.put(aUseGlobalIllum,        false);
+        values.put(aUseFinalGather,        false);
 
-        values.put(aScanline,	        "Rasterizer");
-        values.put(aVisibilitySamples,	8);
-        values.put(aShadingQuality, 	2.0);
-        values.put(aCausticsGenerating,	"None");
-        values.put(aCausticsReceiving, 	"None");
-        values.put(aGlobalIllumGenerating,	"None");
-        values.put(aGlobalIllumReceiving, 	"None");
+        values.put(aScanline,	           "Rasterizer");
+        values.put(aVisibilitySamples,     8);
+        values.put(aShadingQuality, 	   2.0);
+        values.put(aCausticsGenerating,	   "None");
+        values.put(aCausticsReceiving, 	   "None");
+        values.put(aGlobalIllumGenerating, "None");
+        values.put(aGlobalIllumReceiving,  "None");
 
-        values.put(aShadowMethod, "Simple");
-        values.put(aShadowMapsFormat, "Regular");
+        values.put(aShadowMethod,          "Simple");
+        values.put(aShadowMapsFormat,      "Regular");
         values.put(aShadowMapsRebuildMode, "Reuse Existing Maps");
-        values.put(aMotionBlurShadowMaps, true);
-        values.put(aShadowMapBias, 0.0);
+        values.put(aMotionBlurShadowMaps,  true);
+        values.put(aShadowMapBias,         0.0);
 
         addPresetValues(aQuality, "Production Rapid Motion", values);
       }
 
       {
         TreeMap<String,Comparable> values = new TreeMap<String,Comparable>();
-        values.put(aMinSampleLevel,     1);
-        values.put(aMaxSampleLevel,     2);
-        values.put(aPixelFilterType,    "Box Filter");
-        values.put(aPixelFilterWidthX,  0.75);
-        values.put(aPixelFilterWidthY,  0.75);
-        values.put(aRedThreshold,       0.02);
-        values.put(aGreenThreshold,     0.02);
-        values.put(aBlueThreshold,      0.02);
-        values.put(aJitter,             true);
+        values.put(aMinSampleLevel,        1);
+        values.put(aMaxSampleLevel,        2);
+        values.put(aPixelFilterType,       "Box Filter");
+        values.put(aPixelFilterWidthX,     0.75);
+        values.put(aPixelFilterWidthY,     0.75);
+        values.put(aThreshold,             new Tuple3d(0.02, 0.02, 0.02));
+        values.put(aJitter,                true);
 
-        values.put(aReflections,        1);
-        values.put(aRefractions,        1);
-        values.put(aMaxTraceDepth,      1);
+        values.put(aReflections,           1);
+        values.put(aRefractions,           1);
+        values.put(aMaxTraceDepth,         1);
 
-        values.put(aMotionBlur,         "Off");
-        values.put(aTimeContrastRed,    0.200);
-        values.put(aTimeContrastGreen,  0.200);
-        values.put(aTimeContrastBlue,   0.200);
-        values.put(aTimeContrastAlpha,  0.200);
+        values.put(aMotionBlur,            "Off");
+        values.put(aTimeContrast,          new Tuple3d(0.200, 0.200, 0.200));
+        values.put(aTimeContrastAlpha,     0.200);
 
-        values.put(aUseCaustics,        false);
-        values.put(aUseGlobalIllum,     false);
-        values.put(aUseFinalGather,     false);
+        values.put(aUseCaustics,           false);
+        values.put(aUseGlobalIllum,        false);
+        values.put(aUseFinalGather,        false);
 
-        values.put(aScanline,	        "Raytracing");
-        values.put(aVisibilitySamples,	0);
-        values.put(aShadingQuality, 	1.0);
-        values.put(aCausticsGenerating,	"None");
-        values.put(aCausticsReceiving, 	"None");
-        values.put(aGlobalIllumGenerating,	"None");
-        values.put(aGlobalIllumReceiving, 	"None");
+        values.put(aScanline,	           "Raytracing");
+        values.put(aVisibilitySamples,	   0);
+        values.put(aShadingQuality, 	   1.0);
+        values.put(aCausticsGenerating,	   "None");
+        values.put(aCausticsReceiving, 	   "None");
+        values.put(aGlobalIllumGenerating, "None");
+        values.put(aGlobalIllumReceiving,  "None");
 
-        values.put(aShadowMethod, "Simple");
-        values.put(aShadowMapsFormat, "Regular");
+        values.put(aShadowMethod,          "Simple");
+        values.put(aShadowMapsFormat,      "Regular");
         values.put(aShadowMapsRebuildMode, "Reuse Existing Maps");
-        values.put(aMotionBlurShadowMaps, true);
-        values.put(aShadowMapBias, 0.0);
+        values.put(aMotionBlurShadowMaps,  true);
+        values.put(aShadowMapBias,         0.0);
 
         addPresetValues(aQuality, "Production Fine Trace", values);
       }
@@ -3515,6 +3844,9 @@ extends CommonActionUtils
       layout.addEntry(aImageWidth);
       layout.addEntry(aImageHeight);
       layout.addEntry(aPixelAspectRatio);
+      layout.addSeparator();
+      layout.addEntry(aAlphaMaskChannel);
+      layout.addEntry(aZDepthChannel);
       layout.addSeparator();
       layout.addEntry(aQuality);
       layout.addEntry(aScanline);
@@ -3534,10 +3866,11 @@ extends CommonActionUtils
         { 
           LayoutGroup ct = new LayoutGroup
           ("ContrastThreshold", "Controls of oversampling due to sample contrast.", true);
-          ct.addEntry(aRedThreshold);
-          ct.addEntry(aGreenThreshold);
-          ct.addEntry(aBlueThreshold);
-          ct.addEntry(aAlphaThreshold);
+          //ct.addEntry(aRedThreshold);
+          //ct.addEntry(aGreenThreshold);
+          //ct.addEntry(aBlueThreshold);
+          ct.addEntry(aThreshold);
+          ct.addEntry(aCoverageThreshold);
 
           aaq.addSubGroup(ct);
         }
@@ -3639,11 +3972,9 @@ extends CommonActionUtils
         mb.addSeparator(); 
         mb.addEntry(aShutterOpen);
         mb.addEntry(aShutterClose);
-        mb.addSeparator();
         mb.addEntry(aTimeSamples);
-        mb.addEntry(aTimeContrastRed);
-        mb.addEntry(aTimeContrastGreen);
-        mb.addEntry(aTimeContrastBlue);
+        mb.addSeparator();
+        mb.addEntry(aTimeContrast);
         mb.addEntry(aTimeContrastAlpha);
 
         {
@@ -3664,11 +3995,9 @@ extends CommonActionUtils
         cs.addEntry(aUseCaustics);
         cs.addSeparator();
         cs.addEntry(aCausticsAccuracy);
-        cs.addEntry(aCausticsRadius);
+        cs.addEntry(aCausticScale);
         cs.addSeparator();
-        cs.addEntry(aRedCausticScale);
-        cs.addEntry(aGreenCausticScale);
-        cs.addEntry(aBlueCausticScale);
+        cs.addEntry(aCausticsRadius);
         //cs.addEntry(aAlphaCausticScale);
         cs.addSeparator();
         cs.addEntry(aCausticFilterType);
@@ -3683,12 +4012,9 @@ extends CommonActionUtils
         gi.addEntry(aUseGlobalIllum);
         gi.addSeparator(); 
         gi.addEntry(aGlobalIllumAccuracy);
+        gi.addEntry(aGlobalIllumScale);
+        gi.addSeparator();
         gi.addEntry(aGlobalIllumRadius);
-        gi.addSeparator(); 
-        gi.addEntry(aRedGlobalIllumScale);
-        gi.addEntry(aGreenGlobalIllumScale);
-        gi.addEntry(aBlueGlobalIllumScale);
-        //gi.addEntry(aAlphaGlobalIllumScale);
         gi.addSeparator(); 
         gi.addEntry(aMaxReflectionPhotons);
         gi.addEntry(aMaxRefractionPhotons);
@@ -3713,9 +4039,7 @@ extends CommonActionUtils
         fg.addEntry(aFinalGatherRays);
         fg.addEntry(aPointDensity);
         fg.addEntry(aPointInterpolation);
-        fg.addEntry(aRedFinalGatherScale);
-        fg.addEntry(aGreenFinalGatherScale);
-        fg.addEntry(aBlueFinalGatherScale);
+        fg.addEntry(aFinalGatherScale);
         //fg.addEntry(aAlphaFinalGatherScale);
         fg.addSeparator(); 
         fg.addEntry(aFinalGatherMapRebuild);
@@ -3723,8 +4047,10 @@ extends CommonActionUtils
         fg.addEntry(aEnableFGMapVisualizer);
         fg.addEntry(aPreviewFinalGather);
         fg.addSeparator();
-        fg.addEntry(aMinRadius);
+        fg.addEntry(aOptimizeForAnim);
+        fg.addEntry(aUseRadiusQualityControl);
         fg.addEntry(aMaxRadius);
+        fg.addEntry(aMinRadius);
         fg.addEntry(aFinalGatherView);
         fg.addSeparator();
         fg.addEntry(aPrecompPhotonLookup);
@@ -3736,9 +4062,7 @@ extends CommonActionUtils
         fg.addEntry(aTraceRefraction);
         fg.addEntry(aTraceDepth);
         fg.addEntry(aFinalGatherTraceDiffuse);
-        fg.addEntry(aRedFGBounceScale);
-        fg.addEntry(aGreenFGBounceScale);
-        fg.addEntry(aBlueFGBounceScale);
+        fg.addEntry(aFGBounceScale);
         //fg.addEntry(aAlphaFGBounceScale);
         
         layout.addSubGroup(fg);
@@ -3829,9 +4153,7 @@ extends CommonActionUtils
         ("Contours", "Contour rendering controls.", false);
         cntr.addEntry(aEnableContourRendering);
         cntr.addEntry(aHideSource);
-        cntr.addEntry(aRedFloodColor);
-        cntr.addEntry(aGreenFloodColor);
-        cntr.addEntry(aBlueFloodColor);
+        cntr.addEntry(aFloodColor);
         //cntr.addEntry(aAlphaFloodColor);
 
         {
@@ -3853,13 +4175,11 @@ extends CommonActionUtils
           dc.addEntry(aBetweenDiffInstances);
           dc.addEntry(aBetweenDiffMaterials);
           dc.addEntry(aBetweenDiffLabels);
-          dc.addEntry(aAroundRenderTesselation);
+          dc.addEntry(aAroundRenderTessellation);
           dc.addEntry(aFrontVsBackFaceContours);
           dc.addSeparator();
           dc.addEntry(aEnableColorContrast);
-          dc.addEntry(aRedColorContrast);
-          dc.addEntry(aGreenColorContrast);
-          dc.addEntry(aBlueColorContrast);
+          dc.addEntry(aColorContrast);
           //dc.addEntry(aAlphaColorContrast);
           dc.addEntry(aEnableDepthContrast);
           dc.addEntry(aDepthContrast);
@@ -3868,8 +4188,7 @@ extends CommonActionUtils
           dc.addEntry(aEnableNormalContrast);
           dc.addEntry(aNormalContrast);
           dc.addEntry(aEnableUVContours);
-          dc.addEntry(aUVContoursU);
-          dc.addEntry(aUVContoursV);
+          dc.addEntry(aUVContours);
           cntr.addSubGroup(dc);
         }
 
@@ -4042,18 +4361,20 @@ extends CommonActionUtils
       boolean createDefaults = getSingleBooleanParamValue(aCreateDefaultNodes);
 
       if (createDefaults)
-        out.write("// TEST FOR EXISTENCE OF REQUIRED GLOBALS NODES\n\n" +
-          "if ((!`objExists miDefaultOptions`) || (!`objExists mentalrayGlobals`)) {\n" +
-          "\tif (!`pluginInfo -query -loaded \"Mayatomr\"`)\n" +
-          "\t\tloadPlugin -quiet \"Mayatomr\";\n" +
-          "\tmiCreateDefaultNodes;\n" +
-        "}\n\n");
+        out.write
+          ("// TEST FOR EXISTENCE OF REQUIRED GLOBALS NODES\n\n" +
+           "if ((!`objExists miDefaultOptions`) || (!`objExists mentalrayGlobals`)) {\n" +
+           "\tif (!`pluginInfo -query -loaded \"Mayatomr\"`)\n" +
+           "\t\tloadPlugin -quiet \"Mayatomr\";\n" +
+           "\tmiCreateDefaultNodes;\n" +
+           "}\n\n");
 
       {
         Path npath = new Path(agenda.getNodeID().getName());
         Path wpath = new Path(npath.getParentPath(), agenda.getPrimaryTarget().getPath(0)); 
-        out.write("print(\"Applying Render Globals: " + 
-          "\" + `getenv \"WORKING\"` + \"" + wpath + "\\n\");\n\n");
+        out.write
+          ("print(\"Applying Render Globals: " + 
+           "\" + `getenv \"WORKING\"` + \"" + wpath + "\\n\");\n\n");
       }
 
       /* image resolution */ 
@@ -4068,22 +4389,37 @@ extends CommonActionUtils
         double deviceRatio = (((double) width) / ((double) height)) * ratio;
 
         out.write
-        ("// IMAGE RESOLUTION\n" + 
-          "setAttr \"defaultResolution.aspectLock\" 0;\n" + 
-          "setAttr \"defaultResolution.width\" " + width + ";\n" + 
-          "setAttr \"defaultResolution.height\" " + height + ";\n" + 
-          "setAttr \"defaultResolution.deviceAspectRatio\" " + deviceRatio + ";\n\n");
+          ("// IMAGE RESOLUTION\n" + 
+           "setAttr \"defaultResolution.aspectLock\" 0;\n" + 
+           "setAttr \"defaultResolution.width\" " + width + ";\n" + 
+           "setAttr \"defaultResolution.height\" " + height + ";\n" + 
+           "setAttr \"defaultResolution.deviceAspectRatio\" " + deviceRatio + ";\n\n");
       }
 
+      /* alpha & depth channels */
+      {
+        boolean alpha = getSingleBooleanParamValue(aAlphaMaskChannel);
+        boolean depth = getSingleBooleanParamValue(aZDepthChannel);
+        
+        out.write
+        ("// ALPHA & DEPTH CHANNEL OVERRIDE\n" +
+         "string $cameras[] = `ls -type \"camera\"`;\n" +
+         "string $cam;\n" +
+         "for ($cam in $cameras) {\n" +
+         "\tsetAttr ($cam + \".mask\") " + alpha + ";\n" +
+         "\tsetAttr ($cam + \".depth\") " + depth + ";\n" +
+         "}\n\n");
+      }
+      
       /* number of samples */ 
       {
         int minSamples = getSingleIntegerParamValue(aMinSampleLevel); 
         int maxSamples = getSingleIntegerParamValue(aMaxSampleLevel); 
 
         out.write
-        ("// NUMBER OF SAMPLES\n" + 
-          "setAttr \"miDefaultOptions.minSamples\" " + minSamples + ";\n" + 
-          "setAttr \"miDefaultOptions.maxSamples\" " + maxSamples + ";\n\n");
+          ("// NUMBER OF SAMPLES\n" + 
+           "setAttr \"miDefaultOptions.minSamples\" " + minSamples + ";\n" + 
+           "setAttr \"miDefaultOptions.maxSamples\" " + maxSamples + ";\n\n");
       }
 
       /* multi-pixel filtering */ 
@@ -4107,26 +4443,25 @@ extends CommonActionUtils
         }
 
         out.write
-        ("// MULTI-PIXEL FILTERING\n" + 
-          "setAttr \"miDefaultOptions.filter\" " + filter + ";\n" + 
-          "setAttr \"miDefaultOptions.filterWidth\" " + filterX + ";\n" + 
-          "setAttr \"miDefaultOptions.filterHeight\" " + filterY + ";\n\n");	   
+          ("// MULTI-PIXEL FILTERING\n" + 
+           "setAttr \"miDefaultOptions.filter\" " + filter + ";\n" + 
+           "setAttr \"miDefaultOptions.filterWidth\" " + filterX + ";\n" + 
+           "setAttr \"miDefaultOptions.filterHeight\" " + filterY + ";\n\n");	   
       }
 
       /* contrast threshold */ 
       {
-        Range range = new Range(0.0, null, false); 
-        double red      = getSingleDoubleParamValue(aRedThreshold, range); 
-        double green    = getSingleDoubleParamValue(aGreenThreshold, range); 
-        double blue     = getSingleDoubleParamValue(aBlueThreshold, range); 
-        double alpha 	= getSingleDoubleParamValue(aAlphaThreshold, range); 
-
+        Range range3d = new Range(new Tuple3d(0.0, 0.0, 0.0), null, false); 
+        Range range = new Range(0.0, null, false);
+        Tuple3d contrast = getSingleTuple3dParamValue(aThreshold, range3d, false);
+        double alpha 	= getSingleDoubleParamValue(aCoverageThreshold, range);
+        
         out.write
-        ("// CONTRAST THRESHOLD\n" +
-          "setAttr \"miDefaultOptions.contrastR\" " + red + ";\n" + 
-          "setAttr \"miDefaultOptions.contrastG\" " + green + ";\n" + 
-          "setAttr \"miDefaultOptions.contrastB\" " + blue + ";\n" +
-          "setAttr \"miDefaultOptions.contrastA\" " + alpha + ";\n\n");
+          ("// CONTRAST THRESHOLD\n" +
+           "setAttr \"miDefaultOptions.contrastR\" " + contrast.x() + ";\n" + 
+           "setAttr \"miDefaultOptions.contrastG\" " + contrast.y() + ";\n" + 
+           "setAttr \"miDefaultOptions.contrastB\" " + contrast.z()+ ";\n" +
+           "setAttr \"miDefaultOptions.contrastA\" " + alpha + ";\n\n");
       }
 
       /* sample options */ 
@@ -4135,9 +4470,9 @@ extends CommonActionUtils
         boolean jitter = getSingleBooleanParamValue(aJitter);  
 
         out.write
-        ("// SAMPLE OPTIONS \n" +
-          "setAttr \"miDefaultOptions.sampleLock\" " + lock + ";\n" +
-          "setAttr \"miDefaultOptions.jitter\" " + jitter + ";\n\n");
+          ("// SAMPLE OPTIONS \n" +
+           "setAttr \"miDefaultOptions.sampleLock\" " + lock + ";\n" +
+           "setAttr \"miDefaultOptions.jitter\" " + jitter + ";\n\n");
       }
 
       /* raytracing quality */ 
@@ -4156,30 +4491,29 @@ extends CommonActionUtils
         double rapidSamplesShading = getSingleDoubleParamValue(aShadingQuality, sampleShadingRange);
 
         out.write
-        ("// RAYTRACING QUALITY\n" +
-          "setAttr \"miDefaultOptions.rayTracing\" " + useRay + ";\n" +
-          "setAttr \"miDefaultOptions.scanline\" " + scanline + ";\n" +
-          "setAttr \"miDefaultOptions.maxReflectionRays\" " + reflect + ";\n" +
-          "setAttr \"miDefaultOptions.maxRefractionRays\"  " + refract + ";\n" +
-          "setAttr \"miDefaultOptions.maxRayDepth\"  " + depth + ";\n" +
-          "setAttr \"miDefaultOptions.maxShadowRayDepth\" " + shadows + ";\n" +
-          "setAttr \"miDefaultOptions.maxReflectionBlur\"  " + maxReflectionBlur + ";\n" +
-          "setAttr \"miDefaultOptions.maxRefractionBlur\" " + maxRefractionBlur + ";\n" +
-          "setAttr \"miDefaultOptions.rapidSamplesCollect\"  " + rapidSamplesCollect + ";\n" +
-          "setAttr \"miDefaultOptions.rapidSamplesShading\" " + rapidSamplesShading + ";\n\n");
+          ("// RAYTRACING QUALITY\n" +
+           "setAttr \"miDefaultOptions.rayTracing\" " + useRay + ";\n" +
+           "setAttr \"miDefaultOptions.scanline\" " + scanline + ";\n" +
+           "setAttr \"miDefaultOptions.maxReflectionRays\" " + reflect + ";\n" +
+           "setAttr \"miDefaultOptions.maxRefractionRays\"  " + refract + ";\n" +
+           "setAttr \"miDefaultOptions.maxRayDepth\"  " + depth + ";\n" +
+           "setAttr \"miDefaultOptions.maxShadowRayDepth\" " + shadows + ";\n" +
+           "setAttr \"miDefaultOptions.maxReflectionBlur\"  " + maxReflectionBlur + ";\n" +
+           "setAttr \"miDefaultOptions.maxRefractionBlur\" " + maxRefractionBlur + ";\n" +
+           "setAttr \"miDefaultOptions.rapidSamplesCollect\"  " + rapidSamplesCollect + ";\n" +
+           "setAttr \"miDefaultOptions.rapidSamplesShading\" " + rapidSamplesShading + ";\n\n");
       }
 
       /* motion blur */ 
       {
         Range range = new Range(0.0, 1.0);
+        Range range3d = new Range(new Tuple3d(0.0, 0.0, 0.0), new Tuple3d(1.0, 1.0, 1.0));
         Range timeSampleRange = new Range(1, 100);
         int blur       = getSingleEnumParamIndex(aMotionBlur);
         double blurBy  = getSingleDoubleParamValue(aMotionBlurBy);
         double shutter = getSingleDoubleParamValue(aShutterClose);
         double delay   = getSingleDoubleParamValue(aShutterOpen);
-        double red     = getSingleDoubleParamValue(aTimeContrastRed, range);
-        double green   = getSingleDoubleParamValue(aTimeContrastGreen, range);
-        double blue    = getSingleDoubleParamValue(aTimeContrastBlue, range);
+        Tuple3d timeContrast = getSingleTuple3dParamValue(aTimeContrast, range3d, false);
         double alpha   = getSingleDoubleParamValue(aTimeContrastAlpha, range);
         int rapidSamplesMotion = getSingleIntegerParamValue(aTimeSamples, timeSampleRange);
         int steps      = getSingleIntegerParamValue(aMotionSteps);
@@ -4190,74 +4524,75 @@ extends CommonActionUtils
         int scanline   = getSingleEnumParamIndex(aScanline);
 
         out.write
-        ("// MOTION BLUR\n" +
-          "setAttr \"miDefaultOptions.motionBlur\" " + blur + ";\n" +
-          "setAttr \"miDefaultOptions.motionBlurBy\" " + blurBy + ";\n" +
-          "setAttr \"miDefaultOptions.shutter\" " + shutter + ";\n" +
-          "setAttr \"miDefaultOptions.shutterDelay\" " + delay + ";\n" +
-          "setAttr \"miDefaultOptions.timeContrastR\" " + red + ";\n" +
-          "setAttr \"miDefaultOptions.timeContrastG\" " + green + ";\n" +
-          "setAttr \"miDefaultOptions.timeContrastB\" " + blue + ";\n" +
-          "setAttr \"miDefaultOptions.timeContrastA\" " + alpha + ";\n" +
-          "setAttr \"mentalrayGlobals.exportCustomMotion\" " + exportCustomMotion + ";\n" +
-          "setAttr \"mentalrayGlobals.exportMotionOffset\" " + exportMotionOffset + ";\n" +
-          "setAttr \"mentalrayGlobals.exportMotionOutput\" " + exportMotionOutput + ";\n" +
-          "setAttr \"miDefaultOptions.motionSteps\" " + steps + ";\n\n");
+          ("// MOTION BLUR\n" +
+           "setAttr \"miDefaultOptions.motionBlur\" " + blur + ";\n" +
+           "setAttr \"miDefaultOptions.motionBlurBy\" " + blurBy + ";\n" +
+           "setAttr \"miDefaultOptions.shutter\" " + shutter + ";\n" +
+           "setAttr \"miDefaultOptions.shutterDelay\" " + delay + ";\n" +
+           "setAttr \"miDefaultOptions.timeContrastR\" " + timeContrast.x() + ";\n" +
+           "setAttr \"miDefaultOptions.timeContrastG\" " + timeContrast.y() + ";\n" +
+           "setAttr \"miDefaultOptions.timeContrastB\" " + timeContrast.z() + ";\n" +
+           "setAttr \"miDefaultOptions.timeContrastA\" " + alpha + ";\n" +
+           "setAttr \"mentalrayGlobals.exportCustomMotion\" " + exportCustomMotion + ";\n" +
+           "setAttr \"mentalrayGlobals.exportMotionOffset\" " + exportMotionOffset + ";\n" +
+           "setAttr \"mentalrayGlobals.exportMotionOutput\" " + exportMotionOutput + ";\n" +
+           "setAttr \"miDefaultOptions.motionSteps\" " + steps + ";\n\n");
 
         if (blur > 0 && scanline == 3)
-          out.write(
-            "// MOTION BLUR QUALITY FACTOR\n" + 
-            "proc int tm_miFindMotionFactorIndex() {\n" +
-            "\tint $index = -1;\n" +
-            "\tstring $stringOptions[] = `listAttr -string \"stringOptions\" -multi \"miDefaultOptions\"`;\n" +
-            "\tint $stringOptionCount = size( $stringOptions );\n" +
-            "\tfor( $i = 0; $i < $stringOptionCount; $i++ ) {\n" +
-            "\t\tif(\"rast motion factor\" == `getAttr (\"miDefaultOptions.stringOptions[\" + $i + \"].name\")`) {\n" +
-            "\t\t\t$index = $i;\n" +
-            "\t\t\tbreak;\n" +
-            "\t\t}\n" +
-            "\t}\n\n" +
-            "\tif($index == -1) {\n" +
-            "\t\t$index = $stringOptionCount;\n" +
-            "\t\tsetAttr -type \"string\" miDefaultOptions.stringOptions[$index].name \"rast motion factor\";\n" +
-            "\t\tsetAttr -type \"string\" miDefaultOptions.stringOptions[$index].type \"scalar\";\n" +
-            "\t\tsetAttr -type \"string\" miDefaultOptions.stringOptions[$index].value \"1.0\";\n" +
-            "\t}\n\n" +
-            "\treturn $index;\n" +
-            "}\n\n" +
-            "int $index = tm_miFindMotionFactorIndex();\n" +
-            "setAttr -type \"string\" (\"miDefaultOptions.stringOptions[\" + $index + \"].value\") " +
-            motionQualityFactor + ";\n");
+          out.write
+            ("// MOTION BLUR QUALITY FACTOR\n" + 
+              "proc int tm_miFindMotionFactorIndex() {\n" +
+              "\tint $index = -1;\n" +
+              "\tstring $stringOptions[] = `listAttr -string \"stringOptions\" -multi \"miDefaultOptions\"`;\n" +
+              "\tint $stringOptionCount = size( $stringOptions );\n" +
+              "\tfor( $i = 0; $i < $stringOptionCount; $i++ ) {\n" +
+              "\t\tif(\"rast motion factor\" == `getAttr (\"miDefaultOptions.stringOptions[\" + $i + \"].name\")`) {\n" +
+              "\t\t\t$index = $i;\n" +
+              "\t\t\tbreak;\n" +
+              "\t\t}\n" +
+              "\t}\n\n" +
+              "\tif($index == -1) {\n" +
+              "\t\t$index = $stringOptionCount;\n" +
+              "\t\tsetAttr -type \"string\" miDefaultOptions.stringOptions[$index].name \"rast motion factor\";\n" +
+              "\t\tsetAttr -type \"string\" miDefaultOptions.stringOptions[$index].type \"scalar\";\n" +
+              "\t\tsetAttr -type \"string\" miDefaultOptions.stringOptions[$index].value \"1.0\";\n" +
+              "\t}\n\n" +
+              "\treturn $index;\n" +
+              "}\n\n" +
+              "int $index = tm_miFindMotionFactorIndex();\n" +
+              "setAttr -type \"string\" (\"miDefaultOptions.stringOptions[\" + $index + \"].value\") " +
+              motionQualityFactor + ";\n");
         out.write("\n");
       }
 
       /* caustics */ 
       {
         Range range = new Range(0.0, 1.0);
+        Range cfkRange = new Range(0.0, 4.0);
+        Range range3d = new Range(new Tuple3d(0.0, 0.0, 0.0), new Tuple3d(1.0, 1.0, 1.0));
         boolean useCaustics = getSingleBooleanParamValue(aUseCaustics);  
         int accuracy  = getSingleIntegerParamValue(aCausticsAccuracy); 
         double radius = getSingleDoubleParamValue(aCausticsRadius); 
         int filter    = getSingleEnumParamIndex(aCausticFilterType);
-        double kernel = getSingleDoubleParamValue(aCausticFilterKernel);
-        double causticScaleR = getSingleDoubleParamValue(aRedCausticScale, range);
-        double causticScaleG = getSingleDoubleParamValue(aGreenCausticScale, range);
-        double causticScaleB = getSingleDoubleParamValue(aBlueCausticScale, range);
-
+        double kernel = getSingleDoubleParamValue(aCausticFilterKernel, cfkRange);
+        Tuple3d causticScale = getSingleTuple3dParamValue(aCausticScale, range3d, false);
+        
         out.write
-        ("// CAUSTICS\n" +
-          "setAttr \"miDefaultOptions.caustics\" " + useCaustics + ";\n" +
-          "setAttr \"miDefaultOptions.causticAccuracy\" " + accuracy + ";\n" +
-          "setAttr \"miDefaultOptions.causticScaleR\" " + causticScaleR + ";\n" +
-          "setAttr \"miDefaultOptions.causticScaleG\" " + causticScaleG + ";\n" +
-          "setAttr \"miDefaultOptions.causticScaleB\" " + causticScaleB + ";\n" +
-          "setAttr \"miDefaultOptions.causticRadius\" " + radius + ";\n" +
-          "setAttr \"miDefaultOptions.causticFilterType\" " + filter + ";\n" +
-          "setAttr \"miDefaultOptions.causticFilterKernel\" " + kernel + ";\n\n");
+          ("// CAUSTICS\n" +
+           "setAttr \"miDefaultOptions.caustics\" " + useCaustics + ";\n" +
+           "setAttr \"miDefaultOptions.causticAccuracy\" " + accuracy + ";\n" +
+           "setAttr \"miDefaultOptions.causticScaleR\" " + causticScale.x() + ";\n" +
+           "setAttr \"miDefaultOptions.causticScaleG\" " + causticScale.y() + ";\n" +
+           "setAttr \"miDefaultOptions.causticScaleB\" " + causticScale.z() + ";\n" +
+           "setAttr \"miDefaultOptions.causticRadius\" " + radius + ";\n" +
+           "setAttr \"miDefaultOptions.causticFilterType\" " + filter + ";\n" +
+           "setAttr \"miDefaultOptions.causticFilterKernel\" " + kernel + ";\n\n");
       }
 
       /* global illumination */ 
       {
         Range range = new Range(0.0, 1.0);
+        Range range3d = new Range(new Tuple3d(0.0, 0.0, 0.0), new Tuple3d(1.0, 1.0, 1.0));
         boolean useGlobalIllum = getSingleBooleanParamValue(aUseGlobalIllum);  
         int accuracy   = getSingleIntegerParamValue(aGlobalIllumAccuracy); 
         double radius  = getSingleDoubleParamValue(aGlobalIllumRadius); 
@@ -4266,9 +4601,7 @@ extends CommonActionUtils
         int reflect    = getSingleIntegerParamValue(aMaxReflectionPhotons); 
         int refract    = getSingleIntegerParamValue(aMaxRefractionPhotons); 
         int depth      = getSingleIntegerParamValue(aMaxPhotonDepth); 
-        double globalIllumScaleR = getSingleDoubleParamValue(aRedGlobalIllumScale, range);
-        double globalIllumScaleG = getSingleDoubleParamValue(aGreenGlobalIllumScale, range);
-        double globalIllumScaleB = getSingleDoubleParamValue(aBlueGlobalIllumScale, range);
+        Tuple3d globalIllumScale = getSingleTuple3dParamValue(aGlobalIllumScale, range3d, false);
         String file = getSingleStringParamValue(aPhotonMapFile); 
         boolean mapvis  = getSingleBooleanParamValue(aEnableGIMapVisualizer);  
         boolean rebuild = getSingleBooleanParamValue(aPhotonMapRebuild);
@@ -4279,38 +4612,37 @@ extends CommonActionUtils
           file = "";
         
         out.write
-        ("// GLOBAL ILLUMINATION\n" +
-          "setAttr \"miDefaultOptions.globalIllum\" " + useGlobalIllum + ";\n" +
-          "setAttr \"miDefaultOptions.globalIllumAccuracy\" " + accuracy + ";\n" +
-          "setAttr \"miDefaultOptions.globalIllumScaleR\" " + globalIllumScaleR + ";\n" +
-          "setAttr \"miDefaultOptions.globalIllumScaleG\" " + globalIllumScaleG + ";\n" +
-          "setAttr \"miDefaultOptions.globalIllumScaleB\" " + globalIllumScaleB + ";\n" +
-          "setAttr \"miDefaultOptions.globalIllumRadius\" " + radius + ";\n" +
-          "setAttr \"miDefaultOptions.photonAutoVolume\" " + photonAutoVolume + ";\n" +
-          "setAttr \"miDefaultOptions.photonVolumeAccuracy\" " + paccuracy + ";\n" +
-          "setAttr \"miDefaultOptions.photonVolumeRadius\" " + pradius + ";\n" +
-          "setAttr \"miDefaultOptions.maxReflectionPhotons\" " + reflect + ";\n" +
-          "setAttr \"miDefaultOptions.maxRefractionPhotons\" " + refract + ";\n" +
-          "setAttr \"miDefaultOptions.maxPhotonDepth\" " + depth + ";\n" +
-          "setAttr -type \"string\" \"miDefaultOptions.photonMapFilename\" " + 
-          "\"" + file + "\";\n" +
-          "setAttr \"miDefaultOptions.photonMapVisualizer\" " + mapvis + ";\n" +
-          "setAttr \"miDefaultOptions.photonMapRebuild\" " + rebuild + ";\n" + 
-          "setAttr \"mentalrayGlobals.shadowEffectsWithPhotons\" " + direct + ";\n\n");
+          ("// GLOBAL ILLUMINATION\n" +
+           "setAttr \"miDefaultOptions.globalIllum\" " + useGlobalIllum + ";\n" +
+           "setAttr \"miDefaultOptions.globalIllumAccuracy\" " + accuracy + ";\n" +
+           "setAttr \"miDefaultOptions.globalIllumScaleR\" " + globalIllumScale.x() + ";\n" +
+           "setAttr \"miDefaultOptions.globalIllumScaleG\" " + globalIllumScale.y() + ";\n" +
+           "setAttr \"miDefaultOptions.globalIllumScaleB\" " + globalIllumScale.z() + ";\n" +
+           "setAttr \"miDefaultOptions.globalIllumRadius\" " + radius + ";\n" +
+           "setAttr \"miDefaultOptions.photonAutoVolume\" " + photonAutoVolume + ";\n" +
+           "setAttr \"miDefaultOptions.photonVolumeAccuracy\" " + paccuracy + ";\n" +
+           "setAttr \"miDefaultOptions.photonVolumeRadius\" " + pradius + ";\n" +
+           "setAttr \"miDefaultOptions.maxReflectionPhotons\" " + reflect + ";\n" +
+           "setAttr \"miDefaultOptions.maxRefractionPhotons\" " + refract + ";\n" +
+           "setAttr \"miDefaultOptions.maxPhotonDepth\" " + depth + ";\n" +
+           "setAttr -type \"string\" \"miDefaultOptions.photonMapFilename\" " + 
+           "\"" + file + "\";\n" +
+           "setAttr \"miDefaultOptions.photonMapVisualizer\" " + mapvis + ";\n" +
+           "setAttr \"miDefaultOptions.photonMapRebuild\" " + rebuild + ";\n" + 
+           "setAttr \"mentalrayGlobals.shadowEffectsWithPhotons\" " + direct + ";\n\n");
       }
 
       /* final gather */ 
       {
         Range range = new Range(0.0, 1.0);
+        Range range3d = new Range(new Tuple3d(0.0, 0.0, 0.0), new Tuple3d(1.0, 1.0, 1.0));
         Range range16Bit = new Range(-32768, 32767);
         boolean useFinalGather = getSingleBooleanParamValue(aUseFinalGather);  
         boolean precomp = getSingleBooleanParamValue(aPrecompPhotonLookup);  
         int rays = getSingleIntegerParamValue(aFinalGatherRays); 
         double pointDensity = getSingleDoubleParamValue(aPointDensity);
         int finalGatherPoints = getSingleIntegerParamValue(aPointInterpolation, range16Bit);
-        double finalGatherScaleR = getSingleDoubleParamValue(aRedFinalGatherScale, range);
-        double finalGatherScaleG = getSingleDoubleParamValue(aGreenFinalGatherScale, range);
-        double finalGatherScaleB = getSingleDoubleParamValue(aBlueFinalGatherScale, range);
+        Tuple3d finalGatherScale = getSingleTuple3dParamValue(aFinalGatherScale, range3d, false);
         double minRadius = getSingleDoubleParamValue(aMinRadius); 
         double maxRadius = getSingleDoubleParamValue(aMaxRadius); 
         int filter = getSingleIntegerParamValue(aFilter); 
@@ -4320,46 +4652,63 @@ extends CommonActionUtils
         int reflect = getSingleIntegerParamValue(aTraceReflection); 
         int refract = getSingleIntegerParamValue(aTraceRefraction);
         boolean finalGatherView = getSingleBooleanParamValue(aFinalGatherView);
+        boolean optimizeForAnim = getSingleBooleanParamValue(aOptimizeForAnim);
+        boolean useRadiusQualityControl = getSingleBooleanParamValue(aUseRadiusQualityControl);
         boolean finalGatherTraceDiffuse = getSingleBooleanParamValue(aFinalGatherTraceDiffuse);
-        double finalGatherBounceScaleR = getSingleDoubleParamValue(aRedFGBounceScale, range);
-        double finalGatherBounceScaleG = getSingleDoubleParamValue(aGreenFGBounceScale, range);
-        double finalGatherBounceScaleB = getSingleDoubleParamValue(aBlueFGBounceScale, range);
+        Tuple3d finalGatherBounceScale = getSingleTuple3dParamValue(aFGBounceScale, range3d, false);
         String file = getSingleStringParamValue(aFinalGatherMapFile); 
         boolean mapvis  = getSingleBooleanParamValue(aEnableFGMapVisualizer);  
         int rebuild = getSingleEnumParamIndex(aFinalGatherMapRebuild);  
         boolean preview = getSingleBooleanParamValue(aPreviewFinalGather);
+        int finalGatherMode = 0;
         
         if(file == null) 
           file = "";
 
+        if (optimizeForAnim) {
+          finalGatherMode = 3;
+        }
+        else {
+          if (useRadiusQualityControl)
+            finalGatherMode = 1;
+          else
+            finalGatherMode = 2;
+        }
+        
         out.write
-        ("// FINAL GATHER\n" +
-          "setAttr \"miDefaultOptions.finalGather\" " + useFinalGather + ";\n" +
-          "setAttr \"miDefaultOptions.finalGatherFast\" " + precomp + ";\n" +
-          "setAttr \"miDefaultOptions.finalGatherRays\" " + rays + ";\n" +
-          "setAttr \"miDefaultOptions.finalGatherPresampleDensity\" " + pointDensity + ";\n" +
-          "setAttr \"miDefaultOptions.finalGatherPoints\" " + finalGatherPoints + ";\n" +
-          "setAttr \"miDefaultOptions.finalGatherScaleR\" " + finalGatherScaleR + ";\n" +
-          "setAttr \"miDefaultOptions.finalGatherScaleG\" " + finalGatherScaleG + ";\n" +
-          "setAttr \"miDefaultOptions.finalGatherScaleB\" " + finalGatherScaleB + ";\n" +
-          "setAttr \"miDefaultOptions.finalGatherMinRadius\" " + minRadius + ";\n" +
-          "setAttr \"miDefaultOptions.finalGatherMaxRadius\" " + maxRadius + ";\n" +
-          "setAttr \"miDefaultOptions.finalGatherFilter\" " + filter + ";\n" +
-          "setAttr \"miDefaultOptions.finalGatherFalloffStart\" " + falloffStart + ";\n" +
-          "setAttr \"miDefaultOptions.finalGatherFalloffStop\" " + falloffStop + ";\n" +
-          "setAttr \"miDefaultOptions.finalGatherTraceDepth\" " + depth + ";\n" +
-          "setAttr \"miDefaultOptions.finalGatherTraceReflection\" " + reflect + ";\n" +
-          "setAttr \"miDefaultOptions.finalGatherTraceRefraction\" " + refract + ";\n" +
-          "setAttr \"miDefaultOptions.finalGatherView\" " + finalGatherView + ";\n" +
-          "setAttr \"miDefaultOptions.finalGatherTraceDiffuse\" " + finalGatherTraceDiffuse + ";\n" +
-          "setAttr \"miDefaultOptions.finalGatherBounceScaleR\" " + finalGatherBounceScaleR + ";\n" +
-          "setAttr \"miDefaultOptions.finalGatherBounceScaleG\" " + finalGatherBounceScaleG + ";\n" +
-          "setAttr \"miDefaultOptions.finalGatherBounceScaleB\" " + finalGatherBounceScaleB + ";\n" +
-          "setAttr -type \"string\" \"miDefaultOptions.finalGatherFilename\" " + 
-          "\"" + file + "\";\n" +
-          "setAttr \"miDefaultOptions.finalGatherMapVisualizer\" " + mapvis + ";\n" +
-          "setAttr \"miDefaultOptions.finalGatherRebuild\" " + rebuild + ";\n" +
-          "setAttr \"mentalrayGlobals.previewFinalGatherTiles\" " + preview + ";\n\n");
+          ("// FINAL GATHER\n" +
+           "setAttr \"miDefaultOptions.finalGather\" " + useFinalGather + ";\n" +
+           "setAttr \"miDefaultOptions.finalGatherFast\" " + precomp + ";\n" +
+           "setAttr \"miDefaultOptions.finalGatherRays\" " + rays + ";\n" +
+           "setAttr \"miDefaultOptions.finalGatherPresampleDensity\" " + pointDensity + ";\n" +
+           "setAttr \"miDefaultOptions.finalGatherPoints\" " + finalGatherPoints + ";\n" +
+           "setAttr \"miDefaultOptions.finalGatherScaleR\" " + finalGatherScale.x() + ";\n" +
+           "setAttr \"miDefaultOptions.finalGatherScaleG\" " + finalGatherScale.y() + ";\n" +
+           "setAttr \"miDefaultOptions.finalGatherScaleB\" " + finalGatherScale.z() + ";\n" +
+           "setAttr \"miDefaultOptions.finalGatherMode\" " + finalGatherMode + ";\n");
+        
+        if (optimizeForAnim || useRadiusQualityControl)
+          out.write
+            ("setAttr \"miDefaultOptions.finalGatherMinRadius\" " + minRadius + ";\n" +
+             "setAttr \"miDefaultOptions.finalGatherMaxRadius\" " + maxRadius + ";\n" +
+             "setAttr \"miDefaultOptions.finalGatherView\" " + finalGatherView + ";\n");
+        
+        out.write
+          ("setAttr \"miDefaultOptions.finalGatherFilter\" " + filter + ";\n" +
+           "setAttr \"miDefaultOptions.finalGatherFalloffStart\" " + falloffStart + ";\n" +
+           "setAttr \"miDefaultOptions.finalGatherFalloffStop\" " + falloffStop + ";\n" +
+           "setAttr \"miDefaultOptions.finalGatherTraceDepth\" " + depth + ";\n" +
+           "setAttr \"miDefaultOptions.finalGatherTraceReflection\" " + reflect + ";\n" +
+           "setAttr \"miDefaultOptions.finalGatherTraceRefraction\" " + refract + ";\n" +
+           "setAttr \"miDefaultOptions.finalGatherTraceDiffuse\" " + finalGatherTraceDiffuse + ";\n" +
+           "setAttr \"miDefaultOptions.finalGatherBounceScaleR\" " + finalGatherBounceScale.x() + ";\n" +
+           "setAttr \"miDefaultOptions.finalGatherBounceScaleG\" " + finalGatherBounceScale.y() + ";\n" +
+           "setAttr \"miDefaultOptions.finalGatherBounceScaleB\" " + finalGatherBounceScale.z() + ";\n" +
+           "setAttr -type \"string\" \"miDefaultOptions.finalGatherFilename\" " + 
+           "\"" + file + "\";\n" +
+           "setAttr \"miDefaultOptions.finalGatherMapVisualizer\" " + mapvis + ";\n" +
+           "setAttr \"miDefaultOptions.finalGatherRebuild\" " + rebuild + ";\n" +
+           "setAttr \"mentalrayGlobals.previewFinalGatherTiles\" " + preview + ";\n\n");
       }
 
       /* diagnostics */
@@ -4373,15 +4722,14 @@ extends CommonActionUtils
         boolean diagnoseFinalg = getSingleBooleanParamValue(aDiagnoseFinalGather);
 
         out.write
-        ("// DIAGNOSTICS\n" +
-          "setAttr \"miDefaultOptions.diagnoseSamples\" " + diagnoseSamples + ";\n" +
-          "setAttr \"miDefaultOptions.diagnoseBsp\" " + diagnoseBsp + ";\n" +
-          "setAttr \"miDefaultOptions.diagnoseGrid\" " + diagnoseGrid + ";\n" +
-          "setAttr \"miDefaultOptions.diagnoseGridSize\" " + diagnoseGridSize + ";\n" +
-          "setAttr \"miDefaultOptions.diagnosePhoton\" " + diagnosePhoton + ";\n" +
-          "setAttr \"miDefaultOptions.diagnosePhotonDensity\" " + diagnosePhotonDensity + ";\n" +
-          "setAttr \"miDefaultOptions.diagnoseFinalg\" " + diagnoseFinalg + ";\n\n");
-
+          ("// DIAGNOSTICS\n" +
+           "setAttr \"miDefaultOptions.diagnoseSamples\" " + diagnoseSamples + ";\n" +
+           "setAttr \"miDefaultOptions.diagnoseBsp\" " + diagnoseBsp + ";\n" +
+           "setAttr \"miDefaultOptions.diagnoseGrid\" " + diagnoseGrid + ";\n" +
+           "setAttr \"miDefaultOptions.diagnoseGridSize\" " + diagnoseGridSize + ";\n" +
+           "setAttr \"miDefaultOptions.diagnosePhoton\" " + diagnosePhoton + ";\n" +
+           "setAttr \"miDefaultOptions.diagnosePhotonDensity\" " + diagnosePhotonDensity + ";\n" +
+           "setAttr \"miDefaultOptions.diagnoseFinalg\" " + diagnoseFinalg + ";\n\n");
       }
 
       /* render options */
@@ -4412,36 +4760,38 @@ extends CommonActionUtils
           displaceApprox = displaceApprox.trim();
 
         out.write
-        ("// DIAGNOSTICS\n" +
-          "setAttr \"miDefaultOptions.volumeShaders\" " + volumeShaders + ";\n" +
-          "setAttr \"miDefaultOptions.geometryShaders\" " + geometryShaders + ";\n" +
-          "setAttr \"miDefaultOptions.displacementShaders\" " + displacementShaders + ";\n" +
-          "setAttr \"miDefaultOptions.outputShaders\" " + outputShaders + ";\n" +
-          "setAttr \"miDefaultOptions.autoVolume\" " + autoVolume + ";\n" +
-          "setAttr \"miDefaultOptions.displacePresample\" " + displacePresample + ";\n" +
-          "setAttr \"miDefaultOptions.mergeSurfaces\" " + mergeSurfaces + ";\n" +
-          "setAttr \"miDefaultOptions.renderHair\" " + renderHair + ";\n" +
-          "setAttr \"miDefaultOptions.renderPasses\" " + renderPasses + ";\n" +
-          "setAttr \"miDefaultOptions.faces\" " + faces + ";\n" + 
-          "setAttr \"miDefaultOptions.volumeSamples\" " + volumeSamples + ";\n" +
-          "setAttr \"miDefaultOptions.maxDisplace\" " + maxDisplace + ";\n" +
-          "setAttr \"miDefaultOptions.biasShadowMaps\" " + biasShadowMaps + ";\n" +
-          "setAttr \"miDefaultOptions.causticsGenerating\" " + causticsGenerating + ";\n" + 
-          "setAttr \"miDefaultOptions.causticsReceiving\" " + causticsReceiving + ";\n" +
-          "setAttr \"miDefaultOptions.globalIllumGenerating\" " + globalIllumGenerating + ";\n" +
-          "setAttr \"miDefaultOptions.globalIllumReceiving\" " + globalIllumReceiving + ";\n");
+          ("// DIAGNOSTICS\n" +
+           "setAttr \"miDefaultOptions.volumeShaders\" " + volumeShaders + ";\n" +
+           "setAttr \"miDefaultOptions.geometryShaders\" " + geometryShaders + ";\n" +
+           "setAttr \"miDefaultOptions.displacementShaders\" " + displacementShaders + ";\n" +
+           "setAttr \"miDefaultOptions.outputShaders\" " + outputShaders + ";\n" +
+           "setAttr \"miDefaultOptions.autoVolume\" " + autoVolume + ";\n" +
+           "setAttr \"miDefaultOptions.displacePresample\" " + displacePresample + ";\n" +
+           "setAttr \"miDefaultOptions.mergeSurfaces\" " + mergeSurfaces + ";\n" +
+           "setAttr \"miDefaultOptions.renderHair\" " + renderHair + ";\n" +
+           "setAttr \"miDefaultOptions.renderPasses\" " + renderPasses + ";\n" +
+           "setAttr \"miDefaultOptions.faces\" " + faces + ";\n" + 
+           "setAttr \"miDefaultOptions.volumeSamples\" " + volumeSamples + ";\n" +
+           "setAttr \"miDefaultOptions.maxDisplace\" " + maxDisplace + ";\n" +
+           "setAttr \"miDefaultOptions.biasShadowMaps\" " + biasShadowMaps + ";\n" +
+           "setAttr \"miDefaultOptions.causticsGenerating\" " + causticsGenerating + ";\n" + 
+           "setAttr \"miDefaultOptions.causticsReceiving\" " + causticsReceiving + ";\n" +
+           "setAttr \"miDefaultOptions.globalIllumGenerating\" " + globalIllumGenerating + ";\n" +
+           "setAttr \"miDefaultOptions.globalIllumReceiving\" " + globalIllumReceiving + ";\n");
 
         if (approx != null && !approx.isEmpty() && !approx.contains(" "))
-          out.write("if ((`objExists " + approx + "`) && " +
-            "(`objectType " + approx + "` == \"mentalraySurfaceApprox\") && " +
-            "(!`isConnected " + approx +".message miDefaultOptions.approx`))\n" + 
-            "\tconnectAttr -f " + approx + ".message miDefaultOptions.approx;\n");
+          out.write
+            ("if ((`objExists " + approx + "`) && " +
+             "(`objectType " + approx + "` == \"mentalraySurfaceApprox\") && " +
+             "(!`isConnected " + approx +".message miDefaultOptions.approx`))\n" + 
+             "\tconnectAttr -f " + approx + ".message miDefaultOptions.approx;\n");
 
         if (displaceApprox != null && !displaceApprox.isEmpty() && !displaceApprox.contains(" "))
-          out.write("if ((`objExists " + displaceApprox + "`) && " +
-            "(`objectType " + displaceApprox + "` == \"mentalraySurfaceApprox\") && " +
-            "(!`isConnected " + displaceApprox +".message miDefaultOptions.displaceApprox`))\n" + 
-            "\tconnectAttr -f " + displaceApprox + ".message miDefaultOptions.displaceApprox;\n");
+          out.write
+            ("if ((`objExists " + displaceApprox + "`) && " +
+             "(`objectType " + displaceApprox + "` == \"mentalrayDisplaceApprox\") && " +
+             "(!`isConnected " + displaceApprox +".message miDefaultOptions.displaceApprox`))\n" + 
+             "\tconnectAttr -f " + displaceApprox + ".message miDefaultOptions.displaceApprox;\n");
 
         out.write("\n");
       }
@@ -4467,26 +4817,25 @@ extends CommonActionUtils
         boolean dither     = getSingleBooleanParamValue(aDither);  
 
         out.write
-        ("// FRAMEBUFFER ATTRIBUTES\n" + 
-          "setAttr \"miDefaultFramebuffer.datatype\" " + dtype + ";\n" +
-          "setAttr \"miDefaultFramebuffer.gamma\" " + gamma + ";\n" +
-          "setAttr \"miDefaultFramebuffer.colorclip\" " + clip + ";\n" +
-          "setAttr \"miDefaultFramebuffer.interpolateSamples\" " + interp + ";\n" +
-          "setAttr \"miDefaultFramebuffer.desaturate\" " + desaturate + ";\n" +
-          "setAttr \"miDefaultFramebuffer.premultiply\" " + premult + ";\n" +
-          "setAttr \"miDefaultFramebuffer.dither\" " + dither + ";\n\n");
+          ("// FRAMEBUFFER ATTRIBUTES\n" + 
+           "setAttr \"miDefaultFramebuffer.datatype\" " + dtype + ";\n" +
+           "setAttr \"miDefaultFramebuffer.gamma\" " + gamma + ";\n" +
+           "setAttr \"miDefaultFramebuffer.colorclip\" " + clip + ";\n" +
+           "setAttr \"miDefaultFramebuffer.interpolateSamples\" " + interp + ";\n" +
+           "setAttr \"miDefaultFramebuffer.desaturate\" " + desaturate + ";\n" +
+           "setAttr \"miDefaultFramebuffer.premultiply\" " + premult + ";\n" +
+           "setAttr \"miDefaultFramebuffer.dither\" " + dither + ";\n\n");
       }
 
       /* contours */
       {
         Range range = new Range(0.0, 1.0);
+        Range range3d = new Range(new Tuple3d(0.0, 0.0, 0.0), new Tuple3d(1.0, 1.0, 1.0));
         Range cfsRange = new Range(0.0, 2.0);
         Range angleRange = new Range(0.0, 180.0);
         boolean contourEnable = getSingleBooleanParamValue(aEnableContourRendering);
         boolean contourClearImage = getSingleBooleanParamValue(aHideSource);
-        double contourClearColorR = getSingleDoubleParamValue(aRedFloodColor, range);
-        double contourClearColorG = getSingleDoubleParamValue(aGreenFloodColor, range);
-        double contourClearColorB = getSingleDoubleParamValue(aBlueFloodColor, range);
+        Tuple3d contourClearColor = getSingleTuple3dParamValue(aFloodColor, range3d, false);
         int contourSamples = getSingleIntegerParamValue(aOverSample);
         int contourFilter = getSingleEnumParamIndex(aContourFilterType);
         double contourFilterSupport = getSingleDoubleParamValue(aContourFilterSupport, cfsRange);
@@ -4496,12 +4845,10 @@ extends CommonActionUtils
         boolean contourInstance = getSingleBooleanParamValue(aBetweenDiffInstances);
         boolean contourMaterial = getSingleBooleanParamValue(aBetweenDiffMaterials);
         boolean contourLabel = getSingleBooleanParamValue(aBetweenDiffLabels);
-        boolean contourPriIdx = getSingleBooleanParamValue(aAroundRenderTesselation);
+        boolean contourPriIdx = getSingleBooleanParamValue(aAroundRenderTessellation);
         boolean contourInvNormal = getSingleBooleanParamValue(aFrontVsBackFaceContours);
         boolean enableContourColor = getSingleBooleanParamValue(aEnableColorContrast);
-        double contourColorR = getSingleDoubleParamValue(aRedColorContrast, range);
-        double contourColorG = getSingleDoubleParamValue(aGreenColorContrast, range);
-        double contourColorB = getSingleDoubleParamValue(aBlueColorContrast, range);
+        Tuple3d contourColor = getSingleTuple3dParamValue(aColorContrast, range3d, false);
         boolean enableContourDepth = getSingleBooleanParamValue(aEnableDepthContrast);
         double contourDepth = getSingleDoubleParamValue(aDepthContrast);
         boolean enableContourDist = getSingleBooleanParamValue(aEnableDistanceContrast);
@@ -4509,8 +4856,7 @@ extends CommonActionUtils
         boolean enableContourNormal = getSingleBooleanParamValue(aEnableNormalContrast);
         double contourNormal = getSingleDoubleParamValue(aNormalContrast, angleRange);
         boolean enableContourTexUV = getSingleBooleanParamValue(aEnableUVContours);
-        double contourTexU = getSingleDoubleParamValue(aUVContoursU);
-        double contourTexV = getSingleDoubleParamValue(aUVContoursV);
+        Tuple2d contourTex = getSingleTuple2dParamValue(aUVContours);
         String contrastShader = getSingleStringParamValue(aContrastShader);
         String storeShader = getSingleStringParamValue(aStoreShader);
 
@@ -4520,47 +4866,49 @@ extends CommonActionUtils
           storeShader = storeShader.trim();
 
         out.write
-        ("// CONTOURS\n" + 
-          "setAttr \"miDefaultFramebuffer.contourEnable\" " + contourEnable + ";\n" +
-          "setAttr \"miDefaultFramebuffer.contourClearImage\" " + contourClearImage + ";\n" +
-          "setAttr \"miDefaultFramebuffer.contourClearColorR\" " + contourClearColorR + ";\n" +
-          "setAttr \"miDefaultFramebuffer.contourClearColorG\" " + contourClearColorG + ";\n" +
-          "setAttr \"miDefaultFramebuffer.contourClearColorB\" " + contourClearColorB + ";\n" +
-          "setAttr \"miDefaultFramebuffer.contourSamples\" " + contourSamples + ";\n" +	
-          "setAttr \"miDefaultFramebuffer.contourFilter\" " + contourFilter + ";\n" +
-          "setAttr \"miDefaultFramebuffer.contourFilterSupport\" " + contourFilterSupport + ";\n" +
-          "setAttr \"miDefaultOptions.contourBackground\" " + contourBackground + ";\n" +
-          "setAttr \"miDefaultOptions.contourPriData\" " + contourPriData + ";\n" +
-          "setAttr \"miDefaultOptions.contourNormalGeom\" " + contourNormalGeom + ";\n" +
-          "setAttr \"miDefaultOptions.contourInstance\" " + contourInstance + ";\n" +
-          "setAttr \"miDefaultOptions.contourMaterial\" " + contourMaterial + ";\n" +
-          "setAttr \"miDefaultOptions.contourLabel\" " + contourLabel + ";\n" +
-          "setAttr \"miDefaultOptions.contourPriIdx\" " + contourPriIdx + ";\n" +
-          "setAttr \"miDefaultOptions.contourInvNormal\" " + contourInvNormal + ";\n" +
-          "setAttr \"miDefaultOptions.enableContourColor\" " + enableContourColor + ";\n" +
-          "setAttr \"miDefaultOptions.contourColorR\" " + contourColorR + ";\n" +
-          "setAttr \"miDefaultOptions.contourColorG\" " + contourColorG + ";\n" +
-          "setAttr \"miDefaultOptions.contourColorB\" " + contourColorB + ";\n" +
-          "setAttr \"miDefaultOptions.enableContourDepth\" " + enableContourDepth + ";\n" +
-          "setAttr \"miDefaultOptions.contourDepth\" " + contourDepth + ";\n" +
-          "setAttr \"miDefaultOptions.enableContourDist\" " + enableContourDist + ";\n" +
-          "setAttr \"miDefaultOptions.contourDist\" " + contourDist + ";\n" +
-          "setAttr \"miDefaultOptions.enableContourNormal\" " + enableContourNormal + ";\n" +
-          "setAttr \"miDefaultOptions.contourNormal\" " + contourNormal + ";\n" +
-          "setAttr \"miDefaultOptions.enableContourTexUV\" " + enableContourTexUV + ";\n" +
-          "setAttr \"miDefaultOptions.contourTexU\" " + contourTexU + ";\n" +
-          "setAttr \"miDefaultOptions.contourTexV\" " + contourTexV + ";\n");
+          ("// CONTOURS\n" + 
+           "setAttr \"miDefaultFramebuffer.contourEnable\" " + contourEnable + ";\n" +
+           "setAttr \"miDefaultFramebuffer.contourClearImage\" " + contourClearImage + ";\n" +
+           "setAttr \"miDefaultFramebuffer.contourClearColorR\" " + contourClearColor.x() + ";\n" +
+           "setAttr \"miDefaultFramebuffer.contourClearColorG\" " + contourClearColor.y() + ";\n" +
+           "setAttr \"miDefaultFramebuffer.contourClearColorB\" " + contourClearColor.z() + ";\n" +
+           "setAttr \"miDefaultFramebuffer.contourSamples\" " + contourSamples + ";\n" +	
+           "setAttr \"miDefaultFramebuffer.contourFilter\" " + contourFilter + ";\n" +
+           "setAttr \"miDefaultFramebuffer.contourFilterSupport\" " + contourFilterSupport + ";\n" +
+           "setAttr \"miDefaultOptions.contourBackground\" " + contourBackground + ";\n" +
+           "setAttr \"miDefaultOptions.contourPriData\" " + contourPriData + ";\n" +
+           "setAttr \"miDefaultOptions.contourNormalGeom\" " + contourNormalGeom + ";\n" +
+           "setAttr \"miDefaultOptions.contourInstance\" " + contourInstance + ";\n" +
+           "setAttr \"miDefaultOptions.contourMaterial\" " + contourMaterial + ";\n" +
+           "setAttr \"miDefaultOptions.contourLabel\" " + contourLabel + ";\n" +
+           "setAttr \"miDefaultOptions.contourPriIdx\" " + contourPriIdx + ";\n" +
+           "setAttr \"miDefaultOptions.contourInvNormal\" " + contourInvNormal + ";\n" +
+           "setAttr \"miDefaultOptions.enableContourColor\" " + enableContourColor + ";\n" +
+           "setAttr \"miDefaultOptions.contourColorR\" " + contourColor.x() + ";\n" +
+           "setAttr \"miDefaultOptions.contourColorG\" " + contourColor.y() + ";\n" +
+           "setAttr \"miDefaultOptions.contourColorB\" " + contourColor.z() + ";\n" +
+           "setAttr \"miDefaultOptions.enableContourDepth\" " + enableContourDepth + ";\n" +
+           "setAttr \"miDefaultOptions.contourDepth\" " + contourDepth + ";\n" +
+           "setAttr \"miDefaultOptions.enableContourDist\" " + enableContourDist + ";\n" +
+           "setAttr \"miDefaultOptions.contourDist\" " + contourDist + ";\n" +
+           "setAttr \"miDefaultOptions.enableContourNormal\" " + enableContourNormal + ";\n" +
+           "setAttr \"miDefaultOptions.contourNormal\" " + contourNormal + ";\n" +
+           "setAttr \"miDefaultOptions.enableContourTexUV\" " + enableContourTexUV + ";\n" +
+           "setAttr \"miDefaultOptions.contourTexU\" " + contourTex.x() + ";\n" +
+           "setAttr \"miDefaultOptions.contourTexV\" " + contourTex.y() + ";\n");
 
         if (contrastShader != null && !contrastShader.isEmpty() && !contrastShader.contains(" "))
-          out.write("if ((`objExists " + contrastShader + "`) && " +
-            "(!`isConnected " + contrastShader +".message miDefaultOptions.approx`))\n" + 
-            "\tconnectAttr -f " + contrastShader + ".message miDefaultOptions.contourContrast;\n");
+          out.write
+            ("if ((`objExists " + contrastShader + "`) && " +
+             "(!`isConnected " + contrastShader +".message miDefaultOptions.contourContrast`))\n" + 
+             "\tconnectAttr -f " + contrastShader + ".message miDefaultOptions.contourContrast;\n");
 
 
         if (storeShader != null && !storeShader.isEmpty() && !storeShader.contains(" "))
-          out.write("if ((`objExists " + storeShader + "`) && " +
-            "(!`isConnected " + storeShader +".message miDefaultOptions.approx`))\n" + 
-            "\tconnectAttr -f " + storeShader + ".message miDefaultOptions.contourStore;\n");
+          out.write
+            ("if ((`objExists " + storeShader + "`) && " +
+             "(!`isConnected " + storeShader +".message miDefaultOptions.contourStore`))\n" + 
+             "\tconnectAttr -f " + storeShader + ".message miDefaultOptions.contourStore;\n");
 
         out.write("\n");
       }
@@ -4572,12 +4920,15 @@ extends CommonActionUtils
         case 0:
           method = 0;
           break;
+          
         case 1:
           method = 3;
           break;
+          
         case 2:
           method = 1;
           break;
+          
         default:
           throw new PipelineException
           ("The AccelerationMethod was illegal!"); 
@@ -4593,16 +4944,16 @@ extends CommonActionUtils
         boolean bspShadow = getSingleBooleanParamValue(aBspShadow); 
 
         out.write
-        ("// MEMORY AND PERFORMANCE ATTRIBUTES\n" + 
-          "setAttr \"mentalrayGlobals.accelerationMethod\" " + method + ";\n" +
-          "setAttr \"mentalrayGlobals.bspSize\" " + bspSize + ";\n" +
-          "setAttr \"mentalrayGlobals.bspDepth\" " + bspDepth + ";\n" +
-          "setAttr \"mentalrayGlobals.bspShadow\" " + bspShadow + ";\n" +
-          "setAttr \"mentalrayGlobals.gridResolution\" " + gridRes + ";\n" +
-          "setAttr \"mentalrayGlobals.gridMaxSize\" " + gridSize + ";\n" +
-          "setAttr \"mentalrayGlobals.gridDepth\" " + gridDepth + ";\n" +
-          "setAttr \"mentalrayGlobals.taskSize\" " + taskSize + ";\n" +
-          "setAttr \"mentalrayGlobals.jlpm\" " + memory + ";\n\n");
+          ("// MEMORY AND PERFORMANCE ATTRIBUTES\n" + 
+           "setAttr \"mentalrayGlobals.accelerationMethod\" " + method + ";\n" +
+           "setAttr \"mentalrayGlobals.bspSize\" " + bspSize + ";\n" +
+           "setAttr \"mentalrayGlobals.bspDepth\" " + bspDepth + ";\n" +
+           "setAttr \"mentalrayGlobals.bspShadow\" " + bspShadow + ";\n" +
+           "setAttr \"mentalrayGlobals.gridResolution\" " + gridRes + ";\n" +
+           "setAttr \"mentalrayGlobals.gridMaxSize\" " + gridSize + ";\n" +
+           "setAttr \"mentalrayGlobals.gridDepth\" " + gridDepth + ";\n" +
+           "setAttr \"mentalrayGlobals.taskSize\" " + taskSize + ";\n" +
+           "setAttr \"mentalrayGlobals.jlpm\" " + memory + ";\n\n");
       }
 
       /* shadows */
@@ -4619,21 +4970,23 @@ extends CommonActionUtils
         case 0:
           shadowsObeyShadowLinking = true;
           break;
+          
         case 1:
           shadowsObeyLightLinking = true;
           break;
+          
         default: //do nothing...
           break;
         }
 
         out.write
-        ("// SHADOWS \n" +
-          "setAttr \"miDefaultOptions.shadowMethod\" " + shadowMethod + ";\n" +
-          "setAttr \"miDefaultOptions.shadowMaps\" " + shadowMaps + ";\n" +
-          "setAttr \"miDefaultOptions.rebuildShadowMaps\" " + rebuildShadowMaps + ";\n" +
-          "setAttr \"miDefaultOptions.motionBlurShadowMaps\" " + motionBlurShadowMaps + ";\n" +
-          "setAttr \"mentalrayGlobals.shadowsObeyShadowLinking\" " + shadowsObeyShadowLinking + ";\n" +
-          "setAttr \"mentalrayGlobals.shadowsObeyLightLinking\" " + shadowsObeyLightLinking + ";\n\n");
+          ("// SHADOWS \n" +
+           "setAttr \"miDefaultOptions.shadowMethod\" " + shadowMethod + ";\n" +
+           "setAttr \"miDefaultOptions.shadowMaps\" " + shadowMaps + ";\n" +
+           "setAttr \"miDefaultOptions.rebuildShadowMaps\" " + rebuildShadowMaps + ";\n" +
+           "setAttr \"miDefaultOptions.motionBlurShadowMaps\" " + motionBlurShadowMaps + ";\n" +
+           "setAttr \"mentalrayGlobals.shadowsObeyShadowLinking\" " + shadowsObeyShadowLinking + ";\n" +
+           "setAttr \"mentalrayGlobals.shadowsObeyLightLinking\" " + shadowsObeyLightLinking + ";\n\n");
       }
       
       /* translation */ 
@@ -4673,39 +5026,39 @@ extends CommonActionUtils
         boolean exportCustomVectors = getSingleBooleanParamValue(aCustomVectors);
 
         out.write
-        ("// TRANSLATION\n" + 
-          "setAttr \"mentalrayGlobals.exportVerbosity\" " + verbose + ";\n" +
-          "setAttr \"mentalrayGlobals.exportExactHierarchy\" " + hier + ";\n" +
-          "setAttr \"mentalrayGlobals.exportFullDagpath\" " + dag + ";\n" +
-          "setAttr \"mentalrayGlobals.exportTexturesFirst\" " + textures + ";\n" +
-          "setAttr \"mentalrayGlobals.exportParticles\" " + particles + ";\n" +
-          "setAttr \"mentalrayGlobals.exportParticleInstances\" " + pinst + ";\n" +
-          "setAttr \"mentalrayGlobals.exportFluids\" " + fluids + ";\n" +
-          "setAttr \"mentalrayGlobals.exportPostEffects\" " + effects + ";\n" +
-          "setAttr \"mentalrayGlobals.exportHair\" " + exportHair + ";\n" +
-          "setAttr \"mentalrayGlobals.exportVertexColors\" " + exportVertexColors + ";\n" +
-          "setAttr \"mentalrayGlobals.exportAssignedOnly\" " + exportAssignedOnly + ";\n" +
-          "setAttr \"mentalrayGlobals.exportVisibleOnly\" " + exportVisibleOnly + ";\n" +
-          "setAttr \"mentalrayGlobals.optimizeAnimateDetection\" " + optimizeAnimateDetection + ";\n" +
-          "setAttr \"mentalrayGlobals.exportSharedVertices\" " + exportSharedVertices + ";\n" +
-          "setAttr \"mentalrayGlobals.optimizeRaytraceShadows\" " + optimizeRaytraceShadows + ";\n" +
-          "setAttr \"mentalrayGlobals.exportMotionSegments\" " + exportMotionSegments + ";\n" +
-          "setAttr \"mentalrayGlobals.exportTriangles\" " + exportTriangles + ";\n" +
-          "setAttr \"mentalrayGlobals.exportShapeDeformation\" " + exportShapeDeformation + ";\n" +
-          "setAttr \"mentalrayGlobals.exportPolygonDerivatives\" " + exportPolygonDerivatives + ";\n" +
-          "setAttr \"mentalrayGlobals.mayaDerivatives\" " + mayaDerivatives + ";\n" +
-          "setAttr \"mentalrayGlobals.smoothPolygonDerivatives\" " + smoothPolygonDerivatives + ";\n" +
-          "setAttr \"mentalrayGlobals.exportNurbsDerivatives\" " + exportNurbsDerivatives + ";\n" +
-          "setAttr \"mentalrayGlobals.exportObjectsOnDemand\" " + exportObjectsOnDemand + ";\n" +
-          "setAttr \"mentalrayGlobals.exportPlaceholderSize\" " + exportPlaceholderSize + ";\n" +
-          "setAttr \"mentalrayGlobals.renderShadersWithFiltering\" " + renderShadersWithFiltering + ";\n" +
-          "setAttr \"mentalrayGlobals.exportStateShader\" " + exportStateShader + ";\n" +
-          "setAttr \"mentalrayGlobals.exportLightLinker\" " + exportLightLinker + ";\n" +
-          "setAttr \"mentalrayGlobals.exportMayaOptions\" " + exportMayaOptions + ";\n" +
-          "setAttr \"mentalrayGlobals.exportCustomColors\" " + exportCustomColors + ";\n" +
-          "setAttr \"mentalrayGlobals.exportCustom\" " + exportCustom + ";\n" +
-          "setAttr \"mentalrayGlobals.exportCustomData\" " + exportCustomData + ";\n" +
-          "setAttr \"mentalrayGlobals.exportCustomVectors\" " + exportCustomVectors + ";\n\n");
+          ("// TRANSLATION\n" + 
+           "setAttr \"mentalrayGlobals.exportVerbosity\" " + verbose + ";\n" +
+           "setAttr \"mentalrayGlobals.exportExactHierarchy\" " + hier + ";\n" +
+           "setAttr \"mentalrayGlobals.exportFullDagpath\" " + dag + ";\n" +
+           "setAttr \"mentalrayGlobals.exportTexturesFirst\" " + textures + ";\n" +
+           "setAttr \"mentalrayGlobals.exportParticles\" " + particles + ";\n" +
+           "setAttr \"mentalrayGlobals.exportParticleInstances\" " + pinst + ";\n" +
+           "setAttr \"mentalrayGlobals.exportFluids\" " + fluids + ";\n" +
+           "setAttr \"mentalrayGlobals.exportPostEffects\" " + effects + ";\n" +
+           "setAttr \"mentalrayGlobals.exportHair\" " + exportHair + ";\n" +
+           "setAttr \"mentalrayGlobals.exportVertexColors\" " + exportVertexColors + ";\n" +
+           "setAttr \"mentalrayGlobals.exportAssignedOnly\" " + exportAssignedOnly + ";\n" +
+           "setAttr \"mentalrayGlobals.exportVisibleOnly\" " + exportVisibleOnly + ";\n" +
+           "setAttr \"mentalrayGlobals.optimizeAnimateDetection\" " + optimizeAnimateDetection + ";\n" +
+           "setAttr \"mentalrayGlobals.exportSharedVertices\" " + exportSharedVertices + ";\n" +
+           "setAttr \"mentalrayGlobals.optimizeRaytraceShadows\" " + optimizeRaytraceShadows + ";\n" +
+           "setAttr \"mentalrayGlobals.exportMotionSegments\" " + exportMotionSegments + ";\n" +
+           "setAttr \"mentalrayGlobals.exportTriangles\" " + exportTriangles + ";\n" +
+           "setAttr \"mentalrayGlobals.exportShapeDeformation\" " + exportShapeDeformation + ";\n" +
+           "setAttr \"mentalrayGlobals.exportPolygonDerivatives\" " + exportPolygonDerivatives + ";\n" +
+           "setAttr \"mentalrayGlobals.mayaDerivatives\" " + mayaDerivatives + ";\n" +
+           "setAttr \"mentalrayGlobals.smoothPolygonDerivatives\" " + smoothPolygonDerivatives + ";\n" +
+           "setAttr \"mentalrayGlobals.exportNurbsDerivatives\" " + exportNurbsDerivatives + ";\n" +
+           "setAttr \"mentalrayGlobals.exportObjectsOnDemand\" " + exportObjectsOnDemand + ";\n" +
+           "setAttr \"mentalrayGlobals.exportPlaceholderSize\" " + exportPlaceholderSize + ";\n" +
+           "setAttr \"mentalrayGlobals.renderShadersWithFiltering\" " + renderShadersWithFiltering + ";\n" +
+           "setAttr \"mentalrayGlobals.exportStateShader\" " + exportStateShader + ";\n" +
+           "setAttr \"mentalrayGlobals.exportLightLinker\" " + exportLightLinker + ";\n" +
+           "setAttr \"mentalrayGlobals.exportMayaOptions\" " + exportMayaOptions + ";\n" +
+           "setAttr \"mentalrayGlobals.exportCustomColors\" " + exportCustomColors + ";\n" +
+           "setAttr \"mentalrayGlobals.exportCustom\" " + exportCustom + ";\n" +
+           "setAttr \"mentalrayGlobals.exportCustomData\" " + exportCustomData + ";\n" +
+           "setAttr \"mentalrayGlobals.exportCustomVectors\" " + exportCustomVectors + ";\n\n");
       }
 
       /* preview */
@@ -4718,13 +5071,13 @@ extends CommonActionUtils
         double tonemapRangeHigh = getSingleDoubleParamValue(aTonemapScale);
 
         out.write
-        ("// PREVIEW\n" + 
-          "setAttr \"mentalrayGlobals.previewAnimation\" " + previewAnimation + ";\n" +
-          "setAttr \"mentalrayGlobals.previewMotionBlur\" " + previewMotionBlur + ";\n" +
-          "setAttr \"mentalrayGlobals.previewRenderTiles\" " + previewRenderTiles + ";\n" +
-          "setAttr \"mentalrayGlobals.previewConvertTiles\" " + previewConvertTiles + ";\n" +
-          "setAttr \"mentalrayGlobals.previewTonemapTiles\" " + previewTonemapTiles + ";\n" +
-          "setAttr \"mentalrayGlobals.tonemapRangeHigh\" " + tonemapRangeHigh + ";\n\n");
+          ("// PREVIEW\n" + 
+           "setAttr \"mentalrayGlobals.previewAnimation\" " + previewAnimation + ";\n" +
+           "setAttr \"mentalrayGlobals.previewMotionBlur\" " + previewMotionBlur + ";\n" +
+           "setAttr \"mentalrayGlobals.previewRenderTiles\" " + previewRenderTiles + ";\n" +
+           "setAttr \"mentalrayGlobals.previewConvertTiles\" " + previewConvertTiles + ";\n" +
+           "setAttr \"mentalrayGlobals.previewTonemapTiles\" " + previewTonemapTiles + ";\n" +
+           "setAttr \"mentalrayGlobals.tonemapRangeHigh\" " + tonemapRangeHigh + ";\n\n");
       }
 
       /* custom entities */
@@ -4737,10 +5090,10 @@ extends CommonActionUtils
         String includes = getSingleStringParamValue(aCustomIncludes);
 
         out.write
-        ("// CUSTOM ENTITIES\n" + 
-          "setAttr \"mentalrayGlobals.passAlphaThrough\" " + passAlphaThrough + ";\n" +
-          "setAttr \"mentalrayGlobals.passDepthThrough\" " + passDepthThrough + ";\n" +
-          "setAttr \"mentalrayGlobals.passLabelThrough\" " + passLabelThrough + ";\n");
+          ("// CUSTOM ENTITIES\n" + 
+           "setAttr \"mentalrayGlobals.passAlphaThrough\" " + passAlphaThrough + ";\n" +
+           "setAttr \"mentalrayGlobals.passDepthThrough\" " + passDepthThrough + ";\n" +
+           "setAttr \"mentalrayGlobals.passLabelThrough\" " + passLabelThrough + ";\n");
 
         String customEntities = "";
         if (versions != null)
@@ -4757,9 +5110,9 @@ extends CommonActionUtils
     }
     catch(IOException ex) {
       throw new PipelineException
-      ("Unable to write the temporary MEL script file (" + temp + ") for Job " + 
-        "(" + agenda.getJobID() + ")!\n" +
-        ex.getMessage());
+        ("Unable to write the temporary MEL script file (" + temp + ") for Job " + 
+         "(" + agenda.getJobID() + ")!\n" +
+         ex.getMessage());
     }
 
     /* create the process to run the action */ 
@@ -4781,10 +5134,8 @@ extends CommonActionUtils
   public static final String aPixelFilterType           = "PixelFilterType";
   public static final String aPixelFilterWidthX         = "PixelFilterWidthX";
   public static final String aPixelFilterWidthY         = "PixelFilterWidthY";
-  public static final String aRedThreshold              = "RedThreshold";
-  public static final String aGreenThreshold            = "GreenThreshold";
-  public static final String aBlueThreshold             = "BlueThreshold";
-  public static final String aAlphaThreshold            = "AlphaThreshold";
+  public static final String aThreshold                 = "Threshold";
+  public static final String aCoverageThreshold         = "AlphaThreshold";
   public static final String aSampleLock                = "SampleLock";
   public static final String aJitter                    = "Jitter";
   public static final String aUseRaytracing             = "UseRaytracing";
@@ -4798,9 +5149,7 @@ extends CommonActionUtils
   public static final String aMotionBlurBy              = "MotionBlurBy";
   public static final String aShutterClose              = "ShutterClose";
   public static final String aShutterOpen               = "ShutterOpen";
-  public static final String aTimeContrastRed           = "RedTimeContrast";
-  public static final String aTimeContrastGreen         = "GreenTimeContrast";
-  public static final String aTimeContrastBlue          = "BlueTimeContrast";
+  public static final String aTimeContrast              = "TimeContrast";
   public static final String aTimeContrastAlpha         = "AlphaTimeContrast";
   public static final String aMotionSteps               = "MotionSteps";
   public static final String aUseCaustics               = "UseCaustics";
@@ -4835,6 +5184,8 @@ extends CommonActionUtils
   public static final String aEnableFGMapVisualizer     = "EnableFGMapVisualizer";
   public static final String aFinalGatherMapRebuild     = "RebuildFinalGatherMap";
   public static final String aPreviewFinalGather        = "PreviewFinalGatherTiles";
+  public static final String aOptimizeForAnim           = "OptimizeForAnimation";
+  public static final String aUseRadiusQualityControl   = "UseRadiusQualityControl";
   public static final String aDataType                  = "DataType";
   public static final String aGamma                     = "Gamma";
   public static final String aColorClip                 = "ColorClip";
@@ -4859,139 +5210,120 @@ extends CommonActionUtils
   public static final String aExportFluids              = "ExportFluids";
   public static final String aExportPostEffects         = "ExportPostEffects";
   public static final String aQuality                   = "QualityPresets";
-  public static final String aSamplingMode 	        = "SamplingMode";
-  public static final String aVisibilitySamples	        = "VisibilitySamples";
-  public static final String aShadingQuality 	        = "ShadingQuality";
+  public static final String aVisibilitySamples         = "VisibilitySamples";
+  public static final String aShadingQuality            = "ShadingQuality";
   public static final String aReflectionBlurLimit       = "ReflectionBlurLimit";
   public static final String aRefractionBlurLimit       = "RefractionBlurLimit";
-  public static final String aBspShadow      	        = "SeparateShadowMap";
-  public static final String aShadowMethod 	        = "ShadowMethod";
-  public static final String aShadowLinking 	        = "ShadowLinking";
-  public static final String aShadowMapsFormat	        = "ShadowMapsFormat";
+  public static final String aBspShadow                 = "SeparateShadowMap";
+  public static final String aShadowMethod              = "ShadowMethod";
+  public static final String aShadowLinking             = "ShadowLinking";
+  public static final String aShadowMapsFormat          = "ShadowMapsFormat";
   public static final String aShadowMapsRebuildMode     = "ShadowMapsRebuildMode";
   public static final String aMotionBlurShadowMaps      = "MotionBlurShadowMaps";
   public static final String aMotionQualityFactor       = "MotionQualityFactor";
   public static final String aCustomMotionOffsets       = "CustomMotionOffsets";
-  public static final String aMotionBackOffset	        = "MotionBackOffset";
+  public static final String aMotionBackOffset          = "MotionBackOffset";
   public static final String aStaticObjectOffset        = "StaticObjectOffset";
   public static final String aTimeSamples               = "TimeSamples";
-  public static final String aRedCausticScale	        = "RedCausticScale";
-  public static final String aGreenCausticScale	        = "GreenCausticScale";
-  public static final String aBlueCausticScale	        = "BlueCausticScale";
-  //public static final String aAlphaCausticScale       = "AlphaCausticScale";
-  public static final String aRedGlobalIllumScale       = "RedGlobalIllumScale";
-  public static final String aGreenGlobalIllumScale     = "GreenGlobalIllumScale";
-  public static final String aBlueGlobalIllumScale      = "BlueGlobalIllumScale";
-  //public static final String aAlphaGlobalIllumScale   = "AlphaGlobalIllumScale";
-  public static final String aPhotonAutoVolume	        = "PhotonAutoVolume";
-  public static final String aPointDensity	        = "PointDensity";
+  public static final String aCausticScale              = "CausticScale";
+  public static final String aGlobalIllumScale          = "GlobalIllumScale";
+  public static final String aPhotonAutoVolume          = "PhotonAutoVolume";
+  public static final String aPointDensity              = "PointDensity";
   public static final String aPointInterpolation        = "PointInterpolation";
-  public static final String aRedFinalGatherScale       = "RedFinalGatherScale";
-  public static final String aGreenFinalGatherScale     = "GreenFinalGatherScale";
-  public static final String aBlueFinalGatherScale      = "BlueFinalGatherScale";
-  //public static final String aAlphaFinalGatherScale   = "AlphaFinalGatherScale";
-  //public static final String aUseRadiusQualityControl = "UseRadiusQualityControl";
-  public static final String aFinalGatherView	        = "ViewRadiiInPixelSize";
+  public static final String aFinalGatherScale          = "FinalGatherScale";
+  public static final String aFinalGatherView           = "ViewRadiiInPixelSize";
   public static final String aFinalGatherTraceDiffuse   = "SecondaryDiffuseBounces";
-  public static final String aRedFGBounceScale		= "RedSecondaryBounceScale";
-  public static final String aGreenFGBounceScale	= "GreenSecondaryBounceScale";
-  public static final String aBlueFGBounceScale		= "BlueSecondaryBounceScale";
-  //public static final String aAlphaFGBounceScale      = "AlphaSecondaryBounceScale";
-  public static final String aDiagnoseSamples	        = "DiagnoseSamples";
-  public static final String aDiagnoseBsp	        = "DiagnoseBsp";
-  public static final String aDiagnoseGrid	        = "DiagnoseGrid";
-  public static final String aDiagnoseGridSize		= "DiagnoseGridSize";
-  public static final String aDiagnosePhoton	        = "DiagnosePhoton";
-  public static final String aDiagnosePhotonDensity	= "DiagnosePhotonDensity";
+  public static final String aFGBounceScale             = "SecondaryBounceScale";
+  public static final String aDiagnoseSamples           = "DiagnoseSamples";
+  public static final String aDiagnoseBsp               = "DiagnoseBsp";
+  public static final String aDiagnoseGrid              = "DiagnoseGrid";
+  public static final String aDiagnoseGridSize          = "DiagnoseGridSize";
+  public static final String aDiagnosePhoton            = "DiagnosePhoton";
+  public static final String aDiagnosePhotonDensity     = "DiagnosePhotonDensity";
   public static final String aDiagnoseFinalGather       = "DiagnoseFinalGather";
-  public static final String aVolumeShaders	        = "VolumeShaders";
-  public static final String aGeometryShaders	        = "GeometryShaders";
-  public static final String aDisplacementShaders	= "DisplacementShaders";
-  public static final String aOutputShaders		= "OutputShaders";
-  public static final String aAutoVolume		= "AutoVolume";
-  public static final String aDisplacePresample		= "DisplacePresample";
-  public static final String aMergeSurfaces		= "MergeSurfaces";
-  public static final String aRenderFurHair		= "RenderFurHair";
-  public static final String aRenderPasses		= "RenderPasses";
-  public static final String aVolumeSamples		= "VolumeSamples";
-  public static final String aMaxDisplace		= "MaxDisplace";
-  public static final String aShadowMapBias		= "ShadowMapBias";
-  public static final String aSurfaceApprox		= "TessellationSurfaceApprox";
-  public static final String aDisplaceApprox		= "TessellationDisplaceApprox";
-  public static final String aCausticsGenerating	= "CausticsGenerating";
-  public static final String aCausticsReceiving		= "CausticsReceiving";
-  public static final String aGlobalIllumGenerating	= "GlobalIllumGenerating";
+  public static final String aVolumeShaders             = "VolumeShaders";
+  public static final String aGeometryShaders           = "GeometryShaders";
+  public static final String aDisplacementShaders       = "DisplacementShaders";
+  public static final String aOutputShaders             = "OutputShaders";
+  public static final String aAutoVolume                = "AutoVolume";
+  public static final String aDisplacePresample         = "DisplacePresample";
+  public static final String aMergeSurfaces             = "MergeSurfaces";
+  public static final String aRenderFurHair             = "RenderFurHair";
+  public static final String aRenderPasses              = "RenderPasses";
+  public static final String aVolumeSamples             = "VolumeSamples";
+  public static final String aMaxDisplace               = "MaxDisplace";
+  public static final String aShadowMapBias             = "ShadowMapBias";
+  public static final String aSurfaceApprox             = "TessellationSurfaceApprox";
+  public static final String aDisplaceApprox            = "TessellationDisplaceApprox";
+  public static final String aCausticsGenerating        = "CausticsGenerating";
+  public static final String aCausticsReceiving         = "CausticsReceiving";
+  public static final String aGlobalIllumGenerating     = "GlobalIllumGenerating";
   public static final String aGlobalIllumReceiving      = "GlobalIllumReceiving";
-  public static final String aEnableContourRendering	= "EnableContourRendering";
-  public static final String aHideSource	        = "HideSource";
-  public static final String aRedFloodColor	        = "RedFloodColor";
-  public static final String aGreenFloodColor		= "GreenFloodColor";
-  public static final String aBlueFloodColor		= "BlueFloodColor";
-  //public static final String aAlphaFloodColor	        = "AlphaFloodColor";
-  public static final String aOverSample		= "OverSample";
-  public static final String aContourFilterType		= "ContourFilterType";
-  public static final String aContourFilterSupport	= "ContourFilterSupport";
-  public static final String aAroundSilhouette		= "AroundSilhouette";
-  public static final String aAroundAllPolyFaces	= "AroundAllPolyFaces";
-  public static final String aAroundCoplanarFaces	= "AroundCoplanarFaces";
-  public static final String aBetweenDiffInstances	= "BetweenDiffInstances";
-  public static final String aBetweenDiffMaterials	= "BetweenDiffMaterials";
-  public static final String aBetweenDiffLabels	 	= "BetweenDiffLabels";
-  public static final String aAroundRenderTesselation	= "AroundRenderTesselation";
-  public static final String aFrontVsBackFaceContours	= "FrontVsBackFaceContours";
+  public static final String aEnableContourRendering    = "EnableContourRendering";
+  public static final String aHideSource                = "HideSource";
+  public static final String aFloodColor                = "FloodColor";
+  public static final String aOverSample                = "OverSample";
+  public static final String aContourFilterType         = "ContourFilterType";
+  public static final String aContourFilterSupport      = "ContourFilterSupport";
+  public static final String aAroundSilhouette          = "AroundSilhouette";
+  public static final String aAroundAllPolyFaces        = "AroundAllPolyFaces";
+  public static final String aAroundCoplanarFaces       = "AroundCoplanarFaces";
+  public static final String aBetweenDiffInstances      = "BetweenDiffInstances";
+  public static final String aBetweenDiffMaterials      = "BetweenDiffMaterials";
+  public static final String aBetweenDiffLabels         = "BetweenDiffLabels";
+  public static final String aAroundRenderTessellation  = "AroundRenderTessellation";
+  public static final String aFrontVsBackFaceContours   = "FrontVsBackFaceContours";
   public static final String aEnableColorContrast       = "EnableColorContrast";
-  public static final String aRedColorContrast		= "RedColorContrast";
-  public static final String aGreenColorContrast        = "GreenColorContrast";
-  public static final String aBlueColorContrast		= "BlueColorContrast";
-  //public static final String aAlphaColorContrast	= "AlphaColorContrast";
-  public static final String aEnableDepthContrast	= "EnableDepthContrast";
-  public static final String aDepthContrast		= "DepthContrast";
-  public static final String aEnableDistanceContrast	= "EnableDistanceContrast";
-  public static final String aDistanceContrast		= "DistanceContrast";
-  public static final String aEnableNormalContrast	= "EnableNormalContrast";
-  public static final String aNormalContrast		= "NormalContrast";
-  public static final String aEnableUVContours		= "EnableUVContours";
-  public static final String aUVContoursU		= "UVContoursU";
-  public static final String aUVContoursV		= "UVContoursV";
-  public static final String aContrastShader		= "ContrastShader";
-  public static final String aStoreShader		= "StoreShader";
-  public static final String aExportHair		= "ExportHair";
-  public static final String aExportVertexColors	= "ExportVertexColors";
-  public static final String aPruneObjectsWOMaterial	= "PruneObjectsWithoutMaterial";
-  public static final String aOptNonAnimDisplayVis	= "OptimizeNonanimatedDisplayVisibility";
-  public static final String aOptAnimDetection		= "OptimizeAnimationDetection";
-  public static final String aOptVertSharing		= "OptimizeVertexSharing";
-  public static final String aOptRaytraceShadows	= "OptimizeRaytraceShadows";
-  public static final String aExportMotionSegments	= "ExportMotionSegments";
-  public static final String aExportTriangulatedPoly	= "ExportTriangulatedPolygons";
-  public static final String aExportShapeDeformation	= "ExportShapeDeformation";
+  public static final String aColorContrast             = "ColorContrast";
+  public static final String aEnableDepthContrast       = "EnableDepthContrast";
+  public static final String aDepthContrast             = "DepthContrast";
+  public static final String aEnableDistanceContrast    = "EnableDistanceContrast";
+  public static final String aDistanceContrast          = "DistanceContrast";
+  public static final String aEnableNormalContrast      = "EnableNormalContrast";
+  public static final String aNormalContrast            = "NormalContrast";
+  public static final String aEnableUVContours          = "EnableUVContours";
+  public static final String aUVContours                = "UVContours";
+  public static final String aContrastShader            = "ContrastShader";
+  public static final String aStoreShader               = "StoreShader";
+  public static final String aExportHair                = "ExportHair";
+  public static final String aExportVertexColors        = "ExportVertexColors";
+  public static final String aPruneObjectsWOMaterial    = "PruneObjectsWithoutMaterial";
+  public static final String aOptNonAnimDisplayVis      = "OptimizeNonanimatedDisplayVisibility";
+  public static final String aOptAnimDetection          = "OptimizeAnimationDetection";
+  public static final String aOptVertSharing            = "OptimizeVertexSharing";
+  public static final String aOptRaytraceShadows        = "OptimizeRaytraceShadows";
+  public static final String aExportMotionSegments      = "ExportMotionSegments";
+  public static final String aExportTriangulatedPoly    = "ExportTriangulatedPolygons";
+  public static final String aExportShapeDeformation    = "ExportShapeDeformation";
   public static final String aExportPolygonDerivatives  = "ExportPolygonDerivatives";
-  public static final String aMayaDerivatives		= "MayaDerivatives";
+  public static final String aMayaDerivatives           = "MayaDerivatives";
   public static final String aSmoothPolygonDerivatives  = "SmoothPolygonDerivatives";
-  public static final String aExportNurbsDerivatives	= "ExportNurbsDerivatives";
-  public static final String aExportObjectsOnDemand	= "ExportObjectsOnDemand";
-  public static final String aPerformanceThreshold	= "PerformanceThreshold";
+  public static final String aExportNurbsDerivatives    = "ExportNurbsDerivatives";
+  public static final String aExportObjectsOnDemand     = "ExportObjectsOnDemand";
+  public static final String aPerformanceThreshold      = "PerformanceThreshold";
   public static final String aRenderShadersWithFilter   = "RenderShadersWithFiltering";
-  public static final String aExportStateShader		= "ExportStateShader";
-  public static final String aExportLightLinker		= "ExportLightLinker";
-  public static final String aExprtMayaOptions		= "ExportMayaOptions";
-  public static final String aCustomColors		= "ExportCustomColors";
-  public static final String aCustomTexts		= "ExportCustomTexts";
-  public static final String aCustomData		= "ExportCustomData";
-  public static final String aCustomVectors		= "ExportCustomVectors";
-  public static final String aPreviewAnimation		= "PreviewAnimation";
-  public static final String aPreviewMotionBlur		= "PreviewMotionBlur";
-  public static final String aPreviewRenderTiles	= "PreviewRenderTiles";
-  public static final String aPreviewConvertTiles	= "PreviewConvertTiles";
-  public static final String aPreviewTonemapTiles	= "PreviewTonemapTiles";
-  public static final String aTonemapScale		= "TonemapScale";
-  public static final String aPassCustomAlphaChannel	= "PassCustomAlphaChannel";
-  public static final String aPassCustomDepthChannel	= "PassCustomDepthChannel";
-  public static final String aPassCustomLabelChannel	= "PassCustomLabelChannel";
-  public static final String aCustomVersions		= "CustomVersions";
-  public static final String aCustomLinks		= "CustomLinks";
-  public static final String aCustomIncludes		= "CustomIncludes";
-  public static final String aCreateDefaultNodes	= "CreateDefaultNodes";
+  public static final String aExportStateShader         = "ExportStateShader";
+  public static final String aExportLightLinker         = "ExportLightLinker";
+  public static final String aExprtMayaOptions          = "ExportMayaOptions";
+  public static final String aCustomColors              = "ExportCustomColors";
+  public static final String aCustomTexts               = "ExportCustomTexts";
+  public static final String aCustomData                = "ExportCustomData";
+  public static final String aCustomVectors             = "ExportCustomVectors";
+  public static final String aPreviewAnimation          = "PreviewAnimation";
+  public static final String aPreviewMotionBlur         = "PreviewMotionBlur";
+  public static final String aPreviewRenderTiles        = "PreviewRenderTiles";
+  public static final String aPreviewConvertTiles       = "PreviewConvertTiles";
+  public static final String aPreviewTonemapTiles       = "PreviewTonemapTiles";
+  public static final String aTonemapScale              = "TonemapScale";
+  public static final String aPassCustomAlphaChannel    = "PassCustomAlphaChannel";
+  public static final String aPassCustomDepthChannel    = "PassCustomDepthChannel";
+  public static final String aPassCustomLabelChannel    = "PassCustomLabelChannel";
+  public static final String aCustomVersions            = "CustomVersions";
+  public static final String aCustomLinks               = "CustomLinks";
+  public static final String aCustomIncludes            = "CustomIncludes";
+  public static final String aCreateDefaultNodes        = "CreateDefaultNodes";
+  public static final String aAlphaMaskChannel          = "AlphaMaskChannel";
+  public static final String aZDepthChannel             = "ZDepthChannel";
 
   private static final long serialVersionUID = -7887483141312167689L;
 }
