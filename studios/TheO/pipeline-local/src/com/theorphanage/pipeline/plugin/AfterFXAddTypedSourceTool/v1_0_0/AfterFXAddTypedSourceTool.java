@@ -49,10 +49,11 @@ class AfterFXAddTypedSourceTool
         ("At least two nodes must be selected for this tool to work, including a primary node.");
     
     pStatus = pSelected.get(pPrimary);
-    FileSeq seq = pStatus.getDetails().getWorkingVersion().getPrimarySequence();
+    FileSeq seq = pStatus.getLightDetails().getWorkingVersion().getPrimarySequence();
     String suffix = seq.getFilePattern().getSuffix();
     if (suffix == null || !suffix.equals("aep"))
-      throw new PipelineException("Please select an AfterFX composite node for this script to run on.");
+      throw new PipelineException
+        ("Please select an AfterFX composite node for this script to run on.");
     
     pNodeID = pStatus.getNodeID();
     

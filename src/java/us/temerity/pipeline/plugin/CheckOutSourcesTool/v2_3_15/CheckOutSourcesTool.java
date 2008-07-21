@@ -1,4 +1,4 @@
-// $Id: CheckOutSourcesTool.java,v 1.4 2008/07/21 17:31:09 jim Exp $
+// $Id: CheckOutSourcesTool.java,v 1.5 2008/07/21 23:28:13 jim Exp $
 
 package us.temerity.pipeline.plugin.CheckOutSourcesTool.v2_3_15;
 
@@ -90,22 +90,30 @@ class CheckOutSourcesTool
   {
     TreeSet<String> checkOut = new TreeSet<String>();
     TreeMap<String, VersionID> lock = new TreeMap<String, VersionID>();
-    NodeStatus stat = pSelected.get(pPrimary);
+
+    NodeStatus stat = mclient.status(pSelected.get(pPrimary).getNodeID());
+
     NodeID id = stat.getNodeID();
     for (String source : stat.getSourceNames()) {
       NodeStatus child = stat.getSource(source);
       NodeDetailsHeavy det = child.getHeavyDetails();
       VersionID base = det.getBaseVersion().getVersionID();
       VersionID latest = det.getLatestVersion().getVersionID();
-      NodeMod mod = det.getWorkingVersion();
-      boolean locked = mod.isLocked();
-      if (!base.equals(latest))
-	if (locked) {
-	  lock.put(source, latest);
-	  break;
-	}
-      if (det.getOverallNodeState() != OverallNodeState.Conflicted)
-        checkOut.add(source);
+      if((base != null) && (latest != null)) {
+        boolean locked = false;
+        {
+          NodeMod mod = det.getWorkingVersion();
+          if(mod != null) 
+            locked = mod.isLocked();
+        }
+
+        if (!base.equals(latest)) {
+          if (locked) 
+            lock.put(source, latest);
+          else if (det.getOverallNodeState() != OverallNodeState.Conflicted) 
+            checkOut.add(source);
+        }
+      }
     }
     
     for (String each : checkOut) {

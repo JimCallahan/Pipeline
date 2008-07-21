@@ -1,4 +1,4 @@
-// $Id: MRayAddTexturesTool.java,v 1.2 2007/07/31 14:32:16 jim Exp $
+// $Id: MRayAddTexturesTool.java,v 1.3 2008/07/21 23:28:13 jim Exp $
 
 package us.temerity.pipeline.plugin.MRayAddTexturesTool.v2_2_1;
 
@@ -156,9 +156,8 @@ MRayAddTexturesTool
           pView   = nodeID.getView();
         }
 
-        NodeDetails details = status.getDetails();
-        if(details != null) {
-          NodeMod mod = details.getWorkingVersion();
+        if(status.hasLightDetails()) {
+          NodeMod mod = status.getLightDetails().getWorkingVersion();
           if(name.equals(pPrimary)) 
             pDefaultToolset = mod.getToolset();
           else 

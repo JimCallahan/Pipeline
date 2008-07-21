@@ -72,12 +72,18 @@ public class MayaRemoveReferenceTool
   {
     Set<String> nodes = new TreeSet<String>(pSelected.keySet());
     nodes.remove(pPrimary);
+
     NodeStatus targetStatus = pSelected.get(pPrimary);
+    if((targetStatus == null) || !targetStatus.hasLightDetails()) 
+      throw new PipelineException
+        ("This tool requires at least lightweight status details on target node " + 
+         "(" + pPrimary + ") to work.");
+
     NodeID targetID = targetStatus.getNodeID();
     String user = targetID.getAuthor();
     String view = targetID.getView();
 
-    NodeMod targetMod = targetStatus.getDetails().getWorkingVersion();
+    NodeMod targetMod = targetStatus.getLightDetails().getWorkingVersion();
 
     File targetFile;
     {
@@ -87,9 +93,8 @@ public class MayaRemoveReferenceTool
 	|| (!suffix.equals("ma") && !suffix.equals("mb")))
 	throw new PipelineException("The target node (" + pPrimary
 	  + ") must be a maya scene.");
-      targetFile =
-	new Path(PackageInfo.sProdPath, targetID.getWorkingParent() + "/" + fseq.getPath(0))
-	  .toFile();
+      targetFile = (new Path(PackageInfo.sProdPath, 
+                             targetID.getWorkingParent() + "/" + fseq.getPath(0))).toFile();
     }
 
     File script = null;
@@ -102,15 +107,20 @@ public class MayaRemoveReferenceTool
       out = new PrintWriter(new BufferedWriter(new FileWriter(script)));
     }
     catch(IOException ex) {
-      throw new PipelineException(
-	"Unable to create the temporary MEL script used to remove a "
-	  + "reference from the Maya scene!");
+      throw new PipelineException
+        ("Unable to create the temporary MEL script used to remove a reference from " + 
+         "the Maya scene!");
     }
 
     NodeStatus referenceStatus;
     for(String sourceName : nodes) {
       referenceStatus = pSelected.get(sourceName);
-      NodeMod referenceMod = referenceStatus.getDetails().getWorkingVersion();
+      if((referenceStatus == null) || !referenceStatus.hasLightDetails()) 
+        throw new PipelineException
+          ("This tool requires at least lightweight status details on reference node " + 
+           "(" + sourceName + ") to work.");
+
+      NodeMod referenceMod = referenceStatus.getLightDetails().getWorkingVersion();
       String refFileName;
       {
 	FileSeq fseq = referenceMod.getPrimarySequence();

@@ -1,4 +1,4 @@
-// $Id: RenumberTool.java,v 1.1 2007/06/17 15:34:45 jim Exp $
+// $Id: RenumberTool.java,v 1.2 2008/07/21 23:28:15 jim Exp $
 
 package us.temerity.pipeline.plugin.RenumberTool.v2_0_9;
 
@@ -195,16 +195,16 @@ RenumberTool
 
       {
 	NodeStatus status = pSelected.get(pPrimary);
+        if((status == null) || !status.hasLightDetails()) 
+          throw new PipelineException
+            ("This tool requires at least lightweight status details on target node " + 
+             "(" + pPrimary + ") to work.");
+
 	NodeID nodeID = status.getNodeID();
 	pUser = nodeID.getAuthor();
 	pView = nodeID.getView();
 
-	NodeDetails details = status.getDetails();
-	if(details == null)
-	  throw new PipelineException
-	    ("The target node must have an existing status in order to be renumbered!");
-
-	NodeMod mod = details.getWorkingVersion();
+	NodeMod mod = status.getLightDetails().getWorkingVersion();
 	if(mod == null)
 	  throw new PipelineException
 	    ("The target node must be checked-out in order to be renumbered!");
@@ -465,7 +465,7 @@ RenumberTool
     {
       pTargetNodeID = new NodeID(pUser, pView, pTargetNode);
       pTargetNodeStatus = mclient.status(pTargetNodeID);
-      pTargetNodeMod = pTargetNodeStatus.getDetails().getWorkingVersion();
+      pTargetNodeMod = pTargetNodeStatus.getLightDetails().getWorkingVersion();
       if(pTargetNodeMod == null)
 	throw new PipelineException
 	  ("No working version of the Target Node ("+ pTargetNode + ") exists " + 
@@ -551,11 +551,10 @@ RenumberTool
    NodeStatus status
   )
   {
-    NodeDetails details = status.getDetails();
-    if(details == null)
+    if(!status.hasLightDetails())
       return;
 
-    NodeMod mod = details.getWorkingVersion();
+    NodeMod mod = status.getLightDetails().getWorkingVersion();
     if(mod == null)
       return;
 

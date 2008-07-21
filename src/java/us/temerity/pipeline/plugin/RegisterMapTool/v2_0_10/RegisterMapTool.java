@@ -1,4 +1,4 @@
-// $Id: RegisterMapTool.java,v 1.2 2007/07/25 19:45:44 jim Exp $
+// $Id: RegisterMapTool.java,v 1.3 2008/07/21 23:28:15 jim Exp $
 
 package us.temerity.pipeline.plugin.RegisterMapTool.v2_0_10;
 
@@ -81,18 +81,19 @@ RegisterMapTool
 
     for (String each : pSelected.keySet()) {
       NodeStatus status = pSelected.get(each);
-      NodeDetails det = status.getDetails();
-      NodeMod mod = det.getWorkingVersion();
-      NodeID nodeID = status.getNodeID();
-      String suffix = mod.getPrimarySequence().getFilePattern().getSuffix();
-      if (pTextureFormats.contains(suffix)) {
-	pOriginalNodes.add(each);
-	pToolsets.add(mod.getToolset());
-	pUser = nodeID.getAuthor();
-	pView = nodeID.getView();
-	Path p = new Path(each);
-	String newName = p.getParentPath().getParent() + "/map/" + p.getName();
-	pNewNodes.add(newName);
+      if(status.hasLightDetails()) {
+        NodeMod mod = status.getLightDetails().getWorkingVersion();
+        NodeID nodeID = status.getNodeID();
+        String suffix = mod.getPrimarySequence().getFilePattern().getSuffix();
+        if (pTextureFormats.contains(suffix)) {
+          pOriginalNodes.add(each);
+          pToolsets.add(mod.getToolset());
+          pUser = nodeID.getAuthor();
+          pView = nodeID.getView();
+          Path p = new Path(each);
+          String newName = p.getParentPath().getParent() + "/map/" + p.getName();
+          pNewNodes.add(newName);
+        }
       }
     }
 

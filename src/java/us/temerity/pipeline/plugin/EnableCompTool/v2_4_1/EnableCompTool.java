@@ -1,4 +1,4 @@
-// $Id: EnableCompTool.java,v 1.2 2008/07/21 17:31:09 jim Exp $
+// $Id: EnableCompTool.java,v 1.3 2008/07/21 23:28:13 jim Exp $
 
 package us.temerity.pipeline.plugin.EnableCompTool.v2_4_1;
 
@@ -59,8 +59,13 @@ class EnableCompTool
       throw new PipelineException
         ("This tool requires at least lightweight status details on target node " + 
          "(" + pPrimary + ") to work.");
-
-    FileSeq seq = pStatus.getLightDetails().getWorkingVersion().getPrimarySequence();
+    
+    NodeMod mod = pStatus.getLightDetails().getWorkingVersion();
+    if(mod == null) 
+      throw new PipelineException
+        ("This tool requires a working version of the target node (" + pPrimary + "!"); 
+    
+    FileSeq seq = mod.getPrimarySequence();
     String suffix = seq.getFilePattern().getSuffix();
     if (suffix == null || 
        !(suffix.equals("aep") || suffix.equals("nk") || suffix.equals("shk")))

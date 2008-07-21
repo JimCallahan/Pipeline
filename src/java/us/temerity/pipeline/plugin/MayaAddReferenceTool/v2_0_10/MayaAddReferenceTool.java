@@ -170,16 +170,15 @@ class MayaAddReferenceTool
   )
     throws PipelineException
   {
-
     NodeID targetID = new NodeID(pAuthor, pView, pPrimary);
-    NodeMod targetMod = pSelected.get(pPrimary).getDetails().getWorkingVersion();
+    NodeMod targetMod = pSelected.get(pPrimary).getLightDetails().getWorkingVersion();
 
     Path targetPath;
 
     if(targetMod == null)
-      throw new PipelineException("No working version of the Target Scene Node (" + pPrimary
-	+ ") exists " + "in the (" + pView + ") working area owned by (" + PackageInfo.sUser
-	+ ")!");
+      throw new PipelineException
+        ("No working version of the Target Scene Node (" + pPrimary + ") exists " + 
+         "in the (" + pView + ") working area owned by (" + PackageInfo.sUser + ")!");
 
     {
       FileSeq fseq = targetMod.getPrimarySequence();
@@ -195,7 +194,7 @@ class MayaAddReferenceTool
     {
       for(String sourceName : pSelected.keySet()) {
 	if(!sourceName.equals(pPrimary)) {
-	  NodeMod sourceMod = pSelected.get(sourceName).getDetails().getWorkingVersion();
+	  NodeMod sourceMod = pSelected.get(sourceName).getLightDetails().getWorkingVersion();
 
 	  FileSeq fseq = sourceMod.getPrimarySequence();
 	  String suffix = fseq.getFilePattern().getSuffix();

@@ -144,9 +144,8 @@ public class MayaAddReferenceTool
   public boolean executePhase(MasterMgrClient mclient, QueueMgrClient qclient)
     throws PipelineException
   {
-
     NodeID targetID = new NodeID(user, view, pPrimary);
-    NodeMod targetMod = pSelected.get(pPrimary).getDetails().getWorkingVersion();
+    NodeMod targetMod = pSelected.get(pPrimary).getLightDetails().getWorkingVersion();
 
     Path targetPath;
 
@@ -169,7 +168,7 @@ public class MayaAddReferenceTool
     {
       for(String sourceName : pSelected.keySet()) {
 	if(!sourceName.equals(pPrimary)) {
-	  NodeMod sourceMod = pSelected.get(sourceName).getDetails().getWorkingVersion();
+	  NodeMod sourceMod = pSelected.get(sourceName).getLightDetails().getWorkingVersion();
 
 	  FileSeq fseq = sourceMod.getPrimarySequence();
 	  String suffix = fseq.getFilePattern().getSuffix();

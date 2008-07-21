@@ -1,4 +1,4 @@
-// $Id: MayaTextureSyncTool.java,v 1.1 2007/06/17 15:34:44 jim Exp $
+// $Id: MayaTextureSyncTool.java,v 1.2 2008/07/21 23:28:13 jim Exp $
 
 package us.temerity.pipeline.plugin.MayaTextureSyncTool.v2_0_0;
 
@@ -875,7 +875,7 @@ class MayaTextureSyncTool
     {
       pTargetSceneID = new NodeID(PackageInfo.sUser, pView, pTargetScene);
       pTargetSceneStatus = mclient.status(pTargetSceneID);
-      pTargetSceneMod = pTargetSceneStatus.getDetails().getWorkingVersion();
+      pTargetSceneMod = pTargetSceneStatus.getLightDetails().getWorkingVersion();
       if(pTargetSceneMod == null) 
 	throw new PipelineException
 	  ("No working version of the Target Scene Node (" + pTargetScene + ") exists " + 
@@ -904,7 +904,7 @@ class MayaTextureSyncTool
 	   "of nodes upstream of the Target Scene Node (" + pTargetScene + ") in the " + 
 	   "(" + pView + ") working area owned by (" + PackageInfo.sUser + ")!");
 
-      pTargetLinkMod = pTargetLinkStatus.getDetails().getWorkingVersion();
+      pTargetLinkMod = pTargetLinkStatus.getLightDetails().getWorkingVersion();
       if(pTargetLinkMod == null) 
 	throw new PipelineException
 	("No working version of the Target Link Node (" + pTargetLink + ") exists " + 
@@ -1240,7 +1240,7 @@ class MayaTextureSyncTool
     for(NodeID nodeID : pNodeTextures.keySet()) {
       try {
 	NodeStatus status = mclient.status(nodeID); 
-	NodeDetails details = status.getDetails(); 
+	NodeDetailsHeavy details = status.getHeavyDetails(); 
 	NodeCommon com = null;
 	if(details.getOverallNodeState() == OverallNodeState.CheckedIn) {
 	  pCheckOutNodes.add(nodeID);
@@ -1290,7 +1290,7 @@ class MayaTextureSyncTool
 
     for(String name : pTargetLinkMod.getSourceNames()) {
       NodeStatus status = pTargetLinkStatus.getSource(name);
-      NodeDetails details = status.getDetails();
+      NodeDetailsLight details = status.getLightDetails();
       NodeMod mod = details.getWorkingVersion();
       
       FileSeq fseq = mod.getPrimarySequence();

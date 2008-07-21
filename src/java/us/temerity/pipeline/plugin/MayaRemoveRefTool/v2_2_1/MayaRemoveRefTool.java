@@ -72,7 +72,7 @@ class MayaRemoveRefTool
       pView = nodeID.getView();
       
       {
-        NodeMod mod = status.getDetails().getWorkingVersion();
+        NodeMod mod = status.getLightDetails().getWorkingVersion();
         FileSeq fseq = mod.getPrimarySequence();
         String suffix = fseq.getFilePattern().getSuffix();
         if(!fseq.isSingle() || (suffix == null)
@@ -102,7 +102,7 @@ class MayaRemoveRefTool
               ("The selected source node (" + sname + ") is not currently linked to the " + 
                "target node (" + pPrimary + ")!");
         
-          NodeMod sourceMod = pSelected.get(sname).getDetails().getWorkingVersion();
+          NodeMod sourceMod = pSelected.get(sname).getLightDetails().getWorkingVersion();
           FileSeq fseq = sourceMod.getPrimarySequence();
           String suffix = fseq.getFilePattern().getSuffix();
           if(!fseq.isSingle() || 
@@ -190,7 +190,7 @@ class MayaRemoveRefTool
     throws PipelineException
   {
     NodeID targetID   = new NodeID(PackageInfo.sUser, pView, pPrimary);
-    NodeMod targetMod = pSelected.get(pPrimary).getDetails().getWorkingVersion();
+    NodeMod targetMod = pSelected.get(pPrimary).getLightDetails().getWorkingVersion();
 
     /* create a temporary MEL script to add the references */ 
     Path script = null; 

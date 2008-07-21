@@ -1,4 +1,4 @@
-// $Id: MayaTextureSyncTool.java,v 1.2 2008/03/28 21:15:48 jim Exp $
+// $Id: MayaTextureSyncTool.java,v 1.3 2008/07/21 23:28:13 jim Exp $
 
 package us.temerity.pipeline.plugin.MayaTextureSyncTool.v2_0_11;
 
@@ -106,16 +106,6 @@ class MayaTextureSyncTool
   {
     switch(pPhase) {
     case 1:
-      try {
-	// TODO remove debug stuff
-        File tempFile = File.createTempFile("MayaTextureSyncTool-DebugInfo.", ".txt", 
-                                            PackageInfo.sTempPath.toFile());
-        tempOutput = new PrintWriter(new BufferedWriter(new FileWriter(tempFile)));
-      } 
-      catch (IOException ex) {
-        throw new PipelineException(ex); 
-      }
-
       return collectFirstPhaseInput();
 
     case 2:
@@ -253,8 +243,6 @@ class MayaTextureSyncTool
       return ": Collecting Texture Information...";
     }
     else {
-//    TODO remove
-      tempOutput.close();
       return null;
     }	
   }
@@ -501,8 +489,6 @@ class MayaTextureSyncTool
       return ": Collecting Node Information...";
     }
     else {
-      //TODO remove
-      tempOutput.close();
       return null;
     }	
   }
@@ -662,12 +648,11 @@ class MayaTextureSyncTool
 	      UIFactory.addVerticalSpacer(tpanel, vpanel, 9);
 	      boolean nodeExistsLocally = pNodeLocalVersions.containsKey(nodeID);
 	      boolean nodeIsModifiable = false;
-	      if ( !nodeExistsLocally )
-	      {
+	      if ( !nodeExistsLocally ) {
 		UIFactory.createTitledTextField(tpanel, "Node Existance", sTSize - 7,
 		  vpanel, "Node does not exist locally", sVSize2);
-	      } else
-	      {
+	      } 
+              else {
 		String s = null;
 		NodeMod mod = pNodeLocalVersions.get(nodeID);
 		if ( mod.isLocked() )
@@ -683,20 +668,21 @@ class MayaTextureSyncTool
 		  vpanel, s, sVSize2);
 	      }
 	      
-	      if (nodeExistsLocally && nodeIsModifiable)
-	      {
+	      if (nodeExistsLocally && nodeIsModifiable) {
 		UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
-		 JBooleanField field = 
+                JBooleanField field = 
 		    UIFactory.createTitledBooleanField
-		    (tpanel, "Copy over local file:", sTSize-7, 
-		     vpanel, sVSize2, 
-		     "Whether to copy the file linked in the maya scene over the existing local file.");
-		  field.setValue(false);
-		  
-		  pCopyFields.put(nodeID, field);
-	      } else if (nodeExistsLocally && !nodeIsModifiable)
+                  (tpanel, "Copy over local file:", sTSize-7, 
+                   vpanel, sVSize2, 
+                   "Whether to copy the file linked in the maya scene over the existing " + 
+                   "local file.");
+                field.setValue(false);
+                
+                pCopyFields.put(nodeID, field);
+	      } 
+              else if (nodeExistsLocally && !nodeIsModifiable) {
 		pCopyFields.put(nodeID, null);
-		
+              }
 	      
 	      boolean registerNode = pRegisterNodes.contains(nodeID);
 	      boolean renumberNode = pRenumberNodes.containsKey(nodeID);
@@ -874,8 +860,6 @@ class MayaTextureSyncTool
       return ": Modifying Nodes...";
     }
     else {
-//    TODO remove
-      tempOutput.close();
       return null;
     }	
   }
@@ -947,7 +931,7 @@ class MayaTextureSyncTool
     {
       pTargetSceneID = new NodeID(PackageInfo.sUser, pView, pTargetScene);
       pTargetSceneStatus = mclient.status(pTargetSceneID);
-      pTargetSceneMod = pTargetSceneStatus.getDetails().getWorkingVersion();
+      pTargetSceneMod = pTargetSceneStatus.getLightDetails().getWorkingVersion();
       if(pTargetSceneMod == null) 
 	throw new PipelineException
 	  ("No working version of the Target Scene Node (" + pTargetScene + ") exists " + 
@@ -979,7 +963,7 @@ class MayaTextureSyncTool
 	   "of nodes upstream of the Target Scene Node (" + pTargetScene + ") in the " + 
 	   "(" + pView + ") working area owned by (" + PackageInfo.sUser + ")!");
 
-      pTargetLinkMod = pTargetLinkStatus.getDetails().getWorkingVersion();
+      pTargetLinkMod = pTargetLinkStatus.getLightDetails().getWorkingVersion();
       if(pTargetLinkMod == null) 
 	throw new PipelineException
 	("No working version of the Target Link Node (" + pTargetLink + ") exists " + 
@@ -988,7 +972,6 @@ class MayaTextureSyncTool
 
     /* collect texture file information from Maya scene */ 
     TreeMap<String,String> fileInfo = new TreeMap<String,String>();
-    //TreeMap<String, String> mentalrayInfo = new TreeMap<String, String>();
     {  
       File script = null;
       try {
@@ -1100,7 +1083,8 @@ class MayaTextureSyncTool
 	}
 	catch(IOException ex) {
 	  throw new PipelineException 
-	    ("Unable to read the collected texture information from (" + info + ")!" + ex.getMessage());
+	    ("Unable to read the collected texture information from (" + info + ")!" + 
+             ex.getMessage());
 	}
 	
 	String lines[] = buf.toString().split("\n");
@@ -1111,23 +1095,21 @@ class MayaTextureSyncTool
 	    if(fields.length != 2)  
 	        throw new PipelineException("The texture information file (" + info
 		  + ") contained invalide data!");
-	    // TODO format
-	    if ( fields[0].startsWith("Shader=") && fields[1].startsWith("Texture=") )
-	    {
+
+	    if (fields[0].startsWith("Shader=") && fields[1].startsWith("Texture=")) {
 	      String shader = fields[0].substring(7);
 	      String texture = fields[1].substring(8);
-	      log("Maya: " + shader + "\t" + texture);
 	      fileInfo.put(shader, texture);
-	    } else if ( fields[0].startsWith("MRay=") && fields[1].startsWith("Texture=") )
-	    {
+	    } 
+            else if ( fields[0].startsWith("MRay=") && fields[1].startsWith("Texture=") ) {
 	      String shader = fields[0].substring(5);
 	      String texture = fields[1].substring(8);
-	      log("MRay: " + shader + "\t" + texture);
 	      fileInfo.put(shader, texture);
-	      //mentalrayInfo.put(shader, texture);
-	    } else
-	      throw new PipelineException("The texture information file (" + info
-		  + ") contained invalide data!");
+	    } 
+            else {
+	      throw new PipelineException
+                ("The texture information file (" + info + ") contained invalide data!");
+            }
 	  }
 	}
       }
@@ -1188,7 +1170,6 @@ class MayaTextureSyncTool
 	       tex);
 	  }
 	    
-	  log("Cannon: " + shader + "\t" + canon);
 	  String prefix = null;
 	  String suffix = null;
 	  {
@@ -1234,10 +1215,6 @@ class MayaTextureSyncTool
 	  pTextureFiles.put(file, new File(pRelocatePath + "/" + file.getName()));
       }
     }
-    for (File f : pTextureFiles.keySet())
-    {
-      log(f.getPath() + "\t" + pTextureFiles.get(f).getPath());
-    }
 
     pPhase++; 
     return true;
@@ -1270,7 +1247,6 @@ class MayaTextureSyncTool
     TreeMap<NodeID,TreeSet<String>> nodeTextures = new TreeMap<NodeID,TreeSet<String>>();
     for(File canon : pTextureFiles.keySet()) {
       File texture = pTextureFiles.get(canon);
-      log("Texture Name: " + texture.getPath());
       
       NodeID nodeID = null;
       {
@@ -1293,7 +1269,6 @@ class MayaTextureSyncTool
 
 	String name = mclient.getNodeOwning(texture.getPath());
 	if(name == null) {
-	  log("\tNode Doesn't exist.");
 	  nodeID = new NodeID(PackageInfo.sUser, pView, texture.getParent() + "/" + prefix);
 
 	  TreeSet<String> textures = nodeTextures.get(nodeID);
@@ -1304,7 +1279,6 @@ class MayaTextureSyncTool
 	  textures.add(texture.getName());
 	}
 	else {
-	  log("\tNode Exists.");
 	  nodeID = new NodeID(PackageInfo.sUser, pView, name);
 	  
 	  TreeSet<String> textures = pNodeTextures.get(nodeID);
@@ -1349,7 +1323,7 @@ class MayaTextureSyncTool
     for(NodeID nodeID : pNodeTextures.keySet()) {
       try {
 	NodeStatus status = mclient.status(nodeID); 
-	NodeDetails details = status.getDetails(); 
+	NodeDetailsHeavy details = status.getHeavyDetails(); 
 	NodeCommon com = null;
 	if(details.getOverallNodeState() == OverallNodeState.CheckedIn) {
 	  pCheckOutNodes.add(nodeID);
@@ -1360,10 +1334,8 @@ class MayaTextureSyncTool
 	  if(!pTargetLinkMod.getSourceNames().contains(nodeID.getName())) 
 	    pLinkNodes.add(nodeID);
 
-	  //TODO format
-	  NodeMod mod =  details.getWorkingVersion();
+	  NodeMod mod = details.getWorkingVersion();
 	  pNodeLocalVersions.put(nodeID, mod);
-	  log(nodeID.getName() + " exists in the working area");
 
 	  com = details.getWorkingVersion();
 	}
@@ -1405,7 +1377,7 @@ class MayaTextureSyncTool
 
     for(String name : pTargetLinkMod.getSourceNames()) {
       NodeStatus status = pTargetLinkStatus.getSource(name);
-      NodeDetails details = status.getDetails();
+      NodeDetailsLight details = status.getLightDetails();
       NodeMod mod = details.getWorkingVersion();
       
       FileSeq fseq = mod.getPrimarySequence();
@@ -1501,42 +1473,38 @@ class MayaTextureSyncTool
 	boolean doIt = false;
 
 	NodeID nodeID = pFileToNodeID.get(pTextureFiles.get(canon));
-	if ( pCopyFields.containsKey(nodeID) )
-	{
+	if(pCopyFields.containsKey(nodeID)) {
 	  JBooleanField field = pCopyFields.get(nodeID);
-	  if ( field != null && field.getValue() )
-	  {
+	  if((field != null) && field.getValue()) {
 	    doIt = true;
 	    NodeMod mod = pNodeLocalVersions.get(nodeID);
-	    env = mclient.getToolsetEnvironment(nodeID.getAuthor(), nodeID.getView(), mod
-	      .getToolset());
+	    env = mclient.getToolsetEnvironment(nodeID.getAuthor(), nodeID.getView(), 
+                                                mod.getToolset());
 	  }
-	} else
-	{
+	} 
+        else {
 	  doIt = true;
 	}
 	
-	if (doIt)
-	{
+	if (doIt) {
 	  File texture = new File(pWorkRoot + pTextureFiles.get(canon).getPath());
 	  if(!canon.equals(texture)) {
-	    log("Copying: " + canon.getPath() + "  :  " + texture.getPath()  );
 	    ArrayList<String> args = new ArrayList<String>();
 	    args.add("--force");
 	    args.add(canon.getPath());
 	    args.add(texture.getPath());
-
+            
 	    SubProcessLight proc = 
 	      new SubProcessLight("CopyTextures", "cp", 
-		args, env, PackageInfo.sTempPath.toFile());
+                                  args, env, PackageInfo.sTempPath.toFile());
 	    try {	    
 	      proc.start();
 	      proc.join();
 	      if(!proc.wasSuccessful()) 
 		throw new PipelineException
-		("Unable to copying the texture file (" + canon + ") to the " + 
-		  "working area location (" + texture + "):\n\n" + 
-		  proc.getStdErr());
+                  ("Unable to copying the texture file (" + canon + ") to the " + 
+                   "working area location (" + texture + "):\n\n" + 
+                   proc.getStdErr());
 	    }
 	    catch(InterruptedException ex) {
 	      throw new PipelineException
@@ -1594,12 +1562,9 @@ class MayaTextureSyncTool
 	args.add("-file");
 	args.add(pTargetFullName.toOsString());
 	
-	for (String each : args)
-	  log(each);
-	
 	TreeMap<String,String> env = 
 	  mclient.getToolsetEnvironment
-	  (PackageInfo.sUser, pView, pTargetSceneMod.getToolset(), PackageInfo.sOsType);	
+	  (PackageInfo.sUser, pView, pTargetSceneMod.getToolset(), PackageInfo.sOsType);
 
 	Path wpath = new Path(PackageInfo.sProdPath, pTargetSceneID.getWorkingParent());
 
@@ -1630,8 +1595,6 @@ class MayaTextureSyncTool
       }
     }
 
-//  TODO remove
-    tempOutput.close();
     return false;
   }
   
@@ -2074,15 +2037,5 @@ class MayaTextureSyncTool
    */ 
   private TreeMap<NodeID,JBooleanField>  pCopyFields;
   
-  
-  /*-- Logging and Error Checking File ----------------------------------------------------*/
-  private PrintWriter tempOutput;
-  
-  void log(String s)
-  {
-    if (tempOutput != null)
-      tempOutput.println(s);
-  }
-
 }
 
