@@ -16,7 +16,7 @@ import java.util.*;
  */
 public 
 class TupleNl
-  implements Comparable<TupleNl>, Glueable, Serializable
+  implements Glueable, Serializable
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -1081,7 +1081,7 @@ class TupleNl
    * @param t
    *   The <CODE>TupleNl</CODE> to be compared.
    */
-  public int
+  protected int
   compareTo
   (
    TupleNl t
@@ -1090,15 +1090,11 @@ class TupleNl
     if(pComps.length != t.size()) 
       throw new TupleSizeMismatchException(pComps.length, t.size());
 
-    int i; 
-    for(i=0; i<pComps.length; i++) {
-      if(pComps[i] > t.pComps[i])
-        return 1; 
-      else if(pComps[i] < t.pComps[i])
-        return -1; 
-    }
-     
-    return 0; 
+    if (this.anyLt(t))
+      return -1;
+    if (this.anyGt(t))
+      return 1;
+    return 0;
   }
 
 

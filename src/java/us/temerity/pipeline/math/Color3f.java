@@ -1,4 +1,4 @@
-// $Id: Color3f.java,v 1.4 2004/12/17 20:07:36 jim Exp $
+// $Id: Color3f.java,v 1.5 2008/07/21 20:35:19 jesse Exp $
 
 package us.temerity.pipeline.math;
 
@@ -14,6 +14,7 @@ import java.util.*;
 public 
 class Color3f
   extends TupleNf
+  implements Comparable<Color3f>
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -394,7 +395,23 @@ class Color3f
     return hsv;
   }
 
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O M P A R A B L E                                                                  */
+  /*----------------------------------------------------------------------------------------*/
 
+  @Override
+  public int 
+  compareTo
+  (
+    Color3f o
+  )
+  {
+    return super.compareTo(o);
+  }
+
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */

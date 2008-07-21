@@ -1,4 +1,4 @@
-// $Id: Tuple2f.java,v 1.2 2004/12/14 14:08:43 jim Exp $
+// $Id: Tuple2f.java,v 1.3 2008/07/21 20:35:19 jesse Exp $
 
 package us.temerity.pipeline.math;
 
@@ -14,6 +14,7 @@ import java.util.*;
 public 
 class Tuple2f
   extends TupleNf
+  implements Comparable<Tuple2f>
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -151,6 +152,23 @@ class Tuple2f
     pComps[1] = y;
   }
 
+
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O M P A R A B L E                                                                  */
+  /*----------------------------------------------------------------------------------------*/
+
+  @Override
+  public int 
+  compareTo
+  (
+    Tuple2f o
+  )
+  {
+    return super.compareTo(o);
+  }
+  
+  
   
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */

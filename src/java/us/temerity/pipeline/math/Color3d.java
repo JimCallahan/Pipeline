@@ -14,6 +14,7 @@ import java.util.*;
 public 
 class Color3d
   extends TupleNd
+  implements Comparable<Color3d>
 {  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -299,7 +300,7 @@ class Color3d
     /* has saturation... */ 
     else {
       double hue  = hsv.x() / 60.0;
-      int region = (int) Math.floor(hue);
+      int region = (int) Math.floor((double) hue);
       double frac = hue - ((double) region);
 
       double p = hsv.z() * (1.0 - hsv.y());
@@ -394,7 +395,23 @@ class Color3d
     return hsv;
   }
 
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O M P A R A B L E                                                                  */
+  /*----------------------------------------------------------------------------------------*/
 
+  @Override
+  public int 
+  compareTo
+  (
+    Color3d o
+  )
+  {
+    return super.compareTo(o);
+  }
+
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
