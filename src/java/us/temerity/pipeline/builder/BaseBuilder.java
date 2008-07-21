@@ -1,4 +1,4 @@
-// $Id: BaseBuilder.java,v 1.59 2008/07/02 10:11:52 jesse Exp $
+// $Id: BaseBuilder.java,v 1.60 2008/07/21 17:25:53 jim Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -1798,17 +1798,6 @@ class BaseBuilder
   useBuilderLogging()
   {
     return pBuilderInformation.useBuilderLogging();
-  }
-  
-  /**
-   * Disconnect all the instances of the server clients that the Builder has been using.
-   */
-  public final void
-  disconnectClients()
-  {
-    pClient.disconnect();
-    pQueue.disconnect();
-    LogMgr.getInstance().cleanup();
   }
   
   /**

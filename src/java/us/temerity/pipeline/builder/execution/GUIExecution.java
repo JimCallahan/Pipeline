@@ -1,4 +1,4 @@
-// $Id: GUIExecution.java,v 1.6 2008/05/10 03:18:54 jesse Exp $
+// $Id: GUIExecution.java,v 1.7 2008/07/21 17:25:53 jim Exp $
 
 package us.temerity.pipeline.builder.execution;
 
@@ -376,13 +376,10 @@ class GUIExecution
       int exitCode  
     )
     {
-      if (getBuilder().terminateAppOnQuit()) {
-        pTopPanel.disconnect();
+      if (getBuilder().terminateAppOnQuit()) 
         System.exit(exitCode);
-      } 
-      else {
+      else 
         this.setVisible(false);
-      }
     }
 
     private

@@ -1,4 +1,4 @@
-// $Id: BuilderApp.java,v 1.29 2008/07/03 19:53:22 jesse Exp $
+// $Id: BuilderApp.java,v 1.30 2008/07/21 17:25:53 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -74,9 +74,6 @@ public class BuilderApp
       return;
     }
     
-    MasterMgrClient mclient = new MasterMgrClient();
-    QueueMgrClient qclient = new QueueMgrClient();
-    
     LogMgr.getInstance().log(Kind.Ops, Level.Info, "Starting Builder Execution!");
     
     try {
@@ -100,12 +97,26 @@ public class BuilderApp
           PluginMgrClient.getInstance().newBuilderCollection
           (pCollectionName, pCollectionVersion, pCollectionVendor);
 
-        BaseBuilder builder = 
-          collection.instantiateBuilder(pBuilderName, mclient, qclient, info);
-        if (builder != null)
-          builder.run();
-        else
-          throw new PipelineException("Unable to instanstiate the builder.");
+        MasterMgrClient mclient = null;
+        QueueMgrClient qclient = null;
+        try {
+          mclient = new MasterMgrClient();
+          qclient = new QueueMgrClient();
+
+          BaseBuilder builder = 
+            collection.instantiateBuilder(pBuilderName, mclient, qclient, info);
+
+          if (builder != null)
+            builder.run();
+          else
+            throw new PipelineException("Unable to instanstiate the builder.");
+        }
+        finally {
+          if(mclient != null) 
+            mclient.disconnect();
+          if(qclient != null) 
+            qclient.disconnect();
+        } 
       } 
       else if (pBuilderName != null) {
         DoubleMap<String, String, TreeSet<VersionID>> toPrint = 
@@ -148,8 +159,7 @@ public class BuilderApp
           }
         }
       }
-      else
-      {
+      else {
         DoubleMap<String, String, TreeSet<VersionID>> toPrint = getPrintList();
         
         TripleMap<String, String, VersionID, LayoutGroup> layouts = 

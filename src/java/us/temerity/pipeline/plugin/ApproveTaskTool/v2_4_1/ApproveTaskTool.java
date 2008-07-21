@@ -1,4 +1,4 @@
-// $Id: ApproveTaskTool.java,v 1.2 2008/05/15 08:54:46 jim Exp $
+// $Id: ApproveTaskTool.java,v 1.3 2008/07/21 17:25:53 jim Exp $
 
 package us.temerity.pipeline.plugin.ApproveTaskTool.v2_4_1;
 
@@ -384,14 +384,14 @@ class ApproveTaskTool
     
     /* instantiate the builder */ 
     BaseBuilder builder = 
-      collection.instantiateBuilder(pApproveBuilderID.getBuilderName(), null, null, 
+      collection.instantiateBuilder(pApproveBuilderID.getBuilderName(), mclient, qclient, 
                                     false, true, false, false, params);
     if(builder == null)
       throw new PipelineException
         ("Unable to instantiate the builder " + pApproveBuilderID.getBuilderName() + " " + 
          "(v" + pApproveBuilderID.getVersionID() + ") from Vendor " + 
          "(" + pApproveBuilderID.getVendor() + ")!"); 
-
+    
     /* run it! */ 
     builder.run();
   }

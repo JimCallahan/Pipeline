@@ -1,4 +1,4 @@
-// $Id: BaseBuilderCollection.java,v 1.16 2008/07/21 14:50:44 jim Exp $
+// $Id: BaseBuilderCollection.java,v 1.17 2008/07/21 17:25:53 jim Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -245,12 +245,18 @@ class BaseBuilderCollection
    *   The short name of the Builder to instantiate.  This needs to be one of the names
    *   in the keySet of the TreeMap returned by the {@link #getBuildersProvided()} method.
    *   
+   * @param mclient
+   *   The instance of {@link MasterMgrClient} for the builder to use.
+   *
+   * @param qclient
+   *   The instance of {@link QueueMgrClient} for the builder to use.
+   *
    * @param terminateOnQuit
    *   Should be entire app quit when the builder execution ends.  This needs to be false
    *   if the builder is being launched from inside plui or from some other external app
    *   that needs to continue running after the builder has completed.  If this is set
    *   to false, then whatever program invokes the builder is responsible for making sure
-   *   the jvm is terminated.
+   *   the JVM is terminated.
    *   
    * @param useBuilderLogging
    *   Should the builder use its own internal log panel or should it use the built in
@@ -265,6 +271,8 @@ class BaseBuilderCollection
   instantiateBuilder
   (
     String builderName,
+    MasterMgrClient mclient,
+    QueueMgrClient qclient,
     boolean terminateOnQuit,
     boolean useBuilderLogging
   )
@@ -273,7 +281,7 @@ class BaseBuilderCollection
     BuilderInformation info = 
       new BuilderInformation(true, terminateOnQuit, true, 
                              useBuilderLogging, new MultiMap<String, String>());
-    return instantiateBuilder(builderName, null, null, info);
+    return instantiateBuilder(builderName, mclient, qclient, info);
   }
 
   /**
@@ -287,13 +295,11 @@ class BaseBuilderCollection
    *   in the keySet of the TreeMap returned by the {@link #getBuildersProvided()} method.
    *   
    * @param mclient
-   *   The instance of {@link MasterMgrClient} for the builder to use or <code>null</code>
-   *   if a new connection should be created.
-   *   
+   *   The instance of {@link MasterMgrClient} for the builder to use.
+   *
    * @param qclient
-   *   The instance of {@link QueueMgrClient} the builder to use or <code>null</code> if
-   *   a new connection should be created.
-   *   
+   *   The instance of {@link QueueMgrClient} for the builder to use.
+   *
    * @param useGui
    *   Should the builder be instantiated in GUI mode.
    *   
@@ -353,12 +359,10 @@ class BaseBuilderCollection
    *   in the keySet of the TreeMap returned by the {@link #getBuildersProvided()} method.
    *
    * @param mclient
-   *   The instance of {@link MasterMgrClient} for the builder to use or <code>null</code>
-   *   if a new connection should be created.
+   *   The instance of {@link MasterMgrClient} for the builder to use.
    *
    * @param qclient
-   *   The instance of {@link QueueMgrClient} the builder to use or <code>null</code> if
-   *   a new connection should be created.
+   *   The instance of {@link QueueMgrClient} for the builder to use.
    *
    * @param info
    *   The instance of {@link BuilderInformation} for the builder to use or <code>null</code>
@@ -383,6 +387,15 @@ class BaseBuilderCollection
   )
     throws PipelineException
   {
+    if (mclient == null)
+      throw new PipelineException("The MasterMgrClient cannot be (null)!"); 
+
+    if (qclient == null)
+      throw new PipelineException("The QueueMgrClient cannot be (null)!");
+
+    if (info == null)
+      info = new BuilderInformation(true, true, true, true, new MultiMap<String, String>());
+    
     TreeMap<String, String> list = getBuildersProvided();
     if (!list.keySet().contains(builderName))
       throw new PipelineException
@@ -395,13 +408,6 @@ class BaseBuilderCollection
       throw new PipelineException
         ("A valid string must be provided for the name of the builder class.  " +
          "The builder (" + builderName + ") does not return a valid builder class path.");
-    
-    if (mclient == null)
-      mclient = new MasterMgrClient();
-    if (qclient == null)
-      qclient = new QueueMgrClient();
-    if (info == null)
-      info = new BuilderInformation(true, true, true, true, new MultiMap<String, String>());
     
     Level opLevel = LogMgr.getInstance().getLevel(Kind.Ops);
     switch(opLevel) {

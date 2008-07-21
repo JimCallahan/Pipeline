@@ -1,4 +1,4 @@
-// $Id: JBuilderTopPanel.java,v 1.21 2008/07/04 13:27:54 jesse Exp $
+// $Id: JBuilderTopPanel.java,v 1.22 2008/07/21 17:25:53 jim Exp $
 
 package us.temerity.pipeline.builder.ui;
 
@@ -442,12 +442,6 @@ class JBuilderTopPanel
     if (pActiveNode != null)
       ((BuilderTreeNodeInfo) pActiveNode.getUserObject()).setActive();
     model.nodeChanged(pActiveNode);
-  }
-  
-  public void
-  disconnect()
-  {
-    pBuilder.disconnectClients();
   }
   
   public void

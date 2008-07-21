@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.121 2008/07/03 19:43:51 jesse Exp $
+// $Id: JNodeViewerPanel.java,v 1.122 2008/07/21 17:27:46 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -7284,18 +7284,33 @@ class JNodeViewerPanel
             (pCollectionName, 
              pCollectionVersion, 
              pCollectionVendor);
-       MultiMap<String, String> params = new MultiMap<String, String>();
-       for (LinkedList<String> keys : pTopLevelParams.keySet()) {
-         String value = pTopLevelParams.get(keys);
-         keys.addFirst(pBuilderName);
-         params.putValue(keys, value, true);
-       }
-        BaseBuilder builder = 
-          collection.instantiateBuilder(pBuilderName, null, null, 
-                                        true, true, false, false, params);
-        if (builder != null)
-          builder.run();
-      } 
+
+        MultiMap<String, String> params = new MultiMap<String, String>();
+        for (LinkedList<String> keys : pTopLevelParams.keySet()) {
+          String value = pTopLevelParams.get(keys);
+          keys.addFirst(pBuilderName);
+          params.putValue(keys, value, true);
+        }
+        
+        MasterMgrClient mclient = null;
+        QueueMgrClient qclient = null;
+        try {
+          mclient = new MasterMgrClient();
+          qclient = new QueueMgrClient();
+          
+          BaseBuilder builder = 
+            collection.instantiateBuilder(pBuilderName, mclient, qclient,
+                                          true, true, false, false, params);
+          if(builder != null)
+            builder.run();
+        }
+        finally {
+          if(mclient != null) 
+            mclient.disconnect();
+          if(qclient != null) 
+            qclient.disconnect();
+        } 
+      }
       catch(Exception ex) {
         UIMaster.getInstance().showErrorDialog(ex);
       }
