@@ -1,4 +1,4 @@
-// $Id: VersionID.java,v 1.17 2008/06/15 01:59:49 jim Exp $
+// $Id: VersionID.java,v 1.18 2008/07/22 21:37:30 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -276,6 +276,54 @@ class VersionID
     return (pIDs.length - vid.pIDs.length);
   }
 
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C    M E T H O D S                                                         */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Is the String a valid version id representation?
+   */
+  public static boolean
+  isValidVersionID
+  (
+    String str
+  )
+  {
+    if(str == null) 
+     return false;
+      
+    if(str.length() == 0) 
+      return false;
+      
+    String[] parts = str.split("\\.");
+    if(parts.length != 3)
+      return false;
+      
+    
+    int wk;
+    for(wk=0; wk<3; wk++) {
+      if(parts[wk].length() == 0)
+        return false;
+
+      int num = 0;
+      try {
+        num = Integer.parseInt(parts[wk]);
+      }
+      catch (NumberFormatException e) {
+        return false;
+      }
+
+      if(num < 0)
+        return false;
+
+      if((wk == 0) && (num < 1)) 
+        return false;
+    }
+    return true;
+  }
+  
 
 
   /*----------------------------------------------------------------------------------------*/
