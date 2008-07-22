@@ -15,12 +15,12 @@ import java.util.*;
  *  <p>
  *  This implementation is inherently slower than something like a {@link TreeMap}. 
  *  The very nature of the keySet in this implementation requires an O(n) cost search
- *  everytime something is inserted or a pValue is requested as opposed to the O(log(n)) 
+ *  every time something is inserted or a pValue is requested as opposed to the O(log(n)) 
  *  provided by {@link TreeMap}.  Therefore this class should only be used where the 
  *  ordering qualities it provides are necessary.
  *  <p>
  *  One other advantage of this class is that unlike the {@link TreeMap} it does not depend
- *  upon the pKey pValue implementing {@link Comparable}.
+ *  upon the pKey data type implementing {@link Comparable}.
  *  
  *  @see Map
  *  @see TreeMap
@@ -205,7 +205,45 @@ class ListMap<K, V>
   {
     return pMap.size();
   }
-
+  
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   A C C E S S                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Returns the key at the specified position in this map. 
+   * 
+   * @param index
+   *   the position index
+   */
+  public K
+  getKey
+  (
+    int index  
+  )
+  {
+    return pMap.get(index).pKey;
+  }
+  
+  /**
+   * Returns the value at the specified position in this map. 
+   * 
+   * @param index
+   *   the position index
+   */
+  public V
+  getValue
+  (
+    int index  
+  )
+  {
+    return pMap.get(index).pValue;
+  }
+  
+  
+  
   /*----------------------------------------------------------------------------------------*/
   /*   P R I V A T E   M E T H O D S                                                        */
   /*----------------------------------------------------------------------------------------*/

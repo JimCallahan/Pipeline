@@ -1,4 +1,4 @@
-// $Id: DoubleMap.java,v 1.3 2006/10/23 18:29:31 jim Exp $
+// $Id: DoubleMap.java,v 1.4 2008/07/22 21:42:12 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -211,6 +211,28 @@ class DoubleMap<A,B,V>
       return null;
 
     return tableB.keySet(); 
+  }
+  
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Return a {@link MappedSet} that represents the two level of keys in the 
+   * {@link DoubleMap}.
+   * <p>
+   * This data structure is NOT backed by the map.  Changes made to it will not be reflected
+   * in map that generated it.
+   * 
+   * @return
+   *   The keys or an empty structure if the map is empty.
+   */
+  public MappedSet<A, B>
+  mappedKeySet()
+  {
+    MappedSet<A, B> toReturn = new MappedSet<A, B>();
+    for (A key : keySet()) 
+      for (B key2 : keySet(key)) 
+        toReturn.put(key, key2);
+    return toReturn;
   }
 
 
