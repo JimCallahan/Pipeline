@@ -1,3 +1,5 @@
+// $Id: MappedSet.java,v 1.4 2008/07/22 15:12:07 jim Exp $
+
 package us.temerity.pipeline;
 
 import java.util.*;
