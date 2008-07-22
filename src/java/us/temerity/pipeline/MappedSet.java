@@ -1,4 +1,4 @@
-// $Id: MappedSet.java,v 1.4 2008/07/22 15:12:07 jim Exp $
+// $Id: MappedSet.java,v 1.5 2008/07/22 23:02:39 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -80,7 +80,8 @@ public class MappedSet<K, V>
    * @param value
    *   The value to insert.
    */ 
-  public void put
+  public void 
+  put
   (
     K key, 
     V value
