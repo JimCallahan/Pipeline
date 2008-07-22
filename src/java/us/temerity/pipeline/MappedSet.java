@@ -2,6 +2,10 @@ package us.temerity.pipeline;
 
 import java.util.*;
 
+/*------------------------------------------------------------------------------------------*/
+/*   M A P P E D   S E T                                                                    */
+/*------------------------------------------------------------------------------------------*/
+
 /**
  *  A {@link TreeMap} that contains {@link TreeSet}s.
  */
@@ -59,6 +63,7 @@ public class MappedSet<K, V>
     for (V key : map.keySet())
       put(map.get(key), key);
   }
+
   
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
@@ -110,7 +115,8 @@ public class MappedSet<K, V>
   /**
    * Type-safe getter method.
    */
-  public TreeSet<V> get
+  public TreeSet<V> 
+  get
   (
     K key
   )
