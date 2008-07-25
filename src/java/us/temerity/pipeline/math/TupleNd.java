@@ -895,7 +895,7 @@ class TupleNd
   public double 
   length() 
   {
-    return (double) Math.sqrt(lengthSquared());
+    return Math.sqrt(lengthSquared());
   }
 
 
