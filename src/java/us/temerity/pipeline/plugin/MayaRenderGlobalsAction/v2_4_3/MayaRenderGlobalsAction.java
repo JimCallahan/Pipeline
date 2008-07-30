@@ -1,4 +1,4 @@
-// $Id: MayaRenderGlobalsAction.java,v 1.2 2008/07/21 23:28:06 jim Exp $
+// $Id: MayaRenderGlobalsAction.java,v 1.3 2008/07/30 16:04:38 jim Exp $
 
 package us.temerity.pipeline.plugin.MayaRenderGlobalsAction.v2_4_3;
 
@@ -1657,15 +1657,15 @@ class MayaRenderGlobalsAction
 
       /* number of samples */ 
       { 
-        Range range = new Range(1, null);
-        Range vsrange = new Range(1, 32);
+        Range range    = new Range(1, null);
+        Range vsrange  = new Range(1, 32);
         Range mvsrange = new Range(2, 32);
         
-        int samples  = getSingleIntegerParamValue(aShadingSamples, range); 
-        int msamples = getSingleIntegerParamValue(aMaxShadingSamples, range);
-        int visibilitySamples = getSingleIntegerParamValue(a3dBlurVisibility, vsrange);
+        int samples              = getSingleIntegerParamValue(aShadingSamples, range); 
+        int msamples             = getSingleIntegerParamValue(aMaxShadingSamples, range);
+        int visibilitySamples    = getSingleIntegerParamValue(a3dBlurVisibility, vsrange);
         int maxVisibilitySamples = getSingleIntegerParamValue(aMax3dBlurVisibility, mvsrange);
-        int psamples = getSingleIntegerParamValue(aParticleSamples, range); 
+        int psamples             = getSingleIntegerParamValue(aParticleSamples, range); 
 
         out.write
           ("// NUMBER OF SAMPLES\n" + 
@@ -1720,10 +1720,11 @@ class MayaRenderGlobalsAction
 
       /* contrast threshold */ 
       {
-        Range range3d = new Range(new Tuple3d(0.0, 0.0, 0.0), null, false);
-        Range range = new Range(0.0, null, false);
+        Range<Tuple3d> range3d = new Range<Tuple3d>(new Tuple3d(0.0, 0.0, 0.0), null, false);
+        Range range            = new Range(0.0, null, false);
+        
         Tuple3d threshold = getSingleTuple3dParamValue(aThreshold, range3d, false);
-        double coverage = getSingleDoubleParamValue(aCoverageThreshold, range); 
+        double coverage   = getSingleDoubleParamValue(aCoverageThreshold, range); 
 
         out.write
           ("// CONTRAST THRESHOLD\n" +
@@ -1824,12 +1825,12 @@ class MayaRenderGlobalsAction
       
       /* raytracing quality */
       {
-        Range range = new Range(0, null);
+        Range range    = new Range(0, null);
         boolean useRay = getSingleBooleanParamValue(aUseRaytracing); 
-        int reflect = getSingleIntegerParamValue(aReflections, range); 
-        int refract = getSingleIntegerParamValue(aRefractions, range); 
-        int shadow  = getSingleIntegerParamValue(aShadows, range); 
-        double bias = getSingleDoubleParamValue(aBias, new Range(0.0, null));
+        int reflect    = getSingleIntegerParamValue(aReflections, range); 
+        int refract    = getSingleIntegerParamValue(aRefractions, range); 
+        int shadow     = getSingleIntegerParamValue(aShadows, range); 
+        double bias    = getSingleDoubleParamValue(aBias, new Range(0.0, null));
 
         out.write
           ("// RAYTRACING QUALITY \n" +
@@ -1842,14 +1843,13 @@ class MayaRenderGlobalsAction
 
       /* motion blur */ 
       { 
-        boolean useBlur = getSingleBooleanParamValue(aUseMotionBlur); 
-        int blurType    = getSingleEnumParamIndex(aMotionBlurType); 
-        
         Range range = new Range(0.0, null);
-        double byFrame   = getSingleDoubleParamValue(aBlurByFrame, range); 
-        double length    = getSingleDoubleParamValue(aBlurLength, range); 
-        double sharpness = getSingleDoubleParamValue(aBlurSharpness, range); 
         
+        boolean useBlur     = getSingleBooleanParamValue(aUseMotionBlur); 
+        int blurType        = getSingleEnumParamIndex(aMotionBlurType);      
+        double byFrame      = getSingleDoubleParamValue(aBlurByFrame, range); 
+        double length       = getSingleDoubleParamValue(aBlurLength, range); 
+        double sharpness    = getSingleDoubleParamValue(aBlurSharpness, range); 
         int smooth          = getSingleEnumParamIndex(aSmooth); 
         int smoothValue     = getSingleIntegerParamValue(aSmoothValue, new Range(0, null));
         boolean keepVectors = getSingleBooleanParamValue(aKeepMotionVectors); 
@@ -1872,20 +1872,21 @@ class MayaRenderGlobalsAction
 
       /* render options */
       {
-        String envFog = getSingleStringParamValue(aEnvironmentFog);
-        boolean applyFog = getSingleBooleanParamValue(aApplyFogInPost);
-        int postFogBlur = getSingleIntegerParamValue(aPostFogBlur);
-        boolean ignoreFilmGate = getSingleBooleanParamValue(aIgnoreFilmGate);
-        boolean enableDepthMaps = getSingleBooleanParamValue(aEnableDepthMaps);
-        boolean shadowsObeyShadowLinking = false;
-        boolean shadowsObeyLightLinking = false;
-        double gamma = getSingleDoubleParamValue(aGammaCorrection); 
-        boolean clipFinalShadedColor = getSingleBooleanParamValue(aClipFinalShadedColor);
-        boolean jitterFinalColor = getSingleBooleanParamValue(aJitterFinalColor);
-        
         Range compRange = new Range(0.0, 1.0);
-        boolean composite = getSingleBooleanParamValue(aPremultiply);
-        double compositeThreshold = getSingleDoubleParamValue(aPremultiplyThreshold, compRange);
+        
+        String envFog                    = getSingleStringParamValue(aEnvironmentFog);
+        boolean applyFog                 = getSingleBooleanParamValue(aApplyFogInPost);
+        int postFogBlur                  = getSingleIntegerParamValue(aPostFogBlur);
+        boolean ignoreFilmGate           = getSingleBooleanParamValue(aIgnoreFilmGate);
+        boolean enableDepthMaps          = getSingleBooleanParamValue(aEnableDepthMaps);
+        boolean shadowsObeyShadowLinking = false;
+        boolean shadowsObeyLightLinking  = false;
+        double gamma                     = getSingleDoubleParamValue(aGammaCorrection); 
+        boolean clipFinalShadedColor     = getSingleBooleanParamValue(aClipFinalShadedColor);
+        boolean jitterFinalColor         = getSingleBooleanParamValue(aJitterFinalColor);
+        boolean composite                = getSingleBooleanParamValue(aPremultiply);
+        double compositeThreshold        = getSingleDoubleParamValue(aPremultiplyThreshold,
+                                                                     compRange);
 
         switch (getSingleEnumParamIndex(aShadowLinking)) {
         case 0:
@@ -1929,17 +1930,20 @@ class MayaRenderGlobalsAction
       
       /* memory and performance options */
       {
-        boolean useFileCache = getSingleBooleanParamValue(aUseFileCache);
-        boolean optimizeInstances = getSingleBooleanParamValue(aOptimizeInstances);
-        boolean reuseTessellations = getSingleBooleanParamValue(aReuseTessellations);
-        boolean useDisplacementBoundingBox = getSingleBooleanParamValue(aUseDisplacementBoundingBox);
-
-        Range recurRange = new Range(0, 10);
+        Range recurRange    = new Range(0, 10);
         Range leafPrimRange = new Range(50, 5000);
-        Range subdivRange = new Range(0.01, 1.0);
-        int recursionDepth = getSingleIntegerParamValue(aRecursionDepth, recurRange);
-        int leafPrimitives = getSingleIntegerParamValue(aLeafPrimitives, leafPrimRange);
-        double subdivisionPower = getSingleDoubleParamValue(aSubdivisionPower, subdivRange);
+        Range subdivRange   = new Range(0.01, 1.0);
+        
+        boolean useFileCache               = getSingleBooleanParamValue(aUseFileCache);
+        boolean optimizeInstances          = getSingleBooleanParamValue(aOptimizeInstances);
+        boolean reuseTessellations         = getSingleBooleanParamValue(aReuseTessellations);
+        boolean useDisplacementBoundingBox = getSingleBooleanParamValue(aUseDisplacementBoundingBox);
+        int recursionDepth                 = getSingleIntegerParamValue(aRecursionDepth,
+                                                                        recurRange);
+        int leafPrimitives                 = getSingleIntegerParamValue(aLeafPrimitives,
+                                                                        leafPrimRange);
+        double subdivisionPower            = getSingleDoubleParamValue(aSubdivisionPower,
+                                                                       subdivRange);
 
         out.write
         ("// MEMORY AND PERFORMANCE OPTIONS \n" +
@@ -1954,7 +1958,7 @@ class MayaRenderGlobalsAction
       
       /* IPR options */
       {
-        boolean iprRenderShading = getSingleBooleanParamValue(aRenderShadingLightAndGlow);
+        boolean iprRenderShading    = getSingleBooleanParamValue(aRenderShadingLightAndGlow);
         boolean iprRenderShadowMaps = getSingleBooleanParamValue(aRenderShadowMaps);
         boolean iprRenderMotionBlur = getSingleBooleanParamValue(aRender2dMotionBlur);
 
@@ -1971,10 +1975,10 @@ class MayaRenderGlobalsAction
       
       /* paint effects and rendering options */
       {
-        boolean enableStrokeRender = getSingleBooleanParamValue(aEnableStrokeRendering);
-        boolean oversamplePaintEffects = getSingleBooleanParamValue(aOversample);
+        boolean enableStrokeRender      = getSingleBooleanParamValue(aEnableStrokeRendering);
+        boolean oversamplePaintEffects  = getSingleBooleanParamValue(aOversample);
         boolean oversamplePfxPostFilter = getSingleBooleanParamValue(aOversamplePostFilter);
-        boolean onlyRenderStrokes = getSingleBooleanParamValue(aOnlyRenderStrokes);
+        boolean onlyRenderStrokes       = getSingleBooleanParamValue(aOnlyRenderStrokes);
 
         out.write
         ("// PAINT EFFECTS RENDERING OPTIONS \n" +
