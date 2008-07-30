@@ -1,9 +1,9 @@
-// $Id: MRayRenderGlobalsAction.java,v 1.2 2008/07/21 23:28:06 jim Exp $
+// $Id: MRayRenderGlobalsAction.java,v 1.3 2008/07/30 15:56:44 jim Exp $
 
 package us.temerity.pipeline.plugin.MRayRenderGlobalsAction.v2_4_3;
 
 import us.temerity.pipeline.*; 
-import us.temerity.pipeline.plugin.*;
+import us.temerity.pipeline.plugin.CommonActionUtils;
 import us.temerity.pipeline.math.Range; 
 import us.temerity.pipeline.math.Tuple2d;
 import us.temerity.pipeline.math.Tuple3d;
@@ -1629,7 +1629,7 @@ class MRayRenderGlobalsAction
             0.200);
         addSingleParam(param);
       }
-
+      
       {
         ActionParam param = 
           new IntegerActionParam
@@ -2289,16 +2289,6 @@ class MRayRenderGlobalsAction
         addSingleParam(param);
       }
 
-      //range is 0.0 to 1.0
-      //      {
-      //        ActionParam param = 
-      //          new DoubleActionParam
-      //          (aAlphaFloodColor,
-      //            "The alpha component of the flood color.", 
-      //            1.0);
-      //        addSingleParam(param);
-      //      }
-
       {
         ActionParam param = 
           new IntegerActionParam
@@ -2421,16 +2411,6 @@ class MRayRenderGlobalsAction
            new Tuple3d(1.0, 1.0, 1.0));
         addSingleParam(param);
       }
-
-      //range is 0.0 to 1.0
-      //      {
-      //        ActionParam param = 
-      //          new DoubleActionParam
-      //          (aAlphaColorContrast,
-      //            "The alpha component of the color contrast.", 
-      //            1.0);
-      //        addSingleParam(param);
-      //      }
 
       {
         ActionParam param = 
@@ -3259,6 +3239,7 @@ class MRayRenderGlobalsAction
         values.put(aPixelFilterWidthX,     1.0);
         values.put(aPixelFilterWidthY,     1.0);
         values.put(aThreshold,             new Tuple3d(0.1, 0.1, 0.1));
+        values.put(aCoverageThreshold,     0.1);
         values.put(aJitter,                false);
 
         values.put(aReflections,           1);
@@ -3298,6 +3279,7 @@ class MRayRenderGlobalsAction
         values.put(aPixelFilterWidthX,     1.0);
         values.put(aPixelFilterWidthY,     1.0);
         values.put(aThreshold,             new Tuple3d(0.1, 0.1, 0.1));
+        values.put(aCoverageThreshold,     0.1);
         values.put(aJitter,                false);
 
         values.put(aReflections,           1);
@@ -3337,6 +3319,7 @@ class MRayRenderGlobalsAction
         values.put(aPixelFilterWidthX,     1.0);
         values.put(aPixelFilterWidthY,     1.0);
         values.put(aThreshold,             new Tuple3d(0.1, 0.1, 0.1));
+        values.put(aCoverageThreshold,     0.1);
         values.put(aJitter,                false);
 
         values.put(aReflections,           1);
@@ -3376,6 +3359,7 @@ class MRayRenderGlobalsAction
         values.put(aPixelFilterWidthX,     2.0);
         values.put(aPixelFilterWidthY,     2.0);
         values.put(aThreshold,             new Tuple3d(0.1, 0.1, 0.1));
+        values.put(aCoverageThreshold,     0.1);
         values.put(aJitter,                false);
 
         values.put(aReflections,           2);
@@ -3413,6 +3397,8 @@ class MRayRenderGlobalsAction
         values.put(aPixelFilterType,       "Triangle Filter");
         values.put(aPixelFilterWidthX,     2.0);
         values.put(aPixelFilterWidthY,     2.0);
+        values.put(aThreshold,             new Tuple3d(0.1, 0.1, 0.1));
+        values.put(aCoverageThreshold,     0.1);
         values.put(aJitter,                false);
 
         values.put(aReflections,           2);
@@ -3452,6 +3438,7 @@ class MRayRenderGlobalsAction
         values.put(aPixelFilterWidthX,     2.0);
         values.put(aPixelFilterWidthY,     2.0);
         values.put(aThreshold,             new Tuple3d(0.1, 0.1, 0.1));
+        values.put(aCoverageThreshold,     0.1);
         values.put(aJitter,                false);
 
         values.put(aReflections,           2);
@@ -3491,6 +3478,7 @@ class MRayRenderGlobalsAction
         values.put(aPixelFilterWidthX,     2.0);
         values.put(aPixelFilterWidthY,     2.0);
         values.put(aThreshold,             new Tuple3d(0.1, 0.1, 0.1));
+        values.put(aCoverageThreshold,     0.1);
         values.put(aJitter,                false);
 
         values.put(aReflections,           2);
@@ -3530,6 +3518,7 @@ class MRayRenderGlobalsAction
         values.put(aPixelFilterWidthX,     2.0);
         values.put(aPixelFilterWidthY,     2.0);
         values.put(aThreshold,             new Tuple3d(0.1, 0.1, 0.1));
+        values.put(aCoverageThreshold,     0.1);
         values.put(aJitter,                false);
 
         values.put(aReflections,           2);
@@ -3569,6 +3558,7 @@ class MRayRenderGlobalsAction
         values.put(aPixelFilterWidthX,     2.0);
         values.put(aPixelFilterWidthY,     2.0);
         values.put(aThreshold,             new Tuple3d(0.1, 0.1, 0.1));
+        values.put(aCoverageThreshold,     0.1);
         values.put(aJitter,                false);
 
         values.put(aReflections,           2);
@@ -3608,6 +3598,7 @@ class MRayRenderGlobalsAction
         values.put(aPixelFilterWidthX,     3.0);
         values.put(aPixelFilterWidthY,     3.0);
         values.put(aThreshold,             new Tuple3d(0.1, 0.1, 0.1));
+        values.put(aCoverageThreshold,     0.1);
         values.put(aJitter,                false);
 
         values.put(aReflections,           10);
@@ -3646,6 +3637,7 @@ class MRayRenderGlobalsAction
         values.put(aPixelFilterType,       "Gaussian Filter");
         values.put(aPixelFilterWidthX,     3.0);
         values.put(aThreshold,             new Tuple3d(0.1, 0.1, 0.1));
+        values.put(aCoverageThreshold,     0.1);
         values.put(aJitter,                false);
 
         values.put(aReflections,           10);
@@ -3685,6 +3677,7 @@ class MRayRenderGlobalsAction
         values.put(aPixelFilterWidthX,     2.29);
         values.put(aPixelFilterWidthY,     2.29);
         values.put(aThreshold,             new Tuple3d(0.4, 0.3, 0.7));
+        values.put(aCoverageThreshold,     0.1);
         values.put(aJitter,                true);
 
         values.put(aReflections,           1);
@@ -3724,6 +3717,7 @@ class MRayRenderGlobalsAction
         values.put(aPixelFilterWidthX,     2.29);
         values.put(aPixelFilterWidthY,     2.29);
         values.put(aThreshold,             new Tuple3d(0.4, 0.3, 0.7));
+        values.put(aCoverageThreshold,     0.1);
         values.put(aJitter,                true);
 
         values.put(aReflections,           1);
@@ -3763,6 +3757,7 @@ class MRayRenderGlobalsAction
         values.put(aPixelFilterWidthX,     3.0);
         values.put(aPixelFilterWidthY,     3.0);
         values.put(aThreshold,             new Tuple3d(0.1, 0.1, 0.1));
+        values.put(aCoverageThreshold,     0.1);
         values.put(aJitter,                false);
 
         values.put(aReflections,           10);
@@ -3802,6 +3797,7 @@ class MRayRenderGlobalsAction
         values.put(aPixelFilterWidthX,     0.75);
         values.put(aPixelFilterWidthY,     0.75);
         values.put(aThreshold,             new Tuple3d(0.02, 0.02, 0.02));
+        values.put(aCoverageThreshold,     0.1);
         values.put(aJitter,                true);
 
         values.put(aReflections,           1);
@@ -4040,7 +4036,6 @@ class MRayRenderGlobalsAction
         fg.addEntry(aPointDensity);
         fg.addEntry(aPointInterpolation);
         fg.addEntry(aFinalGatherScale);
-        //fg.addEntry(aAlphaFinalGatherScale);
         fg.addSeparator(); 
         fg.addEntry(aFinalGatherMapRebuild);
         fg.addEntry(aFinalGatherMapFile);
@@ -4063,7 +4058,6 @@ class MRayRenderGlobalsAction
         fg.addEntry(aTraceDepth);
         fg.addEntry(aFinalGatherTraceDiffuse);
         fg.addEntry(aFGBounceScale);
-        //fg.addEntry(aAlphaFGBounceScale);
         
         layout.addSubGroup(fg);
       }
@@ -4154,7 +4148,6 @@ class MRayRenderGlobalsAction
         cntr.addEntry(aEnableContourRendering);
         cntr.addEntry(aHideSource);
         cntr.addEntry(aFloodColor);
-        //cntr.addEntry(aAlphaFloodColor);
 
         {
           LayoutGroup ct = new LayoutGroup
@@ -4180,7 +4173,6 @@ class MRayRenderGlobalsAction
           dc.addSeparator();
           dc.addEntry(aEnableColorContrast);
           dc.addEntry(aColorContrast);
-          //dc.addEntry(aAlphaColorContrast);
           dc.addEntry(aEnableDepthContrast);
           dc.addEntry(aDepthContrast);
           dc.addEntry(aEnableDistanceContrast);
@@ -4372,9 +4364,8 @@ class MRayRenderGlobalsAction
       {
         Path npath = new Path(agenda.getNodeID().getName());
         Path wpath = new Path(npath.getParentPath(), agenda.getPrimaryTarget().getPath(0)); 
-        out.write
-          ("print(\"Applying Render Globals: " + 
-           "\" + `getenv \"WORKING\"` + \"" + wpath + "\\n\");\n\n");
+        out.write("print(\"Applying Render Globals: " + 
+                  "\" + `getenv \"WORKING\"` + \"" + wpath + "\\n\");\n\n");
       }
 
       /* image resolution */ 
@@ -4385,7 +4376,9 @@ class MRayRenderGlobalsAction
       else {
         int width    = getSingleIntegerParamValue(aImageWidth,  new Range(1, null)); 
         int height   = getSingleIntegerParamValue(aImageHeight, new Range(1, null)); 
-        double ratio = getSingleDoubleParamValue(aPixelAspectRatio, new Range(0.0, null, false));
+        double ratio = getSingleDoubleParamValue(aPixelAspectRatio,
+                                                 new Range(0.0, null, false));
+        
         double deviceRatio = (((double) width) / ((double) height)) * ratio;
 
         out.write
@@ -4424,7 +4417,7 @@ class MRayRenderGlobalsAction
 
       /* multi-pixel filtering */ 
       {
-        Range range = new Range(0.0, 10.0, false, true); 
+        Range range    = new Range(0.0, 10.0, false, true); 
         int filter     = getSingleEnumParamIndex(aPixelFilterType);
         double filterX = getSingleDoubleParamValue(aPixelFilterWidthX, range); 
         double filterY = getSingleDoubleParamValue(aPixelFilterWidthY, range); 
@@ -4451,10 +4444,11 @@ class MRayRenderGlobalsAction
 
       /* contrast threshold */ 
       {
-        Range range3d = new Range(new Tuple3d(0.0, 0.0, 0.0), null, false); 
-        Range range = new Range(0.0, null, false);
-        Tuple3d contrast = getSingleTuple3dParamValue(aThreshold, range3d, false);
-        double alpha 	= getSingleDoubleParamValue(aCoverageThreshold, range);
+        Range<Tuple3d> range3d = new Range<Tuple3d>(new Tuple3d(0.0, 0.0, 0.0),
+                                                    null, false); 
+        Range range            = new Range(0.0, null, false);
+        Tuple3d contrast       = getSingleTuple3dParamValue(aThreshold, range3d, false);
+        double alpha 	       = getSingleDoubleParamValue(aCoverageThreshold, range);
         
         out.write
           ("// CONTRAST THRESHOLD\n" +
@@ -4477,18 +4471,20 @@ class MRayRenderGlobalsAction
 
       /* raytracing quality */ 
       {
-        boolean useRay = getSingleBooleanParamValue(aUseRaytracing);  
-        int reflect    = getSingleIntegerParamValue(aReflections); 
-        int refract    = getSingleIntegerParamValue(aRefractions); 
-        int depth      = getSingleIntegerParamValue(aMaxTraceDepth); 
-        int shadows    = getSingleIntegerParamValue(aShadows); 
-        int scanline   = getSingleEnumParamIndex(aScanline);
-        int maxReflectionBlur = getSingleIntegerParamValue(aReflectionBlurLimit); 
-        int maxRefractionBlur = getSingleIntegerParamValue(aRefractionBlurLimit); 
-        Range sampleCollectRange = new Range (0, 30);
-        Range sampleShadingRange = new Range (0.1, null);
-        int rapidSamplesCollect = getSingleIntegerParamValue(aVisibilitySamples, sampleCollectRange);
-        double rapidSamplesShading = getSingleDoubleParamValue(aShadingQuality, sampleShadingRange);
+        boolean useRay             = getSingleBooleanParamValue(aUseRaytracing);  
+        int reflect                = getSingleIntegerParamValue(aReflections); 
+        int refract                = getSingleIntegerParamValue(aRefractions); 
+        int depth                  = getSingleIntegerParamValue(aMaxTraceDepth); 
+        int shadows                = getSingleIntegerParamValue(aShadows); 
+        int scanline               = getSingleEnumParamIndex(aScanline);
+        int maxReflectionBlur      = getSingleIntegerParamValue(aReflectionBlurLimit); 
+        int maxRefractionBlur      = getSingleIntegerParamValue(aRefractionBlurLimit); 
+        Range sampleCollectRange   = new Range (0, 30);
+        Range sampleShadingRange   = new Range (0.1, null);
+        int rapidSamplesCollect    = getSingleIntegerParamValue(aVisibilitySamples,
+                                                                sampleCollectRange);
+        double rapidSamplesShading = getSingleDoubleParamValue(aShadingQuality,
+                                                               sampleShadingRange);
 
         out.write
           ("// RAYTRACING QUALITY\n" +
@@ -4506,22 +4502,23 @@ class MRayRenderGlobalsAction
 
       /* motion blur */ 
       {
-        Range range = new Range(0.0, 1.0);
-        Range range3d = new Range(new Tuple3d(0.0, 0.0, 0.0), new Tuple3d(1.0, 1.0, 1.0));
-        Range timeSampleRange = new Range(1, 100);
-        int blur       = getSingleEnumParamIndex(aMotionBlur);
-        double blurBy  = getSingleDoubleParamValue(aMotionBlurBy);
-        double shutter = getSingleDoubleParamValue(aShutterClose);
-        double delay   = getSingleDoubleParamValue(aShutterOpen);
-        Tuple3d timeContrast = getSingleTuple3dParamValue(aTimeContrast, range3d, false);
-        double alpha   = getSingleDoubleParamValue(aTimeContrastAlpha, range);
-        int rapidSamplesMotion = getSingleIntegerParamValue(aTimeSamples, timeSampleRange);
-        int steps      = getSingleIntegerParamValue(aMotionSteps);
+        Range range                = new Range(0.0, 1.0);
+        Range<Tuple3d> range3d     = new Range<Tuple3d>(new Tuple3d(0.0, 0.0, 0.0),
+                                                        new Tuple3d(1.0, 1.0, 1.0));
+        Range timeSampleRange      = new Range(1, 100);
+        int blur                   = getSingleEnumParamIndex(aMotionBlur);
+        double blurBy              = getSingleDoubleParamValue(aMotionBlurBy);
+        double shutter             = getSingleDoubleParamValue(aShutterClose);
+        double delay               = getSingleDoubleParamValue(aShutterOpen);
+        Tuple3d timeContrast       = getSingleTuple3dParamValue(aTimeContrast, range3d, false);
+        double alpha               = getSingleDoubleParamValue(aTimeContrastAlpha, range);
+        int rapidSamplesMotion     = getSingleIntegerParamValue(aTimeSamples, timeSampleRange);
+        int steps                  = getSingleIntegerParamValue(aMotionSteps);
         double motionQualityFactor = getSingleDoubleParamValue(aMotionQualityFactor);
         boolean exportCustomMotion = getSingleBooleanParamValue(aCustomMotionOffsets);
         double exportMotionOffset  = getSingleDoubleParamValue(aMotionBackOffset, range);
         double exportMotionOutput  = getSingleDoubleParamValue(aStaticObjectOffset, range);
-        int scanline   = getSingleEnumParamIndex(aScanline);
+        int scanline               = getSingleEnumParamIndex(aScanline);
 
         out.write
           ("// MOTION BLUR\n" +
@@ -4543,39 +4540,46 @@ class MRayRenderGlobalsAction
             ("// MOTION BLUR QUALITY FACTOR\n" + 
               "proc int tm_miFindMotionFactorIndex() {\n" +
               "\tint $index = -1;\n" +
-              "\tstring $stringOptions[] = `listAttr -string \"stringOptions\" -multi \"miDefaultOptions\"`;\n" +
+              "\tstring $stringOptions[] = `listAttr -string \"stringOptions\"" +
+              " -multi \"miDefaultOptions\"`;\n" +
               "\tint $stringOptionCount = size( $stringOptions );\n" +
               "\tfor( $i = 0; $i < $stringOptionCount; $i++ ) {\n" +
-              "\t\tif(\"rast motion factor\" == `getAttr (\"miDefaultOptions.stringOptions[\" + $i + \"].name\")`) {\n" +
+              "\t\tif(\"rast motion factor\" == " +
+              "`getAttr (\"miDefaultOptions.stringOptions[\" + $i + \"].name\")`) {\n" +
               "\t\t\t$index = $i;\n" +
               "\t\t\tbreak;\n" +
               "\t\t}\n" +
               "\t}\n\n" +
               "\tif($index == -1) {\n" +
               "\t\t$index = $stringOptionCount;\n" +
-              "\t\tsetAttr -type \"string\" miDefaultOptions.stringOptions[$index].name \"rast motion factor\";\n" +
-              "\t\tsetAttr -type \"string\" miDefaultOptions.stringOptions[$index].type \"scalar\";\n" +
-              "\t\tsetAttr -type \"string\" miDefaultOptions.stringOptions[$index].value \"1.0\";\n" +
+              "\t\tsetAttr -type \"string\" miDefaultOptions.stringOptions[$index].name" +
+              " \"rast motion factor\";\n" +
+              "\t\tsetAttr -type \"string\" miDefaultOptions.stringOptions[$index].type" +
+              " \"scalar\";\n" +
+              "\t\tsetAttr -type \"string\" miDefaultOptions.stringOptions[$index].value" +
+              " \"1.0\";\n" +
               "\t}\n\n" +
               "\treturn $index;\n" +
               "}\n\n" +
               "int $index = tm_miFindMotionFactorIndex();\n" +
-              "setAttr -type \"string\" (\"miDefaultOptions.stringOptions[\" + $index + \"].value\") " +
+              "setAttr -type \"string\" " +
+              "(\"miDefaultOptions.stringOptions[\" + $index + \"].value\") " +
               motionQualityFactor + ";\n");
         out.write("\n");
       }
 
       /* caustics */ 
       {
-        Range range = new Range(0.0, 1.0);
-        Range cfkRange = new Range(0.0, 4.0);
-        Range range3d = new Range(new Tuple3d(0.0, 0.0, 0.0), new Tuple3d(1.0, 1.0, 1.0));
-        boolean useCaustics = getSingleBooleanParamValue(aUseCaustics);  
-        int accuracy  = getSingleIntegerParamValue(aCausticsAccuracy); 
-        double radius = getSingleDoubleParamValue(aCausticsRadius); 
-        int filter    = getSingleEnumParamIndex(aCausticFilterType);
-        double kernel = getSingleDoubleParamValue(aCausticFilterKernel, cfkRange);
-        Tuple3d causticScale = getSingleTuple3dParamValue(aCausticScale, range3d, false);
+        Range range            = new Range(0.0, 1.0);
+        Range cfkRange         = new Range(0.0, 4.0);
+        Range<Tuple3d> range3d = new Range<Tuple3d>(new Tuple3d(0.0, 0.0, 0.0),
+                                                    new Tuple3d(1.0, 1.0, 1.0));
+        boolean useCaustics    = getSingleBooleanParamValue(aUseCaustics);  
+        int accuracy           = getSingleIntegerParamValue(aCausticsAccuracy); 
+        double radius          = getSingleDoubleParamValue(aCausticsRadius); 
+        int filter             = getSingleEnumParamIndex(aCausticFilterType);
+        double kernel          = getSingleDoubleParamValue(aCausticFilterKernel, cfkRange);
+        Tuple3d causticScale   = getSingleTuple3dParamValue(aCausticScale, range3d, false);
         
         out.write
           ("// CAUSTICS\n" +
@@ -4591,22 +4595,24 @@ class MRayRenderGlobalsAction
 
       /* global illumination */ 
       {
-        Range range = new Range(0.0, 1.0);
-        Range range3d = new Range(new Tuple3d(0.0, 0.0, 0.0), new Tuple3d(1.0, 1.0, 1.0));
-        boolean useGlobalIllum = getSingleBooleanParamValue(aUseGlobalIllum);  
-        int accuracy   = getSingleIntegerParamValue(aGlobalIllumAccuracy); 
-        double radius  = getSingleDoubleParamValue(aGlobalIllumRadius); 
-        int paccuracy  = getSingleIntegerParamValue(aPhotonVolumeAccuracy); 
-        double pradius = getSingleDoubleParamValue(aPhotonVolumeRadius); 
-        int reflect    = getSingleIntegerParamValue(aMaxReflectionPhotons); 
-        int refract    = getSingleIntegerParamValue(aMaxRefractionPhotons); 
-        int depth      = getSingleIntegerParamValue(aMaxPhotonDepth); 
-        Tuple3d globalIllumScale = getSingleTuple3dParamValue(aGlobalIllumScale, range3d, false);
-        String file = getSingleStringParamValue(aPhotonMapFile); 
-        boolean mapvis  = getSingleBooleanParamValue(aEnableGIMapVisualizer);  
-        boolean rebuild = getSingleBooleanParamValue(aPhotonMapRebuild);
+        Range range              = new Range(0.0, 1.0);
+        Range<Tuple3d> range3d   = new Range<Tuple3d>(new Tuple3d(0.0, 0.0, 0.0),
+                                                      new Tuple3d(1.0, 1.0, 1.0));
+        boolean useGlobalIllum   = getSingleBooleanParamValue(aUseGlobalIllum);  
+        int accuracy             = getSingleIntegerParamValue(aGlobalIllumAccuracy); 
+        double radius            = getSingleDoubleParamValue(aGlobalIllumRadius); 
+        int paccuracy            = getSingleIntegerParamValue(aPhotonVolumeAccuracy); 
+        double pradius           = getSingleDoubleParamValue(aPhotonVolumeRadius); 
+        int reflect              = getSingleIntegerParamValue(aMaxReflectionPhotons); 
+        int refract              = getSingleIntegerParamValue(aMaxRefractionPhotons); 
+        int depth                = getSingleIntegerParamValue(aMaxPhotonDepth); 
+        Tuple3d globalIllumScale = getSingleTuple3dParamValue(aGlobalIllumScale,
+                                                              range3d, false);
+        String file              = getSingleStringParamValue(aPhotonMapFile); 
+        boolean mapvis           = getSingleBooleanParamValue(aEnableGIMapVisualizer);  
+        boolean rebuild          = getSingleBooleanParamValue(aPhotonMapRebuild);
         boolean photonAutoVolume = getSingleBooleanParamValue(aPhotonAutoVolume);  
-        boolean direct  = getSingleBooleanParamValue(aDirectIllumShadowEffects);  
+        boolean direct           = getSingleBooleanParamValue(aDirectIllumShadowEffects);  
 
         if(file == null) 
           file = "";
@@ -4634,33 +4640,34 @@ class MRayRenderGlobalsAction
 
       /* final gather */ 
       {
-        Range range = new Range(0.0, 1.0);
-        Range range3d = new Range(new Tuple3d(0.0, 0.0, 0.0), new Tuple3d(1.0, 1.0, 1.0));
-        Range range16Bit = new Range(-32768, 32767);
-        boolean useFinalGather = getSingleBooleanParamValue(aUseFinalGather);  
-        boolean precomp = getSingleBooleanParamValue(aPrecompPhotonLookup);  
-        int rays = getSingleIntegerParamValue(aFinalGatherRays); 
-        double pointDensity = getSingleDoubleParamValue(aPointDensity);
-        int finalGatherPoints = getSingleIntegerParamValue(aPointInterpolation, range16Bit);
-        Tuple3d finalGatherScale = getSingleTuple3dParamValue(aFinalGatherScale, range3d, false);
-        double minRadius = getSingleDoubleParamValue(aMinRadius); 
-        double maxRadius = getSingleDoubleParamValue(aMaxRadius); 
-        int filter = getSingleIntegerParamValue(aFilter); 
-        double falloffStart = getSingleDoubleParamValue(aFalloffStart); 
-        double falloffStop  = getSingleDoubleParamValue(aFalloffStop); 
-        int depth   = getSingleIntegerParamValue(aTraceDepth); 
-        int reflect = getSingleIntegerParamValue(aTraceReflection); 
-        int refract = getSingleIntegerParamValue(aTraceRefraction);
-        boolean finalGatherView = getSingleBooleanParamValue(aFinalGatherView);
-        boolean optimizeForAnim = getSingleBooleanParamValue(aOptimizeForAnim);
+        Range range                     = new Range(0.0, 1.0);
+        Range<Tuple3d> range3d          = new Range<Tuple3d>(new Tuple3d(0.0, 0.0, 0.0),
+                                                             new Tuple3d(1.0, 1.0, 1.0));
+        Range range16Bit                = new Range(-32768, 32767);
+        boolean useFinalGather          = getSingleBooleanParamValue(aUseFinalGather);  
+        boolean precomp                 = getSingleBooleanParamValue(aPrecompPhotonLookup);  
+        int rays                        = getSingleIntegerParamValue(aFinalGatherRays); 
+        double pointDensity             = getSingleDoubleParamValue(aPointDensity);
+        int finalGatherPoints           = getSingleIntegerParamValue(aPointInterpolation, range16Bit);
+        Tuple3d finalGatherScale        = getSingleTuple3dParamValue(aFinalGatherScale, range3d, false);
+        double minRadius                = getSingleDoubleParamValue(aMinRadius); 
+        double maxRadius                = getSingleDoubleParamValue(aMaxRadius); 
+        int filter                      = getSingleIntegerParamValue(aFilter); 
+        double falloffStart             = getSingleDoubleParamValue(aFalloffStart); 
+        double falloffStop              = getSingleDoubleParamValue(aFalloffStop); 
+        int depth                       = getSingleIntegerParamValue(aTraceDepth); 
+        int reflect                     = getSingleIntegerParamValue(aTraceReflection); 
+        int refract                     = getSingleIntegerParamValue(aTraceRefraction);
+        boolean finalGatherView         = getSingleBooleanParamValue(aFinalGatherView);
+        boolean optimizeForAnim         = getSingleBooleanParamValue(aOptimizeForAnim);
         boolean useRadiusQualityControl = getSingleBooleanParamValue(aUseRadiusQualityControl);
         boolean finalGatherTraceDiffuse = getSingleBooleanParamValue(aFinalGatherTraceDiffuse);
-        Tuple3d finalGatherBounceScale = getSingleTuple3dParamValue(aFGBounceScale, range3d, false);
-        String file = getSingleStringParamValue(aFinalGatherMapFile); 
-        boolean mapvis  = getSingleBooleanParamValue(aEnableFGMapVisualizer);  
-        int rebuild = getSingleEnumParamIndex(aFinalGatherMapRebuild);  
-        boolean preview = getSingleBooleanParamValue(aPreviewFinalGather);
-        int finalGatherMode = 0;
+        Tuple3d finalGatherBounceScale  = getSingleTuple3dParamValue(aFGBounceScale, range3d, false);
+        String file                     = getSingleStringParamValue(aFinalGatherMapFile); 
+        boolean mapvis                  = getSingleBooleanParamValue(aEnableFGMapVisualizer);  
+        int rebuild                     = getSingleEnumParamIndex(aFinalGatherMapRebuild);  
+        boolean preview                 = getSingleBooleanParamValue(aPreviewFinalGather);
+        int finalGatherMode             = 0;
         
         if(file == null) 
           file = "";
@@ -4713,13 +4720,13 @@ class MRayRenderGlobalsAction
 
       /* diagnostics */
       {
-        boolean diagnoseSamples = getSingleBooleanParamValue(aDiagnoseSamples); 
-        int diagnoseBsp = getSingleEnumParamIndex(aDiagnoseBsp);
-        int diagnoseGrid = getSingleEnumParamIndex(aDiagnoseGrid);
-        double diagnoseGridSize = getSingleDoubleParamValue(aDiagnoseGridSize);
-        int diagnosePhoton = getSingleEnumParamIndex(aDiagnosePhoton);
+        boolean diagnoseSamples      = getSingleBooleanParamValue(aDiagnoseSamples); 
+        int diagnoseBsp              = getSingleEnumParamIndex(aDiagnoseBsp);
+        int diagnoseGrid             = getSingleEnumParamIndex(aDiagnoseGrid);
+        double diagnoseGridSize      = getSingleDoubleParamValue(aDiagnoseGridSize);
+        int diagnosePhoton           = getSingleEnumParamIndex(aDiagnosePhoton);
         double diagnosePhotonDensity = getSingleDoubleParamValue(aDiagnosePhotonDensity);
-        boolean diagnoseFinalg = getSingleBooleanParamValue(aDiagnoseFinalGather);
+        boolean diagnoseFinalg       = getSingleBooleanParamValue(aDiagnoseFinalGather);
 
         out.write
           ("// DIAGNOSTICS\n" +
@@ -4734,25 +4741,25 @@ class MRayRenderGlobalsAction
 
       /* render options */
       {
-        boolean volumeShaders = getSingleBooleanParamValue(aVolumeShaders);
-        boolean geometryShaders = getSingleBooleanParamValue(aGeometryShaders);
+        boolean volumeShaders       = getSingleBooleanParamValue(aVolumeShaders);
+        boolean geometryShaders     = getSingleBooleanParamValue(aGeometryShaders);
         boolean displacementShaders = getSingleBooleanParamValue(aDisplacementShaders);
-        boolean outputShaders = getSingleBooleanParamValue(aOutputShaders);
-        boolean autoVolume = getSingleBooleanParamValue(aAutoVolume);
-        boolean displacePresample = getSingleBooleanParamValue(aDisplacePresample);
-        boolean mergeSurfaces = getSingleBooleanParamValue(aMergeSurfaces);
-        boolean renderHair = getSingleBooleanParamValue(aRenderFurHair);
-        boolean renderPasses = getSingleBooleanParamValue(aRenderPasses);
-        int faces = getSingleEnumParamIndex(aFaces);
-        int volumeSamples = getSingleIntegerParamValue(aVolumeSamples);
-        double maxDisplace = getSingleDoubleParamValue(aMaxDisplace);
-        double biasShadowMaps = getSingleDoubleParamValue(aShadowMapBias);
-        int causticsGenerating = getSingleEnumParamIndex(aCausticsGenerating);
-        int causticsReceiving = getSingleEnumParamIndex(aCausticsReceiving);
-        int globalIllumGenerating= getSingleEnumParamIndex(aGlobalIllumGenerating);
-        int globalIllumReceiving = getSingleEnumParamIndex(aGlobalIllumReceiving);
-        String approx = getSingleStringParamValue(aSurfaceApprox);
-        String displaceApprox = getSingleStringParamValue(aDisplaceApprox);
+        boolean outputShaders       = getSingleBooleanParamValue(aOutputShaders);
+        boolean autoVolume          = getSingleBooleanParamValue(aAutoVolume);
+        boolean displacePresample   = getSingleBooleanParamValue(aDisplacePresample);
+        boolean mergeSurfaces       = getSingleBooleanParamValue(aMergeSurfaces);
+        boolean renderHair          = getSingleBooleanParamValue(aRenderFurHair);
+        boolean renderPasses        = getSingleBooleanParamValue(aRenderPasses);
+        int faces                   = getSingleEnumParamIndex(aFaces);
+        int volumeSamples           = getSingleIntegerParamValue(aVolumeSamples);
+        double maxDisplace          = getSingleDoubleParamValue(aMaxDisplace);
+        double biasShadowMaps       = getSingleDoubleParamValue(aShadowMapBias);
+        int causticsGenerating      = getSingleEnumParamIndex(aCausticsGenerating);
+        int causticsReceiving       = getSingleEnumParamIndex(aCausticsReceiving);
+        int globalIllumGenerating   = getSingleEnumParamIndex(aGlobalIllumGenerating);
+        int globalIllumReceiving    = getSingleEnumParamIndex(aGlobalIllumReceiving);
+        String approx               = getSingleStringParamValue(aSurfaceApprox);
+        String displaceApprox       = getSingleStringParamValue(aDisplaceApprox);
 
         if (approx != null)
           approx = approx.trim();
@@ -4809,8 +4816,8 @@ class MRayRenderGlobalsAction
           dtype = indexMap[dtype];
         }
 
-        double gamma = getSingleDoubleParamValue(aGamma); 
-        int clip     = getSingleEnumParamIndex(aColorClip);
+        double gamma       = getSingleDoubleParamValue(aGamma); 
+        int clip           = getSingleEnumParamIndex(aColorClip);
         boolean interp     = getSingleBooleanParamValue(aInterpSamples);  
         boolean desaturate = getSingleBooleanParamValue(aDesaturate);  
         boolean premult    = getSingleBooleanParamValue(aPremultiply);  
@@ -4829,36 +4836,37 @@ class MRayRenderGlobalsAction
 
       /* contours */
       {
-        Range range = new Range(0.0, 1.0);
-        Range range3d = new Range(new Tuple3d(0.0, 0.0, 0.0), new Tuple3d(1.0, 1.0, 1.0));
-        Range cfsRange = new Range(0.0, 2.0);
-        Range angleRange = new Range(0.0, 180.0);
-        boolean contourEnable = getSingleBooleanParamValue(aEnableContourRendering);
-        boolean contourClearImage = getSingleBooleanParamValue(aHideSource);
-        Tuple3d contourClearColor = getSingleTuple3dParamValue(aFloodColor, range3d, false);
-        int contourSamples = getSingleIntegerParamValue(aOverSample);
-        int contourFilter = getSingleEnumParamIndex(aContourFilterType);
+        Range range                 = new Range(0.0, 1.0);
+        Range<Tuple3d> range3d      = new Range<Tuple3d>(new Tuple3d(0.0, 0.0, 0.0),
+                                                         new Tuple3d(1.0, 1.0, 1.0));
+        Range cfsRange              = new Range(0.0, 2.0);
+        Range angleRange            = new Range(0.0, 180.0);
+        boolean contourEnable       = getSingleBooleanParamValue(aEnableContourRendering);
+        boolean contourClearImage   = getSingleBooleanParamValue(aHideSource);
+        Tuple3d contourClearColor   = getSingleTuple3dParamValue(aFloodColor, range3d, false);
+        int contourSamples          = getSingleIntegerParamValue(aOverSample);
+        int contourFilter           = getSingleEnumParamIndex(aContourFilterType);
         double contourFilterSupport = getSingleDoubleParamValue(aContourFilterSupport, cfsRange);
-        boolean contourBackground = getSingleBooleanParamValue(aAroundSilhouette);
-        boolean contourPriData = getSingleBooleanParamValue(aAroundAllPolyFaces);
-        boolean contourNormalGeom = getSingleBooleanParamValue(aAroundCoplanarFaces);
-        boolean contourInstance = getSingleBooleanParamValue(aBetweenDiffInstances);
-        boolean contourMaterial = getSingleBooleanParamValue(aBetweenDiffMaterials);
-        boolean contourLabel = getSingleBooleanParamValue(aBetweenDiffLabels);
-        boolean contourPriIdx = getSingleBooleanParamValue(aAroundRenderTessellation);
-        boolean contourInvNormal = getSingleBooleanParamValue(aFrontVsBackFaceContours);
-        boolean enableContourColor = getSingleBooleanParamValue(aEnableColorContrast);
-        Tuple3d contourColor = getSingleTuple3dParamValue(aColorContrast, range3d, false);
-        boolean enableContourDepth = getSingleBooleanParamValue(aEnableDepthContrast);
-        double contourDepth = getSingleDoubleParamValue(aDepthContrast);
-        boolean enableContourDist = getSingleBooleanParamValue(aEnableDistanceContrast);
-        double contourDist = getSingleDoubleParamValue(aDistanceContrast);
+        boolean contourBackground   = getSingleBooleanParamValue(aAroundSilhouette);
+        boolean contourPriData      = getSingleBooleanParamValue(aAroundAllPolyFaces);
+        boolean contourNormalGeom   = getSingleBooleanParamValue(aAroundCoplanarFaces);
+        boolean contourInstance     = getSingleBooleanParamValue(aBetweenDiffInstances);
+        boolean contourMaterial     = getSingleBooleanParamValue(aBetweenDiffMaterials);
+        boolean contourLabel        = getSingleBooleanParamValue(aBetweenDiffLabels);
+        boolean contourPriIdx       = getSingleBooleanParamValue(aAroundRenderTessellation);
+        boolean contourInvNormal    = getSingleBooleanParamValue(aFrontVsBackFaceContours);
+        boolean enableContourColor  = getSingleBooleanParamValue(aEnableColorContrast);
+        Tuple3d contourColor        = getSingleTuple3dParamValue(aColorContrast, range3d, false);
+        boolean enableContourDepth  = getSingleBooleanParamValue(aEnableDepthContrast);
+        double contourDepth         = getSingleDoubleParamValue(aDepthContrast);
+        boolean enableContourDist   = getSingleBooleanParamValue(aEnableDistanceContrast);
+        double contourDist          = getSingleDoubleParamValue(aDistanceContrast);
         boolean enableContourNormal = getSingleBooleanParamValue(aEnableNormalContrast);
-        double contourNormal = getSingleDoubleParamValue(aNormalContrast, angleRange);
-        boolean enableContourTexUV = getSingleBooleanParamValue(aEnableUVContours);
-        Tuple2d contourTex = getSingleTuple2dParamValue(aUVContours);
-        String contrastShader = getSingleStringParamValue(aContrastShader);
-        String storeShader = getSingleStringParamValue(aStoreShader);
+        double contourNormal        = getSingleDoubleParamValue(aNormalContrast, angleRange);
+        boolean enableContourTexUV  = getSingleBooleanParamValue(aEnableUVContours);
+        Tuple2d contourTex          = getSingleTuple2dParamValue(aUVContours);
+        String contrastShader       = getSingleStringParamValue(aContrastShader);
+        String storeShader          = getSingleStringParamValue(aStoreShader);
 
         if (contrastShader != null)
           contrastShader = contrastShader.trim();
@@ -4934,13 +4942,13 @@ class MRayRenderGlobalsAction
           ("The AccelerationMethod was illegal!"); 
         }
 
-        int bspSize   = getSingleIntegerParamValue(aBspSize); 
-        int bspDepth  = getSingleIntegerParamValue(aBspDepth); 
-        int gridRes   = getSingleIntegerParamValue(aGridResolution); 
-        int gridSize  = getSingleIntegerParamValue(aGridMaxSize); 
-        int gridDepth = getSingleIntegerParamValue(aGridDepth); 
-        int taskSize  = getSingleIntegerParamValue(aTaskSize); 
-        int memory    = getSingleIntegerParamValue(aPhysicalMemory); 
+        int bspSize       = getSingleIntegerParamValue(aBspSize); 
+        int bspDepth      = getSingleIntegerParamValue(aBspDepth); 
+        int gridRes       = getSingleIntegerParamValue(aGridResolution); 
+        int gridSize      = getSingleIntegerParamValue(aGridMaxSize); 
+        int gridDepth     = getSingleIntegerParamValue(aGridDepth); 
+        int taskSize      = getSingleIntegerParamValue(aTaskSize); 
+        int memory        = getSingleIntegerParamValue(aPhysicalMemory); 
         boolean bspShadow = getSingleBooleanParamValue(aBspShadow); 
 
         out.write
@@ -4958,13 +4966,13 @@ class MRayRenderGlobalsAction
 
       /* shadows */
       {
-        int shadowMethod = getSingleEnumParamIndex(aShadowMethod);
-        int shadowLinking = getSingleEnumParamIndex(aShadowLinking);
+        int shadowMethod                 = getSingleEnumParamIndex(aShadowMethod);
+        int shadowLinking                = getSingleEnumParamIndex(aShadowLinking);
         boolean shadowsObeyShadowLinking = false;
-        boolean shadowsObeyLightLinking = false;
-        int shadowMaps = getSingleEnumParamIndex(aShadowMapsFormat);
-        int rebuildShadowMaps = getSingleEnumParamIndex(aShadowMapsRebuildMode);
-        boolean motionBlurShadowMaps  = getSingleBooleanParamValue(aMotionBlurShadowMaps);
+        boolean shadowsObeyLightLinking  = false;
+        int shadowMaps                   = getSingleEnumParamIndex(aShadowMapsFormat);
+        int rebuildShadowMaps            = getSingleEnumParamIndex(aShadowMapsRebuildMode);
+        boolean motionBlurShadowMaps     = getSingleBooleanParamValue(aMotionBlurShadowMaps);
 
         switch(shadowLinking) {
         case 0:
@@ -4993,37 +5001,37 @@ class MRayRenderGlobalsAction
       {
         int verbose = getSingleEnumParamIndex(aExportVerbosity);
 
-        boolean hier      = getSingleBooleanParamValue(aExportExactHierarchy);  
-        boolean dag       = getSingleBooleanParamValue(aExportFullDagpath);  
-        boolean textures  = getSingleBooleanParamValue(aExportTexturesFirst);  
-        boolean particles = getSingleBooleanParamValue(aExportParticles);  
-        boolean pinst     = getSingleBooleanParamValue(aExportParticleInstances);  
-        boolean fluids    = getSingleBooleanParamValue(aExportFluids);  
-        boolean effects   = getSingleBooleanParamValue(aExportPostEffects);
-        int exportHair = getSingleEnumParamIndex(aExportHair);
-        boolean exportVertexColors = getSingleBooleanParamValue(aExportVertexColors);
-        boolean exportAssignedOnly = getSingleBooleanParamValue(aPruneObjectsWOMaterial);
-        boolean exportVisibleOnly = getSingleBooleanParamValue(aOptNonAnimDisplayVis);
-        boolean optimizeAnimateDetection = getSingleBooleanParamValue(aOptAnimDetection);
-        boolean exportSharedVertices = getSingleBooleanParamValue(aOptVertSharing);
-        boolean optimizeRaytraceShadows = getSingleBooleanParamValue(aOptRaytraceShadows);
-        boolean exportMotionSegments = getSingleBooleanParamValue(aExportMotionSegments);
-        boolean exportTriangles = getSingleBooleanParamValue(aExportTriangulatedPoly);
-        boolean exportShapeDeformation = getSingleBooleanParamValue(aExportShapeDeformation);
-        boolean exportPolygonDerivatives = getSingleBooleanParamValue(aExportPolygonDerivatives);
-        boolean mayaDerivatives = getSingleBooleanParamValue(aMayaDerivatives);
-        boolean smoothPolygonDerivatives = getSingleBooleanParamValue(aSmoothPolygonDerivatives);
-        boolean exportNurbsDerivatives = getSingleBooleanParamValue(aExportNurbsDerivatives);
-        boolean exportObjectsOnDemand = getSingleBooleanParamValue(aExportObjectsOnDemand);
-        int exportPlaceholderSize = getSingleIntegerParamValue(aPerformanceThreshold);
+        boolean hier                       = getSingleBooleanParamValue(aExportExactHierarchy);  
+        boolean dag                        = getSingleBooleanParamValue(aExportFullDagpath);  
+        boolean textures                   = getSingleBooleanParamValue(aExportTexturesFirst);  
+        boolean particles                  = getSingleBooleanParamValue(aExportParticles);  
+        boolean pinst                      = getSingleBooleanParamValue(aExportParticleInstances);  
+        boolean fluids                     = getSingleBooleanParamValue(aExportFluids);  
+        boolean effects                    = getSingleBooleanParamValue(aExportPostEffects);
+        int exportHair                     = getSingleEnumParamIndex(aExportHair);
+        boolean exportVertexColors         = getSingleBooleanParamValue(aExportVertexColors);
+        boolean exportAssignedOnly         = getSingleBooleanParamValue(aPruneObjectsWOMaterial);
+        boolean exportVisibleOnly          = getSingleBooleanParamValue(aOptNonAnimDisplayVis);
+        boolean optimizeAnimateDetection   = getSingleBooleanParamValue(aOptAnimDetection);
+        boolean exportSharedVertices       = getSingleBooleanParamValue(aOptVertSharing);
+        boolean optimizeRaytraceShadows    = getSingleBooleanParamValue(aOptRaytraceShadows);
+        boolean exportMotionSegments       = getSingleBooleanParamValue(aExportMotionSegments);
+        boolean exportTriangles            = getSingleBooleanParamValue(aExportTriangulatedPoly);
+        boolean exportShapeDeformation     = getSingleBooleanParamValue(aExportShapeDeformation);
+        boolean exportPolygonDerivatives   = getSingleBooleanParamValue(aExportPolygonDerivatives);
+        boolean mayaDerivatives            = getSingleBooleanParamValue(aMayaDerivatives);
+        boolean smoothPolygonDerivatives   = getSingleBooleanParamValue(aSmoothPolygonDerivatives);
+        boolean exportNurbsDerivatives     = getSingleBooleanParamValue(aExportNurbsDerivatives);
+        boolean exportObjectsOnDemand      = getSingleBooleanParamValue(aExportObjectsOnDemand);
+        int exportPlaceholderSize          = getSingleIntegerParamValue(aPerformanceThreshold);
         boolean renderShadersWithFiltering = getSingleBooleanParamValue(aRenderShadersWithFilter);
-        boolean exportStateShader = getSingleBooleanParamValue(aExportStateShader);
-        boolean exportLightLinker = getSingleBooleanParamValue(aExportLightLinker);
-        boolean exportMayaOptions = getSingleBooleanParamValue(aExprtMayaOptions);
-        boolean exportCustomColors = getSingleBooleanParamValue(aCustomColors);
-        boolean exportCustom = getSingleBooleanParamValue(aCustomTexts);
-        boolean exportCustomData = getSingleBooleanParamValue(aCustomData);
-        boolean exportCustomVectors = getSingleBooleanParamValue(aCustomVectors);
+        boolean exportStateShader          = getSingleBooleanParamValue(aExportStateShader);
+        boolean exportLightLinker          = getSingleBooleanParamValue(aExportLightLinker);
+        boolean exportMayaOptions          = getSingleBooleanParamValue(aExprtMayaOptions);
+        boolean exportCustomColors         = getSingleBooleanParamValue(aCustomColors);
+        boolean exportCustom               = getSingleBooleanParamValue(aCustomTexts);
+        boolean exportCustomData           = getSingleBooleanParamValue(aCustomData);
+        boolean exportCustomVectors        = getSingleBooleanParamValue(aCustomVectors);
 
         out.write
           ("// TRANSLATION\n" + 
@@ -5063,12 +5071,12 @@ class MRayRenderGlobalsAction
 
       /* preview */
       {
-        boolean previewAnimation = getSingleBooleanParamValue(aPreviewAnimation);
-        boolean previewMotionBlur = getSingleBooleanParamValue(aPreviewMotionBlur);
-        boolean previewRenderTiles = getSingleBooleanParamValue(aPreviewRenderTiles);
+        boolean previewAnimation    = getSingleBooleanParamValue(aPreviewAnimation);
+        boolean previewMotionBlur   = getSingleBooleanParamValue(aPreviewMotionBlur);
+        boolean previewRenderTiles  = getSingleBooleanParamValue(aPreviewRenderTiles);
         boolean previewConvertTiles = getSingleBooleanParamValue(aPreviewConvertTiles);
         boolean previewTonemapTiles = getSingleBooleanParamValue(aPreviewTonemapTiles);
-        double tonemapRangeHigh = getSingleDoubleParamValue(aTonemapScale);
+        double tonemapRangeHigh     = getSingleDoubleParamValue(aTonemapScale);
 
         out.write
           ("// PREVIEW\n" + 
@@ -5085,9 +5093,9 @@ class MRayRenderGlobalsAction
         boolean passAlphaThrough = getSingleBooleanParamValue(aPassCustomAlphaChannel);
         boolean passDepthThrough = getSingleBooleanParamValue(aPassCustomDepthChannel);
         boolean passLabelThrough = getSingleBooleanParamValue(aPassCustomLabelChannel);
-        String versions = getSingleStringParamValue(aCustomVersions);
-        String links = getSingleStringParamValue(aCustomLinks);
-        String includes = getSingleStringParamValue(aCustomIncludes);
+        String versions          = getSingleStringParamValue(aCustomVersions);
+        String links             = getSingleStringParamValue(aCustomLinks);
+        String includes          = getSingleStringParamValue(aCustomIncludes);
 
         out.write
           ("// CUSTOM ENTITIES\n" + 
