@@ -1753,6 +1753,7 @@ AC_CONFIG_FILES([
 
   docs/legal/Makefile
   docs/man/Makefile
+  docs/man/plbuilder.src.html
   docs/man/plfilemgr.src.html
   docs/man/pljobmgr.src.html
   docs/man/plmaster.src.html
