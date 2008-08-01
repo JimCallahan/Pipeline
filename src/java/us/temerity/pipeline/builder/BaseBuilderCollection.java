@@ -1,4 +1,4 @@
-// $Id: BaseBuilderCollection.java,v 1.17 2008/07/21 17:25:53 jim Exp $
+// $Id: BaseBuilderCollection.java,v 1.18 2008/08/01 21:34:41 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -494,8 +494,6 @@ class BaseBuilderCollection
   }
   
   
-  
-
   
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
