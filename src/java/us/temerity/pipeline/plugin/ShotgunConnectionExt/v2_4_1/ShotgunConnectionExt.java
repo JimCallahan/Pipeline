@@ -1,4 +1,4 @@
-// $Id: ShotgunConnectionExt.java,v 1.3 2008/07/03 19:50:45 jesse Exp $
+// $Id: ShotgunConnectionExt.java,v 1.4 2008/08/01 21:24:39 jesse Exp $
 
 package us.temerity.pipeline.plugin.ShotgunConnectionExt.v2_4_1;
 
@@ -761,7 +761,7 @@ class ShotgunConnectionExt
     if((taskType != null) && (taskType.length() == 0))
       taskType = null;
     
-    if((taskType != null) && taskType.equals(TaskType.CUSTOM)) {
+    if((taskType != null) && taskType.equals(TaskType.CUSTOM.toString())) {
       taskType = (String) an.getParamValue(aCustomTaskType);
       if((taskType != null) && (taskType.length() == 0))
         taskType = null;
