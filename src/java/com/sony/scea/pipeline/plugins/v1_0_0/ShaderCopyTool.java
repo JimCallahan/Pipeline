@@ -89,7 +89,7 @@ public class ShaderCopyTool extends BaseTool
       {
 	 NodeStatus stat = pSelected.get(hiRezScene);
 	 hiID = stat.getNodeID();
-	 hiMod = stat.getDetails().getWorkingVersion();
+	 hiMod = stat.getHeavyDetails().getWorkingVersion();
 	 FileSeq fseq = hiMod.getPrimarySequence();
 	 hiRezPath = new Path(PackageInfo.sProdPath, hiID.getWorkingParent() + "/"
 	       + fseq.getPath(0));
@@ -98,7 +98,7 @@ public class ShaderCopyTool extends BaseTool
       {
 	 NodeStatus stat = pSelected.get(loRezScene);
 	 loID = stat.getNodeID();
-	 loMod = stat.getDetails().getWorkingVersion();
+	 loMod = stat.getHeavyDetails().getWorkingVersion();
 	 FileSeq fseq = loMod.getPrimarySequence();
 	 loRezPath = new Path(PackageInfo.sProdPath, loID.getWorkingParent() + "/"
 	       + fseq.getPath(0));

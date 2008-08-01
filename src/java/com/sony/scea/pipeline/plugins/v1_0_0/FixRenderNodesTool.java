@@ -44,7 +44,7 @@ public class FixRenderNodesTool extends BaseTool
     {
       NodeStatus status = pSelected.get(nodeName);
       NodeID id = status.getNodeID();
-      NodeMod mod = status.getDetails().getWorkingVersion();
+      NodeMod mod = status.getHeavyDetails().getWorkingVersion();
       BaseAction act = mod.getAction();
       String mel = null;
       String mayaScene = (String) act.getSingleParamValue("MayaScene");

@@ -113,7 +113,7 @@ public class LightingCheckOutTool extends BaseTool{
 
 		{
 			/*-check out the switch and anim nodes-*/
-			OverallNodeState state = status.getDetails().getOverallNodeState();
+			OverallNodeState state = status.getHeavyDetails().getOverallNodeState();
 			if(!state.equals(OverallNodeState.Modified))
 				jcheckOut(mclient,pUser, pView, pPrimary, null, keep, pFroz);
 			

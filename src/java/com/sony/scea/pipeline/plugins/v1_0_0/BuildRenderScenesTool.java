@@ -262,7 +262,7 @@ public class BuildRenderScenesTool extends BaseTool implements ActionListener
 	pView = nodeID.getView();
 
 	{
-	  String toolset = status.getDetails().getWorkingVersion().getToolset();
+	  String toolset = status.getHeavyDetails().getWorkingVersion().getToolset();
 	  nToolsetNameMap.put(name, toolset);
 	}
 

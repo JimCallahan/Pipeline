@@ -250,7 +250,7 @@ public class BuildShakePreCompTool extends BaseTool {
 							LinkRelationship.All, null);
 				}
 				
-				OverallNodeState state = mclient.status(pUser, pView, preName).getDetails().getOverallNodeState();
+				OverallNodeState state = mclient.status(pUser, pView, preName).getHeavyDetails().getOverallNodeState();
 				System.err.println(state);
 				
 				JToolDialog tool = new JToolDialog("BuildShakePreComp", new JPanel(), "Continue");

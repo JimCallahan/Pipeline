@@ -112,7 +112,7 @@ public class DeliveryPackageTool extends BaseTool
       pView = id.getView();
       pUser = id.getAuthor();
       
-      OverallNodeState state = status.getDetails().getOverallNodeState();
+      OverallNodeState state = status.getHeavyDetails().getOverallNodeState();
 	
       if(!state.equals(OverallNodeState.Identical)){
 	 throw new PipelineException("This node has not been checked in. You can only " +
@@ -243,7 +243,7 @@ public class DeliveryPackageTool extends BaseTool
    public int getNodeList(String nodeName, NodeStatus stat, int level){
       
       if((!pNodes.containsValue(stat))&&(!(pExclusions.containsValue(stat)))){
-	 FileSeq fseq = stat.getDetails().getWorkingVersion().getPrimarySequence();
+	 FileSeq fseq = stat.getHeavyDetails().getWorkingVersion().getPrimarySequence();
 	 String suffix = fseq.getFilePattern().getSuffix();
 
 	 if((level<=pDiag)||(pDiag==0)) {
@@ -285,7 +285,7 @@ public class DeliveryPackageTool extends BaseTool
     */
    private String makeTxtFile() throws PipelineException{
       	
-      NodeDetails det = pSelected.get(pPrimary).getDetails();
+      NodeDetailsHeavy det = pSelected.get(pPrimary).getHeavyDetails();
       VersionID mainID = det.getWorkingVersion().getWorkingID();
       
       String verNum = mainID.toString();
@@ -302,30 +302,30 @@ public class DeliveryPackageTool extends BaseTool
 	 
 	 /*add the included files*/
 	 for(Integer key: pNodes.keySet()){
-	    NodeDetails cur = pNodes.get(key).getDetails();
+	    NodeDetailsHeavy cur = pNodes.get(key).getHeavyDetails();
 	    VersionID id = cur.getWorkingVersion().getWorkingID();	 
 	    
 	    FileSeq fseq = cur.getWorkingVersion().getPrimarySequence();
 	    if(fseq.numFrames()>1){
-	       out.write(key+"\t"+cur.getName()+"\t"+fseq.toString() +"\t"+id+"\n");
+	       out.write(key+"\t"+cur.getBaseVersion().getName()+"\t"+fseq.toString() +"\t"+id+"\n");
 	       
 	    } else {
 	       //System.err.println("Not a sequence");
-	       out.write(key+"\t"+cur.getName()+"\t"+cur.getWorkingVersion()+"\t"+id+"\n");	 
+	       out.write(key+"\t"+cur.getBaseVersion().getName()+"\t"+cur.getWorkingVersion()+"\t"+id+"\n");	 
 	    }
 	 }//end for
 	 
 	 /*add the excluded files*/
 	 for(Integer key: pExclusions.keySet()){
-	    NodeDetails cur = pExclusions.get(key).getDetails();
+	    NodeDetailsHeavy cur = pExclusions.get(key).getHeavyDetails();
 	    VersionID id = cur.getWorkingVersion().getWorkingID();	 
 	    FileSeq fseq = cur.getWorkingVersion().getPrimarySequence();
 	    if(fseq.numFrames()>1){
-	       out.write(key+"\t"+cur.getName()+"\t"+fseq.toString() +"\t"+id+"\t[Excluded]\n");
+	       out.write(key+"\t"+cur.getBaseVersion().getName()+"\t"+fseq.toString() +"\t"+id+"\t[Excluded]\n");
 	       
 	    } else {
 	       //System.err.println("Not a sequence");
-	       out.write(key+"\t"+cur.getName()+"\t"+cur.getWorkingVersion()+"\t"+id+"\t[Excluded]\n");	 
+	       out.write(key+"\t"+cur.getBaseVersion().getName()+"\t"+cur.getWorkingVersion()+"\t"+id+"\t[Excluded]\n");	 
 	    }
 	 }//end for
 	 
@@ -356,7 +356,7 @@ public class DeliveryPackageTool extends BaseTool
     * @throws PipelineException
     */
    private boolean makeTarFile(MasterMgrClient mclient, String txtFile) throws PipelineException{
-      NodeDetails det = pSelected.get(pPrimary).getDetails();
+      NodeDetailsHeavy det = pSelected.get(pPrimary).getHeavyDetails();
       NodeMod mod = det.getWorkingVersion();
       NodeID id = pSelected.get(pPrimary).getNodeID();
       
@@ -390,10 +390,10 @@ public class DeliveryPackageTool extends BaseTool
 	 out.write("cd "+REPOSITORY+"\n");
 	 out.write("tar -czf "+tarFile+" "+txtFile);
 	 for(Integer key: pNodes.keySet()){
-	    NodeDetails cur = pNodes.get(key).getDetails();
+	    NodeDetailsHeavy cur = pNodes.get(key).getHeavyDetails();
 	    VersionID curVer = cur.getWorkingVersion().getWorkingID();
 	    
-	    String name = cur.getName();
+	    String name = cur.getBaseVersion().getName();
 	    name = name.substring(1,name.length());
 	    
 	    FileSeq fseq = cur.getWorkingVersion().getPrimarySequence();

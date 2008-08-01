@@ -40,7 +40,7 @@ public class SetMapNameTool extends BaseTool
       {
 	 NodeStatus status = pSelected.get(nodeName);
 	 NodeID id = status.getNodeID();
-	 NodeMod mod = status.getDetails().getWorkingVersion();
+	 NodeMod mod = status.getHeavyDetails().getWorkingVersion();
 	 BaseAction act = mod.getAction();
 	 TreeSet<String> sources = new TreeSet<String>(mod.getSourceNames());
 	 if ( sources.size() == 1 )

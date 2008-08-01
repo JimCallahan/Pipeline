@@ -146,7 +146,7 @@ private static State getState(NodeTreeComp treeComps, String scene)
 	      //NodeID nodeID = status.getNodeID();
 	      
 	      //NodeMod mod = mclient.getWorkingVersion(nodeID);
-	      NodeMod mod = status.getDetails().getWorkingVersion();
+	      NodeMod mod = status.getHeavyDetails().getWorkingVersion();
 	      
 	      
 	      //mod.setActionEnabled(false);

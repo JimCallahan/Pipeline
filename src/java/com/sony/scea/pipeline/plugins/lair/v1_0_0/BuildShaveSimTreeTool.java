@@ -61,7 +61,7 @@ public class BuildShaveSimTreeTool
     hairCharNode = "/projects/lr/assets/character/" + hairChar + "/" + hairChar;
     String lowrezChar = hairCharNode + "_lr";
     
-    NodeMod animMod = stat.getDetails().getWorkingVersion();
+    NodeMod animMod = stat.getHeavyDetails().getWorkingVersion();
     Set<String> sources = animMod.getSourceNames();
     if (!sources.contains(lowrezChar))
       throw new PipelineException("The selected shot does not contain a character that needs a hair simulation");
@@ -100,7 +100,7 @@ public class BuildShaveSimTreeTool
 
       NodeStatus stat = pSelected.get(pPrimary);
       nodeID = stat.getNodeID();
-      mod = stat.getDetails().getWorkingVersion();
+      mod = stat.getHeavyDetails().getWorkingVersion();
       FileSeq fseq = mod.getPrimarySequence();
       mayaScenePath = new Path(PackageInfo.sProdPath, nodeID.getWorkingParent() + "/"
 	+ fseq.getPath(0));

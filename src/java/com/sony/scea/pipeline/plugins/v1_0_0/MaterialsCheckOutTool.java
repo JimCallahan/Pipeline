@@ -105,7 +105,7 @@ public class MaterialsCheckOutTool extends BaseTool{
 
 
 
-		OverallNodeState state = status.getDetails().getOverallNodeState();
+		OverallNodeState state = status.getHeavyDetails().getOverallNodeState();
 		JToolDialog tool = new JToolDialog("MaterialsCheckOut", new JPanel(), "Continue");
 		if (!state.equals(OverallNodeState.Identical)) {
 			JConfirmDialog dialog = new JConfirmDialog(tool,
@@ -175,7 +175,7 @@ public class MaterialsCheckOutTool extends BaseTool{
 					} else {
 
 						OverallNodeState state = 
-							mclient.status(pUser,pView,src).getDetails().getOverallNodeState();
+							mclient.status(pUser,pView,src).getHeavyDetails().getOverallNodeState();
 
 						if (!state.equals(OverallNodeState.Modified)){
 							err.println("Mat node has not been modified");

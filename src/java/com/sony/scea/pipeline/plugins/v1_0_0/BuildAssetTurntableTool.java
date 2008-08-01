@@ -132,7 +132,7 @@ public class BuildAssetTurntableTool extends BaseTool{
 		folder += "/tt/";
 		pUser = nodeID.getAuthor();
 		pView = nodeID.getView();
-		pToolset = status.getDetails().getWorkingVersion().getToolset();
+		pToolset = status.getHeavyDetails().getWorkingVersion().getToolset();
 		return "...Couldn't put Humpty together again...";
 	}
 

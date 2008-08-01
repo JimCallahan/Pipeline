@@ -138,7 +138,7 @@ public class UpdateCameraTool extends BaseTool{
 
 							NodeID targetID = new NodeID(pUser,pView,anim);
 							NodeStatus targetStat = pSelected.get(anim);
-							NodeMod targetMod = targetStat.getDetails().getWorkingVersion();
+							NodeMod targetMod = targetStat.getHeavyDetails().getWorkingVersion();
 							ArrayList<String> args = new ArrayList<String>();
 
 							if(targetMod == null)

@@ -92,7 +92,7 @@ public class PrepLairShotTool extends BaseTool {
 		pUser = nodeID.getAuthor();
 		pView = nodeID.getView();
 
-		OverallNodeState state = status.getDetails().getOverallNodeState();
+		OverallNodeState state = status.getHeavyDetails().getOverallNodeState();
 		JToolDialog tool = new JToolDialog("PrepLair", new JPanel(), "Continue");
 
 		if (!state.equals(OverallNodeState.Identical)) {

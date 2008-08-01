@@ -221,7 +221,7 @@ public class UpdateAssetGUI extends BootApp implements ActionListener
 
 		NodeID targetID = new NodeID(w.user,w.view,nodeName);
 		NodeStatus targetStat = mclient.status(targetID);
-		NodeMod targetMod = targetStat.getDetails().getWorkingVersion();
+		NodeMod targetMod = targetStat.getHeavyDetails().getWorkingVersion();
 		if(targetMod == null)
 			throw new PipelineException("No working version of the Target Scene Node (" 
 					+ nodeName + ") exists " + "in the (" + w.view + ") working area owned by (" 

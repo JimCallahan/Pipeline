@@ -89,7 +89,7 @@ public class RenderAssetStillsTool extends BaseTool{
 		folder += "/tt/";
 		pUser = nodeID.getAuthor();
 		pView = nodeID.getView();
-		pToolset = status.getDetails().getWorkingVersion().getToolset();
+		pToolset = status.getHeavyDetails().getWorkingVersion().getToolset();
 		return "...All the king's horses and all the king's men...";
 	}
 

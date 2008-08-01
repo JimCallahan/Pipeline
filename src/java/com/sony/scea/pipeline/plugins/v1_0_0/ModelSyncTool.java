@@ -102,7 +102,7 @@ public class ModelSyncTool extends BaseTool
 		for(String node: pSelected.keySet()){
 			NodeStatus stat = pSelected.get(node);
 
-			NodeMod mod = stat.getDetails().getWorkingVersion();
+			NodeMod mod = stat.getHeavyDetails().getWorkingVersion();
 			if (mod.getAction()==null )
 				throw new PipelineException("The target node does not have a Model Replace action!");
 			

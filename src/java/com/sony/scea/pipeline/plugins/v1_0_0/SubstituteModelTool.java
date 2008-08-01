@@ -158,7 +158,7 @@ public class SubstituteModelTool
 		pUser = nodeID.getAuthor();
 		pView = nodeID.getView();
 
-		OverallNodeState state = status.getDetails().getOverallNodeState();
+		OverallNodeState state = status.getHeavyDetails().getOverallNodeState();
 			
 		if(!state.equals(OverallNodeState.Identical)){
 		   	JToolDialog tool = new JToolDialog("SubModel", new JPanel(), "Continue");
@@ -505,7 +505,7 @@ public class SubstituteModelTool
 	 * returns the absolute file name of the scene file for the node to be changed.
 	 */  
 	private String getFullFileName(NodeStatus stat) {
-		NodeMod mod = stat.getDetails().getWorkingVersion();
+		NodeMod mod = stat.getHeavyDetails().getWorkingVersion();
 		NodeID snodeID = stat.getNodeID();
 		FileSeq fseq = mod.getPrimarySequence();
 		Path script = new Path(PackageInfo.sProdPath,
@@ -572,7 +572,7 @@ public class SubstituteModelTool
 	 */
 	private void findNodesToSwitch (NodeStatus status, MasterMgrClient mclient) throws PipelineException
 	{		
-		NodeDetails details = status.getDetails();
+		NodeDetailsHeavy details = status.getHeavyDetails();
 		if(details == null)
 			throw new PipelineException("The target node must have an existing status!");
 

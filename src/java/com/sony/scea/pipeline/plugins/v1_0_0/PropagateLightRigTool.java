@@ -351,7 +351,7 @@ public class PropagateLightRigTool extends BaseTool{
 
 		try
 		{	
-			NodeMod targetMod = pSelected.get(pPrimary).getDetails().getWorkingVersion();
+			NodeMod targetMod = pSelected.get(pPrimary).getHeavyDetails().getWorkingVersion();
 			NodeID targetID = new NodeID(pUser,pView,pPrimary);
 
 			if(targetMod == null)

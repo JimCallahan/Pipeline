@@ -282,7 +282,7 @@ public class BuildRenderTreeTool extends BaseTool{
 		NodeID nodeID = status.getNodeID();
 		pUser = nodeID.getAuthor();
 		pView = nodeID.getView();
-		pToolset = status.getDetails().getWorkingVersion().getToolset();
+		pToolset = status.getHeavyDetails().getWorkingVersion().getToolset();
 
 		
 		File errFile = null;
@@ -298,7 +298,7 @@ public class BuildRenderTreeTool extends BaseTool{
 		
 		
 		
-		NodeMod mod = status.getDetails().getWorkingVersion();
+		NodeMod mod = status.getHeavyDetails().getWorkingVersion();
 		FileSeq fseq = mod.getPrimarySequence();
 		Path script = new Path(PackageInfo.sProdPath,
 				nodeID.getWorkingParent() + "/" + fseq.getPath(0));

@@ -40,7 +40,7 @@ public class GeoNameCompareTool extends BaseTool
       
       for (NodeStatus status : pSelected.values())
       {
-	 NodeMod mod = status.getDetails().getWorkingVersion();
+	 NodeMod mod = status.getHeavyDetails().getWorkingVersion();
 	 FileSeq fseq = mod.getPrimarySequence();
 	 String suffix = fseq.getFilePattern().getSuffix();
 	 if ( !fseq.isSingle() || ( suffix == null )

@@ -27,12 +27,11 @@ public class MultipleRenumberTool extends BaseTool
       addSupport(OsType.Windows);
    }
    
-   @SuppressWarnings("static-access")
-public synchronized String collectPhaseInput() throws PipelineException
+   public synchronized String collectPhaseInput() throws PipelineException
    {
       for (NodeStatus stat : pSelected.values())
       {
-	 NodeMod mod = stat.getDetails().getWorkingVersion();
+	 NodeMod mod = stat.getHeavyDetails().getWorkingVersion();
 	 if (mod == null)
 	    throw new PipelineException("All selected nodes must have a working version");
 	 FileSeq seq = mod.getPrimarySequence();

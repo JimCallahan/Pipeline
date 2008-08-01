@@ -46,9 +46,9 @@ public class BuildShaveRenderTreeTool extends BaseTool
     String imgShotName = shotName.replaceAll("seq", "s") + "_hair";
     hairImageName = new Path(new Path(new Path(imgName).getParentPath().getParentPath(), "hair"), imgShotName).toString();
     
-    NodeCommon mod = stat.getDetails().getWorkingVersion();
+    NodeCommon mod = stat.getHeavyDetails().getWorkingVersion();
     if (mod == null)
-      mod = stat.getDetails().getLatestVersion();
+      mod = stat.getHeavyDetails().getLatestVersion();
     for (String source : mod.getSourceNames())
     {
       Path p = new Path(source);

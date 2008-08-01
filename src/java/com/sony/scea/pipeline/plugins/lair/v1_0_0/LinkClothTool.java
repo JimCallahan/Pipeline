@@ -38,7 +38,7 @@ public class LinkClothTool extends BaseTool
       NodeID id = stat.getNodeID();
       pUser = id.getAuthor();
       pView = id.getView();
-      NodeMod switchMod = stat.getDetails().getWorkingVersion();
+      NodeMod switchMod = stat.getHeavyDetails().getWorkingVersion();
       String pToolset = switchMod.getToolset();
       PluginSet plugs = mclient.getToolsetActionPlugins(pToolset);
       String animName = null;

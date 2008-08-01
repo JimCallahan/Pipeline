@@ -91,7 +91,7 @@ public class BuildHeadTurntableTool extends BaseTool{
 		folder += "/tt/";
 		pUser = nodeID.getAuthor();
 		pView = nodeID.getView();
-		pToolset = status.getDetails().getWorkingVersion().getToolset();
+		pToolset = status.getHeavyDetails().getWorkingVersion().getToolset();
 		return "...You are now entering The Twilight Zone...";
 	}
 

@@ -97,7 +97,7 @@ public class BuildAssetTreeTool extends BaseTool
 	 NodeID nodeID = status.getNodeID();
 	 user = nodeID.getAuthor();
 	 view = nodeID.getView();
-	 toolsetMap.put(name, status.getDetails().getWorkingVersion().getToolset());
+	 toolsetMap.put(name, status.getHeavyDetails().getWorkingVersion().getToolset());
 
 	 String projectPrefix;
 	 String assetType;

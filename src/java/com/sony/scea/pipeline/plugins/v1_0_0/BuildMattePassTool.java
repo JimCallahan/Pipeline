@@ -282,7 +282,7 @@ public class BuildMattePassTool extends BaseTool{
 		NodeID nodeID = status.getNodeID();
 		pUser = nodeID.getAuthor();
 		pView = nodeID.getView();
-		pToolset = status.getDetails().getWorkingVersion().getToolset();
+		pToolset = status.getHeavyDetails().getWorkingVersion().getToolset();
 
 		
 		File errFile = null;
@@ -297,7 +297,7 @@ public class BuildMattePassTool extends BaseTool{
 		
 		
 		
-		NodeMod mod = status.getDetails().getWorkingVersion();
+		NodeMod mod = status.getHeavyDetails().getWorkingVersion();
 		FileSeq fseq = mod.getPrimarySequence();
 		Path script = new Path(PackageInfo.sProdPath,
 				nodeID.getWorkingParent() + "/" + fseq.getPath(0));
@@ -569,7 +569,7 @@ public class BuildMattePassTool extends BaseTool{
 		DoubleMap<String, String, TreeSet<VersionID>> plugs = mclient.getToolsetActionPlugins(pToolset);
 		
 		NodeStatus status = pSelected.get(pPrimary);
-		NodeMod mod = status.getDetails().getWorkingVersion();
+		NodeMod mod = status.getHeavyDetails().getWorkingVersion();
 		
 		jcheckOut(mclient,pUser, pView, rndrGlob, null, over, froz);
 				

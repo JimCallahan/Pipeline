@@ -480,7 +480,7 @@ public class BuildSyflexTreeTool extends BaseTool
 
       NodeStatus stat = pSelected.get(pPrimary);
       nodeID = stat.getNodeID();
-      mod = stat.getDetails().getWorkingVersion();
+      mod = stat.getHeavyDetails().getWorkingVersion();
       FileSeq fseq = mod.getPrimarySequence();
       mayaScenePath = new Path(PackageInfo.sProdPath, nodeID.getWorkingParent() + "/"
 	  + fseq.getPath(0));

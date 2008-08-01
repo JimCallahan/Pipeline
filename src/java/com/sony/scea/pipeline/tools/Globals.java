@@ -131,7 +131,7 @@ public class Globals
    */
   public static OverallQueueState getTreeState(NodeStatus status)
   {
-    OverallQueueState state = status.getDetails().getOverallQueueState();
+    OverallQueueState state = status.getHeavyDetails().getOverallQueueState();
     System.err.println(status.getName() + "\t" + state);
     switch (state)
     {

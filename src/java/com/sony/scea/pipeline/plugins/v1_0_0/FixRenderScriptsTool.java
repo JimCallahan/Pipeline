@@ -41,7 +41,7 @@ public class FixRenderScriptsTool extends BaseTool
     pUser = id.getAuthor();
     pView = id.getView();
 
-    NodeMod mod = status.getDetails().getWorkingVersion();
+    NodeMod mod = status.getHeavyDetails().getWorkingVersion();
     FileSeq fseq = mod.getPrimarySequence();
     Path script = new Path(PackageInfo.sProdPath,
       id.getWorkingParent() + "/" + fseq.getPath(0));

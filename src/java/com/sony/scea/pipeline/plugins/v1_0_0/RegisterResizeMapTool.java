@@ -1,4 +1,4 @@
-// $Id: RegisterResizeMapTool.java,v 1.1 2007/02/13 05:27:17 jesse Exp $
+// $Id: RegisterResizeMapTool.java,v 1.2 2008/08/01 21:28:51 jesse Exp $
 
 package com.sony.scea.pipeline.plugins.v1_0_0;
 
@@ -84,7 +84,7 @@ RegisterResizeMapTool
 
     for (String each : pSelected.keySet()) {
       NodeStatus status = pSelected.get(each);
-      NodeDetails det = status.getDetails();
+      NodeDetailsHeavy det = status.getHeavyDetails();
       NodeMod mod = det.getWorkingVersion();
       NodeID nodeID = status.getNodeID();
       String suffix = mod.getPrimarySequence().getFilePattern().getSuffix();
