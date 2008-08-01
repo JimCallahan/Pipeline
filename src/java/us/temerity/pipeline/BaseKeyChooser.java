@@ -1,4 +1,4 @@
-// $Id: BaseKeyChooser.java,v 1.4 2008/07/08 17:02:28 jesse Exp $
+// $Id: BaseKeyChooser.java,v 1.5 2008/08/01 21:33:58 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -174,11 +174,16 @@ class BaseKeyChooser
         LogMgr.getInstance().logAndFlush(Kind.Ops, Level.Severe, msg);
         throw new PipelineException(msg + e.getMessage());
       }
-      else {
+      else if (e instanceof Exception || e instanceof LinkageError) {
+        String fullMessage = Exceptions.getFullMessage(msg, e);
         LogMgr.getInstance().logAndFlush(Kind.Ops, Level.Severe, msg);
-        throw new PipelineException(Exceptions.getFullMessage(msg, e));
+        throw new PipelineException(fullMessage);
       }
-      
+      else {
+        String fullMessage = Exceptions.getFullMessage(msg, e);
+        LogMgr.getInstance().logAndFlush(Kind.Ops, Level.Severe, fullMessage);
+        throw (Error) e;
+      }
     }
   }
   

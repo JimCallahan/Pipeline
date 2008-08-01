@@ -1,4 +1,4 @@
-// $Id: JErrorDialog.java,v 1.13 2008/03/28 21:09:01 jim Exp $
+// $Id: JErrorDialog.java,v 1.14 2008/08/01 21:28:13 jesse Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -125,7 +125,7 @@ class JErrorDialog
   public void 
   setMessage
   (
-   Exception ex
+   Throwable ex
   ) 
   {
     if(ex instanceof PipelineException) {

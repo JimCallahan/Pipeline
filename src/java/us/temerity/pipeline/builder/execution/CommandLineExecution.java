@@ -1,4 +1,4 @@
-// $Id: CommandLineExecution.java,v 1.5 2008/05/07 22:00:50 jesse Exp $
+// $Id: CommandLineExecution.java,v 1.6 2008/08/01 21:28:13 jesse Exp $
 
 package us.temerity.pipeline.builder.execution;
 
@@ -41,6 +41,9 @@ class CommandLineExecution
     catch (Exception ex) {
       handleException(ex);
     }
+    catch (LinkageError er ) {
+      handleException(er);
+    }
   }
   
   /**
@@ -62,7 +65,7 @@ class CommandLineExecution
   protected void
   handleException
   (
-    Exception ex
+    Throwable ex
   )
     throws PipelineException
   {
@@ -92,7 +95,7 @@ class CommandLineExecution
       }
       if (!getBuilder().useBuilderLogging())
         throw new PipelineException(message);
-      if (getBuilder().terminateAppOnQuit())
+      if (getBuilder().terminateAppOnQuit()) 
         System.exit(1);
     }
     else if (phase == ExecutionPhase.Release) {
@@ -105,7 +108,5 @@ class CommandLineExecution
         message = Exceptions.getFullMessage(header, ex);
       pLog.logAndFlush(Kind.Ops, Level.Severe, message);
     }
-
   }
-  
 }

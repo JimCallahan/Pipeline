@@ -1,4 +1,4 @@
-// $Id: JobMgr.java,v 1.43 2008/06/29 17:46:16 jim Exp $
+// $Id: JobMgr.java,v 1.44 2008/08/01 21:31:15 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -108,6 +108,9 @@ class JobMgr
     }
     catch(Exception ex) {
       return new FailureRsp(timer, ex.getMessage());
+    }
+    catch (LinkageError er) {
+      return new FailureRsp(timer, er.getMessage());
     }
   }
 
@@ -1083,7 +1086,13 @@ class JobMgr
 	      ("The prep() method of the Action (" + pJob.getAction().getName() + ") " + 
 	       "returned (null) instead of a the expected SubProcessHeavy instance!");
 	}
-	catch(Exception ex) {
+	catch(Throwable ex) {
+	  if (!(ex instanceof Exception || ex instanceof LinkageError)) {
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+	       "Job Prep Failed: " + jobID);
+	    throw (Error) ex;
+	  }
 	  LogMgr.getInstance().log
 	    (LogMgr.Kind.Ops, LogMgr.Level.Severe,
 	     "Job Prep Failed: " + jobID);

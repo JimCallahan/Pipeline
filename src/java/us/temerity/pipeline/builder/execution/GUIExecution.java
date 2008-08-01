@@ -1,4 +1,4 @@
-// $Id: GUIExecution.java,v 1.7 2008/07/21 17:25:53 jim Exp $
+// $Id: GUIExecution.java,v 1.8 2008/08/01 21:31:15 jesse Exp $
 
 package us.temerity.pipeline.builder.execution;
 
@@ -54,7 +54,7 @@ class GUIExecution
   protected void 
   handleException
   (
-    Exception ex
+    Throwable ex
   )
   {
     ExecutionPhase phase = getPhase();
@@ -117,6 +117,9 @@ class GUIExecution
     catch (Exception ex) {
       handleException(ex);  
     }
+    catch (LinkageError er ) {
+      handleException(er);
+    }
   }
   
   public void
@@ -127,6 +130,9 @@ class GUIExecution
     }
     catch(Exception ex) {
       handleException(ex);
+    }
+    catch (LinkageError er ) {
+      handleException(er);
     }
   }
   
@@ -450,6 +456,9 @@ class GUIExecution
         catch (Exception ex) {
           handleException(ex);
         }
+        catch (LinkageError er ) {
+          handleException(er);
+        }
       }
     }
 
@@ -474,6 +483,9 @@ class GUIExecution
         }
         catch (Exception ex) {
           handleException(ex);
+        }
+        catch (LinkageError er ) {
+          handleException(er);
         }
       }
     }
@@ -508,6 +520,9 @@ class GUIExecution
         catch (Exception ex) {
           handleException(ex);
         }
+        catch (LinkageError er ) {
+          handleException(er);
+        }
       }
     }
 
@@ -524,6 +539,9 @@ class GUIExecution
         }
         catch (Exception ex) {
           handleException(ex);
+        }
+        catch (LinkageError er ) {
+          handleException(er);
         }
       }
     }
@@ -563,6 +581,9 @@ class GUIExecution
         catch (Exception ex) {
           handleException(ex);
         }
+        catch (LinkageError er ) {
+          handleException(er);
+        }
       }
       private String pMessage;
     }
@@ -593,6 +614,9 @@ class GUIExecution
         }
         catch (Exception ex) {
           handleException(ex);
+        }
+        catch (LinkageError er ) {
+          handleException(er);
         }
       }
       private String pMessage;
@@ -642,6 +666,9 @@ class GUIExecution
       catch(Exception ex) {
         handleException(ex);
       }
+      catch (LinkageError er ) {
+        handleException(er);
+      }
     }
   }
 
@@ -661,6 +688,9 @@ class GUIExecution
       }
       catch(Exception ex) {
         handleException(ex);
+      }
+      catch (LinkageError er ) {
+        handleException(er);
       }
     }
   }
@@ -690,6 +720,9 @@ class GUIExecution
       catch (Exception ex) {
         handleException(ex);
       }
+      catch (LinkageError er ) {
+        handleException(er);
+      }
     }
   }
 
@@ -713,6 +746,10 @@ class GUIExecution
         }
         catch (Exception ex) {
           handleException(ex);
+          error = true;
+        }
+        catch (LinkageError er ) {
+          handleException(er);
           error = true;
         }
       }
@@ -742,6 +779,9 @@ class GUIExecution
       catch (Exception ex) {
         handleException(ex);
       }
+      catch (LinkageError er ) {
+        handleException(er);
+      }
     }
   }
 
@@ -766,7 +806,11 @@ class GUIExecution
       catch (Exception ex) {
         SwingUtilities.invokeLater(pDialog.new AdjustButtonsTask(ButtonState.EnableQuit));
         handleException(ex);
-      }    
+      }
+      catch (LinkageError er ) {
+        SwingUtilities.invokeLater(pDialog.new AdjustButtonsTask(ButtonState.EnableQuit));
+        handleException(er);
+      }
     }
   }
 
@@ -784,7 +828,10 @@ class GUIExecution
       }
       catch (Exception ex) {
         handleException(ex);
-      }    
+      }
+      catch (LinkageError er ) {
+        handleException(er);
+      }
     }
   }
   
@@ -802,6 +849,9 @@ class GUIExecution
       }
       catch (Exception ex) {
         handleException(ex);
+      }
+      catch (LinkageError er ) {
+        handleException(er);
       }
     }
   }

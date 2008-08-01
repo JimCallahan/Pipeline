@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.123 2008/07/21 17:31:10 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.124 2008/08/01 21:28:13 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -8,6 +8,7 @@ import java.util.*;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.GLAutoDrawable;
+import javax.naming.*;
 import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
@@ -7143,6 +7144,7 @@ class JNodeViewerPanel
       pOpTask = task;
     }
 
+    @Override
     public void 
     run() 
     {	
@@ -7160,6 +7162,10 @@ class JNodeViewerPanel
       catch(Exception ex) {
 	pOpTask.endTool(false); 
 	master.showErrorDialog(ex);
+      }
+      catch(LinkageError er) {
+        pOpTask.endTool(false); 
+        master.showErrorDialog(er);
       }
     }
 

@@ -1,4 +1,4 @@
-// $Id: JQueueJobSlotsPanel.java,v 1.13 2007/11/30 20:14:26 jesse Exp $
+// $Id: JQueueJobSlotsPanel.java,v 1.14 2008/08/01 21:28:13 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1068,6 +1068,10 @@ class JQueueJobSlotsPanel
  	  }
  	  catch(PipelineException ex) {
  	    master.showErrorDialog(ex);
+ 	    return;
+ 	  }
+ 	  catch (LinkageError er) {
+ 	    master.showErrorDialog(er);
  	    return;
  	  }
  	  finally {

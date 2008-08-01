@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.57 2008/07/15 18:14:46 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.58 2008/08/01 21:28:13 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -3134,6 +3134,10 @@ class JQueueJobViewerPanel
  	  }
  	  catch(PipelineException ex) {
  	    master.showErrorDialog(ex);
+ 	    return;
+ 	  }
+ 	  catch (LinkageError er) {
+ 	    master.showErrorDialog(er);
  	    return;
  	  }
  	  finally {

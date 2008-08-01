@@ -1,4 +1,4 @@
-// $Id: BaseBuilderExecution.java,v 1.4 2008/05/10 03:18:00 jesse Exp $
+// $Id: BaseBuilderExecution.java,v 1.5 2008/08/01 21:28:13 jesse Exp $
 
 package us.temerity.pipeline.builder.execution;
 
@@ -62,7 +62,7 @@ class BaseBuilderExecution
   protected abstract void
   handleException
   (
-    Exception ex
+    Throwable ex
   )
     throws PipelineException;
   

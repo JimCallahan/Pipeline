@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.47 2008/07/21 17:31:10 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.48 2008/08/01 21:28:13 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2950,6 +2950,10 @@ class JNodeFilesPanel
 	    master.showErrorDialog(ex);
 	    return;
 	  }
+	  catch (LinkageError er) {
+	    master.showErrorDialog(er);
+	    return;
+	  }
 	  finally {
 	    master.endPanelOp(pGroupID, "Done.");
 	  }
@@ -3096,6 +3100,10 @@ class JNodeFilesPanel
 	  catch(PipelineException ex) {
 	    master.showErrorDialog(ex);
 	    return;
+	  }
+	  catch(LinkageError ex) {
+	    master.showErrorDialog(ex);
+            return;
 	  }
 	  finally {
 	    master.endPanelOp(pGroupID, "Done.");
