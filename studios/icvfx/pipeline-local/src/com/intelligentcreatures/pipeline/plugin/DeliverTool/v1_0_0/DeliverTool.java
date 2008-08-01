@@ -1,4 +1,4 @@
-// $Id: DeliverTool.java,v 1.4 2008/07/21 17:25:53 jim Exp $
+// $Id: DeliverTool.java,v 1.5 2008/08/01 20:19:14 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.DeliverTool.v1_0_0;
 
@@ -302,7 +302,7 @@ class DeliverTool
     
     /* instantiate the builder */ 
     BaseBuilder builder = 
-      collection.instantiateBuilder(builderName, mclient, qclient, 
+      collection.instantiateBuilder(builderName, null, null, 
                                     true, true, false, false, params);
     if(builder == null)
       throw new PipelineException

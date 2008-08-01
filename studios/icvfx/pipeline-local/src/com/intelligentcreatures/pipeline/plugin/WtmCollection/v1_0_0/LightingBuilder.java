@@ -347,6 +347,9 @@ class LightingBuilder
     	  // Preview network
     	  pBaseSlapcompNukeNodeName = pProjectNamer.getLightingSlapcompNukeNode();
     	  pRequiredNodeNames.add(pBaseSlapcompNukeNodeName);
+
+    	  // Temp for 32bit tif
+    	  pRequiredNodeNames.add(pProjectNamer.getLightingPlateConvertNukeNode());
       }
     }
 
@@ -450,14 +453,12 @@ class LightingBuilder
   	  	pMatchMaskGeoNodeName = pShotNamer.getMatchMaskGeoNode();
   	  	pRequiredNodeNames.add(pMatchMaskGeoNodeName);
 
-  	  	pNoiseDispAllNodeName = pShotNamer.getNoiseDisplaceAllNode();
-  	  	pRequiredNodeNames.add(pNoiseDispAllNodeName);
-
   	  	pUndistorted1kQuickTimeNodeName = pShotNamer.getUndistorted1kQuickTimeNode();
   	  	pRequiredNodeNames.add(pUndistorted1kQuickTimeNodeName);
 
+  	  	// No longer needed as a prereq; we just replace it with a placeholder.
   	  	pNoiseDisplaceNodeName = pShotNamer.getNoiseApprovedDisplaceNode();
-  	  	pRequiredNodeNames.add(pNoiseDisplaceNodeName);
+  	  	pNoiseDispAllNodeName = pShotNamer.getNoiseDisplaceAllNode();
 
   	  	pRedistortUvImageNode = pShotNamer.getRedistortUvImageNode();
 		pRequiredNodeNames.add(pRedistortUvImageNode);
@@ -467,6 +468,9 @@ class LightingBuilder
 
 		pUndistorted1kQuickTimeNode = pShotNamer.getUndistorted1kQuickTimeNode();
         pRequiredNodeNames.add(pUndistorted1kQuickTimeNode);
+
+        pRequiredNodeNames.add(pShotNamer.getApprovedUndistorted2kCineonPlateNode());
+
 
         /* the background plates node */
         pUndistorted1kPlateNodeName = pShotNamer.getUndistorted1kPlateNode();
@@ -679,100 +683,9 @@ class LightingBuilder
 
     		  BuildLightingAssemblyStage stage =
     			  new BuildLightingAssemblyStage(stageInfo, pContext, pClient,
-    					  hipAssemblyNodeName, ordered, unordered, true);
+    					  hipAssemblyNodeName, ordered, unordered, true, null);
 
       		  addTaskAnnotation(stage, NodePurpose.Prepare);
-      		  stage.build();
-    	  }
-
-    	  // Build node: ambOcc_prep.cmd
-    	  String ambOccPrepCmdNodeName = pShotNamer.getLightingAmbOccPrepCmdNode();
-    	  {
-       		  WriteFileStage stage =
-    			  new WriteFileStage("CreateAmbOccPrepCmd",
-    					  "Creates a Houdini cmd which preps the Amb Occ phase.",
-    					  stageInfo, pContext, pClient,
-    					  ambOccPrepCmdNodeName, "cmd", "TextFile",
-    					  generateAmbOccPrepCmd());
-
-    		  addTaskAnnotation(stage, NodePurpose.Prepare);
-    		  stage.build();
-    	  }
-
-    	  // Build node: <vfxno>_pre_ambOcc.hip
-    	  String preAmbOccHipNodeName = pShotNamer.getLightingPreAmbOccHipNode();
-    	  {
-    		  ArrayList<String> ordered = new ArrayList<String>();
-    		  ArrayList<String> unordered = new ArrayList<String>();
-
-    		  ordered.add(hipAssemblyNodeName);
-    		  ordered.add(pRorMaskAoShaderNodeName);
-    		  ordered.add(pRorAmbOccRenderNode);
-    		  ordered.add(pPreAmbOccCmdNodeName);
-    		  ordered.add(ambOccPrepCmdNodeName);
-
-    		  unordered.add(pRorClothBmpNodeName);
-    		  unordered.add(pRorPaintBmpNodeName);
-
-    		  BuildLightingAssemblyStage stage =
-    			  new BuildLightingAssemblyStage(stageInfo, pContext, pClient,
-    					  preAmbOccHipNodeName, ordered, unordered, true);
-
-      		  addTaskAnnotation(stage, NodePurpose.Prepare);
-      		  stage.build();
-    	  }
-
-    	  // Build node: <vfxno>_ambOcc.hip
-    	  String ambOccHipNodeName = pShotNamer.getLightingAmbOccHipNode();
-    	  {
-    		  ArrayList<String> ordered = new ArrayList<String>();
-    		  ordered.add(preAmbOccHipNodeName);
-
-    		  HfsBuildStage stage =
-    			  new HfsBuildStage(stageInfo, pContext, pClient,
-    					  ambOccHipNodeName, ordered, null, false,
-    					  null, null, null, null);
-
-      		  addTaskAnnotation(stage, NodePurpose.Edit);
-      		  stage.build();
-    	  }
-
-    	  // Build node: <vfxno>_ambOcc_2k.ifd
-    	  String ambOcc2kIfdNodeName = pShotNamer.getLightingAmbOcc2kIfdNode();
-    	  {
-    		  HfsGenerateStage stage =
-    			  new HfsGenerateStage(stageInfo, pContext, pClient,
-    					  ambOcc2kIfdNodeName, pFrameRange, FRAME_PADDING,
-    					  "ifd", ambOccHipNodeName,
-    					  "/out/ambOcc", null, false, null);
-
-      		  addTaskAnnotation(stage, NodePurpose.Prepare);
-      		  stage.build();
-    	  }
-
-    	  // Build node: <vfxno>_ambOcc_2k.exr
-    	  String ambOcc2kExrNodeName = pShotNamer.getLightingAmbOcc2kExrNode();
-    	  {
-    		  HfsMantraStage stage =
-    			  new HfsMantraStage(stageInfo, pContext, pClient,
-    					  ambOcc2kExrNodeName, pFrameRange, FRAME_PADDING,
-    					  "exr", ambOcc2kIfdNodeName, 1, null, null,
-    					  "Color Image", "Natural", "Full", "-j 0",
-    					  "Mixed", true, "All", true, true, 1.0, null, 1.0,
-    					  "Default", 4096, 10, 1024, 1.0, "0 (None)", "None");
-
-      		  addTaskAnnotation(stage, NodePurpose.Focus);
-      		  stage.build();
-    	  }
-
-    	  String ambOcc2kJpgNodeName = pShotNamer.getLightingAmbOcc2kJpgNode();
-    	  {
-    		  HfsIConvertStage stage =
-    			    new HfsIConvertStage(stageInfo, pContext, pClient,
-    			    		ambOcc2kJpgNodeName, ambOcc2kExrNodeName,
-    			    		pFrameRange, FRAME_PADDING, "jpg", "8-Bit (byte)");
-
-      		  addTaskAnnotation(stage, NodePurpose.Focus);
       		  stage.build();
     	  }
 
@@ -793,12 +706,43 @@ class LightingBuilder
     		  stage.build();
     	  }
 
+    	  String noiseToUse = "";
+
+    	  try
+    	  {
+    		  pClient.getCheckedInVersion(pNoiseDisplaceNodeName, null);
+    		  noiseToUse = pNoiseDisplaceNodeName;
+  	  		  pClient.checkOut(getAuthor(), getView(), pNoiseDisplaceNodeName, null,
+                      CheckOutMode.OverwriteAll, CheckOutMethod.AllFrozen);
+  	  		  pClient.checkOut(getAuthor(), getView(), pNoiseDispAllNodeName, null,
+                      CheckOutMode.OverwriteAll, CheckOutMethod.AllFrozen);
+  	  		  pClient.lock(getAuthor(), getView(), pNoiseDisplaceNodeName, null);
+  	  		  pClient.lock(getAuthor(), getView(), pNoiseDispAllNodeName, null);
+    	  }
+    	  // Not present in the repo, so use the placeholder
+    	  catch (PipelineException e)
+    	  {
+    		  noiseToUse = pShotNamer.getLightingPlaceholderNoiseNode();
+  	  		  pClient.checkOut(getAuthor(), getView(), pProjectNamer.getRorschachNoisePlaceholderNode(), null,
+                      CheckOutMode.OverwriteAll, CheckOutMethod.AllFrozen);
+
+  	  		  // Need to copy in the placeholder noise to a node at our level
+    		  DoCopyStage stage =
+    			  new DoCopyStage("CopyPlaceholderNoise", "Copy the general placeholder noise to the shot level.",
+    					  stageInfo, pContext, pClient,
+    					  noiseToUse, pFrameRange, 4, "rat",
+    					  pProjectNamer.getRorschachNoisePlaceholderNode());
+
+      		  addTaskAnnotation(stage, NodePurpose.Edit);
+      		  stage.build();
+    	  }
+
     	  // Build node: _mask_disp.cmd
     	  String maskDispCmdNodeName = pShotNamer.getLightingMaskDispCmdNode();
     	  {
     		  HfsReadCmdStage stage =
     			  new HfsReadCmdStage(stageInfo, pContext, pClient,
-    					  maskDispCmdNodeName, pNoiseDisplaceNodeName,
+    					  maskDispCmdNodeName, noiseToUse,
     					  "/shop/mask", "InkblotMap");
 
       		  addTaskAnnotation(stage, NodePurpose.Prepare);
@@ -811,8 +755,14 @@ class LightingBuilder
     			  pShotNamer.getSequenceName()).toString() + "/presets/lighting/edit/hip/"
     			  + pShotNamer.getSequenceName() + "_preset_lgt" ;
 
-    	  NodeVersion vsn = pClient.getCheckedInVersion(presetLightHipNodeName, null);
-  	  	  if(vsn == null)
+    	  try
+    	  {
+    		  pClient.getCheckedInVersion(presetLightHipNodeName, null);
+  	  		  pClient.checkOut(getAuthor(), getView(), presetLightHipNodeName, null,
+                      CheckOutMode.OverwriteAll, CheckOutMethod.AllFrozen);
+    	  }
+    	  // Not present in the repo, so copy it
+    	  catch (PipelineException e)
     	  {
     		  DoCopyStage stage =
     			  new DoCopyStage("CopyLightRig", "Copy the general light rig to the shot level.",
@@ -823,12 +773,6 @@ class LightingBuilder
       		  addTaskAnnotation(stage, NodePurpose.Edit);
       		  stage.build();
     	  }
-  	  	  // The presets rig is in the repository, so we'll need to check it out
-  	  	  else
-  	  	  {
-  	  		  pClient.checkOut(getAuthor(), getView(), presetLightHipNodeName, null,
-                    CheckOutMode.OverwriteAll, CheckOutMethod.AllFrozen);
-  	  	  }
 
     	  // Build node: <vfxno>_pre_beauty.hip
     	  String preBeautyHipNodeName = pShotNamer.getLightingPreBeautyHipNode();
@@ -852,11 +796,23 @@ class LightingBuilder
 
     		  BuildLightingAssemblyStage stage =
     			  new BuildLightingAssemblyStage(stageInfo, pContext, pClient,
-    					  preBeautyHipNodeName, ordered, unordered, true);
+    					  preBeautyHipNodeName, ordered, unordered, true, maskDispCmdNodeName);
 
       		  addTaskAnnotation(stage, NodePurpose.Prepare);
+
+      		  // TODO: edit the link to maskDispCmdNode to be an association
       		  stage.build();
     	  }
+
+
+//    	  public void setSource(LinkMod link)
+//          throws PipelineException
+//    	  NodeMod preBeautyHipNode = pClient.getWorkingVersion(pContext.getAuthor(),
+//    			  pContext.getView(), preBeautyHipNodeName);
+//
+//
+//    	  preBeautyHipNode.setSource(new LinkMod(maskDispCmdNodeName, LinkPolicy.Association));
+
     	  // Build node: createShdDir
     	  String createShdDirNodeName = pShotNamer.getLightingCreateShdDirNode();
     	  {
@@ -945,6 +901,120 @@ class LightingBuilder
     	  }
 
 
+    	  // Build node: ambOcc_prep.cmd
+    	  String ambOccPrepCmdNodeName = pShotNamer.getLightingAmbOccPrepCmdNode();
+    	  {
+       		  WriteFileStage stage =
+    			  new WriteFileStage("CreateAmbOccPrepCmd",
+    					  "Creates a Houdini cmd which preps the Amb Occ phase.",
+    					  stageInfo, pContext, pClient,
+    					  ambOccPrepCmdNodeName, "cmd", "TextFile",
+    					  generateAmbOccPrepCmd());
+
+    		  addTaskAnnotation(stage, NodePurpose.Prepare);
+    		  stage.build();
+    	  }
+
+    	  // Build node: <vfxno>_pre_ambOcc.hip
+//    	  String preAmbOccHipNodeName = pShotNamer.getLightingPreAmbOccHipNode();
+//    	  {
+//    		  ArrayList<String> ordered = new ArrayList<String>();
+//    		  ArrayList<String> unordered = new ArrayList<String>();
+//
+//    		  ordered.add(hipAssemblyNodeName);
+//    		  ordered.add(pRorMaskAoShaderNodeName);
+//    		  ordered.add(pRorAmbOccRenderNode);
+//    		  ordered.add(pPreAmbOccCmdNodeName);
+//    		  ordered.add(ambOccPrepCmdNodeName);
+//
+//    		  unordered.add(pRorClothBmpNodeName);
+//    		  unordered.add(pRorPaintBmpNodeName);
+//
+//    		  BuildLightingAssemblyStage stage =
+//    			  new BuildLightingAssemblyStage(stageInfo, pContext, pClient,
+//    					  preAmbOccHipNodeName, ordered, unordered, true);
+//
+//      		  addTaskAnnotation(stage, NodePurpose.Prepare);
+//      		  stage.build();
+//    	  }
+
+    	  // Build node: <vfxno>_ambOcc.hip
+//    	  String ambOccHipNodeName = pShotNamer.getLightingAmbOccHipNode();
+//    	  {
+//    		  ArrayList<String> ordered = new ArrayList<String>();
+//    		  ordered.add(preAmbOccHipNodeName);
+//
+//    		  HfsBuildStage stage =
+//    			  new HfsBuildStage(stageInfo, pContext, pClient,
+//    					  ambOccHipNodeName, ordered, null, false,
+//    					  null, null, null, null);
+//
+//      		  addTaskAnnotation(stage, NodePurpose.Edit);
+//      		  stage.build();
+//    	  }
+
+    	  // Build node: <vfxno>_ambOcc.hip
+    	  String ambOccHipNodeName = pShotNamer.getLightingAmbOccHipNode();
+    	  {
+    		  ArrayList<String> ordered = new ArrayList<String>();
+
+    		  ordered.add(beautyHipNodeName);
+    		  ordered.add(pRorMaskAoShaderNodeName);
+    		  ordered.add(pRorAmbOccRenderNode);
+    		  ordered.add(pPreAmbOccCmdNodeName);
+    		  ordered.add(ambOccPrepCmdNodeName);
+
+    		  BuildLightingAssemblyStage stage =
+    			  new BuildLightingAssemblyStage(stageInfo, pContext, pClient,
+    					  ambOccHipNodeName, ordered, null, true, null);
+
+      		  addTaskAnnotation(stage, NodePurpose.Prepare);
+      		  stage.build();
+    	  }
+
+    	  // Build node: <vfxno>_ambOcc_2k.ifd
+    	  String ambOcc2kIfdNodeName = pShotNamer.getLightingAmbOcc2kIfdNode();
+    	  {
+    		  HfsGenerateStage stage =
+    			  new HfsGenerateStage(stageInfo, pContext, pClient,
+    					  ambOcc2kIfdNodeName, pFrameRange, FRAME_PADDING,
+    					  "ifd", ambOccHipNodeName,
+    					  "/out/ambOcc", null, false, null);
+
+      		  addTaskAnnotation(stage, NodePurpose.Prepare);
+      		  stage.build();
+    	  }
+
+    	  // Build node: <vfxno>_ambOcc_2k.exr
+    	  String ambOcc2kExrNodeName = pShotNamer.getLightingAmbOcc2kExrNode();
+    	  {
+    		  HfsMantraStage stage =
+    			  new HfsMantraStage(stageInfo, pContext, pClient,
+    					  ambOcc2kExrNodeName, pFrameRange, FRAME_PADDING,
+    					  "exr", ambOcc2kIfdNodeName, 1, null, null,
+    					  "Color Image", "Natural", "Full", "-j 0",
+    					  "Mixed", true, "All", true, true, 1.0, null, 1.0,
+    					  "Default", 4096, 10, 1024, 1.0, "0 (None)", "None");
+
+      		  addTaskAnnotation(stage, NodePurpose.Focus);
+      		  stage.build();
+    	  }
+
+    	  String ambOcc2kJpgNodeName = pShotNamer.getLightingAmbOcc2kJpgNode();
+    	  {
+    		  HfsIConvertStage stage =
+    			    new HfsIConvertStage(stageInfo, pContext, pClient,
+    			    		ambOcc2kJpgNodeName, ambOcc2kExrNodeName,
+    			    		pFrameRange, FRAME_PADDING, "jpg", "8-Bit (byte)");
+
+      		  addTaskAnnotation(stage, NodePurpose.Focus);
+      		  stage.build();
+    	  }
+
+    	  //
+    	  // INK CONSTANT STREAM
+    	  //
+
     	  // Build node: ink_prep.cmd
     	  String inkPrepCmdNodeName = pShotNamer.getLightingInkPrepCmdNode();
     	  {
@@ -959,42 +1029,66 @@ class LightingBuilder
     		  stage.build();
     	  }
 
-    	  // Build node: <vfxno>_pre_ink_const.hip
-    	  String preInkHipNodeName = pShotNamer.getLightingPreInkHipNode();
-    	  {
-    		  ArrayList<String> ordered = new ArrayList<String>();
-    		  ArrayList<String> unordered = new ArrayList<String>();
+//    	  // Build node: <vfxno>_pre_ink_const.hip
+//    	  String preInkHipNodeName = pShotNamer.getLightingPreInkHipNode();
+//    	  {
+//    		  ArrayList<String> ordered = new ArrayList<String>();
+//    		  ArrayList<String> unordered = new ArrayList<String>();
+//
+//    		  ordered.add(hipAssemblyNodeName);
+//    		  ordered.add(pRorInkblotRenderNodeName);
+//    		  ordered.add(pRorMaskInkShaderNodeName);
+//    		  ordered.add(pPreInkConstCmdNodeName);
+//    		  ordered.add(maskDispCmdNodeName);
+//    		  ordered.add(inkPrepCmdNodeName);
+//
+//    		  unordered.add(pRorClothBmpNodeName);
+//    		  unordered.add(pRorPaintBmpNodeName);
+//
+//    		  BuildLightingAssemblyStage stage =
+//    			  new BuildLightingAssemblyStage(stageInfo, pContext, pClient,
+//    					  preInkHipNodeName, ordered, unordered, true);
+//
+//      		  addTaskAnnotation(stage, NodePurpose.Prepare);
+//      		  stage.build();
+//    	  }
 
-    		  ordered.add(hipAssemblyNodeName);
-    		  ordered.add(pRorInkblotRenderNodeName);
-    		  ordered.add(pRorMaskInkShaderNodeName);
-    		  ordered.add(pPreInkConstCmdNodeName);
-    		  ordered.add(maskDispCmdNodeName);
-    		  ordered.add(inkPrepCmdNodeName);
+    	  // Build node: <vfxno>_ink_const.hip
+//    	  String inkHipNodeName = pShotNamer.getLightingInkHipNode();
+//    	  {
+//    		  ArrayList<String> ordered = new ArrayList<String>();
+//    		  ordered.add(preInkHipNodeName);
+//
+//    		  HfsBuildStage stage =
+//    			  new HfsBuildStage(stageInfo, pContext, pClient,
+//    					  inkHipNodeName, ordered, null, false,
+//    					  null, null, null, null);
+//
+//      		  addTaskAnnotation(stage, NodePurpose.Edit);
+//      		  stage.build();
+//    	  }
 
-    		  unordered.add(pRorClothBmpNodeName);
-    		  unordered.add(pRorPaintBmpNodeName);
-
-    		  BuildLightingAssemblyStage stage =
-    			  new BuildLightingAssemblyStage(stageInfo, pContext, pClient,
-    					  preInkHipNodeName, ordered, unordered, true);
-
-      		  addTaskAnnotation(stage, NodePurpose.Prepare);
-      		  stage.build();
-    	  }
+    	  // how to change link type? where to add the
+    	  // make mask_disp.cmd a reference?
 
     	  // Build node: <vfxno>_ink_const.hip
     	  String inkHipNodeName = pShotNamer.getLightingInkHipNode();
     	  {
     		  ArrayList<String> ordered = new ArrayList<String>();
-    		  ordered.add(preInkHipNodeName);
+    		  ArrayList<String> unordered = new ArrayList<String>();
 
-    		  HfsBuildStage stage =
-    			  new HfsBuildStage(stageInfo, pContext, pClient,
-    					  inkHipNodeName, ordered, null, false,
-    					  null, null, null, null);
+    		  ordered.add(beautyHipNodeName);
+    		  ordered.add(pRorMaskInkShaderNodeName);
+    		  ordered.add(pRorInkblotRenderNodeName);
+    		  ordered.add(pPreInkConstCmdNodeName);
+    		  ordered.add(inkPrepCmdNodeName);
+    		  ordered.add(maskDispCmdNodeName);
 
-      		  addTaskAnnotation(stage, NodePurpose.Edit);
+    		  BuildLightingAssemblyStage stage =
+    			  new BuildLightingAssemblyStage(stageInfo, pContext, pClient,
+    					  inkHipNodeName, ordered, unordered, true, null);
+
+      		  addTaskAnnotation(stage, NodePurpose.Prepare);
       		  stage.build();
     	  }
 
@@ -1053,8 +1147,12 @@ class LightingBuilder
     					    submitNodeName, sources);
     		  addTaskAnnotation(stage, NodePurpose.Submit);
 
-    		  stage.addLink(new LinkMod(pNoiseDispAllNodeName,
-    			  		LinkPolicy.Association));
+    		  if (noiseToUse.equals(pNoiseDisplaceNodeName))
+    		  {
+    			  stage.addLink(new LinkMod(pNoiseDispAllNodeName,
+    					  LinkPolicy.Association));
+    		  }
+
     		  stage.addLink(new LinkMod(pBackgroundPlateNodeName,
 				  		LinkPolicy.Association));
     		  stage.addLink(new LinkMod(pUndistorted1kQuickTimeNodeName,
@@ -1063,9 +1161,49 @@ class LightingBuilder
     		  stage.build();
     	  }
 
+    	  // FIXME: Temporary addition of 32bit undistorted plate conversion
+    	  String cinNukeScriptNode = pShotNamer.getLightingBgUd2kNukeNode();
+    	  {
+    		  NukeReadStage stage = new NukeReadStage(stageInfo, pContext, pClient,
+    				  				cinNukeScriptNode,
+    				  				pShotNamer.getApprovedUndistorted2kCineonPlateNode(),// this node needs to be checked-out
+    				  				"Error");
+    		  addTaskAnnotation(stage, NodePurpose.Prepare);
+    		  stage.build();
+    	  }
+
+    	  String plateConvertScriptNode = pShotNamer.getLightingPlateConvertNukeNode();
+    	  {
+    		  TreeMap<String,String> subst = new TreeMap<String,String>();
+    		  subst.put(cinNukeScriptNode, "Plate");
+
+    		  NukeSubstCompStage stage =
+    			    new NukeSubstCompStage
+    			      (stageInfo, pContext, pClient,
+    			    		  plateConvertScriptNode,
+    			    		  pProjectNamer.getLightingPlateConvertNukeNode(),// this node needs to be checked-out
+    			    		  subst);
+    		  addTaskAnnotation(stage, NodePurpose.Prepare);
+    		  stage.build();
+    	  }
+
+    	  String tifCompNode = pShotNamer.getPlatesBgUd2kTifCompNode();
+    	  {
+    		  NukeSubstCompStage stage =
+    			    new NukeSubstCompStage
+    			      (stageInfo, pContext, pClient,
+    			    		  tifCompNode, pFrameRange, 4, "tif",
+    			       "Process", plateConvertScriptNode,  new TreeMap<String,String>());
+
+    		  addTaskAnnotation(stage, NodePurpose.Prepare);
+    		  stage.build();
+    	  }
+
     	  /*
     	   * APPROVE NETWORK
     	   */
+
+    	  /* Approve network for Lighting has been axed for now.
 
     	  String approvedAmbOccNodeName = pShotNamer.getLightingApprovedAmbOccNode();
     	  {
@@ -1114,6 +1252,8 @@ class LightingBuilder
     		  addTaskAnnotation(stage, NodePurpose.Approve);
     		  stage.build();
     	  }
+
+    	  */
 
     	  /*
     	   * PREVIEW NETWORK
@@ -1179,7 +1319,7 @@ class LightingBuilder
     		  TreeMap<String, String> subst = new TreeMap<String, String>();
     		  subst.put(mattesSlapNkNodeName, "Mattes");
     		  subst.put(beautySlapNkNodeName, "Mask");
-    		  subst.put(ambOccSlapNkNodeName, "AmbOcc");
+    		  //subst.put(ambOccSlapNkNodeName, "AmbOcc");
     		  subst.put(plateSlapNkNodeName, "Plates");
     		  subst.put(redistortSlapNkNodeName, "Distort");
 
@@ -1231,11 +1371,27 @@ class LightingBuilder
 
     	script += "set -g START = " + pFrameRange.getStart() + "\n";
     	script += "set -g END = " + pFrameRange.getEnd() + "\n";
+
+    	script += 	"#transfer shader values\n" +
+				   	"opparm /shop/mask_ao vopdisplace1_paintBmpMap `chs(\"/shop/mask/paintBmpMap2\")`\n" +
+				   	"opparm /shop/mask_ao vopdisplace1_BmpPaint `ch(\"/shop/mask/BmpPaint2\")`\n" +
+				   	"opparm /shop/mask_ao vopdisplace1_paintBmpFilter `ch(\"/shop/mask/paintBmpFilter2\")`\n" +
+				   	"opparm /shop/mask_ao vopdisplace1_paintBmpWidth `ch(\"/shop/mask/paintBmpWidth2\")`\n" +
+					"opparm /shop/mask_ao vopdisplace1_paintBmpSx `ch(\"/shop/mask/paintBmpSx2\")`\n" +
+					"opparm /shop/mask_ao vopdisplace1_paintBmpSy `ch(\"/shop/mask/paintBmpSy2\")`\n" +
+					"opparm /shop/mask_ao vopdisplace1_clothBmpMap `chs(\"/shop/mask/clothBmpMap2\")`\n" +
+					"opparm /shop/mask_ao vopdisplace1_BmpCloth `ch(\"/shop/mask/BmpCloth2\")`\n" +
+					"opparm /shop/mask_ao vopdisplace1_clothBmpFilter `ch(\"/shop/mask/clothBmpFilter2\")`\n" +
+					"opparm /shop/mask_ao vopdisplace1_clothBmpWidth `ch(\"/shop/mask/clothBmpWidth2\")`\n" +
+					"opparm /shop/mask_ao vopdisplace1_clothBmpSx `ch(\"/shop/mask/clothBmpSx2\")`\n" +
+					"opparm /shop/mask_ao vopdisplace1_clothBmpSy `ch(\"/shop/mask/clothBmpSy2\")`\n" +
+					"opparm /shop/mask_ao properties1_vm_displacebound `ch(\"/shop/mask/vm_displacebound\")`\n";
+
     	script += "opparm ambOcc soho_diskfile " +
     			"( '$WORKING" + pShotNamer.getLightingAmbOcc2kIfdNode() + ".$F4.ifd' )" + "\n";
     	script += "opparm ambOcc vm_picture " +
 				"( '$WORKING" + pShotNamer.getLightingAmbOcc2kExrNode() + ".$F4.exr' )" + "\n";
-    	script += "mwrite $WORKING" + pShotNamer.getLightingPreAmbOccHipNode() + ".hip" + "\n";
+    	script += "mwrite $WORKING" + pShotNamer.getLightingAmbOccHipNode() + ".hip" + "\n";
 
     	return script;
     }
@@ -1265,11 +1421,27 @@ class LightingBuilder
     	script += "set -g END = " + pFrameRange.getEnd() + "\n";
     	script += "set -g SEQ = " + pShotNamer.getSequenceName() + "\n";
     	script += "set -g SHOTNUM = " + pShotNamer.getShotName() + "\n";
+
+    	script += 	"#transfer shader values\n" +
+			    	"opparm /shop/mask_inkblot paintBmpMap2 `chs(\"/shop/mask/paintBmpMap2\")`\n" +
+			    	"opparm /shop/mask_inkblot BmpPaint2 `ch(\"/shop/mask/BmpPaint2\")`\n" +
+			    	"opparm /shop/mask_inkblot paintBmpFilter2 `ch(\"/shop/mask/paintBmpFilter2\")`\n" +
+			    	"opparm /shop/mask_inkblot paintBmpWidth2 `ch(\"/shop/mask/paintBmpWidth2\")`\n" +
+			    	"opparm /shop/mask_inkblot paintBmpSx2 `ch(\"/shop/mask/paintBmpSx2\")`\n" +
+			    	"opparm /shop/mask_inkblot paintBmpSy2 `ch(\"/shop/mask/paintBmpSy2\")`\n" +
+			    	"opparm /shop/mask_inkblot clothBmpMap2 `chs(\"/shop/mask/clothBmpMap2\")`\n" +
+			    	"opparm /shop/mask_inkblot BmpCloth2 `ch(\"/shop/mask/BmpCloth2\")`\n" +
+			    	"opparm /shop/mask_inkblot clothBmpFilter2 `ch(\"/shop/mask/clothBmpFilter2\")`\n" +
+			    	"opparm /shop/mask_inkblot clothBmpWidth2 `ch(\"/shop/mask/clothBmpWidth2\")`\n" +
+			    	"opparm /shop/mask_inkblot clothBmpSx2 `ch(\"/shop/mask/clothBmpSx2\")`\n" +
+			    	"opparm /shop/mask_inkblot clothBmpSy2 `ch(\"/shop/mask/clothBmpSy2\")`\n" +
+			    	"opparm /shop/mask_inkblot vm_displacebound `ch(\"/shop/mask/vm_displacebound\")`\n";
+
     	script += "opparm ink_const soho_diskfile " +
     			"( '$WORKING" + pShotNamer.getLightingInk2kIfdNode() + ".$F4.ifd' )" + "\n";
     	script += "opparm ink_const vm_picture " +
 				"( '$WORKING" + pShotNamer.getLightingInk2kExrNode() + ".$F4.exr' )" + "\n";
-    	script += "mwrite $WORKING" + pShotNamer.getLightingPreInkHipNode() + ".hip" + "\n";
+    	script += "mwrite $WORKING" + pShotNamer.getLightingInkHipNode() + ".hip" + "\n";
 
     	return script;
     }
@@ -1300,11 +1472,14 @@ class LightingBuilder
 
         	script += "import sys, mantra" + "\n\n";
         	script += "def filterCamera():" + "\n";
-        	script += "\t" + "mantra.setproperty('image:resolution', [" +
+        	script += "\t" + "mantra.setproperty('renderer:shadingfactor', [0.25])" + "\n";
+        	script += "\t" + "map = mantra.property('image:filename')[0]" + "\n";
+        	script += "\t" + "if map.find('beauty') > 0:" + "\n";
+        	script += "\t\t" + "mantra.setproperty('image:resolution', [" +
         				width.intValue() + ", " +
         				height.intValue() + "])" + "\n";
-        	script += "\t" + "mantra.setproperty('renderer:shadingfactor', [0.25])" + "\n";
-
+        	script += "\t" + "else:" + "\n";
+        	script += "\t\t" + "mantra.setproperty('image:resolution', [256, 256])" + "\n";
     	}
     	catch (FileNotFoundException f)
     	{
@@ -1373,7 +1548,6 @@ class LightingBuilder
   private String pLightRigNodeName;
   private String pBackgroundPlateNodeName;
 
-  private String pSlapcompHip;
   private String pRedistortUvImageNode;
   private String pMattesApprovedImagesNodeName;
   private String pUndistorted1kQuickTimeNode;

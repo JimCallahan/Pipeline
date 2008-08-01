@@ -1,4 +1,4 @@
-// $Id: ShotNamer.java,v 1.38 2008/07/18 13:22:57 jim Exp $
+// $Id: ShotNamer.java,v 1.39 2008/08/01 20:19:14 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -604,6 +604,14 @@ class ShotNamer
     return path.toString();
   }
 
+  public String
+  getPlatesBgUd2kTifCompNode()
+  {
+	    Path path = new Path(pBasePaths.get(TaskType.Plates, NodePurpose.Product),
+				 new Path(AppDirs.Image2k.toDirPath(),
+					  joinNames(getFullShotName(), "bg_ud_2k_32bit")));
+	    return path.toString();
+  }
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -1176,11 +1184,20 @@ class ShotNamer
    * verification images.
    */
   public String
-  getMatchVerifyImagesNode()
+  getMatchVerifyRedImagesNode()
   {
     Path path = new Path(pBasePaths.get(TaskType.Match, NodePurpose.Focus),
 			 new Path(AppDirs.Render.toDirPath(),
-				  joinNames(getFullShotName(), "match")));
+				  joinNames("red/" + getFullShotName(), "red_match")));
+    return path.toString();
+  }
+
+  public String
+  getMatchVerifyGrayImagesNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Match, NodePurpose.Focus),
+			 new Path(AppDirs.Render.toDirPath(),
+				  joinNames("gray/" + getFullShotName(), "gray_match")));
     return path.toString();
   }
 
@@ -1196,6 +1213,16 @@ class ShotNamer
 				  joinNames(getFullShotName(), "comp_match")));
     return path.toString();
   }
+
+  public String
+  getMatchGrayCompNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Match, NodePurpose.Focus),
+			 new Path(AppDirs.Comp.toDirPath(),
+				  joinNames(getFullShotName(), "gray_match")));
+    return path.toString();
+  }
+
 
   /**
    * Returns the fully resolved name of the node containing a thumbnail image extracted
@@ -1220,6 +1247,14 @@ class ShotNamer
     return path.toString();
   }
 
+  public String
+  getMatchAttachSoundtrackNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Match, NodePurpose.Prepare),
+			 new Path(AppDirs.MEL.toDirPath(),
+				  joinNames(getFullShotName(), "attach_soundtrack")));
+    return path.toString();
+  }
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -1448,6 +1483,22 @@ class ShotNamer
     return path.toString();
   }
 
+  public String
+  getBlotFrameOffsetNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Blot, NodePurpose.Edit),
+			 joinNames(getFullShotName(), "frame_offset"));
+    return path.toString();
+  }
+
+  public String
+  getBlotPreBlotNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Blot, NodePurpose.Prepare),
+			 new Path(AppDirs.Maya.toDirPath(),
+				  joinNames(getFullShotName(), "pre_blot")));
+    return path.toString();
+  }
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -1473,7 +1524,6 @@ class ShotNamer
 			 joinNames(getFullShotName(), "blot_approve"));
     return path.toString();
   }
-
 
   /*----------------------------------------------------------------------------------------*/
   /*   N O I S E                                                                            */
@@ -2172,6 +2222,33 @@ class ShotNamer
     Path path = new Path(pBasePaths.get(TaskType.Lighting, NodePurpose.Prepare),
 			 new Path(AppDirs.Python.toDirPath(),
 					 joinNames(getFullShotName(), "beautyPreview")));
+    return path.toString();
+  }
+
+  public String
+  getLightingBgUd2kNukeNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Lighting, NodePurpose.Prepare),
+			 new Path(AppDirs.Nuke.toDirPath(),
+					 joinNames(getFullShotName(), "bg_ud_2k_cin")));
+    return path.toString();
+  }
+
+  public String
+  getLightingPlateConvertNukeNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Lighting, NodePurpose.Prepare),
+			 new Path(AppDirs.Nuke.toDirPath(),
+					 joinNames(getFullShotName(), "plate_convert")));
+    return path.toString();
+  }
+
+  public String
+  getLightingPlaceholderNoiseNode()
+  {
+    Path path = new Path(pBasePaths.get(TaskType.Lighting, NodePurpose.Prepare),
+			 new Path(AppDirs.Rat.toDirPath(),
+					 joinNames(getFullShotName(), "noise_placeholder")));
     return path.toString();
   }
 

@@ -1,4 +1,4 @@
-// $Id: BuildBlotAnimStage.java,v 1.3 2008/06/02 20:47:05 jim Exp $
+// $Id: BuildBlotAnimStage.java,v 1.4 2008/08/01 20:19:15 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
 
@@ -16,9 +16,9 @@ import java.util.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Creates the Maya scene used to animate the blot textures. 
- */ 
-public 
+ * Creates the Maya scene used to animate the blot textures.
+ */
+public
 class BuildBlotAnimStage
   extends MayaBuildStage
   implements FinalizableStage
@@ -26,31 +26,31 @@ class BuildBlotAnimStage
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
-  
+
   /**
    * Construct a new stage.
-   * 
+   *
    * @param stageInfo
    *   Class containing basic information shared among all stages.
-   * 
+   *
    * @param context
    *   The {@link UtilContext} that this stage acts in.
-   * 
+   *
    * @param client
    *   The instance of Master Manager that the stage performs all its actions in.
-   * 
+   *
    * @param nodeName
    *   The name of the node that is to be created.
-   * 
+   *
    * @param placeholderName
    *   The name of the node containing the placeholder blot anim scene.
-   * 
+   *
    * @param guidlinesName
-   *   The name of the node containing the face guidelines image. 
-   * 
+   *   The name of the node containing the face guidelines image.
+   *
    * @param attachMEL
    *   The name of the node containing the soundtrack attach MEL script.
-   * 
+   *
    * @param range
    *   The frame range to give the newly created scene.
    */
@@ -59,37 +59,37 @@ class BuildBlotAnimStage
   (
     StageInformation stageInfo,
     UtilContext context,
-    MasterMgrClient client, 
+    MasterMgrClient client,
     String nodeName,
-    String placeholderName, 
-    String guidlinesName, 
-    String attachMEL, 
+    String preBlot,
+    String guidlinesName,
+    String attachMEL,
     FrameRange range
-  ) 
+  )
     throws PipelineException
   {
-    super("BuildBlotAnim", 
-      	  "Creates the Maya scene used to used to animate the blot textures.", 
+    super("BuildBlotAnim",
+      	  "Creates the Maya scene used to used to animate the blot textures.",
       	  stageInfo, context, client,
           new MayaContext(), nodeName, true);
-    
-    pPlaceholderNodeName = placeholderName;
-    pAttachMEL = attachMEL;
+
+//    pPlaceholderNodeName = placeholderName;
+//    pAttachMEL = attachMEL;
 
     if(range != null)
       setFrameRange(range);
 
     setUnits();
 
-    addLink(new LinkMod(placeholderName, LinkPolicy.Dependency)); 
-    addSourceParamValue(placeholderName, "PrefixName", null); 
-    addSourceParamValue(placeholderName, "BuildType", "Import");
-    addSourceParamValue(placeholderName, "NameSpace", false);
+    addLink(new LinkMod(preBlot, LinkPolicy.Dependency));
+    addSourceParamValue(preBlot, "PrefixName", "prep");
+    addSourceParamValue(preBlot, "BuildType", "Reference");
+    addSourceParamValue(preBlot, "NameSpace", true);
 
-    addLink(new LinkMod(attachMEL, LinkPolicy.Dependency)); 
-    addSingleParamValue("ModelMEL", attachMEL); 
+    addLink(new LinkMod(attachMEL, LinkPolicy.Reference));
+    addSingleParamValue("InitialMEL", attachMEL);
 
-    addLink(new LinkMod(guidlinesName, LinkPolicy.Association, LinkRelationship.None, null)); 
+    addLink(new LinkMod(guidlinesName, LinkPolicy.Association, LinkRelationship.None, null));
   }
 
 
@@ -101,41 +101,41 @@ class BuildBlotAnimStage
   /**
    * Finishes off the work of the stage after it has been queued.
    */
-  public void 
-  finalizeStage() 
+  public void
+  finalizeStage()
     throws PipelineException
   {
-    removeAction();
-
-    if(pRegisteredNodeMod.getSourceNames().contains(pPlaceholderNodeName)) 
-      pClient.unlink(getAuthor(), getView(), pRegisteredNodeName, pPlaceholderNodeName); 
-    
-    pClient.link(getAuthor(), getView(), pRegisteredNodeName, pAttachMEL, 
-		 LinkPolicy.Association, LinkRelationship.None, null); 
-
-    vouch(); 
+//    removeAction();
+//
+//    if(pRegisteredNodeMod.getSourceNames().contains(pPlaceholderNodeName))
+//      pClient.unlink(getAuthor(), getView(), pRegisteredNodeName, pPlaceholderNodeName);
+//
+//    pClient.link(getAuthor(), getView(), pRegisteredNodeName, pAttachMEL,
+//		 LinkPolicy.Association, LinkRelationship.None, null);
+//
+//    vouch();
   }
 
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
- 
+
   private static final long serialVersionUID = -7748064797093838598L;
 
-  
+
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
- 
+
   /**
-   * The name of the placeholder Maya scene node. 
-   */ 
-  private String pPlaceholderNodeName; 
+   * The name of the placeholder Maya scene node.
+   */
+  private String pPlaceholderNodeName;
 
   /**
    * The name of the node containing the soundtrack attach MEL script.
-   */ 
-  private String pAttachMEL; 
+   */
+  private String pAttachMEL;
 
 }

@@ -54,7 +54,8 @@ class BuildLightingAssemblyStage
    String nodeName,
    ArrayList<String> orderedSources,
    ArrayList<String> unorderedSources,
-   boolean useGraphicalLicense
+   boolean useGraphicalLicense,
+   String noiseCmdNode
   )
     throws PipelineException
   {
@@ -67,20 +68,23 @@ class BuildLightingAssemblyStage
 
 	    addSingleParamValue("UseGraphicalLicense", useGraphicalLicense);
 
-	    if(orderedSources.size() < 1)
+	    if(orderedSources != null && orderedSources.size() < 1)
 	        throw new PipelineException
 	  	("At least one source script is required for a HfsScript Action!");
 
 	    // Add the scripts
-	    if (orderedSources != null)
+	    int order = 100;
+	    for (String source : orderedSources)
 	    {
-		    int order = 100;
-		    for (String source : orderedSources)
-		    {
+	    	// FIXME: A hack; want to make this a reference.
+	    	if (source.equals(noiseCmdNode))
+	    		addLink(new LinkMod(source, LinkPolicy.Association));
+	    	else
+    		{
 		    	addLink(new LinkMod(source, LinkPolicy.Reference));
 		    	addSourceParamValue(source, "Order", order);
 		    	order += 50;
-		    }
+    		}
 	    }
 
 	    if (unorderedSources != null)

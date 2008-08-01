@@ -10,15 +10,15 @@ import us.temerity.pipeline.stages.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   Do Copy Stage                                                 			*/
+/*   B U I L D   P R E   B L O T   A N I M   S T A G E                                              */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Creates a node which runs Maya MEL scripts on the provided scene.
+ * Creates the Maya scene used to animate the blot textures.
  */
 public
-class DoCopyStage
-  extends CopyStage
+class BuildPreBlotAnimStage
+  extends MayaBuildStage
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -38,55 +38,54 @@ class DoCopyStage
    *
    * @param nodeName
    *   The name of the node that is to be created.
+   *
+   *
+   * @param attachMEL
+   *   The name of the node containing the soundtrack attach MEL script.
+   *
+   * @param range
+   *   The frame range to give the newly created scene.
    */
   public
-  DoCopyStage
+  BuildPreBlotAnimStage
   (
-   String name,
-   String desc,
-   StageInformation stageInfo,
-   UtilContext context,
-   MasterMgrClient client,
-   String nodeName,
-   String suffix,
-   String source
+    StageInformation stageInfo,
+    UtilContext context,
+    MasterMgrClient client,
+    String nodeName,
+    String seqAnim,
+    String attachMEL,
+    String frameOffsetNode,
+    FrameRange range
   )
     throws PipelineException
   {
-	  super(name, desc,
-			  stageInfo, context, client,
-			  nodeName, suffix, source);
-  }
+    super("BuildPreBlotAnim",
+      	  "Pre-blot Maya scene.",
+      	  stageInfo, context, client,
+          new MayaContext(), nodeName, true);
 
-  public
-  DoCopyStage
-  (
-   String name,
-   String desc,
-   StageInformation stageInfo,
-   UtilContext context,
-   MasterMgrClient client,
-   String nodeName,
-   FrameRange range,
-   Integer padding,
-   String suffix,
-   String source
-  )
-    throws PipelineException
-  {
-	  super(name, desc,
-			  stageInfo, context, client,
-			  nodeName, range, padding,
-			  suffix, source);
+    if(range != null)
+      setFrameRange(range);
 
-	    addLink(new LinkMod(source, LinkPolicy.Dependency, LinkRelationship.OneToOne, 0));
+    setUnits();
 
+    addLink(new LinkMod(seqAnim, LinkPolicy.Dependency));
+    addSourceParamValue(seqAnim, "PrefixName", "lib");
+    addSourceParamValue(seqAnim, "BuildType", "Import");
+    addSourceParamValue(seqAnim, "NameSpace", true);
+
+    addLink(new LinkMod(attachMEL, LinkPolicy.Dependency));
+    addSingleParamValue("ModelMEL", attachMEL);
+
+    addLink(new LinkMod(frameOffsetNode, LinkPolicy.Dependency));
   }
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -1900200318984798400L;
+  private static final long serialVersionUID = -7748064797093838599L;
+
 
 }

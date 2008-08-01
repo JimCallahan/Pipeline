@@ -1,4 +1,4 @@
-// $Id: ProjectNamer.java,v 1.26 2008/07/18 13:22:57 jim Exp $
+// $Id: ProjectNamer.java,v 1.27 2008/08/01 20:19:14 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -386,7 +386,13 @@ class ProjectNamer
     return path.toString();
   }
 
-
+  public String
+  getBlotLibOffsetNode()
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Blot),
+			 new Path(AppDirs.MEL.toDirPath(), "blot_lib_offset"));
+    return path.toString();
+  }
 
   /*----------------------------------------------------------------------------------------*/
   /*   N O I S E   A S S E T S                                                              */
@@ -517,6 +523,13 @@ class ProjectNamer
     return path.toString();
   }
 
+  public String
+  getLightingPlateConvertNukeNode()
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Common, TaskType.Lighting),
+			 new Path(AppDirs.Nuke.toDirPath(), "plate_convert"));
+    return path.toString();
+  }
 
   /*----------------------------------------------------------------------------------------*/
   /*   R O R S C H A C H   A S S E T S                                                      */
@@ -717,6 +730,18 @@ class ProjectNamer
   }
 
   /**
+   * Returns the fully resolved name of the node containing a placeholder Maya scene which
+   * will eventually contain the match animation.
+   */
+  public String
+  getRorschachMatchAnimPlaceholderNode()
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Rorschach, TaskType.Placeholder),
+			 "ror_match");
+    return path.toString();
+  }
+
+  /**
    * Returns the fully resolved name of the node containing the face guidelines image.
    */
   public String
@@ -768,6 +793,17 @@ class ProjectNamer
   {
     Path path = new Path(pBasePaths.get(AssetType.Rorschach, TaskType.Geometry),
     		new Path(AppDirs.Otl.toDirPath(), "ror_geo"));
+    return path.toString();
+  }
+
+  /**
+   * Returns the fully resolved name of the placeholder Noise texture.
+   */
+  public String
+  getRorschachNoisePlaceholderNode()
+  {
+    Path path = new Path(pBasePaths.get(AssetType.Rorschach, TaskType.Texture),
+    		new Path(AppDirs.Rat.toDirPath(), "noise_disp"));
     return path.toString();
   }
 

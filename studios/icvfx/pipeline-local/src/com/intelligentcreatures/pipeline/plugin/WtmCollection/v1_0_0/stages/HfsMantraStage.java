@@ -281,7 +281,12 @@ class HfsMantraStage
   public String
   getStageFunction()
   {
-    return ICStageFunction.aHoudiniScene;
+	  if (pSuffix.equals("exr"))
+		  return ICStageFunction.aExrImage;
+	  else if (pSuffix.equals("rat"))
+	  	  return ICStageFunction.aRatImage;
+	  else
+		  return ICStageFunction.aRenderedImage;
   }
 
   /*----------------------------------------------------------------------------------------*/

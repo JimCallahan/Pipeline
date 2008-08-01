@@ -1,4 +1,4 @@
-// $Id: ApproveTaskTool.java,v 1.7 2008/07/21 17:25:53 jim Exp $
+// $Id: ApproveTaskTool.java,v 1.8 2008/08/01 20:19:14 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.ApproveTaskTool.v1_0_0;
 
@@ -415,7 +415,7 @@ class ApproveTaskTool
     
     /* instantiate the builder */ 
     BaseBuilder builder = 
-      collection.instantiateBuilder(pApproveBuilderID.getBuilderName(), mclient, qclient, 
+      collection.instantiateBuilder(pApproveBuilderID.getBuilderName(), null, null, 
                                     false, true, false, false, params);
     if(builder == null)
       throw new PipelineException
