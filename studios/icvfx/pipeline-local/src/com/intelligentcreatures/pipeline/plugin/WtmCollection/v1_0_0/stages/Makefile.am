@@ -19,6 +19,7 @@ java_DATA = \
   BuildMatchPrebakeStage.java \
   BuildMatchStage.java \
   BuildMatchVerifyStage.java \
+  BuildPreBlotAnimStage.java \
   BuildPreMatchStage.java \
   BuildTestRenderStage.java \
   BuildTrackingExtractStage.java \
