@@ -1,4 +1,4 @@
-// $Id: QueueJobResults.java,v 1.8 2006/07/03 06:38:42 jim Exp $
+// $Id: QueueJobResults.java,v 1.9 2008/08/02 23:43:24 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -37,7 +37,7 @@ class QueueJobResults
   public
   QueueJobResults
   (
-   Exception ex
+   Throwable ex
   )
   {
     pTimeStamp = new Date(); 

@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.89 2008/07/03 03:19:02 jim Exp $
+// $Id: UIMaster.java,v 1.90 2008/08/02 23:43:24 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -3256,7 +3256,7 @@ class UIMaster
   public void 
   showErrorDialog
   (
-   Exception ex
+   Throwable ex
   ) 
   {
     pErrorDialog.setMessage(ex);
