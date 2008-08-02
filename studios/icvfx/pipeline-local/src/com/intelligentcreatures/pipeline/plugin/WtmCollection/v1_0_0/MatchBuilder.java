@@ -1,4 +1,4 @@
-// $Id: MatchBuilder.java,v 1.15 2008/08/01 20:19:14 jim Exp $
+// $Id: MatchBuilder.java,v 1.16 2008/08/02 20:19:11 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -425,7 +425,6 @@ class MatchBuilder
 	  stage.build();
 	}
 
-	// need to change this stage to take a placeholder name and build and vouch
 	pMatchAnimNodeName = pShotNamer.getMatchAnimNode();
 	{
 	  BuildMatchStage stage =
@@ -436,7 +435,7 @@ class MatchBuilder
 				pFrameRange);
 	  addTaskAnnotation(stage, NodePurpose.Edit);
 	  stage.build();
-	  pFinalStages.add(stage);
+	  addToDisableList(pMatchAnimNodeName); 
 	}
 
 	String verifyNodeName = pShotNamer.getMatchVerifyNode();
@@ -589,48 +588,36 @@ class MatchBuilder
 
   /*----------------------------------------------------------------------------------------*/
 
-  protected
+  protected 
   class QueueDisablePass
     extends ConstructPass
   {
-    public
-    QueueDisablePass()
+    public 
+    QueueDisablePass() 
     {
-      super("Queue and Disable Actions",
+      super("Queue and Disable Actions", 
 	    "");
     }
-
+    
     /**
      * Return nodes which will have their actions disabled to be queued now.
-     */
+     */ 
     @Override
-    public LinkedList<String>
+    public LinkedList<String> 
     preBuildPhase()
     {
-        LinkedList<String> regenerate = new LinkedList<String>();
-
-        regenerate.addAll(getDisableList());
-        for(FinalizableStage stage : pFinalStages)
-        	regenerate.add(stage.getNodeName());
-
-        return regenerate;
+      return new LinkedList<String>(getDisableList());
     }
-
+    
     /**
-     * Disable the actions for the second pass nodes.
-     */
+     * Disable the actions for the second pass nodes. 
+     */ 
     @Override
-    public void
-    buildPhase()
+    public void 
+    buildPhase() 
       throws PipelineException
     {
-        for(FinalizableStage stage : pFinalStages)
-        	stage.finalizeStage();
-        //disableActions();
-        for (String s : getDisableList())
-        {
-        	System.out.println(s);
-        }
+      disableActions();
     }
 
     private static final long serialVersionUID = 6063704518254978295L;
@@ -754,5 +741,4 @@ class MatchBuilder
   private String pMatchAnimNodeName;
   private String pSoundtrackNodeName;
 
-  private ArrayList<FinalizableStage> pFinalStages;
 }

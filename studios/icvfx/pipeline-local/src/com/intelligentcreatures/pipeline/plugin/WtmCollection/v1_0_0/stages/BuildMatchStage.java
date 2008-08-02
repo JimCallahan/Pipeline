@@ -1,4 +1,4 @@
-// $Id: BuildMatchStage.java,v 1.3 2008/08/01 20:19:15 jim Exp $
+// $Id: BuildMatchStage.java,v 1.4 2008/08/02 20:19:11 jim Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
 
@@ -21,7 +21,6 @@ import java.util.*;
 public
 class BuildMatchStage
   extends MayaBuildStage
-  implements FinalizableStage
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
@@ -94,20 +93,7 @@ class BuildMatchStage
     addSingleParamValue("ModelMEL", resolutionMEL);
   }
 
-  /*----------------------------------------------------------------------------------------*/
-  /*   F I N A L I Z A B L E   S T A G E                                                    */
-  /*----------------------------------------------------------------------------------------*/
 
-  /**
-   * Finishes off the work of the stage after it has been queued.
-   */
-  public void
-  finalizeStage()
-    throws PipelineException
-  {
-	  disableAction();
-	  vouch();
-  }
 
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
