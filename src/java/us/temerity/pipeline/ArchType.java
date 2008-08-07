@@ -1,4 +1,4 @@
-// $Id: ArchType.java,v 1.4 2008/07/22 21:37:30 jesse Exp $
+// $Id: ArchType.java,v 1.5 2008/08/07 21:44:11 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -27,17 +27,8 @@ enum ArchType
   /**
    * Any of the CPU types supported by Universal Binary.
    */
-  UnivBin,
+  UnivBin;
 
-  /**
-   * A 32-bit Motorola PowerPC G4 compatible processor.
-   */
-  PPC_G4,
-  
-  /**
-   * A 64-bit Motorola PowerPC G4 compatible processor.
-   */
-  PPC_G5;
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -94,8 +85,6 @@ enum ArchType
   private static String sTitles[] = {
     "x86 (32-bit)", 
     "x86 (64-bit)", 
-    "Universal Binary (32-bit)",
-    "PowerPC G4 (32-bit)",
-    "PowerPC G5 (32-bit)"
+    "Universal Binary (32-bit)"
   };
 }

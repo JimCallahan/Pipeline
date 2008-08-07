@@ -1,4 +1,4 @@
-// $Id: OsType.java,v 1.3 2008/07/22 21:37:30 jesse Exp $
+// $Id: OsType.java,v 1.4 2008/08/07 21:44:11 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -157,16 +157,13 @@ enum OsType
     {
       ArchType types [] = {
         ArchType.x86,
-        ArchType.x86_64,
-        ArchType.PPC_G5
+        ArchType.x86_64
       };
       sUnixArch = Collections.unmodifiableList(Arrays.asList(types));
     }
     {
       ArchType types [] = {
-        ArchType.x86_64,
-        ArchType.PPC_G4,
-        ArchType.PPC_G5
+        ArchType.x86_64
       };
       sMacArch = Collections.unmodifiableList(Arrays.asList(types));
     }
