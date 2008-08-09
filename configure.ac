@@ -1808,6 +1808,7 @@ AC_CONFIG_FILES([
   src/java/scripts/plfilemgr
   src/java/scripts/pljobmgr
   src/java/scripts/plmaster
+  src/java/scripts/plmine
   src/java/scripts/plplugin
   src/java/scripts/plpluginmgr
   src/java/scripts/plqueuemgr
@@ -1826,8 +1827,9 @@ AC_CONFIG_FILES([
   src/java/scripts/debug/Makefile
   src/java/scripts/debug/plbuilder
   src/java/scripts/debug/plfilemgr
-  src/java/scripts/debug/pljobmgr
+  src/java/scripts/debug/pljobmgr  
   src/java/scripts/debug/plmaster
+  src/java/scripts/debug/plmine
   src/java/scripts/debug/plplugin
   src/java/scripts/debug/plpluginmgr
   src/java/scripts/debug/plqueuemgr

@@ -3,6 +3,7 @@ instbindir = @ROOT_INST_DIR@/@NATIVE_OSTYPE@-@NATIVE_ARCHTYPE@-Debug/bin
 
 instbin_SCRIPTS = \
   plbuilder \
+  plmine \
   plplugin \
   plpython \
   plremote \
