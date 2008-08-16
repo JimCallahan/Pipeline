@@ -1,4 +1,4 @@
-// $Id: JobMgrClient.java,v 1.9 2006/07/03 06:38:42 jim Exp $
+// $Id: JobMgrClient.java,v 1.10 2008/08/16 21:46:18 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -308,6 +308,32 @@ class JobMgrClient
   /*----------------------------------------------------------------------------------------*/
   /*   H E L P E R S                                                                        */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Handle non-successful responses.
+   * 
+   * @param obj
+   *   The response from the server.
+   */ 
+  protected void 
+  handleFailure
+  ( 
+   Object obj
+  )
+    throws PipelineException
+  {
+    if(obj instanceof FailureRsp) {
+      FailureRsp rsp = (FailureRsp) obj;
+      throw new PipelineException
+        ("The pljobmgr(1) daemon running on (" + pHostname + ") reports:\n\n" + 
+         rsp.getMessage());	
+    }
+    else {
+      disconnect();
+      throw new PipelineException
+	("Illegal response received from the pljobmgr(1) running on (" + pHostname + ")!");
+    }
+  }
 
   /**
    * Get the error message to be shown when the server cannot be contacted.
