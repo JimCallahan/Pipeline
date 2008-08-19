@@ -1,4 +1,4 @@
-// $Id: PluginMgr.java,v 1.24 2008/07/21 17:31:09 jim Exp $
+// $Id: PluginMgr.java,v 1.25 2008/08/19 19:44:34 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -603,8 +603,15 @@ class PluginMgr
 
       if(plg instanceof BaseEditor) 
 	pEditors.addPlugin(plg, cname, contents);
-      else if(plg instanceof BaseAction) 
+      else if(plg instanceof BaseAction) {
+        BaseAction action = (BaseAction) plg;
+        if(action.supportsSourceParams() && (action.getInitialSourceParams() == null))
+          throw new PipelineException
+            ("The action plugin (" + cname + ") claims to support source parameters, but " + 
+             "does not actually create any source parameters."); 
+
 	pActions.addPlugin(plg, cname, contents);
+      }
       else if(plg instanceof BaseComparator) 
 	pComparators.addPlugin(plg, cname, contents);
       else if(plg instanceof BaseTool) 

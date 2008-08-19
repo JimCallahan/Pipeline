@@ -1,4 +1,4 @@
-// $Id: SourceParamsTableModel.java,v 1.7 2007/07/31 14:58:14 jim Exp $
+// $Id: SourceParamsTableModel.java,v 1.8 2008/08/19 19:44:34 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -76,6 +76,10 @@ class SourceParamsTableModel
     /* initialize the columns */ 
     { 
       TreeMap<String,ActionParam> params = pAction.getInitialSourceParams();
+      if(params == null) 
+        throw new IllegalArgumentException
+          ("The Action (" + action.getName() + ") claims to support source parameters, " + 
+           "but does not actually create any source parameters."); 
 
       {
 	pNumColumns = params.size() + 2;
