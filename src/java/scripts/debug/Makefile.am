@@ -3,7 +3,6 @@ instbindir = @ROOT_INST_DIR@/@NATIVE_OSTYPE@-@NATIVE_ARCHTYPE@-Debug/bin
 
 instbin_SCRIPTS = \
   plbuilder \
-  plmine \
   plplugin \
   plpython \
   plremote \
@@ -23,6 +22,7 @@ if IS_UNIX
 admin_scripts = \
   plfilemgr \
   plmaster \
+  plmine \
   plpluginmgr \
   plqueuemgr \
   plvalidate
