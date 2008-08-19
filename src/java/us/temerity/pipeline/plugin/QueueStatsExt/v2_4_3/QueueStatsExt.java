@@ -1,4 +1,4 @@
-// $Id: QueueStatsExt.java,v 1.1 2008/08/18 16:54:27 jim Exp $
+// $Id: QueueStatsExt.java,v 1.2 2008/08/19 00:12:48 jim Exp $
 
 package us.temerity.pipeline.plugin.QueueStatsExt.v2_4_3;
 
@@ -376,7 +376,7 @@ QueueStatsExt
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -364826528098694531L;
+  private static final long serialVersionUID = 8015477122748659478L;
 
 
   private static final String  aDatabaseHostname = "DatabaseHostname"; 
