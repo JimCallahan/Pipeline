@@ -1,4 +1,4 @@
-// $Id: FlashEditor.java,v 1.1 2008/01/23 16:25:59 jim Exp $
+// $Id: FlashEditor.java,v 1.2 2008/09/14 22:14:42 jim Exp $
 
 package us.temerity.pipeline.plugin.FlashEditor.v2_4_1;
 
@@ -37,8 +37,6 @@ class FlashEditor
     removeSupport(OsType.Unix);
     addSupport(OsType.MacOS); 
     addSupport(OsType.Windows); 
-
-    underDevelopment(); 
   }
 
 

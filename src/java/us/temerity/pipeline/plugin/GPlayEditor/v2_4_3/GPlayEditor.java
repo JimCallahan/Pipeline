@@ -1,4 +1,4 @@
-// $Id: GPlayEditor.java,v 1.1 2008/05/30 04:23:13 jim Exp $
+// $Id: GPlayEditor.java,v 1.2 2008/09/14 22:14:42 jim Exp $
 
 package us.temerity.pipeline.plugin.GPlayEditor.v2_4_3;
 
@@ -27,8 +27,6 @@ class GPlayEditor
 	  "gplay");
 
     addSupport(OsType.Windows); 
-
-    underDevelopment(); 
   }
 
 

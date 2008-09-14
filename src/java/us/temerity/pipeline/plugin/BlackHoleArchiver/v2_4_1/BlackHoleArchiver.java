@@ -1,4 +1,4 @@
-// $Id: BlackHoleArchiver.java,v 1.1 2008/05/21 02:00:27 jim Exp $
+// $Id: BlackHoleArchiver.java,v 1.2 2008/09/14 22:14:42 jim Exp $
 
 package us.temerity.pipeline.plugin.BlackHoleArchiver.v2_4_1;
 
@@ -37,8 +37,6 @@ class BlackHoleArchiver
   {
     super("BlackHole", new VersionID("2.4.1"), "Temerity", 
 	  "A fake archiver which does nothing!");
-
-    underDevelopment(); 
   }
 
 

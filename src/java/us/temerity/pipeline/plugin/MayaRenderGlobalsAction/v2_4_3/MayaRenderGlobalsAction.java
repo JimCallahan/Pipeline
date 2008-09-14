@@ -1,4 +1,4 @@
-// $Id: MayaRenderGlobalsAction.java,v 1.3 2008/07/30 16:04:38 jim Exp $
+// $Id: MayaRenderGlobalsAction.java,v 1.4 2008/09/14 22:14:42 jim Exp $
 
 package us.temerity.pipeline.plugin.MayaRenderGlobalsAction.v2_4_3;
 
@@ -1538,8 +1538,6 @@ class MayaRenderGlobalsAction
 
     addSupport(OsType.MacOS);
     addSupport(OsType.Windows);
-
-    underDevelopment();
   }
 
 

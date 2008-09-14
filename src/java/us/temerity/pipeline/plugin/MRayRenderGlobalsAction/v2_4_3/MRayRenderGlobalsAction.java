@@ -1,4 +1,4 @@
-// $Id: MRayRenderGlobalsAction.java,v 1.3 2008/07/30 15:56:44 jim Exp $
+// $Id: MRayRenderGlobalsAction.java,v 1.4 2008/09/14 22:14:42 jim Exp $
 
 package us.temerity.pipeline.plugin.MRayRenderGlobalsAction.v2_4_3;
 
@@ -4286,8 +4286,6 @@ class MRayRenderGlobalsAction
 
     addSupport(OsType.MacOS);
     addSupport(OsType.Windows);
-
-    underDevelopment();
   }
 
 

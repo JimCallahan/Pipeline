@@ -1,4 +1,4 @@
-// $Id: MRayOptionsAction.java,v 1.1 2008/07/30 16:50:13 jim Exp $
+// $Id: MRayOptionsAction.java,v 1.2 2008/09/14 22:14:42 jim Exp $
 
 package us.temerity.pipeline.plugin.MRayOptionsAction.v2_4_3;
 
@@ -462,8 +462,6 @@ class MRayOptionsAction
 
     addSupport(OsType.MacOS); 
     addSupport(OsType.Windows);
-    
-    underDevelopment();
   }
   
   @SuppressWarnings("unchecked")

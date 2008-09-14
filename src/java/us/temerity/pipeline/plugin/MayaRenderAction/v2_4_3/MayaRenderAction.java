@@ -1,4 +1,4 @@
-// $Id: MayaRenderAction.java,v 1.1 2008/07/30 16:08:08 jim Exp $
+// $Id: MayaRenderAction.java,v 1.2 2008/09/14 22:14:42 jim Exp $
 
 package us.temerity.pipeline.plugin.MayaRenderAction.v2_4_3;
 
@@ -293,8 +293,6 @@ class MayaRenderAction
     
     addSupport(OsType.MacOS);
     addSupport(OsType.Windows);
-    
-    underDevelopment();
   }
 
 
