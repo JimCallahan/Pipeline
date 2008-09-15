@@ -1,4 +1,4 @@
 #!/bin/sh
 
-time ../../src/pipeline/config/bootstrap-suse10.1-32bit.sh \
-  SCEACSG 080610 43000 43100
+time ../../src/pipeline/config/bootstrap-centos5.1-64bit.sh \
+  SCEACSG 080915 43000 43100
