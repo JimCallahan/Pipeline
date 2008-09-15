@@ -1,4 +1,4 @@
-// $Id: MayaRenderAction.java,v 1.2 2008/09/14 22:14:42 jim Exp $
+// $Id: MayaRenderAction.java,v 1.3 2008/09/15 17:36:08 jesse Exp $
 
 package us.temerity.pipeline.plugin.MayaRenderAction.v2_4_3;
 
@@ -37,11 +37,13 @@ import us.temerity.pipeline.plugin.PythonActionUtils;
  *   Render Layer <BR>
  *   <DIV style="margin-left: 40px;">
  *     If the Maya scene has render layers, you can specify here which render layer you
- *     want to render.  Note that due to the naming restictions that Maya imposes, the
+ *     want to render.  Note that due to the naming restrictions that Maya imposes, the
  *     name of the render layer must match the directory that you are attempting to
- *     render into.  There is no restiction on the actual image name.  If you are
+ *     render into.  There is no restriction on the actual image name.  If you are
  *     attempting to render a scene with render layers without specifying this flag,
- *     your job will not produce frames in the right location.<BR>
+ *     your job will not produce frames in the right location.<BR><BR>
+ *     If this is a 3delight render, this represents the name of the 3delight render pass
+ *     to render.
  *   </DIV> <BR>
  *
  *   Particle Cache <BR>
@@ -53,8 +55,8 @@ import us.temerity.pipeline.plugin.PythonActionUtils;
  *   
  *   Renderer <BR>
  *   <DIV style="margin-left: 40px;">
- *     The type of renderer used to render the images: Hardware, Software, Mental Ray or
- *     Vector<BR>
+ *     The type of renderer used to render the images: Hardware, Software, Mental Ray, 
+ *     Vector, or 3Delight<BR>
  *   </DIV> <BR>
  *   
  *   Processors <BR>
@@ -110,7 +112,6 @@ public
 class MayaRenderAction
   extends MayaActionUtils
 {
-
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
@@ -119,7 +120,7 @@ class MayaRenderAction
   MayaRenderAction()
   {
     super("MayaRender", new VersionID("2.4.3"), "Temerity",
-	  "Renders a Maya scene.");
+          "Renders a Maya scene.");
 
     addMayaSceneParam();
     
@@ -145,8 +146,8 @@ class MayaRenderAction
       ActionParam param =
         new StringActionParam
         (aRenderLayer,
-         "The Render Layer in the maya scene that should be rendered.  " +
-         "Leave this blank to ignore renderlayers.",
+         "The Render Layer in the maya scene or the 3delight render pass that should be " +
+         "rendered.  Leave this blank to ignore renderlayers.",
          null);
       addSingleParam(param);
     }
@@ -168,6 +169,7 @@ class MayaRenderAction
       names.add("Software");
       names.add("Mental Ray");
       names.add("Vector");
+      names.add("3delight");
         
       ActionParam param =
         new EnumActionParam
@@ -192,7 +194,7 @@ class MayaRenderAction
       ActionParam param =
         new EnumActionParam
         (aVerbosity,
-         "The Log verbosity for mental ray renders",
+         "The Log verbosity for mental ray renders or 3delight renders (0-3 valid only)",
          "3",
          choices);
       addSingleParam(param);
@@ -206,7 +208,7 @@ class MayaRenderAction
       ActionParam param =
         new LinkActionParam
         (aPreRenderMEL,
-         "The MEL script to sourced before rendering begins.",
+         "The MEL script to source before rendering begins.",
          null);
       addSingleParam(param);
     }
@@ -215,7 +217,7 @@ class MayaRenderAction
       ActionParam param =
         new LinkActionParam
         (aPostRenderMEL,
-         "The MEL script to sourced after rendering ends.",
+         "The MEL script to source after rendering ends.",
          null);
       addSingleParam(param);
     }
@@ -224,7 +226,7 @@ class MayaRenderAction
       ActionParam param =
         new LinkActionParam
         (aPreLayerMEL,
-         "The MEL script to sourced before rendering each layer.",
+         "The MEL script to source before rendering each layer.",
          null);
       addSingleParam(param);
     }
@@ -233,7 +235,7 @@ class MayaRenderAction
       ActionParam param =
         new LinkActionParam
         (aPostLayerMEL,
-         "The MEL script to sourced after rendering each layer.",
+         "The MEL script to source after rendering each layer.",
          null);
       addSingleParam(param);
     }
@@ -242,7 +244,7 @@ class MayaRenderAction
       ActionParam param =
         new LinkActionParam
         (aPreFrameMEL,
-         "The MEL script to sourced before rendering each frame.",
+         "The MEL script to source before rendering each frame.",
          null);
       addSingleParam(param);
     }
@@ -251,10 +253,11 @@ class MayaRenderAction
       ActionParam param =
         new LinkActionParam
         (aPostFrameMEL,
-         "The MEL script to sourced after rendering each frame.",
+         "The MEL script to source after rendering each frame.",
          null);
       addSingleParam(param);
     }
+    
 
     {
       LayoutGroup layout = new LayoutGroup(true);
@@ -325,9 +328,9 @@ class MayaRenderAction
   public SubProcessHeavy
   prep
   (
-   ActionAgenda agenda,
-   File outFile,
-   File errFile
+    ActionAgenda agenda,
+    File outFile,
+    File errFile
   )
     throws PipelineException
   {
@@ -337,8 +340,8 @@ class MayaRenderAction
       target = agenda.getPrimaryTarget();
       String suffix = target.getFilePattern().getSuffix();
       if(suffix == null)
-	throw new PipelineException
-	  ("The target file sequence (" + target + ") must have a filename suffix!");
+        throw new PipelineException
+          ("The target file sequence (" + target + ") must have a filename suffix!");
 
       if(!target.hasFrameNumbers())
         throw new PipelineException
@@ -351,7 +354,7 @@ class MayaRenderAction
     if(sourceScene == null)
       throw new PipelineException
         ("A source MayaScene must be specified!");
-    
+
     /* MEL script paths */
     Path preRenderMEL  = getMelScriptSourcePath(aPreRenderMEL, agenda);
     Path postRenderMEL = getMelScriptSourcePath(aPostRenderMEL, agenda);
@@ -369,33 +372,48 @@ class MayaRenderAction
       hasRenderLayers = true;
     Path renderPath = agenda.getTargetPath();
     
+    int renderer = getSingleEnumParamIndex(aRenderer); 
     /* renderer command-line arguments */
     ArrayList<String> args = new ArrayList<String>();
     {
       args.add("-renderer");
 
-      int renderer = getSingleEnumParamIndex(aRenderer); 
       switch(renderer) {
       case 0: // Hardware
-	args.add("hw");
+        args.add("hw");
         break;
 
       case 1: // Software
-	args.add("sw");
+        args.add("sw");
         break;
 
       case 2: // Mental Ray
-	args.add("mr");
+        args.add("mr");
         break;
 
       case 3: // Vector
-	args.add("vr");
+        args.add("vr");
+        break;
+        
+      case 4: //3delight
+        args.add("3delight");
         break;
 
       default:
-	throw new PipelineException("Unsupported Renderer type!");
+        throw new PipelineException("Unsupported Renderer type!");
       }
 
+      
+      if (renderLayer != null ) {
+        if (renderer == 4) {
+          args.add("-rp");
+        }
+        else {
+          args.add("-rl");
+        }
+        args.add(renderLayer);
+      }
+      
       FrameRange range = target.getFrameRange();
       FilePattern fpat = target.getFilePattern();
       
@@ -405,22 +423,31 @@ class MayaRenderAction
       args.add(String.valueOf(range.getStart()));
       args.add("-e");
       args.add(String.valueOf(range.getEnd()));
-      args.add("-b");
+      
+      if (renderer == 4)
+        args.add("-inc");
+      else
+        args.add("-b");
       args.add(String.valueOf(range.getBy()));
+      
+      if (renderer == 4) {
+        args.add("-an");
+        args.add("true");
+      }
 
       
       NodeID nodeID = agenda.getNodeID();
       {
-	if (renderLayer != null) {
-	  String topPathDir = nodeID.getWorkingParent().getName();
-	  if (!topPathDir.equals(renderLayer))
-	    throw new PipelineException
-	      ("If render layers are being used, the name of the directory being rendered " +
-	       "to must correspond to the name of the render layer.");
+        if (renderLayer != null && renderer != 4) {
+          String topPathDir = nodeID.getWorkingParent().getName();
+          if (!topPathDir.equals(renderLayer))
+            throw new PipelineException
+              ("If render layers are being used, the name of the directory being rendered " +
+               "to must correspond to the name of the render layer.");
 
-	  if (PackageInfo.sOsType != OsType.Windows)
-	    renderPath = renderPath.getParentPath();
-	}
+          if (PackageInfo.sOsType != OsType.Windows)
+            renderPath = renderPath.getParentPath();
+        }
       }
       
       /* the set project option */
@@ -432,182 +459,190 @@ class MayaRenderAction
       
       /* cache dir and project stuff */ 
       {
-	Path workspaceMel = new Path(getTempPath(agenda), "workspace.mel");
-	try {
-	  FileWriter out = new FileWriter(workspaceMel.toFile());
+        Path workspaceMel = new Path(getTempPath(agenda), "workspace.mel");
+        try {
+          FileWriter out = new FileWriter(workspaceMel.toFile());
 
-	  String particleSourceName = getSingleStringParamValue(aParticleCache); 
-	  if (particleSourceName != null) {
+          String particleSourceName = getSingleStringParamValue(aParticleCache); 
+          if (particleSourceName != null) {
             if(PackageInfo.sOsType == OsType.Windows)
               throw new PipelineException
                 ("Particle cache setup features not yet supported for Windows!"); 
 
-	    ActionInfo info = agenda.getSourceActionInfo(particleSourceName);
-	    if (!info.getName().equals("MayaPartCacheGroup") || !info.isEnabled()) {
-	      throw new PipelineException
+            ActionInfo info = agenda.getSourceActionInfo(particleSourceName);
+            if (!info.getName().equals("MayaPartCacheGroup") || !info.isEnabled()) {
+              throw new PipelineException
                 ("Only nodes with the MayaPartCacheGroup Action enabled can be hooked into " +
                  "the Particle Cache source param.");
-	    }
-	    Path melScript = getMelScriptSourcePath(aParticleCache, agenda);
-	    BufferedReader in = new BufferedReader(new FileReader(melScript.toFile()));
-	    String line = in.readLine();
-	    while (line != null) {
-	     out.write(line);
-	     line = in.readLine();
-	    }
-	    in.close();
-	  }
-	  out.close();
-	}
-	catch(IOException ex) {
-	  throw new PipelineException
+            }
+            Path melScript = getMelScriptSourcePath(aParticleCache, agenda);
+            BufferedReader in = new BufferedReader(new FileReader(melScript.toFile()));
+            String line = in.readLine();
+            while (line != null) {
+             out.write(line);
+             line = in.readLine();
+            }
+            in.close();
+          }
+          out.close();
+        }
+        catch(IOException ex) {
+          throw new PipelineException
             ("Unable to write temporary MEL script file (" + workspaceMel + ") for Job " +
              "(" + agenda.getJobID() + ")!\n" + ex.getMessage());
-	}
+        }
       }
 
       {
-	{ 
-	  File script = createTemp(agenda, "mel");
-	  try {
-	    FileWriter out = new FileWriter(script);
+        { 
+          File script = createTemp(agenda, "mel");
+          try {
+            FileWriter out = new FileWriter(script);
 
-	    if(preRenderMEL != null)
-	      out.write("source \"" + preRenderMEL + "\";\n\n");
+            if(preRenderMEL != null)
+              out.write("source \"" + preRenderMEL + "\";\n\n");
 
-	    if (fixPadding)
-	      out.write("setAttr \"defaultRenderGlobals.extensionPadding\" " + 
+            if (fixPadding)
+              out.write("setAttr \"defaultRenderGlobals.extensionPadding\" " + 
                         "" + fpat.getPadding() + ";\n");
-	    
-	    out.close();
-	  }
-	  catch(IOException ex) {
-	    throw new PipelineException
+            
+            out.close();
+          }
+          catch(IOException ex) {
+            throw new PipelineException
               ("Unable to write temporary MEL script file (" + script + ") for Job " +
                "(" + agenda.getJobID() + ")!\n" +
                ex.getMessage());
-	  }
-	    
-	  args.add("-preRender");
-	  if(PackageInfo.sOsType == OsType.Windows && !hasRenderLayers)
-	    args.add("\"source " + script.getName() + "\"");
-	  else
-	    args.add("source " + script.getName());
-	}
+          }
+            
+          args.add("-preRender");
+          if(PackageInfo.sOsType == OsType.Windows && !hasRenderLayers)
+            args.add("\"source " + script.getName() + "\"");
+          else
+            args.add("source " + script.getName());
+        }
 
-	if(postRenderMEL != null) {
-	  args.add("-postRender");
-	  args.add(wrapperMEL(agenda, postRenderMEL, hasRenderLayers));
-	}
+        if(postRenderMEL != null) {
+          args.add("-postRender");
+          args.add(wrapperMEL(agenda, postRenderMEL, hasRenderLayers));
+        }
 
-	if(preLayerMEL != null) {
-	  args.add("-preLayer");
-	  args.add(wrapperMEL(agenda, preLayerMEL, hasRenderLayers));
-	}
+        if(preLayerMEL != null) {
+          args.add("-preLayer");
+          args.add(wrapperMEL(agenda, preLayerMEL, hasRenderLayers));
+        }
 
-	if(postLayerMEL != null) {
-	  args.add("-postLayer");
-	  args.add(wrapperMEL(agenda, postLayerMEL, hasRenderLayers));
-	}
+        if(postLayerMEL != null) {
+          args.add("-postLayer");
+          args.add(wrapperMEL(agenda, postLayerMEL, hasRenderLayers));
+        }
 
-	if(preFrameMEL != null) {
-	  args.add("-preFrame");
-	  args.add(wrapperMEL(agenda, preFrameMEL, hasRenderLayers));
-	}
+        if(preFrameMEL != null) {
+          args.add("-preFrame");
+          args.add(wrapperMEL(agenda, preFrameMEL, hasRenderLayers));
+        }
 
-	if (renderLayer != null && PackageInfo.sOsType == OsType.Windows) {
-	  File script = createTemp(agenda, "mel");
-	  try {
-	    FileWriter out = new FileWriter(script);
+        if (renderLayer != null && PackageInfo.sOsType == OsType.Windows && renderer != 4) {
+          File script = createTemp(agenda, "mel");
+          try {
+            FileWriter out = new FileWriter(script);
 
-	    if(preRenderMEL != null)
-	      out.write("source \"" + preRenderMEL + "\";\n\n");
-	    
-	    String targetDir = renderPath.toOsString(OsType.Unix);
-	    String srcDir = new Path(renderPath, renderLayer).toOsString(OsType.Unix);
-	    
-	    out.write
-	      ("string $command = \"import os;\\n\" + \n" + 
-	       "\"import shutil;\\n\" + \n" + 
-	       "\"\\n\" + \n" + 
-	       "\"parentDir = '" + targetDir + "'\\n\" + \n" + 
-	       "\"srcDir = '" + srcDir + "'\\n\" + \n" + 
-	       "\"files = os.listdir(srcDir)\\n\" + \n" + 
-	       "\"for file in files:\\n\" + \n" + 
-	       "\"  shutil.move(srcDir + '/' + file, parentDir)\\n\";\n" + 
-	       "\n" + 
-	       "print($command);\n" + 
-	       "python($command);\n\n");
+            if(preRenderMEL != null)
+              out.write("source \"" + preRenderMEL + "\";\n\n");
+            
+            String targetDir = renderPath.toOsString(OsType.Unix);
+            String srcDir = new Path(renderPath, renderLayer).toOsString(OsType.Unix);
+            
+            out.write
+              ("string $command = \"import os;\\n\" + \n" + 
+               "\"import shutil;\\n\" + \n" + 
+               "\"\\n\" + \n" + 
+               "\"parentDir = '" + targetDir + "'\\n\" + \n" + 
+               "\"srcDir = '" + srcDir + "'\\n\" + \n" + 
+               "\"files = os.listdir(srcDir)\\n\" + \n" + 
+               "\"for file in files:\\n\" + \n" + 
+               "\"  shutil.move(srcDir + '/' + file, parentDir)\\n\";\n" + 
+               "\n" + 
+               "print($command);\n" + 
+               "python($command);\n\n");
 
-	    out.close();
-	  }
-	  catch(IOException ex) {
-	    throw new PipelineException
+            out.close();
+          }
+          catch(IOException ex) {
+            throw new PipelineException
               ("Unable to write temporary MEL script file (" + script + ") for Job " +
                "(" + agenda.getJobID() + ")!\n" +
                ex.getMessage());
-	  }
-	  args.add("-postFrame");
-	  if(PackageInfo.sOsType == OsType.Windows && !hasRenderLayers)
-	    args.add("\"source " + script.getName() + "\"");
-	  else
-	    args.add("source " + script.getName());
+          }
+          args.add("-postFrame");
+          if(PackageInfo.sOsType == OsType.Windows && !hasRenderLayers)
+            args.add("\"source " + script.getName() + "\"");
+          else
+            args.add("source " + script.getName());
 
-	}
-	else if(postFrameMEL != null) {
-	  args.add("-postFrame");
-	  args.add(wrapperMEL(agenda, postFrameMEL, hasRenderLayers));
-	}
+        }
+        else if(postFrameMEL != null) {
+          args.add("-postFrame");
+          args.add(wrapperMEL(agenda, postFrameMEL, hasRenderLayers));
+        }
 
-	{
-	  Path tempPath = getTempPath(agenda);
-	  String ospath = env.get("MAYA_SCRIPT_PATH");
-	  if(ospath != null) {
-	    env.put("MAYA_SCRIPT_PATH",
-	      tempPath.toOsString() + File.pathSeparator + ospath);
-	  }
-	  else {
-	    env.put("MAYA_SCRIPT_PATH", tempPath.toOsString());
-	  }
-	}
-	
-	if (!fixPadding ) {
-	  args.add("-pad");
-	  args.add(String.valueOf(fpat.getPadding()));
-	}
+        {
+          Path tempPath = getTempPath(agenda);
+          String ospath = env.get("MAYA_SCRIPT_PATH");
+          if(ospath != null) {
+            env.put("MAYA_SCRIPT_PATH",
+              tempPath.toOsString() + File.pathSeparator + ospath);
+          }
+          else {
+            env.put("MAYA_SCRIPT_PATH", tempPath.toOsString());
+          }
+        }
+        
+        if (!fixPadding && renderer != 4) {
+          args.add("-pad");
+          args.add(String.valueOf(fpat.getPadding()));
+        }
       }
-      
-      args.add("-fnc");
-      args.add("3");
 
       args.add("-of");
       args.add(fpat.getSuffix());
 
-      args.add("-rd");
-      args.add(renderPath.toOsString());
+      if (renderer != 4) {
+        args.add("-fnc");
+        args.add("3");
+
+        args.add("-rd");
+        args.add(renderPath.toOsString());
+      }
 
       {
         Path path = new Path(nodeID.getName());
-        args.add("-im");
-        args.add(path.getName());
+        if (renderer == 4) { //3delight special naming sauce
+          if (fpat.getPadding() != 4)
+            throw new PipelineException("The 3Delight render only supports frame padding of 4");
+          String outputName = path.getName() + ".#." + fpat.getSuffix();
+          Path outputPath = new Path(renderPath, outputName);
+          
+          args.add("-img");
+          args.add(outputPath.toOsString());
+        }
+        else {
+          args.add("-im");
+          args.add(path.getName());
+        }
       }
       
-      if (renderLayer != null) {
-	args.add("-rl");
-	args.add(renderLayer);
+      {
+        String camera = getSingleStringParamValue(aCameraOverride);
+        if(camera != null) {
+          args.add("-cam");
+          args.add(camera);
+        }
       }
 
       {
-	String camera = getSingleStringParamValue(aCameraOverride);
-	if(camera != null) {
-	  args.add("-cam");
-	  args.add(camera);
-	}
-      }
-
-      {
-	Integer procs = (Integer) getSingleParamValue(aProcessors);
-	if(procs != null) {
+        Integer procs = (Integer) getSingleParamValue(aProcessors);
+        if(procs != null) {
           switch(getSingleEnumParamIndex(aRenderer)) {
           case 1: // Software
             {
@@ -631,14 +666,32 @@ class MayaRenderAction
               args.add("-rt");
               args.add(procs.toString());
             }
+            break;
+          case 4:
+            {
+              if(procs < 0)
+                throw new PipelineException
+                  ("The 3delight renderer requires that the Processors parameter is " +
+                   "non-negative.");
+              args.add("-cpus");
+              args.add(procs.toString());
+            }
+            break;
           }
         }
       }
 
-      if(getSingleEnumParamIndex(aRenderer) == 2) { // Mental Ray
-	String verb = getSingleStringParamValue(aVerbosity);
-	args.add("-v");
-	args.add(verb);
+      if(renderer == 2) { // Mental Ray
+        String verb = getSingleStringParamValue(aVerbosity);
+        args.add("-v");
+        args.add(verb);
+      }
+      else if (renderer == 4) { // 3delight
+        String verb = getSingleStringParamValue(aVerbosity);
+        if (Integer.valueOf(verb) > 3)
+          throw new PipelineException("3delight only supports verbosity levels up to 3");
+        args.add("-statl");
+        args.add(verb);
       }
 
       args.addAll(getExtraOptionsArgs());
@@ -649,35 +702,35 @@ class MayaRenderAction
     String program = "Render";
     if (PackageInfo.sOsType == OsType.Windows) {
       program = "Render.exe";
-      if (renderLayer == null)
-	/* create the process to run the action */
-	return createSubProcess(agenda, program, args, env,
-	    agenda.getTargetPath().toFile(), outFile, errFile);
+      if (renderLayer == null || renderer == 4)
+        /* create the process to run the action */
+        return createSubProcess(agenda, program, args, env,
+            agenda.getTargetPath().toFile(), outFile, errFile);
       else {
-	File pyScript = createTemp(agenda, "py");
-	try {
-	  FileWriter out = new FileWriter(pyScript);
-	  out.write("import os\n");
-	  out.write("import shutil\n");
-	  out.write(getPythonLaunchHeader());
-	  out.write(createMayaRenderPythonLauncher(args) + "\n");
-	  String targetDir = escPath(renderPath.toOsString());
-	  String srcDir = escPath(new Path(renderPath, renderLayer).toOsString());
-	  out.write("parentDir = \'" + targetDir + "'\n" + 
+        File pyScript = createTemp(agenda, "py");
+        try {
+          FileWriter out = new FileWriter(pyScript);
+          out.write("import os\n");
+          out.write("import shutil\n");
+          out.write(getPythonLaunchHeader());
+          out.write(createMayaRenderPythonLauncher(args) + "\n");
+          String targetDir = escPath(renderPath.toOsString());
+          String srcDir = escPath(new Path(renderPath, renderLayer).toOsString());
+          out.write("parentDir = \'" + targetDir + "'\n" + 
                     "srcDir = \'" + srcDir + "'\n" + 
                     "\n" + 
                     "files = os.listdir(srcDir)\n" + 
                     "for file in files:\n" + 
                     "  shutil.move(srcDir + \'/\' + file, parentDir)");
-	  out.close();
+          out.close();
         } 
-	catch (IOException ex) {
-	  throw new PipelineException
-	    ("Unable to write temporary MEL script file (" + pyScript + ") for Job " +
-	     "(" + agenda.getJobID() + ")!\n" +
-	     ex.getMessage());
+        catch (IOException ex) {
+          throw new PipelineException
+            ("Unable to write temporary MEL script file (" + pyScript + ") for Job " +
+             "(" + agenda.getJobID() + ")!\n" +
+             ex.getMessage());
         }
-	return createPythonSubProcess(agenda, pyScript, null, env, outFile, errFile);
+        return createPythonSubProcess(agenda, pyScript, null, env, outFile, errFile);
       }
     }
     else {
@@ -721,9 +774,9 @@ class MayaRenderAction
     }
     catch(IOException ex) {
       throw new PipelineException
-	("Unable to write temporary MEL script file (" + script + ") for Job " +
-	 "(" + agenda.getJobID() + ")!\n" +
-	 ex.getMessage());
+        ("Unable to write temporary MEL script file (" + script + ") for Job " +
+         "(" + agenda.getJobID() + ")!\n" +
+         ex.getMessage());
     }
 
     if((PackageInfo.sOsType == OsType.Windows)  && !hasRenderLayers)
@@ -766,10 +819,10 @@ class MayaRenderAction
     for (int i = 0; i < args.size(); i++) {
       String arg = args.get(i);
       if (arg.contains("\\"))
-	arg = escPath(arg);
+        arg = escPath(arg);
       buf.append("'" + arg + "'");
       if (i != args.size() -1)
-	buf.append(",");
+        buf.append(",");
     }
 
     buf.append("])\n");
@@ -784,7 +837,7 @@ class MayaRenderAction
   /*----------------------------------------------------------------------------------------*/
 
   private static final long serialVersionUID = 472998966492199733L;
- 
+
   public static final String aCameraOverride = "CameraOverride";
   public static final String aRenderLayer    = "RenderLayer";
   public static final String aParticleCache  = "ParticleCache";
