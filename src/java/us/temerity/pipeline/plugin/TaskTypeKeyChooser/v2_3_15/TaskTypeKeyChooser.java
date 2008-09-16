@@ -1,4 +1,4 @@
-// $Id: TaskTypeKeyChooser.java,v 1.3 2008/03/23 19:06:26 jim Exp $
+// $Id: TaskTypeKeyChooser.java,v 1.4 2008/09/16 23:15:51 jesse Exp $
 
 package us.temerity.pipeline.plugin.TaskTypeKeyChooser.v2_3_15;
 
@@ -93,27 +93,21 @@ class TaskTypeKeyChooser
   )
     throws PipelineException
   {
-    BaseAnnotation task = null;
-    for (BaseAnnotation annot : annots.values()) {
-      if ( (annot.getName().equals("Task") || annot.getName().equals("SubmitNode") )  && 
-            annot.getVersionID().equals(new VersionID("2.3.2")))
-        task = annot;
-      if (task != null)
-        break;
-    }
-    if (task == null)
-      return false;
-    
     String chosen = (String) getParamValue(aTaskType);
     if (chosen == null)
       return false;
     
-    String given = (String) task.getParamValue(aTaskType);
-    if (given == null)
-      return false;
-    
-    if (chosen.equals(given))
-      return true;
+    for (String annotName : annots.keySet()) {
+      if ( (annotName.equals("Task") || annotName.startsWith("AltTask") )) {
+        BaseAnnotation task = annots.get(annotName);
+        String given = (String) task.getParamValue(aTaskType);
+        if (given == null)
+          return false;
+        
+        if (chosen.equals(given))
+          return true;
+      }
+    }
     return false;
   }
 
