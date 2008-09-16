@@ -373,7 +373,7 @@ class MayaCurvesExportAction
 	out.write("// NEW SCENE SCRIPT\n" +
 	          "file -open -f \"" + newScene + "\";\n");
 	out.write
-	  ("python(\"source = open('" + python.toString() + "', 'rU')\");\n" + 
+	  ("python(\"source = open('" + escPath(escPath(python.toString())) + "', 'rU')\");\n" + 
 	   "python(\"exec source\");");
 	if (cleanUp)
 	  out.write
