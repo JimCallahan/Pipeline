@@ -1,0 +1,32 @@
+Slice -
+  A percentage of the queue
+  The number of machines it currently has
+  The percentages of each bucket it wants
+  The percentages of each bucket it has
+  A list of jobs that belong to the slice
+
+Job
+  Which slice it belongs to
+  Which buckets it can fit into
+  How long it needs to run
+  Time when it was submitted
+  Time when it started running
+  Hardware Keys
+  Amount of RAM
+
+Machine
+  Hardware Group
+  Amount of RAM
+  Current Job
+
+Bucket
+  List of Machines
+  Hardware Group
+  Amount of RAM
+
+The queue:
+
+static class:
+  has a list of Jobs
+  has a list of Machines
+  has a list of Buckets

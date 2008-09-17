@@ -1,0 +1,72 @@
+Packages cannot declare the same variable more than once in any heirarchy traversal.  So if you declare "Path" as a top level variable, you cannot have an OS specific "Path" variable.  However, if you declare a Unix "Path" variable, you could still have a Windows x86 and Windows x86_64 "Path" variable, since they could never end up in the same final result.
+
+How do we enforce this?  We do a path query when we try to add a variable.
+first check 
+
+Classes:
+
+PackageCommon:
+  The OsTypes supported
+    The ArchTypes supported for each OsType
+      The Variables at each level
+  PackageMod:
+    create entry
+    Set entry value
+    add OSType
+
+  PackageVersion:
+    VersionID
+    Message
+ToolsetCommon:
+  An ordered list of packages and their associated versions that make up the toolset.
+  The name of the toolset.
+  A list of the indices of the toolset which provide a given variable  ?
+  ----------
+  getters for the environment (3 varieties, plain, with user, with user + view)
+  a method which creates the environment from the component packages (run at toolset creation).
+  hasPackages
+  get OSes supported
+
+  How does OSA (OsType/ArchType) support work with Toolsets?  A Toolset is made up of packages.  Is there a reason to have a Toolset without support for a operating system?  Well, maybe.  You might want to build a Linux only toolset for some nodes in a tree.  So by default, a toolset should support all the OSA's that its packages report it supports.  If a package has High-Level variables, it is considered to support all OSA's underneath that.  So a Windows variable will enable the Windows:x86 and the Windows:x86_64 OSA's.  However, this can be overriden at the toolset level.  And a list of explicitly supported OS's can be supplied.  This list will be vetted for correctness (ie, if you say you want Mac support and there are no Mac variables and no Package level variables, Mac support will not be included).  Internally, we'll deal with this with an OSA class: MachineType sounds good for that (name subject to Jim's changes).  Once that list is supplied it will be passed along to new versions (though of course it can be changed in a new version).  Toolsets will actually maintain two internal list of MachineTypes.  The actual list of types that the toolset thinks it can support and the list of types it actually supports.  This will make doing nice little GUI graphics showing what is currently enabled and disabled feasible.  This is definitely going to mean some changes to the current Toolset/Package panels.  More on that later.
+
+  So the whole toolset building thing.  It seems like there is no reason to build two different init methods.  So the init() method should always flag potential conflicts and the like.  These will never actually exist in an ToolsetVer, only a ToolsetMod, but since they're not being saved out, moving these into the parent class should not be an issue at all. 
+
+
+  ToolsetVersion:
+    VersionID
+    Message
+    -----------
+    getTimestamp()
+    getAuthor(), etc.
+
+  ToolsetMod:
+    hasModifiablePackage
+    methods related to conflicts
+    isFreezable?
+    addPackage ?
+    
+
+
+PluginMenuLayout
+
+
+
+JManageToolsetsDialog - dialog for creating and editing toolsets and packages
+
+JBaseToolsetPluginsPanel - Base Class of Panels for editing menus
+
+JToolsetDetailsDialog - Displays the Env. Variables in a toolset
+
+
+So we have three classes, ToolsetCommon, ToolsetVersion, and ToolsetMod.  (In a change, ToolsetMod's are now being writen to GLUE as well, since we're adding in the idea of having toolsets 'underDevelopment' so they can be tested in actual node networks.  That is slightly off topic but relevant.)  The real issue is how to create/position the data structures so that everything works right.  The core of this is the difference between creating a toolset and reading one from GLUE.
+When we create a new toolset, the current constructor methodology is to pass a list of PackagesCommon in which then generates the toolset.  We clearly need to keep this methodology existance for at least ToolsetMod.  Everytime we make a new working version of a toolset, we have to actually generate it, so we can check for conflicts and because the user is almost guaranteed to want to test it out.
+Now when we create a ToolsetVersion from a ToolsetMod, we shouldn't have to regenerate it.  Assuming the ToolsetMod is in a state which is anemable to being frozen, we can just copy the package list and generated environment and we're ready to go.  Otherwise we just throw a PipelineException (since you cannot make a ToolsetVersion until you've resolved all the conflicts and non-frozen Packages in the ToolsetMod).  That means a ToolsetVersion has a nice easy constructor.
+However, while reading things off disks gets a bit more complicated.  In either case, we're going to have some issue with what happens when they get read from disk, since the GLUE file will only have the list of packages, but not the actual environment.  Right now that problem doesn't exist because the env is cooked into the toolset glue file, so it is never being rebuilt once it is created.  And since there is no concept of a persistent ToolsetMod, we didn't have to deal with that at all.  However, these things are no longer going to be true.  We could extend the persistence concept to ToolsetMod, as well, which would mean all the conflict info, etc. would be written to GLUE as well.  Therefore, you would never have to worry about recomputing a toolset read from GLUE since it would have everything saved into the GLUE file already.  And when you went to modify the ToolsetMod, you'd be creating a new toolset anyway, using the constructor that passes a list of PackageCommons, so it would have all the information it would need.  This seems to be the simplest solution to the problem.
+
+The only drawback to this is that it is more heavyweight than the other option being discussed.  Which is essentially that we just store only the list of packages in GLUE and we rebuild the toolset only when someone (a user or a job) needs it.  So there is no need to keep a majority of the toolset environments in memory.  Instead we just keep the names of the toolset and the list of packages in memory (to make things like the ManageToolsets panel nice and snappy) and only generate the toolset when someone wants to see it.  This complicates things somewhat in terms of toolset generation.  We still need to have the abilities discussed in the last entry.  But we also need the ability to pass in a list of PackageCommons to an exist toolset and have it rebuild itself from that.  This should never cause problems . . . but we need to make sure we're never passing around a toolset in lightweight mode when it shouldn't be lightweight.  We also need to make sure that we pass the right list of PackageCommons into the toolset.  We'll be doing error checking in there to ensure that the list of packages matches the list of packages the toolset is supposed to have.  We can either pass in a specific list or just have MasterMgr hand the toolset a handle to all of the packages and it can choose the ones it wants.  This is slower than the first option in operation, the first time we ask for a given toolset.  After that the speed is comperable to the first solution.  However this should take less time when starting Pipeline, since there is less to read off disk (though I'm not convinced the savings will be all that significant.  I think one of the biggest speed limitations is the number of files, not a difference of a few K in an individual file's size).  The memory footprint this of this option will almost always be lower than the first, since reading all the toolsets in memory should be extremely rare.
+
+There is a third option which somewhat combines the first two.  We still write GLUE files for all toolset fields, just like in the first option.  However, instead of reading all the toolsets off disk at startup, we just read a cache file which contains all the toolset and package names.  Then, when someone actually needs a specific toolset or package, we read it off disk.  So we only load into the memory the cache file and the specific packages/toolsets that are being used.  This should have about the same memory footprint as the second option, but will be even slower the first time something is asked for, since it will always have to go to disk.  After that, the speed is the same.  The advantage this has over the second option is that it makes the constructor situation easier (there is no need to have lightweight toolsets, etc).  
+
+There is a modification of 3, which we can call 3a.  The new toolset setup is going to allow you to hide versions of toolsets or even entire toolsets.  So what you see in the list of existing toolsets is a filtered list (with a control to flip all of them on and off).  So we could save out a cache of all the toolsets, including which ones are hidden and then only load the visible ones at start-up.  Those are the ones that people will most likely be using, so it makes sense to have them in memory.  Then we load the hidden ones off disk when someone asks for them.  A sort of smart caching.  Of course, if the studio doesn't have any hidden toolsets, we don't get any memory benefits.  But I would assume that most studios will have less than 10 visible toolsets at any one time, so we should get signifigant savings as time goes on.
+
+I think the third option is the worst of the three.  It has the potential to make interactive speed in the ManageToolsets dialog the slowest.  If we're going to go with dynamic loading, the second option provides better speed and the same small memory footprint.  I'm torn between option 1 and option 2.  2 is definitely more efficient, but slower and slightly less clean to implement.  1 is faster and cleaner, but the amount of memory need is O(n) to the number of toolsets.   3a preserves the cleanness, gets the speed for the toolsets that will be frequently used, but still has quite nice memory footprint. 

@@ -1,0 +1,32 @@
+DataStructure needs the following things
+
+What subBuilder
+
+Information.
+
+SetupPasses to be run
+Namers to be run with a SetupPass
+
+as stuff is added it needs to be added to the list and run in the right places.
+
+How easy is it to keep track of 'new stuff' in a Builder.
+
+What if Builders tag SubBuilders with the pass that they were added in.  Then the Executor can just ask them for all Subs created in a certain pass.  It never needs to particularly keep track of what has already been run or not run, because everything will have been run.
+
+How does a builder know what pass it is?  Right now, it is a counter being incremented inside BaseBuilder.  If that is going to be changed, then it should be something that users cannot monkey with.  What if the executor keeps track of what pass each Builder is on and tells the Setup Pass when it runs which pass it is.  So that it then knows how to set the Builder correctly.
+
+How is the pass number used . . .
+Needs to be right for replaceParam in BaseUtil
+Needs to be right for assignCommandLineParams() in BaseBuilder (Execution)
+In GUI code.
+
+So setting it in the run() pass of the SetupPass would not be a terrible idea.  In fact, the SetupPass should just bump the current pass when it finishes.  hmmm  SetupPass already handles all of the which Namers have run code (which is hot).  So I don't have to worry about that.  All I have to worry about is which SubBuilders have run and the currentPass stuff can handle that.
+
+Once a SetupPass is run, ask it what subBuilders were created in that currentPass.  Add the SetupPasses from that to the head of the queue (in reverse order).
+
+So each time a setup pass is run, the currentPass is bumped.  We do the check after any subbuilders would have been added, so that the isSetupFinished will return the right values.
+
+
+
+
+Builder GUI Execution Path

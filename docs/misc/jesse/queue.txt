@@ -1,0 +1,39 @@
+Rendertime it goes to a particular host group in rush.  On top of that it can be restricted in terms of RAM or arch type.
+
+The balancing works by picking anything about any job
+jobid, artist, shot, sequence, hostgroup, criteria
+
+hierarchy setup.  Everything in a given show by a given artist needs to have highest priority.
+
+organize things by artists
+
+Entire Farm
+	Split by Shows
+		then sort by a given artist 
+
+
+percentages at different hierarchical levels.
+
+You can also push individual jobs higher 
+
+Balancer which takes high level criteria, looks at jobs on the farm and assigns them a number of procs.
+
+
+From certain artists and certain sequences.  Maybe by department, maybe by individual artist.
+
+Rebalances every 30 seconds
+
+As the hardware key type requirements of jobs change.
+
+Allocation is based on the sorts of jobs that are waiting to run, and so will change which machines are actually in each selection group to best match the criteria of the jobs that are waiting to run.  So while a project may have 60% of the queue, it will have an ever changing 60% of the queue based upon the machine resources that it needs.
+
+Machine qualifications:
+  OS
+  RAM
+  Node licenses
+
+Job qualifications:
+  Shot
+  Sequence
+  Artist
+  Floating Licenses

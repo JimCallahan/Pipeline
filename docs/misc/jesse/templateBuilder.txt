@@ -1,0 +1,78 @@
+Rules.
+  + Only works with nodes using the Task Annotation system.  That gives us the means to figure out what nodes are meant to be copied and which are just sources.  At some point in the future, maybe we could extend it to work with non-Task networks (using a more generic annotation system), but for the time being Task networks it is.
+
+So what does the template need?  It needs a source node in the network we are going to use as the template.  I think we can make this any node, since we'll be searching the node networks anyway.
+
+Things we need to search networks for.
+  +  The Submit and the Approve node.  These represent the two most upstream nodes that we're going to make.  To find them, we need to search upstream for an edit node.  Once we find the edit node, we search downstream from that to find the Submit and Approve nodes.  While we're going the searching, we should be caching all the annotations at each node so we don't have to look for them again.
+
+  + Starting at the Submit node and the Approve node, we need to search upstream for all the nodes we are going to build.  We want to build up some lists.  A list, for each node, of all the nodes downstream of it.  And a list for each node of all the nodes upstream of this.  This way, we can figure out which nodes have nothing upstream of them and these are what we want to build.  One of these lists should also be used to determine which nodes we've already searched, so we don't have to do it again (since the Approve and the Submit network share nodes).
+
+  + We also need to check all the products coming into nodes, make sure that they are either Products of another task or have no Task annotations at all.  All product NodeMods needs to be saved so we can check them out before we start working.
+
+So now that we've got all those things.
+  + We get all the product nodes.  (either frozen or locked, depending on how they are in the template).
+  + Then we build nodes, starting with ones with nothing upstream of them.  Once we build a node, we need to remove it from all the upstream list of all the nodes that are downstream of it.  Continue building nodes with nothing upstream of them until done.
+  + Queue Everything that needs to be finalized.  (how do we know what needs to be finalized?)
+  + Finalize everything
+  + Queue the submit and appove node
+  + Check-in the submit and the approve node.
+
+
+So, maps, what are the sorts of things we might want to represent with maps.
+
+Render passes.
+Characters in a shot
+Animation being exported from a shot.
+
+Again, these are all string replacement underneath, so at its heart, it needs to boil down to a key,value list of what is going to get replaced.  We want to keep this as simple as possible so that they are easy for people to write by hand.  If this turns into some sort of crazy construction, it will definitely make Templates harder to use.
+
+There seem to be two different constructions I can think of.
+
+key,<list of values>, where I basically do everything size(list) times replacing key with a different value each time.  This works great if there is only one key to replace.  But there are issues that come into play as soon as there is more than one key.  What combination of these things should I run it on?  
+
+list<list<key,value>.  So we have an internal list which is all the substitutions for one run of the map, and then an external list which is all possible substitutions.  This should work in all cases, but requires a lot more complexity than the first approach, in situations where there is only a single replacement being made.
+
+The difference would be.
+ASSET,<jeff,bob,harry>
+vs.
+<<ASSET,jeff>>,<<ASSET,bob>>,<<ASSET,harry>>
+
+obviously if TYPE was also part of this, we'd have problems in the first case.
+ASSET,<jeff,bob,harry>
+TYPE,<char,extra> // what goes with what here?
+vs.
+<<ASSET,jeff>,<TYPE,char>>,<<ASSET,bob>,<TYPE,char>>,<<ASSET,harry>,<TYPE,extra>> //very clear.
+
+TreeMap<String, ArrayList<TreeMap<String, String>>>
+
+
+Maps:  So what is a map. It is essentially a subfunction we are going to call multiple times to generate some stuff.  It may not be only one node.  Instead it is going to be a tag that gets put on the node.  The tag essentially means that additional substitutions are added to the environment.  Lets call each tag a context
+
+So, each map is named.  When you link to a node that is in a map, you are linking to all the nodes the map generates that are outside of the context that you're in.  Simple example.
+
+Two maps.  the 'character' map and the 'export map'.  
+
+character map = <<ASSET,jeff>,<TYPE,char>>,<<ASSET,bob>,<TYPE,char>>,<<ASSET,harry>,<TYPE,extra>>
+export map = <<EXPORT, geo>,<EXPORT,anim>>
+
+Obviously, this makes no sense, but just go with it. So we've now got two nodes.
+
+NodeA (tagged as character) and NodeB (tagged as character and export)
+So NodeA <--- NodeB
+
+So when we run the maps, we get the following
+                     ----------- NodeB(Jeff, Char, geo)
+NodeA(Jeff, Char) <--|
+                     ----------- NodeB(Jeff, Char, export)
+
+
+                     ----------- NodeB(bob, Char, geo)
+NodeA(bob, Char) <--|
+                     ----------- NodeB(bob, Char, export)
+
+etc . . . 
+
+This should happen automatically.  Just by creating the link between A and B, you are stating you want this to happen.  No need for a special annotation on the downstream side.
+
+Seems simple and easy to implement.  There must be something wrong with it.

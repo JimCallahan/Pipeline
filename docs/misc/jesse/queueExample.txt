@@ -1,0 +1,21 @@
+50 machines in the queue.  Two buckets of machines, mA is 45 machines, mB is 5 machines
+
+There are three slices.  Slice3 is in a Feast state (over quota) so is not being considered.
+
+**************************
+
+Slice1 gets 20% of the queue.  It currently has 80% of its quota (8 machines out of 10).  90% of its jobs need mB, while 10% can run anywhere
+
+Slice2 gets 20% of the queue.  It currently has 80% of its quota (8 machines out of 10).  100% of its jobs can run anywhere.
+
+A machine in mB becomes free.  The two slices have identical quota requirements.  If we consider all the jobs in each slice, the mB jobs in Slice1 can only run on 10% of the queue, while all other jobs can run on 100% of the queue.  Therefore we give the machine to Slice1 for the mB job.
+
+
+***************************
+
+Slice1 gets 20% of the queue.  It currently has 80% of its quota (8 machines out of 10).  90% of its jobs need mB, while 10% can run anywhere
+
+Slice2 gets 40% of the queue.  It currently has 80% of its quota (16 machines out of 20).  100% of its jobs can run anywhere.
+
+
+A machine in mA becomes free.  The two slices have identical quota requirements.  100% of Slice2's jobs can run on this machine, but only 10% of Slice1's jobs can run.
