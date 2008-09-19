@@ -1,4 +1,4 @@
-// $Id: TaskBuilder.java,v 1.6 2008/06/26 21:31:34 jesse Exp $
+// $Id: TaskBuilder.java,v 1.7 2008/09/19 03:38:21 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_1;
 
@@ -55,7 +55,7 @@ class TaskBuilder
   {
     super(name, desc, mclient, qclient, builderInformation);
     
-    pAnnotTaskTypeChoices = TaskType.titles(); 
+    pAnnotTaskTypeChoices = TaskType.titlesNonCustom(); 
     
     pEntityType = entityType;
   }

@@ -1,4 +1,4 @@
-// $Id: TaskType.java,v 1.1 2008/05/10 03:23:22 jesse Exp $
+// $Id: TaskType.java,v 1.2 2008/09/19 03:38:21 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_1;
 
@@ -82,6 +82,21 @@ enum TaskType
     ArrayList<String> toReturn = new ArrayList<String>();
     for (TaskType type : values()) {
       toReturn.add(type.toTitle());
+    }
+    return toReturn;
+  }
+  
+  /**
+   * Get the list of human friendly string representation for all possible values
+   * except the CUSTOM value.
+   */ 
+  public static ArrayList<String>
+  titlesNonCustom()
+  {
+    ArrayList<String> toReturn = new ArrayList<String>();
+    for (TaskType type : values()) {
+      if (type != CUSTOM)
+        toReturn.add(type.toTitle());
     }
     return toReturn;
   }
