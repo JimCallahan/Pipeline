@@ -1,4 +1,4 @@
-// $Id: TaskToolUtils.java,v 1.1 2008/05/12 16:41:48 jesse Exp $
+// $Id: TaskToolUtils.java,v 1.2 2008/09/19 03:39:22 jesse Exp $
 
 package us.temerity.pipeline.plugin;
 
@@ -249,7 +249,7 @@ class TaskToolUtils
     if (status == null)
       status = mclient.status(new NodeID(getAuthor(), getView(), startNode), true);
     
-    findDownstreamNodes(status, mclient);
+    findUpstreamNodes(status, mclient);
     
     if (pEditNode == null)
       throw new PipelineException
@@ -269,7 +269,7 @@ class TaskToolUtils
    *   The instance of the Master Manager to look up the annotations on.
    */
   private void
-  findDownstreamNodes
+  findUpstreamNodes
   (
     NodeStatus status,
     MasterMgrClient mclient
@@ -300,7 +300,7 @@ class TaskToolUtils
       if (taskMatch) {
         Collection<NodeStatus> stati = status.getSources();
         for (NodeStatus childStatus : stati) {
-          findDownstreamNodes(childStatus, mclient);
+          findUpstreamNodes(childStatus, mclient);
           if (pEditNode != null)
             return;
         }
@@ -353,11 +353,9 @@ class TaskToolUtils
     pSubmitNode = null;
     pApprovalNode = null;
     
-    NodeStatus status = pSelected.get(editNode);
-    if (status == null)
-      status = mclient.status(new NodeID(getAuthor(), getView(), editNode), true);
+    NodeStatus status = mclient.status(new NodeID(getAuthor(), getView(), editNode), true);
 
-    findUpstreamNodes(status, mclient);
+    findDownstreamNodes(status, mclient);
     
     if (pSubmitNode == null)
       throw new PipelineException
@@ -385,7 +383,7 @@ class TaskToolUtils
    *   The instance of the Master Manager to look up the annotations on.
    */
   private void
-  findUpstreamNodes
+  findDownstreamNodes
   (
     NodeStatus status,
     MasterMgrClient mclient
@@ -408,7 +406,7 @@ class TaskToolUtils
             pTaskType.equals(taskType)) {
           taskMatch = true;
           if (purpose.equals(NodePurpose.Submit.toString())) {
-            pSubmitNode= nodeName;
+            pSubmitNode = nodeName;
             return;
           }
           if (purpose.equals(NodePurpose.Approve.toString())) {
@@ -418,10 +416,9 @@ class TaskToolUtils
         }
       }
       if (taskMatch) {
-        Collection<NodeStatus> stati = 
-          mclient.status(new NodeID(getAuthor(), getView(), nodeName), true).getTargets();
+        Collection<NodeStatus> stati = status.getTargets();
         for (NodeStatus parentStatus : stati) {
-          findUpstreamNodes(parentStatus, mclient);
+          findDownstreamNodes(parentStatus, mclient);
           if (pSubmitNode != null && pApprovalNode != null)
             return;
         }
@@ -465,4 +462,6 @@ class TaskToolUtils
   public static final String aNONE            = "[[NONE]]";  
   
   public static final String aPurpose         = "Purpose";
+  
+  private static final long serialVersionUID = -9150142209228867761L;
 }
