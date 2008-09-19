@@ -1,4 +1,4 @@
-// $Id: TaskGuardExt.java,v 1.3 2008/05/21 21:23:19 jesse Exp $
+// $Id: TaskGuardExt.java,v 1.4 2008/09/19 03:34:54 jesse Exp $
 
 package us.temerity.pipeline.plugin.TaskGuardExt.v2_4_1;
 
@@ -11,7 +11,7 @@ import java.util.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Restricts access to node operations based on the SubmitTask, ApproveTask and 
+ * Restricts access to node operations based on the SubmitTask, ApproveTask, SynchTask and 
  * CommonTask annotations.
  */
 public 
@@ -26,8 +26,8 @@ class TaskGuardExt
   TaskGuardExt()
   {
     super("TaskGuard", new VersionID("2.4.1"), "Temerity",
-          "Restricts access to node operations based on the SubmitTask, ApproveTask and " + 
-          "CommonTask annotations."); 
+          "Restricts access to node operations based on the SubmitTask, ApproveTask, " +
+          "Synchtask, and CommonTask annotations."); 
     
     underDevelopment(); 
   }
@@ -182,9 +182,30 @@ class TaskGuardExt
                           "user (" + supervise + ")") + ".  " + 
                "Since the user (" + author + ") attempting the check-in does not match the " +
 	       aSupervisedBy + " user/group, they are not allowed to check-in this " + 
-	       aSubmit + " node.");
+	       aApprove + " node.");
         }
       }
+      else if(rootAnnots.containsKey(aSynch)) {
+        BaseAnnotation an = rootAnnots.get(aSynch); 
+        String supervise = (String) an.getParamValue(aControlledBy); 
+        if((supervise != null) && (supervise.length() == 0))
+          supervise = null;
+        
+        if(!author.equals(PackageInfo.sPipelineUser) && (supervise != null)) {
+          boolean isGroup = wgroups.isGroup(supervise); 
+          if((!isGroup && !supervise.equals(author)) || 
+             (isGroup && wgroups.isMemberOrManager(author, supervise) == null)) 
+            throw new PipelineException 
+              ("The task (" + rootTask + ") defined by the root node of the check-in " + 
+               "operation (" + rname + ") is currently " + aControlledBy + " the " + 
+               (isGroup ? "Pipeline work group [" + supervise + "]" : 
+                          "user (" + supervise + ")") + ".  " + 
+               "Since the user (" + author + ") attempting the check-in does not match the " +
+               aControlledBy + " user/group, they are not allowed to check-in this " + 
+               aSynch + " node.");
+        }
+      }
+
       else {
         throw new PipelineException
           ("Check-in aborted for node (" + nname + ") because the root node of " + 
@@ -224,6 +245,7 @@ class TaskGuardExt
 	       "root node of the check-in operation has a " + aPurpose + " of " + 
 	       "(" + aSubmit + ")!"); 
 	}
+	//TODO, I think this line is wrong.  Why is Approve here?
 	else if(purpose.equals(aPrepare)) {
 	  if(!rootAnnots.containsKey(aSubmit) && 
 	     !rootAnnots.containsKey(aApprove) && 
@@ -241,8 +263,16 @@ class TaskGuardExt
 	       " of (" + aProduct + ") can only be checked-in when the root node of the " + 
 	       "check-in operation has a " + aPurpose + " of (" + aApprove + ")!"); 
 	}
+	else if(purpose.equals(aUnify)) {
+          if(!rootAnnots.containsKey(aSynch)) 
+            throw new PipelineException
+              ("Check-in aborted for node (" + nname + ") because nodes with a " + aPurpose + 
+               " of (" + aUnify + ") can only be checked-in when the root node of the " + 
+               "check-in operation has a " + aPurpose + " of (" + aSynch + ")!"); 
+        }
 	else if(purpose.equals(aSubmit) || 
 		purpose.equals(aApprove) || 
+		purpose.equals(aSynch) ||
 		purpose.equals(aDeliver)) {  
 	  if(!nname.equals(rname)) 
 	    throw new PipelineException
@@ -467,6 +497,8 @@ class TaskGuardExt
   public static final String aAssignedTo      = "AssignedTo";
   public static final String aSupervisedBy    = "SupervisedBy";
   public static final String aApprovalBuilder = "ApprovalBuilder";
+  public static final String aControlledBy    = "ControlledBy";
+  public static final String aSynchBuilder    = "SynchBuilder";
   
   public static final String aSimpleAsset   = "Simple Asset";  
   public static final String aModeling      = "Modeling";        
@@ -493,5 +525,7 @@ class TaskGuardExt
   public static final String aProduct   = "Product";
   public static final String aDeliver   = "Deliver";
   public static final String aApprove   = "Approve";
+  public static final String aSynch     = "Synch";
+  public static final String aUnify     = "Unify";
       
 }
