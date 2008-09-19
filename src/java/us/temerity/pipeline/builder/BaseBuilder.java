@@ -1,4 +1,4 @@
-// $Id: BaseBuilder.java,v 1.60 2008/07/21 17:25:53 jim Exp $
+// $Id: BaseBuilder.java,v 1.61 2008/09/19 03:36:22 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -999,7 +999,7 @@ class BaseBuilder
       throw new PipelineException("Cannot add a null ConstructPass");
     if (isLocked())
       throw new IllegalStateException
-        ("Illegal attempt to add a Setup Pass(" + pass.getName() + ") after " +
+        ("Illegal attempt to add a Construct Pass(" + pass.getName() + ") after " +
          "the Builder has been locked.");
     pConstructPasses.add(pass);
     pass.setParentBuilder(this);
