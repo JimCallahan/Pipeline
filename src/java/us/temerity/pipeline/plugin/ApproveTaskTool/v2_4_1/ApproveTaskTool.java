@@ -1,4 +1,4 @@
-// $Id: ApproveTaskTool.java,v 1.3 2008/07/21 17:25:53 jim Exp $
+// $Id: ApproveTaskTool.java,v 1.4 2008/09/19 03:33:05 jesse Exp $
 
 package us.temerity.pipeline.plugin.ApproveTaskTool.v2_4_1;
 
@@ -531,38 +531,6 @@ class ApproveTaskTool
     return purpose;
   }
   
-  /**
-   * Lookup the value of the ApproveNode annotation parameter.
-   * 
-   * @param name
-   *   The fully resolved name of the node having the given annotation.
-   * 
-   * @param aname
-   *   The name of the annotation instance.
-   * 
-   * @param annot
-   *   The annotation instance.
-   */ 
-  private String
-  lookupApprovalNode
-  (
-   String name, 
-   String aname, 
-   BaseAnnotation annot   
-  ) 
-    throws PipelineException
-  {
-    Path apPath = (Path) annot.getParamValue(aApproveNode);
-    if(apPath == null) 
-      throw new PipelineException
-        ("No " + aApproveNode + " parameter was specified for the (" + aname + ") " + 
-         "annotation on the node (" + name + ")!"); 
-
-    
-    return apPath.toString();
-  }
-
-
 
 
 
@@ -571,7 +539,7 @@ class ApproveTaskTool
   /*----------------------------------------------------------------------------------------*/
   
   /** 
-   * Run the builder in a seperate thread so control can be returned to plui(1).
+   * Run the builder in a separate thread so control can be returned to plui(1).
    */ 
   private
   class RunBuilderTask
