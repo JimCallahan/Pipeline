@@ -1,4 +1,4 @@
-// $Id: BaseUtil.java,v 1.36 2008/07/21 17:31:09 jim Exp $
+// $Id: BaseUtil.java,v 1.37 2008/09/19 03:37:35 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -1192,7 +1192,6 @@ class BaseUtil
   /**
    *  Does a parameter defined by this mapping exist? 
    */
-  @SuppressWarnings("unchecked")
   public boolean
   hasParam
   (
@@ -1252,7 +1251,6 @@ class BaseUtil
   /**
    * Does a parameter defined by this mapping that implements {@link SimpleParamAccess} exist?
    */
-  @SuppressWarnings("unchecked")
   public boolean
   hasSimpleParam
   (
@@ -1313,7 +1311,6 @@ class BaseUtil
    * Does a parameter defined by this mapping that implements {@link SimpleParamFromString}
    * exist?
    */
-  @SuppressWarnings("unchecked")
   public boolean
   canSetSimpleParamFromString
   (
