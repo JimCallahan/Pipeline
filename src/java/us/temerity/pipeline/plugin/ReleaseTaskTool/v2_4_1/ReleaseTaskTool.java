@@ -1,4 +1,4 @@
-// $Id: ReleaseTaskTool.java,v 1.1 2008/05/19 04:15:18 jesse Exp $
+// $Id: ReleaseTaskTool.java,v 1.2 2008/09/19 03:33:52 jesse Exp $
 
 package us.temerity.pipeline.plugin.ReleaseTaskTool.v2_4_1;
 
@@ -176,8 +176,7 @@ class ReleaseTaskTool
         if (pTaskName.equals(taskName) && 
             pProjectName.equals(projectName) &&
             pTaskType.equals(taskType)) {
-          Collection<NodeStatus> stati = mclient.status(new NodeID(getAuthor(), getView(), nodeName), true).getTargets();
-          for (NodeStatus parentStatus : stati) {
+          for (NodeStatus parentStatus : status.getTargets()) {
             findUpstreamNodes(parentStatus, mclient);
           }
           pTaskNodes.add(nodeName);
