@@ -1,4 +1,4 @@
-// $Id: MayaAnimBuildAction.java,v 1.1 2008/03/06 13:04:02 jim Exp $
+// $Id: MayaAnimBuildAction.java,v 1.2 2008/09/26 16:08:03 jesse Exp $
 
 package us.temerity.pipeline.plugin.MayaAnimBuildAction.v2_4_1;
 
@@ -446,6 +446,8 @@ class MayaAnimBuildAction
       
       /* set the time options */ 
       out.write(genPlaybackOptionsMEL()); 
+      
+      writeAnimMEL(agenda, out);
       
       /* save the file */ 
       out.write("// SAVE\n" + 

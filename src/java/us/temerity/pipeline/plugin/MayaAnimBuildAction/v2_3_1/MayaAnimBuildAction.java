@@ -484,6 +484,7 @@ class MayaAnimBuildAction
         out.write("\n"); 
       }
 
+      writeAnimMEL(agenda, out);
       
       /* save the file */ 
       out.write("// SAVE\n" + 
