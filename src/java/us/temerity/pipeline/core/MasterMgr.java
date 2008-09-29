@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.254 2008/07/21 17:31:09 jim Exp $
+// $Id: MasterMgr.java,v 1.255 2008/09/29 19:02:17 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -328,6 +328,11 @@ class MasterMgr
 
     /* validate startup state */ 
     if(pRebuildCache) {
+      LogMgr.getInstance().log
+        (LogMgr.Kind.Net, LogMgr.Level.Info,
+         "Removing Stale Caches...");
+      LogMgr.getInstance().flush();
+
       removeLockFile();
       removeDownstreamLinksCache(); 
       removeNodeTreeCache();
@@ -1345,17 +1350,7 @@ class MasterMgr
       TreeMap<VersionID,CheckedInBundle> table = readCheckedInVersions(name);
       for(VersionID vid : table.keySet()) {
 	NodeVersion vsn = table.get(vid).getVersion();
-	  
-	{
-	  DownstreamLinks dsl = pDownstream.get(name); 
-	  if(dsl == null) {
-	    dsl = new DownstreamLinks(name);
-	    pDownstream.put(dsl.getName(), dsl);
-	  }
-	  
-	  dsl.createCheckedIn(vid);
-	}
-	
+
 	for(LinkVersion link : vsn.getSources()) {
 	  DownstreamLinks dsl = pDownstream.get(link.getName());
 	  if(dsl == null) {
@@ -1363,7 +1358,7 @@ class MasterMgr
 	    pDownstream.put(dsl.getName(), dsl);
 	  }
 	  
-	  dsl.addCheckedIn(link.getVersionID(), vsn.getName(), vsn.getVersionID());
+	  dsl.addCheckedIn(link.getVersionID(), name, vid);
 	}
       }
     }
@@ -1412,21 +1407,14 @@ class MasterMgr
       else {
 	String path = files[wk].getPath();
 	if(!path.endsWith(".backup")) {
-	  NodeID id = new NodeID(author, view, path.substring(prefix.length()));
-	  NodeMod mod = readWorkingVersion(id);
+          String name = path.substring(prefix.length());
+
+          NodeID nodeID = new NodeID(author, view, name);
+	  NodeMod mod = readWorkingVersion(nodeID); 
 	  if(mod == null) 
 	    throw new PipelineException
 	      ("I/O ERROR:\n" + 
-	       "  Somehow the working version (" + id + ") was missing!");
-	  {
-	    DownstreamLinks dsl = pDownstream.get(id.getName());
-	    if(dsl == null) {
-	      dsl = new DownstreamLinks(id.getName());
-	      pDownstream.put(dsl.getName(), dsl);
-	    }
-	    
-	    dsl.createWorking(id);
-	  }	    
+	       "  Somehow the working version (" + nodeID + ") was missing!");
 	  
 	  for(LinkMod link : mod.getSources()) {
 	    DownstreamLinks dsl = pDownstream.get(link.getName());
@@ -1435,7 +1423,7 @@ class MasterMgr
 	      pDownstream.put(dsl.getName(), dsl);
 	    }
 	    
-	    dsl.addWorking(new NodeID(author, view, link.getName()), mod.getName());
+	    dsl.addWorking(author, view, name); 
 	  }  
 	}
       }
@@ -1480,6 +1468,10 @@ class MasterMgr
   public void  
   shutdown() 
   {
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Net, LogMgr.Level.Info,
+       "Closing Server Connections...");
+
     /* close the connection to the file manager */ 
     if(!pInternalFileMgr && (pFileMgrNetClients != null)) {
       while(!pFileMgrNetClients.isEmpty()) {
@@ -1535,17 +1527,33 @@ class MasterMgr
 
     /* write the cache files */ 
     try {
+      TaskTimer timer = new TaskTimer();
+      LogMgr.getInstance().log
+        (LogMgr.Kind.Glu, LogMgr.Level.Info,
+         "Writing Updated Caches...");
+      LogMgr.getInstance().flush(); 
+      
       writeArchivedIn();
       writeArchivedOn();
       writeRestoredOn();
       writeOfflined();
 
-      for(DownstreamLinks links : pDownstream.values()) 
-	writeDownstreamLinks(links);
+      writeAllDownstreamLinks();
 
       pNodeTree.writeGlueFile(new File(pNodeDir, "etc/node-tree"));
+
+      timer.suspend();
+      LogMgr.getInstance().log
+        (LogMgr.Kind.Glu, LogMgr.Level.Info,
+         "  Saved in " + TimeStamps.formatInterval(timer.getTotalDuration()));
+      LogMgr.getInstance().flush();
     }
     catch(Exception ex) {
+      LogMgr.getInstance().log
+        (LogMgr.Kind.Glu, LogMgr.Level.Severe,
+         "  Failed to Save Caches:  " + ex.getMessage());
+      LogMgr.getInstance().flush();
+
       removeArchivesCache();
        
       try {
@@ -1607,6 +1615,7 @@ class MasterMgr
   private void 
   writeAllDownstreamLinks()
   {
+    /* write the entire cache */ 
     try {
       for(DownstreamLinks links : pDownstream.values()) 
 	writeDownstreamLinks(links);
@@ -1616,7 +1625,7 @@ class MasterMgr
 	(LogMgr.Kind.Ops, LogMgr.Level.Severe,
 	 ex.getMessage());
       
-      /* remove the entire downstream directory */ 
+      /* remove the entire downstream directory on failure */ 
       try {
 	removeDownstreamLinksCache();
       }
@@ -1627,6 +1636,7 @@ class MasterMgr
       }
     }
   }
+
 
   
   /*----------------------------------------------------------------------------------------*/
@@ -8208,67 +8218,66 @@ class MasterMgr
 	try {
 	  timer.resume();
 	  
-	  DownstreamLinks links = getDownstreamLinks(id.getName()); 
-	  if(links == null)
-	    throw new IllegalStateException(); 
-	  
-	  for(String target : links.getWorking(id)) {
-	    NodeID targetID = new NodeID(id, target);
-	    
-	    timer.aquire();
-	    ReentrantReadWriteLock lock = getWorkingLock(targetID);
-	    lock.readLock().lock();
-	    try {
-	      timer.resume();
-	      
-	      NodeMod targetMod = getWorkingBundle(targetID).getVersion();
-	      LinkMod dlink = targetMod.getSource(name);
-	      if(dlink != null) {
-		dlinks.put(target, dlink);
-
-		BaseAction targetAction = targetMod.getAction();
-		if(targetAction != null) {
-		  for(ActionParam aparam : targetAction.getSingleParams()) {
-		    if(aparam instanceof LinkActionParam) {
-		      LinkActionParam lparam = (LinkActionParam) aparam;
-		      if(name.equals(lparam.getStringValue()))
-			singleLinkParams.put(target, lparam.getName());
-		    }
-		  }
-
-		  if(targetAction.getSourceNames().contains(name))
-		    sourceParams.put(target, targetAction.getSourceParams(name));
-		 
-		  if(targetAction.getSecondarySourceNames().contains(name)) {
-		    TreeMap<FilePattern,Collection<ActionParam>> sfparams = null;
-		    for(FileSeq sfseq : secondary) {
-		      FilePattern sfpat = sfseq.getFilePattern();
-		      
-		      Collection<ActionParam> sparams = 
-			targetAction.getSecondarySourceParams(name, sfpat);
-
-		      if(!sparams.isEmpty()) {
-			if(sfparams == null) {
-			  sfparams = new TreeMap<FilePattern,Collection<ActionParam>>();
-			  secondaryParams.put(target, sfparams);
-			}
-
-			sfparams.put(sfpat, sparams);
-		      }
-		    }
-		  }
-		}
-	      }
-	    }
-	    finally {
-	      lock.readLock().unlock();
-	    }  
-	    
-	    timer.suspend();
-	    Object obj = unlink(new NodeUnlinkReq(targetID, id.getName()));
-	    timer.accum(((TimedRsp) obj).getTimer());
-	  }
-	}
+	  DownstreamLinks dsl = getDownstreamLinks(id.getName()); 
+          if(dsl.hasWorking(id)) {
+            for(String target : dsl.getWorking(id)) {
+              NodeID targetID = new NodeID(id, target);
+              
+              timer.aquire();
+              ReentrantReadWriteLock lock = getWorkingLock(targetID);
+              lock.readLock().lock();
+              try {
+                timer.resume();
+                
+                NodeMod targetMod = getWorkingBundle(targetID).getVersion();
+                LinkMod dlink = targetMod.getSource(name);
+                if(dlink != null) {
+                  dlinks.put(target, dlink);
+                  
+                  BaseAction targetAction = targetMod.getAction();
+                  if(targetAction != null) {
+                    for(ActionParam aparam : targetAction.getSingleParams()) {
+                      if(aparam instanceof LinkActionParam) {
+                        LinkActionParam lparam = (LinkActionParam) aparam;
+                        if(name.equals(lparam.getStringValue()))
+                          singleLinkParams.put(target, lparam.getName());
+                      }
+                    }
+                    
+                    if(targetAction.getSourceNames().contains(name))
+                      sourceParams.put(target, targetAction.getSourceParams(name));
+                    
+                    if(targetAction.getSecondarySourceNames().contains(name)) {
+                      TreeMap<FilePattern,Collection<ActionParam>> sfparams = null;
+                      for(FileSeq sfseq : secondary) {
+                        FilePattern sfpat = sfseq.getFilePattern();
+                        
+                        Collection<ActionParam> sparams = 
+                          targetAction.getSecondarySourceParams(name, sfpat);
+                        
+                        if(!sparams.isEmpty()) {
+                          if(sfparams == null) {
+                            sfparams = new TreeMap<FilePattern,Collection<ActionParam>>();
+                            secondaryParams.put(target, sfparams);
+                          }
+                          
+                          sfparams.put(sfpat, sparams);
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+              finally {
+                lock.readLock().unlock();
+              }  
+              
+              timer.suspend();
+              Object obj = unlink(new NodeUnlinkReq(targetID, id.getName()));
+              timer.accum(((TimedRsp) obj).getTimer());
+            }
+          }
+        }
 	finally {
 	  downstreamLock.writeLock().unlock();
 	}
@@ -8995,7 +9004,7 @@ class MasterMgr
     try {
       timer.resume();
 
-      TreeMap<String,VersionID> dnodes = null;
+      MappedSet<String,VersionID> dnodes = null;
       {
 	timer.aquire();
 	ReentrantReadWriteLock downstreamLock = getDownstreamLock(name);
@@ -9016,7 +9025,6 @@ class MasterMgr
 
       if(dnodes != null) {
 	for(String dname : dnodes.keySet()) {
-	  VersionID dvid = dnodes.get(dname);
 
 	  timer.aquire();
 	  ReentrantReadWriteLock lock = getCheckedInLock(dname);
@@ -9024,14 +9032,9 @@ class MasterMgr
 	  try {
 	    timer.resume();
 
-	    TreeMap<VersionID,CheckedInBundle> checkedIn = null;
-	    try {
-	      checkedIn = getCheckedInBundles(dname);
-	    }
-	    catch(PipelineException ex) {
-	    }
-	    
-	    if(checkedIn != null) {
+	    TreeMap<VersionID,CheckedInBundle> checkedIn = getCheckedInBundles(dname);
+
+            for(VersionID dvid : dnodes.get(dname)) {
 	      NodeVersion vsn = checkedIn.get(dvid).getVersion();
 	      links.put(dname, dvid, vsn.getSource(name));
 	    }
@@ -9086,14 +9089,15 @@ class MasterMgr
     pDatabaseLock.readLock().lock();
     try {
       timer.resume();
-
-      NodeID nodeID = req.getNodeID();
       
       NodeOp nodeOp = null;
       if(!req.getLightweight()) 
         nodeOp = new NodeOp();
 
-      NodeStatus root = performNodeOperation(nodeOp, nodeID, timer);
+      NodeID nodeID = req.getNodeID();
+      DownstreamMode dmode = req.getDownstreamMode();
+
+      NodeStatus root = performNodeOperation(nodeOp, nodeID, dmode, timer);
 
       return new NodeStatusRsp(timer, nodeID, root);
     }
@@ -9147,15 +9151,24 @@ class MasterMgr
       timer.resume();
 
       String author = req.getAuthor();
-      String view   = req.getView();
+      String view = req.getView();
+      TreeSet<String> rootNames = req.getRootNames();
+      TreeSet<String> heavyNames = req.getHeavyNames();
+      DownstreamMode dmode = req.getDownstreamMode();
 
       TreeMap<String,NodeStatus> results = new TreeMap<String,NodeStatus>();
 
       /* filter out missing root nodes */ 
-      TreeMap<String,Boolean> roots = req.getRoots();
+      TreeSet<String> foundRoots = new TreeSet<String>();
+      TreeSet<String> foundHeavy = new TreeSet<String>();
       {
-        TreeSet<String> dead = new TreeSet<String>(); 
-        for(String name : roots.keySet()) {
+        TreeSet<String> foundNames = new TreeSet<String>(); 
+                
+        TreeSet<String> allNames = new TreeSet<String>();
+        allNames.addAll(rootNames);
+        allNames.addAll(heavyNames);
+
+        for(String name : allNames) {
           boolean found = false;
 
           NodeID nodeID = new NodeID(author, view, name); 
@@ -9188,13 +9201,20 @@ class MasterMgr
             workingLock.readLock().unlock();
           }
 
-          if(!found) 
-            dead.add(name);
+          if(found) 
+            foundNames.add(name); 
         }
         
-        for(String name : dead) {
-          roots.remove(name);
-          results.put(name, null);
+        for(String name : rootNames) {
+          if(foundNames.contains(name))
+            foundRoots.add(name);
+          else 
+            results.put(name, null);
+        }
+
+        for(String name : heavyNames) {
+          if(foundNames.contains(name))
+            foundHeavy.add(name);          
         }
       }
 
@@ -9202,35 +9222,150 @@ class MasterMgr
       {
         HashMap<String,NodeStatus> cache = new HashMap<String,NodeStatus>();
 
-        /* do heavyweight status roots first */ 
-        for(String name : roots.keySet()) {
-          Boolean isLightweight = roots.get(name);
-          if((isLightweight != null) && !isLightweight) {
-            NodeID nodeID = new NodeID(author, view, name);
-            NodeStatus status = performNodeOperation(new NodeOp(), nodeID, cache, timer);
+        /* populate the cache with heavyweight status first */ 
+        for(String name : foundHeavy) {
+          boolean isRoot = foundRoots.contains(name);
+          NodeID nodeID = new NodeID(author, view, name);
+          DownstreamMode dm = isRoot ? dmode : DownstreamMode.None;
+          NodeStatus status = performNodeOperation(new NodeOp(), nodeID, dm, cache, timer);
+
+          /* if its also one of the root nodes, add the original node status to the results */
+          if(isRoot) 
             results.put(name, status);
 
-            /* replace the cached root node status copy without targets, 
-                 this way the orignal's targets won't get stomped on when its looked up 
-                 from the cache during future performNodeOperation() calls */ 
-            cache.put(name, new NodeStatus(status, false)); 
-          }
+          /* replace the cached root node status with a copy without targets, 
+               this way the orignal's targets won't get stomped on when its looked up 
+               from the cache during future performNodeOperation() calls */ 
+          cache.put(name, new NodeStatus(status, false)); 
         }
 
-        /* then add lightweight status roots */ 
-        for(String name : roots.keySet()) {
-          Boolean isLightweight = roots.get(name);
-          if((isLightweight != null) && isLightweight) {
+        /* do lightweight status for all remaining roots */ 
+        for(String name : foundRoots) {
+          if(!foundHeavy.contains(name)) {
             NodeID nodeID = new NodeID(author, view, name);
-            NodeStatus status = performNodeOperation(null, nodeID, cache, timer);
+            NodeStatus status = performNodeOperation(null, nodeID, dmode, cache, timer);
+
+            /* add the original node status to the results */
             results.put(name, status);  
 
-            /* replace the cached root node status copy without targets, 
+            /* replace the cached root node status with a copy without targets, 
                  this way the orignal's targets won't get stomped on when its looked up 
                  from the cache during future performNodeOperation() calls */ 
             cache.put(name, new NodeStatus(status, false)); 
           }
         }
+      }
+
+      return new NodeMultiStatusRsp(timer, results);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }    
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+  
+  /** 
+   * Get the downstream only status of multiple nodes. <P> 
+   * 
+   * For each of the root nodes given, a <CODE>NodeStatus</CODE> instance will be returned
+   * which access the status of all nodes downstream linked to the given node according the 
+   * the criteria specified by the given downtream mode. <P> 
+   * 
+   * This method returns a table containing {@link NodeStatus} instances for each of the 
+   * given nodes in the <CODE>rootNames</CODE> set indexed by their fully resolved node names.
+   * If status for a root node is requested and the node does not exist, then the entry in 
+   * this table for the missing node will be <CODE>null</CODE>.  To enable partial completion 
+   * of this method when specified both existing and missing root nodes, a PipelineException 
+   * will not be thrown when only a subset of the nodes are missing. <P> 
+   * 
+   * Note that all returned <CODE>NodeStatus</CODE> instances will not contain any detailed
+   * status information, just the minimal status and connectivity information. <P> 
+   * 
+   * @param req 
+   *   The node status request.
+   *
+   * @return
+   *   <CODE>NodeStatusRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to get the status of the node.
+   */ 
+  public Object
+  downstreamStatus
+  ( 
+   NodeDownstreamStatusReq req 
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      timer.resume();
+
+      String author = req.getAuthor();
+      String view = req.getView();
+      TreeSet<String> rootNames = req.getRootNames();
+      DownstreamMode dmode = req.getDownstreamMode();
+
+      TreeMap<String,NodeStatus> results = new TreeMap<String,NodeStatus>();
+
+      /* filter out missing root nodes */ 
+      TreeSet<String> foundRoots = new TreeSet<String>();
+      {
+        TreeSet<String> foundNames = new TreeSet<String>(); 
+
+        for(String name : rootNames) {
+          boolean found = false;
+
+          NodeID nodeID = new NodeID(author, view, name); 
+          timer.aquire();
+          ReentrantReadWriteLock workingLock = getWorkingLock(nodeID);
+          workingLock.readLock().lock();
+          ReentrantReadWriteLock checkedInLock = getCheckedInLock(name);
+          checkedInLock.readLock().lock();
+          try {
+            timer.resume();	
+              
+            try {
+              getWorkingBundle(nodeID);
+              found = true;
+            }
+            catch(PipelineException ex) {
+            }
+
+            if(!found) {
+              try {
+                getCheckedInBundles(name);
+                found = true;
+              }
+              catch(PipelineException ex) {
+              }
+            }
+          }
+          finally {
+            checkedInLock.readLock().unlock();  
+            workingLock.readLock().unlock();
+          }
+
+          if(found) 
+            foundNames.add(name); 
+        }
+        
+        for(String name : rootNames) {
+          if(foundNames.contains(name))
+            foundRoots.add(name);
+          else 
+            results.put(name, null);
+        }
+      }
+
+      /* compute downstream status for each root */ 
+      for(String name : foundRoots) {
+        NodeID nodeID = new NodeID(author, view, name);
+        NodeStatus root = new NodeStatus(nodeID);
+        getDownstreamNodeStatus(root, nodeID, dmode, timer);
+        results.put(name, root);  
       }
 
       return new NodeMultiStatusRsp(timer, results);
@@ -9348,20 +9483,6 @@ class MasterMgr
 	/* keep track of the change to the node version cache */ 
 	incrementWorkingCounter(nodeID); 
 
-	/* initialize the working downstream links */ 
-	timer.aquire();
-	ReentrantReadWriteLock downstreamLock = getDownstreamLock(nodeID.getName());
-	downstreamLock.writeLock().lock();
-	try {
-	  timer.resume();
-	  
-	  DownstreamLinks links = getDownstreamLinks(nodeID.getName()); 
-	  links.createWorking(nodeID);
-	}
-	finally {
-	  downstreamLock.writeLock().unlock();
-	}      
-	
 	/* record event */ 
 	pPendingEvents.add(new RegisteredNodeEvent(nodeID));
 
@@ -9582,22 +9703,20 @@ class MasterMgr
       try {
 	timer.resume();
 	  
-	DownstreamLinks links = getDownstreamLinks(name); 
-	if(links != null) {
-	  TreeSet<String> targets = links.getWorking(id);
-	  if(targets != null) {
-	    for(String target : targets) {
-	      NodeID targetID = new NodeID(id, target);
-		
-	      timer.suspend();
-	      Object obj = unlink(new NodeUnlinkReq(targetID, name));
-	      timer.accum(((TimedRsp) obj).getTimer());
-		
-	      if(obj instanceof FailureRsp)  {
-		FailureRsp rsp = (FailureRsp) obj;
-		throw new PipelineException(rsp.getMessage());
-	      }
-	    }
+	DownstreamLinks dsl = getDownstreamLinks(name); 
+        TreeSet<String> targets = dsl.getWorking(id);
+        if(targets != null) {
+          for(String target : targets) {
+            NodeID targetID = new NodeID(id, target);
+            
+            timer.suspend();
+            Object obj = unlink(new NodeUnlinkReq(targetID, name));
+            timer.accum(((TimedRsp) obj).getTimer());
+            
+            if(obj instanceof FailureRsp)  {
+              FailureRsp rsp = (FailureRsp) obj;
+              throw new PipelineException(rsp.getMessage());
+            }
 	  }
 	}
       }
@@ -9667,7 +9786,7 @@ class MasterMgr
 	  timer.resume();
 	    
 	  DownstreamLinks links = getDownstreamLinks(name); 
-	  links.releaseWorking(id);
+	  links.removeAllWorking(id);
 	}  
 	finally {
 	  downstreamLock.writeLock().unlock();
@@ -9771,23 +9890,20 @@ class MasterMgr
       /* get the downstream links */ 
       DownstreamLinks dsl = getDownstreamLinks(name);
 
-      /* make sure none of the checked-in versions are the source node of a link of 
-           another node */ 
+      /* make sure none of the checked-in versions are required by downstream nodes */ 
       {
 	boolean failed = false;
 	StringBuilder buf = new StringBuilder();
 	for(VersionID vid : checkedIn.keySet()) {
-	  TreeMap<String,VersionID> dlinks = dsl.getCheckedIn(vid);
-	  if(dlinks == null) 
-	    throw new PipelineException
-	      ("Somehow there was no downstream links entry for checked-in version " + 
-	       "(" + vid + ") of node (" + name + ")!");
-	  
-	  if(!dlinks.isEmpty()) {
+          if(dsl.hasCheckedIn(vid)) {
 	    failed = true;
 	    buf.append("\nChecked-in versions downstream of the (" + vid + ") version:\n");
-	    for(String dname : dlinks.keySet()) 
-	      buf.append("  " + dname + "  (" + dlinks.get(dname) + ")\n");
+
+            MappedSet<String,VersionID> dlinks = dsl.getCheckedIn(vid);
+	    for(String dname : dlinks.keySet()) {
+              for(VersionID dvid : dlinks.get(dname)) 
+                buf.append("  " + dname + "  (" + dlinks.get(dvid) + ")\n");
+            }
 	  }
 	}
 
@@ -9828,13 +9944,18 @@ class MasterMgr
       if(!checkedIn.isEmpty()) {
 
 	/* remove the downstream links to this node from the checked-in source nodes */ 
-	for(VersionID vid : checkedIn.keySet()) {
-	  NodeVersion vsn = checkedIn.get(vid).getVersion();
-	  for(LinkVersion link : vsn.getSources()) {
-	    DownstreamLinks ldsl = getDownstreamLinks(link.getName());
-	    ldsl.deleteCheckedIn(link.getVersionID(), name);
-	  }
-	}
+        {
+          TreeSet<String> snames = new TreeSet<String>();
+          for(VersionID vid : checkedIn.keySet()) {
+            NodeVersion vsn = checkedIn.get(vid).getVersion();
+            snames.addAll(vsn.getSourceNames());
+          }
+
+          for(String sname : snames) {
+            DownstreamLinks sdsl = getDownstreamLinks(sname);
+            sdsl.removeAllCheckedIn(name);
+          }
+        }
 
 	/* delete files associated with all checked-in versions of the node */ 
 	{
@@ -9877,13 +9998,7 @@ class MasterMgr
 
       /* remove the downstream links file and entry */ 
       {
-	File file = new File(pNodeDir, "downstream" + name);
-	if(file.isFile()) {
-	  if(!file.delete())
-	    throw new PipelineException
-	      ("Unable to remove the downstream links file (" + file + ")!");
-	}
-
+        removeDownstreamLinks(name); 
 	pDownstream.remove(name);
       }
 
@@ -10052,20 +10167,20 @@ class MasterMgr
 	 the upstream nodes which will be checked-out or the checked-out downstream nodes 
          currently exist */ 
       {
-	TreeMap<String,FileSeq> fseqs = new TreeMap<String,FileSeq>();
-	for(String source : requiredVersions.keySet()) {
-	  NodeID snodeID = new NodeID(nodeID, source);
-	  getDownstreamWorkingSeqs(snodeID, new LinkedList<String>(), fseqs, timer);
-	}
+ 	TreeMap<String,FileSeq> fseqs = new TreeMap<String,FileSeq>();
+ 	for(String source : requiredVersions.keySet()) {
+ 	  NodeID snodeID = new NodeID(nodeID, source);
+ 	  getDownstreamWorkingSeqs(snodeID, fseqs, timer);
+ 	}
 
-	if(!fseqs.isEmpty()) {
-	  TreeMap<String,TreeSet<Long>> jobIDs = 
-	    pQueueMgrClient.getUnfinishedJobsForNodes
-	    (nodeID.getAuthor(), nodeID.getView(), fseqs);
-	  
-	  if(!jobIDs.isEmpty()) 
-	    return new GetUnfinishedJobsForNodesRsp(timer, jobIDs);
-	}
+ 	if(!fseqs.isEmpty()) {
+ 	  TreeMap<String,TreeSet<Long>> jobIDs = 
+ 	    pQueueMgrClient.getUnfinishedJobsForNodes
+              (nodeID.getAuthor(), nodeID.getView(), fseqs);
+        
+ 	  if(!jobIDs.isEmpty()) 
+ 	    return new GetUnfinishedJobsForNodesRsp(timer, jobIDs);
+ 	}
       }
 
       /* lock online/offline status of all required nodes */ 
@@ -10691,22 +10806,6 @@ class MasterMgr
 
 	/* keep track of the change to the node version cache */ 
 	incrementWorkingCounter(nodeID);
-
-	/* initialize the working downstream links */ 
-	{
-	  timer.aquire();
-	  ReentrantReadWriteLock downstreamLock = getDownstreamLock(name);
-	  downstreamLock.writeLock().lock();
-	  try {
-	    timer.resume();
-	    
-	    DownstreamLinks links = getDownstreamLinks(name); 
-	    links.createWorking(nodeID);
-	  }
-	  finally {
-	    downstreamLock.writeLock().unlock();
-	  }      
-	}
       }
 	 
       /* update existing working version */ 
@@ -10721,8 +10820,7 @@ class MasterMgr
 
 	/* remove the downstream links from any obsolete upstream nodes */ 
 	for(LinkMod link : work.getSources()) {
-	  if(isLocked || 
-	     !nwork.getSourceNames().contains(link.getName())) {
+	  if(isLocked || !nwork.getSourceNames().contains(link.getName())) {
 	    String source = link.getName();
 	    
 	    timer.aquire();
@@ -11005,22 +11103,6 @@ class MasterMgr
 	  
 	    /* keep track of the change to the node version cache */ 
 	    incrementWorkingCounter(nodeID);
-
-	    /* initialize the working downstream links */ 
-	    {
-	      timer.aquire();
-	      ReentrantReadWriteLock downstreamLock = getDownstreamLock(name);
-	      downstreamLock.writeLock().lock();
-	      try {
-		timer.resume();
-	      
-		DownstreamLinks links = getDownstreamLinks(name); 
-		links.createWorking(nodeID);
-	      }
-	      finally {
-		downstreamLock.writeLock().unlock();
-	      }      
-	    }
 	  }
 	
 	  /* update existing working version */ 
@@ -13224,7 +13306,7 @@ class MasterMgr
 	  for(Integer idx : batch) 
 	    njobIDs[idx] = jobID;
 	}
-      } //  for(TreeSet<Integer> batch : batches)
+      }
     }
   }
 
@@ -16427,7 +16509,7 @@ class MasterMgr
    * <CODE>nodeOp</CODE> is <CODE>null</CODE>, then no operation will be performed and only
    * lightweight node status details will be generated for the upstream nodes. <P> 
    * 
-   * In all cases, only undetailed status information is computed for the downstream nodes.
+   * No downstream node status will be reported (DownstreamMode.None).
    * 
    * @param nodeOp
    *   The node operation or <CODE>null</CODE> if only lightweight node details are required.
@@ -16453,7 +16535,7 @@ class MasterMgr
   ) 
     throws PipelineException
   {
-    return performNodeOperation(nodeOp, nodeID, new HashMap<String,NodeStatus>(), timer);
+    return performNodeOperation(nodeOp, nodeID, DownstreamMode.None, timer);
   }
 
   /**
@@ -16465,13 +16547,55 @@ class MasterMgr
    * <CODE>nodeOp</CODE> is <CODE>null</CODE>, then no operation will be performed and only
    * lightweight node status details will be generated for the upstream nodes. <P> 
    * 
-   * In all cases, only undetailed status information is computed for the downstream nodes.
+   * @param nodeOp
+   *   The node operation or <CODE>null</CODE> if only lightweight node details are required.
+   * 
+   * @param nodeID
+   *   The unique working version identifier.
+   * 
+   * @param dmode
+   *   The criteria used to determine how downstream node status is reported.
+   * 
+   * @param timer
+   *   The shared task timer for this operation.
+   * 
+   * @return 
+   *   The root of the node status tree corresponding to the given working version.
+   * 
+   * @throws PipelineException 
+   *   If unable to perform the node operation.
+   */ 
+  private NodeStatus 
+  performNodeOperation
+  (
+   NodeOp nodeOp, 
+   NodeID nodeID,
+   DownstreamMode dmode, 
+   TaskTimer timer
+  ) 
+    throws PipelineException
+  {
+    HashMap<String,NodeStatus> cache = new HashMap<String,NodeStatus>();
+    return performNodeOperation(nodeOp, nodeID, dmode, cache, timer); 
+  }
+
+  /**
+   * Recursively perfrorm a node status based operation on the tree of nodes rooted at the 
+   * given working version. <P> 
+   * 
+   * The <CODE>nodeOp</CODE> argument is performed on all upstream nodes and detailed
+   * post-operation status information is generated for these nodes.  If the 
+   * <CODE>nodeOp</CODE> is <CODE>null</CODE>, then no operation will be performed and only
+   * lightweight node status details will be generated for the upstream nodes. <P> 
    * 
    * @param nodeOp
    *   The node operation or <CODE>null</CODE> if only lightweight node details are required.
    * 
    * @param nodeID
    *   The unique working version identifier.
+   * 
+   * @param dmode
+   *   The criteria used to determine how downstream node status is reported.
    * 
    * @param timer
    *   The shared task timer for this operation.
@@ -16490,6 +16614,7 @@ class MasterMgr
   (
    NodeOp nodeOp, 
    NodeID nodeID,
+   DownstreamMode dmode, 
    HashMap<String,NodeStatus> cache,
    TaskTimer timer
   ) 
@@ -16509,18 +16634,9 @@ class MasterMgr
         validateStaleLinks(root, qstate == OverallQueueState.Finished);
       }
     }
-
-    {
-      NodeDetailsLight details = root.getLightDetails();
-
-      VersionID vid = null;
-      if(details.getWorkingVersion() == null) 
-	vid = details.getLatestVersion().getVersionID();
-      
-      HashMap<String,NodeStatus> table = new HashMap<String,NodeStatus>();
-      getDownstreamNodeStatus(root, nodeID, vid, new LinkedList<String>(), table, timer);
-    }
-
+    
+    getDownstreamNodeStatus(root, nodeID, dmode, timer);
+    
     return root;
   }
 
@@ -17692,19 +17808,106 @@ class MasterMgr
   }
 
   /**
-   * Recursively compute the state of all nodes downstream of the given node. <P> 
+   * Compute the state of all nodes downstream of the given node. <P> 
    * 
-   * If the <CODE>vid</CODE> argument is not <CODE>null</CODE>, then follow the downstream
-   * links associated with the checked-in version with this revision number.
-   * 
-   * @param root
-   *   The status of the root node of the tree.
+   * @param root 
+   *   The already computed node status for the root node.
    * 
    * @param nodeID
    *   The unique working version identifier.
    * 
-   * @param vid 
-   *   The revision number of the checked-in node version.
+   * @param dmode
+   *   The criteria used to determine how downstream node status is reported.
+   * 
+   * @param timer
+   *   The shared task timer for this operation.
+   */ 
+  private void
+  getDownstreamNodeStatus
+  (
+   NodeStatus root, 
+   NodeID nodeID, 
+   DownstreamMode dmode, 
+   TaskTimer timer
+  ) 
+    throws PipelineException
+  {
+    if(dmode == DownstreamMode.None) 
+      return;
+
+    String rname = root.getName();
+    TreeMap<String,NodeStatus> table = new TreeMap<String,NodeStatus>();
+    table.put(rname, root);
+
+    LinkedList<String> branch = new LinkedList<String>();
+
+    switch(dmode) {
+    case CheckedInOnly:
+    case All:
+      {
+        TreeSet<VersionID> vids = new TreeSet<VersionID>();
+
+        timer.aquire();      
+        String name = nodeID.getName();
+        ReentrantReadWriteLock lock = getCheckedInLock(name);
+        lock.readLock().lock();
+        try {
+          timer.resume();	
+        
+          TreeMap<VersionID,CheckedInBundle> checkedIn = getCheckedInBundles(name);
+          vids.addAll(checkedIn.keySet());
+        }
+        catch(PipelineException ex) {
+        }
+        finally {
+          lock.readLock().unlock();
+        }  
+
+        for(VersionID vid : vids) 
+          getCheckedInDownstreamNodeStatus(nodeID, vid, branch, table, timer);
+      }
+    }
+
+    switch(dmode) {
+    case WorkingOnly:
+    case All:
+      getWorkingDownstreamNodeStatus(nodeID, branch, table, timer);
+    }
+  }
+
+  /**
+   * Lookup the already cached node status or create a new one for the given node.
+   * 
+   * @param nodeID
+   *   The unique working version identifier. 
+   * 
+   * @param table
+   *   The previously computed states indexed by node name.
+   */ 
+  private NodeStatus
+  lookupOrCreateNodeStatus
+  (
+   NodeID nodeID, 
+   TreeMap<String,NodeStatus> table
+  ) 
+  {
+    NodeStatus status = table.get(nodeID.getName()); 
+    if(status == null) {
+      status = new NodeStatus(nodeID); 
+      table.put(nodeID.getName(), status);
+    }
+
+    return status; 
+  }
+
+  /**
+   * Recursively process checked-in node versions downstream.
+   * 
+   * @param nodeID
+   *   The unique working version identifier.
+   * 
+   * @param vid
+   *   The revision number of the current checked-in node version being processed. 
    * 
    * @param branch
    *   The names of the nodes from the root to this node.
@@ -17714,15 +17917,116 @@ class MasterMgr
    * 
    * @param timer
    *   The shared task timer for this operation.
+   * 
+   * @return
+   *   The status of the current node if there exists one or more versions downstream which 
+   *   are the latest version of their respective node. 
    */ 
-  private void 
-  getDownstreamNodeStatus
+  private NodeStatus
+  getCheckedInDownstreamNodeStatus
   (
-   NodeStatus root, 
    NodeID nodeID, 
    VersionID vid, 
    LinkedList<String> branch, 
-   HashMap<String,NodeStatus> table, 
+   TreeMap<String,NodeStatus> table, 
+   TaskTimer timer
+   ) 
+    throws PipelineException
+  {
+    String name = nodeID.getName();
+
+    /* check for circularity */ 
+    checkBranchForCircularity(name, branch);
+  
+    /* push the current node onto the end of the branch */ 
+    branch.addLast(name);
+
+    /* get checked-in downstream links */ 
+    TreeMap<VersionID,MappedSet<String,VersionID>> downstream = null;
+    {
+      timer.aquire();
+      ReentrantReadWriteLock lock = getDownstreamLock(name);
+      lock.readLock().lock();
+      try {
+        timer.resume();
+        
+        DownstreamLinks dsl = getDownstreamLinks(name); 
+        downstream = dsl.getAllCheckedIn();
+      }
+      finally {
+        lock.readLock().unlock();
+      }
+    }
+
+    /* returned status for this node */ 
+    NodeStatus status = null;
+
+    /* process downstream links from this checked-in version... */ 
+    MappedSet<String,VersionID> links = downstream.get(vid);
+    if(links != null) {
+      for(String dname : links.keySet()) {
+        for(VersionID dvid : links.get(dname)) {
+          NodeID dnodeID = new NodeID(nodeID, dname);
+          
+          NodeStatus dstatus = 
+            getCheckedInDownstreamNodeStatus(dnodeID, dvid, branch, table, timer);
+          
+          if(dstatus != null) {
+            status = lookupOrCreateNodeStatus(nodeID, table);
+            dstatus.addSource(status);
+            status.addTarget(dstatus);
+          }
+        }
+      }
+    }
+
+    /* if no downstream versions are the latest version, then check to see if this one is */ 
+    if(status == null) {
+      timer.aquire();
+      ReentrantReadWriteLock lock = getCheckedInLock(name);
+      lock.readLock().lock();
+      try {
+        timer.resume();	
+        
+        TreeMap<VersionID,CheckedInBundle> checkedIn = getCheckedInBundles(name);
+        if(checkedIn.lastKey().equals(vid))
+          status = lookupOrCreateNodeStatus(nodeID, table);
+      }
+      finally {
+        lock.readLock().unlock();
+      }  
+    }
+    
+    /* pop the current node off of the end of the branch */ 
+    branch.removeLast();
+    
+    return status;
+  } 
+
+  /**
+   * Recursively process working node versions downstream.
+   * 
+   * @param nodeID
+   *   The unique working version identifier.
+   * 
+   * @param branch
+   *   The names of the nodes from the root to this node.
+   * 
+   * @param table
+   *   The previously computed states indexed by node name.
+   * 
+   * @param timer
+   *   The shared task timer for this operation.
+   * 
+   * @return
+   *   The status of the current node. 
+   */ 
+  private NodeStatus
+  getWorkingDownstreamNodeStatus
+  (
+   NodeID nodeID, 
+   LinkedList<String> branch, 
+   TreeMap<String,NodeStatus> table, 
    TaskTimer timer
   ) 
     throws PipelineException
@@ -17731,77 +18035,44 @@ class MasterMgr
 
     /* check for circularity */ 
     checkBranchForCircularity(name, branch);
-
-    /* skip nodes which have already been processed */ 
-    if(table.containsKey(name)) 
-      return;
-
+  
     /* push the current node onto the end of the branch */ 
     branch.addLast(name);
 
-
-    timer.aquire();
-    ReentrantReadWriteLock lock = getDownstreamLock(name);
-    lock.readLock().lock();
-    try {
-      timer.resume();
-
-      /* add the status stub */ 
-      NodeStatus status = root; 
-      if(!root.getNodeID().equals(nodeID)) {
-	status = new NodeStatus(nodeID);
-	table.put(name, status);
+    /* get working downstream links */ 
+    TreeSet<String> links = null;
+    {
+      timer.aquire();
+      ReentrantReadWriteLock lock = getDownstreamLock(name);
+      lock.readLock().lock();
+      try {
+        timer.resume();
+        
+        DownstreamLinks dsl = getDownstreamLinks(name); 
+        links = dsl.getWorking(nodeID); 
       }
-
-      /* process downstream nodes */ 
-      DownstreamLinks dsl = getDownstreamLinks(name); 
-      if(dsl == null)
-	throw new IllegalStateException(); 
-
-      TreeSet<String> wlinks = dsl.getWorking(nodeID);
-      if(wlinks != null) {
-	for(String lname : wlinks) {
-	  getDownstreamNodeStatus(root, new NodeID(nodeID, lname), null, 
-				  branch, table, timer);
-
-	  NodeStatus lstatus = table.get(lname);
-	  if(lstatus == null)
-	    throw new IllegalStateException(); 
-
-	  status.addTarget(lstatus);
-	  lstatus.addSource(status);
-	}
-      }
-      else {
-	TreeMap<String,VersionID> clinks = null;
-	if(vid != null)
-	  clinks = dsl.getCheckedIn(vid);
-	else 
-	  clinks = dsl.getLatestCheckedIn();
-
-	if(clinks != null) {
-	  for(String lname : clinks.keySet()) {
-	    VersionID lvid = clinks.get(lname);
-	    
-	    getDownstreamNodeStatus(root, new NodeID(nodeID, lname), lvid, 
-				    branch, table, timer);
-	    
-	    NodeStatus lstatus = table.get(lname);
-	    if(lstatus == null)
-	      throw new IllegalStateException(); 
-	    
-	    status.addTarget(lstatus);
-	    lstatus.addSource(status);
-	  }
-	}
+      finally {
+        lock.readLock().unlock();
       }
     }
-    finally {
-      lock.readLock().unlock();
+
+    /* returned status for this node */ 
+    NodeStatus status = lookupOrCreateNodeStatus(nodeID, table);
+
+    /* process downstream links... */ 
+    if(links !=  null) {
+      for(String dname : links) {
+        NodeID dnodeID = new NodeID(nodeID, dname);
+        NodeStatus dstatus = getWorkingDownstreamNodeStatus(dnodeID, branch, table, timer);
+        dstatus.addSource(status);
+        status.addTarget(dstatus);
+      }
     }
 
     /* pop the current node off of the end of the branch */ 
     branch.removeLast();
+
+    return status;
   } 
 
   /**
@@ -17811,8 +18082,39 @@ class MasterMgr
    * @param nodeID
    *   The unique working version identifier.
    * 
-   * @param branch
-   *   The names of the nodes from the root to this node.
+   * @param fseqs
+   *   The collected primary file sequences indexed by fully resolved names of the nodes.
+   * 
+   * @param timer
+   *   The shared task timer for this operation.
+   */ 
+   private void 
+   getDownstreamWorkingSeqs
+   (
+    NodeID nodeID, 
+    TreeMap<String,FileSeq> fseqs,
+    TaskTimer timer
+   ) 
+     throws PipelineException
+   {
+     NodeStatus status = null;
+     {
+       TreeMap<String,NodeStatus> table = new TreeMap<String,NodeStatus>();
+       NodeStatus root = lookupOrCreateNodeStatus(nodeID, table);
+       LinkedList<String> branch = new LinkedList<String>();
+       status = getWorkingDownstreamNodeStatus(nodeID, branch, table, timer);
+     }
+
+     getDownstreamWorkingSeqsHelper(status, fseqs, timer);
+   }
+
+  /**
+   * Use the previously computed node status to recursively find the names and primary 
+   * file sequences of all nodes downstream of the given node which are currently 
+   * checked-out into the given working area. <P> 
+   * 
+   * @param status
+   *   The downtream node status. 
    * 
    * @param fseqs
    *   The collected primary file sequences indexed by fully resolved names of the nodes.
@@ -17821,82 +18123,47 @@ class MasterMgr
    *   The shared task timer for this operation.
    */ 
   private void 
-  getDownstreamWorkingSeqs
+  getDownstreamWorkingSeqsHelper
   (
-   NodeID nodeID, 
-   LinkedList<String> branch, 
+   NodeStatus status, 
    TreeMap<String,FileSeq> fseqs,
    TaskTimer timer
   ) 
     throws PipelineException
   {
+    NodeID nodeID = status.getNodeID();
     String name = nodeID.getName();
-
-    /* check for circularity */ 
-    checkBranchForCircularity(name, branch);
 
     /* skip nodes which have already been processed */ 
     if(fseqs.containsKey(name)) 
       return;
 
-    /* push the current node onto the end of the branch */ 
-    branch.addLast(name);
-
     /* add the current node */ 
-    boolean hasWorking = false;
     timer.aquire();
     ReentrantReadWriteLock workingLock = getWorkingLock(nodeID);
     workingLock.readLock().lock(); 
     try {
       timer.resume();
-      
+    
       WorkingBundle working = null;
       try {
-	working = getWorkingBundle(nodeID);
+ 	working = getWorkingBundle(nodeID);
       }
       catch(PipelineException ex) {
       }
-      
+    
       if(working != null) {
-	hasWorking = true;
-	FileSeq fseq = working.getVersion().getPrimarySequence();
-	fseqs.put(name, fseq);
+ 	FileSeq fseq = working.getVersion().getPrimarySequence();
+ 	fseqs.put(name, fseq);
       }
     }
     finally {
       workingLock.readLock().unlock();
     }
-
-    if(hasWorking) {
-      /* lookup the names of the working nodes downstream */ 
-      TreeSet<String> wlinks = null;
-      {
-        timer.aquire();
-        ReentrantReadWriteLock lock = getDownstreamLock(name);
-        lock.readLock().lock();
-        try {
-          timer.resume();
-          
-          DownstreamLinks dsl = getDownstreamLinks(name); 
-          if(dsl == null)
-            throw new IllegalStateException(); 
-          
-          wlinks = dsl.getWorking(nodeID);
-        }
-        finally {
-          lock.readLock().unlock();
-        }
-      }
-        
-      /* process any downstream nodes... */ 
-      if(wlinks != null) {
-        for(String lname : wlinks) 
-          getDownstreamWorkingSeqs(new NodeID(nodeID, lname), branch, fseqs, timer);
-      }
-    }
-
-    /* pop the current node off of the end of the branch */ 
-    branch.removeLast();
+      
+    /* process any downstream nodes... */ 
+    for(NodeStatus dstatus : status.getTargets()) 
+      getDownstreamWorkingSeqsHelper(dstatus, fseqs, timer);
   } 
 
 
@@ -18325,9 +18592,8 @@ class MasterMgr
     return bundle;
   }
 
-
   /**
-   * Get the downstream links for a node.
+   * Get the downstream links cache for a node.
    * 
    * This method assumes that a read/write lock for the downstream links has already been 
    * aquired.
@@ -18364,6 +18630,7 @@ class MasterMgr
     return links;
   }
 
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   N O D E   G A R B A G E   C O L L E C T O R                                          */
@@ -20945,11 +21212,7 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Write the downstream links to disk. <P> 
-   * 
-   * If no working or checked-in versions exist for the node, the downstream links file
-   * associated with the node will be removed instead of being written.  See the 
-   * @{link DownstreamLinks#hasLinks DownstreamLinks.hasLink} method for details. <P> 
+   * Write the downstream links to disk (if any exist). <P> 
    * 
    * This method assumes that the write lock for the downstream links has already been 
    * aquired.
@@ -20967,22 +21230,13 @@ class MasterMgr
   ) 
     throws PipelineException
   {
-    File file = new File(pNodeDir, "downstream/" + links.getName());
-    File dir  = file.getParentFile();
-
-    if(!links.hasLinks()) {
-      if(file.isFile()) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Glu, LogMgr.Level.Finer,
-	   "Removing Obsolete Downstream Links: " + links.getName());
-
-	if(!file.delete()) 
-	  throw new PipelineException
-	    ("Unable to delete obsolete downstream links file (" + file + ")!");
-      }
-
+    if(!links.hasAny()) {
+      removeDownstreamLinks(links.getName());
       return;
     }
+
+    File file = new File(pNodeDir, "downstream/" + links.getName());
+    File dir  = file.getParentFile();
     
     try {
       LogMgr.getInstance().log
@@ -21015,7 +21269,8 @@ class MasterMgr
   /**
    * Read the downstream links from disk. <P> 
    * 
-   * This method assumes that it was called from within a synchronized(pDownstream) block.
+   * This method assumes that the write lock for the downstream links has already been 
+   * aquired.
    * 
    * @param name 
    *   The fully resolved node name.
@@ -21060,6 +21315,33 @@ class MasterMgr
   }
 
 
+  /**
+   * Remove the downstream link file. 
+   * 
+   * This method assumes that the write lock for the downstream links has already been 
+   * aquired.
+   * 
+   * @param name
+   *   The name of the node who's downstream links are to be deleted. 
+   * 
+   * @throws PipelineException
+   *   If unable to delete the downstream links file.
+   */ 
+  private void 
+  removeDownstreamLinks
+  (
+   String name
+  ) 
+    throws PipelineException
+  {
+    File file = new File(pNodeDir, "downstream" + name);
+    if(file.isFile()) {
+      if(!file.delete())
+        throw new PipelineException
+          ("Unable to remove the downstream links file (" + file + ")!");
+    }
+  }
+    
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -21386,22 +21668,6 @@ class MasterMgr
 	  /* update the node tree entry */ 
 	  pNodeTree.addCheckedInNodeTreePath(vsn);
 
-	  /* initialize the downstream links for the new checked-in version of this node */ 
-	  {
-	    timer.aquire();
-	    ReentrantReadWriteLock downstreamLock = getDownstreamLock(name);
-	    downstreamLock.writeLock().lock();
-	    try {
-	      timer.resume();
-	      
-	      DownstreamLinks dsl = getDownstreamLinks(name);
-	      dsl.createCheckedIn(vsn.getVersionID());
-	    }
-	    finally {
-	      downstreamLock.writeLock().unlock();
-	    }    
-	  }
-
 	  /* set the checked-in downstream links from the upstream nodes to this node */ 
 	  for(LinkVersion link : vsn.getSources()) { 
 	    String lname = link.getName();
@@ -21594,7 +21860,7 @@ class MasterMgr
 
  
   /*----------------------------------------------------------------------------------------*/
-  /*   I N T E R N A L S                                                                    */
+  /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
  
   /**

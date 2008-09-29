@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.70 2008/07/15 17:25:28 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.71 2008/09/29 19:02:19 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -93,7 +93,8 @@ class GenUserPrefsApp
 	 false, true, false, 85),  /* ALT+U */
 	 
 	 new HotKeyPref
-	 ("Opens up a dialog allowing the selection and invocation of all installed builders.",
+	 ("Opens up a dialog allowing the selection and invocation of all installed " + 
+          "builders.",
 	  "LaunchBuilders", "Launch Builders:"),
 
 	new BasePref(),
@@ -955,6 +956,12 @@ class GenUserPrefsApp
       looks.add("Rounded");
       looks.add("Square");
 
+      LinkedList<String> dmodes = new LinkedList();
+      dmodes.add("None");          
+      dmodes.add("Working Only");
+      dmodes.add("Checked-In Only");  
+      dmodes.add("All");                 
+    
       BasePref prefs[] = {
 	new BooleanPref
 	("Whether to always perform heavyweight node status updates.  Heavyweight status " + 
@@ -970,9 +977,9 @@ class GenUserPrefsApp
 	("The initial orientation and alignment of the displayed node trees.", 
 	 "Orientation", "Default Orientation:", orient, "Horizontal"),
 
-	new BooleanPref
-	("Whether to initially show downstream links by default.",
-	 "ShowDownstream", "Show Downstream:", false), 
+	new ChoicePref
+	("The initial criteria used to determine how downstream node status is computed.", 
+	 "DownstreamMode", "Downstream Mode:", dmodes, "None"),
 
 	new BooleanPref
 	("Whether to fit nodes as closely together as possible.", 
@@ -1180,9 +1187,21 @@ class GenUserPrefsApp
 	 "ToggleOrientation", "Toggle Orientation:", 
 	 false, false, false, 79),  /* O */
 
+	new BasePref(),
+
 	new HotKeyPref
-	("Show/hide nodes downstream of the focus node.",
-	 "NodeViewerShowHideDownstreamNodes", "Show/Hide Downstream:", 
+	("Toggle showing only downstream nodes in the current working area.",
+	 "NodeViewerDownstreamWorkingOnly", "Downstream Working Only:", 
+	 false, false, false, 87),  /* W */
+
+	new HotKeyPref
+	("Toggle showing only checked-in downstream nodes.",
+	 "NodeViewerDownstreamCheckedInOnly", "Downstream Checked-In Only:", 
+	 false, false, false, 67),  /* C */
+
+	new HotKeyPref
+	("Toggle showing both working and checked-in downstream nodes.",
+	 "NodeViewerDownstreamAll", "Downstream All:", 
 	 false, false, false, 68),  /* D */
 
 	new BasePref(),
@@ -2396,7 +2415,9 @@ class GenUserPrefsApp
 	group.add("NodeViewerShowHideEditorHint"); 
 	group.add("ShowHideActionHint"); 
 	group.add("NodeViewerShowHideEditingHint"); 
-	group.add("NodeViewerShowHideDownstreamNodes");
+	group.add("NodeViewerDownstreamWorkingOnly");
+	group.add("NodeViewerDownstreamCheckedInOnly");
+	group.add("NodeViewerDownstreamAll");
 	group.add(hideAll);
       }
 
@@ -2711,7 +2732,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.70 2008/07/15 17:25:28 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.71 2008/09/29 19:02:19 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -2966,7 +2987,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.70 2008/07/15 17:25:28 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.71 2008/09/29 19:02:19 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -4323,7 +4344,7 @@ class GenUserPrefsApp
 
       StringBuilder buf = new StringBuilder();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.70 2008/07/15 17:25:28 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.71 2008/09/29 19:02:19 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 

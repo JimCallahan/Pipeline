@@ -1,4 +1,4 @@
-// $Id: NodeMultiStatusReq.java,v 1.2 2008/09/29 19:02:18 jim Exp $
+// $Id: NodeDownstreamStatusReq.java,v 1.1 2008/09/29 19:02:18 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -9,16 +9,16 @@ import java.io.*;
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   N O D E   M U L T I   S T A T U S   R E Q                                              */
+/*   N O D E   D O W N S T R E A M   S T A T U S   R E Q                                    */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Get the status of multiple overlapping trees of nodes. <P> 
+ * Get the downstream only status of multiple nodes. <P> 
  * 
  * @see MasterMgr
  */
 public
-class NodeMultiStatusReq
+class NodeDownstreamStatusReq
   implements Serializable
 {
   /*----------------------------------------------------------------------------------------*/
@@ -35,26 +35,18 @@ class NodeMultiStatusReq
    *   The name of the user's working area view. 
    * 
    * @param rootNames
-   *   The fully resolved names of the nodes for which <CODE>NodeStatus</CODE> will be 
-   *   reported.
-   * 
-   * @param heavyNames
-   *   The fully resolved names of the nodes which require heavyweight node status details.
-   *   All nodes upstream will also return heavyweight details as well.  Note that in order
-   *   for these heavyweight nodes to be returned, they must be included or reachable
-   *   upstream from the <CODE>rootNames</CODE> set.
+   *   The fully resolved names of the nodes for which node stats will be reported.
    * 
    * @param dmode
    *   The criteria used to determine how downstream node status is reported for the nodes
-   *   included in the <CODE>roots</CODE> set.
+   *   included in the <CODE>rootNames</CODE> set.
    */
   public
-  NodeMultiStatusReq
+  NodeDownstreamStatusReq
   (
    String author, 
    String view, 
    TreeSet<String> rootNames, 
-   TreeSet<String> heavyNames, 
    DownstreamMode dmode   
   )
   { 
@@ -70,11 +62,6 @@ class NodeMultiStatusReq
       throw new IllegalArgumentException
 	("The root node names cannot be (null)!");
     pRootNames = rootNames; 
-
-    if(heavyNames == null) 
-      throw new IllegalArgumentException
-	("The heavyweight node names cannot be (null)!");
-    pHeavyNames = heavyNames; 
 
     if(dmode == null) 
       throw new IllegalArgumentException
@@ -116,15 +103,6 @@ class NodeMultiStatusReq
   }
 
   /**
-   * Gets the fully resolved names of the nodes which require heavyweight node status details.
-   */
-  public TreeSet<String>
-  getHeavyNames() 
-  {
-    return pHeavyNames;
-  }
-  
-  /**
    * The criteria used to determine how downstream node status is reported.
    */ 
   public DownstreamMode 
@@ -139,7 +117,7 @@ class NodeMultiStatusReq
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 2386610225504409786L;
+  private static final long serialVersionUID = -5497355370176560223L;
 
   
 
@@ -161,11 +139,6 @@ class NodeMultiStatusReq
    * The fully resolved names of the nodes for which node stats will be reported.
    */
   private TreeSet<String>  pRootNames; 
-
-  /** 
-   * The fully resolved names of the nodes which require heavyweight node status details.
-   */
-  private TreeSet<String>  pHeavyNames; 
 
   /**
    * The criteria used to determine how downstream node status is reported.

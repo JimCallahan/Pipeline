@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.123 2008/06/26 20:45:34 jesse Exp $
+// $Id: MasterMgrClient.java,v 1.124 2008/09/29 19:02:17 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -5110,13 +5110,12 @@ class MasterMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Get the heavyweight status of the tree of nodes rooted at a node. <P> 
+   * Get the heavyweight upstream status of the tree of nodes rooted at a node. <P> 
    * 
-   * In addition to providing node status information for the given node, the returned 
-   * <CODE>NodeStatus</CODE> instance can be used access the status of all nodes (both 
-   * upstream and downstream) linked to the given node.  The status information for the 
-   * upstream nodes will also include detailed state and version information which is 
-   * accessable by calling the {@link NodeStatus#getDetails NodeStatus.getDetails} method.
+   * The status information for all nodes upstream of and including the root node will include
+   * detailed per-file state and version information which is accessable by calling the 
+   * {@link NodeStatus#getHeavyDetails NodeStatus.getHeavyDetails} method.  No downstream 
+   * node status will be returned.
    * 
    * @param author 
    *   The name of the user which owns the working version.
@@ -5139,17 +5138,16 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {
-    return status(new NodeID(author, view, name), false);
+    return status(new NodeID(author, view, name), false, DownstreamMode.None);
   } 
 
   /** 
-   * Get the heavyweight status of the tree of nodes rooted at a node. <P> 
+   * Get the heavyweight upstream status of the tree of nodes rooted at a node. <P> 
    * 
-   * In addition to providing node status information for the given node, the returned 
-   * <CODE>NodeStatus</CODE> instance can be used access the status of all nodes (both 
-   * upstream and downstream) linked to the given node.  The status information for the 
-   * upstream nodes will also include detailed state and version information which is 
-   * accessable by calling the {@link NodeStatus#getDetails NodeStatus.getDetails} method.
+   * The status information for all nodes upstream of and including the root node will include
+   * detailed per-file state and version information which is accessable by calling the 
+   * {@link NodeStatus#getHeavyDetails NodeStatus.getHeavyDetails} method.  No downstream 
+   * node status will be returned.
    * 
    * @param nodeID 
    *   The unique working version identifier. 
@@ -5164,7 +5162,7 @@ class MasterMgrClient
   ) 
     throws PipelineException
   {
-    return status(nodeID, false);
+    return status(nodeID, false, DownstreamMode.None);
   } 
 
   /** 
@@ -5174,7 +5172,9 @@ class MasterMgrClient
    * <CODE>NodeStatus</CODE> instance can be used access the status of all nodes (both 
    * upstream and downstream) linked to the given node.  The status information for the 
    * upstream nodes will also include detailed state and version information which is 
-   * accessable by calling the {@link NodeStatus#getDetails NodeStatus.getDetails} method.
+   * accessable by calling the {@link NodeStatus#getLightDetails NodeStatus.getLightDetails}
+   * method or the {@link NodeStatus#getHeavyDetails NodeStatus.getHeavyDetails} depending
+   * on whether lightweight or heavyweight details have been requested.  
    * 
    * @param author 
    *   The name of the user which owns the working version.
@@ -5186,7 +5186,11 @@ class MasterMgrClient
    *   The fully resolved node name.
    * 
    * @param lightweight
-   *   Get only lightweight node status detail information for the upstream nodes.
+   *   Whether to report only lightweight node status detail information for the 
+   *   upstream nodes.
+   * 
+   * @param dmode
+   *   The criteria used to determine how downstream node status is reported.
    * 
    * @throws PipelineException
    *   If unable to determine the status of the node.
@@ -5197,11 +5201,12 @@ class MasterMgrClient
    String author, 
    String view, 
    String name, 
-   boolean lightweight
+   boolean lightweight, 
+   DownstreamMode dmode
   ) 
     throws PipelineException
   {
-    return status(new NodeID(author, view, name), lightweight);
+    return status(new NodeID(author, view, name), lightweight, dmode);
   } 
 
   /** 
@@ -5211,13 +5216,19 @@ class MasterMgrClient
    * <CODE>NodeStatus</CODE> instance can be used access the status of all nodes (both 
    * upstream and downstream) linked to the given node.  The status information for the 
    * upstream nodes will also include detailed state and version information which is 
-   * accessable by calling the {@link NodeStatus#getDetails NodeStatus.getDetails} method.
+   * accessable by calling the {@link NodeStatus#getLightDetails NodeStatus.getLightDetails}
+   * method or the {@link NodeStatus#getHeavyDetails NodeStatus.getHeavyDetails} depending
+   * on whether lightweight or heavyweight details have been requested.  
    * 
    * @param nodeID 
    *   The unique working version identifier. 
    * 
    * @param lightweight
-   *   Get only lightweight node status detail information for the upstream nodes.
+   *   Whether to report only lightweight node status detail information for the 
+   *   upstream nodes.
+   * 
+   * @param dmode
+   *   The criteria used to determine how downstream node status is reported.
    * 
    * @throws PipelineException
    *   If unable to determine the status of the node.
@@ -5226,13 +5237,14 @@ class MasterMgrClient
   status
   ( 
    NodeID nodeID, 
-   boolean lightweight
+   boolean lightweight, 
+   DownstreamMode dmode
   ) 
     throws PipelineException
   {
     verifyConnection();
  
-    NodeStatusReq req = new NodeStatusReq(nodeID, lightweight);
+    NodeStatusReq req = new NodeStatusReq(nodeID, lightweight, dmode);
 
     Object obj = performTransaction(MasterRequest.Status, req);
     if(obj instanceof NodeStatusRsp) {
@@ -5246,31 +5258,38 @@ class MasterMgrClient
   } 
 
   /** 
-   * Get the status of multiple overlapping trees of nodes. <P> 
+   * Get the status of multiple possibly overlapping trees of nodes. <P> 
    * 
-   * For each of the root nodes given, either a lightweight or heavyweight node status can 
-   * be performed on the node and its upstream dependencies.  For nodes which are upstream of
-   * multiple root nodes, heavyweight status is performed in preference to lightweight status.
-   * The ability to specify different status modes at each root node means that the returned 
-   * NodeStatus datastructures can contain mixtures of lightweight and heavyweight node 
-   * details. See the {@link NodeDetails} class for more information about the information
-   * available for each mode.<P> 
+   * For each of the root nodes given, a <CODE>NodeStatus</CODE> instance will be returned
+   * which access the status of all nodes (both upstream and downstream) linked to the given 
+   * node.  By default, the upstream node status details will be lightweight (see 
+   * {@link NodeStatus#getLightDetails NodeStatus.getLightDetails}) for all nodes root at 
+   * and included in the <CODE>rootNames</CODE> node name set.  However, heavyweight status 
+   * (see {@link NodeStatus#getHeavyDetails NodeStatus.getHeavyDetails}) can be returned for 
+   * upstream subtree of these root nodes by including them in the <CODE>heavyNames</CODE>
+   * node name set.  If the contents of the <CODE>rootNames</CODE> and <CODE>heavyNames</CODE>
+   * node name sets are identical, then all upstream nodes will have heavyweight node 
+   * status details.<P> 
    * 
    * This method returns a table containing {@link NodeStatus} instances for each of the 
-   * given root nodes indexed by their fully resolved node names.  If status for a root
-   * node is requested and the node does not exist, then the entry in this table for the 
-   * missing node will be <CODE>null</CODE>.  To enable partial completion of this method
-   * when specified both existing and missing root nodes, a PipelineException will not be
-   * thrown in the limited case of one or more root nodes not existing. <P> 
+   * given nodes in the <CODE>rootNames</CODE> set indexed by their fully resolved node names.
+   * If status for a root node is requested and the node does not exist, then the entry in 
+   * this table for the missing node will be <CODE>null</CODE>.  To enable partial completion 
+   * of this method when specified both existing and missing root nodes, a PipelineException 
+   * will not be thrown when only a subset of the nodes are missing. <P> 
    * 
-   * In not <CODE>null</CODE>, the <CODE>NodeStatus</CODE> for each root node can be used 
-   * access the status of all nodes (both upstream and downstream) linked to the node.  The 
-   * status information for the upstream nodes will also include detailed state and version 
-   * information accessable by calling the {@link NodeStatus#getDetails 
-   * NodeStatus.getDetails} method.<P> 
+   * If not <CODE>null</CODE>, the <CODE>NodeStatus</CODE> for each root node can be used 
+   * access the status of all nodes (both upstream and downstream) linked to the node.
+   * The status information for the upstream nodes will also include detailed state and 
+   * version information which is accessable by calling the {@link NodeStatus#getLightDetails 
+   * NodeStatus.getLightDetails} method or the {@link NodeStatus#getHeavyDetails 
+   * NodeStatus.getHeavyDetails} depending on whether lightweight or heavyweight details 
+   * have been requested.  <P> 
    * 
-   * Note that when computing node status where the given root nodes share a large percentage
-   * of thier upstream nodes, this method will be much more efficient than calling the single
+   * For any given node, only one <CODE>NodeStatus</CODE> is actually returned but it may 
+   * be accessible from multiple paths and from various root nodes.  This means that when 
+   * computing node status where the given root nodes share a significant portion of their
+   * upstream nodes, this method will be much more efficient than calling the single
    * node {@link #status status} method for each root node seperately. 
    * 
    * @param author 
@@ -5279,29 +5298,42 @@ class MasterMgrClient
    * @param view 
    *   The name of the user's working area view. 
    * 
-   * @param roots
-   *   Whether to get only lightweight (true) or heavyweight (false) node status detail 
-   *   information indexed by the fully resolved named of the root nodes.
+   * @param rootNames
+   *   The fully resolved names of the nodes for which node stats will be reported.
+   * 
+   * @param heavyNames
+   *   The fully resolved names of the nodes which require heavyweight node status details.
+   *   All nodes upstream will also return heavyweight details as well.  Note that in order
+   *   for these heavyweight nodes to be returned, they must be included or reachable
+   *   upstream from the <CODE>rootNames</CODE> set. 
+   * 
+   * @param dmode
+   *   The criteria used to determine how downstream node status is reported for the nodes
+   *   included in the <CODE>rootNames</CODE> set.
    * 
    * @return 
-   *   The node status for each of the root nodes indexed by the root nodes fully resolved
-   *   node name.  This table contain <CODE>null</CODE> values (see above).
+   *   The node status for each of the root nodes indexed by th root nodes fully resolved
+   *   names of these nodes.  This table contain <CODE>null</CODE> values for some keys
+   *   (see above).
    * 
    * @throws PipelineException
-   *   If unable to determine the status of the node.
+   *   If unable to determine the status of any of the root nodes.
    */ 
   public synchronized TreeMap<String,NodeStatus> 
   status
   ( 
    String author, 
    String view, 
-   TreeMap<String,Boolean> roots
+   TreeSet<String> rootNames,
+   TreeSet<String> heavyNames, 
+   DownstreamMode dmode   
   ) 
     throws PipelineException
   {
     verifyConnection();
  
-    NodeMultiStatusReq req = new NodeMultiStatusReq(author, view, roots); 
+    NodeMultiStatusReq req = 
+      new NodeMultiStatusReq(author, view, rootNames, heavyNames, dmode); 
 
     Object obj = performTransaction(MasterRequest.MultiStatus, req);
     if(obj instanceof NodeMultiStatusRsp) {
@@ -5314,7 +5346,75 @@ class MasterMgrClient
     }
   } 
 
+
   
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Get the downstream only status of multiple nodes. <P> 
+   * 
+   * For each of the root nodes given, a <CODE>NodeStatus</CODE> instance will be returned
+   * which access the status of all nodes downstream linked to the given node according the 
+   * the criteria specified by the given downtream mode. <P> 
+   * 
+   * This method returns a table containing {@link NodeStatus} instances for each of the 
+   * given nodes in the <CODE>rootNames</CODE> set indexed by their fully resolved node names.
+   * If status for a root node is requested and the node does not exist, then the entry in 
+   * this table for the missing node will be <CODE>null</CODE>.  To enable partial completion 
+   * of this method when specified both existing and missing root nodes, a PipelineException 
+   * will not be thrown when only a subset of the nodes are missing. <P> 
+   * 
+   * Note that all returned <CODE>NodeStatus</CODE> instances will not contain any detailed
+   * status information, just the minimal status and connectivity information. <P> 
+   * 
+   * @param author 
+   *   The name of the user which owns the working version.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param rootNames
+   *   The fully resolved names of the nodes for which node stats will be reported.
+   * 
+   * @param dmode
+   *   The criteria used to determine how downstream node status is reported for the nodes
+   *   included in the <CODE>rootNames</CODE> set.
+   * 
+   * @return 
+   *   The downstream node status for each of the root nodes indexed by th root nodes 
+   *   fully resolved names of these nodes.  This table may contain <CODE>null</CODE> values 
+   *   for some keys (see above).
+   * 
+   * @throws PipelineException
+   *   If unable to determine the status of any of the root nodes.
+   */ 
+  public synchronized TreeMap<String,NodeStatus> 
+  downstreamStatus
+  ( 
+   String author, 
+   String view, 
+   TreeSet<String> rootNames,
+   DownstreamMode dmode   
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+ 
+    NodeDownstreamStatusReq req = 
+      new NodeDownstreamStatusReq(author, view, rootNames, dmode); 
+
+    Object obj = performTransaction(MasterRequest.DownstreamStatus, req);
+    if(obj instanceof NodeMultiStatusRsp) {
+      NodeMultiStatusRsp rsp = (NodeMultiStatusRsp) obj;
+      return rsp.getNodeStatus();
+    }
+    else {
+      handleFailure(obj);
+       return null;
+    }
+  } 
+  
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   R E V I S I O N   C O N T R O L                                                      */

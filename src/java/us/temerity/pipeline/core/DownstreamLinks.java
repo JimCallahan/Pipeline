@@ -1,4 +1,4 @@
-// $Id: DownstreamLinks.java,v 1.11 2006/09/29 03:03:21 jim Exp $
+// $Id: DownstreamLinks.java,v 1.12 2008/09/29 19:02:17 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -39,8 +39,8 @@ class DownstreamLinks
   public
   DownstreamLinks() 
   {
-    pWorkingLinks   = new TreeMap<NodeID,TreeSet<String>>();
-    pCheckedInLinks = new TreeMap<VersionID,TreeMap<String,VersionID>>();
+    pWorkingLinks   = new DoubleMap<String,String,TreeSet<String>>();
+    pCheckedInLinks = new TreeMap<VersionID,MappedSet<String,VersionID>>();
   }
 
   /**
@@ -59,8 +59,8 @@ class DownstreamLinks
       throw new IllegalArgumentException("The node name cannot be (null)!");
     pName = name;
 
-    pWorkingLinks   = new TreeMap<NodeID,TreeSet<String>>();
-    pCheckedInLinks = new TreeMap<VersionID,TreeMap<String,VersionID>>();
+    pWorkingLinks   = new DoubleMap<String,String,TreeSet<String>>();
+    pCheckedInLinks = new TreeMap<VersionID,MappedSet<String,VersionID>>();
   }
 
   
@@ -70,19 +70,103 @@ class DownstreamLinks
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Are there any working or checked-in versions of this node existing? <P> 
-   * 
-   * There may not be any downstream links for these nodes, but as long as there are 
-   * working or checked-in versions, the downstream links file should still exist.  This
-   * method is used by @{link MasterMgr#writeDownstreamLinks MasterMgr.writeDownstreamLinks}
-   * to determine if the downstream links file should be updated or destroyed.
+   * Whether there area any working versions downstream of this node.
    */ 
   public boolean 
-  hasLinks() 
+  hasWorking() 
   {
-    return !(pCheckedInLinks.isEmpty() && pWorkingLinks.isEmpty());
+    return (!pWorkingLinks.isEmpty());
   }
 
+  /**
+   * Whether there are any working versions downstream of this node in the given working area.
+   * 
+   * @param author 
+   *   The name of the user which owns the upstream working version.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   */ 
+  public boolean 
+  hasWorking
+  (
+   String author, 
+   String view
+  ) 
+  {
+    if(author == null) 
+      throw new IllegalArgumentException("The author cannot be (null)!");
+
+    if(view == null) 
+      throw new IllegalArgumentException("The view cannot be (null)!");
+
+    return pWorkingLinks.containsKey(author, view);
+  }
+
+  /** 
+   * Whether there are any working versions downstream of this node in the working area 
+   * containing the given working version.
+   * 
+   * @param nodeID
+   *   The unique working version identifier of the upstream node.
+   */
+  public boolean
+  hasWorking
+  (
+   NodeID nodeID
+  ) 
+  {
+    if(nodeID == null) 
+      throw new IllegalArgumentException
+        ("The upstream working version node ID cannot be (null)!");
+
+    if(!nodeID.getName().equals(pName))
+      throw new IllegalStateException(); 
+
+    return hasWorking(nodeID.getAuthor(), nodeID.getView());
+  }
+
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Are there any checked-in versions downstream of this node.
+   */ 
+  public boolean 
+  hasCheckedIn() 
+  {
+    return (!pCheckedInLinks.isEmpty()); 
+  }
+
+  /**
+   * Are there any checked-in versions downstream of the given checked-in version of 
+   * this node.
+   * 
+   * @param vid 
+   *   The revision number of the checked-in upstream node.
+   */ 
+  public boolean 
+  hasCheckedIn
+  (
+   VersionID vid 
+  ) 
+  {
+    return (pCheckedInLinks.containsKey(vid));
+  }
+
+   
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Whether there are any working or checked-in versions downstream of this node.
+   */ 
+  public boolean 
+  hasAny() 
+  {
+    return (hasWorking() || hasCheckedIn());
+  }
+
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
@@ -100,68 +184,118 @@ class DownstreamLinks
   }
 
 
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   W O R K I N G   V E R S I O N S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Gets the names of the nodes connected by a downstream link to the given working 
-   * version. <P> 
+   * Gets the names of the working versions of nodes downstream of the given working version
+   * within a specific working area. <P> 
    * 
-   * A return value of <CODE>null</CODE> indicates that no working version with the 
-   * given node ID exists.  If the working version does exist and has no downstream
-   * links, an empty <CODE>TreeSet</CODE> will be returned.
+   * @param author 
+   *   The name of the user which owns the upstream working version.
    * 
-   * @param id
-   *   The unique working version identifier.
+   * @param view 
+   *   The name of the user's working area view. 
    * 
    * @return
-   *   The names of the downstream nodes.
+   *   The names of the downstream nodes or <CODE>null</CODE> if none exist.
    */
   public TreeSet<String>
   getWorking
   (
-   NodeID id
+   String author, 
+   String view
   ) 
   {
-    if(id == null) 
-      throw new IllegalArgumentException
-	("The working version ID cannot be (null)!");
-    if(!id.getName().equals(pName))
-      throw new IllegalStateException(); 
+    if(author == null) 
+      throw new IllegalArgumentException("The author cannot be (null)!");
 
-    if(pWorkingLinks.containsKey(id)) {
-      TreeSet<String> links = pWorkingLinks.get(id);
-      if(links != null)
-	return new TreeSet<String>(links);
-      else 
-	return new TreeSet<String>();
-    }
+    if(view == null) 
+      throw new IllegalArgumentException("The view cannot be (null)!");
+
+    TreeSet<String> links = pWorkingLinks.get(author, view);
+    if(links != null) 
+      return new TreeSet<String>(links);
 
     return null;
   }
   
-  /**
-   * If no downstream links already exist for the given working version, create an 
-   * empty set of downstream links for the version.
+  /** 
+   * Gets the names of the working versions of nodes downstream of the given working version
+   * within a specific working area. <P> 
    * 
-   * @param id
-   *   The unique working version identifier.
-   */ 
-  public void 
-  createWorking
+   * @param nodeID
+   *   The unique working version identifier of the upstream node.
+   * 
+   * @return
+   *   The names of the downstream nodes or <CODE>null</CODE> if none exist.
+   */
+  public TreeSet<String>
+  getWorking
   (
-   NodeID id
+   NodeID nodeID
   ) 
   {
-    TreeSet<String> links = pWorkingLinks.get(id);
-    if(links == null) 
-      pWorkingLinks.put(id, null);
+    if(nodeID == null) 
+      throw new IllegalArgumentException
+        ("The upstream working version node ID cannot be (null)!");
+
+    if(!nodeID.getName().equals(pName))
+      throw new IllegalStateException(); 
+
+    return getWorking(nodeID.getAuthor(), nodeID.getView());
   }
 
+  
+  /*----------------------------------------------------------------------------------------*/
+
   /** 
-   * Add the name of a node connected by a downstream link to the given working version.
+   * Add the name of a working version of a node downstream of the given working version
+   * within a specific working area. <P> 
    * 
-   * @param id
-   *   The unique working version identifier.
+   * @param author 
+   *   The name of the user which owns the upstream working version.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param dname 
+   *   The fully resolved name of the downstream node.
+   */
+  public void 
+  addWorking
+  (
+   String author, 
+   String view,
+   String dname
+  ) 
+  {
+    if(author == null) 
+      throw new IllegalArgumentException("The author cannot be (null)!");
+
+    if(view == null) 
+      throw new IllegalArgumentException("The view cannot be (null)!");
+
+    if(dname == null) 
+      throw new IllegalArgumentException("The downstream node name cannot be (null)!");
+
+    TreeSet<String> links = pWorkingLinks.get(author, view);
+    if(links == null) {
+      links = new TreeSet<String>();
+      pWorkingLinks.put(author, view, links);
+    }
+
+    links.add(dname); 
+  }
+ 
+  /** 
+   * Add the name of a working version of a node downstream of the given working version
+   * within a specific working area. <P> 
+   * 
+   * @param nodeID
+   *   The unique working version identifier of the upstream node.
    * 
    * @param name 
    *   The fully resolved name of the downstream node.
@@ -169,98 +303,191 @@ class DownstreamLinks
   public void 
   addWorking
   (
-   NodeID id,
+   NodeID nodeID,
    String name
   ) 
   {
-    if(id == null) 
+    if(nodeID == null) 
       throw new IllegalArgumentException
-	("The working version ID cannot be (null)!");
-    if(!id.getName().equals(pName))
+	("The upstream working version node ID cannot be (null)!");
+
+    if(!nodeID.getName().equals(pName))
       throw new IllegalStateException(); 
     
-    if(name == null) 
-      throw new IllegalArgumentException
-	("The downstream node name cannot be (null)!");
-
-    TreeSet<String> links = pWorkingLinks.get(id);
-    if(links == null) {
-      links = new TreeSet<String>();
-      pWorkingLinks.put(id, links);
-    }
-    links.add(name);
+    addWorking(nodeID.getAuthor(), nodeID.getView(), name);
   }
+ 
+
+  /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Remove the name of a node connected by a downstream link to the given working version.
+   * Remove the name of a working version of a node downstream of the given working version
+   * within a specific working area. <P> 
    * 
-   * @param id
-   *   The unique working version identifier.
+   * This is used by the Release node operation to clean up downstream links to the 
+   * node being released. 
    * 
-   * @param name 
-   *   The fully resolved name of the downstream node.
+   * @param author 
+   *   The name of the user which owns the upstream working version.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param dname 
+   *   The fully resolved name of the downstream node being released.
    */
   public void 
   removeWorking
   (
-   NodeID id,
-   String name
+   String author, 
+   String view,
+   String dname
   ) 
   {
-    if(id == null) 
-      throw new IllegalArgumentException
-	("The working version ID cannot be (null)!");
-    if(!id.getName().equals(pName))
-      throw new IllegalStateException(); 
+    if(author == null) 
+      throw new IllegalArgumentException("The author cannot be (null)!");
 
-    if(name == null) 
-      throw new IllegalArgumentException
-	("The downstream node name cannot be (null)!");
-  
-    TreeSet<String> links = pWorkingLinks.get(id);
+    if(view == null) 
+      throw new IllegalArgumentException("The view cannot be (null)!");
+
+    TreeSet<String> links = pWorkingLinks.get(author, view);
     if(links != null) {
-      links.remove(name);
-      if(links.isEmpty()) 
-	pWorkingLinks.put(id, null);
+      links.remove(dname);
+      if(links.isEmpty())
+        pWorkingLinks.remove(author, view);
     }
   }
-
-  /**
-   * Delete the given working version from the downstream links table. <P> 
+ 
+  /** 
+   * Remove the name of a working version of a node downstream of the given working version
+   * within a specific working area. <P> 
    * 
-   * Used when releasing a working version so that subsequent calls to the 
-   * {@link #getWorking getWorking} method will return <CODE>null</CODE>.
+   * This is used by the Release node operation to clean up downstream links to the 
+   * node being released. 
    * 
-   * @param id
-   *   The unique working version identifier.
-   */ 
+   * @param nodeID
+   *   The unique working version identifier of the upstream node.
+   * 
+   * @param dname 
+   *   The fully resolved name of the downstream node being released.
+   */
   public void 
-  releaseWorking
+  removeWorking
   (
-   NodeID id
+   NodeID nodeID,
+   String dname
   ) 
   {
-    pWorkingLinks.remove(id);
+    if(nodeID == null) 
+      throw new IllegalArgumentException
+	("The upstream working version node ID cannot be (null)!");
+
+    if(!nodeID.getName().equals(pName))
+      throw new IllegalStateException(); 
+
+    if(dname == null) 
+      throw new IllegalArgumentException
+	("The downstream node name cannot be (null)!");
+
+    removeWorking(nodeID.getAuthor(), nodeID.getView(), dname);
   }
 
 
   /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Remove the names of all working versions downstream of the given working version
+   * within a specific working area. <P> 
+   * 
+   * This is used by the Release node operation to clean up all downstream links of the 
+   * node being released.
+   * 
+   * @param author 
+   *   The name of the user which owns the upstream working version being released.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   */ 
+  public void 
+  removeAllWorking
+  (
+   String author, 
+   String view
+  ) 
+  {
+    if(author == null) 
+      throw new IllegalArgumentException("The author cannot be (null)!");
+
+    if(view == null) 
+      throw new IllegalArgumentException("The view cannot be (null)!");
+
+    pWorkingLinks.remove(author, view);
+  }
+
+  /**
+   * Remove the names of all working versions downstream of the given working version
+   * within a specific working area. <P> 
+   * 
+   * This is used by the Release node operation to clean up all downstream links of the 
+   * node being released.
+   * 
+   * @param nodeID
+   *   The unique working version identifier of the upstream node being released.
+   */ 
+  public void 
+  removeAllWorking
+  (
+   NodeID nodeID
+  ) 
+  {
+    if(nodeID == null) 
+      throw new IllegalArgumentException
+	("The upstream working version node ID cannot be (null)!");
+
+    if(!nodeID.getName().equals(pName))
+      throw new IllegalStateException(); 
+
+    removeAllWorking(nodeID.getAuthor(), nodeID.getView());
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   C H E C K E D - I N   V E R S I O N S                                                */
+  /*----------------------------------------------------------------------------------------*/
 
   /**  
-   * Get the revision numbers indexed by node name of the checked-in nodes connected by a 
-   * downstream link to the checked-in version with the given revision number. <P> 
-   * 
-   * A return value of <CODE>null</CODE> indicates that no checked-in version with the given 
-   * revision number exists.  If the checked-in version does exist and has no downstream
-   * links, an empty <CODE>TreeMap</CODE> will be returned.
-   * 
-   * @param vid 
-   *   The revision number of the checked-in node version.
+   * Get the names and revision numbers of the checked-in versions of nodes downstream 
+   * of each of the checked-in versions of a node.<P> 
    * 
    * @return
-   *   The table of revision numbers indexed by the names of the downstream nodes.
+   *   The revision numbers of all checked-in nodes downstream of a specific version of this
+   *   node indexed by upstream node revision number and downstream node name. 
    */
-  public TreeMap<String,VersionID>
+  public TreeMap<VersionID,MappedSet<String,VersionID>> 
+  getAllCheckedIn() 
+  {
+    TreeMap<VersionID,MappedSet<String,VersionID>> versions = 
+      new TreeMap<VersionID,MappedSet<String,VersionID>>();
+
+    for(VersionID vid : pCheckedInLinks.keySet()) 
+      versions.put(vid, new MappedSet<String,VersionID>(pCheckedInLinks.get(vid)));
+
+    return versions;
+  }
+
+  /**  
+   * Get the names and revision numbers of the checked-in versions of nodes downstream 
+   * of the given checked-in version of a node.<P> 
+   * 
+   * @param vid 
+   *   The revision number of the checked-in upstream node.
+   * 
+   * @return
+   *   The revision numbers indexed by the names of the downstream nodes or 
+   *   <CODE>null</CODE> if none exist.
+   */
+  public MappedSet<String,VersionID>
   getCheckedIn
   (
    VersionID vid 
@@ -270,82 +497,42 @@ class DownstreamLinks
       throw new IllegalArgumentException
 	("The revision number cannot be (null)!");
     
-    if(pCheckedInLinks.containsKey(vid)) {
-      TreeMap<String,VersionID> links = pCheckedInLinks.get(vid);
-      if(links != null)
-	return new TreeMap<String,VersionID>(links);
-      else 
-	return new TreeMap<String,VersionID>();
-    }
+    MappedSet<String,VersionID> links = pCheckedInLinks.get(vid);
+    if(links != null) 
+      return new MappedSet<String,VersionID>(links);
 
     return null;
   }
   
-  /**  
-   * Get the revision numbers indexed by node name of the checked-in nodes connected by a 
-   * downstream link to the checked-in version with the given revision number.
-   * 
-   * A return value of <CODE>null</CODE> indicates that no checked-in versions exist.
-   * If the latest checked-in version does exist and has no downstream links, an 
-   * empty <CODE>TreeMap</CODE> will be returned.
-   * 
-   * @return
-   *   The table of revision numbers indexed by the names of the downstream nodes.
-   */
-  public TreeMap<String,VersionID>
-  getLatestCheckedIn() 
-  {
-    if(pCheckedInLinks.isEmpty()) 
-      return null;
 
-    VersionID vid = pCheckedInLinks.lastKey();
-    return getCheckedIn(vid);
-  }
-  
-  /**
-   * If no downstream links already exist for the given checked-in version, create an 
-   * empty set of downstream links for the version.
-   * 
-   * @param vid 
-   *   The revision number of the checked-in node version.
-   */ 
-  public void 
-  createCheckedIn
-  (
-   VersionID vid
-  ) 
-  { 
-    TreeMap<String,VersionID> links = pCheckedInLinks.get(vid);
-    if(links == null) 
-      pCheckedInLinks.put(vid, null);
-  }
+  /*----------------------------------------------------------------------------------------*/
 
   /** 
-   * Add the name and revision of a checked-in version of a node connected by a downstream 
-   * link to the checked-in version with the given revision number.
+   * Add the name and revision of a checked-in version of a node downstream of the given 
+   * checked-in version of a node.<P> 
    * 
    * @param vid 
-   *   The revision number of the checked-in node version.
+   *   The revision number of the checked-in upstream node.
    * 
-   * @param name 
+   * @param dname 
    *   The fully resolved name of the downstream node.
    * 
    * @param dvid
-   *   The revision number of the downstream checked-in node version.
+   *   The revision number of the downstream checked-in version of the node.
    */
   public void 
   addCheckedIn
   (
    VersionID vid,
-   String name,
+   String dname,
    VersionID dvid 
   ) 
   {
     if(vid == null) 
       throw new IllegalArgumentException
-	("The revision number cannot be (null)!");
+	("The revision number of the upstream cannot be (null)!");
 
-    if(name == null) 
+    if(dname == null) 
       throw new IllegalArgumentException
 	("The downstream node name cannot be (null)!");
     
@@ -353,48 +540,49 @@ class DownstreamLinks
       throw new IllegalArgumentException
 	("The downstream revision number cannot be (null)!");
 
-    TreeMap<String,VersionID> links = pCheckedInLinks.get(vid);
+    MappedSet<String,VersionID> links = pCheckedInLinks.get(vid);
     if(links == null) {
-      links = new TreeMap<String,VersionID>();
+      links = new MappedSet<String,VersionID>();
       pCheckedInLinks.put(vid, links);
     }
-    links.put(name, dvid);
+
+    links.put(dname, dvid);
   }
 
-  /**
-   * Delete the name and revision of a checked-in version of a node connected by a downstream 
-   * link to the checked-in version with the given revision number. <P> 
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Remove the name of all checked-in versions of a node downstream of this node.
    * 
-   * @param vid 
-   *   The revision number of the checked-in node version.
+   * This is used by the Delete node operation to clean up downstream links to the 
+   * node being deleted. 
    * 
-   * @param name 
-   *   The fully resolved name of the downstream node.
-   */ 
+   * @param dname 
+   *   The fully resolved name of the downstream node being deleted.
+   */
   public void 
-  deleteCheckedIn
+  removeAllCheckedIn
   (
-   VersionID vid,
-   String name
+   String dname
   ) 
   {
-    if(vid == null) 
-      throw new IllegalArgumentException
-	("The revision number cannot be (null)!");
+    TreeSet<VersionID> empty = new TreeSet<VersionID>();
 
-    if(name == null) 
-      throw new IllegalArgumentException
-	("The downstream node name cannot be (null)!");
-    
-    TreeMap<String,VersionID> links = pCheckedInLinks.get(vid);
-    if(links != null) {
-      links.remove(name);
-      if(links.isEmpty())
-	pCheckedInLinks.put(vid, null);
+    for(VersionID vid : pCheckedInLinks.keySet()) {
+      MappedSet<String,VersionID> links = pCheckedInLinks.get(vid);
+      if(links != null) {
+        links.remove(dname);
+        if(links.isEmpty()) 
+          empty.add(vid);
+      }
     }
+    
+    for(VersionID vid : empty)
+      pCheckedInLinks.remove(vid);      
   }
+ 
   
-
   
   /*----------------------------------------------------------------------------------------*/
   /*   G L U E A B L E                                                                      */
@@ -428,13 +616,13 @@ class DownstreamLinks
       throw new GlueException("The \"Name\" was missing!");
     pName = name;
 
-    TreeMap<NodeID,TreeSet<String>> working = 
-      (TreeMap<NodeID,TreeSet<String>>) decoder.decode("WorkingLinks");
+    DoubleMap<String,String,TreeSet<String>> working = 
+      (DoubleMap<String,String,TreeSet<String>>) decoder.decode("WorkingLinks");
     if(working != null) 
       pWorkingLinks = working;
 
-    TreeMap<VersionID,TreeMap<String,VersionID>> checkedIn = 
-      (TreeMap<VersionID,TreeMap<String,VersionID>>) decoder.decode("CheckedInLinks");
+    TreeMap<VersionID,MappedSet<String,VersionID>> checkedIn = 
+      (TreeMap<VersionID,MappedSet<String,VersionID>>) decoder.decode("CheckedInLinks");
     if(checkedIn != null) 
       pCheckedInLinks = checkedIn;
   }
@@ -451,15 +639,15 @@ class DownstreamLinks
   private String  pName;        
 
   /** 
-   * The names of the working nodes downstream indexed by working version id.
+   * The names of the working nodes downstream of this node indexed by the working area 
+   * author and view containing the working nodes. 
    */
-  private TreeMap<NodeID,TreeSet<String>>  pWorkingLinks;
+  private DoubleMap<String,String,TreeSet<String>>  pWorkingLinks;
 
   /** 
-   * The revision numbers of the checked-in nodes downstream indexed by revision number and
-   * downstream node name.
+   * The revision numbers of all checked-in nodes downstream of a specific version of this
+   * node indexed by upstream node revision number and downstream node name.
    */
-  private TreeMap<VersionID,TreeMap<String,VersionID>>  pCheckedInLinks;
-  
+  private TreeMap<VersionID,MappedSet<String,VersionID>>  pCheckedInLinks;
 }
 

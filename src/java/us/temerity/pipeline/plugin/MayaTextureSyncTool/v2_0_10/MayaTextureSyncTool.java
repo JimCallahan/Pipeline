@@ -1,4 +1,4 @@
-// $Id: MayaTextureSyncTool.java,v 1.2 2008/07/21 23:28:13 jim Exp $
+// $Id: MayaTextureSyncTool.java,v 1.3 2008/09/29 19:02:18 jim Exp $
 
 package us.temerity.pipeline.plugin.MayaTextureSyncTool.v2_0_10;
 
@@ -883,7 +883,7 @@ class MayaTextureSyncTool
     /* get the current status of the Maya scene node */ 
     {
       pTargetSceneID = new NodeID(PackageInfo.sUser, pView, pTargetScene);
-      pTargetSceneStatus = mclient.status(pTargetSceneID);
+      pTargetSceneStatus = mclient.status(pTargetSceneID, true, DownstreamMode.None);
       pTargetSceneMod = pTargetSceneStatus.getLightDetails().getWorkingVersion();
       if(pTargetSceneMod == null) 
 	throw new PipelineException
@@ -1081,7 +1081,7 @@ class MayaTextureSyncTool
 	      if(name != null) {
 		try {
 		  NodeID nodeID = new NodeID(PackageInfo.sUser, pView, name);
-		  mclient.status(nodeID);
+		  mclient.status(nodeID, true, DownstreamMode.None);  // TOO EXPENSIVE!
 		  hasOwningNode = true;
 		}
 		catch(PipelineException ex) {

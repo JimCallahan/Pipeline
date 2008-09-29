@@ -1,4 +1,4 @@
-// $Id: BaseUtilityApp.java,v 1.5 2008/06/29 17:46:16 jim Exp $
+// $Id: BaseUtilityApp.java,v 1.6 2008/09/29 19:02:19 jim Exp $
 
 package us.temerity.pipeline.utils;  
 
@@ -95,7 +95,7 @@ class BaseUtilityApp
   {
     if(args.length != 1)
       throw new PipelineException
-	("A Pipeline utility application should have exactly argument containing the " +
+	("A Pipeline utility application should have exactly one argument containing the " +
 	 "name of the input GLUE file.  This application had (" + args.length + ") " + 
 	 "arguments!\n");
 

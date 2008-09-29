@@ -1,4 +1,4 @@
-// $Id: NodeStatusReq.java,v 1.6 2007/04/15 10:30:47 jim Exp $
+// $Id: NodeStatusReq.java,v 1.7 2008/09/29 19:02:18 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -32,13 +32,18 @@ class NodeStatusReq
    *   The unique working version identifier.
    * 
    * @param lightweight
-   *   Get only lightweight node status detail information for the upstream nodes.
+   *   Whether to report only lightweight node status detail information for the 
+   *   upstream nodes.
+   * 
+   * @param dmode
+   *   The criteria used to determine how downstream node status is reported.
    */
   public
   NodeStatusReq
   (
    NodeID nodeID, 
-   boolean lightweight
+   boolean lightweight,
+   DownstreamMode dmode   
   )
   { 
     if(nodeID == null) 
@@ -47,6 +52,11 @@ class NodeStatusReq
     pNodeID = nodeID;
 
     pLightweight = lightweight;
+
+    if(dmode == null) 
+      throw new IllegalArgumentException
+	("The downstream mode cannot be (null)!");
+    pDownstreamMode = dmode;
   }
 
 
@@ -65,7 +75,7 @@ class NodeStatusReq
   }
   
   /**
-   * Whether to get only lightweight node status detail information for the upstream nodes.
+   * Whether to report only lightweight node status detail information for the upstream nodes.
    */
   public boolean
   getLightweight() 
@@ -73,6 +83,15 @@ class NodeStatusReq
     return pLightweight;
   }
 
+  /**
+   * The criteria used to determine how downstream node status is reported.
+   */ 
+  public DownstreamMode 
+  getDownstreamMode()
+  {
+    return pDownstreamMode;
+  }
+  
   
 
   /*----------------------------------------------------------------------------------------*/
@@ -93,9 +112,14 @@ class NodeStatusReq
   private NodeID  pNodeID;
   
   /**
-   * Whether to get only lightweight node status detail information for the upstream nodes.
-   */ 
+   * Whether to report only lightweight node status detail information for the upstream nodes.
+   */
   private boolean pLightweight; 
+  
+  /**
+   * The criteria used to determine how downstream node status is reported.
+   */ 
+  private DownstreamMode pDownstreamMode;
   
 }
   

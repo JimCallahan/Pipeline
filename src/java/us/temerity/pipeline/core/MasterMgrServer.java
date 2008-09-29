@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.86 2008/05/04 00:40:17 jim Exp $
+// $Id: MasterMgrServer.java,v 1.87 2008/09/29 19:02:17 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1309,6 +1309,14 @@ class MasterMgrServer
                 {
                   NodeMultiStatusReq req = (NodeMultiStatusReq) objIn.readObject();
                   objOut.writeObject(pMasterMgr.multiStatus(req));
+                  objOut.flush(); 
+                }
+                break;
+
+              case DownstreamStatus:
+                {
+                  NodeDownstreamStatusReq req = (NodeDownstreamStatusReq) objIn.readObject();
+                  objOut.writeObject(pMasterMgr.downstreamStatus(req));
                   objOut.flush(); 
                 }
                 break;

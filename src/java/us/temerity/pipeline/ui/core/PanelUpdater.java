@@ -1,4 +1,4 @@
-// $Id: PanelUpdater.java,v 1.27 2008/07/21 17:31:10 jim Exp $
+// $Id: PanelUpdater.java,v 1.28 2008/09/29 19:02:19 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -39,6 +39,7 @@ class PanelUpdater
 
     pNodeStatusModified = true;
     pLightweightNodeStatus = true;
+
     pNodeBrowserSelection = panel.getSelected(); 
 
     if(pNodeViewerPanel != null) {
@@ -85,7 +86,7 @@ class PanelUpdater
    JNodeViewerPanel panel
   ) 
   {
-    this(panel, false, true, null);
+    this(panel, false, true, null, false);
   }
 
   /**
@@ -98,10 +99,23 @@ class PanelUpdater
    TreeSet<String> postUpdateSelected   
   ) 
   {
-    this(panel, false, true, null);
+    this(panel, false, true, null, false);
 
     if(postUpdateSelected != null) 
       pNodeViewerPostUpdateSelected.addAll(postUpdateSelected);
+  }
+
+  /**
+   * A lightweight panel update originating from the Node Viewer panel. <P> 
+   */ 
+  public
+  PanelUpdater
+  (
+   JNodeViewerPanel panel, 
+   DownstreamMode dmode
+  ) 
+  {
+    this(panel, false, true, null, true);
   }
 
   /**
@@ -116,9 +130,12 @@ class PanelUpdater
    * @param lightweight 
    *   Whether perform lightweight status (true) or heavyweight status (false).
    * 
-   * @param branchRoots
+   * @param heavyRoots
    *   If doing lightweight status, first perform heavyweight status on the branch of 
    *   nodes upstream of these nodes. 
+   * 
+   * @param downstreamOnly
+   *   Whether to perform downstream status only, keeping the existing upstream node status.
    */ 
   public
   PanelUpdater
@@ -126,12 +143,14 @@ class PanelUpdater
    JNodeViewerPanel panel,
    boolean detailsOnly, 
    boolean lightweight, 
-   TreeSet<String> branchRoots
+   TreeSet<String> heavyRoots, 
+   boolean downstreamOnly
   ) 
   {
     pNodeDetailsOnly = detailsOnly; 
     pLightweightNodeStatus = lightweight;
-    pNodeViewerBranchRoots = branchRoots; 
+    pNodeViewerHeavyRootNames = heavyRoots; 
+    pDownstreamStatusOnly = downstreamOnly;
     initPanels(panel);
     pNodeStatusModified = true;
     pNodeViewerRoots = panel.getRoots();
@@ -324,11 +343,13 @@ class PanelUpdater
       pQueueJobDetailsPanel = master.getQueueJobDetailsPanels().getPanel(pGroupID);
     }
 
+    pDownstreamMode = DownstreamMode.None;
     if(pNodeViewerPanel != null) {
-      if(pNodeViewerBranchRoots == null) 
-        pNodeViewerBranchRoots = new TreeSet<String>();
+      if(pNodeViewerHeavyRootNames == null) 
+        pNodeViewerHeavyRootNames = new TreeSet<String>();
 
       pDetailedNodeName = pNodeViewerPanel.getDetailedNodeName();
+      pDownstreamMode   = pNodeViewerPanel.getDownstreamMode();
 
       if(!(panel instanceof JNodeViewerPanel) && 
 	 !pJobDetailsOnly && !pJobBrowserSelectionOnly && !pJobSlotsSelectionOnly) {
@@ -425,32 +446,67 @@ class PanelUpdater
 
 	    /* update node status */ 
 	    if(!pNodeDetailsOnly) {
-              TreeSet<String> roots = new TreeSet<String>(); 
-              for(String name : pNodeViewerRoots.keySet()) {
-                if(pNodeViewerRoots.get(name) == null) 
-                  roots.add(name); 
+              TreeSet<String> rootNames = new TreeSet<String>(); 
+
+              /* replacing downstream status only */ 
+              if(pDownstreamStatusOnly) {
+                rootNames.addAll(pNodeViewerRoots.keySet());
+
+                master.updatePanelOp(pGroupID, "Updating Downstream Node Status...");
+                TreeMap<String,NodeStatus> results =
+                  mclient.downstreamStatus(pAuthor, pView, rootNames, pDownstreamMode); 
+                
+                pNodeStatusModified = true;
+
+                /* relink new downstream status with existing upstream roots */ 
+                for(String name : results.keySet()) {
+                  NodeStatus ostatus = pNodeViewerRoots.get(name);
+                  if(ostatus != null) {
+                    ostatus.clearTargets();
+
+                    NodeStatus dstatus = results.get(name);
+                    if(dstatus != null) {
+                      for(NodeStatus tstatus : dstatus.getTargets()) {
+                        tstatus.clearSources();
+
+                        tstatus.addSource(ostatus);
+                        ostatus.addTarget(tstatus);
+                      }
+                    }
+                    else {
+                      pNodeViewerRoots.remove(name);
+                    }
+                  }
+                }
               }
 
-              TreeMap<String,Boolean> all = new TreeMap<String,Boolean>();
-              for(String name : roots) 
-                all.put(name, pLightweightNodeStatus);
-
-              if(pLightweightNodeStatus) {
-                for(String name : pNodeViewerBranchRoots)
-                  all.put(name, false);
-              }
-
-              master.updatePanelOp(pGroupID, "Updating Node Status...");
-              TreeMap<String,NodeStatus> results = mclient.status(pAuthor, pView, all); 
-              pNodeStatusModified = true;
-
-              for(String name : results.keySet()) {
-                if(roots.contains(name)) {
-                  NodeStatus status = results.get(name);
-                  if(status != null) 
-                    pNodeViewerRoots.put(name, status);
-                  else 
-                    pNodeViewerRoots.remove(name);
+              /* doing a full upstream/downstream node status */ 
+              else {
+                for(String name : pNodeViewerRoots.keySet()) {
+                  if(pNodeViewerRoots.get(name) == null) 
+                    rootNames.add(name); 
+                }
+                
+                TreeSet<String> heavyNames = new TreeSet<String>(); 
+                if(pLightweightNodeStatus) 
+                  heavyNames.addAll(pNodeViewerHeavyRootNames); 
+                else 
+                  heavyNames.addAll(rootNames);
+                
+                master.updatePanelOp(pGroupID, "Updating Node Status...");
+                TreeMap<String,NodeStatus> results = 
+                  mclient.status(pAuthor, pView, rootNames, heavyNames, pDownstreamMode); 
+                
+                pNodeStatusModified = true;
+                
+                for(String name : results.keySet()) {
+                  if(rootNames.contains(name)) {
+                    NodeStatus status = results.get(name);
+                    if(status != null) 
+                      pNodeViewerRoots.put(name, status);
+                    else 
+                      pNodeViewerRoots.remove(name);
+                  }
                 }
               }
             }
@@ -903,6 +959,11 @@ class PanelUpdater
    */ 
   private boolean  pLightweightNodeStatus;
   
+  /**
+   * The criteria used to determine how downstream node status is reported.
+   */ 
+  private DownstreamMode  pDownstreamMode; 
+
 
   /**
    * The names of the new changed selected nodes from the Node Browser panel.
@@ -914,24 +975,18 @@ class PanelUpdater
    * If doing lightweight status, first perform heavyweight status on the branch of 
    * nodes upstream of these nodes. 
    */ 
-  private TreeSet<String>  pNodeViewerBranchRoots;
+  private TreeSet<String>  pNodeViewerHeavyRootNames;
 
   /**
    * The status of all currently displayed roots indexed by root node name from the 
-   * Node Viewer panel.
+   * Node Viewer panel.  Entries will (null) value will be updated.
    */ 
   private TreeMap<String,NodeStatus>  pNodeViewerRoots;
   
   /**
-   * The names of the root nodes from the Node Viewer panel which require updating.
-   */ 
-  private TreeSet<String>  pNodeViewerRootsToUpdate;
-
-  /**
    * The names of the nodes which should be selected in the NodeViewer after an update.
    */ 
   private TreeSet<String>  pNodeViewerPostUpdateSelected; 
-
 
   /**
    * Whether to update only the node details panels.
@@ -947,6 +1002,11 @@ class PanelUpdater
    * The node status for the node currently displayed in the node details panels. 
    */ 
   private NodeStatus  pDetailedNode; 
+
+  /**
+   * Whether to perform downstream status only, keeping the existing upstream node status.
+   */ 
+  private boolean  pDownstreamStatusOnly; 
 
 
   /*----------------------------------------------------------------------------------------*/

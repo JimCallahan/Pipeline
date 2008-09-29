@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.124 2008/08/01 21:28:13 jesse Exp $
+// $Id: JNodeViewerPanel.java,v 1.125 2008/09/29 19:02:19 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -80,7 +80,8 @@ class JNodeViewerPanel
       pHorizontalOrientation = 
         ((prefs.getOrientation() != null) && prefs.getOrientation().equals("Horizontal"));
 
-      pShowDownstream  = prefs.getShowDownstream();
+      pDownstreamMode = DownstreamMode.fromTitle(prefs.getDownstreamMode()); 
+
       pShowDetailHints = prefs.getShowDetailHints();
 
       pViewerNodeHint = 
@@ -195,12 +196,20 @@ class JNodeViewerPanel
       item.addActionListener(this);
       pPanelPopup.add(item);  
 
-      item = new JMenuItem();
-      pShowHideDownstreamItem = item;
-      item.setActionCommand("show-hide-downstream");
-      item.addActionListener(this);
-      pPanelPopup.add(item);  
+      {
+        JMenu sub = new JMenu("Downstream Mode");
+        pPanelPopup.add(sub);  
 
+        pDownstreamModeItems = new JPopupMenuItem[4];
+        for(DownstreamMode dmode : DownstreamMode.all()) {
+          JPopupMenuItem pitem = new JPopupMenuItem(pPanelPopup, dmode.toTitle());
+          pDownstreamModeItems[dmode.ordinal()] = pitem;
+          pitem.setActionCommand("downstream-mode:" + dmode);
+          pitem.addActionListener(this);
+          sub.add(pitem);  
+        }
+      }
+    
       item = new JMenuItem("Hide All Roots");
       pRemoveAllRootsItem = item;
       item.setActionCommand("remove-all-roots");
@@ -965,6 +974,18 @@ class JNodeViewerPanel
 
   
   /*----------------------------------------------------------------------------------------*/
+   
+  /**
+   * Get the criteria used to determine how downstream node status is reported.
+   */ 
+  public DownstreamMode
+  getDownstreamMode()
+  {
+    return pDownstreamMode;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
   
   /**
    * Get the name of the node used to update the node details panels.
@@ -1087,7 +1108,7 @@ class JNodeViewerPanel
     UserPrefs prefs = UserPrefs.getInstance();
 
     pShowDetailHints = prefs.getShowDetailHints();
-    pShowDownstream  = prefs.getShowDownstream();
+    pDownstreamMode = DownstreamMode.fromTitle(prefs.getDownstreamMode()); 
 
     TextureMgr.getInstance().rebuildIcons();
 
@@ -1140,9 +1161,24 @@ class JNodeViewerPanel
     updateMenuToolTip
       (pToggleOrientationItem, prefs.getToggleOrientation(), 
        "Toggle the node tree orientation between Horizontal and Vertical.");
+    
     updateMenuToolTip
-      (pShowHideDownstreamItem, prefs.getNodeViewerShowHideDownstreamNodes(), 
-       "Show/hide nodes downstream of the focus node.");
+      (pDownstreamModeItems[DownstreamMode.None.ordinal()], 
+       null, 
+       "Hide all downstream nodes.");
+    updateMenuToolTip
+      (pDownstreamModeItems[DownstreamMode.WorkingOnly.ordinal()], 
+       prefs.getNodeViewerDownstreamWorkingOnly(), 
+       "Show only downstream nodes in the current working area.");
+    updateMenuToolTip
+      (pDownstreamModeItems[DownstreamMode.CheckedInOnly.ordinal()], 
+       prefs.getNodeViewerDownstreamCheckedInOnly(), 
+       "Show only checked-in downstream nodes.");
+    updateMenuToolTip
+      (pDownstreamModeItems[DownstreamMode.All.ordinal()], 
+       prefs.getNodeViewerDownstreamAll(), 
+       "Show both working and checked-in downstream nodes.");
+
     updateMenuToolTip
       (pRemoveAllRootsItem, prefs.getHideAll(), 
        "Hide all of the root nodes.");
@@ -1312,9 +1348,6 @@ class JNodeViewerPanel
     pRegisterItem.setEnabled(!isLocked());
     pReleaseViewItem.setEnabled(!isLocked());
 
-    pShowHideDownstreamItem.setText
-      ((pShowDownstream ? "Hide" : "Show") + " Downstream");
-
     pShowHideDetailHintsItem.setText
       ((pShowDetailHints ? "Hide" : "Show") + " Detail Hints");
     pShowHideDetailHintsItem.setEnabled(true);
@@ -1349,6 +1382,10 @@ class JNodeViewerPanel
       pShowHideEditingHintItem.setText("Show Editing Hint");
       pShowHideEditingHintItem.setEnabled(false);
     }
+
+    int wk;
+    for(wk=0; wk<pDownstreamModeItems.length; wk++) 
+      pDownstreamModeItems[wk].setEnabled(wk != pDownstreamMode.ordinal());
   }
 
   /**
@@ -1797,7 +1834,8 @@ class JNodeViewerPanel
           /* layout downstream nodes */ 
           Point2d dpos = null;
           BBox2d dbox = null;
-	  if(pShowDownstream && status.hasTargets()) {
+          boolean showDownstream = (pDownstreamMode != DownstreamMode.None);
+	  if(showDownstream && status.hasTargets()) {
             ArrayList<ViewerNode> lowest = new ArrayList<ViewerNode>();
             TreeMap<NodePath,ViewerNode> above = new TreeMap<NodePath,ViewerNode>();
 	    TreeSet<String> seen = new TreeSet<String>();
@@ -1812,7 +1850,7 @@ class JNodeViewerPanel
           if(pHorizontalOrientation) {
             double span = 0.0;
             double treeSpace = prefs.getNodeTreeSpace()*prefs.getNodeSpaceX(); 
-            if(pShowDownstream && status.hasTargets()) {
+            if(showDownstream && status.hasTargets()) {
               Point2d dleft = new Point2d(dbox.getMin().x(), dpos.y());
               Vector2d delta = new Vector2d(dleft, origin);
               shiftBranch(true, false, status, path, delta);
@@ -1834,7 +1872,7 @@ class JNodeViewerPanel
           else {
             double span = 0.0;
             double treeSpace = prefs.getNodeTreeSpace()*prefs.getNodeSpaceY(); 
-            if(pShowDownstream && status.hasTargets()) {
+            if(showDownstream && status.hasTargets()) {
               double shiftY = upos.y() - dpos.y();
 
               double uminY = ubox.getMin().y();
@@ -3317,9 +3355,17 @@ class JNodeViewerPanel
       else if((prefs.getToggleOrientation() != null) &&
               prefs.getToggleOrientation().wasPressed(e))
 	doToggleOrientation();     
-      else if((prefs.getNodeViewerShowHideDownstreamNodes() != null) &&
-		prefs.getNodeViewerShowHideDownstreamNodes().wasPressed(e))
-	doShowHideDownstream();      
+
+      else if((prefs.getNodeViewerDownstreamWorkingOnly() != null) &&
+              prefs.getNodeViewerDownstreamWorkingOnly().wasPressed(e))
+        doToggleDownstreamMode(DownstreamMode.WorkingOnly);
+      else if((prefs.getNodeViewerDownstreamCheckedInOnly() != null) &&
+              prefs.getNodeViewerDownstreamCheckedInOnly().wasPressed(e))
+        doToggleDownstreamMode(DownstreamMode.CheckedInOnly);
+      else if((prefs.getNodeViewerDownstreamAll() != null) &&
+              prefs.getNodeViewerDownstreamAll().wasPressed(e))
+        doToggleDownstreamMode(DownstreamMode.All);
+
       else if((prefs.getHideAll() != null) &&
 	      prefs.getHideAll().wasPressed(e))
 	doRemoveAllRoots();
@@ -3534,8 +3580,8 @@ class JNodeViewerPanel
       doCollapseAll();
     else if(cmd.equals("toggle-orientation"))
       doToggleOrientation();
-    else if(cmd.equals("show-hide-downstream"))
-      doShowHideDownstream();
+    else if(cmd.startsWith("downstream-mode:")) 
+      doDownstreamMode(DownstreamMode.valueOf(DownstreamMode.class, cmd.substring(16)));
     else if(cmd.equals("show-hide-detail-hints"))
       doShowHideDetailHints();
     else if(cmd.equals("show-hide-toolset-hint"))
@@ -3574,7 +3620,7 @@ class JNodeViewerPanel
     for(String name : pRoots.keySet()) 
       pRoots.put(name, null);
     
-    PanelUpdater pu = new PanelUpdater(this, false, false, null);
+    PanelUpdater pu = new PanelUpdater(this, false, false, null, false);
     pu.execute();
   }
   
@@ -3598,7 +3644,7 @@ class JNodeViewerPanel
     for(String name : pRoots.keySet()) 
       pRoots.put(name, null);
     
-    PanelUpdater pu = new PanelUpdater(this, false, true, branches);
+    PanelUpdater pu = new PanelUpdater(this, false, true, branches, false);
     pu.execute();    
   }
   
@@ -3614,7 +3660,7 @@ class JNodeViewerPanel
     if(pPrimary != null) {
       pLastDetailsName = pPrimary.getName();
 
-      PanelUpdater pu = new PanelUpdater(this, true, true, null);
+      PanelUpdater pu = new PanelUpdater(this, true, true, null, false);
       pu.execute();
     }
 
@@ -5232,19 +5278,50 @@ class JNodeViewerPanel
     updateUniverse();
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
-   * Show/Hide the downstream node tree.
+   * Change the downstream mode.
    */ 
   private synchronized void
-  doShowHideDownstream()
+  doDownstreamMode
+  (
+   DownstreamMode dmode
+  ) 
   {
     clearSelection();
-    pShowDownstream = !pShowDownstream;
 
     if(UserPrefs.getInstance().getAutoFrameDownstream()) 
       pAutoframeOnUpdate = true; 
 
-    updateUniverse();
+    pDownstreamMode = dmode; 
+    switch(pDownstreamMode) {
+    case None:
+      for(NodeStatus status : pRoots.values()) 
+        status.clearTargets();
+      updateUniverse();
+      break;
+
+    default:
+      PanelUpdater pu = new PanelUpdater(this, pDownstreamMode);
+      pu.execute();
+    }
+  }
+
+  /**
+   * Toggle between None and the given the downstream mode.
+   */ 
+  private synchronized void
+  doToggleDownstreamMode
+  (
+   DownstreamMode dmode
+  ) 
+  {
+    if(pDownstreamMode == dmode) 
+      doDownstreamMode(DownstreamMode.None);
+    else
+      doDownstreamMode(dmode);
   }
 
 
@@ -5337,7 +5414,7 @@ class JNodeViewerPanel
     }
 
     /* whether to show the downstram links */
-    encoder.encode("ShowDownstream", pShowDownstream);
+    encoder.encode("DownstreamMode", pDownstreamMode);
 
     /* initial layout orientation */
     encoder.encode("HorizontalOrientation", pHorizontalOrientation);
@@ -5391,9 +5468,9 @@ class JNodeViewerPanel
 
     /* whether to show the downstram links */    
     {
-      Boolean show = (Boolean) decoder.decode("ShowDownstream");
-      if(show != null) 
-	pShowDownstream = show; 
+      DownstreamMode dmode = (DownstreamMode) decoder.decode("DownstreamMode");
+      if(dmode != null) 
+	pDownstreamMode = dmode; 
     }
 
     /* whether to orient and align node trees horizontally */    
@@ -7329,9 +7406,9 @@ class JNodeViewerPanel
   private boolean  pShowDetailHints;
 
   /**
-   * Whether to display the downstream tree of nodes.
+   * The criteria used to determine how downstream node status is reported.
    */ 
-  private boolean  pShowDownstream;
+  private DownstreamMode  pDownstreamMode; 
 
   /**
    * Whether to orient and align node tree roots horizontally (true) or vertically (false).
@@ -7465,15 +7542,17 @@ class JNodeViewerPanel
   private JMenuItem  pExpandAllItem;
   private JMenuItem  pCollapseAllItem;
   private JMenuItem  pToggleOrientationItem;
-  private JMenuItem  pShowHideDownstreamItem;
+
+  private JPopupMenuItem[]  pDownstreamModeItems; 
+
   private JMenuItem  pRemoveAllRootsItem;
   private JMenuItem  pShowHideDetailHintsItem;
   private JMenuItem  pShowHideToolsetHintItem;
   private JMenuItem  pShowHideEditorHintItem;
   private JMenuItem  pShowHideActionHintItem;
-  private JMenuItem  pShowHideEditingHintItem;
+  private JMenuItem  pShowHideEditingHintItem; 
 
-  private JMenu      pLaunchBuilderMenu;
+  private JMenu pLaunchBuilderMenu;
 
   /*----------------------------------------------------------------------------------------*/
 

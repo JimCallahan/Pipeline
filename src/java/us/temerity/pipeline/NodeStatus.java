@@ -1,4 +1,4 @@
-// $Id: NodeStatus.java,v 1.21 2008/07/21 17:31:09 jim Exp $
+// $Id: NodeStatus.java,v 1.22 2008/09/29 19:02:17 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -338,6 +338,18 @@ class NodeStatus
     pSources.put(status.getName(), status);
   }
 
+  /** 
+   * Remove all upstream nodes. <P> 
+   * 
+   * This method is used to initialize instances of this class and should not
+   * be called directly by the user.
+   */ 
+  public void 
+  clearSources() 
+  {
+    pSources.clear(); 
+  }
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -402,6 +414,18 @@ class NodeStatus
   ) 
   {
     pTargets.put(status.getName(), status);
+  }
+
+  /** 
+   * Remove all downstream nodes. <P> 
+   * 
+   * This method is used to initialize instances of this class and should not
+   * be called directly by the user.
+   */ 
+  public void 
+  clearTargets() 
+  {
+    pTargets.clear(); 
   }
 
 

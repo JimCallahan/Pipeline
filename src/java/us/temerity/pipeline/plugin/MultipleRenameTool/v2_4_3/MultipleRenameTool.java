@@ -1,4 +1,4 @@
-// $Id: MultipleRenameTool.java,v 1.1 2008/09/19 03:30:10 jesse Exp $
+// $Id: MultipleRenameTool.java,v 1.2 2008/09/29 19:02:18 jim Exp $
 
 package us.temerity.pipeline.plugin.MultipleRenameTool.v2_4_3;
 
@@ -135,7 +135,7 @@ class MultipleRenameTool
     for (String node : pSelected.keySet()) {
       if (node.matches(oldP) || node.contains(oldP) ) {
         
-        NodeStatus stat = mclient.status(pUser, pView, node, true);
+        NodeStatus stat = mclient.status(pUser, pView, node, true, DownstreamMode.None);
         if (stat.getLightDetails().getBaseVersion() != null)
           bad.add(node);
         good.put(node, stat.getLightDetails().getWorkingVersion().

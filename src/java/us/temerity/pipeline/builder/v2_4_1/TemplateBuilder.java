@@ -1,4 +1,4 @@
-// $Id: TemplateBuilder.java,v 1.1 2008/09/19 03:30:09 jesse Exp $
+// $Id: TemplateBuilder.java,v 1.2 2008/09/29 19:02:17 jim Exp $
 
 package us.temerity.pipeline.builder.v2_4_1;
 
@@ -96,7 +96,8 @@ class TemplateBuilder
   )
     throws PipelineException
   {
-    NodeStatus status = pClient.status(new NodeID(getAuthor(), getView(), startNode), true);
+    NodeStatus status = pClient.status(new NodeID(getAuthor(), getView(), startNode), 
+                                       true, DownstreamMode.None);
     
     findUpstreamNodes(null, status);
   }
@@ -122,7 +123,8 @@ class TemplateBuilder
     pSubmitNode = null;
     pApprovalNode = null;
     
-    NodeStatus status = pClient.status(new NodeID(getAuthor(), getView(), editNode), true);
+    NodeStatus status = pClient.status(new NodeID(getAuthor(), getView(), editNode), 
+                                       true, DownstreamMode.All);  // Correct DownstreamMode?
 
     findDownstreamNodes(status);
     

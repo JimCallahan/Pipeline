@@ -1,4 +1,4 @@
-// $Id: VersionApp.java,v 1.7 2008/07/21 17:31:09 jim Exp $
+// $Id: VersionApp.java,v 1.8 2008/09/29 19:02:18 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -372,7 +372,8 @@ class VersionApp
         }
 
         /* get the lightweight status of the node */ 
-        NodeStatus status = pMasterMgrClient.status(author, view, name, true);
+        NodeStatus status = 
+          pMasterMgrClient.status(author, view, name, true, DownstreamMode.None);
 
         /* check for task annotations */ 
         ArrayList<String> purposes = new ArrayList<String>(); 

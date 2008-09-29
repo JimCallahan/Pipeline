@@ -1,4 +1,4 @@
-// $Id: ReleaseTaskTool.java,v 1.2 2008/09/19 03:33:52 jesse Exp $
+// $Id: ReleaseTaskTool.java,v 1.3 2008/09/29 19:02:18 jim Exp $
 
 package us.temerity.pipeline.plugin.ReleaseTaskTool.v2_4_1;
 
@@ -116,7 +116,7 @@ class ReleaseTaskTool
      *   The instance of the Master Manager to look up the annotations on.
      */
     private boolean
-    findDownstreamNodes
+    findDownstreamNodes  // REALLY IS UPSTREAM!
     (
       NodeStatus status,
       MasterMgrClient mclient
@@ -159,7 +159,7 @@ class ReleaseTaskTool
      *   The instance of the Master Manager to look up the annotations on.
      */
     private void
-    findUpstreamNodes
+    findUpstreamNodes  // REALLY IS DOWNSTREAM!
     (
       NodeStatus status,
       MasterMgrClient mclient

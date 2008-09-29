@@ -1,4 +1,4 @@
-// $Id: TaskToolUtils.java,v 1.2 2008/09/19 03:39:22 jesse Exp $
+// $Id: TaskToolUtils.java,v 1.3 2008/09/29 19:02:18 jim Exp $
 
 package us.temerity.pipeline.plugin;
 
@@ -247,7 +247,8 @@ class TaskToolUtils
     
     NodeStatus status = pSelected.get(startNode);
     if (status == null)
-      status = mclient.status(new NodeID(getAuthor(), getView(), startNode), true);
+      status = mclient.status(new NodeID(getAuthor(), getView(), startNode), 
+                              true, DownstreamMode.None);
     
     findUpstreamNodes(status, mclient);
     
@@ -353,7 +354,8 @@ class TaskToolUtils
     pSubmitNode = null;
     pApprovalNode = null;
     
-    NodeStatus status = mclient.status(new NodeID(getAuthor(), getView(), editNode), true);
+    NodeStatus status = mclient.status(new NodeID(getAuthor(), getView(), editNode), 
+                                       true, DownstreamMode.All);  // Correct DownstreamMode?
 
     findDownstreamNodes(status, mclient);
     

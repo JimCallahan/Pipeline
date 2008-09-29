@@ -1,4 +1,4 @@
-// $Id: AnimApproveTaskBuilder.java,v 1.2 2008/06/26 20:45:55 jesse Exp $
+// $Id: AnimApproveTaskBuilder.java,v 1.3 2008/09/29 19:02:19 jim Exp $
 
 package com.nathanlove.pipeline.plugin.BaseCollection.v1_0_0;
 
@@ -127,7 +127,8 @@ class AnimApproveTaskBuilder
       
       /* Find the animation node. */
       String animEdit = pShotNamer.getAnimEditScene();
-      NodeStatus aeStatus = pClient.status(getAuthor(), getView(), animEdit, true);
+      NodeStatus aeStatus = 
+        pClient.status(getAuthor(), getView(), animEdit, true, DownstreamMode.None);
       TreeSet<String> prepareNodes = new TreeSet<String>();
       
       /* Find all the animation being exported from that node.*/
