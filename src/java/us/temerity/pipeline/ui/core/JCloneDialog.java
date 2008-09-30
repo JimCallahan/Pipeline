@@ -1,4 +1,4 @@
-// $Id: JCloneDialog.java,v 1.17 2007/12/15 07:29:10 jesse Exp $
+// $Id: JCloneDialog.java,v 1.18 2008/09/30 23:23:22 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -567,7 +567,7 @@ class JCloneDialog
       BaseEditor editor = null;
       if(pExportPanel.exportEditor()) 
 	editor = pNodeMod.getEditor();
-      else 
+      else if(suffix != null) 
 	editor = master.getMasterMgrClient(pChannel).getEditorForSuffix(suffix);
 
       String toolset = null;
