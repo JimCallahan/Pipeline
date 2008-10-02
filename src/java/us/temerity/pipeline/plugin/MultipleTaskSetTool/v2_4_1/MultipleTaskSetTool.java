@@ -1,4 +1,4 @@
-// $Id: MultipleTaskSetTool.java,v 1.1 2008/09/19 03:30:10 jesse Exp $
+// $Id: MultipleTaskSetTool.java,v 1.2 2008/10/02 00:26:23 jesse Exp $
 
 package us.temerity.pipeline.plugin.MultipleTaskSetTool.v2_4_1;
 
@@ -144,7 +144,8 @@ class MultipleTaskSetTool
       String entityType = pEntityField.getSelected();
       
       for (String node : pSelected.keySet()) {
-        TreeMap<String, BaseAnnotation> annots = getTaskAnnotation(node, mclient);
+        TreeMap<String, BaseAnnotation> annots = 
+          getTaskAnnotation(node, mclient);
         if (annots != null) {
           for (String aName : annots.keySet()) {
             BaseAnnotation annot = annots.get(aName);
@@ -181,17 +182,17 @@ class MultipleTaskSetTool
       throws PipelineException
     {
       JScrollPane scroll = null;
-      Box hbox = new Box(BoxLayout.X_AXIS);
+      Box vbox = new Box(BoxLayout.Y_AXIS);
 
       {
-        scroll = new JScrollPane(hbox);
+        scroll = new JScrollPane(vbox);
 
         scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         scroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 
         scroll.getViewport().setScrollMode(JViewport.BACKINGSTORE_SCROLL_MODE);
 
-        Dimension size = new Dimension(sTSize + sVSize, 400);
+        Dimension size = new Dimension(sTSize + sVSize2, 400);
         scroll.setMinimumSize(size);
       }
       
@@ -213,10 +214,13 @@ class MultipleTaskSetTool
           (tpanel, "NodePurpose:", sTSize, vpanel, NodePurpose.titles(), diag, sVSize2, 
            "The purpose of this node.");
         
-        hbox.add(comps[2]);
+        vbox.add(comps[2]);
+        
+        vbox.add(UIFactory.createFiller(sTSize + sVSize2));
       }
       
       diag.pack();
+      
       
       TreeSet<String> focusNodes = new TreeSet<String>();
       pNewAnnotsPurpose = new TreeMap<String, String>();
@@ -228,7 +232,7 @@ class MultipleTaskSetTool
           purposeField.setSelected(NodePurpose.Focus.toTitle());
         else if (node.contains("thumb"))
           purposeField.setSelected(NodePurpose.Thumbnail.toTitle());
-        else if (node.contains("proceduct"))
+        else if (node.contains("product"))
           purposeField.setSelected(NodePurpose.Product.toTitle());
         else if (node.contains("edit"))
           purposeField.setSelected(NodePurpose.Edit.toTitle());
@@ -254,8 +258,11 @@ class MultipleTaskSetTool
           (tpanel, "MasterFocusNode:", sTSize, vpanel, focusNodes, diag, sVSize2, 
            "Which focus node should be the master focus node.");
         
-        hbox.add(comps[2]);
-        scroll.setViewportView(hbox);
+        vbox.removeAll();
+        vbox.add(comps[2]);
+        vbox.add(UIFactory.createFiller(sTSize + sVSize));
+        
+        scroll.setViewportView(vbox);
         diag.pack();
         diag.setVisible(true);
         if (!diag.wasConfirmed())
@@ -369,6 +376,10 @@ class MultipleTaskSetTool
     case Approve:
     case Synch:
       break;
+      
+    case Focus:
+      if (master)
+        break;
 
     default:
       annot.setParamValue(aPurpose, purpose.toString());
