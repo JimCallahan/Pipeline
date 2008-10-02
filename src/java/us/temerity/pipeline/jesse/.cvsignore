@@ -1,3 +1,7 @@
 BuilderGuiTest.java
 ParamPanelTest.java
 Plugin.java
+BadNodeModTest.java
+GlueTest.java
+ToolsetTest.java
+TupleRangeTest.java
