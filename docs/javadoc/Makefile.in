@@ -329,7 +329,9 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
                                -maxdepth 1 -type d -not \( -name CVS -o -name EXTRA \) )
 
     MODERN_DIRS = $(shell find $(top_srcdir)/src/java/us/temerity/pipeline/plugin/*/v2_*_* \
+                               $(top_srcdir)/src/java/us/temerity/pipeline/builder/v2_4_* \
                                -maxdepth 1 -type d -not \( -name CVS -o -name EXTRA \) )
+
 
 LEGACY_PACKAGES = $(subst /,.,$(patsubst $(top_srcdir)/src/java/%,%,$(LEGACY_DIRS)))
 MODERN_PACKAGES = $(subst /,.,$(patsubst $(top_srcdir)/src/java/%,%,$(MODERN_DIRS)))
