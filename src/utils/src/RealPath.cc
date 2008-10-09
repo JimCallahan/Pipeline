@@ -1,4 +1,4 @@
-/* $Id: RealPath.cc,v 1.4 2004/04/05 05:53:20 jim Exp $ */
+/* $Id: RealPath.cc,v 1.5 2008/10/09 03:07:13 jim Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -26,6 +26,14 @@
 
 #ifdef HAVE_UNISTD_H
 #  include <unistd.h>
+#endif
+
+#ifdef HAVE_CSTRING_H
+#  include <cstring>
+#else 
+#  ifdef HAVE_STRING_H
+#    include <string.h>
+#  endif
 #endif
 
 #include <PackageInfo.hh>

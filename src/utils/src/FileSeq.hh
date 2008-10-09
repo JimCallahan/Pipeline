@@ -1,4 +1,4 @@
-// $Id: FileSeq.hh,v 1.2 2003/10/11 04:16:07 jim Exp $
+// $Id: FileSeq.hh,v 1.3 2008/10/09 03:07:13 jim Exp $
 
 #ifndef PIPELINE_FILE_SEQ_HH
 #define PIPELINE_FILE_SEQ_HH
@@ -7,7 +7,7 @@
 #  include "config.h"
 #endif
 
-#ifdef CSTRING_H
+#ifdef HAVE_CSTRING_H
 #  include <cstring>
 #else 
 #  ifdef HAVE_STRING_H

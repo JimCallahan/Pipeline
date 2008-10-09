@@ -1,4 +1,4 @@
-// $Id: PlRun.cc,v 1.11 2007/04/02 22:46:31 jim Exp $
+// $Id: PlRun.cc,v 1.12 2008/10/09 03:07:13 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -18,6 +18,18 @@
 
 #ifdef HAVE_ERRNO_H
 #  include <errno.h>
+#endif
+
+#ifdef HAVE_CSTRING_H
+#  include <cstring>
+#else 
+#  ifdef HAVE_STRING_H
+#    include <string.h>
+#  endif
+#endif
+
+#ifdef HAVE_LIMITS_H
+#  include <limits.h>
 #endif
 
 #include <PackageInfo.hh>

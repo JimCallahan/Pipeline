@@ -1,4 +1,4 @@
-// $Id: HtmlHelp.hh,v 1.3 2004/03/21 01:20:26 jim Exp $
+// $Id: HtmlHelp.hh,v 1.4 2008/10/09 03:07:13 jim Exp $
 
 #ifndef PIPELINE_HTML_HELP_HH
 #define PIPELINE_HTML_HELP_HH 
@@ -25,6 +25,14 @@
 
 #ifdef HAVE_UNISTD_H
 #  include <unistd.h>
+#endif
+
+#ifdef HAVE_CSTRING_H
+#  include <cstring>
+#else 
+#  ifdef HAVE_STRING_H
+#    include <string.h>
+#  endif
 #endif
 
 namespace Pipeline {
