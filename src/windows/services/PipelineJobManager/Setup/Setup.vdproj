@@ -375,7 +375,7 @@
             {
             "Name" = "8:Search forJDK"
             "Root" = "2:1"
-            "RegKey" = "8:SOFTWARE\\JavaSoft\\Java Development Kit\\1.6.0_06"
+            "RegKey" = "8:SOFTWARE\\JavaSoft\\Java Development Kit\\1.6.0_07"
             "Value" = "8:JavaHome"
             "Property" = "8:JAVAHOME"
             }
