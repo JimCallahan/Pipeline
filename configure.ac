@@ -9,7 +9,7 @@ AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
 AC_CONFIG_HEADERS([config.h])
-AM_INIT_AUTOMAKE(Pipeline, 2.4.3b11)
+AM_INIT_AUTOMAKE(Pipeline, 2.4.3b12)
                            
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
@@ -685,6 +685,20 @@ then
 fi 
 
 AC_MSG_RESULT([$PRODDIR])
+
+
+
+AC_MSG_CHECKING([File Status Directory])
+
+AC_SUBST(STATDIR)
+STATDIR=`crypto_lookup FileStatDirectory`
+
+if test "$STATDIR" == "null"
+then
+  AC_MSG_ERROR([customer profile was incomplete.])
+fi 
+
+AC_MSG_RESULT([$STATDIR])
 
 
 
@@ -1667,7 +1681,7 @@ AC_MSG_RESULT([Locating Basic C++ headers:])
 AC_CHECK_HEADERS([stdexcept])
 AC_CHECK_HEADERS([float.h])
 AC_CHECK_HEADERS([cassert assert.h], [break])
-AC_CHECK_HEADERS([climits limits.h], [break])
+AC_CHECK_HEADERS([limits.h], [break])
 AC_CHECK_HEADERS([cstdlib stdlib.h], [break])
 AC_CHECK_HEADERS([cstdio stdio.h], [break])
 AC_CHECK_HEADERS([cstring string.h], [break])

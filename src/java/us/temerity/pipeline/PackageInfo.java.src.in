@@ -1,4 +1,4 @@
-// $Id: PackageInfo.java.src.in,v 1.45 2008/05/16 01:11:40 jim Exp $
+// $Id: PackageInfo.java.src.in,v 1.46 2008/10/09 03:06:06 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -145,6 +145,7 @@ class PackageInfo
 
       sInstPath   = new Path("@ROOT_INST_DIR@");
       sProdPath   = new Path("@PRODDIR@");
+      sStatPath   = new Path("@STATDIR@");
       sRepoPath   = new Path("@PRODDIR@/repository");
       sWorkPath   = new Path("@PRODDIR@/working");
       sTargetPath = new Path("@PRODDIR@/target");
@@ -162,6 +163,7 @@ class PackageInfo
 
       sInstPath   = new Path("@MAC_ROOT_INST_DIR@");
       sProdPath   = new Path("@MAC_PRODDIR@");
+      sStatPath   = null;
       sRepoPath   = new Path("@MAC_PRODDIR@/repository");
       sWorkPath   = new Path("@MAC_PRODDIR@/working");
       sTargetPath = new Path("@MAC_PRODDIR@/target");
@@ -179,6 +181,7 @@ class PackageInfo
 
       sInstPath   = new Path("@WIN_ROOT_INST_DIR@");
       sProdPath   = new Path("@WIN_PRODDIR@");
+      sStatPath   = null;
       sRepoPath   = new Path("@WIN_PRODDIR@/repository");
       sWorkPath   = new Path("@WIN_PRODDIR@/working");
       sTargetPath = new Path("@WIN_PRODDIR@/target");
@@ -197,6 +200,7 @@ class PackageInfo
 
       sInstPath   = null;
       sProdPath   = null;
+      sStatPath   = null;
       sRepoPath   = null;
       sWorkPath   = null;
       sTargetPath = null;
@@ -324,7 +328,7 @@ class PackageInfo
   /*----------------------------------------------------------------------------------------*/
   
   /** 
-   * Gets the abstract pathname of the root installation directory for the given 
+   * Gets the abstract pathname of the root production directory for the given 
    * operating system.
    */ 
   public static Path
@@ -853,6 +857,17 @@ class PackageInfo
    */
   @Deprecated
   public static final File sProdDir;
+
+
+  /** 
+   * The abstract pathname of the root production directory used for file status operations
+   * for the current operating system. <P>
+   *
+   * Set by the FileStatDirectory customer profile entry.<P> 
+   * 
+   * WARNING: This field is not initialized on MacOS or Windows systems. 
+   */
+  public static final Path sStatPath;
 
 
   /** 

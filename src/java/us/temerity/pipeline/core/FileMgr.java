@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.79 2008/07/09 04:11:52 jim Exp $
+// $Id: FileMgr.java,v 1.80 2008/10/09 03:06:06 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -168,6 +168,7 @@ class FileMgr
     if(PackageInfo.sOsType != OsType.Unix)
       throw new IllegalStateException("The OS type must be Unix!");
     pProdDir = PackageInfo.sProdPath.toFile();
+    pStatDir = PackageInfo.sStatPath.toFile();
     pRepoDir = PackageInfo.sRepoPath.toFile();
     pTempDir = PackageInfo.sTempPath.toFile();
 
@@ -423,7 +424,7 @@ class FileMgr
       synchronized(workingLock) {
 	timer.resume();
 
-	CheckSum checkSum = new CheckSum("MD5", pProdDir);
+	CheckSum checkSum = new CheckSum("MD5", pStatDir);
 
 	NodeID id = req.getNodeID();
 	TreeMap<FileSeq, FileState[]> states = new TreeMap<FileSeq, FileState[]>();
@@ -439,7 +440,7 @@ class FileMgr
 	      int wk = 0;
 	      for(File file : fseq.getFiles()) {
 		File wpath = new File(req.getNodeID().getWorkingParent() + "/" + file);
-		File work  = new File(pProdDir, wpath.getPath());
+		File work  = new File(pStatDir, wpath.getPath());
 
 		if(!work.isFile()) {
 		  /* this means that someone has manually removed the symlink! */ 
@@ -463,11 +464,11 @@ class FileMgr
 	      int wk = 0;
 	      for(File file : fseq.getFiles()) {
 		File wpath = new File(req.getNodeID().getWorkingParent() + "/" + file);
-		File work  = new File(pProdDir, wpath.getPath());
+		File work  = new File(pStatDir, wpath.getPath());
 		
 		VersionID lvid = req.getLatestVersionID();
 		File lpath  = new File(req.getNodeID().getCheckedInPath(lvid) + "/" + file);
-		File latest = new File(pProdDir, lpath.getPath());
+		File latest = new File(pStatDir, lpath.getPath());
 		
 		if(!latest.isFile()) {
 		  fs[wk] = FileState.Obsolete;
@@ -503,7 +504,7 @@ class FileMgr
 	    
 	      int wk = 0;
 	      for(File file : fseq.getFiles()) {
-		File work = new File(pProdDir, 
+		File work = new File(pStatDir, 
 				     req.getNodeID().getWorkingParent() + "/" + file);
 
 		if(work.isFile())
@@ -531,14 +532,14 @@ class FileMgr
 	      int wk = 0;
 	      for(File file : fseq.getFiles()) {
 		File wpath = new File(req.getNodeID().getWorkingParent() + "/" + file);
-		File work  = new File(pProdDir, wpath.getPath());
+		File work  = new File(pStatDir, wpath.getPath());
 	      
 		if(!work.isFile()) 
 		  fs[wk] = FileState.Missing;
 		else {
 		  VersionID lvid = req.getLatestVersionID();
 		  File lpath  = new File(req.getNodeID().getCheckedInPath(lvid) + "/" + file);
-		  File latest = new File(pProdDir, lpath.getPath());
+		  File latest = new File(pStatDir, lpath.getPath());
 		
 		  if(!latest.isFile()) 
 		    fs[wk] = FileState.Added;
@@ -572,18 +573,18 @@ class FileMgr
 	      int wk = 0;
 	      for(File file : fseq.getFiles()) {
 		File wpath = new File(req.getNodeID().getWorkingParent() + "/" + file);
-		File work  = new File(pProdDir, wpath.getPath());
+		File work  = new File(pStatDir, wpath.getPath());
 
 		if(!work.isFile()) 
 		  fs[wk] = FileState.Missing;
 		else {
 		  VersionID lvid = req.getLatestVersionID();
 		  File lpath  = new File(req.getNodeID().getCheckedInPath(lvid) + "/" + file);
-		  File latest = new File(pProdDir, lpath.getPath());
+		  File latest = new File(pStatDir, lpath.getPath());
 
 		  VersionID bvid = req.getWorkingVersionID();
 		  File bpath = new File(req.getNodeID().getCheckedInPath(bvid) + "/" + file);
-		  File base  = new File(pProdDir, bpath.getPath());
+		  File base  = new File(pStatDir, bpath.getPath());
 		
 		  if(!latest.isFile()) {
 		    if(!base.isFile()) 
@@ -648,7 +649,7 @@ class FileMgr
 	      int wk = 0;
 	      for(File file : fseq.getFiles()) {
                 if(fs[wk] != FileState.Missing) {
-                  File work = new File(pProdDir, 
+                  File work = new File(pStatDir, 
                                        req.getNodeID().getWorkingParent() + "/" + file);
 
                   try {
@@ -4423,6 +4424,7 @@ class FileMgr
    * initialized to Unix specific paths.
    */
   private File pProdDir; 
+  private File pStatDir; 
   private File pRepoDir; 
   private File pTempDir; 
 
