@@ -1,4 +1,4 @@
-// $Id: BaseMgrClient.java,v 1.25 2007/03/23 23:14:53 jim Exp $
+// $Id: BaseMgrClient.java,v 1.26 2008/10/10 15:15:18 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -82,23 +82,37 @@ class BaseMgrClient
     {
       boolean illegal = false;
       Thread current = Thread.currentThread();
-      if(current instanceof BaseExtThread) 
+      if(current instanceof BaseExtThread)
 	illegal = true;
       else {
 	StackTraceElement[] elem = current.getStackTrace();
 	int wk; 
 	for(wk=0; wk<elem.length; wk++) {
-	  if(elem[wk].getMethodName().equals("performExtensionTests")) {
-	    illegal = true;
-	    break;
+          String cname = elem[wk].getClassName();
+          String mname = elem[wk].getMethodName();
+
+          if((cname.equals("us.temerity.pipeline.core.QueueMgr") || 
+              cname.equals("us.temerity.pipeline.core.MasterMgr")) && 
+             mname.equals("performExtensionTests")) {
+            illegal = true;
+            break;
+	  }
+
+          if(cname.equals("us.temerity.pipeline.core.JobMgr$ExecuteTask") && 
+             mname.equals("run")) {
+            illegal = true;
+            break;
 	  }
 	}
       }
 
       if(illegal) 
 	throw new PipelineException
-	  ("Access to Pipeline server client methods is not allowed inside server " + 
-	   "extension pre-operation tests or post-operation tasks!");
+          ("You may not use Pipeline server client class instances from plugins " +
+           "derived from BaseAction, BaseMasterExt or BaseQueueExt.  Use of clients " + 
+           "in this way would invalidate the reproducibility of the file associated " + 
+           "with actions and make the Pipeline servers vunerable to infinite loops and " + 
+           "other undesirable side effects from server extensions.");
     }
 
     /* (re)estblish the connection */ 
