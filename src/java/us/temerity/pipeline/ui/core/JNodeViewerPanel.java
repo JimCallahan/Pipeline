@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.125 2008/09/29 19:02:19 jim Exp $
+// $Id: JNodeViewerPanel.java,v 1.126 2008/10/10 12:33:09 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -7160,8 +7160,14 @@ class JNodeViewerPanel
           master.endPanelOp(pGID, pMessage);
 	}
 
-        if((pSuccess) && pTool.updateOnExit()) 
-          setRoots(pTool.rootsOnExit());
+        if((pSuccess) && pTool.updateOnExit()) {
+          String author = pTool.authorOnExit();
+          String view = pTool.viewOnExit();
+          if(!pAuthor.equals(author) || !pView.equals(view)) 
+            setRoots(pTool.authorOnExit(), pTool.viewOnExit(), pTool.rootsOnExit());
+          else 
+            setRoots(pTool.rootsOnExit());
+        }
       }
       catch(Exception ex) {
 	pMessage = "Unexpected Failure!";

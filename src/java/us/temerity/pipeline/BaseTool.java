@@ -1,4 +1,4 @@
-// $Id: BaseTool.java,v 1.18 2008/07/21 17:31:09 jim Exp $
+// $Id: BaseTool.java,v 1.19 2008/10/10 12:33:09 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -313,13 +313,49 @@ class BaseTool
    * By default this method returns <CODE>pRoots</CODE>.  Subclasses which wish to modify
    * the set of nodes updated when the tool exits should modify the contents of 
    * <CODE>pRoots</CODE> or override this method to return the specific root nodes they wish 
-   * to be displayed. 
+   * to be displayed. <P> 
+   * 
+   * Note that a status update is required for this to take effect, so updateOnExit() must
+   * also return <CODE>true</CODE>.
    */ 
   public TreeSet<String> 
   rootsOnExit() 
   {
     return pRoots; 
   }
+
+  /**
+   * The name of the user owning the current working area on exit.
+   * 
+   * By default this method returns <CODE>getAuthor()</CODE>.  Subclasses which wish to modify
+   * the current working area when the tool exits should override this method to return an
+   * alternative owning user.<P> 
+   * 
+   * Note that a status update is required for this to take effect, so updateOnExit() must
+   * also return <CODE>true</CODE>.
+   */ 
+  public String
+  authorOnExit() 
+  {
+    return pAuthor;
+  }
+
+  /**
+   * The name of the user's working area view on exit.
+   * 
+   * By default this method returns <CODE>getView()</CODE>.  Subclasses which wish to modify
+   * the current working area when the tool exits should override this method to return an
+   * alternative working area view name.<P> 
+   * 
+   * Note that a status update is required for this to take effect, so updateOnExit() must
+   * also return <CODE>true</CODE>.
+   */ 
+  public String
+  viewOnExit() 
+  {
+    return pView;
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
