@@ -1,4 +1,4 @@
-// $Id: ShotgunConnection.java,v 1.4 2008/07/03 19:50:45 jesse Exp $
+// $Id: ShotgunConnection.java,v 1.5 2008/10/10 12:46:58 jim Exp $
 
 package us.temerity.pipeline.plugin.ShotgunConnectionExt.v2_4_1;
 
@@ -330,7 +330,7 @@ class ShotgunConnection
    *   The name of the project
    * @param scene
    *   The name of the scene
-   * @param name
+   * @param shot
    *   The name of the shot
    */
   public Integer
@@ -379,9 +379,10 @@ class ShotgunConnection
    * Get the unique ID of an asset in a project in Shotgun.
    * 
    * @param project
-   *   The name of the project
-   * @param scene
-   *   The name of the scene
+   *   The name of the project.
+   * 
+   * @param asset
+   *   The name of the asset.
    */
   public Integer
   getAssetID
@@ -920,12 +921,13 @@ class ShotgunConnection
    * Create a new task on an asset, with the given name, in a project.
    * 
    * @param project
-   *   The name of the project
-   * @param
+   *   The name of the project.
+   * 
+   * @param asset
    *   The name of the asset.
+   * 
    * @param taskType
    *   The type of the task.
-   *
    */
   public Integer 
   createTaskOnAsset

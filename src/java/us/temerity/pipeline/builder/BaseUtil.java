@@ -1,4 +1,4 @@
-// $Id: BaseUtil.java,v 1.37 2008/09/19 03:37:35 jesse Exp $
+// $Id: BaseUtil.java,v 1.38 2008/10/10 12:46:58 jim Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -773,7 +773,6 @@ class BaseUtil
    * structures can be added.
    * <p>
    * Locking occurs upon calling the {@link #setLayout(PassLayoutGroup)} method.
-   * @return
    */
   public boolean
   isLocked()
@@ -1906,7 +1905,7 @@ class BaseUtil
    * Generate a string containing both the exception message and stack trace. 
    * 
    * @deprecated 
-   *   The static method {@link Exceptions.getFullMessage} should be used instead.
+   *   The static method {@link Exceptions#getFullMessage} should be used instead.
    * 
    * @param ex 
    *   The thrown exception.   

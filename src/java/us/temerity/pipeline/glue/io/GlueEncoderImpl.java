@@ -1,4 +1,4 @@
-// $Id: GlueEncoderImpl.java,v 1.5 2008/06/29 17:46:16 jim Exp $
+// $Id: GlueEncoderImpl.java,v 1.6 2008/10/10 12:46:58 jim Exp $
 
 package us.temerity.pipeline.glue.io;
 
@@ -68,9 +68,6 @@ class GlueEncoderImpl
    * 
    * @param obj 
    *   The <CODE>Object</CODE> to be encoded.
-   * 
-   * @param writer 
-   *   The character stream into which the Glue encoded representation is written.
    */
   public static String
   encodeString

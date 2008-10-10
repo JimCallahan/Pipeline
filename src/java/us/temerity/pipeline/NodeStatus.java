@@ -1,4 +1,4 @@
-// $Id: NodeStatus.java,v 1.22 2008/09/29 19:02:17 jim Exp $
+// $Id: NodeStatus.java,v 1.23 2008/10/10 12:46:58 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -13,8 +13,6 @@ import java.io.*;
 
 /**
  * The status of a node with respect to a particular user and view.
- * 
- * @see NodeDetails
  */
 public
 class NodeStatus

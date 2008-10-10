@@ -1,4 +1,4 @@
-// $Id: BasePlugin.java,v 1.15 2008/06/15 01:59:49 jim Exp $
+// $Id: BasePlugin.java,v 1.16 2008/10/10 12:46:58 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -381,7 +381,7 @@ class BasePlugin
    * Generate a string containing both the exception message and stack trace. 
    * 
    * @deprecated 
-   *   The static method {@link Exceptions.getFullMessage} should be used instead.
+   *   The static method {@link Exceptions#getFullMessage} should be used instead.
    * 
    * @param ex 
    *   The thrown exception.   

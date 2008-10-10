@@ -1,6 +1,8 @@
-// $Id: TextAreaAnnotationParam.java,v 1.3 2008/03/16 13:02:34 jim Exp $
+// $Id: TextAreaAnnotationParam.java,v 1.4 2008/10/10 12:46:58 jim Exp $
 
 package us.temerity.pipeline;
+
+import us.temerity.pipeline.glue.GlueDecoder;
 
 /*------------------------------------------------------------------------------------------*/
 /*   T E X T   A R E A   A N N O T A T I O N   P A R A M                                    */

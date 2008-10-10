@@ -1,4 +1,4 @@
-// $Id: StageState.java,v 1.9 2008/04/21 23:15:06 jesse Exp $
+// $Id: StageState.java,v 1.10 2008/10/10 12:46:58 jim Exp $
 
 package us.temerity.pipeline.stages;
 
@@ -95,7 +95,6 @@ class StageState
    * @param view
    *   The working area the node was created in.
    * @throws PipelineException
-   * @see #initializeAddedNodes()
    */
   public final boolean 
   addNode
@@ -106,9 +105,6 @@ class StageState
   ) 
     throws PipelineException
   {
-    if(pAddedNodes == null)
-      throw new PipelineException(
-      "It appears that initializeAddedNodes() was never called, leading to an error");
     if(pAddedNodes.keySet().contains(name))
       return false;
     pAddedNodes.put(name, new NodeID(author, view, name));
