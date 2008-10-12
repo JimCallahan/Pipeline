@@ -1,10 +1,12 @@
-// $Id: BaseApp.java,v 1.26 2008/02/14 20:26:29 jim Exp $
+// $Id: BaseApp.java,v 1.27 2008/10/12 07:21:05 jim Exp $
 
 package us.temerity.pipeline.core;
 
 import java.io.File;
 import java.io.FileReader;
 import java.util.*;
+import java.awt.Desktop;
+import java.net.URI; 
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.bootstrap.BootApp;
@@ -134,172 +136,16 @@ class BaseApp
   ) 
     throws PipelineException
   {
-    Map<String,String> env = System.getenv();
-
-    switch(PackageInfo.sOsType) {
-    case Unix:
-    case Windows:
-      {
-        String path = env.get("PATH");
-        String firefox = null;
-        switch(PackageInfo.sOsType) {
-        case Unix:
-          firefox = "firefox";
-          break;
-
-        case Windows:
-          if(path == null) 
-            path = env.get("Path");
-          firefox = "firefox.exe";
-        }
-
-        if(path == null) 
-          throw new PipelineException
-            ("No executable PATH was defined in the environment!");
-
-        ExecPath epath = new ExecPath(path);
-        if(epath.which(firefox) != null) {
-          if(isBrowserRunning(firefox, env))
-            displayURL(firefox, env, url);
-          else 
-            launchURL(firefox, env, url);
-        }
-	else {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Sub, LogMgr.Level.Warning,
-	     "Unable to find (" + firefox + ") on your system to display URLs!");
-        }
-      }
-      break;
-
-    case MacOS:
-      {
-	ArrayList<String> args = new ArrayList<String>();
-	args.add(url);
-        
-        SubProcessLight proc = 
-          new SubProcessLight("OpenURL", "open", 
-                              args, env, PackageInfo.sTempPath.toFile());
-        proc.start();
-      }
-    }
-  }
-
-  /**
-   * Returns whether a web browser is currently running.
-   * 
-   * @param browser
-   *   The browser program name.
-   * 
-   * @param env
-   *   The shell environment.
-   * 
-   * @throws PipelineException
-   *   If unable to determine whether the browser is running.
-   */    
-  private static boolean
-  isBrowserRunning
-  (
-   String browser, 
-   Map<String,String> env
-  )
-    throws PipelineException
-  {
-    ArrayList<String> args = new ArrayList<String>();
-    args.add("-remote");
-    args.add("ping()");
-
-    SubProcessLight proc = 
-      new SubProcessLight("CheckBrowser", browser, 
-			  args, env, PackageInfo.sTempPath.toFile());
     try {
-      proc.start();
-      proc.join();
+      Desktop.getDesktop().browse(new URI(url));
+      return;
     }
-    catch(InterruptedException ex) {
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Sub, LogMgr.Level.Severe,
-	 ex.getMessage());
-    }
-    
-    return proc.wasSuccessful();
-  }
-
-  /**
-   * Direct a running browser to display the given URL.
-   * 
-   * @param browser
-   *   The browser program name.
-   * 
-   * @param env
-   *   The shell environment.
-   * 
-   * @param url
-   *   The URL to display.
-   * 
-   * @throws PipelineException
-   *   If unable to contact the browser.
-   */ 
-  private static void
-  displayURL
-  (
-   String browser, 
-   Map<String,String> env,
-   String url 
-  )
-    throws PipelineException
-  {
-    ArrayList<String> args = new ArrayList<String>();
-    args.add("-new-tab");
-    args.add(url);
-    
-    SubProcessLight proc = 
-      new SubProcessLight("RemoteBrowser", browser, 
-			  args, env, PackageInfo.sTempPath.toFile());
-    try {      
-      proc.start();
-      proc.join();
-    }
-    catch(InterruptedException ex) {
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Sub, LogMgr.Level.Severe,
-	 ex.getMessage());
+    catch(Exception ex) {
+      throw new PipelineException
+        ("Unable to launch native browser to display the URL:\n  " + url + "\n\n" + 
+         ex.getMessage());
     }
   }
-  
-  /**
-   * Launch a new browser process to display the given URL.
-   * 
-   * @param browser
-   *   The browser program name.
-   * 
-   * @param env
-   *   The shell environment.
-   * 
-   * @param url
-   *   The URL to display.
-   * 
-   * @throws PipelineException
-   *   If unable to launch the browser.
-   */ 
-  private static void
-  launchURL
-  (
-   String browser, 
-   Map<String,String> env,
-   String url 
-  )
-    throws PipelineException
-  {
-    ArrayList<String> args = new ArrayList<String>();
-    args.add(url.toString());
-    
-    SubProcessLight proc = 
-      new SubProcessLight("LaunchBrowser", browser, 
-			  args, env, PackageInfo.sTempPath.toFile());
-    proc.start();
-  }
-    
 
 
   /*----------------------------------------------------------------------------------------*/

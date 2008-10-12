@@ -1818,6 +1818,7 @@ AC_CONFIG_FILES([
   src/java/jython/Windows/jythonc.bat.src
 
   src/java/scripts/Makefile
+  src/java/scripts/plbrowse
   src/java/scripts/plbuilder
   src/java/scripts/plfilemgr
   src/java/scripts/pljobmgr
@@ -1839,6 +1840,7 @@ AC_CONFIG_FILES([
   src/java/scripts/upgrade-hosts-file
 
   src/java/scripts/debug/Makefile
+  src/java/scripts/debug/plbrowse
   src/java/scripts/debug/plbuilder
   src/java/scripts/debug/plfilemgr
   src/java/scripts/debug/pljobmgr  
@@ -1860,6 +1862,7 @@ AC_CONFIG_FILES([
   src/java/scripts/debug/plversion
 
   src/java/scripts/profile/Makefile
+  src/java/scripts/profile/plbrowse
   src/java/scripts/profile/plbuilder
   src/java/scripts/profile/plfilemgr
   src/java/scripts/profile/pljobmgr
@@ -1926,6 +1929,7 @@ AC_CONFIG_FILES([
   src/windows/scripts/plscript.bat.src
   src/windows/scripts/plscript-splash.bat.src
   src/windows/scripts/plpython.bat.src
+  src/windows/scripts/plbrowse.bat.src
   src/windows/scripts/plbuilder.bat.src
   src/windows/scripts/pljobmgr.bat.src  
   src/windows/scripts/plui2.bat.src
@@ -1941,6 +1945,7 @@ AC_CONFIG_FILES([
   src/windows/scripts/debug/plscript.bat.src
   src/windows/scripts/debug/plscript-splash.bat.src
   src/windows/scripts/debug/plpython.bat.src
+  src/windows/scripts/debug/plbrowse.bat.src
   src/windows/scripts/debug/plbuilder.bat.src
   src/windows/scripts/debug/plui2.bat.src
   src/windows/scripts/debug/plui2-j2dgl.bat.src

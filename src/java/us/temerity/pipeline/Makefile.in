@@ -371,24 +371,24 @@ PLG_UTIL_SOURCES = $(shell ls $(srcdir)/plugin/*.java)
                    $(PLG_UTIL_SOURCES)
 
     CORE_PARSERS = BatchParser \
-                   ToolsetEnvParser \
+                   BrowseOptsParser \
+                   BuilderOptsParser \
                    FileMgrOptsParser \
-                   JobMgrOptsParser \
+                   GlueParser \
                    GraphicalOptsParser \
-                   RemoteOptsParser \
+                   JobMgrOptsParser \
                    MasterOptsParser \
                    MineOptsParser \
+                   PluginMgrOptsParser \
                    PluginOptsParser \
                    PythonOptsParser \
-                   PluginMgrOptsParser \
                    QueueMgrOptsParser \
+                   RemoteOptsParser \
                    ScriptOptsParser \
-                   VersionOptsParser \
                    TestNativeOptsParser \
+                   ToolsetEnvParser \
                    ValidateOptsParser \
-                   GlueParser \
-                   BuilderOptsParser
-
+                   VersionOptsParser
 
     GLUE_PARSERS = GlueParser
 

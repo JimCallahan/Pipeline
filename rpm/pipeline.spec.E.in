@@ -22,6 +22,7 @@
 @ROOT_INST_DIR@/share/docs/javadoc
 @ROOT_INST_DIR@/share/docs/legal
 
+@ROOT_INST_DIR@/share/docs/man/plbrowse.html
 @ROOT_INST_DIR@/share/docs/man/plbuilder.html
 @ROOT_INST_DIR@/share/docs/man/plfilemgr.html 
 @ROOT_INST_DIR@/share/docs/man/pljobmgr.html 

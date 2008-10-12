@@ -1,0 +1,238 @@
+options {
+  STATIC = false;
+}
+
+PARSER_BEGIN(BrowseOptsParser)
+
+package us.temerity.pipeline.core;
+
+import us.temerity.pipeline.*;
+
+import java.util.*;
+import java.text.*;
+import java.io.*;
+
+/*------------------------------------------------------------------------------------------*/
+/*   V E R S I O N   O P T S   P A R S E R                                                  */
+/*                                                                                          */
+/*    The parser for the plversion(1) tool.                                                 */
+/*------------------------------------------------------------------------------------------*/
+
+class 
+BrowseOptsParser
+{
+  /*----------------------------------------------------------------------------------------*/
+  /*   A C C E S S                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Set the application instance. 
+   */ 
+  public void 
+  setApp
+  (
+   BrowseApp app  
+  ) 
+  {
+    if(app == null) 
+      throw new IllegalArgumentException("The application cannot be (null)!");
+    pApp = app;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The application instance. 
+   */
+  private BrowseApp  pApp;
+
+}
+
+
+PARSER_END(BrowseOptsParser)
+
+<DEFAULT> 
+TOKEN :
+{       
+  /* information options */ 
+  <HELP:         "--help">         
+| <HTML_HELP:    "--html-help">    
+| <VERSION:      "--version">      
+| <RELEASE_DATE: "--release-date"> 
+| <COPYRIGHT:    "--copyright">    
+| <LICENSE:      "--license">    
+
+  /* command options */	
+| <URL:           "--url">   : URL_SEP
+
+  /* seperators */ 
+| <AE1: (["\0"])+>
+
+  /* errors */ 
+| <UNKNOWN_OPTION:  "-" ("-")? (~["\0","="])*>  : IGNORE_STATE
+| <UNKNOWN_COMMAND: ~["-","\0"] (~["\0"])*>     : IGNORE_STATE
+}
+
+
+/* common states */ 
+<IGNORE_STATE> 
+TOKEN :
+{
+  <IGNORED: (~[])+>
+}
+
+
+/* URL arguments */ 
+<URL_SEP> 
+TOKEN :
+{
+  <EQ1:                "=">  : URL_STATE
+| <MISSING_URL_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<URL_STATE> 
+TOKEN :
+{
+  <URL_ARG:       (("file" | "http" | "https" | "ftp") ":")? ("/")* ("../")* <URL_COMP> 
+	         ("/" (".." | (<URL_COMP>)+)?)*>              : DEFAULT
+| <#URL_COMP: (["a"-"z","A"-"Z","0"-"9","_","-","."])*>
+| <MISSING_URL:   ["\0"]>                                     : IGNORE_STATE
+| <ILLEGAL_URL:   (~["\0"])+>                                 : IGNORE_STATE
+}
+
+
+
+/*------------------------------------------------------------------------------------------*/
+/*   T O P   L E V E L                                                                      */
+/*------------------------------------------------------------------------------------------*/
+
+void
+CommandLine() 
+  throws PipelineException :
+{}
+{
+  (InformationOpts() | URL()) <EOF>
+  {}
+}
+
+
+void
+URL()
+  throws PipelineException :
+{
+  Token t;
+}
+{
+  <URL> EQ() t=<URL_ARG> AE()
+  { 
+    pApp.showURL(t.image);
+  }
+}
+
+
+
+/*------------------------------------------------------------------------------------------*/
+/*   I N F O R M A T I O N   O P T I O N S                                                  */
+/*------------------------------------------------------------------------------------------*/
+
+void
+InformationOpts() :
+{}
+{
+  (Help() | HtmlHelp() | Version() | ReleaseDate() | Copyright() | License())
+  {}
+}
+
+void
+Help() : 
+{}
+{
+  <HELP> AE()
+  { 
+    pApp.help(); 
+  }
+}
+
+void
+HtmlHelp() : 
+{}
+{
+  <HTML_HELP> AE()
+  { 
+    pApp.htmlHelp(); 
+  }
+}
+
+void
+Version() :
+{}
+{
+  <VERSION> AE()
+  { 
+    pApp.version(); 
+  }
+}
+
+void
+ReleaseDate() :
+{}
+{
+  <RELEASE_DATE> AE()
+  { 
+    pApp.releaseDate(); 
+  }
+}
+
+void
+Copyright() :
+{}
+{
+  <COPYRIGHT> AE() 
+  { 
+    pApp.copyright(); 
+  }
+}
+
+void
+License() :
+{}
+{
+  <LICENSE> AE() 
+  { 
+    pApp.license(); 
+  }
+}
+
+
+
+/*------------------------------------------------------------------------------------------*/
+/*   S H A R E D   T O K E N S                                                              */
+/*------------------------------------------------------------------------------------------*/
+
+Token
+AE() :
+{
+  Token t;
+}
+{
+  (t=<AE1>)
+  { 
+    return t; 
+  }
+}
+
+
+Token
+EQ() :
+{
+  Token t;
+}
+{
+  (t=<EQ1>)
+  { 
+    return t; 
+  }
+}

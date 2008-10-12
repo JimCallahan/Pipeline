@@ -2,6 +2,7 @@
 instbindir = @ROOT_INST_DIR@/@NATIVE_OSTYPE@-@NATIVE_ARCHTYPE@-Opt/bin
 
 instbin_SCRIPTS = \
+  plbrowse \
   plbuilder \
   plplugin \
   plpython \

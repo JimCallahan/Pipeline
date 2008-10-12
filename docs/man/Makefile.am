@@ -2,6 +2,7 @@
 htmldir = @ROOT_INST_DIR@/share/docs/man
 
 html_DATA = \
+  plbrowse.html \
   plbuilder.html \
   plfilemgr.html \
   pljobmgr.html \

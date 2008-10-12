@@ -1,67 +1,43 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-  <title>plshakeio(1)</title>
+  <title>plbrowse(1)</title>
   <meta http-equiv="content-type"
  content="text/html; charset=ISO-8859-1">
 </head>
 <body>
 <h3><a name="Name"></a>Name
 </h3>
-<blockquote><b>plshakeio</b> - lists information about the
-FileIn/SFileIn and FileOut nodes in a Shake script<br>
+<blockquote><b>plbrowse</b> - show a URL using the native desktop
+browser<br>
 </blockquote>
 <h3><a name="Synopsis"></a>Synopsis</h3>
-<blockquote><b>plshakeio</b> [<a href="#Global_Options"><span
- style="font-style: italic;">options</span></a>] script.shk<br>
+<blockquote><b>plbrowse</b> [<a href="#Global_Options"><span
+ style="font-style: italic;">options</span></a>] <span
+ style="font-style: italic;"><a href="#--url"><span
+ style="font-weight: bold;">--url</span></a>=URL</span><br>
   <br>
-  <b>plshakeio</b> <a style="font-weight: bold;" href="#--help">--help</a><b><br>
-plshakeio</b> <a style="font-weight: bold;" href="#--html-help">--html-help</a><br>
-  <b>plshakeio</b> <b><a href="#--version">--version</a><br>
-plshakeio</b><span style="font-weight: bold;"> <a
- href="#--release-date">--release-date</a></span><b><br>
-plshakeio</b><span style="font-weight: bold;"> <a href="#--copyright">--copyright</a><br>
-plshakeio <a href="#--license">--license</a><br>
+  <b>plbrowse</b> <a style="font-weight: bold;" href="#--help">--help</a><b><br>
+plbrowse</b> <a style="font-weight: bold;" href="#--html-help">--html-help</a><br>
+  <b>plbrowse</b> <b><a href="#--version">--version</a><br>
+plbrowse</b><span style="font-weight: bold;"> <a href="#--release-date">--release-date</a></span><b><br>
+plbrowse</b><span style="font-weight: bold;"> <a href="#--copyright">--copyright</a><br>
+plbrowse <a href="#--license">--license</a><br>
   </span></blockquote>
 <h3><a name="Description"></a>Description</h3>
-<div style="margin-left: 40px;">This utility loads a Shake script and
-prints a line of information for each file I/O node found.&nbsp; This
-information is used by the ShakeSync Tool plugin to verify that the
-files read and written by a Shake script correspond to the Pipeline
-nodes associated with the script.<br>
-<br>
-The format of the information printed for these Shake file I/O nodes is:<br>
-<div style="margin-left: 40px;"><br>
-<span style="font-family: monospace;">FileIn</span> <span
- style="font-style: italic;">shake-node-name pipeline-file-sequence
-time-shift speed in-point in-mode out-point out-mode<br>
-</span></div>
-<div style="margin-left: 40px;"><span style="font-family: monospace;">FileOut</span>
-<span style="font-style: italic;">shake-node-name pipeline-file-sequence</span><br>
-</div>
-<div style="margin-left: 40px;"><span style="font-style: italic;"></span><span
- style="font-style: italic;"></span></div>
-<span style="font-style: italic;"><span style="font-style: italic;"></span></span><span
- style="font-style: italic;"></span></div>
-<div style="margin-left: 40px;"><span style="font-style: italic;"></span><code></code></div>
-<div style="margin-left: 40px;"></div>
-<br>
-<div style="margin-left: 40px;">The file sequence is printed using the
-Pipeline specification directly readable by plscript(1) and the FileSeq
-class from Pipeline's Java API.&nbsp; If missing, the file sequence
-will be printed as "<span style="font-family: monospace;">-</span>".&nbsp;
-The remaining fields printed for FileIn/SFileIn nodes is identical to
-values for the Shake plugs of the same name.<br>
-</div>
+<blockquote>A utility program which determines the appropriate web
+browser to view the given URL on the current operating system and
+according to the current user's preferences.<br>
+</blockquote>
 <h3><a name="Information_Options"></a>Information Options</h3>
-<blockquote>The following options provide information about <b>plshakeio</b>(1)
+<blockquote>The following options provide information about <b>plbrowse</b>(1)
 and then immediately exit:<br>
   <br>
   <b><a name="--help"></a>--help</b><br>
   <blockquote>Prints a brief usage message and exits.<br>
   </blockquote>
   <b><a name="--html-help"></a>--html-help</b><br>
-  <blockquote>Opens this page using the default web browser. <br>
+  <blockquote>Opens this page using the default web browser.<br>
   </blockquote>
   <b><a name="--version"></a>--version</b><br>
   <blockquote>Prints the version number of this software and exits.<br>
@@ -81,36 +57,37 @@ agreement</a> for this software and exits. </div>
   <blockquote> </blockquote>
 </blockquote>
 <blockquote> </blockquote>
-<h3><a name="Global_Options"></a>Global Options</h3>
+<h3>
+</h3>
+<blockquote>
+  <blockquote> </blockquote>
+</blockquote>
+<blockquote> </blockquote>
+<h3><a name="Global_Options"></a>Global
+Options</h3>
+<span style="color: rgb(0, 0, 0);"></span><a href="pljobmgr.html"><span
+ style="font-weight: bold;"></span></a>
+<blockquote>
+  <blockquote> </blockquote>
+</blockquote>
 <div style="margin-left: 40px;"><span style="font-weight: bold;"><a
- name="--stats"></a>--stats</span>=<span style="font-style: italic;">level
-<br>
-<br>
-</span></div>
+ name="--url"></a>--url</span>=<span style="font-style: italic;">URL</span><br>
+</div>
 <div style="margin-left: 40px;">
-<div style="margin-left: 40px;">Print stage statistics with the given
-level of vebosity (<span style="font-style: italic;">level</span>).&nbsp;
-<br>
-<br>
-By default, stage statistics are disabled.<br>
-<br>
+<div style="margin-left: 40px;"><span style="font-style: italic;"></span><br>
+<span style="font-style: italic;">
+</span></div>
 </div>
-</div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
- name="--warnings"></a>--warnings</span>=<span
- style="font-style: italic;">level</span><br>
-<div style="margin-left: 40px;"><br>
-Print warning messages with the given level of vebosity (<span
- style="font-style: italic;">level</span>). <br>
-<br>
-By default, warning messages are disabled.</div>
+<div style="margin-left: 80px;"><span style="font-style: italic;"><span
+ style="font-style: italic;"></span></span>Open the given location
+(URL) in the default web browser.<br>
 </div>
 <h3><a name="See_Also"></a>See Also<br>
 </h3>
 <blockquote><span style="font-weight: bold;"><span
- style="font-weight: bold;"></span></span> <span
+ style="font-weight: bold;"></span></span><a style="font-weight: bold;"
+ href="../javadoc/us/temerity/pipeline/FileSeq.html"></a><span
  style="font-weight: bold;">Pipeline Programs</span><span
- style="font-weight: bold;"></span><span style="font-weight: bold;"></span><span
  style="font-weight: bold;"></span><br>
   <div style="margin-left: 40px;"><a href="plui.html"><span
  style="font-weight: bold;">plui</span></a>(1), <a href="plremote.html"><span
@@ -135,7 +112,7 @@ By default, warning messages are disabled.</div>
   <span style="font-weight: bold;"></span><a
  href="file://usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
  style="font-weight: bold;">plconfig</span></a>(1)</div>
-</blockquote>
+  <span style="font-weight: bold;"></span></blockquote>
 <blockquote>
   <blockquote> </blockquote>
 </blockquote>

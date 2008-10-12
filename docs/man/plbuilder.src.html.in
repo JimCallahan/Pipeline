@@ -1,238 +1,130 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-
-  
-
-
-  
   <title>plbuilder(1)</title>
-  <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+  <meta http-equiv="content-type"
+ content="text/html; charset=ISO-8859-1">
 </head>
-
-
 <body>
-
-
 <h3>Name</h3>
-
-
-<blockquote><b>plbuilder</b> - the Pipeline User
-Interface<br>
-
-
+<blockquote><b>plbuilder</b> - launches a Pipeline Node Builder
+application<br>
 </blockquote>
-
-
 <h3>Synopsis</h3>
-
-
 <blockquote><b>plbuilder</b>&nbsp;[<a href="#Global_Options"><i>options</i></a>]<br>
-
-
   <br>
-
-
   <b>plbuilder</b>&nbsp;<a href="#--help" style="font-weight: bold;">--help</a><br>
-
-
-  <b>plbuilder</b>&nbsp;<a href="#--html-help" style="font-weight: bold;">--html-help</a><br>
-
-
+  <b>plbuilder</b>&nbsp;<a href="#--html-help"
+ style="font-weight: bold;">--html-help</a><br>
   <b>plbuilder</b>&nbsp;<a href="#--version_" style="font-weight: bold;">--version</a><br>
-
-
-  <b>plbuilder</b>&nbsp;<a href="#--release-date" style="font-weight: bold;">--release-date</a><br>
-
-
-  <b>plbuilder</b>&nbsp;<a href="#--copyright" style="font-weight: bold;">--copyright</a><br>
-
-
-  <b>plbuilder</b><span style="font-weight: bold;">&nbsp;<a href="#--license">--license</a></span><br>
-
-
+  <b>plbuilder</b>&nbsp;<a href="#--release-date"
+ style="font-weight: bold;">--release-date</a><br>
+  <b>plbuilder</b>&nbsp;<a href="#--copyright"
+ style="font-weight: bold;">--copyright</a><br>
+  <b>plbuilder</b><span style="font-weight: bold;">&nbsp;<a
+ href="#--license">--license</a></span><br>
 </blockquote>
-
-
 <h3><a name="Description"></a>Description</h3>
-
-
-<blockquote>The <b>plbuilder</b>(1) tool is a
-command-line tool that
-allows users to launch Builders without having to have an instance of
-  <a href="plui.html"><b>plui</b></a>(1)
-running.&nbsp; It can run in
-an interactive mode (allowing users to input parameter values) or in
-a batch mode where all parameter values are specified on the command
-line and no GUI is displayed.<br>
-
-
+<blockquote>The <b>plbuilder</b>(1) application allows users to launch
+a Node Builder without the need to have an instance of <a
+ href="plui.html"><b>plui</b></a>(1)
+running.&nbsp; By default, an wizard-like graphical interface is shown
+which allows users to specify all builder parameters and control the
+phases of execution.&nbsp; Alternatively, the builder can be run in
+batch mode (<a href="#--batch"><span style="font-weight: bold;">--batch</span></a>)
+where all parameter values can be specified using command-line options
+and no user interface is shown.&nbsp; This mode is suitable for
+automation using shell scripts to easily create large numbers of shots
+or assets.&nbsp; <br>
+  <br>
+Note that you can also run builders using the <a
+ href="../javadoc/index.html"><span style="font-weight: bold;">Pipeline
+API</span></a> either in a native Java application or through <a
+ href="plpython.html"><span style="font-weight: bold;">plpython</span></a>(1).&nbsp;
+See the&nbsp;<a
+ href="http://temerity.us/products/pipeline/docs/javadoc/us/temerity/pipeline/builder/BaseBuilderCollection.html#instantiateBuilder%28java.lang.String,%20us.temerity.pipeline.MasterMgrClient,%20us.temerity.pipeline.QueueMgrClient,%20boolean,%20boolean%29"><a
+ href="http://temerity.us/products/pipeline/docs/javadoc/us/temerity/pipeline/BasePluginMgrClient.html#newBuilderCollection%28us.temerity.pipeline.PluginID%29"><span
+ style="font-weight: bold;"></span></a></a><a
+ href="http://temerity.us/products/pipeline/docs/javadoc/us/temerity/pipeline/builder/BaseBuilderCollection.html#instantiateBuilder%28java.lang.String,%20us.temerity.pipeline.MasterMgrClient,%20us.temerity.pipeline.QueueMgrClient,%20boolean,%20boolean%29"><span
+ style="font-weight: bold;">BaseBuilderCollection.instantiateBuilder</span></a>
+method for details.<br>
 </blockquote>
-
-
 <h3><a name="Information_Options"></a>Information
 Options</h3>
-
-
 <blockquote>The following options provide online information
 about <span style="font-weight: bold;">plbuilder</span>(1)
 and then immediately
 exit:</blockquote>
-
-
 <blockquote><b><a name="--help"></a>--help</b><br>
-
-
-  
   <blockquote>Prints a brief usage message and exits.<br>
-
-
   </blockquote>
-
-
   <b><a name="--html-help"></a>--html-help</b><br>
-
-
-  
-  <blockquote>Opens this page using the <a href="http://www.mozilla.org"><b>mozilla</b></a>(1)
-web browser.
-Look <a href="http://www.mozilla.org/unix/remote.html">here</a>
-for
-details about how this works.<br>
-
-
+  <blockquote>Opens this page using the default web browser.<span
+ style="text-decoration: underline;"><span style="font-weight: bold;"></span></span><br>
   </blockquote>
-
-
   <b><a name="--version_"></a>--version</b><br>
-
-
-  
   <blockquote>Prints the version number of this software and
 exits.<br>
-
-
   </blockquote>
-
-
   <b><a name="--release-date"></a>--release-date</b><br>
-
-
-  
   <blockquote> Prints date that this software was released and
 exits.<br>
-
-
   </blockquote>
-
-
   <b><a name="--copyright"></a>--copyright</b><br>
-
-
-  
-  <blockquote> Prints the <a href="#Copyright"><span style="font-weight: bold;">copyright notice</span></a>
+  <blockquote> Prints the <a href="#Copyright"><span
+ style="font-weight: bold;">copyright notice</span></a>
 for this
 software and exits.<br>
-
-
   </blockquote>
-
-
   <span style="font-weight: bold;"><a name="--license"></a>--license<br>
-
-
   <br>
-
-
   </span>
-  
-  <div style="margin-left: 40px;"><span style="font-weight: bold;"></span><span style="font-weight: bold;"></span>Prints the <a href="#License_Agreement"><span style="font-weight: bold;">license
+  <div style="margin-left: 40px;"><span style="font-weight: bold;"></span><span
+ style="font-weight: bold;"></span>Prints the <a
+ href="#License_Agreement"><span style="font-weight: bold;">license
 agreement</span></a> for this software and exits.</div>
-
-
 </blockquote>
-
-
 <blockquote> </blockquote>
-
-
 <h3><a name="Global_Options"></a>Global
 Options</h3>
-
-
-<span style="color: rgb(0, 0, 0);"></span><a href="pljobmgr.html"><span style="font-weight: bold;"></span></a>
-<div style="margin-left: 40px;"><span style="font-weight: bold;"><a name="--log-file"></a>--log-file</span>=<span style="font-style: italic;">filename</span><br>
-
-
+<span style="color: rgb(0, 0, 0);"></span><a href="pljobmgr.html"><span
+ style="font-weight: bold;"></span></a>
+<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
+ name="--log-file"></a>--log-file</span>=<span
+ style="font-style: italic;">filename</span><br>
 <div style="margin-left: 40px;">
 <div style="margin-left: 40px;"><span style="font-style: italic;"></span><br>
-
-
 <span style="font-style: italic;">
 </span></div>
-
-
 </div>
-
-
-<div style="margin-left: 40px;"><span style="font-style: italic;"><span style="font-style: italic;"></span></span>Write
+<div style="margin-left: 40px;"><span style="font-style: italic;"><span
+ style="font-style: italic;"></span></span>Write
 all output to the
 given log file (filename) instead of printing to stdout.<br>
-
-
-</div>
-
-
-<div style="margin-left: 40px;"><span style="font-style: italic;"></span></div>
-
-
-</div>
-
-
-<div style="margin-left: 40px;"><span style="font-weight: bold;"><a name="--default-log-file"></a>--standard-log-file</span><br>
-
-
 <br>
-
-
 </div>
-
-
+<div style="margin-left: 40px;"><span style="font-style: italic;"></span></div>
+</div>
+<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
+ name="--default-log-file"></a>--standard-log-file</span><br>
+<br>
+</div>
 <div style="margin-left: 80px;">Write all output to the
 standard log
 file for <span style="font-weight: bold;">plbuilder</span>(1)
 instead of
 printing to stdout.<br>
-
-
 <br>
-
-
 The standard log file for this site is:<br>
-
-
 <br>
-
-
 <div style="margin-left: 40px;">@ROOT_INST_DIR@/logs/plmaster.log.#<br>
-
-
 </div>
-
-
 <br>
-
-
 </div>
-
-
 <div style="margin-left: 40px;">
-<span style="font-weight: bold;"><a name="--standard-log-dir"></a>--standard-log-dir</span>=<span style="font-style: italic;">dirname</span><br>
-
-
+<span style="font-weight: bold;"><a name="--standard-log-dir"></a>--standard-log-dir</span>=<span
+ style="font-style: italic;">dirname</span><br>
 <br>
-
-
 <div style="margin-left: 40px;">Write all output to the
 standard log
 file for <span style="font-weight: bold;">plbuilder</span>(1)
@@ -240,20 +132,14 @@ written to
 the given logs directory (<span style="font-style: italic;">dirname</span>)
 instead
 of printing to stdout.</div>
-
-
 <br>
-
-
 <span style="font-weight: bold;">
-<a name="--log-backups"></a>--log-backups</span>=<span style="font-style: italic;">num</span><br>
-
-
+<a name="--log-backups"></a>--log-backups</span>=<span
+ style="font-style: italic;">num</span><br>
 <br>
-
-
 <div style="margin-left: 40px;">
-When logging to a file using <a href="#--log-file"><span style="font-weight: bold;">--log-file</span></a>,
+When logging to a file using <a href="#--log-file"><span
+ style="font-weight: bold;">--log-file</span></a>,
 this option sets the
 number of rotating backups (<span style="font-style: italic;">num</span>)
 to maintain of the logfile.&nbsp;&nbsp; The names of the backup
@@ -265,432 +151,216 @@ current
 logfile,
 rotate the backups and reopen the logfile whenever the log grows to
 larger than 10MB.<br>
-
-
 <br>
-
-
 The default number of backups is (10).</div>
-
-
 <br>
-
-
-<span style="font-weight: bold;"><a name="--logging"></a>--log</span>=<span style="font-style: italic;">logger:level</span>[<span style="font-style: italic;">,logger:level</span>[...]]</div>
-
-
+<span style="font-weight: bold;"><a name="--logging"></a>--log</span>=<span
+ style="font-style: italic;">logger:level</span>[<span
+ style="font-style: italic;">,logger:level</span>[...]]</div>
 <div style="margin-left: 40px;"><br>
-
-
 <div style="margin-left: 40px;">In addition to the normal
 output,
 <b>plbuilder</b>(1) can generate detailed output tracing
 the various
 stages of internal execution.&nbsp; &nbsp; <br>
-
-
 <br>
-
-
 The following arguments control the several different
 types of logging information (<span style="font-style: italic;">logger</span>)
 and different amounts of information (<span style="font-style: italic;">level</span>)
 of each type to generate.&nbsp; Several loggers can be modified in
 one
 option.<br>
-
-
 <br>
-
-
 The (<span style="font-style: italic;">logger</span>)
 portion of the
 option's argument can be:<br>
-
-
 <br>
-
-
-<div style="margin-left: 40px;"><span style="font-weight: bold;">all</span><br style="font-weight: bold;">
-
-
+<div style="margin-left: 40px;"><span style="font-weight: bold;">all</span><br
+ style="font-weight: bold;">
 </div>
-
-
 <div style="margin-left: 80px;">A shortcut for specifying
 all loggers
 at once.<br>
-
-
 </div>
-
-
 <div style="margin-left: 40px;"><span style="font-weight: bold;">arg</span><br>
-
-
 <br>
-
-
 </div>
-
-
 <div style="margin-left: 80px;">Logs errors and operations
 relating to
 parsing the command-line options and the parameter values being
 passed in.<br>
-
-
 <br>
-
-
 </div>
-
-
 <div style="margin-left: 40px;"><span style="font-weight: bold;">ops</span><br>
-
-
 <br>
-
-
 </div>
-
-
 <div style="margin-left: 80px;">Logs operations that the
 builder
 is performing.<br>
-
-
 <br>
-
-
 </div>
-
-
 <div style="margin-left: 40px;"><span style="font-weight: bold;">net</span><br>
-
-
 <br>
-
-
 </div>
-
-
 <div style="margin-left: 80px;">Logs network connections
 and activity.<br>
-
-
 <br>
-
-
 </div>
-
-
 <div style="margin-left: 40px;"><span style="font-weight: bold;">bld</span><br>
-
-
 <br>
-
-
 </div>
-
-
 <div style="margin-left: 80px;">Logs internal
 operations that builders are performing, to allow advanced debugging
 of builder bugs.<br>
-
-
 </div>
-
-
 <br>
-
-
 The (<span style="font-style: italic;">level</span>)
 portion of
 the option's argument can be:<br>
-
-
 <br>
-
-
 <div style="margin-left: 40px;"><span style="font-weight: bold;">severe</span><br>
-
-
 <br>
-
-
 </div>
-
-
 <div style="margin-left: 80px;">This level is used for
 error messages
 and other catastrophic events.<br>
-
-
 </div>
-
-
 <div style="margin-left: 40px;"><br style="font-weight: bold;">
-
-
 <span style="font-weight: bold;">warning</span><br>
-
-
 </div>
-
-
 <div style="margin-left: 80px;">This level is used for
 non-fatal error
 messages and advisory information.<br>
-
-
 </div>
-
-
 <div style="margin-left: 40px;"><br style="font-weight: bold;">
-
-
 <span style="font-weight: bold;">info</span><br>
-
-
 </div>
-
-
 <div style="margin-left: 80px;">This is the default output
 level for
 all loggers and is used for normal output from <b>pui</b>(1).
 <br>
-
-
 </div>
-
-
 <div style="margin-left: 40px;"><br style="font-weight: bold;">
-
-
 <span style="font-weight: bold;">fine</span><br>
-
-
 <span style="font-weight: bold;">finer</span><br>
-
-
 <span style="font-weight: bold;">finest</span><br>
-
-
 </div>
-
-
 <div style="margin-left: 80px;">These three levels are
 used for
 increasingly more detailed command tracing messages. <br>
-
-
 </div>
-
-
 <br>
-
-
 </div>
-
-
 <br>
-
-
 <span style="font-weight: bold;"><a name="--batch"></a>--batch</span><br>
-
-
 <div style="margin-left: 40px;"><br>
-
-
 Run the builder in
 batch mode, without displaying a user interface. All required
 parameter values must be specified on the command line as well. <br>
-
-
 <br>
-
-
 </div>
-
-
 <span style="font-weight: bold;"><br>
-
-
 <a name="--abort"></a>--abort</span><br>
-
-
 <div style="margin-left: 40px;"><br>
-
-
 Verify that all
 the parameters being set on the command-line actually exist and abort
 builder execution if an attempt is made to set a parameter which
 doesn't exist.<br>
-
-
 <br>
-
-
 The exact list of parameters&nbsp;can&nbsp;
 be tricky to figure out, since certain parameters in
 certain nested levels of builders and namers may or may not exist
-depending on what other options have previously been set. If, for
-example, command line parameters are being used to provide default
+depending on what other options have previously been set. If command
+line parameters are being used to provide default
 values for users in GUI mode, this option may not be desirable since
 some of the things command line default values are set for may not
 exist depending on what options the user selects! That would lead to
-unwanted termination of the builder. However in <a href="plbuilder.src.html.in#--batch">batch</a>
+unwanted termination of the builder. However in <a
+ href="plbuilder.src.html.in#--batch">batch</a>
 mode, where there is complete control over parameter values are, this
 option can provide sanity checking making sure all values being
 passed in actually have meaning.<br>
-
-
 <br>
-
-
 </div>
-
-
 </div>
-
-
-<br>
 <h3><a name="Builder_Collection_Options"></a>Builder Collection Options</h3>
-
-
-<blockquote>These options specify which builder <span style="font-weight: bold;">plbuilder(1)</span> should
+<blockquote>These options specify which builder <span
+ style="font-weight: bold;">plbuilder</span>(1) should
 execute or specify a search pattern which will be used to return a list
 of availible builders matching the criteria. &nbsp;At a miniumum,
---collection and --builder-name need to be specified to actually invoke
+  <span style="font-weight: bold;">--collection</span> and <span
+ style="font-weight: bold;">--builder-name</span> need to be specified
+to actually invoke
 a builder. &nbsp;If one or both of those are missing, then a search
 will be performed. &nbsp;If both are present, then an attempt will
 be made to invoke a builder. &nbsp;If a builder cannot be found
-which matches the specified criteria,&nbsp;<span style="font-weight: bold;">plbuilder(1)</span> will
+which matches the specified criteria,&nbsp;<span
+ style="font-weight: bold;">plbuilder</span>(1) will
 throw an error and exit.<br>
-
-
 </blockquote>
-
-
-<div style="margin-left: 40px;"><span style="font-weight: bold;"><a name="--collection"></a>--collection=</span><span style="font-style: italic;">collection-name</span><br>
-
-
+<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
+ name="--collection"></a>--collection=</span><span
+ style="font-style: italic;">collection-name<br>
+<br>
+</span>
 <div style="margin-left: 40px;">The name of the collection
 that contains the builder or the name of the collection to search for
 availible builders in.<br>
-
-
 <br>
-
-
 If no collection is specified, then no builder be invoked, but a search
 will be performed across all installed builder collections.<br>
-
-
 </div>
-
-
 <br>
-
-
-<span style="font-weight: bold;"><a name="--versionid"></a>--versionid=</span><span style="font-style: italic;">VersionID</span><br>
-
-
+<span style="font-weight: bold;"><a name="--versionid"></a>--versionid=</span><span
+ style="font-style: italic;">VersionID<br>
+<br>
+</span>
 <div style="margin-left: 40px;">The version id of the
 collection that contains the builder or the version id of the
 collections to search for availible builder in.<br>
-
-
 <br>
-
-
 If no id is specified in a builder invocation, then the latest version
 of the collection will be used.<br>
-
-
 <br>
-
-
 If no id is specified during a builder search, then all versions of the
 collection will be searched.<br>
-
-
 </div>
-
-
 <br>
-
-
 <span style="font-weight: bold;">
-<a name="--vender"></a>--vender=</span><span style="font-style: italic;">vendor</span><br>
-
-
+<a name="--vender"></a>--vender=</span><span style="font-style: italic;">vendor<br>
+<br>
+</span>
 <div style="margin-left: 40px;">The vendor of the
 collection that contains the builder or the vendor of the collections
 to search for availible builder in.<br>
-
-
 <br>
-
-
-If no vendor is specified in a builder invocation, then the <span style="font-style: italic;">Temerity</span> vendor is
+If no vendor is specified in a builder invocation, then the <span
+ style="font-style: italic;">Temerity</span> vendor is
 assumed.<br>
-
-
 <br>
-
-
 If no vendor is specified during a builder search, then all vendors
 will be searched.</div>
-
-
 <br>
-
-
 <span style="font-weight: bold;"><a name="--builder-name"></a>
---builder-name=</span><span style="font-style: italic;">builder-name</span><br>
-
-
+--builder-name=</span><span style="font-style: italic;">builder-name<br>
+<br>
+</span>
 <div style="margin-left: 40px;">The name of &nbsp;the
 builder to be invoked or searched for. &nbsp;<br>
-
-
 <br>
-
-
 If no builder name is specified, then no builder be invoked, but a
 search
 will be performed across collections that match other given priorities.<br>
-
-
 <br>
-
-
 If a builder name is specified, it will be the builder invoked or the
 name of the builder to be searched for.<br>
-
-
 </div>
-
-
 </div>
-
-
 <br>
-
-
-<br>
-
-
-<br>
-
-
 <h3><a name="Builder_Options"></a>Builder&nbsp;Options</h3>
-
-
 <blockquote>These options specify the parameters which will be
-passed to the builder that is invoked. &nbsp;<span style="font-weight: bold;">plbuilder(1)&nbsp;</span>
+passed to the builder that is invoked. &nbsp;<span
+ style="font-weight: bold;">plbuilder(1)&nbsp;</span>
 takes its parameters in a state-based method, where the name of the
 builder or sub-builder needs to be specified before the parameters for
 that builder are set. &nbsp;All parameter/value declarations that
@@ -699,84 +369,62 @@ until the next builder name declaration. Parameter/value declarations
 that occur before any builder name declaration are assumed to refer to
 the top level builder. &nbsp;An example follows the option
 explantion which should make this clearer.<br>
-
-
 </blockquote>
-
-
-<div style="margin-left: 40px;"><span style="font-weight: bold;"><a name="--builder"></a>--builder=</span><span style="font-style: italic;">full-name-of-builder</span><br>
-
-
+<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
+ name="--builder"></a>--builder=</span><span style="font-style: italic;">full-name-of-builder<br>
+<br>
+</span>
 <div style="margin-left: 40px;">The fully prefixed name of
 the builder that all the following parameter/value declarations will
 belong to.<br>
-
-
 <br>
-
-
 For sub-builders, the fully prefixed name contains all the names of its
 parent builders separated by hyphens. &nbsp;<br>
-
-
 </div>
-
-
 <br>
-
-
-<span style="font-weight: bold;"><a name="--ParamName"></a>--&lt;ParamName&gt;=</span><span style="font-style: italic;">ParamValue</span><br>
-
-
+<span style="font-weight: bold;"><a name="--ParamName"></a>--&lt;ParamName&gt;=</span><span
+ style="font-style: italic;">ParamValue<br>
+<br>
+</span>
 <div style="margin-left: 40px;">The left hand side of this
 argument is the name of the parameter. &nbsp;The right hand side of
 this argument is the value that will be assigned to the parameter.<br>
-
-
 <br>
-
-
 For Complex Parameters, the fully prefixed name of the parameter must
 be passed in on the left hand side. &nbsp;The fully prefixed name
 contains all the names of the parent parameters separated by hyphens<br>
-
-
 </div>
-
-
 <br>
-
-
 <span style="font-weight: bold;">Examples:
 <br>
-
-
+<br>
 </span>
-<div style="margin-left: 40px;"><span style="font-style: italic;">--MayaScene=/tests/maya.scenes/model</span>
+<div style="margin-left: 40px;"><span style="font-style: italic;">--MayaScene=/tests/maya.scenes/model<br>
+<br>
+</span>
 <div style="margin-left: 40px;">Set the value of the
 MayaScene param in the top-level builder to "/tests/maya.scenes/model"</div>
-
-
 <br>
-
-
-<span style="font-style: italic;">--UtilContext-Author=pipeline</span>
-<div style="margin-left: 40px;">Set the value of the Author param in the complex parameter UtilContext in the top-level builder to "pipeline"</div>
-
-
+<span style="font-style: italic;">--UtilContext-Author=pipeline<br>
 <br>
-
-
-<span style="font-style: italic;">--builder=AssetBuilder-AssetNamer --AssetType=char</span>
+</span>
+<div style="margin-left: 40px;">Set the value of the Author param in
+the complex parameter UtilContext in the top-level builder to "pipeline"</div>
+<br>
+<span style="font-style: italic;">--builder=AssetBuilder-AssetNamer
+--AssetType=char<br>
+<br>
+</span>
 <div style="margin-left: 40px;">Set the value of the AssetType param in
 the AssetNamer sub-builder to "char". &nbsp;For this to work, the
 top-level builder being invoked must be named AssetBuilder.</div>
-
-
 <br>
-
-
-<span style="font-style: italic;">--UtilContext-Author=pipeline </span><span style="font-style: italic;">--builder=AssetBuilder-AssetNamer --AssetType=char --builder=AssetBuilder-ModelBuilder-ProjectNamer --ProjectName="example"</span>
+<span style="font-style: italic;">--UtilContext-Author=pipeline </span><span
+ style="font-style: italic;">--builder=AssetBuilder-AssetNamer
+--AssetType=char --builder=AssetBuilder-ModelBuilder-ProjectNamer
+--ProjectName="example"<br>
+<br>
+</span>
 <div style="margin-left: 40px;">Set the value of&nbsp;the Author param
 in the complex parameter UtilContext in the top-level builder to
 "pipeline" and set the value of the
@@ -785,127 +433,66 @@ value of the ProjectName parameter in the ProjectNamer sub-builder in
 the ModelBuilder sub-builder to "example" . &nbsp;For this to work, the
 top-level builder being invoked must be named AssetBuilder and must
 contain a sub-builder called ModelBuilder.</div>
-
-
 <br>
-
-
 </div>
-
-
 </div>
-
-
-<br>
-
-
-<br>
-
-
-<br>
-
-
 <h3><a name="See_Also"></a>See
 Also</h3>
-
-
 <div style="margin-left: 40px;"><span style="font-weight: bold;">Documentation</span>
 <br>
-
-
-<div style="margin-left: 40px;"><a href="../javadoc/index.html"><span style="font-weight: bold;">Pipeline
+<div style="margin-left: 40px;"><a href="../javadoc/index.html"><span
+ style="font-weight: bold;">Pipeline
 Java API</span></a><span style="font-weight: bold;"></span></div>
-
-
 </div>
-
-
 <blockquote>
-  
   <blockquote> </blockquote>
-
-
   <span style="font-weight: bold;">Pipeline Programs</span><br>
-
-
-  
-  <div style="margin-left: 40px;"><a href="plui.html"><span style="font-weight: bold;">plui</span></a>(1), <a href="plremote.html"><span style="font-weight: bold;">plremote</span></a>(1),
-  <a href="plscript.html"><span style="font-weight: bold;">plscript</span></a>(1),
+  <div style="margin-left: 40px;"><a href="plui.html"><span
+ style="font-weight: bold;">plui</span></a>(1), <a href="plremote.html"><span
+ style="font-weight: bold;">plremote</span></a>(1), plversion(1), <a
+ href="plscript.html"><span style="font-weight: bold;">plscript</span></a>(1),
   <a href="plpython.html"><span style="font-weight: bold;">plpython</span></a>(1),
-  <a href="plplugin.html"><span style="font-weight: bold;"></span></a><a href="plplugin.html"><span style="font-weight: bold;">plplugin</span></a>(1)<br>
-
-
+  <a href="plplugin.html"><span style="font-weight: bold;"></span></a><a
+ href="plplugin.html"><span style="font-weight: bold;">plplugin</span></a>(1),
+  <a href="plbuilder.html"><span style="font-weight: bold;">plbuilder</span></a>(1)<br>
+  <a href="plmaster.html"><span style="font-weight: bold;">plmaster</span></a>(1),
+  <a href="pljobmgr.html"><span style="font-weight: bold;"></span></a><a
+ href="plmaster.html"><span style="font-weight: bold;"></span></a> <a
+ href="plfilemgr.html"><span style="font-weight: bold;"></span></a><a
+ href="plqueuemgr.html"><span style="font-weight: bold;">plqueuemgr</span></a>(1),
   <a href="plpluginmgr.html"><span style="font-weight: bold;">plpluginmgr</span></a>(1),
-  <a href="plfilemgr.html"><span style="font-weight: bold;"></span></a><a href="plfilemgr.html"><span style="font-weight: bold;">plfilemgr</span></a>(1),
-  <a href="pljobmgr.html"><span style="font-weight: bold;"></span></a><a href="plmaster.html"><span style="font-weight: bold;">plmaster</span></a>(1),
-  <a href="plfilemgr.html"><span style="font-weight: bold;"></span></a><a href="plqueuemgr.html"><span style="font-weight: bold;">plqueuemgr</span></a>(1),
-  <a href="pljobmgr.html"><span style="font-weight: bold;">pljobmgr</span></a>(1), <a href="plbuilder.html"><span style="font-weight: bold;">plbuilder</span></a>(1)<br>
-
-
-  <span style="font-weight: bold;"></span><a href="file://usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span style="font-weight: bold;">plconfig</span></a>(1)
-  </div>
-
-
-  <span style="font-weight: bold;">Other Software</span><br>
-
-
-  
-  <div style="margin-left: 40px;"><a href="http://www.mozilla.org/"><b>mozilla</b></a>(1)</div>
-
-
+  <a href="plfilemgr.html"><span style="font-weight: bold;"></span></a><a
+ href="plfilemgr.html"><span style="font-weight: bold;">plfilemgr</span></a>(1),
+  <a href="pljobmgr.html"><span style="font-weight: bold;">pljobmgr</span></a>(1)<br>
+  <a href="pls.html"><span style="font-weight: bold;">pls</span></a>(1),
+  <a href="plbrowse.html"><span style="font-weight: bold;">plbrowse</span></a>(1),
+  <a href="realpath.html"><span style="font-weight: bold;">realpath</span></a>(1)<br>
+  <span style="font-weight: bold;"></span><a
+ href="file://usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html"><span
+ style="font-weight: bold;">plconfig</span></a>(1)</div>
 </blockquote>
-
-
 <blockquote>
-  
   <blockquote>
-    
     <blockquote> </blockquote>
-
-
-    
     <blockquote> </blockquote>
-
-
-    
     <blockquote> </blockquote>
-
-
   </blockquote>
-
-
 </blockquote>
-
-
 <h3><a name="Author"></a>Author</h3>
-
-
-<div style="margin-left: 40px;">Created by <span style="font-weight: bold;">Jim Callahan</span> of <a href="http://temerity.us/"><span style="font-weight: bold;">Temerity
+<div style="margin-left: 40px;">Created by <span
+ style="font-weight: bold;">Jim Callahan</span> of <a
+ href="http://temerity.us/"><span style="font-weight: bold;">Temerity
 Software, Inc</span></a>.<br>
-
-
 </div>
-
-
 <h3><a name="Copyright"></a>Copyright</h3>
-
-
 <div style="margin-left: 40px;">
 @COPYRIGHT@
 <br>
-
-
 </div>
-
-
 <h3><a name="License_Agreement"></a>License
 Agreement</h3>
-
-
 <div style="margin-left: 40px;">
 @LICENSE@
 </div>
-
-
 </body>
 </html>
