@@ -1,9 +1,10 @@
-// $Id: JBuilderParamPanel.java,v 1.21 2008/04/21 23:12:14 jesse Exp $
+// $Id: JBuilderParamPanel.java,v 1.22 2008/10/16 23:03:29 jesse Exp $
 
 package us.temerity.pipeline.builder.ui;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.beans.*;
 import java.util.*;
 
 import javax.swing.*;
@@ -31,7 +32,6 @@ class JBuilderParamPanel
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
   
-  @SuppressWarnings("unchecked")
   public
   JBuilderParamPanel
   (
@@ -120,6 +120,30 @@ class JBuilderParamPanel
     this.setMaximumSize(new Dimension(sTSize + sVSize+50, Integer.MAX_VALUE));
   }
 
+  /**
+   * Recursive call used to examine a parameter and figure out what sort of 
+   * gui components to make.
+   * 
+   * @param bparam
+   *   The parameter we're examining.
+   * @param mapping
+   *   The full name of the parameter, including all its parents if this is part of a
+   *   complex parameter
+   * @param tpanel
+   *   The title panel to use.
+   * @param vpanel
+   *   The value panel to use.
+   * @param tSize
+   *   The width of the title panel.
+   * @param vSize
+   *   The width of the value panel.
+   * @param prefix
+   *   The NameUI of all the parent parameters to use when constructing the paramater title.
+   * @param actionCommand
+   *   The actionCommand the parameter is going to have if it is a simple param.  Being reset
+   *   if the parameter is complex.
+   * @throws PipelineException
+   */
   @SuppressWarnings("unchecked")
   private void
   doParam
@@ -146,13 +170,15 @@ class JBuilderParamPanel
     }
     if (bparam instanceof ComplexParamAccess) {
       ComplexParamAccess<UtilityParam> cparam = (ComplexParamAccess<UtilityParam>) bparam;
+      String newPrefix;
       if (prefix == null)
-	prefix = bparam.getNameUI();
+        newPrefix = bparam.getNameUI();
       else
-	prefix += " " + bparam.getNameUI();
+        newPrefix =  prefix + " " + bparam.getNameUI();
       
+      String newAC = actionCommand;
       if (cparam.requiresUpdating())
-	actionCommand = mapping.getParamName();
+        newAC = mapping.getParamName();
       
       boolean first = true;
       for (String entry : cparam.getLayout()) {
@@ -164,7 +190,7 @@ class JBuilderParamPanel
 	  UtilityParam param = cparam.getParam(entry);
 	  ParamMapping newMapping = new ParamMapping(mapping);
 	  newMapping.addKey(entry);
-	  doParam(param, newMapping, tpanel, vpanel, tSize, vSize, prefix, actionCommand);
+	  doParam(param, newMapping, tpanel, vpanel, tSize, vSize, newPrefix, newAC);
 	  first = false;
 	}
       }
@@ -255,6 +281,11 @@ class JBuilderParamPanel
   /*   U T I L I T I E S                                                                    */
   /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * Check against the list of simple parameters that builders know how to display to ensure
+   * that the user has not created a new sort of {@link SimpleParamAccess} that we may not
+   * be able to display.
+   */
   private boolean
   rightSortOfParam
   (
@@ -276,6 +307,25 @@ class JBuilderParamPanel
     return false;
   }
   
+  /**
+   * Convert a simple parameter into a gui component.
+   * 
+   * @param bparam
+   *   The parameter
+   * @param tpanel
+   *   The title panel.
+   * @param vpanel
+   *   The value panel.
+   * @param tsize
+   *   The title panel width.
+   * @param vsize
+   *   The value panel width.
+   * @param prefix
+   *   The prefix to the parameter name in the UI
+   * @param actionCommand
+   *   The actionCommand to add to the parameter.
+   * @return
+   */
   private Component 
   parameterToComponent
   (
@@ -536,10 +586,7 @@ class JBuilderParamPanel
 
   /*-- COMPONENT LISTENER METHODS ----------------------------------------------------------*/
 
-  /**
-   * Invoked when the component has been made invisible.
-   */ 
-  @SuppressWarnings("unused")
+  @Override
   public void 	
   componentHidden
   (
@@ -547,10 +594,7 @@ class JBuilderParamPanel
   ) 
   {} 
 
-  /**
-   * Invoked when the component's position changes.
-   */ 
-  @SuppressWarnings("unused")
+  @Override
   public void 
   componentMoved
   (
@@ -558,10 +602,7 @@ class JBuilderParamPanel
   ) 
   {} 
 
-  /**
-   * Invoked when the component's size changes.
-   */ 
-  @SuppressWarnings("unused")
+  @Override
   public void 
   componentResized
   (
@@ -578,11 +619,7 @@ class JBuilderParamPanel
     spacer.repaint();
   }
   
-  /**
-   * Invoked when the component has been made visible.
-   */
-  @SuppressWarnings("unused")
-  public void 
+  @Override  public void 
   componentShown
   (
     ComponentEvent e
@@ -611,8 +648,14 @@ class JBuilderParamPanel
       for (ParamMapping map : comps.keySet()) {
 	Component comp = comps.get(map);
 	UtilityParam param = pBuilder.getParam(map);
-	if (comp == source)
-	  continue;
+//	TODO look at again if this fix doesn't work
+	
+	/* This was causing some stuff to not work as expect.
+	 * it may cause other stuff to break.  If it does, we need
+	 * to re-examing what we're doing here. 
+	 */
+//	if (comp == source)
+//	  continue;
 	if (comp instanceof JCollectionField) {
 	  JCollectionField field = (JCollectionField) comp;
 	  String val = null;
@@ -650,6 +693,8 @@ class JBuilderParamPanel
       pViewedPanels.put(selected + 1, true);
   }
   
+  
+  
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   M E T H O D S                                                          */
   /*----------------------------------------------------------------------------------------*/
@@ -660,6 +705,13 @@ class JBuilderParamPanel
     return sTSize + sVSize + 50;
   }
   
+  /**
+   * Gets a Comparable value from a Gui component
+   * @param field
+   *   The gui component.
+   * @return
+   *   The Comparable value contained in the component.
+   */
   @SuppressWarnings("unchecked")
   private static Comparable
   valueFromComponent
