@@ -1,4 +1,4 @@
-// $Id: TemplateTaskBuilder.java,v 1.1 2008/10/02 01:29:52 jesse Exp $
+// $Id: TemplateTaskBuilder.java,v 1.2 2008/10/17 03:36:46 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -80,7 +80,8 @@ class TemplateTaskBuilder
   )
     throws PipelineException
   {
-    NodeStatus status = pClient.status(new NodeID(getAuthor(), getView(), startNode), true);
+    NodeStatus status = pClient.status(new NodeID(getAuthor(), getView(), startNode), true, 
+      DownstreamMode.WorkingOnly);
     
     findUpstreamNodes(null, status);
   }
@@ -106,7 +107,8 @@ class TemplateTaskBuilder
     pSubmitNode = null;
     pApprovalNode = null;
     
-    NodeStatus status = pClient.status(new NodeID(getAuthor(), getView(), editNode), true);
+    NodeStatus status = pClient.status(new NodeID(getAuthor(), getView(), editNode), true, 
+      DownstreamMode.WorkingOnly);
 
     findDownstreamNodes(status);
     

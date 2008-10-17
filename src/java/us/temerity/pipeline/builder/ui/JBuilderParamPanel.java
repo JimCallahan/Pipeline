@@ -1,10 +1,9 @@
-// $Id: JBuilderParamPanel.java,v 1.22 2008/10/16 23:03:29 jesse Exp $
+// $Id: JBuilderParamPanel.java,v 1.23 2008/10/17 03:36:46 jesse Exp $
 
 package us.temerity.pipeline.builder.ui;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.beans.*;
 import java.util.*;
 
 import javax.swing.*;
@@ -369,7 +368,6 @@ class JBuilderParamPanel
 	  field.addActionListener(this);
 	  field.setActionCommand(actionCommand);
 	}
-
 	return field;
       }
       else if(bparam instanceof EnumUtilityParam) {
@@ -401,7 +399,6 @@ class JBuilderParamPanel
 	  field.addActionListener(this);
 	  field.setActionCommand(actionCommand);
 	}
-
 	return field;
       }
       else if(bparam instanceof StringUtilityParam) {
@@ -416,7 +413,6 @@ class JBuilderParamPanel
 	  field.addActionListener(this);
 	  field.setActionCommand(actionCommand);
 	}
-
 	return field;     
       }
       else if((bparam instanceof PathUtilityParam) ||
@@ -432,7 +428,6 @@ class JBuilderParamPanel
 	  field.addActionListener(this);
 	  field.setActionCommand(actionCommand);
 	}
-
 	return field; 
       }
       else if(bparam instanceof IdentifierUtilityParam) {
@@ -447,7 +442,6 @@ class JBuilderParamPanel
 	  field.addActionListener(this);
 	  field.setActionCommand(actionCommand);
 	}
-
 	return field;      
       }
       else if(bparam instanceof OptionalEnumUtilityParam) {
@@ -465,7 +459,6 @@ class JBuilderParamPanel
 	  field.addActionListener(this);
 	  field.setActionCommand(actionCommand);
 	}
-
 	return field;
       }
       else {
@@ -692,7 +685,7 @@ class JBuilderParamPanel
     if (selected > 0)
       pViewedPanels.put(selected + 1, true);
   }
-  
+
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -787,5 +780,4 @@ class JBuilderParamPanel
   
   private static final Icon sTabIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("TabIcon.png"));
-
 }

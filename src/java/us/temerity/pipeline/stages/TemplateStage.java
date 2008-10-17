@@ -1,12 +1,14 @@
-// $Id: TemplateStage.java,v 1.1 2008/09/19 03:30:09 jesse Exp $
+// $Id: TemplateStage.java,v 1.2 2008/10/17 03:36:46 jesse Exp $
 
 package us.temerity.pipeline.stages;
 
 import java.util.*;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.LogMgr.*;
 import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.builder.BuilderInformation.*;
+import us.temerity.pipeline.builder.v2_4_3.*;
 import us.temerity.pipeline.math.*;
 
 /*------------------------------------------------------------------------------------------*/
@@ -28,7 +30,6 @@ class TemplateStage
   TemplateStage
   (
     NodeMod sourceMod,
-    TreeMap<String, BaseAnnotation> annots,
     StageInformation stageInfo,
     UtilContext context,
     MasterMgrClient client,
@@ -38,8 +39,9 @@ class TemplateStage
     String suffix,
     PluginContext editor,
     PluginContext action,
+    TemplateBuildInfo templateInfo,
     TreeMap<String, String> stringReplacements,
-    TreeMap<String, ArrayList<TreeMap<String, String>>> maps,
+    TreeMap<String, ArrayList<TreeMap<String, String>>> contexts,
     TreeMap<String, TreeMap<String, BaseAnnotation>> annotCache
   ) 
     throws PipelineException
@@ -49,16 +51,16 @@ class TemplateStage
           stageInfo, context, client, 
           nodeName, range, padding, suffix, editor, action);
     pReplacements = stringReplacements;
-    pMaps = maps;
+    pContexts = contexts;
     pAnnotCache = annotCache;
-    init(sourceMod, annots);
+    pTemplateInfo = templateInfo;
+    init(sourceMod);
   }
 
   private
   TemplateStage
   (
     NodeMod sourceMod,
-    TreeMap<String, BaseAnnotation> annots,
     StageInformation stageInfo,
     UtilContext context,
     MasterMgrClient client,
@@ -66,6 +68,7 @@ class TemplateStage
     String suffix,
     PluginContext editor,
     PluginContext action,
+    TemplateBuildInfo templateInfo,
     TreeMap<String, String> stringReplacements,
     TreeMap<String, ArrayList<TreeMap<String, String>>> maps,
     TreeMap<String, TreeMap<String, BaseAnnotation>> annotCache
@@ -77,9 +80,10 @@ class TemplateStage
           stageInfo, context, client, 
           nodeName, suffix, editor, action);
     pReplacements = stringReplacements;
-    pMaps = maps;
+    pContexts = maps;
     pAnnotCache = annotCache;
-    init(sourceMod, annots);
+    pTemplateInfo = templateInfo;
+    init(sourceMod);
   }
   
   /**
@@ -101,12 +105,13 @@ class TemplateStage
   private void 
   init
   (
-    NodeMod sourceMod,
-    TreeMap<String, BaseAnnotation> annots
+    NodeMod sourceMod
   ) 
     throws PipelineException
   {
     pSourceMod = sourceMod;
+    
+    TreeMap<String, BaseAnnotation> annots = getAnnotations(pSourceMod.getName());
     
     for (String aName : annots.keySet()) {
       BaseAnnotation annot = annots.get(aName); 
@@ -126,11 +131,13 @@ class TemplateStage
     BaseAction act = sourceMod.getAction();
     
     for (LinkMod link : sourceMod.getSources()) {
-      TreeSet<String> maps = getMaps(aLinkName);
-      if (maps.size() == 0)
+      LogMgr.getInstance().log(Kind.Ops, Level.Finest, 
+        "checking the link: " + link.getName());
+      TreeSet<String> contexts = getContexts(link.getName());
+      if (contexts.size() == 0)
         createLink(link, act, pReplacements);
       else
-        mapLink(link, act, maps, pReplacements);
+        contextLink(link, act, new TreeSet<String>(contexts), pReplacements);
     }
     
     pSrcHasDisabledAction = !(sourceMod.isActionEnabled()); 
@@ -201,31 +208,31 @@ class TemplateStage
   }
   
   private void
-  mapLink
+  contextLink
   (
     LinkMod link,
     BaseAction act,
-    TreeSet<String> mapList,
+    TreeSet<String> contextList,
     TreeMap<String, String> replace
   )
     throws PipelineException
   {
-    String currentMap = mapList.pollFirst();
-    ArrayList<TreeMap<String, String>> values = pMaps.get(currentMap);
+    String currentContext = contextList.pollFirst();
+    ArrayList<TreeMap<String, String>> values = pContexts.get(currentContext);
     
     if (values == null || values.isEmpty()) 
       throw new PipelineException
-        ("The map (" + currentMap + ") specified on (" + link.getName() + ") has no values " +
+        ("The context (" + currentContext + ") specified on (" + link.getName() + ") has no values " +
          "defined for it.");
     
-    for (TreeMap<String, String> mapEntry : values) {
+    for (TreeMap<String, String> contextEntry : values) {
       TreeMap<String, String> newReplace = new TreeMap<String, String>(replace);
-      newReplace.putAll(mapEntry);
-      if (mapList.isEmpty()) {  //bottom of the recursion
+      newReplace.putAll(contextEntry);
+      if (contextList.isEmpty()) {  //bottom of the recursion
         createLink(link, act, newReplace);
       }
       else {
-        mapLink(link, act, mapList, newReplace);
+        contextLink(link, act, new TreeSet<String>(contextList), newReplace);
       }
     }
   }
@@ -235,8 +242,6 @@ class TemplateStage
    * 
    * @param sourceMod
    *   The template node we are basing this new node on.
-   * @param annots
-   *   The annotations on the template node.
    * @param stageInfo
    *   The stage information for the builder.
    * @param context
@@ -248,11 +253,14 @@ class TemplateStage
    *   A list of String replacements to make when creating the node from the template.  The
    *   keys will be searched for in node names, links, param values, and annotations
    *   and replaced with the values the key maps to.
-   * @param maps
+   * @param contexts
    *   The list of recursive string substitutions to be performed on nodes tagged with the
-   *   TemplateMapAnnotation.
+   *   TemplateContextAnnotation.
    * @param annotCache
    *   A shared cache of annotations for nodes 
+   * @param templateInfo
+   *   Information about what the template is making.  Used to pull out context information
+   *   for product nodes.
    * @return
    *   A TemplateStage ready to build the new node.
    * @throws PipelineException
@@ -262,12 +270,12 @@ class TemplateStage
   getTemplateStage
   (
     NodeMod sourceMod,
-    TreeMap<String, BaseAnnotation> annots,
     StageInformation stageInfo,
     UtilContext context,
     MasterMgrClient client,
+    TemplateBuildInfo templateInfo,
     TreeMap<String, String> stringReplacements,
-    TreeMap<String, ArrayList<TreeMap<String, String>>> maps,
+    TreeMap<String, ArrayList<TreeMap<String, String>>> contexts,
     TreeMap<String, TreeMap<String, BaseAnnotation>> annotCache
   ) 
     throws PipelineException
@@ -302,13 +310,13 @@ class TemplateStage
       int padding = pat.getPadding();
       FrameRange range = priSeq.getFrameRange();
       return new TemplateStage
-        (sourceMod, annots, stageInfo, newContext, client, nodeName, range, padding, suffix, 
-         editor, action, stringReplacements, maps, annotCache);
+        (sourceMod, stageInfo, newContext, client, nodeName, range, padding, suffix, 
+         editor, action, templateInfo, stringReplacements, contexts, annotCache);
     }
     else 
       return new TemplateStage
-        (sourceMod, annots, stageInfo, newContext, client, nodeName, suffix, editor, action, 
-         stringReplacements, maps, annotCache);
+        (sourceMod, stageInfo, newContext, client, nodeName, suffix, editor, action, 
+         templateInfo, stringReplacements, contexts, annotCache);
   }
   
   @Override
@@ -391,6 +399,7 @@ class TemplateStage
     if (pVouch)
       vouch();
   }
+  
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -537,7 +546,7 @@ class TemplateStage
   }
   
   private TreeSet<String>
-  getMaps
+  getContexts
   (
     String name  
   )
@@ -545,14 +554,27 @@ class TemplateStage
   {
     TreeSet<String> toReturn = new TreeSet<String>();
     
-    TreeMap<String, BaseAnnotation> allAnnots = getAnnotations(name);
-    for (String aName : allAnnots.keySet()) {
-      if (aName.startsWith("TemplateMap")) {
-        BaseAnnotation annot = allAnnots.get(aName);
-        String mapName = (String) annot.getParamValue(aMapName);
-        toReturn.add(mapName); 
+    // if the node is part of the template.
+    if (pTemplateInfo.getNodesToBuild().contains(name)) {
+      TreeMap<String, BaseAnnotation> allAnnots = getAnnotations(name);
+      for (String aName : allAnnots.keySet()) {
+        if (aName.startsWith("TemplateContext")) {
+          BaseAnnotation annot = allAnnots.get(aName);
+          String mapName = (String) annot.getParamValue(aContextName);
+          toReturn.add(mapName); 
+        }
       }
     }
+    /* else this is a product node and we need to pull context info from
+     * the template info.
+     */
+    else {
+      TreeSet<String> contexts = 
+        pTemplateInfo.getProductContexts().get(name, pSourceMod.getName());
+      if (contexts != null)
+        toReturn.addAll(contexts);       
+    }
+    
    return toReturn;   
   }
   
@@ -569,8 +591,9 @@ class TemplateStage
   public static final String aVouch = "Vouch";
   public static final String aPostRemoveAction = "PostRemoveAction";
   public static final String aPostDisableAction = "PostDisableAction";
-  public static final String aMapName = "MapName";
+  public static final String aContextName = "ContextName";
   public static final String aLinkName = "LinkName";
+  
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -578,8 +601,10 @@ class TemplateStage
   /*----------------------------------------------------------------------------------------*/
   
   private TreeMap<String, String> pReplacements;
-  private TreeMap<String, ArrayList<TreeMap<String, String>>> pMaps;
+  private TreeMap<String, ArrayList<TreeMap<String, String>>> pContexts;
   private TreeMap<String, TreeMap<String, BaseAnnotation>> pAnnotCache;
+  
+  private TemplateBuildInfo pTemplateInfo;
   
   private boolean pSrcHasDisabledAction;
   

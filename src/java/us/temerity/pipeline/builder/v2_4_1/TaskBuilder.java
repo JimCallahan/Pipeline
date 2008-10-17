@@ -1,4 +1,4 @@
-// $Id: TaskBuilder.java,v 1.7 2008/09/19 03:38:21 jesse Exp $
+// $Id: TaskBuilder.java,v 1.8 2008/10/17 03:36:46 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_1;
 
@@ -23,6 +23,7 @@ class TaskBuilder
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
+  
   /**
    * Constructor.
    * 
@@ -54,6 +55,8 @@ class TaskBuilder
     throws PipelineException
   {
     super(name, desc, mclient, qclient, builderInformation);
+    
+    pAnnotCache = new TreeMap<String, TreeMap<String,BaseAnnotation>>();
     
     pAnnotTaskTypeChoices = TaskType.titlesNonCustom(); 
     
@@ -664,6 +667,30 @@ class TaskBuilder
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Get the Annotations on the given node.  
+   *
+   * @param name
+   *   The name of the node.
+   * @return
+   *   A TreeMap of Annotations indexed by annotation name or 
+   *   <code>null</code> if none exists.
+   */
+  protected TreeMap<String, BaseAnnotation>
+  getAnnotations
+  (
+    String name
+  )
+    throws PipelineException
+  {
+    TreeMap<String, BaseAnnotation> annots = pAnnotCache.get(name);
+    if (annots == null) {
+      annots = getMasterMgrClient().getAnnotations(name);
+      pAnnotCache.put(name, annots);
+    }
+   return annots;
+  }
+  
+  /**
    * Get the Task Annotations on the given node.  
    *
    * @param name
@@ -679,8 +706,9 @@ class TaskBuilder
   )
     throws PipelineException
   {
+    TreeMap<String, BaseAnnotation> annotations = getAnnotations(name);
+    
     TreeMap<String, BaseAnnotation> toReturn = null;
-    TreeMap<String, BaseAnnotation> annotations = getMasterMgrClient().getAnnotations(name);
     for(String aname : annotations.keySet()) {
       if(aname.equals("Task") || aname.startsWith("AltTask")) {
         if (toReturn == null)
@@ -963,5 +991,7 @@ class TaskBuilder
   private ArrayList<String> pAnnotTaskTypeChoices;
   
   private EntityType pEntityType;
+  
+  private TreeMap<String, TreeMap<String, BaseAnnotation>> pAnnotCache;
   
 }

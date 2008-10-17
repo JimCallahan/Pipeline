@@ -1,4 +1,4 @@
-// $Id: TemplateBuilder.java,v 1.1 2008/10/02 01:29:52 jesse Exp $
+// $Id: TemplateBuilder.java,v 1.2 2008/10/17 03:36:46 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -245,7 +245,6 @@ class TemplateBuilder
   
   
   
-  
   /*----------------------------------------------------------------------------------------*/
   /*   F I R S T   L O O P                                                                  */
   /*----------------------------------------------------------------------------------------*/
@@ -283,7 +282,8 @@ class TemplateBuilder
         for (String node : pNodesToBuild) {
           NodeStatus stat = statusCache.get(node);
           if (stat == null) {
-            stat = pClient.status(new NodeID(getAuthor(), getView(), node), true);
+            stat = pClient.status(new NodeID(getAuthor(), getView(), node), true, 
+              DownstreamMode.WorkingOnly);
             mineStatus(stat, statusCache);
           }
           for (String src : stat.getSourceNames()) {
@@ -350,7 +350,8 @@ class TemplateBuilder
     {
       acquireProducts();
       
-      TreeSet<String> roots = new TreeSet<String>(); 
+      ArrayList<String> roots = new ArrayList<String>(); 
+      MappedSet<Integer, String> orderedRoots = new MappedSet<Integer, String>();
       
       while (!pNodesToBuild.isEmpty() ) {
         String toBuild = findNodeToBuild();
@@ -364,6 +365,14 @@ class TemplateBuilder
           if (aName.startsWith("TemplateContext") && !aName.startsWith("TemplateContextLink")) {
             String contextName = (String) annot.getParamValue(aContextName);
             contexts.add(contextName);
+          }
+        }
+        
+        Integer order = null;
+        {
+          BaseAnnotation annot = annots.get("TemplateOrder");
+          if (annot != null) {
+            order = (Integer) annot.getParamValue("Order");
           }
         }
         
@@ -388,9 +397,20 @@ class TemplateBuilder
           }
         } 
         else { // we've got a node that nothing depends on, must be a root.
-          roots.addAll(nodesMade);
+          if (order == null)
+            roots.addAll(nodesMade);
+          else {
+            for (String node : nodesMade)
+              orderedRoots.put(order, node);
+          }
         }
       } // while (!pNodesToBuild.isEmpty() )
+      for (Integer order : orderedRoots.keySet()) {
+        for (String root : orderedRoots.get(order)) {
+          addToQueueList(root);
+          addToCheckInList(root);  
+        }
+      }
       for (String root : roots) {
         addToQueueList(root);
         addToCheckInList(root);  

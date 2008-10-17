@@ -1,4 +1,4 @@
-// $Id: TemplateContextTool.java,v 1.1 2008/10/02 00:26:56 jesse Exp $
+// $Id: TemplateContextTool.java,v 1.2 2008/10/17 03:36:46 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateContextTool.v2_4_3;
 
@@ -31,6 +31,9 @@ class TemplateContextTool
   {
     super("TemplateContext", new VersionID("2.4.3"), "Temerity", 
           "Tool for adding context animation to a group of nodes.");
+    
+    addSupport(OsType.Windows);
+    addSupport(OsType.MacOS);
     
     underDevelopment();
   }

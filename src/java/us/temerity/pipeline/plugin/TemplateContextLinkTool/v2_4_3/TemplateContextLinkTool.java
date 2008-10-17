@@ -1,4 +1,4 @@
-// $Id: TemplateContextLinkTool.java,v 1.1 2008/10/02 00:26:56 jesse Exp $
+// $Id: TemplateContextLinkTool.java,v 1.2 2008/10/17 03:36:46 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateContextLinkTool.v2_4_3;
 
@@ -35,6 +35,9 @@ class TemplateContextLinkTool
   {
     super("TemplateContextLink", new VersionID("2.4.3"), "Temerity", 
           "Tool for adding context link animation to a group of nodes.");
+
+    addSupport(OsType.Windows);
+    addSupport(OsType.MacOS);
     
     underDevelopment();
   }

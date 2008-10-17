@@ -1,4 +1,4 @@
-// $Id: TemplateBuildInfo.java,v 1.1 2008/10/02 01:29:52 jesse Exp $
+// $Id: TemplateBuildInfo.java,v 1.2 2008/10/17 03:36:46 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -251,6 +251,12 @@ class TemplateBuildInfo
     else
       pProductContexts = null;
   }
+
+
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*  I N T E R N A L S                                                                     */
+  /*----------------------------------------------------------------------------------------*/
 
   private TreeSet<String> pNodesToBuild;
   
