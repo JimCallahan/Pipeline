@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.90 2008/08/02 23:43:24 jim Exp $
+// $Id: UIMaster.java,v 1.91 2008/10/17 03:39:58 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -6,6 +6,7 @@ import us.temerity.pipeline.*;
 import us.temerity.pipeline.ui.*;
 import us.temerity.pipeline.glue.*;
 import us.temerity.pipeline.math.*;
+import us.temerity.pipeline.message.*;
 import us.temerity.pipeline.LogMgr.*;
 import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.core.RemoteServer;
@@ -5613,6 +5614,10 @@ class UIMaster
 	  catch(PipelineException ex) {
 	    master.showErrorDialog(ex);
 	    return;
+	  }
+	  catch (LinkageError er) {
+	    master.showErrorDialog(er);
+            return;
 	  }
 	  finally {
 	    master.endPanelOp(pChannel, "Done.");
