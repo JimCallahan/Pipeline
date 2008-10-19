@@ -1,4 +1,4 @@
-// $Id: NodeTree.java,v 1.10 2008/06/29 17:46:16 jim Exp $
+// $Id: NodeTree.java,v 1.11 2008/10/19 17:06:29 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -32,6 +32,24 @@ class NodeTree
     pNodeTreeRoot = new NodeTreeEntry();
   }
   
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   I N I T I A L I Z A T I O N                                                          */
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Initialize fields which must be determined at runtime.
+   */ 
+  static {
+    if(PackageInfo.sSupportsWindows) {
+      sWindowsMessage = 
+        ("\n\n" + 
+         "When Pipeline is configured to use Windows clients, case-insensitive conflicts " + 
+         "between the names of nodes and/or their file sequences are not allowed.  This " +
+         "is to prevent problems for Windows clients using the CIFS network file system " +
+         "to access the files associated with nodes, since CIFS does not understand case.");
+    }
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -196,7 +214,8 @@ class NodeTree
    *   Whether to only check the file sequences, ignoring node name conflicts.
    * 
    * @return 
-   *   The node already using the given sequence or <CODE>null</CODE> if unused.
+   *   The node name or components of the common node path already using the given 
+   *   sequence name or <CODE>null</CODE> if unused.
    */ 
   public synchronized String
   getNodeReservingSeq
@@ -210,46 +229,130 @@ class NodeTree
 
     String comps[] = name.split("/"); 
     NodeTreeEntry parent = pNodeTreeRoot;
-    int wk;
-    for(wk=1; wk<comps.length; wk++) {
-      NodeTreeEntry entry = parent.get(comps[wk]);
-      
-      if(entry != null) 
-        buf.append("/" + entry.getName());
 
-      if(wk < (comps.length-1)) {
-	if(entry == null) 
-	  return null;
-        else if(entry.isLeaf())
-          return buf.toString(); 
-      }
-      else {
-        /* ignore the existance of the primary seq for the node itself,
-             when testing secondary sequences */ 
-	if(!checkSeqsOnly && (entry != null)) 
-          return (buf.toString() + " (or nodes prefixed by this path)");
-	
-        /* for each entry in the same directory as the node owning the seq being tested: 
-           + ignore entries which don't represent nodes in the current directory
-           + ignore existing seqs from the owning node, since NodeMod will catch these
-               if they are already on the current working version and this prevents 
-               false conflicts with the same seq on an existing checked-in version
-           + check file sequences on all other nodes for conflicts */ 
-	for(NodeTreeEntry child : parent.values()) {
-	  if(child.isLeaf() && 
-             !child.getName().equals(comps[wk]) &&  
-             !child.isSequenceUnused(fseq)) {
-            buf.append("/" + child.getName());
-            return buf.toString();
+    /* if the Windows is being supported, 
+         we have to do much more exhaustive testing to prevent case-insensitive aliasing */ 
+    if(PackageInfo.sSupportsWindows) {
+      int wk;
+      for(wk=1; wk<comps.length; wk++) {
+        NodeTreeEntry entry = null;
+
+        /* test the non-leaf components of the new node name... */ 
+        if(wk < (comps.length-1)) {
+          for(NodeTreeEntry child : parent.values()) {
+
+            /* found a perfect match for the component */ 
+            if(child.getName().equals(comps[wk])) {
+              entry = child; 
+
+              /* a non-leaf component of the node name is already a leaf of an 
+                   existing node */ 
+              if(child.isLeaf()) {
+                buf.append("/" + child.getName());
+                return buf.toString(); 
+              }
+            }
+            
+            /* found an case-insensitive alias for the new component */ 
+            else if(child.getName().compareToIgnoreCase(comps[wk]) == 0) {
+              buf.append("/" + child.getName());
+              return buf.toString(); 
+            }
           }
-	}
-	
-	return null; 
+          
+          /* the node name lives in a novel branch not used by any existing node */ 
+          if(entry == null)
+            return null;              
+              
+          buf.append("/" + entry.getName());
+        }
+
+        /* test the leaf component of the new node name... */ 
+        else {
+          for(NodeTreeEntry child : parent.values()) {
+            
+            /* found a perfect match for the component */ 
+            if(child.getName().equals(comps[wk])) {
+              /* there is an existing node with the identical or which shares a common 
+                   node path prefix with the new node name */ 
+              if(!checkSeqsOnly) {
+                buf.append("/" + child.getName());
+                return buf.toString(); 
+              }
+            }
+
+            /* found an case-insensitive alias for the new component */ 
+            else if(child.getName().compareToIgnoreCase(comps[wk]) == 0) {
+              buf.append("/" + child.getName());
+              return buf.toString(); 
+            }
+            
+            /* found a leaf node with a matching secondary sequence */ 
+            else if(child.isLeaf() &&  
+                    !child.isSequenceUnused(fseq, true)) {
+              buf.append("/" + child.getName());
+              return buf.toString();
+            }
+          }
+          
+          return null; 
+        }
+        
+        parent = entry;
       }
-      
-      parent = entry;
     }
-    
+
+    /* without Windows support, 
+         we can peform the test much more efficiently */ 
+    else {
+      int wk;
+      for(wk=1; wk<comps.length; wk++) {
+        NodeTreeEntry entry = parent.get(comps[wk]);
+        
+        if(entry != null) 
+          buf.append("/" + entry.getName());
+
+        /* test the non-leaf components of the new node name... */ 
+        if(wk < (comps.length-1)) {
+
+          /* the node name lives in a novel branch not used by any existing node */ 
+          if(entry == null) 
+            return null;
+
+          /* a non-leaf component of the node name is already a leaf of an existing node */ 
+          else if(entry.isLeaf())
+            return buf.toString(); 
+        }
+
+        /* test the leaf component of the new node name... */ 
+        else {
+          /* if checking both primary and secondary sequences, 
+               finding an existing node or node path component is a failure! */ 
+          if(!checkSeqsOnly && (entry != null)) 
+            return buf.toString(); 
+          
+          /* for each entry in the same directory as the node owning the seq being tested: 
+             + ignore entries which don't represent nodes in the current directory
+             + ignore existing seqs from the owning node, since NodeMod will catch these
+                 if they are already on the current working version and this prevents 
+                 false conflicts with the same seq on an existing checked-in version
+             + check file sequences on all other nodes for conflicts */ 
+          for(NodeTreeEntry child : parent.values()) {
+            if(child.isLeaf() && 
+               !child.getName().equals(comps[wk]) &&  
+               !child.isSequenceUnused(fseq)) {
+              buf.append("/" + child.getName());
+              return buf.toString();
+            }
+          }
+          
+          return null; 
+        }
+        
+        parent = entry;
+      }
+    }
+
     throw new IllegalStateException();
   }
 
@@ -373,8 +476,8 @@ class NodeTree
 	("Cannot register node:\n\n" +
          "  " + nodeID.getName() + "\n\n" + 
          "The new node's name conflicts with one of the associated file sequences of the " + 
-         "existing node:\n\n" + 
-         "  " + reserving + "\n");
+         "existing node or components of the common node path:\n\n" + 
+         "  " + reserving + sWindowsMessage + "\n");
 	
     addWorkingNodeTreePath(nodeID, newSeqs);     
   }
@@ -418,7 +521,7 @@ class NodeTree
   {
     /* remove the old working node entry, primary and secondary sequences */ 
     removeWorkingNodeTreePath(oldID, oldSeqs); 
-	  
+
     try {
       String name  = oldID.getName();
       String nname = newID.getName();
@@ -432,8 +535,9 @@ class NodeTree
              "To the new name:\n\n" + 
              "  " + nname + "\n\n" +
              "The new primary sequence name (" + primary + ") conflicts with one of the " + 
-             "associated file sequences of the existing node:\n\n" + 
-             "  " + reserving + "\n");
+             "associated file sequences of the existing node or components of the common " + 
+             "node path:\n\n" + 
+             "  " + reserving + sWindowsMessage + "\n");
       }
       
       for(FileSeq fseq : secondary) {
@@ -445,8 +549,9 @@ class NodeTree
              "To the new name:\n\n" + 
              "  " + nname + "\n\n" +
              "The new secondary sequence name (" + fseq + ") conflicts with one of the " + 
-             "associated file sequences of the existing node:\n\n" + 
-             "  " + reserving + "\n");
+             "associated file sequences of the existing node or components of the common " + 
+             "node path:\n\n" + 
+             "  " + reserving + sWindowsMessage + "\n");
       }
     }
     catch(PipelineException ex) {
@@ -487,8 +592,9 @@ class NodeTree
 	("Cannot add secondary file sequence to node:\n\n" + 
          "  " + nodeID.getName() + "\n\n" + 
          "The new secondary sequence name (" + fseq + ") conflicts with one of the " + 
-         "associated file sequences of the existing node:\n\n" +
-         "  " + reserving + "\n");
+         "associated file sequences of the existing node or components of the common " + 
+         "node path:\n\n" +
+         "  " + reserving + sWindowsMessage + "\n");
     
     TreeSet<FileSeq> secondary = new TreeSet<FileSeq>();
     secondary.add(fseq);
@@ -1195,5 +1301,10 @@ class NodeTree
    * The root of the tree of node path components currently in use.
    */ 
   private NodeTreeEntry  pNodeTreeRoot;
+
+  /**
+   * Explanitory note about case-insensitive tests performed if Windows support is enabled.
+   */ 
+  private static final String  sWindowsMessage;
 
 }

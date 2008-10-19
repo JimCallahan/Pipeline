@@ -9,7 +9,7 @@ AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
 AC_CONFIG_HEADERS([config.h])
-AM_INIT_AUTOMAKE(Pipeline, 2.4.3b12)
+AM_INIT_AUTOMAKE(Pipeline, 2.4.3b13)
                            
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
@@ -916,6 +916,8 @@ fi
 
 AM_CONDITIONAL(HAS_MAC, test x$has_mac = xtrue)
 
+AC_SUBST(SUPPORTS_MAC)
+SUPPORTS_MAC="$mac_support"
 
 
 dnl ------------------------------------------------------------------------------------------
@@ -1012,6 +1014,9 @@ then
 fi 
 
 AM_CONDITIONAL(HAS_WINDOWS, test x$has_windows = xtrue)
+
+AC_SUBST(SUPPORTS_WIN)
+SUPPORTS_WIN="$win_support"
 
 AC_SUBST(WIN_SERVICE_VERSION)
 WIN_SERVICE_VERSION=1.1.0

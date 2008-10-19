@@ -1,4 +1,4 @@
-// $Id: PackageInfo.java.src.in,v 1.46 2008/10/09 03:06:06 jim Exp $
+// $Id: PackageInfo.java.src.in,v 1.47 2008/10/19 17:06:29 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -738,6 +738,19 @@ class PackageInfo
    * The host IDs of the Pipeline servers. <P> 
    */
   public static final String[] sHostIDs = { @PIPELINE_HOST_IDS@ };
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Whether this site supports the Windows operating system.
+   */ 
+  public static final boolean sSupportsWindows = @SUPPORTS_WIN@;
+
+  /**
+   * Whether this site supports the Mac OS X operating system.
+   */ 
+  public static final boolean sSupportsMacOS = @SUPPORTS_MAC@;
 
 
   /*----------------------------------------------------------------------------------------*/

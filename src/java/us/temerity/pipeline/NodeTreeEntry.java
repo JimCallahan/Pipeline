@@ -1,4 +1,4 @@
-// $Id: NodeTreeEntry.java,v 1.10 2006/09/29 03:03:21 jim Exp $
+// $Id: NodeTreeEntry.java,v 1.11 2008/10/19 17:06:29 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -280,11 +280,16 @@ class NodeTreeEntry
   /**
    * Does there exist a file sequence which conflicts with the given file
    * sequence?
+   * 
+   * @param ignoreCase
+   *   Whether to ignore case when comparing file sequences.  This can be useful when 
+   *   checking for potential file system aliasing using Windows and CIFS.
    */ 
   public boolean 
   isSequenceUnused
   ( 
-   FileSeq fseq
+   FileSeq fseq, 
+   boolean ignoreCase
   ) 
   {
     if(!pIsLeaf)
@@ -292,7 +297,32 @@ class NodeTreeEntry
 
     FilePattern fpat = fseq.getFilePattern();
     String sname = (fpat.getPrefix() + "|" + fpat.getSuffix());
-    return (!pFileSeqRefs.contains(sname));
+
+    if(ignoreCase) {
+      for(String key : pFileSeqRefs.getKeys()) {
+        if(sname.compareToIgnoreCase(key) == 0)
+          return false;
+      }
+      return true;
+    }
+    else {
+      return (!pFileSeqRefs.contains(sname));
+    }
+  }
+
+  /**
+   * Does there exist a file sequence which conflicts with the given file
+   * sequence?
+   * 
+   * This version is always case sensitive.
+   */ 
+  public boolean 
+  isSequenceUnused
+  ( 
+   FileSeq fseq
+  ) 
+  {
+    return isSequenceUnused(fseq, false);
   }
 
   /**
