@@ -190,9 +190,12 @@ class MultipleRenumberTool
           if(frame == null)
             throw new PipelineException
               ("Unable to renumber node with an unspecified frame increment!");
+          if(frame < 1) 
+            throw new PipelineException
+              ("The new frame increment must be positive!");          
           pByFrame = frame;
         }
-
+        
         pIsByEnabled = pByFrameField.isEnabled();
 
         {
