@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.255 2008/09/29 19:02:17 jim Exp $
+// $Id: MasterMgr.java,v 1.256 2008/10/19 17:03:18 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -429,8 +429,7 @@ class MasterMgr
       initToolsets();
       initMasterExtensions();
       initWorkingAreas();
-      initDownstreamLinks();
-      initNodeTree();
+      initNodeDatabase(); 
       readNextIDs();
     }
     catch(Exception ex) {
@@ -1016,187 +1015,7 @@ class MasterMgr
 
 
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Remove any existing node tree cache file.
-   */ 
-  private void 
-  removeNodeTreeCache()
-  {
-    File file = new File(pNodeDir, "etc/node-tree");
-    if(file.exists())
-      file.delete();
-  }
-
-  /**
-   * Build the initial node name tree by searching the file system for node related files.
-   */
-  private void 
-  initNodeTree()
-    throws PipelineException 
-  {
-    TaskTimer timer = new TaskTimer();
-    if(pRebuildCache) {
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Ops, LogMgr.Level.Info,
-	 "Rebuilding Node Tree Cache...");    
-      LogMgr.getInstance().flush();
-      
-      {
-	File dir = new File(pNodeDir, "repository");
-	initCheckedInNodeTree(dir.getPath(), dir); 
-      }
-      
-      {
-	File dir = new File(pNodeDir, "working");
-	File authors[] = dir.listFiles(); 
-	int ak;
-	for(ak=0; ak<authors.length; ak++) {
-	  if(!authors[ak].isDirectory())
-	    throw new IllegalStateException
-	      ("Non-directory file found in the root working area directory!"); 
-	  String author = authors[ak].getName();
-	  
-	  File views[] = authors[ak].listFiles();  
-	  int vk;
-	  for(vk=0; vk<views.length; vk++) {
-	    if(!views[vk].isDirectory())
-	      throw new IllegalStateException
-		("Non-directory file found in the user (" + author + ") root working " + 
-		 "area directory!"); 
-	    String view = views[vk].getName();
-	    
-	    initWorkingNodeTree(views[vk].getPath(), author, view, views[vk]);
-	  }
-	}
-      } 
-
-      timer.suspend();
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Net, LogMgr.Level.Info,
-	 "  Rebuilt in " + TimeStamps.formatInterval(timer.getTotalDuration()));
-      LogMgr.getInstance().flush();
-    }
-    else {
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Ops, LogMgr.Level.Info,
-	 "Loading Node Tree Cache...");   
-      LogMgr.getInstance().flush();
-
-      pNodeTree.readGlueFile(new File(pNodeDir, "etc/node-tree"));
-      removeNodeTreeCache();
-
-      timer.suspend();
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Net, LogMgr.Level.Info,
-	 "  Loaded in " + TimeStamps.formatInterval(timer.getTotalDuration()));
-      LogMgr.getInstance().flush();
-    }
-
-    pNodeTree.logNodeTree();
-  }
-
-  /**
-   * Recursively search the checked-in node directories for node names. <P> 
-   * 
-   * No locks are aquired because this method is only called by the constructor.
-   * 
-   * @param prefix 
-   *   The root directory of checked-in versions.
-   * 
-   * @param dir
-   *   The current directory to process.
-   */ 
-  private void 
-  initCheckedInNodeTree
-  (
-   String prefix, 
-   File dir
-  ) 
-    throws PipelineException
-  {
-    boolean allDirs  = true;
-    boolean allFiles = true;
-
-    File files[] = dir.listFiles(); 
-
-    {
-      int wk;
-      for(wk=0; wk<files.length; wk++) {
-	if(files[wk].isDirectory()) 
-	  allFiles = false;
-	else if(files[wk].isFile()) 
-	  allDirs = false;
-	else
-	  throw new IllegalStateException(); 
-      }
-    }
-
-    if(allFiles) {
-      String full = dir.getPath();
-      String path = full.substring(prefix.length());
-      if(path.length() > 0) {
-	TreeMap<VersionID,CheckedInBundle> table = readCheckedInVersions(path);
-	for(CheckedInBundle bundle : table.values()) 
-	  pNodeTree.addCheckedInNodeTreePath(bundle.getVersion());
-      }
-    }
-    else if(allDirs) {
-      int wk;
-      for(wk=0; wk<files.length; wk++) 
-	initCheckedInNodeTree(prefix, files[wk]);
-    }
-    else {
-      throw new IllegalStateException(); 
-    } 
-  }
-  
-  /**
-   * Recursively search the working node directories for node names. <P> 
-   * 
-   * No locks are aquired because this method is only called by the constructor.
-   * 
-   * @param prefix 
-   *   The root directory of a particular user's view. 
-   * 
-   * @param author 
-   *   The name of the user which owns the working version.
-   * 
-   * @param view 
-   *   The name of the user's working area view. 
-   * 
-   * @param dir
-   *   The current directory to process.
-   */
-  private void 
-  initWorkingNodeTree
-  (
-   String prefix, 
-   String author, 
-   String view, 
-   File dir
-  ) 
-    throws PipelineException 
-  {
-    File files[] = dir.listFiles(); 
-    int wk;
-    for(wk=0; wk<files.length; wk++) {
-      if(files[wk].isDirectory()) 
-	initWorkingNodeTree(prefix, author, view, files[wk]);
-      else {
-	String path = files[wk].getPath();
-	if(!path.endsWith(".backup")) {
-	  NodeID nodeID = new NodeID(author, view, path.substring(prefix.length()));
-	  NodeMod mod = readWorkingVersion(nodeID);
-	  addWorkingNodeTreePath(nodeID, mod.getSequences());
-	}
-      }
-    }
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
+ 
   /**
    * Remove any existing downstream link files.
    */ 
@@ -1230,86 +1049,101 @@ class MasterMgr
     }
   }
 
-  /** 
-   * Rebuild the downstream links from the working and checked-in version of ALL nodes! 
+  /**
+   * Remove any existing node tree cache file.
    */ 
   private void 
-  initDownstreamLinks()
-    throws PipelineException 
+  removeNodeTreeCache()
   {
-    if(!pRebuildCache) 
-      return; 
-
-    {
-      File dir = new File(pNodeDir, "downstream");
-      if(dir.isDirectory()) 
-	throw new PipelineException
-	  ("Somehow the downstream links directory (" + dir + ") already exists!");
-
-      if(!dir.mkdir()) 
-	throw new IllegalArgumentException
-	  ("Unable to create the downstream links directory (" + dir + ")!");
-    }
-
-    TaskTimer timer = new TaskTimer();
-    LogMgr.getInstance().log
-      (LogMgr.Kind.Ops, LogMgr.Level.Info,
-       "Rebuilding Downstream Links Cache...");   
-    LogMgr.getInstance().flush(); 
-
-    /* process checked-in versions */ 
-    {
-      File dir = new File(pNodeDir, "repository");
-      collectCheckedInDownstreamLinks(dir.getPath(), dir); 
-    }
-
-    /* process working versions */ 
-    {
-      File dir = new File(pNodeDir, "working");
-      File authors[] = dir.listFiles(); 
-      int ak;
-      for(ak=0; ak<authors.length; ak++) {
-	if(!authors[ak].isDirectory())
-	  throw new IllegalStateException
-	    ("Non-directory file found in the root working area directory!"); 
-	String author = authors[ak].getName();
-	
-	File views[] = authors[ak].listFiles();  
-	int vk;
-	for(vk=0; vk<views.length; vk++) {
-	  if(!views[vk].isDirectory())
-	    throw new IllegalStateException
-	      ("Non-directory file found in the user (" + author + ") root working " + 
-	       "area directory!"); 
-	  String view = views[vk].getName();
-	  collectWorkingDownstreamLinks(author, view, views[vk].getPath(), views[vk]);
-	}
-      }
-    }
-
-    if(!pDownstream.isEmpty() && 
-       LogMgr.getInstance().isLoggable(LogMgr.Kind.Ops, LogMgr.Level.Finer)) { 
-      StringBuilder buf = new StringBuilder(); 
-      buf.append("Rebuilt Links:\n");
-      for(String name : pDownstream.keySet()) 
-	buf.append("  " + name + "\n");
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Ops, LogMgr.Level.Finer,
-	 buf.toString());
-    }
-
-    /* write cached downstream links */ 
-    writeAllDownstreamLinks();
-
-    timer.suspend();
-    LogMgr.getInstance().log
-      (LogMgr.Kind.Net, LogMgr.Level.Info,
-       "  Rebuilt in " + TimeStamps.formatInterval(timer.getTotalDuration()));
-    LogMgr.getInstance().flush();
+    File file = new File(pNodeDir, "etc/node-tree");
+    if(file.exists())
+      file.delete();
   }
 
   /**
-   * Recursively search the checked-in node directories for downstream links.<P> 
+   * Load or rebuild the initial node name tree and downstream links caches by recursively
+   * searching the file system for node related files.
+   */
+  private void 
+  initNodeDatabase() 
+    throws PipelineException 
+  {
+    TaskTimer timer = new TaskTimer();
+    if(pRebuildCache) {
+      
+      {
+        File dir = new File(pNodeDir, "downstream");
+        if(dir.isDirectory()) 
+          throw new PipelineException
+            ("Somehow the downstream links directory (" + dir + ") already exists!");
+        
+        if(!dir.mkdir()) 
+          throw new PipelineException
+            ("Unable to create the downstream links directory (" + dir + ")!");
+      }
+
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Info,
+	 "Rebuilding Node Tree and Downstream Link Caches...");    
+      LogMgr.getInstance().flush();
+
+      {
+	File dir = new File(pNodeDir, "repository");
+	initCheckedInNodeDatabase(dir.getPath(), dir); 
+      }
+      
+      {
+	File dir = new File(pNodeDir, "working");
+	File authors[] = dir.listFiles(); 
+	int ak;
+	for(ak=0; ak<authors.length; ak++) {
+	  if(!authors[ak].isDirectory())
+	    throw new IllegalStateException
+	      ("Non-directory file found in the root working area directory!"); 
+	  String author = authors[ak].getName();
+	  
+	  File views[] = authors[ak].listFiles();  
+	  int vk;
+	  for(vk=0; vk<views.length; vk++) {
+	    if(!views[vk].isDirectory())
+	      throw new IllegalStateException
+		("Non-directory file found in the user (" + author + ") root working " + 
+		 "area directory!"); 
+	    String view = views[vk].getName();
+	    
+	    initWorkingNodeDatabase(author, view, views[vk].getPath(), views[vk]);
+	  }
+	}
+      } 
+
+      timer.suspend();
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Net, LogMgr.Level.Info,
+	 "  Rebuilt in " + TimeStamps.formatInterval(timer.getTotalDuration()));
+      LogMgr.getInstance().flush();
+    }
+    else {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Info,
+	 "Loading Node Tree Cache...");   
+      LogMgr.getInstance().flush();
+
+      pNodeTree.readGlueFile(new File(pNodeDir, "etc/node-tree"));
+      removeNodeTreeCache();
+
+      timer.suspend();
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Net, LogMgr.Level.Info,
+	 "  Loaded in " + TimeStamps.formatInterval(timer.getTotalDuration()));
+      LogMgr.getInstance().flush();
+    }
+    
+    pNodeTree.logNodeTree();
+  }
+
+  /**
+   * Recursively search the checked-in node directories for node name and downstream 
+   * link information. <P> 
    * 
    * No locks are aquired because this method is only called by the constructor.
    * 
@@ -1320,12 +1154,12 @@ class MasterMgr
    *   The current directory to process.
    */ 
   private void 
-  collectCheckedInDownstreamLinks
+  initCheckedInNodeDatabase
   (
    String prefix, 
    File dir
   ) 
-    throws PipelineException 
+    throws PipelineException
   {
     boolean allDirs  = true;
     boolean allFiles = true;
@@ -1345,8 +1179,8 @@ class MasterMgr
     }
 
     if(allFiles) {
-      String name = dir.getPath().substring(prefix.length());
-      
+      String full = dir.getPath();
+      String name = full.substring(prefix.length());
       TreeMap<VersionID,CheckedInBundle> table = readCheckedInVersions(name);
       for(VersionID vid : table.keySet()) {
 	NodeVersion vsn = table.get(vid).getVersion();
@@ -1360,12 +1194,14 @@ class MasterMgr
 	  
 	  dsl.addCheckedIn(link.getVersionID(), name, vid);
 	}
+
+        pNodeTree.addCheckedInNodeTreePath(vsn);
       }
     }
     else if(allDirs) {
       int wk;
       for(wk=0; wk<files.length; wk++) 
-	collectCheckedInDownstreamLinks(prefix, files[wk]);
+	initCheckedInNodeDatabase(prefix, files[wk]);
     }
     else {
       throw new IllegalStateException(); 
@@ -1373,12 +1209,13 @@ class MasterMgr
   }
   
   /**
-   * Recursively search the working node directories for for downstream links.<P> 
+   * Recursively search the working node directories for node name and downstream 
+   * link information. <P> 
    * 
    * No locks are aquired because this method is only called by the constructor.
    * 
    * @param author 
-   *   The of the user which owns the working version..
+   *   The name of the user which owns the working version.
    * 
    * @param view 
    *   The name of the user's working area view. 
@@ -1390,7 +1227,7 @@ class MasterMgr
    *   The current directory to process.
    */
   private void 
-  collectWorkingDownstreamLinks
+  initWorkingNodeDatabase
   (
    String author, 
    String view, 
@@ -1403,7 +1240,7 @@ class MasterMgr
     int wk;
     for(wk=0; wk<files.length; wk++) {
       if(files[wk].isDirectory()) 
-	collectWorkingDownstreamLinks(author, view, prefix, files[wk]);
+	initWorkingNodeDatabase(author, view, prefix, files[wk]);
       else {
 	String path = files[wk].getPath();
 	if(!path.endsWith(".backup")) {
@@ -1425,10 +1262,13 @@ class MasterMgr
 	    
 	    dsl.addWorking(author, view, name); 
 	  }  
+
+	  addWorkingNodeTreePath(nodeID, mod.getSequences());
 	}
       }
     }
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
