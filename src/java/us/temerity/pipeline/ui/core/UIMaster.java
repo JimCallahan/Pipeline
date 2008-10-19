@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.91 2008/10/17 03:39:58 jesse Exp $
+// $Id: UIMaster.java,v 1.92 2008/10/19 11:59:04 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -826,8 +826,13 @@ class UIMaster
       
     if(!authors.isEmpty()) {
       for(TreeSet<String> agroup : authors) {
-	JMenu gsub = new JMenu(agroup.first().substring(0, 3).toUpperCase() + "-" + 
-			       agroup.last().substring(0, 3).toUpperCase());      
+        String afirst = agroup.first();
+        String first3 = first.substring(0, Math.min(3, afirst.length()));
+
+        String alast  = agroup.last(); 
+        String last3  = alast.substring(0, Math.min(3, alast.length()));
+
+	JMenu gsub = new JMenu(first3.toUpperCase() + "-" + last3.toUpperCase()); 
 	menu.add(gsub);
 	
 	for(String author : agroup) 
