@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.92 2008/10/19 11:59:04 jim Exp $
+// $Id: UIMaster.java,v 1.93 2008/10/19 17:04:20 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -827,7 +827,7 @@ class UIMaster
     if(!authors.isEmpty()) {
       for(TreeSet<String> agroup : authors) {
         String afirst = agroup.first();
-        String first3 = first.substring(0, Math.min(3, afirst.length()));
+        String first3 = afirst.substring(0, Math.min(3, afirst.length()));
 
         String alast  = agroup.last(); 
         String last3  = alast.substring(0, Math.min(3, alast.length()));
