@@ -1,4 +1,4 @@
-// $Id: JBaseViewerPanel.java,v 1.20 2008/06/27 01:39:34 jim Exp $
+// $Id: JBaseViewerPanel.java,v 1.21 2008/10/20 00:26:38 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -361,6 +361,8 @@ class JBaseViewerPanel
     
     double dist = -pCameraPos.z();
     dist = Math.max(((double) pGLComponent.getHeight()) / pMaxFactor, dist); 
+    if(Double.isNaN(dist) || Double.isInfinite(dist))
+      dist = 20.0; 
     pCameraPos.z(-dist);
   }
  
@@ -699,6 +701,8 @@ class JBaseViewerPanel
 	double dist = -pCameraPos.z();
 	dist += pZoomSpeed*zm;
 	dist = Math.max(((double) pGLComponent.getHeight()) / pMaxFactor, dist); 
+        if(Double.isNaN(dist) || Double.isInfinite(dist))
+          dist = 20.0; 
 	pCameraPos.z(-dist);
 
         pCameraMovedSinceFramed = true;
@@ -751,6 +755,8 @@ class JBaseViewerPanel
     double distY = hrange.y() / ftan;
     double z = Math.max(((double) pGLComponent.getHeight()) / pMaxFactor, 
                         Math.max(distX, distY));
+    if(Double.isNaN(z) || Double.isInfinite(z))
+      z = 20.0; 
 
     Point2d center = bbox.getCenter();
     pCameraPos.set(center.x(), center.y(), z);
