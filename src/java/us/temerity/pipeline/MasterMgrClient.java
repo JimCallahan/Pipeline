@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.124 2008/09/29 19:02:17 jim Exp $
+// $Id: MasterMgrClient.java,v 1.125 2008/10/20 00:27:33 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -4712,6 +4712,8 @@ class MasterMgrClient
 
     Object obj = performTransaction(MasterRequest.Rename, req);
     handleSimpleResponse(obj);
+
+    vouch(nodeID);
   } 
 
 
@@ -5460,11 +5462,13 @@ class MasterMgrClient
   {
     verifyConnection();
 
-    NodeID id = new NodeID(author, view, mod.getName());
-    NodeRegisterReq req = new NodeRegisterReq(id, mod);
+    NodeID nodeID = new NodeID(author, view, mod.getName());
+    NodeRegisterReq req = new NodeRegisterReq(nodeID, mod);
 
     Object obj = performTransaction(MasterRequest.Register, req);
     if(obj instanceof NodeGetWorkingRsp) {
+      vouch(nodeID);
+
       NodeGetWorkingRsp rsp = (NodeGetWorkingRsp) obj;
       return rsp.getNodeMod();      
     }
