@@ -1,4 +1,4 @@
-// $Id: AdminPrivileges.java,v 1.10 2008/07/07 20:41:07 jesse Exp $
+// $Id: AdminPrivileges.java,v 1.11 2008/10/20 00:30:55 jim Exp $
  
 package us.temerity.pipeline.core;
 
@@ -540,16 +540,38 @@ class AdminPrivileges
       throw new PipelineException
 	("Only a user with Master Admin privileges may modify administrative privileges!");
     
+    TreeSet<String> unknown = new TreeSet<String>();
+
     TreeMap<String,Privileges> table = req.getTable();
     for(String uname : table.keySet()) {
-      Privileges privs = table.get(uname);
-      if(pWorkGroups.isUser(uname) && privs.hasAnyPrivileges()) 
-	pPrivileges.put(uname, privs);
-      else
-	pPrivileges.remove(uname);
+      if(pWorkGroups.isUser(uname)) {
+        Privileges privs = table.get(uname);
+        if(privs.hasAnyPrivileges()) 
+          pPrivileges.put(uname, privs);
+        else
+          pPrivileges.remove(uname);
+      }
+      else {
+        unknown.add(uname);
+        pPrivileges.remove(uname);
+      }
     }
 
     writePrivileges();
+
+    if(!unknown.isEmpty()) {
+      StringBuilder buf = new StringBuilder();
+      buf.append
+        ("While modifying administrative privileges, the following user names where " +
+         "specified that where not known as users of Pipeline:\n\n"); 
+      for(String uname : unknown) 
+        buf.append("  " + uname + "\n");
+      buf.append
+        ("\n" + 
+         "Changes in privileges for these specific users were ignored, however changes " + 
+         "to privileges for all other users specified were performed successfully.");
+      throw new PipelineException(buf.toString());
+    }
   }
   
 
