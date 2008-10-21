@@ -802,6 +802,20 @@ AC_MSG_RESULT([$PL_PLUGIN_PORT])
 
 
 
+AC_MSG_CHECKING([Pipeline Plugin Local Vendor])
+
+AC_SUBST(PL_LOCAL_VENDOR)
+PL_LOCAL_VENDOR=`crypto_lookup LocalVendor`
+
+if test "$PL_LOCAL_VENDOR" == "null"
+then
+  AC_MSG_ERROR([customer profile was incomplete.])
+fi 
+
+AC_MSG_RESULT([$PL_LOCAL_VENDOR])
+
+
+
 dnl ------------------------------------------------------------------------------------------
 
 AC_MSG_CHECKING([Pipeline User])

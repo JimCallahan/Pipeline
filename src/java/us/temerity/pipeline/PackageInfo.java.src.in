@@ -1,4 +1,4 @@
-// $Id: PackageInfo.java.src.in,v 1.47 2008/10/19 17:06:29 jim Exp $
+// $Id: PackageInfo.java.src.in,v 1.48 2008/10/21 00:52:42 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -1034,6 +1034,15 @@ class PackageInfo
    */
   @Deprecated
   public static final File sPluginsDir = new File("@ROOT_INST_DIR@/plugins");
+
+
+  /** 
+   * The default local plugin vendor. <P>
+   *
+   * Set by the LocalVendor customer profile entry.
+   */
+  public static final String sLocalVendor = "@PL_LOCAL_VENDOR@"; 
+
 
 
   /*----------------------------------------------------------------------------------------*/
