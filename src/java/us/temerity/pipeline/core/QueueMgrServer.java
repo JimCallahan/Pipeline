@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.54 2008/07/03 19:50:01 jesse Exp $
+// $Id: QueueMgrServer.java,v 1.55 2008/10/21 00:54:11 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -950,7 +950,7 @@ class QueueMgrServer
 	InetAddress addr = pSocket.getInetAddress(); 
 	String host = "???";
 	if(addr != null) 
-	  host = addr.getCanonicalHostName();
+	  host = addr.getCanonicalHostName().toLowerCase(Locale.ENGLISH);
 	
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
@@ -961,7 +961,7 @@ class QueueMgrServer
 	InetAddress addr = pSocket.getInetAddress(); 
 	String host = "???";
 	if(addr != null) 
-	  host = addr.getCanonicalHostName();
+	  host = addr.getCanonicalHostName().toLowerCase(Locale.ENGLISH);
 
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
@@ -973,7 +973,7 @@ class QueueMgrServer
 	InetAddress addr = pSocket.getInetAddress(); 
 	String host = "???";
 	if(addr != null) 
-	  host = addr.getCanonicalHostName();
+	  host = addr.getCanonicalHostName().toLowerCase(Locale.ENGLISH);
 
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Severe,

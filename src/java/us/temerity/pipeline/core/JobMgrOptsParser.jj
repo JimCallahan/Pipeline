@@ -377,7 +377,7 @@ void StandardLogDir() :
 	  while(addrs.hasMoreElements()) {
 	    InetAddress addr = (InetAddress) addrs.nextElement();
 	    if((addr instanceof Inet4Address) && !addr.isLoopbackAddress()) 
-	      hostnames.add(addr.getCanonicalHostName());
+	      hostnames.add(addr.getCanonicalHostName().toLowerCase(Locale.ENGLISH));
 	  }
 	}
 	
@@ -412,7 +412,7 @@ void StandardLogFile() :
 	  while(addrs.hasMoreElements()) {
 	    InetAddress addr = (InetAddress) addrs.nextElement();
 	    if((addr instanceof Inet4Address) && !addr.isLoopbackAddress()) 
-	      hostnames.add(addr.getCanonicalHostName());
+	      hostnames.add(addr.getCanonicalHostName().toLowerCase(Locale.ENGLISH));
 	  }
 	}
 	

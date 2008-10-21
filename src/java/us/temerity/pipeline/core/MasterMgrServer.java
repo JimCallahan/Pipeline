@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.87 2008/09/29 19:02:17 jim Exp $
+// $Id: MasterMgrServer.java,v 1.88 2008/10/21 00:54:11 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1461,7 +1461,7 @@ class MasterMgrServer
                   TaskTimer timer = new TaskTimer(); 
                   try {
                     InetAddress addr = pSocket.getInetAddress();
-                    String hostname = addr.getCanonicalHostName();
+                    String hostname = addr.getCanonicalHostName().toLowerCase(Locale.ENGLISH);
 
                     EditedNodeEvent event = req.getEvent(hostname);
                     Long editID = pMasterMgr.editingStarted(timer, event); 
@@ -1754,7 +1754,7 @@ class MasterMgrServer
 	InetAddress addr = pSocket.getInetAddress(); 
 	String host = "???";
 	if(addr != null) 
-	  host = addr.getCanonicalHostName();
+	  host = addr.getCanonicalHostName().toLowerCase(Locale.ENGLISH);
 	
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
@@ -1765,7 +1765,7 @@ class MasterMgrServer
 	InetAddress addr = pSocket.getInetAddress(); 
 	String host = "???";
 	if(addr != null) 
-	  host = addr.getCanonicalHostName();
+	  host = addr.getCanonicalHostName().toLowerCase(Locale.ENGLISH);
 
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
@@ -1777,7 +1777,7 @@ class MasterMgrServer
 	InetAddress addr = pSocket.getInetAddress(); 
 	String host = "???";
 	if(addr != null) 
-	  host = addr.getCanonicalHostName();
+	  host = addr.getCanonicalHostName().toLowerCase(Locale.ENGLISH);
 
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Severe,

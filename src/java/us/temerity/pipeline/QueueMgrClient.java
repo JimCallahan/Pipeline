@@ -1,4 +1,4 @@
-// $Id: QueueMgrClient.java,v 1.46 2008/07/03 19:50:01 jesse Exp $
+// $Id: QueueMgrClient.java,v 1.47 2008/10/21 00:54:11 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -45,7 +45,7 @@ class QueueMgrClient
 	while(addrs.hasMoreElements()) {
 	  InetAddress addr = (InetAddress) addrs.nextElement();
 	  if((addr instanceof Inet4Address) && !addr.isLoopbackAddress()) 
-	    pLocalHostnames.add(addr.getCanonicalHostName());
+	    pLocalHostnames.add(addr.getCanonicalHostName().toLowerCase(Locale.ENGLISH));
 	}
       }
     }

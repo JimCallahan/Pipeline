@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.106 2008/07/08 17:02:28 jesse Exp $
+// $Id: QueueMgr.java,v 1.107 2008/10/21 00:54:11 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2713,6 +2713,7 @@ class QueueMgr
 	
 	try {
 	  hname = InetAddress.getByName(hname).getCanonicalHostName();
+          hname = hname.toLowerCase(Locale.ENGLISH);
 	}
 	catch(UnknownHostException ex) {
 	  throw new PipelineException

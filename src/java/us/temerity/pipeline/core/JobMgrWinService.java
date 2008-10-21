@@ -1,4 +1,4 @@
-// $Id: JobMgrWinService.java,v 1.4 2007/04/13 10:37:53 jim Exp $
+// $Id: JobMgrWinService.java,v 1.5 2008/10/21 00:54:11 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -116,7 +116,7 @@ class JobMgrWinService
 	    while(addrs.hasMoreElements()) {
 	      InetAddress addr = (InetAddress) addrs.nextElement();
 	      if((addr instanceof Inet4Address) && !addr.isLoopbackAddress()) 
-		hostnames.add(addr.getCanonicalHostName());
+		hostnames.add(addr.getCanonicalHostName().toLowerCase(Locale.ENGLISH));
 	    }
 	  }
 	  

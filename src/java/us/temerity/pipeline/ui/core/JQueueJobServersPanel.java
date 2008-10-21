@@ -1,4 +1,4 @@
-// $Id: JQueueJobServersPanel.java,v 1.12 2007/12/05 04:51:31 jesse Exp $
+// $Id: JQueueJobServersPanel.java,v 1.13 2008/10/21 00:54:11 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -73,7 +73,7 @@ class JQueueJobServersPanel
 	while(addrs.hasMoreElements()) {
 	  InetAddress addr = (InetAddress) addrs.nextElement();
 	  if((addr instanceof Inet4Address) && !addr.isLoopbackAddress()) 
-	    pLocalHostnames.add(addr.getCanonicalHostName());
+	    pLocalHostnames.add(addr.getCanonicalHostName().toLowerCase(Locale.ENGLISH));
 	}
       }
     }
