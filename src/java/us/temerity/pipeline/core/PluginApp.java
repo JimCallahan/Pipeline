@@ -1,4 +1,4 @@
-// $Id: PluginApp.java,v 1.15 2008/03/04 19:14:09 jim Exp $
+// $Id: PluginApp.java,v 1.16 2008/10/22 18:12:30 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -318,7 +318,8 @@ class PluginApp
        "  plplugin --license\n" + 
        "\n" + 
        "OPTIONS:\n" +
-       "  [--log-file=...][--log-backups=...][--log=...]\n" +
+       "  [--log-file=...] [--log-backups=...] [--log=...]\n" +
+       "  [--external] [--rename]\n" + 
        "\n" + 
        "\n" +  
        "Use \"plplugin --html-help\" to browse the full documentation.\n");

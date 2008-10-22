@@ -1,4 +1,4 @@
-// $Id: PluginMgrControlClient.java,v 1.6 2008/02/26 09:01:59 jim Exp $
+// $Id: PluginMgrControlClient.java,v 1.7 2008/10/22 18:12:30 jim Exp $
   
 package us.temerity.pipeline.core;
 
@@ -82,6 +82,12 @@ class PluginMgrControlClient
    * @param pluginfile
    *   The plugin class or JAR file.
    * 
+   * @param external
+   *   Whether to ignore the Local Vendor check.
+   *
+   * @param rename
+   *   Whether to ignore the Java class/package aliasing check.
+   * 
    * @throws PipelineException
    *   If unable to install the plugin.
    */ 
@@ -89,7 +95,9 @@ class PluginMgrControlClient
   installPlugin
   (
    File classdir, 
-   File pluginfile
+   File pluginfile, 
+   boolean external, 
+   boolean rename
   ) 
     throws PipelineException 
   {
@@ -169,7 +177,7 @@ class PluginMgrControlClient
       }
     }
     
-    /* load, instantiate and validate the plugin class or JAR file */ 
+    /* load the Java byte-code from the supplied class or JAR file */ 
     {
       TreeMap<String,byte[]> contents = new TreeMap<String,byte[]>(); 
       File cfile = cpath.toFile(); 
@@ -231,7 +239,8 @@ class PluginMgrControlClient
 	contents.put(cname, bytes);
       }
       
-      PluginInstallReq req = new PluginInstallReq(pluginfile, cname, pkgID, contents);
+      PluginInstallReq req = 
+        new PluginInstallReq(pluginfile, cname, pkgID, contents, external, rename);
       
       Object obj = performTransaction(PluginRequest.Install, req);
       handleSimpleResponse(obj);    

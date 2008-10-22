@@ -62,14 +62,25 @@ plugin base classes: <a
  href="../javadoc/us/temerity/pipeline/BaseComparator.html"><span
  style="font-weight: bold;">BaseComparator</span></a>, <a
  href="../javadoc/us/temerity/pipeline/BaseTool.html"><span
- style="font-weight: bold;">BaseTool</span></a> or <a
+ style="font-weight: bold;">BaseTool</span></a>, <a
  href="../javadoc/us/temerity/pipeline/BaseArchiver.html"><span
- style="font-weight: bold;">BaseArchiver</span></a>.&nbsp; Each of
+ style="font-weight: bold;">BaseArchiver</span></a>, <a
+ href="../javadoc/us/temerity/pipeline/BaseMasterExt.html"><span
+ style="font-weight: bold;">BaseMasterExt</span></a>, <a
+ href="../javadoc/us/temerity/pipeline/BaseQueueExt.html"><span
+ style="font-weight: bold;">BaseQueueExt</span></a>, <a
+ href="../javadoc/us/temerity/pipeline/BaseAnnotation.html"><span
+ style="font-weight: bold;">BaseAnnotation</span></a>, <a
+ href="../javadoc/us/temerity/pipeline/BaseKeyChooser.html"><span
+ style="font-weight: bold;">BaseKeyChooser</span></a> or <a
+ href="../javadoc/us/temerity/pipeline/BaseKeyChooser.html"><span
+ style="font-weight: bold;">BaseBuilderCollection</span></a>.&nbsp;
+Each of
 these classes has a protected constructor which should be called from
 your plugin's single no-arg constructor with constant values for the
 following four parameters:<br>
 </blockquote>
-<div style="margin-left: 40px;"><code>String name</code><br>
+<div style="margin-left: 40px;"><big><code>String name</code></big><br>
 </div>
 <div style="margin-left: 40px;"><br>
 <div style="margin-left: 40px;">The unique name of the plugin.&nbsp;
@@ -80,7 +91,7 @@ scripts and command line arguments, its advisable that it does not
 contain whitespace or other non-printable characters.<br>
 </div>
 <br>
-<code>VersionID vid</code><br>
+<big><code>VersionID vid</code></big><br>
 <br>
 <div style="margin-left: 40px;">The plugin revision number.&nbsp;
 Pipeline allows multiple versions of the same plugin to be used
@@ -88,7 +99,7 @@ simultaneously and this revision number is used to distinguish between
 the various versions.&nbsp; <br>
 </div>
 <br>
-<code>String vendor</code><br>
+<big><code>String vendor</code></big><br>
 <div style="margin-left: 40px;"><br>
 The short name of the organization which created the
 plugin.&nbsp;&nbsp; This name will also be displayed in the UI and
@@ -100,7 +111,7 @@ sure your choice is unique.&nbsp; In particular, you should NEVER use
 the "Temerity" vendor name for your plugins.<br>
 </div>
 <br>
-<code>String desc</code><br>
+<big><code>String desc</code></big><br>
 <br>
 <div style="margin-left: 40px;">A short description of the
 plugin.&nbsp; This should be a short phrase suitable for use in tool
@@ -204,9 +215,10 @@ manner.&nbsp; <br>
   <br>
 To facilitate testing of new plugin versions, the API provides a way to
 mark plugin versions as being under active development by calling
-the&nbsp; <code><a
+the <big><code><a
  href="../javadoc/us/temerity/pipeline/BasePlugin.html#underDevelopment"><span
- style="font-weight: bold;">underDevelopment</span></a></code> method
+ style="font-weight: bold;">underDevelopment</span></a></code></big>
+method
 in the plugin's constructor.&nbsp; This lets Pipeline know that the
 plugin might change substantially and that its use should be restricted
 when changes could cause problems.&nbsp; In particular, nodes who's
@@ -438,8 +450,10 @@ installed plugins and exits.<br>
 </div>
 <br>
 <div style="margin-left: 40px;"><span style="font-weight: bold;"><a
- name="--install"></a>--install</span><i> plugin-file1 </i>[<i>plugin-file2
-...</i>]<br>
+ name="--install"></a></span>[<a
+ href="plplugin.src.html.in#Install_Options">install-options</a>] <span
+ style="font-weight: bold;">--install</span><i> plugin-file1 </i>[<i>plugin-file2
+...</i>]&nbsp;<br>
 <br>
 <div style="margin-left: 40px;">Installs one or more compiled plugins (<span
  style="font-style: italic;">plugin-file</span>) contained in the
@@ -459,8 +473,64 @@ class and JAR file form installed for a given plugin version.<br>
 <br>
 <span style="font-weight: normal;">This command requires Developer
 privileges (see <a style="font-weight: bold;"
- href="../javadoc/us/temerity/pipeline/Privileges.html#isDeveloper">Privileges</a>).</span><span
- style="font-weight: normal;"></span><br>
+ href="../javadoc/us/temerity/pipeline/Privileges.html#isDeveloper">Privileges</a>).<br>
+</span></div>
+<span style="font-weight: normal;"></span><span
+ style="font-weight: bold;"></span><br>
+<span style="font-weight: bold;"><a name="Install_Options"></a>Install
+Options</span><br>
+<br>
+A plugin is identified to Pipeline by the combination its Name,
+VersionID and Vendor.&nbsp; This information is specified by the plugin
+as
+part of its constructor and accessors are provided for this information
+in BasePlugin.&nbsp; When you attempt to install a plugin, there is no
+requirement that the name of the plugin Java class and package have any
+relationship with the Name, Version and Vendor of the
+plugin.&nbsp;&nbsp; <br>
+<br>
+One consequence of this is that it is possible to accidentally copy the
+source code of an existing class as a starting point for a new class
+and forget to change the original Name, Version and Vendor.&nbsp; If
+you install this new plugin and the original plugin is still under
+development, the new plugin will overwrite the existing one instead of
+adding a new kind of plugin to Pipeline!&nbsp; <br>
+<br>
+In order to reduce the possibility of mistakes of this kind, additional
+checks have been added to the plugin installation procedure which
+should catch most of these type of accidents.&nbsp; The following
+options allow expert users to selectively disable these additional
+checks in cases where it is required.&nbsp;&nbsp; These options are
+only valid when given before the <span style="font-weight: bold;">--install</span>
+option on the command line: <br>
+<br>
+<span style="font-weight: bold;"><a name="--external"></a>--external<br>
+</span>
+<div style="margin-left: 40px;"><br>
+A default <a href="plconfig.html#--local-vendor"><span
+ style="font-weight: bold;">Local Vendor</span></a> has been added to
+the site profile created with <a href="plconfig.html"><span
+ style="font-weight: bold;">plconfig</span></a>(1)
+for a studio.&nbsp; If you attempt to install a plugin who's Vendor
+does not
+match this default Local Vendor, an error will be generated and the
+plugin will not be installed.&nbsp; If you wish to install plugins
+created by another Vendor, this option will disable the requirement
+that it match the Locall Vendor.<br>
+</div>
+<span style="font-weight: bold;"><br>
+<a name="--rename"></a>--rename</span><br>
+<br>
+<div style="margin-left: 40px;">When installing a plugin which will
+replace a currently installed and under development plugin, the Java
+class and package names of the existing and new plugin will be
+compared.&nbsp; If they are not identical, the new plugin will not be
+installed and an error will be generated.&nbsp; This check is to
+prevent the accidental overwriting of an entirely different plugin due
+to the new plugin specifying incorrect Name, VersionID and Vendor
+information.&nbsp; However, it is occasonally necessary to be able to
+override this check and this option provides the means to do so.<br>
+<br>
 </div>
 </div>
 <h3><a name="See_Also"></a>See Also</h3>

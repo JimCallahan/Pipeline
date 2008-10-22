@@ -16,7 +16,7 @@
 
 install: $(TARGET)
 	(cd $(CLASS_ROOT); \
-         $(PLPLUGIN) --install $(JAVA_PACKAGE)/$(TARGET))
+         $(PLPLUGIN) @PLPLUGIN_EXTERNAL@ --install $(JAVA_PACKAGE)/$(TARGET))
 
 all: $(TARGET)
 

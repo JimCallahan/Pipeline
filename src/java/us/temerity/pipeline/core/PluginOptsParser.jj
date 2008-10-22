@@ -90,6 +90,16 @@ PluginOptsParser
   private boolean  pList; 
 
   /**
+   * Whether to ignore the Local Vendor check.
+   */ 
+  private boolean  pExternal;
+
+  /**
+   * Whether to ignore the Java class/package aliasing check.
+   */ 
+  private boolean  pRename;
+
+  /**
    * Whether to install the given plugins. 
    */ 
   private boolean  pInstall;
@@ -122,6 +132,8 @@ TOKEN :
 
   /* action options */	
 | <LIST:         "--list">     
+| <EXTERNAL:     "--external">    
+| <RENAME:       "--rename">    
 | <INSTALL:      "--install">    
 
   /* plugin files */
@@ -275,7 +287,7 @@ CommandLine()
             LogMgr.getInstance().flush();
 	  
             try {
-              client.installPlugin(plugindir, pluginfile);
+              client.installPlugin(plugindir, pluginfile, pExternal, pRename);
             }
             catch(PipelineException ex) {
               LogMgr.getInstance().log
@@ -301,7 +313,7 @@ Commands()
 {
   (GlobalOpts() AE())* 
     ((List()) | 
-     (Install() (PluginFile() AE())+))
+     ((External() | Rename())* Install() (PluginFile() AE())+))
   { 
     pHasCommands = true;
   }
@@ -317,6 +329,28 @@ List() :
     pList = true;
   }
 }
+
+
+void
+External() :
+{}
+{
+  <EXTERNAL> AE() 
+  { 
+    pExternal = true;
+  }
+}
+
+void
+Rename() :
+{}
+{
+  <RENAME> AE() 
+  { 
+    pRename = true;
+  }
+}
+
 
 void
 Install() :

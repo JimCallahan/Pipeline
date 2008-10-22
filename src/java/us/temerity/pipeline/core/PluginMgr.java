@@ -1,4 +1,4 @@
-// $Id: PluginMgr.java,v 1.25 2008/08/19 19:44:34 jim Exp $
+// $Id: PluginMgr.java,v 1.26 2008/10/22 18:12:30 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -211,7 +211,8 @@ class PluginMgr
 
       /* load the class and cache the class bytes */ 
       pLoadCycleID++;
-      loadPluginHelper(req.getClassFile(), cname, req.getVersionID(), contents); 
+      loadPluginHelper(req.getClassFile(), cname, req.getVersionID(), contents, 
+                       req.getExternal(), req.getRename()); 
 
       /* save the plugin class bytes in a file */ 
       Path path = null; 
@@ -502,7 +503,7 @@ class PluginMgr
 	contents.put(cname, bytes);
       }
 
-      loadPluginHelper(pluginfile, cname, pkgID, contents);
+      loadPluginHelper(pluginfile, cname, pkgID, contents, true, true);
     }
   }
     
@@ -521,6 +522,12 @@ class PluginMgr
    * @param contents
    *   The raw plugin class bytes indexed by class name.
    * 
+   * @param external
+   *   Whether to ignore the Local Vendor check.
+   *
+   * @param rename
+   *   Whether to ignore the Java class/package aliasing check.
+   * 
    * @throws PipelineException
    *   If unable to load the plugin.
    */ 
@@ -530,7 +537,9 @@ class PluginMgr
    File pluginfile, 
    String cname, 
    VersionID pkgID, 
-   TreeMap<String,byte[]> contents
+   TreeMap<String,byte[]> contents,
+   boolean external, 
+   boolean rename
   ) 
     throws PipelineException
   {
@@ -570,7 +579,7 @@ class PluginMgr
 
       if(!plg.getVersionID().equals(pkgID)) 
 	throw new PipelineException
-	  ("The revision number (" + plg.getVersionID() + ") of the instantiated " + 
+	  ("The revision number (v" + plg.getVersionID() + ") of the instantiated " + 
 	   "plugin class (" + cname + ") does not match the revision number " + 
 	   "(" + pkgID + ") derived from the name of the directory containing the " + 
 	   "class file (" + pluginfile + ")!");
@@ -601,9 +610,27 @@ class PluginMgr
 	pSerialVersionUIDs.put(serialID, cname); 
       }
 
-      if(plg instanceof BaseEditor) 
+      if(!external && !plg.getVendor().equals(PackageInfo.sLocalVendor)) 
+        throw new PipelineException
+          ("The Vendor of the plugin (" + cname + ") does not match the default Local " + 
+           "Vendor (" + PackageInfo.sLocalVendor + ") for this site!  This may " + 
+           "be due to copying the source code from another plugin and forgetting to " + 
+           "update the Name, VersionID and Vendor properties of the new plugin.\n" + 
+           "\n" + 
+           "You can use the --external option to plplugin(1) if you want to install " + 
+           "plugins from other vendors and override this check."); 
+
+
+      if(plg instanceof BaseEditor) { 
+        if(!rename) 
+          checkForPluginAliasing(pEditors, cname, plg); 
+
 	pEditors.addPlugin(plg, cname, contents);
+      }
       else if(plg instanceof BaseAction) {
+        if(!rename) 
+          checkForPluginAliasing(pActions, cname, plg); 
+
         BaseAction action = (BaseAction) plg;
         if(action.supportsSourceParams() && (action.getInitialSourceParams() == null))
           throw new PipelineException
@@ -612,11 +639,22 @@ class PluginMgr
 
 	pActions.addPlugin(plg, cname, contents);
       }
-      else if(plg instanceof BaseComparator) 
+      else if(plg instanceof BaseComparator) {
+        if(!rename) 
+          checkForPluginAliasing(pComparators, cname, plg); 
+
 	pComparators.addPlugin(plg, cname, contents);
-      else if(plg instanceof BaseTool) 
+      }
+      else if(plg instanceof BaseTool) {
+        if(!rename) 
+          checkForPluginAliasing(pTools, cname, plg); 
+
         pTools.addPlugin(plg, cname, contents);
+      }
       else if(plg instanceof BaseAnnotation) {
+        if(!rename) 
+          checkForPluginAliasing(pAnnotations, cname, plg); 
+
 	pAnnotations.addPlugin(plg, cname, contents);
 	BaseAnnotation annot = (BaseAnnotation) plg;
 	AnnotationPermissions permissions = 
@@ -626,15 +664,34 @@ class PluginMgr
 	pAnnotationPermissions.put
 	  (plg.getVendor(), plg.getName(), plg.getVersionID(), permissions);
       }
-      else if(plg instanceof BaseArchiver) 
+      else if(plg instanceof BaseArchiver) {
+        if(!rename) 
+          checkForPluginAliasing(pArchivers, cname, plg); 
+
 	pArchivers.addPlugin(plg, cname, contents);
-      else if(plg instanceof BaseMasterExt) 
+      }
+      else if(plg instanceof BaseMasterExt) {
+        if(!rename) 
+          checkForPluginAliasing(pMasterExts, cname, plg); 
+
 	pMasterExts.addPlugin(plg, cname, contents);
-      else if(plg instanceof BaseQueueExt) 
+      }
+      else if(plg instanceof BaseQueueExt) {
+        if(!rename) 
+          checkForPluginAliasing(pQueueExts, cname, plg); 
+
 	pQueueExts.addPlugin(plg, cname, contents);
-      else if(plg instanceof BaseKeyChooser)
+      }
+      else if(plg instanceof BaseKeyChooser) {
+        if(!rename) 
+          checkForPluginAliasing(pKeyChoosers, cname, plg); 
+
         pKeyChoosers.addPlugin(plg, cname, contents);
+      }
       else if(plg instanceof BaseBuilderCollection) {
+        if(!rename) 
+          checkForPluginAliasing(pBuilderCollection, cname, plg); 
+        
         BaseBuilderCollection collection = (BaseBuilderCollection) plg;
 
         /* if we can contact the MasterMgr and QueueMgr, 
@@ -714,6 +771,34 @@ class PluginMgr
     }
   }
 
+  /**
+   * Check the Java class of any existing plugin to make sure it matches the new one. 
+   */ 
+  private void 
+  checkForPluginAliasing
+  (
+   PluginCache cache, 
+   String cname, 
+   BasePlugin plg
+  )
+    throws PipelineException
+  {
+    Plugin plugin = cache.get(plg.getVendor(), plg.getName(), plg.getVersionID()); 
+    if((plugin != null) && !plugin.getClassName().equals(cname)) {
+      throw new PipelineException
+        ("There already exists a plugin identified by the same Name, VersionID and Vendor " + 
+         "(" + plg.getName() + ", v" + plg.getVersionID() + ", " + plg.getVendor() + ") " +
+         "as the plugin being installed, but it is implemented with a different Java class! " + 
+         "The existing plugin's Java class is (" + plugin.getClassName() + ") while the " + 
+         "new plugin is implemented by the (" + cname + ") Java class. This may " + 
+         "be due to copying the source code from another plugin and forgetting to " + 
+         "update the Name, VersionID and Vendor properties of the new plugin.\n" +
+         "\n" + 
+         "You can use the --rename option to plplugin(1) if you need to install " + 
+         "plugins with different Java class names for the same plugin identifier.");
+    }
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -784,7 +869,7 @@ class PluginMgr
   /*----------------------------------------------------------------------------------------*/
  
   /**
-   * The loaded plugins indexed by plugin name and revision number.
+   * The loaded plugins indexed by plugin vendor, name and revision number.
    */
   private 
   class PluginCache
@@ -876,8 +961,9 @@ class PluginMgr
       Plugin plugin = get(plg.getVendor(), plg.getName(), plg.getVersionID());
       if((plugin != null) && (!plugin.isUnderDevelopment())) 
         throw new PipelineException 
-          ("Cannot install the plugin (" + cname + ") because a previously installed " + 
-           "version of this plugin exists which is no longer under development!");
+          ("Cannot install the plugin class (" + cname + ") because a previously installed " + 
+           "version of the plugin (" + plg.getName() + ", v" + plg.getVersionID() + ", " + 
+           plg.getVendor() + ") exists which is no longer under development!");
       
       put(plg.getVendor(), plg.getName(), plg.getVersionID(),
           new Plugin(pLoadCycleID, cname, 

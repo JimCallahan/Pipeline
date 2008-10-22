@@ -9,7 +9,7 @@ AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
 AC_CONFIG_HEADERS([config.h])
-AM_INIT_AUTOMAKE(Pipeline, 2.4.3b13)
+AM_INIT_AUTOMAKE(Pipeline, 2.4.3)
                            
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
@@ -314,6 +314,13 @@ AC_ARG_ENABLE([pllocal-all],
 AM_CONDITIONAL(PL_LOCAL, test x$pllocal = xtrue -o x$pllocal_all = xtrue )
 AM_CONDITIONAL(PL_LOCAL_ALL, test x$pllocal_all = xtrue)
 
+AC_SUBST(PLPLUGIN_EXTERNAL)
+PLPLUGIN_EXTERNAL=
+
+if test x$pllocal_all = xtrue
+then 
+  PLPLUGIN_EXTERNAL=--external
+fi 
 
 dnl ------------------------------------------------------------------------------------------
 

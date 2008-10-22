@@ -1,4 +1,4 @@
-// $Id: PluginInstallReq.java,v 1.3 2006/08/20 05:46:51 jim Exp $
+// $Id: PluginInstallReq.java,v 1.4 2008/10/22 18:12:31 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -36,6 +36,12 @@ class PluginInstallReq
    * 
    * @param contents
    *   The raw plugin class bytes indexed by class name.
+   * 
+   * @param external
+   *   Whether to ignore the Local Vendor check.
+   *
+   * @param rename
+   *   Whether to ignore the Java class/package aliasing check.
    */
   public
   PluginInstallReq
@@ -43,7 +49,9 @@ class PluginInstallReq
    File classfile, 
    String cname, 
    VersionID pkgID, 
-   TreeMap<String,byte[]> contents
+   TreeMap<String,byte[]> contents, 
+   boolean external, 
+   boolean rename
   )
   { 
     super();
@@ -52,6 +60,8 @@ class PluginInstallReq
     pClassName = cname;
     pVersionID = pkgID; 
     pContents  = contents; 
+    pExternal  = external;
+    pRename    = rename; 
   }
 
 
@@ -96,6 +106,24 @@ class PluginInstallReq
     return pContents; 
   }
 
+  /**
+   * Whether to ignore the Local Vendor check.
+   */
+  public boolean 
+  getExternal() 
+  {
+    return pExternal; 
+  }
+
+  /**
+   * Whether to ignore the Java class/package aliasing check.
+   */
+  public boolean 
+  getRename() 
+  {
+    return pRename; 
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -129,6 +157,16 @@ class PluginInstallReq
    * The raw class bytes indexed by class name.
    */ 
   private TreeMap<String,byte[]>  pContents; 
+
+  /**
+   * Whether to ignore the Local Vendor check.
+   */
+  private boolean pExternal; 
+
+  /**
+   * Whether to ignore the Java class/package aliasing check.
+   */
+  private boolean pRename;
 
 }
   
