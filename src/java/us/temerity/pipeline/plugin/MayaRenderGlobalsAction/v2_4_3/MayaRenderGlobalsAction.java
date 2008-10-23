@@ -1,4 +1,4 @@
-// $Id: MayaRenderGlobalsAction.java,v 1.4 2008/09/14 22:14:42 jim Exp $
+// $Id: MayaRenderGlobalsAction.java,v 1.5 2008/10/23 19:39:35 jim Exp $
 
 package us.temerity.pipeline.plugin.MayaRenderGlobalsAction.v2_4_3;
 
@@ -1574,13 +1574,13 @@ class MayaRenderGlobalsAction
     File outFile, 
     File errFile 
   )
-  throws PipelineException
+    throws PipelineException
   { 
     /* target MEL script */ 
     Path target = getPrimaryTargetPath(agenda, "mel", "MEL script");
 
-    /* resolution MEL script */ 
-    Path resSourcePath = null;
+    /* resolution MEL */ 
+    String resSourceMel = null;
     {
       String sname = getSingleStringParamValue(aResolutionSource); 
       if(sname != null) {
@@ -1591,8 +1591,28 @@ class MayaRenderGlobalsAction
              "source nodes!");
 
         NodeID snodeID = new NodeID(agenda.getNodeID(), sname);
-        resSourcePath = new Path(PackageInfo.sProdPath, 
-          new Path(snodeID.getWorkingParent(), fseq.getPath(0)));
+        Path spath = new Path(PackageInfo.sProdPath, 
+                              new Path(snodeID.getWorkingParent(), fseq.getPath(0)));
+
+        try {
+          FileReader in = new FileReader(spath.toFile());
+          StringBuilder buf = new StringBuilder();
+          char cs[] = new char[1024];
+          while(true) {
+            int len = in.read(cs);
+            if(len == -1) 
+              break;
+            
+            buf.append(cs, 0, len); 
+          }
+          resSourceMel = buf.toString();
+          in.close();
+        }
+        catch(IOException ex) {
+          throw new PipelineException
+            ("Unable to read the contents of the " + aResolutionSource + " MEL script " + 
+             "file (" + spath.toOsString() + ")!");
+        }
       }
     }
 
@@ -1609,9 +1629,8 @@ class MayaRenderGlobalsAction
       }
 
       /* image resolution */ 
-      if(resSourcePath != null) {
-        out.write("// IMAGE RESOLUTION\n" + 
-                  "source \"" + resSourcePath + "\";\n\n");
+      if(resSourceMel != null) {
+        out.write(resSourceMel + "\n");
       }
       else {
         int width    = getSingleIntegerParamValue(aImageWidth,  new Range(1, null)); 
@@ -1670,7 +1689,8 @@ class MayaRenderGlobalsAction
            "setAttr \"defaultRenderQuality.shadingSamples\" " + samples + ";\n" + 
            "setAttr \"defaultRenderQuality.maxShadingSamples\" " + msamples + ";\n" + 
            "setAttr \"defaultRenderQuality.visibilitySamples\" " + visibilitySamples + ";\n" + 
-           "setAttr \"defaultRenderQuality.maxVisibilitySamples\" " + maxVisibilitySamples + ";\n" + 
+           "setAttr \"defaultRenderQuality.maxVisibilitySamples\" " + 
+             maxVisibilitySamples + ";\n" + 
            "setAttr \"defaultRenderQuality.particleSamples\" " + psamples + ";\n\n");
       }
 
@@ -1802,7 +1822,8 @@ class MayaRenderGlobalsAction
               ("The Field Extension selection was illegal!"); 
           }
 
-          out.write("setAttr \"defaultRenderGlobals.fieldExtControl\" " + fieldExtControl + ";\n");
+          out.write("setAttr \"defaultRenderGlobals.fieldExtControl\" " + 
+                      fieldExtControl + ";\n");
 
           if (fieldExtControl == 2) {
             String ofield = getSingleStringParamValue(aOddField);
@@ -1906,10 +1927,13 @@ class MayaRenderGlobalsAction
            "setAttr \"defaultRenderGlobals.postFogBlur\" " + postFogBlur + ";\n" +
            "setAttr \"defaultRenderGlobals.ignoreFilmGate\" " + ignoreFilmGate + ";\n" +
            "setAttr \"defaultRenderGlobals.enableDepthMaps\" " + enableDepthMaps + ";\n" +
-           "setAttr \"defaultRenderGlobals.shadowsObeyShadowLinking\" " + shadowsObeyShadowLinking + ";\n" +
-           "setAttr \"defaultRenderGlobals.shadowsObeyLightLinking\" " + shadowsObeyLightLinking + ";\n" +
+           "setAttr \"defaultRenderGlobals.shadowsObeyShadowLinking\" " + 
+             shadowsObeyShadowLinking + ";\n" +
+           "setAttr \"defaultRenderGlobals.shadowsObeyLightLinking\" " + 
+             shadowsObeyLightLinking + ";\n" +
            "setAttr \"defaultRenderGlobals.gammaCorrection\" " + gamma + ";\n" +
-           "setAttr \"defaultRenderGlobals.clipFinalShadedColor\" " + clipFinalShadedColor + ";\n" +
+           "setAttr \"defaultRenderGlobals.clipFinalShadedColor\" " + 
+             clipFinalShadedColor + ";\n" +
            "setAttr \"defaultRenderGlobals.composite\" " + composite + ";\n" +
            "setAttr \"defaultRenderGlobals.jitterFinalColor\" " + jitterFinalColor + ";\n");
 
@@ -1921,7 +1945,8 @@ class MayaRenderGlobalsAction
              "\tconnectAttr -f " + envFog +".message defaultRenderGlobals.fogGeometry;\n");
 
         if (composite)
-          out.write("setAttr \"defaultRenderGlobals.compositeThreshold\" " + compositeThreshold + ";\n");
+          out.write("setAttr \"defaultRenderGlobals.compositeThreshold\" " + 
+                      compositeThreshold + ";\n");
 
         out.write("\n");
       }
@@ -1932,26 +1957,25 @@ class MayaRenderGlobalsAction
         Range leafPrimRange = new Range(50, 5000);
         Range subdivRange   = new Range(0.01, 1.0);
         
-        boolean useFileCache               = getSingleBooleanParamValue(aUseFileCache);
-        boolean optimizeInstances          = getSingleBooleanParamValue(aOptimizeInstances);
-        boolean reuseTessellations         = getSingleBooleanParamValue(aReuseTessellations);
-        boolean useDisplacementBoundingBox = getSingleBooleanParamValue(aUseDisplacementBoundingBox);
-        int recursionDepth                 = getSingleIntegerParamValue(aRecursionDepth,
-                                                                        recurRange);
-        int leafPrimitives                 = getSingleIntegerParamValue(aLeafPrimitives,
-                                                                        leafPrimRange);
-        double subdivisionPower            = getSingleDoubleParamValue(aSubdivisionPower,
-                                                                       subdivRange);
+        boolean useFileCache        = getSingleBooleanParamValue(aUseFileCache);
+        boolean optimizeInstances   = getSingleBooleanParamValue(aOptimizeInstances);
+        boolean reuseTessellations  = getSingleBooleanParamValue(aReuseTessellations);
+        boolean useDisplacementBBox = getSingleBooleanParamValue(aUseDisplacementBoundingBox);
+        int recursionDepth      = getSingleIntegerParamValue(aRecursionDepth, recurRange);
+        int leafPrimitives      = getSingleIntegerParamValue(aLeafPrimitives, leafPrimRange);
+        double subdivisionPower = getSingleDoubleParamValue(aSubdivisionPower, subdivRange);
 
         out.write
-        ("// MEMORY AND PERFORMANCE OPTIONS \n" +
-         "setAttr \"defaultRenderGlobals.useFileCache\" " + useFileCache + ";\n" +
-         "setAttr \"defaultRenderGlobals.optimizeInstances\" " + optimizeInstances + ";\n" +
-         "setAttr \"defaultRenderGlobals.reuseTessellations\" " + reuseTessellations + ";\n" +
-         "setAttr \"defaultRenderGlobals.useDisplacementBoundingBox\" " + useDisplacementBoundingBox + ";\n" +
-         "setAttr \"defaultRenderGlobals.recursionDepth\" " + recursionDepth + ";\n" +
-         "setAttr \"defaultRenderGlobals.leafPrimitives\" " + leafPrimitives + ";\n" +
-         "setAttr \"defaultRenderGlobals.subdivisionPower\" " + subdivisionPower + ";\n\n");
+          ("// MEMORY AND PERFORMANCE OPTIONS \n" +
+           "setAttr \"defaultRenderGlobals.useFileCache\" " + useFileCache + ";\n" +
+           "setAttr \"defaultRenderGlobals.optimizeInstances\" " + optimizeInstances + ";\n" +
+           "setAttr \"defaultRenderGlobals.reuseTessellations\" " + 
+             reuseTessellations + ";\n" +
+           "setAttr \"defaultRenderGlobals.useDisplacementBoundingBox\" " + 
+             useDisplacementBBox + ";\n" +
+           "setAttr \"defaultRenderGlobals.recursionDepth\" " + recursionDepth + ";\n" +
+           "setAttr \"defaultRenderGlobals.leafPrimitives\" " + leafPrimitives + ";\n" +
+           "setAttr \"defaultRenderGlobals.subdivisionPower\" " + subdivisionPower + ";\n\n");
       }
       
       /* IPR options */
@@ -1961,12 +1985,14 @@ class MayaRenderGlobalsAction
         boolean iprRenderMotionBlur = getSingleBooleanParamValue(aRender2dMotionBlur);
 
         out.write
-        ("// IPR OPTIONS \n" +
-          "setAttr \"defaultRenderGlobals.iprRenderShading\" " + iprRenderShading + ";\n" +
-          "setAttr \"defaultRenderGlobals.iprRenderMotionBlur\" " + iprRenderMotionBlur + ";\n");
+          ("// IPR OPTIONS \n" +
+           "setAttr \"defaultRenderGlobals.iprRenderShading\" " + iprRenderShading + ";\n" +
+           "setAttr \"defaultRenderGlobals.iprRenderMotionBlur\" " + 
+             iprRenderMotionBlur + ";\n");
 
         if (iprRenderShading)
-          out.write("setAttr \"defaultRenderGlobals.iprRenderShadowMaps\" " + iprRenderShadowMaps + ";\n");
+          out.write("setAttr \"defaultRenderGlobals.iprRenderShadowMaps\" " + 
+                      iprRenderShadowMaps + ";\n");
 
         out.write("\n");
       }
@@ -1983,12 +2009,15 @@ class MayaRenderGlobalsAction
           "setAttr \"defaultRenderGlobals.enableStrokeRender\" " + enableStrokeRender + ";\n");
         if (enableStrokeRender) {
           out.write
-          ("setAttr \"defaultRenderGlobals.oversamplePaintEffects\" " + oversamplePaintEffects + ";\n" +
-           "setAttr \"defaultRenderGlobals.onlyRenderStrokes\" " + onlyRenderStrokes + ";\n");
+            ("setAttr \"defaultRenderGlobals.oversamplePaintEffects\" " + 
+               oversamplePaintEffects + ";\n" +
+             "setAttr \"defaultRenderGlobals.onlyRenderStrokes\" " + 
+               onlyRenderStrokes + ";\n");
 
           if (oversamplePaintEffects)
             out.write
-            ("setAttr \"defaultRenderGlobals.oversamplePfxPostFilter\" " + oversamplePfxPostFilter + ";\n");
+            ("setAttr \"defaultRenderGlobals.oversamplePfxPostFilter\" " + 
+               oversamplePfxPostFilter + ";\n");
         }
 
         out.write("\n");
@@ -2014,72 +2043,72 @@ class MayaRenderGlobalsAction
 
   private static final long serialVersionUID = 6135126172872209184L;
 
-  public static final String aResolutionSource                  = "ResolutionSource";
-  public static final String aImageWidth                        = "ImageWidth";
-  public static final String aImageHeight                       = "ImageHeight";
-  public static final String aPixelAspectRatio                  = "PixelAspectRatio";
-  public static final String aImageResolution                   = "ImageResolution";
-  public static final String aEdgeAntiAliasing                  = "EdgeAntiAliasing";
-  public static final String aShadingSamples                    = "ShadingSamples";
-  public static final String aMaxShadingSamples                 = "MaxShadingSamples";
-  public static final String aParticleSamples                   = "ParticleSamples";
-  public static final String aUseMultiPixelFiltering            = "UseMultiPixelFiltering";
-  public static final String aPixelFilterType                   = "PixelFilterType";
-  public static final String aPixelFilterWidthX                 = "PixelFilterWidthX";
-  public static final String aPixelFilterWidthY                 = "PixelFilterWidthY";
-  public static final String aThreshold                         = "Threshold";
-  public static final String aCoverageThreshold                 = "CoverageThreshold";
-  public static final String aQuality                           = "Quality";
-  public static final String aUseRaytracing                     = "UseRaytracing";
-  public static final String aReflections                       = "Reflections";
-  public static final String aRefractions                       = "Refractions";
-  public static final String aShadows                           = "Shadows";
-  public static final String aBias                              = "Bias";
-  public static final String aUseMotionBlur                     = "UseMotionBlur";
-  public static final String aMotionBlurType                    = "MotionBlurType";
-  public static final String aBlurByFrame                       = "BlurByFrame";
-  public static final String aBlurLength                        = "BlurLength";
-  public static final String aBlurSharpness                     = "BlurSharpness";
-  public static final String aSmooth                            = "Smooth";
-  public static final String aSmoothValue                       = "SmoothValue";
-  public static final String aKeepMotionVectors                 = "KeepMotionVectors";
-  public static final String aUse2dBlurMemoryLimit              = "Use2DBlurMemoryLimit";
-  public static final String a2dBlurMemoryLimit                 = "2DBlurMemoryLimit";
-  public static final String aRender                            = "Render";
-  public static final String aFieldDominance                    = "FieldDominance";
-  public static final String aZerothScanline                    = "ZerothScanline";
-  public static final String aFieldExtension                    = "FieldExtension";
-  public static final String aOddField                          = "OddField";
-  public static final String aEvenField                         = "EvenField";
-  public static final String aEnvironmentFog                    = "EnvironmentFog";
-  public static final String aApplyFogInPost                    = "ApplyFogInPost";
-  public static final String aPostFogBlur                       = "PostFogBlur";
-  public static final String aIgnoreFilmGate                    = "IgnoreFilmGate";
-  public static final String aShadowLinking                     = "ShadowLinking";
-  public static final String aEnableDepthMaps                   = "EnableDepthMaps";
-  public static final String aGammaCorrection                   = "GammaCorrection";
-  public static final String aClipFinalShadedColor              = "ClipFinalShadedColor";
-  public static final String aJitterFinalColor                  = "JitterFinalColor";
-  public static final String aPremultiply                       = "Premultiply";
-  public static final String aPremultiplyThreshold              = "PremultiplyThreshold";
-  public static final String aUseFileCache                      = "UseFileCache";
-  public static final String aOptimizeInstances                 = "OptimizeInstances";
-  public static final String aReuseTessellations                = "ReuseTessellations";
-  public static final String aUseDisplacementBoundingBox        = "UseDisplacementBoundingBox";
-  public static final String aRecursionDepth                    = "RecursionDepth";
-  public static final String aLeafPrimitives                    = "LeafPrimitives";
-  public static final String aSubdivisionPower                  = "Subdivision";
-  public static final String aRenderShadingLightAndGlow         = "RenderShadingLightingAndGlow";
-  public static final String aRenderShadowMaps                  = "RenderShadowMaps";
-  public static final String aRender2dMotionBlur                = "Render2DMotionBlur";
-  public static final String aEnableStrokeRendering             = "EnableStrokeRendering";
-  public static final String aOversample                        = "Oversample";
-  public static final String aOversamplePostFilter              = "OversamplePostFilter";
-  public static final String aOnlyRenderStrokes                 = "OnlyRenderStrokes";
-  public static final String a3dBlurVisibility                  = "3DBlurVisibility";
-  public static final String aMax3dBlurVisibility               = "Max3DBlurVisibility";
-  public static final String aAlphaMaskChannel                  = "AlphaMaskChannel";
-  public static final String aZDepthChannel                     = "ZDepthChannel";
+  public static final String aResolutionSource            = "ResolutionSource";
+  public static final String aImageWidth                  = "ImageWidth";
+  public static final String aImageHeight                 = "ImageHeight";
+  public static final String aPixelAspectRatio            = "PixelAspectRatio";
+  public static final String aImageResolution             = "ImageResolution";
+  public static final String aEdgeAntiAliasing            = "EdgeAntiAliasing";
+  public static final String aShadingSamples              = "ShadingSamples";
+  public static final String aMaxShadingSamples           = "MaxShadingSamples";
+  public static final String aParticleSamples             = "ParticleSamples";
+  public static final String aUseMultiPixelFiltering      = "UseMultiPixelFiltering";
+  public static final String aPixelFilterType             = "PixelFilterType";
+  public static final String aPixelFilterWidthX           = "PixelFilterWidthX";
+  public static final String aPixelFilterWidthY           = "PixelFilterWidthY";
+  public static final String aThreshold                   = "Threshold";
+  public static final String aCoverageThreshold           = "CoverageThreshold";
+  public static final String aQuality                     = "Quality";
+  public static final String aUseRaytracing               = "UseRaytracing";
+  public static final String aReflections                 = "Reflections";
+  public static final String aRefractions                 = "Refractions";
+  public static final String aShadows                     = "Shadows";
+  public static final String aBias                        = "Bias";
+  public static final String aUseMotionBlur               = "UseMotionBlur";
+  public static final String aMotionBlurType              = "MotionBlurType";
+  public static final String aBlurByFrame                 = "BlurByFrame";
+  public static final String aBlurLength                  = "BlurLength";
+  public static final String aBlurSharpness               = "BlurSharpness";
+  public static final String aSmooth                      = "Smooth";
+  public static final String aSmoothValue                 = "SmoothValue";
+  public static final String aKeepMotionVectors           = "KeepMotionVectors";
+  public static final String aUse2dBlurMemoryLimit        = "Use2DBlurMemoryLimit";
+  public static final String a2dBlurMemoryLimit           = "2DBlurMemoryLimit";
+  public static final String aRender                      = "Render";
+  public static final String aFieldDominance              = "FieldDominance";
+  public static final String aZerothScanline              = "ZerothScanline";
+  public static final String aFieldExtension              = "FieldExtension";
+  public static final String aOddField                    = "OddField";
+  public static final String aEvenField                   = "EvenField";
+  public static final String aEnvironmentFog              = "EnvironmentFog";
+  public static final String aApplyFogInPost              = "ApplyFogInPost";
+  public static final String aPostFogBlur                 = "PostFogBlur";
+  public static final String aIgnoreFilmGate              = "IgnoreFilmGate";
+  public static final String aShadowLinking               = "ShadowLinking";
+  public static final String aEnableDepthMaps             = "EnableDepthMaps";
+  public static final String aGammaCorrection             = "GammaCorrection";
+  public static final String aClipFinalShadedColor        = "ClipFinalShadedColor";
+  public static final String aJitterFinalColor            = "JitterFinalColor";
+  public static final String aPremultiply                 = "Premultiply";
+  public static final String aPremultiplyThreshold        = "PremultiplyThreshold";
+  public static final String aUseFileCache                = "UseFileCache";
+  public static final String aOptimizeInstances           = "OptimizeInstances";
+  public static final String aReuseTessellations          = "ReuseTessellations";
+  public static final String aUseDisplacementBoundingBox  = "UseDisplacementBoundingBox";
+  public static final String aRecursionDepth              = "RecursionDepth";
+  public static final String aLeafPrimitives              = "LeafPrimitives";
+  public static final String aSubdivisionPower            = "Subdivision";
+  public static final String aRenderShadingLightAndGlow   = "RenderShadingLightingAndGlow";
+  public static final String aRenderShadowMaps            = "RenderShadowMaps";
+  public static final String aRender2dMotionBlur          = "Render2DMotionBlur";
+  public static final String aEnableStrokeRendering       = "EnableStrokeRendering";
+  public static final String aOversample                  = "Oversample";
+  public static final String aOversamplePostFilter        = "OversamplePostFilter";
+  public static final String aOnlyRenderStrokes           = "OnlyRenderStrokes";
+  public static final String a3dBlurVisibility            = "3DBlurVisibility";
+  public static final String aMax3dBlurVisibility         = "Max3DBlurVisibility";
+  public static final String aAlphaMaskChannel            = "AlphaMaskChannel";
+  public static final String aZDepthChannel               = "ZDepthChannel";
   
 }
 
