@@ -1,8 +1,17 @@
 #!/bin/sh
 
-if [ `hostname` != "tarchia" ]
-then
-  echo "This configuration should only be run from tarchia!"
+if [ -f /etc/redhat-release ]
+then 
+  redhat_release=`cat /etc/redhat-release`
+  redhat_arch=`uname -i`
+  if [ "$redhat_release" != "CentOS release 5 (Final)" -o "$redhat_arch" != "x86_64" ]
+  then
+    echo "This configuration should only be run from a Centos 5 (64-bit) machine!"
+    echo "  Found: $redhat_release"
+    exit 1
+  fi
+else
+  echo "Unable to determine if this is an CentOS 5 (64-bit) machine!"
   exit 1
 fi
 
@@ -35,7 +44,7 @@ mkdir  debug
 
 pushd debug
   time \
-  JAVA_HOME=/usr/java/jdk1.6.0_06-x86_64 \
+  JAVA_HOME=/usr/java/jdk1.6.0_10 \
   PATH="$JAVA_HOME/bin:$PATH" \
   CC="/usr/bin/gcc" \
   CXX="/usr/bin/g++" \
@@ -62,7 +71,7 @@ mkdir  debug-native
 
 pushd debug-native
   time \
-  JAVA_HOME=/usr/java/jdk1.6.0_06-x86 \
+  JAVA_HOME=/usr/java/jdk1.6.0_10 \
   PATH="$JAVA_HOME/bin:$PATH" \
   CC="/usr/bin/gcc" \
   CXX="/usr/bin/g++" \
@@ -78,7 +87,7 @@ popd
 
 
 
-JAVA_HOME=/usr/java/jdk1.6.0_06-x86_64
+JAVA_HOME=/usr/java/jdk1.6.0_10
 PATH="$JAVA_HOME/bin:$PATH"
 
 mac_support=`java -classpath $plsrcdir/plconfig CryptoApp $plprofile --lookup MacSupport`
