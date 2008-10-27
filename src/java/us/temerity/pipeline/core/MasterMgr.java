@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.256 2008/10/19 17:03:18 jim Exp $
+// $Id: MasterMgr.java,v 1.257 2008/10/27 17:16:35 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -9742,7 +9742,7 @@ class MasterMgr
             MappedSet<String,VersionID> dlinks = dsl.getCheckedIn(vid);
 	    for(String dname : dlinks.keySet()) {
               for(VersionID dvid : dlinks.get(dname)) 
-                buf.append("  " + dname + "  (" + dlinks.get(dvid) + ")\n");
+                buf.append("  " + dname + "  (" + dvid + ")\n");
             }
 	  }
 	}
