@@ -1,8 +1,16 @@
 #!/bin/sh
 
-if [ `hostname` != "archelon" ]
-then
-  echo "This configuration should only be run from archelon!"
+if [ -f /etc/SuSE-release ]
+then 
+  suse_release=`head -1 /etc/SuSE-release`
+  if [ "$suse_release" != "openSUSE 10.2 (X86-64)" ]
+  then
+    echo "This configuration should only be run from a openSUSE-10.2 (64-bit) machine!"
+    echo "  Found: $suse_release"
+    exit 1
+  fi
+else
+  echo "Unable to determine if this is an openSUSE-10.2 (64-bit) machine!"
   exit 1
 fi
 
@@ -35,7 +43,7 @@ mkdir  debug
 
 pushd debug
   time \
-  JAVA_HOME=/usr/java/jdk1.6.0_06-x86_64 \
+  JAVA_HOME=/usr/java/jdk1.6.0_10 \
   PATH="$JAVA_HOME/bin:$PATH" \
   CC="/usr/bin/gcc-4.1" \
   CXX="/usr/bin/g++-4.1" \
@@ -62,7 +70,7 @@ mkdir  debug-native
 
 pushd debug-native
   time \
-  JAVA_HOME=/usr/java/jdk1.6.0_06-x86 \
+  JAVA_HOME=/usr/java/jdk1.6.0_10 \
   PATH="$JAVA_HOME/bin:$PATH" \
   CC="/usr/bin/gcc-4.1" \
   CXX="/usr/bin/g++-4.1" \
@@ -78,7 +86,7 @@ popd
 
 
 
-JAVA_HOME=/usr/java/jdk1.6.0_06-x86_64
+JAVA_HOME=/usr/java/jdk1.6.0_10
 PATH="$JAVA_HOME/bin:$PATH"
 
 mac_support=`java -classpath $plsrcdir/plconfig CryptoApp $plprofile --lookup MacSupport`
