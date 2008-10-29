@@ -1,4 +1,4 @@
-// $Id: NodeBundle.java,v 1.2 2007/10/25 00:09:09 jim Exp $
+// $Id: NodeBundle.java,v 1.3 2008/10/29 22:41:09 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -234,7 +234,7 @@ class NodeBundle
   {
     Set<String> keys = pAnnotations.keySet(nname);
     if(keys != null) 
-      Collections.unmodifiableSet(keys);
+      return Collections.unmodifiableSet(keys);
     return new TreeSet<String>();
   }
 

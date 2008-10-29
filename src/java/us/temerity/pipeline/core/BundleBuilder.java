@@ -200,6 +200,9 @@ class BundleBuilder
       pLog.log(LogMgr.Kind.Ops, LogMgr.Level.Fine, 
                "Starting the build phase in the Build Pass");
       
+      /* make sure annotations are actually added */ 
+      getStageInformation().setDoAnnotations(true);
+
       /* initially lock nodes which are locked in the bundle, 
            this need to be done first so that the nodes will exist in the working area 
            when links are created to them by other unlocked nodes */ 
