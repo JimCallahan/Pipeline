@@ -1,4 +1,4 @@
-// $Id: MappedArrayList.java,v 1.3 2007/11/04 20:40:42 jesse Exp $
+// $Id: MappedArrayList.java,v 1.4 2008/10/30 15:58:10 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -9,7 +9,7 @@ import java.util.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- *  A {@link TreeMap} that contains {@link ArrayList}s.
+ *  A {@link TreeMap} that contains {@link ArrayList ArrayLists}.
  */
 public 
 class MappedArrayList<K, V>
