@@ -1,4 +1,4 @@
-// $Id: NodeTree.java,v 1.11 2008/10/19 17:06:29 jim Exp $
+// $Id: NodeTree.java,v 1.12 2008/10/30 17:59:17 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -46,9 +46,11 @@ class NodeTree
         ("\n\n" + 
          "When Pipeline is configured to use Windows clients, case-insensitive conflicts " + 
          "between the names of nodes and/or their file sequences are not allowed.  This " +
-         "is to prevent problems for Windows clients using the CIFS network file system " +
+         "is to prevent problems for keWindows clients using the CIFS network file system " +
          "to access the files associated with nodes, since CIFS does not understand case.");
     }
+    else
+      sWindowsMessage = null;
   }
 
 
