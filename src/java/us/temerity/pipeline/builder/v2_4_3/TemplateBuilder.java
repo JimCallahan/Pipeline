@@ -1,4 +1,4 @@
-// $Id: TemplateBuilder.java,v 1.2 2008/10/17 03:36:46 jesse Exp $
+// $Id: TemplateBuilder.java,v 1.3 2008/10/30 17:58:51 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -82,11 +82,15 @@ class TemplateBuilder
       throw new PipelineException("Empty list of nodes to build passed to Template Builder.");
     pNodesToBuild = new TreeSet<String>(nodesToBuild);
     
-    LogMgr.getInstance().log(Kind.Ops, Level.Finer, 
+    
+    pLog.log(Kind.Ops, Level.Finer, 
       "The list of nodes being built is " + pNodesToBuild);
     pGenerateDependSets = false;
     
     MappedSet<String, String> nodesDependingOnMe = templateInfo.getNodesDependingOnMe();
+    pLog.log(Kind.Ops, Level.Finest, 
+      "The nodesDependingOnMe data structure passed in has the following values:\n" + 
+      nodesDependingOnMe );
     pNodesDependingOnMe = new MappedSet<String, String>();
     if (nodesDependingOnMe == null || nodesDependingOnMe.isEmpty())
       pGenerateDependSets = true;
@@ -94,6 +98,9 @@ class TemplateBuilder
       pNodesDependingOnMe.putAll(nodesDependingOnMe);
     
     MappedSet<String, String> nodesIDependedOn = templateInfo.getNodesIDependedOn();
+    pLog.log(Kind.Ops, Level.Finest, 
+      "The nodesIDependOn data structure passed in has the following values:\n" + 
+      nodesIDependedOn );
     pNodesIDependedOn = new MappedSet<String, String>();
     if (nodesIDependedOn == null || nodesIDependedOn.isEmpty())
       pGenerateDependSets = true;
@@ -101,14 +108,22 @@ class TemplateBuilder
       pNodesIDependedOn.putAll(nodesIDependedOn);
     
     // Is this stringent a condition needed for product nodes?  not sure.
+    // Seems to be.  Turning it off for now.
     TreeSet<String> products = templateInfo.getProductNodes();
+    pLog.log(Kind.Ops, Level.Finest, 
+      "The products data structure passed in has the following values:\n" + 
+      products );
     pProductNodes = new TreeSet<String>();
     if (products == null || products.isEmpty())
-      pGenerateDependSets = true;
+      pLog.log(Kind.Ops, Level.Fine, "No product nodes defined in this template");
+    //pGenerateDependSets = true;
     else
       pProductNodes.addAll(products);
     
     DoubleMap<String, String, TreeSet<String>> productContexts = templateInfo.getProductContexts();
+    pLog.log(Kind.Ops, Level.Finest, 
+      "The productContexts data structure passed in has the following values:\n" + 
+      productContexts );
     pProductContexts = new DoubleMap<String, String, TreeSet<String>>();
     if (productContexts == null) 
       pGenerateDependSets = true;
@@ -120,14 +135,14 @@ class TemplateBuilder
     pReplacements = new TreeMap<String, String>();
     if (stringReplacements != null)
       pReplacements.putAll(stringReplacements);
-    LogMgr.getInstance().log(Kind.Ops, Level.Finest, 
+    pLog.log(Kind.Ops, Level.Finest, 
       "The list of top-level string replacements: " + pReplacements);
 
     pContexts = new TreeMap<String, ArrayList<TreeMap<String,String>>>();
     if (contexts != null)
       pContexts.putAll(contexts);
     
-    LogMgr.getInstance().log(Kind.Ops, Level.Finest, 
+    pLog.log(Kind.Ops, Level.Finest, 
       "The list of contexts to apply to this template: " + pContexts);
     
     pAnnotCache = new TreeMap<String, TreeMap<String,BaseAnnotation>>();
@@ -270,7 +285,7 @@ class TemplateBuilder
       getStageInformation().setDoAnnotations(true);
       
       if (pGenerateDependSets) {
-        LogMgr.getInstance().log(Kind.Ops, Level.Finer, 
+        pLog.log(Kind.Ops, Level.Finer, 
           "Generating the product and dependency nodes.");
 
         pProductNodes = new TreeSet<String>();
@@ -278,14 +293,9 @@ class TemplateBuilder
         pNodesDependingOnMe = new MappedSet<String, String>();
         pNodesIDependedOn = new MappedSet<String, String>();
         
-        TreeMap<String, NodeStatus> statusCache = new TreeMap<String, NodeStatus>();
         for (String node : pNodesToBuild) {
-          NodeStatus stat = statusCache.get(node);
-          if (stat == null) {
-            stat = pClient.status(new NodeID(getAuthor(), getView(), node), true, 
-              DownstreamMode.WorkingOnly);
-            mineStatus(stat, statusCache);
-          }
+          NodeStatus stat = pClient.status(new NodeID(getAuthor(), getView(), node), true, 
+            DownstreamMode.WorkingOnly);
           for (String src : stat.getSourceNames()) {
             if (pNodesToBuild.contains(src))
               pNodesIDependedOn.put(node, src);
@@ -301,6 +311,14 @@ class TemplateBuilder
               pNodesDependingOnMe.put(node, trgt);
           }
         }
+        pLog.log(Kind.Ops, Level.Finest, 
+          "The generated nodesDependingOnMe is:\n" + pNodesDependingOnMe);
+        pLog.log(Kind.Ops, Level.Finest, 
+          "The generated nodesIDependOn is:\n" + pNodesIDependedOn);
+        pLog.log(Kind.Ops, Level.Finest, 
+          "The generated product nodes is:\n" + pProductNodes);
+        pLog.log(Kind.Ops, Level.Finest, 
+          "The generated product contexts is:\n" + pProductContexts);
       }
       pFinalizableStages = new ArrayList<FinalizableStage>();
     }
@@ -482,9 +500,17 @@ class TemplateBuilder
     findNodeToBuild()
       throws PipelineException
     {
+      pLog.log
+      (Kind.Ops, Level.Finer,"Search for a node to build");
       for (String node : pNodesToBuild) {
-        if (pNodesIDependedOn.get(node) == null)
+        TreeSet<String> set = pNodesIDependedOn.get(node);
+        if ( set == null)
           return node;
+        else
+          pLog.log
+            (Kind.Ops, Level.Finest, 
+             "The node (" + node + ") must wait for the following nodes to be built: \n" + 
+             set);
       }
       throw new PipelineException
         ("There are no nodes which is is possible to construct.  " +
@@ -511,6 +537,9 @@ class TemplateBuilder
           String realProduct = stringReplace(product, pReplacements);
           allProducts.add(realProduct);
         }
+        
+        LogMgr.getInstance().log(Kind.Ops, Level.Finer,
+          "The following products were found:\n " + allProducts);
         
         for (String realProduct : allProducts) {
         

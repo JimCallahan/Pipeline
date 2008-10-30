@@ -1,4 +1,4 @@
-// $Id: TemplateTaskBuilder.java,v 1.2 2008/10/17 03:36:46 jesse Exp $
+// $Id: TemplateTaskBuilder.java,v 1.3 2008/10/30 17:58:51 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -354,6 +354,12 @@ class TemplateTaskBuilder
       pNodesDependingOnMe = new MappedSet<String, String>();
       
       getLeafNodes(pStartNode);
+      
+      pLog.log(Kind.Ops, Level.Finest, 
+        "The following edit nodes were found:\n" + pEditNodes);
+      
+      if (pEditNodes.isEmpty())
+        throw new PipelineException("There were no edit nodes found in the task network.");
       getSubmitAndApproveNodes(pEditNodes.first());
       getLeafNodes(pSubmitNode);
       getLeafNodes(pApprovalNode);

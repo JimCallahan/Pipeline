@@ -1,4 +1,4 @@
-// $Id: TemplateInfoBuilder.java,v 1.1 2008/10/17 03:36:46 jesse Exp $
+// $Id: TemplateInfoBuilder.java,v 1.2 2008/10/30 17:58:51 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -6,6 +6,7 @@ import java.io.*;
 import java.util.*;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.LogMgr.*;
 import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.builder.v2_4_1.*;
 import us.temerity.pipeline.builder.v2_4_1.TaskBuilder;
@@ -391,6 +392,20 @@ class TemplateInfoBuilder
   }
 
   
+  public static void 
+  main
+  (
+    String[] args
+  ) throws PipelineException
+  {
+    PluginMgrClient.init();
+    LogMgr.getInstance().setLevel(Kind.Ops, Level.Finest);
+    MasterMgrClient mclient = new MasterMgrClient();
+    QueueMgrClient qclient = new QueueMgrClient();
+    BuilderInformation info = new BuilderInformation(true, true, true,true, new MultiMap<String, String>());
+    TemplateInfoBuilder builder = new TemplateInfoBuilder(mclient, qclient, info, "/projects/TEMPLATE/util/UTIL_template", "jesse", "tacoma");
+    builder.run();
+  }
   
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
