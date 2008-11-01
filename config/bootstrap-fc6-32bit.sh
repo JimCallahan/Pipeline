@@ -3,15 +3,14 @@
 if [ -f /etc/redhat-release ]
 then 
   redhat_release=`cat /etc/redhat-release`
-  redhat_arch=`uname -i`
-  if [ "$redhat_release" != "Fedora Core release 6 (Zod)" -o "$redhat_arch" != "x86_64" ]
+  if [ "$redhat_release" != "Fedora Core release 6 (Zod)" ]
   then
-    echo "This configuration should only be run from a Fedora Core 6 (64-bit) machine!"
+    echo "This configuration should only be run from a Fedora Core 6 (32-bit) machine!"
     echo "  Found: $redhat_release"
     exit 1
   fi
 else
-  echo "Unable to determine if this is an Fedora Core 6 (64-bit) machine!"
+  echo "Unable to determine if this is an Fedora Core 6 (32-bit) machine!"
   exit 1
 fi
 
@@ -44,14 +43,14 @@ mkdir  debug
 
 pushd debug
   time \
-  JAVA_HOME=/usr/java/jdk1.6.0_10-x86_64 \
+  JAVA_HOME=/usr/java/jdk1.6.0_10-x86 \
   PATH="$JAVA_HOME/bin:$PATH" \
   CC="/usr/bin/gcc" \
   CXX="/usr/bin/g++" \
   $plsrcdir/configure \
     --enable-foundation \
-    --enable-x86-subpass \
     --disable-opt \
+    --with-target-archtype=x86 \
     --with-debug-base=$debug_base \
     --with-prof-base=$prof_base \
     --with-crypto-app=$plsrcdir/plconfig \
@@ -61,33 +60,7 @@ pushd debug
 popd
 
 
-echo 
-echo "---------------------------------------------------------------------------------------"
-echo "  CONFIGURING (native): $HOSTNAME"
-echo "---------------------------------------------------------------------------------------"
-
-rm -rf debug-native
-mkdir  debug-native
-
-pushd debug-native
-  time \
-  JAVA_HOME=/usr/java/jdk1.6.0_10-x86 \
-  PATH="$JAVA_HOME/bin:$PATH" \
-  CC="/usr/bin/gcc" \
-  CXX="/usr/bin/g++" \
-  $plsrcdir/configure \
-    --disable-opt \
-    --with-target-archtype=x86 \
-    --with-debug-base=$debug_base \
-    --with-prof-base=$prof_base \
-    --with-crypto-app=$plsrcdir/plconfig \
-    --with-customer=$customer \
-    --with-customer-profile=$plprofile
-popd
-
-
-
-JAVA_HOME=/usr/java/jdk1.6.0_10-x86_64
+JAVA_HOME=/usr/java/jdk1.6.0_10-x86
 PATH="$JAVA_HOME/bin:$PATH"
 
 mac_support=`java -classpath $plsrcdir/plconfig CryptoApp $plprofile --lookup MacSupport`
