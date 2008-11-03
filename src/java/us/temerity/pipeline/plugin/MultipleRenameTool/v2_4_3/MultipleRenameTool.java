@@ -1,4 +1,4 @@
-// $Id: MultipleRenameTool.java,v 1.2 2008/09/29 19:02:18 jim Exp $
+// $Id: MultipleRenameTool.java,v 1.3 2008/11/03 23:47:37 jesse Exp $
 
 package us.temerity.pipeline.plugin.MultipleRenameTool.v2_4_3;
 
@@ -78,7 +78,7 @@ class MultipleRenameTool
 
       pNewPattern = UIFactory.createTitledEditableTextField
         (tpanel, "New Pattern:", sTSize, vpanel,
-         "new ", sVSize, 
+         "new", sVSize, 
          "The string to be added in the node names.");
       
       hbox.add(comps[2]);
@@ -146,17 +146,31 @@ class MultipleRenameTool
         throw new PipelineException
           ("The nodes (" + bad +") cannot be renamed since it has been checked-in.  " +
            "Please deselect them before running this tool.");
+    
+
+    if (pRoots == null)
+      pRoots = new TreeSet<String>();
+    
     for (String node : good.keySet() ) {
       String newName = node.replaceAll(oldP, newP);
       FilePattern oldPat = good.get(node);
       FilePattern pat = new FilePattern(newName, oldPat.getPadding(), oldPat.getSuffix() );
       mclient.rename(pUser, pView, node, pat, true);
+      pRoots.remove(node);
+      pRoots.add(newName);
     }
     
     return false;
   }
-
   
+  @Override
+  public TreeSet<String> 
+  rootsOnExit()
+  {
+    return pRoots;
+  }
+  
+
   
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
