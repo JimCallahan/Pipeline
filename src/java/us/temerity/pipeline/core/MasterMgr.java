@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.259 2008/11/04 00:31:17 jim Exp $
+// $Id: MasterMgr.java,v 1.260 2008/11/04 02:49:42 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -6925,7 +6925,7 @@ class MasterMgr
   }
   
   /**
-   * Helper method for getting all the annotations for a node.
+   * Helper method for getting a copy of all of the annotations for a node.
    * <p>
    * This method assumes that the pDatabaseLock has been acquired before this
    * was called.
@@ -6934,28 +6934,29 @@ class MasterMgr
    * @param name
    *   The name of the node to get the annotations for.
    */
-  private TreeMap<String, BaseAnnotation> 
-  getAnnotationsHelper
-  (
-    TaskTimer timer,
-    String name
-  )
-    throws PipelineException
-  {
-    timer.aquire();
-    ReentrantReadWriteLock lock = getAnnotationsLock(name); 
-    lock.readLock().lock();
-    try {
-      timer.resume();
-    
-      TreeMap<String, BaseAnnotation> table = getAnnotationsTable(name);
-
-      return table;
-    }
-    finally {
-      lock.readLock().unlock();
-    }  
-  }
+   private TreeMap<String, BaseAnnotation> 
+   getAnnotationsHelper
+   (
+     TaskTimer timer,
+     String name
+   )
+     throws PipelineException
+   {
+     timer.aquire();
+     ReentrantReadWriteLock lock = getAnnotationsLock(name); 
+     lock.readLock().lock();
+     try {
+       timer.resume();
+  
+       TreeMap<String, BaseAnnotation> table = getAnnotationsTable(name);
+       if(table != null) 
+         return new TreeMap<String, BaseAnnotation>(table);
+       return null;
+     }
+     finally {
+       lock.readLock().unlock();
+     }  
+   }
   
   /**
    * Add the given annotation to the set of current annotations for the given node.
@@ -7200,7 +7201,6 @@ class MasterMgr
     finally {
       pDatabaseLock.readLock().unlock();
     }
-
   }
   
   /**
@@ -8326,8 +8326,7 @@ class MasterMgr
        */
       {
         TreeMap<String, BaseAnnotation> annots = getAnnotationsHelper(timer, name);
-        if (annots != null) {
-          
+        if(annots != null) {
           TaskTimer child = new TaskTimer("MasterMgr.removeAnnotationHelper()");
           timer.suspend();
           Object removed = removeAnnotationsHelper(req, child, name);
@@ -8345,6 +8344,7 @@ class MasterMgr
               "a failure occured when trying to remove the annotations from the ex-node: " + 
               rsp.getMessage());
           }
+
           if (added instanceof FailureRsp) {
             FailureRsp rsp = (FailureRsp) removed;
             throw new PipelineException
