@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.258 2008/11/03 23:47:37 jesse Exp $
+// $Id: MasterMgr.java,v 1.259 2008/11/04 00:31:17 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -19,10 +19,6 @@ import us.temerity.pipeline.event.*;
 import us.temerity.pipeline.glue.*;
 import us.temerity.pipeline.message.*;
 import us.temerity.pipeline.toolset.*;
-import us.temerity.pipeline.toolset.PackageCommon;
-import us.temerity.pipeline.toolset.PackageMod;
-import us.temerity.pipeline.toolset.PackageVersion;
-import us.temerity.pipeline.toolset2.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   N O D E   M G R                                                                        */
@@ -295,8 +291,6 @@ class MasterMgr
       (LogMgr.Kind.Net, LogMgr.Level.Info,
        "Establishing Network Connections [PluginMgr FileMgr QueueMgr]...");
     LogMgr.getInstance().flush();
-    
-    pToolsetCycleID = 1L;
 
     {
       /* initialize the plugins */ 
@@ -12502,10 +12496,6 @@ class MasterMgr
 			  status.getHeavyDetails().getWorkingVersion().getToolset(), 
 			  targetSeq, orderedRootIDs, externalIDs, 
 			  new TreeSet<Long>(jobs.keySet()));
-      
-      for (QueueJob job : jobs.values()) {
-        job.setOwningJobGroupID(group.getGroupID());
-      }
 
       /* update the job and group IDs file */ 
       writeNextIDs();
@@ -21900,32 +21890,6 @@ class MasterMgr
   private TripleMap<String,OsType,VersionID,PackageVersion>  pToolsetPackages;
 
 
-  /*----------------------------------------------------------------------------------------*/
-  
-  /**
-   * The current cycle of toolset/package versioning.
-   */
-  private Long pToolsetCycleID;
-  
-  /**
-   * A cached table of all toolsets indexed by toolset name and a version identifier, either
-   * the name of the user who created a working version or a string representation of the
-   * toolset's {@link VersionID}.
-   * 
-   * Access to this field should be protected by a synchronized block.
-   */
-  private DoubleMap<String, String, ToolsetCommon> pToolsets2;
-  
-  /**
-   * A cached table of all toolset packages indexed by package name and a version identifier, 
-   * either the name of the user who created a working version or a string representation of 
-   * the package's {@link VersionID}.
-   * 
-   * Access to this field should be protected by a synchronized block.
-   */
-  private DoubleMap<String, String, us.temerity.pipeline.toolset2.PackageCommon> pToolsetPackages2;
-  
-  
   /*----------------------------------------------------------------------------------------*/
   
   /**
