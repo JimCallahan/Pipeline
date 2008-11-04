@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.125 2008/10/20 00:27:33 jim Exp $
+// $Id: MasterMgrClient.java,v 1.126 2008/11/04 00:31:49 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -4713,7 +4713,7 @@ class MasterMgrClient
     Object obj = performTransaction(MasterRequest.Rename, req);
     handleSimpleResponse(obj);
 
-    vouch(nodeID);
+    vouch(new NodeID(nodeID, pattern.getPrefix()));
   } 
 
 
