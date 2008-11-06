@@ -1,4 +1,4 @@
-// $Id: MultipleTaskSetTool.java,v 1.2 2008/10/02 00:26:23 jesse Exp $
+// $Id: MultipleTaskSetTool.java,v 1.3 2008/11/06 21:10:09 jesse Exp $
 
 package us.temerity.pipeline.plugin.MultipleTaskSetTool.v2_4_1;
 
@@ -139,7 +139,7 @@ class MultipleTaskSetTool
       
       String project = pProjectField.getText();
       String taskName = pTaskNameField.getText();
-      TaskType taskType = TaskType.valueOf(pTaskTypeField.getSelected());
+      String taskType = pTaskTypeField.getSelected();
       String customType = pCustomTaskTypeField.getText();
       String entityType = pEntityField.getSelected();
       
@@ -151,8 +151,8 @@ class MultipleTaskSetTool
             BaseAnnotation annot = annots.get(aName);
             annot.setParamValue(aProjectName, project);
             annot.setParamValue(aTaskName, taskName);
-            annot.setParamValue(aTaskType, taskType.toTitle());
-            if (taskType == TaskType.CUSTOM)
+            annot.setParamValue(aTaskType, taskType);
+            if (taskType.equals(TaskType.CUSTOM.toTitle()))
               annot.setParamValue(aCustomTaskType, customType);
             annot.setParamValue(aEntityType, entityType);
             mclient.addAnnotation(node, aName, annot);
@@ -285,7 +285,7 @@ class MultipleTaskSetTool
       
       String project = pProjectField.getText();
       String taskName = pTaskNameField.getText();
-      TaskType taskType = TaskType.valueOf(pTaskTypeField.getSelected());
+      String taskType = pTaskTypeField.getSelected();
       String customType = pCustomTaskTypeField.getText();
       String entityType = pEntityField.getSelected();
       
@@ -293,8 +293,8 @@ class MultipleTaskSetTool
         NodePurpose purpose = NodePurpose.valueOf(pNewAnnotsPurpose.get(node));
         boolean master = (pMasterFocus != null && node.equals(pMasterFocus));
         
-        String type = taskType.toTitle();
-        if (taskType == TaskType.CUSTOM)
+        String type = taskType;
+        if (taskType.equals(TaskType.CUSTOM.toTitle()))
           type = customType;
         BaseAnnotation annot = getNewTaskAnnotation
           (purpose, master, project, taskName, type, entityType );
