@@ -1,4 +1,4 @@
-// $Id: UIFactory.java,v 1.27 2008/05/12 04:07:49 jim Exp $
+// $Id: UIFactory.java,v 1.28 2008/11/13 20:43:59 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -4034,7 +4034,6 @@ class UIFactory
       return buf.toString();
     }
   }
-
   
 
   /*----------------------------------------------------------------------------------------*/

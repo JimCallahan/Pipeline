@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.52 2008/07/21 17:25:53 jim Exp $
+// $Id: JManagerPanel.java,v 1.53 2008/11/13 20:43:59 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1855,12 +1855,12 @@ class JManagerPanel
       /* UIMaster */ 
       else if((prefs.getSaveLayout() != null) &&
               prefs.getSaveLayout().wasPressed(e)) {
-        master.doSaveLayout();
+        master.doSaveLayout(getTopFrame());
         return true;
       }
       else if((prefs.getSaveLayoutAs() != null) &&
               prefs.getSaveLayoutAs().wasPressed(e)) {
-        master.showSaveLayoutDialog();
+        master.showSaveLayoutDialog(getTopFrame());
         return true;
       }
       else if((prefs.getShowManageLayouts() != null) &&
@@ -1920,7 +1920,7 @@ class JManagerPanel
 
       else if((prefs.getQuit() != null) &&
               prefs.getQuit().wasPressed(e)) {
-        master.doQuit();    
+        master.doQuit(getTopFrame());    
         return true;
       }
 
@@ -2102,9 +2102,9 @@ class JManagerPanel
     
       /* UIMaster */ 
       else if(cmd.equals("save-layout"))
-        master.doSaveLayout();
+        master.doSaveLayout(getTopFrame());
       else if(cmd.equals("save-layout-as"))
-        master.showSaveLayoutDialog();
+        master.showSaveLayoutDialog(getTopFrame());
       else if(cmd.startsWith("restore-layout:")) 
         master.doRestoreSavedLayout(new Path(cmd.substring(15)), true);
       else if(cmd.startsWith("restore-layout-no-select:")) 
@@ -2175,7 +2175,7 @@ class JManagerPanel
         master.showLogsDialog(); 
 
       else if(cmd.equals("quit"))
-        master.doQuit();    
+        master.doQuit(getTopFrame());    
     }
     catch(PipelineException ex) {
       master.showErrorDialog(ex);
@@ -3193,7 +3193,7 @@ class JManagerPanel
     diag.setVisible(true);
 
     if(diag.wasConfirmed()) {
-      master.doUponExit();
+      master.doUponExit(getTopFrame());
       master.getQueueMgrClient().disconnect();
 
       try {
