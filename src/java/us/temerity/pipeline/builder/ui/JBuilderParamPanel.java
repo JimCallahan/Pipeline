@@ -1,4 +1,4 @@
-// $Id: JBuilderParamPanel.java,v 1.23 2008/10/17 03:36:46 jesse Exp $
+// $Id: JBuilderParamPanel.java,v 1.24 2008/11/13 21:38:09 jesse Exp $
 
 package us.temerity.pipeline.builder.ui;
 
@@ -645,7 +645,7 @@ class JBuilderParamPanel
 	
 	/* This was causing some stuff to not work as expect.
 	 * it may cause other stuff to break.  If it does, we need
-	 * to re-examing what we're doing here. 
+	 * to re-examine what we're doing here. 
 	 */
 //	if (comp == source)
 //	  continue;

@@ -1,4 +1,4 @@
-// $Id: KeyIntValueParam.java,v 1.1 2008/10/17 03:36:46 jesse Exp $
+// $Id: KeyIntValueParam.java,v 1.2 2008/11/13 21:38:09 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -85,7 +85,8 @@ KeyIntValueParam<E>
   )
   {
     if (paramName.equals(aKey)) {
-      setValue(aKey, pKeyValue);
+      E param = createStringParam(aKey, "The key.  Not user modifiable", pKeyValue);
+      replaceParam(param);
       return true;
     }
     return false;

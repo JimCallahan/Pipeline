@@ -1,4 +1,4 @@
-// $Id: TemplateInfoBuilder.java,v 1.2 2008/10/30 17:58:51 jesse Exp $
+// $Id: TemplateInfoBuilder.java,v 1.3 2008/11/13 21:38:09 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -133,7 +133,8 @@ class TemplateInfoBuilder
          1);
       addParam(param);
       pContextParams.add(param);
-      layout.addEntry(3, context);
+      layout.addEntry(3, name);
+      i++;
     }
     
     addCheckinWhenDoneParam();
@@ -302,7 +303,7 @@ class TemplateInfoBuilder
       else 
         defaults = new ArrayList<TreeMap<String,String>>(defaultValues);
       
-      for (int i = 1; i < numValues; i++ ) {
+      for (int i = 0; i < numValues; i++ ) {
         LayoutGroup group = new LayoutGroup(true);
         
         ArrayList<KeyValueUtilityParam> params = 
@@ -326,10 +327,16 @@ class TemplateInfoBuilder
           addParam(param);
           params.add(param);
           group.addEntry(name);
+          j++;
         }
         layout.addSubGroup(1, group);
         pParams.add(params);
       }
+      
+      layout.addEntry(1, aUtilContext);
+      layout.addEntry(1, null);
+      layout.addEntry(1, aActionOnExistence);
+      layout.addEntry(1, aReleaseOnError);
       
       addSetupPass(new ContextInformationPass());
       
@@ -361,6 +368,7 @@ class TemplateInfoBuilder
           for (KeyValueUtilityParam param : params ) {
             values.put(param.getKeyValue(), param.getValueValue());
           }
+          pToReturn.add(values);
         }
       }
       
