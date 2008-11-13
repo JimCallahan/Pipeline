@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.94 2008/11/13 20:43:59 jim Exp $
+// $Id: UIMaster.java,v 1.95 2008/11/13 20:53:03 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -3242,12 +3242,9 @@ class UIMaster
    * Show the save layouts dialog.
    */ 
   public void 
-  showSaveLayoutDialog
-  (
-   Frame parent
-  )
+  showSaveLayoutDialog()
   {
-    SwingUtilities.invokeLater(new ShowSaveLayoutDialogTask(parent));
+    SwingUtilities.invokeLater(new ShowSaveLayoutDialogTask());
   }
   
   /**
@@ -4084,7 +4081,7 @@ class UIMaster
    WindowEvent e
   ) 
   {
-    doQuit(pFrame);
+    doQuit();
   }
 
   /**
@@ -4121,15 +4118,12 @@ class UIMaster
    * Save the current panel layout.
    */
   public void 
-  doSaveLayout
-  (
-   Frame parent
-  )
+  doSaveLayout()
   {
     if(pLayoutPath != null) 
       saveLayoutHelper();
     else 
-      showSaveLayoutDialog(parent);
+      showSaveLayoutDialog();
   }
 
   /**
@@ -4248,10 +4242,7 @@ class UIMaster
    * Perform any tasks which should occur before exiting.
    */ 
   public void
-  doUponExit
-  (
-   Frame parent
-  )
+  doUponExit()
   {
     /* autosave layouts */ 
     {
@@ -4262,11 +4253,10 @@ class UIMaster
 	  if(pLayoutPath != null) 
 	    saveLayoutHelper();
 	  else {
-	    JSaveLayoutDialog diag = new JSaveLayoutDialog(parent);
-            diag.updateLayouts(pLayoutPath);
-	    diag.setVisible(true);
-	    if(diag.wasConfirmed()) {
-	      Path path = diag.getSelectedPath();
+	    pSaveLayoutDialog.updateLayouts(pLayoutPath);
+	    pSaveLayoutDialog.setVisible(true);
+	    if(pSaveLayoutDialog.wasConfirmed()) {
+	      Path path = pSaveLayoutDialog.getSelectedPath();
 	      if(path != null) {
 		setLayoutPath(path);	    
 		saveLayoutHelper();
@@ -4306,18 +4296,15 @@ class UIMaster
    * Close the network connection and exit.
    */ 
   public void 
-  doQuit
-  (
-   Frame parent
-  )
+  doQuit()
   {
     /* last chance to save toolsets/packages */ 
     if(!discardWorkingToolsets()) {
-      showManageToolsetsDialog();  // parent
+      showManageToolsetsDialog();
       return;
     }
 
-    doUponExit(parent);
+    doUponExit();
 
     int idx;
     for(idx=0; idx<pMasterMgrClients.length; idx++) {
@@ -4659,8 +4646,8 @@ class UIMaster
       {
 	pPanelFrames = new LinkedList<JPanelFrame>();
 
-	//pSaveLayoutDialog     = new JSaveLayoutDialog();
-	pManageLayoutsDialog = new JManageLayoutsDialog(pFrame);
+	pSaveLayoutDialog     = new JSaveLayoutDialog(pFrame);
+	pManageLayoutsDialog  = new JManageLayoutsDialog(pFrame);
 
 	pErrorDialog     = new JErrorDialog(pFrame);
 	pUserPrefsDialog = new JUserPrefsDialog();
@@ -4944,24 +4931,19 @@ class UIMaster
     extends Thread
   { 
     public 
-    ShowSaveLayoutDialogTask
-    (
-     Frame parent
-    ) 
+    ShowSaveLayoutDialogTask() 
     {
       super("UIMaster:ShowSaveLayoutDialogTask");
-      pParent = parent; 
     }
 
     public void 
     run() 
     {
       try {
-        JSaveLayoutDialog diag = new JSaveLayoutDialog(pParent);
-        diag.updateLayouts(pLayoutPath);
-	diag.setVisible(true);
-	if(diag.wasConfirmed()) {
-	  Path path = diag.getSelectedPath();
+	pSaveLayoutDialog.updateLayouts(pLayoutPath);
+	pSaveLayoutDialog.setVisible(true);
+	if(pSaveLayoutDialog.wasConfirmed()) {
+	  Path path = pSaveLayoutDialog.getSelectedPath();
 	  if(path != null) {
 	    setLayoutPath(path);	    
 	    saveLayoutHelper();
@@ -4972,8 +4954,6 @@ class UIMaster
 	showErrorDialog(ex);
       }
     }
-
-    private Frame pParent; 
   }
 
   /**
@@ -6685,7 +6665,7 @@ class UIMaster
   /**
    * The save layouts dialog.
    */ 
-  //private JSaveLayoutDialog  pSaveLayoutDialog;
+  private JSaveLayoutDialog  pSaveLayoutDialog;
 
   /**
    * The manage layouts dialog.

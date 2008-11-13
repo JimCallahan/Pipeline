@@ -1,4 +1,4 @@
-// $Id: JIntegerField.java,v 1.6 2008/11/13 20:43:59 jim Exp $
+// $Id: JIntegerField.java,v 1.7 2008/11/13 20:53:03 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -6,7 +6,6 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.text.*;
-import javax.swing.event.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   I N T E G E R   F I E L D                                                              */
@@ -30,7 +29,6 @@ class JIntegerField
   JIntegerField() 
   {
     super();
-    addFocusListener(new SetOnFocusLost()); 
   }
 
 
@@ -104,44 +102,6 @@ class JIntegerField
       return false;
     }
   }      
-
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   H E L P E R   C L A S S E S                                                          */
-  /*----------------------------------------------------------------------------------------*/
-  
-  private 
-  class SetOnFocusLost
-    implements FocusListener
-  {
-    public 
-    SetOnFocusLost() 
-    {}
-
-    /**
-     * Invoked when a component gains the keyboard focus.
-     */ 
-    public void 	
-    focusGained
-    (
-     FocusEvent e
-    )
-    {}
-
-    /**
-     * Invoked when a component loses the keyboard focus.
-     */ 
-    public void
-    focusLost
-    (
-     FocusEvent e
-    )
-    {
-      fireActionPeformed();
-    }
-  }
-
 
 
   /*----------------------------------------------------------------------------------------*/
