@@ -1,4 +1,4 @@
-// $Id: JManageToolsetsDialog.java,v 1.32 2008/01/28 11:58:51 jesse Exp $
+// $Id: JManageToolsetsDialog.java,v 1.33 2008/11/13 21:50:27 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -4859,7 +4859,7 @@ class JManageToolsetsDialog
       return new PluginSet();
     }
      
-    public void 
+    public PluginSet 
     put
     (
      String pname,
@@ -4868,9 +4868,9 @@ class JManageToolsetsDialog
     ) 
     {
       if(plugins != null) 
-	super.put(pname, vid, new PluginSet(plugins));
+	return super.put(pname, vid, new PluginSet(plugins));
       else 
-	super.remove(pname, vid);
+	return super.remove(pname, vid);
     }
 
     private static final long serialVersionUID = 7809754910797720803L;
