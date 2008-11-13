@@ -1,4 +1,4 @@
-// $Id: TripleMap.java,v 1.6 2008/06/26 21:49:34 jesse Exp $
+// $Id: TripleMap.java,v 1.7 2008/11/13 21:45:38 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -99,8 +99,12 @@ class TripleMap<A,B,C,V>
    * 
    * @param value
    *   The value to insert.
+   *   
+   * @return 
+   *   The previous value associated with the key or <code>null</code> if there was no previous
+   *   value for the key.
    */ 
-  public void
+  public V
   put
   (
    A keyA,
@@ -117,6 +121,8 @@ class TripleMap<A,B,C,V>
 
     if(keyC == null) 
       throw new IllegalArgumentException("The third key cannot be (null)!");
+    
+    V toReturn = null;
 
     TreeMap<B,TreeMap<C,V>> tableB = super.get(keyA);
     if(tableB == null) {
@@ -129,8 +135,12 @@ class TripleMap<A,B,C,V>
       tableC = new TreeMap<C,V>();
       tableB.put(keyB, tableC);
     }
+    else
+      toReturn = tableC.get(keyC);
 
     tableC.put(keyC, value);
+    
+    return toReturn;
   }
 
   /**

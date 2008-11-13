@@ -1,4 +1,4 @@
-// $Id: DoubleMap.java,v 1.4 2008/07/22 21:42:12 jesse Exp $
+// $Id: DoubleMap.java,v 1.5 2008/11/13 21:45:38 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -74,12 +74,16 @@ class DoubleMap<A,B,V>
    *   The first key.
    * 
    * @param keyB
-   *   The second key. 
+   *  The second key.
    * 
    * @param value
    *   The value to insert.
+   * 
+   * @return 
+   *   The previous value associated with the key or <code>null</code> if there was no previous
+   *   value for the key.
    */ 
-  public void
+  public V
   put
   (
    A keyA,
@@ -92,14 +96,20 @@ class DoubleMap<A,B,V>
 
     if(keyB == null) 
       throw new IllegalArgumentException("The second key cannot be (null)!");
+    
+    V toReturn = null;
 
     TreeMap<B,V> tableB = super.get(keyA);
     if(tableB == null) {
       tableB = new TreeMap<B,V>();
       put(keyA, tableB);
     }
+    else
+      toReturn = tableB.get(keyB);
 
     tableB.put(keyB, value);
+    
+    return toReturn;
   }
 
   /**
@@ -162,7 +172,7 @@ class DoubleMap<A,B,V>
    * @param keyB
    *   The second key. 
    */ 
-  public void
+  public V
   remove
   (
    A keyA,
@@ -177,12 +187,15 @@ class DoubleMap<A,B,V>
 
     TreeMap<B,V> tableB = super.get(keyA);
     if(tableB == null) 
-      return;
+      return null;
 
-    tableB.remove(keyB);
+    V temp = tableB.remove(keyB);
 
-    if(tableB.isEmpty())
+    if(tableB.isEmpty()) {
       super.remove(keyA);
+    }
+    
+    return temp; 
   }
 
 
