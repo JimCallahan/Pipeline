@@ -1,4 +1,4 @@
-// $Id: MappedSet.java,v 1.5 2008/07/22 23:02:39 jim Exp $
+// $Id: MappedSet.java,v 1.6 2008/11/13 21:39:34 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -9,7 +9,15 @@ import java.util.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- *  A {@link TreeMap} that contains {@link TreeSet}s.
+ *  A {@link TreeMap} that contains {@link TreeSet TreeSets}.
+ *  <p>
+ *  This class does automatic lazy creation of the sets when a value is added to them.
+ *  
+ * @param <K> 
+ *   The type of keys maintained by this map.
+ *   
+ * @param <V> 
+ *   The type of the sets that are the mapped values.
  */
 public class MappedSet<K, V>
   extends TreeMap<K, java.util.TreeSet<V>>
@@ -19,7 +27,7 @@ public class MappedSet<K, V>
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Contructs an empty map.
+   * Constructs an empty map.
    */
   public MappedSet()
   {
