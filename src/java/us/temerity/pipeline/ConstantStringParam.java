@@ -1,20 +1,22 @@
-// $Id: StringParam.java,v 1.7 2008/11/19 04:32:03 jesse Exp $
+// $Id: ConstantStringParam.java,v 1.1 2008/11/19 04:32:03 jesse Exp $
 
 package us.temerity.pipeline;
 
-import us.temerity.pipeline.glue.GlueDecoder;
+import us.temerity.pipeline.glue.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   S T R I N G   P A R A M                                                                */
+/*   C O N S T A N T   S T R I N G   P A R A M                                              */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * An plugin parameter with a short String value. <P> 
+ * An plugin parameter with a short String value which cannot be changed. 
+ * <P>
+ * Used for creating complex parameters who have some values which cannot change.
  */
-public 
-class StringParam
+public  
+class ConstantStringParam
   extends SimpleParam
-{  
+{
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
@@ -25,11 +27,11 @@ class StringParam
    * from user code.
    */    
   public 
-  StringParam() 
+  ConstantStringParam() 
   {
     super();
   }
-
+  
   /** 
    * Construct a parameter with the given name, description and default value.
    * 
@@ -42,19 +44,20 @@ class StringParam
    * @param value 
    *   The default value for this parameter.
    */ 
-  public
-  StringParam
+  public 
+  ConstantStringParam
   (
-   String name,  
-   String desc, 
-   String value
-  ) 
+    String name,
+    String desc,
+    String value
+  )
   {
     super(name, desc, value);
+    pSet = true;
   }
 
-
-
+  
+  
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
@@ -101,23 +104,64 @@ class StringParam
   protected void 
   validate
   (
-    Comparable value	  
+    Comparable value      
   )
     throws IllegalArgumentException 
   {
     if((value != null) && !(value instanceof String))
       throw new IllegalArgumentException
-	("The parameter (" + pName + ") only accepts (String) values!");
+        ("The parameter (" + pName + ") only accepts (String) values!");
+    if (pSet == true)
+      throw new IllegalStateException
+        ("The parameter (" + pName + ") is a ConstantStringParam, which means its value " +
+         "cannot be changed after it is created.");
+  }
+
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   G L U E A B L E                                                                      */
+  /*----------------------------------------------------------------------------------------*/
+  
+  @Override
+  public void 
+  toGlue
+  ( 
+   GlueEncoder encoder  
+  ) 
+    throws GlueException
+  {
+    super.toGlue(encoder);
+
+    encoder.encode("Set", pSet);
+  }
+  
+  @Override
+  public void 
+  fromGlue
+  (
+   GlueDecoder decoder  
+  ) 
+    throws GlueException
+  {
+    super.fromGlue(decoder);
+
+    pSet = (Boolean) decoder.decode("Set"); 
   }
 
 
+  
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
+  
+  private static final long serialVersionUID = 3351606101441159005L;
 
-  private static final long serialVersionUID = -945680476333950647L;
-
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+  
+  private boolean pSet = false;
 }
-
-
-

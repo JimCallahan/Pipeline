@@ -1,4 +1,4 @@
-// $Id: KeyValueParam.java,v 1.1 2008/10/17 03:36:46 jesse Exp $
+// $Id: KeyValueParam.java,v 1.2 2008/11/19 04:32:03 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -54,14 +54,13 @@ KeyValueParam<E>
     super(name, desc);
     
     {
-      E param = createStringParam(aKey, "The key.  Not user modifiable", key);
+      E param = createConstantStringParam(aKey, "The key.  Not user modifiable", key);
       addParam(param);
     }
     {
       E param = createStringParam(aValue, "The value.  User modifiable", value);
       addParam(param);
     }
-    pKeyValue = key;
   }
   
   
@@ -74,21 +73,6 @@ KeyValueParam<E>
   protected boolean 
   needsUpdating()
   {
-    return true;
-  }
-  
-  @Override
-  protected boolean
-  valueUpdated
-  (
-    String paramName
-  )
-  {
-    if (paramName.equals(aKey)) {
-      E param = createStringParam(aKey, "The key.  Not user modifiable", pKeyValue);
-      replaceParam(param);
-      return true;
-    }
     return false;
   }
   
@@ -100,6 +84,14 @@ KeyValueParam<E>
   
   protected abstract E
   createStringParam
+  (
+    String name, 
+    String desc, 
+    String value 
+  );
+  
+  protected abstract E
+  createConstantStringParam
   (
     String name, 
     String desc, 
@@ -140,12 +132,4 @@ KeyValueParam<E>
 
   public static final String aKey = "Key";
   public static final String aValue = "Value";  
-  
-  
-  
-  /*----------------------------------------------------------------------------------------*/
-  /*   I N T E R N A L S                                                                    */
-  /*----------------------------------------------------------------------------------------*/
-
-  private String pKeyValue;
 }

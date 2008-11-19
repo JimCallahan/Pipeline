@@ -1,4 +1,4 @@
-// $Id: JBuilderParamPanel.java,v 1.24 2008/11/13 21:38:09 jesse Exp $
+// $Id: JBuilderParamPanel.java,v 1.25 2008/11/19 04:32:03 jesse Exp $
 
 package us.temerity.pipeline.builder.ui;
 
@@ -301,7 +301,8 @@ class JBuilderParamPanel
          (param instanceof OptionalEnumUtilityParam) ||
          (param instanceof PathUtilityParam) ||
          (param instanceof NodePathUtilityParam) ||
-         (param instanceof IdentifierUtilityParam) )
+         (param instanceof IdentifierUtilityParam) ||
+         (param instanceof ConstantStringUtilityParam))
       return true;
     return false;
   }
@@ -415,6 +416,16 @@ class JBuilderParamPanel
 	}
 	return field;     
       }
+      else if (bparam instanceof ConstantStringUtilityParam) {
+        String value = (String) sparam.getValue();
+        JTextField field = 
+          UIFactory.createTitledTextField 
+          (tpanel, displayName, tsize, 
+           vpanel, value, vsize, 
+           bparam.getDescription());
+        
+        return field;
+      }
       else if((bparam instanceof PathUtilityParam) ||
               (bparam instanceof NodePathUtilityParam)) {
 	Path value = (Path) sparam.getValue();
@@ -506,10 +517,12 @@ class JBuilderParamPanel
       ((JIdentifierField) comp).addActionListener(this);
     }
     else if (comp instanceof JTextField) {
-      String value = (String) ((SimpleParamAccess) param).getValue();
-      ((JTextField) comp).removeActionListener(this);
-      ((JTextField) comp).setText(value);
-      ((JTextField) comp).addActionListener(this);
+      //if (! (param instanceof ConstantStringUtilityParam)) {
+        String value = (String) ((SimpleParamAccess) param).getValue();
+        ((JTextField) comp).removeActionListener(this);
+        ((JTextField) comp).setText(value);
+        ((JTextField) comp).addActionListener(this);
+      //}
     }
   }
 
@@ -520,6 +533,8 @@ class JBuilderParamPanel
     for (String name : pStorage.keySet()) {
       for (ParamMapping mapping : pStorage.keySet(name)) {
 	Component comp = pStorage.get(name, mapping);
+	if (comp instanceof JTextField && !((JTextField) comp).isEditable())
+	  continue;
 	Comparable value = valueFromComponent(comp);
 	pBuilder.setParamValue(mapping, value);
       }

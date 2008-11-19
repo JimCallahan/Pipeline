@@ -1,21 +1,21 @@
-// $Id: StringUtilityParam.java,v 1.2 2008/11/19 04:32:03 jesse Exp $
+// $Id: ConstantStringUtilityParam.java,v 1.1 2008/11/19 04:32:03 jesse Exp $
 
 package us.temerity.pipeline;
 
-import us.temerity.pipeline.glue.GlueDecoder;
+import us.temerity.pipeline.glue.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   S T R I N G   U T I L I T Y   P A R A M                                                */
+/*   C O N S T A N T    S T R I N G   U T I L I T Y   P A R A M                             */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * A Utility parameter with a short String value. <P> 
+ * A Utility parameter with a short, uneditable String value. <P> 
  */
 public 
-class StringUtilityParam
-  extends StringParam
+class ConstantStringUtilityParam
+  extends ConstantStringParam
   implements UtilityParam
-{  
+{
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
@@ -26,7 +26,7 @@ class StringUtilityParam
    * from user code.
    */    
   public 
-  StringUtilityParam() 
+  ConstantStringUtilityParam() 
   {
     super();
   }
@@ -44,7 +44,7 @@ class StringUtilityParam
    *   The default value for this parameter.
    */ 
   public
-  StringUtilityParam
+  ConstantStringUtilityParam
   (
    String name,  
    String desc, 
@@ -54,34 +54,11 @@ class StringUtilityParam
     super(name, desc, value);
   }
   
-  
-  
-  /*----------------------------------------------------------------------------------------*/
-  /*   U T I L I T I E S                                                                    */
-  /*----------------------------------------------------------------------------------------*/
-  
-  /**
-   * Sets the value of this parameter from a string.
-   */
-  public void 
-  valueFromString
-  (
-    String value
-  )
-  {
-    if (value == null)
-      return;
-    setValue(value);
-  }
 
-
-
+  
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = -3966290581349083988L;
+  private static final long serialVersionUID = 2561951707589932989L;
 }
-
-
-

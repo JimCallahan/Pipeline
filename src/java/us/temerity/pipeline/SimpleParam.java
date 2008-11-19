@@ -119,6 +119,7 @@ class SimpleParam
    * @param obj 
    *   The reference object with which to compare.
    */
+  @Override
   public boolean
   equals
   (
@@ -139,6 +140,7 @@ class SimpleParam
   /**
    * Returns a string representation of the object. 
    */
+  @Override
   public String
   toString() 
   {
@@ -153,6 +155,7 @@ class SimpleParam
   /*   G L U E A B L E                                                                      */
   /*----------------------------------------------------------------------------------------*/
   
+  @Override
   public void 
   toGlue
   ( 
@@ -165,6 +168,7 @@ class SimpleParam
     encoder.encode("Value", pValue);
   }
   
+  @Override
   @SuppressWarnings("unchecked")
   public void 
   fromGlue

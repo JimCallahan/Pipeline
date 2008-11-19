@@ -1,4 +1,4 @@
-// $Id: KeyIntValueParam.java,v 1.2 2008/11/13 21:38:09 jesse Exp $
+// $Id: KeyIntValueParam.java,v 1.3 2008/11/19 04:32:03 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -28,7 +28,7 @@ KeyIntValueParam<E>
   }
   
   /**
-   * Construct a parameter with the given name, description, default value, and layout.
+   * Construct a parameter with the given name, description, and default value.
    *
    * @param name
    *   The short name of the parameter.
@@ -54,14 +54,13 @@ KeyIntValueParam<E>
     super(name, desc);
     
     {
-      E param = createStringParam(aKey, "The key.  Not user modifiable", key);
+      E param = createConstantStringParam(aKey, "The key.  Not user modifiable", key);
       addParam(param);
     }
     {
       E param = createIntegerParam(aValue, "The value.  User modifiable", value);
       addParam(param);
     }
-    pKeyValue = key;
   }
   
   
@@ -74,21 +73,6 @@ KeyIntValueParam<E>
   protected boolean 
   needsUpdating()
   {
-    return true;
-  }
-  
-  @Override
-  protected boolean
-  valueUpdated
-  (
-    String paramName
-  )
-  {
-    if (paramName.equals(aKey)) {
-      E param = createStringParam(aKey, "The key.  Not user modifiable", pKeyValue);
-      replaceParam(param);
-      return true;
-    }
     return false;
   }
   
@@ -99,7 +83,7 @@ KeyIntValueParam<E>
   /*----------------------------------------------------------------------------------------*/
   
   protected abstract E
-  createStringParam
+  createConstantStringParam
   (
     String name, 
     String desc, 
@@ -148,12 +132,4 @@ KeyIntValueParam<E>
 
   public static final String aKey = "Key";
   public static final String aValue = "Value";  
-  
-  
-  
-  /*----------------------------------------------------------------------------------------*/
-  /*   I N T E R N A L S                                                                    */
-  /*----------------------------------------------------------------------------------------*/
-
-  private String pKeyValue;
 }

@@ -1,4 +1,4 @@
-// $Id: KeyValueUtilityParam.java,v 1.1 2008/10/17 03:36:46 jesse Exp $
+// $Id: KeyValueUtilityParam.java,v 1.2 2008/11/19 04:32:03 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -71,6 +71,18 @@ class KeyValueUtilityParam
   )
   {
     return new StringUtilityParam(name, desc, value);
+  }
+  
+  @Override
+  protected UtilityParam 
+  createConstantStringParam
+  (
+    String name,
+    String desc,
+    String value
+  )
+  {
+    return new ConstantStringUtilityParam(name, desc, value);
   }
   
 
