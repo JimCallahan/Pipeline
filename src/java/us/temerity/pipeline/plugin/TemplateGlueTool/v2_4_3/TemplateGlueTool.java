@@ -1,4 +1,4 @@
-// $Id: TemplateGlueTool.java,v 1.1 2008/10/17 03:40:28 jesse Exp $
+// $Id: TemplateGlueTool.java,v 1.2 2008/11/19 04:34:48 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateGlueTool.v2_4_3;
 
@@ -52,7 +52,15 @@ class TemplateGlueTool
         UIFactory.addVerticalSpacer(pTpanel, pVpanel, 6);
         JTextField field = makeStringReplacementField("");
         pStringReplaceFields.add(field);
-        pDialog.validate();
+        pVbox.validate();
+        break;
+      }
+    case FrameRanges:
+      {
+        UIFactory.addVerticalSpacer(pTpanel, pVpanel, 6);
+        JTextField field = makeFrameRangeField("");
+        pFrameRangeFields.add(field);
+        pVbox.validate();
         break;
       }
     case ContextNames:
@@ -60,7 +68,7 @@ class TemplateGlueTool
         UIFactory.addVerticalSpacer(pTpanel, pVpanel, 6);
         JTextField field = makeContextNameField("");
         pContextNameFields.add(field);
-        pDialog.validate();
+        pVbox.validate();
         break;
       }
     case ContextValues:
@@ -68,14 +76,14 @@ class TemplateGlueTool
         UIFactory.addVerticalSpacer(pTpanel, pVpanel, 6);
         JTextField field = makeContextValueField("");
         pContextValueFields.put(pCurrentContext, field);
-        pDialog.validate();
+        pVbox.validate();
         break;
       }
     case ContextDefaults:
       {
         JDrawer draw = makeContextDefaultFields(pContextValues.get(pCurrentContext));
         pVbox2.add(draw);
-        pDialog.validate();
+        pVbox.validate();
       }
     }
   }
@@ -111,6 +119,70 @@ class TemplateGlueTool
     return UIFactory.createTitledEditableTextField
       (pTpanel, "ContextName:", sTSize, pVpanel, value, sVSize, 
       "The name of the context.");  
+  }
+  
+  public JTextField 
+  makeFrameRangeField
+  (
+    String value  
+  )
+  {
+    return UIFactory.createTitledEditableTextField
+      (pTpanel, "FrameRange:", sTSize, pVpanel, value, sVSize, 
+      "The name of the frame range.");  
+  }
+  
+  public void
+  makeFrameRangeDefaultField
+  (
+    String name,
+    FrameRange value  
+  )
+  {
+    pTpanel.add(UIFactory.createFixedLabel(name + ":", sTSize, JLabel.RIGHT));
+    Box hbox = new Box(BoxLayout.X_AXIS);
+    
+    JIntegerField startFrameField = UIFactory.createIntegerField(null, 60, JLabel.CENTER);
+    if (value != null)
+      startFrameField.setValue(value.getStart());
+    hbox.add(startFrameField);
+  
+    hbox.add(Box.createHorizontalGlue());
+    hbox.add(Box.createRigidArea(new Dimension(8, 0)));
+  
+    hbox.add(new JLabel("to")); 
+  
+    hbox.add(Box.createRigidArea(new Dimension(8, 0)));
+    hbox.add(Box.createHorizontalGlue());
+  
+    JIntegerField endFrameField = UIFactory.createIntegerField(null, 60, JLabel.CENTER);
+    if (value != null)
+      endFrameField.setValue(value.getEnd());
+    hbox.add(endFrameField);
+  
+    hbox.add(Box.createHorizontalGlue());
+    hbox.add(Box.createRigidArea(new Dimension(8, 0)));
+  
+    hbox.add(new JLabel("by"));
+  
+    hbox.add(Box.createRigidArea(new Dimension(8, 0)));
+    hbox.add(Box.createHorizontalGlue());
+  
+    JIntegerField byFrameField = UIFactory.createIntegerField(null, 60, JLabel.CENTER);
+    if (value != null)
+      byFrameField.setValue(value.getBy());
+    hbox.add(byFrameField); 
+  
+    Dimension size = new Dimension(sVSize+1, 19);
+    hbox.setMinimumSize(size);
+    hbox.setMaximumSize(size);
+    hbox.setPreferredSize(size);
+  
+    pVpanel.add(hbox);
+    pFrameRangeStartFields.put(name, startFrameField);
+    pFrameRangeEndFields.put(name, endFrameField);
+    pFrameRangeByFields.put(name, byFrameField);
+
   }
   
   public JTextField 
@@ -266,7 +338,11 @@ class TemplateGlueTool
       pStringDefaultFields = new TreeMap<String, JTextField>();
       pContextNameFields = new ArrayList<JTextField>();
       pContextValueFields = new MappedArrayList<String, JTextField>();
-      pContextDefaultFields = new MappedArrayList<String, TreeMap<String,JTextField>>(); 
+      pContextDefaultFields = new MappedArrayList<String, TreeMap<String,JTextField>>();
+      pFrameRangeFields = new ArrayList<JTextField>();
+      pFrameRangeStartFields = new TreeMap<String, JIntegerField>();
+      pFrameRangeEndFields = new TreeMap<String, JIntegerField>();
+      pFrameRangeByFields = new TreeMap<String, JIntegerField>();
       
       
       pVbox = new Box(BoxLayout.Y_AXIS);
@@ -297,6 +373,38 @@ class TemplateGlueTool
       for (String replace : pStringDefaultFields.keySet()) {
         String value = pStringDefaultFields.get(replace).getText();
         pStringDefaults.put(replace, value);
+      }
+      
+      prepFrameRangeDialog();
+      pDialog.setVisible(true);
+      
+      if (!pDialog.wasConfirmed())
+        return null;
+      
+      pFrameRanges = new TreeSet<String>();
+      for (JTextField field : pFrameRangeFields) {
+        String value = field.getText();
+        if (value != null && !value.equals(""))
+          pFrameRanges.add(value);
+      }
+      
+      if (!pFrameRanges.isEmpty() ) {
+        prepFrameRangeDefaultDialog();
+        pDialog.setVisible(true);
+
+        if (!pDialog.wasConfirmed())
+          return null;
+      }
+      
+      pFrameRangeDefaults = new TreeMap<String, FrameRange>();
+      for (String name : pFrameRanges) {
+        Integer start = pFrameRangeStartFields.get(name).getValue();
+        Integer end = pFrameRangeEndFields.get(name).getValue();
+        Integer by = pFrameRangeByFields.get(name).getValue();
+        if (start == null || end == null || by == null)
+          continue;
+        FrameRange range = new FrameRange(start, end, by);
+        pFrameRangeDefaults.put(name, range);
       }
       
       prepContextNameDialog();
@@ -367,6 +475,8 @@ class TemplateGlueTool
       info.setReplacementDefaults(pStringDefaults);
       info.setContexts(pContextValues);
       info.setContextDefaults(pContextDefaults);
+      info.setFrameRanges(pFrameRanges);
+      info.setFrameRangeDefaults(pFrameRangeDefaults);
       
       pTemplateFile.delete();
       try {
@@ -452,7 +562,7 @@ class TemplateGlueTool
       
       String instructions = 
         "Enter the default values for each string replacement in the template.  " +
-        "If you do not wish to have a default value for a particular replacement, simply" +
+        "If you do not wish to have a default value for a particular replacement, simply " +
         "leave the field blank.";
       UIFactory.createTitledTextArea(pTpanel, "Instructions", sTSize, pVpanel, instructions, sVSize, 5, true);
       UIFactory.addVerticalSpacer(pTpanel, pVpanel, 12);
@@ -471,10 +581,79 @@ class TemplateGlueTool
       pDialog.setTitle("Set Replacement Defaults");
       pDialog.pack();
     }
+    
+    private void 
+    prepFrameRangeDialog()
+    {
+      pVbox.removeAll();
+      {
+        Component comps[] = UIFactory.createTitledPanels();
+        pTpanel = (JPanel) comps[0];
+        pVpanel = (JPanel) comps[1];
+        pBody = (Box) comps[2];
+    
+        pVbox.add(pBody);
+      }
+      
+      String instructions = 
+        "Enter the names of all the frame ranges that are going to be used in the template.  " +
+        "A frame range defines a start and end frame for a node or for the Action Parameters " +
+        "of a node.  After the frame ranges are defined, you will be prompted for default " +
+        "values  The add button can be used if additional fields are needed.";
+      UIFactory.createTitledTextArea(pTpanel, "Instructions", sTSize, pVpanel, instructions, sVSize, 5, true);
+      UIFactory.addVerticalSpacer(pTpanel, pVpanel, 12);
+      
+      pPhase = TemplatePhase.FrameRanges;
+      if (pOldSettings != null && !pOldSettings.getFrameRanges().isEmpty() ) {
+        for (String frameRange : pOldSettings.getFrameRanges()) {
+          JTextField field = makeFrameRangeField(frameRange);
+          pFrameRangeFields.add(field);
+          UIFactory.addVerticalSpacer(pTpanel, pVpanel, 6);
+        }
+      }
+      JTextField field = makeFrameRangeField("");
+      pFrameRangeFields.add(field);
+      
+      pVbox.add(UIFactory.createFiller(sTSize +sVSize + 35));
+      pDialog.setTitle("Set Frame Ranges");
+      pDialog.pack();
 
-    /**
-     * @param vbox
-     */
+    }
+    
+    private void 
+    prepFrameRangeDefaultDialog()
+    {
+      pVbox.removeAll();
+      {
+        Component comps[] = UIFactory.createTitledPanels();
+        pTpanel = (JPanel) comps[0];
+        pVpanel = (JPanel) comps[1];
+        pBody = (Box) comps[2];
+    
+        pVbox.add(pBody);
+      }
+      
+      String instructions = 
+        "Enter the default values for each frame range in the template.  " +
+        "If you do not wish to have a default value for a particular frame range, simply " +
+        "leave the fields blank.";
+      UIFactory.createTitledTextArea(pTpanel, "Instructions", sTSize, pVpanel, instructions, sVSize, 5, true);
+      UIFactory.addVerticalSpacer(pTpanel, pVpanel, 12);
+      
+      pPhase = TemplatePhase.FrameRangeDefaults;
+      
+      for (String frameRange : pFrameRanges) {
+        FrameRange defaults = null;
+        if (pOldSettings != null)
+          defaults = pOldSettings.getFrameRangeDefaults().get(frameRange);
+        makeFrameRangeDefaultField(frameRange, defaults);
+        UIFactory.addVerticalSpacer(pTpanel, pVpanel, 6);
+      }
+      pVbox.add(UIFactory.createFiller(sTSize +sVSize + 35));
+      pDialog.setTitle("Set Frame Range Defaults");
+      pDialog.pack();
+    }
+
     private void 
     prepContextNameDialog()
     {
@@ -489,9 +668,9 @@ class TemplateGlueTool
       }
       
       String instructions = 
-        "Enter the names of all the contexts that are going to be used in the template." +
-        "A context is a scope inside which an additional set of string replacements will" +
-        "occur.  After the contexts are defined, you will be prompted for which patterns will" +
+        "Enter the names of all the contexts that are going to be used in the template.  " +
+        "A context is a scope inside which an additional set of string replacements will " +
+        "occur.  After the contexts are defined, you will be prompted for which patterns will " +
         "be replaced in each context.  The add button can be used if additional fields " +
         "are needed.";
       UIFactory.createTitledTextArea(pTpanel, "Instructions", sTSize, pVpanel, instructions, sVSize, 5, true);
@@ -643,7 +822,13 @@ class TemplateGlueTool
   private enum
   TemplatePhase
   {
-    StringReplace, StringDefaults, ContextNames, ContextValues, ContextDefaults 
+    StringReplace, 
+    StringDefaults,
+    FrameRanges,
+    FrameRangeDefaults,
+    ContextNames, 
+    ContextValues, 
+    ContextDefaults 
   }
 
     
@@ -689,11 +874,17 @@ class TemplateGlueTool
   private ArrayList<JTextField> pContextNameFields;
   private MappedArrayList<String, JTextField> pContextValueFields;
   private MappedArrayList<String, TreeMap<String, JTextField>> pContextDefaultFields;
+  private ArrayList<JTextField> pFrameRangeFields;
+  private TreeMap<String, JIntegerField> pFrameRangeStartFields;
+  private TreeMap<String, JIntegerField> pFrameRangeEndFields;
+  private TreeMap<String, JIntegerField> pFrameRangeByFields;
   
   private TreeSet<String> pStringReplacements;
   private TreeMap<String, String> pStringDefaults;
   private TreeSet<String> pContextNames;
   private MappedSet<String, String> pContextValues;
   private MappedArrayList<String, TreeMap<String, String>> pContextDefaults;
+  private TreeSet<String> pFrameRanges;
+  private TreeMap<String, FrameRange> pFrameRangeDefaults;
   
 }

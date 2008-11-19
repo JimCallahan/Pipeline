@@ -1,4 +1,4 @@
-// $Id: TemplateTaskBuilder.java,v 1.3 2008/10/30 17:58:51 jesse Exp $
+// $Id: TemplateTaskBuilder.java,v 1.4 2008/11/19 04:34:48 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -28,7 +28,8 @@ class TemplateTaskBuilder
     BuilderInformation builderInformation,
     String startNode,
     TreeMap<String, String> stringReplacements,
-    TreeMap<String, ArrayList<TreeMap<String, String>>> contexts
+    TreeMap<String, ArrayList<TreeMap<String, String>>> contexts,
+    TreeMap<String, FrameRange> frameRanges
   ) 
     throws PipelineException
   {
@@ -45,6 +46,10 @@ class TemplateTaskBuilder
     pContexts = new TreeMap<String, ArrayList<TreeMap<String,String>>>();
     if (contexts != null)
       pContexts.putAll(contexts);
+    
+    pFrameRanges = new TreeMap<String, FrameRange>();
+    if (frameRanges != null)
+      pFrameRanges.putAll(frameRanges);
     
     addCheckinWhenDoneParam();
     
@@ -380,7 +385,7 @@ class TemplateTaskBuilder
          pProductNodes, pProductNodeContexts);
       TemplateBuilder builder = 
         new TemplateBuilder
-          (pClient, pQueue, getBuilderInformation(), info, pReplacements, pContexts);
+          (pClient, pQueue, getBuilderInformation(), info, pReplacements, pContexts, pFrameRanges);
       addSubBuilder(builder);
       addMappedParam(builder.getName(), aCheckinWhenDone, aCheckinWhenDone);
     }
@@ -461,7 +466,7 @@ class TemplateTaskBuilder
     TemplateTaskBuilder builder = new TemplateTaskBuilder
       (new MasterMgrClient(), new QueueMgrClient(), 
        new BuilderInformation(false, true, true, new MultiMap<String, String>()), 
-       "/projects/TEMPLATE/prod/SEQ1/SHOT1/anim/submit/SEQ1_SHOT1_submit", subs, contexts);
+       "/projects/TEMPLATE/prod/SEQ1/SHOT1/anim/submit/SEQ1_SHOT1_submit", subs, contexts, null);
     
     GUIExecution exec = new GUIExecution(builder);
     exec.run();
@@ -501,6 +506,8 @@ class TemplateTaskBuilder
   private TreeMap<String, String> pReplacements;
   
   private TreeMap<String, ArrayList<TreeMap<String, String>>> pContexts;
+  
+  private TreeMap<String, FrameRange> pFrameRanges;
   
   private MappedSet<String, String> pNodesIDependedOn;
   private MappedSet<String, String> pNodesDependingOnMe;

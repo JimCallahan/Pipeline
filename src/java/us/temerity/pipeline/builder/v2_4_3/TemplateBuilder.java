@@ -1,4 +1,4 @@
-// $Id: TemplateBuilder.java,v 1.3 2008/10/30 17:58:51 jesse Exp $
+// $Id: TemplateBuilder.java,v 1.4 2008/11/19 04:34:47 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -8,6 +8,7 @@ import us.temerity.pipeline.*;
 import us.temerity.pipeline.LogMgr.*;
 import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.builder.v2_4_1.TaskBuilder;
+import us.temerity.pipeline.plugin.TemplateRangeAnnotation.v2_4_3.*;
 import us.temerity.pipeline.stages.*;
 
 /*------------------------------------------------------------------------------------------*/
@@ -57,6 +58,10 @@ class TemplateBuilder
    * @param contexts
    *   A set of the replacements to be made, each indexed by the context name that will trigger 
    *   those replacements to be used.
+   *   
+   * @param frameRanges
+   *   The list of frame ranges to use, each indexed by the name of the template Range value
+   *   that should be set on the {@link TemplateRangeAnnotation}.
    * 
    * @throws PipelineException
    */
@@ -68,7 +73,8 @@ class TemplateBuilder
     BuilderInformation builderInformation,
     TemplateBuildInfo templateInfo,
     TreeMap<String, String> stringReplacements,
-    TreeMap<String, ArrayList<TreeMap<String, String>>> contexts
+    TreeMap<String, ArrayList<TreeMap<String, String>>> contexts,
+    TreeMap<String, FrameRange> frameRanges
   ) 
     throws PipelineException
   {
@@ -144,7 +150,14 @@ class TemplateBuilder
     
     pLog.log(Kind.Ops, Level.Finest, 
       "The list of contexts to apply to this template: " + pContexts);
-    
+
+    pFrameRanges = new TreeMap<String, FrameRange>();
+    if (frameRanges != null)
+      pFrameRanges.putAll(frameRanges);
+
+    pLog.log(Kind.Ops, Level.Finest, 
+      "The list of frame ranges to apply to this template: " + pFrameRanges);
+
     pAnnotCache = new TreeMap<String, TreeMap<String,BaseAnnotation>>();
     
     addCheckinWhenDoneParam();
@@ -211,6 +224,33 @@ class TemplateBuilder
         if (aSrc.equals(src))
           toReturn.add((String) annot.getParamValue(aContextName));
       }
+    }
+    return toReturn;
+  }
+
+  /**
+   * Get the frame range associated with the given node, if one exists.
+   * 
+   * @param target
+   *   The name of the node.
+   *   
+   * @return
+   *   The framerange or <code>null</code> if there is no frame range annotation
+   *   on this node.
+   */
+  protected FrameRange
+  getTemplateFrameRange
+  (
+    String target
+  )
+    throws PipelineException
+  {
+    TreeMap<String, BaseAnnotation> annots = getAnnotations(target);
+    FrameRange toReturn = null;
+    BaseAnnotation annot = annots.get("TemplateRange");
+    if (annot != null) {
+      String range = (String) annot.getParamValue("RangeName");
+      toReturn = pFrameRanges.get(range);
     }
     return toReturn;
   }
@@ -394,12 +434,14 @@ class TemplateBuilder
           }
         }
         
+        FrameRange range = getTemplateFrameRange(toBuild);
+        
         TreeSet<String> nodesMade = new TreeSet<String>();
         if (contexts.size() == 0) { //no contexts, just do a straight build
-          makeNode(mod, pReplacements, pContexts, nodesMade);
+          makeNode(mod, pReplacements, pContexts, range,  nodesMade);
         }
         else { //uh-oh, there are contexts!
-          contextLoop(toBuild, mod, contexts, pReplacements, pContexts, nodesMade);
+          contextLoop(toBuild, mod, contexts, pReplacements, pContexts, range, nodesMade);
         }
 
         pNodesToBuild.remove(toBuild);
@@ -443,6 +485,7 @@ class TemplateBuilder
       TreeSet<String> contextList,
       TreeMap<String, String> replace,
       TreeMap<String, ArrayList<TreeMap<String, String>>> contexts, 
+      FrameRange range,
       TreeSet<String> nodesMade
     )
       throws PipelineException
@@ -465,11 +508,12 @@ class TemplateBuilder
         newMaps.put(currentContext, newStuff);
         
         if (contextList.isEmpty()) {  //bottom of the recursion
-          makeNode(mod, newReplace, newMaps, nodesMade);
+          makeNode(mod, newReplace, newMaps, range, nodesMade);
         }
         else {
           contextLoop
-            (toBuild, mod, new TreeSet<String>(contextList), newReplace, newMaps, nodesMade);
+            (toBuild, mod, new TreeSet<String>(contextList), 
+             newReplace, newMaps, range, nodesMade);
         }
       }
     }
@@ -479,7 +523,8 @@ class TemplateBuilder
     (
       NodeMod mod,
       TreeMap<String, String> replace,
-      TreeMap<String, ArrayList<TreeMap<String, String>>> contexts, 
+      TreeMap<String, ArrayList<TreeMap<String, String>>> contexts,
+      FrameRange range,
       TreeSet<String> nodesMade
     )
       throws PipelineException
@@ -487,7 +532,7 @@ class TemplateBuilder
       TemplateStage stage = 
         TemplateStage.getTemplateStage
         (mod, getStageInformation(), pContext, pClient, 
-         pTemplateInfo, replace, contexts, pAnnotCache);
+         pTemplateInfo, replace, contexts, range, pAnnotCache);
 
       if (stage.build()) {
         if (stage.needsFinalization())
@@ -656,4 +701,5 @@ class TemplateBuilder
   private MappedSet<String, String> pNodesDependingOnMe;
   private TreeSet<String> pProductNodes;
   private DoubleMap<String, String, TreeSet<String>> pProductContexts;
+  private TreeMap<String, FrameRange> pFrameRanges;
 }

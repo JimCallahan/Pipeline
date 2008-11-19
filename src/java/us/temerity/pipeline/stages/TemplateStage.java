@@ -1,4 +1,4 @@
-// $Id: TemplateStage.java,v 1.2 2008/10/17 03:36:46 jesse Exp $
+// $Id: TemplateStage.java,v 1.3 2008/11/19 04:34:48 jesse Exp $
 
 package us.temerity.pipeline.stages;
 
@@ -42,6 +42,7 @@ class TemplateStage
     TemplateBuildInfo templateInfo,
     TreeMap<String, String> stringReplacements,
     TreeMap<String, ArrayList<TreeMap<String, String>>> contexts,
+    FrameRange templateRange,
     TreeMap<String, TreeMap<String, BaseAnnotation>> annotCache
   ) 
     throws PipelineException
@@ -49,11 +50,12 @@ class TemplateStage
     super("Template", 
           "Stage for use with the Template Builder", 
           stageInfo, context, client, 
-          nodeName, range, padding, suffix, editor, action);
+          nodeName, (templateRange != null) ? templateRange : range, padding, suffix, editor, action);
     pReplacements = stringReplacements;
     pContexts = contexts;
     pAnnotCache = annotCache;
     pTemplateInfo = templateInfo;
+    pTemplateRange = templateRange;
     init(sourceMod);
   }
 
@@ -71,6 +73,7 @@ class TemplateStage
     TemplateBuildInfo templateInfo,
     TreeMap<String, String> stringReplacements,
     TreeMap<String, ArrayList<TreeMap<String, String>>> maps,
+    FrameRange templateRange,
     TreeMap<String, TreeMap<String, BaseAnnotation>> annotCache
   ) 
     throws PipelineException
@@ -83,6 +86,7 @@ class TemplateStage
     pContexts = maps;
     pAnnotCache = annotCache;
     pTemplateInfo = templateInfo;
+    pTemplateRange = templateRange;
     init(sourceMod);
   }
   
@@ -147,6 +151,15 @@ class TemplateStage
       for (ActionParam param : act.getSingleParams()) {
         Comparable value = stringReplaceParamValue(param);
         addSingleParamValue(param.getName(), value);
+      }
+      
+      if (pTemplateRange != null) {
+        if (act.getSingleParam(aStartFrame) != null)
+          addSingleParamValue(aStartFrame, pTemplateRange.getStart());
+        if (act.getSingleParam(aEndFrame) != null)
+          addSingleParamValue(aEndFrame, pTemplateRange.getEnd());
+        if (act.getSingleParam(aByFrame) != null)
+          addSingleParamValue(aByFrame, pTemplateRange.getBy());
       }
       
       setJobReqs(sourceMod.getJobRequirements());
@@ -242,27 +255,40 @@ class TemplateStage
    * 
    * @param sourceMod
    *   The template node we are basing this new node on.
+   * 
    * @param stageInfo
    *   The stage information for the builder.
+   * 
    * @param context
    *   The UtilContext we're making the node in.  Note that the toolset setting in this 
    *   context is going to be ignored in favor of the toolset in the source NodeMod.
+   * 
    * @param client
    *   The instance of the MasterMgr to use when making the node.
+   * 
    * @param stringReplacements
    *   A list of String replacements to make when creating the node from the template.  The
    *   keys will be searched for in node names, links, param values, and annotations
    *   and replaced with the values the key maps to.
+   * 
    * @param contexts
    *   The list of recursive string substitutions to be performed on nodes tagged with the
    *   TemplateContextAnnotation.
+   * 
    * @param annotCache
    *   A shared cache of annotations for nodes 
+   * 
    * @param templateInfo
    *   Information about what the template is making.  Used to pull out context information
    *   for product nodes.
+   * 
+   * @param range
+   *   The frame range to be used for this node or <code>null</code> if there is no 
+   *   special template frame range. 
+   * 
    * @return
    *   A TemplateStage ready to build the new node.
+   * 
    * @throws PipelineException
    *   If something goes horribly awry. 
    */
@@ -276,6 +302,7 @@ class TemplateStage
     TemplateBuildInfo templateInfo,
     TreeMap<String, String> stringReplacements,
     TreeMap<String, ArrayList<TreeMap<String, String>>> contexts,
+    FrameRange range, 
     TreeMap<String, TreeMap<String, BaseAnnotation>> annotCache
   ) 
     throws PipelineException
@@ -308,15 +335,15 @@ class TemplateStage
     
     if (priSeq.hasFrameNumbers()) {
       int padding = pat.getPadding();
-      FrameRange range = priSeq.getFrameRange();
+      FrameRange oldRange = priSeq.getFrameRange();
       return new TemplateStage
-        (sourceMod, stageInfo, newContext, client, nodeName, range, padding, suffix, 
-         editor, action, templateInfo, stringReplacements, contexts, annotCache);
+        (sourceMod, stageInfo, newContext, client, nodeName, oldRange, padding, suffix, 
+         editor, action, templateInfo, stringReplacements, contexts, range, annotCache);
     }
     else 
       return new TemplateStage
         (sourceMod, stageInfo, newContext, client, nodeName, suffix, editor, action, 
-         templateInfo, stringReplacements, contexts, annotCache);
+         templateInfo, stringReplacements, contexts, range, annotCache);
   }
   
   @Override
@@ -594,6 +621,10 @@ class TemplateStage
   public static final String aContextName = "ContextName";
   public static final String aLinkName = "LinkName";
   
+  public static final String aStartFrame = "StartFrame";
+  public static final String aEndFrame = "EndFrame";
+  public static final String aByFrame = "ByFrame";
+  
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -616,4 +647,6 @@ class TemplateStage
   private boolean pEnableAction;
   
   private NodeMod pSourceMod;
+  
+  private FrameRange pTemplateRange;
 }

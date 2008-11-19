@@ -1,4 +1,4 @@
-// $Id: TemplateContextLinkTool.java,v 1.2 2008/10/17 03:36:46 jesse Exp $
+// $Id: TemplateContextLinkTool.java,v 1.3 2008/11/19 04:34:48 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateContextLinkTool.v2_4_3;
 
@@ -66,15 +66,15 @@ class TemplateContextLinkTool
     /* create dialog body components */ 
     JScrollPane scroll;
     {
-      Box vbox = new Box(BoxLayout.Y_AXIS);
+      pBody = new Box(BoxLayout.Y_AXIS);
 
       {
         Component comps[] = UIFactory.createTitledPanels();
         pTpanel = (JPanel) comps[0];
         pVpanel = (JPanel) comps[1];
-        pBody = (Box) comps[2];
+        Box body = (Box) comps[2];
         
-        vbox.add(pBody);
+        pBody.add(body);
       }
       { 
         JTextField field = UIFactory.createTitledEditableTextField
@@ -84,10 +84,10 @@ class TemplateContextLinkTool
 
       }
       
-      vbox.add(UIFactory.createFiller(sTSize +sVSize + 35));
+      pBody.add(UIFactory.createFiller(sTSize +sVSize + 35));
       
       {
-        scroll = new JScrollPane(vbox);
+        scroll = new JScrollPane(pBody);
 
         scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         scroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);

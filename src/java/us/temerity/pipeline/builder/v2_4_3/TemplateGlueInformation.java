@@ -1,4 +1,4 @@
-// $Id: TemplateGlueInformation.java,v 1.1 2008/10/17 03:36:46 jesse Exp $
+// $Id: TemplateGlueInformation.java,v 1.2 2008/11/19 04:34:48 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -35,6 +35,9 @@ class TemplateGlueInformation
     pContextDefaults = new MappedArrayList<String, TreeMap<String,String>>();
     
     pNodesInTemplate = new TreeSet<String>();
+    
+    pFrameRanges = new TreeSet<String>();
+    pFrameRangeDefaults = new TreeMap<String, FrameRange>();
   }
   
   public 
@@ -53,6 +56,9 @@ class TemplateGlueInformation
     pContextDefaults = new MappedArrayList<String, TreeMap<String,String>>();
     
     pNodesInTemplate = new TreeSet<String>();
+    
+    pFrameRanges = new TreeSet<String>();
+    pFrameRangeDefaults = new TreeMap<String, FrameRange>();
   }
   
   
@@ -214,6 +220,65 @@ class TemplateGlueInformation
       pNodesInTemplate = new TreeSet<String>(nodesInTemplate);
   }
   
+  /**
+   * Get a list of frame ranges in the template.
+   */
+  public final TreeSet<String>
+  getFrameRanges()
+  {
+    return new TreeSet<String>(pFrameRanges); 
+  }
+  
+  /**
+   * Set the list of frame ranges in the template.
+   */
+  public final void
+  setFrameRanges
+  (
+    TreeSet<String> frameRanges  
+  )
+  {
+    if (frameRanges == null)
+      pFrameRanges = new TreeSet<String>();
+    else
+      pFrameRanges = new TreeSet<String>(frameRanges);
+  }
+  
+  /**
+   *  Get the list of default values for the frame ranges. 
+   */
+  public final TreeMap<String, FrameRange> 
+  getFrameRangeDefaults()
+  {
+    return new TreeMap<String, FrameRange>(pFrameRangeDefaults);
+  }
+
+  
+  /**
+   * Set the list of default values for the frame ranges.
+   * <p>
+   * All values in the keyset must already exist in the list of frame ranges for
+   * this template.
+   */
+  public final void 
+  setFrameRangeDefaults
+  (
+    TreeMap<String, FrameRange> replacementDefaults
+  )
+  {
+    if (replacementDefaults == null)
+      pFrameRangeDefaults = new TreeMap<String, FrameRange>();
+    else {
+      for (String key : replacementDefaults.keySet()) {
+        if (!pFrameRanges.contains(key))
+          throw new IllegalArgumentException
+            ("The key (" + key + ") specified while setting the default " +
+             "frame range values is not specified as valid key for this template"); 
+      }
+      pFrameRangeDefaults = new TreeMap<String, FrameRange>(replacementDefaults);
+    }
+  }
+  
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -261,6 +326,18 @@ class TemplateGlueInformation
       if (o != null)
         pReplacementDefaults = (TreeMap<String, String>) o;
     }
+    
+    {
+      Object o = decoder.decode(aFrameRanges);
+      if (o != null)
+        pFrameRanges = (TreeSet<String>) o;
+    }
+    
+    {
+      Object o = decoder.decode(aFrameRangeDefaults);
+      if (o != null)
+        pFrameRangeDefaults = (TreeMap<String, FrameRange>) o;
+    }
   }
 
   @Override
@@ -283,6 +360,12 @@ class TemplateGlueInformation
       encoder.encode(aReplacements, pReplacements);
     if (!pReplacementDefaults.isEmpty())
       encoder.encode(aReplacementDefaults, pReplacementDefaults);
+    if (!pFrameRanges.isEmpty())
+      encoder.encode(aFrameRanges, pFrameRanges);
+    if (!pFrameRanges.isEmpty())
+      encoder.encode(aFrameRanges, pFrameRanges);
+    if (!pFrameRangeDefaults.isEmpty())
+      encoder.encode(aFrameRangeDefaults, pFrameRangeDefaults);
   }
   
   
@@ -299,6 +382,8 @@ class TemplateGlueInformation
   public static final String aContexts = "Contexts";
   public static final String aContextDefaults = "ContextDefaults";
   public static final String aNodesInTemplate = "NodesInTemplate";
+  public static final String aFrameRanges = "FrameRanges";
+  public static final String aFrameRangeDefaults = "FrameRangeDefaults";
   
   
   
@@ -311,6 +396,8 @@ class TemplateGlueInformation
   private MappedSet<String, String> pContexts;
   private MappedArrayList<String, TreeMap<String, String>> pContextDefaults;
   
+  private TreeSet<String> pFrameRanges;
+  private TreeMap<String, FrameRange> pFrameRangeDefaults;
   
   private TreeSet<String> pNodesInTemplate;
 

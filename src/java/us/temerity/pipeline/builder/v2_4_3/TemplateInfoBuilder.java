@@ -1,4 +1,4 @@
-// $Id: TemplateInfoBuilder.java,v 1.3 2008/11/13 21:38:09 jesse Exp $
+// $Id: TemplateInfoBuilder.java,v 1.4 2008/11/19 04:34:48 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -23,19 +23,26 @@ class TemplateInfoBuilder
 {
   /**
    * Create a new Template Info Builder.
+   * 
    * @param mclient
    *   The instance of MasterMgrClient to use in the builder.
+   * 
    * @param qclient
    *   The instance of QueueMgrClient to use in the builder.
+   * 
    * @param builderInformation
    *   The instance of the global information class used to share information between all the
    *   Builders that are invoked.e 
+   * 
    * @param templatePath
    *   The path of the node containing the template glue information.
+   * 
    * @param author
    *   The user whose working area the template information node.
+   * 
    * @param view
    *   The user's working area containing the template information node. 
+   * 
    * @throws PipelineException
    */
   public
@@ -102,9 +109,11 @@ class TemplateInfoBuilder
     
     layout.addColumn("Replacements", true);
     layout.addColumn("Contexts", true);
+    layout.addColumn("FrameRanges", true);
     
     pReplacementParams = new ArrayList<KeyValueUtilityParam>();
     pContextParams = new ArrayList<KeyIntValueUtilityParam>();
+    pFrameRangeParams = new TreeMap<String, FrameRangeUtilityParam>();
     
     TreeMap<String, String> rDefaults = pTemplateGlueInfo.getReplacementDefaults();
     int i = 1;
@@ -135,6 +144,20 @@ class TemplateInfoBuilder
       pContextParams.add(param);
       layout.addEntry(3, name);
       i++;
+    }
+    
+    for (String range : pTemplateGlueInfo.getFrameRanges()) {
+      FrameRangeUtilityParam param =
+        new FrameRangeUtilityParam
+        (range,
+         "The frame range",
+         pTemplateGlueInfo.getFrameRangeDefaults().get(range)
+        );
+      addParam(param);
+      pFrameRangeParams.put(range, param);
+      LayoutGroup group = new LayoutGroup(range, "The frame range", true);
+      group.addEntry(range);
+      layout.addSubGroup(4, group);
     }
     
     addCheckinWhenDoneParam();
@@ -180,6 +203,11 @@ class TemplateInfoBuilder
       pContextValues = new TreeMap<String, Integer>();
       for (KeyIntValueUtilityParam param : pContextParams) {
         pContextValues.put(param.getKeyValue(), param.getValueValue());
+      }
+      pFrameRanges = new TreeMap<String, FrameRange>();
+      for (String frameRange: pFrameRangeParams.keySet()) {
+        FrameRangeUtilityParam param = pFrameRangeParams.get(frameRange);
+        pFrameRanges.put(frameRange, param.getFrameRangeValue());
       }
       
     }
@@ -241,7 +269,7 @@ class TemplateInfoBuilder
       if (nodes.isEmpty()) {
         TemplateTaskBuilder builder = 
           new TemplateTaskBuilder(pClient, pQueue, getBuilderInformation(),
-            pTemplateStartNode, pReplacements, pContexts);
+            pTemplateStartNode, pReplacements, pContexts, pFrameRanges);
         addSubBuilder(builder);
         addMappedParam(builder.getName(), aCheckinWhenDone, aCheckinWhenDone);
       }
@@ -250,7 +278,7 @@ class TemplateInfoBuilder
         info.setNodesToBuild(nodes);
         TemplateBuilder builder = 
           new TemplateBuilder(pClient, pQueue, getBuilderInformation(),
-            info, pReplacements, pContexts);
+            info, pReplacements, pContexts, pFrameRanges);
         addSubBuilder(builder);
         addMappedParam(builder.getName(), aCheckinWhenDone, aCheckinWhenDone);
       }
@@ -442,6 +470,10 @@ class TemplateInfoBuilder
   private TreeMap<String, ContextInfoBuilder> pContextBuilders;
   
   private TreeMap<String, ArrayList<TreeMap<String, String>>> pContexts;
+  
+  private TreeMap<String, FrameRange> pFrameRanges;
+  
+  private TreeMap<String, FrameRangeUtilityParam> pFrameRangeParams;
 
   private File pFile;
   
