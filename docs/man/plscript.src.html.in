@@ -617,6 +617,24 @@ Administration</span></span></a><br>
  style="font-weight: normal;"><a href="#key-chooser_--get-info-all"><span
  style="font-weight: bold;">--get-info-all</span></a></span></li>
       </ul>
+      <li style="font-weight: bold; color: rgb(0, 0, 0);">builder-collection<br>
+      </li>
+      <ul>
+        <li style="font-weight: bold; color: rgb(0, 0, 0);"><a
+ href="plscript.src.html.in#builder-collection_--get">--get</a></li>
+        <li style="font-weight: bold; color: rgb(0, 0, 0);"><a
+ href="plscript.src.html.in#builder-collection_--get-info">--get-info</a><span
+ style="font-weight: normal;">=<span style="font-style: italic;">builder-collection-name</span>[:<span
+ style="font-style: italic;">major</span>.<span
+ style="font-style: italic;">minor</span>.<span
+ style="font-style: italic;">micro</span>]</span><span
+ style="font-weight: normal;">[<span style="font-style: italic;">,vendor-name</span>]</span><span
+ style="font-weight: normal;"></span></li>
+        <li style="font-weight: bold; color: rgb(0, 0, 0);"><span
+ style="font-weight: normal;"><a
+ href="plscript.src.html.in#builder-collection_--get-info-all"><span
+ style="font-weight: bold;">--get-info-all</span></a></span></li>
+      </ul>
     </ul>
     <li style="font-weight: bold;"><a href="#User_Preferences">User
 Preferences</a><br>
@@ -3820,14 +3838,14 @@ Equivalent to performing a <a
 <br>
 </div>
 </div>
-<span style="font-weight: bold;">Key-Chooser Plugins: <br>
+<span style="font-weight: bold;">Key Chooser Plugins: <br>
 <br>
 <a name="key-chooser_--get"></a>key-chooser
 --get</span><br>
 <br>
 </div>
 <div style="margin-left: 80px;">Prints the names and versions of the
-Key-Chooser plugins.<br>
+Key Chooser plugins.<br>
 </div>
 <div style="margin-left: 40px;"><br>
 <span style="font-weight: bold;"><a name="key-chooser_--get-info"></a>key-chooser</span><span
@@ -3843,7 +3861,7 @@ Key-Chooser plugins.<br>
 the given version (<span style="font-weight: normal;"><span
  style="font-style: italic;">major</span>.<span
  style="font-style: italic;">minor</span>.<span
- style="font-style: italic;">micro</span>) of an </span>Key-Chooser<span
+ style="font-style: italic;">micro</span>) of an </span>Key Chooser<span
  style="font-weight: normal;"> plugin</span><span
  style="font-weight: normal;"> created by the given vendor (<span
  style="font-style: italic;">vendor-name</span>)</span><span
@@ -3857,11 +3875,11 @@ installed.<br>
  style="font-weight: bold;"> --get-info-all</span><br>
 <br>
 <div style="margin-left: 40px;">Prints a summary of information for all
-Key-Chooser plugins.&nbsp;
+Key Chooser plugins.&nbsp;
 Equivalent to performing a <a
  href="plscript.src.html.in#key-chooser_--get-info"><span
  style="font-weight: bold;">key-chooser
---get-info</span></a> for each Key-Chooser plugin.<br>
+--get-info</span></a> for each Key Chooser plugin.<br>
 </div>
 </div>
 <div style="margin-left: 40px;">
@@ -3870,7 +3888,54 @@ Equivalent to performing a <a
 <br>
 </div>
 </div>
+<span style="font-weight: bold;">Builder Collection Plugins: </span><br>
+<br>
 <span style="font-weight: bold;"></span></div>
+<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
+ name="builder-collection_--get"></a>builder-collection
+--get</span><br>
+<span style="font-weight: bold;"><br>
+</span></div>
+<div style="margin-left: 80px;">Prints the names and versions of the
+Builder Collection plugins.<br>
+</div>
+<div style="margin-left: 40px;"><br>
+<span style="font-weight: bold;"><a name="builder-collection_--get-info"></a>builder-collection</span><span
+ style="font-weight: bold;"> --get-info</span><span
+ style="font-weight: normal;">=<span style="font-style: italic;">action-name</span>[:<span
+ style="font-style: italic;">major</span>.<span
+ style="font-style: italic;">minor</span>.<span
+ style="font-style: italic;">micro</span>]</span><span
+ style="font-weight: normal;">[<span style="font-style: italic;">,vendor-name</span>]</span><br>
+<span style="font-weight: normal;"></span><br>
+<span style="font-weight: normal;"></span></div>
+<div style="margin-left: 80px;">Prints a summary of information about
+the given version (<span style="font-weight: normal;"><span
+ style="font-style: italic;">major</span>.<span
+ style="font-style: italic;">minor</span>.<span
+ style="font-style: italic;">micro</span>) of an </span>Builder
+Collection<span style="font-weight: normal;"> plugin</span><span
+ style="font-weight: normal;"> created by the given vendor (<span
+ style="font-style: italic;">vendor-name</span>)</span><span
+ style="font-weight: normal;">.</span><span style="font-weight: normal;">&nbsp;
+The information includes a description of the plugin, the name of the
+associated Java class and the timestamp of when the plugin was
+installed.<br>
+</span></div>
+<div style="margin-left: 40px;"><br>
+<span style="font-weight: bold;"><a
+ name="builder-collection_--get-info-all"></a>builder-collection</span><span
+ style="font-weight: bold;"> --get-info-all</span><br>
+<br>
+<div style="margin-left: 40px;">Prints a summary of information for all
+Builder Collection plugins.&nbsp;
+Equivalent to performing a <a
+ href="plscript.src.html.in#builder-collection_--get-info"><span
+ style="font-weight: bold;">builder-collection
+--get-info</span></a> for each Builder Collection plugin.<br>
+</div>
+</div>
+<br>
 <h3><a name="User_Preferences"></a><span style="font-weight: bold;"></span>User
 Preferences</h3>
 <div style="margin-left: 40px;"><span style="font-weight: bold;"><a

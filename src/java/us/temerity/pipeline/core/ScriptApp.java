@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.91 2008/09/29 19:02:17 jim Exp $
+// $Id: ScriptApp.java,v 1.92 2008/11/25 01:18:03 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1949,6 +1949,35 @@ class ScriptApp
   /*----------------------------------------------------------------------------------------*/
   /*   P L U G I N S                                                                        */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * List all of the names and versions of a given plugin. <P>
+   * 
+   * This is needed because javacc(1) doesn't understand generics, so we need to cast the 
+   * returned TreeMap from the PluginMgrClient.get*() methods into a usable type first.
+   */ 
+  public void 
+  listPlugins
+  (
+   TreeMap plugins
+  ) 
+  { 
+    StringBuilder buf = new StringBuilder();
+
+    TripleMap<String,String,VersionID,TreeSet<OsType>> table = 
+      (TripleMap<String,String,VersionID,TreeSet<OsType>>) plugins;    
+    for(String vendor : table.keySet()) {
+      buf.append("Vendor: " + vendor + "\n");
+      for(String name : table.keySet(vendor)) {
+        for(VersionID vid : table.keySet(vendor, name)) {
+          buf.append("  " + name + " (v" + vid + ")\n");
+        }
+      }
+    } 
+
+    LogMgr.getInstance().log(LogMgr.Kind.Ops, LogMgr.Level.Info, buf.toString());
+    LogMgr.getInstance().flush();
+  }
 
   /**
    * Print information about all Editor plugins.
@@ -4838,8 +4867,26 @@ class ScriptApp
     case ScriptOptsParserConstants.COMPARATOR_NAME:
       return "an Comparator plugin name";
 
+    case ScriptOptsParserConstants.TOOL_NAME:
+      return "an Tool plugin name";
+
+    case ScriptOptsParserConstants.ANNOTATION_NAME:
+      return "an Annotation plugin name";
+
     case ScriptOptsParserConstants.ARCHIVER_NAME:
       return "an Archiver plugin name";
+
+    case ScriptOptsParserConstants.MASTER_EXTENSION_NAME:
+      return "an Master Extension plugin name";
+
+    case ScriptOptsParserConstants.QUEUE_EXTENSION_NAME:
+      return "an Queue Extension plugin name";
+
+    case ScriptOptsParserConstants.KEY_CHOOSER_NAME:
+      return "an Key Chooser plugin name";
+
+    case ScriptOptsParserConstants.BUILDER_COLLECTION_NAME:
+      return "an Builder Collection plugin name";
 
     case ScriptOptsParserConstants.ARCHIVE_PREFIX: 
       return "an archive volume prefix/name"; 

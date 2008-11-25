@@ -7,6 +7,7 @@ PARSER_BEGIN(ScriptOptsParser)
 package us.temerity.pipeline.core;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.ui.*;
 
 import java.util.*;
@@ -324,33 +325,34 @@ TOKEN :
 | <BATCH:        "--batch">               : PATH_SEP2
 		   
   /* commands */ 
-| <USER:              "user">             : USER_OPTS 
-| <WORK_GROUP:        "work-group">       : WORK_GROUP_OPTS 
-| <PRIVILEGE:         "privilege">        : PRIVILEGE_OPTS 
-| <ADMIN:             "admin">            : ADMIN_OPTS
-| <RUNTIME:           "runtime">          : RUNTIME_OPTS
-| <ARCHIVE_VOLUME:    "archive-volume">   : ARCHIVE_VOLUME_OPTS
-| <DEFAULT_TOOLSET:   "default-toolset">  : TOOLSET_OPTS 
-| <ACTIVE_TOOLSET:    "active-toolset">   : TOOLSET_OPTS 
-| <TOOLSET1:          "toolset">          : TOOLSET_OPTS 
-| <LICENSE_KEY1:      "license-key">      : KEY_OPTS 
-| <SELECTION_KEY1:    "selection-key">    : KEY_OPTS  
-| <HARDWARE_KEY1:     "hardware-key">     : KEY_OPTS  
-| <JOB_SERVER:        "job-server">       : JOB_SERVER_OPTS
-| <EDITOR1:           "editor">           : EDITOR_OPTS
-| <ACTION1:           "action">           : ACTION_OPTS
-| <COMPARATOR:        "comparator">       : COMPARATOR_OPTS
-| <TOOL:              "tool">             : TOOL_OPTS      
-| <ANNOTATION:        "annotation">       : ANNOTATION_OPTS  
-| <ARCHIVER:          "archiver">         : ARCHIVER_OPTS  
-| <MASTER_EXTENSION:  "master_extension"> : MASTER_EXTENSION_OPTS
-| <QUEUE_EXTENSION:   "queue_extension">  : QUEUE_EXTENSION_OPTS
-| <KEY_CHOOSER:       "key_chooser">      : KEY_CHOOSER_OPTS      
-| <SUFFIX_EDITOR:     "suffix-editor">    : SUFFIX_EDITOR_OPTS
-| <VIEW1:             "view">             : VIEW_OPTS
-| <WORKING:           "working">          : WORKING_OPTS
-| <CHECKED_IN:        "checked-in">       : CHECKED_IN_OPTS
-| <NODE:              "node">             : NODE_OPTS
+| <USER:                "user">               : USER_OPTS             
+| <WORK_GROUP:          "work-group">         : WORK_GROUP_OPTS       
+| <PRIVILEGE:           "privilege">          : PRIVILEGE_OPTS        
+| <ADMIN:               "admin">              : ADMIN_OPTS            
+| <RUNTIME:             "runtime">            : RUNTIME_OPTS          
+| <ARCHIVE_VOLUME:      "archive-volume">     : ARCHIVE_VOLUME_OPTS   
+| <DEFAULT_TOOLSET:     "default-toolset">    : TOOLSET_OPTS          
+| <ACTIVE_TOOLSET:      "active-toolset">     : TOOLSET_OPTS          
+| <TOOLSET1:            "toolset">            : TOOLSET_OPTS          
+| <LICENSE_KEY1:        "license-key">        : KEY_OPTS              
+| <SELECTION_KEY1:      "selection-key">      : KEY_OPTS              
+| <HARDWARE_KEY1:       "hardware-key">       : KEY_OPTS              
+| <JOB_SERVER:          "job-server">         : JOB_SERVER_OPTS       
+| <EDITOR1:             "editor">             : EDITOR_OPTS           
+| <ACTION1:             "action">             : ACTION_OPTS           
+| <COMPARATOR:          "comparator">         : COMPARATOR_OPTS       
+| <TOOL:                "tool">               : TOOL_OPTS             
+| <ANNOTATION:          "annotation">         : ANNOTATION_OPTS       
+| <ARCHIVER:            "archiver">           : ARCHIVER_OPTS         
+| <MASTER_EXTENSION:    "master-extension">   : MASTER_EXTENSION_OPTS 
+| <QUEUE_EXTENSION:     "queue-extension">    : QUEUE_EXTENSION_OPTS  
+| <KEY_CHOOSER:         "key-chooser">        : KEY_CHOOSER_OPTS      
+| <BUILDER_COLLECTION:  "builder-collection"> : BUILDER_COLLECTION_OPTS      
+| <SUFFIX_EDITOR:       "suffix-editor">      : SUFFIX_EDITOR_OPTS
+| <VIEW1:               "view">               : VIEW_OPTS
+| <WORKING:             "working">            : WORKING_OPTS
+| <CHECKED_IN:          "checked-in">         : CHECKED_IN_OPTS
+| <NODE:                "node">               : NODE_OPTS
 
   /* argument end separator */ 
 | <AE1: ("\0")+>
@@ -984,7 +986,7 @@ TOKEN :
 <QUEUE_EXTENSION_NAME_SEP> 
 TOKEN :
 {
-  <EQ46:                     "=">   : QUEUE_EXTENSION_NAME_STATE
+  <EQ46:                        "=">     : QUEUE_EXTENSION_NAME_STATE
 | <MISSING_QUEUE_EXTENSION_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -1004,7 +1006,7 @@ TOKEN :
 <KEY_CHOOSER_NAME_SEP> 
 TOKEN :
 {
-  <EQ47:                     "=">    : KEY_CHOOSER_NAME_STATE
+  <EQ47:                    "=">     : KEY_CHOOSER_NAME_STATE
 | <MISSING_KEY_CHOOSER_ARG: ~["="]>  : IGNORE_STATE
 }
 
@@ -1017,6 +1019,25 @@ TOKEN :
 | <COMMA22:               ",">                                 : VENDOR_NAME_STATE 
 | <AE61:                  ["\0"]>                              : OPTIONS
 | <ILLEGAL_KEY_CHOOSER:   (~[":",",","\0"])+>                  : IGNORE_STATE
+}
+
+/* builder collection arguments */ 
+<BUILDER_COLLECTION_NAME_SEP> 
+TOKEN :
+{
+  <EQ48:                           "=">     : BUILDER_COLLECTION_NAME_STATE
+| <MISSING_BUILDER_COLLECTION_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<BUILDER_COLLECTION_NAME_STATE> 
+TOKEN :
+{
+  <BUILDER_COLLECTION_NAME:     (["a"-"z","A"-"Z"]) 
+	                          (["a"-"z","A"-"Z","0"-"9","_","-"])+>   
+| <COLON16:                     ":">                        : REVISION_NUMBER_STATE2 
+| <COMMA23:                     ",">                        : VENDOR_NAME_STATE 
+| <AE66:                        ["\0"]>                     : OPTIONS
+| <ILLEGAL_BUILDER_COLLECTION:  (~[":",",","\0"])+>         : IGNORE_STATE
 }
 
 
@@ -1705,7 +1726,7 @@ TOKEN :
 }
 
 
-/* master_extension command options */ 
+/* master extension command options */ 
 <MASTER_EXTENSION_OPTS> 
 TOKEN :
 {
@@ -1718,7 +1739,7 @@ TOKEN :
 }
 
 
-/* queue_extension command options */ 
+/* queue extension command options */ 
 <QUEUE_EXTENSION_OPTS> 
 TOKEN :
 {
@@ -1731,7 +1752,7 @@ TOKEN :
 }
 
 
-/* key_chooser command options */ 
+/* key chooser command options */ 
 <KEY_CHOOSER_OPTS> 
 TOKEN :
 {
@@ -1741,6 +1762,19 @@ TOKEN :
 | <AE65:                       ["\0"]>   
 | <UNKNOWN_OPTION27:           "-" ("-")? (~["\0","="])*> : IGNORE_STATE
 | <UNKNOWN27:                  ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
+}
+
+
+/* builder collection command options */ 
+<BUILDER_COLLECTION_OPTS> 
+TOKEN :
+{
+  <BUILDER_COLLECTION_GET:            "--get">            : OPTIONS
+| <BUILDER_COLLECTION_GET_INFO:       "--get-info">       : BUILDER_COLLECTION_NAME_SEP  
+| <BUILDER_COLLECTION_GET_INFO_ALL:   "--get-info-all">   : OPTIONS
+| <AE67:                       ["\0"]>   
+| <UNKNOWN_OPTION28:           "-" ("-")? (~["\0","="])*> : IGNORE_STATE
+| <UNKNOWN28:                  ~["-","\0"] (~["\0"])*>    : IGNORE_STATE         
 }
 
 
@@ -1899,7 +1933,8 @@ Commands()
    LicenseKeyCmds() | SelectionKeyCmds() | HardwareKeyCmds() | JobServerCmds() | 
    EditorCmds() | ActionCmds() | ComparatorCmds() | ToolCmds() | AnnotationCmds() | 
    ArchiverCmds() | MasterExtensionCmds() | QueueExtensionCmds() | KeyChooserCmds() | 
-   SuffixEditorCmds() | ViewCmds() | WorkingCmds() | CheckedInCmds() | NodeCmds()) 
+   BuilderCollectionCmds() | SuffixEditorCmds() | ViewCmds() | WorkingCmds() | 
+   CheckedInCmds() | NodeCmds()) 
   {
     disconnect();
   }
@@ -2012,7 +2047,8 @@ BatchCommand()
    LicenseKeyCmds() | SelectionKeyCmds() | HardwareKeyCmds() | JobServerCmds() | 
    EditorCmds() | ActionCmds() | ComparatorCmds() | ToolCmds() | AnnotationCmds() | 
    ArchiverCmds() | MasterExtensionCmds() | QueueExtensionCmds() | KeyChooserCmds() | 
-   SuffixEditorCmds() | ViewCmds() | WorkingCmds() | CheckedInCmds() | NodeCmds()) 
+   BuilderCollectionCmds() | SuffixEditorCmds() | ViewCmds() | WorkingCmds() | 
+   CheckedInCmds() | NodeCmds()) 
     (AE())* <EOF>
   {}
 }
@@ -4423,22 +4459,7 @@ EditorGet()
 {
   <EDITOR_GET> AE()
   {
-    TreeMap table = PluginMgrClient.getInstance().getEditors();
-    Iterator iter = table.keySet().iterator();
-    while(iter.hasNext()) {
-      String name      = (String) iter.next();
-      TreeSet versions = (TreeSet) table.get(name);
-      
-      Iterator viter = versions.iterator();
-      while(viter.hasNext()) {
-	VersionID vid = (VersionID) viter.next();
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Ops, LogMgr.Level.Info,
-	   name + " (v" + vid + ")");
-      }
-    }
-    
-    LogMgr.getInstance().flush();
+    pApp.listPlugins(PluginMgrClient.getInstance().getEditors());
   }
 }
 
@@ -4493,22 +4514,7 @@ ActionGet()
 {
   <ACTION_GET> AE()
   {
-    TreeMap table = PluginMgrClient.getInstance().getActions();
-    Iterator iter = table.keySet().iterator();
-    while(iter.hasNext()) {
-      String name      = (String) iter.next();
-      TreeSet versions = (TreeSet) table.get(name);
-      
-      Iterator viter = versions.iterator();
-      while(viter.hasNext()) {
-	VersionID vid = (VersionID) viter.next();
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Ops, LogMgr.Level.Info,
-	   name + " (v" + vid + ")");
-      }
-    }
-    
-    LogMgr.getInstance().flush();
+    pApp.listPlugins(PluginMgrClient.getInstance().getActions());
   }
 }
 
@@ -4563,22 +4569,7 @@ ComparatorGet()
 {
   <COMPARATOR_GET> AE()
   {
-    TreeMap table = PluginMgrClient.getInstance().getComparators();
-    Iterator iter = table.keySet().iterator();
-    while(iter.hasNext()) {
-      String name      = (String) iter.next();
-      TreeSet versions = (TreeSet) table.get(name);
-      
-      Iterator viter = versions.iterator();
-      while(viter.hasNext()) {
-	VersionID vid = (VersionID) viter.next();
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Ops, LogMgr.Level.Info,
-	   name + " (v" + vid + ")");
-      }
-    }
-    
-    LogMgr.getInstance().flush();
+    pApp.listPlugins(PluginMgrClient.getInstance().getComparators());
   }
 }
 
@@ -4633,22 +4624,7 @@ ToolGet()
 {
   <TOOL_GET> AE()
   {
-    TreeMap table = PluginMgrClient.getInstance().getTools();
-    Iterator iter = table.keySet().iterator();
-    while(iter.hasNext()) {
-      String name      = (String) iter.next();
-      TreeSet versions = (TreeSet) table.get(name);
-      
-      Iterator viter = versions.iterator();
-      while(viter.hasNext()) {
-	VersionID vid = (VersionID) viter.next();
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Ops, LogMgr.Level.Info,
-	   name + " (v" + vid + ")");
-      }
-    }
-    
-    LogMgr.getInstance().flush();
+    pApp.listPlugins(PluginMgrClient.getInstance().getTools());
   }
 }
 
@@ -4703,22 +4679,7 @@ AnnotationGet()
 {
   <ANNOTATION_GET> AE()
   {
-    TreeMap table = PluginMgrClient.getInstance().getAnnotations();
-    Iterator iter = table.keySet().iterator();
-    while(iter.hasNext()) {
-      String name      = (String) iter.next();
-      TreeSet versions = (TreeSet) table.get(name);
-      
-      Iterator viter = versions.iterator();
-      while(viter.hasNext()) {
-	VersionID vid = (VersionID) viter.next();
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Ops, LogMgr.Level.Info,
-	   name + " (v" + vid + ")");
-      }
-    }
-    
-    LogMgr.getInstance().flush();
+    pApp.listPlugins(PluginMgrClient.getInstance().getAnnotations());
   }
 }
 
@@ -4773,22 +4734,7 @@ ArchiverGet()
 {
   <ARCHIVER_GET> AE()
   {
-    TreeMap table = PluginMgrClient.getInstance().getArchivers();
-    Iterator iter = table.keySet().iterator();
-    while(iter.hasNext()) {
-      String name      = (String) iter.next();
-      TreeSet versions = (TreeSet) table.get(name);
-      
-      Iterator viter = versions.iterator();
-      while(viter.hasNext()) {
-	VersionID vid = (VersionID) viter.next();
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Ops, LogMgr.Level.Info,
-	   name + " (v" + vid + ")");
-      }
-    }
-    
-    LogMgr.getInstance().flush();
+    pApp.listPlugins(PluginMgrClient.getInstance().getArchivers());
   }
 }
 
@@ -4843,22 +4789,7 @@ MasterExtensionGet()
 {
   <MASTER_EXTENSION_GET> AE()
   {
-    TreeMap table = PluginMgrClient.getInstance().getMasterExts();
-    Iterator iter = table.keySet().iterator();
-    while(iter.hasNext()) {
-      String name      = (String) iter.next();
-      TreeSet versions = (TreeSet) table.get(name);
-      
-      Iterator viter = versions.iterator();
-      while(viter.hasNext()) {
-	VersionID vid = (VersionID) viter.next();
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Ops, LogMgr.Level.Info,
-	   name + " (v" + vid + ")");
-      }
-    }
-    
-    LogMgr.getInstance().flush();
+    pApp.listPlugins(PluginMgrClient.getInstance().getMasterExts());
   }
 }
 
@@ -4913,22 +4844,7 @@ QueueExtensionGet()
 {
   <QUEUE_EXTENSION_GET> AE()
   {
-    TreeMap table = PluginMgrClient.getInstance().getQueueExts();
-    Iterator iter = table.keySet().iterator();
-    while(iter.hasNext()) {
-      String name      = (String) iter.next();
-      TreeSet versions = (TreeSet) table.get(name);
-      
-      Iterator viter = versions.iterator();
-      while(viter.hasNext()) {
-	VersionID vid = (VersionID) viter.next();
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Ops, LogMgr.Level.Info,
-	   name + " (v" + vid + ")");
-      }
-    }
-    
-    LogMgr.getInstance().flush();
+    pApp.listPlugins(PluginMgrClient.getInstance().getQueueExts()); 
   }
 }
 
@@ -4983,22 +4899,7 @@ KeyChooserGet()
 {
   <KEY_CHOOSER_GET> AE()
   {
-    TreeMap table = PluginMgrClient.getInstance().getKeyChoosers();
-    Iterator iter = table.keySet().iterator();
-    while(iter.hasNext()) {
-      String name      = (String) iter.next();
-      TreeSet versions = (TreeSet) table.get(name);
-      
-      Iterator viter = versions.iterator();
-      while(viter.hasNext()) {
-	VersionID vid = (VersionID) viter.next();
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Ops, LogMgr.Level.Info,
-	   name + " (v" + vid + ")");
-      }
-    }
-    
-    LogMgr.getInstance().flush();
+    pApp.listPlugins(PluginMgrClient.getInstance().getKeyChoosers());
   }
 }
 
@@ -5029,6 +4930,62 @@ KeyChooserGetInfoAll()
 {}
 {
   <KEY_CHOOSER_GET_INFO_ALL> AE()
+  {
+    pApp.keyChooserGetInfoAll();
+  }
+}
+
+
+/*------------------------------------------------------------------------------------------*/
+
+void 
+BuilderCollectionCmds() 
+  throws PipelineException : 
+{}
+{
+  <BUILDER_COLLECTION> AE() 
+     (BuilderCollectionGet() | BuilderCollectionGetInfo() | BuilderCollectionGetInfoAll())
+  {}
+}
+
+void 
+BuilderCollectionGet() 
+  throws PipelineException : 
+{}
+{
+  <BUILDER_COLLECTION_GET> AE()
+  {
+    pApp.listPlugins(PluginMgrClient.getInstance().getBuilderCollections());
+  }
+}
+
+void 
+BuilderCollectionGetInfo() 
+  throws PipelineException : 
+{
+  String name = null;
+  VersionID vid = null;
+  String vendor = null;
+}
+{
+  <BUILDER_COLLECTION_GET_INFO> EQ() name=BuilderCollectionName() 
+    (COLON() vid=RevisionNumber())? (COMMA() vendor=VendorName())? AE()
+  {
+    BaseBuilderCollection plg = 
+      PluginMgrClient.getInstance().newBuilderCollection(name, vid, vendor);
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       plg.toString());
+    LogMgr.getInstance().flush();
+  }
+}
+
+void 
+BuilderCollectionGetInfoAll() 
+  throws PipelineException : 
+{}
+{
+  <BUILDER_COLLECTION_GET_INFO_ALL> AE()
   {
     pApp.keyChooserGetInfoAll();
   }
@@ -8109,6 +8066,18 @@ KeyChooserName() :
 }
 
 String
+BuilderCollectionName() : 
+{
+  Token t;
+}
+{
+  t=<BUILDER_COLLECTION_NAME>
+  {
+    return t.image;
+  }
+}
+
+String
 ViewName() : 
 {
   Token t;
@@ -8387,7 +8356,8 @@ AE() :
    t=<AE46> | t=<AE47> | t=<AE48> | t=<AE49> | t=<AE50> | 
    t=<AE51> | t=<AE52> | t=<AE53> | t=<AE54> | t=<AE55> | 
    t=<AE56> | t=<AE57> | t=<AE58> | t=<AE59> | t=<AE60> | 
-   t=<AE61> | t=<AE62> | t=<AE63> | t=<AE64> | t=<AE65>)
+   t=<AE61> | t=<AE62> | t=<AE63> | t=<AE64> | t=<AE65> | 
+   t=<AE66> | t=<AE67>)
   { 
     return t; 
   }
@@ -8449,7 +8419,8 @@ COLON() :
 {
   (t=<COLON1>  | t=<COLON2>  | t=<COLON3>  | t=<COLON4>  | t=<COLON5>  | 
    t=<COLON6>  | t=<COLON7>  | t=<COLON8>  | t=<COLON9>  | t=<COLON10> | 
-   t=<COLON11> | t=<COLON12> | t=<COLON13> | t=<COLON14> | t=<COLON15>)
+   t=<COLON11> | t=<COLON12> | t=<COLON13> | t=<COLON14> | t=<COLON15> | 
+   t=<COLON16>)
   { 
     return t; 
   }
@@ -8465,7 +8436,7 @@ COMMA() :
    t=<COMMA6>  | t=<COMMA7>  | t=<COMMA8>  | t=<COMMA9>  | t=<COMMA10> |
    t=<COMMA11> | t=<COMMA12> | t=<COMMA13> | t=<COMMA14> | t=<COMMA15> |
    t=<COMMA16> | t=<COMMA17> | t=<COMMA18> | t=<COMMA19> | t=<COMMA20> |
-   t=<COMMA21> | t=<COMMA22>)
+   t=<COMMA21> | t=<COMMA22> | t=<COMMA23>)
   { 
     return t; 
   }
@@ -8486,7 +8457,7 @@ EQ() :
    t=<EQ31> | t=<EQ32> | t=<EQ33> | t=<EQ34> | t=<EQ35> | 
    t=<EQ36> | t=<EQ37> | t=<EQ38> | t=<EQ39> | t=<EQ40> | 
    t=<EQ41> | t=<EQ42> | t=<EQ43> | t=<EQ44> | t=<EQ45> | 
-   t=<EQ46> | t=<EQ47>)
+   t=<EQ46> | t=<EQ47> | t=<EQ48>)
   { 
     return t; 
   }
