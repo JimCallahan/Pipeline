@@ -1,4 +1,4 @@
-// $Id: VerifiedApp.java.in,v 1.12 2008/10/21 00:54:11 jim Exp $
+// $Id: VerifiedApp.java.in,v 1.13 2008/12/02 21:03:01 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -193,7 +193,9 @@ class VerifiedApp
             for(wk=0; wk<cnt; wk++) {
               if(cs[wk] == '\n') {
                 String line = buf.toString();
-                if(!line.startsWith("cpu MHz") && !line.startsWith("bogomips")) 
+                if(!line.startsWith("cpu MHz") && 
+                   !line.startsWith("bogomips") &&
+                   !line.startsWith("core id")) 
                   md.update(line.getBytes());
                 buf = new StringBuffer();
               }
