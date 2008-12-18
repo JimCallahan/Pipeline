@@ -41,6 +41,8 @@
 @ROOT_INST_DIR@/share/docs/man/pls.html
 @ROOT_INST_DIR@/share/docs/man/realpath.html
 
+@ROOT_INST_DIR@/share/docs/manuals/PipelineManual.pdf
+
 @ROOT_INST_DIR@/share/icons/plui.png
 
 @ROOT_INST_DIR@/share/splash/Splash.gif

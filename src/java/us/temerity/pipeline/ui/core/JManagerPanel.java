@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.54 2008/11/13 20:53:03 jim Exp $
+// $Id: JManagerPanel.java,v 1.55 2008/12/18 00:36:32 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1937,7 +1937,7 @@ class JManagerPanel
       }
       else if((prefs.getShowUserManual() != null) &&
               prefs.getShowUserManual().wasPressed(e)) {
-        BaseApp.showURL("http://temerity.us/products/pipeline/docs/PipelineManual.pdf");
+        BaseApp.showURL("file:///" + PackageInfo.sInstPath + "/share/docs/manuals/PipelineManual.pdf");
         return true;
       }
 
@@ -1958,7 +1958,7 @@ class JManagerPanel
       }
       else if((prefs.getShowLicenseAgreement() != null) &&
               prefs.getShowLicenseAgreement().wasPressed(e)) {
-        BaseApp.showURL("http//www.temerity.us/company/license.php");
+        BaseApp.showURL("file:///" + PackageInfo.sInstPath + "/share/docs/legal/license.html");
         return true;
       }
     
@@ -2155,8 +2155,8 @@ class JManagerPanel
         master.showAboutDialog();
       else if(cmd.equals("quick-reference"))
         BaseApp.showURL("http://temerity.us/products/pipeline/docs/reference/ref.php");
-      else if(cmd.equals("user-manual"))
-        BaseApp.showURL("http://temerity.us/products/pipeline/docs/PipelineManual.pdf");
+      else if(cmd.equals("user-manual")) 
+        BaseApp.showURL("file:///" + PackageInfo.sInstPath + "/share/docs/manuals/PipelineManual.pdf");
 
       else if(cmd.equals("home-page"))
         BaseApp.showURL("http://www.temerity.us");
@@ -2168,8 +2168,7 @@ class JManagerPanel
       else if(cmd.equals("site-configuration"))
         master.showConfigDialog(); 
       else if(cmd.equals("license-agreement"))
-        BaseApp.showURL("file:///" + PackageInfo.sInstPath + 
-                        "/share/docs/legal/license.html");
+        BaseApp.showURL("file:///" + PackageInfo.sInstPath + "/share/docs/legal/license.html");
 
       else if(cmd.equals("show-logs"))
         master.showLogsDialog(); 

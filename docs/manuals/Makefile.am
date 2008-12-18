@@ -1,5 +1,6 @@
 
 docdir = @ROOT_INST_DIR@/share/docs/manuals
 
-doc_DATA =
+doc_DATA = \
+  PipelineManual.pdf
 

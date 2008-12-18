@@ -2,7 +2,8 @@
 SUBDIRS = \
   images \
   legal \
-  man
+  man \
+  manuals \
+  javadoc
 
-#  javadoc 
 
