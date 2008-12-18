@@ -1,4 +1,4 @@
-// $Id: FileMgrDirectClient.java,v 1.10 2008/05/16 01:11:40 jim Exp $
+// $Id: FileMgrDirectClient.java,v 1.11 2008/12/18 00:46:24 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -30,13 +30,77 @@ class FileMgrDirectClient
 
   /** 
    * Construct a new file manager client.
+   * 
+   * @param fileStatDir
+   *   An alternative root production directory accessed via a different NFS mount point
+   *   to provide an exclusively network for file status query traffic.  Setting this to 
+   *   <CODE>null</CODE> will cause the default root production directory to be used instead.
+   * 
+   * @param inodeFileStat
+   *   Whether to use the alternative i-node based unique file comparison tests instead
+   *   of the original realpath based approach.
+   * 
+   * @param checksumDir
+   *   An alternative root production directory accessed via a different NFS mount point
+   *   to provide an exclusively network for checksum generation traffic.  Setting this to 
+   *   <CODE>null</CODE> will cause the default root production directory to be used instead.
+   * 
+   * @param nativeChecksum
+   *   Whether to use the native JNI based checksum generation code instead of the original
+   *   Java based method.
    */
   public
-  FileMgrDirectClient()
+  FileMgrDirectClient
+  (
+   Path fileStatDir, 
+   boolean inodeFileStat, 
+   Path checksumDir, 
+   boolean nativeChecksum
+  ) 
   {
-    pFileMgr = new FileMgr();
+    pFileMgr = new FileMgr(fileStatDir, inodeFileStat, checksumDir, nativeChecksum);
   }
 
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   R U N T I M E   C O N T R O L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the current runtime performance controls.
+   */ 
+  public synchronized MasterControls
+  getRuntimeControls() 
+    throws PipelineException 
+  {
+    Object obj = pFileMgr.getRuntimeControls(); 
+    if(obj instanceof MiscGetMasterControlsRsp) {
+      MiscGetMasterControlsRsp rsp = (MiscGetMasterControlsRsp) obj;
+      return rsp.getControls();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }    
+  }
+
+  /**
+   * Set the current runtime performance controls.
+   */ 
+  public synchronized void
+  setRuntimeControls
+  (
+   MasterControls controls
+  ) 
+    throws PipelineException 
+  {
+    MiscSetMasterControlsReq req = new MiscSetMasterControlsReq(controls);
+
+    Object obj = pFileMgr.setRuntimeControls(req);
+    handleSimpleResponse(obj);
+  }
+  
 
 
   /*----------------------------------------------------------------------------------------*/

@@ -225,7 +225,14 @@ Privileges<br>
  style="font-weight: bold;">-</span><span class="postbody"><span
  style="font-weight: bold;">-restore-cleanup-interval</span>=<span
  style="font-style: italic; font-weight: normal;">msec</span></span><span
- class="postbody"><span style="font-weight: normal;">]</span></span></li>
+ class="postbody"><span style="font-weight: normal;">] [<span
+ style="font-weight: bold;">--file-stat-dir</span>=<span
+ style="font-style: italic;">dir</span>] [<span
+ style="font-weight: bold;">--file-stat-method</span>=realpath|inode] [<span
+ style="font-weight: bold;">--checksum-dir</span>=<span
+ style="font-style: italic;">dir</span>] [<span
+ style="font-weight: bold;">--checksum-method</span>=java|native]<br>
+          </span></span></li>
         <li style="font-weight: bold;"><a href="#runtime_--set-queue">--set-queue</a>
           <span style="font-weight: normal;">[</span>--remote-log<span
  style="font-weight: normal;">=</span><span
@@ -2719,8 +2726,19 @@ original toolset environment used to create the archive volume.<br>
  href="plmaster.html#--restore-cleanup-interval"><span
  style="font-weight: bold;">-restore-cleanup-interval</span></a>=<span
  style="font-style: italic; font-weight: normal;">msec</span></span><span
- class="postbody"><span style="font-weight: normal;">]<br>
+ class="postbody"><span style="font-weight: normal;">] <br>
+&nbsp; </span></span><span class="postbody"><span
+ style="font-weight: normal;">[<a href="plmaster.html#--file-stat-dir"><span
+ style="font-weight: bold;">--file-stat-dir</span></a>=<span
+ style="font-style: italic;">dir</span>] [<a
+ href="plmaster.html#--file-stat-method"><span
+ style="font-weight: bold;">--file-stat-method</span></a>=realpath|inode]
 <br>
+&nbsp; [<a href="plmaster.html#--checksum-dir"><span
+ style="font-weight: bold;">--checksum-dir</span></a>=<span
+ style="font-style: italic;">dir</span>] [<a
+ href="plmaster.html#--checksum-method"><span style="font-weight: bold;">--checksum-method</span></a>=java|native]</span></span><br>
+<span class="postbody"><span style="font-weight: normal;"><br>
 </span></span><span style="font-weight: normal;"></span><span
  style="font-weight: bold;"><a name="runtime_--set_queue"></a>runtime
 --set-queue </span><span style="font-weight: normal;">[</span><span

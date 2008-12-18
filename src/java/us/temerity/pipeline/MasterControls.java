@@ -1,4 +1,4 @@
-// $Id: MasterControls.java,v 1.2 2006/12/14 19:01:31 jim Exp $
+// $Id: MasterControls.java,v 1.3 2008/12/18 00:46:24 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -52,6 +52,24 @@ class MasterControls
    * @param restoreCleanupInterval
    *   The maximum age of a resolved (Restored or Denied) restore request before it 
    *   is deleted (in milliseconds).
+   * 
+   * @param fileStatDir
+   *   An alternative root production directory accessed via a different NFS mount point
+   *   to provide an exclusively network for file status query traffic.  Setting this to 
+   *   <CODE>null</CODE> will cause the default root production directory to be used instead.
+   * 
+   * @param inodeFileStat
+   *   Whether to use the alternative i-node based unique file comparison tests instead
+   *   of the original realpath based approach.
+   * 
+   * @param checksumDir
+   *   An alternative root production directory accessed via a different NFS mount point
+   *   to provide an exclusively network for checksum generation traffic.  Setting this to 
+   *   <CODE>null</CODE> will cause the default root production directory to be used instead.
+   * 
+   * @param nativeChecksum
+   *   Whether to use the native JNI based checksum generation code instead of the original
+   *   Java based method.
    */ 
   public 
   MasterControls
@@ -60,13 +78,21 @@ class MasterControls
    Long minOverhead, 
    Long maxOverhead, 
    Long nodeGCInterval, 
-   Long restoreCleanupInterval
+   Long restoreCleanupInterval, 
+   Path fileStatDir, 
+   boolean inodeFileStat, 
+   Path checksumDir, 
+   boolean nativeChecksum
   ) 
   {    
     setAverageNodeSize(avgNodeSize); 
     setOverhead(minOverhead, maxOverhead);
     setNodeGCInterval(nodeGCInterval); 
     setRestoreCleanupInterval(restoreCleanupInterval); 
+    setFileStatDir(fileStatDir);
+    setINodeFileStat(inodeFileStat);
+    setChecksumDir(checksumDir);
+    setNativeChecksum(nativeChecksum);
   }
 
 
@@ -239,6 +265,126 @@ class MasterControls
   }
 
 
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the alternative root production directory accessed via a different NFS mount point
+   * to provide an exclusively network for file status query traffic.
+   *
+   * @return 
+   *   The file status root production directory or <CODE>null</CODE> if the default root
+   *   production directory is being used instead.
+   */ 
+  public Path
+  getFileStatDir() 
+  {
+    return pFileStatDir;
+  }
+
+  /**
+   * Set the alternative root production directory accessed via a different NFS mount point
+   * to provide an exclusively network for file status query traffic.
+   * 
+   * @param dir
+   *   The file status root production directory or <CODE>null</CODE> to use the default 
+   *   root production directory.
+   */
+  public void 
+  setFileStatDir
+  (
+   Path dir
+  ) 
+  {
+    pFileStatDir = dir; 
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get whether to use the alternative i-node based unique file comparison tests instead
+   * of the original realpath based approach.
+   */ 
+  public boolean
+  getINodeFileStat() 
+  {
+    return pINodeFileStat;
+  }
+
+  /**
+   * Set whether to use the alternative i-node based unique file comparison tests instead
+   * of the original realpath based approach.
+   */
+  public void 
+  setINodeFileStat
+  (
+   boolean useINodeFileStat
+  ) 
+  {
+    pINodeFileStat = useINodeFileStat;
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the alternative root production directory accessed via a different NFS mount point
+   * to provide an exclusively network for checksum generation traffic.
+   *
+   * @return 
+   *   The checksum root production directory or <CODE>null</CODE> if the default root
+   *   production directory is being used instead.
+   */ 
+  public Path
+  getChecksumDir() 
+  {
+    return pChecksumDir;
+  }
+
+  /**
+   * Set the alternative root production directory accessed via a different NFS mount point
+   * to provide an exclusively network for checksum generation traffic.
+   * 
+   * @param dir
+   *   The checksum root production directory or <CODE>null</CODE> to use the default 
+   *   root production directory.
+   */
+  public void 
+  setChecksumDir
+  (
+   Path dir
+  ) 
+  {
+    pChecksumDir = dir; 
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get whether to use the native JNI based checksum generation code instead of the original
+   * Java based method.
+   */ 
+  public boolean
+  getNativeChecksum() 
+  {
+    return pNativeChecksum;
+  }
+
+  /**
+   * Set whether to use the native JNI based checksum generation code instead of the original
+   * Java based method.
+   */
+  public void 
+  setNativeChecksum
+  (
+   boolean useNativeChecksum
+  ) 
+  {
+    pNativeChecksum = useNativeChecksum;
+  }
+
+
  
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
@@ -276,6 +422,31 @@ class MasterControls
    */ 
   private Long  pRestoreCleanupInterval; 
 
+  /**
+   * An alternative root production directory accessed via a different NFS mount point
+   * to provide an exclusively network for file status query traffic.  Setting this to 
+   * <CODE>null</CODE> will cause the default root production directory to be used instead.
+   */ 
+  private Path pFileStatDir;
+
+  /**
+   * Whether to use the alternative i-node based unique file comparison tests instead
+   * of the original realpath based approach.
+   */ 
+  private boolean pINodeFileStat;
+
+  /**
+   * An alternative root production directory accessed via a different NFS mount point
+   * to provide an exclusively network for checksum generation traffic.  Setting this to 
+   * <CODE>null</CODE> will cause the default root production directory to be used instead.
+   */ 
+  private Path pChecksumDir;
+
+  /**
+   * Whether to use the native JNI based checksum generation code instead of the original
+   * Java based method.
+   */ 
+  private boolean pNativeChecksum;
 
 }
 

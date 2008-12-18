@@ -1,4 +1,4 @@
-// $Id: FileMgrServer.java,v 1.39 2008/05/16 01:11:40 jim Exp $
+// $Id: FileMgrServer.java,v 1.40 2008/12/18 00:46:24 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -35,13 +35,37 @@ class FileMgrServer
 
   /** 
    * Construct a new file manager server.
+   * 
+   * @param fileStatDir
+   *   An alternative root production directory accessed via a different NFS mount point
+   *   to provide an exclusively network for file status query traffic.  Setting this to 
+   *   <CODE>null</CODE> will cause the default root production directory to be used instead.
+   * 
+   * @param inodeFileStat
+   *   Whether to use the alternative i-node based unique file comparison tests instead
+   *   of the original realpath based approach.
+   * 
+   * @param checksumDir
+   *   An alternative root production directory accessed via a different NFS mount point
+   *   to provide an exclusively network for checksum generation traffic.  Setting this to 
+   *   <CODE>null</CODE> will cause the default root production directory to be used instead.
+   * 
+   * @param nativeChecksum
+   *   Whether to use the native JNI based checksum generation code instead of the original
+   *   Java based method.
    */
   public
-  FileMgrServer()
+  FileMgrServer
+  (
+   Path fileStatDir, 
+   boolean inodeFileStat, 
+   Path checksumDir, 
+   boolean nativeChecksum
+  ) 
   { 
     super("FileMgrServer");
 
-    pFileMgr = new FileMgr();
+    pFileMgr = new FileMgr(fileStatDir, inodeFileStat, checksumDir, nativeChecksum);
     pTasks   = new HashSet<HandlerTask>();    
   }
   
@@ -227,6 +251,23 @@ class FileMgrServer
 
             try {
               switch(kind) {
+              /*-- RUNTIME PARAMETERS ----------------------------------------------------*/
+              case GetMasterControls:
+                {
+                  objOut.writeObject(pFileMgr.getRuntimeControls());
+                  objOut.flush(); 
+                }
+                break;
+
+              case SetMasterControls:
+                {
+                  MiscSetMasterControlsReq req = 
+                    (MiscSetMasterControlsReq) objIn.readObject();
+                  objOut.writeObject(pFileMgr.setRuntimeControls(req));
+                  objOut.flush(); 
+                }
+                break;
+
               /*-- WORKING VERSIONS --------------------------------------------------------*/
               case ValidateScratchDir: 
                 {

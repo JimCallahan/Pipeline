@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.92 2008/11/25 01:18:03 jim Exp $
+// $Id: ScriptApp.java,v 1.93 2008/12/18 00:46:25 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1263,6 +1263,15 @@ class ScriptApp
 
     {
       MasterControls controls = client.getRuntimeControls();
+
+      Path statDir = controls.getFileStatDir();
+      if(statDir == null) 
+        statDir = PackageInfo.sProdPath;
+
+      Path checksumDir = controls.getChecksumDir();
+      if(checksumDir == null) 
+        checksumDir = PackageInfo.sProdPath;
+
       buf.append
 	(tbar(80) + "\n" +
 	 " Average Node Size : " + controls.getAverageNodeSize() + " (bytes)\n" + 
@@ -1273,12 +1282,21 @@ class ScriptApp
 	 "  Node GC Interval : " + controls.getNodeGCInterval() + " (msec)\n" + 
 	 "  Restore Interval : " + controls.getRestoreCleanupInterval() + " (msec)\n" + 
 	 "\n" + 
+	 "     File Stat Dir : " + statDir + "\n" + 
+	 "  File Stat Method : " + 
+           (controls.getINodeFileStat() ? "inode" : "realpath") + "\n" +
+         "\n" + 
+	 "      Checksum Dir : " + checksumDir + "\n" + 
+	 "   Checksum Method : " + 
+           (controls.getNativeChecksum() ? "native" : "java") + "\n" +
+	 "\n" + 
 	 pad("-- Logging Levels ", '-', 80) + "\n");
     }
      
     {
       LogControls controls = client.getLogControls();
       logLevelMessage(controls, LogMgr.Kind.Glu, buf);
+      logLevelMessage(controls, LogMgr.Kind.Sum, buf);
       logLevelMessage(controls, LogMgr.Kind.Sub, buf);
       logLevelMessage(controls, LogMgr.Kind.Ops, buf);
       logLevelMessage(controls, LogMgr.Kind.Net, buf);

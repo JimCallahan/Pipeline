@@ -1,4 +1,4 @@
-// $Id: NativeFileSys.java,v 1.17 2008/07/08 10:11:08 jim Exp $
+// $Id: NativeFileSys.java,v 1.18 2008/12/18 00:46:24 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -272,6 +272,39 @@ class NativeFileSys
 
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * Generate a 128-bit MD5 checksum for the given file.
+   * 
+   * @param path 
+   *   The path to the file to digest. 
+   * 
+   * @return
+   *   The checksum bytes.
+   * 
+   * @throws IOException 
+   *   If the given path is illegal or some other I/O problem was encountered.
+   */ 
+  public static byte[]
+  md5sum
+  (
+   Path path
+  )  
+    throws IOException
+  {
+    switch(PackageInfo.sOsType) {
+    case Windows:
+      throw new IOException
+	("Not supported on Windows systems!");
+    }
+
+    loadLibrary();
+    return md5sumNative(path.toOsString());
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+
   /** 
    * Determine amount of free disk space available on the file system which contains the 
    * given path. 
@@ -412,6 +445,19 @@ class NativeFileSys
    String path, 
    long critical
   ) 
+    throws IOException; 
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Generate a 128-bit MD5 checksum for the given file.
+   */ 
+  public static native byte[]
+  md5sumNative
+  (
+   String string
+  )
     throws IOException; 
 
 

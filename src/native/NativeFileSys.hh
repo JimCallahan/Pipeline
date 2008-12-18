@@ -49,6 +49,14 @@ JNIEXPORT jlong JNICALL Java_us_temerity_pipeline_NativeFileSys_lastStamps
 
 /*
  * Class:     us_temerity_pipeline_NativeFileSys
+ * Method:    md5sumNative
+ * Signature: (Ljava/lang/String;J)[B
+ */
+JNIEXPORT jbyteArray JNICALL Java_us_temerity_pipeline_NativeFileSys_md5sumNative
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * Class:     us_temerity_pipeline_NativeFileSys
  * Method:    freeDiskSpaceNative
  * Signature: (Ljava/lang/String;)J
  */

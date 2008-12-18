@@ -179,6 +179,11 @@ ScriptOptsParser
   private Long  pAvgNodeSize;
   private Long  pRestoreCleanupInterval;
 
+  private Path    pFileStatDir;
+  private Boolean pINodeFileStat;
+  private Path    pChecksumDir;
+  private Boolean pNativeChecksum;  
+
   /**
    * archive-volume options. 
    */ 
@@ -395,6 +400,12 @@ TOKEN :
 | <MIN_OVERHEAD:             "--min-overhead">              : INTEGER_SEP  
 | <MAX_OVERHEAD:             "--max-overhead">              : INTEGER_SEP  
 | <AVG_NODE_SIZE:            "--avg-node-size">             : INTEGER_SEP  
+
+| <FILE_STAT_DIR:     "--file-stat-dir">      : PATH_SEP
+| <FILE_STAT_METHOD:  "--file-stat-method">   : FILE_STAT_SEP
+| <CHECKSUM_DIR:      "--checksum-dir">       : PATH_SEP
+| <CHECKSUM_METHOD:   "--checksum-method">    : CHECKSUM_SEP
+
 | <PATTERN:            "--pattern">         	: STRING_SEP	      
 | <MAX_ARCHIVES:       "--max-archives">    	: INTEGER_SEP	      
 | <MIN_SIZE:           "--min-size">        	: BYTE_SIZE_SEP	      
@@ -1515,6 +1526,43 @@ TOKEN :
 | <ILLEGAL_REMOTE_LOG_LEVEL: (~["\0",","])+>  : IGNORE_STATE
 }
 
+
+/*------------------------------------------------------------------------------------------*/
+
+/* --file-stat-method arguments */ 
+<FILE_STAT_SEP> 
+TOKEN :
+{
+  <EQ49:              "=">  : FS_METHOD
+| <MISSING_FS_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<FS_METHOD> 
+TOKEN :
+{
+  <FS_REALPATH:      "realpath">       
+| <FS_INODE: 	     "inode">     
+| <AE68:             (["\0"])+>  : OPTIONS  
+| <ILLEGAL_FS_TYPE:  (~["\0"])+> : IGNORE_STATE    
+}
+
+
+/* --checksum-method arguments */ 
+<CHECKSUM_SEP> 
+TOKEN :
+{
+  <EQ50:              "=">  : CS_METHOD
+| <MISSING_CS_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<CS_METHOD> 
+TOKEN :
+{
+  <CS_JAVA:          "java">       
+| <CS_NATIVE: 	     "native">     
+| <AE69:             (["\0"])+>  : OPTIONS
+| <ILLEGAL_CS_TYPE:  (~["\0"])+>  : IGNORE_STATE    
+}
 
 /*------------------------------------------------------------------------------------------*/
 
@@ -3309,6 +3357,10 @@ SetRuntimeMaster()
   pMaxOverhead = null;
   pAvgNodeSize = null;
   pRestoreCleanupInterval = null;
+  pFileStatDir = null; 
+  pINodeFileStat = null; 
+  pChecksumDir = null; 
+  pNativeChecksum = null; 
 }
 {
   <SET_MASTER_RT> AE() (RuntimeMasterOpts())* 
@@ -3320,10 +3372,45 @@ SetRuntimeMaster()
     }
 
     if((pNodeGCInterval != null) || (pMinOverhead != null) || (pMaxOverhead != null) || 
-       (pAvgNodeSize != null) || (pRestoreCleanupInterval != null)) {
-      MasterControls controls =
-	new MasterControls(pAvgNodeSize, pMinOverhead, pMaxOverhead, 
-			   pNodeGCInterval, pRestoreCleanupInterval);
+       (pAvgNodeSize != null) || (pRestoreCleanupInterval != null) || 
+       (pFileStatDir != null) || (pINodeFileStat != null) || 
+       (pChecksumDir != null) || (pNativeChecksum != null)) {
+
+      MasterControls controls = pMasterMgrClient.getRuntimeControls();
+
+      if(pNodeGCInterval != null)
+        controls.setNodeGCInterval(pNodeGCInterval);
+
+      if((pMinOverhead != null) || (pMaxOverhead != null)) {
+        Long min = controls.getMinimumOverhead();
+        if(pMinOverhead != null)
+          min = pMinOverhead;
+
+        Long max = controls.getMaximumOverhead();
+        if(pMaxOverhead != null)
+          max = pMaxOverhead;
+
+        controls.setOverhead(min, max);
+      }
+
+      if(pAvgNodeSize != null)
+        controls.setAverageNodeSize(pAvgNodeSize);
+
+      if(pRestoreCleanupInterval != null)
+        controls.setRestoreCleanupInterval(pRestoreCleanupInterval);
+
+      if(pFileStatDir != null)
+        controls.setFileStatDir(pFileStatDir);
+
+      if(pINodeFileStat != null)
+        controls.setINodeFileStat(pINodeFileStat);
+
+      if(pChecksumDir != null)
+        controls.setChecksumDir(pChecksumDir);
+
+      if(pNativeChecksum != null)
+        controls.setNativeChecksum(pNativeChecksum);
+
       pMasterMgrClient.setRuntimeControls(controls);
       noOpts = false;
     }
@@ -3351,7 +3438,8 @@ RuntimeMasterOpts()
 {}
 {
   (RemoteLog() | NodeGCInterval() | MinOverhead() | MaxOverhead() | AvgNodeSize() | 
-   RestoreCleanupInterval())
+   RestoreCleanupInterval() | FileStatDir() | FileStatMethod() | ChecksumDir() | 
+   ChecksumMethod())
   {}
 }
 
@@ -3433,6 +3521,81 @@ void RestoreCleanupInterval()
       throw new PipelineException
         ("The restore cleanup interval (" + msec + ") must be positive!");
     pRestoreCleanupInterval = msec;
+  }
+}
+
+void FileStatDir() :
+{
+  Token t;
+}
+{
+  <FILE_STAT_DIR> EQ() t=<PATH_ARG> AE()
+  { 
+    pFileStatDir = new Path(t.image); 
+  }
+}
+
+
+void FileStatMethod() :
+{}
+{
+  <FILE_STAT_METHOD> EQ() (Realpath() | INode()) AE()
+  {}
+}
+
+void Realpath() : 
+{}
+{
+  <FS_REALPATH> 
+  {
+    pINodeFileStat = false; 
+  }
+}
+
+void INode() : 
+{}
+{
+  <FS_INODE> 
+  {
+    pINodeFileStat = true; 
+  }
+}
+
+
+void ChecksumDir() :
+{
+  Token t;
+}
+{
+  <CHECKSUM_DIR> EQ() t=<PATH_ARG> AE()
+  { 
+    pChecksumDir = new Path(t.image); 
+  }
+}
+
+
+void ChecksumMethod() :
+{}
+{
+  <CHECKSUM_METHOD> EQ() (Java() | Native()) AE()
+  {}
+}
+
+void Java() : 
+{}
+{
+  <CS_JAVA> 
+  {
+    pNativeChecksum = false; 
+  }
+}
+
+void Native() : 
+{}
+{
+  <CS_NATIVE> 
+  {
+    pNativeChecksum = true; 
   }
 }
 
@@ -8357,7 +8520,7 @@ AE() :
    t=<AE51> | t=<AE52> | t=<AE53> | t=<AE54> | t=<AE55> | 
    t=<AE56> | t=<AE57> | t=<AE58> | t=<AE59> | t=<AE60> | 
    t=<AE61> | t=<AE62> | t=<AE63> | t=<AE64> | t=<AE65> | 
-   t=<AE66> | t=<AE67>)
+   t=<AE66> | t=<AE67> | t=<AE68> | t=<AE69>)
   { 
     return t; 
   }
@@ -8457,7 +8620,7 @@ EQ() :
    t=<EQ31> | t=<EQ32> | t=<EQ33> | t=<EQ34> | t=<EQ35> | 
    t=<EQ36> | t=<EQ37> | t=<EQ38> | t=<EQ39> | t=<EQ40> | 
    t=<EQ41> | t=<EQ42> | t=<EQ43> | t=<EQ44> | t=<EQ45> | 
-   t=<EQ46> | t=<EQ47> | t=<EQ48>)
+   t=<EQ46> | t=<EQ47> | t=<EQ48> | t=<EQ49> | t=<EQ50>)
   { 
     return t; 
   }

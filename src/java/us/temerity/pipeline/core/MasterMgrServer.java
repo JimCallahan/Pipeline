@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.89 2008/10/21 18:10:55 jim Exp $
+// $Id: MasterMgrServer.java,v 1.90 2008/12/18 00:46:25 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -66,6 +66,24 @@ class MasterMgrServer
    *   The maximum age of a resolved (Restored or Denied) restore request before it 
    *   is deleted (in milliseconds).
    * 
+   * @param fileStatDir
+   *   An alternative root production directory accessed via a different NFS mount point
+   *   to provide an exclusively network for file status query traffic.  Setting this to 
+   *   <CODE>null</CODE> will cause the default root production directory to be used instead.
+   * 
+   * @param inodeFileStat
+   *   Whether to use the alternative i-node based unique file comparison tests instead
+   *   of the original realpath based approach.
+   * 
+   * @param checksumDir
+   *   An alternative root production directory accessed via a different NFS mount point
+   *   to provide an exclusively network for checksum generation traffic.  Setting this to 
+   *   <CODE>null</CODE> will cause the default root production directory to be used instead.
+   * 
+   * @param nativeChecksum
+   *   Whether to use the native JNI based checksum generation code instead of the original
+   *   Java based method.
+   * 
    * @throws PipelineException 
    *   If unable to properly initialize the server.
    */
@@ -80,7 +98,11 @@ class MasterMgrServer
    long minOverhead, 
    long maxOverhead, 
    long nodeGCInterval, 
-   long restoreCleanupInterval
+   long restoreCleanupInterval, 
+   Path fileStatDir, 
+   boolean inodeFileStat, 
+   Path checksumDir, 
+   boolean nativeChecksum
   )
     throws PipelineException 
   { 
@@ -92,7 +114,8 @@ class MasterMgrServer
     pMasterMgr = 
       new MasterMgr(rebuildCache, preserveOfflinedCache, internalFileMgr,  
 		    avgNodeSize, minOverhead, maxOverhead, nodeGCInterval, 
-		    restoreCleanupInterval);
+		    restoreCleanupInterval, 
+                    fileStatDir, inodeFileStat, checksumDir, nativeChecksum);
 
     pTasks = new HashSet<HandlerTask>();
   }
@@ -384,7 +407,8 @@ class MasterMgrServer
 
               case SetMasterControls:
                 {
-                  MiscSetMasterControlsReq req = (MiscSetMasterControlsReq) objIn.readObject();
+                  MiscSetMasterControlsReq req = 
+                    (MiscSetMasterControlsReq) objIn.readObject();
                   objOut.writeObject(pMasterMgr.setRuntimeControls(req));
                   objOut.flush(); 
                 }

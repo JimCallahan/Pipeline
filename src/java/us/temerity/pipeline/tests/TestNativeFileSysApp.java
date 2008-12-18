@@ -1,4 +1,4 @@
-// $Id: TestNativeFileSysApp.java,v 1.6 2006/05/07 21:30:13 jim Exp $
+// $Id: TestNativeFileSysApp.java,v 1.7 2008/12/18 00:46:25 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
@@ -45,6 +45,7 @@ class TestNativeFileSysApp
     File dir = new File(System.getProperty("user.dir") + "/data");
 
     File sometext    = new File("sometext");
+    File moretext    = new File(dir, "moretext");
     File somelink    = new File(dir, "sometext.link");
     File anotherlink = new File(dir, "anotherlink");
 
@@ -67,6 +68,26 @@ class TestNativeFileSysApp
 	File rpath = testRealpath(new File("data/link-to-link"));
 	assert(rpath.equals(new File(dir, "sometext")));
       }
+    }
+
+    /* try out NativeFileStat for the files */ 
+    {
+      NativeFileStat crapstat    = testStat(new File(dir, "crap")); 
+      NativeFileStat textstat    = testStat(new File(dir, "sometext")); 
+      NativeFileStat morestat    = testStat(moretext); 
+      NativeFileStat linkstat    = testStat(somelink);
+      NativeFileStat anotherstat = testStat(anotherlink);
+      NativeFileStat dirstat     = testStat(dir);
+
+      System.out.print
+        ("-----------------------------------\n" + 
+         "I-Node Alias Checks:\n\n" + 
+         "textstat vs. morestat    = " + textstat.isAlias(morestat) + "\n" + 
+         "textstat vs. linkstat    = " + textstat.isAlias(linkstat) + "\n" + 
+         "linkstat vs. anotherstat = " + linkstat.isAlias(anotherstat) + "\n" + 
+         "anotherstat vs. linkstat = " + anotherstat.isAlias(linkstat) + "\n" +
+         "textstat vs. dirstat     = " + textstat.isAlias(dirstat) + "\n\n");
+
     }
 
     /* get the total and free disk space for the filesystem containing /usr/tmp */ 
@@ -124,6 +145,32 @@ class TestNativeFileSysApp
 		     "         link = " + link + "\n\n");
 
     NativeFileSys.symlink(file, link);
+  }
+
+  public NativeFileStat
+  testStat
+  ( 
+   File file
+  ) 
+    throws IOException
+  {
+    Path path = new Path(file.getPath());
+    NativeFileStat stat = new NativeFileStat(path); 
+
+    System.out.print
+      ("File Status: \n" + 
+       "  target path         = " + path + "\n" +
+       "  isValid             = " + stat.isValid() + "\n" + 
+       "  isFile              = " + stat.isFile() + "\n" + 
+       "  isDirectory         = " + stat.isDirectory() + "\n" + 
+       "  fileSize            = " + stat.fileSize() + "\n" + 
+       "  lastAccess          = " + stat.lastAccess() + "\n" + 
+       "  lastModification    = " + stat.lastModification() + "\n" + 
+       "  lastChange          = " + stat.lastChange() + "\n" + 
+       "  lastModOrChange     = " + stat.lastModOrChange() + "\n" + 
+       "  lastCriticalChange  = " + stat.lastCriticalChange(TimeStamps.now()) + "\n\n"); 
+
+    return stat;
   }
 
   public File

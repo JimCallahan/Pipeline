@@ -1,4 +1,4 @@
-// $Id: MasterRequest.java,v 1.63 2008/09/29 19:02:18 jim Exp $
+// $Id: MasterRequest.java,v 1.64 2008/12/18 00:46:25 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -63,7 +63,7 @@ enum MasterRequest
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the current logging levels.
+   * Get the current runtime controls. 
    */ 
   GetMasterControls,
   

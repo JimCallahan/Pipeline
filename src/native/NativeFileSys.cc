@@ -1,4 +1,4 @@
-// $Id: NativeFileSys.cc,v 1.7 2008/07/08 10:11:08 jim Exp $
+// $Id: NativeFileSys.cc,v 1.8 2008/12/18 00:46:25 jim Exp $
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -36,6 +36,10 @@
 #  include <unistd.h>
 #endif
 
+#ifdef HAVE_FCNTL_H
+#  include <fcntl.h>
+#endif
+
 #ifdef HAVE_SYS_STAT_H
 #  include <sys/stat.h>
 #endif
@@ -48,12 +52,20 @@
 #  include <sys/param.h>
 #endif
 
+#ifdef HAVE_SYS_STAT_H
+#  include <sys/stat.h>
+#endif
+
 #ifdef HAVE_SYS_STATFS_H
 #  include <sys/statfs.h>
 #endif
 
 #ifdef HAVE_SYS_MOUNT_H
 #  include <sys/mount.h>
+#endif
+
+#ifdef HAVE_OPENSSL_MD5_H
+#  include <openssl/md5.h>
 #endif
 
 
@@ -262,6 +274,113 @@ JNICALL Java_us_temerity_pipeline_NativeFileSys_lastStamps
     return 0L;
   }
 }
+
+/* Generate a 128-bit MD5 checksum for the given file. */  
+extern "C" 
+JNIEXPORT jbyteArray 
+JNICALL Java_us_temerity_pipeline_NativeFileSys_md5sumNative
+(
+ JNIEnv *env, 
+ jclass cls, 
+ jstring jpath  /* IN: the path of the file to digest */ 
+)
+{
+  /* exception initialization */ 
+  char msg[1024];
+  jclass IOException = env->FindClass("java/io/IOException");
+  if(IOException == 0) {
+    errno = ECANCELED;
+    perror("NativeFileSys.md5sumNative(), unable to lookup \"java/lang/IOException\"");
+    return NULL;
+  }
+  
+  /* repackage the arguments */ 
+  const char* path = env->GetStringUTFChars(jpath, 0);
+  if((path == NULL) || (strlen(path) == 0)) {
+    env->ThrowNew(IOException,"empty path argument");
+    return NULL;
+  }
+  
+  /* validate the file and get the optimal read cache block size */ 
+  blksize_t blksize = 0; 
+  {
+    struct stat buf;
+    if(stat(path, &buf) != 0) {
+      sprintf(msg, "cannot stat (%s): %s\n", path, strerror(errno));
+      env->ReleaseStringUTFChars(jpath, path);
+      env->ThrowNew(IOException, msg);  
+      return NULL;
+    }
+
+    if(!S_ISREG(buf.st_mode)) {
+      sprintf(msg, "the target (%s) is not a regular file!\n", path); 
+      env->ReleaseStringUTFChars(jpath, path);
+      env->ThrowNew(IOException, msg);  
+      return NULL;      
+    }
+
+    blksize = buf.st_blksize;
+  }
+  
+  /* generate the checksum */ 
+  unsigned char sum[16];
+  {
+    MD5_CTX ctx;
+    if(MD5_Init(&ctx) != 1) {
+      env->ReleaseStringUTFChars(jpath, path);
+      env->ThrowNew(IOException, "unable to initialize MD5 checksum!");  
+      return NULL;      
+    }
+
+    int fd = open(path, 0, O_RDONLY); 
+    if(fd == -1) {
+      sprintf(msg, "unable to open (%s): %s\n", path, strerror(errno));
+      env->ReleaseStringUTFChars(jpath, path);
+      env->ThrowNew(IOException, msg);  
+      return NULL;      
+    }
+
+    char buf[blksize];
+    ssize_t len = 0;
+    while(1) {
+      len = read(fd, buf, sizeof(buf));
+      if(len < 1) 
+        break;
+
+      if(MD5_Update(&ctx, buf, len) != 1) {
+        len = -1; 
+        break;
+      }
+    }
+    
+    close(fd);
+
+    if(len == -1) {
+      sprintf(msg, "during MD5 checksum generation, problems reading (%s)\n", path); 
+      env->ReleaseStringUTFChars(jpath, path);
+      env->ThrowNew(IOException, msg);  
+      return NULL;
+    }
+    
+    env->ReleaseStringUTFChars(jpath, path);
+
+    if(MD5_Final(sum, &ctx) != 1) {
+      env->ThrowNew(IOException, "unable to finalize MD5 checksum!");  
+      return NULL;      
+    }
+  }
+
+  /* copy the results into a Java byte array */ 
+  jbyteArray rtn = env->NewByteArray(16);
+  if(rtn == NULL) {
+    env->ThrowNew(IOException, "unable to allocate the MD5 checksum Java byte array!");
+    return NULL;
+  }
+  env->SetByteArrayRegion(rtn, 0, 16, (jbyte*) sum); 
+
+  return rtn;
+}
+
 
 /* Determine amount of free disk space available on the file system which contains the 
    given path. */  

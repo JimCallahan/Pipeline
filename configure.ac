@@ -9,7 +9,7 @@ AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
 AC_CONFIG_HEADERS([config.h])
-AM_INIT_AUTOMAKE(Pipeline, 2.4.5b1)
+AM_INIT_AUTOMAKE(Pipeline, 2.4.5b2)
                            
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
@@ -692,20 +692,6 @@ then
 fi 
 
 AC_MSG_RESULT([$PRODDIR])
-
-
-
-AC_MSG_CHECKING([File Status Directory])
-
-AC_SUBST(STATDIR)
-STATDIR=`crypto_lookup FileStatDirectory`
-
-if test "$STATDIR" == "null"
-then
-  AC_MSG_ERROR([customer profile was incomplete.])
-fi 
-
-AC_MSG_RESULT([$STATDIR])
 
 
 
@@ -1697,6 +1683,7 @@ AC_CHECK_HEADERS([sys/time.h sys/param.h sys/utsname.h sys/wait.h sys/resource.h
 AC_CHECK_HEADERS([sys/statfs.h sys/mount.h])
 AC_CHECK_HEADERS([sys/socket.h netdb.h netinet/in.h arpa/inet.h]) 
 AC_CHECK_HEADERS([sys/sysctl.h])
+AC_CHECK_HEADERS([openssl/md5.h])
 
 
 AC_MSG_RESULT([ ])

@@ -1,4 +1,4 @@
-// $Id: CheckSum.java,v 1.14 2008/07/08 10:11:08 jim Exp $
+// $Id: CheckSum.java,v 1.15 2008/12/18 00:46:24 jim Exp $
 
 package us.temerity.pipeline.core;
  
@@ -68,15 +68,19 @@ class CheckSum
    * 
    * @param dir 
    *   The root production directory.
+   * 
+   * @param useNative 
+   *   Use NativeFileSys.md5sum() to generate the checksums.
    */ 
   public
   CheckSum
   (
    String algorithm, 
-   File dir
+   File dir, 
+   boolean useNative
   ) 
   {
-    init(algorithm, dir);
+    init(algorithm, dir, useNative);
   }
 
 
@@ -86,7 +90,8 @@ class CheckSum
   init
   (
    String algorithm,
-   File dir
+   File dir,
+   boolean useNative
   ) 
   {
     if(PackageInfo.sOsType != OsType.Unix)
@@ -103,6 +108,11 @@ class CheckSum
 	("Unknown digest algorithm (" + algorithm + ")!");
     }
     
+    if(useNative && !algorithm.equals("MD5")) 
+      throw new IllegalArgumentException
+        ("Only the MD5 digest algorithm is supported with the native code method!"); 
+    pUseNative = useNative; 
+
     pBuf = new byte[65536];
 
     if(dir == null) 
@@ -169,6 +179,8 @@ class CheckSum
   }
   
 
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Generate an up-to-date checksum file for the given node file path. <P> 
    *
@@ -209,10 +221,10 @@ class CheckSum
       catch(IOException ex) {
         throw new PipelineException
           ("Unable to determine the last modification/change timestamps for a production " + 
-           "file (" + file + ") and/or its checksum (" + sfile + ") even though both files " +
-           "appear to exist!  This is likely a symptom of a serious file server and/or file " + 
-           "system configuration problem and you should notify your Systems Administrator " + 
-           "of this error immediately. More specifically:\n\n" + 
+           "file (" + file + ") and/or its checksum (" + sfile + ") even though both " + 
+           "files appear to exist!  This is likely a symptom of a serious file server " + 
+           "and/or file system configuration problem and you should notify your Systems " + 
+           "Administrator of this error immediately. More specifically:\n\n" + 
            "  " + ex.getMessage());
       }
     }
@@ -254,46 +266,60 @@ class CheckSum
 	   ") attempts!");
     }
 
+    TaskTimer timer = null;
+    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Sum, LogMgr.Level.Finer))
+      timer = new TaskTimer();
+
     /* generate the checksum */ 
     byte checksum[] = null;
-    try {
-      FileInputStream in = new FileInputStream(file);
-      
+    if(pUseNative) {
       try {
-	MessageDigest digest = (MessageDigest) pDigest.clone();
-
-	while(true) {
-	  int num = in.read(pBuf);
-	  if(num == -1) 
-	    break;
-	  digest.update(pBuf, 0, num);
-	}
-
-	checksum = digest.digest();
+        checksum = NativeFileSys.md5sum(new Path(file.getPath())); 
       }
       catch(IOException ex) {
-	throw new PipelineException
-	  ("Unable to read the source file (" + file + ")!");
-      }
-      catch(CloneNotSupportedException ex) {
-	throw new PipelineException
-	  ("Unable to clone the MessageDigest!");
-      }
-      finally {
-	in.close();
+        throw new PipelineException(ex);
       }
     }
-    catch(FileNotFoundException ex) {
-      throw new PipelineException
-	("The source file (" + file + ") did not exist!");
+    else {
+      try {
+        FileInputStream in = new FileInputStream(file);
+        
+        try {
+          MessageDigest digest = (MessageDigest) pDigest.clone();
+          
+          while(true) {
+            int num = in.read(pBuf);
+            if(num == -1) 
+              break;
+            digest.update(pBuf, 0, num);
+          }
+          
+          checksum = digest.digest();
+        }
+        catch(IOException ex) {
+          throw new PipelineException
+            ("Unable to read the source file (" + file + ")!");
+        }
+        catch(CloneNotSupportedException ex) {
+          throw new PipelineException
+            ("Unable to clone the MessageDigest!");
+        }
+        finally {
+          in.close();
+        }
+      }
+      catch(FileNotFoundException ex) {
+        throw new PipelineException
+          ("The source file (" + file + ") did not exist!");
+      }
+      catch(SecurityException ex) {
+        throw new PipelineException
+          ("No permission to read the source file (" + file + ")!");
+      }   
+      catch (IOException ex) {   
+        throw new IllegalStateException();
+      } 
     }
-    catch(SecurityException ex) {
-      throw new PipelineException
-	("No permission to read the source file (" + file + ")!");
-    }   
-    catch (IOException ex) {   
-      throw new IllegalStateException();
-    } 
 
     /* write the checksum to file */ 
     try {
@@ -326,8 +352,41 @@ class CheckSum
       throw new IllegalStateException();
     }
 
+    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Sum, LogMgr.Level.Finer)) {
+      timer.suspend(); 
+      LogMgr.getInstance().log
+        (LogMgr.Kind.Sum, LogMgr.Level.Finer,
+         "\n  " + timer);
+    }
+
     LogMgr.getInstance().flush();
   }
+
+  /**
+   * Generate an up-to-date checksum file for the given node file path. <P> 
+   *
+   * No action will be taken if the source file is missing, if the source file is not a 
+   * regular file or if there already exists a checksum file which is newer than 
+   * the given source file. <P> 
+   * 
+   * @param path 
+   *   The fully resolved node file path.
+   * 
+   * @throws PipelineException
+   *   If unable to generate the checksum file.
+   */ 
+  public void
+  refresh
+  (
+   Path path
+  ) 
+    throws PipelineException
+  {
+    refresh(path.toFile());
+  }
+  
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Indirectly compare the two files specified by the given node file paths by comparing 
@@ -430,6 +489,39 @@ class CheckSum
     /* compare checksums */ 
     return Arrays.equals(sumA, sumB);
   } 
+
+  /**
+   * Indirectly compare the two files specified by the given node file paths by comparing 
+   * their associated checksum files. <P> 
+   * 
+   * The checksum files associated with the given node file paths are assumed to up-to-date 
+   * by a previous call to {@link #refresh refresh}. 
+   * 
+   * @param pathA 
+   *   The first fully resolved node file path.
+   * 
+   * @param pathB 
+   *   The second fully resolved node file path.
+   * 
+   * @return 
+   *   Whether the given files are identical.
+   * 
+   * @throws PipelineException
+   *   If unable to compare the associated checksum files.
+   */
+  public boolean
+  compare
+  (
+   Path pathA,   
+   Path pathB   
+  ) 
+    throws PipelineException
+  {
+    return compare(pathA.toFile(), pathB.toFile());
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Validate a restored file associated with a checked-in node using the previously 
@@ -543,7 +635,13 @@ class CheckSum
    * The message digest algorithm. 
    */ 
   private MessageDigest pDigest;
-  
+
+  /**
+   * Whether to use the native JNI based checksum generation code instead of the original
+   * Java based method.
+   */                    
+  private boolean pUseNative; 
+
   /**
    * An I/O buffer.
    */ 

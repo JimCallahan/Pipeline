@@ -135,7 +135,111 @@ server, the next best option is to run the file manager internally
 using this option.<br>
 </div>
 <span style="font-weight: bold;"></span><span style="font-weight: bold;"><br>
-<a name="--log-file"></a>--log-file</span>=<span
+</span><span class="postbody"><span style="font-weight: normal;"> <span
+ style="font-weight: bold;"><a name="--file-stat-dir"></a>--file-stat-dir</span>=<span
+ style="font-style: italic;">dir<br>
+</span></span></span>
+<div style="margin-left: 40px;"><br>
+An alternative root production directory (see <a
+ style="font-weight: bold;"
+ href="file:///usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html#--prod-dir">plconfig
+--prod-dir</a>) accessed via a different NFS mount point to provide an
+exclusively network for file status query traffic.&nbsp; In order to
+take advantage of this feature, the machine running the File Manager
+daemon needs to have an additional network interface dedicated file
+status related NFS traffic.&nbsp; The same root production directory on
+the network file server should then be mounted under the given file
+status directory (dir) using an IP address for the file server which
+will direct all traffic to this dedicated network interface on the File
+Manager host.<br>
+<br>
+Since all traffic on this file status dedicated network will be NFS
+metadata queries, you should mount the file status directory using
+suitably small packet sizes and short NFS client file and directory
+caching intervals (usually 1 second).<br>
+<br>
+If not provided, the default root production directory is used
+instead.&nbsp; <br>
+<br>
+This option is silently ignored if <a href="#--file-mgr"><span
+ style="font-weight: bold;">--file-mgr</span></a> is not also specified.<br>
+</div>
+<span class="postbody"><span style="font-weight: normal;"><span
+ style="font-style: italic;"><br>
+</span><span style="font-weight: bold;"><a name="--file-stat-method"></a>--file-stat-method</span>=realpath|inode<br>
+</span></span>
+<div style="margin-left: 40px;"><br>
+Traditionally, Pipeline used the system call realpath(2) to disabiguate
+paths to working area and repository files in order to determine
+whether through symlinks these paths actually specified the same
+literal file on the file server.&nbsp; This method is well tested and
+reliable, however it can generate a large amount of NFS traffic.&nbsp;
+There is a newer method for comparing working and repository files
+which uses i-node numbers to avoid most of this NFS traffic and
+includes some other optimizations as well.&nbsp; This "inode" method
+should be much faster than the traditional "realpath" method, but is
+not currently well tested and therefore should be used with
+caution.&nbsp;&nbsp; We are providing this control now to allow studios
+to experiement with this new faster method with the understanding that
+there is some inherent risk involved in this less tested method.&nbsp; <br>
+<br>
+If not provided, the slower but well tested realpath method will be
+used. <br>
+<br>
+This option is silently ignored if <a href="#--file-mgr"><span
+ style="font-weight: bold;">--file-mgr</span></a> is not also specified.</div>
+<span class="postbody"><span style="font-weight: normal;"><span
+ style="font-weight: bold;"><br>
+<a name="--checksum-dir"></a>--checksum-dir</span>=<span
+ style="font-style: italic;">dir</span><br>
+<span style="font-weight: bold;"><br>
+</span></span></span>
+<div style="margin-left: 40px;">An alternative root production
+directory (see <a style="font-weight: bold;"
+ href="file:///usr/share/doc/plconfig-@PLCONFIG_VERSION@/plconfig.html#--prod-dir">plconfig
+--prod-dir</a>)
+accessed via a different NFS mount point to provide an exclusively
+network for checksum generation I/O traffic.&nbsp; In order to take
+advantage of
+this feature, the machine running the File Manager daemon needs to have
+an additional network interface dedicated checksum related NFS
+traffic.&nbsp; The same root production directory on the network file
+server
+should then be mounted under the given checksum directory (dir)
+using an IP address for the file server which will direct all traffic
+to this dedicated network interface on the File Manager host.<br>
+<br>
+The vast majority of the NFS traffic on this checksum dedicated network
+will be reading the contents of production data files which are likely
+to be large in size.&nbsp; You should therefore set your NFS mount
+options to optimize for this type of traffic.<br>
+<br>
+If not provided, the default root production directory is used instead.
+<br>
+<br>
+This option is silently ignored if <a href="#--file-mgr"><span
+ style="font-weight: bold;">--file-mgr</span></a> is not also specified.</div>
+<span class="postbody"><span style="font-weight: normal;"><span
+ style="font-weight: bold;"><br>
+<a name="--checksum-method"></a>--checksum-method</span>=java|native<br>
+<br>
+</span></span>
+<div style="margin-left: 40px;">Traditionally, Pipeline computed MD5
+checksums entirely with Java based methods.&nbsp; However, since
+checksum generation is a very I/O intensive process, we've recently
+added an alternative entirely native C++ based method which appears to
+be about twice as fast.&nbsp;&nbsp; We are providing
+this control now to allow studios to experiement with this new faster
+method with the understanding that there is some inherent risk
+involved in this less tested method.&nbsp; <br>
+<br>
+If not provided, the slower but well tested Java based method will be
+used. <br>
+<br>
+This option is silently ignored if <a href="#--file-mgr"><span
+ style="font-weight: bold;">--file-mgr</span></a> is not also specified.</div>
+<br>
+<span style="font-weight: bold;"><a name="--log-file"></a>--log-file</span>=<span
  style="font-style: italic;">filename<br>
 <br>
 </span>

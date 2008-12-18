@@ -1,10 +1,11 @@
-// $Id: TestCheckSumApp.java,v 1.9 2007/02/22 16:14:02 jim Exp $
+// $Id: TestCheckSumApp.java,v 1.10 2008/12/18 00:46:25 jim Exp $
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.core.*;
 
 import java.io.*; 
 import java.util.*;
+import java.math.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   T E S T   o f   C H E C K   S U M                                                      */
@@ -22,16 +23,11 @@ class TestCheckSumApp
    String[] args  /* IN: command line arguments */
   )
   {
-    //LogMgr.getInstance().setLevel(LogMgr.Kind.Sub, LogMgr.Level.Finest);
+    LogMgr.getInstance().setLevel(LogMgr.Kind.Sum, LogMgr.Level.Finer);
     FileCleaner.init();
 
     try {
       File dir = new File(System.getProperty("user.dir") + "/data/prod");
-      {
-	File cdir = new File(dir, "checksum");
-	cdir.mkdirs();
-      }
-
       TestCheckSumApp app = new TestCheckSumApp(dir);
       app.run();
     } 
@@ -51,7 +47,10 @@ class TestCheckSumApp
   )
   {
     pDir = dir;
-    pCheckSum = new CheckSum("MD5", dir);
+    pDir.mkdirs();
+      
+    pCheckSum = new CheckSum("MD5", dir, false);
+    pCheckSumNative = new CheckSum("MD5", dir, true);
   }
 
 
@@ -68,7 +67,7 @@ class TestCheckSumApp
 	 "Generating Data Files: \n");
 
       int wk;
-      for(wk=0; wk<15; wk++) {
+      for(wk=0; wk<17; wk++) {
 	ArrayList<File> paths = new ArrayList<File>();
 
         long blocks = 2 << wk;
@@ -88,9 +87,74 @@ class TestCheckSumApp
       System.out.print("\n");
     }
 
-      
     /* tests */ 
     {
+      File cdir = new File(pDir, "checksum");
+      cdir.mkdirs();
+
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Sum, LogMgr.Level.Info,
+	 "-----------------------------------\n" + 
+	 "Rebuilding CheckSums (native): \n\n");
+
+      for(Long size : table.keySet()) {
+	ArrayList<File> paths = table.get(size);
+
+	{
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Sum, LogMgr.Level.Info,
+	     "  File Size: " + size + ":\n");
+          
+          long total = 0;
+          for(File path : paths) 
+            total += refreshNative(path);
+
+          double rate = ((((double) (size*paths.size())) / ((double) total)) * 
+                         (6000.0 / (1024.0*1024.0)));
+	  System.out.print("   TOTAL = " + total + " msec\n" + 
+			   "    RATE = " + ((float) rate) + " MB/sec\n\n");
+	}
+      }
+
+      moveResults("native");
+    }
+      
+    {
+      File cdir = new File(pDir, "checksum");
+      cdir.mkdirs();
+
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Sum, LogMgr.Level.Info,
+	 "-----------------------------------\n" + 
+	 "Rebuilding CheckSums (java): \n\n");
+
+      for(Long size : table.keySet()) {
+	ArrayList<File> paths = table.get(size);
+
+	{
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Sum, LogMgr.Level.Info,
+	     "  File Size: " + size + ":\n");
+
+          long total = 0;
+          for(File path : paths) 
+            total += refresh(path);
+
+          double rate = ((((double) (size*paths.size())) / ((double) total)) * 
+                         (6000.0 / (1024.0*1024.0)));
+	  System.out.print("   TOTAL = " + total + " msec\n" + 
+			   "    RATE = " + ((float) rate) + " MB/sec\n\n");
+	}
+      }
+
+      moveResults("java");
+    } 
+
+    
+    {
+      File cdir = new File(pDir, "checksum/working/jim/default");
+      cdir.mkdirs();
+
       LogMgr.getInstance().log
 	(LogMgr.Kind.Sum, LogMgr.Level.Info,
 	 "-----------------------------------\n" + 
@@ -114,33 +178,10 @@ class TestCheckSumApp
 			   "    RATE = " + ((float) rate) + " MB/sec\n\n");
 	}
       }
+
+      moveResults("openssl");
     }
     
-    {
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Sum, LogMgr.Level.Info,
-	 "-----------------------------------\n" + 
-	 "Rebuilding CheckSums (java): \n\n");
-
-      for(Long size : table.keySet()) {
-	ArrayList<File> paths = table.get(size);
-
-	{
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Sum, LogMgr.Level.Info,
-	     "  File Size: " + size + ":\n");
-
-          long total = 0;
-          for(File path : paths) 
-            total += refreshSSL(path);
-
-          double rate = ((((double) (size*paths.size())) / ((double) total)) * 
-                         (6000.0 / (1024.0*1024.0)));
-	  System.out.print("   TOTAL = " + total + " msec\n" + 
-			   "    RATE = " + ((float) rate) + " MB/sec\n\n");
-	}
-      }
-    }
 
 
 
@@ -197,6 +238,54 @@ class TestCheckSumApp
     return time;
   }
 
+  private long 
+  refreshNative
+  (
+   File path
+  ) 
+    throws PipelineException
+  {
+    Date start = new Date();
+    pCheckSumNative.refresh(path); 
+    long time = (new Date()).getTime() - start.getTime();
+   
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Sum, LogMgr.Level.Info,
+       "    File = " + path + "\n" +
+       "    Time = " + time + " msec\n");
+
+    return time;
+  }
+
+  private long 
+  refreshNativeRaw
+  (
+   File file
+  ) 
+    throws PipelineException
+  {
+    Path path = new Path(new Path(pDir), file.getPath());
+
+    byte[] sum = null;
+    Date start = new Date();
+    try {
+      sum = NativeFileSys.md5sum(path); 
+    }
+    catch(IOException ex) {
+      throw new PipelineException(ex);
+    }
+    long time = (new Date()).getTime() - start.getTime();
+
+    BigInteger big = new BigInteger(sum);
+
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Sum, LogMgr.Level.Info,
+       "   Bytes = " + big.toString(16) + "\n" +
+       "    Time = " + time + " msec\n");
+
+    return time;
+  }
+
 
   private long 
   refreshSSL
@@ -215,7 +304,7 @@ class TestCheckSumApp
     args.add("-md5");
     args.add("-binary");
     args.add("-out");
-    args.add(out.toString() + ".ssl");
+    args.add(out.toString());
     args.add(in.toString());
     
     SubProcessLight proc = 
@@ -282,7 +371,7 @@ class TestCheckSumApp
 
     LogMgr.getInstance().log
       (LogMgr.Kind.Sum, LogMgr.Level.Info,
-       "  " + file.getName() + "\n");
+       "  " + file.getName());
 
     file.getParentFile().mkdirs();
     FileOutputStream out = new FileOutputStream(file);
@@ -300,6 +389,37 @@ class TestCheckSumApp
     out.close();
   }    
 
+  private void
+  moveResults
+  (
+   String title
+  ) 
+    throws PipelineException
+  {
+    File fromDir = new File(pDir, "checksum");
+    File toDir = new File(pDir, "checksum-" + title);
+
+    ArrayList<String> args = new ArrayList<String>();
+    args.add(fromDir.toString());
+    args.add(toDir.toString());
+    
+    SubProcessLight proc = 
+      new SubProcessLight("MoveResults", "mv", args, System.getenv(), pDir);
+    try {
+      proc.start();
+      proc.join();
+      if(!proc.wasSuccessful()) 
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Sum, LogMgr.Level.Severe,
+           proc.getStdErr());	
+    }
+    catch(InterruptedException ex) {
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Sum, LogMgr.Level.Severe,
+           "Interrupted."); 
+    }
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -308,4 +428,5 @@ class TestCheckSumApp
 
   private File      pDir;
   private CheckSum  pCheckSum;
+  private CheckSum  pCheckSumNative;
 }

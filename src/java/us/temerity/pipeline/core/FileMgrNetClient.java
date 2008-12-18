@@ -1,4 +1,4 @@
-// $Id: FileMgrNetClient.java,v 1.12 2008/05/16 01:11:40 jim Exp $
+// $Id: FileMgrNetClient.java,v 1.13 2008/12/18 00:46:24 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -43,6 +43,49 @@ class FileMgrNetClient
 	  FileRequest.Disconnect, FileRequest.Shutdown);
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   R U N T I M E   C O N T R O L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the current runtime performance controls.
+   */ 
+  public synchronized MasterControls
+  getRuntimeControls() 
+    throws PipelineException 
+  {
+    verifyConnection();
+	 
+    Object obj = performTransaction(FileRequest.GetMasterControls, null);
+    if(obj instanceof MiscGetMasterControlsRsp) {
+      MiscGetMasterControlsRsp rsp = (MiscGetMasterControlsRsp) obj;
+      return rsp.getControls();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }    
+  }
+
+  /**
+   * Set the current runtime performance controls.
+   */ 
+  public synchronized void
+  setRuntimeControls
+  (
+   MasterControls controls
+  ) 
+    throws PipelineException 
+  {
+    verifyConnection();
+	 
+    MiscSetMasterControlsReq req = new MiscSetMasterControlsReq(controls);
+
+    Object obj = performTransaction(FileRequest.SetMasterControls, req);
+    handleSimpleResponse(obj);
+  }
+  
 
 
   /*----------------------------------------------------------------------------------------*/

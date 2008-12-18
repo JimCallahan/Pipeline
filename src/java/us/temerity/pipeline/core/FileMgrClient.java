@@ -1,4 +1,4 @@
-// $Id: FileMgrClient.java,v 1.43 2008/05/16 01:11:40 jim Exp $
+// $Id: FileMgrClient.java,v 1.44 2008/12/18 00:46:24 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -21,6 +21,29 @@ import java.util.*;
  */
 interface FileMgrClient
 {  
+  /*----------------------------------------------------------------------------------------*/
+  /*   R U N T I M E   C O N T R O L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the current runtime performance controls.
+   */ 
+  public MasterControls
+  getRuntimeControls() 
+    throws PipelineException;
+
+  /**
+   * Set the current runtime performance controls.
+   */ 
+  public void
+  setRuntimeControls
+  (
+   MasterControls controls
+  ) 
+    throws PipelineException;
+  
+
+
   /*----------------------------------------------------------------------------------------*/
   /*   O P S                                                                                */
   /*----------------------------------------------------------------------------------------*/

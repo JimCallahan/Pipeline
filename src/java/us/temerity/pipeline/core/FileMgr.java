@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.80 2008/10/09 03:06:06 jim Exp $
+// $Id: FileMgr.java,v 1.81 2008/12/18 00:46:24 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -10,6 +10,7 @@ import java.io.*;
 import java.util.*;
 import java.util.jar.*; 
 import java.util.concurrent.locks.*;
+import java.util.concurrent.atomic.*;
 import java.text.*;
 
 /*------------------------------------------------------------------------------------------*/
@@ -156,19 +157,43 @@ class FileMgr
 
   /** 
    * Construct a new file manager.
+   * 
+   * @param fileStatDir
+   *   An alternative root production directory accessed via a different NFS mount point
+   *   to provide an exclusively network for file status query traffic.  Setting this to 
+   *   <CODE>null</CODE> will cause the default root production directory to be used instead.
+   * 
+   * @param inodeFileStat
+   *   Whether to use the alternative i-node based unique file comparison tests instead
+   *   of the original realpath based approach.
+   * 
+   * @param checksumDir
+   *   An alternative root production directory accessed via a different NFS mount point
+   *   to provide an exclusively network for checksum generation traffic.  Setting this to 
+   *   <CODE>null</CODE> will cause the default root production directory to be used instead.
+   * 
+   * @param nativeChecksum
+   *   Whether to use the native JNI based checksum generation code instead of the original
+   *   Java based method.
    */
   public
-  FileMgr()
+  FileMgr
+  (
+   Path fileStatDir, 
+   boolean inodeFileStat, 
+   Path checksumDir, 
+   boolean nativeChecksum
+  )
   {
     LogMgr.getInstance().log
       (LogMgr.Kind.Net, LogMgr.Level.Info,
        "Initializing [FileMgr]...");
     LogMgr.getInstance().flush();
 
+    /* init common back-end directories */ 
     if(PackageInfo.sOsType != OsType.Unix)
       throw new IllegalStateException("The OS type must be Unix!");
     pProdDir = PackageInfo.sProdPath.toFile();
-    pStatDir = PackageInfo.sStatPath.toFile();
     pRepoDir = PackageInfo.sRepoPath.toFile();
     pTempDir = PackageInfo.sTempPath.toFile();
 
@@ -184,10 +209,152 @@ class FileMgr
       System.exit(1);
     }
     
+    /* runtime controls */ 
+    pFileStatPath = new AtomicReference<Path>();
+    pINodeFileStat = new AtomicBoolean();
+    pChecksumPath = new AtomicReference<Path>();
+    pNativeChecksum = new AtomicBoolean();
+    setRuntimeControlsHelper(fileStatDir, inodeFileStat, checksumDir, nativeChecksum);
+
+    /* init file system locks */ 
     pCheckedInLocks = new HashMap<String,ReentrantReadWriteLock>();
     pWorkingLocks   = new HashMap<NodeID,Object>();
     pMakeDirLock    = new Object();
   }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   R U N T I M E   P A R A M E T E R S                                                  */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the current runtime performance controls.
+   * 
+   * @return
+   *   <CODE>MiscGetMasterControlsRsp</CODE>.
+   */ 
+  public Object
+  getRuntimeControls() 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    Path fileStatPath = null;
+    {
+      Path path = pFileStatPath.get();
+      if(!path.equals(PackageInfo.sProdPath)) 
+        fileStatPath = path;
+    }
+
+    Path checksumPath = null;
+    {
+      Path path = pChecksumPath.get();
+      if(!path.equals(PackageInfo.sProdPath)) 
+        checksumPath = path;
+    }
+
+    MasterControls controls = 
+      new MasterControls(null, null, null, null, null, 
+                         fileStatPath, pINodeFileStat.get(), 
+                         checksumPath, pNativeChecksum.get()); 
+
+    return new MiscGetMasterControlsRsp(timer, controls);
+  }
+
+  /**
+   * Set the current runtime performance controls.
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE>.
+   */ 
+  public synchronized Object
+  setRuntimeControls
+  (
+   MiscSetMasterControlsReq req
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    MasterControls controls = req.getControls();
+    setRuntimeControlsHelper(controls.getFileStatDir(), controls.getINodeFileStat(), 
+                             controls.getChecksumDir(), controls.getNativeChecksum());
+    
+    return new SuccessRsp(timer);
+  }
+  
+  
+  /**
+   * Helper for setting the current runtime performance controls.
+   * 
+   * @param fileStatDir
+   *   An alternative root production directory accessed via a different NFS mount point
+   *   to provide an exclusively network for file status query traffic.  Setting this to 
+   *   <CODE>null</CODE> will cause the default root production directory to be used instead.
+   * 
+   * @param inodeFileStat
+   *   Whether to use the alternative i-node based unique file comparison tests instead
+   *   of the original realpath based approach.
+   * 
+   * @param checksumDir
+   *   An alternative root production directory accessed via a different NFS mount point
+   *   to provide an exclusively network for checksum generation traffic.  Setting this to 
+   *   <CODE>null</CODE> will cause the default root production directory to be used instead.
+   * 
+   * @param nativeChecksum
+   *   Whether to use the native JNI based checksum generation code instead of the original
+   *   Java based method.
+   */ 
+  private void 
+  setRuntimeControlsHelper
+  (
+   Path fileStatDir, 
+   boolean inodeFileStat, 
+   Path checksumDir, 
+   boolean nativeChecksum
+  ) 
+  {
+    StringBuilder buf = new StringBuilder();
+    buf.append("--- FileMgr Runtime Controls ---\n"); 
+
+    {
+      Path path = fileStatDir;
+      if(path == null) 
+        pFileStatPath.set(PackageInfo.sProdPath);
+      else 
+        pFileStatPath.set(path);
+
+      buf.append("File Stat Root Directory: " + pFileStatPath.get() + "\n");
+    }
+    
+    pINodeFileStat.set(inodeFileStat);
+    buf.append("        File Stat Method: " + 
+               (pINodeFileStat.get() ? "INode" : "Realpath") + "\n");
+    
+    {
+      Path path = checksumDir;
+      if(path == null) 
+        pChecksumPath.set(PackageInfo.sProdPath);
+      else 
+        pChecksumPath.set(path);
+
+      buf.append(" Checksum Root Directory: " + pChecksumPath.get() + "\n");
+    }
+    
+    pNativeChecksum.set(nativeChecksum);
+    buf.append("         Checksum Method: " + 
+               (pNativeChecksum.get() ? "Native" : "Java") + "\n");
+    
+    buf.append("--------------------------------"); 
+
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+       buf.toString());
+  }
+   
+  
 
 
 
@@ -414,6 +581,29 @@ class FileMgr
    FileStateReq req
   ) 
   {
+    if(pINodeFileStat.get()) 
+      return statesINode(req);
+    else
+      return statesRealpath(req);
+  }
+
+  /**
+   * Compute the {@link FileState FileState} for each file associated with the working 
+   * version of a node. <P> 
+   * 
+   * @param req 
+   *   The file state request.
+   * 
+   * @return
+   *   <CODE>FileStateRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to compute the file states.
+   */ 
+  public Object
+  statesINode
+  (
+   FileStateReq req
+  ) 
+  {
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
@@ -424,11 +614,312 @@ class FileMgr
       synchronized(workingLock) {
 	timer.resume();
 
-	CheckSum checkSum = new CheckSum("MD5", pStatDir);
+	CheckSum checkSum = 
+          new CheckSum("MD5", pChecksumPath.get().toFile(), pNativeChecksum.get());
+
+	NodeID nodeID = req.getNodeID(); 
+        long ctime = req.getChangeStamp();
+        VersionID lvid = req.getLatestVersionID();
+        VersionID bvid = req.getWorkingVersionID();
+
+	TreeMap<FileSeq, FileState[]> states = new TreeMap<FileSeq, FileState[]>();
+	TreeMap<FileSeq, Long[]> timestamps = new TreeMap<FileSeq, Long[]>();
+
+        Path statPath = new Path(pFileStatPath.get());
+
+	/* if frozen, the possibilities are more limited... */ 
+	if(req.isFrozen()) {
+	  switch(req.getVersionState()) {
+	  case Identical:
+            {
+              Path wpath = new Path(statPath, nodeID.getWorkingParent());
+
+              for(FileSeq fseq : req.getFileSequences()) {
+                FileState fs[] = new FileState[fseq.numFrames()];
+                Long stamps[]  = new Long[fseq.numFrames()];
+
+                int wk = 0;
+                for(Path path : fseq.getPaths()) {
+                  NativeFileStat work = new NativeFileStat(new Path(wpath, path));
+
+                  if(!work.isFile()) {
+                    /* this means that someone has manually removed the symlink! */ 
+                    fs[wk] = FileState.Missing; 
+                  }
+                  else {
+                    fs[wk] = FileState.Identical;
+                    stamps[wk] = work.lastCriticalChange(ctime); 
+                  }
+                  
+                  wk++;
+                }
+
+                states.put(fseq, fs);
+                timestamps.put(fseq, stamps);
+              }
+            }
+	    break;
+
+	  case NeedsCheckOut:
+            {
+              Path wpath = new Path(statPath, nodeID.getWorkingParent());
+              Path lpath = new Path(statPath, nodeID.getCheckedInPath(lvid));
+
+              for(FileSeq fseq : req.getFileSequences()) {
+                FileState fs[] = new FileState[fseq.numFrames()];
+                Long stamps[]  = new Long[fseq.numFrames()];
+                
+                int wk = 0;
+                for(Path path : fseq.getPaths()) {
+                  NativeFileStat work   = new NativeFileStat(new Path(wpath, path));
+                  NativeFileStat latest = new NativeFileStat(new Path(lpath, path));
+		
+                  if(!latest.isFile()) {
+                    fs[wk] = FileState.Obsolete;
+                    stamps[wk] = work.lastCriticalChange(ctime); 
+                  }
+                  else if(!work.isFile()) {
+                    /* this means that someone has manually removed the symlink! */ 
+                    fs[wk] = FileState.Missing;  
+                  }
+                  else {
+                    if(work.isAlias(latest))
+                      fs[wk] = FileState.Identical;
+                    else 
+                      fs[wk] = FileState.NeedsCheckOut;
+                    stamps[wk] = work.lastCriticalChange(ctime); 
+                  }
+
+                  wk++;
+                }
+                
+                states.put(fseq, fs);
+                timestamps.put(fseq, stamps);
+              }
+            }
+          }
+        }
+	
+	/* if not frozen, do a more exhaustive set of tests... */ 
+	else {
+	  switch(req.getVersionState()) {
+	  case Pending:
+            {
+              if((bvid != null) || (lvid != null))
+                throw new PipelineException("Internal Error");
+              
+              Path wpath = new Path(statPath, nodeID.getWorkingParent());
+              
+              for(FileSeq fseq : req.getFileSequences()) {
+                FileState fs[] = new FileState[fseq.numFrames()];
+                Long stamps[]  = new Long[fseq.numFrames()];
+
+                int wk = 0;
+                for(Path path : fseq.getPaths()) {
+                  NativeFileStat work = new NativeFileStat(new Path(wpath, path));
+                  
+                  if(work.isFile()) {
+                    fs[wk] = FileState.Pending;
+                    stamps[wk] = work.lastCriticalChange(ctime); 
+                  }
+                  else {
+                    fs[wk] = FileState.Missing;
+                  }
+                  
+                  wk++;
+                }
+                
+                states.put(fseq, fs);
+                timestamps.put(fseq, stamps);
+              }
+            }
+	    break;
+	  
+	  case CheckedIn:
+	    throw new PipelineException("Internal Error");
+	  
+	  case Identical:
+            {
+              if((bvid == null) || (lvid == null))
+                throw new PipelineException("Internal Error");
+              
+              Path wpath = new Path(statPath, nodeID.getWorkingParent());
+              Path lpath = new Path(statPath, nodeID.getCheckedInPath(lvid));
+
+              for(FileSeq fseq : req.getFileSequences()) {
+                FileState fs[] = new FileState[fseq.numFrames()];
+                Long stamps[]  = new Long[fseq.numFrames()];
+                
+                int wk = 0;
+                for(Path path : fseq.getPaths()) {
+                  NativeFileStat work = new NativeFileStat(new Path(wpath, path));
+
+                  if(!work.isFile()) 
+                    fs[wk] = FileState.Missing;
+                  else {
+                    NativeFileStat latest = new NativeFileStat(new Path(lpath, path));
+
+                    if(!latest.isFile()) 
+                      fs[wk] = FileState.Added;
+                    else if(work.fileSize() != latest.fileSize()) 
+                      fs[wk] = FileState.Modified;
+                    else if(work.isAlias(latest))
+                      fs[wk] = FileState.Identical;
+                    else {
+                      Path wnpath = new Path(nodeID.getWorkingParent(), path);
+                      Path lnpath = new Path(nodeID.getCheckedInPath(lvid), path);
+                      checkSum.refresh(wnpath);
+                      if(checkSum.compare(wnpath, lnpath))
+                        fs[wk] = FileState.Identical;
+                      else 
+                        fs[wk] = FileState.Modified;
+                    }
+                    
+                    stamps[wk] = work.lastCriticalChange(ctime); 
+                  }
+                  
+                  wk++;
+                }
+                
+                states.put(fseq, fs);
+                timestamps.put(fseq, stamps);
+              }
+            }
+	    break;
+	  
+	  case NeedsCheckOut:
+            {
+              if((bvid == null) || (lvid == null))
+                throw new PipelineException("Internal Error");
+
+              Path wpath = new Path(statPath, nodeID.getWorkingParent());
+              Path bpath = new Path(statPath, nodeID.getCheckedInPath(bvid));
+              Path lpath = new Path(statPath, nodeID.getCheckedInPath(lvid));
+              
+              for(FileSeq fseq : req.getFileSequences()) {
+                FileState fs[] = new FileState[fseq.numFrames()];
+                Long stamps[]  = new Long[fseq.numFrames()];
+                
+                int wk = 0;
+                for(Path path : fseq.getPaths()) {
+                  NativeFileStat work = new NativeFileStat(new Path(wpath, path));
+
+                  if(!work.isFile()) 
+                    fs[wk] = FileState.Missing;
+                  else {
+                    NativeFileStat latest = new NativeFileStat(new Path(lpath, path));
+                    NativeFileStat base   = new NativeFileStat(new Path(bpath, path));
+
+                    if(!latest.isFile()) {
+                      if(!base.isFile()) 
+                        fs[wk] = FileState.Added;
+                      else 
+                        fs[wk] = FileState.Obsolete;
+                    }
+                    else {
+                      boolean workRefreshed = false;
+                      boolean workEqLatest = false;
+                      if(work.isAlias(latest)) 
+                        workEqLatest = true;
+                      else if(work.fileSize() == latest.fileSize()) {
+                        Path wnpath = new Path(nodeID.getWorkingParent(), path);
+                        Path lnpath = new Path(nodeID.getCheckedInPath(lvid), path);
+                        checkSum.refresh(wnpath);
+                        workRefreshed = true;
+                        workEqLatest = checkSum.compare(wnpath, lnpath);
+                      }
+                      
+                      if(workEqLatest) {
+                        fs[wk] = FileState.Identical;
+                      }
+                      else if(!base.isFile()) {
+                        fs[wk] = FileState.Conflicted;
+                      }
+                      else { 
+                        if(base.isAlias(latest))
+                          fs[wk] = FileState.Modified;
+                        else {
+                          boolean workEqBase = false;
+                          if(work.isAlias(base))
+                            workEqBase = true;
+                          else if(work.fileSize() == base.fileSize()) {
+                            Path wnpath = new Path(nodeID.getWorkingParent(), path);
+                            Path bnpath = new Path(nodeID.getCheckedInPath(bvid), path);
+                            if(!workRefreshed) 
+                              checkSum.refresh(wnpath);
+                            workEqBase = checkSum.compare(wnpath, bnpath);
+                          }
+                          
+                          if(workEqBase)
+                            fs[wk] = FileState.NeedsCheckOut;
+                          else 
+                            fs[wk] = FileState.Conflicted;
+                        }
+                      }
+                    }
+
+                    stamps[wk] = work.lastCriticalChange(ctime); 
+                  }
+                  
+                  wk++;
+                }
+                
+                states.put(fseq, fs);
+                timestamps.put(fseq, stamps);
+              }
+            }
+          }
+	}
+
+	return new FileStateRsp(timer, nodeID, states, timestamps);
+      }
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+    catch(IOException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+    finally {
+      checkedInLock.readLock().unlock();
+    }  
+  }
+
+  /**
+   * Compute the {@link FileState FileState} for each file associated with the working 
+   * version of a node. <P> 
+   * 
+   * @param req 
+   *   The file state request.
+   * 
+   * @return
+   *   <CODE>FileStateRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to compute the file states.
+   */ 
+  public Object
+  statesRealpath
+  (
+   FileStateReq req
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    timer.aquire();
+    ReentrantReadWriteLock checkedInLock = getCheckedInLock(req.getNodeID().getName());
+    checkedInLock.readLock().lock();
+    try {
+      Object workingLock = getWorkingLock(req.getNodeID());
+      synchronized(workingLock) {
+	timer.resume();
+
+	CheckSum checkSum = 
+          new CheckSum("MD5", pChecksumPath.get().toFile(), pNativeChecksum.get());
 
 	NodeID id = req.getNodeID();
 	TreeMap<FileSeq, FileState[]> states = new TreeMap<FileSeq, FileState[]>();
 	TreeMap<FileSeq, Long[]> timestamps = null; 
+
+        File statDir = pFileStatPath.get().toFile();
 
 	/* if frozen, the possibilities are more limited... */ 
 	if(req.isFrozen()) {
@@ -440,7 +931,7 @@ class FileMgr
 	      int wk = 0;
 	      for(File file : fseq.getFiles()) {
 		File wpath = new File(req.getNodeID().getWorkingParent() + "/" + file);
-		File work  = new File(pStatDir, wpath.getPath());
+		File work  = new File(statDir, wpath.getPath());
 
 		if(!work.isFile()) {
 		  /* this means that someone has manually removed the symlink! */ 
@@ -464,11 +955,11 @@ class FileMgr
 	      int wk = 0;
 	      for(File file : fseq.getFiles()) {
 		File wpath = new File(req.getNodeID().getWorkingParent() + "/" + file);
-		File work  = new File(pStatDir, wpath.getPath());
+		File work  = new File(statDir, wpath.getPath());
 		
 		VersionID lvid = req.getLatestVersionID();
 		File lpath  = new File(req.getNodeID().getCheckedInPath(lvid) + "/" + file);
-		File latest = new File(pStatDir, lpath.getPath());
+		File latest = new File(statDir, lpath.getPath());
 		
 		if(!latest.isFile()) {
 		  fs[wk] = FileState.Obsolete;
@@ -504,7 +995,7 @@ class FileMgr
 	    
 	      int wk = 0;
 	      for(File file : fseq.getFiles()) {
-		File work = new File(pStatDir, 
+		File work = new File(statDir, 
 				     req.getNodeID().getWorkingParent() + "/" + file);
 
 		if(work.isFile())
@@ -532,14 +1023,14 @@ class FileMgr
 	      int wk = 0;
 	      for(File file : fseq.getFiles()) {
 		File wpath = new File(req.getNodeID().getWorkingParent() + "/" + file);
-		File work  = new File(pStatDir, wpath.getPath());
+		File work  = new File(statDir, wpath.getPath());
 	      
 		if(!work.isFile()) 
 		  fs[wk] = FileState.Missing;
 		else {
 		  VersionID lvid = req.getLatestVersionID();
 		  File lpath  = new File(req.getNodeID().getCheckedInPath(lvid) + "/" + file);
-		  File latest = new File(pStatDir, lpath.getPath());
+		  File latest = new File(statDir, lpath.getPath());
 		
 		  if(!latest.isFile()) 
 		    fs[wk] = FileState.Added;
@@ -573,18 +1064,18 @@ class FileMgr
 	      int wk = 0;
 	      for(File file : fseq.getFiles()) {
 		File wpath = new File(req.getNodeID().getWorkingParent() + "/" + file);
-		File work  = new File(pStatDir, wpath.getPath());
+		File work  = new File(statDir, wpath.getPath());
 
 		if(!work.isFile()) 
 		  fs[wk] = FileState.Missing;
 		else {
 		  VersionID lvid = req.getLatestVersionID();
 		  File lpath  = new File(req.getNodeID().getCheckedInPath(lvid) + "/" + file);
-		  File latest = new File(pStatDir, lpath.getPath());
+		  File latest = new File(statDir, lpath.getPath());
 
 		  VersionID bvid = req.getWorkingVersionID();
 		  File bpath = new File(req.getNodeID().getCheckedInPath(bvid) + "/" + file);
-		  File base  = new File(pStatDir, bpath.getPath());
+		  File base  = new File(statDir, bpath.getPath());
 		
 		  if(!latest.isFile()) {
 		    if(!base.isFile()) 
@@ -649,7 +1140,7 @@ class FileMgr
 	      int wk = 0;
 	      for(File file : fseq.getFiles()) {
                 if(fs[wk] != FileState.Missing) {
-                  File work = new File(pStatDir, 
+                  File work = new File(statDir, 
                                        req.getNodeID().getWorkingParent() + "/" + file);
 
                   try {
@@ -726,7 +1217,8 @@ class FileMgr
       synchronized(workingLock) {
 	timer.resume();
 
-	CheckSum checkSum = new CheckSum("MD5", pProdDir);
+	CheckSum checkSum = 
+          new CheckSum("MD5", pChecksumPath.get().toFile(), pNativeChecksum.get());
 
 	/* refresh the working checksums */ 
 	for(FileSeq fseq : req.getFileSequences()) {
@@ -3867,7 +4359,9 @@ class FileMgr
       
       /* verify that all files where restored and that their checksums are correct */ 
       {
-	CheckSum checkSum = new CheckSum("MD5", pProdDir);
+	CheckSum checkSum = 
+          new CheckSum("MD5", pChecksumPath.get().toFile(), pNativeChecksum.get());
+
 	for(File file : files) {
 	  if(!checkSum.validateRestore(restoreDir, file))
 	    throw new PipelineException
@@ -4420,11 +4914,10 @@ class FileMgr
   /**
    * The common back-end directories.
    * 
-   * Since the file manager should always be run on a Unix system, these variables are always
-   * initialized to Unix specific paths.
+   * Historically, these where File objects instead of Path objects since the backend only
+   * ran on Unix systems.  Eventually they should all be converted to Paths instead.
    */
   private File pProdDir; 
-  private File pStatDir; 
   private File pRepoDir; 
   private File pTempDir; 
 
@@ -4435,7 +4928,41 @@ class FileMgr
    * The file system directory creation lock.
    */
   private Object pMakeDirLock;
+
+
+  /*----------------------------------------------------------------------------------------*/
+  
+  /* RUNTINE CONTROLS */ 
+  
+  /**
+   * An alternative root production directory accessed via a different NFS mount point
+   * to provide an exclusively network for file status query traffic.  Setting this to 
+   * <CODE>null</CODE> will cause the default root production directory to be used instead.
+   */ 
+  private AtomicReference<Path> pFileStatPath;
+
+  /**
+   * Whether to use the alternative i-node based unique file comparison tests instead
+   * of the original realpath based approach.
+   */ 
+  private AtomicBoolean pINodeFileStat;
+
+  /**
+   * An alternative root production directory accessed via a different NFS mount point
+   * to provide an exclusively network for checksum generation traffic.  Setting this to 
+   * <CODE>null</CODE> will cause the default root production directory to be used instead.
+   */ 
+  private AtomicReference<Path> pChecksumPath;
+
+  /**
+   * Whether to use the native JNI based checksum generation code instead of the original
+   * Java based method.
+   */ 
+  private AtomicBoolean pNativeChecksum;
  
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * The per-node locks indexed by fully resolved node name. <P> 
    * 

@@ -12,6 +12,7 @@ noinst_PROGRAMS = \
 
 
 libNative_so_SOURCES = \
+  NativeFileStat.cc \
   NativeFileSys.cc \
   NativeOS.cc \
   NativeProcessStats.cc \
@@ -19,7 +20,7 @@ libNative_so_SOURCES = \
   NativeProcessLight.cc
 
 libNative_so_LDADD = \
-  @JNI_LDADD@
+  @JNI_LDADD@ -lcrypto
 
 
 if IS_MAC_OS
@@ -47,6 +48,7 @@ endif
 
 EXTRA_DIST = \
   NativeFileSys.hh \
+  NativeFileStat.hh \
   NativeOS.hh \
   NativeProcessStats.hh \
   NativeProcessHeavy.hh \

@@ -1,4 +1,4 @@
-// $Id: FileRequest.java,v 1.24 2008/05/16 01:11:41 jim Exp $
+// $Id: FileRequest.java,v 1.25 2008/12/18 00:46:25 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -19,6 +19,19 @@ package us.temerity.pipeline.message;
 public
 enum FileRequest
 {
+  /**
+   * Get the current runtime controls. 
+   */ 
+  GetMasterControls,
+  
+  /**
+   * An instance of {@link MiscSetMasterControlsReq} is next.
+   */ 
+  SetMasterControls,
+
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Make sure that the temporary directory exists.
    */ 

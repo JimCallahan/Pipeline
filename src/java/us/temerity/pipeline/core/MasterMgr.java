@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.260 2008/11/04 02:49:42 jim Exp $
+// $Id: MasterMgr.java,v 1.261 2008/12/18 00:46:24 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -6,8 +6,7 @@ import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -21,7 +20,7 @@ import us.temerity.pipeline.message.*;
 import us.temerity.pipeline.toolset.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   N O D E   M G R                                                                        */
+/*   M A S T E R   M G R                                                                    */
 /*------------------------------------------------------------------------------------------*/
 
 /**
@@ -227,6 +226,24 @@ class MasterMgr
    *   The maximum age of a resolved (Restored or Denied) restore request before it 
    *   is deleted (in milliseconds).
    * 
+   * @param fileStatDir
+   *   An alternative root production directory accessed via a different NFS mount point
+   *   to provide an exclusively network for file status query traffic.  Setting this to 
+   *   <CODE>null</CODE> will cause the default root production directory to be used instead.
+   * 
+   * @param inodeFileStat
+   *   Whether to use the alternative i-node based unique file comparison tests instead
+   *   of the original realpath based approach.
+   * 
+   * @param checksumDir
+   *   An alternative root production directory accessed via a different NFS mount point
+   *   to provide an exclusively network for checksum generation traffic.  Setting this to 
+   *   <CODE>null</CODE> will cause the default root production directory to be used instead.
+   * 
+   * @param nativeChecksum
+   *   Whether to use the native JNI based checksum generation code instead of the original
+   *   Java based method.
+   * 
    * @throws PipelineException 
    *   If unable to properly initialize the manager.
    */
@@ -240,7 +257,11 @@ class MasterMgr
    long minOverhead, 
    long maxOverhead, 
    long nodeGCInterval, 
-   long restoreCleanupInterval
+   long restoreCleanupInterval, 
+   Path fileStatDir, 
+   boolean inodeFileStat, 
+   Path checksumDir, 
+   boolean nativeChecksum
   )
     throws PipelineException 
   { 
@@ -298,7 +319,8 @@ class MasterMgr
 
       /* initialize the internal file manager instance */ 
       if(pInternalFileMgr) {
-	pFileMgrDirectClient = new FileMgrDirectClient();
+	pFileMgrDirectClient = 
+          new FileMgrDirectClient(fileStatDir, inodeFileStat, checksumDir, nativeChecksum);
       }
       /* make a connection to the remote file manager */ 
       else {
@@ -1672,6 +1694,7 @@ class MasterMgr
       lc.setLevel(LogMgr.Kind.Net, mgr.getLevel(LogMgr.Kind.Net));
       lc.setLevel(LogMgr.Kind.Plg, mgr.getLevel(LogMgr.Kind.Plg));
       lc.setLevel(LogMgr.Kind.Sub, mgr.getLevel(LogMgr.Kind.Sub));
+      lc.setLevel(LogMgr.Kind.Sum, mgr.getLevel(LogMgr.Kind.Sum));
     }
 
     return new MiscGetLogControlsRsp(timer, lc);
@@ -1744,6 +1767,12 @@ class MasterMgr
 	  if(level != null) 
 	    mgr.setLevel(LogMgr.Kind.Sub, level);
 	}
+
+	{
+	  LogMgr.Level level = lc.getLevel(LogMgr.Kind.Sum);
+	  if(level != null) 
+	    mgr.setLevel(LogMgr.Kind.Sum, level);
+	}
       }
       
       return new SuccessRsp(timer);
@@ -1770,12 +1799,28 @@ class MasterMgr
   {
     TaskTimer timer = new TaskTimer();
 
-    MasterControls controls = 
-      new MasterControls(pAverageNodeSize.get(), 
-			 pMinimumOverhead.get(), pMaximumOverhead.get(), 
-			 pNodeGCInterval.get(), pRestoreCleanupInterval.get());
-
-    return new MiscGetMasterControlsRsp(timer, controls);
+    try {
+      MasterControls controls = null;
+      {
+        FileMgrClient fclient = getFileMgrClient();
+        try {
+          controls = fclient.getRuntimeControls(); 
+        }
+        finally {
+          freeFileMgrClient(fclient);
+        }
+      }
+      
+      controls.setAverageNodeSize(pAverageNodeSize.get()); 
+      controls.setOverhead(pMinimumOverhead.get(), pMaximumOverhead.get()); 
+      controls.setNodeGCInterval(pNodeGCInterval.get()); 
+      controls.setRestoreCleanupInterval(pRestoreCleanupInterval.get()); 
+      
+      return new MiscGetMasterControlsRsp(timer, controls);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
   }
 
   /**
@@ -1838,6 +1883,14 @@ class MasterMgr
 	  pRestoreCleanupInterval.set(interval);
       }
 
+      FileMgrClient fclient = getFileMgrClient();
+      try {
+        fclient.setRuntimeControls(controls);
+      }
+      finally {
+        freeFileMgrClient(fclient);
+      }
+      
       return new SuccessRsp(timer);
     }
     catch(PipelineException ex) {

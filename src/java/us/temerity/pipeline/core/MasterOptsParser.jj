@@ -47,10 +47,20 @@ MasterOptsParser
   private void 
   init()
   {
+    pFileStatDir    = PackageInfo.sProdPath; 
+    pINodeFileStat  = false;
+    pChecksumDir    = PackageInfo.sProdPath; 
+    pNativeChecksum = false;
+
+    pNodeGCInterval = 300000L;  /* 5-minutes */ 
+
     Runtime rt = Runtime.getRuntime();
     double maxMemory = (double) rt.maxMemory();
     pMinOverhead = (long) (maxMemory * 0.2);
     pMaxOverhead = (long) (maxMemory * 0.3);
+
+    pAvgNodeSize = 4000L;
+    pRestoreCleanupInterval = 172800000L;  /* 48-hours */ 
 
     pLogBackups = 10;
   }
@@ -65,6 +75,14 @@ MasterOptsParser
    * The application instance. 
    */
   private MasterApp  pApp;
+
+  /**
+   * Whether non-information commands have been given.
+   */   
+  private boolean  pHasCommands; 
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Whether to rebuild cache files and ignore existing lock files.
@@ -84,10 +102,35 @@ MasterOptsParser
 
 
   /**
+   * An alternative root production directory accessed via a different NFS mount point
+   * to provide an exclusively network for file status query traffic.  
+   */ 
+  private Path pFileStatDir;
+
+  /**
+   * Whether to use the alternative i-node based unique file comparison tests instead
+   * of the original realpath based approach.
+   */ 
+  private boolean pINodeFileStat;
+
+  /**
+   * An alternative root production directory accessed via a different NFS mount point
+   * to provide an exclusively network for checksum generation traffic. 
+   */ 
+  private Path pChecksumDir;
+
+  /**
+   * Whether to use the native JNI based checksum generation code instead of the original
+   * Java based method.
+   */ 
+  private boolean pNativeChecksum;  
+
+
+  /**
    * The minimum time a cycle of the node cache garbage collector loop should 
    * take (in milliseconds).
    */ 
-  private long  pNodeGCInterval = 300000L;  /* 5-minutes */ 
+  private long  pNodeGCInterval;  
 
   /**
    * The minimum amount of memory overhead to maintain at all times.  The maximum amount of 
@@ -99,22 +142,16 @@ MasterOptsParser
   /**
    * The estimated memory size of a node version (in bytes).
    */ 
-  private long  pAvgNodeSize = 4000L;
+  private long  pAvgNodeSize;
 
   /**
    * The maximum age of a resolved (Restored or Denied) restore request before it 
    * is deleted (in milliseconds).
    */ 
-  private long  pRestoreCleanupInterval = 172800000L;  /* 48-hours */ 
-
+  private long  pRestoreCleanupInterval; 
 
 
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Whether non-information commands have been given.
-   */   
-  private boolean  pHasCommands; 
 
   /**
    * The name of the log file.
@@ -146,11 +183,17 @@ TOKEN :
 | <REBUILD:           "--rebuild"> 
 | <PRESERVE_OFFLINED: "--preserve-offlined"> 
 | <FILE_MGR:          "--file-mgr">   
-| <LOG_FILE:          "--log-file">                : PATH_SEP
-| <STANDARD_LOG_DIR:  "--standard-log-dir">        : PATH_SEP
+
+| <FILE_STAT_DIR:     "--file-stat-dir">      : PATH_SEP
+| <FILE_STAT_METHOD:  "--file-stat-method">   : FILE_STAT_SEP
+| <CHECKSUM_DIR:      "--checksum-dir">       : PATH_SEP
+| <CHECKSUM_METHOD:   "--checksum-method">    : CHECKSUM_SEP
+
+| <LOG_FILE:          "--log-file">           : PATH_SEP
+| <STANDARD_LOG_DIR:  "--standard-log-dir">   : PATH_SEP
 | <STANDARD_LOG_FILE: "--standard-log-file"> 
-| <LOG_BACKUPS:       "--log-backups">             : INTEGER_SEP
-| <LOG:               "--log">                     : LOG_SEP
+| <LOG_BACKUPS:       "--log-backups">        : INTEGER_SEP
+| <LOG:               "--log">                : LOG_SEP
 
   /* performance tuning options */ 
 | <RESTORE_CLEANUP_INTERVAL:  "--restore-cleanup-interval">  : INTEGER_SEP
@@ -231,6 +274,43 @@ TOKEN :
 }
 
 
+
+/* --file-stat-method arguments */ 
+<FILE_STAT_SEP> 
+TOKEN :
+{
+  <EQ5:               "=">  : FS_METHOD
+| <MISSING_FS_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<FS_METHOD> 
+TOKEN :
+{
+  <FS_REALPATH:      "realpath">       
+| <FS_INODE: 	     "inode">     
+| <AE3:              (["\0"])+>   : DEFAULT   
+| <ILLEGAL_FS_TYPE:  (~["\0"])+>  : IGNORE_STATE    
+}
+
+
+/* --checksum-method arguments */ 
+<CHECKSUM_SEP> 
+TOKEN :
+{
+  <EQ6:               "=">  : CS_METHOD
+| <MISSING_CS_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<CS_METHOD> 
+TOKEN :
+{
+  <CS_JAVA:          "java">       
+| <CS_NATIVE: 	     "native">     
+| <AE4:              (["\0"])+>  : DEFAULT   
+| <ILLEGAL_CS_TYPE:  (~["\0"])+>  : IGNORE_STATE    
+}
+
+
 /* --log arguments */ 
 <LOG_SEP> 
 TOKEN :
@@ -307,7 +387,8 @@ CommandLine()
       /* create the server */ 
       return new MasterMgrServer(pApp, pRebuildCache, pPreserveOfflinedCache, 
                                  pInternalFileMgr, pAvgNodeSize, pMinOverhead, pMaxOverhead, 
-                                 pNodeGCInterval, pRestoreCleanupInterval);
+                                 pNodeGCInterval, pRestoreCleanupInterval,
+                                 pFileStatDir, pINodeFileStat, pChecksumDir, pNativeChecksum);
     }
 
     return null;
@@ -412,6 +493,7 @@ GlobalOpts()
 {}
 {
   (Rebuild() | PreserveOfflined() | FileMgr() |
+   FileStatDir() | FileStatMethod() | ChecksumDir() | ChecksumMethod() | 
    Log() | LogFile() | StandardLogFile() | StandardLogDir() | LogBackups() |
    NodeGCInterval() | MinOverhead() | MaxOverhead() | AvgNodeSize() |
    RestoreCleanupInterval())
@@ -445,6 +527,85 @@ void FileMgr() :
   }
 }
 
+
+void FileStatDir() :
+{
+  Token t;
+}
+{
+  <FILE_STAT_DIR> EQ() t=<PATH_ARG>
+  { 
+    pFileStatDir = new Path(t.image); 
+  }
+}
+
+
+void FileStatMethod() :
+{}
+{
+  <FILE_STAT_METHOD> EQ() (Realpath() | INode()) 
+  {}
+}
+
+void Realpath() : 
+{}
+{
+  <FS_REALPATH> 
+  {
+    pINodeFileStat = false; 
+  }
+}
+
+void INode() : 
+{}
+{
+  <FS_INODE> 
+  {
+    pINodeFileStat = true; 
+  }
+}
+
+
+void ChecksumDir() :
+{
+  Token t;
+}
+{
+  <CHECKSUM_DIR> EQ() t=<PATH_ARG>
+  { 
+    pChecksumDir = new Path(t.image); 
+  }
+}
+
+
+void ChecksumMethod() :
+{}
+{
+  <CHECKSUM_METHOD> EQ() (Java() | Native()) 
+  {}
+}
+
+void Java() : 
+{}
+{
+  <CS_JAVA> 
+  {
+    pNativeChecksum = false; 
+  }
+}
+
+void Native() : 
+{}
+{
+  <CS_NATIVE> 
+  {
+    pNativeChecksum = true; 
+  }
+}
+
+
+
+/*------------------------------------------------------------------------------------------*/
 
 void LogFile() : 
 {
@@ -803,7 +964,7 @@ AE() :
   Token t;
 }
 {
-  (t=<AE1> | t=<AE2>)
+  (t=<AE1> | t=<AE2> | t=<AE3> | t=<AE4>)
   { 
     return t; 
   }
@@ -816,7 +977,7 @@ EQ() :
   Token t;
 }
 {
-  (t=<EQ1> | t=<EQ2> | t=<EQ3> | t=<EQ4>)
+  (t=<EQ1> | t=<EQ2> | t=<EQ3> | t=<EQ4> | t=<EQ5> | t=<EQ6>)
   { 
     return t; 
   }

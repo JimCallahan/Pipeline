@@ -379,10 +379,14 @@ check-each: $(CLASSES) clean-data
             echo "  TESTING: "$$c"..."; \
             echo; \
             echo env LD_LIBRARY_PATH=./native:$$LD_LIBRARY_PATH \
-                 $(JAVA) $(GC_OPTS) $(DEBUG_OPTS) -cp $(TEST_CLASS_PATH) \
+                 $(JAVA) $(GC_OPTS) $(DEBUG_OPTS) \
+                         @JAVA_OSARCH_TYPE@ @JAVA_BUILD_TYPE@=Debug \
+                         -cp $(TEST_CLASS_PATH) \
                          $(JAVA_RUNTIME_FLAGS) $$c; \
             if env LD_LIBRARY_PATH=./native:$$LD_LIBRARY_PATH \
-                   $(JAVA) $(GC_OPTS) -Xmx128M $(DEBUG_OPTS) -cp $(TEST_CLASS_PATH) \
+                   $(JAVA) $(GC_OPTS) -Xmx128M $(DEBUG_OPTS) \
+                           @JAVA_OSARCH_TYPE@ @JAVA_BUILD_TYPE@=Debug \
+                           -cp $(TEST_CLASS_PATH) \
                            $(JAVA_RUNTIME_FLAGS) $$c; \
             then \
               all=`expr $$all + 1`; \
@@ -425,9 +429,11 @@ check-each-interactive: $(INT_CLASSES) ../api.jar
             echo; \
             echo env LD_LIBRARY_PATH=./native:$$LD_LIBRARY_PATH \
                  $(JAVA) -Djava.util.logging.config.file=$(LOGGER_PROPS) \
+                         @JAVA_OSARCH_TYPE@ @JAVA_BUILD_TYPE@=Debug \
                          -cp $(TEST_CLASS_PATH) $(JAVA_RUNTIME_FLAGS) $$c; \
             if env LD_LIBRARY_PATH=./native:$$LD_LIBRARY_PATH \
                    $(JAVA) -Djava.util.logging.config.file=$(LOGGER_PROPS) \
+                           @JAVA_OSARCH_TYPE@ @JAVA_BUILD_TYPE@=Debug \
                            -cp $(TEST_CLASS_PATH) $(JAVA_RUNTIME_FLAGS) $$c; then \
               all=`expr $$all + 1`; \
               echo; \
