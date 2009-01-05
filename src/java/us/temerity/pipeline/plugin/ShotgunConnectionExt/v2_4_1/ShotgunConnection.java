@@ -1,4 +1,4 @@
-// $Id: ShotgunConnection.java,v 1.5 2008/10/10 12:46:58 jim Exp $
+// $Id: ShotgunConnection.java,v 1.6 2009/01/05 17:24:22 jesse Exp $
 
 package us.temerity.pipeline.plugin.ShotgunConnectionExt.v2_4_1;
 
@@ -93,6 +93,8 @@ class ShotgunConnection
     pClient = null;
     pToken = null;
     pExceptionOnDup = exceptionOnDup;
+    pShotContainer = ShotgunEntity.Scene;
+    pShotContainerString = "sg_scene";
   }
   
   public static void
@@ -159,18 +161,32 @@ class ShotgunConnection
   )
     throws PipelineException
   {
-    if (pClient != null)
-      throw new PipelineException("Already connected to the server.");
+    pURLName = urlName;
+    pUserName = userName;
+    pAPIKey = apiKey;
+    
+    pProjectIDCache = new TreeMap<String, Integer>();
+    
+    reconnect();
+  }
+  
+  public void
+  reconnect()
+    throws PipelineException
+  {
+    if (pClient != null) {
+      disconnectFromServer();
+    }
     
     XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
     URL url;
 
     try {
-      url = new URL(urlName);
+      url = new URL(pURLName);
     }
     catch (Exception ex) {
       throw new PipelineException
-        ("The Url (" + urlName +") was not a valid URL.  The following error was thrown " +
+        ("The Url (" + pURLName +") was not a valid URL.  The following error was thrown " +
          "when attempting to parse the URL.\n" + ex.getMessage());
     }
     
@@ -182,17 +198,17 @@ class ShotgunConnection
     pClient.setTypeFactory(new TemerityTypeFactory(pClient));
     
     Object tokenParam[] = new Object[1];
-    tokenParam[0] = new Object[]{userName, apiKey};
+    tokenParam[0] = new Object[]{pUserName, pAPIKey};
     try {
       pToken = pClient.execute("getSessionToken", tokenParam);
     }
     catch(Exception e) {
-      throw new PipelineException
+      disconnectFromServer();
+      String message = Exceptions.getFullMessage
         ("Unable to get a Session Token from Shotgun.  " +
-         "The following error was reported.\n " + e.getMessage() );
+         "The following error was reported.", e);
+      throw new PipelineException(message);
     } 
-    
-    pProjectIDCache = new TreeMap<String, Integer>();
   }
   
   /**
@@ -205,6 +221,14 @@ class ShotgunConnection
   disconnectFromServer()
     throws PipelineException
   {
+    // No successful connection exists, clear it out and try again.
+    if (pToken == null) {
+      pClient = null;
+      pToken = null;
+      pProjectIDCache.clear();
+      return;
+    }
+    
     Object tokenParam[] = new Object[1];
     tokenParam[0] = pToken;
     try {
@@ -215,26 +239,46 @@ class ShotgunConnection
       ("Unable to release the Shotgun API Token.  " +
        "The following error was reported.\n " + e.getMessage() );
     }
-    pClient = null;
-    pToken = null;
-    pProjectIDCache.clear();
+    finally {
+      pClient = null;
+      pToken = null;
+      pProjectIDCache.clear();
+    }
   }
   
   /**
    * Checks if there is a valid connection to the server before attempting to access it.
-   * @throws PipelineException  If there is no active connection.
+   * 
+   * @throws PipelineException  
+   *   If a valid connection cannot be established.
    */
   private void
   checkConnection()
     throws PipelineException
   {
     if (pToken == null || pClient == null)
+      reconnect();
+    if (pToken == null || pClient == null)
       throw new PipelineException
-        ("No connection was made to Shotgun server before an attempt was made to access it.  " +
-         "Please make sure the connectToServer() method is called before attempts are made " +
-         "to talk to the server.");
+        ("Unable to create a new connection to the server.");
   }
 
+  public void
+  setShotContatinerEntity
+  (
+    ShotgunEntity entity
+  )
+  {
+    pShotContainer = entity;
+    switch (pShotContainer) {
+    case Scene:
+      pShotContainerString = "sg_scene";
+      break;
+    case Sequence:
+      pShotContainerString = "sg_sequence";
+      break;
+    }
+  }
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -310,7 +354,7 @@ class ShotgunConnection
     }
     
     ArrayList<Map<String, Object>> results = 
-      getEntity(ShotgunEntity.Scene, filters, columns);
+      getEntity(pShotContainer, filters, columns);
     if (results.size() > 1)
       throw new PipelineException
       ("There were multiple scenes in Shotgun in the (" + project + ") project " +
@@ -353,7 +397,7 @@ class ShotgunConnection
       filters.add(filter);
     }
     {
-      String filter[] = {"sg_scene", "is", scene};
+      String filter[] = {pShotContainerString, "is", scene};
       filters.add(filter);
     }
     {
@@ -806,7 +850,7 @@ class ShotgunConnection
     someMap.put("code", scene);
     
     try {
-      toReturn = createEntity(ShotgunEntity.Scene, someMap);
+      toReturn = createEntity(pShotContainer, someMap);
     } 
     catch ( Exception ex ) {
       throw new PipelineException
@@ -850,9 +894,9 @@ class ShotgunConnection
     someMap.put("project_names", project);
     {
       TreeMap<String, Object> entityMap = new TreeMap<String, Object>();
-      entityMap.put("type", ShotgunEntity.Scene.toEntity());
+      entityMap.put("type", pShotContainer.toEntity());
       entityMap.put("id", sceneID);
-      someMap.put("sg_scene", entityMap);
+      someMap.put(pShotContainerString, entityMap);
     }
     someMap.put("code", join(scene, shot));
     
@@ -1635,7 +1679,7 @@ class ShotgunConnection
       filters.add(filter);
     }
 
-    ArrayList<Map<String, Object>> results = getEntity(ShotgunEntity.Scene, filters, columns);
+    ArrayList<Map<String, Object>> results = getEntity(pShotContainer, filters, columns);
     for (Map<String, Object> result : results) {
       String scene = (String) result.get("code");
       Integer id = (Integer) result.get("id");
@@ -1673,7 +1717,7 @@ class ShotgunConnection
       filters.add(filter);
     }
     {
-      String filter[] = {"sg_scene", "is", scene};
+      String filter[] = {pShotContainerString, "is", scene};
       filters.add(filter);
     }
 
@@ -1893,5 +1937,13 @@ class ShotgunConnection
   private TripleMap<String, String, String, Integer> pShotIDCache;
   
   private DoubleMap<String, String, Integer> pAssetIDCache;
+  
+  private String pURLName;
+  private String pUserName;
+  private String pAPIKey;
+  
+  private ShotgunEntity pShotContainer;
+  
+  private String pShotContainerString;
   
 }
