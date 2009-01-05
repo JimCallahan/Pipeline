@@ -1,4 +1,4 @@
-// $Id: ShotgunConnectionExt.java,v 1.4 2008/08/01 21:24:39 jesse Exp $
+// $Id: ShotgunConnectionExt.java,v 1.5 2009/01/05 17:21:16 jesse Exp $
 
 package us.temerity.pipeline.plugin.ShotgunConnectionExt.v2_4_1;
 
@@ -36,7 +36,7 @@ import us.temerity.pipeline.builder.v2_4_1.TaskType;
  * We've extended the functionality of the TypeSerializerImpl and TypeFactory classes in 
  * order to make this plugin work with the non-standard responses that Shotgun provides. 
  * The required Apache 2.0 "LICENSE.txt" and "NOTICE" files are also included in the plugin
- * JAR file and all Apache copyright notices have been retained in source files derrived 
+ * JAR file and all Apache copyright notices have been retained in source files derived 
  * from Apache sources.
  */
 public 
@@ -181,6 +181,14 @@ class ShotgunConnectionExt
       
       sConnection.connectToServer(hostname + "api2", user, password);
       LogMgr.getInstance().log(Kind.Ext, Level.Info, "Shotgun Connection has been enabled.");
+      
+      String entity = (String) getParamValue(aShotContainer);
+      if (entity.equals("Scene")) {
+        sConnection.setShotContatinerEntity(ShotgunEntity.Scene);
+      }
+      else if (entity.equals("Sequence")) {
+        sConnection.setShotContatinerEntity(ShotgunEntity.Sequence);
+      }
       
       sNoteOnEntity = (Boolean) getParamValue(aNoteOnEntity);
       sNoteOnTask   = (Boolean) getParamValue(aNoteOnTask);
@@ -607,64 +615,73 @@ class ShotgunConnectionExt
     String taskName    = null; 
     String taskType    = null; 
     for(String aname : annots.keySet()) {
-      BaseAnnotation an = annots.get(aname);
-      
-      String purpose = lookupPurpose(an); 
-      if(purpose != null) {
-        if(byPurpose.containsKey(purpose)) 
-          throw new PipelineException
-            ("More than one Task related annotation with a " + aPurpose + " of " + 
-             purpose + " was found on node (" + name + ")!"); 
+      if(aname.equals("Task") || aname.startsWith("AltTask")) {
+        BaseAnnotation an = annots.get(aname);
 
-        {
-          String pname = lookupProjectName(an); 
-          if(pname == null) 
+        /* Skip old annotation plugins*/
+        if (an.getVendor().equals("Temerity") && 
+            an.getVersionID().equals(new VersionID("2.3.2")) &&
+            an.getName().equals("Task"))
+          continue;
+
+
+        String purpose = lookupPurpose(an); 
+        if(purpose != null) {
+          if(byPurpose.containsKey(purpose)) 
             throw new PipelineException
-              ("The " + aProjectName + " was not set for Task annotation on node " + 
-               "(" + name + ")!"); 
-          
-          if((projectName != null) && !projectName.equals(pname)) 
-            throw new PipelineException 
-              ("The " + aProjectName + " was set in multiple Task annotations on node " + 
-               "(" + name + "), but the did not match!  Both (" + projectName + ") and " + 
-               "(" + pname + ") where given as the " + aProjectName + ".");
+              ("More than one Task related annotation with a " + aPurpose + " of " + 
+               purpose + " was found on node (" + name + ")!"); 
 
-          projectName = pname;
+          {
+            String pname = lookupProjectName(an); 
+            if(pname == null) 
+              throw new PipelineException
+                ("The " + aProjectName + " was not set for Task annotation on node " + 
+                 "(" + name + ")!"); 
+
+            if((projectName != null) && !projectName.equals(pname)) 
+              throw new PipelineException 
+                ("The " + aProjectName + " was set in multiple Task annotations on node " + 
+                 "(" + name + "), but the did not match!  Both (" + projectName + ") and " + 
+                 "(" + pname + ") where given as the " + aProjectName + ".");
+
+            projectName = pname;
+          }
+
+          {
+            String tname = lookupTaskName(an);  
+            if(tname == null) 
+              throw new PipelineException
+                ("The " + aTaskName + " was not set for Task annotation on node " + 
+                 "(" + name + ")!"); 
+
+            if((taskName != null) && !taskName.equals(tname)) 
+              throw new PipelineException 
+                ("The " + aTaskName + " was set in multiple Task annotations on node " + 
+                 "(" + name + "), but the did not match!  Both (" + taskName + ") and " + 
+                 "(" + tname + ") where given as the " + aTaskName + ".");
+
+            taskName = tname; 
+          }
+
+          {
+            String ttype = lookupTaskType(an);  
+            if(ttype == null) 
+              throw new PipelineException
+                ("The " + aTaskType + " was not set for Task annotation on node " + 
+                 "(" + name + ")!"); 
+
+            if((taskType != null) && !taskType.equals(ttype)) 
+              throw new PipelineException 
+                ("The " + aTaskType + " was set in multiple Task annotations on node " + 
+                 "(" + name + "), but the did not match!  Both (" + taskType + ") and " + 
+                 "(" + ttype + ") where given as the " + aTaskType + ".");
+
+            taskType = ttype;
+          }
+
+          byPurpose.put(purpose, an); 
         }
-
-        {
-          String tname = lookupTaskName(an);  
-          if(tname == null) 
-            throw new PipelineException
-              ("The " + aTaskName + " was not set for Task annotation on node " + 
-               "(" + name + ")!"); 
-          
-          if((taskName != null) && !taskName.equals(tname)) 
-            throw new PipelineException 
-              ("The " + aTaskName + " was set in multiple Task annotations on node " + 
-               "(" + name + "), but the did not match!  Both (" + taskName + ") and " + 
-               "(" + tname + ") where given as the " + aTaskName + ".");
-
-          taskName = tname; 
-        }
-
-        {
-          String ttype = lookupTaskType(an);  
-          if(ttype == null) 
-            throw new PipelineException
-              ("The " + aTaskType + " was not set for Task annotation on node " + 
-               "(" + name + ")!"); 
-          
-          if((taskType != null) && !taskType.equals(ttype)) 
-            throw new PipelineException 
-              ("The " + aTaskType + " was set in multiple Task annotations on node " + 
-               "(" + name + "), but the did not match!  Both (" + taskType + ") and " + 
-               "(" + ttype + ") where given as the " + aTaskType + ".");
-
-          taskType = ttype;
-        }
-
-        byPurpose.put(purpose, an); 
       }
     }
 
