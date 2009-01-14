@@ -1,4 +1,4 @@
-// $Id: NodeTree.java,v 1.12 2008/10/30 17:59:17 jesse Exp $
+// $Id: NodeTree.java,v 1.13 2009/01/14 22:26:11 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -46,7 +46,7 @@ class NodeTree
         ("\n\n" + 
          "When Pipeline is configured to use Windows clients, case-insensitive conflicts " + 
          "between the names of nodes and/or their file sequences are not allowed.  This " +
-         "is to prevent problems for keWindows clients using the CIFS network file system " +
+         "is to prevent problems for Windows clients using the CIFS network file system " +
          "to access the files associated with nodes, since CIFS does not understand case.");
     }
     else
@@ -521,6 +521,28 @@ class NodeTree
   ) 
     throws PipelineException
   {
+    if(oldID.equals(newID))
+      throw new PipelineException
+        ("Somehow the old and new node IDs (" + newID + ") are identical!");
+
+    /* make sure that the full new name doesn't match some subset of the non-leaf 
+       components of the old name */ 
+    if(hasDirectorySubsetConflict(newID, oldID)) 
+      throw new PipelineException
+        ("The full new node name (" + newID.getName() + ") cannot match any part of the " + 
+         "directory component of the old node name (" + oldID.getName() + ")!  In order " + 
+         "to perform an operation like this, you may need to first rename the node to a " + 
+         "temporary name which avoids this kind of conflict.");
+    
+    /* make sure that the full old name doesn't match some subset of the non-leaf 
+       components of the new name */ 
+    if(hasDirectorySubsetConflict(oldID, newID)) 
+      throw new PipelineException
+        ("The full old node name (" + oldID.getName() + ") cannot match any part of the " + 
+         "directory component of the new node name (" + newID.getName() + ")!  In order " + 
+         "to perform an operation like this, you may need to first rename the node to a " + 
+         "temporary name which avoids this kind of conflict.");
+
     /* remove the old working node entry, primary and secondary sequences */ 
     removeWorkingNodeTreePath(oldID, oldSeqs); 
 
@@ -565,6 +587,36 @@ class NodeTree
     
     /* add the new working node entry, primary and secondary sequences */ 
     addWorkingNodeTreePath(newID, newSeqs);
+  }
+
+  /**
+   * Check whether the full node name A is a matches a subset of the directory components
+   * of node name B.
+   */ 
+  private boolean
+  hasDirectorySubsetConflict
+  (
+   NodeID idA, 
+   NodeID idB
+  ) 
+  {
+    String compsA[] = idA.getName().split("/"); 
+    String compsB[] = idB.getName().split("/"); 
+
+    int wk;
+    for(wk=1; wk<compsA.length; wk++) {
+      /* all done with non-leaf components without conflicts */
+      if(wk == (compsB.length-1)) 
+        return false;
+
+      /* if any shared component is different, there isn't a conflict */ 
+      if(!compsA[wk].equals(compsB[wk])) 
+        return false;
+    }
+
+    /* all components of A match the initial directory components of B, 
+         so there is a a conflict */ 
+    return true;
   }
 
   /**
