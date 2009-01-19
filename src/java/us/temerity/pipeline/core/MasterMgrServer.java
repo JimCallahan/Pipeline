@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.90 2008/12/18 00:46:25 jim Exp $
+// $Id: MasterMgrServer.java,v 1.91 2009/01/19 21:50:12 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1812,6 +1812,11 @@ class MasterMgrServer
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
 	   Exceptions.getFullMessage(ex));
+      }
+      catch (LinkageError er) {
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Net, LogMgr.Level.Severe,
+           Exceptions.getFullMessage(er));
       }
       finally {
 	closeConnection();
