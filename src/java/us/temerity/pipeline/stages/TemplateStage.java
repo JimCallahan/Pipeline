@@ -1,4 +1,4 @@
-// $Id: TemplateStage.java,v 1.3 2008/11/19 04:34:48 jesse Exp $
+// $Id: TemplateStage.java,v 1.4 2009/01/19 23:56:15 jesse Exp $
 
 package us.temerity.pipeline.stages;
 
@@ -149,7 +149,7 @@ class TemplateStage
     
     if (act != null) {
       for (ActionParam param : act.getSingleParams()) {
-        Comparable value = stringReplaceParamValue(param);
+        Comparable value = stringReplaceParamValue(param, pReplacements);
         addSingleParamValue(param.getName(), value);
       }
       
@@ -203,7 +203,7 @@ class TemplateStage
           if (act.hasSourceParams(oldSrc)) {
             for (String srcParam : sourceParams) {
               ActionParam param = act.getSourceParam(oldSrc, srcParam);
-              Comparable value = stringReplaceParamValue(param);
+              Comparable value = stringReplaceParamValue(param, replacements);
               addSourceParamValue(newSrc, srcParam, value);
             }
           }
@@ -211,7 +211,7 @@ class TemplateStage
             FilePattern newPat = stringReplacePat(oldPat);
             for (String srcParam : sourceParams) {
               ActionParam param = act.getSecondarySourceParam(oldSrc, oldPat, srcParam);
-              Comparable value = stringReplaceParamValue(param);
+              Comparable value = stringReplaceParamValue(param, replacements);
               addSecondarySourceParamValue(newSrc, newPat, srcParam, value);
             }
           }
@@ -504,19 +504,22 @@ class TemplateStage
    * 
    * @param param
    *   The Action Param to be modified;
+   * @param replacements 
+   *   The list of replacements to use when fixing the String.
    */
   @SuppressWarnings("unchecked")
   private Comparable
   stringReplaceParamValue
   (
-    ActionParam param
+    ActionParam param, 
+    TreeMap<String,String> replacements
   )
   {
     Comparable value = param.getValue();
     if (param instanceof LinkActionParam || 
         param instanceof StringActionParam ||
         param instanceof TextAreaActionParam) 
-      value = stringReplace((String) value, pReplacements);
+      value = stringReplace((String) value, replacements);
     
     return value;
   }
