@@ -1,4 +1,4 @@
-// $Id: TemplateGlueTool.java,v 1.2 2008/11/19 04:34:48 jesse Exp $
+// $Id: TemplateGlueTool.java,v 1.3 2009/01/19 21:51:29 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateGlueTool.v2_4_3;
 
@@ -25,6 +25,9 @@ public
 class TemplateGlueTool
   extends TaskToolUtils
 {
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O N S T R U C T O R                                                                */
+  /*----------------------------------------------------------------------------------------*/
 
   public
   TemplateGlueTool()
