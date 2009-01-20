@@ -1,4 +1,4 @@
-// $Id: TextureMgr.java,v 1.8 2008/04/21 06:15:11 jim Exp $
+// $Id: TextureMgr.java,v 1.9 2009/01/20 22:35:41 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -722,6 +722,7 @@ class TextureMgr
                   switch(qstate) {
                   case Finished:
                   case Stale:
+                  case Dubious:
                     {
                       String name = (nstate + "-" + qstate + "-Frozen-" + mode);   
                       ImageIcon icons[] = pIcons.get(name); 
@@ -874,6 +875,7 @@ class TextureMgr
             switch(qstate) {
             case Finished:
             case Stale:
+            case Dubious:
               {
                 String name = (prefix[wk] + "-" + qstate + "-Frozen-Normal");  
                 ImageIcon icons[] = pIcons.get(name); 
@@ -952,6 +954,7 @@ class TextureMgr
               switch(qstate) {
               case Finished:
               case Stale:
+              case Dubious:
                 {
                   String name = (prefix[wk] + "-" + qstate + "Frozen-" + mode); 
                   ImageIcon icons[] = pIcons.get(name); 
