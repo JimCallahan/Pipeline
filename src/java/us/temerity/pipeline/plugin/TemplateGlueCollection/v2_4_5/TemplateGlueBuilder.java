@@ -1,4 +1,4 @@
-// $Id: TemplateGlueBuilder.java,v 1.1 2009/01/05 17:22:38 jesse Exp $
+// $Id: TemplateGlueBuilder.java,v 1.2 2009/01/20 03:01:30 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateGlueCollection.v2_4_5;
 
@@ -131,6 +131,8 @@ class TemplateGlueBuilder
       addSubBuilder(builder);
       addMappedParam(builder.getName(), aCheckinWhenDone, aCheckinWhenDone);
     }
+    private static final long serialVersionUID = -3615571748207002085L;
+    
     private String pNodeName;
   }
   
