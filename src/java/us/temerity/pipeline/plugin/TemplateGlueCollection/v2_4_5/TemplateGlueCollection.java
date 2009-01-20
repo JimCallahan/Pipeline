@@ -1,4 +1,4 @@
-// $Id: TemplateGlueCollection.java,v 1.1 2009/01/05 17:22:38 jesse Exp $
+// $Id: TemplateGlueCollection.java,v 1.2 2009/01/20 03:02:09 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateGlueCollection.v2_4_5;
 
@@ -33,7 +33,7 @@ class TemplateGlueCollection
     addSupport(OsType.MacOS);
     
     LayoutGroup layout = new LayoutGroup(true);
-    layout.addEntry("TemplateGlue");
+    layout.addEntry("TemplateGlueBuilder");
     setLayout(layout);
     
     underDevelopment();
@@ -63,7 +63,7 @@ class TemplateGlueCollection
     String pkg = "us.temerity.pipeline.plugin.TemplateGlueCollection.v2_4_5.";
 
     TreeMap<String, String> toReturn = new TreeMap<String, String>();
-    toReturn.put("TemplateGlue", pkg + "TemplateGlueBuilder");
+    toReturn.put("TemplateGlueBuilder", pkg + "TemplateGlueBuilder");
     
     return toReturn;
   }
