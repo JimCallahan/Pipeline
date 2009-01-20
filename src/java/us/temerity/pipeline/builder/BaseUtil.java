@@ -1,4 +1,4 @@
-// $Id: BaseUtil.java,v 1.38 2008/10/10 12:46:58 jim Exp $
+// $Id: BaseUtil.java,v 1.39 2009/01/20 02:55:24 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -394,7 +394,7 @@ class BaseUtil
     NodeTreeComp treeComps = pClient.updatePaths(getAuthor(), getView(), comps);
     ArrayList<String> toReturn = new ArrayList<String>();
     for(String s : treeComps.keySet()) {
-      findNodes(treeComps.get(s), toReturn, "/");
+      findNodes(treeComps.get(s), toReturn, "/", start);
     }
     return toReturn;
   }
@@ -718,21 +718,30 @@ class BaseUtil
    * @param path
    *   The full path that leads up to the current {@link NodeTreeComp}. This is needed
    *   to build the full node name being stored in the ArrayList.
+   * 
+   * @param start
+   *   The path we want all of the nodes to be contained under.  This will keep nodes which
+   *   live a single level above the searched directory from somehow creeping in from the
+   *   NodeTreeComps.
    */
   private void 
   findNodes
   (
     NodeTreeComp treeComps, 
     ArrayList<String> toReturn, 
-    String path
+    String path, 
+    String start
   )
   {
     State state = treeComps.getState();
     if(state.equals(State.Branch))
       for(String s : treeComps.keySet())
-	findNodes(treeComps.get(s), toReturn, path + treeComps.getName() + "/");
-    else
-      toReturn.add(path + treeComps.getName());
+	findNodes(treeComps.get(s), toReturn, path + treeComps.getName() + "/", start);
+    else {
+      String node = path + treeComps.getName();
+      if (node.startsWith(start))
+        toReturn.add(node);
+    }
   }
 
   /**

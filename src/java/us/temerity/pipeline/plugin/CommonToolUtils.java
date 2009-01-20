@@ -1,4 +1,4 @@
-// $Id: CommonToolUtils.java,v 1.2 2008/05/12 17:51:23 jesse Exp $
+// $Id: CommonToolUtils.java,v 1.3 2009/01/20 02:55:24 jesse Exp $
 
 package us.temerity.pipeline.plugin;
 
@@ -379,7 +379,7 @@ class CommonToolUtils
     NodeTreeComp treeComps = mclient.updatePaths(getAuthor(), getView(), comps);
     ArrayList<String> toReturn = new ArrayList<String>();
     for(String s : treeComps.keySet()) {
-      findNodes(treeComps.get(s), toReturn, "/");
+      findNodes(treeComps.get(s), toReturn, "/", start);
     }
     return toReturn;
   }
@@ -401,21 +401,29 @@ class CommonToolUtils
    * @param path
    *        The full path that leads up to the current {@link NodeTreeComp}. This is needed
    *        to build the full node name being stored in the ArrayList.
+   * @param start
+   *   The path we want all of the nodes to be contained under.  This will keep nodes which
+   *   live a single level above the searched directory from somehow creeping in from the
+   *   NodeTreeComps.
    */
   protected void 
   findNodes
   (
     NodeTreeComp treeComps, 
     ArrayList<String> toReturn, 
-    String path
+    String path,
+    String start
   )
   {
     State state = treeComps.getState();
     if(state.equals(State.Branch))
       for(String s : treeComps.keySet())
-        findNodes(treeComps.get(s), toReturn, path + treeComps.getName() + "/");
-    else
-      toReturn.add(path + treeComps.getName());
+        findNodes(treeComps.get(s), toReturn, path + treeComps.getName() + "/", start);
+    else {
+      String node = path + treeComps.getName();
+      if (node.startsWith(start))
+        toReturn.add(node);
+    }
   }
   
   
@@ -444,6 +452,8 @@ class CommonToolUtils
      comps.put(nodeName, true);
      NodeTreeComp treeComps = mclient.updatePaths(getAuthor(), getView(), comps);
      State state =  treeComps.getState(nodeName);
+     if (state == null)
+       return false;
      switch (state) {
      case WorkingCurrentCheckedInNone:
      case WorkingCurrentCheckedInSome:
@@ -473,6 +483,8 @@ class CommonToolUtils
       comps.put(nodeName, true);
       NodeTreeComp treeComps = mclient.updatePaths(getAuthor(), getView(), comps);
       State state =  treeComps.getState(nodeName);
+      if (state == null)
+        return false;
       switch (state) {
       case WorkingCurrentCheckedInSome:
       case WorkingNoneCheckedInSome:
