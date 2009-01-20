@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.81 2008/12/18 00:46:24 jim Exp $
+// $Id: FileMgr.java,v 1.82 2009/01/20 22:50:47 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2954,7 +2954,8 @@ class FileMgr
       
       /* create the node bundle JAR file */ 
       { 
-	Map<String,String> env = System.getenv();
+	Map<String,String> jenv = new HashMap<String,String>(); 
+        jenv.put("PATH", PackageInfo.getJavaRuntime(OsType.Unix).getParentPath().toOsString());
 
         {
           ArrayList<String> args = new ArrayList<String>();
@@ -2964,7 +2965,7 @@ class FileMgr
           
           SubProcessLight proc = 
             new SubProcessLight(rootID.getAuthor(), 
-                                "PackNodes", "jar", args, env, pScratchDir); 
+                                "PackNodes", "jar", args, jenv, pScratchDir); 
           
           try {
             proc.start();
@@ -3003,7 +3004,7 @@ class FileMgr
 	    LinkedList<SubProcessLight> procs = 
 	      SubProcessLight.createMultiSubProcess
                 (rootID.getAuthor(), 
-                 "PackNodes", "jar", preOpts, args, env, workPath.toFile());
+                 "PackNodes", "jar", preOpts, args, jenv, workPath.toFile());
           
 	    try {
 	      for(SubProcessLight proc : procs) {
@@ -3180,6 +3181,9 @@ class FileMgr
 
       Map<String,String> env = System.getenv();
 
+      Map<String,String> jenv = new HashMap<String,String>(); 
+      jenv.put("PATH", PackageInfo.getJavaRuntime(OsType.Unix).getParentPath().toOsString());
+
       /* generate a list of all files contained in the bundle in depth first order */ 
       ArrayList<Path> bundledPaths = new ArrayList<Path>();
       ArrayList<Path> proceduralPaths = new ArrayList<Path>();
@@ -3251,7 +3255,7 @@ class FileMgr
           LinkedList<SubProcessLight> procs = 
             SubProcessLight.createMultiSubProcess
               (author, "UnpackNodeFiles", "jar", preOpts, args, 
-               env, workPath.toFile());
+               jenv, workPath.toFile());
 
           try {
             for(SubProcessLight proc : procs) {
