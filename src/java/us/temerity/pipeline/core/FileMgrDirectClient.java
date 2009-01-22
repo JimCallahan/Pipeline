@@ -1,4 +1,4 @@
-// $Id: FileMgrDirectClient.java,v 1.11 2008/12/18 00:46:24 jim Exp $
+// $Id: FileMgrDirectClient.java,v 1.12 2009/01/22 23:38:01 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -822,6 +822,32 @@ class FileMgrDirectClient
     Object obj = pFileMgr.getOfflined();
     if(obj instanceof FileGetOfflinedRsp) {
       FileGetOfflinedRsp rsp = (FileGetOfflinedRsp) obj;
+      return rsp.getVersions();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }
+  
+  /**
+   * Get the revision numbers of all offlined checked-in versions of the given node.
+   *
+   * @param name
+   *   The fully resolved node name.
+   */
+  public TreeSet<VersionID>
+  getOfflinedNodeVersions
+  (
+   String name
+  ) 
+    throws PipelineException
+  { 
+    FileGetOfflinedNodeVersionsReq req = new FileGetOfflinedNodeVersionsReq(name);
+
+    Object obj = pFileMgr.getOfflinedNodeVersions(req);
+    if(obj instanceof FileGetOfflinedNodeVersionsRsp) {
+      FileGetOfflinedNodeVersionsRsp rsp = (FileGetOfflinedNodeVersionsRsp) obj;
       return rsp.getVersions();
     }
     else {

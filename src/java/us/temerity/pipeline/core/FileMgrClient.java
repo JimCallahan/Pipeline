@@ -1,4 +1,4 @@
-// $Id: FileMgrClient.java,v 1.44 2008/12/18 00:46:24 jim Exp $
+// $Id: FileMgrClient.java,v 1.45 2009/01/22 23:38:01 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -574,6 +574,19 @@ interface FileMgrClient
    */
   public TreeMap<String,TreeSet<VersionID>>
   getOfflined() 
+    throws PipelineException;
+  
+  /**
+   * Get the revision numbers of all offlined checked-in versions of the given node.
+   *
+   * @param name
+   *   The fully resolved node name.
+   */
+  public TreeSet<VersionID>
+  getOfflinedNodeVersions
+  (
+   String name
+  ) 
     throws PipelineException;
   
 

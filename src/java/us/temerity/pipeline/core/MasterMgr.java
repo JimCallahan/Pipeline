@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.261 2008/12/18 00:46:24 jim Exp $
+// $Id: MasterMgr.java,v 1.262 2009/01/22 23:38:01 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -385,7 +385,8 @@ class MasterMgr
       pArchivedOn         = new TreeMap<String,Long>();
       pRestoredOn         = new TreeMap<String,TreeSet<Long>>();
       pOnlineOfflineLocks = new HashMap<String,ReentrantReadWriteLock>();
-      pOfflined           = new TreeMap<String,TreeSet<VersionID>>();
+      pOfflinedLock       = new Object();
+      pOfflined           = null;
       pRestoreReqs        = new TreeMap<String,TreeMap<VersionID,RestoreRequest>>();
 
       pDefaultToolsetLock = new Object();
@@ -595,6 +596,23 @@ class MasterMgr
     throws PipelineException
   {
     if(pRebuildCache) {
+      /* rebuild (or reread) offlined versions cache */ 
+      {
+	File offlined = new File(pNodeDir, "archives/offlined");
+	if(pPreserveOfflinedCache && offlined.exists()) {
+	  readOfflined();
+	}
+	else {
+          LogMgr.getInstance().log
+            (LogMgr.Kind.Ops, LogMgr.Level.Info,
+             "Starting Offlined Cache Rebuild (in background)...");    
+          LogMgr.getInstance().flush();
+          
+          pRebuildOfflinedCacheTask = new RebuildOfflinedCacheTask();
+          pRebuildOfflinedCacheTask.start(); 
+	}
+      }
+
       /* scan archive volume GLUE files */ 
       {
 	TaskTimer timer = new TaskTimer();
@@ -678,35 +696,6 @@ class MasterMgr
 	   "  Rebuilt in " + TimeStamps.formatInterval(timer.getTotalDuration()));
 	LogMgr.getInstance().flush();
       }
-
-      /* rebuild (or reread) offlined versions cache */ 
-      {
-	File offlined = new File(pNodeDir, "archives/offlined");
-	if(pPreserveOfflinedCache && offlined.exists()) {
-	  readOfflined();
-	}
-	else {
-	  TaskTimer timer = new TaskTimer();
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Ops, LogMgr.Level.Info,
-	     "Rebuilding Offlined Cache...");    
-	  LogMgr.getInstance().flush();
-
-	  FileMgrClient fclient = getFileMgrClient();
-	  try {
-	    pOfflined = fclient.getOfflined();
-	  }
-	  finally {
-	    freeFileMgrClient(fclient);
-	  }
-
-	  timer.suspend();
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Net, LogMgr.Level.Info,
-	     "  Rebuilt in " + TimeStamps.formatInterval(timer.getTotalDuration()));
-	  LogMgr.getInstance().flush();
-	}
-      }
     }
     else {
       TaskTimer timer = new TaskTimer();
@@ -715,10 +704,10 @@ class MasterMgr
 	 "Loading Archive Caches...");   
       LogMgr.getInstance().flush();
 
+      readOfflined();
       readArchivedIn();
       readArchivedOn();
       readRestoredOn();
-      readOfflined();
 
       removeArchivesCache();
 
@@ -1398,7 +1387,27 @@ class MasterMgr
       writeArchivedIn();
       writeArchivedOn();
       writeRestoredOn();
-      writeOfflined();
+
+      if(pRebuildOfflinedCacheTask != null) {
+        try {
+          LogMgr.getInstance().log
+	    (LogMgr.Kind.Net, LogMgr.Level.Info,
+	     "Waiting on Offline Cache Rebuild...");
+	  LogMgr.getInstance().flush();
+
+          pRebuildOfflinedCacheTask.join();
+          writeOfflined();
+        }
+        catch(InterruptedException ex) {
+          LogMgr.getInstance().log
+            (LogMgr.Kind.Ops, LogMgr.Level.Severe,
+             "Interrupted while waiting for the offline cache rebuild to complete:\n  " + 
+             ex.getMessage());
+        }
+      }
+      else {
+        writeOfflined();
+      }
 
       writeAllDownstreamLinks();
 
@@ -1499,6 +1508,69 @@ class MasterMgr
     }
   }
 
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   O F F L I N E D   H E L P E R S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /** 
+   * Whether the offlined cache is currently valid. 
+   */ 
+  private boolean
+  isOfflineCacheValid()
+  {
+    synchronized(pOfflinedLock) {
+      return (pOfflined != null);
+    }
+  }
+
+  /** 
+   * Determine the revision numbers (if any) of the offlined versions of the given node.
+   * 
+   * @param timer
+   *   The current operation timer.
+   * 
+   * @param name
+   *   The fully resolved node name.
+   * 
+   * @return 
+   *   The offlined revision number or (null) if none are offline.
+   */ 
+  private TreeSet<VersionID>
+  getOfflinedVersions
+  (
+   TaskTimer timer,
+   String name
+  )
+    throws PipelineException 
+  { 
+    if(isOfflineCacheValid()) {
+      timer.aquire();
+      synchronized(pOfflinedLock) {
+        timer.resume();
+
+        TreeSet<VersionID> offlined = pOfflined.get(name);
+        if(offlined != null) 
+          return new TreeSet<VersionID>(offlined);
+        else 
+          return null;
+      }
+    }
+    else {
+      TreeSet<VersionID> offline = null;
+
+      FileMgrClient fclient = getFileMgrClient();
+      try {
+        return fclient.getOfflinedNodeVersions(name);
+      }
+      finally {
+        freeFileMgrClient(fclient);
+      }
+    }
+  }
+
+  
 
   
   /*----------------------------------------------------------------------------------------*/
@@ -10088,26 +10160,19 @@ class MasterMgr
 	  new TreeMap<String,TreeSet<VersionID>>();
 	{
 	  for(String name : requiredVersions.keySet()) {
-
-	    timer.aquire();
-	    synchronized(pOfflined) {
-	      timer.resume();
-
-	      TreeSet<VersionID> offline = pOfflined.get(name);
-	      
-	      if(offline != null) {
-		for(VersionID vid : requiredVersions.get(name)) {
-		  if(offline.contains(vid)) {
-		    TreeSet<VersionID> ovids = offlineVersions.get(name);
-		    if(ovids == null) {
-		      ovids = new TreeSet<VersionID>();
-		      offlineVersions.put(name, ovids);
-		    }
-		    ovids.add(vid);
-		  }
-		}
-	      }
-	    }
+            TreeSet<VersionID> offline = getOfflinedVersions(timer, name);
+            if(offline != null) {
+              for(VersionID vid : requiredVersions.get(name)) {
+                if(offline.contains(vid)) {
+                  TreeSet<VersionID> ovids = offlineVersions.get(name);
+                  if(ovids == null) {
+                    ovids = new TreeSet<VersionID>();
+                    offlineVersions.put(name, ovids);
+                  }
+                  ovids.add(vid);
+                }
+              }
+            }
 	  }
 	}
 
@@ -10826,13 +10891,9 @@ class MasterMgr
 	/* check if the target version is currently offline */ 
 	boolean isOffline = false;
 	{
-	  timer.aquire();
-	  synchronized(pOfflined) {
-	    timer.resume();
-	    TreeSet<VersionID> offline = pOfflined.get(name);
-	    if((offline != null) && offline.contains(vid)) 
-	      isOffline = true;
-	  }
+          TreeSet<VersionID> offline = getOfflinedVersions(timer, name);
+          if((offline != null) && offline.contains(vid)) 
+            isOffline = true;
 	}
 	
 	/* abort if the target version is offline */ 
@@ -11131,18 +11192,13 @@ class MasterMgr
 	{
 	  TreeSet<VersionID> ovids = new TreeSet<VersionID>();
 	  
-	  timer.aquire();
-	  synchronized(pOfflined) {
-	    timer.resume();
-	    
-	    TreeSet<VersionID> offline = pOfflined.get(name);
-	    if(offline != null) {
-	      TreeSet<VersionID> vids = new TreeSet<VersionID>(files.values());
-	      for(VersionID vid : vids) {
-		if(offline.contains(vid))
-		  ovids.add(vid);
-	      }
-	    }
+          TreeSet<VersionID> offline = getOfflinedVersions(timer, name);
+          if(offline != null) {
+            TreeSet<VersionID> vids = new TreeSet<VersionID>(files.values());
+            for(VersionID vid : vids) {
+              if(offline.contains(vid))
+                ovids.add(vid);
+            }
 	  }
 	  
 	  if(!ovids.isEmpty()) {
@@ -11440,38 +11496,33 @@ class MasterMgr
 
 	/* check whether the checked-in version is currently online */ 
 	{
-	  timer.aquire();
-	  synchronized(pOfflined) {
-	    timer.resume();
+          TreeSet<VersionID> offline = getOfflinedVersions(timer, name);
+          if((offline != null) && offline.contains(vid)) {
+            TreeSet<VersionID> vids = new TreeSet<VersionID>();
+            vids.add(vid);
 	    
-	    TreeSet<VersionID> offline = pOfflined.get(name);
-	    if((offline != null) && offline.contains(vid)) {
-	      TreeSet<VersionID> vids = new TreeSet<VersionID>();
-	      vids.add(vid);
-	      
-	      TreeMap<String,TreeSet<VersionID>> vsns = 
-		new TreeMap<String,TreeSet<VersionID>>();
-	      vsns.put(name, vids);
-	      
-	      Object obj = requestRestore(new MiscRequestRestoreReq(vsns));
-	      if(obj instanceof FailureRsp) {
-		FailureRsp rsp = (FailureRsp) obj;
-		throw new PipelineException
-		  ("Unable to evolve to version (" + vid + ") of node (" + name + ") " +
-		   "because the version is currently offline.  The request to restore " + 
-		   "this version also failed:\n\n" + 
-		   rsp.getMessage());
-	      }
-	      else {
-		throw new PipelineException
-		  ("Unable to evolve to version (" + vid + ") of node (" + name + ")  " + 
-		   "because the version is currently offline.  However, a request has " + 
-		   "been submitted to restore the version so that it may be used once " + 
-		   "it has been brought back online.");
-	      }
-	    }
-	  }
-	}
+            TreeMap<String,TreeSet<VersionID>> vsns = 
+              new TreeMap<String,TreeSet<VersionID>>();
+            vsns.put(name, vids);
+	    
+            Object obj = requestRestore(new MiscRequestRestoreReq(vsns));
+            if(obj instanceof FailureRsp) {
+              FailureRsp rsp = (FailureRsp) obj;
+              throw new PipelineException
+                ("Unable to evolve to version (" + vid + ") of node (" + name + ") " +
+                 "because the version is currently offline.  The request to restore " + 
+                 "this version also failed:\n\n" + 
+                 rsp.getMessage());
+            }
+            else {
+              throw new PipelineException
+                ("Unable to evolve to version (" + vid + ") of node (" + name + ")  " + 
+                 "because the version is currently offline.  However, a request has " + 
+                 "been submitted to restore the version so that it may be used once " + 
+                 "it has been brought back online.");
+            }
+          }
+        }
 	
 	/* change the checked-in version number for the working version */ 
 	timer.aquire();
@@ -13988,6 +14039,11 @@ class MasterMgr
     try {
       timer.resume();	
 
+      if(!isOfflineCacheValid()) 
+        throw new PipelineException 
+          ("The ArchiveQuery operation will not be available until the offlined node " +
+           "version cache has finished being rebuilt.");
+
       String pattern      = req.getPattern();
       Integer maxArchives = req.getMaxArchives();
       
@@ -14047,7 +14103,7 @@ class MasterMgr
 	    boolean isOnline = true;
 	    {
 	      timer.aquire();
-	      synchronized(pOfflined) {
+	      synchronized(pOfflinedLock) {
 		timer.resume();
 		TreeSet<VersionID> offline = pOfflined.get(name);
 		if(offline != null) 
@@ -14236,6 +14292,11 @@ class MasterMgr
     try {
       timer.resume();	
 
+      if(!isOfflineCacheValid()) 
+        throw new PipelineException 
+          ("The Archive operation will not be available until the offlined node " +
+           "version cache has finished being rebuilt.");
+
       if(!pAdminPrivileges.isMasterAdmin(req))
 	throw new PipelineException
 	  ("Only a user with Master Admin privileges may create archives of checked-in " +
@@ -14283,7 +14344,7 @@ class MasterMgr
 
 	      TreeMap<VersionID,CheckedInBundle> checkedIn = getCheckedInBundles(name);
 
-	      synchronized(pOfflined) {
+	      synchronized(pOfflinedLock) {
 		TreeSet<VersionID> offline = pOfflined.get(name);
 		TreeMap<VersionID,Long> vsizes = sizes.get(name);
 		for(VersionID vid : versions.get(name)) {
@@ -14481,6 +14542,11 @@ class MasterMgr
     try {
       timer.resume();	
 
+      if(!isOfflineCacheValid()) 
+        throw new PipelineException 
+          ("The OfflineQuery operation will not be available until the offlined node " +
+           "version cache has finished being rebuilt.");
+
       String pattern      = req.getPattern();
       Integer exclude     = req.getExcludeLatest();
       Integer minArchives = req.getMinArchives();
@@ -14549,7 +14615,7 @@ class MasterMgr
 	  }
 
 	  /* remove any already offline versions */ 
-	  synchronized(pOfflined)	{
+	  synchronized(pOfflinedLock)	{
 	    TreeSet<VersionID> offlined = pOfflined.get(name);
 	    if(offlined != null) {
 	      for(VersionID ovid : offlined) 
@@ -14694,22 +14760,19 @@ class MasterMgr
       try {
 	timer.resume();	
 
-	/* the currently offline revision numbers */ 
-	TreeSet<VersionID> offlined = new TreeSet<VersionID>();
-	timer.aquire();
-	synchronized(pOfflined) {
-	  timer.resume();
-	  
-	  if(pOfflined.get(name) != null)
-	    offlined.addAll(pOfflined.get(name));
-	}
-	
+        TreeSet<VersionID> offlined = getOfflinedVersions(timer, name);
+        if(offlined == null) 
+          offlined = new TreeSet<VersionID>();
+
 	return new NodeGetOfflineVersionIDsRsp(timer, offlined);
       }
       finally {
 	onOffLock.readLock().unlock();
       }      
     }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }  
     finally {
       pDatabaseLock.readLock().unlock();
     }  
@@ -14744,6 +14807,11 @@ class MasterMgr
     try {
       timer.resume();	
 
+      if(!isOfflineCacheValid()) 
+        throw new PipelineException 
+          ("The GetOfflineSizes operation will not be available until the offlined node " +
+           "version cache has finished being rebuilt.");
+
       TreeMap<String,TreeSet<VersionID>> versions = req.getVersions();
 
       /* lock online/offline status of the nodes */ 
@@ -14760,7 +14828,7 @@ class MasterMgr
 	  /* the currently offline revision numbers */ 
 	  TreeSet<VersionID> offlined = new TreeSet<VersionID>();
 	  timer.aquire();
-	  synchronized(pOfflined) {
+	  synchronized(pOfflinedLock) {
 	    timer.resume();
 
 	    if(pOfflined.get(name) != null)
@@ -14911,6 +14979,11 @@ class MasterMgr
     try {
       timer.resume();	
 
+      if(!isOfflineCacheValid()) 
+        throw new PipelineException 
+          ("The Offline operation will not be available until the offlined node " +
+           "version cache has finished being rebuilt.");
+
       if(!pAdminPrivileges.isMasterAdmin(req))
 	throw new PipelineException
 	  ("Only a user with Master Admin privileges may offline checked-in versions!"); 
@@ -14958,7 +15031,7 @@ class MasterMgr
 
 	      /* whether the version is currently online */
 	      boolean isOnline = false;
-	      synchronized(pOfflined) {
+	      synchronized(pOfflinedLock) {
 		TreeSet<VersionID> offlined = pOfflined.get(name);
 		isOnline = ((offlined == null) || !offlined.contains(vid));
 	      }
@@ -15032,7 +15105,7 @@ class MasterMgr
 			for(vk=vidx-1; vk>=0; vk--) {
 			  VersionID nvid = vids.get(vk);
 			  
-			  synchronized(pOfflined) {
+			  synchronized(pOfflinedLock) {
 			    TreeSet<VersionID> offlined = pOfflined.get(name);
 			    if((offlined != null) && offlined.contains(nvid)) {
 			      selected = true;
@@ -15053,7 +15126,7 @@ class MasterMgr
 			  if((isNovel[vk] == null) || isNovel[vk]) 
 			    break;
 			  else {
-			    synchronized(pOfflined) {
+			    synchronized(pOfflinedLock) {
 			      TreeSet<VersionID> offlined = pOfflined.get(name);
 			      if((offlined == null) || !offlined.contains(nvid)) {
 				TreeSet<VersionID> svids = symlinks.get(file);
@@ -15084,7 +15157,7 @@ class MasterMgr
 
                 if(!req.isDryRun()) {
                   /* update the currently offlined revision numbers */ 
-                  synchronized(pOfflined) {
+                  synchronized(pOfflinedLock) {
                     TreeSet<VersionID> offlined = pOfflined.get(name);
                     if(offlined == null) {
                       offlined = new TreeSet<VersionID>();
@@ -15209,13 +15282,18 @@ class MasterMgr
     try {
       timer.resume();	
 
+      if(!isOfflineCacheValid()) 
+        throw new PipelineException 
+          ("The RestoreQuery operation will not be available until the offlined node " +
+           "version cache has finished being rebuilt.");
+
       String pattern = req.getPattern();
 
       /* get versions which match the pattern */ 
       TreeMap<String,TreeSet<VersionID>> versions = new TreeMap<String,TreeSet<VersionID>>();
       {
 	timer.aquire();
-	synchronized(pOfflined) {
+	synchronized(pOfflinedLock) {
 	  try {
 	    timer.resume();
 	    
@@ -15287,25 +15365,27 @@ class MasterMgr
 	timer.aquire();
 	List<ReentrantReadWriteLock> onOffLocks = onlineOfflineReadLock(versions.keySet());
 	try {
-	  synchronized(pOfflined) {
-	    timer.resume();
-	    for(String name : versions.keySet()) {
-	      TreeSet<VersionID> offline = pOfflined.get(name);
-	      if(offline != null) {
-		for(VersionID vid : versions.get(name)) {
-		  if(offline.contains(vid)) {
-		    TreeSet<VersionID> vids = vsns.get(name);
-		    if(vids == null) {
-		      vids = new TreeSet<VersionID>();
-		    vsns.put(name, vids);
-		    }
-		    vids.add(vid);
-		  }
-		}
-	      }
-	    }	  
+          timer.resume();
+
+          for(String name : versions.keySet()) {
+            TreeSet<VersionID> offline = getOfflinedVersions(timer, name); 
+            if(offline != null) {
+              for(VersionID vid : versions.get(name)) {
+                if(offline.contains(vid)) {
+                  TreeSet<VersionID> vids = vsns.get(name);
+                  if(vids == null) {
+                    vids = new TreeSet<VersionID>();
+                    vsns.put(name, vids);
+                  }
+                  vids.add(vid);
+                }
+              }
+            }	  
 	  }
 	}
+        catch(PipelineException ex) {
+          return new FailureRsp(timer, ex.getMessage());
+        }  
 	finally {
 	  onlineOfflineReadUnlock(onOffLocks);
 	}
@@ -15653,6 +15733,11 @@ class MasterMgr
     try {
       timer.resume();	
 
+      if(!isOfflineCacheValid()) 
+        throw new PipelineException 
+          ("The Restore operation will not be available until the offlined node " +
+           "version cache has finished being rebuilt.");
+
       if(!pAdminPrivileges.isMasterAdmin(req))
         throw new PipelineException 
           ("Only a user with Master Admin privileges may restore checked-in versions!"); 
@@ -15707,7 +15792,7 @@ class MasterMgr
 		   "(" + archiveName + ")!");
 	      total += vol.getSize(name, vid);
 	      
-	      synchronized(pOfflined) {
+	      synchronized(pOfflinedLock) {
 		TreeSet<VersionID> offlined = pOfflined.get(name);
 		if((offlined == null) || !offlined.contains(vid)) 
 		  throw new PipelineException 
@@ -15838,7 +15923,7 @@ class MasterMgr
 		    for(vk=vidx-1; vk>=0; vk--) {
 		      VersionID nvid = vids.get(vk);
 		      
-		      synchronized(pOfflined) {
+		      synchronized(pOfflinedLock) {
 			TreeSet<VersionID> offlined = pOfflined.get(name);
 			if((offlined == null) || !offlined.contains(nvid)) 
 			  tvid = nvid;
@@ -15863,7 +15948,7 @@ class MasterMgr
 		      if((isNovel[vk] == null) || isNovel[vk]) 
 			break;
 		      else {
-			synchronized(pOfflined) {
+			synchronized(pOfflinedLock) {
 			  TreeSet<VersionID> offlined = pOfflined.get(name);
 			  if((offlined == null) || !offlined.contains(nvid)) 
 			    svids.add(nvid);
@@ -15891,7 +15976,7 @@ class MasterMgr
 	      }
 
 	      /* update the currently offlined revision numbers */ 
-	      synchronized(pOfflined) {
+	      synchronized(pOfflinedLock) {
 		TreeSet<VersionID> offlined = pOfflined.get(name);
 		offlined.remove(vid);
 		if(offlined.isEmpty()) {
@@ -19364,8 +19449,18 @@ class MasterMgr
   private void 
   writeOfflined() 
     throws PipelineException
-  {
-    synchronized(pOfflined) {
+  { 
+    synchronized(pOfflinedLock) {
+      if(!isOfflineCacheValid()) {
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Glu, LogMgr.Level.Warning,
+           "Ignoring the request to write the Offlined Cache to disk because it is not " + 
+           "currently valid.  Likely this is because it is currently in the process of " + 
+           "being rebuilt."); 
+        LogMgr.getInstance().flush();
+        return;
+      }
+      
       if(pOfflined.isEmpty()) 
 	return;
 
@@ -19395,7 +19490,9 @@ class MasterMgr
   readOfflined()
     throws PipelineException
   {
-    synchronized(pOfflined) {
+    synchronized(pOfflinedLock) {
+      pOfflined = new TreeMap<String,TreeSet<VersionID>>();
+
       File file = new File(pNodeDir, "archives/offlined");
       if(!file.isFile()) 
 	return;
@@ -19404,7 +19501,6 @@ class MasterMgr
 	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
 	 "Reading Offlined Cache...");
 
-      pOfflined.clear();
       try {
         pOfflined.putAll
           ((TreeMap<String,TreeSet<VersionID>>) GlueDecoderImpl.decodeFile("Offlined", file));
@@ -21238,6 +21334,63 @@ class MasterMgr
 
 
   /*----------------------------------------------------------------------------------------*/
+  /*   T A S K S                                                                            */
+  /*----------------------------------------------------------------------------------------*/
+ 
+  private 
+  class RebuildOfflinedCacheTask
+    extends Thread
+  {
+    /** 
+     * Construct a new task.
+     */
+    public
+    RebuildOfflinedCacheTask()
+    {
+      super("MasterMgr:RebuildOfflinedCacheTask"); 
+    }
+
+    public void 
+    run() 
+    {
+      TaskTimer timer = new TaskTimer();
+      try {
+        
+        FileMgrClient fclient = getFileMgrClient();
+        try {
+          TreeMap<String,TreeSet<VersionID>> offlined = fclient.getOfflined();
+          synchronized(pOfflinedLock) {
+            pOfflined = offlined;
+          }
+        }
+        finally {
+          freeFileMgrClient(fclient);
+        }
+
+        timer.suspend();
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Net, LogMgr.Level.Info,
+           "--- Offlined Task (Finished) ---\n" + 
+           "  Offlined Cache Rebuild Succeeded.\n" + 
+           "    Rebuilt in " + TimeStamps.formatInterval(timer.getTotalDuration()) + "\n" +
+           "--------------------------------");
+        LogMgr.getInstance().flush();
+      }
+      catch(Exception ex) {
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Net, LogMgr.Level.Info,
+           "--- Offlined Task (Finished) ---\n" + 
+           "  Offlined Cache Rebuild Aborted.\n" + 
+           "    Time Spent " + TimeStamps.formatInterval(timer.getTotalDuration()) + "\n" +
+           "--------------------------------"); 
+        LogMgr.getInstance().flush();
+      }
+    }
+  }
+
+  
+
+  /*----------------------------------------------------------------------------------------*/
   /*   N O D E   O P   C L A S S E S                                                        */
   /*----------------------------------------------------------------------------------------*/
   
@@ -21889,9 +22042,20 @@ class MasterMgr
    * 
    * This table is rebuild by scanning the repository for empty directories. <P> 
    * 
-   * Access to this field should be protected by a synchronized block.
+   * Access to pOfflined should be protected by a synchronized block on pOfflinedLock;
+   * 
+   * If (null), then the offlined cache is currently invalid and direct tests are required
+   * to determine if a file is online or not.  Because of this, helper methods should be
+   * used to determine if a node version which will take care of this instead of accessing
+   * pOfflined directly.
    */ 
+  private Object pOfflinedLock;
   private TreeMap<String,TreeSet<VersionID>>  pOfflined;
+
+  /**
+   * The task responsible for rebuiling the offlined cache, if any.
+   */
+  private RebuildOfflinedCacheTask  pRebuildOfflinedCacheTask; 
 
   /**
    * The pending restore requests indexed by the fully resolved node names and 

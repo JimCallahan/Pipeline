@@ -1,4 +1,4 @@
-// $Id: FileRequest.java,v 1.25 2008/12/18 00:46:25 jim Exp $
+// $Id: FileRequest.java,v 1.26 2009/01/22 23:38:01 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -156,6 +156,11 @@ enum FileRequest
    * Get the fully resolved names and revision numbers of all offlined checked-in versions.
    */
   GetOfflined, 
+
+  /**
+   * An instance of {@link FileGetOfflinedNodeVersionsReq} is next.
+   */
+  GetOfflinedNodeVersions, 
 
 
   /*----------------------------------------------------------------------------------------*/

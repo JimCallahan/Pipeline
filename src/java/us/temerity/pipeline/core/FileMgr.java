@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.82 2009/01/20 22:50:47 jim Exp $
+// $Id: FileMgr.java,v 1.83 2009/01/22 23:38:01 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -326,11 +326,11 @@ class FileMgr
       else 
         pFileStatPath.set(path);
 
-      buf.append("File Stat Root Directory: " + pFileStatPath.get() + "\n");
+      buf.append("  File Stat Root Directory: " + pFileStatPath.get() + "\n");
     }
     
     pINodeFileStat.set(inodeFileStat);
-    buf.append("        File Stat Method: " + 
+    buf.append("          File Stat Method: " + 
                (pINodeFileStat.get() ? "INode" : "Realpath") + "\n");
     
     {
@@ -340,11 +340,11 @@ class FileMgr
       else 
         pChecksumPath.set(path);
 
-      buf.append(" Checksum Root Directory: " + pChecksumPath.get() + "\n");
+      buf.append("   Checksum Root Directory: " + pChecksumPath.get() + "\n");
     }
     
     pNativeChecksum.set(nativeChecksum);
-    buf.append("         Checksum Method: " + 
+    buf.append("           Checksum Method: " + 
                (pNativeChecksum.get() ? "Native" : "Java") + "\n");
     
     buf.append("--------------------------------"); 
@@ -4135,15 +4135,20 @@ class FileMgr
   getOfflined() 
   {
     TaskTimer timer = new TaskTimer();
+    OfflineProgressTask task = null;
     try {
       TreeMap<String,TreeSet<VersionID>> offlined = new TreeMap<String,TreeSet<VersionID>>();
 
+      int head = (pProdDir + "/repository").length();
       File dir = new File(pProdDir, "repository");
       File files[] = dir.listFiles(); 
       if(files != null) {
+        task = new OfflineProgressTask();
+        task.start();
+
 	int wk;
 	for(wk=0; wk<files.length; wk++) 
-	  getOfflinedHelper(files[wk], offlined);
+          getOfflinedHelper(head, files[wk], offlined, task);
       }
 
       return new FileGetOfflinedRsp(timer, offlined);
@@ -4151,28 +4156,50 @@ class FileMgr
     catch(Exception ex) {
       return new FailureRsp(timer, ex.getMessage());
     }
+    finally {
+      if(task != null) {
+        try {
+          task.interrupt();
+          task.join();
+        }
+        catch(InterruptedException ex) {
+        }
+      }
+    }
   }
 
   /**
    * Recursively scan the repository directories for offlined checked-in versions.
+   * 
+   * @param head
+   *   The number of characters in path before node name starts.
    * 
    * @param dir
    *   The current directory (or file).
    * 
    * @param offlined
    *   The fully resolved names and revision numbers of offlined checked-in versions.
+   * 
+   * @param task
+   *   The thread keeping track of progress being made rebuilding the cache.
    */ 
   private void 
   getOfflinedHelper
   (
+   int head, 
    File dir, 
-   TreeMap<String,TreeSet<VersionID>> offlined
-  ) 
+   TreeMap<String,TreeSet<VersionID>> offlined, 
+   OfflineProgressTask task
+  )
   {
-    int head = (pProdDir + "/repository").length();
+    task.addTotal();
+
     File files[] = dir.listFiles(); 
     if(files != null) {
+      /* empty directory must be the leaf revision number named directory */ 
       if(files.length == 0) {
+        task.addOffline();
+
 	String name = dir.getParent().substring(head);
 	VersionID vid = new VersionID(dir.getName());
 	
@@ -4184,11 +4211,66 @@ class FileMgr
 
 	vids.add(vid);
       }
+      
+      /* process any subdirectories */ 
       else {
 	int wk;
-	for(wk=0; wk<files.length; wk++) 
-	  getOfflinedHelper(files[wk], offlined);
+	for(wk=0; wk<files.length; wk++) {
+          if(files[wk].isDirectory()) 
+            getOfflinedHelper(head, files[wk], offlined, task);
+        }
       }
+    }
+  }
+
+  /**
+   * Get the revision numbers of all offlined checked-in versions of the given node.
+   * 
+   * @param req
+   *   The offlined request.
+   * 
+   * @return
+   *   <CODE>FileGetOfflinedNodeVersionsRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to determine the offlined files.
+   */ 
+  public Object
+  getOfflinedNodeVersions
+  (
+   FileGetOfflinedNodeVersionsReq req
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+    try {
+      String name = req.getName();
+
+      TreeSet<VersionID> vids = new TreeSet<VersionID>();
+
+      File ndir = new File(pProdDir, "repository" + name);
+      if(!ndir.isDirectory()) 
+        throw new PipelineException 
+          ("Unable to find any repository directory for the node (" + name + "!");
+
+      File vdirs[] = ndir.listFiles(); 
+      if(vdirs == null) 
+        throw new PipelineException 
+          ("Unable to find any repository directory for the versions of node (" + name + "!");
+
+      int wk;
+      for(wk=0; wk<vdirs.length; wk++) {
+        if(!vdirs[wk].isDirectory()) 
+          throw new PipelineException 
+            ("Found a file in the repository (" + vdirs[wk] + ") where there should have " + 
+             "been a node version directory for the node (" + name + "!");
+
+         File files[] = vdirs[wk].listFiles(); 
+         if((files != null) && (files.length == 0)) 
+           vids.add(new VersionID(vdirs[wk].getName()));
+      }
+
+      return new FileGetOfflinedNodeVersionsRsp(timer, vids);
+    }
+    catch(Exception ex) {
+      return new FailureRsp(timer, ex.getMessage());
     }
   }
 
@@ -4909,6 +4991,77 @@ class FileMgr
       return String.format("%1$.1fG", g);
     }
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   T A S K S                                                                            */
+  /*----------------------------------------------------------------------------------------*/
+ 
+  private 
+  class OfflineProgressTask
+    extends Thread
+  {
+    /** 
+     * Construct a new task.
+     */
+    public
+    OfflineProgressTask()
+    {
+      super("FileMgr:OfflineProgressTask"); 
+
+      pTotal   = new AtomicLong();
+      pOffline = new AtomicLong();
+    }
+
+    public void 
+    run() 
+    {
+      TaskTimer timer = new TaskTimer();
+
+      boolean active = true;
+      while(active) {
+        try {
+          Thread.sleep(900000);    // 15-minutes
+        }
+        catch(InterruptedException ex) {
+          active = false;
+        }
+        
+        timer.aquire();
+        long millis = timer.getTotalDuration();
+        timer.resume();        
+
+        long total   = pTotal.get();
+        long offline = pOffline.get();
+
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Net, LogMgr.Level.Info,
+           "--- Offlined Task (Active) -----\n" + 
+           "      Time Spent: " + TimeStamps.formatInterval(millis) + "\n" +
+           "  Dirs Processed: " + total + 
+           " (" + (total*1000 / millis) + " dirs/sec)\n" + 
+           "   Offline Found: " + offline + "\n" + 
+           "--------------------------------");
+        LogMgr.getInstance().flush();
+      }
+    }
+
+    public void
+    addTotal() 
+    {
+      pTotal.getAndIncrement();
+    }
+
+    public void
+    addOffline() 
+    {
+      pOffline.getAndIncrement();
+    }
+
+    private AtomicLong  pTotal; 
+    private AtomicLong  pOffline; 
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
