@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.83 2009/01/22 23:38:01 jim Exp $
+// $Id: FileMgr.java,v 1.84 2009/01/26 21:49:25 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -4246,25 +4246,30 @@ class FileMgr
       TreeSet<VersionID> vids = new TreeSet<VersionID>();
 
       File ndir = new File(pProdDir, "repository" + name);
-      if(!ndir.isDirectory()) 
-        throw new PipelineException 
-          ("Unable to find any repository directory for the node (" + name + "!");
 
-      File vdirs[] = ndir.listFiles(); 
-      if(vdirs == null) 
-        throw new PipelineException 
-          ("Unable to find any repository directory for the versions of node (" + name + "!");
-
-      int wk;
-      for(wk=0; wk<vdirs.length; wk++) {
-        if(!vdirs[wk].isDirectory()) 
+      /* make sure a repository version exits, might be newly registered... */ 
+      if(ndir.exists()) {
+        if(!ndir.isDirectory()) 
           throw new PipelineException 
-            ("Found a file in the repository (" + vdirs[wk] + ") where there should have " + 
-             "been a node version directory for the node (" + name + "!");
+            ("Unable to find any repository directory for the node (" + name + ")!");
 
-         File files[] = vdirs[wk].listFiles(); 
-         if((files != null) && (files.length == 0)) 
-           vids.add(new VersionID(vdirs[wk].getName()));
+        File vdirs[] = ndir.listFiles(); 
+        if(vdirs == null) 
+          throw new PipelineException 
+            ("Unable to find any repository directory for the versions of " + 
+             "node (" + name + ")!");
+        
+        int wk;
+        for(wk=0; wk<vdirs.length; wk++) {
+          if(!vdirs[wk].isDirectory()) 
+            throw new PipelineException 
+              ("Found a file in the repository (" + vdirs[wk] + ") where there should " +
+               "have been a node version directory for the node (" + name + ")!");
+          
+          File files[] = vdirs[wk].listFiles(); 
+          if((files != null) && (files.length == 0)) 
+            vids.add(new VersionID(vdirs[wk].getName()));
+        }
       }
 
       return new FileGetOfflinedNodeVersionsRsp(timer, vids);
