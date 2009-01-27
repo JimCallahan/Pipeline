@@ -1,3 +1,1383 @@
+2009-01-22  author  <author@trex>
+
+	* src/java/us/temerity/pipeline/core/FileMgr.java, src/java/us/temerity/pipeline/core/FileMgrClient.java, src/java/us/temerity/pipeline/core/FileMgrDirectClient.java, src/java/us/temerity/pipeline/core/FileMgrNetClient.java, src/java/us/temerity/pipeline/core/MasterMgr.java, src/java/us/temerity/pipeline/message/FileGetOfflinedNodeVersionsReq.java, src/java/us/temerity/pipeline/message/FileGetOfflinedNodeVersionsRsp.java, src/java/us/temerity/pipeline/message/FileRequest.java:
+	implemented 1802 - Background Offline Cache Rebuild
+
+	* config/bootstrap-trex.sh: kernel upgraded, new plid
+
+	* configure.ac: v2.4.5b5
+
+	* plconfig/customers/trex/090121, plconfig/customers/trex/090121.txt:
+	initial revision
+
+2009-01-20  author  <author@trex>
+
+	* src/java/us/temerity/pipeline/core/FileMgr.java:
+	fixed 1797 - Bundles use System Path to unpack jar file
+
+	* src/java/us/temerity/pipeline/ui/core/TextureMgr.java:
+	fixed 1800 - No 32x32 icon for (ModifiedLinks-Dubious-Frozen-Normal)
+
+2009-01-19  author  <author@trex>
+
+	* src/java/us/temerity/pipeline/plugin/TemplateGlueCollection/v2_4_5/TemplateGlueCollection.java:
+	name fix
+
+	* src/java/us/temerity/pipeline/plugin/TemplateGlueCollection/v2_4_5/TemplateGlueBuilder.java:
+	added uid
+
+	* src/java/us/temerity/pipeline/plugin/MayaAnimBuildAction/v2_4_3/MayaAnimBuildAction.java:
+	fixed 1796 - MayaAnimBuild never calls AnimMEL
+
+	* src/java/us/temerity/pipeline/builder/BaseUtil.java, src/java/us/temerity/pipeline/plugin/CommonToolUtils.java:
+	fixed 1795 - Null Pointer Bug in CommonToolUtils
+
+	* src/java/us/temerity/pipeline/stages/TemplateStage.java:
+	fixed 1799 - Templates do not do Context String Replacements in SrcParams
+
+	* src/java/us/temerity/pipeline/plugin/TemplateGlueTool/v2_4_3/TemplateGlueTool.java:
+	comments
+
+	* src/java/us/temerity/pipeline/core/MasterMgrServer.java:
+	added in Linkage Error check
+
+	* plconfig/customers/shrike/090114, plconfig/customers/shrike/090114.txt:
+	new profile
+
+2009-01-14  author  <author@trex>
+
+	* src/java/us/temerity/pipeline/core/NodeTree.java:
+	fixed 1791 - Rename Directory Prefix Conflicts
+
+	* src/java/us/temerity/pipeline/core/MasterApp.java, src/java/us/temerity/pipeline/core/ScriptApp.java:
+	added missing file-stat/checksum options to --help message
+
+	* plconfig/customers/trex/090113, plconfig/customers/trex/090113.txt:
+	fixed java location
+
+	* config/bootstrap-trex.sh: latest site-profile
+
+	* configure.ac: v2_4_5b4
+
+2009-01-13  author  <author@trex>
+
+	* plconfig/customers/trex/090113, plconfig/customers/trex/090113.txt:
+	moved database to /base/db from /usr/share
+
+	* plconfig/customers/trex/090113, plconfig/customers/trex/090113.txt:
+	initial revision
+
+2009-01-06  author  <author@trex>
+
+	* config/bootstrap-icvfx.sh: latest site-profile
+
+	* plconfig/customers/icvfx/090106, plconfig/customers/icvfx/090106.txt:
+	initial revision
+
+2009-01-05  author  <author@trex>
+
+	* plconfig/customers/SCEACSG/081211, plconfig/customers/SCEACSG/081211.txt, plconfig/customers/SCEACSG/090105, plconfig/customers/SCEACSG/090105.txt:
+	initial revision
+
+	* config/bootstrap-lumiere.sh: latest site-profile
+
+	* configure.ac: v2.4.5b3
+
+	* plconfig/customers/lumiere/090105, plconfig/customers/lumiere/090105.txt:
+	initial revision
+
+	* src/java/us/temerity/pipeline/plugin/ShotgunConnectionExt/v2_4_1/ShotgunConnection.java:
+	fixed 1770 - ShotgunConnection: connection test incomplete
+
+	* src/java/us/temerity/pipeline/plugin/TemplateGlueCollection/v2_4_5/TemplateGlueBuilder.java, src/java/us/temerity/pipeline/plugin/TemplateGlueCollection/v2_4_5/TemplateGlueCollection.java, src/java/us/temerity/pipeline/plugin/TemplateGlueCollection/v2_4_5/package.html:
+	Added a version of the template builder that plbuilder can invoke.
+
+	* src/java/us/temerity/pipeline/plugin/ShotgunConnectionExt/v2_4_1/ShotgunConnectionExt.java:
+	added the ignore for v2.3.2 task plugins
+
+2009-01-04  author  <author@trex>
+
+	* config/bootstrap-SCEACSG.sh: latest site-profile
+
+2008-12-17  author  <author@trex>
+
+	* config/bootstrap-trex.sh, configure.ac, docs/man/plfilemgr.src.html.in, docs/man/plmaster.src.html.in, docs/man/plscript.src.html.in, plconfig/CryptoApp.class, plconfig/plconfig-3.6.1-1.noarch.rpm, src/java/us/temerity/pipeline/MasterControls.java, src/java/us/temerity/pipeline/NativeFileStat.java, src/java/us/temerity/pipeline/NativeFileSys.java, src/java/us/temerity/pipeline/PackageInfo.java.src.in, src/java/us/temerity/pipeline/core/CheckSum.java, src/java/us/temerity/pipeline/core/FileMgr.java, src/java/us/temerity/pipeline/core/FileMgrClient.java, src/java/us/temerity/pipeline/core/FileMgrDirectClient.java, src/java/us/temerity/pipeline/core/FileMgrNetClient.java, src/java/us/temerity/pipeline/core/FileMgrOptsParser.jj, src/java/us/temerity/pipeline/core/FileMgrServer.java, src/java/us/temerity/pipeline/core/MasterMgr.java, src/java/us/temerity/pipeline/core/MasterMgrServer.java, src/java/us/temerity/pipeline/core/MasterOptsParser.jj, src/java/us/temerity/pipeline/core/ScriptApp.java, src/java/us/temerity/pipeline/core/ScriptOptsParser.jj, src/java/us/temerity/pipeline/message/FileRequest.java, src/java/us/temerity/pipeline/message/MasterRequest.java, src/java/us/temerity/pipeline/tests/Makefile.in, src/java/us/temerity/pipeline/tests/TestCheckSumApp.java, src/java/us/temerity/pipeline/tests/TestNativeFileSysApp.java, src/java/us/temerity/pipeline/tests/data/moretext, src/native/Makefile.am, src/native/NativeFileStat.cc, src/native/NativeFileStat.hh, src/native/NativeFileSys.cc, src/native/NativeFileSys.hh:
+	implemented 1780 - Optimizing File Stat Operations, 1781 - Native CheckSum Generation, 1782 - Segregate CheckSum Network Traffic, 1784 - FileStatDirectory Config Option Obsolete
+
+	* docs/Makefile.am, docs/manuals/Makefile.am, docs/manuals/PipelineManual.pdf, rpm/pipeline.spec.E.in, src/java/us/temerity/pipeline/ui/core/JManagerPanel.java:
+	implemented 1783 - Local User Manual
+
+2008-12-16  author  <author@trex>
+
+	* plconfig/customers/trex/081216, plconfig/customers/trex/081216.txt:
+	initial revision
+
+	* plconfig/CryptoApp.class, plconfig/plconfig-3.6.1-1.noarch.rpm:
+	plconfig-3.6.1
+
+2008-12-04  author  <author@trex>
+
+	* src/unix/splash/Splash.gif: v2.4.5
+
+2008-12-03  author  <author@trex>
+
+	* plconfig/customers/rv/081203, plconfig/customers/rv/081203.txt:
+	initial revision
+
+	* config/bootstrap-rv.sh: latest site-profile...
+
+	* plconfig/plconfig-3.6.0-1.noarch.rpm:
+	compiled under CentOS to avoid lzw compression dependency
+
+2008-12-02  author  <author@trex>
+
+	* config/bootstrap-trex.sh: latest site-profile...
+
+	* plconfig/customers/trex/081202, plconfig/customers/trex/081202.txt:
+	initial revision
+
+	* src/unix/splash/Splash-vsn.png: v2.4.5
+
+	* configure.ac, plconfig/CryptoApp.class, plconfig/plconfig-3.6.0-1.noarch.rpm, src/java/us/temerity/pipeline/core/VerifiedApp.java.in:
+	fixed 1773 - Host ID Inconsistent
+
+2008-11-28  author  <author@trex>
+
+	* configure.ac: v2.4.4b4
+
+	* config/bootstrap-rv.sh: latest site-profile
+
+	* plconfig/customers/rv/081127, plconfig/customers/rv/081127.txt:
+	initial revision
+
+2008-11-24  author  <author@trex>
+
+	* docs/man/plscript.src.html.in, src/java/us/temerity/pipeline/core/ScriptApp.java, src/java/us/temerity/pipeline/core/ScriptOptsParser.jj:
+	fixed 1771 - 'plscript editor --get' fail
+
+2008-11-20  author  <author@trex>
+
+	* config/bootstrap-rv.sh: latest site-profile
+
+	* configure.ac: v2.4.4b3
+
+	* plconfig/customers/rv/081120, plconfig/customers/rv/081120.txt:
+	initial revision
+
+2008-11-18  author  <author@trex>
+
+	* src/java/us/temerity/pipeline/FrameRangeParam.java, src/java/us/temerity/pipeline/FrameRangeUtilityParam.java, src/java/us/temerity/pipeline/builder/v2_4_3/TemplateBuilder.java, src/java/us/temerity/pipeline/builder/v2_4_3/TemplateGlueInformation.java, src/java/us/temerity/pipeline/builder/v2_4_3/TemplateInfoBuilder.java, src/java/us/temerity/pipeline/builder/v2_4_3/TemplateTaskBuilder.java, src/java/us/temerity/pipeline/plugin/TemplateContextLinkTool/v2_4_3/TemplateContextLinkTool.java, src/java/us/temerity/pipeline/plugin/TemplateContextTool/v2_4_3/TemplateContextTool.java, src/java/us/temerity/pipeline/plugin/TemplateGlueTool/v2_4_3/TemplateGlueTool.java, src/java/us/temerity/pipeline/plugin/TemplateRangeAnnotation/v2_4_3/TemplateRangeAnnotation.java, src/java/us/temerity/pipeline/plugin/TemplateRangeAnnotation/v2_4_3/package.html, src/java/us/temerity/pipeline/plugin/TemplateRangeTool/v2_4_3/TemplateRangeTool.java, src/java/us/temerity/pipeline/plugin/TemplateRangeTool/v2_4_3/package.html, src/java/us/temerity/pipeline/stages/TemplateStage.java:
+	Implemented the TemplateRange feature for templates
+
+	* src/java/us/temerity/pipeline/ConstantStringParam.java, src/java/us/temerity/pipeline/ConstantStringUtilityParam.java, src/java/us/temerity/pipeline/KeyIntValueParam.java, src/java/us/temerity/pipeline/KeyIntValueUtilityParam.java, src/java/us/temerity/pipeline/KeyValueParam.java, src/java/us/temerity/pipeline/KeyValueUtilityParam.java, src/java/us/temerity/pipeline/SimpleParam.java, src/java/us/temerity/pipeline/StringParam.java, src/java/us/temerity/pipeline/StringUtilityParam.java, src/java/us/temerity/pipeline/builder/ui/JBuilderParamPanel.java:
+	implemented 1769 - ConstantStringParam
+
+2008-11-13  author  <author@trex>
+
+	* src/java/us/temerity/pipeline/DoubleMappedSet.java, src/java/us/temerity/pipeline/TripleMappedSet.java:
+	implemented 1768 - New MappedSet datastructures
+
+	* src/java/us/temerity/pipeline/ui/core/JManageToolsetsDialog.java:
+	change the put method here to return values.  not exactly sure why I did this, but i think it was important
+
+	* src/java/us/temerity/pipeline/DoubleMap.java, src/java/us/temerity/pipeline/TripleMap.java:
+	implemented 1767 - Change Map.remove() return value to V from void
+
+	* src/java/us/temerity/pipeline/MappedSet.java: comment cleanup
+
+	* src/java/us/temerity/pipeline/KeyIntValueParam.java, src/java/us/temerity/pipeline/builder/ui/JBuilderParamPanel.java, src/java/us/temerity/pipeline/builder/v2_4_3/TemplateInfoBuilder.java:
+	fixes to the template info builder context support
+
+	* configure.ac: v2.4.4b2
+
+	* config/bootstrap-rv.sh: initial revision
+
+	* src/java/us/temerity/pipeline/ui/JIntegerField.java, src/java/us/temerity/pipeline/ui/UIFactory.java, src/java/us/temerity/pipeline/ui/core/JManagerPanel.java, src/java/us/temerity/pipeline/ui/core/UIMaster.java:
+	reverting accidental early check-in to previous version
+
+	* docs/Makefile.am, plconfig/customers/rv/081112, plconfig/customers/rv/081112.txt, src/java/us/temerity/pipeline/ui/JIntegerField.java, src/java/us/temerity/pipeline/ui/UIFactory.java, src/java/us/temerity/pipeline/ui/core/JManagerPanel.java, src/java/us/temerity/pipeline/ui/core/UIMaster.java:
+	initial revision
+
+2008-11-06  author  <author@trex>
+
+	* src/java/us/temerity/pipeline/plugin/MultipleTaskSetTool/v2_4_1/MultipleTaskSetTool.java:
+	fixed 1764 - MultipleTaskSet throws exception if TaskType is [[CUSTOM]]
+
+2008-11-03  author  <author@trex>
+
+	* src/java/us/temerity/pipeline/core/MasterMgr.java:
+	fixed 1753 - Renaming a node destroys all annotations  Reply with quote
+
+	* src/java/us/temerity/pipeline/MasterMgrClient.java:
+	fixed 1759 - Node Renaming Broken
+
+	* src/java/us/temerity/pipeline/core/MasterMgr.java:
+	reverts back to 1.257 to erase Jesse's accidental check-in of 1.258
+
+	* src/java/us/temerity/pipeline/core/MasterMgr.java, src/java/us/temerity/pipeline/plugin/MultipleRenameTool/v2_4_3/MultipleRenameTool.java:
+	fixed 1759 - Renaming a node leaves the UI out of sync
+
+2008-11-01  author  <author@trex>
+
+	* config/bootstrap-fc6-32bit.sh, config/bootstrap-fc6-64bit.sh, config/bootstrap-rvantslaptop.sh:
+	JDK 6.0 Update 10
+
+	* config/bootstrap-rvantslaptop.sh, plconfig/customers/rvantslaptop/081031, plconfig/customers/rvantslaptop/081031.txt:
+	initial revision
+
+2008-10-30  author  <author@trex>
+
+	* src/java/us/temerity/pipeline/NodeBundle.java:
+	fixed bug where annotation parameters from GLUE where being ignored
+
+	* src/java/us/temerity/pipeline/core/NodeTree.java:
+	fixed a non-building issue with NodeTree on non-Windows builds
+
+	* src/java/us/temerity/pipeline/builder/v2_4_3/TemplateBuilder.java, src/java/us/temerity/pipeline/builder/v2_4_3/TemplateInfoBuilder.java, src/java/us/temerity/pipeline/builder/v2_4_3/TemplateTaskBuilder.java:
+	updated TemplateBuilder fixes.  This should fix the problems reported by Lumiere with network traversal. It also adds siginifigant extra logging
+
+	* src/java/us/temerity/pipeline/MappedArrayList.java: comment fix
+
+	* config/bootstrap-shrike.sh, config/bootstrap-suse10.3-64bit.sh:
+	new build for suse10.3 with java 1.6.10
+
+	* plconfig/customers/shrike/081023, plconfig/customers/shrike/081023.txt, plconfig/customers/shrike/081029, plconfig/customers/shrike/081029.txt:
+	new profiles
+
+2008-10-29  author  <author@trex>
+
+	* src/java/us/temerity/pipeline/NodeBundle.java, src/java/us/temerity/pipeline/core/BundleBuilder.java:
+	fixed 1755 - Bundled Annotations Ignored
+
+2008-10-27  author  <author@trex>
+
+	* config/bootstrap-lumiere.sh:
+	switched to suse-10.2 from centos-5.1 to work with lumiere's weird setup
+
+	* config/bootstrap-suse10.2-64bit.sh:
+	modernized to use JDK 6.0 Update 10 and better OS checking code
+
+	* src/java/us/temerity/pipeline/core/MasterMgr.java:
+	fixed 1747 - Exception on Node Delete
+
+2008-10-26  author  <author@trex>
+
+	* src/unix/splash/Makefile.am, src/unix/splash/Splash-vsn.png, src/unix/splash/Splash.gif:
+	v2.4.4 splash image
+
+2008-10-24  author  <author@trex>
+
+	* src/java/us/temerity/pipeline/plugin/MayaAttachGeoCacheAction/v2_4_4/MayaAttachGeoCacheAction.java, src/java/us/temerity/pipeline/plugin/MayaAttachGeoCacheAction/v2_4_4/package.html:
+	fixed 1722 - GeoCache scriptNode does not work with referencing.
+
+	* src/java/us/temerity/pipeline/plugin/NukeViewerEditor/v2_4_4/NukeViewerEditor.java, src/java/us/temerity/pipeline/plugin/NukeViewerEditor/v2_4_4/package.html:
+	fixed 1745 - NukeViewer Editor Broken with Nuke 5.1
+
+2008-10-23  author  <author@trex>
+
+	* config/bootstrap-lumiere.sh: latest site-profile
+
+	* plconfig/customers/lumiere/081023, plconfig/customers/lumiere/081023.txt:
+	initial revision
+
+	* config/bootstrap-centos5.1-64bit.sh:
+	updated for JDK 6.0 Update 10 and better OS-type checks
+
+	* plconfig/plconfig-3.5.0-1.noarch.rpm:
+	built on CentOS host to avoid RPM compression format dependencies
+
+	* src/java/us/temerity/pipeline/plugin/MayaRenderGlobalsAction/v2_4_3/MayaRenderGlobalsAction.java:
+	fixed 1743 - MayaRenderGlobals Sourcing of Resolution MEL
+
+	* configure.ac: 2.4.4b1
+
+2008-10-22  author  <author@trex>
+
+	* configure.ac, docs/man/plplugin.src.html.in, src/java/us/temerity/pipeline/core/PluginApp.java, src/java/us/temerity/pipeline/core/PluginMgr.java, src/java/us/temerity/pipeline/core/PluginMgrControlClient.java, src/java/us/temerity/pipeline/core/PluginOptsParser.jj, src/java/us/temerity/pipeline/message/PluginInstallReq.java, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/MayaAnimInstanceBuildAction/v1_0_0/Makefile.local.in, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ModelReplaceAction/v1_2_0/Makefile.local.in, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/Makefile.local.in, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ShakeQuickTimeAction/v1_3_0/Makefile.local.in, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ShakeQuickTimeThumbnailAction/v1_0_0/Makefile.local.in, studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/AfterFXAddTypedSourceTool/v1_0_0/Makefile.local.in, studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/AfterFXTemplateAction/v1_0_0/Makefile.local.in, studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/FrameCyclerEditor/v1_0_0/Makefile.local.in, studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/JobRankingTool/v1_0_0/Makefile.local.in, studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/QueueBalanceTool/v1_0_0/Makefile.local.in, studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/SilhouetteEditor/v1_0_0/Makefile.local.in, studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/SilhouetteEditor/v1_1_0/Makefile.local.in, studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/ZohanCollection/v1_0_0/Makefile.local.in, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/ApproveTaskAnnotation/v1_0_0/Makefile.local.in, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/ApproveTaskTool/v1_0_0/Makefile.local.in, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/CommonTaskAnnotation/v1_0_0/Makefile.local.in, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/DJVEditor/v1_0_0/Makefile.local.in, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/DeliverTool/v1_0_0/Makefile.local.in, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/FArchiver/v1_0_0/Makefile.local.in, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/FArchiver/v1_1_0/Makefile.local.in, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/Kdiff3Comparator/v1_0_0/Makefile.local.in, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/KritaEditor/v1_0_0/Makefile.local.in, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/LensInfoAction/v1_0_0/Makefile.local.in, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/LensInfoAction/v1_0_1/Makefile.local.in, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/NotMiniKeyChooser/v1_0_0/Makefile.local.in, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/NukeQtAction/v1_0_0/Makefile.local.in, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/PFTrackBuildAction/v1_0_0/Makefile.local.in, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/PFTrackEditor/v1_0_0/Makefile.local.in, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/QtEncodeAction/v1_0_0/Makefile.local.in, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/SMplayerEditor/v1_0_0/Makefile.local.in, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/ShakeQtDeliveryAction/v1_0_0/Makefile.local.in, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/SlateSubstAction/v1_0_0/Makefile.local.in, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/SlateSubstAction/v1_1_0/Makefile.local.in, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/SlateSubstAction/v1_2_0/Makefile.local.in, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/SlateSubstAction/v1_3_0/Makefile.local.in, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/SlateSubstAction/v1_4_0/Makefile.local.in, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/SlateSubstAction/v1_5_0/Makefile.local.in, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/SubmitTaskAnnotation/v1_0_0/Makefile.local.in, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/TaskGuardExt/v1_0_0/Makefile.local.in, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/Makefile.local.in, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/Makefile.local.in, studios/radar/pipeline-local/src/com/radar/pipeline/plugin/RadarMaya2MRCollection/v2_3_2/Makefile.local.in, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/CurveExportSyncTool/v2_3_4/Makefile.local.in, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/JeditEditor/v2_3_4/Makefile.local.in, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/KonquerorEditor/v2_3_5/Makefile.local.in, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/MencoderEncodeAction/v2_3_10/Makefile.local.in, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/MencoderEncodeAction/v2_3_14/Makefile.local.in, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/NukeOutputQuicktimeAction/v2_3_10/Makefile.local.in, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/NukeOutputQuicktimeAction/v2_3_13/Makefile.local.in, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/SeqRapportGeneratorAction/v2_3_13/Makefile.local.in, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/ShakeImgConvert/v2_3_14/Makefile.local.in, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/ShakeImgConvert/v2_3_15/Makefile.local.in, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/WavGeneratorAction/v2_3_13/Makefile.local.in, studios/radar/pipeline-local/src/us/temerity/pipeline/plugin/MayaExportAction/v2_3_11/Makefile.local.in:
+	implemented 1713 - PlPlugin Should Enforce Name/VersionID/Vendor
+
+2008-10-21  author  <author@trex>
+
+	* src/java/us/temerity/pipeline/builder/v2_4_1/TemplateBuilder.java:
+	shouldn't have existed
+
+	* src/java/us/temerity/pipeline/core/MasterMgrServer.java, src/java/us/temerity/pipeline/core/QueueMgrServer.java:
+	fixed imports
+
+	* studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/ShakeImgConvert/v2_3_15/.cvsignore:
+	initial revision
+
+2008-10-20  author  <author@trex>
+
+	* studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/ShakeImgConvert/v2_3_15/Makefile.in:
+	never should have been checked-in
+
+	* src/java/us/temerity/pipeline/QueueMgrClient.java, src/java/us/temerity/pipeline/core/JobMgrOptsParser.jj, src/java/us/temerity/pipeline/core/JobMgrWinService.java, src/java/us/temerity/pipeline/core/MasterMgrServer.java, src/java/us/temerity/pipeline/core/QueueMgr.java, src/java/us/temerity/pipeline/core/QueueMgrServer.java, src/java/us/temerity/pipeline/core/VerifiedApp.java.in, src/java/us/temerity/pipeline/ui/core/JQueueJobServersPanel.java, src/java/us/temerity/pipeline/ui/core/JQueueJobSlotsPanel.java:
+	fixed 1735 - Canonical Hostnames should be lower-case
+
+	* config/bootstrap-trex.sh: latest site profile
+
+	* configure.ac, src/java/us/temerity/pipeline/Makefile.in, src/java/us/temerity/pipeline/PackageInfo.java.src.in:
+	added PL_LOCAL_VENDOR
+
+	* plconfig/CryptoApp.class, plconfig/plconfig-3.5.0-1.noarch.rpm:
+	plconfig 3.5.0
+
+	* config/bootstrap-suse11.0-64bit.sh, src/windows/native/libNative.vcproj, src/windows/services/PipelineJobManager/PipelineJobManager/PipelineJobManager.vcproj:
+	upgraded to JDK 6.0 Update 10
+
+	* plconfig/customers/trex/081020: plconfig upgrade
+
+	* plconfig/customers/trex/081020, plconfig/customers/trex/081020.txt:
+	fixed JavaHome
+
+	* plconfig/customers/trex/081020, plconfig/customers/trex/081020.txt:
+	initial revision
+
+2008-10-19  author  <author@trex>
+
+	* src/java/us/temerity/pipeline/core/AdminPrivileges.java:
+	fixed 1523 - plscript privileges no return error
+
+	* src/java/us/temerity/pipeline/MasterMgrClient.java:
+	fixed 1590 - Registering an Existing File is Dubious
+
+	* src/java/us/temerity/pipeline/ui/core/JBaseViewerPanel.java:
+	fixed 1709 - Restore layout hangs
+
+	* src/java/us/temerity/pipeline/plugin/MultipleRenumberTool/v2_4_3/MultipleRenumberTool.java:
+	fixed 1733 - Not enough input verification in MultipleRenumberTool
+
+	* configure.ac, src/java/us/temerity/pipeline/Makefile.in, src/java/us/temerity/pipeline/NodeTreeEntry.java, src/java/us/temerity/pipeline/PackageInfo.java.src.in, src/java/us/temerity/pipeline/core/NodeTree.java:
+	fixed 1421 - Lack of Case Insensitve Nodename checks breaks CIFS
+
+	* src/java/us/temerity/pipeline/ui/core/UIMaster.java: fixed typo
+
+	* src/java/us/temerity/pipeline/core/MasterMgr.java:
+	implemented 1347 - Faster Downstream Links Cache Rebuilding
+
+	* config/bootstrap-icvfx.sh: latest site-profile
+
+	* studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/ShakeImgConvert/v2_3_15/Makefile.in:
+	latest config params
+
+	* src/java/us/temerity/pipeline/ui/core/UIMaster.java:
+	fixed 1731 - Exception when right-clicking on a node
+
+2008-10-16  author  <author@trex>
+
+	* src/java/us/temerity/pipeline/plugin/TemplateGlueTool/v2_4_3/TemplateGlueTool.java:
+	implementing but not yet finished with 1710 - Template Builder
+
+	* src/java/us/temerity/pipeline/ui/core/UIMaster.java:
+	left out a LinkageError catch
+
+	* src/java/us/temerity/pipeline/plugin/TemplateBuilderTool/v2_4_3/package.html, src/java/us/temerity/pipeline/plugin/TemplateGlueTool/v2_4_3/package.html, src/java/us/temerity/pipeline/plugin/TemplateOrderAnnotation/v2_4_3/package.html:
+	package.html files
+
+	* src/java/us/temerity/pipeline/KeyIntValueParam.java, src/java/us/temerity/pipeline/KeyIntValueUtilityParam.java, src/java/us/temerity/pipeline/KeyValueParam.java, src/java/us/temerity/pipeline/KeyValueUtilityParam.java, src/java/us/temerity/pipeline/Makefile.in, src/java/us/temerity/pipeline/builder/ui/JBuilderParamPanel.java, src/java/us/temerity/pipeline/builder/v2_4_1/TaskBuilder.java, src/java/us/temerity/pipeline/builder/v2_4_3/TemplateBuildInfo.java, src/java/us/temerity/pipeline/builder/v2_4_3/TemplateBuilder.java, src/java/us/temerity/pipeline/builder/v2_4_3/TemplateGlueInformation.java, src/java/us/temerity/pipeline/builder/v2_4_3/TemplateInfoBuilder.java, src/java/us/temerity/pipeline/builder/v2_4_3/TemplateTaskBuilder.java, src/java/us/temerity/pipeline/plugin/TemplateBuilderTool/v2_4_3/TemplateBuilderTool.java, src/java/us/temerity/pipeline/plugin/TemplateContextLinkTool/v2_4_3/TemplateContextLinkTool.java, src/java/us/temerity/pipeline/plugin/TemplateContextTool/v2_4_3/TemplateContextTool.java, src/java/us/temerity/pipeline/plugin/TemplateMapAnnotation/v2_4_3/package.html, src/java/us/temerity/pipeline/plugin/TemplateOrderAnnotation/v2_4_3/TemplateOrderAnnotation.java, src/java/us/temerity/pipeline/stages/TemplateStage.java:
+	implementing but not yet finished with 1710 - Template Builder
+
+	* src/java/us/temerity/pipeline/builder/ui/JBuilderParamPanel.java:
+	updated the comments
+
+2008-10-13  author  <author@trex>
+
+	* plconfig/customers/icvfx/081013, plconfig/customers/icvfx/081013.txt:
+	latest site-profile
+
+2008-10-12  author  <author@trex>
+
+	* docs/Makefile.am: restored javadoc subdir...
+
+	* configure.ac, docs/Makefile.am, docs/man/Makefile.am, docs/man/plbrowse.src.html, docs/man/plbuilder.src.html.in, docs/man/plfilemgr.src.html.in, docs/man/pljobmgr.src.html.in, docs/man/plmaster.src.html.in, docs/man/plplugin.src.html.in, docs/man/plpluginmgr.src.html.in, docs/man/plpython.src.html.in, docs/man/plqueuemgr.src.html.in, docs/man/plremote.src.html.in, docs/man/plrestore.src.html.in, docs/man/pls.src.html, docs/man/plscript.src.html.in, docs/man/plshakeio.src.html, docs/man/plui.src.html.in, docs/man/plvalidate.src.html.in, docs/man/plversion.src.html.in, docs/man/realpath.src.html, rpm/pipeline.spec.A.in, rpm/pipeline.spec.B.in, rpm/pipeline.spec.E.in, rpm/plmac.spec.in, rpm/plwin.spec.in, src/java/scripts/Makefile.am, src/java/scripts/debug/Makefile.am, src/java/scripts/debug/plbrowse.in, src/java/scripts/plbrowse.in, src/java/scripts/profile/Makefile.am, src/java/scripts/profile/plbrowse.in, src/java/us/temerity/pipeline/Makefile.in, src/java/us/temerity/pipeline/core/BaseApp.java, src/java/us/temerity/pipeline/core/BrowseApp.java, src/java/us/temerity/pipeline/core/BrowseOptsParser.jj, src/java/us/temerity/pipeline/plugin/WebBrowserEditor/v2_4_3/WebBrowserEditor.java, src/java/us/temerity/pipeline/plugin/WebBrowserEditor/v2_4_3/package.html, src/windows/scripts/Makefile.am, src/windows/scripts/debug/Makefile.am, src/windows/scripts/debug/plbrowse.bat.src.in, src/windows/scripts/plbrowse.bat.src.in:
+	implemented 1552 - Browser Launch Code
+
+2008-10-10  author  <author@trex>
+
+	* src/java/us/temerity/pipeline/BaseMgrClient.java:
+	fixed 1720 - MasterMgrClient wrongly being allowed in plugin code!
+
+	* src/java/us/temerity/pipeline/BasePlugin.java, src/java/us/temerity/pipeline/NodeStatus.java, src/java/us/temerity/pipeline/TextAreaAnnotationParam.java, src/java/us/temerity/pipeline/builder/BaseBuilder.java, src/java/us/temerity/pipeline/builder/BaseUtil.java, src/java/us/temerity/pipeline/glue/io/GlueEncoderImpl.java, src/java/us/temerity/pipeline/plugin/ShotgunConnectionExt/v2_4_1/ShotgunConnection.java, src/java/us/temerity/pipeline/stages/StageState.java:
+	fixed Javadoc errors
+
+	* src/java/us/temerity/pipeline/BaseTool.java, src/java/us/temerity/pipeline/ui/core/JNodeViewerPanel.java:
+	implemented 1727 - Change Owner/View controls in BaseTool
+
+2008-10-09  author  <author@trex>
+
+	* config/bootstrap-trex.sh: latest site-profile/plconfig
+
+	* plconfig/customers/trex/081008, plconfig/customers/trex/081008.txt:
+	initial revision
+
+2008-10-08  author  <author@trex>
+
+	* config/bootstrap-icvfx.sh: latest site-profile
+
+	* plconfig/customers/icvfx/081008, plconfig/customers/icvfx/081008.txt:
+	initial revision
+
+	* docs/javadoc/Makefile.in:
+	added missing builder version specific packages
+
+	* plconfig/plconfig-3.4.0-1.noarch.rpm: added File Status Directory
+
+	* src/windows/native/libNative.vcproj, src/windows/services/PipelineJobManager/PipelineJobManager/PipelineJobManager.vcproj, src/windows/services/PipelineJobManager/Setup/Setup.vdproj:
+	upgraded to jdk-1.6.0_07
+
+	* src/utils/src/FileSeq.hh, src/utils/src/HtmlHelp.hh, src/utils/src/PlRun.cc, src/utils/src/RealPath.cc:
+	fixed includes for openSUSE-11.0
+
+	* src/java/us/temerity/pipeline/Makefile.in, aclocal.m4, configure.ac, plconfig/CryptoApp.class, src/java/us/temerity/pipeline/PackageInfo.java.src.in, src/java/us/temerity/pipeline/core/FileMgr.java, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/ShakeImgConvert/v2_3_15/Makefile.in:
+	added File Status Directory
+
+	* src/java/us/temerity/pipeline/builder/v2_4_1/package.html, src/java/us/temerity/pipeline/builder/v2_4_3/package.html:
+	initial revision
+
+	* src/java/us/temerity/pipeline/plugin/MayaAnimBuildAction/v2_4_1/package.html, src/java/us/temerity/pipeline/plugin/MayaAnimBuildAction/v2_4_3/MayaAnimBuildAction.java, src/java/us/temerity/pipeline/plugin/MayaAnimBuildAction/v2_4_3/package.html:
+	fixed 1726 - Constraints can break MayaAnimBuild
+
+2008-10-07  author  <author@trex>
+
+	* studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/ShakeImgConvert/v2_3_15/Makefile.in:
+	comments
+
+	* plconfig/CryptoApp.class: plconfig-3.3.2
+
+	* plconfig/customers/trex/081007, plconfig/customers/trex/081007.txt:
+	initial revision
+
+	* plconfig/plconfig-3.3.2-1.noarch.rpm: initial version
+
+	* config/bootstrap-suse11.0-64bit.sh, config/bootstrap-trex.sh:
+	initial revision
+
+2008-10-01  author  <author@trex>
+
+	* src/java/us/temerity/pipeline/builder/v2_4_3/TemplateBuildInfo.java, src/java/us/temerity/pipeline/builder/v2_4_3/TemplateBuilder.java, src/java/us/temerity/pipeline/builder/v2_4_3/TemplateTaskBuilder.java:
+	implemented as part of 1710 - Template Builder
+
+	* src/java/us/temerity/pipeline/jesse/.cvsignore: more stuff to ignore
+
+	* config/bootstrap-shrike.sh: new bootstrap
+
+	* src/java/us/temerity/pipeline/plugin/TemplateContextLinkAnnotation/v2_4_3/TemplateContextLinkAnnotation.java, src/java/us/temerity/pipeline/plugin/TemplateContextLinkAnnotation/v2_4_3/package.html, src/java/us/temerity/pipeline/plugin/TemplateContextLinkTool/v2_4_3/TemplateContextLinkTool.java, src/java/us/temerity/pipeline/plugin/TemplateContextLinkTool/v2_4_3/package.html, src/java/us/temerity/pipeline/plugin/TemplateContextTool/v2_4_3/TemplateContextTool.java, src/java/us/temerity/pipeline/plugin/TemplateContextTool/v2_4_3/package.html, src/java/us/temerity/pipeline/plugin/TemplateMapAnnotation/v2_4_3/TemplateContextAnnotation.java, src/java/us/temerity/pipeline/plugin/TemplateMapAnnotation/v2_4_3/package.html:
+	implemented as part of 1710 - Template Builder
+
+	* src/java/us/temerity/pipeline/plugin/MultipleTaskSetTool/v2_4_1/MultipleTaskSetTool.java:
+	Gui cleanup
+
+	* plconfig/customers/shrike/080711, plconfig/customers/shrike/080711.txt:
+	new profile
+
+2008-09-30  author  <author@trex>
+
+	* src/java/us/temerity/pipeline/ui/core/JCloneDialog.java:
+	fixed 1717 - cannot clone nodes that do not have a suffix
+
+2008-09-29  author  <author@trex>
+
+	* src/java/us/temerity/pipeline/DownstreamMode.java, src/java/us/temerity/pipeline/MasterMgrClient.java, src/java/us/temerity/pipeline/NodeStatus.java, src/java/us/temerity/pipeline/builder/v2_4_1/TemplateBuilder.java, src/java/us/temerity/pipeline/core/DownstreamLinks.java, src/java/us/temerity/pipeline/core/MasterMgr.java, src/java/us/temerity/pipeline/core/MasterMgrServer.java, src/java/us/temerity/pipeline/core/ScriptApp.java, src/java/us/temerity/pipeline/core/VersionApp.java, src/java/us/temerity/pipeline/message/MasterRequest.java, src/java/us/temerity/pipeline/message/NodeDownstreamStatusReq.java, src/java/us/temerity/pipeline/message/NodeMultiStatusReq.java, src/java/us/temerity/pipeline/message/NodeStatusReq.java, src/java/us/temerity/pipeline/plugin/MayaTextureSyncTool/v1_0_0/MayaTextureSyncTool.java, src/java/us/temerity/pipeline/plugin/MayaTextureSyncTool/v2_0_0/MayaTextureSyncTool.java, src/java/us/temerity/pipeline/plugin/MayaTextureSyncTool/v2_0_10/MayaTextureSyncTool.java, src/java/us/temerity/pipeline/plugin/MayaTextureSyncTool/v2_0_11/MayaTextureSyncTool.java, src/java/us/temerity/pipeline/plugin/MayaTextureSyncTool/v2_0_9/MayaTextureSyncTool.java, src/java/us/temerity/pipeline/plugin/MultipleRenameTool/v2_4_3/MultipleRenameTool.java, src/java/us/temerity/pipeline/plugin/ReleaseTaskTool/v2_4_1/ReleaseTaskTool.java, src/java/us/temerity/pipeline/plugin/TaskToolUtils.java, src/java/us/temerity/pipeline/stages/StandardStage.java, src/java/us/temerity/pipeline/ui/core/JNodeViewerPanel.java, src/java/us/temerity/pipeline/ui/core/PanelUpdater.java, src/java/us/temerity/pipeline/ui/core/prefs/GenUserPrefsApp.java, src/java/us/temerity/pipeline/utils/BaseUtilityApp.java, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/AnimApproveTaskBuilder.java:
+	fixed 1650 - Downstream Status Misleading
+
+2008-09-26  author  <author@trex>
+
+	* src/java/us/temerity/pipeline/plugin/TemplateMapAnnotation/v2_4_3/TemplateMapAnnotation.java, src/java/us/temerity/pipeline/plugin/TemplateMapAnnotation/v2_4_3/package.html:
+	renaming this to TemplateMapContextAnnotation
+
+	* src/java/us/temerity/pipeline/plugin/MayaAnimBuildAction/v2_3_1/MayaAnimBuildAction.java, src/java/us/temerity/pipeline/plugin/MayaAnimBuildAction/v2_3_14/MayaAnimBuildAction.java, src/java/us/temerity/pipeline/plugin/MayaAnimBuildAction/v2_4_1/MayaAnimBuildAction.java:
+	fixed 1715 - MayaAnimBuilder doesn't call AnimMEL
+
+2008-09-19  author  <author@trex>
+
+	* plconfig/customers/rhinofx/080919, plconfig/customers/rhinofx/080919.txt:
+	initial revision
+
+	* config/bootstrap-rhinofx.sh: latest profile...
+
+	* config/bootstrap-rhinofx.sh: modern...
+
+2008-09-18  author  <author@trex>
+
+	* src/java/us/temerity/pipeline/plugin/TaskToolUtils.java:
+	renamed the internal private methods to actually be correct. I am upstream/downstrean dyslexic
+
+	* src/java/us/temerity/pipeline/builder/v2_4_1/TaskBuilder.java, src/java/us/temerity/pipeline/builder/v2_4_1/TaskType.java:
+	fixed a bug when using custom task types.  oops
+
+	* src/java/us/temerity/pipeline/builder/BaseUtil.java:
+	removed unnecessary annotations
+
+	* src/java/us/temerity/pipeline/builder/BaseBuilder.java:
+	fixed error message to make sense
+
+	* src/java/us/temerity/pipeline/plugin/TaskGuardExt/v2_4_1/TaskGuardExt.java:
+	added synch support
+
+	* src/java/us/temerity/pipeline/plugin/ReleaseTaskTool/v2_4_1/ReleaseTaskTool.java:
+	mass efficiency improvement
+
+	* src/java/us/temerity/pipeline/plugin/ApproveTaskTool/v2_4_1/ApproveTaskTool.java:
+	removed unused method
+
+	* src/java/us/temerity/pipeline/plugin/TaskTypeKeyChooser/v2_4_1/TaskTypeKeyChooser.java, src/java/us/temerity/pipeline/plugin/TaskTypeKeyChooser/v2_4_1/package.html:
+	fixed some stuff
+
+	* src/java/us/temerity/pipeline/plugin/MultipleRenameTool/v2_4_3/MultipleRenameTool.java, src/java/us/temerity/pipeline/plugin/MultipleRenameTool/v2_4_3/package.html, src/java/us/temerity/pipeline/plugin/MultipleTaskSetTool/v2_4_1/MultipleTaskSetTool.java, src/java/us/temerity/pipeline/plugin/MultipleTaskSetTool/v2_4_1/package.html, src/java/us/temerity/pipeline/plugin/TemplateMapAnnotation/v2_4_3/TemplateMapAnnotation.java, src/java/us/temerity/pipeline/plugin/TemplateMapAnnotation/v2_4_3/package.html, src/java/us/temerity/pipeline/builder/v2_4_1/TemplateBuilder.java, src/java/us/temerity/pipeline/plugin/TemplateSettingsAnnotation/v2_4_3/TemplateSettingsAnnotation.java, src/java/us/temerity/pipeline/plugin/TemplateSettingsAnnotation/v2_4_3/package.html, src/java/us/temerity/pipeline/stages/TemplateStage.java:
+	first pass of template tools.  highly beta.  subject to massive changes
+
+	* config/bootstrap-lumiere.sh: fixed hostname paths
+
+	* plconfig/customers/lumiere/080918, plconfig/customers/lumiere/080918.txt:
+	initial revision
+
+2008-09-17  author  <author@trex>
+
+	* docs/misc/jesse/builder.txt, docs/misc/jesse/dubiousBuilders.txt, docs/misc/jesse/queue.txt, docs/misc/jesse/queueExample.txt, docs/misc/jesse/queueList, docs/misc/jesse/subBuilders.txt, docs/misc/jesse/templateBuilder.txt, docs/misc/jesse/toolsets.txt:
+	all my random docs musing about stuff in pipeline
+
+2008-09-16  author  <author@trex>
+
+	* src/java/us/temerity/pipeline/plugin/TaskTypeKeyChooser/v2_3_15/TaskTypeKeyChooser.java:
+	made the keychooser more robust
+
+	* src/java/us/temerity/pipeline/plugin/MayaCurvesExportAction/v2_3_14/MayaCurvesExportAction.java:
+	fixed 1711 - MayaCurveExport fails on windows
+
+2008-09-15  author  <author@trex>
+
+	* config/bootstrap-SCEACSG.sh: upgraded to Centos5.1 and 64-bit
+
+	* plconfig/customers/SCEACSG/080915, plconfig/customers/SCEACSG/080915.txt:
+	initial revision
+
+	* src/java/us/temerity/pipeline/plugin/MayaRenderAction/v2_4_3/MayaRenderAction.java:
+	implemented 1708 - Add 3Delight support to MayaRender action
+
+2008-09-14  author  <author@trex>
+
+	* config/bootstrap-lumiere.sh: fixed path
+
+	* config/bootstrap-centos-64bit.sh:
+	not any different than bootstrap-centos5.1-64bit.sh
+
+	* config/bootstrap-lumiere.sh: latest site-profile
+
+	* plconfig/customers/lumiere/080912, plconfig/customers/lumiere/080912.txt:
+	initial revision
+
+	* src/java/us/temerity/pipeline/plugin/AfterFXEditor/v2_4_1/AfterFXEditor.java, src/java/us/temerity/pipeline/plugin/BlackHoleArchiver/v2_4_1/BlackHoleArchiver.java, src/java/us/temerity/pipeline/plugin/FlashEditor/v2_4_1/FlashEditor.java, src/java/us/temerity/pipeline/plugin/GPlayEditor/v2_4_3/GPlayEditor.java, src/java/us/temerity/pipeline/plugin/IllustratorEditor/v2_4_1/IllustratorEditor.java, src/java/us/temerity/pipeline/plugin/InDesignEditor/v2_4_1/InDesignEditor.java, src/java/us/temerity/pipeline/plugin/MRayOptionsAction/v2_4_3/MRayOptionsAction.java, src/java/us/temerity/pipeline/plugin/MRayRenderGlobalsAction/v2_4_3/MRayRenderGlobalsAction.java, src/java/us/temerity/pipeline/plugin/MayaRenderAction/v2_4_3/MayaRenderAction.java, src/java/us/temerity/pipeline/plugin/MayaRenderGlobalsAction/v2_4_3/MayaRenderGlobalsAction.java, src/java/us/temerity/pipeline/plugin/PhotoshopEditor/v2_4_1/PhotoshopEditor.java:
+	removed underDevelopment()
+
+	* src/java/us/temerity/pipeline/plugin/NukeEditor/v2_4_3/NukeEditor.java, src/java/us/temerity/pipeline/plugin/NukeEditor/v2_4_3/package.html, plconfig/customers/SCEACSG/080910, plconfig/customers/SCEACSG/080910.txt:
+	initial revision
+
+2008-09-12  author  <author@trex>
+
+	* config/bootstrap-centos-64bit.sh, config/bootstrap-lumiere.sh, config/bootstrap-wenjamin.sh, plconfig/customers/lumiere/080908, plconfig/customers/lumiere/080908.txt, plconfig/customers/lumiere/080911, plconfig/customers/lumiere/080911.txt:
+	new bootstrap and plconfig files
+
+2008-08-27  author  <author@trex>
+
+	* config/bootstrap-TheO.sh, plconfig/customers/TheO/080826, plconfig/customers/TheO/080826.txt:
+	latest site-profile
+
+2008-08-19  author  <author@trex>
+
+	* rpm/pipeline.spec.A.in, rpm/pipeline.spec.B.in, rpm/pipeline.spec.C.in, rpm/pipeline.spec.D.in, src/java/scripts/Makefile.am, src/java/scripts/debug/Makefile.am:
+	moved plmine into sbin
+
+	* src/java/us/temerity/pipeline/core/PluginMgr.java, src/java/us/temerity/pipeline/ui/core/SourceParamsTableModel.java:
+	fixed 1699 - sourceParams code breaks plui action
+
+	* src/windows/launchers/debug/plui-j2dgl.exe4j.in, src/windows/launchers/debug/plui.exe4j.in:
+	fixed 1698 - Debug version of plui.exe wrong
+
+2008-08-18  author  <author@trex>
+
+	* rpm/pipeline.spec.B.in: added plmine
+
+	* src/java/us/temerity/pipeline/plugin/QueueStatsExt/v2_4_3/QueueStatsExt.java:
+	fixed duplicate serialVersionUID
+
+	* src/java/us/temerity/pipeline/plugin/QueueStatsExt/v2_4_3/QueueStatsDb.java, src/java/us/temerity/pipeline/plugin/QueueStatsExt/v2_4_3/QueueStatsExt.java, src/java/us/temerity/pipeline/plugin/QueueStatsExt/v2_4_3/package.html:
+	fixed null pointer bug
+
+	* plconfig/customers/redvision/080818, plconfig/customers/redvision/080818.txt:
+	initial revision
+
+	* config/bootstrap-redvision.sh: latest site-profile
+
+2008-08-16  author  <author@trex>
+
+	* src/java/us/temerity/pipeline/core/JobMgr.java:
+	fixed name of scratch file reported in error message
+
+	* src/java/us/temerity/pipeline/JobMgrClient.java:
+	implemented 1697 - Better JobMgr Error Messages
+
+2008-08-15  author  <author@trex>
+
+	* config/bootstrap-redvision.sh, plconfig/customers/redvision/080815, plconfig/customers/redvision/080815.txt:
+	latest site-profile
+
+2008-08-09  author  <author@trex>
+
+	* src/java/us/temerity/pipeline/Makefile.in: added plmine parser
+
+	* configure.ac, rpm/pipeline.spec.A.in, src/java/scripts/Makefile.am, src/java/scripts/debug/Makefile.am, src/java/scripts/debug/plmine.in, src/java/scripts/plmine.in, src/java/us/temerity/pipeline/core/MineApp.java, src/java/us/temerity/pipeline/core/MineOptsParser.jj:
+	initial revision
+
+2008-08-07  author  <author@trex>
+
+	* src/java/us/temerity/pipeline/plugin/JavaUtilityAction/v2_4_3/JavaUtilityAction.java, src/java/us/temerity/pipeline/plugin/JavaUtilityAction/v2_4_3/package.html:
+	initial revision
+
+	* src/java/us/temerity/pipeline/ArchType.java, src/java/us/temerity/pipeline/OsType.java:
+	roll back to older arch type stuff
+
+	* src/java/us/temerity/pipeline/plugin/ShakeFullscreenEditor/.cvsignore, src/java/us/temerity/pipeline/plugin/ShakeFullscreenEditor/v2_4_3/ShakeFullscreenEditor.java, src/java/us/temerity/pipeline/plugin/ShakeFullscreenEditor/v2_4_3/package.html:
+	initial revision
+
+2008-08-02  author  <author@trex>
+
+	* src/java/us/temerity/pipeline/QueueJobResults.java, src/java/us/temerity/pipeline/ui/core/UIMaster.java:
+	fixed 1602 - Linkage errors in plugin code fail silently
+
+	* studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/stages/Makefile.am:
+	addd BuildPreBlotAnimStage
+
+	* studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/MatchBuilder.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/stages/BuildMatchStage.java:
+	removed finalize stage vouch stuff
+
+2008-08-01  author  <author@trex>
+
+	* src/java/us/temerity/pipeline/builder/BaseBuilderCollection.java:
+	code cleanup
+
+	* src/java/us/temerity/pipeline/BaseKeyChooser.java, src/java/us/temerity/pipeline/builder/execution/GUIExecution.java, src/java/us/temerity/pipeline/core/JobMgr.java:
+	fixed 1601 - Linkage errors in plugin code fail silently
+
+	* src/java/com/sony/scea/pipeline/plugins/lair/v1_0_0/BuildShaveRenderTreeTool.java, src/java/com/sony/scea/pipeline/plugins/lair/v1_0_0/BuildShaveSimTreeTool.java, src/java/com/sony/scea/pipeline/plugins/lair/v1_0_0/LinkClothTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/BuildAssetTreeTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/BuildAssetTurntableTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/BuildHeadTurntableTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/BuildMattePassTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/BuildRenderScenesTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/BuildRenderTreeTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/BuildShakePreCompTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/BuildSyflexTreeTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/DeliveryPackageTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/FixRenderNodesTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/FixRenderScriptsTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/GeoNameCompareTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/LightingCheckOutTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/MakeFBXMayaTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/MakeMatteRenderTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/MaterialsCheckOutTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/ModelSyncTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/MultipleRenumberTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/PrepLairShotTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/PropagateLightRigTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/RegisterResizeMapTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/RenderAssetStillsTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/SetMapNameTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/ShaderCopyTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/SubstituteModelTool.java, src/java/com/sony/scea/pipeline/plugins/v1_0_0/UpdateCameraTool.java, src/java/com/sony/scea/pipeline/tools/Globals.java, src/java/com/sony/scea/pipeline/tools/UpdateAssetGUI.java:
+	fixed legacy sony code messed up by changes to status
+
+	* src/java/us/temerity/pipeline/builder/execution/BaseBuilderExecution.java, src/java/us/temerity/pipeline/builder/execution/CommandLineExecution.java, src/java/us/temerity/pipeline/core/exts/BaseMasterTask.java, src/java/us/temerity/pipeline/core/exts/BaseQueueTask.java, src/java/us/temerity/pipeline/ui/JErrorDialog.java, src/java/us/temerity/pipeline/ui/core/JNodeFilesPanel.java, src/java/us/temerity/pipeline/ui/core/JNodeViewerPanel.java, src/java/us/temerity/pipeline/ui/core/JQueueJobSlotsPanel.java, src/java/us/temerity/pipeline/ui/core/JQueueJobViewerPanel.java:
+	fixed 1601 - Linkage errors in plugin code fail silently
+
+	* src/java/us/temerity/pipeline/plugin/ShotgunConnectionExt/v2_4_1/ShotgunConnectionExt.java:
+	fixed 1687 - Custom Tasks are ignored in ShotgunConnectorExt
+
+	* studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/ApproveTaskTool/v1_0_0/ApproveTaskTool.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/DeliverTool/v1_0_0/DeliverTool.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/AppDirs.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/BaseShotBuilder.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/BlotBuilder.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/ICStageFunction.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/LightingBuilder.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/MatchBuilder.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/NoiseBuilder.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/ProjectNamer.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/ShotNamer.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/SoundBuilder.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/TaskType.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/TrackingBuilder.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/WtmCollection.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/stages/BuildBlotAnimStage.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/stages/BuildLightingAssemblyStage.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/stages/BuildMatchStage.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/stages/BuildPreBlotAnimStage.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/stages/DoCopyStage.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/stages/HfsCompositeStage.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/stages/HfsMantraStage.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/stages/NukeQtStage.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/stages/RenderTaskVerifyStage.java:
+	Ryan's latest
+
+	* configure.ac: v2.4.3b11
+
+	* config/bootstrap-nathanlove.sh: latest site-profile
+
+	* plconfig/customers/nathanlove/080730, plconfig/customers/nathanlove/080730.txt:
+	initial revision
+
+2008-07-31  author  <author@trex>
+
+	* configure.ac, rpm/pipeline.spec.E.in, docs/man/Makefile.am, docs/man/plbuilder.src.html.in, docs/man/plfilemgr.src.html.in, docs/man/pljobmgr.src.html.in, docs/man/plmaster.src.html.in, docs/man/plplugin.src.html.in, docs/man/plpluginmgr.src.html.in, docs/man/plpython.src.html.in, docs/man/plqueuemgr.src.html.in, docs/man/plrestore.src.html.in, docs/man/plscript.src.html.in, docs/man/plui.src.html.in:
+	implemented 1627 - man page for plbuilder
+
+2008-07-30  author  <author@trex>
+
+	* src/java/us/temerity/pipeline/plugin/MRayOptionsAction/v2_4_3/MRayOptionsAction.java, src/java/us/temerity/pipeline/plugin/MRayOptionsAction/v2_4_3/package.html:
+	implemented 1269 - Make MRayOptionsAction use Tuple Parameters
+
+	* src/java/us/temerity/pipeline/plugin/MayaRenderAction/v2_4_3/MayaRenderAction.java, src/java/us/temerity/pipeline/plugin/MayaRenderAction/v2_4_3/package.html:
+	implemented 1288 - MayaRender should let you set the project (Wen)
+
+	* src/java/us/temerity/pipeline/plugin/MayaRenderGlobalsAction/v2_4_3/MayaRenderGlobalsAction.java:
+	implemented 1539 - Alpha and Depth in the MayaRenderGlobals Action (Wen)
+
+	* src/java/us/temerity/pipeline/plugin/MRayRenderGlobalsAction/v2_4_3/MRayRenderGlobalsAction.java:
+	implemented 1054 - MRayRenderGlobals 2.2.1 and Maya 8.5 error (Wen)
+
+2008-07-24  author  <author@trex>
+
+	* src/java/us/temerity/pipeline/math/Color3d.java, src/java/us/temerity/pipeline/math/CoordSys2d.java, src/java/us/temerity/pipeline/math/Matrix33d.java, src/java/us/temerity/pipeline/math/TupleNd.java:
+	removed redundant casts
+
+2008-07-22  author  <author@trex>
+
+	* src/java/us/temerity/pipeline/MappedSet.java: code formatting
+
+	* src/java/us/temerity/pipeline/DoubleMap.java, src/java/us/temerity/pipeline/ListMap.java:
+	implemented 1674 - Enhancements to ListMap and DoubleMap
+
+	* src/java/us/temerity/pipeline/ArchType.java, src/java/us/temerity/pipeline/OsType.java, src/java/us/temerity/pipeline/VersionID.java, src/java/us/temerity/pipeline/MachineType.java, src/java/us/temerity/pipeline/toolset2/EnvCache.java, src/java/us/temerity/pipeline/toolset2/MergePolicy.java, src/java/us/temerity/pipeline/toolset2/PackageCommon.java, src/java/us/temerity/pipeline/toolset2/PackageEntry.java, src/java/us/temerity/pipeline/toolset2/PackageMod.java, src/java/us/temerity/pipeline/toolset2/PackageVersion.java, src/java/us/temerity/pipeline/toolset2/ToolsetCommon.java, src/java/us/temerity/pipeline/toolset2/ToolsetMod.java, src/java/us/temerity/pipeline/toolset2/ToolsetVersion.java:
+	first pass of toolset2 code
+
+	* src/java/us/temerity/pipeline/MappedSet.java: more code formatting...
+
+	* src/java/us/temerity/pipeline/MappedSet.java: code formatting...
+
+2008-07-21  author  <author@trex>
+
+	* studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/AfterFXAddTypedSourceTool/v1_0_0/AfterFXAddTypedSourceTool.java, src/java/us/temerity/pipeline/plugin/CheckOutSourcesTool/v2_3_15/CheckOutSourcesTool.java, src/java/us/temerity/pipeline/plugin/DisableCompTool/v2_4_1/DisableCompTool.java, src/java/us/temerity/pipeline/plugin/EnableCompTool/v2_4_1/EnableCompTool.java, src/java/us/temerity/pipeline/plugin/MRayAddTexturesTool/v2_2_1/MRayAddTexturesTool.java, src/java/us/temerity/pipeline/plugin/MayaAddRefTool/v2_2_1/MayaAddRefTool.java, src/java/us/temerity/pipeline/plugin/MayaAddReferenceTool/v2_0_10/MayaAddReferenceTool.java, src/java/us/temerity/pipeline/plugin/MayaAddReferenceTool/v2_0_9/MayaAddReferenceTool.java, src/java/us/temerity/pipeline/plugin/MayaRemoveRefTool/v2_2_1/MayaRemoveRefTool.java, src/java/us/temerity/pipeline/plugin/MayaRemoveReferenceTool/v2_0_9/MayaRemoveReferenceTool.java, src/java/us/temerity/pipeline/plugin/MayaTextureSyncTool/v1_0_0/MayaTextureSyncTool.java, src/java/us/temerity/pipeline/plugin/MayaTextureSyncTool/v2_0_0/MayaTextureSyncTool.java, src/java/us/temerity/pipeline/plugin/MayaTextureSyncTool/v2_0_10/MayaTextureSyncTool.java, src/java/us/temerity/pipeline/plugin/MayaTextureSyncTool/v2_0_11/MayaTextureSyncTool.java, src/java/us/temerity/pipeline/plugin/MayaTextureSyncTool/v2_0_9/MayaTextureSyncTool.java, src/java/us/temerity/pipeline/plugin/PatternCloneTool/v2_3_1/PatternCloneTool.java, src/java/us/temerity/pipeline/plugin/RegisterMapTool/v2_0_10/RegisterMapTool.java, src/java/us/temerity/pipeline/plugin/RegisterMapTool/v2_0_9/RegisterMapTool.java, src/java/us/temerity/pipeline/plugin/RenumberTool/v2_0_9/RenumberTool.java, src/java/us/temerity/pipeline/plugin/RenumberTool/v2_2_1/RenumberTool.java:
+	implemented 1670 - Improved Node Status Details
+
+	* src/java/us/temerity/pipeline/plugin/MRayRenderGlobalsAction/v2_4_3/MRayRenderGlobalsAction.java, src/java/us/temerity/pipeline/plugin/MayaRenderGlobalsAction/v2_4_3/MayaRenderGlobalsAction.java:
+	Wen's upgrade to use Tuple parameters
+
+	* src/java/us/temerity/pipeline/plugin/JavaBuildAction/v2_0_15/JavaBuildAction.java, configure.ac, docs/javadoc/Makefile.in, studios/SCEACSG/pipeline-local/src/Makefile.local.in, studios/TheO/pipeline-local/src/Makefile.local.in, studios/icvfx/pipeline-local/src/Makefile.local.in, studios/nathanlove/pipeline-local/src/Makefile.local.in, studios/radar/pipeline-local/src/Makefile.local.in:
+	changed javac option -source from 1.5 to 1.6
+
+	* src/java/us/temerity/pipeline/math/Color3d.java, src/java/us/temerity/pipeline/math/Color3f.java, src/java/us/temerity/pipeline/math/Color4d.java, src/java/us/temerity/pipeline/math/Color4f.java, src/java/us/temerity/pipeline/math/CoordSys2d.java, src/java/us/temerity/pipeline/math/Matrix33d.java, src/java/us/temerity/pipeline/math/Tuple2d.java, src/java/us/temerity/pipeline/math/Tuple2f.java, src/java/us/temerity/pipeline/math/Tuple2i.java, src/java/us/temerity/pipeline/math/Tuple2l.java, src/java/us/temerity/pipeline/math/Tuple3d.java, src/java/us/temerity/pipeline/math/Tuple3f.java, src/java/us/temerity/pipeline/math/Tuple3i.java, src/java/us/temerity/pipeline/math/Tuple3l.java, src/java/us/temerity/pipeline/math/Tuple4d.java, src/java/us/temerity/pipeline/math/Tuple4f.java, src/java/us/temerity/pipeline/math/Tuple4i.java, src/java/us/temerity/pipeline/math/Tuple4l.java, src/java/us/temerity/pipeline/math/TupleNd.java, src/java/us/temerity/pipeline/math/TupleNf.java, src/java/us/temerity/pipeline/math/TupleNi.java, src/java/us/temerity/pipeline/math/TupleNl.java:
+	fixed 1672 - Error in compareTo with Tuples
+
+	* src/java/us/temerity/pipeline/plugin/NukeBuildAction/v2_3_4/NukeBuildAction.java, src/java/us/temerity/pipeline/plugin/NukeSourceSyncTool/v2_3_4/NukeSourceSyncTool.java, src/java/us/temerity/pipeline/plugin/PatternCloneTool/v2_3_1/PatternCloneTool.java, src/java/us/temerity/pipeline/stages/StandardStage.java, src/java/us/temerity/pipeline/ui/core/JBaseNodeDetailPanel.java, src/java/us/temerity/pipeline/ui/core/JNodeAnnotationsPanel.java, src/java/us/temerity/pipeline/ui/core/JNodeDetailsPanel.java, src/java/us/temerity/pipeline/ui/core/JNodeFilesPanel.java, src/java/us/temerity/pipeline/ui/core/JNodeHistoryPanel.java, src/java/us/temerity/pipeline/ui/core/JNodeLinksPanel.java, src/java/us/temerity/pipeline/ui/core/JNodeViewerPanel.java, src/java/us/temerity/pipeline/ui/core/JSimpleNodeDetailPanel.java, src/java/us/temerity/pipeline/ui/core/PanelUpdater.java, src/java/us/temerity/pipeline/ui/core/ViewerLinks.java, src/java/us/temerity/pipeline/ui/core/ViewerNode.java, src/java/us/temerity/pipeline/ui/core/ViewerNodeHint.java, src/java/us/temerity/pipeline/BaseNodeDetails.java, src/java/us/temerity/pipeline/BaseTool.java, src/java/us/temerity/pipeline/NodeDetails.java, src/java/us/temerity/pipeline/NodeDetailsCheckedIn.java, src/java/us/temerity/pipeline/NodeDetailsHeavy.java, src/java/us/temerity/pipeline/NodeDetailsLight.java, src/java/us/temerity/pipeline/NodeStatus.java, src/java/us/temerity/pipeline/builder/BaseUtil.java, src/java/us/temerity/pipeline/core/MasterMgr.java, src/java/us/temerity/pipeline/core/PluginMgr.java, src/java/us/temerity/pipeline/core/ScriptApp.java, src/java/us/temerity/pipeline/core/VersionApp.java, src/java/us/temerity/pipeline/plugin/CheckOutSourcesTool/v2_3_15/CheckOutSourcesTool.java, src/java/us/temerity/pipeline/plugin/DisableCompTool/v2_4_1/DisableCompTool.java, src/java/us/temerity/pipeline/plugin/EnableCompTool/v2_4_1/EnableCompTool.java, src/java/us/temerity/pipeline/plugin/ImportExternalTool/v2_3_15/ImportExternalTool.java, src/java/us/temerity/pipeline/plugin/MultipleRenumberTool/v2_4_3/MultipleRenumberTool.java, src/java/us/temerity/pipeline/plugin/NukeAddSourceTool/v2_3_4/NukeAddSourceTool.java:
+	implemented 1670 - Improved Node Status Details
+
+	* src/java/us/temerity/pipeline/ui/core/JNodeViewerPanel.java, src/java/us/temerity/pipeline/builder/BaseBuilder.java, src/java/us/temerity/pipeline/builder/BaseBuilderCollection.java, src/java/us/temerity/pipeline/builder/execution/GUIExecution.java, src/java/us/temerity/pipeline/builder/ui/JBuilderTopPanel.java, src/java/us/temerity/pipeline/core/BuilderApp.java, src/java/us/temerity/pipeline/plugin/ApproveTaskTool/v2_4_1/ApproveTaskTool.java, src/java/us/temerity/pipeline/ui/core/JManagerPanel.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/ApproveTaskTool/v1_0_0/ApproveTaskTool.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/DeliverTool/v1_0_0/DeliverTool.java:
+	fixed 1673 - Builder Network Connections
+
+	* src/java/us/temerity/pipeline/builder/BaseBuilderCollection.java:
+	code formatting
+
+2008-07-18  author  <author@trex>
+
+	* studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/LightingBuilder.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/ProjectNamer.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/ShotNamer.java:
+	Ryan's 2007-07-10 changes
+
+	* studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/AppDirs.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/BaseShotBuilder.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/ICStageFunction.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/LightingBuilder.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/NoiseBuilder.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/ProjectNamer.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/ShotNamer.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/TaskType.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/WtmCollection.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/stages/BuildLightingAssemblyStage.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/stages/HfsBuildStage.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/stages/HfsCompositeStage.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/stages/HfsGenerateStage.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/stages/HfsGeoStage.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/stages/HfsIConvertStage.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/stages/HfsMantraStage.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/stages/HfsRatCompositeStage.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/stages/Makefile.am, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/stages/WriteFileStage.java:
+	Ryan's latest changes
+
+2008-07-16  author  <author@trex>
+
+	* src/java/us/temerity/pipeline/ui/core/JResourceUsageHistoryDialog.java:
+	fixed 1455 - Short Hostnames in Resource Usage History Dialog, fixed 1367 - Drawing bugs in Resource Usage History dialog
+
+2008-07-15  author  <author@trex>
+
+	* src/java/us/temerity/pipeline/ui/core/JQueueJobViewerPanel.java:
+	fixed 1098 - GL Exception in Job Browser
+
+	* src/java/us/temerity/pipeline/QueueJobGroup.java, src/java/us/temerity/pipeline/ui/core/JQueueJobViewerPanel.java, src/java/us/temerity/pipeline/ui/core/prefs/GenUserPrefsApp.java:
+	fixed 1661 - Job Viewer Display Limits
+
+	* studios/radar/pipeline-local/src/com/radar/pipeline/plugin/RadarMaya2MRCollection/v2_3_2/Makefile.local.in:
+	added .class files from the Temerity Maya2MRCollection.jar into the RadarMaya2MRCollection.jar
+
+	* studios/radar/pipeline-local/src/com/radar/pipeline/plugin/RadarMaya2MRCollection/v2_3_2/RadarMaya2MRCollection.java:
+	fixed bug in builder package paths
+
+	* studios/SCEACSG/pipeline-local/src/Makefile.local.in, studios/TheO/pipeline-local/src/Makefile.local.in, studios/icvfx/pipeline-local/src/Makefile.local.in, studios/nathanlove/pipeline-local/src/Makefile.local.in, studios/radar/pipeline-local/src/Makefile.local.in:
+	fixed 1666 - plplugin 32/64-bit in pllocal RPMs
+
+	* src/java/us/temerity/pipeline/plugin/MRayRenderGlobalsAction/v2_4_3/MRayRenderGlobalsAction.java, src/java/us/temerity/pipeline/plugin/MRayRenderGlobalsAction/v2_4_3/package.html, src/java/us/temerity/pipeline/plugin/MayaRenderGlobalsAction/v2_4_3/MayaRenderGlobalsAction.java, src/java/us/temerity/pipeline/plugin/MayaRenderGlobalsAction/v2_4_3/package.html:
+	initial check-in of Wen's new plugins... not done yet
+
+2008-07-14  author  <author@trex>
+
+	* src/java/us/temerity/pipeline/bootstrap/BootStrapLoader.java.in.in, src/java/us/temerity/pipeline/core/GlueClassCache.java, src/java/us/temerity/pipeline/core/GlueParser.jj, src/java/us/temerity/pipeline/glue/io/GlueClassCache.java, src/java/us/temerity/pipeline/glue/io/GlueParser.jj:
+	implemented 1665 - Glue Load Speed
+
+	* src/java/us/temerity/pipeline/QueueHostInfo.java, src/java/us/temerity/pipeline/QueueJobInfo.java:
+	fixed 1508 - Numeric Hostnames should always be Long
+
+	* configure.ac: v2.4.3b9
+
+2008-07-10  author  <author@trex>
+
+	* src/java/us/temerity/pipeline/core/MasterMgr.java:
+	fixed 1664 - Check-Out Deadlock
+
+	* configure.ac: v2.4.3b8
+
+	* src/java/us/temerity/pipeline/ui/core/JQueueJobViewerPanel.java, src/java/us/temerity/pipeline/ui/core/prefs/GenUserPrefsApp.java:
+	implemented 1663 - Job Viewer AutoExpand New
+
+2008-07-09  author  <author@trex>
+
+	* plconfig/customers/jeppewalther/080709, plconfig/customers/jeppewalther/080709.txt:
+	initial revision
+
+	* src/java/us/temerity/pipeline/ui/core/JQueueJobViewerPanel.java:
+	fixed 1660 - Exception in JobViewer panel
+
+	* src/java/us/temerity/pipeline/core/FileMgr.java:
+	fixed 1659 - Internal Error while performing: MultiStatus
+
+2008-07-08  author  <author@trex>
+
+	* src/java/us/temerity/pipeline/plugin/SynchTaskAnnotation/v2_4_1/package.html:
+	initial revision
+
+	* src/java/us/temerity/pipeline/ui/core/JQueueJobServerStatsPanel.java:
+	fixed 1283 - Null Pointer in QueueHostHistograms
+
+	* src/java/us/temerity/pipeline/ui/core/JManageSelectionKeysDialog.java:
+	fixed 1430 - selection schedules not updating properly
+
+	* src/java/us/temerity/pipeline/BaseKeyChooser.java, src/java/us/temerity/pipeline/core/MasterMgr.java, src/java/us/temerity/pipeline/core/QueueMgr.java:
+	implemented keychooser part of 1601 - Possible to installer KeyChooser which does not compile?
+
+	* configure.ac: v2.4.3b7
+
+	* config/bootstrap-radar.sh: now uses 64-bit
+
+	* config/bootstrap-suse10.1-64bit.sh: initial revision
+
+	* src/java/us/temerity/pipeline/NativeFileSys.java, src/java/us/temerity/pipeline/core/CheckSum.java, src/java/us/temerity/pipeline/core/FileMgr.java, src/native/NativeFileSys.cc:
+	fixed 1657 - NativeFileSys.latestStamps() Error Checking
+
+	* configure.ac, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/BlackHoleArchiver/.cvsignore, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/BlackHoleArchiver/Makefile.am, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/BlackHoleArchiver/Makefile.local, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/BlackHoleArchiver/v2_3_14/.cvsignore, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/BlackHoleArchiver/v2_3_14/BlackHoleArchiver.java, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/BlackHoleArchiver/v2_3_14/Makefile.am, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/BlackHoleArchiver/v2_3_14/Makefile.local.in, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/Makefile.am, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/Makefile.local:
+	got rid of Radar's BlackHoleArchiver
+
+	* src/java/us/temerity/pipeline/NodeCommon.java:
+	fixed NullPointer exception in suffix checks
+
+2008-07-07  author  <author@trex>
+
+	* src/java/us/temerity/pipeline/plugin/MayaBuildAction/v2_4_1/MayaBuildAction.java:
+	no functional changes, just fixing ugly code layout
+
+	* src/java/us/temerity/pipeline/core/AdminPrivileges.java:
+	fixed 1656 - exception while adding new users
+
+2008-07-04  author  <author@trex>
+
+	* src/java/us/temerity/pipeline/plugin/MultipleRenumberTool/v2_4_3/MultipleRenumberTool.java, src/java/us/temerity/pipeline/plugin/MultipleRenumberTool/v2_4_3/package.html:
+	implemented 1655 - Multiple Renumber Tool
+
+	* src/java/us/temerity/pipeline/plugin/SynchTaskAnnotation/v2_4_1/SynchTaskAnnotation.java:
+	implementing 1599 - Synch and Unify nodes for the Task System
+
+	* configure.ac, studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/JobRankingTool/.cvsignore, studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/JobRankingTool/Makefile.am, studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/JobRankingTool/Makefile.local, studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/JobRankingTool/v1_0_0/.cvsignore, studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/JobRankingTool/v1_0_0/JobRankingTableModel.java, studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/JobRankingTool/v1_0_0/JobRankingTool.java, studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/JobRankingTool/v1_0_0/Makefile.am, studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/JobRankingTool/v1_0_0/Makefile.local.in, studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/Makefile.am, studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/Makefile.local, studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/QueueBalanceTool/.cvsignore, studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/QueueBalanceTool/Makefile.am, studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/QueueBalanceTool/Makefile.local, studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/QueueBalanceTool/v1_0_0/.cvsignore, studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/QueueBalanceTool/v1_0_0/Makefile.am, studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/QueueBalanceTool/v1_0_0/Makefile.local.in, studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/QueueBalanceTool/v1_0_0/QueueBalanceTool.java:
+	added latest orphanage queue balancing tools
+
+	* src/java/us/temerity/pipeline/ui/core/JExportPanel.java:
+	implemented 1654 - Export should default to all no, not YES
+
+	* src/java/us/temerity/pipeline/builder/ui/JBuilderTopPanel.java:
+	implemented 1612 - Setup Pass Titles
+
+2008-07-03  author  <author@trex>
+
+	* src/java/us/temerity/pipeline/core/BuilderApp.java:
+	fixed 1647 - NullPointer in BuilderApp while collecting builder names
+
+	* studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/AssetBuilder.java, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/CurveShotBuilder.java, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/ShotNamer.java:
+	latest client fixes
+
+	* src/java/us/temerity/pipeline/plugin/ShotgunConnectionExt/v2_4_1/ShotgunConnection.java, src/java/us/temerity/pipeline/plugin/ShotgunConnectionExt/v2_4_1/ShotgunConnectionExt.java, src/java/us/temerity/pipeline/plugin/ShotgunConnectionExt/v2_4_1/ShotgunEntity.java, src/java/us/temerity/pipeline/plugin/ShotgunConnectionExt/v2_4_1/ShotgunEntityBundle.java, src/java/us/temerity/pipeline/plugin/ShotgunConnectionExt/v2_4_1/ShotgunTaskStatus.java, src/java/us/temerity/pipeline/plugin/ShotgunConnectionExt/v2_4_1/ShotgunVersionStatus.java, src/java/us/temerity/pipeline/plugin/ShotgunConnectionExt/v2_4_1/TemerityNullSerializer.java, src/java/us/temerity/pipeline/plugin/ShotgunConnectionExt/v2_4_1/TemerityTypeFactory.java:
+	latest shotgun connector fixes
+
+	* src/java/us/temerity/pipeline/QueueMgrClient.java, src/java/us/temerity/pipeline/core/QueueMgr.java, src/java/us/temerity/pipeline/core/QueueMgrServer.java, src/java/us/temerity/pipeline/message/QueueGetJobInfoReq.java, src/java/us/temerity/pipeline/message/QueueGetJobInfoRsp.java, src/java/us/temerity/pipeline/message/QueueGetJobReq.java, src/java/us/temerity/pipeline/message/QueueGetJobRsp.java:
+	implemented 1651 - Allow retrieval of multiple Jobs and JobInfos
+
+	* src/java/us/temerity/pipeline/NodeCommon.java, src/java/us/temerity/pipeline/NodeMod.java, src/java/us/temerity/pipeline/core/MasterMgr.java:
+	1619 - double period can be in filename when registering with java
+
+	* src/java/us/temerity/pipeline/ui/core/JNodeViewerPanel.java:
+	fixed 1447 - Uninitialized Default Tool Menu
+
+2008-07-02  author  <author@trex>
+
+	* docs/man/plui.src.html.in:
+	implemented 1645 - Add Option to Disable PBuffers
+
+	* configure.ac, studios/radar/pipeline-local/src/Makefile.am, studios/radar/pipeline-local/src/Makefile.local.in, studios/radar/pipeline-local/src/us/.cvsignore, studios/radar/pipeline-local/src/us/Makefile.am, studios/radar/pipeline-local/src/us/Makefile.local, studios/radar/pipeline-local/src/us/temerity/.cvsignore, studios/radar/pipeline-local/src/us/temerity/Makefile.am, studios/radar/pipeline-local/src/us/temerity/Makefile.local, studios/radar/pipeline-local/src/us/temerity/pipeline/.cvsignore, studios/radar/pipeline-local/src/us/temerity/pipeline/Makefile.am, studios/radar/pipeline-local/src/us/temerity/pipeline/Makefile.local, studios/radar/pipeline-local/src/us/temerity/pipeline/plugin/.cvsignore, studios/radar/pipeline-local/src/us/temerity/pipeline/plugin/Makefile.am, studios/radar/pipeline-local/src/us/temerity/pipeline/plugin/Makefile.local, studios/radar/pipeline-local/src/us/temerity/pipeline/plugin/MayaExportAction/.cvsignore, studios/radar/pipeline-local/src/us/temerity/pipeline/plugin/MayaExportAction/Makefile.am, studios/radar/pipeline-local/src/us/temerity/pipeline/plugin/MayaExportAction/Makefile.local, studios/radar/pipeline-local/src/us/temerity/pipeline/plugin/MayaExportAction/v2_3_11/.cvsignore, studios/radar/pipeline-local/src/us/temerity/pipeline/plugin/MayaExportAction/v2_3_11/Makefile.am, studios/radar/pipeline-local/src/us/temerity/pipeline/plugin/MayaExportAction/v2_3_11/Makefile.local.in, studios/radar/pipeline-local/src/us/temerity/pipeline/plugin/MayaExportAction/v2_3_11/MayaExportAction.java, studios/radar/pipeline-local/src/us/temerity/pipeline/plugin/MayaExportAction/v2_3_11/README.txt:
+	added Radar's MayaExport
+
+	* src/java/us/temerity/pipeline/core/GraphicalOptsParser.jj, src/java/us/temerity/pipeline/ui/core/TextureLoader.java, src/java/us/temerity/pipeline/ui/core/UIMaster.java:
+	implemented 1645 - Add Option to Disable PBuffers
+
+	* src/java/us/temerity/pipeline/builder/BaseBuilder.java:
+	implemented 1664 - Helper Method for setting Default Editors
+
+2008-06-29  author  <author@trex>
+
+	* config/bootstrap-fc6-64bit.sh: fixed gcc paths
+
+	* configure.ac: v2.4.3b5
+
+	* src/java/us/temerity/pipeline/core/AdminPrivileges.java, src/java/us/temerity/pipeline/core/FileMgr.java, src/java/us/temerity/pipeline/core/GlueDecoderImpl.java, src/java/us/temerity/pipeline/core/GlueEncoderImpl.java, src/java/us/temerity/pipeline/core/JobMgr.java, src/java/us/temerity/pipeline/core/LockedGlueFile.java, src/java/us/temerity/pipeline/core/MasterMgr.java, src/java/us/temerity/pipeline/core/NodeTree.java, src/java/us/temerity/pipeline/core/QueueMgr.java, src/java/us/temerity/pipeline/core/ScriptApp.java, src/java/us/temerity/pipeline/glue/GlueDecoder.java, src/java/us/temerity/pipeline/glue/GlueEncoder.java, src/java/us/temerity/pipeline/glue/io/GlueDecoderImpl.java, src/java/us/temerity/pipeline/glue/io/GlueEncoderImpl.java, src/java/us/temerity/pipeline/plugin/JavaUtilityAction/v2_0_15/JavaUtilityAction.java, src/java/us/temerity/pipeline/plugin/MRayRenderAction/v2_0_10/MRayRenderAction.java, src/java/us/temerity/pipeline/plugin/MRayRenderAction/v2_0_14/MRayRenderAction.java, src/java/us/temerity/pipeline/plugin/MRayRenderAction/v2_0_9/MRayRenderAction.java, src/java/us/temerity/pipeline/plugin/MayaMiShaderAction/v2_0_11/MayaMiShaderAction.java, src/java/us/temerity/pipeline/plugin/MayaMiShaderAction/v2_0_12/MayaMiShaderAction.java, src/java/us/temerity/pipeline/plugin/MayaMiShaderAction/v2_0_13/MayaMiShaderAction.java, src/java/us/temerity/pipeline/plugin/MayaMiShaderAction/v2_0_14/MayaMiShaderAction.java, src/java/us/temerity/pipeline/utils/BaseUtilityApp.java, src/java/us/temerity/pipeline/utils/v2_0_14/MiRenderPrep.java:
+	implemented 1637 - Glue I/O Buffering
+
+2008-06-28  author  <author@trex>
+
+	* src/java/us/temerity/pipeline/core/MasterMgr.java:
+	fixed 1636 - Overly Zealous Propagation of Staleness via Dependencies
+
+2008-06-27  author  <author@trex>
+
+	* plconfig/customers/essy/080627, plconfig/customers/essy/080627.txt:
+	new profile
+
+	* config/bootstrap-redvision.sh: latest site-profile...
+
+	* plconfig/customers/redvision/080627, plconfig/customers/redvision/080627.txt:
+	initial revision
+
+	* src/java/us/temerity/pipeline/core/VersionApp.java:
+	fixed plversion network hang
+
+	* configure.ac: v2.4.3b4
+
+2008-06-26  author  <author@trex>
+
+	* src/java/us/temerity/pipeline/ui/core/JNodeViewerPanel.java, src/java/us/temerity/pipeline/ui/core/JQueueJobViewerPanel.java, src/java/us/temerity/pipeline/ui/core/prefs/GenUserPrefsApp.java:
+	implemented 1075 - node viewer autoframe preference (added JobViewer and Expand/Collapse)
+
+	* src/java/us/temerity/pipeline/ui/core/JBaseViewerPanel.java, src/java/us/temerity/pipeline/ui/core/JNodeViewerPanel.java, src/java/us/temerity/pipeline/ui/core/prefs/GenUserPrefsApp.java:
+	implemented 1075 - node viewer autoframe preference
+
+	* src/java/us/temerity/pipeline/ui/core/JWorkingSelectDialog.java, src/java/us/temerity/pipeline/ui/core/UIMaster.java, src/java/us/temerity/pipeline/ui/core/prefs/GenUserPrefsApp.java:
+	implemented 1568 - Default settings for plremote
+
+	* docs/man/plremote.src.html.in, src/etc/python/debug/plremote.py.src.in, src/etc/python/plremote.py.src.in, src/etc/python/profile/plremote.py.src.in, src/java/us/temerity/pipeline/core/RemoteOptsParser.jj, src/java/us/temerity/pipeline/ui/core/JNodeViewerPanel.java, src/java/us/temerity/pipeline/ui/core/JWorkingSelectDialog.java, src/java/us/temerity/pipeline/ui/core/PanelUpdater.java, src/java/us/temerity/pipeline/ui/core/UIMaster.java:
+	implemented 1632 - Node Highlight Option for plremote.
+
+	* src/java/us/temerity/pipeline/TripleMap.java:
+	implemented 1635 - Add Two-key getter in TripleMap
+
+	* src/java/us/temerity/pipeline/builder/v2_4_1/NodePurpose.java:
+	not done but checking in
+
+	* src/java/us/temerity/pipeline/builder/v2_4_1/TaskBuilder.java:
+	implemented 1633 - FocusTaskAnnotation
+
+	* studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/AppDirs.java:
+	Ryan's funky BGEO enum...
+
+	* src/java/us/temerity/pipeline/plugin/FocusTaskAnnotation/v2_4_1/package.html:
+	fixed package version number...
+
+	* studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/AnimApproveTaskBuilder.java, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/AssetBuilder.java, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/AssetNamer.java, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/BaseCollection.java, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/CameraAssetBuilder.java, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/CurveShotBuilder.java, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/LgtApproveTaskBuilder.java, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/ParamNames.java, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/ProjectBuilder.java, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/RenderPassBuilder.java, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/ShadeApproveTaskBuilder.java, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/ShotNamer.java, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/SimpleAssetBuilder.java:
+	newest nathan stuff
+
+	* src/java/us/temerity/pipeline/MasterMgrClient.java, src/java/us/temerity/pipeline/core/MasterMgr.java:
+	comment fixes
+
+	* src/java/us/temerity/pipeline/ui/core/HardwareGroupsTableModel.java, src/java/us/temerity/pipeline/ui/core/PrivilegesTableModel.java, src/java/us/temerity/pipeline/ui/core/QueueHostsTableModel.java, src/java/us/temerity/pipeline/ui/core/SelectionGroupsTableModel.java, src/java/us/temerity/pipeline/ui/core/SelectionRulesTableModel.java:
+	fixed 1622 - Table Model update bug on Multiple Edit
+
+	* src/java/us/temerity/pipeline/plugin/ApprovalCollection/v2_4_1/ApproveTaskBuilder.java:
+	fixed 1623 - ApprovalCollection 2.4.1 always checking out latest submit
+
+	* src/java/us/temerity/pipeline/WorkGroups.java, src/java/us/temerity/pipeline/core/AdminPrivileges.java, src/java/us/temerity/pipeline/core/MasterMgr.java:
+	implemented 1630 - Autocreate Pipeline Users
+
+	* src/java/us/temerity/pipeline/plugin/FocusTaskAnnotation/v2_4_1/FocusTaskAnnotation.java:
+	added missing serialVersionUID
+
+	* configure.ac, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/SlateSubstAction/Makefile.am, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/SlateSubstAction/Makefile.local, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/SlateSubstAction/v1_4_0/.cvsignore, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/SlateSubstAction/v1_4_0/Makefile.am, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/SlateSubstAction/v1_4_0/Makefile.local.in, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/SlateSubstAction/v1_4_0/SlateSubstAction.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/AppDirs.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/BaseShotBuilder.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/ICStageFunction.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/LightingBuilder.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/Makefile.am, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/NoiseBuilder.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/ProjectNamer.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/ShotNamer.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/TaskType.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/WtmCollection.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/stages/BuildLightingAssemblyStage.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/stages/DoCopyStage.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/stages/HfsCompositeStage.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/stages/HfsGConvertStage.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/stages/HfsIConvertStage.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/stages/Makefile.am, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/stages/MayaMelStage.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/stages/WriteFileStage.java:
+	latest updates from Ryan at icvfx
+
+	* src/java/us/temerity/pipeline/plugin/FocusTaskAnnotation/v2_4_1/FocusTaskAnnotation.java, src/java/us/temerity/pipeline/plugin/FocusTaskAnnotation/v2_4_1/package.html:
+	implemented 1633 - FocusTaskAnnotation
+
+2008-06-25  author  <author@trex>
+
+	* src/java/us/temerity/pipeline/plugin/HfsBatchKeyChooser/v2_4_1/HfsBatchKeyChooser.java, src/java/us/temerity/pipeline/plugin/HfsBatchKeyChooser/v2_4_3/HfsBatchKeyChooser.java, src/java/us/temerity/pipeline/plugin/HfsBatchKeyChooser/v2_4_3/package.html:
+	fixed 1631 - HfsBatchKeyChooser Error
+
+2008-06-20  author  <author@trex>
+
+	* docs/misc/active-bugs.ods: added some more time estimates
+
+	* src/java/us/temerity/pipeline/ui/core/QueueSlotsTableModel.java:
+	fixed 1621 - Sorting Bug in Slots Table
+
+	* plconfig/customers/wenjamin/080620, plconfig/customers/wenjamin/080620.txt:
+	initial revision
+
+2008-06-19  author  <author@trex>
+
+	* plconfig/customers/radar/080618, plconfig/customers/radar/080618.txt:
+	fixed plid's finally
+
+	* plconfig/customers/radar/080618, plconfig/customers/radar/080618.txt:
+	fixed
+
+2008-06-18  author  <author@trex>
+
+	* config/bootstrap-radar.sh: fixed site-profile name
+
+	* configure.ac: v2.4.3b3
+
+	* src/java/us/temerity/pipeline/MasterMgrClient.java, src/java/us/temerity/pipeline/MasterMgrLightClient.java, src/java/us/temerity/pipeline/core/MasterMgr.java, src/java/us/temerity/pipeline/core/MasterMgrDirectLightClient.java, src/java/us/temerity/pipeline/core/ScriptApp.java, src/java/us/temerity/pipeline/message/NodeGetEventsRsp.java:
+	fixed 1620 - Event Filename Aliasing
+
+	* src/java/share/Unix/actions, src/java/share/Unix/editors, src/java/share/Unix/tools, configure.ac:
+	added latest radar pipeline-local stuff
+
+	* config/bootstrap-radar.sh: latest profile
+
+	* studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/BlackHoleArchiver/v2_3_14/.cvsignore, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/BlackHoleArchiver/v2_3_14/BlackHoleArchiver.java, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/BlackHoleArchiver/v2_3_14/Makefile.am, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/BlackHoleArchiver/v2_3_14/Makefile.local.in, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/CurveExportSyncTool/v2_3_4/.cvsignore, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/CurveExportSyncTool/v2_3_4/CurveExportSyncTool.java, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/CurveExportSyncTool/v2_3_4/Makefile.am, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/CurveExportSyncTool/v2_3_4/Makefile.local.in, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/JeditEditor/v2_3_4/.cvsignore, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/JeditEditor/v2_3_4/JeditEditor.java, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/JeditEditor/v2_3_4/Makefile.am, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/JeditEditor/v2_3_4/Makefile.local.in, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/KonquerorEditor/v2_3_5/.cvsignore, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/KonquerorEditor/v2_3_5/KonquerorEditor.java, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/KonquerorEditor/v2_3_5/Makefile.am, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/KonquerorEditor/v2_3_5/Makefile.local.in, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/MencoderEncodeAction/v2_3_10/.cvsignore, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/MencoderEncodeAction/v2_3_10/Makefile.am, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/MencoderEncodeAction/v2_3_10/Makefile.local.in, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/MencoderEncodeAction/v2_3_10/MencoderEncodeAction.java, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/MencoderEncodeAction/v2_3_14/.cvsignore, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/MencoderEncodeAction/v2_3_14/Makefile.am, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/MencoderEncodeAction/v2_3_14/Makefile.local.in, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/MencoderEncodeAction/v2_3_14/MencoderEncodeAction.java, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/NukeOutputQuicktimeAction/v2_3_10/.cvsignore, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/NukeOutputQuicktimeAction/v2_3_10/Makefile.am, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/NukeOutputQuicktimeAction/v2_3_10/Makefile.local.in, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/NukeOutputQuicktimeAction/v2_3_10/NukeOutputQuicktimeAction.java, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/NukeOutputQuicktimeAction/v2_3_13/.cvsignore, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/NukeOutputQuicktimeAction/v2_3_13/Makefile.am, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/NukeOutputQuicktimeAction/v2_3_13/Makefile.local.in, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/NukeOutputQuicktimeAction/v2_3_13/NukeOutputQuicktimeAction.java, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/SeqRapportGeneratorAction/v2_3_13/.cvsignore, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/SeqRapportGeneratorAction/v2_3_13/Makefile.am, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/SeqRapportGeneratorAction/v2_3_13/Makefile.local.in, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/SeqRapportGeneratorAction/v2_3_13/SeqRapportGeneratorAction.java, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/ShakeImgConvert/v2_3_14/.cvsignore, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/ShakeImgConvert/v2_3_14/Makefile.am, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/ShakeImgConvert/v2_3_14/Makefile.local.in, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/ShakeImgConvert/v2_3_14/ShakeImgConvert.java, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/ShakeImgConvert/v2_3_15/Makefile.am, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/ShakeImgConvert/v2_3_15/Makefile.in, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/ShakeImgConvert/v2_3_15/Makefile.local.in, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/ShakeImgConvert/v2_3_15/ShakeImgConvert.java, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/WavGeneratorAction/v2_3_13/.cvsignore, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/WavGeneratorAction/v2_3_13/Makefile.am, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/WavGeneratorAction/v2_3_13/Makefile.local.in, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/WavGeneratorAction/v2_3_13/WavGeneratorAction.java, studios/radar/pipeline-local/src/com/Makefile.am, studios/radar/pipeline-local/src/com/Makefile.local, studios/radar/pipeline-local/src/com/radarfilm/.cvsignore, studios/radar/pipeline-local/src/com/radarfilm/Makefile.am, studios/radar/pipeline-local/src/com/radarfilm/Makefile.local, studios/radar/pipeline-local/src/com/radarfilm/pipeline/.cvsignore, studios/radar/pipeline-local/src/com/radarfilm/pipeline/Makefile.am, studios/radar/pipeline-local/src/com/radarfilm/pipeline/Makefile.local, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/.cvsignore, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/BlackHoleArchiver/.cvsignore, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/BlackHoleArchiver/Makefile.am, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/BlackHoleArchiver/Makefile.local, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/CurveExportSyncTool/.cvsignore, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/CurveExportSyncTool/Makefile.am, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/CurveExportSyncTool/Makefile.local, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/JeditEditor/.cvsignore, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/JeditEditor/Makefile.am, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/JeditEditor/Makefile.local, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/KonquerorEditor/.cvsignore, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/KonquerorEditor/Makefile.am, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/KonquerorEditor/Makefile.local, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/Makefile.am, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/Makefile.local, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/MencoderEncodeAction/.cvsignore, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/MencoderEncodeAction/Makefile.am, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/MencoderEncodeAction/Makefile.local, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/NukeOutputQuicktimeAction/.cvsignore, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/NukeOutputQuicktimeAction/Makefile.am, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/NukeOutputQuicktimeAction/Makefile.local, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/SeqRapportGeneratorAction/.cvsignore, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/SeqRapportGeneratorAction/Makefile.am, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/SeqRapportGeneratorAction/Makefile.local, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/ShakeImgConvert/.cvsignore, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/ShakeImgConvert/Makefile.am, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/ShakeImgConvert/Makefile.local, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/WavGeneratorAction/.cvsignore, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/WavGeneratorAction/Makefile.am, studios/radar/pipeline-local/src/com/radarfilm/pipeline/plugin/WavGeneratorAction/Makefile.local:
+	added latest radar pipeline-local stuff
+
+	* docs/misc/active-bugs.ods: latest
+
+	* src/java/us/temerity/pipeline/plugin/FrameCyclerEditor/v2_4_3/FrameCyclerEditor.java, src/java/us/temerity/pipeline/plugin/FrameCyclerEditor/v2_4_3/package.html:
+	implemented 1617 - FrameCycler Problem Viewing 5-digit Padded
+
+	* studios/radar/pipeline-local/src/com/radar/pipeline/plugin/RadarMaya2MRCollection/v2_3_2/RadarAssetBuilder.java, studios/radar/pipeline-local/src/com/radar/pipeline/plugin/RadarMaya2MRCollection/v2_3_2/RadarProjectBuilder.java, studios/radar/pipeline-local/src/com/radar/pipeline/plugin/RadarMaya2MRCollection/v2_3_2/RadarProjectNames.java, studios/radar/pipeline-local/src/com/radar/pipeline/plugin/RadarMaya2MRCollection/v2_3_2/RadarProjectScriptBuilder.java, studios/radar/pipeline-local/src/com/radar/pipeline/plugin/RadarMaya2MRCollection/v2_3_2/RadarProjectTurntableBuilder.java, studios/radar/pipeline-local/src/com/radar/pipeline/plugin/RadarMaya2MRCollection/v2_3_2/RadarShotBuilder.java, studios/radar/pipeline-local/src/com/radar/pipeline/plugin/RadarMaya2MRCollection/v2_3_2/RadarShotNames.java, studios/radar/pipeline-local/src/com/radar/pipeline/plugin/RadarMaya2MRCollection/v2_3_2/RadarSimpleAssetBuilder.java:
+	Overwrote with the latest radar code with their code and then change the compatibility back to the latest code base
+
+	* plconfig/customers/radar/080618, plconfig/customers/radar/080618.txt:
+	initial revision
+
+	* src/java/scripts/debug/plbuilder.in, src/java/scripts/debug/plfilemgr.in, src/java/scripts/debug/pljobmgr.in, src/java/scripts/debug/plmaster.in, src/java/scripts/debug/plplugin.in, src/java/scripts/debug/plpluginmgr.in, src/java/scripts/debug/plpython.in, src/java/scripts/debug/plqueuemgr.in, src/java/scripts/debug/plscript-splash.in, src/java/scripts/debug/plscript.in, src/java/scripts/debug/pltestheavy.in, src/java/scripts/debug/pltestlight.in, src/java/scripts/debug/pltestnative.in, src/java/scripts/debug/plui-j2dgl.in, src/java/scripts/debug/plui.in, src/java/scripts/debug/plvalidate.in, src/java/scripts/debug/plversion.in, src/java/scripts/plbuilder.in, src/java/scripts/plfilemgr.in, src/java/scripts/pljobmgr.in, src/java/scripts/plmaster.in, src/java/scripts/plplugin.in, src/java/scripts/plpluginmgr.in, src/java/scripts/plpython.in, src/java/scripts/plqueuemgr.in, src/java/scripts/plscript-splash.in, src/java/scripts/plscript.in, src/java/scripts/plui-j2dgl.in, src/java/scripts/plui.in, src/java/scripts/plvalidate.in, src/java/scripts/plversion.in, src/java/scripts/profile/plbuilder.in, src/java/scripts/profile/plfilemgr.in, src/java/scripts/profile/pljobmgr.in, src/java/scripts/profile/plmaster.in, src/java/scripts/profile/plplugin.in, src/java/scripts/profile/plpluginmgr.in, src/java/scripts/profile/plpython.in, src/java/scripts/profile/plqueuemgr.in, src/java/scripts/profile/plscript-splash.in, src/java/scripts/profile/plscript.in, src/java/scripts/profile/plui-j2dgl.in, src/java/scripts/profile/plui.in, src/java/scripts/profile/plversion.in:
+	fixed 1618 - Suppress JAVA_JVM_VERSION on Mac OS X
+
+2008-06-17  author  <author@trex>
+
+	* docs/misc/active-bugs.ods: latest
+
+	* config/bootstrap-fc6-64bit.sh, config/bootstrap-redvision.sh, plconfig/customers/wenjamin/080617, plconfig/customers/wenjamin/080617.txt:
+	initial revision
+
+2008-06-16  author  <author@trex>
+
+	* docs/misc/active-bugs.ods: as of 2.4.3b2
+
+	* plconfig/customers/redvision/080616, plconfig/customers/redvision/080616.txt:
+	initial revision
+
+	* studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/BlotBuilder.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/ShotNamer.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/TrackingBuilder.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/stages/HfsCompositeStage.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/stages/HfsThumbnailStage.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/stages/Makefile.am:
+	last minute IC fixes
+
+	* studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/TrackingBuilder.java:
+	removed intermediate MEL script in the approval network used to add image resolution settings to the extracted camera
+
+	* studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/ShotNamer.java:
+	removed ShotNamer.getTrackingTempRenderNode()
+
+2008-06-15  author  <author@trex>
+
+	* studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/ShotNamer.java:
+	added getNoiseReadTestImagesNode()
+
+	* configure.ac: v2.4.3b2
+
+	* studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/NoiseBuilder.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/ProjectNamer.java:
+	fixed compositing bug in noise builder
+
+	* studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/BlotBuilder.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/CineonDeliverBuilder.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/DpxDeliverBuilder.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/HdriBuilder.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/MatchBuilder.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/MattesBuilder.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/NoiseBuilder.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/PlatesBuilder.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/ProjectNamer.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/QtDeliverBuilder.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/ShotNamer.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/SoundBuilder.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/TaskType.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/TempCompBuilder.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/TrackingBuilder.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/stages/AddNoiseStage.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/stages/AttachGeoCacheStage.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/stages/CopyImagesStage.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/stages/HfsCompositeStage.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/stages/HfsRenderStage.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/stages/HfsThumbnailStage.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/stages/MattesScriptStage.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/stages/NukeSubstCompStage.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/stages/NukeThumbnailStage.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/stages/SlateSubstStage.java:
+	overall of all builders to include Jeff Newton's fixes prior to Ryan adding the Lighting and Comp builders
+
+2008-06-14  author  <author@trex>
+
+	* src/java/us/temerity/pipeline/plugin/HfsBatchKeyChooser/v2_4_1/HfsBatchKeyChooser.java, src/java/us/temerity/pipeline/plugin/HfsThumbnailAction/v2_4_3/.cvsignore, src/java/us/temerity/pipeline/plugin/HfsThumbnailAction/v2_4_3/HfsThumbnailAction.java, src/java/us/temerity/pipeline/plugin/HfsThumbnailAction/v2_4_3/package.html, src/java/us/temerity/pipeline/plugin/NukeThumbnailAction/v2_4_3/.cvsignore, src/java/us/temerity/pipeline/plugin/NukeThumbnailAction/v2_4_3/package.html:
+	implemented 1609 - HfsThumbnail Action
+
+	* src/java/us/temerity/pipeline/ui/core/JobPath.java, src/java/us/temerity/pipeline/ui/core/NodePath.java, src/java/us/temerity/pipeline/BasePlugin.java, src/java/us/temerity/pipeline/BuilderID.java, src/java/us/temerity/pipeline/ComparableRange.java, src/java/us/temerity/pipeline/FilePattern.java, src/java/us/temerity/pipeline/FileSeq.java, src/java/us/temerity/pipeline/HistogramRange.java, src/java/us/temerity/pipeline/NodeID.java, src/java/us/temerity/pipeline/Path.java, src/java/us/temerity/pipeline/PluginID.java, src/java/us/temerity/pipeline/SuffixEditor.java, src/java/us/temerity/pipeline/VersionID.java, src/java/us/temerity/pipeline/math/TupleNd.java, src/java/us/temerity/pipeline/math/TupleNf.java, src/java/us/temerity/pipeline/math/TupleNi.java, src/java/us/temerity/pipeline/math/TupleNl.java:
+	implemented 1610 - Comparable<T>
+
+	* src/java/share/Unix/actions, src/java/share/Unix/annotations, src/java/share/Unix/archivers, src/java/share/Unix/comparators, src/java/share/Unix/editors, src/java/share/Unix/key-choosers, src/java/share/Unix/master-extensions, src/java/share/Unix/queue-extensions, src/java/share/Unix/tools:
+	latest plugins
+
+2008-06-11  author  <author@trex>
+
+	* config/bootstrap-jlee.sh: latest profile...
+
+	* plconfig/customers/jlee/080611, plconfig/customers/jlee/080611.txt:
+	initial revision
+
+	* config/bootstrap-SCEACSG.sh: latest site-profile
+
+	* configure.ac: v2.4.3b1
+
+	* configure.ac: added more SCEA plugins
+
+	* studios/Makefile.am, studios/make-local:
+	added top-level make script for all studios
+
+	* studios/icvfx/pipeline-local/src/python/register-plates.py:
+	added auto-Vouch
+
+	* studios/SCEACSG/pipeline-local/src/com/FROM-LOCAL.bash, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/Makefile.am, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/Makefile.local, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/MayaAnimInstanceBuildAction/.cvsignore, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/MayaAnimInstanceBuildAction/Makefile.am, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/MayaAnimInstanceBuildAction/Makefile.local, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/MayaAnimInstanceBuildAction/v1_0_0/.cvsignore, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/MayaAnimInstanceBuildAction/v1_0_0/Makefile.am, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/MayaAnimInstanceBuildAction/v1_0_0/Makefile.local.in, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/MayaAnimInstanceBuildAction/v1_0_0/MayaAnimInstanceBuildAction.java, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/.cvsignore, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/Makefile.am, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/Makefile.local, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/.cvsignore, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/AssetBuilder.java, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/AssetNamer.java, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/AssetType.java, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/BaseAssetBuilder.java, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/CurveShotBuilder.java, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/Department.java, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/IntegerListUtilityParam.java, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/Makefile.am, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/Makefile.local.in, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/ParamNames.java, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/ProjectBuilder.java, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/ProjectNamer.java, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/ProjectSetterUpper.java, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/ScriptType.java, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/ShotNames.java, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/SimpleAssetBuilder.java, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/StudioDefinitions.java, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/SubDir.java, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/stages/.cvsignore, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/stages/AfterFXTemplateStage.java, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/stages/AnimEditStage.java, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/stages/AssetBuilderMRayTTImgStage.java, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/stages/AssetBuilderModelStage.java, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/stages/AssetBuilderTTImgStage.java, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/stages/AssetBuilderTTStage.java, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/stages/AssetVerifyStage.java, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/stages/FancyRigEditStage.java, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/stages/MRayShotImgStage.java, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/stages/Makefile.am, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/stages/MayaAnimInstanceBuildStage.java, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/stages/MayaMRayRenderStage.java, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/stages/MayaMRayTurntableStage.java, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/stages/ModelEditStage.java, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/stages/PlaceholderCameraStage.java, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/stages/PlaceholderMELStage.java, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/stages/PlaceholderSkelMELStage.java, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/stages/PlaceholderTTStage.java, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/stages/QuickTimeThumbnailStage.java, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/stages/RigEditStage.java, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/stages/ShadeEditStage.java, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/stages/ShadeFinalStage.java, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/stages/ShaderExportStage.java, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/stages/ShakeQuickTimeStage.java, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/stages/ShakeThumbnailStage.java, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/stages/ShotAnimBuildStage.java, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/stages/ShotBuilderLightStage.java, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/stages/ShotImgStage.java, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/stages/ShotMayaCurvesExportStage.java, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ProjectSetterUpper/v1_1_0/stages/VerifyModelMELStage.java, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ShakeQuickTimeAction/.cvsignore, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ShakeQuickTimeAction/Makefile.am, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ShakeQuickTimeAction/Makefile.local, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ShakeQuickTimeAction/v1_3_0/.cvsignore, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ShakeQuickTimeAction/v1_3_0/Makefile.am, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ShakeQuickTimeAction/v1_3_0/Makefile.local.in, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ShakeQuickTimeAction/v1_3_0/ShakeQuickTimeAction.java, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ShakeQuickTimeThumbnailAction/.cvsignore, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ShakeQuickTimeThumbnailAction/Makefile.am, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ShakeQuickTimeThumbnailAction/Makefile.local, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ShakeQuickTimeThumbnailAction/v1_0_0/.cvsignore, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ShakeQuickTimeThumbnailAction/v1_0_0/Makefile.am, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ShakeQuickTimeThumbnailAction/v1_0_0/Makefile.local.in, studios/SCEACSG/pipeline-local/src/com/sony/scea/pipeline/plugin/ShakeQuickTimeThumbnailAction/v1_0_0/ShakeQuickTimeThumbnailAction.java, plconfig/customers/SCEACSG/080610, plconfig/customers/SCEACSG/080610.txt:
+	initial revision
+
+2008-06-10  author  <author@trex>
+
+	* studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/SlateSubstAction/Makefile.local, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/SlateSubstAction/v1_5_0/SlateSubstAction.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/CineonDeliverBuilder.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/DpxDeliverBuilder.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/QtDeliverBuilder.java:
+	bug fixes for Jeff Klug's mods
+
+	* src/java/us/temerity/pipeline/MultiMap.java: comments
+
+	* studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/DeliverTool/v1_0_0/DeliverTool.java, src/java/us/temerity/pipeline/ui/core/JArchiveParamsDialog.java, src/java/us/temerity/pipeline/ui/core/JBaseExtensionConfigDialog.java, src/java/us/temerity/pipeline/ui/core/JKeyChooserConfigDialog.java, src/java/us/temerity/pipeline/ui/core/JRestoreParamsDialog.java:
+	fixed 1602 - EnumParam display is buggy in keyChooser window
+
+	* configure.ac: added new plugins from Jeff Klug
+
+	* src/java/share/Unix/actions: Maya 2.4.3 upgrades
+
+	* src/java/us/temerity/pipeline/ui/core/JRegisterDialog.java:
+	code formatting
+
+2008-06-09  author  <author@trex>
+
+	* studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/SlateSubstAction/Makefile.am, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/SlateSubstAction/v1_5_0/.cvsignore, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/SlateSubstAction/v1_5_0/Makefile.am, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/SlateSubstAction/v1_5_0/Makefile.local.in, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/SlateSubstAction/v1_5_0/SlateSubstAction.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/CineonDeliverBuilder.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/DpxDeliverBuilder.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/stages/SlateSubstStage.java:
+	Jeff Klug mods
+
+2008-06-08  author  <author@trex>
+
+	* config/bootstrap-Technicolor.sh: changed to centos
+
+	* config/bootstrap-Technicolor.sh:
+	new site-profile, now uses centos-5.1
+
+	* config/bootstrap-suse10.1-32bit.sh, config/bootstrap-suse10.2-64bit.sh:
+	added hostname checks
+
+	* config/bootstrap-centos5.1-64bit.sh, plconfig/customers/Technicolor/080606.txt, plconfig/customers/Technicolor/080606:
+	initial revision
+
+2008-06-07  author  <author@trex>
+
+	* config/bootstrap-scottb08.sh: latest profile...
+
+	* plconfig/customers/scottb08/080606, plconfig/customers/scottb08/080606.txt:
+	initial revision
+
+2008-06-05  author  <author@trex>
+
+	* src/java/us/temerity/pipeline/core/BundleBuilder.java:
+	fixed locking bug
+
+	* src/java/us/temerity/pipeline/plugin/MayaAttachGeoCacheAction/v2_4_3/MayaAttachGeoCacheAction.java, src/java/us/temerity/pipeline/plugin/MayaAttachGeoCacheAction/v2_4_3/package.html:
+	fixed 1598 - MayaAttachGeoCache Naming
+
+2008-06-03  author  <author@trex>
+
+	* src/java/us/temerity/pipeline/MasterMgrClient.java, src/java/us/temerity/pipeline/core/BundleBuilder.java, src/java/us/temerity/pipeline/core/FileMgr.java, src/java/us/temerity/pipeline/core/MasterMgr.java, src/java/us/temerity/pipeline/message/NodeUnpackReq.java, src/java/us/temerity/pipeline/ui/JCollectionTableCellEditor.java, src/java/us/temerity/pipeline/ui/core/JLockedVersionTableCellEditor.java, src/java/us/temerity/pipeline/ui/core/JNodeViewerPanel.java, src/java/us/temerity/pipeline/ui/core/JUnpackBundleDialog.java, src/java/us/temerity/pipeline/ui/core/PackedNodeTableModel.java:
+	implemented 1591 - Better Handling of Locked Nodes in Node Bundles
+
+2008-06-02  author  <author@trex>
+
+	* src/java/share/Unix/actions, src/java/share/Unix/editors:
+	latest plugins
+
+	* configure.ac, src/unix/splash/Splash-vsn.png, src/unix/splash/Splash.ai, src/unix/splash/Splash.gif:
+	v2.4.3
+
+	* studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/stages/BuildBlotAnimStage.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/stages/MattesScriptStage.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/stages/PlaceholderStage.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/stages/SoundtrackStage.java:
+	now vouches for nodes modified after removing actions
+
+2008-05-30  author  <author@trex>
+
+	* src/java/us/temerity/pipeline/plugin/HfsRenderAction/v2_4_3/HfsRenderAction.java, src/java/us/temerity/pipeline/plugin/HfsRenderAction/v2_4_3/package.html:
+	implemented 1583 - Houdini Action OutputOperator Paths, 1431 - HfsRender2.0.0 action needs upgrading for Houdini9
+
+	* src/java/us/temerity/pipeline/plugin/HfsClipAction/v2_4_3/HfsClipAction.java, src/java/us/temerity/pipeline/plugin/HfsClipAction/v2_4_3/package.html, src/java/us/temerity/pipeline/plugin/HfsCompositeAction/v2_4_3/HfsCompositeAction.java, src/java/us/temerity/pipeline/plugin/HfsCompositeAction/v2_4_3/package.html, src/java/us/temerity/pipeline/plugin/HfsGEOAction/v2_4_3/HfsGEOAction.java, src/java/us/temerity/pipeline/plugin/HfsGEOAction/v2_4_3/package.html, src/java/us/temerity/pipeline/plugin/HfsGenerateAction/v2_4_3/HfsGenerateAction.java, src/java/us/temerity/pipeline/plugin/HfsGenerateAction/v2_4_3/package.html:
+	implemented 1583 - Houdini Action OutputOperator Paths
+
+	* src/java/us/temerity/pipeline/plugin/HfsBatchKeyChooser/v2_4_1/HfsBatchKeyChooser.java, src/java/us/temerity/pipeline/plugin/HfsRenderKeyChooser/v2_4_1/HfsRenderKeyChooser.java:
+	removed underDevelopment
+
+	* src/java/us/temerity/pipeline/ui/core/TextureLoader.java:
+	fixed 1588 - Force PLUI to use the non-pbuffer texture loading method
+
+	* src/java/us/temerity/pipeline/plugin/GPlayEditor/v2_4_3/GPlayEditor.java, src/java/us/temerity/pipeline/plugin/GPlayEditor/v2_4_3/package.html:
+	implemented 1585 - GPlay Animations
+
+2008-05-29  author  <author@trex>
+
+	* src/java/us/temerity/pipeline/plugin/HfsBuildAction/v1_0_0/HfsBuildAction.java, src/java/us/temerity/pipeline/plugin/HfsBuildAction/v1_1_0/HfsBuildAction.java, src/java/us/temerity/pipeline/plugin/HfsBuildAction/v2_0_0/HfsBuildAction.java, src/java/us/temerity/pipeline/plugin/HfsClipAction/v1_1_0/HfsClipAction.java, src/java/us/temerity/pipeline/plugin/HfsClipAction/v2_0_0/HfsClipAction.java, src/java/us/temerity/pipeline/plugin/HfsCompositeAction/v1_0_0/HfsCompositeAction.java, src/java/us/temerity/pipeline/plugin/HfsCompositeAction/v1_1_0/HfsCompositeAction.java, src/java/us/temerity/pipeline/plugin/HfsCompositeAction/v2_0_0/HfsCompositeAction.java, src/java/us/temerity/pipeline/plugin/HfsGenerateAction/v1_0_0/HfsGenerateAction.java, src/java/us/temerity/pipeline/plugin/HfsGenerateAction/v1_1_0/HfsGenerateAction.java, src/java/us/temerity/pipeline/plugin/HfsGenerateAction/v2_0_0/HfsGenerateAction.java:
+	fixed 1584 - hfsCompositeAction and Houdini 9.1 possible defect
+
+2008-05-28  author  <author@trex>
+
+	* config/bootstrap-TheO.sh: 64-bit support...
+
+	* config/bootstrap-TheO.sh: fixed plids...
+
+	* plconfig/customers/TheO/080528, plconfig/customers/TheO/080528.txt:
+	initial version
+
+	* config/bootstrap-jlee.sh: changed to 64-bit
+
+2008-05-27  author  <author@trex>
+
+	* config/bootstrap-jlee.sh: new site profile...
+
+	* plconfig/customers/jlee/080527, plconfig/customers/jlee/080527.txt:
+	initial revision
+
+2008-05-25  author  <author@trex>
+
+	* src/java/us/temerity/pipeline/plugin/ApprovalCollection/v2_4_1/ApproveTaskBuilder.java:
+	made code more efficient
+
+	* src/java/us/temerity/pipeline/stages/MayaFileStage.java, src/java/us/temerity/pipeline/stages/MayaRenderStage.java:
+	code cleanup
+
+	* src/java/us/temerity/pipeline/builder/v2_4_1/TaskBuilder.java:
+	added task annotation lookup methods
+
+	* src/java/us/temerity/pipeline/builder/BaseUtil.java:
+	added frozen stomp method
+
+	* src/java/us/temerity/pipeline/builder/BaseBuilder.java: code cleanup
+
+	* studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/Makefile.local.in, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/ParamNames.java, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/ProjectBuilder.java, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/ProjectNamer.java, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/RenderPassBuilder.java, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/ScriptType.java, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/ShadeApproveTaskBuilder.java, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/ShotNamer.java, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/SimpleAssetBuilder.java, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/StudioDefinitions.java, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/SubDir.java, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/stages/.cvsignore, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/stages/AfterFXTemplateStage.java, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/stages/AnimCurveExportStage.java, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/stages/AnimEditStage.java, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/stages/AnimVerifyStage.java, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/stages/AssetEditStage.java, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/stages/AssetVerifyStage.java, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/stages/CameraPlaceholderMELStage.java, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/stages/LightingEditStage.java, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/stages/LightingProductMELStage.java, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/stages/LightingProductStage.java, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/stages/LightingRenderStage.java, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/stages/Makefile.am, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/stages/ModelEditStage.java, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/stages/PlaceholderMELStage.java, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/stages/PlaceholderTTStage.java, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/stages/PreLightStage.java, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/stages/RigEditStage.java, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/stages/ShadeEditStage.java, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/stages/ShadeFinalStage.java, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/stages/ShaderExportStage.java, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/stages/VerifyModelMELStage.java, configure.ac, studios/Makefile.am, studios/nathanlove/.cvsignore, studios/nathanlove/Makefile.am, studios/nathanlove/pipeline-local/.classpath.in, studios/nathanlove/pipeline-local/.cvsignore, studios/nathanlove/pipeline-local/.project.in, studios/nathanlove/pipeline-local/Makefile.am, studios/nathanlove/pipeline-local/ant.xml.in, studios/nathanlove/pipeline-local/make-local, studios/nathanlove/pipeline-local/src/.cvsignore, studios/nathanlove/pipeline-local/src/Makefile.am, studios/nathanlove/pipeline-local/src/Makefile.local.in, studios/nathanlove/pipeline-local/src/com/.cvsignore, studios/nathanlove/pipeline-local/src/com/Makefile.am, studios/nathanlove/pipeline-local/src/com/Makefile.local, studios/nathanlove/pipeline-local/src/com/nathanlove/.cvsignore, studios/nathanlove/pipeline-local/src/com/nathanlove/Makefile.am, studios/nathanlove/pipeline-local/src/com/nathanlove/Makefile.local, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/.cvsignore, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/Makefile.am, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/Makefile.local, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/.cvsignore, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/.cvsignore, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/Makefile.am, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/Makefile.local, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/.cvsignore, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/AnimApproveTaskBuilder.java, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/AssetBuilder.java, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/AssetBundle.java, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/AssetClass.java, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/AssetNamer.java, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/AssetType.java, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/BaseAssetBuilder.java, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/BaseCollection.java, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/CameraAssetBuilder.java, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/CurveShotBuilder.java, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/Department.java, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/LgtApproveTaskBuilder.java, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/BaseCollection/v1_0_0/Makefile.am, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/Makefile.am, studios/nathanlove/pipeline-local/src/com/nathanlove/pipeline/plugin/Makefile.local:
+	added the nathanlove studio files
+
+	* src/java/us/temerity/pipeline/stages/MayaMELStage.java: new stage
+
+2008-05-24  author  <author@trex>
+
+	* src/etc/python/Makefile.am, src/etc/python/debug/Makefile.am, src/etc/python/profile/Makefile.am:
+	fixed install path
+
+2008-05-23  author  <author@trex>
+
+	* config/bootstrap-TheO.sh: updated site-profile...
+
+	* rpm/plmac.spec.in: fixed bug in plrun line
+
+	* configure.ac, rpm/Makefile.am, rpm/plmac.spec.in, src/java/us/temerity/pipeline/BaseSubProcess.java, src/utils/Makefile.am, src/utils/src/Makefile.am:
+	moved plrun back into plmac RPM and got rid of PipelineJobManager.pkg
+
+	* src/unix/splash/Splash-vsn.png, src/unix/splash/Splash.gif:
+	upgraded to v2.4.2
+
+	* plconfig/customers/TheO/080523, plconfig/customers/TheO/080523.txt:
+	initial revision
+
+2008-05-22  author  <author@trex>
+
+	* src/java/us/temerity/pipeline/builder/BaseBuilder.java, src/java/us/temerity/pipeline/plugin/Maya2MRCollection/v2_3_2/AdvAssetBuilder.java, src/java/us/temerity/pipeline/plugin/Maya2MRCollection/v2_3_2/AssetBuilder.java, src/java/us/temerity/pipeline/plugin/Maya2MRCollection/v2_3_2/CurveShotBuilder.java, src/java/us/temerity/pipeline/plugin/Maya2MRCollection/v2_3_2/ModelPiecesBuilder.java, src/java/us/temerity/pipeline/plugin/Maya2MRCollection/v2_3_2/NewAssetBuilder.java, src/java/us/temerity/pipeline/plugin/Maya2MRCollection/v2_3_2/ProjectScriptBuilder.java, src/java/us/temerity/pipeline/plugin/Maya2MRCollection/v2_3_2/ProjectTurntableBuilder.java, src/java/us/temerity/pipeline/plugin/Maya2MRCollection/v2_3_2/SimpleAssetBuilder.java, studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/ZohanCollection/v1_0_0/RotoBuilder.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/BlotBuilder.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/MatchBuilder.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/MattesBuilder.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/SoundBuilder.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/TempCompBuilder.java, studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/TrackingBuilder.java, studios/radar/pipeline-local/src/com/radar/pipeline/plugin/RadarMaya2MRCollection/v2_3_2/RadarShotBuilder.java:
+	implemented 1578 - Job Queueing is currently unordered
+
+2008-05-21  author  <author@trex>
+
+	* src/java/us/temerity/pipeline/ui/core/QueueJobGroupsTableModel.java:
+	the last fix actually correctly works now
+
+	* src/java/us/temerity/pipeline/ListUtilityParam.java, src/java/us/temerity/pipeline/builder/ParamMapping.java:
+	commenting cleanup
+
+	* src/java/us/temerity/pipeline/jesse/.cvsignore: ignore file
+
+	* studios/radar/pipeline-local/src/com/radar/pipeline/plugin/RadarMaya2MRCollection/v2_3_2/RadarMaya2MRCollection.java:
+	comment cleanup
+
+	* src/java/us/temerity/pipeline/plugin/Maya2MRCollection/v2_3_2/AssetBuilder.java, src/java/us/temerity/pipeline/plugin/Maya2MRCollection/v2_3_2/DefaultShotNames.java:
+	code cleanup
+
+	* studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/ZohanCollection/v1_0_0/ShotNames.java:
+	comment fix
+
+	* src/java/us/temerity/pipeline/plugin/PatternCloneTool/v2_3_1/PatternCloneTool.java:
+	added @override tag
+
+	* src/java/us/temerity/pipeline/plugin/Maya2MRCollection/v2_3_2/stages/AssetBuilderModelStage.java:
+	added vouch call in light of new status code
+
+	* src/java/us/temerity/pipeline/plugin/TaskGuardExt/v2_4_1/TaskGuardExt.java:
+	fixed 1577 - TaskGuardExt(2.4.1) breaks TaskAnnotations(2.3.2)
+
+	* src/java/us/temerity/pipeline/Makefile.in: updated makefile
+
+2008-05-20  author  <author@trex>
+
+	* src/java/us/temerity/pipeline/plugin/BlackHoleArchiver/v2_4_1/BlackHoleArchiver.java, src/java/us/temerity/pipeline/plugin/BlackHoleArchiver/v2_4_1/package.html:
+	implemented 798 - Feature Request - Remove Old Versions of Nodes
+
+	* src/java/us/temerity/pipeline/plugin/MayaCompleteEditor/v2_4_1/MayaCompleteEditor.java, src/java/us/temerity/pipeline/plugin/MayaCompleteEditor/v2_4_1/package.html, src/java/us/temerity/pipeline/plugin/MayaEditor/v2_4_1/MayaEditor.java, src/java/us/temerity/pipeline/plugin/MayaEditor/v2_4_1/package.html, src/java/us/temerity/pipeline/plugin/MayaNoRefEditor/v2_4_1/MayaNoRefEditor.java, src/java/us/temerity/pipeline/plugin/MayaNoRefEditor/v2_4_1/package.html, src/java/us/temerity/pipeline/plugin/MayaProjectEditor/v2_4_1/MayaProjectEditor.java, src/java/us/temerity/pipeline/plugin/MayaProjectEditor/v2_4_1/package.html:
+	implemented 1573 - Maya & MayaProject editors no longer work on osx leopard
+
+	* src/java/us/temerity/pipeline/builder/v2_4_1/EntityType.java, src/java/us/temerity/pipeline/builder/v2_4_1/TaskBuilder.java, src/java/us/temerity/pipeline/plugin/ApprovalCollection/v2_4_1/ApproveTaskBuilder.java, src/java/us/temerity/pipeline/plugin/SubmitTaskAnnotation/v2_4_1/SubmitTaskAnnotation.java:
+	updated to use the new EntityType
+
+	* src/java/us/temerity/pipeline/builder/v2_4_1/NodePurpose.java:
+	fixed bug in titles() method
+
+	* src/java/us/temerity/pipeline/plugin/SilhouetteBuildAction/v2_3_15/SilhouetteBuildAction.java:
+	fixed imports
+
+	* src/java/us/temerity/pipeline/ui/core/QueueJobGroupsTableModel.java:
+	implemented 1576 - Include FrameRange in Job Browser
+
+	* src/java/us/temerity/pipeline/MasterMgrClient.java: comment cleanup
+
+	* src/java/us/temerity/pipeline/plugin/ApproveTaskAnnotation/v2_4_1/ApproveTaskAnnotation.java:
+	fixed the default approval builder to not be from IC
+
+2008-05-19  author  <author@trex>
+
+	* docs/Makefile.am: reenabled javadoc
+
+	* src/java/us/temerity/pipeline/plugin/ShotgunConnectionExt/v2_4_1/ShotgunConnection.java:
+	fixed indentation of javadoc header
+
+	* docs/javadoc/Makefile.in, docs/javadoc/package-lists/xmlrpc2/package-list, src/java/us/temerity/pipeline/plugin/ShotgunConnectionExt/v2_4_1/EXTRA/LICENSE.txt, src/java/us/temerity/pipeline/plugin/ShotgunConnectionExt/v2_4_1/EXTRA/NOTICE, src/java/us/temerity/pipeline/plugin/ShotgunConnectionExt/v2_4_1/EXTRA/xmlrpc.jar:
+	Embedded Apache XML-RPC package
+
+	* src/java/us/temerity/pipeline/plugin/ShotgunConnectionExt/v2_4_1/ShotgunConnection.java, src/java/us/temerity/pipeline/plugin/ShotgunConnectionExt/v2_4_1/ShotgunConnectionExt.java, src/java/us/temerity/pipeline/plugin/ShotgunConnectionExt/v2_4_1/TemerityNullSerializer.java, src/java/us/temerity/pipeline/plugin/ShotgunConnectionExt/v2_4_1/TemerityTypeFactory.java, src/java/us/temerity/pipeline/Makefile.in:
+	javadoc improvements
+
+	* src/java/us/temerity/pipeline/plugin/SilhouetteBuildAction/v2_3_15/SilhouetteBuildAction.java:
+	removed unneeded import
+
+	* src/java/us/temerity/pipeline/laf/RestoreSplash.png, src/java/us/temerity/pipeline/laf/TexturesSplash.png, src/java/us/temerity/pipeline/ui/core/TextureLoader.java, src/java/us/temerity/pipeline/ui/core/UIMaster.java, src/unix/splash/RestoreSplash.nk, src/unix/splash/Splash-restore.png, src/unix/splash/Splash-textures.png, src/unix/splash/Splash.ai, src/unix/splash/TexturesSplash.nk, src/windows/launchers/Makefile.am, src/windows/scripts/debug/plui2-j2dgl.bat.src.in, src/windows/scripts/debug/plui2.bat.src.in, src/windows/scripts/plui2-j2dgl.bat.src.in, src/windows/scripts/plui2.bat.src.in:
+	implemented 1574 - JDK 1.6.0 Splash Screens
+
+	* src/java/us/temerity/pipeline/plugin/ReleaseTaskTool/v2_4_1/ReleaseTaskTool.java, src/java/us/temerity/pipeline/plugin/ShotgunConnectionExt/v2_4_1/ShotgunConnection.java, src/java/us/temerity/pipeline/plugin/ShotgunConnectionExt/v2_4_1/ShotgunConnectionExt.java, src/java/us/temerity/pipeline/plugin/ShotgunConnectionExt/v2_4_1/ShotgunEntity.java, src/java/us/temerity/pipeline/plugin/ShotgunConnectionExt/v2_4_1/ShotgunEntityBundle.java, src/java/us/temerity/pipeline/plugin/ShotgunConnectionExt/v2_4_1/ShotgunTaskStatus.java, src/java/us/temerity/pipeline/plugin/ShotgunConnectionExt/v2_4_1/TemerityNullSerializer.java, src/java/us/temerity/pipeline/plugin/ShotgunConnectionExt/v2_4_1/TemerityTypeFactory.java, src/java/us/temerity/pipeline/plugin/ShotgunConnectionExt/v2_4_1/package.html:
+	Release task tool and Shotgun connector
+
+2008-05-18  author  <author@trex>
+
+	* src/java/us/temerity/pipeline/core/VersionApp.java, src/java/us/temerity/pipeline/core/VersionOptsParser.jj:
+	fixed file naming bugs in Windows version of plversion
+
+	* configure.ac, docs/Makefile.am, rpm/pipeline.spec.A.in, rpm/pipeline.spec.B.in, rpm/pipeline.spec.E.in, rpm/plmac.spec.in, rpm/plwin.spec.in, src/etc/python/Makefile.am, src/etc/python/debug/Makefile.am, src/etc/python/debug/plremote.py.src.in, src/etc/python/plremote.py.src.in, src/etc/python/profile/Makefile.am, src/etc/python/profile/plremote.py.src.in, src/java/scripts/Makefile.am, src/java/scripts/debug/Makefile.am, src/java/scripts/debug/plscript-batch.in, src/java/scripts/debug/plscript-splash.in, src/java/scripts/debug/plui-j2dgl.in, src/java/scripts/debug/plui.in, src/java/scripts/debug/plversion.in, src/java/scripts/plscript-batch.in, src/java/scripts/plscript-splash.in, src/java/scripts/plui-j2dgl.in, src/java/scripts/plui.in, src/java/scripts/plversion.in, src/java/scripts/profile/Makefile.am, src/java/scripts/profile/plscript-batch.in, src/java/scripts/profile/plscript-splash.in, src/java/scripts/profile/plui-j2dgl.in, src/java/scripts/profile/plui.in, src/java/scripts/profile/plversion.in, src/java/us/temerity/pipeline/core/VersionApp.java, src/java/us/temerity/pipeline/laf/RestoreSplash.png, src/mac-apps/pipeline/MacOS/plui.in, src/unix/splash/Makefile.am, src/unix/splash/PlVersionSplash.ai, src/unix/splash/PlVersionSplash.png, src/unix/splash/Splash-bg.png, src/unix/splash/Splash-progress.tif, src/unix/splash/Splash-vsn.png, src/unix/splash/Splash.ai, src/unix/splash/Splash.gif, src/unix/splash/Splash.nk.in, src/windows/etc/python/Makefile.am, src/windows/etc/python/debug/Makefile.am, src/windows/etc/python/debug/plremote.py.src.in, src/windows/etc/python/plremote.py.src.in, src/windows/launchers/plui-j2dgl.exe4j.in, src/windows/launchers/plui.exe4j.in, src/windows/scripts/Makefile.am, src/windows/scripts/debug/Makefile.am, src/windows/scripts/debug/plscript-batch.bat.src.in, src/windows/scripts/debug/plscript-splash.bat.src.in, src/windows/scripts/debug/plversion.bat.src.in, src/windows/scripts/plscript-batch.bat.src.in, src/windows/scripts/plscript-splash.bat.src.in, src/windows/scripts/plui2-j2dgl.bat.src.in, src/windows/scripts/plui2.bat.src.in, src/windows/scripts/plversion.bat.src.in:
+	fixed 1570 - plremote hangs if plui is not running, also new and improved splash screens
+
+2008-05-16  author  <author@trex>
+
+	* src/java/us/temerity/pipeline/ui/core/JNodeViewerPanel.java, src/java/us/temerity/pipeline/NodeMod.java, src/java/us/temerity/pipeline/core/FileMgr.java, src/java/us/temerity/pipeline/core/MasterMgr.java:
+	fixed missing file NullPointerException bug in status, got rid of canBeDubious()
+
+	* ChangeLog: latest
+
+	* src/java/us/temerity/pipeline/core/VersionApp.java:
+	implemented 1549 - trivial checkin standalone mini-app (all done)
+
+	* src/java/us/temerity/pipeline/plugin/ApproveTaskAnnotation/v2_4_1/ApproveTaskAnnotation.java, src/java/us/temerity/pipeline/plugin/SubmitTaskAnnotation/v2_4_1/SubmitTaskAnnotation.java, src/java/us/temerity/pipeline/plugin/TaskAnnotation/v2_4_1/TaskAnnotation.java:
+	fixed bugs in new Shotgun Entity parameter
+
+2008-05-15  author  <author@trex>
+
+	* src/etc/python/Makefile.am, src/etc/python/debug/Makefile.am, src/etc/python/plremote.py.src.in, src/etc/python/profile/Makefile.am:
+	made plremote use plscript if plui isn't running for checked-in --view operations
+
+	* src/windows/scripts/plbuilder.bat.src.in:
+	fixed 1567 - Windows Opt version of plBuilder is broken
+
+	* src/java/us/temerity/pipeline/LinkState.java, src/java/us/temerity/pipeline/Makefile.in, src/java/us/temerity/pipeline/NodeDetails.java, src/java/us/temerity/pipeline/NodeMod.java, src/java/us/temerity/pipeline/PackageInfo.java.src.in, src/java/us/temerity/pipeline/PropertyState.java, src/java/us/temerity/pipeline/QueueState.java, src/java/us/temerity/pipeline/UpdateState.java, src/java/us/temerity/pipeline/core/FileMgr.java, src/java/us/temerity/pipeline/core/FileMgrClient.java, src/java/us/temerity/pipeline/core/FileMgrDirectClient.java, src/java/us/temerity/pipeline/core/FileMgrNetClient.java, src/java/us/temerity/pipeline/core/FileMgrServer.java, src/java/us/temerity/pipeline/core/MasterMgr.java, src/java/us/temerity/pipeline/message/FileRequest.java, src/java/us/temerity/pipeline/message/FileStateReq.java, src/java/us/temerity/pipeline/message/FileTouchAllReq.java, src/java/us/temerity/pipeline/ui/core/JNodeViewerPanel.java, src/java/us/temerity/pipeline/ui/core/UIMaster.java:
+	Complete overhaul of node status to simplify and fix the calculation of Stale/Dubious QueueStates.
+
+	* src/java/scripts/debug/Makefile.am, src/java/scripts/debug/plversion.in, src/java/scripts/plversion.in, src/java/scripts/profile/Makefile.am, src/java/scripts/profile/plversion.in, src/java/us/temerity/pipeline/core/VersionApp.java, src/java/us/temerity/pipeline/core/VersionOptsParser.jj, src/unix/Makefile.am, src/unix/splash/.cvsignore, src/unix/splash/Makefile.am, src/unix/splash/PlVersionSplash.ai, src/unix/splash/PlVersionSplash.png, src/windows/scripts/Makefile.am, src/windows/scripts/debug/Makefile.am, src/windows/scripts/debug/plversion.bat.src.in, src/windows/scripts/plversion.bat.src.in, configure.ac, docs/man/Makefile.am, docs/man/plversion.src.html.in, rpm/pipeline.spec.A.in, rpm/pipeline.spec.B.in, rpm/pipeline.spec.E.in, rpm/plmac.spec.in, rpm/plwin.spec.in, src/java/scripts/Makefile.am:
+	implemented 1549 - trivial checkin standalone mini-app (basics only)
+
+	* src/java/us/temerity/pipeline/builder/TaskBuilder.java:
+	updated comments
+
+	* src/java/us/temerity/pipeline/core/BuilderOptsParser.jj:
+	fixed 1566 - plbuilder does not accept the standard log flags
+
+	* src/java/us/temerity/pipeline/plugin/ApprovalCollection/v2_4_1/ApproveTaskBuilder.java, src/java/us/temerity/pipeline/plugin/ApproveTaskAnnotation/v2_4_1/ApproveTaskAnnotation.java, src/java/us/temerity/pipeline/builder/v2_4_1/TaskBuilder.java, src/java/us/temerity/pipeline/plugin/SubmitTaskAnnotation/v2_4_1/SubmitTaskAnnotation.java, src/java/us/temerity/pipeline/plugin/TaskAnnotation/v2_4_1/TaskAnnotation.java:
+	implemented 1565 - Add shotgun entity to Task Policy v2.4.1 classes
+
+	* studios/icvfx/pipeline-local/src/com/intelligentcreatures/pipeline/plugin/WtmCollection/v1_0_0/DpxDeliverBuilder.java:
+	code formatting
+
+	* src/java/us/temerity/pipeline/plugin/ApproveTaskTool/v2_4_1/ApproveTaskTool.java, src/java/us/temerity/pipeline/plugin/TaskGuardExt/v2_4_1/TaskGuardExt.java:
+	fixed duplicate serialVersionUIDs
+
+	* src/java/us/temerity/pipeline/plugin/ApprovalCollection/v2_4_1/ApproveTaskBuilder.java:
+	javadocs
+
 2008-05-15  author  <author@dimetrodon>
 
 	* src/etc/python/Makefile.am, src/etc/python/debug/Makefile.am, src/etc/python/plremote.py.src.in, src/etc/python/profile/Makefile.am:
