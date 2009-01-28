@@ -1,4 +1,4 @@
-// $Id: TaskBuilder.java,v 1.8 2008/10/17 03:36:46 jesse Exp $
+// $Id: TaskBuilder.java,v 1.9 2009/01/28 04:45:08 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_1;
 
@@ -551,7 +551,11 @@ class TaskBuilder
     case Approve:
     case Synch:
       break;
-
+      
+    case Focus:
+      if (master)
+        break;
+    
     default:
       annot.setParamValue(aAnnotPurpose, purpose.toString());
     }
