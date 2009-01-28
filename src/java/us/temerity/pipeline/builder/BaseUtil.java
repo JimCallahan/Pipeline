@@ -1,4 +1,4 @@
-// $Id: BaseUtil.java,v 1.39 2009/01/20 02:55:24 jesse Exp $
+// $Id: BaseUtil.java,v 1.40 2009/01/28 05:39:20 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -398,6 +398,27 @@ class BaseUtil
     }
     return toReturn;
   }
+  
+  /**
+   * Get the working version of a node in the current working area. 
+   * 
+   * @param nodeName
+   *   The name of the node.
+   * @return
+   *   The working version of the node
+   * @throws PipelineException
+   *   If there is no working version of the node.
+   */
+  public NodeMod
+  getWorkingVersion
+  (
+    String nodeName  
+  )
+    throws PipelineException
+  {
+    return pClient.getWorkingVersion(getAuthor(), getView(), nodeName);
+  }
+  
 
   /**
    * Check-outs the latest version of a node if the working version is older than the latest
