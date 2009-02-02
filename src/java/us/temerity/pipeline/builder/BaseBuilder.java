@@ -1,4 +1,4 @@
-// $Id: BaseBuilder.java,v 1.63 2009/02/02 18:59:10 jesse Exp $
+// $Id: BaseBuilder.java,v 1.64 2009/02/02 19:57:41 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -1201,16 +1201,15 @@ class BaseBuilder
   ) 
     throws PipelineException
   {
-    pLog.log(Kind.Bld, Level.Finer, "Getting a needed node (" + nodeName + ")");
-    boolean exists = nodeExists(nodeName);
-    if (!exists)
-      throw new PipelineException
-        ("The needed node (" + nodeName + ") for builder (" + getPrefixedName() + ") " +
-         "does not exist.  Stopping execution.");
+    pLog.log(Kind.Bld, Level.Finer, "Getting the needed node (" + nodeName + ")");
     TreeMap<String, Boolean> comps = new TreeMap<String, Boolean>();
     comps.put(nodeName, false);
     NodeTreeComp treeComps = pClient.updatePaths(getAuthor(), getView(), comps);
     State state = treeComps.getState(nodeName);
+    if (state == null  || state == State.Branch)
+      throw new PipelineException
+        ("The needed node (" + nodeName + ") for builder (" + getPrefixedName() + ") " +
+         "does not exist.  Stopping execution.");
     switch(state) {
     case WorkingOtherCheckedInNone:
       throw new PipelineException
@@ -1233,6 +1232,35 @@ class BaseBuilder
       break;
     }
   }
+  
+  private final void
+  verifyAndLock
+  (
+    String nodeName  
+  )
+    throws PipelineException
+  {
+    pLog.log(Kind.Bld, Level.Finer, "Getting the product node (" + nodeName + ")");
+    TreeMap<String, Boolean> comps = new TreeMap<String, Boolean>();
+    comps.put(nodeName, false);
+    NodeTreeComp treeComps = pClient.updatePaths(getAuthor(), getView(), comps);
+    State state = treeComps.getState(nodeName);
+    if (state == null  || state == State.Branch)
+      throw new PipelineException
+        ("The product node (" + nodeName + ") for builder (" + getPrefixedName() + ") " +
+         "does not exist.  Stopping execution.");
+    switch(state) {
+    case WorkingCurrentCheckedInNone:
+    case WorkingOtherCheckedInNone:
+      throw new PipelineException
+        ("The product node (" + nodeName + ") for builder (" + getPrefixedName() + ") " +
+         "has never been checked in and cannot be locked.  Stopping execution.");
+    default:
+      lockLatest(nodeName);
+    }
+  }
+  
+  
   
   /**
    * Disable the Actions for all the nodes that have been specified for disabling by the
@@ -2249,6 +2277,16 @@ class BaseBuilder
     }
     
     /**
+     * A list of nodes which need to exist and should be locked before the pass is run.
+     * <p>
+     */
+    public TreeSet<String>
+    getProductNodes()
+    {
+      return new TreeSet<String>();
+    }
+    
+    /**
      * Executes the stage.
      */
     @Override
@@ -2287,6 +2325,9 @@ class BaseBuilder
       pQueuedNodes.clear();
       for (String needed : this.nodesDependedOn())
 	neededNode(needed);
+      for (String product : this.getProductNodes()) {
+        verifyAndLock(product);
+      }
       pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Finer, 
         "Starting the build phase in the (" + getName() + ").");
       buildPhase();
