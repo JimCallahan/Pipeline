@@ -39,7 +39,7 @@ class BundleStage
     TreeMap<String,String> hardwareKeyRemap
   )
   {
-    super("Bundle", "Description...", stageInfo, context, client, mod); 
+    super("Bundle", "Description...", stageInfo, context, client, mod, StageFunction.aNone); 
 
     pOrigNodeMod = mod;
 
