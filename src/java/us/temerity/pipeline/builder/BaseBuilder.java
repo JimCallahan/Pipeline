@@ -1,4 +1,4 @@
-// $Id: BaseBuilder.java,v 1.62 2008/10/10 12:46:58 jim Exp $
+// $Id: BaseBuilder.java,v 1.63 2009/02/02 18:59:10 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -338,6 +338,7 @@ class BaseBuilder
     pStageInfo = builderInformation.getNewStageInformation();
     pSubBuilders = new TreeMap<String, BaseBuilder>();
     pOrderedSubBuilders = new TreeMap<Integer, BaseBuilder>();
+    pSubBuilderOrder = new TreeMap<String, Integer>();
     pSubNames = new TreeMap<String, BaseNames>();
     pGeneratedNames = new TreeMap<String, BaseNames>();
     pSetupPasses = new ArrayList<SetupPass>();
@@ -484,7 +485,8 @@ class BaseBuilder
    * @param defaultMapping 
    *   Should the Sub-Builder be setup with the default parameter mappings.  This means that
    *   all the parameters which are defined as part of the BaseUtil and BaseBuilder will
-   *   be mapped from the parent to this child Builder.
+   *   be mapped from the parent to this child Builder.  This includes the ForceActionOnExt,
+   *   but does not include the CheckinWhenDone param.
    * 
    * @param paramMapping 
    *   A TreeMap containing a set of parameter mappings to make between the child Builder's 
@@ -538,6 +540,7 @@ class BaseBuilder
           ("The child Builder (" + subBuilder.getName() + ") does not have a valid layout.");
       pSubBuilders.put(instanceName, sub);
       pOrderedSubBuilders.put(order, sub);
+      pSubBuilderOrder.put(instanceName, order);
       pSubBuildersByPass.put(getCurrentPass(), instanceName);
     }
     
@@ -639,7 +642,7 @@ class BaseBuilder
   
   /**
    * Gets the Sub-Builder identified by the given instance name.
-   * 
+   * <p>
    * It is assumed that a Builder actually knows what all its Sub-Builders are named.
    * Therefore this method throws an {@link IllegalArgumentException} if this contract is
    * violated. If code is properly written, this exception should never be thrown, since a
@@ -733,9 +736,12 @@ class BaseBuilder
     
     ArrayList<String> builderNames = pSubBuildersByPass.get(passNumber);
     if (builderNames != null) {
+      TreeMap<Integer, BaseBuilder> ordered = new TreeMap<Integer, BaseBuilder>();
       for (String name : builderNames) {
-        toReturn.add((BaseBuilder) getSubBuilder(name));
+        int order = pSubBuilderOrder.get(name);
+        ordered.put(order, (BaseBuilder) getSubBuilder(name));
       }
+      toReturn.addAll(ordered.values());
     }
     return toReturn;
   }
@@ -971,8 +977,10 @@ class BaseBuilder
    *      from it.
    * <li> ReleaseOnError - Extracts the Release On Error value and sets the pReleaseOnError 
    *      variable from it.
-   * <li> ActionOnExistence - Extracts the Action on Existance value and sets the correct 
-   *      value in the Stage Information for the Builder. 
+   * <li> ActionOnExistence - Extracts the Action on Existence value and sets the correct 
+   *      value in the Stage Information for the Builder.
+   * <li> ForceActionOnExt - Extract the boolean value and set the correct flag in the
+   *      Stage Information for the Builder.  
    * </ul>
    */
   public final void 
@@ -2421,6 +2429,7 @@ class BaseBuilder
   public final static String aSelectionKeys = "SelectionKeys";
   public final static String aCheckinWhenDone = "CheckinWhenDone";
   
+  
   private static final long serialVersionUID = 1157778379895394547L;
   
 
@@ -2457,6 +2466,8 @@ class BaseBuilder
   private TreeMap<String, BaseBuilder> pSubBuilders;
   
   private TreeMap<Integer, BaseBuilder> pOrderedSubBuilders;
+  
+  private TreeMap<String, Integer> pSubBuilderOrder;
   
   private MappedArrayList<Integer, String> pSubBuildersByPass;
   

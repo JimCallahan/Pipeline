@@ -1,4 +1,4 @@
-// $Id: BaseBuilderExecution.java,v 1.5 2008/08/01 21:28:13 jesse Exp $
+// $Id: BaseBuilderExecution.java,v 1.6 2009/02/02 18:59:10 jesse Exp $
 
 package us.temerity.pipeline.builder.execution;
 
@@ -161,7 +161,10 @@ class BaseBuilderExecution
     
     pass.run();
     
-    for (BaseBuilder child : pass.getSubBuildersAdd()) {
+    ArrayList<BaseBuilder> addedSubs = pass.getSubBuildersAdd();
+    //Need to reverse it since we preprend to the list.
+    Collections.reverse(addedSubs);
+    for (BaseBuilder child : addedSubs) {
       initializeSubBuilder(child, builder);
       ArrayList<SetupPass> initialPasses = 
         new ArrayList<SetupPass>(child.getSetupPasses());
