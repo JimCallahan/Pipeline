@@ -1,4 +1,4 @@
-// $Id: CopyTrackingMarkersStage.java,v 1.1 2008/03/19 22:38:46 jim Exp $
+// $Id: CopyTrackingMarkersStage.java,v 1.2 2009/02/02 17:15:10 jesse Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
 
@@ -58,7 +58,7 @@ class CopyTrackingMarkersStage
     super("CopyTrackingMarkers", 
           "Make an approved copy of the original tracking markers file.", 
           stageInfo, context, client, 
-          nodeName, "2dt", source);
+          nodeName, "2dt", source, StageFunction.aTextFile);
   }
   
 

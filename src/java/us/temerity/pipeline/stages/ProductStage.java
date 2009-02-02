@@ -34,8 +34,8 @@ class ProductStage
           client, 
           nodeName, 
           suffix, 
-          source);
-    pStageFunction = stageFunction;
+          source,
+          stageFunction);
   }
   
   public 
@@ -62,27 +62,10 @@ class ProductStage
           range,
           padding,
           suffix, 
-          source);
-    pStageFunction = stageFunction;
+          source,
+          stageFunction);
   }
   
-  /**
-   * See {@link BaseStage#getStageFunction()}
-   */
-  @Override
-  public String 
-  getStageFunction()
-  {
-    // THIS DOESN'T WORK!!!
-    // This method gets called by StandardStage (line 69) during construction BEFORE 
-    // pStageFunction be set.  Since pStageFunction is (null) when this happens, the 
-    // pEditor is not set!   Lots of code uses this, but I don't know if it ever worked.
-    if (pStageFunction != null)
-      return pStageFunction;
-    return super.getStageFunction();
-  }
-  
-  private String pStageFunction;
   
   private static final long serialVersionUID = 7855226729103372831L;
 }

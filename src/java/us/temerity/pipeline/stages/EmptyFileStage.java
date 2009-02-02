@@ -11,7 +11,8 @@ import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
  * this behavior is desired. 
  *
  */
-public class EmptyFileStage
+public 
+class EmptyFileStage
   extends StandardStage
   implements FinalizableStage
 {
@@ -89,7 +90,6 @@ public class EmptyFileStage
    * <p>
    * Removes the action from the node. This only needs to be called if it is desirous to
    * remove the Action.
-   * 
    */
   public void 
   finalizeStage() 

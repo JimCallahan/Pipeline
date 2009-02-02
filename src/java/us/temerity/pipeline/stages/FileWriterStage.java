@@ -33,9 +33,9 @@ class FileWriterStage
           nodeName, 
           suffix, 
           null, 
-          null);
+          null,
+          stageFunction);
     pFileContents = null;
-    pStageFunction = stageFunction;
   }
   
   protected void
@@ -84,23 +84,7 @@ class FileWriterStage
     return new Path(PackageInfo.sProdPath, nodeID.getWorkingParent() + "/" + seq.getFile(0));     
   }
   
-  /**
-   * See {@link BaseStage#getStageFunction()}
-   */
-  @Override
-  public String 
-  getStageFunction()
-  {
-    if (pStageFunction != null)
-      return pStageFunction;
-    return StageFunction.aTextFile;
-  }
-
-  
   private String pFileContents;
   
-  private String pStageFunction;
-  
   private static final long serialVersionUID = 4013108921342960191L;
-  
 }

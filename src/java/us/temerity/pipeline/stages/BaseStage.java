@@ -1,4 +1,4 @@
-// $Id: BaseStage.java,v 1.30 2008/05/12 16:45:24 jesse Exp $
+// $Id: BaseStage.java,v 1.31 2009/02/02 17:15:10 jesse Exp $
 
 package us.temerity.pipeline.stages;
 
@@ -60,15 +60,19 @@ class BaseStage
    * Constructor that passes in all the information BaseState needs to initialize.
    * 
    * @param name
-   *        The name of the stage.
+   *  The name of the stage.
    * @param desc
-   *        A description of what the stage should do.
+   *  A description of what the stage should do.
    * @param stageInformation
-   *        Contains information about stage execution that is global for all stages.
+   *  Contains information about stage execution that is global for all stages.
    * @param context
-   *        The context the stage operates in.
+   *   The context the stage operates in.
    * @param client
-   *        The instance of Master Manager that the stage performs all its actions in.
+   *   The instance of Master Manager that the stage performs all its actions in.
+   * @param stageFunction
+   *   A string which describes what sort of node the stage is building.  This is currently
+   *   being used to decide which editor to assign to nodes.  This can be set to 
+   *   <code>null</code> if a stage does not want to provide a value.
    */
   protected 
   BaseStage
@@ -77,7 +81,8 @@ class BaseStage
     String desc,
     StageInformation stageInformation,
     UtilContext context,
-    MasterMgrClient client
+    MasterMgrClient client,
+    String stageFunction
   ) 
   {
     super(name, desc);
@@ -90,6 +95,9 @@ class BaseStage
     pExecutionMethod = ExecutionMethod.Serial;
     pBatchSize = 0;
     pJobReqs = JobReqs.defaultJobReqs();
+   
+    if (stageFunction != null)
+      pStageFunction = stageFunction;
     
     pNodeCheckedOut = false;
   }
@@ -1167,7 +1175,7 @@ class BaseStage
   public String
   getStageFunction()
   {
-    return StageFunction.aNone;
+    return pStageFunction;
   }
   
   
@@ -1477,4 +1485,5 @@ class BaseStage
    */
   private boolean pNodeCheckedOut;
 
+  private String pStageFunction = StageFunction.aNone;
 }

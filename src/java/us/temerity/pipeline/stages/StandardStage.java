@@ -1,13 +1,11 @@
 package us.temerity.pipeline.stages;
 
-import us.temerity.pipeline.*;
-import us.temerity.pipeline.LogMgr.Kind;
-import us.temerity.pipeline.LogMgr.Level;
-import us.temerity.pipeline.builder.*;
-import us.temerity.pipeline.builder.BuilderInformation.StageInformation;
-import us.temerity.pipeline.plugin.EnableCompTool.v2_4_1.*;
-
 import java.util.*;
+
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.LogMgr.*;
+import us.temerity.pipeline.builder.*;
+import us.temerity.pipeline.builder.BuilderInformation.*;
 
 /**
  * A branch stage designed to make building stages easy.
@@ -25,24 +23,24 @@ class StandardStage
    * Action (with vendor).
    * 
    * @param name
-   *        The name of the stage.
+   *  The name of the stage.
    * @param desc
-   *        A description of what the stage should do.
+   *  A description of what the stage should do.
    * @param stageInformation
-   *        Class containing basic information shared among all stages.
+   *  Class containing basic information shared among all stages.
    * @param context
-   *        The {@link UtilContext} that this stage acts in.
+   *  The {@link UtilContext} that this stage acts in.
    * @param client
-   *        The instance of Master Manager that the stage performs all its actions in.
+   *  The instance of Master Manager that the stage performs all its actions in.
    * @param nodeName
-   *        The name of the node that is to be created.
+   *  The name of the node that is to be created.
    * @param suffix
-   *        The suffix for the created node.
+   *  The suffix for the created node.
    * @param editor
-   *        Contains the name and vendor for the Editor plugin. If this is <code>null</code>
-   *        then the Maya Editor from Temerity will be used. *
+   *  Contains the name and vendor for the Editor plugin. If this is <code>null</code>
+   *  then an editor will be selected based on the Stage Function.
    * @param action
-   *        Contains the name and vendor for the Action plugin.
+   *  Contains the name and vendor for the Action plugin.
    */
   protected 
   StandardStage
@@ -59,7 +57,56 @@ class StandardStage
   ) 
     throws PipelineException
   {
-    super(name, desc, stageInformation, context, client);
+    this(name, desc, stageInformation, 
+         context, client, nodeName, suffix, 
+         editor, action, StageFunction.aNone);
+  }
+  
+  /**
+   * Constructor that allows the specification of the name of an Editor (with vendor) and an
+   * Action (with vendor).
+   * 
+   * @param name
+   *  The name of the stage.
+   * @param desc
+   *  A description of what the stage should do.
+   * @param stageInformation
+   *  Class containing basic information shared among all stages.
+   * @param context
+   *  The {@link UtilContext} that this stage acts in.
+   * @param client
+   *  The instance of Master Manager that the stage performs all its actions in.
+   * @param nodeName
+   *  The name of the node that is to be created.
+   * @param suffix
+   *  The suffix for the created node.
+   * @param editor
+   *  Contains the name and vendor for the Editor plugin. If this is <code>null</code>
+   *  then an editor will be selected based on the Stage Function.
+   * @param action
+   *  Contains the name and vendor for the Action plugin.
+   * @param stageFunction
+   *   A string which describes what sort of node the stage is building.  This is currently
+   *   being used to decide which editor to assign to nodes.  This can be set to 
+   *   <code>null</code> if a stage does not want to provide a value.
+   */
+  protected 
+  StandardStage
+  (
+    String name, 
+    String desc,
+    StageInformation stageInformation,
+    UtilContext context,
+    MasterMgrClient client,
+    String nodeName, 
+    String suffix,
+    PluginContext editor, 
+    PluginContext action,
+    String stageFunction
+  ) 
+    throws PipelineException
+  {
+    super(name, desc, stageInformation, context, client, stageFunction);
     pRegisteredNodeName = nodeName;
     pSuffix = suffix;
     if(editor != null) {
@@ -76,7 +123,7 @@ class StandardStage
     }
     pFrameRange = null;
     pPadding = -1;
-    initBooleans();
+    init();
   }
 
   
@@ -108,7 +155,6 @@ class StandardStage
    *        then the Maya Editor from Temerity will be used. 
    * @param action
    *        Contains the name and vendor for the Action plugin.
-   * 
    */
   protected 
   StandardStage
@@ -127,7 +173,63 @@ class StandardStage
   )
     throws PipelineException
   {
-    super(name, desc, stageInformation, context, client);
+    this(name, desc, stageInformation, context, client, nodeName, range, padding, suffix,
+         editor, action, StageFunction.aNone);
+  }
+  
+
+  /**
+   * Constructor that allows the specification of the name of an Editor (with vendor) and an
+   * Action (with vendor).
+   * 
+   * @param name
+   *        The name of the stage.
+   * @param desc
+   *        A description of what the stage should do.
+   * @param stageInformation
+   *        Class containing basic information shared among all stages.
+   * @param context
+   *        The {@link UtilContext} that this stage acts in.
+   * @param client
+   *        The instance of Master Manager that the stage performs all its actions in.
+   * @param nodeName
+   *        The name of the node that is to be created.
+   * @param range
+   *        The frame range for the node.
+   * @param padding
+   *        The padding for the file numbers. If this is set to <code>null</code>, a
+   *        padding of 4 will be used.
+   * @param suffix
+   *        The suffix for the created node.
+   * @param editor
+   *        Contains the name and vendor for the Editor plugin. If this is <code>null</code>
+   *        then the Maya Editor from Temerity will be used. 
+   * @param action
+   *        Contains the name and vendor for the Action plugin.
+   * @param stageFunction
+   *   A string which describes what sort of node the stage is building.  This is currently
+   *   being used to decide which editor to assign to nodes.  This can be set to 
+   *   <code>null</code> if a stage does not want to provide a value. 
+   */
+  protected 
+  StandardStage
+  (
+    String name, 
+    String desc,
+    StageInformation stageInformation,
+    UtilContext context,
+    MasterMgrClient client,
+    String nodeName,
+    FrameRange range,
+    Integer padding,
+    String suffix,
+    PluginContext editor, 
+    PluginContext action, 
+    String stageFunction
+  )
+    throws PipelineException
+  {
+    super(name, desc, stageInformation, context, client, stageFunction);
     pRegisteredNodeName = nodeName;
     pSuffix = suffix;
     if(editor != null) {
@@ -151,7 +253,7 @@ class StandardStage
       throw new PipelineException("Cannot have a negative padding value");
     else
       pPadding = padding;
-    initBooleans();
+    init();
   }
   
   /**
@@ -186,7 +288,43 @@ class StandardStage
     NodeMod mod
   )
   {
-    super(name, desc, stageInformation, context, client);
+    this(name, desc, stageInformation, context, client, mod, StageFunction.aNone);
+  }
+  
+
+  /**
+   * Construct a node identical to the given working version.
+   * 
+   * @param name
+   *        The name of the stage.
+   * @param desc
+   *        A description of what the stage should do.
+   * @param stageInformation
+   *        Class containing basic information shared among all stages.
+   * @param context
+   *        The {@link UtilContext} that this stage acts in.
+   * @param client
+   *        The instance of Master Manager that the stage performs all its actions in.
+   * @param mod
+   *        The original node working version.
+   * @param stageFunction
+   *   A string which describes what sort of node the stage is building.  This is currently
+   *   being used to decide which editor to assign to nodes.  This can be set to 
+   *   <code>null</code> if a stage does not want to provide a value.
+   */
+  protected 
+  StandardStage
+  (
+    String name, 
+    String desc,
+    StageInformation stageInformation,
+    UtilContext context,
+    MasterMgrClient client,
+    NodeMod mod, 
+    String stageFunction
+  )
+  {
+    super(name, desc, stageInformation, context, client, stageFunction);
 
     pRegisteredNodeName = mod.getName();
 
@@ -210,18 +348,20 @@ class StandardStage
 
     pLinks = new LinkedList<LinkMod>();  // SHOULDN'T NEED THIS!!!
     pLinks.addAll(mod.getSources());
-    initBooleans();
+    init();
   }
 
 
   /*----------------------------------------------------------------------------------------*/
 
   private void
-  initBooleans()
+  init()
   {
     pNodeAdded     = false;
     pNodeConformed = false;
     pNodeSkipped   = false;
+    
+    pAOEOverride = null;
   }
   
 
@@ -257,7 +397,9 @@ class StandardStage
     LogMgr.getInstance().log
       (Kind.Ops, Level.Fine, "Building the node: " + pRegisteredNodeName );
 
-    ActionOnExistence actionOnExistence = pStageInformation.getActionOnExistence(); 
+    ActionOnExistence actionOnExistence = pStageInformation.getActionOnExistence();
+    if (pAOEOverride != null && !pStageInformation.getForceActionOnExt())
+      actionOnExistence = pAOEOverride;
     if (!checkExistance(pRegisteredNodeName, actionOnExistence))
       return construct();
     else if (actionOnExistence == ActionOnExistence.Conform)
@@ -477,6 +619,32 @@ class StandardStage
     return toReturn;
   }
   
+
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*  A C C E S S                                                                           */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Pass in an override for the {@link ActionOnExistence}.
+   * <p>
+   * This will not change the setting of AOE in the StageInformation.  This can be overriden
+   * at a global level using the optional ForceAOE parameter.  That will cause the override to
+   * be ignored.  
+   * 
+   * @param override
+   *   The {@link ActionOnExistence} value that this stage will use.
+   */
+  public void
+  overrideAOE
+  (
+    ActionOnExistence override  
+  )
+  {
+    pAOEOverride = override;
+  }
+  
+  
   /**
    * Was the node conformed in this stage.
    */
@@ -503,9 +671,17 @@ class StandardStage
   {
     return pNodeSkipped; 
   }
- 
- 
 
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C    I N T E R N A L S                                                     */
+  /*----------------------------------------------------------------------------------------*/
+
+  private static final long serialVersionUID = 2327486058471612742L;
+
+
+  
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
@@ -517,4 +693,5 @@ class StandardStage
   private boolean pNodeConformed;
   private boolean pNodeSkipped; 
   
+  private ActionOnExistence pAOEOverride;
 }

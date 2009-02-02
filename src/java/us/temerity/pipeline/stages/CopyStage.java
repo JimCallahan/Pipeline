@@ -18,7 +18,8 @@ class CopyStage
     MasterMgrClient client, 
     String nodeName,
     String suffix,
-    String source
+    String source,
+    String stageFunction
   )
     throws PipelineException
   {
@@ -30,7 +31,8 @@ class CopyStage
           nodeName, 
           suffix, 
           null, 
-          new PluginContext("Copy"));
+          new PluginContext("Copy"),
+          stageFunction);
     addLink(new LinkMod(source, LinkPolicy.Dependency));
   }
   
@@ -46,7 +48,8 @@ class CopyStage
     FrameRange range,
     Integer padding,
     String suffix,
-    String source
+    String source,
+    String stageFunction
   )
     throws PipelineException
   {
@@ -60,20 +63,11 @@ class CopyStage
           padding,
           suffix, 
           null, 
-          new PluginContext("Copy"));
+          new PluginContext("Copy"),
+          stageFunction);
     addLink(new LinkMod(source, LinkPolicy.Dependency));
   }
   
-  /**
-   * See {@link BaseStage#getStageFunction()}
-   */
-  @Override
-  public String 
-  getStageFunction()
-  {
-    return StageFunction.aNone;
-  }
-
   
   private static final long serialVersionUID = 5430807656489635181L;
 }
