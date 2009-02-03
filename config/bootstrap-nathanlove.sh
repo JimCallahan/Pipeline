@@ -1,4 +1,4 @@
 #!/bin/sh
 
 time ../../src/pipeline/config/bootstrap-suse10.1-32bit.sh \
-  nathanlove 080730 43000 43100
+  nathanlove 090203 43000 43100
