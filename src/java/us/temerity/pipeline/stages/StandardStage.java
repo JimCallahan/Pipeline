@@ -360,8 +360,6 @@ class StandardStage
     pNodeAdded     = false;
     pNodeConformed = false;
     pNodeSkipped   = false;
-    
-    pAOEOverride = null;
   }
   
 
@@ -398,8 +396,6 @@ class StandardStage
       (Kind.Ops, Level.Fine, "Building the node: " + pRegisteredNodeName );
 
     ActionOnExistence actionOnExistence = pStageInformation.getActionOnExistence();
-    if (pAOEOverride != null && !pStageInformation.getForceActionOnExt())
-      actionOnExistence = pAOEOverride;
     if (!checkExistance(pRegisteredNodeName, actionOnExistence))
       return construct();
     else if (actionOnExistence == ActionOnExistence.Conform)
@@ -626,26 +622,6 @@ class StandardStage
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Pass in an override for the {@link ActionOnExistence}.
-   * <p>
-   * This will not change the setting of AOE in the StageInformation.  This can be overriden
-   * at a global level using the optional ForceAOE parameter.  That will cause the override to
-   * be ignored.  
-   * 
-   * @param override
-   *   The {@link ActionOnExistence} value that this stage will use.
-   */
-  public void
-  overrideAOE
-  (
-    ActionOnExistence override  
-  )
-  {
-    pAOEOverride = override;
-  }
-  
-  
-  /**
    * Was the node conformed in this stage.
    */
   public boolean
@@ -693,5 +669,4 @@ class StandardStage
   private boolean pNodeConformed;
   private boolean pNodeSkipped; 
   
-  private ActionOnExistence pAOEOverride;
 }
