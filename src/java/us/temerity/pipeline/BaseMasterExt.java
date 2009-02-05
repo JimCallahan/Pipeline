@@ -1,7 +1,8 @@
-// $Id: BaseMasterExt.java,v 1.10 2008/05/04 00:40:16 jim Exp $
+// $Id: BaseMasterExt.java,v 1.11 2009/02/05 05:18:42 jim Exp $
 
 package us.temerity.pipeline;
 
+import  us.temerity.pipeline.toolset.*;
 import  us.temerity.pipeline.builder.*;
 import  us.temerity.pipeline.glue.*;
 
@@ -211,6 +212,158 @@ class BaseMasterExt
   {}
 
   
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   T O O L S E T S                                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether to test before creating a new read-only package from the given 
+   * modifiable package.
+   */  
+  public boolean
+  hasPreCreateToolsetPackageTest() 
+  {
+    return false;
+  }
+
+  /**
+   * Test to perform before creating a new read-only package from the given 
+   * modifiable package.
+   * 
+   * @param author
+   *   The name of the user creating the package.
+   * 
+   * @param mod
+   *   The source modifiable toolset package.
+   * 
+   * @param desc 
+   *   The package description text.
+   * 
+   * @param level
+   *   The revision number component level to increment.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @throws PipelineException
+   *   To abort the operation.
+   */  
+  public void
+  preCreateToolsetPackageTest
+  (
+   String author, 
+   PackageMod mod, 
+   String desc, 
+   VersionID.Level level, 
+   OsType os
+  ) 
+    throws PipelineException
+  {}
+
+
+  /**
+   * Whether to run a task after creating a new read-only package from the given 
+   * modifiable package.
+   */  
+  public boolean
+  hasPostCreateToolsetPackageTask() 
+  {
+    return false;
+  }
+
+  /**
+   * The task to perform after creating a new read-only package from the given 
+   * modifiable package.
+   * 
+   * @param pkg
+   *   The newly created toolset package version.
+   * 
+   * @param os
+   *   The operating system type.
+   */  
+  public void
+  postCreateToolsetPackageTask
+  (
+   PackageVersion pkg, 
+   OsType os
+  ) 
+  {}
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether to test before creating a new toolset from the given toolset packages.
+   */  
+  public boolean
+  hasPreCreateToolsetTest() 
+  {
+    return false;
+  }
+
+  /**
+   * Test to perform before creating a new toolset from the given toolset packages.
+   * 
+   * @param author
+   *   The name of the user creating the toolset.
+   * 
+   * @param name
+   *   The name of the new toolset.
+   * 
+   * @param desc 
+   *   The toolset description text.
+   * 
+   * @param packages
+   *   The packages in order of evaluation.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @throws PipelineException
+   *   To abort the operation.
+   */  
+  public void
+  preCreateToolsetTest
+  (  
+   String author, 
+   String name, 
+   String desc, 
+   Collection<PackageVersion> packages,
+   OsType os   
+  ) 
+    throws PipelineException
+  {}
+
+
+  /**
+   * Whether to run a task after creating a new toolset from the given toolset packages.
+   */  
+  public boolean
+  hasPostCreateToolsetTask() 
+  {
+    return false;
+  }
+
+  /**
+   * The task to perform after creating a new toolset from the given toolset packages.
+   * 
+   * @param tset
+   *   The newly created Toolset.
+   * 
+   * @param os
+   *   The operating system type.
+   */  
+  public void
+  postCreateToolsetTask
+  (
+   Toolset tset,
+   OsType os   
+  ) 
+  {}
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   W O R K I N G   A R E A   O P S                                                      */

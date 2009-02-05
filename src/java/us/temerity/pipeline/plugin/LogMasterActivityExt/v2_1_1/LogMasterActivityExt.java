@@ -1,4 +1,4 @@
-// $Id: LogMasterActivityExt.java,v 1.6 2007/10/23 02:29:58 jim Exp $
+// $Id: LogMasterActivityExt.java,v 1.7 2009/02/05 05:18:42 jim Exp $
 
 package us.temerity.pipeline.plugin.LogMasterActivityExt.v2_1_1;
 
@@ -67,6 +67,45 @@ LogMasterActivityExt
 	  new BooleanExtensionParam
 	  (aLogSetWorkGroups,
 	   "Enable logging of setting work groups.",
+	   true);
+	addParam(param);
+      }
+    }
+
+    /* toolset ops */ 
+    {
+      {
+	ExtensionParam param = 
+	  new BooleanExtensionParam
+	  (aAllowCreatePackage, 
+	   "Whether to allow the creation of new toolset packages.", 
+	   true);
+	addParam(param);
+      }
+      
+      {
+	ExtensionParam param = 
+	  new BooleanExtensionParam
+	  (aLogCreatePackage,
+	   "Enable logging of new toolset package creation.", 
+	   true);
+	addParam(param);
+      }
+
+      {
+	ExtensionParam param = 
+	  new BooleanExtensionParam
+	  (aAllowCreateToolset, 
+	   "Whether to allow the creation of new toolsets.", 
+	   true);
+	addParam(param);
+      }
+      
+      {
+	ExtensionParam param = 
+	  new BooleanExtensionParam
+	  (aLogCreateToolset,
+	   "Enable logging of new toolset creation.", 
 	   true);
 	addParam(param);
       }
@@ -678,6 +717,18 @@ LogMasterActivityExt
 
       {
 	LayoutGroup sub = new LayoutGroup
+	  ("ToolsetOps", "Toolset related operations.", true);
+	sub.addEntry(aAllowCreatePackage);
+	sub.addEntry(aLogCreatePackage);
+	sub.addSeparator(); 
+	sub.addEntry(aAllowCreateToolset);
+	sub.addEntry(aLogCreateToolset);
+
+	layout.addSubGroup(sub);
+      }
+
+      {
+	LayoutGroup sub = new LayoutGroup
 	  ("WorkingAreaOps", "Working area management operations.", true);
 	sub.addEntry(aAllowCreateWorkingArea);
 	sub.addEntry(aLogCreateWorkingArea);
@@ -976,6 +1027,184 @@ LogMasterActivityExt
     LogMgr.getInstance().log
       (LogMgr.Kind.Ext, LogMgr.Level.Info, 
        buf.toString());
+  }
+
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   T O O L S E T S                                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether to test before creating a new read-only package from the given 
+   * modifiable package.
+   */  
+  public boolean
+  hasPreCreateToolsetPackageTest() 
+  {
+    return true;
+  }
+
+  /**
+   * Test to perform before creating a new read-only package from the given 
+   * modifiable package.
+   * 
+   * @param author
+   *   The name of the user creating the package.
+   * 
+   * @param mod
+   *   The source modifiable toolset package.
+   * 
+   * @param desc 
+   *   The package description text.
+   * 
+   * @param level
+   *   The revision number component level to increment.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @throws PipelineException
+   *   To abort the operation.
+   */  
+  public void
+  preCreateToolsetPackageTest
+  (
+   String author, 
+   PackageMod mod, 
+   String desc, 
+   VersionID.Level level, 
+   OsType os
+  ) 
+    throws PipelineException
+  {
+    if(!isParamTrue(aAllowCreatePackage)) 
+      throw new PipelineException
+	("Creating a new read-only toolset package version is not allowed!");
+  }
+
+
+  /**
+   * Whether to run a task after creating a new read-only package from the given 
+   * modifiable package.
+   */  
+  public boolean
+  hasPostCreateToolsetPackageTask() 
+  {
+    return isParamTrue(aLogCreatePackage);
+  }
+
+  /**
+   * The task to perform after creating a new read-only package from the given 
+   * modifiable package.
+   * 
+   * @param pkg
+   *   The newly created toolset package version.
+   * 
+   * @param os
+   *   The operating system type.
+   */  
+  public void
+  postCreateToolsetPackageTask
+  (
+   PackageVersion pkg, 
+   OsType os
+  ) 
+  {     
+    String msg = 
+      ("CREATE TOOLSET PACKAGE\n" +
+       "  Package : " + pkg.getName() + " v" + pkg.getVersionID() + "\n" + 
+       "  OS Type : " + os);
+
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ext, LogMgr.Level.Info, 
+       msg); 
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether to test before creating a new toolset from the given toolset packages.
+   */  
+  public boolean
+  hasPreCreateToolsetTest() 
+  {
+    return true; 
+  }
+
+  /**
+   * Test to perform before creating a new toolset from the given toolset packages.
+   * 
+   * @param author
+   *   The name of the user creating the toolset.
+   * 
+   * @param name
+   *   The name of the new toolset.
+   * 
+   * @param desc 
+   *   The toolset description text.
+   * 
+   * @param packages
+   *   The packages in order of evaluation.
+   * 
+   * @param os
+   *   The operating system type.
+   * 
+   * @throws PipelineException
+   *   To abort the operation.
+   */  
+  public void
+  preCreateToolsetTest
+  (  
+   String author, 
+   String name, 
+   String desc, 
+   Collection<PackageVersion> packages,
+   OsType os   
+  ) 
+    throws PipelineException
+  {
+    if(!isParamTrue(aAllowCreateToolset))
+      throw new PipelineException
+	("Creating a new read-only toolset is not allowed!");
+  }
+
+
+  /**
+   * Whether to run a task after creating a new toolset from the given toolset packages.
+   */  
+  public boolean
+  hasPostCreateToolsetTask() 
+  {
+    return isParamTrue(aLogCreateToolset);
+  }
+
+  /**
+   * The task to perform after creating a new toolset from the given toolset packages.
+   * 
+   * @param tset
+   *   The newly created Toolset.
+   * 
+   * @param os
+   *   The operating system type.
+   */  
+  public void
+  postCreateToolsetTask
+  (
+   Toolset tset, 
+   OsType os
+  ) 
+  {
+    String msg = 
+      ("CREATE TOOLSET\n" +
+       "   Toolset : " + tset.getName() + "\n" + 
+       "   OS Type : " + os);
+
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ext, LogMgr.Level.Info, 
+       msg); 
   }
 
 
@@ -3733,7 +3962,13 @@ LogMasterActivityExt
   private static final String  aDisableDelay 	        = "DisableDelay";  	   
 
   private static final String  aAllowSetWorkGroups      = "AllowSetWorkGroups";   
-  private static final String  aLogSetWorkGroups        = "LogSetWorkGroups"; 	   
+  private static final String  aLogSetWorkGroups        = "LogSetWorkGroups"; 	  
+
+  private static final String  aAllowCreatePackage      = "AllowCreatePackage";   
+  private static final String  aLogCreatePackage        = "LogCreatePackage"; 	   
+
+  private static final String  aAllowCreateToolset      = "AllowCreateToolset";   
+  private static final String  aLogCreateToolset        = "LogCreateToolset"; 	   
 
   private static final String  aAllowCreateWorkingArea  = "AllowCreateWorkingArea";   
   private static final String  aLogCreateWorkingArea	= "LogCreateWorkingArea"; 	   

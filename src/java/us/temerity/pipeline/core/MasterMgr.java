@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.262 2009/01/22 23:38:01 jim Exp $
+// $Id: MasterMgr.java,v 1.263 2009/02/05 05:18:42 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2629,7 +2629,48 @@ class MasterMgr
    MiscCreateToolsetReq req
   )  
   {
-    TaskTimer timer = new TaskTimer();
+    String author = req.getAuthor();
+    String tname  = req.getName();
+    String desc   = req.getDescription();
+    OsType os     = req.getOsType();
+
+    TaskTimer timer = new TaskTimer("MasterMgr.createToolset(): " + tname);
+    
+    /* lookup the packages */  
+    Collection<PackageVersion> packages = new ArrayList<PackageVersion>();
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      synchronized(pToolsetPackages) {
+        timer.resume();
+	  
+        for(String pname : req.getPackages()) {
+          VersionID vid = req.getVersions().get(pname);
+          if(vid == null) 
+            throw new PipelineException 
+              ("Unable to create the " + os + " toolset (" + tname + ") because " +
+               "no revision number for package (" + pname + ") was supplied!");
+          
+          packages.add(getToolsetPackage(pname, vid, os));	   
+        }
+      }
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+      
+    /* pre-op tests */
+    CreateToolsetExtFactory factory = 
+      new CreateToolsetExtFactory(author, tname, desc, packages, os); 
+    try {
+      performExtensionTests(timer, factory);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
 
     timer.aquire();
     pDatabaseLock.readLock().lock();
@@ -2640,9 +2681,6 @@ class MasterMgr
 
       synchronized(pToolsets) {
 	timer.resume();
-
-	String tname = req.getName();
-	OsType os    = req.getOsType();
 
 	if((pToolsets.get(tname) != null) && pToolsets.get(tname).containsKey(os)) 
 	  throw new PipelineException 
@@ -2659,26 +2697,9 @@ class MasterMgr
 	       "added for (" + tname + ")!");
 	}
 
-	/* lookup the packages */  
-	ArrayList<PackageCommon> packages = new ArrayList<PackageCommon>();
-	timer.aquire();
-	synchronized(pToolsetPackages) {
-	  timer.resume();
-	  
-	  for(String pname : req.getPackages()) {
-	    VersionID vid = req.getVersions().get(pname);
-	    if(vid == null) 
-	      throw new PipelineException 
-		("Unable to create the " + os + " toolset (" + tname + ") because " +
-		 "no revision number for package (" + pname + ") was supplied!");
-
-	    packages.add(getToolsetPackage(pname, vid, os));	   
-	  }
-	}
-	
 	/* build the toolset */ 
 	Toolset tset = 
-	  new Toolset(req.getAuthor(), tname, packages, req.getDescription(), os);
+          new Toolset(author, tname, new ArrayList<PackageCommon>(packages), desc, os);
 	if(tset.hasConflicts()) 
 	  return new FailureRsp
 	    (timer, 
@@ -2694,7 +2715,10 @@ class MasterMgr
 	}
 
 	toolsets.put(os, tset);
-	
+
+	/* post-op tasks */ 
+        startExtensionTasks(timer, new CreateToolsetExtFactory(tset, os));
+
 	return new MiscCreateToolsetRsp(timer, tset);
       }    
     }
@@ -2942,8 +2966,25 @@ class MasterMgr
    MiscCreateToolsetPackageReq req
   ) 
   {    
-    TaskTimer timer = new TaskTimer();
+    String author         = req.getAuthor();
+    PackageMod pmod       = req.getPackage();
+    String pname          = pmod.getName();
+    String desc           = req.getDescription();
+    VersionID.Level level = req.getLevel(); 
+    OsType os             = req.getOsType();
+
+    TaskTimer timer = new TaskTimer("MasterMgr.createToolsetPackage(): " + pname);
     
+    /* pre-op tests */
+    CreateToolsetPackageExtFactory factory = 
+      new CreateToolsetPackageExtFactory(author, pmod, desc, level, os); 
+    try {
+      performExtensionTests(timer, factory);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+
     timer.aquire();
     pDatabaseLock.readLock().lock();
     try {
@@ -2953,10 +2994,6 @@ class MasterMgr
 
       synchronized(pToolsetPackages) {
 	timer.resume();
-
-	String pname    = req.getPackage().getName();
-	OsType os       = req.getOsType();
-	PackageMod pmod = req.getPackage();
 
 	if(pmod.isEmpty() && (os != OsType.Unix))
 	  throw new PipelineException 
@@ -2984,21 +3021,23 @@ class MasterMgr
 	  if(versions.isEmpty())
 	    throw new IllegalStateException();
 	  
-	  if(req.getLevel() == null) 
+	  if(level == null) 
 	    throw new PipelineException 
 	      ("Unable to create the " + os + " toolset package (" + pname + ") " + 
 	       "due to a missing revision number increment level!");
 	  
-	  nvid = new VersionID(versions.lastKey(), req.getLevel());
+	  nvid = new VersionID(versions.lastKey(), level);
 	}
 	
-	PackageVersion pkg = 
-	  new PackageVersion(req.getAuthor(), pmod, nvid, req.getDescription());
+	PackageVersion pkg = new PackageVersion(author, pmod, nvid, desc); 
 	
 	writeToolsetPackage(pkg, os);
 
 	pToolsetPackages.put(pname, os, pkg.getVersionID(), pkg);
 	
+	/* post-op tasks */ 
+        startExtensionTasks(timer, new CreateToolsetPackageExtFactory(pkg, os));
+
 	return new MiscCreateToolsetPackageRsp(timer, pkg);
       }
     }
