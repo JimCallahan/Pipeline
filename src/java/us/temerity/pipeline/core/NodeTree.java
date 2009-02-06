@@ -1,4 +1,4 @@
-// $Id: NodeTree.java,v 1.13 2009/01/14 22:26:11 jim Exp $
+// $Id: NodeTree.java,v 1.14 2009/02/06 07:03:17 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -521,9 +521,9 @@ class NodeTree
   ) 
     throws PipelineException
   {
-    if(oldID.equals(newID))
-      throw new PipelineException
-        ("Somehow the old and new node IDs (" + newID + ") are identical!");
+//     if(oldID.equals(newID))
+//       throw new PipelineException
+//         ("Somehow the old and new node IDs (" + newID + ") are identical!");
 
     /* make sure that the full new name doesn't match some subset of the non-leaf 
        components of the old name */ 
