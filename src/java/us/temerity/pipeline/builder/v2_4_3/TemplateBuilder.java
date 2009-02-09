@@ -1,4 +1,4 @@
-// $Id: TemplateBuilder.java,v 1.4 2008/11/19 04:34:47 jesse Exp $
+// $Id: TemplateBuilder.java,v 1.5 2009/02/09 16:00:57 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -359,6 +359,11 @@ class TemplateBuilder
           "The generated product nodes is:\n" + pProductNodes);
         pLog.log(Kind.Ops, Level.Finest, 
           "The generated product contexts is:\n" + pProductContexts);
+        
+        pTemplateInfo.setNodesDependingOnMe(pNodesDependingOnMe);
+        pTemplateInfo.setNodesIDependedOn(pNodesIDependedOn);
+        pTemplateInfo.setProductNodes(pProductNodes);
+        pTemplateInfo.setProductContexts(pProductContexts);
       }
       pFinalizableStages = new ArrayList<FinalizableStage>();
     }
