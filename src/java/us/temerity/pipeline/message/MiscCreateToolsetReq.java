@@ -1,4 +1,4 @@
-// $Id: MiscCreateToolsetReq.java,v 1.4 2006/09/29 03:03:21 jim Exp $
+// $Id: MiscCreateToolsetReq.java,v 1.5 2009/02/10 10:56:12 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -67,11 +67,17 @@ class MiscCreateToolsetReq
     if(name == null) 
       throw new IllegalArgumentException
 	("The toolset name cannot be (null)!");
+    if(name.length() == 0) 
+      throw new IllegalArgumentException
+	("The toolset name must be specified!");
     pName = name;
 
     if(desc == null) 
       throw new IllegalArgumentException
 	("The toolset description cannot be (null)!");
+    if(desc.length() == 0) 
+      throw new IllegalArgumentException
+	("The toolset description must be specified!");
     pDescription = desc;
 
     if(packages == null) 
