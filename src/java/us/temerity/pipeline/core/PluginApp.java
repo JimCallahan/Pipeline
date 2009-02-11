@@ -1,4 +1,4 @@
-// $Id: PluginApp.java,v 1.16 2008/10/22 18:12:30 jim Exp $
+// $Id: PluginApp.java,v 1.17 2009/02/11 16:32:39 jlee Exp $
 
 package us.temerity.pipeline.core;
 
@@ -292,6 +292,20 @@ class PluginApp
     LogMgr.getInstance().flush();
   }
 
+  /**
+   * List the required plugins that need to be installed and the unregistered plugins 
+   * detected during plpluginmgr startup.
+   */
+  public void
+  listRequiredPlugins
+  (
+    PluginMgrControlClient client
+  )
+    throws PipelineException
+  {
+    client.listRequiredPlugins();
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -308,6 +322,7 @@ class PluginApp
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
        "USAGE:\n" +
        "  plplugin [options] --list\n" +  
+       "  plplugin [options] --list-required\n" + 
        "  plplugin [options] --install class-file1 [class-file2 ..]\n" + 
        "\n" + 
        "  plplugin --help\n" +

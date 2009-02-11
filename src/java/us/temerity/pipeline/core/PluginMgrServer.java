@@ -1,4 +1,4 @@
-// $Id: PluginMgrServer.java,v 1.13 2008/04/24 08:08:42 jim Exp $
+// $Id: PluginMgrServer.java,v 1.14 2009/02/11 16:32:39 jlee Exp $
 
 package us.temerity.pipeline.core;
 
@@ -28,7 +28,7 @@ import java.util.concurrent.atomic.*;
  */
 class PluginMgrServer
   extends BaseMgrServer
-{  
+{
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
@@ -38,12 +38,21 @@ class PluginMgrServer
    */
   public
   PluginMgrServer()
+  {
+    this(null);
+  }
+
+  public
+  PluginMgrServer
+  (
+    File bootstrapDir
+  )
   { 
     super("PluginMgrServer");
 
     pTimer     = new TaskTimer();
-    pPluginMgr = new PluginMgr();
-    pTasks     = new HashSet<HandlerTask>();    
+    pPluginMgr = new PluginMgr(bootstrapDir);
+    pTasks     = new HashSet<HandlerTask>();
   }
 
 
@@ -69,86 +78,92 @@ class PluginMgrServer
       server.bind(saddr, 100);
       
       LogMgr.getInstance().log
-	(LogMgr.Kind.Net, LogMgr.Level.Fine,
-	 "Listening on Port: " + PackageInfo.sPluginPort);
+  (LogMgr.Kind.Net, LogMgr.Level.Fine, 
+   "Listening on Port: " + PackageInfo.sPluginPort);
+
       pTimer.suspend();
+
       LogMgr.getInstance().log
-	(LogMgr.Kind.Net, LogMgr.Level.Info,
-	 "Server Ready.\n" + 
-	 "  Started in " + TimeStamps.formatInterval(pTimer.getTotalDuration()));
+  (LogMgr.Kind.Net, LogMgr.Level.Info,
+   "Server Ready.\n" + 
+   "  Started in " + TimeStamps.formatInterval(pTimer.getTotalDuration()));
       LogMgr.getInstance().flush();
+
       pTimer = new TaskTimer();
 
       schannel.configureBlocking(false);
+
       while(!pShutdown.get()) {
-	SocketChannel channel = schannel.accept();
-	if(channel != null) {
-	  HandlerTask task = new HandlerTask(channel);
-	  pTasks.add(task);
-	  task.start();	
-	}
-	else {
-	  Thread.sleep(PackageInfo.sServerSleep);
-	}
+  SocketChannel channel = schannel.accept();
+
+  if(channel != null) {
+    HandlerTask task = new HandlerTask(channel);
+    pTasks.add(task);
+    task.start(); 
+  }
+  else {
+    Thread.sleep(PackageInfo.sServerSleep);
+  }
       }
 
       try {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Net, LogMgr.Level.Info,
-	   "Waiting on Client Handlers...");
-	LogMgr.getInstance().flush();
-	
-	synchronized(pTasks) {
-	  for(HandlerTask task : pTasks) 
-	    task.closeConnection();
-	}
-	
-	synchronized(pTasks) {
-	  for(HandlerTask task : pTasks) 
-	    task.join();
-	}
+  LogMgr.getInstance().log
+    (LogMgr.Kind.Net, LogMgr.Level.Info, 
+     "Waiting on Client Handlers...");
+  LogMgr.getInstance().flush();
+
+  synchronized(pTasks) {
+    for(HandlerTask task : pTasks) 
+      task.closeConnection();
+  }
+
+  synchronized(pTasks) {
+    for(HandlerTask task : pTasks) 
+      task.join();
+  }
       }
       catch(InterruptedException ex) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
-	   "Interrupted while shutting down!");
-	LogMgr.getInstance().flush();
+  LogMgr.getInstance().log
+    (LogMgr.Kind.Net, LogMgr.Level.Severe,
+     "Interrupted while shutting down!");
+  LogMgr.getInstance().flush();
       }
     }
     catch (IOException ex) {
       LogMgr.getInstance().log
-	(LogMgr.Kind.Net, LogMgr.Level.Severe,
+  (LogMgr.Kind.Net, LogMgr.Level.Severe, 
          Exceptions.getFullMessage
-	 ("IO problems on port (" + PackageInfo.sPluginPort + "):", ex)); 
+    ("IO problems on port (" + PackageInfo.sPluginPort + "):", ex));
       LogMgr.getInstance().flush();
     }
     catch (SecurityException ex) {
       LogMgr.getInstance().log
-	(LogMgr.Kind.Net, LogMgr.Level.Severe,
+  (LogMgr.Kind.Net, LogMgr.Level.Severe,
          Exceptions.getFullMessage
-	 ("The Security Manager doesn't allow listening to sockets!", ex)); 
+    ("The Security Manager doesn't allow listening to sockets!", ex));
       LogMgr.getInstance().flush();
     }
     catch (Exception ex) {
       LogMgr.getInstance().log
-	(LogMgr.Kind.Net, LogMgr.Level.Severe,
-	 Exceptions.getFullMessage(ex));
+  (LogMgr.Kind.Net, LogMgr.Level.Severe, 
+   Exceptions.getFullMessage(ex));
     }
     finally {
       if(schannel != null) {
-	try {
-	  schannel.close();
-	}
-	catch (IOException ex) {
-	}
+  try {
+    schannel.close();
+  }
+  catch (IOException ex) {
+  }
       }
 
       pTimer.suspend();
+
       LogMgr.getInstance().log
-	(LogMgr.Kind.Net, LogMgr.Level.Info,
-	 "Server Shutdown.\n" + 
-	 "  Uptime " + TimeStamps.formatInterval(pTimer.getTotalDuration()));
-      LogMgr.getInstance().flush();  
+  (LogMgr.Kind.Net, LogMgr.Level.Info,
+   "Server Shutdown.\n" + 
+   "  Uptime " + TimeStamps.formatInterval(pTimer.getTotalDuration()));
+      LogMgr.getInstance().flush();
     }
   }
 
@@ -179,58 +194,101 @@ class PluginMgrServer
     run() 
     {
       try {
-	pSocket = pChannel.socket();
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Net, LogMgr.Level.Fine,
-	   "Connection Opened: " + pSocket.getInetAddress());
-	LogMgr.getInstance().flush();
+  pSocket = pChannel.socket();
+  LogMgr.getInstance().log
+    (LogMgr.Kind.Net, LogMgr.Level.Fine,
+     "Connection Opened: " + pSocket.getInetAddress());
+  LogMgr.getInstance().flush();
 
-	boolean first = true;
-	boolean live = true;
-	while(pSocket.isConnected() && live && !pShutdown.get()) {
-	  InputStream in     = pSocket.getInputStream();
-	  ObjectInput objIn  = new ObjectInputStream(in);
-	  Object obj         = objIn.readObject();
+  boolean first = true;
+  boolean live  = true;
 
-	  OutputStream out    = pSocket.getOutputStream();
-	  ObjectOutput objOut = new ObjectOutputStream(out);
-	  
-	  if(first) {
-	    String sinfo = 
-	      ("Pipeline-" + PackageInfo.sVersion + " [" + PackageInfo.sRelease + "]");
-	    
-	    objOut.writeObject(sinfo);
-	    objOut.flush(); 
-	    
-	    String cinfo = "Unknown"; 
-	    if(obj instanceof String) 
-	      cinfo = (String) obj;
-	    
-	    if(!sinfo.equals(cinfo)) {
-	      LogMgr.getInstance().log
-		(LogMgr.Kind.Net, LogMgr.Level.Warning,
-		 "Connection from (" + pSocket.getInetAddress() + ") rejected due to a " + 
-		 "mismatch in Pipeline release versions!\n" + 
-		 "  Client = " + cinfo + "\n" +
-		 "  Server = " + sinfo);	      
-	      
-	      live = false;
-	    }
-	      
-	    first = false;
-	  }
-	  else {
-            /* check time difference between client and server */ 
-            checkTimeSync((Long) obj, pSocket); 
+  while(pSocket.isConnected() && live && !pShutdown.get()) {
+    InputStream in     = pSocket.getInputStream();
+    ObjectInput objIn  = new ObjectInputStream(in);
+    Object obj         = objIn.readObject();
 
-            /* dispatch request by kind */ 
-	    PluginRequest kind = (PluginRequest) objIn.readObject();
-	      
-	    LogMgr.getInstance().log
-	      (LogMgr.Kind.Net, LogMgr.Level.Finer,
-	       "Request [" + pSocket.getInetAddress() + "]: " + kind.name());	  
-	    LogMgr.getInstance().flush();
-	      
+    OutputStream out    = pSocket.getOutputStream();
+    ObjectOutput objOut = new ObjectOutputStream(out);
+
+    if(first) {
+      String clientMsg = "";
+      String serverRsp = "OK";
+
+      if(obj instanceof String)
+        clientMsg = (String) obj;
+
+      String[] parts = clientMsg.split(BaseMgrClient.sVerifyConnectionMessageDelim);
+
+      if(parts.length != 2) {
+        serverRsp = 
+          "Connection from (" + pSocket.getInetAddress() + ") rejected due to " + 
+          "an invalid message format.  Expected: (Pipeline version+release)" + 
+          BaseMgrClient.sVerifyConnectionMessageDelim + "clientID.\n" +
+          "Receieved: " + clientMsg;
+
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Net, LogMgr.Level.Warning, 
+           serverRsp);
+
+        live = false;
+      }
+      else {
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Net, LogMgr.Level.Finest, 
+          "From the client = " + clientMsg);
+
+        String cinfo    = parts[0];
+        String clientID = parts[1];
+
+        String sinfo = 
+          ("Pipeline-" + PackageInfo.sVersion + " [" + PackageInfo.sRelease + "]");
+
+        if(!sinfo.equals(cinfo)) {
+          serverRsp = 
+            "Connection from (" + pSocket.getInetAddress() + ") rejected due to a " + 
+            "mismatch in Pipeline release versions!\n" + 
+            "  Client = " + cinfo + "\n" + 
+            "  Server = " + sinfo;
+
+          LogMgr.getInstance().log
+            (LogMgr.Kind.Net, LogMgr.Level.Warning, 
+            serverRsp);
+
+          live = false;
+        }
+
+        if(!pPluginMgr.isUpToDate() && !clientID.equals("PluginMgrControlClient")) {
+          serverRsp = 
+            "Connection from (" + pSocket.getInetAddress() + ") rejected " + 
+            "because plpluginmgr is waiting for the installation of required plugins. " + 
+            "Only connections from plplugin will be accepted at this time.";
+
+          LogMgr.getInstance().log
+            (LogMgr.Kind.Net, LogMgr.Level.Warning, 
+             serverRsp);
+          
+          live = false;
+        }
+      }
+
+      objOut.writeObject(serverRsp);
+      objOut.flush();
+
+      first = false;
+    }
+    else {
+      /* check time difference between client and server */ 
+      checkTimeSync((Long) obj, pSocket); 
+
+      /* dispatch request by kind */ 
+      PluginRequest kind = (PluginRequest) objIn.readObject();
+
+      LogMgr.getInstance().log
+        (LogMgr.Kind.Net, LogMgr.Level.Finer,
+         "Request [" + pSocket.getInetAddress() + "]: " + kind.name());
+      LogMgr.getInstance().flush();
+
             try {
               switch(kind) {
               /*-- ADMINISTRATIVE PRIVILEGES -----------------------------------------------*/
@@ -251,29 +309,38 @@ class PluginMgrServer
                   objOut.flush(); 
                 }
                 break;
-		
+
               case Install:
                 {
                   PluginInstallReq req = (PluginInstallReq) objIn.readObject();
+
                   objOut.writeObject(pPluginMgr.install(req));
                   objOut.flush(); 
                 }
                 break;
-		
+
+              case ListRequired:
+                {
+                  objOut.writeObject(pPluginMgr.listRequired());
+                  objOut.flush();
+                }
+                break;
+
               case Disconnect:
                 live = false;
                 break;
-		
+
               case Shutdown:
                 LogMgr.getInstance().log
                   (LogMgr.Kind.Net, LogMgr.Level.Warning,
                    "Shutdown Request Received: " + pSocket.getInetAddress());
+
                 LogMgr.getInstance().flush();
                 pShutdown.set(true);
-                break;	    
-		
+                break;
+
               default:
-                throw new IllegalStateException("Unknown request ID (" + kind + ")!"); 
+                throw new IllegalStateException("Unknown request ID (" + kind + ")!");
               }
             }
             catch(Exception opex) {
@@ -290,41 +357,41 @@ class PluginMgrServer
                 objOut.flush(); 
               }
             }
-	  }
-	}
+    }
+  }
       }
       catch(AsynchronousCloseException ex) {
       }
       catch (EOFException ex) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
-	   "Connection on port (" + PackageInfo.sPluginPort + ") terminated abruptly!");
+  LogMgr.getInstance().log
+    (LogMgr.Kind.Net, LogMgr.Level.Severe,
+     "Connection on port (" + PackageInfo.sPluginPort + ") terminated abruptly!");
       }
       catch (IOException ex) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
+  LogMgr.getInstance().log
+    (LogMgr.Kind.Net, LogMgr.Level.Severe,
            Exceptions.getFullMessage
-	   ("IO problems on port (" + PackageInfo.sPluginPort + "):", ex)); 
+     ("IO problems on port (" + PackageInfo.sPluginPort + "):", ex));
       }
       catch(ClassNotFoundException ex) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
+  LogMgr.getInstance().log
+    (LogMgr.Kind.Net, LogMgr.Level.Severe,
            Exceptions.getFullMessage
-	   ("Illegal object encountered on port (" + PackageInfo.sPluginPort + "):", ex)); 
+     ("Illegal object encountered on port (" + PackageInfo.sPluginPort + "):", ex));
       }
       catch (Exception ex) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
-	   Exceptions.getFullMessage(ex));
+  LogMgr.getInstance().log
+    (LogMgr.Kind.Net, LogMgr.Level.Severe,
+     Exceptions.getFullMessage(ex));
       }
       finally {
-	closeConnection();
+  closeConnection();
 
-	if(!pShutdown.get()) {
-	  synchronized(pTasks) {
-	    pTasks.remove(this);
-	  }
-	}
+  if(!pShutdown.get()) {
+    synchronized(pTasks) {
+      pTasks.remove(this);
+    }
+  }
       }
     }
 
@@ -332,22 +399,22 @@ class PluginMgrServer
     closeConnection() 
     {
       if(!pChannel.isOpen()) 
-	return;
+  return;
 
       try {
-	pChannel.close();
+  pChannel.close();
       }
       catch(IOException ex) {
       }
 
       LogMgr.getInstance().log
-	(LogMgr.Kind.Net, LogMgr.Level.Fine,
-	 "Client Connection Closed.");
+  (LogMgr.Kind.Net, LogMgr.Level.Fine,
+   "Client Connection Closed.");
       LogMgr.getInstance().flush();
     }
-    
-    private SocketChannel  pChannel; 
-    private Socket         pSocket;     
+
+    private SocketChannel  pChannel;
+    private Socket         pSocket;
   }
   
 

@@ -90,6 +90,11 @@ PluginOptsParser
   private boolean  pList; 
 
   /**
+   * Whether to list information about required plugins or unregistered plugins.
+   */
+  private boolean  pListRequired;
+
+  /**
    * Whether to ignore the Local Vendor check.
    */ 
   private boolean  pExternal;
@@ -131,10 +136,11 @@ TOKEN :
 | <LOG:               "--log">                     : LOG_SEP
 
   /* action options */	
-| <LIST:         "--list">     
-| <EXTERNAL:     "--external">    
-| <RENAME:       "--rename">    
-| <INSTALL:      "--install">    
+| <LIST:              "--list">             
+| <LIST_REQUIRED:     "--list-required">    
+| <EXTERNAL:          "--external">         
+| <RENAME:            "--rename">           
+| <INSTALL:           "--install">          
 
   /* plugin files */
 | <PLUGIN_FILE:   (["/","\\"])* ("../" | "..\\")* <PLUGIN_COMP> 
@@ -271,6 +277,9 @@ CommandLine()
         if(pList) {
           pApp.listPlugins(client);
         }
+        else if(pListRequired) {
+          pApp.listRequiredPlugins(client);
+        }
         else if(pInstall) {
           if(pPluginFiles.isEmpty()) 
             throw new ParseException
@@ -313,6 +322,7 @@ Commands()
 {
   (GlobalOpts() AE())* 
     ((List()) | 
+     (ListRequired()) |  
      ((External() | Rename())* Install() (PluginFile() AE())+))
   { 
     pHasCommands = true;
@@ -329,6 +339,17 @@ List() :
     pList = true;
   }
 }
+
+void
+ListRequired() :
+{}
+{
+  <LIST_REQUIRED> AE()
+  {
+    pListRequired = true;
+  }
+}
+
 
 
 void

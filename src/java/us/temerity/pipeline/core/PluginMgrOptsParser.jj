@@ -61,6 +61,12 @@ PluginMgrOptsParser
    */
   private PluginMgrApp  pApp;
 
+  /**
+   * The required plugins bootstrap directory.  This should point to the last 
+   * Pipeline directory.
+   */
+   private File  pBootstrapDir;
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -101,6 +107,9 @@ TOKEN :
 | <STANDARD_LOG_DIR:  "--standard-log-dir">   : PATH_SEP
 | <LOG_BACKUPS:       "--log-backups">        : INTEGER_SEP
 | <LOG:               "--log">                : LOG_SEP
+
+  /* required plugins bootstrap option */
+| <BOOTSTRAP:         "--bootstrap">          : PATH_SEP
 
   /* seperators */ 
 | <AE1: (["\0"])+> 
@@ -234,8 +243,13 @@ CommandLine() :
         }
       }
       
-      /* create the server */ 
-      return new PluginMgrServer();
+      /* create the server */
+      if(pBootstrapDir != null) {
+        return new PluginMgrServer(pBootstrapDir);
+      }
+      else {
+        return new PluginMgrServer();
+      }
     }
 
     return null;
@@ -248,11 +262,37 @@ Commands() :
 {}
 {
   (GlobalOpts() AE())*
+    [Bootstrap()]
   { 
     pHasCommands = true;    
   }
 }
-    
+
+
+void
+Bootstrap() :
+{
+  Token t;
+}
+{
+  <BOOTSTRAP> EQ() t=<PATH_ARG> AE()
+  {
+    pBootstrapDir = new File(t.image);
+    if(!pBootstrapDir.isDirectory())
+      throw new ParseException
+        ("The given required plugins bootstrap directory (" + pBootstrapDir + 
+        ") does not exist!");
+
+    File bootstrapPluginsDir = new File(pBootstrapDir, "plugins");
+    if(!bootstrapPluginsDir.isDirectory()) {
+      throw new ParseException
+        ("The given required plugins bootstrap directory (" + pBootstrapDir + 
+        ") does not contain a plugins directory!  Please check that you are using " + 
+        "the correct previous Pipeline directory or do not use --bootstrap=(previous " + 
+        "Pipeline root directory)");
+    }
+  }
+}
 
 
 /*------------------------------------------------------------------------------------------*/
