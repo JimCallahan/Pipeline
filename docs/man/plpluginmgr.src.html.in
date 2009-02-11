@@ -10,8 +10,9 @@
 <blockquote><b>plpluginmgr</b> - the Pipeline Plugin Manager daemon<br>
 </blockquote>
 <h3><a name="Synopsis"></a>Synopsis</h3>
-<blockquote><b>plpluginmgr</b> [<a href="#Global_Options"><i>options</i></a>]<i><br>
-  </i><br>
+<blockquote><b>plpluginmgr</b> [<a href="#Global_Options"><i>options</i></a>]<br>
+  <b>plpluginmgr</b> [<a href="#Global_Options"><i>options</i></a>] <a style="font-weight: bold;" href="#--bootstrap">--bootstrap</a>=dirname<br>
+  <br>
   <b>plpluginmgr</b> <a style="font-weight: bold;" href="#--help">--help</a><br>
   <b>plpluginmgr</b> <a style="font-weight: bold;" href="#--html-help">--html-help</a><br>
   <b>plpluginmgr</b> <a style="font-weight: bold;" href="#--version_">--version</a><br>
@@ -205,6 +206,29 @@ increasingly more detailed command tracing messages. <br>
 </div>
 </div>
 </div>
+
+<h3<a name="--bootstrap"></a>Bootstrap</h3>
+<div style="margin-left: 40px;">
+Between Pipeline upgrades the local plugins created by studios are not automatically 
+installed.  Only the Temerity plugins are part of the Pipeline plugins directory.  If the 
+local studio plugins are not installed after the start up of plpluginmgr and before plmaster 
+and plquememgr start up, problems can occur because plmaster and plqueuemgr assume that all 
+plugins are available.<br>
+<br>
+The required plugins features now provides a means of creating a GLUE file of all the local 
+studio plugins that need to be installed after plpluginmgr start up.  However, the initial use 
+of this feature still requires the studios to install the list of their plugins.  With the 
+--bootstrap option a studio can specifiy the previous Pipeline root directory and read the 
+plugins to generate an initial required plugins GLUE database.<br>
+<br>
+<span style="font-weight: bold;">--bootstrap</span>=dirname<br>
+<br>
+<div style="margin-left: 40px;">
+The previous Pipeline root directory (dirname) to be used to bootstrap the required plugins 
+feature.
+</div>
+</div>
+
 <h3><a name="See_Also"></a>See Also</h3>
 <div style="margin-left: 40px;"><span style="font-weight: bold;">Documentation</span>
 <br>

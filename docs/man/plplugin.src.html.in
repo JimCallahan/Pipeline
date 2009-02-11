@@ -12,8 +12,11 @@
 <h3><a name="Synopsis"></a>Synopsis</h3>
 <blockquote><b>plplugin</b> [<a href="#Global_Options"><i>options</i></a>]
   <a style="font-weight: bold;" href="#--list">--list</a><span
- style="font-weight: bold;"> </span><b><br>
-plplugin</b> [<a href="#Global_Options"><i>options</i></a>] <a
+ style="font-weight: bold;"> </span><br>
+<b>plplugin</b> [<a href="#Global_Options"><i>options</i></a>]
+  <a style="font-weight: bold;" href="#--list-required">--list-required</a><span
+ style="font-weight: bold;"> </span><br>
+<b>plplugin</b> [<a href="#Global_Options"><i>options</i></a>] <a
  href="#--install"><span style="font-weight: bold;">--install</span></a>
   <i>plugin-file1 </i>[<i>plugin-file2 ...</i>]<i><br>
   </i><br>
@@ -449,6 +452,20 @@ installed plugins and exits.<br>
 </div>
 </div>
 <br>
+
+<div style="margin-left: 40px;">
+<span
+ style="font-weight: bold;">
+<a name="--list-required"></a>--list-required</span><br>
+<span style="font-weight: bold;"></span></div>
+<br>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;">Lists information about the required 
+plugins that need to be installed and the un-registered plugins detected and exits.<br>
+</div>
+</div>
+<br>
+
 <div style="margin-left: 40px;"><span style="font-weight: bold;"><a
  name="--install"></a></span>[<a
  href="plplugin.src.html.in#Install_Options">install-options</a>] <span
