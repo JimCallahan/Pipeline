@@ -1,0 +1,38 @@
+Summary: The config files used by the plpluginmgr(1) Pipeline daemon.
+Name: plpluginmgr-@CUSTOMER@
+Version: @VERSION@
+Release: @PROFILE_STAMP@
+URL: http://www.temerity.us
+License: Commercial
+Vendor: Temerity Software, Inc
+Group: Applications/Productivity
+BuildRoot: @RPM_ROOT@/DEST/plpluginmgr
+
+%description
+
+This RPM should only be installed on the Pipeline plugin manager server:
+
+  @PL_QUEUE_SERVER@
+
+It provides the directory structure and configuration files needed by 
+plpluginmgr(1).  
+
+The plpluginmgr(1) program is distributed in the main Pipeline RPM:
+
+  pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.rpm
+
+%files
+
+%defattr(755,@PIPELINE_USER@,@PIPELINE_GROUP@)
+%dir @PL_PLUGIN_DIRECTORY@
+%dir @PL_PLUGIN_DIRECTORY@/required
+
+%defattr(444,@PIPELINE_USER@,@PIPELINE_GROUP@)
+%config @PL_PLUGIN_DIRECTORY@/required/Temerity
+
+%changelog
+* @RPM_DATE@ Temerity Support <support@temerity.us>
+Latest build.
+
+
+

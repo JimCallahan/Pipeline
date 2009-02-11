@@ -1,4 +1,3 @@
-
 if IS_UNIX
 
 if FOUNDATION 
@@ -15,6 +14,7 @@ if HAS_WINDOWS
     RPMS = \
       RPMS/i686/pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
       RPMS/i686/plmaster-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
+      RPMS/i686/plpluginmgr-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
       RPMS/i686/plqueuemgr-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
       RPMS/i686/pllocal-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
       RPMS/i686/plmac-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
@@ -23,6 +23,7 @@ else
     RPMS = \
       RPMS/i686/pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
       RPMS/i686/plmaster-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
+      RPMS/i686/plpluginmgr-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
       RPMS/i686/plqueuemgr-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
       RPMS/i686/pllocal-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
       RPMS/i686/plmac-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm
@@ -34,6 +35,7 @@ if HAS_WINDOWS
   RPMS = \
     RPMS/i686/pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
     RPMS/i686/plmaster-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
+    RPMS/i686/plpluginmgr-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
     RPMS/i686/plqueuemgr-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
     RPMS/i686/pllocal-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
     RPMS/i686/plwin-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm
@@ -41,6 +43,7 @@ else
   RPMS = \
     RPMS/i686/pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
     RPMS/i686/plmaster-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
+    RPMS/i686/plpluginmgr-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
     RPMS/i686/plqueuemgr-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
     RPMS/i686/pllocal-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm
 endif
@@ -55,6 +58,7 @@ if HAS_WINDOWS
     RPMS = \
       RPMS/i686/pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
       RPMS/i686/plmaster-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
+      RPMS/i686/plpluginmgr-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
       RPMS/i686/plqueuemgr-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
       RPMS/i686/plmac-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
       RPMS/i686/plwin-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm
@@ -62,6 +66,7 @@ else
     RPMS = \
       RPMS/i686/pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
       RPMS/i686/plmaster-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
+      RPMS/i686/plpluginmgr-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
       RPMS/i686/plqueuemgr-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
       RPMS/i686/plmac-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm
 endif 
@@ -72,12 +77,14 @@ if HAS_WINDOWS
   RPMS = \
     RPMS/i686/pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
     RPMS/i686/plmaster-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
+    RPMS/i686/plpluginmgr-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
     RPMS/i686/plqueuemgr-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
     RPMS/i686/plwin-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm
 else 
   RPMS = \
     RPMS/i686/pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
     RPMS/i686/plmaster-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
+    RPMS/i686/plpluginmgr-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
     RPMS/i686/plqueuemgr-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm
 endif
 
@@ -135,10 +142,11 @@ pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.tgz: pipeline-install $(RPMS)
 	rm -rf pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@
 
 pipeline-install: clean-rpms rpm-mkdirs
-	rm -rf DEST/pipeline DEST/plmaster DEST/plqueuemgr DEST/pllocal
+	rm -rf DEST/pipeline DEST/plmaster DEST/plpluginmgr DEST/plqueuemgr DEST/pllocal
 	DESTDIR=`pwd`/DEST/pipeline $(MAKE) -C .. install
 	mkdir -p DEST/plmaster/@NODEDIR@
 	mv DEST/pipeline/@NODEDIR@/* DEST/plmaster/@NODEDIR@
+	mkdir -p DEST/plpluginmgr/@PL_PLUGIN_DIRECTORY@/required
 	mkdir -p DEST/plqueuemgr/@QUEUEDIR@
 	ln -s pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@ \
               DEST/pipeline/@ROOT_INST_PARENT_DIR@/pipeline-latest
@@ -167,6 +175,7 @@ if PL_LOCAL
 core-rpms: pipeline-install \
   RPMS/i686/pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
   RPMS/i686/plmaster-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
+  RPMS/i686/plpluginmgr-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
   RPMS/i686/plqueuemgr-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
   RPMS/i686/pllocal-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm
 
@@ -175,6 +184,7 @@ else !PL_LOCAL
 core-rpms: pipeline-install \
   RPMS/i686/pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
   RPMS/i686/plmaster-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
+  RPMS/i686/plpluginmgr-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm \
   RPMS/i686/plqueuemgr-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm
 
 endif !PL_LOCAL
@@ -231,6 +241,23 @@ RPMS/i686/plqueuemgr-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm: \
 SPECS/plqueuemgr-@CUSTOMER@-@VERSION@.spec: plqueuemgr.spec
 	cp -f plqueuemgr.spec $@
 
+
+RPMS/i686/plpluginmgr-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm: \
+  SPECS/plpluginmgr-@CUSTOMER@-@VERSION@.spec
+	javac -classpath DEST/pipeline/base/apps/pipeline-latest/lib/api.jar \
+    GeneratePluginDB.java
+	java \
+    -Dpipeline.ostype=Unix -Dpipeline.archtype=x86_64 -Dpipeline.buildtype=Debug \
+    -classpath \
+    DEST/pipeline/base/apps/pipeline-latest/lib/api.jar:. \
+    GeneratePluginDB \
+    DEST/pipeline/base/apps/pipeline-latest/plugins \
+    DEST/plpluginmgr@PL_PLUGIN_DIRECTORY@
+#	rm -f DEST/plpluginmgr/GeneratePluginDB.*
+	rpmbuild --rcfile rpmrc -bb SPECS/plpluginmgr-@CUSTOMER@-@VERSION@.spec
+
+SPECS/plpluginmgr-@CUSTOMER@-@VERSION@.spec: plpluginmgr.spec
+	cp -f plpluginmgr.spec $@
 
 if PL_LOCAL
 

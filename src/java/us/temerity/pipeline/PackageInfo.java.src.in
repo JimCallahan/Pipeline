@@ -1,4 +1,4 @@
-// $Id: PackageInfo.java.src.in,v 1.49 2008/12/18 00:46:24 jim Exp $
+// $Id: PackageInfo.java.src.in,v 1.50 2009/02/11 16:27:15 jlee Exp $
 
 package us.temerity.pipeline;
 
@@ -1027,6 +1027,25 @@ class PackageInfo
    * Set by the LocalVendor customer profile entry.
    */
   public static final String sLocalVendor = "@PL_LOCAL_VENDOR@"; 
+
+  /** 
+   * The abstract pathname of where plpluginmgr saves plugin information that persists between Pipeline upgrades. <P>
+   *
+   * Set by the PluginDirectory customer profile entry.
+   */
+  public static final Path sPluginMgrPath = new Path("@PL_PLUGIN_DIRECTORY@"); 
+
+  /** 
+   * The root directory where plpluginmgr saves plugin information that persists between Pipeline upgrades. <P>
+   *
+   * Set by the PluginDirectory customer profile entry.
+   * 
+   * @deprecated 
+   *   This field is not properly initialized on Windows systems.  Use {@link #sPluginMgrPath} 
+   *   instead for an operating system independent abstract pathname.
+   */
+  @Deprecated
+  public static final File sPluginMgrDir = new File("@PL_PLUGIN_DIRECTORY@"); 
 
 
 

@@ -809,6 +809,20 @@ AC_MSG_RESULT([$PL_LOCAL_VENDOR])
 
 
 
+AC_MSG_CHECKING([Pipeline Plugin Directory])
+
+AC_SUBST(PL_PLUGIN_DIRECTORY)
+PL_PLUGIN_DIRECTORY=`crypto_lookup PluginDirectory`
+
+if test "$PL_PLUGIN_DIRECTORY" == "null"
+then
+  AC_MSG_ERROR([customer profile was incomplete.])
+fi 
+
+AC_MSG_RESULT([$PL_PLUGIN_DIRECTORY])
+
+
+
 dnl ------------------------------------------------------------------------------------------
 
 AC_MSG_CHECKING([Pipeline User])
@@ -2212,6 +2226,7 @@ AC_CONFIG_FILES([
   studios/TheO/pipeline-local/src/com/theorphanage/pipeline/plugin/ZohanCollection/v1_0_0/stages/Makefile
 
   rpm/Makefile
+  rpm/GeneratePluginDB.java
   rpm/pipeline.spec.A
   rpm/pipeline.spec.B
   rpm/pipeline.spec.C
@@ -2220,6 +2235,7 @@ AC_CONFIG_FILES([
   rpm/pipeline.spec.F
   rpm/pipeline.spec.G
   rpm/plmaster.spec
+  rpm/plpluginmgr.spec
   rpm/plqueuemgr.spec
   rpm/pllocal.spec
   rpm/plmac.spec
