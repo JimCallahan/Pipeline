@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.126 2008/11/04 00:31:49 jim Exp $
+// $Id: MasterMgrClient.java,v 1.127 2009/02/11 16:31:31 jlee Exp $
 
 package us.temerity.pipeline;
 
@@ -44,7 +44,7 @@ class MasterMgrClient
   MasterMgrClient()
   {
     super(PackageInfo.sMasterServer, PackageInfo.sMasterPort, 
-	  MasterRequest.Disconnect, MasterRequest.Shutdown);
+	  MasterRequest.Disconnect, MasterRequest.Shutdown, "MasterMgrClient");
   }
 
 

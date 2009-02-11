@@ -1,4 +1,4 @@
-// $Id: QueueMgrControlClient.java,v 1.18 2007/03/28 19:51:04 jim Exp $
+// $Id: QueueMgrControlClient.java,v 1.19 2009/02/11 16:31:32 jlee Exp $
 
 package us.temerity.pipeline.core;
 
@@ -32,7 +32,7 @@ class QueueMgrControlClient
   public
   QueueMgrControlClient() 
   {
-    super();
+    super("QueueMgrControlClient");
   }
 
 

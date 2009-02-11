@@ -1,4 +1,4 @@
-// $Id: JobMgrClient.java,v 1.10 2008/08/16 21:46:18 jim Exp $
+// $Id: JobMgrClient.java,v 1.11 2009/02/11 16:31:31 jlee Exp $
 
 package us.temerity.pipeline;
 
@@ -51,7 +51,7 @@ class JobMgrClient
   ) 
   {
     super(hostname, PackageInfo.sJobPort, 
-	  JobRequest.Disconnect, null);
+	  JobRequest.Disconnect, null, "JobMgrClient");
   }
 
   

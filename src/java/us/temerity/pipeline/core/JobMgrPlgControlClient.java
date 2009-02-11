@@ -1,4 +1,4 @@
-// $Id: JobMgrPlgControlClient.java,v 1.2 2007/02/07 21:13:54 jim Exp $
+// $Id: JobMgrPlgControlClient.java,v 1.3 2009/02/11 16:31:31 jlee Exp $
 
 package us.temerity.pipeline.core;
 
@@ -41,7 +41,7 @@ class JobMgrPlgControlClient
    String hostname
   ) 
   {
-    super(hostname); 
+    super(hostname, "JobMgrPlgControlClient"); 
   }
 
 

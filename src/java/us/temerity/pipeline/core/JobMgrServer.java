@@ -1,4 +1,4 @@
-// $Id: JobMgrServer.java,v 1.32 2008/04/24 08:08:42 jim Exp $
+// $Id: JobMgrServer.java,v 1.33 2009/02/11 16:31:31 jlee Exp $
 
 package us.temerity.pipeline.core;
 
@@ -217,31 +217,56 @@ class JobMgrServer
 
 	  OutputStream out    = pSocket.getOutputStream();
 	  ObjectOutput objOut = new ObjectOutputStream(out);
-	  
-	  if(first) {
-	    String sinfo = 
-	      ("Pipeline-" + PackageInfo.sVersion + " [" + PackageInfo.sRelease + "]");
-	    
-	    objOut.writeObject(sinfo);
-	    objOut.flush(); 
-	    
-	    String cinfo = "Unknown"; 
-	    if(obj instanceof String) 
-	      cinfo = (String) obj;
-	    
-	    if(!sinfo.equals(cinfo)) {
-	      LogMgr.getInstance().log
-		(LogMgr.Kind.Net, LogMgr.Level.Warning,
-		 "Connection from (" + pSocket.getInetAddress() + ") rejected due to a " + 
-		 "mismatch in Pipeline release versions!\n" + 
-		 "  Client = " + cinfo + "\n" +
-		 "  Server = " + sinfo);	      
-	      
-	      live = false;
-	    }
-	      
-	    first = false;
-	  }
+
+    if(first) {
+      String clientMsg = "";
+      String serverRsp = "OK";
+
+      if(obj instanceof String)
+        clientMsg = (String) obj;
+
+      String[] parts = clientMsg.split(BaseMgrClient.sVerifyConnectionMessageDelim);
+
+      if(parts.length != 2) {
+        serverRsp = 
+          "Connection from (" + pSocket.getInetAddress() + ") rejected due to " + 
+          "an invalid message format.  Expected: (Pipeline version+release)" + 
+          BaseMgrClient.sVerifyConnectionMessageDelim + "clientID.\n" +
+          "Receieved: " + clientMsg;
+        
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Net, LogMgr.Level.Warning, 
+           serverRsp);
+
+        live = false;
+      }
+      else {
+        String cinfo    = parts[0];
+        String clientID = parts[1];
+
+        String sinfo = 
+          ("Pipeline-" + PackageInfo.sVersion + " [" + PackageInfo.sRelease + "]");
+
+        if(!sinfo.equals(cinfo)) {
+          serverRsp = 
+            "Connection from (" + pSocket.getInetAddress() + ") rejected due to a " + 
+            "mismatch in Pipeline release versions!\n" + 
+            "  Client = " + cinfo + "\n" + 
+            "  Server = " + sinfo;
+
+          LogMgr.getInstance().log
+            (LogMgr.Kind.Net, LogMgr.Level.Warning, 
+             serverRsp);
+
+          live = false;
+        }
+      }
+
+      objOut.writeObject(serverRsp);
+      objOut.flush();
+
+      first = false;
+    }
 	  else {
             /* check time difference between client and server */ 
             checkTimeSync((Long) obj, pSocket); 

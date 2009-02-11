@@ -1,4 +1,4 @@
-// $Id: PluginMgrClient.java,v 1.6 2008/05/10 03:17:35 jesse Exp $
+// $Id: PluginMgrClient.java,v 1.7 2009/02/11 16:31:31 jlee Exp $
   
 package us.temerity.pipeline;
 
@@ -47,7 +47,7 @@ class PluginMgrClient
   protected 
   PluginMgrClient() 
   {
-    super();
+    super("PluginMgrClient");
   }
 
 

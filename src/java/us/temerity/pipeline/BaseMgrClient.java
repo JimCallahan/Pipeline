@@ -1,4 +1,4 @@
-// $Id: BaseMgrClient.java,v 1.26 2008/10/10 15:15:18 jim Exp $
+// $Id: BaseMgrClient.java,v 1.27 2009/02/11 16:31:31 jlee Exp $
 
 package us.temerity.pipeline;
 
@@ -46,6 +46,37 @@ class BaseMgrClient
    Object shutdown
   ) 
   {
+    this(hostname, port, disconnect, shutdown, "BaseMgrClient");
+  }
+
+  /** 
+   * Construct a new manager client.
+   * 
+   * @param hostname 
+   *   The name of the host running the server.
+   * 
+   * @param port 
+   *   The network port listened to by server.
+   * 
+   * @param disconnect
+   *   The disconnect request enum.
+   * 
+   * @param shutdown
+   *   The shutdown request enum.
+   * 
+   * @param clientID
+   *   The clientID sent to the server.
+   */
+  public
+  BaseMgrClient
+  (
+    String hostname, 
+    int port, 
+    Object disconnect, 
+    Object shutdown, 
+    String clientID
+  )
+  {
     if(hostname == null) 
       throw new IllegalArgumentException("The hostname argument cannot be (null)!");
     pHostname = hostname;
@@ -59,6 +90,7 @@ class BaseMgrClient
     pDisconnect = disconnect;
 
     pShutdown = shutdown;
+    pClientID = clientID;
   }
 
 
@@ -133,60 +165,70 @@ class BaseMgrClient
       pSocket.connect(addr, 10000);
       
       {
-	String cinfo = 
-	  ("Pipeline-" + PackageInfo.sVersion + " [" + PackageInfo.sRelease + "]");
+  String cinfo = 
+    ("Pipeline-" + PackageInfo.sVersion + " [" + PackageInfo.sRelease + "]");
 
-	pSocket.setSoTimeout(10000);
+  /* The verifyConnection protocol has been updated to send the Pipeline version + release
+      and the client ID.  The server does the Pipeline version + release validation.  
+      The server will response with OK for successful verifyConnection, else it will be 
+      and error message. */
+  String clientMsg = cinfo + BaseMgrClient.sVerifyConnectionMessageDelim + pClientID;
 
-	OutputStream out = pSocket.getOutputStream();
-	ObjectOutput objOut = new ObjectOutputStream(out);
-	objOut.writeObject(cinfo);
-	objOut.flush(); 
+  LogMgr.getInstance().log
+    (LogMgr.Kind.Net, LogMgr.Level.Finest, 
+    clientMsg);
 
-	InputStream in = pSocket.getInputStream();
-	ObjectInput objIn = getObjectInput(in); 
-	Object rsp = objIn.readObject();
-	
-	pSocket.setSoTimeout(0);
-	
-	String sinfo = "Unknown"; 
-	if(rsp instanceof String) 
-	  sinfo = (String) rsp;
-	
-	if(!sinfo.equals(cinfo)) {
-	  disconnect();
-	  throw new PipelineException 
-	    (getServerDownMessage() + "\n  " + 
-	     "Connection rejected due to a mismatch in Pipeline " + 
-	     "release versions!\n" + 
-	     "  Client = " + cinfo + "\n" +
-	     "  Server = " + sinfo);
-	}
+  pSocket.setSoTimeout(10000);
 
-	if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Fine)) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Net, LogMgr.Level.Fine,
-	     "Connection Opened: " + pSocket.getInetAddress() + ":" + pPort); 
-	  LogMgr.getInstance().flush();
-	}
+  OutputStream out = pSocket.getOutputStream();
+  ObjectOutput objOut = new ObjectOutputStream(out);
+
+  objOut.writeObject(clientMsg);
+  objOut.flush(); 
+
+  InputStream in = pSocket.getInputStream();
+  ObjectInput objIn = getObjectInput(in); 
+  Object rsp = objIn.readObject();
+  
+  pSocket.setSoTimeout(0);
+
+  String serverRsp = "The server's response is not an instance of String.  " +
+    "The server is not following protocol.";
+  if(rsp instanceof String) 
+    serverRsp = (String) rsp;
+
+  /* The server will send back OK if all is well, else the return String will
+      be an error message.  The client side no longer performs a check of the server's 
+      Pipeline release version. */
+  if(!serverRsp.equals("OK")) {
+    disconnect();
+    throw new PipelineException(getServerDownMessage() + "\n" + serverRsp);
+  }
+
+  if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Fine)) {
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Net, LogMgr.Level.Fine,
+       "Connection Opened: " + pSocket.getInetAddress() + ":" + pPort); 
+    LogMgr.getInstance().flush();
+  }
       }
     }
     catch(IOException ex) {
       disconnect();
       throw new PipelineException
-	(getServerDownMessage() + "\n  " + 
-	 ex.getMessage(), ex);
+  (getServerDownMessage() + "\n  " + 
+   ex.getMessage(), ex);
     }
     catch(ClassNotFoundException ex) {
       disconnect();
       throw new PipelineException
-	("Illegal object encountered on port (" + pPort + "):\n" + 
-	 ex.getMessage());  
+  ("Illegal object encountered on port (" + pPort + "):\n" + 
+   ex.getMessage());  
     }
     catch(SecurityException ex) {
       throw new PipelineException
-	("The Security Manager doesn't allow socket connections!\n" + 
-	 ex.getMessage());
+  ("The Security Manager doesn't allow socket connections!\n" + 
+   ex.getMessage());
     }
   }
 
@@ -680,6 +722,18 @@ class BaseMgrClient
    * The shutdown request.
    */ 
   private Object  pShutdown;
+
+  /**
+   * The the ID of the client.
+   *
+   * This can be used by a BaseMgrServer to restrict access to certain clients.
+   */
+  private String pClientID;
+
+  /**
+   * The delimiter used to separate the Pipeline version + release and the client ID.
+   */
+  public static final String sVerifyConnectionMessageDelim = "/";
 
 }
 
