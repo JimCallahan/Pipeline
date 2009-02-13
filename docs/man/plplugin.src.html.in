@@ -549,6 +549,17 @@ information.&nbsp; However, it is occasonally necessary to be able to
 override this check and this option provides the means to do so.<br>
 <br>
 </div>
+
+<span style="font-weight: bold;"><br>
+<a name="--dry-run"></a>--dry-run</span><br>
+<br>
+<div style="margin-left: 40px;">
+The --dry-run option allows for plugin developer to check that plugins 
+will pass plpluginmgr's verifcation process without installing the plugin.
+<br>
+<br>
+</div>
+
 </div>
 <h3><a name="See_Also"></a>See Also</h3>
 <div style="margin-left: 40px;"><span style="font-weight: bold;">Documentation</span>
