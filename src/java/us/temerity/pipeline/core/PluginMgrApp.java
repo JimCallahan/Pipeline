@@ -1,4 +1,4 @@
-// $Id: PluginMgrApp.java,v 1.9 2009/02/11 16:32:39 jlee Exp $
+// $Id: PluginMgrApp.java,v 1.10 2009/02/13 16:01:03 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -119,7 +119,6 @@ class PluginMgrApp
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
        "USAGE:\n" +
        "  plpluginmgr [options]\n" + 
-       "  plpluginmgr [options] --bootstrap=(Previous Pipeline root directory)\n" +
        "\n" + 
        "  plpluginmgr --help\n" +
        "  plpluginmgr --html-help\n" +
@@ -130,7 +129,7 @@ class PluginMgrApp
        "\n" + 
        "GLOBAL OPTIONS:\n" +
        "  [--log-file=...] [--standard-log-file] [--standard-log-dir=...] \n" + 
-       "  [--log-backups=...] [--log=...]\n" +
+       "  [--log-backups=...] [--log=...] [--bootstrap=...]\n" +
        "\n" + 
        "\n" +  
        "Use \"plpluginmgr --html-help\" to browse the full documentation.\n");
