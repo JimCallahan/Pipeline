@@ -1,4 +1,4 @@
-// $Id: BasePluginMgrClient.java,v 1.18 2009/02/11 16:31:31 jlee Exp $
+// $Id: BasePluginMgrClient.java,v 1.19 2009/02/13 04:47:47 jlee Exp $
   
 package us.temerity.pipeline;
 
@@ -43,20 +43,20 @@ class BasePluginMgrClient
   )
   {
     super(PackageInfo.sPluginServer, PackageInfo.sPluginPort, 
-      PluginRequest.Disconnect, PluginRequest.Shutdown, clientID);
+          PluginRequest.Disconnect, PluginRequest.Shutdown, clientID);
 
     pEditors       = new PluginDataCache("Editor");  
     pActions       = new PluginDataCache("Actions");  
     pComparators   = new PluginDataCache("Comparators");  
-    pTools         = new PluginDataCache("Tools");   
+    pTools  	   = new PluginDataCache("Tools");   
     pAnnotations   = new PluginDataCache("Annotations");   
     pArchivers     = new PluginDataCache("Archivers");  
     pMasterExts    = new PluginDataCache("MasterExts");  
     pQueueExts     = new PluginDataCache("QueueExts");
     pKeyChoosers   = new PluginDataCache("KeyChoosers");
     pBuilderCollections = new PluginDataCache("BuilderCollections");
-
-
+    
+    
     pBuilderCollectionLayouts = 
       new TripleMap<String, String, VersionID, LayoutGroup>();
     pAnnotationPermissions = 
@@ -954,7 +954,6 @@ class BasePluginMgrClient
             TreeSet<OsType> supports = (TreeSet<OsType>) objs[2];
             
             ClassLoader loader = new PluginClassLoader(contents);
-
             try {
               LogMgr.getInstance().log
                 (LogMgr.Kind.Plg, LogMgr.Level.Finer,

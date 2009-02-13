@@ -1,4 +1,4 @@
-// $Id: BaseMgrClient.java,v 1.27 2009/02/11 16:31:31 jlee Exp $
+// $Id: BaseMgrClient.java,v 1.28 2009/02/13 04:47:47 jlee Exp $
 
 package us.temerity.pipeline;
 
@@ -165,70 +165,70 @@ class BaseMgrClient
       pSocket.connect(addr, 10000);
       
       {
-  String cinfo = 
-    ("Pipeline-" + PackageInfo.sVersion + " [" + PackageInfo.sRelease + "]");
+	String cinfo = 
+	  ("Pipeline-" + PackageInfo.sVersion + " [" + PackageInfo.sRelease + "]");
 
-  /* The verifyConnection protocol has been updated to send the Pipeline version + release
-      and the client ID.  The server does the Pipeline version + release validation.  
-      The server will response with OK for successful verifyConnection, else it will be 
-      and error message. */
-  String clientMsg = cinfo + BaseMgrClient.sVerifyConnectionMessageDelim + pClientID;
+        /* The verifyConnection protocol has been updated to send the Pipeline version + release
+             and the client ID.  The server does the Pipeline version + release validation.  
+             The server will response with OK for successful verifyConnection, else it will be 
+             and error message. */
+        String clientMsg = cinfo + BaseMgrClient.sVerifyConnectionMessageDelim + pClientID;
 
-  LogMgr.getInstance().log
-    (LogMgr.Kind.Net, LogMgr.Level.Finest, 
-    clientMsg);
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Net, LogMgr.Level.Finest, 
+           clientMsg);
 
-  pSocket.setSoTimeout(10000);
+        pSocket.setSoTimeout(10000);
 
-  OutputStream out = pSocket.getOutputStream();
-  ObjectOutput objOut = new ObjectOutputStream(out);
+        OutputStream out = pSocket.getOutputStream();
+        ObjectOutput objOut = new ObjectOutputStream(out);
 
-  objOut.writeObject(clientMsg);
-  objOut.flush(); 
+        objOut.writeObject(clientMsg);
+        objOut.flush(); 
 
-  InputStream in = pSocket.getInputStream();
-  ObjectInput objIn = getObjectInput(in); 
-  Object rsp = objIn.readObject();
-  
-  pSocket.setSoTimeout(0);
+        InputStream in = pSocket.getInputStream();
+        ObjectInput objIn = getObjectInput(in); 
+        Object rsp = objIn.readObject();
 
-  String serverRsp = "The server's response is not an instance of String.  " +
-    "The server is not following protocol.";
-  if(rsp instanceof String) 
-    serverRsp = (String) rsp;
+        pSocket.setSoTimeout(0);
 
-  /* The server will send back OK if all is well, else the return String will
-      be an error message.  The client side no longer performs a check of the server's 
-      Pipeline release version. */
-  if(!serverRsp.equals("OK")) {
-    disconnect();
-    throw new PipelineException(getServerDownMessage() + "\n" + serverRsp);
-  }
+        String serverRsp = "The server's response is not an instance of String.  " +
+          "The server is not following protocol.";
+        if(rsp instanceof String) 
+          serverRsp = (String) rsp;
 
-  if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Fine)) {
-    LogMgr.getInstance().log
-      (LogMgr.Kind.Net, LogMgr.Level.Fine,
-       "Connection Opened: " + pSocket.getInetAddress() + ":" + pPort); 
-    LogMgr.getInstance().flush();
-  }
+        /* The server will send back OK if all is well, else the return String will
+             be an error message.  The client side no longer performs a check of the server's 
+             Pipeline release version. */
+        if(!serverRsp.equals("OK")) {
+          disconnect();
+          throw new PipelineException(getServerDownMessage() + "\n" + serverRsp);
+        }
+
+        if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Fine)) {
+          LogMgr.getInstance().log
+            (LogMgr.Kind.Net, LogMgr.Level.Fine,
+             "Connection Opened: " + pSocket.getInetAddress() + ":" + pPort); 
+          LogMgr.getInstance().flush();
+        }
       }
     }
     catch(IOException ex) {
       disconnect();
       throw new PipelineException
-  (getServerDownMessage() + "\n  " + 
-   ex.getMessage(), ex);
+	(getServerDownMessage() + "\n  " + 
+	 ex.getMessage(), ex);
     }
     catch(ClassNotFoundException ex) {
       disconnect();
       throw new PipelineException
-  ("Illegal object encountered on port (" + pPort + "):\n" + 
-   ex.getMessage());  
+	("Illegal object encountered on port (" + pPort + "):\n" + 
+	 ex.getMessage());  
     }
     catch(SecurityException ex) {
       throw new PipelineException
-  ("The Security Manager doesn't allow socket connections!\n" + 
-   ex.getMessage());
+	("The Security Manager doesn't allow socket connections!\n" + 
+	 ex.getMessage());
     }
   }
 
