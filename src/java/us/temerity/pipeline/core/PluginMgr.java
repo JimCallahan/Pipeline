@@ -1,4 +1,4 @@
-// $Id: PluginMgr.java,v 1.28 2009/02/13 04:58:56 jlee Exp $
+// $Id: PluginMgr.java,v 1.29 2009/02/13 05:32:53 jlee Exp $
 
 package us.temerity.pipeline.core;
 
@@ -99,7 +99,9 @@ class PluginMgr
         collect the non Temerity plugins. Then write a GLUE file for each Vendor.  
         The bootstrap process performs all the checking that loadAllPlugin does, but 
         does not load the plugins.  The bootstrap flag  allows for the same code to be 
-        used. */
+        used.  After the bootstrap process writes the required plugins GLUE file for 
+	Vendor plugins detected, plpluginmgr starts up as normal, now it has additional 
+	GLUE files to examine. */
     if(bootstrapDir != null) {
       if(!bootstrapDir.isDirectory())
         throw new IllegalStateException
