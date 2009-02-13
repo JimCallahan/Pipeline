@@ -1,4 +1,4 @@
-// $Id: PluginMgr.java,v 1.29 2009/02/13 05:32:53 jlee Exp $
+// $Id: PluginMgr.java,v 1.30 2009/02/13 15:59:38 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1413,17 +1413,17 @@ class PluginMgr
 
       if(file.exists()) {
         if(!file.delete())
-  throw new PipelineException
-    ("Unable to remove the old installed plugins file (" + file + ")!");
+          throw new PipelineException
+            ("Unable to remove the old installed plugins file (" + file + ")!");
       }
-
+      
       GlueEncoderImpl.encodeFile("RequiredPlugins", plugins, file);
     }
     catch(GlueException ex) {
-  LogMgr.getInstance().log
-    (LogMgr.Kind.Plg, LogMgr.Level.Finest, 
-     "Error saving the installed plugins list = " + ex);
-
+      LogMgr.getInstance().log
+        (LogMgr.Kind.Plg, LogMgr.Level.Finest, 
+         "Error saving the installed plugins list = " + ex);
+      
       throw new PipelineException(ex);
     }
     finally {
@@ -1626,6 +1626,9 @@ class PluginMgr
     static final long serialVersionUID = 6780638964799823468L;
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Rather than deal with a boolean to deal with the current type of plugin loading, 
    * this enum expresses all the types.
@@ -1646,7 +1649,7 @@ class PluginMgr
     Install, 
 
     /* Go through the plugin validation but do not load the plugin. */
-    DryRun
+    DryRun;
   }
 
 
