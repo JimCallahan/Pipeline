@@ -105,6 +105,11 @@ PluginOptsParser
   private boolean  pRename;
 
   /**
+   * Whether to just perform plugin validation and not load the plugin.
+   */
+  private boolean  pDryRun;
+
+  /**
    * Whether to install the given plugins. 
    */ 
   private boolean  pInstall;
@@ -136,11 +141,12 @@ TOKEN :
 | <LOG:               "--log">                     : LOG_SEP
 
   /* action options */	
-| <LIST:              "--list">             
-| <LIST_REQUIRED:     "--list-required">    
-| <EXTERNAL:          "--external">         
-| <RENAME:            "--rename">           
-| <INSTALL:           "--install">          
+| <LIST:         "--list">     
+| <LIST_REQUIRED: "--list-required">
+| <EXTERNAL:     "--external">    
+| <RENAME:       "--rename">    
+| <DRYRUN:       "--dry-run">
+| <INSTALL:      "--install">    
 
   /* plugin files */
 | <PLUGIN_FILE:   (["/","\\"])* ("../" | "..\\")* <PLUGIN_COMP> 
@@ -277,9 +283,9 @@ CommandLine()
         if(pList) {
           pApp.listPlugins(client);
         }
-        else if(pListRequired) {
-          pApp.listRequiredPlugins(client);
-        }
+	else if(pListRequired) {
+	  pApp.listRequiredPlugins(client);
+	}
         else if(pInstall) {
           if(pPluginFiles.isEmpty()) 
             throw new ParseException
@@ -292,11 +298,11 @@ CommandLine()
 	  
             LogMgr.getInstance().log
               (LogMgr.Kind.Ops, LogMgr.Level.Info,
-               "Installing: " + pluginfile); 
+               (pDryRun ? "Dry run install: " : "Installing: ") + pluginfile); 
             LogMgr.getInstance().flush();
 	  
             try {
-              client.installPlugin(plugindir, pluginfile, pExternal, pRename);
+              client.installPlugin(plugindir, pluginfile, pExternal, pRename, pDryRun);
             }
             catch(PipelineException ex) {
               LogMgr.getInstance().log
@@ -322,8 +328,8 @@ Commands()
 {
   (GlobalOpts() AE())* 
     ((List()) | 
-     (ListRequired()) |  
-     ((External() | Rename())* Install() (PluginFile() AE())+))
+     (ListRequired()) | 
+     ((External() | Rename() | DryRun())* Install() (PluginFile() AE())+))
   { 
     pHasCommands = true;
   }
@@ -340,6 +346,7 @@ List() :
   }
 }
 
+
 void
 ListRequired() :
 {}
@@ -349,7 +356,6 @@ ListRequired() :
     pListRequired = true;
   }
 }
-
 
 
 void
@@ -369,6 +375,17 @@ Rename() :
   <RENAME> AE() 
   { 
     pRename = true;
+  }
+}
+
+
+void
+DryRun() :
+{}
+{
+  <DRYRUN> AE()
+  {
+    pDryRun = true;
   }
 }
 

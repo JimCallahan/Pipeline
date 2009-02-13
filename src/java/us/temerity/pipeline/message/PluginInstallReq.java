@@ -1,4 +1,4 @@
-// $Id: PluginInstallReq.java,v 1.4 2008/10/22 18:12:31 jim Exp $
+// $Id: PluginInstallReq.java,v 1.5 2009/02/13 04:55:47 jlee Exp $
 
 package us.temerity.pipeline.message;
 
@@ -51,7 +51,8 @@ class PluginInstallReq
    VersionID pkgID, 
    TreeMap<String,byte[]> contents, 
    boolean external, 
-   boolean rename
+   boolean rename, 
+   boolean dryRun
   )
   { 
     super();
@@ -62,6 +63,7 @@ class PluginInstallReq
     pContents  = contents; 
     pExternal  = external;
     pRename    = rename; 
+    pDryRun    = dryRun;
   }
 
 
@@ -124,6 +126,15 @@ class PluginInstallReq
     return pRename; 
   }
 
+  /**
+   *
+   */
+  public boolean
+  getDryRun()
+  {
+    return pDryRun;
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -167,6 +178,11 @@ class PluginInstallReq
    * Whether to ignore the Java class/package aliasing check.
    */
   private boolean pRename;
+
+  /**
+   * Whether to just perform plugin validation and not load the plugin.
+   */
+  private boolean  pDryRun;
 
 }
   
