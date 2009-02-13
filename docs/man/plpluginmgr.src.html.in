@@ -11,7 +11,9 @@
 </blockquote>
 <h3><a name="Synopsis"></a>Synopsis</h3>
 <blockquote><b>plpluginmgr</b> [<a href="#Global_Options"><i>options</i></a>]<br>
-  <b>plpluginmgr</b> [<a href="#Global_Options"><i>options</i></a>] <a style="font-weight: bold;" href="#--bootstrap">--bootstrap</a>=dirname<br>
+  <b>plpluginmgr</b> [<a href="#Global_Options"><i>options</i></a>] <a
+ style="font-weight: bold;" href="#--bootstrap">--bootstrap</a>=<span
+ style="font-style: italic;">dirname</span><br>
   <br>
   <b>plpluginmgr</b> <a style="font-weight: bold;" href="#--help">--help</a><br>
   <b>plpluginmgr</b> <a style="font-weight: bold;" href="#--html-help">--html-help</a><br>
@@ -206,29 +208,48 @@ increasingly more detailed command tracing messages. <br>
 </div>
 </div>
 </div>
-
-<h3<a name="--bootstrap"></a>Bootstrap</h3>
+<h3><a name="--bootstrap"></a>Plugin Database and Bootstrapping</h3>
 <div style="margin-left: 40px;">
-Between Pipeline upgrades the local plugins created by studios are not automatically 
-installed.  Only the Temerity plugins are part of the Pipeline plugins directory.  If the 
-local studio plugins are not installed after the start up of plpluginmgr and before plmaster 
-and plquememgr start up, problems can occur because plmaster and plqueuemgr assume that all 
-plugins are available.<br>
+When Pipeline is upgraded, only those plugins provided by Temerity are
+included in the new release.&nbsp; All locally created plugins will
+also need to be installed prior to starting <span
+ style="font-weight: bold;">plmaster</span>(1) and the other server
+daemons.&nbsp;&nbsp; In order to insure that no locally created plugins
+required by these other server daemons have been overlooked, Pipeline
+maintains a database containing information about these local plugins
+and will not fully startup until all have been installed
+properly.&nbsp; This prevents potential runtime failures loading nodes
+or running jobs which may depend on these locally created
+plugins.&nbsp; During initial startup, <span style="font-weight: bold;">plpluginmgr</span>(1)
+will only communicate with <span style="font-weight: bold;">plplugin</span>(1)
+until all locally required plugins have been installed.&nbsp;&nbsp;
+When plugins are installed, a count of missing local plugins is
+reported and the names of all missing required plugins can be listed
+using the --list-required option to <span style="font-weight: bold;">plplugin</span>(1).&nbsp;
+See that man page for details.<br>
 <br>
-The required plugins features now provides a means of creating a GLUE file of all the local 
-studio plugins that need to be installed after plpluginmgr start up.  However, the initial use 
-of this feature still requires the studios to install the list of their plugins.  With the 
---bootstrap option a studio can specifiy the previous Pipeline root directory and read the 
-plugins to generate an initial required plugins GLUE database.<br>
+The required plugin database is always provided for plugins generated
+by Temerity Software and included in the Pipeline release RPMs.&nbsp;
+When new plugins are installed with <span style="font-weight: bold;">plplugin</span>(1),
+the database for non-Temerity vendors is updated to keep track of the
+requirement for these plugins during future upgrades.&nbsp; However,
+the information about locally created plugins must be initialized the
+first time this feature is used at a studio.&nbsp; To bootstrap this
+process, the following option is provided: <br>
 <br>
-<span style="font-weight: bold;">--bootstrap</span>=dirname<br>
+<span style="font-weight: bold;">--bootstrap</span>=<span
+ style="font-style: italic;">dirname</span><br>
 <br>
-<div style="margin-left: 40px;">
-The previous Pipeline root directory (dirname) to be used to bootstrap the required plugins 
-feature.
+<div style="margin-left: 40px;">By providing the root install location (<span
+ style="font-style: italic;">dirname</span>) of the previous Pipeline
+installation, the required plugins database can be generated if none
+already exists.&nbsp; This is useful when upgrading Pipeline for the
+first time after this required plugins feature has been added for
+studios with existing locally installed plugins.&nbsp;&nbsp; This
+option is not normally required and should only be neccessary to
+bootstrap the database initially.<br>
 </div>
 </div>
-
 <h3><a name="See_Also"></a>See Also</h3>
 <div style="margin-left: 40px;"><span style="font-weight: bold;">Documentation</span>
 <br>

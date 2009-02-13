@@ -13,10 +13,10 @@
 <blockquote><b>plplugin</b> [<a href="#Global_Options"><i>options</i></a>]
   <a style="font-weight: bold;" href="#--list">--list</a><span
  style="font-weight: bold;"> </span><br>
-<b>plplugin</b> [<a href="#Global_Options"><i>options</i></a>]
-  <a style="font-weight: bold;" href="#--list-required">--list-required</a><span
+  <b>plplugin</b> [<a href="#Global_Options"><i>options</i></a>] <a
+ style="font-weight: bold;" href="#--list-required">--list-required</a><span
  style="font-weight: bold;"> </span><br>
-<b>plplugin</b> [<a href="#Global_Options"><i>options</i></a>] <a
+  <b>plplugin</b> [<a href="#Global_Options"><i>options</i></a>] <a
  href="#--install"><span style="font-weight: bold;">--install</span></a>
   <i>plugin-file1 </i>[<i>plugin-file2 ...</i>]<i><br>
   </i><br>
@@ -452,20 +452,24 @@ installed plugins and exits.<br>
 </div>
 </div>
 <br>
-
 <div style="margin-left: 40px;">
-<span
- style="font-weight: bold;">
-<a name="--list-required"></a>--list-required</span><br>
+<span style="font-weight: bold;"><a name="--list-required"></a>--list-required</span><br>
 <span style="font-weight: bold;"></span></div>
 <br>
 <div style="margin-left: 40px;">
-<div style="margin-left: 40px;">Lists information about the required 
-plugins that need to be installed and the un-registered plugins detected and exits.<br>
+<div style="margin-left: 40px;">Lists information about the required
+locally created plugins that need to be installed after an upgrade and
+any un-registered local plugins detected and exits.&nbsp; After an
+upgrade of Pipeline, the Plugin Manager will not begin serving the
+other server daemons or clients other than <span
+ style="font-weight: bold;">plplugin</span>(1) until all locally
+created plugins previously in use have been installed for the upgraded
+version of Pipeline.&nbsp; See the <a href="plpluginmgr.html"><span
+ style="font-weight: bold;">plpluginmgr</span></a>(1) man page for
+details.<br>
 </div>
 </div>
 <br>
-
 <div style="margin-left: 40px;"><span style="font-weight: bold;"><a
  name="--install"></a></span>[<a
  href="plplugin.src.html.in#Install_Options">install-options</a>] <span
@@ -547,19 +551,15 @@ prevent the accidental overwriting of an entirely different plugin due
 to the new plugin specifying incorrect Name, VersionID and Vendor
 information.&nbsp; However, it is occasonally necessary to be able to
 override this check and this option provides the means to do so.<br>
-<br>
 </div>
-
 <span style="font-weight: bold;"><br>
 <a name="--dry-run"></a>--dry-run</span><br>
 <br>
-<div style="margin-left: 40px;">
-The --dry-run option allows for plugin developer to check that plugins 
-will pass plpluginmgr's verifcation process without installing the plugin.
-<br>
-<br>
+<div style="margin-left: 40px;">Perform all required checks to validate
+that an install of a plugin but do not actually perform the
+installation.&nbsp; This option allows for plugin developer to check
+whether a plugin would be installed successfully without installing it.<br>
 </div>
-
 </div>
 <h3><a name="See_Also"></a>See Also</h3>
 <div style="margin-left: 40px;"><span style="font-weight: bold;">Documentation</span>
