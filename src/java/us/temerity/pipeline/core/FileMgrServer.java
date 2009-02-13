@@ -1,4 +1,4 @@
-// $Id: FileMgrServer.java,v 1.41 2009/02/11 16:31:31 jlee Exp $
+// $Id: FileMgrServer.java,v 1.42 2009/02/13 04:51:08 jlee Exp $
 
 package us.temerity.pipeline.core;
 
@@ -181,7 +181,7 @@ class FileMgrServer
    */
   private 
   class HandlerTask
-    extends Thread
+    extends BaseHandlerTask
   {
     public 
     HandlerTask
@@ -203,9 +203,7 @@ class FileMgrServer
 	   "Connection Opened: " + pSocket.getInetAddress());
 	LogMgr.getInstance().flush();
 
-	boolean first = true;
-	boolean live = true;
-	while(pSocket.isConnected() && live && !pShutdown.get()) {
+	while(pSocket.isConnected() && isLive() && !pShutdown.get()) {
 	  InputStream in    = pSocket.getInputStream();
 	  ObjectInput objIn = new PluginInputStream(in);
 	  Object obj        = objIn.readObject();
@@ -213,55 +211,8 @@ class FileMgrServer
 	  OutputStream out    = pSocket.getOutputStream();
 	  ObjectOutput objOut = new ObjectOutputStream(out);
 
-    if(first) {
-      String clientMsg = "";
-      String serverRsp = "OK";
-
-      if(obj instanceof String)
-        clientMsg = (String) obj;
-
-      String[] parts = clientMsg.split(BaseMgrClient.sVerifyConnectionMessageDelim);
-
-      if(parts.length != 2) {
-        serverRsp = 
-          "Connection from (" + pSocket.getInetAddress() + ") rejected due to " + 
-          "an invalid message format.  Expected: (Pipeline version+release)" + 
-          BaseMgrClient.sVerifyConnectionMessageDelim + "clientID.\n" +
-          "Receieved: " + clientMsg;
-        
-        LogMgr.getInstance().log
-          (LogMgr.Kind.Net, LogMgr.Level.Warning, 
-           serverRsp);
-
-        live = false;
-      }
-      else {
-        String cinfo    = parts[0];
-        String clientID = parts[1];
-
-        String sinfo = 
-          ("Pipeline-" + PackageInfo.sVersion + " [" + PackageInfo.sRelease + "]");
-
-        if(!sinfo.equals(cinfo)) {
-          serverRsp = 
-            "Connection from (" + pSocket.getInetAddress() + ") rejected due to a " + 
-            "mismatch in Pipeline release versions!\n" + 
-            "  Client = " + cinfo + "\n" + 
-            "  Server = " + sinfo;
-
-          LogMgr.getInstance().log
-            (LogMgr.Kind.Net, LogMgr.Level.Warning, 
-             serverRsp);
-
-          live = false;
-        }
-      }
-
-      objOut.writeObject(serverRsp);
-      objOut.flush();
-
-      first = false;
-    }
+	  if(isFirst())
+	    verifyConnection(obj, objOut);
 	  else {
             /* check time difference between client and server */ 
             checkTimeSync((Long) obj, pSocket); 
@@ -502,7 +453,7 @@ class FileMgrServer
 
               /*-- NETWORK CONNECTION ------------------------------------------------------*/
               case Disconnect:
-                live = false;
+		disconnect();
                 break;
 
               case Shutdown:
@@ -586,9 +537,6 @@ class FileMgrServer
 	 "Client Connection Closed.");
       LogMgr.getInstance().flush();
     }
-    
-    private SocketChannel  pChannel; 
-    private Socket         pSocket;     
   }
   
 

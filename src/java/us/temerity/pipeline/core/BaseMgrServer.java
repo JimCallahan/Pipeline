@@ -1,4 +1,4 @@
-// $Id: BaseMgrServer.java,v 1.4 2008/02/14 20:26:29 jim Exp $
+// $Id: BaseMgrServer.java,v 1.5 2009/02/13 04:51:08 jlee Exp $
 
 package us.temerity.pipeline.core;
 
@@ -71,6 +71,125 @@ class BaseMgrServer
          "clock on this server by (" + deltaT + ") milliseconds!\n" + 
          "This is likely a symptom a broken or misconfigured NTP service and should be " + 
          "fixed immediately!");
+  }
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L   C L A S S E S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Base inner class to handle incoming connection from subclass BaseMgrClient instances.
+   */
+  protected
+  class BaseHandlerTask
+    extends Thread
+  {
+    public
+    BaseHandlerTask
+    (
+     String name
+    )
+    {
+      super(name);
+
+      pFirst = true;
+      pLive  = true;
+
+      pServerRsp = "OK";
+    }
+
+    protected boolean
+    isFirst()
+    {
+      return pFirst;
+    }
+
+    protected boolean
+    isLive()
+    {
+      return pLive;
+    }
+
+    protected void
+    disconnect()
+    {
+      pLive = false;
+    }
+
+    protected void
+    verifyConnection
+    (
+     Object obj, 
+     ObjectOutput objOut
+    )
+      throws IOException
+    {
+      String clientMsg = "";
+
+      if(obj instanceof String)
+	clientMsg = (String) obj;
+
+      String[] parts = clientMsg.split(BaseMgrClient.sVerifyConnectionMessageDelim);
+
+      if(parts.length != 2) {
+	pServerRsp = 
+	  "Connection from (" + pSocket.getInetAddress() + ") rejected due to " + 
+	  "an invalid message format.  Expected: (Pipeline version+release)" + 
+	  BaseMgrClient.sVerifyConnectionMessageDelim + "clientID.\n" + 
+	  "Receieved: " + clientMsg;
+
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Warning, 
+           pServerRsp);
+
+	pLive = false;
+      }
+      else {
+	String cinfo    = parts[0];
+	String clientID = parts[1];
+	
+	String sinfo = 
+	  ("Pipeline-" + PackageInfo.sVersion + " [" + PackageInfo.sRelease + "]");
+
+	if(!sinfo.equals(cinfo)) {
+	  pServerRsp = 
+	    "Connection from (" + pSocket.getInetAddress() + ") rejected due to a " + 
+	    "mismatch in Pipeline release versions!\n" + 
+	    "  Client = " + cinfo + "\n" + 
+	    "  Server = " + sinfo;
+
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Net, LogMgr.Level.Warning, 
+	     pServerRsp);
+
+	  pLive = false;
+	}
+
+	if(pLive)
+	  verifyClient(clientID);
+      }
+
+      objOut.writeObject(pServerRsp);
+      objOut.flush();
+
+      pFirst = false;
+    }
+
+    protected void
+    verifyClient
+    (
+     String clientID
+    )
+    {
+    }
+
+    private boolean  pFirst;
+    private boolean  pLive;
+
+    protected String  pServerRsp;
+
+    protected SocketChannel  pChannel;
+    protected Socket         pSocket;
   }
 
 
