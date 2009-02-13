@@ -1,4 +1,4 @@
-// $Id: GeneratePluginDB.java.in,v 1.1 2009/02/11 16:27:15 jlee Exp $
+// $Id: GeneratePluginDB.java.in,v 1.2 2009/02/13 04:46:37 jlee Exp $
 
 import java.io.*;
 import java.util.*;
@@ -74,8 +74,8 @@ class GeneratePluginDB
 
         if(file.exists()) {
           if(!file.delete())
-  throw new PipelineException
-    ("Unable to remove the old plugins file (" + file + ")!");
+            throw new PipelineException
+              ("Unable to remove the old plugins file (" + file + ")!");
         }
 
         GlueEncoderImpl.encodeFile("RequiredPlugins", plugins, file);
@@ -99,7 +99,7 @@ class GeneratePluginDB
     int wk;
     for(wk=0; wk<dirs.length; wk++) {
       if(dirs[wk].isDirectory()) 
-  loadBelow(root, dirs[wk]);
+        loadBelow(root, dirs[wk]);
     }
   }
 
@@ -123,38 +123,38 @@ class GeneratePluginDB
     int wk;
     for(wk=0; wk<fs.length; wk++) {
       if(fs[wk].isFile()) {
-  try {
-    File file = fs[wk];
+        try {
+          File file = fs[wk];
 
-    VersionID vid = null;
-    try {
-      String dname = dir.getName();
-      if(dname.startsWith("v")) {
-        String vstr = dname.substring(1, dname.length()).replace('_','.');
-        vid = new VersionID(vstr);
-      }
-      else {
-        throw new IllegalArgumentException("Missing \"v\" prefix.");
-      }
-    }
-    catch(IllegalArgumentException ex) {
-      throw new PipelineException 
-        ("The directory containing plugin files (" + dir + ") does " +
-         "not conform to the naming convention of \"v#_#_#\" used to denote " +
-         "the plugin version!  Ignoring plugin file (" + file + ").\n" + 
-         ex.getMessage());
-    }
+          VersionID vid = null;
+          try {
+            String dname = dir.getName();
+            if(dname.startsWith("v")) {
+              String vstr = dname.substring(1, dname.length()).replace('_','.');
+              vid = new VersionID(vstr);
+            }
+            else {
+              throw new IllegalArgumentException("Missing \"v\" prefix.");
+            }
+          }
+          catch(IllegalArgumentException ex) {
+            throw new PipelineException 
+              ("The directory containing plugin files (" + dir + ") does " +
+               "not conform to the naming convention of \"v#_#_#\" used to denote " +
+               "the plugin version!  Ignoring plugin file (" + file + ").\n" + 
+               ex.getMessage());
+          }
 
-    loadPlugin(root, file);
-  }
-  catch(PipelineException ex) {
-    LogMgr.getInstance().log
-      (LogMgr.Kind.Plg, LogMgr.Level.Warning,
-       ex.getMessage());
-  }
+          loadPlugin(root, file);
+        }
+        catch(PipelineException ex) {
+          LogMgr.getInstance().log
+            (LogMgr.Kind.Plg, LogMgr.Level.Warning,
+             ex.getMessage());
+        }
       }
       else if(fs[wk].isDirectory()) {
-  loadBelow(root, fs[wk]);
+        loadBelow(root, fs[wk]);
       }
     }
   }
@@ -185,11 +185,11 @@ class GeneratePluginDB
       cdir = classdir.getCanonicalFile();
 
       if(!cdir.isDirectory()) 
-  throw new IOException();
+        throw new IOException();
     }
     catch(IOException ex) {
-      throw new PipelineException 
-  ("The plugin directory (" + classdir + ") was not a valid directory!");
+      throw new PipelineException
+        ("The plugin directory (" + classdir + ") was not a valid directory!");
     }
 
     /* the canonical class file */ 
@@ -198,11 +198,11 @@ class GeneratePluginDB
       cfile = pluginfile.getCanonicalFile();
 
       if(!cfile.isFile()) 
-  throw new IOException();
+        throw new IOException();
     }
     catch(IOException ex) {
-      throw new PipelineException 
-  ("The plugin file (" + pluginfile + ") was not a valid file!");
+      throw new PipelineException
+        ("The plugin file (" + pluginfile + ") was not a valid file!");
     }
 
     /* the class file relative to the class directory */ 
@@ -212,10 +212,10 @@ class GeneratePluginDB
       String dpath = cdir.getPath();
 
       if(!fpath.startsWith(dpath)) 
-  throw new PipelineException 
-    ("The plugin file (" + cfile + ") was not located under the " + 
-     "plugin directory (" + cdir + ")!");
-      
+        throw new PipelineException
+          ("The plugin file (" + cfile + ") was not located under the " + 
+           "plugin directory (" + cdir + ")!");
+
       rfile = new File(fpath.substring(dpath.length()));
     }
 
@@ -228,15 +228,15 @@ class GeneratePluginDB
       
       String vstr = parent.getName();
       if(!vstr.startsWith("v")) 
-  throw new IllegalArgumentException
-    ("The directory (" + vstr + ") did not match the pattern (v#_#_#)!");
+        throw new IllegalArgumentException
+          ("The directory (" + vstr + ") did not match the pattern (v#_#_#)!");
       
       pkgID = new VersionID(vstr.substring(1).replace("_", "."));
     }
     catch(IllegalArgumentException ex) {
       throw new PipelineException
-  ("The plugin file (" + pluginfile + ") was not located under a directory who's " +
-   "name designates a legal plugin revision number:\n" + ex.getMessage());
+        ("The plugin file (" + pluginfile + ") was not located under a directory who's " +
+         "name designates a legal plugin revision number:\n" + ex.getMessage());
     }
 
     /* the class name */ 
@@ -245,12 +245,12 @@ class GeneratePluginDB
     {
       String parts[] = cfile.getName().split("\\.");
       if((parts.length == 2) && (parts[1].equals("class") || parts[1].equals("jar"))) {
-  isJar = parts[1].equals("jar");
-  cname = (pkgName + "." + parts[0]);
+        isJar = parts[1].equals("jar");
+        cname = (pkgName + "." + parts[0]);
       }
       else {
-  throw new PipelineException 
-    ("The plugin file (" + pluginfile + ") was not a Java class or JAR file!");
+        throw new PipelineException 
+          ("The plugin file (" + pluginfile + ") was not a Java class or JAR file!");
       }
     }
 
@@ -258,60 +258,60 @@ class GeneratePluginDB
     {
       TreeMap<String,byte[]> contents = new TreeMap<String,byte[]>(); 
       if(isJar) {
-  try {
-    JarInputStream in = new JarInputStream(new FileInputStream(cfile)); 
+        try {
+          JarInputStream in = new JarInputStream(new FileInputStream(cfile)); 
 
-    byte buf[] = new byte[4096];
-    while(true) {
-      JarEntry entry = in.getNextJarEntry();
-      if(entry == null) 
-        break;
+          byte buf[] = new byte[4096];
+          while(true) {
+            JarEntry entry = in.getNextJarEntry();
+            if(entry == null) 
+              break;
 
-      if(!entry.isDirectory()) {
-        String path = entry.getName();
-        if(path.endsWith("class")) {
-    String jcname = path.substring(0, path.length() - 6).replace('/', '.');
+            if(!entry.isDirectory()) {
+              String path = entry.getName();
+              if(path.endsWith("class")) {
+                String jcname = path.substring(0, path.length() - 6).replace('/', '.');
 
-    ByteArrayOutputStream out = new ByteArrayOutputStream();
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-    while(true) {
-      int len = in.read(buf, 0, buf.length); 
-      if(len == -1) 
-        break;
-      out.write(buf, 0, len);
-    }
+                while(true) {
+                  int len = in.read(buf, 0, buf.length); 
+                  if(len == -1) 
+                    break;
+                  out.write(buf, 0, len);
+                }
 
-    contents.put(jcname, out.toByteArray());
+                contents.put(jcname, out.toByteArray());
+              }
+            }
+          }
+
+          in.close();
         }
-      }
-    }
+        catch(IOException ex) {
+          throw new PipelineException
+            ("Unable to read the plugin JAR file (" + cfile + ")!");
+        }
 
-    in.close();
-  }
-  catch(IOException ex) {
-    throw new PipelineException
-      ("Unable to read the plugin JAR file (" + cfile + ")!");
-  }
-
-  if(!contents.containsKey(cname))
-    throw new PipelineException
-      ("The plugin JAR file (" + cfile + ") did not contain the required " + 
-       "plugin class (" + cname + ")!");
+        if(!contents.containsKey(cname))
+          throw new PipelineException
+            ("The plugin JAR file (" + cfile + ") did not contain the required " + 
+             "plugin class (" + cname + ")!");
       }
       else {
-  byte[] bytes = new byte[(int) cfile.length()];
+        byte[] bytes = new byte[(int) cfile.length()];
 
-  try {
-    FileInputStream in = new FileInputStream(cfile);
-    in.read(bytes);
-    in.close();
-  }
-  catch(IOException ex) {
-    throw new PipelineException
-      ("Unable to read the plugin class file (" + cfile + ")!");
-  }
+        try {
+          FileInputStream in = new FileInputStream(cfile);
+          in.read(bytes);
+          in.close();
+        }
+        catch(IOException ex) {
+          throw new PipelineException
+            ("Unable to read the plugin class file (" + cfile + ")!");
+        }
 
-  contents.put(cname, bytes);
+        contents.put(cname, bytes);
       }
 
       loadPluginHelper(pluginfile, cname, pkgID, contents, true, true);
@@ -357,68 +357,68 @@ class GeneratePluginDB
     ClassLoader loader = new PluginClassLoader(contents);
     try {
       LogMgr.getInstance().log
-  (LogMgr.Kind.Plg, LogMgr.Level.Finer,
-   "Loading: " + cname);
+        (LogMgr.Kind.Plg, LogMgr.Level.Finer,
+         "Loading: " + cname);
       Class cls = loader.loadClass(cname);
 
       if(!BasePlugin.class.isAssignableFrom(cls)) 
-  throw new PipelineException
-    ("The loaded class (" + cname + ") was not a Pipeline plugin!");
+        throw new PipelineException
+          ("The loaded class (" + cname + ") was not a Pipeline plugin!");
 
       LogMgr.getInstance().log
-  (LogMgr.Kind.Plg, LogMgr.Level.Finest,
-   "Instantiating Plugin: " + cname);
+        (LogMgr.Kind.Plg, LogMgr.Level.Finest,
+         "Instantiating Plugin: " + cname);
       BasePlugin plg = null; 
       try {
-  plg = (BasePlugin) cls.newInstance();
+        plg = (BasePlugin) cls.newInstance();
       }
       catch(InstantiationException ex) {
-  throw new PipelineException
-    ("Unable to intantiate plugin class (" + cls.getName() + "):\n" +
-     ex.getMessage());
+        throw new PipelineException
+          ("Unable to intantiate plugin class (" + cls.getName() + "):\n" +
+           ex.getMessage());
       }
       catch(IllegalAccessException ex) {
-  throw new PipelineException
-    ("Unable to access plugin class (" + cls.getName() + "):\n" +
-     ex.getMessage());
+        throw new PipelineException
+          ("Unable to access plugin class (" + cls.getName() + "):\n" +
+           ex.getMessage());
       }
       catch(Exception ex) {
-  throw new PipelineException
-    ("Exception thrown by constructor of plugin class (" + cls.getName() + "):\n" + 
-     ex.getMessage());
+        throw new PipelineException
+          ("Exception thrown by constructor of plugin class (" + cls.getName() + "):\n" + 
+           ex.getMessage());
       }
 
       if(!plg.getVersionID().equals(pkgID)) 
-  throw new PipelineException
-    ("The revision number (v" + plg.getVersionID() + ") of the instantiated " + 
-     "plugin class (" + cname + ") does not match the revision number " + 
-     "(" + pkgID + ") derived from the name of the directory containing the " + 
-     "class file (" + pluginfile + ")!");
+        throw new PipelineException
+          ("The revision number (v" + plg.getVersionID() + ") of the instantiated " + 
+           "plugin class (" + cname + ") does not match the revision number " + 
+           "(" + pkgID + ") derived from the name of the directory containing the " + 
+           "class file (" + pluginfile + ")!");
       
       if(plg.getSupports().isEmpty()) 
-  throw new PipelineException
-    ("The plugin class (" + cname + ") does not support execution under any " + 
-     "type of operating system!  At least one OS must be supported.");
+        throw new PipelineException
+          ("The plugin class (" + cname + ") does not support execution under any " + 
+           "type of operating system!  At least one OS must be supported.");
 
       {
-  ObjectStreamClass osc = ObjectStreamClass.lookup(cls);
-  if(osc == null) 
-    throw new PipelineException
-      ("The plugin (" + cname + ") does not implement Serializable!");
+        ObjectStreamClass osc = ObjectStreamClass.lookup(cls);
+        if(osc == null) 
+          throw new PipelineException
+            ("The plugin (" + cname + ") does not implement Serializable!");
 
-  long serialID = osc.getSerialVersionUID();
-  if(serialID == 0L) 
-    throw new PipelineException
-      ("No member (serialVersionUID) was declared for plugin (" + cname + ")!");
+        long serialID = osc.getSerialVersionUID();
+        if(serialID == 0L) 
+          throw new PipelineException
+            ("No member (serialVersionUID) was declared for plugin (" + cname + ")!");
 
-  String sname = pSerialVersionUIDs.get(serialID); 
-  if((sname != null) && !sname.equals(cname)) 
-    throw new PipelineException
-      ("The member (serialVersionUID) of plugin (" + cname + ") with a value " + 
-       "of (" +  serialID + ") is already being used by the installed plugin " + 
-       "(" + sname + ")!"); 
+        String sname = pSerialVersionUIDs.get(serialID); 
+        if((sname != null) && !sname.equals(cname)) 
+          throw new PipelineException
+            ("The member (serialVersionUID) of plugin (" + cname + ") with a value " + 
+             "of (" +  serialID + ") is already being used by the installed plugin " + 
+             "(" + sname + ")!"); 
 
-  pSerialVersionUIDs.put(serialID, cname); 
+        pSerialVersionUIDs.put(serialID, cname); 
       }
 
       if(!external && !plg.getVendor().equals(PackageInfo.sLocalVendor)) 
@@ -458,8 +458,8 @@ class GeneratePluginDB
       else if(plg instanceof BaseBuilderCollection) {
       }
       else {
-  throw new PipelineException
-    ("The class file (" + pluginfile + ") does not contain a Pipeline plugin!");
+        throw new PipelineException
+          ("The class file (" + pluginfile + ") does not contain a Pipeline plugin!");
       }
 
       /* After the plugin passes all the sanity checks it can be added to the 
@@ -478,13 +478,13 @@ class GeneratePluginDB
     }
     catch(LinkageError ex) {
       throw new PipelineException
-  ("Unable to link plugin class (" + cname + "):\n" + 
-   ex.getMessage());
+        ("Unable to link plugin class (" + cname + "):\n" + 
+         ex.getMessage());
     }
     catch(ClassNotFoundException ex) {
       throw new PipelineException
-  ("Unable to find plugin class (" + cname + "):\n" +
-   ex.getMessage());
+        ("Unable to find plugin class (" + cname + "):\n" +
+         ex.getMessage());
     }
     finally {
       LogMgr.getInstance().flush();
