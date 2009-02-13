@@ -62,10 +62,10 @@ PluginMgrOptsParser
   private PluginMgrApp  pApp;
 
   /**
-   * The required plugins bootstrap directory.  This should point to the last 
-   * Pipeline directory.
+   * The required plugins bootstrap directory.
+   * This should point to the previous Pipeline root directory.
    */
-   private File  pBootstrapDir;
+  private File  pBootstrapDir;
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -243,13 +243,11 @@ CommandLine() :
         }
       }
       
-      /* create the server */
-      if(pBootstrapDir != null) {
-        return new PluginMgrServer(pBootstrapDir);
-      }
-      else {
-        return new PluginMgrServer();
-      }
+      /* create the server */ 
+      if(pBootstrapDir == null)
+	return new PluginMgrServer();
+      else
+	return new PluginMgrServer(pBootstrapDir);
     }
 
     return null;
@@ -269,8 +267,12 @@ Commands() :
 }
 
 
-void
-Bootstrap() :
+
+/*------------------------------------------------------------------------------------------*/
+/*   B O O T S T R A P   O P T I O N                                                        */
+/*------------------------------------------------------------------------------------------*/
+
+void Bootstrap() :
 {
   Token t;
 }
@@ -280,19 +282,17 @@ Bootstrap() :
     pBootstrapDir = new File(t.image);
     if(!pBootstrapDir.isDirectory())
       throw new ParseException
-        ("The given required plugins bootstrap directory (" + pBootstrapDir + 
-        ") does not exist!");
+	("The given required plugins bootstrap directory (" + pBootstrapDir + ") " + 
+	 "does not exist!");
 
     File bootstrapPluginsDir = new File(pBootstrapDir, "plugins");
-    if(!bootstrapPluginsDir.isDirectory()) {
+    if(!bootstrapPluginsDir.isDirectory())
       throw new ParseException
-        ("The given required plugins bootstrap directory (" + pBootstrapDir + 
-        ") does not contain a plugins directory!  Please check that you are using " + 
-        "the correct previous Pipeline directory or do not use --bootstrap=(previous " + 
-        "Pipeline root directory)");
-    }
+	("The given required plugins bootstrap directory (" + bootstrapPluginsDir + ")" + 
+	 "does not contain a plugins directory!");
   }
 }
+
 
 
 /*------------------------------------------------------------------------------------------*/
