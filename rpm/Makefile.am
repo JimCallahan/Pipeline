@@ -146,7 +146,7 @@ pipeline-install: clean-rpms rpm-mkdirs
 	DESTDIR=`pwd`/DEST/pipeline $(MAKE) -C .. install
 	mkdir -p DEST/plmaster/@NODEDIR@
 	mv DEST/pipeline/@NODEDIR@/* DEST/plmaster/@NODEDIR@
-	mkdir -p DEST/plpluginmgr/@PL_PLUGIN_DIRECTORY@/required
+	mkdir -p DEST/plpluginmgr/@PL_PLUGIN_DIRECTORY@/plugins/required
 	mkdir -p DEST/plqueuemgr/@QUEUEDIR@
 	ln -s pipeline-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@ \
               DEST/pipeline/@ROOT_INST_PARENT_DIR@/pipeline-latest
@@ -243,21 +243,24 @@ SPECS/plqueuemgr-@CUSTOMER@-@VERSION@.spec: plqueuemgr.spec
 
 
 RPMS/i686/plpluginmgr-@CUSTOMER@-@VERSION@-@PROFILE_STAMP@.i686.rpm: \
-  SPECS/plpluginmgr-@CUSTOMER@-@VERSION@.spec
-	javac -classpath DEST/pipeline/base/apps/pipeline-latest/lib/api.jar \
-    GeneratePluginDB.java
-	java \
-    -Dpipeline.ostype=Unix -Dpipeline.archtype=x86_64 -Dpipeline.buildtype=Debug \
-    -classpath \
-    DEST/pipeline/base/apps/pipeline-latest/lib/api.jar:. \
-    GeneratePluginDB \
-    DEST/pipeline/base/apps/pipeline-latest/plugins \
-    DEST/plpluginmgr@PL_PLUGIN_DIRECTORY@
-#	rm -f DEST/plpluginmgr/GeneratePluginDB.*
+  SPECS/plpluginmgr-@CUSTOMER@-@VERSION@.spec \
+  required-plugins
 	rpmbuild --rcfile rpmrc -bb SPECS/plpluginmgr-@CUSTOMER@-@VERSION@.spec
 
 SPECS/plpluginmgr-@CUSTOMER@-@VERSION@.spec: plpluginmgr.spec
 	cp -f plpluginmgr.spec $@
+
+required-plugins: GeneratePluginDB.class
+	java \
+	  -Dpipeline.ostype=Unix -Dpipeline.archtype=x86_64 -Dpipeline.buildtype=Debug \
+          -classpath DEST/pipeline/base/apps/pipeline-latest/lib/api.jar:. \
+	  GeneratePluginDB \
+	  DEST/pipeline/base/apps/pipeline-latest/plugins \
+          DEST/plpluginmgr@PL_PLUGIN_DIRECTORY@
+
+GeneratePluginDB.class : GeneratePluginDB.java
+	javac -classpath DEST/pipeline/base/apps/pipeline-latest/lib/api.jar \
+              GeneratePluginDB.java
 
 if PL_LOCAL
 
