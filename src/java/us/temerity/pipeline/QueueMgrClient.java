@@ -1,4 +1,4 @@
-// $Id: QueueMgrClient.java,v 1.48 2009/02/11 16:31:31 jlee Exp $
+// $Id: QueueMgrClient.java,v 1.49 2009/02/17 00:37:50 jlee Exp $
 
 package us.temerity.pipeline;
 
@@ -32,17 +32,8 @@ class QueueMgrClient
   public
   QueueMgrClient()
   {
-    this("QueueMgrClient");
-  }
-
-  public
-  QueueMgrClient
-  (
-    String clientID
-  )
-  {
     super(PackageInfo.sQueueServer, PackageInfo.sQueuePort, 
-	  QueueRequest.Disconnect, QueueRequest.Shutdown, clientID);
+	  QueueRequest.Disconnect, QueueRequest.Shutdown, "QueueMgr");
 
     /* the canonical names of this host */ 
     pLocalHostnames = new TreeSet<String>();
