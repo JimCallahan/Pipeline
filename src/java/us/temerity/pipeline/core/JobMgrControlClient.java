@@ -1,4 +1,4 @@
-// $Id: JobMgrControlClient.java,v 1.22 2009/02/11 16:31:31 jlee Exp $
+// $Id: JobMgrControlClient.java,v 1.23 2009/02/17 00:44:18 jlee Exp $
 
 package us.temerity.pipeline.core;
 
@@ -40,18 +40,8 @@ class JobMgrControlClient
    String hostname
   ) 
   {
-    this(hostname, "JobMgrControlClient");
-  }
-
-  public
-  JobMgrControlClient
-  (
-    String hostname, 
-    String clientID
-  )
-  {
     super(hostname, PackageInfo.sJobPort, 
-	  JobRequest.Disconnect, JobRequest.Shutdown, clientID);
+	  JobRequest.Disconnect, JobRequest.Shutdown, "JobMgrControl");
   }
 
 
