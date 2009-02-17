@@ -1,4 +1,4 @@
-// $Id: BaseMgrServer.java,v 1.5 2009/02/13 04:51:08 jlee Exp $
+// $Id: BaseMgrServer.java,v 1.6 2009/02/17 00:41:03 jlee Exp $
 
 package us.temerity.pipeline.core;
 
@@ -80,7 +80,7 @@ class BaseMgrServer
   /**
    * Base inner class to handle incoming connection from subclass BaseMgrClient instances.
    */
-  protected
+  protected abstract
   class BaseHandlerTask
     extends Thread
   {
@@ -98,24 +98,19 @@ class BaseMgrServer
       pServerRsp = "OK";
     }
 
-    protected boolean
-    isFirst()
-    {
-      return pFirst;
-    }
+    /**
+     * Each subclass of the BaseHandlerTask needs specify which clientIDs are permitted 
+     * to connect to the server.
+     */
+    protected abstract String
+    verifyClient
+    (
+      String clientID
+    );
 
-    protected boolean
-    isLive()
-    {
-      return pLive;
-    }
-
-    protected void
-    disconnect()
-    {
-      pLive = false;
-    }
-
+    /**
+     * The opening protocol between a BaseMgrClient subclass and a BaseMgrServer subclass.
+     */
     protected void
     verifyConnection
     (
@@ -129,13 +124,17 @@ class BaseMgrServer
       if(obj instanceof String)
 	clientMsg = (String) obj;
 
-      String[] parts = clientMsg.split(BaseMgrClient.sVerifyConnectionMessageDelim);
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Plg, LogMgr.Level.Finest, 
+	 "From client (" + clientMsg + ")");
+
+      String[] parts = clientMsg.split("/");
 
       if(parts.length != 2) {
 	pServerRsp = 
 	  "Connection from (" + pSocket.getInetAddress() + ") rejected due to " + 
 	  "an invalid message format.  Expected: (Pipeline version+release)" + 
-	  BaseMgrClient.sVerifyConnectionMessageDelim + "clientID.\n" + 
+	  "/clientID.\n" + 
 	  "Receieved: " + clientMsg;
 
 	LogMgr.getInstance().log
@@ -166,7 +165,7 @@ class BaseMgrServer
 	}
 
 	if(pLive)
-	  verifyClient(clientID);
+	  pServerRsp = verifyClient(clientID);
       }
 
       objOut.writeObject(pServerRsp);
@@ -175,18 +174,28 @@ class BaseMgrServer
       pFirst = false;
     }
 
-    protected void
-    verifyClient
-    (
-     String clientID
-    )
+    protected boolean
+    isFirst()
     {
+      return pFirst;
+    }
+
+    protected boolean
+    isLive()
+    {
+      return pLive;
+    }
+
+    protected void
+    disconnect()
+    {
+      pLive = false;
     }
 
     private boolean  pFirst;
     private boolean  pLive;
 
-    protected String  pServerRsp;
+    private String  pServerRsp;
 
     protected SocketChannel  pChannel;
     protected Socket         pSocket;
