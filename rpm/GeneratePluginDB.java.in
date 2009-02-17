@@ -1,6 +1,7 @@
-// $Id: GeneratePluginDB.java.in,v 1.2 2009/02/13 04:46:37 jlee Exp $
+// $Id: GeneratePluginDB.java.in,v 1.3 2009/02/17 00:23:45 jlee Exp $
 
 import java.io.*;
+import java.lang.reflect.*;
 import java.util.*;
 import java.util.jar.*;
 
@@ -52,6 +53,45 @@ class GeneratePluginDB
     pRequiredPlugins = new TreeMap<String,MappedSet<PluginType,PluginID>>();
   }
 
+  /*----------------------------------------------------------------------------------------*/
+  /*   S O M E   S T R I N G   H E L P E R   F U N C T I O N S                              */
+  /*----------------------------------------------------------------------------------------*/
+
+  private String
+  formatString
+  (
+   String str, 
+   int len
+  )
+  {
+    if(len <= str.length())
+      return str;
+
+    StringBuilder buf = new StringBuilder();
+
+    for(int i = 0 ; i < (len - str.length()) ; i++)
+      buf.append(" ");
+
+    buf.append(str);
+
+    return buf.toString();
+  }
+
+  private String
+  drawline
+  (
+   char ch, 
+   int len
+  )
+  {
+    StringBuilder buf = new StringBuilder();
+
+    for(int i = 0 ; i < len ; i++)
+      buf.append(ch);
+
+    return buf.toString();
+  }
+
   /**
    * This code mimics the initial loading of plugins that PluginMgr's constructors performs.
    */
@@ -63,14 +103,42 @@ class GeneratePluginDB
 
     if(pRequiredPlugins.size() > 1)
       throw new PipelineException
-      ("The default Pipeline plugins directory contains " +
-      "vendors other than Temerity!");
+	("The default Pipeline plugins directory contains " +
+         "vendors other than Temerity!");
+
+    int maxLength = 0;
+    for(String plgType : PluginType.titles())
+      maxLength = Math.max(plgType.length(), maxLength);
+
+    String totalMsg = "Total plugin count";
+    maxLength = Math.max(totalMsg.length(), maxLength);
 
     for(String vendor : pRequiredPlugins.keySet()) {
       MappedSet<PluginType,PluginID> plugins = pRequiredPlugins.get(vendor);
 
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Plg, LogMgr.Level.Info, 
+	 "\n" + formatString("Vendor", maxLength) + " : " + vendor + 
+	 "\n" + drawline('-', maxLength));
+
+      int plgCount = 0;
+      for(PluginType plgType : plugins.keySet()) {
+	int plgTypeCount = plugins.get(plgType).size();
+
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Plg, LogMgr.Level.Info, 
+	   formatString(plgType.toString(), maxLength) + " : " + plgTypeCount);
+
+	plgCount += plgTypeCount;
+      }
+
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Plg, LogMgr.Level.Info, 
+	 drawline('=', maxLength) + "\n" + 
+	 formatString(totalMsg, maxLength) + " : " + plgCount + "\n");
+
       try {
-        File file = new File(pDestPath, "required/" + vendor);
+        File file = new File(pDestPath, "plugins/required/" + vendor);
 
         if(file.exists()) {
           if(!file.delete())
@@ -400,6 +468,16 @@ class GeneratePluginDB
           ("The plugin class (" + cname + ") does not support execution under any " + 
            "type of operating system!  At least one OS must be supported.");
 
+      /* Check for the existence of a serialVersionUID field. */
+      try {
+	Field serialVersionUID = cls.getDeclaredField("serialVersionUID");
+      }
+      catch(NoSuchFieldException ex) {
+	throw new PipelineException
+	  ("The plugin class (" + cname + ") does not define a serialVersionUID " + 
+	   "field!  Please run serialver to obtain a serialVersionUID.");
+      }
+
       {
         ObjectStreamClass osc = ObjectStreamClass.lookup(cls);
         if(osc == null) 
@@ -432,33 +510,26 @@ class GeneratePluginDB
            "plugins from other vendors and override this check."); 
 
 
-      if(plg instanceof BaseEditor) {
-      }
-      else if(plg instanceof BaseAction) {
+      /* Ensure that the plugin is one of the Pipeline base plugins.  But for 
+           BaseAction check the source parameters. */
+      if(plg instanceof BaseAction) {
         BaseAction action = (BaseAction) plg;
         if(action.supportsSourceParams() && (action.getInitialSourceParams() == null))
           throw new PipelineException
             ("The action plugin (" + cname + ") claims to support source parameters, but " + 
              "does not actually create any source parameters."); 
       }
-      else if(plg instanceof BaseComparator) {
-      }
-      else if(plg instanceof BaseTool) {
-      }
-      else if(plg instanceof BaseAnnotation) {
-      }
-      else if(plg instanceof BaseArchiver) {
-      }
-      else if(plg instanceof BaseMasterExt) {
-      }
-      else if(plg instanceof BaseQueueExt) {
-      }
-      else if(plg instanceof BaseKeyChooser) {
-      }
-      else if(plg instanceof BaseBuilderCollection) {
-      }
-      else {
-        throw new PipelineException
+      /* Verify that the plugin is an instance of one of Pipeline's base plugins. */
+      else if(!(plg instanceof BaseEditor)
+           && !(plg instanceof BaseComparator)
+           && !(plg instanceof BaseTool)
+           && !(plg instanceof BaseAnnotation)
+           && !(plg instanceof BaseArchiver)
+           && !(plg instanceof BaseMasterExt)
+           && !(plg instanceof BaseQueueExt)
+           && !(plg instanceof BaseKeyChooser)
+           && !(plg instanceof BaseBuilderCollection)) {
+	throw new PipelineException
           ("The class file (" + pluginfile + ") does not contain a Pipeline plugin!");
       }
 
@@ -473,8 +544,7 @@ class GeneratePluginDB
         pRequiredPlugins.put(vendor, new MappedSet<PluginType,PluginID>());
       }
 
-      MappedSet<PluginType,PluginID> plugins = pRequiredPlugins.get(vendor);
-      plugins.put(plgType, plgID);
+      pRequiredPlugins.get(vendor).put(plgType, plgID);
     }
     catch(LinkageError ex) {
       throw new PipelineException
@@ -522,8 +592,16 @@ class GeneratePluginDB
     String[] av
   )
   {
+    if(av.length != 2)
+      throw new IllegalArgumentException
+	("java -classpath ... GeneratePluginDB " + 
+         "(plugin path) (dest path)");
+
+    String pluginPath = av[0];
+    String destPath   = av[1];
+
     try {
-      new GeneratePluginDB(av[0], av[1]).run();
+      new GeneratePluginDB(pluginPath, destPath).run();
     }
     catch(PipelineException ex) {
       ex.printStackTrace();
