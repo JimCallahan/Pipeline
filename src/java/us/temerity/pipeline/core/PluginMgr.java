@@ -1,8 +1,9 @@
-// $Id: PluginMgr.java,v 1.30 2009/02/13 15:59:38 jim Exp $
+// $Id: PluginMgr.java,v 1.31 2009/02/17 01:00:11 jlee Exp $
 
 package us.temerity.pipeline.core;
 
 import java.io.*;
+import java.lang.reflect.*;
 import java.util.*;
 import java.util.concurrent.atomic.*;
 import java.util.concurrent.locks.*;
@@ -81,7 +82,28 @@ class PluginMgr
     }
 
     /* Initialize and setup the required, loaded and unknown plugins data 
-        structures. */
+         structures. */
+
+    /* A plugin is uniquley defined by a PluginType and a PluginID, therefore all the 
+         following data structures use PluginType as the key to a Set of PluginIDs.
+         
+	 pRequiredPlugins stores all the required plugins found GLUE files.
+
+	 pLoadedPlugins stores all the plugins loaded during startup by traversing the 
+	 plugins directory that are found in a required plugins GLUE file.
+	 
+	 pUnknownPlugins stores all the plugins detected at startup but not found in a 
+	 required plugins GLUE file.
+
+	 If the --bootstrap option is used properly, pBootstrapPlugins will store all 
+	 plugins detected by traversing the specified bootstrap directory.  The first 
+	 key of this table is plugin Vendor, which can access a MappedSet of PluginType and 
+	 PluginID.  Then this hashtable is written to disk as the starting point for the 
+	 required plugins GLUE db.
+
+	 pVendorPlugins stores all the properly loaded plugins, either during startup or 
+	 through plplugin --install.
+	 */
     {
       pRequiredPluginCount = 0;
 
@@ -102,6 +124,7 @@ class PluginMgr
         used.  After the bootstrap process writes the required plugins GLUE file for 
 	Vendor plugins detected, plpluginmgr starts up as normal, now it has additional 
 	GLUE files to examine. */
+
     if(bootstrapDir != null) {
       if(!bootstrapDir.isDirectory())
         throw new IllegalStateException
@@ -158,10 +181,19 @@ class PluginMgr
             writeRequiredPlugins(vname, PluginLoadType.Bootstrap);
           }
           catch(PipelineException ex) {
-            throw new IllegalStateException(ex);
+            throw new IllegalStateException(ex.getMessage());
           }
         }
       }
+
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Plg, LogMgr.Level.Info, 
+	 "Bootstrap plugins");
+      displayVendorPlugins(pBootstrapPlugins, LogMgr.Level.Info);
+
+      /* After the bootstrap plugins are written to GLUE files it can be nulled out, 
+           since it will not be used again. */
+      pBootstrapPlugins = null;
     }
 
     /* Load the required plugins from glue files. */
@@ -169,11 +201,160 @@ class PluginMgr
       readRequiredPlugins();
     }
     catch(PipelineException ex) {
-      throw new IllegalStateException("Error reading required plugins GLUE files!");
+      throw new IllegalStateException(ex.getMessage());
     }
 
+    for(PluginType plgType : pRequiredPlugins.keySet())
+      pRequiredPluginCount += pRequiredPlugins.get(plgType).size();
+
     loadAllPlugins(PackageInfo.sPluginsPath.toFile(), PluginLoadType.Startup);
+
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Plg, LogMgr.Level.Info, 
+       "\nVendor plugins :\n");
+    displayVendorPlugins(pVendorPlugins, LogMgr.Level.Info);
+
+    {
+      int requiredPluginCount = 0;
+      for(PluginType plgType : pRequiredPlugins.keySet())
+	requiredPluginCount += pRequiredPlugins.get(plgType).size();
+
+      if(requiredPluginCount > 0) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Plg, LogMgr.Level.Info, 
+           "\nRequired plugins that need to be installed :\n");
+	displayPlugins(pRequiredPlugins, LogMgr.Level.Info);
+      }
+    }
+
+    if(pUnknownPlugins.size() > 0) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Plg, LogMgr.Level.Info, 
+         "\nUnregistered plugins :\n");
+      displayPlugins(pUnknownPlugins, LogMgr.Level.Info);
+    }
+
     checkRequiredPlugins();
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S O M E   S T R I N G   H E L P E R   F U N C T I O N S                              */
+  /*----------------------------------------------------------------------------------------*/
+
+  private void
+  displayVendorPlugins
+  (
+   TreeMap<String,MappedSet<PluginType,PluginID>> vendorPlugins, 
+   LogMgr.Level loglevel
+  )
+  {
+    int maxLength = 0;
+    for(String plgType : PluginType.titles())
+      maxLength = Math.max(plgType.length(), maxLength);
+
+    String totalMsg = "Total plugin count";
+    maxLength = Math.max(totalMsg.length(), maxLength);
+
+    for(String vendor : vendorPlugins.keySet()) {
+      MappedSet<PluginType,PluginID> plugins = vendorPlugins.get(vendor);
+
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Plg, loglevel, 
+	 formatString("Vendor", maxLength) + " : " + vendor);
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Plg, loglevel, 
+	 drawline('-', maxLength));
+
+      int plgCount = 0;
+      for(PluginType plgType : plugins.keySet()) {
+	int plgTypeCount = plugins.get(plgType).size();
+
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Plg, loglevel, 
+	   formatString(plgType.toString(), maxLength) + " : " + plgTypeCount);
+
+	plgCount += plgTypeCount;
+      }
+
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Plg, loglevel, 
+	 drawline('=', maxLength));
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Plg, loglevel, 
+	 formatString(totalMsg, maxLength) + " : " + plgCount);
+    }
+  }
+
+  public void
+  displayPlugins
+  (
+   MappedSet<PluginType,PluginID> plugins, 
+   LogMgr.Level loglevel
+  )
+  {
+    int maxLength = 0;
+    for(String plgType : PluginType.titles())
+      maxLength = Math.max(plgType.length(), maxLength);
+
+    String totalMsg = "Total plugin count";
+    maxLength = Math.max(totalMsg.length(), maxLength);
+
+    int plgCount = 0;
+    for(PluginType plgType : plugins.keySet()) {
+      int plgTypeCount = plugins.get(plgType).size();
+
+      if(plgTypeCount > 0) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Plg, loglevel, 
+	   formatString(plgType.toString(), maxLength) + " : " + plgTypeCount);
+
+	plgCount += plgTypeCount;
+      }
+    }
+
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Plg, loglevel, 
+       drawline('=', maxLength));
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Plg, loglevel, 
+       formatString(totalMsg, maxLength) + " : " + plgCount + "\n");
+  }
+
+  private String
+  formatString
+  (
+   String str, 
+   int len
+  )
+  {
+    if(len <= str.length())
+      return str;
+
+    StringBuilder buf = new StringBuilder();
+
+    for(int i = 0 ; i < (len - str.length()) ; i++)
+      buf.append(" ");
+
+    buf.append(str);
+
+    return buf.toString();
+  }
+
+  private String
+  drawline
+  (
+   char ch, 
+   int len
+  )
+  {
+    StringBuilder buf = new StringBuilder();
+
+    for(int i = 0 ; i < len ; i++)
+      buf.append(ch);
+
+    return buf.toString();
   }
 
 
@@ -805,6 +986,58 @@ class PluginMgr
 	  ("The plugin class (" + cname + ") does not support execution under any " + 
 	   "type of operating system!  At least one OS must be supported.");	
       
+      /* Check that the plugin defines a serialVersionUID by using Java reflection.  
+           The getDeclaredField method of Class allows access to all fields defined 
+	   within a class, SecurityManager permitting.  Testing this code showed me 
+	   that I failed to add a serialVersionUID to one of the plugins I installed.  
+	   During startup it caught the NoSuchException and did not load the plugin.  
+	   plplugin will balk at the install of the plugin until the serialVersionUID 
+	   field is added.  This code should be moved to PluginMgrControlClient so the 
+	   checking occurs client side, and not waste resources to send over the network 
+	   and perform the check on the server side.  Also, the serialVersionID that 
+	   ObjectStreamClass reported for my plugin missing the field was not the same 
+	   as the value that serialver reports. */
+
+      try {
+	Field serialVersionUID = cls.getDeclaredField("serialVersionUID");
+      }
+      catch(NoSuchFieldException ex) {
+	/* Previous versions of Pipeline did not perform an existence of serialVersionUID 
+	     test and the version of Pipeline that introduced the required plugins feature 
+	     may not load previously successfully loaded plugins.  I think placing such 
+	     plugins into the required plugins table when the PluginLoadType is 
+	     Startup or Bootstrap will provide the proper feedback that a plugin needs 
+	     to be reinstalled. */
+
+	PluginType plgType = plg.getPluginType();
+	PluginID   plgID   = plg.getPluginID();
+
+	switch(pluginLoadType) {
+	  case Bootstrap:
+	    {
+	      String vname = plgID.getVendor();
+
+	      if(!vname.equals("Temerity")) {
+		if(!pBootstrapPlugins.containsKey(vname))
+		  pBootstrapPlugins.put(vname, new MappedSet<PluginType,PluginID>());
+
+		pBootstrapPlugins.get(vname).put(plgType, plgID);
+	      }
+	    }
+	    break;
+
+	  case Startup:
+	    {
+	      pRequiredPlugins.put(plgType, plgID);
+	    }
+	    break;
+	}
+
+	throw new PipelineException
+	  ("The plugin class (" + cname + ") does not define a serialVersionUID " + 
+	   "field!  Please run serialver to obtain a serialVersionUID.");
+      }
+
       {
 	ObjectStreamClass osc = ObjectStreamClass.lookup(cls);
 	if(osc == null) 
@@ -815,6 +1048,10 @@ class PluginMgr
 	if(serialID == 0L) 
 	  throw new PipelineException
 	    ("No member (serialVersionUID) was declared for plugin (" + cname + ")!");
+
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Plg, LogMgr.Level.Finest, 
+	   "The serialID for (" + cname + ") : " + serialID);
 
 	String sname = pSerialVersionUIDs.get(serialID); 
 	if((sname != null) && !sname.equals(cname)) 
@@ -1078,6 +1315,10 @@ class PluginMgr
     switch(loadType) {
       case Startup:
 	{
+	  /* In Startup mode first check if the plugin is in the required plugins table. 
+	       If the plugin is in the table then load the plugin, else make an entry in 
+	       the unknown plugins table. */
+
 	  load = checkRequiredPlugin(plg);
 	}
 	break;
@@ -1097,6 +1338,9 @@ class PluginMgr
 
 	  String vname = plgID.getVendor();
 
+	  /* During bootstrap Temerity plugins are not considered.  Since they would have 
+	       been updated during the upgrade of Pipeline. */
+
 	  if(!vname.equals("Temerity")) {
 	    if(!pBootstrapPlugins.containsKey(vname))
 	      pBootstrapPlugins.put(vname, new MappedSet<PluginType,PluginID>());
@@ -1108,6 +1352,13 @@ class PluginMgr
 
       case Install:
 	{
+	  /* Only Temerity developers are allowed to install plugins using Temerity 
+	       as the vendor.  This is expressed by the local vendor.  It is possible 
+	       for any studio to use Temerity as the local plugin vendor name, perhaps 
+	       some further restriction can be placed on the usage of the Temerity 
+	       vendor.  For now I will assume that studios will use their own local 
+	       plugin vendor name. */
+
 	  if(plg.getVendor().equals("Temerity")) {
 	    if(PackageInfo.sLocalVendor.equals("Temerity"))
 	      load = true;
@@ -1124,6 +1375,9 @@ class PluginMgr
 
       case DryRun:
 	{
+	  /* Dry run mode allows for the plugin to run the gamut of verification but 
+	       does not load the plugin into a PluginCache. */
+
 	  plgCache.addPlugin(plg, cname, null, true);
 	}
 	break;
@@ -1151,8 +1405,21 @@ class PluginMgr
 	  (LogMgr.Kind.Plg, LogMgr.Level.Finest, 
 	   "Writing " + plg.getVendor() + " required plugins GLUE file to disk.");
 
+	/* If the plugin is a required plugin, perform some accounting within the 
+	     required plugins table by moving the plugin from the required plugins 
+	     table to the loaded plugins table. */
+
 	checkRequiredPlugin(plg);
+
+	/* Add plugin to the vendor table.  Also remove from the unknown plugins 
+	     table if the plugin was detected as unknown at startup. */
+
 	addRequiredPlugin(plg);
+
+	/* After every successful plugin install write a new required plugins GLUE 
+	     file to keep the db as up to date as possible.  A future optimization 
+	     could be to incrementally or patch the GLUE file if this becomes a 
+	     performance bottleneck, which I doubt will ever be the case. */
 	writeRequiredPlugins(plg.getVendor(), PluginLoadType.Install);
       }
     }
@@ -1185,6 +1452,9 @@ class PluginMgr
       pUnknownPlugins.get(plgType).contains(plgID)) {
 
       pUnknownPlugins.get(plgType).remove(plgID);
+
+      if(pUnknownPlugins.get(plgType).size() == 0)
+	pUnknownPlugins.remove(plgType);
     }
 
     /* Newly installed, or reinstalled plugins should be added to the Vendor 
@@ -1230,6 +1500,9 @@ class PluginMgr
 
         pRequiredPlugins.get(plgType).remove(plgID);
 
+	if(pRequiredPlugins.get(plgType).size() == 0)
+	  pRequiredPlugins.remove(plgType);
+
         isRequiredPlugin = true;
       }
       else {
@@ -1245,15 +1518,22 @@ class PluginMgr
     for(PluginType plgType : pUnknownPlugins.keySet())
       unknownPluginCount += pUnknownPlugins.get(plgType).size();
 
+    StringBuilder buf = new StringBuilder();
+
+    buf.append("\n");
+    buf.append("                     Required plugins = " + pRequiredPluginCount);
+    buf.append("\n");
+    buf.append("                       Loaded plugins = " + loadedPluginCount);
+    buf.append("\n");
+    buf.append("                 Unregistered plugins = " + unknownPluginCount);
+    buf.append("\n");
+    buf.append("Remaining required plugins to install = " + 
+      (pRequiredPluginCount - loadedPluginCount));
+    buf.append("\n");
+
     LogMgr.getInstance().log
       (LogMgr.Kind.Plg, LogMgr.Level.Finest, 
-       "\n" + 
-       "    Required plugins = " + pRequiredPluginCount + "\n" + 
-       "      Loaded plugins = " + loadedPluginCount   + "\n" + 
-       "Unregistered plugins = " + unknownPluginCount  + "\n" + 
-       "\n" + 
-       "Remaining required plugins to install = " + 
-       (pRequiredPluginCount - loadedPluginCount));
+       buf.toString());
 
     return isRequiredPlugin;
   }
@@ -1281,12 +1561,36 @@ class PluginMgr
 
       LogMgr.getInstance().log
         (LogMgr.Kind.Plg, LogMgr.Level.Info,
-        "plpluginmgr ready to accept connections from other servers.");
+        "plpluginmgr ready to accept connections from other servers.\n");
     }
     else {
+      int loadedPluginCount = 0;
+      for(PluginType plgType : pLoadedPlugins.keySet())
+	loadedPluginCount += pLoadedPlugins.get(plgType).size();
+
+      int unknownPluginCount = 0;
+      for(PluginType plgType : pUnknownPlugins.keySet())
+	unknownPluginCount += pUnknownPlugins.get(plgType).size();
+
+      StringBuilder buf = new StringBuilder();
+
+      buf.append("                     Required plugins = " + pRequiredPluginCount);
+      buf.append("\n");
+      buf.append("                       Loaded plugins = " + loadedPluginCount);
+      buf.append("\n");
+      buf.append("                 Unregistered plugins = " + unknownPluginCount);
+      buf.append("\n");
+      buf.append("Remaining required plugins to install = " + 
+	(pRequiredPluginCount - loadedPluginCount));
+      buf.append("\n");
+
       LogMgr.getInstance().log
-        (LogMgr.Kind.Plg, LogMgr.Level.Info, 
-        "plpluginmgr NOT ready to accept connections from other servers.");
+	(LogMgr.Kind.Plg, LogMgr.Level.Info, 
+         buf.toString());
+
+      LogMgr.getInstance().log
+        (LogMgr.Kind.Plg, LogMgr.Level.Severe, 
+        "plpluginmgr NOT ready to accept connections from other servers.\n");
     }
 
     return requiredPluginCount;
@@ -1313,10 +1617,12 @@ class PluginMgr
   readRequiredPlugins()
     throws PipelineException
   {
-    File root = new File(pPluginMgrDir, "required");
+    File root = new File(pPluginMgrDir, "plugins/required");
     File[] requiredPlugins = root.listFiles();
 
-    pRequiredPluginCount = 0;
+    if(requiredPlugins == null || requiredPlugins.length == 0)
+      throw new PipelineException
+	(root + " does not contain any required plugins GLUE files");
 
     for(int i = 0 ; i < requiredPlugins.length ; i++) {
       LogMgr.getInstance().log
@@ -1340,7 +1646,6 @@ class PluginMgr
 
             pRequiredPlugins.put(plgType, plgID);
             pVendorPlugins.get(vendor).put(plgType, plgID);
-            pRequiredPluginCount++;
           }
         }
         catch(GlueException ex) {
@@ -1348,10 +1653,6 @@ class PluginMgr
         }
       }
     }
-
-    LogMgr.getInstance().log
-      (LogMgr.Kind.Plg, LogMgr.Level.Finest, 
-      pRequiredPluginCount + " required plugins");
   }
 
   /**
@@ -1405,7 +1706,7 @@ class PluginMgr
          (bootstrapMode ? "bootstrap" : "Vendor") + " table!");
 
     try {
-      File file = new File(pPluginMgrDir, "required/"  + vendor.replace(' ', '-'));
+      File file = new File(pPluginMgrDir, "plugins/required/"  + vendor.replace(' ', '-'));
 
       LogMgr.getInstance().log
         (LogMgr.Kind.Plg, LogMgr.Level.Finest, 
