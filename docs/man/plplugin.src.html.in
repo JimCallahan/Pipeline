@@ -537,7 +537,7 @@ does not
 match this default Local Vendor, an error will be generated and the
 plugin will not be installed.&nbsp; If you wish to install plugins
 created by another Vendor, this option will disable the requirement
-that it match the Locall Vendor.<br>
+that it match the Local Vendor.<br>
 </div>
 <span style="font-weight: bold;"><br>
 <a name="--rename"></a>--rename</span><br>

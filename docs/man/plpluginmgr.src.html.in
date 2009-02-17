@@ -246,7 +246,7 @@ installation, the required plugins database can be generated if none
 already exists.&nbsp; This is useful when upgrading Pipeline for the
 first time after this required plugins feature has been added for
 studios with existing locally installed plugins.&nbsp;&nbsp; This
-option is not normally required and should only be neccessary to
+option is not normally required and should only be necessary to
 bootstrap the database initially.<br>
 </div>
 </div>
