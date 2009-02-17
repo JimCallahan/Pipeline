@@ -25,10 +25,10 @@ The plpluginmgr(1) program is distributed in the main Pipeline RPM:
 
 %defattr(755,@PIPELINE_USER@,@PIPELINE_GROUP@)
 %dir @PL_PLUGIN_DIRECTORY@
-%dir @PL_PLUGIN_DIRECTORY@/required
+%dir @PL_PLUGIN_DIRECTORY@/plugins/required
 
 %defattr(644,@PIPELINE_USER@,@PIPELINE_GROUP@)
-@PL_PLUGIN_DIRECTORY@/required/Temerity
+@PL_PLUGIN_DIRECTORY@/plugins/required/Temerity
 
 %changelog
 * @RPM_DATE@ Temerity Support <support@temerity.us>
