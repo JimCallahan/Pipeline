@@ -1,4 +1,4 @@
-// $Id: PluginMgrControlClient.java,v 1.9 2009/02/13 04:54:00 jlee Exp $
+// $Id: PluginMgrControlClient.java,v 1.10 2009/02/17 00:45:34 jlee Exp $
   
 package us.temerity.pipeline.core;
 
@@ -7,6 +7,7 @@ import us.temerity.pipeline.message.*;
 
 import java.net.*; 
 import java.io.*; 
+import java.lang.reflect.*;
 import java.nio.*;
 import java.nio.channels.*;
 import java.util.*;
@@ -35,7 +36,7 @@ class PluginMgrControlClient
   public
   PluginMgrControlClient() 
   {
-    super("PluginMgrControlClient");
+    super("PluginMgrControl");
   }
 
 
@@ -239,7 +240,34 @@ class PluginMgrControlClient
 
 	contents.put(cname, bytes);
       }
-      
+
+      ClassLoader loader = new PluginClassLoader(contents);
+
+      /* Check the plugin defines the serialVersionUID that Serializable recommends.  
+           Using Java reflection we can access private field by using getDeclaredField from 
+	   a class object.  If the field is missing then a NosuchFieldException is thrown.  
+	   Through my testing I was able to find one plugin that I failed to use serialver 
+	   to obtain the serialVersionUID, however the class was still loaded because 
+	   ObjectStreamClass provides a serialVersionUID for classes that fail to declare one.  
+	   This code is also in PluginMgr, but having it on the client side makes it more 
+	   efficient. */
+
+      try {
+	Class cls = loader.loadClass(cname);
+
+	Field serialVersionUID = cls.getDeclaredField("serialVersionUID");
+      }
+      catch(ClassNotFoundException ex) {
+	throw new PipelineException
+	  ("Unable to find plugin class (" + cname + "):\n" +
+	   ex.getMessage());
+      }
+      catch(NoSuchFieldException ex) {
+	throw new PipelineException
+	  ("The plugin class (" + cname + ") does not define a serialVersionUID field!  " + 
+	   "Please run serialver to obtain a serialVersionUID.");
+      }
+
       PluginInstallReq req = 
         new PluginInstallReq(pluginfile, cname, pkgID, contents, external, rename, dryRun);
       
