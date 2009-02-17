@@ -1,4 +1,4 @@
-// $Id: BasePluginMgrClient.java,v 1.19 2009/02/13 04:47:47 jlee Exp $
+// $Id: BasePluginMgrClient.java,v 1.20 2009/02/17 00:33:16 jlee Exp $
   
 package us.temerity.pipeline;
 
@@ -30,12 +30,6 @@ class BasePluginMgrClient
   /** 
    * Construct the sole instance.
    **/
-  protected 
-  BasePluginMgrClient()
-  {
-    this("BasePluginMgrClient");
-  }
-
   protected 
   BasePluginMgrClient
   (
