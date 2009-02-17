@@ -1,4 +1,4 @@
-// $Id: BaseMgrClient.java,v 1.28 2009/02/13 04:47:47 jlee Exp $
+// $Id: BaseMgrClient.java,v 1.29 2009/02/17 00:32:20 jlee Exp $
 
 package us.temerity.pipeline;
 
@@ -21,33 +21,6 @@ class BaseMgrClient
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
-
-  /** 
-   * Construct a new manager client.
-   * 
-   * @param hostname 
-   *   The name of the host running the server.
-   * 
-   * @param port 
-   *   The network port listened to by server.
-   * 
-   * @param disconnect
-   *   The disconnect request enum.
-   * 
-   * @param shutdown
-   *   The shutdown request enum.
-   */
-  public
-  BaseMgrClient
-  ( 
-   String hostname, 
-   int port, 
-   Object disconnect, 
-   Object shutdown
-  ) 
-  {
-    this(hostname, port, disconnect, shutdown, "BaseMgrClient");
-  }
 
   /** 
    * Construct a new manager client.
@@ -90,6 +63,9 @@ class BaseMgrClient
     pDisconnect = disconnect;
 
     pShutdown = shutdown;
+
+    if(clientID == null)
+      throw new IllegalArgumentException("The client ID cannot be (null)!");
     pClientID = clientID;
   }
 
@@ -172,11 +148,11 @@ class BaseMgrClient
              and the client ID.  The server does the Pipeline version + release validation.  
              The server will response with OK for successful verifyConnection, else it will be 
              and error message. */
-        String clientMsg = cinfo + BaseMgrClient.sVerifyConnectionMessageDelim + pClientID;
+        String clientMsg = cinfo + "/" + pClientID;
 
         LogMgr.getInstance().log
           (LogMgr.Kind.Net, LogMgr.Level.Finest, 
-           clientMsg);
+           "Message to server (" + clientMsg + ")");
 
         pSocket.setSoTimeout(10000);
 
@@ -729,11 +705,6 @@ class BaseMgrClient
    * This can be used by a BaseMgrServer to restrict access to certain clients.
    */
   private String pClientID;
-
-  /**
-   * The delimiter used to separate the Pipeline version + release and the client ID.
-   */
-  public static final String sVerifyConnectionMessageDelim = "/";
 
 }
 
