@@ -1,4 +1,4 @@
-// $Id: JobMgrServer.java,v 1.34 2009/02/13 04:51:08 jlee Exp $
+// $Id: JobMgrServer.java,v 1.35 2009/02/17 00:51:44 jlee Exp $
 
 package us.temerity.pipeline.core;
 
@@ -196,6 +196,31 @@ class JobMgrServer
     {
       super("JobMgrServer:HandlerTask");
       pChannel = channel;
+    }
+
+    @Override
+    protected String
+    verifyClient
+    (
+     String clientID
+    )
+    {
+      if(!clientID.equals("JobMgr") && !clientID.equals("JobMgrControl")) {
+	String serverRsp = 
+	  "Connection from (" + pSocket.getInetAddress() + ") rejected " + 
+	  " due to invalid client ID (" + clientID + ")";
+
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Warning, 
+	   serverRsp);
+
+	disconnect();
+
+	return serverRsp;
+      }
+      else {
+	return "OK";
+      }
     }
 
     public void 

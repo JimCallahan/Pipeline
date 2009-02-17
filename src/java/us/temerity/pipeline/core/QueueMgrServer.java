@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.58 2009/02/13 04:51:08 jlee Exp $
+// $Id: QueueMgrServer.java,v 1.59 2009/02/17 00:51:44 jlee Exp $
 
 package us.temerity.pipeline.core;
 
@@ -243,6 +243,31 @@ class QueueMgrServer
     {
       super("QueueMgrServer:HandlerTask");
       pChannel = channel;
+    }
+
+    @Override
+    protected String
+    verifyClient
+    (
+     String clientID
+    )
+    {
+      if(!clientID.equals("QueueMgr")) {
+	String serverRsp = 
+	  "Connection from (" + pSocket.getInetAddress() + ") rejected " + 
+	  " due to invalid client ID (" + clientID + ")";
+
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Warning, 
+	   serverRsp);
+
+	disconnect();
+
+	return serverRsp;
+      }
+      else {
+	return "OK";
+      }
     }
 
     @Override

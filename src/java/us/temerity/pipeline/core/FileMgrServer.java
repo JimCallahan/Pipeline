@@ -1,4 +1,4 @@
-// $Id: FileMgrServer.java,v 1.42 2009/02/13 04:51:08 jlee Exp $
+// $Id: FileMgrServer.java,v 1.43 2009/02/17 00:51:44 jlee Exp $
 
 package us.temerity.pipeline.core;
 
@@ -191,6 +191,31 @@ class FileMgrServer
     {
       super("FileMgrServer:HandlerTask");
       pChannel = channel;
+    }
+
+    @Override
+    protected String
+    verifyClient
+    (
+     String clientID
+    )
+    {
+      if(!clientID.equals("FileMgrNet")) {
+	String serverRsp = 
+	  "Connection from (" + pSocket.getInetAddress() + ") rejected " + 
+	  " due to invalid client ID (" + clientID + ")";
+
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Net, LogMgr.Level.Warning, 
+	   serverRsp);
+
+	disconnect();
+
+	return serverRsp;
+      }
+      else {
+	return "OK";
+      }
     }
 
     public void 
