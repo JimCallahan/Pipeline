@@ -1,4 +1,4 @@
-// $Id: PluginMgrServer.java,v 1.15 2009/02/13 04:51:08 jlee Exp $
+// $Id: PluginMgrServer.java,v 1.16 2009/02/17 00:56:47 jlee Exp $
 
 package us.temerity.pipeline.core;
 
@@ -188,23 +188,48 @@ class PluginMgrServer
     }
 
     @Override
-    protected void
+    protected String
     verifyClient
     (
      String clientID
     )
     {
-      if(!pPluginMgr.isUpToDate() && !clientID.equals("PluginMgrControlClient")) {
-	pServerRsp = 
-	  "Connection from (" + pSocket.getInetAddress() + ") rejected " + 
-	  "because plpluginmgr is waiting for the installation of required plugins. " + 
-	  "Only connections from plplugin will be accepted at this time.";
-	
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Net, LogMgr.Level.Warning, 
-	   pServerRsp);
+      if(pPluginMgr.isUpToDate()) {
+	if(!clientID.equals("PluginMgr") && !clientID.equals("PluginMgrControl")) {
+	  String serverRsp = 
+	    "Connection from (" + pSocket.getInetAddress() + ") rejected " + 
+	    " due to invalid client ID (" + clientID + ")";
 
-	disconnect();
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Net, LogMgr.Level.Warning, 
+	     serverRsp);
+
+	  disconnect();
+
+	  return serverRsp;
+	}
+	else {
+	  return "OK";
+	}
+      }
+      else {
+	if(!clientID.equals("PluginMgrControl")) {
+	  String serverRsp = 
+	    "Connection from (" + pSocket.getInetAddress() + ") rejected " + 
+	    "because plpluginmgr is waiting for the installation of required plugins. " + 
+	    "Only connections from plplugin will be accepted at this time.";
+
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Net, LogMgr.Level.Warning, 
+	     serverRsp);
+
+	  disconnect();
+
+	  return serverRsp;
+	}
+	else {
+	  return "OK";
+	}
       }
     }
 
