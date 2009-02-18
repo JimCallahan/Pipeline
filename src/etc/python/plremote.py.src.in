@@ -41,7 +41,7 @@ def release():
     sys.exit(0)
     
 def copyright():
-    print '(c) 2002-2007 Temerity Software, Inc.'
+    print '(c) 2002-2009 Temerity Software, Inc.'
     print 'All rights reserved.'
     sys.exit(0)
 

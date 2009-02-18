@@ -1,4 +1,4 @@
-// $Id: PackageInfo.java.src.in,v 1.50 2009/02/11 16:27:15 jlee Exp $
+// $Id: PackageInfo.java.src.in,v 1.51 2009/02/18 16:08:10 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -1260,7 +1260,7 @@ class PackageInfo
    * The copyright notice for Pipeline. 
    */
   public static final String sCopyright = 
-    ("Copyright (c) 2002-2008 Temerity Software, Inc.\n" + 
+    ("Copyright (c) 2002-2009 Temerity Software, Inc.\n" + 
      "All rights reserved.");
   
   
