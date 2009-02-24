@@ -253,13 +253,14 @@ SPECS/plpluginmgr-@CUSTOMER@-@VERSION@.spec: plpluginmgr.spec
 required-plugins: GeneratePluginDB.class
 	java \
 	  -Dpipeline.ostype=Unix -Dpipeline.archtype=x86_64 -Dpipeline.buildtype=Debug \
-          -classpath DEST/pipeline/base/apps/pipeline-latest/lib/api.jar:. \
+          -classpath DEST/pipeline/@ROOT_INST_DIR@/lib/api.jar:. \
 	  GeneratePluginDB \
-	  DEST/pipeline/base/apps/pipeline-latest/plugins \
+	  DEST/pipeline/@ROOT_INST_DIR@/plugins \
           DEST/plpluginmgr@PL_PLUGIN_DIRECTORY@
 
 GeneratePluginDB.class : GeneratePluginDB.java
-	javac -classpath DEST/pipeline/base/apps/pipeline-latest/lib/api.jar \
+	pwd
+	javac -classpath DEST/pipeline/@ROOT_INST_DIR@/lib/api.jar \
               GeneratePluginDB.java
 
 if PL_LOCAL
