@@ -489,6 +489,8 @@ class SlateSubstAction
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
+  static final long serialVersionUID = -8590809018365194140L;
+
   private static Pattern sDeliveryType  = Pattern.compile("@IC_DELIVERY_TYPE@"); 
   private static Pattern sDeliverable   = Pattern.compile("@IC_DELIVERABLE@"); 
   private static Pattern sClientVersion = Pattern.compile("@IC_CLIENT_VERSION@"); 
