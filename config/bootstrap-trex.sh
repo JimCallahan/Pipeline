@@ -1,5 +1,5 @@
 #!/bin/sh
 
 time ../../src/pipeline/config/bootstrap-suse11.0-64bit.sh \
-  trex 090121 45000 45100 --enable-pllocal-all
+  trex 090218 45000 45100 --enable-pllocal-all
 

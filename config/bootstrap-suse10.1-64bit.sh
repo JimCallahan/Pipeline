@@ -35,7 +35,7 @@ mkdir  debug
 
 pushd debug
   time \
-  JAVA_HOME=/usr/java/jdk1.6.0_06-x86_64 \
+  JAVA_HOME=/usr/java/latest \
   PATH="$JAVA_HOME/bin:$PATH" \
   CC="/usr/bin/gcc" \
   CXX="/usr/bin/g++" \
@@ -62,7 +62,7 @@ mkdir  debug-native
 
 pushd debug-native
   time \
-  JAVA_HOME=/usr/java/jdk1.6.0_06-x86 \
+  JAVA_HOME=/usr/java/latest \
   PATH="$JAVA_HOME/bin:$PATH" \
   CC="/usr/bin/gcc" \
   CXX="/usr/bin/g++" \
@@ -78,7 +78,7 @@ popd
 
 
 
-JAVA_HOME=/usr/java/jdk1.6.0_06-x86_64
+JAVA_HOME=/usr/java/latest
 PATH="$JAVA_HOME/bin:$PATH"
 
 mac_support=`java -classpath $plsrcdir/plconfig CryptoApp $plprofile --lookup MacSupport`
