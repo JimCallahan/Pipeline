@@ -1,4 +1,4 @@
-// $Id: BasePlugin.java,v 1.16 2008/10/10 12:46:58 jim Exp $
+// $Id: BasePlugin.java,v 1.17 2009/02/24 00:54:19 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -266,21 +266,21 @@ class BasePlugin
     StringBuilder buf = new StringBuilder();
 
     buf.append
-      ("Name              : " + getName() + "\n" + 
-       "Version           : " + getVersionID() + "\n" + 
-       "Vendor            : " + getVendor() + "\n" + 
-       "Supports          :"); 
+      ("Name        : " + getName() + "\n" + 
+       "Version     : " + getVersionID() + "\n" + 
+       "Vendor      : " + getVendor() + "\n" + 
+       "Supports    :"); 
     
     for(OsType os : pSupports) 
       buf.append(" " + os.toTitle()); 
 
     buf.append
       ("\n" +
-       "Description       : " + wordWrap(getDescription(), 14, 80) + "\n" + 
-       "PluginType        : " + getPluginType() + "\n" +
-       "Status            : " + 
+       "Description : " + wordWrap(getDescription(), 14, 80) + "\n" + 
+       "PluginType  : " + getPluginType() + "\n" +
+       "Status      : " + 
          (isUnderDevelopment() ? "Under Development" : "Permanent") + "\n" + 
-       "Class             : " + getClass().getName());
+       "Class       : " + getClass().getName());
 
     return buf.toString();
   }

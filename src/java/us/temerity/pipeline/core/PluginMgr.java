@@ -1,4 +1,4 @@
-// $Id: PluginMgr.java,v 1.31 2009/02/17 01:00:11 jlee Exp $
+// $Id: PluginMgr.java,v 1.32 2009/02/24 00:54:19 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -139,15 +139,15 @@ class PluginMgr
           were bypassed. */
       if(!bootstrapPluginsDir.isDirectory())
         throw new IllegalStateException
-          ("[PluginMgr] The given required plugins bootstrap directory (" + bootstrapDir + 
-	   ") does not contain a plugins directory!  Please check that you are using " + 
-           "the correct previous Pipeline directory or do not use --bootstrap=(previous " + 
+          ("The given required plugins bootstrap directory (" + bootstrapDir + ") does " + 
+           "not contain a plugins directory!  Please check that you are using the correct " + 
+           "previous Pipeline directory or do not use --bootstrap=(previous " + 
            "Pipeline root directory)");
 
       LogMgr.getInstance().log
         (LogMgr.Kind.Plg, LogMgr.Level.Info, 
-         "[PluginMgr] In required plugins bootstrap mode using (" + bootstrapDir + ") " + 
-         "as the root of the previous Pipeline version.");
+         "In required plugins bootstrap mode using (" + bootstrapDir + ") as the root of " + 
+         "the previous Pipeline version.");
 
       loadAllPlugins(bootstrapPluginsDir, PluginLoadType.Bootstrap);
 
@@ -163,18 +163,18 @@ class PluginMgr
 
       if(pluginCount == 0) {
 	throw new IllegalStateException
-	  ("[PluginMgr] The given required plugins bootstrap directory (" + bootstrapDir + ")" + 
-	   " does not contain any plugins.  Please check the directory again or do not use the" + 
-	   " bootstrap option");
+	  ("The given required plugins bootstrap directory (" + bootstrapDir + ") " + 
+	   "does not contain any plugins.  Please check the directory again or do not " + 
+           "use the bootstrap option");
       }
 
       for(String vname : pBootstrapPlugins.keySet()) {
         if(vname.equals("Temerity")) {
           LogMgr.getInstance().log
             (LogMgr.Kind.Plg, LogMgr.Level.Info, 
-            "For some reason Temerity plugins are in the bootstrap plugins " + 
-            "hashtable, this is a problem but they are going to be ignored.  " + 
-            "If you see message in your log file please post the forum about this.");
+             "For some reason Temerity plugins are in the bootstrap plugins hashtable, " + 
+             "this is a problem but they are going to be ignored. If you see message in " + 
+             "your log file please post the forum about this.");
         }
         else {
           try {
@@ -186,10 +186,7 @@ class PluginMgr
         }
       }
 
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Plg, LogMgr.Level.Info, 
-	 "Bootstrap plugins");
-      displayVendorPlugins(pBootstrapPlugins, LogMgr.Level.Info);
+      displayBootstrapPlugins();
 
       /* After the bootstrap plugins are written to GLUE files it can be nulled out, 
            since it will not be used again. */
@@ -209,152 +206,160 @@ class PluginMgr
 
     loadAllPlugins(PackageInfo.sPluginsPath.toFile(), PluginLoadType.Startup);
 
-    LogMgr.getInstance().log
-      (LogMgr.Kind.Plg, LogMgr.Level.Info, 
-       "\nVendor plugins :\n");
-    displayVendorPlugins(pVendorPlugins, LogMgr.Level.Info);
-
-    {
-      int requiredPluginCount = 0;
-      for(PluginType plgType : pRequiredPlugins.keySet())
-	requiredPluginCount += pRequiredPlugins.get(plgType).size();
-
-      if(requiredPluginCount > 0) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Plg, LogMgr.Level.Info, 
-           "\nRequired plugins that need to be installed :\n");
-	displayPlugins(pRequiredPlugins, LogMgr.Level.Info);
-      }
-    }
-
-    if(pUnknownPlugins.size() > 0) {
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Plg, LogMgr.Level.Info, 
-         "\nUnregistered plugins :\n");
-      displayPlugins(pUnknownPlugins, LogMgr.Level.Info);
-    }
-
+    displayVendorPlugins(); 
     checkRequiredPlugins();
   }
 
 
 
   /*----------------------------------------------------------------------------------------*/
-  /*   S O M E   S T R I N G   H E L P E R   F U N C T I O N S                              */
+  /*   O U T P U T                                                                          */
   /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * Print a table of plugins required, loadad and unknown by vendor.
+   */ 
   private void
-  displayVendorPlugins
-  (
-   TreeMap<String,MappedSet<PluginType,PluginID>> vendorPlugins, 
-   LogMgr.Level loglevel
-  )
+  displayBootstrapPlugins() 
   {
     int maxLength = 0;
     for(String plgType : PluginType.titles())
-      maxLength = Math.max(plgType.length(), maxLength);
+      maxLength = Math.max(plgType.length()+1, maxLength);
 
-    String totalMsg = "Total plugin count";
-    maxLength = Math.max(totalMsg.length(), maxLength);
+    String totalMsg = "TOTAL";
 
-    for(String vendor : vendorPlugins.keySet()) {
-      MappedSet<PluginType,PluginID> plugins = vendorPlugins.get(vendor);
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Plg, LogMgr.Level.Info,
+       tbar(80) + "\n" + 
+       "  B O O T S T R A P P E D   P L U G I N S");
+
+    for(String vendor : pBootstrapPlugins.keySet()) {
 
       LogMgr.getInstance().log
-	(LogMgr.Kind.Plg, loglevel, 
-	 formatString("Vendor", maxLength) + " : " + vendor);
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Plg, loglevel, 
-	 drawline('-', maxLength));
+        (LogMgr.Kind.Plg, LogMgr.Level.Info,
+         bar(80) + "\n" + 
+         " " + vendor + " Plugins\n" + 
+         pad(maxLength) + "   required\n" +
+         pad(maxLength) + "   --------");
 
-      int plgCount = 0;
-      for(PluginType plgType : plugins.keySet()) {
-	int plgTypeCount = plugins.get(plgType).size();
-
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Plg, loglevel, 
-	   formatString(plgType.toString(), maxLength) + " : " + plgTypeCount);
-
-	plgCount += plgTypeCount;
+      int total = 0;
+      MappedSet<PluginType,PluginID> pset = pBootstrapPlugins.get(vendor);
+      for(PluginType ptype : pset.keySet()) {
+        int cnt = pset.get(ptype).size();
+        if(cnt > 0) {
+          LogMgr.getInstance().log
+            (LogMgr.Kind.Plg, LogMgr.Level.Info,
+             lpad(ptype.toString(), maxLength) + " :  " + 
+             lpad(Integer.toString(cnt), 5)); 
+        }
+          
+        total += cnt;
       }
 
       LogMgr.getInstance().log
-	(LogMgr.Kind.Plg, loglevel, 
-	 drawline('=', maxLength));
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Plg, loglevel, 
-	 formatString(totalMsg, maxLength) + " : " + plgCount);
+        (LogMgr.Kind.Plg, LogMgr.Level.Info,
+         "\n" + lpad("TOTAL", maxLength) + " :  " + 
+         lpad(Integer.toString(total), 5) + "\n");
     }
   }
 
-  public void
-  displayPlugins
-  (
-   MappedSet<PluginType,PluginID> plugins, 
-   LogMgr.Level loglevel
-  )
+
+  /**
+   * Print a table of plugins required, loadad and unknown by vendor.
+   */ 
+  private void
+  displayVendorPlugins() 
   {
     int maxLength = 0;
     for(String plgType : PluginType.titles())
-      maxLength = Math.max(plgType.length(), maxLength);
+      maxLength = Math.max(plgType.length()+1, maxLength);
 
-    String totalMsg = "Total plugin count";
-    maxLength = Math.max(totalMsg.length(), maxLength);
+    String totalMsg = "TOTAL";
 
-    int plgCount = 0;
-    for(PluginType plgType : plugins.keySet()) {
-      int plgTypeCount = plugins.get(plgType).size();
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Plg, LogMgr.Level.Info,
+       tbar(80) + "\n" + 
+       "  P R O C E S S E D   P L U G I N S");
 
-      if(plgTypeCount > 0) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Plg, loglevel, 
-	   formatString(plgType.toString(), maxLength) + " : " + plgTypeCount);
+    for(String vendor : pVendorPlugins.keySet()) {
 
-	plgCount += plgTypeCount;
+      LogMgr.getInstance().log
+        (LogMgr.Kind.Plg, LogMgr.Level.Info,
+         bar(80) + "\n" + 
+         " " + vendor + " Plugins\n" + 
+         pad(maxLength) + "   required  loaded  unknown\n" +
+         pad(maxLength) + "   -------------------------");
+
+      int totalR = 0;
+      int totalL = 0;
+      int totalU = 0;
+      for(PluginType ptype : PluginType.all()) {
+        int rcnt = 0;
+        {
+          TreeSet<PluginID> plugins = pRequiredPlugins.get(ptype);
+          if(plugins != null) {
+            for(PluginID pid : plugins) {
+              if(pid.getVendor().equals(vendor))
+                rcnt++;
+            }
+          }
+        }
+
+        int lcnt = 0;
+        {
+          TreeSet<PluginID> plugins = pLoadedPlugins.get(ptype);
+          if(plugins != null) {
+            for(PluginID pid : plugins) {
+              if(pid.getVendor().equals(vendor))
+                lcnt++;
+            }       
+          }
+        }
+        
+        int ucnt = 0;
+        {
+          TreeSet<PluginID> plugins = pUnknownPlugins.get(ptype);
+          if(plugins != null) {
+            for(PluginID pid : plugins) {
+              if(pid.getVendor().equals(vendor))
+              ucnt++;
+            }       
+          }
+        }
+
+        if((rcnt > 0) || (lcnt > 0) || (ucnt > 0)) {
+          LogMgr.getInstance().log
+            (LogMgr.Kind.Plg, LogMgr.Level.Info,
+             lpad(ptype.toString(), maxLength) + " :  " + 
+             lpad(Integer.toString(lcnt+rcnt), 5) + 
+             lpad(Integer.toString(lcnt), 8) + 
+             lpad(Integer.toString(ucnt), 9));
+        }
+          
+        totalR += rcnt;
+        totalL += lcnt;
+        totalU += ucnt;
+      }
+
+      LogMgr.getInstance().log
+        (LogMgr.Kind.Plg, LogMgr.Level.Info,
+         "\n" + lpad("TOTAL", maxLength) + " :  " + 
+         lpad(Integer.toString(totalR+totalL), 5) + 
+         lpad(Integer.toString(totalL), 8) + 
+         lpad(Integer.toString(totalU), 9) + "\n");
+
+      if(totalR > totalL) {
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Plg, LogMgr.Level.Info,
+           pad(maxLength) + "   (" + (totalR-totalL) + " REQUIRED PLUGIN" + 
+           (((totalR-totalL) > 1) ? "S" : "") + " MISSING!)\n"); 
+      }
+      else {
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Plg, LogMgr.Level.Info,
+           pad(maxLength) + "   (all plugins found)\n"); 
       }
     }
-
-    LogMgr.getInstance().log
-      (LogMgr.Kind.Plg, loglevel, 
-       drawline('=', maxLength));
-    LogMgr.getInstance().log
-      (LogMgr.Kind.Plg, loglevel, 
-       formatString(totalMsg, maxLength) + " : " + plgCount + "\n");
-  }
-
-  private String
-  formatString
-  (
-   String str, 
-   int len
-  )
-  {
-    if(len <= str.length())
-      return str;
-
-    StringBuilder buf = new StringBuilder();
-
-    for(int i = 0 ; i < (len - str.length()) ; i++)
-      buf.append(" ");
-
-    buf.append(str);
-
-    return buf.toString();
-  }
-
-  private String
-  drawline
-  (
-   char ch, 
-   int len
-  )
-  {
-    StringBuilder buf = new StringBuilder();
-
-    for(int i = 0 ; i < len ; i++)
-      buf.append(ch);
-
-    return buf.toString();
   }
 
 
@@ -1262,9 +1267,9 @@ class PluginMgr
       throw new PipelineException
         ("There already exists a plugin identified by the same Name, VersionID and Vendor " + 
          "(" + plg.getName() + ", v" + plg.getVersionID() + ", " + plg.getVendor() + ") " +
-         "as the plugin being installed, but it is implemented with a different Java class! " + 
-         "The existing plugin's Java class is (" + plugin.getClassName() + ") while the " + 
-         "new plugin is implemented by the (" + cname + ") Java class. This may " + 
+         "as the plugin being installed, but it is implemented with a different Java " + 
+         "class! The existing plugin's Java class is (" + plugin.getClassName() + ") while " + 
+         "the new plugin is implemented by the (" + cname + ") Java class. This may " + 
          "be due to copying the source code from another plugin and forgetting to " + 
          "update the Name, VersionID and Vendor properties of the new plugin.\n" +
          "\n" + 
@@ -1495,7 +1500,9 @@ class PluginMgr
       PluginType plgType = plg.getPluginType();
       PluginID   plgID   = plg.getPluginID();
 
-      if(pRequiredPlugins.containsKey(plgType) && pRequiredPlugins.get(plgType).contains(plgID)) {
+      if(pRequiredPlugins.containsKey(plgType) && 
+         pRequiredPlugins.get(plgType).contains(plgID)) {
+
         pLoadedPlugins.put(plgType, plgID);
 
         pRequiredPlugins.get(plgType).remove(plgID);
@@ -1509,31 +1516,6 @@ class PluginMgr
         pUnknownPlugins.put(plgType, plgID);
       }
     }
-
-    int loadedPluginCount = 0;
-    for(PluginType plgType : pLoadedPlugins.keySet())
-      loadedPluginCount += pLoadedPlugins.get(plgType).size();
-
-    int unknownPluginCount = 0;
-    for(PluginType plgType : pUnknownPlugins.keySet())
-      unknownPluginCount += pUnknownPlugins.get(plgType).size();
-
-    StringBuilder buf = new StringBuilder();
-
-    buf.append("\n");
-    buf.append("                     Required plugins = " + pRequiredPluginCount);
-    buf.append("\n");
-    buf.append("                       Loaded plugins = " + loadedPluginCount);
-    buf.append("\n");
-    buf.append("                 Unregistered plugins = " + unknownPluginCount);
-    buf.append("\n");
-    buf.append("Remaining required plugins to install = " + 
-      (pRequiredPluginCount - loadedPluginCount));
-    buf.append("\n");
-
-    LogMgr.getInstance().log
-      (LogMgr.Kind.Plg, LogMgr.Level.Finest, 
-       buf.toString());
 
     return isRequiredPlugin;
   }
@@ -1561,7 +1543,11 @@ class PluginMgr
 
       LogMgr.getInstance().log
         (LogMgr.Kind.Plg, LogMgr.Level.Info,
-        "plpluginmgr ready to accept connections from other servers.\n");
+         bar(80) + "\n" +
+         wordWrap
+         ("All required plugins have now been loaded!  You may start all other Pipeline " + 
+          "servers and begin normal operation.", 0, 80) + "\n" + 
+         bar(80));
     }
     else {
       int loadedPluginCount = 0;
@@ -1572,25 +1558,25 @@ class PluginMgr
       for(PluginType plgType : pUnknownPlugins.keySet())
 	unknownPluginCount += pUnknownPlugins.get(plgType).size();
 
-      StringBuilder buf = new StringBuilder();
-
-      buf.append("                     Required plugins = " + pRequiredPluginCount);
-      buf.append("\n");
-      buf.append("                       Loaded plugins = " + loadedPluginCount);
-      buf.append("\n");
-      buf.append("                 Unregistered plugins = " + unknownPluginCount);
-      buf.append("\n");
-      buf.append("Remaining required plugins to install = " + 
-	(pRequiredPluginCount - loadedPluginCount));
-      buf.append("\n");
-
       LogMgr.getInstance().log
-	(LogMgr.Kind.Plg, LogMgr.Level.Info, 
-         buf.toString());
-
-      LogMgr.getInstance().log
-        (LogMgr.Kind.Plg, LogMgr.Level.Severe, 
-        "plpluginmgr NOT ready to accept connections from other servers.\n");
+        (LogMgr.Kind.Plg, LogMgr.Level.Warning, 
+         bar(80) + "\n" +
+         wordWrap
+         ("Not yet accepting connections from other servers until all required " + 
+          "plugins have been installed.  You must use plplugin(1) to install all required " + 
+          "plugins before the rest of the Pipeline servers can be started.", 0, 80) + "\n" + 
+         "\n" + 
+         "Current Plugin Counts:\n\n" +
+         "   Required = " + pRequiredPluginCount + "\n" + 
+         "     Loaded = " + loadedPluginCount + "\n" + 
+         "    Unknown = " + unknownPluginCount + "\n" + 
+         "    Missing = " + (pRequiredPluginCount - loadedPluginCount) + "\n" + 
+         "\n" + 
+         wordWrap
+         ("You can use plplugin(1) with the --list-required option to get the full listing " + 
+          "of the specific required plugins which are currently missing and need to be " + 
+          "installed.", 0, 80) + "\n" + 
+         bar(80));
     }
 
     return requiredPluginCount;
@@ -1745,6 +1731,165 @@ class PluginMgr
   isUpToDate()
   {
     return pUpToDate.get();
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   H E L P E R S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Generate a string consisting the the given character repeated N number of times.
+   */ 
+  public String
+  repeat
+  (
+   char c,
+   int size
+  ) 
+  {
+    StringBuilder buf = new StringBuilder();
+    int wk;
+    for(wk=0; wk<size; wk++) 
+      buf.append(c);
+    return buf.toString();
+  }
+
+  /**
+   * Generate a horizontal bar.
+   */ 
+  public String
+  bar
+  (
+   int size
+  ) 
+  {
+    return repeat('-', size);
+  }
+
+  /**
+   * Generate a horizontal title bar.
+   */ 
+  public String
+  tbar
+  (
+   int size
+  ) 
+  {
+    return repeat('=', size);
+  }
+
+  /**
+   * Pad the given string so that it is at least N characters long.
+   */ 
+  public String
+  pad
+  (
+   String str, 
+   char c,
+   int size
+  ) 
+  {
+    return (str + repeat(c, Math.max(0, size - str.length())));
+  }
+
+  /**
+   * Pad the given string with spaces so that it is at least N characters long.
+   */ 
+  public String
+  pad
+  (
+   String str,
+   int size
+  ) 
+  {
+    return pad(str, ' ', size);
+  }
+
+  /**
+   * Generate N spaces. 
+   */ 
+  public String
+  pad
+  (
+   int size
+  ) 
+  {
+    return repeat(' ', size);
+  }
+
+  /**
+   * Left pad the given string so that it is at least N characters long.
+   */ 
+  public String
+  lpad
+  (
+   String str, 
+   char c,
+   int size
+  ) 
+  {
+    return (repeat(c, Math.max(0, size - str.length())) + str);
+  }
+
+  /**
+   * Left pad the given string with spaces so that it is at least N characters long.
+   */ 
+  public String
+  lpad
+  (
+   String str,
+   int size
+  ) 
+  {
+    return lpad(str, ' ', size);
+  }
+
+  /**
+   * Line wrap the given String at word boundries.
+   */ 
+  public String
+  wordWrap
+  (
+   String str,
+   int indent, 
+   int size
+  ) 
+  {
+    if(str.length() + indent < size) 
+      return str;
+
+    StringBuilder buf = new StringBuilder();
+    String words[] = str.split("\\p{Blank}");
+    int cnt = indent;
+    int wk;
+    for(wk=0; wk<words.length; wk++) {
+      int ws = words[wk].length();
+      if(ws > 0) {
+	if((size - cnt - ws) > 0) {
+	  buf.append(words[wk]);
+	  cnt += ws;
+	}
+	else {
+	  buf.append("\n" + repeat(' ', indent) + words[wk]);
+	  cnt = indent + ws;
+	}
+
+	if(wk < (words.length-1)) {
+	  if((size - cnt) > 0) {
+	    buf.append(' ');
+	    cnt++;
+	  }
+	  else {
+	    buf.append("\n" + repeat(' ', indent));
+	    cnt = indent;
+	  }
+	}
+      }
+    }
+
+    return buf.toString();
   }
 
 
@@ -1999,8 +2144,7 @@ class PluginMgr
   private PluginCache  pBuilderCollection;
   
   private TripleMap<String,String,VersionID,LayoutGroup> pBuilderCollectionLayouts;
-  
-  private TripleMap<String, String, VersionID, AnnotationPermissions> pAnnotationPermissions; 
+  private TripleMap<String,String,VersionID,AnnotationPermissions> pAnnotationPermissions; 
 
   /**
    * The serialVersionUIDs of all loaded plugins used to test for conflicts.

@@ -47,8 +47,8 @@ PluginOptsParser
   private void 
   init()
   {
-    pLogBackups = 10;
-    pList       = false;
+    pLogBackups  = 10;
+    pList        = false;
     pPluginFiles = new TreeSet();
   }
  
@@ -141,12 +141,12 @@ TOKEN :
 | <LOG:               "--log">                     : LOG_SEP
 
   /* action options */	
-| <LIST:         "--list">     
+| <LIST:          "--list">     
 | <LIST_REQUIRED: "--list-required">
-| <EXTERNAL:     "--external">    
-| <RENAME:       "--rename">    
-| <DRYRUN:       "--dry-run">
-| <INSTALL:      "--install">    
+| <EXTERNAL:      "--external">    
+| <RENAME:        "--rename">    
+| <DRYRUN:        "--dry-run">
+| <INSTALL:       "--install">    
 
   /* plugin files */
 | <PLUGIN_FILE:   (["/","\\"])* ("../" | "..\\")* <PLUGIN_COMP> 

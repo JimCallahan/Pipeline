@@ -1,4 +1,4 @@
-// $Id: PluginMgrControlClient.java,v 1.10 2009/02/17 00:45:34 jlee Exp $
+// $Id: PluginMgrControlClient.java,v 1.11 2009/02/24 00:54:19 jim Exp $
   
 package us.temerity.pipeline.core;
 
@@ -248,10 +248,9 @@ class PluginMgrControlClient
 	   a class object.  If the field is missing then a NosuchFieldException is thrown.  
 	   Through my testing I was able to find one plugin that I failed to use serialver 
 	   to obtain the serialVersionUID, however the class was still loaded because 
-	   ObjectStreamClass provides a serialVersionUID for classes that fail to declare one.  
-	   This code is also in PluginMgr, but having it on the client side makes it more 
-	   efficient. */
-
+	   ObjectStreamClass provides a serialVersionUID for classes that fail to declare 
+           one. This code is also in PluginMgr, but having it on the client side makes it 
+           more efficient. */
       try {
 	Class cls = loader.loadClass(cname);
 
@@ -286,24 +285,24 @@ class PluginMgrControlClient
 
         if(requiredPluginsCount > 0)
           LogMgr.getInstance().log
-            (LogMgr.Kind.Ops, LogMgr.Level.Info, 
-            requiredPluginsCount + " plugin" + (requiredPluginsCount > 1 ? "s " : " ") + 
-            "need" + (requiredPluginsCount > 1 ? "" : "s") + " to be installed.  " + 
-            "Please rerun plplugin with the --list-required option " + 
-            "to get the full details.");
+            (LogMgr.Kind.Ops, LogMgr.Level.Warning, 
+             requiredPluginsCount + " plugin" + (requiredPluginsCount > 1 ? "s " : " ") + 
+             "still need" + (requiredPluginsCount > 1 ? "" : "s") + " to be installed.  " + 
+             "Please rerun plplugin with the --list-required option " + 
+             "to get the full details.");
 
         if(unknownPluginsCount > 0)
           LogMgr.getInstance().log
-            (LogMgr.Kind.Ops, LogMgr.Level.Info, 
-            unknownPluginsCount + " unregistered plugin" + 
-            (unknownPluginsCount > 1 ? "s " : " ") + 
-            (unknownPluginsCount > 1 ? "have" : "has") + 
-            " been detected.  They have not been loaded.  " + 
-            "Install the plugin" + 
-            (unknownPluginsCount > 1 ? "s " : " ") + 
-            " using plplugin --install.  " + 
-            "Please rerun plplugin with the --list-required option " + 
-            "to get the full details.");
+            (LogMgr.Kind.Ops, LogMgr.Level.Warning, 
+             unknownPluginsCount + " unregistered plugin" + 
+             (unknownPluginsCount > 1 ? "s " : " ") + 
+             (unknownPluginsCount > 1 ? "have" : "has") + 
+             " been detected.  They have not been loaded.  " + 
+             "Install the plugin" + 
+             (unknownPluginsCount > 1 ? "s " : " ") + 
+             " using plplugin --install.  " + 
+             "Please rerun plplugin with the --list-required option " + 
+             "to get the full details.");
       }
       else if(obj instanceof SuccessRsp) {
         LogMgr.getInstance().log
@@ -374,12 +373,12 @@ class PluginMgrControlClient
 
       if(requiredPluginCount > 0) {
         LogMgr.getInstance().log
-         (LogMgr.Kind.Ops, LogMgr.Level.Info, 
-         requiredPluginCount + " plugin" + (requiredPluginCount > 1 ? "s " : " ") + 
-          "need" + (requiredPluginCount > 1 ? "" : "s") + " to be installed.");
+         (LogMgr.Kind.Ops, LogMgr.Level.Warning, 
+          requiredPluginCount + " plugin" + (requiredPluginCount > 1 ? "s " : " ") + 
+          "still need" + (requiredPluginCount > 1 ? "" : "s") + " to be installed.");
       }
       
-      if(requiredPluginCount == 0 && unknownPluginCount == 0) {
+      if((requiredPluginCount == 0) && (unknownPluginCount == 0)) {
         LogMgr.getInstance().log
           (LogMgr.Kind.Ops, LogMgr.Level.Info, 
           "All required plugins are installed.");
@@ -392,5 +391,4 @@ class PluginMgrControlClient
     LogMgr.getInstance().flush();
   }
 }
-
 
