@@ -1,4 +1,4 @@
-// $Id: NodeTree.java,v 1.14 2009/02/06 07:03:17 jim Exp $
+// $Id: NodeTree.java,v 1.15 2009/02/25 18:50:36 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -49,8 +49,9 @@ class NodeTree
          "is to prevent problems for Windows clients using the CIFS network file system " +
          "to access the files associated with nodes, since CIFS does not understand case.");
     }
-    else
-      sWindowsMessage = null;
+    else {
+      sWindowsMessage = "";
+    }
   }
 
 
@@ -521,10 +522,6 @@ class NodeTree
   ) 
     throws PipelineException
   {
-//     if(oldID.equals(newID))
-//       throw new PipelineException
-//         ("Somehow the old and new node IDs (" + newID + ") are identical!");
-
     /* make sure that the full new name doesn't match some subset of the non-leaf 
        components of the old name */ 
     if(hasDirectorySubsetConflict(newID, oldID)) 
