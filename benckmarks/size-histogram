@@ -1,0 +1,74 @@
+#!/bin/bash
+
+function usage {
+  echo "usage: size-histogram /path/to/root/directory"
+  exit 1
+}
+
+if [ "$#" -ne 1 ]
+then
+  usage
+fi
+
+rootdir=$1
+
+find $rootdir -type f -exec stat -c %s {} \; | sort -n > raw-sizes.dat
+
+files=`cat raw-sizes.dat | wc -l`
+min=`head -1 raw-sizes.dat`
+max=`tail -1 raw-sizes.dat`
+
+echo Files=$files Min=$min Max=$max
+
+buckets=-1;
+h=0;
+while [ $h -lt $max ]
+do
+  buckets=$(($buckets+1))
+  h=`echo "2^($buckets-1)" | bc`
+  inter[$buckets]=$h
+done
+
+echo "Intervals=${inter[*]}"
+
+for ((i=0; $i<$buckets; i++)) 
+do
+  counts[$i]=0
+done
+
+for v in `cat raw-sizes.dat`
+do
+  for ((i=0; $i<$buckets; i++)) 
+  do
+    if [ $v -le ${inter[$i]} ]
+    then
+      counts[$i]=$((${counts[$i]}+1))
+      break
+    fi
+  done
+done
+
+echo "Counts = ${counts[*]}"
+
+totalCounts=0
+totalHist=0.0
+
+rm -f size-buckets.dat
+
+echo "File Sizes:"
+echo "[min, max) = count [percent]"
+for ((i=0; $i<$buckets; i++))
+do 
+  n=`echo "2^($i-1)" | bc`
+  x=`echo "2^($i)" | bc`  
+  hist[$i]=`echo "${counts[$i]}/$files" | bc -l`
+  echo "[$n, $x) = ${counts[$i]} [${hist[$i]}]"
+
+  totalCounts=`echo "$totalCounts+${counts[$i]}" | bc`
+  totalHist=`echo "$totalHist+${hist[$i]}" | bc -l` 
+  printf "${n}\t${x}\t${counts[$i]}\t${hist[$i]}\n" >> size-buckets.dat
+done
+
+#echo TotalCounts=$totalCounts TotalHist=$totalHist
+
+rm -f raw-sizes.dat
