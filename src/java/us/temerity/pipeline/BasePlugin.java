@@ -1,4 +1,4 @@
-// $Id: BasePlugin.java,v 1.17 2009/02/24 00:54:19 jim Exp $
+// $Id: BasePlugin.java,v 1.18 2009/03/01 21:47:12 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -168,7 +168,7 @@ class BasePlugin
   }
 
   /**
-   * Copy the OS support flags from the given plugin.
+   * Set the specific operating systems that are supported.
    */ 
   protected void
   setSupports
