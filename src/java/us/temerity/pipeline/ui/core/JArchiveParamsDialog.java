@@ -1,4 +1,4 @@
-// $Id: JArchiveParamsDialog.java,v 1.9 2008/06/10 09:37:20 jim Exp $
+// $Id: JArchiveParamsDialog.java,v 1.10 2009/03/01 20:47:00 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -150,16 +150,7 @@ class JArchiveParamsDialog
 	body.add(drawer);
       }
 
-      {
-	JPanel spanel = new JPanel();
-	spanel.setName("Spacer");
-	
-	spanel.setMinimumSize(new Dimension(sTSize+sVSize, 7));
-	spanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
-	spanel.setPreferredSize(new Dimension(sTSize+sVSize, 7));
-	
-	body.add(spanel);
-      }
+      body.add(UIFactory.createFiller(sTSize+sVSize));
 
       JScrollPane scroll = UIFactory.createVertScrollPane(body, sTSize+sVSize+52, 300);
 
