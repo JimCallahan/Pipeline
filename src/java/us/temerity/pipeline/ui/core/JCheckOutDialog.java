@@ -1,4 +1,4 @@
-// $Id: JCheckOutDialog.java,v 1.9 2007/09/07 18:52:38 jim Exp $
+// $Id: JCheckOutDialog.java,v 1.10 2009/03/01 20:52:42 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -118,17 +118,8 @@ class JCheckOutDialog
 	Box vbox = new Box(BoxLayout.Y_AXIS);
 	pVersionBox = vbox;
 	
-	{
-	  JPanel spanel = new JPanel();
-	  spanel.setName("Spacer");
-	  
-	  spanel.setMinimumSize(new Dimension(sTSize+sVSize, 7));
-	  spanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
-	  spanel.setPreferredSize(new Dimension(sTSize+sVSize, 7));
-	  
-	  vbox.add(spanel);
-	}
-	
+	vbox.add(UIFactory.createFiller(sTSize+sVSize));
+
 	{
 	  JScrollPane scroll = UIFactory.createVertScrollPane(vbox);
 	  box.add(scroll);
@@ -317,16 +308,7 @@ class JCheckOutDialog
 	}
       }
       
-      {
-	JPanel spanel = new JPanel();
-	spanel.setName("Spacer");
-	
-	spanel.setMinimumSize(new Dimension(sTSize+sVSize, 7));
-	spanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
-	spanel.setPreferredSize(new Dimension(sTSize+sVSize, 7));
-	
-	pVersionBox.add(spanel);
-      }
+      pVersionBox.add(UIFactory.createFiller(sTSize+sVSize));
 
       boolean isSingle = (pVersionIDs.size() == 1);
       pHeaderLabel.setText("Check-Out " + (isSingle ? ":" : "Multiple Nodes:"));

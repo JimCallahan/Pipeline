@@ -1,4 +1,4 @@
-// $Id: JArchiveVolumesDialog.java,v 1.6 2007/09/07 18:52:38 jim Exp $
+// $Id: JArchiveVolumesDialog.java,v 1.7 2009/03/01 20:52:42 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -149,19 +149,10 @@ class JArchiveVolumesDialog
 	    
 	      {
 		Box apbox = new Box(BoxLayout.X_AXIS);
+
 		apbox.addComponentListener(this);
-		
-		{
-		  JPanel spanel = new JPanel();
-		  spanel.setName("Spacer");
-		  
-		  spanel.setMinimumSize(new Dimension(7, 0));
-		  spanel.setMaximumSize(new Dimension(7, Integer.MAX_VALUE));
-		  spanel.setPreferredSize(new Dimension(7, 0));
-		  
-		  apbox.add(spanel);
-		}
-		
+		apbox.add(UIFactory.createSidebar());
+
 		/* archiver parameters */ 
 		{
 		  Component comps[] = UIFactory.createTitledPanels();
@@ -200,17 +191,7 @@ class JArchiveVolumesDialog
 	      sbox.add(drawer);
 	    }
 
-	    {
-	      JPanel spanel = new JPanel();
-	      spanel.setName("Spacer");
-	      
-	      spanel.setMinimumSize(new Dimension(sTSize+sVSize, 7));
-	      spanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
-	      spanel.setPreferredSize(new Dimension(sTSize+sVSize, 7));
-	      
-	      sbox.add(spanel);
-	    }
-
+            sbox.add(UIFactory.createFiller(sTSize+sVSize));
 	    sbox.add(Box.createVerticalGlue());
       
 	    {

@@ -1,4 +1,4 @@
-// $Id: JLockDialog.java,v 1.5 2008/04/22 20:35:54 jim Exp $
+// $Id: JLockDialog.java,v 1.6 2009/03/01 20:52:42 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -57,16 +57,7 @@ class JLockDialog
 	Box vbox = new Box(BoxLayout.Y_AXIS);
 	pVersionBox = vbox;
 	
-	{
-	  JPanel spanel = new JPanel();
-	  spanel.setName("Spacer");
-	  
-	  spanel.setMinimumSize(new Dimension(sTSize+sVSize, 7));
-	  spanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
-	  spanel.setPreferredSize(new Dimension(sTSize+sVSize, 7));
-	  
-	  vbox.add(spanel);
-	}
+        vbox.add(UIFactory.createFiller(sTSize+sVSize));
 	
 	{
 	  JScrollPane scroll = UIFactory.createVertScrollPane(vbox);
@@ -197,16 +188,7 @@ class JLockDialog
 	}
       }
       
-      {
-	JPanel spanel = new JPanel();
-	spanel.setName("Spacer");
-	
-	spanel.setMinimumSize(new Dimension(sTSize+sVSize, 7));
-	spanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
-	spanel.setPreferredSize(new Dimension(sTSize+sVSize, 7));
-	
-	pVersionBox.add(spanel);
-      }
+      pVersionBox.add(UIFactory.createFiller(sTSize+sVSize));
 
       boolean isSingle = (pVersionIDs.size() == 1);
       pHeaderLabel.setText("Lock " + (isSingle ? ":" : "Multiple Nodes:"));

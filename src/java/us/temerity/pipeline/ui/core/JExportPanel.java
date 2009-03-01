@@ -1,4 +1,4 @@
-// $Id: JExportPanel.java,v 1.7 2008/07/04 14:49:08 jesse Exp $
+// $Id: JExportPanel.java,v 1.8 2009/03/01 20:52:42 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -143,19 +143,9 @@ class JExportPanel
 	  
 	{
 	  Box jrbox = new Box(BoxLayout.X_AXIS);
+
 	  jrbox.addComponentListener(this);
-	  
-	  {
-	    JPanel spanel = new JPanel();
-	    pJobReqsSpacer = spanel;
-	    spanel.setName("Spacer");
-	    
-	    spanel.setMinimumSize(new Dimension(7, 0));
-	    spanel.setMaximumSize(new Dimension(7, Integer.MAX_VALUE));
-	    spanel.setPreferredSize(new Dimension(7, 0));
-	    
-	    jrbox.add(spanel);
-	  }
+          jrbox.add(UIFactory.createSidebar());
 	    
 	  { 
 	    Box dbox = new Box(BoxLayout.Y_AXIS);
@@ -729,18 +719,8 @@ class JExportPanel
 	Box hbox = new Box(BoxLayout.X_AXIS);
 
 	hbox.addComponentListener(this);
-      
-	{
-	  JPanel spanel = new JPanel();
-	  spanel.setName("Spacer");
-	  
-	  spanel.setMinimumSize(new Dimension(7, 0));
-	  spanel.setMaximumSize(new Dimension(7, Integer.MAX_VALUE));
-	  spanel.setPreferredSize(new Dimension(7, 0));
-	  
-	  hbox.add(spanel);
-	}
-	
+        hbox.add(UIFactory.createSidebar());
+
 	{
 	  Box vbox = new Box(BoxLayout.Y_AXIS);
 	  

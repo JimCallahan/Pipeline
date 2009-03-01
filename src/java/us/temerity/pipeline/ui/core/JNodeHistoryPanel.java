@@ -1,4 +1,4 @@
-// $Id: JNodeHistoryPanel.java,v 1.28 2008/07/21 17:31:10 jim Exp $
+// $Id: JNodeHistoryPanel.java,v 1.29 2009/03/01 20:54:48 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -590,16 +590,7 @@ class JNodeHistoryPanel
 	}
       }
       
-      {
-	JPanel spanel = new JPanel();
-	spanel.setName("Spacer");
-	
-	spanel.setMinimumSize(new Dimension(sSize, 7));
-	spanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
-	spanel.setPreferredSize(new Dimension(sSize, 7));
-	
-	pMessageBox.add(spanel);
-      }
+      pMessageBox.add(UIFactory.createFiller(sSize));
     }
       
     pMessageBox.revalidate();

@@ -1,4 +1,4 @@
-// $Id: JCloneDialog.java,v 1.18 2008/09/30 23:23:22 jim Exp $
+// $Id: JCloneDialog.java,v 1.19 2009/03/01 20:52:42 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -183,17 +183,7 @@ class JCloneDialog
 	vbox.add(panel);
       }
 
-      {
-	JPanel spanel = new JPanel();
-	spanel.setName("Spacer");
-	
-	spanel.setMinimumSize(new Dimension(sTSize+sVSize+30, 7));
-	spanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
-	spanel.setPreferredSize(new Dimension(sTSize+sVSize+30, 7));
-	
-	vbox.add(spanel);
-      }
-      
+      vbox.add(UIFactory.createFiller(sTSize+sVSize+30));
       vbox.add(Box.createVerticalGlue());
       
       JScrollPane scroll = UIFactory.createVertScrollPane(vbox, sTSize+sVSize+52, 312);

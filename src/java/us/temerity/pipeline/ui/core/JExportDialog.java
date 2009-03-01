@@ -1,4 +1,4 @@
-// $Id: JExportDialog.java,v 1.9 2007/12/15 07:29:10 jesse Exp $
+// $Id: JExportDialog.java,v 1.10 2009/03/01 20:52:42 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -59,17 +59,7 @@ class JExportDialog
 	vbox.add(panel);
       }
 
-      {
-	JPanel spanel = new JPanel();
-	spanel.setName("Spacer");
-	
-	spanel.setMinimumSize(new Dimension(sTSize+sVSize+30, 7));
-	spanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
-	spanel.setPreferredSize(new Dimension(sTSize+sVSize+30, 7));
-	
-	vbox.add(spanel);
-      }
-      
+      vbox.add(UIFactory.createFiller(sTSize+sVSize+30));
       vbox.add(Box.createVerticalGlue());
       
       JScrollPane scroll = UIFactory.createVertScrollPane(vbox, sTSize+sVSize+52, 150);

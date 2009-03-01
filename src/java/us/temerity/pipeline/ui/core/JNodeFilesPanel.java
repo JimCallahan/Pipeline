@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.48 2008/08/01 21:28:13 jesse Exp $
+// $Id: JNodeFilesPanel.java,v 1.49 2009/03/01 20:52:42 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -539,16 +539,7 @@ class JNodeFilesPanel
 	}
       }
 
-      {
-	JPanel spanel = new JPanel();
-	spanel.setName("Spacer");
-	
-	spanel.setMinimumSize(new Dimension(sSize, 7));
-	spanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
-	spanel.setPreferredSize(new Dimension(sSize, 7));
-	
-	pFileSeqBox.add(spanel);
-      }
+      pFileSeqBox.add(UIFactory.createFiller(sSize));
     }
       
     pFileSeqBox.revalidate();

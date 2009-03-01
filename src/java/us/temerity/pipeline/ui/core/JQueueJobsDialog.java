@@ -1,4 +1,4 @@
-// $Id: JQueueJobsDialog.java,v 1.9 2007/12/15 07:41:15 jesse Exp $
+// $Id: JQueueJobsDialog.java,v 1.10 2009/03/01 20:54:48 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -277,19 +277,8 @@ class JQueueJobsDialog
       /* initialize the selection/license/hardware keys */ 
       doApply();
 
-      {
-	JPanel spanel = new JPanel();
-	spanel.setName("Spacer");
-	
-	spanel.setMinimumSize(new Dimension(sTSize+sVSize+30, 7));
-	spanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
-	spanel.setPreferredSize(new Dimension(sTSize+sVSize+30, 7));
-	
-	vbox.add(spanel);
-      }
-      
+      vbox.add(UIFactory.createFiller(sTSize+sVSize+30));
       vbox.add(Box.createVerticalGlue());
-
 
       JScrollPane scroll = UIFactory.createVertScrollPane(vbox);
 	

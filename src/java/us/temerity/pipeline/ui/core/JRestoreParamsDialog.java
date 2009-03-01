@@ -1,4 +1,4 @@
-// $Id: JRestoreParamsDialog.java,v 1.8 2008/06/10 09:37:20 jim Exp $
+// $Id: JRestoreParamsDialog.java,v 1.9 2009/03/01 20:54:48 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -116,16 +116,7 @@ class JRestoreParamsDialog
 	body.add(drawer);
       }
 
-      {
-	JPanel spanel = new JPanel();
-	spanel.setName("Spacer");
-	
-	spanel.setMinimumSize(new Dimension(sTSize+sVSize, 7));
-	spanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
-	spanel.setPreferredSize(new Dimension(sTSize+sVSize, 7));
-	
-	body.add(spanel);
-      }
+      body.add(UIFactory.createFiller(sTSize+sVSize));
 
       JScrollPane scroll = UIFactory.createVertScrollPane(body, sTSize+sVSize+52, 300);
 

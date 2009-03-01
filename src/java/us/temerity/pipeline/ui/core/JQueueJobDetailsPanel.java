@@ -1,4 +1,4 @@
-// $Id: JQueueJobDetailsPanel.java,v 1.17 2008/05/08 22:46:42 jim Exp $
+// $Id: JQueueJobDetailsPanel.java,v 1.18 2009/03/01 20:54:48 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -460,17 +460,7 @@ class JQueueJobDetailsPanel
 	    pKeysBox = kbox;
 	  
 	    kbox.addComponentListener(this);
-	  
-	    {
-	      JPanel spanel = new JPanel();
-	      spanel.setName("Spacer");
-	      
-	      spanel.setMinimumSize(new Dimension(7, 0));
-	      spanel.setMaximumSize(new Dimension(7, Integer.MAX_VALUE));
-	      spanel.setPreferredSize(new Dimension(7, 0));
-	      
-	      kbox.add(spanel);
-	    }
+            kbox.add(UIFactory.createSidebar());
 	
 	    {
 	      Box dbox = new Box(BoxLayout.Y_AXIS);
@@ -624,17 +614,7 @@ class JQueueJobDetailsPanel
 	  vbox.add(drawer);
 	}
 
-	{
-	  JPanel spanel = new JPanel();
-	  spanel.setName("Spacer");
-	  
-	  spanel.setMinimumSize(new Dimension(sTSize+sVSize+30, 7));
-	  spanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
-	  spanel.setPreferredSize(new Dimension(sTSize+sVSize+30, 7));
-	  
-	  vbox.add(spanel);
-	}
-
+        vbox.add(UIFactory.createFiller(sTSize+sVSize+30));
 	vbox.add(Box.createVerticalGlue());
 
 	{
@@ -1265,17 +1245,7 @@ class JQueueJobDetailsPanel
 	Box hbox = new Box(BoxLayout.X_AXIS);
 
 	hbox.addComponentListener(this);
-
-	{
-	  JPanel spanel = new JPanel();
-	  spanel.setName("Spacer");
-
-	  spanel.setMinimumSize(new Dimension(7, 0));
-	  spanel.setMaximumSize(new Dimension(7, Integer.MAX_VALUE));
-	  spanel.setPreferredSize(new Dimension(7, 0));
-
-	  hbox.add(spanel);
-	}
+        hbox.add(UIFactory.createSidebar());
 
 	{
 	  Box vbox = new Box(BoxLayout.Y_AXIS);

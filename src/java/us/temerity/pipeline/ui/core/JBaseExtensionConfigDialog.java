@@ -1,4 +1,4 @@
-// $Id: JBaseExtensionConfigDialog.java,v 1.5 2008/06/10 09:37:20 jim Exp $
+// $Id: JBaseExtensionConfigDialog.java,v 1.6 2009/03/01 20:52:42 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -137,16 +137,7 @@ class JBaseExtensionConfigDialog
 	body.add(pbox);
       }
 
-      {
-	JPanel spanel = new JPanel();
-	spanel.setName("Spacer");
-	
-	spanel.setMinimumSize(new Dimension(sTSize+sVSize, 7));
-	spanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
-	spanel.setPreferredSize(new Dimension(sTSize+sVSize, 7));
-	
-	body.add(spanel);
-      }
+      body.add(UIFactory.createFiller(sTSize+sVSize));
 
       JScrollPane scroll = UIFactory.createVertScrollPane(body, sTSize+sVSize+52, 300);
       
@@ -351,18 +342,9 @@ class JBaseExtensionConfigDialog
 
     {
       Box hbox = new Box(BoxLayout.X_AXIS);
+
       hbox.addComponentListener(this);
-      
-      {
-	JPanel spanel = new JPanel();
-	spanel.setName("Spacer");
-	
-	spanel.setMinimumSize(new Dimension(7, 0));
-	spanel.setMaximumSize(new Dimension(7, Integer.MAX_VALUE));
-	spanel.setPreferredSize(new Dimension(7, 0));
-	
-	hbox.add(spanel);
-      }
+      hbox.add(UIFactory.createSidebar());
 
       if((pExtension != null) && pExtension.hasParams()) {
 	updateParamsHelper(pExtension.getLayout(), hbox, 1);
@@ -500,18 +482,9 @@ class JBaseExtensionConfigDialog
 
     if(!group.getSubGroups().isEmpty())  {
       Box hbox = new Box(BoxLayout.X_AXIS);
-      hbox.addComponentListener(this);
 
-      {
-	JPanel spanel = new JPanel();
-	spanel.setName("Spacer");
-	
-	spanel.setMinimumSize(new Dimension(7, 0));
-	spanel.setMaximumSize(new Dimension(7, Integer.MAX_VALUE));
-	spanel.setPreferredSize(new Dimension(7, 0));
-	
-	hbox.add(spanel);
-      }
+      hbox.addComponentListener(this);
+      hbox.add(UIFactory.createSidebar());
 
       {
 	Box vbox = new Box(BoxLayout.Y_AXIS);
