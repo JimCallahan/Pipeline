@@ -1,4 +1,4 @@
-// $Id: PluginMgrClient.java,v 1.8 2009/02/17 00:36:10 jlee Exp $
+// $Id: PluginMgrClient.java,v 1.9 2009/03/01 21:47:46 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -19,13 +19,13 @@ import java.util.*;
  * A connection to the Pipeline plugin manager daemon. <P> 
  * 
  * This class handles network communication with the Pipeline plugin manager daemon 
- * <A HREF="../../../../man/plpluginmgr.html"><B>plpluginmgr</B><A>(1). 
- * <p>
- * As opposed to the other Pipeline client classes, the PluginMgrClient is not initialized with
- * a constructor.  Instead, an instance is retrieved using the {@link #getInstance()} method,
- * which returns a connection to the server.  Attempting to make a connecting using 
- * {@link #PluginMgrClient()} will not succeed.
- * <p>
+ * <A HREF="../../../../man/plpluginmgr.html"><B>plpluginmgr</B><A>(1). <P> 
+ * 
+ * As opposed to the other Pipeline client classes, the PluginMgrClient is not initialized 
+ * with a constructor.  Instead, an instance is retrieved using the 
+ * {@link #getInstance()} method, which returns a connection to the server.  Attempting to 
+ * make a connecting using {@link #PluginMgrClient()} will not succeed. <P> 
+ * 
  * In stand alone Pipeline applications which need to deal with plugins, it is necessary to 
  * call the {@link #init()} method before any method calls that manipulate any data structures
  * that use plugins.  This could be something as apparently unconnected as getting a Working

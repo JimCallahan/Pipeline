@@ -1,4 +1,4 @@
-// $Id: BaseMgrClient.java,v 1.29 2009/02/17 00:32:20 jlee Exp $
+// $Id: BaseMgrClient.java,v 1.30 2009/03/01 21:48:28 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -144,10 +144,10 @@ class BaseMgrClient
 	String cinfo = 
 	  ("Pipeline-" + PackageInfo.sVersion + " [" + PackageInfo.sRelease + "]");
 
-        /* The verifyConnection protocol has been updated to send the Pipeline version + release
-             and the client ID.  The server does the Pipeline version + release validation.  
-             The server will response with OK for successful verifyConnection, else it will be 
-             and error message. */
+        /* The verifyConnection protocol has been updated to send the Pipeline version + 
+           release and the client ID.  The server does the Pipeline version + release 
+           validation.  The server will response with OK for successful verifyConnection, 
+           else it will be and error message. */
         String clientMsg = cinfo + "/" + pClientID;
 
         LogMgr.getInstance().log
