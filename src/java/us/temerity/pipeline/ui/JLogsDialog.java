@@ -1,4 +1,4 @@
-// $Id: JLogsDialog.java,v 1.3 2007/09/07 18:52:38 jim Exp $
+// $Id: JLogsDialog.java,v 1.4 2009/03/01 22:59:42 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -127,7 +127,7 @@ class JLogsDialog
       }
 
       String extra[][] = {
-	{ "Enable", "enable" },
+	{ "Enable ", "enable" },
 	null, 
 	{ "Save...", "save" },
 	{ "Clear",  "clear" }
