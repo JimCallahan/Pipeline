@@ -1,4 +1,4 @@
-// $Id: BaseApp.java,v 1.27 2008/10/12 07:21:05 jim Exp $
+// $Id: BaseApp.java,v 1.28 2009/03/02 00:23:08 jlee Exp $
 
 package us.temerity.pipeline.core;
 
@@ -425,6 +425,45 @@ class BaseApp
   }
 
   /**
+   * Generate N spaces. 
+   */ 
+  public String
+  pad
+  (
+   int size
+  ) 
+  {
+    return repeat(' ', size);
+  }
+
+  /**
+   * Left pad the given string so that it is at least N characters long.
+   */ 
+  public String
+  lpad
+  (
+   String str, 
+   char c,
+   int size
+  ) 
+  {
+    return (repeat(c, Math.max(0, size - str.length())) + str);
+  }
+
+  /**
+   * Left pad the given string with spaces so that it is at least N characters long.
+   */ 
+  public String
+  lpad
+  (
+   String str,
+   int size
+  ) 
+  {
+    return lpad(str, ' ', size);
+  }
+
+  /**
    * Line wrap the given String at word boundries.
    */ 
   public String
@@ -464,6 +503,46 @@ class BaseApp
 	    cnt = indent;
 	  }
 	}
+      }
+    }
+
+    return buf.toString();
+  }
+
+  /**
+   * Generate a Jim title string.  Used while iterating through all the PluginType enums.
+   * All strings should be NOT null and greater than zero length, but still doing the check
+   * using the garbage in garbage out scheme.
+   */
+  public String
+  title
+  (
+   String title
+  )
+  {
+    if(title == null)
+      return title;
+
+    if(title.length() == 0)
+      return title;
+
+    StringBuilder buf = new StringBuilder();
+
+    char[] cs = title.toCharArray();
+
+    buf.append(" ");
+    buf.append(" ");
+    buf.append(cs[0]);
+
+    for(int i = 1 ; i < cs.length ; i++) {
+      buf.append(" ");
+      if(Character.isUpperCase(cs[i])) {
+	buf.append(" ");
+	buf.append(" ");
+	buf.append(cs[i]);
+      }
+      else {
+	buf.append(Character.toUpperCase(cs[i]));
       }
     }
 
