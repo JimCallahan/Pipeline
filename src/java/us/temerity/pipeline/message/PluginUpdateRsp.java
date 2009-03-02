@@ -1,4 +1,4 @@
-// $Id: PluginUpdateRsp.java,v 1.10 2008/01/30 09:04:13 jesse Exp $
+// $Id: PluginUpdateRsp.java,v 1.11 2009/03/02 00:25:48 jlee Exp $
 
 package us.temerity.pipeline.message;
 
@@ -80,6 +80,9 @@ class PluginUpdateRsp
    *   
    * @param annotationPermissions
    *   The new or updated Annotation Permissions indexed by class name and revision number.
+   *
+   * @param pluginStatus
+   *   The current status of all plugins.
    */
   public
   PluginUpdateRsp
@@ -97,7 +100,8 @@ class PluginUpdateRsp
    TripleMap<String,String,VersionID,Object[]> keyChoosers,
    TripleMap<String,String,VersionID,Object[]> builderCollections,
    TripleMap<String,String,VersionID,LayoutGroup> builderCollectionLayouts,
-   TripleMap<String,String,VersionID,AnnotationPermissions> annotationPermissions
+   TripleMap<String,String,VersionID,AnnotationPermissions> annotationPermissions, 
+   TripleMap<PluginType,String,PluginID,PluginStatus> pluginStatus
   )
   { 
     super(timer);
@@ -153,6 +157,10 @@ class PluginUpdateRsp
     if(annotationPermissions == null) 
       throw new IllegalArgumentException("The Annotation permissions cannot be (null)!");
     pAnnotationPermissions = annotationPermissions;
+
+    if(pluginStatus == null)
+      throw new IllegalArgumentException("The Plugins permissions cannot be (null)!");
+    pPluginStatus = pluginStatus;
 
     if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finest)) {
       LogMgr.getInstance().log
@@ -300,6 +308,15 @@ class PluginUpdateRsp
     return pAnnotationPermissions; 
   }
 
+  /**
+   * Gets the PluginStatus index by PluginType, Vendor string, and PluginID.
+   */
+  public TripleMap<PluginType,String,PluginID,PluginStatus>
+  getPluginStatus()
+  {
+    return pPluginStatus;
+  }
+
 
   
   /*----------------------------------------------------------------------------------------*/
@@ -391,6 +408,11 @@ class PluginUpdateRsp
    * The new or updated Annotation permissions.
    */ 
   private TripleMap<String,String,VersionID,AnnotationPermissions>  pAnnotationPermissions; 
+
+  /**
+   * The complete status of all plugins.
+   */
+  private TripleMap<PluginType,String,PluginID,PluginStatus>  pPluginStatus;
 
 }
   

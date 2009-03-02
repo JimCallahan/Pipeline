@@ -1,4 +1,4 @@
-// $Id: PluginApp.java,v 1.19 2009/02/17 00:52:47 jlee Exp $
+// $Id: PluginApp.java,v 1.20 2009/03/02 00:25:48 jlee Exp $
 
 package us.temerity.pipeline.core;
 
@@ -91,205 +91,316 @@ class PluginApp
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * List the installed plugins.
-   */ 
-  public void 
-  listPlugins
+   * Display a count summary of all plugins.
+   */
+  public void
+  pluginSummary
   (
-   PluginMgrControlClient client
-  ) 
-    throws PipelineException 
+    PluginMgrControlClient client
+  )
   {
-    {
-      TripleMap<String,String,VersionID,TreeSet<OsType>> versions = client.getEditors();
-      if(!versions.isEmpty()) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Ops, LogMgr.Level.Info,
-	   tbar(80) + "\n" + 
-	   "  E D I T O R S");
-	
-	for(String vendor : versions.keySet()) {
-	  for(String name : versions.get(vendor).keySet()) {
-	    for(VersionID vid : versions.get(vendor).get(name).keySet()) {
-	      BaseEditor plg = client.newEditor(name, vid, vendor);
-	      LogMgr.getInstance().log
-		(LogMgr.Kind.Ops, LogMgr.Level.Info,
-		 bar(80) + "\n\n" + plg + "\n");
-	    }
-	  }
-	}
-      }
-    }
-    
-    {
-      TripleMap<String,String,VersionID,TreeSet<OsType>> versions = client.getActions();
-      if(!versions.isEmpty()) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Ops, LogMgr.Level.Info,
-	   tbar(80) + "\n" + 
-	   "  A C T I O N S");
-	
-	for(String vendor : versions.keySet()) {
-	  for(String name : versions.get(vendor).keySet()) {
-	    for(VersionID vid : versions.get(vendor).get(name).keySet()) {
-	      BaseAction plg = client.newAction(name, vid, vendor);
-	      LogMgr.getInstance().log
-		(LogMgr.Kind.Ops, LogMgr.Level.Info,
-		 bar(80) + "\n\n" + plg + "\n");
-	    }
-	  }
-	}
-      }
-    }
-    
-    {
-      TripleMap<String,String,VersionID,TreeSet<OsType>> versions = client.getComparators();
-      if(!versions.isEmpty()) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Ops, LogMgr.Level.Info,
-	   tbar(80) + "\n" + 
-	   "  C O M P A R A T O R S");
-	
-	for(String vendor : versions.keySet()) {
-	  for(String name : versions.get(vendor).keySet()) {
-	    for(VersionID vid : versions.get(vendor).get(name).keySet()) {
-	      BaseComparator plg = client.newComparator(name, vid, vendor);
-	      LogMgr.getInstance().log
-		(LogMgr.Kind.Ops, LogMgr.Level.Info,
-		 bar(80) + "\n\n" + plg + "\n");
-	    }
-	  }
-	}
-      }
-    }
-    
-    {
-      TripleMap<String,String,VersionID,TreeSet<OsType>> versions = client.getTools();
-      if(!versions.isEmpty()) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Ops, LogMgr.Level.Info,
-	   tbar(80) + "\n" + 
-	   "  T O O L S"); 
-	
-	for(String vendor : versions.keySet()) {
-	  for(String name : versions.get(vendor).keySet()) {
-	    for(VersionID vid : versions.get(vendor).get(name).keySet()) {
-	      BaseTool plg = client.newTool(name, vid, vendor);
-	      LogMgr.getInstance().log
-		(LogMgr.Kind.Ops, LogMgr.Level.Info,
-		 bar(80) + "\n\n" + plg + "\n");
-	    }
-	  }
-	}
-      }
-    }
-    
-    {
-      TripleMap<String,String,VersionID,TreeSet<OsType>> versions = client.getAnnotations();
-      if(!versions.isEmpty()) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Ops, LogMgr.Level.Info,
-	   tbar(80) + "\n" + 
-	   "  A N N O T A T I O N S"); 
-	
-	for(String vendor : versions.keySet()) {
-	  for(String name : versions.get(vendor).keySet()) {
-	    for(VersionID vid : versions.get(vendor).get(name).keySet()) {
-	      BaseAnnotation plg = client.newAnnotation(name, vid, vendor);
-	      LogMgr.getInstance().log
-		(LogMgr.Kind.Ops, LogMgr.Level.Info,
-		 bar(80) + "\n\n" + plg + "\n");
-	    }
-	  }
-	}
-      }
-    }
-    
-    {
-      TripleMap<String,String,VersionID,TreeSet<OsType>> versions = client.getArchivers();
-      if(!versions.isEmpty()) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Ops, LogMgr.Level.Info,
-	   tbar(80) + "\n" + 
-	   "  A R C H I V E R S");
-	
-	for(String vendor : versions.keySet()) {
-	  for(String name : versions.get(vendor).keySet()) {
-	    for(VersionID vid : versions.get(vendor).get(name).keySet()) {
-	      BaseArchiver plg = client.newArchiver(name, vid, vendor);
-	      LogMgr.getInstance().log
-		(LogMgr.Kind.Ops, LogMgr.Level.Info,
-		 bar(80) + "\n\n" + plg + "\n");
-	    }
-	  }
-	}
-      }
-    }
+    TripleMap<PluginType,String,PluginID,PluginStatus> ptypeVendorTable = 
+      client.getPluginStatus();
 
-    {
-      TripleMap<String,String,VersionID,TreeSet<OsType>> versions = client.getMasterExts();
-      if(!versions.isEmpty()) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Ops, LogMgr.Level.Info,
-	   tbar(80) + "\n" + 
-	   "  M A S T E R   E X T S");
-	
-	for(String vendor : versions.keySet()) {
-	  for(String name : versions.get(vendor).keySet()) {
-	    for(VersionID vid : versions.get(vendor).get(name).keySet()) {
-	      BaseMasterExt plg = client.newMasterExt(name, vid, vendor);
-	      LogMgr.getInstance().log
-		(LogMgr.Kind.Ops, LogMgr.Level.Info,
-		 bar(80) + "\n\n" + plg + "\n");
-	    }
-	  }
-	}
-      }
-    }
+    TripleMap<String,PluginType,PluginID,PluginStatus> vendorPtypeTable = 
+      new TripleMap<String,PluginType,PluginID,PluginStatus>();
 
-    {
-      TripleMap<String,String,VersionID,TreeSet<OsType>> versions = client.getQueueExts();
-      if(!versions.isEmpty()) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Ops, LogMgr.Level.Info,
-	   tbar(80) + "\n" + 
-	   "  Q U E U E   E X T S");
-	
-	for(String vendor : versions.keySet()) {
-	  for(String name : versions.get(vendor).keySet()) {
-	    for(VersionID vid : versions.get(vendor).get(name).keySet()) {
-	      BaseQueueExt plg = client.newQueueExt(name, vid, vendor);
-	      LogMgr.getInstance().log
-		(LogMgr.Kind.Ops, LogMgr.Level.Info,
-		 bar(80) + "\n\n" + plg + "\n");
-	    }
+    for(PluginType ptype : ptypeVendorTable.keySet())
+      for(String vendor : ptypeVendorTable.get(ptype).keySet())
+	for(PluginID pid : ptypeVendorTable.get(ptype).get(vendor).keySet()) {
+	  PluginStatus pstat = ptypeVendorTable.get(ptype).get(vendor).get(pid);
+
+	  vendorPtypeTable.put(vendor, ptype, pid, pstat);
+	}
+
+    int maxLength = 0;
+    for(String plgType : PluginType.titles())
+      maxLength = Math.max(plgType.length()+1, maxLength);
+
+    String totalMsg = "TOTAL";
+
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Plg, LogMgr.Level.Info,
+       tbar(80) + "\n" + 
+       title("PluginSummary"));
+
+    for(String vendor : vendorPtypeTable.keySet()) {
+
+      LogMgr.getInstance().log
+        (LogMgr.Kind.Plg, LogMgr.Level.Info,
+         bar(80) + "\n" + 
+         " " + vendor + " Plugins\n" + 
+         pad(maxLength) + "   required  loaded  unknown\n" +
+         pad(maxLength) + "   -------------------------");
+
+      int totalR = 0;
+      int totalL = 0;
+      int totalU = 0;
+      for(PluginType ptype : PluginType.all()) {
+	TreeMap<PluginID,PluginStatus> plugins = vendorPtypeTable.get(vendor, ptype);
+
+	if(plugins == null)
+	  continue;
+
+        int rcnt = 0;
+	int lcnt = 0;
+	int ucnt = 0;
+
+	for(PluginID pid : plugins.keySet()) {
+	  PluginStatus pstat = plugins.get(pid);
+
+	  switch(pstat) {
+	    case Missing:
+	      {
+		rcnt++;
+	      }
+	      break;
+	    case Installed:
+	    case UnderDevelopment:
+	    case Permanent:
+	      {
+		lcnt++;
+	      }
+	      break;
+	    case Unknown:
+	      {
+		ucnt++;
+	      }
+	      break;
 	  }
 	}
-      }
-    }
-    
-    {
-      TripleMap<String,String,VersionID,TreeSet<OsType>> versions = client.getKeyChoosers();
-      if(!versions.isEmpty()) {
-        LogMgr.getInstance().log
-          (LogMgr.Kind.Ops, LogMgr.Level.Info,
-           tbar(80) + "\n" + 
-           "  K E Y   C H O O S E R S");
-        
-        for(String vendor : versions.keySet()) {
-          for(String name : versions.get(vendor).keySet()) {
-            for(VersionID vid : versions.get(vendor).get(name).keySet()) {
-              BaseKeyChooser plg = client.newKeyChooser(name, vid, vendor);
-              LogMgr.getInstance().log
-                (LogMgr.Kind.Ops, LogMgr.Level.Info,
-                 bar(80) + "\n\n" + plg + "\n");
-            }
-          }
+
+        if((rcnt > 0) || (lcnt > 0) || (ucnt > 0)) {
+          LogMgr.getInstance().log
+            (LogMgr.Kind.Plg, LogMgr.Level.Info,
+             lpad(ptype.toString(), maxLength) + " :  " + 
+             lpad(Integer.toString(lcnt+rcnt), 5) + 
+             lpad(Integer.toString(lcnt), 8) + 
+             lpad(Integer.toString(ucnt), 9));
         }
+          
+        totalR += rcnt;
+        totalL += lcnt;
+        totalU += ucnt;
+      }
+
+      LogMgr.getInstance().log
+        (LogMgr.Kind.Plg, LogMgr.Level.Info,
+         "\n" + lpad("TOTAL", maxLength) + " :  " + 
+         lpad(Integer.toString(totalR+totalL), 5) + 
+         lpad(Integer.toString(totalL), 8) + 
+         lpad(Integer.toString(totalU), 9) + "\n");
+
+      if(totalR > totalL) {
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Plg, LogMgr.Level.Info,
+           pad(maxLength) + "   (" + (totalR-totalL) + " REQUIRED PLUGIN" + 
+           (((totalR-totalL) > 1) ? "S" : "") + " MISSING!)\n"); 
+      }
+      else {
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Plg, LogMgr.Level.Info,
+           pad(maxLength) + "   (all plugins found)\n"); 
       }
     }
 
     LogMgr.getInstance().flush();
+  }
+
+  /**
+   * List the installed plugins with optional plugin type, plugin status and
+   * plugin vendor filtering.
+   */ 
+  public void 
+  listPlugins
+  (
+   PluginMgrControlClient client, 
+   TreeSet<PluginType>    ptypeFilter, 
+   TreeSet<String>        vendorFilter, 
+   TreeSet<PluginStatus>  pstatFilter
+  ) 
+    throws PipelineException 
+  {
+    TripleMap<PluginType,String,PluginID,PluginStatus> pluginStatus = 
+      client.getPluginStatus();
+
+    for(PluginType ptype : PluginType.all()) {
+      if(!pluginStatus.containsKey(ptype))
+	continue;
+
+      if(pluginStatus.get(ptype).isEmpty())
+	continue;
+
+      if(!ptypeFilter.isEmpty() && !ptypeFilter.contains(ptype))
+	continue;
+
+      boolean displayPluginTypeBanner = true;
+
+      for(String vendor : pluginStatus.get(ptype).keySet()) {
+	if(!vendorFilter.isEmpty() && !vendorFilter.contains(vendor))
+	  continue;
+
+	for(PluginID pid : pluginStatus.get(ptype).get(vendor).keySet()) {
+	  PluginStatus pstat = pluginStatus.get(ptype).get(vendor).get(pid);
+
+	  if(!pstatFilter.isEmpty())
+	    switch(pstat) {
+	      case UnderDevelopment:
+		{
+		  if(!pstatFilter.contains(PluginStatus.UnderDevelopment) && 
+		     !pstatFilter.contains(PluginStatus.Installed) && 
+		     !pstatFilter.contains(PluginStatus.Required))
+		    continue;
+		}
+		break;
+	      case Permanent:
+		{
+		  if(!pstatFilter.contains(PluginStatus.Permanent) && 
+		     !pstatFilter.contains(PluginStatus.Installed) && 
+		     !pstatFilter.contains(PluginStatus.Required))
+		    continue;
+		}
+		break;
+	      case Missing:
+		{
+		  if(!pstatFilter.contains(PluginStatus.Missing) && 
+		     !pstatFilter.contains(PluginStatus.Required))
+		    continue;
+		}
+		break;
+	      case Unknown:
+		{
+		  if(!pstatFilter.contains(PluginStatus.Unknown))
+		    continue;
+		}
+		break;
+	    }
+
+	  if(displayPluginTypeBanner) {
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Ops, LogMgr.Level.Info,
+	       tbar(80) + "\n" + 
+	       title(ptype.toString()));
+
+	    displayPluginTypeBanner = false;
+	  }
+
+	  String name = pid.getName();
+	  VersionID vid = pid.getVersionID();
+
+	  StringBuilder buf = new StringBuilder();
+
+	  buf.append("Name        : " + name + "\n");
+          buf.append("Version     : " + vid + "\n");
+          buf.append("Vendor      : " + vendor + "\n");
+
+	  switch(pstat) {
+	    case Installed:
+	    case UnderDevelopment:
+	    case Permanent:
+	      {
+		BasePlugin plugin = newPlugin(client, ptype, pid);
+
+		if(plugin == null)
+		  throw new PipelineException
+		    ("There is no plugin () of type ()");
+
+		buf.append("Supports    :");
+
+		for(OsType os : plugin.getSupports()) 
+		  buf.append(" " + os.toTitle());
+		buf.append("\n");
+
+		buf.append("Description : " + wordWrap(plugin.getDescription(), 14, 80) + "\n");
+		buf.append("PluginType  : " + ptype + "\n");
+		buf.append("Status      : " + pstat + "\n");
+		buf.append("Class       : " + plugin.getClass().getName());
+	      }
+	      break;
+	    case Missing:
+	      {
+		buf.append("PluginType  : " + ptype + "\n");
+		buf.append("Status      : Missing\n");
+	      }
+	      break;
+	    case Unknown:
+	      {
+		buf.append("PluginType  : " + ptype + "\n");
+		buf.append("Status      : Unknown\n");
+	      }
+	      break;
+	  }
+
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Ops, LogMgr.Level.Info,
+             bar(80) + "\n\n" + buf.toString() + "\n");
+	}
+      }
+    }
+
+    LogMgr.getInstance().flush();
+  }
+
+  /**
+   * Retrieve a plugin based on type and plugin id.
+   */
+  private BasePlugin
+  newPlugin
+  (
+   PluginMgrControlClient client, 
+   PluginType ptype, 
+   PluginID pid
+  )
+    throws PipelineException
+  {
+    String name = pid.getName();
+    VersionID vid = pid.getVersionID();
+    String vendor = pid.getVendor();
+
+    switch(ptype) {
+      case Editor:
+	{
+	  return client.newEditor(name, vid, vendor);
+	}
+      case Action:
+	{
+	  return client.newAction(name, vid, vendor);
+	}
+      case Comparator:
+	{
+	  return client.newComparator(name, vid, vendor);
+	}
+      case Tool:
+	{
+	  return client.newTool(name, vid, vendor);
+	}
+      case Annotation:
+	{
+	  return client.newAnnotation(name, vid, vendor);
+	}
+      case Archiver:
+	{
+	  return client.newArchiver(name, vid, vendor);
+	}
+      case MasterExt:
+	{
+	  return client.newMasterExt(name, vid, vendor);
+	}
+      case QueueExt:
+	{
+	  return client.newQueueExt(name, vid, vendor);
+	}
+      case KeyChooser:
+	{
+	  return client.newKeyChooser(name, vid, vendor);
+	}
+      case BuilderCollection:
+	{
+	  return client.newBuilderCollection(name, vid, vendor);
+	}
+      default:
+	return null;
+    }
   }
 
 
@@ -307,8 +418,8 @@ class PluginApp
     LogMgr.getInstance().log
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
        "USAGE:\n" +
-       "  plplugin [options] --list\n" +  
-       "  plplugin [options] --list-required\n" + 
+       "  plplugin [options] --list [--status=...] [--type=...] [--vendor=...] [--summary]\n" +  
+       "  plplugin [options] --summary\n" + 
        "  plplugin [options] --install class-file1 [class-file2 ..]\n" + 
        "\n" + 
        "  plplugin --help\n" +

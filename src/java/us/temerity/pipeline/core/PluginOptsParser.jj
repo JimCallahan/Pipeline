@@ -49,6 +49,7 @@ PluginOptsParser
   {
     pLogBackups  = 10;
     pList        = false;
+    pSummary     = false;
     pPluginFiles = new TreeSet();
   }
  
@@ -90,9 +91,24 @@ PluginOptsParser
   private boolean  pList; 
 
   /**
-   * Whether to list information about required plugins or unregistered plugins.
+   *
    */
-  private boolean  pListRequired;
+  private boolean  pSummary;
+
+  /**
+   *
+   */
+  private TreeSet<PluginStatus>  pStatusSet;
+
+  /**
+   *
+   */
+  private TreeSet<PluginType>  pTypeSet;
+
+  /**
+   *
+   */
+  private TreeSet<String>  pVendorSet;
 
   /**
    * Whether to ignore the Local Vendor check.
@@ -142,7 +158,10 @@ TOKEN :
 
   /* action options */	
 | <LIST:          "--list">     
-| <LIST_REQUIRED: "--list-required">
+| <LIST_STATUS:   "--status">                      : PLG_STATUS_SEP
+| <LIST_TYPE:     "--type">                        : PLG_TYPE_SEP
+| <LIST_VENDOR:   "--vendor">                      : PLG_VENDOR_SEP
+| <SUMMARY:       "--summary">
 | <EXTERNAL:      "--external">    
 | <RENAME:        "--rename">    
 | <DRYRUN:        "--dry-run">
@@ -241,6 +260,77 @@ TOKEN :
 }
 
 
+/* plugins status arguments */ 
+<PLG_STATUS_SEP> 
+TOKEN :
+{
+  <EQ4:                       "=">   : PLG_STATUS_STATE
+| <MISSING_PLG_STATUS_ARG:  ~["="]>  : IGNORE_STATE
+}
+
+<PLG_STATUS_STATE> 
+TOKEN :
+{
+  <PLG_STATUS_ALL:              "all"> 
+| <PLG_STATUS_REQ:              "req"> 
+| <PLG_STATUS_INST:             "inst"> 
+| <PLG_STATUS_DEV:              "dev"> 
+| <PLG_STATUS_PERM:             "perm"> 
+| <PLG_STATUS_MISS:             "miss"> 
+| <PLG_STATUS_UNKNOWN:          "unknown"> 
+| <COMMA1:                      ","> 
+| <AE3:                         "\0">               : DEFAULT
+| <ILLEGAL_PLG_STATUS:          (~[",","\0"])+>     : IGNORE_STATE
+}
+
+
+/* plugin type arguments */ 
+<PLG_TYPE_SEP> 
+TOKEN :
+{
+  <EQ5:                       "=">   : PLG_TYPE_STATE
+| <MISSING_PLG_TYPE_ARG:    ~["="]>  : IGNORE_STATE
+}
+
+<PLG_TYPE_STATE> 
+TOKEN :
+{
+  <PLG_TYPE_ALL:          "all"> 
+| <PLG_TYPE_ACT:          "act"> 
+| <PLG_TYPE_ANNOT:        "annot"> 
+| <PLG_TYPE_ARCH:         "arch"> 
+| <PLG_TYPE_BUILD:        "build"> 
+| <PLG_TYPE_COMP:         "comp"> 
+| <PLG_TYPE_EDIT:         "edit"> 
+| <PLG_TYPE_KEY:          "key">
+| <PLG_TYPE_MASTER:       "master">
+| <PLG_TYPE_QUEUE:        "queue">
+| <PLG_TYPE_TOOL:         "tool">
+| <COMMA2:                ","> 
+| <AE4:                   "\0">               : DEFAULT
+| <ILLEGAL_PLG_TYPE:      (~[",","\0"])+>     : IGNORE_STATE
+}
+
+
+/* plugin vendor arguments */
+<PLG_VENDOR_SEP>
+TOKEN :
+{
+  <EQ6:                         "=">   : PLG_VENDOR_STATE
+| <MISSING_PLG_VENDOR_ARG:    ~["="]>  : IGNORE_STATE
+}
+
+<PLG_VENDOR_STATE> 
+TOKEN :
+{
+  <VENDOR_NAME:           (["a"-"z","A"-"Z"]) 
+	   	          (["a"-"z","A"-"Z","0"-"9","_","-","."])+>  
+| <COMMA3:                ",">
+| <AE5:                   ["\0"]>                                   : DEFAULT
+| <ILLEGAL_VENDOR_NAME:   (~[",","\0"])+>                           : IGNORE_STATE
+}
+
+
 /*------------------------------------------------------------------------------------------*/
 /*   T O P   L E V E L                                                                      */
 /*------------------------------------------------------------------------------------------*/
@@ -281,11 +371,8 @@ CommandLine()
       
         /* run the program */ 
         if(pList) {
-          pApp.listPlugins(client);
+          pApp.listPlugins(client, pTypeSet, pVendorSet, pStatusSet);
         }
-	else if(pListRequired) {
-	  client.listRequiredPlugins();
-	}
         else if(pInstall) {
           if(pPluginFiles.isEmpty()) 
             throw new ParseException
@@ -311,6 +398,10 @@ CommandLine()
             }
           }
         }
+
+	if(pSummary) {
+	  pApp.pluginSummary(client);
+	}
       }
       finally {
         client.disconnect();
@@ -327,9 +418,11 @@ Commands()
 {}
 {
   (GlobalOpts() AE())* 
-    ((List()) | 
-     (ListRequired()) | 
-     ((External() | Rename() | DryRun())* Install() (PluginFile() AE())+))
+    (
+     (List() (Summary())?) | 
+     (Summary() (List())?) | 
+     ((External() | Rename() | DryRun())* Install() (PluginFile() AE())+)
+    )
   { 
     pHasCommands = true;
   }
@@ -337,26 +430,276 @@ Commands()
     
 
 void
-List() :
+Summary() :
 {}
 {
-  <LIST> AE() 
+  <SUMMARY> AE()
+  {
+    pSummary = true;
+  }
+}
+
+void
+List() :
+{
+  pStatusSet = new TreeSet<PluginStatus>();
+  pTypeSet   = new TreeSet<PluginType>();
+  pVendorSet = new TreeSet<String>();
+}
+{
+  <LIST> AE() (ListOpts())*
   { 
     pList = true;
   }
 }
 
-
 void
-ListRequired() :
+ListOpts() :
 {}
 {
-  <LIST_REQUIRED> AE()
+  (PluginStatus() | PluginType() | PluginVendor())
+  {}
+}
+
+void
+PluginStatus() :
+{}
+{
+  <LIST_STATUS> EQ() PluginStatusToken() (COMMA() PluginStatusToken())* AE()
+  {}
+}
+
+void
+PluginType() :
+{}
+{
+  <LIST_TYPE> EQ() PluginTypeToken() (COMMA() PluginTypeToken())* AE()
+  {}
+}
+
+void
+PluginVendor() :
+{}
+{
+  <LIST_VENDOR> EQ() VendorName() (COMMA() VendorName())* AE()
+  {}
+}
+
+void
+VendorName() :
+{
+  Token t;
+}
+{
+  t=<VENDOR_NAME>
   {
-    pListRequired = true;
+    pVendorSet.add(t.image);
   }
 }
 
+void
+PluginStatusToken() :
+{}
+{
+  (PluginStatusAll() | 
+   PluginStatusReq() | PluginStatusMiss() | 
+   PluginStatusInst() | PluginStatusDev() | PluginStatusPerm() | 
+   PluginStatusUnknown())
+  {}
+}
+
+void
+PluginTypeToken() :
+{}
+{
+  (PluginTypeAll() | 
+   PluginTypeAct() | PluginTypeAnnot() | PluginTypeArch() | 
+   PluginTypeBuild() | PluginTypeComp() | PluginTypeEdit() | 
+   PluginTypeKey() | PluginTypeMaster() | PluginTypeQueue() | PluginTypeTool())
+  {}
+}
+
+void
+PluginStatusAll() :
+{}
+{
+  <PLG_STATUS_ALL>
+  {
+    for(PluginStatus status : PluginStatus.all())
+      pStatusSet.add(status);
+  }
+}
+
+void
+PluginStatusReq() :
+{}
+{
+  <PLG_STATUS_REQ>
+  {
+    pStatusSet.add(PluginStatus.Required);
+  }
+}
+
+void
+PluginStatusInst() :
+{}
+{
+  <PLG_STATUS_INST>
+  {
+    pStatusSet.add(PluginStatus.Installed);
+  }
+}
+
+void
+PluginStatusDev() :
+{}
+{
+  <PLG_STATUS_DEV>
+  {
+    pStatusSet.add(PluginStatus.UnderDevelopment);
+  }
+}
+
+void
+PluginStatusPerm() :
+{}
+{
+  <PLG_STATUS_PERM>
+  {
+    pStatusSet.add(PluginStatus.Permanent);
+  }
+}
+
+void
+PluginStatusMiss() :
+{}
+{
+  <PLG_STATUS_MISS>
+  {
+    pStatusSet.add(PluginStatus.Missing);
+  }
+}
+
+void
+PluginStatusUnknown() :
+{}
+{
+  <PLG_STATUS_UNKNOWN>
+  {
+    pStatusSet.add(PluginStatus.Unknown);
+  }
+}
+
+void
+PluginTypeAll() :
+{}
+{
+  <PLG_TYPE_ALL>
+  {
+    for(PluginType type : PluginType.all())
+      pTypeSet.add(type);
+  }
+}
+
+void
+PluginTypeAct() :
+{}
+{
+  <PLG_TYPE_ACT>
+  {
+    pTypeSet.add(PluginType.Action);
+  }
+}
+
+void
+PluginTypeAnnot() :
+{}
+{
+  <PLG_TYPE_ANNOT>
+  {
+    pTypeSet.add(PluginType.Annotation);
+  }
+}
+
+void
+PluginTypeArch() :
+{}
+{
+  <PLG_TYPE_ARCH>
+  {
+    pTypeSet.add(PluginType.Archiver);
+  }
+}
+
+void
+PluginTypeBuild() :
+{}
+{
+  <PLG_TYPE_BUILD>
+  {
+    pTypeSet.add(PluginType.BuilderCollection);
+  }
+}
+
+void
+PluginTypeComp() :
+{}
+{
+  <PLG_TYPE_COMP>
+  {
+    pTypeSet.add(PluginType.Comparator);
+  }
+}
+
+void
+PluginTypeEdit() :
+{}
+{
+  <PLG_TYPE_EDIT>
+  {
+    pTypeSet.add(PluginType.Editor);
+  }
+}
+
+void
+PluginTypeKey() :
+{}
+{
+  <PLG_TYPE_KEY>
+  {
+    pTypeSet.add(PluginType.KeyChooser);
+  }
+}
+
+void
+PluginTypeMaster() :
+{}
+{
+  <PLG_TYPE_MASTER>
+  {
+    pTypeSet.add(PluginType.MasterExt);
+  }
+}
+
+void
+PluginTypeQueue() :
+{}
+{
+  <PLG_TYPE_QUEUE>
+  {
+    pTypeSet.add(PluginType.QueueExt);
+  }
+}
+
+void
+PluginTypeTool() :
+{}
+{
+  <PLG_TYPE_TOOL>
+  {
+    pTypeSet.add(PluginType.Tool);
+  }
+}
 
 void
 External() :
@@ -713,7 +1056,21 @@ AE() :
   Token t;
 }
 {
-  (t=<AE1> | t=<AE2>)
+  (t=<AE1> | t=<AE2> | 
+   t=<AE3> | t=<AE4> | t=<AE5>)
+  { 
+    return t; 
+  }
+}
+
+
+Token
+COMMA() :
+{
+  Token t;
+}
+{
+  (t=<COMMA1> | t=<COMMA2> | t=<COMMA3>)
   { 
     return t; 
   }
@@ -726,7 +1083,8 @@ EQ() :
   Token t;
 }
 {
-  (t=<EQ1> | t=<EQ2> | t=<EQ3>)  
+  (t=<EQ1> | t=<EQ2> | t=<EQ3> | 
+   t=<EQ4> | t=<EQ5> | t=<EQ6>)  
   { 
     return t; 
   }

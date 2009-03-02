@@ -1,4 +1,4 @@
-// $Id: BasePluginMgrClient.java,v 1.20 2009/02/17 00:33:16 jlee Exp $
+// $Id: BasePluginMgrClient.java,v 1.21 2009/03/02 00:25:48 jlee Exp $
   
 package us.temerity.pipeline;
 
@@ -55,6 +55,9 @@ class BasePluginMgrClient
       new TripleMap<String, String, VersionID, LayoutGroup>();
     pAnnotationPermissions = 
       new TripleMap<String, String, VersionID, AnnotationPermissions>();
+
+    pPluginStatus = 
+      new TripleMap<PluginType,String,PluginID,PluginStatus>();
   }
 
 
@@ -93,6 +96,8 @@ class BasePluginMgrClient
       
       pBuilderCollectionLayouts.putAll(rsp.getBuilderCollectionLayouts());
       pAnnotationPermissions.putAll(rsp.getAnnotationPermissions());
+
+      pPluginStatus.putAll(rsp.getPluginStatus());
      
       pCycleID = rsp.getCycleID();
     }
@@ -225,6 +230,15 @@ class BasePluginMgrClient
   getAnnotationPermissions() 
   {
     return new TripleMap<String,String,VersionID,AnnotationPermissions>(pAnnotationPermissions);
+  }
+
+  /**
+   * Get the PluginStatus of all plugins.
+   */
+  public synchronized TripleMap<PluginType,String,PluginID,PluginStatus>
+  getPluginStatus()
+  {
+    return new TripleMap<PluginType,String,PluginID,PluginStatus>(pPluginStatus);
   }
  
 
@@ -1102,6 +1116,8 @@ class BasePluginMgrClient
   private TripleMap<String,String,VersionID,LayoutGroup> pBuilderCollectionLayouts;
   
   private TripleMap<String, String, VersionID, AnnotationPermissions> pAnnotationPermissions; 
+
+  private TripleMap<PluginType,String,PluginID,PluginStatus> pPluginStatus;
 
 
 }
