@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.128 2009/02/17 00:36:10 jlee Exp $
+// $Id: MasterMgrClient.java,v 1.129 2009/03/02 05:15:01 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -423,6 +423,42 @@ class MasterMgrClient
       handleFailure(obj);
       return null;
     }
+  }
+
+  /**
+   * Get the cached name of the default Unix toolset.<P> 
+   * 
+   * Each time the default toolset name is obtained from the server it is cached.  If the 
+   * cache has not been invalidated since the last communication with the server, this method 
+   * returns the last cached value instead. If the cache has been invalidated, this method 
+   * behaves identically to {@link #getDefaultToolsetName() getDefaultToolsetName}.  This 
+   * means that the name returned by this method is not guaranteed to be up-to-date but is
+   * much faster. <P> 
+   * 
+   * This method is provided mostly to support UI components which depend on the 
+   * default toolset name, but don't need a more up-to-date value than the last status
+   * update.  Unless speed is a critical factor, its better to use the normal non-caching
+   * method to determine the default toolset name.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the default toolset name.
+   */ 
+  public synchronized String
+  getCachedDefaultToolsetName() 
+    throws PipelineException
+  {    
+    if(pDefaultToolsetName == null) 
+      pDefaultToolsetName = getDefaultToolsetName();
+    return pDefaultToolsetName;
+  }
+
+  /**
+   * Manually invalidate the default toolset name cache.
+   */ 
+  public synchronized void 
+  invalidateCachedDefaultToolsetName()
+  {
+    pDefaultToolsetName = null;
   }
 
   /**
@@ -8134,6 +8170,12 @@ class MasterMgrClient
    * the cache was last updated.
    */ 
   private PrivilegeDetails  pPrivilegeDetails; 
+
+  /**
+   * The cached name of the default toolset or <CODE>null</CODE> if an operation which 
+   * modifies the default toolset name has been the cache was last updated.
+   */ 
+  private String  pDefaultToolsetName; 
 
 }
 
