@@ -10,14 +10,12 @@
 <blockquote><b>plplugin</b> - the Pipeline plugin installation tool<br>
 </blockquote>
 <h3><a name="Synopsis"></a>Synopsis</h3>
-<blockquote>
-  <b>plplugin</b> [<a href="#Global_Options"><i>options</i></a>]
+<blockquote> <b>plplugin</b> [<a href="#Global_Options"><i>options</i></a>]
   <a style="font-weight: bold;" href="#--list">--list</a><span
- style="font-weight: bold;"> </span> <i>[--status=...] [--type=...] [--vendor=...] [--summary]</i><br>
-
-  <b>plplugin</b> [<a href="#Global_Options"><i>options</i></a>]
-  <a style="font-weight: bold;" href="#--summary">--summary</a><br>
-
+ style="font-weight: bold;"> </span> [<span style="font-style: italic;">list-options</span>]
+[<a style="font-weight: bold;" href="plplugin.src.html.in#--summary">--summary</a>]<br>
+  <b>plplugin</b> [<a href="#Global_Options"><i>options</i></a>] <a
+ style="font-weight: bold;" href="#--summary">--summary</a><br>
   <b>plplugin</b> [<a href="#Global_Options"><i>options</i></a>] <a
  href="#--install"><span style="font-weight: bold;">--install</span></a>
   <i>plugin-file1 </i>[<i>plugin-file2 ...</i>]<i><br>
@@ -445,94 +443,174 @@ A JAR file example, might look like this: <br>
 and JAR files in one invocation of <span style="font-weight: bold;">plplugin</span>(1).<span
  style="font-weight: bold;"><br>
 <br>
-<a name="--list"></a>--list</span><br>
+<a name="--list"></a>--list </span>[<span style="font-style: italic;">list-options</span>]<br>
 <span style="font-weight: bold;"></span></div>
 <br>
 <div style="margin-left: 40px;">
-<div style="margin-left: 40px;">Lists information about plugins and exits.&nbsp;&nbsp;
-The following options can be used to filter the results:<br>
+<div style="margin-left: 40px;">Lists information about each plugin and
+exits.&nbsp;&nbsp;
+The following list options can be used to filter the results:<br>
 <br>
-<div style="margine-left: 40px;"><b><i>--status=...</i></b><br></div>
-<div style="margine-left: 40px;"><b><i>--type=...</i></b><br></div>
-<div style="margine-left: 40px;"><b><i>--vendor=...</i></b><br></div>
+<div style=""><b>--status=</b><i><span style="font-style: italic;">filter[,filter
+...]</span></i><br>
+</div>
 <br>
-The values for each option can be a comma separated list of values.<br>
+<div style="margin-left: 40px;">The possible installation status
+filtering options (<span style="font-style: italic;">filter</span>) can
+be:<br>
 <br>
-
-The (<span style="font-style: italic;">status</span>) portion of the option's argument can be:<br>
+</div>
+<div style="margin-left: 80px;"><span style="font-weight: bold;">all</span><br>
+</div>
+<div style="margin-left: 120px;">This is the default value that
+performs no filtering.<br>
 <br>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">all</span><br></div>
-<div style="margin-left: 80px;">This is the default value that performs no filtering.<br></div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">req</span><br></div>
-<div style="margin-left: 80px;">This filter displays required plugins.<br></div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">inst</span><br></div>
-<div style="margin-left: 80px;">This filter displays installed plugins.<br></div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">dev</span><br></div>
-<div style="margin-left: 80px;">This filter displays plugins under development.<br></div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">perm</span><br></div>
-<div style="margin-left: 80px;">This filter displays plugins NOT under development.<br></div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">miss</span><br></div>
-<div style="margin-left: 80px;">This filter displays plugins that need to be installed.<br></div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">unknown</span><br></div>
-<div style="margin-left: 80px;">This filter displays plugins that are unknown to plpluginmgr.<br></div>
+</div>
+<div style="margin-left: 80px;"><span style="font-weight: bold;">req</span><br>
+</div>
+<div style="margin-left: 120px;">This filter displays required plugins.<br>
 <br>
-
-The (<span style="font-style: italic;">type</span>) portion of the option's argument can be:<br>
+</div>
+<div style="margin-left: 80px;"><span style="font-weight: bold;">inst</span><br>
+</div>
+<div style="margin-left: 120px;">This filter displays installed plugins.<br>
 <br>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">all</span><br></div>
-<div style="margin-left: 80px;">This is the default value that performs no filtering.<br></div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">act</span><br></div>
-<div style="margin-left: 80px;">This filter displays Action plugins.<br></div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">annot</span><br></div>
-<div style="margin-left: 80px;">This filter displays Annotation plugins.<br></div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">arch</span><br></div>
-<div style="margin-left: 80px;">This filter displays Archiver plugins.<br></div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">build</span><br></div>
-<div style="margin-left: 80px;">This filter displays Builder Collection plugins.<br></div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">comp</span><br></div>
-<div style="margin-left: 80px;">This filter displays Comparator plugins.<br></div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">edit</span><br></div>
-<div style="margin-left: 80px;">This filter displays Editor plugins.<br></div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">key</span><br></div>
-<div style="margin-left: 80px;">This filter displays Key Chooser plugins.<br></div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">master</span><br></div>
-<div style="margin-left: 80px;">This filter displays MasterExt plugins.<br></div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">queue</span><br></div>
-<div style="margin-left: 80px;">This filter displays QueueExt plugins.<br></div>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">tool</span><br></div>
-<div style="margin-left: 80px;">This filter displays Tool plugins plugins.<br></div>
+</div>
+<div style="margin-left: 80px;"><span style="font-weight: bold;">dev</span><br>
+</div>
+<div style="margin-left: 120px;">This filter displays plugins under
+development.<br>
 <br>
-
-The (<span style="font-style: italic;">vendor</span>) portion of the option's argument 
-can be a valid plugin vendor name.<br>
+</div>
+<div style="margin-left: 80px;"><span style="font-weight: bold;">perm</span><br>
+</div>
+<div style="margin-left: 120px;">This filter displays plugins NOT under
+development.<br>
 <br>
-
+</div>
+<div style="margin-left: 80px;"><span style="font-weight: bold;">miss</span><br>
+</div>
+<div style="margin-left: 120px;">This filter displays plugins that need
+to be installed.<br>
+<br>
+</div>
+<div style="margin-left: 80px;"><span style="font-weight: bold;">unknown</span><br>
+</div>
+<div style="margin-left: 120px;">This filter displays plugins that are
+unknown to plpluginmgr.<br>
+</div>
+<br>
+<b>--type=</b><i><span style="font-style: italic;">filter[,filter ...]<br>
+<br>
+</span></i>
+<div style="margin-left: 40px;">&nbsp;
+The possible plugin type filtering options (<span
+ style="font-style: italic;">filter</span>) can be:<br>
+<br>
+</div>
+<div style="margin-left: 80px;"><span style="font-weight: bold;">all</span><br>
+</div>
+<div style="margin-left: 120px;">This is the default value that
+performs no filtering.<br>
+<br>
+</div>
+<div style="margin-left: 80px;"><span style="font-weight: bold;">act</span><br>
+</div>
+<div style="margin-left: 120px;">This filter displays Action plugins.<br>
+<br>
+</div>
+<div style="margin-left: 80px;"><span style="font-weight: bold;">annot</span><br>
+</div>
+<div style="margin-left: 120px;">This filter displays Annotation
+plugins.<br>
+<br>
+</div>
+<div style="margin-left: 80px;"><span style="font-weight: bold;">arch</span><br>
+</div>
+<div style="margin-left: 120px;">This filter displays Archiver plugins.<br>
+<br>
+</div>
+<div style="margin-left: 80px;"><span style="font-weight: bold;">build</span><br>
+</div>
+<div style="margin-left: 120px;">This filter displays Builder
+Collection plugins.<br>
+<br>
+</div>
+<div style="margin-left: 80px;"><span style="font-weight: bold;">comp</span><br>
+</div>
+<div style="margin-left: 120px;">This filter displays Comparator
+plugins.<br>
+<br>
+</div>
+<div style="margin-left: 80px;"><span style="font-weight: bold;">edit</span><br>
+</div>
+<div style="margin-left: 120px;">This filter displays Editor plugins.<br>
+<br>
+</div>
+<div style="margin-left: 80px;"><span style="font-weight: bold;">key</span><br>
+</div>
+<div style="margin-left: 120px;">This filter displays Key Chooser
+plugins.<br>
+<br>
+</div>
+<div style="margin-left: 80px;"><span style="font-weight: bold;">master</span><br>
+</div>
+<div style="margin-left: 120px;">This filter displays MasterExt plugins.<br>
+<br>
+</div>
+<div style="margin-left: 80px;"><span style="font-weight: bold;">queue</span><br>
+</div>
+<div style="margin-left: 120px;">This filter displays QueueExt plugins.<br>
+<br>
+</div>
+<div style="margin-left: 80px;"><span style="font-weight: bold;">tool</span><br>
+</div>
+<div style="margin-left: 120px;">This filter displays Tool plugins
+plugins.<br>
+</div>
+<br>
+<b>--type=</b><i><span style="font-style: italic;">filter[,filter ...]<br>
+<br>
+</span></i>
+<div style="margin-left: 40px;">The vendor filtering options (<span
+ style="font-style: italic;">filter</span>) must be an exact match for
+the plugin's vendor property. <br>
+</div>
+<br>
+</div>
+</div>
+<div style="margin-left: 80px;"><b>--summary<br>
+<br>
+</b></div>
+<div style="margin-left: 120px;">Prints a summary of the numbers of
+required, loaded and unknown plugins organized plugin vendor.</div>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"><br>
+<br>
 <b>Examples</b>:<br>
 <br>
-
-To display all Builder Collection plugins from the Temerity vendor which are under development:<br>
+To display all Builder Collection plugins from the Temerity vendor
+which are under development:<br>
 <br>
-<div style="margin-left: 40px;">plplugin --status=dev --type=build --vendor=Temerity<br></div>
+<div style="margin-left: 40px;">plplugin --status=dev --type=build
+--vendor=Temerity<br>
+</div>
 <br>
-
 To display all Action, Editor and Tool plugins:<br>
 <br>
-<div style="margin-left: 40px;">plplugin --type=act,edit,tool<br></div>
+<div style="margin-left: 40px;">plplugin --type=act,edit,tool<br>
+</div>
 <br>
-
 To display all missing and unknown plugins:<br>
 <br>
-<div style="margin-left: 40px;">plplugin --status=miss,unknown<br></div>
+<div style="margin-left: 40px;">plplugin --status=miss,unknown<br>
+</div>
 </div>
 </div>
 <br>
-
-<div style="margin-left: 40px;"><a name="--summary"></a><b>--summary</b></div>
-<div style="margin-left: 80px;"><a name="--summary"></a>Prints a table of required, loaded and unknown plugins by vendor.</div>
 <br>
-
 <div style="margin-left: 40px;"><span style="font-weight: bold;"><a
- name="--install"></a></span>[<a
+ name="--install"></a></span>[<a style="font-style: italic;"
  href="plplugin.src.html.in#Install_Options">install-options</a>] <span
  style="font-weight: bold;">--install</span><i> plugin-file1 </i>[<i>plugin-file2
 ...</i>]&nbsp;<br>
