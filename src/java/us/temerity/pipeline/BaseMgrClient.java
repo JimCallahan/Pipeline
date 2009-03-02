@@ -1,4 +1,4 @@
-// $Id: BaseMgrClient.java,v 1.30 2009/03/01 21:48:28 jim Exp $
+// $Id: BaseMgrClient.java,v 1.31 2009/03/02 05:15:56 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -449,12 +449,14 @@ class BaseMgrClient
 
       TaskTimer timer = null;
       if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Net, LogMgr.Level.Finer)) {
-	timer = new TaskTimer("Recv [" + pSocket.getInetAddress() + ":" + pPort + "] " + 
-			      kind.toString());
+	timer = new TaskTimer
+          (pClientID + " Recv [" + pSocket.getInetAddress() + ":" + pPort + "] " + 
+           kind.toString());
 	timer.aquire();
 	LogMgr.getInstance().log
 	  (LogMgr.Kind.Net, LogMgr.Level.Finer,
-	   "Send [" + pSocket.getInetAddress() + ":" + pPort + "]: " + kind.toString());
+	   pClientID + " Send [" + pSocket.getInetAddress() + ":" + pPort + "]: " + 
+           kind.toString());
       }
 
       OutputStream out = pSocket.getOutputStream();
