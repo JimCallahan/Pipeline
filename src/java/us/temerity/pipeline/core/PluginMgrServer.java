@@ -1,4 +1,4 @@
-// $Id: PluginMgrServer.java,v 1.16 2009/02/17 00:56:47 jlee Exp $
+// $Id: PluginMgrServer.java,v 1.17 2009/03/02 00:18:48 jlee Exp $
 
 package us.temerity.pipeline.core;
 
@@ -293,13 +293,6 @@ class PluginMgrServer
                   objOut.flush(); 
                 }
                 break;
-
-	      case ListRequired:
-		{
-		  objOut.writeObject(pPluginMgr.listRequired());
-		  objOut.flush();
-		}
-		break;
 		
               case Disconnect:
 		disconnect();

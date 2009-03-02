@@ -1,4 +1,4 @@
-// $Id: PluginMgrControlClient.java,v 1.11 2009/02/24 00:54:19 jim Exp $
+// $Id: PluginMgrControlClient.java,v 1.12 2009/03/02 00:18:48 jlee Exp $
   
 package us.temerity.pipeline.core;
 
@@ -313,82 +313,6 @@ class PluginMgrControlClient
         handleFailure(obj);
       }
     }
-  }
-
-
-  /**
-   * List the required plugins that need to be installed or the detection of 
-   * unregistered plugins.
-   */
-  public void
-  listRequiredPlugins
-  ()
-    throws PipelineException
-  {
-    Object obj = performTransaction(PluginRequest.ListRequired, null);
-
-    if(obj instanceof PluginListRequiredRsp) {
-      PluginListRequiredRsp rsp = (PluginListRequiredRsp)obj;
-
-      MappedSet<PluginType,PluginID> requiredPlugins = rsp.getRequiredPlugins();
-      MappedSet<PluginType,PluginID> unknownPlugins  = rsp.getUnknownPlugins();
-
-      int requiredPluginCount = 0;
-      int unknownPluginCount  = 0;
-
-      for(PluginType plgType : requiredPlugins.keySet()) {
-        for(PluginID plgID : requiredPlugins.get(plgType)) {
-          LogMgr.getInstance().log
-            (LogMgr.Kind.Ops, LogMgr.Level.Info, 
-            "   Name : " + plgID.getName() + "\n" + 
-            "Version : " + plgID.getVersionID() + "\n" + 
-            " Vendor : " + plgID.getVendor() + "\n" + 
-            "   Type : " + plgType + "\n" + 
-            " Status : Required plugin, needs to be installed.\n");
-
-          requiredPluginCount++;
-        }
-      }
-
-      for(PluginType plgType : unknownPlugins.keySet()) {
-        for(PluginID plgID : unknownPlugins.get(plgType)) {
-          LogMgr.getInstance().log
-            (LogMgr.Kind.Ops, LogMgr.Level.Info, 
-            "   Name : " + plgID.getName() + "\n" + 
-            "Version : " + plgID.getVersionID() + "\n" + 
-            " Vendor : " + plgID.getVendor() + "\n" + 
-            "   Type : " + plgType + "\n" + 
-            " Status : Unregistered plugin, not loaded.\n");
-
-          unknownPluginCount++;
-        }
-      }
-
-      if(unknownPluginCount > 0) {
-        LogMgr.getInstance().log
-         (LogMgr.Kind.Ops, LogMgr.Level.Info, 
-         unknownPluginCount + " unregistered plugin" + 
-         (unknownPluginCount > 1 ? "s " : " ") + "detected.");
-      }
-
-      if(requiredPluginCount > 0) {
-        LogMgr.getInstance().log
-         (LogMgr.Kind.Ops, LogMgr.Level.Warning, 
-          requiredPluginCount + " plugin" + (requiredPluginCount > 1 ? "s " : " ") + 
-          "still need" + (requiredPluginCount > 1 ? "" : "s") + " to be installed.");
-      }
-      
-      if((requiredPluginCount == 0) && (unknownPluginCount == 0)) {
-        LogMgr.getInstance().log
-          (LogMgr.Kind.Ops, LogMgr.Level.Info, 
-          "All required plugins are installed.");
-      }
-    }
-    else {
-      handleFailure(obj);
-    }
-
-    LogMgr.getInstance().flush();
   }
 }
 

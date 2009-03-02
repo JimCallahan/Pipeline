@@ -1,4 +1,4 @@
-// $Id: PluginRequest.java,v 1.4 2009/02/13 04:54:00 jlee Exp $
+// $Id: PluginRequest.java,v 1.5 2009/03/02 00:18:48 jlee Exp $
 
 package us.temerity.pipeline.message;
 
@@ -37,13 +37,6 @@ enum PluginRequest
    */
   Install, 
   
-  /**
-   * Request the list of required plugins that need to be installed after 
-   * an upgrade of Pipeline or the unregistered plugins detected during 
-   * plpluginmgr startup.
-   */
-  ListRequired, 
-
   /*----------------------------------------------------------------------------------------*/
 
   /**
