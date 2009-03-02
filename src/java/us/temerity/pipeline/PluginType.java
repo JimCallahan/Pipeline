@@ -1,4 +1,4 @@
-// $Id: PluginType.java,v 1.5 2008/01/28 12:00:51 jesse Exp $
+// $Id: PluginType.java,v 1.6 2009/03/02 00:32:22 jlee Exp $
 
 package us.temerity.pipeline;
 
@@ -117,4 +117,32 @@ enum PluginType
     return toString();
   }
 
+  /**
+   * Convert to a short name representation.
+   */
+  public String
+  toShortName()
+  {
+    return sShortNames[ordinal()];
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  private static String sShortNames[] = {
+    "edit", 
+    "comp", 
+    "act", 
+    "tool", 
+    "annot", 
+    "arch", 
+    "master", 
+    "queue", 
+    "build", 
+    "proc", 
+    "key"
+  };
 }
