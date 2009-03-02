@@ -260,7 +260,7 @@ Commands() :
 {}
 {
   (GlobalOpts() AE())*
-    [Bootstrap()]
+    (Bootstrap())?
   { 
     pHasCommands = true;    
   }
