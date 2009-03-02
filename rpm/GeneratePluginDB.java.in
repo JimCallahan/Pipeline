@@ -1,4 +1,4 @@
-// $Id: GeneratePluginDB.java.in,v 1.3 2009/02/17 00:23:45 jlee Exp $
+// $Id: GeneratePluginDB.java.in,v 1.4 2009/03/02 00:04:44 jlee Exp $
 
 import java.io.*;
 import java.lang.reflect.*;
@@ -54,43 +54,6 @@ class GeneratePluginDB
   }
 
   /*----------------------------------------------------------------------------------------*/
-  /*   S O M E   S T R I N G   H E L P E R   F U N C T I O N S                              */
-  /*----------------------------------------------------------------------------------------*/
-
-  private String
-  formatString
-  (
-   String str, 
-   int len
-  )
-  {
-    if(len <= str.length())
-      return str;
-
-    StringBuilder buf = new StringBuilder();
-
-    for(int i = 0 ; i < (len - str.length()) ; i++)
-      buf.append(" ");
-
-    buf.append(str);
-
-    return buf.toString();
-  }
-
-  private String
-  drawline
-  (
-   char ch, 
-   int len
-  )
-  {
-    StringBuilder buf = new StringBuilder();
-
-    for(int i = 0 ; i < len ; i++)
-      buf.append(ch);
-
-    return buf.toString();
-  }
 
   /**
    * This code mimics the initial loading of plugins that PluginMgr's constructors performs.
@@ -108,34 +71,65 @@ class GeneratePluginDB
 
     int maxLength = 0;
     for(String plgType : PluginType.titles())
-      maxLength = Math.max(plgType.length(), maxLength);
+      maxLength = Math.max(plgType.length()+1, maxLength);
 
-    String totalMsg = "Total plugin count";
-    maxLength = Math.max(totalMsg.length(), maxLength);
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Plg, LogMgr.Level.Info,
+       tbar(80) + "\n" + 
+       title("GeneratePluginDb") + "\n" + 
+       bar(80) + "\n");
 
     for(String vendor : pRequiredPlugins.keySet()) {
-      MappedSet<PluginType,PluginID> plugins = pRequiredPlugins.get(vendor);
 
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Plg, LogMgr.Level.Info, 
-	 "\n" + formatString("Vendor", maxLength) + " : " + vendor + 
-	 "\n" + drawline('-', maxLength));
+      MappedSet<PluginType,PluginID> pset = pRequiredPlugins.get(vendor);
 
-      int plgCount = 0;
-      for(PluginType plgType : plugins.keySet()) {
-	int plgTypeCount = plugins.get(plgType).size();
-
+      for(PluginType ptype : pset.keySet()) {
 	LogMgr.getInstance().log
-	  (LogMgr.Kind.Plg, LogMgr.Level.Info, 
-	   formatString(plgType.toString(), maxLength) + " : " + plgTypeCount);
+	  (LogMgr.Kind.Ops, LogMgr.Level.Info, 
+	   tbar(80) + "\n" + 
+	   title(ptype.toString()));
+	
+	TreeSet<PluginID> plugins = pset.get(ptype);
+	for(PluginID pid : plugins) {
+	  StringBuilder pstring = new StringBuilder();
 
-	plgCount += plgTypeCount;
+	  pstring.append("Name       : " + pid.getName() + "\n");
+	  pstring.append("Version    : " + pid.getVersionID() + "\n");
+	  pstring.append("Vendor     : " + pid.getVendor() + "\n");
+	  pstring.append("PluginType : " + ptype + "\n");
+
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Ops, LogMgr.Level.Info, 
+	     bar(80) + "\n\n" + 
+	     pstring.toString() + 
+	     "\n");
+	}
       }
 
       LogMgr.getInstance().log
-	(LogMgr.Kind.Plg, LogMgr.Level.Info, 
-	 drawline('=', maxLength) + "\n" + 
-	 formatString(totalMsg, maxLength) + " : " + plgCount + "\n");
+        (LogMgr.Kind.Plg, LogMgr.Level.Info,
+         bar(80) + "\n" + 
+         " " + vendor + " Plugins\n" + 
+         pad(maxLength) + "   required\n" +
+         pad(maxLength) + "   --------");
+
+      int total = 0;
+      for(PluginType ptype : pset.keySet()) {
+        int cnt = pset.get(ptype).size();
+        if(cnt > 0) {
+          LogMgr.getInstance().log
+            (LogMgr.Kind.Plg, LogMgr.Level.Info,
+             lpad(ptype.toString(), maxLength) + " :  " + 
+             lpad(Integer.toString(cnt), 5)); 
+        }
+          
+        total += cnt;
+      }
+
+      LogMgr.getInstance().log
+        (LogMgr.Kind.Plg, LogMgr.Level.Info,
+         "\n" + lpad("TOTAL", maxLength) + " :  " + 
+         lpad(Integer.toString(total), 5) + "\n");
 
       try {
         File file = new File(pDestPath, "plugins/required/" + vendor);
@@ -146,7 +140,7 @@ class GeneratePluginDB
               ("Unable to remove the old plugins file (" + file + ")!");
         }
 
-        GlueEncoderImpl.encodeFile("RequiredPlugins", plugins, file);
+        GlueEncoderImpl.encodeFile("RequiredPlugins", pset, file);
       }
       catch(GlueException ex) {
         throw new PipelineException(ex);
@@ -561,6 +555,206 @@ class GeneratePluginDB
     }
   }
 
+
+    /*----------------------------------------------------------------------------------------*/
+  /*   H E L P E R S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Generate a Jim title string.  Used while iterating through all the PluginType enums.
+   * All strings should be NOT null and greater than zero length, but still doing the check
+   * using the garbage in garbage out scheme.
+   */
+  public String
+  title
+  (
+   String title
+  )
+  {
+    if(title == null)
+      return title;
+
+    if(title.length() == 0)
+      return title;
+
+    StringBuilder buf = new StringBuilder();
+
+    buf.append(" ");
+    buf.append(" ");
+    buf.append(title.charAt(0));
+
+    for(int i = 1 ; i < title.length() ; i++) {
+      char ch = title.charAt(i);
+
+      buf.append(" ");
+      if(Character.isUpperCase(ch)) {
+	buf.append(" ");
+	buf.append(" ");
+	buf.append(ch);
+      }
+      else {
+	buf.append(Character.toUpperCase(ch));
+      }
+    }
+
+    return buf.toString();
+  }
+
+  /**
+   * Generate a string consisting the the given character repeated N number of times.
+   */ 
+  public String
+  repeat
+  (
+   char c,
+   int size
+  ) 
+  {
+    StringBuilder buf = new StringBuilder();
+    int wk;
+    for(wk=0; wk<size; wk++) 
+      buf.append(c);
+    return buf.toString();
+  }
+
+  /**
+   * Generate a horizontal bar.
+   */ 
+  public String
+  bar
+  (
+   int size
+  ) 
+  {
+    return repeat('-', size);
+  }
+
+  /**
+   * Generate a horizontal title bar.
+   */ 
+  public String
+  tbar
+  (
+   int size
+  ) 
+  {
+    return repeat('=', size);
+  }
+
+  /**
+   * Pad the given string so that it is at least N characters long.
+   */ 
+  public String
+  pad
+  (
+   String str, 
+   char c,
+   int size
+  ) 
+  {
+    return (str + repeat(c, Math.max(0, size - str.length())));
+  }
+
+  /**
+   * Pad the given string with spaces so that it is at least N characters long.
+   */ 
+  public String
+  pad
+  (
+   String str,
+   int size
+  ) 
+  {
+    return pad(str, ' ', size);
+  }
+
+  /**
+   * Generate N spaces. 
+   */ 
+  public String
+  pad
+  (
+   int size
+  ) 
+  {
+    return repeat(' ', size);
+  }
+
+  /**
+   * Left pad the given string so that it is at least N characters long.
+   */ 
+  public String
+  lpad
+  (
+   String str, 
+   char c,
+   int size
+  ) 
+  {
+    return (repeat(c, Math.max(0, size - str.length())) + str);
+  }
+
+  /**
+   * Left pad the given string with spaces so that it is at least N characters long.
+   */ 
+  public String
+  lpad
+  (
+   String str,
+   int size
+  ) 
+  {
+    return lpad(str, ' ', size);
+  }
+
+  /**
+   * Line wrap the given String at word boundries.
+   */ 
+  public String
+  wordWrap
+  (
+   String str,
+   int indent, 
+   int size
+  ) 
+  {
+    if(str.length() + indent < size) 
+      return str;
+
+    StringBuilder buf = new StringBuilder();
+    String words[] = str.split("\\p{Blank}");
+    int cnt = indent;
+    int wk;
+    for(wk=0; wk<words.length; wk++) {
+      int ws = words[wk].length();
+      if(ws > 0) {
+	if((size - cnt - ws) > 0) {
+	  buf.append(words[wk]);
+	  cnt += ws;
+	}
+	else {
+	  buf.append("\n" + repeat(' ', indent) + words[wk]);
+	  cnt = indent + ws;
+	}
+
+	if(wk < (words.length-1)) {
+	  if((size - cnt) > 0) {
+	    buf.append(' ');
+	    cnt++;
+	  }
+	  else {
+	    buf.append("\n" + repeat(' ', indent));
+	    cnt = indent;
+	  }
+	}
+      }
+    }
+
+    return buf.toString();
+  }
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Path of the Temerity plugins directory.
    */
@@ -585,6 +779,9 @@ class GeneratePluginDB
    * The table contains a MappedSet of PluginID indexed by PluginType.
    */
   private TreeMap<String,MappedSet<PluginType,PluginID>>  pRequiredPlugins;
+
+
+  /*----------------------------------------------------------------------------------------*/
 
   public static void
   main
