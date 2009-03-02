@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.95 2008/11/13 20:53:03 jim Exp $
+// $Id: UIMaster.java,v 1.96 2009/03/02 05:12:32 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1459,7 +1459,7 @@ class UIMaster
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
     try {
       MasterMgrClient client = getMasterMgrClient(channel);
-      String tname = client.getDefaultToolsetName();
+      String tname = client.getCachedDefaultToolsetName();
 
       synchronized(pToolPlugins) {
 	plugins = pToolPlugins.get(tname);
@@ -1543,8 +1543,9 @@ class UIMaster
     String tname = null;
     try {
       MasterMgrClient client = getMasterMgrClient(channel);
-      tname = client.getDefaultToolsetName();
-    } catch (PipelineException ex) {
+      tname = client.getCachedDefaultToolsetName();
+    } 
+    catch (PipelineException ex) {
       menu.removeAll();
       LogMgr.getInstance().log
         (Kind.Ops, Level.Warning, 
@@ -1767,7 +1768,7 @@ class UIMaster
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
     try {
       MasterMgrClient client = getMasterMgrClient(channel);
-      String tname = client.getDefaultToolsetName();
+      String tname = client.getCachedDefaultToolsetName();
 
       synchronized(pEditorPlugins) {
 	plugins = pEditorPlugins.get(tname);
@@ -1889,7 +1890,7 @@ class UIMaster
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
     try {
       MasterMgrClient client = getMasterMgrClient(channel);
-      String tname = client.getDefaultToolsetName();
+      String tname = client.getCachedDefaultToolsetName();
 
       synchronized(pActionPlugins) {
 	plugins = pActionPlugins.get(tname);
@@ -2010,7 +2011,7 @@ class UIMaster
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
     try {
       MasterMgrClient client = getMasterMgrClient();
-      String tname = client.getDefaultToolsetName();
+      String tname = client.getCachedDefaultToolsetName();
 
       synchronized(pArchiverPlugins) {
 	plugins = pArchiverPlugins.get(tname);
@@ -2127,7 +2128,7 @@ class UIMaster
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
     try {
       MasterMgrClient client = getMasterMgrClient();
-      String tname = client.getDefaultToolsetName();
+      String tname = client.getCachedDefaultToolsetName();
 
       synchronized(pMasterExtPlugins) {
 	plugins = pMasterExtPlugins.get(tname);
@@ -2244,7 +2245,7 @@ class UIMaster
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
     try {
       MasterMgrClient client = getMasterMgrClient();
-      String tname = client.getDefaultToolsetName();
+      String tname = client.getCachedDefaultToolsetName();
 
       synchronized(pQueueExtPlugins) {
 	plugins = pQueueExtPlugins.get(tname);
@@ -2348,20 +2349,24 @@ class UIMaster
   /**
    * Create a new annotation plugin selection field based on the default toolset.
    * 
+   * @param channel
+   *   The index of the update channel.
+   * 
    * @param width
    *   The minimum and preferred width of the field.
    */ 
   public JPluginSelectionField
   createAnnotationSelectionField
   (
+   int channel,
    int width  
   ) 
   {
     PluginMenuLayout layout = null;
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
     try {
-      MasterMgrClient client = getMasterMgrClient();
-      String tname = client.getDefaultToolsetName();
+      MasterMgrClient client = getMasterMgrClient(channel);
+      String tname = client.getCachedDefaultToolsetName();
 
       synchronized(pAnnotationPlugins) {
 	plugins = pAnnotationPlugins.get(tname);
@@ -2394,12 +2399,11 @@ class UIMaster
       }
       
       synchronized(pAnnotationPermissions) {
-        if (pAnnotationPermissions == null)
+        if(pAnnotationPermissions == null)
           pAnnotationPermissions = PluginMgrClient.getInstance().getAnnotationPermissions();
       }
       
-      
-      if (!client.getPrivilegeDetails(PackageInfo.sUser).isAnnotator()) {
+      if(!client.getCachedPrivilegeDetails().isAnnotator()) {
         TripleMap<String,String,VersionID,TreeSet<OsType>> newPlugins =
           new TripleMap<String, String, VersionID, TreeSet<OsType>>();
         for (String vend : plugins.keySet()) {
@@ -2429,14 +2433,15 @@ class UIMaster
   public void 
   updateAnnotationPluginField
   (
+   int channel,
    JPluginSelectionField field
   ) 
   {
     PluginMenuLayout layout = null;
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
     try {
-      MasterMgrClient client = getMasterMgrClient();
-      String tname = client.getDefaultToolsetName();
+      MasterMgrClient client = getMasterMgrClient(channel);
+      String tname = client.getCachedDefaultToolsetName();
 
       synchronized(pAnnotationPlugins) {
 	plugins = pAnnotationPlugins.get(tname);
@@ -2473,8 +2478,7 @@ class UIMaster
           pAnnotationPermissions = PluginMgrClient.getInstance().getAnnotationPermissions();
       }
       
-      
-      if (!client.getPrivilegeDetails(PackageInfo.sUser).isAnnotator()) {
+      if (!client.getCachedPrivilegeDetails().isAnnotator()) {
         TripleMap<String,String,VersionID,TreeSet<OsType>> newPlugins =
           new TripleMap<String, String, VersionID, TreeSet<OsType>>();
         for (String vend : plugins.keySet()) {
@@ -2516,7 +2520,7 @@ class UIMaster
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
     try {
       MasterMgrClient client = getMasterMgrClient();
-      String tname = client.getDefaultToolsetName();
+      String tname = client.getCachedDefaultToolsetName();
 
       synchronized(pKeyChooserPlugins) {
 	plugins = pKeyChooserPlugins.get(tname);
@@ -2571,7 +2575,7 @@ class UIMaster
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
     try {
       MasterMgrClient client = getMasterMgrClient();
-      String tname = client.getDefaultToolsetName();
+      String tname = client.getCachedDefaultToolsetName();
 
       synchronized(pKeyChooserPlugins) {
 	plugins = pKeyChooserPlugins.get(tname);
@@ -2630,7 +2634,7 @@ class UIMaster
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
     try {
       MasterMgrClient client = getMasterMgrClient();
-      String tname = client.getDefaultToolsetName();
+      String tname = client.getCachedDefaultToolsetName();
 
       synchronized(pBuilderCollectionPlugins) {
         plugins = pBuilderCollectionPlugins.get(tname);
@@ -2787,7 +2791,7 @@ class UIMaster
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
     try {
       MasterMgrClient client = getMasterMgrClient();
-      String tname = client.getDefaultToolsetName();
+      String tname = client.getCachedDefaultToolsetName();
 
       synchronized(pBuilderCollectionPlugins) {
         plugins = pBuilderCollectionPlugins.get(tname);

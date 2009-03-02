@@ -1,4 +1,4 @@
-// $Id: PanelUpdater.java,v 1.28 2008/09/29 19:02:19 jim Exp $
+// $Id: PanelUpdater.java,v 1.29 2009/03/02 05:16:19 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -436,8 +436,9 @@ class PanelUpdater
 	MasterMgrClient mclient = master.getMasterMgrClient(pGroupID);
 	QueueMgrClient qclient  = master.getQueueMgrClient(pGroupID);
 	
-	/* clear privileges cache */ 
-	master.getMasterMgrClient(pGroupID).invalidateCachedPrivilegeDetails();
+	/* clear client caches */ 
+	mclient.invalidateCachedDefaultToolsetName();
+	mclient.invalidateCachedPrivilegeDetails();
 
 	if(!pJobDetailsOnly && !pJobBrowserSelectionOnly && !pJobSlotsSelectionOnly) {
 
