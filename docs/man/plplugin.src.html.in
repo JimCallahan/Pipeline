@@ -10,12 +10,14 @@
 <blockquote><b>plplugin</b> - the Pipeline plugin installation tool<br>
 </blockquote>
 <h3><a name="Synopsis"></a>Synopsis</h3>
-<blockquote><b>plplugin</b> [<a href="#Global_Options"><i>options</i></a>]
+<blockquote>
+  <b>plplugin</b> [<a href="#Global_Options"><i>options</i></a>]
   <a style="font-weight: bold;" href="#--list">--list</a><span
- style="font-weight: bold;"> </span><br>
-  <b>plplugin</b> [<a href="#Global_Options"><i>options</i></a>] <a
- style="font-weight: bold;" href="#--list-required">--list-required</a><span
- style="font-weight: bold;"> </span><br>
+ style="font-weight: bold;"> </span> <i>[--status=...] [--type=...] [--vendor=...] [--summary]</i><br>
+
+  <b>plplugin</b> [<a href="#Global_Options"><i>options</i></a>]
+  <a style="font-weight: bold;" href="#--summary">--summary</a><br>
+
   <b>plplugin</b> [<a href="#Global_Options"><i>options</i></a>] <a
  href="#--install"><span style="font-weight: bold;">--install</span></a>
   <i>plugin-file1 </i>[<i>plugin-file2 ...</i>]<i><br>
@@ -447,29 +449,88 @@ and JAR files in one invocation of <span style="font-weight: bold;">plplugin</sp
 <span style="font-weight: bold;"></span></div>
 <br>
 <div style="margin-left: 40px;">
-<div style="margin-left: 40px;">Lists information about the currently
-installed plugins and exits.<br>
+<div style="margin-left: 40px;">Lists information about plugins and exits.&nbsp;&nbsp;
+The following options can be used to filter the results:<br>
+<br>
+<div style="margine-left: 40px;"><b><i>--status=...</i></b><br></div>
+<div style="margine-left: 40px;"><b><i>--type=...</i></b><br></div>
+<div style="margine-left: 40px;"><b><i>--vendor=...</i></b><br></div>
+<br>
+The values for each option can be a comma separated list of values.<br>
+<br>
+
+The (<span style="font-style: italic;">status</span>) portion of the option's argument can be:<br>
+<br>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">all</span><br></div>
+<div style="margin-left: 80px;">This is the default value that performs no filtering.<br></div>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">req</span><br></div>
+<div style="margin-left: 80px;">This filter displays required plugins.<br></div>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">inst</span><br></div>
+<div style="margin-left: 80px;">This filter displays installed plugins.<br></div>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">dev</span><br></div>
+<div style="margin-left: 80px;">This filter displays plugins under development.<br></div>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">perm</span><br></div>
+<div style="margin-left: 80px;">This filter displays plugins NOT under development.<br></div>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">miss</span><br></div>
+<div style="margin-left: 80px;">This filter displays plugins that need to be installed.<br></div>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">unknown</span><br></div>
+<div style="margin-left: 80px;">This filter displays plugins that are unknown to plpluginmgr.<br></div>
+<br>
+
+The (<span style="font-style: italic;">type</span>) portion of the option's argument can be:<br>
+<br>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">all</span><br></div>
+<div style="margin-left: 80px;">This is the default value that performs no filtering.<br></div>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">act</span><br></div>
+<div style="margin-left: 80px;">This filter displays Action plugins.<br></div>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">annot</span><br></div>
+<div style="margin-left: 80px;">This filter displays Annotation plugins.<br></div>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">arch</span><br></div>
+<div style="margin-left: 80px;">This filter displays Archiver plugins.<br></div>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">build</span><br></div>
+<div style="margin-left: 80px;">This filter displays Builder Collection plugins.<br></div>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">comp</span><br></div>
+<div style="margin-left: 80px;">This filter displays Comparator plugins.<br></div>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">edit</span><br></div>
+<div style="margin-left: 80px;">This filter displays Editor plugins.<br></div>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">key</span><br></div>
+<div style="margin-left: 80px;">This filter displays Key Chooser plugins.<br></div>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">master</span><br></div>
+<div style="margin-left: 80px;">This filter displays MasterExt plugins.<br></div>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">queue</span><br></div>
+<div style="margin-left: 80px;">This filter displays QueueExt plugins.<br></div>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">tool</span><br></div>
+<div style="margin-left: 80px;">This filter displays Tool plugins plugins.<br></div>
+<br>
+
+The (<span style="font-style: italic;">vendor</span>) portion of the option's argument 
+can be a valid plugin vendor name.<br>
+<br>
+
+<b>Examples</b>:<br>
+<br>
+
+To display all Builder Collection plugins from the Temerity vendor which are under development:<br>
+<br>
+<div style="margin-left: 40px;">plplugin --status=dev --type=build --vendor=Temerity<br></div>
+<br>
+
+To display all Action, Editor and Tool plugins:<br>
+<br>
+<div style="margin-left: 40px;">plplugin --type=act,edit,tool<br></div>
+<br>
+
+To display all missing and unknown plugins:<br>
+<br>
+<div style="margin-left: 40px;">plplugin --status=miss,unknown<br></div>
 </div>
 </div>
 <br>
-<div style="margin-left: 40px;">
-<span style="font-weight: bold;"><a name="--list-required"></a>--list-required</span><br>
-<span style="font-weight: bold;"></span></div>
+
+<div style="margin-left: 40px;"><a name="--summary"></a><b>--summary</b></div>
+<div style="margin-left: 80px;"><a name="--summary"></a>Prints a table of required, loaded and unknown plugins by vendor.</div>
 <br>
-<div style="margin-left: 40px;">
-<div style="margin-left: 40px;">Lists information about the required
-locally created plugins that need to be installed after an upgrade and
-any un-registered local plugins detected and exits.&nbsp; After an
-upgrade of Pipeline, the Plugin Manager will not begin serving the
-other server daemons or clients other than <span
- style="font-weight: bold;">plplugin</span>(1) until all locally
-created plugins previously in use have been installed for the upgraded
-version of Pipeline.&nbsp; See the <a href="plpluginmgr.html"><span
- style="font-weight: bold;">plpluginmgr</span></a>(1) man page for
-details.<br>
-</div>
-</div>
-<br>
+
 <div style="margin-left: 40px;"><span style="font-weight: bold;"><a
  name="--install"></a></span>[<a
  href="plplugin.src.html.in#Install_Options">install-options</a>] <span
