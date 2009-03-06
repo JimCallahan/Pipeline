@@ -1,0 +1,23 @@
+#!/bin/bash
+
+function usage {
+  echo "usage: status-loop $numThreads"
+  exit 1
+}
+
+if [ "$#" -ne 1 ]
+then
+  usage
+fi
+
+numThreads=$1
+
+log=wedge-$numThreads/STATUS-${numThreads}-THREADS.log 
+while true
+do
+  date | tee --append $log
+  ../temerity-benchmark benchmark-init0.data status | tee --append $log
+  echo | tee --append $log
+  echo | tee --append $log
+done
+

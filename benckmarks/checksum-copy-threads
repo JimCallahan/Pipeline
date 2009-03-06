@@ -1,0 +1,32 @@
+#!/bin/bash
+
+function usage {
+  echo "usage: checksum-copy-threads numThreads"
+  exit 1
+}
+
+if [ "$#" -ne 1 ]
+then
+  usage
+fi
+
+numThreads=$1
+
+tdir=/prod/tmp/isilon_testing
+
+for (( i=1; $i<=$numThreads; i++))
+do
+  log=$tdir/wedge-$numThreads/checksum-copy${i}.log 
+  date > $log
+  $tdir/temerity-benchmark $tdir/benchmark-init${i}.data checksum copy >> $log &
+done
+
+wait
+
+log=$tdir/wedge-$numThreads/CHECKSUM-COPY-${numThreads}-THREADS.log
+for (( i=1; $i<=$numThreads; i++))
+do
+  cat $tdir/wedge-$numThreads/checksum-copy${i}.log >> $log
+  echo >> $log
+  echo >> $log
+done

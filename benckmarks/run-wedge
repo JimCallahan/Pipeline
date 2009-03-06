@@ -1,0 +1,43 @@
+#!/bin/bash
+
+function usage {
+  echo "usage: run-wedge $numThreads"
+  exit 1
+}
+
+if [ "$#" -ne 1 ]
+then
+  usage
+fi
+
+numThreads=$1
+
+tdir=/prod/tmp/isilon_testing
+
+logdir=$tdir/wedge-$numThreads
+rm -rf $logdir
+mkdir $logdir
+
+$tdir/status-loop $numThreads &
+
+sleep 60 
+
+echo
+echo "=================================="
+echo "  Starting Copy Threads..."
+echo "=================================="
+echo
+
+$tdir/checksum-copy-threads $numThreads
+
+echo
+echo "=================================="
+echo "  Copy Done."
+echo "=================================="
+echo
+
+sleep 60 
+
+kill %1
+
+echo "ALL DONE."

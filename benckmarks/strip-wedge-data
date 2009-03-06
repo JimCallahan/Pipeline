@@ -1,0 +1,29 @@
+#!/bin/bash
+
+function usage {
+  echo "usage: strip-wedge-data $numThreads"
+  exit 1
+}
+
+if [ "$#" -ne 1 ]
+then
+  usage
+fi
+
+numThreads=$1
+
+tdir=/prod/tmp/isilon_testing
+
+logdir=$tdir/wedge-$numThreads
+
+rm -f $tdir/status-timing-$numThreads.data
+grep Elapsed $logdir/STATUS-$numThreads-THREADS.log | awk '{print $5}' > $tdir/status-timing-$numThreads.data
+
+rm -f $tdir/checksum-timing-$numThreads.data
+rm -f $tdir/copy-timing-$numThreads.data
+for (( i=1; $i<=$numThreads; i++))
+do
+  log=$logdir/checksum-copy${i}.log 
+  head -7  $log | tail -1 | awk '{print $3"\t"$5"\t"$7}' >> $tdir/checksum-timing-$numThreads.data
+  head -14 $log | tail -1 | awk '{print $3"\t"$5"\t"$7}' >> $tdir/copy-timing-$numThreads.data
+done
