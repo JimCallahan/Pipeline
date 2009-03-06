@@ -85,14 +85,14 @@ then
   echo "Creating Local Directories..."
 
   tdir="$localRoot/local-scratch/$stamp"
-  for f in `tail +6 benchmark-init.data`
+  for f in `tail +6 $initData`
   do
     mkdir -p $tdir/`dirname $f`
   done
 
   echo "Timing CheckSum Generation..."
 
-  files=`tail +6 benchmark-init.data`
+  files=`tail +6 $initData`
   stats=`time ( for f in $files; do md5sum "$readRoot/read-scratch/$f" > "$tdir/$f"; done ) 2>&1`
 
   e=`echo $stats | awk '{print $1}'`
@@ -118,7 +118,7 @@ then
   fk=0
   ak=0
   od=""
-  for f in `tail +6 benchmark-init.data`
+  for f in `tail +6 $initData`
   do
     d=`dirname $f`
     if [ "$d" != "$od" ]
@@ -190,7 +190,7 @@ then
   fk=0
   ak=0
   od=""
-  for f in `tail +6 benchmark-init.data`
+  for f in `tail +6 $initData`
   do
     d=`dirname $f`
     if [ "$d" != "$od" ]
