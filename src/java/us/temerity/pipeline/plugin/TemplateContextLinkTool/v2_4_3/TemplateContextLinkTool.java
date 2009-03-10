@@ -1,4 +1,4 @@
-// $Id: TemplateContextLinkTool.java,v 1.3 2008/11/19 04:34:48 jesse Exp $
+// $Id: TemplateContextLinkTool.java,v 1.4 2009/03/10 16:37:12 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateContextLinkTool.v2_4_3;
 
@@ -55,7 +55,7 @@ class TemplateContextLinkTool
   {
     if (pSelected.size() < 2)
       throw new PipelineException
-        ("You must have at least twonode selected to run this tool.");
+        ("You must have at least two nodes selected to run this tool.");
     
     if (pPrimary == null)
       throw new PipelineException

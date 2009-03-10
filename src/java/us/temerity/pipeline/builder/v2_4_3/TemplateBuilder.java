@@ -1,4 +1,4 @@
-// $Id: TemplateBuilder.java,v 1.5 2009/02/09 16:00:57 jesse Exp $
+// $Id: TemplateBuilder.java,v 1.6 2009/03/10 16:36:26 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -79,8 +79,8 @@ class TemplateBuilder
     throws PipelineException
   {
     super("TemplateBuilder",
-          "Builder to read a template node network, built using the v2.4.1 Task system, " +
-          "and create an instance of it for particular project.",
+          "Builder to read a template node network and create an instance of it for " +
+          "particular set of replacement values.",
           mclient, qclient, builderInformation, null);
     
     TreeSet<String> nodesToBuild = templateInfo.getNodesToBuild();
