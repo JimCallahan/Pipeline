@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.129 2009/03/02 05:15:01 jim Exp $
+// $Id: MasterMgrClient.java,v 1.130 2009/03/10 16:47:05 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -459,6 +459,32 @@ class MasterMgrClient
   invalidateCachedDefaultToolsetName()
   {
     pDefaultToolsetName = null;
+  }
+  
+  public synchronized void
+  invalidateCachedDefaultToolset2Name()
+  {
+    pDefaultToolsetName2 = null;
+  }
+  
+  public synchronized void
+  invalidateCachedActiveToolsetNames()
+  {
+    pActiveToolsetNames = null;
+  }
+  
+  public synchronized void
+  invalidateCachedWorkingToolsetNames()
+  {
+    pWorkingToolsetNames = null;
+  }
+  
+  public synchronized void
+  invalidateCachedToolsetInfo()
+  {
+    invalidateCachedActiveToolsetNames();
+    invalidateCachedDefaultToolset2Name();
+    invalidateCachedWorkingToolsetNames();
   }
 
   /**
@@ -6172,14 +6198,51 @@ class MasterMgrClient
   public synchronized void 
   cloneFiles  
   ( 
-   NodeID sourceID, 
-   NodeID targetID
+    NodeID sourceID, 
+    NodeID targetID
+  )
+    throws PipelineException
+  {
+    cloneFiles(sourceID, targetID, null);
+  }
+  
+  /**
+   * Replace the primary and selected secondary files associated with one node with the 
+   * primary and selected secondary files of another node. <P>
+   * 
+   * The two nodes must have exactly the same number of files in their primary file sequences
+   * or the operation will fail. <P> 
+   * 
+   * If the <CODE>author</CODE> argument is different than the current user, this method 
+   * will fail unless the current user has privileged access status.
+   * 
+   * @param sourceID
+   *   The unique working version identifier of the node owning the files being copied. 
+   * 
+   * @param targetID
+   *   The unique working version identifier of the node owning the files being replaced.
+   *
+   * @param secondarySequences
+   *   A map of the secondary file sequences to be copied.  The keys are the secondary
+   *   sequences of the source node and the values are the corresponding sequences in 
+   *   the target node.
+   * 
+   * @throws PipelineException
+   *   If unable to clone the files or if some of the specified secondary sequences do not
+   *   exist.
+   */ 
+  public synchronized void 
+  cloneFiles  
+  ( 
+    NodeID sourceID, 
+    NodeID targetID,
+    TreeMap<FileSeq, FileSeq> secondarySequences
   )
     throws PipelineException
   {
     verifyConnection();
 
-    NodeCloneFilesReq req = new NodeCloneFilesReq(sourceID, targetID); 
+    NodeCloneFilesReq req = new NodeCloneFilesReq(sourceID, targetID, secondarySequences); 
     
     Object obj = performTransaction(MasterRequest.CloneFiles, req);
     handleSimpleResponse(obj);
@@ -8176,6 +8239,12 @@ class MasterMgrClient
    * modifies the default toolset name has been the cache was last updated.
    */ 
   private String  pDefaultToolsetName; 
+  
+  private EnvID pDefaultToolsetName2;
+  
+  private TreeSet<EnvID> pActiveToolsetNames;
+  
+  private TreeSet<EnvID> pWorkingToolsetNames;
 
 }
 

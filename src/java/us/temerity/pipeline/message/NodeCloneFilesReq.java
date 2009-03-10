@@ -1,12 +1,10 @@
-// $Id: NodeCloneFilesReq.java,v 1.2 2006/01/15 06:29:25 jim Exp $
+// $Id: NodeCloneFilesReq.java,v 1.3 2009/03/10 16:47:05 jesse Exp $
 
 package us.temerity.pipeline.message;
 
-import us.temerity.pipeline.*; 
-import us.temerity.pipeline.core.*; 
-
-import java.io.*;
 import java.util.*;
+
+import us.temerity.pipeline.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   N O D E   C L O N E   F I L E S   R E Q                                                */
@@ -38,20 +36,46 @@ class NodeCloneFilesReq
    NodeID sourceID, 
    NodeID targetID
   )
+  {
+    this(sourceID, targetID, null);
+  }
+
+  /** 
+   * Constructs a new request. <P> 
+   * 
+   * @param sourceID
+   *   The unique working version identifier of the node owning the files being copied. 
+   * 
+   * @param targetID
+   *   The unique working version identifier of the node owning the files being replaced.
+   *   
+   * @param secondarySequences
+   *   A map whose keys are the secondary sequences whose files will be copied, with the 
+   *   corresponding file sequence in the target node as the value.  This can be set to
+   *   <code>null</code> if there are no secondary sequences whose files should be copied.
+   */
+  public
+  NodeCloneFilesReq
+  (
+   NodeID sourceID, 
+   NodeID targetID,
+   TreeMap<FileSeq, FileSeq> secondarySequences
+  )
   { 
     super();
 
     if(sourceID == null) 
       throw new IllegalArgumentException
-	("The source node ID cannot be (null)!");
+        ("The source node ID cannot be (null)!");
     pSourceID = sourceID;
 
     if(targetID == null) 
       throw new IllegalArgumentException
-	("The target node ID cannot be (null)!");
+        ("The target node ID cannot be (null)!");
     pTargetID = targetID;
+    
+    pSecondarySequences = secondarySequences;
   }
-
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -74,6 +98,16 @@ class NodeCloneFilesReq
   getTargetID() 
   {
     return pTargetID; 
+  }
+  
+  /**
+   * Get the map whose keys are the secondary sequences whose files will be copied, with the 
+   * corresponding file sequence in the target node as the value.
+   */
+  public TreeMap<FileSeq, FileSeq>
+  getSecondarySequences()
+  {
+    return pSecondarySequences;
   }
 
   
@@ -99,6 +133,12 @@ class NodeCloneFilesReq
    * The unique working version identifier of the node owning the files being replaced. 
    */ 
   private NodeID  pTargetID;
+
+  /**
+   * A map whose keys are the secondary sequences whose files will be copied, with the 
+   * corresponding file sequence in the target node as the value.
+   */
+  private TreeMap<FileSeq, FileSeq> pSecondarySequences;
 
 }
   

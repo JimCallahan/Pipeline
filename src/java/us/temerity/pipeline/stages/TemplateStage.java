@@ -1,4 +1,4 @@
-// $Id: TemplateStage.java,v 1.4 2009/01/19 23:56:15 jesse Exp $
+// $Id: TemplateStage.java,v 1.5 2009/03/10 16:47:05 jesse Exp $
 
 package us.temerity.pipeline.stages;
 
@@ -115,6 +115,10 @@ class TemplateStage
   {
     pSourceMod = sourceMod;
     
+    pUnlinkNodes = new MappedSet<String, String>();
+    pTemplateNodesToUnlink = new TreeSet<String>();
+    pSecSeqs = new TreeMap<FileSeq, FileSeq>();
+    
     TreeMap<String, BaseAnnotation> annots = getAnnotations(pSourceMod.getName());
     
     for (String aName : annots.keySet()) {
@@ -127,10 +131,17 @@ class TemplateStage
         pVouch = (Boolean) annot.getParamValue(aVouch);
         pUnlinkAll = (Boolean) annot.getParamValue(aUnlinkAll);
       }
+      if (aName.startsWith("TemplateUnlink" )) {
+        String unlink = (String) annot.getParamValue(aLinkName);
+        pTemplateNodesToUnlink.add(unlink);
+      }
     }
     
-    for (FileSeq seq : sourceMod.getSecondarySequences()) 
-      addSecondarySequence(stringReplaceSeq(seq));
+    for (FileSeq seq : sourceMod.getSecondarySequences()) {
+      FileSeq targetSeq = stringReplaceSeq(seq);
+      addSecondarySequence(targetSeq);
+      pSecSeqs.put(seq, targetSeq);
+    }
     
     BaseAction act = sourceMod.getAction();
     
@@ -196,6 +207,8 @@ class TemplateStage
     LinkMod newLink = new LinkMod(newSrc, link.getPolicy(), link.getRelationship(), link.getFrameOffset());
     addLink(newLink);
     
+    if (pTemplateNodesToUnlink.contains(oldSrc))
+      pUnlinkNodes.put(oldSrc, newSrc);
     
     if (act != null) {
       if (act.supportsSourceParams()) {
@@ -361,7 +374,7 @@ class TemplateStage
       if (pCloneFiles) {
         NodeID src = new NodeID(getAuthor(), getView(), pSourceMod.getName() );
         NodeID tar = new NodeID(getAuthor(), getView(), pRegisteredNodeName);
-        pClient.cloneFiles(src, tar);
+        pClient.cloneFiles(src, tar, pSecSeqs);
       }
     }
     return build;
@@ -387,7 +400,7 @@ class TemplateStage
   public boolean
   needsFinalization()
   {
-    if (pUnlinkAll || pRemoveAction || pDisableAction || pVouch)
+    if (pUnlinkAll || pRemoveAction || pDisableAction || pVouch || !pUnlinkNodes.isEmpty())
       return true;
     return false;
   }
@@ -414,6 +427,14 @@ class TemplateStage
       pRegisteredNodeMod.setAction(null);
     if (pDisableAction || pRemoveAction) {
       pClient.modifyProperties(getAuthor(), getView(), pRegisteredNodeMod);
+      pRegisteredNodeMod = pClient.getWorkingVersion(getAuthor(), getView(), pRegisteredNodeName);
+    }
+
+    if (!pUnlinkNodes.isEmpty()) {
+      for (String oldSrc : pUnlinkNodes.keySet()) {
+        for (String newSrc : pUnlinkNodes.get(oldSrc))
+          pClient.unlink(getAuthor(), getView(), pRegisteredNodeName, newSrc);
+      }
       pRegisteredNodeMod = pClient.getWorkingVersion(getAuthor(), getView(), pRegisteredNodeName);
     }
     
@@ -638,6 +659,9 @@ class TemplateStage
   private TreeMap<String, ArrayList<TreeMap<String, String>>> pContexts;
   private TreeMap<String, TreeMap<String, BaseAnnotation>> pAnnotCache;
   
+  private MappedSet<String, String> pUnlinkNodes;
+  private TreeSet<String> pTemplateNodesToUnlink;
+  
   private TemplateBuildInfo pTemplateInfo;
   
   private boolean pSrcHasDisabledAction;
@@ -652,4 +676,6 @@ class TemplateStage
   private NodeMod pSourceMod;
   
   private FrameRange pTemplateRange;
+  
+  private TreeMap<FileSeq, FileSeq> pSecSeqs;
 }
