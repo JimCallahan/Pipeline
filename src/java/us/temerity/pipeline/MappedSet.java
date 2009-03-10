@@ -1,4 +1,4 @@
-// $Id: MappedSet.java,v 1.6 2008/11/13 21:39:34 jesse Exp $
+// $Id: MappedSet.java,v 1.7 2009/03/10 16:37:52 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -104,6 +104,27 @@ public class MappedSet<K, V>
       this.put(key, set);
     }
     set.add(value);
+  }
+  
+  /**
+   * Associates a <code>null</code> value with the specified key.
+   *
+   * @param key
+   *   The first key.
+   *
+   * @return
+   *   Any value that might have existed in the now <code>null</code> mapping.
+   */
+  public TreeSet<V> 
+  put
+  (
+    K key
+  )
+  {
+    if(key == null)
+      throw new IllegalArgumentException("The key cannot be (null)!");
+   
+    return super.put(key, null);
   }
   
   /**
