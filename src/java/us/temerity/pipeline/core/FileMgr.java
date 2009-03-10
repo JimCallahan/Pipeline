@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.84 2009/01/26 21:49:25 jim Exp $
+// $Id: FileMgr.java,v 1.85 2009/03/10 16:35:57 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2312,7 +2312,7 @@ class FileMgr
 	/* set write permission to the to working files */ 
         {
 	  ArrayList<String> preOpts = new ArrayList<String>();
-	  preOpts.add(req.getWritable() ? "u+w" : "u-w");
+	  preOpts.add(writeable ? "u+w" : "u-w");
 
 	  ArrayList<String> args = new ArrayList<String>();
 	  for(File file : files.values()) {
