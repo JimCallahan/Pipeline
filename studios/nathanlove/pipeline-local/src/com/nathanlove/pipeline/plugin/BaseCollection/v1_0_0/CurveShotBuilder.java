@@ -1,4 +1,4 @@
-// $Id: CurveShotBuilder.java,v 1.3 2008/07/03 19:52:48 jesse Exp $
+// $Id: CurveShotBuilder.java,v 1.4 2009/03/10 16:54:04 jesse Exp $
 
 package com.nathanlove.pipeline.plugin.BaseCollection.v1_0_0;
 
@@ -568,8 +568,11 @@ class CurveShotBuilder
     {
       String type = TaskType.Animation.toTitle();
       
+      ActionOnExistence cache = pStageInfo.getActionOnExistence();
+      
       String animEdit = pShotNamer.getAnimEditScene();
       {
+        pStageInfo.setActionOnExistence(ActionOnExistence.CheckOut);
         AnimEditStage stage = 
           new AnimEditStage
           (pStageInfo, pContext, pClient, pMayaContext,
@@ -577,6 +580,7 @@ class CurveShotBuilder
         addTaskAnnotation(stage, NodePurpose.Edit, pProject, pTaskName, type);
         if (stage.build())
           addToDisableList(animEdit);
+        pStageInfo.setActionOnExistence(cache);
       }
 
       TreeMap<String, String> animPrepareFiles = new TreeMap<String, String>();
@@ -611,6 +615,7 @@ class CurveShotBuilder
       }
       String animVerify = pShotNamer.getAnimVerifyScene();
       {
+        pStageInfo.setActionOnExistence(ActionOnExistence.Conform);
         AnimVerifyStage stage = 
           new AnimVerifyStage
           (pStageInfo, pContext, pClient, pMayaContext,
@@ -618,6 +623,7 @@ class CurveShotBuilder
            null, pFrameRange);
         addTaskAnnotation(stage, NodePurpose.Focus, pProject, pTaskName, type);
         stage.build();
+        pStageInfo.setActionOnExistence(cache);
       }
       String animSubmit = pShotNamer.getAnimSubmitNode();
       {
@@ -636,7 +642,7 @@ class CurveShotBuilder
         TargetStage stage = 
           new TargetStage(pStageInfo, pContext, pClient, animApprove, sources);
         addApproveTaskAnnotation(stage, pProject, pTaskName, type, 
-          new BuilderID("BaseCollection", new VersionID("1.0.0"), "NathanLove", 
+          new BuilderID("BaseBuilders", new VersionID("1.0.0"), "NathanLove", 
                         "AnimApproveTask"));
 
         if (stage.build()) {
@@ -650,6 +656,8 @@ class CurveShotBuilder
     buildLighting()
       throws PipelineException
     {
+      ActionOnExistence cache = pStageInfo.getActionOnExistence();
+      
       String type = TaskType.Lighting.toTitle();
       LockBundle bundle = new LockBundle();
       for (String node : pAnimProductFiles.values()) 
@@ -664,6 +672,7 @@ class CurveShotBuilder
       }
       String preLightScene = pShotNamer.getPreLightScene();
       {
+        pStageInfo.setActionOnExistence(ActionOnExistence.Conform);
         PreLightStage stage = 
           new PreLightStage
           (pStageInfo, pContext, pClient, pMayaContext,
@@ -671,9 +680,11 @@ class CurveShotBuilder
            null, pFrameRange);
         addTaskAnnotation(stage, NodePurpose.Edit, pProject, pTaskName, type);
         stage.build();
+        pStageInfo.setActionOnExistence(cache);
       }
       String lightingScene = pShotNamer.getLightingEditScene();
       {
+        pStageInfo.setActionOnExistence(ActionOnExistence.CheckOut);
         LightingEditStage stage = 
           new LightingEditStage
           (pStageInfo, pContext, pClient, pMayaContext,
@@ -681,6 +692,7 @@ class CurveShotBuilder
         addTaskAnnotation(stage, NodePurpose.Edit, pProject, pTaskName, type);
         if (stage.build())
           addToDisableList(lightingScene);
+        pStageInfo.setActionOnExistence(cache);
       }
       String lightingRenderNode = pShotNamer.getLightingRenderNode();
       {
@@ -718,6 +730,7 @@ class CurveShotBuilder
         stage.build();
       }
       {
+        pStageInfo.setActionOnExistence(ActionOnExistence.Conform);
         String script = pProjectNamer.getLightingProductMEL();
         LightingProductStage stage = 
           new LightingProductStage
@@ -726,12 +739,13 @@ class CurveShotBuilder
         addTaskAnnotation(stage, NodePurpose.Product, pProject, pTaskName, type);
         if (stage.build()) 
           pFinalizeStages.add(stage);
+        pStageInfo.setActionOnExistence(cache);
       }
       {
         TargetStage stage = 
           new TargetStage(pStageInfo, pContext, pClient, lightingApprove, lightingProduct);
         addApproveTaskAnnotation(stage, pProject, pTaskName, type, 
-          new BuilderID("BaseCollection", new VersionID("1.0.0"), "NathanLove", 
+          new BuilderID("BaseBuilders", new VersionID("1.0.0"), "NathanLove", 
                         "LgtApproveTask"));
 
         if (stage.build()) {

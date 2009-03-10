@@ -1,4 +1,4 @@
-// $Id: ShotNamer.java,v 1.3 2008/07/03 19:52:48 jesse Exp $
+// $Id: ShotNamer.java,v 1.4 2009/03/10 16:54:04 jesse Exp $
 
 package com.nathanlove.pipeline.plugin.BaseCollection.v1_0_0;
 
@@ -93,7 +93,7 @@ class ShotNamer
     for (Department discipline : Department.values()) {
       Path disPath = new Path(startPath, discipline.toString() );
       for (SubDir dir : SubDir.values()) {
-        Path finalPath = new Path(disPath, dir.toString());
+        Path finalPath = new Path(disPath, dir.dirName());
         pStartPaths.put(discipline, dir, finalPath);
       }
     }

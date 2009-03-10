@@ -1,4 +1,4 @@
-// $Id: AssetBuilder.java,v 1.3 2008/07/03 19:52:48 jesse Exp $
+// $Id: AssetBuilder.java,v 1.4 2009/03/10 16:54:04 jesse Exp $
 
 package com.nathanlove.pipeline.plugin.BaseCollection.v1_0_0;
 
@@ -412,7 +412,7 @@ class AssetBuilder
         sources.add(pAssetNames.getTextureProductNode());
         TargetStage stage = new TargetStage(pStageInfo, pContext, pClient, shdApprove, sources);
         addApproveTaskAnnotation(stage, pProjectName, pTaskName, type, 
-          new BuilderID("BaseCollection", new VersionID("1.0.0"), "NathanLove", 
+          new BuilderID("BaseBuilders", new VersionID("1.0.0"), "NathanLove", 
                         "ShadeApproveTask"));
         if (stage.build()) {
           addToQueueList(shdApprove);

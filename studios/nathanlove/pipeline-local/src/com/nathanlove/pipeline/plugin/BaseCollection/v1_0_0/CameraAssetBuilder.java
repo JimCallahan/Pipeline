@@ -1,4 +1,4 @@
-// $Id: CameraAssetBuilder.java,v 1.2 2008/06/26 20:45:55 jesse Exp $
+// $Id: CameraAssetBuilder.java,v 1.3 2009/03/10 16:54:04 jesse Exp $
 
 package com.nathanlove.pipeline.plugin.BaseCollection.v1_0_0;
 
@@ -211,7 +211,7 @@ class CameraAssetBuilder
         TargetStage stage = 
           new TargetStage(pStageInfo, pContext, pClient, camApprove, sources);
         addApproveTaskAnnotation(stage, pProjectName, pTaskName, type, 
-          new BuilderID("BaseCollection", new VersionID("1.0.0"), "NathanLove", 
+          new BuilderID("BaseBuilders", new VersionID("1.0.0"), "NathanLove", 
                         "ShadeApproveTask"));
         if (stage.build()) {
           addToQueueList(camApprove);
