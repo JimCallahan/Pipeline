@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.264 2009/03/10 16:47:05 jesse Exp $
+// $Id: MasterMgr.java,v 1.265 2009/03/13 20:38:43 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -17,10 +17,6 @@ import us.temerity.pipeline.event.*;
 import us.temerity.pipeline.glue.*;
 import us.temerity.pipeline.message.*;
 import us.temerity.pipeline.toolset.*;
-import us.temerity.pipeline.toolset.PackageCommon;
-import us.temerity.pipeline.toolset.PackageMod;
-import us.temerity.pipeline.toolset.PackageVersion;
-import us.temerity.pipeline.toolset2.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   M A S T E R   M G R                                                                    */
@@ -398,16 +394,6 @@ class MasterMgr
       pToolsets           = new TreeMap<String,TreeMap<OsType,Toolset>>();
       pToolsetPackages    = new TripleMap<String,OsType,VersionID,PackageVersion>();
 
-      pActiveToolsets2          = new TreeSet<EnvID>();
-      pToolsets2                = new TreeMap<EnvID, ToolsetCommon>();
-      pToolsetPackages2         = new TreeMap<EnvID, us.temerity.pipeline.toolset2.PackageCommon>();
-      pToolsetModificationStamp = new TreeMap<EnvID, Long>();
-      pPackageModificationStamp = new TreeMap<EnvID, Long>();
-      pDefaultToolset2          = null;
-      pWorkingPackageUse        = new MappedSet<EnvID, EnvID>();
-      pWorkingToolsetUse        = new MappedSet<EnvID, NodeID>();
-      pToolsetMenus             = new DoubleMap<EnvID, PluginType, String>();
-      
       pEditorMenuLayouts            = new TreeMap<String,PluginMenuLayout>();
       pComparatorMenuLayouts        = new TreeMap<String,PluginMenuLayout>();
       pActionMenuLayouts            = new TreeMap<String,PluginMenuLayout>();
@@ -463,7 +449,6 @@ class MasterMgr
       initPrivileges();
       initArchives();
       initToolsets();
-//      initToolsets2();
       initMasterExtensions();
       initWorkingAreas();
       initNodeDatabase(); 
@@ -943,74 +928,6 @@ class MasterMgr
 	    }
 	  }
 	}
-      }
-    }
-
-    timer.suspend();
-    LogMgr.getInstance().log
-      (LogMgr.Kind.Net, LogMgr.Level.Info,
-       "  Loaded in " + TimeStamps.formatInterval(timer.getTotalDuration()));
-    LogMgr.getInstance().flush();
-  }
-
-  
-  /**
-   * Load the toolset and toolset package indices.
-   */ 
-  private void 
-  initToolsets2()
-    throws PipelineException
-  {
-    TaskTimer timer = new TaskTimer();
-    LogMgr.getInstance().log
-      (LogMgr.Kind.Ops, LogMgr.Level.Info,
-       "Loading Toolsets 2...");   
-    LogMgr.getInstance().flush();
-
-    readDefaultToolset2();
-    readActiveToolsets2();
-
-    /* initialize toolsets */ 
-    {
-      File dir = new File(pNodeDir, "toolsets2/toolsets");
-      File tsets[] = dir.listFiles(); 
-      for(File toolsetDir : tsets) {
-        if(toolsetDir.isDirectory()) {
-          String tname = toolsetDir.getName();
-          
-          File versions[] = toolsetDir.listFiles();
-          for (File ver : versions) {
-            if(ver.isFile()) {
-              String versionName = ver.getName();
-              VersionID verID = new VersionID(versionName);
-              EnvID toolset = new EnvID(tname, verID);
-              pToolsets2.put(toolset, null);
-            }
-          }
-        }
-      }
-    }
-
-    readToolsetMenus();
-    
-    /* initialize package keys and plugin tables */ 
-    {
-      File dir = new File(pNodeDir, "toolsets2/packages");
-      File pkgs[] = dir.listFiles();
-      for (File packageDir : pkgs) {
-        if (packageDir.isDirectory()) {
-          String pName = packageDir.getName();
-
-          File versions[] = packageDir.listFiles();
-          for (File ver : versions) {
-            if(ver.isFile()) {
-              String versionName = ver.getName();
-              VersionID verID = new VersionID(versionName);
-              EnvID packageName = new EnvID(pName, verID);
-              pToolsetPackages2.put(packageName, null);
-            }
-          }
-        }
       }
     }
 
@@ -2179,32 +2096,6 @@ class MasterMgr
       pDatabaseLock.readLock().unlock();
     }
   }
-  
-  /**
-   * Get the names of the currently active Unix toolsets.
-   * 
-   * @return
-   *   <CODE>MiscGetActiveToolset2NamesRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to determine the toolset names.
-   */
-//  public Object
-//  getActiveToolset2Names() 
-//  {    
-//    TaskTimer timer = new TaskTimer();
-//
-//    timer.aquire();
-//    pDatabaseLock.readLock().lock();
-//    try {
-//      synchronized(pActiveToolsets2) {
-//        timer.resume();
-//        
-//        return new MiscGetActiveToolset2NamesRsp(timer, new TreeSet<EnvID>(pActiveToolsets2));
-//      }
-//    }
-//    finally {
-//      pDatabaseLock.readLock().unlock();
-//    }
-//  }
 
   /**
    * Set the active/inactive state of the Unix toolset with the given name. <P> 
@@ -2359,36 +2250,6 @@ class MasterMgr
       pDatabaseLock.readLock().unlock();
     }    
   }
-  
-  /**
-   * Get the names and versions of all toolsets.
-   * 
-   * @return
-   *   <CODE>MiscGetToolset2NamesRsp</CODE> if successful or 
-   *   <CODE>FailureRsp</CODE> if unable to determine the toolset names.
-   */
-//  public Object
-//  getToolset2Names()
-//  {
-//    TaskTimer timer = new TaskTimer();
-//
-//    timer.aquire();
-//    pDatabaseLock.readLock().lock();
-//    try {
-//      synchronized(pToolsets2) {
-//        timer.resume();
-//
-//        TreeSet<EnvID> names = new TreeSet<EnvID>();
-//        for(EnvID name : pToolsets2.keySet()) 
-//          names.add(name);
-//        
-//        return new MiscGetToolset2NamesRsp(timer, names);
-//      }
-//    }
-//    finally {
-//      pDatabaseLock.readLock().unlock();
-//    }    
-//  }
 
   /**
    * Get the toolset with the given name.
@@ -19819,39 +19680,6 @@ class MasterMgr
   }
   
   /**
-   * Write the default toolset to disk. <P> 
-   * 
-   * @throws PipelineException
-   *   If unable to write the default toolset file.
-   */ 
-  private void 
-  writeDefaultToolset2() 
-    throws PipelineException
-  {
-    synchronized(pDefaultToolsetLock) {
-      File file = new File(pNodeDir, "toolsets2/default-toolset");
-      if(file.exists()) {
-        if(!file.delete())
-          throw new PipelineException
-            ("Unable to remove the old default toolset 2 file (" + file + ")!");
-      }
-
-      if(pDefaultToolset2 != null) {
-        LogMgr.getInstance().log
-          (LogMgr.Kind.Glu, LogMgr.Level.Finer,
-           "Writing Default Toolset 2.");
-
-        try {
-          GlueEncoderImpl.encodeFile("DefaultToolset", pDefaultToolset2, file);
-        }
-        catch(GlueException ex) {
-          throw new PipelineException(ex);
-        }
-      }
-    }
-  }
-  
-  /**
    * Read the default toolsets from disk.
    * 
    * @throws PipelineException
@@ -19880,102 +19708,7 @@ class MasterMgr
     }
   }
 
-  /**
-   * Read the default toolsets 2 from disk.
-   * 
-   * @throws PipelineException
-   *   If unable to read the default toolset file.
-   */ 
-  private void 
-  readDefaultToolset2()
-    throws PipelineException
-  {
-    synchronized(pDefaultToolsetLock) {
-      pDefaultToolset2 = null;
 
-      File file = new File(pNodeDir, "toolsets2/default-toolset");
-      if(file.isFile()) {
-        LogMgr.getInstance().log
-          (LogMgr.Kind.Glu, LogMgr.Level.Finer,
-           "Reading Default Toolset 2.");
-
-        try {
-          pDefaultToolset2 = (EnvID) GlueDecoderImpl.decodeFile("DefaultToolset", file);
-        }       
-        catch(GlueException ex) {
-          throw new PipelineException(ex);
-        }
-      }
-    }
-  }
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Write the toolset menus to disk. <P> 
-   * 
-   * @throws PipelineException
-   *   If unable to write the toolset menus file.
-   */ 
-  private void 
-  writeToolsetsMenus() 
-    throws PipelineException
-  {
-    synchronized(pToolsetMenus) {
-      File file = new File(pNodeDir, "toolsets2/toolset-menus");
-      if(file.exists()) {
-        if(!file.delete())
-          throw new PipelineException
-            ("Unable to remove the old toolset menus file (" + file + ")!");
-      }
-  
-      if(!pToolsetMenus.isEmpty()) {
-        LogMgr.getInstance().log
-          (LogMgr.Kind.Glu, LogMgr.Level.Finer,
-           "Writing the Toolset Menus.");
-  
-        try {
-          GlueEncoderImpl.encodeFile("ToolsetMenus", pToolsetMenus, file);
-        }
-        catch(GlueException ex) {
-          throw new PipelineException(ex);
-        }
-      }
-    }
-  }
-  
-  /**
-   * Read the toolsets menus from disk.
-   * 
-   * @throws PipelineException
-   *   If unable to read the toolset menus file.
-   */ 
-  @SuppressWarnings("unchecked")
-  private void 
-  readToolsetMenus()
-    throws PipelineException
-  {
-    synchronized(pDefaultToolsetLock) {
-      pToolsetMenus.clear();
-
-      File file = new File(pNodeDir, "toolsets2/toolset-menus");
-      if(file.isFile()) {
-        LogMgr.getInstance().log
-          (LogMgr.Kind.Glu, LogMgr.Level.Finer,
-           "Reading Toolset Menus.");
-
-        try {
-          pToolsetMenus.putAll(
-            (DoubleMap<EnvID, PluginType, String>) 
-              GlueDecoderImpl.decodeFile("ToolsetMenus", file));
-        }       
-        catch(GlueException ex) {
-          throw new PipelineException(ex);
-        }
-      }
-    }
-  }
-  
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -20012,40 +19745,6 @@ class MasterMgr
   }
   
   /**
-   * Write the active toolset 2 to disk. <P> 
-   * 
-   * @throws PipelineException
-   *   If unable to write the active toolset file.
-   */ 
-  private void 
-  writeActiveToolsets2() 
-    throws PipelineException
-  {
-    synchronized(pActiveToolsets2) {
-      File file = new File(pNodeDir, "toolsets2/active-toolsets");
-      if(file.exists()) {
-        if(!file.delete())
-          throw new PipelineException
-            ("Unable to remove the old active toolsets 2 file (" + file + ")!");
-      }
-  
-      if(!pActiveToolsets2.isEmpty()) {
-        LogMgr.getInstance().log
-          (LogMgr.Kind.Glu, LogMgr.Level.Finer,
-           "Writing Active Toolsets 2.");
-  
-        try {
-          GlueEncoderImpl.encodeFile("ActiveToolsets", pActiveToolsets2, file);
-        }
-        catch(GlueException ex) {
-          throw new PipelineException(ex);
-        }
-      }
-    }
-  }
-
-
-  /**
    * Read the active toolsets from disk.
    * 
    * @throws PipelineException
@@ -20073,37 +19772,6 @@ class MasterMgr
           throw new PipelineException(ex);
         }
       }
-    }
-  }
-
-  /**
-   * Read the active toolsets from disk.
-   * 
-   * @throws PipelineException
-   *   If unable to read the active toolset file.
-   */ 
-  @SuppressWarnings("unchecked")
-  private void 
-  readActiveToolsets2()
-    throws PipelineException
-  {
-    synchronized (pActiveToolsets2) {
-     pActiveToolsets2.clear(); 
-     
-     File file = new File(pNodeDir, "toolsets2/active-toolsets");
-     if(file.isFile()) {
-       LogMgr.getInstance().log
-         (LogMgr.Kind.Glu, LogMgr.Level.Finer,
-          "Reading Active Toolsets 2.");
-       
-       try {
-         pActiveToolsets2.addAll
-           ((TreeSet<EnvID>) GlueDecoderImpl.decodeFile("ActiveToolsets", file));
-       }       
-       catch(GlueException ex) {
-         throw new PipelineException(ex);
-       }
-     }
     }
   }
 
@@ -20148,54 +19816,6 @@ class MasterMgr
       LogMgr.getInstance().log
 	(LogMgr.Kind.Glu, LogMgr.Level.Finer,
 	 "Writing " + os + " Toolset: " + tset.getName());
-
-      try {
-        GlueEncoderImpl.encodeFile("Toolset", tset, file);
-      }
-      catch(GlueException ex) {
-        throw new PipelineException(ex);
-      }
-    }
-  }
-  
-  /**
-   * Write the given toolset to disk. <P> 
-   * 
-   * @param tset
-   *   The toolset.
-   * 
-   * @throws PipelineException
-   *   If unable to write the toolset file.
-   */ 
-  private void 
-  writeToolset2
-  (
-   ToolsetCommon tset 
-  ) 
-    throws PipelineException
-  {
-    synchronized(pToolsets2) {
-      File dir = new File(pNodeDir, "toolsets2/toolsets/" + tset.getName());
-      synchronized(pMakeDirLock) {
-        if(!dir.isDirectory()) 
-          if(!dir.mkdir()) 
-            throw new PipelineException
-              ("Unable to create toolset 2 directory (" + dir + ")!");
-      }
-
-      String versionName = tset.getVersionName();
-      File file = new File(dir, versionName);
-      if(file.exists()) {
-        if (tset.isFrozen())
-          throw new PipelineException
-            ("Unable to overrite the existing toolset file(" + file + ")!");
-        else
-          file.delete();
-      }
-
-      LogMgr.getInstance().log
-        (LogMgr.Kind.Glu, LogMgr.Level.Finer,
-         "Writing Version (" + versionName + ") of Toolset2: " + tset.getName() );
 
       try {
         GlueEncoderImpl.encodeFile("Toolset", tset, file);
@@ -20259,51 +19879,6 @@ class MasterMgr
     }
   }
 
-  /**
-   * Read the toolset 2 with the given name from disk. <P> 
-   * 
-   * @param tname
-   *   The toolset name.
-   * 
-   * @throws PipelineException
-   *   If unable to read the toolset file.
-   */ 
-  private ToolsetCommon
-  readToolset2
-  (
-    EnvID tname 
-  )
-    throws PipelineException
-  {
-    synchronized(pToolsets2) {
-      String name = tname.getName();
-      VersionID ver = tname.getVersion();
-      File file = new File(pNodeDir, "toolsets2/toolsets/" + name + "/" + ver);
-      if(!file.isFile()) 
-        throw new PipelineException
-          ("No version file (" + ver + ") exists for the toolset (" + name + ")!");
-
-      LogMgr.getInstance().log
-        (LogMgr.Kind.Glu, LogMgr.Level.Finer,
-         "Reading version (" + ver + ") of Toolset: " + name);
-
-      ToolsetCommon tset = null;
-      try {
-        tset = (ToolsetCommon) GlueDecoderImpl.decodeFile("Toolset", file);
-      } 
-      catch(GlueException ex) {
-        throw new PipelineException(ex);
-      }
-
-      if((tset == null) || !tset.getName().equals(tname))
-        throw new IllegalStateException(); 
-
-      pToolsets2.put(tname, tset);
-
-      return tset;
-    }
-  }
-
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -20354,53 +19929,7 @@ class MasterMgr
       }
     }
   }
-
-  /**
-   * Write the given toolset package to disk. <P> 
-   * 
-   * @param pkg
-   *   The toolset package.
-   * 
-   * @throws PipelineException
-   *   If unable to write the toolset package file.
-   */ 
-  private void 
-  writeToolsetPackage2
-  (
-    us.temerity.pipeline.toolset2.PackageCommon pkg 
-  ) 
-    throws PipelineException
-  {
-    synchronized(pToolsetPackages2) {
-      String name = pkg.getName();
-      VersionID ver = pkg.getVersion();
-      File dir = new File(pNodeDir, "toolsets2/packages/" + name);
-      synchronized(pMakeDirLock) {
-        if(!dir.isDirectory()) 
-          if(!dir.mkdirs()) 
-            throw new PipelineException
-              ("Unable to create toolset package directory (" + dir + ")!");
-      }
-
-      File file = new File(dir, ver.toString());
-      if(file.exists()) {
-        throw new PipelineException
-          ("Unable to overrite the existing toolset package file (" + file + ")!");
-      }
-
-      LogMgr.getInstance().log
-        (LogMgr.Kind.Glu, LogMgr.Level.Finer,
-         "Writing Toolset Package: " + name + " version: " + ver);
-
-      try {
-        GlueEncoderImpl.encodeFile("ToolsetPackage", pkg, file);
-      }
-      catch(GlueException ex) {
-        throw new PipelineException(ex);
-      }
-    }
-  }
-
+  
   /**
    * Read the toolset package with the given name and revision number from disk.
    * 
@@ -20453,51 +19982,6 @@ class MasterMgr
     }
   }
 
-  /**
-   * Read the toolset package with the given name and revision from disk.
-   * 
-   * @param pkg
-   *   The toolset package name.
-   * 
-   * @throws PipelineException
-   *   If unable to read the toolset package file.
-   */ 
-  private us.temerity.pipeline.toolset2.PackageCommon
-  readToolsetPackage2
-  (
-    EnvID pkgName
-  )
-    throws PipelineException
-  {
-    synchronized(pToolsetPackages2) {
-      String name = pkgName.getName();
-      VersionID ver = pkgName.getVersion();
-      File file = new File(pNodeDir, "toolsets2/packages/" + name + "/" + ver);
-      if(!file.isFile()) 
-        throw new PipelineException
-          ("No toolset package file exists for package " + 
-           "(" + name + " version: " + ver + ")!");
-
-      LogMgr.getInstance().log
-        (LogMgr.Kind.Glu, LogMgr.Level.Finer,
-         "Reading Toolset Package: " + name + " version: " + ver);
-
-      us.temerity.pipeline.toolset2.PackageCommon pkg = null;
-      try {
-       pkg = (us.temerity.pipeline.toolset2.PackageCommon) GlueDecoderImpl.decodeFile("ToolsetPackage", file);
-      } 
-      catch(GlueException ex) {
-        throw new PipelineException(ex);
-      }
-
-      if((pkg == null) || !pkg.getName().equals(name) || !pkg.getVersion().equals(ver))
-        throw new IllegalStateException(); 
-
-      pToolsetPackages2.put(pkgName, pkg);
-
-      return pkg;
-    }
-  }
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -22687,37 +22171,7 @@ class MasterMgr
    */ 
   private TripleMap<String,OsType,VersionID,PackageVersion>  pToolsetPackages;
 
-  /*----------------------------------------------------------------------------------------*/
 
-  /**
-   * The names and versions of the active toolsets. <P> 
-   * 
-   * Access to this field should be protected by a synchronized block.
-   */ 
-  private TreeSet<EnvID> pActiveToolsets2; 
-  
-  private TreeMap<EnvID, ToolsetCommon> pToolsets2;
-  
-  private TreeMap<EnvID, us.temerity.pipeline.toolset2.PackageCommon> pToolsetPackages2;
-  
-  private TreeMap<EnvID, Long> pToolsetModificationStamp;
-  
-  private TreeMap<EnvID, Long> pPackageModificationStamp;
-  
-  private EnvID pDefaultToolset2;
-  
-  private MappedSet<EnvID, EnvID> pWorkingPackageUse;
-  
-  private MappedSet<EnvID, NodeID> pWorkingToolsetUse;
-  
-  private DoubleMap<EnvID, PluginType, String> pToolsetMenus;
-  
-  private Long pToolsetID;
-  
-  private Long pPackageID;
-  
-  private Long pToolsetConfigID;
-  
   /*----------------------------------------------------------------------------------------*/
   
   /**

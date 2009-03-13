@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.130 2009/03/10 16:47:05 jesse Exp $
+// $Id: MasterMgrClient.java,v 1.131 2009/03/13 20:38:44 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -461,32 +461,6 @@ class MasterMgrClient
     pDefaultToolsetName = null;
   }
   
-  public synchronized void
-  invalidateCachedDefaultToolset2Name()
-  {
-    pDefaultToolsetName2 = null;
-  }
-  
-  public synchronized void
-  invalidateCachedActiveToolsetNames()
-  {
-    pActiveToolsetNames = null;
-  }
-  
-  public synchronized void
-  invalidateCachedWorkingToolsetNames()
-  {
-    pWorkingToolsetNames = null;
-  }
-  
-  public synchronized void
-  invalidateCachedToolsetInfo()
-  {
-    invalidateCachedActiveToolsetNames();
-    invalidateCachedDefaultToolset2Name();
-    invalidateCachedWorkingToolsetNames();
-  }
-
   /**
    * Set the default Unix toolset name. <P> 
    * 
@@ -541,6 +515,42 @@ class MasterMgrClient
     }
   }
 
+  /**
+   * Get the cached names of the active Unix toolsets.<P> 
+   * 
+   * Each time the active toolset names are obtained from the server they are cached.  If the 
+   * cache has not been invalidated since the last communication with the server, this method 
+   * returns the last cached value instead. If the cache has been invalidated, this method 
+   * behaves identically to {@link #getActiveToolsetNames() getActiveToolsetNames}.  This 
+   * means that the name returned by this method is not guaranteed to be up-to-date but is
+   * much faster. <P> 
+   * 
+   * This method is provided mostly to support UI components which depend on the 
+   * default toolset name, but don't need a more up-to-date value than the last status
+   * update.  Unless speed is a critical factor, its better to use the normal non-caching
+   * method to determine the active toolset names.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the toolset names.
+   */ 
+  public synchronized TreeSet<String>
+  getCachedActiveToolsetName() 
+    throws PipelineException
+  {    
+    if(pActiveToolsetNames == null) 
+      pActiveToolsetNames = getActiveToolsetNames();
+    return pActiveToolsetNames;
+  }
+
+  /**
+   * Manually invalidate the active toolset names cache.
+   */ 
+  public synchronized void
+  invalidateCachedActiveToolsetNames()
+  {
+    pActiveToolsetNames = null;
+  }
+  
   /**
    * Set the active/inactive state of a Unix toolset. <P> 
    * 
@@ -8240,11 +8250,11 @@ class MasterMgrClient
    */ 
   private String  pDefaultToolsetName; 
   
-  private EnvID pDefaultToolsetName2;
+  /**
+   * The cached name of the active toolsets or <CODE>null</CODE> if an operation which 
+   * modifies the active toolset names has been the cache was last updated.
+   */ 
+  private TreeSet<String> pActiveToolsetNames;
   
-  private TreeSet<EnvID> pActiveToolsetNames;
-  
-  private TreeSet<EnvID> pWorkingToolsetNames;
-
 }
 
