@@ -1,4 +1,4 @@
-// $Id: PlaceholderStage.java,v 1.3 2008/06/02 20:47:05 jim Exp $
+// $Id: PlaceholderStage.java,v 1.4 2009/03/17 18:32:06 jesse Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
 
@@ -64,7 +64,7 @@ class PlaceholderStage
           "Creates a node which is a copy of an existing placeholder node.", 
           stageInfo,  context, client, 
           nodeName, suffix, 
-	  placeholder);
+	  placeholder, StageFunction.aNone);
 
     pPlaceholderNodeName = placeholder;
   }
@@ -115,7 +115,7 @@ class PlaceholderStage
           "Creates a node which is a copy of an existing placeholder node.", 
           stageInfo,  context, client, 
           nodeName, range, padding, suffix, 
-	  placeholder);
+	  placeholder, StageFunction.aNone);
 
     pPlaceholderNodeName = placeholder;
   }

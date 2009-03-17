@@ -55,7 +55,7 @@ class DoCopyStage
   {
 	  super(name, desc,
 			  stageInfo, context, client,
-			  nodeName, suffix, source);
+			  nodeName, suffix, source, StageFunction.aNone);
   }
 
   public
@@ -77,7 +77,7 @@ class DoCopyStage
 	  super(name, desc,
 			  stageInfo, context, client,
 			  nodeName, range, padding,
-			  suffix, source);
+			  suffix, source, StageFunction.aNone);
 
 	    addLink(new LinkMod(source, LinkPolicy.Dependency, LinkRelationship.OneToOne, 0));
 

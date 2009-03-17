@@ -1,4 +1,4 @@
-// $Id: SoundtrackStage.java,v 1.3 2008/06/02 20:47:06 jim Exp $
+// $Id: SoundtrackStage.java,v 1.4 2009/03/17 18:32:06 jesse Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0.stages;
 
@@ -60,7 +60,7 @@ class SoundtrackStage
           "Creates a copy of the placeholder soundtrack audio file node." , 
           stageInfo,  context, client, 
           nodeName, "aiff", 
-	  placeholder);
+	  placeholder, StageFunction.aNone);
 
     pPlaceholderNodeName = placeholder;
   }

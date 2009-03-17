@@ -1,4 +1,4 @@
-// $Id: MatchBuilder.java,v 1.16 2008/08/02 20:19:11 jim Exp $
+// $Id: MatchBuilder.java,v 1.17 2009/03/17 18:32:06 jesse Exp $
 
 package com.intelligentcreatures.pipeline.plugin.WtmCollection.v1_0_0;
 
@@ -72,7 +72,6 @@ class MatchBuilder
          new StudioDefinitions(mclient, qclient, UtilContext.getDefaultUtilContext(mclient)),
          null, null);
   }
-
   /**
    * Provided to allow parent builders to create instances and share namers.
    *
@@ -740,5 +739,9 @@ class MatchBuilder
    */
   private String pMatchAnimNodeName;
   private String pSoundtrackNodeName;
+
+
+
+  private ArrayList<FinalizableStage> pFinalStages;
 
 }
