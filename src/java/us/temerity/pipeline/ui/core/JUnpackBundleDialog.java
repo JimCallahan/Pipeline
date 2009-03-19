@@ -1,17 +1,17 @@
-// $Id: JUnpackBundleDialog.java,v 1.8 2008/06/03 17:47:01 jim Exp $
+// $Id: JUnpackBundleDialog.java,v 1.9 2009/03/19 20:32:28 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
+
+import java.awt.*;
+import java.awt.event.*;
+import java.util.*;
+
+import javax.swing.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.toolset.*;
 import us.temerity.pipeline.ui.*;
-
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
-import java.io.*;
-import javax.swing.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   U N P A C K   B U N D L E   D I A L O G                                                */
@@ -463,14 +463,17 @@ class JUnpackBundleDialog
           names.add(name);
 
           if(mod.isLocked()) {
-            locked.add(name); 
+            locked.add(name);
+            UIMaster master = UIMaster.getInstance();
+            MasterMgrClient mclient = master.leaseMasterMgrClient();
             try {
-              UIMaster master = UIMaster.getInstance();
-              MasterMgrClient mclient = master.getMasterMgrClient(pChannel);
               TreeSet<VersionID> vids = mclient.getCheckedInVersionIDs(name);  
               versionIDs.put(name, vids); 
             }
             catch(PipelineException ex) {
+            }
+            finally {
+              master.returnMasterMgrClient(mclient);
             }
           }
         }
@@ -502,13 +505,13 @@ class JUnpackBundleDialog
     TreeSet<String> selectionKeys = null;
     TreeSet<String> licenseKeys = null;
     TreeSet<String> hardwareKeys = null;
+    UIMaster master = UIMaster.getInstance();
+    MasterMgrClient mclient = master.leaseMasterMgrClient();
+    QueueMgrClient qclient = master.leaseQueueMgrClient();
     try {
-      UIMaster master = UIMaster.getInstance();
-      MasterMgrClient mclient = master.getMasterMgrClient(pChannel);
       toolsets = mclient.getActiveToolsetNames();
       defaultToolset = mclient.getDefaultToolsetName();
       
-      QueueMgrClient qclient = master.getQueueMgrClient(pChannel);
       selectionKeys = qclient.getSelectionKeyNames(true);
       licenseKeys = qclient.getLicenseKeyNames(true);
       hardwareKeys = qclient.getHardwareKeyNames(true);
@@ -516,6 +519,10 @@ class JUnpackBundleDialog
     catch(PipelineException ex) {
       showErrorDialog(ex);
       return;
+    }
+    finally {
+      master.returnMasterMgrClient(mclient);
+      master.returnQueueMgrClient(qclient);
     }
 
     /* rebuild the toolsets drawer */
@@ -643,6 +650,7 @@ class JUnpackBundleDialog
   /** 
    * Invoked when an action occurs. 
    */ 
+  @Override
   public void 
   actionPerformed
   (
@@ -743,13 +751,14 @@ class JUnpackBundleDialog
       pPath = bundlePath;
     }
 
+    @Override
     public void 
     run() 
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pChannel, "Extracting Bundle Metadata: " + pPath)) {
+        MasterMgrClient client = master.leaseMasterMgrClient();
  	try {
- 	  MasterMgrClient client = master.getMasterMgrClient(pChannel);
  	  NodeBundle bundle = client.extractBundle(pPath); 
        
           UpdateBundleTask task = new UpdateBundleTask(pPath, bundle);
@@ -760,6 +769,7 @@ class JUnpackBundleDialog
  	  return;
  	}
  	finally {
+ 	  master.returnMasterMgrClient(client);
  	  master.endPanelOp(pChannel, "Done.");
  	}
       }
@@ -788,6 +798,7 @@ class JUnpackBundleDialog
       pBundle = bundle;
     }
 
+    @Override
     public void 
     run() 
     {
@@ -821,15 +832,16 @@ class JUnpackBundleDialog
       pLocalToolsetName   = local;
     }
 
+    @Override
     public void 
     run() 
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pChannel, "Fetching Toolset: " + pLocalToolsetName)) {
+        MasterMgrClient client = master.leaseMasterMgrClient();
  	try {
           TreeMap<OsType,Toolset> bundled = pNodeBundle.getOsToolsets(pBundledToolsetName);
 
- 	  MasterMgrClient client = master.getMasterMgrClient(pChannel);
           TreeMap<OsType,Toolset> local = client.getOsToolsets(pLocalToolsetName);
 
           ShowCompareToolsetsDialog task = new ShowCompareToolsetsDialog(bundled, local);
@@ -840,6 +852,7 @@ class JUnpackBundleDialog
  	  return;
  	}
  	finally {
+ 	  master.returnMasterMgrClient(client);
  	  master.endPanelOp(pChannel, "Done.");
  	}
       }
@@ -869,6 +882,7 @@ class JUnpackBundleDialog
       pLocalToolsets   = local;
     }
 
+    @Override
     public void 
     run() 
     {

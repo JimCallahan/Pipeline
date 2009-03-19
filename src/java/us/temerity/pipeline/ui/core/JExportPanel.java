@@ -1,4 +1,4 @@
-// $Id: JExportPanel.java,v 1.8 2009/03/01 20:52:42 jim Exp $
+// $Id: JExportPanel.java,v 1.9 2009/03/19 20:32:28 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -583,11 +583,15 @@ class JExportPanel
       TreeSet<String> knames = new TreeSet<String>();
       {
 	UIMaster master = UIMaster.getInstance();
+	QueueMgrClient client = master.leaseQueueMgrClient();
 	try {
-	  knames.addAll(master.getQueueMgrClient(pChannel).getLicenseKeyNames(true));
+	  knames.addAll(client.getLicenseKeyNames(true));
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
+	}
+	finally {
+	  master.returnQueueMgrClient(client);
 	}
       }
       
@@ -626,11 +630,15 @@ class JExportPanel
       TreeSet<String> knames = new TreeSet<String>();
       {
 	UIMaster master = UIMaster.getInstance();
+	QueueMgrClient client = master.leaseQueueMgrClient();
 	try {
-	  knames.addAll(master.getQueueMgrClient(pChannel).getSelectionKeyNames(true));
+	  knames.addAll(client.getSelectionKeyNames(true));
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
+	}
+	finally {
+	  master.returnQueueMgrClient(client);
 	}
       }
       
@@ -669,11 +677,15 @@ class JExportPanel
       TreeSet<String> knames = new TreeSet<String>();
       {
         UIMaster master = UIMaster.getInstance();
+        QueueMgrClient client = master.leaseQueueMgrClient();
         try {
-          knames.addAll(master.getQueueMgrClient(pChannel).getHardwareKeyNames(true));
+          knames.addAll(client.getHardwareKeyNames(true));
         }
         catch(PipelineException ex) {
           master.showErrorDialog(ex);
+        }
+        finally {
+          master.returnQueueMgrClient(client);
         }
       }
       
@@ -765,12 +777,16 @@ class JExportPanel
     {
       pAnnotationFields.clear();
       UIMaster master = UIMaster.getInstance();
+      MasterMgrClient mclient = master.leaseMasterMgrClient();
       TreeMap<String, BaseAnnotation> annots = new TreeMap<String, BaseAnnotation>();
       try {
-        annots = master.getMasterMgrClient(pChannel).getAnnotations(mod.getName());
+        annots = mclient.getAnnotations(mod.getName());
       }
       catch (PipelineException ex) {
 	master.showErrorDialog(ex);
+      }
+      finally {
+        master.returnMasterMgrClient(mclient);
       }
       
       if(!annots.isEmpty()) {

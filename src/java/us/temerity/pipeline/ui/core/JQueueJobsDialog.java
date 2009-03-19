@@ -1,4 +1,4 @@
-// $Id: JQueueJobsDialog.java,v 1.10 2009/03/01 20:54:48 jim Exp $
+// $Id: JQueueJobsDialog.java,v 1.11 2009/03/19 20:32:28 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -311,7 +311,8 @@ class JQueueJobsDialog
     TreeSet<String> lknames = new TreeSet<String>();
     TreeSet<String> hknames = new TreeSet<String>();
     {
-      QueueMgrClient qclient = UIMaster.getInstance().getQueueMgrClient();
+      UIMaster master = UIMaster.getInstance();
+      QueueMgrClient qclient = master.leaseQueueMgrClient();
       try {
 	sknames.addAll(qclient.getSelectionKeyNames(true));
 	lknames.addAll(qclient.getLicenseKeyNames(true));
@@ -319,6 +320,9 @@ class JQueueJobsDialog
       }
       catch(PipelineException ex) {
 	showErrorDialog(ex);
+      }
+      finally {
+        master.returnQueueMgrClient(qclient);
       }
     }
       
@@ -686,7 +690,6 @@ class JQueueJobsDialog
   public void 	
   componentHidden
   (
-    @SuppressWarnings("unused")
     ComponentEvent e
   ) {} 
 
@@ -696,7 +699,6 @@ class JQueueJobsDialog
   public void 
   componentMoved  
   (
-    @SuppressWarnings("unused")
     ComponentEvent e
   ) {} 
 
@@ -725,7 +727,6 @@ class JQueueJobsDialog
   public void 
   componentShown
   (
-    @SuppressWarnings("unused")
     ComponentEvent e
   ) {} 
 
@@ -736,6 +737,7 @@ class JQueueJobsDialog
   /** 
    * Invoked when an action occurs. 
    */ 
+  @Override
   public void 
   actionPerformed
   (
@@ -948,6 +950,7 @@ class JQueueJobsDialog
   /**
    * Reset the fields to default values. 
    */ 
+  @Override
   public void 
   doApply()
   { 
@@ -970,7 +973,8 @@ class JQueueJobsDialog
     TreeSet<String> lknames = new TreeSet<String>();
     TreeSet<String> hknames = new TreeSet<String>();
     {
-      QueueMgrClient qclient = UIMaster.getInstance().getQueueMgrClient();
+      UIMaster master = UIMaster.getInstance();
+      QueueMgrClient qclient = master.leaseQueueMgrClient();
       try {
 	sknames.addAll(qclient.getSelectionKeyNames(true));
 	lknames.addAll(qclient.getLicenseKeyNames(true));
@@ -978,6 +982,9 @@ class JQueueJobsDialog
       }
       catch(PipelineException ex) {
 	showErrorDialog(ex);
+      }
+      finally {
+        master.returnQueueMgrClient(qclient);
       }
     }
       

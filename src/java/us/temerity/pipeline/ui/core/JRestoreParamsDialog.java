@@ -1,17 +1,15 @@
-// $Id: JRestoreParamsDialog.java,v 1.9 2009/03/01 20:54:48 jim Exp $
+// $Id: JRestoreParamsDialog.java,v 1.10 2009/03/19 20:32:28 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
-import us.temerity.pipeline.*;
-import us.temerity.pipeline.ui.*; 
-
 import java.awt.*;
 import java.awt.event.*;
-import java.io.*;
 import java.util.*;
+
 import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.tree.*;
+
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.ui.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   R E S T O R E   P A R A M S   D I A L O G                                              */
@@ -143,6 +141,7 @@ class JRestoreParamsDialog
   /**
    * Get the archiver plugin instance to use to restore the nodes.
    */
+  @SuppressWarnings("unchecked")
   public BaseArchiver
   getArchiver() 
   {
@@ -212,11 +211,14 @@ class JRestoreParamsDialog
 
       TreeSet<String> toolsets = new TreeSet<String>();
       UIMaster master = UIMaster.getInstance();
+      MasterMgrClient client = master.leaseMasterMgrClient();
       try {
-	MasterMgrClient client = master.getMasterMgrClient();
 	toolsets.addAll(client.getActiveToolsetNames());
       }
       catch(PipelineException ex) {
+      }
+      finally {
+        master.returnMasterMgrClient(client);
       }
 
       if((tname != null) && !toolsets.contains(tname))

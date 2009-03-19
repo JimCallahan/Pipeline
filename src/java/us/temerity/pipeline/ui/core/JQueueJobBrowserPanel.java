@@ -1,4 +1,4 @@
-// $Id: JQueueJobBrowserPanel.java,v 1.36 2007/11/30 20:14:25 jesse Exp $
+// $Id: JQueueJobBrowserPanel.java,v 1.37 2009/03/19 20:32:28 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -289,6 +289,7 @@ class JQueueJobBrowserPanel
   /** 
    * Get the title of this type of panel.
    */
+  @Override
   public String 
   getTypeName() 
   {
@@ -306,6 +307,7 @@ class JQueueJobBrowserPanel
    * @param groupID
    *   The new group ID or (0) for no group assignment.
    */ 
+  @Override
   public void
   setGroupID
   (
@@ -331,6 +333,7 @@ class JQueueJobBrowserPanel
   /**
    * Is the given group currently unused for this type of panel.
    */ 
+  @Override
   public boolean
   isGroupUnused
   (
@@ -348,6 +351,7 @@ class JQueueJobBrowserPanel
   /**
    * Are the contents of the panel read-only. <P> 
    */ 
+  @Override
   public boolean
   isLocked() 
   {
@@ -357,6 +361,7 @@ class JQueueJobBrowserPanel
   /**
    * Set the author and view.
    */ 
+  @Override
   public synchronized void 
   setAuthorView
   (
@@ -521,6 +526,7 @@ class JQueueJobBrowserPanel
    * 
    * This method is run by the Swing Event thread.
    */ 
+  @Override
   public void 
   prePanelOp() 
   {
@@ -535,6 +541,7 @@ class JQueueJobBrowserPanel
    * 
    * This method is run by the Swing Event thread.
    */ 
+  @Override
   public void 
   postPanelOp() 
   {
@@ -679,6 +686,7 @@ class JQueueJobBrowserPanel
    * @return
    *   Whether the panel has received the focus.
    */ 
+  @Override
   public boolean 
   refocusOnPanel() 
   {
@@ -696,6 +704,7 @@ class JQueueJobBrowserPanel
   /**
    * Update the panel to reflect new user preferences.
    */ 
+  @Override
   public void 
   updateUserPrefs() 
   {
@@ -1375,6 +1384,7 @@ class JQueueJobBrowserPanel
   /*   G L U E A B L E                                                                      */
   /*----------------------------------------------------------------------------------------*/
 
+  @Override
   public synchronized void 
   toGlue
   ( 
@@ -1390,6 +1400,7 @@ class JQueueJobBrowserPanel
       encoder.encode("SelectedIDs", pSelectedIDs);
   }
 
+  @Override
   public synchronized void 
   fromGlue
   (
@@ -1461,6 +1472,7 @@ class JQueueJobBrowserPanel
     /**
      * Invoked when the mouse enters a component. 
      */ 
+    @Override
     public void 
     mouseEntered
     (
@@ -1473,6 +1485,7 @@ class JQueueJobBrowserPanel
     /**
      * Invoked when the mouse exits a component. 
      */ 
+    @Override
     public void 
     mouseExited
     (
@@ -1511,6 +1524,7 @@ class JQueueJobBrowserPanel
       table.addKeyListener(pSelector);
     }
 
+    @Override
     protected void 
     doSort
     (
@@ -1638,6 +1652,7 @@ class JQueueJobBrowserPanel
     /**
      * Invoked when a mouse button has been released on a component. 
      */ 
+    @Override
     public void 
     mouseReleased
     (
@@ -1654,6 +1669,7 @@ class JQueueJobBrowserPanel
     /**
      * Invoked when the mouse exits a component. 
      */ 
+    @Override
     public void 
     mouseExited
     (
@@ -1715,16 +1731,17 @@ class JQueueJobBrowserPanel
       pHardwareKeys  = hardwareKeys;
     }
 
+    @Override
     public void 
     run() 
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID)) {
+        MasterMgrClient client = master.leaseMasterMgrClient();
 	try {
 	  for(NodeID nodeID : pTargets.keySet()) {
 	    master.updatePanelOp(pGroupID, 
 				 "Resubmitting Jobs to the Queue: " + nodeID.getName());
-	    MasterMgrClient client = master.getMasterMgrClient(pGroupID);
 	    client.resubmitJobs
 	      (nodeID, pTargets.get(nodeID), pBatchSize, pPriority, pRampUp,
 	       pMaxLoad, pMinMemory, pMinDisk,
@@ -1736,6 +1753,7 @@ class JQueueJobBrowserPanel
 	  return;
 	}
 	finally {
+	  master.returnMasterMgrClient(client);
 	  master.endPanelOp(pGroupID, "Done.");
 	}
 
@@ -1773,19 +1791,22 @@ class JQueueJobBrowserPanel
       pJobIDs = jobIDs;
     }
 
+    @Override
     public void 
     run() 
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Pausing Jobs...")) {
+        QueueMgrClient client = master.leaseQueueMgrClient();
 	try {
-	  master.getQueueMgrClient(pGroupID).pauseJobs(pJobIDs);
+	  client.pauseJobs(pJobIDs);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
 	  return;
 	}
 	finally {
+	  master.returnQueueMgrClient(client);
 	  master.endPanelOp(pGroupID, "Done.");
 	}
 
@@ -1814,19 +1835,22 @@ class JQueueJobBrowserPanel
       pJobIDs = jobIDs; 
     }
 
+    @Override
     public void 
     run() 
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Resuming Paused Jobs...")) {
+        QueueMgrClient client = master.leaseQueueMgrClient();
 	try {
-	  master.getQueueMgrClient(pGroupID).resumeJobs(pJobIDs);
+	  client.resumeJobs(pJobIDs);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
 	  return;
 	}
 	finally {
+	  master.returnQueueMgrClient(client);
 	  master.endPanelOp(pGroupID, "Done.");
 	}
 
@@ -1855,19 +1879,22 @@ class JQueueJobBrowserPanel
       pJobIDs = jobIDs; 
     }
 
+    @Override
     public void 
     run() 
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Preempting Jobs...")) {
+        QueueMgrClient client = master.leaseQueueMgrClient();
 	try {
-	  master.getQueueMgrClient(pGroupID).preemptJobs(pJobIDs);
+	  client.preemptJobs(pJobIDs);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
 	  return;
 	}
 	finally {
+	  master.returnQueueMgrClient(client);
 	  master.endPanelOp(pGroupID, "Done.");
 	}
 
@@ -1896,19 +1923,22 @@ class JQueueJobBrowserPanel
       pJobIDs = jobIDs; 
     }
 
+    @Override
     public void 
     run() 
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Killing Jobs...")) {
+        QueueMgrClient client = master.leaseQueueMgrClient();
 	try {
-	  master.getQueueMgrClient(pGroupID).killJobs(pJobIDs);
+	  client.killJobs(pJobIDs);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
 	  return;
 	}
 	finally {
+	  master.returnQueueMgrClient(client);
 	  master.endPanelOp(pGroupID, "Done.");
 	}
 
@@ -1937,19 +1967,22 @@ class JQueueJobBrowserPanel
       pJobReqChanges = jobReqChanges;
     }
 
+    @Override
     public void 
     run() 
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Changing Job Reqs...")) {
+        QueueMgrClient client = master.leaseQueueMgrClient();
 	try {
-	  master.getQueueMgrClient(pGroupID).changeJobReqs(pJobReqChanges);
+	  client.changeJobReqs(pJobReqChanges);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
 	  return;
 	}
 	finally {
+	  master.returnQueueMgrClient(client);
 	  master.endPanelOp(pGroupID, "Done.");
 	}
 
@@ -1978,19 +2011,22 @@ class JQueueJobBrowserPanel
       pGroups = groups;
     }
 
+    @Override
     public void 
     run() 
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Deleting Job Groups...")) {
+        QueueMgrClient client = master.leaseQueueMgrClient();
 	try {
-	  master.getQueueMgrClient(pGroupID).deleteJobGroups(pGroups);
+	  client.deleteJobGroups(pGroups);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
 	  return;
 	}
 	finally {
+	  master.returnQueueMgrClient(client);
 	  master.endPanelOp(pGroupID, "Done.");
 	}
 
@@ -2019,14 +2055,15 @@ class JQueueJobBrowserPanel
       pFilter = filter;
     }
 
+    @Override
     public void 
     run() 
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Deleting Job Groups...")) {
+        MasterMgrClient mclient = master.leaseMasterMgrClient();
+        QueueMgrClient qclient  = master.leaseQueueMgrClient();
 	try {
-	  MasterMgrClient mclient = master.getMasterMgrClient(pGroupID);
-	  QueueMgrClient qclient  = master.getQueueMgrClient(pGroupID);
 	  switch(pFilter) {
 	  case SingleView:
 	    qclient.deleteViewJobGroups(pAuthor, pView);
@@ -2052,6 +2089,8 @@ class JQueueJobBrowserPanel
 	  return;
 	}
 	finally {
+	  master.returnMasterMgrClient(mclient);
+	  master.returnQueueMgrClient(qclient);
 	  master.endPanelOp(pGroupID, "Done.");
 	}
 

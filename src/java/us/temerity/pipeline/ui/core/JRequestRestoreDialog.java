@@ -1,17 +1,17 @@
-// $Id: JRequestRestoreDialog.java,v 1.3 2006/10/18 06:34:22 jim Exp $
+// $Id: JRequestRestoreDialog.java,v 1.4 2009/03/19 20:32:28 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
-import us.temerity.pipeline.*;
-import us.temerity.pipeline.ui.*; 
-
 import java.awt.*;
 import java.awt.event.*;
-import java.io.*;
 import java.util.*;
+import java.util.regex.*;
+
 import javax.swing.*;
 import javax.swing.event.*;
-import javax.swing.tree.*;
+
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.ui.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   R E Q U E S T   R E S T O R E   D I A L O G                                            */
@@ -161,6 +161,7 @@ class JRequestRestoreDialog
   /** 
    * Invoked when an action occurs. 
    */ 
+  @Override
   public void 
   actionPerformed
   (
@@ -230,14 +231,15 @@ class JRequestRestoreDialog
       pPattern = pattern;	        
     }
 
+    @Override
     public void 
     run() 
     {
       UIMaster master = UIMaster.getInstance();
       TreeMap<String,TreeSet<VersionID>> versions = null;
-      if(master.beginPanelOp("Searching for Offline Versions...")) {
+      if(master.beginPanelOp(pChannel, "Searching for Offline Versions...")) {
+        MasterMgrClient client = master.leaseMasterMgrClient();
 	try {
-	  MasterMgrClient client = master.getMasterMgrClient(pChannel);
 	  versions = client.restoreQuery(pPattern); 
 	}
 	catch(PipelineException ex) {
@@ -245,11 +247,12 @@ class JRequestRestoreDialog
 	  return;
 	}
 	finally {
+	  master.returnMasterMgrClient(client);
 	  master.endPanelOp("Done.");
 	}
       }
 
-      if(!versions.isEmpty()) {
+      if(versions != null && !versions.isEmpty()) {
 	UpdateTask task = new UpdateTask(versions);
 	SwingUtilities.invokeLater(task);
       }
@@ -275,6 +278,7 @@ class JRequestRestoreDialog
       pVersions = versions;
     }
 
+    @Override
     public void 
     run() 
     {

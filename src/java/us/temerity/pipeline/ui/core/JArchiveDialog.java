@@ -1,15 +1,15 @@
-// $Id: JArchiveDialog.java,v 1.12 2008/05/08 22:46:42 jim Exp $
+// $Id: JArchiveDialog.java,v 1.13 2009/03/19 20:32:28 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
-
-import us.temerity.pipeline.*;
-import us.temerity.pipeline.ui.*;
 
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
+
 import javax.swing.*;
-import javax.swing.event.*;
+
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.ui.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   A R C H I V E   D I A L O G                                                            */
@@ -239,12 +239,15 @@ class JArchiveDialog
   updatePanel() 
   {
     UIMaster master = UIMaster.getInstance();
-    MasterMgrClient client = master.getMasterMgrClient();
+    MasterMgrClient client = master.leaseMasterMgrClient();
     try {
       pPrivilegeDetails = client.getPrivilegeDetails();
     }
     catch(PipelineException ex) {
       showErrorDialog(ex);
+    }
+    finally {
+     master.returnMasterMgrClient(client); 
     }
 
     updateButtons();
@@ -271,6 +274,7 @@ class JArchiveDialog
   /** 
    * Invoked when an action occurs. 
    */ 
+  @Override
   public void 
   actionPerformed
   (
@@ -532,20 +536,23 @@ class JArchiveDialog
       pMaxArchives   = maxArchives;
     }
 
+    @Override
     public void 
     run() 
     {
       UIMaster master = UIMaster.getInstance();
       ArrayList<ArchiveInfo> info = null;
+      
+      MasterMgrClient client = master.leaseMasterMgrClient();
       if(master.beginPanelOp("Searching for Candidate Versions...")) {
 	try {
-	  MasterMgrClient client = master.getMasterMgrClient();
 	  info = client.archiveQuery(pPattern, pMaxArchives);
 	}
 	catch(PipelineException ex) {
 	  showErrorDialog(ex);
 	}
 	finally {
+	  master.returnMasterMgrClient(client);
 	  master.endPanelOp("Done.");
 	}
       }
@@ -575,6 +582,7 @@ class JArchiveDialog
       pInfo = info;
     }
 
+    @Override
     public void 
     run() 
     {
@@ -607,42 +615,48 @@ class JArchiveDialog
       pVersions = versions;
     }
 
+    @Override
     public void 
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      MasterMgrClient client = master.getMasterMgrClient();
-      TreeMap<String,TreeMap<VersionID,Long>> data = null;
-      if(master.beginPanelOp("Calculating File Sizes...")) {
-	try {
-	  data = client.getArchivedSizes(pVersions);
-	}
-	catch(PipelineException ex) {
-	  showErrorDialog(ex);
-	}
-	finally {
-	  master.endPanelOp("Done.");
-	}
-      }
-	
-      /* merge existing and new sizes */ 
-      if(data != null) {
-	for(String name : pData.keySet()) {
-	  TreeMap<VersionID,Long> oversions = pData.get(name);
-	  TreeMap<VersionID,Long> versions  = data.get(name);
-	  if(versions == null) {
-	    data.put(name, oversions);
-	  }
-	  else {
-	    for(VersionID vid : oversions.keySet()) {
-	      if(versions.get(vid) == null) 
-		versions.put(vid, oversions.get(vid));
-	    }
-	  }
-	}
+      MasterMgrClient client = master.leaseMasterMgrClient();
+      try {
+        TreeMap<String,TreeMap<VersionID,Long>> data = null;
+        if(master.beginPanelOp("Calculating File Sizes...")) {
+          try {
+            data = client.getArchivedSizes(pVersions);
+          }
+          catch(PipelineException ex) {
+            showErrorDialog(ex);
+          }
+          finally {
+            master.endPanelOp("Done.");
+          }
+        }
+  	
+        /* merge existing and new sizes */ 
+        if(data != null) {
+          for(String name : pData.keySet()) {
+            TreeMap<VersionID,Long> oversions = pData.get(name);
+            TreeMap<VersionID,Long> versions  = data.get(name);
+            if(versions == null) {
+              data.put(name, oversions);
+            }
+            else {
+              for(VersionID vid : oversions.keySet()) {
+                if(versions.get(vid) == null) 
+                  versions.put(vid, oversions.get(vid));
+              }
+            }
+          }
 
-	UpdateSizesTask task = new UpdateSizesTask(data);
-	SwingUtilities.invokeLater(task);
+          UpdateSizesTask task = new UpdateSizesTask(data);
+          SwingUtilities.invokeLater(task);
+        }
+      }
+      finally {
+        master.returnMasterMgrClient(client);
       }
     }
 
@@ -667,6 +681,7 @@ class JArchiveDialog
       pData = data;
     }
 
+    @Override
     public void 
     run() 
     {
@@ -719,148 +734,154 @@ class JArchiveDialog
       pArchiver = archiver;
     }
 
+    @Override
     public void 
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      MasterMgrClient client = master.getMasterMgrClient();
-      TreeMap<String,TreeMap<VersionID,Long>> versionSizes = null;
-      if(master.beginPanelOp("Assigning Versions to Archives...")) {
-	try {
-	  versionSizes = client.getArchivedSizes(pVersions);
-	}
-	catch(PipelineException ex) {
-	  showErrorDialog(ex);
-	}
-	finally {
-	  master.endPanelOp("Done.");
-	}
+      MasterMgrClient client = master.leaseMasterMgrClient();
+      try {
+        TreeMap<String,TreeMap<VersionID,Long>> versionSizes = null;
+        if(master.beginPanelOp("Assigning Versions to Archives...")) {
+          try {
+      	    versionSizes = client.getArchivedSizes(pVersions);
+      	  }
+          catch(PipelineException ex) {
+            showErrorDialog(ex);
+          }
+          finally {
+            master.endPanelOp("Done.");
+          }
+        }
+  	
+        /* assign the maximum number of versions to each archive volume without 
+  	 exceeding its capacity */ 
+        TreeMap<Integer,TreeMap<String,TreeSet<VersionID>>> archives = 
+  	new TreeMap<Integer,TreeMap<String,TreeSet<VersionID>>>(); 
+        if(versionSizes != null) {
+  	long capacity = pArchiver.getCapacity();
+  	int idx = 0;
+  	long total = 0L;
+  	boolean done = false;
+  	TreeMap<String,TreeMap<VersionID,Long>> skippedVersionSizes = 
+  	  new TreeMap<String,TreeMap<VersionID,Long>>();
+  	while(!done) {
+  	  for(String name : versionSizes.keySet()) {
+  	    TreeMap<VersionID,Long> sizes = versionSizes.get(name);
+  	    for(VersionID vid : sizes.keySet()) {
+  	      Long size = sizes.get(vid);
+  	      
+  	      if((total+size) >= capacity) {
+  		/* the version is too big to fit by itself in a volume */ 
+  		if(total == 0L) {
+  		  showErrorDialog
+  		    ("Error:", 
+  		     "The version (" + vid + ") of node (" + name + ") was larger than " + 
+  		     "the capacity of an entire archive volume!  The capacity of the " + 
+  		     "archive volume must be increased to at least " + 
+  		     "(" + formatLong(size) + ") in order to archive this version.");
+  		  return;
+  		}
+  		
+  		/* the version is too big for this volume, skip it for now... */ 
+  		TreeMap<VersionID,Long> skippedSizes = skippedVersionSizes.get(name);
+  		if(skippedSizes == null) {
+  		  skippedSizes = new TreeMap<VersionID,Long>();
+  		  skippedVersionSizes.put(name, skippedSizes);
+  		}
+  		skippedSizes.put(vid, size);
+  	      }
+  
+  	      /* the version fits, add it to this volume */ 
+  	      else {
+  		TreeMap<String,TreeSet<VersionID>> versions = archives.get(idx);
+  		if(versions == null) {
+  		  versions = new TreeMap<String,TreeSet<VersionID>>();
+  		  archives.put(idx, versions);
+  		}
+  		
+  		TreeSet<VersionID> vids = versions.get(name);
+  		if(vids == null) {
+  		  vids = new TreeSet<VersionID>();
+  		  versions.put(name, vids);
+  		}
+  		
+  		vids.add(vid);
+  		total += size;
+  	      }
+  	    }
+  	  }
+  	  
+  	  /* some versions wouldn't fit in the current volume, 
+  	       create a new volume and try again... */ 
+  	  if(!skippedVersionSizes.isEmpty()) {
+  	    idx++;
+  	    total = 0L;
+  	    versionSizes = skippedVersionSizes;
+  	    skippedVersionSizes = new TreeMap<String,TreeMap<VersionID,Long>>();
+  	  }
+  	  else {
+  	    if(total < pMinSize) {
+  	      if(idx == 0) {
+  		showErrorDialog
+  		  ("Error:", 
+  		   "The total size (" + formatLong(total) + ") of all versions selected " + 
+  		   "for archiving was less than the minimum archive volume size " + 
+  		   "(" + formatLong(pMinSize) + ")!  Either select enough versions to " + 
+  		   "meet this minimum size or specify a smaller minimum size to create " + 
+  		   "an archive volume.");
+  		return;
+  	      }
+  	      else {
+  		archives.remove(idx);
+  	      }
+  	    }
+  
+  	    break;
+  	  }
+  	}
+        }
+  
+        /* perform the archive operations */ 
+        if(!archives.isEmpty()) {
+          if(pArchiver.isManual()) {
+      	    ManualArchiveConfirmTask task = 
+      	      new ManualArchiveConfirmTask
+      	        (pParent, null, 0, pPrefix, archives, pToolset, pArchiver);
+      	    SwingUtilities.invokeLater(task);
+          }
+          else {  
+            if(master.beginPanelOp()) {
+              int lastIdx = 0;
+              try {
+                for(Integer idx : archives.keySet()) {
+                  master.updatePanelOp
+                    ("Archiving Volume (" + (idx+1) + " of " + archives.size() + ")...");
+                  lastIdx = idx;
+                  client.archive(pPrefix, archives.get(idx), pArchiver, pToolset);
+                }
+              }
+              catch(PipelineException ex) {
+                showErrorDialog
+                  ("Error:", 
+      		   ex.getMessage() + "\n\n" + 
+      		   "Archive operation aborted early without creating " + 
+      		   "(" + (archives.size()-lastIdx) + " of " + archives.size() + ") archive " +
+      		   "volumes!");
+                return;
+      	    }
+      	    finally {
+      	      master.endPanelOp("Done.");
+      	    }
+      
+      	    RemoveAllTask task = new RemoveAllTask();
+      	    SwingUtilities.invokeLater(task);      
+      	  } //if(master.beginPanelOp()) {
+      	} //else
+        } //if(!archives.isEmpty()) {
       }
-	
-      /* assign the maximum number of versions to each archive volume without 
-	 exceeding its capacity */ 
-      TreeMap<Integer,TreeMap<String,TreeSet<VersionID>>> archives = 
-	new TreeMap<Integer,TreeMap<String,TreeSet<VersionID>>>(); 
-      if(versionSizes != null) {
-	long capacity = pArchiver.getCapacity();
-	int idx = 0;
-	long total = 0L;
-	boolean done = false;
-	TreeMap<String,TreeMap<VersionID,Long>> skippedVersionSizes = 
-	  new TreeMap<String,TreeMap<VersionID,Long>>();
-	while(!done) {
-	  for(String name : versionSizes.keySet()) {
-	    TreeMap<VersionID,Long> sizes = versionSizes.get(name);
-	    for(VersionID vid : sizes.keySet()) {
-	      Long size = sizes.get(vid);
-	      
-	      if((total+size) >= pArchiver.getCapacity()) {
-		/* the version is too big to fit by itself in a volume */ 
-		if(total == 0L) {
-		  showErrorDialog
-		    ("Error:", 
-		     "The version (" + vid + ") of node (" + name + ") was larger than " + 
-		     "the capacity of an entire archive volume!  The capacity of the " + 
-		     "archive volume must be increased to at least " + 
-		     "(" + formatLong(size) + ") in order to archive this version.");
-		  return;
-		}
-		
-		/* the version is too big for this volume, skip it for now... */ 
-		TreeMap<VersionID,Long> skippedSizes = skippedVersionSizes.get(name);
-		if(skippedSizes == null) {
-		  skippedSizes = new TreeMap<VersionID,Long>();
-		  skippedVersionSizes.put(name, skippedSizes);
-		}
-		skippedSizes.put(vid, size);
-	      }
-
-	      /* the version fits, add it to this volume */ 
-	      else {
-		TreeMap<String,TreeSet<VersionID>> versions = archives.get(idx);
-		if(versions == null) {
-		  versions = new TreeMap<String,TreeSet<VersionID>>();
-		  archives.put(idx, versions);
-		}
-		
-		TreeSet<VersionID> vids = versions.get(name);
-		if(vids == null) {
-		  vids = new TreeSet<VersionID>();
-		  versions.put(name, vids);
-		}
-		
-		vids.add(vid);
-		total += size;
-	      }
-	    }
-	  }
-	  
-	  /* some versions wouldn't fit in the current volume, 
-	       create a new volume and try again... */ 
-	  if(!skippedVersionSizes.isEmpty()) {
-	    idx++;
-	    total = 0L;
-	    versionSizes = skippedVersionSizes;
-	    skippedVersionSizes = new TreeMap<String,TreeMap<VersionID,Long>>();
-	  }
-	  else {
-	    if(total < pMinSize) {
-	      if(idx == 0) {
-		showErrorDialog
-		  ("Error:", 
-		   "The total size (" + formatLong(total) + ") of all versions selected " + 
-		   "for archiving was less than the minimum archive volume size " + 
-		   "(" + formatLong(pMinSize) + ")!  Either select enough versions to " + 
-		   "meet this minimum size or specify a smaller minimum size to create " + 
-		   "an archive volume.");
-		return;
-	      }
-	      else {
-		archives.remove(idx);
-	      }
-	    }
-
-	    break;
-	  }
-	}
-      }
-
-      /* perform the archive operations */ 
-      if(!archives.isEmpty()) {
-	if(pArchiver.isManual()) {
-	    ManualArchiveConfirmTask task = 
-	      new ManualArchiveConfirmTask
-	        (pParent, null, 0, pPrefix, archives, pToolset, pArchiver);
-	    SwingUtilities.invokeLater(task);
-	}
-	else {  
-	  if(master.beginPanelOp()) {
-	    int lastIdx = 0;
-	    try {
-	      for(Integer idx : archives.keySet()) {
-		master.updatePanelOp
-		  ("Archiving Volume (" + (idx+1) + " of " + archives.size() + ")...");
-		lastIdx = idx;
-		client.archive(pPrefix, archives.get(idx), pArchiver, pToolset);
-	      }
-	    }
-	    catch(PipelineException ex) {
-	      showErrorDialog
-		("Error:", 
-		 ex.getMessage() + "\n\n" + 
-		 "Archive operation aborted early without creating " + 
-		 "(" + (archives.size()-lastIdx) + " of " + archives.size() + ") archive " +
-		 "volumes!");
-	      return;
-	    }
-	    finally {
-	      master.endPanelOp("Done.");
-	    }
-
-	    RemoveAllTask task = new RemoveAllTask();
-	    SwingUtilities.invokeLater(task);      
-	  }
-	}
+      finally {
+        master.returnMasterMgrClient(client);
       }
     }
 
@@ -906,6 +927,7 @@ class JArchiveDialog
       pArchiver = archiver;
     }
 
+    @Override
     public void 
     run() 
     {
@@ -975,40 +997,46 @@ class JArchiveDialog
       pArchiver = archiver;
     }
 
+    @Override
     public void 
     run() 
     {  
       UIMaster master = UIMaster.getInstance();
-      MasterMgrClient client = master.getMasterMgrClient();
-      String msg = ("Archiving Volume (" + (pIndex+1) + " of " + pArchives.size() + ")...");
-      String archiveName = null;
-      if(master.beginPanelOp(msg)) {
-	TreeMap<String,TreeSet<VersionID>> versions = pArchives.get(pIndex);
+      MasterMgrClient client = master.leaseMasterMgrClient();
+      try {
+        String msg = ("Archiving Volume (" + (pIndex+1) + " of " + pArchives.size() + ")...");
+        String archiveName = null;
+        if(master.beginPanelOp(msg)) {
+          TreeMap<String,TreeSet<VersionID>> versions = pArchives.get(pIndex);
 
-	try {
-	  archiveName = client.archive(pPrefix, versions, pArchiver, pToolset);
-	}
-	catch(PipelineException ex) {
-	  showErrorDialog
-	    ("Error:", 
-	     ex.getMessage() + "\n\n" + 
-	     "Archive operation aborted early without creating " + 
-	     "(" + (pArchives.size()-pIndex) + " of " + pArchives.size() + ") archive " +
-	     "volumes!");
-	  return;
-	}
-	finally {
-	  master.endPanelOp("Done.");
-	}
+          try {
+            archiveName = client.archive(pPrefix, versions, pArchiver, pToolset);
+          }
+          catch(PipelineException ex) {
+            showErrorDialog
+              ("Error:", 
+               ex.getMessage() + "\n\n" + 
+               "Archive operation aborted early without creating " + 
+               "(" + (pArchives.size()-pIndex) + " of " + pArchives.size() + ") archive " +
+               "volumes!");
+            return;
+          }
+          finally {
+            master.endPanelOp("Done.");
+          }
 
-	RemoveTask task = new RemoveTask(versions);
-	SwingUtilities.invokeLater(task);      
+          RemoveTask task = new RemoveTask(versions);
+          SwingUtilities.invokeLater(task);      
+        }
+  
+        ManualArchiveConfirmTask task = 
+  	new ManualArchiveConfirmTask
+  	  (pParent, archiveName, pIndex+1, pPrefix, pArchives, pToolset, pArchiver);
+        SwingUtilities.invokeLater(task); 
       }
-
-      ManualArchiveConfirmTask task = 
-	new ManualArchiveConfirmTask
-	  (pParent, archiveName, pIndex+1, pPrefix, pArchives, pToolset, pArchiver);
-      SwingUtilities.invokeLater(task);
+      finally {
+        master.returnMasterMgrClient(client);
+      }
     }
 
     private JArchiveDialog  pParent; 
@@ -1038,6 +1066,7 @@ class JArchiveDialog
       pVersions = versions;
     }
 
+    @Override
     public void 
     run() 
     {
@@ -1073,6 +1102,7 @@ class JArchiveDialog
       super("JArchiveDialog:RemoveAllTask");
     }
 
+    @Override
     public void 
     run() 
     {

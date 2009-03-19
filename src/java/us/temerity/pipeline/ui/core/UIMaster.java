@@ -1,34 +1,25 @@
-// $Id: UIMaster.java,v 1.96 2009/03/02 05:12:32 jim Exp $
+// $Id: UIMaster.java,v 1.97 2009/03/19 20:32:28 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
-
-import us.temerity.pipeline.*;
-import us.temerity.pipeline.ui.*;
-import us.temerity.pipeline.glue.*;
-import us.temerity.pipeline.math.*;
-import us.temerity.pipeline.message.*;
-import us.temerity.pipeline.LogMgr.*;
-import us.temerity.pipeline.builder.*;
-import us.temerity.pipeline.core.RemoteServer;
-import us.temerity.pipeline.core.JobMgrPlgControlClient;
-import us.temerity.pipeline.core.LockedGlueFile;
-import us.temerity.pipeline.core.GlueLockException;
-import us.temerity.pipeline.laf.LookAndFeelLoader;
 
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import java.text.*;
 import java.util.*;
 import java.util.concurrent.atomic.*;
 import java.util.concurrent.locks.*;
-import java.text.*;
 
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.text.*;
-import javax.swing.plaf.basic.*;
-import javax.swing.plaf.synth.*;
 import javax.media.opengl.*;
+import javax.swing.*;
+import javax.swing.plaf.synth.*;
+
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.LogMgr.*;
+import us.temerity.pipeline.core.*;
+import us.temerity.pipeline.glue.*;
+import us.temerity.pipeline.laf.*;
+import us.temerity.pipeline.ui.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   U I   M A S T E R                                                                      */
@@ -83,8 +74,22 @@ class UIMaster
    boolean traceGL
   ) 
   {
-    pMasterMgrClients = new MasterMgrClient[10];
-    pQueueMgrClients  = new QueueMgrClient[10];
+    {
+      pMasterMgrList = new LinkedList<MasterMgrClient>();
+      pMasterMgrClientStack = new Stack<MasterMgrClient>();
+
+      MasterMgrClient mclient = leaseMasterMgrClient();
+      returnMasterMgrClient(mclient);
+    }
+
+    {
+      pQueueMgrList = new LinkedList<QueueMgrClient>();
+      pQueueMgrClientStack = new Stack<QueueMgrClient>();
+
+      QueueMgrClient qclient = leaseQueueMgrClient();
+      returnQueueMgrClient(qclient);
+    }
+
 
     if(remoteServer) 
       pRemoteServer = new RemoteServer(this);
@@ -239,61 +244,124 @@ class UIMaster
 
   /**
    * Get the network connection to <B>plmaster</B>(1).
-   */ 
-  public MasterMgrClient
-  getMasterMgrClient() 
-  {
-    return getMasterMgrClient(0);
-  }
-
-  /**
-   * Get the network connection to <B>plmaster</B>(1).
+   * <p>
+   * The connection that has been acquired should always be returned using the
+   * {@link #returnMasterMgrClient(MasterMgrClient)} method.
    * 
-   * @param channel
-   *   The index of the update channel.
+   * @return An unused connection to the MasterMgrClient.
    */ 
   public MasterMgrClient
-  getMasterMgrClient
-  (
-   int channel
-  ) 
+  leaseMasterMgrClient() 
   {
-    assert((channel >= 0) && (channel < 10)); 
+    synchronized(pMasterMgrClientStack) {
+      if(pMasterMgrClientStack.isEmpty()) {
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Net, LogMgr.Level.Finest,
+           "Creating New Master Manager Client.");
+        LogMgr.getInstance().flush();
 
-    if(pMasterMgrClients[channel] == null) 
-      pMasterMgrClients[channel] = new MasterMgrClient();
+        MasterMgrClient mclient = new MasterMgrClient();
+        pMasterMgrList.add(mclient);
+        return mclient;
+      }
+      else {
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Net, LogMgr.Level.Finest,
+           "Reusing Master Manager Client: " + (pMasterMgrClientStack.size()-1) + " inactive");
+        LogMgr.getInstance().flush();
 
-    return pMasterMgrClients[channel];
+        return pMasterMgrClientStack.pop();
+      }
+    }
   }
-
+  
+  /**
+   * Return an inactive connection to the master manager for reuse.
+   * 
+   *  @param mclient
+   *    The inactive connection.
+   */ 
+  public void
+  returnMasterMgrClient
+  (
+    MasterMgrClient mclient  
+  )
+  {
+    synchronized(pMasterMgrClientStack) {
+      pMasterMgrClientStack.push(mclient);
+      
+      LogMgr.getInstance().log
+        (LogMgr.Kind.Net, LogMgr.Level.Finest,
+         "Freed Master Manager Client: " + pMasterMgrClientStack.size() + " inactive");
+      LogMgr.getInstance().flush();
+    }
+  }
 
   /**
    * Get the network connection to <B>plqueuemgr</B>(1).
+   * <p>
+   * The connection that has been acquired should always be returned using the
+   * {@link #returnQueueMgrClient(QueueMgrClient)} method.
+   * 
+   * @return An unused connection to the QueueMgrClient.
    */ 
   public QueueMgrClient
-  getQueueMgrClient() 
+  leaseQueueMgrClient() 
   {
-    return getQueueMgrClient(0);
+    synchronized(pQueueMgrClientStack) {
+      if(pQueueMgrClientStack.isEmpty()) {
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Net, LogMgr.Level.Finest,
+           "Creating New Queue Manager Client.");
+        LogMgr.getInstance().flush();
+
+        QueueMgrClient qclient = new QueueMgrClient();
+        pQueueMgrList.add(qclient);
+        return qclient;
+      }
+      else {
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Net, LogMgr.Level.Finest,
+           "Reusing Queue Manager Client: " + (pQueueMgrClientStack.size()-1) + " inactive");
+        LogMgr.getInstance().flush();
+
+        return pQueueMgrClientStack.pop();
+      }
+    }
+  }
+  
+  /**
+   * Return an inactive connection to the queue manager for reuse.
+   * 
+   *  @param qclient
+   *    The inactive connection.
+   */ 
+  public void
+  returnQueueMgrClient
+  (
+    QueueMgrClient qclient  
+  )
+  {
+    synchronized(pQueueMgrClientStack) {
+      pQueueMgrClientStack.push(qclient);
+      
+      LogMgr.getInstance().log
+        (LogMgr.Kind.Net, LogMgr.Level.Finest,
+         "Freed Queue Manager Client: " + pQueueMgrClientStack.size() + " inactive");
+      LogMgr.getInstance().flush();
+    }
+ 
   }
 
-  /**
-   * Get the network connection to <B>plqueuemgr</B>(1).
-   * 
-   * @param channel
-   *   The index of the update channel.
-   */ 
-  public QueueMgrClient
-  getQueueMgrClient
-  (
-   int channel
-  ) 
+  public void
+  disconnectQueueMgrClients()
   {
-    assert((channel >= 0) && (channel < 10)); 
-
-    if(pQueueMgrClients[channel] == null) 
-      pQueueMgrClients[channel] = new QueueMgrClient();
-
-    return pQueueMgrClients[channel];
+    Iterator<QueueMgrClient> it = pQueueMgrList.iterator();
+    while (it.hasNext()) {
+      QueueMgrClient client = it.next();
+      client.disconnect();
+      it.remove();
+    }
   }
 
  
@@ -682,17 +750,17 @@ class UIMaster
     TreeMap<String,TreeSet<String>> views = new TreeMap<String,TreeSet<String>>();
     
     if(name != null) {
-      UIMaster master = UIMaster.getInstance();
-      if(master.beginSilentPanelOp(channel)) {
+      if(beginSilentPanelOp(channel)) {
+        MasterMgrClient client = leaseMasterMgrClient();
 	try {
-	  MasterMgrClient client = master.getMasterMgrClient(channel);
 	  views.putAll(client.getWorkingAreasContaining(name));
 	}
 	catch(PipelineException ex) {
-	  master.showErrorDialog(ex);
+	  showErrorDialog(ex);
 	}
 	finally {
-	  master.endSilentPanelOp(channel);
+	  returnMasterMgrClient(client);
+	  endSilentPanelOp(channel);
 	}
       }
     }
@@ -722,17 +790,17 @@ class UIMaster
     TreeMap<String,TreeSet<String>> views = new TreeMap<String,TreeSet<String>>();
     
     if(name != null) {
-      UIMaster master = UIMaster.getInstance();
-      if(master.beginSilentPanelOp(channel)) {
+      if(beginSilentPanelOp(channel)) {
+        MasterMgrClient client = leaseMasterMgrClient();
 	try {
-	  MasterMgrClient client = master.getMasterMgrClient(channel);
 	  views.putAll(client.getWorkingAreasEditing(name));
 	}
 	catch(PipelineException ex) {
-	  master.showErrorDialog(ex);
+	  showErrorDialog(ex);
 	}
 	finally {
-	  master.endSilentPanelOp(channel);
+	  returnMasterMgrClient(client);
+	  endSilentPanelOp(channel);
 	}
       }
     }
@@ -1067,9 +1135,8 @@ class UIMaster
   {
     PluginMenuLayout layout = null;
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
+    MasterMgrClient client = leaseMasterMgrClient();
     try {
-      MasterMgrClient client = getMasterMgrClient(channel);
-
       synchronized(pEditorPlugins) {
 	plugins = pEditorPlugins.get(tname);
 	if(plugins == null) {
@@ -1103,6 +1170,9 @@ class UIMaster
     catch(PipelineException ex) {
       showErrorDialog(ex);
       return;
+    }
+    finally {
+      returnMasterMgrClient(client);
     }
 
     menu.removeAll();
@@ -1174,9 +1244,8 @@ class UIMaster
   {
     PluginMenuLayout layout = null;
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
+    MasterMgrClient client = leaseMasterMgrClient();
     try {
-      MasterMgrClient client = getMasterMgrClient(channel);
-
       synchronized(pComparatorPlugins) {
 	plugins = pComparatorPlugins.get(tname);
 	if(plugins == null) {
@@ -1209,6 +1278,9 @@ class UIMaster
     }
     catch(PipelineException ex) {
       showErrorDialog(ex);
+    }
+    finally {
+      returnMasterMgrClient(client);
     }
 
     menu.removeAll();
@@ -1280,9 +1352,8 @@ class UIMaster
   {
     PluginMenuLayout layout = null;
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
+    MasterMgrClient client = leaseMasterMgrClient();
     try {
-      MasterMgrClient client = getMasterMgrClient(channel);
-
       synchronized(pToolPlugins) {
 	plugins = pToolPlugins.get(tname);
 	if(plugins == null) {
@@ -1315,6 +1386,9 @@ class UIMaster
     }
     catch(PipelineException ex) {
       showErrorDialog(ex);
+    }
+    finally {
+      returnMasterMgrClient(client);
     }
 
     menu.removeAll();
@@ -1359,9 +1433,8 @@ class UIMaster
   {
     PluginMenuLayout layout = null;
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
+    MasterMgrClient client = leaseMasterMgrClient();
     try {
-      MasterMgrClient client = getMasterMgrClient(channel);
-
       synchronized(pToolPlugins) {
 	plugins = pToolPlugins.get(tname);
 	if(plugins == null) {
@@ -1394,6 +1467,9 @@ class UIMaster
     }
     catch(PipelineException ex) {
       showErrorDialog(ex);
+    }
+    finally {
+      returnMasterMgrClient(client);
     }
 
     menu.removeAll();
@@ -1457,8 +1533,8 @@ class UIMaster
   {
     PluginMenuLayout layout = null;
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
+    MasterMgrClient client = leaseMasterMgrClient();
     try {
-      MasterMgrClient client = getMasterMgrClient(channel);
       String tname = client.getCachedDefaultToolsetName();
 
       synchronized(pToolPlugins) {
@@ -1493,6 +1569,9 @@ class UIMaster
     }
     catch(PipelineException ex) {
       showErrorDialog(ex);
+    }
+    finally {
+      returnMasterMgrClient(client);
     }
 
     menu.removeAll();
@@ -1541,21 +1620,25 @@ class UIMaster
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
     
     String tname = null;
-    try {
-      MasterMgrClient client = getMasterMgrClient(channel);
-      tname = client.getCachedDefaultToolsetName();
-    } 
-    catch (PipelineException ex) {
-      menu.removeAll();
-      LogMgr.getInstance().log
-        (Kind.Ops, Level.Warning, 
-         "Unable to retrieve a default toolset when trying to create the Builder menus.");
-      return;
+    {
+      MasterMgrClient client = leaseMasterMgrClient();
+      try {
+        tname = client.getCachedDefaultToolsetName();
+      } 
+      catch (PipelineException ex) {
+        menu.removeAll();
+        LogMgr.getInstance().log
+          (Kind.Ops, Level.Warning, 
+          "Unable to retrieve a default toolset when trying to create the Builder menus.");
+        return;
+      } 
+      finally {
+        returnMasterMgrClient(client);
+      }
     }
-    
-    try {
-      MasterMgrClient client = getMasterMgrClient(channel);
 
+    MasterMgrClient client = leaseMasterMgrClient();
+    try {
       synchronized(pBuilderCollectionPlugins) {
         plugins = pBuilderCollectionPlugins.get(tname);
         if(plugins == null) {
@@ -1597,6 +1680,9 @@ class UIMaster
     }
     catch(PipelineException ex) {
       showErrorDialog(ex);
+    }
+    finally {
+      returnMasterMgrClient(client);
     }
 
     menu.removeAll();
@@ -1766,8 +1852,8 @@ class UIMaster
   {
     PluginMenuLayout layout = null;
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
+    MasterMgrClient client = leaseMasterMgrClient();
     try {
-      MasterMgrClient client = getMasterMgrClient(channel);
       String tname = client.getCachedDefaultToolsetName();
 
       synchronized(pEditorPlugins) {
@@ -1806,6 +1892,9 @@ class UIMaster
       layout = new PluginMenuLayout();
       plugins = new TripleMap<String,String,VersionID,TreeSet<OsType>>();
     }
+    finally {
+      returnMasterMgrClient(client);
+    }
 
     return UIFactory.createPluginSelectionField(layout, plugins, width);
   }
@@ -1826,9 +1915,8 @@ class UIMaster
 
     PluginMenuLayout layout = null;
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
+    MasterMgrClient client = leaseMasterMgrClient();
     try {
-      MasterMgrClient client = getMasterMgrClient(channel);
-
       synchronized(pEditorPlugins) {
 	plugins = pEditorPlugins.get(tname);
 	if(plugins == null) {
@@ -1862,6 +1950,9 @@ class UIMaster
     catch(PipelineException ex) {
       showErrorDialog(ex);
       return;
+    }
+    finally {
+      returnMasterMgrClient(client);
     }
 
     field.updatePlugins(layout, plugins);
@@ -1888,8 +1979,8 @@ class UIMaster
   {
     PluginMenuLayout layout = null;
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
+    MasterMgrClient client = leaseMasterMgrClient();
     try {
-      MasterMgrClient client = getMasterMgrClient(channel);
       String tname = client.getCachedDefaultToolsetName();
 
       synchronized(pActionPlugins) {
@@ -1928,6 +2019,9 @@ class UIMaster
       layout = new PluginMenuLayout();
       plugins = new TripleMap<String,String,VersionID,TreeSet<OsType>>();
     }
+    finally {
+      returnMasterMgrClient(client);
+    }
 
     return UIFactory.createPluginSelectionField(layout, plugins, width);
   }
@@ -1948,9 +2042,8 @@ class UIMaster
 
     PluginMenuLayout layout = null;
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
+    MasterMgrClient client = leaseMasterMgrClient();
     try {
-      MasterMgrClient client = getMasterMgrClient(channel);
-
       synchronized(pActionPlugins) {
 	plugins = pActionPlugins.get(tname);
 	if(plugins == null) {
@@ -1984,6 +2077,9 @@ class UIMaster
     catch(PipelineException ex) {
       showErrorDialog(ex);
       return;
+    }
+    finally {
+      returnMasterMgrClient(client);
     }
 
     field.updatePlugins(layout, plugins);
@@ -2009,8 +2105,8 @@ class UIMaster
   {
     PluginMenuLayout layout = null;
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
+    MasterMgrClient client = leaseMasterMgrClient();
     try {
-      MasterMgrClient client = getMasterMgrClient();
       String tname = client.getCachedDefaultToolsetName();
 
       synchronized(pArchiverPlugins) {
@@ -2049,6 +2145,9 @@ class UIMaster
       layout = new PluginMenuLayout();
       plugins = new TripleMap<String,String,VersionID,TreeSet<OsType>>();
     }
+    finally {
+      returnMasterMgrClient(client);
+    }
 
     return UIFactory.createPluginSelectionField(layout, plugins, width);
   }
@@ -2068,9 +2167,8 @@ class UIMaster
 
     PluginMenuLayout layout = null;
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
+    MasterMgrClient client = leaseMasterMgrClient();
     try {
-      MasterMgrClient client = getMasterMgrClient();
-
       synchronized(pArchiverPlugins) {
 	plugins = pArchiverPlugins.get(tname);
 	if(plugins == null) {
@@ -2104,6 +2202,9 @@ class UIMaster
     catch(PipelineException ex) {
       showErrorDialog(ex);
       return;
+    }
+    finally {
+      returnMasterMgrClient(client);
     }
 
     field.updatePlugins(layout, plugins);
@@ -2126,8 +2227,8 @@ class UIMaster
   {
     PluginMenuLayout layout = null;
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
+    MasterMgrClient client = leaseMasterMgrClient();
     try {
-      MasterMgrClient client = getMasterMgrClient();
       String tname = client.getCachedDefaultToolsetName();
 
       synchronized(pMasterExtPlugins) {
@@ -2166,6 +2267,9 @@ class UIMaster
       layout = new PluginMenuLayout();
       plugins = new TripleMap<String,String,VersionID,TreeSet<OsType>>();
     }
+    finally {
+      returnMasterMgrClient(client);
+    }
 
     return UIFactory.createPluginSelectionField(layout, plugins, width);
   }
@@ -2185,9 +2289,8 @@ class UIMaster
 
     PluginMenuLayout layout = null;
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
+    MasterMgrClient client = leaseMasterMgrClient();
     try {
-      MasterMgrClient client = getMasterMgrClient();
-
       synchronized(pMasterExtPlugins) {
 	plugins = pMasterExtPlugins.get(tname);
 	if(plugins == null) {
@@ -2221,6 +2324,9 @@ class UIMaster
     catch(PipelineException ex) {
       showErrorDialog(ex);
       return;
+    }
+    finally {
+      returnMasterMgrClient(client);
     }
 
     field.updatePlugins(layout, plugins);
@@ -2243,8 +2349,8 @@ class UIMaster
   {
     PluginMenuLayout layout = null;
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
+    MasterMgrClient client = leaseMasterMgrClient();
     try {
-      MasterMgrClient client = getMasterMgrClient();
       String tname = client.getCachedDefaultToolsetName();
 
       synchronized(pQueueExtPlugins) {
@@ -2283,6 +2389,9 @@ class UIMaster
       layout = new PluginMenuLayout();
       plugins = new TripleMap<String,String,VersionID,TreeSet<OsType>>();
     }
+    finally {
+      returnMasterMgrClient(client);
+    }
 
     return UIFactory.createPluginSelectionField(layout, plugins, width);
   }
@@ -2302,9 +2411,8 @@ class UIMaster
 
     PluginMenuLayout layout = null;
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
+    MasterMgrClient client = leaseMasterMgrClient();
     try {
-      MasterMgrClient client = getMasterMgrClient();
-
       synchronized(pQueueExtPlugins) {
 	plugins = pQueueExtPlugins.get(tname);
 	if(plugins == null) {
@@ -2338,6 +2446,9 @@ class UIMaster
     catch(PipelineException ex) {
       showErrorDialog(ex);
       return;
+    }
+    finally {
+      returnMasterMgrClient(client);
     }
 
     field.updatePlugins(layout, plugins);
@@ -2364,8 +2475,8 @@ class UIMaster
   {
     PluginMenuLayout layout = null;
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
+    MasterMgrClient client = leaseMasterMgrClient();
     try {
-      MasterMgrClient client = getMasterMgrClient(channel);
       String tname = client.getCachedDefaultToolsetName();
 
       synchronized(pAnnotationPlugins) {
@@ -2424,6 +2535,9 @@ class UIMaster
       layout = new PluginMenuLayout();
       plugins = new TripleMap<String,String,VersionID,TreeSet<OsType>>();
     }
+    finally {
+      returnMasterMgrClient(client);
+    }
     return UIFactory.createPluginSelectionField(layout, plugins, width);
   }
 
@@ -2439,8 +2553,8 @@ class UIMaster
   {
     PluginMenuLayout layout = null;
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
+    MasterMgrClient client = leaseMasterMgrClient();
     try {
-      MasterMgrClient client = getMasterMgrClient(channel);
       String tname = client.getCachedDefaultToolsetName();
 
       synchronized(pAnnotationPlugins) {
@@ -2497,6 +2611,9 @@ class UIMaster
       showErrorDialog(ex);
       return;
     }
+    finally {
+      returnMasterMgrClient(client);
+    }
 
     field.updatePlugins(layout, plugins);
   }
@@ -2518,8 +2635,8 @@ class UIMaster
   {
     PluginMenuLayout layout = null;
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
+    MasterMgrClient client = leaseMasterMgrClient();
     try {
-      MasterMgrClient client = getMasterMgrClient();
       String tname = client.getCachedDefaultToolsetName();
 
       synchronized(pKeyChooserPlugins) {
@@ -2558,6 +2675,9 @@ class UIMaster
       layout = new PluginMenuLayout();
       plugins = new TripleMap<String,String,VersionID,TreeSet<OsType>>();
     }
+    finally {
+      returnMasterMgrClient(client);
+    }
 
     return UIFactory.createPluginSelectionField(layout, plugins, width);
   }
@@ -2573,8 +2693,8 @@ class UIMaster
   {
     PluginMenuLayout layout = null;
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
+    MasterMgrClient client = leaseMasterMgrClient();
     try {
-      MasterMgrClient client = getMasterMgrClient();
       String tname = client.getCachedDefaultToolsetName();
 
       synchronized(pKeyChooserPlugins) {
@@ -2611,6 +2731,9 @@ class UIMaster
       showErrorDialog(ex);
       return;
     }
+    finally {
+      returnMasterMgrClient(client);
+    }
 
     field.updatePlugins(layout, plugins);
   }
@@ -2632,8 +2755,8 @@ class UIMaster
     PluginMenuLayout layout = null;
     TripleMap<String,String,VersionID,LayoutGroup> builderLayouts = null;
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
+    MasterMgrClient client = leaseMasterMgrClient();
     try {
-      MasterMgrClient client = getMasterMgrClient();
       String tname = client.getCachedDefaultToolsetName();
 
       synchronized(pBuilderCollectionPlugins) {
@@ -2680,6 +2803,9 @@ class UIMaster
 
       layout = new PluginMenuLayout();
       plugins = new TripleMap<String,String,VersionID,TreeSet<OsType>>();
+    }
+    finally {
+      returnMasterMgrClient(client);
     }
 
     return UIFactory.createBuilderIDSelectionField(layout, builderLayouts, plugins, width);
@@ -2789,8 +2915,8 @@ class UIMaster
     PluginMenuLayout layout = null;
     TripleMap<String,String,VersionID,LayoutGroup> builderLayouts = null;
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
+    MasterMgrClient client = leaseMasterMgrClient();
     try {
-      MasterMgrClient client = getMasterMgrClient();
       String tname = client.getCachedDefaultToolsetName();
 
       synchronized(pBuilderCollectionPlugins) {
@@ -2835,6 +2961,9 @@ class UIMaster
     catch(PipelineException ex) {
       showErrorDialog(ex);
       return;
+    }
+    finally {
+      returnMasterMgrClient(client);
     }
 
     field.updatePlugins(layout, builderLayouts, plugins);
@@ -3030,14 +3159,21 @@ class UIMaster
   )
     throws PipelineException 
   {
-    NodeVersion vsn = getMasterMgrClient(0).getCheckedInVersion(name, vid);
+    {
+      MasterMgrClient client = leaseMasterMgrClient();
+      try {
+        NodeVersion vsn = client.getCheckedInVersion(name, vid);
+        LogMgr.getInstance().log
+        (LogMgr.Kind.Ops, LogMgr.Level.Finer,
+         "Viewing Checked-In Version: " + name + " (v" + vsn.getVersionID() + ")"); 
 
-    LogMgr.getInstance().log
-      (LogMgr.Kind.Ops, LogMgr.Level.Finer,
-       "Viewing Checked-In Version: " + name + " (v" + vsn.getVersionID() + ")"); 
-
-    EditTask task = new EditTask(0, vsn, false, null, null, false);
-    task.start();
+        EditTask task = new EditTask(0, vsn, false, null, null, false);
+        task.start();
+      }
+      finally {
+        returnMasterMgrClient(client);
+      }
+    }
   }
     
   
@@ -3531,7 +3667,7 @@ class UIMaster
   } 
 
   /**
-   * Show a dialog for browsing the contents of existing archive volumnes.
+   * Show a dialog for browsing the contents of existing archive volumes.
    */ 
   public void 
   showArchiveVolumesDialog()
@@ -3554,7 +3690,7 @@ class UIMaster
   /**
    * Show the log history dialog. 
    * 
-   * @param 
+   * @param enabled
    *   Whether logging is enabled at the start.
    */ 
   public void 
@@ -3590,9 +3726,9 @@ class UIMaster
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Try to aquire a panel operation lock. <P> 
+   * Try to acquire a panel operation lock. <P> 
    * 
-   * If this method returns <CODE>true</CODE> then the lock was aquired and the operation 
+   * If this method returns <CODE>true</CODE> then the lock was acquired and the operation 
    * can proceed.  Otherwise, the caller should abort the operation immediately. <P> 
    * 
    * Once the operation is complete or if it is aborted early, the caller
@@ -3608,9 +3744,9 @@ class UIMaster
   }
 
   /**
-   * Try to aquire a panel operation lock, but generate no progress messages. <P> 
+   * Try to acquire a panel operation lock, but generate no progress messages. <P> 
    * 
-   * If this method returns <CODE>true</CODE> then the lock was aquired and the operation 
+   * If this method returns <CODE>true</CODE> then the lock was acquired and the operation 
    * can proceed.  Otherwise, the caller should abort the operation immediately. <P> 
    * 
    * Once the operation is complete or if it is aborted early, the caller
@@ -3632,9 +3768,9 @@ class UIMaster
    }
 
   /**
-   * Try to aquire a panel operation lock. <P> 
+   * Try to acquire a panel operation lock. <P> 
    * 
-   * If this method returns <CODE>true</CODE> then the lock was aquired and the operation 
+   * If this method returns <CODE>true</CODE> then the lock was acquired and the operation 
    * can proceed.  Otherwise, the caller should abort the operation immediately. <P> 
    * 
    * Once the operation is complete or if it is aborted early, the caller
@@ -3656,10 +3792,10 @@ class UIMaster
    }
 
   /**
-   * Try to aquire a panel operation lock and if successfull notify the user that 
+   * Try to acquire a panel operation lock and if successfully notify the user that 
    * an operation is in progress. <P> 
    * 
-   * If this method returns <CODE>true</CODE> then the lock was aquired and the operation 
+   * If this method returns <CODE>true</CODE> then the lock was acquired and the operation 
    * can proceed.  Otherwise, the caller should abort the operation immediately. <P> 
    * 
    * Once the operation is complete or if it is aborted early, the caller
@@ -3681,10 +3817,10 @@ class UIMaster
   }
   
   /**
-   * Try to aquire a panel operation lock and if successfull notify the user that 
+   * Try to acquire a panel operation lock and if successfully notify the user that 
    * an operation is in progress. <P> 
    * 
-   * If this method returns <CODE>true</CODE> then the lock was aquired and the operation 
+   * If this method returns <CODE>true</CODE> then the lock was acquired and the operation 
    * can proceed.  Otherwise, the caller should abort the operation immediately. <P> 
    * 
    * Once the operation is complete or if it is aborted early, the caller
@@ -3710,10 +3846,10 @@ class UIMaster
   }
 
   /**
-   * Try to aquire a panel operation lock and if successfull notify the user that 
+   * Try to acquire a panel operation lock and if successfully notify the user that 
    * an operation is in progress. <P> 
    * 
-   * If this method returns <CODE>true</CODE> then the lock was aquired and the operation 
+   * If this method returns <CODE>true</CODE> then the lock was acquired and the operation 
    * can proceed.  Otherwise, the caller should abort the operation immediately. <P> 
    * 
    * Once the operation is complete or if it is aborted early, the caller
@@ -4230,13 +4366,17 @@ class UIMaster
       if(path == null) 
 	path = new Path("Default"); 
 
+      MasterMgrClient client = leaseMasterMgrClient();
       try {
-	getMasterMgrClient().createInitialPanelLayout
+	client.createInitialPanelLayout
 	  (path.toString(), PackageInfo.sUser, "default");
       }
       catch(Exception ex) {
 	showErrorDialog(ex);
       }    
+      finally {
+        returnMasterMgrClient(client);
+      }
 
       doRestoreSavedLayout(path, false);
     }  
@@ -4311,13 +4451,16 @@ class UIMaster
     doUponExit();
 
     int idx;
-    for(idx=0; idx<pMasterMgrClients.length; idx++) {
-      if(pMasterMgrClients[idx] != null) 
-	pMasterMgrClients[idx].disconnect();
-      
-      if(pQueueMgrClients[idx] != null) 
-	pQueueMgrClients[idx].disconnect();
+    for (MasterMgrClient client : pMasterMgrList) {
+      if (client != null)
+        client.disconnect();
     }
+    
+    for (QueueMgrClient client : pQueueMgrList) {
+      if (client != null)
+        client.disconnect();
+    }
+      
 
     PluginMgrClient.getInstance().disconnect();
 
@@ -4357,6 +4500,8 @@ class UIMaster
       pMaster = master;
     }
 
+    @SuppressWarnings("unchecked")
+    @Override
     public void 
     run() 
     {  
@@ -4376,8 +4521,14 @@ class UIMaster
 	      System.exit(1);	    
 	    }
 	    
-	    getMasterMgrClient().createInitialPanelLayout
-	      ("Default", PackageInfo.sUser, "default");
+	    MasterMgrClient client = leaseMasterMgrClient();
+	    try {
+	      client.createInitialPanelLayout
+	        ("Default", PackageInfo.sUser, "default");
+	    }
+	    finally {
+	      returnMasterMgrClient(client);
+	    }
 
 	    try {
 	      Path dpath = new Path(base, "default-layout");
@@ -4427,9 +4578,10 @@ class UIMaster
 	System.exit(1);	 
       }
 
-      /* make sure that the default working area exists */ 
+      /* make sure that the default working area exists */
+      MasterMgrClient client = leaseMasterMgrClient();
       try {
-	getMasterMgrClient().createWorkingArea(PackageInfo.sUser, "default");
+	client.createWorkingArea(PackageInfo.sUser, "default");
       }
       catch(PipelineException ex) {	
 	LogMgr.getInstance().log
@@ -4438,6 +4590,9 @@ class UIMaster
 	   "  " + ex.getMessage());
 	LogMgr.getInstance().flush();
 	System.exit(1);	 
+      }
+      finally {
+        returnMasterMgrClient(client);
       }
 
       /* load the look-and-feel */ 
@@ -4521,6 +4676,7 @@ class UIMaster
       pMaster = master;
     }
 
+    @Override
     public void 
     run() 
     {
@@ -4759,6 +4915,7 @@ class UIMaster
       pMsg = msg;
     }
 
+    @Override
     public void 
     run() 
     { 
@@ -4800,6 +4957,7 @@ class UIMaster
       pMsg = msg;
     }
 
+    @Override
     public void 
     run() 
     {
@@ -4829,6 +4987,7 @@ class UIMaster
       pMsg = msg;
     }
 
+    @Override
     public void 
     run() 
     {
@@ -4866,6 +5025,7 @@ class UIMaster
       pIdx = channel;
     }
 
+    @Override
     public void 
     run() 
     {
@@ -4898,6 +5058,7 @@ class UIMaster
       pIdx = channel;
     }
 
+    @Override
     public void 
     run() 
     {
@@ -4940,6 +5101,7 @@ class UIMaster
       super("UIMaster:ShowSaveLayoutDialogTask");
     }
 
+    @Override
     public void 
     run() 
     {
@@ -4973,6 +5135,7 @@ class UIMaster
       super("UIMaster:SaveLayoutTask");
     }
 
+    @Override
     public void 
     run() 
     {
@@ -5023,6 +5186,7 @@ class UIMaster
       pPath = path;
     }
 
+    @Override
     public void 
     run() 
     {
@@ -5087,6 +5251,7 @@ class UIMaster
       pPath = path; 
     }
 
+    @Override
     public void 
     run() 
     {
@@ -5118,6 +5283,8 @@ class UIMaster
       pPath = path;
     }
 
+    @SuppressWarnings("unchecked")
+    @Override
     public void 
     run() 
     {
@@ -5234,6 +5401,7 @@ class UIMaster
       super("UIMaster:ShowManageLayoutsDialogTask");
     }
 
+    @Override
     public void 
     run() 
     {
@@ -5263,6 +5431,7 @@ class UIMaster
       super("UIMaster:UpdateUserPrefsTask");
     }
 
+    @Override
     public void 
     run() 
     {
@@ -5335,6 +5504,7 @@ class UIMaster
       pMessageText = msg;
     }
 
+    @Override
     public void 
     run() 
     {
@@ -5363,6 +5533,7 @@ class UIMaster
       super("UIMaster:ShowErrorDialogTask");
     }
 
+    @Override
     public void 
     run() 
     {
@@ -5396,6 +5567,7 @@ class UIMaster
       pStdErr   = stderr;
     }
 
+    @Override
     public void 
     run() 
     {
@@ -5494,19 +5666,19 @@ class UIMaster
     }
 
 
+    @Override
     @SuppressWarnings("deprecation")
     public void 
     run() 
     {
-      MasterMgrClient client = null;
       SubProcessLight proc = null;
       Long editID = null;
       {
 	UIMaster master = UIMaster.getInstance();
         boolean ignoreExitCode = false;
 	if(master.beginPanelOp(pChannel, "Launching Node Editor...")) {
+	  MasterMgrClient client = master.leaseMasterMgrClient();
 	  try {
-	    client = master.getMasterMgrClient(pChannel);
 
 	    NodeMod mod = null;
 	    if(pNodeCommon instanceof NodeMod) 
@@ -5629,6 +5801,7 @@ class UIMaster
             return;
 	  }
 	  finally {
+	    master.returnMasterMgrClient(client);
 	    master.endPanelOp(pChannel, "Done.");
 	  }
 	}
@@ -5640,8 +5813,14 @@ class UIMaster
 	    if(!proc.wasSuccessful() && !ignoreExitCode) 
 	      master.showSubprocessFailureDialog("Editor Failure:", proc);
 
-	    if((client != null) && (editID != null))
-	      client.editingFinished(editID);
+	    MasterMgrClient client = leaseMasterMgrClient();
+	    try {
+	      if((client != null) && (editID != null))
+	        client.editingFinished(editID);
+  	    }
+	    finally {
+	      returnMasterMgrClient(client);
+	    }
 	  }
 	  catch(Exception ex) {
 	    master.showErrorDialog(ex);
@@ -5684,6 +5863,7 @@ class UIMaster
       pDir        = dir; 
     } 
 
+    @Override
     public void 
     run() 
     {
@@ -5787,15 +5967,15 @@ class UIMaster
       pHardwareKeys  = hardwareKeys;
     }
 
+    @Override
     public void 
     run() 
     {
-      UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp(pChannel)) {
+      MasterMgrClient client = leaseMasterMgrClient();
+      if(beginPanelOp(pChannel)) {
 	try {
 	  for(String name : pNames) {
-	    master.updatePanelOp(pChannel, "Submitting Jobs to the Queue: " + name);
-	    MasterMgrClient client = master.getMasterMgrClient(pChannel);
+	    updatePanelOp(pChannel, "Submitting Jobs to the Queue: " + name);
 	    client.submitJobs(pAuthorName, pViewName, name, null, 
 			      pBatchSize, pPriority, pRampUp,
 			      pMaxLoad, pMinMemory, pMinDisk,
@@ -5803,11 +5983,12 @@ class UIMaster
 	  }
 	}
 	catch(PipelineException ex) {
-	  master.showErrorDialog(ex);
+	  showErrorDialog(ex);
 	  return;
 	}
 	finally {
-	  master.endPanelOp(pChannel, "Done.");
+	  returnMasterMgrClient(client);
+	  endPanelOp(pChannel, "Done.");
 	}
 
 	postOp();
@@ -5852,30 +6033,32 @@ class UIMaster
       pJobIDs  = jobIDs; 
     }
 
+    @Override
     public void 
     run() 
     {
-      UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp(pChannel)) {
+      if(beginPanelOp(pChannel)) {
+        QueueMgrClient client = leaseQueueMgrClient();
 	try {
 	  if((pNodeIDs != null) && !pNodeIDs.isEmpty()) {
             for(NodeID nodeID : pNodeIDs) {
-              master.updatePanelOp(pChannel, pMsg + " Jobs for Node: " + nodeID.getName());
-              performNodeOp(master.getQueueMgrClient(pChannel), nodeID); 
+              updatePanelOp(pChannel, pMsg + " Jobs for Node: " + nodeID.getName());
+              performNodeOp(client, nodeID); 
             }
           }
 
 	  if((pJobIDs != null) && !pJobIDs.isEmpty()) {
-            master.updatePanelOp(pChannel, pMsg + " Jobs...");
-            performJobOps(master.getQueueMgrClient(pChannel), pJobIDs); 
+            updatePanelOp(pChannel, pMsg + " Jobs...");
+            performJobOps(client, pJobIDs); 
           }
 	}
 	catch(PipelineException ex) {
-	  master.showErrorDialog(ex);
+	  showErrorDialog(ex);
 	  return;
 	}
 	finally {
-	  master.endPanelOp(pChannel, "Done.");
+	  returnQueueMgrClient(client);
+	  endPanelOp(pChannel, "Done.");
 	}
 
 	postOp();
@@ -5925,6 +6108,7 @@ class UIMaster
             channel, nodeIDs, jobIDs, author, view);
     }
 
+    @Override
     protected void 
     performNodeOp
     (
@@ -5936,6 +6120,7 @@ class UIMaster
       qclient.pauseJobs(nodeID); 
     }
 
+    @Override
     protected void 
     performJobOps
     (
@@ -5970,6 +6155,7 @@ class UIMaster
             channel, nodeIDs, jobIDs, author, view);
     }
 
+    @Override
     protected void 
     performNodeOp
     (
@@ -5981,6 +6167,7 @@ class UIMaster
       qclient.resumeJobs(nodeID); 
     }
 
+    @Override
     protected void 
     performJobOps
     (
@@ -6015,6 +6202,7 @@ class UIMaster
             channel, nodeIDs, jobIDs, author, view);
     }
 
+    @Override
     protected void 
     performNodeOp
     (
@@ -6026,6 +6214,7 @@ class UIMaster
       qclient.preemptJobs(nodeID); 
     }
 
+    @Override
     protected void 
     performJobOps
     (
@@ -6060,6 +6249,7 @@ class UIMaster
             channel, nodeIDs, jobIDs, author, view);
     }
 
+    @Override
     protected void 
     performNodeOp
     (
@@ -6071,6 +6261,7 @@ class UIMaster
       qclient.killJobs(nodeID); 
     }
 
+    @Override
     protected void 
     performJobOps
     (
@@ -6122,24 +6313,25 @@ class UIMaster
       pNames = names; 
     }
 
+    @Override
     public void 
     run() 
     {
-      UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp(pChannel)) {
+      if(beginPanelOp(pChannel)) {
+        MasterMgrClient client = leaseMasterMgrClient();
 	try {
 	  for(String name : pNames) {
-	    master.updatePanelOp(pChannel, "Vouching for: " + name);
-	    MasterMgrClient client = master.getMasterMgrClient(pChannel);
+	    updatePanelOp(pChannel, "Vouching for: " + name);
 	    client.vouch(pAuthorName, pViewName, name);
 	  }
 	}
 	catch(PipelineException ex) {
-	  master.showErrorDialog(ex);
+	  showErrorDialog(ex);
 	  return;
 	}
 	finally {
-	  master.endPanelOp(pChannel, "Done.");
+	  returnMasterMgrClient(client);
+	  endPanelOp(pChannel, "Done.");
 	}
 
 	postOp();
@@ -6188,15 +6380,16 @@ class UIMaster
       pNames = names; 
     }
 
+    @Override
     public void 
     run() 
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pChannel)) {
+        MasterMgrClient client = master.leaseMasterMgrClient();
 	try {
 	  for(String name : pNames) {
 	    master.updatePanelOp(pChannel, "Removing Files: " + name);
-	    MasterMgrClient client = master.getMasterMgrClient(pChannel);
 	    client.removeFiles(pAuthorName, pViewName, name, null);
 	  }
 	}
@@ -6205,6 +6398,7 @@ class UIMaster
 	  return;
 	}
 	finally {
+	  master.returnMasterMgrClient(client);
 	  master.endPanelOp(pChannel, "Done.");
 	}
 
@@ -6236,19 +6430,22 @@ class UIMaster
       pBackupFile = file;
     }
 
+    @Override
     public void 
     run() 
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp("Database Backup...")) {
+        MasterMgrClient client = master.leaseMasterMgrClient();
 	try {
-	  master.getMasterMgrClient().backupDatabase(pBackupFile);
+	  client.backupDatabase(pBackupFile);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
 	  return;
 	}
 	finally {
+	  master.returnMasterMgrClient(client);
 	  master.endPanelOp("Done.");
 	}
       }
@@ -6282,6 +6479,7 @@ class UIMaster
       pPostUpdateSelected = postUpdateSelected;
     }
 
+    @Override
     public void 
     run() 
     {
@@ -6334,6 +6532,7 @@ class UIMaster
       pPostUpdateSelected = postUpdateSelected;
     }
 
+    @Override
     public void 
     run() 
     {
@@ -6415,15 +6614,38 @@ class UIMaster
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The network interfaces to the <B>plmaster</B>(1) daemon.
+   * A pool of inactive connections to the master manager daemon: <B>plmaster<B>(1). <P> 
+   * 
+   * This field should not be access directly.  Instead a master manager connection should 
+   * be obtained with the {@link #leaseMasterMgrClient leaseMasterMgrClient} method and returned
+   * to the inactive pool with {@link #returnMasterMgrClient returnMasterMgrClient}.
    */ 
-  private MasterMgrClient[]  pMasterMgrClients;
+  private Stack<MasterMgrClient>  pMasterMgrClientStack;
+  
+  /**
+   * A list of all the master manager connections that have ever been handed out.
+   * <p>
+   * This data structure should NEVER be used for anything except disconnecting all the
+   * servers
+   */
+  private LinkedList<MasterMgrClient> pMasterMgrList;
+  
+  /**
+   * A pool of inactive connections to the queue manager daemon: <B>plqueuemgr<B>(1). <P> 
+   * 
+   * This field should not be access directly.  Instead a queue manager connection should 
+   * be obtained with the {@link #leaseQueueMgrClient leaseQueueMgrClient} method and returned
+   * to the inactive pool with {@link #returnQueueMgrClient returnQueueMgrClient}.
+   */ 
+  private Stack<QueueMgrClient>  pQueueMgrClientStack;
 
   /**
-   * The network interfaces to the <B>plqueuemgr</B>(1) daemon.
-   */ 
-  private QueueMgrClient[]  pQueueMgrClients;
-
+   * A list of all the queue manager connections that have ever been handed out.
+   * <p>
+   * This data structure should NEVER be used for anything except disconnecting all the
+   * servers
+   */
+  private LinkedList<QueueMgrClient> pQueueMgrList;
 
   /**
    * The remote control server thread or <CODE>null</CODE> if disabled.

@@ -1,18 +1,14 @@
-// $Id: JManageLicenseKeysDialog.java,v 1.9 2007/12/16 12:22:09 jesse Exp $
+// $Id: JManageLicenseKeysDialog.java,v 1.10 2009/03/19 20:32:28 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
-import java.awt.BorderLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.ArrayList;
+import java.awt.*;
+import java.awt.event.*;
 
-import javax.swing.JButton;
-import javax.swing.JPanel;
+import javax.swing.*;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.ui.JTablePanel;
-import us.temerity.pipeline.ui.JTopLevelDialog;
+import us.temerity.pipeline.ui.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   M A N A G E   L I C E N S E   K E Y S   D I A L O G                                    */
@@ -94,14 +90,18 @@ class JManageLicenseKeysDialog
   updateLicenseKeys() 
   { 
     UIMaster master = UIMaster.getInstance();
-    MasterMgrClient mclient = master.getMasterMgrClient();
-    QueueMgrClient qclient = master.getQueueMgrClient();
+    MasterMgrClient mclient = master.leaseMasterMgrClient();
+    QueueMgrClient qclient = master.leaseQueueMgrClient();
     try {
       pPrivilegeDetails = mclient.getPrivilegeDetails();
       pTableModel.setLicenseKeys(qclient.getLicenseKeys(), pPrivilegeDetails);
     }
     catch(PipelineException ex) {
       showErrorDialog(ex);
+    }
+    finally {
+      master.returnMasterMgrClient(mclient);
+      master.returnQueueMgrClient(qclient);
     }
 
     pAddButton.setEnabled(pPrivilegeDetails.isQueueAdmin());
@@ -177,7 +177,7 @@ class JManageLicenseKeysDialog
   setTotalKeys() 
   {
     UIMaster master = UIMaster.getInstance();
-    QueueMgrClient client = master.getQueueMgrClient();
+    QueueMgrClient client = master.leaseQueueMgrClient();
     try {
       int wk;
       for(wk=0; wk<pTableModel.getRowCount(); wk++) {
@@ -189,6 +189,9 @@ class JManageLicenseKeysDialog
     }
     catch(PipelineException ex) {
       showErrorDialog(ex);
+    }
+    finally {
+      master.returnQueueMgrClient(client);
     }
   }
 
@@ -209,7 +212,7 @@ class JManageLicenseKeysDialog
 	 (desc != null) && (desc.length() > 0)) {
 
 	UIMaster master = UIMaster.getInstance();
-	QueueMgrClient client = master.getQueueMgrClient();
+	QueueMgrClient client = master.leaseQueueMgrClient();
 	try {
 	  LicenseKey key = new LicenseKey(kname, desc, LicenseScheme.PerSlot, 0, null, null);
 	  client.addLicenseKey(key);
@@ -218,6 +221,9 @@ class JManageLicenseKeysDialog
 	}
 	catch(PipelineException ex) {
 	  showErrorDialog(ex);
+	}
+	finally {
+	  master.returnQueueMgrClient(client);
 	}
       }
     }
@@ -232,7 +238,7 @@ class JManageLicenseKeysDialog
     pTablePanel.cancelEditing();
 
     UIMaster master = UIMaster.getInstance();
-    QueueMgrClient client = master.getQueueMgrClient();
+    QueueMgrClient client = master.leaseQueueMgrClient();
     try {
       int rows[] = pTablePanel.getTable().getSelectedRows();
       int wk;
@@ -245,6 +251,9 @@ class JManageLicenseKeysDialog
     }
     catch(PipelineException ex) {
       showErrorDialog(ex);
+    }
+    finally {
+      master.returnQueueMgrClient(client);
     }
   }
 
@@ -277,8 +286,8 @@ class JManageLicenseKeysDialog
       BaseKeyChooser plugin = pKeyDetailsDialog.getKeyChooser();
       LicenseKey key = pTableModel.getKey(row);
       if(key != null) {
+        QueueMgrClient qclient = master.leaseQueueMgrClient();
         try {
-          QueueMgrClient qclient = master.getQueueMgrClient();
           LicenseKey newKey = 
             new LicenseKey(key.getName(), key.getDescription(), plugin,
                            key.getScheme(), key.getMaxSlots(), key.getMaxHosts(), key.getMaxHostSlots()); 
@@ -288,6 +297,9 @@ class JManageLicenseKeysDialog
         }
         catch(PipelineException ex) {
           showErrorDialog(ex);
+        }
+        finally {
+          master.returnQueueMgrClient(qclient);
         }
       }
     }

@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.58 2008/08/01 21:28:13 jesse Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.59 2009/03/19 20:32:28 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -378,6 +378,7 @@ class JQueueJobViewerPanel
   /** 
    * Get the title of this type of panel.
    */
+  @Override
   public String 
   getTypeName() 
   {
@@ -395,6 +396,7 @@ class JQueueJobViewerPanel
    * @param groupID
    *   The new group ID or (0) for no group assignment.
    */ 
+  @Override
   public void
   setGroupID
   (
@@ -420,6 +422,7 @@ class JQueueJobViewerPanel
   /**
    * Is the given group currently unused for this type of panel.
    */ 
+  @Override
   public boolean
   isGroupUnused
   (
@@ -437,6 +440,7 @@ class JQueueJobViewerPanel
   /**
    * Are the contents of the panel read-only. <P> 
    */ 
+  @Override
   public boolean
   isLocked() 
   {
@@ -446,6 +450,7 @@ class JQueueJobViewerPanel
   /**
    * Set the author and view.
    */ 
+  @Override
   public synchronized void 
   setAuthorView
   (
@@ -638,6 +643,7 @@ class JQueueJobViewerPanel
   /**
    * Reset the caches of toolset plugins and plugin menu layouts.
    */ 
+  @Override
   public void 
   clearPluginCache()
   {
@@ -673,6 +679,7 @@ class JQueueJobViewerPanel
   /**
    * Update the panel to reflect new user preferences.
    */ 
+  @Override
   public void 
   updateUserPrefs() 
   {
@@ -775,6 +782,9 @@ class JQueueJobViewerPanel
     updateMenuToolTip
       (pGroupViewItem, prefs.getEdit(), 
        "View the target files of the primary selected job group.");
+    updateMenuToolTip
+    (pGroupViewWithDefaultItem, prefs.getEditWithDefault(), 
+       "View the target files of the primary selected job group with its default editor.");
     updateMenuToolTip
       (pGroupQueueJobsItem, prefs.getQueueJobs(), 
        "Resubmit all aborted and failed selected jobs.");
@@ -913,10 +923,8 @@ class JQueueJobViewerPanel
 	ViewerJobGroup vgroup = new ViewerJobGroup(group, created, gheight); 
 	pViewerJobGroups.put(group.getGroupID(), vgroup);
 
-	double vspan = 0.0;
 	{
 	  BBox2d bbox = vgroup.getBounds();
-	  vspan = bbox.getRange().y(); 
 	  Vector2d offset = Vector2d.mult(bbox.getRange(), new Vector2d(0.5, -0.5));
 	  vgroup.setPosition(Point2d.add(ganchor, offset));
 	}
@@ -1218,6 +1226,7 @@ class JQueueJobViewerPanel
   /**
    * Make the given viewer job the primary selection.
    */ 
+  @SuppressWarnings({ "fallthrough", "incomplete-switch" })
   public void
   primarySelect
   (
@@ -1242,6 +1251,7 @@ class JQueueJobViewerPanel
   /**
    * Make the given viewer job group the primary selection.
    */ 
+  @SuppressWarnings({ "incomplete-switch", "fallthrough" })
   public void 
   primarySelect
   (
@@ -1269,6 +1279,7 @@ class JQueueJobViewerPanel
   /**
    * Add the given viewer job to the selection.
    */ 
+  @SuppressWarnings({ "fallthrough", "incomplete-switch" })
   public void 
   addSelect
   (
@@ -1291,6 +1302,7 @@ class JQueueJobViewerPanel
   /**
    * Add the given viewer job group to the selection.
    */ 
+  @SuppressWarnings({ "incomplete-switch", "fallthrough" })
   public void 
   addSelect
   (
@@ -1335,6 +1347,7 @@ class JQueueJobViewerPanel
   /**
    * Toggle the selection of the given viewer job.
    */ 
+  @SuppressWarnings("fallthrough")
   public void 
   toggleSelect
   (
@@ -1362,6 +1375,7 @@ class JQueueJobViewerPanel
   /**
    * Toggle the selection of the given viewer job group.
    */ 
+  @SuppressWarnings("fallthrough")
   public void 
   toggleSelect
   (
@@ -1464,6 +1478,7 @@ class JQueueJobViewerPanel
   /**
    * Called by the drawable to initiate OpenGL rendering by the client.
    */ 
+  @Override
   public void 
   display
   (
@@ -1539,6 +1554,7 @@ class JQueueJobViewerPanel
   /**
    * Invoked when a mouse button has been pressed on a component. 
    */
+  @Override
   public void 
   mousePressed
   (
@@ -1740,6 +1756,7 @@ class JQueueJobViewerPanel
   /**
    * Invoked when a mouse button has been released on a component. 
    */ 
+  @Override
   public void 
   mouseReleased
   (
@@ -1844,6 +1861,7 @@ class JQueueJobViewerPanel
    * Invoked when the mouse cursor has been moved onto a component but no buttons have 
    * been pushed. 
    */ 
+  @Override
   public void 	
   mouseMoved 
   (
@@ -1862,8 +1880,8 @@ class JQueueJobViewerPanel
 	if(pLastJobHintID != jobID) {
           UIMaster master = UIMaster.getInstance();
           if(master.beginSilentPanelOp(0)) {
+            QueueMgrClient qclient = master.leaseQueueMgrClient();
             try {
-              QueueMgrClient qclient = master.getQueueMgrClient(0);
               QueueJob job = qclient.getJob(jobID);
               QueueJobInfo info = qclient.getJobInfo(jobID);
               
@@ -1877,6 +1895,7 @@ class JQueueJobViewerPanel
             catch(PipelineException ex) {
             }
             finally {
+              master.returnQueueMgrClient(qclient);
               master.endSilentPanelOp(0);
             }
           }
@@ -2746,10 +2765,8 @@ class JQueueJobViewerPanel
     TreeSet<Long> preempt = new TreeSet<Long>();
     for(ViewerJob vjob : pSelected.values()) {
       JobStatus status = vjob.getJobStatus();
-      switch(status.getState()) {
-      case Running:
+      if (status.getState() == JobState.Running)
 	preempt.add(status.getJobID());
-      }
     }
 
     if(!preempt.isEmpty()) {
@@ -2764,6 +2781,7 @@ class JQueueJobViewerPanel
   /**
    * Change the jobs requirements associated with the selected jobs.
    */ 
+  @SuppressWarnings("incomplete-switch")
   private synchronized void 
   doChangeJobReqs() 
   {
@@ -2826,6 +2844,7 @@ class JQueueJobViewerPanel
   /**
    * Kill all jobs associated with the selected nodes.
    */ 
+  @SuppressWarnings("incomplete-switch")
   private synchronized void 
   doKillJobs() 
   {
@@ -2927,6 +2946,7 @@ class JQueueJobViewerPanel
   /*   G L U E A B L E                                                                      */
   /*----------------------------------------------------------------------------------------*/
 
+  @Override
   public synchronized void 
   toGlue
   ( 
@@ -2949,6 +2969,7 @@ class JQueueJobViewerPanel
     encoder.encode("HorizontalOrientation", pHorizontalOrientation);
   }
 
+  @Override
   public synchronized void 
   fromGlue
   (
@@ -3046,19 +3067,19 @@ class JQueueJobViewerPanel
       pEditorVendor  = evendor;       
     }
 
+    @Override
     @SuppressWarnings("deprecation")
     public void 
     run() 
     {
-      MasterMgrClient client = null;
       SubProcessLight proc = null;
       Long editID = null;
       {
  	UIMaster master = UIMaster.getInstance();
         boolean ignoreExitCode = false;
  	if(master.beginPanelOp(pGroupID, "Launching Node Editor...")) {
+ 	  MasterMgrClient client = master.leaseMasterMgrClient();
  	  try {
-	    client = master.getMasterMgrClient(pGroupID);
 
  	    NodeMod mod = client.getWorkingVersion(pNodeID);
  	    String author = pNodeID.getAuthor();
@@ -3141,6 +3162,7 @@ class JQueueJobViewerPanel
  	    return;
  	  }
  	  finally {
+ 	    master.returnMasterMgrClient(client);
  	    master.endPanelOp(pGroupID, "Done.");
  	  }
  	}
@@ -3151,9 +3173,15 @@ class JQueueJobViewerPanel
  	    proc.join();
 	    if(!proc.wasSuccessful() && !ignoreExitCode) 
  	      master.showSubprocessFailureDialog("Editor Failure:", proc);
-
-	    if((client != null) && (editID != null))
-	      client.editingFinished(editID);
+	    
+	    MasterMgrClient client = master.leaseMasterMgrClient();
+	    try {
+	      if(editID != null)
+	        client.editingFinished(editID);
+	    }
+	    finally {
+	      master.returnMasterMgrClient(client);
+	    }
  	  }
  	  catch(Exception ex) {
  	    master.showErrorDialog(ex);
@@ -3221,16 +3249,18 @@ class JQueueJobViewerPanel
       pSpecial       = special;
     }
 
+    @Override
     public void 
     run() 
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID)) {
+        MasterMgrClient client = master.leaseMasterMgrClient();
+        QueueMgrClient queue = master.leaseQueueMgrClient();
 	try {
 	  for(NodeID nodeID : pTargets.keySet()) {
 	    master.updatePanelOp(pGroupID, 
 				 "Resubmitting Jobs to the Queue: " + nodeID.getName());
-	    MasterMgrClient client = master.getMasterMgrClient(pGroupID);
 	    TreeMap<Long, TreeSet<FileSeq>> targets = pTargets.get(nodeID);
 	    long jobID = targets.firstKey();
 	    if (pSpecial) 
@@ -3239,15 +3269,12 @@ class JQueueJobViewerPanel
 	          pMaxLoad, pMinMemory, pMinDisk,
 	         pSelectionKeys, pLicenseKeys, pHardwareKeys);
 	    else {
-	      
-	      QueueMgrClient queue = master.getQueueMgrClient(pGroupID);
 	      QueueJob job = queue.getJob(jobID);
 	      JobReqs reqs = job.getJobRequirements();
 	      client.resubmitJobs
 	        (nodeID, targets.get(jobID), pBatchSize, reqs.getPriority(), reqs.getRampUp(),
 	         reqs.getMaxLoad(), reqs.getMinMemory(), reqs.getMinDisk(),
 	         reqs.getSelectionKeys(), reqs.getLicenseKeys(), reqs.getHardwareKeys());
-
 	    }
 	  }
 	}
@@ -3256,6 +3283,8 @@ class JQueueJobViewerPanel
 	  return;
 	}
 	finally {
+	  master.returnMasterMgrClient(client);
+	  master.returnQueueMgrClient(queue);
 	  master.endPanelOp(pGroupID, "Done.");
 	}
 
@@ -3294,19 +3323,22 @@ class JQueueJobViewerPanel
       pJobIDs = jobIDs;
     }
 
+    @Override
     public void 
     run() 
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Pausing Jobs...")) {
+        QueueMgrClient client = master.leaseQueueMgrClient();
 	try { 
-	  master.getQueueMgrClient(pGroupID).pauseJobs(pJobIDs);
+	  client.pauseJobs(pJobIDs);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
 	  return;
 	}
 	finally {
+	  master.returnQueueMgrClient(client);
 	  master.endPanelOp(pGroupID, "Done.");
 	}
 
@@ -3335,19 +3367,22 @@ class JQueueJobViewerPanel
       pJobIDs = jobIDs;
     }
 
+    @Override
     public void 
     run() 
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Resuming Paused Jobs...")) {
+        QueueMgrClient client = master.leaseQueueMgrClient();
 	try {
-	  master.getQueueMgrClient(pGroupID).resumeJobs(pJobIDs);
+	  client.resumeJobs(pJobIDs);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
 	  return;
 	}
 	finally {
+	  master.returnQueueMgrClient(client);
 	  master.endPanelOp(pGroupID, "Done.");
 	}
 
@@ -3376,19 +3411,22 @@ class JQueueJobViewerPanel
       pJobIDs = jobIDs;
     }
 
+    @Override
     public void 
     run() 
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Preempting Jobs...")) {
+        QueueMgrClient client = master.leaseQueueMgrClient();
 	try {
-	  master.getQueueMgrClient(pGroupID).preemptJobs(pJobIDs);
+	  client.preemptJobs(pJobIDs);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
 	  return;
 	}
 	finally {
+	  master.returnQueueMgrClient(client);
 	  master.endPanelOp(pGroupID, "Done.");
 	}
 
@@ -3417,19 +3455,22 @@ class JQueueJobViewerPanel
       pJobIDs = jobIDs;
     }
 
+    @Override
     public void 
     run() 
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Killing Jobs...")) {
+        QueueMgrClient client = master.leaseQueueMgrClient();
 	try {
-	  master.getQueueMgrClient(pGroupID).killJobs(pJobIDs);
+	  client.killJobs(pJobIDs);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
 	  return;
 	}
 	finally {
+	  master.returnQueueMgrClient(client);
 	  master.endPanelOp(pGroupID, "Done.");
 	}
 
@@ -3458,19 +3499,22 @@ class JQueueJobViewerPanel
       pJobReqChanges = jobReqChanges;
     }
 
+    @Override
     public void 
     run() 
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Changing Job Reqs...")) {
+        QueueMgrClient client = master.leaseQueueMgrClient();
 	try {
-	  master.getQueueMgrClient(pGroupID).changeJobReqs(pJobReqChanges);
+	  client.changeJobReqs(pJobReqChanges);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
 	  return;
 	}
 	finally {
+	  master.returnQueueMgrClient(client);
 	  master.endPanelOp(pGroupID, "Done.");
 	}
 
@@ -3500,19 +3544,22 @@ class JQueueJobViewerPanel
       pGroupAuthors = groupAuthors;
     }
 
+    @Override
     public void 
     run() 
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Deleting Job Groups...")) {
+        QueueMgrClient client = master.leaseQueueMgrClient();
 	try {
-	  master.getQueueMgrClient(pGroupID).deleteJobGroups(pGroupAuthors);
+	  client.deleteJobGroups(pGroupAuthors);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
 	  return;
 	}
 	finally {
+	  master.returnQueueMgrClient(client);
 	  master.endPanelOp(pGroupID, "Done.");
 	}
 
@@ -3667,7 +3714,6 @@ class JQueueJobViewerPanel
   private JMenuItem  pToggleOrientationItem;
   private JMenuItem  pShowHideDetailHintsItem;
   private JMenuItem  pShowHideToolsetHintItem;
-  private JMenuItem  pShowHideEditorHintItem;
   private JMenuItem  pShowHideActionHintItem;
   private JMenuItem  pShowHideHostHintItem;
   private JMenuItem  pShowHideTimingHintItem;
@@ -3716,7 +3762,6 @@ class JQueueJobViewerPanel
   private JMenuItem  pGroupKillJobsItem;
   private JMenuItem  pGroupHideGroupsItem;
   private JMenuItem  pGroupDeleteGroupsItem;
-  private JMenuItem  pGroupChangeJobReqsItem;
   private JMenuItem  pGroupShowNodeItem;
 
   /**

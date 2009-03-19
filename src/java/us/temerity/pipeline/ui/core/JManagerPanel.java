@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.55 2008/12/18 00:36:32 jim Exp $
+// $Id: JManagerPanel.java,v 1.56 2009/03/19 20:32:28 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -3193,15 +3193,15 @@ class JManagerPanel
 
     if(diag.wasConfirmed()) {
       master.doUponExit();
-      master.getQueueMgrClient().disconnect();
+      master.disconnectQueueMgrClients();
 
       try {
 	boolean jobMgrs   = diag.shutdownJobMgrs();
 	boolean pluginMgr = diag.shutdownPluginMgr();
 	if(jobMgrs || pluginMgr) 
-	  master.getMasterMgrClient().shutdown(jobMgrs, pluginMgr);
+	  master.leaseMasterMgrClient().shutdown(jobMgrs, pluginMgr);
 	else 
-	  master.getMasterMgrClient().shutdown();
+	  master.leaseMasterMgrClient().shutdown();
       }
       catch(PipelineException ex) {
       }
@@ -3419,7 +3419,7 @@ class JManagerPanel
       /* privileged status */ 
       {
  	UIMaster master = UIMaster.getInstance();
-	MasterMgrClient client = master.getMasterMgrClient();
+	MasterMgrClient client = master.leaseMasterMgrClient();
  	try {
  	  PrivilegeDetails privileges = client.getCachedPrivilegeDetails();
  	  pBackupDatabaseItem.setEnabled
@@ -3431,6 +3431,9 @@ class JManagerPanel
  	}
  	catch(PipelineException ex) {
  	  master.showErrorDialog(ex);
+ 	}
+ 	finally {
+ 	  master.returnMasterMgrClient(client);
  	}
       } 
       
@@ -3659,6 +3662,7 @@ class JManagerPanel
     /**
      * Invoked when the mouse enters a component. 
      */
+    @Override
     public void 
     mouseEntered
     (
@@ -3671,6 +3675,7 @@ class JManagerPanel
     /**
      * Invoked when the mouse exits a component. 
      */ 
+    @Override
     public void 
     mouseExited
     (
@@ -3763,17 +3768,17 @@ class JManagerPanel
   public void 
   toGlue
   ( 
-   GlueEncoder encoder   
+    GlueEncoder encoder   
   ) 
     throws GlueException
   {
-    encoder.encode("Contents", (Glueable) getContents());
+    encoder.encode("Contents", getContents());
   }
 
   public void 
   fromGlue
   (
-   GlueDecoder decoder 
+    GlueDecoder decoder 
   ) 
     throws GlueException
   {
@@ -3812,6 +3817,7 @@ class JManagerPanel
     new ImageIcon(LookAndFeelLoader.class.getResource("Group9.png"))
   };
 
+  @SuppressWarnings("unused")
   private static final Icon sGroupSelectedIcons[] = {
     new ImageIcon(LookAndFeelLoader.class.getResource("Group0Selected.png")),
     new ImageIcon(LookAndFeelLoader.class.getResource("Group1Selected.png")),

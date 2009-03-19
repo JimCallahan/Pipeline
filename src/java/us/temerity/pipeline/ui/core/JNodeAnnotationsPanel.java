@@ -1,4 +1,4 @@
-// $Id: JNodeAnnotationsPanel.java,v 1.16 2009/03/02 05:11:58 jim Exp $
+// $Id: JNodeAnnotationsPanel.java,v 1.17 2009/03/19 20:32:28 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1757,37 +1757,42 @@ class JNodeAnnotationsPanel
       Set<String> workGroups = null;
       if(pAnnotation != null) {
         UIMaster master = UIMaster.getInstance();
-        MasterMgrClient mclient = master.getMasterMgrClient();
+        MasterMgrClient mclient = master.leaseMasterMgrClient();
+        
+        try {
+          boolean needsToolsets = false;
+          boolean needsWorkGroups = false;
+          for(AnnotationParam aparam : pAnnotation.getParams()) {
+            if(aparam instanceof ToolsetAnnotationParam) 
+              needsToolsets = true;
+            else if(aparam instanceof WorkGroupAnnotationParam) 
+              needsWorkGroups = true;
+          }
 
-        boolean needsToolsets = false;
-        boolean needsWorkGroups = false;
-        for(AnnotationParam aparam : pAnnotation.getParams()) {
-          if(aparam instanceof ToolsetAnnotationParam) 
-            needsToolsets = true;
-          else if(aparam instanceof WorkGroupAnnotationParam) 
-            needsWorkGroups = true;
+          if(needsToolsets) {
+            toolsets = new TreeSet<String>();
+            toolsets.add("-");
+            try {
+              toolsets.addAll(mclient.getActiveToolsetNames());
+            }
+            catch(PipelineException ex) {
+            }
+          }
+
+          if(needsWorkGroups) {
+            try {
+              WorkGroups wgroups = mclient.getWorkGroups();
+              workGroups = wgroups.getGroups();
+              workUsers  = wgroups.getUsers();
+            }
+            catch(PipelineException ex) {
+              workGroups = new TreeSet<String>(); 
+              workUsers  = new TreeSet<String>(); 
+            }
+          }
         }
-
-        if(needsToolsets) {
-          toolsets = new TreeSet<String>();
-          toolsets.add("-");
-          try {
-            toolsets.addAll(mclient.getActiveToolsetNames());
-          }
-          catch(PipelineException ex) {
-          }
-        }
-
-        if(needsWorkGroups) {
-          try {
-            WorkGroups wgroups = mclient.getWorkGroups();
-            workGroups = wgroups.getGroups();
-            workUsers  = wgroups.getUsers();
-          }
-          catch(PipelineException ex) {
-            workGroups = new TreeSet<String>(); 
-            workUsers  = new TreeSet<String>(); 
-          }
+        finally {
+          master.returnMasterMgrClient(mclient);
         }
       }
 
@@ -2116,9 +2121,8 @@ class JNodeAnnotationsPanel
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Applying Annotation Changes...")) {
+        MasterMgrClient mclient = master.leaseMasterMgrClient();
 	try {
-          MasterMgrClient mclient = master.getMasterMgrClient();
-
           for(String aname : pDead) 
             mclient.removeAnnotation(pNodeName, aname); 
 
@@ -2132,6 +2136,7 @@ class JNodeAnnotationsPanel
 	  return;
 	}
 	finally {
+	  master.returnMasterMgrClient(mclient);
 	  master.endPanelOp(pGroupID, "Done.");
 	}
 

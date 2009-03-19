@@ -1,15 +1,15 @@
-// $Id: JOfflineDialog.java,v 1.7 2008/05/08 22:46:42 jim Exp $
+// $Id: JOfflineDialog.java,v 1.8 2009/03/19 20:32:28 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
-
-import us.temerity.pipeline.*;
-import us.temerity.pipeline.ui.*;
 
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
+
 import javax.swing.*;
-import javax.swing.event.*;
+
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.ui.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   O F F L I N E   D I A L O G                                                            */
@@ -240,12 +240,15 @@ class JOfflineDialog
   updatePanel() 
   {
     UIMaster master = UIMaster.getInstance();
-    MasterMgrClient client = master.getMasterMgrClient();
+    MasterMgrClient client = master.leaseMasterMgrClient();
     try {
       pPrivilegeDetails = client.getPrivilegeDetails();
     }
     catch(PipelineException ex) {
       showErrorDialog(ex);
+    }
+    finally {
+      master.returnMasterMgrClient(client);
     }
 
     updateButtons();
@@ -272,6 +275,7 @@ class JOfflineDialog
   /** 
    * Invoked when an action occurs. 
    */ 
+  @Override
   public void 
   actionPerformed
   (
@@ -520,20 +524,22 @@ class JOfflineDialog
       pUnusedOnly    = unusedOnly; 
     }
 
+    @Override
     public void 
     run() 
     {
       UIMaster master = UIMaster.getInstance();
       ArrayList<OfflineInfo> info = null;
       if(master.beginPanelOp("Searching for Candidate Versions...")) {
+        MasterMgrClient client = master.leaseMasterMgrClient();
 	try {
-	  MasterMgrClient client = master.getMasterMgrClient();
 	  info = client.offlineQuery(pPattern, pExcludeLatest, pMinArchives, pUnusedOnly);
 	}
 	catch(PipelineException ex) {
 	  showErrorDialog(ex);
 	}
 	finally {
+	  master.returnMasterMgrClient(client);
 	  master.endPanelOp("Done.");
 	}
       }
@@ -565,6 +571,7 @@ class JOfflineDialog
       pInfo = info;
     }
 
+    @Override
     public void 
     run() 
     {
@@ -595,11 +602,12 @@ class JOfflineDialog
       pVersions = versions;
     }
 
+    @Override
     public void 
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      MasterMgrClient client = master.getMasterMgrClient();
+      MasterMgrClient client = master.leaseMasterMgrClient();
       TreeMap<String,TreeMap<VersionID,Long>> data = null;
       if(master.beginPanelOp("Calculating File Sizes...")) {
 	try {
@@ -609,6 +617,7 @@ class JOfflineDialog
 	  showErrorDialog(ex);
 	}
 	finally {
+	  master.returnMasterMgrClient(client);
 	  master.endPanelOp("Done.");
 	}
       }
@@ -654,6 +663,7 @@ class JOfflineDialog
       pData = data;
     }
 
+    @Override
     public void 
     run() 
     {
@@ -696,11 +706,12 @@ class JOfflineDialog
       pVersions = versions; 
     }
 
+    @Override
     public void 
     run() 
     {  
       UIMaster master = UIMaster.getInstance();
-      MasterMgrClient client = master.getMasterMgrClient();
+      MasterMgrClient client = master.leaseMasterMgrClient();
       if(master.beginPanelOp("Offlining Checked-In Versions...")) {
 	try {
 	  client.offline(pVersions); 
@@ -710,6 +721,7 @@ class JOfflineDialog
 	  return;
 	}
 	finally {
+	  master.returnMasterMgrClient(client);
 	  master.endPanelOp("Done.");
 	}
 
@@ -734,6 +746,7 @@ class JOfflineDialog
       super("JOfflineDialog:RemoveAllTask");
     }
 
+    @Override
     public void 
     run() 
     {

@@ -1,4 +1,4 @@
-// $Id: JArchiveVolumesDialog.java,v 1.7 2009/03/01 20:52:42 jim Exp $
+// $Id: JArchiveVolumesDialog.java,v 1.8 2009/03/19 20:32:28 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -276,6 +276,7 @@ class JArchiveVolumesDialog
   /**
    * Update the archive detailes panel components.
    */
+  @SuppressWarnings("unchecked")
   private void 
   updateDetails
   (
@@ -493,6 +494,7 @@ class JArchiveVolumesDialog
   /**
    * Shows or hides this component.
    */ 
+  @Override
   public void 
   setVisible
   (
@@ -588,6 +590,7 @@ class JArchiveVolumesDialog
   /** 
    * Invoked when an action occurs. 
    */ 
+  @Override
   public void 
   actionPerformed
   (
@@ -748,11 +751,12 @@ class JArchiveVolumesDialog
       pParent = parent;
     }
 
+    @Override
     public void 
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      MasterMgrClient client = master.getMasterMgrClient();
+      MasterMgrClient client = master.leaseMasterMgrClient();
       synchronized(pUpdateLock) {
 	if(master.beginPanelOp()) {
 	  try {
@@ -777,6 +781,7 @@ class JArchiveVolumesDialog
 	    showErrorDialog(ex);
 	  }
 	  finally {
+	    master.returnMasterMgrClient(client);
 	    master.endPanelOp("Done.");
 	  }
 	}
@@ -806,6 +811,7 @@ class JArchiveVolumesDialog
       pParent = parent;
     }
 
+    @Override
     public void 
     run() 
     {
@@ -859,11 +865,12 @@ class JArchiveVolumesDialog
       pArchiveName = aname;
     }
 
+    @Override
     public void 
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      MasterMgrClient client = master.getMasterMgrClient();
+      MasterMgrClient client = master.leaseMasterMgrClient();
       ArchiveVolume volume = null;
       TreeMap<String,TreeSet<VersionID>> offline = new TreeMap<String,TreeSet<VersionID>>();
       if(pArchiveName != null) {
@@ -891,7 +898,8 @@ class JArchiveVolumesDialog
 	      showErrorDialog(ex);
 	    }
 	    finally {
-	    master.endPanelOp("Done.");
+	      master.returnMasterMgrClient(client);
+	      master.endPanelOp("Done.");
 	    }
 	  }
 	}
@@ -924,6 +932,7 @@ class JArchiveVolumesDialog
       pOffline = offline;
     }
 
+    @Override
     public void 
     run() 
     {
@@ -960,20 +969,23 @@ class JArchiveVolumesDialog
       pVersions = versions;
     }
 
+    @Override
     public void 
     run() 
     {
       UIMaster master = UIMaster.getInstance();
       synchronized(pUpdateLock) {
 	if(master.beginPanelOp("Requesting Restore...")) {
+	  MasterMgrClient client = master.leaseMasterMgrClient();
 	  try {
-	    master.getMasterMgrClient().requestRestore(pVersions);
+	    client.requestRestore(pVersions);
 	  }
 	  catch(PipelineException ex) {
 	    showErrorDialog(ex);
 	    return;
 	  }
 	  finally {
+	    master.returnMasterMgrClient(client);
 	    master.endPanelOp("Done.");
 	  }
 	}
@@ -1003,6 +1015,7 @@ class JArchiveVolumesDialog
       pName = aname;
     }
 
+    @Override
     public void 
     run() 
     {
@@ -1010,14 +1023,16 @@ class JArchiveVolumesDialog
       String output = null;
       synchronized(pUpdateLock) {
 	if(master.beginPanelOp("Loading Archiver Output: " + pName)) {
+	  MasterMgrClient client = master.leaseMasterMgrClient(); 
 	  try {
-	    output = master.getMasterMgrClient().getArchivedOutput(pName);
+	    output = client.getArchivedOutput(pName);
 	  }
 	  catch(PipelineException ex) {
 	    showErrorDialog(ex);
 	    return;
 	  }
 	  finally {
+	    master.returnMasterMgrClient(client);
 	    master.endPanelOp("Done.");
 	  }
 	}
@@ -1052,6 +1067,7 @@ class JArchiveVolumesDialog
       pStamp = stamp; 
     }
 
+    @Override
     public void 
     run() 
     {
@@ -1059,14 +1075,16 @@ class JArchiveVolumesDialog
       String output = null;
       synchronized(pUpdateLock) {
 	if(master.beginPanelOp("Loading Archiver Output: " + pName)) {
+	  MasterMgrClient client = master.leaseMasterMgrClient();
 	  try {
-	    output = master.getMasterMgrClient().getRestoredOutput(pName, pStamp);
+	    output = client.getRestoredOutput(pName, pStamp);
 	  }
 	  catch(PipelineException ex) {
 	    showErrorDialog(ex);
 	    return;
 	  }
 	  finally {
+	    master.returnMasterMgrClient(client);
 	    master.endPanelOp("Done.");
 	  }
 	}
@@ -1109,6 +1127,7 @@ class JArchiveVolumesDialog
 	pMessage = msg; 
     }
 
+    @Override
     public void 
     run() 
     {

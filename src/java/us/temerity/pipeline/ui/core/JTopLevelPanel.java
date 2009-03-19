@@ -1,17 +1,16 @@
-// $Id: JTopLevelPanel.java,v 1.12 2007/05/29 22:23:08 jim Exp $
+// $Id: JTopLevelPanel.java,v 1.13 2009/03/19 20:32:28 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
-import us.temerity.pipeline.*;
-import us.temerity.pipeline.ui.*;
-import us.temerity.pipeline.glue.*;
-
 import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
-import javax.swing.plaf.basic.*;
 import java.util.*;
 import java.util.concurrent.atomic.*;
+
+import javax.swing.*;
+
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.glue.*;
+import us.temerity.pipeline.ui.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   T O P   L E V E L   P A N E L                                                          */
@@ -235,12 +234,15 @@ class JTopLevelPanel
   updatePrivileges() 
   {
     UIMaster master = UIMaster.getInstance();
-    MasterMgrClient client = master.getMasterMgrClient(pGroupID);
+    MasterMgrClient client = master.leaseMasterMgrClient();
     try {
       pPrivilegeDetails = client.getCachedPrivilegeDetails();
     }
     catch(PipelineException ex) {
       master.showErrorDialog(ex);
+    }
+    finally {
+      master.returnMasterMgrClient(client);
     }
 
     updateManagerTitlePanel();
@@ -610,6 +612,7 @@ class JTopLevelPanel
       return pWasConfirmed;
     }
 
+    @Override
     public void 
     run() 
     {  

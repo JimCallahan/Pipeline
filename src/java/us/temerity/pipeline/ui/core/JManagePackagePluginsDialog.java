@@ -1,18 +1,12 @@
-// $Id: JManagePackagePluginsDialog.java,v 1.9 2008/01/28 11:58:51 jesse Exp $
+// $Id: JManagePackagePluginsDialog.java,v 1.10 2009/03/19 20:32:28 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
-import us.temerity.pipeline.*;
-import us.temerity.pipeline.ui.*; 
-import us.temerity.pipeline.math.*; 
-
-import java.awt.*;
 import java.awt.event.*;
-import java.io.*;
 import java.util.*;
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.tree.*;
+
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.ui.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   M A N A G E   P A C K A G E   P L U G I N S   D I A L O G                              */
@@ -109,8 +103,6 @@ class JManagePackagePluginsDialog
    PrivilegeDetails privileges
   )
   {
-    UIMaster master = UIMaster.getInstance();
-    MasterMgrClient client = master.getMasterMgrClient();
     PluginMgrClient pclient = PluginMgrClient.getInstance();
     try {
       if(vid == null)
@@ -224,6 +216,7 @@ class JManagePackagePluginsDialog
   /**
    * Apply changes and close. 
    */ 
+  @Override
   public void 
   doConfirm()
   {
@@ -234,6 +227,7 @@ class JManagePackagePluginsDialog
   /**
    * Apply changes and continue. 
    */ 
+  @Override
   public void 
   doApply()
   {

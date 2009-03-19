@@ -1,4 +1,4 @@
-// $Id: JRestoreDialog.java,v 1.11 2008/05/08 22:46:42 jim Exp $
+// $Id: JRestoreDialog.java,v 1.12 2009/03/19 20:32:28 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -324,12 +324,15 @@ class JRestoreDialog
   updatePanel() 
   {
     UIMaster master = UIMaster.getInstance();
-    MasterMgrClient client = master.getMasterMgrClient();
+    MasterMgrClient client = master.leaseMasterMgrClient();
     try {
       pPrivilegeDetails = client.getPrivilegeDetails();
     }
     catch(PipelineException ex) {
       showErrorDialog(ex);
+    }
+    finally {
+      master.returnMasterMgrClient(client);
     }
 
     updateButtons();
@@ -368,6 +371,7 @@ class JRestoreDialog
   /**
    * Shows or hides this component.
    */ 
+  @Override
   public void 
   setVisible
   (
@@ -430,6 +434,7 @@ class JRestoreDialog
   /** 
    * Invoked when an action occurs. 
    */ 
+  @Override
   public void 
   actionPerformed
   (
@@ -687,6 +692,7 @@ class JRestoreDialog
       super("JRestoreDialog:GetRequestsTask");
     }
 
+    @Override
     public void 
     run() 
     {
@@ -694,14 +700,15 @@ class JRestoreDialog
       TreeMap<String,TreeMap<VersionID,RestoreRequest>> reqs = null;
       synchronized(pUpdateLock) {
 	if(master.beginPanelOp("Loading Restore Requests...")) {
+	  MasterMgrClient client = master.leaseMasterMgrClient();
 	  try {
-	    MasterMgrClient client = master.getMasterMgrClient();
 	    reqs = client.getRestoreRequests();
 	  }
 	  catch(PipelineException ex) {
 	    showErrorDialog(ex);
 	  }
 	  finally {
+	    master.returnMasterMgrClient(client);
 	    master.endPanelOp("Done.");
 	  }
 	}
@@ -729,6 +736,7 @@ class JRestoreDialog
       pRequests = reqs;
     }
 
+    @Override
     public void 
     run() 
     {
@@ -759,11 +767,12 @@ class JRestoreDialog
       pVersions = versions;
     }
 
+    @Override
     public void 
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      MasterMgrClient client = master.getMasterMgrClient();
+      MasterMgrClient client = master.leaseMasterMgrClient();
       synchronized(pUpdateLock) {
 	if(master.beginPanelOp("Denying Requests...")) {
 	  try {
@@ -773,6 +782,7 @@ class JRestoreDialog
 	    showErrorDialog(ex);
 	  }
 	  finally {
+	    master.returnMasterMgrClient(client);
 	    master.endPanelOp("Done.");
 	  }
 	}
@@ -805,11 +815,12 @@ class JRestoreDialog
       pData = data;
     }
 
+    @Override
     public void 
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      MasterMgrClient client = master.getMasterMgrClient();
+      MasterMgrClient client = master.leaseMasterMgrClient();
 
       TreeMap<String,TreeMap<VersionID,TreeSet<String>>> contains = null;
       ArrayList<ArchiveVolume> volumes = null;
@@ -844,6 +855,7 @@ class JRestoreDialog
 	    showErrorDialog(ex);
 	  }
 	  finally {
+	    master.returnMasterMgrClient(client);
 	    master.endPanelOp("Done.");
 	  }
 	}
@@ -878,6 +890,7 @@ class JRestoreDialog
       pVolumes  = volumes; 
     }
 
+    @Override
     public void 
     run() 
     {
@@ -940,6 +953,7 @@ class JRestoreDialog
       pVersions = versions; 
     }
 
+    @Override
     public void 
     run() 
     {  
@@ -1017,11 +1031,12 @@ class JRestoreDialog
     }
     
 
+    @Override
     public void 
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      MasterMgrClient client = master.getMasterMgrClient();
+      MasterMgrClient client = master.leaseMasterMgrClient();
 
       String aname = pNames.get(pIndex);
       synchronized(pUpdateLock) {
@@ -1045,6 +1060,7 @@ class JRestoreDialog
  	    return;
  	  }
  	  finally {
+ 	    master.returnMasterMgrClient(client);
  	    master.endPanelOp("Done.");
  	  }
 	  
@@ -1092,6 +1108,7 @@ class JRestoreDialog
       pVersions = versions;
     }
 
+    @Override
     public void 
     run() 
     {

@@ -1,20 +1,15 @@
-// $Id: JNodeLinksPanel.java,v 1.29 2009/03/01 20:54:48 jim Exp $
+// $Id: JNodeLinksPanel.java,v 1.30 2009/03/19 20:32:28 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.ui.*;
-import us.temerity.pipeline.glue.*;
 import us.temerity.pipeline.laf.LookAndFeelLoader;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.io.*;
 import java.util.*;
-import java.text.*;
 import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.tree.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   N O D E   L I N K S   P A N E L                                                        */
@@ -275,6 +270,7 @@ class JNodeLinksPanel
   /** 
    * Get the title of this type of panel.
    */
+  @Override
   public String 
   getTypeName() 
   {
@@ -292,6 +288,7 @@ class JNodeLinksPanel
    * @param groupID
    *   The new group ID or (0) for no group assignment.
    */ 
+  @Override
   public void
   setGroupID
   (
@@ -317,6 +314,7 @@ class JNodeLinksPanel
   /**
    * Is the given group currently unused for this type of panel.
    */ 
+  @Override
   public boolean
   isGroupUnused
   (
@@ -333,6 +331,7 @@ class JNodeLinksPanel
   /**
    * Are the contents of the panel read-only. <P> 
    */ 
+  @Override
   public boolean
   isLocked() 
   {
@@ -342,6 +341,7 @@ class JNodeLinksPanel
   /**
    * Set the author and view.
    */ 
+  @Override
   public synchronized void 
   setAuthorView
   (
@@ -409,6 +409,7 @@ class JNodeLinksPanel
    * 
    * This method is run by the Swing Event thread.
    */ 
+  @Override
   public void 
   postPanelOp() 
   {
@@ -421,6 +422,7 @@ class JNodeLinksPanel
   /**
    * Register the name of a panel property which has just been modified.
    */ 
+  @Override
   public void
   unsavedChange
   (
@@ -819,6 +821,7 @@ class JNodeLinksPanel
   /**
    * Reset the caches of toolset plugins and plugin menu layouts.
    */ 
+  @Override
   public void 
   clearPluginCache()
   {
@@ -860,6 +863,7 @@ class JNodeLinksPanel
   /**
    * Update the panel to reflect new user preferences.
    */ 
+  @Override
   public void 
   updateUserPrefs() 
   {
@@ -1152,6 +1156,7 @@ class JNodeLinksPanel
   /**
    * Replace working files with the selected checked-in files.
    */ 
+  @Override
   public void 
   doApply()
   {
@@ -1862,6 +1867,7 @@ class JNodeLinksPanel
       super(isExtended, vid);
     }
 
+    @Override
     public void 
     setSelected
     (
@@ -2325,18 +2331,19 @@ class JNodeLinksPanel
     {
       super("JNodeLinksPanel:ApplyTask");
 
-      pLinks = links;
+      pLinksLocal = links;
     }
 
+    @Override
     public void 
     run() 
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Modifying Link Properties...")) {
+        MasterMgrClient client = master.leaseMasterMgrClient();
 	try {
-	  MasterMgrClient client = master.getMasterMgrClient(pGroupID);
-	  for(String sname : pLinks.keySet()) {
-	    LinkCommon link = pLinks.get(sname);
+	  for(String sname : pLinksLocal.keySet()) {
+	    LinkCommon link = pLinksLocal.get(sname);
 	    client.link(pAuthor, pView, pStatus.getName(), sname, 
 			link.getPolicy(), link.getRelationship(), link.getFrameOffset());
 	  }
@@ -2346,6 +2353,7 @@ class JNodeLinksPanel
 	  return;
 	}
 	finally {
+	  master.returnMasterMgrClient(client);
 	  master.endPanelOp(pGroupID, "Done.");
 	}
 
@@ -2353,7 +2361,7 @@ class JNodeLinksPanel
       }
     }
 
-    private  TreeMap<String,LinkCommon>  pLinks; 
+    private  TreeMap<String,LinkCommon>  pLinksLocal; 
   }
 
 
@@ -2377,20 +2385,22 @@ class JNodeLinksPanel
       pSourceName = name;
     }
 
+    @Override
     public void 
     run() 
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Unlinking Node...")) {
+        MasterMgrClient client = master.leaseMasterMgrClient();
 	try {
-	  MasterMgrClient client = master.getMasterMgrClient(pGroupID);
-	  master.getMasterMgrClient().unlink(pAuthor, pView, pStatus.getName(), pSourceName);
+	  client.unlink(pAuthor, pView, pStatus.getName(), pSourceName);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
 	  return;
 	}
 	finally {
+	  master.returnMasterMgrClient(client);
 	  master.endPanelOp(pGroupID, "Done.");
 	}
 
@@ -2490,6 +2500,7 @@ class JNodeLinksPanel
       setName("JNodeLinksPanel:QueueJobsTask");
     }
 
+    @Override
     protected void
     postOp() 
     {
@@ -2514,6 +2525,7 @@ class JNodeLinksPanel
       setName("JNodeLinksPanel:VouchTask");
     }
     
+    @Override
     protected void
     postOp() 
     {
@@ -2539,6 +2551,7 @@ class JNodeLinksPanel
                                    pGroupID, nodeIDs, jobIDs, pAuthor, pView);
     }
 
+    @Override
     protected void
     postOp() 
     {
@@ -2564,6 +2577,7 @@ class JNodeLinksPanel
                                    pGroupID, nodeIDs, jobIDs, pAuthor, pView);
     }
 
+    @Override
     protected void
     postOp() 
     {
@@ -2589,6 +2603,7 @@ class JNodeLinksPanel
                                    pGroupID, nodeIDs, jobIDs, pAuthor, pView);
     }
 
+    @Override
     protected void
     postOp() 
     {
@@ -2614,6 +2629,7 @@ class JNodeLinksPanel
                                    pGroupID, nodeIDs, jobIDs, pAuthor, pView);
     }
 
+    @Override
     protected void
     postOp() 
     {
@@ -2640,6 +2656,7 @@ class JNodeLinksPanel
       setName("JNodeLinksPanel:RemoveFilesTask");
     }
     
+    @Override
     protected void
     postOp() 
     {

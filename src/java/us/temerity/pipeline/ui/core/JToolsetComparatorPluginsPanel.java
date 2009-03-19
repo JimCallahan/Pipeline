@@ -1,13 +1,10 @@
-// $Id: JToolsetComparatorPluginsPanel.java,v 1.5 2006/05/07 21:30:14 jim Exp $
+// $Id: JToolsetComparatorPluginsPanel.java,v 1.6 2009/03/19 20:32:28 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
-import us.temerity.pipeline.*;
-import us.temerity.pipeline.toolset.*; 
-import us.temerity.pipeline.ui.*; 
-
-import java.io.*;
 import java.util.*;
+
+import us.temerity.pipeline.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   T O O L S E T   C O M P A R A T O R   P L U G I N S   P A N E L                        */
@@ -51,6 +48,8 @@ class JToolsetComparatorPluginsPanel
    * @param pvid
    *   The version number of the package.
    */ 
+  @Override
+  @SuppressWarnings("unused")
   protected TripleMap<String,String,VersionID,TreeSet<OsType>>
   getAllPlugins() 
     throws PipelineException
@@ -68,6 +67,7 @@ class JToolsetComparatorPluginsPanel
    * @param pvid
    *   The version number of the package.
    */ 
+  @Override
   protected DoubleMap<String,String,TreeSet<VersionID>> 
   getPackagePlugins
   (
@@ -82,27 +82,39 @@ class JToolsetComparatorPluginsPanel
   /**
    * Reset the layout to the default menu lauyout.
    */ 
+  @Override
   public void 
   defaultLayout() 
     throws PipelineException
   {
     UIMaster master = UIMaster.getInstance();
-    MasterMgrClient client = master.getMasterMgrClient();
-    PluginMenuLayout layout = client.getComparatorMenuLayout();
-    setLayout(pToolsetName, layout);
-    updateDefault(layout);
+    MasterMgrClient client = master.leaseMasterMgrClient();
+    try {
+      PluginMenuLayout layout = client.getComparatorMenuLayout();
+      setLayout(pToolsetName, layout);
+      updateDefault(layout);
+    }
+    finally {
+      master.returnMasterMgrClient(client);
+    }
   }
 
   /**
    * Save the current menu layout as the default layout.
    */ 
+  @Override
   public void 
   saveDefaultLayout() 
     throws PipelineException
   {
     UIMaster master = UIMaster.getInstance();
-    MasterMgrClient client = master.getMasterMgrClient();
-    client.setComparatorMenuLayout(getLayout(pToolsetName));
+    MasterMgrClient client = master.leaseMasterMgrClient();
+    try {
+      client.setComparatorMenuLayout(getLayout(pToolsetName));
+    }
+    finally {
+      master.returnMasterMgrClient(client);
+    }
   }
 
 
@@ -116,6 +128,7 @@ class JToolsetComparatorPluginsPanel
    *   The name of the toolset.
    * 
    */ 
+  @Override
   protected  PluginMenuLayout
   getLayout
   (
@@ -135,6 +148,7 @@ class JToolsetComparatorPluginsPanel
    * @param layout
    *   The plugin menu layout.
    */ 
+  @Override
   protected  void
   setLayout
   (

@@ -1,20 +1,17 @@
-// $Id: JNodeFilesPanel.java,v 1.49 2009/03/01 20:52:42 jim Exp $
+// $Id: JNodeFilesPanel.java,v 1.50 2009/03/19 20:32:28 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
-
-import us.temerity.pipeline.*;
-import us.temerity.pipeline.ui.*;
-import us.temerity.pipeline.glue.*;
-import us.temerity.pipeline.laf.LookAndFeelLoader;
 
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.util.*;
-import java.text.*;
+
 import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.tree.*;
+
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.laf.*;
+import us.temerity.pipeline.ui.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   N O D E   F I L E S   P A N E L                                                        */
@@ -277,6 +274,7 @@ class JNodeFilesPanel
   /** 
    * Get the title of this type of panel.
    */
+  @Override
   public String 
   getTypeName() 
   {
@@ -294,6 +292,7 @@ class JNodeFilesPanel
    * @param groupID
    *   The new group ID or (0) for no group assignment.
    */ 
+  @Override
   public void
   setGroupID
   (
@@ -319,6 +318,7 @@ class JNodeFilesPanel
   /**
    * Is the given group currently unused for this type of panel.
    */ 
+  @Override
   public boolean
   isGroupUnused
   (
@@ -335,6 +335,7 @@ class JNodeFilesPanel
   /**
    * Are the contents of the panel read-only. <P> 
    */ 
+  @Override
   public boolean
   isLocked() 
   {
@@ -344,6 +345,7 @@ class JNodeFilesPanel
   /**
    * Set the author and view.
    */ 
+  @Override
   public synchronized void 
   setAuthorView
   (
@@ -411,6 +413,7 @@ class JNodeFilesPanel
    * 
    * This method is run by the Swing Event thread.
    */ 
+  @Override
   public void 
   postPanelOp() 
   {
@@ -423,6 +426,7 @@ class JNodeFilesPanel
   /**
    * Register the name of a panel property which has just been modified.
    */ 
+  @Override
   public void
   unsavedChange
   (
@@ -928,6 +932,7 @@ class JNodeFilesPanel
   /**
    * Reset the caches of toolset plugins and plugin menu layouts.
    */ 
+  @Override
   public void 
   clearPluginCache()
   {
@@ -994,6 +999,7 @@ class JNodeFilesPanel
   /**
    * Update the panel to reflect new user preferences.
    */ 
+  @Override
   public void 
   updateUserPrefs() 
   {
@@ -1548,6 +1554,7 @@ class JNodeFilesPanel
   /**
    * Replace working files with the selected checked-in files.
    */ 
+  @Override
   public void 
   doApply()
   {
@@ -2830,20 +2837,20 @@ class JNodeFilesPanel
       pSubstitute    = substitute;
     }
 
+    @Override
     @SuppressWarnings("deprecation")
     public void 
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      MasterMgrClient client = null;
       SubProcessLight proc = null;
       Long editID = null;
       boolean ignoreExitCode = false;
       {
 	if(master.beginPanelOp(pGroupID, "Launching Node Editor...")) {
+	  MasterMgrClient client = master.leaseMasterMgrClient();
 	  try {
 	    String name = pStatus.getName();
-	    client = master.getMasterMgrClient(pGroupID);
 	    
 	    NodeMod mod = pStatus.getLightDetails().getWorkingVersion();
 	    NodeCommon com = null;
@@ -2946,6 +2953,7 @@ class JNodeFilesPanel
 	    return;
 	  }
 	  finally {
+	    master.returnMasterMgrClient(client);
 	    master.endPanelOp(pGroupID, "Done.");
 	  }
 	}
@@ -2957,9 +2965,15 @@ class JNodeFilesPanel
 	  proc.join();
           if(!proc.wasSuccessful() && !ignoreExitCode) 
 	    master.showSubprocessFailureDialog("Editor Failure:", proc);
-
-	  if((client != null) && (editID != null))
-	    client.editingFinished(editID);
+          
+          MasterMgrClient client = master.leaseMasterMgrClient();
+          try {
+            if(editID != null)
+              client.editingFinished(editID);
+          }
+          finally {
+            master.returnMasterMgrClient(client);
+          }
 	}
 	catch(Exception ex) {
 	  master.showErrorDialog(ex);
@@ -3029,6 +3043,7 @@ class JNodeFilesPanel
       pVersionID         = vid; 
     }
 
+    @Override
     public void 
     run() 
     {
@@ -3037,9 +3052,9 @@ class JNodeFilesPanel
 	UIMaster master = UIMaster.getInstance();
         boolean ignoreExitCode = false;
 	if(master.beginPanelOp(pGroupID, "Launching Node Comparator...")) {
+	  MasterMgrClient client = master.leaseMasterMgrClient();
 	  try {
 	    String name = pStatus.getName();
-	    MasterMgrClient client = master.getMasterMgrClient(pGroupID);
 
 	    NodeCommon com = null;
 	    {
@@ -3097,6 +3112,7 @@ class JNodeFilesPanel
             return;
 	  }
 	  finally {
+	    master.returnMasterMgrClient(client);
 	    master.endPanelOp(pGroupID, "Done.");
 	  }
 	}
@@ -3143,13 +3159,14 @@ class JNodeFilesPanel
       pFiles = files;
     }
 
+    @Override
     public void 
     run() 
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Reverting Files...")) {
+        MasterMgrClient client = master.leaseMasterMgrClient();
 	try {
-	  MasterMgrClient client = master.getMasterMgrClient(pGroupID);
 	  client.revertFiles(pAuthor, pView, pStatus.getName(), pFiles);
 	}
 	catch(PipelineException ex) {
@@ -3157,6 +3174,7 @@ class JNodeFilesPanel
 	  return;
 	}
 	finally {
+	  master.returnMasterMgrClient(client);
 	  master.endPanelOp(pGroupID, "Done.");
 	}
 
@@ -3215,13 +3233,14 @@ class JNodeFilesPanel
       pHardwareKeys  = hardwareKeys;
     }
 
+    @Override
     public void 
     run() 
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Submitting Jobs to the Queue...")) {
+        MasterMgrClient client = master.leaseMasterMgrClient();
 	try {
-	  MasterMgrClient client = master.getMasterMgrClient(pGroupID);
 	  client.submitJobs(pAuthor, pView, pStatus.getName(), pIndices, 
 			    pBatchSize, pPriority, pRampUp, 
 			    pMaxLoad, pMinMemory, pMinDisk,
@@ -3232,6 +3251,7 @@ class JNodeFilesPanel
 	  return;
 	}
 	finally {
+	  master.returnMasterMgrClient(client);
 	  master.endPanelOp(pGroupID, "Done.");
 	}
 
@@ -3268,6 +3288,7 @@ class JNodeFilesPanel
       setName("JNodeFilesPanel:VouchTask");
     }
     
+    @Override
     protected void
     postOp() 
     {
@@ -3293,6 +3314,7 @@ class JNodeFilesPanel
                                    pGroupID, nodeIDs, jobIDs, pAuthor, pView);
     }
 
+    @Override
     protected void
     postOp() 
     {
@@ -3318,6 +3340,7 @@ class JNodeFilesPanel
                                    pGroupID, nodeIDs, jobIDs, pAuthor, pView);
     }
 
+    @Override
     protected void
     postOp() 
     {
@@ -3343,6 +3366,7 @@ class JNodeFilesPanel
                                    pGroupID, nodeIDs, jobIDs, pAuthor, pView);
     }
 
+    @Override
     protected void
     postOp() 
     {
@@ -3368,6 +3392,7 @@ class JNodeFilesPanel
                                    pGroupID, nodeIDs, jobIDs, pAuthor, pView);
     }
 
+    @Override
     protected void
     postOp() 
     {
@@ -3396,13 +3421,14 @@ class JNodeFilesPanel
       pIndices = new TreeSet<Integer>(indices);
     }
 
+    @Override
     public void 
     run() 
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Removing Files: " + pStatus.getName())) {
+        MasterMgrClient client = master.leaseMasterMgrClient();
 	try {
-	  MasterMgrClient client = master.getMasterMgrClient(pGroupID);
 	  client.removeFiles(pAuthor, pView, pStatus.getName(), pIndices);
 	}
 	catch(PipelineException ex) {
@@ -3410,6 +3436,7 @@ class JNodeFilesPanel
 	  return;
 	}
 	finally {
+	  master.returnMasterMgrClient(client);
 	  master.endPanelOp(pGroupID, "Done.");
 	}
 	

@@ -1,4 +1,4 @@
-// $Id: JManageToolsetsDialog.java,v 1.33 2008/11/13 21:50:27 jesse Exp $
+// $Id: JManageToolsetsDialog.java,v 1.34 2009/03/19 20:32:28 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -638,14 +638,17 @@ class JManageToolsetsDialog
 	Toolset toolset = pToolsets.get(tname, os);
 	if(toolset == null) {
 	  UIMaster master = UIMaster.getInstance();
+	  MasterMgrClient client = master.leaseMasterMgrClient();
 	  try {
-	    MasterMgrClient client = master.getMasterMgrClient();
 	    toolset = client.getToolset(tname, os);
 	    pToolsets.put(tname, os, toolset);
 	  }
 	  catch(PipelineException ex) {
 	    showErrorDialog(ex);
 	  }
+	  finally {
+            master.returnMasterMgrClient(client);
+          }
 	}
 	
 	return toolset; 
@@ -721,8 +724,13 @@ class JManageToolsetsDialog
       pFrozenToolsetLayouts.put(tname, PluginType.Editor, layout2);
 
       UIMaster master = UIMaster.getInstance();
-      MasterMgrClient client = master.getMasterMgrClient();
-      client.setEditorMenuLayout(tname, layout2);
+      MasterMgrClient client = master.leaseMasterMgrClient();
+      try {
+        client.setEditorMenuLayout(tname, layout2);
+      }
+      finally {
+        master.returnMasterMgrClient(client);
+      }
     }    
   }
 
@@ -793,8 +801,13 @@ class JManageToolsetsDialog
       pFrozenToolsetLayouts.put(tname, PluginType.Comparator, layout2);
 
       UIMaster master = UIMaster.getInstance();
-      MasterMgrClient client = master.getMasterMgrClient();
-      client.setComparatorMenuLayout(tname, layout2);
+      MasterMgrClient client = master.leaseMasterMgrClient();
+      try {
+        client.setComparatorMenuLayout(tname, layout2);
+      }
+      finally {
+        master.returnMasterMgrClient(client);
+      }
     }    
   }
 
@@ -865,8 +878,13 @@ class JManageToolsetsDialog
       pFrozenToolsetLayouts.put(tname, PluginType.Action, layout2);
 
       UIMaster master = UIMaster.getInstance();
-      MasterMgrClient client = master.getMasterMgrClient();
-      client.setActionMenuLayout(tname, layout2);
+      MasterMgrClient client = master.leaseMasterMgrClient();
+      try {
+        client.setActionMenuLayout(tname, layout2);
+      }
+      finally {
+        master.returnMasterMgrClient(client);
+      }
     }    
   }
 
@@ -937,8 +955,13 @@ class JManageToolsetsDialog
       pFrozenToolsetLayouts.put(tname, PluginType.Tool, layout2);
 
       UIMaster master = UIMaster.getInstance();
-      MasterMgrClient client = master.getMasterMgrClient();
-      client.setToolMenuLayout(tname, layout2);
+      MasterMgrClient client = master.leaseMasterMgrClient();
+      try {
+        client.setToolMenuLayout(tname, layout2);
+      }
+      finally {
+        master.returnMasterMgrClient(client);
+      }
     }    
   }
 
@@ -1009,8 +1032,13 @@ class JManageToolsetsDialog
       pFrozenToolsetLayouts.put(tname, PluginType.Archiver, layout2);
 
       UIMaster master = UIMaster.getInstance();
-      MasterMgrClient client = master.getMasterMgrClient();
-      client.setArchiverMenuLayout(tname, layout2);
+      MasterMgrClient client = master.leaseMasterMgrClient();
+      try {
+        client.setArchiverMenuLayout(tname, layout2);
+      }
+      finally {
+        master.returnMasterMgrClient(client);
+      }
     }    
   }
 
@@ -1081,8 +1109,13 @@ class JManageToolsetsDialog
       pFrozenToolsetLayouts.put(tname, PluginType.MasterExt, layout2);
 
       UIMaster master = UIMaster.getInstance();
-      MasterMgrClient client = master.getMasterMgrClient();
-      client.setMasterExtMenuLayout(tname, layout2);
+      MasterMgrClient client = master.leaseMasterMgrClient();
+      try {
+        client.setMasterExtMenuLayout(tname, layout2);
+      }
+      finally {
+        master.returnMasterMgrClient(client);
+      }
     }    
   }
 
@@ -1153,8 +1186,13 @@ class JManageToolsetsDialog
       pFrozenToolsetLayouts.put(tname, PluginType.QueueExt, layout2);
 
       UIMaster master = UIMaster.getInstance();
-      MasterMgrClient client = master.getMasterMgrClient();
-      client.setQueueExtMenuLayout(tname, layout2);
+      MasterMgrClient client = master.leaseMasterMgrClient();
+      try {
+        client.setQueueExtMenuLayout(tname, layout2);
+      }
+      finally {
+        master.returnMasterMgrClient(client);
+      }
     }    
   }
 
@@ -1224,8 +1262,13 @@ class JManageToolsetsDialog
       pFrozenToolsetLayouts.put(tname, PluginType.Annotation, layout2);
 
       UIMaster master = UIMaster.getInstance();
-      MasterMgrClient client = master.getMasterMgrClient();
-      client.setAnnotationMenuLayout(tname, layout2);
+      MasterMgrClient client = master.leaseMasterMgrClient();
+      try {
+        client.setAnnotationMenuLayout(tname, layout2);
+      }
+      finally {
+        master.returnMasterMgrClient(client);
+      }
     }    
   }
 
@@ -1295,8 +1338,13 @@ class JManageToolsetsDialog
       pFrozenToolsetLayouts.put(tname, PluginType.KeyChooser, layout2);
 
       UIMaster master = UIMaster.getInstance();
-      MasterMgrClient client = master.getMasterMgrClient();
-      client.setKeyChooserMenuLayout(tname, layout2);
+      MasterMgrClient client = master.leaseMasterMgrClient();
+      try {
+        client.setKeyChooserMenuLayout(tname, layout2);
+      }
+      finally {
+        master.returnMasterMgrClient(client);
+      }
     }    
   }
 
@@ -1365,8 +1413,13 @@ class JManageToolsetsDialog
       pFrozenToolsetLayouts.put(tname, PluginType.BuilderCollection, layout2);
 
       UIMaster master = UIMaster.getInstance();
-      MasterMgrClient client = master.getMasterMgrClient();
-      client.setBuilderCollectionMenuLayout(tname, layout2);
+      MasterMgrClient client = master.leaseMasterMgrClient();
+      try {
+        client.setBuilderCollectionMenuLayout(tname, layout2);
+      }
+      finally {
+        master.returnMasterMgrClient(client);
+      }
     }    
   }
 
@@ -1398,7 +1451,7 @@ class JManageToolsetsDialog
 
     if(!index.isEmpty()) {
       UIMaster master = UIMaster.getInstance();
-      MasterMgrClient client = master.getMasterMgrClient();
+      MasterMgrClient client = master.leaseMasterMgrClient();
       try {
 	TripleMap<String,VersionID,OsType,PackageVersion> packages = 
 	  client.getToolsetPackages(index);
@@ -1412,6 +1465,9 @@ class JManageToolsetsDialog
       }
       catch(PipelineException ex) {
 	showErrorDialog(ex);
+      }
+      finally {
+        master.returnMasterMgrClient(client);
       }
     }
   }
@@ -1445,7 +1501,7 @@ class JManageToolsetsDialog
 	PackageVersion pkg = pPackageVersions.get(pname, os, vid); 
 	if(pkg == null) {
 	  UIMaster master = UIMaster.getInstance();
-	  MasterMgrClient client = master.getMasterMgrClient();
+	  MasterMgrClient client = master.leaseMasterMgrClient();
 	  try {
 	    pkg = client.getToolsetPackage(pname, vid, os);
 	    pPackageVersions.put(pname, os, vid, pkg);
@@ -1453,6 +1509,9 @@ class JManageToolsetsDialog
 	  catch(PipelineException ex) {
 	    showErrorDialog(ex);
 	  }
+	  finally {
+            master.returnMasterMgrClient(client);
+          }
 	}
 	
 	return pkg;
@@ -1506,44 +1565,49 @@ class JManageToolsetsDialog
     throws PipelineException
   {
     UIMaster master = UIMaster.getInstance();
-    MasterMgrClient client = master.getMasterMgrClient();
+    MasterMgrClient client = master.leaseMasterMgrClient();
 
-    /* cache package plugins */ 
-    {
-      TreeMap<String,TreeSet<VersionID>> uncached = new TreeMap<String,TreeSet<VersionID>>();
+    try {
+      /* cache package plugins */ 
       {
-	int wk;
-	for(wk=0; wk<toolset.getNumPackages(); wk++) {
-	  String pname = toolset.getPackageName(wk);
-	  VersionID pvid = toolset.getPackageVersionID(wk);
-	  
-	  /* its a frozen and uncached package */ 
-	  if(pvid != null && (pFrozenPackagePlugins.keySet(pname, pvid) == null)) {
-	    TreeSet<VersionID> vids = uncached.get(pname);
-	    if(vids == null) {
-	      vids = new TreeSet<VersionID>();
-	      uncached.put(pname, vids);
-	    }
-	    vids.add(pvid);
-	  }
-	}
-      }
-      
-      if(!uncached.isEmpty()) {
-	TripleMap<String,VersionID,PluginType,PluginSet> psets = 
-	  client.getSelectPackagePlugins(uncached);
-	
-	for(String pname : psets.keySet()) {
-	  for(VersionID pvid : psets.keySet(pname)) 
-	    pFrozenPackagePlugins.put(pname, pvid, psets.get(pname).get(pvid));
-	}
-      }
-    }
+        TreeMap<String,TreeSet<VersionID>> uncached = new TreeMap<String,TreeSet<VersionID>>();
+        {
+          int wk;
+          for(wk=0; wk<toolset.getNumPackages(); wk++) {
+            String pname = toolset.getPackageName(wk);
+            VersionID pvid = toolset.getPackageVersionID(wk);
 
-    /* cache menu layouts */ 
-    String tname = toolset.getName();
-    if(!pFrozenToolsetLayouts.containsKey(tname))
-       pFrozenToolsetLayouts.put(tname, client.getPluginMenuLayouts(tname));
+            /* its a frozen and uncached package */ 
+            if(pvid != null && (pFrozenPackagePlugins.keySet(pname, pvid) == null)) {
+              TreeSet<VersionID> vids = uncached.get(pname);
+              if(vids == null) {
+                vids = new TreeSet<VersionID>();
+                uncached.put(pname, vids);
+              }
+              vids.add(pvid);
+            }
+          }
+        }
+
+        if(!uncached.isEmpty()) {
+          TripleMap<String,VersionID,PluginType,PluginSet> psets = 
+            client.getSelectPackagePlugins(uncached);
+
+          for(String pname : psets.keySet()) {
+            for(VersionID pvid : psets.keySet(pname)) 
+              pFrozenPackagePlugins.put(pname, pvid, psets.get(pname).get(pvid));
+          }
+        }
+      }
+
+      /* cache menu layouts */ 
+      String tname = toolset.getName();
+      if(!pFrozenToolsetLayouts.containsKey(tname))
+        pFrozenToolsetLayouts.put(tname, client.getPluginMenuLayouts(tname));
+    }
+    finally {
+      master.returnMasterMgrClient(client);
+    }
   }
 
   /**
@@ -1558,11 +1622,16 @@ class JManageToolsetsDialog
     throws PipelineException
   {
     UIMaster master = UIMaster.getInstance();
-    MasterMgrClient client = master.getMasterMgrClient();
+    MasterMgrClient client = master.leaseMasterMgrClient();
 
+    try {
     /* cache package plugins */ 
     if(pvid != null) 
       pFrozenPackagePlugins.put(pname, pvid, client.getSelectPackagePlugins(pname, pvid));
+    }
+    finally {
+      master.returnMasterMgrClient(client);
+    }
   }
 
   
@@ -1593,8 +1662,13 @@ class JManageToolsetsDialog
       pset = pFrozenPackagePlugins.get(pname, vid, PluginType.Editor);
       if(pset == null) {
 	UIMaster master = UIMaster.getInstance();
-	MasterMgrClient client = master.getMasterMgrClient();
-	pset = client.getPackageEditorPlugins(pname, vid);
+	MasterMgrClient client = master.leaseMasterMgrClient();
+	try {
+	  pset = client.getPackageEditorPlugins(pname, vid);
+	}
+	finally {
+          master.returnMasterMgrClient(client);
+        }
 	pFrozenPackagePlugins.put(pname, vid, PluginType.Editor, pset);
       }
     }
@@ -1633,8 +1707,13 @@ class JManageToolsetsDialog
       pFrozenPackagePlugins.put(pname, vid, PluginType.Editor, plugins);
 
       UIMaster master = UIMaster.getInstance();
-      MasterMgrClient client = master.getMasterMgrClient();
-      client.setPackageEditorPlugins(pname, vid, plugins);
+      MasterMgrClient client = master.leaseMasterMgrClient();
+      try {
+        client.setPackageEditorPlugins(pname, vid, plugins);
+      }
+      finally {
+        master.returnMasterMgrClient(client);
+      }
     }    
   }
 
@@ -1665,8 +1744,13 @@ class JManageToolsetsDialog
       pset = pFrozenPackagePlugins.get(pname, vid, PluginType.Comparator);
       if(pset == null) {
 	UIMaster master = UIMaster.getInstance();
-	MasterMgrClient client = master.getMasterMgrClient();
-	pset = client.getPackageComparatorPlugins(pname, vid);
+	MasterMgrClient client = master.leaseMasterMgrClient();
+	try {
+	  pset = client.getPackageComparatorPlugins(pname, vid);
+	}
+	finally {
+          master.returnMasterMgrClient(client);
+        }
 	pFrozenPackagePlugins.put(pname, vid, PluginType.Comparator, pset);
       }
     }
@@ -1705,8 +1789,13 @@ class JManageToolsetsDialog
       pFrozenPackagePlugins.put(pname, vid, PluginType.Comparator, plugins);
 
       UIMaster master = UIMaster.getInstance();
-      MasterMgrClient client = master.getMasterMgrClient();
-      client.setPackageComparatorPlugins(pname, vid, plugins);
+      MasterMgrClient client = master.leaseMasterMgrClient();
+      try {
+        client.setPackageComparatorPlugins(pname, vid, plugins);
+      }
+      finally {
+        master.returnMasterMgrClient(client);
+      }
     }    
   }
 
@@ -1737,8 +1826,13 @@ class JManageToolsetsDialog
       pset = pFrozenPackagePlugins.get(pname, vid, PluginType.Action);
       if(pset == null) {
 	UIMaster master = UIMaster.getInstance();
-	MasterMgrClient client = master.getMasterMgrClient();
-	pset = client.getPackageActionPlugins(pname, vid);
+	MasterMgrClient client = master.leaseMasterMgrClient();
+	try {
+	  pset = client.getPackageActionPlugins(pname, vid);
+	}
+	finally {
+          master.returnMasterMgrClient(client);
+        }
 	pFrozenPackagePlugins.put(pname, vid, PluginType.Action, pset);
       }
     }
@@ -1777,8 +1871,13 @@ class JManageToolsetsDialog
       pFrozenPackagePlugins.put(pname, vid, PluginType.Action, plugins);
 
       UIMaster master = UIMaster.getInstance();
-      MasterMgrClient client = master.getMasterMgrClient();
-      client.setPackageActionPlugins(pname, vid, plugins);
+      MasterMgrClient client = master.leaseMasterMgrClient();
+      try {
+        client.setPackageActionPlugins(pname, vid, plugins);
+      }
+      finally {
+        master.returnMasterMgrClient(client);
+      }
     }    
   }
 
@@ -1809,8 +1908,13 @@ class JManageToolsetsDialog
       pset = pFrozenPackagePlugins.get(pname, vid, PluginType.Tool);
       if(pset == null) {
 	UIMaster master = UIMaster.getInstance();
-	MasterMgrClient client = master.getMasterMgrClient();
-	pset = client.getPackageToolPlugins(pname, vid);
+	MasterMgrClient client = master.leaseMasterMgrClient();
+	try {
+	  pset = client.getPackageToolPlugins(pname, vid);
+	}
+	finally {
+          master.returnMasterMgrClient(client);
+        }
 	pFrozenPackagePlugins.put(pname, vid, PluginType.Tool, pset);
       }
     }
@@ -1849,8 +1953,13 @@ class JManageToolsetsDialog
       pFrozenPackagePlugins.put(pname, vid, PluginType.Tool, plugins);
 
       UIMaster master = UIMaster.getInstance();
-      MasterMgrClient client = master.getMasterMgrClient();
-      client.setPackageToolPlugins(pname, vid, plugins);
+      MasterMgrClient client = master.leaseMasterMgrClient();
+      try {
+        client.setPackageToolPlugins(pname, vid, plugins);
+      }
+      finally {
+        master.returnMasterMgrClient(client);
+      }
     }    
   }
 
@@ -1881,8 +1990,13 @@ class JManageToolsetsDialog
       pset = pFrozenPackagePlugins.get(pname, vid, PluginType.Archiver);
       if(pset == null) {
 	UIMaster master = UIMaster.getInstance();
-	MasterMgrClient client = master.getMasterMgrClient();
-	pset = client.getPackageArchiverPlugins(pname, vid);
+	MasterMgrClient client = master.leaseMasterMgrClient();
+	try {
+	  pset = client.getPackageArchiverPlugins(pname, vid);
+	}
+	finally {
+          master.returnMasterMgrClient(client);
+        }
 	pFrozenPackagePlugins.put(pname, vid, PluginType.Archiver, pset);
       }
     }
@@ -1921,8 +2035,13 @@ class JManageToolsetsDialog
       pFrozenPackagePlugins.put(pname, vid, PluginType.Archiver, plugins);
 
       UIMaster master = UIMaster.getInstance();
-      MasterMgrClient client = master.getMasterMgrClient();
-      client.setPackageArchiverPlugins(pname, vid, plugins);
+      MasterMgrClient client = master.leaseMasterMgrClient();
+      try {
+        client.setPackageArchiverPlugins(pname, vid, plugins);
+      }
+      finally {
+        master.returnMasterMgrClient(client);
+      }
     }    
   }
 
@@ -1953,8 +2072,13 @@ class JManageToolsetsDialog
       pset = pFrozenPackagePlugins.get(pname, vid, PluginType.MasterExt);
       if(pset == null) {
 	UIMaster master = UIMaster.getInstance();
-	MasterMgrClient client = master.getMasterMgrClient();
-	pset = client.getPackageMasterExtPlugins(pname, vid);
+	MasterMgrClient client = master.leaseMasterMgrClient();
+	try {
+	  pset = client.getPackageMasterExtPlugins(pname, vid);
+	}
+	finally {
+          master.returnMasterMgrClient(client);
+        }
 	pFrozenPackagePlugins.put(pname, vid, PluginType.MasterExt, pset);
       }
     }
@@ -1993,8 +2117,13 @@ class JManageToolsetsDialog
       pFrozenPackagePlugins.put(pname, vid, PluginType.MasterExt, plugins);
 
       UIMaster master = UIMaster.getInstance();
-      MasterMgrClient client = master.getMasterMgrClient();
-      client.setPackageMasterExtPlugins(pname, vid, plugins);
+      MasterMgrClient client = master.leaseMasterMgrClient();
+      try {
+        client.setPackageMasterExtPlugins(pname, vid, plugins);
+      }
+      finally {
+        master.returnMasterMgrClient(client);
+      }
     }    
   }
 
@@ -2025,8 +2154,13 @@ class JManageToolsetsDialog
       pset = pFrozenPackagePlugins.get(pname, vid, PluginType.QueueExt);
       if(pset == null) {
 	UIMaster master = UIMaster.getInstance();
-	MasterMgrClient client = master.getMasterMgrClient();
-	pset = client.getPackageQueueExtPlugins(pname, vid);
+	MasterMgrClient client = master.leaseMasterMgrClient();
+	try {
+	  pset = client.getPackageQueueExtPlugins(pname, vid);
+	}
+	finally {
+          master.returnMasterMgrClient(client);
+        }
 	pFrozenPackagePlugins.put(pname, vid, PluginType.QueueExt, pset);
       }
     }
@@ -2065,8 +2199,13 @@ class JManageToolsetsDialog
       pFrozenPackagePlugins.put(pname, vid, PluginType.QueueExt, plugins);
 
       UIMaster master = UIMaster.getInstance();
-      MasterMgrClient client = master.getMasterMgrClient();
-      client.setPackageQueueExtPlugins(pname, vid, plugins);
+      MasterMgrClient client = master.leaseMasterMgrClient();
+      try {
+        client.setPackageQueueExtPlugins(pname, vid, plugins);
+      }
+      finally {
+        master.returnMasterMgrClient(client);
+      }
     }    
   }
 
@@ -2097,8 +2236,13 @@ class JManageToolsetsDialog
       pset = pFrozenPackagePlugins.get(pname, vid, PluginType.Annotation);
       if(pset == null) {
 	UIMaster master = UIMaster.getInstance();
-	MasterMgrClient client = master.getMasterMgrClient();
-	pset = client.getPackageAnnotationPlugins(pname, vid);
+	MasterMgrClient client = master.leaseMasterMgrClient();
+	try {
+	  pset = client.getPackageAnnotationPlugins(pname, vid);
+	}
+	finally {
+          master.returnMasterMgrClient(client);
+        }
 	pFrozenPackagePlugins.put(pname, vid, PluginType.Annotation, pset);
       }
     }
@@ -2137,8 +2281,14 @@ class JManageToolsetsDialog
       pFrozenPackagePlugins.put(pname, vid, PluginType.Annotation, plugins);
 
       UIMaster master = UIMaster.getInstance();
-      MasterMgrClient client = master.getMasterMgrClient();
-      client.setPackageAnnotationPlugins(pname, vid, plugins);
+      MasterMgrClient client = master.leaseMasterMgrClient();
+      try {
+        client.setPackageAnnotationPlugins(pname, vid, plugins);
+      }
+      finally {
+        master.returnMasterMgrClient(client);
+      }
+
     }    
   }
 
@@ -2169,8 +2319,13 @@ class JManageToolsetsDialog
       pset = pFrozenPackagePlugins.get(pname, vid, PluginType.KeyChooser);
       if(pset == null) {
 	UIMaster master = UIMaster.getInstance();
-	MasterMgrClient client = master.getMasterMgrClient();
-	pset = client.getPackageKeyChooserPlugins(pname, vid);
+	MasterMgrClient client = master.leaseMasterMgrClient();
+	try {
+	  pset = client.getPackageKeyChooserPlugins(pname, vid);
+	}
+	finally {
+          master.returnMasterMgrClient(client);
+        }
 	pFrozenPackagePlugins.put(pname, vid, PluginType.KeyChooser, pset);
       }
     }
@@ -2209,8 +2364,13 @@ class JManageToolsetsDialog
       pFrozenPackagePlugins.put(pname, vid, PluginType.KeyChooser, plugins);
 
       UIMaster master = UIMaster.getInstance();
-      MasterMgrClient client = master.getMasterMgrClient();
-      client.setPackageKeyChooserPlugins(pname, vid, plugins);
+      MasterMgrClient client = master.leaseMasterMgrClient();
+      try {
+        client.setPackageKeyChooserPlugins(pname, vid, plugins);
+      }
+      finally {
+        master.returnMasterMgrClient(client);
+      }
     }    
   }
 
@@ -2240,8 +2400,13 @@ class JManageToolsetsDialog
       pset = pFrozenPackagePlugins.get(pname, vid, PluginType.BuilderCollection);
       if(pset == null) {
         UIMaster master = UIMaster.getInstance();
-        MasterMgrClient client = master.getMasterMgrClient();
-        pset = client.getPackageBuilderCollectionPlugins(pname, vid);
+        MasterMgrClient client = master.leaseMasterMgrClient();
+        try {
+          pset = client.getPackageBuilderCollectionPlugins(pname, vid);
+        }
+        finally {
+          master.returnMasterMgrClient(client);
+        }
         pFrozenPackagePlugins.put(pname, vid, PluginType.BuilderCollection, pset);
       }
     }
@@ -2280,8 +2445,13 @@ class JManageToolsetsDialog
       pFrozenPackagePlugins.put(pname, vid, PluginType.BuilderCollection, plugins);
 
       UIMaster master = UIMaster.getInstance();
-      MasterMgrClient client = master.getMasterMgrClient();
-      client.setPackageBuilderCollectionPlugins(pname, vid, plugins);
+      MasterMgrClient client = master.leaseMasterMgrClient();
+      try {
+        client.setPackageBuilderCollectionPlugins(pname, vid, plugins);
+      }
+      finally {
+        master.returnMasterMgrClient(client);
+      }
     }    
   }
 
@@ -2848,7 +3018,7 @@ class JManageToolsetsDialog
       pActiveToolsets.clear();
       
       UIMaster master = UIMaster.getInstance();
-      MasterMgrClient client = master.getMasterMgrClient();
+      MasterMgrClient client = master.leaseMasterMgrClient();
       try {
 	pDefaultToolset = client.getDefaultToolsetName();
       }
@@ -2888,6 +3058,9 @@ class JManageToolsetsDialog
 	showErrorDialog(ex);
 	setVisible(false);
 	return;      
+      }
+      finally {
+        master.returnMasterMgrClient(client);
       }
     }
 
@@ -3039,7 +3212,7 @@ class JManageToolsetsDialog
 	  for(wk=0; wk<toolset.getNumPackages(); wk++) {
 	    String pname  = toolset.getPackageName(wk); 
 	    VersionID vid = toolset.getPackageVersionID(wk); 
-	    PackageCommon pkg = lookupPackage(pname, os, vid, false);
+	    lookupPackage(pname, os, vid, false);
 	      
 	    model.addElement(new PackageListData(pname, os, vid));
 	  }
@@ -3296,6 +3469,7 @@ class JManageToolsetsDialog
   /**
    * Shows or hides this component.
    */ 
+  @Override
   public void 
   setVisible
   (
@@ -4092,7 +4266,7 @@ class JManageToolsetsDialog
 	  String desc = pCreateToolsetDialog.getDescription();
 	  assert((desc != null) && (desc.length() > 0));
 	
-	  MasterMgrClient client = master.getMasterMgrClient();
+	  MasterMgrClient client = master.leaseMasterMgrClient();
 	  try {
 	    ArrayList<PackageVersion> packages = new ArrayList<PackageVersion>();
 	    int wk;
@@ -4124,6 +4298,9 @@ class JManageToolsetsDialog
 	    showErrorDialog(ex);
 	    return;
 	  }
+	  finally {
+            master.returnMasterMgrClient(client);
+          }
 	
 	  updateAll();
 	  updateDialogs();
@@ -4173,13 +4350,16 @@ class JManageToolsetsDialog
     if(tname != null) {
       {
 	UIMaster master = UIMaster.getInstance();
-	MasterMgrClient client = master.getMasterMgrClient();
+	MasterMgrClient client = master.leaseMasterMgrClient();
 	try {
 	  client.setDefaultToolsetName(tname);
 	}
 	catch(PipelineException ex) {
 	  showErrorDialog(ex);
 	  return;
+	}
+	finally {
+	  master.returnMasterMgrClient(client);
 	}
 	
 	pDefaultToolset = tname;
@@ -4207,13 +4387,16 @@ class JManageToolsetsDialog
 
 	  {
 	    UIMaster master = UIMaster.getInstance();
-	    MasterMgrClient client = master.getMasterMgrClient();
+	    MasterMgrClient client = master.leaseMasterMgrClient();
 	    try {
 	      client.setToolsetActive(tname, true);
 	    }
 	    catch(PipelineException ex) {
 	      showErrorDialog(ex);
 	      return;
+	    }
+	    finally {
+	      master.returnMasterMgrClient(client);
 	    }
 	    
 	    pActiveToolsets.add(tname);
@@ -4236,13 +4419,16 @@ class JManageToolsetsDialog
     if(tname != null) {
       {
 	UIMaster master = UIMaster.getInstance();
-	MasterMgrClient client = master.getMasterMgrClient();
+	MasterMgrClient client = master.leaseMasterMgrClient();
 	try {
 	  client.setToolsetActive(tname, false);
 	}
 	catch(PipelineException ex) {
 	  showErrorDialog(ex);
 	  return;
+	}
+	finally {
+	  master.returnMasterMgrClient(client);
 	}
 	
 	pActiveToolsets.remove(tname);
@@ -4526,7 +4712,7 @@ class JManageToolsetsDialog
 	    VersionID.Level level = pCreatePackageDialog.getLevel();
 	    
 	    UIMaster master = UIMaster.getInstance();
-	    MasterMgrClient client = master.getMasterMgrClient();
+	    MasterMgrClient client = master.leaseMasterMgrClient();
 	    try {
 	      pvsn = client.createToolsetPackage(pmod, desc, level, os);
 	      assert(pvsn != null);
@@ -4538,6 +4724,9 @@ class JManageToolsetsDialog
 	      showErrorDialog(ex);
 	      return;
 	    }
+	    finally {
+              master.returnMasterMgrClient(client);
+            }
 	  }
 	  
 	  /* remove the working package */ 

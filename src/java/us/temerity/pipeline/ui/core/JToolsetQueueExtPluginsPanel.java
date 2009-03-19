@@ -1,13 +1,10 @@
-// $Id: JToolsetQueueExtPluginsPanel.java,v 1.1 2006/10/11 22:45:41 jim Exp $
+// $Id: JToolsetQueueExtPluginsPanel.java,v 1.2 2009/03/19 20:32:28 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
-import us.temerity.pipeline.*;
-import us.temerity.pipeline.toolset.*; 
-import us.temerity.pipeline.ui.*; 
-
-import java.io.*;
 import java.util.*;
+
+import us.temerity.pipeline.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   T O O L S E T   Q U E U E   E X T   P L U G I N S   P A N E L                          */
@@ -51,6 +48,8 @@ class JToolsetQueueExtPluginsPanel
    * @param pvid
    *   The version number of the package.
    */ 
+  @Override
+  @SuppressWarnings("unused")
   protected TripleMap<String,String,VersionID,TreeSet<OsType>>
   getAllPlugins() 
     throws PipelineException
@@ -68,6 +67,7 @@ class JToolsetQueueExtPluginsPanel
    * @param pvid
    *   The version number of the package.
    */ 
+  @Override
   protected DoubleMap<String,String,TreeSet<VersionID>> 
   getPackagePlugins
   (
@@ -82,27 +82,40 @@ class JToolsetQueueExtPluginsPanel
   /**
    * Reset the layout to the default menu lauyout.
    */ 
+  @Override
   public void 
   defaultLayout() 
     throws PipelineException
   {
     UIMaster master = UIMaster.getInstance();
-    MasterMgrClient client = master.getMasterMgrClient();
-    PluginMenuLayout layout = client.getQueueExtMenuLayout();
-    setLayout(pToolsetName, layout);
-    updateDefault(layout);
+    MasterMgrClient client = master.leaseMasterMgrClient();
+    try {
+      PluginMenuLayout layout = client.getQueueExtMenuLayout();
+      setLayout(pToolsetName, layout);
+      updateDefault(layout);
+    }
+    finally {
+      master.returnMasterMgrClient(client);
+    }
   }
 
   /**
    * Save the current menu layout as the default layout.
    */ 
+  @Override
   public void 
   saveDefaultLayout() 
     throws PipelineException
   {
     UIMaster master = UIMaster.getInstance();
-    MasterMgrClient client = master.getMasterMgrClient();
-    client.setQueueExtMenuLayout(getLayout(pToolsetName));
+    MasterMgrClient client = master.leaseMasterMgrClient();
+    try {
+      client.setQueueExtMenuLayout(getLayout(pToolsetName));
+    }
+    finally {
+      master.returnMasterMgrClient(client);
+    }
+    
   }
 
 
@@ -115,6 +128,7 @@ class JToolsetQueueExtPluginsPanel
    * @param tname
    *   The name of the toolset.
    */ 
+  @Override
   protected  PluginMenuLayout
   getLayout
   (
@@ -134,6 +148,7 @@ class JToolsetQueueExtPluginsPanel
    * @param layout
    *   The plugin menu layout.
    */ 
+  @Override
   protected void
   setLayout
   (

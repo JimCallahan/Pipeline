@@ -1,4 +1,4 @@
-// $Id: JOwnerViewDialog.java,v 1.5 2006/09/25 12:11:44 jim Exp $
+// $Id: JOwnerViewDialog.java,v 1.6 2009/03/19 20:32:28 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -116,7 +116,7 @@ class JOwnerViewDialog
   )
   {
     UIMaster master = UIMaster.getInstance();
-    MasterMgrClient client = master.getMasterMgrClient();
+    MasterMgrClient client = master.leaseMasterMgrClient();
     try {
       pPrivilegeDetails = client.getPrivilegeDetails();
       pTable = client.getWorkingAreas(); 
@@ -125,6 +125,9 @@ class JOwnerViewDialog
       showErrorDialog(ex);
       setVisible(false);
       return;
+    }
+    finally {
+      master.returnMasterMgrClient(client);
     }
       
     /* rebuild the lists */ 
@@ -232,6 +235,7 @@ class JOwnerViewDialog
   /** 
    * Invoked when an action occurs. 
    */ 
+  @Override
   public void 
   actionPerformed
   (
@@ -267,8 +271,9 @@ class JOwnerViewDialog
 	  UIMaster master = UIMaster.getInstance();
 
 	  if(master.beginPanelOp("Creating New Working Area...")) {
+	    MasterMgrClient client = master.leaseMasterMgrClient();
 	    try {
-	      master.getMasterMgrClient().createWorkingArea(author, view);
+	      client.createWorkingArea(author, view);
 	    }
 	    catch(PipelineException ex) {
 	      showErrorDialog(ex);
@@ -276,6 +281,7 @@ class JOwnerViewDialog
 	      return;
 	    }
 	    finally {
+	      master.returnMasterMgrClient(client);
 	      master.endPanelOp("Done.");
 	    }
 	  

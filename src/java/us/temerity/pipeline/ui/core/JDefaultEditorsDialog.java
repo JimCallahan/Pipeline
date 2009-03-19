@@ -1,4 +1,4 @@
-// $Id: JDefaultEditorsDialog.java,v 1.6 2006/09/25 12:11:44 jim Exp $
+// $Id: JDefaultEditorsDialog.java,v 1.7 2009/03/19 20:32:28 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -9,9 +9,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
 import javax.swing.*;
-import javax.swing.table.*;
-import javax.swing.event.*;
-import javax.swing.border.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   D E F A U L T   E D I T O R   D I A L O G                                              */
@@ -97,7 +94,7 @@ class JDefaultEditorsDialog
   { 
     /* get the current info from the server */ 
     UIMaster master = UIMaster.getInstance();
-    MasterMgrClient client = master.getMasterMgrClient();
+    MasterMgrClient client = master.leaseMasterMgrClient();
     try {
       pTableModel.setSuffixEditors(client.getSuffixEditors());
     }
@@ -105,6 +102,9 @@ class JDefaultEditorsDialog
       showErrorDialog(ex);
       setVisible(false);
       return;      
+    }
+    finally {
+      master.returnMasterMgrClient(client);
     }
   }
 
@@ -117,7 +117,7 @@ class JDefaultEditorsDialog
   { 
     /* get the current info from the server */ 
     UIMaster master = UIMaster.getInstance();
-    MasterMgrClient client = master.getMasterMgrClient();
+    MasterMgrClient client = master.leaseMasterMgrClient();
     try {
       pTableModel.setSuffixEditors(client.getDefaultSuffixEditors());
     }
@@ -125,6 +125,9 @@ class JDefaultEditorsDialog
       showErrorDialog(ex);
       setVisible(false);
       return;      
+    }
+    finally {
+      master.returnMasterMgrClient(client);
     }
   }
   
@@ -140,7 +143,7 @@ class JDefaultEditorsDialog
     pTablePanel.stopEditing();
 
     UIMaster master = UIMaster.getInstance();
-    MasterMgrClient client = master.getMasterMgrClient();
+    MasterMgrClient client = master.leaseMasterMgrClient();
     try {
       client.setSuffixEditors(pTableModel.getSuffixEditors());
       return true;
@@ -148,6 +151,9 @@ class JDefaultEditorsDialog
     catch(PipelineException ex) {
       showErrorDialog(ex);
       return false; 
+    }
+    finally {
+      master.returnMasterMgrClient(client);
     }
   }
 
@@ -163,6 +169,7 @@ class JDefaultEditorsDialog
   /** 
    * Invoked when an action occurs. 
    */ 
+  @Override
   public void 
   actionPerformed
   (
@@ -189,6 +196,7 @@ class JDefaultEditorsDialog
   /**
    * Apply changes and close. 
    */ 
+  @Override
   public void 
   doConfirm()
   {
@@ -199,6 +207,7 @@ class JDefaultEditorsDialog
   /**
    * Apply changes. 
    */ 
+  @Override
   public void 
   doApply()
   {

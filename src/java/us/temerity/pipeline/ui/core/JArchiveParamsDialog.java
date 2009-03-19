@@ -1,4 +1,4 @@
-// $Id: JArchiveParamsDialog.java,v 1.10 2009/03/01 20:47:00 jim Exp $
+// $Id: JArchiveParamsDialog.java,v 1.11 2009/03/19 20:32:28 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -7,11 +7,8 @@ import us.temerity.pipeline.ui.*;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.io.*;
 import java.util.*;
 import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.tree.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   A R C H I V E   P A R A M S   D I A L O G                                              */
@@ -197,6 +194,7 @@ class JArchiveParamsDialog
   /**
    * Get the archiver plugin instance to use to archive the nodes.
    */
+  @SuppressWarnings("unchecked")
   public BaseArchiver
   getArchiver() 
   {
@@ -257,11 +255,11 @@ class JArchiveParamsDialog
   updateArchiver() 
   { 
     UIMaster master = UIMaster.getInstance();
-    MasterMgrClient client = master.getMasterMgrClient();
 
     pToolsetField.removeActionListener(this);
+    TreeSet<String> toolsets = new TreeSet<String>();
     {
-      TreeSet<String> toolsets = new TreeSet<String>();
+      MasterMgrClient client = master.leaseMasterMgrClient();      
       try {
 	if(pToolset == null) 
 	  pToolset = client.getDefaultToolsetName();
@@ -272,7 +270,11 @@ class JArchiveParamsDialog
       }
       catch(PipelineException ex) {
       }
-
+      finally {
+        master.returnMasterMgrClient(client);
+      }
+    }
+    {
       if(toolsets.isEmpty())
 	toolsets.add("-");
 	  
@@ -461,6 +463,7 @@ class JArchiveParamsDialog
   /** 
    * Invoked when an action occurs. 
    */ 
+  @Override
   public void 
   actionPerformed
   (
@@ -545,6 +548,7 @@ class JArchiveParamsDialog
   /**
    * Shows or hides this component.
    */ 
+  @Override
   public void 
   setVisible
   (

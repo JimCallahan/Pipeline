@@ -1,4 +1,4 @@
-// $Id: JManagePrivilegesDialog.java,v 1.4 2008/01/28 11:58:51 jesse Exp $
+// $Id: JManagePrivilegesDialog.java,v 1.5 2009/03/19 20:32:28 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -9,9 +9,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
 import javax.swing.*;
-import javax.swing.table.*;
 import javax.swing.event.*;
-import javax.swing.border.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   M A N A G E   P R I V I L E G E S   D I A L O G                                        */
@@ -276,7 +274,7 @@ class  JManagePrivilegesDialog
   updateAll() 
   { 
     UIMaster master = UIMaster.getInstance();
-    MasterMgrClient client = master.getMasterMgrClient();
+    MasterMgrClient client = master.leaseMasterMgrClient();
     try {
       pPrivilegeDetails = client.getPrivilegeDetails();
       pWorkGroups = client.getWorkGroups();
@@ -290,6 +288,9 @@ class  JManagePrivilegesDialog
     }
     catch(PipelineException ex) {
       showErrorDialog(ex);
+    }
+    finally {
+      master.returnMasterMgrClient(client);
     }
 
     updateUsersMenu();
@@ -470,6 +471,7 @@ class  JManagePrivilegesDialog
   /**
    * Used to determine the name of the work group under the given mouse position (if any).
    */ 
+  @SuppressWarnings("unused")
   private void 
   setGroupUnderMouse
   (
@@ -625,6 +627,7 @@ class  JManagePrivilegesDialog
   /** 
    * Invoked when an action occurs. 
    */ 
+  @Override
   public void 
   actionPerformed
   (
@@ -687,6 +690,7 @@ class  JManagePrivilegesDialog
   /**
    * Apply changes and close. 
    */ 
+  @Override
   public void 
   doConfirm() 
   {
@@ -697,11 +701,12 @@ class  JManagePrivilegesDialog
   /**
    * Apply changes. 
    */ 
+  @Override
   public void 
   doApply()
   {
     UIMaster master = UIMaster.getInstance();
-    MasterMgrClient client = master.getMasterMgrClient();
+    MasterMgrClient client = master.leaseMasterMgrClient();
     try {
       TreeMap<String,Privileges> privs = pPrivilegesTableModel.getModifiedPrivileges();
       if(!privs.isEmpty()) 
@@ -719,6 +724,9 @@ class  JManagePrivilegesDialog
     }
     catch(PipelineException ex) {
       showErrorDialog(ex);
+    }
+    finally {
+      master.returnMasterMgrClient(client);
     }
     
     updateAll();
@@ -813,7 +821,7 @@ class  JManagePrivilegesDialog
 	if((uname != null) && (uname.length() > 0)) {
 	  
 	  UIMaster master = UIMaster.getInstance();
-	  MasterMgrClient client = master.getMasterMgrClient();
+	  MasterMgrClient client = master.leaseMasterMgrClient();
 	  try {
 	    pWorkGroups.addUser(uname);
 	    client.setWorkGroups(pWorkGroups);
@@ -821,6 +829,9 @@ class  JManagePrivilegesDialog
 	  }
 	  catch(PipelineException ex) {
 	    showErrorDialog(ex);
+	  }
+	  finally {
+	    master.returnMasterMgrClient(client);
 	  }
 	}
       }
@@ -841,7 +852,7 @@ class  JManagePrivilegesDialog
     boolean modified = false;
     {
       UIMaster master = UIMaster.getInstance();
-      MasterMgrClient client = master.getMasterMgrClient();
+      MasterMgrClient client = master.leaseMasterMgrClient();
       try {
 	int rows[] = pPrivilegeNamesTablePanel.getTable().getSelectedRows();
 	int wk;
@@ -854,6 +865,9 @@ class  JManagePrivilegesDialog
       }
       catch(PipelineException ex) {
 	showErrorDialog(ex);
+      }
+      finally {
+        master.returnMasterMgrClient(client);
       }
     }
     
@@ -880,7 +894,7 @@ class  JManagePrivilegesDialog
 	String gname = pGroupsNewDialog.getName();
 	if((gname != null) && (gname.length() > 0)) {
 	  UIMaster master = UIMaster.getInstance();
-	  MasterMgrClient client = master.getMasterMgrClient();
+	  MasterMgrClient client = master.leaseMasterMgrClient();
 	  try {
 	    pWorkGroups.addGroup(gname);
 	    client.setWorkGroups(pWorkGroups);
@@ -888,6 +902,9 @@ class  JManagePrivilegesDialog
 	  }
 	  catch(PipelineException ex) {
 	    showErrorDialog(ex);
+	  }
+	  finally {
+	    master.returnMasterMgrClient(client);
 	  }
 	}
       }
@@ -908,7 +925,7 @@ class  JManagePrivilegesDialog
     boolean modified = false;
     if(pGroupUnderMouse != null) {
       UIMaster master = UIMaster.getInstance();
-      MasterMgrClient client = master.getMasterMgrClient();
+      MasterMgrClient client = master.leaseMasterMgrClient();
       try {
 	pWorkGroups.removeGroup(pGroupUnderMouse);
 	client.setWorkGroups(pWorkGroups);
@@ -916,6 +933,9 @@ class  JManagePrivilegesDialog
       }
       catch(PipelineException ex) {
 	showErrorDialog(ex);
+      }
+      finally {
+        master.returnMasterMgrClient(client);
       }
 
       pGroupUnderMouse = null;

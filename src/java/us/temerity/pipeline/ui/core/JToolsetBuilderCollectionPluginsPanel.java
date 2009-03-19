@@ -1,4 +1,4 @@
-// $Id: JToolsetBuilderCollectionPluginsPanel.java,v 1.1 2008/01/28 11:58:50 jesse Exp $
+// $Id: JToolsetBuilderCollectionPluginsPanel.java,v 1.2 2009/03/19 20:32:28 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -80,10 +80,15 @@ class JToolsetBuilderCollectionPluginsPanel
     throws PipelineException
   {
     UIMaster master = UIMaster.getInstance();
-    MasterMgrClient client = master.getMasterMgrClient();
-    PluginMenuLayout layout = client.getBuilderCollectionMenuLayout();
-    setLayout(pToolsetName, layout);
-    updateDefault(layout);
+    MasterMgrClient client = master.leaseMasterMgrClient();
+    try {
+      PluginMenuLayout layout = client.getBuilderCollectionMenuLayout();
+      setLayout(pToolsetName, layout);
+      updateDefault(layout);
+    }
+    finally {
+      master.returnMasterMgrClient(client);
+    }
   }
 
   /**
@@ -95,8 +100,13 @@ class JToolsetBuilderCollectionPluginsPanel
     throws PipelineException
   {
     UIMaster master = UIMaster.getInstance();
-    MasterMgrClient client = master.getMasterMgrClient();
-    client.setBuilderCollectionMenuLayout(getLayout(pToolsetName));
+    MasterMgrClient client = master.leaseMasterMgrClient();
+    try {
+      client.setBuilderCollectionMenuLayout(getLayout(pToolsetName));
+    }
+    finally {
+      master.returnMasterMgrClient(client);
+    }
   }
 
 

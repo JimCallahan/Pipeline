@@ -1,13 +1,10 @@
-// $Id: JToolsetKeyChooserPluginsPanel.java,v 1.1 2007/12/16 11:03:59 jim Exp $
+// $Id: JToolsetKeyChooserPluginsPanel.java,v 1.2 2009/03/19 20:32:28 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
-import us.temerity.pipeline.*;
-import us.temerity.pipeline.toolset.*; 
-import us.temerity.pipeline.ui.*; 
-
-import java.io.*;
 import java.util.*;
+
+import us.temerity.pipeline.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   T O O L S E T   K E Y   C H O O S E R   P L U G I N S   P A N E L                      */
@@ -51,6 +48,8 @@ class JToolsetKeyChooserPluginsPanel
    * @param pvid
    *   The version number of the package.
    */ 
+  @Override
+  @SuppressWarnings("unused")
   protected TripleMap<String,String,VersionID,TreeSet<OsType>>
   getAllPlugins() 
     throws PipelineException
@@ -68,6 +67,7 @@ class JToolsetKeyChooserPluginsPanel
    * @param pvid
    *   The version number of the package.
    */ 
+  @Override
   protected DoubleMap<String,String,TreeSet<VersionID>> 
   getPackagePlugins
   (
@@ -82,27 +82,39 @@ class JToolsetKeyChooserPluginsPanel
   /**
    * Reset the layout to the default menu lauyout.
    */ 
+  @Override
   public void 
   defaultLayout() 
     throws PipelineException
   {
     UIMaster master = UIMaster.getInstance();
-    MasterMgrClient client = master.getMasterMgrClient();
-    PluginMenuLayout layout = client.getKeyChooserMenuLayout();
-    setLayout(pToolsetName, layout);
-    updateDefault(layout);
+    MasterMgrClient client = master.leaseMasterMgrClient();
+    try {
+      PluginMenuLayout layout = client.getKeyChooserMenuLayout();
+      setLayout(pToolsetName, layout);
+      updateDefault(layout);
+    }
+    finally {
+      master.returnMasterMgrClient(client);
+    }
   }
 
   /**
    * Save the current menu layout as the default layout.
    */ 
+  @Override
   public void 
   saveDefaultLayout() 
     throws PipelineException
   {
     UIMaster master = UIMaster.getInstance();
-    MasterMgrClient client = master.getMasterMgrClient();
-    client.setKeyChooserMenuLayout(getLayout(pToolsetName));
+    MasterMgrClient client = master.leaseMasterMgrClient();
+    try {
+      client.setKeyChooserMenuLayout(getLayout(pToolsetName));
+    }
+    finally {
+      master.returnMasterMgrClient(client);
+    }
   }
 
 
@@ -115,6 +127,7 @@ class JToolsetKeyChooserPluginsPanel
    * @param tname
    *   The name of the toolset.
    */ 
+  @Override
   protected  PluginMenuLayout
   getLayout
   (
@@ -134,6 +147,7 @@ class JToolsetKeyChooserPluginsPanel
    * @param layout
    *   The plugin menu layout.
    */ 
+  @Override
   protected void
   setLayout
   (

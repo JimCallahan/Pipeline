@@ -1,13 +1,10 @@
-// $Id: JToolsetArchiverPluginsPanel.java,v 1.3 2006/05/07 21:30:14 jim Exp $
+// $Id: JToolsetArchiverPluginsPanel.java,v 1.4 2009/03/19 20:32:28 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
-import us.temerity.pipeline.*;
-import us.temerity.pipeline.toolset.*; 
-import us.temerity.pipeline.ui.*; 
-
-import java.io.*;
 import java.util.*;
+
+import us.temerity.pipeline.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   T O O L S E T   A R C H I V E R   P L U G I N S   P A N E L                            */
@@ -51,6 +48,8 @@ class JToolsetArchiverPluginsPanel
    * @param pvid
    *   The version number of the package.
    */ 
+  @Override
+  @SuppressWarnings("unused")
   protected TripleMap<String,String,VersionID,TreeSet<OsType>>
   getAllPlugins() 
     throws PipelineException
@@ -68,6 +67,7 @@ class JToolsetArchiverPluginsPanel
    * @param pvid
    *   The version number of the package.
    */ 
+  @Override
   protected DoubleMap<String,String,TreeSet<VersionID>> 
   getPackagePlugins
   (
@@ -82,27 +82,39 @@ class JToolsetArchiverPluginsPanel
   /**
    * Reset the layout to the default menu lauyout.
    */ 
+  @Override
   public void 
   defaultLayout() 
     throws PipelineException
   {
     UIMaster master = UIMaster.getInstance();
-    MasterMgrClient client = master.getMasterMgrClient();
-    PluginMenuLayout layout = client.getArchiverMenuLayout();
-    setLayout(pToolsetName, layout);
-    updateDefault(layout);
+    MasterMgrClient client = master.leaseMasterMgrClient();
+    try {
+      PluginMenuLayout layout = client.getArchiverMenuLayout();
+      setLayout(pToolsetName, layout);
+      updateDefault(layout);
+    }
+    finally {
+      master.returnMasterMgrClient(client);
+    }
   }
 
   /**
    * Save the current menu layout as the default layout.
    */ 
+  @Override
   public void 
   saveDefaultLayout() 
     throws PipelineException
   {
     UIMaster master = UIMaster.getInstance();
-    MasterMgrClient client = master.getMasterMgrClient();
-    client.setArchiverMenuLayout(getLayout(pToolsetName));
+    MasterMgrClient client = master.leaseMasterMgrClient();
+    try {
+      client.setArchiverMenuLayout(getLayout(pToolsetName));
+    }
+    finally {
+      master.returnMasterMgrClient(client);
+    }
   }
 
 
@@ -115,6 +127,7 @@ class JToolsetArchiverPluginsPanel
    * @param tname
    *   The name of the toolset.
    */ 
+  @Override
   protected  PluginMenuLayout
   getLayout
   (
@@ -134,6 +147,7 @@ class JToolsetArchiverPluginsPanel
    * @param layout
    *   The plugin menu layout.
    */ 
+  @Override
   protected void
   setLayout
   (

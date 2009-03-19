@@ -1,4 +1,4 @@
-// $Id: JNodeBrowserPanel.java,v 1.20 2008/01/28 12:02:23 jesse Exp $
+// $Id: JNodeBrowserPanel.java,v 1.21 2009/03/19 20:32:28 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -140,6 +140,7 @@ class JNodeBrowserPanel
   /** 
    * Get the title of this type of panel.
    */
+  @Override
   public String 
   getTypeName() 
   {
@@ -157,6 +158,7 @@ class JNodeBrowserPanel
    * @param groupID
    *   The new group ID or (0) for no group assignment.
    */ 
+  @Override
   public void
   setGroupID
   (
@@ -182,6 +184,7 @@ class JNodeBrowserPanel
   /**
    * Is the given group currently unused for this type of panel.
    */ 
+  @Override
   public boolean
   isGroupUnused
   (
@@ -198,6 +201,7 @@ class JNodeBrowserPanel
   /**
    * Are the contents of the panel read-only. <P> 
    */ 
+  @Override
   public boolean
   isLocked() 
   {
@@ -207,6 +211,7 @@ class JNodeBrowserPanel
   /**
    * Set the author and view.
    */ 
+  @Override
   public void 
   setAuthorView
   (
@@ -391,7 +396,7 @@ class JNodeBrowserPanel
       if(master.beginSilentPanelOp(pGroupID)) {
 
 	updatePrivileges();
-    
+        MasterMgrClient client = master.leaseMasterMgrClient();
 	try { 
 	  TreeMap<String,Boolean> paths = new TreeMap<String,Boolean>();
 	  for(String path : expanded)
@@ -399,13 +404,14 @@ class JNodeBrowserPanel
 	  for(String path : pSelected) 
 	    paths.put(path, false);
 	  
-	  comp = master.getMasterMgrClient(pGroupID).updatePaths(pAuthor, pView, paths); 
+	  comp = client.updatePaths(pAuthor, pView, paths); 
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
 	  return;
 	}
 	finally {
+	  master.returnMasterMgrClient(client);
 	  master.endSilentPanelOp(pGroupID);
 	}
       }
@@ -550,6 +556,7 @@ class JNodeBrowserPanel
    * @return
    *   Whether the panel has received the focus.
    */ 
+  @Override
   public boolean 
   refocusOnPanel() 
   {
@@ -567,6 +574,7 @@ class JNodeBrowserPanel
   /**
    * Update the panel to reflect new user preferences.
    */ 
+  @Override
   public void 
   updateUserPrefs() 
   {
@@ -972,6 +980,7 @@ class JNodeBrowserPanel
   /*   G L U E A B L E                                                                      */
   /*----------------------------------------------------------------------------------------*/
 
+  @Override
   public void 
   toGlue
   ( 
@@ -988,6 +997,7 @@ class JNodeBrowserPanel
     encoder.encode("Filter", pFilter);
   }
 
+  @Override
   public void 
   fromGlue
   (

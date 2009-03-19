@@ -1,4 +1,4 @@
-// $Id: PanelUpdater.java,v 1.29 2009/03/02 05:16:19 jim Exp $
+// $Id: PanelUpdater.java,v 1.30 2009/03/19 20:32:28 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -106,16 +106,22 @@ class PanelUpdater
   }
 
   /**
-   * A lightweight panel update originating from the Node Viewer panel. <P> 
+   * A lightweight panel update originating from the Node Viewer panel. <P>
+   *  
+   * @param panel
+   *   The new viewer panel.
+   *  
+   * @param downstreamOnly
+   *    Whether to perform downstream status only, keeping the existing upstream node status.
    */ 
   public
   PanelUpdater
   (
-   JNodeViewerPanel panel, 
-   DownstreamMode dmode
+    JNodeViewerPanel panel, 
+    boolean downstreamOnly
   ) 
   {
-    this(panel, false, true, null, true);
+    this(panel, false, true, null, downstreamOnly);
   }
 
   /**
@@ -431,10 +437,9 @@ class PanelUpdater
     boolean success = true;
     UIMaster master = UIMaster.getInstance();
     if(master.beginPanelOp(pGroupID)) {
-      TaskTimer timer = new TaskTimer();
+      MasterMgrClient mclient = master.leaseMasterMgrClient();
+      QueueMgrClient qclient  = master.leaseQueueMgrClient();
       try {
-	MasterMgrClient mclient = master.getMasterMgrClient(pGroupID);
-	QueueMgrClient qclient  = master.getQueueMgrClient(pGroupID);
 	
 	/* clear client caches */ 
 	mclient.invalidateCachedDefaultToolsetName();
@@ -724,6 +729,8 @@ class PanelUpdater
 	success = false;
       }
       finally {
+        master.returnMasterMgrClient(mclient);
+        master.returnQueueMgrClient(qclient);
 	master.endPanelOp(pGroupID, success ? "Done." : "Failed!");
       }
     }

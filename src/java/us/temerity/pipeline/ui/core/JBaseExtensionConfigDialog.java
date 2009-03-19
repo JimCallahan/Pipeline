@@ -1,4 +1,4 @@
-// $Id: JBaseExtensionConfigDialog.java,v 1.6 2009/03/01 20:52:42 jim Exp $
+// $Id: JBaseExtensionConfigDialog.java,v 1.7 2009/03/19 20:32:28 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -8,9 +8,7 @@ import us.temerity.pipeline.ui.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
-import java.io.*;
 import javax.swing.*;
-import javax.swing.tree.*;
 import javax.swing.event.*;
 
 /*------------------------------------------------------------------------------------------*/
@@ -197,6 +195,7 @@ class JBaseExtensionConfigDialog
   /**
    * Get the extension plugin instance.
    */
+  @SuppressWarnings("unchecked")
   protected BaseExt
   getExtension()
   {
@@ -273,11 +272,13 @@ class JBaseExtensionConfigDialog
   private void 
   updateExtension() 
   { 
-    MasterMgrClient client = UIMaster.getInstance().getMasterMgrClient();
+    UIMaster master = UIMaster.getInstance();
+    
 
     pToolsetField.removeActionListener(this);
+    TreeSet<String> toolsets = new TreeSet<String>();
     {
-      TreeSet<String> toolsets = new TreeSet<String>();
+      MasterMgrClient client = master.leaseMasterMgrClient();
       try {
 	if(pToolset == null) 
 	  pToolset = client.getDefaultToolsetName();
@@ -288,6 +289,11 @@ class JBaseExtensionConfigDialog
       }
       catch(PipelineException ex) {
       }
+      finally {
+        master.returnMasterMgrClient(client);
+      }
+    }
+    {
 
       if(toolsets.isEmpty())
 	toolsets.add("-");
@@ -607,6 +613,7 @@ class JBaseExtensionConfigDialog
   /** 
    * Invoked when an action occurs. 
    */ 
+  @Override
   public void 
   actionPerformed
   (
@@ -754,6 +761,8 @@ class JBaseExtensionConfigDialog
   /*----------------------------------------------------------------------------------------*/
 
   //private static final long serialVersionUID = -4103423556794887982L;
+  
+  private static final long serialVersionUID = -3759436064676407566L;
 
   protected static final int sTSize = 180;
   protected static final int sVSize = 300;

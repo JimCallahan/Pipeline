@@ -1,4 +1,4 @@
-// $Id: JCloneDialog.java,v 1.19 2009/03/01 20:52:42 jim Exp $
+// $Id: JCloneDialog.java,v 1.20 2009/03/19 20:32:28 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -98,7 +98,6 @@ class JCloneDialog
 
 	    {
 	      JLabel label = new JLabel("to");
-	      pToLabel = label;
 
 	      label.setName("DisableLabel");
 
@@ -121,7 +120,6 @@ class JCloneDialog
 
 	    {
 	      JLabel label = new JLabel("by");
-	      pByLabel = label;
 
 	      label.setName("DisableLabel");
 
@@ -331,6 +329,7 @@ class JCloneDialog
   /** 
    * Invoked when an action occurs. 
    */ 
+  @Override
   public void 
   actionPerformed
   (
@@ -353,6 +352,7 @@ class JCloneDialog
   /**
    * Apply changes and close. 
    */ 
+  @Override
   public void 
   doConfirm()
   {
@@ -372,7 +372,7 @@ class JCloneDialog
     }
 
     UIMaster master = UIMaster.getInstance();
-    if(master.beginPanelOp("Registering Cloned Node: " + mod.getName())) {
+    if(master.beginPanelOp(pChannel, "Registering Cloned Node: " + mod.getName())) {
       try {
 	doClone(mod);
 	synchronized(pRegistered) {
@@ -383,7 +383,7 @@ class JCloneDialog
 	showErrorDialog(ex);
       }
       finally {
-	master.endPanelOp("Done.");
+	master.endPanelOp(pChannel, "Done.");
       }
     }
     
@@ -393,6 +393,7 @@ class JCloneDialog
   /**
    * Apply changes. 
    */ 
+  @Override
   public void 
   doApply()
   {
@@ -415,7 +416,7 @@ class JCloneDialog
     pApplyButton.setEnabled(false);
     pCancelButton.setEnabled(false);
 
-    CloneTask task = new CloneTask(mod);
+    ApplyTask task = new ApplyTask(mod);
     task.start();
   }
 
@@ -552,21 +553,25 @@ class JCloneDialog
       FileSeq primary = new FileSeq(fpat, frange);
 
       UIMaster master = UIMaster.getInstance();
+      MasterMgrClient client = master.leaseMasterMgrClient();
+      try {
+        /* node properties */ 
+        BaseEditor editor = null;
+        if(pExportPanel.exportEditor()) 
+          editor = pNodeMod.getEditor();
+        else if(suffix != null) 
+          editor = client.getEditorForSuffix(suffix);
 
-      /* node properties */ 
-      BaseEditor editor = null;
-      if(pExportPanel.exportEditor()) 
-	editor = pNodeMod.getEditor();
-      else if(suffix != null) 
-	editor = master.getMasterMgrClient(pChannel).getEditorForSuffix(suffix);
-
-      String toolset = null;
-      if(pExportPanel.exportToolset()) 
-	toolset = pNodeMod.getToolset();
-      else 
-	toolset = master.getMasterMgrClient(pChannel).getDefaultToolsetName();
-      
-      mod = new NodeMod(name, primary, new TreeSet<FileSeq>(), toolset, editor);
+        String toolset = null;
+        if(pExportPanel.exportToolset()) 
+          toolset = pNodeMod.getToolset();
+        else 
+          toolset = client.getDefaultToolsetName();
+        mod = new NodeMod(name, primary, new TreeSet<FileSeq>(), toolset, editor);
+      }
+      finally {
+        master.returnMasterMgrClient(client);
+      }
     }
     catch(Exception ex) {
       showErrorDialog(ex);
@@ -583,152 +588,157 @@ class JCloneDialog
   private void
   doClone
   (
-   NodeMod mod
+    NodeMod mod
   ) 
     throws PipelineException 
   {
     UIMaster master = UIMaster.getInstance();
-    MasterMgrClient client = master.getMasterMgrClient(pChannel);
+    MasterMgrClient client = master.leaseMasterMgrClient();
     
-    /* register the node */ 
-    String name = mod.getName();
-    client.register(pAuthor, pView, mod);
+    try {
+      /* register the node */ 
+      String name = mod.getName();
+      client.register(pAuthor, pView, mod);
 
-    /* upstream links */ 
-    {
-      boolean addedLinks = false;
-      for(String source : pNodeMod.getSourceNames()) {
-	if(pExportPanel.exportSource(source)) {
-	  LinkMod link = pNodeMod.getSource(source);
-	  client.link(pAuthor, pView, name, source, 
-		      link.getPolicy(), link.getRelationship(), 
-		      link.getFrameOffset());
-	  addedLinks = true;
-	}
-      }
-      
-      /* update the links if we need them for per-source action parameters below */
-      if(addedLinks && pExportPanel.exportActionSourceParams()) 
-	mod = client.getWorkingVersion(pAuthor, pView, name);
-    }
-    
-    /* actions */ 
-    BaseAction action = null;
-    {
-      BaseAction oaction = pNodeMod.getAction(); 
-      if((oaction != null) && pExportPanel.exportAction()) {
-	  
-	/* the action and parameters */ 
-	{
-	  PluginMgrClient mgr = PluginMgrClient.getInstance();
-	  action = mgr.newAction(oaction.getName(), 
-                                 oaction.getVersionID(), 
-                                 oaction.getVendor()); 
-	  
-	  for(ActionParam param : oaction.getSingleParams()) {
-	    if(pExportPanel.exportActionSingleParam(param.getName())) 
-	      action.setSingleParamValue(param.getName(), param.getValue());
-	  }
-	  
-	  if(pExportPanel.exportActionSourceParams()) 
-	    action.setSourceParamValues(oaction);
-
-	  mod.setAction(action);
-	}
-	
-	/* action enabled */ 
-	if(pExportPanel.exportActionEnabled()) 
-	  mod.setActionEnabled(pNodeMod.isActionEnabled()); 
-      }
-    }
-    
-    if(action != null) {
-      /* execution details */ 
+      /* upstream links */ 
       {
-	if(pExportPanel.exportOverflowPolicy()) 
-	  mod.setOverflowPolicy(pNodeMod.getOverflowPolicy());
-	
-	if(pExportPanel.exportExecutionMethod()) 
-	  mod.setExecutionMethod(pNodeMod.getExecutionMethod());
-	
-	if(pExportPanel.exportBatchSize() && 
-	   (pNodeMod.getExecutionMethod() == ExecutionMethod.Parallel))
-	  mod.setBatchSize(pNodeMod.getBatchSize());
+        boolean addedLinks = false;
+        for(String source : pNodeMod.getSourceNames()) {
+          if(pExportPanel.exportSource(source)) {
+            LinkMod link = pNodeMod.getSource(source);
+            client.link(pAuthor, pView, name, source, 
+                        link.getPolicy(), link.getRelationship(), 
+                        link.getFrameOffset());
+            addedLinks = true;
+          }
+        }
+
+        /* update the links if we need them for per-source action parameters below */
+        if(addedLinks && pExportPanel.exportActionSourceParams()) 
+          mod = client.getWorkingVersion(pAuthor, pView, name);
       }
-      
-      /* job requirements */ 
+
+      /* actions */ 
+      BaseAction action = null;
       {
-	JobReqs jreqs = mod.getJobRequirements();
-	JobReqs ojreqs = pNodeMod.getJobRequirements();
-	
-	if(pExportPanel.exportPriority()) 
-	  jreqs.setPriority(ojreqs.getPriority());
-	
-	if (pExportPanel.exportRampUpInterval())
-	  jreqs.setRampUp(ojreqs.getRampUp());
-	
-	if(pExportPanel.exportMaxLoad()) 
-	  jreqs.setMaxLoad(ojreqs.getMaxLoad());
-	
-	if(pExportPanel.exportMinMemory()) 
-	  jreqs.setMinMemory(ojreqs.getMinMemory());
-	
-	if(pExportPanel.exportMinDisk()) 
-	  jreqs.setMinDisk(ojreqs.getMinDisk());
-	
-	for(String kname : pExportPanel.exportedLicenseKeys()) {
-	  if(ojreqs.getLicenseKeys().contains(kname)) 
-	    jreqs.addLicenseKey(kname);
-	  else 
-	    jreqs.removeLicenseKey(kname);
-	}
-	
-	for(String kname : pExportPanel.exportedHardwareKeys()) {
-	  if(ojreqs.getHardwareKeys().contains(kname)) 
-	    jreqs.addHardwareKey(kname);
-	  else 
-	    jreqs.removeHardwareKey(kname);
-	}
+        BaseAction oaction = pNodeMod.getAction(); 
+        if((oaction != null) && pExportPanel.exportAction()) {
 
-	for(String kname : pExportPanel.exportedSelectionKeys()) {
-	  if(ojreqs.getSelectionKeys().contains(kname)) 
-	    jreqs.addSelectionKey(kname);
-	  else 
-	    jreqs.removeSelectionKey(kname);
-	}
+          /* the action and parameters */ 
+          {
+            PluginMgrClient mgr = PluginMgrClient.getInstance();
+            action = mgr.newAction(oaction.getName(), 
+                                   oaction.getVersionID(), 
+                                   oaction.getVendor()); 
 
-	mod.setJobRequirements(jreqs);
+            for(ActionParam param : oaction.getSingleParams()) {
+              if(pExportPanel.exportActionSingleParam(param.getName())) 
+                action.setSingleParamValue(param.getName(), param.getValue());
+            }
+
+            if(pExportPanel.exportActionSourceParams()) 
+              action.setSourceParamValues(oaction);
+
+            mod.setAction(action);
+          }
+
+          /* action enabled */ 
+          if(pExportPanel.exportActionEnabled()) 
+            mod.setActionEnabled(pNodeMod.isActionEnabled()); 
+        }
+      }
+
+      if(action != null) {
+        /* execution details */ 
+        {
+          if(pExportPanel.exportOverflowPolicy()) 
+            mod.setOverflowPolicy(pNodeMod.getOverflowPolicy());
+
+          if(pExportPanel.exportExecutionMethod()) 
+            mod.setExecutionMethod(pNodeMod.getExecutionMethod());
+
+          if(pExportPanel.exportBatchSize() && 
+            (pNodeMod.getExecutionMethod() == ExecutionMethod.Parallel))
+            mod.setBatchSize(pNodeMod.getBatchSize());
+        }
+
+        /* job requirements */ 
+        {
+          JobReqs jreqs = mod.getJobRequirements();
+          JobReqs ojreqs = pNodeMod.getJobRequirements();
+
+          if(pExportPanel.exportPriority()) 
+            jreqs.setPriority(ojreqs.getPriority());
+
+          if (pExportPanel.exportRampUpInterval())
+            jreqs.setRampUp(ojreqs.getRampUp());
+
+          if(pExportPanel.exportMaxLoad()) 
+            jreqs.setMaxLoad(ojreqs.getMaxLoad());
+
+          if(pExportPanel.exportMinMemory()) 
+            jreqs.setMinMemory(ojreqs.getMinMemory());
+
+          if(pExportPanel.exportMinDisk()) 
+            jreqs.setMinDisk(ojreqs.getMinDisk());
+
+          for(String kname : pExportPanel.exportedLicenseKeys()) {
+            if(ojreqs.getLicenseKeys().contains(kname)) 
+              jreqs.addLicenseKey(kname);
+            else 
+              jreqs.removeLicenseKey(kname);
+          }
+
+          for(String kname : pExportPanel.exportedHardwareKeys()) {
+            if(ojreqs.getHardwareKeys().contains(kname)) 
+              jreqs.addHardwareKey(kname);
+            else 
+              jreqs.removeHardwareKey(kname);
+          }
+
+          for(String kname : pExportPanel.exportedSelectionKeys()) {
+            if(ojreqs.getSelectionKeys().contains(kname)) 
+              jreqs.addSelectionKey(kname);
+            else 
+              jreqs.removeSelectionKey(kname);
+          }
+
+          mod.setJobRequirements(jreqs);
+        }
+      }
+
+      /* apply the changes */ 
+      client.modifyProperties(pAuthor, pView, mod);
+
+      /* Do the annotations */
+      {
+        TreeMap<String, BaseAnnotation> annots = client.getAnnotations(pNodeMod.getName());
+        for (String aname : annots.keySet()) {
+          if (pExportPanel.exportAnnotation(aname)) {
+            BaseAnnotation an = annots.get(aname);
+            PluginMgrClient mgr = PluginMgrClient.getInstance();
+            BaseAnnotation newAnnot = mgr.newAnnotation(an.getName(), 
+                                                        an.getVersionID(), 
+                                                        an.getVendor()); 
+            for (AnnotationParam param : an.getParams()) {
+              String paramName = param.getName();
+              Comparable value = param.getValue();
+              AnnotationParam newParam = newAnnot.getParam(paramName);
+              newParam.setValue(value);
+            }
+            client.addAnnotation(mod.getName(), aname, newAnnot);
+          }
+        }
+      }
+
+      /* copy the files */ 
+      if(pCopyFilesField.getValue()) {
+        client.cloneFiles(new NodeID(pAuthor, pView, pNodeMod.getName()), 
+          new NodeID(pAuthor, pView, mod.getName()));
       }
     }
-    
-    /* apply the changes */ 
-    client.modifyProperties(pAuthor, pView, mod);
-    
-    /* Do the annotations */
-    {
-      TreeMap<String, BaseAnnotation> annots = client.getAnnotations(pNodeMod.getName());
-      for (String aname : annots.keySet()) {
-	if (pExportPanel.exportAnnotation(aname)) {
-	  BaseAnnotation an = annots.get(aname);
-	  PluginMgrClient mgr = PluginMgrClient.getInstance();
-	  BaseAnnotation newAnnot = mgr.newAnnotation(an.getName(), 
-	                                              an.getVersionID(), 
-	                                              an.getVendor()); 
-	  for (AnnotationParam param : an.getParams()) {
-	    String paramName = param.getName();
-	    Comparable value = param.getValue();
-	    AnnotationParam newParam = newAnnot.getParam(paramName);
-	    newParam.setValue(value);
-	  }
-	  client.addAnnotation(mod.getName(), aname, newAnnot);
-	}
-      }
-    }
-
-    /* copy the files */ 
-    if(pCopyFilesField.getValue()) {
-      client.cloneFiles(new NodeID(pAuthor, pView, pNodeMod.getName()), 
-			new NodeID(pAuthor, pView, mod.getName()));
+    finally {
+      master.returnMasterMgrClient(client);
     }
   }
 
@@ -742,42 +752,43 @@ class JCloneDialog
    * Clone a new node.
    */ 
   private
-  class CloneTask
+  class ApplyTask
     extends Thread
   {
     public 
-    CloneTask
+    ApplyTask
     (
      NodeMod mod 
     ) 
     {
-      super("JCloneDialog:CloneTask");
-      pNodeMod = mod;
+      super("JCloneDialog:ApplyTask");
+      pNodeModLocal = mod;
     }
 
+    @Override
     public void 
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp("Registering Cloned Node: " + pNodeMod.getName())) {
+      if(master.beginPanelOp(pChannel, "Registering Cloned Node: " + pNodeModLocal.getName())) {
 	try {
-	  doClone(pNodeMod);
+	  doClone(pNodeModLocal);
 	  synchronized(pRegistered) {
-	    pRegistered.add(pNodeMod.getName());
+	    pRegistered.add(pNodeModLocal.getName());
 	  }
 	}
 	catch(PipelineException ex) {
 	  showErrorDialog(ex);
 	}
 	finally {
-	  master.endPanelOp("Done.");
+	  master.endPanelOp(pChannel, "Done.");
 	}
       }
 
       SwingUtilities.invokeLater(new DoneTask());
     }
 
-    private NodeMod  pNodeMod;
+    private NodeMod  pNodeModLocal;
   }
 
 
@@ -794,6 +805,7 @@ class JCloneDialog
       super("JCloneDialog:DoneTask");
     }
 
+    @Override
     public void 
     run() 
     {
@@ -877,21 +889,12 @@ class JCloneDialog
    */ 
   private JIntegerField  pStartFrameField;
 
-  /**
-   * The "to" label.
-   */ 
-  private JLabel pToLabel;
   
   /**
    * The end frame.
    */ 
   private JIntegerField  pEndFrameField;
 
-  /**
-   * The "by" label.
-   */ 
-  private JLabel pByLabel;
-  
   /**
    * The by frame.
    */ 

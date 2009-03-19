@@ -1,4 +1,4 @@
-// $Id: JManageHardwareKeysDialog.java,v 1.3 2007/12/16 12:22:09 jesse Exp $
+// $Id: JManageHardwareKeysDialog.java,v 1.4 2009/03/19 20:32:28 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -325,14 +325,15 @@ class JManageHardwareKeysDialog
   updateAll() 
   { 
     UIMaster master = UIMaster.getInstance();
-    QueueMgrClient client = master.getQueueMgrClient();
+    QueueMgrClient qclient = master.leaseQueueMgrClient();
+    MasterMgrClient mclient = master.leaseMasterMgrClient();
     try {
-      pPrivilegeDetails = master.getMasterMgrClient().getPrivilegeDetails();
+      pPrivilegeDetails = mclient.getPrivilegeDetails();
 
       ArrayList<BaseKey> keys = new ArrayList<BaseKey>();
-      for (HardwareKey key : client.getHardwareKeys() )
+      for (HardwareKey key : qclient.getHardwareKeys() )
         keys.add(key);
-      TreeMap<String,HardwareGroup> groups = client.getHardwareGroups();
+      TreeMap<String,HardwareGroup> groups = qclient.getHardwareGroups();
 
       pGroupNames.clear();
       pGroupNames.addAll(groups.keySet());
@@ -353,6 +354,10 @@ class JManageHardwareKeysDialog
     }
     catch(PipelineException ex) {
       showErrorDialog(ex);
+    }
+    finally {
+      master.returnMasterMgrClient(mclient);
+      master.returnQueueMgrClient(qclient);
     }
 
     updateKeysMenu();
@@ -775,7 +780,7 @@ class JManageHardwareKeysDialog
   doApply()
   {
     UIMaster master = UIMaster.getInstance();
-    QueueMgrClient client = master.getQueueMgrClient();
+    QueueMgrClient client = master.leaseQueueMgrClient();
     try {
       ArrayList<HardwareGroup> groups = pGroupsTableModel.getModifiedGroups();
       if(groups != null) 
@@ -783,6 +788,9 @@ class JManageHardwareKeysDialog
     }
     catch(PipelineException ex) {
       showErrorDialog(ex);
+    }
+    finally {
+      master.returnQueueMgrClient(client);
     }
     
     updateAll();
@@ -829,8 +837,8 @@ class JManageHardwareKeysDialog
       BaseKeyChooser plugin = pKeyDetailsDialog.getKeyChooser();
       BaseKey key = pKeysTableModel.getKey(row);
       if(key != null) {
+        QueueMgrClient qclient = master.leaseQueueMgrClient();
         try {
-          QueueMgrClient qclient = master.getQueueMgrClient();
           HardwareKey newKey = 
             new HardwareKey(key.getName(), key.getDescription(), plugin); 
           qclient.addHardwareKey(newKey);
@@ -842,6 +850,9 @@ class JManageHardwareKeysDialog
         }
         catch(PipelineException ex) {
           showErrorDialog(ex);
+        }
+        finally {
+          master.returnQueueMgrClient(qclient);
         }
       }
     }
@@ -868,13 +879,16 @@ class JManageHardwareKeysDialog
 	   (desc != null) && (desc.length() > 0)) {
 	  
 	  UIMaster master = UIMaster.getInstance();
-	  QueueMgrClient client = master.getQueueMgrClient();
+	  QueueMgrClient client = master.leaseQueueMgrClient();
 	  try {
 	    client.addHardwareKey(new HardwareKey(kname, desc));
 	    modified = true;
 	  }
 	  catch(PipelineException ex) {
 	    showErrorDialog(ex);
+	  }
+	  finally {
+	    master.returnQueueMgrClient(client);
 	  }
 	}
       }
@@ -895,7 +909,7 @@ class JManageHardwareKeysDialog
     boolean modified = false;
     {
       UIMaster master = UIMaster.getInstance();
-      QueueMgrClient client = master.getQueueMgrClient();
+      QueueMgrClient client = master.leaseQueueMgrClient();
       try {
 	int rows[] = pKeysTablePanel.getTable().getSelectedRows();
 	int wk;
@@ -907,6 +921,9 @@ class JManageHardwareKeysDialog
       }
       catch(PipelineException ex) {
 	showErrorDialog(ex);
+      }
+      finally {
+        master.returnQueueMgrClient(client);
       }
     }
     
@@ -933,13 +950,16 @@ class JManageHardwareKeysDialog
 	String gname = pGroupsNewDialog.getName();
 	if((gname != null) && (gname.length() > 0)) {
 	  UIMaster master = UIMaster.getInstance();
-	  QueueMgrClient client = master.getQueueMgrClient();
+	  QueueMgrClient client = master.leaseQueueMgrClient();
 	  try {
 	    client.addHardwareGroup(gname);
 	    modified = true;
 	  }
 	  catch(PipelineException ex) {
 	    showErrorDialog(ex);
+	  }
+	  finally {
+	    master.returnQueueMgrClient(client);
 	  }
 	}
       }
@@ -978,7 +998,7 @@ class JManageHardwareKeysDialog
 	  String gname = pGroupsNewDialog.getName();
 	  if((gname != null) && (gname.length() > 0)) {
 	    UIMaster master = UIMaster.getInstance();
-	    QueueMgrClient client = master.getQueueMgrClient();
+	    QueueMgrClient client = master.leaseQueueMgrClient();
 	    try {
 	      client.addHardwareGroup(gname);
 	      client.editHardwareGroup(new HardwareGroup(gname, group));
@@ -986,6 +1006,9 @@ class JManageHardwareKeysDialog
 	    }
 	    catch(PipelineException ex) {
 	      showErrorDialog(ex);
+	    }
+	    finally {
+	      master.returnQueueMgrClient(client);
 	    }
 	  }
 	}
@@ -1009,7 +1032,7 @@ class JManageHardwareKeysDialog
     boolean modified = false;
     {
       UIMaster master = UIMaster.getInstance();
-      QueueMgrClient client = master.getQueueMgrClient();
+      QueueMgrClient client = master.leaseQueueMgrClient();
       try {
 	TreeSet<String> gnames = new TreeSet<String>();
 	{
@@ -1026,6 +1049,9 @@ class JManageHardwareKeysDialog
       }
       catch(PipelineException ex) {
 	showErrorDialog(ex);
+      }
+      finally {
+        master.returnQueueMgrClient(client);
       }
     }
 

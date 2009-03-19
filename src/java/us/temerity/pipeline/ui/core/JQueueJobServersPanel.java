@@ -1,4 +1,4 @@
-// $Id: JQueueJobServersPanel.java,v 1.13 2008/10/21 00:54:11 jim Exp $
+// $Id: JQueueJobServersPanel.java,v 1.14 2009/03/19 20:32:28 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -66,12 +66,12 @@ class JQueueJobServersPanel
     /* the canonical names of this host */ 
     pLocalHostnames = new TreeSet<String>();
     try {
-      Enumeration nets = NetworkInterface.getNetworkInterfaces();  
+      Enumeration<NetworkInterface> nets = NetworkInterface.getNetworkInterfaces();  
       while(nets.hasMoreElements()) {
-	NetworkInterface net = (NetworkInterface) nets.nextElement();
-	Enumeration addrs = net.getInetAddresses();
+	NetworkInterface net = nets.nextElement();
+	Enumeration<InetAddress> addrs = net.getInetAddresses();
 	while(addrs.hasMoreElements()) {
-	  InetAddress addr = (InetAddress) addrs.nextElement();
+	  InetAddress addr = addrs.nextElement();
 	  if((addr instanceof Inet4Address) && !addr.isLoopbackAddress()) 
 	    pLocalHostnames.add(addr.getCanonicalHostName().toLowerCase(Locale.ENGLISH));
 	}
@@ -374,6 +374,7 @@ class JQueueJobServersPanel
   /** 
    * Get the title of this type of panel.
    */
+  @Override
   public String 
   getTypeName() 
   {
@@ -401,6 +402,7 @@ class JQueueJobServersPanel
    * @param groupID
    *   The new group ID or (0) for no group assignment.
    */ 
+  @Override
   public void
   setGroupID
   (
@@ -424,6 +426,7 @@ class JQueueJobServersPanel
   /**
    * Is the given group currently unused for this type of panel.
    */ 
+  @Override
   public boolean
   isGroupUnused
   (
@@ -441,6 +444,7 @@ class JQueueJobServersPanel
   /**
    * Are the contents of the panel read-only. <P> 
    */ 
+  @Override
   public boolean
   isLocked() 
   {
@@ -450,6 +454,7 @@ class JQueueJobServersPanel
   /**
    * Set the author and view.
    */ 
+  @Override
   public synchronized void 
   setAuthorView
   (
@@ -567,6 +572,7 @@ class JQueueJobServersPanel
   /**
    * Register the name of a panel property which has just been modified.
    */ 
+  @Override
   public void
   unsavedChange
   (
@@ -584,6 +590,7 @@ class JQueueJobServersPanel
    * 
    * This method is run by the Swing Event thread.
    */ 
+  @Override
   public void 
   prePanelOp() 
   {
@@ -601,6 +608,7 @@ class JQueueJobServersPanel
    * 
    * This method is run by the Swing Event thread.
    */ 
+  @Override
   public void 
   postPanelOp() 
   {
@@ -817,6 +825,7 @@ class JQueueJobServersPanel
    * @return
    *   Whether the panel has received the focus.
    */ 
+  @Override
   public boolean 
   refocusOnPanel() 
   {
@@ -834,6 +843,7 @@ class JQueueJobServersPanel
   /**
    * Update the panel to reflect new user preferences.
    */ 
+  @Override
   public void 
   updateUserPrefs() 
   {
@@ -1082,6 +1092,7 @@ class JQueueJobServersPanel
   /**
    * Apply the changes to server properties. 
    */ 
+  @Override
   public void 
   doApply()
   {
@@ -1241,6 +1252,7 @@ class JQueueJobServersPanel
     /**
      * Invoked when the mouse enters a component. 
      */ 
+    @Override
     public void 
     mouseEntered
     (
@@ -1253,6 +1265,7 @@ class JQueueJobServersPanel
     /**
      * Invoked when the mouse exits a component. 
      */ 
+    @Override
     public void 
     mouseExited
     (
@@ -1345,20 +1358,22 @@ class JQueueJobServersPanel
       pChanges = pHostsTableModel.getHostChanges();
     }
 
+    @Override
     public void 
     run() 
     {
       UIMaster master = UIMaster.getInstance();
 
       if(master.beginPanelOp(pGroupID, "Modifying Servers...")) {
+        QueueMgrClient client = master.leaseQueueMgrClient();
 	try {
-	  QueueMgrClient client = master.getQueueMgrClient(pGroupID);
 	  client.editHosts(pChanges); 
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
 	}
 	finally {
+	  master.returnQueueMgrClient(client);
 	  master.endPanelOp(pGroupID, "Done.");
 	}
       }
@@ -1387,19 +1402,21 @@ class JQueueJobServersPanel
       pHostname = hostname;
     }
  
+    @Override
     public void 
     run() 
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Adding Server...")) {
+        QueueMgrClient client = master.leaseQueueMgrClient();
 	try {
-	  QueueMgrClient client = master.getQueueMgrClient(pGroupID);
 	  client.addHost(pHostname);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
 	}
 	finally {
+	  master.returnQueueMgrClient(client);
 	  master.endPanelOp(pGroupID, "Done.");
 	}
       }
@@ -1428,19 +1445,21 @@ class JQueueJobServersPanel
       pHostnames = hostnames;
     }
  
+    @Override
     public void 
     run() 
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Removing Servers...")) {
+        QueueMgrClient client = master.leaseQueueMgrClient();
 	try {
-	  QueueMgrClient client = master.getQueueMgrClient(pGroupID);
 	  client.removeHosts(pHostnames);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
 	}
 	finally {
+	  master.returnQueueMgrClient(client);
 	  master.endPanelOp(pGroupID, "Done.");
 	}
       }
@@ -1533,12 +1552,6 @@ class JQueueJobServersPanel
    */ 
   private JTablePanel  pHostsTablePanel;
 
-
-  /**
-   * The container of the header buttons for the selection key columns.
-   */ 
-  private Box  pSelectionKeyHeaderBox; 
-  
   /**
    * The matrix representing all the selection schedule values at the time of the 
    * last update.

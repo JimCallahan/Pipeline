@@ -1,4 +1,4 @@
-// $Id: JQueueJobSlotsPanel.java,v 1.15 2008/10/21 00:54:11 jim Exp $
+// $Id: JQueueJobSlotsPanel.java,v 1.16 2009/03/19 20:32:28 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -68,12 +68,12 @@ class JQueueJobSlotsPanel
       /* the canonical names of this host */ 
       pLocalHostnames = new TreeSet<String>();
       try {
-	Enumeration nets = NetworkInterface.getNetworkInterfaces();  
+	Enumeration<NetworkInterface> nets = NetworkInterface.getNetworkInterfaces();  
 	while(nets.hasMoreElements()) {
-	  NetworkInterface net = (NetworkInterface) nets.nextElement();
-	  Enumeration addrs = net.getInetAddresses();
+	  NetworkInterface net = nets.nextElement();
+	  Enumeration<InetAddress> addrs = net.getInetAddresses();
 	  while(addrs.hasMoreElements()) {
-	    InetAddress addr = (InetAddress) addrs.nextElement();
+	    InetAddress addr = addrs.nextElement();
 	    if((addr instanceof Inet4Address) && !addr.isLoopbackAddress()) 
 	      pLocalHostnames.add(addr.getCanonicalHostName().toLowerCase(Locale.ENGLISH));
 	  }
@@ -215,6 +215,7 @@ class JQueueJobSlotsPanel
   /** 
    * Get the title of this type of panel.
    */
+  @Override
   public String 
   getTypeName() 
   {
@@ -232,6 +233,7 @@ class JQueueJobSlotsPanel
    * @param groupID
    *   The new group ID or (0) for no group assignment.
    */ 
+  @Override
   public void
   setGroupID
   (
@@ -255,6 +257,7 @@ class JQueueJobSlotsPanel
   /**
    * Is the given group currently unused for this type of panel.
    */ 
+  @Override
   public boolean
   isGroupUnused
   (
@@ -272,6 +275,7 @@ class JQueueJobSlotsPanel
   /**
    * Are the contents of the panel read-only. <P> 
    */ 
+  @Override
   public boolean
   isLocked() 
   {
@@ -281,6 +285,7 @@ class JQueueJobSlotsPanel
   /**
    * Set the author and view.
    */ 
+  @Override
   public synchronized void 
   setAuthorView
   (
@@ -332,6 +337,7 @@ class JQueueJobSlotsPanel
   /**
    * Reset the caches of toolset plugins and plugin menu layouts.
    */ 
+  @Override
   public void 
   clearPluginCache()
   {
@@ -439,6 +445,7 @@ class JQueueJobSlotsPanel
    * 
    * This method is run by the Swing Event thread.
    */ 
+  @Override
   public void 
   prePanelOp() 
   {
@@ -453,6 +460,7 @@ class JQueueJobSlotsPanel
    * 
    * This method is run by the Swing Event thread.
    */ 
+  @Override
   public void 
   postPanelOp() 
   {
@@ -527,6 +535,7 @@ class JQueueJobSlotsPanel
    * @return
    *   Whether the panel has received the focus.
    */ 
+  @Override
   public boolean 
   refocusOnPanel() 
   {
@@ -552,6 +561,7 @@ class JQueueJobSlotsPanel
   /**
    * Update the panel to reflect new user preferences.
    */ 
+  @Override
   public void 
   updateUserPrefs() 
   {
@@ -904,6 +914,7 @@ class JQueueJobSlotsPanel
     /**
      * Invoked when the mouse enters a component. 
      */ 
+    @Override
     public void 
     mouseEntered
     (
@@ -916,6 +927,7 @@ class JQueueJobSlotsPanel
     /**
      * Invoked when the mouse exits a component. 
      */ 
+    @Override
     public void 
     mouseExited
     (
@@ -980,6 +992,7 @@ class JQueueJobSlotsPanel
       pEditorVendor  = evendor;       
     }
 
+    @Override
     @SuppressWarnings("deprecation")
     public void 
     run() 
@@ -991,8 +1004,8 @@ class JQueueJobSlotsPanel
  	UIMaster master = UIMaster.getInstance();
         boolean ignoreExitCode = false;
  	if(master.beginPanelOp(pGroupID, "Launching Node Editor...")) {
+ 	 client = master.leaseMasterMgrClient();
  	  try {
-	    client = master.getMasterMgrClient(pGroupID);
 
  	    NodeMod mod = client.getWorkingVersion(pNodeID);
  	    String author = pNodeID.getAuthor();
@@ -1075,6 +1088,7 @@ class JQueueJobSlotsPanel
  	    return;
  	  }
  	  finally {
+ 	    master.returnMasterMgrClient(client);
  	    master.endPanelOp(pGroupID, "Done.");
  	  }
  	}
@@ -1108,91 +1122,6 @@ class JQueueJobSlotsPanel
 
   /*----------------------------------------------------------------------------------------*/
 
-  /** 
-   * Resubmit jobs to the queue for the given file sequences.
-   */ 
-  private
-  class QueueJobsTask
-    extends Thread
-  {
-    public 
-    QueueJobsTask
-    (
-     TreeMap<NodeID,TreeSet<FileSeq>> targets
-    ) 
-    {
-      this(targets, null, null, null, null, null, null, null, null, null);
-    }
-    
-    public 
-    QueueJobsTask
-    (
-     TreeMap<NodeID,TreeSet<FileSeq>> targets,
-     Integer batchSize, 
-     Integer priority, 
-     Integer rampUp, 
-     Float maxLoad,              
-     Long minMemory,              
-     Long minDisk,  
-     TreeSet<String> selectionKeys,
-     TreeSet<String> licenseKeys,
-     TreeSet<String> hardwareKeys
-    ) 
-    {
-      super("JQueueJobsBrowserPanel:QueueJobsTask");
-
-      pTargets       = targets;
-      pBatchSize     = batchSize;
-      pPriority      = priority; 
-      pRampUp        = rampUp; 
-      pMaxLoad       = maxLoad;
-      pMinMemory     = minMemory;
-      pMinDisk       = minDisk;
-      pSelectionKeys = selectionKeys;
-      pLicenseKeys   = licenseKeys;
-      pHardwareKeys  = hardwareKeys;
-    }
-
-    public void 
-    run() 
-    {
-      UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp(pGroupID)) {
-	try {
-	  for(NodeID nodeID : pTargets.keySet()) {
-	    master.updatePanelOp(pGroupID, 
-				 "Resubmitting Jobs to the Queue: " + nodeID.getName());
-	    
- 	    MasterMgrClient client = master.getMasterMgrClient(pGroupID);
-	    client.resubmitJobs(nodeID, pTargets.get(nodeID), 
-				pBatchSize, pPriority, pRampUp, 
-				pMaxLoad, pMinMemory, pMinDisk,
-				pSelectionKeys, pLicenseKeys, pHardwareKeys);
-	  }
-	}
-	catch(PipelineException ex) {
-	  master.showErrorDialog(ex);
-	  return;
-	}
-	finally {
-	  master.endPanelOp(pGroupID, "Done.");
-	}
-
-	updatePanels();
-      }
-    }
-
-    private TreeMap<NodeID,TreeSet<FileSeq>>  pTargets;
-    private Integer                           pBatchSize;
-    private Integer                           pPriority;
-    private Integer                           pRampUp; 
-    private Float                             pMaxLoad;        
-    private Long                              pMinMemory;              
-    private Long                              pMinDisk;
-    private TreeSet<String>                   pSelectionKeys;
-    private TreeSet<String>                   pLicenseKeys;
-    private TreeSet<String>                   pHardwareKeys;
-  }
 
   /** 
    * Preempt the given jobs.
@@ -1212,19 +1141,22 @@ class JQueueJobSlotsPanel
       pJobIDs = jobIDs; 
     }
 
+    @Override
     public void 
     run() 
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Preempting Jobs...")) {
+        QueueMgrClient client = master.leaseQueueMgrClient();
 	try {
-	  master.getQueueMgrClient(pGroupID).preemptJobs(pJobIDs);
+	  client.preemptJobs(pJobIDs);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
 	  return;
 	}
 	finally {
+	  master.returnQueueMgrClient(client);
 	  master.endPanelOp(pGroupID, "Done.");
 	}
 
@@ -1253,19 +1185,22 @@ class JQueueJobSlotsPanel
       pJobIDs = jobIDs; 
     }
 
+    @Override
     public void 
     run() 
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Killing Jobs...")) {
-	try {
-	  master.getQueueMgrClient(pGroupID).killJobs(pJobIDs);
+        QueueMgrClient client = master.leaseQueueMgrClient();
+        try {
+	  client.killJobs(pJobIDs);
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
 	  return;
 	}
 	finally {
+	  master.returnQueueMgrClient(client);
 	  master.endPanelOp(pGroupID, "Done.");
 	}
 
