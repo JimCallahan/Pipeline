@@ -1,4 +1,4 @@
-// $Id: JArchiveDialog.java,v 1.13 2009/03/19 20:32:28 jesse Exp $
+// $Id: JArchiveDialog.java,v 1.14 2009/03/19 21:55:59 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -239,7 +239,7 @@ class JArchiveDialog
   updatePanel() 
   {
     UIMaster master = UIMaster.getInstance();
-    MasterMgrClient client = master.leaseMasterMgrClient();
+    MasterMgrClient client = master.acquireMasterMgrClient();
     try {
       pPrivilegeDetails = client.getPrivilegeDetails();
     }
@@ -247,7 +247,7 @@ class JArchiveDialog
       showErrorDialog(ex);
     }
     finally {
-     master.returnMasterMgrClient(client); 
+     master.releaseMasterMgrClient(client); 
     }
 
     updateButtons();
@@ -543,7 +543,7 @@ class JArchiveDialog
       UIMaster master = UIMaster.getInstance();
       ArrayList<ArchiveInfo> info = null;
       
-      MasterMgrClient client = master.leaseMasterMgrClient();
+      MasterMgrClient client = master.acquireMasterMgrClient();
       if(master.beginPanelOp("Searching for Candidate Versions...")) {
 	try {
 	  info = client.archiveQuery(pPattern, pMaxArchives);
@@ -552,7 +552,7 @@ class JArchiveDialog
 	  showErrorDialog(ex);
 	}
 	finally {
-	  master.returnMasterMgrClient(client);
+	  master.releaseMasterMgrClient(client);
 	  master.endPanelOp("Done.");
 	}
       }
@@ -620,7 +620,7 @@ class JArchiveDialog
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      MasterMgrClient client = master.leaseMasterMgrClient();
+      MasterMgrClient client = master.acquireMasterMgrClient();
       try {
         TreeMap<String,TreeMap<VersionID,Long>> data = null;
         if(master.beginPanelOp("Calculating File Sizes...")) {
@@ -656,7 +656,7 @@ class JArchiveDialog
         }
       }
       finally {
-        master.returnMasterMgrClient(client);
+        master.releaseMasterMgrClient(client);
       }
     }
 
@@ -739,7 +739,7 @@ class JArchiveDialog
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      MasterMgrClient client = master.leaseMasterMgrClient();
+      MasterMgrClient client = master.acquireMasterMgrClient();
       try {
         TreeMap<String,TreeMap<VersionID,Long>> versionSizes = null;
         if(master.beginPanelOp("Assigning Versions to Archives...")) {
@@ -881,7 +881,7 @@ class JArchiveDialog
         } //if(!archives.isEmpty()) {
       }
       finally {
-        master.returnMasterMgrClient(client);
+        master.releaseMasterMgrClient(client);
       }
     }
 
@@ -1002,7 +1002,7 @@ class JArchiveDialog
     run() 
     {  
       UIMaster master = UIMaster.getInstance();
-      MasterMgrClient client = master.leaseMasterMgrClient();
+      MasterMgrClient client = master.acquireMasterMgrClient();
       try {
         String msg = ("Archiving Volume (" + (pIndex+1) + " of " + pArchives.size() + ")...");
         String archiveName = null;
@@ -1035,7 +1035,7 @@ class JArchiveDialog
         SwingUtilities.invokeLater(task); 
       }
       finally {
-        master.returnMasterMgrClient(client);
+        master.releaseMasterMgrClient(client);
       }
     }
 

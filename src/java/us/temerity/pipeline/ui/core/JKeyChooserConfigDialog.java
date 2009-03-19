@@ -1,4 +1,4 @@
-// $Id: JKeyChooserConfigDialog.java,v 1.8 2009/03/19 20:32:28 jesse Exp $
+// $Id: JKeyChooserConfigDialog.java,v 1.9 2009/03/19 21:55:59 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -285,7 +285,7 @@ class JKeyChooserConfigDialog
         }
         if(needsWorkGroups) {
           UIMaster master = UIMaster.getInstance();
-          MasterMgrClient mclient = master.leaseMasterMgrClient();
+          MasterMgrClient mclient = master.acquireMasterMgrClient();
           try {
             WorkGroups wgroups = mclient.getWorkGroups();
             workGroups = wgroups.getGroups();
@@ -296,7 +296,7 @@ class JKeyChooserConfigDialog
             workUsers  = new TreeSet<String>(); 
           }
           finally {
-            master.returnMasterMgrClient(mclient);
+            master.releaseMasterMgrClient(mclient);
           }
         }
         updateParamsHelper(pKeyChooser.getLayout(), hbox, 1, workGroups, workUsers);

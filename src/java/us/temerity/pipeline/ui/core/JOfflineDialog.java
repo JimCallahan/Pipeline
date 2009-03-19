@@ -1,4 +1,4 @@
-// $Id: JOfflineDialog.java,v 1.8 2009/03/19 20:32:28 jesse Exp $
+// $Id: JOfflineDialog.java,v 1.9 2009/03/19 21:55:59 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -240,7 +240,7 @@ class JOfflineDialog
   updatePanel() 
   {
     UIMaster master = UIMaster.getInstance();
-    MasterMgrClient client = master.leaseMasterMgrClient();
+    MasterMgrClient client = master.acquireMasterMgrClient();
     try {
       pPrivilegeDetails = client.getPrivilegeDetails();
     }
@@ -248,7 +248,7 @@ class JOfflineDialog
       showErrorDialog(ex);
     }
     finally {
-      master.returnMasterMgrClient(client);
+      master.releaseMasterMgrClient(client);
     }
 
     updateButtons();
@@ -531,7 +531,7 @@ class JOfflineDialog
       UIMaster master = UIMaster.getInstance();
       ArrayList<OfflineInfo> info = null;
       if(master.beginPanelOp("Searching for Candidate Versions...")) {
-        MasterMgrClient client = master.leaseMasterMgrClient();
+        MasterMgrClient client = master.acquireMasterMgrClient();
 	try {
 	  info = client.offlineQuery(pPattern, pExcludeLatest, pMinArchives, pUnusedOnly);
 	}
@@ -539,7 +539,7 @@ class JOfflineDialog
 	  showErrorDialog(ex);
 	}
 	finally {
-	  master.returnMasterMgrClient(client);
+	  master.releaseMasterMgrClient(client);
 	  master.endPanelOp("Done.");
 	}
       }
@@ -607,7 +607,7 @@ class JOfflineDialog
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      MasterMgrClient client = master.leaseMasterMgrClient();
+      MasterMgrClient client = master.acquireMasterMgrClient();
       TreeMap<String,TreeMap<VersionID,Long>> data = null;
       if(master.beginPanelOp("Calculating File Sizes...")) {
 	try {
@@ -617,7 +617,7 @@ class JOfflineDialog
 	  showErrorDialog(ex);
 	}
 	finally {
-	  master.returnMasterMgrClient(client);
+	  master.releaseMasterMgrClient(client);
 	  master.endPanelOp("Done.");
 	}
       }
@@ -711,7 +711,7 @@ class JOfflineDialog
     run() 
     {  
       UIMaster master = UIMaster.getInstance();
-      MasterMgrClient client = master.leaseMasterMgrClient();
+      MasterMgrClient client = master.acquireMasterMgrClient();
       if(master.beginPanelOp("Offlining Checked-In Versions...")) {
 	try {
 	  client.offline(pVersions); 
@@ -721,7 +721,7 @@ class JOfflineDialog
 	  return;
 	}
 	finally {
-	  master.returnMasterMgrClient(client);
+	  master.releaseMasterMgrClient(client);
 	  master.endPanelOp("Done.");
 	}
 

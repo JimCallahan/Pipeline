@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.59 2009/03/19 20:32:28 jesse Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.60 2009/03/19 21:55:59 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1880,7 +1880,7 @@ class JQueueJobViewerPanel
 	if(pLastJobHintID != jobID) {
           UIMaster master = UIMaster.getInstance();
           if(master.beginSilentPanelOp(0)) {
-            QueueMgrClient qclient = master.leaseQueueMgrClient();
+            QueueMgrClient qclient = master.acquireQueueMgrClient();
             try {
               QueueJob job = qclient.getJob(jobID);
               QueueJobInfo info = qclient.getJobInfo(jobID);
@@ -1895,7 +1895,7 @@ class JQueueJobViewerPanel
             catch(PipelineException ex) {
             }
             finally {
-              master.returnQueueMgrClient(qclient);
+              master.releaseQueueMgrClient(qclient);
               master.endSilentPanelOp(0);
             }
           }
@@ -3078,7 +3078,7 @@ class JQueueJobViewerPanel
  	UIMaster master = UIMaster.getInstance();
         boolean ignoreExitCode = false;
  	if(master.beginPanelOp(pGroupID, "Launching Node Editor...")) {
- 	  MasterMgrClient client = master.leaseMasterMgrClient();
+ 	  MasterMgrClient client = master.acquireMasterMgrClient();
  	  try {
 
  	    NodeMod mod = client.getWorkingVersion(pNodeID);
@@ -3162,7 +3162,7 @@ class JQueueJobViewerPanel
  	    return;
  	  }
  	  finally {
- 	    master.returnMasterMgrClient(client);
+ 	    master.releaseMasterMgrClient(client);
  	    master.endPanelOp(pGroupID, "Done.");
  	  }
  	}
@@ -3174,13 +3174,13 @@ class JQueueJobViewerPanel
 	    if(!proc.wasSuccessful() && !ignoreExitCode) 
  	      master.showSubprocessFailureDialog("Editor Failure:", proc);
 	    
-	    MasterMgrClient client = master.leaseMasterMgrClient();
+	    MasterMgrClient client = master.acquireMasterMgrClient();
 	    try {
 	      if(editID != null)
 	        client.editingFinished(editID);
 	    }
 	    finally {
-	      master.returnMasterMgrClient(client);
+	      master.releaseMasterMgrClient(client);
 	    }
  	  }
  	  catch(Exception ex) {
@@ -3255,8 +3255,8 @@ class JQueueJobViewerPanel
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID)) {
-        MasterMgrClient client = master.leaseMasterMgrClient();
-        QueueMgrClient queue = master.leaseQueueMgrClient();
+        MasterMgrClient client = master.acquireMasterMgrClient();
+        QueueMgrClient queue = master.acquireQueueMgrClient();
 	try {
 	  for(NodeID nodeID : pTargets.keySet()) {
 	    master.updatePanelOp(pGroupID, 
@@ -3283,8 +3283,8 @@ class JQueueJobViewerPanel
 	  return;
 	}
 	finally {
-	  master.returnMasterMgrClient(client);
-	  master.returnQueueMgrClient(queue);
+	  master.releaseMasterMgrClient(client);
+	  master.releaseQueueMgrClient(queue);
 	  master.endPanelOp(pGroupID, "Done.");
 	}
 
@@ -3329,7 +3329,7 @@ class JQueueJobViewerPanel
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Pausing Jobs...")) {
-        QueueMgrClient client = master.leaseQueueMgrClient();
+        QueueMgrClient client = master.acquireQueueMgrClient();
 	try { 
 	  client.pauseJobs(pJobIDs);
 	}
@@ -3338,7 +3338,7 @@ class JQueueJobViewerPanel
 	  return;
 	}
 	finally {
-	  master.returnQueueMgrClient(client);
+	  master.releaseQueueMgrClient(client);
 	  master.endPanelOp(pGroupID, "Done.");
 	}
 
@@ -3373,7 +3373,7 @@ class JQueueJobViewerPanel
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Resuming Paused Jobs...")) {
-        QueueMgrClient client = master.leaseQueueMgrClient();
+        QueueMgrClient client = master.acquireQueueMgrClient();
 	try {
 	  client.resumeJobs(pJobIDs);
 	}
@@ -3382,7 +3382,7 @@ class JQueueJobViewerPanel
 	  return;
 	}
 	finally {
-	  master.returnQueueMgrClient(client);
+	  master.releaseQueueMgrClient(client);
 	  master.endPanelOp(pGroupID, "Done.");
 	}
 
@@ -3417,7 +3417,7 @@ class JQueueJobViewerPanel
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Preempting Jobs...")) {
-        QueueMgrClient client = master.leaseQueueMgrClient();
+        QueueMgrClient client = master.acquireQueueMgrClient();
 	try {
 	  client.preemptJobs(pJobIDs);
 	}
@@ -3426,7 +3426,7 @@ class JQueueJobViewerPanel
 	  return;
 	}
 	finally {
-	  master.returnQueueMgrClient(client);
+	  master.releaseQueueMgrClient(client);
 	  master.endPanelOp(pGroupID, "Done.");
 	}
 
@@ -3461,7 +3461,7 @@ class JQueueJobViewerPanel
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Killing Jobs...")) {
-        QueueMgrClient client = master.leaseQueueMgrClient();
+        QueueMgrClient client = master.acquireQueueMgrClient();
 	try {
 	  client.killJobs(pJobIDs);
 	}
@@ -3470,7 +3470,7 @@ class JQueueJobViewerPanel
 	  return;
 	}
 	finally {
-	  master.returnQueueMgrClient(client);
+	  master.releaseQueueMgrClient(client);
 	  master.endPanelOp(pGroupID, "Done.");
 	}
 
@@ -3505,7 +3505,7 @@ class JQueueJobViewerPanel
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Changing Job Reqs...")) {
-        QueueMgrClient client = master.leaseQueueMgrClient();
+        QueueMgrClient client = master.acquireQueueMgrClient();
 	try {
 	  client.changeJobReqs(pJobReqChanges);
 	}
@@ -3514,7 +3514,7 @@ class JQueueJobViewerPanel
 	  return;
 	}
 	finally {
-	  master.returnQueueMgrClient(client);
+	  master.releaseQueueMgrClient(client);
 	  master.endPanelOp(pGroupID, "Done.");
 	}
 
@@ -3550,7 +3550,7 @@ class JQueueJobViewerPanel
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Deleting Job Groups...")) {
-        QueueMgrClient client = master.leaseQueueMgrClient();
+        QueueMgrClient client = master.acquireQueueMgrClient();
 	try {
 	  client.deleteJobGroups(pGroupAuthors);
 	}
@@ -3559,7 +3559,7 @@ class JQueueJobViewerPanel
 	  return;
 	}
 	finally {
-	  master.returnQueueMgrClient(client);
+	  master.releaseQueueMgrClient(client);
 	  master.endPanelOp(pGroupID, "Done.");
 	}
 

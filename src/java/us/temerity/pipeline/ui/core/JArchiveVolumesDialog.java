@@ -1,4 +1,4 @@
-// $Id: JArchiveVolumesDialog.java,v 1.8 2009/03/19 20:32:28 jesse Exp $
+// $Id: JArchiveVolumesDialog.java,v 1.9 2009/03/19 21:55:59 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -756,7 +756,7 @@ class JArchiveVolumesDialog
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      MasterMgrClient client = master.leaseMasterMgrClient();
+      MasterMgrClient client = master.acquireMasterMgrClient();
       synchronized(pUpdateLock) {
 	if(master.beginPanelOp()) {
 	  try {
@@ -781,7 +781,7 @@ class JArchiveVolumesDialog
 	    showErrorDialog(ex);
 	  }
 	  finally {
-	    master.returnMasterMgrClient(client);
+	    master.releaseMasterMgrClient(client);
 	    master.endPanelOp("Done.");
 	  }
 	}
@@ -870,7 +870,7 @@ class JArchiveVolumesDialog
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      MasterMgrClient client = master.leaseMasterMgrClient();
+      MasterMgrClient client = master.acquireMasterMgrClient();
       ArchiveVolume volume = null;
       TreeMap<String,TreeSet<VersionID>> offline = new TreeMap<String,TreeSet<VersionID>>();
       if(pArchiveName != null) {
@@ -898,7 +898,7 @@ class JArchiveVolumesDialog
 	      showErrorDialog(ex);
 	    }
 	    finally {
-	      master.returnMasterMgrClient(client);
+	      master.releaseMasterMgrClient(client);
 	      master.endPanelOp("Done.");
 	    }
 	  }
@@ -976,7 +976,7 @@ class JArchiveVolumesDialog
       UIMaster master = UIMaster.getInstance();
       synchronized(pUpdateLock) {
 	if(master.beginPanelOp("Requesting Restore...")) {
-	  MasterMgrClient client = master.leaseMasterMgrClient();
+	  MasterMgrClient client = master.acquireMasterMgrClient();
 	  try {
 	    client.requestRestore(pVersions);
 	  }
@@ -985,7 +985,7 @@ class JArchiveVolumesDialog
 	    return;
 	  }
 	  finally {
-	    master.returnMasterMgrClient(client);
+	    master.releaseMasterMgrClient(client);
 	    master.endPanelOp("Done.");
 	  }
 	}
@@ -1023,7 +1023,7 @@ class JArchiveVolumesDialog
       String output = null;
       synchronized(pUpdateLock) {
 	if(master.beginPanelOp("Loading Archiver Output: " + pName)) {
-	  MasterMgrClient client = master.leaseMasterMgrClient(); 
+	  MasterMgrClient client = master.acquireMasterMgrClient(); 
 	  try {
 	    output = client.getArchivedOutput(pName);
 	  }
@@ -1032,7 +1032,7 @@ class JArchiveVolumesDialog
 	    return;
 	  }
 	  finally {
-	    master.returnMasterMgrClient(client);
+	    master.releaseMasterMgrClient(client);
 	    master.endPanelOp("Done.");
 	  }
 	}
@@ -1075,7 +1075,7 @@ class JArchiveVolumesDialog
       String output = null;
       synchronized(pUpdateLock) {
 	if(master.beginPanelOp("Loading Archiver Output: " + pName)) {
-	  MasterMgrClient client = master.leaseMasterMgrClient();
+	  MasterMgrClient client = master.acquireMasterMgrClient();
 	  try {
 	    output = client.getRestoredOutput(pName, pStamp);
 	  }
@@ -1084,7 +1084,7 @@ class JArchiveVolumesDialog
 	    return;
 	  }
 	  finally {
-	    master.returnMasterMgrClient(client);
+	    master.releaseMasterMgrClient(client);
 	    master.endPanelOp("Done.");
 	  }
 	}

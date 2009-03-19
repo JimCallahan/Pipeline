@@ -1,4 +1,4 @@
-// $Id: JNodeBrowserPanel.java,v 1.21 2009/03/19 20:32:28 jesse Exp $
+// $Id: JNodeBrowserPanel.java,v 1.22 2009/03/19 21:55:59 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -396,7 +396,7 @@ class JNodeBrowserPanel
       if(master.beginSilentPanelOp(pGroupID)) {
 
 	updatePrivileges();
-        MasterMgrClient client = master.leaseMasterMgrClient();
+        MasterMgrClient client = master.acquireMasterMgrClient();
 	try { 
 	  TreeMap<String,Boolean> paths = new TreeMap<String,Boolean>();
 	  for(String path : expanded)
@@ -411,7 +411,7 @@ class JNodeBrowserPanel
 	  return;
 	}
 	finally {
-	  master.returnMasterMgrClient(client);
+	  master.releaseMasterMgrClient(client);
 	  master.endSilentPanelOp(pGroupID);
 	}
       }

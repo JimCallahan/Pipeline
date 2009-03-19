@@ -1,4 +1,4 @@
-// $Id: JQueueJobServersPanel.java,v 1.14 2009/03/19 20:32:28 jesse Exp $
+// $Id: JQueueJobServersPanel.java,v 1.15 2009/03/19 21:55:59 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1365,7 +1365,7 @@ class JQueueJobServersPanel
       UIMaster master = UIMaster.getInstance();
 
       if(master.beginPanelOp(pGroupID, "Modifying Servers...")) {
-        QueueMgrClient client = master.leaseQueueMgrClient();
+        QueueMgrClient client = master.acquireQueueMgrClient();
 	try {
 	  client.editHosts(pChanges); 
 	}
@@ -1373,7 +1373,7 @@ class JQueueJobServersPanel
 	  master.showErrorDialog(ex);
 	}
 	finally {
-	  master.returnQueueMgrClient(client);
+	  master.releaseQueueMgrClient(client);
 	  master.endPanelOp(pGroupID, "Done.");
 	}
       }
@@ -1408,7 +1408,7 @@ class JQueueJobServersPanel
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Adding Server...")) {
-        QueueMgrClient client = master.leaseQueueMgrClient();
+        QueueMgrClient client = master.acquireQueueMgrClient();
 	try {
 	  client.addHost(pHostname);
 	}
@@ -1416,7 +1416,7 @@ class JQueueJobServersPanel
 	  master.showErrorDialog(ex);
 	}
 	finally {
-	  master.returnQueueMgrClient(client);
+	  master.releaseQueueMgrClient(client);
 	  master.endPanelOp(pGroupID, "Done.");
 	}
       }
@@ -1451,7 +1451,7 @@ class JQueueJobServersPanel
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Removing Servers...")) {
-        QueueMgrClient client = master.leaseQueueMgrClient();
+        QueueMgrClient client = master.acquireQueueMgrClient();
 	try {
 	  client.removeHosts(pHostnames);
 	}
@@ -1459,7 +1459,7 @@ class JQueueJobServersPanel
 	  master.showErrorDialog(ex);
 	}
 	finally {
-	  master.returnQueueMgrClient(client);
+	  master.releaseQueueMgrClient(client);
 	  master.endPanelOp(pGroupID, "Done.");
 	}
       }

@@ -1,4 +1,4 @@
-// $Id: JResourceUsageHistoryDialog.java,v 1.25 2009/03/19 20:32:28 jesse Exp $
+// $Id: JResourceUsageHistoryDialog.java,v 1.26 2009/03/19 21:55:59 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -3050,7 +3050,7 @@ class JResourceUsageHistoryDialog
       int sz = (int) (PackageInfo.sSampleCleanupInterval / PackageInfo.sCollectorInterval);
 
       if(master.beginPanelOp(pGroupID, "Loading History...")) {
-        QueueMgrClient qclient = master.leaseQueueMgrClient();
+        QueueMgrClient qclient = master.acquireQueueMgrClient();
 	try {
 	  /* determine which samples are needed */ 
 	  TreeMap<String,TimeInterval> intervals = new TreeMap<String,TimeInterval>();
@@ -3117,7 +3117,7 @@ class JResourceUsageHistoryDialog
 	  }
 	}
 	finally {
-	  master.returnQueueMgrClient(qclient);
+	  master.releaseQueueMgrClient(qclient);
 	  master.endPanelOp(pGroupID, "Done.");
 	}
       }

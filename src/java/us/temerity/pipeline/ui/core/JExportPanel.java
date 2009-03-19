@@ -1,4 +1,4 @@
-// $Id: JExportPanel.java,v 1.9 2009/03/19 20:32:28 jesse Exp $
+// $Id: JExportPanel.java,v 1.10 2009/03/19 21:55:59 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -583,7 +583,7 @@ class JExportPanel
       TreeSet<String> knames = new TreeSet<String>();
       {
 	UIMaster master = UIMaster.getInstance();
-	QueueMgrClient client = master.leaseQueueMgrClient();
+	QueueMgrClient client = master.acquireQueueMgrClient();
 	try {
 	  knames.addAll(client.getLicenseKeyNames(true));
 	}
@@ -591,7 +591,7 @@ class JExportPanel
 	  master.showErrorDialog(ex);
 	}
 	finally {
-	  master.returnQueueMgrClient(client);
+	  master.releaseQueueMgrClient(client);
 	}
       }
       
@@ -630,7 +630,7 @@ class JExportPanel
       TreeSet<String> knames = new TreeSet<String>();
       {
 	UIMaster master = UIMaster.getInstance();
-	QueueMgrClient client = master.leaseQueueMgrClient();
+	QueueMgrClient client = master.acquireQueueMgrClient();
 	try {
 	  knames.addAll(client.getSelectionKeyNames(true));
 	}
@@ -638,7 +638,7 @@ class JExportPanel
 	  master.showErrorDialog(ex);
 	}
 	finally {
-	  master.returnQueueMgrClient(client);
+	  master.releaseQueueMgrClient(client);
 	}
       }
       
@@ -677,7 +677,7 @@ class JExportPanel
       TreeSet<String> knames = new TreeSet<String>();
       {
         UIMaster master = UIMaster.getInstance();
-        QueueMgrClient client = master.leaseQueueMgrClient();
+        QueueMgrClient client = master.acquireQueueMgrClient();
         try {
           knames.addAll(client.getHardwareKeyNames(true));
         }
@@ -685,7 +685,7 @@ class JExportPanel
           master.showErrorDialog(ex);
         }
         finally {
-          master.returnQueueMgrClient(client);
+          master.releaseQueueMgrClient(client);
         }
       }
       
@@ -777,7 +777,7 @@ class JExportPanel
     {
       pAnnotationFields.clear();
       UIMaster master = UIMaster.getInstance();
-      MasterMgrClient mclient = master.leaseMasterMgrClient();
+      MasterMgrClient mclient = master.acquireMasterMgrClient();
       TreeMap<String, BaseAnnotation> annots = new TreeMap<String, BaseAnnotation>();
       try {
         annots = mclient.getAnnotations(mod.getName());
@@ -786,7 +786,7 @@ class JExportPanel
 	master.showErrorDialog(ex);
       }
       finally {
-        master.returnMasterMgrClient(mclient);
+        master.releaseMasterMgrClient(mclient);
       }
       
       if(!annots.isEmpty()) {

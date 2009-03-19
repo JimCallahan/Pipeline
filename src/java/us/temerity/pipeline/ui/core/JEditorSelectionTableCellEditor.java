@@ -1,4 +1,4 @@
-// $Id: JEditorSelectionTableCellEditor.java,v 1.3 2009/03/19 20:32:28 jesse Exp $
+// $Id: JEditorSelectionTableCellEditor.java,v 1.4 2009/03/19 21:55:59 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -63,7 +63,7 @@ class JEditorSelectionTableCellEditor
   updateMenus()
   {
     UIMaster master = UIMaster.getInstance();
-    MasterMgrClient client = master.leaseMasterMgrClient();
+    MasterMgrClient client = master.acquireMasterMgrClient();
     try {
       String tname = client.getDefaultToolsetName();
       master.updateEditorPluginField(0, tname, pField);
@@ -72,7 +72,7 @@ class JEditorSelectionTableCellEditor
       master.showErrorDialog(ex);
     }
     finally {
-      master.returnMasterMgrClient(client);
+      master.releaseMasterMgrClient(client);
     }
   }
 

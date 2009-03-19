@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.50 2009/03/19 20:32:28 jesse Exp $
+// $Id: JNodeDetailsPanel.java,v 1.51 2009/03/19 21:55:59 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1605,7 +1605,7 @@ class JNodeDetailsPanel
 	vsn = pCheckedInVersions.get(vid);
 	if(vsn == null) {
 	  UIMaster master = UIMaster.getInstance();
-	  MasterMgrClient client = master.leaseMasterMgrClient();
+	  MasterMgrClient client = master.acquireMasterMgrClient();
 	  try {
 	    vsn = client.getCheckedInVersion(pStatus.getName(), vid);
 	    pCheckedInVersions.put(vid, vsn);
@@ -1615,7 +1615,7 @@ class JNodeDetailsPanel
 	    return null;
 	  }
 	  finally {
-	    master.returnMasterMgrClient(client);
+	    master.releaseMasterMgrClient(client);
 	  }
 	}
 	assert(vsn != null);
@@ -1835,7 +1835,7 @@ class JNodeDetailsPanel
 	  TreeSet<String> toolsets = new TreeSet<String>();
 	  if(work != null) {
 	    UIMaster master = UIMaster.getInstance();
-	    MasterMgrClient client = master.leaseMasterMgrClient();
+	    MasterMgrClient client = master.acquireMasterMgrClient();
 	    try {
 	      toolsets.addAll(client.getActiveToolsetNames());
 	      if((work.getToolset() != null) && !toolsets.contains(work.getToolset()))
@@ -1844,7 +1844,7 @@ class JNodeDetailsPanel
 	    catch(PipelineException ex) {
 	    }
 	    finally {
-	      master.returnMasterMgrClient(client);
+	      master.releaseMasterMgrClient(client);
 	    }
 	  }
 	  
@@ -5961,7 +5961,7 @@ class JNodeDetailsPanel
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Modifying Node...")) {
-        MasterMgrClient client = master.leaseMasterMgrClient();
+        MasterMgrClient client = master.acquireMasterMgrClient();
 	try {
 	  client.modifyProperties(pAuthor, pView, pNodeMod);
 	}
@@ -5970,7 +5970,7 @@ class JNodeDetailsPanel
 	  return;
 	}
 	finally {
-	  master.returnMasterMgrClient(client);
+	  master.releaseMasterMgrClient(client);
 	  master.endPanelOp(pGroupID, "Done.");
 	}
 

@@ -1,4 +1,4 @@
-// $Id: JNodeLinksPanel.java,v 1.30 2009/03/19 20:32:28 jesse Exp $
+// $Id: JNodeLinksPanel.java,v 1.31 2009/03/19 21:55:59 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2340,7 +2340,7 @@ class JNodeLinksPanel
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Modifying Link Properties...")) {
-        MasterMgrClient client = master.leaseMasterMgrClient();
+        MasterMgrClient client = master.acquireMasterMgrClient();
 	try {
 	  for(String sname : pLinksLocal.keySet()) {
 	    LinkCommon link = pLinksLocal.get(sname);
@@ -2353,7 +2353,7 @@ class JNodeLinksPanel
 	  return;
 	}
 	finally {
-	  master.returnMasterMgrClient(client);
+	  master.releaseMasterMgrClient(client);
 	  master.endPanelOp(pGroupID, "Done.");
 	}
 
@@ -2391,7 +2391,7 @@ class JNodeLinksPanel
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Unlinking Node...")) {
-        MasterMgrClient client = master.leaseMasterMgrClient();
+        MasterMgrClient client = master.acquireMasterMgrClient();
 	try {
 	  client.unlink(pAuthor, pView, pStatus.getName(), pSourceName);
 	}
@@ -2400,7 +2400,7 @@ class JNodeLinksPanel
 	  return;
 	}
 	finally {
-	  master.returnMasterMgrClient(client);
+	  master.releaseMasterMgrClient(client);
 	  master.endPanelOp(pGroupID, "Done.");
 	}
 

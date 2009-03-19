@@ -1,4 +1,4 @@
-// $Id: JQueueJobSlotsPanel.java,v 1.16 2009/03/19 20:32:28 jesse Exp $
+// $Id: JQueueJobSlotsPanel.java,v 1.17 2009/03/19 21:55:59 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1004,7 +1004,7 @@ class JQueueJobSlotsPanel
  	UIMaster master = UIMaster.getInstance();
         boolean ignoreExitCode = false;
  	if(master.beginPanelOp(pGroupID, "Launching Node Editor...")) {
- 	 client = master.leaseMasterMgrClient();
+ 	 client = master.acquireMasterMgrClient();
  	  try {
 
  	    NodeMod mod = client.getWorkingVersion(pNodeID);
@@ -1088,7 +1088,7 @@ class JQueueJobSlotsPanel
  	    return;
  	  }
  	  finally {
- 	    master.returnMasterMgrClient(client);
+ 	    master.releaseMasterMgrClient(client);
  	    master.endPanelOp(pGroupID, "Done.");
  	  }
  	}
@@ -1147,7 +1147,7 @@ class JQueueJobSlotsPanel
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Preempting Jobs...")) {
-        QueueMgrClient client = master.leaseQueueMgrClient();
+        QueueMgrClient client = master.acquireQueueMgrClient();
 	try {
 	  client.preemptJobs(pJobIDs);
 	}
@@ -1156,7 +1156,7 @@ class JQueueJobSlotsPanel
 	  return;
 	}
 	finally {
-	  master.returnQueueMgrClient(client);
+	  master.releaseQueueMgrClient(client);
 	  master.endPanelOp(pGroupID, "Done.");
 	}
 
@@ -1191,7 +1191,7 @@ class JQueueJobSlotsPanel
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Killing Jobs...")) {
-        QueueMgrClient client = master.leaseQueueMgrClient();
+        QueueMgrClient client = master.acquireQueueMgrClient();
         try {
 	  client.killJobs(pJobIDs);
 	}
@@ -1200,7 +1200,7 @@ class JQueueJobSlotsPanel
 	  return;
 	}
 	finally {
-	  master.returnQueueMgrClient(client);
+	  master.releaseQueueMgrClient(client);
 	  master.endPanelOp(pGroupID, "Done.");
 	}
 

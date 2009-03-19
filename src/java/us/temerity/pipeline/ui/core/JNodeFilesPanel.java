@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.50 2009/03/19 20:32:28 jesse Exp $
+// $Id: JNodeFilesPanel.java,v 1.51 2009/03/19 21:55:59 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2848,7 +2848,7 @@ class JNodeFilesPanel
       boolean ignoreExitCode = false;
       {
 	if(master.beginPanelOp(pGroupID, "Launching Node Editor...")) {
-	  MasterMgrClient client = master.leaseMasterMgrClient();
+	  MasterMgrClient client = master.acquireMasterMgrClient();
 	  try {
 	    String name = pStatus.getName();
 	    
@@ -2953,7 +2953,7 @@ class JNodeFilesPanel
 	    return;
 	  }
 	  finally {
-	    master.returnMasterMgrClient(client);
+	    master.releaseMasterMgrClient(client);
 	    master.endPanelOp(pGroupID, "Done.");
 	  }
 	}
@@ -2966,13 +2966,13 @@ class JNodeFilesPanel
           if(!proc.wasSuccessful() && !ignoreExitCode) 
 	    master.showSubprocessFailureDialog("Editor Failure:", proc);
           
-          MasterMgrClient client = master.leaseMasterMgrClient();
+          MasterMgrClient client = master.acquireMasterMgrClient();
           try {
             if(editID != null)
               client.editingFinished(editID);
           }
           finally {
-            master.returnMasterMgrClient(client);
+            master.releaseMasterMgrClient(client);
           }
 	}
 	catch(Exception ex) {
@@ -3052,7 +3052,7 @@ class JNodeFilesPanel
 	UIMaster master = UIMaster.getInstance();
         boolean ignoreExitCode = false;
 	if(master.beginPanelOp(pGroupID, "Launching Node Comparator...")) {
-	  MasterMgrClient client = master.leaseMasterMgrClient();
+	  MasterMgrClient client = master.acquireMasterMgrClient();
 	  try {
 	    String name = pStatus.getName();
 
@@ -3112,7 +3112,7 @@ class JNodeFilesPanel
             return;
 	  }
 	  finally {
-	    master.returnMasterMgrClient(client);
+	    master.releaseMasterMgrClient(client);
 	    master.endPanelOp(pGroupID, "Done.");
 	  }
 	}
@@ -3165,7 +3165,7 @@ class JNodeFilesPanel
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Reverting Files...")) {
-        MasterMgrClient client = master.leaseMasterMgrClient();
+        MasterMgrClient client = master.acquireMasterMgrClient();
 	try {
 	  client.revertFiles(pAuthor, pView, pStatus.getName(), pFiles);
 	}
@@ -3174,7 +3174,7 @@ class JNodeFilesPanel
 	  return;
 	}
 	finally {
-	  master.returnMasterMgrClient(client);
+	  master.releaseMasterMgrClient(client);
 	  master.endPanelOp(pGroupID, "Done.");
 	}
 
@@ -3239,7 +3239,7 @@ class JNodeFilesPanel
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Submitting Jobs to the Queue...")) {
-        MasterMgrClient client = master.leaseMasterMgrClient();
+        MasterMgrClient client = master.acquireMasterMgrClient();
 	try {
 	  client.submitJobs(pAuthor, pView, pStatus.getName(), pIndices, 
 			    pBatchSize, pPriority, pRampUp, 
@@ -3251,7 +3251,7 @@ class JNodeFilesPanel
 	  return;
 	}
 	finally {
-	  master.returnMasterMgrClient(client);
+	  master.releaseMasterMgrClient(client);
 	  master.endPanelOp(pGroupID, "Done.");
 	}
 
@@ -3427,7 +3427,7 @@ class JNodeFilesPanel
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Removing Files: " + pStatus.getName())) {
-        MasterMgrClient client = master.leaseMasterMgrClient();
+        MasterMgrClient client = master.acquireMasterMgrClient();
 	try {
 	  client.removeFiles(pAuthor, pView, pStatus.getName(), pIndices);
 	}
@@ -3436,7 +3436,7 @@ class JNodeFilesPanel
 	  return;
 	}
 	finally {
-	  master.returnMasterMgrClient(client);
+	  master.releaseMasterMgrClient(client);
 	  master.endPanelOp(pGroupID, "Done.");
 	}
 	

@@ -1,4 +1,4 @@
-// $Id: JCloneDialog.java,v 1.20 2009/03/19 20:32:28 jesse Exp $
+// $Id: JCloneDialog.java,v 1.21 2009/03/19 21:55:59 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -553,7 +553,7 @@ class JCloneDialog
       FileSeq primary = new FileSeq(fpat, frange);
 
       UIMaster master = UIMaster.getInstance();
-      MasterMgrClient client = master.leaseMasterMgrClient();
+      MasterMgrClient client = master.acquireMasterMgrClient();
       try {
         /* node properties */ 
         BaseEditor editor = null;
@@ -570,7 +570,7 @@ class JCloneDialog
         mod = new NodeMod(name, primary, new TreeSet<FileSeq>(), toolset, editor);
       }
       finally {
-        master.returnMasterMgrClient(client);
+        master.releaseMasterMgrClient(client);
       }
     }
     catch(Exception ex) {
@@ -593,7 +593,7 @@ class JCloneDialog
     throws PipelineException 
   {
     UIMaster master = UIMaster.getInstance();
-    MasterMgrClient client = master.leaseMasterMgrClient();
+    MasterMgrClient client = master.acquireMasterMgrClient();
     
     try {
       /* register the node */ 
@@ -738,7 +738,7 @@ class JCloneDialog
       }
     }
     finally {
-      master.returnMasterMgrClient(client);
+      master.releaseMasterMgrClient(client);
     }
   }
 

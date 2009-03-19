@@ -1,4 +1,4 @@
-// $Id: JQueueJobsDialog.java,v 1.11 2009/03/19 20:32:28 jesse Exp $
+// $Id: JQueueJobsDialog.java,v 1.12 2009/03/19 21:55:59 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -312,7 +312,7 @@ class JQueueJobsDialog
     TreeSet<String> hknames = new TreeSet<String>();
     {
       UIMaster master = UIMaster.getInstance();
-      QueueMgrClient qclient = master.leaseQueueMgrClient();
+      QueueMgrClient qclient = master.acquireQueueMgrClient();
       try {
 	sknames.addAll(qclient.getSelectionKeyNames(true));
 	lknames.addAll(qclient.getLicenseKeyNames(true));
@@ -322,7 +322,7 @@ class JQueueJobsDialog
 	showErrorDialog(ex);
       }
       finally {
-        master.returnQueueMgrClient(qclient);
+        master.releaseQueueMgrClient(qclient);
       }
     }
       
@@ -974,7 +974,7 @@ class JQueueJobsDialog
     TreeSet<String> hknames = new TreeSet<String>();
     {
       UIMaster master = UIMaster.getInstance();
-      QueueMgrClient qclient = master.leaseQueueMgrClient();
+      QueueMgrClient qclient = master.acquireQueueMgrClient();
       try {
 	sknames.addAll(qclient.getSelectionKeyNames(true));
 	lknames.addAll(qclient.getLicenseKeyNames(true));
@@ -984,7 +984,7 @@ class JQueueJobsDialog
 	showErrorDialog(ex);
       }
       finally {
-        master.returnQueueMgrClient(qclient);
+        master.releaseQueueMgrClient(qclient);
       }
     }
       

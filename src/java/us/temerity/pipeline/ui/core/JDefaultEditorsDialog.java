@@ -1,4 +1,4 @@
-// $Id: JDefaultEditorsDialog.java,v 1.7 2009/03/19 20:32:28 jesse Exp $
+// $Id: JDefaultEditorsDialog.java,v 1.8 2009/03/19 21:55:59 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -94,7 +94,7 @@ class JDefaultEditorsDialog
   { 
     /* get the current info from the server */ 
     UIMaster master = UIMaster.getInstance();
-    MasterMgrClient client = master.leaseMasterMgrClient();
+    MasterMgrClient client = master.acquireMasterMgrClient();
     try {
       pTableModel.setSuffixEditors(client.getSuffixEditors());
     }
@@ -104,7 +104,7 @@ class JDefaultEditorsDialog
       return;      
     }
     finally {
-      master.returnMasterMgrClient(client);
+      master.releaseMasterMgrClient(client);
     }
   }
 
@@ -117,7 +117,7 @@ class JDefaultEditorsDialog
   { 
     /* get the current info from the server */ 
     UIMaster master = UIMaster.getInstance();
-    MasterMgrClient client = master.leaseMasterMgrClient();
+    MasterMgrClient client = master.acquireMasterMgrClient();
     try {
       pTableModel.setSuffixEditors(client.getDefaultSuffixEditors());
     }
@@ -127,7 +127,7 @@ class JDefaultEditorsDialog
       return;      
     }
     finally {
-      master.returnMasterMgrClient(client);
+      master.releaseMasterMgrClient(client);
     }
   }
   
@@ -143,7 +143,7 @@ class JDefaultEditorsDialog
     pTablePanel.stopEditing();
 
     UIMaster master = UIMaster.getInstance();
-    MasterMgrClient client = master.leaseMasterMgrClient();
+    MasterMgrClient client = master.acquireMasterMgrClient();
     try {
       client.setSuffixEditors(pTableModel.getSuffixEditors());
       return true;
@@ -153,7 +153,7 @@ class JDefaultEditorsDialog
       return false; 
     }
     finally {
-      master.returnMasterMgrClient(client);
+      master.releaseMasterMgrClient(client);
     }
   }
 

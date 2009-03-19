@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.56 2009/03/19 20:32:28 jesse Exp $
+// $Id: JManagerPanel.java,v 1.57 2009/03/19 21:55:59 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -3199,9 +3199,9 @@ class JManagerPanel
 	boolean jobMgrs   = diag.shutdownJobMgrs();
 	boolean pluginMgr = diag.shutdownPluginMgr();
 	if(jobMgrs || pluginMgr) 
-	  master.leaseMasterMgrClient().shutdown(jobMgrs, pluginMgr);
+	  master.acquireMasterMgrClient().shutdown(jobMgrs, pluginMgr);
 	else 
-	  master.leaseMasterMgrClient().shutdown();
+	  master.acquireMasterMgrClient().shutdown();
       }
       catch(PipelineException ex) {
       }
@@ -3419,7 +3419,7 @@ class JManagerPanel
       /* privileged status */ 
       {
  	UIMaster master = UIMaster.getInstance();
-	MasterMgrClient client = master.leaseMasterMgrClient();
+	MasterMgrClient client = master.acquireMasterMgrClient();
  	try {
  	  PrivilegeDetails privileges = client.getCachedPrivilegeDetails();
  	  pBackupDatabaseItem.setEnabled
@@ -3433,7 +3433,7 @@ class JManagerPanel
  	  master.showErrorDialog(ex);
  	}
  	finally {
- 	  master.returnMasterMgrClient(client);
+ 	  master.releaseMasterMgrClient(client);
  	}
       } 
       

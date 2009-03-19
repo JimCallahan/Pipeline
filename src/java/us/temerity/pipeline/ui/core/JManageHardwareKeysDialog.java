@@ -1,4 +1,4 @@
-// $Id: JManageHardwareKeysDialog.java,v 1.4 2009/03/19 20:32:28 jesse Exp $
+// $Id: JManageHardwareKeysDialog.java,v 1.5 2009/03/19 21:55:59 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -325,8 +325,8 @@ class JManageHardwareKeysDialog
   updateAll() 
   { 
     UIMaster master = UIMaster.getInstance();
-    QueueMgrClient qclient = master.leaseQueueMgrClient();
-    MasterMgrClient mclient = master.leaseMasterMgrClient();
+    QueueMgrClient qclient = master.acquireQueueMgrClient();
+    MasterMgrClient mclient = master.acquireMasterMgrClient();
     try {
       pPrivilegeDetails = mclient.getPrivilegeDetails();
 
@@ -356,8 +356,8 @@ class JManageHardwareKeysDialog
       showErrorDialog(ex);
     }
     finally {
-      master.returnMasterMgrClient(mclient);
-      master.returnQueueMgrClient(qclient);
+      master.releaseMasterMgrClient(mclient);
+      master.releaseQueueMgrClient(qclient);
     }
 
     updateKeysMenu();
@@ -780,7 +780,7 @@ class JManageHardwareKeysDialog
   doApply()
   {
     UIMaster master = UIMaster.getInstance();
-    QueueMgrClient client = master.leaseQueueMgrClient();
+    QueueMgrClient client = master.acquireQueueMgrClient();
     try {
       ArrayList<HardwareGroup> groups = pGroupsTableModel.getModifiedGroups();
       if(groups != null) 
@@ -790,7 +790,7 @@ class JManageHardwareKeysDialog
       showErrorDialog(ex);
     }
     finally {
-      master.returnQueueMgrClient(client);
+      master.releaseQueueMgrClient(client);
     }
     
     updateAll();
@@ -837,7 +837,7 @@ class JManageHardwareKeysDialog
       BaseKeyChooser plugin = pKeyDetailsDialog.getKeyChooser();
       BaseKey key = pKeysTableModel.getKey(row);
       if(key != null) {
-        QueueMgrClient qclient = master.leaseQueueMgrClient();
+        QueueMgrClient qclient = master.acquireQueueMgrClient();
         try {
           HardwareKey newKey = 
             new HardwareKey(key.getName(), key.getDescription(), plugin); 
@@ -852,7 +852,7 @@ class JManageHardwareKeysDialog
           showErrorDialog(ex);
         }
         finally {
-          master.returnQueueMgrClient(qclient);
+          master.releaseQueueMgrClient(qclient);
         }
       }
     }
@@ -879,7 +879,7 @@ class JManageHardwareKeysDialog
 	   (desc != null) && (desc.length() > 0)) {
 	  
 	  UIMaster master = UIMaster.getInstance();
-	  QueueMgrClient client = master.leaseQueueMgrClient();
+	  QueueMgrClient client = master.acquireQueueMgrClient();
 	  try {
 	    client.addHardwareKey(new HardwareKey(kname, desc));
 	    modified = true;
@@ -888,7 +888,7 @@ class JManageHardwareKeysDialog
 	    showErrorDialog(ex);
 	  }
 	  finally {
-	    master.returnQueueMgrClient(client);
+	    master.releaseQueueMgrClient(client);
 	  }
 	}
       }
@@ -909,7 +909,7 @@ class JManageHardwareKeysDialog
     boolean modified = false;
     {
       UIMaster master = UIMaster.getInstance();
-      QueueMgrClient client = master.leaseQueueMgrClient();
+      QueueMgrClient client = master.acquireQueueMgrClient();
       try {
 	int rows[] = pKeysTablePanel.getTable().getSelectedRows();
 	int wk;
@@ -923,7 +923,7 @@ class JManageHardwareKeysDialog
 	showErrorDialog(ex);
       }
       finally {
-        master.returnQueueMgrClient(client);
+        master.releaseQueueMgrClient(client);
       }
     }
     
@@ -950,7 +950,7 @@ class JManageHardwareKeysDialog
 	String gname = pGroupsNewDialog.getName();
 	if((gname != null) && (gname.length() > 0)) {
 	  UIMaster master = UIMaster.getInstance();
-	  QueueMgrClient client = master.leaseQueueMgrClient();
+	  QueueMgrClient client = master.acquireQueueMgrClient();
 	  try {
 	    client.addHardwareGroup(gname);
 	    modified = true;
@@ -959,7 +959,7 @@ class JManageHardwareKeysDialog
 	    showErrorDialog(ex);
 	  }
 	  finally {
-	    master.returnQueueMgrClient(client);
+	    master.releaseQueueMgrClient(client);
 	  }
 	}
       }
@@ -998,7 +998,7 @@ class JManageHardwareKeysDialog
 	  String gname = pGroupsNewDialog.getName();
 	  if((gname != null) && (gname.length() > 0)) {
 	    UIMaster master = UIMaster.getInstance();
-	    QueueMgrClient client = master.leaseQueueMgrClient();
+	    QueueMgrClient client = master.acquireQueueMgrClient();
 	    try {
 	      client.addHardwareGroup(gname);
 	      client.editHardwareGroup(new HardwareGroup(gname, group));
@@ -1008,7 +1008,7 @@ class JManageHardwareKeysDialog
 	      showErrorDialog(ex);
 	    }
 	    finally {
-	      master.returnQueueMgrClient(client);
+	      master.releaseQueueMgrClient(client);
 	    }
 	  }
 	}
@@ -1032,7 +1032,7 @@ class JManageHardwareKeysDialog
     boolean modified = false;
     {
       UIMaster master = UIMaster.getInstance();
-      QueueMgrClient client = master.leaseQueueMgrClient();
+      QueueMgrClient client = master.acquireQueueMgrClient();
       try {
 	TreeSet<String> gnames = new TreeSet<String>();
 	{
@@ -1051,7 +1051,7 @@ class JManageHardwareKeysDialog
 	showErrorDialog(ex);
       }
       finally {
-        master.returnQueueMgrClient(client);
+        master.releaseQueueMgrClient(client);
       }
     }
 

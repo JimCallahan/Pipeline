@@ -1,4 +1,4 @@
-// $Id: JToolsetActionPluginsPanel.java,v 1.6 2009/03/19 20:32:28 jesse Exp $
+// $Id: JToolsetActionPluginsPanel.java,v 1.7 2009/03/19 21:55:59 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -88,14 +88,14 @@ class JToolsetActionPluginsPanel
     throws PipelineException
   {
     UIMaster master = UIMaster.getInstance();
-    MasterMgrClient client = master.leaseMasterMgrClient();
+    MasterMgrClient client = master.acquireMasterMgrClient();
     try {
       PluginMenuLayout layout = client.getActionMenuLayout();
       setLayout(pToolsetName, layout);
       updateDefault(layout);
     }
     finally {
-      master.returnMasterMgrClient(client);
+      master.releaseMasterMgrClient(client);
     }
   }
 
@@ -108,12 +108,12 @@ class JToolsetActionPluginsPanel
     throws PipelineException
   {
     UIMaster master = UIMaster.getInstance();
-    MasterMgrClient client = master.leaseMasterMgrClient();
+    MasterMgrClient client = master.acquireMasterMgrClient();
     try {
       client.setActionMenuLayout(getLayout(pToolsetName));
     }
     finally {
-      master.returnMasterMgrClient(client);
+      master.releaseMasterMgrClient(client);
     }
 
   }

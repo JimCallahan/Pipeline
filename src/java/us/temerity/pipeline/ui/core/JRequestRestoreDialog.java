@@ -1,4 +1,4 @@
-// $Id: JRequestRestoreDialog.java,v 1.4 2009/03/19 20:32:28 jesse Exp $
+// $Id: JRequestRestoreDialog.java,v 1.5 2009/03/19 21:55:59 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -238,7 +238,7 @@ class JRequestRestoreDialog
       UIMaster master = UIMaster.getInstance();
       TreeMap<String,TreeSet<VersionID>> versions = null;
       if(master.beginPanelOp(pChannel, "Searching for Offline Versions...")) {
-        MasterMgrClient client = master.leaseMasterMgrClient();
+        MasterMgrClient client = master.acquireMasterMgrClient();
 	try {
 	  versions = client.restoreQuery(pPattern); 
 	}
@@ -247,7 +247,7 @@ class JRequestRestoreDialog
 	  return;
 	}
 	finally {
-	  master.returnMasterMgrClient(client);
+	  master.releaseMasterMgrClient(client);
 	  master.endPanelOp("Done.");
 	}
       }

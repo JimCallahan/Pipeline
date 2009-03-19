@@ -1,4 +1,4 @@
-// $Id: JQueueJobBrowserPanel.java,v 1.37 2009/03/19 20:32:28 jesse Exp $
+// $Id: JQueueJobBrowserPanel.java,v 1.38 2009/03/19 21:55:59 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1737,7 +1737,7 @@ class JQueueJobBrowserPanel
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID)) {
-        MasterMgrClient client = master.leaseMasterMgrClient();
+        MasterMgrClient client = master.acquireMasterMgrClient();
 	try {
 	  for(NodeID nodeID : pTargets.keySet()) {
 	    master.updatePanelOp(pGroupID, 
@@ -1753,7 +1753,7 @@ class JQueueJobBrowserPanel
 	  return;
 	}
 	finally {
-	  master.returnMasterMgrClient(client);
+	  master.releaseMasterMgrClient(client);
 	  master.endPanelOp(pGroupID, "Done.");
 	}
 
@@ -1797,7 +1797,7 @@ class JQueueJobBrowserPanel
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Pausing Jobs...")) {
-        QueueMgrClient client = master.leaseQueueMgrClient();
+        QueueMgrClient client = master.acquireQueueMgrClient();
 	try {
 	  client.pauseJobs(pJobIDs);
 	}
@@ -1806,7 +1806,7 @@ class JQueueJobBrowserPanel
 	  return;
 	}
 	finally {
-	  master.returnQueueMgrClient(client);
+	  master.releaseQueueMgrClient(client);
 	  master.endPanelOp(pGroupID, "Done.");
 	}
 
@@ -1841,7 +1841,7 @@ class JQueueJobBrowserPanel
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Resuming Paused Jobs...")) {
-        QueueMgrClient client = master.leaseQueueMgrClient();
+        QueueMgrClient client = master.acquireQueueMgrClient();
 	try {
 	  client.resumeJobs(pJobIDs);
 	}
@@ -1850,7 +1850,7 @@ class JQueueJobBrowserPanel
 	  return;
 	}
 	finally {
-	  master.returnQueueMgrClient(client);
+	  master.releaseQueueMgrClient(client);
 	  master.endPanelOp(pGroupID, "Done.");
 	}
 
@@ -1885,7 +1885,7 @@ class JQueueJobBrowserPanel
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Preempting Jobs...")) {
-        QueueMgrClient client = master.leaseQueueMgrClient();
+        QueueMgrClient client = master.acquireQueueMgrClient();
 	try {
 	  client.preemptJobs(pJobIDs);
 	}
@@ -1894,7 +1894,7 @@ class JQueueJobBrowserPanel
 	  return;
 	}
 	finally {
-	  master.returnQueueMgrClient(client);
+	  master.releaseQueueMgrClient(client);
 	  master.endPanelOp(pGroupID, "Done.");
 	}
 
@@ -1929,7 +1929,7 @@ class JQueueJobBrowserPanel
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Killing Jobs...")) {
-        QueueMgrClient client = master.leaseQueueMgrClient();
+        QueueMgrClient client = master.acquireQueueMgrClient();
 	try {
 	  client.killJobs(pJobIDs);
 	}
@@ -1938,7 +1938,7 @@ class JQueueJobBrowserPanel
 	  return;
 	}
 	finally {
-	  master.returnQueueMgrClient(client);
+	  master.releaseQueueMgrClient(client);
 	  master.endPanelOp(pGroupID, "Done.");
 	}
 
@@ -1973,7 +1973,7 @@ class JQueueJobBrowserPanel
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Changing Job Reqs...")) {
-        QueueMgrClient client = master.leaseQueueMgrClient();
+        QueueMgrClient client = master.acquireQueueMgrClient();
 	try {
 	  client.changeJobReqs(pJobReqChanges);
 	}
@@ -1982,7 +1982,7 @@ class JQueueJobBrowserPanel
 	  return;
 	}
 	finally {
-	  master.returnQueueMgrClient(client);
+	  master.releaseQueueMgrClient(client);
 	  master.endPanelOp(pGroupID, "Done.");
 	}
 
@@ -2017,7 +2017,7 @@ class JQueueJobBrowserPanel
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Deleting Job Groups...")) {
-        QueueMgrClient client = master.leaseQueueMgrClient();
+        QueueMgrClient client = master.acquireQueueMgrClient();
 	try {
 	  client.deleteJobGroups(pGroups);
 	}
@@ -2026,7 +2026,7 @@ class JQueueJobBrowserPanel
 	  return;
 	}
 	finally {
-	  master.returnQueueMgrClient(client);
+	  master.releaseQueueMgrClient(client);
 	  master.endPanelOp(pGroupID, "Done.");
 	}
 
@@ -2061,8 +2061,8 @@ class JQueueJobBrowserPanel
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Deleting Job Groups...")) {
-        MasterMgrClient mclient = master.leaseMasterMgrClient();
-        QueueMgrClient qclient  = master.leaseQueueMgrClient();
+        MasterMgrClient mclient = master.acquireMasterMgrClient();
+        QueueMgrClient qclient  = master.acquireQueueMgrClient();
 	try {
 	  switch(pFilter) {
 	  case SingleView:
@@ -2089,8 +2089,8 @@ class JQueueJobBrowserPanel
 	  return;
 	}
 	finally {
-	  master.returnMasterMgrClient(mclient);
-	  master.returnQueueMgrClient(qclient);
+	  master.releaseMasterMgrClient(mclient);
+	  master.releaseQueueMgrClient(qclient);
 	  master.endPanelOp(pGroupID, "Done.");
 	}
 

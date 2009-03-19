@@ -1,4 +1,4 @@
-// $Id: JUnpackBundleDialog.java,v 1.9 2009/03/19 20:32:28 jesse Exp $
+// $Id: JUnpackBundleDialog.java,v 1.10 2009/03/19 21:55:59 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -465,7 +465,7 @@ class JUnpackBundleDialog
           if(mod.isLocked()) {
             locked.add(name);
             UIMaster master = UIMaster.getInstance();
-            MasterMgrClient mclient = master.leaseMasterMgrClient();
+            MasterMgrClient mclient = master.acquireMasterMgrClient();
             try {
               TreeSet<VersionID> vids = mclient.getCheckedInVersionIDs(name);  
               versionIDs.put(name, vids); 
@@ -473,7 +473,7 @@ class JUnpackBundleDialog
             catch(PipelineException ex) {
             }
             finally {
-              master.returnMasterMgrClient(mclient);
+              master.releaseMasterMgrClient(mclient);
             }
           }
         }
@@ -506,8 +506,8 @@ class JUnpackBundleDialog
     TreeSet<String> licenseKeys = null;
     TreeSet<String> hardwareKeys = null;
     UIMaster master = UIMaster.getInstance();
-    MasterMgrClient mclient = master.leaseMasterMgrClient();
-    QueueMgrClient qclient = master.leaseQueueMgrClient();
+    MasterMgrClient mclient = master.acquireMasterMgrClient();
+    QueueMgrClient qclient = master.acquireQueueMgrClient();
     try {
       toolsets = mclient.getActiveToolsetNames();
       defaultToolset = mclient.getDefaultToolsetName();
@@ -521,8 +521,8 @@ class JUnpackBundleDialog
       return;
     }
     finally {
-      master.returnMasterMgrClient(mclient);
-      master.returnQueueMgrClient(qclient);
+      master.releaseMasterMgrClient(mclient);
+      master.releaseQueueMgrClient(qclient);
     }
 
     /* rebuild the toolsets drawer */
@@ -757,7 +757,7 @@ class JUnpackBundleDialog
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pChannel, "Extracting Bundle Metadata: " + pPath)) {
-        MasterMgrClient client = master.leaseMasterMgrClient();
+        MasterMgrClient client = master.acquireMasterMgrClient();
  	try {
  	  NodeBundle bundle = client.extractBundle(pPath); 
        
@@ -769,7 +769,7 @@ class JUnpackBundleDialog
  	  return;
  	}
  	finally {
- 	  master.returnMasterMgrClient(client);
+ 	  master.releaseMasterMgrClient(client);
  	  master.endPanelOp(pChannel, "Done.");
  	}
       }
@@ -838,7 +838,7 @@ class JUnpackBundleDialog
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pChannel, "Fetching Toolset: " + pLocalToolsetName)) {
-        MasterMgrClient client = master.leaseMasterMgrClient();
+        MasterMgrClient client = master.acquireMasterMgrClient();
  	try {
           TreeMap<OsType,Toolset> bundled = pNodeBundle.getOsToolsets(pBundledToolsetName);
 
@@ -852,7 +852,7 @@ class JUnpackBundleDialog
  	  return;
  	}
  	finally {
- 	  master.returnMasterMgrClient(client);
+ 	  master.releaseMasterMgrClient(client);
  	  master.endPanelOp(pChannel, "Done.");
  	}
       }

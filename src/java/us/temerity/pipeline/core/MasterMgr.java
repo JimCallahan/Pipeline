@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.265 2009/03/13 20:38:43 jim Exp $
+// $Id: MasterMgr.java,v 1.266 2009/03/19 21:55:59 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -325,12 +325,12 @@ class MasterMgr
       else {
 	pFileMgrNetClients = new Stack<FileMgrNetClient>();
 	
-	FileMgrNetClient fclient = (FileMgrNetClient) getFileMgrClient();
+	FileMgrNetClient fclient = (FileMgrNetClient) acquireFileMgrClient();
 	try {
 	  fclient.waitForConnection(1000, 5000);
 	}
 	finally {
-	  freeFileMgrClient(fclient);
+	  releaseFileMgrClient(fclient);
 	}
       }
       
@@ -1559,12 +1559,12 @@ class MasterMgr
     else {
       TreeSet<VersionID> offline = null;
 
-      FileMgrClient fclient = getFileMgrClient();
+      FileMgrClient fclient = acquireFileMgrClient();
       try {
         return fclient.getOfflinedNodeVersions(name);
       }
       finally {
-        freeFileMgrClient(fclient);
+        releaseFileMgrClient(fclient);
       }
     }
   }
@@ -1873,12 +1873,12 @@ class MasterMgr
     try {
       MasterControls controls = null;
       {
-        FileMgrClient fclient = getFileMgrClient();
+        FileMgrClient fclient = acquireFileMgrClient();
         try {
           controls = fclient.getRuntimeControls(); 
         }
         finally {
-          freeFileMgrClient(fclient);
+          releaseFileMgrClient(fclient);
         }
       }
       
@@ -1954,12 +1954,12 @@ class MasterMgr
 	  pRestoreCleanupInterval.set(interval);
       }
 
-      FileMgrClient fclient = getFileMgrClient();
+      FileMgrClient fclient = acquireFileMgrClient();
       try {
         fclient.setRuntimeControls(controls);
       }
       finally {
-        freeFileMgrClient(fclient);
+        releaseFileMgrClient(fclient);
       }
       
       return new SuccessRsp(timer);
@@ -6672,12 +6672,12 @@ class MasterMgr
       }
       
       /* create the working area files directory */ 
-      FileMgrClient fclient = getFileMgrClient();
+      FileMgrClient fclient = acquireFileMgrClient();
       try {
         fclient.createWorkingArea(author, view);
       }
       finally {
-        freeFileMgrClient(fclient);
+        releaseFileMgrClient(fclient);
       }
       
       /* add the view to the runtime table */ 
@@ -6768,12 +6768,12 @@ class MasterMgr
 	}
 
 	/* remove the working area files directory */ 
-	FileMgrClient fclient = getFileMgrClient();
+	FileMgrClient fclient = acquireFileMgrClient();
 	try {
 	  fclient.removeWorkingArea(author, removeUser ? null : view);
 	}
 	finally {
-	  freeFileMgrClient(fclient);
+	  releaseFileMgrClient(fclient);
 	}
       
 	/* remove the empty working area database directory */ 
@@ -7626,13 +7626,13 @@ class MasterMgr
 
         /* change working file write permissions? */ 
 	if(wasActionEnabled != mod.isActionEnabled()) {
-	  FileMgrClient fclient = getFileMgrClient();
+	  FileMgrClient fclient = acquireFileMgrClient();
 	  try {
 	    fclient.changeMode(nodeID, mod, !mod.isActionEnabled());
 	    mod.updateLastCTimeUpdate();
 	  }
 	  finally {
-	    freeFileMgrClient(fclient);
+	    releaseFileMgrClient(fclient);
 	  }
 	}
 
@@ -8099,7 +8099,7 @@ class MasterMgr
 
     /* make sure the file manager can rename the files */ 
     {
-      FileMgrClient fclient = getFileMgrClient();
+      FileMgrClient fclient = acquireFileMgrClient();
       try {
         fclient.validateScratchDir();
       }
@@ -8107,7 +8107,7 @@ class MasterMgr
         return new FailureRsp(timer, ex.getMessage());
       }
       finally {
-        freeFileMgrClient(fclient);
+        releaseFileMgrClient(fclient);
       }
     }
 
@@ -8369,12 +8369,12 @@ class MasterMgr
 	  
 	  /* rename the files */ 
 	  if(req.renameFiles()) {
-	    FileMgrClient fclient = getFileMgrClient();
+	    FileMgrClient fclient = acquireFileMgrClient();
 	    try {
 	      fclient.rename(id, omod, npat);  
 	    }
 	    finally {
-	      freeFileMgrClient(fclient);
+	      releaseFileMgrClient(fclient);
 	    }
 	  }
 	}
@@ -8603,12 +8603,12 @@ class MasterMgr
 
       /* remove obsolete files... */ 
       if(req.removeFiles()) {
-	FileMgrClient fclient = getFileMgrClient();
+	FileMgrClient fclient = acquireFileMgrClient();
 	try {
 	  fclient.remove(nodeID, obsolete);
 	}
 	finally {
-	  freeFileMgrClient(fclient);
+	  releaseFileMgrClient(fclient);
 	}
       }
 
@@ -9821,12 +9821,12 @@ class MasterMgr
 
       /* remove the associated files */ 
       if(removeFiles) {
-	FileMgrClient fclient = getFileMgrClient();
+	FileMgrClient fclient = acquireFileMgrClient();
 	try {
 	  fclient.removeAll(id, mod.getSequences());
 	}
 	finally {
-	  freeFileMgrClient(fclient);
+	  releaseFileMgrClient(fclient);
 	}	
       }
 
@@ -9962,12 +9962,12 @@ class MasterMgr
 
 	/* delete files associated with all checked-in versions of the node */ 
 	{
-	  FileMgrClient fclient = getFileMgrClient();
+	  FileMgrClient fclient = acquireFileMgrClient();
 	  try {
 	    fclient.deleteCheckedIn(name);
 	  }
 	  finally {
-	    freeFileMgrClient(fclient);
+	    releaseFileMgrClient(fclient);
 	  }
 	}
 	
@@ -10760,7 +10760,7 @@ class MasterMgr
       long timestamp = TimeStamps.now(); 
 
       {
-	FileMgrClient fclient = getFileMgrClient();
+	FileMgrClient fclient = acquireFileMgrClient();
 	try {
 	  /* remove the existing working area files before the check-out */ 
 	  if(work != null) 
@@ -10777,7 +10777,7 @@ class MasterMgr
 	  }
 	}
 	finally {
-	  freeFileMgrClient(fclient);
+	  releaseFileMgrClient(fclient);
 	}
       }
 
@@ -11060,7 +11060,7 @@ class MasterMgr
           }
 
 	  {
-	    FileMgrClient fclient = getFileMgrClient();
+	    FileMgrClient fclient = acquireFileMgrClient();
 	    try {
 	      /* remove the existing working area files before the check-out */ 
 	      if(work != null) 
@@ -11070,7 +11070,7 @@ class MasterMgr
 	      fclient.checkOut(nodeID, vsn, true);
 	    }
 	    finally {
-	      freeFileMgrClient(fclient);
+	      releaseFileMgrClient(fclient);
 	    }
 	  }
 
@@ -11273,12 +11273,12 @@ class MasterMgr
 
 	/* revert the files */ 
 	{
-	  FileMgrClient fclient = getFileMgrClient();
+	  FileMgrClient fclient = acquireFileMgrClient();
 	  try {
 	    fclient.revert(nodeID, files, writeable);
 	  }
 	  finally {
-	    freeFileMgrClient(fclient);
+	    releaseFileMgrClient(fclient);
 	  }
 	}
       }
@@ -11340,7 +11340,7 @@ class MasterMgr
 
     /* make sure the file manager can clone the files */ 
     {
-      FileMgrClient fclient = getFileMgrClient();
+      FileMgrClient fclient = acquireFileMgrClient();
       try {
         fclient.validateScratchDir();
       }
@@ -11348,7 +11348,7 @@ class MasterMgr
         return new FailureRsp(timer, ex.getMessage());
       }
       finally {
-        freeFileMgrClient(fclient);
+        releaseFileMgrClient(fclient);
       }
     }
 
@@ -11461,12 +11461,12 @@ class MasterMgr
 
       /* clone the files */ 
       {
-	FileMgrClient fclient = getFileMgrClient();
+	FileMgrClient fclient = acquireFileMgrClient();
 	try {
 	  fclient.clone(sourceID, targetID, files, writeable);
 	}
 	finally {
-	  freeFileMgrClient(fclient);
+	  releaseFileMgrClient(fclient);
 	}
       }
 	
@@ -11789,12 +11789,12 @@ class MasterMgr
           throw new PipelineException(ex);
         }
 
-        FileMgrClient fclient = getFileMgrClient();
+        FileMgrClient fclient = acquireFileMgrClient();
         try {
           nodeArchive = fclient.packNodes(bundle);
         }
         finally {
-          freeFileMgrClient(fclient);
+          releaseFileMgrClient(fclient);
         }
       }
 
@@ -11890,12 +11890,12 @@ class MasterMgr
       /* extract the node bundle */ 
       NodeBundle bundle = null; 
       {
-        FileMgrClient fclient = getFileMgrClient();
+        FileMgrClient fclient = acquireFileMgrClient();
         try {
           bundle = fclient.extractBundle(bundlePath);
         }
         finally {
-          freeFileMgrClient(fclient);
+          releaseFileMgrClient(fclient);
         }
       }
 
@@ -11977,12 +11977,12 @@ class MasterMgr
       /* extract the node bundle */ 
       NodeBundle bundle = null; 
       {
-        FileMgrClient fclient = getFileMgrClient();
+        FileMgrClient fclient = acquireFileMgrClient();
         try {
           bundle = fclient.extractBundle(bundlePath);
         }
         finally {
-          freeFileMgrClient(fclient);
+          releaseFileMgrClient(fclient);
         }
       }
       
@@ -12069,12 +12069,12 @@ class MasterMgr
       }
 
       /* unpack the node data files */ 
-      FileMgrClient fclient = getFileMgrClient();
+      FileMgrClient fclient = acquireFileMgrClient();
       try {
         fclient.unpackNodes(bundlePath, bundle, author, view, skipUnpack); 
       }
       finally {
-        freeFileMgrClient(fclient);
+        releaseFileMgrClient(fclient);
       }
       
       /* post-op tasks */ 
@@ -13792,12 +13792,12 @@ class MasterMgr
        
       /* touch the files */ 
       {
-        FileMgrClient fclient = getFileMgrClient();
+        FileMgrClient fclient = acquireFileMgrClient();
         try {
           fclient.touchAll(nodeID, mod);
         }
         finally {
-          freeFileMgrClient(fclient);
+          releaseFileMgrClient(fclient);
         }
       }
       
@@ -13935,12 +13935,12 @@ class MasterMgr
 	pQueueMgrClient.killJobs(activeIDs);
 
       {
-	FileMgrClient fclient = getFileMgrClient();
+	FileMgrClient fclient = acquireFileMgrClient();
 	try {
 	  fclient.removeAll(nodeID, fseqs);
 	}
 	finally {
-	    freeFileMgrClient(fclient);
+	    releaseFileMgrClient(fclient);
 	}
       }
       
@@ -14294,12 +14294,12 @@ class MasterMgr
 	/* compute the sizes of the files */ 
 	TreeMap<String,TreeMap<VersionID,Long>> sizes = null;
 	{
-	  FileMgrClient fclient = getFileMgrClient();
+	  FileMgrClient fclient = acquireFileMgrClient();
 	  try {
 	    sizes = fclient.getArchiveSizes(fseqs);
 	  }
 	  finally {
-	    freeFileMgrClient(fclient);
+	    releaseFileMgrClient(fclient);
 	  }
 	}
 
@@ -14339,7 +14339,7 @@ class MasterMgr
 
     /* make sure the file manager can archive files */ 
     {
-      FileMgrClient fclient = getFileMgrClient();
+      FileMgrClient fclient = acquireFileMgrClient();
       try {
         fclient.validateScratchDir();
       }
@@ -14347,7 +14347,7 @@ class MasterMgr
         return new FailureRsp(timer, ex.getMessage());
       }  
       finally {
-        freeFileMgrClient(fclient);
+        releaseFileMgrClient(fclient);
       }
     }
 
@@ -14496,7 +14496,7 @@ class MasterMgr
 	{
 	  String output = null;
 	  {
-	    FileMgrClient fclient = getFileMgrClient();
+	    FileMgrClient fclient = acquireFileMgrClient();
 	    try {
               StringBuilder dryRunResults = null;
               if(req.isDryRun()) 
@@ -14508,7 +14508,7 @@ class MasterMgr
                 return new MiscArchiveRsp(timer, archiveName, dryRunResults.toString()); 
 	    }
 	    finally {
-	      freeFileMgrClient(fclient);
+	      releaseFileMgrClient(fclient);
 	    }
 	  }
 	  
@@ -14975,12 +14975,12 @@ class MasterMgr
 	/* compute the sizes of the files */
 	TreeMap<String,TreeMap<VersionID,Long>> sizes = null;
 	{
-	  FileMgrClient fclient = getFileMgrClient();
+	  FileMgrClient fclient = acquireFileMgrClient();
 	  try {
 	    sizes = fclient.getOfflineSizes(contribute);
 	  }
 	  finally {
-	    freeFileMgrClient(fclient);
+	    releaseFileMgrClient(fclient);
 	  }
 	}
 	
@@ -15210,12 +15210,12 @@ class MasterMgr
 	      	    
 		/* offline the files */ 	
 		{
-		  FileMgrClient fclient = getFileMgrClient();
+		  FileMgrClient fclient = acquireFileMgrClient();
 		  try {
 		    fclient.offline(name, vid, symlinks, dryRunResults);
 		  }
 		  finally {
-		    freeFileMgrClient(fclient);
+		    releaseFileMgrClient(fclient);
 		  }
 		}
 
@@ -15779,7 +15779,7 @@ class MasterMgr
 
     /* make sure the file manager can archive files */ 
     {
-      FileMgrClient fclient = getFileMgrClient();
+      FileMgrClient fclient = acquireFileMgrClient();
       try {
         fclient.validateScratchDir();
       }
@@ -15787,7 +15787,7 @@ class MasterMgr
         return new FailureRsp(timer, ex.getMessage());
       }  
       finally {
-        freeFileMgrClient(fclient);
+        releaseFileMgrClient(fclient);
       }
     }
 
@@ -15907,7 +15907,7 @@ class MasterMgr
 	{
 	  String output = null;
 	  {
-	    FileMgrClient fclient = getFileMgrClient();
+	    FileMgrClient fclient = acquireFileMgrClient();
 	    try {
               StringBuilder dryRunResults = null;
               if(req.isDryRun()) 
@@ -15920,7 +15920,7 @@ class MasterMgr
                 return new DryRunRsp(timer, dryRunResults.toString()); 
 	    }
 	    finally {
-	      freeFileMgrClient(fclient);
+	      releaseFileMgrClient(fclient);
 	    }
 	  }
 	  
@@ -16030,12 +16030,12 @@ class MasterMgr
  
 	      /* restore the files */ 
 	      {
-		FileMgrClient fclient = getFileMgrClient();
+		FileMgrClient fclient = acquireFileMgrClient();
 		try {
 		  fclient.restore(archiveName, stamp, name, vid, symlinks, targets);
 		}
 		finally {
-		  freeFileMgrClient(fclient);
+		  releaseFileMgrClient(fclient);
 		}
 	      }
 
@@ -16091,12 +16091,12 @@ class MasterMgr
       }
 
       try {
-	FileMgrClient fclient = getFileMgrClient();
+	FileMgrClient fclient = acquireFileMgrClient();
 	try {
 	  fclient.extractCleanup(archiveName, stamp);
 	}
 	finally {
-	  freeFileMgrClient(fclient);
+	  releaseFileMgrClient(fclient);
 	}
       }
       catch(PipelineException ex) {
@@ -17101,7 +17101,7 @@ class MasterMgr
 
             /* query the file manager */
             {	     
-              FileMgrClient fclient = getFileMgrClient();
+              FileMgrClient fclient = acquireFileMgrClient();
               try {
                 VersionID vid = null;
                 if(latest != null) 
@@ -17128,7 +17128,7 @@ class MasterMgr
                 }
               }
               finally {
-                freeFileMgrClient(fclient);
+                releaseFileMgrClient(fclient);
               }
             }
 
@@ -18218,7 +18218,7 @@ class MasterMgr
    * Get a connection to the file manager.
    */ 
   private FileMgrClient
-  getFileMgrClient()
+  acquireFileMgrClient()
   {
     if(pInternalFileMgr)
       return pFileMgrDirectClient;
@@ -18247,7 +18247,7 @@ class MasterMgr
    * Return an inactive connection to the file manager for reuse.
    */ 
   private void
-  freeFileMgrClient
+  releaseFileMgrClient
   (
    FileMgrClient client
   )
@@ -21421,7 +21421,7 @@ class MasterMgr
       TaskTimer timer = new TaskTimer();
       try {
         
-        FileMgrClient fclient = getFileMgrClient();
+        FileMgrClient fclient = acquireFileMgrClient();
         try {
           TreeMap<String,TreeSet<VersionID>> offlined = fclient.getOfflined();
           synchronized(pOfflinedLock) {
@@ -21429,7 +21429,7 @@ class MasterMgr
           }
         }
         finally {
-          freeFileMgrClient(fclient);
+          releaseFileMgrClient(fclient);
         }
 
         timer.suspend();
@@ -21696,12 +21696,12 @@ class MasterMgr
 
 	  /* check-in the files */ 
 	  {
-	    FileMgrClient fclient = getFileMgrClient();
+	    FileMgrClient fclient = acquireFileMgrClient();
 	    try {
 	      fclient.checkIn(nodeID, work, vid, latestID, isNovel);
 	    }
 	    finally {
-	      freeFileMgrClient(fclient);
+	      releaseFileMgrClient(fclient);
 	    }
 	  }
 

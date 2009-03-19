@@ -1,4 +1,4 @@
-// $Id: PanelUpdater.java,v 1.30 2009/03/19 20:32:28 jesse Exp $
+// $Id: PanelUpdater.java,v 1.31 2009/03/19 21:55:59 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -437,8 +437,8 @@ class PanelUpdater
     boolean success = true;
     UIMaster master = UIMaster.getInstance();
     if(master.beginPanelOp(pGroupID)) {
-      MasterMgrClient mclient = master.leaseMasterMgrClient();
-      QueueMgrClient qclient  = master.leaseQueueMgrClient();
+      MasterMgrClient mclient = master.acquireMasterMgrClient();
+      QueueMgrClient qclient  = master.acquireQueueMgrClient();
       try {
 	
 	/* clear client caches */ 
@@ -729,8 +729,8 @@ class PanelUpdater
 	success = false;
       }
       finally {
-        master.returnMasterMgrClient(mclient);
-        master.returnQueueMgrClient(qclient);
+        master.releaseMasterMgrClient(mclient);
+        master.releaseQueueMgrClient(qclient);
 	master.endPanelOp(pGroupID, success ? "Done." : "Failed!");
       }
     }

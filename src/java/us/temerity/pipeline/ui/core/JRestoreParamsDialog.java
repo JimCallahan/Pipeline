@@ -1,4 +1,4 @@
-// $Id: JRestoreParamsDialog.java,v 1.10 2009/03/19 20:32:28 jesse Exp $
+// $Id: JRestoreParamsDialog.java,v 1.11 2009/03/19 21:55:59 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -211,14 +211,14 @@ class JRestoreParamsDialog
 
       TreeSet<String> toolsets = new TreeSet<String>();
       UIMaster master = UIMaster.getInstance();
-      MasterMgrClient client = master.leaseMasterMgrClient();
+      MasterMgrClient client = master.acquireMasterMgrClient();
       try {
 	toolsets.addAll(client.getActiveToolsetNames());
       }
       catch(PipelineException ex) {
       }
       finally {
-        master.returnMasterMgrClient(client);
+        master.releaseMasterMgrClient(client);
       }
 
       if((tname != null) && !toolsets.contains(tname))

@@ -1,4 +1,4 @@
-// $Id: JRegisterDialog.java,v 1.21 2009/03/19 20:32:28 jesse Exp $
+// $Id: JRegisterDialog.java,v 1.22 2009/03/19 21:55:59 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -298,7 +298,7 @@ class JRegisterDialog
 
       TreeSet<String> tsets = new TreeSet<String>();
       {
-        MasterMgrClient client = master.leaseMasterMgrClient();
+        MasterMgrClient client = master.acquireMasterMgrClient();
 	try {
 	  tsets.addAll(client.getActiveToolsetNames());
 	  defaultToolset = client.getDefaultToolsetName();
@@ -307,7 +307,7 @@ class JRegisterDialog
 	  showErrorDialog(ex);
 	}
 	finally {
-	  master.returnMasterMgrClient(client);
+	  master.releaseMasterMgrClient(client);
 	}
 
 	if(tsets.isEmpty())
@@ -466,7 +466,7 @@ class JRegisterDialog
     
     UIMaster master = UIMaster.getInstance();
     if(master.beginPanelOp(pChannel, "Registering New Node: " + mod.getName())) {
-      MasterMgrClient client = master.leaseMasterMgrClient();
+      MasterMgrClient client = master.acquireMasterMgrClient();
       try {
 	client.register(pAuthor, pView, mod);
 	synchronized(pRegistered) {
@@ -477,7 +477,7 @@ class JRegisterDialog
 	showErrorDialog(ex);
       }
       finally {
-        master.returnMasterMgrClient(client);
+        master.releaseMasterMgrClient(client);
 	master.endPanelOp(pChannel, "Done.");
       }
     }
@@ -524,7 +524,7 @@ class JRegisterDialog
     File rootDir = pRootPath.toFile();
     if(!rootDir.exists()) {
       UIMaster master = UIMaster.getInstance();
-      MasterMgrClient client = master.leaseMasterMgrClient();
+      MasterMgrClient client = master.acquireMasterMgrClient();
       try {
 	client.createWorkingArea(pAuthor, pView);
         if(!rootDir.exists()) 
@@ -539,7 +539,7 @@ class JRegisterDialog
 	return;
       }
       finally {
-        master.returnMasterMgrClient(client);
+        master.releaseMasterMgrClient(client);
       }
     }
 
@@ -658,14 +658,14 @@ class JRegisterDialog
     String suffix = pSuffixField.getText();
     if((suffix != null) && (suffix.length() > 0)) {
       UIMaster master = UIMaster.getInstance();
-      MasterMgrClient client = master.leaseMasterMgrClient();
+      MasterMgrClient client = master.acquireMasterMgrClient();
       try {
 	editor = client.getEditorForSuffix(suffix);
       }
       catch(PipelineException ex) {
       }
       finally {
-        master.returnMasterMgrClient(client);
+        master.releaseMasterMgrClient(client);
       }
     }
 
@@ -851,7 +851,7 @@ class JRegisterDialog
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pChannel, "Registering New Node: " + pNodeModLocal.getName())) {
-        MasterMgrClient client = master.leaseMasterMgrClient();
+        MasterMgrClient client = master.acquireMasterMgrClient();
 	try {
 	  client.register(pAuthorLocal, pViewLocal, pNodeModLocal);
 	  synchronized(pRegistered) {
@@ -862,7 +862,7 @@ class JRegisterDialog
 	  showErrorDialog(ex);
 	}
 	finally {
-	  master.returnMasterMgrClient(client);
+	  master.releaseMasterMgrClient(client);
 	  master.endPanelOp(pChannel, "Done.");
 	}
       }

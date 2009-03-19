@@ -1,4 +1,4 @@
-// $Id: JManageServerExtensionsDialog.java,v 1.2 2009/03/19 20:32:28 jesse Exp $
+// $Id: JManageServerExtensionsDialog.java,v 1.3 2009/03/19 21:55:59 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -156,8 +156,8 @@ class JManageServerExtensionsDialog
   updateAll() 
   { 
     UIMaster master = UIMaster.getInstance();
-    MasterMgrClient mclient = master.leaseMasterMgrClient();
-    QueueMgrClient qclient = master.leaseQueueMgrClient();
+    MasterMgrClient mclient = master.acquireMasterMgrClient();
+    QueueMgrClient qclient = master.acquireQueueMgrClient();
     try {
       pPrivilegeDetails = mclient.getPrivilegeDetails();
       pMasterTableModel.setMasterExtensionConfigs
@@ -170,8 +170,8 @@ class JManageServerExtensionsDialog
       showErrorDialog(ex);
     }
     finally {
-      master.returnMasterMgrClient(mclient);
-      master.returnQueueMgrClient(qclient);
+      master.releaseMasterMgrClient(mclient);
+      master.releaseQueueMgrClient(qclient);
     }
 
     pAddButton.setEnabled(pPrivilegeDetails.isMasterAdmin());
@@ -232,7 +232,7 @@ class JManageServerExtensionsDialog
 	if(pMasterDetailsDialog.wasConfirmed()) {
 	  MasterExtensionConfig config = pMasterDetailsDialog.getMasterExtensionConfig(); 
 	  if(config != null) {
-	    MasterMgrClient mclient = master.leaseMasterMgrClient();
+	    MasterMgrClient mclient = master.acquireMasterMgrClient();
 	    try {
 	      mclient.setMasterExtensionConfig(config);
 	      pMasterTableModel.setMasterExtensionConfigs
@@ -242,7 +242,7 @@ class JManageServerExtensionsDialog
 	      showErrorDialog(ex);
 	    }
 	    finally {
-	      master.returnMasterMgrClient(mclient);
+	      master.releaseMasterMgrClient(mclient);
 	    }
 	  }
 	}
@@ -257,7 +257,7 @@ class JManageServerExtensionsDialog
 	if(pQueueDetailsDialog.wasConfirmed()) {
 	  QueueExtensionConfig config = pQueueDetailsDialog.getQueueExtensionConfig(); 
 	  if(config != null) {
-	    QueueMgrClient qclient = master.leaseQueueMgrClient();
+	    QueueMgrClient qclient = master.acquireQueueMgrClient();
 	    try {
 	      qclient.setQueueExtensionConfig(config);
 	      pQueueTableModel.setQueueExtensionConfigs
@@ -267,7 +267,7 @@ class JManageServerExtensionsDialog
 	      showErrorDialog(ex);
 	    }
 	    finally {
-	      master.returnQueueMgrClient(qclient);
+	      master.releaseQueueMgrClient(qclient);
 	    }
 	  }
 	}
@@ -296,7 +296,7 @@ class JManageServerExtensionsDialog
 	if(pMasterDetailsDialog.wasConfirmed()) {
 	  MasterExtensionConfig config = pMasterDetailsDialog.getMasterExtensionConfig(); 
 	  if(config != null) {
-	    MasterMgrClient mclient = master.leaseMasterMgrClient();
+	    MasterMgrClient mclient = master.acquireMasterMgrClient();
 	    try {
 	      if((oconfig != null) && !oconfig.getName().equals(config.getName()))
 		mclient.removeMasterExtensionConfig(oconfig.getName());
@@ -309,7 +309,7 @@ class JManageServerExtensionsDialog
 	      showErrorDialog(ex);
 	    }
 	    finally {
-	      master.returnMasterMgrClient(mclient);
+	      master.releaseMasterMgrClient(mclient);
 	    }
 	  }
 	}
@@ -329,7 +329,7 @@ class JManageServerExtensionsDialog
 	if(pQueueDetailsDialog.wasConfirmed()) {
 	  QueueExtensionConfig config = pQueueDetailsDialog.getQueueExtensionConfig(); 
 	  if(config != null) {
-	    QueueMgrClient qclient = master.leaseQueueMgrClient();
+	    QueueMgrClient qclient = master.acquireQueueMgrClient();
 	    try {
 
 	      if((oconfig != null) && !oconfig.getName().equals(config.getName()))
@@ -343,7 +343,7 @@ class JManageServerExtensionsDialog
 	      showErrorDialog(ex);
 	    }
 	    finally {
-	      master.returnQueueMgrClient(qclient);
+	      master.releaseQueueMgrClient(qclient);
 	    }
 	  }
 	}
@@ -362,7 +362,7 @@ class JManageServerExtensionsDialog
       switch(pTab.getSelectedIndex()) {    
       case 0:
 	{
-	  MasterMgrClient mclient = master.leaseMasterMgrClient();
+	  MasterMgrClient mclient = master.acquireMasterMgrClient();
 
 	  try {
 	    TreeMap<String,MasterExtensionConfig> configs = 
@@ -374,14 +374,14 @@ class JManageServerExtensionsDialog
 	      (mclient.getMasterExtensionConfigs(), pPrivilegeDetails);
 	  }
 	  finally {
-	    master.returnMasterMgrClient(mclient);
+	    master.releaseMasterMgrClient(mclient);
 	  }
 	}
 	break;
 
       case 1:
 	{
-	  QueueMgrClient qclient = master.leaseQueueMgrClient();
+	  QueueMgrClient qclient = master.acquireQueueMgrClient();
 
 	  try {
 	    TreeMap<String,QueueExtensionConfig> configs = 
@@ -393,7 +393,7 @@ class JManageServerExtensionsDialog
 	      (qclient.getQueueExtensionConfigs(), pPrivilegeDetails);
 	  }
 	  finally {
-	    master.returnQueueMgrClient(qclient);
+	    master.releaseQueueMgrClient(qclient);
 	  }
 	}
       }
@@ -422,7 +422,7 @@ class JManageServerExtensionsDialog
 	  JConfirmDialog diag = new JConfirmDialog(this, "Are you sure?"); 
 	  diag.setVisible(true);
 	  if(diag.wasConfirmed()) {
-	    MasterMgrClient mclient = master.leaseMasterMgrClient();
+	    MasterMgrClient mclient = master.acquireMasterMgrClient();
 	    try {
 	      mclient.removeMasterExtensionConfig(config.getName());
 	      pMasterTableModel.setMasterExtensionConfigs
@@ -432,7 +432,7 @@ class JManageServerExtensionsDialog
 	      showErrorDialog(ex);
 	    }
 	    finally {
-	      master.returnMasterMgrClient(mclient);
+	      master.releaseMasterMgrClient(mclient);
 	    }
 	  }
 	}
@@ -450,7 +450,7 @@ class JManageServerExtensionsDialog
 	  JConfirmDialog diag = new JConfirmDialog(this, "Are you sure?"); 
 	  diag.setVisible(true);
 	  if(diag.wasConfirmed()) {
-	    QueueMgrClient qclient = master.leaseQueueMgrClient();
+	    QueueMgrClient qclient = master.acquireQueueMgrClient();
 	    try {
 	      qclient.removeQueueExtensionConfig(config.getName());
 	      pQueueTableModel.setQueueExtensionConfigs
@@ -460,7 +460,7 @@ class JManageServerExtensionsDialog
 	      showErrorDialog(ex);
 	    }
 	    finally {
-	      master.returnQueueMgrClient(qclient);
+	      master.releaseQueueMgrClient(qclient);
 	    }
 	  }
 	}

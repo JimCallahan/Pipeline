@@ -1,4 +1,4 @@
-// $Id: JManageSelectionKeysDialog.java,v 1.19 2009/03/19 20:32:28 jesse Exp $
+// $Id: JManageSelectionKeysDialog.java,v 1.20 2009/03/19 21:55:59 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -477,8 +477,8 @@ class JManageSelectionKeysDialog
   updateAll() 
   { 
     UIMaster master = UIMaster.getInstance();
-    QueueMgrClient qclient = master.leaseQueueMgrClient();
-    MasterMgrClient mclient = master.leaseMasterMgrClient();
+    QueueMgrClient qclient = master.acquireQueueMgrClient();
+    MasterMgrClient mclient = master.acquireMasterMgrClient();
     try {
       pPrivilegeDetails = mclient.getPrivilegeDetails();
 
@@ -533,8 +533,8 @@ class JManageSelectionKeysDialog
       showErrorDialog(ex);
     }
     finally {
-      master.returnMasterMgrClient(mclient);
-      master.returnQueueMgrClient(qclient);
+      master.releaseMasterMgrClient(mclient);
+      master.releaseQueueMgrClient(qclient);
     }
 
     updateKeysMenu();
@@ -1077,7 +1077,7 @@ class JManageSelectionKeysDialog
   doApply()
   {
     UIMaster master = UIMaster.getInstance();
-    QueueMgrClient client = master.leaseQueueMgrClient();
+    QueueMgrClient client = master.acquireQueueMgrClient();
     try {
       ArrayList<SelectionGroup> groups = pGroupsTableModel.getModifiedGroups();
       if(groups != null) 
@@ -1096,7 +1096,7 @@ class JManageSelectionKeysDialog
       showErrorDialog(ex);
     }
     finally {
-      master.returnQueueMgrClient(client);
+      master.releaseQueueMgrClient(client);
     }
     
     updateAll();
@@ -1143,7 +1143,7 @@ class JManageSelectionKeysDialog
       BaseKeyChooser plugin = pKeyDetailsDialog.getKeyChooser();
       BaseKey key = pKeysTableModel.getKey(row);
       if(key != null) {
-        QueueMgrClient qclient = master.leaseQueueMgrClient();
+        QueueMgrClient qclient = master.acquireQueueMgrClient();
         try {
           SelectionKey newKey = 
             new SelectionKey(key.getName(), key.getDescription(), plugin); 
@@ -1158,7 +1158,7 @@ class JManageSelectionKeysDialog
           showErrorDialog(ex);
         }
         finally {
-          master.returnQueueMgrClient(qclient);
+          master.releaseQueueMgrClient(qclient);
         }
       }
     }
@@ -1186,7 +1186,7 @@ class JManageSelectionKeysDialog
 	   (desc != null) && (desc.length() > 0)) {
 	  
 	  UIMaster master = UIMaster.getInstance();
-	  QueueMgrClient client = master.leaseQueueMgrClient();
+	  QueueMgrClient client = master.acquireQueueMgrClient();
 	  try {
 	    client.addSelectionKey(new SelectionKey(kname, desc));
 	    modified = true;
@@ -1195,7 +1195,7 @@ class JManageSelectionKeysDialog
 	    showErrorDialog(ex);
 	  }
 	  finally {
-	    master.returnQueueMgrClient(client);
+	    master.releaseQueueMgrClient(client);
 	  }
 	}
       }
@@ -1216,7 +1216,7 @@ class JManageSelectionKeysDialog
     boolean modified = false;
     {
       UIMaster master = UIMaster.getInstance();
-      QueueMgrClient client = master.leaseQueueMgrClient();
+      QueueMgrClient client = master.acquireQueueMgrClient();
       try {
 	int rows[] = pKeysTablePanel.getTable().getSelectedRows();
 	int wk;
@@ -1230,7 +1230,7 @@ class JManageSelectionKeysDialog
 	showErrorDialog(ex);
       }
       finally {
-        master.returnQueueMgrClient(client);
+        master.releaseQueueMgrClient(client);
       }
     }
     
@@ -1257,7 +1257,7 @@ class JManageSelectionKeysDialog
 	String gname = pGroupsNewDialog.getName();
 	if((gname != null) && (gname.length() > 0)) {
 	  UIMaster master = UIMaster.getInstance();
-	  QueueMgrClient client = master.leaseQueueMgrClient();
+	  QueueMgrClient client = master.acquireQueueMgrClient();
 	  try {
 	    client.addSelectionGroup(gname);
 	    modified = true;
@@ -1266,7 +1266,7 @@ class JManageSelectionKeysDialog
 	    showErrorDialog(ex);
 	  }
 	  finally {
-	    master.returnQueueMgrClient(client);
+	    master.releaseQueueMgrClient(client);
 	  }
 	}
       }
@@ -1305,7 +1305,7 @@ class JManageSelectionKeysDialog
 	  String gname = pGroupsNewDialog.getName();
 	  if((gname != null) && (gname.length() > 0)) {
 	    UIMaster master = UIMaster.getInstance();
-	    QueueMgrClient client = master.leaseQueueMgrClient();
+	    QueueMgrClient client = master.acquireQueueMgrClient();
 	    try {
 	      client.addSelectionGroup(gname);
 	      client.editSelectionGroup(new SelectionGroup(gname, group));
@@ -1315,7 +1315,7 @@ class JManageSelectionKeysDialog
 	      showErrorDialog(ex);
 	    }
 	    finally {
-	      master.returnQueueMgrClient(client);
+	      master.releaseQueueMgrClient(client);
 	    }
 	  }
 	}
@@ -1339,7 +1339,7 @@ class JManageSelectionKeysDialog
     boolean modified = false;
     {
       UIMaster master = UIMaster.getInstance();
-      QueueMgrClient client = master.leaseQueueMgrClient();
+      QueueMgrClient client = master.acquireQueueMgrClient();
       try {
 	TreeSet<String> gnames = new TreeSet<String>();
 	{
@@ -1358,7 +1358,7 @@ class JManageSelectionKeysDialog
 	showErrorDialog(ex);
       }
       finally {
-        master.returnQueueMgrClient(client);
+        master.releaseQueueMgrClient(client);
       }
     }
 
@@ -1395,7 +1395,7 @@ class JManageSelectionKeysDialog
 	String gname = pSchedulesNewDialog.getName();
 	if((gname != null) && (gname.length() > 0)) {
 	  UIMaster master = UIMaster.getInstance();
-	  QueueMgrClient client = master.leaseQueueMgrClient();
+	  QueueMgrClient client = master.acquireQueueMgrClient();
 	  try {
 	    client.addSelectionSchedule(gname);
 	    modified = true;
@@ -1404,7 +1404,7 @@ class JManageSelectionKeysDialog
 	    showErrorDialog(ex);
 	  }
 	  finally {
-	    master.returnQueueMgrClient(client);
+	    master.releaseQueueMgrClient(client);
 	  }
 	}
       }
@@ -1433,7 +1433,7 @@ class JManageSelectionKeysDialog
 	    String sname = pSchedulesNewDialog.getName();
 	    if((sname != null) && (sname.length() > 0)) {
 	      UIMaster master = UIMaster.getInstance();
-	      QueueMgrClient client = master.leaseQueueMgrClient();
+	      QueueMgrClient client = master.acquireQueueMgrClient();
 	      try {
 		client.addSelectionSchedule(sname);
 		client.editSelectionSchedule(new SelectionSchedule(sname, schedule));
@@ -1443,7 +1443,7 @@ class JManageSelectionKeysDialog
 		showErrorDialog(ex);
 	      }
 	      finally {
-	        master.returnQueueMgrClient(client);
+	        master.releaseQueueMgrClient(client);
 	      }
 	    }
 	  }
@@ -1468,7 +1468,7 @@ class JManageSelectionKeysDialog
       String selected = (String) pScheduleNamesList.getSelectedValue(); 
       if(selected != null) {
 	UIMaster master = UIMaster.getInstance();
-	QueueMgrClient client = master.leaseQueueMgrClient();
+	QueueMgrClient client = master.acquireQueueMgrClient();
 	try {
 	  client.removeSelectionSchedule(selected);
 	  modified = true;
@@ -1477,7 +1477,7 @@ class JManageSelectionKeysDialog
 	  showErrorDialog(ex);
 	}
 	finally {
-	  master.returnQueueMgrClient(client);
+	  master.releaseQueueMgrClient(client);
 	}
       }
     }
@@ -1506,7 +1506,7 @@ class JManageSelectionKeysDialog
 	SelectionSchedule schedule = pSchedules.get(selected);
 	if(schedule != null) {
 	  UIMaster master = UIMaster.getInstance();
-	  QueueMgrClient client = master.leaseQueueMgrClient();
+	  QueueMgrClient client = master.acquireQueueMgrClient();
 	  try {
 	    schedule.addRule(new SelectionRule());
 	    client.editSelectionSchedule(schedule);
@@ -1516,7 +1516,7 @@ class JManageSelectionKeysDialog
 	    showErrorDialog(ex);
 	  }
 	  finally {
-	    master.returnQueueMgrClient(client);
+	    master.releaseQueueMgrClient(client);
 	  }
 	}
       }
@@ -1548,7 +1548,7 @@ class JManageSelectionKeysDialog
 	    SelectionRule selectedRule = pRulesTableModel.getSelectionRule(rows[0]);
 	    if(selectedRule != null) {
 	      UIMaster master = UIMaster.getInstance();
-	      QueueMgrClient client = master.leaseQueueMgrClient();
+	      QueueMgrClient client = master.acquireQueueMgrClient();
 	      try {
 		schedule.addRule((SelectionRule) selectedRule.clone());
 		client.editSelectionSchedule(schedule);
@@ -1558,7 +1558,7 @@ class JManageSelectionKeysDialog
 		showErrorDialog(ex);
 	      }
 	      finally {
-	        master.returnQueueMgrClient(client);
+	        master.releaseQueueMgrClient(client);
 	      }
 	    }
 	  }
@@ -1589,7 +1589,7 @@ class JManageSelectionKeysDialog
 	  int rows[] = pRulesTablePanel.getTable().getSelectedRows();
 	  if(rows.length > 0) {
 	    UIMaster master = UIMaster.getInstance();
-	    QueueMgrClient client = master.leaseQueueMgrClient();
+	    QueueMgrClient client = master.acquireQueueMgrClient();
 	    try {
 	      schedule.setRules(pRulesTableModel.getSelectionRules(rows));
 	      client.editSelectionSchedule(schedule);
@@ -1599,7 +1599,7 @@ class JManageSelectionKeysDialog
 	      showErrorDialog(ex);
 	    }
 	    finally {
-	      master.returnQueueMgrClient(client);
+	      master.releaseQueueMgrClient(client);
 	    }
 	  }
 	}

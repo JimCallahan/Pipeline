@@ -1,4 +1,4 @@
-// $Id: JNodeAnnotationsPanel.java,v 1.17 2009/03/19 20:32:28 jesse Exp $
+// $Id: JNodeAnnotationsPanel.java,v 1.18 2009/03/19 21:55:59 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1757,7 +1757,7 @@ class JNodeAnnotationsPanel
       Set<String> workGroups = null;
       if(pAnnotation != null) {
         UIMaster master = UIMaster.getInstance();
-        MasterMgrClient mclient = master.leaseMasterMgrClient();
+        MasterMgrClient mclient = master.acquireMasterMgrClient();
         
         try {
           boolean needsToolsets = false;
@@ -1792,7 +1792,7 @@ class JNodeAnnotationsPanel
           }
         }
         finally {
-          master.returnMasterMgrClient(mclient);
+          master.releaseMasterMgrClient(mclient);
         }
       }
 
@@ -2121,7 +2121,7 @@ class JNodeAnnotationsPanel
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID, "Applying Annotation Changes...")) {
-        MasterMgrClient mclient = master.leaseMasterMgrClient();
+        MasterMgrClient mclient = master.acquireMasterMgrClient();
 	try {
           for(String aname : pDead) 
             mclient.removeAnnotation(pNodeName, aname); 
@@ -2136,7 +2136,7 @@ class JNodeAnnotationsPanel
 	  return;
 	}
 	finally {
-	  master.returnMasterMgrClient(mclient);
+	  master.releaseMasterMgrClient(mclient);
 	  master.endPanelOp(pGroupID, "Done.");
 	}
 
