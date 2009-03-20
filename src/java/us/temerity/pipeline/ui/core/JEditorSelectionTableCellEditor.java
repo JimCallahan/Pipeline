@@ -1,4 +1,4 @@
-// $Id: JEditorSelectionTableCellEditor.java,v 1.4 2009/03/19 21:55:59 jesse Exp $
+// $Id: JEditorSelectionTableCellEditor.java,v 1.5 2009/03/20 18:04:18 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -41,7 +41,7 @@ class JEditorSelectionTableCellEditor
    int width
   ) 
   {
-    pField = UIMaster.getInstance().createEditorSelectionField(0, width);
+    pField = UIMaster.getInstance().createEditorSelectionField(width);
     
     Dimension size = new Dimension(width, 19);
     pField.setMinimumSize(size);
@@ -66,7 +66,7 @@ class JEditorSelectionTableCellEditor
     MasterMgrClient client = master.acquireMasterMgrClient();
     try {
       String tname = client.getDefaultToolsetName();
-      master.updateEditorPluginField(0, tname, pField);
+      master.updateEditorPluginField(tname, pField);
     }
     catch(PipelineException ex) {
       master.showErrorDialog(ex);

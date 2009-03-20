@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.128 2009/03/19 21:55:59 jesse Exp $
+// $Id: JNodeViewerPanel.java,v 1.129 2009/03/20 18:04:19 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1538,7 +1538,7 @@ class JNodeViewerPanel
       int wk;
       for(wk=0; wk<pEditWithMenus.length; wk++) 
 	master.rebuildEditorMenu(pNodeMenus[wk+1], 
-                                 pGroupID, toolset, pEditWithMenus[wk], this);
+                                 toolset, pEditWithMenus[wk], this);
       
       pEditorMenuToolset = toolset;
     }    
@@ -1571,7 +1571,7 @@ class JNodeViewerPanel
       int wk;
       for(wk=0; wk<pToolMenu.length; wk++) 
 	master.rebuildToolMenu(pNodeMenus[wk], 
-                               pGroupID, toolset, pToolMenu[wk], this);
+                               toolset, pToolMenu[wk], this);
       
       pToolMenusToolset = toolset;
     }    
@@ -1597,7 +1597,7 @@ class JNodeViewerPanel
 
     if((toolset != null) && !toolset.equals(pToolMenuToolset)) {
       UIMaster master = UIMaster.getInstance();
-      master.rebuildToolMenu(pToolPopup, pGroupID, toolset, pToolPopup, this);
+      master.rebuildToolMenu(pToolPopup, toolset, pToolPopup, this);
       
       pToolMenuToolset = toolset;
     }    
@@ -1611,7 +1611,7 @@ class JNodeViewerPanel
   {
     if(pRefreshDefaultToolMenu) {
       UIMaster master = UIMaster.getInstance();
-      master.rebuildDefaultToolMenu(pDefaultToolPopup, pGroupID, pDefaultToolPopup, this);
+      master.rebuildDefaultToolMenu(pDefaultToolPopup, pDefaultToolPopup, this);
       
       pRefreshDefaultToolMenu = false; 
     }    
@@ -1625,7 +1625,7 @@ class JNodeViewerPanel
   {
     if(pRefreshDefaultBuilderMenu) {
       UIMaster master = UIMaster.getInstance();
-      master.rebuildDefaultBuilderCollectionMenu(pPanelPopup, pGroupID, pLaunchBuilderMenu, 
+      master.rebuildDefaultBuilderCollectionMenu(pPanelPopup, pLaunchBuilderMenu, 
                                                  this, !isLocked());
       pRefreshDefaultBuilderMenu = false; 
     }    

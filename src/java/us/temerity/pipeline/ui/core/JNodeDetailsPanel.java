@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.52 2009/03/20 03:10:39 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.53 2009/03/20 18:04:18 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -432,7 +432,7 @@ class JNodeDetailsPanel
 
 		{
 		  JPluginSelectionField field = 
-		    UIMaster.getInstance().createEditorSelectionField(pGroupID, sVSize);
+		    UIMaster.getInstance().createEditorSelectionField(sVSize);
 		  pWorkingEditorField = field;
 		  
 		  field.setActionCommand("editor-changed");
@@ -613,7 +613,7 @@ class JNodeDetailsPanel
 		
 		{
 		  JPluginSelectionField field = 
-		    UIMaster.getInstance().createActionSelectionField(pGroupID, sVSize);
+		    UIMaster.getInstance().createActionSelectionField(sVSize);
 		  pWorkingActionField = field;
 		
 		  field.setActionCommand("action-changed");
@@ -2236,8 +2236,8 @@ class JNodeDetailsPanel
     if(hasWorking()) {
       UIMaster master = UIMaster.getInstance();
       String toolset = pWorkingToolsetField.getSelected();
-      master.updateActionPluginField(pGroupID, toolset, pWorkingActionField);
-      master.updateEditorPluginField(pGroupID, toolset, pWorkingEditorField);
+      master.updateActionPluginField(toolset, pWorkingActionField);
+      master.updateEditorPluginField(toolset, pWorkingEditorField);
     }
   }
 
@@ -3916,7 +3916,7 @@ class JNodeDetailsPanel
       UIMaster master = UIMaster.getInstance();
       int wk;
       for(wk=0; wk<pEditWithMenus.length; wk++) 
-	master.rebuildEditorMenu(pGroupID, toolset, pEditWithMenus[wk], this);
+	master.rebuildEditorMenu(toolset, pEditWithMenus[wk], this);
       
       pEditorMenuToolset = toolset;
     }
@@ -6539,7 +6539,7 @@ class JNodeDetailsPanel
       pWorkingAnnotationField.removeActionListener(pParent);
       {
         UIMaster master = UIMaster.getInstance();
-        master.updateAnnotationPluginField(pGroupID, pToolsetName, pWorkingAnnotationField); 
+        master.updateAnnotationPluginField(pToolsetName, pWorkingAnnotationField); 
 
         pWorkingAnnotationField.setPlugin(pWorkingAnnotation);
 

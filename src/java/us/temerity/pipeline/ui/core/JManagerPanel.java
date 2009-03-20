@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.57 2009/03/19 21:55:59 jesse Exp $
+// $Id: JManagerPanel.java,v 1.58 2009/03/20 18:04:18 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -3439,7 +3439,7 @@ class JManagerPanel
       
       {
         UIMaster master = UIMaster.getInstance();
-        master.rebuildDefaultBuilderCollectionMenu(pPopup, 0, pLaunchBuilderMenu, pPanel, true);
+        master.rebuildDefaultBuilderCollectionMenu(pPopup, pLaunchBuilderMenu, pPanel, true);
       }
       
       pPopup.show(e.getComponent(), e.getX(), e.getY()); 

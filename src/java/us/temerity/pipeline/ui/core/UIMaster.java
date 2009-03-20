@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.99 2009/03/20 03:10:39 jim Exp $
+// $Id: UIMaster.java,v 1.100 2009/03/20 18:04:19 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1098,13 +1098,12 @@ class UIMaster
   public void
   rebuildEditorMenu
   (
-   int channel, 
    String tname, 
    JMenu menu, 
    ActionListener listener
   ) 
   {
-    rebuildEditorMenu(null, channel, tname, menu, listener);
+    rebuildEditorMenu(null, tname, menu, listener);
   }
 
   /**
@@ -1112,9 +1111,6 @@ class UIMaster
    * 
    * @param topmenu
    *   The top-level popup menu containing the items.
-   * 
-   * @param channel
-   *   The index of the update channel.
    * 
    * @param tname
    *   The name of the toolset.
@@ -1129,7 +1125,6 @@ class UIMaster
   rebuildEditorMenu
   (
    JPopupMenu topmenu,
-   int channel, 
    String tname, 
    JMenu menu, 
    ActionListener listener
@@ -1192,9 +1187,6 @@ class UIMaster
   /**
    * Rebuild the contents of an comparator plugin menu for the given toolset.
    * 
-   * @param channel
-   *   The index of the update channel.
-   * 
    * @param tname
    *   The name of the toolset.
    * 
@@ -1207,13 +1199,12 @@ class UIMaster
   public void
   rebuildComparatorMenu
   (
-   int channel, 
    String tname, 
    JMenu menu, 
    ActionListener listener
   ) 
   {
-    rebuildComparatorMenu(null, channel, tname, menu, listener);
+    rebuildComparatorMenu(null, tname, menu, listener);
   }
 
   /**
@@ -1221,9 +1212,6 @@ class UIMaster
    * 
    * @param topmenu
    *   The top-level popup menu containing the items.
-   * 
-   * @param channel
-   *   The index of the update channel.
    * 
    * @param tname
    *   The name of the toolset.
@@ -1238,7 +1226,6 @@ class UIMaster
   rebuildComparatorMenu
   (
    JPopupMenu topmenu,
-   int channel, 
    String tname, 
    JMenu menu, 
    ActionListener listener
@@ -1300,9 +1287,6 @@ class UIMaster
   /**
    * Rebuild the contents of an tool plugin menu for the given toolset.
    * 
-   * @param channel
-   *   The index of the update channel.
-   * 
    * @param tname
    *   The name of the toolset.
    * 
@@ -1315,13 +1299,12 @@ class UIMaster
   public void
   rebuildToolMenu
   (
-   int channel, 
    String tname, 
    JPopupMenu menu, 
    ActionListener listener
   ) 
   {
-    rebuildToolMenu(null, channel, tname, menu, listener);
+    rebuildToolMenu(null, tname, menu, listener);
   }
 
   /**
@@ -1329,9 +1312,6 @@ class UIMaster
    * 
    * @param topmenu
    *   The top-level popup menu containing the items.
-   * 
-   * @param channel
-   *   The index of the update channel.
    * 
    * @param tname
    *   The name of the toolset.
@@ -1346,7 +1326,6 @@ class UIMaster
   rebuildToolMenu
   (
    JPopupMenu topmenu,
-   int channel, 
    String tname, 
    JPopupMenu menu, 
    ActionListener listener
@@ -1411,9 +1390,6 @@ class UIMaster
    * @param topmenu
    *   The top-level popup menu containing the items.
    * 
-   * @param channel
-   *   The index of the update channel.
-   * 
    * @param tname
    *   The name of the toolset.
    * 
@@ -1427,7 +1403,6 @@ class UIMaster
   rebuildToolMenu
   (
    JPopupMenu topmenu,
-   int channel, 
    String tname, 
    JMenu menu, 
    ActionListener listener
@@ -1489,9 +1464,6 @@ class UIMaster
   /**
    * Rebuild the contents of an tool plugin menu for the given toolset.
    * 
-   * @param channel
-   *   The index of the update channel.
-   * 
    * @param menu
    *   The menu to be rebuilt.
    * 
@@ -1501,12 +1473,11 @@ class UIMaster
   public void
   rebuildDefaultToolMenu
   (
-   int channel, 
    JPopupMenu menu, 
    ActionListener listener
   ) 
   {
-    rebuildDefaultToolMenu(null, channel, menu, listener);
+    rebuildDefaultToolMenu(null, menu, listener);
   }
 
   /**
@@ -1528,7 +1499,6 @@ class UIMaster
   rebuildDefaultToolMenu
   (
    JPopupMenu topmenu,
-   int channel, 
    JPopupMenu menu, 
    ActionListener listener
   ) 
@@ -1593,10 +1563,7 @@ class UIMaster
    * 
    * @param topmenu
    *   The top-level popup menu containing the items.
-   * 
-   * @param channel
-   *   The index of the update channel.
-   * 
+   *   
    * @param menu
    *   The menu to be rebuilt.
    * 
@@ -1611,7 +1578,6 @@ class UIMaster
   rebuildDefaultBuilderCollectionMenu
   (
    JPopupMenu topmenu,
-   int channel, 
    JMenu menu, 
    ActionListener listener,
    boolean enabled
@@ -1839,16 +1805,12 @@ class UIMaster
   /**
    * Create a new editor plugin selection field based on the default toolset.
    * 
-   * @param channel
-   *   The index of the update channel.
-   * 
    * @param width
    *   The minimum and preferred width of the field.
    */ 
   public JPluginSelectionField
   createEditorSelectionField
   (
-   int channel,
    int width  
   ) 
   {
@@ -1907,7 +1869,6 @@ class UIMaster
   public void 
   updateEditorPluginField
   (
-   int channel,
    String tname, 
    JPluginSelectionField field
   ) 
@@ -1966,16 +1927,12 @@ class UIMaster
   /**
    * Create a new action plugin selection field based on the default toolset.
    * 
-   * @param channel
-   *   The index of the update channel.
-   * 
    * @param width
    *   The minimum and preferred width of the field.
    */ 
   public JPluginSelectionField
   createActionSelectionField
   (
-   int channel,
    int width  
   ) 
   {
@@ -2034,7 +1991,6 @@ class UIMaster
   public void 
   updateActionPluginField
   (
-   int channel,
    String tname, 
    JPluginSelectionField field
   ) 
@@ -2460,10 +2416,7 @@ class UIMaster
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Create a new per-node annotation plugin selection field based on the default toolset.
-   * 
-   * @param channel
-   *   The index of the update channel.
+   * Create a new annotation plugin selection field based on the default toolset.
    * 
    * @param width
    *   The minimum and preferred width of the field.
@@ -2471,19 +2424,15 @@ class UIMaster
   public JPluginSelectionField
   createAnnotationSelectionField
   (
-   int channel,
    int width
   ) 
   {
     return createOrUpdateAnnotationPluginField
-      (channel, null, width, null, AnnotationContext.PerNode);
+      (null, width, null, AnnotationContext.PerNode);
   }
 
   /**
    * Update the contents of an per-node annotation plugin field based on the default toolset.
-   * 
-   * @param channel
-   *   The index of the update channel.
    * 
    * @param field
    *   The field to update. 
@@ -2491,20 +2440,16 @@ class UIMaster
   public void 
   updateAnnotationPluginField
   (
-   int channel,
    JPluginSelectionField field
   ) 
   {
     createOrUpdateAnnotationPluginField
-      (channel, null, 0, field, AnnotationContext.PerNode);
+      (null, 0, field, AnnotationContext.PerNode);
   }
 
   /**
    * Update the contents of an per-version annotation plugin field based on the 
    * given working toolset.
-   * 
-   * @param channel
-   *   The index of the update channel.
    * 
    * @param toolset
    *   The name of the toolset providing the menu layout.
@@ -2515,20 +2460,16 @@ class UIMaster
   public void 
   updateAnnotationPluginField
   (
-   int channel,
    String toolset, 
    JPluginSelectionField field
   ) 
   {
     createOrUpdateAnnotationPluginField
-      (channel, toolset, 0, field, AnnotationContext.PerVersion);
+      (toolset, 0, field, AnnotationContext.PerVersion);
   }
 
   /**
    * Update or create the contents of an annotation plugin field.
-   * 
-   * @param channel
-   *   The index of the update channel.
    * 
    * @param toolset
    *   The toolset which provides the menu layout or <CODE>null</CODE> to use the default
@@ -2549,7 +2490,6 @@ class UIMaster
   private JPluginSelectionField
   createOrUpdateAnnotationPluginField
   (
-   int channel,
    String toolset, 
    int width, 
    JPluginSelectionField field,
@@ -4487,7 +4427,6 @@ class UIMaster
 
     doUponExit();
 
-    int idx;
     for (MasterMgrClient client : pMasterMgrList) {
       if (client != null)
         client.disconnect();

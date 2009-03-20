@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.51 2009/03/19 21:55:59 jesse Exp $
+// $Id: JNodeFilesPanel.java,v 1.52 2009/03/20 18:04:18 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -959,7 +959,7 @@ class JNodeFilesPanel
       UIMaster master = UIMaster.getInstance();
       int wk;
       for(wk=0; wk<pEditWithMenus.length; wk++) 
-	master.rebuildEditorMenu(pGroupID, toolset, pEditWithMenus[wk], this);
+	master.rebuildEditorMenu(toolset, pEditWithMenus[wk], this);
       
       pEditorMenuToolset = toolset;
     }
@@ -986,7 +986,7 @@ class JNodeFilesPanel
 
     if((toolset != null) && !toolset.equals(pComparatorMenuToolset)) {
       UIMaster master = UIMaster.getInstance();
-      master.rebuildComparatorMenu(pGroupID, toolset, pCompareWithMenu, this);
+      master.rebuildComparatorMenu(toolset, pCompareWithMenu, this);
       
       pComparatorMenuToolset = toolset;
     }

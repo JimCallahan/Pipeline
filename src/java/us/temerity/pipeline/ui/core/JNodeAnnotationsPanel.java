@@ -1,4 +1,4 @@
-// $Id: JNodeAnnotationsPanel.java,v 1.19 2009/03/20 03:10:39 jim Exp $
+// $Id: JNodeAnnotationsPanel.java,v 1.20 2009/03/20 18:04:18 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -515,7 +515,7 @@ class JNodeAnnotationsPanel
       UIMaster master = UIMaster.getInstance();
       int wk;
       for(wk=0; wk<pEditWithMenus.length; wk++) 
-	master.rebuildEditorMenu(pGroupID, toolset, pEditWithMenus[wk], this);
+	master.rebuildEditorMenu(toolset, pEditWithMenus[wk], this);
       
       pEditorMenuToolset = toolset;
     }
@@ -1504,7 +1504,7 @@ class JNodeAnnotationsPanel
             tpanel.add(label);
 
             JPluginSelectionField field =  
-              UIMaster.getInstance().createAnnotationSelectionField(pGroupID, sVSize);
+              UIMaster.getInstance().createAnnotationSelectionField(sVSize);
             pAnnotationField = field;
             
             field.setActionCommand("annotation-changed:" + pName);
@@ -1718,7 +1718,7 @@ class JNodeAnnotationsPanel
     private void 
     updateAnnotation() 
     {
-      UIMaster.getInstance().updateAnnotationPluginField(pGroupID, pAnnotationField); 
+      UIMaster.getInstance().updateAnnotationPluginField(pAnnotationField); 
 
       updateAnnotationFields();
       updateAnnotationParams();
