@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.267 2009/03/20 03:10:38 jim Exp $
+// $Id: MasterMgr.java,v 1.268 2009/03/20 23:01:20 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -7468,9 +7468,18 @@ class MasterMgr
           ("Only a user with Annotator privileges may remove annotations from a node!" +
            "The only exception to this is if the annotation has set the isUserRemovable" +
            "flag.  The annotation that was being removed does not set this flag.");
-      
-      
+            
+      /* remove the annotation from the internal table */ 
       table.remove(aname); 
+
+      /* if no annotations exist now, get rid of the entry too */ 
+      if (table.isEmpty()) {  
+        synchronized(pAnnotations) {
+          pAnnotations.remove(name); 
+        }
+      }
+      
+      /* write the changes to disk, this will remove the file if table is empty */ 
       writeAnnotations(name, table);
 
       /* post-op tasks */ 
@@ -7509,7 +7518,7 @@ class MasterMgr
     
     pDatabaseLock.readLock().lock();
     try {
-      return removeAnnotationsHelper(req, timer, name);
+      return removeAnnotationsHelper(req, timer, name, false);
     }
     finally {
       pDatabaseLock.readLock().unlock();
@@ -7538,7 +7547,8 @@ class MasterMgr
   (
     PrivilegedReq req,
     TaskTimer timer,
-    String name
+    String name, 
+    boolean ignorePrivileges
   )
   {
     timer.aquire();
@@ -7552,6 +7562,7 @@ class MasterMgr
         return new SuccessRsp(timer);
       
       ArrayList<String> removeList = new ArrayList<String>();
+
       /* pre-op tests */
       TreeMap<String, RemoveAnnotationExtFactory> factories = 
         new TreeMap<String, RemoveAnnotationExtFactory>();
@@ -7561,27 +7572,26 @@ class MasterMgr
         performExtensionTests(timer, factory);
         BaseAnnotation annot = table.get(aname);
 
-        if( pAdminPrivileges.isAnnotator(req) || annot.isUserRemovable()) 
+        if(ignorePrivileges ||
+           pAdminPrivileges.isAnnotator(req) || 
+           annot.isUserRemovable()) {
           removeList.add(aname);
+        }
       }
-      for (String remove : removeList)
+
+      /* remove all annotations we are allowed to from the internal table */ 
+      for(String remove : removeList)
         table.remove(remove);
 
-      boolean error = false;
-      
-      if (table.isEmpty()) {
-        File file = new File(pNodeDir, "annotations" + name); 
-        if(!file.delete()) 
-          throw new PipelineException
-          ("Unable to remove the annotations file (" + file + ")!");
+      /* if no annotations exist now, get rid of the entry too */ 
+      if(table.isEmpty()) {  
         synchronized(pAnnotations) {
           pAnnotations.remove(name); 
         }
       }
-      else {
-        writeAnnotations(name, table);
-        error =true;
-      }
+
+      /* write the changes to disk, this will remove the file if table is empty */ 
+      writeAnnotations(name, table);
 
       /* post-op tasks */ 
       for(String aname : removeList) {
@@ -7590,13 +7600,12 @@ class MasterMgr
           startExtensionTasks(timer, factory);
       }
       
-      if (error)
+      if(!table.isEmpty())
         throw new PipelineException
           ("Only a user with Annotator privileges may remove annotations from a node!" +
            "The only exception to this is if the annotation has set the isUserRemovable" +
            "flag.  The following annotations being removed did not set that flag:\n" +
            table.keySet());
-
 
       return new SuccessRsp(timer);
     }
@@ -8642,7 +8651,7 @@ class MasterMgr
         if(annots != null) {
           TaskTimer child = new TaskTimer("MasterMgr.removeAnnotationHelper()");
           timer.suspend();
-          Object removed = removeAnnotationsHelper(req, child, name);
+          Object removed = removeAnnotationsHelper(req, child, name, true);
           timer.accum(child);
           
           child = new TaskTimer("MasterMgr.addAnnotationHelper()");
@@ -9791,7 +9800,7 @@ class MasterMgr
           if (!pNodeTree.isNameCheckedIn(name)) {
             TaskTimer child = new TaskTimer("MasterMgr.removeAnnotationsHelper()");
             timer.suspend();
-            Object returned = removeAnnotationsHelper(req, child, name);
+            Object returned = removeAnnotationsHelper(req, child, name, true);
             timer.accum(child);
             if (returned instanceof FailureRsp) {
               errors.put(name, (FailureRsp) returned);
@@ -10169,7 +10178,7 @@ class MasterMgr
       {
         TaskTimer child = new TaskTimer("MasterMgr.removeAnnotationsHelper()");
         timer.suspend();
-        Object returned = removeAnnotationsHelper(req, child, name);
+        Object returned = removeAnnotationsHelper(req, child, name, true);
         timer.accum(child);
         
         if (returned instanceof FailureRsp) {
