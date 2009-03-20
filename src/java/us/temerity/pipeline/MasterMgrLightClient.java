@@ -1,4 +1,4 @@
-// $Id: MasterMgrLightClient.java,v 1.2 2008/06/19 03:30:36 jim Exp $
+// $Id: MasterMgrLightClient.java,v 1.3 2009/03/20 03:10:38 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -534,7 +534,7 @@ interface MasterMgrLightClient
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get a specific annotation for the given node.<P> 
+   * Get a specific per-node annotation for the given node.<P> 
    * 
    * @param nname 
    *   The fully resolved node name.
@@ -555,9 +555,94 @@ interface MasterMgrLightClient
    String aname
   ) 
     throws PipelineException;
-  
+
   /**
-   * Get all of the annotations for the given node.<P> 
+   * Get a unified view of a specific named annotation from both node and working version
+   * of the node in a particular working area view.<P> 
+   * 
+   * If the named annotation exists as both a per-node and per-version annotation, then 
+   * the per-version annotation will be returned without generating any warnings or
+   * exceptions.  If the named annotation exists as only one of a per-node or per-version 
+   * annotation, then which ever one exists will be be returned.  If neither exist, 
+   * then <CODE>null</CODE> will be returned.<P> 
+   * 
+   * Note that this is merely a convienence method that provides a quicker way of 
+   * looking up both per-node annotations and lookup the working version of a node and
+   * then accessing its annotation properties.  No new functionality is provided by
+   * this method, but it may be faster when needing a unified view of all annotations
+   * and other working version information is not required.
+   * 
+   * @param author 
+   *   The name of the user which owns the working version.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param nname 
+   *   The fully resolved node name.
+   * 
+   * @param aname 
+   *   The name of the annotation. 
+   * 
+   * @return 
+   *   The named annotation for the node or <CODE>null</CODE> if none exists. 
+   * 
+   * @throws PipelineException 
+   *   If no working version of the new exists or otherwise unable to determine the 
+   *   annotations.
+   */ 
+  public BaseAnnotation
+  getAnnotation
+  (
+   String author, 
+   String view, 
+   String nname, 
+   String aname
+  ) 
+    throws PipelineException;
+
+  /**
+   * Get a unified view of a specific named annotation from both node and working version
+   * of the node in a particular working area view.<P> 
+   * 
+   * If the named annotation exists as both a per-node and per-version annotation, then 
+   * the per-version annotation will be returned without generating any warnings or
+   * exceptions.  If the named annotation exists as only one of a per-node or per-version 
+   * annotation, then which ever one exists will be be returned.  If neither exist, 
+   * then <CODE>null</CODE> will be returned.<P> 
+   * 
+   * Note that this is merely a convienence method that provides a quicker way of 
+   * looking up both per-node annotations and lookup the working version of a node and
+   * then accessing its annotation properties.  No new functionality is provided by
+   * this method, but it may be faster when needing a unified view of all annotations
+   * and other working version information is not required.
+   * 
+   * @param nodeID 
+   *   The unique working version identifier. 
+   * 
+   * @param aname 
+   *   The name of the annotation. 
+   * 
+   * @return 
+   *   The named annotation for the node or <CODE>null</CODE> if none exists. 
+   * 
+   * @throws PipelineException 
+   *   If no working version of the new exists or otherwise unable to determine the 
+   *   annotations.
+   */ 
+  public BaseAnnotation
+  getAnnotation
+  (
+   NodeID nodeID,
+   String aname
+  ) 
+    throws PipelineException;
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get all per-node the annotations for the given node.<P> 
    * 
    * @param name 
    *   The fully resolved node name.
@@ -572,6 +657,78 @@ interface MasterMgrLightClient
   getAnnotations
   (
    String name
+  ) 
+    throws PipelineException;
+  
+  /**
+   * Get a unified view of all annotation from both node and working version
+   * of the node in a particular working area view.<P> 
+   * 
+   * If a given annotation exists as both a per-node and per-version annotation, then 
+   * the per-version annotation will be returned without generating any warnings or
+   * exceptions.  If a given annotation exists as only one of a per-node or per-version 
+   * annotation, then which ever one exists will be be returned. <P> 
+   * 
+   * Note that this is merely a convienence method that provides a quicker way of 
+   * looking up both per-node annotations and lookup the working version of a node and
+   * then accessing its annotation properties.  No new functionality is provided by
+   * this method, but it may be faster when needing a unified view of all annotations
+   * and other working version information is not required.
+   * 
+   * @param author 
+   *   The name of the user which owns the working version.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param name 
+   *   The fully resolved node name.
+   * 
+   * @return 
+   *   The annotations for the node indexed by annotation name (may be empty).
+   * 
+   * @throws PipelineException 
+   *   If no working version of the new exists or otherwise unable to determine the 
+   *   annotations.
+   */ 
+  public TreeMap<String,BaseAnnotation> 
+  getAnnotations
+  (
+   String author, 
+   String view, 
+   String name
+  ) 
+    throws PipelineException;
+  
+  /**
+   * Get a unified view of all annotation from both node and working version
+   * of the node in a particular working area view.<P> 
+   * 
+   * If a given annotation exists as both a per-node and per-version annotation, then 
+   * the per-version annotation will be returned without generating any warnings or
+   * exceptions.  If a given annotation exists as only one of a per-node or per-version 
+   * annotation, then which ever one exists will be be returned. <P> 
+   * 
+   * Note that this is merely a convienence method that provides a quicker way of 
+   * looking up both per-node annotations and lookup the working version of a node and
+   * then accessing its annotation properties.  No new functionality is provided by
+   * this method, but it may be faster when needing a unified view of all annotations
+   * and other working version information is not required.
+   * 
+   * @param nodeID 
+   *   The unique working version identifier. 
+   * 
+   * @return 
+   *   The annotations for the node indexed by annotation name (may be empty).
+   * 
+   * @throws PipelineException 
+   *   If no working version of the new exists or otherwise unable to determine the 
+   *   annotations.
+   */ 
+  public TreeMap<String,BaseAnnotation> 
+  getAnnotations
+  (
+   NodeID nodeID
   ) 
     throws PipelineException;
   

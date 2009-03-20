@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.62 2008/07/03 19:46:32 jesse Exp $
+// $Id: NodeMod.java,v 1.63 2009/03/20 03:10:38 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -1027,6 +1027,96 @@ class NodeMod
  
 
   /*----------------------------------------------------------------------------------------*/
+   
+  /**
+   * Add the given annotation to the set of current annotations for this node version.<P> 
+   * 
+   * If an annotation with the same name already exists for the node, it will be replaced
+   * by this new annotation.  This method can therefore be used to modify existing annotations
+   * as well as add new ones.<P> 
+   * 
+   * @param aname 
+   *   The name of the annotation. 
+   * 
+   * @param annot 
+   *   The new node annotation to add.
+   */ 
+  public void
+  addAnnotation
+  (
+   String aname, 
+   BaseAnnotation annot 
+  ) 
+    throws PipelineException
+  {
+    if(pIsFrozen) 
+      throw new IllegalArgumentException
+	("Frozen working versions cannot be modified!");
+
+    if(aname == null) 
+      throw new IllegalArgumentException
+	("The annotation name cannot be (null)!");
+
+    if(annot == null) 
+      throw new IllegalArgumentException
+	("The annotation plugin instance cannot be (null)!");
+
+    if(!annot.isContextual(AnnotationContext.PerVersion)) 
+      throw new IllegalArgumentException
+	("The annotation plugin (" + annot.getName() + ") is not valid for the " + 
+         AnnotationContext.PerVersion + " context!");
+
+    pAnnotations.put(aname, (BaseAnnotation) annot.clone());
+
+    updateLastMod();
+  }
+  
+  /**
+   * Remove a specific annotation from this node version. <P> 
+   *
+   * @param aname 
+   *   The name of the annotation. 
+   */ 
+  public void
+  removeAnnotation
+  (
+   String aname
+  ) 
+    throws PipelineException
+  {
+    if(pIsFrozen) 
+      throw new IllegalArgumentException
+	("Frozen working versions cannot be modified!");
+
+    if(!pAnnotations.containsKey(aname)) 
+      return;
+    
+    pAnnotations.remove(aname);
+
+    updateLastMod();
+  }
+
+  /**
+   * Remove all annotations from this node version. <P> 
+   */ 
+  public void
+  removeAnnotations()
+    throws PipelineException
+  {
+    if(pIsFrozen) 
+      throw new IllegalArgumentException
+	("Frozen working versions cannot be modified!");
+
+    if(pAnnotations.isEmpty()) 
+      return;
+
+    pAnnotations.clear();
+    
+    updateLastMod();
+  }
+  
+
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Set the node properties of this working version by copying them from the given
@@ -1208,6 +1298,15 @@ class NodeMod
 	  critical = true;
 	else 
 	  modified = true;
+      }
+    }
+
+    {
+      TreeMap<String,BaseAnnotation> annots = mod.getAnnotations();
+      if(!pAnnotations.equals(annots)) { 
+        pAnnotations.clear(); 
+        pAnnotations.putAll(annots);
+	modified = true;
       }
     }
 

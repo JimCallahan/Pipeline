@@ -1,4 +1,4 @@
-// $Id: JNodeAnnotationsPanel.java,v 1.18 2009/03/19 21:55:59 jesse Exp $
+// $Id: JNodeAnnotationsPanel.java,v 1.19 2009/03/20 03:10:39 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1758,7 +1758,6 @@ class JNodeAnnotationsPanel
       if(pAnnotation != null) {
         UIMaster master = UIMaster.getInstance();
         MasterMgrClient mclient = master.acquireMasterMgrClient();
-        
         try {
           boolean needsToolsets = false;
           boolean needsWorkGroups = false;
@@ -1768,20 +1767,20 @@ class JNodeAnnotationsPanel
             else if(aparam instanceof WorkGroupAnnotationParam) 
               needsWorkGroups = true;
           }
-
+          
           if(needsToolsets) {
             toolsets = new TreeSet<String>();
             toolsets.add("-");
             try {
-              toolsets.addAll(mclient.getActiveToolsetNames());
+              toolsets.addAll(mclient.getCachedActiveToolsetNames());
             }
             catch(PipelineException ex) {
             }
           }
-
+          
           if(needsWorkGroups) {
             try {
-              WorkGroups wgroups = mclient.getWorkGroups();
+              WorkGroups wgroups = mclient.getCachedWorkGroups();
               workGroups = wgroups.getGroups();
               workUsers  = wgroups.getUsers();
             }

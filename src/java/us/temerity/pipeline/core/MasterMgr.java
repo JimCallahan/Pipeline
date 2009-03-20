@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.266 2009/03/19 21:55:59 jesse Exp $
+// $Id: MasterMgr.java,v 1.267 2009/03/20 03:10:38 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -7030,6 +7030,93 @@ class MasterMgr
 
     timer.aquire();
     pDatabaseLock.readLock().lock();
+    try {
+      timer.resume();
+    
+      BaseAnnotation annot = getAnnotationHelper(timer, name, aname); 
+
+      return new NodeGetAnnotationRsp(timer, annot);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }   
+  }
+
+  /**
+   * Get a specific annotation for the given node.<P> 
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>NodeGetBothAnnotationRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable determine the annotations.
+   */
+  public Object
+  getBothAnnotation
+  (
+   NodeGetBothAnnotationReq req
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    NodeID nodeID = req.getNodeID();
+    String name   = nodeID.getName(); 
+    String aname  = req.getAnnotationName(); 
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    ReentrantReadWriteLock lock = getWorkingLock(nodeID);
+    lock.readLock().lock();
+    try {
+      timer.resume();
+    
+      BaseAnnotation annot = getAnnotationHelper(timer, name, aname); 
+
+      NodeMod mod = new NodeMod(getWorkingBundle(nodeID).getVersion());
+      BaseAnnotation vannot = mod.getAnnotation(aname);
+      if(vannot != null) 
+        annot = vannot;
+      
+      return new NodeGetAnnotationRsp(timer, annot);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+    finally {
+      lock.readLock().unlock();
+      pDatabaseLock.readLock().unlock();
+    }   
+  }
+
+  /**
+   * Helper method to get a copy of a specific annotation for the given node.<P> 
+   * 
+   * This method assumes that the pDatabaseLock has been acquired before this
+   * was called.
+   * 
+   * @param name 
+   *   The fully resolved node name.
+   * 
+   * @param aname 
+   *   The name of the annotation. 
+   * 
+   * @return 
+   *   The named annotation for the node or <CODE>null</CODE> if none exists. 
+   */
+  public BaseAnnotation
+  getAnnotationHelper
+  (
+   TaskTimer timer,
+   String name, 
+   String aname
+  ) 
+    throws PipelineException 
+  {
+    timer.aquire();
     ReentrantReadWriteLock lock = getAnnotationsLock(name); 
     lock.readLock().lock();
     try {
@@ -7042,14 +7129,12 @@ class MasterMgr
           annot = table.get(aname);
       }
 
-      return new NodeGetAnnotationRsp(timer, annot);
-    }
-    catch(PipelineException ex) {
-      return new FailureRsp(timer, ex.getMessage());
+      if(annot != null) 
+        return (BaseAnnotation) annot.clone(); 
+      return null;
     }
     finally {
       lock.readLock().unlock();
-      pDatabaseLock.readLock().unlock();
     }   
   }
 
@@ -7073,8 +7158,11 @@ class MasterMgr
 
     String name = req.getNodeName();
 
+    timer.aquire();
     pDatabaseLock.readLock().lock();
     try {
+      timer.resume();
+
       TreeMap<String,BaseAnnotation> table = getAnnotationsHelper(timer, name);
 
       return new NodeGetAnnotationsRsp(timer, table);
@@ -7088,20 +7176,66 @@ class MasterMgr
   }
   
   /**
-   * Helper method for getting a copy of all of the annotations for a node.
-   * <p>
+   * Get all of the annotations for the given node.<P> 
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>NodeGetAnnotationsRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable determine the annotations.
+   */
+  public Object
+  getBothAnnotations
+  (
+   NodeGetBothAnnotationsReq req
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    NodeID nodeID = req.getNodeID();
+    String name   = nodeID.getName(); 
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    ReentrantReadWriteLock lock = getWorkingLock(nodeID);
+    lock.readLock().lock();
+    try {
+      timer.resume();
+
+      TreeMap<String,BaseAnnotation> table = getAnnotationsHelper(timer, name);
+
+      NodeMod mod = new NodeMod(getWorkingBundle(nodeID).getVersion());
+      table.putAll(mod.getAnnotations());
+
+      return new NodeGetAnnotationsRsp(timer, table);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+    finally {
+      lock.readLock().unlock();
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+  
+  /**
+   * Helper method for getting a deep copy of all of the annotations for a node.<P> 
+   * 
    * This method assumes that the pDatabaseLock has been acquired before this
    * was called.
+   * 
    * @param timer
    *   Timer associated with this task.
+   * 
    * @param name
    *   The name of the node to get the annotations for.
    */
    private TreeMap<String, BaseAnnotation> 
    getAnnotationsHelper
    (
-     TaskTimer timer,
-     String name
+    TaskTimer timer,
+    String name
    )
      throws PipelineException
    {
@@ -7112,8 +7246,13 @@ class MasterMgr
        timer.resume();
   
        TreeMap<String, BaseAnnotation> table = getAnnotationsTable(name);
-       if(table != null) 
-         return new TreeMap<String, BaseAnnotation>(table);
+       if(table != null) {
+         TreeMap<String, BaseAnnotation> copy = new TreeMap<String, BaseAnnotation>();
+         for(String aname : table.keySet()) 
+           copy.put(aname, (BaseAnnotation) table.get(aname).clone());
+         return copy; 
+       }
+
        return null;
      }
      finally {
@@ -7179,21 +7318,27 @@ class MasterMgr
       }
       return new FailureRsp(timer, msg);
     }
+
     return new SuccessRsp(timer);
   }
   
   /**
-   * Help method for adding an annotation to a node.
-   * <p>
+   * Help method for adding an annotation to a node.<P> 
+   * 
    * Assumes that the pDatabaseLock read lock has been acquired before it is called.
+   * 
    * @param req
    *   The privileged req generating the annotation to be added.
+   * 
    * @param timer
    *   Event timer.
+   * 
    * @param name
    *   The name of the node to add the annotation to.
+   * 
    * @param aname
    *   The name of the annotation.
+   * 
    * @param annot
    *   The annotation being added.
    */
@@ -7215,6 +7360,11 @@ class MasterMgr
     catch(PipelineException ex) {
       return new FailureRsp(timer, ex.getMessage());
     }
+
+    if(!annot.isContextual(AnnotationContext.PerNode))
+      return new FailureRsp
+        (timer, "The annotation plugin (" + annot.getName() + ") is not valid for the " + 
+         AnnotationContext.PerNode + " context!");
 
     timer.aquire();
 

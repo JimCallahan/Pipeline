@@ -1,4 +1,4 @@
-// $Id: PluginMgr.java,v 1.33 2009/03/02 00:15:45 jlee Exp $
+// $Id: PluginMgr.java,v 1.34 2009/03/20 03:10:38 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -61,22 +61,25 @@ class PluginMgr
       
       pLoadCycleID = 1L;
       
-      pEditors     = new PluginCache();  
-      pActions     = new PluginCache();  
-      pComparators = new PluginCache();  
-      pTools  	   = new PluginCache();   
-      pAnnotations = new PluginCache();   
-      pArchivers   = new PluginCache();  
-      pMasterExts  = new PluginCache();  
-      pQueueExts   = new PluginCache();  
-      pKeyChoosers = new PluginCache();
+      pEditors           = new PluginCache();  
+      pActions           = new PluginCache();  
+      pComparators       = new PluginCache();  
+      pTools             = new PluginCache();   
+      pAnnotations       = new PluginCache();   
+      pArchivers         = new PluginCache();  
+      pMasterExts        = new PluginCache();  
+      pQueueExts         = new PluginCache();  
+      pKeyChoosers       = new PluginCache();
       pBuilderCollection = new PluginCache();
       
       pBuilderCollectionLayouts = 
-        new TripleMap<String, String, VersionID, LayoutGroup>();
+        new TripleMap<String,String,VersionID,LayoutGroup>();
       
       pAnnotationPermissions = 
-        new TripleMap<String, String, VersionID, AnnotationPermissions>();
+        new TripleMap<String,String,VersionID,AnnotationPermissions>();
+      
+      pAnnotationContexts = 
+        new TripleMap<String,String,VersionID,TreeSet<AnnotationContext>>();
       
       pSerialVersionUIDs = new TreeMap<Long,String>(); 
     }
@@ -348,9 +351,8 @@ class PluginMgr
       LogMgr.getInstance().log
         (LogMgr.Kind.Plg, LogMgr.Level.Info,
          bar(80) + "\n" +
-         wordWrap
-         ("All required plugins have now been loaded!  You may start all other Pipeline " + 
-          "servers and begin normal operation.", 0, 80) + "\n" + 
+         "All required plugins have now been loaded!  You may start all other Pipeline " + 
+         "servers and begin normal operation.\n" + 
          bar(80));
     }
     else {
@@ -358,10 +360,9 @@ class PluginMgr
       LogMgr.getInstance().log
         (LogMgr.Kind.Plg, LogMgr.Level.Warning, 
          bar(80) + "\n" +
-         wordWrap
-         ("Not yet accepting connections from other servers until all required " + 
-          "plugins have been installed.  You must use plplugin(1) to install all required " + 
-          "plugins before the rest of the Pipeline servers can be started.", 0, 80) + "\n" + 
+         "Not yet accepting connections from other servers until all required " + 
+         "plugins have been installed.  You must use plplugin(1) to install all required " + 
+         "plugins before the rest of the Pipeline servers can be started.\n" + 
          "\n" + 
          "Current Plugin Counts:\n\n" +
          "   Required = " + pRequiredCount + "\n" + 
@@ -369,10 +370,9 @@ class PluginMgr
          "    Unknown = " + pUnknownCount + "\n" + 
          "    Missing = " + pMissingCount + "\n" + 
          "\n" + 
-         wordWrap
-         ("You can use plplugin(1) with the --list-required option to get the full listing " + 
-          "of the specific required plugins which are currently missing and need to be " + 
-          "installed.", 0, 80) + "\n" + 
+         "You can use plplugin(1) with the \"--list --status=miss\" options to get the " + 
+         "full listing of the specific required plugins which are currently missing and " + 
+         "still need to be installed.\n" + 
          bar(80));
     }
   }
@@ -442,22 +442,25 @@ class PluginMgr
       
       TripleMap<String, String, VersionID, LayoutGroup> groups =
         new TripleMap<String, String, VersionID, LayoutGroup>();
-      for (String name : builders.keySet()) {
-        for (String vendor : builders.keySet(name)) {
-          for (VersionID id : builders.keySet(name, vendor)) {
-            groups.put(name, vendor, id, pBuilderCollectionLayouts.get(name, vendor, id));
+      for(String vendor : builders.keySet()) {
+        for(String name : builders.keySet(vendor)) {
+          for(VersionID vid : builders.keySet(vendor, name)) {
+            groups.put(vendor, name, vid, pBuilderCollectionLayouts.get(vendor, name, vid));
           }
         }
       }
       
       TripleMap<String, String, VersionID, Object[]> annotations = 
         pAnnotations.collectUpdated(cycleID);
-      TripleMap<String, String, VersionID, AnnotationPermissions> permissions =
-        new TripleMap<String, String, VersionID, AnnotationPermissions>();
-      for (String name : annotations.keySet()) {
-        for (String vendor : annotations.keySet(name)) {
-          for (VersionID id : annotations.keySet(name, vendor)) {
-            permissions.put(name, vendor, id, pAnnotationPermissions.get(name, vendor, id));
+      TripleMap<String, String, VersionID, AnnotationPermissions> annotPerms =
+        new TripleMap<String,String,VersionID,AnnotationPermissions>();
+      TripleMap<String,String,VersionID,TreeSet<AnnotationContext>> annotContexts = 
+        new TripleMap<String,String,VersionID,TreeSet<AnnotationContext>>();
+      for(String vendor : annotations.keySet()) {
+        for(String name : annotations.keySet(vendor)) {
+          for(VersionID vid : annotations.keySet(vendor, name)) {
+            annotPerms.put(vendor, name, vid, pAnnotationPermissions.get(vendor, name, vid));
+            annotContexts.put(vendor, name, vid, pAnnotationContexts.get(vendor, name, vid));
           }
         }
       }
@@ -466,14 +469,14 @@ class PluginMgr
          by PluginType, Vendor string, and PluginID. */
       TripleMap<PluginType,String,PluginID,PluginStatus> pluginStatus = 
 	new TripleMap<PluginType,String,PluginID,PluginStatus>();
-
-      for(String vendor : pPluginStatus.keySet())
-	for(PluginType ptype : pPluginStatus.get(vendor).keySet())
-	  for(PluginID pid : pPluginStatus.get(vendor).get(ptype).keySet()) {
-	    PluginStatus pstat = pPluginStatus.get(vendor).get(ptype).get(pid);
-
+      for(String vendor : pPluginStatus.keySet()) {
+	for(PluginType ptype : pPluginStatus.keySet(vendor)) {
+	  for(PluginID pid : pPluginStatus.keySet(vendor, ptype)) {
+	    PluginStatus pstat = pPluginStatus.get(vendor, ptype, pid);
 	    pluginStatus.put(ptype, vendor, pid, pstat);
 	  }
+        }
+      }
       
       return new PluginUpdateRsp(timer, pLoadCycleID, 
                                  pEditors.collectUpdated(cycleID), 
@@ -487,7 +490,7 @@ class PluginMgr
                                  pKeyChoosers.collectUpdated(cycleID),
                                  builders,
                                  groups,
-                                 permissions, 
+                                 annotPerms, annotContexts, 
 				 pluginStatus); 
     }
     finally {
@@ -1125,12 +1128,14 @@ class PluginMgr
 
 	if(checkLoadPlugin(pAnnotations, plg, cname, contents, pluginLoadType)) {
 	  BaseAnnotation annot = (BaseAnnotation) plg;
+
 	  AnnotationPermissions permissions = 
-	    new AnnotationPermissions(
-	      annot.isUserAddable(), 
-	      annot.isUserRemovable());
-	  pAnnotationPermissions.put
-	    (plg.getVendor(), plg.getName(), plg.getVersionID(), permissions);
+	    new AnnotationPermissions(annot.isUserAddable(), annot.isUserRemovable());
+	  pAnnotationPermissions.put(plg.getVendor(), plg.getName(), plg.getVersionID(), 
+                                     permissions);
+          
+          pAnnotationContexts.put(plg.getVendor(), plg.getName(), plg.getVersionID(),
+                                  new TreeSet<AnnotationContext>(annot.getContexts()));
 	}
       }
       else if(plg instanceof BaseArchiver) {
@@ -1814,6 +1819,7 @@ class PluginMgr
       pContents           = contents; 
     }
 
+
     public long
     getCycleID()
     {
@@ -1955,9 +1961,9 @@ class PluginMgr
            plg.getVendor() + ") exists which is no longer under development!");
       
       put(plg.getVendor(), plg.getName(), plg.getVersionID(),
-	new Plugin(pLoadCycleID, cname, 
-                   plg.getSupports(), plg.isUnderDevelopment(), 
-                   contents));
+          new Plugin(pLoadCycleID, cname, 
+                     plg.getSupports(), plg.isUnderDevelopment(), 
+                     contents));
     }
 
     static final long serialVersionUID = 6780638964799823468L;
@@ -2034,8 +2040,23 @@ class PluginMgr
   private PluginCache  pKeyChoosers;
   private PluginCache  pBuilderCollection;
   
+  /**
+   * Menu layout information for the builders contained with a builder collection
+   * indexed by plugin vendor, name and version.
+   */ 
   private TripleMap<String,String,VersionID,LayoutGroup> pBuilderCollectionLayouts;
+
+  /** 
+   * The annotation creation and editing flags 
+   * indexed by plugin vendor, name and version.
+   */ 
   private TripleMap<String,String,VersionID,AnnotationPermissions> pAnnotationPermissions; 
+
+  /** 
+   * The contexts in which each annotation plugin can be used 
+   * indexed by plugin vendor, name and version.
+   */ 
+  private TripleMap<String,String,VersionID,TreeSet<AnnotationContext>> pAnnotationContexts; 
 
   /**
    * The serialVersionUIDs of all loaded plugins used to test for conflicts.

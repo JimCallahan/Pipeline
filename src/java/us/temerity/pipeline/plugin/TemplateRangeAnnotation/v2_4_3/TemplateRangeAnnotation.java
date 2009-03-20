@@ -1,4 +1,4 @@
-// $Id: TemplateRangeAnnotation.java,v 1.1 2008/11/19 04:34:48 jesse Exp $
+// $Id: TemplateRangeAnnotation.java,v 1.2 2009/03/20 03:10:39 jim Exp $
 
 package us.temerity.pipeline.plugin.TemplateRangeAnnotation.v2_4_3;
 
@@ -35,11 +35,12 @@ class TemplateRangeAnnotation
         new StringAnnotationParam
         (aRangeName,
          "The name of the range.",
-         null
-        );
+         null);
       addParam(param);
     }
     
+    addContext(AnnotationContext.PerVersion);
+
     underDevelopment();
   }
 

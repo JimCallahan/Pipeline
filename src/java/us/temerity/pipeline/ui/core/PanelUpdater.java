@@ -1,4 +1,4 @@
-// $Id: PanelUpdater.java,v 1.31 2009/03/19 21:55:59 jesse Exp $
+// $Id: PanelUpdater.java,v 1.32 2009/03/20 03:10:39 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -442,8 +442,10 @@ class PanelUpdater
       try {
 	
 	/* clear client caches */ 
-	mclient.invalidateCachedDefaultToolsetName();
+	mclient.invalidateCachedWorkGroups();
 	mclient.invalidateCachedPrivilegeDetails();
+	mclient.invalidateCachedDefaultToolsetName();
+	mclient.invalidateCachedActiveToolsetNames();
 
 	if(!pJobDetailsOnly && !pJobBrowserSelectionOnly && !pJobSlotsSelectionOnly) {
 
@@ -612,7 +614,7 @@ class PanelUpdater
 		master.updatePanelOp(pGroupID, "Updating Queue Stats...");
 		pServerHistograms = qclient.getHostHistograms(pServerHistogramSpecs);
 
-		WorkGroups wgroups = mclient.getWorkGroups();
+		WorkGroups wgroups = mclient.getCachedWorkGroups();
 		pWorkGroups = wgroups.getGroups();
 		pWorkUsers  = wgroups.getUsers();
 	      }
@@ -641,7 +643,7 @@ class PanelUpdater
 		}
 
 		if((pWorkGroups == null) || (pWorkUsers == null)) {
-		  WorkGroups wgroups = mclient.getWorkGroups();
+		  WorkGroups wgroups = mclient.getCachedWorkGroups();
 		  pWorkGroups = wgroups.getGroups();
 		  pWorkUsers  = wgroups.getUsers();
 		}
@@ -729,8 +731,8 @@ class PanelUpdater
 	success = false;
       }
       finally {
-        master.releaseMasterMgrClient(mclient);
         master.releaseQueueMgrClient(qclient);
+        master.releaseMasterMgrClient(mclient);
 	master.endPanelOp(pGroupID, success ? "Done." : "Failed!");
       }
     }

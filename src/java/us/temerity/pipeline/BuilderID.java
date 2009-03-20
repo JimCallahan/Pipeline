@@ -1,4 +1,4 @@
-// $Id: BuilderID.java,v 1.2 2008/06/15 01:59:49 jim Exp $
+// $Id: BuilderID.java,v 1.3 2009/03/20 03:10:38 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -143,6 +143,15 @@ class BuilderID
 	      pBuilderName.equals(plg.pBuilderName));
     }
     return false;
+  }
+
+  /**
+   * Returns a string representation of the object. 
+   */
+  public String
+  toString() 
+  {
+    return (pBuilderName + ":" + super.toString()); 
   }
 
 

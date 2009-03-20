@@ -1,4 +1,4 @@
-// $Id: BaseAnnotation.java,v 1.4 2008/02/11 03:14:41 jim Exp $
+// $Id: BaseAnnotation.java,v 1.5 2009/03/20 03:10:38 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -49,8 +49,12 @@ class BaseAnnotation
   BaseAnnotation() 
   {
     super();
+
     pParams    = new TreeMap<String,AnnotationParam>();
     pConstants = new TreeSet<String>(); 
+
+    pContexts = new TreeSet<AnnotationContext>();
+    addContext(AnnotationContext.PerNode);
   }
 
   /** 
@@ -78,8 +82,12 @@ class BaseAnnotation
   ) 
   {
     super(name, vid, vendor, desc);
+
     pParams    = new TreeMap<String,AnnotationParam>();
     pConstants = new TreeSet<String>(); 
+
+    pContexts = new TreeSet<AnnotationContext>();
+    addContext(AnnotationContext.PerNode);
   }
 
   /**
@@ -95,8 +103,12 @@ class BaseAnnotation
   ) 
   {
     super(annot.pName, annot.pVersionID, annot.pVendor, annot.pDescription);
+
     pParams    = annot.pParams;
     pConstants = annot.pConstants;
+
+    pContexts = new TreeSet<AnnotationContext>();
+    setContexts(annot.getContexts());
   }
 
 
@@ -224,7 +236,77 @@ class BaseAnnotation
   }
 
   
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether this annotation is intended to be used in the given context.
+   *
+   * @param context
+   *   The annotation context. 
+   */ 
+  public final boolean
+  isContextual
+  (
+   AnnotationContext context
+  ) 
+  {
+    return pContexts.contains(context); 
+  }
+
+  /**
+   * Get the intended contexts for this annotation. 
+   */ 
+  public SortedSet<AnnotationContext>
+  getContexts() 
+  {
+    return Collections.unmodifiableSortedSet(pContexts); 
+  }
+
+  /**
+   * Add validity for the use of this annotation in the given context.
+   * 
+   * @param context
+   *   The annotation context. 
+   */ 
+  protected void 
+  addContext
+  (
+   AnnotationContext context
+  ) 
+  {
+    pContexts.add(context); 
+  }
+
+  /**
+   * Remove validity for the use of this annotation in the given context.
+   * 
+   * @param context
+   *   The annotation context. 
+   */ 
+  protected void 
+  removeContext
+  (
+   AnnotationContext context
+  ) 
+  {
+    pContexts.remove(context); 
+  }
+
+  /**
+   * Set the valid contexts for this annotation.
+   */ 
+  protected void
+  setContexts
+  (
+   SortedSet<AnnotationContext> contexts
+  ) 
+  {
+    pContexts.clear();
+    pContexts.addAll(contexts); 
+  }
+
   
+
   /*----------------------------------------------------------------------------------------*/
   /*   P A R A M E T E R S                                                                  */
   /*----------------------------------------------------------------------------------------*/
@@ -742,6 +824,11 @@ class BaseAnnotation
    */ 
   private ArrayList<String>  pLayout;
   
+  /**
+   * The intended contexts for this annotation. 
+   */ 
+  private TreeSet<AnnotationContext>  pContexts; 
+
 }
 
 

@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.98 2009/03/19 21:55:59 jesse Exp $
+// $Id: UIMaster.java,v 1.99 2009/03/20 03:10:39 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -128,8 +128,8 @@ class UIMaster
       new TreeMap<String,TripleMap<String,String,VersionID,TreeSet<OsType>>>();
     
     pBuilderLayoutGroups = new TripleMap<String, String, VersionID, LayoutGroup>();
-    pAnnotationPermissions = 
-      new TripleMap<String, String, VersionID, AnnotationPermissions>();
+
+    pAnnotationExtrasLock = new Object();
     
     pEditorLayouts            = new TreeMap<String,PluginMenuLayout>();                   
     pComparatorLayouts        = new TreeMap<String,PluginMenuLayout>();                  
@@ -1023,9 +1023,11 @@ class UIMaster
       pBuilderCollectionLayouts.clear();
     }
 
-    synchronized(pAnnotationPermissions) {
-      pAnnotationPermissions.clear();
+    synchronized(pAnnotationExtrasLock) {
+      pAnnotationPermissions = null;
+      pAnnotationContexts    = null;
     }
+
     synchronized (pBuilderLayoutGroups) {
       pBuilderLayoutGroups.clear();
     }
@@ -2458,7 +2460,7 @@ class UIMaster
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Create a new annotation plugin selection field based on the default toolset.
+   * Create a new per-node annotation plugin selection field based on the default toolset.
    * 
    * @param channel
    *   The index of the update channel.
@@ -2470,79 +2472,21 @@ class UIMaster
   createAnnotationSelectionField
   (
    int channel,
-   int width  
+   int width
   ) 
   {
-    PluginMenuLayout layout = null;
-    TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
-    MasterMgrClient client = acquireMasterMgrClient();
-    try {
-      String tname = client.getCachedDefaultToolsetName();
-
-      synchronized(pAnnotationPlugins) {
-	plugins = pAnnotationPlugins.get(tname);
-	if(plugins == null) {
-	  DoubleMap<String,String,TreeSet<VersionID>> index = 
-	    client.getToolsetAnnotationPlugins(tname);
-
-	  TripleMap<String,String,VersionID,TreeSet<OsType>> all = 
-	    PluginMgrClient.getInstance().getAnnotations();
-
-	  plugins = new TripleMap<String,String,VersionID,TreeSet<OsType>>();
-	  for(String vendor : index.keySet()) {
-	    for(String name : index.keySet(vendor)) {
-	      for(VersionID vid : index.get(vendor, name)) {
-		plugins.put(vendor, name, vid, all.get(vendor, name, vid));
-	      }
-	    }
-	  }
-
-	  pAnnotationPlugins.put(tname, plugins);
-	}
-      }
-      
-      synchronized(pAnnotationLayouts) {
-	layout = pAnnotationLayouts.get(tname);
-	if(layout == null) {
-	  layout = client.getAnnotationMenuLayout(tname);
-	  pAnnotationLayouts.put(tname, layout);
-	}
-      }
-      
-      synchronized(pAnnotationPermissions) {
-        if(pAnnotationPermissions == null)
-          pAnnotationPermissions = PluginMgrClient.getInstance().getAnnotationPermissions();
-      }
-      
-      if(!client.getCachedPrivilegeDetails().isAnnotator()) {
-        TripleMap<String,String,VersionID,TreeSet<OsType>> newPlugins =
-          new TripleMap<String, String, VersionID, TreeSet<OsType>>();
-        for (String vend : plugins.keySet()) {
-          for (String name : plugins.keySet(vend)) {
-            for (VersionID ver : plugins.keySet(vend, name)) {
-              AnnotationPermissions perm = pAnnotationPermissions.get(name, vend, ver);
-              if (perm.isUserCreatable())
-                newPlugins.put(vend, name, ver, plugins.get(vend, name, ver));
-            }
-          }
-        }
-        plugins = newPlugins;
-      }
-    }
-    catch(PipelineException ex) {
-      showErrorDialog(ex);
-
-      layout = new PluginMenuLayout();
-      plugins = new TripleMap<String,String,VersionID,TreeSet<OsType>>();
-    }
-    finally {
-      releaseMasterMgrClient(client);
-    }
-    return UIFactory.createPluginSelectionField(layout, plugins, width);
+    return createOrUpdateAnnotationPluginField
+      (channel, null, width, null, AnnotationContext.PerNode);
   }
 
   /**
-   * Update the contents of an annotation plugin field.
+   * Update the contents of an per-node annotation plugin field based on the default toolset.
+   * 
+   * @param channel
+   *   The index of the update channel.
+   * 
+   * @param field
+   *   The field to update. 
    */ 
   public void 
   updateAnnotationPluginField
@@ -2551,34 +2495,98 @@ class UIMaster
    JPluginSelectionField field
   ) 
   {
+    createOrUpdateAnnotationPluginField
+      (channel, null, 0, field, AnnotationContext.PerNode);
+  }
+
+  /**
+   * Update the contents of an per-version annotation plugin field based on the 
+   * given working toolset.
+   * 
+   * @param channel
+   *   The index of the update channel.
+   * 
+   * @param toolset
+   *   The name of the toolset providing the menu layout.
+   * 
+   * @param field
+   *   The field to update. 
+   */ 
+  public void 
+  updateAnnotationPluginField
+  (
+   int channel,
+   String toolset, 
+   JPluginSelectionField field
+  ) 
+  {
+    createOrUpdateAnnotationPluginField
+      (channel, toolset, 0, field, AnnotationContext.PerVersion);
+  }
+
+  /**
+   * Update or create the contents of an annotation plugin field.
+   * 
+   * @param channel
+   *   The index of the update channel.
+   * 
+   * @param toolset
+   *   The toolset which provides the menu layout or <CODE>null</CODE> to use the default
+   *   toolset.
+   * 
+   * @param width
+   *   The minimum and preferred width of the field (if creating).
+   * 
+   * @param field
+   *   The field to update or <CODE>null</CODE> to create a new one.
+   * 
+   * @param context
+   *   The context in which the annotations are to be used.
+   * 
+   * @return 
+   *   The new or updated field.
+   */ 
+  private JPluginSelectionField
+  createOrUpdateAnnotationPluginField
+  (
+   int channel,
+   String toolset, 
+   int width, 
+   JPluginSelectionField field,
+   AnnotationContext context
+  ) 
+  {
     PluginMenuLayout layout = null;
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
     MasterMgrClient client = acquireMasterMgrClient();
     try {
-      String tname = client.getCachedDefaultToolsetName();
+      String tname = toolset;
+      if(tname == null) 
+        tname = client.getCachedDefaultToolsetName();
 
+      TripleMap<String,String,VersionID,TreeSet<OsType>> tsPlugins = null;
       synchronized(pAnnotationPlugins) {
-	plugins = pAnnotationPlugins.get(tname);
-	if(plugins == null) {
+	tsPlugins = pAnnotationPlugins.get(tname);
+	if(tsPlugins == null) {
 	  DoubleMap<String,String,TreeSet<VersionID>> index = 
 	    client.getToolsetAnnotationPlugins(tname);
 
 	  TripleMap<String,String,VersionID,TreeSet<OsType>> all = 
 	    PluginMgrClient.getInstance().getAnnotations();
 
-	  plugins = new TripleMap<String,String,VersionID,TreeSet<OsType>>();
+	  tsPlugins = new TripleMap<String,String,VersionID,TreeSet<OsType>>();
 	  for(String vendor : index.keySet()) {
 	    for(String name : index.keySet(vendor)) {
 	      for(VersionID vid : index.get(vendor, name)) {
-		plugins.put(vendor, name, vid, all.get(vendor, name, vid));
+		tsPlugins.put(vendor, name, vid, all.get(vendor, name, vid));
 	      }
 	    }
 	  }
 
-	  pAnnotationPlugins.put(tname, plugins);
+	  pAnnotationPlugins.put(tname, tsPlugins);
 	}
       }
-      
+
       synchronized(pAnnotationLayouts) {
 	layout = pAnnotationLayouts.get(tname);
 	if(layout == null) {
@@ -2587,35 +2595,64 @@ class UIMaster
 	}
       }
       
-      synchronized(pAnnotationPermissions) {
-        if (pAnnotationPermissions == null)
-          pAnnotationPermissions = PluginMgrClient.getInstance().getAnnotationPermissions();
-      }
+      boolean isAnnotator = client.getCachedPrivilegeDetails().isAnnotator();
+
+      plugins = new TripleMap<String,String,VersionID,TreeSet<OsType>>();
+      synchronized(pAnnotationExtrasLock) {
+        if(pAnnotationPermissions == null) 
+          pAnnotationPermissions =
+            PluginMgrClient.getInstance().getAnnotationPermissions();
+
+        if(pAnnotationContexts == null) 
+          pAnnotationContexts = 
+            PluginMgrClient.getInstance().getAnnotationContexts();
       
-      if (!client.getCachedPrivilegeDetails().isAnnotator()) {
-        TripleMap<String,String,VersionID,TreeSet<OsType>> newPlugins =
-          new TripleMap<String, String, VersionID, TreeSet<OsType>>();
-        for (String vend : plugins.keySet()) {
-          for (String name : plugins.keySet(vend)) {
-            for (VersionID ver : plugins.keySet(vend, name)) {
-              AnnotationPermissions perm = pAnnotationPermissions.get(name, vend, ver);
-              if (perm.isUserCreatable())
-                newPlugins.put(vend, name, ver, plugins.get(vend, name, ver));
+        for(String vendor : tsPlugins.keySet()) {
+          for(String name : tsPlugins.keySet(vendor)) {
+            for(VersionID vid : tsPlugins.keySet(vendor, name)) {
+              TreeSet<AnnotationContext> contexts = 
+                pAnnotationContexts.get(vendor, name, vid);
+              if((contexts != null) && contexts.contains(context)) {
+                switch(context) {
+                case PerNode:
+                  {
+                    AnnotationPermissions perm = null;
+                    if(!isAnnotator) 
+                      perm = pAnnotationPermissions.get(vendor, name, vid); 
+
+                    if(isAnnotator || ((perm != null) && perm.isUserCreatable()))
+                      plugins.put(vendor, name, vid, tsPlugins.get(vendor, name, vid));
+                  }
+                  break;
+
+                case PerVersion:
+                  plugins.put(vendor, name, vid, tsPlugins.get(vendor, name, vid));
+                }
+              }
             }
           }
-        }
-        plugins = newPlugins;
+        }        
       }
     }
     catch(PipelineException ex) {
       showErrorDialog(ex);
-      return;
+      
+      layout  = new PluginMenuLayout();
+      plugins = new TripleMap<String,String,VersionID,TreeSet<OsType>>();
+      
+      if(field != null) 
+        return null;
     }
     finally {
       releaseMasterMgrClient(client);
     }
+    
+    if(field == null) 
+      field = UIFactory.createPluginSelectionField(layout, plugins, width);
+    else 
+      field.updatePlugins(layout, plugins);
 
-    field.updatePlugins(layout, plugins);
+    return field;
   }
 
 
@@ -6831,10 +6868,18 @@ class UIMaster
   
   
   /**
-   * Caches of plugins specific options, indexed by name, vendor, and revision number.
+   * Cache of plugins specific options, indexed by name, vendor, and revision number.
    */
   private TripleMap<String,String,VersionID,LayoutGroup> pBuilderLayoutGroups;
+
+  /** 
+   * Caches of annotation plugin related extra information indexed by plugin 
+   * name, vendor, and revision number.  The pAnnotationExtrasLock to be used to 
+   * synchronize access to these fields.
+   */ 
+  private Object pAnnotationExtrasLock;           
   private TripleMap<String,String,VersionID,AnnotationPermissions> pAnnotationPermissions;
+  private TripleMap<String,String,VersionID,TreeSet<AnnotationContext>> pAnnotationContexts;
 
 
   /** 

@@ -1,4 +1,4 @@
-// $Id: TemplateContextLinkAnnotation.java,v 1.1 2008/10/02 00:26:56 jesse Exp $
+// $Id: TemplateContextLinkAnnotation.java,v 1.2 2009/03/20 03:10:39 jim Exp $
 
 package us.temerity.pipeline.plugin.TemplateContextLinkAnnotation.v2_4_3;
 
@@ -29,16 +29,15 @@ class TemplateContextLinkAnnotation
   TemplateContextLinkAnnotation()
   {
     super("TemplateContextLink", new VersionID("2.4.3"), "Temerity", 
-          "Annotation specifying a name of the context that is going to be applied to the named" +
-          "link when the template is instantiated.");
+          "Annotation specifying a name of the context that is going to be applied to the " + 
+          "named link when the template is instantiated.");
     
     {
       AnnotationParam param =
         new StringAnnotationParam
         (aContextName,
          "The name of the context",
-         null
-        );
+         null);
       addParam(param);
     }
     
@@ -47,10 +46,11 @@ class TemplateContextLinkAnnotation
         new StringAnnotationParam
         (aLinkName,
          "The name of the linked mode to apply the map to.",
-         null
-        );
+         null);
       addParam(param);
     }
+
+    addContext(AnnotationContext.PerVersion);
     
     underDevelopment();
   }
@@ -64,6 +64,6 @@ class TemplateContextLinkAnnotation
   private static final long serialVersionUID = 8753807750309229909L;
 
   public static final String aContextName = "ContextName";
-  public static final String aLinkName = "LinkName";
+  public static final String aLinkName    = "LinkName";
 }
 

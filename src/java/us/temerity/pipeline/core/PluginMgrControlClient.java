@@ -1,4 +1,4 @@
-// $Id: PluginMgrControlClient.java,v 1.12 2009/03/02 00:18:48 jlee Exp $
+// $Id: PluginMgrControlClient.java,v 1.13 2009/03/20 03:10:38 jim Exp $
   
 package us.temerity.pipeline.core;
 
@@ -288,7 +288,7 @@ class PluginMgrControlClient
             (LogMgr.Kind.Ops, LogMgr.Level.Warning, 
              requiredPluginsCount + " plugin" + (requiredPluginsCount > 1 ? "s " : " ") + 
              "still need" + (requiredPluginsCount > 1 ? "" : "s") + " to be installed.  " + 
-             "Please rerun plplugin with the --list-required option " + 
+             "Please rerun plplugin with the \"--list --status=miss\" options " + 
              "to get the full details.");
 
         if(unknownPluginsCount > 0)
@@ -298,11 +298,9 @@ class PluginMgrControlClient
              (unknownPluginsCount > 1 ? "s " : " ") + 
              (unknownPluginsCount > 1 ? "have" : "has") + 
              " been detected.  They have not been loaded.  " + 
-             "Install the plugin" + 
-             (unknownPluginsCount > 1 ? "s " : " ") + 
-             " using plplugin --install.  " + 
-             "Please rerun plplugin with the --list-required option " + 
-             "to get the full details.");
+             "Install the plugin" + (unknownPluginsCount > 1 ? "s " : " ") + 
+             "properly using plplugin --install. Please rerun plplugin with the " + 
+             "\"--list --status=unknown\" options to get the full details.");
       }
       else if(obj instanceof SuccessRsp) {
         LogMgr.getInstance().log

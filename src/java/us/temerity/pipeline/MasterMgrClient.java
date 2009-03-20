@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.131 2009/03/13 20:38:44 jim Exp $
+// $Id: MasterMgrClient.java,v 1.132 2009/03/20 03:10:38 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -131,6 +131,45 @@ class MasterMgrClient
   }
   
   /**
+   * Get the cached work groups used to determine the scope of administrative privileges.<P>
+   * 
+   * Each time the work groups are obtained from the server they are cached.  If the 
+   * cache has not been invalidated since the last communication with the server, this method 
+   * returns the last cached value instead. If the cache has been invalidated, this method 
+   * behaves identically to {@link #getWorkGroups() getWorkGroups}.  This 
+   * means that the groups returned by this method are not guaranteed to be up-to-date but 
+   * are much faster. <P> 
+   * 
+   * This method is provided mostly to support UI components which depend on the 
+   * work groups, but don't need a more up-to-date value than the last status
+   * update.  Unless speed is a critical factor, its better to use the normal non-caching
+   * method to determine the work groups.
+   * 
+   * @return 
+   *   The work groups.
+   * 
+   * @throws PipelineException
+   *   If unable to get the work groups.
+   */ 
+  public synchronized WorkGroups
+  getCachedWorkGroups()
+    throws PipelineException  
+  {
+    if(pWorkGroups == null) 
+      pWorkGroups = getWorkGroups();
+    return pWorkGroups;
+  }
+
+  /**
+   * Manually invalidate the work groups cache.
+   */ 
+  public synchronized void 
+  invalidateCachedWorkGroups()
+  {
+    pWorkGroups = null;
+  }
+  
+  /**
    * Set the work groups used to determine the scope of administrative privileges. <P> 
    * 
    * This operation requires Master Admin privileges 
@@ -234,8 +273,7 @@ class MasterMgrClient
   getPrivilegeDetails()
     throws PipelineException 
   {
-    pPrivilegeDetails = getPrivilegeDetails(PackageInfo.sUser);
-    return pPrivilegeDetails;
+    return getPrivilegeDetails(PackageInfo.sUser);
   }
 
   /**
@@ -261,7 +299,7 @@ class MasterMgrClient
     throws PipelineException 
   {
     if(pPrivilegeDetails == null) 
-      return getPrivilegeDetails();
+      pPrivilegeDetails = getPrivilegeDetails();
     return pPrivilegeDetails;
   }
 
@@ -534,7 +572,7 @@ class MasterMgrClient
    *   If unable to determine the toolset names.
    */ 
   public synchronized TreeSet<String>
-  getCachedActiveToolsetName() 
+  getCachedActiveToolsetNames() 
     throws PipelineException
   {    
     if(pActiveToolsetNames == null) 
@@ -4012,7 +4050,7 @@ class MasterMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get a specific annotation for the given node.<P> 
+   * Get a specific per-node annotation for the given node.<P> 
    * 
    * @param nname 
    *   The fully resolved node name.
@@ -4050,7 +4088,110 @@ class MasterMgrClient
   }
   
   /**
-   * Get all of the annotations for the given node.<P> 
+   * Get a unified view of a specific named annotation from both node and working version
+   * of the node in a particular working area view.<P> 
+   * 
+   * If the named annotation exists as both a per-node and per-version annotation, then 
+   * the per-version annotation will be returned without generating any warnings or
+   * exceptions.  If the named annotation exists as only one of a per-node or per-version 
+   * annotation, then which ever one exists will be be returned.  If neither exist, 
+   * then <CODE>null</CODE> will be returned.<P> 
+   * 
+   * Note that this is merely a convienence method that provides a quicker way of 
+   * looking up both per-node annotations and lookup the working version of a node and
+   * then accessing its annotation properties.  No new functionality is provided by
+   * this method, but it may be faster when needing a unified view of all annotations
+   * and other working version information is not required.
+   * 
+   * @param author 
+   *   The name of the user which owns the working version.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param nname 
+   *   The fully resolved node name.
+   * 
+   * @param aname 
+   *   The name of the annotation. 
+   * 
+   * @return 
+   *   The named annotation for the node or <CODE>null</CODE> if none exists. 
+   * 
+   * @throws PipelineException 
+   *   If no working version of the new exists or otherwise unable to determine the 
+   *   annotations.
+   */ 
+  public BaseAnnotation
+  getAnnotation
+  (
+   String author, 
+   String view, 
+   String nname, 
+   String aname
+  ) 
+    throws PipelineException
+  {
+    return getAnnotation(new NodeID(author, view, nname), aname);
+  }
+
+  /**
+   * Get a unified view of a specific named annotation from both node and working version
+   * of the node in a particular working area view.<P> 
+   * 
+   * If the named annotation exists as both a per-node and per-version annotation, then 
+   * the per-version annotation will be returned without generating any warnings or
+   * exceptions.  If the named annotation exists as only one of a per-node or per-version 
+   * annotation, then which ever one exists will be be returned.  If neither exist, 
+   * then <CODE>null</CODE> will be returned.<P> 
+   * 
+   * Note that this is merely a convienence method that provides a quicker way of 
+   * looking up both per-node annotations and lookup the working version of a node and
+   * then accessing its annotation properties.  No new functionality is provided by
+   * this method, but it may be faster when needing a unified view of all annotations
+   * and other working version information is not required.
+   * 
+   * @param nodeID 
+   *   The unique working version identifier. 
+   * 
+   * @param aname 
+   *   The name of the annotation. 
+   * 
+   * @return 
+   *   The named annotation for the node or <CODE>null</CODE> if none exists. 
+   * 
+   * @throws PipelineException 
+   *   If no working version of the new exists or otherwise unable to determine the 
+   *   annotations.
+   */ 
+  public BaseAnnotation
+  getAnnotation
+  (
+   NodeID nodeID,
+   String aname
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+
+    NodeGetBothAnnotationReq req = new NodeGetBothAnnotationReq(nodeID, aname); 
+
+    Object obj = performTransaction(MasterRequest.GetBothAnnotation, req);
+    if(obj instanceof NodeGetAnnotationRsp) {
+      NodeGetAnnotationRsp rsp = (NodeGetAnnotationRsp) obj;
+      return rsp.getAnnotation();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get all of the per-node annotations for the given node.<P> 
    * 
    * @param name 
    *   The fully resolved node name.
@@ -4083,6 +4224,99 @@ class MasterMgrClient
     }
   }
   
+  /**
+   * Get a unified view of all annotation from both node and working version
+   * of the node in a particular working area view.<P> 
+   * 
+   * If a given annotation exists as both a per-node and per-version annotation, then 
+   * the per-version annotation will be returned without generating any warnings or
+   * exceptions.  If a given annotation exists as only one of a per-node or per-version 
+   * annotation, then which ever one exists will be be returned. <P> 
+   * 
+   * Note that this is merely a convienence method that provides a quicker way of 
+   * looking up both per-node annotations and lookup the working version of a node and
+   * then accessing its annotation properties.  No new functionality is provided by
+   * this method, but it may be faster when needing a unified view of all annotations
+   * and other working version information is not required.
+   * 
+   * @param author 
+   *   The name of the user which owns the working version.
+   * 
+   * @param view 
+   *   The name of the user's working area view. 
+   * 
+   * @param name 
+   *   The fully resolved node name.
+   * 
+   * @return 
+   *   The annotations for the node indexed by annotation name (may be empty).
+   * 
+   * @throws PipelineException 
+   *   If no working version of the new exists or otherwise unable to determine the 
+   *   annotations.
+   */ 
+  public TreeMap<String,BaseAnnotation> 
+  getAnnotations
+  (
+   String author,
+   String view, 
+   String name
+  ) 
+    throws PipelineException
+  {
+    return getAnnotations(new NodeID(author, view, name));
+  }
+  
+  /**
+   * Get a unified view of all annotation from both node and working version
+   * of the node in a particular working area view.<P> 
+   * 
+   * If a given annotation exists as both a per-node and per-version annotation, then 
+   * the per-version annotation will be returned without generating any warnings or
+   * exceptions.  If a given annotation exists as only one of a per-node or per-version 
+   * annotation, then which ever one exists will be be returned. <P> 
+   * 
+   * Note that this is merely a convienence method that provides a quicker way of 
+   * looking up both per-node annotations and lookup the working version of a node and
+   * then accessing its annotation properties.  No new functionality is provided by
+   * this method, but it may be faster when needing a unified view of all annotations
+   * and other working version information is not required.
+   * 
+   * @param nodeID 
+   *   The unique working version identifier. 
+   * 
+   * @return 
+   *   The annotations for the node indexed by annotation name (may be empty).
+   * 
+   * @throws PipelineException 
+   *   If no working version of the new exists or otherwise unable to determine the 
+   *   annotations.
+   */ 
+  public TreeMap<String,BaseAnnotation> 
+  getAnnotations
+  (
+   NodeID nodeID
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+
+    NodeGetBothAnnotationsReq req = new NodeGetBothAnnotationsReq(nodeID); 
+
+    Object obj = performTransaction(MasterRequest.GetBothAnnotations, req);
+    if(obj instanceof NodeGetAnnotationsRsp) {
+      NodeGetAnnotationsRsp rsp = (NodeGetAnnotationsRsp) obj;
+      return rsp.getAnnotations();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Add the given annotation to the set of current annotations for the given node.<P> 
    * 
@@ -4127,7 +4361,10 @@ class MasterMgrClient
     Object obj = performTransaction(MasterRequest.AddAnnotation, req);
     handleSimpleResponse(obj);
   }
-  
+
+
+  /*----------------------------------------------------------------------------------------*/
+
   /**
    * Remove a specific annotation from a node. <P> 
    * 
@@ -8236,6 +8473,13 @@ class MasterMgrClient
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The cached work groups used to determine the scope of administrative privileges or 
+   * <CODE>null</CODE> if an operation which modifies the work groups has been called since
+   * the cache was last updated.
+   */ 
+  private WorkGroups  pWorkGroups; 
 
   /**
    * The cached details of the administrative privileges granted to the current user or 

@@ -1,4 +1,4 @@
-// $Id: PluginApp.java,v 1.20 2009/03/02 00:25:48 jlee Exp $
+// $Id: PluginApp.java,v 1.21 2009/03/20 03:10:38 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -295,41 +295,53 @@ class PluginApp
           buf.append("Vendor      : " + vendor + "\n");
 
 	  switch(pstat) {
-	    case Installed:
-	    case UnderDevelopment:
-	    case Permanent:
-	      {
-		BasePlugin plugin = newPlugin(client, ptype, pid);
-
-		if(plugin == null)
-		  throw new PipelineException
-		    ("There is no plugin () of type ()");
-
-		buf.append("Supports    :");
-
-		for(OsType os : plugin.getSupports()) 
-		  buf.append(" " + os.toTitle());
-		buf.append("\n");
-
-		buf.append("Description : " + wordWrap(plugin.getDescription(), 14, 80) + "\n");
-		buf.append("PluginType  : " + ptype + "\n");
-		buf.append("Status      : " + pstat + "\n");
-		buf.append("Class       : " + plugin.getClass().getName());
-	      }
-	      break;
-	    case Missing:
-	      {
-		buf.append("PluginType  : " + ptype + "\n");
-		buf.append("Status      : Missing\n");
-	      }
-	      break;
-	    case Unknown:
-	      {
-		buf.append("PluginType  : " + ptype + "\n");
-		buf.append("Status      : Unknown\n");
-	      }
-	      break;
-	  }
+          case Installed:
+          case UnderDevelopment:
+          case Permanent:
+            {
+              BasePlugin plugin = newPlugin(client, ptype, pid);
+              
+              if(plugin == null)
+                throw new PipelineException
+                  ("There is no plugin () of type ()");
+              
+              buf.append("Supports    :");
+              
+              for(OsType os : plugin.getSupports()) 
+                buf.append(" " + os.toTitle());
+              buf.append("\n");
+              
+              if(plugin instanceof BaseAnnotation) {
+                buf.append("Contexts    :");
+                  
+                BaseAnnotation annot = (BaseAnnotation) plugin; 
+                for(AnnotationContext context: annot.getContexts()) 
+                  buf.append(" " + context.toTitle());
+                buf.append("\n");
+              }
+              
+              buf.append("Description : " + 
+                         wordWrap(plugin.getDescription(), 14, 80) + "\n");
+              
+              buf.append("PluginType  : " + ptype + "\n");
+              buf.append("Status      : " + pstat + "\n");
+              buf.append("Class       : " + plugin.getClass().getName());
+            }
+            break;
+            
+          case Missing:
+            {
+              buf.append("PluginType  : " + ptype + "\n");
+              buf.append("Status      : Missing\n");
+            }
+            break;
+            
+          case Unknown:
+            {
+              buf.append("PluginType  : " + ptype + "\n");
+              buf.append("Status      : Unknown\n");
+            }
+          }
 
 	  LogMgr.getInstance().log
 	    (LogMgr.Kind.Ops, LogMgr.Level.Info,
@@ -359,45 +371,35 @@ class PluginApp
 
     switch(ptype) {
       case Editor:
-	{
-	  return client.newEditor(name, vid, vendor);
-	}
+        return client.newEditor(name, vid, vendor);
+
       case Action:
-	{
-	  return client.newAction(name, vid, vendor);
-	}
+        return client.newAction(name, vid, vendor);
+
       case Comparator:
-	{
-	  return client.newComparator(name, vid, vendor);
-	}
+        return client.newComparator(name, vid, vendor);
+
       case Tool:
-	{
-	  return client.newTool(name, vid, vendor);
-	}
+        return client.newTool(name, vid, vendor);
+
       case Annotation:
-	{
-	  return client.newAnnotation(name, vid, vendor);
-	}
+        return client.newAnnotation(name, vid, vendor);
+
       case Archiver:
-	{
-	  return client.newArchiver(name, vid, vendor);
-	}
+        return client.newArchiver(name, vid, vendor);
+
       case MasterExt:
-	{
-	  return client.newMasterExt(name, vid, vendor);
-	}
+        return client.newMasterExt(name, vid, vendor);
+
       case QueueExt:
-	{
-	  return client.newQueueExt(name, vid, vendor);
-	}
+        return client.newQueueExt(name, vid, vendor);
+
       case KeyChooser:
-	{
-	  return client.newKeyChooser(name, vid, vendor);
-	}
+        return client.newKeyChooser(name, vid, vendor);
+
       case BuilderCollection:
-	{
-	  return client.newBuilderCollection(name, vid, vendor);
-	}
+        return client.newBuilderCollection(name, vid, vendor);
+
       default:
 	return null;
     }

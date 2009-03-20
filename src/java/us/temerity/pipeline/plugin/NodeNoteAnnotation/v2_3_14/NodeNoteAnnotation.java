@@ -1,4 +1,4 @@
-// $Id: NodeNoteAnnotation.java,v 1.3 2008/02/11 22:20:08 jim Exp $
+// $Id: NodeNoteAnnotation.java,v 1.4 2009/03/20 03:10:39 jim Exp $
 
 package us.temerity.pipeline.plugin.NodeNoteAnnotation.v2_3_14;
 
@@ -34,6 +34,8 @@ class NodeNoteAnnotation
 	 7); 
       addParam(param);
     }
+
+    addContext(AnnotationContext.PerVersion);
   }
   
   /*----------------------------------------------------------------------------------------*/

@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.94 2009/02/17 00:51:44 jlee Exp $
+// $Id: MasterMgrServer.java,v 1.95 2009/03/20 03:10:38 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1159,10 +1159,28 @@ class MasterMgrServer
                 }
                 break; 
 
+              case GetBothAnnotation:
+                {
+                  NodeGetBothAnnotationReq req = 
+                    (NodeGetBothAnnotationReq) objIn.readObject();
+                  objOut.writeObject(pMasterMgr.getBothAnnotation(req));
+                  objOut.flush(); 
+                }
+                break; 
+
               case GetAnnotations:
                 {
                   NodeGetAnnotationsReq req = (NodeGetAnnotationsReq) objIn.readObject();
                   objOut.writeObject(pMasterMgr.getAnnotations(req));
+                  objOut.flush(); 
+                }
+                break;
+
+              case GetBothAnnotations:
+                {
+                  NodeGetBothAnnotationsReq req = 
+                    (NodeGetBothAnnotationsReq) objIn.readObject();
+                  objOut.writeObject(pMasterMgr.getBothAnnotations(req));
                   objOut.flush(); 
                 }
                 break;

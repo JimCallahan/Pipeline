@@ -1,4 +1,4 @@
-// $Id: PluginUpdateRsp.java,v 1.11 2009/03/02 00:25:48 jlee Exp $
+// $Id: PluginUpdateRsp.java,v 1.12 2009/03/20 03:10:39 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -36,53 +36,59 @@ class PluginUpdateRsp
    * 
    * @param editors
    *   The new or updated Editor plugin class [name, bytes, supports] 
-   *   indexed by class name and revision number.
+   *   indexed by plugin vendor, name and revision number.
    * 
    * @param actions
    *   The new or updated Action plugin class [name, bytes, supports] 
-   *   indexed by class name and revision number.
+   *   indexed by plugin vendor, name and revision number.
    * 
    * @param comparators
    *   The new or updated Comparator plugin class [name, bytes, supports] 
-   *   indexed by class name and revision number.
+   *   indexed by plugin vendor, name and revision number.
    * 
    * @param tools
    *   The new or updated Tool plugin class [name, bytes, supports] 
-   *   indexed by class name and revision number.
+   *   indexed by plugin vendor, name and revision number.
    * 
    * @param annotations
    *   The new or updated Annotation plugin class [name, bytes, supports] 
-   *   indexed by class name and revision number.
+   *   indexed by plugin vendor, name and revision number.
    * 
    * @param archivers
    *   The new or updated Archiver plugin class [name, bytes, supports] 
-   *   indexed by class name and revision number.
+   *   indexed by plugin vendor, name and revision number.
    * 
    * @param masterExts
    *   The new or updated Master Extension plugin class [name, bytes, supports] 
-   *   indexed by class name and revision number.
+   *   indexed by plugin vendor, name and revision number.
    * 
    * @param queueExts
    *   The new or updated Queue Extension plugin class [name, bytes, supports] 
-   *   indexed by class name and revision number.
+   *   indexed by plugin vendor, name and revision number.
    *   
    * @param keyChoosers
    *   The new or updated Key Chooser plugin class [name, bytes, supports] 
-   *   indexed by class name and revision number.
+   *   indexed by plugin vendor, name and revision number.
    *   
    * @param builderCollections
    *   The new or updated Builder Collection plugin class [name, bytes, supports] 
-   *   indexed by class name and revision number.
+   *   indexed by plugin vendor, name and revision number.
    *   
    * @param builderCollectionLayouts
-   *   The new or updated Builder Collection layouts indexed by class name and 
-   *   revision number.
+   *   The new or updated Builder Collection layouts 
+   *   indexed by plugin vendor, name and revision number.
    *   
-   * @param annotationPermissions
-   *   The new or updated Annotation Permissions indexed by class name and revision number.
+   * @param annotPerms
+   *   The new or updated Annotation permissions 
+   *   indexed by plugin vendor, name and revision number.
+   *
+   * @param annotContexts
+   *   The new or updated Annotation contexts 
+   *   indexed by plugin vendor, name and revision number.
    *
    * @param pluginStatus
-   *   The current status of all plugins.
+   *   The current status of all plugins 
+   *   indexed by ???.
    */
   public
   PluginUpdateRsp
@@ -100,7 +106,8 @@ class PluginUpdateRsp
    TripleMap<String,String,VersionID,Object[]> keyChoosers,
    TripleMap<String,String,VersionID,Object[]> builderCollections,
    TripleMap<String,String,VersionID,LayoutGroup> builderCollectionLayouts,
-   TripleMap<String,String,VersionID,AnnotationPermissions> annotationPermissions, 
+   TripleMap<String,String,VersionID,AnnotationPermissions> annotPerms, 
+   TripleMap<String,String,VersionID,TreeSet<AnnotationContext>> annotContexts, 
    TripleMap<PluginType,String,PluginID,PluginStatus> pluginStatus
   )
   { 
@@ -154,9 +161,13 @@ class PluginUpdateRsp
       throw new IllegalArgumentException("The Builder Collections layouts cannot be (null)!");
     pBuilderCollectionLayouts = builderCollectionLayouts;
     
-    if(annotationPermissions == null) 
+    if(annotPerms == null) 
       throw new IllegalArgumentException("The Annotation permissions cannot be (null)!");
-    pAnnotationPermissions = annotationPermissions;
+    pAnnotationPermissions = annotPerms;
+
+    if(annotContexts == null) 
+      throw new IllegalArgumentException("The Annotation contexts cannot be (null)!");
+    pAnnotationContexts = annotContexts;
 
     if(pluginStatus == null)
       throw new IllegalArgumentException("The Plugins permissions cannot be (null)!");
@@ -190,7 +201,7 @@ class PluginUpdateRsp
 
   /**
    * Gets the new or updated Editor plugin class [name, bytes, supports] 
-   * indexed by class name and revision number.
+   * indexed by plugin vendor, name and revision number.
    */
   public TripleMap<String,String,VersionID,Object[]>
   getEditors() 
@@ -200,7 +211,7 @@ class PluginUpdateRsp
 
   /**
    * Gets the new or updated Action plugin class [name, bytes, supports] 
-   * indexed by class name and revision number.
+   * indexed by plugin vendor, name and revision number.
    */
   public TripleMap<String,String,VersionID,Object[]>
   getActions() 
@@ -210,7 +221,7 @@ class PluginUpdateRsp
 
   /**
    * Gets the new or updated Comparator plugin class [name, bytes, supports] 
-   * indexed by class name and revision number.
+   * indexed by plugin vendor, name and revision number.
    */
   public TripleMap<String,String,VersionID,Object[]>
   getComparators() 
@@ -220,7 +231,7 @@ class PluginUpdateRsp
 
   /**
    * Gets the new or updated Tool plugin class [name, bytes, supports] 
-   * indexed by class name and revision number.
+   * indexed by plugin vendor, name and revision number.
    */
   public TripleMap<String,String,VersionID,Object[]>
   getTools() 
@@ -230,7 +241,7 @@ class PluginUpdateRsp
 
   /**
    * Gets the new or updated Annotation plugin class [name, bytes, supports] 
-   * indexed by class name and revision number.
+   * indexed by plugin vendor, name and revision number.
    */
   public TripleMap<String,String,VersionID,Object[]>
   getAnnotations() 
@@ -240,7 +251,7 @@ class PluginUpdateRsp
 
   /**
    * Gets the new or updated Archiver plugin class [name, bytes, supports] 
-   * indexed by class name and revision number.
+   * indexed by plugin vendor, name and revision number.
    */
   public TripleMap<String,String,VersionID,Object[]>
   getArchivers() 
@@ -250,7 +261,7 @@ class PluginUpdateRsp
 
   /**
    * Gets the new or updated Master Extension plugin class [name, bytes, supports] 
-   * indexed by class name and revision number.
+   * indexed by plugin vendor, name and revision number.
    */
   public TripleMap<String,String,VersionID,Object[]>
   getMasterExts() 
@@ -260,7 +271,7 @@ class PluginUpdateRsp
 
   /**
    * Gets the new or updated Queue Extension plugin class [name, bytes, supports] 
-   * indexed by class name and revision number.
+   * indexed by plugin vendor, name and revision number.
    */
   public TripleMap<String,String,VersionID,Object[]>
   getQueueExts() 
@@ -270,7 +281,7 @@ class PluginUpdateRsp
 
   /**
    * Gets the new or updated Key Chooser plugin class [name, bytes, supports] 
-   * indexed by class name and revision number.
+   * indexed by plugin vendor, name and revision number.
    */
   public TripleMap<String,String,VersionID,Object[]>
   getKeyChoosers() 
@@ -280,7 +291,7 @@ class PluginUpdateRsp
   
   /**
    * Gets the new or updated Builder Collections plugin class [name, bytes, supports] 
-   * indexed by class name and revision number.
+   * indexed by plugin vendor, name and revision number.
    */
   public TripleMap<String,String,VersionID,Object[]>
   getBuilderCollections() 
@@ -289,8 +300,8 @@ class PluginUpdateRsp
   }  
   
   /**
-   * Gets the new or updated Builder Collections Layouts indexed by class name and revision
-   * number.
+   * Gets the new or updated Builder Collections Layouts
+   * indexed by plugin vendor, name and revision number.
    */
   public TripleMap<String,String,VersionID,LayoutGroup>
   getBuilderCollectionLayouts() 
@@ -299,13 +310,23 @@ class PluginUpdateRsp
   }
   
   /**
-   * Gets the new or updated Annotation Permissions indexed by class name and revision
-   * number.
+   * Gets the new or updated Annotation permissions
+   * indexed by plugin vendor, name and revision number. 
    */
   public TripleMap<String,String,VersionID,AnnotationPermissions>
   getAnnotationPermissions() 
   {
     return pAnnotationPermissions; 
+  }
+
+  /**
+   * Gets the new or updated Annotation contexts 
+   * indexed by plugin vendor, name and revision number.
+   */
+  public TripleMap<String,String,VersionID,TreeSet<AnnotationContext>>
+  getAnnotationContexts() 
+  {
+    return pAnnotationContexts; 
   }
 
   /**
@@ -341,76 +362,85 @@ class PluginUpdateRsp
 
   /**
    * The new or updated Editor plugin class [name, bytes, supports] 
-   * indexed by class name and revision number.
+   * indexed by plugin vendor, name and revision number.
    */ 
   private TripleMap<String,String,VersionID,Object[]>  pEditors; 
 
   /**
    * The new or updated Action plugin class [name, bytes, supports] 
-   * indexed by class name and revision number.
+   * indexed by plugin vendor, name and revision number.
    */ 
   private TripleMap<String,String,VersionID,Object[]>  pActions; 
 
   /**
    * The new or updated Comparator plugin class [name, bytes, supports] 
-   * indexed by class name and revision number.
+   * indexed by plugin vendor, name and revision number.
    */ 
   private TripleMap<String,String,VersionID,Object[]>  pComparators; 
 
   /**
    * The new or updated Tool plugin class [name, bytes, supports] 
-   * indexed by class name and revision number.
+   * indexed by plugin vendor, name and revision number.
    */ 
   private TripleMap<String,String,VersionID,Object[]>  pTools; 
 
   /**
    * The new or updated Annotation plugin class [name, bytes, supports] 
-   * indexed by class name and revision number.
+   * indexed by plugin vendor, name and revision number.
    */ 
   private TripleMap<String,String,VersionID,Object[]>  pAnnotations; 
 
   /**
    * The new or updated Archiver plugin class [name, bytes, supports] 
-   * indexed by class name and revision number.
+   * indexed by plugin vendor, name and revision number.
    */ 
   private TripleMap<String,String,VersionID,Object[]>  pArchivers; 
 
   /**
    * The new or updated Master Extension plugin class [name, bytes, supports] 
-   * indexed by class name and revision number.
+   * indexed by plugin vendor, name and revision number.
    */ 
   private TripleMap<String,String,VersionID,Object[]>  pMasterExts; 
 
   /**
    * The new or updated Queue Extension plugin class [name, bytes, supports] 
-   * indexed by class name and revision number.
+   * indexed by plugin vendor, name and revision number.
    */ 
   private TripleMap<String,String,VersionID,Object[]>  pQueueExts; 
   
   /**
    * The new or updated Key Choosers plugin class [name, bytes, supports] 
-   * indexed by class name and revision number.
+   * indexed by plugin vendor, name and revision number.
    */ 
   private TripleMap<String,String,VersionID,Object[]>  pKeyChoosers; 
   
   /**
    * The new or updated Builder Collection plugin class [name, bytes, supports] 
-   * indexed by class name and revision number.
+   * indexed by plugin vendor, name and revision number.
    */ 
   private TripleMap<String,String,VersionID,Object[]>  pBuilderCollections; 
   
   /**
-   * The new or updated Builder Collection layouts.
+   * The new or updated Builder Collection layouts
+   * indexed by plugin vendor, name and revision number.
    */ 
   private TripleMap<String,String,VersionID,LayoutGroup>  pBuilderCollectionLayouts; 
   
   /**
-   * The new or updated Annotation permissions.
+   * The new or updated Annotation permissions
+   * indexed by plugin vendor, name and revision number.
    */ 
   private TripleMap<String,String,VersionID,AnnotationPermissions>  pAnnotationPermissions; 
 
   /**
-   * The complete status of all plugins.
+   * The new or updated Annotation contexts
+   * indexed by plugin vendor, name and revision number.
+   */ 
+  private TripleMap<String,String,VersionID,TreeSet<AnnotationContext>>  pAnnotationContexts; 
+
+  /**
+   * The complete status of all plugins
+   * indexed by ???.
    */
   private TripleMap<PluginType,String,PluginID,PluginStatus>  pPluginStatus;
 

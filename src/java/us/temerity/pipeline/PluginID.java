@@ -1,4 +1,4 @@
-// $Id: PluginID.java,v 1.2 2008/06/15 01:59:49 jim Exp $
+// $Id: PluginID.java,v 1.3 2009/03/20 03:10:38 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -131,6 +131,14 @@ class PluginID
     return false;
   }
 
+  /**
+   * Returns a string representation of the object. 
+   */
+  public String
+  toString() 
+  {
+    return (pName + ":" + pVersionID + ":" + pVendor);
+  }
 
 
   /*----------------------------------------------------------------------------------------*/

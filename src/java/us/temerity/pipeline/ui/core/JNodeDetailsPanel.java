@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.51 2009/03/19 21:55:59 jesse Exp $
+// $Id: JNodeDetailsPanel.java,v 1.52 2009/03/20 03:10:39 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -93,6 +93,10 @@ class JNodeDetailsPanel
       pSelectionKeyComponents = new TreeMap<String,Component[]>();
       pLicenseKeyComponents   = new TreeMap<String,Component[]>();
       pHardwareKeyComponents  = new TreeMap<String,Component[]>();
+
+      pAnnotations       = new TreeMap<String,BaseAnnotation[]>();
+      pAnnotationsPanels = new TreeMap<String,JAnnotationPanel>(); 
+      pDocToAnnotName    = new ListMap<Document, String>();
     }
 
     /* initialize the popup menus */ 
@@ -109,15 +113,22 @@ class JNodeDetailsPanel
 	item.setActionCommand("apply");
 	item.addActionListener(this);
 	pWorkingPopup.add(item);
-
-	pWorkingPopup.addSeparator();
       }
+
+      item = new JMenuItem("Add Annotation...");
+      pAddAnnotationItem = item;
+      item.setActionCommand("add-annotation");
+      item.addActionListener(this);
+      pWorkingPopup.add(item);
+      
+      pWorkingPopup.addSeparator();
 
       pEditItems            = new JMenuItem[2];
       pEditWithDefaultItems = new JMenuItem[2];
       pEditWithMenus        = new JMenu[2];
 
       JPopupMenu menus[] = { pWorkingPopup, pCheckedInPopup };
+
       int wk;
       for(wk=0; wk<menus.length; wk++) {
 	item = new JMenuItem((wk == 1) ? "View" : "Edit"); 
@@ -134,7 +145,6 @@ class JNodeDetailsPanel
 	item.setActionCommand("edit-with-default");
 	item.addActionListener(this);
 	menus[wk].add(item);
-
       }
       
       item = new JMenuItem("Edit As Owner");
@@ -243,7 +253,7 @@ class JNodeDetailsPanel
 	  
 	  btn.setToolTipText(UIFactory.formatToolTip
 			     ("Apply the changes to node properties."));
-
+          
 	  panel.add(btn);
 	} 
       
@@ -805,17 +815,7 @@ class JNodeDetailsPanel
 	    pJobReqsBox = jrbox;
 
 	    jrbox.addComponentListener(this);
-
-	    {
-	      JPanel spanel = new JPanel();
-	      spanel.setName("Spacer");
-
-	      spanel.setMinimumSize(new Dimension(7, 0));
-	      spanel.setMaximumSize(new Dimension(7, Integer.MAX_VALUE));
-	      spanel.setPreferredSize(new Dimension(7, 0));
-
-	      jrbox.add(spanel);
-	    }
+            jrbox.add(UIFactory.createSidebar());
 	
 	    { 
 	      Box dbox = new Box(BoxLayout.Y_AXIS);
@@ -1360,17 +1360,27 @@ class JNodeDetailsPanel
 	  vbox.add(drawer);
 	}
 	
-	{
-	  JPanel spanel = new JPanel();
-	  spanel.setName("Spacer");
-	  
-	  spanel.setMinimumSize(new Dimension(sTSize+sSSize+30, 7));
-	  spanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
-	  spanel.setPreferredSize(new Dimension(sTSize+sSSize+30, 7));
-	  
-	  vbox.add(spanel);
+        { 
+	  Box abox = new Box(BoxLayout.X_AXIS);
+
+          abox.addComponentListener(this);
+          abox.add(UIFactory.createSidebar());
+          
+          {
+            Box avbox = new Box(BoxLayout.Y_AXIS);
+            pAnnotationsBox = avbox;
+
+            abox.add(avbox);
+          }
+
+	  JDrawer drawer = new JDrawer("Version Annotations:", abox, false);
+	  drawer.setToolTipText(UIFactory.formatToolTip
+            ("Annotation plugins associated with each node version.")); 
+	  pAnnotationsDrawer = drawer;
+	  vbox.add(drawer);
 	}
 
+        vbox.add(UIFactory.createFiller(sTSize+sVSize+30));
 	vbox.add(Box.createVerticalGlue());
 
 	{
@@ -1571,6 +1581,7 @@ class JNodeDetailsPanel
   {
     pWorkingAction = action;
   }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -1837,7 +1848,7 @@ class JNodeDetailsPanel
 	    UIMaster master = UIMaster.getInstance();
 	    MasterMgrClient client = master.acquireMasterMgrClient();
 	    try {
-	      toolsets.addAll(client.getActiveToolsetNames());
+	      toolsets.addAll(client.getCachedActiveToolsetNames());
 	      if((work.getToolset() != null) && !toolsets.contains(work.getToolset()))
 		toolsets.add(work.getToolset());
 	    }
@@ -1987,7 +1998,115 @@ class JNodeDetailsPanel
 
     /* job requirements panel */ 
     updateJobRequirements(false, true);
+
+    /* annotations panels */ 
+    {
+      TreeSet<String> anames = new TreeSet<String>();
+      
+      TreeMap<String,BaseAnnotation> wannots = null;
+      {
+        NodeMod mod = getWorkingVersion();
+        if(mod != null) {
+          wannots = mod.getAnnotations();
+          anames.addAll(wannots.keySet());
+        }
+      }
+        
+      TreeMap<String,BaseAnnotation> cannots = null;
+      {
+        if(latest != null) {
+          cannots = latest.getAnnotations(); 
+          anames.addAll(cannots.keySet());
+        }
+      }
+      
+      pAnnotations.clear();
+      for(String aname : anames) {
+        BaseAnnotation annots[] = new BaseAnnotation[2];
+
+        if(wannots != null) 
+          annots[0] = wannots.get(aname);
+
+        if(cannots != null) 
+          annots[1] = cannots.get(aname);
+
+        pAnnotations.put(aname, annots); 
+      }
+
+      rebuildAnnotationPanels();      
+    }
   }
+
+  /**
+   * Set the temporary working and checked-in annotation tables from the values currently
+   * in the annotation panel UI components.
+   */ 
+  private void
+  extractAnnotationsFromPanels() 
+  {
+    TreeSet<String> anames = new TreeSet<String>();
+
+    TreeMap<String,BaseAnnotation> wannots = new TreeMap<String,BaseAnnotation>();
+    for(String aname : pAnnotationsPanels.keySet()) {
+      JAnnotationPanel apanel = pAnnotationsPanels.get(aname);
+      BaseAnnotation wannot = apanel.getWorkingAnnotation(); 
+      if(wannot != null) {
+        wannots.put(aname, wannot);
+        anames.add(aname);
+      }
+    }
+
+    TreeMap<String,BaseAnnotation> cannots = new TreeMap<String,BaseAnnotation>();
+    for(String aname : pAnnotations.keySet()) {
+      BaseAnnotation annots[] = pAnnotations.get(aname);
+      if(annots[1] != null) {
+        cannots.put(aname, annots[1]);
+        anames.add(aname);
+      }
+    }
+
+    pAnnotations.clear();
+    for(String aname : anames) {
+      BaseAnnotation annots[] = new BaseAnnotation[2];
+      annots[0] = wannots.get(aname);
+      annots[1] = cannots.get(aname);
+      pAnnotations.put(aname, annots); 
+    }
+  }
+
+  /**
+   * Rebuild the annotation panels from the temporary working and checked-in annotation
+   * tables.
+   */ 
+  private void 
+  rebuildAnnotationPanels() 
+  {
+    pAnnotationsBox.removeAll();
+    pAnnotationsPanels.clear(); 
+    
+    if(!pAnnotations.isEmpty()) {    
+      String toolset = null;
+      {
+        NodeDetailsLight details = null;
+        if(pStatus != null) 
+          details = pStatus.getLightDetails();
+        
+        NodeMod work = null; 
+        if(details != null) 
+          work = details.getWorkingVersion();
+      }
+
+      for(String aname: pAnnotations.keySet()) {
+        BaseAnnotation annots[] = pAnnotations.get(aname);
+        JAnnotationPanel panel = new JAnnotationPanel(this, toolset, aname, annots);
+        pAnnotationsBox.add(panel);        
+        pAnnotationsPanels.put(aname, panel);
+      }
+    }
+    
+    pAnnotationsBox.revalidate(); 
+  }
+
 
   /**
    * Update checked-in version related values of all fields.
@@ -2060,6 +2179,39 @@ class JNodeDetailsPanel
 
     /* job requirements panel */ 
     updateJobRequirements(false, false); 
+
+    /* annotations */ 
+    {
+      TreeSet<String> anames = new TreeSet<String>();
+
+      TreeMap<String,BaseAnnotation> wannots = new TreeMap<String,BaseAnnotation>();
+      for(String aname : pAnnotationsPanels.keySet()) {
+        JAnnotationPanel panel = pAnnotationsPanels.get(aname);
+        BaseAnnotation annot = panel.getWorkingAnnotation();
+        if(annot != null) {
+          wannots.put(aname, annot); 
+          anames.add(aname); 
+        }
+      }
+        
+      TreeMap<String,BaseAnnotation> cannots = vsn.getAnnotations(); 
+      anames.addAll(cannots.keySet());
+      
+      pAnnotations.clear();
+      for(String aname : anames) {
+        BaseAnnotation annots[] = new BaseAnnotation[2];
+
+        if(wannots != null) 
+          annots[0] = wannots.get(aname);
+
+        if(cannots != null) 
+          annots[1] = cannots.get(aname);
+
+        pAnnotations.put(aname, annots); 
+      }
+
+      rebuildAnnotationPanels();      
+    }
   }
 
 
@@ -2380,8 +2532,8 @@ class JNodeDetailsPanel
 
       {
 	Box hbox = new Box(BoxLayout.X_AXIS);
-	hbox.addComponentListener(this);
 
+	hbox.addComponentListener(this);
         hbox.add(UIFactory.createSidebar());
       
 	updateSingleActionParams(action, waction, caction, action.getSingleLayout(), hbox, 1);
@@ -2863,18 +3015,9 @@ class JNodeDetailsPanel
     
     if(!group.getSubGroups().isEmpty())  {
       Box hbox = new Box(BoxLayout.X_AXIS);
-      hbox.addComponentListener(this);
 
-      {
-	JPanel spanel = new JPanel();
-	spanel.setName("Spacer");
-	
-	spanel.setMinimumSize(new Dimension(7, 0));
-	spanel.setMaximumSize(new Dimension(7, Integer.MAX_VALUE));
-	spanel.setPreferredSize(new Dimension(7, 0));
-	
-	hbox.add(spanel);
-      }
+      hbox.addComponentListener(this);
+      hbox.add(UIFactory.createSidebar()); 
 
       {
 	Box vbox = new Box(BoxLayout.Y_AXIS);
@@ -3872,13 +4015,14 @@ class JNodeDetailsPanel
   {
     super.toGlue(encoder);
   
-    encoder.encode("VersionDrawerOpen",   pVersionDrawer.isOpen());
-    encoder.encode("PropertyDrawerOpen",  pPropertyDrawer.isOpen());
-    encoder.encode("ActionDrawerOpen",    pActionDrawer.isOpen());
-    encoder.encode("JobReqsDrawerOpen",   pJobReqsDrawer.isOpen());
-    encoder.encode("SelectionDrawerOpen", pSelectionDrawer.isOpen());
-    encoder.encode("HardwareDrawerOpen",  pHardwareDrawer.isOpen());
-    encoder.encode("LicenseDrawerOpen",   pLicenseDrawer.isOpen());
+    encoder.encode("VersionDrawerOpen",     pVersionDrawer.isOpen());
+    encoder.encode("PropertyDrawerOpen",    pPropertyDrawer.isOpen());
+    encoder.encode("ActionDrawerOpen",      pActionDrawer.isOpen());
+    encoder.encode("JobReqsDrawerOpen",     pJobReqsDrawer.isOpen());
+    encoder.encode("SelectionDrawerOpen",   pSelectionDrawer.isOpen());
+    encoder.encode("HardwareDrawerOpen",    pHardwareDrawer.isOpen());
+    encoder.encode("LicenseDrawerOpen",     pLicenseDrawer.isOpen());
+    encoder.encode("AnnotationsDrawerOpen", pAnnotationsDrawer.isOpen());
   }
 
   public void 
@@ -3928,6 +4072,12 @@ class JNodeDetailsPanel
       Boolean open = (Boolean) decoder.decode("LicenseDrawerOpen");
       if(open != null) 
 	pLicenseDrawer.setIsOpen(open);
+    }
+
+    {
+      Boolean open = (Boolean) decoder.decode("AnnotationsDrawerOpen");
+      if(open != null) 
+	pAnnotationsDrawer.setIsOpen(open);
     }
 
     super.fromGlue(decoder);
@@ -4157,6 +4307,7 @@ class JNodeDetailsPanel
       doSetEditor();
     else if(cmd.equals("editor-changed")) 
       doEditorChanged(true);
+
     else if(cmd.equals("set-action")) 
       doSetAction();
     else if(cmd.equals("action-changed")) 
@@ -4173,6 +4324,7 @@ class JNodeDetailsPanel
       doViewSourceParams();
     else if(cmd.equals("set-source-params")) 
       doSetSourceParams();
+
     else if(cmd.equals("set-overflow-policy")) 
       doSetOverflowPolicy();
     else if(cmd.equals("overflow-policy-changed")) 
@@ -4217,6 +4369,21 @@ class JNodeDetailsPanel
       doLicenseKeyChanged(cmd.substring(20), true);
     else if(cmd.startsWith("set-license-key:")) 
       doSetLicenseKey(cmd.substring(16));
+
+    else if(cmd.equals("add-annotation")) 
+      doAddAnnotation();
+    else if(cmd.startsWith("set-annotation:")) 
+      doSetAnnotation(cmd.substring(15));
+    else if(cmd.startsWith("annotation-changed:")) 
+      doAnnotationChanged(cmd.substring(19), true);
+    else if(cmd.startsWith("remove-annotation:"))
+      doRemoveAnnotation(cmd.substring(18));
+    else if(cmd.startsWith("rename-annotation:"))
+      doRenameAnnotation(cmd.substring(18));
+    else if(cmd.startsWith("set-annot-param:")) 
+      doSetAnnotationParam(cmd.substring(16));
+    else if(cmd.startsWith("annot-param-changed:")) 
+      doAnnotationParamChanged(cmd.substring(20));
 
     else if(cmd.equals("edit"))
       doEdit();
@@ -4263,7 +4430,16 @@ class JNodeDetailsPanel
   )
   {
     Document doc = e.getDocument();
-    doActionParamChanged(doc);
+    
+    String aname = pDocToAnnotName.get(doc);
+    if(aname != null) {
+      JAnnotationPanel panel = pAnnotationsPanels.get(aname);
+      if(panel != null) 
+        panel.doAnnotationParamChanged(doc);
+    }
+    else {
+      doActionParamChanged(doc);
+    }
   }
 
   public void 
@@ -4271,11 +4447,19 @@ class JNodeDetailsPanel
   (
     DocumentEvent e
   )
-  {
+  { 
     Document doc = e.getDocument();
-    doActionParamChanged(doc);
+    
+    String aname = pDocToAnnotName.get(doc);
+    if(aname != null) {
+      JAnnotationPanel panel = pAnnotationsPanels.get(aname);
+      if(panel != null) 
+        panel.doAnnotationParamChanged(doc);
+    }
+    else {
+      doActionParamChanged(doc);
+    }
   } 
-
 
 
 
@@ -4522,7 +4706,17 @@ class JNodeDetailsPanel
 	    }
 
 	    mod.setJobRequirements(jreq);
-	  }	
+	  }
+
+          {
+            mod.removeAnnotations();
+            for(String aname : pAnnotationsPanels.keySet()) {
+              JAnnotationPanel panel = pAnnotationsPanels.get(aname);
+              BaseAnnotation wannot = panel.getWorkingAnnotation();
+              if(wannot != null) 
+                mod.addAnnotation(aname, wannot);
+            }
+          }
 
 	  ModifyTask task = new ModifyTask(mod);
 	  task.start();
@@ -5496,6 +5690,195 @@ class JNodeDetailsPanel
   }
 
 
+  /*--------------------------------------------------------------------------------------*/
+  
+  /**
+   * Add a new annotation to this node version.
+   */ 
+  private void 
+  doAddAnnotation() 
+  { 
+    JNewIdentifierDialog diag = 
+      new JNewIdentifierDialog(getTopFrame(), "New Annotation", "New Annotation Name:", 
+                               null, "Add");
+    diag.setVisible(true);
+    if(diag.wasConfirmed()) {
+      String aname = diag.getName();
+      if((aname != null) && (aname.length() > 0)) {
+        JAnnotationPanel panel = pAnnotationsPanels.get(aname);
+        if(panel != null) {
+          BaseAnnotation wannot = panel.getWorkingAnnotation();
+          if(wannot != null) {
+            UIMaster.getInstance().showErrorDialog
+              ("Error:", 
+               "The new annotation name (" + aname + ") is already being used by an " +
+               "existing working version annotation!");
+            return;
+          }
+        }
+
+        extractAnnotationsFromPanels();
+        BaseAnnotation annots[] = pAnnotations.get(aname);
+        if(annots == null) {
+          annots = new BaseAnnotation[2];
+          pAnnotations.put(aname, annots);
+        }          
+        
+        rebuildAnnotationPanels();
+
+        unsavedChange("Annotation Added: " + aname);
+      }
+    }
+  }
+
+  /**
+   * Set the working annotation field from the value of the checked-in field.
+   */ 
+  private void 
+  doSetAnnotation
+  (
+   String aname
+  ) 
+  { 
+    pAnnotationsPanels.get(aname).doSetAnnotation();
+  }
+
+  /**
+   * Update the appearance of the annotation field after a change of value.
+   */ 
+  private void 
+  doAnnotationChanged
+  (
+   String aname,   
+   boolean modified
+  )  
+  {
+    pAnnotationsPanels.get(aname).doAnnotationChanged(modified);
+  }
+
+  /**
+   * Remove the given working annotation.
+   */ 
+  public void 
+  doRemoveAnnotation
+  (
+   String aname
+  ) 
+  { 
+    extractAnnotationsFromPanels();
+
+    BaseAnnotation annots[] = pAnnotations.get(aname);
+    if(annots != null) {
+      if(annots[1] == null) 
+        pAnnotations.remove(aname);
+      else 
+        annots[0] = null;
+
+      unsavedChange("Annotation Removed: " + aname);
+    }          
+
+    rebuildAnnotationPanels();
+  }
+  
+  /**
+   * Rename the given annotation panel.
+   */ 
+  public void 
+  doRenameAnnotation
+  (
+   String aname
+  ) 
+  {
+    JAnnotationPanel panel = pAnnotationsPanels.get(aname);
+    if(panel != null) {
+      BaseAnnotation wannot = panel.getWorkingAnnotation();
+      if(wannot != null) {
+        JNewIdentifierDialog diag = 
+          new JNewIdentifierDialog
+            (getTopFrame(), "Rename Annotation", "New Annotation Name:", aname, "Rename");
+
+        diag.setVisible(true);
+        if(diag.wasConfirmed()) {
+          String nname = diag.getName();
+          if((nname != null) && (nname.length() > 0) && !nname.equals(aname)) {
+
+            extractAnnotationsFromPanels();
+
+            BaseAnnotation annots[] = pAnnotations.get(nname);
+            if(annots == null) {
+              annots = new BaseAnnotation[2];
+              pAnnotations.put(nname, annots);
+            }
+            annots[0] = wannot;
+
+            pAnnotations.remove(aname);
+             
+            rebuildAnnotationPanels();
+            
+            unsavedChange("Annotation Renamed from: " + aname + " to " + nname);
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Set the working annotation parameter field from the value of the checked-in 
+   * annotation parameter.
+   */ 
+  public void 
+  doSetAnnotationParam
+  (
+   String args
+  ) 
+  {
+    String parts[] = args.split(":");
+    if((parts.length == 2) && (parts[0].length() > 0) && (parts[1].length() > 0)) {
+      String aname = parts[0];
+      String pname = parts[1];
+
+      JAnnotationPanel panel = pAnnotationsPanels.get(aname);
+      if(panel != null) 
+        panel.doSetAnnotationParam(pname); 
+    }
+  }
+
+  /**
+   * Notify the panel that an annotation parameter has changed value.
+   */ 
+  public void 
+  doAnnotationParamChanged
+  (
+   String args
+  ) 
+  {
+    String parts[] = args.split(":");
+    if((parts.length == 2) && (parts[0].length() > 0) && (parts[1].length() > 0)) {
+      String aname = parts[0];
+      String pname = parts[1];
+
+      JAnnotationPanel panel = pAnnotationsPanels.get(aname);
+      if(panel != null) 
+        panel.doAnnotationParamChanged(pname); 
+    }
+  }
+  
+  /**
+   * Notify the panel that an annotation parameter has changed value.
+   */ 
+  public void 
+  doAnnotationParamChanged
+  (
+   Document doc
+  ) 
+  {
+    String aname = pDocToAnnotName.get(doc);
+    JAnnotationPanel panel = pAnnotationsPanels.get(aname);
+    if(panel != null) 
+      panel.doAnnotationParamChanged(doc); 
+  }
+
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -5780,6 +6163,1490 @@ class JNodeDetailsPanel
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L   C L A S S E S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * A component representing a pair of working and checked-in node annotation plugin 
+   * instances which share a common name.
+   */ 
+  private 
+  class JAnnotationPanel
+    extends JPanel
+  {
+    /**
+     * Construct a new annotation panel.
+     */ 
+    public 
+    JAnnotationPanel
+    (
+     JNodeDetailsPanel parent, 
+     String toolset, 
+     String aname,
+     BaseAnnotation annots[]
+    ) 
+    {
+      super();
+     
+      /* initialize fields */ 
+      {
+	pAnnotName = aname; 
+        pParent = parent; 
+
+        pToolsetName = toolset;
+
+        pWorkingAnnotation   = annots[0];
+        pCheckedInAnnotation = annots[1];
+
+        pParamComponents     = new TreeMap<String,Component[]>();
+        pDocToAnnotParamName = new ListMap<Document, String>();
+      }
+
+      initUI();
+    }
+
+
+
+    /*--------------------------------------------------------------------------------------*/
+    /*   A C C E S S O R S                                                                  */
+    /*--------------------------------------------------------------------------------------*/
+
+    /**
+     * The name of the annotation plugin instance.
+     */ 
+    public String
+    getName() 
+    {
+      return pAnnotName;
+    }
+
+    /**
+     * Get the updated working plugin instance based on the values in the UI fields.
+     */
+    public BaseAnnotation
+    getWorkingAnnotation() 
+    {
+      if(pWorkingAnnotation != null) {
+        for(AnnotationParam aparam : pWorkingAnnotation.getParams()) {
+          if(!pWorkingAnnotation.isParamConstant(aparam.getName())) {
+            Component comps[] = pParamComponents.get(aparam.getName()); 
+            if(comps != null) {
+              Comparable value = null;
+              if(aparam instanceof BooleanAnnotationParam) {
+                JBooleanField field = (JBooleanField) comps[1];
+                value = field.getValue();
+              }
+              else if(aparam instanceof DoubleAnnotationParam) {
+                JDoubleField field = (JDoubleField) comps[1];
+                value = field.getValue();
+              }
+              else if(aparam instanceof EnumAnnotationParam) {
+                JCollectionField field = (JCollectionField) comps[1];
+                EnumAnnotationParam eparam = (EnumAnnotationParam) aparam;
+                value = eparam.getValueOfIndex(field.getSelectedIndex());
+              }
+              else if(aparam instanceof IntegerAnnotationParam) {
+                JIntegerField field = (JIntegerField) comps[1];
+                value = field.getValue();
+              }
+              else if(aparam instanceof TextAreaAnnotationParam) {
+                JTextArea field = (JTextArea) comps[1];
+                value = field.getText();	  
+              }
+              else if(aparam instanceof StringAnnotationParam) {
+                JTextField field = (JTextField) comps[1];
+                value = field.getText();	  
+              }
+              else if(aparam instanceof PathAnnotationParam) {
+                JPathField field = (JPathField) comps[1];
+                value = field.getPath();	  
+              }
+              else if(aparam instanceof ToolsetAnnotationParam) {
+                JCollectionField field = (JCollectionField) comps[1];
+                String toolset = field.getSelected();
+                if(toolset.equals("-") || (toolset.length() == 0))
+                  value = null;
+                else 
+                  value = toolset;
+              }
+              else if(aparam instanceof WorkGroupAnnotationParam) {
+                JCollectionField field = (JCollectionField) comps[1];
+                String ugname = field.getSelected(); 
+                if(ugname.equals("-") || (ugname.length() == 0))
+                  value = null;
+                else if(ugname.startsWith("[") && ugname.endsWith("]"))
+                  value = ugname.substring(1, ugname.length()-1);
+                else 
+                  value = ugname;
+              }
+              else if(aparam instanceof BuilderIDAnnotationParam) {
+                JBuilderIDSelectionField field = (JBuilderIDSelectionField) comps[1];
+                value = field.getBuilderID();
+              }
+              else {
+                assert(false) : "Unknown annotation parameter type!";
+              }
+            
+              pWorkingAnnotation.setParamValue(aparam.getName(), value);
+            }
+          }
+        }
+      }
+      
+      return pWorkingAnnotation;
+    }
+
+
+   
+    /*--------------------------------------------------------------------------------------*/
+    /*   U S E R   I N T E R F A C E                                                        */
+    /*--------------------------------------------------------------------------------------*/
+
+    /**
+     * Initialize the common user interface components.
+     */ 
+    private void 
+    initUI()
+    {
+      setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+
+      Box vbox = new Box(BoxLayout.Y_AXIS);
+      {
+        Component comps[] = UIFactory.createTitledPanels();
+        JPanel tpanel = (JPanel) comps[0];
+        JPanel vpanel = (JPanel) comps[1];
+
+        /* edit buttons */ 
+        {
+          tpanel.add(Box.createRigidArea(new Dimension(0, 19)));
+
+          Box hbox = new Box(BoxLayout.X_AXIS);
+
+          {
+            JButton btn = new JButton("Rename...");
+            pRenameButton = btn;
+            btn.setName("ValuePanelButton");
+            btn.setRolloverEnabled(false);
+            btn.setFocusable(false);
+
+            Dimension size = new Dimension(sVSize/2-2, 19);
+            btn.setMinimumSize(size);
+            btn.setPreferredSize(size);
+            btn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+
+            btn.setActionCommand("rename-annotation:" + pAnnotName);
+            btn.addActionListener(pParent);
+
+            hbox.add(btn);
+          }
+
+          hbox.add(Box.createRigidArea(new Dimension(4, 0)));
+
+          {
+            JButton btn = new JButton("Remove...");
+            pRemoveButton = btn;
+            btn.setName("ValuePanelButton");
+            btn.setRolloverEnabled(false);
+            btn.setFocusable(false);
+
+            Dimension size = new Dimension(sVSize/2-2, 19);
+            btn.setMinimumSize(size);
+            btn.setPreferredSize(size);
+            btn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+
+            btn.setActionCommand("remove-annotation:" + pAnnotName);
+            btn.addActionListener(pParent);
+
+            hbox.add(btn);
+          }
+
+          vpanel.add(hbox);
+
+          UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+        }
+
+        /* annotation */ 
+        {
+          {
+            JLabel label = UIFactory.createFixedLabel
+              ("Annotation:", sTSize-7, JLabel.RIGHT, 
+               "The name of the Annotation plugin.");
+            pAnnotationTitle = label;
+            tpanel.add(label);
+          }
+
+          {
+            Box hbox = new Box(BoxLayout.X_AXIS);
+
+            {
+              JPluginSelectionField field = 
+                UIFactory.createPluginSelectionField
+                  (new PluginMenuLayout(),
+                   new TripleMap<String,String,VersionID,TreeSet<OsType>>(), sVSize);
+              pWorkingAnnotationField = field;
+
+              field.setActionCommand("annotation-changed:" + pAnnotName);
+              field.addActionListener(pParent);
+
+              hbox.add(field);
+            }
+
+            hbox.add(Box.createRigidArea(new Dimension(4, 0)));
+
+            {
+              JButton btn = new JButton();		 
+              pSetAnnotationButton = btn;
+              btn.setName("SmallLeftArrowButton");
+
+              Dimension size = new Dimension(12, 12);
+              btn.setMinimumSize(size);
+              btn.setMaximumSize(size);
+              btn.setPreferredSize(size);
+
+              btn.setActionCommand("set-annotation:" + pAnnotName);
+              btn.addActionListener(pParent);
+
+              hbox.add(btn);
+            } 
+
+            hbox.add(Box.createRigidArea(new Dimension(4, 0)));
+
+            {
+              JTextField field = UIFactory.createTextField("-", sVSize, JLabel.CENTER);
+              pCheckedInAnnotationField = field;
+
+              hbox.add(field);
+            }
+
+            vpanel.add(hbox);
+          }
+        }
+
+        UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+
+        /* annotation version */ 
+        { 
+          {
+            JLabel label = UIFactory.createFixedLabel
+              ("Version:", sTSize-7, JLabel.RIGHT, 
+               "The revision number of the Annotation plugin.");
+            pAnnotationVersionTitle = label;
+            tpanel.add(label);
+          }
+
+          {
+            Box hbox = new Box(BoxLayout.X_AXIS);
+
+            {
+              JTextField field = UIFactory.createTextField("-", sVSize, JLabel.CENTER);
+              pWorkingAnnotationVersionField = field;
+
+              hbox.add(field);
+            }
+
+            hbox.add(Box.createRigidArea(new Dimension(20, 0)));
+
+            {
+              JTextField field = UIFactory.createTextField("-", sVSize, JLabel.CENTER);
+              pCheckedInAnnotationVersionField = field;
+
+              hbox.add(field);
+            }
+
+            vpanel.add(hbox);
+          }
+        }
+
+        UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+
+        /* annotation vendor */ 
+        { 
+          {
+            JLabel label = UIFactory.createFixedLabel
+              ("Vendor:", sTSize-7, JLabel.RIGHT, 
+               "The name of the vendor of the Annotation plugin.");
+            pAnnotationVendorTitle = label;
+            tpanel.add(label);
+          }
+
+          {
+            Box hbox = new Box(BoxLayout.X_AXIS);
+
+            {
+              JTextField field = UIFactory.createTextField("-", sVSize, JLabel.CENTER);
+              pWorkingAnnotationVendorField = field;
+
+              hbox.add(field);
+            }
+
+            hbox.add(Box.createRigidArea(new Dimension(20, 0)));
+
+            {
+              JTextField field = UIFactory.createTextField("-", sVSize, JLabel.CENTER);
+              pCheckedInAnnotationVendorField = field;
+
+              hbox.add(field);
+            }
+
+            vpanel.add(hbox);
+          }
+        }
+        
+        vbox.add(comps[2]);
+      }
+
+      {
+        Box hbox = new Box(BoxLayout.X_AXIS);
+
+        hbox.addComponentListener(pParent);
+        hbox.add(UIFactory.createSidebar());
+        
+        {
+          Component comps[] = UIFactory.createTitledPanels();
+          JPanel tpanel = (JPanel) comps[0];
+          JPanel vpanel = (JPanel) comps[1];
+          
+          tpanel.add(Box.createRigidArea(new Dimension(sTSize-14, 0)));
+          vpanel.add(Box.createHorizontalGlue());
+          
+          UIFactory.addVerticalGlue(tpanel, vpanel);
+          
+          JDrawer drawer = 
+            new JDrawer("Annotation Parameters:", (JComponent) comps[2], true);
+          drawer.setToolTipText(UIFactory.formatToolTip("Annotation plugin parameters."));
+          pParamsDrawer = drawer;
+
+          hbox.add(drawer);
+        }  
+        
+        vbox.add(hbox);
+      }
+
+      {
+        JDrawer drawer = new JDrawer("Annotation: " + pAnnotName, vbox, true);
+        drawer.setToolTipText(UIFactory.formatToolTip("Node Annotation."));
+        add(drawer);
+      }
+
+      updateAnnotation();
+    }
+
+    /**
+     * Update the UI components.
+     */
+    private void 
+    updateAnnotation() 
+    {
+      pWorkingAnnotationField.removeActionListener(pParent);
+      {
+        UIMaster master = UIMaster.getInstance();
+        master.updateAnnotationPluginField(pGroupID, pToolsetName, pWorkingAnnotationField); 
+
+        pWorkingAnnotationField.setPlugin(pWorkingAnnotation);
+
+        updateAnnotationFields();
+      }
+      pWorkingAnnotationField.addActionListener(pParent);
+
+      pSetAnnotationButton.setEnabled
+        (!isLocked() && !pIsFrozen && 
+         (pWorkingAnnotation != null) && (pCheckedInAnnotation != null));
+	
+      {
+        BaseAnnotation annot = pCheckedInAnnotation;
+        if(annot != null) {
+          pCheckedInAnnotationField.setText(annot.getName());
+          pCheckedInAnnotationVersionField.setText("v" + annot.getVersionID());
+          pCheckedInAnnotationVendorField.setText(annot.getVendor());
+        }
+        else {
+          pCheckedInAnnotationField.setText("-");
+          pCheckedInAnnotationVersionField.setText("-");
+          pCheckedInAnnotationVendorField.setText("-");	
+        }
+	
+        pCheckedInAnnotationField.setEnabled(annot != null);
+        pCheckedInAnnotationVersionField.setEnabled(annot != null);
+        pCheckedInAnnotationVendorField.setEnabled(annot != null);
+      }
+      
+      updateAnnotationParams();
+      updateAnnotationColors();
+    }
+
+    /**
+     * Update the annotation plugin version and vendor fields.
+     */ 
+    public void 
+    updateAnnotationFields()
+    {
+      if(pWorkingAnnotationField.getPluginName() != null) {
+        pWorkingAnnotationVersionField.setText
+          ("v" + pWorkingAnnotationField.getPluginVersionID());
+        pWorkingAnnotationVendorField.setText(pWorkingAnnotationField.getPluginVendor());
+      }
+      else {
+        pWorkingAnnotationVersionField.setText("-");
+        pWorkingAnnotationVendorField.setText("-");
+      }
+    }
+    
+    /**
+     * Update the UI components associated annotation parameters.
+     */ 
+    private void 
+    updateAnnotationParams() 
+    {
+      /* the annotations */ 
+      BaseAnnotation wannot = pWorkingAnnotation;
+      BaseAnnotation cannot = pCheckedInAnnotation;
+
+      BaseAnnotation annot = null;
+      if(wannot != null) 
+        annot = wannot;
+      else if(cannot != null) 
+        annot = cannot;
+
+      /* lookup common server info... */ 
+      TreeSet<String> toolsets = null; 
+      Set<String> workUsers  = null;
+      Set<String> workGroups = null;
+      if((wannot != null) || (cannot != null)) {
+        boolean needsToolsets = false;
+        boolean needsWorkGroups = false;
+
+        if(wannot != null) {
+          for(AnnotationParam aparam : wannot.getParams()) {
+            if(aparam instanceof ToolsetAnnotationParam) 
+              needsToolsets = true;
+            else if(aparam instanceof WorkGroupAnnotationParam) 
+              needsWorkGroups = true;
+          }
+        }
+
+        if(cannot != null) {
+          for(AnnotationParam aparam : cannot.getParams()) {
+            if(aparam instanceof ToolsetAnnotationParam) 
+              needsToolsets = true;
+            else if(aparam instanceof WorkGroupAnnotationParam) 
+              needsWorkGroups = true;
+          }
+        }
+        
+        UIMaster master = UIMaster.getInstance();
+        MasterMgrClient mclient = master.acquireMasterMgrClient();
+        try {
+          if(needsToolsets) {
+            toolsets = new TreeSet<String>();
+            toolsets.add("-");
+            try {
+              toolsets.addAll(mclient.getCachedActiveToolsetNames());
+            }
+            catch(PipelineException ex) {
+            }
+          }
+          
+          if(needsWorkGroups) {
+            try {
+              WorkGroups wgroups = mclient.getCachedWorkGroups();
+              workGroups = wgroups.getGroups();
+              workUsers  = wgroups.getUsers();
+            }
+            catch(PipelineException ex) {
+              workGroups = new TreeSet<String>(); 
+              workUsers  = new TreeSet<String>(); 
+            }
+          }
+        }
+        finally {
+          master.releaseMasterMgrClient(mclient);
+        }
+      }
+
+      pRenameButton.setEnabled(wannot != null);
+      pRemoveButton.setEnabled(wannot != null);
+
+      pParamComponents.clear();
+      pDocToAnnotParamName.clear();
+      
+      Component comps[] = UIFactory.createTitledPanels();
+      JPanel tpanel = (JPanel) comps[0];
+      JPanel vpanel = (JPanel) comps[1];
+
+      boolean first = true;
+      if(annot != null) {
+        for(String pname : annot.getLayout()) {
+          if(pname == null) {
+            UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
+          }
+          else {
+            if(!first) 
+              UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+            
+            AnnotationParam param = annot.getParam(pname);
+            if(param != null) {
+              String cname = (pAnnotName + ":" + pname);
+              Component pcomps[] = new Component[4];              
+              pParamComponents.put(pname, pcomps);
+              
+              {
+                JLabel label = UIFactory.createFixedLabel
+                  (param.getNameUI() + ":", sTSize-14, JLabel.RIGHT, 
+                   param.getDescription());
+             
+                pcomps[0] = label;
+           
+                tpanel.add(label);
+
+                {
+                  AnnotationParam aparam = null;
+                  if(annot != null) 
+                    aparam = annot.getParam(pname);
+                  
+                  if((aparam != null) && (aparam instanceof TextAreaAnnotationParam)) { 
+                    TextAreaAnnotationParam bparam = (TextAreaAnnotationParam) aparam; 
+                    int rows = bparam.getRows(); 
+                    int height = 19*rows + 3*(rows-1);
+                    tpanel.add(Box.createRigidArea(new Dimension(0, height-19)));
+                  }
+                }
+              }
+              
+              { 
+                Box hbox = new Box(BoxLayout.X_AXIS);
+
+                {
+                  AnnotationParam aparam = null;
+                  if(wannot != null) 
+                    aparam = wannot.getParam(pname);
+                  
+                  if(aparam != null) {  
+                    boolean paramEnabled = 
+                      (!isLocked() && !pIsFrozen && !wannot.isParamConstant(pname)); 
+                    
+                    if(aparam instanceof BooleanAnnotationParam) {
+                      Boolean value = (Boolean) aparam.getValue();
+                      JBooleanField field = 
+                        UIFactory.createBooleanField(value, sVSize);
+                      pcomps[1] = field;
+                    
+                      field.setActionCommand("annot-param-changed:" + cname);
+                      field.addActionListener(pParent);
+                      
+                      field.setEnabled(paramEnabled);
+                      
+                      hbox.add(field);
+                    }
+                    else if(aparam instanceof DoubleAnnotationParam) {
+                      Double value = (Double) aparam.getValue();
+
+                      JDoubleField field = 
+                        UIFactory.createDoubleField(value, sVSize, JLabel.CENTER);
+                      pcomps[1] = field;
+                    
+                      field.setActionCommand("annot-param-changed:" + cname); 
+                      field.addActionListener(pParent);
+                      
+                      field.setEnabled(paramEnabled);
+                      
+                      hbox.add(field);
+                    }
+                    else if(aparam instanceof EnumAnnotationParam) {
+                      EnumAnnotationParam eparam = (EnumAnnotationParam) aparam;
+                      
+                      JCollectionField field = 
+                        UIFactory.createCollectionField(eparam.getValues(), sVSize); 
+                      pcomps[1] = field;
+
+                      field.setSelected((String) eparam.getValue());
+                      
+                      field.setActionCommand("annot-param-changed:" + cname); 
+                      field.addActionListener(pParent);
+                      
+                      field.setEnabled(paramEnabled);
+                      
+                      hbox.add(field);
+                    }
+                    else if(aparam instanceof IntegerAnnotationParam) {
+                      Integer value = (Integer) aparam.getValue();
+                      JIntegerField field = 
+                        UIFactory.createIntegerField(value, sVSize, JLabel.CENTER);
+                      pcomps[1] = field;
+                    
+                      field.setActionCommand("annot-param-changed:" + cname); 
+                      field.addActionListener(pParent);
+                      
+                      field.setEnabled(paramEnabled);
+                      
+                      hbox.add(field);
+                    }
+                    else if(aparam instanceof TextAreaAnnotationParam) {
+                      TextAreaAnnotationParam bparam = (TextAreaAnnotationParam) aparam; 
+                      String value = (String) aparam.getValue(); 
+                      int rows = bparam.getRows(); 
+                      JTextArea area = UIFactory.createEditableTextArea(value, rows);
+                      pcomps[1] = area;
+
+                      int height = 19*rows + 3*(rows-1);
+                      Dimension size = new Dimension(sVSize, height);
+                      area.setMinimumSize(size);
+                      area.setMaximumSize(new Dimension(Integer.MAX_VALUE, height)); 
+                      area.setPreferredSize(size);
+
+                      Document doc = area.getDocument();
+                      doc.addDocumentListener(pParent);
+                      pDocToAnnotParamName.put(doc, pname);
+                      pDocToAnnotName.put(doc, pAnnotName);
+                      
+                      area.setEnabled(paramEnabled); 
+                      	   
+                      hbox.add(area);
+                    }
+                    else if(aparam instanceof StringAnnotationParam) {
+                      String value = (String) aparam.getValue();
+                      JTextField field = 
+                        UIFactory.createEditableTextField(value, sVSize, JLabel.CENTER);
+                      pcomps[1] = field;
+
+                      field.setActionCommand("annot-param-changed:" + cname);
+                      field.addActionListener(pParent);
+                      
+                      field.setEnabled(paramEnabled); 
+                      	
+                      hbox.add(field);         
+                    }
+                    else if(aparam instanceof PathAnnotationParam) {
+                      Path value = (Path) aparam.getValue();
+                       JPathField field = 
+                         UIFactory.createPathField(value, sVSize, JLabel.CENTER);
+                       pcomps[1] = field;
+
+                      field.setActionCommand("annot-param-changed:" + cname);
+                      field.addActionListener(pParent);
+                      
+                      field.setEnabled(paramEnabled); 
+                      	
+                      hbox.add(field);         
+                    }
+                    else if(aparam instanceof ToolsetAnnotationParam) {
+                      String value = (String) aparam.getValue();
+                      
+                      TreeSet<String> values = new TreeSet<String>(toolsets);
+                      if((value != null) && !values.contains(value))
+                        values.add(value); 
+
+                      JCollectionField field = 
+                        UIFactory.createCollectionField(values, sVSize); 
+                      pcomps[1] = field;
+
+                      if(value != null) 
+                        field.setSelected(value);
+                      else 
+                        field.setSelected("-");
+                      
+                      field.setActionCommand("annot-param-changed:" + cname);
+                      field.addActionListener(pParent);
+                      
+                      field.setEnabled(paramEnabled); 
+                      	
+                      hbox.add(field);         
+                    }
+                    else if(aparam instanceof WorkGroupAnnotationParam) {
+                      WorkGroupAnnotationParam wparam = (WorkGroupAnnotationParam) aparam;
+                      String value = (String) aparam.getValue();
+                      
+                      TreeSet<String> values = new TreeSet<String>();
+                      values.add("-");
+                      if(wparam.allowsGroups()) {
+                        for(String gname : workGroups) 
+                          values.add("[" + gname + "]"); 
+                      }
+                      if(wparam.allowsUsers()) 
+                        values.addAll(workUsers);
+                        
+                      JCollectionField field = 
+                        UIFactory.createCollectionField(values, sVSize); 
+                      pcomps[1] = field;
+                       
+                      if(value == null) 
+                        field.setSelected("-");
+                      else {                  
+                        if(wparam.allowsGroups() && workGroups.contains(value))
+                          field.setSelected("[" + value + "]");
+                        else if(wparam.allowsUsers() && workUsers.contains(value))
+                          field.setSelected(value);
+                        else 
+                          field.setSelected("-");
+                      }
+                      
+                      field.setActionCommand("annot-param-changed:" + cname);
+                      field.addActionListener(pParent);
+                      
+                      field.setEnabled(paramEnabled); 
+                      	
+                      hbox.add(field);         
+                    }
+                    else if(aparam instanceof BuilderIDAnnotationParam) {
+                      BuilderID value = (BuilderID) aparam.getValue();
+
+                      JBuilderIDSelectionField field = 
+                        UIMaster.getInstance().createBuilderIDSelectionField(sVSize);
+                      pcomps[1] = field;
+                      
+                      field.setEnabled(paramEnabled); 
+                      	
+                      hbox.add(field);         
+                    }
+                    else {
+                      assert(false) : 
+                        ("Unknown annotation parameter type (" + pname + ")!");
+                    }
+                  }
+                  else {
+                    JLabel label = UIFactory.createLabel("-", sVSize, JLabel.CENTER);
+                    label.setName("TextFieldLabel");
+                    pcomps[1] = label;
+                    
+                    hbox.add(label);
+                  }
+                }
+
+                hbox.add(Box.createRigidArea(new Dimension(4, 0)));
+
+                {
+                  JButton btn = new JButton();		 
+                  pcomps[2] = btn;
+                  btn.setName("SmallLeftArrowButton");
+                  
+                  Dimension size = new Dimension(12, 12);
+                  btn.setMinimumSize(size);
+                  btn.setMaximumSize(size);
+                  btn.setPreferredSize(size);
+                  
+                  btn.setActionCommand("set-annot-param:" + cname);
+                  btn.addActionListener(pParent);
+                  
+                  btn.setEnabled(!isLocked() && !pIsFrozen && 
+                                 (wannot != null) && (cannot != null) && 
+                                 cannot.getName().equals(wannot.getName()));
+                  
+                  hbox.add(btn);
+                } 
+                
+                hbox.add(Box.createRigidArea(new Dimension(4, 0)));
+                
+                {
+                  AnnotationParam aparam = null;
+                  if((cannot != null) && 
+                     ((wannot == null) || cannot.getName().equals(wannot.getName())))
+                    aparam = cannot.getParam(pname);
+                  
+                  if(aparam != null) {
+                    if(aparam instanceof TextAreaAnnotationParam) {
+                      TextAreaAnnotationParam bparam = (TextAreaAnnotationParam) aparam; 
+                      String value = (String) aparam.getValue(); 
+                      int rows = bparam.getRows(); 
+                      JTextArea area = UIFactory.createTextArea(value, rows);
+                      pcomps[3] = area;
+
+                      int height = 19*rows + 3*(rows-1);
+                      Dimension size = new Dimension(sVSize, height);
+                      area.setMinimumSize(size);
+                      area.setMaximumSize(new Dimension(Integer.MAX_VALUE, height)); 
+                      area.setPreferredSize(size);
+
+                      area.setEnabled(false); 
+
+                      hbox.add(area);
+                    }
+                    else if(aparam instanceof BuilderIDAnnotationParam) {
+                      BuilderID value = (BuilderID) aparam.getValue();
+
+                      JBuilderIDSelectionField field = 
+                        UIMaster.getInstance().createBuilderIDSelectionField(sVSize);
+                      pcomps[3] = field;
+                      
+                      field.setEnabled(false); 
+                      	
+                      hbox.add(field);         
+                    }
+                    else {
+                      String text = "-";
+                      {
+                        if(aparam instanceof BooleanAnnotationParam) {
+                          Boolean value = (Boolean) aparam.getValue();
+                          if(value != null) 
+                            text = (value ? "YES" : "no");
+                          else 
+                            text = "-";
+                        }
+                        else if(aparam instanceof WorkGroupAnnotationParam) {
+                          WorkGroupAnnotationParam gparam = (WorkGroupAnnotationParam) aparam;
+                          String value = (String) gparam.getValue();
+
+                          text = "-";
+                          if(value != null) {
+                            if(gparam.allowsGroups() && workGroups.contains(value))
+                              text = ("[" + value + "]");
+                            else if(gparam.allowsUsers() && workUsers.contains(value))
+                              text = value;
+                          }                          
+                        }
+                        else {
+                          Comparable value = aparam.getValue();
+                          if(value != null)
+                            text = value.toString();
+                        }
+                      }
+                    
+                      JTextField field = 
+                        UIFactory.createTextField(text, sVSize, JLabel.CENTER);
+                      pcomps[3] = field;
+                      
+                      hbox.add(field);
+                    }
+                  }
+                  else {
+                    JLabel label = UIFactory.createLabel("-", sVSize, JLabel.CENTER);
+                    label.setName("TextFieldLabel");
+                    
+                    pcomps[3] = label;
+                    
+                    hbox.add(label);
+                  }
+                }
+                
+                vpanel.add(hbox);
+              }
+
+              /* optional builder ID slave fields */ 
+              if((pcomps[1] instanceof JBuilderIDSelectionField) ||
+                 (pcomps[3] instanceof JBuilderIDSelectionField)) {
+                 
+                JBuilderIDSelectionField wfield = null;
+                if(pcomps[1] instanceof JBuilderIDSelectionField)
+                  wfield = (JBuilderIDSelectionField) pcomps[1];
+                
+                JBuilderIDSelectionField cfield = null;
+                if(pcomps[3] instanceof JBuilderIDSelectionField)
+                  cfield = (JBuilderIDSelectionField) pcomps[3];
+                
+                UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+
+                /* builder version */ 
+                {
+                  {
+                    JLabel label = 
+                      UIFactory.createFixedLabel
+                      ("Version:", sTSize-14, JLabel.RIGHT, 
+                       "The revision number of the builder collection."); 
+                    tpanel.add(label); 
+                  }
+                  
+                  {
+                    Box hbox = new Box(BoxLayout.X_AXIS);
+
+                    if(wfield != null) 
+                      hbox.add(wfield.createVersionField(sVSize));
+                    else {
+                      JLabel label = UIFactory.createLabel("-", sVSize, JLabel.CENTER);
+                      label.setName("TextFieldLabel");
+                      hbox.add(label); 
+                    }
+                      
+                    hbox.add(Box.createRigidArea(new Dimension(20, 0)));
+
+                    if(cfield != null) 
+                      hbox.add(cfield.createVersionField(sVSize));
+                    else {
+                      JLabel label = UIFactory.createLabel("-", sVSize, JLabel.CENTER);
+                      label.setName("TextFieldLabel");
+                      hbox.add(label); 
+                    }
+
+                    vpanel.add(hbox); 
+                  }
+                }
+
+                UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+
+                /* builder vendor */ 
+                {
+                  {
+                    JLabel label = 
+                      UIFactory.createFixedLabel
+                      ("Vendor:", sTSize-14, JLabel.RIGHT, 
+                       "The vendor of the builder collection."); 
+                    tpanel.add(label); 
+                  }
+                    
+                  {
+                    Box hbox = new Box(BoxLayout.X_AXIS);
+
+                    if(wfield != null) 
+                      hbox.add(wfield.createVendorField(sVSize));
+                    else {
+                      JLabel label = UIFactory.createLabel("-", sVSize, JLabel.CENTER);
+                      label.setName("TextFieldLabel");
+                      hbox.add(label); 
+                    }
+
+                    hbox.add(Box.createRigidArea(new Dimension(20, 0)));
+                    
+                    if(cfield != null) 
+                      hbox.add(cfield.createVendorField(sVSize));
+                    else {
+                      JLabel label = UIFactory.createLabel("-", sVSize, JLabel.CENTER);
+                      label.setName("TextFieldLabel");
+                      hbox.add(label); 
+                    }
+                    
+                    vpanel.add(hbox); 
+                  }
+                }
+
+                UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+
+                /* builder OS support */ 
+                {
+                  {
+                    JLabel label = 
+                      UIFactory.createFixedLabel
+                      ("OS Support:", sVSize, JLabel.RIGHT, 
+                       "The operating systems supported by the builer collection."); 
+                    tpanel.add(label); 
+                  }
+                  
+                  {
+                    Box hbox = new Box(BoxLayout.X_AXIS);
+
+                    if(wfield != null) 
+                      hbox.add(wfield.createOsSupportField(sVSize));
+                    else {
+                      JLabel label = UIFactory.createLabel("-", sVSize, JLabel.CENTER);
+                      label.setName("TextFieldLabel");
+                      hbox.add(label); 
+                    }
+
+                    hbox.add(Box.createRigidArea(new Dimension(20, 0)));
+                    
+                    if(cfield != null) 
+                      hbox.add(cfield.createOsSupportField(sVSize));
+                    else {
+                      JLabel label = UIFactory.createLabel("-", sVSize, JLabel.CENTER);
+                      label.setName("TextFieldLabel");
+                      hbox.add(label); 
+                    }
+
+                    vpanel.add(hbox); 
+                  }
+                }
+                
+                UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
+                
+                /* builder OS support */ 
+                {
+                  {
+                    JLabel label = 
+                      UIFactory.createFixedLabel
+                      ("Builder Name:", sVSize, JLabel.RIGHT, 
+                       "The name of the selected builder within the builder collection."); 
+                    tpanel.add(label); 
+                  }
+                  
+                  {
+                    Box hbox = new Box(BoxLayout.X_AXIS);
+
+                    if(wfield != null) 
+                      hbox.add(wfield.createBuilderNameField(sVSize));
+                    else {
+                      JLabel label = UIFactory.createLabel("-", sVSize, JLabel.CENTER);
+                      label.setName("TextFieldLabel");
+                      hbox.add(label); 
+                    }
+
+                    hbox.add(Box.createRigidArea(new Dimension(20, 0)));
+
+                    if(cfield != null) 
+                      hbox.add(cfield.createBuilderNameField(sVSize));
+                    else {
+                      JLabel label = UIFactory.createLabel("-", sVSize, JLabel.CENTER);
+                      label.setName("TextFieldLabel");
+                      hbox.add(label); 
+                    }
+
+                    vpanel.add(hbox); 
+                  }
+                }              
+
+                /* set the value for all fields */ 
+                if(wfield != null) {
+                  AnnotationParam wparam = null;
+                  if(wannot != null) 
+                    wparam = wannot.getParam(pname);
+                  
+                  if(wparam != null) 
+                    wfield.setBuilderID((BuilderID) wparam.getValue()); 
+
+                  wfield.setActionCommand("annot-param-changed:" + cname);
+                  wfield.addActionListener(pParent);
+                }
+
+                if(cfield != null) {
+                  AnnotationParam cparam = null;
+                  if((cannot != null) && 
+                     ((wannot == null) || cannot.getName().equals(wannot.getName())))
+                    cparam = cannot.getParam(pname);
+                  
+                  if(cparam != null) 
+                    cfield.setBuilderID((BuilderID) cparam.getValue()); 
+                }
+              }
+            }
+          }
+            
+          first = false;
+        }
+      }
+      else {
+        tpanel.add(Box.createRigidArea(new Dimension(sTSize-7, 0)));
+        vpanel.add(Box.createHorizontalGlue());
+      }
+
+      UIFactory.addVerticalGlue(tpanel, vpanel);
+        
+      pParamsDrawer.setContents((JComponent) comps[2]);
+    }
+
+    /**
+     * Update the appearance of the annotation fields after a change of value.
+     */ 
+    private void 
+    updateAnnotationColors()
+    {
+      BaseAnnotation wannot = pWorkingAnnotation;
+      BaseAnnotation cannot = pCheckedInAnnotation;
+      
+      BaseAnnotation annot = null;
+      if(wannot != null) 
+        annot = wannot;
+      else if (cannot != null) 
+        annot = cannot;
+
+      Color color = Color.white;
+      if((wannot != null) && (cannot != null)) {  
+        if(!(((wannot == null) && (cannot == null)) ||
+             ((wannot != null) && (cannot != null) && 
+              wannot.getName().equals(cannot.getName()) && 
+              wannot.getVersionID().equals(cannot.getVersionID()) && 
+              wannot.getVendor().equals(cannot.getVendor()))))
+          color = Color.cyan;
+        else 
+          color = null;
+      }
+      
+      pAnnotationTitle.setForeground(color);
+      pWorkingAnnotationField.setForeground(color);
+      pCheckedInAnnotationField.setForeground(color);
+      
+      pAnnotationVersionTitle.setForeground(color);
+      pWorkingAnnotationVersionField.setForeground(color);
+      pCheckedInAnnotationVersionField.setForeground(color);
+      
+      pAnnotationVendorTitle.setForeground(color);
+      pWorkingAnnotationVendorField.setForeground(color);
+      pCheckedInAnnotationVendorField.setForeground(color);
+
+      if(annot != null) {
+        for(AnnotationParam aparam : annot.getParams()) 
+          updateAnnotParamColor(aparam.getName(), color);
+      }
+    }
+  
+    /**
+     * Update the color of the UI components associated with an action parameter.
+     */ 
+    private void 
+    updateAnnotParamColor
+    (
+     String pname,
+     Color color
+    ) 
+    {
+      Component pcomps[] = pParamComponents.get(pname);
+      if(pcomps == null)
+        return;
+
+      Color fg = color;
+      if(fg == null) {
+        String wtext = null;
+        {
+          AnnotationParam aparam = null;
+          if(pWorkingAnnotation != null) 
+            aparam = pWorkingAnnotation.getParam(pname);
+          
+          if(aparam != null) {
+            if(aparam instanceof BooleanAnnotationParam) {
+              JBooleanField field = (JBooleanField) pcomps[1];
+              if(field.getValue() != null) 
+                wtext = field.getValue().toString();
+            }
+            else if(aparam instanceof DoubleAnnotationParam) {
+              JDoubleField field = (JDoubleField) pcomps[1];
+              if(field.getValue() != null) 
+                wtext = field.getValue().toString();
+            }
+            else if(aparam instanceof EnumAnnotationParam) {
+              JCollectionField field = (JCollectionField) pcomps[1];
+              wtext = field.getSelected();
+            }
+            else if(aparam instanceof IntegerAnnotationParam) {  
+              JIntegerField field = (JIntegerField) pcomps[1];
+              if(field.getValue() != null) 
+                wtext = field.getValue().toString();
+            }
+            else if(aparam instanceof TextAreaAnnotationParam) {
+              JTextArea area = (JTextArea) pcomps[1];
+              wtext = area.getText();
+            }
+            else if(aparam instanceof StringAnnotationParam) {
+              JTextField field = (JTextField) pcomps[1];
+              wtext = field.getText();
+            }
+            else if(aparam instanceof PathAnnotationParam) {
+              JPathField field = (JPathField) pcomps[1];
+              Path path = field.getPath();
+              if(path != null) 
+                wtext = path.toString();
+            }
+            else if(aparam instanceof ToolsetAnnotationParam) {
+              JCollectionField field = (JCollectionField) pcomps[1];
+              wtext = field.getSelected();
+            }
+            else if(aparam instanceof WorkGroupAnnotationParam) {
+              JCollectionField field = (JCollectionField) pcomps[1];
+              String ugname = field.getSelected(); 
+              if(ugname != null) {
+                if(ugname.equals("-") || (ugname.length() == 0))
+                  wtext = null;
+                else if(ugname.startsWith("[") && ugname.endsWith("]"))
+                  wtext = ugname.substring(1, ugname.length()-1);
+                else 
+                  wtext = ugname;
+              }
+            }
+            else if(aparam instanceof BuilderIDAnnotationParam) {
+              JBuilderIDSelectionField field = (JBuilderIDSelectionField) pcomps[1];
+              BuilderID builderID = field.getBuilderID();
+              if(builderID != null) 
+                wtext = builderID.toString();
+            }
+          }
+        }
+
+        String ctext = null;
+        {
+          AnnotationParam aparam = null;
+          if((pCheckedInAnnotation != null) && 
+             ((pWorkingAnnotation == null) || 
+              pCheckedInAnnotation.getName().equals(pWorkingAnnotation.getName())))
+            aparam = pCheckedInAnnotation.getParam(pname);
+
+          if((aparam != null) && (aparam.getValue() != null)) 
+            ctext = aparam.getValue().toString();
+        }
+        
+        if(((wtext == null) && (ctext == null)) ||
+           ((wtext != null) && wtext.equals(ctext)))
+          fg = Color.white;
+        else
+          fg = Color.cyan;
+      }
+    
+      {
+        pcomps[0].setForeground(fg);
+        
+        if(pcomps[1] instanceof JIntegerField) 
+          ((JIntegerField) pcomps[1]).setWarningColor(fg);
+        else if(pcomps[1] instanceof JDoubleField) 
+          ((JDoubleField) pcomps[1]).setWarningColor(fg);
+        else 
+          pcomps[1].setForeground(fg);
+        
+        pcomps[3].setForeground(fg);
+      }
+    }
+    
+    
+
+    /*--------------------------------------------------------------------------------------*/
+    /*   A C T I O N S                                                                      */
+    /*--------------------------------------------------------------------------------------*/
+
+    /**
+     * Set the working annotation field from the value of the checked-in field.
+     */ 
+    public void 
+    doSetAnnotation() 
+    { 
+      BaseAnnotation cannot = getCheckedInVersion().getAnnotation(pAnnotName);
+
+      try {
+        PluginMgrClient pclient = PluginMgrClient.getInstance();
+        pWorkingAnnotation = pclient.newAnnotation(cannot.getName(), 
+                                                   cannot.getVersionID(), 
+                                                   cannot.getVendor()); 
+        pWorkingAnnotation.setParamValues(cannot);
+        unsavedChange("Annotation Plugin: " + pAnnotName); 
+      }
+      catch(PipelineException ex) {
+        UIMaster.getInstance().showErrorDialog(ex);
+        pWorkingAnnotation = null;	    
+      }
+
+      updateAnnotation(); 
+    }
+
+    /**
+     * Update the appearance of the annotation field after a change of value.
+     */ 
+    public void 
+    doAnnotationChanged
+    (
+     boolean modified
+    )  
+    {
+      if(modified) 
+        unsavedChange("Annotation Plugin: " + pAnnotName); 
+
+      BaseAnnotation oannot = getWorkingAnnotation(); 
+
+      String aname = pWorkingAnnotationField.getPluginName();
+      if(aname == null) {
+        pWorkingAnnotation = null;
+      }
+      else {
+        VersionID avid = pWorkingAnnotationField.getPluginVersionID();
+        String avendor = pWorkingAnnotationField.getPluginVendor();
+        
+        if((oannot == null) || 
+           !oannot.getName().equals(aname) ||
+           !oannot.getVersionID().equals(avid) ||
+           !oannot.getVendor().equals(avendor)) {
+          try {
+            PluginMgrClient pclient = PluginMgrClient.getInstance();
+            pWorkingAnnotation = pclient.newAnnotation(aname, avid, avendor);
+            if(oannot != null)
+              pWorkingAnnotation.setParamValues(oannot);
+            unsavedChange("Annotation Plugin: " + aname);
+          }
+          catch(PipelineException ex) {
+            UIMaster.getInstance().showErrorDialog(ex);
+            pWorkingAnnotation = null;	    
+          }
+        }
+      }
+      
+      updateAnnotationFields();
+      updateAnnotationParams();
+
+      updateAnnotationColors();
+    }
+
+    /**
+     * Remove the given working annotation.
+     */ 
+    public void 
+    doRemoveAnnotation() 
+    {
+      pWorkingAnnotation = null;
+      updateAnnotation();
+    }
+
+    
+    /*--------------------------------------------------------------------------------------*/
+
+    /**
+     * Set the working annotation parameter field from the value of the checked-in 
+     * annotation parameter.
+     */ 
+    public void 
+    doSetAnnotationParam
+    (
+     String pname
+    ) 
+    {
+      BaseAnnotation wannot = pWorkingAnnotation;
+      BaseAnnotation cannot = pCheckedInAnnotation;
+
+      AnnotationParam wparam = null;
+      if(wannot != null) 
+        wparam = wannot.getParam(pname);
+      
+      AnnotationParam cparam = null;
+      if(cannot != null) 
+        cparam = cannot.getParam(pname);
+      
+      if((wparam != null) && (cparam != null) && wannot.getName().equals(cannot.getName())) {
+        Component pcomps[] = pParamComponents.get(pname);
+        if(pcomps != null) {
+          Comparable value = cparam.getValue();
+          if(wparam instanceof BooleanAnnotationParam) {
+            JBooleanField field = (JBooleanField) pcomps[1];
+            field.setValue((Boolean) value);
+          }
+          else if(wparam instanceof DoubleAnnotationParam) {
+            JDoubleField field = (JDoubleField) pcomps[1];
+            field.setValue((Double) value);
+          }
+          else if(wparam instanceof EnumAnnotationParam) {
+            JCollectionField field = (JCollectionField) pcomps[1];
+            field.setSelected(value.toString()); 
+          }
+          else if(wparam instanceof IntegerAnnotationParam) {
+            JIntegerField field = (JIntegerField) pcomps[1];
+            field.setValue((Integer) value);
+          }
+          else if(wparam instanceof TextAreaAnnotationParam) {
+            JTextArea field = (JTextArea) pcomps[1]; 
+            if(value != null) 
+              field.setText(value.toString());
+            else 
+              field.setText(null);
+          }
+          else if(wparam instanceof StringAnnotationParam) {
+            JTextField field = (JTextField) pcomps[1];
+            if(value != null) 
+              field.setText(value.toString());
+            else 
+              field.setText(null);
+          }
+          else if(wparam instanceof PathAnnotationParam) {
+            JPathField field = (JPathField) pcomps[1];
+            field.setPath((Path) value);	  
+          }
+          else if(wparam instanceof ToolsetAnnotationParam) {
+            JCollectionField field = (JCollectionField) pcomps[1];
+            if(value != null) 
+              field.setSelected((String) value);
+            else 
+              field.setSelected("-");
+          }
+          else if(wparam instanceof WorkGroupAnnotationParam) {
+            JCollectionField field = (JCollectionField) pcomps[1];
+            if(value == null) 
+              field.setSelected("-");
+            else {        
+              Set<String> workUsers  = null;
+              Set<String> workGroups = null;
+              {
+                UIMaster master = UIMaster.getInstance();
+                MasterMgrClient mclient = master.acquireMasterMgrClient();
+                try {
+                  WorkGroups wgroups = mclient.getCachedWorkGroups();
+                  workGroups = wgroups.getGroups();
+                  workUsers  = wgroups.getUsers();
+                }
+                catch(PipelineException ex) {
+                  workGroups = new TreeSet<String>(); 
+                  workUsers  = new TreeSet<String>(); 
+                }
+                finally {
+                  master.releaseMasterMgrClient(mclient);
+                }
+              }
+          
+              WorkGroupAnnotationParam wgparam = (WorkGroupAnnotationParam) wparam;
+              if(wgparam.allowsGroups() && workGroups.contains(value))
+                field.setSelected("[" + value + "]");
+              else if(wgparam.allowsUsers() && workUsers.contains(value))
+                field.setSelected((String) value);
+              else 
+                field.setSelected("-");
+            }
+          }
+          else if(wparam instanceof BuilderIDAnnotationParam) {
+            JBuilderIDSelectionField field = (JBuilderIDSelectionField) pcomps[1];
+            field.setBuilderID((BuilderID) value);
+          }
+          else {
+            assert(false) : "Unknown annotation parameter type!";
+          }
+
+          doAnnotationParamChanged(pname);
+        }
+      }
+    }
+
+    
+    /*--------------------------------------------------------------------------------------*/
+
+  
+    /**
+     * Notify the panel that an annotation parameter has changed value.
+     */ 
+    public void 
+    doAnnotationParamChanged
+    (
+     String pname
+    ) 
+    {
+      unsavedChange("Annotation Parameter: " + pAnnotName + " (" + pname + ")"); 
+      updateAnnotParamColor(pname, null);
+    }
+    
+    /**
+     * Notify the panel that an annotation parameter has changed value.
+     */ 
+    public void 
+    doAnnotationParamChanged
+    (
+     Document doc
+    ) 
+    {
+      String pname = pDocToAnnotParamName.get(doc);
+      unsavedChange("Annotation Parameter: " + pAnnotName + " (" + pname + ")"); 
+      updateAnnotParamColor(pname, null);
+    }
+
+    
+
+
+    /*--------------------------------------------------------------------------------------*/
+    /*   I N T E R N A L S                                                                  */
+    /*--------------------------------------------------------------------------------------*/
+
+    private static final long serialVersionUID = 94363755980501272L;
+
+    private JNodeDetailsPanel  pParent; 
+
+    private String pToolsetName; 
+
+    private String          pAnnotName; 
+    private BaseAnnotation  pWorkingAnnotation; 
+    private BaseAnnotation  pCheckedInAnnotation; 
+
+    private JButton pRenameButton;
+    private JButton pRemoveButton;
+     
+    private JLabel                 pAnnotationTitle;     
+    private JPluginSelectionField  pWorkingAnnotationField;                         
+    private JButton                pSetAnnotationButton; 
+    private JTextField             pCheckedInAnnotationField;
+
+    private JLabel      pAnnotationVersionTitle;
+    private JTextField  pWorkingAnnotationVersionField;
+    private JTextField  pCheckedInAnnotationVersionField;
+
+    private JLabel      pAnnotationVendorTitle;
+    private JTextField  pWorkingAnnotationVendorField;
+    private JTextField  pCheckedInAnnotationVendorField;
+
+    private JDrawer                      pParamsDrawer; 
+    private TreeMap<String,Component[]>  pParamComponents; 
+    private ListMap<Document, String>    pDocToAnnotParamName;
+  }
+  
+
   /*----------------------------------------------------------------------------------------*/
 
   /** 
@@ -6290,6 +8157,7 @@ class JNodeDetailsPanel
    * The working file popup menu items.
    */ 
   private JMenuItem  pApplyItem;
+  private JMenuItem  pAddAnnotationItem;
   private JMenuItem  pQueueJobsItem;
   private JMenuItem  pQueueJobsSpecialItem;
   private JMenuItem  pVouchItem;
@@ -6791,7 +8659,6 @@ class JNodeDetailsPanel
   private JDrawer  pJobReqsDrawer;
 
 
-
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -6829,6 +8696,7 @@ class JNodeDetailsPanel
    */ 
   private JDrawer  pLicenseDrawer;
   
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -6846,5 +8714,35 @@ class JNodeDetailsPanel
    * The drawer containing the hardware key components.
    */ 
   private JDrawer  pHardwareDrawer;
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The annotations container. 
+   */ 
+  private Box  pAnnotationsBox;
+
+  /**
+   * Temporary table of pairs of working and checked-in annotations indexed by 
+   * their common annotations name. 
+   */ 
+  private TreeMap<String,BaseAnnotation[]>  pAnnotations;
+
+  /**
+   * The panels containing information about the pair of working and checked-in 
+   * annotations indexed by thier common annotations name. 
+   */ 
+  private TreeMap<String,JAnnotationPanel>  pAnnotationsPanels;
+
+  /**
+   * The drawer containing all annotations components. 
+   */ 
+  private JDrawer  pAnnotationsDrawer;
+
+  /**
+   * The annotation names indexed by the TextArea annotation parameter documents.
+   */ 
+  private ListMap<Document, String> pDocToAnnotName;
 
 }

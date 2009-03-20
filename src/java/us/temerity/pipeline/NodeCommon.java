@@ -1,4 +1,4 @@
-// $Id: NodeCommon.java,v 1.32 2008/07/08 09:59:39 jim Exp $
+// $Id: NodeCommon.java,v 1.33 2009/03/20 03:10:38 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -34,7 +34,8 @@ class NodeCommon
   protected 
   NodeCommon() 
   {
-    pSecondarySeqs = new TreeSet<FileSeq>();
+    pSecondarySeqs = new TreeSet<FileSeq>(); 
+    pAnnotations   = new TreeMap<String,BaseAnnotation>();
   }
 
   /**
@@ -181,6 +182,7 @@ class NodeCommon
     pOverflow        = com.getOverflowPolicy();
     pExecution       = com.getExecutionMethod();
     pBatchSize       = com.getBatchSize();
+    pAnnotations     = com.getAnnotations();
   }
 
 
@@ -262,7 +264,9 @@ class NodeCommon
       pIsActionEnabled = isActionEnabled;
     else if(isActionEnabled) 
       throw new IllegalArgumentException
-	("The action cannot be enabled if it does not exist!");    
+	("The action cannot be enabled if it does not exist!"); 
+    
+    pAnnotations = new TreeMap<String,BaseAnnotation>();  
   }
 
 
@@ -428,7 +432,46 @@ class NodeCommon
   {
     return pBatchSize;
   }
+ 
+ 
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * Get a specific annotation associated with this node version.<P> 
+   * 
+   * @param aname 
+   *   The name of the annotation. 
+   * 
+   * @return 
+   *   The named annotation for the node or <CODE>null</CODE> if none exists. 
+   */ 
+  public BaseAnnotation
+  getAnnotation
+  (
+   String aname
+  ) 
+  {
+    BaseAnnotation annot = pAnnotations.get(aname);
+    if(annot != null) 
+      return (BaseAnnotation) annot.clone();
+    return null;
+  }
   
+  /**
+   * Get all of the annotations associated with this node version.<P> 
+   * 
+   * @return 
+   *   The annotations indexed by annotation name (may be empty).
+   */ 
+  public TreeMap<String,BaseAnnotation> 
+  getAnnotations() 
+  {
+    TreeMap<String,BaseAnnotation> rtn = new TreeMap<String,BaseAnnotation>();
+    for(String name : pAnnotations.keySet()) 
+      rtn.put(name, (BaseAnnotation) pAnnotations.get(name).clone());
+    return rtn;
+  }  
+
 
   /*----------------------------------------------------------------------------------------*/
   
@@ -475,7 +518,8 @@ class NodeCommon
 	    (((pExecution == null) && (com.pExecution == null)) || 
 	     ((pExecution != null) && pExecution.equals(com.pExecution))) &&
 	    (((pBatchSize == null) && (com.pBatchSize == null)) || 
-	     ((pBatchSize != null) && pBatchSize.equals(com.pBatchSize))));
+	     ((pBatchSize != null) && pBatchSize.equals(com.pBatchSize))) &&
+            pAnnotations.equals(com.pAnnotations));
   }
 
 
@@ -556,6 +600,11 @@ class NodeCommon
     out.writeObject(pOverflow);
     out.writeObject(pExecution);
     out.writeObject(pBatchSize);
+
+    TreeMap<String,BaseAnnotation> annots = new TreeMap<String,BaseAnnotation>();
+    for(String aname : pAnnotations.keySet()) 
+      annots.put(aname, new BaseAnnotation(pAnnotations.get(aname)));
+    out.writeObject(annots);
   }
 
   /**
@@ -615,6 +664,23 @@ class NodeCommon
     pOverflow = (OverflowPolicy) in.readObject();
     pExecution = (ExecutionMethod) in.readObject();
     pBatchSize = (Integer) in.readObject();
+
+    pAnnotations = new TreeMap<String,BaseAnnotation>();
+    TreeMap<String,BaseAnnotation> annots = (TreeMap<String,BaseAnnotation>) in.readObject();
+    for(String aname : annots.keySet()) {
+      try {
+        PluginMgrClient client = PluginMgrClient.getInstance();
+        BaseAnnotation base = annots.get(aname);
+        BaseAnnotation inst = client.newAnnotation(base.getName(), 
+                                                   base.getVersionID(), 
+                                                   base.getVendor());
+        inst.setParamValues(base);
+        pAnnotations.put(aname, inst);          
+      }
+      catch(PipelineException ex) {
+        throw new IOException(ex.getMessage());
+      }
+    }
   }
  
 
@@ -664,6 +730,13 @@ class NodeCommon
 	  throw new IllegalStateException(); 
 	encoder.encode("BatchSize", pBatchSize);
       }
+    }
+
+    if(!pAnnotations.isEmpty()) {
+      TreeMap<String,BaseAnnotation> annots = new TreeMap<String,BaseAnnotation>();
+      for(String aname : pAnnotations.keySet()) 
+        annots.put(aname, new BaseAnnotation(pAnnotations.get(aname)));
+      encoder.encode("Annotations", annots); 
     }
   }
 
@@ -745,6 +818,26 @@ class NodeCommon
 	  throw new GlueException("The \"BatchSize\" was missing or (null)!");
 	pBatchSize = size;
       }
+    }
+
+    pAnnotations.clear();
+    TreeMap<String,BaseAnnotation> annots = 
+      (TreeMap<String,BaseAnnotation>) decoder.decode("Annotations");
+    if(annots != null) {
+      for(String aname : annots.keySet()) {
+        try {
+          PluginMgrClient client = PluginMgrClient.getInstance();
+          BaseAnnotation base = annots.get(aname);
+          BaseAnnotation inst = client.newAnnotation(base.getName(), 
+                                                     base.getVersionID(), 
+                                                     base.getVendor());
+          inst.setParamValues(base);
+          pAnnotations.put(aname, inst);          
+        }
+        catch(PipelineException ex) {
+          throw new GlueException(ex.getMessage());
+        }
+      }    
     }
   }
 
@@ -973,5 +1066,11 @@ class NodeCommon
   protected Integer  pBatchSize;          
 
  
+  /** 
+   * The annotation plugin instances associated with this version of the node indexed
+   * by the name of the annotations. 
+   */
+  protected TreeMap<String,BaseAnnotation>  pAnnotations;
+
 }
 

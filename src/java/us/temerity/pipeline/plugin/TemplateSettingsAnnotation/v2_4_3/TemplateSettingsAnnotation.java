@@ -1,4 +1,4 @@
-// $Id: TemplateSettingsAnnotation.java,v 1.1 2008/09/19 03:30:09 jesse Exp $
+// $Id: TemplateSettingsAnnotation.java,v 1.2 2009/03/20 03:10:39 jim Exp $
 
 package us.temerity.pipeline.plugin.TemplateSettingsAnnotation.v2_4_3;
 
@@ -138,6 +138,8 @@ class TemplateSettingsAnnotation
 
       setLayout(layout);      
     }
+
+    addContext(AnnotationContext.PerVersion);
     
     underDevelopment();
   }
@@ -150,11 +152,11 @@ class TemplateSettingsAnnotation
 
   private static final long serialVersionUID = 596856736121177610L;
   
-  public static final String aCloneFiles = "CloneFiles";
-  public static final String aPreEnableAction = "PreEnableAction";
-  public static final String aUnlinkAll ="UnlinkAll";
-  public static final String aVouch = "Vouch";
-  public static final String aPostRemoveAction = "PostRemoveAction";
+  public static final String aCloneFiles        = "CloneFiles";
+  public static final String aPreEnableAction   = "PreEnableAction";
+  public static final String aUnlinkAll         = "UnlinkAll";
+  public static final String aVouch             = "Vouch";
+  public static final String aPostRemoveAction  = "PostRemoveAction";
   public static final String aPostDisableAction = "PostDisableAction";
   
 }

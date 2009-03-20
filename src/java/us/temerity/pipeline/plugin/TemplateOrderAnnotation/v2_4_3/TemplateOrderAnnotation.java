@@ -1,4 +1,4 @@
-// $Id: TemplateOrderAnnotation.java,v 1.1 2008/10/17 03:36:46 jesse Exp $
+// $Id: TemplateOrderAnnotation.java,v 1.2 2009/03/20 03:10:39 jim Exp $
 
 package us.temerity.pipeline.plugin.TemplateOrderAnnotation.v2_4_3;
 
@@ -42,6 +42,8 @@ class TemplateOrderAnnotation
       addParam(param);
     }
     
+    addContext(AnnotationContext.PerVersion);
+
     underDevelopment();
   }
   
