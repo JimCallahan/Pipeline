@@ -1,4 +1,4 @@
-// $Id: JRegisterDialog.java,v 1.23 2009/03/20 18:04:19 jesse Exp $
+// $Id: JRegisterDialog.java,v 1.24 2009/03/24 01:21:21 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -326,7 +326,7 @@ class JRegisterDialog
       else 
 	pToolsetField.setSelected(defaultToolset);
 
-      master.updateEditorPluginField(pToolsetField.getSelected(), pEditorField);
+      master.updateEditorPluginField(pChannel, pToolsetField.getSelected(), pEditorField);
     }
 
     pFileSeqDialog.updateHeader(author, view);
@@ -698,7 +698,7 @@ class JRegisterDialog
     if(toolset.equals("-")) 
       toolset = null;
 
-    UIMaster.getInstance().updateEditorPluginField(toolset, pEditorField);    
+    UIMaster.getInstance().updateEditorPluginField(pChannel, toolset, pEditorField);    
   }
 
 

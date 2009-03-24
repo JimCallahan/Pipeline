@@ -1,4 +1,4 @@
-// $Id: JManagePrivilegesDialog.java,v 1.6 2009/03/19 21:55:59 jesse Exp $
+// $Id: JManagePrivilegesDialog.java,v 1.7 2009/03/24 01:21:21 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -709,8 +709,10 @@ class  JManagePrivilegesDialog
     MasterMgrClient client = master.acquireMasterMgrClient();
     try {
       TreeMap<String,Privileges> privs = pPrivilegesTableModel.getModifiedPrivileges();
-      if(!privs.isEmpty()) 
+      if(!privs.isEmpty()) {
 	client.editPrivileges(privs);
+	master.invalidateAllCachedPrivilegeDetails();
+      }
 
       DoubleMap<String,String,Boolean> members = 
 	pPrivilegesTableModel.getModifiedWorkGroupMemberships(); 
@@ -720,6 +722,7 @@ class  JManagePrivilegesDialog
 	  pWorkGroups.setMemberOrManager(uname, gname, members.get(uname, gname));
 	}
 	client.setWorkGroups(pWorkGroups);
+	master.invalidateAllCachedWorkGroups();
       }
     }
     catch(PipelineException ex) {
@@ -825,6 +828,7 @@ class  JManagePrivilegesDialog
 	  try {
 	    pWorkGroups.addUser(uname);
 	    client.setWorkGroups(pWorkGroups);
+	    master.invalidateAllCachedWorkGroups();
 	    modified = true;
 	  }
 	  catch(PipelineException ex) {
@@ -860,6 +864,7 @@ class  JManagePrivilegesDialog
 	  String uname = pPrivilegeNamesTableModel.getName(rows[wk]);
 	  pWorkGroups.removeUser(uname);
 	  client.setWorkGroups(pWorkGroups);
+	  master.invalidateAllCachedWorkGroups();
 	  modified = true;
 	}
       }
@@ -898,6 +903,7 @@ class  JManagePrivilegesDialog
 	  try {
 	    pWorkGroups.addGroup(gname);
 	    client.setWorkGroups(pWorkGroups);
+	    master.invalidateAllCachedWorkGroups();
 	    modified = true;
 	  }
 	  catch(PipelineException ex) {
@@ -929,6 +935,7 @@ class  JManagePrivilegesDialog
       try {
 	pWorkGroups.removeGroup(pGroupUnderMouse);
 	client.setWorkGroups(pWorkGroups);
+	master.invalidateAllCachedWorkGroups();
 	modified = true;
       }
       catch(PipelineException ex) {

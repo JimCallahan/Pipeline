@@ -1,4 +1,4 @@
-// $Id: JNodeHistoryPanel.java,v 1.30 2009/03/20 18:04:19 jesse Exp $
+// $Id: JNodeHistoryPanel.java,v 1.31 2009/03/24 01:21:21 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -656,7 +656,7 @@ class JNodeHistoryPanel
       UIMaster master = UIMaster.getInstance();
       int wk;
       for(wk=0; wk<pEditWithMenus.length; wk++) 
-	master.rebuildEditorMenu(toolset, pEditWithMenus[wk], this);
+	master.rebuildEditorMenu(pGroupID, toolset, pEditWithMenus[wk], this);
       
       pEditorMenuToolset = toolset;
     }

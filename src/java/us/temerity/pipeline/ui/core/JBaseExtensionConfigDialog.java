@@ -1,4 +1,4 @@
-// $Id: JBaseExtensionConfigDialog.java,v 1.8 2009/03/19 21:55:59 jesse Exp $
+// $Id: JBaseExtensionConfigDialog.java,v 1.9 2009/03/24 01:21:21 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -20,7 +20,7 @@ import javax.swing.event.*;
  */ 
 public abstract
 class JBaseExtensionConfigDialog
-  extends JFullDialog
+  extends JFullCacheDialog
   implements ComponentListener, DocumentListener, ActionListener
 {
   /*----------------------------------------------------------------------------------------*/
@@ -173,6 +173,9 @@ class JBaseExtensionConfigDialog
       pIsEnabled = false;
     }
     pNameField.getDocument().addDocumentListener(this);
+    
+    /* Clear the UI Cache*/
+    invalidateCaches();
 	
     updateExtension();		
   }
@@ -272,25 +275,19 @@ class JBaseExtensionConfigDialog
   private void 
   updateExtension() 
   { 
-    UIMaster master = UIMaster.getInstance();
-    
-
     pToolsetField.removeActionListener(this);
     TreeSet<String> toolsets = new TreeSet<String>();
     {
-      MasterMgrClient client = master.acquireMasterMgrClient();
+      UICache cache = getUICache();
       try {
 	if(pToolset == null) 
-	  pToolset = client.getDefaultToolsetName();
+	  pToolset = cache.getCachedDefaultToolsetName();
 	
-	toolsets.addAll(client.getActiveToolsetNames());
+	toolsets.addAll(cache.getCachedActiveToolsetNames());
 	if((pToolset != null) && !toolsets.contains(pToolset))
 	  toolsets.add(pToolset);
       }
       catch(PipelineException ex) {
-      }
-      finally {
-        master.releaseMasterMgrClient(client);
       }
     }
     {

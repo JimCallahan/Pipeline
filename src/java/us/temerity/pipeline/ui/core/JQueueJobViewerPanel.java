@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.61 2009/03/20 18:04:19 jesse Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.62 2009/03/24 01:21:21 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -664,8 +664,8 @@ class JQueueJobViewerPanel
 
     if((toolset != null) && !toolset.equals(pEditorMenuToolset)) {
       UIMaster master = UIMaster.getInstance();
-      master.rebuildEditorMenu(toolset, pViewWithMenu, this);
-      master.rebuildEditorMenu(toolset, pGroupViewWithMenu, this);
+      master.rebuildEditorMenu(pGroupID, toolset, pViewWithMenu, this);
+      master.rebuildEditorMenu(pGroupID, toolset, pGroupViewWithMenu, this);
       
       pEditorMenuToolset = toolset;
     }
@@ -1879,7 +1879,7 @@ class JQueueJobViewerPanel
     
 	if(pLastJobHintID != jobID) {
           UIMaster master = UIMaster.getInstance();
-          if(master.beginSilentPanelOp(0)) {
+          if(master.beginSilentPanelOp()) {
             QueueMgrClient qclient = master.acquireQueueMgrClient();
             try {
               QueueJob job = qclient.getJob(jobID);

@@ -1,17 +1,11 @@
-// $Id: JMasterExtensionConfigDialog.java,v 1.2 2007/12/16 11:03:59 jim Exp $
+// $Id: JMasterExtensionConfigDialog.java,v 1.3 2009/03/24 01:21:21 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
+import java.awt.*;
+
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.ui.*;
-
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
-import java.io.*;
-import javax.swing.*;
-import javax.swing.tree.*;
-import javax.swing.event.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   M A S T E R   E X T E N S I O N   C O N F I G   D I A L O G                            */
@@ -99,17 +93,19 @@ class JMasterExtensionConfigDialog
   /**
    * Create the field for editing the server extension plugin.
    */ 
+  @Override
   protected JPluginSelectionField
   createExtPluginField()
   {
     UIMaster master = UIMaster.getInstance(); 
     master.clearExtPluginCaches();
-    return master.createMasterExtSelectionField(sVSize);
+    return master.createMasterExtSelectionField(getChannel(), sVSize);
   }
   
   /**
    * Create the field for editing the server extension plugin.
    */ 
+  @Override
   protected void 
   updateExtPluginField()
   {
@@ -127,6 +123,7 @@ class JMasterExtensionConfigDialog
   /**
    * Get a new instance of the given extension plugin.
    */ 
+  @Override
   protected BaseExt
   newExtPlugin
   (

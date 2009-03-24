@@ -1,4 +1,4 @@
-// $Id: JDefaultEditorsDialog.java,v 1.8 2009/03/19 21:55:59 jesse Exp $
+// $Id: JDefaultEditorsDialog.java,v 1.9 2009/03/24 01:21:21 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -19,7 +19,7 @@ import javax.swing.*;
  */ 
 public 
 class JDefaultEditorsDialog
-  extends JTopLevelDialog
+  extends JTopLevelCacheDialog
   implements ActionListener
 {
   /*----------------------------------------------------------------------------------------*/
@@ -42,7 +42,7 @@ class JDefaultEditorsDialog
       body.setLayout(new BorderLayout());
 
       {
-	SuffixEditorTableModel model = new SuffixEditorTableModel();
+	SuffixEditorTableModel model = new SuffixEditorTableModel(getChannel());
 	pTableModel = model;
 
 	JTablePanel tpanel = new JTablePanel(model);
@@ -92,6 +92,9 @@ class JDefaultEditorsDialog
   public void 
   updateEditors() 
   { 
+    /* Invalidates the UI Cache before we rebuild the menus */
+    invalidateCaches();
+
     /* get the current info from the server */ 
     UIMaster master = UIMaster.getInstance();
     MasterMgrClient client = master.acquireMasterMgrClient();
@@ -114,7 +117,10 @@ class JDefaultEditorsDialog
    */ 
   public void 
   updateDefaultEditors() 
-  { 
+  {
+    /* Invalidates the UI Cache before we rebuild the menus */
+    invalidateCaches();
+
     /* get the current info from the server */ 
     UIMaster master = UIMaster.getInstance();
     MasterMgrClient client = master.acquireMasterMgrClient();
@@ -264,6 +270,8 @@ class JDefaultEditorsDialog
     if(diag.wasConfirmed()) 
       updateDefaultEditors();
   }
+  
+  
 
 
 

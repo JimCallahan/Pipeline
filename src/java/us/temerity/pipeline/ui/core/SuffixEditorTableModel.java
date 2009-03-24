@@ -1,16 +1,14 @@
-// $Id: SuffixEditorTableModel.java,v 1.8 2006/09/25 12:11:44 jim Exp $
+// $Id: SuffixEditorTableModel.java,v 1.9 2009/03/24 01:21:21 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
-import us.temerity.pipeline.*;
-import us.temerity.pipeline.ui.*;
-
-import java.awt.*;
-import java.awt.event.*;
-import java.text.*;
 import java.util.*;
+
 import javax.swing.*;
 import javax.swing.table.*;
+
+import us.temerity.pipeline.*;
+import us.temerity.pipeline.ui.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   S U F F I X   E D I T O R   T A B L E   M O D E L                                      */
@@ -32,7 +30,10 @@ class SuffixEditorTableModel
    * Construct a table model.
    */
   public 
-  SuffixEditorTableModel() 
+  SuffixEditorTableModel
+  (
+    int channel  
+  ) 
   {
     super();
     
@@ -80,7 +81,7 @@ class SuffixEditorTableModel
       }
 
       {
-	pPluginCellEditor = new JEditorSelectionTableCellEditor(120);
+	pPluginCellEditor = new JEditorSelectionTableCellEditor(channel, 120);
 
 	TableCellEditor editors[] = {
 	  null, 
@@ -105,6 +106,8 @@ class SuffixEditorTableModel
   /**
    * Sort the rows by the values in the current sort column and direction.
    */ 
+  @SuppressWarnings("unchecked")
+  @Override
   public void 
   sort()
   {
@@ -268,6 +271,7 @@ class SuffixEditorTableModel
   /**
    * Returns true if the cell at rowIndex and columnIndex is editable.
    */ 
+  @Override
   public boolean 	
   isCellEditable
   (
@@ -331,6 +335,7 @@ class SuffixEditorTableModel
   /**
    * Sets the value in the cell at columnIndex and rowIndex to aValue.
    */ 
+  @Override
   public void 
   setValueAt
   (

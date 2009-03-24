@@ -1,4 +1,4 @@
-// $Id: JManageToolsetsDialog.java,v 1.35 2009/03/19 21:55:59 jesse Exp $
+// $Id: JManageToolsetsDialog.java,v 1.36 2009/03/24 01:21:21 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -4353,6 +4353,7 @@ class JManageToolsetsDialog
 	MasterMgrClient client = master.acquireMasterMgrClient();
 	try {
 	  client.setDefaultToolsetName(tname);
+	  master.invalidateAllCachedDefaultToolsetName();
 	}
 	catch(PipelineException ex) {
 	  showErrorDialog(ex);
@@ -4390,6 +4391,7 @@ class JManageToolsetsDialog
 	    MasterMgrClient client = master.acquireMasterMgrClient();
 	    try {
 	      client.setToolsetActive(tname, true);
+	      master.invalidateAllCachedActiveToolsetNames();
 	    }
 	    catch(PipelineException ex) {
 	      showErrorDialog(ex);
@@ -4422,6 +4424,7 @@ class JManageToolsetsDialog
 	MasterMgrClient client = master.acquireMasterMgrClient();
 	try {
 	  client.setToolsetActive(tname, false);
+	  master.invalidateAllCachedActiveToolsetNames();
 	}
 	catch(PipelineException ex) {
 	  showErrorDialog(ex);

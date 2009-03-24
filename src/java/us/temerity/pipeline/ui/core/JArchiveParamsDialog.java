@@ -1,4 +1,4 @@
-// $Id: JArchiveParamsDialog.java,v 1.12 2009/03/19 21:55:59 jesse Exp $
+// $Id: JArchiveParamsDialog.java,v 1.13 2009/03/24 01:21:21 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -19,7 +19,7 @@ import javax.swing.*;
  */ 
 public 
 class JArchiveParamsDialog
-  extends JFullDialog
+  extends JFullCacheDialog
   implements ActionListener
 {
   /*----------------------------------------------------------------------------------------*/
@@ -32,7 +32,7 @@ class JArchiveParamsDialog
   public 
   JArchiveParamsDialog
   (
-   Frame owner
+    Frame owner
   ) 
   {
     super(owner, "Archive");
@@ -100,7 +100,7 @@ class JArchiveParamsDialog
 	  tpanel.add(label);
 
 	  JPluginSelectionField field = 
-	    UIMaster.getInstance().createArchiverSelectionField(sVSize);
+	    UIMaster.getInstance().createArchiverSelectionField(getChannel(), sVSize);
 	  pArchiverField = field;
 	  
 	  field.setActionCommand("archiver-changed");
@@ -255,23 +255,23 @@ class JArchiveParamsDialog
   updateArchiver() 
   { 
     UIMaster master = UIMaster.getInstance();
+    
+    /* invalidate the cache */
+    invalidateCaches();
 
     pToolsetField.removeActionListener(this);
     TreeSet<String> toolsets = new TreeSet<String>();
     {
-      MasterMgrClient client = master.acquireMasterMgrClient();      
+      UICache cache = getUICache();
       try {
 	if(pToolset == null) 
-	  pToolset = client.getDefaultToolsetName();
+	  pToolset = cache.getCachedDefaultToolsetName();
 	
-	toolsets.addAll(client.getActiveToolsetNames());
+	toolsets.addAll(cache.getCachedActiveToolsetNames());
 	if((pToolset != null) && !toolsets.contains(pToolset))
 	  toolsets.add(pToolset);
       }
       catch(PipelineException ex) {
-      }
-      finally {
-        master.releaseMasterMgrClient(client);
       }
     }
     {

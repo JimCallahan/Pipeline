@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.58 2009/03/20 18:04:18 jesse Exp $
+// $Id: JManagerPanel.java,v 1.59 2009/03/24 01:21:21 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -3327,6 +3327,9 @@ class JManagerPanel
      MouseEvent e
     )
     {
+      if (pTopLevelPanel.getGroupID() == 0)
+        return;
+      
       int mods = e.getModifiersEx();
       
       int on1  = (MouseEvent.BUTTON1_DOWN_MASK);		  
@@ -3368,7 +3371,9 @@ class JManagerPanel
     ) 
     {
       setIcon(sMenuAnchorPressedIcon);
-
+      
+      int channel = pTopLevelPanel.getGroupID();
+      
       /* the main window cannot be renamed */ 
       pRenameWindowItem.setEnabled(getPanelFrame() != null);
 
@@ -3419,9 +3424,9 @@ class JManagerPanel
       /* privileged status */ 
       {
  	UIMaster master = UIMaster.getInstance();
-	MasterMgrClient client = master.acquireMasterMgrClient();
+	UICache cache = master.getUICache(channel);
  	try {
- 	  PrivilegeDetails privileges = client.getCachedPrivilegeDetails();
+ 	  PrivilegeDetails privileges = cache.getCachedPrivilegeDetails();
  	  pBackupDatabaseItem.setEnabled
 	    (privileges.isMasterAdmin() && (PackageInfo.sOsType == OsType.Unix));
  	  pArchiveItem.setEnabled(privileges.isMasterAdmin());
@@ -3432,14 +3437,12 @@ class JManagerPanel
  	catch(PipelineException ex) {
  	  master.showErrorDialog(ex);
  	}
- 	finally {
- 	  master.releaseMasterMgrClient(client);
- 	}
       } 
       
       {
         UIMaster master = UIMaster.getInstance();
-        master.rebuildDefaultBuilderCollectionMenu(pPopup, pLaunchBuilderMenu, pPanel, true);
+        master.rebuildDefaultBuilderCollectionMenu
+          (pPopup, channel, pLaunchBuilderMenu, pPanel, true);
       }
       
       pPopup.show(e.getComponent(), e.getX(), e.getY()); 

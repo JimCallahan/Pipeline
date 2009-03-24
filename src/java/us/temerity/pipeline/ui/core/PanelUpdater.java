@@ -1,4 +1,4 @@
-// $Id: PanelUpdater.java,v 1.32 2009/03/20 03:10:39 jim Exp $
+// $Id: PanelUpdater.java,v 1.33 2009/03/24 01:21:21 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -7,6 +7,7 @@ import java.util.*;
 import javax.swing.SwingUtilities;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.LogMgr.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   P A N E L   U P D A T E R                                                              */
@@ -441,11 +442,13 @@ class PanelUpdater
       QueueMgrClient qclient  = master.acquireQueueMgrClient();
       try {
 	
-	/* clear client caches */ 
-	mclient.invalidateCachedWorkGroups();
-	mclient.invalidateCachedPrivilegeDetails();
-	mclient.invalidateCachedDefaultToolsetName();
-	mclient.invalidateCachedActiveToolsetNames();
+	/* clear client caches */
+        LogMgr.getInstance().log(Kind.Ops, Level.Finest, 
+          "Invalidating UI Cache with ID (" + pGroupID + ")");
+
+        master.getUICache(pGroupID).invalidateCaches();
+	
+	WorkGroups wgroups = null;
 
 	if(!pJobDetailsOnly && !pJobBrowserSelectionOnly && !pJobSlotsSelectionOnly) {
 
@@ -614,7 +617,8 @@ class PanelUpdater
 		master.updatePanelOp(pGroupID, "Updating Queue Stats...");
 		pServerHistograms = qclient.getHostHistograms(pServerHistogramSpecs);
 
-		WorkGroups wgroups = mclient.getCachedWorkGroups();
+		if (wgroups == null)
+		  wgroups = mclient.getWorkGroups();
 		pWorkGroups = wgroups.getGroups();
 		pWorkUsers  = wgroups.getUsers();
 	      }
@@ -643,7 +647,8 @@ class PanelUpdater
 		}
 
 		if((pWorkGroups == null) || (pWorkUsers == null)) {
-		  WorkGroups wgroups = mclient.getCachedWorkGroups();
+		  if (wgroups == null)
+		    wgroups = mclient.getWorkGroups();
 		  pWorkGroups = wgroups.getGroups();
 		  pWorkUsers  = wgroups.getUsers();
 		}

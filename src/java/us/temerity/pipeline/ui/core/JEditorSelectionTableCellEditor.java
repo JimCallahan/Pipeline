@@ -1,4 +1,4 @@
-// $Id: JEditorSelectionTableCellEditor.java,v 1.5 2009/03/20 18:04:18 jesse Exp $
+// $Id: JEditorSelectionTableCellEditor.java,v 1.6 2009/03/24 01:21:21 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -29,8 +29,8 @@ class JEditorSelectionTableCellEditor
   /**
    * Construct a new renderer.
    * 
-   * @param values
-   *   The choice values.
+   * @param channel
+   *   The update channel to use
    * 
    * @param width
    *   The horizontal size.
@@ -38,10 +38,12 @@ class JEditorSelectionTableCellEditor
   public 
   JEditorSelectionTableCellEditor
   (
-   int width
+    int channel,
+    int width
   ) 
   {
-    pField = UIMaster.getInstance().createEditorSelectionField(width);
+    pChannel = channel;
+    pField = UIMaster.getInstance().createEditorSelectionField(pChannel, width);
     
     Dimension size = new Dimension(width, 19);
     pField.setMinimumSize(size);
@@ -63,16 +65,13 @@ class JEditorSelectionTableCellEditor
   updateMenus()
   {
     UIMaster master = UIMaster.getInstance();
-    MasterMgrClient client = master.acquireMasterMgrClient();
+    UICache cache = master.getUICache(pChannel);
     try {
-      String tname = client.getDefaultToolsetName();
-      master.updateEditorPluginField(tname, pField);
+      String tname = cache.getCachedDefaultToolsetName();
+      master.updateEditorPluginField(pChannel, tname, pField);
     }
     catch(PipelineException ex) {
       master.showErrorDialog(ex);
-    }
-    finally {
-      master.releaseMasterMgrClient(client);
     }
   }
 
@@ -129,9 +128,6 @@ class JEditorSelectionTableCellEditor
 
   /*-- ACTION LISTENER METHODS -------------------------------------------------------------*/
 
-  /** 
-   * Invoked when an action occurs. 
-   */ 
   public void 
   actionPerformed
   (
@@ -141,8 +137,8 @@ class JEditorSelectionTableCellEditor
     fireEditingStopped();
   }
 
-
-
+  
+  
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C    I N T E R N A L S                                                     */
   /*----------------------------------------------------------------------------------------*/
@@ -159,5 +155,10 @@ class JEditorSelectionTableCellEditor
    * The collection field editor.
    */ 
   private JPluginSelectionField  pField;
+  
+  /**
+   * The group id that this editor needs for updating.
+   */
+  private int pChannel;
 
 }

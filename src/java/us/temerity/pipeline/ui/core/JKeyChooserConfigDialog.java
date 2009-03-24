@@ -1,4 +1,4 @@
-// $Id: JKeyChooserConfigDialog.java,v 1.9 2009/03/19 21:55:59 jesse Exp $
+// $Id: JKeyChooserConfigDialog.java,v 1.10 2009/03/24 01:21:21 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -21,7 +21,7 @@ import us.temerity.pipeline.ui.*;
  */ 
 public 
 class JKeyChooserConfigDialog
-  extends JFullDialog
+  extends JFullCacheDialog
   implements ComponentListener, ActionListener
 {
   /*----------------------------------------------------------------------------------------*/
@@ -71,7 +71,7 @@ class JKeyChooserConfigDialog
 
           UIMaster master = UIMaster.getInstance();
           master.clearKeyChooserPluginCaches();
-          JPluginSelectionField field = master.createKeyChooserSelectionField(sVSize);
+          JPluginSelectionField field = master.createKeyChooserSelectionField(getChannel(), sVSize);
           pKeyChooserField = field;
           
           field.setActionCommand("chooser-changed");
@@ -138,6 +138,9 @@ class JKeyChooserConfigDialog
    BaseKeyChooser plugin
   ) 
   {
+    /* Invalidate Cache*/
+    invalidateCaches();
+    
     pKeyChooser = plugin;
     updateKeyChooser();
     pConfirmButton.setEnabled(false);
@@ -217,7 +220,7 @@ class JKeyChooserConfigDialog
   {
     UIMaster master = UIMaster.getInstance();
     master.clearKeyChooserPluginCaches();
-    master.updateKeyChooserPluginField(pKeyChooserField); 
+    master.updateKeyChooserPluginField(getChannel(), pKeyChooserField); 
 
     updateKeyChooserFields();
     updateKeyChooserParams();
@@ -284,19 +287,15 @@ class JKeyChooserConfigDialog
             needsWorkGroups = true;
         }
         if(needsWorkGroups) {
-          UIMaster master = UIMaster.getInstance();
-          MasterMgrClient mclient = master.acquireMasterMgrClient();
+          UICache cache = getUICache();
           try {
-            WorkGroups wgroups = mclient.getWorkGroups();
+            WorkGroups wgroups = cache.getCachedWorkGroups();
             workGroups = wgroups.getGroups();
             workUsers  = wgroups.getUsers();
           }
           catch(PipelineException ex) {
             workGroups = new TreeSet<String>(); 
             workUsers  = new TreeSet<String>(); 
-          }
-          finally {
-            master.releaseMasterMgrClient(mclient);
           }
         }
         updateParamsHelper(pKeyChooser.getLayout(), hbox, 1, workGroups, workUsers);

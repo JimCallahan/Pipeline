@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.53 2009/03/20 18:04:18 jesse Exp $
+// $Id: JNodeDetailsPanel.java,v 1.54 2009/03/24 01:21:21 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -432,7 +432,7 @@ class JNodeDetailsPanel
 
 		{
 		  JPluginSelectionField field = 
-		    UIMaster.getInstance().createEditorSelectionField(sVSize);
+		    UIMaster.getInstance().createEditorSelectionField(pGroupID, sVSize);
 		  pWorkingEditorField = field;
 		  
 		  field.setActionCommand("editor-changed");
@@ -613,7 +613,7 @@ class JNodeDetailsPanel
 		
 		{
 		  JPluginSelectionField field = 
-		    UIMaster.getInstance().createActionSelectionField(sVSize);
+		    UIMaster.getInstance().createActionSelectionField(pGroupID, sVSize);
 		  pWorkingActionField = field;
 		
 		  field.setActionCommand("action-changed");
@@ -1430,6 +1430,7 @@ class JNodeDetailsPanel
   /** 
    * Get the title of this type of panel.
    */
+  @Override
   public String 
   getTypeName() 
   {
@@ -1447,6 +1448,7 @@ class JNodeDetailsPanel
    * @param groupID
    *   The new group ID or (0) for no group assignment.
    */ 
+  @Override
   public void
   setGroupID
   (
@@ -1472,6 +1474,7 @@ class JNodeDetailsPanel
   /**
    * Is the given group currently unused for this type of panel.
    */ 
+  @Override
   public boolean
   isGroupUnused
   (
@@ -1488,6 +1491,7 @@ class JNodeDetailsPanel
   /**
    * Are the contents of the panel read-only. <P> 
    */ 
+  @Override
   public boolean
   isLocked() 
   {
@@ -1497,6 +1501,7 @@ class JNodeDetailsPanel
   /**
    * Set the author and view.
    */ 
+  @Override
   public synchronized void 
   setAuthorView
   (
@@ -1707,6 +1712,7 @@ class JNodeDetailsPanel
    * 
    * This method is run by the Swing Event thread.
    */ 
+  @Override
   public void 
   postPanelOp() 
   {
@@ -1719,6 +1725,7 @@ class JNodeDetailsPanel
   /**
    * Register the name of a panel property which has just been modified.
    */ 
+  @Override
   public void
   unsavedChange
   (
@@ -1846,16 +1853,13 @@ class JNodeDetailsPanel
 	  TreeSet<String> toolsets = new TreeSet<String>();
 	  if(work != null) {
 	    UIMaster master = UIMaster.getInstance();
-	    MasterMgrClient client = master.acquireMasterMgrClient();
+	    UICache cache = master.getUICache(pGroupID);
 	    try {
-	      toolsets.addAll(client.getCachedActiveToolsetNames());
+	      toolsets.addAll(cache.getCachedActiveToolsetNames());
 	      if((work.getToolset() != null) && !toolsets.contains(work.getToolset()))
 		toolsets.add(work.getToolset());
 	    }
 	    catch(PipelineException ex) {
-	    }
-	    finally {
-	      master.releaseMasterMgrClient(client);
 	    }
 	  }
 	  
@@ -2236,8 +2240,8 @@ class JNodeDetailsPanel
     if(hasWorking()) {
       UIMaster master = UIMaster.getInstance();
       String toolset = pWorkingToolsetField.getSelected();
-      master.updateActionPluginField(toolset, pWorkingActionField);
-      master.updateEditorPluginField(toolset, pWorkingEditorField);
+      master.updateActionPluginField(pGroupID, toolset, pWorkingActionField);
+      master.updateEditorPluginField(pGroupID, toolset, pWorkingEditorField);
     }
   }
 
@@ -3891,6 +3895,7 @@ class JNodeDetailsPanel
   /**
    * Reset the caches of toolset plugins and plugin menu layouts.
    */ 
+  @Override
   public void 
   clearPluginCache()
   {
@@ -3916,7 +3921,7 @@ class JNodeDetailsPanel
       UIMaster master = UIMaster.getInstance();
       int wk;
       for(wk=0; wk<pEditWithMenus.length; wk++) 
-	master.rebuildEditorMenu(toolset, pEditWithMenus[wk], this);
+	master.rebuildEditorMenu(pGroupID, toolset, pEditWithMenus[wk], this);
       
       pEditorMenuToolset = toolset;
     }
@@ -3933,6 +3938,7 @@ class JNodeDetailsPanel
   /**
    * Update the panel to reflect new user preferences.
    */ 
+  @Override
   public void 
   updateUserPrefs() 
   {
@@ -4006,6 +4012,7 @@ class JNodeDetailsPanel
   /*   G L U E A B L E                                                                      */
   /*----------------------------------------------------------------------------------------*/
 
+  @Override
   public void 
   toGlue
   ( 
@@ -4025,6 +4032,7 @@ class JNodeDetailsPanel
     encoder.encode("AnnotationsDrawerOpen", pAnnotationsDrawer.isOpen());
   }
 
+  @Override
   public void 
   fromGlue
   (
@@ -4471,6 +4479,7 @@ class JNodeDetailsPanel
    * Modify the working version of the node based on the current settings if the 
    * UI components.
    */ 
+  @Override
   public void 
   doApply()
   {
@@ -6213,6 +6222,7 @@ class JNodeDetailsPanel
     /**
      * The name of the annotation plugin instance.
      */ 
+    @Override
     public String
     getName() 
     {
@@ -6539,7 +6549,7 @@ class JNodeDetailsPanel
       pWorkingAnnotationField.removeActionListener(pParent);
       {
         UIMaster master = UIMaster.getInstance();
-        master.updateAnnotationPluginField(pToolsetName, pWorkingAnnotationField); 
+        master.updateAnnotationPluginField(pGroupID, pToolsetName, pWorkingAnnotationField); 
 
         pWorkingAnnotationField.setPlugin(pWorkingAnnotation);
 
@@ -6633,32 +6643,27 @@ class JNodeDetailsPanel
         }
         
         UIMaster master = UIMaster.getInstance();
-        MasterMgrClient mclient = master.acquireMasterMgrClient();
-        try {
-          if(needsToolsets) {
-            toolsets = new TreeSet<String>();
-            toolsets.add("-");
-            try {
-              toolsets.addAll(mclient.getCachedActiveToolsetNames());
-            }
-            catch(PipelineException ex) {
-            }
+        UICache cache = master.getUICache(pGroupID);
+        if(needsToolsets) {
+          toolsets = new TreeSet<String>();
+          toolsets.add("-");
+          try {
+            toolsets.addAll(cache.getCachedActiveToolsetNames());
           }
-          
-          if(needsWorkGroups) {
-            try {
-              WorkGroups wgroups = mclient.getCachedWorkGroups();
-              workGroups = wgroups.getGroups();
-              workUsers  = wgroups.getUsers();
-            }
-            catch(PipelineException ex) {
-              workGroups = new TreeSet<String>(); 
-              workUsers  = new TreeSet<String>(); 
-            }
+          catch(PipelineException ex) {
           }
         }
-        finally {
-          master.releaseMasterMgrClient(mclient);
+
+        if(needsWorkGroups) {
+          try {
+            WorkGroups wgroups = cache.getCachedWorkGroups();
+            workGroups = wgroups.getGroups();
+            workUsers  = wgroups.getUsers();
+          }
+          catch(PipelineException ex) {
+            workGroups = new TreeSet<String>(); 
+            workUsers  = new TreeSet<String>(); 
+          }
         }
       }
 
@@ -6889,7 +6894,7 @@ class JNodeDetailsPanel
                       BuilderID value = (BuilderID) aparam.getValue();
 
                       JBuilderIDSelectionField field = 
-                        UIMaster.getInstance().createBuilderIDSelectionField(sVSize);
+                        UIMaster.getInstance().createBuilderIDSelectionField(pGroupID, sVSize);
                       pcomps[1] = field;
                       
                       field.setEnabled(paramEnabled); 
@@ -6962,7 +6967,7 @@ class JNodeDetailsPanel
                       BuilderID value = (BuilderID) aparam.getValue();
 
                       JBuilderIDSelectionField field = 
-                        UIMaster.getInstance().createBuilderIDSelectionField(sVSize);
+                        UIMaster.getInstance().createBuilderIDSelectionField(pGroupID, sVSize);
                       pcomps[3] = field;
                       
                       field.setEnabled(false); 
@@ -7540,18 +7545,15 @@ class JNodeDetailsPanel
               Set<String> workGroups = null;
               {
                 UIMaster master = UIMaster.getInstance();
-                MasterMgrClient mclient = master.acquireMasterMgrClient();
+                UICache cache = master.getUICache(pGroupID);
                 try {
-                  WorkGroups wgroups = mclient.getCachedWorkGroups();
+                  WorkGroups wgroups = cache.getCachedWorkGroups();
                   workGroups = wgroups.getGroups();
                   workUsers  = wgroups.getUsers();
                 }
                 catch(PipelineException ex) {
                   workGroups = new TreeSet<String>(); 
                   workUsers  = new TreeSet<String>(); 
-                }
-                finally {
-                  master.releaseMasterMgrClient(mclient);
                 }
               }
           
@@ -7823,6 +7825,7 @@ class JNodeDetailsPanel
       pNodeMod = mod;
     }
 
+    @Override
     public void 
     run() 
     {
@@ -7937,6 +7940,7 @@ class JNodeDetailsPanel
       setName("JNodeDetailsPanel:QueueJobsTask");
     }
 
+    @Override
     protected void
     postOp() 
     {
@@ -7961,6 +7965,7 @@ class JNodeDetailsPanel
       setName("JNodeDetailsPanel:VouchTask");
     }
     
+    @Override
     protected void
     postOp() 
     {
@@ -7986,6 +7991,7 @@ class JNodeDetailsPanel
                                    pGroupID, nodeIDs, jobIDs, pAuthor, pView);
     }
 
+    @Override
     protected void
     postOp() 
     {
@@ -8011,6 +8017,7 @@ class JNodeDetailsPanel
                                    pGroupID, nodeIDs, jobIDs, pAuthor, pView);
     }
 
+    @Override
     protected void
     postOp() 
     {
@@ -8036,6 +8043,7 @@ class JNodeDetailsPanel
                                    pGroupID, nodeIDs, jobIDs, pAuthor, pView);
     }
 
+    @Override
     protected void
     postOp() 
     {
@@ -8061,6 +8069,7 @@ class JNodeDetailsPanel
                                    pGroupID, nodeIDs, jobIDs, pAuthor, pView);
     }
 
+    @Override
     protected void
     postOp() 
     {
@@ -8088,6 +8097,7 @@ class JNodeDetailsPanel
       setName("JNodeDetailsPanel:RemoveFilesTask");
     }
     
+    @Override
     protected void
     postOp() 
     {

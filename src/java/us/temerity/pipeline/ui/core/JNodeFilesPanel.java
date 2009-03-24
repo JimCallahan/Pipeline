@@ -1,4 +1,4 @@
-// $Id: JNodeFilesPanel.java,v 1.52 2009/03/20 18:04:18 jesse Exp $
+// $Id: JNodeFilesPanel.java,v 1.53 2009/03/24 01:21:21 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -959,7 +959,7 @@ class JNodeFilesPanel
       UIMaster master = UIMaster.getInstance();
       int wk;
       for(wk=0; wk<pEditWithMenus.length; wk++) 
-	master.rebuildEditorMenu(toolset, pEditWithMenus[wk], this);
+	master.rebuildEditorMenu(pGroupID, toolset, pEditWithMenus[wk], this);
       
       pEditorMenuToolset = toolset;
     }
@@ -986,7 +986,7 @@ class JNodeFilesPanel
 
     if((toolset != null) && !toolset.equals(pComparatorMenuToolset)) {
       UIMaster master = UIMaster.getInstance();
-      master.rebuildComparatorMenu(toolset, pCompareWithMenu, this);
+      master.rebuildComparatorMenu(pGroupID, toolset, pCompareWithMenu, this);
       
       pComparatorMenuToolset = toolset;
     }
@@ -2848,6 +2848,7 @@ class JNodeFilesPanel
       boolean ignoreExitCode = false;
       {
 	if(master.beginPanelOp(pGroupID, "Launching Node Editor...")) {
+	  UICache cache = master.getUICache(pGroupID);
 	  MasterMgrClient client = master.acquireMasterMgrClient();
 	  try {
 	    String name = pStatus.getName();
@@ -2918,7 +2919,7 @@ class JNodeFilesPanel
 	    /* start the editor */ 
 	    FileSeq fseq = new FileSeq(dir.getPath(), pFileSeq);
 	    if(pSubstitute) {
-	      PrivilegeDetails details = client.getCachedPrivilegeDetails();
+	      PrivilegeDetails details = cache.getCachedPrivilegeDetails();
 	      if(details.isNodeManaged(pAuthorName)) {
 		EditAsTask task = 
 		  new EditAsTask(editor, pAuthorName, fseq, env, dir);

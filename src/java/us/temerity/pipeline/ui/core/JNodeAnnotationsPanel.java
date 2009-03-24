@@ -1,4 +1,4 @@
-// $Id: JNodeAnnotationsPanel.java,v 1.20 2009/03/20 18:04:18 jesse Exp $
+// $Id: JNodeAnnotationsPanel.java,v 1.21 2009/03/24 01:21:21 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -515,7 +515,7 @@ class JNodeAnnotationsPanel
       UIMaster master = UIMaster.getInstance();
       int wk;
       for(wk=0; wk<pEditWithMenus.length; wk++) 
-	master.rebuildEditorMenu(toolset, pEditWithMenus[wk], this);
+	master.rebuildEditorMenu(pGroupID, toolset, pEditWithMenus[wk], this);
       
       pEditorMenuToolset = toolset;
     }
@@ -1504,7 +1504,7 @@ class JNodeAnnotationsPanel
             tpanel.add(label);
 
             JPluginSelectionField field =  
-              UIMaster.getInstance().createAnnotationSelectionField(sVSize);
+              UIMaster.getInstance().createAnnotationSelectionField(pGroupID, sVSize);
             pAnnotationField = field;
             
             field.setActionCommand("annotation-changed:" + pName);
@@ -1718,7 +1718,7 @@ class JNodeAnnotationsPanel
     private void 
     updateAnnotation() 
     {
-      UIMaster.getInstance().updateAnnotationPluginField(pAnnotationField); 
+      UIMaster.getInstance().updateAnnotationPluginField(pGroupID, pAnnotationField); 
 
       updateAnnotationFields();
       updateAnnotationParams();
@@ -1758,6 +1758,7 @@ class JNodeAnnotationsPanel
       if(pAnnotation != null) {
         UIMaster master = UIMaster.getInstance();
         MasterMgrClient mclient = master.acquireMasterMgrClient();
+        UICache cache = master.getUICache(pGroupID);
         try {
           boolean needsToolsets = false;
           boolean needsWorkGroups = false;
@@ -1772,7 +1773,7 @@ class JNodeAnnotationsPanel
             toolsets = new TreeSet<String>();
             toolsets.add("-");
             try {
-              toolsets.addAll(mclient.getCachedActiveToolsetNames());
+              toolsets.addAll(cache.getCachedActiveToolsetNames());
             }
             catch(PipelineException ex) {
             }
@@ -1780,7 +1781,7 @@ class JNodeAnnotationsPanel
           
           if(needsWorkGroups) {
             try {
-              WorkGroups wgroups = mclient.getCachedWorkGroups();
+              WorkGroups wgroups = cache.getCachedWorkGroups();
               workGroups = wgroups.getGroups();
               workUsers  = wgroups.getUsers();
             }
@@ -1997,7 +1998,7 @@ class JNodeAnnotationsPanel
                 BuilderID value = (BuilderID) aparam.getValue();
                 JBuilderIDSelectionField field = 
                   UIMaster.getInstance().createTitledBuilderIDSelectionField
-                  (tpanel, aparam.getNameUI() + ":", sTSize-7, 
+                  (pGroupID, tpanel, aparam.getNameUI() + ":", sTSize-7, 
                    vpanel, value, sVSize, 
                    aparam.getDescription());
                    

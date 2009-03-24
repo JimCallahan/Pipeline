@@ -1,4 +1,4 @@
-// $Id: JTopLevelDialog.java,v 1.4 2008/05/08 22:46:42 jim Exp $
+// $Id: JTopLevelDialog.java,v 1.5 2009/03/24 01:21:21 jesse Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -40,12 +40,21 @@ class JTopLevelDialog
   protected
   JTopLevelDialog
   (
-   String title
+    String title
   ) 
   {
     super(title); 
   }
-
+  
+  /**
+   * Construct a new top-level frame. 
+   * 
+   * @param title
+   *   The title of the dialog window.
+   *   
+   * @param acquireCache
+   *   
+   */ 
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -261,10 +270,11 @@ class JTopLevelDialog
   /**
    * Shows or hides this component.
    */ 
+  @Override
   public void 
   setVisible
   (
-   boolean isVisible
+    boolean isVisible
   )
   {
     if(isVisible)

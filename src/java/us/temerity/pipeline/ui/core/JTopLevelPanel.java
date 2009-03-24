@@ -1,4 +1,4 @@
-// $Id: JTopLevelPanel.java,v 1.14 2009/03/19 21:55:59 jesse Exp $
+// $Id: JTopLevelPanel.java,v 1.15 2009/03/24 01:21:21 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -234,15 +234,26 @@ class JTopLevelPanel
   updatePrivileges() 
   {
     UIMaster master = UIMaster.getInstance();
-    MasterMgrClient client = master.acquireMasterMgrClient();
-    try {
-      pPrivilegeDetails = client.getCachedPrivilegeDetails();
+    if (pGroupID > 0) {
+      UICache cache = master.getUICache(pGroupID);
+      try {
+        pPrivilegeDetails = cache.getCachedPrivilegeDetails();
+      }
+      catch(PipelineException ex) {
+        master.showErrorDialog(ex);
+      }
     }
-    catch(PipelineException ex) {
-      master.showErrorDialog(ex);
-    }
-    finally {
-      master.releaseMasterMgrClient(client);
+    else {
+      MasterMgrClient client = master.acquireMasterMgrClient();
+      try {
+        pPrivilegeDetails = client.getPrivilegeDetails();
+      }
+      catch(PipelineException ex) {
+        master.showErrorDialog(ex);
+      }
+      finally {
+        master.releaseMasterMgrClient(client);
+      }
     }
 
     updateManagerTitlePanel();

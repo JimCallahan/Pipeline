@@ -1,4 +1,4 @@
-// $Id: JQueueJobSlotsPanel.java,v 1.18 2009/03/20 18:04:19 jesse Exp $
+// $Id: JQueueJobSlotsPanel.java,v 1.19 2009/03/24 01:21:21 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -365,7 +365,7 @@ class JQueueJobSlotsPanel
 	  
     if((toolset != null) && !toolset.equals(pSlotsEditorMenuToolset)) {
       UIMaster master = UIMaster.getInstance();
-      master.rebuildEditorMenu(toolset, pSlotsViewWithMenu, this);
+      master.rebuildEditorMenu(pGroupID, toolset, pSlotsViewWithMenu, this);
       
       pSlotsEditorMenuToolset = toolset;
     }

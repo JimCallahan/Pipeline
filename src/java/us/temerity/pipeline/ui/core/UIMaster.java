@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.100 2009/03/20 18:04:19 jesse Exp $
+// $Id: UIMaster.java,v 1.101 2009/03/24 01:21:21 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -88,6 +88,13 @@ class UIMaster
 
       QueueMgrClient qclient = acquireQueueMgrClient();
       releaseQueueMgrClient(qclient);
+    }
+    
+    {
+      pUICaches = new TreeMap<Integer, UICache>();
+      for (int i = 1; i < 10; i++ ) {
+        pUICaches.put(i, new UICache());
+      }
     }
 
 
@@ -363,8 +370,130 @@ class UIMaster
       it.remove();
     }
   }
-
+  
  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   U I   C A C H E                                                                      */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Get the UICache for a particular channel.
+   * <p>
+   * @param channel
+   *   The channel whose cache should be retrieved.
+   */
+  public UICache
+  getUICache
+  (
+    int channel  
+  )
+  {
+    LogMgr.getInstance().log(Kind.Ops, Level.Finest, 
+      "Accessing UI Cache with ID (" + channel + ")");
+    LogMgr.getInstance().flush(Kind.Ops, Level.Finest);
+    assert(channel != 0 && channel <= pUICaches.size());
+    synchronized (pUICaches) {
+      return pUICaches.get(channel);
+    }
+  }
+  
+  /**
+   * Create a new UICache for a dialog.
+   * <p>
+   * Dialogs which extend {@link JFullCacheDialog} call this method to create a new cache
+   * for themselves.
+   * 
+   * @return
+   *   The unique ID number which the dialog can later use to access the cache.
+   */
+  public Integer
+  registerUICache()
+  {
+    synchronized(pUICaches) {
+      Integer cacheNum = pUICaches.lastKey() + 1;
+      pUICaches.put(cacheNum, new UICache());
+      
+      LogMgr.getInstance().log(Kind.Ops, Level.Finest, 
+         "Creating UI Cache with ID (" + cacheNum + ")");
+      return cacheNum;
+    }
+  }
+  
+  /**
+   * Call the {@link UICache#invalidateCachedActiveToolsetNames()} method on the caches for 
+   * all the channels.
+   * <p>
+   * This call should be made in any UI class which modifies the active toolset.
+   */
+  public void
+  invalidateAllCachedActiveToolsetNames()
+  {
+    synchronized(pUICaches) {
+      LogMgr.getInstance().log(Kind.Ops, Level.Finest, 
+        "Invalidating all Cached Active Toolsets");
+      for (UICache cache : pUICaches.values()) {
+        cache.invalidateCachedActiveToolsetNames();
+      }
+    }
+  }
+  
+  /**
+   * Call the {@link UICache#invalidateCachedDefaultToolsetName()} method on the caches for 
+   * all the channels.
+   * <p>
+   * This call should be made in any UI class which modifies the default toolset.
+   */
+  public void
+  invalidateAllCachedDefaultToolsetName()
+  {
+    synchronized(pUICaches) {
+      LogMgr.getInstance().log(Kind.Ops, Level.Finest, 
+        "Invalidating all Cached Default Toolsets");
+      for (UICache cache : pUICaches.values()) {
+        cache.invalidateCachedDefaultToolsetName();
+      }
+    }
+  }
+
+  /**
+   * Call the {@link UICache#invalidateCachedPrivilegeDetails} method on the caches for 
+   * all the channels.
+   * <p>
+   * This call should be made in any UI class which modifies the privileges.
+   */
+  public void
+  invalidateAllCachedPrivilegeDetails()
+  {
+    synchronized(pUICaches) {
+      LogMgr.getInstance().log(Kind.Ops, Level.Finest, 
+        "Invalidating all Cached Privileged Details");
+      for (UICache cache : pUICaches.values()) {
+        cache.invalidateCachedPrivilegeDetails();
+      }
+    }
+  }
+  
+  /**
+   * Call the {@link UICache#invalidateCachedWorkGroups} method on the caches for 
+   * all the channels.
+   * <p>
+   * This call should be made in any UI class which modifies work groups.
+   */
+  public void
+  invalidateAllCachedWorkGroups()
+  {
+    synchronized(pUICaches) {
+      LogMgr.getInstance().log(Kind.Ops, Level.Finest, 
+        "Invalidating all Cached Work Groups");
+      for (UICache cache : pUICaches.values()) {
+        cache.invalidateCachedWorkGroups();
+      }
+    }
+  }
+ 
+  
+  
   /*----------------------------------------------------------------------------------------*/
   /*   U S E R   I N T E R F A C E                                                          */
   /*----------------------------------------------------------------------------------------*/
@@ -1098,12 +1227,13 @@ class UIMaster
   public void
   rebuildEditorMenu
   (
+   int channel, 
    String tname, 
    JMenu menu, 
    ActionListener listener
   ) 
   {
-    rebuildEditorMenu(null, tname, menu, listener);
+    rebuildEditorMenu(null, channel, tname, menu, listener);
   }
 
   /**
@@ -1111,6 +1241,9 @@ class UIMaster
    * 
    * @param topmenu
    *   The top-level popup menu containing the items.
+   * 
+   * @param channel
+   *   The index of the update channel.
    * 
    * @param tname
    *   The name of the toolset.
@@ -1125,6 +1258,7 @@ class UIMaster
   rebuildEditorMenu
   (
    JPopupMenu topmenu,
+   int channel, 
    String tname, 
    JMenu menu, 
    ActionListener listener
@@ -1187,6 +1321,9 @@ class UIMaster
   /**
    * Rebuild the contents of an comparator plugin menu for the given toolset.
    * 
+   * @param channel
+   *   The index of the update channel.
+   * 
    * @param tname
    *   The name of the toolset.
    * 
@@ -1199,12 +1336,13 @@ class UIMaster
   public void
   rebuildComparatorMenu
   (
+   int channel, 
    String tname, 
    JMenu menu, 
    ActionListener listener
   ) 
   {
-    rebuildComparatorMenu(null, tname, menu, listener);
+    rebuildComparatorMenu(null, channel, tname, menu, listener);
   }
 
   /**
@@ -1212,6 +1350,9 @@ class UIMaster
    * 
    * @param topmenu
    *   The top-level popup menu containing the items.
+   * 
+   * @param channel
+   *   The index of the update channel.
    * 
    * @param tname
    *   The name of the toolset.
@@ -1226,6 +1367,7 @@ class UIMaster
   rebuildComparatorMenu
   (
    JPopupMenu topmenu,
+   int channel, 
    String tname, 
    JMenu menu, 
    ActionListener listener
@@ -1287,6 +1429,9 @@ class UIMaster
   /**
    * Rebuild the contents of an tool plugin menu for the given toolset.
    * 
+   * @param channel
+   *   The index of the update channel.
+   * 
    * @param tname
    *   The name of the toolset.
    * 
@@ -1299,12 +1444,13 @@ class UIMaster
   public void
   rebuildToolMenu
   (
+   int channel, 
    String tname, 
    JPopupMenu menu, 
    ActionListener listener
   ) 
   {
-    rebuildToolMenu(null, tname, menu, listener);
+    rebuildToolMenu(null, channel, tname, menu, listener);
   }
 
   /**
@@ -1312,6 +1458,9 @@ class UIMaster
    * 
    * @param topmenu
    *   The top-level popup menu containing the items.
+   * 
+   * @param channel
+   *   The index of the update channel.
    * 
    * @param tname
    *   The name of the toolset.
@@ -1326,6 +1475,7 @@ class UIMaster
   rebuildToolMenu
   (
    JPopupMenu topmenu,
+   int channel, 
    String tname, 
    JPopupMenu menu, 
    ActionListener listener
@@ -1390,6 +1540,9 @@ class UIMaster
    * @param topmenu
    *   The top-level popup menu containing the items.
    * 
+   * @param channel
+   *   The index of the update channel.
+   * 
    * @param tname
    *   The name of the toolset.
    * 
@@ -1403,6 +1556,7 @@ class UIMaster
   rebuildToolMenu
   (
    JPopupMenu topmenu,
+   int channel, 
    String tname, 
    JMenu menu, 
    ActionListener listener
@@ -1464,6 +1618,9 @@ class UIMaster
   /**
    * Rebuild the contents of an tool plugin menu for the given toolset.
    * 
+   * @param channel
+   *   The index of the update channel.
+   * 
    * @param menu
    *   The menu to be rebuilt.
    * 
@@ -1473,11 +1630,12 @@ class UIMaster
   public void
   rebuildDefaultToolMenu
   (
+   int channel, 
    JPopupMenu menu, 
    ActionListener listener
   ) 
   {
-    rebuildDefaultToolMenu(null, menu, listener);
+    rebuildDefaultToolMenu(null, channel, menu, listener);
   }
 
   /**
@@ -1499,15 +1657,17 @@ class UIMaster
   rebuildDefaultToolMenu
   (
    JPopupMenu topmenu,
-   JPopupMenu menu, 
-   ActionListener listener
+   int channel, 
+    JPopupMenu menu, 
+    ActionListener listener
   ) 
   {
     PluginMenuLayout layout = null;
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
     MasterMgrClient client = acquireMasterMgrClient();
     try {
-      String tname = client.getCachedDefaultToolsetName();
+      UICache cache = getUICache(channel);
+      String tname = cache.getCachedDefaultToolsetName();
 
       synchronized(pToolPlugins) {
 	plugins = pToolPlugins.get(tname);
@@ -1563,7 +1723,10 @@ class UIMaster
    * 
    * @param topmenu
    *   The top-level popup menu containing the items.
-   *   
+   * 
+   * @param channel
+   *   The index of the update channel.
+   * 
    * @param menu
    *   The menu to be rebuilt.
    * 
@@ -1578,6 +1741,7 @@ class UIMaster
   rebuildDefaultBuilderCollectionMenu
   (
    JPopupMenu topmenu,
+   int channel, 
    JMenu menu, 
    ActionListener listener,
    boolean enabled
@@ -1591,7 +1755,7 @@ class UIMaster
     {
       MasterMgrClient client = acquireMasterMgrClient();
       try {
-        tname = client.getCachedDefaultToolsetName();
+        tname = getUICache(channel).getCachedDefaultToolsetName();
       } 
       catch (PipelineException ex) {
         menu.removeAll();
@@ -1805,12 +1969,16 @@ class UIMaster
   /**
    * Create a new editor plugin selection field based on the default toolset.
    * 
+   * @param channel
+   *   The index of the update channel.
+   * 
    * @param width
    *   The minimum and preferred width of the field.
    */ 
   public JPluginSelectionField
   createEditorSelectionField
   (
+   int channel,
    int width  
   ) 
   {
@@ -1818,7 +1986,7 @@ class UIMaster
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
     MasterMgrClient client = acquireMasterMgrClient();
     try {
-      String tname = client.getCachedDefaultToolsetName();
+      String tname = getUICache(channel).getCachedDefaultToolsetName();
 
       synchronized(pEditorPlugins) {
 	plugins = pEditorPlugins.get(tname);
@@ -1869,6 +2037,7 @@ class UIMaster
   public void 
   updateEditorPluginField
   (
+   int channel,
    String tname, 
    JPluginSelectionField field
   ) 
@@ -1927,12 +2096,16 @@ class UIMaster
   /**
    * Create a new action plugin selection field based on the default toolset.
    * 
+   * @param channel
+   *   The index of the update channel.
+   * 
    * @param width
    *   The minimum and preferred width of the field.
    */ 
   public JPluginSelectionField
   createActionSelectionField
   (
+   int channel,
    int width  
   ) 
   {
@@ -1940,7 +2113,7 @@ class UIMaster
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
     MasterMgrClient client = acquireMasterMgrClient();
     try {
-      String tname = client.getCachedDefaultToolsetName();
+      String tname = getUICache(channel).getCachedDefaultToolsetName();
 
       synchronized(pActionPlugins) {
 	plugins = pActionPlugins.get(tname);
@@ -1991,6 +2164,7 @@ class UIMaster
   public void 
   updateActionPluginField
   (
+   int channel,
    String tname, 
    JPluginSelectionField field
   ) 
@@ -2058,14 +2232,15 @@ class UIMaster
   public JPluginSelectionField
   createArchiverSelectionField
   (
-   int width  
+    int channel,
+    int width  
   ) 
   {
     PluginMenuLayout layout = null;
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
     MasterMgrClient client = acquireMasterMgrClient();
     try {
-      String tname = client.getCachedDefaultToolsetName();
+      String tname = getUICache(channel).getCachedDefaultToolsetName();
 
       synchronized(pArchiverPlugins) {
 	plugins = pArchiverPlugins.get(tname);
@@ -2174,20 +2349,25 @@ class UIMaster
   /**
    * Create a new master extension plugin selection field based on the default toolset.
    * 
+   * @param channel
+   *   The index of the update channel.
+   * 
    * @param width
    *   The minimum and preferred width of the field.
    */ 
+  //FIXME This is zero-channel.  Should there be a cache here?
   public JPluginSelectionField
   createMasterExtSelectionField
   (
-   int width  
+    int channel,
+    int width
   ) 
   {
     PluginMenuLayout layout = null;
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
     MasterMgrClient client = acquireMasterMgrClient();
     try {
-      String tname = client.getCachedDefaultToolsetName();
+      String tname = getUICache(channel).getCachedDefaultToolsetName();
 
       synchronized(pMasterExtPlugins) {
 	plugins = pMasterExtPlugins.get(tname);
@@ -2295,6 +2475,9 @@ class UIMaster
   
   /**
    * Create a new queue extension plugin selection field based on the default toolset.
+   *
+   * @param channel
+   *   The index of the update channel.
    * 
    * @param width
    *   The minimum and preferred width of the field.
@@ -2302,14 +2485,15 @@ class UIMaster
   public JPluginSelectionField
   createQueueExtSelectionField
   (
-   int width  
+    int channel,
+    int width  
   ) 
   {
     PluginMenuLayout layout = null;
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
     MasterMgrClient client = acquireMasterMgrClient();
     try {
-      String tname = client.getCachedDefaultToolsetName();
+      String tname = getUICache(channel).getCachedDefaultToolsetName();
 
       synchronized(pQueueExtPlugins) {
 	plugins = pQueueExtPlugins.get(tname);
@@ -2416,7 +2600,10 @@ class UIMaster
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Create a new annotation plugin selection field based on the default toolset.
+   * Create a new per-node annotation plugin selection field based on the default toolset.
+   * 
+   * @param channel
+   *   The index of the update channel.
    * 
    * @param width
    *   The minimum and preferred width of the field.
@@ -2424,15 +2611,19 @@ class UIMaster
   public JPluginSelectionField
   createAnnotationSelectionField
   (
+   int channel,
    int width
   ) 
   {
     return createOrUpdateAnnotationPluginField
-      (null, width, null, AnnotationContext.PerNode);
+      (channel, null, width, null, AnnotationContext.PerNode);
   }
 
   /**
    * Update the contents of an per-node annotation plugin field based on the default toolset.
+   * 
+   * @param channel
+   *   The index of the update channel.
    * 
    * @param field
    *   The field to update. 
@@ -2440,16 +2631,20 @@ class UIMaster
   public void 
   updateAnnotationPluginField
   (
+   int channel,
    JPluginSelectionField field
   ) 
   {
     createOrUpdateAnnotationPluginField
-      (null, 0, field, AnnotationContext.PerNode);
+      (channel, null, 0, field, AnnotationContext.PerNode);
   }
 
   /**
    * Update the contents of an per-version annotation plugin field based on the 
    * given working toolset.
+   * 
+   * @param channel
+   *   The index of the update channel.
    * 
    * @param toolset
    *   The name of the toolset providing the menu layout.
@@ -2460,16 +2655,20 @@ class UIMaster
   public void 
   updateAnnotationPluginField
   (
+   int channel,
    String toolset, 
    JPluginSelectionField field
   ) 
   {
     createOrUpdateAnnotationPluginField
-      (toolset, 0, field, AnnotationContext.PerVersion);
+      (channel, toolset, 0, field, AnnotationContext.PerVersion);
   }
 
   /**
    * Update or create the contents of an annotation plugin field.
+   * 
+   * @param channel
+   *   The index of the update channel.
    * 
    * @param toolset
    *   The toolset which provides the menu layout or <CODE>null</CODE> to use the default
@@ -2490,6 +2689,7 @@ class UIMaster
   private JPluginSelectionField
   createOrUpdateAnnotationPluginField
   (
+   int channel,
    String toolset, 
    int width, 
    JPluginSelectionField field,
@@ -2499,10 +2699,11 @@ class UIMaster
     PluginMenuLayout layout = null;
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
     MasterMgrClient client = acquireMasterMgrClient();
+    UICache cache = getUICache(channel);
     try {
       String tname = toolset;
       if(tname == null) 
-        tname = client.getCachedDefaultToolsetName();
+        tname = cache.getCachedDefaultToolsetName();
 
       TripleMap<String,String,VersionID,TreeSet<OsType>> tsPlugins = null;
       synchronized(pAnnotationPlugins) {
@@ -2535,7 +2736,7 @@ class UIMaster
 	}
       }
       
-      boolean isAnnotator = client.getCachedPrivilegeDetails().isAnnotator();
+      boolean isAnnotator = cache.getCachedPrivilegeDetails().isAnnotator();
 
       plugins = new TripleMap<String,String,VersionID,TreeSet<OsType>>();
       synchronized(pAnnotationExtrasLock) {
@@ -2601,20 +2802,24 @@ class UIMaster
   /**
    * Create a new key chooser plugin selection field based on the default toolset.
    * 
+   * @param channel
+   *   The index of the update channel.
+   * 
    * @param width
    *   The minimum and preferred width of the field.
    */ 
   public JPluginSelectionField
   createKeyChooserSelectionField
   (
-   int width  
+    int channel,
+    int width  
   ) 
   {
     PluginMenuLayout layout = null;
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
     MasterMgrClient client = acquireMasterMgrClient();
     try {
-      String tname = client.getCachedDefaultToolsetName();
+      String tname = getUICache(channel).getCachedDefaultToolsetName();
 
       synchronized(pKeyChooserPlugins) {
 	plugins = pKeyChooserPlugins.get(tname);
@@ -2661,18 +2866,22 @@ class UIMaster
 
   /**
    * Update the contents of an key chooser plugin field.
+   * 
+   * @param channel
+   *   The index of the update channel.
    */ 
   public void 
   updateKeyChooserPluginField
   (
-   JPluginSelectionField field
+    int channel,
+    JPluginSelectionField field
   ) 
   {
     PluginMenuLayout layout = null;
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
     MasterMgrClient client = acquireMasterMgrClient();
     try {
-      String tname = client.getCachedDefaultToolsetName();
+      String tname = getUICache(channel).getCachedDefaultToolsetName();
 
       synchronized(pKeyChooserPlugins) {
 	plugins = pKeyChooserPlugins.get(tname);
@@ -2719,14 +2928,18 @@ class UIMaster
   
   /**
    * Create a new builder ID selection field based on the default toolset.
-   * 
+   *
+   * @param channel
+   *   The index of the update channel.
+   *
    * @param width
    *   The minimum and preferred width of the field.
    */ 
   public JBuilderIDSelectionField
   createBuilderIDSelectionField
   (
-   int width
+    int channel,
+    int width
   ) 
   {
     PluginMenuLayout layout = null;
@@ -2734,7 +2947,7 @@ class UIMaster
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
     MasterMgrClient client = acquireMasterMgrClient();
     try {
-      String tname = client.getCachedDefaultToolsetName();
+      String tname = getUICache(channel).getCachedDefaultToolsetName();
 
       synchronized(pBuilderCollectionPlugins) {
         plugins = pBuilderCollectionPlugins.get(tname);
@@ -2792,8 +3005,14 @@ class UIMaster
    * Create a new set of builder ID related fields based on the default toolset with a 
    * title and add them to the given panels.
    * 
+   * @param channel
+   *   The index of the update channel.
+   * 
    * @param tpanel
    *   The titles panel.
+   *   
+   * @param title
+   *   The name for the field that should appear in the UI.
    * 
    * @param twidth
    *   The minimum and preferred width of the title.
@@ -2813,17 +3032,18 @@ class UIMaster
   public JBuilderIDSelectionField
   createTitledBuilderIDSelectionField
   (
-   JPanel tpanel, 
-   String title,  
-   int twidth,
-   JPanel vpanel, 
-   BuilderID builderID, 
-   int vwidth, 
-   String tooltip
+    int channel, 
+    JPanel tpanel, 
+    String title,  
+    int twidth,
+    JPanel vpanel, 
+    BuilderID builderID, 
+    int vwidth, 
+    String tooltip
   ) 
   { 
     tpanel.add(UIFactory.createFixedLabel(title, twidth, JLabel.RIGHT, tooltip));
-    JBuilderIDSelectionField bfield = createBuilderIDSelectionField(vwidth);
+    JBuilderIDSelectionField bfield = createBuilderIDSelectionField(channel, vwidth);
     vpanel.add(bfield);
 
     UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
@@ -2882,11 +3102,15 @@ class UIMaster
 
   /**
    * Update the contents of a builder ID selection field.
+   * 
+   * @param channel
+   *   The index of the update channel.
    */ 
   public void 
-  updateBuilderIDSelectionField
+  updateBuilderIDSelectionFieldchannel
   (
-   JBuilderIDSelectionField field
+    JBuilderIDSelectionField field,
+    int channel
   ) 
   {
     PluginMenuLayout layout = null;
@@ -2894,7 +3118,7 @@ class UIMaster
     TripleMap<String,String,VersionID,TreeSet<OsType>> plugins = null;
     MasterMgrClient client = acquireMasterMgrClient();
     try {
-      String tname = client.getCachedDefaultToolsetName();
+      String tname = getUICache(channel).getCachedDefaultToolsetName();
 
       synchronized(pBuilderCollectionPlugins) {
         plugins = pBuilderCollectionPlugins.get(tname);
@@ -3719,6 +3943,24 @@ class UIMaster
   {
     return beginPanelOpHelper(0, "", false);
   }
+  
+  /**
+   * Try to acquire a panel operation lock, but generate no progress messages. <P> 
+   * 
+   * If this method returns <CODE>true</CODE> then the lock was acquired and the operation 
+   * can proceed.  Otherwise, the caller should abort the operation immediately. <P> 
+   * 
+   * Once the operation is complete or if it is aborted early, the caller
+   * of this methods must call {@link #endPanelOp endPanelOp} to release the lock.
+   * 
+   * @return
+   *   Whether the panel operation should proceed.
+   */ 
+   public boolean
+   beginSilentPanelOp() 
+   {
+     return beginPanelOpHelper(0, "", true);
+   }
 
   /**
    * Try to acquire a panel operation lock, but generate no progress messages. <P> 
@@ -3735,6 +3977,7 @@ class UIMaster
    * @return
    *   Whether the panel operation should proceed.
    */ 
+   //Santized
    public boolean
    beginSilentPanelOp
    (
@@ -3758,7 +4001,8 @@ class UIMaster
    * 
    * @return
    *   Whether the panel operation should proceed.
-   */ 
+   */
+   // Sanitized
    public boolean
    beginPanelOp
    (
@@ -5738,7 +5982,7 @@ class UIMaster
 
 	    /* start the editor */ 
 	    if(pSubstitute) {
-	      PrivilegeDetails details = client.getCachedPrivilegeDetails();
+	      PrivilegeDetails details = getUICache(pChannel).getCachedPrivilegeDetails();
 	      if(details.isNodeManaged(pAuthorName)) {
 		EditAsTask task = new EditAsTask(editor, pAuthorName, fseq, env, dir);
 		task.start();
@@ -6626,7 +6870,9 @@ class UIMaster
   /**
    * The remote control server thread or <CODE>null</CODE> if disabled.
    */ 
-  private RemoteServer  pRemoteServer; 
+  private RemoteServer  pRemoteServer;
+  
+  private TreeMap<Integer, UICache> pUICaches;
 
 
   /*----------------------------------------------------------------------------------------*/
