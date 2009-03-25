@@ -1,8 +1,9 @@
-// $Id: PackageInfo.java.src.in,v 1.51 2009/02/18 16:08:10 jim Exp $
+// $Id: PackageInfo.java.src.in,v 1.52 2009/03/25 22:02:23 jim Exp $
 
 package us.temerity.pipeline;
 
 import java.io.*;
+import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   P A C K A G E   I N F O                                                                */
@@ -286,6 +287,19 @@ class PackageInfo
     return sJavaRuntimePaths[os.ordinal()];
   }
 
+  /**
+   * Get an environment containing only the path to the "java" binary.
+   */ 
+  public static Map<String,String>
+  getJavaEnvironment() 
+  {
+    TreeMap<String,String> env = new TreeMap<String,String>(); 
+    Path jrebin = PackageInfo.getJavaRuntime(sOsType).getParentPath();
+    Path jdkbin = new Path(jrebin.getParentPath().getParentPath(), "bin");
+    env.put("PATH", jrebin + getPathSep() + jdkbin); 
+    return env;
+  }
+  
 
   /*----------------------------------------------------------------------------------------*/
  

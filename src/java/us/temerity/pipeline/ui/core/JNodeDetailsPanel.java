@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.55 2009/03/25 19:31:58 jesse Exp $
+// $Id: JNodeDetailsPanel.java,v 1.56 2009/03/25 22:02:24 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -6519,17 +6519,8 @@ class JNodeDetailsPanel
         hbox.add(UIFactory.createSidebar());
         
         {
-          Component comps[] = UIFactory.createTitledPanels();
-          JPanel tpanel = (JPanel) comps[0];
-          JPanel vpanel = (JPanel) comps[1];
-          
-          tpanel.add(Box.createRigidArea(new Dimension(sTSize-14, 0)));
-          vpanel.add(Box.createHorizontalGlue());
-          
-          UIFactory.addVerticalGlue(tpanel, vpanel);
-          
           JDrawer drawer = 
-            new JDrawer("Annotation Parameters:", (JComponent) comps[2], true);
+            new JDrawer("Annotation Parameters:", null, true);
           drawer.setToolTipText(UIFactory.formatToolTip("Annotation plugin parameters."));
           pParamsDrawer = drawer;
 
@@ -6681,12 +6672,12 @@ class JNodeDetailsPanel
       pParamComponents.clear();
       pDocToAnnotParamName.clear();
       
-      Component comps[] = UIFactory.createTitledPanels();
-      JPanel tpanel = (JPanel) comps[0];
-      JPanel vpanel = (JPanel) comps[1];
-
       boolean first = true;
-      if(annot != null) {
+      if((annot != null) && annot.hasParams()) {
+        Component comps[] = UIFactory.createTitledPanels();
+        JPanel tpanel = (JPanel) comps[0];
+        JPanel vpanel = (JPanel) comps[1];
+
         for(String pname : annot.getLayout()) {
           if(pname == null) {
             UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
@@ -7219,15 +7210,14 @@ class JNodeDetailsPanel
             
           first = false;
         }
+        
+        UIFactory.addVerticalGlue(tpanel, vpanel);
+        
+        pParamsDrawer.setContents((JComponent) comps[2]);
       }
       else {
-        tpanel.add(Box.createRigidArea(new Dimension(sTSize-7, 0)));
-        vpanel.add(Box.createHorizontalGlue());
+        pParamsDrawer.setContents(null);
       }
-
-      UIFactory.addVerticalGlue(tpanel, vpanel);
-        
-      pParamsDrawer.setContents((JComponent) comps[2]);
     }
 
     /**

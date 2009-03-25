@@ -1,4 +1,4 @@
-// $Id: MasterMgrLightClient.java,v 1.3 2009/03/20 03:10:38 jim Exp $
+// $Id: MasterMgrLightClient.java,v 1.4 2009/03/25 22:02:23 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -1025,6 +1025,106 @@ interface MasterMgrLightClient
   (
    String name
   ) 
+    throws PipelineException;
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S I T E   V E R S I O N S                                                            */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Creates a JAR archive containing both files and metadata associated with a checked-in
+   * version of a node suitable for transfer to a remote site.<P> 
+   * 
+   * The JAR archive will contain a copy of the original NodeVersion which has been altered 
+   * from its original form in several ways:<P>
+   * 
+   * <DIV style="margin-left: 40px;">
+   *   The full name of the target node as well as the names of any source nodes of this
+   *   target node will have been changed to append the "localSiteName" as the last 
+   *   directory component of the node path before the node prefix.  <P> 
+   * 
+   *   For each source node listed in the "referenceNames", the link type will be changed 
+   *   to Reference.  The name of the source nodes will also be modified to include the 
+   *   "localSiteName" as the last directory component.  Any source nodes not contained in 
+   *   "referenceNames" will be removed as a source for the target node.<P> 
+   * 
+   *   Any action associated with the target node will be removed.
+   * 
+   *   A RemoteVersion per-version annotation will be added to the NodeVersion who's 
+   *   annotation parameters included detailed information about the original node version
+   *   being extracted.  This includes the original node name, local site name as well as
+   *   information about when the JAR archive was created and by whom. 
+   * </DIV><P> 
+   *   
+   * Each file associated with the target node will also be copied and included in the JAR 
+   * archive generated.  These files will also be altered from their original in the 
+   * following ways:<P> 
+   * 
+   * <DIV style="margin-left: 40px;">
+   *   The names of the files will similarly renamed to include the local site name as the 
+   *   last directory component of the file path.<P> 
+   * 
+   *   If a file is part of one of the primary/secondary file sequences contained in 
+   *   "replaceSeqs", then a series of string substitutions will be performed on each file 
+   *   to make it portable to the new site.  All occurances of the names of source nodes 
+   *   included in the "referenceNames" will be automatically changed to include the local 
+   *   site name.  In addition, all key entries in the "replacements" table will replaced 
+   *   by their value in this table.  This provides a way of adding in any arbitrary site 
+   *   localization fixes which may be node specific.
+   * </DIV><P> 
+   * 
+   * In addition to a GLUE format file containing the altered NodeVersion copy and associated
+   * node files, a "README" text file will also be added to the JAR archive which details 
+   * the contents and all changes made to the node version being extracted.<P> 
+   * 
+   * If successfull, the JAR archive file will be written to the directory named by "dir" 
+   * and given a unique name based on the timestamp of when the archive was created.  The
+   * full filesystem path of this uniquely named JAR file will be returned by this method.<P>
+   * 
+   * This method will go away when true multi-site support is added to Pipeline.<P>  
+   * 
+   * @param name
+   *   The fully resolved node name of the node to extract.
+   * 
+   * @param vid
+   *   The revision number of the node version to extract. 
+   * 
+   * @param referenceNames
+   *   The fully resolved names of the source nodes to include as Reference links or
+   *   <CODE>null</CODE> if no links should be included.
+   * 
+   * @param localSiteName
+   *   Name for the local site which will be used to modify extracted node names.
+   * 
+   * @param replaceSeqs
+   *   The primary and secondary file sequences associated with the node to which all 
+   *   string replacements should be applied or <CODE>null</CODE> to skip all file contents 
+   *   replacements.
+   * 
+   * @param replacements
+   *   The table of additional string replacements to perform on the files associated
+   *   with the node version being extracted or <CODE>null</CODE> if there are no
+   *   additional replacements. 
+   * 
+   * @parma dir
+   *   The directory in which to place the JAR archive created.
+   *
+   * @returns
+   *   The full file system path of the created JAR archive.
+   */ 
+  public Path
+  extractSiteVersion
+  (
+   String name, 
+   VersionID vid, 
+   TreeSet<String> referenceNames, 
+   String localSiteName, 
+   TreeSet<FileSeq> replaceSeqs, 
+   TreeMap<String,String> replacements,
+   Path dir
+  )
     throws PipelineException;
 
 }

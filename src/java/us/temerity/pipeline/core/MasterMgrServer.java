@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.95 2009/03/20 03:10:38 jim Exp $
+// $Id: MasterMgrServer.java,v 1.96 2009/03/25 22:02:24 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1486,6 +1486,47 @@ class MasterMgrServer
                 }
                 break;
 
+              /*-- SITE VERSIONS ---------------------------------------------------------*/
+              case ExtractSiteVersion:
+                {
+                  NodeExtractSiteVersionReq req = 
+                    (NodeExtractSiteVersionReq) objIn.readObject();
+                  objOut.writeObject(pMasterMgr.extractSiteVersion(req));
+                  objOut.flush(); 
+                }
+                break;
+
+              case LookupSiteVersion:
+                {
+                  NodeSiteVersionReq req = (NodeSiteVersionReq) objIn.readObject();
+                  objOut.writeObject(pMasterMgr.lookupSiteVersion(req));
+                  objOut.flush(); 
+                }
+                break;
+
+              case IsSiteVersionInserted:
+                {
+                  NodeSiteVersionReq req = (NodeSiteVersionReq) objIn.readObject();
+                  objOut.writeObject(pMasterMgr.isSiteVersionInserted(req));
+                  objOut.flush(); 
+                }
+                break;
+
+              case GetMissingSiteVersionRefs:
+                {
+                  NodeSiteVersionReq req = (NodeSiteVersionReq) objIn.readObject();
+                  objOut.writeObject(pMasterMgr.getMissingSiteVersionRefs(req));
+                  objOut.flush(); 
+                }
+                break;
+
+              case InsertSiteVersion:
+                {
+                  NodeSiteVersionReq req = (NodeSiteVersionReq) objIn.readObject();
+                  objOut.writeObject(pMasterMgr.insertSiteVersion(req));
+                  objOut.flush(); 
+                }
+                break;
 
               /*-- NODE EVENTS -----------------------------------------------------------*/
               case GetEvents: 

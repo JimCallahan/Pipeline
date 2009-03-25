@@ -1,4 +1,4 @@
-// $Id: FileMgrNetClient.java,v 1.16 2009/02/17 00:44:18 jlee Exp $
+// $Id: FileMgrNetClient.java,v 1.17 2009/03/25 22:02:23 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -664,6 +664,168 @@ class FileMgrNetClient
       new FileUnpackNodesReq(bundlePath, bundle, author, view, skipUnpack);
     
     Object obj = performLongTransaction(FileRequest.UnpackNodes, req, 15000, 60000);
+    handleSimpleResponse(obj);    
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+   
+  /**
+   * Creates a JAR archive containing both files and metadata associated with a checked-in
+   * version of a node suitable for transfer to a remote site.<P> 
+   * 
+   * The JAR archive will contain a copy of the original NodeVersion which has been altered 
+   * from its original form in several ways:<P>
+   * 
+   * <DIV style="margin-left: 40px;">
+   *   The full name of the target node as well as the names of any source nodes of this
+   *   target node will have been changed to append the "localSiteName" as the last 
+   *   directory component of the node path before the node prefix.  <P> 
+   * 
+   *   For each source node listed in the "referenceNames", the link type will be changed 
+   *   to Reference.  The name of the source nodes will also be modified to include the 
+   *   "localSiteName" as the last directory component.  Any source nodes not contained in 
+   *   "referenceNames" will be removed as a source for the target node.<P> 
+   * 
+   *   Any action associated with the target node will be removed.
+   * 
+   *   A RemoteVersion per-version annotation will be added to the NodeVersion who's 
+   *   annotation parameters included detailed information about the original node version
+   *   being extracted.  This includes the original node name, local site name as well as
+   *   information about when the JAR archive was created and by whom. 
+   * </DIV><P> 
+   *   
+   * Each file associated with the target node will also be copied and included in the JAR 
+   * archive generated.  These files will also be altered from their original in the 
+   * following ways:<P> 
+   * 
+   * <DIV style="margin-left: 40px;">
+   *   The names of the files will similarly renamed to include the local site name as the 
+   *   last directory component of the file path.<P> 
+   * 
+   *   If a file is part of one of the primary/secondary file sequences contained in 
+   *   "replaceSeqs", then a series of string substitutions will be performed on each file 
+   *   to make it portable to the new site.  All occurances of the names of source nodes 
+   *   included in the "referenceNames" will be automatically changed to include the local 
+   *   site name.  In addition, all key entries in the "replacements" table will replaced 
+   *   by their value in this table.  This provides a way of adding in any arbitrary site 
+   *   localization fixes which may be node specific.
+   * </DIV><P> 
+   * 
+   * In addition to a GLUE format file containing the altered NodeVersion copy and associated
+   * node files, a "README" text file will also be added to the JAR archive which details 
+   * the contents and all changes made to the node version being extracted.<P> 
+   * 
+   * If successfull, the JAR archive file will be written to "jarPath".<P>
+   * 
+   * This method will go away when true multi-site support is added to Pipeline.<P>  
+   * 
+   * @param name
+   *   The fully resolved node name of the node to extract.
+   * 
+   * @param referenceNames
+   *   The fully resolved names of the source nodes to include as Reference links or
+   *   <CODE>null</CODE> if no links should be included.
+   * 
+   * @param localSiteName
+   *   Name for the local site which will be used to modify extracted node names.
+   * 
+   * @param replaceSeqs
+   *   The primary and secondary file sequences associated with the node to which all 
+   *   string replacements should be applied or <CODE>null</CODE> to skip all file contents 
+   *   replacements.
+   * 
+   * @param replacements
+   *   The table of additional string replacements to perform on the files associated
+   *   with the node version being extracted or <CODE>null</CODE> if there are no
+   *   additional replacements. 
+   * 
+   * @param vsn
+   *   The extracted node version with all modifications applied to include in the 
+   *   JAR archive.
+   * 
+   * @param stamp
+   *   The timestamp of when this node was extracted.
+   * 
+   * @param creator
+   *   The name of the user who extracted the node.
+   * 
+   * @param jarPath
+   *   The name of the JAR archive to create.
+   */ 
+  public synchronized void 
+  extractSiteVersion
+  (
+   String name, 
+   TreeSet<String> referenceNames, 
+   String localSiteName, 
+   TreeSet<FileSeq> replaceSeqs, 
+   TreeMap<String,String> replacements,
+   NodeVersion vsn, 
+   long stamp, 
+   String creator, 
+   Path jarPath
+  )
+    throws PipelineException
+  {
+    verifyConnection();
+
+    FileExtractSiteVersionReq req = 
+      new FileExtractSiteVersionReq(name, referenceNames, localSiteName, 
+                                   replaceSeqs, replacements, 
+                                   vsn, stamp, creator, jarPath);
+    
+    Object obj = performLongTransaction(FileRequest.ExtractSiteVersion, req, 15000, 60000);
+    handleSimpleResponse(obj);    
+  }
+
+  /**
+   * Lookup the NodeVersion contained within the extracted site version JAR archive.
+   * 
+   * @param jarPath
+   *   The name of the JAR archive to read.
+   */ 
+  public NodeVersion
+  lookupSiteVersion
+  ( 
+   Path jarPath
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+
+    FileSiteVersionReq req = new FileSiteVersionReq(jarPath);
+
+    Object obj = performTransaction(FileRequest.LookupSiteVersion, req); 
+    if(obj instanceof FileLookupSiteVersionRsp) {
+      FileLookupSiteVersionRsp rsp = (FileLookupSiteVersionRsp) obj;
+      return rsp.getNodeVersion();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }
+
+  /**
+   * Extract the node files in a extracted site version JAR archive and insert them into the 
+   * repository.
+   * 
+   * @param jarPath
+   *   The name of the JAR archive to read.
+   */ 
+  public void
+  insertSiteVersion
+  ( 
+   Path jarPath
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+
+    FileSiteVersionReq req = new FileSiteVersionReq(jarPath);
+    
+    Object obj = performLongTransaction(FileRequest.InsertSiteVersion, req, 15000, 60000);
     handleSimpleResponse(obj);    
   }
 

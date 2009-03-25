@@ -1,4 +1,4 @@
-// $Id: FileRequest.java,v 1.26 2009/01/22 23:38:01 jim Exp $
+// $Id: FileRequest.java,v 1.27 2009/03/25 22:02:24 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -180,6 +180,24 @@ enum FileRequest
    */
   ExtractCleanup, 
 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * An instance of {@link FileExtractSiteVersionReq} is next.
+   */
+  ExtractSiteVersion, 
+
+  /**
+   * An instance of {@link FileSiteVersionReq} is next.
+   */
+  LookupSiteVersion, 
+
+  /**
+   * An instance of {@link FileSiteVersionReq} is next.
+   */
+  InsertSiteVersion, 
+  
 
   /*----------------------------------------------------------------------------------------*/
 

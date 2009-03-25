@@ -1,4 +1,4 @@
-// $Id: JBaseExtensionConfigDialog.java,v 1.9 2009/03/24 01:21:21 jesse Exp $
+// $Id: JBaseExtensionConfigDialog.java,v 1.10 2009/03/25 22:02:24 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -237,6 +237,10 @@ class JBaseExtensionConfigDialog
           if(pw != null) 
             value = new String(pw); 
 	}
+	else if(aparam instanceof PathExtensionParam) {
+	  JPathField field = (JPathField) comp;
+	  value = field.getPath();	  
+	}
 	else {
 	  assert(false) : "Unknown extension parameter type!";
 	}
@@ -468,6 +472,16 @@ class JBaseExtensionConfigDialog
 		 aparam.getDescription());
 
               field.setText(value);
+
+	      pParamComponents.put(pname, field);	      
+	    }
+	    else if(aparam instanceof PathExtensionParam) {
+	      Path value = (Path) aparam.getValue();
+	      JPathField field = 
+		UIFactory.createTitledPathField 
+		(tpanel, aparam.getNameUI() + ":", tsize, 
+		 vpanel, value, sVSize, 
+		 aparam.getDescription());
 
 	      pParamComponents.put(pname, field);	      
 	    }

@@ -1,4 +1,4 @@
-// $Id: NodeVersion.java,v 1.25 2007/08/08 17:16:57 jim Exp $
+// $Id: NodeVersion.java,v 1.26 2009/03/25 22:02:23 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -435,6 +435,121 @@ class NodeVersion
     if(isNovel == null) 
       throw new GlueException("The \"IsNovel\" was missing!");
     pIsNovel = isNovel;
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S I T E   V E R S I O N S                                                            */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Modify the node version to make it suitable for transfer to a remote site.<P> 
+   * 
+   * This method should only be used internallly to implement the 
+   * {@link MssterMgrClient#extractSiteVersion} method and never in user code!<P> 
+   * 
+   * This method will go away when true multi-site support is added to Pipeline.<P> 
+   * 
+   * @param referenceNames
+   *   The fully resolved names of the source nodes to include as Reference links or
+   *   <CODE>null</CODE> if no links should be included.
+   * 
+   * @param localSiteName
+   *   Name for the local site which will be used to modify extracted node names.
+   * 
+   * @param stamp
+   *   The timestamp of when this node version was extracted.
+   * 
+   * @param creator
+   *   The name of the user extracting this node version. 
+   * 
+   * @param jarName
+   *   The name of the JAR archive which will contain the extracted node.
+   */ 
+  public void
+  makeSiteLocal
+  (
+   TreeSet<String> referenceNames, 
+   String localSiteName, 
+   long stamp, 
+   String creator, 
+   String jarName
+  )
+    throws PipelineException
+  {
+    /* record info about original node in a version annotation */ 
+    {
+      PluginMgrClient client = PluginMgrClient.getInstance();
+      BaseAnnotation annot = 
+        client.newAnnotation("RemoteVersion", new VersionID("2.4.5"), "Temerity");
+
+      annot.setParamValue("OrigName", new Path(pName));
+      annot.setParamValue("VersionID", pVersionID.toString());
+      annot.setParamValue("ExtractedAt", localSiteName);
+      annot.setParamValue("ExtractedOn", TimeStamps.format(stamp));
+      annot.setParamValue("ExtractedBy", creator);
+      annot.setParamValue("JarName", jarName);
+      
+      pAnnotations.put("RemoteVersion", annot);
+    }    
+
+    /* remove any action and action related information */ 
+    pAction = null;
+    pIsActionEnabled = false;
+    pJobReqs   = null;
+    pOverflow  = null;
+    pExecution = null;
+    pBatchSize = null;
+    
+    /* localize node name */ 
+    String origName = pName;
+    pName = siteLocalName(origName, localSiteName);
+    
+    /* fix sources */ 
+    {
+      TreeMap<String,LinkVersion> sources = new TreeMap<String,LinkVersion>();
+      if(referenceNames != null) {
+        for(String sname : referenceNames) {
+          LinkVersion vsn = pSources.get(sname);
+          if(vsn == null) 
+            throw new PipelineException
+              ("There is no existing link to a source node named (" + sname + ") for the " + 
+               "node (" + origName + "), so it cannot be included as a one of the links " + 
+               "to be converted to a Reference link for this node!");
+          
+          String nname = siteLocalName(sname, localSiteName);
+          LinkMod mod = new LinkMod(nname, LinkPolicy.Reference, 
+                                    vsn.getRelationship(), vsn.getFrameOffset());
+          sources.put(nname, new LinkVersion(mod, vsn.getVersionID(), false));
+        }
+      }
+      pSources = sources;
+    }
+
+    /* make all files novel */ 
+    for(FileSeq fseq : pIsNovel.keySet()) {
+      boolean novel[] = pIsNovel.get(fseq);
+
+      int wk;
+      for(wk=0; wk<novel.length; wk++) 
+        novel[wk] = true;
+    }
+  }
+
+  /** 
+   * Generate a localized name for extracted nodes.
+   */ 
+  private String
+  siteLocalName
+  (
+   String name, 
+   String localSiteName
+  ) 
+  {
+    Path orig = new Path(name); 
+    Path fixed = new Path(new Path(orig.getParentPath(), localSiteName), orig.getName());
+    return fixed.toString();
   }
 
 

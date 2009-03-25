@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.268 2009/03/20 23:01:20 jim Exp $
+// $Id: MasterMgr.java,v 1.269 2009/03/25 22:02:23 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -7282,9 +7282,11 @@ class MasterMgr
     String aname         = req.getAnnotationName();
     BaseAnnotation annot = req.getAnnotation();
     
+    timer.aquire();
     pDatabaseLock.readLock().lock();
-
     try {
+      timer.resume();
+
       return addAnnotationHelper(req, timer, name, aname, annot);
     }
     finally {
@@ -12256,6 +12258,522 @@ class MasterMgr
   }
 
 
+ 
+  /*----------------------------------------------------------------------------------------*/
+  /*   S I T E   V E R S I O N S                                                            */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Creates a JAR archive containing both files and metadata associated with a checked-in
+   * version of a node suitable for transfer to a remote site.<P> 
+   * 
+   * @param req 
+   *   The extract site version request.
+   *
+   * @return
+   *   <CODE>NodeExtractSiteVersionRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to extract the site version.
+   */ 
+  public Object
+  extractSiteVersion
+  ( 
+   NodeExtractSiteVersionReq req 
+  ) 
+  {
+    String name = req.getName(); 
+    VersionID vid = req.getVersionID();
+    TreeSet<String> referenceNames = req.getReferenceNames();
+    String localSiteName = req.getLocalSiteName();
+    TreeSet<FileSeq> replaceSeqs = req.getReplaceSeqs();
+    TreeMap<String,String> replacements = req.getReplacements();
+    Path dir = req.getDir();
+    String creator = req.getRequestor();
+
+    TaskTimer timer = new TaskTimer(); 
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      timer.resume();
+ 
+      if(!pAdminPrivileges.isMasterAdmin(req)) 
+	throw new PipelineException
+	  ("Only a user with Master Admin privileges may extract site versions!"); 
+
+      /* lookup the node version */ 
+      NodeVersion vsn = null;
+      {
+        timer.aquire();
+        ReentrantReadWriteLock lock = getCheckedInLock(name);
+        lock.readLock().lock();
+        try {
+          timer.resume();	
+
+          CheckedInBundle bundle = getCheckedInBundles(name).get(vid);
+          if(bundle == null) 
+            throw new PipelineException 
+              ("No checked-in version (" + vid + ") of node (" + name + ") exists!"); 
+          
+          vsn = new NodeVersion(bundle.getVersion());
+        }
+        finally {
+          lock.readLock().unlock();
+        }
+      }
+
+      /* localize the version */ 
+      Path npath = new Path(name);
+      long stamp = System.currentTimeMillis(); 
+      String jarName = (stamp + "-" + npath.getName() + ".jar"); 
+      Path jarPath = new Path(dir, jarName); 
+      vsn.makeSiteLocal(referenceNames, localSiteName, stamp, creator, jarName);
+
+      /* combine automatic replacements for references with the supplied replacements */ 
+      TreeMap<String,String> repls = new TreeMap<String,String>();
+      repls.put(name, siteLocalName(name, localSiteName));
+      for(String sname : referenceNames) 
+        repls.put(sname, siteLocalName(sname, localSiteName));
+      if(replacements != null) 
+        repls.putAll(replacements);
+
+      /* fix the files and create the JAR archive */ 
+      {
+        FileMgrClient fclient = acquireFileMgrClient();
+        try {
+          fclient.extractSiteVersion(name, referenceNames, localSiteName, 
+                                     replaceSeqs, repls, vsn, stamp, creator, jarPath);
+        }
+        finally {
+          releaseFileMgrClient(fclient);
+        }
+      }
+
+      return new NodeExtractSiteVersionRsp(timer, name, vid, jarPath); 
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+  /** 
+   * Generate a localized name for extracted nodes.
+   */ 
+  private String
+  siteLocalName
+  (
+   String name, 
+   String localSiteName
+  ) 
+  {
+    Path orig = new Path(name); 
+    Path fixed = new Path(new Path(orig.getParentPath(), localSiteName), orig.getName());
+    return fixed.toString();
+  }
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Lookup the NodeVersion contained within the extracted site version JAR archive.
+   * 
+   * @param req 
+   *   The request.
+   *
+   * @return
+   *   <CODE>NodeLookupSiteVersionRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to lookup the node version.
+   */ 
+  public Object
+  lookupSiteVersion
+  ( 
+   NodeSiteVersionReq req 
+  ) 
+  {
+    Path jarPath = req.getJarPath();
+
+    TaskTimer timer = new TaskTimer(); 
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      timer.resume();	
+
+      /* get the node version from the JAR archive */ 
+      NodeVersion vsn = null;
+      {
+        FileMgrClient fclient = acquireFileMgrClient();
+        try {
+          vsn = fclient.lookupSiteVersion(jarPath); 
+        }
+        finally {
+          releaseFileMgrClient(fclient);
+        }
+      }
+
+      return new NodeLookupSiteVersionRsp(timer, vsn);    
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+  
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether the extracted node contained in the given JAR archive has already been inserted
+   * into the node database.
+   * 
+   * @param req 
+   *   The request.
+   *
+   * @return
+   *   <CODE>NodeIsSiteVersionInsertedRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to determine if the node is inserted.
+   */ 
+  public Object
+  isSiteVersionInserted
+  ( 
+   NodeSiteVersionReq req 
+  ) 
+  {
+    Path jarPath = req.getJarPath();
+
+    TaskTimer timer = new TaskTimer(); 
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      timer.resume();	
+
+      /* get the node version from the JAR archive */ 
+      NodeVersion vsn = null;
+      {
+        FileMgrClient fclient = acquireFileMgrClient();
+        try {
+          vsn = fclient.lookupSiteVersion(jarPath); 
+        }
+        finally {
+          releaseFileMgrClient(fclient);
+        }
+      }
+
+      /* see if the version already exists in the database */ 
+      boolean isInserted = false;
+      {
+        String name = vsn.getName();
+        VersionID vid = vsn.getVersionID();
+
+        timer.aquire();
+        ReentrantReadWriteLock lock = getCheckedInLock(name);
+        lock.readLock().lock();
+        try {
+          timer.resume();	
+          
+          TreeMap<VersionID,CheckedInBundle> checkedIn = null; 
+          try {
+            checkedIn = getCheckedInBundles(name);
+          }
+          catch(PipelineException ex) {
+          }
+          
+          isInserted = ((checkedIn != null) && checkedIn.containsKey(vid));
+        }
+        finally {
+          lock.readLock().unlock();
+        }  
+      }
+
+      return new NodeIsSiteVersionInsertedRsp(timer, isInserted);    
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Checks each of the source nodes referenced by the extracted node contained in the 
+   * given JAR archive and returns the names and versions of any of them that are not
+   * already in the node database.<P> 
+   * 
+   * @param req 
+   *   The request.
+   *
+   * @return
+   *   <CODE>NodeGetMissingSiteVersionRefsRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to determine the missing versions.
+   */ 
+  public Object
+  getMissingSiteVersionRefs
+  ( 
+   NodeSiteVersionReq req 
+  ) 
+  {
+    Path jarPath = req.getJarPath();
+
+    TaskTimer timer = new TaskTimer(); 
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      timer.resume();	
+
+      /* get the node version from the JAR archive */ 
+      NodeVersion vsn = null;
+      {
+        FileMgrClient fclient = acquireFileMgrClient();
+        try {
+          vsn = fclient.lookupSiteVersion(jarPath); 
+        }
+        finally {
+          releaseFileMgrClient(fclient);
+        }
+      }
+
+      /* get the names and versions of any missing dependencies */ 
+      TreeMap<String,VersionID> missing = new TreeMap<String,VersionID>(); 
+      for(LinkVersion link : vsn.getSources()) {
+        String sname = link.getName();
+        VersionID svid = link.getVersionID();
+
+        timer.aquire();
+        ReentrantReadWriteLock lock = getCheckedInLock(sname);
+        lock.readLock().lock();
+        try {
+          timer.resume();	
+
+          TreeMap<VersionID,CheckedInBundle> checkedIn = null; 
+          try {
+            checkedIn = getCheckedInBundles(sname);
+          }
+          catch(PipelineException ex) {
+          }
+
+          if((checkedIn == null) || !checkedIn.containsKey(svid)) 
+            missing.put(sname, svid);
+        }
+        finally {
+          lock.readLock().unlock();
+        }  
+      }
+
+      return new NodeGetMissingSiteVersionRefsRsp(timer, missing);
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Inserts a node version into the local node database previously extraced from a remote
+   * site using the {@link #extractSiteVersion} method.<P> 
+   * 
+   * @param req 
+   *   The request.
+   *
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to insert the node.
+   */ 
+  public Object
+  insertSiteVersion
+  ( 
+   NodeSiteVersionReq req 
+  ) 
+  {
+    Path jarPath = req.getJarPath();
+
+    TaskTimer timer = new TaskTimer(); 
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    try {
+      timer.resume();	
+
+      if(!pAdminPrivileges.isMasterAdmin(req)) 
+	throw new PipelineException
+	  ("Only a user with Master Admin privileges may insert site versions!"); 
+
+      /* get the node version from the JAR archive */ 
+      NodeVersion vsn = null;
+      {
+        FileMgrClient fclient = acquireFileMgrClient();
+        try {
+          vsn = fclient.lookupSiteVersion(jarPath); 
+        }
+        finally {
+          releaseFileMgrClient(fclient);
+        }
+      }
+
+      /* insert the version into the database */ 
+      String name = vsn.getName();
+      VersionID vid = vsn.getVersionID();
+      {
+        timer.aquire();
+        ReentrantReadWriteLock lock = getCheckedInLock(name);
+        lock.readLock().lock();
+        try {
+          timer.resume();	
+          
+          /* lookup the bundle */ 
+          TreeMap<VersionID,CheckedInBundle> checkedIn = null; 
+          try {
+            checkedIn = getCheckedInBundles(name);
+          }
+          catch(PipelineException ex) {
+          }
+          
+          /* make sure it doesn't already exist */ 
+          if((checkedIn != null) && checkedIn.containsKey(vid))
+            throw new PipelineException
+              ("A checked-in version (" + vid + ") of node (" + name + ") already exists!"); 
+          
+          /* make sure all of the dependencies do exist */ 
+          {
+            TreeMap<String,VersionID> missing = new TreeMap<String,VersionID>(); 
+            for(LinkVersion link : vsn.getSources()) {
+              String sname = link.getName();
+              VersionID svid = link.getVersionID();
+              
+              timer.aquire();
+              ReentrantReadWriteLock slock = getCheckedInLock(sname);
+              slock.readLock().lock();
+              try {
+                timer.resume();	
+                
+                TreeMap<VersionID,CheckedInBundle> scheckedIn = null; 
+                try {
+                  scheckedIn = getCheckedInBundles(sname);
+                }
+                catch(PipelineException ex) {
+                }
+                
+                if((scheckedIn == null) || !scheckedIn.containsKey(svid)) 
+                  missing.put(sname, svid);
+              }
+              finally {
+                slock.readLock().unlock();
+              }  
+            }
+
+            if(!missing.isEmpty()) {
+              StringBuilder buf = new StringBuilder(); 
+              buf.append("Unable to insert version (" + vid + ") of node (" + name + ") " + 
+                         "because the following dependencies of this node do not yet " + 
+                         "exist in the node database:\n\n"); 
+
+              for(String sname : missing.keySet()) 
+                buf.append("  " + sname + " v" + missing.get(sname) + "\n");
+
+              buf.append("\nYou must insert these missing versions before you will be " + 
+                         "able to insert the target node.");
+
+              throw new PipelineException(buf.toString());
+            }
+          }
+          
+          /* insert the files into the repository */ 
+          {
+            FileMgrClient fclient = acquireFileMgrClient();
+            try {
+              fclient.insertSiteVersion(jarPath); 
+            }
+            finally {
+              releaseFileMgrClient(fclient);
+            }
+          }
+
+          /* write the new version database entry to disk */ 
+          writeCheckedInVersion(vsn);
+
+          /* add the new version to the checked-in bundles */ 
+          if(checkedIn == null) {
+            checkedIn = new TreeMap<VersionID,CheckedInBundle>();
+
+            synchronized(pCheckedInBundles) {
+	      pCheckedInBundles.put(name, checkedIn);
+	    }
+
+	    /* keep track of the change to the node version cache */ 
+	    incrementCheckedInCounter(name, vid);
+          }
+          checkedIn.put(vid, new CheckedInBundle(vsn));
+
+	  /* update the node tree entry */ 
+	  pNodeTree.addCheckedInNodeTreePath(vsn);
+
+	  /* set the checked-in downstream links from the upstream nodes to this node */ 
+	  for(LinkVersion link : vsn.getSources()) { 
+	    String lname = link.getName();
+
+	    timer.aquire();
+	    ReentrantReadWriteLock downstreamLock = getDownstreamLock(lname);
+	    downstreamLock.writeLock().lock();
+	    try {
+	      timer.resume();
+
+	      DownstreamLinks dsl = getDownstreamLinks(lname);
+	      dsl.addCheckedIn(link.getVersionID(), name, vid);
+	    }  
+	    finally {
+	      downstreamLock.writeLock().unlock();
+	    }     
+	  }
+        }
+        finally {
+          lock.readLock().unlock();
+        }  
+      }
+
+      /* add the RemoteNode annotation */ 
+      {      
+        timer.suspend();
+
+        PluginMgrClient client = PluginMgrClient.getInstance();
+        BaseAnnotation annot = 
+          client.newAnnotation("RemoteNode", new VersionID("2.4.5"), "Temerity");
+
+        TaskTimer ctimer = new TaskTimer("MasterMgr.addAnnotationHelper()");
+        Object rsp = addAnnotationHelper(req, ctimer, name, "RemoteNode", annot);
+        if(rsp instanceof FailureRsp) {
+          FailureRsp failure = (FailureRsp) rsp;
+          throw new PipelineException
+            ("Unable to add the RemoteNode annotation to the newly inserted node " + 
+             "(" + name + "):\n" + failure.getMessage());
+        }
+
+        timer.accum(ctimer);
+      }
+      
+      return new SuccessRsp(timer);    
+    }
+    catch(PipelineException ex) {
+      return new FailureRsp(timer, ex.getMessage());
+    }
+    finally {
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   N O D E   E V E N T S                                                                */
@@ -14184,7 +14702,7 @@ class MasterMgr
       /* create the backup */ 
       {
 	ArrayList<String> args = new ArrayList<String>();
-	args.add("-zcvf");
+	args.add("-zcf");
 	args.add(backupFile.toString());
 	args.add("annotations"); 
 	args.add("archives"); 

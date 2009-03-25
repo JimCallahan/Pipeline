@@ -1,4 +1,4 @@
-// $Id: FileMgrServer.java,v 1.43 2009/02/17 00:51:44 jlee Exp $
+// $Id: FileMgrServer.java,v 1.44 2009/03/25 22:02:23 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -409,6 +409,33 @@ class FileMgrServer
                   objOut.flush(); 
                 }
                 break;
+
+              /*-- SITE VERSIONS -----------------------------------------------------------*/
+              case ExtractSiteVersion:
+                {
+                  FileExtractSiteVersionReq req = 
+                    (FileExtractSiteVersionReq) objIn.readObject();
+                  objOut.writeObject(pFileMgr.extractSiteVersion(req));
+                  objOut.flush(); 
+                }
+                break;
+
+              case LookupSiteVersion:
+                {
+                  FileSiteVersionReq req = (FileSiteVersionReq) objIn.readObject();
+                  objOut.writeObject(pFileMgr.lookupSiteVersion(req));
+                  objOut.flush(); 
+                }
+                break;
+
+              case InsertSiteVersion:
+                {
+                  FileSiteVersionReq req = (FileSiteVersionReq) objIn.readObject();
+                  objOut.writeObject(pFileMgr.insertSiteVersion(req));
+                  objOut.flush(); 
+                }
+                break;
+
 
               /*-- ARCHIVE -----------------------------------------------------------------*/
               case GetArchiveSizes:

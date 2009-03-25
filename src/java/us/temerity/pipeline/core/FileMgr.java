@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.85 2009/03/10 16:35:57 jesse Exp $
+// $Id: FileMgr.java,v 1.86 2009/03/25 22:02:23 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -12,6 +12,7 @@ import java.util.jar.*;
 import java.util.concurrent.locks.*;
 import java.util.concurrent.atomic.*;
 import java.text.*;
+import java.util.regex.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   F I L E   M G R                                                                        */
@@ -2954,8 +2955,7 @@ class FileMgr
       
       /* create the node bundle JAR file */ 
       { 
-	Map<String,String> jenv = new HashMap<String,String>(); 
-        jenv.put("PATH", PackageInfo.getJavaRuntime(OsType.Unix).getParentPath().toOsString());
+	Map<String,String> jenv = PackageInfo.getJavaEnvironment();
 
         {
           ArrayList<String> args = new ArrayList<String>();
@@ -3180,9 +3180,7 @@ class FileMgr
       int workLen = workPath.toOsString().length();
 
       Map<String,String> env = System.getenv();
-
-      Map<String,String> jenv = new HashMap<String,String>(); 
-      jenv.put("PATH", PackageInfo.getJavaRuntime(OsType.Unix).getParentPath().toOsString());
+      Map<String,String> jenv = PackageInfo.getJavaEnvironment(); 
 
       /* generate a list of all files contained in the bundle in depth first order */ 
       ArrayList<Path> bundledPaths = new ArrayList<Path>();
@@ -3370,6 +3368,613 @@ class FileMgr
       }
       
       return new SuccessRsp(timer);      
+    }
+    catch(PipelineException ex) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Severe, 
+	 ex.getMessage());
+      return new FailureRsp(timer, ex.getMessage());
+    }
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Creates a JAR archive containing both files and metadata associated with a checked-in
+   * version of a node suitable for transfer to a remote site.<P>
+   * 
+   * @param req 
+   *   The extract site version request.
+   * 
+   * @return
+   *   <CODE>SuccessRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to extract the site version.
+   */
+  public Object
+  extractSiteVersion
+  (
+   FileExtractSiteVersionReq req
+  ) 
+  {
+    String name = req.getName(); 
+    TreeSet<String> referenceNames = req.getReferenceNames();
+    String localSiteName = req.getLocalSiteName();
+    TreeSet<FileSeq> replaceSeqs = req.getReplaceSeqs();
+    TreeMap<String,String> replacements = req.getReplacements();
+    NodeVersion vsn = req.getNodeVersion();
+    VersionID vid = vsn.getVersionID();
+    long stamp = req.getStamp();
+    String creator = req.getCreator();
+    Path jarPath = req.getJarPath();
+
+    TaskTimer timer = 
+      new TaskTimer("FileMgr.extractSiteVersion(): " + name + " v" + vid + 
+                    " (" + jarPath + "):");
+
+    /* create a temporary directory for the JAR contents */ 
+    Path scratchPath = 
+      new Path(pScratchPath, "/site-versions/" + name + "/" + vid + "/" + stamp);
+    try {
+      File dir = scratchPath.toFile();
+      if(!dir.isDirectory())
+        if(!dir.mkdirs()) 
+          throw new IOException
+            ("Unable to create the extract site profile temporary directory (" + dir + ")!");
+    }
+    catch(IOException ex) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Severe, 
+	 ex.getMessage());
+      return new FailureRsp(timer, ex.getMessage());
+    }
+
+    try {
+      /* write the node version GLUE file */ 
+      Path gluePath = new Path(scratchPath, "NodeVersion.glue");
+      {
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Glu, LogMgr.Level.Finer,
+           "Writing Node Metadata: " + name + " v" + vid);
+
+        try {
+          GlueEncoderImpl.encodeFile("NodeVersion", vsn, gluePath.toFile());
+        }
+        catch(GlueException ex) {
+          throw new PipelineException
+            ("Unable to node version metadata file (" + gluePath + ") to be included in " + 
+             "the extraced version JAR archive (" + jarPath + ")!\n" +
+             ex.getMessage());
+        }
+      }
+      
+      /* write README file */ 
+      Path readmePath = new Path(scratchPath, "README");
+      try {
+        FileWriter out = new FileWriter(readmePath.toString());
+        out.write
+          ("OrigName    : " + name + "\n" + 
+           "VersionID   : " + vid + "\n\n" + 
+           "ExtractedAt : " + localSiteName + "\n" + 
+           "ExtractedOn : " + TimeStamps.format(stamp) + "\n" + 
+           "ExtractedBy : " + creator + "\n\n" + 
+           "JarName     : " + jarPath.getName() + "\n");
+        out.close();
+      }
+      catch(IOException ex) {
+        throw new PipelineException
+          ("Unable to write temporary file (" + readmePath + ") to be included in the " + 
+           "extraced version JAR archive (" + jarPath + ")!\n" +
+           ex.getMessage());
+      }
+
+      /* copy and optionally process the primary/secondary files associated with the node */
+      TreeSet<String> fileNames = new TreeSet<String>();
+      {
+        TreeMap<String,String> replaceMap = null; 
+        if((replacements != null) && !replacements.isEmpty()) {
+          replaceMap = new TreeMap<String,String>();
+          for(String key : replacements.keySet()) {
+            String value = replacements.get(key);
+            if(value != null) 
+              replaceMap.put(Pattern.quote(key), Matcher.quoteReplacement(value));
+          }
+        }
+
+        Path rpath = new Path(PackageInfo.sRepoPath, name + "/" + vid);
+        for(FileSeq fseq : vsn.getSequences()) {
+          boolean replace = ((replaceMap != null) && 
+                             (replaceSeqs != null) && replaceSeqs.contains(fseq));
+
+          for(Path fpath : fseq.getPaths()) {
+            Path path = new Path(rpath, fpath);
+            Path spath = new Path(scratchPath, fpath);
+            
+            /* create a copy, performing string replacements on the text file */ 
+            if(replace) {
+              try {
+                BufferedReader in  = new BufferedReader(new FileReader(path.toFile()));
+                BufferedWriter out = new BufferedWriter(new FileWriter(spath.toFile()));
+                while(true) {
+                  String line = in.readLine();
+                  if(line == null) 
+                    break;
+                  
+                  for(String key : replaceMap.keySet()) 
+                    line = line.replaceAll(key, replaceMap.get(key)); 
+                
+                  out.write(line + "\n");
+                }
+                in.close();
+                out.close();
+              }
+              catch(IOException ex) {
+                throw new PipelineException
+                  ("Unable perform string replacements on original node file " + 
+                   "(" + path + ") needed to produce the version of the file " + 
+                   "(" + spath + ") to be included in the extraced version JAR archive " + 
+                   "(" + jarPath + ")!\n" +
+                   ex.getMessage());
+              }
+            }              
+
+            /* just make a symlink to the original version, 
+                 the JAR archive will contain a copy not a link */ 
+            else {
+              try {
+                NativeFileSys.symlink(path.toFile(), spath.toFile());
+              }
+              catch(IOException ex) {
+                throw new PipelineException
+                  ("Unable create the symbolic link from (" + spath + ") to " + 
+                   "(" + path + ") to be included in the extraced version JAR archive " + 
+                   "(" + jarPath + ")!\n" +
+                   ex.getMessage());
+              }
+            }
+
+            fileNames.add(path.getName());
+          }
+        }
+      }
+
+      /* the node JAR archive file */ 
+      {    
+        Map<String,String> jenv = PackageInfo.getJavaEnvironment(); 
+        
+        {
+          ArrayList<String> args = new ArrayList<String>();
+          args.add("-cvMf");
+          args.add(jarPath.toOsString());
+          args.add(gluePath.getName());
+          args.add(readmePath.getName());
+          args.addAll(fileNames);
+          
+          SubProcessLight proc = 
+            new SubProcessLight(creator, 
+                                "ExtractSiteVersion", "jar", args, jenv, 
+                                scratchPath.toFile()); 
+          
+          try {
+            proc.start();
+            proc.join();
+            if(!proc.wasSuccessful()) 
+              throw new PipelineException
+                ("Unable to create the site version archive (" + jarPath + "):\n\n" + 
+                 "  " + proc.getStdErr());	
+          }
+          catch(InterruptedException ex) {
+            throw new PipelineException
+            ("Interrupted while the site version archive (" + jarPath + ")!");
+          }
+        }
+      }
+
+      return new SuccessRsp(timer);      
+    }
+    catch(PipelineException ex) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Severe, 
+	 ex.getMessage());
+      return new FailureRsp(timer, ex.getMessage());
+    }
+    finally {
+      /* clean up temporary files */ 
+      try {
+        Map<String,String> env = System.getenv();
+        
+        ArrayList<String> args = new ArrayList<String>();
+        args.add("-rf");
+        args.add(scratchPath.toOsString());
+        
+        SubProcessLight proc = 
+          new SubProcessLight
+          ("DeleteSiteVersionScratch", "rm", args, env, pScratchPath.toFile()); 
+        
+        try {
+          proc.start();
+          proc.join();
+          if(!proc.wasSuccessful()) 
+            throw new PipelineException
+              ("Unable to delete the extract site profile temporary directory " + 
+               "(" + scratchPath + "):\n" +
+               "  " + proc.getStdErr());	
+        }
+        catch(InterruptedException ex) {
+          throw new PipelineException
+            ("Interrupted while deleting the extract site profile temporary directory " + 
+             "(" + scratchPath + ")!");
+        }
+      }
+      catch(PipelineException ex) {
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Ops, LogMgr.Level.Severe, 
+           ex.getMessage());
+      }
+    }
+  }
+  
+  /**
+   * Lookup the NodeVersion contained within the extracted site version JAR archive.
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>FileLookupSiteVersionRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to lookup the node version.
+   */
+  public Object
+  lookupSiteVersion
+  (
+    FileSiteVersionReq req
+  ) 
+  {
+    Path jarPath = req.getJarPath();
+    
+    TaskTimer timer = new TaskTimer("FileMgr.lookupSiteVersion(): " + jarPath);
+    try {
+      NodeVersion vsn = lookupSiteVersionHelper(jarPath); 
+      if(vsn == null)  
+        throw new PipelineException
+          ("Unable to read the contents of the node version GLUE file in the site version " + 
+           "JAR archive (" + jarPath + ")!");
+
+      return new FileLookupSiteVersionRsp(timer, vsn); 
+    }
+    catch(PipelineException ex) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Severe, 
+	 ex.getMessage());
+      return new FailureRsp(timer, ex.getMessage());
+    }
+  }
+
+  /**
+   * Lookup the NodeVersion contained within the extracted site version JAR archive.
+   * 
+   * @param jarPath 
+   *   The name of the JAR archive to read.
+   * 
+   * @returns 
+   *   The node version.
+   */
+  public NodeVersion
+  lookupSiteVersionHelper
+  (
+   Path jarPath
+  ) 
+    throws PipelineException 
+  {
+    /* extract the raw bytes of the GLUE file */ 
+    byte glueBytes[] = null;
+    try {
+      JarInputStream in = new JarInputStream(new FileInputStream(jarPath.toFile())); 
+      
+      while(true) {
+        JarEntry entry = in.getNextJarEntry();
+        if(entry == null) 
+          break;
+        
+        if(!entry.isDirectory()) {
+          if(entry.getName().equals("NodeVersion.glue")) {
+            ByteArrayOutputStream bout = new ByteArrayOutputStream();
+            
+            byte buf[] = new byte[4096];
+            while(true) {
+              int len = in.read(buf, 0, buf.length); 
+              if(len == -1) 
+                break;
+                bout.write(buf, 0, len);
+            }
+            
+            glueBytes = bout.toByteArray();
+            break;
+          }
+        }
+      }          
+      
+      in.close();
+    }
+    catch(IOException ex) {
+      throw new PipelineException
+        ("Unable to extract the node version GLUE file from the site version JAR archive " +
+         "(" + jarPath + "): \n" + ex.getMessage());
+    }
+    
+    if(glueBytes == null) 
+      throw new PipelineException
+        ("Unable to find node version GLUE file in the site version JAR archive " +
+         "(" + jarPath + ")!");
+    
+    {
+      PluginMgrClient.getInstance().update();
+      try {
+        return (NodeVersion) GlueDecoderImpl.decodeBytes("NodeVersion", glueBytes);
+      }	
+      catch(GlueException ex) {
+        throw new PipelineException(ex);
+      }
+    }
+  }
+
+  /**
+   * Extract the node files in a extracted site version JAR archive and insert them into the 
+   * repository.
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE><SuccessRsp/CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to insert the node files.
+   */
+  public Object
+  insertSiteVersion
+  (
+    FileSiteVersionReq req
+  ) 
+  {
+    Path jarPath = req.getJarPath();
+
+    TaskTimer timer = new TaskTimer("FileMgr.insertSiteVersion(): " + jarPath);  
+    try {
+      NodeVersion vsn = lookupSiteVersionHelper(jarPath); 
+      if(vsn == null)  
+        throw new PipelineException
+          ("Unable to read the contents of the node version GLUE file in the site version " + 
+           "JAR archive (" + jarPath + ")!");
+
+      String name = vsn.getName();
+      VersionID vid = vsn.getVersionID();
+
+      timer.aquire();
+      ReentrantReadWriteLock checkedInLock = getCheckedInLock(name);
+      checkedInLock.writeLock().lock();
+      try {
+	timer.resume();
+
+	/* create the repository file and checksum directories
+	     as well any missing subdirectories */ 
+	Path rdir  = null;
+	Path crdir = null;
+	{
+	  Path rpath = new Path("/repository/" + name + "/" + vid); 
+	  rdir  = new Path(PackageInfo.sProdPath, rpath);
+	  crdir = new Path(PackageInfo.sProdPath, "checksum/" + rpath);
+
+	  timer.aquire();
+	  synchronized(pMakeDirLock) { 
+	    timer.resume();
+
+            File repoDir = rdir.toFile();
+	    if(repoDir.exists()) {
+	      if(repoDir.isDirectory()) 
+		throw new PipelineException
+		  ("Somehow the repository directory (" + rdir + 
+		   ") already exists!");
+	      else 
+		throw new PipelineException
+		  ("Somehow there exists a non-directory (" + rdir + 
+		   ") in the location of the repository directory!");
+	    }
+	    
+	    try {
+	      if(!repoDir.mkdirs())
+		throw new PipelineException
+		  ("Unable to create the repository directory (" + rdir + ")!");
+	    }
+	    catch (SecurityException ex) {
+	      throw new PipelineException
+		("Unable to create the repository directory (" + rdir + ")!");
+	    }
+
+            File checkSumDir = crdir.toFile();
+	    if(checkSumDir.exists()) {
+	      if(checkSumDir.isDirectory()) 
+		throw new PipelineException
+		  ("Somehow the repository checksum directory (" + crdir + 
+		   ") already exists!");
+	      else 
+		throw new PipelineException
+		  ("Somehow there exists a non-directory (" + crdir + 
+		   ") in the location of the repository checksum directory!");
+	    }
+	    
+	    try {
+	      if(!checkSumDir.mkdirs())
+		throw new PipelineException
+		  ("Unable to create the repository checksum directory (" + crdir + ")!");
+	    }
+	    catch (SecurityException ex) {
+	      throw new PipelineException
+		("Unable to create the repository checksum directory (" + crdir + ")!");
+	    }
+	  }
+	}
+
+	boolean success = false;
+	try {
+	  Map<String,String> env = System.getenv();
+          Map<String,String> jenv = PackageInfo.getJavaEnvironment(); 
+
+          /* insert the files into the repository */ 
+          {
+            ArrayList<String> preOpts = new ArrayList<String>();
+            preOpts.add("-xvf");
+            preOpts.add(jarPath.toOsString());
+            
+            ArrayList<String> args = new ArrayList<String>();
+            for(FileSeq fseq : vsn.getSequences()) {
+              for(Path path : fseq.getPaths()) {
+                args.add(path.toOsString());
+              }
+            }
+            
+            if(!args.isEmpty()) {
+              LinkedList<SubProcessLight> procs = 
+                SubProcessLight.createMultiSubProcess
+                 ("InsertSiteVersionFiles", "jar", preOpts, args, 
+                  jenv, rdir.toFile()); 
+              
+              try {
+                for(SubProcessLight proc : procs) {
+                  proc.start();
+                  proc.join();
+                  if(!proc.wasSuccessful()) 
+                    throw new PipelineException
+                      ("Unable to insert files from the site version JAR archive "  + 
+                       "(" + jarPath + "):\n\n" + 
+                       "  " + proc.getStdErr());	
+                }
+              }
+              catch(InterruptedException ex) {
+                throw new PipelineException
+                  ("Interrupted while inserting files from the site version JAR archive " + 
+                   "(" + jarPath + ")!");
+              }
+            }
+
+            for(FileSeq fseq : vsn.getSequences()) {
+              for(Path path : fseq.getPaths()) {
+                Path p = new Path(rdir, path);
+                File repo = p.toFile();
+                
+                if(!repo.isFile()) 
+                  throw new PipelineException
+                    ("The newly created repository file (" + repo + ") was missing!\n\n" + 
+                     "PLEASE NOTIFY YOUR SYSTEMS ADMINSTRATOR OF THIS ERROR IMMEDIATELY, " +
+                     "SINCE IT IS A SYMPTOM OF A SERIOUS FILE SERVER PROBLEM."); 
+                
+                repo.setReadOnly();
+              }
+            }
+          }
+
+          /* create checksums for these files */ 
+          {
+            for(FileSeq fseq : vsn.getSequences()) {
+              for(Path path : fseq.getPaths()) {
+                Path p = new Path(rdir, path);
+                
+                /* compute checksum */ 
+                byte checksum[] = null;
+                try {
+                  checksum = NativeFileSys.md5sum(p); 
+                }
+                catch(IOException ex) {
+                  throw new PipelineException(ex);
+                }
+                
+                /* write the checksum to file */ 
+                Path sp = new Path(crdir, path);
+                try {
+                  LogMgr.getInstance().log
+                    (LogMgr.Kind.Sum, LogMgr.Level.Finest,
+                     "Writing the checksum file: " + sp);
+                  
+                  FileOutputStream out = new FileOutputStream(sp.toFile());	
+                  try {
+                    out.write(checksum);
+                  }
+                  catch(IOException ex) {
+                    throw new PipelineException
+                      ("Unable to write the checksum file (" + sp + ")!");
+                  }
+                  finally {
+                    out.flush();
+                    out.close();
+                  }
+                }  
+                catch(FileNotFoundException ex) {
+                  throw new PipelineException
+                    ("Could not open the checksum file (" + sp + ")!");
+                }
+                catch(SecurityException ex) {
+                  throw new PipelineException
+                    ("No permission to write the checksum file (" + sp + ")!");
+                } 
+                catch (IOException ex) { 
+                  throw new IllegalStateException();
+                }
+              }
+            }
+            
+            for(FileSeq fseq : vsn.getSequences()) {
+              for(Path path : fseq.getPaths()) {
+                Path p = new Path(crdir, path);
+                File repo = p.toFile();
+                
+                if(!repo.isFile()) 
+                  throw new PipelineException
+                    ("The newly created repository checksum (" + repo + ") was missing!\n\n" + 
+                     "PLEASE NOTIFY YOUR SYSTEMS ADMINSTRATOR OF THIS ERROR IMMEDIATELY, " +
+                     "SINCE IT IS A SYMPTOM OF A SERIOUS FILE SERVER PROBLEM."); 
+                
+                repo.setReadOnly();
+              }
+            }
+          }
+
+	  success = true;
+	}
+	finally {
+	  /* make the repository directories read-only */ 
+	  if(success) {
+	    rdir.toFile().setReadOnly();
+	    crdir.toFile().setReadOnly();
+	  }
+
+	  /* cleanup any partial results */ 
+	  else { 
+            for(FileSeq fseq : vsn.getSequences()) {
+              for(Path path : fseq.getPaths()) {
+                {
+                  Path p = new Path(rdir, path);
+                  File file = p.toFile();
+                  if(file.exists()) 
+                    file.delete();
+                }
+
+                {
+                  Path p = new Path(crdir, path);
+                  File file = p.toFile();
+                  if(file.exists()) 
+                    file.delete();
+                }
+              }
+            }
+
+	    rdir.toFile().delete();
+	    crdir.toFile().delete();
+	  }
+	}
+      }
+      finally {
+        checkedInLock.writeLock().unlock();
+      }  
+
+      return new SuccessRsp(timer);
     }
     catch(PipelineException ex) {
       LogMgr.getInstance().log
