@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.269 2009/03/25 22:02:23 jim Exp $
+// $Id: MasterMgr.java,v 1.270 2009/03/25 23:04:15 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1976,6 +1976,23 @@ class MasterMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Whether the given toolset name actually exists.
+   * 
+   * @param tname
+   *   The toolset name.
+   */ 
+  private boolean 
+  isValidToolsetName
+  (
+   String tname
+  ) 
+  {
+    synchronized(pToolsets) {
+      return pToolsets.containsKey(tname); 
+    }
+  }
+
+  /**
    * Get the name of the default Unix toolset.
    * 
    * @return
@@ -2611,7 +2628,6 @@ class MasterMgr
     }
   }
   
-
   /**
    * Create a new toolset from the given toolset packages.
    * 
@@ -7766,6 +7782,12 @@ class MasterMgr
 	  ("Only a user with Node Manager privileges may modify nodes owned by " + 
 	   "another user!");
 
+      /* make sure the named toolset exits */ 
+      if(!isValidToolsetName(nmod.getToolset()))
+         throw new PipelineException
+           ("Unable to modify the properties of node (" + nodeID + ") because its Toolset " + 
+            "property (" + nmod.getToolset() + ") names a non-existent toolset!"); 
+
       /* get the working version */ 
       WorkingBundle bundle = getWorkingBundle(nodeID);
       NodeMod mod = new NodeMod(bundle.getVersion());
@@ -9612,6 +9634,12 @@ class MasterMgr
 	throw new PipelineException
 	  ("Only a user with Node Manager privileges may register nodes owned " + 
 	   "by another user!");
+
+      /* make sure the named toolset exits */ 
+      if(!isValidToolsetName(mod.getToolset()))
+         throw new PipelineException
+           ("Unable to register the node (" + mod.getName()  + ") because its Toolset " + 
+            "property (" + mod.getToolset() + ") names a non-existent toolset!"); 
 
       /* reserve the node name, 
          after verifying that it doesn't conflict with existing nodes */ 
@@ -12613,19 +12641,28 @@ class MasterMgr
 
       /* get the node version from the JAR archive */ 
       NodeVersion vsn = null;
+      String name = null; 
+      VersionID vid = null; 
       {
         FileMgrClient fclient = acquireFileMgrClient();
         try {
-          vsn = fclient.lookupSiteVersion(jarPath); 
+          vsn  = fclient.lookupSiteVersion(jarPath); 
+          name = vsn.getName();
+          vid  = vsn.getVersionID();
         }
         finally {
           releaseFileMgrClient(fclient);
         }
       }
 
+      /* make sure the named toolset exits */ 
+      if(!isValidToolsetName(vsn.getToolset()))
+         throw new PipelineException
+           ("Unable to insert version (" + vid + ") of node (" + name + ") because " + 
+            "its Toolset property (" + vsn.getToolset() + ") names a toolset which does " + 
+            "not exist at the local site!"); 
+
       /* insert the version into the database */ 
-      String name = vsn.getName();
-      VersionID vid = vsn.getVersionID();
       {
         timer.aquire();
         ReentrantReadWriteLock lock = getCheckedInLock(name);
