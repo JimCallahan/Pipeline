@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.54 2009/03/24 01:21:21 jesse Exp $
+// $Id: JNodeDetailsPanel.java,v 1.55 2009/03/25 19:31:58 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1467,6 +1467,12 @@ class JNodeDetailsPanel
       panels.assignGroup(this, groupID);
       pGroupID = groupID;
     }
+    /*
+     * If we were trying to build a non-zero channel panel and failed, then the cache has
+     * not been cleared by JManagerPanel and we need to do it ourselves here.
+     */
+    else if (groupID > 0)
+      UIMaster.getInstance().getUICache(0).invalidateCaches();
 
     master.updateOpsBar();
   }
@@ -1668,8 +1674,10 @@ class JNodeDetailsPanel
   private void 
   updatePanels() 
   {
-    PanelUpdater pu = new PanelUpdater(this);
-    pu.execute();
+    if (pGroupID != 0) {
+      PanelUpdater pu = new PanelUpdater(this);
+      pu.execute();
+    }
   }
 
   /**

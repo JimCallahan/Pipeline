@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.130 2009/03/24 01:21:21 jesse Exp $
+// $Id: JNodeViewerPanel.java,v 1.131 2009/03/25 19:31:58 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -733,8 +733,10 @@ class JNodeViewerPanel
     for(String name : pRoots.keySet()) 
       pRoots.put(name, null);
     
-    PanelUpdater pu = new PanelUpdater(this);
-    pu.execute();
+    if (pGroupID != 0) {
+      PanelUpdater pu = new PanelUpdater(this);
+      pu.execute();
+    }
   }
 
   /**
@@ -784,8 +786,10 @@ class JNodeViewerPanel
     for(String name : names) 
       pRoots.put(name, null);
   
-    PanelUpdater pu = new PanelUpdater(this, postUpdateSelected);
-    pu.execute();
+    if (pGroupID != 0) {
+      PanelUpdater pu = new PanelUpdater(this, postUpdateSelected);
+      pu.execute();
+    }
   }
 
   /**
@@ -904,8 +908,10 @@ class JNodeViewerPanel
     for(String name : names) 
       pRoots.remove(name);
     
-    PanelUpdater pu = new PanelUpdater(this);
-    pu.execute();
+    if (pGroupID != 0) {
+      PanelUpdater pu = new PanelUpdater(this);
+      pu.execute();
+    }
   }
 
   /**
@@ -989,8 +995,10 @@ class JNodeViewerPanel
   public void 
   restoreSelections() 
   {
-    PanelUpdater pu = new PanelUpdater(this);
-    pu.execute();
+    if (pGroupID != 0) {
+      PanelUpdater pu = new PanelUpdater(this);
+      pu.execute();
+    }
   }
 
   /**
@@ -2939,15 +2947,19 @@ class JNodeViewerPanel
 	    
 	    /* BUTTON3: panel popup menu */ 
 	    if((mods & (on1 | off1)) == on1) {
-	      updatePanelMenu();
-	      updateDefaultBuilderMenu();
-	      pPanelPopup.show(e.getComponent(), e.getX(), e.getY());
+	      if (pGroupID != 0) {
+	        updatePanelMenu();
+	        updateDefaultBuilderMenu();
+	        pPanelPopup.show(e.getComponent(), e.getX(), e.getY());
+	      }
 	    }
 
 	    /* BUTTON3+SHIFT: tool popup menu */ 
 	    else if((mods & (on2 | off2)) == on2) {
-	      updateDefaultToolMenu();
-	      pDefaultToolPopup.show(e.getComponent(), e.getX(), e.getY());
+	      if (pGroupID != 0) {
+	        updateDefaultToolMenu();
+	        pDefaultToolPopup.show(e.getComponent(), e.getX(), e.getY());
+	      }
 	    }
 	  }
 	}
@@ -3609,8 +3621,10 @@ class JNodeViewerPanel
     for(String name : pRoots.keySet()) 
       pRoots.put(name, null);
     
-    PanelUpdater pu = new PanelUpdater(this, false, false, null, false);
-    pu.execute();
+    if (pGroupID != 0) {
+      PanelUpdater pu = new PanelUpdater(this, false, false, null, false);
+      pu.execute();
+    }
   }
   
   /**
@@ -3633,8 +3647,10 @@ class JNodeViewerPanel
     for(String name : pRoots.keySet()) 
       pRoots.put(name, null);
     
-    PanelUpdater pu = new PanelUpdater(this, false, true, branches, false);
-    pu.execute();    
+    if (pGroupID != 0) {
+      PanelUpdater pu = new PanelUpdater(this, false, true, branches, false);
+      pu.execute();    
+    }
   }
   
 
@@ -3648,9 +3664,11 @@ class JNodeViewerPanel
   {
     if(pPrimary != null) {
       pLastDetailsName = pPrimary.getName();
-
-      PanelUpdater pu = new PanelUpdater(this, true, true, null, false);
-      pu.execute();
+      
+      if (pGroupID != 0) {
+        PanelUpdater pu = new PanelUpdater(this, true, true, null, false);
+        pu.execute();
+      }
     }
 
     clearSelection();
@@ -5306,8 +5324,10 @@ class JNodeViewerPanel
       break;
 
     default:
-      PanelUpdater pu = new PanelUpdater(this, true);
-      pu.execute();
+      if (pGroupID != 0) {
+        PanelUpdater pu = new PanelUpdater(this, true);
+        pu.execute();
+      }
     }
   }
 

@@ -1,4 +1,4 @@
-// $Id: JNodeLinksPanel.java,v 1.33 2009/03/24 01:21:21 jesse Exp $
+// $Id: JNodeLinksPanel.java,v 1.34 2009/03/25 19:31:58 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -366,8 +366,10 @@ class JNodeLinksPanel
   private void 
   updatePanels() 
   {
-    PanelUpdater pu = new PanelUpdater(this);
-    pu.execute();
+    if (pGroupID != 0) {
+      PanelUpdater pu = new PanelUpdater(this);
+      pu.execute();
+    }
   }
 
   /**

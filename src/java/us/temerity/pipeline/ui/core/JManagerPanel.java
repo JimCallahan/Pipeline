@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.59 2009/03/24 01:21:21 jesse Exp $
+// $Id: JManagerPanel.java,v 1.60 2009/03/25 19:31:58 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -475,6 +475,8 @@ class JManagerPanel
 	item.setActionCommand("shutdown");
 	item.addActionListener(this);
 	sub.add(item);  
+	
+	pAdminSubMenu = sub;
       }
 
       {
@@ -2234,6 +2236,18 @@ class JManagerPanel
     JPanelFrame frame = UIMaster.getInstance().createWindow();
     frame.setSize(612, 752);
 
+    /*
+     * If we're building a zero-channel panel, we need to clear the cache.
+     */
+    {
+      int channel = 0;
+      if (pTopLevelPanel != null)
+        channel = pTopLevelPanel.getGroupID();
+
+      if (channel == 0)
+        UIMaster.getInstance().getUICache(0).invalidateCaches();
+    }
+    
     JManagerPanel mgr = frame.getManagerPanel();
     JNodeDetailsPanel panel = new JNodeDetailsPanel(pTopLevelPanel);
     mgr.setContents(panel);
@@ -2528,6 +2542,12 @@ class JManagerPanel
       return;
 
     JTopLevelPanel dead = (JTopLevelPanel) removeContents();
+    
+    /*
+     * If we're building a zero-channel panel, we need to clear the cache.
+     */
+    if (dead.getGroupID() == 0)
+      UIMaster.getInstance().getUICache(0).invalidateCaches();
     JNodeDetailsPanel panel = new JNodeDetailsPanel(dead);
     setContents(panel);
     dead.setGroupID(0);
@@ -3327,8 +3347,8 @@ class JManagerPanel
      MouseEvent e
     )
     {
-      if (pTopLevelPanel.getGroupID() == 0)
-        return;
+//      if (pTopLevelPanel.getGroupID() == 0)
+//        return;
       
       int mods = e.getModifiersEx();
       
@@ -3421,8 +3441,9 @@ class JManagerPanel
 	}
       }
 
-      /* privileged status */ 
-      {
+      /* privileged status */
+      if (channel != 0) {
+        pAdminSubMenu.setEnabled(true);
  	UIMaster master = UIMaster.getInstance();
 	UICache cache = master.getUICache(channel);
  	try {
@@ -3437,12 +3458,19 @@ class JManagerPanel
  	catch(PipelineException ex) {
  	  master.showErrorDialog(ex);
  	}
-      } 
+      }
+      else {
+        pAdminSubMenu.setEnabled(false);
+      }
       
-      {
+      if (channel != 0) {
+        pLaunchBuilderMenu.setEnabled(true);
         UIMaster master = UIMaster.getInstance();
         master.rebuildDefaultBuilderCollectionMenu
           (pPopup, channel, pLaunchBuilderMenu, pPanel, true);
+      }
+      else {
+        pLaunchBuilderMenu.setEnabled(false);
       }
       
       pPopup.show(e.getComponent(), e.getX(), e.getY()); 
@@ -3935,6 +3963,7 @@ class JManagerPanel
   private JMenu      pRestoreLayoutNoSelectMenu;
 
   private JMenu      pLaunchBuilderMenu;
+  private JMenu      pAdminSubMenu;
   private JMenuItem  pPreferencesItem;
   private JMenuItem  pDefaultEditorsItem;
   private JMenuItem  pUpdatePluginsItem;

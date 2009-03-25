@@ -1,4 +1,4 @@
-// $Id: JQueueJobBrowserPanel.java,v 1.38 2009/03/19 21:55:59 jesse Exp $
+// $Id: JQueueJobBrowserPanel.java,v 1.39 2009/03/25 19:31:58 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -484,8 +484,10 @@ class JQueueJobBrowserPanel
     pSelectionModified = false;
     pModifierPressed = false;
 
-    PanelUpdater pu = new PanelUpdater(this, selectionOnly);
-    pu.execute();
+    if (pGroupID != 0) {
+      PanelUpdater pu = new PanelUpdater(this, selectionOnly);
+      pu.execute();
+    }
   }
 
   /**

@@ -1,4 +1,4 @@
-// $Id: JNodeHistoryPanel.java,v 1.31 2009/03/24 01:21:21 jesse Exp $
+// $Id: JNodeHistoryPanel.java,v 1.32 2009/03/25 19:31:58 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -316,8 +316,10 @@ class JNodeHistoryPanel
   private void 
   updatePanels() 
   {
-    PanelUpdater pu = new PanelUpdater(this);
-    pu.execute();
+    if (pGroupID != 0) {
+      PanelUpdater pu = new PanelUpdater(this);
+      pu.execute();
+    }
   }
 
   /**

@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.101 2009/03/24 01:21:21 jesse Exp $
+// $Id: UIMaster.java,v 1.102 2009/03/25 19:31:58 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -92,7 +92,7 @@ class UIMaster
     
     {
       pUICaches = new TreeMap<Integer, UICache>();
-      for (int i = 1; i < 10; i++ ) {
+      for (int i = 0; i < 10; i++ ) {
         pUICaches.put(i, new UICache());
       }
     }
@@ -392,7 +392,7 @@ class UIMaster
     LogMgr.getInstance().log(Kind.Ops, Level.Finest, 
       "Accessing UI Cache with ID (" + channel + ")");
     LogMgr.getInstance().flush(Kind.Ops, Level.Finest);
-    assert(channel != 0 && channel <= pUICaches.size());
+    assert(channel >= 0 && channel <= pUICaches.size());
     synchronized (pUICaches) {
       return pUICaches.get(channel);
     }
@@ -5512,6 +5512,7 @@ class UIMaster
       LinkedList<PanelLayout> layouts = null;
       {
 	pIsRestoring.set(true);
+	getUICache(0).invalidateCaches();
 	
 	Path lpath = new Path(PackageInfo.getSettingsPath(), "layouts"); 
 	Path path = new Path(lpath, pPath);

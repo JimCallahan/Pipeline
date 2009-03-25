@@ -1,4 +1,4 @@
-// $Id: JTopLevelPanel.java,v 1.15 2009/03/24 01:21:21 jesse Exp $
+// $Id: JTopLevelPanel.java,v 1.16 2009/03/25 19:31:58 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -39,8 +39,8 @@ class JTopLevelPanel
     pPrivilegeDetails = new PrivilegeDetails();
     pPanelOpInProgress = new AtomicBoolean(false);
     pUnsavedChanges   = new TreeSet<String>();
-      
-    setAuthorView(PackageInfo.sUser, "default");
+
+    setAuthorViewLocal(PackageInfo.sUser, "default");
     setGroupID(0);
   }
 
@@ -50,7 +50,7 @@ class JTopLevelPanel
   public 
   JTopLevelPanel
   (
-   JTopLevelPanel panel
+    JTopLevelPanel panel
   )
   {
     super();
@@ -60,11 +60,11 @@ class JTopLevelPanel
     pUnsavedChanges   = new TreeSet<String>();
 
     if(panel != null) {
-      setAuthorView(panel.getAuthor(), panel.getView());
+      setAuthorViewLocal(panel.getAuthor(), panel.getView());
       setGroupID(panel.getGroupID());
     }
     else {
-      setAuthorView(PackageInfo.sUser, "default");
+      setAuthorViewLocal(PackageInfo.sUser, "default");
       setGroupID(0);
     }
   }
@@ -140,6 +140,25 @@ class JTopLevelPanel
    int groupID
   )
   {
+    setGroupIDLocal(groupID);
+  }
+  
+  /**
+   * Set the group ID. <P> 
+   * 
+   * A local method to be called in the constructor.
+   * <p>
+   * Group ID values must be in the range: [1-9]
+   * 
+   * @param groupID
+   *   The new group ID or (0) for no group assignment.
+   */ 
+  private void
+  setGroupIDLocal
+  (
+   int groupID
+  )
+  {
     pGroupID = groupID;
   }
 
@@ -207,6 +226,19 @@ class JTopLevelPanel
    String view 
   ) 
   {
+    setAuthorViewLocal(author, view);
+  }
+
+  /**
+   * A local method to set the author and view which exists to be called in the constructor.
+   */ 
+  private void 
+  setAuthorViewLocal
+  (
+   String author, 
+   String view 
+  ) 
+  {
     if(warnUnsavedChangesBeforeAuthorView()) 
       return; 
 
@@ -221,7 +253,7 @@ class JTopLevelPanel
     updatePrivileges();
   }
 
-
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   U S E R   I N T E R F A C E                                                          */

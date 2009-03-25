@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.62 2009/03/24 01:21:21 jesse Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.63 2009/03/25 19:31:58 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -499,8 +499,10 @@ class JQueueJobViewerPanel
    boolean detailsOnly
   ) 
   {
-    PanelUpdater pu = new PanelUpdater(this, detailsOnly);
-    pu.execute();
+    if (pGroupID != 0) {
+      PanelUpdater pu = new PanelUpdater(this, detailsOnly);
+      pu.execute();
+    }
   }
 
   /**
