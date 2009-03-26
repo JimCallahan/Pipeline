@@ -1,4 +1,4 @@
-// $Id: TemplateBuilder.java,v 1.8 2009/03/26 05:15:43 jim Exp $
+// $Id: TemplateBuilder.java,v 1.9 2009/03/26 15:18:01 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -634,10 +634,17 @@ class TemplateBuilder
     )
       throws PipelineException
     {
+      String nodeName = stringReplace(mod.getName(), replace);
+      
+      if (nodeName.equals(mod.getName()))
+        throw new PipelineException
+          ("The name of the node in the template (" + nodeName + ") is the same as the " +
+           "instantiated node.  A template cannot build over itself.  All nodes in a template " +
+           "must contain at least one string replacement.");
+      
       if (conditionalBuild != null) {
         String check = stringReplace(conditionalBuild, replace);
         if (!nodeExists(check)) {
-          String nodeName = stringReplace(mod.getName(), replace);
           pLog.logAndFlush
             (Kind.Ops, Level.Fine, 
              "Not building (" + nodeName + ") because conditional node (" + check + ") " +
