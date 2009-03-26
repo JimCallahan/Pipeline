@@ -1,4 +1,4 @@
-// $Id: TemplateTaskBuilder.java,v 1.5 2009/03/26 00:04:16 jesse Exp $
+// $Id: TemplateTaskBuilder.java,v 1.6 2009/03/26 05:15:43 jim Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -10,7 +10,6 @@ import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.builder.execution.*;
 import us.temerity.pipeline.builder.v2_4_1.*;
 import us.temerity.pipeline.builder.v2_4_1.TaskBuilder;
-import us.temerity.pipeline.plugin.TemplateIgnoreProductAnnotation.v2_4_3.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   T E M P L A T E   T A S K   B U I L D E R                                              */

@@ -1,4 +1,4 @@
-// $Id: TemplateBuilder.java,v 1.7 2009/03/26 00:04:16 jesse Exp $
+// $Id: TemplateBuilder.java,v 1.8 2009/03/26 05:15:43 jim Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -8,8 +8,6 @@ import us.temerity.pipeline.*;
 import us.temerity.pipeline.LogMgr.*;
 import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.builder.v2_4_1.TaskBuilder;
-import us.temerity.pipeline.plugin.TemplateIgnoreProductAnnotation.v2_4_3.*;
-import us.temerity.pipeline.plugin.TemplateRangeAnnotation.v2_4_3.*;
 import us.temerity.pipeline.stages.*;
 
 /*------------------------------------------------------------------------------------------*/
@@ -36,7 +34,8 @@ class TemplateBuilder
    * already generated as part of constructing the list of nodes to builder.  For example, any
    * sort of node traversal should generate a list of upstream and downstream connections that
    * can be passed into this builder.  This will save time.  If that data is not available,
-   * then the template builder will perform a traversal itself and figure that information out. 
+   * then the template builder will perform a traversal itself and figure that information 
+   * out. 
    *
    * @param mclient
    *   The instance of the Master Manager that the Builder is going to use.
@@ -49,16 +48,16 @@ class TemplateBuilder
    *   Builders that are invoked.
    * 
    * @param templateInfo
-   *   Information about what exactly this builder should generated.  If any of the information
-   *   is missing, the builder will generate it itself.
+   *   Information about what exactly this builder should generated.  If any of the 
+   *   information is missing, the builder will generate it itself.
    * 
    * @param stringReplacements
    *   A list of all the string replacements to be made for all nodes in the template and on
    *   all product nodes.
    * 
    * @param contexts
-   *   A set of the replacements to be made, each indexed by the context name that will trigger 
-   *   those replacements to be used.
+   *   A set of the replacements to be made, each indexed by the context name that will 
+   *   trigger those replacements to be used.
    *   
    * @param frameRanges
    *   The list of frame ranges to use, each indexed by the name of the template Range value
@@ -485,7 +484,8 @@ class TemplateBuilder
         TreeSet<String> ignoreableProducts = new TreeSet<String>();
         for (String aName : annots.keySet()) {
           BaseAnnotation annot = annots.get(aName);
-          if (aName.startsWith("TemplateContext") && !aName.startsWith("TemplateContextLink")) {
+          if (aName.startsWith("TemplateContext") && 
+              !aName.startsWith("TemplateContextLink")) {
             String contextName = (String) annot.getParamValue(aContextName);
             contexts.add(contextName);
           }
@@ -514,10 +514,12 @@ class TemplateBuilder
         
         TreeSet<String> nodesMade = new TreeSet<String>();
         if (contexts.size() == 0) { //no contexts, just do a straight build
-          makeNode(mod, pReplacements, pContexts, range, ignoreableProducts, conditionalBuild, nodesMade);
+          makeNode(mod, pReplacements, pContexts, range, ignoreableProducts, 
+                   conditionalBuild, nodesMade);
         }
         else { //uh-oh, there are contexts!
-          contextLoop(toBuild, mod, contexts, pReplacements, pContexts, range, ignoreableProducts, conditionalBuild, nodesMade);
+          contextLoop(toBuild, mod, contexts, pReplacements, pContexts, 
+                      range, ignoreableProducts, conditionalBuild, nodesMade);
         }
 
         pNodesToBuild.remove(toBuild);
@@ -573,9 +575,10 @@ class TemplateBuilder
       
       if (values == null || values.isEmpty()) {
         if (pAllowZeroContexts) {
-          pLog.logAndFlush(Kind.Ops, Level.Warning, 
-            "The context (" + currentContext + ") specified on (" + toBuild + ") has no values " +
-            "defined for it.");
+          pLog.logAndFlush
+            (Kind.Ops, Level.Warning, 
+             "The context (" + currentContext + ") specified on (" + toBuild + ") has no " + 
+             "values defined for it.");
           TreeMap<String, String> newReplace = new TreeMap<String, String>(replace);
           TreeMap<String, ArrayList<TreeMap<String, String>>> newMaps = 
             new TreeMap<String, ArrayList<TreeMap<String,String>>>(contexts);
@@ -607,7 +610,8 @@ class TemplateBuilder
         newMaps.put(currentContext, newStuff);
         
         if (contextList.isEmpty()) {  //bottom of the recursion
-          makeNode(mod, newReplace, newMaps, range, ignorableProducts, conditionalBuild, nodesMade);
+          makeNode(mod, newReplace, newMaps, range, ignorableProducts, 
+                   conditionalBuild, nodesMade);
         }
         else {
           contextLoop
@@ -634,9 +638,10 @@ class TemplateBuilder
         String check = stringReplace(conditionalBuild, replace);
         if (!nodeExists(check)) {
           String nodeName = stringReplace(mod.getName(), replace);
-          pLog.logAndFlush(Kind.Ops, Level.Fine, 
-            "Not building (" + nodeName + ") because conditional node (" + check + ") " +
-            "does not exist");
+          pLog.logAndFlush
+            (Kind.Ops, Level.Fine, 
+             "Not building (" + nodeName + ") because conditional node (" + check + ") " +
+             "does not exist");
           pIgnoredNodes.add(nodeName);
           return;
         }
@@ -659,8 +664,7 @@ class TemplateBuilder
     findNodeToBuild()
       throws PipelineException
     {
-      pLog.log
-      (Kind.Ops, Level.Finer,"Search for a node to build");
+      pLog.log(Kind.Ops, Level.Finer, "Search for a node to build");
       for (String node : pNodesToBuild) {
         TreeSet<String> set = pNodesIDependedOn.get(node);
         if ( set == null)
@@ -681,8 +685,9 @@ class TemplateBuilder
      throws PipelineException
     {
       for (String product : pProductNodes.keySet()) {
-        LogMgr.getInstance().log(Kind.Ops, Level.Fine, 
-          "Searching for product nodes based on the template node (" + product + ")");
+        LogMgr.getInstance().log
+          (Kind.Ops, Level.Fine, 
+           "Searching for product nodes based on the template node (" + product + ")");
         NodeMod mod = pClient.getWorkingVersion(getAuthor(), getView(), product);
         TreeSet<String> allProducts = new TreeSet<String>();
         if (pProductContexts.containsKey(product)) {
@@ -738,8 +743,8 @@ class TemplateBuilder
       
       if (values == null || values.isEmpty()) 
         throw new PipelineException
-          ("The context (" + currentContext + ") specified for the product (" + product + ") has no " +
-           "values defined for it.");
+          ("The context (" + currentContext + ") specified for the product " + 
+           "(" + product + ") has no values defined for it.");
       
       for (TreeMap<String, String> contextEntry : values) {
         TreeMap<String, String> newReplace = new TreeMap<String, String>(replacements);
