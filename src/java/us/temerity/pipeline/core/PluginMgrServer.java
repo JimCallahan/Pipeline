@@ -1,4 +1,4 @@
-// $Id: PluginMgrServer.java,v 1.17 2009/03/02 00:18:48 jlee Exp $
+// $Id: PluginMgrServer.java,v 1.18 2009/03/26 06:48:37 jlee Exp $
 
 package us.temerity.pipeline.core;
 
@@ -243,6 +243,8 @@ class PluginMgrServer
 	   "Connection Opened: " + pSocket.getInetAddress());
 	LogMgr.getInstance().flush();
 
+	pSessionID = -1;
+
 	while(pSocket.isConnected() && isLive() && !pShutdown.get()) {
 	  InputStream in     = pSocket.getInputStream();
 	  ObjectInput objIn  = new ObjectInputStream(in);
@@ -293,6 +295,102 @@ class PluginMgrServer
                   objOut.flush(); 
                 }
                 break;
+
+	      case Checksum:
+		{
+		  PluginChecksumReq req = (PluginChecksumReq) objIn.readObject();
+		  objOut.writeObject(pPluginMgr.checksum(req));
+		  objOut.flush();
+		}
+		break;
+
+	      case ResourceInstall:
+		{
+		  PluginResourceInstallReq req = 
+		    (PluginResourceInstallReq) objIn.readObject();
+
+		  /* Prior to the plugin resource install, attempt to install the 
+		     plugin in dry run mode.  This way the plugin can be validated 
+		     before creating a scratch directory and any other processing. */
+
+		  boolean isDryRun = req.getDryRun();
+		  
+		  /* If the request is in dry run mode, then immediately return 
+		     response. */
+		  if(isDryRun) {
+		    objOut.writeObject(pPluginMgr.install(req));
+		    objOut.flush();
+		  }
+		  else {
+		    /* Construct a new PluginInstallReq where the dry run flag 
+		       is set to true. */
+		    PluginInstallReq dryRunInstallReq = 
+		      new PluginInstallReq(req.getClassFile(), 
+		                           req.getClassName(), 
+					   req.getVersionID(), 
+					   req.getContents(), 
+					   req.getExternal(), 
+					   req.getRename(), 
+					   true);
+
+		    Object dryRunInstallRsp = pPluginMgr.install(dryRunInstallReq);
+
+		    /* If the dry run install results in a FailureRsp write the 
+		       response to the object output stream. */
+		    if(dryRunInstallRsp instanceof FailureRsp) {
+		      objOut.writeObject(dryRunInstallRsp);
+		      objOut.flush();
+		    }
+		    else {
+		      /* The plugin has passed the plugin validation so we can 
+		         begin the resource install phase. */
+		      Object rsp = pPluginMgr.prepInstallResource(req);
+
+		      /* The responses from the resource install can be a 
+		         PluginResourceInstallRsp, FailureRsp, SuccessRsp.  
+			 The PluginResourceInstallRsp is return if resource 
+			 chunks needs to send in subsequent requests.  FailureRsp 
+			 is returned if an exception was thrown.  SuccessRsp is 
+			 returned if no resources needed to updated and the plugin 
+			 class files were successfully loaded. */
+
+		      /* If the resource install returned a PluginResourceInstallRsp 
+		         then save the session ID. */
+		      if(rsp instanceof PluginResourceInstallRsp) {
+			PluginResourceInstallRsp installResourceRsp = 
+			  (PluginResourceInstallRsp) rsp;
+
+			long pSessionID = installResourceRsp.getSessionID();
+		      }
+
+		      objOut.writeObject(rsp);
+		      objOut.flush();
+		    }
+		  }
+		}
+		break;
+
+	      case ResourceChunkInstall:
+		{
+		  PluginResourceChunkInstallReq req = 
+		    (PluginResourceChunkInstallReq) objIn.readObject();
+
+		  Object rsp = pPluginMgr.installResourceChunk(req);
+
+		  if(rsp instanceof PluginResourceInstallRsp) {
+		    PluginResourceInstallRsp installRsp = 
+		      (PluginResourceInstallRsp) rsp;
+
+		    pSessionID = installRsp.getSessionID();
+		  }
+		  else if(rsp instanceof SuccessRsp) {
+		    pSessionID = -1;
+		  }
+
+		  objOut.writeObject(rsp);
+		  objOut.flush();
+		}
+		break;
 		
               case Disconnect:
 		disconnect();
@@ -352,6 +450,21 @@ class PluginMgrServer
 	   Exceptions.getFullMessage(ex));
       }
       finally {
+	if(pSessionID != -1) {
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Plg, LogMgr.Level.Finest, 
+	     "An error has occurred during Resource Install.");
+
+	  try {
+	    pPluginMgr.cleanupResourceInstall(pSessionID);
+	  }
+	  catch(PipelineException ex) {
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Plg, LogMgr.Level.Finest, 
+	       ex.getMessage());
+	  }
+	}
+
 	closeConnection();
 
 	if(!pShutdown.get()) {
@@ -379,6 +492,11 @@ class PluginMgrServer
 	 "Client Connection Closed.");
       LogMgr.getInstance().flush();
     }
+
+    /**
+     *
+     */
+    private long  pSessionID;
   }
   
 

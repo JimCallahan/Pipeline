@@ -1,4 +1,4 @@
-// $Id: BasePluginMgrClient.java,v 1.22 2009/03/20 03:10:38 jim Exp $
+// $Id: BasePluginMgrClient.java,v 1.23 2009/03/26 06:48:37 jlee Exp $
   
 package us.temerity.pipeline;
 
@@ -61,7 +61,7 @@ class BasePluginMgrClient
       new TripleMap<String,String,VersionID,TreeSet<AnnotationContext>>();
 
     pPluginStatus = 
-      new TripleMap<PluginType,String,PluginID,PluginStatus>();
+      new DoubleMap<PluginType,PluginID,PluginStatus>();
   }
 
 
@@ -253,12 +253,12 @@ class BasePluginMgrClient
   }
 
   /**
-   * Get the plugin type, ???, plugin ID and PluginStatus of all plugins.
+   * The PluginStatus of a plugin indexed by PluginType and PluginID.
    */
-  public synchronized TripleMap<PluginType,String,PluginID,PluginStatus>
+  public synchronized DoubleMap<PluginType,PluginID,PluginStatus>
   getPluginStatus()
   {
-    return new TripleMap<PluginType,String,PluginID,PluginStatus>(pPluginStatus);
+    return new DoubleMap<PluginType,PluginID,PluginStatus>(pPluginStatus);
   }
  
 
@@ -1041,8 +1041,9 @@ class BasePluginMgrClient
             String cname = (String) objs[0];
             TreeMap<String,byte[]> contents = (TreeMap<String,byte[]>) objs[1];
             TreeSet<OsType> supports = (TreeSet<OsType>) objs[2];
+	    TreeMap<String,Long> resources = (TreeMap<String,Long>) objs[3];
             
-            ClassLoader loader = new PluginClassLoader(contents);
+            ClassLoader loader = new PluginClassLoader(contents, cname, resources);
             try {
               LogMgr.getInstance().log
                 (LogMgr.Kind.Plg, LogMgr.Level.Finer,
@@ -1213,9 +1214,9 @@ class BasePluginMgrClient
   private TripleMap<String,String,VersionID,TreeSet<AnnotationContext>> pAnnotationContexts;
 
   /**
-   * The plugin type, ???, plugin ID and PluginStatus of all plugins.
+   * The PluginStatus for a plugin indexed by PluginType and PluginID.
    */
-  private TripleMap<PluginType,String,PluginID,PluginStatus> pPluginStatus;
+  private DoubleMap<PluginType,PluginID,PluginStatus> pPluginStatus;
 
 }
 

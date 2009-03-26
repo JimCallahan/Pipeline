@@ -91,24 +91,40 @@ PluginOptsParser
   private boolean  pList; 
 
   /**
-   *
+   * Whether to list the contents of installed plugins with plugins.
+   */
+  private boolean  pContents;
+
+  /**
+   * Whether to display a summary table about the installed plugins.
    */
   private boolean  pSummary;
 
   /**
-   *
+   * The list of PluginStatus enums used to filter the display of installed plugins.
    */
   private TreeSet<PluginStatus>  pStatusSet;
 
   /**
-   *
+   * The list of PluginType enums used to filter the display of installed plugins.
    */
   private TreeSet<PluginType>  pTypeSet;
 
   /**
-   *
+   * The list of plugin vendor name Strings used to filter the 
+   * display of installed plugins.
    */
   private TreeSet<String>  pVendorSet;
+
+  /**
+   * The list of plugin name Strings used to filter the display of installed plugins.
+   */
+  private TreeSet<String>  pNameSet;
+
+  /**
+   * The list of VersionID objects used to filter the display of installed plugins.
+   */
+  private TreeSet<VersionID>  pVersionSet;
 
   /**
    * Whether to ignore the Local Vendor check.
@@ -157,15 +173,18 @@ TOKEN :
 | <LOG:               "--log">                     : LOG_SEP
 
   /* action options */	
-| <LIST:          "--list">     
-| <LIST_STATUS:   "--status">                      : PLG_STATUS_SEP
-| <LIST_TYPE:     "--type">                        : PLG_TYPE_SEP
-| <LIST_VENDOR:   "--vendor">                      : PLG_VENDOR_SEP
-| <SUMMARY:       "--summary">
-| <EXTERNAL:      "--external">    
-| <RENAME:        "--rename">    
-| <DRYRUN:        "--dry-run">
-| <INSTALL:       "--install">    
+| <LIST:           "--list">     
+| <CONTENTS:       "--contents">
+| <STATUS_FILTER:  "--status">                     : PLG_STATUS_SEP
+| <TYPE_FILTER:    "--type">                       : PLG_TYPE_SEP
+| <VENDOR_FILTER:  "--vendor">                     : PLG_VENDOR_SEP
+| <NAME_FILTER:    "--name">                       : PLG_NAME_SEP
+| <VERSION_FILTER: "--vsn">                        : PLG_VERSION_SEP
+| <SUMMARY:        "--summary">
+| <EXTERNAL:       "--external">    
+| <RENAME:         "--rename">    
+| <DRYRUN:         "--dry-run">
+| <INSTALL:        "--install">    
 
   /* plugin files */
 | <PLUGIN_FILE:   (["/","\\"])* ("../" | "..\\")* <PLUGIN_COMP> 
@@ -323,11 +342,52 @@ TOKEN :
 <PLG_VENDOR_STATE> 
 TOKEN :
 {
-  <VENDOR_NAME:           (["a"-"z","A"-"Z"]) 
-	   	          (["a"-"z","A"-"Z","0"-"9","_","-","."])+>  
-| <COMMA3:                ",">
-| <AE5:                   ["\0"]>                                   : DEFAULT
-| <ILLEGAL_VENDOR_NAME:   (~[",","\0"])+>                           : IGNORE_STATE
+  <PLUGIN_VENDOR:           (["a"-"z","A"-"Z"]) 
+	   	            (["a"-"z","A"-"Z","0"-"9","_","-","."])+>  
+| <COMMA3:                  ",">
+| <AE5:                     ["\0"]>                                   : DEFAULT
+| <ILLEGAL_PLUGIN_VENDOR:   (~[",","\0"])+>                           : IGNORE_STATE
+}
+
+
+/* plugin name arguments */
+<PLG_NAME_SEP>
+TOKEN :
+{
+  <EQ7:                       "=">   : PLG_NAME_STATE
+| <MISSING_PLG_NAME_ARG:    ~["="]>  : IGNORE_STATE
+}
+
+<PLG_NAME_STATE> 
+TOKEN :
+{
+  <PLUGIN_NAME:             (["a"-"z","A"-"Z"]) 
+	   	            (["a"-"z","A"-"Z","0"-"9","_","-","."])+>  
+| <COMMA4:                  ",">
+| <AE6:                     ["\0"]>                                   : DEFAULT
+| <ILLEGAL_PLUGIN_NAME:   (~[",","\0"])+>                           : IGNORE_STATE
+}
+
+
+/* plugin version arguments */
+<PLG_VERSION_SEP>
+TOKEN :
+{
+  <EQ8:                          "=">   : PLG_VERSION_STATE
+| <MISSING_PLG_VERSION_ARG:    ~["="]>  : IGNORE_STATE
+}
+
+<PLG_VERSION_STATE> 
+TOKEN :
+{
+//  <PLUGIN_VERSION:           (["a"-"z","A"-"Z"]) 
+//	   	             (["a"-"z","A"-"Z","0"-"9","_","-","."])+>  
+  <PLUGIN_VERSION:            (<IREVNUM> "." <REVNUM> "." <REVNUM>)>  
+| <#IREVNUM:                   ["1"-"9"] (["0"-"9"])*>
+| <#REVNUM:                    (["0"-"9"])+>
+| <COMMA5:                   ",">
+| <AE7:                      ["\0"]>                                   : DEFAULT
+| <ILLEGAL_PLUGIN_VERSION:   (~[",","\0"])+>                           : IGNORE_STATE
 }
 
 
@@ -371,8 +431,17 @@ CommandLine()
       
         /* run the program */ 
         if(pList) {
-          pApp.listPlugins(client, pTypeSet, pVendorSet, pStatusSet);
+          pApp.listPlugins(client, 
+	                   pStatusSet, pTypeSet, 
+			   pVendorSet, pNameSet, pVersionSet, 
+			   false);
         }
+	else if(pContents) {
+	  pApp.listPlugins(client, 
+	                   pStatusSet, pTypeSet, 
+			   pVendorSet, pNameSet, pVersionSet, 
+			   true);
+	}
         else if(pInstall) {
           if(pPluginFiles.isEmpty()) 
             throw new ParseException
@@ -419,8 +488,8 @@ Commands()
 {
   (GlobalOpts() AE())* 
     (
-     (List() (Summary())?) | 
-     (Summary() (List())?) | 
+     ((List() | Contents()) (Summary())?) | 
+     (Summary() (List() | Contents())?) | 
      ((External() | Rename() | DryRun())* Install() (PluginFile() AE())+)
     )
   { 
@@ -442,9 +511,11 @@ Summary() :
 void
 List() :
 {
-  pStatusSet = new TreeSet<PluginStatus>();
-  pTypeSet   = new TreeSet<PluginType>();
-  pVendorSet = new TreeSet<String>();
+  pStatusSet  = new TreeSet<PluginStatus>();
+  pTypeSet    = new TreeSet<PluginType>();
+  pVendorSet  = new TreeSet<String>();
+  pNameSet    = new TreeSet<String>();
+  pVersionSet = new TreeSet<VersionID>();
 }
 {
   <LIST> AE() (ListOpts())*
@@ -454,10 +525,34 @@ List() :
 }
 
 void
+Contents() :
+{
+  pStatusSet  = new TreeSet<PluginStatus>();
+  pTypeSet    = new TreeSet<PluginType>();
+  pVendorSet  = new TreeSet<String>();
+  pNameSet    = new TreeSet<String>();
+  pVersionSet = new TreeSet<VersionID>();
+}
+{
+  <CONTENTS> AE() (ListOpts())*
+  { 
+    pContents = true;
+  }
+}
+
+void
 ListOpts() :
 {}
 {
-  (PluginStatus() | PluginType() | PluginVendor())
+  (PluginStatus() | PluginType() | PluginVendor() | PluginName() | PluginVersion())
+  {}
+}
+
+void
+ContentsOpts() :
+{}
+{
+  (PluginStatus() | PluginType() | PluginVendor() | PluginName() | PluginVersion())
   {}
 }
 
@@ -465,7 +560,7 @@ void
 PluginStatus() :
 {}
 {
-  <LIST_STATUS> EQ() PluginStatusToken() (COMMA() PluginStatusToken())* AE()
+  <STATUS_FILTER> EQ() PluginStatusToken() (COMMA() PluginStatusToken())* AE()
   {}
 }
 
@@ -473,7 +568,7 @@ void
 PluginType() :
 {}
 {
-  <LIST_TYPE> EQ() PluginTypeToken() (COMMA() PluginTypeToken())* AE()
+  <TYPE_FILTER> EQ() PluginTypeToken() (COMMA() PluginTypeToken())* AE()
   {}
 }
 
@@ -481,19 +576,59 @@ void
 PluginVendor() :
 {}
 {
-  <LIST_VENDOR> EQ() VendorName() (COMMA() VendorName())* AE()
+  <VENDOR_FILTER> EQ() PluginVendorToken() (COMMA() PluginVendorToken())* AE()
   {}
 }
 
 void
-VendorName() :
+PluginName() :
+{}
+{
+  <NAME_FILTER> EQ() PluginNameToken() (COMMA() PluginNameToken())* AE()
+  {}
+}
+
+void
+PluginVersion() :
+{}
+{
+  <VERSION_FILTER> EQ() PluginVersionToken() (COMMA() PluginVersionToken())* AE()
+  {}
+}
+
+void
+PluginVendorToken() :
 {
   Token t;
 }
 {
-  t=<VENDOR_NAME>
+  t=<PLUGIN_VENDOR>
   {
     pVendorSet.add(t.image);
+  }
+}
+
+void
+PluginNameToken() :
+{
+  Token t;
+}
+{
+  t=<PLUGIN_NAME>
+  {
+    pNameSet.add(t.image);
+  }
+}
+
+void
+PluginVersionToken() :
+{
+  Token t;
+}
+{
+  t=<PLUGIN_VERSION>
+  {
+    pVersionSet.add(new VersionID(t.image));
   }
 }
 
@@ -1057,7 +1192,7 @@ AE() :
 }
 {
   (t=<AE1> | t=<AE2> | 
-   t=<AE3> | t=<AE4> | t=<AE5>)
+   t=<AE3> | t=<AE4> | t=<AE5> | t=<AE6> | t=<AE7>)
   { 
     return t; 
   }
@@ -1070,7 +1205,7 @@ COMMA() :
   Token t;
 }
 {
-  (t=<COMMA1> | t=<COMMA2> | t=<COMMA3>)
+  (t=<COMMA1> | t=<COMMA2> | t=<COMMA3> | t=<COMMA4> | t=<COMMA5>)
   { 
     return t; 
   }
@@ -1084,7 +1219,7 @@ EQ() :
 }
 {
   (t=<EQ1> | t=<EQ2> | t=<EQ3> | 
-   t=<EQ4> | t=<EQ5> | t=<EQ6>)  
+   t=<EQ4> | t=<EQ5> | t=<EQ6> | t=<EQ7> | t=<EQ8>)  
   { 
     return t; 
   }

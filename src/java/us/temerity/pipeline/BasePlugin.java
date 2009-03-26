@@ -1,4 +1,4 @@
-// $Id: BasePlugin.java,v 1.18 2009/03/01 21:47:12 jim Exp $
+// $Id: BasePlugin.java,v 1.19 2009/03/26 06:48:37 jlee Exp $
 
 package us.temerity.pipeline;
 
@@ -6,6 +6,7 @@ import us.temerity.pipeline.glue.*;
 import us.temerity.pipeline.Exceptions;
 
 import java.util.*;
+import java.net.*;
 import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
@@ -229,6 +230,89 @@ class BasePlugin
   getPluginID()
   {
     return new PluginID(this);
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * A convenience method to find a resource with a given name.
+   *
+   * @param name
+   *   The name of the resource.
+   */
+  public URL
+  getResource
+  (
+   String name
+  )
+  {
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Finest, 
+       "Name (" + name + ")");
+
+    Class cls = this.getClass();
+
+    PluginClassLoader loader = (PluginClassLoader) cls.getClassLoader();
+
+    if(name.charAt(0) != '/') {
+      String cname = cls.getName();
+      String rname = 
+	cname.substring(0, cname.lastIndexOf('.')).replace('.', '/') + '/' + name;
+
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Finest, 
+         "BasePlugin.getResource (" + rname + ")");
+
+      return loader.getResource(rname);
+    }
+
+    return loader.getResource(name.substring(1));
+  }
+
+  /**
+   * Retrieves the file size for a valid resource.
+   */
+  public long
+  getResourceSize
+  (
+   String name
+  )
+  {
+    LogMgr.getInstance().log
+      (LogMgr.Kind.Ops, LogMgr.Level.Finest, 
+       "Name (" + name + ")");
+
+    Class cls = this.getClass();
+
+    PluginClassLoader loader = (PluginClassLoader) cls.getClassLoader();
+
+    if(name.charAt(0) != '/') {
+      String cname = cls.getName();
+      String rname = 
+	cname.substring(0, cname.lastIndexOf('.')).replace('.', '/') + '/' + name;
+
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Finest, 
+         "BasePlugin.getResourceFileSize (" + rname + ")");
+
+      return loader.getResourceSize(rname);
+    }
+
+    return loader.getResourceSize(name.substring(1));
+  }
+
+  /**
+   * Retrieves all the resources available to the plugin.
+   */
+  public SortedMap<String,Long>
+  getResources()
+  {
+    Class cls = this.getClass();
+
+    PluginClassLoader loader = (PluginClassLoader) cls.getClassLoader();
+
+    return loader.getResources();
   }
     
 

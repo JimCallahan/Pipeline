@@ -1,4 +1,4 @@
-// $Id: PluginMgrControlClient.java,v 1.13 2009/03/20 03:10:38 jim Exp $
+// $Id: PluginMgrControlClient.java,v 1.14 2009/03/26 06:48:37 jlee Exp $
   
 package us.temerity.pipeline.core;
 
@@ -8,8 +8,10 @@ import us.temerity.pipeline.message.*;
 import java.net.*; 
 import java.io.*; 
 import java.lang.reflect.*;
+import java.math.*;
 import java.nio.*;
 import java.nio.channels.*;
+import java.security.*;
 import java.util.*;
 import java.util.jar.*; 
 
@@ -37,6 +39,13 @@ class PluginMgrControlClient
   PluginMgrControlClient() 
   {
     super("PluginMgrControl");
+
+    try {
+      pDigest = MessageDigest.getInstance("MD5");
+    }
+    catch(NoSuchAlgorithmException ex) {
+      throw new IllegalArgumentException("MD5 is not supported?!");
+    }
   }
 
 
@@ -145,6 +154,17 @@ class PluginMgrControlClient
       rpath = new Path(fpath.substring(dpath.length()));
     }
 
+    {
+      long filesize = pluginfile.length();
+
+      if(filesize > sMaxFileSize) {
+	throw new PipelineException
+	  ("The plugin (" + pluginfile + ") " + 
+	   "file size greater than the max file size " + 
+	   "(" + filesize + " > " + sMaxFileSize + ")!");
+      }
+    }
+
     /* the Java package name and plugin revision number */ 
     String pkgName = null; 
     VersionID pkgID = null;
@@ -182,6 +202,10 @@ class PluginMgrControlClient
     /* load the Java byte-code from the supplied class or JAR file */ 
     {
       TreeMap<String,byte[]> contents = new TreeMap<String,byte[]>(); 
+      TreeMap<String,Long> resources = new TreeMap<String,Long>();
+      TreeMap<String,byte[]> checksums = new TreeMap<String,byte[]>();
+      TreeMap<String,Long> chunkTable = new TreeMap<String,Long>();
+
       File cfile = cpath.toFile(); 
       if(isJar) {
 	try {
@@ -195,6 +219,11 @@ class PluginMgrControlClient
 	    
 	    if(!entry.isDirectory()) {
 	      String path = entry.getName(); 
+
+	      LogMgr.getInstance().log
+		(LogMgr.Kind.Plg, LogMgr.Level.Finest, 
+		 "Path (" + path + ")");
+
 	      if(path.endsWith("class")) {
 		String jcname = path.substring(0, path.length()-6).replace('/', '.'); 
 		
@@ -208,6 +237,39 @@ class PluginMgrControlClient
 		}
 		
 		contents.put(jcname, out.toByteArray());
+	      }
+	      else {
+		try {
+		  MessageDigest digest = (MessageDigest) pDigest.clone();
+		  
+		  long filesize = 0L;
+
+		  while(true) {
+		    int len = in.read(buf, 0, buf.length);
+		    if(len == -1)
+		      break;
+		    filesize += len;
+		    digest.update(buf, 0, len);
+		  }
+
+		  byte[] checksum = digest.digest();
+
+		  resources.put(path, filesize);
+		  checksums.put(path, checksum);
+
+		  chunkTable.put(path, 0L);
+
+		  BigInteger number = new BigInteger(1, checksum);
+
+		  LogMgr.getInstance().log
+		    (LogMgr.Kind.Plg, LogMgr.Level.Finest, 
+		     "Resource (" + path + ") file size (" + filesize + ") " + 
+		     "checksum (" + number.toString(16) + ")");
+		}
+		catch(CloneNotSupportedException ex) {
+		  throw new PipelineException
+		    ("Unable to clone the MessageDigest!");
+		}
 	      }
 	    }
 	  }
@@ -241,76 +303,356 @@ class PluginMgrControlClient
 	contents.put(cname, bytes);
       }
 
-      ClassLoader loader = new PluginClassLoader(contents);
+      /* Load the plugin after checking for the serialVersionUID field.  The plugin 
+         is used get the PluginID.  The PluginID is used to request the checksum from 
+	 the PluginMgrServer. */
+      BasePlugin plg = loadPlugin(contents, cname);
 
-      /* Check the plugin defines the serialVersionUID that Serializable recommends.  
-           Using Java reflection we can access private field by using getDeclaredField from 
-	   a class object.  If the field is missing then a NosuchFieldException is thrown.  
-	   Through my testing I was able to find one plugin that I failed to use serialver 
-	   to obtain the serialVersionUID, however the class was still loaded because 
-	   ObjectStreamClass provides a serialVersionUID for classes that fail to declare 
-           one. This code is also in PluginMgr, but having it on the client side makes it 
-           more efficient. */
-      try {
-	Class cls = loader.loadClass(cname);
+      /* */
+      TreeMap<String,byte[]> installedChecksums = new TreeMap<String,byte[]>();
 
-	Field serialVersionUID = cls.getDeclaredField("serialVersionUID");
+      {
+	PluginChecksumReq req 
+	  = new PluginChecksumReq(plg.getPluginType(), plg.getPluginID());
+
+	Object obj = performTransaction(PluginRequest.Checksum, req);
+
+	if(obj instanceof PluginChecksumRsp) {
+	  PluginChecksumRsp rsp = (PluginChecksumRsp) obj;
+
+	  TreeMap<String,byte[]> checksumsFromServer = rsp.getChecksums();
+
+	  if(checksumsFromServer != null)
+	    installedChecksums.putAll(rsp.getChecksums());
+	}
+	else {
+	  /* A failure rsp was received, proceed as if an empty checksum table 
+	     was received and install all resources. */
+	}
       }
-      catch(ClassNotFoundException ex) {
-	throw new PipelineException
-	  ("Unable to find plugin class (" + cname + "):\n" +
-	   ex.getMessage());
+
+      /* If there are no resources in the jar file and no resources on the server, 
+         then we can safely do a normal plugin install.  No resources need to be 
+	 installed and no resources on the server side need to be removed. */
+      if(checksums.isEmpty() && installedChecksums.isEmpty()) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Plg, LogMgr.Level.Finest, 
+	   "Installing the plugin (" + cname + ") normally since " + 
+	   "it did not have resources and is not installing resources.");
+
+	PluginInstallReq req = 
+	  new PluginInstallReq(pluginfile, cname, pkgID, 
+	                       contents, 
+			       external, rename, dryRun);
+
+	Object obj = performTransaction(PluginRequest.Install, req);
+
+	if(obj instanceof PluginCountRsp) {
+	  displayPluginCountRsp(obj);
+	}
+	else if(obj instanceof SuccessRsp) {
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Ops, LogMgr.Level.Info, 
+             "All required plugins are installed ");
+	}
+	else {
+	  handleFailure(obj);
+	}
+
+	return;
       }
-      catch(NoSuchFieldException ex) {
-	throw new PipelineException
-	  ("The plugin class (" + cname + ") does not define a serialVersionUID field!  " + 
-	   "Please run serialver to obtain a serialVersionUID.");
+
+      if(!installedChecksums.isEmpty()) {
+	for(String path : installedChecksums.keySet()) {
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Plg, LogMgr.Level.Finest, 
+	     "Installed resource (" + path + ")");
+
+	  if(checksums.containsKey(path)) {
+	    byte[] checksum1 = installedChecksums.get(path);
+	    byte[] checksum2 = checksums.get(path);
+
+	    if(Arrays.equals(checksum1, checksum2)) {
+	      LogMgr.getInstance().log
+		(LogMgr.Kind.Plg, LogMgr.Level.Finest, 
+		 "The resource (" + path + ") does not need to be updated.");
+
+	      resources.remove(path);
+	    }
+	  }
+	}
       }
 
-      PluginInstallReq req = 
-        new PluginInstallReq(pluginfile, cname, pkgID, contents, external, rename, dryRun);
-      
-      Object obj = performTransaction(PluginRequest.Install, req);
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Plg, LogMgr.Level.Finest, 
+	 "Performing a resource install of the plugin (" + cname + ").");
 
-      /* In addition to a SuccessRsp and FailureRsp, the response can be a PluginCountRsp.  
-          A PluginCountRsp is a subclass of SuccessRsp since the installation was successful, 
-          but contains extra information about the state of required plugins and unregistered 
-          plugins.  This is used to inform the user that there might be plugins that need to 
-          be installed. */
-      if(obj instanceof PluginCountRsp) {
-        PluginCountRsp rsp = (PluginCountRsp)obj;
+      PluginResourceInstallReq req = 
+	new PluginResourceInstallReq(pluginfile, cname, pkgID, 
+	                     contents, 
+			     resources, checksums, 
+			     external, rename, dryRun);
 
-        int requiredPluginsCount = rsp.getRequiredPluginCount();
-        int unknownPluginsCount  = rsp.getUnknownPluginCount();
+      Object obj = performTransaction(PluginRequest.ResourceInstall, req);
 
-        if(requiredPluginsCount > 0)
-          LogMgr.getInstance().log
-            (LogMgr.Kind.Ops, LogMgr.Level.Warning, 
-             requiredPluginsCount + " plugin" + (requiredPluginsCount > 1 ? "s " : " ") + 
-             "still need" + (requiredPluginsCount > 1 ? "" : "s") + " to be installed.  " + 
-             "Please rerun plplugin with the \"--list --status=miss\" options " + 
-             "to get the full details.");
+      if(obj instanceof PluginResourceInstallRsp) {
+	/* The PluginMgrServer has sent back a resource install session ID.  
+	   Start the sending of resource chunks. */
+	PluginResourceInstallRsp rsp = (PluginResourceInstallRsp) obj;
 
-        if(unknownPluginsCount > 0)
-          LogMgr.getInstance().log
-            (LogMgr.Kind.Ops, LogMgr.Level.Warning, 
-             unknownPluginsCount + " unregistered plugin" + 
-             (unknownPluginsCount > 1 ? "s " : " ") + 
-             (unknownPluginsCount > 1 ? "have" : "has") + 
-             " been detected.  They have not been loaded.  " + 
-             "Install the plugin" + (unknownPluginsCount > 1 ? "s " : " ") + 
-             "properly using plplugin --install. Please rerun plplugin with the " + 
-             "\"--list --status=unknown\" options to get the full details.");
+	long sessionID = rsp.getSessionID();
+
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Plg, LogMgr.Level.Finest, 
+	   "Session ID (" + sessionID + ")");
+
+	installResourceChunks(sessionID, cpath, resources, checksums);
+      }
+      else if(obj instanceof PluginCountRsp) {
+	displayPluginCountRsp(obj);
       }
       else if(obj instanceof SuccessRsp) {
-        LogMgr.getInstance().log
-         (LogMgr.Kind.Ops, LogMgr.Level.Info, 
-         "All required plugins are installed "); 
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ops, LogMgr.Level.Info, 
+           "All required plugins are installed ");
       }
       else {
-        handleFailure(obj);
+	handleFailure(obj);
       }
     }
   }
+
+  /**
+   *
+   */
+  private BasePlugin
+  loadPlugin
+  (
+   TreeMap<String,byte[]> contents, 
+   String cname
+  )
+    throws PipelineException
+  {
+    ClassLoader loader = new PluginClassLoader(contents);
+
+    Class cls = null;
+    BasePlugin plg = null;
+
+    try {
+      cls = loader.loadClass(cname);
+
+      if(!BasePlugin.class.isAssignableFrom(cls)) 
+	throw new PipelineException
+	  ("The loaded class (" + cname + ") was not a Pipeline plugin!");
+
+      /* Check the plugin defines the serialVersionUID that Serializable recommends.  
+         Using Java reflection we can access private field by using getDeclaredField from 
+	 a class object.  If the field is missing then a NosuchFieldException is thrown.  
+	 Through my testing I was able to find one plugin that I failed to use serialver 
+	 to obtain the serialVersionUID, however the class was still loaded because 
+	 ObjectStreamClass provides a serialVersionUID for classes that fail to declare 
+         one. This code is also in PluginMgr, but having it on the client side makes it 
+         more efficient. */
+      Field serialVersionUID = cls.getDeclaredField("serialVersionUID");
+	
+      plg = (BasePlugin) cls.newInstance();
+    }
+    catch(ClassNotFoundException ex) {
+      throw new PipelineException
+	("Unable to find plugin class (" + cname + "):\n" +
+	 ex.getMessage());
+    }
+    catch(LinkageError ex) {
+      throw new PipelineException
+	("Unable to link plugin class (" + cname + "):\n" + 
+	 ex.getMessage());
+    }
+    catch(NoSuchFieldException ex) {
+      throw new PipelineException
+	("The plugin class (" + cname + ") does not define a serialVersionUID field!  " + 
+	 "Please run serialver to obtain a serialVersionUID.");
+    }
+    catch(InstantiationException ex) {
+      throw new PipelineException
+	("Unable to intantiate plugin class (" + cls.getName() + "):\n" +
+	 ex.getMessage());
+    }
+    catch(IllegalAccessException ex) {
+      throw new PipelineException
+	("Unable to access plugin class (" + cls.getName() + "):\n" +
+	 ex.getMessage());
+    }
+    catch(Exception ex) {
+      throw new PipelineException
+	("Exception thrown by constructor of plugin class (" + cls.getName() + "):\n" + 
+	 ex.getMessage());
+    }
+
+    if(plg == null)
+      throw new PipelineException
+	("The plugin (" + cname + ") is null!");
+
+    return plg;
+  }
+
+  /**
+   *
+   */
+  private void
+  installResourceChunks
+  (
+   long sessionID, 
+   Path cpath, 
+   TreeMap<String,Long> resources, 
+   TreeMap<String,byte[]> checksums
+  )
+    throws PipelineException
+  {
+    try {
+      File cfile = cpath.toFile();
+
+      JarInputStream in = new JarInputStream(new FileInputStream(cfile)); 
+
+      int numBytes;
+
+      byte[] buf   = new byte[4096];
+      byte[] bytes = new byte[4096*2 + sChunkSize];
+
+      while(true) {
+	JarEntry entry = in.getNextJarEntry();
+	if(entry == null) 
+	  break;
+
+	if(entry.isDirectory())
+	  continue;
+	
+	String path = entry.getName();
+
+	if(path.endsWith("class"))
+	  continue;
+
+	if(!resources.containsKey(path))
+	  continue;
+
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Plg, LogMgr.Level.Info, 
+	   "Path (" + path + ")");
+
+	long filesize  = resources.get(path);
+	long bytesRead = 0L;
+
+	numBytes = 0;
+
+	while(true) {
+	  int len = in.read(buf, 0, buf.length);
+	  if(len == -1)
+	    break;
+
+	  bytesRead += len;
+	  System.arraycopy(buf, 0, bytes, numBytes, len);
+	  numBytes += len;
+
+	  if((numBytes > sChunkSize) || (bytesRead == filesize)) {
+	    PluginResourceChunkInstallReq req = 
+	      new PluginResourceChunkInstallReq
+		(sessionID, path, bytes, numBytes, bytesRead - numBytes);
+
+	    Object obj = performTransaction
+	      (PluginRequest.ResourceChunkInstall, req);
+	    
+	    int percentTransferred = (int)(bytesRead / (double)filesize * 100);
+
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Plg, LogMgr.Level.Info, 
+	       percentTransferred + "% (" + path + ")");
+
+	    if(obj instanceof PluginCountRsp) {
+	      LogMgr.getInstance().log
+		(LogMgr.Kind.Plg, LogMgr.Level.Finest, 
+		 "Recevied a PluginCountRsp.");
+
+	      displayPluginCountRsp(obj);
+	    }
+	    else if(obj instanceof SuccessRsp) {
+	      LogMgr.getInstance().log
+		(LogMgr.Kind.Ops, LogMgr.Level.Info, 
+                 "All required plugins are installed ");
+	    }
+	    else if(obj instanceof FailureRsp) {
+	      handleFailure(obj);
+	    }
+
+	    numBytes = 0;
+	  }
+	}
+      }
+
+      in.close();
+    }
+    catch(IOException ex) {
+      throw new PipelineException
+	("Unable to read the plugin JAR file (" + cpath + ")!");
+    }
+  }
+
+  /**
+   *
+   */
+  private void
+  displayPluginCountRsp
+  (
+   Object obj
+  )
+  {
+    PluginCountRsp rsp = (PluginCountRsp)obj;
+
+    int requiredPluginsCount = rsp.getRequiredPluginCount();
+    int unknownPluginsCount  = rsp.getUnknownPluginCount();
+
+    if(requiredPluginsCount > 0) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Warning, 
+         requiredPluginsCount + " plugin" + (requiredPluginsCount > 1 ? "s " : " ") + 
+         "still need" + (requiredPluginsCount > 1 ? "" : "s") + " to be installed.  " + 
+         "Please rerun plplugin with the --list --status=miss option " + 
+          "to get the full details.");
+    }
+
+    if(unknownPluginsCount > 0) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Warning, 
+         unknownPluginsCount + " unregistered plugin" + 
+         (unknownPluginsCount > 1 ? "s " : " ") + 
+         (unknownPluginsCount > 1 ? "have " : "has ") + 
+         "been detected.  They have not been loaded.  " + 
+         "Install the plugin" + 
+	 (unknownPluginsCount > 1 ? "s " : " ") + 
+         "using plplugin --install.  " + 
+         "Please rerun plplugin with the --list --status=unknown option " + 
+         "to get the full details.");
+    }
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The message digest algorithm. 
+   */ 
+  private MessageDigest pDigest;
+
+  /**
+   *
+   */
+  private final static int  sChunkSize = 1024*512;
+
+  /**
+   *
+   */
+  private final static long  sMaxFileSize = 1024 * 1024 * 128;
+
 }
 

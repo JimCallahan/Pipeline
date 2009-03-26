@@ -1,4 +1,4 @@
-// $Id: PluginRequest.java,v 1.5 2009/03/02 00:18:48 jlee Exp $
+// $Id: PluginRequest.java,v 1.6 2009/03/26 06:48:37 jlee Exp $
 
 package us.temerity.pipeline.message;
 
@@ -36,6 +36,21 @@ enum PluginRequest
    * An instance of {@link PluginInstallReq PluginInstallReq} is next.
    */
   Install, 
+
+  /**
+   *
+   */
+  Checksum, 
+
+  /**
+   *
+   */
+  ResourceInstall, 
+
+  /**
+   *
+   */
+  ResourceChunkInstall, 
   
   /*----------------------------------------------------------------------------------------*/
 
