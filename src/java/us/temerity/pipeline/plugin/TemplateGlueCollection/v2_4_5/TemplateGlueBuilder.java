@@ -1,4 +1,4 @@
-// $Id: TemplateGlueBuilder.java,v 1.2 2009/01/20 03:01:30 jesse Exp $
+// $Id: TemplateGlueBuilder.java,v 1.3 2009/03/26 00:07:37 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateGlueCollection.v2_4_5;
 
@@ -61,6 +61,15 @@ class TemplateGlueBuilder
          null);
       addParam(param);
     }
+    
+    {
+      UtilityParam param = 
+        new BooleanUtilityParam
+          (aAllowZeroContexts,
+           "Allow contexts to have no replacements.",
+           false);
+      addParam(param);
+    }
 
     addCheckinWhenDoneParam();
     
@@ -82,6 +91,7 @@ class TemplateGlueBuilder
     layout.addEntry(1, aReleaseOnError);
     layout.addEntry(1, null);
     layout.addEntry(1, aTemplateNode);
+    layout.addEntry(1, aAllowZeroContexts);
     
     PassLayoutGroup finalLayout = new PassLayoutGroup(layout.getName(), layout);
     
@@ -130,13 +140,21 @@ class TemplateGlueBuilder
         new TemplateInfoBuilder(pClient, pQueue, getBuilderInformation(), pNodeName, getAuthor(), getView());
       addSubBuilder(builder);
       addMappedParam(builder.getName(), aCheckinWhenDone, aCheckinWhenDone);
+      addMappedParam(builder.getName(), aAllowZeroContexts, aAllowZeroContexts);
     }
     private static final long serialVersionUID = -3615571748207002085L;
     
     private String pNodeName;
   }
   
+  
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+  
   public static final String aTemplateNode = "TemplateNode";
+  public static final String aAllowZeroContexts = "AllowZeroContexts";
   
   private static final long serialVersionUID = 7681162001215421131L;
 

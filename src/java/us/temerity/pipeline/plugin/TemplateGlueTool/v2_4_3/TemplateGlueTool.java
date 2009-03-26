@@ -1,4 +1,4 @@
-// $Id: TemplateGlueTool.java,v 1.3 2009/01/19 21:51:29 jesse Exp $
+// $Id: TemplateGlueTool.java,v 1.4 2009/03/26 00:07:52 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateGlueTool.v2_4_3;
 
@@ -297,7 +297,7 @@ class TemplateGlueTool
       if (pNodesInTemplate.isEmpty()) {
         for (String source : templateMod.getSourceNames()) {
           TreeMap<String, BaseAnnotation> annots = getTaskAnnotation(source, mclient);
-          if (annots.isEmpty())
+          if (annots == null || annots.isEmpty())
             throw new PipelineException
               ("There were no nodes selected as being in the template and the nodes " +
                "attached to the template definition node do not contain task annotations.  " +
