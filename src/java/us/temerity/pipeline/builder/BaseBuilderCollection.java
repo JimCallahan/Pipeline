@@ -1,4 +1,4 @@
-// $Id: BaseBuilderCollection.java,v 1.18 2008/08/01 21:34:41 jesse Exp $
+// $Id: BaseBuilderCollection.java,v 1.19 2009/03/26 00:09:39 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -236,7 +236,7 @@ class BaseBuilderCollection
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Creates and runs an instance of the named builder.
+   * Return an instance of the named builder.
    * <p>
    * The Builder Collection will create a new connection to the MasterMgr and QueueMgr and
    * provide a new {@link BuilderInformation} for this Builder to use. 
@@ -285,7 +285,7 @@ class BaseBuilderCollection
   }
 
   /**
-   * Creates and runs an instance of the named builder.<p>
+   * Return an instance of the named builder.<p>
    * 
    * The Builder Collection will create a new connection to the MasterMgr and QueueMgr and
    * provide a new {@link BuilderInformation} for this Builder to use. 
@@ -349,7 +349,7 @@ class BaseBuilderCollection
   }
   
   /**
-   * Creates and runs an instance of the named builder.<p>
+   * Return an instance of the named builder.<p>
    *
    * The Builder Collection will create a new connection to the MasterMgr and QueueMgr and
    * provide a new {@link BuilderInformation} for this Builder to use. 

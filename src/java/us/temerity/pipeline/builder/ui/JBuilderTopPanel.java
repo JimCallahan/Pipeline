@@ -1,4 +1,4 @@
-// $Id: JBuilderTopPanel.java,v 1.22 2008/07/21 17:25:53 jim Exp $
+// $Id: JBuilderTopPanel.java,v 1.23 2009/03/26 00:10:01 jesse Exp $
 
 package us.temerity.pipeline.builder.ui;
 
@@ -462,7 +462,6 @@ class JBuilderTopPanel
   public void 
   componentHidden
   (
-    @SuppressWarnings("unused")
     ComponentEvent e
   )
   {}
@@ -470,7 +469,6 @@ class JBuilderTopPanel
   public void 
   componentMoved
   (
-    @SuppressWarnings("unused")
     ComponentEvent e
   )
   {}
@@ -493,7 +491,6 @@ class JBuilderTopPanel
   public void 
   componentShown
   (
-    @SuppressWarnings("unused")
     ComponentEvent e
   )
   {}
@@ -506,7 +503,6 @@ class JBuilderTopPanel
   public void 
   valueChanged
   (
-    @SuppressWarnings("unused")
     TreeSelectionEvent e
   )
   {
@@ -555,15 +551,16 @@ class JBuilderTopPanel
   public void 
   stateChanged
   (
-    @SuppressWarnings("unused")
     ChangeEvent e
   )
   {
     JBuilderParamPanel panel = pPanels.get(pActiveNode);
-    pViewedYet.put(pActiveNode, panel.allViewed());
-    if (panel.allViewed()) {
-      ((BuilderTreeNodeInfo) pActiveNode.getUserObject()).setDone();
-      pSetupTree.repaint();
+    if (panel != null) {
+      pViewedYet.put(pActiveNode, panel.allViewed());
+      if (panel.allViewed()) {
+        ((BuilderTreeNodeInfo) pActiveNode.getUserObject()).setDone();
+        pSetupTree.repaint();
+      }
     }
   }
   

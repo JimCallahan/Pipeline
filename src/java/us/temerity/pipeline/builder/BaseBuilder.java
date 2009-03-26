@@ -1,4 +1,4 @@
-// $Id: BaseBuilder.java,v 1.64 2009/02/02 19:57:41 jesse Exp $
+// $Id: BaseBuilder.java,v 1.65 2009/03/26 00:09:04 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -1514,10 +1514,13 @@ class BaseBuilder
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Adds a node to the global queue list.
-   * 
-   * This is the list of nodes which will be queued after all the Construct Passes have been
-   * executed.  This is a global list which is added to by all builders.
+   * Adds a node to the queue list.
+   * <p>
+   * This is the list of nodes which will be queued after all the Construct Passes for this 
+   * particular builder have been run.
+   * <p>
+   * This is a Builder specific list, so adding and removing nodes will not effect
+   * other Builders. 
    * 
    * @param nodeName
    *   The name of the node.
@@ -1534,11 +1537,10 @@ class BaseBuilder
   }
 
   /**
-   * Removes a node from the global queue list.
-   * 
-   * Since this is a global list, this has the potential of affecting other Builders which 
-   * may have added the node to the this list.  This may have the result of causing their 
-   * check-ins to fail, so it should be used with caution.
+   * Removes a node from the queue list.
+   * <p>
+   * This is a Builder specific list, so adding and removing nodes will not effect
+   * other Builders.
    * 
    * @param nodeName
    *   The name of the node.
@@ -1557,10 +1559,10 @@ class BaseBuilder
 
   /**
    * Adds a node to the Builder's disable list.
-   * 
+   * <p>
    * This is a Builder specific list, so adding and removing nodes will not effect
-   * other Builders.<p>
-   * 
+   * other Builders.
+   * <p>
    * All nodes in this list will have their Actions disabled when the 
    * {@link #disableActions()} method is called.
    * 
@@ -1725,7 +1727,7 @@ class BaseBuilder
    * instantiating any of its sub-builders. Failure to do so may result in the default editor
    * values being set by the sub-builder.
    */
-  public void
+  public final void
   setDefaultEditor
   (
     String function,
@@ -1750,7 +1752,7 @@ class BaseBuilder
    * instantiating any of its sub-builders. Failure to do so may result in the default editor
    * values being set by the sub-builder.
    */
-  public void
+  public final void
   setDefaultEditors
   (
     TreeMap<String, PluginContext> defaultEditors
@@ -1777,7 +1779,7 @@ class BaseBuilder
    * instantiating any of its sub-builders. Failure to do so may result in the default keys
    * values being set by the sub-builder.
    */
-  public void
+  public final void
   setStageFunctionSelectionKeys
   (
     String function,
@@ -1802,7 +1804,7 @@ class BaseBuilder
    * instantiating any of its sub-builders. Failure to do so may result in the default keys
    * values being set by the sub-builder.
    */
-  public void
+  public final void
   setStageFunctionLicenseKeys
   (
     String function,
@@ -1847,7 +1849,7 @@ class BaseBuilder
     return pBuilderInformation;
   }
   
-  public StageInformation
+  public final StageInformation
   getStageInformation()
   {
     return pStageInfo;
