@@ -1,4 +1,4 @@
-// $Id: PluginStatus.java,v 1.1 2009/03/02 00:16:27 jlee Exp $
+// $Id: PluginStatus.java,v 1.2 2009/03/26 06:43:42 jlee Exp $
 
 package us.temerity.pipeline;
 
@@ -92,30 +92,5 @@ enum PluginStatus
   {
     return toString();
   }
-
-  /**
-   * Convert to a short name representation.
-   */
-  public String
-  toShortName()
-  {
-    return sShortNames[ordinal()];
-  }
-
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   S T A T I C   I N T E R N A L S                                                      */
-  /*----------------------------------------------------------------------------------------*/
-
-  private static String sShortNames[] = {
-    "req", 
-    "inst", 
-    "dev", 
-    "perm", 
-    "miss", 
-    "unknown"
-  };
-
 }
 
