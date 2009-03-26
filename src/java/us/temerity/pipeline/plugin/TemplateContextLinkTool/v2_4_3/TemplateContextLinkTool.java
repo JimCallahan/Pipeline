@@ -1,4 +1,4 @@
-// $Id: TemplateContextLinkTool.java,v 1.4 2009/03/10 16:37:12 jesse Exp $
+// $Id: TemplateContextLinkTool.java,v 1.5 2009/03/26 00:10:41 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateContextLinkTool.v2_4_3;
 
@@ -17,7 +17,7 @@ import us.temerity.pipeline.ui.*;
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Tool for adding context link animation to a group of nodes.
+ * Tool for adding context link annotations to a group of nodes.
  * <p>
  * First select the nodes that need to be in the context.  Then run the tool on the node that
  * is going to hold the context information.
@@ -34,7 +34,7 @@ class TemplateContextLinkTool
   TemplateContextLinkTool()
   {
     super("TemplateContextLink", new VersionID("2.4.3"), "Temerity", 
-          "Tool for adding context link animation to a group of nodes.");
+          "Tool for adding context link annotations to a group of nodes.");
 
     addSupport(OsType.Windows);
     addSupport(OsType.MacOS);
@@ -103,7 +103,7 @@ class TemplateContextLinkTool
     pDialog.setMinimumSize(new Dimension(pDialog.getSize().width, 300));
     pDialog.setVisible(true);
     if (pDialog.wasConfirmed())
-      return ": adding Template Context";
+      return ": adding Template Contexts";
     
     return null;
   }
@@ -148,10 +148,13 @@ class TemplateContextLinkTool
     if (!aNames.isEmpty())
       newNum = Integer.valueOf(aNames.last().replaceAll("TemplateContextLink", "")) + 1;
     
+    NodeMod mod = mclient.getWorkingVersion(getAuthor(), getView(), pPrimary);
+    Set<String> currentSources = mod.getSourceNames();
+    
     for (String node : sourceNodes) {
       TreeSet<String> exists = existing.get(node);
       for (String context : contexts) {
-        if (exists == null || !exists.contains(context)) {
+        if ((exists == null || !exists.contains(context)) && currentSources.contains(node)) {
           String aName = "TemplateContextLink" + pad(newNum); 
           BaseAnnotation annot = 
             plug.newAnnotation("TemplateContextLink", new VersionID("2.4.3"), "Temerity");
