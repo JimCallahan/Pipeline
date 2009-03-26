@@ -121,7 +121,12 @@ of the given checked-in version of a node (<span
  style="font-style: italic;">node-name</span>).
 &nbsp;
 If no <span style="font-weight: bold;">--version</span> option is
-specified, the latest checked-in version will be viewed.<br>
+specified, the latest checked-in version will be viewed.&nbsp; If <span
+ style="font-weight: bold;">plui</span>(1) is not already running, this
+falls back to using <span style="font-weight: bold;">plscript</span>(1)
+to launch the Editor for the node.&nbsp; For compatibility, <span
+ style="font-weight: bold;">plscript</span>(1) if launched will show a
+splash screen so the user has some feedback while the JVM starts up.<br>
 </div>
 <blockquote><span style="font-weight: bold;">working</span> <span
  style="font-weight: bold;">--select</span>=<span
