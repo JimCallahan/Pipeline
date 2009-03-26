@@ -1,4 +1,4 @@
-// $Id: TemplateInfoBuilder.java,v 1.5 2009/03/26 00:04:16 jesse Exp $
+// $Id: TemplateInfoBuilder.java,v 1.6 2009/03/26 15:55:29 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -60,6 +60,8 @@ class TemplateInfoBuilder
       "Builder which reads a template information file and then uses that information to" +
       "run the template and create an instance of it for particular project.",
       mclient, qclient, builderInformation, EntityType.Ignore);
+    
+    noDefaultConstructPasses();
     
     {
       NodeID nodeID = 
@@ -257,7 +259,6 @@ class TemplateInfoBuilder
             "Context Information pass for the TemplateBuilder");
     }
     
-    @SuppressWarnings("unused")
     @Override
     public void 
     validatePhase()
@@ -335,8 +336,10 @@ class TemplateInfoBuilder
       
       pParams = new ArrayList<ArrayList<KeyValueUtilityParam>>();
       
+      noDefaultConstructPasses();
+      
       AdvancedLayoutGroup layout = new AdvancedLayoutGroup
-        ("ContextInformation", "Values for the context", "Context", true);
+        ("ContextInformation", "Values for the context", "Context: " + contextName, true);
       
       ArrayList<TreeMap<String, String>> defaults = null;
       if (defaultValues == null)

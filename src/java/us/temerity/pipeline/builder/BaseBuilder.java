@@ -1,4 +1,4 @@
-// $Id: BaseBuilder.java,v 1.66 2009/03/26 11:57:13 jesse Exp $
+// $Id: BaseBuilder.java,v 1.67 2009/03/26 15:55:29 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -334,6 +334,9 @@ class BaseBuilder
     throws PipelineException
   {
     super(name, desc, mclient, qclient);
+    
+    pNoBuild = false;
+    
     pBuilderInformation = builderInformation;
     pStageInfo = builderInformation.getNewStageInformation();
     pSubBuilders = new TreeMap<String, BaseBuilder>();
@@ -401,15 +404,17 @@ class BaseBuilder
       throw new IllegalArgumentException
         ("There are more passes in the layout than SetupPasses exist for " +
          "builder (" + getName() + ").");
-    try {
-      addConstructPass(new QueueConstructPass());
-      addConstructPass(new CheckInConstructPass());
-    }
-    catch (PipelineException ex) {
-      throw new IllegalStateException
-        ("Problem adding built in Construct Passes to the Builder.  " +
-         "There must be an existing Construct Pass named (CheckInPass) or (QueuePass)." +
-         "This needs to be renamed before continuing.");
+    if (!pNoBuild) {
+      try {
+        addConstructPass(new QueueConstructPass());
+        addConstructPass(new CheckInConstructPass());
+      }
+      catch (PipelineException ex) {
+        throw new IllegalStateException
+         ("Problem adding built in Construct Passes to the Builder.  " +
+          "There must be an existing Construct Pass named (CheckInPass) or (QueuePass)." +
+          "This needs to be renamed before continuing.");
+      }
     }
     super.setLayout(layout);
   }
@@ -478,6 +483,13 @@ class BaseBuilder
   
   /**
    * Adds a Sub-Builder to the current Builder, with the given Builder Parameter mapping.
+   * <p>
+   * Using this method acquires a builder from outside the current jar.  That means there is 
+   * certainty about what is exactly being acquired.  Changes made to other builders may have 
+   * significant unintentional impact on builders which use this methods.
+   * <p>
+   * Due to initialization issues, these methods cannot be called from the constructor of a 
+   * Builder.  They should only be called in the initPhase of a SetupPass. 
    * <p>
    * @param collectionName
    *   The name of the BuilderCollection.
@@ -612,6 +624,13 @@ class BaseBuilder
   /**
    * Adds a Sub-Builder to the current Builder.
    * <p>
+   * Using this method acquires a builder from outside the current jar.  That means there is 
+   * certainty about what is exactly being acquired.  Changes made to other builders may have 
+   * significant unintentional impact on builders which use this methods.
+   * <p>
+   * Due to initialization issues, these methods cannot be called from the constructor of a 
+   * Builder.  They should only be called in the initPhase of a SetupPass.
+   * 
    * @param collectionName
    *   The name of the BuilderCollection.
    *   
@@ -694,6 +713,13 @@ class BaseBuilder
    * If there are no existing child Builders, it sets a value of 50 for the child Builder's 
    * order.  If there are other existing child Builders, it adds the Builder to the end of
    * the execution order, incrementing the largest current order by 50.
+   * <p>
+   * Using this method acquires a builder from outside the current jar.  That means there is 
+   * certainty about what is exactly being acquired.  Changes made to other builders may have 
+   * significant unintentional impact on builders which use this methods.
+   * <p>
+   * Due to initialization issues, these methods cannot be called from the constructor of a 
+   * Builder.  They should only be called in the initPhase of a SetupPass.
    * 
    * @param collectionName
    *   The name of the BuilderCollection.
@@ -1249,6 +1275,20 @@ class BaseBuilder
       return true;
     else
       return false;
+  }
+  
+  /**
+   * This can be called in the constructor of a builder (must be before 
+   * {@link #setLayout(PassLayoutGroup)}) to prevent the default Queue and Check-In passes 
+   * from being added to the builder.  
+   * <p>
+   * Intended for builders which exist solely to handle data-input and which are not
+   * actually building any nodes of their own.
+   */
+  protected void
+  noDefaultConstructPasses()
+  {
+    pNoBuild = true;
   }
   
   
@@ -2675,4 +2715,6 @@ class BaseBuilder
    * and jobs need to be killed.
    */
   private TreeSet<String> pQueuedNodes;
+  
+  private boolean pNoBuild;
 }

@@ -1,4 +1,4 @@
-// $Id: TemplateTaskBuilder.java,v 1.6 2009/03/26 05:15:43 jim Exp $
+// $Id: TemplateTaskBuilder.java,v 1.7 2009/03/26 15:55:29 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -36,6 +36,8 @@ class TemplateTaskBuilder
       "Builder to read a template node network, built using the v2.4.1 Task system, " +
       "and create an instance of it for particular project.",
       mclient, qclient, builderInformation, null);
+    
+    noDefaultConstructPasses();
     
     pStartNode = startNode;
     pReplacements = new TreeMap<String, String>();
