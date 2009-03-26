@@ -1,4 +1,4 @@
-// $Id: PluginUpdateRsp.java,v 1.12 2009/03/20 03:10:39 jim Exp $
+// $Id: PluginUpdateRsp.java,v 1.13 2009/03/26 06:41:16 jlee Exp $
 
 package us.temerity.pipeline.message;
 
@@ -88,7 +88,7 @@ class PluginUpdateRsp
    *
    * @param pluginStatus
    *   The current status of all plugins 
-   *   indexed by ???.
+   *   indexed by PluginType and PluginID.
    */
   public
   PluginUpdateRsp
@@ -108,7 +108,7 @@ class PluginUpdateRsp
    TripleMap<String,String,VersionID,LayoutGroup> builderCollectionLayouts,
    TripleMap<String,String,VersionID,AnnotationPermissions> annotPerms, 
    TripleMap<String,String,VersionID,TreeSet<AnnotationContext>> annotContexts, 
-   TripleMap<PluginType,String,PluginID,PluginStatus> pluginStatus
+   DoubleMap<PluginType,PluginID,PluginStatus> pluginStatus
   )
   { 
     super(timer);
@@ -332,7 +332,7 @@ class PluginUpdateRsp
   /**
    * Gets the PluginStatus index by PluginType, Vendor string, and PluginID.
    */
-  public TripleMap<PluginType,String,PluginID,PluginStatus>
+  public DoubleMap<PluginType,PluginID,PluginStatus>
   getPluginStatus()
   {
     return pPluginStatus;
@@ -440,9 +440,9 @@ class PluginUpdateRsp
 
   /**
    * The complete status of all plugins
-   * indexed by ???.
+   * indexed by PluginType and PluginID.
    */
-  private TripleMap<PluginType,String,PluginID,PluginStatus>  pPluginStatus;
+  private DoubleMap<PluginType,PluginID,PluginStatus>  pPluginStatus;
 
 }
   

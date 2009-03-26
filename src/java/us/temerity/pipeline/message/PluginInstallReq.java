@@ -1,4 +1,4 @@
-// $Id: PluginInstallReq.java,v 1.5 2009/02/13 04:55:47 jlee Exp $
+// $Id: PluginInstallReq.java,v 1.6 2009/03/26 06:41:16 jlee Exp $
 
 package us.temerity.pipeline.message;
 
@@ -39,9 +39,12 @@ class PluginInstallReq
    * 
    * @param external
    *   Whether to ignore the Local Vendor check.
-   *
+   * 
    * @param rename
    *   Whether to ignore the Java class/package aliasing check.
+   * 
+   * @param dryRun
+   *   Whether to validate the plugin only and not load it.
    */
   public
   PluginInstallReq
@@ -127,7 +130,7 @@ class PluginInstallReq
   }
 
   /**
-   *
+   * Whether to load the plugin after the validation steps.
    */
   public boolean
   getDryRun()
@@ -168,7 +171,7 @@ class PluginInstallReq
    * The raw class bytes indexed by class name.
    */ 
   private TreeMap<String,byte[]>  pContents; 
-
+  
   /**
    * Whether to ignore the Local Vendor check.
    */
