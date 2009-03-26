@@ -1,4 +1,4 @@
-// $Id: TemplateBuilder.java,v 1.9 2009/03/26 15:18:01 jesse Exp $
+// $Id: TemplateBuilder.java,v 1.10 2009/03/26 16:26:07 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -8,6 +8,7 @@ import us.temerity.pipeline.*;
 import us.temerity.pipeline.LogMgr.*;
 import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.builder.v2_4_1.TaskBuilder;
+import us.temerity.pipeline.plugin.TemplateRangeAnnotation.v2_4_3.*;
 import us.temerity.pipeline.stages.*;
 
 /*------------------------------------------------------------------------------------------*/
