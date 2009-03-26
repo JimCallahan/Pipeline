@@ -1,4 +1,4 @@
-// $Id: TemplateTaskBuilder.java,v 1.4 2008/11/19 04:34:48 jesse Exp $
+// $Id: TemplateTaskBuilder.java,v 1.5 2009/03/26 00:04:16 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -10,11 +10,11 @@ import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.builder.execution.*;
 import us.temerity.pipeline.builder.v2_4_1.*;
 import us.temerity.pipeline.builder.v2_4_1.TaskBuilder;
+import us.temerity.pipeline.plugin.TemplateIgnoreProductAnnotation.v2_4_3.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   T E M P L A T E   T A S K   B U I L D E R                                              */
 /*------------------------------------------------------------------------------------------*/
-
 
 public 
 class TemplateTaskBuilder
@@ -57,6 +57,15 @@ class TemplateTaskBuilder
     
     PassLayoutGroup rootLayout = new PassLayoutGroup("Root", "Root Layout");
     
+    {
+      UtilityParam param = 
+        new BooleanUtilityParam
+          (aAllowZeroContexts,
+           "Allow contexts to have no replacements.",
+           false);
+      addParam(param);
+    }
+    
     AdvancedLayoutGroup layout = 
       new AdvancedLayoutGroup
       ("Builder Information", 
@@ -69,6 +78,8 @@ class TemplateTaskBuilder
     layout.addEntry(1, aCheckinWhenDone);
     layout.addEntry(1, aActionOnExistence);
     layout.addEntry(1, aReleaseOnError);
+    layout.addEntry(1, null);
+    layout.addEntry(1, aAllowZeroContexts);
     
     rootLayout.addPass(layout.getName(), layout);
     setLayout(rootLayout);
@@ -227,12 +238,12 @@ class TemplateTaskBuilder
           throw new PipelineException
             ("The node ("+ nodeName + ") connected to this network belongs to a different " +
              "task, but is not a Product node.");
-        pProductNodes.add(nodeName);
+        checkProductNode(parent, nodeName);
         searchForContexts(parent, nodeName);
       }
     }//if (annots != null && !annots.isEmpty()) {
     else { //If there are no task annotations/ {
-      pProductNodes.add(nodeName);
+      checkProductNode(parent, nodeName);
       searchForContexts(parent, nodeName);
     }
   }
@@ -314,6 +325,79 @@ class TemplateTaskBuilder
     return toReturn;
   }
 
+  /**
+   * Check if a product node is ignorable from the perspective of a given parent node.
+   * 
+   * @param parent
+   *   The downstream node.
+   * 
+   * @param src
+   *   The upstream node
+   *   
+   * @throws PipelineException
+   */
+  private void 
+  checkProductNode
+  (
+    String parent,
+    String src
+  )
+    throws PipelineException
+  {
+    pLog.logAndFlush(Kind.Bld, Level.Finest, 
+      "Checking for product node (" + src + ") ignorability with regard to " +
+      "(" + parent + ")");
+    boolean ignoreable = getIgnorable(parent, src);
+    if (!pProductNodes.containsKey(src)) {
+      pProductNodes.put(src, ignoreable);
+      pLog.logAndFlush(Kind.Bld, Level.Finest,
+        "Ignorability has been set to (" + ignoreable + ")");
+    }
+    else if (pProductNodes.get(src) == true && !ignoreable) {
+      pProductNodes.put(src, ignoreable);
+      pLog.logAndFlush(Kind.Bld, Level.Finest,
+        "Ignorability has been overriden to (" + ignoreable + ")");
+    }
+  }
+
+
+  /**
+   * Check if the src node is ignorable from the perspective of the target node.
+   * <p>
+   * The node is considered ignorable if the target node has a 
+   * {@link TemplateIgnoreProductAnnotation} with the LinkName parameter set to the
+   * value of the src node.
+   * 
+   * @param target
+   *   The target node, which should be part of the template.
+   * 
+   * @param src
+   *   The source node, which should not be part of the template
+   * 
+   * @return
+   *   <code>true</code> if the node is ignorable, <code>false</code> otherwise.
+   * 
+   * @throws PipelineException
+   */
+  protected boolean 
+  getIgnorable
+  (
+    String target,
+    String src
+  )
+    throws PipelineException
+  {
+    TreeMap<String, BaseAnnotation> annots = getAnnotations(target);
+    for (String aName : annots.keySet()) {
+      if (aName.startsWith("TemplateIgnoreProduct")) {
+        BaseAnnotation annot = annots.get(aName);
+        String aSrc = (String) annot.getParamValue(aLinkName);
+        if (aSrc.equals(src))
+          return true;
+      }
+    }
+    return false;
+  }
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -352,7 +436,7 @@ class TemplateTaskBuilder
       pTaskType = lookupTaskType(pStartNode, aName, annot);
       
       pEditNodes = new TreeSet<String>();
-      pProductNodes = new TreeSet<String>();
+      pProductNodes = new TreeMap<String, Boolean>();
       pProductNodeContexts = new DoubleMap<String, String, TreeSet<String>>();
       
       pNodesIDependedOn = new MappedSet<String, String>();
@@ -388,6 +472,7 @@ class TemplateTaskBuilder
           (pClient, pQueue, getBuilderInformation(), info, pReplacements, pContexts, pFrameRanges);
       addSubBuilder(builder);
       addMappedParam(builder.getName(), aCheckinWhenDone, aCheckinWhenDone);
+      addMappedParam(builder.getName(), aAllowZeroContexts, aAllowZeroContexts);
     }
     
     private TreeSet<String> pNodesToBuild;
@@ -473,6 +558,7 @@ class TemplateTaskBuilder
   }
   
   
+  
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
@@ -481,6 +567,8 @@ class TemplateTaskBuilder
 
   public static final String aContextName = "ContextName";
   public static final String aLinkName = "LinkName";
+  
+  public static final String aAllowZeroContexts = "AllowZeroContexts";
   
   
   
@@ -498,7 +586,7 @@ class TemplateTaskBuilder
   private TreeSet<String> pEditNodes;
   private String pSubmitNode;
   private String pApprovalNode;
-  private TreeSet<String> pProductNodes;
+  private TreeMap<String, Boolean> pProductNodes;
   private DoubleMap<String, String, TreeSet<String>> pProductNodeContexts;
   
   private String pStartNode;

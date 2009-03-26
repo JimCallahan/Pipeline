@@ -1,4 +1,4 @@
-// $Id: TemplateBuildInfo.java,v 1.2 2008/10/17 03:36:46 jesse Exp $
+// $Id: TemplateBuildInfo.java,v 1.3 2009/03/26 00:04:16 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -65,7 +65,7 @@ class TemplateBuildInfo
     TreeSet<String> nodesToBuild,
     MappedSet<String, String> nodesDependingOnMe,
     MappedSet<String, String> nodesIDependedOn,
-    TreeSet<String> productNodes,
+    TreeMap<String, Boolean> productNodes,
     DoubleMap<String, String, TreeSet<String>> productContexts
   )
   {
@@ -188,14 +188,14 @@ class TemplateBuildInfo
    * <code>null</code> or an empty set, then the Template Builder will generate the list
    * itself.
    */
-  public final TreeSet<String> 
+  public final TreeMap<String, Boolean> 
   getProductNodes()
   {
     return pProductNodes;
   }
 
   /**
-   * Set the list of product nodes.
+   * Set the list of product nodes and whether they are optional.
    * <p>
    * A list of all the nodes that the nodes being built depend on. These will either be locked
    * or checked-out frozen depending on how the template is designed. If this value is
@@ -205,11 +205,11 @@ class TemplateBuildInfo
   public final void 
   setProductNodes
   (
-    TreeSet<String> productNodes
+    TreeMap<String, Boolean> productNodes
   )
   {
     if (productNodes != null)
-      pProductNodes = new TreeSet<String>(productNodes);
+      pProductNodes = new TreeMap<String, Boolean>(productNodes);
     else 
       pProductNodes = null;
   }
@@ -264,7 +264,7 @@ class TemplateBuildInfo
   
   private MappedSet<String, String> pNodesDependingOnMe;
 
-  private TreeSet<String> pProductNodes;
+  private TreeMap<String, Boolean> pProductNodes;
 
   private DoubleMap<String, String, TreeSet<String>> pProductContexts;
 }

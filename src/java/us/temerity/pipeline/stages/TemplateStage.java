@@ -1,4 +1,4 @@
-// $Id: TemplateStage.java,v 1.5 2009/03/10 16:47:05 jesse Exp $
+// $Id: TemplateStage.java,v 1.6 2009/03/26 00:04:16 jesse Exp $
 
 package us.temerity.pipeline.stages;
 
@@ -43,6 +43,8 @@ class TemplateStage
     TreeMap<String, String> stringReplacements,
     TreeMap<String, ArrayList<TreeMap<String, String>>> contexts,
     FrameRange templateRange,
+    TreeSet<String> ignoredNodes,
+    TreeSet<String> ignorableProducts,
     TreeMap<String, TreeMap<String, BaseAnnotation>> annotCache
   ) 
     throws PipelineException
@@ -56,6 +58,8 @@ class TemplateStage
     pAnnotCache = annotCache;
     pTemplateInfo = templateInfo;
     pTemplateRange = templateRange;
+    pIgnoredNodes = ignoredNodes;
+    pIgnorableProducts = ignorableProducts;
     init(sourceMod);
   }
 
@@ -74,6 +78,8 @@ class TemplateStage
     TreeMap<String, String> stringReplacements,
     TreeMap<String, ArrayList<TreeMap<String, String>>> maps,
     FrameRange templateRange,
+    TreeSet<String> ignoredNodes,
+    TreeSet<String> ignorableProducts,
     TreeMap<String, TreeMap<String, BaseAnnotation>> annotCache
   ) 
     throws PipelineException
@@ -87,6 +93,8 @@ class TemplateStage
     pAnnotCache = annotCache;
     pTemplateInfo = templateInfo;
     pTemplateRange = templateRange;
+    pIgnoredNodes = ignoredNodes;
+    pIgnorableProducts = ignorableProducts;
     init(sourceMod);
   }
   
@@ -146,13 +154,27 @@ class TemplateStage
     BaseAction act = sourceMod.getAction();
     
     for (LinkMod link : sourceMod.getSources()) {
+      String linkName = link.getName();
+      
       LogMgr.getInstance().log(Kind.Ops, Level.Finest, 
-        "checking the link: " + link.getName());
-      TreeSet<String> contexts = getContexts(link.getName());
+        "checking the link: " + linkName);
+      TreeSet<String> contexts = getContexts(linkName);
+      
+      boolean ignoreable = false;
+      
+      //If it is a product node (not being built)
+      if (!pTemplateInfo.getNodesToBuild().contains(linkName)) { 
+        if (pIgnorableProducts.contains(linkName)) {
+          ignoreable = true;
+          LogMgr.getInstance().log(Kind.Ops, Level.Finest,
+            "The link is in the ignorable product list.");
+        }
+      }
+      
       if (contexts.size() == 0)
-        createLink(link, act, pReplacements);
+        createLink(link, act, pReplacements, ignoreable);
       else
-        contextLink(link, act, new TreeSet<String>(contexts), pReplacements);
+        contextLink(link, act, new TreeSet<String>(contexts), pReplacements, ignoreable);
     }
     
     pSrcHasDisabledAction = !(sourceMod.isActionEnabled()); 
@@ -197,13 +219,25 @@ class TemplateStage
   (
     LinkMod link,
     BaseAction act,
-    TreeMap<String, String> replacements
+    TreeMap<String, String> replacements, 
+    boolean ignoreable
   )
     throws PipelineException
   {
     String oldSrc = link.getName();
     
     String newSrc = stringReplace(oldSrc, replacements);
+    if (pIgnoredNodes.contains(newSrc)) {
+      LogMgr.getInstance().log(Kind.Ops, Level.Fine, 
+        "Not linking source node (" + newSrc + ") because the template skipped building it.");
+      return null;
+    }
+    
+    if (!nodeExists(newSrc) && ignoreable) {
+      LogMgr.getInstance().log(Kind.Ops, Level.Fine, 
+        "Not linking source node (" + newSrc + ") because it doesn't exist");
+      return null;
+    }
     LinkMod newLink = new LinkMod(newSrc, link.getPolicy(), link.getRelationship(), link.getFrameOffset());
     addLink(newLink);
     
@@ -239,26 +273,38 @@ class TemplateStage
     LinkMod link,
     BaseAction act,
     TreeSet<String> contextList,
-    TreeMap<String, String> replace
+    TreeMap<String, String> replace, boolean ignoreable
   )
     throws PipelineException
   {
     String currentContext = contextList.pollFirst();
     ArrayList<TreeMap<String, String>> values = pContexts.get(currentContext);
     
-    if (values == null || values.isEmpty()) 
-      throw new PipelineException
-        ("The context (" + currentContext + ") specified on (" + link.getName() + ") has no values " +
-         "defined for it.");
+    if (values == null || values.isEmpty()) {
+      LogMgr.getInstance().logAndFlush(Kind.Ops, Level.Warning, 
+        "The context (" + currentContext + ") specified on (" + link.getName() + ") has no " +
+         "values defined for it.");
+      TreeMap<String, String> newReplace = new TreeMap<String, String>(replace);
+      if (contextList.isEmpty()) {  //bottom of the recursion
+        createLink(link, act, newReplace, ignoreable);
+      }
+      else {
+        contextLink(link, act, new TreeSet<String>(contextList), newReplace, ignoreable);
+      }
+      return;
+    }
+//      throw new PipelineException
+//        ("The context (" + currentContext + ") specified on (" + link.getName() + ") has no values " +
+//         "defined for it.");
     
     for (TreeMap<String, String> contextEntry : values) {
       TreeMap<String, String> newReplace = new TreeMap<String, String>(replace);
       newReplace.putAll(contextEntry);
       if (contextList.isEmpty()) {  //bottom of the recursion
-        createLink(link, act, newReplace);
+        createLink(link, act, newReplace, ignoreable);
       }
       else {
-        contextLink(link, act, new TreeSet<String>(contextList), newReplace);
+        contextLink(link, act, new TreeSet<String>(contextList), newReplace, ignoreable);
       }
     }
   }
@@ -279,6 +325,10 @@ class TemplateStage
    * @param client
    *   The instance of the MasterMgr to use when making the node.
    * 
+   * @param templateInfo
+   *   Information about what the template is making.  Used to pull out context information
+   *   for product nodes.
+   * 
    * @param stringReplacements
    *   A list of String replacements to make when creating the node from the template.  The
    *   keys will be searched for in node names, links, param values, and annotations
@@ -288,16 +338,19 @@ class TemplateStage
    *   The list of recursive string substitutions to be performed on nodes tagged with the
    *   TemplateContextAnnotation.
    * 
-   * @param annotCache
-   *   A shared cache of annotations for nodes 
-   * 
-   * @param templateInfo
-   *   Information about what the template is making.  Used to pull out context information
-   *   for product nodes.
-   * 
    * @param range
    *   The frame range to be used for this node or <code>null</code> if there is no 
-   *   special template frame range. 
+   *   special template frame range.
+   * 
+   * @param ignoreableProducts
+   *   A list of products which can be ignored if they are not found.
+   *   
+   * @param ignoredNodes
+   *   A list of nodes in the template which were not built because of a Conditional Build
+   *   annotation
+   * 
+   * @param annotCache
+   *   A shared cache of annotations for nodes 
    * 
    * @return
    *   A TemplateStage ready to build the new node.
@@ -316,6 +369,8 @@ class TemplateStage
     TreeMap<String, String> stringReplacements,
     TreeMap<String, ArrayList<TreeMap<String, String>>> contexts,
     FrameRange range, 
+    TreeSet<String> ignoredNodes,
+    TreeSet<String> ignoreableProducts,
     TreeMap<String, TreeMap<String, BaseAnnotation>> annotCache
   ) 
     throws PipelineException
@@ -351,12 +406,14 @@ class TemplateStage
       FrameRange oldRange = priSeq.getFrameRange();
       return new TemplateStage
         (sourceMod, stageInfo, newContext, client, nodeName, oldRange, padding, suffix, 
-         editor, action, templateInfo, stringReplacements, contexts, range, annotCache);
+         editor, action, templateInfo, stringReplacements, contexts, range, ignoredNodes, 
+         ignoreableProducts, annotCache);
     }
     else 
       return new TemplateStage
         (sourceMod, stageInfo, newContext, client, nodeName, suffix, editor, action, 
-         templateInfo, stringReplacements, contexts, range, annotCache);
+         templateInfo, stringReplacements, contexts, range, ignoredNodes, ignoreableProducts, 
+         annotCache);
   }
   
   @Override
@@ -395,7 +452,11 @@ class TemplateStage
    * <li> Post Remove Action
    * <li> Post Disable Action
    * <li> Vouch
+   * <li> Unlink
    * </ul>
+   * 
+   * @return
+   *   If the stage needs finalization.
    */
   public boolean
   needsFinalization()
@@ -678,4 +739,8 @@ class TemplateStage
   private FrameRange pTemplateRange;
   
   private TreeMap<FileSeq, FileSeq> pSecSeqs;
+  
+  private TreeSet<String> pIgnorableProducts;
+  
+  private TreeSet<String> pIgnoredNodes;
 }

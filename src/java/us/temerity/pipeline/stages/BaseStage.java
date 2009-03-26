@@ -1,4 +1,4 @@
-// $Id: BaseStage.java,v 1.31 2009/02/02 17:15:10 jesse Exp $
+// $Id: BaseStage.java,v 1.32 2009/03/26 00:04:16 jesse Exp $
 
 package us.temerity.pipeline.stages;
 
@@ -1252,7 +1252,7 @@ class BaseStage
    *         not exist or if the specified path is a Branch.
    * @throws PipelineException
    */
-  private boolean 
+  protected boolean 
   nodeExists
   (
     String name
@@ -1389,6 +1389,9 @@ class BaseStage
     pStageInformation.addCheckedOutNode(pRegisteredNodeName);
     pNodeCheckedOut = true;
   }
+  
+  
+  
 
 
   

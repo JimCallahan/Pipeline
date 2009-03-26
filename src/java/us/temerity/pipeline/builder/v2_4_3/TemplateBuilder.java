@@ -1,4 +1,4 @@
-// $Id: TemplateBuilder.java,v 1.6 2009/03/10 16:36:26 jesse Exp $
+// $Id: TemplateBuilder.java,v 1.7 2009/03/26 00:04:16 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -8,6 +8,7 @@ import us.temerity.pipeline.*;
 import us.temerity.pipeline.LogMgr.*;
 import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.builder.v2_4_1.TaskBuilder;
+import us.temerity.pipeline.plugin.TemplateIgnoreProductAnnotation.v2_4_3.*;
 import us.temerity.pipeline.plugin.TemplateRangeAnnotation.v2_4_3.*;
 import us.temerity.pipeline.stages.*;
 
@@ -115,16 +116,16 @@ class TemplateBuilder
     
     // Is this stringent a condition needed for product nodes?  not sure.
     // Seems to be.  Turning it off for now.
-    TreeSet<String> products = templateInfo.getProductNodes();
+    TreeMap<String, Boolean> products = templateInfo.getProductNodes();
     pLog.log(Kind.Ops, Level.Finest, 
       "The products data structure passed in has the following values:\n" + 
       products );
-    pProductNodes = new TreeSet<String>();
+    pProductNodes = new TreeMap<String, Boolean>();
     if (products == null || products.isEmpty())
       pLog.log(Kind.Ops, Level.Fine, "No product nodes defined in this template");
     //pGenerateDependSets = true;
     else
-      pProductNodes.addAll(products);
+      pProductNodes.putAll(products);
     
     DoubleMap<String, String, TreeSet<String>> productContexts = templateInfo.getProductContexts();
     pLog.log(Kind.Ops, Level.Finest, 
@@ -160,6 +161,15 @@ class TemplateBuilder
 
     pAnnotCache = new TreeMap<String, TreeMap<String,BaseAnnotation>>();
     
+    {
+      UtilityParam param = 
+        new BooleanUtilityParam
+          (aAllowZeroContexts,
+           "Allow contexts to have no replacements.",
+           false);
+      addParam(param);
+    }
+    
     addCheckinWhenDoneParam();
     
     addSetupPass(new InformationPass());
@@ -180,6 +190,8 @@ class TemplateBuilder
     layout.addEntry(1, aCheckinWhenDone);
     layout.addEntry(1, aActionOnExistence);
     layout.addEntry(1, aReleaseOnError);
+    layout.addEntry(1, null);
+    layout.addEntry(1, aAllowZeroContexts);
     
     rootLayout.addPass(layout.getName(), layout);
     setLayout(rootLayout);
@@ -227,6 +239,45 @@ class TemplateBuilder
     }
     return toReturn;
   }
+
+  /**
+   * Check if the src node is ignorable from the perspective of the target node.
+   * <p>
+   * The node is considered ignorable if the target node has a 
+   * {@link TemplateIgnoreProductAnnotation} with the LinkName parameter set to the
+   * value of the src node.
+   * 
+   * @param target
+   *   The target node, which should be part of the template.
+   * 
+   * @param src
+   *   The source node, which should not be part of the template
+   * 
+   * @return
+   *   <code>true</code> if the node is ignorable, <code>false</code> otherwise.
+   * 
+   * @throws PipelineException
+   */
+  protected boolean 
+  getIgnorable
+  (
+    String target,
+    String src
+  )
+    throws PipelineException
+  {
+    TreeMap<String, BaseAnnotation> annots = getAnnotations(target);
+    for (String aName : annots.keySet()) {
+      if (aName.startsWith("TemplateIgnoreProduct")) {
+        BaseAnnotation annot = annots.get(aName);
+        String aSrc = (String) annot.getParamValue(aLinkName);
+        if (aSrc.equals(src))
+          return true;
+      }
+    }
+    return false;
+  }
+  
 
   /**
    * Get the frame range associated with the given node, if one exists.
@@ -324,11 +375,13 @@ class TemplateBuilder
       //grr, can't forget this call or stuff don't work.
       getStageInformation().setDoAnnotations(true);
       
+      pAllowZeroContexts = getBooleanParamValue(new ParamMapping(aAllowZeroContexts));
+      
       if (pGenerateDependSets) {
         pLog.log(Kind.Ops, Level.Finer, 
           "Generating the product and dependency nodes.");
 
-        pProductNodes = new TreeSet<String>();
+        pProductNodes = new TreeMap<String, Boolean>();
         pProductContexts = new DoubleMap<String, String, TreeSet<String>>();
         pNodesDependingOnMe = new MappedSet<String, String>();
         pNodesIDependedOn = new MappedSet<String, String>();
@@ -343,7 +396,11 @@ class TemplateBuilder
               TreeSet<String> contexts = getContextLinks(node, src);
               if (!contexts.isEmpty())
                 pProductContexts.put(src, node, contexts);
-              pProductNodes.add(src);
+              boolean ignoreable = getIgnorable(node, src);
+              if (!pProductNodes.containsKey(src))
+                pProductNodes.put(src, ignoreable);
+              else if (pProductNodes.get(src) == true && !ignoreable)
+                pProductNodes.put(src, ignoreable);
             }
           }
           for (String trgt : stat.getTargetNames()) {
@@ -413,6 +470,8 @@ class TemplateBuilder
     {
       acquireProducts();
       
+      pIgnoredNodes = new TreeSet<String>();
+      
       ArrayList<String> roots = new ArrayList<String>(); 
       MappedSet<Integer, String> orderedRoots = new MappedSet<Integer, String>();
       
@@ -423,11 +482,16 @@ class TemplateBuilder
         NodeMod mod = pClient.getWorkingVersion(getAuthor(), getView(), toBuild);
         TreeMap<String, BaseAnnotation> annots = getAnnotations(toBuild);
         TreeSet<String> contexts = new TreeSet<String>();
+        TreeSet<String> ignoreableProducts = new TreeSet<String>();
         for (String aName : annots.keySet()) {
           BaseAnnotation annot = annots.get(aName);
           if (aName.startsWith("TemplateContext") && !aName.startsWith("TemplateContextLink")) {
             String contextName = (String) annot.getParamValue(aContextName);
             contexts.add(contextName);
+          }
+          else if (aName.startsWith("TemplateIgnoreProduct")) {
+            String linkName = (String) annot.getParamValue(aLinkName);
+            ignoreableProducts.add(linkName);
           }
         }
         
@@ -439,14 +503,21 @@ class TemplateBuilder
           }
         }
         
+        String conditionalBuild = null;
+        {
+          BaseAnnotation annot = annots.get("TemplateConditionalBuild");
+          if (annot != null)
+            conditionalBuild = (String) annot.getParamValue(aConditionName); 
+        }
+        
         FrameRange range = getTemplateFrameRange(toBuild);
         
         TreeSet<String> nodesMade = new TreeSet<String>();
         if (contexts.size() == 0) { //no contexts, just do a straight build
-          makeNode(mod, pReplacements, pContexts, range,  nodesMade);
+          makeNode(mod, pReplacements, pContexts, range, ignoreableProducts, conditionalBuild, nodesMade);
         }
         else { //uh-oh, there are contexts!
-          contextLoop(toBuild, mod, contexts, pReplacements, pContexts, range, nodesMade);
+          contextLoop(toBuild, mod, contexts, pReplacements, pContexts, range, ignoreableProducts, conditionalBuild, nodesMade);
         }
 
         pNodesToBuild.remove(toBuild);
@@ -491,6 +562,8 @@ class TemplateBuilder
       TreeMap<String, String> replace,
       TreeMap<String, ArrayList<TreeMap<String, String>>> contexts, 
       FrameRange range,
+      TreeSet<String> ignorableProducts,
+      String conditionalBuild, 
       TreeSet<String> nodesMade
     )
       throws PipelineException
@@ -498,10 +571,31 @@ class TemplateBuilder
       String currentContext = contextList.pollFirst();
       ArrayList<TreeMap<String, String>> values = contexts.get(currentContext);
       
-      if (values == null || values.isEmpty()) 
-        throw new PipelineException
-          ("The context (" + currentContext + ") specified on (" + toBuild + ") has no values " +
-           "defined for it.");
+      if (values == null || values.isEmpty()) {
+        if (pAllowZeroContexts) {
+          pLog.logAndFlush(Kind.Ops, Level.Warning, 
+            "The context (" + currentContext + ") specified on (" + toBuild + ") has no values " +
+            "defined for it.");
+          TreeMap<String, String> newReplace = new TreeMap<String, String>(replace);
+          TreeMap<String, ArrayList<TreeMap<String, String>>> newMaps = 
+            new TreeMap<String, ArrayList<TreeMap<String,String>>>(contexts);
+          if (contextList.isEmpty()) {  //bottom of the recursion
+            makeNode(mod, newReplace, newMaps, range, ignorableProducts, 
+                     conditionalBuild, nodesMade);
+          }
+          else {
+            contextLoop
+            (toBuild, mod, new TreeSet<String>(contextList), 
+              newReplace, newMaps, range, ignorableProducts, conditionalBuild, nodesMade);
+          }
+          return;
+        }
+        else
+          throw new PipelineException
+            ("The context (" + currentContext + ") specified on (" + toBuild + ") has " +
+             "no values defined for it.");
+      }
+        
       
       for (TreeMap<String, String> contextEntry : values) {
         TreeMap<String, String> newReplace = new TreeMap<String, String>(replace);
@@ -513,12 +607,12 @@ class TemplateBuilder
         newMaps.put(currentContext, newStuff);
         
         if (contextList.isEmpty()) {  //bottom of the recursion
-          makeNode(mod, newReplace, newMaps, range, nodesMade);
+          makeNode(mod, newReplace, newMaps, range, ignorableProducts, conditionalBuild, nodesMade);
         }
         else {
           contextLoop
             (toBuild, mod, new TreeSet<String>(contextList), 
-             newReplace, newMaps, range, nodesMade);
+             newReplace, newMaps, range, ignorableProducts, conditionalBuild, nodesMade);
         }
       }
     }
@@ -530,14 +624,29 @@ class TemplateBuilder
       TreeMap<String, String> replace,
       TreeMap<String, ArrayList<TreeMap<String, String>>> contexts,
       FrameRange range,
+      TreeSet<String> ignorableProducts, 
+      String conditionalBuild, 
       TreeSet<String> nodesMade
     )
       throws PipelineException
     {
+      if (conditionalBuild != null) {
+        String check = stringReplace(conditionalBuild, replace);
+        if (!nodeExists(check)) {
+          String nodeName = stringReplace(mod.getName(), replace);
+          pLog.logAndFlush(Kind.Ops, Level.Fine, 
+            "Not building (" + nodeName + ") because conditional node (" + check + ") " +
+            "does not exist");
+          pIgnoredNodes.add(nodeName);
+          return;
+        }
+      }
+      
       TemplateStage stage = 
         TemplateStage.getTemplateStage
         (mod, getStageInformation(), pContext, pClient, 
-         pTemplateInfo, replace, contexts, range, pAnnotCache);
+         pTemplateInfo, replace, contexts, range, pIgnoredNodes, ignorableProducts, 
+         pAnnotCache);
 
       if (stage.build()) {
         if (stage.needsFinalization())
@@ -571,7 +680,7 @@ class TemplateBuilder
     acquireProducts()
      throws PipelineException
     {
-      for (String product : pProductNodes) {
+      for (String product : pProductNodes.keySet()) {
         LogMgr.getInstance().log(Kind.Ops, Level.Fine, 
           "Searching for product nodes based on the template node (" + product + ")");
         NodeMod mod = pClient.getWorkingVersion(getAuthor(), getView(), product);
@@ -591,10 +700,21 @@ class TemplateBuilder
         LogMgr.getInstance().log(Kind.Ops, Level.Finer,
           "The following products were found:\n " + allProducts);
         
+        boolean ignorable = pProductNodes.get(product);
+        
         for (String realProduct : allProducts) {
         
-          if (!nodeExists(realProduct))
-            throw new PipelineException("Needed source node (" + realProduct + ") does not exist.");
+          if (!nodeExists(realProduct)) {
+            if (ignorable) {
+              pLog.log(Kind.Ops, Level.Finer, 
+                "Needed source node (" + realProduct + ") does not exist, " +
+              "but is being ignored.");
+              continue;
+            }
+            else
+              throw new PipelineException
+                ("Needed source node (" + realProduct + ") does not exist.");
+          }
           if (mod.isLocked())
             lockLatest(realProduct);
           else
@@ -679,8 +799,11 @@ class TemplateBuilder
 
   private static final long serialVersionUID = 3515581617122035575L;
 
-  public static final String aContextName = "ContextName";
-  public static final String aLinkName = "LinkName";
+  public static final String aContextName   = "ContextName";
+  public static final String aLinkName      = "LinkName";
+  public static final String aConditionName = "ConditionName";
+  
+  public static final String aAllowZeroContexts = "AllowZeroContexts";
   
   
   
@@ -689,6 +812,8 @@ class TemplateBuilder
   /*----------------------------------------------------------------------------------------*/
  
   private boolean pGenerateDependSets;
+  
+  private boolean pAllowZeroContexts;
   
   private TreeMap<String, String> pReplacements;
   
@@ -704,7 +829,9 @@ class TemplateBuilder
   
   private MappedSet<String, String> pNodesIDependedOn;
   private MappedSet<String, String> pNodesDependingOnMe;
-  private TreeSet<String> pProductNodes;
+  private TreeMap<String, Boolean> pProductNodes;
   private DoubleMap<String, String, TreeSet<String>> pProductContexts;
   private TreeMap<String, FrameRange> pFrameRanges;
+  
+  private TreeSet<String> pIgnoredNodes;
 }
