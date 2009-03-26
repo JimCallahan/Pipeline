@@ -1,4 +1,4 @@
-// $Id: BaseBuilder.java,v 1.65 2009/03/26 00:09:04 jesse Exp $
+// $Id: BaseBuilder.java,v 1.66 2009/03/26 11:57:13 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -478,6 +478,59 @@ class BaseBuilder
   
   /**
    * Adds a Sub-Builder to the current Builder, with the given Builder Parameter mapping.
+   * <p>
+   * @param collectionName
+   *   The name of the BuilderCollection.
+   *   
+   * @param version
+   *   The version id of the BuilderCollection
+   *   
+   * @param vendor
+   *   The vendor of the BuilderCollection
+   *   
+   * @param builderName
+   *   The name of the builder in the collection to instantiate.
+   * 
+   * @param defaultMapping 
+   *   Should the Sub-Builder be setup with the default parameter mappings.  This means that
+   *   all the parameters which are defined as part of the BaseUtil and BaseBuilder will
+   *   be mapped from the parent to this child Builder.  This includes the ForceActionOnExt,
+   *   but does not include the CheckinWhenDone param.
+   * 
+   * @param paramMapping 
+   *   A TreeMap containing a set of parameter mappings to make between the child Builder's 
+   *   parameters and the parent Builder. 
+   * 
+   * @param order
+   *   The execution order of the child Builder.  The lower the order, the sooner the child
+   *   Builder will run.
+   * 
+   * @throws PipelineException
+   *   If an attempt is made to add a Sub-Builder with the same name as one that already
+   *   exists or with an order that is already being used.
+   */
+  public final void 
+  addSubBuilder
+  (
+    String collectionName,
+    VersionID version,
+    String vendor,
+    String builderName,
+    boolean defaultMapping,
+    TreeMap<ParamMapping, ParamMapping> paramMapping,
+    int order
+  ) 
+    throws PipelineException
+  {
+    BaseBuilderCollection col = 
+      pPlug.newBuilderCollection(collectionName, version, vendor);
+    BaseBuilder builder = col.instantiateBuilder(builderName, pClient, pQueue, pBuilderInformation);
+  
+    addSubBuilder(builder, defaultMapping, paramMapping, order);
+  }
+  
+  /**
+   * Adds a Sub-Builder to the current Builder, with the given Builder Parameter mapping.
    * 
    * @param subBuilder
    *   The instance of BaseUtil that is being added as a Sub-Builder. 
@@ -555,6 +608,53 @@ class BaseBuilder
     if (paramMapping != null)
       addMappedParams(instanceName, paramMapping);
   }
+  
+  /**
+   * Adds a Sub-Builder to the current Builder.
+   * <p>
+   * @param collectionName
+   *   The name of the BuilderCollection.
+   *   
+   * @param version
+   *   The version id of the BuilderCollection
+   *   
+   * @param vendor
+   *   The vendor of the BuilderCollection
+   *   
+   * @param builderName
+   *   The name of the builder in the collection to instantiate.
+   * 
+   * @param defaultMapping 
+   *   Should the Sub-Builder be setup with the default parameter mappings.  This means that
+   *   all the parameters which are defined as part of the BaseUtil and BaseBuilder will
+   *   be mapped from the parent to this child Builder.
+   * 
+   * @param order
+   *   The execution order of the child Builder.  The lower the order, the sooner the child
+   *   Builder will run.
+   * 
+   * @throws PipelineException
+   *   If an attempt is made to add a Sub-Builder with the same name as one that already
+   *   exists or with an order that is already being used.
+   */
+  public final void 
+  addSubBuilder
+  (
+    String collectionName,
+    VersionID version,
+    String vendor,
+    String builderName,
+    boolean defaultMapping,
+    int order
+  ) 
+    throws PipelineException
+  {
+    BaseBuilderCollection col = 
+      pPlug.newBuilderCollection(collectionName, version, vendor);
+    BaseBuilder builder = col.instantiateBuilder(builderName, pClient, pQueue, pBuilderInformation);
+    
+    addSubBuilder(builder, defaultMapping, order);
+  }
 
   /**
    * Adds a Sub-Builder to the current Builder.
@@ -588,6 +688,45 @@ class BaseBuilder
                   new TreeMap<ParamMapping, ParamMapping>(), order);
   }
 
+  /**
+   * Adds a Sub-Builder to the current Builder.
+   * 
+   * If there are no existing child Builders, it sets a value of 50 for the child Builder's 
+   * order.  If there are other existing child Builders, it adds the Builder to the end of
+   * the execution order, incrementing the largest current order by 50.
+   * 
+   * @param collectionName
+   *   The name of the BuilderCollection.
+   *   
+   * @param version
+   *   The version id of the BuilderCollection
+   *   
+   * @param vendor
+   *   The vendor of the BuilderCollection
+   *   
+   * @param builderName
+   *   The name of the builder in the collection to instantiate.
+   * 
+   * @throws PipelineException
+   *   If an attempt is made to add a Sub-Builder with the same name as one that already
+   *   exists.
+   */
+  public final void
+  addSubBuilder
+  (
+    String collectionName,
+    VersionID version,
+    String vendor,
+    String builderName
+  )
+    throws PipelineException
+  {
+    BaseBuilderCollection col = 
+      pPlug.newBuilderCollection(collectionName, version, vendor);
+    BaseBuilder builder = col.instantiateBuilder(builderName, pClient, pQueue, pBuilderInformation);
+    addSubBuilder(builder);
+  }
+  
   /**
    * Adds a Sub-Builder to the current Builder.
    * 
