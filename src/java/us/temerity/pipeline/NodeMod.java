@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.63 2009/03/20 03:10:38 jim Exp $
+// $Id: NodeMod.java,v 1.64 2009/03/27 17:46:32 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -276,7 +276,7 @@ class NodeMod
    * Have there been any modifications to this working version since the time it was created.
    */ 
   public boolean 
-  hasModication() 
+  hasModification() 
   {
     return (pLastMod > pTimeStamp); 
   }
