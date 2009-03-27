@@ -5,7 +5,7 @@ icon_DATA = \
   Splash.gif
 
 
-# NUKE = /base/apps/i686-pc-linux-gnu-opt/Nuke5.1v2/Nuke5.1
+# NUKE = /base/apps/i686-pc-linux-gnu-opt/Nuke5.1v3/Nuke5.1
 
 # Splash.gif: Splash.nk \
 #   $(srcdir)/Splash-bg.png $(srcdir)/Splash-progress.tif $(srcdir)/Splash-vsn.png
