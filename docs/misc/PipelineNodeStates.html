@@ -21,6 +21,9 @@ Properties<br>
  style="text-align: center; font-weight: bold;">PropertyState
 or LinkState<br>
       </td>
+      <td colspan="1" rowspan="2" style="text-align: center;"><span
+ style="font-weight: bold;">Node</span><br>
+      </td>
     </tr>
     <tr>
       <td style="text-align: center; font-weight: bold;">Working vs.
@@ -42,6 +45,8 @@ Latest<br>
       </td>
       <td style="text-align: center;">Pending<br>
       </td>
+      <td style="text-align: center;">A<br>
+      </td>
     </tr>
     <tr>
       <td style="text-align: center;">CheckedIn<br>
@@ -54,10 +59,11 @@ Latest<br>
       </td>
       <td style="text-align: center;">CheckedIn<br>
       </td>
+      <td style="text-align: center;">B<br>
+      </td>
     </tr>
     <tr>
-      <td style="text-align: center;">Identical<br>
-      </td>
+      <td style="text-align: center;">Identical </td>
       <td style="text-align: center;">Same<br>
       </td>
       <td style="text-align: center;">Same<br>
@@ -65,6 +71,21 @@ Latest<br>
       <td style="text-align: center;">Same<br>
       </td>
       <td style="text-align: center;">Identical<br>
+      </td>
+      <td style="text-align: center;">C<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="text-align: center;">NeedsCheckOut </td>
+      <td style="text-align: center;">Same<br>
+      </td>
+      <td style="text-align: center;">Same<br>
+      </td>
+      <td style="text-align: center;">Same<br>
+      </td>
+      <td style="text-align: center;">Identical<br>
+      </td>
+      <td style="text-align: center;">D<br>
       </td>
     </tr>
     <tr>
@@ -77,6 +98,8 @@ Latest<br>
       <td style="text-align: center;">Different<br>
       </td>
       <td style="text-align: center;">NeedsCheckOut<br>
+      </td>
+      <td style="text-align: center;">E<br>
       </td>
     </tr>
     <tr>
@@ -90,6 +113,22 @@ Latest<br>
       </td>
       <td style="text-align: center;">BaseModified<br>
       </td>
+      <td style="text-align: center;">F<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="text-align: center;">Identical<br>
+      </td>
+      <td style="text-align: center;">Different<br>
+      </td>
+      <td style="text-align: center;">Different<br>
+      </td>
+      <td style="text-align: center;">Same<br>
+      </td>
+      <td colspan="1" rowspan="1" style="text-align: center;">Modified<br>
+      </td>
+      <td style="text-align: center;">G<br>
+      </td>
     </tr>
     <tr>
       <td style="text-align: center;">NeedsCheckOut<br>
@@ -102,17 +141,8 @@ Latest<br>
       </td>
       <td colspan="1" rowspan="1" style="text-align: center;">Modified<br>
       </td>
-    </tr>
-    <tr>
-      <td style="text-align: center;">Identical<br>
+      <td style="text-align: center;">H<br>
       </td>
-      <td style="text-align: center;">Different<br>
-      </td>
-      <td style="text-align: center;">Different<br>
-      </td>
-      <td style="text-align: center;">Different<br>
-      </td>
-      <td style="text-align: center;">Modified </td>
     </tr>
     <tr>
       <td style="text-align: center;">NeedsCheckOut<br>
@@ -124,6 +154,8 @@ Latest<br>
       <td style="text-align: center;">Different<br>
       </td>
       <td style="text-align: center;">Conflicted<br>
+      </td>
+      <td style="text-align: center;">I<br>
       </td>
     </tr>
   </tbody>
@@ -201,8 +233,7 @@ Latest<br>
       </td>
     </tr>
     <tr>
-      <td style="text-align: center;">Pending, Identical or
-NeedsCheckOut<br>
+      <td style="text-align: center;">Pending<br>
       </td>
       <td style="text-align: center;">no<br>
       </td>
@@ -220,7 +251,61 @@ NeedsCheckOut<br>
       </td>
     </tr>
     <tr>
-      <td style="text-align: center;">Identical or NeedsCheckOut<br>
+      <td style="text-align: center;">Identical<br>
+      </td>
+      <td style="text-align: center;">no<br>
+      </td>
+      <td style="text-align: center;">-<br>
+      </td>
+      <td style="text-align: center;">-<br>
+      </td>
+      <td style="text-align: center;">-<br>
+      </td>
+      <td style="text-align: center;">-<br>
+      </td>
+      <td style="text-align: center;">-<br>
+      </td>
+      <td style="text-align: center;">Missing<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="text-align: center;">&nbsp;NeedsCheckOut<br>
+      </td>
+      <td style="text-align: center;">no<br>
+      </td>
+      <td style="text-align: center;">-<br>
+      </td>
+      <td style="text-align: center;">-<br>
+      </td>
+      <td style="text-align: center;">-<br>
+      </td>
+      <td style="text-align: center;">-<br>
+      </td>
+      <td style="text-align: center;">-<br>
+      </td>
+      <td style="text-align: center;">Missing<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="text-align: center;">Identical<br>
+      </td>
+      <td style="text-align: center;">YES <br>
+      </td>
+      <td style="text-align: center;">no<br>
+      </td>
+      <td style="text-align: center;">no<br>
+      </td>
+      <td style="text-align: center;">-<br>
+      </td>
+      <td style="text-align: center;">-<br>
+      </td>
+      <td style="text-align: center;">-<br>
+      </td>
+      <td style="text-align: center;">Added<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="text-align: center;">&nbsp;NeedsCheckOut<br>
       </td>
       <td style="text-align: center;">YES <br>
       </td>
