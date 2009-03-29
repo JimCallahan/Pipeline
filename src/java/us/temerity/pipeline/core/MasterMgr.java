@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.270 2009/03/25 23:04:15 jim Exp $
+// $Id: MasterMgr.java,v 1.271 2009/03/29 22:22:01 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -10905,7 +10905,6 @@ class MasterMgr
 	    else {
 	      switch(details.getOverallNodeState()) {
 	      case Identical:
-	      case TrivialMod:
 	      case NeedsCheckOut:
 		break;
 
@@ -22309,7 +22308,6 @@ class MasterMgr
       case Pending:
       case Modified:
       case ModifiedLinks:
-      case TrivialMod:
 	{	
 	  NodeID nodeID  = status.getNodeID();
           NodeID rnodeID = pRequest.getNodeID();
