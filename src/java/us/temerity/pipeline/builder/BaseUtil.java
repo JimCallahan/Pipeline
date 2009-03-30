@@ -1,4 +1,4 @@
-// $Id: BaseUtil.java,v 1.40 2009/01/28 05:39:20 jesse Exp $
+// $Id: BaseUtil.java,v 1.41 2009/03/30 16:10:30 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -770,7 +770,7 @@ class BaseUtil
    * 
    * @return The Author.
    */
-  protected String 
+  protected final String 
   getAuthor()
   {
     return pContext.getAuthor();
@@ -781,7 +781,7 @@ class BaseUtil
    * 
    * @return The View.
    */
-  protected String 
+  protected final String 
   getView()
   {
     return pContext.getView();
@@ -792,7 +792,7 @@ class BaseUtil
    * 
    * @return The Toolset.
    */
-  protected String 
+  protected final String 
   getToolset()
   {
     return pContext.getToolset();

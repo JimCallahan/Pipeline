@@ -9,9 +9,7 @@ import java.util.*;
 /**
  *  A {@link Map} that preserves its entries in a user specified order.
  *  <p>
- *  By default, the ordering is based upon the order than things are added to
- *  the class.  There are also methods with support inserting entries at specific
- *  points in the Map.
+ *  The ordering is based upon the order than things are added to the collection. 
  *  <p>
  *  This implementation is inherently slower than something like a {@link TreeMap}. 
  *  The very nature of the keySet in this implementation requires an O(n) cost search
@@ -61,6 +59,7 @@ class ListMap<K, V>
    * 
    * @see java.util.Map#clear()
    */
+  @Override
   public void 
   clear()
   {
@@ -80,46 +79,52 @@ class ListMap<K, V>
    *
    * @return a set view of the mappings contained in this map.
    */
+  @Override
   public Set<java.util.Map.Entry<K, V>> 
   entrySet()
   {
     if (entrySet == null) {
       entrySet = new AbstractSet<Map.Entry<K,V>>() {
-	public Iterator<Map.Entry<K,V>> iterator() {
-	  return new EntryIterator() ;
-	}
+        @Override
+        public Iterator<Map.Entry<K,V>> iterator() {
+          return new EntryIterator() ;
+        }
 
-	@SuppressWarnings("unchecked")
-	public boolean contains(Object o) {
-	  if (!(o instanceof Map.Entry))
-	    return false;
-	  Map.Entry<K,V> entry = (Map.Entry<K,V>) o;
-	  V value = entry.getValue();
-	  Entry<K,V> p = getEntry(entry.getKey());
-	  return p != null && (p.getValue().equals(value));
-	}
+        @Override
+        @SuppressWarnings("unchecked")
+        public boolean contains(Object o) {
+          if (!(o instanceof Map.Entry))
+            return false;
+          Map.Entry<K,V> entry = (Map.Entry<K,V>) o;
+          V value = entry.getValue();
+          Entry<K,V> p = getEntry(entry.getKey());
+          return p != null && (p.getValue().equals(value));
+        }
 
-	@SuppressWarnings("unchecked")
-	public boolean remove(Object o) {
-	  if (!(o instanceof Map.Entry))
-	    return false;
-	  Entry<K,V> entry = (Entry<K,V>) o;
-	  V value = entry.getValue();
-	  MapEntry<K,V> p = getEntry(entry.getKey());
-	  if (p != null && (p.getValue().equals(value))) {
-	    pMap.remove(p);
-	    return true;
-	  }
-	  return false;
-	}
+        @Override
+        @SuppressWarnings("unchecked")
+        public boolean remove(Object o) {
+          if (!(o instanceof Map.Entry))
+            return false;
+          Entry<K,V> entry = (Entry<K,V>) o;
+          V value = entry.getValue();
+          MapEntry<K,V> p = getEntry(entry.getKey());
+          if (p != null && (p.getValue().equals(value))) {
+            pMap.remove(p);
+            return true;
+          }
+          return false;
+        }
 
-	public int size() {
-	  return ListMap.this.size();
-	}
+        @Override
+        public int size() {
+          return ListMap.this.size();
+        }
 
-	public void clear() {
-	  ListMap.this.clear();
-	}
+        @Override
+        public void clear() {
+          ListMap.this.clear();
+        }
       };
     }
     return entrySet;
@@ -145,6 +150,7 @@ class ListMap<K, V>
    * @throws IllegalArgumentException if some aspect of this key or value *
    *            prevents it from being stored in this map.
    */
+  @Override
   public V 
   put
   (
@@ -185,6 +191,7 @@ class ListMap<K, V>
    *	       with the specified key, if the implementation supports
    *	       <tt>null</tt> values.)
    */
+  @Override
   public V 
   remove
   (
@@ -200,6 +207,7 @@ class ListMap<K, V>
    *  
    * @see java.util.Map#size()
    */
+  @Override
   public int 
   size()
   {

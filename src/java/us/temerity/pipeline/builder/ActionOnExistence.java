@@ -1,11 +1,11 @@
-// $Id: ActionOnExistence.java,v 1.2 2007/10/28 21:50:25 jim Exp $
+// $Id: ActionOnExistence.java,v 1.3 2009/03/30 16:11:34 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
 import java.util.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   A C T I O N  O N   E X I S T E N C E                                                   */
+/*   A C T I O N   O N   E X I S T E N C E                                                  */
 /*------------------------------------------------------------------------------------------*/
 
 /**
