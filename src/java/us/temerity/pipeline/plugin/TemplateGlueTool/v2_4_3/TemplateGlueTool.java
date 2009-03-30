@@ -1,4 +1,4 @@
-// $Id: TemplateGlueTool.java,v 1.4 2009/03/26 00:07:52 jesse Exp $
+// $Id: TemplateGlueTool.java,v 1.5 2009/03/30 14:40:35 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateGlueTool.v2_4_3;
 
@@ -45,7 +45,7 @@ class TemplateGlueTool
   }
   
 
-  
+  @SuppressWarnings("incomplete-switch")  
   private void
   doAdd()
   {
@@ -199,13 +199,25 @@ class TemplateGlueTool
       "The string to replace in the context.");  
   }
   
+  public JTextField 
+  makeContextParamNameField
+  (
+    String value,
+    String paramName
+  )
+  {
+    return UIFactory.createTitledEditableTextField
+      (pTpanel, value + ":", sTSize, pVpanel, paramName, sVSize, 
+      "The parameter name to use for the context replacement.");  
+  }
+  
   public JDrawer
   makeContextDefaultFields
   (
-    TreeSet<String> values
+    ListSet<String> values
   )
   {
-    TreeMap<String, String> map = new TreeMap<String, String>();
+    ListMap<String, String> map = new ListMap<String, String>();
     for (String key : values) {
       map.put(key, null);
     }
@@ -215,7 +227,7 @@ class TemplateGlueTool
   public JDrawer
   makeContextDefaultFields
   (
-    TreeMap<String, String> values
+    ListMap<String, String> values
   )
   {
     Component comps[] = UIFactory.createTitledPanels();
@@ -254,6 +266,18 @@ class TemplateGlueTool
     return UIFactory.createTitledEditableTextField
       (pTpanel, replace + ":", sTSize, pVpanel, value, sVSize, 
       "The default value for a string replacement.");  
+  }
+  
+  public JTextField 
+  makeStringParamNameField
+  (
+    String replace,
+    String value  
+  )
+  {
+    return UIFactory.createTitledEditableTextField
+      (pTpanel, replace + ":", sTSize, pVpanel, value, sVSize, 
+      "The parameter name for a string replacement.");  
   }
 
   private class
@@ -339,8 +363,10 @@ class TemplateGlueTool
     {
       pStringReplaceFields = new ArrayList<JTextField>();
       pStringDefaultFields = new TreeMap<String, JTextField>();
+      pStringParamNameFields = new TreeMap<String, JTextField>();
       pContextNameFields = new ArrayList<JTextField>();
       pContextValueFields = new MappedArrayList<String, JTextField>();
+      pContextParamNameFields = new DoubleMap<String, String, JTextField>();
       pContextDefaultFields = new MappedArrayList<String, TreeMap<String,JTextField>>();
       pFrameRangeFields = new ArrayList<JTextField>();
       pFrameRangeStartFields = new TreeMap<String, JIntegerField>();
@@ -357,7 +383,7 @@ class TemplateGlueTool
           return null;
       }
       
-      pStringReplacements = new TreeSet<String>();
+      pStringReplacements = new ListSet<String>();
       for (JTextField field : pStringReplaceFields) {
         String value = field.getText();
         if (value != null && !value.equals(""))
@@ -376,6 +402,38 @@ class TemplateGlueTool
       for (String replace : pStringDefaultFields.keySet()) {
         String value = pStringDefaultFields.get(replace).getText();
         pStringDefaults.put(replace, value);
+      }
+      
+      if (!pStringReplacements.isEmpty() ) {
+        boolean verified = false;
+        prepStringParamNameDialog();
+        pDialog.setVisible(true);
+
+        while (!verified) {
+
+          if (!pDialog.wasConfirmed())
+            return null;
+
+          pStringParamNames = new TreeMap<String, String>();
+          TreeSet<String> badNames = new TreeSet<String>(); 
+          for (String replace : pStringParamNameFields.keySet()) {
+            String value = pStringParamNameFields.get(replace).getText();
+            pStringParamNames.put(replace, value);
+            if (!TemplateGlueInformation.isValidName(value))
+              badNames.add(value);
+          }
+          if (badNames.size() == 0)
+            verified = true;
+          else {
+            JErrorDialog edialog = new JErrorDialog(pDialog);
+            edialog.setMessage(
+              "Invalid param name", 
+              "The value(s) " + badNames + " are not valid parameter names.  " +
+              "Please correct them before continuing");
+            edialog.setVisible(true);
+            pDialog.setVisible(true);
+          }
+        } //while (!verified) {
       }
       
       prepFrameRangeDialog();
@@ -423,7 +481,8 @@ class TemplateGlueTool
       }
       
       if (!pContextNames.isEmpty()) {
-        pContextValues = new MappedSet<String, String>();
+        
+        pContextValues = new MappedListSet<String, String>();
         for (String context : pContextNames) {
           pCurrentContext = context;
           prepContextValuesDialog();
@@ -435,10 +494,12 @@ class TemplateGlueTool
             if (value != null && !value.equals(""))
               pContextValues.put(context, value);
           }
-        }
+        } //Context values done
+        
+        //Context Defaults
         pContextDefaults = new MappedArrayList<String, TreeMap<String,String>>();
         for (String context : pContextNames) {
-          TreeSet<String> cValues = pContextValues.get(context);
+          ListSet<String> cValues = pContextValues.get(context);
           if (cValues != null && !cValues.isEmpty()) {
             pCurrentContext = context;
             prepContextDefaultsDialog();
@@ -447,17 +508,58 @@ class TemplateGlueTool
               return null;
             for (TreeMap<String, JTextField> fields : pContextDefaultFields.get(context)) {
               TreeMap<String, String> values = new TreeMap<String, String>();
+              boolean anyValues = false;
               for (String key : fields.keySet()) {
                 String value = fields.get(key).getText();
                 if (value == null)
                   value = "";
+                if (!value.equals(""))
+                  anyValues = true;
                 values.put(key, value);
               }
-              pContextDefaults.put(context, values);
+              if (anyValues)
+                pContextDefaults.put(context, values);
             }
           }
+        } //Context Defaults done.
+    
+        pContextParamNames = new DoubleMap<String, String, String>();
+        //Context Param Names
+        for (String context : pContextNames) {
+          pCurrentContext = context;
+          boolean verified = false;
+
+          prepContextParamNameDialog();
+          pDialog.setVisible(true);
+          
+          while (!verified) {
+            if (!pDialog.wasConfirmed())
+              return null;
+
+            TreeMap<String, String> contextParamNames = new TreeMap<String, String>();
+            TreeSet<String> badNames = new TreeSet<String>(); 
+            for (String replace : pContextParamNameFields.keySet(context)) {
+              String value = pContextParamNameFields.get(context, replace).getText();
+              contextParamNames.put(replace, value);
+              if (!TemplateGlueInformation.isValidName(value))
+                badNames.add(value);
+            }
+            if (badNames.size() == 0) {
+              verified = true;
+              pContextParamNames.put(context, contextParamNames);
+            }
+            else {
+              JErrorDialog edialog = new JErrorDialog(pDialog);
+              edialog.setMessage(
+                "Invalid param name", 
+                "The value(s) " + badNames + " are not valid parameter names.  " +
+                "Please correct them before continuing");
+              edialog.setVisible(true);
+              pDialog.setVisible(true);
+            }
+          } // while (!verified) {
         }
-      }
+      } //if (!pContextNames.isEmpty()) {
       
       return ": Writing Template";
     }
@@ -475,8 +577,10 @@ class TemplateGlueTool
       
       info.setNodesInTemplate(pNodesInTemplate);
       info.setReplacements(pStringReplacements);
+      info.setReplacementParamNames(pStringParamNames);
       info.setReplacementDefaults(pStringDefaults);
       info.setContexts(pContextValues);
+      info.setContextParamNames(pContextParamNames);
       info.setContextDefaults(pContextDefaults);
       info.setFrameRanges(pFrameRanges);
       info.setFrameRangeDefaults(pFrameRangeDefaults);
@@ -584,6 +688,45 @@ class TemplateGlueTool
       pDialog.setTitle("Set Replacement Defaults");
       pDialog.pack();
     }
+    
+    /**
+     * @param vbox
+     */
+    private void 
+    prepStringParamNameDialog()
+    {
+      pVbox.removeAll();
+      {
+        Component comps[] = UIFactory.createTitledPanels();
+        pTpanel = (JPanel) comps[0];
+        pVpanel = (JPanel) comps[1];
+        pBody = (Box) comps[2];
+
+        pVbox.add(pBody);
+      }
+      
+      String instructions = 
+        "Enter a parameter name for each replacement.  If no value is specified then a generic" +
+        "name will be chosen at builder execution time.  All entered values much be valid " +
+        "parameter names.";
+      UIFactory.createTitledTextArea(pTpanel, "Instructions", sTSize, pVpanel, instructions, sVSize, 5, true);
+      UIFactory.addVerticalSpacer(pTpanel, pVpanel, 12);
+      
+      pPhase = TemplatePhase.StringParamNames;
+      
+      TreeMap<String, String> oldValues = new TreeMap<String, String>();
+      if (pOldSettings != null)
+        oldValues = pOldSettings.getReplacementParamNames();
+      for (String replace : pStringReplacements) {
+        JTextField field = makeStringParamNameField(replace, oldValues.get(replace));
+        pStringParamNameFields.put(replace, field);
+        UIFactory.addVerticalSpacer(pTpanel, pVpanel, 6);
+      }
+      pVbox.add(UIFactory.createFiller(sTSize +sVSize + 35));
+      pDialog.setTitle("Set Replacement Param Names");
+      pDialog.pack();
+    }
+
     
     private void 
     prepFrameRangeDialog()
@@ -721,6 +864,7 @@ class TemplateGlueTool
       if (pOldSettings != null && pOldSettings.getContexts().get(pCurrentContext) != null) {
         for (String value : pOldSettings.getContexts().get(pCurrentContext)) {
           JTextField field = makeContextValueField(value);
+          UIFactory.addVerticalSpacer(pTpanel, pVpanel, 6);
           pContextValueFields.put(pCurrentContext, field);
         }
       }
@@ -728,6 +872,45 @@ class TemplateGlueTool
       JTextField field = makeContextValueField("");
       pContextValueFields.put(pCurrentContext, field);
       pDialog.setTitle("Set Context (" + pCurrentContext + ") Values");
+      pDialog.pack();
+      
+      pVbox.add(UIFactory.createFiller(sTSize +sVSize + 35));
+    }
+    
+    private void 
+    prepContextParamNameDialog()
+    {
+      pVbox.removeAll();
+      {
+        Component comps[] = UIFactory.createTitledPanels();
+        pTpanel = (JPanel) comps[0];
+        pVpanel = (JPanel) comps[1];
+        pBody = (Box) comps[2];
+    
+        pVbox.add(pBody);
+      }
+      
+      String instructions = 
+        "Enter a parameter name for each replacement in the context.  If no value is specified " +
+        "then a generic name will be chosen at builder execution time.  All entered values much " +
+        "be valid parameter names.";
+      UIFactory.createTitledTextArea(pTpanel, "Instructions", sTSize, pVpanel, instructions, sVSize, 5, true);
+      UIFactory.addVerticalSpacer(pTpanel, pVpanel, 12);
+      
+      pPhase = TemplatePhase.ContextParamNames;
+      
+      TreeMap<String, String> defaults = new TreeMap<String, String>();
+      if (pOldSettings != null && 
+          pOldSettings.getContextParamNames().get(pCurrentContext) != null )
+        defaults  = pOldSettings.getContextParamNames().get(pCurrentContext);
+      for (String contextValue : pContextValues.get(pCurrentContext) ) {
+        String oldParamName = defaults.get(contextValue);
+        JTextField field = makeContextParamNameField(contextValue, oldParamName);
+        UIFactory.addVerticalSpacer(pTpanel, pVpanel, 6);
+        pContextParamNameFields.put(pCurrentContext, contextValue, field);
+      }
+      
+      pDialog.setTitle("Set Context (" + pCurrentContext + ") Param Names");
       pDialog.pack();
       
       pVbox.add(UIFactory.createFiller(sTSize +sVSize + 35));
@@ -763,7 +946,12 @@ class TemplateGlueTool
         defaults = pOldSettings.getContextDefaults().get(pCurrentContext);
       if (defaults != null && !defaults.isEmpty()) {
         for (TreeMap<String, String> values : defaults) {
-          JDrawer draw = makeContextDefaultFields(values);
+          ListMap<String, String> newMap = new ListMap<String, String>();
+          for (String key : pContextValues.get(pCurrentContext)) {
+            String value = values.get(key);
+            newMap.put(key, value);
+          }
+          JDrawer draw = makeContextDefaultFields(newMap);
           pVbox2.add(draw);
         }
       }
@@ -776,6 +964,7 @@ class TemplateGlueTool
       pDialog.setTitle("Set Context (" + pCurrentContext + ") Defaults");
       pDialog.pack();
     }
+    
   }
 
   
@@ -827,10 +1016,12 @@ class TemplateGlueTool
   {
     StringReplace, 
     StringDefaults,
+    StringParamNames,
     FrameRanges,
     FrameRangeDefaults,
     ContextNames, 
     ContextValues, 
+    ContextParamNames,
     ContextDefaults 
   }
 
@@ -874,18 +1065,22 @@ class TemplateGlueTool
   
   private ArrayList<JTextField> pStringReplaceFields;
   private TreeMap<String, JTextField> pStringDefaultFields;
+  private TreeMap<String, JTextField> pStringParamNameFields;
   private ArrayList<JTextField> pContextNameFields;
   private MappedArrayList<String, JTextField> pContextValueFields;
+  private DoubleMap<String, String, JTextField> pContextParamNameFields;
   private MappedArrayList<String, TreeMap<String, JTextField>> pContextDefaultFields;
   private ArrayList<JTextField> pFrameRangeFields;
   private TreeMap<String, JIntegerField> pFrameRangeStartFields;
   private TreeMap<String, JIntegerField> pFrameRangeEndFields;
   private TreeMap<String, JIntegerField> pFrameRangeByFields;
   
-  private TreeSet<String> pStringReplacements;
+  private ListSet<String> pStringReplacements;
+  private TreeMap<String, String> pStringParamNames;
   private TreeMap<String, String> pStringDefaults;
   private TreeSet<String> pContextNames;
-  private MappedSet<String, String> pContextValues;
+  private MappedListSet<String, String> pContextValues;
+  private DoubleMap<String, String, String> pContextParamNames;
   private MappedArrayList<String, TreeMap<String, String>> pContextDefaults;
   private TreeSet<String> pFrameRanges;
   private TreeMap<String, FrameRange> pFrameRangeDefaults;

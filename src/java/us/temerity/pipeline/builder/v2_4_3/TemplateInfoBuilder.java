@@ -1,4 +1,4 @@
-// $Id: TemplateInfoBuilder.java,v 1.6 2009/03/26 15:55:29 jesse Exp $
+// $Id: TemplateInfoBuilder.java,v 1.7 2009/03/30 14:40:35 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -129,9 +129,17 @@ class TemplateInfoBuilder
     pFrameRangeParams = new TreeMap<String, FrameRangeUtilityParam>();
     
     TreeMap<String, String> rDefaults = pTemplateGlueInfo.getReplacementDefaults();
+    TreeMap<String, String> rParamNames = pTemplateGlueInfo.getReplacementParamNames();
     int i = 1;
     for (String replacement : pTemplateGlueInfo.getReplacements()) {
       String name = "Replace" + String.valueOf(i); 
+      
+      if (rParamNames != null) {
+        String rName = rParamNames.get(replacement);
+        if (rName != null && !rName.equals(""))
+          name = rName;
+      }
+      
       KeyValueUtilityParam param = 
         new KeyValueUtilityParam
         (name,
@@ -238,7 +246,8 @@ class TemplateInfoBuilder
           new ContextInfoBuilder
             (pClient, pQueue, getBuilderInformation(), context, i, num, 
              pTemplateGlueInfo.getContexts().get(context),  
-             pTemplateGlueInfo.getContextDefaults().get(context) );
+             pTemplateGlueInfo.getContextDefaults().get(context),
+             pTemplateGlueInfo.getContextParamNames().get(context));
         addSubBuilder(builder);
         pContextBuilders.put(context, builder);
         i++;
@@ -325,8 +334,9 @@ class TemplateInfoBuilder
       String contextName,
       Integer contextNum,
       Integer numValues,
-      TreeSet<String> contextReplacements,
-      ArrayList<TreeMap<String, String>> defaultValues
+      ListSet<String> contextReplacements,
+      ArrayList<TreeMap<String, String>> defaultValues,
+      TreeMap<String, String> paramNames
     ) 
       throws PipelineException
     {
@@ -346,6 +356,12 @@ class TemplateInfoBuilder
          defaults = new ArrayList<TreeMap<String,String>>();
       else 
         defaults = new ArrayList<TreeMap<String,String>>(defaultValues);
+
+      TreeMap<String, String> lastGoodReplacement = null;
+      
+      TreeMap<String, String> pNames = new TreeMap<String, String>();
+      if (paramNames != null)
+        pNames.putAll(paramNames);
       
       for (int i = 0; i < numValues; i++ ) {
         LayoutGroup group = new LayoutGroup(true);
@@ -353,12 +369,26 @@ class TemplateInfoBuilder
         ArrayList<KeyValueUtilityParam> params = 
           new ArrayList<KeyValueUtilityParam>();
         TreeMap<String, String> defaultsV = null;
-        if (!defaults.isEmpty())
+        if (!defaults.isEmpty()) {
           defaultsV = defaults.remove(0);
+          lastGoodReplacement = defaultsV;
+        }
+        else
+          defaultsV = lastGoodReplacement;
+        
         String base = "C" + String.valueOf(i);
         int j = 0;
         for (String key : contextReplacements) {
+          
+          //Compute the name of the parameter
           String name = base + "V" + String.valueOf(j);
+          {
+            String paramName = pNames.get(key);
+            if (paramName  != null && !paramName.equals("")) {
+              name = paramName + String.valueOf(i);
+            }
+          }
+          
           String value = null;
           if (defaultsV != null)
             value = defaultsV.get(key);

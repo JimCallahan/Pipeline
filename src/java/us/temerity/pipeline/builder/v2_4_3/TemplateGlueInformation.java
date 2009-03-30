@@ -1,4 +1,4 @@
-// $Id: TemplateGlueInformation.java,v 1.2 2008/11/19 04:34:48 jesse Exp $
+// $Id: TemplateGlueInformation.java,v 1.3 2009/03/30 14:40:35 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -28,11 +28,13 @@ class TemplateGlueInformation
   public 
   TemplateGlueInformation()
   {
-    pReplacements = new TreeSet<String>();
+    pReplacements = new ListSet<String>();
     pReplacementDefaults = new TreeMap<String, String>();
+    pReplacementParamNames = new TreeMap<String, String>();
     
-    pContexts = new MappedSet<String, String>();
+    pContexts = new MappedListSet<String, String>();
     pContextDefaults = new MappedArrayList<String, TreeMap<String,String>>();
+    pContextParamNames = new DoubleMap<String, String, String>();
     
     pNodesInTemplate = new TreeSet<String>();
     
@@ -49,16 +51,19 @@ class TemplateGlueInformation
   {
     super(name, desc);
     
-    pReplacements = new TreeSet<String>();
+    pReplacements = new ListSet<String>();
     pReplacementDefaults = new TreeMap<String, String>();
+    pReplacementParamNames = new TreeMap<String, String>();
     
-    pContexts = new MappedSet<String, String>();
+    pContexts = new MappedListSet<String, String>();
     pContextDefaults = new MappedArrayList<String, TreeMap<String,String>>();
+    pContextParamNames = new DoubleMap<String, String, String>();
     
     pNodesInTemplate = new TreeSet<String>();
     
     pFrameRanges = new TreeSet<String>();
     pFrameRangeDefaults = new TreeMap<String, FrameRange>();
+    
   }
   
   
@@ -70,10 +75,10 @@ class TemplateGlueInformation
   /**
    * Return a list of the String replacements for the template. 
    */
-  public final TreeSet<String> 
+  public final ListSet<String> 
   getReplacements()
   {
-    return new TreeSet<String>(pReplacements);
+    return new ListSet<String>(pReplacements);
   }
   
   /**
@@ -82,13 +87,13 @@ class TemplateGlueInformation
   public final void 
   setReplacements
   (
-    TreeSet<String> replacements
+    ListSet<String> replacements
   )
   {
     if (replacements == null)
-      pReplacements = new TreeSet<String>();
+      pReplacements = new ListSet<String>();
     else
-      pReplacements = new TreeSet<String>(replacements);
+      pReplacements = new ListSet<String>(replacements);
   }
 
   /**
@@ -127,12 +132,52 @@ class TemplateGlueInformation
   }
   
   /**
+   *  Get the list of alternate param names for the replacements. 
+   */
+  public final TreeMap<String, String> 
+  getReplacementParamNames()
+  {
+    return new TreeMap<String, String>(pReplacementParamNames);
+  }
+  
+  /**
+   * Set the list of alternate param names for the String replacements.
+   * <p>
+   * All values in the keyset must already exist in the list of replacements for
+   * this template.
+   */
+  public final void 
+  setReplacementParamNames
+  (
+    TreeMap<String, String> paramNames
+  )
+  {
+    if (paramNames == null)
+      pReplacementParamNames = new TreeMap<String, String>();
+    else {
+      for (String key : paramNames.keySet()) {
+        if (!pReplacements.contains(key))
+          throw new IllegalArgumentException
+            ("The replacement key (" + key + ") specified while setting the alternate " +
+             "param names is not specified as valid key for this template");
+        String paramName = paramNames.get(key);
+        if (!isValidName(paramName)) {
+          throw new IllegalArgumentException
+          ("The parameter name (" + paramName + ") specifed for the key ( " + key + ") is not " +
+           "a valid parameter name.");
+        }
+      }
+      pReplacementParamNames = new TreeMap<String, String>(paramNames);
+    }
+  }
+  
+  /**
    * Return a list of the contexts and the string replacements for each context. 
    */
-  public final TreeMap<String, TreeSet<String>> 
+  public final MappedListSet<String, String> 
   getContexts()
   {
-    return new TreeMap<String, TreeSet<String>>(pContexts);
+    return new MappedListSet<String, String>(pContexts);
   }
   
   /**
@@ -141,13 +186,13 @@ class TemplateGlueInformation
   public final void 
   setContexts
   (
-    MappedSet<String, String> contexts
+    MappedListSet<String, String> contexts
   )
   {
     if (contexts == null)
-      pContexts = new MappedSet<String, String>();
+      pContexts = new MappedListSet<String, String>();
     else {
-      pContexts = new MappedSet<String, String>(contexts);
+      pContexts = new MappedListSet<String, String>(contexts);
     }
   }
   
@@ -175,12 +220,12 @@ class TemplateGlueInformation
     if (contextDefaults == null)
       pContextDefaults = new MappedArrayList<String, TreeMap<String, String>>();
     else {
-      for (String context : pContextDefaults.keySet()) {
+      for (String context : contextDefaults.keySet()) {
         if (!pContexts.keySet().contains(context))
           throw new IllegalArgumentException
             ("The context (" + context + ") specified while setting the default context " +
              "values is not set as a valid context for this template");
-        TreeSet<String> cValues = pContexts.get(context);
+        ListSet<String> cValues = pContexts.get(context);
         for (TreeMap<String, String> values : contextDefaults.get(context)) {
           for (String key : values.keySet()) {
             if (!cValues.contains(key))
@@ -195,6 +240,53 @@ class TemplateGlueInformation
         new MappedArrayList<String, TreeMap<String, String>>(contextDefaults);
     }
   }
+  
+  public final DoubleMap<String, String, String>
+  getContextParamNames()
+  {
+    return new DoubleMap<String, String, String>(pContextParamNames);
+  }
+  
+  /**
+   * Set the list of default values for the String replacements for each context.
+   * <p>
+   * All contexts and their values in the keyset must already exist in the list of
+   * replacements for each context in this template.
+   */
+  public final void 
+  setContextParamNames
+  (
+    DoubleMap<String, String, String> contextParamNames
+  )
+  {
+    if (contextParamNames == null)
+      pContextParamNames = new DoubleMap<String, String, String>(); 
+    else {
+      for (String context : contextParamNames.keySet()) {
+        if (!pContexts.keySet().contains(context))
+          throw new IllegalArgumentException
+            ("The context (" + context + ") specified while setting the context param " +
+             "names is not set as a valid context for this template");
+        ListSet<String> cValues = pContexts.get(context);
+        TreeMap<String, String> paramNames = contextParamNames.get(context); 
+        for (String key : paramNames.keySet()) {
+          if (!cValues.contains(key))
+            throw new IllegalArgumentException
+              ("The replacement key (" + key + ") specified having a param name for the " +
+               "context (" + context + ") while setting the param names is " +
+               "not a valid string replacement key.");
+          String paramName = paramNames.get(key);
+          if (!isValidName(paramName)) 
+            throw new IllegalArgumentException
+            ("The parameter name (" + paramName + ") specifed for the key ( " + key + ") in " +
+             "the context (" + context + ") is not a valid parameter name.");
+        }
+      }
+    }
+    pContextParamNames= 
+      new DoubleMap<String, String, String>(contextParamNames);
+  }
+
   
   /**
    * Get a list of nodes in the template.
@@ -279,6 +371,29 @@ class TemplateGlueInformation
     }
   }
   
+
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   U T I L I T Y                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+  
+  public static boolean
+  isValidName
+  (
+   String name
+  ) 
+  {
+    char cs[] = name.toCharArray();
+
+    int wk;
+    for(wk=0; wk<cs.length; wk++) {
+      if(!Character.isLetterOrDigit(cs[wk])) 
+        return false;
+    }
+
+    return true; 
+  }
+  
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -305,8 +420,21 @@ class TemplateGlueInformation
     
     {
       Object o = decoder.decode(aContexts);
+      if (o != null) {
+        if (o instanceof MappedListSet)
+          pContexts = (MappedListSet<String, String>) o;
+        else if (o instanceof MappedSet) {
+          pContexts = new MappedListSet<String, String>((MappedSet<String, String>) o);
+        }
+        else
+          throw new GlueException("Unable to decode (Contexts)");
+      }
+    }
+    
+    {
+      Object o = decoder.decode(aContextParamNames);
       if (o != null)
-        pContexts = (MappedSet<String, String>) o;
+        pContextParamNames = (DoubleMap<String, String, String>) o;
     }
     
     {
@@ -317,14 +445,29 @@ class TemplateGlueInformation
     
     {
       Object o = decoder.decode(aReplacements);
-      if (o != null)
-        pReplacements = (TreeSet<String>) o;
+      if (o != null) {
+        if (o instanceof ListSet) {
+          pReplacements = (ListSet<String>) o;
+        }
+        else if (o instanceof TreeSet){
+          TreeSet<String> set = (TreeSet<String>) o;
+          pReplacements = new ListSet<String>(set);
+        }
+        else
+          throw new GlueException("Unable to decode (Replacements)");
+      }
     }
     
     {
       Object o = decoder.decode(aReplacementDefaults);
       if (o != null)
         pReplacementDefaults = (TreeMap<String, String>) o;
+    }
+    
+    {
+      Object o = decoder.decode(aReplacementParamNames);
+      if (o != null)
+        pReplacementParamNames = (TreeMap<String, String>) o;
     }
     
     {
@@ -360,12 +503,16 @@ class TemplateGlueInformation
       encoder.encode(aReplacements, pReplacements);
     if (!pReplacementDefaults.isEmpty())
       encoder.encode(aReplacementDefaults, pReplacementDefaults);
+    if (!pReplacementParamNames.isEmpty())
+      encoder.encode(aReplacementParamNames, pReplacementParamNames);
     if (!pFrameRanges.isEmpty())
       encoder.encode(aFrameRanges, pFrameRanges);
     if (!pFrameRanges.isEmpty())
       encoder.encode(aFrameRanges, pFrameRanges);
     if (!pFrameRangeDefaults.isEmpty())
       encoder.encode(aFrameRangeDefaults, pFrameRangeDefaults);
+    if (!pContextParamNames.isEmpty())
+      encoder.encode(aContextParamNames, pContextParamNames);
   }
   
   
@@ -379,8 +526,10 @@ class TemplateGlueInformation
   
   public static final String aReplacements = "Replacements";
   public static final String aReplacementDefaults = "ReplacementsDefaults";
+  public static final String aReplacementParamNames = "ReplacementParamNames";
   public static final String aContexts = "Contexts";
   public static final String aContextDefaults = "ContextDefaults";
+  public static final String aContextParamNames = "ContextParamNames";
   public static final String aNodesInTemplate = "NodesInTemplate";
   public static final String aFrameRanges = "FrameRanges";
   public static final String aFrameRangeDefaults = "FrameRangeDefaults";
@@ -391,9 +540,11 @@ class TemplateGlueInformation
   /*  I N T E R N A L S                                                                     */
   /*----------------------------------------------------------------------------------------*/
 
-  private TreeSet<String> pReplacements;
+  private ListSet<String> pReplacements;
+  private TreeMap<String, String> pReplacementParamNames;
   private TreeMap<String, String> pReplacementDefaults;
-  private MappedSet<String, String> pContexts;
+  private MappedListSet<String, String> pContexts;
+  private DoubleMap<String, String, String> pContextParamNames;
   private MappedArrayList<String, TreeMap<String, String>> pContextDefaults;
   
   private TreeSet<String> pFrameRanges;
