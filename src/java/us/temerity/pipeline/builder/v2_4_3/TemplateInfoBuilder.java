@@ -1,4 +1,4 @@
-// $Id: TemplateInfoBuilder.java,v 1.7 2009/03/30 14:40:35 jesse Exp $
+// $Id: TemplateInfoBuilder.java,v 1.8 2009/03/30 19:17:04 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -63,6 +63,8 @@ class TemplateInfoBuilder
     
     noDefaultConstructPasses();
     
+    pTemplateStartNode = templatePath;
+    
     {
       NodeID nodeID = 
         new NodeID(author, view, templatePath);
@@ -88,11 +90,10 @@ class TemplateInfoBuilder
         TreeMap<String, BaseAnnotation> annots = getTaskAnnotations(source);
         if (annots.isEmpty())
           throw new PipelineException
-            ("There were no nodes specified in the Glue information file and the nodes " +
-             "attached to the template definition node do not contain task annotations.  " +
-             "The Template Info Builder is not able to determine what to build.");
-        pTemplateStartNode = source;
-        break;
+            ("There were no nodes specified in the Glue information file and at least one " +
+             "of the nodes attached to the template definition node do not contain task " +
+             "annotations.  The Template Info Builder is not able to determine what to " +
+             "build.");
       }
     }
   }

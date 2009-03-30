@@ -1,4 +1,4 @@
-// $Id: TemplateTaskBuilder.java,v 1.7 2009/03/26 15:55:29 jesse Exp $
+// $Id: TemplateTaskBuilder.java,v 1.8 2009/03/30 19:17:04 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -10,15 +10,58 @@ import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.builder.execution.*;
 import us.temerity.pipeline.builder.v2_4_1.*;
 import us.temerity.pipeline.builder.v2_4_1.TaskBuilder;
+import us.temerity.pipeline.plugin.TemplateRangeAnnotation.v2_4_3.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   T E M P L A T E   T A S K   B U I L D E R                                              */
 /*------------------------------------------------------------------------------------------*/
 
+/**
+ * Builder that will traverse a task network and then use the template builder to instantiate
+ * a copy of that task.
+ */
 public 
 class TemplateTaskBuilder
   extends TaskBuilder
 {
+  /**
+   * Constructor.
+   * 
+   * @param mclient
+   *   The instance of MasterMgrClient the builder will use.
+   *   
+   * @param qclient
+   *   The instance of QueueMgrClient the builder will use.
+   *   
+   * @param builderInformation
+   *   The shared information class for builders.
+   *   
+   * @param startNode
+   *   The node which the builder will use to begin search for task nodes to build. This node
+   *   can be one of two different sorts of nodes.  It can be either the Submit or Approve
+   *   node of the task, in which case the builder will traverse the network up to an Edit node,
+   *   trace its way back down to the Submit and Approve nodes and then scan the network for 
+   *   all nodes that should be built.  Alternatively, it can a grouping node that has all the 
+   *   root nodes of the task underneath it.  The builder will then search upstream from all of 
+   *   these root nodes to find all nodes in the task.  This method should be a lot quicker, 
+   *   but requires there to be an extra node in existence.  If this builder is going to be
+   *   used with the TemplateInfoBuilder, then the glue node that exists for the info builder
+   *   can fill this role. 
+   * 
+   * @param stringReplacements
+   *   A list of all the string replacements to be made for all nodes in the template and on
+   *   all product nodes.
+   * 
+   * @param contexts
+   *   A set of the replacements to be made, each indexed by the context name that will 
+   *   trigger those replacements to be used.
+   *   
+   * @param frameRanges
+   *   The list of frame ranges to use, each indexed by the name of the template Range value
+   *   that should be set on the {@link TemplateRangeAnnotation}.
+   *   
+   * @throws PipelineException
+   */
   public
   TemplateTaskBuilder
   (
@@ -146,7 +189,7 @@ class TemplateTaskBuilder
   }
   
   /**
-   * Recursively finds all the nodes upstream of the current one which are a member
+   * Recursively finds all the nodes downstream of the current one which are a member
    * of the same task as the original node.
    * 
    * @param status
@@ -192,7 +235,7 @@ class TemplateTaskBuilder
   }
   
   /**
-   * Recursively finds all the nodes underneath the current one which are a member
+   * Recursively finds all the nodes upstream of the the current one which are a member
    * of the same task as the original node.
    * 
    * @param status
@@ -426,33 +469,82 @@ class TemplateTaskBuilder
       //grr, can't forget this call or stuff don't work.
       getStageInformation().setDoAnnotations(true);
       
-      TreeMap<String, BaseAnnotation> annots = getTaskAnnotations(pStartNode);
-      if (annots == null || annots.isEmpty())
-        throw new PipelineException
-          ("There were no Task Annotations on the node (" + pStartNode + ")");
-      String aName = annots.firstKey();
-      BaseAnnotation annot = annots.get(aName);
-      pProjectName = lookupProjectName(pStartNode, aName, annot);
-      pTaskName = lookupTaskName(pStartNode, aName, annot);
-      pTaskType = lookupTaskType(pStartNode, aName, annot);
-      
       pEditNodes = new TreeSet<String>();
       pProductNodes = new TreeMap<String, Boolean>();
       pProductNodeContexts = new DoubleMap<String, String, TreeSet<String>>();
       
       pNodesIDependedOn = new MappedSet<String, String>();
       pNodesDependingOnMe = new MappedSet<String, String>();
+
       
-      getLeafNodes(pStartNode);
-      
-      pLog.log(Kind.Ops, Level.Finest, 
-        "The following edit nodes were found:\n" + pEditNodes);
-      
-      if (pEditNodes.isEmpty())
-        throw new PipelineException("There were no edit nodes found in the task network.");
-      getSubmitAndApproveNodes(pEditNodes.first());
-      getLeafNodes(pSubmitNode);
-      getLeafNodes(pApprovalNode);
+      TreeMap<String, BaseAnnotation> annots = getTaskAnnotations(pStartNode);
+
+      // This must be a grouping node case. 
+      if (annots == null || annots.isEmpty()) {
+        NodeStatus status = pClient.status(new NodeID(getAuthor(), getView(), pStartNode), 
+                                           true, DownstreamMode.WorkingOnly);
+        Set<String> sources = status.getSourceNames();
+        if (sources.size() == 0)
+          throw new PipelineException
+            ("There were no source nodes of (" + pStartNode + ") which was specified as the " +
+             "Template Task start node.");
+        
+        pProjectName = null;
+        pTaskName = null;
+        pTaskType = null;
+        for (String source : sources) {
+          TreeMap<String, BaseAnnotation> sAnnots = getTaskAnnotations(source);
+          if (sAnnots == null || sAnnots.isEmpty()) 
+            throw new PipelineException
+              ("The node (" + source + ") that is a source of the start node " +
+               "(" + pStartNode + ") has no task annotations on it");
+          String aName = sAnnots.firstKey();
+          BaseAnnotation annot = sAnnots.get(aName);
+          if (pProjectName == null) {
+            pProjectName = lookupProjectName(source, aName, annot);
+            pTaskName = lookupTaskName(source, aName, annot);
+            pTaskType = lookupTaskType(source, aName, annot);
+          }
+          else {
+            if (!doesTaskMatch(source, aName, annot)) {
+              throw new PipelineException
+               ("The node ("+ source + ") connected to the start node belongs to a " +
+               	"different task.");
+            }
+          }
+          String purpose = lookupPurpose(source, aName, annot);
+          if (purpose.equals(NodePurpose.Approve.toString())) 
+            pApprovalNode = source;
+        } // finish task check for all attached nodes
+        
+        if (pApprovalNode == null)
+          throw new PipelineException
+            ("Unable to find the approve node for the task!  The task approve node must be " +
+             "connected to the template state node."); 
+        
+        for (String source : sources) {
+          getLeafNodes(source);
+        }
+        
+      }
+      else {
+        String aName = annots.firstKey();
+        BaseAnnotation annot = annots.get(aName);
+        pProjectName = lookupProjectName(pStartNode, aName, annot);
+        pTaskName = lookupTaskName(pStartNode, aName, annot);
+        pTaskType = lookupTaskType(pStartNode, aName, annot);
+
+        getLeafNodes(pStartNode);
+
+        pLog.log(Kind.Ops, Level.Finest, 
+          "The following edit nodes were found:\n" + pEditNodes);
+
+        if (pEditNodes.isEmpty())
+          throw new PipelineException("There were no edit nodes found in the task network.");
+        getSubmitAndApproveNodes(pEditNodes.first());
+        getLeafNodes(pSubmitNode);
+        getLeafNodes(pApprovalNode);
+      }
       
       pNodesToBuild = new TreeSet<String>();
       pNodesToBuild.addAll(pNodesDependingOnMe.keySet());
