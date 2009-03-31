@@ -1,4 +1,4 @@
-// $Id: TemplateSettingsAnnotation.java,v 1.2 2009/03/20 03:10:39 jim Exp $
+// $Id: TemplateSettingsAnnotation.java,v 1.3 2009/03/31 01:44:47 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateSettingsAnnotation.v2_4_3;
 
@@ -21,9 +21,20 @@ import us.temerity.pipeline.*;
  *   <DIV style="margin-left: 40px;">
  *     Clone the files of the primary file sequence when making a copy of the template node.  
  *     This will only be effective if the templated node either does not have an action or 
- *     has a disabled action.  This will not clone secondary file sequences, due to how the
- *     cloneFiles() method in {@link MasterMgrClient} works.
+ *     has a disabled action.  This will clone secondary file sequences.
  *   </DIV> <BR> 
+ *   
+ *   Touch Files<BR>
+ *   <DIV style="margin-left: 40px;">
+ *     Assign the Touch action to the node, temporarily.  This allow networks to be
+ *     queued just like normal.  During a special second finalize stage (after all other 
+ *     staleness effecting changes have been made), this node will have its Action returned
+ *     to its originally specified Action and the files will be touched (so it will never
+ *     actually be queued).  The end effect will be that the node has the right Action, but
+ *     the expensive calculation of the Action will never be done.  Of course, anything 
+ *     downstream that depends on those files will either need be able to deal with empty
+ *     files or will have to have use the Touch Files setting as well.
+ *   </DIV> <BR>
  *   
  *   Pre Enable Action<BR>
  *   <DIV style="margin-left: 40px;">
@@ -127,10 +138,21 @@ class TemplateSettingsAnnotation
     }
     
     {
+      AnnotationParam param = 
+        new BooleanAnnotationParam
+        (aTouchFiles,
+         "Instead of running the action, simply touch the files during the build phase.",
+         false);
+      addParam(param);
+    }
+    
+    
+    {
       ArrayList<String> layout = new ArrayList<String>();
       layout.add(aUnlinkAll);
       layout.add(aVouch);
       layout.add(aCloneFiles);
+      layout.add(aTouchFiles);
       layout.add(null);
       layout.add(aPreEnableAction);
       layout.add(aPostRemoveAction);
@@ -153,6 +175,7 @@ class TemplateSettingsAnnotation
   private static final long serialVersionUID = 596856736121177610L;
   
   public static final String aCloneFiles        = "CloneFiles";
+  public static final String aTouchFiles        = "TouchFiles";
   public static final String aPreEnableAction   = "PreEnableAction";
   public static final String aUnlinkAll         = "UnlinkAll";
   public static final String aVouch             = "Vouch";

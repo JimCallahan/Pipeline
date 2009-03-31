@@ -1,7 +1,8 @@
-// $Id: TemplateStage.java,v 1.6 2009/03/26 00:04:16 jesse Exp $
+// $Id: TemplateStage.java,v 1.7 2009/03/31 01:44:47 jesse Exp $
 
 package us.temerity.pipeline.stages;
 
+import java.io.*;
 import java.util.*;
 
 import us.temerity.pipeline.*;
@@ -138,6 +139,7 @@ class TemplateStage
         pCloneFiles = (Boolean) annot.getParamValue(aCloneFiles);
         pVouch = (Boolean) annot.getParamValue(aVouch);
         pUnlinkAll = (Boolean) annot.getParamValue(aUnlinkAll);
+        pTouchFiles = (Boolean) annot.getParamValue(aTouchFiles);
       }
       if (aName.startsWith("TemplateUnlink" )) {
         String unlink = (String) annot.getParamValue(aLinkName);
@@ -433,8 +435,81 @@ class TemplateStage
         NodeID tar = new NodeID(getAuthor(), getView(), pRegisteredNodeName);
         pClient.cloneFiles(src, tar, pSecSeqs);
       }
+      if (pTouchFiles) {
+        pBackedUpAction = pRegisteredNodeMod.getAction();
+        pRegisteredNodeMod.setAction(getAction(new PluginContext("Touch"), getToolset()));
+        pClient.modifyProperties(getAuthor(), getView(), pRegisteredNodeMod);
+        pRegisteredNodeMod = pClient.getWorkingVersion(getAuthor(), getView(), pRegisteredNodeName);
+      }
     }
     return build;
+  }
+  
+  /**
+   * Return a subprocess which, when run, will touch all the files for the node.
+   */
+  private SubProcessLight
+  touchFilesProcess()
+    throws PipelineException
+  {
+    NodeID nodeID = new NodeID(getAuthor(), getView(), pRegisteredNodeName);
+    if(PackageInfo.sOsType == OsType.Windows) { 
+      try {
+        File script = File.createTempFile("BuilderTouchFiles", ".bat");
+        FileWriter out = new FileWriter(script);
+        
+        Path wpath = new Path(PackageInfo.sProdPath, nodeID.getWorkingParent());
+        
+        wpath.toFile().mkdirs();
+        
+        for(Path target : pRegisteredNodeMod.getPrimarySequence().getPaths()) {
+          Path path = new Path(wpath, target);
+          out.write("@echo off > " + path.toOsString() + "\n"); 
+        }
+        
+        for(FileSeq fseq : pRegisteredNodeMod.getSecondarySequences()) {
+          for(Path target : fseq.getPaths()) {
+            Path path = new Path(wpath, target);
+            out.write("@echo off > " + path.toOsString() + "\n"); 
+          }
+        }
+        
+        out.close();
+        
+        TreeMap<String, String> toolset = 
+          pClient.getToolsetEnvironment
+            (getAuthor(), getView(), getToolset(), PackageInfo.sOsType);
+        SubProcessLight light = 
+          new SubProcessLight("BuilderTouch", script.getPath(), new ArrayList<String>(), 
+                              toolset, PackageInfo.sTempPath.toFile());
+        return light;
+      }
+      catch(IOException ex) {
+        throw new PipelineException
+          ("Unable to write temporary BAT file to touch the files for node " +
+           "(" + pRegisteredNodeName + ")\n" + ex.getMessage());
+      }
+    }
+    else {
+      ArrayList<String> args = new ArrayList<String>();
+      for(File file : pRegisteredNodeMod.getPrimarySequence().getFiles()) 
+        args.add(file.toString());
+      
+      for(FileSeq fseq : pRegisteredNodeMod.getSecondarySequences()) {
+        for(File file : fseq.getFiles())
+          args.add(file.toString());
+      }
+      
+      Path wpath = new Path(PackageInfo.sProdPath, nodeID.getWorkingParent()); 
+      wpath.toFile().mkdirs();
+      
+      TreeMap<String, String> toolset = 
+        pClient.getToolsetEnvironment
+          (getAuthor(), getView(), getToolset(), PackageInfo.sOsType);
+      SubProcessLight light = 
+        new SubProcessLight("BuilderTouch", "touch", args, toolset, wpath.toFile());
+      return light;
+    }
   }
 
   
@@ -453,6 +528,7 @@ class TemplateStage
    * <li> Post Disable Action
    * <li> Vouch
    * <li> Unlink
+   * <li> Post Touch Files
    * </ul>
    * 
    * @return
@@ -461,8 +537,18 @@ class TemplateStage
   public boolean
   needsFinalization()
   {
-    if (pUnlinkAll || pRemoveAction || pDisableAction || pVouch || !pUnlinkNodes.isEmpty())
+    if (pUnlinkAll || pRemoveAction || pDisableAction || pVouch || 
+        !pUnlinkNodes.isEmpty())
       return true;
+    return false;
+  }
+
+  public boolean
+  needsSecondFinalization()
+  {
+    if (pTouchFiles)
+      return true;
+    
     return false;
   }
   
@@ -488,7 +574,8 @@ class TemplateStage
       pRegisteredNodeMod.setAction(null);
     if (pDisableAction || pRemoveAction) {
       pClient.modifyProperties(getAuthor(), getView(), pRegisteredNodeMod);
-      pRegisteredNodeMod = pClient.getWorkingVersion(getAuthor(), getView(), pRegisteredNodeName);
+      pRegisteredNodeMod = 
+        pClient.getWorkingVersion(getAuthor(), getView(), pRegisteredNodeName);
     }
 
     if (!pUnlinkNodes.isEmpty()) {
@@ -496,7 +583,8 @@ class TemplateStage
         for (String newSrc : pUnlinkNodes.get(oldSrc))
           pClient.unlink(getAuthor(), getView(), pRegisteredNodeName, newSrc);
       }
-      pRegisteredNodeMod = pClient.getWorkingVersion(getAuthor(), getView(), pRegisteredNodeName);
+      pRegisteredNodeMod = 
+        pClient.getWorkingVersion(getAuthor(), getView(), pRegisteredNodeName);
     }
     
     if (pUnlinkAll) {
@@ -504,7 +592,31 @@ class TemplateStage
         pClient.unlink(getAuthor(), getView(), pRegisteredNodeName, source);
       }
     }
-    
+
+    if (pTouchFiles) {
+      pRegisteredNodeMod.setAction(pBackedUpAction);
+      pRegisteredNodeMod.setActionEnabled(true);
+      pClient.modifyProperties(getAuthor(), getView(), pRegisteredNodeMod);
+      pRegisteredNodeMod = 
+        pClient.getWorkingVersion(getAuthor(), getView(), pRegisteredNodeName);
+      
+      SubProcessLight process = touchFilesProcess();
+      process.run();
+      try {
+        process.join();
+      }
+      catch (InterruptedException ex) 
+      {
+        String message = "The touch subprocess for node () failed.\n";
+        throw new PipelineException(Exceptions.getFullMessage(message, ex));
+      }
+      Integer exit = process.getExitCode();
+      if (exit == null || exit != 0)
+        throw new PipelineException
+        ("The touch subprocess did not finish correctly\n" +
+          process.getStdOut() + "\n" + process.getStdErr());
+    }
+
     if (pVouch)
       vouch();
   }
@@ -697,18 +809,19 @@ class TemplateStage
   
   private static final long serialVersionUID = 1242156409941962795L;
   
-  public static final String aCloneFiles = "CloneFiles";
-  public static final String aPreEnableAction = "PreEnableAction";
-  public static final String aUnlinkAll ="UnlinkAll";
-  public static final String aVouch = "Vouch";
-  public static final String aPostRemoveAction = "PostRemoveAction";
+  public static final String aCloneFiles        = "CloneFiles";
+  public static final String aPreEnableAction   = "PreEnableAction";
+  public static final String aUnlinkAll         = "UnlinkAll";
+  public static final String aVouch             = "Vouch";
+  public static final String aTouchFiles        = "TouchFiles";
+  public static final String aPostRemoveAction  = "PostRemoveAction";
   public static final String aPostDisableAction = "PostDisableAction";
-  public static final String aContextName = "ContextName";
-  public static final String aLinkName = "LinkName";
+  public static final String aContextName       = "ContextName";
+  public static final String aLinkName          = "LinkName";
   
   public static final String aStartFrame = "StartFrame";
-  public static final String aEndFrame = "EndFrame";
-  public static final String aByFrame = "ByFrame";
+  public static final String aEndFrame   = "EndFrame";
+  public static final String aByFrame    = "ByFrame";
   
   
   
@@ -730,6 +843,7 @@ class TemplateStage
   private boolean pDisableAction;
   private boolean pRemoveAction;
   private boolean pCloneFiles;
+  private boolean pTouchFiles;
   private boolean pVouch;
   private boolean pUnlinkAll;
   private boolean pEnableAction;
@@ -743,4 +857,6 @@ class TemplateStage
   private TreeSet<String> pIgnorableProducts;
   
   private TreeSet<String> pIgnoredNodes;
+  
+  private BaseAction pBackedUpAction;
 }

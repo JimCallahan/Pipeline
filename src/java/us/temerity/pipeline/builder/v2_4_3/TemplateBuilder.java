@@ -1,4 +1,4 @@
-// $Id: TemplateBuilder.java,v 1.10 2009/03/26 16:26:07 jesse Exp $
+// $Id: TemplateBuilder.java,v 1.11 2009/03/31 01:44:47 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -175,6 +175,7 @@ class TemplateBuilder
     addSetupPass(new InformationPass());
     addConstructPass(new BuildPass());
     addConstructPass(new FinalizePass());
+    addConstructPass(new SecondFinalizePass());
     
     PassLayoutGroup rootLayout = new PassLayoutGroup("Root", "Root Layout");
     
@@ -423,6 +424,7 @@ class TemplateBuilder
         pTemplateInfo.setProductContexts(pProductContexts);
       }
       pFinalizableStages = new ArrayList<FinalizableStage>();
+      pSecondaryFinalizableStages = new ArrayList<FinalizableStage>();
     }
     
     private void 
@@ -664,6 +666,8 @@ class TemplateBuilder
       if (stage.build()) {
         if (stage.needsFinalization())
           pFinalizableStages.add(stage);
+        if (stage.needsSecondFinalization())
+          pSecondaryFinalizableStages.add(stage);
         nodesMade.add(stage.getNodeName());
       }
     }
@@ -798,12 +802,44 @@ class TemplateBuilder
       throws PipelineException
     {
       for(FinalizableStage stage : pFinalizableStages) 
-        stage.finalizeStage();
+          stage.finalizeStage();
     }    
     private static final long serialVersionUID = -2948200152727649296L;
   }
   
-  
+  protected
+  class SecondFinalizePass
+    extends ConstructPass
+  {
+    public
+    SecondFinalizePass()
+    {
+      super("SecondFinalizePass", "Pass which touches all the Post Touch nodes.");
+    }
+    
+    @Override
+    public LinkedList<String> 
+    preBuildPhase()
+    {
+      LinkedList<String> regenerate = new LinkedList<String>();
+
+      for(FinalizableStage stage : pSecondaryFinalizableStages) 
+        regenerate.add(stage.getNodeName());
+
+      return regenerate;
+    }
+    
+    @Override
+    public void 
+    buildPhase() 
+      throws PipelineException
+    {
+      for(FinalizableStage stage : pSecondaryFinalizableStages) 
+        stage.finalizeStage();
+    }    
+
+    private static final long serialVersionUID = 6576648274737148570L;
+  }  
 
   
   /*----------------------------------------------------------------------------------------*/
@@ -837,6 +873,7 @@ class TemplateBuilder
   private TemplateBuildInfo pTemplateInfo;
   
   private ArrayList<FinalizableStage> pFinalizableStages;
+  private ArrayList<FinalizableStage> pSecondaryFinalizableStages;
   
   private TreeSet<String> pNodesToBuild;
   
