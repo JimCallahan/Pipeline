@@ -1,4 +1,4 @@
-// $Id: BaseBuilderCollection.java,v 1.19 2009/03/26 00:09:39 jesse Exp $
+// $Id: BaseBuilderCollection.java,v 1.20 2009/03/31 22:56:10 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -376,7 +376,7 @@ class BaseBuilderCollection
    *   Only if the builder is being called in a context where the error message will never 
    *   make it to the log.
    */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({ "unchecked", "incomplete-switch" })
   public final BaseBuilder
   instantiateBuilder
   (
@@ -491,6 +491,93 @@ class BaseBuilderCollection
         throw new PipelineException(message); 
     }
     return null;
+  }
+  
+  
+  /**
+   * Get a non-standard builder constructor
+   * <p>
+   * Normal instantiate builder calls automatically fill in constructor arguments and call
+   * the constructor themselves.  This method returns an uninstantiated instance of a 
+   * constructor with the specified argument list.
+   * 
+   * @param builderName
+   *   The name of the builder whose Constructor will be returned.
+   *   
+   * @param arguments
+   *   An array representing the list of arguments that the desired constructor takes.  So if
+   *   the constructor takes a String and an Integer, this array should look like <code>Class 
+   *   arguments[] = {String.class, Integer.class};</code>.  All the arguments classes that 
+   *   are specified must exist within the scope of the Builder Collection that this method
+   *   is being called on.  If this method is being called in a builder from another builder 
+   *   collection and it using a class contained in that collection, that same class much be
+   *   included in this class as well.
+   * 
+   * @return
+   *   An instance of the constructor.  To instantiate the builder, call the newInstance() 
+   *   method on the constructor with an array of the actually arguments.
+   *     
+   * @throws PipelineException
+   *   If no builder with the given name exists or if no constructor with the specified argument
+   *   list exists.
+   */
+  @SuppressWarnings({ "unchecked", "incomplete-switch" })
+  public final Constructor
+  getBuilderConstructor
+  (
+    String builderName,
+    Class[] arguments
+  )
+    throws PipelineException
+  {
+    TreeMap<String, String> list = getBuildersProvided();
+    if (!list.keySet().contains(builderName))
+      throw new PipelineException
+        ("There is no Builder named (" + builderName + ") defined in the BuilderCollection " +
+         "(" + pName + "), version (" + pVersionID.toString() +  ") from the " +
+         "(" + pVendor + ") vendor.");
+    
+    String builderClassLocation = list.get(builderName);
+    if (builderClassLocation == null || builderClassLocation.equals(""))
+      throw new PipelineException
+        ("A valid string must be provided for the name of the builder class.  " +
+         "The builder (" + builderName + ") does not return a valid builder class path.");
+    
+    Level opLevel = LogMgr.getInstance().getLevel(Kind.Ops);
+    switch(opLevel) {
+    case Info:
+    case Warning:
+    case Severe:
+      LogMgr.getInstance().setLevel(Kind.Ops, Level.Fine);
+      break;
+    }
+
+    ClassLoader loader = this.getClass().getClassLoader();
+    Class cls;
+    Constructor construct = null;
+    try {
+      cls = loader.loadClass(builderClassLocation);
+      construct = 
+        cls.getConstructor(arguments);
+    }
+    catch (ClassNotFoundException ex) {
+      String header = 
+        "A builder named (" + builderName + ") with a class file location of " +
+        "(" + builderClassLocation +" ) does not appear to exist in this " +
+        "BuilderCollection\n";
+      String message = Exceptions.getFullMessage(header, ex);
+      LogMgr.getInstance().log
+        (LogMgr.Kind.Ops, LogMgr.Level.Severe, message);
+    }
+    catch (NoSuchMethodException ex) {
+      String header = 
+        "Was unable to instantiate the constructor for the specified Builder.  " +
+        "The arguments passed in do not represent a valid call to the builder .\n";
+      String message = Exceptions.getFullMessage(header, ex);
+      LogMgr.getInstance().log
+        (LogMgr.Kind.Ops, LogMgr.Level.Severe, message);
+    }
+   return construct; 
   }
   
   
