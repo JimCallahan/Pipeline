@@ -1,4 +1,4 @@
-// $Id: PluginMgr.java,v 1.35 2009/03/26 06:48:37 jlee Exp $
+// $Id: PluginMgr.java,v 1.36 2009/04/01 01:19:27 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -413,8 +413,8 @@ class PluginMgr
       LogMgr.getInstance().log
         (LogMgr.Kind.Plg, LogMgr.Level.Info,
          bar(80) + "\n" +
-         "All required plugins have now been loaded!  You may start all other Pipeline " + 
-         "servers and begin normal operation.\n" + 
+         "All required plugins have now been loaded!\n" + 
+         "You may start all other Pipeline servers and begin normal operation.\n" + 
          bar(80));
     }
     else {
