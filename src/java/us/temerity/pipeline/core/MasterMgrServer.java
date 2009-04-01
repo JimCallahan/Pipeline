@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.96 2009/03/25 22:02:24 jim Exp $
+// $Id: MasterMgrServer.java,v 1.97 2009/04/01 21:17:59 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -71,18 +71,10 @@ class MasterMgrServer
    *   to provide an exclusively network for file status query traffic.  Setting this to 
    *   <CODE>null</CODE> will cause the default root production directory to be used instead.
    * 
-   * @param inodeFileStat
-   *   Whether to use the alternative i-node based unique file comparison tests instead
-   *   of the original realpath based approach.
-   * 
    * @param checksumDir
    *   An alternative root production directory accessed via a different NFS mount point
    *   to provide an exclusively network for checksum generation traffic.  Setting this to 
    *   <CODE>null</CODE> will cause the default root production directory to be used instead.
-   * 
-   * @param nativeChecksum
-   *   Whether to use the native JNI based checksum generation code instead of the original
-   *   Java based method.
    * 
    * @throws PipelineException 
    *   If unable to properly initialize the server.
@@ -100,9 +92,7 @@ class MasterMgrServer
    long nodeGCInterval, 
    long restoreCleanupInterval, 
    Path fileStatDir, 
-   boolean inodeFileStat, 
-   Path checksumDir, 
-   boolean nativeChecksum
+   Path checksumDir
   )
     throws PipelineException 
   { 
@@ -115,7 +105,7 @@ class MasterMgrServer
       new MasterMgr(rebuildCache, preserveOfflinedCache, internalFileMgr,  
 		    avgNodeSize, minOverhead, maxOverhead, nodeGCInterval, 
 		    restoreCleanupInterval, 
-                    fileStatDir, inodeFileStat, checksumDir, nativeChecksum);
+                    fileStatDir, checksumDir);
 
     pTasks = new HashSet<HandlerTask>();
   }

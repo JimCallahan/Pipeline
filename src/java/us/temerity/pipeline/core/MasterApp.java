@@ -1,4 +1,4 @@
-// $Id: MasterApp.java,v 1.22 2009/01/14 22:25:40 jim Exp $
+// $Id: MasterApp.java,v 1.23 2009/04/01 21:17:59 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -131,8 +131,7 @@ class MasterApp
        "  [--log-file=...] [--standard-log-file] [--standard-log-dir=...] \n" + 
        "  [--log-backups=...] [--log=...]\n" +
        "  [--rebuild] [--preserve-offlined] [--file-mgr]\n" +
-       "  [--file-stat-dir=...] [--file-stat-method=...]\n" + 
-       "  [--checksum-dir=...] [--checksum-method=...]\n" + 
+       "  [--file-stat-dir=...] [--checksum-dir=...]\n" +
        "\n" + 
        "PERFORMANCE TUNING OPTIONS:\n" +
        "  [--restore-cleanup-interval=...]\n" + 

@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.94 2009/01/14 22:25:40 jim Exp $
+// $Id: ScriptApp.java,v 1.95 2009/04/01 21:17:59 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -161,8 +161,7 @@ class ScriptApp
        "\n" + 
        "    runtime\n" + 
        "      --set-master [--remote-log=logger:level[,logger:level[...]]]\n" + 
-       "        [--file-stat-dir=...] [--file-stat-method=...]\n" + 
-       "        [--checksum-dir=...] [--checksum-method=...]\n" + 
+       "        [--file-stat-dir=...] [--checksum-dir=...]\n" + 
        "        [--node-gc-interval=msec] [--min-overhead=min] [--max-overhead=max]\n" + 
        "        [--avg-node-size=size] [--restore-cleanup-interval=msec]\n" + 
        "      --set-queue [--remote-log=logger:level[,logger:level[...]]]\n" + 
@@ -1285,12 +1284,7 @@ class ScriptApp
 	 "  Restore Interval : " + controls.getRestoreCleanupInterval() + " (msec)\n" + 
 	 "\n" + 
 	 "     File Stat Dir : " + statDir + "\n" + 
-	 "  File Stat Method : " + 
-           (controls.getINodeFileStat() ? "inode" : "realpath") + "\n" +
-         "\n" + 
 	 "      Checksum Dir : " + checksumDir + "\n" + 
-	 "   Checksum Method : " + 
-           (controls.getNativeChecksum() ? "native" : "java") + "\n" +
 	 "\n" + 
 	 pad("-- Logging Levels ", '-', 80) + "\n");
     }

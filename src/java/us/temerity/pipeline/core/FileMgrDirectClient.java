@@ -1,4 +1,4 @@
-// $Id: FileMgrDirectClient.java,v 1.13 2009/03/25 22:02:23 jim Exp $
+// $Id: FileMgrDirectClient.java,v 1.14 2009/04/01 21:17:59 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -36,29 +36,19 @@ class FileMgrDirectClient
    *   to provide an exclusively network for file status query traffic.  Setting this to 
    *   <CODE>null</CODE> will cause the default root production directory to be used instead.
    * 
-   * @param inodeFileStat
-   *   Whether to use the alternative i-node based unique file comparison tests instead
-   *   of the original realpath based approach.
-   * 
    * @param checksumDir
    *   An alternative root production directory accessed via a different NFS mount point
    *   to provide an exclusively network for checksum generation traffic.  Setting this to 
    *   <CODE>null</CODE> will cause the default root production directory to be used instead.
-   * 
-   * @param nativeChecksum
-   *   Whether to use the native JNI based checksum generation code instead of the original
-   *   Java based method.
    */
   public
   FileMgrDirectClient
   (
    Path fileStatDir, 
-   boolean inodeFileStat, 
-   Path checksumDir, 
-   boolean nativeChecksum
+   Path checksumDir
   ) 
   {
-    pFileMgr = new FileMgr(fileStatDir, inodeFileStat, checksumDir, nativeChecksum);
+    pFileMgr = new FileMgr(fileStatDir, checksumDir);
   }
 
 
@@ -293,7 +283,7 @@ class FileMgrDirectClient
     throws PipelineException 
   {
     FileCheckInReq req = 
-      new FileCheckInReq(id, vid, latest, mod.getSequences(), isNovel); 
+      new FileCheckInReq(id, vid, latest, mod.getSequences(), isNovel, mod.isIntermediate()); 
 
     Object obj = pFileMgr.checkIn(req);
     handleSimpleResponse(obj);
@@ -327,7 +317,7 @@ class FileMgrDirectClient
   {
     FileCheckOutReq req = 
       new FileCheckOutReq(id, vsn.getVersionID(), vsn.getSequences(), 
-			  isFrozen, !vsn.isActionEnabled());
+			  isFrozen, !vsn.isActionEnabled(), vsn.isIntermediate());
 
     Object obj = pFileMgr.checkOut(req); 
     handleSimpleResponse(obj);

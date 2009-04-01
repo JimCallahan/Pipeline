@@ -1,4 +1,4 @@
-// $Id: FileMgrApp.java,v 1.19 2008/02/14 20:26:29 jim Exp $
+// $Id: FileMgrApp.java,v 1.20 2009/04/01 21:17:58 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -128,6 +128,7 @@ class FileMgrApp
        "  plfilemgr --license\n" + 
        "\n" + 
        "GLOBAL OPTIONS:\n" +
+       "  [--file-stat-dir=...] [--checksum-dir=...]\n" + 
        "  [--log-file=...] [--standard-log-file] [--standard-log-dir=...] \n" + 
        "  [--log-backups=...] [--log=...]\n" +
        "\n" + 

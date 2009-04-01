@@ -1,4 +1,4 @@
-// $Id: FileMgrServer.java,v 1.44 2009/03/25 22:02:23 jim Exp $
+// $Id: FileMgrServer.java,v 1.45 2009/04/01 21:17:59 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -41,31 +41,21 @@ class FileMgrServer
    *   to provide an exclusively network for file status query traffic.  Setting this to 
    *   <CODE>null</CODE> will cause the default root production directory to be used instead.
    * 
-   * @param inodeFileStat
-   *   Whether to use the alternative i-node based unique file comparison tests instead
-   *   of the original realpath based approach.
-   * 
    * @param checksumDir
    *   An alternative root production directory accessed via a different NFS mount point
    *   to provide an exclusively network for checksum generation traffic.  Setting this to 
    *   <CODE>null</CODE> will cause the default root production directory to be used instead.
-   * 
-   * @param nativeChecksum
-   *   Whether to use the native JNI based checksum generation code instead of the original
-   *   Java based method.
    */
   public
   FileMgrServer
   (
    Path fileStatDir, 
-   boolean inodeFileStat, 
-   Path checksumDir, 
-   boolean nativeChecksum
+   Path checksumDir
   ) 
   { 
     super("FileMgrServer");
 
-    pFileMgr = new FileMgr(fileStatDir, inodeFileStat, checksumDir, nativeChecksum);
+    pFileMgr = new FileMgr(fileStatDir, checksumDir);
     pTasks   = new HashSet<HandlerTask>();    
   }
   

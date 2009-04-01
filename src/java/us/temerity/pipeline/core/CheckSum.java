@@ -1,15 +1,12 @@
-// $Id: CheckSum.java,v 1.15 2008/12/18 00:46:24 jim Exp $
+// $Id: CheckSum.java,v 1.16 2009/04/01 21:17:58 jim Exp $
 
 package us.temerity.pipeline.core;
  
 import us.temerity.pipeline.*;
 
 import java.lang.*;
-import java.security.*;
 import java.util.*;
 import java.io.*;
-import java.nio.*;
-import java.nio.channels.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   C H E C K   S U M                                                                      */
@@ -32,55 +29,16 @@ class CheckSum
   /** 
    * Construct using the given digest algorithm. <P> 
    * 
-   * The <CODE>algorithm</CODE> argument may be one of the following: <P> 
-   * 
-   * <DIV style="margin-left: 40px;">
-   *   "MD2" <BR>
-   *   <DIV style="margin-left: 20px;">
-   *     The MD2 message digest algorithm as defined in RFC 1319. <P>
-   *   </DIV>
-   * </DIV>
-   * 
-   * <DIV style="margin-left: 40px;">
-   *   "MD5" <BR>
-   *   <DIV style="margin-left: 20px;">
-   *     The MD5 message digest algorithm as defined in RFC 1321. <P>
-   *   </DIV>
-   * </DIV>
-   * 
-   * <DIV style="margin-left: 40px;">
-   *   "SHA-1" <BR>
-   *   <DIV style="margin-left: 20px;">
-   *     The Secure Hash Algorithm, as defined in Secure Hash Standard, NIST FIPS 180-1. <P>
-   *   </DIV>
-   * </DIV>
-   * 
-   * <DIV style="margin-left: 40px;">
-   *   "SHA-256", "SHA-384", "SHA-512" <BR>
-   *   <DIV style="margin-left: 20px;">
-   *     New hash algorithms defined by the draft Federal Information Processing 
-   *     Standard 180-2, Secure Hash Standard (SHS). <P>
-   *   </DIV>
-   * </DIV>
-   * 
-   * @param algorithm 
-   *   The digest algorithm.
-   * 
    * @param dir 
    *   The root production directory.
-   * 
-   * @param useNative 
-   *   Use NativeFileSys.md5sum() to generate the checksums.
    */ 
   public
   CheckSum
   (
-   String algorithm, 
-   File dir, 
-   boolean useNative
+   File dir
   ) 
   {
-    init(algorithm, dir, useNative);
+    init(dir);
   }
 
 
@@ -89,31 +47,11 @@ class CheckSum
   private void 
   init
   (
-   String algorithm,
-   File dir,
-   boolean useNative
+   File dir
   ) 
   {
     if(PackageInfo.sOsType != OsType.Unix)
       throw new IllegalStateException("The OS type must be Unix!");
-
-    if(algorithm == null) 
-      throw new IllegalArgumentException("The digest algorithm cannot be (null)!");
-
-    try {
-      pDigest = MessageDigest.getInstance(algorithm);
-    }
-    catch (NoSuchAlgorithmException ex) {
-      throw new IllegalArgumentException
-	("Unknown digest algorithm (" + algorithm + ")!");
-    }
-    
-    if(useNative && !algorithm.equals("MD5")) 
-      throw new IllegalArgumentException
-        ("Only the MD5 digest algorithm is supported with the native code method!"); 
-    pUseNative = useNative; 
-
-    pBuf = new byte[65536];
 
     if(dir == null) 
       throw new IllegalArgumentException("The root production directory cannot be (null)!");
@@ -272,53 +210,11 @@ class CheckSum
 
     /* generate the checksum */ 
     byte checksum[] = null;
-    if(pUseNative) {
-      try {
-        checksum = NativeFileSys.md5sum(new Path(file.getPath())); 
-      }
-      catch(IOException ex) {
-        throw new PipelineException(ex);
-      }
+    try {
+      checksum = NativeFileSys.md5sum(new Path(file.getPath())); 
     }
-    else {
-      try {
-        FileInputStream in = new FileInputStream(file);
-        
-        try {
-          MessageDigest digest = (MessageDigest) pDigest.clone();
-          
-          while(true) {
-            int num = in.read(pBuf);
-            if(num == -1) 
-              break;
-            digest.update(pBuf, 0, num);
-          }
-          
-          checksum = digest.digest();
-        }
-        catch(IOException ex) {
-          throw new PipelineException
-            ("Unable to read the source file (" + file + ")!");
-        }
-        catch(CloneNotSupportedException ex) {
-          throw new PipelineException
-            ("Unable to clone the MessageDigest!");
-        }
-        finally {
-          in.close();
-        }
-      }
-      catch(FileNotFoundException ex) {
-        throw new PipelineException
-          ("The source file (" + file + ") did not exist!");
-      }
-      catch(SecurityException ex) {
-        throw new PipelineException
-          ("No permission to read the source file (" + file + ")!");
-      }   
-      catch (IOException ex) {   
-        throw new IllegalStateException();
-      } 
+    catch(IOException ex) {
+      throw new PipelineException(ex);
     }
 
     /* write the checksum to file */ 
@@ -395,10 +291,10 @@ class CheckSum
    * The checksum files associated with the given node file paths are assumed to up-to-date 
    * by a previous call to {@link #refresh refresh}. 
    * 
-   * @param pathA 
+   * @param fileA 
    *   The first fully resolved node file path.
    * 
-   * @param pathB 
+   * @param fileB 
    *   The second fully resolved node file path.
    * 
    * @return 
@@ -410,82 +306,24 @@ class CheckSum
   public boolean
   compare
   (
-   File pathA,   
-   File pathB   
+   File fileA,   
+   File fileB   
   ) 
     throws PipelineException
   {
     LogMgr.getInstance().log
       (LogMgr.Kind.Sum, LogMgr.Level.Fine,
-       "Comparing (checksums of): " + pathA + " " + pathB);
+       "Comparing (checksums of): " + fileA + " " + fileB);
 
     /* make sure the files are distinct */ 
-    if(pathA.compareTo(pathB) == 0) 
+    if(fileA.compareTo(fileB) == 0) 
       throw new PipelineException
-	("Attempted to compare the node path (" + pathA + ") with itself!");
-
-    /* checksum file paths */ 
-    File sfileA = checkSumFile(pathA);  
-    File sfileB = checkSumFile(pathB);  
+	("Attempted to compare the node path (" + fileA + ") with itself!");
 
     /* checksums */ 
-    int size = pDigest.getDigestLength();
-    byte[] sumA = new byte[size];
-    byte[] sumB = new byte[size];
-    {
-      /* read the first checksum file */ 
-      try {
-	FileInputStream in = new FileInputStream(sfileA);	
-	try {
-	  in.read(sumA);
-	}
-	catch(IOException ex) {
-	  throw new PipelineException
-	    ("Unable to read the checksum file (" + sfileA + ")!");
-	}
-	finally {
-	  in.close();
-	}
-      } 
-      catch(FileNotFoundException ex) {
-	throw new PipelineException
-	  ("The checksum file (" + sfileA + ") did not exist!");
-      }
-      catch(SecurityException ex) {
-	throw new PipelineException
-	("No permission to read the checksum file (" + sfileA + ")!");
-      }   
-      catch (IOException ex) {     
-	throw new IllegalStateException(); 
-      } 
-
-      /* read the second checksum file */ 
-      try {
-	FileInputStream in = new FileInputStream(sfileB);	
-	try {
-	  in.read(sumB);
-	}
-	catch(IOException ex) {
-	  throw new PipelineException
-	    ("Unable to read the checksum file (" + sfileB + ")!");
-	}
-	finally {
-	  in.close();
-	}
-      } 
-      catch(FileNotFoundException ex) {
-	throw new PipelineException
-	  ("The checksum file (" + sfileB + ") did not exist!");
-      }
-      catch(SecurityException ex) {
-	throw new PipelineException
-	("No permission to read the checksum file (" + sfileB + ")!");
-      }   
-      catch (IOException ex) {   
-	throw new IllegalStateException();    
-      }       
-    }
-      
+    byte[] sumA = readCheckSum(checkSumFile(fileA));
+    byte[] sumB = readCheckSum(checkSumFile(fileB));
+  
     /* compare checksums */ 
     return Arrays.equals(sumA, sumB);
   } 
@@ -516,7 +354,7 @@ class CheckSum
    Path pathB   
   ) 
     throws PipelineException
-  {
+  { 
     return compare(pathA.toFile(), pathB.toFile());
   }
 
@@ -549,103 +387,84 @@ class CheckSum
        "Validating Restored File: " + path);
 
     /* read the original checksum */ 
-    byte[] sumA = new byte[pDigest.getDigestLength()];
-    {
-      File file = new File(pCheckSumDir, "repository" + path);
-      try {
-	FileInputStream in = new FileInputStream(file);	
-	try {
-	  in.read(sumA);
-	}
-	catch(IOException ex) {
-	  throw new PipelineException
-	    ("Unable to read the checksum file (" + file + ")!");
-	}
-	finally {
-	  in.close();
-	}
-      } 
-      catch(FileNotFoundException ex) {
-	throw new PipelineException
-	  ("The checksum file (" + file + ") did not exist!");
-      }
-      catch(SecurityException ex) {
-	throw new PipelineException
-	("No permission to read the checksum file (" + file + ")!");
-      }   
-      catch (IOException ex) {   
-	throw new IllegalStateException();     
-      } 
+    byte[] sumA = readCheckSum(new File(pCheckSumDir, "repository" + path));
+
+    /* generate the checksum */ 
+    byte sumB[] = null;
+    try {
+      File file = new File(restoreDir, path.getPath());
+      sumB = NativeFileSys.md5sum(new Path(file.getPath())); 
+    }
+    catch(IOException ex) {
+      throw new PipelineException(ex);
     }
 
-    /* generate a checksum for the restored file */ 
-    byte[] sumB = null;
-    {
-      File file = new File(restoreDir, path.getPath());
-      try {    
-	FileInputStream in = new FileInputStream(file);      
-	try {
-	  MessageDigest digest = (MessageDigest) pDigest.clone();
-	  
-	  while(true) {
-	    int num = in.read(pBuf);
-	    if(num == -1) 
-	      break;
-	    digest.update(pBuf, 0, num);
-	  }
-	  
-	  sumB = digest.digest();
-	}
-	catch(IOException ex) {
-	  throw new PipelineException
-	    ("Unable to read the restored file (" + file + ")!");
-      }
-	catch(CloneNotSupportedException ex) {
-	  throw new PipelineException
-	    ("Unable to clone the MessageDigest!");
-	}
-	finally {
-	  in.close();
-	}
-      }
-      catch(FileNotFoundException ex) {
-	throw new PipelineException
-	  ("The restored file (" + file + ") did not exist!");
-      }
-      catch(SecurityException ex) {
-	throw new PipelineException
-	  ("No permission to read the restored file (" + file + ")!");
-      }   
-      catch (IOException ex) {   
-	throw new IllegalStateException();    
-      } 
-    }
-    
     /* compare checksums */ 
     return Arrays.equals(sumA, sumB);
   }
+
+
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   H E L P E R S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Read in the bytes from a checksum on disk.
+   */ 
+  private byte[] 
+  readCheckSum
+  (
+   File file
+  )
+    throws PipelineException 
+  {
+    byte[] sum = new byte[sByteSize];
+
+    try {
+      FileInputStream in = new FileInputStream(file);	
+      try {
+        in.read(sum);
+      }
+      catch(IOException ex) {
+        throw new PipelineException
+          ("Unable to read the checksum file (" + file + ")!");
+      }
+      finally {
+        in.close();
+      }
+    } 
+    catch(FileNotFoundException ex) {
+      throw new PipelineException
+        ("The checksum file (" + file + ") did not exist!");
+    }
+    catch(SecurityException ex) {
+      throw new PipelineException
+	("No permission to read the checksum file (" + file + ")!");
+    }   
+    catch (IOException ex) {     
+      throw new IllegalStateException(); 
+    } 
+
+    return sum;    
+  } 
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  /** 
+   * Size (in bytes) of checksum data.
+   */ 
+  private final int sByteSize = 16; 
 
 
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * The message digest algorithm. 
-   */ 
-  private MessageDigest pDigest;
-
-  /**
-   * Whether to use the native JNI based checksum generation code instead of the original
-   * Java based method.
-   */                    
-  private boolean pUseNative; 
-
-  /**
-   * An I/O buffer.
-   */ 
-  private byte pBuf[];
 
   /**
    * The root production directory.

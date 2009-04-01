@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.271 2009/03/29 22:22:01 jim Exp $
+// $Id: MasterMgr.java,v 1.272 2009/04/01 21:17:59 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -230,18 +230,10 @@ class MasterMgr
    *   to provide an exclusively network for file status query traffic.  Setting this to 
    *   <CODE>null</CODE> will cause the default root production directory to be used instead.
    * 
-   * @param inodeFileStat
-   *   Whether to use the alternative i-node based unique file comparison tests instead
-   *   of the original realpath based approach.
-   * 
    * @param checksumDir
    *   An alternative root production directory accessed via a different NFS mount point
    *   to provide an exclusively network for checksum generation traffic.  Setting this to 
    *   <CODE>null</CODE> will cause the default root production directory to be used instead.
-   * 
-   * @param nativeChecksum
-   *   Whether to use the native JNI based checksum generation code instead of the original
-   *   Java based method.
    * 
    * @throws PipelineException 
    *   If unable to properly initialize the manager.
@@ -258,9 +250,7 @@ class MasterMgr
    long nodeGCInterval, 
    long restoreCleanupInterval, 
    Path fileStatDir, 
-   boolean inodeFileStat, 
-   Path checksumDir, 
-   boolean nativeChecksum
+   Path checksumDir
   )
     throws PipelineException 
   { 
@@ -318,8 +308,7 @@ class MasterMgr
 
       /* initialize the internal file manager instance */ 
       if(pInternalFileMgr) {
-	pFileMgrDirectClient = 
-          new FileMgrDirectClient(fileStatDir, inodeFileStat, checksumDir, nativeChecksum);
+	pFileMgrDirectClient = new FileMgrDirectClient(fileStatDir, checksumDir);
       }
       /* make a connection to the remote file manager */ 
       else {
@@ -383,7 +372,7 @@ class MasterMgr
       pArchivedIn         = new TreeMap<String,TreeMap<VersionID,TreeSet<String>>>();
       pArchivedOn         = new TreeMap<String,Long>();
       pRestoredOn         = new TreeMap<String,TreeSet<Long>>();
-      pOnlineOfflineLocks = new HashMap<String,ReentrantReadWriteLock>();
+      pOnlineOfflineLocks = new TreeMap<String,ReentrantReadWriteLock>();
       pOfflinedLock       = new Object();
       pOfflined           = null;
       pRestoreReqs        = new TreeMap<String,TreeMap<VersionID,RestoreRequest>>();
@@ -429,17 +418,17 @@ class MasterMgr
       pWorkingAreaViews = new TreeMap<String,TreeSet<String>>();
       pNodeTree         = new NodeTree();
 
-      pAnnotationLocks = new HashMap<String,ReentrantReadWriteLock>();
-      pAnnotations     = new HashMap<String,TreeMap<String,BaseAnnotation>>();
+      pAnnotationLocks = new TreeMap<String,ReentrantReadWriteLock>();
+      pAnnotations     = new TreeMap<String,TreeMap<String,BaseAnnotation>>();
 
-      pCheckedInLocks   = new HashMap<String,ReentrantReadWriteLock>();
-      pCheckedInBundles = new HashMap<String,TreeMap<VersionID,CheckedInBundle>>();
+      pCheckedInLocks   = new TreeMap<String,ReentrantReadWriteLock>();
+      pCheckedInBundles = new TreeMap<String,TreeMap<VersionID,CheckedInBundle>>();
 
-      pWorkingLocks   = new HashMap<NodeID,ReentrantReadWriteLock>();
-      pWorkingBundles = new HashMap<String,HashMap<NodeID,WorkingBundle>>();       
+      pWorkingLocks   = new TreeMap<NodeID,ReentrantReadWriteLock>();
+      pWorkingBundles = new TreeMap<String,TreeMap<NodeID,WorkingBundle>>();       
 
-      pDownstreamLocks = new HashMap<String,ReentrantReadWriteLock>();
-      pDownstream      = new HashMap<String,DownstreamLinks>();
+      pDownstreamLocks = new TreeMap<String,ReentrantReadWriteLock>();
+      pDownstream      = new TreeMap<String,DownstreamLinks>();
 
       pQueueSubmitLock = new Object();
     }
@@ -9406,7 +9395,7 @@ class MasterMgr
 
       /* compute the node status */ 
       {
-        HashMap<String,NodeStatus> cache = new HashMap<String,NodeStatus>();
+        TreeMap<String,NodeStatus> cache = new TreeMap<String,NodeStatus>();
 
         /* populate the cache with heavyweight status first */ 
         for(String name : foundHeavy) {
@@ -9664,9 +9653,9 @@ class MasterMgr
 	
 	/* create a working bundle for the new working version */ 
 	synchronized(pWorkingBundles) {
-	  HashMap<NodeID,WorkingBundle> table = pWorkingBundles.get(name);
+	  TreeMap<NodeID,WorkingBundle> table = pWorkingBundles.get(name);
 	  if(table == null) {
-	    table = new HashMap<NodeID,WorkingBundle>();
+	    table = new TreeMap<NodeID,WorkingBundle>();
 	    pWorkingBundles.put(name, table);
 	  }
 	  table.put(nodeID, new WorkingBundle(mod));
@@ -9934,7 +9923,7 @@ class MasterMgr
 	
       /* remove the bundle */ 
       synchronized(pWorkingBundles) {
-	HashMap<NodeID,WorkingBundle> table = pWorkingBundles.get(name);
+	TreeMap<NodeID,WorkingBundle> table = pWorkingBundles.get(name);
 	table.remove(id);
       }
       
@@ -10341,7 +10330,7 @@ class MasterMgr
 	   "another user!");
 
       /* get the current status of the nodes */ 
-      HashMap<String,NodeStatus> table = new HashMap<String,NodeStatus>();
+      TreeMap<String,NodeStatus> table = new TreeMap<String,NodeStatus>();
       performUpstreamNodeOp(new NodeOp(), req.getNodeID(), false, true, 
 			    new LinkedList<String>(), table, timer);
 
@@ -10515,7 +10504,7 @@ class MasterMgr
    boolean isLocked, 
    CheckOutMode mode,
    CheckOutMethod method, 
-   HashMap<String,NodeStatus> stable,
+   TreeMap<String,NodeStatus> stable,
    TreeMap<String,TreeSet<VersionID>> requiredVersions, 
    LinkedList<String> branch, 
    HashSet<String> seen, 
@@ -10728,7 +10717,7 @@ class MasterMgr
    boolean hasExtTasks, 
    CheckOutMode mode,
    CheckOutMethod method, 
-   HashMap<String,NodeStatus> stable,
+   TreeMap<String,NodeStatus> stable,
    LinkedList<String> branch, 
    HashSet<String> seen, 
    HashSet<String> dirty, 
@@ -10980,9 +10969,9 @@ class MasterMgr
 
 	/* create a new working bundle */ 
 	synchronized(pWorkingBundles) {
-	  HashMap<NodeID,WorkingBundle> table = pWorkingBundles.get(name);
+	  TreeMap<NodeID,WorkingBundle> table = pWorkingBundles.get(name);
 	  if(table == null) {
-	    table = new HashMap<NodeID,WorkingBundle>();
+	    table = new TreeMap<NodeID,WorkingBundle>();
 	    pWorkingBundles.put(name, table);
 	  }
 	  table.put(nodeID, new WorkingBundle(nwork));
@@ -11273,9 +11262,9 @@ class MasterMgr
 	  
 	    /* create a new working bundle */ 
 	    synchronized(pWorkingBundles) {
-	      HashMap<NodeID,WorkingBundle> table = pWorkingBundles.get(name);
+	      TreeMap<NodeID,WorkingBundle> table = pWorkingBundles.get(name);
 	      if(table == null) {
-		table = new HashMap<NodeID,WorkingBundle>();
+		table = new TreeMap<NodeID,WorkingBundle>();
 		pWorkingBundles.put(name, table);
 	      }
 	      table.put(nodeID, new WorkingBundle(nwork));
@@ -17330,7 +17319,7 @@ class MasterMgr
   ) 
     throws PipelineException
   {
-    HashMap<String,NodeStatus> cache = new HashMap<String,NodeStatus>();
+    TreeMap<String,NodeStatus> cache = new TreeMap<String,NodeStatus>();
     return performNodeOperation(nodeOp, nodeID, dmode, cache, timer); 
   }
 
@@ -17370,7 +17359,7 @@ class MasterMgr
    NodeOp nodeOp, 
    NodeID nodeID,
    DownstreamMode dmode, 
-   HashMap<String,NodeStatus> cache,
+   TreeMap<String,NodeStatus> cache,
    TaskTimer timer
   ) 
     throws PipelineException
@@ -17438,7 +17427,7 @@ class MasterMgr
    boolean isTargetLinkLocked, 
    boolean ignoreAnnotations, 
    LinkedList<String> branch, 
-   HashMap<String,NodeStatus> table, 
+   TreeMap<String,NodeStatus> table, 
    TaskTimer timer
   ) 
     throws PipelineException
@@ -19314,9 +19303,9 @@ class MasterMgr
     /* lookup the bundle */ 
     WorkingBundle bundle = null;
     synchronized(pWorkingBundles) {
-      HashMap<NodeID,WorkingBundle> table = pWorkingBundles.get(name);
+      TreeMap<NodeID,WorkingBundle> table = pWorkingBundles.get(name);
       if(table == null) {
-	table = new HashMap<NodeID,WorkingBundle>();
+	table = new TreeMap<NodeID,WorkingBundle>();
 	pWorkingBundles.put(name, table);
       }
       else {
@@ -19535,7 +19524,7 @@ class MasterMgr
 		}
 		
 		{
-		  HashMap<NodeID,WorkingBundle> table = pWorkingBundles.get(name);
+		  TreeMap<NodeID,WorkingBundle> table = pWorkingBundles.get(name);
 		  if(table != null) {
 		    for(WorkingBundle bundle : table.values()) {
 		      newest = Math.max(newest, bundle.getLastAccess());
@@ -19569,7 +19558,7 @@ class MasterMgr
 	  
 	      /* free working versions */ 
 	      {
-		HashMap<NodeID,WorkingBundle> table = pWorkingBundles.get(name);
+		TreeMap<NodeID,WorkingBundle> table = pWorkingBundles.get(name);
 		if(table != null) {
 		  freed += table.size();
 		  pWorkingBundles.remove(name);
@@ -22781,6 +22770,7 @@ class MasterMgr
    * Access to this field should be protected by a synchronized block.
    */
   private TreeMap<String,TreeMap<VersionID,TreeSet<String>>>  pArchivedIn;
+  //private DoubleMappedSet<String,VersionID,String>  pArchivedIn;  <--- Use this instead.
 
   /**
    * The timestamps of when each archive volume was created indexed by unique archive 
@@ -22801,6 +22791,7 @@ class MasterMgr
    * Access to this field should be protected by a synchronized block.
    */
   private TreeMap<String,TreeSet<Long>>  pRestoredOn;
+  //private MappedSet<String,Long>  pRestoredOn;   <--- Use this instead.
 
   /**
    * The per-node online/offline locks indexed by fully resolved node name. <P> 
@@ -22811,11 +22802,11 @@ class MasterMgr
    * write-lock should be aquired when changing the online/offline status of versions of a 
    * node.
    */
-  private HashMap<String,ReentrantReadWriteLock>  pOnlineOfflineLocks;
+  private TreeMap<String,ReentrantReadWriteLock>  pOnlineOfflineLocks;
 
   /**
    * The fully resolved node names and revision numbers of the checked-in versions which
-   * are currently offline. <P> 
+   * are currently offline.<P> 
    * 
    * This table is rebuild by scanning the repository for empty directories. <P> 
    * 
@@ -22828,6 +22819,7 @@ class MasterMgr
    */ 
   private Object pOfflinedLock;
   private TreeMap<String,TreeSet<VersionID>>  pOfflined;
+  //private MappedSet<String,VersionID> pOfflined;   <--- Use this instead.
 
   /**
    * The task responsible for rebuiling the offlined cache, if any.
@@ -22841,6 +22833,7 @@ class MasterMgr
    * Access to this field should be protected by a synchronized block.
    */  
   private TreeMap<String,TreeMap<VersionID,RestoreRequest>>  pRestoreReqs;  
+  //private TripleMap<String,VersionID,RestoreRequest>  pRestoreReqs;  <-- Use this instead.
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -22870,7 +22863,7 @@ class MasterMgr
    * Access to this field should be protected by a synchronized block.
    */
   private TreeMap<String,TreeMap<OsType,Toolset>>  pToolsets;
-  //private DoubleMap<String,OsType,Toolset>  pToolsets;
+  //private DoubleMap<String,OsType,Toolset>  pToolsets; <-- Use this instead.
 
   /**
    * The cached table of all toolset packages indexed by package name, operating system 
@@ -23006,6 +22999,7 @@ class MasterMgr
    * Access to this field should be protected by a synchronized block.
    */ 
   private TreeMap<String,TreeSet<String>>  pWorkingAreaViews;
+  //private MappedSet<String,String>  pWorkingAreaViews; <-- Use this instead.
 
   /**
    * Maintains the the current table of used node names. <P> 
@@ -23053,13 +23047,13 @@ class MasterMgr
    * The per-node write-lock should be aquired when adding new annotations, modifying or 
    * removing existing annotations for a node. 
    */
-  private HashMap<String,ReentrantReadWriteLock>  pAnnotationLocks;
+  private TreeMap<String,ReentrantReadWriteLock>  pAnnotationLocks;
 
   /**
    * The annotations associated with nodes indexed by fully resolved node name. 
    */ 
-  private HashMap<String,TreeMap<String,BaseAnnotation>>  pAnnotations;
-
+  private TreeMap<String,TreeMap<String,BaseAnnotation>>  pAnnotations;
+  //private DoubleMap<String,String,BaseAnnotation>  pAnnotations;  <-- Use this instead.
 
   /**
    * The per-node locks indexed by fully resolved node name. <P> 
@@ -23070,13 +23064,14 @@ class MasterMgr
    * the table of checked-in versions for a node.  No existing checked-in bundle entries in 
    * these tables should ever be modified.
    */
-  private HashMap<String,ReentrantReadWriteLock>  pCheckedInLocks;
+  private TreeMap<String,ReentrantReadWriteLock>  pCheckedInLocks;
 
   /**
    * The checked-in version related information of nodes indexed by fully resolved node 
    * name and revision number.
    */ 
-  private HashMap<String,TreeMap<VersionID,CheckedInBundle>>  pCheckedInBundles;
+  private TreeMap<String,TreeMap<VersionID,CheckedInBundle>>  pCheckedInBundles;
+  //private DoubleMap<String,VersionID,CheckedInBundle>  pCheckedInBundles;  <-- Use this 
 
 
   /**
@@ -23088,13 +23083,14 @@ class MasterMgr
    * working versions, modifying the information associated with existing working versions 
    * or removing existing working versions.
    */
-  private HashMap<NodeID,ReentrantReadWriteLock>  pWorkingLocks;
+  private TreeMap<NodeID,ReentrantReadWriteLock>  pWorkingLocks;
 
   /**
    * The working version related information of nodes indexed by fully resolved node 
    * name and working version node ID.
    */ 
-  private HashMap<String,HashMap<NodeID,WorkingBundle>>  pWorkingBundles;
+  private TreeMap<String,TreeMap<NodeID,WorkingBundle>>  pWorkingBundles;
+  //private DoubleMap<String,NodeID,WorkingBundle>  pWorkingBundles;  <-- Use this instead.
  
 
   /**
@@ -23104,14 +23100,15 @@ class MasterMgr
    * should be aquired for operations which will only access the downstream links of a node.
    * The per-node write-lock should be aquired when adding or removing links for a node.
    */
-  private HashMap<String,ReentrantReadWriteLock>  pDownstreamLocks;
+  private TreeMap<String,ReentrantReadWriteLock>  pDownstreamLocks;
   
   /**
    * The table of downstream links indexed by fully resolved node name. <P> 
    * 
    * Access to this table should be protected by a synchronized block.
    */
-  private HashMap<String,DownstreamLinks>  pDownstream;
+  private TreeMap<String,DownstreamLinks>  pDownstream;
+
   
   
   /*----------------------------------------------------------------------------------------*/

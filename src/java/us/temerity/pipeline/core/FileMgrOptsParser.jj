@@ -48,9 +48,7 @@ FileMgrOptsParser
   init()
   {
     pFileStatDir    = PackageInfo.sProdPath; 
-    pINodeFileStat  = false;
     pChecksumDir    = PackageInfo.sProdPath; 
-    pNativeChecksum = false;
 
     pLogBackups = 10;
   }
@@ -82,22 +80,11 @@ FileMgrOptsParser
   private Path pFileStatDir;
 
   /**
-   * Whether to use the alternative i-node based unique file comparison tests instead
-   * of the original realpath based approach.
-   */ 
-  private boolean pINodeFileStat;
-
-  /**
    * An alternative root production directory accessed via a different NFS mount point
    * to provide an exclusively network for checksum generation traffic. 
    */ 
   private Path pChecksumDir;
 
-  /**
-   * Whether to use the native JNI based checksum generation code instead of the original
-   * Java based method.
-   */ 
-  private boolean pNativeChecksum;
   
 
 
@@ -131,9 +118,7 @@ TOKEN :
 
   /* global options */	
 | <FILE_STAT_DIR:     "--file-stat-dir">      : PATH_SEP
-| <FILE_STAT_METHOD:  "--file-stat-method">   : FILE_STAT_SEP
 | <CHECKSUM_DIR:      "--checksum-dir">       : PATH_SEP
-| <CHECKSUM_METHOD:   "--checksum-method">    : CHECKSUM_SEP
 
 | <LOG_FILE:          "--log-file">           : PATH_SEP
 | <STANDARD_LOG_FILE: "--standard-log-file"> 
@@ -210,43 +195,6 @@ TOKEN :
 | <MISSING_HOSTNAME: ["\0"]>                                      : IGNORE_STATE
 | <ILLEGAL_HOSTNAME: (~["\0"])+>                                  : IGNORE_STATE
 }
-
-
-/* --file-stat-method arguments */ 
-<FILE_STAT_SEP> 
-TOKEN :
-{
-  <EQ5:               "=">  : FS_METHOD
-| <MISSING_FS_ARG: ~["="]>  : IGNORE_STATE
-}
-
-<FS_METHOD> 
-TOKEN :
-{
-  <FS_REALPATH:      "realpath">       
-| <FS_INODE: 	     "inode">     
-| <AE3:              (["\0"])+>  : DEFAULT   
-| <ILLEGAL_FS_TYPE:  (~["\0"])+>  : IGNORE_STATE    
-}
-
-
-/* --checksum-method arguments */ 
-<CHECKSUM_SEP> 
-TOKEN :
-{
-  <EQ6:               "=">  : CS_METHOD
-| <MISSING_CS_ARG: ~["="]>  : IGNORE_STATE
-}
-
-<CS_METHOD> 
-TOKEN :
-{
-  <CS_JAVA:          "java">       
-| <CS_NATIVE: 	     "native">     
-| <AE4:              (["\0"])+>  : DEFAULT   
-| <ILLEGAL_CS_TYPE: (~["\0"])+>  : IGNORE_STATE    
-}
-
 
 /* --log arguments */ 
 <LOG_SEP> 
@@ -327,7 +275,7 @@ CommandLine() :
       }
 
       /* create the server */ 
-      return new FileMgrServer(pFileStatDir, pINodeFileStat, pChecksumDir, pNativeChecksum);
+      return new FileMgrServer(pFileStatDir, pChecksumDir);
     }
     
     return null;
@@ -429,7 +377,7 @@ void
 GlobalOpts() :
 {}
 {
-  (FileStatDir() | FileStatMethod() | ChecksumDir() | ChecksumMethod() | 
+  (FileStatDir() | ChecksumDir() | 
    Log() | LogFile() | StandardLogFile() | StandardLogDir() | LogBackups())
   {}
 }
@@ -448,33 +396,6 @@ void FileStatDir() :
   }
 }
 
-
-void FileStatMethod() :
-{}
-{
-  <FILE_STAT_METHOD> EQ() (Realpath() | INode()) 
-  {}
-}
-
-void Realpath() : 
-{}
-{
-  <FS_REALPATH> 
-  {
-    pINodeFileStat = false; 
-  }
-}
-
-void INode() : 
-{}
-{
-  <FS_INODE> 
-  {
-    pINodeFileStat = true; 
-  }
-}
-
-
 void ChecksumDir() :
 {
   Token t;
@@ -483,32 +404,6 @@ void ChecksumDir() :
   <CHECKSUM_DIR> EQ() t=<PATH_ARG>
   { 
     pChecksumDir = new Path(t.image); 
-  }
-}
-
-
-void ChecksumMethod() :
-{}
-{
-  <CHECKSUM_METHOD> EQ() (Java() | Native()) 
-  {}
-}
-
-void Java() : 
-{}
-{
-  <CS_JAVA> 
-  {
-    pNativeChecksum = false; 
-  }
-}
-
-void Native() : 
-{}
-{
-  <CS_NATIVE> 
-  {
-    pNativeChecksum = true; 
   }
 }
 
@@ -754,7 +649,7 @@ AE() :
   Token t;
 }
 {
-  (t=<AE1> | t=<AE2> | t=<AE3> | t=<AE4>)
+  (t=<AE1> | t=<AE2>)
   { 
     return t; 
   }
@@ -767,7 +662,7 @@ EQ() :
   Token t;
 }
 {
-  (t=<EQ1> | t=<EQ2> | t=<EQ3> | t=<EQ4> | t=<EQ5> | t=<EQ6>)
+  (t=<EQ1> | t=<EQ2> | t=<EQ3> | t=<EQ4>)
   { 
     return t; 
   }
