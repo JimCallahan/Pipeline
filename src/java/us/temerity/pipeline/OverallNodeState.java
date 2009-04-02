@@ -1,4 +1,4 @@
-// $Id: OverallNodeState.java,v 1.17 2009/03/29 22:22:02 jim Exp $
+// $Id: OverallNodeState.java,v 1.18 2009/04/02 00:07:14 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -187,7 +187,6 @@ enum OverallNodeState
     "Pending", 
     "Checked-In", 
     "Identical", 
-    "Trivial Mod",
     "Modified Links",
     "Modified", 
     "Needs Check-Out", 
@@ -200,7 +199,6 @@ enum OverallNodeState
     "P", 
     "I", 
     "=", 
-    "T",
     "L",
     "M", 
     "O",
