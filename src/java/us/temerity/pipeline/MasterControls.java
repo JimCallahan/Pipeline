@@ -1,4 +1,4 @@
-// $Id: MasterControls.java,v 1.3 2008/12/18 00:46:24 jim Exp $
+// $Id: MasterControls.java,v 1.4 2009/04/02 11:47:55 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -58,18 +58,10 @@ class MasterControls
    *   to provide an exclusively network for file status query traffic.  Setting this to 
    *   <CODE>null</CODE> will cause the default root production directory to be used instead.
    * 
-   * @param inodeFileStat
-   *   Whether to use the alternative i-node based unique file comparison tests instead
-   *   of the original realpath based approach.
-   * 
    * @param checksumDir
    *   An alternative root production directory accessed via a different NFS mount point
    *   to provide an exclusively network for checksum generation traffic.  Setting this to 
    *   <CODE>null</CODE> will cause the default root production directory to be used instead.
-   * 
-   * @param nativeChecksum
-   *   Whether to use the native JNI based checksum generation code instead of the original
-   *   Java based method.
    */ 
   public 
   MasterControls
@@ -80,9 +72,7 @@ class MasterControls
    Long nodeGCInterval, 
    Long restoreCleanupInterval, 
    Path fileStatDir, 
-   boolean inodeFileStat, 
-   Path checksumDir, 
-   boolean nativeChecksum
+   Path checksumDir
   ) 
   {    
     setAverageNodeSize(avgNodeSize); 
@@ -90,9 +80,7 @@ class MasterControls
     setNodeGCInterval(nodeGCInterval); 
     setRestoreCleanupInterval(restoreCleanupInterval); 
     setFileStatDir(fileStatDir);
-    setINodeFileStat(inodeFileStat);
     setChecksumDir(checksumDir);
-    setNativeChecksum(nativeChecksum);
   }
 
 
@@ -302,32 +290,6 @@ class MasterControls
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get whether to use the alternative i-node based unique file comparison tests instead
-   * of the original realpath based approach.
-   */ 
-  public boolean
-  getINodeFileStat() 
-  {
-    return pINodeFileStat;
-  }
-
-  /**
-   * Set whether to use the alternative i-node based unique file comparison tests instead
-   * of the original realpath based approach.
-   */
-  public void 
-  setINodeFileStat
-  (
-   boolean useINodeFileStat
-  ) 
-  {
-    pINodeFileStat = useINodeFileStat;
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
    * Get the alternative root production directory accessed via a different NFS mount point
    * to provide an exclusively network for checksum generation traffic.
    *
@@ -356,32 +318,6 @@ class MasterControls
   ) 
   {
     pChecksumDir = dir; 
-  }
-
-
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Get whether to use the native JNI based checksum generation code instead of the original
-   * Java based method.
-   */ 
-  public boolean
-  getNativeChecksum() 
-  {
-    return pNativeChecksum;
-  }
-
-  /**
-   * Set whether to use the native JNI based checksum generation code instead of the original
-   * Java based method.
-   */
-  public void 
-  setNativeChecksum
-  (
-   boolean useNativeChecksum
-  ) 
-  {
-    pNativeChecksum = useNativeChecksum;
   }
 
 
@@ -430,23 +366,11 @@ class MasterControls
   private Path pFileStatDir;
 
   /**
-   * Whether to use the alternative i-node based unique file comparison tests instead
-   * of the original realpath based approach.
-   */ 
-  private boolean pINodeFileStat;
-
-  /**
    * An alternative root production directory accessed via a different NFS mount point
    * to provide an exclusively network for checksum generation traffic.  Setting this to 
    * <CODE>null</CODE> will cause the default root production directory to be used instead.
    */ 
   private Path pChecksumDir;
-
-  /**
-   * Whether to use the native JNI based checksum generation code instead of the original
-   * Java based method.
-   */ 
-  private boolean pNativeChecksum;
 
 }
 
