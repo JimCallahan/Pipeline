@@ -1,4 +1,4 @@
-// $Id: FileMgrNetClient.java,v 1.18 2009/04/01 21:17:59 jim Exp $
+// $Id: FileMgrNetClient.java,v 1.19 2009/04/02 03:03:10 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -289,7 +289,7 @@ class FileMgrNetClient
     verifyConnection();
 
     FileCheckInReq req = 
-      new FileCheckInReq(id, vid, latest, mod.getSequences(), isNovel, mod.isIntermediate()); 
+      new FileCheckInReq(id, vid, latest, mod.getSequences(), isNovel); 
 
     Object obj = performLongTransaction(FileRequest.CheckIn, req, 15000, 60000);  
     handleSimpleResponse(obj);
@@ -325,7 +325,7 @@ class FileMgrNetClient
 
     FileCheckOutReq req = 
       new FileCheckOutReq(id, vsn.getVersionID(), vsn.getSequences(), 
-			  isFrozen, !vsn.isActionEnabled(), vsn.isIntermediate());
+			  isFrozen, !vsn.isActionEnabled());
 
     Object obj = performLongTransaction(FileRequest.CheckOut, req, 15000, 60000);  
     handleSimpleResponse(obj);

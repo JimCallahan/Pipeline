@@ -1,4 +1,4 @@
-// $Id: FileMgrDirectClient.java,v 1.14 2009/04/01 21:17:59 jim Exp $
+// $Id: FileMgrDirectClient.java,v 1.15 2009/04/02 03:03:18 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -283,7 +283,7 @@ class FileMgrDirectClient
     throws PipelineException 
   {
     FileCheckInReq req = 
-      new FileCheckInReq(id, vid, latest, mod.getSequences(), isNovel, mod.isIntermediate()); 
+      new FileCheckInReq(id, vid, latest, mod.getSequences(), isNovel); 
 
     Object obj = pFileMgr.checkIn(req);
     handleSimpleResponse(obj);
@@ -317,7 +317,7 @@ class FileMgrDirectClient
   {
     FileCheckOutReq req = 
       new FileCheckOutReq(id, vsn.getVersionID(), vsn.getSequences(), 
-			  isFrozen, !vsn.isActionEnabled(), vsn.isIntermediate());
+			  isFrozen, !vsn.isActionEnabled());
 
     Object obj = pFileMgr.checkOut(req); 
     handleSimpleResponse(obj);
