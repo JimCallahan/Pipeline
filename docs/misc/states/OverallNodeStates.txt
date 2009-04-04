@@ -1,0 +1,32 @@
+Pending	-	-	-	-	-	Pending
+CheckedIn	-	-	-	-	-	CheckedIn
+NotLatest	Conflicted	BaseMissing	-	-	-	BaseMissing
+NotLatest	Conflicted	Conflicted, Modified,  BaseModified, Added, Obsolete, NotLatest, Identical	-	-	-	Conflicted
+NotLatest	Modified	BaseMissing	-	-	-	BaseMissing
+NotLatest	Modified	Conflicted, Modified,  BaseModified, Added, Obsolete, NotLatest, Identical	-	-	-	Conflicted
+NotLatest	BaseModified	BaseMissing	-	-	-	BaseMissing
+NotLatest	BaseModified	Conflicted, Modified,  BaseModified, Added, Obsolete, NotLatest, Identical	-	-	-	Conflicted
+NotLatest	NotLatest, Identical	BaseMissing	-	-	-	BaseMissing
+NotLatest	NotLatest, Identical	Conflicted	-	-	-	Conflicted
+NotLatest	NotLatest, Identical	Modified	-	-	-	Conflicted
+NotLatest	NotLatest, Identical	BaseModified	-	-	-	Conflicted
+NotLatest	NotLatest, Identical	NotLatest, Identical	Conflicted	-	-	Conflicted
+NotLatest	NotLatest, Identical	NotLatest, Identical	Modified	-	-	Conflicted
+NotLatest	NotLatest, Identical	NotLatest, Identical	BaseModified	-	-	Conflicted
+NotLatest	NotLatest, Identical	NotLatest, Identical	NotLatest, Identical	NotLatest, Identical	Same	NotLatest
+NotLatest	NotLatest, Identical	NotLatest, Identical	NotLatest, Identical	NotLatest, Identical	Different	Conflicted
+NotLatest	NotLatest, Identical	NotLatest, Identical	NotLatest, Identical	Missing, BaseMissing, Conflicted, Modified,  ModifiedLinks	-	Conflicted
+NotLatest	NotLatest, Identical	NotLatest, Identical	Added, Obsolete	-	-	Conflicted
+NotLatest	NotLatest, Identical	Added, Obsolete	-	-	-	Conflicted
+Identical	Modified	Missing	-	-	-	Missing
+Identical	Modified	Modified	-	-	-	Modified
+Identical	Modified	Added, Removed	-	-	-	Modified
+Identical	Modified	Identical	-	-	-	Modified
+Identical	Identical	Missing	-	-	-	Missing
+Identical	Identical	Modified	-	-	-	Modified
+Identical	Identical	Added, Removed	-	-	-	Modified
+Identical	Identical	Identical	Modified	-	-	ModifiedLinks
+Identical	Identical	Identical	Added, Removed	-	-	ModifiedLinks
+Identical	Identical	Identical	Identical	NotLatest, Identical	Same	Identical
+Identical	Identical	Identical	Identical	NotLatest, Identical	Different	ModifiedLinks
+Identical	Identical	Identical	Identical	Missing, BaseMissing, Conflicted, Modified,  ModifiedLinks	-	ModifiedLinks
