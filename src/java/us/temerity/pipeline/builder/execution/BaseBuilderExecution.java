@@ -1,8 +1,10 @@
-// $Id: BaseBuilderExecution.java,v 1.6 2009/02/02 18:59:10 jesse Exp $
+// $Id: BaseBuilderExecution.java,v 1.7 2009/04/06 00:53:11 jesse Exp $
 
 package us.temerity.pipeline.builder.execution;
 
 import java.util.*;
+
+import com.sun.java.swing.plaf.gtk.GTKConstants.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.LogMgr.*;
@@ -413,14 +415,13 @@ class BaseBuilderExecution
   }
   
   /**
-   * Gets the named Sub-Builder ready for execution.
+   * Get the named Sub-Builder ready for execution.
    * <p>
-   * Gets a list of all the mapped Builder Parameters for the Sub-Builder and then sets them
+   * Get a list of all the mapped Builder Parameters for the Sub-Builder and then sets them
    * to the correct value based on the parent's values.
    * 
    * @throws PipelineException
-   *         If there is no Sub-Builder that hasn't been initialized with the name that is
-   *         passed in.
+   *   If there is no Sub-Builder that hasn't been initialized with the name that is passed in.
    */
   protected void
   initializeSubBuilder
@@ -531,6 +532,45 @@ class BaseBuilderExecution
   didNodesReleaseCorrectly()
   {
     return pDidNodesReleaseCorrectly;
+  }
+  
+  /**
+   * Potentially release the working area the builder is operating in.
+   * 
+   * @param error
+   *   Is this call being made when the builder execution is in an error state?
+   *   
+   * @throws PipelineException
+   */
+  protected final void
+  releaseView
+  (
+    boolean error  
+  )
+    throws PipelineException
+  {
+    setPhase(ExecutionPhase.ReleaseView);
+    boolean rv = getReleaseView(error);
+    if (rv) {
+      pLog.log(Kind.Ops, Level.Fine, "Releasing the working area");
+      pBuilder.releaseView();
+    }
+  }
+  
+  protected final boolean
+  getReleaseView
+  (
+    boolean error  
+  )
+  {
+    ReleaseView rv = getBuilder().getReleaseView();
+    if (rv == ReleaseView.Always)
+      return true;
+    else if (rv == ReleaseView.OnError && error) 
+      return true;
+    else if (rv == ReleaseView.OnSuccess && !error)
+      return true;
+    return false;
   }
   
   protected BaseBuilder 

@@ -1,4 +1,4 @@
-// $Id: BaseBuilder.java,v 1.67 2009/03/26 15:55:29 jesse Exp $
+// $Id: BaseBuilder.java,v 1.68 2009/04/06 00:53:11 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -456,7 +456,7 @@ class BaseBuilder
   }
   
   /**
-   * Adds a Check-In when done parameter to the current Builder.
+   * Adds a CheckinWhenDone parameter to the current Builder.
    * 
    * This parameter can be used to specify whether the Builder should check in nodes it has
    * created when it finishes execution. By default this parameter's value is used in the
@@ -472,6 +472,27 @@ class BaseBuilder
       (aCheckinWhenDone,
        "Automatically check-in all the nodes when building is finished.", 
        false); 
+    addParam(param);
+  }
+  
+  /**
+   * Adds a ReleaseView parameter to the current builder.
+   * 
+   * This parameter can be used to specify whether the Builder should release the working area
+   * when builder execution is finished.  
+   * 
+   * @throws PipelineException
+   */
+  protected final void
+  addReleaseViewParam()
+  {
+    
+    UtilityParam param = 
+      new EnumUtilityParam
+      (aReleaseView,
+       "Should the view be released when the builder finishes.",
+       ReleaseView.Never.toTitle(),
+       ReleaseView.titles()); 
     addParam(param);
   }
   
@@ -1362,6 +1383,21 @@ class BaseBuilder
   
   
   /*----------------------------------------------------------------------------------------*/
+  /*   R E L E A S E    V I E W                                                             */
+  /*----------------------------------------------------------------------------------------*/
+  
+  public final ReleaseView
+  getReleaseView()
+  {
+    if (!hasParam(aReleaseView))
+      return ReleaseView.Never;
+    else
+      return ReleaseView.valueFromString((String) getParamValue(aReleaseView));
+  }
+  
+  
+  
+  /*----------------------------------------------------------------------------------------*/
   /*   B U I L D E R   U T I L I T I E S                                                    */
   /*----------------------------------------------------------------------------------------*/
   
@@ -2061,13 +2097,25 @@ class BaseBuilder
   }
   
   /**
-   * Releases all the nodes that were created during Builder execution.
+   * Release all the nodes that were created during Builder execution.
    */
   public final void
   releaseNodes() 
     throws PipelineException
   {
     BaseStage.cleanUpAddedNodes(pClient, pStageInfo);
+  }
+  
+  /**
+   * Release the view the builder is working in. 
+   */
+  public final void
+  releaseView()
+    throws PipelineException
+  {
+    TreeSet<String> names = pClient.getWorkingNames(getAuthor(), getView(), null);
+    pClient.release(getAuthor(), getView(), names, true);
+    pClient.removeWorkingArea(getAuthor(), getView());
   }
 
 
@@ -2647,6 +2695,7 @@ class BaseBuilder
    * Parameter names.
    */
   public final static String aReleaseOnError = "ReleaseOnError";
+  public final static String aReleaseView = "ReleaseView";
   public final static String aActionOnExistence = "ActionOnExistence";
   public final static String aSelectionKeys = "SelectionKeys";
   public final static String aCheckinWhenDone = "CheckinWhenDone";

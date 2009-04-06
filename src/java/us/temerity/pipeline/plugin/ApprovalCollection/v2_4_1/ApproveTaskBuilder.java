@@ -1,4 +1,4 @@
-// $Id: ApproveTaskBuilder.java,v 1.6 2008/06/26 20:39:25 jesse Exp $
+// $Id: ApproveTaskBuilder.java,v 1.7 2009/04/06 00:53:11 jesse Exp $
 
 package us.temerity.pipeline.plugin.ApprovalCollection.v2_4_1;
 
@@ -84,6 +84,8 @@ class ApproveTaskBuilder
     
     addDefaultParams();
     
+    addReleaseViewParam();
+    
     /* create the setup passes */ 
     addSetupPass(new LookupAndValidate());
 
@@ -152,6 +154,8 @@ class ApproveTaskBuilder
     layout.addEntry(aApproveNode);
     layout.addEntry(aCheckInLevel);
     layout.addEntry(aApprovalMessage);
+    layout.addSeparator();
+    layout.addEntry(aReleaseView);
 
     PassLayoutGroup finalLayout = new PassLayoutGroup(layout.getName(), layout);
     return finalLayout;
@@ -311,6 +315,18 @@ class ApproveTaskBuilder
    * {@link LookupAndValidate} pass has been called.  If that method is not being used, then 
    * {@link #pProjectName}, {@link #pTaskName}, and {@link #pTaskType} all need to have valid,
    * non-null values before this method is called.
+   * 
+   * @param aname
+   *   The name of the annotation.
+   *   
+   * @param projectName
+   *   The name of the project being checked for correctness.
+   *   
+   * @param taskName
+   *   The name of the task being checked for correctness
+   *   
+   * @param taskType
+   *   The type of the task being checked for correctness.
    */
   protected void
   validateTaskAnnotation

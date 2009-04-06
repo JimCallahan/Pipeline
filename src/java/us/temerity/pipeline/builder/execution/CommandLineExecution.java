@@ -1,4 +1,4 @@
-// $Id: CommandLineExecution.java,v 1.6 2008/08/01 21:28:13 jesse Exp $
+// $Id: CommandLineExecution.java,v 1.7 2009/04/06 00:53:11 jesse Exp $
 
 package us.temerity.pipeline.builder.execution;
 
@@ -30,13 +30,13 @@ class CommandLineExecution
     throws PipelineException
   {
     pLog.log(Kind.Ops, Level.Fine, "Starting the command line execution.");
-    boolean finish = false;
     try {
       pLog.log(Kind.Ops, Level.Fine, "Beginning execution of SetupPasses.");
       executeFirstLoop();
       checkActions();
       buildSecondLoopExecutionOrder();
       executeSecondLoop();
+      releaseView(false);
     }
     catch (Exception ex) {
       handleException(ex);
@@ -70,7 +70,8 @@ class CommandLineExecution
     throws PipelineException
   {
     ExecutionPhase phase = getPhase();
-    if (phase != ExecutionPhase.Release && phase != ExecutionPhase.Error) {
+    if (phase != ExecutionPhase.Release && phase != ExecutionPhase.Error &&
+        phase != ExecutionPhase.ReleaseView) {
       String header = "An error occurred during Builder Execution.";
 
       if (getBuilder().releaseOnError()) {
@@ -93,6 +94,7 @@ class CommandLineExecution
       if (getRunningBuilder().releaseOnError() && phase.haveNodesBeenMade()) {
         releaseNodes(getRunningBuilder());
       }
+      releaseView(true);
       if (!getBuilder().useBuilderLogging())
         throw new PipelineException(message);
       if (getBuilder().terminateAppOnQuit()) 
@@ -101,6 +103,17 @@ class CommandLineExecution
     else if (phase == ExecutionPhase.Release) {
       String header = 
         "Additionally, an error occurred while attempting to release the nodes";
+      String message;
+      if (ex instanceof PipelineException)
+        message = header + "\n" + ex.getMessage();
+      else
+        message = Exceptions.getFullMessage(header, ex);
+      pLog.logAndFlush(Kind.Ops, Level.Severe, message);
+    }
+    else if (phase == ExecutionPhase.ReleaseView) {
+      String header = 
+        "An error occurred after builder exection while attempting to release the " +
+        "working area";
       String message;
       if (ex instanceof PipelineException)
         message = header + "\n" + ex.getMessage();

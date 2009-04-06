@@ -1,4 +1,4 @@
-// $Id: ApproveTaskTool.java,v 1.4 2008/09/19 03:33:05 jesse Exp $
+// $Id: ApproveTaskTool.java,v 1.5 2009/04/06 00:53:11 jesse Exp $
 
 package us.temerity.pipeline.plugin.ApproveTaskTool.v2_4_1;
 
@@ -95,7 +95,6 @@ class ApproveTaskTool
       return " : Validating Task";
     }
 
-    @SuppressWarnings("unused")
     @Override
     public NextPhase 
     execute
@@ -163,7 +162,6 @@ class ApproveTaskTool
   class SecondPhase
     extends ToolPhase
   {
-    @SuppressWarnings("unused")
     @Override
     public String 
     collectInput()
@@ -251,6 +249,19 @@ class ApproveTaskTool
 
 	  pWaitOnBuilderField.setValue(true); 
 	}
+	
+	UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
+	
+	{
+          pReleaseViewField = 
+            UIFactory.createTitledCollectionField
+            (tpanel, "Release View:", sTSize, 
+             vpanel, ReleaseView.titles(), sVSize,
+             "Whether the approval builder should release the special created working area" +
+             "when it finished running."); 
+
+          pReleaseViewField.setSelected(ReleaseView.Never.toTitle()); 
+        }
       }
       
       JToolDialog diag = 
@@ -263,7 +274,6 @@ class ApproveTaskTool
       return null;
     }
     
-    @SuppressWarnings("unused")
     @Override
     public NextPhase 
     execute
@@ -373,6 +383,15 @@ class ApproveTaskTool
 
 	params.putValue(keys, msg, true);
       }
+      
+      {
+        LinkedList<String> keys = new LinkedList<String>(bkey); 
+        keys.add(aReleaseView);
+
+        String rv = pReleaseViewField.getSelected();
+
+        params.putValue(keys, rv, true);
+      }
     }
 
     /* create a new builder collection */ 
@@ -394,111 +413,6 @@ class ApproveTaskTool
     
     /* run it! */ 
     builder.run();
-  }
-
- 
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   H E L P E R S  (these should become part of a CommonTaskUtils eventually)            */
-  /*----------------------------------------------------------------------------------------*/
-
-  /**
-   * Lookup the value of the ProjectName annotation parameter.
-   * 
-   * @param name
-   *   The fully resolved name of the node having the given annotation.
-   * 
-   * @param aname
-   *   The name of the annotation instance.
-   * 
-   * @param annot
-   *   The annotation instance.
-   */ 
-  private String
-  lookupProjectName
-  (
-   String name, 
-   String aname, 
-   BaseAnnotation annot   
-  ) 
-    throws PipelineException
-  {
-    String projectName = (String) annot.getParamValue(aProjectName);
-    if(projectName == null) 
-      throw new PipelineException
-        ("No " + aProjectName + " parameter was specified for the (" + aname + ") " + 
-	 "annotation on the node (" + name + ")!"); 
-    
-    return projectName;
-  }
-
-  /**
-   * Lookup the value of the TaskName annotation parameter.
-   * 
-   * @param name
-   *   The fully resolved name of the node having the given annotation.
-   * 
-   * @param aname
-   *   The name of the annotation instance.
-   * 
-   * @param annot
-   *   The annotation instance.
-   */ 
-  private String
-  lookupTaskName
-  (
-   String name, 
-   String aname, 
-   BaseAnnotation annot   
-  ) 
-    throws PipelineException
-  {
-    String taskName = (String) annot.getParamValue(aTaskName);
-    if(taskName == null) 
-      throw new PipelineException
-        ("No " + aTaskName + " parameter was specified for the (" + aname + ") " + 
-	 "annotation on the node (" + name + ")!"); 
-
-    return taskName;
-  }
-
-  /**
-   * Lookup the value of the (Custom)TaskType annotation parameter.
-   * 
-   * @param name
-   *   The fully resolved name of the node having the given annotation.
-   * 
-   * @param aname
-   *   The name of the annotation instance.
-   * 
-   * @param annot
-   *   The annotation instance.
-   */ 
-  private String
-  lookupTaskType
-  (
-   String name, 
-   String aname, 
-   BaseAnnotation annot   
-  ) 
-    throws PipelineException
-  {
-    String taskType = (String) annot.getParamValue(aTaskType);
-    if(taskType == null) 
-      throw new PipelineException
-        ("No " + aTaskType + " parameter was specified for the (" + aname + ") " + 
-	 "annotation on the node (" + name + ")!"); 
-
-    if(taskType.equals(aCUSTOM)) {
-      taskType = (String) annot.getParamValue(aCustomTaskType);
-      if(taskType == null) 
-	throw new PipelineException
-	  ("No " + aCustomTaskType + " parameter was specified for the (" + aname + ") " + 
-	   "annotation on the node (" + name + ") even though the " + aTaskType + " " + 
-	   "parameter was set to (" + aCUSTOM + ")!"); 
-    }
-
-    return taskType;
   }
 
   /**
@@ -533,7 +447,6 @@ class ApproveTaskTool
   
 
 
-
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L   C L A S S E S                                                      */
   /*----------------------------------------------------------------------------------------*/
@@ -551,11 +464,13 @@ class ApproveTaskTool
       super("ApproveTaskTool:RunBuilderTask");
     }
     
+    @Override
     public void 
     run() 
     {	
+      //FIXME Should This get a connection from UIMaster?
       try {
-	runBuilder(null, null); 
+	runBuilder(new MasterMgrClient(), new QueueMgrClient()); 
       } 
       catch(PipelineException ex) {
         LogMgr.getInstance().log
@@ -581,11 +496,6 @@ class ApproveTaskTool
   private static final int sTSize = 150;
   private static final int sVSize = 300;
 
-  public static final String aProjectName     = "ProjectName";
-  public static final String aTaskName        = "TaskName";
-  public static final String aTaskType        = "TaskType";
-  public static final String aCustomTaskType  = "CustomTaskType";
-  public static final String aCUSTOM          = "[[CUSTOM]]";  
   public static final String aApprovalBuilder = "ApprovalBuilder";
 
   public static final String aApproveNode     = "ApproveNode";    
@@ -593,8 +503,8 @@ class ApproveTaskTool
   public static final String aSubmitVersion   = "SubmitVersion";
   public static final String aApprovalMessage = "ApprovalMessage";
   public static final String aCheckInLevel    = "CheckInLevel";
+  public static final String aReleaseView     = "ReleaseView";
   
-  public static final String aPurpose = "Purpose";
   public static final String aSubmit  = "Submit";
   public static final String aApprove = "Approve"; 
 
@@ -645,5 +555,9 @@ class ApproveTaskTool
    * Whether the tool should wait on the builder to complete.
    */ 
   private JBooleanField  pWaitOnBuilderField; 
-
+  
+  /**
+   * Whether the tool should release the working area when it finishes.
+   */
+  private JCollectionField  pReleaseViewField;
 }

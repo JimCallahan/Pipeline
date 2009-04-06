@@ -1,4 +1,4 @@
-// $Id: ExecutionPhase.java,v 1.2 2008/03/04 08:15:15 jesse Exp $
+// $Id: ExecutionPhase.java,v 1.3 2009/04/06 00:53:11 jesse Exp $
 
 package us.temerity.pipeline.builder.execution;
 
@@ -47,7 +47,13 @@ enum ExecutionPhase
    * When the executor has encountered an error and has gone ahead to release the nodes
    * that it has made.
    */
-  Release;
+  Release,
+  
+  /**
+   * After all execution (or an error) the working area the builder is running in is being
+   * released. 
+   */
+  ReleaseView;
   
   /**
    * Is the builder in one of its ending phases.
@@ -60,6 +66,7 @@ enum ExecutionPhase
     case Checkin:
     case Error:
     case Release:
+    case ReleaseView:
       return true;
     default:
       return false;

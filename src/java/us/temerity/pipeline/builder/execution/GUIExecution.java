@@ -1,4 +1,4 @@
-// $Id: GUIExecution.java,v 1.8 2008/08/01 21:31:15 jesse Exp $
+// $Id: GUIExecution.java,v 1.9 2009/04/06 00:53:11 jesse Exp $
 
 package us.temerity.pipeline.builder.execution;
 
@@ -58,7 +58,8 @@ class GUIExecution
   )
   {
     ExecutionPhase phase = getPhase();
-    if (phase != ExecutionPhase.Release && phase != ExecutionPhase.Error) {
+    if (phase != ExecutionPhase.Release && phase != ExecutionPhase.Error &&
+        phase != ExecutionPhase.ReleaseView) {
       String header = "An error occurred during Builder Execution.";
       
       String message;
@@ -98,12 +99,21 @@ class GUIExecution
         "Additionally, an error occurred while attempting to release the nodes";
       String message = Exceptions.getFullMessage(header, ex);
       pLog.logAndFlush(Kind.Ops, Level.Severe, message);
+      SwingUtilities.invokeLater(pDialog.new ShowErrorTask(message));
+    }
+    else if (phase == ExecutionPhase.ReleaseView) {
+      String header = 
+        "An error occurred after execution when attempting to release the working area";
+      String message = Exceptions.getFullMessage(header, ex);
+      pLog.logAndFlush(Kind.Ops, Level.Severe, message);
+      SwingUtilities.invokeLater(pDialog.new ShowErrorTask(message));
     }
     else if (phase == ExecutionPhase.Error) {
       String header = 
         "Additionally, another error occurred while dealing with the first error. ";
       String message = Exceptions.getFullMessage(header, ex);
       pLog.logAndFlush(Kind.Ops, Level.Severe, message);
+      SwingUtilities.invokeLater(pDialog.new ShowErrorTask(message));
     }
   }
 
@@ -203,6 +213,9 @@ class GUIExecution
     /*   B U T T O N S                                                                       */
     /*---------------------------------------------------------------------------------------*/
 
+    /**
+     * Disable all the buttons except the cancel button.
+     */
     private void
     disableAllButtons()
     {
@@ -211,6 +224,9 @@ class GUIExecution
       pRunAllButton.setEnabled(false);
     }
 
+    /**
+     * Disable the cancel button.
+     */
     private void
     disableCancelButton()
     {
@@ -260,7 +276,6 @@ class GUIExecution
     public void   
     windowClosing
     (
-      @SuppressWarnings("unused")
       WindowEvent e
     ) 
     {
@@ -295,7 +310,6 @@ class GUIExecution
     public void 
     valueChanged
     (
-      @SuppressWarnings("unused")
       TreeSelectionEvent e
     )
     {
@@ -309,7 +323,6 @@ class GUIExecution
     public void 
     stateChanged
     (
-      @SuppressWarnings("unused")
       ChangeEvent e
     )
     {
@@ -390,7 +403,7 @@ class GUIExecution
 
     private
     class AdjustButtonsTask
-    extends Thread
+      extends Thread
     {
 
       AdjustButtonsTask
@@ -429,7 +442,7 @@ class GUIExecution
 
     private
     class NextParameterPassTask
-    extends Thread
+      extends Thread
     {
       @Override
       public void 
@@ -464,7 +477,7 @@ class GUIExecution
 
     private
     class AfterOneConstructPassTask
-    extends Thread
+      extends Thread
     {
       @Override
       public void 
@@ -478,8 +491,12 @@ class GUIExecution
             pTopPanel.makeNextActive();
             constructPhaseEnableButtons();
           }
-          else
-            SwingUtilities.invokeLater(new FinishedTask());
+          else {
+            if (getReleaseView(false))
+              SwingUtilities.invokeLater(new AskAboutReleaseViewTask(false));
+            else
+              SwingUtilities.invokeLater(new FinishedTask(false));
+          }
         }
         catch (Exception ex) {
           handleException(ex);
@@ -489,25 +506,76 @@ class GUIExecution
         }
       }
     }
-
-    private
-    class FinishedTask
-    extends Thread
+    
+    private 
+    class AskAboutReleaseViewTask
+      extends Thread
     {
+      public
+      AskAboutReleaseViewTask
+      (
+        boolean error  
+      )
+      {
+        pError = error;
+      }
+      
       @Override
       public void
       run()
       {
-        setPhase(ExecutionPhase.Finished);
+        setPhase(ExecutionPhase.ReleaseView);
+        disableAllButtons();
+        JConfirmDialog dialog = 
+          new JConfirmDialog(pDialog, "Builder Error: Release View?", 
+            "Release View was selected for this builder.  Do you want to release the view?");
+        dialog.setVisible(true);
+        if (dialog.wasConfirmed()) {
+          disableCancelButton();
+          new ReleaseViewTask(pError).start();
+        }
+        else
+          pLog.logAndFlush(Kind.Ops, Level.Severe, 
+            "Builder execution has ended with an error.  " +
+            "The working area was not cleaned up.");
+      }
+
+      boolean pError;
+    }
+
+    private
+    class FinishedTask
+      extends Thread
+    {
+      public
+      FinishedTask
+      (
+        boolean error  
+      )
+      {
+        pError = error;
+      }
+      
+      @Override
+      public void
+      run()
+      {
+        if (!pError)
+          setPhase(ExecutionPhase.Finished);
+        else
+          setPhase(ExecutionPhase.Error);
         disableAllButtons();
         makeQuitButton();
+        enableCancelButton();
         pLog.logAndFlush(Kind.Ops, Level.Info, "Execution is now complete");
       }
+      
+      boolean pError;
     }
 
     private
     class PrepareConstructPassesTask
-    extends Thread
+      extends Thread
     {
       @Override
       public void 
@@ -573,10 +641,15 @@ class GUIExecution
             disableCancelButton();
             new ReleaseNodesTask().start();
           }
-          else
+          else {
             pLog.logAndFlush(Kind.Ops, Level.Severe, 
               "Builder execution has ended with an error.  " +
             "The created nodes were not cleaned up.");
+          if (getReleaseView(true)) 
+            SwingUtilities.invokeLater(new AskAboutReleaseViewTask(true));
+          else
+            SwingUtilities.invokeLater(new FinishedTask(true));
+          }
         }
         catch (Exception ex) {
           handleException(ex);
@@ -650,7 +723,7 @@ class GUIExecution
    */
   private
   class BuilderGuiThread
-  extends Thread
+    extends Thread
   {
     @Override
     public void 
@@ -674,7 +747,7 @@ class GUIExecution
 
   private
   class BuilderGuiViewThread
-  extends Thread
+    extends Thread
   {
     @Override
     public void 
@@ -698,7 +771,7 @@ class GUIExecution
 
   private
   class RunSetupPassTask
-  extends Thread
+    extends Thread
   {
     @Override
     public void 
@@ -728,7 +801,7 @@ class GUIExecution
 
   private 
   class RunAllConstructPassTask
-  extends Thread
+    extends Thread
   {
     @Override
     public void 
@@ -753,8 +826,12 @@ class GUIExecution
           error = true;
         }
       }
-      if (!error)
-        SwingUtilities.invokeLater(pDialog.new FinishedTask());
+      if (!error) {
+        if (getReleaseView(false))
+          SwingUtilities.invokeLater(pDialog.new AskAboutReleaseViewTask(false));
+        else
+          SwingUtilities.invokeLater(pDialog.new FinishedTask(false));
+      }
     }
   }
 
@@ -762,7 +839,7 @@ class GUIExecution
 
   private 
   class RunOneConstructPassTask
-  extends Thread
+    extends Thread
   {
     @Override
     public void 
@@ -785,11 +862,44 @@ class GUIExecution
     }
   }
 
+  private
+  class ReleaseViewTask
+    extends Thread
+  {
+    public
+    ReleaseViewTask
+    (
+      boolean error  
+    )
+    {
+      pError = error;
+    }
+    
+    @Override
+    public void
+    run()
+    {
+      try {
+        releaseView(pError);
+        SwingUtilities.invokeLater(pDialog.new FinishedTask(pError));
+      }
+      catch (Exception ex) {
+        SwingUtilities.invokeLater(pDialog.new AdjustButtonsTask(ButtonState.EnableQuit));
+        handleException(ex);
+      }
+      catch (LinkageError er ) {
+        SwingUtilities.invokeLater(pDialog.new AdjustButtonsTask(ButtonState.EnableQuit));
+        handleException(er);
+      }
+    }
+    
+    boolean pError;
+  }
 
 
   private
   class ReleaseNodesTask
-  extends Thread
+    extends Thread
   {
     @Override
     public void 
@@ -797,11 +907,14 @@ class GUIExecution
     {
       try {
         LogMgr.getInstance().log(Kind.Ops, Level.Warning, 
-        "All the nodes that were registered will now be released.");
+          "All the nodes that were registered will now be released.");
         getRunningBuilder().releaseNodes();
         LogMgr.getInstance().log
-        (Kind.Ops, Level.Info, "Finished releasing all the nodes.");
-        SwingUtilities.invokeAndWait(pDialog.new AdjustButtonsTask(ButtonState.EnableQuit));
+          (Kind.Ops, Level.Info, "Finished releasing all the nodes.");
+        if (getReleaseView(true))
+          SwingUtilities.invokeLater(pDialog.new AskAboutReleaseViewTask(true));
+        else
+          SwingUtilities.invokeLater(pDialog.new FinishedTask(true));
       }
       catch (Exception ex) {
         SwingUtilities.invokeLater(pDialog.new AdjustButtonsTask(ButtonState.EnableQuit));
