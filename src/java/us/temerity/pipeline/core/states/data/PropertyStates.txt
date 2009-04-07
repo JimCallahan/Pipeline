@@ -1,0 +1,9 @@
+Pending	-	-	-	Pending
+CheckedIn	-	-	-	CheckedIn
+NotLatest	Different	Different	Different	Conflicted
+NotLatest	Different	Different	Same	Modified
+NotLatest	Different	Same	-	BaseModified
+NotLatest	Same	Different	-	NotLatest
+NotLatest	Same	Same	-	Identical
+Identical	Different	-	-	Modified
+Identical 	Same	-	-	Identical

@@ -1,0 +1,22 @@
+Pending	YES	YES	no	no	-	-	-	Pending
+Pending	no	YES	-	-	-	-	-	Missing
+CheckedIn	no	-	-	YES	-	-	-	CheckedIn
+NotLatest	no	-	-	-	-	-	-	BaseMissing
+NotLatest	YES	YES	YES	YES	Different	Different	Different	Conflicted
+NotLatest	YES	YES	YES	no	Different	-	-	Conflicted
+NotLatest	YES	YES	no	YES	-	Different	-	Conflicted
+NotLatest	-	no	YES	YES	-	-	-	Conflicted
+NotLatest	YES	YES	YES	YES	Different	Different	Same	Modified
+NotLatest	YES	YES	YES	YES	Different	Same	Different	BaseModified
+NotLatest	YES	YES	no	YES	-	Same	-	BaseModified
+NotLatest	-	no	YES	no	-	-	-	BaseModified
+NotLatest	YES	YES	YES	YES	Same	Different	Different	NotLatest
+NotLatest		no	no	YES	-	-	-	NotLatest
+NotLatest	YES 	YES	no	no	-	-	-	Added
+NotLatest	YES	YES	YES	no	Same	-	-	Obsolete
+NotLatest	YES	YES	YES	YES	Same	Same	Same	Identical
+Identical	no	YES	-	-	-	-	-	Missing
+Identical	YES	YES	YES	YES	Different	Different	-	Modified 
+Identical	YES 	YES	no	no	-	-	-	Added
+Identical	-	no	YES	YES	-	-	-	Removed
+Identical	YES	YES	YES	YES	Same	Same	-	Identical
