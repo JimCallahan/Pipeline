@@ -1,4 +1,4 @@
-// $Id: BasePluginMgrClient.java,v 1.23 2009/03/26 06:48:37 jlee Exp $
+// $Id: BasePluginMgrClient.java,v 1.24 2009/04/07 01:48:12 jlee Exp $
   
 package us.temerity.pipeline;
 
@@ -39,20 +39,20 @@ class BasePluginMgrClient
     super(PackageInfo.sPluginServer, PackageInfo.sPluginPort, 
           PluginRequest.Disconnect, PluginRequest.Shutdown, clientID);
 
-    pEditors       = new PluginDataCache("Editor");  
-    pActions       = new PluginDataCache("Actions");  
-    pComparators   = new PluginDataCache("Comparators");  
-    pTools  	   = new PluginDataCache("Tools");   
-    pAnnotations   = new PluginDataCache("Annotations");   
-    pArchivers     = new PluginDataCache("Archivers");  
-    pMasterExts    = new PluginDataCache("MasterExts");  
-    pQueueExts     = new PluginDataCache("QueueExts");
-    pKeyChoosers   = new PluginDataCache("KeyChoosers");
-    pBuilderCollections = new PluginDataCache("BuilderCollections");
+    pEditors            = new PluginDataCache(PluginType.Editor);  
+    pActions            = new PluginDataCache(PluginType.Action);  
+    pComparators        = new PluginDataCache(PluginType.Comparator);  
+    pTools              = new PluginDataCache(PluginType.Tool);   
+    pAnnotations        = new PluginDataCache(PluginType.Annotation);   
+    pArchivers          = new PluginDataCache(PluginType.Archiver);  
+    pMasterExts         = new PluginDataCache(PluginType.MasterExt);  
+    pQueueExts          = new PluginDataCache(PluginType.QueueExt);
+    pKeyChoosers        = new PluginDataCache(PluginType.KeyChooser);
+    pBuilderCollections = new PluginDataCache(PluginType.BuilderCollection);
     
     
     pBuilderCollectionLayouts = 
-      new TripleMap<String, String, VersionID, LayoutGroup>();
+      new TripleMap<String,String,VersionID,LayoutGroup>();
 
     pAnnotationPermissions = 
       new TripleMap<String,String,VersionID,AnnotationPermissions>();
@@ -1017,7 +1017,7 @@ class BasePluginMgrClient
     public 
     PluginDataCache
     (
-     String ptype
+     PluginType ptype
     ) 
     {
       super();
@@ -1042,8 +1042,14 @@ class BasePluginMgrClient
             TreeMap<String,byte[]> contents = (TreeMap<String,byte[]>) objs[1];
             TreeSet<OsType> supports = (TreeSet<OsType>) objs[2];
 	    TreeMap<String,Long> resources = (TreeMap<String,Long>) objs[3];
+
+	    PluginID pid = (PluginID) objs[4];
+	    //PluginType ptype = (PluginType) objs[5];
             
-            ClassLoader loader = new PluginClassLoader(contents, cname, resources);
+            ClassLoader loader = 
+	      new PluginClassLoader(contents, resources, 
+	                            pid, pPluginType);
+
             try {
               LogMgr.getInstance().log
                 (LogMgr.Kind.Plg, LogMgr.Level.Finer,
@@ -1164,7 +1170,7 @@ class BasePluginMgrClient
 
     static final long serialVersionUID = 2146004185163196669L;
 
-    private String pPluginType;
+    private PluginType pPluginType;
   }
   
   

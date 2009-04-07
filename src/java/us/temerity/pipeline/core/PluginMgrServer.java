@@ -1,4 +1,4 @@
-// $Id: PluginMgrServer.java,v 1.18 2009/03/26 06:48:37 jlee Exp $
+// $Id: PluginMgrServer.java,v 1.19 2009/04/07 01:48:12 jlee Exp $
 
 package us.temerity.pipeline.core;
 
@@ -344,7 +344,7 @@ class PluginMgrServer
 		    else {
 		      /* The plugin has passed the plugin validation so we can 
 		         begin the resource install phase. */
-		      Object rsp = pPluginMgr.prepInstallResource(req);
+		      Object rsp = pPluginMgr.installResourcePrep(req);
 
 		      /* The responses from the resource install can be a 
 		         PluginResourceInstallRsp, FailureRsp, SuccessRsp.  
@@ -360,7 +360,7 @@ class PluginMgrServer
 			PluginResourceInstallRsp installResourceRsp = 
 			  (PluginResourceInstallRsp) rsp;
 
-			long pSessionID = installResourceRsp.getSessionID();
+			pSessionID = installResourceRsp.getSessionID();
 		      }
 
 		      objOut.writeObject(rsp);

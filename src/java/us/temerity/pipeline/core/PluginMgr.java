@@ -1,4 +1,4 @@
-// $Id: PluginMgr.java,v 1.36 2009/04/01 01:19:27 jim Exp $
+// $Id: PluginMgr.java,v 1.37 2009/04/07 01:48:12 jlee Exp $
 
 package us.temerity.pipeline.core;
 
@@ -99,6 +99,15 @@ class PluginMgr
 
       /* Flag indicating if all required plugins have been loaded. */
       pUpToDate = new AtomicBoolean(false);
+
+      /* With the new installed plugin directory structure of vendor/type/name/version, 
+         we need a means of getting that information given a class name. */
+      pPluginIDTable = new TreeMap<String,PluginID>();
+      pPluginTypeTable = new TreeMap<String,PluginType>();
+
+      /* The data structures used to store all the plugins found using findAllPlugins. */
+      pPluginPathTable = new MappedSet<String,String>();
+      pBackupPluginPathTable = new MappedSet<String,String>();
     }
 
     /* Plugin resource related fields. */
@@ -181,7 +190,49 @@ class PluginMgr
          "In required plugins bootstrap mode using (" + bootstrapDir + ") as the root of " + 
          "the previous Pipeline version.");
 
-      loadAllPlugins(bootstrapPluginsDir, PluginLoadType.Bootstrap);
+      /* Bootstrapping plpluginmgr using the new findAllPlugins method.  The method 
+         findAllPlugins has a table for normal plugin verison directories and plugin 
+	 version directories with -backup appended, but for bootstrap mode 
+	 we can ignore the backup ones since bootstrap mode assumes the directory 
+	 you are using is clean and fully installed plugins directory. 
+	 
+	 This handles the case where multiple plugin files are stored in a version 
+	 directory as with older style plugins.  Sony has the majority of plugins 
+	 in the old style and the previous version of PluginMgr prevented the loading 
+	 of multiple plugin files under the version directory. */
+      {
+	findAllPlugins(bootstrapPluginsDir);
+
+	Path bootstrapPluginsPath = new Path(bootstrapPluginsDir);
+      
+	for(String key : pPluginPathTable.keySet()) {
+	  TreeSet<String> pathList = pPluginPathTable.get(key);
+
+	  for(String path : pathList) {
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Plg, LogMgr.Level.Finest, 
+	       "Key (" + key + ") " + 
+	       "Path (" + path + ")");
+
+	    try {
+	      Path versionPath = new Path(bootstrapPluginsPath, key);
+	      Path pluginPath  = new Path(versionPath, path);
+
+	      loadPlugin(bootstrapPluginsDir, 
+	                 pluginPath.toFile(), 
+		         PluginLoadType.Bootstrap);
+	    }
+	    catch(PipelineException ex) {
+	      LogMgr.getInstance().log
+		(LogMgr.Kind.Plg, LogMgr.Level.Warning,
+	         ex.getMessage());
+	    }
+	  }
+	}
+
+	pPluginPathTable.clear();
+	pBackupPluginPathTable.clear();
+      }
 
       int pluginCount = 0;
 
@@ -241,7 +292,236 @@ class PluginMgr
       throw new IllegalStateException(ex.getMessage());
     }
 
-    loadAllPlugins(PackageInfo.sPluginsPath.toFile(), PluginLoadType.Startup);
+    /* Load all the plugins found by the findAllPlugins method.  After seeing the 
+       output from Sven@sony, it seemed handy to process plugins if given the find 
+       results of a plugins directory.  And with the new installed plugins directory 
+       structure is makes using the information from the required plugins GLUE files 
+       to make a first pass at loading all the plugins.  Then any plugins remaining 
+       from the results of findAllPlugins are unknown. 
+       
+       findAllPlugins also stores the backup plugin version directories in another 
+       table.  The process to deal with backup directories is:
+       
+       Attempt to load the plugin using the normal directory.
+       If the plugin loads successfully remove the entry from the backup table and 
+       rm -rf the backup directory.
+       If the plugin does not load successfully then let the backup pass handle it.
+       
+       If the backup table is not empty this means that the normal plugin version 
+       failed to load successfully or the directory did not exist.  
+       If the current plugin version directory exists rm -rf it.
+       Rename the backup to current.
+       Then attempt to load the plugin.
+       If successful all is done and complete, backup has become current.
+       If unsuccessful, then rm -rf current and the plugin is still in Missing status 
+       and needs to be reinstalled. */
+    {
+      File pluginsRoot = PackageInfo.sPluginsPath.toFile();
+      
+      findAllPlugins(pluginsRoot);
+
+      for(PluginType ptype : pPluginStatus.keySet()) {
+	for(PluginID pid : pPluginStatus.keySet(ptype)) {
+	  String vendor = pid.getVendor();
+	  String name = pid.getName();
+	  VersionID vid = pid.getVersionID();
+
+	  String key = vendor + "/" + ptype + "/" + name + "/" + vid;
+
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Plg, LogMgr.Level.Finest, 
+	     key + " (" + pPluginPathTable.containsKey(key) + ")");
+
+	  if(pPluginPathTable.containsKey(key)) {
+	    TreeSet<String> pathList = pPluginPathTable.get(key);
+
+	    /* In the new installed plugin directory structure there is only one 
+	       plugin file per version directory. */
+	    if(pathList.size() > 1) {
+	      LogMgr.getInstance().log
+		(LogMgr.Kind.Plg, LogMgr.Level.Warning,
+	         "Plugin (" + key + ")'s directory contained " + 
+		 "more than one plugin file!");
+	    }
+	    else {
+	      boolean isPluginLoaded = false;
+
+	      try {
+		String path = pathList.first();
+
+		LogMgr.getInstance().log
+		  (LogMgr.Kind.Plg, LogMgr.Level.Finest, 
+	           "Key (" + key + ") " + 
+	           "Path (" + path + ")");
+
+		Path versionPath = new Path(PackageInfo.sPluginsPath, key);
+		Path pluginPath  = new Path(versionPath, path);
+
+		loadPlugin(pluginsRoot, 
+	                   pluginPath.toFile(), 
+			   PluginLoadType.Startup);
+
+		isPluginLoaded = true;
+	      }
+	      catch(PipelineException ex) {
+		LogMgr.getInstance().log
+		  (LogMgr.Kind.Plg, LogMgr.Level.Warning,
+	           "" + ex.getMessage());
+	      }
+
+	      if(isPluginLoaded) {
+		if(pBackupPluginPathTable.containsKey(key)) {
+		  pBackupPluginPathTable.remove(key);
+
+		  Path backupPath = 
+		    new Path(PackageInfo.sPluginsPath, key + "-backup");
+		  {
+		    File backupDir = backupPath.toFile();
+
+		    if(backupDir.exists()) {
+		      try {
+			recursiveDelete(backupDir);
+		      }
+		      catch(PipelineException ex) {
+			LogMgr.getInstance().log
+			  (LogMgr.Kind.Plg, LogMgr.Level.Severe, 
+			   "Unable to remove directory (" + backupDir + ")!");
+		      }
+		    }
+		  }
+		}
+	      }
+	    }
+
+	    pPluginPathTable.remove(key);
+	  }
+	}
+      }
+
+      /* Handle the backup plugin version directories. */
+      if(!pBackupPluginPathTable.isEmpty()) {
+	for(String key : pBackupPluginPathTable.keySet()) {
+	  TreeSet<String> pathList = pBackupPluginPathTable.get(key);
+
+	  if(pathList.size() > 1) {
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Plg, LogMgr.Level.Warning,
+	       "Plugin (" + key + "-backup)'s directory " + 
+	       "contained more than one plugin file!");
+	  }
+	  else {
+	    Path currentPath = new Path(PackageInfo.sPluginsPath, key);
+	    Path backupPath  = new Path(PackageInfo.sPluginsPath, key + "-backup");
+
+	    try {
+	      File currentDir = currentPath.toFile();
+	      File backupDir  = backupPath.toFile();
+
+	      if(currentDir.exists()) {
+		try {
+		  recursiveDelete(currentDir);
+		}
+		catch(PipelineException ex) {
+		  throw new PipelineException
+		    ("Unable to remove directory (" + currentDir + ")!");
+		}
+	      }
+
+	      if(backupDir.exists()) {
+		if(!backupDir.renameTo(currentDir))
+		  throw new PipelineException
+		    ("Unable to rename (" + backupDir + ") to (" + currentDir + ")!");
+	      }
+
+	      boolean isPluginLoaded = false;
+
+	      try {
+		String path = pathList.first();
+
+		Path versionPath = new Path(PackageInfo.sPluginsPath, key);
+		Path pluginPath  = new Path(versionPath, path);
+
+		LogMgr.getInstance().log
+		  (LogMgr.Kind.Plg, LogMgr.Level.Info, 
+		   key + ", " + path + ", " + versionPath + ", " + pluginPath);
+
+		loadPlugin(pluginsRoot, 
+	                   pluginPath.toFile(), 
+			   PluginLoadType.Startup);
+
+		isPluginLoaded = true;
+	      }
+	      catch(PipelineException ex) {
+		LogMgr.getInstance().log
+		  (LogMgr.Kind.Plg, LogMgr.Level.Severe,
+	           "" + ex.getMessage());
+	      }
+
+	      if(!isPluginLoaded) {
+		if(currentDir.exists()) {
+		  /*
+		  if(!currentDir.renameTo(backupDir))
+		    throw new PipelineException
+		      ("Unable to rename (" + currentDir + ") to (" + backupDir + ")!");
+		  */
+
+		  try {
+		    recursiveDelete(currentDir);
+		  }
+		  catch(PipelineException ex) {
+		    throw new PipelineException
+		      ("Unable to remove directory (" + currentDir + ")!");
+		  }
+		}
+	      }
+	    }
+	    catch(PipelineException ex) {
+	      LogMgr.getInstance().log
+		(LogMgr.Kind.Plg, LogMgr.Level.Severe, 
+		 ex.getMessage());
+	    }
+	  }
+	}
+      }
+
+      /* Handle the unknown plugins. */
+      if(!pPluginPathTable.isEmpty()) {
+	for(String key : pPluginPathTable.keySet()) {
+	  TreeSet<String> pathList = pPluginPathTable.get(key);
+
+	  if(pathList.size() > 1) {
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Plg, LogMgr.Level.Warning,
+	       "Plugin (" + key + "-backup)'s directory " + 
+	       "contained more than one plugin file!");
+	  }
+	  else {
+	    try {
+	      String path = pathList.first();
+
+	      Path versionPath = new Path(PackageInfo.sPluginsPath, key);
+	      Path pluginPath  = new Path(versionPath, path);
+
+	      loadPlugin(pluginsRoot, 
+	                 pluginPath.toFile(), 
+		         PluginLoadType.Startup);
+	    }
+	    catch(PipelineException ex) {
+	      LogMgr.getInstance().log
+		(LogMgr.Kind.Plg, LogMgr.Level.Warning,
+	         ex.getMessage());
+	    }
+	  }
+	}
+      }
+      
+      pPluginPathTable.clear();
+      pBackupPluginPathTable.clear();
+    }
+
+    // no longer needed
+    pPluginPathTable = null;
+    pBackupPluginPathTable = null;
 
     displayVendorPlugins(); 
 
@@ -601,8 +881,8 @@ class PluginMgr
       TreeMap<String,byte[]> contents = req.getContents();
 
       /* For plugins with resources cache the file sizes and the checksums. */
-      TreeMap<String,Long> resources = new TreeMap<String,Long>();
-      TreeMap<String,byte[]> checksums = new TreeMap<String,byte[]>();
+      SortedMap<String,Long> resources = new TreeMap<String,Long>();
+      SortedMap<String,byte[]> checksums = new TreeMap<String,byte[]>();
 
       if(req instanceof PluginResourceInstallReq) {
 	PluginResourceInstallReq resourceReq = (PluginResourceInstallReq) req;
@@ -636,12 +916,30 @@ class PluginMgr
 
 
       if(!isDryRun) {
+	PluginID pid = pPluginIDTable.get(cname);
+
+	if(pid == null) {
+	  throw new PipelineException
+	    ("Plugin (" + cname + ") was not installed successfully!");
+	}
+
+	PluginType ptype = pPluginTypeTable.get(cname);
+
+	String vendor = pid.getVendor();
+	String name = pid.getName();
+
+	VersionID vid = pid.getVersionID();
+
 	/* save the plugin class bytes in a file */ 
 	Path path = null; 
 	try {
 	  boolean isJar = (contents.size() > 1);
 	  path = new Path(PackageInfo.sPluginsPath, 
-			  cname.replace(".", "/") + (isJar ? ".jar" : ".class"));
+			  vendor + "/" + 
+			  ptype + "/" + 
+			  name + "/" + 
+			  vid + "/" + 
+			  name + (isJar ? ".jar" : ".class"));
 	  
 	  File dir = path.getParentPath().toFile();
 	  if(!dir.exists()) {
@@ -653,7 +951,11 @@ class PluginMgr
 	  else {
 	    /* remove old class or JAR file if the plugin has changed format */ 
 	    Path opath = new Path(PackageInfo.sPluginsPath, 
-				  cname.replace(".", "/") + (isJar ? ".class" : ".jar"));
+	                          vendor + "/" + 
+			          ptype + "/" + 
+			          name + "/" + 
+			          vid + "/" + 
+				  name + (isJar ? ".class" : ".jar"));
 	    File ofile = opath.toFile();
 	    if(ofile.isFile()) 
 	      ofile.delete();
@@ -684,30 +986,20 @@ class PluginMgr
 	    ("Unable to save the plugin (" + cname + ") to file (" + path + ")!");
 	}
 
-	/* If the plugin contains resources save the resources and checksums tables 
-	   in the same directory as the java class or jar file. */
-	if(checksums != null && !checksums.isEmpty()) {
-	  Path checksumsPath = new Path(path.getParentPath(), "checksums.glue");
-
-	  try {
-	    GlueEncoderImpl.encodeFile
-	      ("checksums", checksums, checksumsPath.toFile());
-	  }
-	  catch(GlueException ex) {
-	    throw new PipelineException(ex);
-	  }
+	PluginMetadata metadata = null;
+	try {
+	  metadata = new PluginMetadata(cname, resources, checksums);
+	}
+	catch(IllegalArgumentException ex) {
+	  throw new PipelineException(ex);
 	}
 
-	if(resources != null && !resources.isEmpty()) {
-	  Path resourcesPath = new Path(path.getParentPath(), "resources.glue");
-
-	  try {
-	    GlueEncoderImpl.encodeFile
-	      ("resources", resources, resourcesPath.toFile());
-	  }
-	  catch(GlueException ex) {
-	    throw new PipelineException(ex);
-	  }
+	Path metadataPath = new Path(path.getParentPath(), ".metadata");
+	try {
+	  GlueEncoderImpl.encodeFile("PluginMetadata", metadata, metadataPath.toFile());
+	}
+	catch(GlueException ex) {
+	  throw new PipelineException(ex);
 	}
 
 	/* Check that all required plugins have been loaded. */
@@ -779,7 +1071,7 @@ class PluginMgr
 	throw new PipelineException("PluginID is (null) in this request!");
       }
 
-      TreeMap<String,byte[]> checksums = pResourceChecksums.getChecksums(ptype, pid);
+      SortedMap<String,byte[]> checksums = pResourceChecksums.getChecksums(ptype, pid);
 
       return new PluginChecksumRsp(timer, checksums);
     }
@@ -811,7 +1103,7 @@ class PluginMgr
    *   plugin install was unsuccessful.
    */
   public Object
-  prepInstallResource
+  installResourcePrep
   (
     PluginResourceInstallReq req
   )
@@ -869,7 +1161,7 @@ class PluginMgr
          the plugin version directory clean.  The only possible contents of a plugin 
 	 version directory are a resources directory, and jar or class file. */
       Path scratchResourcePath = 
-	new Path(scratchPath, "resources");
+	new Path(scratchPath, ".resources");
 
       File scratchDir = scratchPath.toFile();
       File scratchResourceDir = scratchResourcePath.toFile();
@@ -898,8 +1190,8 @@ class PluginMgr
 	 empty that means there are resources installed for the plugin but now will be 
 	 removed from the plugin, this signals that none of the previous resource will be 
 	 copied from current plugin version directory. */
-      TreeMap<String,Long>   resources = req.getResources();
-      TreeMap<String,byte[]> checksums = req.getChecksums();
+      SortedMap<String,Long>   resources = req.getResources();
+      SortedMap<String,byte[]> checksums = req.getChecksums();
 
       TreeMap<String,Long> localResources = new TreeMap<String,Long>();
 
@@ -909,9 +1201,27 @@ class PluginMgr
 	 "(" + localResources.size() + ") " + 
 	 "(" + checksums.size() + ")");
 
-      Path cpath = new Path(cname.replace('.', '/'));
-      Path currentPluginPath = new Path(PackageInfo.sPluginsPath, cpath.getParentPath());
-      Path currentResourcePath = new Path(currentPluginPath, "resources");
+      Path currentResourcePath = null;
+      boolean isPluginInstalled = false;
+
+      PluginID pid = pPluginIDTable.get(cname);
+
+      if(pid != null) {
+	isPluginInstalled = true;
+
+	PluginType ptype = pPluginTypeTable.get(cname);
+
+	String vendor = pid.getVendor();
+	String name = pid.getName();
+
+	VersionID vid = pid.getVersionID();
+
+	Path currentPluginPath = 
+	  new Path(PackageInfo.sPluginsPath, 
+		   vendor + "/" + ptype + "/" + name + "/" + vid);
+
+	currentResourcePath = new Path(currentPluginPath, ".resources");
+      }
 
       if(!checksums.isEmpty()) {
 	/* If the checksums table is not empty we will copy the resources that do not 
@@ -948,7 +1258,7 @@ class PluginMgr
 	       the scratch directory.  The use of a scratch directory eliminates 
 	       the need to worry about resources that have been deleted from the 
 	       plugin since the checksums tables will contain all the resources. */
-	    if(!resources.containsKey(path)) {
+	    if(isPluginInstalled && !resources.containsKey(path)) {
 	      Path srcPath = new Path(currentResourcePath, path);
 
 	      LogMgr.getInstance().log
@@ -1031,11 +1341,36 @@ class PluginMgr
     long sessionID = pluginResource.getSessionID();
 
     String cname = pluginResource.getClassName();
-    String cpath = 
-      cname.substring(0, cname.lastIndexOf('.')).replace('.', '/');
+
+    PluginID pid = null;
+    {
+      TaskTimer timer = new TaskTimer();
+
+      timer.aquire();
+      try {
+	pid = pPluginIDTable.get(cname);
+
+	if(pid == null) {
+	  throw new PipelineException
+	    ("Plugin (" + cname + ") was not installed successfully!");
+	}
+      }
+      catch(PipelineException ex) {
+	return new FailureRsp(timer, ex.getMessage());
+      }
+    }
+    
+    PluginType ptype = pPluginTypeTable.get(cname);
+
+    String vendor = pid.getVendor();
+    String name = pid.getName();
+
+    VersionID vid = pid.getVersionID();
+
+    String cpath = vendor + "/" + ptype + "/" + name + "/" + vid;
 
     Path scratchPath = new Path(pPluginScratchPath, Long.toString(sessionID));
-      
+
     Path currentVersionPath = new Path(PackageInfo.sPluginsPath, cpath);
     Path backupVersionPath  = new Path(PackageInfo.sPluginsPath, cpath + "-backup");
 
@@ -1163,8 +1498,9 @@ class PluginMgr
       {
 	File scratchDir = scratchPath.toFile();
 
-	if(scratchDir.exists())
+	if(scratchDir.exists()) {
 	  recursiveDelete(scratchDir);
+	}
       }
 
       pPluginResourceInstalls.remove(sessionID);
@@ -1221,7 +1557,7 @@ class PluginMgr
 	new Path(pPluginScratchPath, Long.toString(sessionID));
 
       Path scratchResourcePath = 
-	new Path(scratchPath, "resources");
+	new Path(scratchPath, ".resources");
 
       Path rpath = new Path(scratchResourcePath, path);
 
@@ -1254,6 +1590,10 @@ class PluginMgr
       /* When all resources have been received we can start the install 
          process and the return the response to the client. */
       if(pluginResource.hasReceivedAllResources()) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Plg, LogMgr.Level.Finest, 
+	   "Received all resource chunks for sessionID (" + sessionID + ")");
+
 	return installResource(pluginResource);
       }
 
@@ -1272,6 +1612,9 @@ class PluginMgr
 
   /**
    * Provides a means to delete directories.
+   *
+   * @param dir
+   *   The root of the directory to be rm -rf
    */
   private boolean
   recursiveDelete
@@ -1315,6 +1658,89 @@ class PluginMgr
     }
   }
 
+  /**
+   * Performs the unix find command for class and jar files only.
+   *
+   * @param root
+   *   Root of the Pipeline plugins directory.
+   */
+  private void 
+  findAllPlugins
+  (
+   File root
+  ) 
+  {
+    File[] dirs = root.listFiles();
+    int wk;
+    for(wk=0; wk<dirs.length; wk++) {
+      if(dirs[wk].isDirectory()) 
+	findPluginHelper(root, dirs[wk]);
+    }
+  }
+
+  /**
+   * Recursively finds all the plugin class and jar files.
+   *
+   * @param root
+   *   The root directory of installed plugins.
+   *
+   * @param dir
+   *   The current directory.
+   */
+  private void
+  findPluginHelper
+  (
+   File root, 
+   File dir
+  )
+  {
+    String dpath = root.getPath();
+    File[] fs = dir.listFiles();
+    int wk;
+    for(wk=0; wk<fs.length; wk++) {
+      if(fs[wk].isFile()) {
+	File file = fs[wk];
+	String fpath = file.getPath();
+
+	/* Pipeline plugins are in class or jar form only.  All other files 
+	   are ignored. */
+	if(!fpath.endsWith(".class") && !fpath.endsWith(".jar"))
+	  continue;
+
+	/* Create a path that is independent of the root directory of 
+	   installed plugins so we are left with a path that follows: 
+	   Vendor-name/plugin-type/plugin-name/plugin-version
+	   
+	   This will allow for a convenient way to use the required plugins 
+	   database to control the plugin loading. */
+	Path pluginPath = new Path(fpath.substring(dpath.length() + 1));
+	String parentPath = pluginPath.getParent();
+
+	/* Plugins with resources have an intermediate step where a scratch 
+	   directory is used to write the resources before it is moved to the 
+	   installed plugins directory.  Before the plugin is moved, the currently 
+	   installed plugin is renamed with -backup appended to the version.  In 
+	   normal cases the backup directory is removed when the plugin is 
+	   successfully installed or renamed back to the original name if the 
+	   plugin install fails, but if due to an error it is still around during 
+	   startup it needs to be andled differently.  Therefore, it is stored in a 
+	   different table with only plugin files with a version directory with 
+	   backup appended. */
+	if(parentPath.endsWith("-backup")) {
+	  pBackupPluginPathTable.put(parentPath.substring(0, parentPath.length() - 7), 
+	                             file.getName());
+	}
+	else {
+	  pPluginPathTable.put(parentPath, 
+	                       file.getName());
+	}
+      }
+      else if(fs[wk].isDirectory()) {
+	findPluginHelper(root, fs[wk]);
+      }
+    }
+  }
+
   /** 
    * Recursively load all installed plugin classes under the given directory.
    * 
@@ -1335,227 +1761,54 @@ class PluginMgr
    PluginLoadType pluginLoadType
   ) 
   {
-    if(!dir.isDirectory())
-      return;
-
     File[] fs = dir.listFiles();
+    int wk;
+    for(wk=0; wk<fs.length; wk++) {
+      if(fs[wk].isFile()) {
+	try {
+	  File file = fs[wk];
+	  String filename = file.getName();
 
-    ArrayList<Path> pluginList = new ArrayList<Path>();
-    {
-      int wk;
-      for(wk=0; wk<fs.length; wk++) {
-	if(fs[wk].isFile()) {
-	  String filename = fs[wk].getName();
-	
-	  if(filename.endsWith(".class") || filename.endsWith(".jar")) {
-	    pluginList.add(new Path(fs[wk]));
-	    break;
-	  }
-	}
-      }
-    }
+	  /* Ignore all non java class or jar files.  This way resource files 
+	     do not throw an exception when they do not conform to having a 
+	     parent directory v#_#_#. */
+	  if(!filename.endsWith(".class") && !filename.endsWith(".jar"))
+	    continue;
 
-    int pluginCount = pluginList.size();
-
-    switch(pluginCount) {
-      case 0:
-	{
-	  int wk;
-	  for(wk=0; wk<fs.length; wk++) {
-	    if(fs[wk].isDirectory()) {
-	      loadBelow(root, fs[wk], pluginLoadType);
-	    }
-	  }
-	}
-	break;
-
-	case 1:
-	  {
-	    Path pluginPath = pluginList.get(0);
+	  VersionID vid = null;
+	  try {
 	    String dname = dir.getName();
-	    boolean isBackup = false;
-
-	    if(dname.endsWith("-backup")) {
-	      isBackup = true;
+	    if(dname.startsWith("v")) {
+	      String vstr = dname.substring(1, dname.length()).replace('_','.');
+	      vid = new VersionID(vstr);
 	    }
-
-	    try {
-	      VersionID vid = null;
-	      try {
-		if(dname.startsWith("v")) {
-		  int endIndx = dname.length() - (isBackup ? 7 : 0);
-
-		  String vstr = 
-		    dname.substring(1, endIndx).replace('_','.');
-
-		  vid = new VersionID(vstr);
-		}
-		else {
-		  throw new IllegalArgumentException("Missing \"v\" prefix.");
-		}
-	      }
-	      catch(IllegalArgumentException ex) {
-		throw new PipelineException 
-		("The directory containing plugin files (" + dir + ") does " +
-	         "not conform to the naming convention of \"v#_#_#\" used to denote " +
-	         "the plugin version!  Ignoring plugin file (" + pluginPath + ").\n" + 
-	         ex.getMessage());
-	      }
-
-	      Path parentPath = new Path(dir.getParentFile());
-
-	      /* If we are in a backup plugin-version directory, as indicated by a 
-	         directory that ends with "-backup," first check to see that a 
-		 directory without the "-backup" exists, if so then do not 
-		 process the directory.
-		 
-		 If the directory without backup does not exist then attempt to 
-		 load the plugin from the backup directory.  First rename the backup 
-		 to current then attempt the plugin load.  If it fails remove current. */
-	      if(isBackup) {
-		Path currentPath = 
-		  new Path(parentPath, dname.substring(0, dname.length() - 7));
-		Path backupPath = 
-		  new Path(parentPath, dname);
-
-		File currentDir = currentPath.toFile();
-		File backupDir  = backupPath.toFile();
-
-		if(currentDir.exists()) {
-		  LogMgr.getInstance().log
-		    (LogMgr.Kind.Plg, LogMgr.Level.Finest, 
-		     "A backup plugin-version directory (" + backupPath + ") " + 
-		     "exists, however a current plugin-version directory " + 
-		     "(" + currentPath + ") also exists.  PluginMgr will attempt " + 
-		     "to load the plugin from the current plugin-version directory " + 
-		     "first.");
-		}
-		else {
-		  LogMgr.getInstance().log
-		    (LogMgr.Kind.Plg, LogMgr.Level.Warning, 
-		     "A backup plugin-version directory (" + backupPath + ") " + 
-		     "exists, and a current plugin-version directory " + 
-		     "does not exist.  PluginMgr will attempt to load the plugin " + 
-		     "from the backup plugin-version directory.");
-
-		  if(!backupDir.renameTo(currentDir)) {
-		    throw new PipelineException
-		      ("Unable to rename backup " + 
-		       "(" + backupPath + ") to current (" + currentPath + ")!");
-		  }
-
-		  try {
-		    Path backupPlugin = new Path(currentPath, pluginPath.getName());
-
-		    if(backupPlugin.toFile().exists())
-		      loadPlugin(root, backupPlugin.toFile(), pluginLoadType);
-		    else
-		      throw new PipelineException("Error loading the backup plugin!");
-		  }
-		  catch(PipelineException ex) {
-		    LogMgr.getInstance().log
-		      (LogMgr.Kind.Plg, LogMgr.Level.Severe, 
-		       "Unable to load the plugin using the backup plugin-version " + 
-		       "directory (" + backupPath + ")!  The backup plugin-version " + 
-		       "directory will be removed.  " + ex.getMessage());
-
-		    if(backupPath.toFile().exists())
-		      recursiveDelete(backupPath.toFile());
-
-		    if(currentPath.toFile().exists())
-		      recursiveDelete(currentPath.toFile());
-		  }
-		}
-	      }
-	      /* We are in a normal plugin-version directory, which will be known
-	         as current when a backup directory exists.  Attempt the plugin load 
-		 as normal.  If the plugin load fails then check for a backup directory. 
-		 Remove current and rename backup to current, then attempt the plugin 
-		 load.  If the plugin load fails then remove current. */
-	      else {
-		Path currentPath = new Path(parentPath, dname);
-		Path backupPath = new Path(parentPath, dname + "-backup");
-
-		File currentDir = currentPath.toFile();
-		File backupDir  = backupPath.toFile();
-
-		try {
-		  loadPlugin(root, pluginPath.toFile(), pluginLoadType);
-		}
-		catch(PipelineException ex) {
-		  LogMgr.getInstance().log
-		    (LogMgr.Kind.Plg, LogMgr.Level.Warning, 
-		     "Unable to load the plugin using the current plugin-version " + 
-		     "directory (" + currentPath + ").  checking for a backup " + 
-		     "plugin-version.  " + ex.getMessage());
-
-		  if(backupPath.toFile().exists()) {
-		    LogMgr.getInstance().log
-		      (LogMgr.Kind.Plg, LogMgr.Level.Warning, 
-		       "A backup plugin-version directory (" + backupPath + ") " + 
-		       "exists.  PlugimMgr will attempt to load the plugin using " + 
-		       "the backup.");
-
-		    recursiveDelete(currentPath.toFile());
-
-		    if(!backupPath.toFile().renameTo(currentPath.toFile()))
-		      throw new PipelineException
-			("Unable to rename the backup " + 
-			 "plugin-version directory (" + backupPath +") to the " + 
-			 "current plugin-version directory (" + currentPath + ")!");
-
-		    try {
-		      ArrayList<Path> plugins = new ArrayList<Path>();
-		      {
-			plugins.add(new Path(currentPath, parentPath.getName() + ".jar"));
-			plugins.add(new Path(currentPath, parentPath.getName() + ".class"));
-		      }
-
-		      for(Path plugin : plugins) {
-			File pluginFile = plugin.toFile();
-
-			if(pluginFile.exists()) {
-			  loadPlugin(root, pluginFile, pluginLoadType);
-
-			  LogMgr.getInstance().log
-			    (LogMgr.Kind.Plg, LogMgr.Level.Info, 
-			     "Successfully loaded the plugin using the backup " + 
-			     "plugin-version directory.  The backup will be renamed " + 
-			     "to the current plugin-version directory.");
-
-			  break;
-			}
-		      }
-		    }
-		    catch(PipelineException ex2) {
-		      LogMgr.getInstance().log
-			(LogMgr.Kind.Plg, LogMgr.Level.Severe, 
-			 "Unable to load the plugin using the backup plugin-version " + 
-			 "directory (" + backupPath + ")!  The backup plugin-version " + 
-			 "directory will be removed.  " + ex2.getMessage());
-
-		      if(currentDir.exists()) {
-			recursiveDelete(currentDir);
-		      }
-		    }
-		  }
-		}
-
-		if(backupDir.exists()) {
-		  recursiveDelete(backupDir);
-		}
-	      }
-	    }
-	    catch(PipelineException ex) {
-	      LogMgr.getInstance().log
-		(LogMgr.Kind.Plg, LogMgr.Level.Warning,
-	         ex.getMessage());
+	    else {
+	      throw new IllegalArgumentException("Missing \"v\" prefix.");
 	    }
 	  }
-	  break;
+	  catch(IllegalArgumentException ex) {
+	    throw new PipelineException 
+	      ("The directory containing plugin files (" + dir + ") does " +
+	       "not conform to the naming convention of \"v#_#_#\" used to denote " +
+	       "the plugin version!  Ignoring plugin file (" + file + ").\n" + 
+	       ex.getMessage());
+	  }
 
-	default:
-	  // TODO log error message about how there are more than one java file.
+	  loadPlugin(root, file, pluginLoadType);
+
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Plg, LogMgr.Level.Finest, 
+	     "classdir (" + root + ") pluginfile (" + file + ")");
+	}
+	catch(PipelineException ex) {
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Plg, LogMgr.Level.Warning,
+	     ex.getMessage());
+	}	
+      }
+      else if(fs[wk].isDirectory()) {
+	loadBelow(root, fs[wk], pluginLoadType);
+      }
     }
   }
 
@@ -1623,19 +1876,57 @@ class PluginMgr
       rfile = new File(fpath.substring(dpath.length()));
     }
 
+    /* With new plugin install directory style, vendor/type/name/version, we 
+       can no longer rely on the file path to provide the plugin class name.  That 
+       information is stored in a glue file with the plugin class name, the resources 
+       table and the checksums table. */
+    PluginMetadata metadata = null;
+    {
+      Path parentPath = new Path(cfile.getParentFile());
+      Path metadataPath = new Path(parentPath, ".metadata");
+
+      {
+	File metadataFile = metadataPath.toFile();
+
+	if(metadataFile.exists()) {
+	  try {
+	    metadata = (PluginMetadata) 
+	      GlueDecoderImpl.decodeFile("PluginMetadata", metadataFile);
+	  }
+	  catch(GlueException ex) {
+	    throw new PipelineException(ex);
+	  }
+	}
+      }
+    }
+
+    /* If plpluginmgr has the --bootstrap flag then it is OK for the metadata 
+       file not to exist since it could be running bootstrap on a previous version 
+       of Pipeline's plugin directory.  However, if it is not in bootstrap mode and 
+       the metadata file is missing then this is a problem. */
+    if(metadata == null && pluginLoadType != PluginLoadType.Bootstrap)
+      throw new PipelineException
+	("The required metadata file was not found for plugin " + 
+	 "(" + pluginfile + ") in (" + pluginLoadType + ") mode!");
+
     /* the Java package name and plugin revision number */ 
-    String pkgName = null; 
+    String pkgName = null;
     VersionID pkgID = null;
     try {
       File parent = rfile.getParentFile();
-      pkgName = parent.getPath().substring(1).replace('/', '.'); 
-      
-      String vstr = parent.getName();
-      if(!vstr.startsWith("v")) 
-	throw new IllegalArgumentException
-	  ("The directory (" + vstr + ") did not match the pattern (v#_#_#)!");
+      pkgName = parent.getPath().substring(1).replace('/', '.');
 
-      pkgID = new VersionID(vstr.substring(1).replace("_", "."));
+      String vstr = parent.getName();
+
+      /* If the metadata file exists then the version directory is already in a 
+         string format that VersionID expects.  Otherwise follow the previous 
+	 method of converting a version name. */
+      if(metadata != null) {
+	pkgID = new VersionID(vstr);
+      }
+      else {
+	pkgID = new VersionID(vstr.substring(1).replace("_", "."));
+      }
     }
     catch(IllegalArgumentException ex) {
       throw new PipelineException
@@ -1651,14 +1942,23 @@ class PluginMgr
       if((parts.length == 2) && (parts[1].equals("class") || parts[1].equals("jar"))) {
 	isJar = parts[1].equals("jar");
 
-	cname = (pkgName + "." + parts[0]);
+	/* The metadata file contains the class name for the plugin.  If plpluginmgr 
+	   is in bootstrap mode and the directory being processed is from an earlier 
+	   version then we can use the file path to determine the class name to be 
+	   loaded. */
+	if(metadata != null) {
+	  cname = metadata.getClassName();
+	}
+	else {
+	  cname = (pkgName + "." + parts[0]);
+	}
       }
       else {
 	throw new PipelineException 
 	  ("The plugin file (" + pluginfile + ") was not a Java class or JAR file!");
       }
     }
-    
+
     /* load, instantiate and validate the plugin class or JAR file */ 
     {
       TreeMap<String,byte[]> contents  = new TreeMap<String,byte[]>(); 
@@ -1674,6 +1974,7 @@ class PluginMgr
 
 	    if(!entry.isDirectory()) {
 	      String path = entry.getName(); 
+
 	      if(path.endsWith("class")) {
 		String jcname = path.substring(0, path.length()-6).replace('/', '.'); 
 		
@@ -1719,59 +2020,28 @@ class PluginMgr
 	contents.put(cname, bytes);
       }
 
-      /* Read the reources.glue file and load the resources table. */
-      TreeMap<String,Long> resources = new TreeMap<String,Long>();
-      {
-	Path parentPath = new Path(cfile.getParentFile());
-	Path resourcesPath = new Path(parentPath, "resources.glue");
-
-	File resourcesFile = resourcesPath.toFile();
-
-	if(resourcesFile.exists()) {
-	  try {
-	    TreeMap<String,Long> resourcesGLUE = 
-	      (TreeMap<String,Long>) GlueDecoderImpl.decodeFile("resources", resourcesFile);
-
-	    if(resourcesGLUE != null) {
-	      resources.putAll(resourcesGLUE);
-	    }
-	  }
-	  catch(GlueException ex) {
-	    throw new PipelineException(ex);
-	  }
-	}
+      if(metadata != null) {
+	loadPluginHelper(pluginfile, cname, pkgID, 
+                         contents, metadata.getResources(), metadata.getChecksums(), 
+		         true, true, 
+		         pluginLoadType);
       }
-      
-      /* Read the checksums.glue file and load the checksums table. */
-      TreeMap<String,byte[]> checksums = new TreeMap<String,byte[]>();
-      {
-	Path parentPath = new Path(cfile.getParentFile());
-	Path checksumsPath = new Path(parentPath, "checksums.glue");
-
-	File checksumsFile = checksumsPath.toFile();
-
-	if(checksumsFile.exists()) {
-	  try {
-	    TreeMap<String,byte[]> checksumsGLUE = 
-	      (TreeMap<String,byte[]>) GlueDecoderImpl.decodeFile("checksums", checksumsFile);
-
-	    if(checksumsGLUE != null) {
-	      checksums.putAll(checksumsGLUE);
-	    }
-	  }
-	  catch(GlueException ex) {
-	    throw new PipelineException(ex);
-	  }
-	}
+      /* If in bootstrap mode we do not need to perform the checks on the resources
+         so just pass nulls for them. */
+      else if(pluginLoadType == PluginLoadType.Bootstrap) {
+	loadPluginHelper(pluginfile, cname, pkgID, 
+                         contents, null, null, 
+		         true, true, 
+		         pluginLoadType);
       }
-
-      loadPluginHelper(pluginfile, cname, pkgID, 
-                       contents, resources, checksums, 
-		       true, true, 
-		       pluginLoadType);
+      else {
+	throw new PipelineException
+	  ("The required metadata file was not found for plugin " + 
+	   "(" + pluginfile + ") in (" + pluginLoadType + ") mode!");
+      }
     }
   }
-    
+
   /**
    * Load the plugin.
    * 
@@ -1786,6 +2056,12 @@ class PluginMgr
    * 
    * @param contents
    *   The raw plugin class bytes indexed by class name.
+   *
+   * @param resources
+   *   The file sizes of resources indexed by class name.
+   *
+   * @param checksums
+   *   The checksums of resources indexed by class name.
    * 
    * @param external
    *   Whether to ignore the Local Vendor check.
@@ -1806,8 +2082,8 @@ class PluginMgr
    String cname, 
    VersionID pkgID, 
    TreeMap<String,byte[]> contents, 
-   TreeMap<String,Long> resources, 
-   TreeMap<String,byte[]> checksums, 
+   SortedMap<String,Long> resources, 
+   SortedMap<String,byte[]> checksums, 
    boolean external, 
    boolean rename, 
    PluginLoadType pluginLoadType
@@ -1872,6 +2148,7 @@ class PluginMgr
       LogMgr.getInstance().log
 	(LogMgr.Kind.Plg, LogMgr.Level.Finest,
 	 "Instantiating Plugin: " + cname);
+
       BasePlugin plg = null; 
       try {
 	plg = (BasePlugin) cls.newInstance();
@@ -1891,6 +2168,37 @@ class PluginMgr
 	  ("Exception thrown by constructor of plugin class (" + cls.getName() + "):\n" + 
 	   ex.getMessage());
       }
+
+      /* If in bootstrap mode we only need to gather info about the plugin to 
+         create a required plugins GLUE file for a vendor.  At this point 
+	 if there is a plugin class that can be instantiated we know the 
+	 PluginID and the PluginType.  However, I am making the assumption that 
+	 previous plugins can be instantiated, version id is in proper format 
+	 and the vendor name is valid.  If they are not they will not be added 
+	 to the bootstrap plugin table since they would have thrown an 
+	 Exception and PluginMgr would continue.  We could throw a more 
+	 fatal runtime exception if in bootstrap mode to fail PluginMgr 
+	 when the minimum tests were not passed. */
+
+      if(isBootstrap) {
+	String vendor = plg.getVendor();
+
+	/* Ignore Temerity plugins during bootstrap mode */
+	if(!vendor.equals("Temerity")) {
+	  PluginType ptype = plg.getPluginType();
+	  PluginID   pid   = plg.getPluginID();
+
+	  pBootstrapPlugins.addPlugin(ptype, pid);
+	}
+
+	return;
+      }
+
+      /* With the vendor/type/name/version installed plugin directory 
+         structure we need a means of retrieving the PluginID and PluginType 
+         for a plugin. */
+      pPluginTypeTable.put(cname, plg.getPluginType());
+      pPluginIDTable.put(cname, plg.getPluginID());
 
       if(!plg.getVersionID().equals(pkgID)) 
 	throw new PipelineException
@@ -1917,31 +2225,6 @@ class PluginMgr
                "following 3 characters: _ - . (underbar, dash, period).");
           }
         }
-      }
-
-      /* If in bootstrap mode we only need to gather info about the plugin to 
-         create a required plugins GLUE file for a vendor.  At this point 
-	 if there is a plugin class that can be instantiated we know the 
-	 PluginID and the PluginType.  However, I am making the assumption that 
-	 previous plugins can be instantiated, version id is in proper format 
-	 and the vendor name is valid.  If they are not they will not be added 
-	 to the bootstrap plugin table since they would have thrown an 
-	 Exception and PluginMgr would continue.  We could throw a more 
-	 fatal runtime exception if in bootstrap mode to fail PluginMgr 
-	 when the minimum tests were not passed. */
-
-      if(isBootstrap) {
-	String vendor = plg.getVendor();
-
-	/* Ignore Temerity plugins during bootstrap mode */
-	if(!vendor.equals("Temerity")) {
-	  PluginType ptype = plg.getPluginType();
-	  PluginID   pid   = plg.getPluginID();
-
-	  pBootstrapPlugins.addPlugin(ptype, pid);
-	}
-
-	return;
       }
 
       if(plg.getSupports().isEmpty()) 
@@ -1981,10 +2264,6 @@ class PluginMgr
 	  throw new PipelineException
 	    ("No member (serialVersionUID) was declared for plugin (" + cname + ")!");
 
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Plg, LogMgr.Level.Finest, 
-	   "The serialID for (" + cname + ") : " + serialID);
-
 	String sname = pSerialVersionUIDs.get(serialID); 
 	if((sname != null) && !sname.equals(cname)) 
 	  throw new PipelineException
@@ -2005,23 +2284,25 @@ class PluginMgr
            "You can use the --external option to plplugin(1) if you want to install " + 
            "plugins from other vendors and override this check."); 
 
-      if(isInstall &&  
-         plg.getVendor().equals("Temerity") && 
-	!PackageInfo.sLocalVendor.equals("Temerity"))
-	throw new PipelineException
-	  ("Local Vendor (" + PackageInfo.sLocalVendor + ") " + 
-	   "cannot install plugins from the Temerity vendor!");
-
       /* If there are resource files with the plugin, verify they exists and 
          the checksum of the file on disk matches the value from the GLUE file. */
       if(isLoadPlugin) {
 	if(resources != null) {
-	  for(String path : resources.keySet()) {
-	    String cpath = 
-	      cname.substring(0, cname.lastIndexOf('.')).replace('.', '/');
+	  PluginType ptype = plg.getPluginType();
+	  PluginID pid = plg.getPluginID();
 
-	    Path pluginPath = new Path(PackageInfo.sPluginsPath, cpath);
-	    Path resourcesPath = new Path(pluginPath, "resources");
+	  String vendor = pid.getVendor();
+	  String name = pid.getName();
+
+	  VersionID vid = pid.getVersionID();
+
+	  Path pluginPath = 
+	    new Path(PackageInfo.sPluginsPath, 
+	             vendor + "/" + ptype + "/" + name + "/" + vid);
+
+	  Path resourcesPath = new Path(pluginPath, ".resources");
+
+	  for(String path : resources.keySet()) {
 	    Path rpath = new Path(resourcesPath, path);
 
 	    if(!rpath.toFile().isFile()) {
@@ -2288,7 +2569,7 @@ class PluginMgr
   }
 
   /**
-   * Check that the plugin being installed in dry run mode is not under development.
+   * Check that the plugin being tested in dry run mode is not under development.
    */
   private void
   checkForPluginUnderDevelopment
@@ -2326,8 +2607,8 @@ class PluginMgr
    String cname, 
    BasePlugin plg, 
    TreeMap<String,byte[]> contents, 
-   TreeMap<String,Long> resources, 
-   TreeMap<String,byte[]> checksums, 
+   SortedMap<String,Long> resources, 
+   SortedMap<String,byte[]> checksums, 
    boolean isStartup
   )
     throws PipelineException
@@ -2348,18 +2629,16 @@ class PluginMgr
 	pPluginStatus.put(ptype, pid, PluginStatus.Unknown);
 	pUnknownCount++;
 
-	// TODO improve error message.
-	throw new PipelineException("Unknown plugin encountered!");
+	throw new PipelineException
+	  ("Unknown plugin " + 
+	   "(" + vendor + "/" + ptype + "/" + name + "/" + vid + ") " + 
+	   "encountered!");
       }
     }
 
-    LogMgr.getInstance().log
-      (LogMgr.Kind.Plg, LogMgr.Level.Finest, 
-       "Adding the plugin (" + cname + ") to the " + ptype + " cache.");
-
-    cache.addPlugin(plg, cname, contents, resources);
+    cache.addPlugin(plg, cname, contents, resources, pid, ptype);
     pResourceChecksums.addChecksums(ptype, pid, checksums);
-    
+
     PluginStatus pstat = pPluginStatus.get(ptype, pid);
 
     if(pstat == null) {
@@ -2429,6 +2708,8 @@ class PluginMgr
 	    for(PluginID pid : plugins.get(ptype)) {
 	      String vendor = pid.getVendor();
 
+	      /* All plugins loaded from required plugins GLUE files are initially 
+	         set to a status of Missing. */
 	      pPluginStatus.put(ptype, pid, PluginStatus.Missing);
 
 	      pRequiredCount++;
@@ -2724,21 +3005,6 @@ class PluginMgr
   private class
   Plugin
   {
-    /*
-    public
-    Plugin
-    (
-     long cycleID, 
-     String cname, 
-     SortedSet<OsType> supports, 
-     boolean underDevelopment,
-     TreeMap<String,byte[]> contents
-    )
-    {
-      this(cycleID, cname, supports, underDevelopment, contents, null);
-    }
-    */
-
     public 
     Plugin
     (
@@ -2747,7 +3013,9 @@ class PluginMgr
      SortedSet<OsType> supports, 
      boolean underDevelopment,
      TreeMap<String,byte[]> contents, 
-     TreeMap<String,Long> resources
+     SortedMap<String,Long> resources, 
+     PluginID pid, 
+     PluginType ptype
     )
     {
       pCycleID            = cycleID; 
@@ -2760,6 +3028,9 @@ class PluginMgr
 
       if(resources != null)
 	pResources.putAll(resources);
+
+      pPluginID = pid;
+      pPluginType = ptype;
     }
 
 
@@ -2799,12 +3070,27 @@ class PluginMgr
       return pResources;
     }
 
+    public PluginID
+    getPluginID()
+    {
+      return pPluginID;
+    }
+
+    public PluginType
+    getPluginType()
+    {
+      return pPluginType;
+    }
+
     private long                    pCycleID; 
     private String                  pClassName;
     private TreeSet<OsType>         pSupports; 
     private boolean                 pIsUnderDevelopment; 
     private TreeMap<String,byte[]>  pContents; 
     private TreeMap<String,Long>    pResources;
+
+    private PluginID  pPluginID;
+    private PluginType  pPluginType;
   }
 
   /**
@@ -2850,11 +3136,6 @@ class PluginMgr
 
       for(String path : pChecksums.keySet()) {
 	pChunkSizes.put(path, 0L);
-
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Plg, LogMgr.Level.Finest, 
-	   "Resource path " + 
-	   "(" + path + ")");
       }
     }
 
@@ -2874,17 +3155,7 @@ class PluginMgr
       long chunksize = pChunkSizes.get(path) + bytesRead;
       long filesize  = pResources.get(path);
 
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Plg, LogMgr.Level.Finest, 
-	 "Resource (" + path + ") " + 
-	 "(" + chunksize + ") " + 
-	 "(" + filesize  + ")");
-
       if(chunksize == filesize) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Plg, LogMgr.Level.Finest, 
-	   "Recevied all bytes for (" + path + ")");
-
 	byte[] checksum = null;
 	try {
 	  checksum = NativeFileSys.md5sum(rpath);
@@ -2896,10 +3167,6 @@ class PluginMgr
 	byte[] checksumFromRequest = pChecksums.get(path);
 
 	if(!Arrays.equals(checksum, checksumFromRequest)) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Plg, LogMgr.Level.Finest, 
-	     "The resource (" + path + ") checksum is incorrect!");
-
 	  throw new PipelineException
 	    ("The resource (" + path + ") checksum is incorrect!");
 	}
@@ -2920,8 +3187,8 @@ class PluginMgr
     public void
     updateResources
     (
-     TreeMap<String,Long> resources, 
-     TreeMap<String,Long> localResources
+     SortedMap<String,Long> resources, 
+     SortedMap<String,Long> localResources
     )
     {
       for(String path : resources.keySet()) {
@@ -2931,14 +3198,6 @@ class PluginMgr
       for(String path: localResources.keySet()) {
 	pResources.put(path, localResources.get(path));
 	pChunkSizes.remove(path);
-      }
-
-      for(String path : pResources.keySet()) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Plg, LogMgr.Level.Finest, 
-	   "Resource path " + 
-	   "(" + path + ") " + 
-	   "(" + pResources.get(path) + ")");
       }
     }
 
@@ -2975,21 +3234,18 @@ class PluginMgr
     public TreeMap<String,byte[]>
     getContents()
     {
-      //return Collections.unmodifiableSortedMap(pContents);
       return pContents;
     }
 
     public TreeMap<String,Long>
     getResources()
     {
-      //return Collections.unmodifiableSortedMap(pResources);
       return pResources;
     }
 
     public TreeMap<String,byte[]>
     getChecksums()
     {
-      //return Collections.unmodifiableSortedMap(pChecksums);
       return pChecksums;
     }
 
@@ -3017,7 +3273,7 @@ class PluginMgr
     private String  pClassName;
     private VersionID  pVersionID;
     private TreeMap<String,byte[]>  pContents;
-    private TreeMap<String,Long>    pResources;
+    private TreeMap<String,Long>  pResources;
     private TreeMap<String,byte[]>  pChecksums;
     private boolean  pExternal;
     private boolean  pRename;
@@ -3066,11 +3322,13 @@ class PluginMgr
             for(VersionID vid : get(vendor).get(name).keySet()) {
               Plugin plg = get(vendor, name, vid);
               
-              Object[] objs = new Object[4];
+              Object[] objs = new Object[5];
               objs[0] = plg.getClassName();
               objs[1] = plg.getContents();
               objs[2] = plg.getSupports();
 	      objs[3] = plg.getResources();
+	      objs[4] = plg.getPluginID();
+	      //objs[5] = plg.getPluginType();
               
               updated.put(vendor, name, vid, objs);
             }
@@ -3084,11 +3342,13 @@ class PluginMgr
               Plugin plg = get(vendor, name, vid);
               
               if(cycleID < plg.getCycleID()) {
-                Object[] objs = new Object[4];
+                Object[] objs = new Object[5];
                 objs[0] = plg.getClassName();
                 objs[1] = plg.getContents();
                 objs[2] = plg.getSupports();
 		objs[3] = plg.getResources();
+		objs[4] = plg.getPluginID();
+		//objs[5] = plg.getPluginType();
                 
                 updated.put(vendor, name, vid, objs);
               }
@@ -3111,6 +3371,9 @@ class PluginMgr
      * 
      * @param contents
      *   The raw plugin class bytes indexed by class name.
+     *
+     * @param resources
+     *   The file sizes of resources indexed by class name.
      */ 
     private void 
     addPlugin
@@ -3118,7 +3381,9 @@ class PluginMgr
      BasePlugin plg,
      String cname, 
      TreeMap<String,byte[]> contents, 
-     TreeMap<String,Long> resources
+     SortedMap<String,Long> resources, 
+     PluginID pid, 
+     PluginType ptype
     ) 
       throws PipelineException 
     {
@@ -3130,9 +3395,10 @@ class PluginMgr
            plg.getVendor() + ") exists which is no longer under development!");
       
       put(plg.getVendor(), plg.getName(), plg.getVersionID(),
-	new Plugin(pLoadCycleID, cname, 
-                   plg.getSupports(), plg.isUnderDevelopment(), 
-                   contents, resources));
+	  new Plugin(pLoadCycleID, cname, 
+                     plg.getSupports(), plg.isUnderDevelopment(), 
+                     contents, resources, 
+		     pid, ptype));
     }
 
     static final long serialVersionUID = 6780638964799823468L;
@@ -3201,7 +3467,7 @@ class PluginMgr
     public
     ResourceChecksums()
     {
-      pResourceChecksums = new DoubleMap<PluginType,PluginID,TreeMap<String,byte[]>>();
+      pResourceChecksums = new DoubleMap<PluginType,PluginID,SortedMap<String,byte[]>>();
     }
 
     private void
@@ -3209,23 +3475,28 @@ class PluginMgr
     (
      PluginType ptype, 
      PluginID pid, 
-     TreeMap<String,byte[]> checksums
+     SortedMap<String,byte[]> checksums
     )
     {
-      pResourceChecksums.put(ptype, pid, checksums);
+      pResourceChecksums.put(ptype, pid, new TreeMap<String,byte[]>(checksums));
     }
 
-    private TreeMap<String,byte[]>
+    private SortedMap<String,byte[]>
     getChecksums
     (
      PluginType ptype, 
      PluginID pid
     )
     {
-      return pResourceChecksums.get(ptype, pid);
+      SortedMap<String,byte[]> checksums = pResourceChecksums.get(ptype, pid);
+
+      if(checksums != null)
+	return Collections.unmodifiableSortedMap(pResourceChecksums.get(ptype, pid));
+      else
+	return null;
     }
 
-    private DoubleMap<PluginType,PluginID,TreeMap<String,byte[]>>  pResourceChecksums;
+    private DoubleMap<PluginType,PluginID,SortedMap<String,byte[]>>  pResourceChecksums;
   }
 
 
@@ -3412,6 +3683,28 @@ class PluginMgr
    * DoubleMap<PluginType,PluginID,TreeMap<String,byte[]>>
    */
   private ResourceChecksums  pResourceChecksums;
+
+  /**
+   * Table of PluginID keyed by plugiin class name.
+   */
+  private TreeMap<String,PluginID>  pPluginIDTable;
+
+  /**
+   * Table of PluginType keyed by plugin class name.
+   */
+  private TreeMap<String,PluginType>  pPluginTypeTable;
+
+  /**
+   * MappedSet of plugin filename keyed by vendor/type/name/version path string 
+   * of plugins detected using findAllPlugins.
+   */
+  private MappedSet<String,String>  pPluginPathTable;
+
+  /**
+   * MappedSet of plugin filename keyed by vendor/type/name/version path string 
+   * of backup version plugins detected using findAllPlugins.
+   */
+  private MappedSet<String,String>  pBackupPluginPathTable;
 
 }
 

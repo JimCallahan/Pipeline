@@ -1,4 +1,4 @@
-// $Id: PluginMgrControlClient.java,v 1.14 2009/03/26 06:48:37 jlee Exp $
+// $Id: PluginMgrControlClient.java,v 1.15 2009/04/07 01:48:12 jlee Exp $
   
 package us.temerity.pipeline.core;
 
@@ -308,7 +308,6 @@ class PluginMgrControlClient
 	 the PluginMgrServer. */
       BasePlugin plg = loadPlugin(contents, cname);
 
-      /* */
       TreeMap<String,byte[]> installedChecksums = new TreeMap<String,byte[]>();
 
       {
@@ -320,7 +319,7 @@ class PluginMgrControlClient
 	if(obj instanceof PluginChecksumRsp) {
 	  PluginChecksumRsp rsp = (PluginChecksumRsp) obj;
 
-	  TreeMap<String,byte[]> checksumsFromServer = rsp.getChecksums();
+	  SortedMap<String,byte[]> checksumsFromServer = rsp.getChecksums();
 
 	  if(checksumsFromServer != null)
 	    installedChecksums.putAll(rsp.getChecksums());
@@ -422,9 +421,6 @@ class PluginMgrControlClient
     }
   }
 
-  /**
-   *
-   */
   private BasePlugin
   loadPlugin
   (
@@ -495,9 +491,6 @@ class PluginMgrControlClient
     return plg;
   }
 
-  /**
-   *
-   */
   private void
   installResourceChunks
   (
@@ -595,9 +588,6 @@ class PluginMgrControlClient
     }
   }
 
-  /**
-   *
-   */
   private void
   displayPluginCountRsp
   (
@@ -645,12 +635,12 @@ class PluginMgrControlClient
   private MessageDigest pDigest;
 
   /**
-   *
+   * The resource file chunk size, currently set at 512k.
    */
   private final static int  sChunkSize = 1024*512;
 
   /**
-   *
+   * The maximum Jar file allowed.  Currently set at 128mb.
    */
   private final static long  sMaxFileSize = 1024 * 1024 * 128;
 

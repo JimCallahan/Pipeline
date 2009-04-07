@@ -1,4 +1,4 @@
-// $Id: PluginClassLoader.java,v 1.3 2009/03/26 06:48:37 jlee Exp $
+// $Id: PluginClassLoader.java,v 1.4 2009/04/07 01:48:12 jlee Exp $
 
 package us.temerity.pipeline;
 
@@ -39,41 +39,57 @@ class PluginClassLoader
   }
 
   /**
+   * Construct a new plugin loader.
    *
+   * @param contents
+   *
+   * @param 
    */
   public
   PluginClassLoader
   (
    TreeMap<String,byte[]> contents, 
-   String cname, 
-   TreeMap<String,Long> resources 
+   TreeMap<String,Long> resources, 
+   PluginID pid, 
+   PluginType ptype
   )
   {
     super();
 
     if(contents == null)
-      throw new IllegalArgumentException();
+      throw new IllegalArgumentException
+	("The class bytes table cannot be (null)!");
 
     if(resources == null)
-      throw new IllegalArgumentException();
+      throw new IllegalArgumentException
+	("The resources table cannot be (null)!");
     
-    if(cname == null)
-      throw new IllegalArgumentException();
+    if(pid == null)
+      throw new IllegalArgumentException
+	("The PluginType cannot be (null)!");
+
+    if(ptype == null)
+      throw new IllegalArgumentException
+	("The PluginID cannt be (null)!");
 
     pContents  = new TreeMap<String,byte[]>(contents);
     pResources = new TreeMap<String,Long>(resources);
 
-    Path cpath = new Path(cname.replace('.', '/'));
+    String vendor = pid.getVendor();
+    String name   = pid.getName();
+    VersionID vid = pid.getVersionID();
 
-    Path pluginPath = new Path
-      (new Path(PackageInfo.sInstPath, "plugins"), 
-       cpath.getParentPath());
+    Path rootPluginPath = new Path(PackageInfo.sInstPath, "plugins");
 
-    pResourceRootPath = new Path(pluginPath, "resources");
+    Path pluginPath = 
+      new Path(rootPluginPath, vendor + "/" + ptype + "/" + name + "/" + vid);
+
+    pResourceRootPath = new Path(pluginPath, ".resources");
 
     LogMgr.getInstance().log
       (LogMgr.Kind.Plg, LogMgr.Level.Finest, 
-       "Resource path (" + pResourceRootPath + ") for plugin (" + cname + ")");
+       "Resource path (" + pResourceRootPath + ") " + 
+       "for Plugin (" + vendor + "/" + ptype + "/" + name + "/" + vid + ")");
   }
 
 
@@ -209,7 +225,7 @@ class PluginClassLoader
   private TreeMap<String,Long>  pResources;
 
   /**
-   *
+   * The resource directory for the Plugin.
    */
   private Path  pResourceRootPath;
 

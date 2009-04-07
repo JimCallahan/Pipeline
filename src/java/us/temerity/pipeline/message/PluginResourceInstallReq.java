@@ -1,4 +1,4 @@
-// $Id: PluginResourceInstallReq.java,v 1.1 2009/03/26 06:38:36 jlee Exp $
+// $Id: PluginResourceInstallReq.java,v 1.2 2009/04/07 01:48:12 jlee Exp $
 
 package us.temerity.pipeline.message;
 
@@ -80,7 +80,7 @@ class PluginResourceInstallReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   *
+   * Get the table of resource file sizes.
    */
   public TreeMap<String,Long>
   getResources()
@@ -89,7 +89,7 @@ class PluginResourceInstallReq
   }
 
   /**
-   *
+   * Get the table of resource checksums.
    */
   public TreeMap<String,byte[]>
   getChecksums()
@@ -112,12 +112,12 @@ class PluginResourceInstallReq
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   *
+   * Resource file sizes keyed by Jar path.
    */
   private TreeMap<String,Long>  pResources;
 
   /**
-   *
+   * Resource checksums keyed by Jar path.
    */
   private TreeMap<String,byte[]>  pChecksums;
 

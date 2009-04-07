@@ -1,4 +1,4 @@
-// $Id: PluginChecksumRsp.java,v 1.1 2009/03/26 06:38:36 jlee Exp $
+// $Id: PluginChecksumRsp.java,v 1.2 2009/04/07 01:48:12 jlee Exp $
 
 package us.temerity.pipeline.message;
 
@@ -37,7 +37,7 @@ class PluginChecksumRsp
   PluginChecksumRsp
   (
    TaskTimer timer, 
-   TreeMap<String,byte[]> checksums
+   SortedMap<String,byte[]> checksums
   )
   { 
     super(timer);
@@ -58,7 +58,7 @@ class PluginChecksumRsp
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
 
-  public TreeMap<String,byte[]>
+  public SortedMap<String,byte[]>
   getChecksums() 
   {
     return pChecksums;
@@ -78,7 +78,7 @@ class PluginChecksumRsp
   /*   I N T E R N A L S                                                                    */
   /*----------------------------------------------------------------------------------------*/
 
-  private TreeMap<String,byte[]> pChecksums;
+  private SortedMap<String,byte[]> pChecksums;
 
 }
 
