@@ -1,4 +1,4 @@
-// $Id: PluginMetadata.java,v 1.1 2009/04/07 01:44:42 jlee Exp $
+// $Id: PluginMetadata.java,v 1.2 2009/04/07 08:01:41 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -7,6 +7,7 @@ import us.temerity.pipeline.glue.*;
 
 import java.io.*;
 import java.util.*;
+import java.math.BigInteger; 
 
 /*------------------------------------------------------------------------------------------*/
 /*   P L U G I N   M E T A D A T A                                                          */
@@ -30,9 +31,9 @@ class PluginMetadata
   public
   PluginMetadata()
   {
-    pClassName  = null;
-    pResources  = new TreeMap<String,Long>();
-    pChecksums  = new TreeMap<String,byte[]>();
+    pClassName = null;
+    pResources = new TreeMap<String,Long>();
+    pChecksums = new TreeMap<String,byte[]>();
   }
 
   /**
@@ -57,8 +58,8 @@ class PluginMetadata
   {
     pClassName = cname;
 
-    pResources  = new TreeMap<String,Long>();
-    pChecksums  = new TreeMap<String,byte[]>();
+    pResources = new TreeMap<String,Long>();
+    pChecksums = new TreeMap<String,byte[]>();
 
     if(resources.size() != checksums.size())
       throw new IllegalArgumentException
@@ -68,6 +69,11 @@ class PluginMetadata
     pResources.putAll(resources);
     pChecksums.putAll(checksums);
   }
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   A C C E S S                                                                          */
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * Get the Java class name for the installed plugin.
@@ -98,6 +104,11 @@ class PluginMetadata
     return Collections.unmodifiableSortedMap(pChecksums);
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   G L U E A B L E                                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
   public void
   toGlue
   (
@@ -113,8 +124,14 @@ class PluginMetadata
       encoder.encode("Resources", pResources);
     }
 
+    /* store checksum bytes in a condensed big integer string format */ 
     if(!pChecksums.isEmpty()) {
-      encoder.encode("Checksums", pChecksums);
+      TreeMap<String,String> table = new TreeMap<String,String>();
+      for(String key : pChecksums.keySet()) {
+        BigInteger big = new BigInteger(pChecksums.get(key));
+        table.put(key, big.toString());
+      }
+      encoder.encode("Checksums", table);
     }
   }
 
@@ -126,30 +143,45 @@ class PluginMetadata
     throws GlueException
   {
     pClassName = (String) decoder.decode("ClassName");
-
     if(pClassName == null)
       throw new GlueException("The \"ClassName\" was missing!");
 
     /* If there are no resources associated with the installed plugin it is OK 
        for the GLUE decoder to return null. */
     {
-      SortedMap<String,Long> resources = 
-	(TreeMap<String,Long>) decoder.decode("Resources");
-
-      if(resources != null)
+      pResources.clear();
+      TreeMap<String,Long> resources = (TreeMap<String,Long>) decoder.decode("Resources");
+      if(resources != null) {
 	pResources.putAll(resources);
+      }
     }
 
+    /* read checksum bytes from a condensed big integer string format */ 
     {
-      SortedMap<String,byte[]> checksums = 
-	(TreeMap<String,byte[]>) decoder.decode("Checksums");
-
-      if(checksums != null)
-	pChecksums.putAll(checksums);
+      pChecksums.clear(); 
+      TreeMap<String,String> table = (TreeMap<String,String>) decoder.decode("Checksums");
+      if(table != null) {
+        for(String key : table.keySet()) {
+          BigInteger big = new BigInteger(table.get(key));
+          pChecksums.put(key, big.toByteArray());
+        }
+      }
     }
   }
 
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   S T A T I C   I N T E R N A L S                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
   private static final long serialVersionUID = 7213104339243605009L;
+
+  
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   I N T E R N A L S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
 
   /**
    * The Java class name of an installed plugin.
