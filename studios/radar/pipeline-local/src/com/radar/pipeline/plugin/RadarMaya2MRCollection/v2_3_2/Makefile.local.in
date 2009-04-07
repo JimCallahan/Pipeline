@@ -1,6 +1,6 @@
 #--- VARIABLES -------------------------------------------------------------------------------
 
-   MAYA2MR_JAR = @ROOT_INST_PARENT_DIR@/pipeline-latest/plugins/us/temerity/pipeline/plugin/Maya2MRCollection/v2_3_2/Maya2MRCollection.jar
+   MAYA2MR_JAR = @ROOT_INST_PARENT_DIR@/pipeline-latest/plugins/Temerity/BuilderCollection/Maya2MR/2.3.2/Maya2MR.jar
 
     CLASS_ROOT = ../../../../../..
 
