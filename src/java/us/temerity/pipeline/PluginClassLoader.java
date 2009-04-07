@@ -1,4 +1,4 @@
-// $Id: PluginClassLoader.java,v 1.4 2009/04/07 01:48:12 jlee Exp $
+// $Id: PluginClassLoader.java,v 1.5 2009/04/07 08:00:11 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -40,10 +40,6 @@ class PluginClassLoader
 
   /**
    * Construct a new plugin loader.
-   *
-   * @param contents
-   *
-   * @param 
    */
   public
   PluginClassLoader

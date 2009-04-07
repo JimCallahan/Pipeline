@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.134 2009/03/25 22:02:23 jim Exp $
+// $Id: MasterMgrClient.java,v 1.135 2009/04/07 07:59:53 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -6742,10 +6742,10 @@ class MasterMgrClient
    *   with the node version being extracted or <CODE>null</CODE> if there are no
    *   additional replacements. 
    * 
-   * @parma dir
+   * @param dir
    *   The directory in which to place the JAR archive created.
    *
-   * @returns
+   * @return
    *   The full file system path of the created JAR archive.
    */ 
   public synchronized Path
@@ -6843,7 +6843,7 @@ class MasterMgrClient
    * @param jarPath
    *   The full file system path to the JAR archive containing the node version to insert.
    * 
-   * @returns
+   * @return
    *   The names and versions of the missing nodes.
    */ 
   public synchronized TreeMap<String,VersionID> 
