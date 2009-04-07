@@ -306,6 +306,7 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
          ALL_JAR = all.jar
          API_JAR = api.jar
            VAULT = vault
+        UTIL_JAR = util.jar
 
 
       JAVA_PATHS = -d ../../.. \
@@ -358,6 +359,8 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
    PARAM_SOURCES = $(shell ls $(srcdir)/param/key/*.java)
 
 PLG_UTIL_SOURCES = $(shell ls $(srcdir)/plugin/*.java)
+
+PLG_BUILD_UTIL_SOURCES = $(shell ls $(srcdir)/plugin/util/*.java)
 
    EVENT_SOURCES = $(shell ls $(srcdir)/event/*.java)
 
@@ -502,8 +505,14 @@ $(API_JAR): java-all textures fonts
          $(JAR) uvf $$bdir/$(API_JAR) \
                     us/temerity/pipeline/laf/*.xml us/temerity/pipeline/laf/*.png)
 
-plugin/plugin-all: java-all java-plugins java-shotgun-plugins
-	(cd plugin; $(srcdir)/plugin/archive-plugins $(JAR))
+$(UTIL_JAR): java-all
+	(cd ../../..; \
+	 $(JAR) cvf us/temerity/pipeline/plugin/$(UTIL_JAR) \
+	 us/temerity/pipeline/plugin/util/*.class \
+	 us/temerity/pipeline/core/PluginMetadata.class)
+
+plugin/plugin-all: java-all java-plugins java-shotgun-plugins $(srcdir)/plugin/archive-plugins
+	(cd plugin; $(srcdir)/plugin/archive-plugins $(JAR) $(top_srcdir)/src/java)
 	@echo "--- PACKING APACHE XML/RPM into SHOTGUN PLUGIN JARs ------------------"
 	(cd plugin/ShotgunConnectionExt/v2_4_1; \
          rm -rf EXTRA; mkdir EXTRA; cd EXTRA; \
@@ -542,7 +551,7 @@ ui/core/prefs/GenUserPrefsApp.class: ui/core/prefs/GenUserPrefsApp.java
 	$(JAVA_C) $(JAVA_C_FLAGS) -d ui/core/prefs -classpath $(srcdir)/ui/core/prefs $<
 
 java-all: $(JAVA_SOURCES) $(JAVA_MSG_SOURCES) $(JAVA_UI_SOURCES) $(JAVA_CORE_SOURCES) \
-          $(JAVA_UI_CORE_SOURCES) $(JAVA_BLD_SOURCES) 
+          $(JAVA_UI_CORE_SOURCES) $(JAVA_BLD_SOURCES) $(PLG_BUILD_UTIL_SOURCES)
 	$(JAVA_C) $(JAVA_C_FLAGS) $(JAVA_PATHS) $(JAVA_SOURCES)
 	$(JAVA_C) $(JAVA_C_FLAGS) $(JAVA_PATHS) $(JAVA_EVENT_SOURCES)
 	$(JAVA_C) $(JAVA_C_FLAGS) $(JAVA_PATHS) $(JAVA_MATH_SOURCES)
@@ -551,6 +560,7 @@ java-all: $(JAVA_SOURCES) $(JAVA_MSG_SOURCES) $(JAVA_UI_SOURCES) $(JAVA_CORE_SOU
 	$(JAVA_C) $(JAVA_C_FLAGS) $(JAVA_PATHS) $(JAVA_CORE_SOURCES)
 	$(JAVA_C) $(JAVA_C_FLAGS) $(JAVA_PATHS) $(JAVA_UI_CORE_SOURCES)
 	$(JAVA_C) $(JAVA_C_FLAGS) $(JAVA_PATHS) $(JAVA_BLD_SOURCES)
+	$(JAVA_C) $(JAVA_C_FLAGS) $(JAVA_PATHS) $(PLG_BUILD_UTIL_SOURCES)
 	touch $@
 	ls core/*.class ui/core/*.class core/exts/*.class > vault-sources
 	rm -f $(top_builddir)/docs/javadoc/docs-all
@@ -631,31 +641,29 @@ install: all installdirs install-jar install-plugins install-plugin-sources
 install-jar: $(API_JAR) $(VAULT)
 	$(INSTALL) -m 444 $(API_JAR) $(VAULT) $(DESTDIR)$(ROOT_INST_DIR)/lib
 
-install-plugins: plugin/plugin-all
+install-plugins: $(UTIL_JAR) plugin/plugin-all
 	(cd ../../..; \
-         for ppath in `cat us/temerity/pipeline/plugin/plugin-all`; \
-         do \
-           dir=$(DESTDIR)$(ROOT_INST_DIR)/plugins/`dirname $$ppath`; \
-           echo $(mkinstalldirs) $$dir; \
-           $(mkinstalldirs) $$dir; \
-           echo $(INSTALL) -m 644 $$ppath $$dir; \
-           $(INSTALL) -m 644 $$ppath $$dir; \
-         done)
-	$(mkinstalldirs) $(DESTDIR)$(ROOT_INST_DIR)/plugins-extra/us/temerity/pipeline/plugin
-	mv $(DESTDIR)$(ROOT_INST_DIR)/plugins/us/temerity/pipeline/plugin/QueueStatsExt \
-           $(DESTDIR)$(ROOT_INST_DIR)/plugins-extra/us/temerity/pipeline/plugin
+	 $(JAVA) -cp us/temerity/pipeline/plugin/$(UTIL_JAR):us/temerity/pipeline/$(API_JAR) \
+	         -Dpipeline.ostype=Unix -Dpipeline.archtype=x86_64 -Dpipeline.buildtype=Debug \
+		 us.temerity.pipeline.plugin.util.PluginInstallUtil \
+		 us/temerity/pipeline/plugin/plugin-all \
+		 $(DESTDIR)$(ROOT_INST_DIR)/plugins/ \
+		 $(DESTDIR)$(ROOT_INST_DIR)/plugins-extra/ \
+		 $(DESTDIR)/plugins/required)
 
 PHONY: installdirs
 installdirs:
 	$(mkinstalldirs) $(DESTDIR)$(ROOT_INST_DIR)/lib
 	$(mkinstalldirs) $(DESTDIR)$(ROOT_INST_DIR)/plconfig
 	$(mkinstalldirs) $(DESTDIR)$(ROOT_INST_DIR)/logs
+	$(mkinstalldirs) $(DESTDIR)$(ROOT_INST_DIR)/plugins
+	$(mkinstalldirs) $(DESTDIR)$(ROOT_INST_DIR)/plugins-extra
 	$(mkinstalldirs) $(DESTDIR)$(PRODDIR)/working
 	$(mkinstalldirs) $(DESTDIR)$(PRODDIR)/repository
 	$(mkinstalldirs) $(DESTDIR)$(PRODDIR)/checksum
 	$(mkinstalldirs) $(DESTDIR)$(PRODDIR)/restore
 	$(mkinstalldirs) $(DESTDIR)$(PRODDIR)/target
-	$(mkinstalldirs) $(DESTDIR)$(NODEDIR)
+	$(mkinstalldirs) $(DESTDIR)/plugins/required
 
 install-plugin-sources: $(JAVA_SOURCES)
 	@for p in `find $(srcdir)/plugin -type f -name "*.java"`; do \

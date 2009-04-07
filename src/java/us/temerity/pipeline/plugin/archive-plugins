@@ -1,6 +1,7 @@
 #!/bin/bash
 
 JAR=$1
+srcdir=$2
 
 rm -f plugin-all
 
@@ -14,7 +15,15 @@ do
 #   echo $plugin $version
 
     cnt=`find $vdir -type f -name "*.class" | wc -l`
-    if [ $cnt -eq 1 ] 
+
+    #
+    # For the Temerity plugins all the resources for the plugin go in a directory named 
+    # RESOURCES.  The resources should be placed in the directory as if it was relative to the plugin class file.
+    # This script will take care of putting the resources in the jar in the proper directories.
+    #
+    rcnt=`find $srcdir/us/temerity/pipeline/plugin/$plugin/$version/ -type f | grep -v \/CVS\/ | grep RESOURCES | wc -l`
+
+    if [ $cnt -eq 1 -a $rcnt -eq 0 ] 
     then
       cfile=`find $vdir -type f -name "*.class" | sed 's:\./:us/temerity/pipeline/plugin/:g'`
       echo "PLUGIN CLASS:" $cfile
@@ -29,6 +38,22 @@ do
           `find us/temerity/pipeline/plugin/$plugin/$version -type f -name "*.class"`
       popd >& /dev/null
       echo $jfile >> plugin-all
+
+      #
+      # Add the resources to the jar file from the RESOURCES directory.  First create the 
+      # intermediate directories in a temporary directory.  Then copy the files from the RESOURCES 
+      # directory into the temporary directory and add to the jar.
+      #
+      if [ $rcnt -gt 0 ]
+      then
+	rm -rf $plugin/$version/TMP-RESOURCES
+	mkdir -p $plugin/$version/TMP-RESOURCES/us/temerity/pipeline/plugin/$plugin/$version/
+	cp -R $srcdir/us/temerity/pipeline/plugin/$plugin/$version/RESOURCES/* $plugin/$version/TMP-RESOURCES/us/temerity/pipeline/plugin/$plugin/$version/
+	pushd $plugin/$version/TMP-RESOURCES >& /dev/null
+	  $JAR uvf ../$plugin.jar `find . -type f | grep -v \/CVS\/`
+	popd >& /dev/null
+	rm -rf $plugin/$version/TMP-RESOURCES
+      fi
     fi
   done
 done
