@@ -23,15 +23,14 @@ class PluginInstallUtil
    String[] args
   )
   {
-    if(args.length != 4)
+    if(args.length != 3)
       throw new IllegalArgumentException
 	("java us.temerity.pipeline.plugin.util.PluginInstallUtil " + 
 	 "(path to plugin-all file) " + 
 	 "(path to plugins) " + 
-	 "(path to plugins-extra) " + 
 	 "(path to required plugins)");
 
-    PluginInstallUtil util = new PluginInstallUtil(args[0], args[1], args[2], args[3]);
+    PluginInstallUtil util = new PluginInstallUtil(args[0], args[1], args[2]);
 
     try {
       util.run();
@@ -55,9 +54,6 @@ class PluginInstallUtil
    * @param pluginsInstallPath
    *   The path to the DEST/root-install-directory where plugins are installed.
    *
-   * @param pluginsExtraInstallPath
-   *   The path to the DEST/root-install-directory where plugins-extra are installed.
-   *
    * @param requiredPluginsPath
    *   The path to where to write the required plugins GLUE file for Temerity 
    *   plugins.
@@ -67,7 +63,6 @@ class PluginInstallUtil
   (
    String pluginAllPath, 
    String pluginsInstallPath, 
-   String pluginsExtraInstallPath, 
    String requiredPluginsPath
   )
   {
@@ -87,11 +82,6 @@ class PluginInstallUtil
 
     if(!pPluginsInstallPath.toFile().exists())
       throw new IllegalArgumentException("The plugins install directory does not exist!");
-
-    pPluginsExtraInstallPath = new Path(pluginsExtraInstallPath);
-
-    if(!pPluginsExtraInstallPath.toFile().exists())
-      throw new IllegalArgumentException("The plugins-extra install directory does not exist!");
 
     pRequiredPluginsPath = new Path(requiredPluginsPath);
 
@@ -242,19 +232,10 @@ class PluginInstallUtil
 	   "is not Temerity (" + vendor + ")!");
       }
 
-      boolean isExtra = false;
-
-      /* Currently the QueueStats plugins are the only ones installed in plugins-extra. */
-      if(ptype == PluginType.QueueExt && name.equals("QueueStats")) {
-	isExtra = true;
-      }
-      else {
-	pset.put(ptype, pid);
-      }
+      pset.put(ptype, pid);
 
       Path installPath = 
-	new Path((isExtra ? pPluginsExtraInstallPath : pPluginsInstallPath), 
-	         (vendor + "/" + ptype + "/" + name + "/" + vid));
+	new Path(pPluginsInstallPath, (vendor + "/" + ptype + "/" + name + "/" + vid));
 
       writePlugin(installPath, cname, plg, contents);
       writePluginMetadata(installPath, cname, plg, resources, checksums, resourceBytes);
@@ -537,11 +518,6 @@ class PluginInstallUtil
    * Path to the plugins install directory.
    */
   private Path  pPluginsInstallPath;
-
-  /**
-   * Path to the plugins-extra directory.
-   */
-  private Path  pPluginsExtraInstallPath;
 
   /**
    * Path to save the required plugins GLUE file for Temerity plugins.

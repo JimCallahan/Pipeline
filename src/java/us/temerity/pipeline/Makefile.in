@@ -648,8 +648,20 @@ install-plugins: $(UTIL_JAR) plugin/plugin-all
 		 us.temerity.pipeline.plugin.util.PluginInstallUtil \
 		 us/temerity/pipeline/plugin/plugin-all \
 		 $(DESTDIR)$(ROOT_INST_DIR)/plugins/ \
-		 $(DESTDIR)$(ROOT_INST_DIR)/plugins-extra/ \
 		 $(DESTDIR)/plugins/required)
+	(cd ../../..; \
+         for ppath in `cat us/temerity/pipeline/plugin/plugin-extra`; \
+         do \
+           dir=$(DESTDIR)$(ROOT_INST_DIR)/plugins/`dirname $$ppath`; \
+           echo $(mkinstalldirs) $$dir; \
+           $(mkinstalldirs) $$dir; \
+           echo $(INSTALL) -m 644 $$ppath $$dir; \
+           $(INSTALL) -m 644 $$ppath $$dir; \
+         done)
+	$(mkinstalldirs) $(DESTDIR)$(ROOT_INST_DIR)/plugins-extra/us/temerity/pipeline/plugin
+	mv $(DESTDIR)$(ROOT_INST_DIR)/plugins/us/temerity/pipeline/plugin/QueueStatsExt \
+           $(DESTDIR)$(ROOT_INST_DIR)/plugins-extra/us/temerity/pipeline/plugin
+	rm -rf $(DESTDIR)$(ROOT_INST_DIR)/plugins/us
 
 PHONY: installdirs
 installdirs:
@@ -657,7 +669,6 @@ installdirs:
 	$(mkinstalldirs) $(DESTDIR)$(ROOT_INST_DIR)/plconfig
 	$(mkinstalldirs) $(DESTDIR)$(ROOT_INST_DIR)/logs
 	$(mkinstalldirs) $(DESTDIR)$(ROOT_INST_DIR)/plugins
-	$(mkinstalldirs) $(DESTDIR)$(ROOT_INST_DIR)/plugins-extra
 	$(mkinstalldirs) $(DESTDIR)$(PRODDIR)/working
 	$(mkinstalldirs) $(DESTDIR)$(PRODDIR)/repository
 	$(mkinstalldirs) $(DESTDIR)$(PRODDIR)/checksum

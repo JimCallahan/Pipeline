@@ -1,4 +1,4 @@
-// $Id: PluginMgr.java,v 1.37 2009/04/07 01:48:12 jlee Exp $
+// $Id: PluginMgr.java,v 1.38 2009/04/07 13:34:41 jlee Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1367,12 +1367,12 @@ class PluginMgr
 
     VersionID vid = pid.getVersionID();
 
-    String cpath = vendor + "/" + ptype + "/" + name + "/" + vid;
+    String pluginPath = vendor + "/" + ptype + "/" + name + "/" + vid;
 
     Path scratchPath = new Path(pPluginScratchPath, Long.toString(sessionID));
 
-    Path currentVersionPath = new Path(PackageInfo.sPluginsPath, cpath);
-    Path backupVersionPath  = new Path(PackageInfo.sPluginsPath, cpath + "-backup");
+    Path currentVersionPath = new Path(PackageInfo.sPluginsPath, pluginPath);
+    Path backupVersionPath  = new Path(PackageInfo.sPluginsPath, pluginPath + "-backup");
 
     LogMgr.getInstance().log
       (LogMgr.Kind.Plg, LogMgr.Level.Finest, 
@@ -1405,12 +1405,23 @@ class PluginMgr
 	    ("Unable to rename (" + currentVersionDir + ") " + 
 	     "to (" + backupVersionDir + ")!");
       }
+      else {
+	if(!currentVersionDir.mkdirs())
+	  throw new PipelineException
+	    ("Unable to create the directory (" + currentVersionDir + ") " + 
+	     "for plugin (" + pluginPath + ")");
+      }
 
       if(scratchVersionDir.exists()) {
 	if(!scratchVersionDir.renameTo(currentVersionDir))
 	  throw new PipelineException
 	    ("Unable to rename (" + scratchVersionDir + ") " + 
 	     "to (" + currentVersionDir + ")!");
+      }
+      else {
+	throw new PipelineException
+	  ("The scratch directory (" + scratchVersionDir + ") " + 
+	   "for plugin (" + pluginPath + ") does not exist!");
       }
 
       PluginResourceInstallReq installReq = 

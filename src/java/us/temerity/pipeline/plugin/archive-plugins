@@ -4,6 +4,7 @@ JAR=$1
 srcdir=$2
 
 rm -f plugin-all
+rm -f plugin-extra
 
 for pdir in `find . -mindepth 1 -maxdepth 1 -type d | sort`
 do 
@@ -27,7 +28,13 @@ do
     then
       cfile=`find $vdir -type f -name "*.class" | sed 's:\./:us/temerity/pipeline/plugin/:g'`
       echo "PLUGIN CLASS:" $cfile
-      echo $cfile >> plugin-all
+
+      if echo $cfile | grep "us/temerity/pipeline/plugin/QueueStatsExt"
+      then
+	echo $cfile >> plugin-extra
+      else
+	echo $cfile >> plugin-all
+      fi
     else 
       jfile=us/temerity/pipeline/plugin/$plugin/$version/$plugin.jar
       echo "PLUGIN JAR:" $jfile
@@ -37,7 +44,13 @@ do
         $JAR cvf $jfile \
           `find us/temerity/pipeline/plugin/$plugin/$version -type f -name "*.class"`
       popd >& /dev/null
-      echo $jfile >> plugin-all
+
+      if echo $jfile | grep "us/temerity/pipeline/plugin/QueueStatsExt"
+      then
+	echo $jfile >> plugin-extra
+      else
+	echo $jfile >> plugin-all
+      fi
 
       #
       # Add the resources to the jar file from the RESOURCES directory.  First create the 
