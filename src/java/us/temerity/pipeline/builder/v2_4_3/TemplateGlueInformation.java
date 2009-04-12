@@ -1,4 +1,4 @@
-// $Id: TemplateGlueInformation.java,v 1.3 2009/03/30 14:40:35 jesse Exp $
+// $Id: TemplateGlueInformation.java,v 1.4 2009/04/12 19:19:00 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -282,9 +282,9 @@ class TemplateGlueInformation
              "the context (" + context + ") is not a valid parameter name.");
         }
       }
+      pContextParamNames = 
+        new DoubleMap<String, String, String>(contextParamNames);
     }
-    pContextParamNames= 
-      new DoubleMap<String, String, String>(contextParamNames);
   }
 
   
