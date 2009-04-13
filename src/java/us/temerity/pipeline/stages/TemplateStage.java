@@ -1,4 +1,4 @@
-// $Id: TemplateStage.java,v 1.7 2009/03/31 01:44:47 jesse Exp $
+// $Id: TemplateStage.java,v 1.8 2009/04/13 19:48:08 jesse Exp $
 
 package us.temerity.pipeline.stages;
 
@@ -40,6 +40,7 @@ class TemplateStage
     String suffix,
     PluginContext editor,
     PluginContext action,
+    boolean inhibitCopy,
     TemplateBuildInfo templateInfo,
     TreeMap<String, String> stringReplacements,
     TreeMap<String, ArrayList<TreeMap<String, String>>> contexts,
@@ -61,6 +62,7 @@ class TemplateStage
     pTemplateRange = templateRange;
     pIgnoredNodes = ignoredNodes;
     pIgnorableProducts = ignorableProducts;
+    pInhibitCopyFiles = inhibitCopy;
     init(sourceMod);
   }
 
@@ -75,6 +77,7 @@ class TemplateStage
     String suffix,
     PluginContext editor,
     PluginContext action,
+    boolean inhibitCopy,
     TemplateBuildInfo templateInfo,
     TreeMap<String, String> stringReplacements,
     TreeMap<String, ArrayList<TreeMap<String, String>>> maps,
@@ -96,6 +99,7 @@ class TemplateStage
     pTemplateRange = templateRange;
     pIgnoredNodes = ignoredNodes;
     pIgnorableProducts = ignorableProducts;
+    pInhibitCopyFiles = inhibitCopy;
     init(sourceMod);
   }
   
@@ -373,6 +377,7 @@ class TemplateStage
     FrameRange range, 
     TreeSet<String> ignoredNodes,
     TreeSet<String> ignoreableProducts,
+    boolean inhibitCopy,
     TreeMap<String, TreeMap<String, BaseAnnotation>> annotCache
   ) 
     throws PipelineException
@@ -408,14 +413,14 @@ class TemplateStage
       FrameRange oldRange = priSeq.getFrameRange();
       return new TemplateStage
         (sourceMod, stageInfo, newContext, client, nodeName, oldRange, padding, suffix, 
-         editor, action, templateInfo, stringReplacements, contexts, range, ignoredNodes, 
-         ignoreableProducts, annotCache);
+         editor, action, inhibitCopy, templateInfo, stringReplacements, contexts, range, 
+         ignoredNodes, ignoreableProducts, annotCache);
     }
     else 
       return new TemplateStage
         (sourceMod, stageInfo, newContext, client, nodeName, suffix, editor, action, 
-         templateInfo, stringReplacements, contexts, range, ignoredNodes, ignoreableProducts, 
-         annotCache);
+         inhibitCopy, templateInfo, stringReplacements, contexts, range, ignoredNodes, 
+         ignoreableProducts, annotCache);
   }
   
   @Override
@@ -430,7 +435,7 @@ class TemplateStage
         pClient.modifyProperties(getAuthor(), getView(), pRegisteredNodeMod);
         pRegisteredNodeMod = pClient.getWorkingVersion(getAuthor(), getView(), pRegisteredNodeName);
       }
-      if (pCloneFiles) {
+      if (pCloneFiles  && !pInhibitCopyFiles) {
         NodeID src = new NodeID(getAuthor(), getView(), pSourceMod.getName() );
         NodeID tar = new NodeID(getAuthor(), getView(), pRegisteredNodeName);
         pClient.cloneFiles(src, tar, pSecSeqs);
@@ -847,6 +852,8 @@ class TemplateStage
   private boolean pVouch;
   private boolean pUnlinkAll;
   private boolean pEnableAction;
+  
+  private boolean pInhibitCopyFiles;
   
   private NodeMod pSourceMod;
   

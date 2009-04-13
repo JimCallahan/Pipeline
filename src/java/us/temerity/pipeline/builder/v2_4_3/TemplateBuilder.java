@@ -1,4 +1,4 @@
-// $Id: TemplateBuilder.java,v 1.11 2009/03/31 01:44:47 jesse Exp $
+// $Id: TemplateBuilder.java,v 1.12 2009/04/13 19:48:08 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -24,6 +24,10 @@ public
 class TemplateBuilder
   extends TaskBuilder
 {
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O N S T R U C T O R                                                                */
+  /*----------------------------------------------------------------------------------------*/
+  
   /**
    * Constructor for the basic template builder.
    * <p>
@@ -170,6 +174,15 @@ class TemplateBuilder
       addParam(param);
     }
     
+    {
+      UtilityParam param = 
+        new BooleanUtilityParam
+          (aInhibitFileCopy,
+           "Inhibit the CopyFile flag on all nodes in the template.",
+           false);
+      addParam(param);
+    }
+    
     addCheckinWhenDoneParam();
     
     addSetupPass(new InformationPass());
@@ -193,6 +206,7 @@ class TemplateBuilder
     layout.addEntry(1, aReleaseOnError);
     layout.addEntry(1, null);
     layout.addEntry(1, aAllowZeroContexts);
+    layout.addEntry(1, aInhibitFileCopy);
     
     rootLayout.addPass(layout.getName(), layout);
     setLayout(rootLayout);
@@ -326,14 +340,14 @@ class TemplateBuilder
   {
     TreeMap<String, BaseAnnotation> annots = getAnnotations(name);
     TreeMap<String, BaseAnnotation> toReturn = null;
-      for(String aname : annots.keySet()) {
-        if(aname.equals("Task") || aname.startsWith("AltTask")) {
-          if (toReturn == null)
-            toReturn = new TreeMap<String, BaseAnnotation>();
-          BaseAnnotation tannot = annots.get(aname);
-          toReturn.put(aname, tannot);
-        }
+    for(String aname : annots.keySet()) {
+      if(aname.equals("Task") || aname.startsWith("AltTask")) {
+        if (toReturn == null)
+          toReturn = new TreeMap<String, BaseAnnotation>();
+        BaseAnnotation tannot = annots.get(aname);
+        toReturn.put(aname, tannot);
       }
+    }
    return toReturn;
   }
   
@@ -377,6 +391,7 @@ class TemplateBuilder
       getStageInformation().setDoAnnotations(true);
       
       pAllowZeroContexts = getBooleanParamValue(new ParamMapping(aAllowZeroContexts));
+      pInhibitCopyFiles = getBooleanParamValue(new ParamMapping(aInhibitFileCopy));
       
       if (pGenerateDependSets) {
         pLog.log(Kind.Ops, Level.Finer, 
@@ -661,7 +676,7 @@ class TemplateBuilder
         TemplateStage.getTemplateStage
         (mod, getStageInformation(), pContext, pClient, 
          pTemplateInfo, replace, contexts, range, pIgnoredNodes, ignorableProducts, 
-         pAnnotCache);
+         pInhibitCopyFiles, pAnnotCache);
 
       if (stage.build()) {
         if (stage.needsFinalization())
@@ -842,6 +857,7 @@ class TemplateBuilder
   }  
 
   
+  
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
@@ -853,6 +869,7 @@ class TemplateBuilder
   public static final String aConditionName = "ConditionName";
   
   public static final String aAllowZeroContexts = "AllowZeroContexts";
+  public static final String aInhibitFileCopy   = "InhibitFileCopy";
   
   
   
@@ -863,6 +880,8 @@ class TemplateBuilder
   private boolean pGenerateDependSets;
   
   private boolean pAllowZeroContexts;
+  
+  private boolean pInhibitCopyFiles;
   
   private TreeMap<String, String> pReplacements;
   

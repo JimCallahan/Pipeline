@@ -1,4 +1,4 @@
-// $Id: TemplateGlueBuilder.java,v 1.3 2009/03/26 00:07:37 jesse Exp $
+// $Id: TemplateGlueBuilder.java,v 1.4 2009/04/13 19:52:28 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateGlueCollection.v2_4_5;
 
@@ -70,6 +70,15 @@ class TemplateGlueBuilder
            false);
       addParam(param);
     }
+    
+    {
+      UtilityParam param = 
+        new BooleanUtilityParam
+          (aInhibitFileCopy,
+           "Inhibit the CopyFile flag on all nodes in the template.",
+           false);
+      addParam(param);
+    }
 
     addCheckinWhenDoneParam();
     
@@ -92,6 +101,7 @@ class TemplateGlueBuilder
     layout.addEntry(1, null);
     layout.addEntry(1, aTemplateNode);
     layout.addEntry(1, aAllowZeroContexts);
+    layout.addEntry(1, aInhibitFileCopy);
     
     PassLayoutGroup finalLayout = new PassLayoutGroup(layout.getName(), layout);
     
@@ -141,6 +151,7 @@ class TemplateGlueBuilder
       addSubBuilder(builder);
       addMappedParam(builder.getName(), aCheckinWhenDone, aCheckinWhenDone);
       addMappedParam(builder.getName(), aAllowZeroContexts, aAllowZeroContexts);
+      addMappedParam(builder.getName(), aInhibitFileCopy, aInhibitFileCopy);
     }
     private static final long serialVersionUID = -3615571748207002085L;
     
@@ -155,6 +166,7 @@ class TemplateGlueBuilder
   
   public static final String aTemplateNode = "TemplateNode";
   public static final String aAllowZeroContexts = "AllowZeroContexts";
+  public static final String aInhibitFileCopy   = "InhibitFileCopy";
   
   private static final long serialVersionUID = 7681162001215421131L;
 

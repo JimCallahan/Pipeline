@@ -1,4 +1,4 @@
-// $Id: TemplateInfoBuilder.java,v 1.8 2009/03/30 19:17:04 jesse Exp $
+// $Id: TemplateInfoBuilder.java,v 1.9 2009/04/13 19:48:08 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -73,46 +73,55 @@ class TemplateInfoBuilder
       Path p = new Path
         (PackageInfo.sProdPath, nodeID.getWorkingParent() + "/" + seq.getFile(0));
       pFile = p.toFile();
-      
-    try {
-      pTemplateGlueInfo = 
-        (TemplateGlueInformation) GlueDecoderImpl.decodeFile(aTemplateGlueInfo, pFile);
-    }
-    catch (GlueException ex) {
-      throw new PipelineException
-        (Exceptions.getFullMessage(
-           "Error reading the glue file with template information", ex));
-    }
-    
-    // This is a task builder
-    if (pTemplateGlueInfo.getNodesInTemplate().isEmpty()) {
-      for (String source : pTemplateInfoMod.getSourceNames()) {
-        TreeMap<String, BaseAnnotation> annots = getTaskAnnotations(source);
-        if (annots.isEmpty())
-          throw new PipelineException
+
+      try {
+        pTemplateGlueInfo = 
+          (TemplateGlueInformation) GlueDecoderImpl.decodeFile(aTemplateGlueInfo, pFile);
+      }
+      catch (GlueException ex) {
+        throw new PipelineException
+        (Exceptions.getFullMessage
+        ("Error reading the glue file with template information", ex));
+      }
+
+      // This is a task builder
+      if (pTemplateGlueInfo.getNodesInTemplate().isEmpty()) {
+        for (String source : pTemplateInfoMod.getSourceNames()) {
+          TreeMap<String, BaseAnnotation> annots = getTaskAnnotations(source);
+          if (annots.isEmpty())
+            throw new PipelineException
             ("There were no nodes specified in the Glue information file and at least one " +
-             "of the nodes attached to the template definition node do not contain task " +
-             "annotations.  The Template Info Builder is not able to determine what to " +
-             "build.");
+              "of the nodes attached to the template definition node do not contain task " +
+              "annotations.  The Template Info Builder is not able to determine what to " +
+              "build.");
+        }
       }
     }
-  }
 
     {
       UtilityParam param = 
         new BooleanUtilityParam
         (aAllowZeroContexts,
-         "Allow contexts to have no replacements.",
-         false);
+          "Allow contexts to have no replacements.",
+          false);
       addParam(param);
     }
 
-    
+    {
+      UtilityParam param = 
+        new BooleanUtilityParam
+        (aInhibitFileCopy,
+          "Inhibit the CopyFile flag on all nodes in the template.",
+          false);
+      addParam(param);
+    }
+
+
     AdvancedLayoutGroup layout = new AdvancedLayoutGroup
-     ("Information Pass", 
+    ("Information Pass", 
       "The First pass of the Template Info Builder",
       "BasicInformation", true);
-    
+
     layout.addEntry(1, aUtilContext);
     layout.addEntry(1, null);
     layout.addEntry(1, aCheckinWhenDone);
@@ -120,6 +129,7 @@ class TemplateInfoBuilder
     layout.addEntry(1, aReleaseOnError);
     layout.addEntry(1, null);
     layout.addEntry(1, aAllowZeroContexts);
+    layout.addEntry(1, aInhibitFileCopy);
     
     layout.addColumn("Replacements", true);
     layout.addColumn("Contexts", true);
@@ -295,6 +305,7 @@ class TemplateInfoBuilder
         addSubBuilder(builder);
         addMappedParam(builder.getName(), aCheckinWhenDone, aCheckinWhenDone);
         addMappedParam(builder.getName(), aAllowZeroContexts, aAllowZeroContexts);
+        addMappedParam(builder.getName(), aInhibitFileCopy, aInhibitFileCopy);
       }
       else {
         TemplateBuildInfo info = new TemplateBuildInfo();
@@ -305,6 +316,7 @@ class TemplateInfoBuilder
         addSubBuilder(builder);
         addMappedParam(builder.getName(), aCheckinWhenDone, aCheckinWhenDone);
         addMappedParam(builder.getName(), aAllowZeroContexts, aAllowZeroContexts);
+        addMappedParam(builder.getName(), aInhibitFileCopy, aInhibitFileCopy);
       }
     }
     
@@ -457,6 +469,7 @@ class TemplateInfoBuilder
       return pToReturn;
     }
     
+  
     
     /*--------------------------------------------------------------------------------------*/
     /*   S T A T I C   I N T E R N A L S                                                    */
@@ -484,6 +497,8 @@ class TemplateInfoBuilder
 
   public static final String aTemplateGlueInfo = "TemplateGlueInfo";
   public static final String aAllowZeroContexts = "AllowZeroContexts";
+  public static final String aInhibitFileCopy   = "InhibitFileCopy";
+  
   
   
   /*----------------------------------------------------------------------------------------*/

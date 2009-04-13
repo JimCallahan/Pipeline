@@ -1,4 +1,4 @@
-// $Id: TemplateTaskBuilder.java,v 1.8 2009/03/30 19:17:04 jesse Exp $
+// $Id: TemplateTaskBuilder.java,v 1.9 2009/04/13 19:48:08 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -110,6 +110,15 @@ class TemplateTaskBuilder
       addParam(param);
     }
     
+    {
+      UtilityParam param = 
+        new BooleanUtilityParam
+          (aInhibitFileCopy,
+           "Inhibit the CopyFile flag on all nodes in the template.",
+           false);
+      addParam(param);
+    }
+    
     AdvancedLayoutGroup layout = 
       new AdvancedLayoutGroup
       ("Builder Information", 
@@ -124,6 +133,7 @@ class TemplateTaskBuilder
     layout.addEntry(1, aReleaseOnError);
     layout.addEntry(1, null);
     layout.addEntry(1, aAllowZeroContexts);
+    layout.addEntry(1, aInhibitFileCopy);
     
     rootLayout.addPass(layout.getName(), layout);
     setLayout(rootLayout);
@@ -566,6 +576,7 @@ class TemplateTaskBuilder
       addSubBuilder(builder);
       addMappedParam(builder.getName(), aCheckinWhenDone, aCheckinWhenDone);
       addMappedParam(builder.getName(), aAllowZeroContexts, aAllowZeroContexts);
+      addMappedParam(builder.getName(), aInhibitFileCopy, aInhibitFileCopy);
     }
     
     private TreeSet<String> pNodesToBuild;
@@ -662,6 +673,7 @@ class TemplateTaskBuilder
   public static final String aLinkName = "LinkName";
   
   public static final String aAllowZeroContexts = "AllowZeroContexts";
+  public static final String aInhibitFileCopy   = "InhibitFileCopy";
   
   
   
