@@ -1,4 +1,4 @@
-// $Id: BaseStage.java,v 1.32 2009/03/26 00:04:16 jesse Exp $
+// $Id: BaseStage.java,v 1.33 2009/04/13 19:44:53 jesse Exp $
 
 package us.temerity.pipeline.stages;
 
@@ -1306,12 +1306,25 @@ class BaseStage
     case WorkingCurrentCheckedInSome:
       switch(actionOnExistence) {
       case CheckOut:
-      case Conform:
-	 pClient.checkOut(getAuthor(), getView(), nodeName, null, 
-	   CheckOutMode.KeepModified, CheckOutMethod.PreserveFrozen);
 	 checkOut(CheckOutMode.KeepModified, CheckOutMethod.PreserveFrozen);
 	 pLog.log(Kind.Ops, Level.Finest, "Checking out the node.");
 	return true;
+      case Conform:
+        NodeID id = new NodeID(getAuthor(), getView(), pRegisteredNodeName);
+        NodeStatus status = pClient.status(id, true, DownstreamMode.None);
+        NodeDetailsLight details = status.getLightDetails();
+        VersionID baseID = details.getBaseVersion().getVersionID();
+        VersionID latestID = details.getLatestVersion().getVersionID();
+        if (baseID.equals(latestID)) {
+          pLog.log(Kind.Ops, Level.Finest, 
+            "Conform is not checking out the node, since it is already based on the " +
+            "latest version.");
+        }
+        else {
+          checkOut(CheckOutMode.KeepModified, CheckOutMethod.PreserveFrozen);
+          pLog.log(Kind.Ops, Level.Finest, "Checking out the node.");
+        }
+        return true;
       case Continue:
 	return true;
       }
