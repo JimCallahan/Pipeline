@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.87 2009/04/01 21:17:58 jim Exp $
+// $Id: FileMgr.java,v 1.88 2009/04/16 20:11:23 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -5179,7 +5179,7 @@ class FileMgr
    * @param root
    *   The delete operation should stop at this directory regardles of whether it is empty.
    * 
-   * @param parent
+   * @param dir
    *   The start directory of the delete operation.
    */ 
   private void 
