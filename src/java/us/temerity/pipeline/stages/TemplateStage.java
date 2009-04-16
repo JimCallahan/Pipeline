@@ -1,4 +1,4 @@
-// $Id: TemplateStage.java,v 1.8 2009/04/13 19:48:08 jesse Exp $
+// $Id: TemplateStage.java,v 1.9 2009/04/16 01:12:24 jesse Exp $
 
 package us.temerity.pipeline.stages;
 
@@ -354,6 +354,9 @@ class TemplateStage
    * @param ignoredNodes
    *   A list of nodes in the template which were not built because of a Conditional Build
    *   annotation
+   *   
+   * @param inhibitCopy
+   *   Whether the CloneFiles template setting should be ignored.
    * 
    * @param annotCache
    *   A shared cache of annotations for nodes 
@@ -386,6 +389,9 @@ class TemplateStage
     FileSeq priSeq = sourceMod.getPrimarySequence();
     FilePattern pat = priSeq.getFilePattern();
     String suffix = pat.getSuffix();
+    if (suffix != null)
+      suffix = stringReplace(suffix, stringReplacements);
+    
     
     PluginContext editor = null;
     {
@@ -671,13 +677,16 @@ class TemplateStage
     FilePattern pat = seq.getFilePattern();
     String prefix = pat.getPrefix();
     prefix = stringReplace(prefix, pReplacements);
+    String suffix = pat.getSuffix();
+    if (suffix != null)
+      suffix = stringReplace(suffix, pReplacements);
     
     if (seq.hasFrameNumbers()) {
       FrameRange range = seq.getFrameRange();
-      FilePattern newPat = new FilePattern(prefix, pat.getPadding(), pat.getSuffix());
+      FilePattern newPat = new FilePattern(prefix, pat.getPadding(), suffix);
       return new FileSeq(newPat, range);
     }
-    return new FileSeq(prefix, pat.getSuffix());
+    return new FileSeq(prefix, suffix);
   }
   
   /**
@@ -694,8 +703,11 @@ class TemplateStage
   {
     String prefix = pat.getPrefix();
     prefix = stringReplace(prefix, pReplacements);
+    String suffix = pat.getSuffix();
+    if (suffix != null)
+      suffix = stringReplace(suffix, pReplacements);
     
-    return new FilePattern(prefix, pat.getPadding(), pat.getSuffix());
+    return new FilePattern(prefix, pat.getPadding(), suffix);
   }
   
   /**
