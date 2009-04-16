@@ -1,4 +1,4 @@
-// $Id: BasePluginMgrClient.java,v 1.26 2009/04/16 20:13:17 jesse Exp $
+// $Id: BasePluginMgrClient.java,v 1.27 2009/04/16 21:18:37 jesse Exp $
   
 package us.temerity.pipeline;
 
@@ -757,11 +757,20 @@ class BasePluginMgrClient
   }
 
   /**
-   * Create a new builder collection plugin instance. <P> 
-   * 
+   * Create a new builder collection plugin instance using an existing classloader context. 
+   * <P> 
+   * This method exists to allow builder collections to instantiate builders in other 
+   * collections that have some classes in common.  Java treats the same class in different 
+   * class loaders as different classes.  This means that a builder with non-standard 
+   * constructor arguments cannot be invoked cross-collection (since the arguments will
+   * resolve to different classes in each Collection).  
+   * <p>
    * Note that the <CODE>name</CODE> argument is not the name of the class, but rather the 
    * name obtained by calling {@link BaseBuilderCollection#getName() 
    * BaseBuilderCollection.getName} for the returned builder collection.
+   *
+   * @param parentLoader
+   *   The classloader which will be the parent classloader for the plugin.  
    *
    * @param name 
    *   The name of the builder collection plugin to instantiate.  

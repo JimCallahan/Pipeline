@@ -1,4 +1,4 @@
-// $Id: BaseBuilderCollection.java,v 1.21 2009/04/16 20:13:17 jesse Exp $
+// $Id: BaseBuilderCollection.java,v 1.22 2009/04/16 21:18:38 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -557,13 +557,7 @@ class BaseBuilderCollection
     Constructor construct = null;
     try {
       cls = loader.loadClass(builderClassLocation);
-      Constructor constructors[] = cls.getConstructors();
-      for (int i = 0; i < constructors.length; i++) {
-        if (checkConstructorArgs(arguments, constructors[i].getParameterTypes())) {
-          construct = constructors[i];
-          break;
-        }
-      }
+      construct = cls.getConstructor(arguments);
     }
     catch (ClassNotFoundException ex) {
       String header = 
@@ -573,7 +567,7 @@ class BaseBuilderCollection
       String message = Exceptions.getFullMessage(header, ex);
       throw new PipelineException(message);
     }
-    if (construct == null) {
+    catch (NoSuchMethodException ex) {
       String header = 
         "Was unable to instantiate the constructor for the specified Builder.  " +
         "The arguments passed in do not represent a valid call to the builder .\n";
