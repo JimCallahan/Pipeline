@@ -261,7 +261,7 @@ class PluginInstallUtil
   )
     throws PipelineException
   {
-    ClassLoader loader = new PluginClassLoader(contents);
+    ClassLoader loader = new PluginClassLoader(contents, null);
     
     BasePlugin plg = null;
 

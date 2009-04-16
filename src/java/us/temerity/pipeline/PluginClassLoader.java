@@ -1,4 +1,4 @@
-// $Id: PluginClassLoader.java,v 1.6 2009/04/16 19:14:53 jlee Exp $
+// $Id: PluginClassLoader.java,v 1.7 2009/04/16 20:13:17 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -21,19 +21,24 @@ class PluginClassLoader
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
 
-  /** 
+  /**
    * Construct a new plugin loader.
    * 
    * @param contents
    *   The raw plugin class bytes indexed by class name.
+   * 
+   * @param parentLoader
+   *   The parent class loader. If this is <code>null</code> then the default System
+   *   Class Loader will be used.
    */
   public 
   PluginClassLoader
   (
-   TreeMap<String,byte[]> contents
+    TreeMap<String,byte[]> contents, 
+    ClassLoader parentLoader
   ) 
   {
-    super();
+    super(parentLoader == null ? getSystemClassLoader() : parentLoader);
 
     pContents  = contents; 
     pResources = new TreeMap<String,Long>();
@@ -41,6 +46,13 @@ class PluginClassLoader
 
   /**
    * Construct a new plugin loader.
+   * 
+   * @param contents
+   *   The raw plugin class bytes indexed by class name.
+   * 
+   * @param parentLoader
+   *   The parent class loader. If this is <code>null</code> then the default System
+   *   Class Loader will be used.
    */
   public
   PluginClassLoader
@@ -48,10 +60,11 @@ class PluginClassLoader
    TreeMap<String,byte[]> contents, 
    TreeMap<String,Long> resources, 
    PluginID pid, 
-   PluginType ptype
+   PluginType ptype, 
+   ClassLoader parentLoader
   )
   {
-    super();
+    super(parentLoader == null ? getSystemClassLoader() : parentLoader);
 
     if(contents == null)
       throw new IllegalArgumentException
@@ -88,32 +101,28 @@ class PluginClassLoader
        "Resource path (" + pResourceRootPath + ") " + 
        "for Plugin (" + vendor + "/" + ptype + "/" + name + "/" + vid + ")");
   }
-
+  
   /**
-   * EXPERIMENTAL - for Jesse's Builders calling Builders outside of it's ClassLoader.
+   * Construct a new plugin loader.
+   * 
+   * @param childLoader
+   *   The childLoader that is going be used to extend the parent loader.
+   * 
+   * @param parentLoader
+   *   The parent class loader. If this is <code>null</code> then the default System
+   *   Class Loader will be used.
    */
-  public
+  public 
   PluginClassLoader
   (
-   PluginClassLoader parentLoader, 
-   PluginClassLoader childLoader
-  )
+    PluginClassLoader childLoader, 
+    ClassLoader parentLoader
+  ) 
   {
-    if(parentLoader == null) {
-      throw new IllegalArgumentException
-	("The parent class loader cannot be (null)!");
-    }
-
-    if(childLoader == null) {
-      throw new IllegalArgumentException
-	("The child class loader cannot be (null)!");
-    }
-
-    pParentLoader = parentLoader;
-    pChildLoader  = childLoader;
+    this(new TreeMap<String, byte[]>(childLoader.pContents), parentLoader);
   }
 
-
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   C L A S S   L O A D E R   O V E R R I D E S                                          */
@@ -122,6 +131,7 @@ class PluginClassLoader
   /**
    * Finds the specified class. 
    */
+  @Override
   protected Class 
   findClass
   (
@@ -129,32 +139,6 @@ class PluginClassLoader
   ) 
     throws ClassNotFoundException
   {
-    /**
-     * EXPERIMENTAL - for Jesse's Builders calling Builders outside of it's ClassLoader.
-     */
-    if(pParentLoader != null) {
-      try {
-	return pParentLoader.loadClass(cname);
-      }
-      catch(ClassNotFoundException ex) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Ops, LogMgr.Level.Finest, 
-	   "Class (" + cname + ") not found in the parent ClassLoader.");
-      }
-
-      try {
-	return pChildLoader.loadClass(cname);
-      }
-      catch(ClassNotFoundException ex) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Ops, LogMgr.Level.Finest, 
-	   "Class (" + cname + ") not found in the child ClassLoader.");
-      }
-
-      throw new ClassNotFoundException
-	("Unable to find class (" + cname + ")!");
-    }
-
     byte bs[] = pContents.get(cname);
     if(bs == null) 
       throw new ClassNotFoundException
@@ -166,32 +150,13 @@ class PluginClassLoader
   /**
    * Finds the specified resource.
    */
+  @Override
   protected URL
   findResource
   (
    String rname
   )
   {
-    /**
-     * EXPERIMENTAL - for Jesse's Builders calling Builders outside of it's ClassLoader.
-     */
-    if(pParentLoader != null) {
-      {
-	URL parentResource = pParentLoader.getResource(rname);
-
-	if(parentResource != null)
-	  return parentResource;
-      }
-      {
-	URL childResource = pChildLoader.getResource(rname);
-
-	if(childResource != null)
-	  return childResource;
-      }
-
-      return null;
-    }
-
     LogMgr.getInstance().log
       (LogMgr.Kind.Ops, LogMgr.Level.Finest, 
        "Resource name (" + rname + ")");
@@ -248,38 +213,26 @@ class PluginClassLoader
    String path
   )
   {
-    /**
-     * EXPERIMENTAL - for Jesse's Builders calling Builders outside of it's ClassLoader.
-     */
-    if(pParentLoader != null) {
-      {
-	long parentResourceSize = pParentLoader.getResourceSize(path);
-
-	if(parentResourceSize != -1L)
-	  return parentResourceSize;
-      }
-      {
-	long childResourceSize = pChildLoader.getResourceSize(path);
-
-	if(childResourceSize != -1L)
-	  return childResourceSize;
-      }
-
-      return -1L;
-    }
-
     LogMgr.getInstance().log
       (LogMgr.Kind.Ops, LogMgr.Level.Finest, 
        "Path (" + path + ")");
-
-    if(pResources != null) {
-      if(pResources.containsKey(path))
-	return pResources.get(path);
-      else
-	return -1L;
+    
+    long toReturn = -1L;
+    
+    ClassLoader parent = getParent();
+    if (parent != null && parent instanceof PluginClassLoader) {
+      PluginClassLoader pparent = (PluginClassLoader) parent;
+      toReturn = pparent.getResourceSize(path);
+    }
+    
+    if (toReturn == -1L) {
+      if(pResources != null) {
+        if(pResources.containsKey(path))
+          toReturn = pResources.get(path);
+      }
     }
 
-    return -1L;
+    return toReturn;
   }
 
   /**
@@ -288,15 +241,37 @@ class PluginClassLoader
   public SortedMap<String,Long>
   getResources()
   {
-    // TODO if the experiment code for Jesse works, then figure out what goes here.
-
-    if(pResources != null) {
-      return Collections.unmodifiableSortedMap(pResources);
+    TreeMap<String, Long> toReturn = new TreeMap<String, Long>();
+    
+    getResourcesHelper(toReturn);
+    
+    if(!toReturn.isEmpty()) {
+      return Collections.unmodifiableSortedMap(toReturn);
     }
 
     return null;
   }
 
+  private void
+  getResourcesHelper
+  (
+    TreeMap<String, Long> resources
+  )
+  {
+    ClassLoader parent = getParent();
+    if (parent != null && parent instanceof PluginClassLoader) {
+      PluginClassLoader pparent = (PluginClassLoader) parent;
+      pparent.getResourcesHelper(resources);
+    }
+    
+    if (pResources != null) {
+      for (String res : pResources.keySet()) {
+        if (!resources.containsKey(res)) {
+          resources.put(res, pResources.get(res));
+        }   
+      }
+    }
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -317,12 +292,6 @@ class PluginClassLoader
    * The resource directory for the Plugin.
    */
   private Path  pResourceRootPath;
-
-  /**
-   * EXPERIMENTAL - for Jesse's Builders calling Builders outside of it's ClassLoader.
-   */
-  private PluginClassLoader  pParentLoader;
-  private PluginClassLoader  pChildLoader;
-
+  
 }
 

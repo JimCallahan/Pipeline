@@ -1,4 +1,4 @@
-// $Id: BasePluginMgrClient.java,v 1.25 2009/04/16 19:14:53 jlee Exp $
+// $Id: BasePluginMgrClient.java,v 1.26 2009/04/16 20:13:17 jesse Exp $
   
 package us.temerity.pipeline;
 
@@ -757,12 +757,29 @@ class BasePluginMgrClient
   }
 
   /**
-   * EXPERIMENTAL - for Jesse's Builders calling Builders outside of it's ClassLoader.
+   * Create a new builder collection plugin instance. <P> 
+   * 
+   * Note that the <CODE>name</CODE> argument is not the name of the class, but rather the 
+   * name obtained by calling {@link BaseBuilderCollection#getName() 
+   * BaseBuilderCollection.getName} for the returned builder collection.
+   *
+   * @param name 
+   *   The name of the builder collection plugin to instantiate.  
+   * 
+   * @param vid
+   *   The revision number of the builder collection to instantiate 
+   *   or <CODE>null</CODE> for the latest version.
+   * 
+   * @param vendor
+   *   The name of the plugin vendor or <CODE>null</CODE> for Temerity.
+   * 
+   * @throws PipelineException
+   *   If no builder collection plugin can be found or instantiation fails for some reason.
    */
   public synchronized BaseBuilderCollection
   newBuilderCollection
   (
-   PluginClassLoader parentLoader, 
+   ClassLoader parentLoader, 
    String name, 
    VersionID vid, 
    String vendor
@@ -776,7 +793,8 @@ class BasePluginMgrClient
     String cname = cls.getName();
 
     PluginClassLoader childLoader = (PluginClassLoader) cls.getClassLoader();
-    PluginClassLoader loader = new PluginClassLoader(parentLoader, childLoader);
+    PluginClassLoader loader = 
+      new PluginClassLoader(childLoader, parentLoader);
 
     try {
       Class childBuilderCollection = loader.loadClass(cname);
@@ -1086,7 +1104,7 @@ class BasePluginMgrClient
             
             ClassLoader loader = 
 	      new PluginClassLoader(contents, resources, 
-	                            pid, pPluginType);
+	                            pid, pPluginType, null);
 
             try {
               LogMgr.getInstance().log

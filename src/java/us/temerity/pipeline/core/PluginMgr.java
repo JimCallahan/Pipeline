@@ -1,4 +1,4 @@
-// $Id: PluginMgr.java,v 1.39 2009/04/16 16:03:52 jlee Exp $
+// $Id: PluginMgr.java,v 1.40 2009/04/16 20:13:17 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2037,7 +2037,7 @@ class PluginMgr
   ) 
     throws PipelineException
   {
-    ClassLoader loader = new PluginClassLoader(contents);
+    ClassLoader loader = new PluginClassLoader(contents, null);
 
     try {
       boolean isDryRun     = false;

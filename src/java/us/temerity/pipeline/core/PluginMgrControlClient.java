@@ -1,4 +1,4 @@
-// $Id: PluginMgrControlClient.java,v 1.15 2009/04/07 01:48:12 jlee Exp $
+// $Id: PluginMgrControlClient.java,v 1.16 2009/04/16 20:13:17 jesse Exp $
   
 package us.temerity.pipeline.core;
 
@@ -429,7 +429,7 @@ class PluginMgrControlClient
   )
     throws PipelineException
   {
-    ClassLoader loader = new PluginClassLoader(contents);
+    ClassLoader loader = new PluginClassLoader(contents, null);
 
     Class cls = null;
     BasePlugin plg = null;

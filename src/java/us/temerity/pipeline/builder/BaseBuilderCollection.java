@@ -1,4 +1,4 @@
-// $Id: BaseBuilderCollection.java,v 1.20 2009/03/31 22:56:10 jesse Exp $
+// $Id: BaseBuilderCollection.java,v 1.21 2009/04/16 20:13:17 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -557,8 +557,13 @@ class BaseBuilderCollection
     Constructor construct = null;
     try {
       cls = loader.loadClass(builderClassLocation);
-      construct = 
-        cls.getConstructor(arguments);
+      Constructor constructors[] = cls.getConstructors();
+      for (int i = 0; i < constructors.length; i++) {
+        if (checkConstructorArgs(arguments, constructors[i].getParameterTypes())) {
+          construct = constructors[i];
+          break;
+        }
+      }
     }
     catch (ClassNotFoundException ex) {
       String header = 
@@ -566,20 +571,48 @@ class BaseBuilderCollection
         "(" + builderClassLocation +" ) does not appear to exist in this " +
         "BuilderCollection\n";
       String message = Exceptions.getFullMessage(header, ex);
-      LogMgr.getInstance().log
-        (LogMgr.Kind.Ops, LogMgr.Level.Severe, message);
+      throw new PipelineException(message);
     }
-    catch (NoSuchMethodException ex) {
+    if (construct == null) {
       String header = 
         "Was unable to instantiate the constructor for the specified Builder.  " +
         "The arguments passed in do not represent a valid call to the builder .\n";
-      String message = Exceptions.getFullMessage(header, ex);
-      LogMgr.getInstance().log
-        (LogMgr.Kind.Ops, LogMgr.Level.Severe, message);
+      throw new PipelineException(header);
     }
+    
    return construct; 
   }
   
+  @SuppressWarnings("unchecked")
+  private static boolean 
+  checkConstructorArgs
+  (
+    Class[] a1, 
+    Class[] a2
+  ) 
+  {
+    LogMgr.getInstance().log(Kind.Bld, Level.Finest, 
+      "Compairing constructor arguments:\n\t" + a1 + "\n\t" + a2 + "\n");
+    
+    if (a1 == null) 
+        return a2 == null || a2.length == 0;
+
+    if (a2 == null) 
+        return a1.length == 0;
+
+    if (a1.length != a2.length) 
+        return false;
+
+    for (int i = 0; i < a1.length; i++) {
+      String className1 = a1[i].getName();
+      String className2 = a2[i].getName();
+        if (!className1.equals(className2)) {
+            return false;
+        }
+    }
+
+    return true;
+}
   
   
   /*----------------------------------------------------------------------------------------*/
