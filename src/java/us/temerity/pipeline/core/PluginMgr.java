@@ -1,4 +1,4 @@
-// $Id: PluginMgr.java,v 1.38 2009/04/07 13:34:41 jlee Exp $
+// $Id: PluginMgr.java,v 1.39 2009/04/16 16:03:52 jlee Exp $
 
 package us.temerity.pipeline.core;
 
@@ -45,6 +45,8 @@ class PluginMgr
   {
     if(PackageInfo.sOsType != OsType.Unix)
       throw new IllegalStateException("The OS type must be Unix!");
+
+    pTempDir = PackageInfo.sTempPath.toFile();
 
     LogMgr.getInstance().log
       (LogMgr.Kind.Net, LogMgr.Level.Info,
@@ -120,11 +122,11 @@ class PluginMgr
 
       LogMgr.getInstance().log
 	(LogMgr.Kind.Plg, LogMgr.Level.Finest, 
-	 "Removing (" + pPluginScratchPath + ")");
+	 "Removing the scratch directory (" + pPluginScratchPath + ").");
 
       /* Recursive delete the contents of the plugin scratch path. */
       try {
-	recursiveDelete(pPluginScratchPath.toFile());
+	rmdir(pPluginScratchPath.toFile());
       }
       catch(PipelineException ex) {
 	throw new IllegalStateException(ex);
@@ -205,21 +207,18 @@ class PluginMgr
 
 	Path bootstrapPluginsPath = new Path(bootstrapPluginsDir);
       
-	for(String key : pPluginPathTable.keySet()) {
-	  TreeSet<String> pathList = pPluginPathTable.get(key);
+	for(String pluginPath : pPluginPathTable.keySet()) {
+	  TreeSet<String> pathList = pPluginPathTable.get(pluginPath);
 
 	  for(String path : pathList) {
-	    LogMgr.getInstance().log
-	      (LogMgr.Kind.Plg, LogMgr.Level.Finest, 
-	       "Key (" + key + ") " + 
-	       "Path (" + path + ")");
-
 	    try {
-	      Path versionPath = new Path(bootstrapPluginsPath, key);
-	      Path pluginPath  = new Path(versionPath, path);
+	      Path versionPath = 
+		new Path(bootstrapPluginsPath, pluginPath);
+	      Path pluginVersionPath = 
+		new Path(versionPath, path);
 
 	      loadPlugin(bootstrapPluginsDir, 
-	                 pluginPath.toFile(), 
+	                 pluginVersionPath.toFile(), 
 		         PluginLoadType.Bootstrap);
 	    }
 	    catch(PipelineException ex) {
@@ -326,21 +325,17 @@ class PluginMgr
 	  String name = pid.getName();
 	  VersionID vid = pid.getVersionID();
 
-	  String key = vendor + "/" + ptype + "/" + name + "/" + vid;
+	  String pluginPath = vendor + "/" + ptype + "/" + name + "/" + vid;
 
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Plg, LogMgr.Level.Finest, 
-	     key + " (" + pPluginPathTable.containsKey(key) + ")");
-
-	  if(pPluginPathTable.containsKey(key)) {
-	    TreeSet<String> pathList = pPluginPathTable.get(key);
+	  if(pPluginPathTable.containsKey(pluginPath)) {
+	    TreeSet<String> pathList = pPluginPathTable.get(pluginPath);
 
 	    /* In the new installed plugin directory structure there is only one 
 	       plugin file per version directory. */
 	    if(pathList.size() > 1) {
 	      LogMgr.getInstance().log
 		(LogMgr.Kind.Plg, LogMgr.Level.Warning,
-	         "Plugin (" + key + ")'s directory contained " + 
+	         "Plugin (" + pluginPath + ")'s directory contained " + 
 		 "more than one plugin file!");
 	    }
 	    else {
@@ -349,16 +344,13 @@ class PluginMgr
 	      try {
 		String path = pathList.first();
 
-		LogMgr.getInstance().log
-		  (LogMgr.Kind.Plg, LogMgr.Level.Finest, 
-	           "Key (" + key + ") " + 
-	           "Path (" + path + ")");
-
-		Path versionPath = new Path(PackageInfo.sPluginsPath, key);
-		Path pluginPath  = new Path(versionPath, path);
+		Path versionPath 
+		  = new Path(PackageInfo.sPluginsPath, pluginPath);
+		Path pluginVersionPath  
+		  = new Path(versionPath, path);
 
 		loadPlugin(pluginsRoot, 
-	                   pluginPath.toFile(), 
+	                   pluginVersionPath.toFile(), 
 			   PluginLoadType.Startup);
 
 		isPluginLoaded = true;
@@ -366,21 +358,21 @@ class PluginMgr
 	      catch(PipelineException ex) {
 		LogMgr.getInstance().log
 		  (LogMgr.Kind.Plg, LogMgr.Level.Warning,
-	           "" + ex.getMessage());
+	           ex.getMessage());
 	      }
 
 	      if(isPluginLoaded) {
-		if(pBackupPluginPathTable.containsKey(key)) {
-		  pBackupPluginPathTable.remove(key);
+		if(pBackupPluginPathTable.containsKey(pluginPath)) {
+		  pBackupPluginPathTable.remove(pluginPath);
 
 		  Path backupPath = 
-		    new Path(PackageInfo.sPluginsPath, key + "-backup");
+		    new Path(PackageInfo.sPluginsPath, pluginPath + "-backup");
 		  {
 		    File backupDir = backupPath.toFile();
 
 		    if(backupDir.exists()) {
 		      try {
-			recursiveDelete(backupDir);
+			rmdir(backupDir);
 		      }
 		      catch(PipelineException ex) {
 			LogMgr.getInstance().log
@@ -393,25 +385,27 @@ class PluginMgr
 	      }
 	    }
 
-	    pPluginPathTable.remove(key);
+	    pPluginPathTable.remove(pluginPath);
 	  }
 	}
       }
 
       /* Handle the backup plugin version directories. */
       if(!pBackupPluginPathTable.isEmpty()) {
-	for(String key : pBackupPluginPathTable.keySet()) {
-	  TreeSet<String> pathList = pBackupPluginPathTable.get(key);
+	for(String pluginPath : pBackupPluginPathTable.keySet()) {
+	  TreeSet<String> pathList = pBackupPluginPathTable.get(pluginPath);
 
 	  if(pathList.size() > 1) {
 	    LogMgr.getInstance().log
 	      (LogMgr.Kind.Plg, LogMgr.Level.Warning,
-	       "Plugin (" + key + "-backup)'s directory " + 
+	       "Plugin (" + pluginPath + "-backup)'s directory " + 
 	       "contained more than one plugin file!");
 	  }
 	  else {
-	    Path currentPath = new Path(PackageInfo.sPluginsPath, key);
-	    Path backupPath  = new Path(PackageInfo.sPluginsPath, key + "-backup");
+	    Path currentPath = 
+	      new Path(PackageInfo.sPluginsPath, pluginPath);
+	    Path backupPath = 
+	      new Path(PackageInfo.sPluginsPath, pluginPath + "-backup");
 
 	    try {
 	      File currentDir = currentPath.toFile();
@@ -419,7 +413,7 @@ class PluginMgr
 
 	      if(currentDir.exists()) {
 		try {
-		  recursiveDelete(currentDir);
+		  rmdir(currentDir);
 		}
 		catch(PipelineException ex) {
 		  throw new PipelineException
@@ -428,9 +422,13 @@ class PluginMgr
 	      }
 
 	      if(backupDir.exists()) {
-		if(!backupDir.renameTo(currentDir))
+		try {
+		  mvdir(backupDir, currentDir);
+		}
+		catch(PipelineException ex) {
 		  throw new PipelineException
 		    ("Unable to rename (" + backupDir + ") to (" + currentDir + ")!");
+		}
 	      }
 
 	      boolean isPluginLoaded = false;
@@ -438,15 +436,20 @@ class PluginMgr
 	      try {
 		String path = pathList.first();
 
-		Path versionPath = new Path(PackageInfo.sPluginsPath, key);
-		Path pluginPath  = new Path(versionPath, path);
+		Path versionPath = 
+		  new Path(PackageInfo.sPluginsPath, pluginPath);
+		Path pluginVersionPath = 
+		  new Path(versionPath, path);
 
 		LogMgr.getInstance().log
 		  (LogMgr.Kind.Plg, LogMgr.Level.Info, 
-		   key + ", " + path + ", " + versionPath + ", " + pluginPath);
+		   pluginPath + ", " + 
+		   path + ", " + 
+		   versionPath + ", " + 
+		   pluginVersionPath);
 
 		loadPlugin(pluginsRoot, 
-	                   pluginPath.toFile(), 
+	                   pluginVersionPath.toFile(), 
 			   PluginLoadType.Startup);
 
 		isPluginLoaded = true;
@@ -454,19 +457,13 @@ class PluginMgr
 	      catch(PipelineException ex) {
 		LogMgr.getInstance().log
 		  (LogMgr.Kind.Plg, LogMgr.Level.Severe,
-	           "" + ex.getMessage());
+	           ex.getMessage());
 	      }
 
 	      if(!isPluginLoaded) {
 		if(currentDir.exists()) {
-		  /*
-		  if(!currentDir.renameTo(backupDir))
-		    throw new PipelineException
-		      ("Unable to rename (" + currentDir + ") to (" + backupDir + ")!");
-		  */
-
 		  try {
-		    recursiveDelete(currentDir);
+		    rmdir(currentDir);
 		  }
 		  catch(PipelineException ex) {
 		    throw new PipelineException
@@ -486,24 +483,24 @@ class PluginMgr
 
       /* Handle the unknown plugins. */
       if(!pPluginPathTable.isEmpty()) {
-	for(String key : pPluginPathTable.keySet()) {
-	  TreeSet<String> pathList = pPluginPathTable.get(key);
+	for(String pluginPath : pPluginPathTable.keySet()) {
+	  TreeSet<String> pathList = pPluginPathTable.get(pluginPath);
 
 	  if(pathList.size() > 1) {
 	    LogMgr.getInstance().log
 	      (LogMgr.Kind.Plg, LogMgr.Level.Warning,
-	       "Plugin (" + key + "-backup)'s directory " + 
+	       "Plugin (" + pluginPath + "-backup)'s directory " + 
 	       "contained more than one plugin file!");
 	  }
 	  else {
 	    try {
 	      String path = pathList.first();
 
-	      Path versionPath = new Path(PackageInfo.sPluginsPath, key);
-	      Path pluginPath  = new Path(versionPath, path);
+	      Path versionPath = new Path(PackageInfo.sPluginsPath, pluginPath);
+	      Path pluginVersionPath  = new Path(versionPath, path);
 
 	      loadPlugin(pluginsRoot, 
-	                 pluginPath.toFile(), 
+	                 pluginVersionPath.toFile(), 
 		         PluginLoadType.Startup);
 	    }
 	    catch(PipelineException ex) {
@@ -864,6 +861,13 @@ class PluginMgr
    PluginInstallReq req
   ) 
   {
+    File currentVersionDir = null;
+    File backupVersionDir  = null;
+
+    String pluginPath = null;
+
+    boolean isPluginInstalled = false;
+
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
@@ -884,6 +888,8 @@ class PluginMgr
       SortedMap<String,Long> resources = new TreeMap<String,Long>();
       SortedMap<String,byte[]> checksums = new TreeMap<String,byte[]>();
 
+      long sessionID = -1L;
+
       if(req instanceof PluginResourceInstallReq) {
 	PluginResourceInstallReq resourceReq = (PluginResourceInstallReq) req;
 
@@ -892,25 +898,19 @@ class PluginMgr
 
 	if(resourcesFromReq != null) {
 	  resources.putAll(resourcesFromReq);
-
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Plg, LogMgr.Level.Finest, 
-	     "Resources table size (" + resources.size() + ").");
 	}
 
 	if(checksumsFromReq != null) {
 	  checksums.putAll(checksumsFromReq);
-
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Plg, LogMgr.Level.Finest, 
-	     "Checksums table size (" + checksums.size() + ").");
 	}
+
+	sessionID = resourceReq.getSessionID();
       }
 
       /* load the class and cache the class bytes */ 
       pLoadCycleID++;
       loadPluginHelper(req.getClassFile(), cname, req.getVersionID(), contents, 
-                       resources, checksums, 
+                       resources, checksums, sessionID, 
                        req.getExternal(), req.getRename(), 
 		       (isDryRun ? PluginLoadType.DryRun : PluginLoadType.Install)); 
 
@@ -920,7 +920,7 @@ class PluginMgr
 
 	if(pid == null) {
 	  throw new PipelineException
-	    ("Plugin (" + cname + ") was not installed successfully!");
+	    ("Plugin (" + cname + ") was not validated!");
 	}
 
 	PluginType ptype = pPluginTypeTable.get(cname);
@@ -930,15 +930,78 @@ class PluginMgr
 
 	VersionID vid = pid.getVersionID();
 
+	pluginPath = vendor + "/" + ptype + "/" + name + "/" + vid;
+
+	Path currentVersionPath = 
+	  new Path(PackageInfo.sPluginsPath, pluginPath);
+	Path backupVersionPath  = 
+	  new Path(PackageInfo.sPluginsPath, pluginPath + "-backup");
+
+	currentVersionDir = currentVersionPath.toFile();
+	backupVersionDir  = backupVersionPath.toFile();
+
+	try {
+	  /* If the plugin version directory exists, this means that the plugin 
+	     was installed successfully.  Move the plugin version directory to 
+	     one that has "-backup" appended to the version ID. */
+	  if(currentVersionDir.exists()) {
+	    /* If for some reason a backup directory exists, this could be due to 
+	       an error removing the directory.  At this point we have already 
+	       obtained a write lock so it is safe to remove the directory.  No 
+	       other thread is performing an action with the backup directory. */
+	    if(backupVersionDir.exists())
+	      rmdir(backupVersionDir);
+
+	    mvdir(currentVersionDir, backupVersionDir);
+	  }
+	  /* If the plugin version directory does not exists, this means it is a 
+	     new plugin being installed.
+	     
+	     If resources are involved with the plugin the mkdir the parent 
+	     of the plugin version directory.
+	     
+	     If there are no resources then mkdir the plugin version directory. */
+	  else {
+	    if(sessionID != -1L) {
+	      File parentDir = currentVersionDir.getParentFile();
+
+	      if(!parentDir.exists()) {
+		if(!parentDir.mkdirs())
+		  throw new PipelineException
+		    ("Unable to create the directory (" + parentDir + ") " + 
+		     "for (" + pluginPath + ")!");
+	      }
+	    }
+	    else {
+	      if(!currentVersionDir.mkdirs()) {
+		throw new PipelineException
+		  ("Unable to create the directory (" + currentVersionDir + ") " + 
+		   "for (" + pluginPath + ")!");
+	      }
+	    }
+	  }
+
+	  /* If there are resources with the plugin then move the scratch directory 
+	     to the plugin version directory. */
+	  if(sessionID != -1L) {
+	    Path scratchPath = 
+	      new Path(pPluginScratchPath, Long.toString(sessionID));
+
+	    File scratchDir = scratchPath.toFile();
+
+	    mvdir(scratchDir, currentVersionDir);
+	  }
+	}
+	catch(PipelineException ex) {
+	  throw ex;
+	}
+
 	/* save the plugin class bytes in a file */ 
 	Path path = null; 
 	try {
 	  boolean isJar = (contents.size() > 1);
 	  path = new Path(PackageInfo.sPluginsPath, 
-			  vendor + "/" + 
-			  ptype + "/" + 
-			  name + "/" + 
-			  vid + "/" + 
+	                  pluginPath + "/" + 
 			  name + (isJar ? ".jar" : ".class"));
 	  
 	  File dir = path.getParentPath().toFile();
@@ -951,10 +1014,7 @@ class PluginMgr
 	  else {
 	    /* remove old class or JAR file if the plugin has changed format */ 
 	    Path opath = new Path(PackageInfo.sPluginsPath, 
-	                          vendor + "/" + 
-			          ptype + "/" + 
-			          name + "/" + 
-			          vid + "/" + 
+				  pluginPath + "/" + 
 				  name + (isJar ? ".class" : ".jar"));
 	    File ofile = opath.toFile();
 	    if(ofile.isFile()) 
@@ -1002,6 +1062,9 @@ class PluginMgr
 	  throw new PipelineException(ex);
 	}
 
+	/* After writing all the plugin related files flip the installed flag. */
+	isPluginInstalled = true;
+
 	/* Check that all required plugins have been loaded. */
 	if(!pUpToDate.get()) {
 	  if(pMissingCount == 0)
@@ -1028,6 +1091,45 @@ class PluginMgr
       return new FailureRsp(timer, ex.getMessage());
     }
     finally {
+      /* Perform the cleanup of directories. */
+      if(currentVersionDir != null && backupVersionDir != null) {
+	try {
+	  /* If the plugin was installed, meaning that all plugin related 
+	     files were written to disk, then remove the backup directory. */
+	  if(isPluginInstalled) {
+	    if(backupVersionDir.exists())
+	      rmdir(backupVersionDir);
+	  }
+	  /* If the plugin was NOT installed, meaning that there was an exception 
+	     during the directory moving, removing or writing of files, check for 
+	     a backup directory.
+	     
+	     If the backup directory exists then this means that the plugin 
+	     version directory should be removed and the backup should be moved 
+	     to the plugin version directory.
+	     
+	     If there is no backup directory this means that there was no 
+	     previous install of the plugin and the plugin version directory 
+	     should be removed. */
+	  else {
+	    if(backupVersionDir.exists()) {
+	      rmdir(currentVersionDir);
+	      mvdir(backupVersionDir, currentVersionDir);
+	    }
+	    else {
+	      rmdir(currentVersionDir);
+	    }
+	  }
+	}
+	catch(PipelineException ex) {
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Plg, LogMgr.Level.Warning, 
+	     "Error cleaning up after plugin (" + pluginPath + ") " + 
+	     "(" + currentVersionDir + ") - (" + currentVersionDir.exists() + ") " + 
+	     "(" + backupVersionDir  + ") - (" + backupVersionDir.exists()  + ")!");
+	}
+      }
+
       pPluginLock.writeLock().unlock();
     }
   }
@@ -1167,7 +1269,7 @@ class PluginMgr
       File scratchResourceDir = scratchResourcePath.toFile();
 
       if(scratchDir.exists())
-	recursiveDelete(scratchDir);
+	rmdir(scratchDir);
 
       if(!scratchDir.mkdirs()) {
 	throw new PipelineException
@@ -1338,92 +1440,13 @@ class PluginMgr
    PluginResource pluginResource
   )
   {
-    long sessionID = pluginResource.getSessionID();
-
-    String cname = pluginResource.getClassName();
-
-    PluginID pid = null;
-    {
-      TaskTimer timer = new TaskTimer();
-
-      timer.aquire();
-      try {
-	pid = pPluginIDTable.get(cname);
-
-	if(pid == null) {
-	  throw new PipelineException
-	    ("Plugin (" + cname + ") was not installed successfully!");
-	}
-      }
-      catch(PipelineException ex) {
-	return new FailureRsp(timer, ex.getMessage());
-      }
-    }
-    
-    PluginType ptype = pPluginTypeTable.get(cname);
-
-    String vendor = pid.getVendor();
-    String name = pid.getName();
-
-    VersionID vid = pid.getVersionID();
-
-    String pluginPath = vendor + "/" + ptype + "/" + name + "/" + vid;
-
-    Path scratchPath = new Path(pPluginScratchPath, Long.toString(sessionID));
-
-    Path currentVersionPath = new Path(PackageInfo.sPluginsPath, pluginPath);
-    Path backupVersionPath  = new Path(PackageInfo.sPluginsPath, pluginPath + "-backup");
-
-    LogMgr.getInstance().log
-      (LogMgr.Kind.Plg, LogMgr.Level.Finest, 
-       "Current plugin path (" + currentVersionPath + ")");
-
-    LogMgr.getInstance().log
-      (LogMgr.Kind.Plg, LogMgr.Level.Finest, 
-       "Backup plugin path (" + backupVersionPath + ")");
-
-    LogMgr.getInstance().log
-      (LogMgr.Kind.Plg, LogMgr.Level.Finest, 
-       "Scratch plugin path (" + scratchPath + ")");
-
-    File scratchDir = scratchPath.toFile();
-
-    File scratchVersionDir = scratchPath.toFile();
-    File currentVersionDir = currentVersionPath.toFile();
-    File backupVersionDir  = backupVersionPath.toFile();
-
-    boolean isNewInstall = !currentVersionDir.exists();
-
     TaskTimer timer = new TaskTimer();
 
     timer.aquire();
     pResourceLock.writeLock().lock();
     try {
-      if(currentVersionDir.exists()) {
-	if(!currentVersionDir.renameTo(backupVersionDir))
-	  throw new PipelineException
-	    ("Unable to rename (" + currentVersionDir + ") " + 
-	     "to (" + backupVersionDir + ")!");
-      }
-      else {
-	if(!currentVersionDir.mkdirs())
-	  throw new PipelineException
-	    ("Unable to create the directory (" + currentVersionDir + ") " + 
-	     "for plugin (" + pluginPath + ")");
-      }
-
-      if(scratchVersionDir.exists()) {
-	if(!scratchVersionDir.renameTo(currentVersionDir))
-	  throw new PipelineException
-	    ("Unable to rename (" + scratchVersionDir + ") " + 
-	     "to (" + currentVersionDir + ")!");
-      }
-      else {
-	throw new PipelineException
-	  ("The scratch directory (" + scratchVersionDir + ") " + 
-	   "for plugin (" + pluginPath + ") does not exist!");
-      }
-
+      long sessionID = pluginResource.getSessionID();
+      
       PluginResourceInstallReq installReq = 
 	new PluginResourceInstallReq(pluginResource.getClassFile(), 
 		                     pluginResource.getClassName(), 
@@ -1433,50 +1456,14 @@ class PluginMgr
 				     pluginResource.getChecksums(), 
 				     pluginResource.getExternal(), 
 				     pluginResource.getRename(), 
-				     pluginResource.getDryRun());
+				     pluginResource.getDryRun(), 
+				     sessionID);
 	  
       Object rsp = install(installReq);
-
-      try {
-	if(rsp instanceof SuccessRsp) {
-	  if(currentVersionDir.exists())
-	    recursiveDelete(backupVersionDir);
-	}
-	else {
-	  if(currentVersionDir.exists())
-	    recursiveDelete(currentVersionDir);
-
-	  if(isNewInstall) {
-	    if(backupVersionDir.exists())
-	      recursiveDelete(backupVersionDir);
-	  }
-	  else {
-	    if(backupVersionDir.exists()) {
-	      if(!backupVersionDir.renameTo(currentVersionDir))
-		throw new PipelineException
-		  ("Unable to rename (" + backupVersionDir + ") " + 
-	           "to (" + currentVersionDir + ")!");
-	    }
-	  }
-	}
-
-	if(scratchDir.exists())
-	  recursiveDelete(scratchDir);
-      }
-      catch(PipelineException ex) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Plg, LogMgr.Level.Finest, 
-	   "Resource install cleanup error (" + ex.getMessage() + ")");
-
-	throw ex;
-      }
 
       pPluginResourceInstalls.remove(sessionID);
 
       return rsp;
-    }
-    catch(PipelineException ex) {
-      return new FailureRsp(timer, ex.getMessage());
     }
     finally {
       pResourceLock.writeLock().unlock();
@@ -1502,16 +1489,10 @@ class PluginMgr
       Path scratchPath = 
 	new Path(pPluginScratchPath, Long.toString(sessionID));
 
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Plg, LogMgr.Level.Finest, 
-	 "Removing scratch path (" + scratchPath + ")");
+      File scratchDir = scratchPath.toFile();
 
-      {
-	File scratchDir = scratchPath.toFile();
-
-	if(scratchDir.exists()) {
-	  recursiveDelete(scratchDir);
-	}
+      if(scratchDir.exists()) {
+	rmdir(scratchDir);
       }
 
       pPluginResourceInstalls.remove(sessionID);
@@ -1627,45 +1608,70 @@ class PluginMgr
    * @param dir
    *   The root of the directory to be rm -rf
    */
-  private boolean
-  recursiveDelete
+  private void
+  rmdir
   (
    File dir
   )
     throws PipelineException
   {
-    if(dir.isDirectory()) {
-      File[] filelist = dir.listFiles();
-
-      for(int i = 0 ; i < filelist.length ; i++)
-	if(!recursiveDelete(filelist[i]))
-	  throw new PipelineException("Unable to remove (" + filelist[i] + ")!");
+    ArrayList<String> args = new ArrayList<String>();
+    args.add("--force");
+    args.add("--recursive");
+    args.add(dir.getPath());
+	
+    Map<String,String> env = System.getenv();
+	
+    SubProcessLight proc = 
+      new SubProcessLight("Remove-Dir", "rm", args, env, pTempDir);
+    try {
+      proc.start();
+      proc.join();
+      if(!proc.wasSuccessful()) 
+	throw new PipelineException
+	  ("Unable to remove the directory (" + dir + "): " + 
+	   proc.getStdErr());	
     }
-
-    return dir.delete();
+    catch(InterruptedException ex) {
+      throw new PipelineException
+	("Interrupted while removing the directory (" + dir + ")!");
+    }
   }
 
   /**
-   * Load all installed plugin classes.
-   * 
-   * @param root
-   *   Root of the Pipeline plugins directory.
-   * 
-   * @param pluginLoadType
-   *   Which rules the plugin loading process should follow.
-   */ 
-  private void 
-  loadAllPlugins
+   * Since File.renameTo fails with network filesystems use SubProcessLight 
+   * to call mv.  Since plpluginmgr requires Linux mv is always available.
+   * Note that we are using mv to rename a directory so the dst parent directory 
+   * should exist but dst itself does not exist, otherwise src will be moved into 
+   * dst.
+   */
+  private void
+  mvdir
   (
-   File root, 
-   PluginLoadType pluginLoadType
-  ) 
+   File src, 
+   File dst
+  )
+    throws PipelineException
   {
-    File[] dirs = root.listFiles();
-    int wk;
-    for(wk=0; wk<dirs.length; wk++) {
-      if(dirs[wk].isDirectory()) 
-	loadBelow(root, dirs[wk], pluginLoadType);
+    ArrayList<String> args = new ArrayList<String>();
+    args.add(src.getPath());
+    args.add(dst.getPath());
+	
+    Map<String,String> env = System.getenv();
+	
+    SubProcessLight proc = 
+      new SubProcessLight("Move-Dir", "mv", args, env, pTempDir);
+    try {
+      proc.start();
+      proc.join();
+      if(!proc.wasSuccessful()) 
+	throw new PipelineException
+	  ("Unable to move the directory (" + src + ") to (" + dst + "): " + 
+	   proc.getStdErr());
+    }
+    catch(InterruptedException ex) {
+      throw new PipelineException
+	("Interrupted while moving the directory (" + src + ") to (" + dst + ")!");
     }
   }
 
@@ -1748,77 +1754,6 @@ class PluginMgr
       }
       else if(fs[wk].isDirectory()) {
 	findPluginHelper(root, fs[wk]);
-      }
-    }
-  }
-
-  /** 
-   * Recursively load all installed plugin classes under the given directory.
-   * 
-   * @param root
-   *   The root directory of installed plugins.
-   * 
-   * @param dir
-   *   The current directory.
-   * 
-   * @param pluginLoadType
-   *   Which rules the plugin loading process should follow.
-   */
-  private void 
-  loadBelow
-  (
-   File root, 
-   File dir, 
-   PluginLoadType pluginLoadType
-  ) 
-  {
-    File[] fs = dir.listFiles();
-    int wk;
-    for(wk=0; wk<fs.length; wk++) {
-      if(fs[wk].isFile()) {
-	try {
-	  File file = fs[wk];
-	  String filename = file.getName();
-
-	  /* Ignore all non java class or jar files.  This way resource files 
-	     do not throw an exception when they do not conform to having a 
-	     parent directory v#_#_#. */
-	  if(!filename.endsWith(".class") && !filename.endsWith(".jar"))
-	    continue;
-
-	  VersionID vid = null;
-	  try {
-	    String dname = dir.getName();
-	    if(dname.startsWith("v")) {
-	      String vstr = dname.substring(1, dname.length()).replace('_','.');
-	      vid = new VersionID(vstr);
-	    }
-	    else {
-	      throw new IllegalArgumentException("Missing \"v\" prefix.");
-	    }
-	  }
-	  catch(IllegalArgumentException ex) {
-	    throw new PipelineException 
-	      ("The directory containing plugin files (" + dir + ") does " +
-	       "not conform to the naming convention of \"v#_#_#\" used to denote " +
-	       "the plugin version!  Ignoring plugin file (" + file + ").\n" + 
-	       ex.getMessage());
-	  }
-
-	  loadPlugin(root, file, pluginLoadType);
-
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Plg, LogMgr.Level.Finest, 
-	     "classdir (" + root + ") pluginfile (" + file + ")");
-	}
-	catch(PipelineException ex) {
-	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Plg, LogMgr.Level.Warning,
-	     ex.getMessage());
-	}	
-      }
-      else if(fs[wk].isDirectory()) {
-	loadBelow(root, fs[wk], pluginLoadType);
       }
     }
   }
@@ -2033,7 +1968,7 @@ class PluginMgr
 
       if(metadata != null) {
 	loadPluginHelper(pluginfile, cname, pkgID, 
-                         contents, metadata.getResources(), metadata.getChecksums(), 
+                         contents, metadata.getResources(), metadata.getChecksums(), -1L, 
 		         true, true, 
 		         pluginLoadType);
       }
@@ -2041,7 +1976,7 @@ class PluginMgr
          so just pass nulls for them. */
       else if(pluginLoadType == PluginLoadType.Bootstrap) {
 	loadPluginHelper(pluginfile, cname, pkgID, 
-                         contents, null, null, 
+                         contents, null, null, -1L, 
 		         true, true, 
 		         pluginLoadType);
       }
@@ -2095,6 +2030,7 @@ class PluginMgr
    TreeMap<String,byte[]> contents, 
    SortedMap<String,Long> resources, 
    SortedMap<String,byte[]> checksums, 
+   long sessionID, 
    boolean external, 
    boolean rename, 
    PluginLoadType pluginLoadType
@@ -2205,12 +2141,6 @@ class PluginMgr
 	return;
       }
 
-      /* With the vendor/type/name/version installed plugin directory 
-         structure we need a means of retrieving the PluginID and PluginType 
-         for a plugin. */
-      pPluginTypeTable.put(cname, plg.getPluginType());
-      pPluginIDTable.put(cname, plg.getPluginID());
-
       if(!plg.getVersionID().equals(pkgID)) 
 	throw new PipelineException
 	  ("The revision number (v" + plg.getVersionID() + ") of the instantiated " + 
@@ -2307,11 +2237,23 @@ class PluginMgr
 
 	  VersionID vid = pid.getVersionID();
 
-	  Path pluginPath = 
-	    new Path(PackageInfo.sPluginsPath, 
-	             vendor + "/" + ptype + "/" + name + "/" + vid);
+	  Path pluginPath = null;
+
+	  if(sessionID == -1L) {
+	    pluginPath =
+	      new Path(PackageInfo.sPluginsPath, 
+	               vendor + "/" + ptype + "/" + name + "/" + vid);
+	  }
+	  else {
+	    pluginPath = 
+	      new Path(pPluginScratchPath, Long.toString(sessionID));
+	  }
 
 	  Path resourcesPath = new Path(pluginPath, ".resources");
+
+	  LogMgr.getInstance().log
+	    (LogMgr.Kind.Plg, LogMgr.Level.Finest, 
+	     "Resource directory (" + resourcesPath + ").");
 
 	  for(String path : resources.keySet()) {
 	    Path rpath = new Path(resourcesPath, path);
@@ -2535,6 +2477,12 @@ class PluginMgr
 	throw new PipelineException
 	  ("The class file (" + pluginfile + ") does not contain a Pipeline plugin!");
       }
+
+      /* With the vendor/type/name/version installed plugin directory 
+         structure we need a means of retrieving the PluginID and PluginType 
+         for a plugin. */
+      pPluginTypeTable.put(cname, plg.getPluginType());
+      pPluginIDTable.put(cname, plg.getPluginID());
     }
     catch(LinkageError ex) {
       throw new PipelineException
@@ -2682,10 +2630,6 @@ class PluginMgr
     pVendorPlugins.addPlugin(ptype, pid);
 
     if(!isStartup) {
-      LogMgr.getInstance().log
-	(LogMgr.Kind.Plg, LogMgr.Level.Finest, 
-         "Writing " + vendor + " required plugins GLUE file to disk.");
-
       writeRequiredPlugins(vendor, pVendorPlugins.getPlugins(vendor));
     }
   }
@@ -2759,10 +2703,6 @@ class PluginMgr
     Path requiredPluginsPath = 
       new Path(pRequiredPluginsPath, vendor);
 
-    LogMgr.getInstance().log
-      (LogMgr.Kind.Plg, LogMgr.Level.Finest, 
-       "Writing " + requiredPluginsPath);
-
     {
       File requiredPluginsFile = requiredPluginsPath.toFile();
 
@@ -2780,8 +2720,9 @@ class PluginMgr
     }
     catch(GlueException ex) {
       LogMgr.getInstance().log
-        (LogMgr.Kind.Plg, LogMgr.Level.Finest, 
-         "Error saving the installed plugins list = " + ex);
+        (LogMgr.Kind.Plg, LogMgr.Level.Warning, 
+         "Error saving the installed plugins list " + 
+	 "(" + ex.getMessage() + ")!");
       
       throw new PipelineException(ex);
     }
@@ -3716,6 +3657,8 @@ class PluginMgr
    * of backup version plugins detected using findAllPlugins.
    */
   private MappedSet<String,String>  pBackupPluginPathTable;
+
+  private File  pTempDir;
 
 }
 

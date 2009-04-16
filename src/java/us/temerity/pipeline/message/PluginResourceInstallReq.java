@@ -1,4 +1,4 @@
-// $Id: PluginResourceInstallReq.java,v 1.2 2009/04/07 01:48:12 jlee Exp $
+// $Id: PluginResourceInstallReq.java,v 1.3 2009/04/16 16:03:52 jlee Exp $
 
 package us.temerity.pipeline.message;
 
@@ -66,11 +66,33 @@ class PluginResourceInstallReq
    boolean dryRun
   )
   { 
+    this(classfile, cname, pkgID, 
+         contents, resources, checksums, 
+	 external, rename, dryRun, -1L);
+  }
+
+  public
+  PluginResourceInstallReq
+  (
+   File classfile, 
+   String cname, 
+   VersionID pkgID, 
+   TreeMap<String,byte[]> contents, 
+   TreeMap<String,Long> resources, 
+   TreeMap<String,byte[]> checksums, 
+   boolean external, 
+   boolean rename, 
+   boolean dryRun, 
+   long sessionID
+  )
+  { 
     super(classfile, cname, pkgID, contents, 
 	  external, rename, dryRun);
 
     pResources = resources;
     pChecksums = checksums;
+
+    pSessionID = sessionID;
   }
 
 
@@ -97,6 +119,15 @@ class PluginResourceInstallReq
     return pChecksums;
   }
 
+  /**
+   * Get the session ID for the resource install.
+   */
+  public long
+  getSessionID()
+  {
+    return pSessionID;
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -120,6 +151,11 @@ class PluginResourceInstallReq
    * Resource checksums keyed by Jar path.
    */
   private TreeMap<String,byte[]>  pChecksums;
+
+  /**
+   * Resource install session ID
+   */
+  private long  pSessionID;
 
 }
   
