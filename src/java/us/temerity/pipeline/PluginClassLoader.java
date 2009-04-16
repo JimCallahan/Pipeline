@@ -1,4 +1,4 @@
-// $Id: PluginClassLoader.java,v 1.5 2009/04/07 08:00:11 jim Exp $
+// $Id: PluginClassLoader.java,v 1.6 2009/04/16 19:14:53 jlee Exp $
 
 package us.temerity.pipeline;
 
@@ -35,7 +35,8 @@ class PluginClassLoader
   {
     super();
 
-    pContents = contents; 
+    pContents  = contents; 
+    pResources = new TreeMap<String,Long>();
   }
 
   /**
@@ -88,6 +89,30 @@ class PluginClassLoader
        "for Plugin (" + vendor + "/" + ptype + "/" + name + "/" + vid + ")");
   }
 
+  /**
+   * EXPERIMENTAL - for Jesse's Builders calling Builders outside of it's ClassLoader.
+   */
+  public
+  PluginClassLoader
+  (
+   PluginClassLoader parentLoader, 
+   PluginClassLoader childLoader
+  )
+  {
+    if(parentLoader == null) {
+      throw new IllegalArgumentException
+	("The parent class loader cannot be (null)!");
+    }
+
+    if(childLoader == null) {
+      throw new IllegalArgumentException
+	("The child class loader cannot be (null)!");
+    }
+
+    pParentLoader = parentLoader;
+    pChildLoader  = childLoader;
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -104,6 +129,32 @@ class PluginClassLoader
   ) 
     throws ClassNotFoundException
   {
+    /**
+     * EXPERIMENTAL - for Jesse's Builders calling Builders outside of it's ClassLoader.
+     */
+    if(pParentLoader != null) {
+      try {
+	return pParentLoader.loadClass(cname);
+      }
+      catch(ClassNotFoundException ex) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ops, LogMgr.Level.Finest, 
+	   "Class (" + cname + ") not found in the parent ClassLoader.");
+      }
+
+      try {
+	return pChildLoader.loadClass(cname);
+      }
+      catch(ClassNotFoundException ex) {
+	LogMgr.getInstance().log
+	  (LogMgr.Kind.Ops, LogMgr.Level.Finest, 
+	   "Class (" + cname + ") not found in the child ClassLoader.");
+      }
+
+      throw new ClassNotFoundException
+	("Unable to find class (" + cname + ")!");
+    }
+
     byte bs[] = pContents.get(cname);
     if(bs == null) 
       throw new ClassNotFoundException
@@ -121,6 +172,26 @@ class PluginClassLoader
    String rname
   )
   {
+    /**
+     * EXPERIMENTAL - for Jesse's Builders calling Builders outside of it's ClassLoader.
+     */
+    if(pParentLoader != null) {
+      {
+	URL parentResource = pParentLoader.getResource(rname);
+
+	if(parentResource != null)
+	  return parentResource;
+      }
+      {
+	URL childResource = pChildLoader.getResource(rname);
+
+	if(childResource != null)
+	  return childResource;
+      }
+
+      return null;
+    }
+
     LogMgr.getInstance().log
       (LogMgr.Kind.Ops, LogMgr.Level.Finest, 
        "Resource name (" + rname + ")");
@@ -177,6 +248,26 @@ class PluginClassLoader
    String path
   )
   {
+    /**
+     * EXPERIMENTAL - for Jesse's Builders calling Builders outside of it's ClassLoader.
+     */
+    if(pParentLoader != null) {
+      {
+	long parentResourceSize = pParentLoader.getResourceSize(path);
+
+	if(parentResourceSize != -1L)
+	  return parentResourceSize;
+      }
+      {
+	long childResourceSize = pChildLoader.getResourceSize(path);
+
+	if(childResourceSize != -1L)
+	  return childResourceSize;
+      }
+
+      return -1L;
+    }
+
     LogMgr.getInstance().log
       (LogMgr.Kind.Ops, LogMgr.Level.Finest, 
        "Path (" + path + ")");
@@ -197,6 +288,8 @@ class PluginClassLoader
   public SortedMap<String,Long>
   getResources()
   {
+    // TODO if the experiment code for Jesse works, then figure out what goes here.
+
     if(pResources != null) {
       return Collections.unmodifiableSortedMap(pResources);
     }
@@ -224,6 +317,12 @@ class PluginClassLoader
    * The resource directory for the Plugin.
    */
   private Path  pResourceRootPath;
+
+  /**
+   * EXPERIMENTAL - for Jesse's Builders calling Builders outside of it's ClassLoader.
+   */
+  private PluginClassLoader  pParentLoader;
+  private PluginClassLoader  pChildLoader;
 
 }
 

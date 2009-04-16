@@ -1,4 +1,4 @@
-// $Id: BasePluginMgrClient.java,v 1.24 2009/04/07 01:48:12 jlee Exp $
+// $Id: BasePluginMgrClient.java,v 1.25 2009/04/16 19:14:53 jlee Exp $
   
 package us.temerity.pipeline;
 
@@ -754,6 +754,44 @@ class BasePluginMgrClient
     throws PipelineException
   {
     return (BaseBuilderCollection) pBuilderCollections.newPlugin(name, vid, vendor);
+  }
+
+  /**
+   * EXPERIMENTAL - for Jesse's Builders calling Builders outside of it's ClassLoader.
+   */
+  public synchronized BaseBuilderCollection
+  newBuilderCollection
+  (
+   PluginClassLoader parentLoader, 
+   String name, 
+   VersionID vid, 
+   String vendor
+  )
+    throws PipelineException
+  {
+    BaseBuilderCollection builderCollection = 
+      (BaseBuilderCollection) pBuilderCollections.newPlugin(name, vid, vendor);
+
+    Class cls = builderCollection.getClass();
+    String cname = cls.getName();
+
+    PluginClassLoader childLoader = (PluginClassLoader) cls.getClassLoader();
+    PluginClassLoader loader = new PluginClassLoader(parentLoader, childLoader);
+
+    try {
+      Class childBuilderCollection = loader.loadClass(cname);
+
+      return (BaseBuilderCollection) childBuilderCollection.newInstance();
+    }
+    catch(ClassNotFoundException ex) {
+      throw new PipelineException(ex);
+    }
+    catch(InstantiationException ex) {
+      throw new PipelineException(ex);
+    }
+    catch(IllegalAccessException ex) {
+      throw new PipelineException(ex);
+    }
   }
   
   /**
