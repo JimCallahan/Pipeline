@@ -1,4 +1,4 @@
-// $Id: InternalBuilder.java,v 1.1 2009/04/16 17:57:25 jesse Exp $
+// $Id: InternalBuilder.java,v 1.2 2009/04/16 20:15:13 jesse Exp $
 
 package com.nathanlove.pipeline.plugin.InternalCollection.v1_0_0;
 
@@ -93,7 +93,7 @@ class InternalBuilder
       throws PipelineException
     {
       BaseBuilderCollection collect = 
-        pPlug.newBuilderCollection("ExternalCollection", new VersionID("1.0.0"), "NathanLove");
+        pPlug.newBuilderCollection(getClass().getClassLoader(), "ExternalCollection", new VersionID("1.0.0"), "NathanLove");
       Class argv[] = 
       {
         MasterMgrClient.class,
