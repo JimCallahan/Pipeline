@@ -1,4 +1,4 @@
-// $Id: TemplateTaskBuilder.java,v 1.9 2009/04/13 19:48:08 jesse Exp $
+// $Id: TemplateTaskBuilder.java,v 1.10 2009/04/20 00:27:01 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -262,8 +262,10 @@ class TemplateTaskBuilder
     String nodeName = status.getName();
     // Easy out if we have already found this node and established that it belongs.
     if (pNodesDependingOnMe.containsKey(nodeName)) {
-      pNodesIDependedOn.put(parent, nodeName);
-      pNodesDependingOnMe.put(nodeName, parent);
+      if (parent != null) {
+        pNodesIDependedOn.put(parent, nodeName);
+        pNodesDependingOnMe.put(nodeName, parent);
+      }
       return;
     }
     TreeMap<String, BaseAnnotation> annots = getTaskAnnotations(nodeName);
