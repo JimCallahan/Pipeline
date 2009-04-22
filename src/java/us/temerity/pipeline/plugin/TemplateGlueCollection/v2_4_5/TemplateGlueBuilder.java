@@ -1,6 +1,8 @@
-// $Id: TemplateGlueBuilder.java,v 1.4 2009/04/13 19:52:28 jesse Exp $
+// $Id: TemplateGlueBuilder.java,v 1.5 2009/04/22 18:02:08 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateGlueCollection.v2_4_5;
+
+import java.util.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
@@ -79,7 +81,16 @@ class TemplateGlueBuilder
            false);
       addParam(param);
     }
-
+    
+    {
+      UtilityParam param = 
+        new BooleanUtilityParam
+          (aCheckOutTemplate,
+           "Checkout the template before running it.",
+           false);
+      addParam(param);
+    }
+    
     addCheckinWhenDoneParam();
     
     /* create the setup passes */ 
@@ -102,6 +113,7 @@ class TemplateGlueBuilder
     layout.addEntry(1, aTemplateNode);
     layout.addEntry(1, aAllowZeroContexts);
     layout.addEntry(1, aInhibitFileCopy);
+    layout.addEntry(1, aCheckOutTemplate);
     
     PassLayoutGroup finalLayout = new PassLayoutGroup(layout.getName(), layout);
     
@@ -138,7 +150,13 @@ class TemplateGlueBuilder
           ("The node (" + pNodeName + ") specified as the template node is not a " +
            "Pipeline node.");
       
-      checkOutNewer(pNodeName, CheckOutMode.KeepModified, CheckOutMethod.PreserveFrozen);
+      boolean checkOut = getBooleanParamValue(new ParamMapping(aCheckOutTemplate));
+      
+      if (checkOut) {
+        TreeSet<String> checkedIn = pClient.getCheckedInNames(pNodeName);
+        if (checkedIn != null && checkedIn.contains(pNodeName))
+          checkOutNewer(pNodeName, CheckOutMode.KeepModified, CheckOutMethod.PreserveFrozen);
+      }
     }
     
     @Override
@@ -164,9 +182,10 @@ class TemplateGlueBuilder
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
   
-  public static final String aTemplateNode = "TemplateNode";
+  public static final String aTemplateNode      = "TemplateNode";
   public static final String aAllowZeroContexts = "AllowZeroContexts";
   public static final String aInhibitFileCopy   = "InhibitFileCopy";
+  public static final String aCheckOutTemplate  = "CheckOutTemplate";
   
   private static final long serialVersionUID = 7681162001215421131L;
 
