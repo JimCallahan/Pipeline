@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.56 2009/03/25 22:02:24 jim Exp $
+// $Id: JNodeDetailsPanel.java,v 1.57 2009/04/22 22:38:21 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2579,11 +2579,13 @@ class JNodeDetailsPanel
       JPanel tpanel = (JPanel) comps[0];
       JPanel vpanel = (JPanel) comps[1];
 
+      int entries = 0;
       for(String pname : group.getEntries()) {
 	if(pname == null) {
 	  UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
 	}
 	else {
+	  entries++;
 	  UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
 
 	  /* single valued parameter */ 
@@ -3019,10 +3021,10 @@ class JNodeDetailsPanel
 		 "Action plugin parameter presets.");		 
 	    }
 	  }
-	}
+	} // End of else clause that is run if the param name is not null
       }
-
-      dbox.add(comps[2]);
+      if (entries > 0)
+        dbox.add(comps[2]);
     }
     
     if(!group.getSubGroups().isEmpty())  {
