@@ -1,4 +1,4 @@
-// $Id: BaseUtil.java,v 1.41 2009/03/30 16:10:30 jesse Exp $
+// $Id: BaseUtil.java,v 1.42 2009/04/22 17:51:22 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -461,7 +461,7 @@ class BaseUtil
     }
     catch(PipelineException ex) {
       throw new PipelineException(
-        "getNewest has aborted since there is no Checked-In Version of the node.\n "
+        "checkOutNewer has aborted since there is no Checked-In Version of the node.\n "
             + ex.getMessage());
     }
     VersionID latestID = versions.last();
