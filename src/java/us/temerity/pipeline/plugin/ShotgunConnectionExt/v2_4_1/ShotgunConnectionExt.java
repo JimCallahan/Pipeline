@@ -1,4 +1,4 @@
-// $Id: ShotgunConnectionExt.java,v 1.5 2009/01/05 17:21:16 jesse Exp $
+// $Id: ShotgunConnectionExt.java,v 1.6 2009/04/22 21:04:39 jesse Exp $
 
 package us.temerity.pipeline.plugin.ShotgunConnectionExt.v2_4_1;
 
@@ -352,12 +352,6 @@ class ShotgunConnectionExt
     TreeSet<String> masterFocusNodes = new TreeSet<String>();
     mineSubmitTree(data, vsn, null, thumbToFocus, thumbNodes, focusNodes, editNodes, 
                    deliveryNodes, masterFocusNodes, mclient);
-    
-    String approveNode = null;
-    {
-      String editNode = editNodes.firstKey();
-      getApproveNode(editNode, editNodes.get(editNode));
-    }
     
     if (masterFocusNodes.size() > 1)
       throw new PipelineException
