@@ -1,4 +1,4 @@
-// $Id: CommandLineExecution.java,v 1.7 2009/04/06 00:53:11 jesse Exp $
+// $Id: CommandLineExecution.java,v 1.8 2009/04/22 17:52:13 jesse Exp $
 
 package us.temerity.pipeline.builder.execution;
 
@@ -91,7 +91,7 @@ class CommandLineExecution
         message = Exceptions.getFullMessage(header, ex);
 
       pLog.logAndFlush(Kind.Ops, Level.Severe, message);
-      if (getRunningBuilder().releaseOnError() && phase.haveNodesBeenMade()) {
+      if (getRunningBuilder() != null && getRunningBuilder().releaseOnError() && phase.haveNodesBeenMade()) {
         releaseNodes(getRunningBuilder());
       }
       releaseView(true);
