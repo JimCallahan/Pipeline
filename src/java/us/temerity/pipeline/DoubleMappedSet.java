@@ -1,4 +1,4 @@
-// $Id: DoubleMappedSet.java,v 1.1 2008/11/13 21:54:40 jesse Exp $
+// $Id: DoubleMappedSet.java,v 1.2 2009/04/22 21:44:16 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -33,7 +33,8 @@ class DoubleMappedSet<A,B,V>
   /**
    * Constructs an empty map.
    */
-  public DoubleMappedSet()
+  public 
+  DoubleMappedSet()
   {
     super();
   }
@@ -44,7 +45,8 @@ class DoubleMappedSet<A,B,V>
    * @param mset
    *   The set to copy.
    */
-  public DoubleMappedSet
+  public 
+  DoubleMappedSet
   (
     DoubleMappedSet<A, B, V> mset
   )
@@ -94,6 +96,34 @@ class DoubleMappedSet<A,B,V>
   }
   
   /**
+   * Associates a <code>null</code> value with the specified keys.
+   *
+   * @param keyA
+   *   The first key.
+   *   
+   * @param keyB
+   *   The second key.
+   *
+   * @return
+   *   Any value that might have existed in the now <code>null</code> mapping.
+   */
+  public TreeSet<V> 
+  put
+  (
+    A keyA,
+    B keyB
+  )
+  {
+    if(keyA == null) 
+      throw new IllegalArgumentException("The first key cannot be (null)!");
+    
+    if (keyB == null)
+      throw new IllegalArgumentException("The second key cannot be (null)!");
+   
+    return super.put(keyA, keyB, null);
+  }
+  
+  /**
    * Inserts all the of key/value mappings from the given map into this map.
    * 
    * @param mset
@@ -102,13 +132,19 @@ class DoubleMappedSet<A,B,V>
   public void
   putAll
   (
-   DoubleMappedSet<A,B,V> mset
+    DoubleMappedSet<A,B,V> mset
   )  
   {
-    for(A a : mset.keySet())
-      for (B b : mset.keySet(a))
-        for (V each : mset.get(a, b))
+    for( A a : mset.keySet())
+    for (B b : mset.keySet(a)) {
+      TreeSet<V> values = mset.get(a, b);
+      if (values == null)
+        put(a, b);
+      else {
+        for (V each : values)
           put(a, b, each);
+      }
+    }
   }
 
   /**

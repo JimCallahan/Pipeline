@@ -1,4 +1,4 @@
-// $Id: TripleMappedSet.java,v 1.1 2008/11/13 21:54:40 jesse Exp $
+// $Id: TripleMappedSet.java,v 1.2 2009/04/22 21:44:16 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -36,7 +36,8 @@ class TripleMappedSet<A, B, C, V>
   /**
    * Constructs an empty map.
    */
-  public TripleMappedSet()
+  public 
+  TripleMappedSet()
   {
     super();
   }
@@ -47,7 +48,8 @@ class TripleMappedSet<A, B, C, V>
    * @param mset
    *   The set to copy.
    */
-  public TripleMappedSet
+  public 
+  TripleMappedSet
   (
     TripleMappedSet<A, B, C, V> mset
   )
@@ -105,6 +107,42 @@ class TripleMappedSet<A, B, C, V>
   }
   
   /**
+   * Associates a <code>null</code> value with the specified keys.
+   *
+   * @param keyA
+   *   The first key.
+   *   
+   * @param keyB
+   *   The second key.
+   *   
+   * @param keyC
+   *   The third key.
+   *
+   * @return
+   *   Any value that might have existed in the now <code>null</code> mapping.
+   */
+  public TreeSet<V> 
+  put
+  (
+    A keyA,
+    B keyB,
+    C keyC
+  )
+  {
+    if(keyA == null) 
+      throw new IllegalArgumentException("The first key cannot be (null)!");
+    
+    if (keyB == null)
+      throw new IllegalArgumentException("The second key cannot be (null)!");
+    
+    if (keyC == null)
+      throw new IllegalArgumentException("The third key cannot be (null)!");
+   
+   
+    return super.put(keyA, keyB, keyC, null);
+  }
+  
+  /**
    * Inserts all the of key/value mappings from the given map into this map.
    * 
    * @param mset
@@ -113,14 +151,20 @@ class TripleMappedSet<A, B, C, V>
   public void
   putAll
   (
-   TripleMappedSet<A,B,C,V> mset
+    TripleMappedSet<A,B,C,V> mset
   )  
   {
     for(A a : mset.keySet())
-      for (B b : mset.keySet(a))
-        for (C c : mset.keySet(a, b))
-          for (V each : mset.get(a, b, c))
-            put(a, b, c, each);
+    for (B b : mset.keySet(a))
+    for (C c : mset.keySet(a, b)) {
+      TreeSet<V> values = mset.get(a, b, c);
+      if (values == null)
+        put(a, b, c);
+      else {
+        for (V each : values )
+          put(a, b, c, each);
+      }
+    }
   }
 
   /**

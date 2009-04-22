@@ -1,4 +1,4 @@
-// $Id: MappedListSet.java,v 1.1 2009/03/30 14:36:25 jesse Exp $
+// $Id: MappedListSet.java,v 1.2 2009/04/22 21:44:16 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -30,7 +30,8 @@ class MappedListSet<K, V>
   /**
    * Constructs an empty map.
    */
-  public MappedListSet()
+  public 
+  MappedListSet()
   {
     super();
   }
@@ -38,7 +39,8 @@ class MappedListSet<K, V>
   /**
    * Deep copy constructor.
    */
-  public MappedListSet
+  public 
+  MappedListSet
   (
     MappedListSet<K, V> mset
   )
@@ -53,7 +55,8 @@ class MappedListSet<K, V>
    * @param mset 
    *   The MappedSet to be converted.
    */
-  public MappedListSet
+  public 
+  MappedListSet
   (
     MappedSet<K, V> mset
   )
@@ -86,7 +89,8 @@ class MappedListSet<K, V>
    *   <li> 4 Duck
    * </ul>
    */
-  public MappedListSet
+  public 
+  MappedListSet
   (
     Map<V, K> map
   )
@@ -96,6 +100,7 @@ class MappedListSet<K, V>
       put(map.get(key), key);
   }
 
+  
   
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
@@ -158,12 +163,18 @@ class MappedListSet<K, V>
   public void
   putAll
   (
-   MappedListSet<K,V> mset
+    MappedListSet<K,V> mset
   )  
   {
-    for(K a : mset.keySet()) 
-      for (V each : mset.get(a))
-	put(a, each);
+    for(K a : mset.keySet()) {
+      ListSet<V> values = mset.get(a);
+      if (values == null)
+        put(a);
+      else {
+        for (V each : values )
+          put(a, each);
+      }
+    }
   }
   
   /**

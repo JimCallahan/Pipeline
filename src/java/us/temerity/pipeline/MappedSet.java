@@ -1,4 +1,4 @@
-// $Id: MappedSet.java,v 1.7 2009/03/10 16:37:52 jesse Exp $
+// $Id: MappedSet.java,v 1.8 2009/04/22 21:44:16 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -29,7 +29,8 @@ public class MappedSet<K, V>
   /**
    * Constructs an empty map.
    */
-  public MappedSet()
+  public 
+  MappedSet()
   {
     super();
   }
@@ -37,7 +38,8 @@ public class MappedSet<K, V>
   /**
    * Deep copy constructor.
    */
-  public MappedSet
+  public 
+  MappedSet
   (
     MappedSet<K, V> mset
   )
@@ -64,7 +66,8 @@ public class MappedSet<K, V>
    *   <li> 4 Duck
    * </ul>
    */
-  public MappedSet
+  public 
+  MappedSet
   (
     Map<V, K> map
   )
@@ -139,9 +142,15 @@ public class MappedSet<K, V>
    MappedSet<K,V> mset
   )  
   {
-    for(K a : mset.keySet()) 
-      for (V each : mset.get(a))
-	put(a, each);
+    for(K a : mset.keySet()) {
+      TreeSet<V> values = mset.get(a);
+      if (values == null)
+        put(a);
+      else {
+        for (V each : values )
+          put(a, each);
+      }
+    }
   }
   
   /**
