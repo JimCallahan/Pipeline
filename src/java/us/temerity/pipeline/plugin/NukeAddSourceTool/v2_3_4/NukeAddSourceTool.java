@@ -64,6 +64,7 @@ class NukeAddSourceTool
     pImageFormats.add("tga");
     pImageFormats.add("tif");
     pImageFormats.add("tiff");
+    pImageFormats.add("exr");
 
     addSupport(OsType.MacOS);
     addSupport(OsType.Windows);
