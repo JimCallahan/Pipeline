@@ -1,4 +1,4 @@
-// $Id: TemplateInfoBuilder.java,v 1.9 2009/04/13 19:48:08 jesse Exp $
+// $Id: TemplateInfoBuilder.java,v 1.10 2009/04/22 19:28:46 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -229,13 +229,23 @@ class TemplateInfoBuilder
       
       pReplacements = new TreeMap<String, String>();
       for (KeyValueUtilityParam param : pReplacementParams) {
-        pReplacements.put(param.getKeyValue(), param.getValueValue());
+        String value = param.getValueValue();
+        if (value == null)
+          value = "";
+        pReplacements.put(param.getKeyValue(), value);
       }
       
       pContextValues = new TreeMap<String, Integer>();
       for (KeyIntValueUtilityParam param : pContextParams) {
-        pContextValues.put(param.getKeyValue(), param.getValueValue());
+        
+        Integer value = param.getValueValue();
+        if (value == null)
+          throw new PipelineException
+            ("A (null) value was specified for the number of context replacements for the " +
+             "context (" + param.getKeyValue() + ")");
+        pContextValues.put(param.getKeyValue(), value);
       }
+
       pFrameRanges = new TreeMap<String, FrameRange>();
       for (String frameRange: pFrameRangeParams.keySet()) {
         FrameRangeUtilityParam param = pFrameRangeParams.get(frameRange);
@@ -453,7 +463,10 @@ class TemplateInfoBuilder
         for (ArrayList<KeyValueUtilityParam> params : pParams) {
           TreeMap<String, String> values = new TreeMap<String, String>();
           for (KeyValueUtilityParam param : params ) {
-            values.put(param.getKeyValue(), param.getValueValue());
+            String value = param.getValueValue();
+            if (value == null)
+              value = "";
+            values.put(param.getKeyValue(), value);
           }
           pToReturn.add(values);
         }
