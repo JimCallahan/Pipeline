@@ -1,4 +1,4 @@
-// $Id: JBuilderParamPanel.java,v 1.25 2008/11/19 04:32:03 jesse Exp $
+// $Id: JBuilderParamPanel.java,v 1.26 2009/04/22 22:12:34 jesse Exp $
 
 package us.temerity.pipeline.builder.ui;
 
@@ -77,6 +77,7 @@ class JBuilderParamPanel
         JPanel vpanel = (JPanel) comps[1];
 
         boolean first = true;
+        int paramCount = 0;
         for(String pname : layout.getEntries(col)) {
           if(pname == null) 
             UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
@@ -86,11 +87,13 @@ class JBuilderParamPanel
               if(!first) 
         	UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
               doParam(bparam, new ParamMapping(pname), tpanel, vpanel, sTSize, sVSize, null, null);
+              paramCount++;
             }
             first = false;
           }   
         } 
-        finalBox.add(comps[2]);
+        if (paramCount > 0)
+          finalBox.add(comps[2]);
         
         for(LayoutGroup group : layout.getSubGroups(col)) {
           Box hbox = new Box(BoxLayout.X_AXIS);
@@ -232,6 +235,7 @@ class JBuilderParamPanel
       JPanel vpanel = (JPanel) comps[1];
 
       boolean first = true;
+      int paramCount = 0;
       for (String pname : group.getEntries()) {
 	if (pname == null) 
 	  UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
@@ -243,11 +247,13 @@ class JBuilderParamPanel
 	    if (!first) 
 	      UIFactory.addVerticalSpacer(tpanel, vpanel, 4);
 	    doParam(bparam, new ParamMapping(pname), tpanel, vpanel, tsize, sVSize, null, null);
+	    paramCount++;
 	  }
 	  first = false;
 	}   
       }
-      dbox.add(comps[2]);
+      if (paramCount > 0)
+        dbox.add(comps[2]);
     } 
     
     if (!group.getSubGroups().isEmpty()) {
@@ -343,6 +349,7 @@ class JBuilderParamPanel
       String displayName = bparam.getNameUI() + ":";
       if (prefix != null)
 	displayName = prefix + " " + displayName;
+      
       if(bparam instanceof BooleanUtilityParam) {
 	Boolean value = (Boolean) sparam.getValue();
 	JBooleanField field = 
