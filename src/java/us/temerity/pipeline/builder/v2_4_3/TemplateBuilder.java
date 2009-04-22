@@ -1,4 +1,4 @@
-// $Id: TemplateBuilder.java,v 1.12 2009/04/13 19:48:08 jesse Exp $
+// $Id: TemplateBuilder.java,v 1.13 2009/04/22 21:05:47 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -768,10 +768,27 @@ class TemplateBuilder
       String currentContext = contexts.pollFirst();
       ArrayList<TreeMap<String, String>> values = pContexts.get(currentContext);
       
-      if (values == null || values.isEmpty()) 
-        throw new PipelineException
-          ("The context (" + currentContext + ") specified for the product " + 
+      if (values == null || values.isEmpty()) {
+        if (pAllowZeroContexts) {
+          pLog.logAndFlush
+          (Kind.Ops, Level.Warning, 
+           "The context (" + currentContext + ") specified for the product " + 
            "(" + product + ") has no values defined for it.");
+          TreeMap<String, String> newReplace = new TreeMap<String, String>(replacements);
+          
+          if (contexts.isEmpty()) {  //bottom of the recursion
+            allProducts.add(stringReplace(product, newReplace));
+          }
+          else {
+            expandContexts(product, new TreeSet<String>(contexts), newReplace, allProducts);
+          }
+          return;
+        }
+        else
+          throw new PipelineException
+            ("The context (" + currentContext + ") specified for the product " + 
+             "(" + product + ") has no values defined for it.");
+      }
       
       for (TreeMap<String, String> contextEntry : values) {
         TreeMap<String, String> newReplace = new TreeMap<String, String>(replacements);
