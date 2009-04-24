@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.107 2008/10/21 00:54:11 jim Exp $
+// $Id: QueueMgr.java,v 1.108 2009/04/24 20:05:38 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -5961,25 +5961,48 @@ class QueueMgr
 				synchronized(pSelectionGroups) {
 				  tm.resume();
 				  SelectionGroup sg = pSelectionGroups.get(gname);
+				  /* I changed this from setting score=0 to score=null.  My
+				   * reasoning was that if the job has selection keys assigned
+				   * to it and this host has a selection group that is null
+				   * (which is an odd condition, but whatever), then the queue 
+				   * should act as if the host does not have a selection group.
+				   * Which would be make score null.  Technically, all this code
+				   * could be replaced with:
+				   * 
+				   * if(sg != null)  
+				   *   score = sg.computeSelectionScore(jreqs, keys);
+				   * 
+				   * since score is already null, but the logic is more clear
+				   * this way. 
+				   */
 				  if(sg == null) 
-				    score = 0;
+				    score = null;
 				  else 
 				    score = sg.computeSelectionScore(jreqs, keys);
 				}
 			      }
 			    }
 			    /* Hardware Keys*/
-			    if (!jreqs.getHardwareKeys().isEmpty()) {
+			    if (!jreqs.getHardwareKeys().isEmpty() && score != null) {
 			      String gname = host.getHardwareGroup();
-			      if(gname != null) {
+			      if (gname != null) {
 				tm.aquire();
 				synchronized(pHardwareGroups) {
 				  tm.resume();
 				  HardwareGroup hg = pHardwareGroups.get(gname);
-				  if(hg != null)
+				  if (hg != null) {
 				    if (!hg.isEligible(jreqs, hardwareKeys))
 				      score = null;
+				  }
+				  else
+				    score = null;
 				}
+			      } // if (gname != null) {
+			      /* If there is a hardware key, but the host is not in a hardware
+			       * group, then the host cannot have the necessary key
+			       */
+			      else {
+			        score = null;
 			      }
 			    }
 			  }
