@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.272 2009/04/01 21:17:59 jim Exp $
+// $Id: MasterMgr.java,v 1.273 2009/05/04 22:38:34 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1359,7 +1359,7 @@ class MasterMgr
 
     /* give the sockets time to disconnect cleanly */ 
     try {
-      Thread.sleep(500);
+      Thread.sleep(1000);
     }
     catch(InterruptedException ex) {
     }

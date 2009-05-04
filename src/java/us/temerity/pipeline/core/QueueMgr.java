@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.108 2009/04/24 20:05:38 jesse Exp $
+// $Id: QueueMgr.java,v 1.109 2009/05/04 22:38:34 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -563,7 +563,7 @@ class QueueMgr
 	 "Unable to (re)connect to the Master Manager daemon!\n" + 
 	 "  " + ex.getMessage());
       
-      pServer.internalShutdown();
+      pServer.shutdown();
     }
   }
 

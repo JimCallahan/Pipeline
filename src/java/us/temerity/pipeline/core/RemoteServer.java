@@ -1,4 +1,4 @@
-// $Id: RemoteServer.java,v 1.3 2009/05/04 21:14:00 jim Exp $
+// $Id: RemoteServer.java,v 1.4 2009/05/04 22:38:35 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -52,21 +52,7 @@ class RemoteServer
     pTasks  = new HashSet<HandlerTask>();    
   }
 
-
-
-  /*----------------------------------------------------------------------------------------*/
-  /*   O P S                                                                                */
-  /*----------------------------------------------------------------------------------------*/
   
-  /**
-   * Initiate a shutdown of all network connections.
-   */
-  public void 
-  shutdown() 
-  {
-    pShutdown.set(true);
-  }
-
 
   /*----------------------------------------------------------------------------------------*/
   /*   T H R E A D   O V E R R I D E S                                                      */
@@ -81,10 +67,9 @@ class RemoteServer
   public void 
   run() 
   {
-    ServerSocketChannel schannel = null;
     try {
-      schannel = ServerSocketChannel.open();
-      ServerSocket server = schannel.socket();
+      pSocketChannel = ServerSocketChannel.open();
+      ServerSocket server = pSocketChannel.socket();
       InetSocketAddress saddr = new InetSocketAddress(PackageInfo.sRemotePort);
       server.bind(saddr, 100);
       
@@ -99,17 +84,14 @@ class RemoteServer
       LogMgr.getInstance().flush();
       pTimer = new TaskTimer();
 
-      schannel.configureBlocking(false);
       while(!pShutdown.get()) {
-	SocketChannel channel = schannel.accept();
-	if(channel != null) {
-	  HandlerTask task = new HandlerTask(channel);
-	  pTasks.add(task);
-	  task.start();	
-	}
-	else {
-	  Thread.sleep(PackageInfo.sServerSleep);
-	}
+        try {
+          HandlerTask task = new HandlerTask(pSocketChannel.accept()); 
+          pTasks.add(task);
+          task.start();	
+        }
+        catch(AsynchronousCloseException ex) {
+        }
       }
 
       try {
@@ -162,12 +144,12 @@ class RemoteServer
          Exceptions.getFullMessage(ex)); 
     }
     finally {
-      if(schannel != null) {
+      if(pSocketChannel != null) {
 	try {
-          ServerSocket socket = schannel.socket(); 
+          ServerSocket socket = pSocketChannel.socket(); 
           if(socket != null) 
             socket.close();
-          schannel.close();
+          pSocketChannel.close();
 	}
 	catch (IOException ex) {
 	}

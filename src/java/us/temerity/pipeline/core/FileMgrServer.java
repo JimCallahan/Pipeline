@@ -1,4 +1,4 @@
-// $Id: FileMgrServer.java,v 1.45 2009/04/01 21:17:59 jim Exp $
+// $Id: FileMgrServer.java,v 1.46 2009/05/04 22:38:34 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -74,10 +74,9 @@ class FileMgrServer
   public void 
   run() 
   {
-    ServerSocketChannel schannel = null;
     try {
-      schannel = ServerSocketChannel.open();
-      ServerSocket server = schannel.socket();
+      pSocketChannel = ServerSocketChannel.open();
+      ServerSocket server = pSocketChannel.socket();
       InetSocketAddress saddr = new InetSocketAddress(PackageInfo.sFilePort);
       server.bind(saddr, 100);
       
@@ -88,18 +87,15 @@ class FileMgrServer
 	(LogMgr.Kind.Net, LogMgr.Level.Info,
 	 "Server Ready.");
       LogMgr.getInstance().flush();
-
-      schannel.configureBlocking(false);
+   
       while(!pShutdown.get()) {
-	SocketChannel channel = schannel.accept();
-	if(channel != null) {
-	  HandlerTask task = new HandlerTask(channel);
-	  pTasks.add(task);
-	  task.start();	
-	}
-	else {
-	  Thread.sleep(PackageInfo.sServerSleep);
-	}
+        try {
+          HandlerTask task = new HandlerTask(pSocketChannel.accept()); 
+          pTasks.add(task);
+          task.start();	
+        }
+        catch(AsynchronousCloseException ex) {
+        }
       }
 
       try {
@@ -145,9 +141,12 @@ class FileMgrServer
 	 Exceptions.getFullMessage(ex));
     }
     finally {
-      if(schannel != null) {
+      if(pSocketChannel != null) {
 	try {
-	  schannel.close();
+          ServerSocket socket = pSocketChannel.socket(); 
+          if(socket != null) 
+            socket.close();
+          pSocketChannel.close();
 	}
 	catch (IOException ex) {
 	}
@@ -503,7 +502,7 @@ class FileMgrServer
                   (LogMgr.Kind.Net, LogMgr.Level.Warning,
                    "Shutdown Request Received: " + pSocket.getInetAddress());
                 LogMgr.getInstance().flush();
-                pShutdown.set(true);
+                shutdown(); 
                 break;	    
 
               default:

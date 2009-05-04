@@ -1,4 +1,4 @@
-// $Id: PluginMgrServer.java,v 1.19 2009/04/07 01:48:12 jlee Exp $
+// $Id: PluginMgrServer.java,v 1.20 2009/05/04 22:38:34 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -73,10 +73,9 @@ class PluginMgrServer
   public void 
   run() 
   {
-    ServerSocketChannel schannel = null;
     try {
-      schannel = ServerSocketChannel.open();
-      ServerSocket server = schannel.socket();
+      pSocketChannel = ServerSocketChannel.open();
+      ServerSocket server = pSocketChannel.socket();
       InetSocketAddress saddr = new InetSocketAddress(PackageInfo.sPluginPort);
       server.bind(saddr, 100);
       
@@ -91,18 +90,15 @@ class PluginMgrServer
       LogMgr.getInstance().flush();
       pTimer = new TaskTimer();
 
-      schannel.configureBlocking(false);
       while(!pShutdown.get()) {
-	SocketChannel channel = schannel.accept();
-	if(channel != null) {
-	  HandlerTask task = new HandlerTask(channel);
-	  pTasks.add(task);
-	  task.start();	
-	}
-	else {
-	  Thread.sleep(PackageInfo.sServerSleep);
-	}
-      }
+        try {
+          HandlerTask task = new HandlerTask(pSocketChannel.accept()); 
+          pTasks.add(task);
+          task.start();	
+        }
+        catch(AsynchronousCloseException ex) {
+        }
+      }  
 
       try {
 	LogMgr.getInstance().log
@@ -147,9 +143,12 @@ class PluginMgrServer
 	 Exceptions.getFullMessage(ex));
     }
     finally {
-      if(schannel != null) {
+      if(pSocketChannel != null) {
 	try {
-	  schannel.close();
+          ServerSocket socket = pSocketChannel.socket(); 
+          if(socket != null) 
+            socket.close();
+          pSocketChannel.close();
 	}
 	catch (IOException ex) {
 	}
@@ -401,7 +400,7 @@ class PluginMgrServer
                   (LogMgr.Kind.Net, LogMgr.Level.Warning,
                    "Shutdown Request Received: " + pSocket.getInetAddress());
                 LogMgr.getInstance().flush();
-                pShutdown.set(true);
+                shutdown(); 
                 break;	    
 		
               default:

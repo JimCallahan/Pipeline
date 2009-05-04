@@ -1,4 +1,4 @@
-// $Id: BaseMgrServer.java,v 1.6 2009/02/17 00:41:03 jlee Exp $
+// $Id: BaseMgrServer.java,v 1.7 2009/05/04 22:38:34 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -41,6 +41,29 @@ class BaseMgrServer
   }
  
 
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   S H U T D O W N                                                                      */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Initiate a shutdown of all network connections.
+   */
+  public void 
+  shutdown() 
+  {
+    if(pSocketChannel != null) {
+      try {
+        pSocketChannel.close();
+      }
+      catch(IOException ex) {
+      }
+    }
+
+    pShutdown.set(true); 
+  }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   H E L P E R S                                                                        */
@@ -72,6 +95,8 @@ class BaseMgrServer
          "This is likely a symptom a broken or misconfigured NTP service and should be " + 
          "fixed immediately!");
   }
+
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L   C L A S S E S                                                      */
@@ -212,5 +237,9 @@ class BaseMgrServer
    */
   protected AtomicBoolean  pShutdown;
 
+  /**
+   * The socket channel listened on by the server.
+   */ 
+  protected ServerSocketChannel  pSocketChannel;
 }
 

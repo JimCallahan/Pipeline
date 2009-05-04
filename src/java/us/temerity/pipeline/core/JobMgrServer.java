@@ -1,4 +1,4 @@
-// $Id: JobMgrServer.java,v 1.35 2009/02/17 00:51:44 jlee Exp $
+// $Id: JobMgrServer.java,v 1.36 2009/05/04 22:38:34 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -62,10 +62,9 @@ class JobMgrServer
   public void 
   run() 
   {
-    ServerSocketChannel schannel = null;
     try {
-      schannel = ServerSocketChannel.open();
-      ServerSocket server = schannel.socket();
+      pSocketChannel = ServerSocketChannel.open();
+      ServerSocket server = pSocketChannel.socket();
       InetSocketAddress saddr = new InetSocketAddress(PackageInfo.sJobPort);
       server.bind(saddr, 100);
 
@@ -86,17 +85,14 @@ class JobMgrServer
 	collector.start();
       }
 
-      schannel.configureBlocking(false);
       while(!pShutdown.get()) {
-	SocketChannel channel = schannel.accept();
-	if(channel != null) {
-	  HandlerTask task = new HandlerTask(channel);
-	  pTasks.add(task);
-	  task.start();	
-	}
-	else {
-	  Thread.sleep(PackageInfo.sServerSleep);
-	}
+        try {
+          HandlerTask task = new HandlerTask(pSocketChannel.accept()); 
+          pTasks.add(task);
+          task.start();	
+        }
+        catch(AsynchronousCloseException ex) {
+        }
       }
 
       pJobMgr.killAll();
@@ -156,9 +152,12 @@ class JobMgrServer
       LogMgr.getInstance().flush();  
     }
     finally {
-      if(schannel != null) {
+      if(pSocketChannel != null) {
 	try {
-	  schannel.close();
+          ServerSocket socket = pSocketChannel.socket(); 
+          if(socket != null) 
+            socket.close();
+          pSocketChannel.close();
 	}
 	catch (IOException ex) {
 	}
@@ -420,7 +419,7 @@ class JobMgrServer
                   (LogMgr.Kind.Net, LogMgr.Level.Warning,
                    "Shutdown Request Received: " + pSocket.getInetAddress());
                 LogMgr.getInstance().flush();
-                pShutdown.set(true);
+                shutdown(); 
                 break;	    
 
               default:
