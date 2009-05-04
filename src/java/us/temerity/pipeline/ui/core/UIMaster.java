@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.102 2009/03/25 19:31:58 jesse Exp $
+// $Id: UIMaster.java,v 1.103 2009/05/04 21:13:16 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -274,7 +274,8 @@ class UIMaster
       else {
         LogMgr.getInstance().log
           (LogMgr.Kind.Net, LogMgr.Level.Finest,
-           "Reusing Master Manager Client: " + (pMasterMgrClientStack.size()-1) + " inactive");
+           "Reusing Master Manager Client: " + (pMasterMgrClientStack.size()-1) + 
+           " inactive");
         LogMgr.getInstance().flush();
 
         return pMasterMgrClientStack.pop();
@@ -360,16 +361,6 @@ class UIMaster
  
   }
 
-  public void
-  disconnectQueueMgrClients()
-  {
-    Iterator<QueueMgrClient> it = pQueueMgrList.iterator();
-    while (it.hasNext()) {
-      QueueMgrClient client = it.next();
-      client.disconnect();
-      it.remove();
-    }
-  }
   
  
   
@@ -4670,34 +4661,51 @@ class UIMaster
     }
 
     doUponExit();
-
-    for (MasterMgrClient client : pMasterMgrList) {
-      if (client != null)
-        client.disconnect();
-    }
-    
-    for (QueueMgrClient client : pQueueMgrList) {
-      if (client != null)
-        client.disconnect();
-    }
-      
-
-    PluginMgrClient.getInstance().disconnect();
-
-    if(pRemoteServer != null) 
-      pRemoteServer.shutdown();
-
-    /* give the sockets time to disconnect cleanly */ 
-    try {
-      Thread.sleep(500);
-    }
-    catch(InterruptedException ex) {
-    }
+    cleanupNetworkConnections();
 
     System.exit(0);
   }  
 
+  /**
+   * Close all open network sockets.
+   */ 
+  public void 
+  cleanupNetworkConnections()
+  {
+    for(MasterMgrClient client : pMasterMgrList) {
+      if(client != null)
+        client.disconnect();
+    }
     
+    for(QueueMgrClient client : pQueueMgrList) {
+      if(client != null)
+        client.disconnect();
+    }
+
+    PluginMgrClient.getInstance().disconnect();
+
+    if(pRemoteServer != null) {
+      pRemoteServer.shutdown();
+      try {
+        pRemoteServer.join();
+      }
+      catch(InterruptedException ex) {
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Ops, LogMgr.Level.Warning,
+           "Interrupted while waiting for RemoteServer connection to shutdown!"); 
+        LogMgr.getInstance().flush();
+      }
+    }
+
+    /* give the sockets time to disconnect cleanly */ 
+    try {
+      Thread.sleep(1000);
+    }
+    catch(InterruptedException ex) {
+    }
+  }
+    
+
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L   C L A S S E S                                                      */
@@ -6838,8 +6846,8 @@ class UIMaster
    * A pool of inactive connections to the master manager daemon: <B>plmaster<B>(1). <P> 
    * 
    * This field should not be access directly.  Instead a master manager connection should 
-   * be obtained with the {@link #leaseMasterMgrClient leaseMasterMgrClient} method and returned
-   * to the inactive pool with {@link #returnMasterMgrClient returnMasterMgrClient}.
+   * be obtained with the {@link #leaseMasterMgrClient leaseMasterMgrClient} method and 
+   * returned to the inactive pool with {@link #returnMasterMgrClient returnMasterMgrClient}.
    */ 
   private Stack<MasterMgrClient>  pMasterMgrClientStack;
   
@@ -6855,8 +6863,8 @@ class UIMaster
    * A pool of inactive connections to the queue manager daemon: <B>plqueuemgr<B>(1). <P> 
    * 
    * This field should not be access directly.  Instead a queue manager connection should 
-   * be obtained with the {@link #leaseQueueMgrClient leaseQueueMgrClient} method and returned
-   * to the inactive pool with {@link #returnQueueMgrClient returnQueueMgrClient}.
+   * be obtained with the {@link #leaseQueueMgrClient leaseQueueMgrClient} method and 
+   * returned to the inactive pool with {@link #returnQueueMgrClient returnQueueMgrClient}.
    */ 
   private Stack<QueueMgrClient>  pQueueMgrClientStack;
 

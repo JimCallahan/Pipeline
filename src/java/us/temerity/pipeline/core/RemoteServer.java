@@ -1,4 +1,4 @@
-// $Id: RemoteServer.java,v 1.2 2008/02/14 20:26:29 jim Exp $
+// $Id: RemoteServer.java,v 1.3 2009/05/04 21:14:00 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -64,9 +64,8 @@ class RemoteServer
   public void 
   shutdown() 
   {
-    pShutdown.set(false);
+    pShutdown.set(true);
   }
-
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -136,6 +135,13 @@ class RemoteServer
 	LogMgr.getInstance().flush();
       }
     }
+    catch (BindException ex) {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Net, LogMgr.Level.Severe,
+         "The Remote port (" + PackageInfo.sRemotePort + ") is already in use!\n" + 
+         "Most likely this is because you are already running another plui this host.");
+      LogMgr.getInstance().flush();
+    }
     catch (IOException ex) {
       LogMgr.getInstance().log
 	(LogMgr.Kind.Net, LogMgr.Level.Severe,
@@ -158,7 +164,10 @@ class RemoteServer
     finally {
       if(schannel != null) {
 	try {
-	  schannel.close();
+          ServerSocket socket = schannel.socket(); 
+          if(socket != null) 
+            socket.close();
+          schannel.close();
 	}
 	catch (IOException ex) {
 	}

@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.60 2009/03/25 19:31:58 jesse Exp $
+// $Id: JManagerPanel.java,v 1.61 2009/05/04 21:13:16 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -3213,7 +3213,6 @@ class JManagerPanel
 
     if(diag.wasConfirmed()) {
       master.doUponExit();
-      master.disconnectQueueMgrClients();
 
       try {
 	boolean jobMgrs   = diag.shutdownJobMgrs();
@@ -3225,14 +3224,9 @@ class JManagerPanel
       }
       catch(PipelineException ex) {
       }
-
-      /* give the sockets time to disconnect cleanly */ 
-      try {
-	Thread.sleep(1000);
-      }
-      catch(InterruptedException ex) {
-      }
       
+      master.cleanupNetworkConnections();
+
       System.exit(0);
     }
   }
