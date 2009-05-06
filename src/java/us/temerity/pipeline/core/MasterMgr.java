@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.273 2009/05/04 22:38:34 jim Exp $
+// $Id: MasterMgr.java,v 1.274 2009/05/06 01:32:27 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -7208,8 +7208,13 @@ class MasterMgr
     try {
       timer.resume();
 
-      TreeMap<String,BaseAnnotation> table = getAnnotationsHelper(timer, name);
+      TreeMap<String,BaseAnnotation> table = new TreeMap<String, BaseAnnotation>();
+      
+      TreeMap<String, BaseAnnotation> perNode = getAnnotationsHelper(timer, name); 
+      if (perNode != null)
+        table.putAll(perNode);
 
+      // This can never be null
       NodeMod mod = new NodeMod(getWorkingBundle(nodeID).getVersion());
       table.putAll(mod.getAnnotations());
 
