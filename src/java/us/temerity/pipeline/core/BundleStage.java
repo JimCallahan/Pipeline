@@ -25,6 +25,7 @@ class BundleStage
   /**
    * Construct a new stage from the information contained in the node bundle.
    */ 
+  @SuppressWarnings("deprecation")
   public
   BundleStage
   (
