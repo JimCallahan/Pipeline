@@ -1,4 +1,4 @@
-// $Id: TemplateUnlinkAnnotation.java,v 1.1 2009/03/26 00:01:12 jesse Exp $
+// $Id: TemplateUnlinkAnnotation.java,v 1.2 2009/05/07 03:12:50 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateUnlinkAnnotation.v2_4_3;
 
@@ -34,6 +34,8 @@ class TemplateUnlinkAnnotation
          null);
       addParam(param);
     }
+
+    addContext(AnnotationContext.PerVersion);
     
     underDevelopment();
   }

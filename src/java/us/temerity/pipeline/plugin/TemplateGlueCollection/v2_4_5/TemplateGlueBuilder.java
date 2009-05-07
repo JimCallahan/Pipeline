@@ -1,4 +1,4 @@
-// $Id: TemplateGlueBuilder.java,v 1.5 2009/04/22 18:02:08 jesse Exp $
+// $Id: TemplateGlueBuilder.java,v 1.6 2009/05/07 03:12:50 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateGlueCollection.v2_4_5;
 
@@ -95,7 +95,8 @@ class TemplateGlueBuilder
     
     /* create the setup passes */ 
     addSetupPass(new InitTemplate());
-
+    
+    disableParam(new ParamMapping(aActionOnExistence));
 
     AdvancedLayoutGroup layout = 
       new AdvancedLayoutGroup
@@ -166,10 +167,12 @@ class TemplateGlueBuilder
     {
       TemplateInfoBuilder builder = 
         new TemplateInfoBuilder(pClient, pQueue, getBuilderInformation(), pNodeName, getAuthor(), getView());
-      addSubBuilder(builder);
+      addSubBuilder(builder, false, 50);
       addMappedParam(builder.getName(), aCheckinWhenDone, aCheckinWhenDone);
       addMappedParam(builder.getName(), aAllowZeroContexts, aAllowZeroContexts);
       addMappedParam(builder.getName(), aInhibitFileCopy, aInhibitFileCopy);
+      addMappedParam(builder.getName(), aUtilContext, aUtilContext);
+      addMappedParam(builder.getName(), aReleaseOnError, aReleaseOnError);
     }
     private static final long serialVersionUID = -3615571748207002085L;
     

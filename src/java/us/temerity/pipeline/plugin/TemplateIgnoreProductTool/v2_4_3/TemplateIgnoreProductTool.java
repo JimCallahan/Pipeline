@@ -1,4 +1,4 @@
-// $Id: TemplateIgnoreProductTool.java,v 1.1 2009/03/26 00:04:16 jesse Exp $
+// $Id: TemplateIgnoreProductTool.java,v 1.2 2009/05/07 03:12:50 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateIgnoreProductTool.v2_4_3;
 
@@ -37,6 +37,8 @@ class TemplateIgnoreProductTool
     underDevelopment();
   }
 
+  
+  
   /*----------------------------------------------------------------------------------------*/
   /*  O P S                                                                                 */
   /*----------------------------------------------------------------------------------------*/
@@ -71,7 +73,8 @@ class TemplateIgnoreProductTool
     TreeSet<String> sourceNodes = new TreeSet<String>(pSelected.keySet());
     sourceNodes.remove(pPrimary);
     
-    TreeMap<String, BaseAnnotation> annots = mclient.getAnnotations(pPrimary);
+    TreeMap<String, BaseAnnotation> annots = 
+      mclient.getAnnotations(getAuthor(), getView(), pPrimary);
 
     NodeMod mod = mclient.getWorkingVersion(getAuthor(), getView(), pPrimary);
     Set<String> currentSources = mod.getSourceNames();
@@ -96,10 +99,12 @@ class TemplateIgnoreProductTool
         BaseAnnotation annot = 
           plug.newAnnotation("TemplateIgnoreProduct", new VersionID("2.4.3"), "Temerity");
         annot.setParamValue(aLinkName, node);
-        mclient.addAnnotation(pPrimary, aName, annot);
+        mod.addAnnotation(aName, annot);
         newNum++;
       }
     }
+    
+    mclient.modifyProperties(getAuthor(), getView(), mod);
     
     return false;
   }

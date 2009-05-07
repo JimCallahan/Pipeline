@@ -1,4 +1,4 @@
-// $Id: TemplateGlueTool.java,v 1.5 2009/03/30 14:40:35 jesse Exp $
+// $Id: TemplateGlueTool.java,v 1.6 2009/05/07 03:12:50 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateGlueTool.v2_4_3;
 
@@ -11,6 +11,7 @@ import javax.swing.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.LogMgr.*;
+import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.builder.v2_4_3.*;
 import us.temerity.pipeline.glue.*;
 import us.temerity.pipeline.glue.io.*;
@@ -63,6 +64,14 @@ class TemplateGlueTool
         UIFactory.addVerticalSpacer(pTpanel, pVpanel, 6);
         JTextField field = makeFrameRangeField("");
         pFrameRangeFields.add(field);
+        pVbox.validate();
+        break;
+      }
+    case AOEModes:
+      {
+        UIFactory.addVerticalSpacer(pTpanel, pVpanel, 6);
+        JTextField field = makeAOEModeField("");
+        pAOEModeFields.add(field);
         pVbox.validate();
         break;
       }
@@ -186,6 +195,32 @@ class TemplateGlueTool
     pFrameRangeEndFields.put(name, endFrameField);
     pFrameRangeByFields.put(name, byFrameField);
 
+  }
+  
+  public JTextField 
+  makeAOEModeField
+  (
+    String value  
+  )
+  {
+    return UIFactory.createTitledEditableTextField
+      (pTpanel, "AoE Mode:", sTSize, pVpanel, value, sVSize, 
+      "The name of the AoE Mode.");  
+  }
+  
+  public JCollectionField
+  makeAOEModeDefaultField
+  (
+    String mode,
+    ActionOnExistence aoe
+  )
+  {
+    JCollectionField field = UIFactory.createTitledCollectionField
+      (pTpanel, mode + ":", sTSize, pVpanel, ActionOnExistence.titles(), pDialog, sVSize, 
+      "The default value for the AoE mode.");
+    field.setSelected(aoe.toTitle());
+    
+    return field;
   }
   
   public JTextField 
@@ -372,6 +407,8 @@ class TemplateGlueTool
       pFrameRangeStartFields = new TreeMap<String, JIntegerField>();
       pFrameRangeEndFields = new TreeMap<String, JIntegerField>();
       pFrameRangeByFields = new TreeMap<String, JIntegerField>();
+      pAOEModeFields = new ArrayList<JTextField>();
+      pAOEModeDefaultFields = new TreeMap<String, JCollectionField>();
       
       
       pVbox = new Box(BoxLayout.Y_AXIS);
@@ -466,6 +503,34 @@ class TemplateGlueTool
           continue;
         FrameRange range = new FrameRange(start, end, by);
         pFrameRangeDefaults.put(name, range);
+      }
+      
+      prepAOEModeDialog();
+      pDialog.setVisible(true);
+      
+      if (!pDialog.wasConfirmed())
+        return null;
+      
+      TreeSet<String> aoeModes = new TreeSet<String>();
+      for (JTextField field : pAOEModeFields) {
+        String value = field.getText();
+        if (value != null && !value.equals(""))
+          aoeModes.add(value);
+      }
+      
+      if (!aoeModes.isEmpty() ) {
+        prepAOEModeDefaultDialog(aoeModes);
+        pDialog.setVisible(true);
+
+        if (!pDialog.wasConfirmed())
+          return null;
+      }
+      
+      pAOEModes = new TreeMap<String, ActionOnExistence>();
+      for (String mod : aoeModes) {
+        ActionOnExistence aoe = 
+          ActionOnExistence.valueFromKey(pAOEModeDefaultFields.get(mod).getSelectedIndex());
+        pAOEModes.put(mod, aoe);
       }
       
       prepContextNameDialog();
@@ -584,6 +649,7 @@ class TemplateGlueTool
       info.setContextDefaults(pContextDefaults);
       info.setFrameRanges(pFrameRanges);
       info.setFrameRangeDefaults(pFrameRangeDefaults);
+      info.setAOEModes(pAOEModes);
       
       pTemplateFile.delete();
       try {
@@ -800,6 +866,83 @@ class TemplateGlueTool
       pDialog.pack();
     }
 
+    
+    private void 
+    prepAOEModeDialog()
+    {
+      pVbox.removeAll();
+      {
+        Component comps[] = UIFactory.createTitledPanels();
+        pTpanel = (JPanel) comps[0];
+        pVpanel = (JPanel) comps[1];
+        pBody = (Box) comps[2];
+    
+        pVbox.add(pBody);
+      }
+      
+      String instructions = 
+        "Enter the names of all the Action of Existence modes that are going to be used in " +
+        "the template.  An AoE allows the specification of additional execution modes to " +
+        "deal with nodes that already exist.  After the AoE modes are defined, you will be " +
+        "prompted for default values.  The add button can be used if additional fields are " +
+        "needed.";
+      UIFactory.createTitledTextArea(pTpanel, "Instructions", sTSize, pVpanel, instructions, sVSize, 5, true);
+      UIFactory.addVerticalSpacer(pTpanel, pVpanel, 12);
+      
+      pPhase = TemplatePhase.AOEModes;
+      if (pOldSettings != null && !pOldSettings.getAOEModes().isEmpty() ) {
+        for (String aoeMode : pOldSettings.getAOEModes().keySet()) {
+          JTextField field = makeFrameRangeField(aoeMode);
+          pAOEModeFields.add(field);
+          UIFactory.addVerticalSpacer(pTpanel, pVpanel, 6);
+        }
+      }
+      JTextField field = makeAOEModeField("");
+      pAOEModeFields.add(field);
+      
+      pVbox.add(UIFactory.createFiller(sTSize +sVSize + 35));
+      pDialog.setTitle("Add AoE Modes.");
+      pDialog.pack();
+    }
+    
+    private void 
+    prepAOEModeDefaultDialog
+    (
+      TreeSet<String> aoeModes  
+    )
+    {
+      pVbox.removeAll();
+      {
+        Component comps[] = UIFactory.createTitledPanels();
+        pTpanel = (JPanel) comps[0];
+        pVpanel = (JPanel) comps[1];
+        pBody = (Box) comps[2];
+    
+        pVbox.add(pBody);
+      }
+      
+      String instructions = 
+        "Select the default values for each AoE Mode in the template.  ";
+      UIFactory.createTitledTextArea(pTpanel, "Instructions", sTSize, pVpanel, instructions, sVSize, 5, true);
+      UIFactory.addVerticalSpacer(pTpanel, pVpanel, 12);
+      
+      pPhase = TemplatePhase.AOEModeDefaults;
+      
+      for (String aoeMode : aoeModes) {
+        ActionOnExistence aoe = null;
+        if (pOldSettings != null)
+          aoe = pOldSettings.getAOEModes().get(aoeMode);
+        if (aoe == null)
+          aoe = ActionOnExistence.Continue;
+        JCollectionField field = makeAOEModeDefaultField(aoeMode, aoe);
+        pAOEModeDefaultFields.put(aoeMode, field);
+        UIFactory.addVerticalSpacer(pTpanel, pVpanel, 6);
+      }
+      pVbox.add(UIFactory.createFiller(sTSize +sVSize + 35));
+      pDialog.setTitle("Set AoE Mode Defaults");
+      pDialog.pack();
+    }
+    
     private void 
     prepContextNameDialog()
     {
@@ -1019,6 +1162,8 @@ class TemplateGlueTool
     StringParamNames,
     FrameRanges,
     FrameRangeDefaults,
+    AOEModes,
+    AOEModeDefaults,
     ContextNames, 
     ContextValues, 
     ContextParamNames,
@@ -1074,6 +1219,8 @@ class TemplateGlueTool
   private TreeMap<String, JIntegerField> pFrameRangeStartFields;
   private TreeMap<String, JIntegerField> pFrameRangeEndFields;
   private TreeMap<String, JIntegerField> pFrameRangeByFields;
+  private ArrayList<JTextField> pAOEModeFields;
+  private TreeMap<String, JCollectionField> pAOEModeDefaultFields;
   
   private ListSet<String> pStringReplacements;
   private TreeMap<String, String> pStringParamNames;
@@ -1084,5 +1231,7 @@ class TemplateGlueTool
   private MappedArrayList<String, TreeMap<String, String>> pContextDefaults;
   private TreeSet<String> pFrameRanges;
   private TreeMap<String, FrameRange> pFrameRangeDefaults;
+  private TreeMap<String, ActionOnExistence> pAOEModes;
+  
   
 }

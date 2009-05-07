@@ -1,4 +1,4 @@
-// $Id: TemplateConditionalBuildTool.java,v 1.1 2009/03/26 00:04:16 jesse Exp $
+// $Id: TemplateConditionalBuildTool.java,v 1.2 2009/05/07 03:12:50 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateConditionalBuildTool.v2_4_3;
 
@@ -82,7 +82,9 @@ class TemplateConditionalBuildTool
       BaseAnnotation annot = 
         plug.newAnnotation(aName, new VersionID("2.4.3"), "Temerity");
       annot.setParamValue(aConditionName, pPrimary);
-      mclient.addAnnotation(sourceNode, aName, annot);
+      NodeMod mod = mclient.getWorkingVersion(getAuthor(), getView(), sourceNode);
+      mod.addAnnotation(aName, annot);
+      mclient.modifyProperties(getAuthor(), getView(), mod);
     }
     
     return false;

@@ -1,4 +1,4 @@
-// $Id: TemplateContextTool.java,v 1.3 2008/11/19 04:34:48 jesse Exp $
+// $Id: TemplateContextTool.java,v 1.4 2009/05/07 03:12:50 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateContextTool.v2_4_3;
 
@@ -123,8 +123,11 @@ class TemplateContextTool
       return false;
     
     for (String node : pSelected.keySet()) {
-      TreeMap<String, BaseAnnotation> annots = mclient.getAnnotations(node);
+      TreeMap<String, BaseAnnotation> annots = 
+        mclient.getAnnotations(getAuthor(), getView(), node);
       TreeMap<String, String> existing = new TreeMap<String, String>();
+      
+      NodeMod mod = mclient.getWorkingVersion(getAuthor(), getView(), node);
       
       // Get the existing contexts.
       for (String aName : annots.keySet()) {
@@ -142,10 +145,11 @@ class TemplateContextTool
           BaseAnnotation annot = 
             plug.newAnnotation("TemplateContext", new VersionID("2.4.3"), "Temerity");
           annot.setParamValue(aContextName, context);
-          mclient.addAnnotation(node, aName, annot);
+          mod.addAnnotation(aName, annot);
           newNum++;
         }
       }
+      mclient.modifyProperties(getAuthor(), getView(), mod);
     }
     
     return false;
@@ -164,6 +168,10 @@ class TemplateContextTool
   }
 
 
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*  G U I   M E T H O D S                                                                 */
+  /*----------------------------------------------------------------------------------------*/
 
   private void
   doAdd()
@@ -173,7 +181,6 @@ class TemplateContextTool
       (pTpanel, "Context:", sTSize, pVpanel, "", sVSize, 
        "The name of the context to assign to the selected nodes.");
     pContextFields.add(field);
-    System.out.println("woowoo");
     pBody.revalidate();
   }
   

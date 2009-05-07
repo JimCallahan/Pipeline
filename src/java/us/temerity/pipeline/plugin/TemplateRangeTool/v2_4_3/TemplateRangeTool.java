@@ -1,4 +1,4 @@
-// $Id: TemplateRangeTool.java,v 1.1 2008/11/19 04:34:48 jesse Exp $
+// $Id: TemplateRangeTool.java,v 1.2 2009/05/07 03:12:50 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateRangeTool.v2_4_3;
 
@@ -112,7 +112,9 @@ class TemplateRangeTool
       BaseAnnotation annot = 
         plug.newAnnotation("TemplateRange", new VersionID("2.4.3"), "Temerity");
       annot.setParamValue(aRangeName, range);
-      mclient.addAnnotation(node, "TemplateRange", annot);
+      NodeMod mod = mclient.getWorkingVersion(getAuthor(), getView(), node);
+      mod.addAnnotation("TemplateRange", annot);
+      mclient.modifyProperties(getAuthor(), getView(), mod);
     }
 
     return false;

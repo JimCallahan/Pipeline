@@ -1,4 +1,4 @@
-// $Id: TemplateUnlinkTool.java,v 1.1 2009/03/26 00:01:12 jesse Exp $
+// $Id: TemplateUnlinkTool.java,v 1.2 2009/05/07 03:12:50 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateUnlinkTool.v2_4_3;
 
@@ -70,7 +70,8 @@ class TemplateUnlinkTool
     TreeSet<String> sourceNodes = new TreeSet<String>(pSelected.keySet());
     sourceNodes.remove(pPrimary);
     
-    TreeMap<String, BaseAnnotation> annots = mclient.getAnnotations(pPrimary);
+    TreeMap<String, BaseAnnotation> annots = 
+      mclient.getAnnotations(getAuthor(), getView(), pPrimary);
     TreeSet<String> existing = new TreeSet<String>();
     
     TreeSet<String> aNames = new TreeSet<String>();
@@ -86,16 +87,20 @@ class TemplateUnlinkTool
     if (!aNames.isEmpty())
       newNum = Integer.valueOf(aNames.last().replaceAll("TemplateUnlink", "")) + 1;
     
+    NodeMod mod = mclient.getWorkingVersion(getAuthor(), getView(), pPrimary);
+    
     for (String node : sourceNodes) {
       if (!existing.contains(node)) {
         String aName = "TemplateUnlink" + pad(newNum);
         BaseAnnotation annot = 
           plug.newAnnotation("TemplateUnlink", new VersionID("2.4.3"), "Temerity");
         annot.setParamValue(aLinkName, node);
-        mclient.addAnnotation(pPrimary, aName, annot);
+        mod.addAnnotation(aName, annot);
         newNum++;
       }
     }
+    
+    mclient.modifyProperties(getAuthor(), getView(), mod);
     
     return false;
   }

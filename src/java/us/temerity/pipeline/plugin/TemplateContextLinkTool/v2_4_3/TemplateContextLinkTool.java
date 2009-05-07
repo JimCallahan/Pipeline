@@ -1,4 +1,4 @@
-// $Id: TemplateContextLinkTool.java,v 1.5 2009/03/26 00:10:41 jesse Exp $
+// $Id: TemplateContextLinkTool.java,v 1.6 2009/05/07 03:12:50 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateContextLinkTool.v2_4_3;
 
@@ -131,7 +131,8 @@ class TemplateContextLinkTool
     TreeSet<String> sourceNodes = new TreeSet<String>(pSelected.keySet());
     sourceNodes.remove(pPrimary);
     
-    TreeMap<String, BaseAnnotation> annots = mclient.getAnnotations(pPrimary);
+    TreeMap<String, BaseAnnotation> annots = 
+      mclient.getAnnotations(getAuthor(), getView(), pPrimary);
     MappedSet<String, String> existing = new MappedSet<String, String>();
     
     TreeSet<String> aNames = new TreeSet<String>();
@@ -160,11 +161,13 @@ class TemplateContextLinkTool
             plug.newAnnotation("TemplateContextLink", new VersionID("2.4.3"), "Temerity");
           annot.setParamValue(aContextName, context);
           annot.setParamValue(aLinkName, node);
-          mclient.addAnnotation(pPrimary, aName, annot);
+          mod.addAnnotation(aName, annot);
           newNum++;
         }
       }
     }
+    
+    mclient.modifyProperties(getAuthor(), getView(), mod);
     
     return false;
   }
