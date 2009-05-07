@@ -1,4 +1,4 @@
-// $Id: BuilderInformation.java,v 1.21 2008/03/04 08:15:14 jesse Exp $
+// $Id: BuilderInformation.java,v 1.22 2009/05/07 03:25:29 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -99,7 +99,7 @@ class BuilderInformation
     pUseBuilderLogging = useBuilderLogging;
     pTerminateAppOnQuit = terminateAppWithGui;
     pCommandLineParams = new MultiMap<String, String>(commandLineParams);
-    pStageState = new StageState();
+    pBuilderStageState = new StageState();
   }
   
   
@@ -166,6 +166,167 @@ class BuilderInformation
   {
     return pTerminateAppOnQuit;
   }
+  
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*  S T A G E   S T A T E   W R A P P E R                                                 */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Add a new AoE mode with a default response.
+   * <p>
+   * The first builder to add an AoE mode wins.  This means that a parent builder can set a
+   * default AoE for a mode that will override any defaults that it sub-builders might attempt
+   * to set for those modes.
+   *
+   * @param mode
+   *   The name of the AoE mode to add.  This cannot be any of the 4 AOE names and should
+   *   never be <code>null</code>
+   *   
+   * @param aoe
+   *   The default AoE for the mode.  This should never be <code>null</code>
+   * 
+   * @return 
+   *   Whether the AoE mode was added.  This will return false is another builder has already
+   *   set an AoE default for this mode.
+   *   
+   * @throws PipelineException
+   *   If an attempt is made to override one of the four built-in AOE modes: 
+   *   Abort, Continue, Conform, or CheckOut
+   */
+  public boolean
+  addAOEMode
+  (
+    String mode,
+    ActionOnExistence aoe
+  ) 
+    throws PipelineException
+  {
+    return pBuilderStageState.addAOEMode(mode, aoe);
+  }
+  
+  /**
+   * Add a per-node override to the mode's default AoE.
+   * <p>
+   * The first builder to add an AoE override wins.  This means that a parent builder can set a
+   * AoE for a node that will override any defaults that it sub-builders might attempt
+   * to set for those nodes.
+   * 
+   * @param mode
+   *   The name of the mode.  A pipeline exception will be thrown is this is not a valid AoE 
+   *   mode.
+   * 
+   * @param nodeName
+   *   The name of the node to add the override for.
+   * 
+   * @param aoe
+   *   The {@link ActionOnExistence} that will be applied to the node in the given mode.
+   * 
+   * @return
+   *   Whether the AoE override was added.  This will return false is another builder has 
+   *   already set an AoE override for this mode and node.
+   *   
+   * @throws PipelineException
+   *   If an attempt is made to add an override to one of the four default AoE modes:
+   *   Abort, Continue, Conform, or CheckOut 
+   */
+  public boolean
+  addAOEOverride
+  (
+    String mode,
+    String nodeName,
+    ActionOnExistence aoe
+  )
+    throws PipelineException
+  {
+    return pBuilderStageState.addAOEOverride(mode, nodeName, aoe);
+  }
+  
+  /**
+   * Get the AoE Modes.
+   */
+  public Set<String>
+  getAOEModes()
+  {
+    return pBuilderStageState.getAOEModes();
+  }
+
+  /**
+   * Get the default AoE for a given mode.
+   * 
+   * @param mode
+   *   The name of the mode.  Cannot be null.
+
+   * @return
+   *   The default AoE.
+   *   
+   * @throws IllegalArgumentException
+   *   If a non-existent mode is specified.
+   */
+  public ActionOnExistence
+  getDefaultAOE
+  (
+    String mode  
+  )
+  {
+    return getDefaultAOE(mode);
+  }
+  
+  /**
+   * Get the AoE that should be used for a particular node in the given mode.
+   * <p>
+   * If there is no node-specific override, then the default AoE for the mode 
+   * is returned.
+   * 
+   * @param mode
+   *   The name of the mode.
+   *   
+   * @param node
+   *   The name of the node.
+   * 
+   * @return
+   *   The AoE to be used for the node.
+   *   
+   * @throws IllegalArgumentException
+   *   If a non-existent mode is specified.
+   */
+  public ActionOnExistence
+  getNodeAOE
+  (
+    String mode,
+    String node
+  )
+  {
+    return pBuilderStageState.getNodeAOE(mode, node);
+  }
+  
+  /**
+   * Get the AoE that should be used for a particular node in the given mode.
+   * <p>
+   * If there is no node-specific override, then <code>null</code> is returned.
+   * 
+   * @param mode
+   *   The name of the mode.
+   *   
+   * @param node
+   *   The name of the node.
+   * 
+   * @return
+   *   The AoE to be used for the node.
+   *   
+   * @throws IllegalArgumentException
+   *   If a non-existent mode is specified.
+   */
+  public ActionOnExistence
+  getBaseNodeAOE
+  (
+    String mode,
+    String node
+  )
+  {
+    return pBuilderStageState.getBaseNodeAOE(mode, node);
+  }
 
   /**
    * Gets a new instance of {@link StageInformation}, initialized with the correct
@@ -182,7 +343,7 @@ class BuilderInformation
   public final StageInformation
   getNewStageInformation()
   {
-    return new StageInformation(pStageState);
+    return new StageInformation(pBuilderStageState);
   }
   
   
@@ -220,7 +381,8 @@ class BuilderInformation
       pSelectionKeyStack = new LinkedList<TreeSet<String>>();
       pLicenseKeyStack = new LinkedList<TreeSet<String>>();
       pDoAnnotations = false;
-      pActionOnExistence = ActionOnExistence.Continue;
+      pDefaultAOE = ActionOnExistence.Continue;
+      pAOEMode = ActionOnExistence.Continue.toString();
       pAddedNodes = new TreeMap<String, NodeID>();
       
       pConformedNodes = new TreeSet<String>();
@@ -231,7 +393,7 @@ class BuilderInformation
     
     
     /*--------------------------------------------------------------------------------------*/
-    /*   A C C E S S                                                                        */
+    /*   Q U E U E   K E Y S                                                                */
     /*--------------------------------------------------------------------------------------*/
     
     /**
@@ -239,7 +401,11 @@ class BuilderInformation
      * 
      * @param keys
      *   The new list of keys or <code>null</code> to clear the list.
+     *   
+     * @deprecated
+     *   Due to the addition of key choosers, it is not recommended to hard code keys on nodes.
      */
+    @Deprecated
     public void
     setDefaultSelectionKeys
     (
@@ -257,7 +423,11 @@ class BuilderInformation
      * 
      * @param key
      *   The key to add.
+     *   
+     * @deprecated
+     *   Due to the addition of key choosers, it is not recommended to hard code keys on nodes.
      */
+    @Deprecated
     public void
     addDefaultSelectionKey
     (
@@ -272,7 +442,11 @@ class BuilderInformation
      * 
      * @param keys
      *   The new list of keys or <code>null</code> to clear the list.
+     *  
+     * @deprecated
+     *   Due to the addition of key choosers, it is not recomemnded to hard code keys on nodes.
      */
+    @Deprecated
     public void
     setDefaultLicenseKeys
     (
@@ -290,7 +464,11 @@ class BuilderInformation
      * 
      * @param key
      *   The key to add.
+     *   
+     * @deprecated
+     *   Due to the addition of key choosers, it is not recommended to hard code keys on nodes.
      */
+    @Deprecated
     public void
     addDefaultLicenseKey
     (
@@ -305,7 +483,11 @@ class BuilderInformation
      * 
      * @param keys
      *   The new list of keys or <code>null</code> to clear the list.
+     *   
+     * @deprecated
+     *   Due to the addition of key choosers, it is not recommended to hard code keys on nodes.
      */
+    @Deprecated
     public void
     setDefaultHardwareKeys
     (
@@ -323,7 +505,11 @@ class BuilderInformation
      * 
      * @param key
      *   The key to add.
+     *   
+     * @deprecated
+     *   Due to the addition of key choosers, it is not recommended to hard code keys on nodes.
      */
+    @Deprecated
     public void
     addDefaultHardwareKey
     (
@@ -341,7 +527,11 @@ class BuilderInformation
      * 
      * @return
      *   The list of keys.
+     *   
+     * @deprecated
+     *   Due to the addition of key choosers, it is not recommended to hard code keys on nodes.
      */
+    @Deprecated
     public TreeSet<String> 
     getDefaultSelectionKeys()
     {
@@ -363,7 +553,11 @@ class BuilderInformation
      * 
      * @return
      *   The list of keys.
+     *   
+     * @deprecated
+     *   Due to the addition of key choosers, it is not recommended to hard code keys on nodes.
      */
+    @Deprecated
     public TreeSet<String> 
     getDefaultLicenseKeys()
     {
@@ -385,7 +579,11 @@ class BuilderInformation
      * 
      * @return
      *   The list of keys.
+     *   
+     * @deprecated
+     *   Due to the addition of key choosers, it is not recommended to hard code keys on nodes.
      */
+    @Deprecated
     public TreeSet<String> 
     getDefaultHardwareKeys()
     {
@@ -401,7 +599,11 @@ class BuilderInformation
     
     /**
      * Set whether the default Selection Keys should be assigned to nodes.
+     * 
+     * @deprecated
+     *   Due to the addition of key choosers, it is not recommended to hard code keys on nodes.
      */
+    @Deprecated
     public void 
     setUseDefaultSelectionKeys
     (
@@ -413,7 +615,11 @@ class BuilderInformation
     
     /**
      * Whether the default Selection Keys should be assigned to nodes.
+     * 
+     * @deprecated
+     *   Due to the addition of key choosers, it is not recommended to hard code keys on nodes.
      */
+    @Deprecated
     public boolean 
     useDefaultSelectionKeys()
     {
@@ -422,7 +628,11 @@ class BuilderInformation
 
     /**
      * Set whether the default License Keys should be assigned to nodes.
+     * 
+     * @deprecated
+     *   Due to the addition of key choosers, it is not recommended to hard code keys on nodes.
      */
+    @Deprecated
     public void 
     setUseDefaultLicenseKeys
     (
@@ -434,7 +644,11 @@ class BuilderInformation
     
     /**
      * Whether the default License Keys should be assigned to nodes.
+     * 
+     * @deprecated
+     *   Due to the addition of key choosers, it is not recommended to hard code keys on nodes.
      */
+    @Deprecated
     public boolean 
     useDefaultLicenseKeys()
     {
@@ -443,7 +657,11 @@ class BuilderInformation
     
     /**
      * Set whether the default Hardware Keys should be assigned to nodes.
+     * 
+     * @deprecated
+     *   Due to the addition of key choosers, it is not recommended to hard code keys on nodes.
      */
+    @Deprecated
     public void 
     setUseDefaultHardwareKeys
     (
@@ -455,7 +673,11 @@ class BuilderInformation
     
     /**
      * Whether the default Hardware Keys should be assigned to nodes.
+     * 
+     * @deprecated
+     *   Due to the addition of key choosers, it is not recommended to hard code keys on nodes.
      */
+    @Deprecated
     public boolean 
     useDefaultHardwareKeys()
     {
@@ -487,7 +709,11 @@ class BuilderInformation
      * 
      * @param keys
      *   The list of keys to put on the stack.
+     *   
+     * @deprecated
+     *   Due to the addition of key choosers, it is not recommended to hard code keys on nodes.
      */
+    @Deprecated
     public void
     pushSelectionKeys
     (
@@ -501,7 +727,11 @@ class BuilderInformation
      * Remove the top group of Selection Keys from the stack.
      * 
      * @see #pushSelectionKeys(TreeSet)
+     * 
+     * @deprecated
+     *   Due to the addition of key choosers, it is not recommended to hard code keys on nodes.
      */
+    @Deprecated
     public void
     popSelectionKeys()
     {
@@ -515,7 +745,11 @@ class BuilderInformation
      * 
      * @param keys
      *  The list of keys.
+     *  
+     * @deprecated
+     *   Due to the addition of key choosers, it is not recommended to hard code keys on nodes.
      */
+    @Deprecated
     public void
     pushLicenseKeys
     (
@@ -529,7 +763,11 @@ class BuilderInformation
      * Remove the top group of License Keys from the stack.
      * 
      * @see #pushSelectionKeys(TreeSet)
+     * 
+     * @deprecated
+     *   Due to the addition of key choosers, it is not recommended to hard code keys on nodes.
      */
+    @Deprecated
     public void
     popLicenseKeys()
     {
@@ -543,7 +781,11 @@ class BuilderInformation
      * 
      * @param keys
      *  The list of keys.
+     *  
+     * @deprecated
+     *   Due to the addition of key choosers, it is not recommended to hard code keys on nodes.
      */
+    @Deprecated
     public void
     pushHardwareKeys
     (
@@ -557,12 +799,22 @@ class BuilderInformation
      * Remove the top group of Hardware Keys from the stack.
      * 
      * @see #pushSelectionKeys(TreeSet)
+     * 
+     * @deprecated
+     *   Due to the addition of key choosers, it is not recommended to hard code keys on nodes.
      */
+    @Deprecated
     public void
     popHardwareKeys()
     {
       pHardwareKeyStack.poll();
     }
+
+    
+    
+    /*--------------------------------------------------------------------------------------*/
+    /*   A N N O T A T I O N S                                                              */
+    /*--------------------------------------------------------------------------------------*/
     
     /**
      * Should stages add annotations to the nodes that they are building?
@@ -588,7 +840,13 @@ class BuilderInformation
     {
       pDoAnnotations = doAnnotations;
     }
+
+
     
+    /*--------------------------------------------------------------------------------------*/
+    /*   A C T I O N    O N    E X I S T E N C E                                            */
+    /*--------------------------------------------------------------------------------------*/
+
     /**
      * Sets what stages should do when they encounter a node that already exists.
      * 
@@ -596,29 +854,101 @@ class BuilderInformation
      *   The Action
      *  
      * @see ActionOnExistence 
+     * 
+     * @deprecated
+     *   The introduction of AoE modes makes this method unnecessary and even somewhat 
+     *   dangerous.  Calls to this method will change the default AoE for the current builder, 
+     *   but will not incorporate any of the per-mode node overrides, which could lead to 
+     *   non-intended behavior.  The method has been preserved to prevent older builders from
+     *   breaking, but those builders should change their code to use the new AoE modes as
+     *   this method will eventually be removed. 
      */
+    @Deprecated
     public void
     setActionOnExistence
     (
       ActionOnExistence aoe  
     )
     {
-      pActionOnExistence = aoe;
+      pDefaultAOE = aoe;
     }
     
     /**
      * What stages should do when they encounter a node that already exists.
      *  
-     * @see ActionOnExistence 
+     * @see ActionOnExistence
+     * @see #getActionOnExistence(String)
+     * 
+     * @deprecated
+     *   The introduction of AoE modes makes this method unnecessary. The method has been 
+     *   preserved to prevent older builders from breaking, but those builders should change 
+     *   their code to use the new AoE modes as this method will eventually be removed.
      */
+    @Deprecated
     public ActionOnExistence
     getActionOnExistence()
     {
-      return pActionOnExistence;
+      return pDefaultAOE;
     }
     
+    /**
+     * Get the ActionOnExistence for the specified node.
+     * <p>
+     * This method will take into account the default AoE that has been set in the 
+     * StageInformation, preferably using the AoE mode code.
+     * 
+     * @param nodeName
+     *   The name of the node, which is used to search for per-node mode overrides.
+     * 
+     * @return
+     *   The response to the node existing.
+     */
+    public ActionOnExistence
+    getActionOnExistence
+    (
+      String nodeName  
+    )
+    {
+      ActionOnExistence toReturn = pStageState.getBaseNodeAOE(pAOEMode, nodeName);
+      if (toReturn == null)
+        toReturn = pDefaultAOE;
+      return toReturn;
+    }
+    
+    /**
+     * Set the AoE mode in the current Stage Information.
+     * <p>
+     * This call only effects the current instance of Stage Information, which means that 
+     * each builder needs to make this call for itself.  That is handled by default in
+     * the {@link BaseBuilder#validateBuiltInParams()} method.
+     * 
+     * @param mode
+     *   The name of the AoE mode.
+     *   
+     * @throws IllegalArgumentException
+     *   If a non-existent mode is specified.
+     */
+    public void
+    setAOEMode
+    (
+      String mode  
+    )
+    {
+      pDefaultAOE = pStageState.getDefaultAOE(mode);
+      pAOEMode = mode;
+    }
+    
+    /**
+     * Get the name of the current AoE mode.
+     */
+    public String
+    getAOEMode()
+    {
+      return pAOEMode;
+    }
     
 
+    
     /*--------------------------------------------------------------------------------------*/
     /*   S T A G E   S T A T E   W R A P P E R                                              */
     /*--------------------------------------------------------------------------------------*/
@@ -633,7 +963,7 @@ class BuilderInformation
     }
     
     /**
-     * Gets a list of all the nodes that have been conformed by a stage in this builder.
+     * Get a list of all the nodes that have been conformed by a stage in this builder.
      */
     public TreeSet<String>
     getConformedNodes()
@@ -642,7 +972,7 @@ class BuilderInformation
     }
     
     /**
-     * Gets a list of all the nodes that have been checked out using the
+     * Get a list of all the nodes that have been checked out using the
      * {@link BaseStage#checkOut(VersionID, CheckOutMode, CheckOutMethod)} method.
      * <p>
      * This does not include nodes that were checked out as part of the neededNode
@@ -656,7 +986,7 @@ class BuilderInformation
     
 
     /**
-     * Gets a list of all the nodes that have been checked out using the
+     * Get a list of all the nodes that have been checked out using the
      * {@link BaseStage#checkOut(VersionID, CheckOutMode, CheckOutMethod)} method
      * in the current Builder.
      * <p>
@@ -670,7 +1000,7 @@ class BuilderInformation
     }
     
     /**
-     * Gets a list of all the nodes that have been skipped by the build() method
+     * Get a list of all the nodes that have been skipped by the build() method
      * of their stage
      */
     public TreeSet<String>
@@ -681,7 +1011,7 @@ class BuilderInformation
     
 
     /**
-     * Gets a list of all the nodes in the current Builder that have been skipped 
+     * Get a list of all the nodes in the current Builder that have been skipped 
      * by the build() method of their stage
      */
     public TreeSet<String>
@@ -691,7 +1021,7 @@ class BuilderInformation
     }
     
     /**
-     * Gets a map that contains the NodeIDs of all the nodes that have been built by stages
+     * Get a map that contains the NodeIDs of all the nodes that have been built by stages
      * indexed by node name.
      * 
      * @return The map containing the node names.
@@ -703,7 +1033,7 @@ class BuilderInformation
     }
     
     /**
-     * Gets a map that contains the NodeIDs of all the nodes that have been built by stages in
+     * Get a map that contains the NodeIDs of all the nodes that have been built by stages in
      * the current Builder indexed by node name.
      * 
      * @return The map containing the node names.
@@ -715,7 +1045,7 @@ class BuilderInformation
     }
 
     /**
-     * Adds a node name to the list of nodes created during the session.
+     * Add a node name to the list of nodes created during the session.
      * <P>
      * The method will return a boolean based on whether the node already existed in the
      * current list. A return value of <code>false</code> indicates that the name was not
@@ -749,7 +1079,7 @@ class BuilderInformation
     }
     
     /**
-     * Adds a node to the list of things that have been checked out by a stage.
+     * Add a node to the list of things that have been checked out by a stage.
      */
     public final void
     addCheckedOutNode
@@ -762,7 +1092,7 @@ class BuilderInformation
     }
     
     /**
-     * Adds a node to the list of things that have been checked out by a stage.
+     * Add a node to the list of things that have been checked out by a stage.
      */
     public final void
     addSkippedNode
@@ -775,7 +1105,7 @@ class BuilderInformation
     }
     
     /**
-     * Adds a node to the list of things that have been conformed by a stage.
+     * Add a node to the list of things that have been conformed by a stage.
      */
     public final void
     addConformedNode
@@ -787,6 +1117,15 @@ class BuilderInformation
       pConformedNodes.add(name);
     }
     
+    /**
+     * Get the default editor for a particular stage function.
+     * 
+     * @param function
+     *   The name of the function
+     * 
+     * @return
+     *   The PluginContext representing the editor.
+     */
     public PluginContext 
     getDefaultEditor
     (
@@ -821,7 +1160,11 @@ class BuilderInformation
      * Gets the default selection keys for a particular function.
      * 
      * @return A list of keys or an empty list if no keys exist
+     * 
+     * @deprecated
+     *   Due to the addition of key choosers, it is not recommended to hard code keys on nodes.
      */
+    @Deprecated
     public Set<String>
     getStageFunctionSelectionKeys
     (
@@ -841,7 +1184,11 @@ class BuilderInformation
      * default keys in its Stage State class before instantiating any of its 
      * sub-builders.  Failure to do so may result in the default keys values being
      * set by the sub-builder.
+     * 
+     * @deprecated
+     *   Due to the addition of key choosers, it is not recommended to hard code keys on nodes.
      */
+    @Deprecated
     public void
     setStageFunctionSelectionKeys
     (
@@ -856,7 +1203,11 @@ class BuilderInformation
      * Gets the default license keys for a particular function.
      * 
      * @return A list of keys or an empty list if no keys exist
+     * 
+     * @deprecated
+     *   Due to the addition of key choosers, it is not recommended to hard code keys on nodes.
      */
+    @Deprecated
     public Set<String>
     getStageFunctionLicenseKeys
     (
@@ -876,7 +1227,11 @@ class BuilderInformation
      * default keys in its Stage State class before instantiating any of its 
      * sub-builders.  Failure to do so may result in the default keys values being
      * set by the sub-builder.
+     * 
+     * @deprecated
+     *   Due to the addition of key choosers, it is not recommended to hard code keys on nodes.
      */
+    @Deprecated
     public void
     setStageFunctionLicenseKeys
     (
@@ -891,7 +1246,11 @@ class BuilderInformation
      * Gets the default hardware keys for a particular function.
      * 
      * @return A list of keys or an empty list if no keys exist
+     * 
+     * @deprecated
+     *   Due to the addition of key choosers, it is not recommended to hard code keys on nodes.
      */
+    @Deprecated
     public Set<String>
     getStageFunctionHardwareKeys
     (
@@ -911,7 +1270,11 @@ class BuilderInformation
      * default keys in its Stage State class before instantiating any of its 
      * sub-builders.  Failure to do so may result in the default keys values being
      * set by the sub-builder.
+     * 
+     * @deprecated
+     *   Due to the addition of key choosers, it is not recommended to hard code keys on nodes.
      */
+    @Deprecated
     public void
     setStageFunctionHardwareKeys
     (
@@ -963,7 +1326,11 @@ class BuilderInformation
     
     private boolean pDoAnnotations;
     
-    private ActionOnExistence pActionOnExistence;
+    private ActionOnExistence pDefaultAOE;
+    
+    private String pAOEMode;
+    
+    private StageState pStageState;
   }  //Stage Information
   
   
@@ -985,5 +1352,5 @@ class BuilderInformation
   
   private boolean pTerminateAppOnQuit;
   
-  private StageState pStageState;
+  private StageState pBuilderStageState;
 }

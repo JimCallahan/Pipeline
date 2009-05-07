@@ -1,10 +1,11 @@
-// $Id: TemplateGlueInformation.java,v 1.4 2009/04/12 19:19:00 jesse Exp $
+// $Id: TemplateGlueInformation.java,v 1.5 2009/05/07 03:25:29 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
 import java.util.*;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.glue.*;
 
 /*------------------------------------------------------------------------------------------*/
@@ -40,6 +41,8 @@ class TemplateGlueInformation
     
     pFrameRanges = new TreeSet<String>();
     pFrameRangeDefaults = new TreeMap<String, FrameRange>();
+    
+    pAOEModes = new TreeMap<String, ActionOnExistence>();
   }
   
   public 
@@ -63,7 +66,7 @@ class TemplateGlueInformation
     
     pFrameRanges = new TreeSet<String>();
     pFrameRangeDefaults = new TreeMap<String, FrameRange>();
-    
+    pAOEModes = new TreeMap<String, ActionOnExistence>();
   }
   
   
@@ -371,7 +374,31 @@ class TemplateGlueInformation
     }
   }
   
+  /**
+   * Get the list of AOEModes and the default value for each one.
+   */
+  public final TreeMap<String, ActionOnExistence>
+  getAOEModes()
+  {
+    return new TreeMap<String, ActionOnExistence>(pAOEModes);
+  }
 
+  /**
+   * Set the AOE modes in the template.
+   */
+  public final void
+  setAOEModes
+  (
+    TreeMap<String, ActionOnExistence> aoes
+  )
+  {
+    if (aoes == null)
+      pAOEModes = new TreeMap<String, ActionOnExistence>();
+    else
+      pAOEModes = new TreeMap<String, ActionOnExistence>(aoes);
+  }
+
+  
   
   /*----------------------------------------------------------------------------------------*/
   /*   U T I L I T Y                                                                        */
@@ -481,6 +508,11 @@ class TemplateGlueInformation
       if (o != null)
         pFrameRangeDefaults = (TreeMap<String, FrameRange>) o;
     }
+    {
+      Object o = decoder.decode(aAOEModes);
+      if (o != null)
+        pAOEModes = (TreeMap<String, ActionOnExistence>) o;
+    }
   }
 
   @Override
@@ -513,6 +545,8 @@ class TemplateGlueInformation
       encoder.encode(aFrameRangeDefaults, pFrameRangeDefaults);
     if (!pContextParamNames.isEmpty())
       encoder.encode(aContextParamNames, pContextParamNames);
+    if (!pAOEModes.isEmpty())
+      encoder.encode(aAOEModes, pAOEModes);
   }
   
   
@@ -523,7 +557,6 @@ class TemplateGlueInformation
 
   private static final long serialVersionUID = -8707667177593745789L;
 
-  
   public static final String aReplacements = "Replacements";
   public static final String aReplacementDefaults = "ReplacementsDefaults";
   public static final String aReplacementParamNames = "ReplacementParamNames";
@@ -533,6 +566,7 @@ class TemplateGlueInformation
   public static final String aNodesInTemplate = "NodesInTemplate";
   public static final String aFrameRanges = "FrameRanges";
   public static final String aFrameRangeDefaults = "FrameRangeDefaults";
+  public static final String aAOEModes = "AOEModes";
   
   
   
@@ -549,6 +583,8 @@ class TemplateGlueInformation
   
   private TreeSet<String> pFrameRanges;
   private TreeMap<String, FrameRange> pFrameRangeDefaults;
+  
+  private TreeMap<String, ActionOnExistence> pAOEModes;
   
   private TreeSet<String> pNodesInTemplate;
 

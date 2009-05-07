@@ -1,19 +1,43 @@
-// $Id: StageState.java,v 1.10 2008/10/10 12:46:58 jim Exp $
+// $Id: StageState.java,v 1.11 2009/05/07 03:25:29 jesse Exp $
 
 package us.temerity.pipeline.stages;
 
 import java.util.*;
 
 import us.temerity.pipeline.*;
-import us.temerity.pipeline.builder.PluginContext;
+import us.temerity.pipeline.builder.*;
+import us.temerity.pipeline.builder.BuilderInformation.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   S T A G E   S T A T E                                                                  */
 /*------------------------------------------------------------------------------------------*/
 
+/**
+ * Information that is shared between all stages in all builders.
+ * <p>
+ * This class was designed to get around the restrictions on static data in builders. Instead
+ * of having a single shared data-store for this information, each invocation of a builder
+ * contains an instance of StageState contained inside its {@link BuilderInformation}. As the
+ * BuilderInformation is passed around among the various sub-builders, the StageState goes
+ * along with it.
+ * <p>
+ * There is no direct access to this class in any user builder code. Instead, access is
+ * mediated through the use of the {@link StageInformation} class contained inside the
+ * {@link BuilderInformation} class. This safeguard is in place to prevent inadvertent use of
+ * an alternative StageState. It also allows for single calls to StageInformation to update
+ * information that is localized the particular builder and global data stored in the
+ * StageState.
+ */
 public 
 class StageState
 {
+  /*----------------------------------------------------------------------------------------*/
+  /*  C O N S T R U C T O R                                                                 */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Default constructor.
+   */
   public
   StageState()
   {
@@ -27,7 +51,15 @@ class StageState
     pCheckedOutNodes = new TreeSet<String>();
     pSkippedNodes = new TreeSet<String>();
     
+    pAOEModes = new TreeMap<String, ActionOnExistence>();
+    pAOEOverrides = new DoubleMap<String, String, ActionOnExistence>();
+    
+    for (String mode : sDefaultModes) {
+      pAOEModes.put(mode, ActionOnExistence.valueFromString(mode));
+    }
   }
+  
+  
   
   /*----------------------------------------------------------------------------------------*/
   /*  A C C E S S                                                                           */
@@ -146,6 +178,12 @@ class StageState
   {
     pConformedNodes.add(name);
   }
+
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*  D E F A U L T   E D I T O R S                                                         */
+  /*----------------------------------------------------------------------------------------*/
   
   /**
    * Gets the default editor for a particular function.
@@ -188,7 +226,11 @@ class StageState
    * Gets the default selection keys for a particular function.
    * 
    * @return A list of keys or an empty list if no keys exist
+   * 
+   * @deprecated
+   *   Due to the addition of key choosers, it is not recommended to hard code keys on nodes.
    */
+  @Deprecated
   public Set<String>
   getStageFunctionSelectionKeys
   (
@@ -201,17 +243,27 @@ class StageState
     return toReturn;
   }
   
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*  Q U E U E   K E Y S                                                                   */
+  /*----------------------------------------------------------------------------------------*/
+  
   /**
    * Sets a default selection keys for a particular stage function type.
    * <p>
    * Note that this method is only effective the FIRST time it is called for a particular
    * function type.  This allows high-level builders to override their child builders if
    * they do not agree on what the default keys should be.  It is important to remember
-   * this when writing builders with sub-builder.  A Builder should always set the
+   * this when writing a builder with sub-builders.  A Builder should always set the
    * default keys in its Stage State class before instantiating any of its 
    * sub-builders.  Failure to do so may result in the default keys values being
    * set by the sub-builder.
+   * 
+   * @deprecated
+   *   Due to the addition of key choosers, it is not recommended to hard code keys on nodes.
    */
+  @Deprecated
   public void
   setStageFunctionSelectionKeys
   (
@@ -228,7 +280,11 @@ class StageState
    * Gets the default license keys for a particular function.
    * 
    * @return A list of keys or an empty list if no keys exist
+   * 
+   * @deprecated
+   *   Due to the addition of key choosers, it is not recommended to hard code keys on nodes.
    */
+  @Deprecated
   public Set<String>
   getStageFunctionLicenseKeys
   (
@@ -247,11 +303,15 @@ class StageState
    * Note that this method is only effective the FIRST time it is called for a particular
    * function type.  This allows high-level builders to override their child builders if
    * they do not agree on what the default keys should be.  It is important to remember
-   * this when writing builders with sub-builder.  A Builder should always set the
+   * this when writing a builder with sub-builders.  A Builder should always set the
    * default keys in its Stage State class before instantiating any of its 
    * sub-builders.  Failure to do so may result in the default keys values being
    * set by the sub-builder.
+   * 
+   * @deprecated
+   *   Due to the addition of key choosers, it is not recommended to hard code keys on nodes.
    */
+  @Deprecated
   public void
   setStageFunctionLicenseKeys
   (
@@ -268,7 +328,11 @@ class StageState
    * Gets the default hardware keys for a particular function.
    * 
    * @return A list of keys or an empty list if no keys exist
+   * 
+   * @deprecated
+   *   Due to the addition of key choosers, it is not recommended to hard code keys on nodes.
    */
+  @Deprecated
   public Set<String>
   getStageFunctionHardwareKeys
   (
@@ -287,11 +351,15 @@ class StageState
    * Note that this method is only effective the FIRST time it is called for a particular
    * function type.  This allows high-level builders to override their child builders if
    * they do not agree on what the default keys should be.  It is important to remember
-   * this when writing builders with sub-builder.  A Builder should always set the
+   * this when writing a builder with sub-builders.  A Builder should always set the
    * default keys in its Stage State class before instantiating any of its 
    * sub-builders.  Failure to do so may result in the default keys values being
    * set by the sub-builder.
+   * 
+   * @deprecated
+   *   Due to the addition of key choosers, it is not recommended to hard code keys on nodes.
    */
+  @Deprecated
   public void
   setStageFunctionHardwareKeys
   (
@@ -302,6 +370,191 @@ class StageState
     if (!pStageFunctionHardwareKeys.containsKey(function)) {
       pStageFunctionHardwareKeys.put(function, keys);
     }
+  }
+  
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*  A C T I O N   O N   E X I S T E N C E                                                 */
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Add a new AoE mode with a default response.
+   * <p>
+   * The first builder to add an AoE mode wins.  This means that a parent builder can set a
+   * default AoE for a mode that will override any defaults that it sub-builders might attempt
+   * to set for those modes.
+   *
+   * @param mode
+   *   The name of the AoE mode to add.  This cannot be any of the 4 AOE names and should
+   *   never be <code>null</code>
+   *   
+   * @param aoe
+   *   The default AoE for the mode.  This should never be <code>null</code>
+   * 
+   * @return 
+   *   Whether the AoE mode was added.  This will return false is another builder has already
+   *   set an AoE default for this mode.
+   *   
+   * @throws PipelineException
+   *   If an attempt is made to override one of the four built-in AOE modes: 
+   *   Abort, Continue, Conform, or CheckOut
+   */
+  public boolean
+  addAOEMode
+  (
+    String mode,
+    ActionOnExistence aoe
+  ) 
+    throws PipelineException
+  {
+    if (sDefaultModes.contains(mode))
+      throw new PipelineException
+        ("The mode (" + mode + ") is a default mode and cannot be set by a builder");
+    if (pAOEModes.containsKey(mode))
+      return false;
+    pAOEModes.put(mode, aoe);
+    return true;
+  }
+  
+  /**
+   * Add a per-node override to the mode's default AoE.
+   * <p>
+   * The first builder to add an AoE override wins.  This means that a parent builder can set a
+   * AoE for a node that will override any defaults that it sub-builders might attempt
+   * to set for those nodes.
+   * 
+   * @param mode
+   *   The name of the mode.  A pipeline exception will be thrown is this is not a valid AoE 
+   *   mode.
+   * 
+   * @param nodeName
+   *   The name of the node to add the override for.
+   * 
+   * @param aoe
+   *   The {@link ActionOnExistence} that will be applied to the node in the given mode.
+   * 
+   * @return
+   *   Whether the AoE override was added.  This will return false is another builder has 
+   *   already set an AoE override for this mode and node.
+   *   
+   * @throws PipelineException
+   *   If an attempt is made to add an override to one of the four default AoE modes:
+   *   Abort, Continue, Conform, or CheckOut 
+   */
+  public boolean
+  addAOEOverride
+  (
+    String mode,
+    String nodeName,
+    ActionOnExistence aoe
+  )
+    throws PipelineException
+  {
+    if (sDefaultModes.contains(mode))
+      throw new PipelineException
+        ("The mode (" + mode + ") is a default mode and cannot have overrides set on it");
+    if (pAOEOverrides.containsKey(mode, nodeName))
+      return false;
+    pAOEOverrides.put(mode, nodeName, aoe);
+    return true;
+  }
+  
+  /**
+   * Get the AoE Modes.
+   */
+  public Set<String>
+  getAOEModes()
+  {
+    return Collections.unmodifiableSet(pAOEModes.keySet());
+  }
+
+  /**
+   * Get the default AoE for a given mode.
+   * 
+   * @param mode
+   *   The name of the mode.  Cannot be null.
+
+   * @return
+   *   The default AoE.
+   *   
+   * @throws IllegalArgumentException
+   *   If a non-existent mode is specified.
+   */
+  public ActionOnExistence
+  getDefaultAOE
+  (
+    String mode  
+  )
+  {
+    if (!pAOEModes.containsKey(mode))
+      throw new IllegalArgumentException("No mode name (" + mode + ") exists.");
+    return pAOEModes.get(mode);
+  }
+  
+  /**
+   * Get the AoE that should be used for a particular node in the given mode.
+   * <p>
+   * If there is no node-specific override, then the default AoE for the mode 
+   * is returned.
+   * 
+   * @param mode
+   *   The name of the mode.
+   *   
+   * @param node
+   *   The name of the node.
+   * 
+   * @return
+   *   The AoE to be used for the node.
+   *   
+   * @throws IllegalArgumentException
+   *   If a non-existent mode is specified.
+   */
+  public ActionOnExistence
+  getNodeAOE
+  (
+    String mode,
+    String node
+  )
+  {
+    if (!pAOEModes.containsKey(mode))
+      throw new IllegalArgumentException("No mode name (" + mode + ") exists.");
+    if (pAOEOverrides.containsKey(mode, node))
+      return pAOEOverrides.get(mode, node);
+    
+    return pAOEModes.get(mode);
+  }
+  
+  /**
+   * Get the AoE that should be used for a particular node in the given mode.
+   * <p>
+   * If there is no node-specific override, then <code>null</code> is returned.
+   * 
+   * @param mode
+   *   The name of the mode.
+   *   
+   * @param node
+   *   The name of the node.
+   * 
+   * @return
+   *   The AoE to be used for the node.
+   *   
+   * @throws IllegalArgumentException
+   *   If a non-existent mode is specified.
+   */
+  public ActionOnExistence
+  getBaseNodeAOE
+  (
+    String mode,
+    String node
+  )
+  {
+    if (!pAOEModes.containsKey(mode))
+      throw new IllegalArgumentException("No mode name (" + mode + ") exists.");
+    if (pAOEOverrides.containsKey(mode, node))
+      return pAOEOverrides.get(mode, node);
+    
+    return null;
   }
   
   
@@ -319,12 +572,49 @@ class StageState
    */
   private TreeMap<String, NodeID> pAddedNodes;
 
+  /**
+   * A list of all the nodes that have been conformed by a stage. 
+   * <p>
+   * All stages are responsible for ensuring conformed nodes end up here. 
+   */
   private TreeSet<String> pConformedNodes;
+  
+  /**
+   * A list of all the nodes that have been checked-out by a stage. 
+   * <p>
+   * All stages are responsible for ensuring checked-out nodes end up here. 
+   */
   private TreeSet<String> pCheckedOutNodes;
+  
+  /**
+   * A list of all the nodes that have been skipped by a stage. 
+   * <p>
+   * All stages are responsible for ensuring skipped nodes end up here. 
+   */
   private TreeSet<String> pSkippedNodes;
   
   private TreeMap<String, PluginContext> pDefaultEditors;
   private MappedSet<String, String> pStageFunctionSelectionKeys;
   private MappedSet<String, String> pStageFunctionLicenseKeys;
   private MappedSet<String, String> pStageFunctionHardwareKeys;
+  
+  /**
+   * A list of AOE modes and their default action. 
+   */
+  private TreeMap<String, ActionOnExistence> pAOEModes;
+  
+  /**
+   * A list of overrides for AOE modes indexed by AOE Mode and node name.
+   */
+  private DoubleMap<String, String, ActionOnExistence> pAOEOverrides;
+  
+  private static TreeSet<String> sDefaultModes;
+  static {
+    sDefaultModes = new TreeSet<String>();
+    Collections.addAll(sDefaultModes, 
+      ActionOnExistence.Abort.toTitle(),
+      ActionOnExistence.CheckOut.toTitle(),
+      ActionOnExistence.Conform.toTitle(),
+      ActionOnExistence.Continue.toTitle());
+  }
 }

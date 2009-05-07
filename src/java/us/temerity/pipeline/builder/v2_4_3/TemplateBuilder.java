@@ -1,4 +1,4 @@
-// $Id: TemplateBuilder.java,v 1.13 2009/04/22 21:05:47 jesse Exp $
+// $Id: TemplateBuilder.java,v 1.14 2009/05/07 03:25:29 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -67,6 +67,9 @@ class TemplateBuilder
    * @param frameRanges
    *   The list of frame ranges to use, each indexed by the name of the template Range value
    *   that should be set on the {@link TemplateRangeAnnotation}.
+   *   
+   * @param aoeModes
+   *   The list of AoE modes and the default value for each mode.
    * 
    * @throws PipelineException
    */
@@ -79,12 +82,13 @@ class TemplateBuilder
     TemplateBuildInfo templateInfo,
     TreeMap<String, String> stringReplacements,
     TreeMap<String, ArrayList<TreeMap<String, String>>> contexts,
-    TreeMap<String, FrameRange> frameRanges
+    TreeMap<String, FrameRange> frameRanges,
+    TreeMap<String, ActionOnExistence> aoeModes
   ) 
     throws PipelineException
   {
     super("TemplateBuilder",
-          "Builder to read a template node network and create an instance of it for " +
+          "Builder to read a template node network and create an instance of it for a" +
           "particular set of replacement values.",
           mclient, qclient, builderInformation, null);
     
@@ -163,7 +167,7 @@ class TemplateBuilder
     pLog.log(Kind.Ops, Level.Finest, 
       "The list of frame ranges to apply to this template: " + pFrameRanges);
 
-    pAnnotCache = new TreeMap<String, TreeMap<String,BaseAnnotation>>();
+    pAnnotCache = new TripleMap<String, String, String, TreeMap<String,BaseAnnotation>>();
     
     {
       UtilityParam param = 
@@ -189,6 +193,11 @@ class TemplateBuilder
     addConstructPass(new BuildPass());
     addConstructPass(new FinalizePass());
     addConstructPass(new SecondFinalizePass());
+    
+    for (String mode : aoeModes.keySet()) {
+      ActionOnExistence aoe = aoeModes.get(mode);
+      addAOEMode(mode, aoe);
+    }
     
     PassLayoutGroup rootLayout = new PassLayoutGroup("Root", "Root Layout");
     
@@ -291,34 +300,6 @@ class TemplateBuilder
       }
     }
     return false;
-  }
-  
-
-  /**
-   * Get the frame range associated with the given node, if one exists.
-   * 
-   * @param target
-   *   The name of the node.
-   *   
-   * @return
-   *   The framerange or <code>null</code> if there is no frame range annotation
-   *   on this node.
-   */
-  protected FrameRange
-  getTemplateFrameRange
-  (
-    String target
-  )
-    throws PipelineException
-  {
-    TreeMap<String, BaseAnnotation> annots = getAnnotations(target);
-    FrameRange toReturn = null;
-    BaseAnnotation annot = annots.get("TemplateRange");
-    if (annot != null) {
-      String range = (String) annot.getParamValue("RangeName");
-      toReturn = pFrameRanges.get(range);
-    }
-    return toReturn;
   }
   
   /**
@@ -492,24 +473,42 @@ class TemplateBuilder
       ArrayList<String> roots = new ArrayList<String>(); 
       MappedSet<Integer, String> orderedRoots = new MappedSet<Integer, String>();
       
+      Set<String> aoeModes = getBuilderInformation().getAOEModes();
+      
       while (!pNodesToBuild.isEmpty() ) {
         String toBuild = findNodeToBuild();
         LogMgr.getInstance().log(Kind.Ops, Level.Fine, 
-          "template: " + toBuild);
+          "Template Node: " + toBuild);
         NodeMod mod = pClient.getWorkingVersion(getAuthor(), getView(), toBuild);
         TreeMap<String, BaseAnnotation> annots = getAnnotations(toBuild);
         TreeSet<String> contexts = new TreeSet<String>();
         TreeSet<String> ignoreableProducts = new TreeSet<String>();
+        TreeMap<String, ActionOnExistence> aoeOverrides = new TreeMap<String, ActionOnExistence>();
         for (String aName : annots.keySet()) {
           BaseAnnotation annot = annots.get(aName);
           if (aName.startsWith("TemplateContext") && 
               !aName.startsWith("TemplateContextLink")) {
             String contextName = (String) annot.getParamValue(aContextName);
+            pLog.log(Kind.Bld, Level.Finest, 
+              "Found the context (" + contextName + ").");
             contexts.add(contextName);
           }
           else if (aName.startsWith("TemplateIgnoreProduct")) {
             String linkName = (String) annot.getParamValue(aLinkName);
+            pLog.log(Kind.Bld, Level.Finest, 
+              "Found an ignorable product (" + linkName + ").");
             ignoreableProducts.add(linkName);
+          }
+          else if (aName.startsWith("TemplateAOE")) {
+            String mode = (String) annot.getParamValue(aModeName);
+            if (aoeModes.contains(mode)) {
+              ActionOnExistence aoe = 
+                ActionOnExistence.valueFromString(
+                  (String) annot.getParamValue(aActionOnExistence));
+              pLog.log(Kind.Bld, Level.Finest, 
+                "Found an AOE override (" + aoe + ") for mode (" + mode + ").");
+              aoeOverrides.put(mode, aoe);
+            }
           }
         }
         
@@ -518,26 +517,40 @@ class TemplateBuilder
           BaseAnnotation annot = annots.get("TemplateOrder");
           if (annot != null) {
             order = (Integer) annot.getParamValue("Order");
+            pLog.log(Kind.Bld, Level.Finest, 
+              "Found a template order of (" + order + ").");
           }
         }
         
         String conditionalBuild = null;
         {
           BaseAnnotation annot = annots.get("TemplateConditionalBuild");
-          if (annot != null)
-            conditionalBuild = (String) annot.getParamValue(aConditionName); 
+          if (annot != null) {
+            conditionalBuild = (String) annot.getParamValue(aConditionName);
+            pLog.log(Kind.Bld, Level.Finest, 
+              "Found a conditional build dependency on (" + conditionalBuild + ").");
+          }
         }
         
-        FrameRange range = getTemplateFrameRange(toBuild);
+        FrameRange range = null;
+        {
+          BaseAnnotation annot = annots.get("TemplateRange");
+          if (annot != null) {
+            String rangeName = (String) annot.getParamValue("RangeName");
+            range = pFrameRanges.get(rangeName);
+            pLog.log(Kind.Bld, Level.Finest, 
+              "Found a template frame range (" + range + ").");
+          }
+        }
         
         TreeSet<String> nodesMade = new TreeSet<String>();
         if (contexts.size() == 0) { //no contexts, just do a straight build
           makeNode(mod, pReplacements, pContexts, range, ignoreableProducts, 
-                   conditionalBuild, nodesMade);
+                   conditionalBuild, aoeOverrides, nodesMade);
         }
         else { //uh-oh, there are contexts!
           contextLoop(toBuild, mod, contexts, pReplacements, pContexts, 
-                      range, ignoreableProducts, conditionalBuild, nodesMade);
+                      range, ignoreableProducts, conditionalBuild, aoeOverrides, nodesMade);
         }
 
         pNodesToBuild.remove(toBuild);
@@ -584,6 +597,7 @@ class TemplateBuilder
       FrameRange range,
       TreeSet<String> ignorableProducts,
       String conditionalBuild, 
+      TreeMap<String,ActionOnExistence> aoeOverrides, 
       TreeSet<String> nodesMade
     )
       throws PipelineException
@@ -602,12 +616,13 @@ class TemplateBuilder
             new TreeMap<String, ArrayList<TreeMap<String,String>>>(contexts);
           if (contextList.isEmpty()) {  //bottom of the recursion
             makeNode(mod, newReplace, newMaps, range, ignorableProducts, 
-                     conditionalBuild, nodesMade);
+                     conditionalBuild, aoeOverrides, nodesMade);
           }
           else {
             contextLoop
             (toBuild, mod, new TreeSet<String>(contextList), 
-              newReplace, newMaps, range, ignorableProducts, conditionalBuild, nodesMade);
+              newReplace, newMaps, range, ignorableProducts, conditionalBuild, 
+              aoeOverrides, nodesMade);
           }
           return;
         }
@@ -629,12 +644,13 @@ class TemplateBuilder
         
         if (contextList.isEmpty()) {  //bottom of the recursion
           makeNode(mod, newReplace, newMaps, range, ignorableProducts, 
-                   conditionalBuild, nodesMade);
+                   conditionalBuild, aoeOverrides, nodesMade);
         }
         else {
           contextLoop
             (toBuild, mod, new TreeSet<String>(contextList), 
-             newReplace, newMaps, range, ignorableProducts, conditionalBuild, nodesMade);
+             newReplace, newMaps, range, ignorableProducts, conditionalBuild, 
+             aoeOverrides, nodesMade);
         }
       }
     }
@@ -648,6 +664,7 @@ class TemplateBuilder
       FrameRange range,
       TreeSet<String> ignorableProducts, 
       String conditionalBuild, 
+      TreeMap<String,ActionOnExistence> aoeOverrides, 
       TreeSet<String> nodesMade
     )
       throws PipelineException
@@ -672,11 +689,16 @@ class TemplateBuilder
         }
       }
       
+      for (String mode : aoeOverrides.keySet()) {
+        addAOEOverride(mode, nodeName, aoeOverrides.get(mode));
+      }
+      
+      
       TemplateStage stage = 
         TemplateStage.getTemplateStage
-        (mod, getStageInformation(), pContext, pClient, 
-         pTemplateInfo, replace, contexts, range, pIgnoredNodes, ignorableProducts, 
-         pInhibitCopyFiles, pAnnotCache);
+          (mod, getStageInformation(), pContext, pClient, 
+           pTemplateInfo, replace, contexts, range, pIgnoredNodes, ignorableProducts, 
+           pInhibitCopyFiles, pAllowZeroContexts, pAnnotCache);
 
       if (stage.build()) {
         if (stage.needsFinalization())
@@ -684,6 +706,9 @@ class TemplateBuilder
         if (stage.needsSecondFinalization())
           pSecondaryFinalizableStages.add(stage);
         nodesMade.add(stage.getNodeName());
+        pLog.logAndFlush
+        (Kind.Ops, Level.Fine, 
+         "FINISHED Building Node.");
       }
     }
     
@@ -884,6 +909,7 @@ class TemplateBuilder
   public static final String aContextName   = "ContextName";
   public static final String aLinkName      = "LinkName";
   public static final String aConditionName = "ConditionName";
+  public static final String aModeName = "ModeName";
   
   public static final String aAllowZeroContexts = "AllowZeroContexts";
   public static final String aInhibitFileCopy   = "InhibitFileCopy";
@@ -904,7 +930,7 @@ class TemplateBuilder
   
   private TreeMap<String, ArrayList<TreeMap<String, String>>> pContexts;
   
-  private TreeMap<String, TreeMap<String, BaseAnnotation>> pAnnotCache;
+  private TripleMap<String, String, String, TreeMap<String, BaseAnnotation>> pAnnotCache;
   
   private TemplateBuildInfo pTemplateInfo;
   

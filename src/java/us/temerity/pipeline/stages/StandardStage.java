@@ -395,7 +395,10 @@ class StandardStage
     LogMgr.getInstance().log
       (Kind.Ops, Level.Fine, "Building the node: " + pRegisteredNodeName );
 
-    ActionOnExistence actionOnExistence = pStageInformation.getActionOnExistence();
+    ActionOnExistence actionOnExistence = 
+      pStageInformation.getActionOnExistence(pRegisteredNodeName);
+    LogMgr.getInstance().log
+      (Kind.Bld, Level.Finer, "Action on Existence for the node: " + actionOnExistence);
     if (!checkExistance(pRegisteredNodeName, actionOnExistence))
       return construct();
     else if (actionOnExistence == ActionOnExistence.Conform)
@@ -430,6 +433,7 @@ class StandardStage
    * @see BaseStage#build()
    * @see #build()
    */
+  @SuppressWarnings("deprecation")
   public boolean
   construct()
     throws PipelineException
@@ -460,8 +464,10 @@ class StandardStage
     pRegisteredNodeMod = 
       pClient.getWorkingVersion(getAuthor(), getView(), pRegisteredNodeName);
 
-    if (pStageInformation.doAnnotations())
+    if (pStageInformation.doAnnotations()) {
 	doAnnotations();
+	pRegisteredNodeMod = doVersionAnnotations(pRegisteredNodeMod);
+    }
 
     return true;
   }
@@ -488,6 +494,7 @@ class StandardStage
    * @see BaseStage#build()
    * @see #build()
    */
+  @SuppressWarnings("deprecation")
   @Override
   public boolean 
   conform()
@@ -558,8 +565,10 @@ class StandardStage
     pRegisteredNodeMod = pClient.getWorkingVersion(id);
 
     removeAnnotations();
-    if (pStageInformation.doAnnotations())
+    if (pStageInformation.doAnnotations()) {
       doAnnotations();
+      pRegisteredNodeMod = doVersionAnnotations(pRegisteredNodeMod);
+    }
 
     return true;
   }

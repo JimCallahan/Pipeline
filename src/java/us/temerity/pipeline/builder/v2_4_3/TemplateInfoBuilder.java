@@ -1,4 +1,4 @@
-// $Id: TemplateInfoBuilder.java,v 1.10 2009/04/22 19:28:46 jesse Exp $
+// $Id: TemplateInfoBuilder.java,v 1.11 2009/05/07 03:25:29 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -196,6 +196,12 @@ class TemplateInfoBuilder
     
     addSetupPass(new InformationPass());
     addSetupPass(new ContextInfoPass());
+    
+    pAOEModes = pTemplateGlueInfo.getAOEModes();
+    for (String mode : pAOEModes.keySet()) {
+      ActionOnExistence aoe = pAOEModes.get(mode);
+      addAOEMode(mode, aoe);
+    }
 
     PassLayoutGroup passLayout = new PassLayoutGroup(layout.getName(), layout);
     passLayout.addPass("ContextInfoPass", new AdvancedLayoutGroup("ContextInfoPass", true));
@@ -251,7 +257,6 @@ class TemplateInfoBuilder
         FrameRangeUtilityParam param = pFrameRangeParams.get(frameRange);
         pFrameRanges.put(frameRange, param.getFrameRangeValue());
       }
-      
     }
     
     @Override
@@ -311,7 +316,7 @@ class TemplateInfoBuilder
       if (nodes.isEmpty()) {
         TemplateTaskBuilder builder = 
           new TemplateTaskBuilder(pClient, pQueue, getBuilderInformation(),
-            pTemplateStartNode, pReplacements, pContexts, pFrameRanges);
+            pTemplateStartNode, pReplacements, pContexts, pFrameRanges, pAOEModes);
         addSubBuilder(builder);
         addMappedParam(builder.getName(), aCheckinWhenDone, aCheckinWhenDone);
         addMappedParam(builder.getName(), aAllowZeroContexts, aAllowZeroContexts);
@@ -322,7 +327,7 @@ class TemplateInfoBuilder
         info.setNodesToBuild(nodes);
         TemplateBuilder builder = 
           new TemplateBuilder(pClient, pQueue, getBuilderInformation(),
-            info, pReplacements, pContexts, pFrameRanges);
+            info, pReplacements, pContexts, pFrameRanges, pAOEModes);
         addSubBuilder(builder);
         addMappedParam(builder.getName(), aCheckinWhenDone, aCheckinWhenDone);
         addMappedParam(builder.getName(), aAllowZeroContexts, aAllowZeroContexts);
@@ -535,6 +540,8 @@ class TemplateInfoBuilder
   private TreeMap<String, FrameRange> pFrameRanges;
   
   private TreeMap<String, FrameRangeUtilityParam> pFrameRangeParams;
+  
+  private TreeMap<String, ActionOnExistence> pAOEModes;
 
   private File pFile;
   

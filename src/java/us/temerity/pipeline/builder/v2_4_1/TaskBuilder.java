@@ -1,4 +1,4 @@
-// $Id: TaskBuilder.java,v 1.9 2009/01/28 04:45:08 jesse Exp $
+// $Id: TaskBuilder.java,v 1.10 2009/05/07 03:25:29 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_1;
 
@@ -56,7 +56,7 @@ class TaskBuilder
   {
     super(name, desc, mclient, qclient, builderInformation);
     
-    pAnnotCache = new TreeMap<String, TreeMap<String,BaseAnnotation>>();
+    pAnnotCache = new TripleMap<String, String, String, TreeMap<String,BaseAnnotation>>();
     
     pAnnotTaskTypeChoices = TaskType.titlesNonCustom(); 
     
@@ -84,6 +84,7 @@ class TaskBuilder
   }
 
 
+  
   /*----------------------------------------------------------------------------------------*/
   /*  T A S K   A N N O T A T I O N S                                                       */
   /*----------------------------------------------------------------------------------------*/
@@ -672,12 +673,18 @@ class TaskBuilder
 
   /**
    * Get the Annotations on the given node.  
-   *
+   * <p>
+   * This method uses a cache to accelerate access to the annotations.  Annotations will only
+   * be looked up once for each node.  This is not a cross-builder cache, so multiple
+   * builders based on the TaskBuilder (perhaps being used a sub-builders) may lookup the
+   * same information.
+   * 
    * @param name
    *   The name of the node.
+   * 
    * @return
-   *   A TreeMap of Annotations indexed by annotation name or 
-   *   <code>null</code> if none exists.
+   *   A TreeMap of Annotations indexed by annotation name or <code>null</code> if none 
+   *   exists.
    */
   protected TreeMap<String, BaseAnnotation>
   getAnnotations
@@ -686,10 +693,10 @@ class TaskBuilder
   )
     throws PipelineException
   {
-    TreeMap<String, BaseAnnotation> annots = pAnnotCache.get(name);
+    TreeMap<String, BaseAnnotation> annots = pAnnotCache.get(getAuthor(), getView(), name);
     if (annots == null) {
-      annots = getMasterMgrClient().getAnnotations(name);
-      pAnnotCache.put(name, annots);
+      annots = getMasterMgrClient().getAnnotations(getAuthor(), getView(), name);
+      pAnnotCache.put(getAuthor(), getView(), name, annots);
     }
    return annots;
   }
@@ -996,6 +1003,5 @@ class TaskBuilder
   
   private EntityType pEntityType;
   
-  private TreeMap<String, TreeMap<String, BaseAnnotation>> pAnnotCache;
-  
+  private TripleMap<String, String, String, TreeMap<String, BaseAnnotation>> pAnnotCache;
 }

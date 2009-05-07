@@ -1,4 +1,4 @@
-// $Id: BaseBuilder.java,v 1.68 2009/04/06 00:53:11 jesse Exp $
+// $Id: BaseBuilder.java,v 1.69 2009/05/07 03:25:29 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -42,8 +42,12 @@ import us.temerity.pipeline.stages.*;
  * <DIV style="margin-left: 40px;">
  *   ActionOnExistence <br>
  *   <DIV style="margin-left: 40px;">
- *     This parameter is used to control the behavior of the Builder when
- *     a node it is supposed to build already exists.
+ *     This parameter is used to control the behavior of the Builder when a node it is 
+ *     supposed to build already exists.<br>
+ *     <b>Important</b> This parameter is added to the builder during the setLayout call.  All
+ *     Builder AoE modes must be specified before this happens.  If the builder should have a
+ *     default value for this parameter, it must be set after setLayout is called.  Otherwise
+ *     it will fail since the parameter will not exist yet. 
  *     </DIV><br>
  * 
  *   ReleaseOnError <br>
@@ -352,15 +356,6 @@ class BaseBuilder
     
     {
       UtilityParam param = 
-	new EnumUtilityParam
-	(aActionOnExistence,
-	 "What action should the Builder take when a node already exists.",
-	 ActionOnExistence.Continue.toString(),
-	 ActionOnExistence.titles());
-      addParam(param);
-    }
-    {
-      UtilityParam param = 
 	new BooleanUtilityParam
 	(aReleaseOnError,
 	 "Release all the created nodes if an exception is thrown.", 
@@ -415,6 +410,15 @@ class BaseBuilder
           "There must be an existing Construct Pass named (CheckInPass) or (QueuePass)." +
           "This needs to be renamed before continuing.");
       }
+    }
+    {
+      UtilityParam param = 
+        new EnumUtilityParam
+        (aActionOnExistence,
+         "What action should the Builder take when a node already exists.",
+         ActionOnExistence.Continue.toString(),
+         new ArrayList<String>(pBuilderInformation.getAOEModes()));
+      addParam(param);
     }
     super.setLayout(layout);
   }
@@ -1176,9 +1180,7 @@ class BaseBuilder
     pLog.log(Kind.Bld, Level.Finest, "Validating the built-in Parameters.");
     setContext((UtilContext) getParamValue(aUtilContext));
     pReleaseOnError = getBooleanParamValue(new ParamMapping(aReleaseOnError));
-    pActionOnExistence = 
-      ActionOnExistence.valueOf(getStringParamValue(new ParamMapping(aActionOnExistence)));
-    pStageInfo.setActionOnExistence(pActionOnExistence);
+    pStageInfo.setAOEMode(getStringParamValue(new ParamMapping(aActionOnExistence)));
   }
   
   /**
@@ -1926,6 +1928,12 @@ class BaseBuilder
   {
     return pCurrentPass;
   }
+
+
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*  I N F O   W R A P P E R                                                               */
+  /*----------------------------------------------------------------------------------------*/
   
   /**
    * Sets a default editor for a particular stage function type.
@@ -1993,7 +2001,11 @@ class BaseBuilder
    * writing builders with sub-builder. A Builder should always set its default keys before
    * instantiating any of its sub-builders. Failure to do so may result in the default keys
    * values being set by the sub-builder.
+   * 
+   * @deprecated
+   *   Due to the addition of key choosers, it is not recommended to hard code keys on nodes.
    */
+  @Deprecated
   public final void
   setStageFunctionSelectionKeys
   (
@@ -2018,7 +2030,11 @@ class BaseBuilder
    * writing builders with sub-builder. A Builder should always set its default keys before
    * instantiating any of its sub-builders. Failure to do so may result in the default keys
    * values being set by the sub-builder.
+   * 
+   * @deprecated
+   *   Due to the addition of key choosers, it is not recommended to hard code keys on nodes.
    */
+  @Deprecated
   public final void
   setStageFunctionLicenseKeys
   (
@@ -2027,6 +2043,76 @@ class BaseBuilder
   )
   {
     pStageInfo.setStageFunctionLicenseKeys(function, keys);
+  }
+  
+  /**
+   * Add a new AoE mode with a default response.
+   * <p>
+   * The first builder to add an AoE mode wins.  This means that a parent builder can set a
+   * default AoE for a mode that will override any defaults that it sub-builders might attempt
+   * to set for those modes.
+   *
+   * @param mode
+   *   The name of the AoE mode to add.  This cannot be any of the 4 AOE names and should
+   *   never be <code>null</code>
+   *   
+   * @param aoe
+   *   The default AoE for the mode.  This should never be <code>null</code>
+   * 
+   * @return 
+   *   Whether the AoE mode was added.  This will return false is another builder has already
+   *   set an AoE default for this mode.
+   *   
+   * @throws PipelineException
+   *   If an attempt is made to override one of the four built-in AOE modes: 
+   *   Abort, Continue, Conform, or CheckOut
+   */
+  public boolean
+  addAOEMode
+  (
+    String mode,
+    ActionOnExistence aoe
+  ) 
+    throws PipelineException
+  {
+    return pBuilderInformation.addAOEMode(mode, aoe);
+  }
+  
+  /**
+   * Add a per-node override to the mode's default AoE.
+   * <p>
+   * The first builder to add an AoE override wins.  This means that a parent builder can set a
+   * AoE for a node that will override any defaults that it sub-builders might attempt
+   * to set for those nodes.
+   * 
+   * @param mode
+   *   The name of the mode.  A pipeline exception will be thrown is this is not a valid AoE 
+   *   mode.
+   * 
+   * @param nodeName
+   *   The name of the node to add the override for.
+   * 
+   * @param aoe
+   *   The {@link ActionOnExistence} that will be applied to the node in the given mode.
+   * 
+   * @return
+   *   Whether the AoE override was added.  This will return false is another builder has 
+   *   already set an AoE override for this mode and node.
+   *   
+   * @throws PipelineException
+   *   If an attempt is made to add an override to one of the four default AoE modes:
+   *   Abort, Continue, Conform, or CheckOut 
+   */
+  public boolean
+  addAOEOverride
+  (
+    String mode,
+    String nodeName,
+    ActionOnExistence aoe
+  )
+    throws PipelineException
+  {
+    return pBuilderInformation.addAOEOverride(mode, nodeName, aoe);
   }
   
   

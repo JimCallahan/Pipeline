@@ -1,4 +1,4 @@
-// $Id: ActionOnExistence.java,v 1.3 2009/03/30 16:11:34 jesse Exp $
+// $Id: ActionOnExistence.java,v 1.4 2009/05/07 03:25:29 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -84,7 +84,7 @@ enum ActionOnExistence
   public static ActionOnExistence
   valueFromString
   (
-   String string  
+    String string  
   )
   {
     ActionOnExistence toReturn = null;
@@ -95,6 +95,7 @@ enum ActionOnExistence
   }
   
 
+  
   /*----------------------------------------------------------------------------------------*/
   /*   C O N V E R S I O N                                                                  */
   /*----------------------------------------------------------------------------------------*/

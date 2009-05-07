@@ -1,4 +1,4 @@
-// $Id: BaseStage.java,v 1.33 2009/04/13 19:44:53 jesse Exp $
+// $Id: BaseStage.java,v 1.34 2009/05/07 03:25:29 jesse Exp $
 
 package us.temerity.pipeline.stages;
 
@@ -91,6 +91,7 @@ class BaseStage
     pClient = client;
     pPlug = PluginMgrClient.getInstance();
     pAnnotations = new ListMap<String, BaseAnnotation>();
+    pVersionAnnotations = new ListMap<String, BaseAnnotation>();
     
     pExecutionMethod = ExecutionMethod.Serial;
     pBatchSize = 0;
@@ -315,7 +316,11 @@ class BaseStage
   /**
    *  Takes all the selection, hardware, and license keys and applies them to the 
    *  Job Requirements of the registered node.
+   *  
+   *  @deprecated
+   *    Due to the addition of key choosers, it is not recommended to hard code keys on nodes.
    */
+  @Deprecated
   protected final void
   setKeys() 
     throws PipelineException
@@ -374,7 +379,7 @@ class BaseStage
   }
   
   /**
-   * Adds all the annotations to the node.
+   * Add all the per-node annotations to the node.
    */
   protected final void
   doAnnotations()
@@ -384,6 +389,32 @@ class BaseStage
       BaseAnnotation annot = pAnnotations.get(name);
       pClient.addAnnotation(pRegisteredNodeName, name, annot);
     }
+  }
+  
+  /**
+   * Add all the per-version annotations to the node.
+   * 
+   * @param mod
+   *   The working version to add the annotations to.
+   * 
+   * @return
+   *   The working version with all the annotations added.
+   *   
+   * @throws PipelineException
+   */
+  protected final NodeMod
+  doVersionAnnotations
+  (
+    NodeMod mod  
+  )
+    throws PipelineException
+  {
+    for (String name : pVersionAnnotations.keySet()) {
+      BaseAnnotation annot = pVersionAnnotations.get(name);
+      mod.addAnnotation(name, annot);
+    }
+    pClient.modifyProperties(getAuthor(), getView(), mod);
+    return pClient.getWorkingVersion(getAuthor(), getView(), pRegisteredNodeName);
   }
 
   /**
@@ -1009,7 +1040,11 @@ class BaseStage
   /**
    * Adds the set of Selection Keys to the Selection Keys that will be assigned to the
    * registered node.
+   * 
+   * @deprecated
+   *   Due to the addition of key choosers, it is not recommended to hard code keys on nodes.
    */
+  @Deprecated
   public void 
   addSelectionKeys
   (
@@ -1023,7 +1058,11 @@ class BaseStage
 
   /**
    * Replaces the existing of Selection Keys with the new set.
+   * 
+   * @deprecated
+   *   Due to the addition of key choosers, it is not recommended to hard code keys on nodes.
    */
+  @Deprecated
   public void 
   setSelectionKeys
   (
@@ -1036,7 +1075,11 @@ class BaseStage
   /**
    * Adds the set of License Keys to the License Keys that will be assigned to the
    * registered node.
+   * 
+   * @deprecated
+   *   Due to the addition of key choosers, it is not recommended to hard code keys on nodes.
    */
+  @Deprecated
   public void 
   addLicenseKeys
   (
@@ -1050,7 +1093,11 @@ class BaseStage
 
   /**
    * Replaces the existing of License Keys with the new set.
+   * 
+   * @deprecated
+   *   Due to the addition of key choosers, it is not recommended to hard code keys on nodes.
    */
+  @Deprecated
   public void 
   setLicenseKeys
   (
@@ -1061,9 +1108,13 @@ class BaseStage
   }
   
   /**
-   * Adds the set of License Keys to the License Keys that will be assigned to the
+   * Adds the set of Hardware Keys to the Hardware Keys that will be assigned to the
    * registered node.
+   * 
+   * @deprecated
+   *   Due to the addition of key choosers, it is not recommended to hard code keys on nodes.
    */
+  @Deprecated
   public void 
   addHardwareKeys
   (
@@ -1077,7 +1128,11 @@ class BaseStage
 
   /**
    * Replaces the existing of Hardware Keys with the new set.
+   * 
+   * @deprecated
+   *   Due to the addition of key choosers, it is not recommended to hard code keys on nodes.
    */
+  @Deprecated
   public void 
   setHardwareKeys
   (
@@ -1088,10 +1143,10 @@ class BaseStage
   }
 
   /**
-   * Adds an annotation with the given name to the registered node.
+   * Add a per-node annotation with the given name to the registered node.
    * <p>
-   * The annotations will not actually be assigned until the
-   * {@link #doAnnotations()} method is called.
+   * The annotations will not actually be assigned until the {@link #doAnnotations()} method
+   * is called.
    */
   public void
   addAnnotation
@@ -1102,15 +1157,41 @@ class BaseStage
   {
     pAnnotations.put(name, annotation);
   }
+
+  /**
+   * Add a per-version annotation with the given name to the registered node.
+   * <p>
+   * The annotations will not actually be assigned until the
+   * {@link #doVersionAnnotations(NodeMod)} method is called.
+   */
+  public void
+  addVersionAnnotation
+  (
+    String name,
+    BaseAnnotation annotation  
+  )
+  {
+    pVersionAnnotations.put(name, annotation);
+  }
   
   /**
-   * Gets the list of all the annotations that are going to be added 
+   * Get the list of all the per-node annotations that are going to be added 
    * to the registered node.
    */
   public Map<String, BaseAnnotation>
   getAnnotations()
   {
     return Collections.unmodifiableMap(pAnnotations);
+  }
+  
+  /**
+   * Get the list of all the per-version annotations that are going to be added 
+   * to the registered node.
+   */
+  public Map<String, BaseAnnotation>
+  getVersionAnnotations()
+  {
+    return Collections.unmodifiableMap(pVersionAnnotations);
   }
   
   /**
@@ -1142,14 +1223,16 @@ class BaseStage
   /**
    * Sets any special job requirements, excluding keys for this job.
    * <p>
-   * Note that all Selection and License key information will be ignored. To set these values
-   * please use the other helper methods in BaseStage meant to deal with License and Selection
-   * Keys.
+   * Note that all Selection, License, and Hardware key information will be ignored. To set 
+   * these values please use the other helper methods in BaseStage meant to deal with 
+   * License, Hardware, and Selection Keys.  
    * 
    * @see #addSelectionKeys(TreeSet)
    * @see #setSelectionKeys(TreeSet)
    * @see #addLicenseKeys(TreeSet) 
    * @see #setLicenseKeys(TreeSet)
+   * @see #addHardwareKeys(TreeSet)
+   * @see #setHardwareKeys(TreeSet)
    */
   public void
   setJobReqs
@@ -1272,6 +1355,7 @@ class BaseStage
    * Checks for the existence of node and takes action based on what the value of the 
    * actionOnExistence parameter.
    */
+  @SuppressWarnings({ "incomplete-switch", "fallthrough" })
   protected final boolean
   checkExistance
   (
@@ -1315,8 +1399,9 @@ class BaseStage
         NodeDetailsLight details = status.getLightDetails();
         VersionID baseID = details.getBaseVersion().getVersionID();
         VersionID latestID = details.getLatestVersion().getVersionID();
-        if (baseID.equals(latestID)) {
-          pLog.log(Kind.Ops, Level.Finest, 
+        NodeMod mod = details.getWorkingVersion();
+        if (baseID.equals(latestID) && !mod.isFrozen()) {
+          pLog.log(Kind.Bld, Level.Finest, 
             "Conform is not checking out the node, since it is already based on the " +
             "latest version.");
         }
@@ -1405,8 +1490,13 @@ class BaseStage
   
   
   
+  /*----------------------------------------------------------------------------------------*/
+  /*  S T A T I C   I N T E R N A L S                                                       */
+  /*----------------------------------------------------------------------------------------*/
 
+  private static final long serialVersionUID = -1921312494746168530L;
 
+  
   
   /*----------------------------------------------------------------------------------------*/
   /*  I N T E R N A L S                                                                     */
@@ -1481,6 +1571,8 @@ class BaseStage
   protected TreeSet<String> pHardwareKeys;
   
   protected ListMap<String, BaseAnnotation> pAnnotations;
+  
+  protected ListMap<String, BaseAnnotation> pVersionAnnotations;
   
   protected ExecutionMethod pExecutionMethod;
   

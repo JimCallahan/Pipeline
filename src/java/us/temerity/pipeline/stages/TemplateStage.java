@@ -1,4 +1,4 @@
-// $Id: TemplateStage.java,v 1.9 2009/04/16 01:12:24 jesse Exp $
+// $Id: TemplateStage.java,v 1.10 2009/05/07 03:25:29 jesse Exp $
 
 package us.temerity.pipeline.stages;
 
@@ -41,13 +41,14 @@ class TemplateStage
     PluginContext editor,
     PluginContext action,
     boolean inhibitCopy,
+    boolean allowZeroContexts,
     TemplateBuildInfo templateInfo,
     TreeMap<String, String> stringReplacements,
     TreeMap<String, ArrayList<TreeMap<String, String>>> contexts,
     FrameRange templateRange,
     TreeSet<String> ignoredNodes,
     TreeSet<String> ignorableProducts,
-    TreeMap<String, TreeMap<String, BaseAnnotation>> annotCache
+    TripleMap<String, String, String, TreeMap<String, BaseAnnotation>> annotCache
   ) 
     throws PipelineException
   {
@@ -63,6 +64,7 @@ class TemplateStage
     pIgnoredNodes = ignoredNodes;
     pIgnorableProducts = ignorableProducts;
     pInhibitCopyFiles = inhibitCopy;
+    pAllowZeroContexts = allowZeroContexts;
     init(sourceMod);
   }
 
@@ -78,13 +80,14 @@ class TemplateStage
     PluginContext editor,
     PluginContext action,
     boolean inhibitCopy,
+    boolean allowZeroContexts,
     TemplateBuildInfo templateInfo,
     TreeMap<String, String> stringReplacements,
     TreeMap<String, ArrayList<TreeMap<String, String>>> maps,
     FrameRange templateRange,
     TreeSet<String> ignoredNodes,
     TreeSet<String> ignorableProducts,
-    TreeMap<String, TreeMap<String, BaseAnnotation>> annotCache
+    TripleMap<String, String, String, TreeMap<String, BaseAnnotation>> annotCache
   ) 
     throws PipelineException
   {
@@ -100,6 +103,7 @@ class TemplateStage
     pIgnoredNodes = ignoredNodes;
     pIgnorableProducts = ignorableProducts;
     pInhibitCopyFiles = inhibitCopy;
+    pAllowZeroContexts = allowZeroContexts;
     init(sourceMod);
   }
   
@@ -137,6 +141,8 @@ class TemplateStage
     for (String aName : annots.keySet()) {
       BaseAnnotation annot = annots.get(aName); 
       if (aName.matches("TemplateSettings")) {
+        LogMgr.getInstance().log(Kind.Bld, Level.Finest, 
+          "Found a template settings annotation.");
         pRemoveAction = (Boolean) annot.getParamValue(aPostRemoveAction);
         pDisableAction = (Boolean) annot.getParamValue(aPostDisableAction);
         pEnableAction = (Boolean) annot.getParamValue(aPreEnableAction);
@@ -147,12 +153,16 @@ class TemplateStage
       }
       if (aName.startsWith("TemplateUnlink" )) {
         String unlink = (String) annot.getParamValue(aLinkName);
+        LogMgr.getInstance().log(Kind.Bld, Level.Finest, 
+          "Found a Template Unlink annotation with the value (" + unlink + ").");
         pTemplateNodesToUnlink.add(unlink);
       }
     }
     
     for (FileSeq seq : sourceMod.getSecondarySequences()) {
       FileSeq targetSeq = stringReplaceSeq(seq);
+      LogMgr.getInstance().log(Kind.Bld, Level.Finest,
+        "Adding the secondary sequence: " + targetSeq);
       addSecondarySequence(targetSeq);
       pSecSeqs.put(seq, targetSeq);
     }
@@ -162,8 +172,8 @@ class TemplateStage
     for (LinkMod link : sourceMod.getSources()) {
       String linkName = link.getName();
       
-      LogMgr.getInstance().log(Kind.Ops, Level.Finest, 
-        "checking the link: " + linkName);
+      LogMgr.getInstance().log(Kind.Bld, Level.Finest, 
+        "Checking the link: " + linkName);
       TreeSet<String> contexts = getContexts(linkName);
       
       boolean ignoreable = false;
@@ -172,7 +182,7 @@ class TemplateStage
       if (!pTemplateInfo.getNodesToBuild().contains(linkName)) { 
         if (pIgnorableProducts.contains(linkName)) {
           ignoreable = true;
-          LogMgr.getInstance().log(Kind.Ops, Level.Finest,
+          LogMgr.getInstance().log(Kind.Bld, Level.Finest,
             "The link is in the ignorable product list.");
         }
       }
@@ -208,14 +218,32 @@ class TemplateStage
         setBatchSize(sourceMod.getBatchSize());
     }
     
-    for (String annotName : annots.keySet()) {
-      BaseAnnotation annot = annots.get(annotName);
-      for (AnnotationParam param : annot.getParams() ) {
-        Comparable value = stringReplaceAnnotParamValue(param);
-        if (!annot.isParamConstant(param.getName()))
-          annot.setParamValue(param.getName(), value);
+    {
+      TreeMap<String, BaseAnnotation> perNode = 
+        pClient.getAnnotations(sourceMod.getName()); 
+      for (String annotName : perNode.keySet()) {
+        BaseAnnotation annot = perNode.get(annotName);
+        for (AnnotationParam param : annot.getParams() ) {
+          Comparable value = stringReplaceAnnotParamValue(param);
+          if (!annot.isParamConstant(param.getName()))
+            annot.setParamValue(param.getName(), value);
+        }
+        addAnnotation(annotName, annot);
       }
-      addAnnotation(annotName, annot);
+    }
+    
+    {
+      TreeMap<String, BaseAnnotation> perVersion = 
+        sourceMod.getAnnotations();
+      for (String annotName : perVersion.keySet()) {
+        BaseAnnotation annot = perVersion.get(annotName);
+        for (AnnotationParam param : annot.getParams() ) {
+          Comparable value = stringReplaceAnnotParamValue(param);
+          if (!annot.isParamConstant(param.getName()))
+            annot.setParamValue(param.getName(), value);
+        }
+        addVersionAnnotation(annotName, annot);
+      }
     }
   }
 
@@ -234,17 +262,19 @@ class TemplateStage
     
     String newSrc = stringReplace(oldSrc, replacements);
     if (pIgnoredNodes.contains(newSrc)) {
-      LogMgr.getInstance().log(Kind.Ops, Level.Fine, 
+      LogMgr.getInstance().log(Kind.Bld, Level.Fine, 
         "Not linking source node (" + newSrc + ") because the template skipped building it.");
       return null;
     }
     
     if (!nodeExists(newSrc) && ignoreable) {
-      LogMgr.getInstance().log(Kind.Ops, Level.Fine, 
+      LogMgr.getInstance().log(Kind.Bld, Level.Fine, 
         "Not linking source node (" + newSrc + ") because it doesn't exist");
       return null;
     }
     LinkMod newLink = new LinkMod(newSrc, link.getPolicy(), link.getRelationship(), link.getFrameOffset());
+    LogMgr.getInstance().log(Kind.Bld, Level.Fine, 
+      "Linking source node (" + newSrc + ").");
     addLink(newLink);
     
     if (pTemplateNodesToUnlink.contains(oldSrc))
@@ -287,21 +317,25 @@ class TemplateStage
     ArrayList<TreeMap<String, String>> values = pContexts.get(currentContext);
     
     if (values == null || values.isEmpty()) {
-      LogMgr.getInstance().logAndFlush(Kind.Ops, Level.Warning, 
-        "The context (" + currentContext + ") specified on (" + link.getName() + ") has no " +
-         "values defined for it.");
-      TreeMap<String, String> newReplace = new TreeMap<String, String>(replace);
-      if (contextList.isEmpty()) {  //bottom of the recursion
-        createLink(link, act, newReplace, ignoreable);
+      if (pAllowZeroContexts) {
+        LogMgr.getInstance().logAndFlush(Kind.Bld, Level.Warning, 
+          "The context (" + currentContext + ") specified on (" + link.getName() + ") has " +
+          "no values defined for it.");
+        TreeMap<String, String> newReplace = new TreeMap<String, String>(replace);
+        if (contextList.isEmpty()) {  //bottom of the recursion
+          createLink(link, act, newReplace, ignoreable);
+        }
+        else {
+          contextLink(link, act, new TreeSet<String>(contextList), newReplace, ignoreable);
+        }
+        return;
       }
       else {
-        contextLink(link, act, new TreeSet<String>(contextList), newReplace, ignoreable);
+        throw new PipelineException
+          ("The context (" + currentContext + ") specified on (" + link.getName() + ") has no values " +
+          "defined for it.");
       }
-      return;
     }
-//      throw new PipelineException
-//        ("The context (" + currentContext + ") specified on (" + link.getName() + ") has no values " +
-//         "defined for it.");
     
     for (TreeMap<String, String> contextEntry : values) {
       TreeMap<String, String> newReplace = new TreeMap<String, String>(replace);
@@ -357,6 +391,9 @@ class TemplateStage
    *   
    * @param inhibitCopy
    *   Whether the CloneFiles template setting should be ignored.
+   *   
+   * @param allowZeroContexts
+   *   Whether a zero context is acceptable in the sources of the node.
    * 
    * @param annotCache
    *   A shared cache of annotations for nodes 
@@ -381,7 +418,8 @@ class TemplateStage
     TreeSet<String> ignoredNodes,
     TreeSet<String> ignoreableProducts,
     boolean inhibitCopy,
-    TreeMap<String, TreeMap<String, BaseAnnotation>> annotCache
+    boolean allowZeroContexts,
+    TripleMap<String, String, String, TreeMap<String, BaseAnnotation>> annotCache
   ) 
     throws PipelineException
   {
@@ -419,13 +457,13 @@ class TemplateStage
       FrameRange oldRange = priSeq.getFrameRange();
       return new TemplateStage
         (sourceMod, stageInfo, newContext, client, nodeName, oldRange, padding, suffix, 
-         editor, action, inhibitCopy, templateInfo, stringReplacements, contexts, range, 
+         editor, action, inhibitCopy, allowZeroContexts, templateInfo, stringReplacements, contexts, range, 
          ignoredNodes, ignoreableProducts, annotCache);
     }
     else 
       return new TemplateStage
         (sourceMod, stageInfo, newContext, client, nodeName, suffix, editor, action, 
-         inhibitCopy, templateInfo, stringReplacements, contexts, range, ignoredNodes, 
+         inhibitCopy, allowZeroContexts, templateInfo, stringReplacements, contexts, range, ignoredNodes, 
          ignoreableProducts, annotCache);
   }
   
@@ -437,16 +475,22 @@ class TemplateStage
     boolean build = super.build();
     if (build) {
       if (pSrcHasDisabledAction && !pEnableAction) {
+        LogMgr.getInstance().log(Kind.Bld, Level.Finer, 
+          "Disabling the action after building the node.");
         pRegisteredNodeMod.setActionEnabled(false);
         pClient.modifyProperties(getAuthor(), getView(), pRegisteredNodeMod);
         pRegisteredNodeMod = pClient.getWorkingVersion(getAuthor(), getView(), pRegisteredNodeName);
       }
       if (pCloneFiles  && !pInhibitCopyFiles) {
+        LogMgr.getInstance().log(Kind.Bld, Level.Finer, 
+          "Cloning the files after building the node.");
         NodeID src = new NodeID(getAuthor(), getView(), pSourceMod.getName() );
         NodeID tar = new NodeID(getAuthor(), getView(), pRegisteredNodeName);
         pClient.cloneFiles(src, tar, pSecSeqs);
       }
       if (pTouchFiles) {
+        LogMgr.getInstance().log(Kind.Bld, Level.Finer, 
+          "Backing up the Action and replacing it with the Touch action.");
         pBackedUpAction = pRegisteredNodeMod.getAction();
         pRegisteredNodeMod.setAction(getAction(new PluginContext("Touch"), getToolset()));
         pClient.modifyProperties(getAuthor(), getView(), pRegisteredNodeMod);
@@ -579,10 +623,16 @@ class TemplateStage
   finalizeStage()
     throws PipelineException
   {
-    if (pDisableAction)
+    if (pDisableAction) {
+      LogMgr.getInstance().log(Kind.Bld, Level.Finer, 
+        "Disabling the action on (" + pRegisteredNodeName + ") as part of finalization.");
       pRegisteredNodeMod.setActionEnabled(false);
-    if (pRemoveAction)
+    }
+    if (pRemoveAction) {
+      LogMgr.getInstance().log(Kind.Bld, Level.Finer, 
+        "Removing the action on (" + pRegisteredNodeName + ") as part of finalization.");
       pRegisteredNodeMod.setAction(null);
+    }
     if (pDisableAction || pRemoveAction) {
       pClient.modifyProperties(getAuthor(), getView(), pRegisteredNodeMod);
       pRegisteredNodeMod = 
@@ -591,26 +641,39 @@ class TemplateStage
 
     if (!pUnlinkNodes.isEmpty()) {
       for (String oldSrc : pUnlinkNodes.keySet()) {
-        for (String newSrc : pUnlinkNodes.get(oldSrc))
+        for (String newSrc : pUnlinkNodes.get(oldSrc)) {
+          LogMgr.getInstance().log(Kind.Bld, Level.Finer, 
+            "Unlinking the node (" + newSrc + ") from (" + pRegisteredNodeName + ") + due to " +
+            "an unlink annotation.");
           pClient.unlink(getAuthor(), getView(), pRegisteredNodeName, newSrc);
+        }
       }
       pRegisteredNodeMod = 
         pClient.getWorkingVersion(getAuthor(), getView(), pRegisteredNodeName);
     }
     
     if (pUnlinkAll) {
+      LogMgr.getInstance().log(Kind.Bld, Level.Finer, 
+        "Unlinking all sources from (" + pRegisteredNodeName + ") due to TemplateSettings " +
+        "Annotation.");
       for (String source : pRegisteredNodeMod.getSourceNames()) {
         pClient.unlink(getAuthor(), getView(), pRegisteredNodeName, source);
       }
     }
 
     if (pTouchFiles) {
+      LogMgr.getInstance().log(Kind.Bld, Level.Finer, 
+        "Restoring backed-up action to (" + pRegisteredNodeName + ") as part " +
+        "of finalization.");
       pRegisteredNodeMod.setAction(pBackedUpAction);
       pRegisteredNodeMod.setActionEnabled(true);
       pClient.modifyProperties(getAuthor(), getView(), pRegisteredNodeMod);
       pRegisteredNodeMod = 
         pClient.getWorkingVersion(getAuthor(), getView(), pRegisteredNodeName);
-      
+
+      LogMgr.getInstance().log(Kind.Bld, Level.Finer, 
+        "Touching the files on (" + pRegisteredNodeName + ") to remove staleness as part of " +
+        "finalization.");
       SubProcessLight process = touchFilesProcess();
       process.run();
       try {
@@ -628,8 +691,11 @@ class TemplateStage
           process.getStdOut() + "\n" + process.getStdErr());
     }
 
-    if (pVouch)
+    if (pVouch) {
+      LogMgr.getInstance().log(Kind.Bld, Level.Finer, 
+        "Vouching for the node (" + pRegisteredNodeName + ") as part of finalization.");
       vouch();
+    }
   }
   
   
@@ -778,10 +844,10 @@ class TemplateStage
   )
     throws PipelineException
   {
-    TreeMap<String, BaseAnnotation> annots = pAnnotCache.get(name);
+    TreeMap<String, BaseAnnotation> annots = pAnnotCache.get(getAuthor(), getView(), name);
     if (annots == null) {
-      annots = pClient.getAnnotations(name);
-      pAnnotCache.put(name, annots);
+      annots = pClient.getAnnotations(getAuthor(), getView(), name);
+      pAnnotCache.put(getAuthor(), getView(), name, annots);
     }
    return annots;
   }
@@ -848,7 +914,7 @@ class TemplateStage
   
   private TreeMap<String, String> pReplacements;
   private TreeMap<String, ArrayList<TreeMap<String, String>>> pContexts;
-  private TreeMap<String, TreeMap<String, BaseAnnotation>> pAnnotCache;
+  private TripleMap<String, String, String, TreeMap<String, BaseAnnotation>> pAnnotCache;
   
   private MappedSet<String, String> pUnlinkNodes;
   private TreeSet<String> pTemplateNodesToUnlink;
@@ -866,6 +932,7 @@ class TemplateStage
   private boolean pEnableAction;
   
   private boolean pInhibitCopyFiles;
+  private boolean pAllowZeroContexts;
   
   private NodeMod pSourceMod;
   

@@ -1,4 +1,4 @@
-// $Id: BaseUtil.java,v 1.42 2009/04/22 17:51:22 jesse Exp $
+// $Id: BaseUtil.java,v 1.43 2009/05/07 03:25:29 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -76,6 +76,9 @@ class BaseUtil
     pPlug = PluginMgrClient.getInstance();
     pContext = context;
     
+    if (pContext == null)
+      pContext = UtilContext.getDefaultUtilContext(mclient);
+    
     if (name.contains(" "))
       throw new PipelineException
       ("A class with Builder Parameters cannot have a space in its name, " +
@@ -94,9 +97,8 @@ class BaseUtil
       new UtilContextUtilityParam
       (aUtilContext, 
        "The User, View, and Toolset to perform these actions in.",  
-       context,
+       pContext,
        mclient);
-      setContext(context);
       addParam(param);
     }
   }
@@ -658,6 +660,7 @@ class BaseUtil
    * @param status
    *   The heavyweight status of the root node of the tree to be searched.
    */
+  @SuppressWarnings("incomplete-switch")
   public void 
   findBadNodes
   (

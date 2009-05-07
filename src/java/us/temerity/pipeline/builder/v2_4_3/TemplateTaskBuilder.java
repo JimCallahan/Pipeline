@@ -1,4 +1,4 @@
-// $Id: TemplateTaskBuilder.java,v 1.10 2009/04/20 00:27:01 jesse Exp $
+// $Id: TemplateTaskBuilder.java,v 1.11 2009/05/07 03:25:29 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -60,6 +60,9 @@ class TemplateTaskBuilder
    *   The list of frame ranges to use, each indexed by the name of the template Range value
    *   that should be set on the {@link TemplateRangeAnnotation}.
    *   
+   * @param aoeModes
+   *   The list of AoE modes and the default value for each mode.
+   *   
    * @throws PipelineException
    */
   public
@@ -71,7 +74,8 @@ class TemplateTaskBuilder
     String startNode,
     TreeMap<String, String> stringReplacements,
     TreeMap<String, ArrayList<TreeMap<String, String>>> contexts,
-    TreeMap<String, FrameRange> frameRanges
+    TreeMap<String, FrameRange> frameRanges,
+    TreeMap<String, ActionOnExistence> aoeModes
   ) 
     throws PipelineException
   {
@@ -95,9 +99,18 @@ class TemplateTaskBuilder
     if (frameRanges != null)
       pFrameRanges.putAll(frameRanges);
     
+    pAOEModes = new TreeMap<String, ActionOnExistence>();
+    if (aoeModes != null)
+      pAOEModes.putAll(aoeModes);
+    
     addCheckinWhenDoneParam();
     
     addSetupPass(new InformationPass());
+    
+    for (String mode : pAOEModes.keySet()) {
+      ActionOnExistence aoe = pAOEModes.get(mode);
+      addAOEMode(mode, aoe);
+    }
     
     PassLayoutGroup rootLayout = new PassLayoutGroup("Root", "Root Layout");
     
@@ -574,7 +587,7 @@ class TemplateTaskBuilder
          pProductNodes, pProductNodeContexts);
       TemplateBuilder builder = 
         new TemplateBuilder
-          (pClient, pQueue, getBuilderInformation(), info, pReplacements, pContexts, pFrameRanges);
+          (pClient, pQueue, getBuilderInformation(), info, pReplacements, pContexts, pFrameRanges, pAOEModes);
       addSubBuilder(builder);
       addMappedParam(builder.getName(), aCheckinWhenDone, aCheckinWhenDone);
       addMappedParam(builder.getName(), aAllowZeroContexts, aAllowZeroContexts);
@@ -657,7 +670,7 @@ class TemplateTaskBuilder
     TemplateTaskBuilder builder = new TemplateTaskBuilder
       (new MasterMgrClient(), new QueueMgrClient(), 
        new BuilderInformation(false, true, true, new MultiMap<String, String>()), 
-       "/projects/TEMPLATE/prod/SEQ1/SHOT1/anim/submit/SEQ1_SHOT1_submit", subs, contexts, null);
+       "/projects/TEMPLATE/prod/SEQ1/SHOT1/anim/submit/SEQ1_SHOT1_submit", subs, contexts, null, null);
     
     GUIExecution exec = new GUIExecution(builder);
     exec.run();
@@ -703,6 +716,8 @@ class TemplateTaskBuilder
   private TreeMap<String, ArrayList<TreeMap<String, String>>> pContexts;
   
   private TreeMap<String, FrameRange> pFrameRanges;
+  
+  private TreeMap<String, ActionOnExistence> pAOEModes;
   
   private MappedSet<String, String> pNodesIDependedOn;
   private MappedSet<String, String> pNodesDependingOnMe;
