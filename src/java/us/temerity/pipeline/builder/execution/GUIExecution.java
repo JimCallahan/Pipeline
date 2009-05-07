@@ -1,4 +1,4 @@
-// $Id: GUIExecution.java,v 1.9 2009/04/06 00:53:11 jesse Exp $
+// $Id: GUIExecution.java,v 1.10 2009/05/07 04:21:09 jesse Exp $
 
 package us.temerity.pipeline.builder.execution;
 
@@ -99,6 +99,7 @@ class GUIExecution
         "Additionally, an error occurred while attempting to release the nodes";
       String message = Exceptions.getFullMessage(header, ex);
       pLog.logAndFlush(Kind.Ops, Level.Severe, message);
+      setPhase(ExecutionPhase.Error);
       SwingUtilities.invokeLater(pDialog.new ShowErrorTask(message));
     }
     else if (phase == ExecutionPhase.ReleaseView) {
@@ -106,6 +107,7 @@ class GUIExecution
         "An error occurred after execution when attempting to release the working area";
       String message = Exceptions.getFullMessage(header, ex);
       pLog.logAndFlush(Kind.Ops, Level.Severe, message);
+      setPhase(ExecutionPhase.Error);
       SwingUtilities.invokeLater(pDialog.new ShowErrorTask(message));
     }
     else if (phase == ExecutionPhase.Error) {

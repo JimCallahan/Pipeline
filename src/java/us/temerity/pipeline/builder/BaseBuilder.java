@@ -1,4 +1,4 @@
-// $Id: BaseBuilder.java,v 1.70 2009/05/07 04:03:11 jesse Exp $
+// $Id: BaseBuilder.java,v 1.71 2009/05/07 04:21:09 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -2200,7 +2200,8 @@ class BaseBuilder
     throws PipelineException
   {
     TreeSet<String> names = pClient.getWorkingNames(getAuthor(), getView(), null);
-    pClient.release(getAuthor(), getView(), names, true);
+    if (names != null && !names.isEmpty())
+      pClient.release(getAuthor(), getView(), names, true);
     pClient.removeWorkingArea(getAuthor(), getView());
   }
 
