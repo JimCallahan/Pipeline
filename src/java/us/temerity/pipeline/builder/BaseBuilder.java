@@ -1,4 +1,4 @@
-// $Id: BaseBuilder.java,v 1.69 2009/05/07 03:25:29 jesse Exp $
+// $Id: BaseBuilder.java,v 1.70 2009/05/07 04:03:11 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -2067,7 +2067,7 @@ class BaseBuilder
    *   If an attempt is made to override one of the four built-in AOE modes: 
    *   Abort, Continue, Conform, or CheckOut
    */
-  public boolean
+  public final boolean
   addAOEMode
   (
     String mode,
@@ -2103,7 +2103,7 @@ class BaseBuilder
    *   If an attempt is made to add an override to one of the four default AoE modes:
    *   Abort, Continue, Conform, or CheckOut 
    */
-  public boolean
+  public final boolean
   addAOEOverride
   (
     String mode,
