@@ -1,4 +1,4 @@
 #!/bin/sh
 
 time ../../src/pipeline/config/bootstrap-suse10.2-64bit.sh \
-  lumiere 090407 43000 43100
+  lumiere 090506 43000 43100
