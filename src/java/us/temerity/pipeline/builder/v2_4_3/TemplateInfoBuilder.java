@@ -1,4 +1,4 @@
-// $Id: TemplateInfoBuilder.java,v 1.11 2009/05/07 03:25:29 jesse Exp $
+// $Id: TemplateInfoBuilder.java,v 1.12 2009/05/07 21:50:14 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -64,6 +64,12 @@ class TemplateInfoBuilder
     noDefaultConstructPasses();
     
     pTemplateStartNode = templatePath;
+    
+    UtilContext utilContext = 
+      new UtilContext(author, view, mclient.getDefaultToolsetName());
+    setContext(utilContext);
+    setParamValue(aUtilContext, utilContext);
+    
     
     {
       NodeID nodeID = 
