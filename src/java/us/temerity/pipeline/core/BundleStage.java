@@ -87,6 +87,12 @@ class BundleStage
 
     for(String aname : annotations.keySet()) 
       addAnnotation(aname, annotations.get(aname));
+    
+    {
+      TreeMap<String, BaseAnnotation> annots = mod.getAnnotations();
+      for (String aname : annots.keySet()) 
+        addVersionAnnotation(aname, annots.get(aname));
+    }
   }
 
   
