@@ -1,0 +1,19 @@
+Okay so how is this going to work?  I need a way to not break anything that is currently working, but also add the new future.
+
+So we add an AoE mode instead of the current AoE setting.  AoE modes are registered in the builder before it runs and are selectable.  The four current AoE settings become hardcoded AoE modes (as well as the potential values for other AoE modes).
+
+When modes are added, they're added with a default AoE value.  This becomes the setting for all nodes which do not have specific specifications.
+
+The method:
+
+	addAOEMode(String name, ActionOnExistance default)
+
+Once a mode is added, nodes can be given individual settings in that mode.
+
+	addAOESetting(String modeName, Sting nodeName, ActionOnExistance aoe)
+
+This method needs to adjust the current StageInformation (if there is one), but also the BuilderInformation.  That way the current builder can set this information right before it instantiates the stage to make the node and still have it apply.
+
+All this AoE information is stored in BuilderInformation and passed into StageInformation when 
+
+The existing setActionOnExistance methods are preserved and now change the default behavior for the current StageInformation.  So changes that are made do not end up back in the BuilderInformation and will not effect other builders.  Existing code will continue to work the exact same way.
