@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.60 2009/05/04 22:38:35 jim Exp $
+// $Id: QueueMgrServer.java,v 1.61 2009/05/11 09:32:02 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -110,6 +110,8 @@ class QueueMgrServer
           task.start();	
         }
         catch(AsynchronousCloseException ex) {
+        }
+        catch(ClosedChannelException ex) {
         }
       }
 

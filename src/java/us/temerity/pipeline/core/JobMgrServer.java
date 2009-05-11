@@ -1,4 +1,4 @@
-// $Id: JobMgrServer.java,v 1.36 2009/05/04 22:38:34 jim Exp $
+// $Id: JobMgrServer.java,v 1.37 2009/05/11 09:32:02 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -92,6 +92,8 @@ class JobMgrServer
           task.start();	
         }
         catch(AsynchronousCloseException ex) {
+        }
+        catch(ClosedChannelException ex) {
         }
       }
 

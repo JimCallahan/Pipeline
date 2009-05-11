@@ -1,4 +1,4 @@
-// $Id: RemoteServer.java,v 1.4 2009/05/04 22:38:35 jim Exp $
+// $Id: RemoteServer.java,v 1.5 2009/05/11 09:32:02 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -91,6 +91,8 @@ class RemoteServer
           task.start();	
         }
         catch(AsynchronousCloseException ex) {
+        }
+        catch(ClosedChannelException ex) {
         }
       }
 

@@ -1,4 +1,4 @@
-// $Id: FileMgrServer.java,v 1.46 2009/05/04 22:38:34 jim Exp $
+// $Id: FileMgrServer.java,v 1.47 2009/05/11 09:32:02 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -95,6 +95,8 @@ class FileMgrServer
           task.start();	
         }
         catch(AsynchronousCloseException ex) {
+        }
+        catch(ClosedChannelException ex) {
         }
       }
 

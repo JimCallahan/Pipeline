@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.98 2009/05/04 22:38:34 jim Exp $
+// $Id: MasterMgrServer.java,v 1.99 2009/05/11 09:32:02 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -159,6 +159,8 @@ class MasterMgrServer
           task.start();	
         }
         catch(AsynchronousCloseException ex) {
+        }
+        catch(ClosedChannelException ex) {
         }
       }
 
