@@ -1,4 +1,4 @@
-// $Id: PluginMgr.java,v 1.40 2009/04/16 20:13:17 jesse Exp $
+// $Id: PluginMgr.java,v 1.41 2009/05/11 17:48:55 jlee Exp $
 
 package us.temerity.pipeline.core;
 
@@ -709,7 +709,7 @@ class PluginMgr
          "    Unknown = " + pUnknownCount + "\n" + 
          "    Missing = " + pMissingCount + "\n" + 
          "\n" + 
-         "You can use plplugin(1) with the \"--list --status=miss\" options to get the " + 
+         "You can use plplugin(1) with the \"list --status=miss\" options to get the " + 
          "full listing of the specific required plugins which are currently missing and " + 
          "still need to be installed.\n" + 
          bar(80));

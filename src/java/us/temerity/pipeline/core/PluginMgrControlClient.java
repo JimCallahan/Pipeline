@@ -1,4 +1,4 @@
-// $Id: PluginMgrControlClient.java,v 1.16 2009/04/16 20:13:17 jesse Exp $
+// $Id: PluginMgrControlClient.java,v 1.17 2009/05/11 17:48:55 jlee Exp $
   
 package us.temerity.pipeline.core;
 
@@ -309,7 +309,6 @@ class PluginMgrControlClient
       BasePlugin plg = loadPlugin(contents, cname);
 
       TreeMap<String,byte[]> installedChecksums = new TreeMap<String,byte[]>();
-
       {
 	PluginChecksumReq req 
 	  = new PluginChecksumReq(plg.getPluginType(), plg.getPluginID());
@@ -604,7 +603,7 @@ class PluginMgrControlClient
 	(LogMgr.Kind.Ops, LogMgr.Level.Warning, 
          requiredPluginsCount + " plugin" + (requiredPluginsCount > 1 ? "s " : " ") + 
          "still need" + (requiredPluginsCount > 1 ? "" : "s") + " to be installed.  " + 
-         "Please rerun plplugin with the --list --status=miss option " + 
+         "Please rerun plplugin with the \"list --status=miss option\" " + 
           "to get the full details.");
     }
 
@@ -617,8 +616,8 @@ class PluginMgrControlClient
          "been detected.  They have not been loaded.  " + 
          "Install the plugin" + 
 	 (unknownPluginsCount > 1 ? "s " : " ") + 
-         "using plplugin --install.  " + 
-         "Please rerun plplugin with the --list --status=unknown option " + 
+         "using plplugin \"install\".  " + 
+         "Please rerun plplugin with the \"list --status=unknown option\" " + 
          "to get the full details.");
     }
   }
