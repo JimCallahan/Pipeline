@@ -1,4 +1,4 @@
-// $Id: TemplateStage.java,v 1.10 2009/05/07 03:25:29 jesse Exp $
+// $Id: TemplateStage.java,v 1.11 2009/05/11 23:27:07 jesse Exp $
 
 package us.temerity.pipeline.stages;
 
@@ -643,7 +643,7 @@ class TemplateStage
       for (String oldSrc : pUnlinkNodes.keySet()) {
         for (String newSrc : pUnlinkNodes.get(oldSrc)) {
           LogMgr.getInstance().log(Kind.Bld, Level.Finer, 
-            "Unlinking the node (" + newSrc + ") from (" + pRegisteredNodeName + ") + due to " +
+            "Unlinking the node (" + newSrc + ") from (" + pRegisteredNodeName + ") due to " +
             "an unlink annotation.");
           pClient.unlink(getAuthor(), getView(), pRegisteredNodeName, newSrc);
         }

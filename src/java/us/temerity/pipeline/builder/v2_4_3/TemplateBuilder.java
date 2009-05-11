@@ -1,4 +1,4 @@
-// $Id: TemplateBuilder.java,v 1.15 2009/05/11 19:19:53 jesse Exp $
+// $Id: TemplateBuilder.java,v 1.16 2009/05/11 23:27:07 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -191,6 +191,7 @@ class TemplateBuilder
     
     addSetupPass(new InformationPass());
     addConstructPass(new BuildPass());
+    addConstructPass(new CheckpointPass());
     addConstructPass(new FinalizePass());
     addConstructPass(new SecondFinalizePass());
     
@@ -421,26 +422,9 @@ class TemplateBuilder
       }
       pFinalizableStages = new ArrayList<FinalizableStage>();
       pSecondaryFinalizableStages = new ArrayList<FinalizableStage>();
+      pCheckpointStages = new ArrayList<FinalizableStage>();
     }
     
-    private void 
-    mineStatus
-    (
-      NodeStatus stat,
-      TreeMap<String, NodeStatus> statusCache
-    )
-    {
-      if (statusCache.containsKey(stat.getName()))
-        return;
-      statusCache.put(stat.getName(), stat);
-      for (NodeStatus src: stat.getSources())
-        if (!statusCache.containsKey(src.getName()))
-          mineStatus(src, statusCache);
-      
-      for (NodeStatus trg : stat.getTargets())
-        if (!statusCache.containsKey(trg.getName()))
-          mineStatus(trg, statusCache);
-    }
 
     private static final long serialVersionUID = -9082066996485427448L;
   }
@@ -484,6 +468,7 @@ class TemplateBuilder
         TreeSet<String> contexts = new TreeSet<String>();
         TreeSet<String> ignoreableProducts = new TreeSet<String>();
         TreeMap<String, ActionOnExistence> aoeOverrides = new TreeMap<String, ActionOnExistence>();
+        boolean checkpoint = false;
         for (String aName : annots.keySet()) {
           BaseAnnotation annot = annots.get(aName);
           if (aName.startsWith("TemplateContext") && 
@@ -509,6 +494,9 @@ class TemplateBuilder
                 "Found an AOE override (" + aoe + ") for mode (" + mode + ").");
               aoeOverrides.put(mode, aoe);
             }
+          }
+          else if (aName.equals("TemplateCheckpoint")) {
+            checkpoint = true;
           }
         }
         
@@ -546,11 +534,11 @@ class TemplateBuilder
         TreeSet<String> nodesMade = new TreeSet<String>();
         if (contexts.size() == 0) { //no contexts, just do a straight build
           makeNode(mod, pReplacements, pContexts, range, ignoreableProducts, 
-                   conditionalBuild, aoeOverrides, nodesMade);
+                   conditionalBuild, checkpoint, aoeOverrides, nodesMade);
         }
         else { //uh-oh, there are contexts!
           contextLoop(toBuild, mod, contexts, pReplacements, pContexts, 
-                      range, ignoreableProducts, conditionalBuild, aoeOverrides, nodesMade);
+                      range, ignoreableProducts, conditionalBuild, checkpoint, aoeOverrides, nodesMade);
         }
 
         pNodesToBuild.remove(toBuild);
@@ -603,6 +591,7 @@ class TemplateBuilder
       FrameRange range,
       TreeSet<String> ignorableProducts,
       String conditionalBuild, 
+      boolean checkpoint, 
       TreeMap<String,ActionOnExistence> aoeOverrides, 
       TreeSet<String> nodesMade
     )
@@ -622,13 +611,13 @@ class TemplateBuilder
             new TreeMap<String, ArrayList<TreeMap<String,String>>>(contexts);
           if (contextList.isEmpty()) {  //bottom of the recursion
             makeNode(mod, newReplace, newMaps, range, ignorableProducts, 
-                     conditionalBuild, aoeOverrides, nodesMade);
+                     conditionalBuild, checkpoint, aoeOverrides, nodesMade);
           }
           else {
             contextLoop
             (toBuild, mod, new TreeSet<String>(contextList), 
               newReplace, newMaps, range, ignorableProducts, conditionalBuild, 
-              aoeOverrides, nodesMade);
+              checkpoint, aoeOverrides, nodesMade);
           }
           return;
         }
@@ -649,14 +638,14 @@ class TemplateBuilder
         newMaps.put(currentContext, newStuff);
         
         if (contextList.isEmpty()) {  //bottom of the recursion
-          makeNode(mod, newReplace, newMaps, range, ignorableProducts, 
-                   conditionalBuild, aoeOverrides, nodesMade);
+          makeNode(mod, newReplace, newMaps, range, ignorableProducts,
+                   conditionalBuild, checkpoint, aoeOverrides, nodesMade);
         }
         else {
           contextLoop
             (toBuild, mod, new TreeSet<String>(contextList), 
              newReplace, newMaps, range, ignorableProducts, conditionalBuild, 
-             aoeOverrides, nodesMade);
+             checkpoint, aoeOverrides, nodesMade);
         }
       }
     }
@@ -670,6 +659,7 @@ class TemplateBuilder
       FrameRange range,
       TreeSet<String> ignorableProducts, 
       String conditionalBuild, 
+      boolean checkpoint, 
       TreeMap<String,ActionOnExistence> aoeOverrides, 
       TreeSet<String> nodesMade
     )
@@ -707,8 +697,12 @@ class TemplateBuilder
            pInhibitCopyFiles, pAllowZeroContexts, pAnnotCache);
 
       if (stage.build()) {
-        if (stage.needsFinalization())
-          pFinalizableStages.add(stage);
+        if (stage.needsFinalization()) {
+          if (checkpoint)
+            pCheckpointStages.add(stage);
+          else
+            pFinalizableStages.add(stage);
+        }
         if (stage.needsSecondFinalization())
           pSecondaryFinalizableStages.add(stage);
         nodesMade.add(stage.getNodeName());
@@ -836,6 +830,60 @@ class TemplateBuilder
 
     private static final long serialVersionUID = -8757997441040344237L;
   }
+
+  protected
+  class CheckpointPass
+    extends ConstructPass
+  {
+    public
+    CheckpointPass()
+    {
+      super("CheckpointPass", "Pass with finalizes the nodes tagged as checkpoints.");
+    }
+    
+    @Override
+    public void 
+    buildPhase()
+      throws PipelineException
+    {
+      for (FinalizableStage stage : pCheckpointStages) {
+        
+        String nodeName = stage.getNodeName();
+        LinkedList<String> toQueue = new LinkedList<String>();
+        toQueue.add(nodeName);
+        LinkedList<QueueJobGroup> jobs = queueNodes(toQueue);
+        if (jobs.size() > 0) {
+          waitForJobs(jobs);
+          /* Sleep for 3 seconds to give nfs caching a chance to catch up */
+          try {
+            Thread.sleep(3000);
+          }
+          catch(InterruptedException ex) {
+            throw new PipelineException
+              ("The execution thread was interrupted while waiting for jobs to complete.\n" + 
+               Exceptions.getFullMessage(ex));
+          }
+        }
+        if (!areAllFinished(toQueue)) {
+          TreeSet<Long> jobList = new TreeSet<Long>();
+          for (QueueJobGroup group : jobs) {
+            for (Long id : group.getAllJobIDs()) {
+              jobList.add(id);
+            }
+          }
+          pQueue.killJobs(jobList);
+          throw new PipelineException
+            ("Errors were encountered when trying to queue the node (" + nodeName + ") " +
+             "during the checkpoint finalization.  Execution has been halted and all " +
+             "associated jobs have been killed.");
+        }
+        stage.finalizeStage();
+      }
+    }
+    
+    private static final long serialVersionUID = -1044782209387738110L;
+  }
+  
   
   protected
   class FinalizePass
@@ -844,7 +892,7 @@ class TemplateBuilder
     public
     FinalizePass()
     {
-      super("FinalizePass", "Pass with finalizes all the nodes.");
+      super("FinalizePass", "Pass which finalizes all the nodes.");
     }
     
     @Override
@@ -939,6 +987,8 @@ class TemplateBuilder
   private TripleMap<String, String, String, TreeMap<String, BaseAnnotation>> pAnnotCache;
   
   private TemplateBuildInfo pTemplateInfo;
+  
+  private ArrayList<FinalizableStage> pCheckpointStages;
   
   private ArrayList<FinalizableStage> pFinalizableStages;
   private ArrayList<FinalizableStage> pSecondaryFinalizableStages;
