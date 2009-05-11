@@ -47,10 +47,19 @@ PluginOptsParser
   private void 
   init()
   {
-    pLogBackups  = 10;
-    pList        = false;
-    pSummary     = false;
-    pPluginFiles = new TreeSet();
+    pLogBackups   = 10;
+    pList         = false;
+    pContents     = false;
+    pSummary      = false;
+    pInstall      = false;
+    pExtract      = false;
+    pVendorSet    = new TreeSet<String>();
+    pTypeSet      = new TreeSet<PluginType>();
+    pNameSet      = new TreeSet<String>();
+    pVersionSet   = new TreeSet<VersionID>();
+    pStatusSet    = new TreeSet<PluginStatus>();
+    pPluginFiles  = new TreeSet<File>();
+    pExtractPaths = new TreeSet<String>();
   }
  
 
@@ -149,7 +158,22 @@ PluginOptsParser
   /**
    * The list of compiled Java plugin files containing plugins.
    */ 
-  private TreeSet  pPluginFiles; 
+  private TreeSet<File>  pPluginFiles; 
+
+  /**
+   * Whether to extract resources.
+   */
+  private boolean  pExtract;
+
+  /**
+   *
+   */
+  private TreeSet<String>  pExtractPaths;
+
+  /**
+   *
+   */
+  private File pExtractDir;
 }
 
 
@@ -172,31 +196,51 @@ TOKEN :
 | <LOG_BACKUPS:       "--log-backups">             : INTEGER_SEP
 | <LOG:               "--log">                     : LOG_SEP
 
-  /* action options */	
-| <LIST:           "--list">     
-| <CONTENTS:       "--contents">
-| <STATUS_FILTER:  "--status">                     : PLG_STATUS_SEP
-| <TYPE_FILTER:    "--type">                       : PLG_TYPE_SEP
-| <VENDOR_FILTER:  "--vendor">                     : PLG_VENDOR_SEP
-| <NAME_FILTER:    "--name">                       : PLG_NAME_SEP
-| <VERSION_FILTER: "--vsn">                        : PLG_VERSION_SEP
-| <SUMMARY:        "--summary">
-| <EXTERNAL:       "--external">    
-| <RENAME:         "--rename">    
-| <DRYRUN:         "--dry-run">
-| <INSTALL:        "--install">    
-
-  /* plugin files */
-| <PLUGIN_FILE:   (["/","\\"])* ("../" | "..\\")* <PLUGIN_COMP> 
-                 (["/","\\"] (".." | (<PLUGIN_COMP>)+)?)* (".jar" | ".class")>  
-| <#PLUGIN_COMP:  (["a"-"z","A"-"Z","0"-"9","_","-","."])*>
+  /* commands */
+| <LIST:     "list">                               :  OPTIONS
+| <CONTENTS: "contents">                           :  OPTIONS
+| <SUMMARY:  "summary">
+| <INSTALL:  "install">                            :  OPTIONS
+| <EXTRACT:  "extract">                            :  OPTIONS
 
   /* seperators */ 
 | <AE1: (["\0"])+>
 
   /* errors */ 
-| <UNKNOWN_OPTION:  "-" ("-")? (~["\0","="])*>  : IGNORE_STATE
-| <UNKNOWN_COMMAND: ~["-","\0"] (~["\0"])*>     : IGNORE_STATE
+| <UNKNOWN_OPTION:  "-" ("-")? (~["\0","="])*>    : IGNORE_STATE
+| <UNKNOWN_COMMAND: ~["-","\0"] (~["\0"])*>       : IGNORE_STATE
+}
+
+<OPTIONS>
+TOKEN :
+{
+  /* action options */	
+  <FILTER_STATUS:  "--status">                     : PLUGIN_STATUS_SEP
+| <FILTER_TYPE:    "--type">                       : PLUGIN_TYPE_SEP
+| <FILTER_VENDOR:  "--vendor">                     : PLUGIN_VENDOR_SEP
+| <FILTER_NAME:    "--name">                       : PLUGIN_NAME_SEP
+| <FILTER_VERSION: "--version">                    : PLUGIN_VERSION_SEP
+| <EXTERNAL:       "--external">    
+| <RENAME:         "--rename">    
+| <DRYRUN:         "--dry-run">
+| <EXTRACT_DIR:    "--dir">                        : EXTRACT_PATH_SEP
+
+  /* plugin files */
+| <PLUGIN_FILE:   (["/","\\"])* ("../" | "..\\")* <PLUGIN_COMP> 
+                  (["/","\\"] (".." | (<PLUGIN_COMP>)+)?)* (".jar" | ".class")>  
+| <#PLUGIN_COMP:  (["a"-"z","A"-"Z","0"-"9","_","-","."])*>
+
+  /* extract paths */
+| <EXTRACT_PATH:        (["a"-"z","A"-"Z","0"-"9","_","-","."])+ 
+		        ("/" (".." | (<EXTRACT_PATH_COMP>)+)?)*>
+| <#EXTRACT_PATH_COMP: (["a"-"z","A"-"Z","0"-"9","_","-","."])*>
+
+  /* argument end separator */ 
+| <AE2:               (["\0"])+>   
+
+  /* errors */ 
+| <UNKNOWN_OPTION2:     "-" ("-")? (~["\0","="])*> : IGNORE_STATE
+| <UNKNOWN_COMMAND2:  ~["-","\0"] (~["\0"])*>      : IGNORE_STATE
 }
 
 
@@ -274,120 +318,136 @@ TOKEN :
 | <FINER :  	      "finer">   
 | <FINEST:    	      "finest">  
 | <COMMA:  	      ",">             : LOG_TYPE
-| <AE2:               (["\0"])+>       : DEFAULT
+| <AE3:               (["\0"])+>       : DEFAULT
 | <ILLEGAL_LOG_LEVEL: (~["\0",","])+>  : IGNORE_STATE
 }
 
 
 /* plugins status arguments */ 
-<PLG_STATUS_SEP> 
+<PLUGIN_STATUS_SEP> 
 TOKEN :
 {
-  <EQ4:                       "=">   : PLG_STATUS_STATE
-| <MISSING_PLG_STATUS_ARG:  ~["="]>  : IGNORE_STATE
+  <EQ4:                         "=">   : PLUGIN_STATUS_STATE
+| <MISSING_PLUGIN_STATUS_ARG: ~["="]>  : IGNORE_STATE
 }
 
-<PLG_STATUS_STATE> 
+<PLUGIN_STATUS_STATE> 
 TOKEN :
 {
-  <PLG_STATUS_ALL:              "all"> 
-| <PLG_STATUS_REQ:              "req"> 
-| <PLG_STATUS_INST:             "inst"> 
-| <PLG_STATUS_DEV:              "dev"> 
-| <PLG_STATUS_PERM:             "perm"> 
-| <PLG_STATUS_MISS:             "miss"> 
-| <PLG_STATUS_UNKNOWN:          "unknown"> 
-| <COMMA1:                      ","> 
-| <AE3:                         "\0">               : DEFAULT
-| <ILLEGAL_PLG_STATUS:          (~[",","\0"])+>     : IGNORE_STATE
+  <PLUGIN_STATUS_ALL:        "all"> 
+| <PLUGIN_STATUS_REQ:        "req"> 
+| <PLUGIN_STATUS_INST:       "inst"> 
+| <PLUGIN_STATUS_DEV:        "dev"> 
+| <PLUGIN_STATUS_PERM:       "perm"> 
+| <PLUGIN_STATUS_MISS:       "miss"> 
+| <PLUGIN_STATUS_UNKNOWN:    "unknown"> 
+| <COMMA1:                   ","> 
+| <AE4:                      "\0">         : OPTIONS
+| <ILLEGAL_PLUGIN_STATUS: (~[",","\0"])+>  : IGNORE_STATE
 }
 
 
 /* plugin type arguments */ 
-<PLG_TYPE_SEP> 
+<PLUGIN_TYPE_SEP> 
 TOKEN :
 {
-  <EQ5:                       "=">   : PLG_TYPE_STATE
-| <MISSING_PLG_TYPE_ARG:    ~["="]>  : IGNORE_STATE
+  <EQ5:                       "=">   : PLUGIN_TYPE_STATE
+| <MISSING_PLUGIN_TYPE_ARG: ~["="]>  : IGNORE_STATE
 }
 
-<PLG_TYPE_STATE> 
+<PLUGIN_TYPE_STATE> 
 TOKEN :
 {
-  <PLG_TYPE_ALL:          "all"> 
-| <PLG_TYPE_ACT:          "act"> 
-| <PLG_TYPE_ANNOT:        "annot"> 
-| <PLG_TYPE_ARCH:         "arch"> 
-| <PLG_TYPE_BUILD:        "build"> 
-| <PLG_TYPE_COMP:         "comp"> 
-| <PLG_TYPE_EDIT:         "edit"> 
-| <PLG_TYPE_KEY:          "key">
-| <PLG_TYPE_MASTER:       "master">
-| <PLG_TYPE_QUEUE:        "queue">
-| <PLG_TYPE_TOOL:         "tool">
-| <COMMA2:                ","> 
-| <AE4:                   "\0">               : DEFAULT
-| <ILLEGAL_PLG_TYPE:      (~[",","\0"])+>     : IGNORE_STATE
+  <PLUGIN_TYPE_ALL:        "all"> 
+| <PLUGIN_TYPE_ACT:        "act"> 
+| <PLUGIN_TYPE_ANNOT:      "annot"> 
+| <PLUGIN_TYPE_ARCH:       "arch"> 
+| <PLUGIN_TYPE_BUILD:      "build"> 
+| <PLUGIN_TYPE_COMP:       "comp"> 
+| <PLUGIN_TYPE_EDIT:       "edit"> 
+| <PLUGIN_TYPE_KEY:        "key">
+| <PLUGIN_TYPE_MASTER:     "master">
+| <PLUGIN_TYPE_QUEUE:      "queue">
+| <PLUGIN_TYPE_TOOL:       "tool">
+| <COMMA2:                 ","> 
+| <AE5:                    "\0">         : OPTIONS
+| <ILLEGAL_PLUGIN_TYPE: (~[",","\0"])+>  : IGNORE_STATE
 }
 
 
 /* plugin vendor arguments */
-<PLG_VENDOR_SEP>
+<PLUGIN_VENDOR_SEP>
 TOKEN :
 {
-  <EQ6:                         "=">   : PLG_VENDOR_STATE
-| <MISSING_PLG_VENDOR_ARG:    ~["="]>  : IGNORE_STATE
+  <EQ6:                          "=">   : PLUGIN_VENDOR_STATE
+| <MISSING_PLUGIN_VENDOR_ARG:  ~["="]>  : IGNORE_STATE
 }
 
-<PLG_VENDOR_STATE> 
+<PLUGIN_VENDOR_STATE> 
 TOKEN :
 {
   <PLUGIN_VENDOR:           (["a"-"z","A"-"Z"]) 
 	   	            (["a"-"z","A"-"Z","0"-"9","_","-","."])+>  
-| <COMMA3:                  ",">
-| <AE5:                     ["\0"]>                                   : DEFAULT
-| <ILLEGAL_PLUGIN_VENDOR:   (~[",","\0"])+>                           : IGNORE_STATE
+| <COMMA3:                    ",">
+| <AE6:                      ["\0"]>                                   : OPTIONS
+| <ILLEGAL_PLUGIN_VENDOR:  (~[",","\0"])+>                             : IGNORE_STATE
 }
 
 
 /* plugin name arguments */
-<PLG_NAME_SEP>
+<PLUGIN_NAME_SEP>
 TOKEN :
 {
-  <EQ7:                       "=">   : PLG_NAME_STATE
-| <MISSING_PLG_NAME_ARG:    ~["="]>  : IGNORE_STATE
+  <EQ7:                        "=">   : PLUGIN_NAME_STATE
+| <MISSING_PLUGIN_NAME_ARG:  ~["="]>  : IGNORE_STATE
 }
 
-<PLG_NAME_STATE> 
+<PLUGIN_NAME_STATE> 
 TOKEN :
 {
-  <PLUGIN_NAME:             (["a"-"z","A"-"Z"]) 
-	   	            (["a"-"z","A"-"Z","0"-"9","_","-","."])+>  
+  <PLUGIN_NAME:           (["a"-"z","A"-"Z"]) 
+	   	          (["a"-"z","A"-"Z","0"-"9","_","-","."])+>
 | <COMMA4:                  ",">
-| <AE6:                     ["\0"]>                                   : DEFAULT
-| <ILLEGAL_PLUGIN_NAME:   (~[",","\0"])+>                           : IGNORE_STATE
+| <AE7:                    ["\0"]>                                   : OPTIONS
+| <ILLEGAL_PLUGIN_NAME:  (~[",","\0"])+>                             : IGNORE_STATE
 }
 
 
 /* plugin version arguments */
-<PLG_VERSION_SEP>
+<PLUGIN_VERSION_SEP>
 TOKEN :
 {
-  <EQ8:                          "=">   : PLG_VERSION_STATE
-| <MISSING_PLG_VERSION_ARG:    ~["="]>  : IGNORE_STATE
+  <EQ8:                           "=">   : PLUGIN_VERSION_STATE
+| <MISSING_PLUGIN_VERSION_ARG:  ~["="]>  : IGNORE_STATE
 }
 
-<PLG_VERSION_STATE> 
+<PLUGIN_VERSION_STATE> 
 TOKEN :
 {
-//  <PLUGIN_VERSION:           (["a"-"z","A"-"Z"]) 
-//	   	             (["a"-"z","A"-"Z","0"-"9","_","-","."])+>  
-  <PLUGIN_VERSION:            (<IREVNUM> "." <REVNUM> "." <REVNUM>)>  
-| <#IREVNUM:                   ["1"-"9"] (["0"-"9"])*>
-| <#REVNUM:                    (["0"-"9"])+>
-| <COMMA5:                   ",">
-| <AE7:                      ["\0"]>                                   : DEFAULT
-| <ILLEGAL_PLUGIN_VERSION:   (~[",","\0"])+>                           : IGNORE_STATE
+  <PLUGIN_VERSION:           (<IREVNUM> "." <REVNUM> "." <REVNUM>)>
+| <#IREVNUM:                  ["1"-"9"] (["0"-"9"])*>
+| <#REVNUM:                  (["0"-"9"])+>
+| <COMMA5:                     ",">
+| <AE8:                       ["\0"]>                                : OPTIONS
+| <ILLEGAL_PLUGIN_VERSION:  (~[",","\0"])+>                          : IGNORE_STATE
+}
+
+/* filesystem path arguments */ 
+<EXTRACT_PATH_SEP> 
+TOKEN :
+{
+  <EQ9:                        "=">   : EXTRACT_PATH_STATE
+| <MISSING_EXTRACT_PATH_ARG: ~["="]>  : IGNORE_STATE
+}
+
+<EXTRACT_PATH_STATE> 
+TOKEN :
+{
+  <EXTRACT_PATH_ARG:        ("/")* ("../")* <EXTRACT_PATH_ARG_COMP> 
+		            ("/" (".." | (<EXTRACT_PATH_ARG_COMP>)+)?)*>  : OPTIONS
+| <#EXTRACT_PATH_ARG_COMP: (["a"-"z","A"-"Z","0"-"9","_","-","."])*>
+| <MISSING_EXTRACT_PATH:    ["\0"]>                                       : IGNORE_STATE
+| <ILLEGAL_EXTRACT_PATH:  (~["\0"])+>                                     : IGNORE_STATE
 }
 
 
@@ -442,6 +502,9 @@ CommandLine()
 			   pVendorSet, pNameSet, pVersionSet, 
 			   true);
 	}
+	else if(pSummary) {
+	  pApp.pluginSummary(client);
+	}
         else if(pInstall) {
           if(pPluginFiles.isEmpty()) 
             throw new ParseException
@@ -467,9 +530,28 @@ CommandLine()
             }
           }
         }
+	else if(pExtract) {
+	  if(pVendorSet.size() == 0 && 
+	     pTypeSet.size() == 0 && 
+	     pNameSet.size() == 0 && 
+	     pVersionSet.size() == 0) {
+	     throw new PipelineException
+	      ("Please provide some information about the plugin.  " + 
+	       "No options will result in too many matches.");
+	  }
+	  if(pExtractDir == null)
+	    pExtractDir = new File(".");
 
-	if(pSummary) {
-	  pApp.pluginSummary(client);
+	  try {
+	    pApp.extractPluginResources(client, 
+	                                pVendorSet, pTypeSet, pNameSet, pVersionSet, 
+	                                pExtractPaths, pExtractDir);
+	  }
+	  catch(PipelineException ex) {
+	    LogMgr.getInstance().log
+	      (LogMgr.Kind.Ops, LogMgr.Level.Warning,
+               ex.getMessage());
+	  }
 	}
       }
       finally {
@@ -487,19 +569,41 @@ Commands()
 {}
 {
   (GlobalOpts() AE())* 
-    (
-     ((List() | Contents()) (Summary())?) | 
-     (Summary() (List() | Contents())?) | 
-     ((External() | Rename() | DryRun())* Install() (PluginFile() AE())+)
-    )
+  (ListCmd() | ContentsCmd() | SummaryCmd() | InstallCmd() | ExtractCmd())
   { 
     pHasCommands = true;
   }
 }
-    
 
 void
-Summary() :
+ListCmd() :
+{}
+{
+  <LIST> AE() (PluginFilterOpts())*
+  {
+    pList = true;
+  }
+}
+
+void
+ContentsCmd() :
+{}
+{
+  <CONTENTS> AE() (PluginFilterOpts())*
+  {
+    pContents = true;
+  }
+}
+
+void
+PluginFilterOpts() :
+{}
+{
+  (PluginStatus() | PluginType() | PluginVendor() | PluginName() | PluginVersion())
+}
+
+void
+SummaryCmd() :
 {}
 {
   <SUMMARY> AE()
@@ -509,91 +613,96 @@ Summary() :
 }
 
 void
-List() :
+InstallCmd() :
+{}
 {
-  pStatusSet  = new TreeSet<PluginStatus>();
-  pTypeSet    = new TreeSet<PluginType>();
-  pVendorSet  = new TreeSet<String>();
-  pNameSet    = new TreeSet<String>();
-  pVersionSet = new TreeSet<VersionID>();
-}
-{
-  <LIST> AE() (ListOpts())*
-  { 
-    pList = true;
+  <INSTALL> AE() InstallOpts()
+  {
+    pInstall = true;
   }
 }
 
 void
-Contents() :
+InstallOpts() :
+{}
 {
-  pStatusSet  = new TreeSet<PluginStatus>();
-  pTypeSet    = new TreeSet<PluginType>();
-  pVendorSet  = new TreeSet<String>();
-  pNameSet    = new TreeSet<String>();
-  pVersionSet = new TreeSet<VersionID>();
+  ((External() | Rename() | DryRun())* (PluginFile() AE())+)
 }
+
+void
+ExtractCmd() :
+{}
 {
-  <CONTENTS> AE() (ListOpts())*
-  { 
-    pContents = true;
+  <EXTRACT> AE() (ExtractOpts())* (ExtractPath() AE())*
+  {
+    pExtract = true;
   }
 }
 
 void
-ListOpts() :
+ExtractOpts() :
 {}
 {
-  (PluginStatus() | PluginType() | PluginVendor() | PluginName() | PluginVersion())
-  {}
+  (PluginVendor() | PluginType() | PluginName() | PluginVersion() | ExtractDir())
 }
 
 void
-ContentsOpts() :
-{}
+ExtractDir() :
 {
-  (PluginStatus() | PluginType() | PluginVendor() | PluginName() | PluginVersion())
-  {}
+  Token t;
+}
+{
+  <EXTRACT_DIR> EQ() t=<EXTRACT_PATH_ARG> AE()
+  {
+    pExtractDir = new File(t.image);
+  }
+}
+
+void
+ExtractPath() :
+{
+  Token t;
+}
+{
+  (t=<EXTRACT_PATH>)
+  {
+    pExtractPaths.add(t.image);
+  }
 }
 
 void
 PluginStatus() :
 {}
 {
-  <STATUS_FILTER> EQ() PluginStatusToken() (COMMA() PluginStatusToken())* AE()
-  {}
+  <FILTER_STATUS> EQ() PluginStatusToken() (COMMA() PluginStatusToken())* AE()
 }
 
 void
 PluginType() :
 {}
 {
-  <TYPE_FILTER> EQ() PluginTypeToken() (COMMA() PluginTypeToken())* AE()
-  {}
+  <FILTER_TYPE> EQ() PluginTypeToken() (COMMA() PluginTypeToken())* AE()
 }
 
 void
 PluginVendor() :
 {}
 {
-  <VENDOR_FILTER> EQ() PluginVendorToken() (COMMA() PluginVendorToken())* AE()
-  {}
+  <FILTER_VENDOR> EQ() PluginVendorToken() (COMMA() PluginVendorToken())* AE()
 }
 
 void
 PluginName() :
 {}
 {
-  <NAME_FILTER> EQ() PluginNameToken() (COMMA() PluginNameToken())* AE()
-  {}
+  <FILTER_NAME> EQ() PluginNameToken() (COMMA() PluginNameToken())* AE()
 }
 
 void
 PluginVersion() :
 {}
 {
-  <VERSION_FILTER> EQ() PluginVersionToken() (COMMA() PluginVersionToken())* AE()
-  {}
+  <FILTER_VERSION> EQ() PluginVersionToken() (COMMA() PluginVersionToken())* AE()
 }
 
 void
@@ -637,10 +746,9 @@ PluginStatusToken() :
 {}
 {
   (PluginStatusAll() | 
-   PluginStatusReq() | PluginStatusMiss() | 
-   PluginStatusInst() | PluginStatusDev() | PluginStatusPerm() | 
+   PluginStatusRequired() | PluginStatusMissing() | 
+   PluginStatusInstalled() | PluginStatusUnderDevelopment() | PluginStatusPermanent() | 
    PluginStatusUnknown())
-  {}
 }
 
 void
@@ -648,17 +756,17 @@ PluginTypeToken() :
 {}
 {
   (PluginTypeAll() | 
-   PluginTypeAct() | PluginTypeAnnot() | PluginTypeArch() | 
-   PluginTypeBuild() | PluginTypeComp() | PluginTypeEdit() | 
-   PluginTypeKey() | PluginTypeMaster() | PluginTypeQueue() | PluginTypeTool())
-  {}
+   PluginTypeAction() | PluginTypeAnnotation() | PluginTypeArchiver() | 
+   PluginTypeBuilderCollection() | PluginTypeComparator() | PluginTypeEditor() | 
+   PluginTypeKeyChooser() | PluginTypeMasterExt() | PluginTypeQueueExt() | 
+   PluginTypeTool())
 }
 
 void
 PluginStatusAll() :
 {}
 {
-  <PLG_STATUS_ALL>
+  <PLUGIN_STATUS_ALL>
   {
     for(PluginStatus status : PluginStatus.all())
       pStatusSet.add(status);
@@ -666,50 +774,50 @@ PluginStatusAll() :
 }
 
 void
-PluginStatusReq() :
+PluginStatusRequired() :
 {}
 {
-  <PLG_STATUS_REQ>
+  <PLUGIN_STATUS_REQ>
   {
     pStatusSet.add(PluginStatus.Required);
   }
 }
 
 void
-PluginStatusInst() :
+PluginStatusInstalled() :
 {}
 {
-  <PLG_STATUS_INST>
+  <PLUGIN_STATUS_INST>
   {
     pStatusSet.add(PluginStatus.Installed);
   }
 }
 
 void
-PluginStatusDev() :
+PluginStatusUnderDevelopment() :
 {}
 {
-  <PLG_STATUS_DEV>
+  <PLUGIN_STATUS_DEV>
   {
     pStatusSet.add(PluginStatus.UnderDevelopment);
   }
 }
 
 void
-PluginStatusPerm() :
+PluginStatusPermanent() :
 {}
 {
-  <PLG_STATUS_PERM>
+  <PLUGIN_STATUS_PERM>
   {
     pStatusSet.add(PluginStatus.Permanent);
   }
 }
 
 void
-PluginStatusMiss() :
+PluginStatusMissing() :
 {}
 {
-  <PLG_STATUS_MISS>
+  <PLUGIN_STATUS_MISS>
   {
     pStatusSet.add(PluginStatus.Missing);
   }
@@ -719,7 +827,7 @@ void
 PluginStatusUnknown() :
 {}
 {
-  <PLG_STATUS_UNKNOWN>
+  <PLUGIN_STATUS_UNKNOWN>
   {
     pStatusSet.add(PluginStatus.Unknown);
   }
@@ -729,7 +837,7 @@ void
 PluginTypeAll() :
 {}
 {
-  <PLG_TYPE_ALL>
+  <PLUGIN_TYPE_ALL>
   {
     for(PluginType type : PluginType.all())
       pTypeSet.add(type);
@@ -737,90 +845,90 @@ PluginTypeAll() :
 }
 
 void
-PluginTypeAct() :
+PluginTypeAction() :
 {}
 {
-  <PLG_TYPE_ACT>
+  <PLUGIN_TYPE_ACT>
   {
     pTypeSet.add(PluginType.Action);
   }
 }
 
 void
-PluginTypeAnnot() :
+PluginTypeAnnotation() :
 {}
 {
-  <PLG_TYPE_ANNOT>
+  <PLUGIN_TYPE_ANNOT>
   {
     pTypeSet.add(PluginType.Annotation);
   }
 }
 
 void
-PluginTypeArch() :
+PluginTypeArchiver() :
 {}
 {
-  <PLG_TYPE_ARCH>
+  <PLUGIN_TYPE_ARCH>
   {
     pTypeSet.add(PluginType.Archiver);
   }
 }
 
 void
-PluginTypeBuild() :
+PluginTypeBuilderCollection() :
 {}
 {
-  <PLG_TYPE_BUILD>
+  <PLUGIN_TYPE_BUILD>
   {
     pTypeSet.add(PluginType.BuilderCollection);
   }
 }
 
 void
-PluginTypeComp() :
+PluginTypeComparator() :
 {}
 {
-  <PLG_TYPE_COMP>
+  <PLUGIN_TYPE_COMP>
   {
     pTypeSet.add(PluginType.Comparator);
   }
 }
 
 void
-PluginTypeEdit() :
+PluginTypeEditor() :
 {}
 {
-  <PLG_TYPE_EDIT>
+  <PLUGIN_TYPE_EDIT>
   {
     pTypeSet.add(PluginType.Editor);
   }
 }
 
 void
-PluginTypeKey() :
+PluginTypeKeyChooser() :
 {}
 {
-  <PLG_TYPE_KEY>
+  <PLUGIN_TYPE_KEY>
   {
     pTypeSet.add(PluginType.KeyChooser);
   }
 }
 
 void
-PluginTypeMaster() :
+PluginTypeMasterExt() :
 {}
 {
-  <PLG_TYPE_MASTER>
+  <PLUGIN_TYPE_MASTER>
   {
     pTypeSet.add(PluginType.MasterExt);
   }
 }
 
 void
-PluginTypeQueue() :
+PluginTypeQueueExt() :
 {}
 {
-  <PLG_TYPE_QUEUE>
+  <PLUGIN_TYPE_QUEUE>
   {
     pTypeSet.add(PluginType.QueueExt);
   }
@@ -830,7 +938,7 @@ void
 PluginTypeTool() :
 {}
 {
-  <PLG_TYPE_TOOL>
+  <PLUGIN_TYPE_TOOL>
   {
     pTypeSet.add(PluginType.Tool);
   }
@@ -864,17 +972,6 @@ DryRun() :
   <DRYRUN> AE()
   {
     pDryRun = true;
-  }
-}
-
-
-void
-Install() :
-{}
-{
-  <INSTALL> AE() 
-  { 
-    pInstall = true; 
   }
 }
 
@@ -1191,8 +1288,8 @@ AE() :
   Token t;
 }
 {
-  (t=<AE1> | t=<AE2> | 
-   t=<AE3> | t=<AE4> | t=<AE5> | t=<AE6> | t=<AE7>)
+  (t=<AE1> | t=<AE2> | t=<AE3> | 
+   t=<AE4> | t=<AE5> | t=<AE6> | t=<AE7> | t=<AE8>)
   { 
     return t; 
   }
@@ -1219,7 +1316,7 @@ EQ() :
 }
 {
   (t=<EQ1> | t=<EQ2> | t=<EQ3> | 
-   t=<EQ4> | t=<EQ5> | t=<EQ6> | t=<EQ7> | t=<EQ8>)  
+   t=<EQ4> | t=<EQ5> | t=<EQ6> | t=<EQ7> | t=<EQ8> | t=<EQ9>)  
   { 
     return t; 
   }

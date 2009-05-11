@@ -9,16 +9,27 @@
 <h3><a name="Name"></a>Name</h3>
 <blockquote><b>plplugin</b> - the Pipeline plugin installation tool<br>
 </blockquote>
-<h3><a name="Synopsis"></a>Synopsis</h3>
-<blockquote> <b>plplugin</b> [<a href="#Global_Options"><i>options</i></a>]
-  <a style="font-weight: bold;" href="#--list">--list</a><span
- style="font-weight: bold;"> </span> [<span style="font-style: italic;">list-options</span>]
-[<a style="font-weight: bold;" href="plplugin.src.html.in#--summary">--summary</a>]<br>
-  <b>plplugin</b> [<a href="#Global_Options"><i>options</i></a>] <a
- style="font-weight: bold;" href="#--summary">--summary</a><br>
-  <b>plplugin</b> [<a href="#Global_Options"><i>options</i></a>] <a
- href="#--install"><span style="font-weight: bold;">--install</span></a>
-  <i>plugin-file1 </i>[<i>plugin-file2 ...</i>]<i><br>
+<h3><a name="Synopsis"></a>Synopsis<br>
+</h3>
+<blockquote> <span style="font-weight: bold;">plplugin</span> [<a
+ href="#Global_Options"><span style="font-style: italic;">options</span></a>]
+  <a href="#List">list</a> [<span style="font-style: italic;">plugin-filtering-options</span>]<br>
+  <span style="font-weight: bold;">plplugin</span> [<a
+ href="#Global_Options"><span style="font-style: italic;">options</span></a>]
+  <a href="#Contents">contents</a> [<span style="font-style: italic;">plugin-filtering-options</span>]<br>
+  <span style="font-weight: bold;">plplugin</span> [<a
+ href="#Global_Options"><span style="font-style: italic;">options</span></a>]
+  <a href="#Summary">summary</a><br>
+  <span style="font-weight: bold;">plplugin</span> [<a
+ href="#Global_Options"><span style="font-style: italic;">options</span></a>]
+  <a href="#Install">install</a> [<span style="font-style: italic;">install-options</span>]
+  <span style="font-style: italic;">plugin-file1</span> [<span
+ style="font-style: italic;">plugin-file2 ...</span>]<br>
+  <span style="font-weight: bold;">plplugin</span> [<a
+ href="#Global_Options"><span style="font-style: italic;">options</span></a>]
+  <a href="#Extract">extract</a> [<span style="font-style: italic;">plugin-filtering-options</span>]
+[<span style="font-style: italic;">extract-options</span>] [<span
+ style="font-style: italic;">extract-path ...</span>]<i><br>
   </i><br>
   <b>plplugin</b> <a style="font-weight: bold;" href="#--help">--help</a><br>
   <b>plplugin</b> <a style="font-weight: bold;" href="#--html-help">--html-help</a><br>
@@ -44,7 +55,7 @@ care be taken so that Pipeline maintains a consistent state.&nbsp; <br>
  style="font-weight: normal;">This program must be run by a user with
 Master Admin
 privileges</span> when installing plugins (see <a href="#--install"><span
- style="font-weight: bold;">--install</span></a>).<br>
+ style="font-weight: bold;">install</span></a>).<br>
 </blockquote>
 <h3><a name="Plugin_Limitations"></a>Plugin Requirements</h3>
 <blockquote>Besides safely installing plugin files, <span
@@ -228,7 +239,7 @@ when changes could cause problems.&nbsp; In particular, nodes who's
 Action plugin is under development cannot be Checked-In.&nbsp; <br>
   <br>
 Plugins which are under developement can also be repeatably updated
-using the <a href="#--install"><span style="font-weight: bold;">--install</span></a>
+using the <a href="#--install"><span style="font-weight: bold;">install</span></a>
 option.&nbsp; Once the the plugin is no longer under developement, it
 cannot be updated and a new version has to be created in order to
 change the plugin.<br>
@@ -390,7 +401,8 @@ increasingly more detailed command tracing messages. <br>
 </div>
 </div>
 </div>
-<h3><a name="Action_Options"></a>Action Options</h3>
+<h3><a name="Action_Options"></a>Action Commands<br>
+</h3>
 <div style="margin-left: 40px;">The following options specify the
 action to be taken by <b>plplugin</b>(1) and may be followed by the
 file system paths to one or more compiled Java class or JAR files
@@ -431,188 +443,399 @@ For instance, to command line to install the <a href="#emacs"><span
  style="font-weight: bold;"> </span>mentioned above would be be: <br>
 <br>
 <div style="margin-left: 40px;"><code>&gt;
-plplugin --install us/temerity/pipeline/plugin/v1_0_0/EmacsEditor.class<br>
+plplugin install us/temerity/pipeline/plugin/v1_0_0/EmacsEditor.class<br>
 </code></div>
 <br>
 A JAR file example, might look like this: <br>
 <div style="margin-left: 40px;">
-<pre>&gt; jar -cvf com/studioX/plugin/v2_1_0/ExampleAction.jar \<br>  com/studioX/plugin/v2_1_0/ExampleAction.class \<br>  com/studioX/plugin/v2_1_0/ExampleExtras.class <br><br>&gt; plplugin --install com/studioX/plugin/v2_1_0/ExampleAction.jar<br><code></code></pre>
+<pre>&gt; jar -cvf com/studioX/plugin/v2_1_0/ExampleAction.jar \<br>  com/studioX/plugin/v2_1_0/ExampleAction.class \<br>  com/studioX/plugin/v2_1_0/ExampleExtras.class <br><br>&gt; plplugin install com/studioX/plugin/v2_1_0/ExampleAction.jar<br><code></code></pre>
 </div>
 </div>
 <div style="margin-left: 40px;">You can also install mixtures of class
 and JAR files in one invocation of <span style="font-weight: bold;">plplugin</span>(1).<span
  style="font-weight: bold;"><br>
 <br>
-<a name="--list"></a>--list </span>[<span style="font-style: italic;">list-options</span>]<br>
+<a name="List"></a>list </span>[<a href="#Plugin_Filtering_Options"><span
+ style="font-style: italic;">plugin-filtering-options</span></a>]<br>
 <span style="font-weight: bold;"></span></div>
-<br>
+<div style="margin-left: 80px;"><br>
+</div>
 <div style="margin-left: 40px;">
 <div style="margin-left: 40px;">Lists information about each plugin and
 exits.&nbsp;&nbsp;
-The following list options can be used to filter the results:<br>
+The <a href="#Plugin_Filtering_Options"><span
+ style="font-style: italic;">plugin-filtering-options</span></a> can be
+used to filter the results.<br>
 <br>
-<div style=""><b>--status=</b><i><span style="font-style: italic;">filter[,filter
-...]</span></i><br>
 </div>
+</div>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"></div>
+</div>
+<div style="margin-left: 40px;"><a name="Contents"></a><span
+ style="font-weight: bold;">contents</span> [<a
+ href="#Plugin_Filtering_Options"><span style="font-style: italic;">plugin-filtering-options</span></a>]<br>
+<div style="margin-left: 40px;"><br>
+</div>
+<div style="margin-left: 40px;">List information about each plugin
+including associated resources and exits.&nbsp; The <a
+ href="#Plugin_Filtering_Options"><span style="font-style: italic;">plugin-filtering-options</span></a>
+can be used to filter the results.<br>
 <br>
+</div>
+</div>
+<div style="margin-left: 40px;"><a name="Summary"></a><span
+ style="font-weight: bold;">summary</span><br>
+<div style="margin-left: 40px;"><br>
+</div>
+<div style="margin-left: 40px;">Prints a summary of the numbers of
+required, loaded and unknown plugins organized plugin vendor.</div>
+</div>
+<div style="margin-left: 40px;"><br>
+<a name="Plugin_Filtering_Options"></a><span style="font-weight: bold;">Plugin
+Filtering Options</span><br>
+<br>
+</div>
+<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
+ name="Plugin_Filtering_Options--status"></a>--status=</span><span
+ style="font-style: italic;">filter[,filter ...]</span><br>
+</div>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"><span style="font-style: italic;"></span></div>
+<span style="font-style: italic;"><br>
+</span></div>
 <div style="margin-left: 40px;">The possible installation status
 filtering options (<span style="font-style: italic;">filter</span>) can
 be:<br>
-<br>
 </div>
+</div>
+<div style="margin-left: 80px;"><br>
+</div>
+<div style="margin-left: 40px;">
 <div style="margin-left: 80px;"><span style="font-weight: bold;">all</span><br>
 </div>
-<div style="margin-left: 120px;">This is the default value that
-performs no filtering.<br>
-<br>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"><span style="font-weight: bold;"></span></div>
+</div>
+</div>
+<div style="margin-left: 80px;">This is the default value that performs
+no filtering.<br>
+</div>
+</div>
+<div style="margin-left: 40px;"><br>
 </div>
 <div style="margin-left: 80px;"><span style="font-weight: bold;">req</span><br>
 </div>
-<div style="margin-left: 120px;">This filter displays required plugins.<br>
-<br>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"><span style="font-weight: bold;"></span></div>
+</div>
+</div>
+<div style="margin-left: 80px;">This filter displays required plugins.<br>
+</div>
+</div>
+<div style="margin-left: 40px;"><br>
 </div>
 <div style="margin-left: 80px;"><span style="font-weight: bold;">inst</span><br>
 </div>
-<div style="margin-left: 120px;">This filter displays installed plugins.<br>
-<br>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"><span style="font-weight: bold;"></span></div>
+</div>
+</div>
+<div style="margin-left: 80px;">This filter displays installed plugins.<br>
+</div>
+</div>
+<div style="margin-left: 40px;"><br>
 </div>
 <div style="margin-left: 80px;"><span style="font-weight: bold;">dev</span><br>
 </div>
-<div style="margin-left: 120px;">This filter displays plugins under
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"><span style="font-weight: bold;"></span></div>
+</div>
+</div>
+<div style="margin-left: 80px;">This filter displays plugins under
 development.<br>
-<br>
+</div>
+</div>
+<div style="margin-left: 40px;"><br>
 </div>
 <div style="margin-left: 80px;"><span style="font-weight: bold;">perm</span><br>
 </div>
-<div style="margin-left: 120px;">This filter displays plugins NOT under
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"><span style="font-weight: bold;"></span></div>
+</div>
+</div>
+<div style="margin-left: 80px;">This filter displays plugins NOT under
 development.<br>
-<br>
+</div>
+</div>
+<div style="margin-left: 40px;"><br>
 </div>
 <div style="margin-left: 80px;"><span style="font-weight: bold;">miss</span><br>
 </div>
-<div style="margin-left: 120px;">This filter displays plugins that need
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"><span style="font-weight: bold;"></span></div>
+</div>
+</div>
+<div style="margin-left: 80px;">This filter displays plugins that need
 to be installed.<br>
-<br>
+</div>
+</div>
+<div style="margin-left: 40px;"><br>
 </div>
 <div style="margin-left: 80px;"><span style="font-weight: bold;">unknown</span><br>
 </div>
-<div style="margin-left: 120px;">This filter displays plugins that are
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"><span style="font-weight: bold;"></span></div>
+</div>
+</div>
+<div style="margin-left: 80px;">This filter displays plugins that are
 unknown to plpluginmgr.<br>
 </div>
-<br>
-<b>--type=</b><i><span style="font-style: italic;">filter[,filter ...]<br>
-<br>
-</span></i>
-<div style="margin-left: 40px;">&nbsp;
-The possible plugin type filtering options (<span
- style="font-style: italic;">filter</span>) can be:<br>
-<br>
 </div>
-<div style="margin-left: 80px;"><span style="font-weight: bold;">all</span><br>
 </div>
-<div style="margin-left: 120px;">This is the default value that
-performs no filtering.<br>
-<br>
+<div style="margin-left: 40px;"><br>
 </div>
-<div style="margin-left: 80px;"><span style="font-weight: bold;">act</span><br>
+<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
+ name="Plugin_Filtering_Options--type"></a>--type=</span><span
+ style="font-style: italic;">filter[,filter ...]</span><br>
 </div>
-<div style="margin-left: 120px;">This filter displays Action plugins.<br>
-<br>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"><span style="font-style: italic;"></span></div>
 </div>
-<div style="margin-left: 80px;"><span style="font-weight: bold;">annot</span><br>
 </div>
-<div style="margin-left: 120px;">This filter displays Annotation
+<div style="margin-left: 80px;"><br>
+</div>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;">The possible plugin type filtering
+options (<span style="font-style: italic;">filter</span>) can be:<br>
+</div>
+<div style="margin-left: 40px;"><br>
+</div>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"><span style="font-weight: bold;">all</span><br>
+</div>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"><span style="font-weight: bold;"></span></div>
+</div>
+<div style="margin-left: 40px;">This is the default value that performs
+no filtering.<br>
+</div>
+</div>
+<div style="margin-left: 40px;"><br>
+</div>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">act</span><br>
+</div>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"><span style="font-weight: bold;"></span></div>
+</div>
+<div style="margin-left: 40px;">This filter displays Action plugins.<br>
+</div>
+</div>
+<div style="margin-left: 40px;"><br>
+</div>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">annot</span><br>
+</div>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"><span style="font-weight: bold;"></span></div>
+</div>
+<div style="margin-left: 40px;">This filter displays Annotation plugins.<br>
+</div>
+</div>
+<div style="margin-left: 40px;"><br>
+</div>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">arch</span><br>
+</div>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"><span style="font-weight: bold;"></span></div>
+</div>
+<div style="margin-left: 40px;">This filter displays Archiver plugins.<br>
+</div>
+</div>
+<div style="margin-left: 40px;"><br>
+</div>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">build</span><br>
+</div>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"><span style="font-weight: bold;"></span></div>
+</div>
+<div style="margin-left: 40px;">This filter displays BuilderCollection
 plugins.<br>
-<br>
 </div>
-<div style="margin-left: 80px;"><span style="font-weight: bold;">arch</span><br>
 </div>
-<div style="margin-left: 120px;">This filter displays Archiver plugins.<br>
-<br>
+<div style="margin-left: 40px;"><br>
 </div>
-<div style="margin-left: 80px;"><span style="font-weight: bold;">build</span><br>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">comp</span><br>
 </div>
-<div style="margin-left: 120px;">This filter displays Builder
-Collection plugins.<br>
-<br>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"><span style="font-weight: bold;"></span></div>
 </div>
-<div style="margin-left: 80px;"><span style="font-weight: bold;">comp</span><br>
+<div style="margin-left: 40px;">This filter displays Comparator plugins.<br>
 </div>
-<div style="margin-left: 120px;">This filter displays Comparator
-plugins.<br>
-<br>
 </div>
-<div style="margin-left: 80px;"><span style="font-weight: bold;">edit</span><br>
+<div style="margin-left: 40px;"><br>
 </div>
-<div style="margin-left: 120px;">This filter displays Editor plugins.<br>
-<br>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">edit</span><br>
 </div>
-<div style="margin-left: 80px;"><span style="font-weight: bold;">key</span><br>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"><span style="font-weight: bold;"></span></div>
 </div>
-<div style="margin-left: 120px;">This filter displays Key Chooser
-plugins.<br>
-<br>
+<div style="margin-left: 40px;">This filter displays Editor plugins.<br>
 </div>
-<div style="margin-left: 80px;"><span style="font-weight: bold;">master</span><br>
 </div>
-<div style="margin-left: 120px;">This filter displays MasterExt plugins.<br>
-<br>
+<div style="margin-left: 40px;"><br>
 </div>
-<div style="margin-left: 80px;"><span style="font-weight: bold;">queue</span><br>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">key</span><br>
 </div>
-<div style="margin-left: 120px;">This filter displays QueueExt plugins.<br>
-<br>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"><span style="font-weight: bold;"></span></div>
 </div>
-<div style="margin-left: 80px;"><span style="font-weight: bold;">tool</span><br>
+<div style="margin-left: 40px;">This filter displays KeyChooser plugins.<br>
 </div>
-<div style="margin-left: 120px;">This filter displays Tool plugins
-plugins.<br>
 </div>
-<br>
-<b>--type=</b><i><span style="font-style: italic;">filter[,filter ...]<br>
-<br>
-</span></i>
+<div style="margin-left: 40px;"><br>
+</div>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">master</span><br>
+</div>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"><span style="font-weight: bold;"></span></div>
+</div>
+<div style="margin-left: 40px;">This filter displays MasterExt plugins.<br>
+</div>
+</div>
+<div style="margin-left: 40px;"><br>
+</div>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">queue</span><br>
+</div>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"><span style="font-weight: bold;"></span></div>
+</div>
+<div style="margin-left: 40px;">This filter displays QueueExt plugins.<br>
+</div>
+</div>
+<div style="margin-left: 40px;"><br>
+</div>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">tool</span><br>
+</div>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"><span style="font-weight: bold;"></span></div>
+</div>
+<div style="margin-left: 40px;">This filter displays Tool plugins.<br>
+</div>
+</div>
+</div>
+<div style="margin-left: 40px;"><br>
+</div>
+</div>
+<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
+ name="Plugin_Filtering_Options--vendor"></a>--vendor=</span><span
+ style="font-style: italic;">filter[,filter ...]</span><br>
+</div>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"><span style="font-style: italic;"></span></div>
+</div>
+</div>
+<div style="margin-left: 80px;"><br>
+</div>
+<div style="margin-left: 40px;">
 <div style="margin-left: 40px;">The vendor filtering options (<span
  style="font-style: italic;">filter</span>) must be an exact match for
-the plugin's vendor property. <br>
-</div>
-<br>
+the plugin's vendor property.<br>
 </div>
 </div>
-<div style="margin-left: 80px;"><b>--summary<br>
-<br>
-</b></div>
-<div style="margin-left: 120px;">Prints a summary of the numbers of
-required, loaded and unknown plugins organized plugin vendor.</div>
-<div style="margin-left: 40px;">
 <div style="margin-left: 40px;"><br>
-<br>
-<b>Examples</b>:<br>
-<br>
+</div>
+<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
+ name="Plugin_Filtering_Options--name"></a>--name=</span><span
+ style="font-style: italic;">filter[,filter ...]</span><br>
+</div>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"><span style="font-style: italic;"></span></div>
+</div>
+</div>
+<div style="margin-left: 80px;"><br>
+</div>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;">The name filtering options (<span
+ style="font-style: italic;">filter</span>) must be an exact match for
+the plugin's name property.<br>
+</div>
+<div style="margin-left: 40px;"><span style="font-style: italic;"><br>
+</span></div>
+</div>
+<div style="margin-left: 40px;"><span style="font-weight: bold;"><a
+ name="Plugin_Filtering_Options--version"></a>--version=</span><span
+ style="font-style: italic;">filter[,filter ...]</span><br>
+</div>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"><span style="font-style: italic;"></span></div>
+<span style="font-style: italic;"><br>
+</span></div>
+<div style="margin-left: 40px;">The version filtering options (<span
+ style="font-style: italic;">filter</span>) must be an exact match for
+the plugin's name property.<br>
+</div>
+<span style="font-weight: bold;"></span></div>
+<div style="margin-left: 40px;"><br>
+</div>
+<div style="margin-left: 40px;"><b>Examples</b>:<br>
+<div style="margin-left: 40px;"><br>
 To display all Builder Collection plugins from the Temerity vendor
 which are under development:<br>
 <br>
-<div style="margin-left: 40px;">plplugin --status=dev --type=build
+<div style="margin-left: 40px;">plplugin list --status=dev --type=build
 --vendor=Temerity<br>
 </div>
 <br>
 To display all Action, Editor and Tool plugins:<br>
 <br>
-<div style="margin-left: 40px;">plplugin --type=act,edit,tool<br>
+<div style="margin-left: 40px;">plplugin list --type=act,edit,tool<br>
 </div>
 <br>
 To display all missing and unknown plugins:<br>
 <br>
-<div style="margin-left: 40px;">plplugin --status=miss,unknown<br>
+<div style="margin-left: 40px;">plplugin list --status=miss,unknown<br>
 </div>
 </div>
+</div>
+<div style="margin-left: 40px;">
 </div>
 <br>
 <br>
 <div style="margin-left: 40px;"><span style="font-weight: bold;"><a
- name="--install"></a></span>[<a style="font-style: italic;"
- href="plplugin.src.html.in#Install_Options">install-options</a>] <span
- style="font-weight: bold;">--install</span><i> plugin-file1 </i>[<i>plugin-file2
+ name="Install"></a></span><span style="font-weight: bold;">install</span><i>
+</i>[<a style="font-style: italic;"
+ href="plplugin.src.html.in#Install_Options">install-options</a>] <i>plugin-file1
+</i>[<i>plugin-file2
 ...</i>]&nbsp;<br>
 <br>
 <div style="margin-left: 40px;">Installs one or more compiled plugins (<span
@@ -698,7 +921,67 @@ override this check and this option provides the means to do so.<br>
 that an install of a plugin but do not actually perform the
 installation.&nbsp; This option allows for plugin developer to check
 whether a plugin would be installed successfully without installing it.<br>
+<br>
 </div>
+</div>
+<div style="margin-left: 40px;"><a name="Extract"></a><span
+ style="font-weight: bold;">extract</span> <a
+ href="#Plugin_Filtering_Options"><span style="font-style: italic;"></span></a>[<a
+ href="#Extract"><span style="font-style: italic;">extract-options</span></a>]
+[<span style="font-style: italic;">extract-path ...</span>]<br>
+<br>
+Extracts all or a subset of resources associated with a single
+plugin.&nbsp; The <span style="font-style: italic;">extract-path</span>
+can be an exact name of a resource or a path that contains multiple
+resources.&nbsp; By specifying a combination of --type, --vendor,
+--name, and --version the result should be a single plugin.<br>
+<br>
+<a name="Extract_Options"></a><span style="font-weight: bold;">Extract
+Options<br>
+<br>
+<a name="Extract--type"></a>--type</span>=<span
+ style="font-style: italic;"><span style="font-style: italic;">plugin-type</span><br>
+<br>
+</span>
+<div style="margin-left: 40px;">See the plugin-filtering-options for <a
+ href="#Plugin_Filtering_Options--type"><span
+ style="font-style: italic;">--type</span></a>.<br>
+</div>
+<span style="font-style: italic;"><br>
+</span><span style="font-weight: bold;"><a name="Extract--vendor"></a>--vendor</span>=<span
+ style="font-style: italic;"><span style="font-style: italic;">plugin-vendor</span><br>
+<br>
+</span>
+<div style="margin-left: 40px;">See the plugin-filtering-options for <a
+ href="#Plugin_Filtering_Options--vendor"><span
+ style="font-style: italic;">--vendor</span></a>.</div>
+<span style="font-style: italic;"><br>
+</span><span style="font-weight: bold;"><a name="Extract--name"></a>--name</span>=<span
+ style="font-style: italic;"><span style="font-style: italic;">plugin-name</span><br>
+<br>
+</span>
+<div style="margin-left: 40px;">See the plugin-filtering-options for <a
+ href="#Plugin_Filtering_Options--name"><span
+ style="font-style: italic;">--name</span></a>.</div>
+<span style="font-style: italic;"><br>
+</span><a name="Extract--version"></a><span style="font-weight: bold;">--version</span>=<span
+ style="font-style: italic;"><span style="font-style: italic;">plugin-version</span><br>
+<br>
+</span>
+<div style="margin-left: 40px;">See the plugin-filtering-options for <a
+ href="#Plugin_Filtering_Options--version"><span
+ style="font-style: italic;">--version</span></a>.</div>
+<span style="font-style: italic;"><br>
+</span><span style="font-weight: bold;"><a name="Extract--dir"></a>--dir</span>=<span
+ style="font-style: italic;">directory-name<br>
+</span>
+<div style="margin-left: 40px;"><br>
+The directory where to write the resource plugins.&nbsp; If this
+options is not specified the current directory is used.<br>
+</div>
+<span style="font-weight: bold;"></span></div>
+<div style="margin-left: 40px;">
+<div style="margin-left: 40px;"></div>
 </div>
 <h3><a name="See_Also"></a>See Also</h3>
 <div style="margin-left: 40px;"><span style="font-weight: bold;">Documentation</span>

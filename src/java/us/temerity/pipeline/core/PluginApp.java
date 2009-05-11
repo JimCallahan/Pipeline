@@ -1,4 +1,4 @@
-// $Id: PluginApp.java,v 1.22 2009/03/26 06:48:37 jlee Exp $
+// $Id: PluginApp.java,v 1.23 2009/05/11 17:46:56 jlee Exp $
 
 package us.temerity.pipeline.core;
 
@@ -245,6 +245,8 @@ class PluginApp
 	String name   = pid.getName();
 	VersionID vid = pid.getVersionID();
 
+	String pluginPath = vendor + "/" + ptype + "/" + name + "/" + vid;
+
 	if(!vendorFilter.isEmpty() && !vendorFilter.contains(vendor))
 	  continue;
 
@@ -313,7 +315,7 @@ class PluginApp
 
 	      if(plugin == null)
 		throw new PipelineException
-		  ("There is no plugin () of type ()");
+		  ("There is no plugin (" + pluginPath + ") of type (" + pstat + ")");
 
 	      buf.append("Supports    :");
 
@@ -407,6 +409,240 @@ class PluginApp
   }
 
   /**
+   * Extract the resources for the plugin given vendor/type/name/version.  
+   * Not all options need to be specified, as long as a single plugin matches.
+   */
+  public void
+  extractPluginResources
+  (
+   PluginMgrControlClient client, 
+   TreeSet<String>     vendorFilter, 
+   TreeSet<PluginType> ptypeFilter, 
+   TreeSet<String>     nameFilter, 
+   TreeSet<VersionID>  versionFilter, 
+   TreeSet<String> extractPaths, 
+   File extractDir
+  )
+    throws PipelineException
+  {
+    Path extractPath = null;
+    try {
+      File dir = extractDir.getCanonicalFile();
+
+      if(!dir.isDirectory()) {
+	if(!dir.mkdirs())
+	  throw new IOException();
+      }
+
+      extractPath = new Path(dir);
+    }
+    catch(IOException ex) {
+      throw new PipelineException
+	("The directory (" + extractDir + ") was not a valid directory!");
+    }
+
+    DoubleMap<PluginType,PluginID,PluginStatus> pluginStatus = 
+      client.getPluginStatus();
+
+    DoubleMap<PluginType,PluginID,PluginStatus> pluginTable = 
+      new DoubleMap<PluginType,PluginID,PluginStatus>();
+
+    int pcnt = 0;
+
+    for(PluginType ptype : pluginStatus.keySet()) {
+      if(!ptypeFilter.isEmpty() && !ptypeFilter.contains(ptype))
+	continue;
+
+      for(PluginID pid : pluginStatus.keySet(ptype)) {
+	String vendor = pid.getVendor();
+	String name   = pid.getName();
+	VersionID vid = pid.getVersionID();
+
+	if(!vendorFilter.isEmpty() && !vendorFilter.contains(vendor))
+	  continue;
+
+	if(!nameFilter.isEmpty() && !nameFilter.contains(name))
+	  continue;
+
+	if(!versionFilter.isEmpty() && !versionFilter.contains(vid))
+	  continue;
+
+	PluginStatus pstat = pluginStatus.get(ptype, pid);
+
+	pluginTable.put(ptype, pid, pstat);
+	pcnt++;
+      }
+    }
+
+    /*
+    for(PluginType ptype : pluginTable.keySet()) {
+      for(PluginID pid : pluginTable.keySet(ptype)) {
+	String vendor = pid.getVendor();
+	String name   = pid.getName();
+	VersionID vid = pid.getVersionID();
+
+	LogMgr.getInstance().logAndFlush
+	  (LogMgr.Kind.Ops, LogMgr.Level.Info, 
+	   vendor + "/" + ptype + "/" + name + "/" + vid);
+      }
+    }
+    */
+
+    if(pcnt == 0) {
+      throw new PipelineException
+	("There is no plugin that matches the options provided.  " + 
+	 "Please rerun extact with more details about the plugin.");
+    }
+    else if(pcnt > 1) {
+      throw new PipelineException
+	("There are (" + pcnt + ") plugins that match the options provided.  " + 
+	 "Please rerun extract with more details about the plugin.");
+    }
+
+    for(PluginType ptype : pluginTable.keySet()) {
+      for(PluginID pid : pluginTable.keySet(ptype)) {
+	String vendor = pid.getVendor();
+	String name   = pid.getName();
+	VersionID vid = pid.getVersionID();
+
+	String pluginPath = vendor + "/" + ptype + "/" + name + "/" + vid;
+
+	PluginStatus pstat = pluginTable.get(ptype, pid);
+
+	switch(pstat) {
+	  case Installed:
+	  case UnderDevelopment:
+	  case Permanent:
+	    {
+	      BasePlugin plugin = newPlugin(client, ptype, pid);
+
+	      if(plugin == null)
+		throw new PipelineException
+		  ("There is no plugin (" + pluginPath + ") of type (" + pstat + ")");
+
+	      SortedMap<String,Long> resources = plugin.getResources();
+
+	      if(resources == null || resources.isEmpty()) {
+		throw new PipelineException
+		  ("There are no resources for plugin (" + pluginPath + ")");
+	      }
+	      
+	      TreeSet<String> rset = new TreeSet<String>();
+
+	      if(extractPaths.isEmpty()) {
+		for(String path : resources.keySet()) {
+		  rset.add(path);
+		}
+	      }
+	      else {
+		TreeSet<String> extractPathsCopy = new TreeSet<String>(extractPaths);
+
+		for(String path : extractPaths) {
+		  if(resources.containsKey(path)) {
+		    rset.add(path);
+
+		    extractPathsCopy.remove(path);
+		  }
+		}
+
+		if(!extractPathsCopy.isEmpty()) {
+		  for(String expath : extractPathsCopy) {
+		    for(String path : resources.keySet()) {
+		      if(path.startsWith(expath)) {
+			rset.add(path);
+		      }
+		    }
+		  }
+		}
+	      }
+
+	      for(String path : rset) {
+		long filesize = resources.get(path);
+		Path rpath = new Path(extractPath, path);
+
+		try {
+		  writeResource(plugin, path, filesize, rpath);
+		}
+		catch(PipelineException ex) {
+		  throw ex;
+		}
+	      }
+	    }
+	    break;
+	  default:
+	    {
+	      throw new PipelineException
+		("Plugin (" + pluginPath + ") is not installed!");
+	    }
+	}
+      }
+    }
+  }
+
+  /**
+   * Write the resource to the specified directory.
+   */
+  private void
+  writeResource
+  (
+   BasePlugin plugin, 
+   String path, 
+   long filesize, 
+   Path rpath
+  )
+    throws PipelineException
+  {
+    File rfile = rpath.toFile();
+    File parent = rfile.getParentFile();
+
+    if(!parent.exists()) {
+      if(!parent.mkdirs()) {
+	throw new PipelineException("Unable to mkdirs (" + parent + ")!");
+      }
+    }
+
+    URL url = plugin.getResource("/" + path);
+
+    long bytesRead = 0L;
+    
+    try {
+      InputStream in = url.openStream();
+      FileOutputStream out = new FileOutputStream(rfile);
+
+      byte[] buf = new byte[4096];
+
+      while(true) {
+	int len = in.read(buf, 0, buf.length);
+	if(len == -1)
+	  break;
+	bytesRead += len;
+	out.write(buf, 0, len);
+      }
+
+      out.close();
+      in.close();
+    }
+    catch(IOException ex) {
+      throw new PipelineException(ex);
+    }
+
+    if(bytesRead != filesize) {
+      if(rfile.exists()) {
+	rfile.delete();
+      }
+
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Info, 
+	 "Error with resource (" + path + ")!");
+    }
+    else {
+      LogMgr.getInstance().log
+	(LogMgr.Kind.Ops, LogMgr.Level.Info, 
+	 "Wrote resource (" + path + ").");
+    }
+  }
+
+  /**
    * Retrieve a plugin based on type and plugin id.
    */
   private BasePlugin
@@ -473,12 +709,13 @@ class PluginApp
     LogMgr.getInstance().log
       (LogMgr.Kind.Ops, LogMgr.Level.Info,
        "USAGE:\n" +
-       "  plplugin [options] --list [--status=...] [--type=...] " + 
-       "[--vendor=...] [--name=...] [--vsn=...] [--summary]\n" +  
-       "  plplugin [options] --contents [--status=...] [--type=...] " + 
-       "[--vendor=...] [--name=...] [--vsn=...] [--summary]\n" + 
-       "  plplugin [options] --summary\n" + 
-       "  plplugin [options] --install class-file1 [class-file2 ...]\n" + 
+       "  plplugin [options] list [plugin filtering options]\n" + 
+       "  plplugin [options] contents [plugin filtering options]\n" + 
+       "  plplugin [options] summary\n" + 
+       "  plplugin [options] install " + 
+       "[--external] [--rename] [--dry-run] plugin-file1 [plugin-file2 ...]\n" + 
+       "  plplugin [options] extract " + 
+       "[--type=] [--vendor=] [--name=] [--version=] [--dir=] [resource-path ...]\n" +
        "\n" + 
        "  plplugin --help\n" +
        "  plplugin --html-help\n" +
@@ -487,9 +724,11 @@ class PluginApp
        "  plplugin --copyright\n" + 
        "  plplugin --license\n" + 
        "\n" + 
+       "PLUGIN FILTERING OPTIONS:\n" + 
+       "  [--status=...] [--type=...] [--vendor=...] [--name=...] [--version=...]\n" + 
+       "\n" + 
        "OPTIONS:\n" +
        "  [--log-file=...] [--log-backups=...] [--log=...]\n" +
-       "  [--external] [--rename] [--dry-run]\n" + 
        "\n" + 
        "\n" +  
        "Use \"plplugin --html-help\" to browse the full documentation.\n");
