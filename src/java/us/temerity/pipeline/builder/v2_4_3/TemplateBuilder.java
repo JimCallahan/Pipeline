@@ -1,4 +1,4 @@
-// $Id: TemplateBuilder.java,v 1.14 2009/05/07 03:25:29 jesse Exp $
+// $Id: TemplateBuilder.java,v 1.15 2009/05/11 19:19:53 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -576,11 +576,17 @@ class TemplateBuilder
       } // while (!pNodesToBuild.isEmpty() )
       for (Integer order : orderedRoots.keySet()) {
         for (String root : orderedRoots.get(order)) {
+          pLog.log(Kind.Bld, Level.Finer, 
+            "Order (" + order + ").  Adding root node (" + root + ") to " +
+            "queue and check-in list.");
           addToQueueList(root);
           addToCheckInList(root);  
         }
       }
       for (String root : roots) {
+        pLog.log(Kind.Bld, Level.Finer, 
+          "Order (none).  Adding root node (" + root + ") to " +
+          "queue and check-in list.");
         addToQueueList(root);
         addToCheckInList(root);  
       }

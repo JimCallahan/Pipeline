@@ -1,4 +1,4 @@
-// $Id: BaseUtil.java,v 1.43 2009/05/07 03:25:29 jesse Exp $
+// $Id: BaseUtil.java,v 1.44 2009/05/11 19:19:53 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -602,8 +602,11 @@ class BaseUtil
     throws PipelineException
   {
     if (nodes != null) 
-      for(String node : nodes) 
+      for(String node : nodes) {
+        pLog.log(Kind.Ops, Level.Finer, 
+          "Checking in node (" + node + ").");
 	pClient.checkIn(getAuthor(), getView(), node, message, level);
+      }
   }
 
   /**
