@@ -1,4 +1,4 @@
-// $Id: QueueJobCounters.java,v 1.1 2006/12/14 02:39:05 jim Exp $
+// $Id: QueueJobCounters.java,v 1.2 2009/05/12 21:57:15 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -220,6 +220,7 @@ class QueueJobCounters
     {
       pTotal = total; 
     }
+
     public synchronized void
     update
     (

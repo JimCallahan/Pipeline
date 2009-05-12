@@ -1,4 +1,4 @@
-// $Id: JQueueJobBrowserPanel.java,v 1.39 2009/03/25 19:31:58 jesse Exp $
+// $Id: JQueueJobBrowserPanel.java,v 1.40 2009/05/12 21:57:39 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -500,7 +500,7 @@ class JQueueJobBrowserPanel
    *   Name of the current working area view.
    * 
    * @param groups
-   *   The queue job groups indexe by job group ID.
+   *   The queue job groups indexed by job group ID.
    * 
    * @param jobStatus
    *   The job status indexed by job ID.
