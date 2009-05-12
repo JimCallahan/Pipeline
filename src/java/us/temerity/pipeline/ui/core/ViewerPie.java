@@ -1,4 +1,4 @@
-// $Id: ViewerPie.java,v 1.5 2007/06/26 05:18:57 jim Exp $
+// $Id: ViewerPie.java,v 1.6 2009/05/12 09:34:47 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -59,12 +59,27 @@ class ViewerPie
 	total += pHistogram.getCount(wk);
       
       if(total > 0L) {    
+        TreeSet<Integer> indices = new TreeSet<Integer>(); 
+        double added = 0.0;
 	double dtotal = (double) total;
 	for(wk=0; wk<size; wk++) {
 	  long count = pHistogram.getCount(wk);
-	  if(count > 0) 
-	    pSlices.put(wk, ((double) count) / dtotal);
-	}
+	  if(count > 0) {
+            double portion = ((double) count) / dtotal;
+            if(portion < sMinPortion) {
+              added += (sMinPortion - portion);
+              portion = sMinPortion;
+            }
+
+            pSlices.put(wk, portion);
+          }
+        }
+
+        if(added > 0.0) {
+          double factor = 1.0 / (1.0 + added); 
+          for(int idx : pSlices.keySet()) 
+            pSlices.put(idx, pSlices.get(idx) * factor);
+        }
       }
     }
   }
@@ -663,13 +678,25 @@ class ViewerPie
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * The minimum percentage of the pie which can be assigned to a slice.
+   */ 
+  private static final  double  sMinPortion = 0.015; 
+
+  /**
    * The inner/outer radius of the pie ring.
    */ 
   private static final  double  sInnerRadius = 1.2;
   private static final  double  sOuterRadius = 2.0;
-  private static final  double  sLabelGap    = 0.15; 
+
+  /**
+   * The gap between the outer ring and the label.
+   */ 
+  private static final  double  sLabelGap = 0.15; 
+
+  /**
+   * The distance from the inner/outer rings to the filter indicator ring segments.
+   */ 
   private static final  double  sFilterWidth = 0.10; 
-  
 
 
   /*----------------------------------------------------------------------------------------*/
