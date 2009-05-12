@@ -1,4 +1,4 @@
-// $Id: AssetBuilder.java,v 1.4 2009/03/10 16:54:04 jesse Exp $
+// $Id: AssetBuilder.java,v 1.5 2009/05/12 03:22:29 jesse Exp $
 
 package com.nathanlove.pipeline.plugin.BaseCollection.v1_0_0;
 
@@ -6,7 +6,6 @@ import java.util.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
-import us.temerity.pipeline.builder.BaseBuilder.*;
 import us.temerity.pipeline.builder.BuilderInformation.*;
 import us.temerity.pipeline.builder.v2_4_1.*;
 import us.temerity.pipeline.math.*;
@@ -467,7 +466,9 @@ class AssetBuilder
     {
       for(FinalizableStage stage : pFinalizeStages2) 
         stage.finalizeStage();
-    }    
+    }
+    
+    private static final long serialVersionUID = -3703167805383428354L;
   }
 
   

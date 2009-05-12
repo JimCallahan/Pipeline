@@ -1,4 +1,4 @@
-// $Id: ShadeApproveTaskBuilder.java,v 1.2 2008/06/26 20:45:55 jesse Exp $
+// $Id: ShadeApproveTaskBuilder.java,v 1.3 2009/05/12 03:22:29 jesse Exp $
 
 package com.nathanlove.pipeline.plugin.BaseCollection.v1_0_0;
 
@@ -48,6 +48,8 @@ class ShadeApproveTaskBuilder
          mclient, qclient, builderInfo);
     
     addDefaultParams();
+    
+    addReleaseViewParam();
     
     addSetupPass(new ApprovalSetup());
     addConstructPass(new UpdateNetworks());

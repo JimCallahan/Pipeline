@@ -1,4 +1,4 @@
-// $Id: CurveShotBuilder.java,v 1.4 2009/03/10 16:54:04 jesse Exp $
+// $Id: CurveShotBuilder.java,v 1.5 2009/05/12 03:22:29 jesse Exp $
 
 package com.nathanlove.pipeline.plugin.BaseCollection.v1_0_0;
 
@@ -80,6 +80,8 @@ class CurveShotBuilder
     addSetupPass(new AssetInfoPass());
     addConstructPass(new MakeNodesPass());
     addConstructPass(new FinalizePass());
+    
+    addAOEMode(aUpdate, ActionOnExistence.Conform);
     
     /* Params  */
     {
@@ -568,11 +570,10 @@ class CurveShotBuilder
     {
       String type = TaskType.Animation.toTitle();
       
-      ActionOnExistence cache = pStageInfo.getActionOnExistence();
-      
       String animEdit = pShotNamer.getAnimEditScene();
       {
-        pStageInfo.setActionOnExistence(ActionOnExistence.CheckOut);
+        addAOEOverride(aUpdate, animEdit, ActionOnExistence.Continue);
+        
         AnimEditStage stage = 
           new AnimEditStage
           (pStageInfo, pContext, pClient, pMayaContext,
@@ -580,7 +581,6 @@ class CurveShotBuilder
         addTaskAnnotation(stage, NodePurpose.Edit, pProject, pTaskName, type);
         if (stage.build())
           addToDisableList(animEdit);
-        pStageInfo.setActionOnExistence(cache);
       }
 
       TreeMap<String, String> animPrepareFiles = new TreeMap<String, String>();
@@ -613,9 +613,9 @@ class CurveShotBuilder
         animPrepareFiles.put(nameSpace, animPrepare);
         pAnimProductFiles.put(nameSpace, animProduct);
       }
+
       String animVerify = pShotNamer.getAnimVerifyScene();
       {
-        pStageInfo.setActionOnExistence(ActionOnExistence.Conform);
         AnimVerifyStage stage = 
           new AnimVerifyStage
           (pStageInfo, pContext, pClient, pMayaContext,
@@ -623,8 +623,8 @@ class CurveShotBuilder
            null, pFrameRange);
         addTaskAnnotation(stage, NodePurpose.Focus, pProject, pTaskName, type);
         stage.build();
-        pStageInfo.setActionOnExistence(cache);
       }
+
       String animSubmit = pShotNamer.getAnimSubmitNode();
       {
         TargetStage stage = 
@@ -656,8 +656,6 @@ class CurveShotBuilder
     buildLighting()
       throws PipelineException
     {
-      ActionOnExistence cache = pStageInfo.getActionOnExistence();
-      
       String type = TaskType.Lighting.toTitle();
       LockBundle bundle = new LockBundle();
       for (String node : pAnimProductFiles.values()) 
@@ -672,7 +670,6 @@ class CurveShotBuilder
       }
       String preLightScene = pShotNamer.getPreLightScene();
       {
-        pStageInfo.setActionOnExistence(ActionOnExistence.Conform);
         PreLightStage stage = 
           new PreLightStage
           (pStageInfo, pContext, pClient, pMayaContext,
@@ -680,11 +677,10 @@ class CurveShotBuilder
            null, pFrameRange);
         addTaskAnnotation(stage, NodePurpose.Edit, pProject, pTaskName, type);
         stage.build();
-        pStageInfo.setActionOnExistence(cache);
       }
       String lightingScene = pShotNamer.getLightingEditScene();
       {
-        pStageInfo.setActionOnExistence(ActionOnExistence.CheckOut);
+        addAOEOverride(aUpdate, lightingScene, ActionOnExistence.Continue);
         LightingEditStage stage = 
           new LightingEditStage
           (pStageInfo, pContext, pClient, pMayaContext,
@@ -692,7 +688,6 @@ class CurveShotBuilder
         addTaskAnnotation(stage, NodePurpose.Edit, pProject, pTaskName, type);
         if (stage.build())
           addToDisableList(lightingScene);
-        pStageInfo.setActionOnExistence(cache);
       }
       String lightingRenderNode = pShotNamer.getLightingRenderNode();
       {
@@ -730,7 +725,6 @@ class CurveShotBuilder
         stage.build();
       }
       {
-        pStageInfo.setActionOnExistence(ActionOnExistence.Conform);
         String script = pProjectNamer.getLightingProductMEL();
         LightingProductStage stage = 
           new LightingProductStage
@@ -739,7 +733,6 @@ class CurveShotBuilder
         addTaskAnnotation(stage, NodePurpose.Product, pProject, pTaskName, type);
         if (stage.build()) 
           pFinalizeStages.add(stage);
-        pStageInfo.setActionOnExistence(cache);
       }
       {
         TargetStage stage = 
@@ -805,10 +798,12 @@ class CurveShotBuilder
   /*  S T A T I C   I N T E R N A L S                                                       */
   /*----------------------------------------------------------------------------------------*/
   
-  public final static String aChars  = "Chars";
-  public final static String aProps  = "Props";
-  public final static String aEnvs   = "Envs";
-  public final static String aCamera = "Camera";
+  public static final String aChars  = "Chars";
+  public static final String aProps  = "Props";
+  public static final String aEnvs   = "Envs";
+  public static final String aCamera = "Camera";
+  
+  public static final String aUpdate = "Update";
   
   
   private static final ParamMapping aProjectMapping = 
