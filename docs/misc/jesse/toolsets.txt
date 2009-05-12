@@ -70,3 +70,63 @@ There is a third option which somewhat combines the first two.  We still write G
 There is a modification of 3, which we can call 3a.  The new toolset setup is going to allow you to hide versions of toolsets or even entire toolsets.  So what you see in the list of existing toolsets is a filtered list (with a control to flip all of them on and off).  So we could save out a cache of all the toolsets, including which ones are hidden and then only load the visible ones at start-up.  Those are the ones that people will most likely be using, so it makes sense to have them in memory.  Then we load the hidden ones off disk when someone asks for them.  A sort of smart caching.  Of course, if the studio doesn't have any hidden toolsets, we don't get any memory benefits.  But I would assume that most studios will have less than 10 visible toolsets at any one time, so we should get signifigant savings as time goes on.
 
 I think the third option is the worst of the three.  It has the potential to make interactive speed in the ManageToolsets dialog the slowest.  If we're going to go with dynamic loading, the second option provides better speed and the same small memory footprint.  I'm torn between option 1 and option 2.  2 is definitely more efficient, but slower and slightly less clean to implement.  1 is faster and cleaner, but the amount of memory need is O(n) to the number of toolsets.   3a preserves the cleanness, gets the speed for the toolsets that will be frequently used, but still has quite nice memory footprint. 
+
+
+*******************************************************
+
+Gui stuff.
+
+Okay, so when we build the package editing GUI what information do we need?
+We want to be able to find out for a given ToolsetMod, which levels of the package are conflicted.  Now toolsets currently save everything by MachineType, which is great for running jobs.  But it doesn't tell us where a particular variable actually comes from.  The package knows what level a given variable exists at.  However, the toolset cannot just say, "HORSE" is conflicted.  It will tell us that "HORSE" is conflicted in the context of a particular MachineType.  This is as it should be, because there isn't actually a generic conflict with "HORSE".  It is completely possible that "HORSE" is an Unix os level variable in the package, but it only has a conflict in the Unix:x86 part of the toolset, while the Unix:x64 part is just fine.  But on the package side we want to be able to color the levels that actually have conflicts, rather than just coloring everything that might be conflicted.
+So we need to get a list of the variables that live in the particular level of the Package and pass them into the toolset with optional os,arch arguments.  The toolset will then search all relevant machine types for a conflict with any of the variables and return true if any of them are found.
+Can we cache this?  not easily given how we currently build toolsets.  Toolsets are isolated from what level variables comes from.  However we could build up lists of variables which are conflicted, based on the machine type we're generating.  That would make this lookup somewhat faster.  Would use slightly more memory, but I doubt that is a major concern.
+
+Adding variables to Packages.  
+
+We essentially need to have a 'fake' package Mod for the GUI.  As we try to add variables to the package, it needs to update this fake package to make sure that everything is correct.  Most importantly it needs to prevent variables from being added that will create internal clashes in the package, etc.  When you hit apply, it can go ahead and dump this modified package back into the cache as the actual package.
+
+
+********************************************************
+Methods:
+
+getToolsetInfo()
+  Returns:
+   DefaultToolset
+   ActiveToolsets
+
+SC - getActiveToolset2Names()
+SC - getDefaultToolset2Name()
+SC - setDefaultToolset2Name()
+SC - getToolset2Names()
+createToolset2()
+freezeToolset2()
+S - getToolset2PackageNames()
+createToolset2Package()
+freezeToolset2Package()
+
+new stuff:
+
+getNewToolsets(TreeSet<EnvID>, Long toolsetID);
+
+********************************************************
+MasterReqs:
+  
+  X - GetDefaultToolset2Name
+  X - SetDefaultToolset2Name
+  X - GetActiveToolset2Names
+  SetToolset2Active
+  X - GetToolset2Names,
+  GetToolset2
+  GetToolset2Environment
+  CreateToolset2,
+  X - GetToolset2PackageNames
+  GetToolset2Package, 
+  GetToolset2Packages, 
+  CreateToolset2Package, 
+
+MasterMgrClient client = master.leaseMasterMgrClient();
+    try {
+    }
+    finally {
+      master.returnQueueMgrClient(client);
+    }
