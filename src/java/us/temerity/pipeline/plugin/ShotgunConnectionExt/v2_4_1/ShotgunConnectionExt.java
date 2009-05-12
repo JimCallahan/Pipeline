@@ -1,4 +1,4 @@
-// $Id: ShotgunConnectionExt.java,v 1.6 2009/04/22 21:04:39 jesse Exp $
+// $Id: ShotgunConnectionExt.java,v 1.7 2009/05/12 22:46:04 jesse Exp $
 
 package us.temerity.pipeline.plugin.ShotgunConnectionExt.v2_4_1;
 
@@ -119,6 +119,28 @@ class ShotgunConnectionExt
          true);
       addParam(param);
     }
+    
+    {
+      ExtensionParam param = 
+        new BooleanExtensionParam
+        (aLongTaskName, 
+         "Should the task name in shotgun contain information about the shot or asset " +
+         "or should it simply be the task type.", 
+         true);
+      addParam(param);
+    }
+    
+    {
+      ArrayList<String> choices = new ArrayList<String>();
+      Collections.addAll(choices, "_", "-", ".");
+      ExtensionParam param = 
+        new EnumExtensionParam
+        (aTaskSeparator, 
+         "The characters used to separate the fields in the task name.",
+         "_",
+         choices);
+      addParam(param);
+    }
 
     LayoutGroup layout = new LayoutGroup(true);
     layout.addEntry(aShotgunServer);
@@ -129,6 +151,9 @@ class ShotgunConnectionExt
     layout.addEntry(aNoteOnTask);
     layout.addEntry(aNoteOnEntity);
     layout.addEntry(aThumbOnEntity);
+    layout.addSeparator();
+    layout.addEntry(aTaskSeparator);
+    layout.addEntry(aLongTaskName);
     
     setLayout(layout);
     
@@ -193,6 +218,11 @@ class ShotgunConnectionExt
       sNoteOnEntity = (Boolean) getParamValue(aNoteOnEntity);
       sNoteOnTask   = (Boolean) getParamValue(aNoteOnTask);
       sThumbOnEntity = (Boolean) getParamValue(aThumbOnEntity);
+      
+      sTaskSeparator = (String) getParamValue(aTaskSeparator);
+      
+      boolean longTaskName = (Boolean) getParamValue(aLongTaskName);
+      sConnection.setLongTaskNames(longTaskName);
     }
     catch(PipelineException ex) {
       LogMgr.getInstance().log
@@ -378,7 +408,7 @@ class ShotgunConnectionExt
     ShotgunEntity shotgunEntity = null;
 
     if (entityType.equals("Asset")) {
-      String pieces[] = taskName.split("_");
+      String pieces[] = taskName.split(sTaskSeparator);
       if (pieces.length != 2)
         throw new PipelineException
         ("The task name (" + taskName + ") is not a valid asset name for " +
@@ -388,7 +418,7 @@ class ShotgunConnectionExt
       shotgunEntity = ShotgunEntity.Asset;
     }
     else if (entityType.equals("Shot")) {
-      String pieces[] = taskName.split("_");
+      String pieces[] = taskName.split(sTaskSeparator);
       if (pieces.length != 2)
         throw new PipelineException
         ("The task name (" + taskName + ") is not a valid shot name for " +
@@ -524,7 +554,7 @@ class ShotgunConnectionExt
     String nodeName = vsn.getName();
     String thumb = currentThumb; 
     TreeMap<String,BaseAnnotation> tAnnots = new TreeMap<String, BaseAnnotation>();
-    LogMgr.getInstance().logAndFlush(Kind.Ext, Level.Info, "NodeName: " + nodeName + "  Annots: " + tAnnots + "\n");
+    LogMgr.getInstance().logAndFlush(Kind.Ext, Level.Finer, "NodeName: " + nodeName + "  Annots: " + tAnnots + "\n");
     String[] data = lookupTaskAnnotations(nodeName, mclient, tAnnots);
 
     if (tAnnots.containsKey(NodePurpose.Focus.toString())) {
@@ -857,7 +887,7 @@ class ShotgunConnectionExt
       (PackageInfo.sPipelineUser, "default", client.getDefaultToolsetName());
     
     for (String arg : args) {
-      LogMgr.getInstance().log(Kind.Ext, Level.Info, arg + " ");
+      LogMgr.getInstance().log(Kind.Ext, Level.Finest, arg + " ");
     }
 
     SubProcessLight proc = 
@@ -900,7 +930,7 @@ class ShotgunConnectionExt
     (PackageInfo.sPipelineUser, "default", client.getDefaultToolsetName());
 
     for (String arg : args) {
-      LogMgr.getInstance().log(Kind.Ext, Level.Info, arg + " ");
+      LogMgr.getInstance().log(Kind.Ext, Level.Finest, arg + " ");
     }
 
     SubProcessLight proc = 
@@ -923,6 +953,8 @@ class ShotgunConnectionExt
   public static final String aNoteOnTask    = "NoteOnTask";
   public static final String aNoteOnEntity  = "NoteOnEntity";
   public static final String aThumbOnEntity = "ThumbOnEntity";
+  public static final String aTaskSeparator = "TaskSeparator";
+  public static final String aLongTaskName  = "LongTaskName";
   
   public static final String aProjectName     = "ProjectName";
   public static final String aEntityType      = "EntityType";
@@ -950,5 +982,5 @@ class ShotgunConnectionExt
   private static boolean sNoteOnTask;
   private static boolean sNoteOnEntity;
   private static boolean sThumbOnEntity;
-
+  private static String  sTaskSeparator;
 }
