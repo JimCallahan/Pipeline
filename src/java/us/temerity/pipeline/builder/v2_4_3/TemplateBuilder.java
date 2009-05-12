@@ -1,4 +1,4 @@
-// $Id: TemplateBuilder.java,v 1.16 2009/05/11 23:27:07 jesse Exp $
+// $Id: TemplateBuilder.java,v 1.17 2009/05/12 03:20:54 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -552,6 +552,9 @@ class TemplateBuilder
             else
               pNodesIDependedOn.put(target, temp);
           }
+          if (order != null)
+            for (String node : nodesMade)
+              orderedRoots.put(order, node);
         } 
         else { // we've got a node that nothing depends on, must be a root.
           if (order == null)
