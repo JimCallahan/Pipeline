@@ -1,4 +1,4 @@
-// $Id: QueueHostMod.java,v 1.4 2007/12/15 07:55:19 jesse Exp $
+// $Id: QueueHostMod.java,v 1.5 2009/05/12 05:57:32 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -567,11 +567,12 @@ class QueueHostMod
   /**
    * Modify the first {@link QueueHostMod}, which should have been generated from a selection
    * schedule (using the
-   * {@link #getModFromSchedule(SelectionScheduleMatrix, String, QueueHostInfo) getModFromSchedule} method)
-   * so that it will incorporate all allowable changes from the second {@link QueueHostMod}.
-   * <p>
-   * Obviously any fields that the schedule is controlling will keep their original value.
-   * <p>
+   * {@link #getModFromSchedule(SelectionScheduleMatrix, String, QueueHostInfo) 
+   * getModFromSchedule} method) so that it will incorporate all allowable changes from the 
+   * second {@link QueueHostMod}.<P>
+   * 
+   * Obviously any fields that the schedule is controlling will keep their original value.<P>
+   * 
    * This method assumes that both values passed in are not <code>null</code>.
    */
   public static void
