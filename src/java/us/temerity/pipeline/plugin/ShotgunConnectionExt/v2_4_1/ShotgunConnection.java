@@ -1,4 +1,4 @@
-// $Id: ShotgunConnection.java,v 1.7 2009/05/12 22:50:35 jesse Exp $
+// $Id: ShotgunConnection.java,v 1.8 2009/05/12 23:16:49 jesse Exp $
 
 package us.temerity.pipeline.plugin.ShotgunConnectionExt.v2_4_1;
 
@@ -225,7 +225,8 @@ class ShotgunConnection
     if (pToken == null) {
       pClient = null;
       pToken = null;
-      pProjectIDCache.clear();
+      if (pProjectIDCache != null)
+        pProjectIDCache.clear();
       return;
     }
     
@@ -301,6 +302,29 @@ class ShotgunConnection
   {
     pLongTaskName = longTaskNames;    
   }
+  
+  /**
+   * Controls version name formatting by the extension.
+   * <p>
+   *
+   * Version names in Shotgun can either consist of the version number or the version number with the task
+   * type prepended to it. The second method makes it easier to identify a particular
+   * version by its name in Shotgun and guarantees a unique name for every version. The first method
+   * makes the display of information in Shotgun cleaner. This parameter should be set to
+   * <code>true</code> if the long name behavior is wanted.
+   *
+   * @param longVersionNames
+   *   The value for long version name.
+   */
+  public void
+  setLongVersionNames
+  (
+    boolean longVersionNames  
+  )
+  {
+    pLongVersionName = longVersionNames;    
+  }
+
   
   
   
@@ -1132,8 +1156,15 @@ class ShotgunConnection
     throws PipelineException
   {
     checkConnection();
-    String taskName = getTaskName(taskID);
-    String versionName = join(taskName, versionID.toString());
+    String versionName;
+    if (pLongVersionName) {
+      String taskName = getTaskName(taskID);
+      versionName = join(taskName, versionID.toString());
+    }
+    else {
+      versionName = versionID.toString();
+    }
+
 
     Integer toReturn = getTaskVersionID(taskID, versionName);
 
@@ -1160,6 +1191,9 @@ class ShotgunConnection
     }
     {
       ShotgunEntityBundle entityMap = getArtistEntity(artist);
+      if (entityMap == null)
+        throw new PipelineException("Error while creating a new Task version.\n" + 
+                "No Shotgun artist named " + artist + " was found.");
       someMap.put("user", entityMap.formatForShotgun());
     }
     someMap.put("code", versionName);
@@ -1241,8 +1275,15 @@ class ShotgunConnection
   throws PipelineException
   {
     checkConnection();
-    String taskName = getTaskName(taskID);
-    String versionName = join(taskName, versionID.toString());
+    String versionName;
+    if (pLongVersionName) {
+      String taskName = getTaskName(taskID);
+      versionName = join(taskName, versionID.toString());
+    }
+    else {
+      versionName = versionID.toString();
+    }
+
 
     Integer toReturn = getTaskVersionID(taskID, versionName);
 
@@ -1993,6 +2034,7 @@ class ShotgunConnection
   private String pAPIKey;
   
   private boolean pLongTaskName;
+  private boolean pLongVersionName;
   
   private ShotgunEntity pShotContainer;
   

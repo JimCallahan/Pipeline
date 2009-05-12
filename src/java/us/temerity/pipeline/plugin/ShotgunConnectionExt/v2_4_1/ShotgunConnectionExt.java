@@ -1,4 +1,4 @@
-// $Id: ShotgunConnectionExt.java,v 1.7 2009/05/12 22:46:04 jesse Exp $
+// $Id: ShotgunConnectionExt.java,v 1.8 2009/05/12 23:16:49 jesse Exp $
 
 package us.temerity.pipeline.plugin.ShotgunConnectionExt.v2_4_1;
 
@@ -131,6 +131,16 @@ class ShotgunConnectionExt
     }
     
     {
+      ExtensionParam param =
+        new BooleanExtensionParam
+        (aLongVersionName,
+         "Should the version name in shotgun contain information about the task " +
+         "or should it simply be the version number.",
+         true);
+      addParam(param);
+    }
+
+    {
       ArrayList<String> choices = new ArrayList<String>();
       Collections.addAll(choices, "_", "-", ".");
       ExtensionParam param = 
@@ -154,6 +164,7 @@ class ShotgunConnectionExt
     layout.addSeparator();
     layout.addEntry(aTaskSeparator);
     layout.addEntry(aLongTaskName);
+    layout.addEntry(aLongVersionName);
     
     setLayout(layout);
     
@@ -223,6 +234,9 @@ class ShotgunConnectionExt
       
       boolean longTaskName = (Boolean) getParamValue(aLongTaskName);
       sConnection.setLongTaskNames(longTaskName);
+      
+      boolean longVersionName = (Boolean) getParamValue(aLongVersionName);
+      sConnection.setLongVersionNames(longVersionName);
     }
     catch(PipelineException ex) {
       LogMgr.getInstance().log
@@ -374,13 +388,13 @@ class ShotgunConnectionExt
   )
     throws PipelineException
   {
-    TreeMap<String,String> thumbToFocus    = new TreeMap<String,String>();
+    TreeMap<String,String> focusToThumb    = new TreeMap<String,String>();
     TreeMap<String,NodeVersion> thumbNodes = new TreeMap<String,NodeVersion>();
     TreeMap<String,NodeVersion> focusNodes = new TreeMap<String,NodeVersion>();
     TreeMap<String,NodeVersion> editNodes  = new TreeMap<String,NodeVersion>();
     TreeMap<String,NodeVersion> deliveryNodes  = new TreeMap<String,NodeVersion>();
     TreeSet<String> masterFocusNodes = new TreeSet<String>();
-    mineSubmitTree(data, vsn, null, thumbToFocus, thumbNodes, focusNodes, editNodes, 
+    mineSubmitTree(data, vsn, null, focusToThumb, thumbNodes, focusNodes, editNodes, 
                    deliveryNodes, masterFocusNodes, mclient);
     
     if (masterFocusNodes.size() > 1)
@@ -486,18 +500,13 @@ class ShotgunConnectionExt
     
     // This should be correct now?
     if (masterFocusNode != null) {
-      String thumbName = null;
-      for (String each : thumbToFocus.keySet()) {
-        if (thumbToFocus.get(each).equals(masterFocusNode)) {
-          thumbName = each;
-          break;
-        }
-      }
+      String thumbName = focusToThumb.get(masterFocusNode);
       
       NodeVersion focusVer = focusNodes.get(masterFocusNode);
 
-      if (focusVer.getPrimarySequence().getFilePattern().getSuffix().equals("mov") || 
-          focusVer.getPrimarySequence().getFilePattern().getSuffix().equals("avi")) {
+      String suffix = focusVer.getPrimarySequence().getFilePattern().getSuffix();
+      if (suffix !=  null && (
+          suffix.equals("mov") || suffix.equals("avi"))) {
         
         ShotgunEntityBundle ebundle = new ShotgunEntityBundle(ShotgunEntity.Version, versionID);
 
@@ -516,14 +525,14 @@ class ShotgunConnectionExt
       }
     }
     
-    // This should be correct
-    for (String thumbName : thumbToFocus.keySet() ) {
+    for (String focusNode : focusToThumb.keySet() ) {
+      String thumbName = focusToThumb.get(focusNode);
       NodeVersion thumb = thumbNodes.get(thumbName);
-      String focusName = thumbToFocus.get(thumbName);
-      Integer nodeID = temerityNodes.get(focusName);
+      Integer nodeID = temerityNodes.get(focusNode);
       ShotgunEntityBundle nodeBundle = new ShotgunEntityBundle(ShotgunEntity.TemerityNode, nodeID);
       uploadThumbnail(nodeBundle, thumb, mclient);
     }
+
   }
   
   
@@ -541,7 +550,7 @@ class ShotgunConnectionExt
     String[] submitData,
     NodeVersion vsn, 
     String currentThumb,  
-    TreeMap<String,String> thumbToFocus, 
+    TreeMap<String,String> focusToThumb, 
     TreeMap<String,NodeVersion> thumbNodes,
     TreeMap<String,NodeVersion> focusNodes, 
     TreeMap<String,NodeVersion> editNodes,
@@ -561,7 +570,7 @@ class ShotgunConnectionExt
       verifyTask(submitData, data); 
       focusNodes.put(nodeName, vsn);
       if(currentThumb != null) {
-        thumbToFocus.put(currentThumb, nodeName);
+        focusToThumb.put(nodeName, currentThumb);
       }
       BaseAnnotation annot = tAnnots.get(NodePurpose.Focus.toString());
       if (annot.getParam("Master") != null) {
@@ -591,7 +600,7 @@ class ShotgunConnectionExt
     for(LinkVersion link : vsn.getSources()) {
       if(!link.isLocked()) {
         NodeVersion source = mclient.getCheckedInVersion(link.getName(), link.getVersionID());
-        mineSubmitTree(submitData, source, thumb, thumbToFocus, thumbNodes, focusNodes, 
+        mineSubmitTree(submitData, source, thumb, focusToThumb, thumbNodes, focusNodes, 
                        editNodes, deliveryNodes, masterFocusNodes, mclient);
       }
     }
@@ -940,21 +949,23 @@ class ShotgunConnectionExt
   }
 
 
+  
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
   
   private static final long serialVersionUID = 1428025364159140119L;
   
-  public static final String aShotgunServer = "ShotgunServer";
-  public static final String aShotgunUser   = "ShotgunUser";
-  public static final String aShotgunApiKey = "ShotgunApiKey";
-  public static final String aShotContainer = "ShotContainer";
-  public static final String aNoteOnTask    = "NoteOnTask";
-  public static final String aNoteOnEntity  = "NoteOnEntity";
-  public static final String aThumbOnEntity = "ThumbOnEntity";
-  public static final String aTaskSeparator = "TaskSeparator";
-  public static final String aLongTaskName  = "LongTaskName";
+  public static final String aShotgunServer   = "ShotgunServer";
+  public static final String aShotgunUser     = "ShotgunUser";
+  public static final String aShotgunApiKey   = "ShotgunApiKey";
+  public static final String aShotContainer   = "ShotContainer";
+  public static final String aNoteOnTask      = "NoteOnTask";
+  public static final String aNoteOnEntity    = "NoteOnEntity";
+  public static final String aThumbOnEntity   = "ThumbOnEntity";
+  public static final String aTaskSeparator   = "TaskSeparator";
+  public static final String aLongTaskName    = "LongTaskName";
+  public static final String aLongVersionName = "LongVersionName";
   
   public static final String aProjectName     = "ProjectName";
   public static final String aEntityType      = "EntityType";
