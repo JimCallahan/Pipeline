@@ -1,4 +1,4 @@
-// $Id: ShotgunConnection.java,v 1.6 2009/01/05 17:24:22 jesse Exp $
+// $Id: ShotgunConnection.java,v 1.7 2009/05/12 22:50:35 jesse Exp $
 
 package us.temerity.pipeline.plugin.ShotgunConnectionExt.v2_4_1;
 
@@ -87,7 +87,7 @@ class ShotgunConnection
   public 
   ShotgunConnection
   (
-    boolean exceptionOnDup    
+    boolean exceptionOnDup
   )
   {
     pClient = null;
@@ -279,6 +279,29 @@ class ShotgunConnection
       break;
     }
   }
+
+  /**
+   * Controls task name formatting by the extension.
+   * <p>
+   * 
+   * Task names in Shotgun can either consist of the task type or the task type with the asset
+   * or shot name prepended to it. The second method makes it easier to identify a particular
+   * task by its name in Shotgun and guarantees a unique name for every task. The first method
+   * makes the display of information in Shotgun cleaner. This parameter should be set to
+   * <code>true</code> if the long name behavior is wanted.
+   * 
+   * @param longTaskNames
+   *   The value for long task name.
+   */
+  public void
+  setLongTaskNames
+  (
+    boolean longTaskNames  
+  )
+  {
+    pLongTaskName = longTaskNames;    
+  }
+  
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -502,7 +525,7 @@ class ShotgunConnection
       filters.add(filter);
     }
     {
-      String filter[] = {"content", "is", join(asset, taskType)};
+      String filter[] = {"content", "is", getAssetTaskName(asset, taskType)};
       filters.add(filter);
     }
     
@@ -560,7 +583,7 @@ class ShotgunConnection
       filters.add(filter);
     }
     {
-      String filter[] = {"content", "is", join(join(scene, shot), taskType)};
+      String filter[] = {"content", "is", getShotTaskName(scene, shot, taskType)};
       filters.add(filter);
     }
     
@@ -984,7 +1007,7 @@ class ShotgunConnection
   {
     checkConnection();
     
-    String taskName = join(asset, taskType);
+    String taskName = getAssetTaskName(asset, taskType);
     Integer toReturn = getAssetTaskID(project, asset, taskType);
     if (toReturn != null) {
       if (pExceptionOnDup)
@@ -1035,7 +1058,7 @@ class ShotgunConnection
     checkConnection();
     
     String shotName = join(scene, shot);
-    String taskName = join(shotName, taskType);
+    String taskName = getShotTaskName(scene, shot, taskType);
     Integer toReturn = getShotTaskID(project, scene, shot, taskType);
     if (toReturn != null) {
       if (pExceptionOnDup)
@@ -1856,6 +1879,33 @@ class ShotgunConnection
   /*   U T I L S                                                                            */
   /*----------------------------------------------------------------------------------------*/
   
+  private String 
+  getAssetTaskName
+  (
+    String asset,
+    String taskType
+  )
+  {
+    if (pLongTaskName)
+      return join(asset, taskType);
+    else
+      return taskType;
+  }
+
+  private String 
+  getShotTaskName
+  (
+    String scene,
+    String shot,
+    String taskType
+  )
+  {
+    if (pLongTaskName)
+      return join(join(scene, shot), taskType);
+    else
+      return taskType;
+  }
+
   /**
    * Join two strings by putting a '_' between them.
    */
@@ -1941,6 +1991,8 @@ class ShotgunConnection
   private String pURLName;
   private String pUserName;
   private String pAPIKey;
+  
+  private boolean pLongTaskName;
   
   private ShotgunEntity pShotContainer;
   
