@@ -1,4 +1,4 @@
-// $Id: ShotgunEntity.java,v 1.2 2008/07/03 19:50:45 jesse Exp $
+// $Id: ShotgunEntity.java,v 1.3 2009/05/13 19:01:58 jesse Exp $
 
 package us.temerity.pipeline.plugin.ShotgunConnectionExt.v2_4_1;
 
@@ -12,7 +12,25 @@ package us.temerity.pipeline.plugin.ShotgunConnectionExt.v2_4_1;
 public enum 
 ShotgunEntity
 {
-  Project, Shot, Scene, Task, Version, Asset, Sequence, User, TemerityNode, Note;
+  Project, Shot, Scene, Task, Version, Asset, Sequence, User, TemerityNode, Note,
+  
+  /*
+   * Anything below this list is currently not being used in the shotgun connector.  
+   */
+  Practical,
+  Tool, 
+  Element, 
+  File,
+  CustomEntity01,
+  CustomEntity02,
+  CustomEntity03,
+  CustomEntity04,
+  CustomEntity05,
+  CustomEntity06,
+  CustomEntity07,
+  CustomEntity08,
+  CustomEntity09,
+  CustomEntity10;
   
   @Override
   public String 

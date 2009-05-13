@@ -1,4 +1,4 @@
-// $Id: FocusTaskAnnotation.java,v 1.2 2008/06/26 05:43:32 jim Exp $
+// $Id: FocusTaskAnnotation.java,v 1.3 2009/05/13 19:01:58 jesse Exp $
 
 package us.temerity.pipeline.plugin.FocusTaskAnnotation.v2_4_1;
 
@@ -72,12 +72,11 @@ class FocusTaskAnnotation
     }
  
     {
-      String choices[] = {"Shot", "Asset", "[[IGNORE]]"};
       AnnotationParam param = 
         new EnumAnnotationParam
         (aEntityType, 
          "The Shotgun entity type owning this task or [[IGNORE]] if not using Shotgun.", 
-         "[[IGNORE]]", new ArrayList<String>(Arrays.asList(choices))); 
+         EntityType.Ignore.toTitle(), EntityType.titles()); 
       addParam(param);
     }
 

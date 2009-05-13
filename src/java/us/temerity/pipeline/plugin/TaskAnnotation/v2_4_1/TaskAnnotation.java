@@ -1,4 +1,4 @@
-// $Id: TaskAnnotation.java,v 1.3 2008/05/16 04:53:54 jim Exp $
+// $Id: TaskAnnotation.java,v 1.4 2009/05/13 19:01:58 jesse Exp $
 
 package us.temerity.pipeline.plugin.TaskAnnotation.v2_4_1;
 
@@ -137,12 +137,11 @@ class TaskAnnotation
     }
  
     {
-      String choices[] = {"Shot", "Asset", "[[IGNORE]]"};
       AnnotationParam param = 
         new EnumAnnotationParam
         (aEntityType, 
          "The Shotgun entity type owning this task or [[IGNORE]] if not using Shotgun.", 
-         "[[IGNORE]]", new ArrayList<String>(Arrays.asList(choices))); 
+         EntityType.Ignore.toTitle(), EntityType.titles()); 
       addParam(param);
     }
 

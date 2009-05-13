@@ -1,4 +1,4 @@
-// $Id: ApproveTaskAnnotation.java,v 1.4 2008/05/20 21:29:14 jesse Exp $
+// $Id: ApproveTaskAnnotation.java,v 1.5 2009/05/13 19:01:58 jesse Exp $
 
 package us.temerity.pipeline.plugin.ApproveTaskAnnotation.v2_4_1;
 
@@ -95,12 +95,11 @@ class ApproveTaskAnnotation
     }
  
     {
-      String choices[] = {"Shot", "Asset", "[[IGNORE]]"};
       AnnotationParam param = 
         new EnumAnnotationParam
         (aEntityType, 
          "The Shotgun entity type owning this task or [[IGNORE]] if not using Shotgun.", 
-         "[[IGNORE]]", new ArrayList<String>(Arrays.asList(choices))); 
+         EntityType.Ignore.toTitle(), EntityType.titles()); 
       addParam(param);
     }
     

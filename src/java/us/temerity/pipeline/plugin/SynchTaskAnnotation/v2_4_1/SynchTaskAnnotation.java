@@ -1,4 +1,4 @@
-// $Id: SynchTaskAnnotation.java,v 1.1 2008/07/04 15:33:13 jesse Exp $
+// $Id: SynchTaskAnnotation.java,v 1.2 2009/05/13 19:01:58 jesse Exp $
 
 package us.temerity.pipeline.plugin.SynchTaskAnnotation.v2_4_1;
 
@@ -94,12 +94,11 @@ class SynchTaskAnnotation
     }
  
     {
-      String choices[] = {"Shot", "Asset", "[[IGNORE]]"};
       AnnotationParam param = 
         new EnumAnnotationParam
         (aEntityType, 
          "The Shotgun entity type owning this task or [[IGNORE]] if not using Shotgun.", 
-         "[[IGNORE]]", new ArrayList<String>(Arrays.asList(choices))); 
+         EntityType.Ignore.toTitle(), EntityType.titles()); 
       addParam(param);
     }
     

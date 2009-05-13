@@ -1,4 +1,4 @@
-// $Id: ShotgunConnectionExt.java,v 1.8 2009/05/12 23:16:49 jesse Exp $
+// $Id: ShotgunConnectionExt.java,v 1.9 2009/05/13 19:01:58 jesse Exp $
 
 package us.temerity.pipeline.plugin.ShotgunConnectionExt.v2_4_1;
 
@@ -505,8 +505,8 @@ class ShotgunConnectionExt
       NodeVersion focusVer = focusNodes.get(masterFocusNode);
 
       String suffix = focusVer.getPrimarySequence().getFilePattern().getSuffix();
-      if (suffix !=  null && (
-          suffix.equals("mov") || suffix.equals("avi"))) {
+      if (suffix !=  null && 
+         (suffix.equals("mov") || suffix.equals("avi"))) {
         
         ShotgunEntityBundle ebundle = new ShotgunEntityBundle(ShotgunEntity.Version, versionID);
 
