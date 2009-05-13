@@ -1,4 +1,4 @@
-// $Id: TemplateInfoBuilder.java,v 1.12 2009/05/07 21:50:14 jesse Exp $
+// $Id: TemplateInfoBuilder.java,v 1.13 2009/05/13 22:49:42 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -169,7 +169,7 @@ class TemplateInfoBuilder
       i++;
     }
     
-    i = 1;
+    i = 0;
     for (String context : pTemplateGlueInfo.getContexts().keySet()) {
       String name = "Context" + String.valueOf(i); 
       KeyIntValueUtilityParam param =
