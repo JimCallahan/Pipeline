@@ -1,4 +1,4 @@
-// $Id: HardwareGroupsTableModel.java,v 1.2 2008/06/26 20:41:13 jesse Exp $
+// $Id: HardwareGroupsTableModel.java,v 1.3 2009/05/13 18:37:51 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -66,9 +66,13 @@ class HardwareGroupsTableModel
   /**
    * Sort the rows by the values in the current sort column and direction.
    */ 
+  @SuppressWarnings("unchecked")
+  @Override
   public void 
   sort()
   {
+    if (pHardwareKeys.size() == 0)
+      return;
     ArrayList<Comparable> values = new ArrayList<Comparable>();
     ArrayList<Integer> indices = new ArrayList<Integer>();
     int idx = 0;
@@ -128,6 +132,7 @@ class HardwareGroupsTableModel
   /**
    * Get the width of the given column.
    */ 
+  @Override
   public int
   getColumnWidth
   (
@@ -141,6 +146,7 @@ class HardwareGroupsTableModel
    * Returns the color prefix used to determine the synth style of the header button for 
    * the given column.
    */ 
+  @Override
   public String 	
   getColumnColorPrefix
   (
@@ -153,6 +159,7 @@ class HardwareGroupsTableModel
   /**
    * Returns the description of the column columnIndex used in tool tips.
    */ 
+  @Override
   public String 	
   getColumnDescription
   (
@@ -165,6 +172,7 @@ class HardwareGroupsTableModel
   /**
    * Get the renderer for the given column. 
    */ 
+  @Override
   public TableCellRenderer
   getRenderer
   (
@@ -177,6 +185,7 @@ class HardwareGroupsTableModel
   /**
    * Get the editor for the given column. 
    */ 
+  @Override
   public TableCellEditor
   getEditor
   (
@@ -195,6 +204,8 @@ class HardwareGroupsTableModel
   /**
    * Returns the most specific superclass for all the cell values in the column.
    */
+  @SuppressWarnings("unchecked")
+  @Override
   public Class 	
   getColumnClass
   (
@@ -207,6 +218,7 @@ class HardwareGroupsTableModel
   /**
    * Returns the number of columns in the model.
    */ 
+  @Override
   public int
   getColumnCount()
   {
@@ -216,6 +228,7 @@ class HardwareGroupsTableModel
   /**
    * Returns the name of the column at columnIndex.
    */ 
+  @Override
   public String 	
   getColumnName
   (
@@ -261,10 +274,11 @@ class HardwareGroupsTableModel
     TreeMap<String,Boolean> modified = new TreeMap<String,Boolean>();
     {
       TreeSet<String> obsolete = new TreeSet<String>(pHardwareKeys);
-      TreeSet<String> newborn  = new TreeSet<String>(keys.keySet());
+      TreeSet<String> newborn  = new TreeSet<String>();
 
       pHardwareKeys.clear();
       if(keys != null) {
+        newborn.addAll(keys.keySet());
 	pHardwareKeys.addAll(newborn);
 	newborn.removeAll(obsolete);
 	obsolete.removeAll(pHardwareKeys);
@@ -385,6 +399,7 @@ class HardwareGroupsTableModel
   /**
    * Returns true if the cell at rowIndex and columnIndex is editable.
    */ 
+  @Override
   public boolean 	
   isCellEditable
   (
@@ -417,6 +432,7 @@ class HardwareGroupsTableModel
   /**
    * Sets the value in the cell at columnIndex and rowIndex to aValue.
    */ 
+  @Override
   public void 
   setValueAt
   (
