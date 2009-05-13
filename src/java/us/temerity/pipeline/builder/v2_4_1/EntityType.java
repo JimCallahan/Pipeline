@@ -1,4 +1,4 @@
-// $Id: EntityType.java,v 1.1 2008/05/20 22:44:23 jesse Exp $
+// $Id: EntityType.java,v 1.2 2009/05/13 22:48:09 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_1;
 
@@ -14,7 +14,24 @@ import java.util.*;
 public 
 enum EntityType
 {
-  Asset, Shot, Ignore;
+  Asset, 
+  Shot, 
+  Practical, 
+  Tool, 
+  Element, 
+  File,
+  CustomEntity01,
+  CustomEntity02,
+  CustomEntity03,
+  CustomEntity04,
+  CustomEntity05,
+  CustomEntity06,
+  CustomEntity07,
+  CustomEntity08,
+  CustomEntity09,
+  CustomEntity10,
+  Ignore;
+  
   
   /*----------------------------------------------------------------------------------------*/
   /*   C O N V E R S I O N                                                                  */
