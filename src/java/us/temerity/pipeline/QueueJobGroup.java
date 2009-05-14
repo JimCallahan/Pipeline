@@ -1,4 +1,4 @@
-// $Id: QueueJobGroup.java,v 1.14 2008/07/15 17:25:27 jim Exp $
+// $Id: QueueJobGroup.java,v 1.15 2009/05/14 22:54:09 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -53,6 +53,10 @@ class QueueJobGroup
    *
    * @param rootIDs
    *   The unique identifiers of the root jobs of the group.
+   *
+   * @param externalIDs
+   *   The unique identifiers of all jobs owned by another group but which are dependencies
+   *   of jobs owned by this group.
    *
    * @param jobIDs
    *   The unique identifiers of all jobs associated with the group.
