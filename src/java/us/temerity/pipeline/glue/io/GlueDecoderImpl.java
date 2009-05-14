@@ -1,4 +1,4 @@
-// $Id: GlueDecoderImpl.java,v 1.3 2008/06/29 17:46:16 jim Exp $
+// $Id: GlueDecoderImpl.java,v 1.4 2009/05/14 22:51:32 jim Exp $
 
 package us.temerity.pipeline.glue.io;
 
@@ -214,7 +214,7 @@ class GlueDecoderImpl
     }
     catch(GlueException ex) {
       String msg = 
-        ("Unable to Glue decode: " + title + "\n" + 
+        ("While reading from file (" + file + "), unable to Glue decode: " + title + "\n" + 
          "  " + ex.getMessage());
       LogMgr.getInstance().log(LogMgr.Kind.Glu, LogMgr.Level.Severe, msg); 
       throw new GlueException(msg);

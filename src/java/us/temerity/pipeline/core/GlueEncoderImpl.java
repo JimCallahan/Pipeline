@@ -1,4 +1,4 @@
-// $Id: GlueEncoderImpl.java,v 1.10 2008/06/29 17:46:16 jim Exp $
+// $Id: GlueEncoderImpl.java,v 1.11 2009/05/14 22:51:32 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -68,9 +68,6 @@ class GlueEncoderImpl
    * 
    * @param obj 
    *   The <CODE>Object</CODE> to be encoded.
-   * 
-   * @param writer 
-   *   The character stream into which the Glue encoded representation is written.
    */
   public static String
   encodeString
@@ -149,7 +146,7 @@ class GlueEncoderImpl
         }
         catch(GlueException ex) {
           String msg = 
-            ("Unable to Glue encode: " + title + "\n" + 
+            ("While writing to file (" + file + "), unable to Glue encode: " + title + "\n" + 
              "  " + ex.getMessage());
           LogMgr.getInstance().log(LogMgr.Kind.Glu, LogMgr.Level.Severe, msg); 
           throw new GlueException(msg);
