@@ -1,4 +1,4 @@
-// $Id: QueueJobInfo.java,v 1.21 2008/07/14 15:06:36 jim Exp $
+// $Id: QueueJobInfo.java,v 1.22 2009/05/14 23:30:43 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -216,20 +216,30 @@ class QueueJobInfo
 
   /**
    * Records that the job has been paused.
+   * 
+   * @return
+   *   The previous job state.
    */ 
-  public synchronized void 
+  public synchronized JobState 
   paused()
   {
+    JobState prev = pState;
     pState = JobState.Paused;
+    return prev;
   }
 
   /**
    * Records that the job has resumed waiting. 
+   * 
+   * @return
+   *   The previous job state.
    */ 
-  public synchronized void 
+  public synchronized JobState
   resumed() 
   {
+    JobState prev = pState;
     pState = JobState.Queued;
+    return prev;
   }
   
   /**
@@ -240,8 +250,11 @@ class QueueJobInfo
    * 
    * @param os
    *   The operating system of the executing host.
+   * 
+   * @return
+   *   The previous job state.
    */ 
-  public synchronized void 
+  public synchronized JobState 
   started
   (
    String hostname, 
@@ -260,13 +273,19 @@ class QueueJobInfo
     pOsType = os; 
 
     pStartedStamp = System.currentTimeMillis();
+
+    JobState prev = pState;
     pState = JobState.Running;
+    return prev;
   }
   
   /**
    * Records that the job was aborted, but then resubmitted. 
+   * 
+   * @return
+   *   The previous job state.
    */ 
-  public synchronized void 
+  public synchronized JobState
   preempted() 
   {
     pHostname      = null;
@@ -274,18 +293,26 @@ class QueueJobInfo
     pStartedStamp  = null;
     pOsType        = null;
 
+    JobState prev = pState;
     pState = JobState.Preempted;
+    return prev;
   }
 
   /**
    * Records that the job was aborted (cancelled) before it could be assigned to a 
    * host for execution.
+   * 
+   * @return
+   *   The previous job state.
    */ 
-  public synchronized void 
+  public synchronized JobState
   aborted() 
   {
     pCompletedStamp = System.currentTimeMillis();
+
+    JobState prev = pState;
     pState = JobState.Aborted;
+    return prev;
   }
 
   /**
@@ -293,8 +320,11 @@ class QueueJobInfo
    * 
    * @param results
    *   The execution results.
+   * 
+   * @return
+   *   The previous job state.
    */ 
-  public synchronized void 
+  public synchronized JobState
   exited
   (
    QueueJobResults results
@@ -307,10 +337,12 @@ class QueueJobInfo
     if(pState == JobState.Preempted)
       throw new IllegalStateException(); 
 
+    JobState prev = pState;
     if((pResults != null) && (pResults.getExitCode() == BaseSubProcess.SUCCESS))
       pState = JobState.Finished;
     else 
       pState = JobState.Failed;
+    return prev;
   }
 
 

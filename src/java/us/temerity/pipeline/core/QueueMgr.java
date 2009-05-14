@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.109 2009/05/04 22:38:34 jim Exp $
+// $Id: QueueMgr.java,v 1.110 2009/05/14 23:30:43 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -492,7 +492,7 @@ class QueueMgr
       
       synchronized(pJobInfo) {
 	for(QueueJobInfo info : pJobInfo.values())
-	  pJobCounters.update(timer, info);
+	  pJobCounters.update(timer, null, info);
       }
 
       timer.suspend();
@@ -3854,6 +3854,32 @@ class QueueMgr
   }
 
   /**
+   * Get the distribution of job states for the jobs associated with each of the given 
+   * job group IDs.
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return 
+   *   <CODE>QueueGetJobStateDistributionRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable to lookup the job states.
+   */ 
+  public Object
+  getJobStateDistribution
+  (
+   QueueGetJobStateDistributionReq req 
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+    
+    TreeMap<Long,double[]> dist = new TreeMap<Long,double[]>();
+    for(Long groupID : req.getGroupIDs()) 
+      dist.put(groupID, pJobCounters.getDistribution(timer, groupID));
+    
+    return new QueueGetJobStateDistributionRsp(timer, dist);
+  }
+
+  /**
    * Get the JobStatus of all jobs associated with the given job group IDs. 
    * 
    * @param req 
@@ -4115,7 +4141,7 @@ class QueueMgr
 	  timer.resume();
 	  writeJobInfo(info);
 	  pJobInfo.put(jobID, info);
-	  pJobCounters.update(timer, info);
+	  pJobCounters.update(timer, null, info);
 	} 
 	
 	{
@@ -4986,25 +5012,41 @@ class QueueMgr
   }
 
   /**
-   * Get all of the existing job groups.
+   * Get the job groups which match the following working area pattern.
    * 
+   * @param req 
+   *   The job groups request.
+   *    
    * @return 
    *   <CODE>QueueGetJobGroupsRsp</CODE> if successful or 
    *   <CODE>FailureRsp</CODE> if unable to lookup the job groups.
    */ 
   public Object
-  getJobGroups() 
+  getJobGroups
+  (
+   QueueGetJobGroupsReq req
+  )
   {
     TaskTimer timer = new TaskTimer();
+
+    String author = req.getAuthor();
+    String view   = req.getView();
+
     timer.aquire();
     synchronized(pJobGroups) {
       timer.resume();
       TreeMap<Long,QueueJobGroup> groups = new TreeMap<Long,QueueJobGroup>();
       for(Long groupID : pJobGroups.keySet()) {
 	QueueJobGroup group = pJobGroups.get(groupID);
-	if(group != null) 
-	  groups.put(groupID, group);
-	}
+        if(group != null) {
+          if((author == null) ||
+             (author.equals(group.getNodeID().getAuthor()) &&
+              ((view == null) || 
+               view.equals(group.getNodeID().getView())))) {
+            groups.put(groupID, group);
+          }
+        }
+      }
       
       return new QueueGetJobGroupsRsp(timer, groups);
     }
@@ -5555,7 +5597,8 @@ class QueueMgr
 	  case Queued:
 	  case Preempted:
 	  case Paused:
-	    info.aborted();
+            JobState prevState = info.aborted();
+	    pJobCounters.update(tm, prevState, info);
 	    try {
 	      writeJobInfo(info);
 	    }
@@ -5564,7 +5607,6 @@ class QueueMgr
 		(LogMgr.Kind.Net, LogMgr.Level.Severe,
 		 ex.getMessage()); 
 	    }
-	    pJobCounters.update(tm, info);
 	    aborted = true;
 	    break; 
 	    
@@ -5619,7 +5661,8 @@ class QueueMgr
 	      {
 		String hostname = info.getHostname();
 		
-		info.preempted();
+                JobState prevState = info.preempted();
+		pJobCounters.update(tm, prevState, info);
 		try {
 		  writeJobInfo(info);
 		}
@@ -5628,8 +5671,6 @@ class QueueMgr
 		  (LogMgr.Kind.Ops, LogMgr.Level.Severe,
 		   ex.getMessage()); 
 		}
-		
-		pJobCounters.update(tm, info);
 
 		KillTask task = new KillTask(hostname, jobID);
 		task.start();
@@ -5721,7 +5762,8 @@ class QueueMgr
 		synchronized(pJobInfo) {
 		  tm.resume();
 
-		  info.paused();
+                  JobState prevState = info.paused();
+		  pJobCounters.update(tm, prevState, info);
 		  try {
 		    writeJobInfo(info);
 		  }
@@ -5730,8 +5772,6 @@ class QueueMgr
 		      (LogMgr.Kind.Ops, LogMgr.Level.Severe,
 		       ex.getMessage()); 
 		  }
-
-		  pJobCounters.update(tm, info);
 		}
 
 		waiting.add(jobID);
@@ -5793,7 +5833,8 @@ class QueueMgr
 		synchronized(pJobInfo) {
 		  tm.resume();
 
-		  info.resumed();
+                  JobState prevState = info.resumed();
+		  pJobCounters.update(tm, prevState, info);
 		  try {
 		    writeJobInfo(info);
 		  }
@@ -5802,8 +5843,6 @@ class QueueMgr
 		      (LogMgr.Kind.Ops, LogMgr.Level.Severe,
 		       ex.getMessage()); 
 		  }
-
-		  pJobCounters.update(tm, info);
 		}
 	      }
 
@@ -5921,8 +5960,8 @@ class QueueMgr
 		    ("Dispatcher [Rank Jobs - " + hostname + ":" + slots + "]");
 
 		  /* job ID indexed by selection score, percent, priority and timestamp */ 
-		TreeMap<Integer,TreeMap<Double,TreeMap<Integer,TreeMap<Long,Long>>>> byScore =
-		  new TreeMap<Integer,TreeMap<Double,TreeMap<Integer,TreeMap<Long,Long>>>>();
+                  TreeMap<Integer,TreeMap<Double,TreeMap<Integer,TreeMap<Long,Long>>>> byScore =
+                    new TreeMap<Integer,TreeMap<Double,TreeMap<Integer,TreeMap<Long,Long>>>>();
 
 		  for(Long jobID : pReady) {
 		    /* selection score */ 
@@ -6163,7 +6202,8 @@ class QueueMgr
 			  synchronized(pJobInfo) {
 			    tm.resume();
 			    
-			    info.paused();
+                            JobState prevState = info.paused();
+			    pJobCounters.update(tm, prevState, info);
 			    try {
 			      writeJobInfo(info);
 			    }
@@ -6172,8 +6212,6 @@ class QueueMgr
 				(LogMgr.Kind.Ops, LogMgr.Level.Severe,
 				 ex.getMessage()); 
 			    }
-
-			    pJobCounters.update(tm, info);
 			  }
 			  
 			  pWaiting.add(jobID);
@@ -6245,7 +6283,9 @@ class QueueMgr
 	    case Preempted:
 	      /* pause ready jobs marked to be paused */ 
 	      if(pPaused.contains(jobID)) {
-		info.paused();
+
+                JobState prevState = info.paused();
+		pJobCounters.update(tm, prevState, info);
 		try {
 		  writeJobInfo(info);
 		}
@@ -6253,9 +6293,7 @@ class QueueMgr
 		  LogMgr.getInstance().log
 		    (LogMgr.Kind.Ops, LogMgr.Level.Severe,
 		     ex.getMessage()); 
-		}
-		
-		pJobCounters.update(tm, info);
+		}		
 
 		pWaiting.add(jobID);
 		processed.add(jobID);
@@ -6495,7 +6533,8 @@ class QueueMgr
       synchronized(pJobInfo) {
 	timer.resume();
 
-	info.started(host.getName(), host.getOsType());
+        JobState prevState = info.started(host.getName(), host.getOsType());
+	pJobCounters.update(timer, prevState, info);
 	try {
 	  writeJobInfo(info);
 	}
@@ -6504,8 +6543,6 @@ class QueueMgr
 	    (LogMgr.Kind.Ops, LogMgr.Level.Severe,
 	     ex.getMessage()); 
 	}
-
-	pJobCounters.update(timer, info);
       }
 
       host.setHold(job.getJobID(), jreqs.getRampUp());
@@ -7681,6 +7718,7 @@ class QueueMgr
           cache = (ResourceSampleCache) GlueDecoderImpl.decodeFile("Samples", file);
         }	
         catch(GlueException ex) {
+          LogMgr.getInstance().log(LogMgr.Kind.Glu, LogMgr.Level.Warning, ex.getMessage()); 
         }
       
 	if(cache != null) 
@@ -8439,7 +8477,8 @@ class QueueMgr
 	    tm.resume();
 
 	    QueueJobInfo info = pJobInfo.get(jobID);
-	    info.preempted();
+            JobState prevState = info.preempted();
+	    pJobCounters.update(tm, prevState, info);
 	    try {
 	      writeJobInfo(info);
 	    }
@@ -8448,8 +8487,6 @@ class QueueMgr
 		(LogMgr.Kind.Job, LogMgr.Level.Severe, 
 		 ex.getMessage()); 
 	    }
-
-	    pJobCounters.update(tm, info);
 	  }
 
 	  balked = true;
@@ -8540,15 +8577,20 @@ class QueueMgr
 
 	  try {
 	    QueueJobInfo info = pJobInfo.get(jobID);
+
+            // Somehow info can be (null) here!!!  NEEDS FIXING
+            
 	    switch(info.getState()) {
 	    case Preempted: 
 	      preempted = true;
 	      break;
 	      
 	    default:
-	      info.exited(results);
-	      pJobCounters.update(tm, info);
-	      finishedInfo = new QueueJobInfo(info);
+              {
+                JobState prevState = info.exited(results);
+                pJobCounters.update(tm, prevState, info);
+                finishedInfo = new QueueJobInfo(info);
+              }
 	    }
 	    writeJobInfo(info);
 	  }
@@ -9577,9 +9619,12 @@ class QueueMgr
 
 
   /*----------------------------------------------------------------------------------------*/
-
+     
   /**
-   * Counts of the Running, Finished and total number of jobs in each job group.
+   * Counts of the Running, Finished and total number of jobs in each job group per job.
+   * 
+   * No locking is required to access pJobCounters as all locking is handled internally
+   * by this class.
    */ 
   private QueueJobCounters  pJobCounters; 
 

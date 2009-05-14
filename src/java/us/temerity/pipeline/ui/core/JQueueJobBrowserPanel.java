@@ -1,4 +1,4 @@
-// $Id: JQueueJobBrowserPanel.java,v 1.40 2009/05/12 21:57:39 jim Exp $
+// $Id: JQueueJobBrowserPanel.java,v 1.41 2009/05/14 23:30:43 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -65,9 +65,9 @@ class JQueueJobBrowserPanel
   {
     /* initialize fields */ 
     {
-      pJobGroups   = new TreeMap<Long,QueueJobGroup>(); 
-      pJobStatus   = new TreeMap<Long,JobStatus>();
-      pSelectedIDs = new TreeSet<Long>();
+      pJobGroups    = new TreeMap<Long,QueueJobGroup>(); 
+      pJobStateDist = new TreeMap<Long,double[]>();
+      pSelectedIDs  = new TreeSet<Long>();
 
       pViewFilter = ViewFilter.SingleView; 
     }
@@ -448,6 +448,17 @@ class JQueueJobBrowserPanel
   }
 
   
+  /*----------------------------------------------------------------------------------------*/
+ 
+  /**
+   * The working area view filter.
+   */
+  public ViewFilter 
+  getViewFilter()
+  {
+    return pViewFilter; 
+  }
+
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -502,8 +513,8 @@ class JQueueJobBrowserPanel
    * @param groups
    *   The queue job groups indexed by job group ID.
    * 
-   * @param jobStatus
-   *   The job status indexed by job ID.
+   * @param dist
+   *   The distribution of job states indexed by job group ID.
    */
   public synchronized void 
   applyPanelUpdates
@@ -511,13 +522,13 @@ class JQueueJobBrowserPanel
    String author, 
    String view, 
    TreeMap<Long,QueueJobGroup> groups, 
-   TreeMap<Long,JobStatus> jobStatus
+   TreeMap<Long,double[]> dist
   )
   {
     if(!pAuthor.equals(author) || !pView.equals(view)) 
       super.setAuthorView(author, view);    
 
-    updateJobs(groups, jobStatus);
+    updateJobs(groups, dist);
   }
 
 
@@ -562,14 +573,14 @@ class JQueueJobBrowserPanel
    * @param groups
    *   The queue job groups indexe by job group ID.
    * 
-   * @param jobStatus
-   *   The job status indexed by job ID.
+   * @param dist
+   *   The distribution of job states indexed by job group ID.
    */ 
   private synchronized void
   updateJobs
   (
    TreeMap<Long,QueueJobGroup> groups, 
-   TreeMap<Long,JobStatus> jobStatus
+   TreeMap<Long,double[]> dist
   ) 
   {
     updatePrivileges();
@@ -585,33 +596,15 @@ class JQueueJobBrowserPanel
       pDeleteCompletedButton.setEnabled(pPrivilegeDetails.isQueueAdmin());
     }
 
-    /* update the groups after applying the current groups filter */ 
+    /* update the groups */ 
     pJobGroups.clear();
-    if(groups != null) {
-      for(QueueJobGroup group : groups.values()) {
-	NodeID nodeID = group.getNodeID();
-	
-	switch(pViewFilter) {
-	case SingleView:
-	  if(nodeID.getAuthor().equals(pAuthor) && nodeID.getView().equals(pView)) 
-	    pJobGroups.put(group.getGroupID(), group);
-	  break;
-	  
-	case OwnedViews:
-	  if(nodeID.getAuthor().equals(pAuthor)) 
-	    pJobGroups.put(group.getGroupID(), group);
-	  break;
-	  
-	case AllViews:
-	  pJobGroups.put(group.getGroupID(), group);
-	}
-      }
-    }
-    
+    if(groups != null) 
+      pJobGroups.putAll(groups);
+
     /* update the job status */ 
-    pJobStatus.clear();
-    if(jobStatus != null) 
-      pJobStatus.putAll(jobStatus);
+    pJobStateDist.clear();
+    if(dist != null) 
+      pJobStateDist.putAll(dist);
     
     /* update the groups table, 
          reselects any of the previously selected job groups which still exist */
@@ -621,7 +614,7 @@ class JQueueJobBrowserPanel
 
       smodel.removeListSelectionListener(pGroupsListSelector);
       { 
-	pGroupsTableModel.setQueueJobGroups(pJobGroups, pJobStatus);
+	pGroupsTableModel.setQueueJobGroups(pJobGroups, pJobStateDist);
 	
 	TreeSet<Long> selected = new TreeSet<Long>();
 	for(Long groupID : pSelectedIDs) {
@@ -1041,9 +1034,19 @@ class JQueueJobBrowserPanel
   public void 
   doGroupsQueueJobs()
   {
-    TreeMap<NodeID,TreeSet<FileSeq>> targets = getQueuedFileSeqs();
-    if(!targets.isEmpty()) {
-      QueueJobsTask task = new QueueJobsTask(targets);
+    TreeMap<Long,QueueJobGroup> groups = new TreeMap<Long,QueueJobGroup>();
+    for(Long groupID : getSelectedGroupIDs()) {
+      QueueJobGroup group = pJobGroups.get(groupID);
+      if(group != null) {
+        String author = group.getNodeID().getAuthor();
+        if((author != null) && 
+           (author.equals(PackageInfo.sUser) || pPrivilegeDetails.isQueueManaged(author)))
+          groups.put(groupID, group); 
+      }
+    }
+
+    if(!groups.isEmpty()) {
+      QueueJobsTask task = new QueueJobsTask(groups);
       task.start();
     }
   }
@@ -1055,8 +1058,18 @@ class JQueueJobBrowserPanel
   public void 
   doGroupsQueueJobsSpecial()
   {
-    TreeMap<NodeID,TreeSet<FileSeq>> targets = getQueuedFileSeqs();
-    if(!targets.isEmpty()) {
+    TreeMap<Long,QueueJobGroup> groups = new TreeMap<Long,QueueJobGroup>();
+    for(Long groupID : getSelectedGroupIDs()) {
+      QueueJobGroup group = pJobGroups.get(groupID);
+      if(group != null) {
+        String author = group.getNodeID().getAuthor();
+        if((author != null) && 
+           (author.equals(PackageInfo.sUser) || pPrivilegeDetails.isQueueManaged(author)))
+          groups.put(groupID, group); 
+      }
+    }
+
+    if(!groups.isEmpty()) {
       JQueueJobsDialog diag = UIMaster.getInstance().showQueueJobsDialog();
       if(diag.wasConfirmed()) {
 	Integer batchSize = null;
@@ -1096,7 +1109,7 @@ class JQueueJobBrowserPanel
 	  hardwareKeys = diag.getHardwareKeys();
 	
 	QueueJobsTask task = 
-	  new QueueJobsTask(targets, batchSize, priority, interval,
+	  new QueueJobsTask(groups, batchSize, priority, interval,
 	                    maxLoad, minMemory, minDisk,
 			    selectionKeys, licenseKeys, hardwareKeys);
 	task.start();
@@ -1104,41 +1117,25 @@ class JQueueJobBrowserPanel
     }
   }
 
-  /** 
-   * Get the target file sequences of the aborted and failed selected root jobs.
-   */ 
-  private TreeMap<NodeID,TreeSet<FileSeq>> 
-  getQueuedFileSeqs() 
-  {
-    TreeMap<NodeID,TreeSet<FileSeq>> targets = new TreeMap<NodeID,TreeSet<FileSeq>>();
+  /**
+   * Get the job IDs of all jobs which are members of the selected groups and for which
+   * the current user has sufficient privileges to change their state.
+   */
+  private TreeSet<Long>
+  getSelectedModifiableJobIDs() 
+  { 
+    TreeSet<Long> jobs = new TreeSet<Long>();
     for(Long groupID : getSelectedGroupIDs()) {
       QueueJobGroup group = pJobGroups.get(groupID);
       if(group != null) {
-	for(Long jobID : group.getRootIDs()) {
-	  JobStatus status = pJobStatus.get(jobID);
-	  NodeID targetID = null;
-	  if(status != null) {
-	    targetID = status.getNodeID();
-	  }
-      
-	  if(targetID != null) {
-	    String author = targetID.getAuthor();
-	    if(author.equals(PackageInfo.sUser) || pPrivilegeDetails.isQueueManaged(author)) {
-
-	      TreeSet<FileSeq> fseqs = targets.get(targetID);
-	      if(fseqs == null) {
-		fseqs = new TreeSet<FileSeq>();
-		targets.put(targetID, fseqs);
-	      }
-	      
-	      fseqs.add(status.getTargetSequence());
-	    }
-	  }
-	}
+        String author = group.getNodeID().getAuthor();
+        if((author != null) && 
+           (author.equals(PackageInfo.sUser) || pPrivilegeDetails.isQueueManaged(author)))
+          jobs.addAll(group.getJobIDs());
       }
     }
-
-    return targets;
+    
+    return jobs;
   }
 
   /**
@@ -1147,28 +1144,7 @@ class JQueueJobBrowserPanel
   public void 
   doGroupsPauseJobs()
   {
-    TreeSet<Long> jobs = new TreeSet<Long>();
-    for(Long groupID : getSelectedGroupIDs()) {
-      QueueJobGroup group = pJobGroups.get(groupID);
-      if(group != null) {
-	for(Long jobID : group.getJobIDs()) {
-	  JobStatus status = pJobStatus.get(jobID);
-	  String author = null;
-	  if(status != null) {
-	    switch(status.getState()) {
-	    case Queued:
-	    case Preempted:
-	      author = status.getNodeID().getAuthor();
-	    }
-	  }
-      
-	  if((author != null) && 
-	     (author.equals(PackageInfo.sUser) || pPrivilegeDetails.isQueueManaged(author))) 
-	    jobs.add(jobID);
-	}
-      }
-    }
-
+    TreeSet<Long> jobs = getSelectedModifiableJobIDs(); 
     if(!jobs.isEmpty()) {
       PauseJobsTask task = new PauseJobsTask(jobs);
       task.start();
@@ -1181,27 +1157,7 @@ class JQueueJobBrowserPanel
   public void 
   doGroupsResumeJobs()
   {
-    TreeSet<Long> jobs = new TreeSet<Long>();
-    for(Long groupID : getSelectedGroupIDs()) {
-      QueueJobGroup group = pJobGroups.get(groupID);
-      if(group != null) {
-	for(Long jobID : group.getJobIDs()) {
-	  JobStatus status = pJobStatus.get(jobID);
-	  String author = null;
-	  if(status != null) {
-	    switch(status.getState()) {
-	    case Paused:
-	      author = status.getNodeID().getAuthor();
-	    }
-	  }
-      
-	  if((author != null) &&
-	     (author.equals(PackageInfo.sUser) || pPrivilegeDetails.isQueueManaged(author))) 
-	    jobs.add(jobID);
-	}
-      }
-    }
-
+    TreeSet<Long> jobs = getSelectedModifiableJobIDs(); 
     if(!jobs.isEmpty()) {
       ResumeJobsTask task = new ResumeJobsTask(jobs);
       task.start();
@@ -1214,30 +1170,7 @@ class JQueueJobBrowserPanel
   public void 
   doGroupsPreemptJobs()
   {
-    TreeSet<Long> jobs = new TreeSet<Long>();
-    for(Long groupID : getSelectedGroupIDs()) {
-      QueueJobGroup group = pJobGroups.get(groupID);
-      if(group != null) {
-	for(Long jobID : group.getJobIDs()) {
-	  JobStatus status = pJobStatus.get(jobID);
-	  String author = null;
-	  if(status != null) {
-	    switch(status.getState()) {
-	    case Paused:
-	    case Queued:
-	    case Preempted:
-	    case Running:
-	      author = status.getNodeID().getAuthor();
-	    }
-	  }
-      
-	  if((author != null) &&
-	     (author.equals(PackageInfo.sUser) || pPrivilegeDetails.isQueueManaged(author)))
-	    jobs.add(jobID);
-	}
-      }
-    }
-
+    TreeSet<Long> jobs = getSelectedModifiableJobIDs(); 
     if(!jobs.isEmpty()) {
       PreemptJobsTask task = new PreemptJobsTask(jobs);
       task.start();
@@ -1250,30 +1183,7 @@ class JQueueJobBrowserPanel
   public void 
   doGroupsKillJobs()
   {
-    TreeSet<Long> jobs = new TreeSet<Long>();
-    for(Long groupID : getSelectedGroupIDs()) {
-      QueueJobGroup group = pJobGroups.get(groupID);
-      if(group != null) {
-	for(Long jobID : group.getJobIDs()) {
-	  JobStatus status = pJobStatus.get(jobID);
-	  String author = null;
-	  if(status != null) {
-	    switch(status.getState()) {
-	    case Paused:
-	    case Queued:
-	    case Preempted:
-	    case Running:
-	      author = status.getNodeID().getAuthor();
-	    }
-	  }
-      
-	  if((author != null) &&
-	     (author.equals(PackageInfo.sUser) || pPrivilegeDetails.isQueueManaged(author)))
-	    jobs.add(jobID);
-	}
-      }
-    }
-
+    TreeSet<Long> jobs = getSelectedModifiableJobIDs(); 
     if(!jobs.isEmpty()) {
       KillJobsTask task = new KillJobsTask(jobs);
       task.start();
@@ -1321,58 +1231,55 @@ class JQueueJobBrowserPanel
   {
     JChangeJobReqsDialog diag = UIMaster.getInstance().showChangeJobReqDialog();
     if(diag.wasConfirmed()) {
-
       Integer priority = null;
-      Integer rampUp = null;
-      Float maxLoad = null;
-      Long minMemory = null;
-      Long minDisk = null;
-      Set<String> licenseKeys = null;
-      Set<String> selectionKeys = null;
-      Set<String> hardwareKeys = null;
-
-      if (diag.overridePriority())
+      if(diag.overridePriority())
 	priority = diag.getPriority();
-      if (diag.overrideRampUp())
+
+      Integer rampUp = null;
+      if(diag.overrideRampUp())
 	rampUp = diag.getRampUp();
-      if (diag.overrideMaxLoad())
+
+      Float maxLoad = null;
+      if(diag.overrideMaxLoad())
 	maxLoad = diag.getMaxLoad();
-      if (diag.overrideMinMemory())
+
+      Long minMemory = null;
+      if(diag.overrideMinMemory())
 	minMemory = diag.getMinMemory();
-      if (diag.overrideMinDisk())
+
+      Long minDisk = null;
+      if(diag.overrideMinDisk())
 	minDisk = diag.getMinDisk();
-      if (diag.overrideLicenseKeys())
+
+      Set<String> licenseKeys = null;
+      if(diag.overrideLicenseKeys())
 	licenseKeys = diag.getLicenseKeys();
-      if (diag.overrideSelectionKeys())
+
+      Set<String> selectionKeys = null;
+      if(diag.overrideSelectionKeys())
 	selectionKeys = diag.getSelectionKeys();
-      if (diag.overrideHardwareKeys())
+
+      Set<String> hardwareKeys = null;
+      if(diag.overrideHardwareKeys())
 	hardwareKeys = diag.getHardwareKeys();
+
       LinkedList<JobReqsDelta> change = new LinkedList<JobReqsDelta>();
       for(Long groupID : getSelectedGroupIDs()) {
 	QueueJobGroup group = pJobGroups.get(groupID);
 	if(group != null) {
 	  for(Long jobID : group.getJobIDs()) {
-	    JobStatus status = pJobStatus.get(jobID);
-	    String author = null;
-	    if(status != null) {
-	      switch(status.getState()) {
-	      case Queued:
-	      case Paused:
-	      case Preempted:
-		author = status.getNodeID().getAuthor();
-	      }
-	    }
-
+            String author = group.getNodeID().getAuthor();
 	    if((author != null) &&
 	      (author.equals(PackageInfo.sUser) || pPrivilegeDetails.isQueueManaged(author))) {
-	      JobReqsDelta newReq = new JobReqsDelta
-	        (jobID, priority, rampUp, maxLoad, minMemory, minDisk, 
-		 licenseKeys, selectionKeys, hardwareKeys);
+	      JobReqsDelta newReq = 
+                new JobReqsDelta(jobID, priority, rampUp, maxLoad, minMemory, minDisk, 
+                                 licenseKeys, selectionKeys, hardwareKeys);
 	      change.add(newReq);
 	    }
 	  }
 	}
       }
+
       if(!change.isEmpty()) {
 	ChangeJobReqsTask task = new ChangeJobReqsTask(change);
 	task.start();
@@ -1434,7 +1341,7 @@ class JQueueJobBrowserPanel
   /**
    * The working area view filter.
    */
-  protected 
+  public 
   enum ViewFilter
   {  
     /**
@@ -1698,16 +1605,16 @@ class JQueueJobBrowserPanel
     public 
     QueueJobsTask
     (
-     TreeMap<NodeID,TreeSet<FileSeq>> targets
+     TreeMap<Long,QueueJobGroup> groups
     ) 
     {
-      this(targets, null, null, null, null, null, null, null, null, null);
+      this(groups, null, null, null, null, null, null, null, null, null);
     }
     
     public 
     QueueJobsTask
     (
-     TreeMap<NodeID,TreeSet<FileSeq>> targets,
+     TreeMap<Long,QueueJobGroup> groups, 
      Integer batchSize, 
      Integer priority, 
      Integer rampUp, 
@@ -1721,7 +1628,7 @@ class JQueueJobBrowserPanel
     {
       super("JQueueJobsBrowserPanel:QueueJobsTask");
 
-      pTargets       = targets;
+      pTargetGroups  = groups;
       pBatchSize     = batchSize;
       pPriority      = priority; 
       pRampUp        = rampUp; 
@@ -1739,23 +1646,45 @@ class JQueueJobBrowserPanel
     {
       UIMaster master = UIMaster.getInstance();
       if(master.beginPanelOp(pGroupID)) {
-        MasterMgrClient client = master.acquireMasterMgrClient();
+        MasterMgrClient mclient = master.acquireMasterMgrClient();
+        QueueMgrClient  qclient = master.acquireQueueMgrClient();
 	try {
-	  for(NodeID nodeID : pTargets.keySet()) {
-	    master.updatePanelOp(pGroupID, 
-				 "Resubmitting Jobs to the Queue: " + nodeID.getName());
-	    client.resubmitJobs
-	      (nodeID, pTargets.get(nodeID), pBatchSize, pPriority, pRampUp,
-	       pMaxLoad, pMinMemory, pMinDisk,
-	       pSelectionKeys, pLicenseKeys, pHardwareKeys);
-	  }
-	}
+          master.updatePanelOp(pGroupID, "Updating Job Status..."); 
+          TreeMap<Long,JobStatus> jstatus = 
+            qclient.getJobStatus(new TreeSet<Long>(pTargetGroups.keySet()));
+
+          for(Long groupID : pTargetGroups.keySet()) {
+            QueueJobGroup group = pTargetGroups.get(groupID);
+            NodeID targetID = group.getNodeID();
+            TreeSet<FileSeq> targetSeqs = new TreeSet<FileSeq>();
+            for(Long jobID : group.getRootIDs()) {
+              JobStatus status = jstatus.get(jobID);
+              if(status != null) {
+                switch(status.getState()) {
+                case Aborted:
+                case Failed:
+                  targetSeqs.add(status.getTargetSequence());
+                }
+              }
+            }
+
+            if(!targetSeqs.isEmpty()) {
+              master.updatePanelOp(pGroupID, 
+                                   "Resubmitting Jobs to the Queue: " + targetID.getName());
+              mclient.resubmitJobs
+                (targetID, targetSeqs, pBatchSize, pPriority, pRampUp,
+                 pMaxLoad, pMinMemory, pMinDisk,
+                 pSelectionKeys, pLicenseKeys, pHardwareKeys);
+            }
+          }
+        }
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
 	  return;
 	}
 	finally {
-	  master.releaseMasterMgrClient(client);
+	  master.releaseMasterMgrClient(mclient);
+	  master.releaseQueueMgrClient(qclient);
 	  master.endPanelOp(pGroupID, "Done.");
 	}
 
@@ -1763,7 +1692,7 @@ class JQueueJobBrowserPanel
       }
     }
 
-    private TreeMap<NodeID,TreeSet<FileSeq>>  pTargets;
+    private TreeMap<Long,QueueJobGroup>       pTargetGroups; 
     private Integer                           pBatchSize;
     private Integer                           pPriority;
     private Integer                           pRampUp; 
@@ -2121,9 +2050,10 @@ class JQueueJobBrowserPanel
   private TreeMap<Long,QueueJobGroup>  pJobGroups;
   
   /**
-   * The job status of the jobs which make up the job groups indexed by job ID. 
-   */ 
-  private TreeMap<Long,JobStatus>  pJobStatus;
+   * The distribution of job states for the jobs associated with each of the given 
+   * job group IDs.
+   */
+  private TreeMap<Long,double[]>  pJobStateDist; 
 
   /**
    * The IDs of the selected job groups. 

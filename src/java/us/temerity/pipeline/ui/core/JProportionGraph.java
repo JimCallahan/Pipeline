@@ -1,4 +1,4 @@
-// $Id: JProportionGraph.java,v 1.2 2006/10/11 06:09:39 jim Exp $
+// $Id: JProportionGraph.java,v 1.3 2009/05/14 23:30:43 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -51,7 +51,7 @@ class JProportionGraph
   public void 
   setValues
   (
-   float[] values, 
+   double[] values, 
    Color[] colors 
   ) 
   {
@@ -94,8 +94,8 @@ class JProportionGraph
       {
 	int wk;
 	for(wk=0; wk<pValues.length; wk++) {
-	  if(pValues[wk] > 0.0f) {
-	    int size = Math.max(1, (int) (pValues[wk] * ((float) width)));
+	  if(pValues[wk] > 0.0) {
+	    int size = Math.max(1, (int) (pValues[wk] * ((double) width)));
 	    ws[wk] = size; 
 	    total += size;
 	  }
@@ -157,7 +157,7 @@ class JProportionGraph
   /**
    * The values to graph.
    */ 
-  private float[]  pValues;
+  private double[]  pValues;
 
   /**
    * The bar colors. 

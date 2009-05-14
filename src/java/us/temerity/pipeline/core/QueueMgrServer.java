@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.61 2009/05/11 09:32:02 jim Exp $
+// $Id: QueueMgrServer.java,v 1.62 2009/05/14 23:30:43 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -722,6 +722,15 @@ class QueueMgrServer
                 }
                 break;
 
+              case GetJobStateDistribution:
+                {
+                  QueueGetJobStateDistributionReq req = 
+                    (QueueGetJobStateDistributionReq) objIn.readObject();
+                  objOut.writeObject(pQueueMgr.getJobStateDistribution(req));
+                  objOut.flush(); 
+                }
+                break;
+	  
               case GetJobStatus:
                 {
                   QueueGetJobStatusReq req = (QueueGetJobStatusReq) objIn.readObject();
@@ -860,7 +869,8 @@ class QueueMgrServer
 
               case GetJobGroups:
                 {
-                  objOut.writeObject(pQueueMgr.getJobGroups());
+                  QueueGetJobGroupsReq req = (QueueGetJobGroupsReq) objIn.readObject();
+                  objOut.writeObject(pQueueMgr.getJobGroups(req));
                   objOut.flush(); 
                 }
                 break;

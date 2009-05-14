@@ -1,4 +1,4 @@
-// $Id: QueueRequest.java,v 1.27 2008/03/07 13:25:21 jim Exp $
+// $Id: QueueRequest.java,v 1.28 2009/05/14 23:30:43 jim Exp $
 
 package us.temerity.pipeline.message;
 
@@ -298,6 +298,11 @@ enum QueueRequest
   GetUnfinishedJobsForNodeFiles, 
 
   /**
+   * Get the JobStateDistribution of all jobs associated with the given job group IDs. 
+   */
+  GetJobStateDistribution, 
+
+  /**
    * Get the JobStatus of all jobs associated with the given job group IDs. 
    */
   GetJobStatus, 
@@ -385,7 +390,7 @@ enum QueueRequest
   GetJobGroup, 
 
   /**
-   * Get all of the existing the job groups.
+   * An instance {@link QueueGetJobGroupsReq QueueGetJobGroupsReq} is next.
    */
   GetJobGroups, 
 

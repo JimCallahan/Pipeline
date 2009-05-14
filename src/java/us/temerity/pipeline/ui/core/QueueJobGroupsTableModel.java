@@ -1,4 +1,4 @@
-// $Id: QueueJobGroupsTableModel.java,v 1.9 2008/05/22 00:10:47 jesse Exp $
+// $Id: QueueJobGroupsTableModel.java,v 1.10 2009/05/14 23:30:43 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -40,7 +40,7 @@ class QueueJobGroupsTableModel
 
       {
 	Class classes[] = { 
-	  Long.class, int[].class, String.class, String.class, String.class, 
+	  Long.class, double[].class, String.class, String.class, String.class, 
 	  String.class, String.class
 	}; 
 	pColumnClasses = classes;
@@ -94,7 +94,7 @@ class QueueJobGroupsTableModel
     }
 
     pQueueJobGroups = new ArrayList<QueueJobGroup>();
-    pStateCounts    = new TreeMap<Long,int[]>();
+    pJobStateDist   = new TreeMap<Long,double[]>();
   }
 
 
@@ -121,11 +121,11 @@ class QueueJobGroupsTableModel
 
       case 1:
 	{
-	  int[] counts = pStateCounts.get(group.getGroupID());
+	  double[] dist = pJobStateDist.get(group.getGroupID());
 	  StringBuilder buf = new StringBuilder();
 	  int wk;
-	  for(wk=0; wk<counts.length; wk++) 
-	    buf.append(counts[wk]);
+	  for(wk=0; wk<dist.length; wk++) 
+	    buf.append(dist[wk] + ":");
 
 	  value = buf.toString();
 	}
@@ -212,32 +212,21 @@ class QueueJobGroupsTableModel
    * @param groups
    *   The queue job groups indexe by job group ID.
    * 
-   * @param status
-   *   The job status indexed by job ID.
+   * @param dist
+   *   The distribution of job states indexed by job group ID.
    */ 
   public void
   setQueueJobGroups
   (
    TreeMap<Long,QueueJobGroup> groups, 
-   TreeMap<Long,JobStatus> status
+   TreeMap<Long,double[]> dist
   ) 
   {
     pQueueJobGroups.clear();
-    pStateCounts.clear();
-    if((groups != null) && (status != null)) {
+    pJobStateDist.clear();
+    if((groups != null) && (dist != null)) {
       pQueueJobGroups.addAll(groups.values());
-
-      int size = JobState.all().size();
-      for(QueueJobGroup group : pQueueJobGroups) {
-	int[] counts = new int[size];
-	for(Long jobID : group.getJobIDs()) {
-	  JobStatus js = status.get(jobID);
-	  if(js != null) 
-	    counts[js.getState().ordinal()]++;
-	}
-	
-	pStateCounts.put(group.getGroupID(), counts);
-      }
+      pJobStateDist.putAll(dist); 
     }
 
     sort();
@@ -307,7 +296,7 @@ class QueueJobGroupsTableModel
       return new Long(group.getGroupID());
       
     case 1:
-      return pStateCounts.get(group.getGroupID());
+      return pJobStateDist.get(group.getGroupID());
 
     case 2:
       return group.getRootSequence().toString();
@@ -353,8 +342,8 @@ class QueueJobGroupsTableModel
   private ArrayList<QueueJobGroup> pQueueJobGroups;
 
   /**
-   * The number of jobs having each possible job state for each job group.
+   * The distribution of job states indexed by job group ID.
    */ 
-  private TreeMap<Long,int[]> pStateCounts; 
+  private TreeMap<Long,double[]> pJobStateDist; 
 
 }

@@ -1,4 +1,4 @@
-// $Id: QueueMgrClient.java,v 1.49 2009/02/17 00:37:50 jlee Exp $
+// $Id: QueueMgrClient.java,v 1.50 2009/05/14 23:30:43 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -1492,6 +1492,41 @@ class QueueMgrClient
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Get the distribution of job states for the jobs associated with each of the given 
+   * job group IDs.
+   * 
+   * @param groupIDs
+   *   The unique job group IDs.
+   * 
+   * @throws PipelineException
+   *   If unable to determine the job states.
+   * 
+   * @return
+   *   The normalized frequency distribution of each JobState index by job group ID.
+   */ 
+  public synchronized TreeMap<Long,double[]>
+  getJobStateDistribution
+  (
+   TreeSet<Long> groupIDs
+  ) 
+    throws PipelineException  
+  {
+    verifyConnection();
+
+    QueueGetJobStateDistributionReq req = new QueueGetJobStateDistributionReq(groupIDs);
+    
+    Object obj = performTransaction(QueueRequest.GetJobStateDistribution, req);
+    if(obj instanceof QueueGetJobStateDistributionRsp) {
+      QueueGetJobStateDistributionRsp rsp = (QueueGetJobStateDistributionRsp) obj;
+      return rsp.getStateDistribution();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }        
+  }
+
+  /**
    * Get the JobStatus of all jobs associated with the given job group IDs. 
    * 
    * @param groupIDs
@@ -2152,9 +2187,36 @@ class QueueMgrClient
   getJobGroups()
     throws PipelineException  
   {
+    return getJobGroups(null, null); 
+  }
+
+  /**
+   * Get the job groups which match the following working area pattern.
+   * 
+   * @param author
+   *   The name of the user owning the job groups or 
+   *   <CODE>null</CODE> to match all users.
+   * 
+   * @param view 
+   *   The name of the working area view owning the job groups or 
+   *   <CODE>null</CODE> to match all working areas.
+   * 
+   * @throws PipelineException
+   *   If no job groups exist.
+   */ 
+  public synchronized TreeMap<Long,QueueJobGroup>
+  getJobGroups
+  (
+   String author,
+   String view
+  )
+    throws PipelineException  
+  {
     verifyConnection();
 
-    Object obj = performTransaction(QueueRequest.GetJobGroups, null);
+    QueueGetJobGroupsReq req = new QueueGetJobGroupsReq(author, view); 
+
+    Object obj = performTransaction(QueueRequest.GetJobGroups, req);
     if(obj instanceof QueueGetJobGroupsRsp) {
       QueueGetJobGroupsRsp rsp = (QueueGetJobGroupsRsp) obj;
       return rsp.getJobGroups();

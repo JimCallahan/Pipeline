@@ -1,4 +1,4 @@
-// $Id: PanelUpdater.java,v 1.34 2009/03/25 19:31:58 jesse Exp $
+// $Id: PanelUpdater.java,v 1.35 2009/05/14 23:30:43 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -375,8 +375,25 @@ class PanelUpdater
     if(pQueueJobServersPanel != null) 
       pSampleIntervals = pQueueJobServersPanel.getSampleIntervals(); 
       
-    if(pQueueJobBrowserPanel != null) 
+    if(pQueueJobBrowserPanel != null) {
       pSelectedJobGroupIDs = pQueueJobBrowserPanel.getSelectedGroupIDs();
+
+      switch(pQueueJobBrowserPanel.getViewFilter()) {
+      case SingleView:
+        pJobGroupAuthor = pAuthor;
+        pJobGroupView   = pView; 
+        break;
+      
+      case OwnedViews:
+        pJobGroupAuthor = pAuthor;
+        pJobGroupView   = null;
+        break;
+
+      case AllViews:
+        pJobGroupAuthor = null;
+        pJobGroupView   = null;
+      }
+    }
 
     if(pQueueJobViewerPanel != null) 
       pDetailedJobID = pQueueJobViewerPanel.getDetailedJobID();
@@ -434,7 +451,9 @@ class PanelUpdater
     UserPrefs prefs = UserPrefs.getInstance();
     if(prefs.getHeavyweightUpdates()) 
       pLightweightNodeStatus = false;
-      
+
+    pJobStatus = new TreeMap<Long,JobStatus>();
+
     boolean success = true;
     UIMaster master = UIMaster.getInstance();
     if(master.beginPanelOp(pGroupID)) {
@@ -596,10 +615,15 @@ class PanelUpdater
 	    /* job browser/viewer panel related */ 
 	    if((pQueueJobBrowserPanel != null) || (pQueueJobViewerPanel != null)) {
 	      master.updatePanelOp(pGroupID, "Updating Jobs...");
-	      pJobGroups = qclient.getJobGroups(); 
-	      pJobStatus = qclient.getJobStatus(new TreeSet<Long>(pJobGroups.keySet()));
+	      pJobGroups = qclient.getJobGroups(pJobGroupAuthor, pJobGroupView); 
+              if(!pJobGroups.isEmpty()) {
+                TreeSet<Long> groupIDs = new TreeSet<Long>(pJobGroups.keySet());
+                pJobStateDist = qclient.getJobStateDistribution(groupIDs);
+              }
 	      
-	      if(pSelectedJobGroupIDs != null) {
+	      if((pSelectedJobGroupIDs != null) && !pSelectedJobGroupIDs.isEmpty()) {
+                pJobStatus.putAll(qclient.getJobStatus(pSelectedJobGroupIDs)); 
+
 		pSelectedJobGroups = new TreeMap<Long,QueueJobGroup>();
 		for(Long groupID : pSelectedJobGroupIDs) {
 		  QueueJobGroup group = pJobGroups.get(groupID);
@@ -617,7 +641,7 @@ class PanelUpdater
 		master.updatePanelOp(pGroupID, "Updating Queue Stats...");
 		pServerHistograms = qclient.getHostHistograms(pServerHistogramSpecs);
 
-		if (wgroups == null)
+		if(wgroups == null)
 		  wgroups = mclient.getWorkGroups();
 		pWorkGroups = wgroups.getGroups();
 		pWorkUsers  = wgroups.getUsers();
@@ -657,8 +681,7 @@ class PanelUpdater
 	      /* job slots panel related */
 	      if(pQueueJobSlotsPanel != null) {
 		master.updatePanelOp(pGroupID, "Updating Queue Slots...");
-		if(pJobStatus == null) 
-		  pJobStatus = qclient.getRunningJobStatus(); 
+                pJobStatus.putAll(qclient.getRunningJobStatus()); 
 		
 		if(pHosts == null) 
 		  pHosts = qclient.getHosts(pServerHistogramSpecs);
@@ -883,7 +906,7 @@ class PanelUpdater
 	  /* job browser */ 
 	  if(pQueueJobBrowserPanel != null) 
 	    pQueueJobBrowserPanel.applyPanelUpdates
-	      (pAuthor, pView, pJobGroups, pJobStatus);
+	      (pAuthor, pView, pJobGroups, pJobStateDist);
 	  
 	  /* job viewer */ 
 	  if(pQueueJobViewerPanel != null) 
@@ -1092,6 +1115,18 @@ class PanelUpdater
    * The currently selected job groups.
    */
   private TreeMap<Long,QueueJobGroup>  pSelectedJobGroups; 
+
+  /** 
+   * The name of the specific working area or author used to filter job groups.
+   */
+  private String  pJobGroupAuthor;
+  private String  pJobGroupView;
+
+  /**
+   * The distribution of job states for the jobs associated with each of the given 
+   * job group IDs.
+   */
+  private TreeMap<Long,double[]>  pJobStateDist; 
 
   /**
    * The abreviated status of all jobs associated with the current job groups.
