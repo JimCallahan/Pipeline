@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.274 2009/05/06 01:32:27 jesse Exp $
+// $Id: MasterMgr.java,v 1.275 2009/05/16 02:06:18 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -7906,7 +7906,7 @@ class MasterMgr
       /* prevent circular links */ 
       if(mod.getSource(source) == null)
 	checkForCircularity(timer, source, targetID, 
-			    new HashSet<String>(), new Stack<String>()); 
+			    new TreeSet<String>(), new Stack<String>()); 
 
       /* add (or modify) the link */ 
       mod.setSource(slink);
@@ -10345,7 +10345,7 @@ class MasterMgr
       {
 	collectRequiredVersions
 	  (true, nodeID, req.getVersionID(), false, req.getMode(), req.getMethod(), 
-	   table, requiredVersions, new LinkedList<String>(), new HashSet<String>(), 
+	   table, requiredVersions, new LinkedList<String>(), new TreeSet<String>(), 
 	   timer);
       }
 
@@ -10436,8 +10436,8 @@ class MasterMgr
 	performCheckOut
 	  (true, nodeID, req.getVersionID(), false, anyExtTests, anyExtTasks, 
 	   req.getMode(), req.getMethod(), 
-	   table, new LinkedList<String>(), new HashSet<String>(), 
-	   new HashSet<String>(), timer);
+	   table, new LinkedList<String>(), new TreeSet<String>(), 
+	   new TreeSet<String>(), timer);
       }
       finally {
 	onlineOfflineReadUnlock(onOffLocks);
@@ -10512,7 +10512,7 @@ class MasterMgr
    TreeMap<String,NodeStatus> stable,
    TreeMap<String,TreeSet<VersionID>> requiredVersions, 
    LinkedList<String> branch, 
-   HashSet<String> seen, 
+   TreeSet<String> seen, 
    TaskTimer timer   
   ) 
     throws PipelineException 
@@ -10724,8 +10724,8 @@ class MasterMgr
    CheckOutMethod method, 
    TreeMap<String,NodeStatus> stable,
    LinkedList<String> branch, 
-   HashSet<String> seen, 
-   HashSet<String> dirty, 
+   TreeSet<String> seen, 
+   TreeSet<String> dirty, 
    TaskTimer timer   
   ) 
     throws PipelineException 
@@ -17162,7 +17162,7 @@ class MasterMgr
    TaskTimer timer, 
    String name,
    NodeID targetID, 
-   HashSet<String> checked, 
+   TreeSet<String> checked, 
    Stack<String> branch
   ) 
     throws PipelineException 

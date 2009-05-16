@@ -1,4 +1,4 @@
-// $Id: BaseSubProcess.java,v 1.29 2008/05/24 01:34:21 jim Exp $
+// $Id: BaseSubProcess.java,v 1.30 2009/05/16 02:06:18 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -726,7 +726,7 @@ class BaseSubProcess
   /**
    * A table of cached UIDs indexed by username.
    */
-  protected static HashMap<String,Integer>  sUserIDs = new HashMap<String,Integer>();
+  protected static TreeMap<String,Integer>  sUserIDs = new TreeMap<String,Integer>();
 
 
 

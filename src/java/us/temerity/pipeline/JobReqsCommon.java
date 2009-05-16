@@ -126,9 +126,9 @@ class JobReqsCommon
   protected
   JobReqsCommon()
   {
-    pLicenseKeys   = new HashSet<String>();
-    pSelectionKeys = new HashSet<String>();
-    pHardwareKeys  = new HashSet<String>();
+    pLicenseKeys   = new TreeSet<String>();
+    pSelectionKeys = new TreeSet<String>();
+    pHardwareKeys  = new TreeSet<String>();
   }
   
   
@@ -468,9 +468,9 @@ class JobReqsCommon
     try {
       JobReqs clone = (JobReqs) super.clone();
 
-      clone.pLicenseKeys   = new HashSet<String>(pLicenseKeys);
-      clone.pSelectionKeys = new HashSet<String>(pSelectionKeys);
-      clone.pHardwareKeys  = new HashSet<String>(pHardwareKeys);
+      clone.pLicenseKeys   = new TreeSet<String>(pLicenseKeys);
+      clone.pSelectionKeys = new TreeSet<String>(pSelectionKeys);
+      clone.pHardwareKeys  = new TreeSet<String>(pHardwareKeys);
       
       return clone; 
     }
@@ -542,21 +542,36 @@ class JobReqsCommon
     pMinDisk = disk;
 
     {
-      HashSet<String> keys = (HashSet<String>) decoder.decode("LicenseKeys");
-      if(keys != null) 
-	pLicenseKeys = keys;
+      pLicenseKeys.clear();
+      Object obj = decoder.decode("LicenseKeys");
+      if(obj != null) {
+        if(obj instanceof HashSet) 
+          pLicenseKeys.addAll((Set<String>) obj);  // backward compatibility
+        else 
+          pLicenseKeys = (TreeSet<String>) obj;
+      }
     }
 
     {
-      HashSet<String> keys = (HashSet<String>) decoder.decode("SelectionKeys");
-      if(keys != null) 
-	pSelectionKeys = keys;
+      pSelectionKeys.clear();
+      Object obj = decoder.decode("SelectionKeys");
+      if(obj != null) {
+        if(obj instanceof HashSet) 
+          pSelectionKeys.addAll((Set<String>) obj);  // backward compatibility
+        else 
+          pSelectionKeys = (TreeSet<String>) obj;
+      }
     }
-    
+
     {
-      HashSet<String> keys = (HashSet<String>) decoder.decode("HardwareKeys");
-      if(keys != null) 
-	pHardwareKeys = keys;
+      pHardwareKeys.clear();
+      Object obj = decoder.decode("HardwareKeys");
+      if(obj != null) {
+        if(obj instanceof HashSet) 
+          pHardwareKeys.addAll((Set<String>) obj);  // backward compatibility
+        else 
+          pHardwareKeys = (TreeSet<String>) obj;
+      }
     }
   }
 
@@ -603,15 +618,15 @@ class JobReqsCommon
   /**
    * The names of the required license keys. 
    */
-  protected HashSet<String>  pLicenseKeys;
+  protected TreeSet<String>  pLicenseKeys;
 
   /**
    * The names of the required selection keys. 
    */
-  protected HashSet<String>  pSelectionKeys;
+  protected TreeSet<String>  pSelectionKeys;
  
   /**
    * The names of the required hardware keys. 
    */
-  protected HashSet<String>  pHardwareKeys;
+  protected TreeSet<String>  pHardwareKeys;
 }

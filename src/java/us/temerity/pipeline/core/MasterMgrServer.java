@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.99 2009/05/11 09:32:02 jim Exp $
+// $Id: MasterMgrServer.java,v 1.100 2009/05/16 02:06:18 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -107,7 +107,7 @@ class MasterMgrServer
 		    restoreCleanupInterval, 
                     fileStatDir, checksumDir);
 
-    pTasks = new HashSet<HandlerTask>();
+    pTasks = new TreeSet<HandlerTask>();
   }
 
   
@@ -2050,7 +2050,7 @@ class MasterMgrServer
   /**
    * The set of currently running tasks.
    */ 
-  private HashSet<HandlerTask>  pTasks;
+  private TreeSet<HandlerTask>  pTasks;
 
 }
 

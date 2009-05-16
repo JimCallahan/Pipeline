@@ -1,4 +1,4 @@
-// $Id: GlueEncoderImpl.java,v 1.11 2009/05/14 22:51:32 jim Exp $
+// $Id: GlueEncoderImpl.java,v 1.12 2009/05/16 02:06:18 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -46,7 +46,7 @@ class GlueEncoderImpl
   ) 
   {
     pNextID  = 1;
-    pObjects = new HashMap<Integer,HashMap<Long,Object>>();  
+    pObjects = new TreeMap<Integer,TreeMap<Long,Object>>();  
     pWriter  = writer;
     pLevel   = 0;
   }
@@ -562,7 +562,7 @@ class GlueEncoderImpl
   ) 
   {
     Integer key = new Integer(obj.hashCode());
-    HashMap<Long,Object> objs = pObjects.get(key);
+    TreeMap<Long,Object> objs = pObjects.get(key);
     if(objs == null) 
       return null;
 
@@ -594,9 +594,9 @@ class GlueEncoderImpl
   ) 
   {
     Integer key = new Integer(obj.hashCode());
-    HashMap<Long,Object> objs = pObjects.get(key);
+    TreeMap<Long,Object> objs = pObjects.get(key);
     if(objs == null) {
-      objs = new HashMap<Long,Object>();
+      objs = new TreeMap<Long,Object>();
       pObjects.put(key, objs);
     }
 
@@ -719,7 +719,8 @@ class GlueEncoderImpl
    * object table contains the encoded/decoded objects with the same Object.hashCode()
    * indexed by unique object IDs. 
    */ 
-  private HashMap<Integer,HashMap<Long,Object>>  pObjects;    
+  private TreeMap<Integer,TreeMap<Long,Object>>  pObjects;    
+  // private DoubleMap<Integer,Long,Object>  pObjects;    <-- Use this 
 
   /**
    * The character stream where GLUE encoded text is written. 

@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.88 2009/04/16 20:11:23 jesse Exp $
+// $Id: FileMgr.java,v 1.89 2009/05/16 02:06:18 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -206,8 +206,8 @@ class FileMgr
     setRuntimeControlsHelper(fileStatDir, checksumDir);
 
     /* init file system locks */ 
-    pCheckedInLocks = new HashMap<String,ReentrantReadWriteLock>();
-    pWorkingLocks   = new HashMap<NodeID,Object>();
+    pCheckedInLocks = new TreeMap<String,ReentrantReadWriteLock>();
+    pWorkingLocks   = new TreeMap<NodeID,Object>();
     pMakeDirLock    = new Object();
   }
 
@@ -5372,7 +5372,7 @@ class FileMgr
    * will only access these checked-in file resources.  The per-node write-lock should be 
    * aquired when creating new files, symlinks or checksums.
    */
-  private HashMap<String,ReentrantReadWriteLock>  pCheckedInLocks;
+  private TreeMap<String,ReentrantReadWriteLock>  pCheckedInLocks;
 
   /**
    * The per-working version locks indexed by NodeID. <P> 
@@ -5382,7 +5382,7 @@ class FileMgr
    * <CODE>synchronized()<CODE> statement block wrapping any access or modification of 
    * these file resources.
    */
-  private HashMap<NodeID,Object>  pWorkingLocks;
+  private TreeMap<NodeID,Object>  pWorkingLocks;
 
 }
 

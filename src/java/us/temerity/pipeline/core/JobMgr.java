@@ -1,4 +1,4 @@
-// $Id: JobMgr.java,v 1.45 2008/08/16 21:46:50 jim Exp $
+// $Id: JobMgr.java,v 1.46 2009/05/16 02:06:18 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -37,7 +37,7 @@ class JobMgr
     /* initialize the fields */ 
     {
       pExecuteTasks = new TreeMap<Long,ExecuteTask>();
-      pFileMonitors = new HashMap<File, FileMonitor>();
+      pFileMonitors = new TreeMap<File,FileMonitor>();
     }
 
     /* make sure that the root job directory exists */ 
@@ -1295,7 +1295,7 @@ class JobMgr
   /**
    * The open output file monitors indexed by filename.
    */
-  private HashMap<File, FileMonitor>  pFileMonitors; 
+  private TreeMap<File, FileMonitor>  pFileMonitors; 
   
 }
 

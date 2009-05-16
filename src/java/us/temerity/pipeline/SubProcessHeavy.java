@@ -1,4 +1,4 @@
-// $Id: SubProcessHeavy.java,v 1.17 2007/04/30 20:51:40 jim Exp $
+// $Id: SubProcessHeavy.java,v 1.18 2009/05/16 02:06:18 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -72,7 +72,7 @@ class SubProcessHeavy
 
     initHeavy(outFile, errFile);
     init(null, program.getPath(), args, 
-	 new HashMap<String,String>(), PackageInfo.sTempPath.toFile());
+	 new TreeMap<String,String>(), PackageInfo.sTempPath.toFile());
   }
 
   /**
@@ -202,7 +202,7 @@ class SubProcessHeavy
          a setuid program.  We copy the dynamic library search path to the 
          PIPELINE_LD_LIBRARY_PATH temporary variable so that plrun(1) can restore 
          it before exec'ing the target program. */
-      HashMap<String,String> uenv = new HashMap<String,String>(env); 
+      TreeMap<String,String> uenv = new TreeMap<String,String>(env); 
       {
         switch(PackageInfo.sOsType) {
         case Unix:

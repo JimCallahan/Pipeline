@@ -1,8 +1,7 @@
 package us.temerity.pipeline;
 
 import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * A class that represents a series of changes that are supposed to be made to 
@@ -96,17 +95,17 @@ class JobReqsDelta
     setMinDisk(minDisk);
     
     if (licenseKeys != null)
-      pLicenseKeys = new HashSet<String>(licenseKeys);
+      pLicenseKeys = new TreeSet<String>(licenseKeys);
     else
       pLicenseKeys = null;
     
     if (selectionKeys != null)
-      pSelectionKeys = new HashSet<String>(selectionKeys);
+      pSelectionKeys = new TreeSet<String>(selectionKeys);
     else
       pSelectionKeys = null;
     
     if (hardwareKeys != null)
-      pHardwareKeys = new HashSet<String>(hardwareKeys);
+      pHardwareKeys = new TreeSet<String>(hardwareKeys);
     else
       pHardwareKeys = null;
   }
@@ -256,13 +255,13 @@ class JobReqsDelta
   }
  
   /**
-  *  Creates a new HashSet for the License Keys. 
+  *  Creates a new TreeSet for the License Keys. 
   */
   private void 
   initLicenseKeys()
   {
     if (pLicenseKeys == null)
-      pLicenseKeys = new HashSet<String>();
+      pLicenseKeys = new TreeSet<String>();
   }
 
   /*----------------------------------------------------------------------------------------*/
@@ -320,13 +319,13 @@ class JobReqsDelta
   }
  
   /**
-  *  Creates a new HashSet for the Selection Keys. 
+  *  Creates a new TreeSet for the Selection Keys. 
   */
   private void 
   initSelectionKeys()
   {
     if (pSelectionKeys == null)
-      pSelectionKeys = new HashSet<String>();
+      pSelectionKeys = new TreeSet<String>();
   }
 
   

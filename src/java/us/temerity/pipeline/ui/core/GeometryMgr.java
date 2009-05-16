@@ -1,4 +1,4 @@
-// $Id: GeometryMgr.java,v 1.8 2007/06/26 05:18:57 jim Exp $
+// $Id: GeometryMgr.java,v 1.9 2009/05/16 02:06:19 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -31,7 +31,7 @@ class GeometryMgr
   private 
   GeometryMgr()
   {
-    pTextDLs     = new HashMap<String,Integer>();
+    pTextDLs     = new TreeMap<String,Integer>();
     pLinkIconDLs = new TreeMap<String,Integer>(); 
     pNodeIconDLs = new TreeMap<String,Integer>();
     pJobIconDLs  = new DoubleMap<String,Integer,Integer>();
@@ -796,7 +796,7 @@ class GeometryMgr
    * The OpenGL display lists which render text labels indexed by a tag which includs the 
    * font name, label text, horizontal alignment and inter-character spacing.
    */ 
-  private HashMap<String,Integer>  pTextDLs;
+  private TreeMap<String,Integer>  pTextDLs;
 
   /**
    * The OpenGL display lists which render the link relationship icons indexed by 

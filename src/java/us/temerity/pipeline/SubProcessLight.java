@@ -1,4 +1,4 @@
-// $Id: SubProcessLight.java,v 1.19 2008/02/14 20:26:29 jim Exp $
+// $Id: SubProcessLight.java,v 1.20 2009/05/16 02:06:18 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -78,7 +78,7 @@ class SubProcessLight
   {
     super(name);
     init(null, program.getPath(), args, 
-	 new HashMap<String,String>(), PackageInfo.sTempPath.toFile());
+	 new TreeMap<String,String>(), PackageInfo.sTempPath.toFile());
   }
 
   /**
@@ -189,7 +189,7 @@ class SubProcessLight
          a setuid program.  We copy the dynamic library search path to the 
          PIPELINE_LD_LIBRARY_PATH temporary variable so that plrun(1) can restore 
          it before exec'ing the target program. */
-      HashMap<String,String> uenv = new HashMap<String,String>(env); 
+      TreeMap<String,String> uenv = new TreeMap<String,String>(env); 
       {
         switch(PackageInfo.sOsType) {
         case Unix:

@@ -1,4 +1,4 @@
-// $Id: GlueParserState.java,v 1.8 2006/11/22 09:08:01 jim Exp $
+// $Id: GlueParserState.java,v 1.9 2009/05/16 02:06:18 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -57,13 +57,13 @@ class GlueParserState
    * <CODE>Glueable.fromGlue()</CODE> is called. 
    * 
    * @param table  
-   *   The <CODE>HashMap</CODE> containing the decoded objects at the current level 
+   *   The <CODE>TreeMap</CODE> containing the decoded objects at the current level 
    *   indexed by object title <CODE>String</CODE>.
    */ 
   public void 
   setCurrentTable
   (
-   HashMap table
+   TreeMap table
   ) 
   {
     if(table == null)
@@ -248,7 +248,7 @@ class GlueParserState
    * Current object table which contains decoded objects at the current level indexed
    * by title <CODE>String</CODE>
    */ 
-  private HashMap  pCurTable;   
+  private TreeMap  pCurTable;   
 
   /**
    * The master table of all objects instantiated during the decoding of the Glue text

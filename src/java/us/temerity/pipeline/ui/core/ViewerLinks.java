@@ -1,4 +1,4 @@
-// $Id: ViewerLinks.java,v 1.10 2008/07/21 17:31:10 jim Exp $
+// $Id: ViewerLinks.java,v 1.11 2009/05/16 02:06:19 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -31,8 +31,8 @@ class ViewerLinks
   public 
   ViewerLinks() 
   {
-    pUpstreamLinks   = new HashMap<NodePath,ArrayList<Link>>();
-    pDownstreamLinks = new HashMap<NodePath,ArrayList<Link>>();
+    pUpstreamLinks   = new TreeMap<NodePath,ArrayList<Link>>();
+    pDownstreamLinks = new TreeMap<NodePath,ArrayList<Link>>();
 
     pLinkRels = new LinkedList<ViewerLinkRelationship>();
 
@@ -676,12 +676,12 @@ class ViewerLinks
   /**
    * The table of upstream links indexed by the path to the common downstream node.
    */ 
-  private HashMap<NodePath,ArrayList<Link>>  pUpstreamLinks;
+  private TreeMap<NodePath,ArrayList<Link>>  pUpstreamLinks;
 
   /**
    * The table of downstream links indexed by the path to the common upstream node.
    */ 
-  private HashMap<NodePath,ArrayList<Link>>  pDownstreamLinks;
+  private TreeMap<NodePath,ArrayList<Link>>  pDownstreamLinks;
 
   /**
    * The rendered link relationship icons.

@@ -1,4 +1,4 @@
-// $Id: BaseMgrServer.java,v 1.7 2009/05/04 22:38:34 jim Exp $
+// $Id: BaseMgrServer.java,v 1.8 2009/05/16 02:06:18 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -37,7 +37,8 @@ class BaseMgrServer
   { 
     super(name); 
 
-    pShutdown = new AtomicBoolean(false);
+    pShutdown = new AtomicBoolean(false); 
+    pNextHandlerID = new AtomicLong(1);
   }
  
 
@@ -108,6 +109,7 @@ class BaseMgrServer
   protected abstract
   class BaseHandlerTask
     extends Thread
+    implements Comparable<BaseHandlerTask> 
   {
     public
     BaseHandlerTask
@@ -121,6 +123,8 @@ class BaseMgrServer
       pLive  = true;
 
       pServerRsp = "OK";
+      
+      pHandlerID = pNextHandlerID.incrementAndGet();
     }
 
     /**
@@ -217,10 +221,40 @@ class BaseMgrServer
       pLive = false;
     }
 
+    public boolean
+    equals
+    (
+     Object obj
+    )
+    {
+      if((obj != null) && (obj instanceof BaseHandlerTask)) {
+        BaseHandlerTask task = (BaseHandlerTask) obj;
+        return (pHandlerID == task.pHandlerID); 
+      }
+      return false;
+    }
+
+    public int
+    compareTo
+    (
+     BaseHandlerTask task
+    )
+    {
+      if(pHandlerID > task.pHandlerID)
+        return 1; 
+      else if(pHandlerID < task.pHandlerID)
+        return -1;
+      else 
+        return 0;
+    }
+
+
+    private long pHandlerID; 
+
     private boolean  pFirst;
     private boolean  pLive;
 
-    private String  pServerRsp;
+    private String  pServerRsp;                              
 
     protected SocketChannel  pChannel;
     protected Socket         pSocket;
@@ -241,5 +275,12 @@ class BaseMgrServer
    * The socket channel listened on by the server.
    */ 
   protected ServerSocketChannel  pSocketChannel;
+
+
+  /**
+   * A counter used to give each incomming connection a unique ID. 
+   */
+  private AtomicLong  pNextHandlerID;
+
 }
 

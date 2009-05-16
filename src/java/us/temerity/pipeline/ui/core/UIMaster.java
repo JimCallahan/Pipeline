@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.103 2009/05/04 21:13:16 jim Exp $
+// $Id: UIMaster.java,v 1.104 2009/05/16 02:06:19 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -171,7 +171,7 @@ class UIMaster
     pRestoreSelections  = restoreSelections; 
     pIsRestoring        = new AtomicBoolean();
 
-    pCollapsedNodePaths = new HashSet<String>();
+    pCollapsedNodePaths = new TreeSet<String>();
 
     pDebugGL = debugGL;
     pTraceGL = traceGL; 
@@ -4780,13 +4780,14 @@ class UIMaster
 
 	/* read the collapsed node paths */ 
 	synchronized(pCollapsedNodePaths) {
+          pCollapsedNodePaths.clear();
 	  Path path = new Path(base, "collapsed-nodes");
 	  File file = path.toFile();
 	  if(file.isFile()) {
-	    try {      
-	      HashSet<String> collapsed = (HashSet<String>) LockedGlueFile.load(file);
-	      if(collapsed != null) 
-		pCollapsedNodePaths.addAll(collapsed);
+	    try {    
+              Object obj = LockedGlueFile.load(file);
+              if(obj != null) 
+                pCollapsedNodePaths.addAll((Set<String>) obj);
 	    }
 	    catch(Exception ex) {
 	      LogMgr.getInstance().log
@@ -7122,7 +7123,7 @@ class UIMaster
   /**
    * The unique paths to the previously collapsed viewer nodes.
    */ 
-  private HashSet<String>  pCollapsedNodePaths;
+  private TreeSet<String>  pCollapsedNodePaths;
 
 
   /*----------------------------------------------------------------------------------------*/

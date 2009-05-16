@@ -1,4 +1,4 @@
-// $Id: FileMgrServer.java,v 1.47 2009/05/11 09:32:02 jim Exp $
+// $Id: FileMgrServer.java,v 1.48 2009/05/16 02:06:18 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -56,7 +56,7 @@ class FileMgrServer
     super("FileMgrServer");
 
     pFileMgr = new FileMgr(fileStatDir, checksumDir);
-    pTasks   = new HashSet<HandlerTask>();    
+    pTasks   = new TreeSet<HandlerTask>();    
   }
   
  
@@ -596,6 +596,6 @@ class FileMgrServer
   /**
    * The set of currently running tasks.
    */ 
-  private HashSet<HandlerTask>  pTasks;
+  private TreeSet<HandlerTask>  pTasks;
 }
 

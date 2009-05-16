@@ -1,4 +1,4 @@
-// $Id: TextureMgr.java,v 1.10 2009/03/30 16:22:45 jim Exp $
+// $Id: TextureMgr.java,v 1.11 2009/05/16 02:06:19 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -46,12 +46,12 @@ class TextureMgr
   private 
   TextureMgr()
   {
-    pFontTextures = new HashMap<String,Integer[]>();
-    pFontGeometry = new HashMap<String,FontGeometry>();
+    pFontTextures = new TreeMap<String,Integer[]>();
+    pFontGeometry = new TreeMap<String,FontGeometry>();
 
-    pIconTextures = new HashMap<String,Integer>();
-    pIcons        = new HashMap<String,ImageIcon[]>();
-    pIconImages   = new HashMap<String,BufferedImage[]>();
+    pIconTextures = new TreeMap<String,Integer>();
+    pIcons        = new TreeMap<String,ImageIcon[]>();
+    pIconImages   = new TreeMap<String,BufferedImage[]>();
   }
   
   
@@ -1530,12 +1530,12 @@ class TextureMgr
    * font name and ASCII character code.  Per-character entries which are <CODE>null</CODE>
    * contain unprintable characters without textures.
    */ 
-  private HashMap<String,Integer[]>  pFontTextures;
+  private TreeMap<String,Integer[]>  pFontTextures;
 
   /**
    * The font geometries indexed by font name.
    */ 
-  private HashMap<String,FontGeometry> pFontGeometry;
+  private TreeMap<String,FontGeometry> pFontGeometry;
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -1543,7 +1543,7 @@ class TextureMgr
   /**
    * The OpenGL texture object handles indexed by texture name.
    */ 
-  private HashMap<String,Integer>  pIconTextures;
+  private TreeMap<String,Integer>  pIconTextures;
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -1557,12 +1557,12 @@ class TextureMgr
    * a icon for a node might be called "Pending-Finished-Selected" to describe the combination
    * of OverallNodeState, OverallQueueState and SelectionMode for the icon. <P> 
    */ 
-  private HashMap<String,ImageIcon[]>  pIcons;
+  private TreeMap<String,ImageIcon[]>  pIcons;
   
   /**
    * The raw image data used to construct the pIcons indexed by texture name.
    */ 
-  private HashMap<String,BufferedImage[]>  pIconImages;
+  private TreeMap<String,BufferedImage[]>  pIconImages;
 
   /**
    * The colors used to rebuild the current icons.

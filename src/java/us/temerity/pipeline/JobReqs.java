@@ -1,4 +1,4 @@
-// $Id: JobReqs.java,v 1.23 2007/12/15 07:14:57 jesse Exp $
+// $Id: JobReqs.java,v 1.24 2009/05/16 02:06:18 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -182,15 +182,15 @@ class JobReqs
     setMinMemory(minMemory);
     setMinDisk(minDisk);
 
-    pLicenseKeys = new HashSet<String>();
+    pLicenseKeys = new TreeSet<String>();
     if(licenseKeys != null) 
       pLicenseKeys.addAll(licenseKeys);
 
-    pSelectionKeys = new HashSet<String>();
+    pSelectionKeys = new TreeSet<String>();
     if(selectionKeys != null) 
       pSelectionKeys.addAll(selectionKeys);
     
-    pHardwareKeys = new HashSet<String>();
+    pHardwareKeys = new TreeSet<String>();
     if(hardwareKeys != null) 
       pHardwareKeys.addAll(hardwareKeys);
   }
@@ -237,19 +237,19 @@ class JobReqs
     else
       setMinDisk(reqs.getMinDisk());
 
-    pLicenseKeys = new HashSet<String>();
+    pLicenseKeys = new TreeSet<String>();
     if(delta.getLicenseKeys() != null) 
       pLicenseKeys.addAll(delta.getLicenseKeys());
     else if (reqs.getLicenseKeys().size() > 0)
       pLicenseKeys.addAll(reqs.getLicenseKeys());
 
-    pSelectionKeys = new HashSet<String>();
+    pSelectionKeys = new TreeSet<String>();
     if(delta.getSelectionKeys() != null) 
       pSelectionKeys.addAll(delta.getSelectionKeys());
     else if (reqs.getSelectionKeys().size() > 0)
       pSelectionKeys.addAll(reqs.getSelectionKeys());
     
-    pHardwareKeys = new HashSet<String>();
+    pHardwareKeys = new TreeSet<String>();
     if(delta.getHardwareKeys() != null) 
       pHardwareKeys.addAll(delta.getHardwareKeys());
     else if (reqs.getHardwareKeys().size() > 0)
@@ -269,7 +269,7 @@ class JobReqs
   defaultJobReqs() 
   {
     return (new JobReqs(50, 0, 2.5f, 134217728L, 67108864L, 
-			new HashSet<String>(), new HashSet<String>(), new HashSet<String>()));
+			new TreeSet<String>(), new TreeSet<String>(), new TreeSet<String>()));
   }
 
 

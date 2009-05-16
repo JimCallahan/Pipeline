@@ -1,4 +1,4 @@
-// $Id: GlueClassCache.java,v 1.1 2008/07/14 15:07:13 jim Exp $
+// $Id: GlueClassCache.java,v 1.2 2009/05/16 02:06:18 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -26,7 +26,7 @@ class GlueClassCache
   private  
   GlueClassCache()
   {
-    pClasses     = new HashMap<String,Class>(1024);
+    pClasses     = new TreeMap<String,Class>();
     pClassesLock = new ReentrantReadWriteLock();
   }
 
@@ -153,7 +153,7 @@ class GlueClassCache
    *
    * Access to this field should be protected by the read/write lock below.
    */
-  private HashMap<String,Class>   pClasses;
+  private TreeMap<String,Class>   pClasses;
   private ReentrantReadWriteLock  pClassesLock;
 
 }

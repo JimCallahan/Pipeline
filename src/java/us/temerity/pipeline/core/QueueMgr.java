@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.110 2009/05/14 23:30:43 jim Exp $
+// $Id: QueueMgr.java,v 1.111 2009/05/16 02:06:19 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -5688,6 +5688,7 @@ class QueueMgr
     }
     
     /* Apply the pending changes to the job requirements for jobs.*/
+    boolean jobReqsChanged = false;
     {
       timer.suspend();
       TaskTimer tm = new TaskTimer("Dispatcher [ChangeJobReqs]");
@@ -5723,6 +5724,7 @@ class QueueMgr
 	      tm.resume();
 	      job = pJobs.get(jobID);
 	      job.setJobRequirements(reqs);
+              jobReqsChanged = true;
 	    }
 	  break;
 	  }
@@ -9320,6 +9322,7 @@ class QueueMgr
    */ 
   private TreeMap<String,LicenseKey>  pLicenseKeys; 
 
+
   /*----------------------------------------------------------------------------------------*/
 
   /**
@@ -9335,6 +9338,21 @@ class QueueMgr
    * Access to this field should be protected by a synchronized block.
    */ 
   private TreeMap<String,HardwareGroup>  pHardwareGroups; 
+
+  /**
+   * Whether there have been any changes to hardware keys or groups since the last time
+   * hardware profiles where regenerated. 
+   */ 
+  //private AtomicBoolean pHardwareChanged; 
+
+  /**
+   * Whether each of the unique combinations of hardware keys required by jobs are 
+   * satisfied by each hardware group.
+   * 
+   * Access to this field should be protected by a synchronized block.
+   */ 
+  //private TreeMap<KeySet,HardwareProfile>  pHardwareProfiles;
+
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -9358,6 +9376,20 @@ class QueueMgr
    * Access to this field should be protected by a synchronized block.
    */ 
   private TreeMap<String,SelectionSchedule>  pSelectionSchedules; 
+
+  /**
+   * Whether there have been any changes to selection keys or groups since the last time
+   * selection profiles where regenerated. 
+   */ 
+  //private AtomicBoolean pSelectionChanged; 
+
+  /**
+   * Whether each of the unique combinations of selection keys required by jobs are 
+   * satisfied by each selection group.
+   * 
+   * Access to this field should be protected by a synchronized block.
+   */ 
+  //private TreeMap<KeySet,SelectionProfile>  pSelectionProfiles;
 
 
   /*----------------------------------------------------------------------------------------*/

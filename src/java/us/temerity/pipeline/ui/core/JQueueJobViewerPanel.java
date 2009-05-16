@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.63 2009/03/25 19:31:58 jesse Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.64 2009/05/16 02:06:19 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -89,12 +89,12 @@ class JQueueJobViewerPanel
       pJobStatus = new TreeMap<Long,JobStatus>();
       
       pViewerJobGroups = new TreeMap<Long,ViewerJobGroup>();
-      pViewerJobs      = new HashMap<JobPath,ViewerJob>();
+      pViewerJobs      = new TreeMap<JobPath,ViewerJob>();
 
       pForcedCollapseMessages = new LinkedList<String>();
 
       pSelectedGroups = new TreeMap<Long,ViewerJobGroup>();
-      pSelected       = new HashMap<JobPath,ViewerJob>();
+      pSelected       = new TreeMap<JobPath,ViewerJob>();
     }
     
     /* panel popup menu */ 
@@ -2671,7 +2671,8 @@ class JQueueJobViewerPanel
     }
 
     /* group the jobs by target node */ 
-    DoubleMap<NodeID, Long, TreeSet<FileSeq>> targets = new DoubleMap<NodeID, Long, TreeSet<FileSeq>>();
+    DoubleMap<NodeID, Long, TreeSet<FileSeq>> targets = 
+      new DoubleMap<NodeID, Long, TreeSet<FileSeq>>();
     if(!failed.isEmpty()) {
       for(JobStatus status : failed.values()) {
 	long jobID = status.getJobID();
@@ -3639,7 +3640,7 @@ class JQueueJobViewerPanel
   /**
    * The currently displayed jobs indexed by <CODE>JobPath</CODE>.
    */ 
-  private HashMap<JobPath,ViewerJob>  pViewerJobs; 
+  private TreeMap<JobPath,ViewerJob>  pViewerJobs; 
 
 
   /**
@@ -3676,7 +3677,7 @@ class JQueueJobViewerPanel
   /**
    * The set of currently selected jobs indexed by <CODE>JobPath</CODE>.
    */ 
-  private HashMap<JobPath,ViewerJob>  pSelected;
+  private TreeMap<JobPath,ViewerJob>  pSelected;
 
   /**
    * The primary job selection.

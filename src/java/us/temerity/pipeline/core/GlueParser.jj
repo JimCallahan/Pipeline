@@ -414,7 +414,7 @@ Object
 GlueableValues(Class cls, Long objID) : 
 {
   Object obj = pState.newInstance(objID, cls);
-  HashMap table = new HashMap();
+  TreeMap table = new TreeMap();
 }
 {
   (GlueableValue(table))+
@@ -434,7 +434,7 @@ GlueableValues(Class cls, Long objID) :
 }
 
 void 
-GlueableValue(HashMap table) : 
+GlueableValue(TreeMap table) : 
 {
   Object[] pair;
 }

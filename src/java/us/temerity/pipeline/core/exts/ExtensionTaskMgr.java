@@ -1,4 +1,4 @@
-// $Id: ExtensionTaskMgr.java,v 1.1 2006/10/11 22:45:40 jim Exp $
+// $Id: ExtensionTaskMgr.java,v 1.2 2009/05/16 02:06:19 jim Exp $
 
 package us.temerity.pipeline.core.exts;
 
@@ -28,7 +28,7 @@ ExtensionTaskMgr
   ExtensionTaskMgr() 
   {
     pIsJoining = new AtomicBoolean(false);
-    pTasks = new HashSet<BaseExtTask>();
+    pTasks = new TreeSet<BaseExtTask>();
   }
 
 
@@ -103,6 +103,6 @@ ExtensionTaskMgr
   /**
    * The manage tasks.
    */ 
-  private HashSet<BaseExtTask>  pTasks; 
+  private TreeSet<BaseExtTask>  pTasks; 
 
 }
