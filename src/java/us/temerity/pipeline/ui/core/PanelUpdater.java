@@ -1,4 +1,4 @@
-// $Id: PanelUpdater.java,v 1.36 2009/05/17 04:00:23 jesse Exp $
+// $Id: PanelUpdater.java,v 1.37 2009/05/17 22:06:12 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -622,7 +622,7 @@ class PanelUpdater
               }
 	      
 	      if((pSelectedJobGroupIDs != null) && !pSelectedJobGroupIDs.isEmpty() &&
-	          pQueueJobViewerPanel != null) {
+                 (pQueueJobViewerPanel != null)) {
                 pJobStatus.putAll(qclient.getJobStatus(pSelectedJobGroupIDs)); 
 
 		pSelectedJobGroups = new TreeMap<Long,QueueJobGroup>();
