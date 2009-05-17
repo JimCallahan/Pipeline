@@ -1,4 +1,4 @@
-// $Id: PanelUpdater.java,v 1.35 2009/05/14 23:30:43 jim Exp $
+// $Id: PanelUpdater.java,v 1.36 2009/05/17 04:00:23 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -621,7 +621,8 @@ class PanelUpdater
                 pJobStateDist = qclient.getJobStateDistribution(groupIDs);
               }
 	      
-	      if((pSelectedJobGroupIDs != null) && !pSelectedJobGroupIDs.isEmpty()) {
+	      if((pSelectedJobGroupIDs != null) && !pSelectedJobGroupIDs.isEmpty() &&
+	          pQueueJobViewerPanel != null) {
                 pJobStatus.putAll(qclient.getJobStatus(pSelectedJobGroupIDs)); 
 
 		pSelectedJobGroups = new TreeMap<Long,QueueJobGroup>();
@@ -631,7 +632,7 @@ class PanelUpdater
 		    pSelectedJobGroups.put(groupID, group);
 		}
 	      }
-	    }
+	    } //if((pQueueJobBrowserPanel != null) || (pQueueJobViewerPanel != null)) {
 	    
 	    /* this is a full jobs/queue update... */
 	    if(!pJobBrowserSelectionOnly && !pJobSlotsSelectionOnly) {
@@ -689,7 +690,7 @@ class PanelUpdater
 		pJobInfo = qclient.getRunningJobInfo();
 	      }
 	    }
-	  }
+	  } // if(!pJobDetailsOnly) {
 
 	  /* job details panel related */ 
 	  if(pQueueJobDetailsPanel != null) {
@@ -751,8 +752,8 @@ class PanelUpdater
 		// ignore jobs which may no longer exist...
 	      }
 	    }
-	  }
-	}
+	  } // if(pQueueJobDetailsPanel != null) {
+	} // if(!pNodeDetailsOnly) {
       }
       catch(PipelineException ex) {
 	master.showErrorDialog(ex);
