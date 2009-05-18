@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.275 2009/05/16 02:06:18 jim Exp $
+// $Id: MasterMgr.java,v 1.276 2009/05/18 04:29:50 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -19865,7 +19865,7 @@ class MasterMgr
       if(nap > 0) {
 	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Ops, LogMgr.Level.Finest,
-	   "Event Writer: Sleeping for (" + nap + ") ms...");
+	   "Event Writer: Sleeping for (" + nap + ") msec...");
 	try {
 	  Thread.sleep(nap);
 	}
@@ -19875,7 +19875,7 @@ class MasterMgr
       else {
 	LogMgr.getInstance().logAndFlush
 	  (LogMgr.Kind.Ops, LogMgr.Level.Finest,
-	   "Event Writer: Overbudget by (" + (-nap) + ") ms...");
+	   "Event Writer: Overbudget by (" + (-nap) + ") msec...");
       }
     }
   }
