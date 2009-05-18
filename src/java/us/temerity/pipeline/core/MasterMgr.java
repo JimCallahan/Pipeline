@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.276 2009/05/18 04:29:50 jim Exp $
+// $Id: MasterMgr.java,v 1.277 2009/05/18 06:03:45 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -7096,7 +7096,7 @@ class MasterMgr
       pDatabaseLock.readLock().unlock();
     }   
   }
-
+  
   /**
    * Helper method to get a copy of a specific annotation for the given node.<P> 
    * 
@@ -7225,6 +7225,67 @@ class MasterMgr
     }
     finally {
       lock.readLock().unlock();
+      pDatabaseLock.readLock().unlock();
+    }
+  }
+  
+  /**
+   * Get all of the annotations for the specified nodes.<P> 
+   * 
+   * @param req 
+   *   The request.
+   * 
+   * @return
+   *   <CODE>NodeGetAllAnnotationsRsp</CODE> if successful or 
+   *   <CODE>FailureRsp</CODE> if unable determine the annotations.
+   */
+  public Object
+  getAllBothAnnotations
+  (
+    NodeGetAllBothAnnotationsReq req
+  ) 
+  {
+    TaskTimer timer = new TaskTimer();
+
+    TreeSet<NodeID> nodeIDs = req.getNodeIDs();
+    
+    DoubleMap<NodeID, String, BaseAnnotation> toReturn = 
+      new DoubleMap<NodeID, String, BaseAnnotation>();
+
+    timer.aquire();
+    pDatabaseLock.readLock().lock();
+    timer.resume();
+    try {
+      for (NodeID nodeID : nodeIDs) {
+        timer.aquire();
+        ReentrantReadWriteLock lock = getWorkingLock(nodeID);
+        lock.readLock().lock();
+        try {
+          timer.resume();
+          String name = nodeID.getName();
+          
+          TreeMap<String,BaseAnnotation> table = new TreeMap<String, BaseAnnotation>();
+
+          TreeMap<String, BaseAnnotation> perNode = getAnnotationsHelper(timer, name); 
+          if (perNode != null)
+            table.putAll(perNode);
+          
+          // This can never be null
+          NodeMod mod = new NodeMod(getWorkingBundle(nodeID).getVersion());
+          table.putAll(mod.getAnnotations());
+
+          toReturn.put(nodeID, table);
+        } 
+        catch(PipelineException ex) {
+          return new FailureRsp(timer, ex.getMessage());
+        }
+        finally {
+          lock.readLock().unlock();
+        }
+      }
+      return new NodeGetAllAnnotationsRsp(timer, toReturn);
+    }
+    finally {
       pDatabaseLock.readLock().unlock();
     }
   }

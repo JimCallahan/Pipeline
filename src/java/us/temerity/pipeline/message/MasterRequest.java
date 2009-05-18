@@ -1,4 +1,4 @@
-// $Id: MasterRequest.java,v 1.66 2009/03/25 22:02:24 jim Exp $
+// $Id: MasterRequest.java,v 1.67 2009/05/18 06:03:45 jesse Exp $
 
 package us.temerity.pipeline.message;
 
@@ -561,7 +561,12 @@ enum MasterRequest
   /**
    * An instance of {@link NodeGetBothAnnotationsReq} is next.
    */
-  GetBothAnnotations,   
+  GetBothAnnotations,  
+  
+  /**
+   * An instance of {@link NodeGetAllBothAnnotationsReq} is next.
+   */
+  GetAllBothAnnotations,
   
   /**
    * An instance of {@link NodeAddAnnotationReq} is next.

@@ -1,10 +1,11 @@
-// $Id: QueueMgr.java,v 1.111 2009/05/16 02:06:19 jim Exp $
+// $Id: QueueMgr.java,v 1.112 2009/05/18 06:03:45 jesse Exp $
 
 package us.temerity.pipeline.core;
 
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.Map.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.*;
 
@@ -4383,52 +4384,100 @@ class QueueMgr
   public Object
   changeJobReqs
   (
-   QueueJobReqsReq req
+    QueueJobReqsReq req
   )
   {
     TaskTimer timer = new TaskTimer("QueueMgr.changeJobReqs()");
     ArrayList<String> exceptions = new ArrayList<String>();
 
+    TreeMap<Long, QueueJob> jobs = new TreeMap<Long, QueueJob>();
+    TreeSet<NodeID> nodeIDs = new TreeSet<NodeID>();
+    TreeMap<String, Boolean> privileges = new TreeMap<String, Boolean>();
+    
+    LinkedList<JobReqsDelta> changes = req.getJobReqsChanges();
+    
+    timer.aquire();
+    synchronized(pJobs) {
+      timer.resume();
+      for(JobReqsDelta delta : changes ) {
+        long id = delta.getJobID();
+        QueueJob job = pJobs.get(id);
+        if (job != null) {
+          QueueJob copy = job.queryOnlyCopy(); 
+          jobs.put(id, copy);
+          NodeID nodeID = copy.getNodeID();
+          nodeIDs.add(nodeID);
+          String author = nodeID.getAuthor();
+          if (!privileges.containsKey(author))
+            privileges.put(author, pAdminPrivileges.isQueueManaged(req, author));
+        }
+      }
+    }
+    
+    TreeMap<String, BaseKeyChooser> selectionKeys = 
+      new TreeMap<String, BaseKeyChooser>();
+    TreeMap<String, BaseKeyChooser> licenseKeys = 
+      new TreeMap<String, BaseKeyChooser>();
+    TreeMap<String, BaseKeyChooser> hardwareKeys = 
+      new TreeMap<String, BaseKeyChooser>();
+    
+    synchronized(pSelectionKeys) {
+      for (Entry<String, SelectionKey> entry : pSelectionKeys.entrySet()) {
+        selectionKeys.put(entry.getKey(), entry.getValue().getKeyChooser());
+      }
+    }
+    
+    synchronized(pLicenseKeys) {
+      for (Entry<String, LicenseKey> entry : pLicenseKeys.entrySet()) {
+        licenseKeys.put(entry.getKey(), entry.getValue().getKeyChooser());
+      }
+    }
+    
+    synchronized(pHardwareKeys) {
+      for (Entry<String, HardwareKey> entry : pHardwareKeys.entrySet()) {
+        hardwareKeys.put(entry.getKey(), entry.getValue().getKeyChooser());
+      }
+    }
+    
     try {
+      DoubleMap<NodeID, String, BaseAnnotation> annots = 
+        pMasterMgrClient.getAnnotations(nodeIDs);
+
       boolean unprivileged = false; 
 
-      timer.aquire();
-      synchronized(pJobs) {
-	timer.resume();
-      
-	LinkedList<JobReqsDelta> changes = req.getJobReqsChanges(); 
-	for(JobReqsDelta delta : changes ) {
-	  long jobID = delta.getJobID();
-	  QueueJob job = pJobs.get(jobID);
-	  if(job != null) {
-	    String author = job.getActionAgenda().getNodeID().getAuthor();
-	    if(pAdminPrivileges.isQueueManaged(req, author)) {
-	      JobReqs reqs = new JobReqs(job.getJobRequirements(), delta);
-	      try {
-	        TaskTimer subTimer = new TaskTimer("QueueMgr.adjustJobRequirements()");
-	        timer.suspend();
-	        exceptions.addAll(adjustJobRequirements(subTimer, job.queryOnlyCopy(), reqs));
-	        timer.accum(subTimer);
-	      }
-	      catch (PipelineException ex) {
-	        exceptions.add(ex.getMessage());
-	      }
-	      timer.aquire();
-	      synchronized (pJobReqsChanges) {
-		timer.resume();
-		pJobReqsChanges.put(jobID, reqs);
-	      }
-	    }
-	    else 
-	      unprivileged = true;
-	  }
-	}
+      for(JobReqsDelta delta : changes ) {
+        long jobID = delta.getJobID();
+        QueueJob job = jobs.get(jobID);
+        if(job != null) {
+          String author = job.getNodeID().getAuthor();
+          if(privileges.get(author)) {
+            JobReqs reqs = new JobReqs(job.getJobRequirements(), delta);
+            try {
+              TreeMap<String, BaseAnnotation> annot = annots.get(job.getNodeID());
+              TaskTimer subTimer = new TaskTimer("QueueMgr.adjustJobRequirements()");
+              timer.suspend();
+              exceptions.addAll(adjustJobRequirements(subTimer, job, reqs, annot, 
+                selectionKeys, hardwareKeys, licenseKeys));
+              timer.accum(subTimer);
+            }
+            catch (PipelineException ex) {
+              exceptions.add(ex.getMessage());
+            }
+            timer.aquire();
+            synchronized (pJobReqsChanges) {
+              timer.resume();
+              pJobReqsChanges.put(jobID, reqs);
+            }
+          }
+          else 
+            unprivileged = true;
+        }
       }
 
       if(unprivileged)
-	throw new PipelineException
-	  ("Only a user with Queue Admin privileges may change job requirements " +
-	   "on jobs owned by another user!");
+	 exceptions.add
+	  ("Some jobs did not have their permissions changed due to lack of Queue Admin or " +
+	   "Queue Manager privileges!");
       
       if (exceptions.size() > 0) {
         String msg = "";
@@ -4461,51 +4510,89 @@ class QueueMgr
   public Object
   updateJobKeys
   (
-   QueueJobsReq req
+    QueueJobsReq req
   )
   {
     TaskTimer timer = new TaskTimer("QueueMgr.updateJobKeys()");
     ArrayList<String> exceptions = new ArrayList<String>();
-
+    
+    TreeMap<Long, QueueJob> jobs = new TreeMap<Long, QueueJob>();
+    TreeSet<Long> ids = req.getJobIDs();
+    TreeSet<NodeID> nodeIDs = new TreeSet<NodeID>();
+    
+    timer.aquire();
+    synchronized(pJobs) {
+      timer.resume();
+      for (Long id : ids) {
+        QueueJob job = pJobs.get(id);
+        if (job != null) {
+          QueueJob copy = job.queryOnlyCopy(); 
+          jobs.put(id, copy);
+          nodeIDs.add(copy.getNodeID());
+        }
+      }
+    }
+    
+    TreeMap<String, BaseKeyChooser> selectionKeys = 
+      new TreeMap<String, BaseKeyChooser>();
+    TreeMap<String, BaseKeyChooser> licenseKeys = 
+      new TreeMap<String, BaseKeyChooser>();
+    TreeMap<String, BaseKeyChooser> hardwareKeys = 
+      new TreeMap<String, BaseKeyChooser>();
+    
+    synchronized(pSelectionKeys) {
+      for (Entry<String, SelectionKey> entry : pSelectionKeys.entrySet()) {
+        selectionKeys.put(entry.getKey(), entry.getValue().getKeyChooser());
+      }
+    }
+    
+    synchronized(pLicenseKeys) {
+      for (Entry<String, LicenseKey> entry : pLicenseKeys.entrySet()) {
+        licenseKeys.put(entry.getKey(), entry.getValue().getKeyChooser());
+      }
+    }
+    
+    synchronized(pHardwareKeys) {
+      for (Entry<String, HardwareKey> entry : pHardwareKeys.entrySet()) {
+        hardwareKeys.put(entry.getKey(), entry.getValue().getKeyChooser());
+      }
+    }
+    
     try {
+      DoubleMap<NodeID, String, BaseAnnotation> annots = 
+        pMasterMgrClient.getAnnotations(nodeIDs);
+      
       boolean unprivileged = false; 
-
-      TreeSet<Long> ids = req.getJobIDs(); 
-      for(Long id : ids) {
-        QueueJob job = null;
-        timer.aquire();
-        synchronized(pJobs) {
-          timer.resume();
-          job = pJobs.get(ids);
-        }
-        if(job != null) {
-          String author = job.getActionAgenda().getNodeID().getAuthor();
-          if(pAdminPrivileges.isQueueManaged(req, author)) {
-            JobReqs reqs = (JobReqs) job.getJobRequirements().clone();
-            try {
-              TaskTimer subTimer = new TaskTimer("QueueMgr.adjustJobRequirements()");
-              timer.suspend();
-              exceptions.addAll(adjustJobRequirements(subTimer, job.queryOnlyCopy(), reqs));
-              timer.accum(subTimer);
-            }
-            catch (PipelineException ex) {
-              exceptions.add(ex.getMessage());
-            }
-            timer.aquire();
-            synchronized (pJobReqsChanges) {
-              timer.resume();
-              pJobReqsChanges.put(id, reqs);
-            }
+      for(Entry<Long, QueueJob> entry : jobs.entrySet()) {
+        QueueJob job = entry.getValue();
+        String author = job.getNodeID().getAuthor();
+        if(pAdminPrivileges.isQueueManaged(req, author)) {
+          JobReqs reqs = (JobReqs) job.getJobRequirements().clone();
+          try {
+            TaskTimer subTimer = new TaskTimer("QueueMgr.adjustJobRequirements()");
+            timer.suspend();
+            TreeMap<String, BaseAnnotation> annot = annots.get(job.getNodeID()); 
+            exceptions.addAll(adjustJobRequirements(subTimer, job, reqs, annot, 
+              selectionKeys, hardwareKeys, licenseKeys));
+            timer.accum(subTimer);
           }
-          else 
-            unprivileged = true;
+          catch (PipelineException ex) {
+            exceptions.add(ex.getMessage());
+          }
+          timer.aquire();
+          synchronized (pJobReqsChanges) {
+            timer.resume();
+            pJobReqsChanges.put(entry.getKey(), reqs);
+          }
         }
+        else 
+          unprivileged = true;
       }
 
       if(unprivileged)
-        throw new PipelineException
-          ("Only a user with Queue Admin privileges may update the selection keys" +
-           "on jobs owned by another user!");
+        exceptions.add
+         ("Some jobs did not have their permissions changed due to lack of Queue Admin or" +
+          "Queue Manager privileges!");
       
       if (exceptions.size() > 0) {
         String msg = "";
@@ -4542,47 +4629,54 @@ class QueueMgr
    * 
    * @param jreqs
    *   The current job requirements that are going to be modified.
-   * 
+   *   
+   * @param annots
+   *   The list of annotations associated with the nodeID of the current job.  Shoulld NEVER
+   *   be <code>null</code>
+   *   
+   * @param selectionKeys
+   *   A map of the selection key choosers indexed by the selection key name.
+   *   
+   * @param hardwareKeys
+   *   A map of the hardware key choosers indexed by the hardware key name.
+   *   
+   * @param licenseKeys
+   *   A map of the license key choosers indexed by the license key name.
+   *   
    * @return
-   *   A list of the exceptions thrown during keychooser execution.
+   *   A list of the exceptions thrown during key chooser execution.
    */
   private ArrayList<String> 
   adjustJobRequirements
   (
     TaskTimer timer,
     QueueJob job,
-    JobReqs jreqs
+    JobReqs jreqs,
+    TreeMap<String, BaseAnnotation> annots,
+    TreeMap<String, BaseKeyChooser> selectionKeys,
+    TreeMap<String, BaseKeyChooser> hardwareKeys,
+    TreeMap<String, BaseKeyChooser> licenseKeys
   )
     throws PipelineException
   {
     ArrayList<String> toReturn = new ArrayList<String>();
     
     /* Lazily evaluate this only if necessary*/
-    TreeMap<String, BaseAnnotation> annots = null;
     PipelineException toThrow = null;
     NodeID nodeID = job.getNodeID();
 
     /* Selection Keys */
     {
-      ArrayList<SelectionKey> allKeys = null;
-      synchronized(pSelectionKeys) {
-        allKeys = new ArrayList<SelectionKey>(pSelectionKeys.values());
-      }
       TreeSet<String> finalKeys = new TreeSet<String>();
       Set<String> currentKeys = jreqs.getSelectionKeys();
 
-      for (SelectionKey key : allKeys) {
-        String name = key.getName();
-        if (!key.hasKeyChooser() && currentKeys.contains(name))
+      for (String name : selectionKeys.keySet()) {
+        BaseKeyChooser kc = selectionKeys.get(name);
+        if (kc == null && currentKeys.contains(name))
           finalKeys.add(name); 
-        else if (key.hasKeyChooser()) {
-          if (annots == null) {
-            annots = pMasterMgrClient.getAnnotations(nodeID.getName());
-            if (annots == null)
-               annots = new TreeMap<String, BaseAnnotation>();
-          }
+        else if (kc != null) {
           try {
-            if (key.getKeyChooser().computeIsActive(job, annots))
+            if (kc.computeIsActive(job, annots))
               finalKeys.add(name);
           }
           catch (PipelineException e) {
@@ -4596,25 +4690,16 @@ class QueueMgr
 
     /* License Keys */
     {
-      ArrayList<LicenseKey> allKeys = null;
-      synchronized(pLicenseKeys) {
-        allKeys = new ArrayList<LicenseKey>(pLicenseKeys.values());
-      }
       TreeSet<String> finalKeys = new TreeSet<String>();
       Set<String> currentKeys = jreqs.getLicenseKeys();
 
-      for (LicenseKey key : allKeys) {
-        String name = key.getName();
-        if (!key.hasKeyChooser() && currentKeys.contains(name))
+      for (String name : licenseKeys.keySet()) {
+        BaseKeyChooser kc = licenseKeys.get(name);
+        if (kc == null && currentKeys.contains(name))
           finalKeys.add(name); 
-        else if (key.hasKeyChooser()) {
-          if (annots == null) {
-            annots = pMasterMgrClient.getAnnotations(nodeID.getName());
-            if (annots == null)
-               annots = new TreeMap<String, BaseAnnotation>();
-          }
+        else if (kc != null) {
           try {
-            if (key.getKeyChooser().computeIsActive(job, annots))
+            if (kc.computeIsActive(job, annots))
               finalKeys.add(name);
           }
           catch (PipelineException e) {
@@ -4628,29 +4713,21 @@ class QueueMgr
 
     /* Hardware Keys */
     {
-      ArrayList<HardwareKey> allKeys = null;
-      synchronized(pHardwareKeys) {
-        allKeys = new ArrayList<HardwareKey>(pHardwareKeys.values());
-      }
       TreeSet<String> finalKeys = new TreeSet<String>();
       Set<String> currentKeys = jreqs.getHardwareKeys();
 
-      for (HardwareKey key : allKeys) {
-        String name = key.getName();
-        if (!key.hasKeyChooser() && currentKeys.contains(name))
+      for (String name : hardwareKeys.keySet()) {
+        BaseKeyChooser kc = hardwareKeys.get(name);
+        if (kc == null && currentKeys.contains(name))
           finalKeys.add(name); 
-        else if (key.hasKeyChooser()) {
-          if (annots == null) {
-            annots = pMasterMgrClient.getAnnotations(nodeID.getName());
-            if (annots == null)
-               annots = new TreeMap<String, BaseAnnotation>();
-          }
+        else if (kc != null) {
           try {
-            if (key.getKeyChooser().computeIsActive(job, annots))
+            if (kc.computeIsActive(job, annots))
               finalKeys.add(name);
           }
           catch (PipelineException e) {
-            toReturn.add(e.getMessage());          }
+            toReturn.add(e.getMessage());
+          }
         }
       }
       jreqs.removeAllHardwareKeys();

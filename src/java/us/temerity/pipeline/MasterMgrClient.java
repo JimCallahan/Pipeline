@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.135 2009/04/07 07:59:53 jim Exp $
+// $Id: MasterMgrClient.java,v 1.136 2009/05/18 06:03:45 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -4157,6 +4157,53 @@ class MasterMgrClient
     Object obj = performTransaction(MasterRequest.GetBothAnnotations, req);
     if(obj instanceof NodeGetAnnotationsRsp) {
       NodeGetAnnotationsRsp rsp = (NodeGetAnnotationsRsp) obj;
+      return rsp.getAnnotations();
+    }
+    else {
+      handleFailure(obj);
+      return null;
+    }
+  }
+  
+  /**
+   * Get a unified view of all annotation from both node and working version
+   * for a set of nodes in working areas.<P> 
+   * 
+   * If a given annotation exists as both a per-node and per-version annotation, then 
+   * the per-version annotation will be returned without generating any warnings or
+   * exceptions.  If a given annotation exists as only one of a per-node or per-version 
+   * annotation, then which ever one exists will be be returned. <P> 
+   * 
+   * Note that this is merely a convienence method that provides a quicker way of 
+   * looking up both per-node annotations and lookup the working version of a node and
+   * then accessing its annotation properties.  No new functionality is provided by
+   * this method, but it may be faster when needing a unified view of all annotations
+   * and other working version information is not required.
+   * 
+   * @param nodeIDs 
+   *   The set of unique working version identifier. 
+   * 
+   * @return 
+   *   The annotations for the node indexed by node id and annotation name (may be empty).
+   * 
+   * @throws PipelineException 
+   *   If a working version for at least one of the node does not exists or if Pipeline is 
+   *   otherwise unable to determine the annotations.
+   */ 
+  public DoubleMap<NodeID, String,BaseAnnotation> 
+  getAnnotations
+  (
+    TreeSet<NodeID> nodeIDs
+  ) 
+    throws PipelineException
+  {
+    verifyConnection();
+
+    NodeGetAllBothAnnotationsReq req = new NodeGetAllBothAnnotationsReq(nodeIDs); 
+
+    Object obj = performTransaction(MasterRequest.GetAllBothAnnotations, req);
+    if(obj instanceof NodeGetAllAnnotationsRsp) {
+      NodeGetAllAnnotationsRsp rsp = (NodeGetAllAnnotationsRsp) obj;
       return rsp.getAnnotations();
     }
     else {

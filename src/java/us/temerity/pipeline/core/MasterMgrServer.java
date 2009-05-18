@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.101 2009/05/18 04:28:34 jim Exp $
+// $Id: MasterMgrServer.java,v 1.102 2009/05/18 06:03:45 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1175,6 +1175,15 @@ class MasterMgrServer
                     (NodeGetBothAnnotationsReq) objIn.readObject();
                   objOut.writeObject(pMasterMgr.getBothAnnotations(req));
                   objOut.flush(); 
+                }
+                break;
+                
+              case GetAllBothAnnotations:
+                {
+                  NodeGetAllBothAnnotationsReq req = 
+                    (NodeGetAllBothAnnotationsReq) objIn.readObject();
+                  objOut.writeObject(pMasterMgr.getAllBothAnnotations(req));
+                  objOut.flush();
                 }
                 break;
 
