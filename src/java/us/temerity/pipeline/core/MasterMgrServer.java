@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.100 2009/05/16 02:06:18 jim Exp $
+// $Id: MasterMgrServer.java,v 1.101 2009/05/18 04:28:34 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -155,7 +155,9 @@ class MasterMgrServer
       while(!pShutdown.get()) {
         try {
           HandlerTask task = new HandlerTask(pSocketChannel.accept()); 
-          pTasks.add(task);
+          synchronized(pTasks) {
+            pTasks.add(task);
+          }
           task.start();	
         }
         catch(AsynchronousCloseException ex) {

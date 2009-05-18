@@ -1,4 +1,4 @@
-// $Id: PluginMgrServer.java,v 1.22 2009/05/16 02:06:19 jim Exp $
+// $Id: PluginMgrServer.java,v 1.23 2009/05/18 04:28:34 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -93,7 +93,9 @@ class PluginMgrServer
       while(!pShutdown.get()) {
         try {
           HandlerTask task = new HandlerTask(pSocketChannel.accept()); 
-          pTasks.add(task);
+          synchronized(pTasks) {
+            pTasks.add(task);
+          }
           task.start();	
         }
         catch(AsynchronousCloseException ex) {

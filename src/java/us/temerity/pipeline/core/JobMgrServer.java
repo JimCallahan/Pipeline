@@ -1,4 +1,4 @@
-// $Id: JobMgrServer.java,v 1.38 2009/05/16 02:06:18 jim Exp $
+// $Id: JobMgrServer.java,v 1.39 2009/05/18 04:28:34 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -87,8 +87,10 @@ class JobMgrServer
 
       while(!pShutdown.get()) {
         try {
-          HandlerTask task = new HandlerTask(pSocketChannel.accept()); 
-          pTasks.add(task);
+          HandlerTask task = new HandlerTask(pSocketChannel.accept());  
+          synchronized(pTasks) {
+            pTasks.add(task);
+          }
           task.start();	
         }
         catch(AsynchronousCloseException ex) {

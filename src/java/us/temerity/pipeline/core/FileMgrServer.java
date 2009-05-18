@@ -1,4 +1,4 @@
-// $Id: FileMgrServer.java,v 1.48 2009/05/16 02:06:18 jim Exp $
+// $Id: FileMgrServer.java,v 1.49 2009/05/18 04:28:34 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -90,8 +90,10 @@ class FileMgrServer
    
       while(!pShutdown.get()) {
         try {
-          HandlerTask task = new HandlerTask(pSocketChannel.accept()); 
-          pTasks.add(task);
+          HandlerTask task = new HandlerTask(pSocketChannel.accept());  
+          synchronized(pTasks) {
+            pTasks.add(task);
+          }
           task.start();	
         }
         catch(AsynchronousCloseException ex) {
