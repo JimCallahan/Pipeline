@@ -1,4 +1,4 @@
 #!/bin/sh
 
-time ../../src/pipeline/config/bootstrap-suse10.1-64bit.sh \
-  nathanlove 090519 43000 43100
+time ../../src/pipeline/config/bootstrap-suse10.2-64bit.sh \
+  nathanlove 090520 43000 43100
