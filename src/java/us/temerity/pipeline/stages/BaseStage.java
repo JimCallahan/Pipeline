@@ -1,4 +1,4 @@
-// $Id: BaseStage.java,v 1.34 2009/05/07 03:25:29 jesse Exp $
+// $Id: BaseStage.java,v 1.35 2009/05/22 21:52:40 jesse Exp $
 
 package us.temerity.pipeline.stages;
 
@@ -1406,7 +1406,7 @@ class BaseStage
             "latest version.");
         }
         else {
-          checkOut(CheckOutMode.KeepModified, CheckOutMethod.PreserveFrozen);
+          checkOut(CheckOutMode.KeepModified, CheckOutMethod.Modifiable);
           pLog.log(Kind.Ops, Level.Finest, "Checking out the node.");
         }
         return true;
