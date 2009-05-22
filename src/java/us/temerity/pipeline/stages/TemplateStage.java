@@ -1,4 +1,4 @@
-// $Id: TemplateStage.java,v 1.11 2009/05/11 23:27:07 jesse Exp $
+// $Id: TemplateStage.java,v 1.12 2009/05/22 19:16:29 jesse Exp $
 
 package us.temerity.pipeline.stages;
 
@@ -163,6 +163,9 @@ class TemplateStage
       FileSeq targetSeq = stringReplaceSeq(seq);
       LogMgr.getInstance().log(Kind.Bld, Level.Finest,
         "Adding the secondary sequence: " + targetSeq);
+      if (pTemplateRange != null) {
+        targetSeq = new FileSeq(targetSeq.getFilePattern(), pTemplateRange);
+      }
       addSecondarySequence(targetSeq);
       pSecSeqs.put(seq, targetSeq);
     }
