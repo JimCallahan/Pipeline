@@ -1,4 +1,4 @@
-// $Id: BaseUtil.java,v 1.44 2009/05/11 19:19:53 jesse Exp $
+// $Id: BaseUtil.java,v 1.45 2009/05/22 18:36:09 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -644,9 +644,14 @@ class BaseUtil
 	return true;
       }
       return true;
-    }
-    default:
-      return false;
+    } 
+    default: 
+      {
+        pLog.logAndFlush(Kind.Ops, Level.Warning, 
+          "The node (" + status.getName() + ") which was expected to be in the Finished state " +
+          "was actually in the (" + state + ") state");
+        return false;
+      }
     }
   }
   

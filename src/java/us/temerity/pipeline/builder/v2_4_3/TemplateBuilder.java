@@ -1,4 +1,4 @@
-// $Id: TemplateBuilder.java,v 1.17 2009/05/12 03:20:54 jesse Exp $
+// $Id: TemplateBuilder.java,v 1.18 2009/05/22 18:35:34 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -469,6 +469,7 @@ class TemplateBuilder
         TreeSet<String> ignoreableProducts = new TreeSet<String>();
         TreeMap<String, ActionOnExistence> aoeOverrides = new TreeMap<String, ActionOnExistence>();
         boolean checkpoint = false;
+        boolean vouchable = false;
         for (String aName : annots.keySet()) {
           BaseAnnotation annot = annots.get(aName);
           if (aName.startsWith("TemplateContext") && 
@@ -497,6 +498,13 @@ class TemplateBuilder
           }
           else if (aName.equals("TemplateCheckpoint")) {
             checkpoint = true;
+            pLog.log(Kind.Bld, Level.Finest, 
+              "Found a Checkpoint annotation.");
+          }
+          else if (aName.equals("TemplateVouchable")) {
+            vouchable = true;
+            pLog.log(Kind.Bld, Level.Finest, 
+            "Found a Vouchable annotation.");
           }
         }
         
@@ -539,6 +547,11 @@ class TemplateBuilder
         else { //uh-oh, there are contexts!
           contextLoop(toBuild, mod, contexts, pReplacements, pContexts, 
                       range, ignoreableProducts, conditionalBuild, checkpoint, aoeOverrides, nodesMade);
+        }
+        
+        if (vouchable) {
+          for (String node : nodesMade)
+            addToVouchableList(node);
         }
 
         pNodesToBuild.remove(toBuild);

@@ -1,4 +1,4 @@
-// $Id: BaseBuilder.java,v 1.71 2009/05/07 04:21:09 jesse Exp $
+// $Id: BaseBuilder.java,v 1.72 2009/05/22 18:35:34 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -1495,7 +1495,122 @@ class BaseBuilder
     }
   }
 
+  /**
+   * Traverse the nodes, queuing stale nodes and vouching for Dubious nodes.
+   * <p>
+   * All dubious nodes need to have already been specified as vouchable using the
+   * {@link #addToVouchableList(String)}.
+   * 
+   * @param nodes
+   *   The list of node names to be queued
+   * 
+   * @throws PipelineException
+   */
+  public final void 
+  queueAndVouch
+  (
+    List<String> nodes
+  ) 
+    throws PipelineException
+  {
+    ArrayList<String> toQueue = new ArrayList<String>();
+    for (String node : nodes) {
+      NodeStatus stat = 
+        pClient.status(getAuthor(), getView(), node, false, DownstreamMode.None);
+      queueAndVouchHlp(node, stat);
+      stat = 
+        pClient.status(getAuthor(), getView(), node, false, DownstreamMode.None);
+      toQueue.add(stat.getName());
+    }
+    queueSomeStuff(toQueue);
+  }
   
+  private void
+  queueAndVouchHlp
+  (
+    String start,
+    NodeStatus stat  
+  ) 
+    throws PipelineException
+  {
+    NodeStatus myStat = stat;
+    String nodeName = myStat.getName();
+    boolean children = false;
+    for (NodeStatus child : myStat.getSources()) {
+      queueAndVouchHlp(start, child);
+      children = true;
+    }
+    
+    if (children)
+      myStat = pClient.status(getAuthor(), getView(), nodeName, false, DownstreamMode.None);
+    OverallQueueState qstate = myStat.getHeavyDetails().getOverallQueueState();
+    switch(qstate) {
+      case Dubious:
+        {
+          if (pVouchableNodes.contains(nodeName)) {
+            queueSomeStuff(myStat);
+            pClient.vouch(getAuthor(), getView(), nodeName);
+          }
+          else
+            throw new PipelineException
+              ("The node (" + nodeName + ") is in a dubious state, but is not in the " +
+               "vouchable list.  The queue process cannot continue.");
+        }
+        break;
+      default:
+        pLog.log(Kind.Ops, Level.Finest, "Final State (" + qstate + ") on node (" + nodeName + ")");
+    }
+  }
+
+
+  /**
+   * Queue a bunch of nodes, wait for them to finish, and then check to make sure the node tree
+   * is in a finished state.
+   */
+  private void 
+  queueSomeStuff
+  (
+    List<String> toQueue
+  )
+    throws PipelineException
+  {
+    LinkedList<QueueJobGroup> groups = 
+      queueNodes(toQueue);
+    waitForJobs(groups);
+    /* Sleep for 3 seconds to give nfs caching a chance to catch up */
+    try {
+      Thread.sleep(5000);
+    }
+    catch(InterruptedException ex) {
+      throw new PipelineException
+       ("The execution thread was interrupted while waiting for jobs to complete.\n" + 
+        Exceptions.getFullMessage(ex));
+    }
+    if (!areAllFinished(toQueue)) {
+      TreeSet<String> badNodes = collectNamesAndKill(toQueue, groups);
+      throw new PipelineException
+        ("The queue jobs in pass (" + toString() + ") did not " + 
+         "finish correctly.\n" +
+         "The following nodes reported failure: " + badNodes.toString() + "\n" +
+         "All remaining jobs have been terminated.");
+    }
+  }
+
+  /**
+   * @param myStat
+   * @throws PipelineException
+   */
+  private void 
+  queueSomeStuff
+  (
+    NodeStatus myStat
+  )
+    throws PipelineException
+  {
+    ArrayList<String> toQueue = 
+      new ArrayList<String>(myStat.getSourceNames());
+    queueSomeStuff(toQueue);
+  }
 
   /**
    * Queues a group of nodes and returns the job groups that were created for all of the 
@@ -1523,7 +1638,7 @@ class BaseBuilder
       }
       catch(PipelineException ex) {
 	pLog.log(Kind.Ops, Level.Finest, 
-	  "No job was generated for node ("+nodeName+")\n" + ex.getMessage()); 
+	  "No job was generated for node (" + nodeName + ")\n" + ex.getMessage()); 
       }
     }
     return toReturn;
@@ -1856,6 +1971,50 @@ class BaseBuilder
    */
   protected final void 
   removeFromCheckInList
+  (
+    String nodeName
+  )
+  {
+    pNodesToCheckIn.remove(nodeName);
+    pLog.log(Kind.Bld, Level.Finest, 
+      "Removing node (" + nodeName + ") from check-in list in " +
+      "Builder (" + getPrefixedName() + ").");
+  }
+  
+  /**
+   * Add a node to the Builder's vouchable list.
+   * <p>
+   * Nodes in this list can be automatically vouched for 
+   * 
+   * This is a Builder specific list, so adding and removing nodes will not effect
+   * other Builders.<p>
+   * 
+   * @param nodeName
+   *   The name of the node.
+   */
+  protected final void 
+  addToVouchableList
+  (
+    String nodeName
+  )
+  {
+    pVouchableNodes.add(nodeName);
+    pLog.log(Kind.Bld, Level.Finest, 
+      "Adding node (" + nodeName + ") to the vouch list in " +
+      "Builder (" + getPrefixedName() + ").");
+  }
+  
+  /**
+   * Remove a node from the Builder's vouchable list.
+   * 
+   * This is a Builder specific list, so adding and removing nodes will not effect
+   * other Builders.
+   * 
+   * @param nodeName
+   *   The name of the node.
+   */
+  protected final void 
+  removeFromVouchableList
   (
     String nodeName
   )
@@ -2615,30 +2774,10 @@ class BaseBuilder
       LinkedList<String> neededNodes = preBuildPhase();
       pQueuedNodes.clear();
       if (neededNodes.size() > 0) {
-	LinkedList<QueueJobGroup> jobs = queueNodes(neededNodes);
-	pQueuedNodes.addAll(neededNodes);
-	if (jobs.size() > 0) {
-	  waitForJobs(jobs);
-	  /* Sleep for 3 seconds to give nfs caching a chance to catch up */
-	  try {
-	    Thread.sleep(3000);
-	  }
-	  catch(InterruptedException ex) {
-	    throw new PipelineException
-	    ("The execution thread was interrupted while waiting for jobs to complete.\n" + 
-	     Exceptions.getFullMessage(ex));
-	  }
-	}
-	if (!areAllFinished(neededNodes)) {
-	  TreeSet<String> badNodes = collectNamesAndKill(neededNodes, jobs);
-	  throw new PipelineException
-	    ("The queue jobs in prebuild phase of  pass (" + toString() + ") did not " + 
-             "finish correctly.\n" +
-	     "The following nodes reported failure: " + badNodes.toString() + "\n" +
-	     "All remaining jobs have been terminated.");
-	}
+        pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Finer, 
+          "List of nodes returned by the pre-build phase: (" + neededNodes + ").");
+        queueAndVouch(neededNodes);
       }
-      pQueuedNodes.clear();
       for (String needed : this.nodesDependedOn())
 	neededNode(needed);
       for (String product : this.getProductNodes()) {
@@ -2668,29 +2807,8 @@ class BaseBuilder
     run()
       throws PipelineException
     {
-      LinkedList<QueueJobGroup> jobGroups = queueNodes(getQueueList());
-      pQueuedNodes.addAll(getQueueList());
-      if (jobGroups.size() > 0) {
-        waitForJobs(jobGroups);
-        /* Sleep for 3 seconds to give nfs caching a chance to catch up */
-        try {
-          Thread.sleep(3000);
-        }
-        catch(InterruptedException ex) {
-          throw new PipelineException
-            ("The execution thread was interrupted while waiting for jobs to complete.\n" + 
-             Exceptions.getFullMessage(ex));
-        }
-      }
-      boolean allFinished = areAllFinished(getQueueList());
-      if (!allFinished) {
-        TreeSet<String> badNodes = collectNamesAndKill(getQueueList(), jobGroups);
-        throw new PipelineException
-          ("The queue jobs in queue pass (" + toString() + ") did not finish correctly.\n" +
-           "The following nodes reported failure: " + badNodes.toString() + "\n" +
-           "All remaining jobs have been terminated.");
-      }
       pQueuedNodes.clear();
+      queueAndVouch(getQueueList());
    }
     
     @Override
@@ -2730,27 +2848,7 @@ class BaseBuilder
             for (String node : bundle.getNodesToLock())
               lockLatest(node);
             List<String> neededNodes = bundle.getNodesToCheckin();
-            LinkedList<QueueJobGroup> jobs = queueNodes(neededNodes);
-            if (jobs.size() > 0) {
-              waitForJobs(jobs);
-              /* Sleep for 3 seconds to give nfs caching a chance to catch up */
-              try {
-                Thread.sleep(3000);
-              }
-              catch(InterruptedException ex) {
-                throw new PipelineException
-                  ("The execution thread was interrupted while waiting for jobs to " + 
-                   "complete.\n" + Exceptions.getFullMessage(ex));
-              }
-            }
-            boolean finished =  areAllFinished(neededNodes);
-            if (!finished) {
-              TreeSet<String> badNodes = collectNamesAndKill(neededNodes, jobs);
-              throw new PipelineException
-                ("The queue jobs in pass (" + toString() + ") did not finish correctly.\n" +
-                 "The following nodes reported failure: " + badNodes.toString() + "\n" +
-                 "All remaining jobs have been terminated.");
-            }
+            queueSomeStuff(neededNodes);
             checkInNodes(bundle.getNodesToCheckin(), VersionID.Level.Micro, 
                          "The tree is now properly locked.");
           }
@@ -2817,6 +2915,11 @@ class BaseBuilder
    * A list of nodes names that need to be queued.
    */
   private LinkedList<String> pNodesToQueue = new LinkedList<String>();
+  
+  /**
+   * A list of nodes which the builder is allowed to automatically vouch for.
+   */
+  private TreeSet<String> pVouchableNodes = new TreeSet<String>();
 
   /**
    * The list of all associated subBuilders
