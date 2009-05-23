@@ -1,4 +1,4 @@
-// $Id: TemplateInfoBuilder.java,v 1.13 2009/05/13 22:49:42 jesse Exp $
+// $Id: TemplateInfoBuilder.java,v 1.14 2009/05/23 05:13:41 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -122,6 +122,26 @@ class TemplateInfoBuilder
       addParam(param);
     }
 
+    {
+      UtilityParam param = 
+        new StringUtilityParam
+          (aCheckInMessage,
+           "The check-in message to use.",
+           null);
+      addParam(param);
+    }
+    
+    {
+      ArrayList<String> values = new ArrayList<String>();
+      Collections.addAll(values, "Major", "Minor", "Micro");
+      UtilityParam param = 
+        new EnumUtilityParam
+          (aCheckInLevel,
+           "The check-in levelto use.",
+           "Minor",
+           values);
+      addParam(param);
+    }
 
     AdvancedLayoutGroup layout = new AdvancedLayoutGroup
     ("Information Pass", 
@@ -133,6 +153,9 @@ class TemplateInfoBuilder
     layout.addEntry(1, aCheckinWhenDone);
     layout.addEntry(1, aActionOnExistence);
     layout.addEntry(1, aReleaseOnError);
+    layout.addEntry(1, null);
+    layout.addEntry(1, aCheckInLevel);
+    layout.addEntry(1, aCheckInMessage);
     layout.addEntry(1, null);
     layout.addEntry(1, aAllowZeroContexts);
     layout.addEntry(1, aInhibitFileCopy);
@@ -327,6 +350,8 @@ class TemplateInfoBuilder
         addMappedParam(builder.getName(), aCheckinWhenDone, aCheckinWhenDone);
         addMappedParam(builder.getName(), aAllowZeroContexts, aAllowZeroContexts);
         addMappedParam(builder.getName(), aInhibitFileCopy, aInhibitFileCopy);
+        addMappedParam(builder.getName(), aCheckInLevel, aCheckInLevel);
+        addMappedParam(builder.getName(), aCheckInMessage, aCheckInMessage);
       }
       else {
         TemplateBuildInfo info = new TemplateBuildInfo();
@@ -338,6 +363,8 @@ class TemplateInfoBuilder
         addMappedParam(builder.getName(), aCheckinWhenDone, aCheckinWhenDone);
         addMappedParam(builder.getName(), aAllowZeroContexts, aAllowZeroContexts);
         addMappedParam(builder.getName(), aInhibitFileCopy, aInhibitFileCopy);
+        addMappedParam(builder.getName(), aCheckInLevel, aCheckInLevel);
+        addMappedParam(builder.getName(), aCheckInMessage, aCheckInMessage);
       }
     }
     
@@ -522,6 +549,9 @@ class TemplateInfoBuilder
   public static final String aTemplateGlueInfo = "TemplateGlueInfo";
   public static final String aAllowZeroContexts = "AllowZeroContexts";
   public static final String aInhibitFileCopy   = "InhibitFileCopy";
+  
+  public static final String aCheckInLevel   = "CheckInLevel";
+  public static final String aCheckInMessage = "CheckInMessage";
   
   
   

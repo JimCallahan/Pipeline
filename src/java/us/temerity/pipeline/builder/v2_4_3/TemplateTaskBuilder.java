@@ -1,4 +1,4 @@
-// $Id: TemplateTaskBuilder.java,v 1.11 2009/05/07 03:25:29 jesse Exp $
+// $Id: TemplateTaskBuilder.java,v 1.12 2009/05/23 05:13:41 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -132,6 +132,27 @@ class TemplateTaskBuilder
       addParam(param);
     }
     
+    {
+      UtilityParam param = 
+        new StringUtilityParam
+          (aCheckInMessage,
+           "The check-in message to use.",
+           null);
+      addParam(param);
+    }
+    
+    {
+      ArrayList<String> values = new ArrayList<String>();
+      Collections.addAll(values, "Major", "Minor", "Micro");
+      UtilityParam param = 
+        new EnumUtilityParam
+          (aCheckInLevel,
+           "The check-in levelto use.",
+           "Minor",
+           values);
+      addParam(param);
+    }
+    
     AdvancedLayoutGroup layout = 
       new AdvancedLayoutGroup
       ("Builder Information", 
@@ -144,6 +165,9 @@ class TemplateTaskBuilder
     layout.addEntry(1, aCheckinWhenDone);
     layout.addEntry(1, aActionOnExistence);
     layout.addEntry(1, aReleaseOnError);
+    layout.addEntry(1, null);
+    layout.addEntry(1, aCheckInLevel);
+    layout.addEntry(1, aCheckInMessage);
     layout.addEntry(1, null);
     layout.addEntry(1, aAllowZeroContexts);
     layout.addEntry(1, aInhibitFileCopy);
@@ -592,88 +616,13 @@ class TemplateTaskBuilder
       addMappedParam(builder.getName(), aCheckinWhenDone, aCheckinWhenDone);
       addMappedParam(builder.getName(), aAllowZeroContexts, aAllowZeroContexts);
       addMappedParam(builder.getName(), aInhibitFileCopy, aInhibitFileCopy);
+      addMappedParam(builder.getName(), aCheckInLevel, aCheckInLevel);
+      addMappedParam(builder.getName(), aCheckInMessage, aCheckInMessage);
     }
     
     private TreeSet<String> pNodesToBuild;
     
     private static final long serialVersionUID = 372864091539779290L;
-  }
-  
-  
-  
-  public static void 
-  main(
-    String[] args
-  ) 
-    throws PipelineException
-  {
-    PluginMgrClient.init();
-    
-    LogMgr.getInstance().setLevel(Kind.Ops, Level.Finest);
-    
-    TreeMap<String, String> subs = new TreeMap<String, String>();
-    subs.put("TEMPLATE", "templ");
-    subs.put("SEQ1", "s001");
-    subs.put("SHOT1", "s002");
-    
-    TreeMap<String, ArrayList<TreeMap<String, String>>> contexts = 
-      new TreeMap<String, ArrayList<TreeMap<String,String>>>();
-    
-    {
-      ArrayList<TreeMap<String,String>> context = new ArrayList<TreeMap<String,String>>(); 
-      {
-        TreeMap<String, String> sub = new TreeMap<String, String>();
-        sub.put("ASSET", "horse");
-        sub.put("TYPE", "prop");
-        context.add(sub);
-      }
-      {
-        TreeMap<String, String> sub = new TreeMap<String, String>();
-        sub.put("ASSET", "bob");
-        sub.put("TYPE", "char");
-        context.add(sub);
-      }
-      {
-        TreeMap<String, String> sub = new TreeMap<String, String>();
-        sub.put("ASSET", "jimmy");
-        sub.put("TYPE", "char");
-        context.add(sub);
-      }
-      contexts.put("assets", context);
-    }
-
-    {
-      ArrayList<TreeMap<String,String>> context = new ArrayList<TreeMap<String,String>>(); 
-      {
-        TreeMap<String, String> sub = new TreeMap<String, String>();
-        sub.put("ATYPE", "facial");
-        context.add(sub);
-      }
-      {
-        TreeMap<String, String> sub = new TreeMap<String, String>();
-        sub.put("ATYPE", "body");
-        context.add(sub);
-      }
-      {
-        TreeMap<String, String> sub = new TreeMap<String, String>();
-        sub.put("ATYPE", "hands");
-        context.add(sub);
-      }
-      contexts.put("atype", context);
-    }
-    
-    
-    //  subs.put("ASSET", "carriage");
-    //  subs.put("TYPE", "prop");
-    
-    
-    TemplateTaskBuilder builder = new TemplateTaskBuilder
-      (new MasterMgrClient(), new QueueMgrClient(), 
-       new BuilderInformation(false, true, true, new MultiMap<String, String>()), 
-       "/projects/TEMPLATE/prod/SEQ1/SHOT1/anim/submit/SEQ1_SHOT1_submit", subs, contexts, null, null);
-    
-    GUIExecution exec = new GUIExecution(builder);
-    exec.run();
   }
   
   
@@ -689,6 +638,9 @@ class TemplateTaskBuilder
   
   public static final String aAllowZeroContexts = "AllowZeroContexts";
   public static final String aInhibitFileCopy   = "InhibitFileCopy";
+  
+  public static final String aCheckInLevel   = "CheckInLevel";
+  public static final String aCheckInMessage = "CheckInMessage";
   
   
   

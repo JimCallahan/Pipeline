@@ -1,4 +1,4 @@
-// $Id: TemplateBuilder.java,v 1.18 2009/05/22 18:35:34 jesse Exp $
+// $Id: TemplateBuilder.java,v 1.19 2009/05/23 05:13:41 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -70,7 +70,7 @@ class TemplateBuilder
    *   
    * @param aoeModes
    *   The list of AoE modes and the default value for each mode.
-   * 
+   *   
    * @throws PipelineException
    */
   public
@@ -187,6 +187,27 @@ class TemplateBuilder
       addParam(param);
     }
     
+    {
+      UtilityParam param = 
+        new StringUtilityParam
+          (aCheckInMessage,
+           "The check-in message to use.",
+           null);
+      addParam(param);
+    }
+    
+    {
+      ArrayList<String> values = new ArrayList<String>();
+      Collections.addAll(values, "Major", "Minor", "Micro");
+      UtilityParam param = 
+        new EnumUtilityParam
+          (aCheckInLevel,
+           "The check-in levelto use.",
+           "Minor",
+           values);
+      addParam(param);
+    }
+    
     addCheckinWhenDoneParam();
     
     addSetupPass(new InformationPass());
@@ -215,6 +236,9 @@ class TemplateBuilder
     layout.addEntry(1, aActionOnExistence);
     layout.addEntry(1, aReleaseOnError);
     layout.addEntry(1, null);
+    layout.addEntry(1, aCheckInLevel);
+    layout.addEntry(1, aCheckInMessage);
+    layout.addEntry(1, null);
     layout.addEntry(1, aAllowZeroContexts);
     layout.addEntry(1, aInhibitFileCopy);
     
@@ -223,12 +247,20 @@ class TemplateBuilder
   }
   
   @Override
+  public us.temerity.pipeline.VersionID.Level 
+  getCheckinLevel()
+  {
+    return pCheckInLevel;
+  }
+  
+  @Override
   public String
   getCheckInMessage()
   {
-    String message = "Node tree created using the (" + getName() + ") Builder.\n";
-//    message += "It was based off the template anchored by ()" + pSubmitNode;
-    return message;
+    if (pCheckInMessage != null)
+      return pCheckInMessage;
+
+    return "Node tree created using the (" + getName() + ") Builder.\n";
   }
   
   
@@ -374,6 +406,12 @@ class TemplateBuilder
       
       pAllowZeroContexts = getBooleanParamValue(new ParamMapping(aAllowZeroContexts));
       pInhibitCopyFiles = getBooleanParamValue(new ParamMapping(aInhibitFileCopy));
+      pCheckInMessage = getStringParamValue(new ParamMapping(aCheckInMessage));
+      
+      {
+        int level = getEnumParamIndex(new ParamMapping(aCheckInLevel));
+        pCheckInLevel = us.temerity.pipeline.VersionID.Level.values()[level];
+      }
       
       if (pGenerateDependSets) {
         pLog.log(Kind.Ops, Level.Finer, 
@@ -984,6 +1022,9 @@ class TemplateBuilder
   public static final String aAllowZeroContexts = "AllowZeroContexts";
   public static final String aInhibitFileCopy   = "InhibitFileCopy";
   
+  public static final String aCheckInLevel   = "CheckInLevel";
+  public static final String aCheckInMessage = "CheckInMessage";
+  
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -1018,4 +1059,7 @@ class TemplateBuilder
   private TreeMap<String, FrameRange> pFrameRanges;
   
   private TreeSet<String> pIgnoredNodes;
+  
+  private us.temerity.pipeline.VersionID.Level pCheckInLevel;
+  private String pCheckInMessage;
 }
