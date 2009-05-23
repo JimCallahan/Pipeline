@@ -1,4 +1,4 @@
-// $Id: CommandLineExecution.java,v 1.8 2009/04/22 17:52:13 jesse Exp $
+// $Id: CommandLineExecution.java,v 1.9 2009/05/23 04:00:11 jesse Exp $
 
 package us.temerity.pipeline.builder.execution;
 
@@ -72,7 +72,7 @@ class CommandLineExecution
     ExecutionPhase phase = getPhase();
     if (phase != ExecutionPhase.Release && phase != ExecutionPhase.Error &&
         phase != ExecutionPhase.ReleaseView) {
-      String header = "An error occurred during Builder Execution.";
+      String header = "The builder was unable to successfully complete.";
 
       if (getBuilder().releaseOnError()) {
         if (phase.haveNodesBeenMade())
@@ -102,7 +102,7 @@ class CommandLineExecution
     }
     else if (phase == ExecutionPhase.Release) {
       String header = 
-        "Additionally, an error occurred while attempting to release the nodes";
+        "The builder was not able to successfully release the nodes: ";
       String message;
       if (ex instanceof PipelineException)
         message = header + "\n" + ex.getMessage();
@@ -112,8 +112,7 @@ class CommandLineExecution
     }
     else if (phase == ExecutionPhase.ReleaseView) {
       String header = 
-        "An error occurred after builder exection while attempting to release the " +
-        "working area";
+        "A problem occured after execution when attempting to release the working area: ";
       String message;
       if (ex instanceof PipelineException)
         message = header + "\n" + ex.getMessage();

@@ -1,4 +1,4 @@
-// $Id: GUIExecution.java,v 1.10 2009/05/07 04:21:09 jesse Exp $
+// $Id: GUIExecution.java,v 1.11 2009/05/23 04:00:11 jesse Exp $
 
 package us.temerity.pipeline.builder.execution;
 
@@ -60,7 +60,7 @@ class GUIExecution
     ExecutionPhase phase = getPhase();
     if (phase != ExecutionPhase.Release && phase != ExecutionPhase.Error &&
         phase != ExecutionPhase.ReleaseView) {
-      String header = "An error occurred during Builder Execution.";
+      String header = "The builder was unable to successfully complete.";
       
       String message;
       if (ex instanceof PipelineException)
@@ -96,7 +96,7 @@ class GUIExecution
     }
     else if (phase == ExecutionPhase.Release) {
       String header = 
-        "Additionally, an error occurred while attempting to release the nodes";
+        "The builder was not able to successfully release the nodes: ";
       String message = Exceptions.getFullMessage(header, ex);
       pLog.logAndFlush(Kind.Ops, Level.Severe, message);
       setPhase(ExecutionPhase.Error);
@@ -104,7 +104,7 @@ class GUIExecution
     }
     else if (phase == ExecutionPhase.ReleaseView) {
       String header = 
-        "An error occurred after execution when attempting to release the working area";
+        "A problem occured after execution when attempting to release the working area: ";
       String message = Exceptions.getFullMessage(header, ex);
       pLog.logAndFlush(Kind.Ops, Level.Severe, message);
       setPhase(ExecutionPhase.Error);
@@ -112,7 +112,7 @@ class GUIExecution
     }
     else if (phase == ExecutionPhase.Error) {
       String header = 
-        "Additionally, another error occurred while dealing with the first error. ";
+        "An additional problem occured while handling the first problem: ";
       String message = Exceptions.getFullMessage(header, ex);
       pLog.logAndFlush(Kind.Ops, Level.Severe, message);
       SwingUtilities.invokeLater(pDialog.new ShowErrorTask(message));
