@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.136 2009/05/18 06:03:45 jesse Exp $
+// $Id: MasterMgrClient.java,v 1.137 2009/05/23 03:59:23 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -7,6 +7,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.util.*;
+import java.util.Map.*;
 import java.util.regex.Pattern;
 
 import us.temerity.pipeline.builder.ActionOnExistence;
@@ -6314,8 +6315,12 @@ class MasterMgrClient
     
     if(cloneAnnotations) {
       TreeMap<String, BaseAnnotation> annots = getAnnotations(oldName);
-      for (String aname : annots.keySet())
-        addAnnotation(newName, aname, annots.get(aname));
+      for (Entry<String, BaseAnnotation> entry  : annots.entrySet())
+        addAnnotation(newName, entry.getKey(), entry.getValue());
+      TreeMap<String, BaseAnnotation> perVer = oldMod.getAnnotations();
+      for (Entry<String, BaseAnnotation> entry : perVer.entrySet()) 
+        addAnnotation(newName, entry.getKey(), entry.getValue());
+      modifyProperties(author, view, newMod);
     }
     
     return getWorkingVersion(author, view, newName);

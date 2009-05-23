@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.131 2009/03/25 19:31:58 jesse Exp $
+// $Id: JNodeViewerPanel.java,v 1.132 2009/05/23 03:58:29 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -5972,6 +5972,26 @@ class JNodeViewerPanel
 		  tmod.setJobRequirements(tjreqs);
 		}
 	      }
+	      
+	      {
+                TreeMap<String, BaseAnnotation> annots = smod.getAnnotations();
+                for (String aname : annots.keySet()) {
+                  if (pExportDialog.exportVersionAnnotation(aname)) {
+                    BaseAnnotation an = annots.get(aname);
+                    PluginMgrClient mgr = PluginMgrClient.getInstance();
+                    BaseAnnotation newAnnot = mgr.newAnnotation(an.getName(), 
+                      an.getVersionID(), 
+                      an.getVendor()); 
+                    for (AnnotationParam param : an.getParams()) {
+                      String paramName = param.getName();
+                      Comparable value = param.getValue();
+                      AnnotationParam newParam = newAnnot.getParam(paramName);
+                      newParam.setValue(value);
+                    }
+                    tmod.addAnnotation(aname, newAnnot);
+                  }
+                }
+              }
 
 	      /* apply the changes */ 
 	      client.modifyProperties(pAuthor, pView, tmod);
@@ -5980,7 +6000,7 @@ class JNodeViewerPanel
 	      {
 		TreeMap<String, BaseAnnotation> annots = client.getAnnotations(smod.getName());
 		for (String aname : annots.keySet()) {
-		  if (pExportDialog.exportAnnotation(aname)) {
+		  if (pExportDialog.exportNodeAnnotation(aname)) {
 		    BaseAnnotation an = annots.get(aname);
 		    PluginMgrClient mgr = PluginMgrClient.getInstance();
 		    BaseAnnotation newAnnot = mgr.newAnnotation(an.getName(), 

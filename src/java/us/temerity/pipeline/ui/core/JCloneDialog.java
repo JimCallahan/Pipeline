@@ -1,4 +1,4 @@
-// $Id: JCloneDialog.java,v 1.21 2009/03/19 21:55:59 jesse Exp $
+// $Id: JCloneDialog.java,v 1.22 2009/05/23 03:58:29 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -706,15 +706,36 @@ class JCloneDialog
           mod.setJobRequirements(jreqs);
         }
       }
+      
+      /* Do the per-version annotations*/
+      {
+        TreeMap<String, BaseAnnotation> annots = pNodeMod.getAnnotations();
+        for (String aname : annots.keySet()) {
+          if (pExportPanel.exportVersionAnnotation(aname)) {
+            BaseAnnotation an = annots.get(aname);
+            PluginMgrClient mgr = PluginMgrClient.getInstance();
+            BaseAnnotation newAnnot = mgr.newAnnotation(an.getName(), 
+                                                        an.getVersionID(), 
+                                                        an.getVendor()); 
+            for (AnnotationParam param : an.getParams()) {
+              String paramName = param.getName();
+              Comparable value = param.getValue();
+              AnnotationParam newParam = newAnnot.getParam(paramName);
+              newParam.setValue(value);
+            }
+            mod.addAnnotation(aname, newAnnot);
+          }
+        }
+      }
 
       /* apply the changes */ 
       client.modifyProperties(pAuthor, pView, mod);
 
-      /* Do the annotations */
+      /* Do the per-node annotations */
       {
         TreeMap<String, BaseAnnotation> annots = client.getAnnotations(pNodeMod.getName());
         for (String aname : annots.keySet()) {
-          if (pExportPanel.exportAnnotation(aname)) {
+          if (pExportPanel.exportNodeAnnotation(aname)) {
             BaseAnnotation an = annots.get(aname);
             PluginMgrClient mgr = PluginMgrClient.getInstance();
             BaseAnnotation newAnnot = mgr.newAnnotation(an.getName(), 

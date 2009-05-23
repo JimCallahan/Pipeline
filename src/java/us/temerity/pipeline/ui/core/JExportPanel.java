@@ -1,4 +1,4 @@
-// $Id: JExportPanel.java,v 1.10 2009/03/19 21:55:59 jesse Exp $
+// $Id: JExportPanel.java,v 1.11 2009/05/23 03:58:29 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -50,12 +50,13 @@ class JExportPanel
       pTSize = tsize; 
       pVSize = vsize; 
 
-      pActionParamFields  = new TreeMap<String,JBooleanField>();
-      pSelectionKeyFields = new TreeMap<String,JBooleanField>();
-      pLicenseKeyFields   = new TreeMap<String,JBooleanField>();
-      pHardwareKeyFields   = new TreeMap<String,JBooleanField>();
-      pSourceFields       = new TreeMap<String,JBooleanField>();
-      pAnnotationFields   = new TreeMap<String, JBooleanField>();
+      pActionParamFields       = new TreeMap<String,JBooleanField>();
+      pSelectionKeyFields      = new TreeMap<String,JBooleanField>();
+      pLicenseKeyFields        = new TreeMap<String,JBooleanField>();
+      pHardwareKeyFields       = new TreeMap<String,JBooleanField>();
+      pSourceFields            = new TreeMap<String,JBooleanField>();
+      pNodeAnnotationFields    = new TreeMap<String, JBooleanField>();
+      pVersionAnnotationFields = new TreeMap<String, JBooleanField>();
     }
 
     /* create panel components */ 
@@ -255,9 +256,16 @@ class JExportPanel
       
       /* annotation panel */
       {
-	JDrawer drawer = new JDrawer("Annotations:", new JPanel(), false);
-	pAnnotationDrawer = drawer;
+	JDrawer drawer = new JDrawer("Node Annotations:", new JPanel(), false);
+	pNodeAnnotationDrawer = drawer;
 	add(drawer);
+      }
+      
+      /* annotation panel */
+      {
+        JDrawer drawer = new JDrawer("Version Annotations:", new JPanel(), false);
+        pVersionAnnotationDrawer = drawer;
+        add(drawer);
       }
     }  
   }
@@ -486,12 +494,29 @@ class JExportPanel
    * Whether to export the node annotation to the given source node.
    */ 
   public boolean
-  exportAnnotation
+  exportNodeAnnotation
   (
    String sname
   ) 
   {
-    JBooleanField field = pAnnotationFields.get(sname);
+    JBooleanField field = pNodeAnnotationFields.get(sname);
+    if((field != null) && (field.getValue() != null))
+      return field.getValue();
+    return false;    
+  }
+  
+  /*----------------------------------------------------------------------------------------*/
+  
+  /**
+   * Whether to export the version annotation to the given source node.
+   */ 
+  public boolean
+  exportVersionAnnotation
+  (
+   String sname
+  ) 
+  {
+    JBooleanField field = pVersionAnnotationFields.get(sname);
     if((field != null) && (field.getValue() != null))
       return field.getValue();
     return false;    
@@ -775,7 +800,7 @@ class JExportPanel
     
     /* annotation panels */ 
     {
-      pAnnotationFields.clear();
+      pNodeAnnotationFields.clear();
       UIMaster master = UIMaster.getInstance();
       MasterMgrClient mclient = master.acquireMasterMgrClient();
       TreeMap<String, BaseAnnotation> annots = new TreeMap<String, BaseAnnotation>();
@@ -809,7 +834,7 @@ class JExportPanel
 						  vpanel, pVSize);
 	      field.setValue(false);
 
-	      pAnnotationFields.put(sname, field);
+	      pNodeAnnotationFields.put(sname, field);
 	    }
 	  
 	    JDrawer drawer = new JDrawer(sname, (JComponent) comps[2], true);
@@ -819,7 +844,7 @@ class JExportPanel
 	  hbox.add(vbox);
 	}
       
-	pAnnotationDrawer.setContents(hbox);
+	pNodeAnnotationDrawer.setContents(hbox);
       }   
       else {
 	Component comps[] = UIFactory.createTitledPanels();
@@ -831,10 +856,60 @@ class JExportPanel
 	  vpanel.add(Box.createHorizontalGlue());
 	}
 	
-	pAnnotationDrawer.setContents((JComponent) comps[2]);
+	pNodeAnnotationDrawer.setContents((JComponent) comps[2]);
       }
     } 
 
+    /* Per-Version annotations*/
+    {
+      pVersionAnnotationFields.clear();
+      TreeMap<String, BaseAnnotation> annots = mod.getAnnotations();
+
+      if(!annots.isEmpty()) {
+        Box hbox = new Box(BoxLayout.X_AXIS);
+
+        hbox.addComponentListener(this);
+        hbox.add(UIFactory.createSidebar());
+        
+        {
+          Box vbox = new Box(BoxLayout.Y_AXIS);
+          
+          for(String sname : annots.keySet()) {
+            Component comps[] = UIFactory.createTitledPanels();
+            {
+              JPanel tpanel = (JPanel) comps[0];
+              JPanel vpanel = (JPanel) comps[1];
+              
+              JBooleanField field = 
+                UIFactory.createTitledBooleanField(tpanel, "Export Annotation:", pTSize-14, 
+                                                  vpanel, pVSize);
+              field.setValue(false);
+
+              pVersionAnnotationFields.put(sname, field);
+            }
+          
+            JDrawer drawer = new JDrawer(sname, (JComponent) comps[2], true);
+            vbox.add(drawer);
+          }
+          
+          hbox.add(vbox);
+        }
+      
+        pVersionAnnotationDrawer.setContents(hbox);
+      }   
+      else {
+        Component comps[] = UIFactory.createTitledPanels();
+        {
+          JPanel tpanel = (JPanel) comps[0];
+          JPanel vpanel = (JPanel) comps[1];
+          
+          tpanel.add(Box.createRigidArea(new Dimension(pTSize, 0)));
+          vpanel.add(Box.createHorizontalGlue());
+        }
+        
+        pVersionAnnotationDrawer.setContents((JComponent) comps[2]);
+      }
+    } 
   }
 
 
@@ -964,7 +1039,10 @@ class JExportPanel
     for(JBooleanField field : pSourceFields.values()) 
       field.setValue(exportAll);
     
-    for (JBooleanField field : pAnnotationFields.values())
+    for (JBooleanField field : pNodeAnnotationFields.values())
+      field.setValue(exportAll);
+    
+    for (JBooleanField field : pVersionAnnotationFields.values())
       field.setValue(exportAll);
   }
 
@@ -1149,14 +1227,24 @@ class JExportPanel
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * The drawer containing all the annotations.
+   * The drawer containing all the per-node annotations.
    */
-  private JDrawer  pAnnotationDrawer;
+  private JDrawer  pNodeAnnotationDrawer;
 
   /**
-   * Where to export each annotation indexed by the name of the annotation.
+   * Whether to export each per-node annotation indexed by the name of the annotation.
    */
-  private TreeMap<String, JBooleanField> pAnnotationFields;
+  private TreeMap<String, JBooleanField> pNodeAnnotationFields;
 
-  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * The drawer containing all the per-version annotations.
+   */
+  private JDrawer  pVersionAnnotationDrawer;
+
+  /**
+   * Whether to export each per-version annotation indexed by the name of the annotation.
+   */
+  private TreeMap<String, JBooleanField> pVersionAnnotationFields;
 }
