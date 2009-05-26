@@ -1,4 +1,4 @@
-// $Id: UIFactory.java,v 1.29 2008/11/13 20:53:03 jim Exp $
+// $Id: UIFactory.java,v 1.30 2009/05/26 07:09:32 jesse Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -438,6 +438,45 @@ class UIFactory
   )
   {
     JIdentifierField field = new JIdentifierField();
+    field.setName("EditableTextField");
+
+    Dimension size = new Dimension(width, 19);
+    field.setMinimumSize(size);
+    field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+    field.setPreferredSize(size);
+    
+    field.setHorizontalAlignment(align);
+    field.setEditable(true);
+    
+    field.setText(text);
+    
+    return field;
+  }
+  
+  /**
+   * Create a new editable text field which can only contain param names. <P> 
+   * 
+   * See {@link JLabel#setHorizontalAlignment JLabel.setHorizontalAlignment} for valid
+   * values for the <CODE>align</CODE> argument.
+   * 
+   * @param text
+   *   The initial text.
+   * 
+   * @param width
+   *   The minimum and preferred width.
+   * 
+   * @param align
+   *   The horizontal alignment.
+   */ 
+  public static JParamNameField
+  createParamNameField
+  (
+   String text, 
+   int width,
+   int align
+  )
+  {
+    JParamNameField field = new JParamNameField();
     field.setName("EditableTextField");
 
     Dimension size = new Dimension(width, 19);
@@ -1675,7 +1714,81 @@ class UIFactory
 
     return field;
   }
+  
+  /*----------------------------------------------------------------------------------------*/
 
+  /**
+   * Create a new param name text field with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param text
+   *   The initial text.
+   * 
+   * @param vwidth
+   *   The minimum and preferred width of the param namefield.
+   */ 
+  public static JParamNameField
+  createTitledParamNameField
+  (
+   JPanel tpanel, 
+   String title,  
+   int twidth,
+   JPanel vpanel, 
+   String text, 
+   int vwidth
+  )
+  {
+    return createTitledParamNameField(tpanel, title, twidth, vpanel, text, vwidth, null);
+  }
+
+  /**
+   * Create a new param name text field with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param text
+   *   The initial text.
+   * 
+   * @param vwidth
+   *   The minimum and preferred width of the param name field.
+   * 
+   * @param tooltip
+   *   The tooltip text.
+   */ 
+  public static JParamNameField
+  createTitledParamNameField
+  (
+   JPanel tpanel, 
+   String title,  
+   int twidth,
+   JPanel vpanel, 
+   String text, 
+   int vwidth, 
+   String tooltip
+  )
+  {
+    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT, tooltip));
+
+    JParamNameField field = createParamNameField(text, vwidth, JLabel.CENTER);
+    vpanel.add(field);
+
+    return field;
+  }
 
   /*----------------------------------------------------------------------------------------*/
   

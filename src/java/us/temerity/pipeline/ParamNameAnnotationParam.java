@@ -1,21 +1,21 @@
-// $Id: IdentifierUtilityParam.java,v 1.2 2009/05/26 07:09:32 jesse Exp $
+// $Id: ParamNameAnnotationParam.java,v 1.1 2009/05/26 07:09:32 jesse Exp $
 
 package us.temerity.pipeline;
 
-import us.temerity.pipeline.glue.GlueDecoder;
+import us.temerity.pipeline.glue.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   I D E N T I F I E R   U T I L I T Y   P A R A M                                        */
+/*   P A R A M   N A M E   A N N O T A T I O N   P A R A M                                  */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * An Utility parameter with an identifier String value. <P> 
+ * An annotation param with a value that is a valid param name.
  */
 public 
-class IdentifierUtilityParam
+class ParamNameAnnotationParam
   extends StringParam
-  implements UtilityParam
-{  
+  implements AnnotationParam
+{
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
@@ -26,11 +26,11 @@ class IdentifierUtilityParam
    * from user code.
    */    
   public 
-  IdentifierUtilityParam() 
+  ParamNameAnnotationParam() 
   {
     super();
   }
-
+  
   /** 
    * Construct a parameter with the given name, description and default value.
    * 
@@ -44,7 +44,7 @@ class IdentifierUtilityParam
    *   The default value for this parameter.
    */ 
   public
-  IdentifierUtilityParam
+  ParamNameAnnotationParam
   (
    String name,  
    String desc, 
@@ -53,6 +53,7 @@ class IdentifierUtilityParam
   {
     super(name, desc, value);
   }
+  
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -64,16 +65,16 @@ class IdentifierUtilityParam
    * <P>
    */
   @Override
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({ "unchecked"})
   protected void 
   validate
   (
-    Comparable value	  
+    Comparable value      
   )
     throws IllegalArgumentException 
   {
     IllegalArgumentException ex = 
-      new IllegalArgumentException("String (" + value + ") is not a valid identifier value");
+      new IllegalArgumentException("String (" + value + ") is not a valid parameter name.");
     
     if((value != null) && !(value instanceof String))
       throw ex;
@@ -82,43 +83,18 @@ class IdentifierUtilityParam
       char[] cs = ((String) value).toCharArray();
       int wk;
       for(wk=0; wk<cs.length; wk++) {
-        if(!(Character.isLetterOrDigit(cs[wk]) || 
-          (cs[wk] == '_') ||(cs[wk] == '-') ||(cs[wk] == '.'))) {
+        if(!(Character.isLetterOrDigit(cs[wk]))) {
           throw ex;
         }
       }
     }
   }
-  
-  
-  
-  /*----------------------------------------------------------------------------------------*/
-  /*   U T I L I T I E S                                                                    */
-  /*----------------------------------------------------------------------------------------*/
-  
-  /**
-   * Sets the value of this parameter from a string.
-   */
-  public void 
-  valueFromString
-  (
-    String value
-  )
-  {
-    if (value == null)
-      return;
-    setValue(value);
-  }
-  
-  
 
+  
+  
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 6562921895708739669L;
-
+  private static final long serialVersionUID = -953093013890655529L;
 }
-
-
-

@@ -1,4 +1,4 @@
-// $Id: MappedSet.java,v 1.8 2009/04/22 21:44:16 jesse Exp $
+// $Id: MappedSet.java,v 1.9 2009/05/26 07:09:32 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -163,6 +163,30 @@ public class MappedSet<K, V>
   )
   {
     return super.get(key);
+  }
+  
+  /**
+   * Remove the value from the set defined by the key.
+   * <p>
+   * If the key does not map to a set or if the value is not in the set, no exception will be
+   * thrown.
+   * 
+   * @param key
+   *   The key which indicates the set that is being edited.  
+   * 
+   * @param value
+   *   The value which should be removed from the set.
+   */
+  public void
+  remove
+  (
+    K key,
+    V value
+  )
+  {
+    TreeSet<V> set = get(key);
+    if (set != null)
+      set.remove(value);
   }
   
   

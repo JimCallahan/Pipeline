@@ -1,4 +1,4 @@
-// $Id: TemplateBuildInfo.java,v 1.3 2009/03/26 00:04:16 jesse Exp $
+// $Id: TemplateBuildInfo.java,v 1.4 2009/05/26 07:09:32 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -59,6 +59,15 @@ class TemplateBuildInfo
    *   the node in the template that contained the TemplateContextLink Annotations that 
    *   identified the contexts. The value is the set of context names. If this variable is 
    *   <code>null</code> then the Template Builder will generated the list itself.
+   *   
+   * @param optionalBranches
+   *   An optional branch is a node which may or may not be built when the template is 
+   *   instantiated.  The keys in this data structure will be matched to the keys passed
+   *   into the TemplateBuilder as part of the externals data structure.  If the template
+   *   has a <code>false</code> value for a key, then any nodes in this data structure and any
+   *   nodes which are upstream of it and not used anywhere else in the template, will not
+   *   be built.  If the template generates its own lists, it will rebuild this data structure
+   *   using the TemplateOptionalBranch Annotations.  
    */
   public TemplateBuildInfo
   (
@@ -66,7 +75,8 @@ class TemplateBuildInfo
     MappedSet<String, String> nodesDependingOnMe,
     MappedSet<String, String> nodesIDependedOn,
     TreeMap<String, Boolean> productNodes,
-    DoubleMap<String, String, TreeSet<String>> productContexts
+    DoubleMap<String, String, TreeSet<String>> productContexts,
+    MappedSet<String, String> optionalBranches
   )
   {
     setNodesToBuild(nodesToBuild);
@@ -74,6 +84,7 @@ class TemplateBuildInfo
     setNodesIDependedOn(nodesIDependedOn);
     setProductNodes(productNodes);
     setProductContexts(productContexts);
+    setOptionalBranches(optionalBranches);
   }
 
   
@@ -81,9 +92,6 @@ class TemplateBuildInfo
   /*----------------------------------------------------------------------------------------*/
   /*   A C C E S S                                                                          */
   /*----------------------------------------------------------------------------------------*/
-  
-
-
 
   /**
    * Get the list of all the nodes in the template.
@@ -251,8 +259,48 @@ class TemplateBuildInfo
     else
       pProductContexts = null;
   }
+  
+  /**
+   * Get the map of optional branches indexed by the name of the optional branch.
+   * <p>
+   * An optional branch is a node which may or may not be built when the template is 
+   * instantiated.  The keys in this data structure will be matched to the keys passed
+   * into the TemplateBuilder as part of the externals data structure.  If the template
+   * has a <code>false</code> value for a key, then any nodes in this data structure and any
+   * nodes which are upstream of it and not used anywhere else in the template, will not
+   * be built.  If the template generates its own lists, it will rebuild this data structure
+   * using the TemplateOptionalBranch Annotations.  
+   */
+  public final MappedSet<String, String>
+  getOptionalBranches()
+  {
+    return pOptionalBranches;
+  }
 
+  /**
+   * Set the map of optional branches indexed by the name of the optional branch.
+   * <p>
+   * An optional branch is a node which may or may not be built when the template is 
+   * instantiated.  The keys in this data structure will be matched to the keys passed
+   * into the TemplateBuilder as part of the externals data structure.  If the template
+   * has a <code>false</code> value for a key, then any nodes in this data structure and any
+   * nodes which are upstream of it and not used anywhere else in the template, will not
+   * be built.  If the template generates its own lists, it will rebuild this data structure
+   * using the TemplateOptionalBranch Annotations.  
+   */
+  public final void
+  setOptionalBranches
+  (
+    MappedSet<String, String> optionalBranches
+  )
+  {
+    if (optionalBranches != null)
+      pOptionalBranches = new MappedSet<String, String>(optionalBranches);
+    else
+      pOptionalBranches = new MappedSet<String, String>();
+  }
 
+  
   
   /*----------------------------------------------------------------------------------------*/
   /*  I N T E R N A L S                                                                     */
@@ -267,4 +315,6 @@ class TemplateBuildInfo
   private TreeMap<String, Boolean> pProductNodes;
 
   private DoubleMap<String, String, TreeSet<String>> pProductContexts;
+  
+  private MappedSet<String, String> pOptionalBranches;
 }

@@ -1,4 +1,4 @@
-// $Id: PathParam.java,v 1.4 2007/03/29 19:27:48 jesse Exp $
+// $Id: PathParam.java,v 1.5 2009/05/26 07:09:32 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -107,6 +107,7 @@ class PathParam
    * A method to confirm that the input to the param is correct.
    * <P>
    */
+  @Override
   @SuppressWarnings("unchecked")
   protected void 
   validate

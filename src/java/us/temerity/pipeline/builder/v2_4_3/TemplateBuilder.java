@@ -1,8 +1,9 @@
-// $Id: TemplateBuilder.java,v 1.19 2009/05/23 05:13:41 jesse Exp $
+// $Id: TemplateBuilder.java,v 1.20 2009/05/26 07:09:32 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
 import java.util.*;
+import java.util.Map.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.LogMgr.*;
@@ -71,6 +72,15 @@ class TemplateBuilder
    * @param aoeModes
    *   The list of AoE modes and the default value for each mode.
    *   
+   * @param externals
+   *   The list of external file sequences that may be used in the template, keyed by the name
+   *   of the external annotation and then complete path (including file sequence).  The value 
+   *   is the frame number where the external sequence will start being read.
+   *   
+   * @param optionalBranches
+   *   The list of optional branches with a boolean value which represents whether the branch 
+   *   should be built.
+   *   
    * @throws PipelineException
    */
   public
@@ -83,7 +93,9 @@ class TemplateBuilder
     TreeMap<String, String> stringReplacements,
     TreeMap<String, ArrayList<TreeMap<String, String>>> contexts,
     TreeMap<String, FrameRange> frameRanges,
-    TreeMap<String, ActionOnExistence> aoeModes
+    TreeMap<String, ActionOnExistence> aoeModes,
+    DoubleMap<String, Path, Integer> externals,
+    TreeMap<String, Boolean> optionalBranches
   ) 
     throws PipelineException
   {
@@ -145,6 +157,14 @@ class TemplateBuilder
     else
       pProductContexts.putAll(productContexts);
     
+    MappedSet<String, String> optionalBranchValues = templateInfo.getOptionalBranches();
+    pLog.log(Kind.Ops, Level.Finest, 
+      "The optionalBranches data structure passed in has the following values:\n" + 
+      optionalBranchValues);
+    pOptionalBranchValues = new MappedSet<String, String>();
+    if (optionalBranchValues != null)
+      pOptionalBranchValues.putAll(optionalBranchValues);
+    
     pTemplateInfo = templateInfo;
     
     pReplacements = new TreeMap<String, String>();
@@ -167,6 +187,20 @@ class TemplateBuilder
     pLog.log(Kind.Ops, Level.Finest, 
       "The list of frame ranges to apply to this template: " + pFrameRanges);
 
+    pExternals = new DoubleMap<String, Path, Integer>();
+    if (externals != null)
+      pExternals.putAll(externals);
+
+    pLog.log(Kind.Ops, Level.Finest, 
+      "The list of external file sequences available to this template: " + pExternals);
+    
+    pOptionalBranches = new TreeMap<String, Boolean>();
+    if (optionalBranches != null)
+      pOptionalBranches.putAll(optionalBranches);
+    
+    pLog.log(Kind.Ops, Level.Finest, 
+      "The list of optional branchs to apply to this template: " + pFrameRanges);
+    
     pAnnotCache = new TripleMap<String, String, String, TreeMap<String,BaseAnnotation>>();
     
     {
@@ -296,6 +330,7 @@ class TemplateBuilder
     }
     return toReturn;
   }
+  
 
   /**
    * Check if the src node is ignorable from the perspective of the target node.
@@ -378,6 +413,30 @@ class TemplateBuilder
     return toReturn;
   }
   
+  private void
+  clearNode
+  (
+    String node  
+  )
+  {
+    TreeSet<String> downstream = pNodesDependingOnMe.remove(node);
+    if (downstream != null) {
+      for (String each : downstream)
+        pNodesIDependedOn.remove(each, node);
+    }
+    TreeSet<String> upstream = pNodesIDependedOn.remove(node);
+    if (upstream != null) {
+      for (String each : upstream) {
+        TreeSet<String> down = pNodesDependingOnMe.get(each); 
+        down.remove(node);
+        if (down.size() == 0)
+          clearNode(each);
+      }
+    }
+    pSkippedNodes.add(node);
+    pNodesToBuild.remove(node);
+  }
+  
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -404,6 +463,8 @@ class TemplateBuilder
       //grr, can't forget this call or stuff don't work.
       getStageInformation().setDoAnnotations(true);
       
+      pSkippedNodes = new TreeSet<String>();
+      
       pAllowZeroContexts = getBooleanParamValue(new ParamMapping(aAllowZeroContexts));
       pInhibitCopyFiles = getBooleanParamValue(new ParamMapping(aInhibitFileCopy));
       pCheckInMessage = getStringParamValue(new ParamMapping(aCheckInMessage));
@@ -421,10 +482,19 @@ class TemplateBuilder
         pProductContexts = new DoubleMap<String, String, TreeSet<String>>();
         pNodesDependingOnMe = new MappedSet<String, String>();
         pNodesIDependedOn = new MappedSet<String, String>();
+        pOptionalBranchValues = new MappedSet<String, String>();
         
         for (String node : pNodesToBuild) {
           NodeStatus stat = pClient.status(new NodeID(getAuthor(), getView(), node), true, 
             DownstreamMode.WorkingOnly);
+          NodeMod mod = stat.getLightDetails().getWorkingVersion();
+          BaseAnnotation annot = mod.getAnnotation("TemplateOptionalBranch");
+          if (annot != null) {
+            String optionName = (String) annot.getParamValue(aOptionName); 
+            pOptionalBranchValues.put(optionName, node);
+            pLog.log(Kind.Bld, Level.Finest, 
+              "Found an optional branch (" + optionName+ ") for node (" + node + ").");
+          }
           for (String src : stat.getSourceNames()) {
             if (pNodesToBuild.contains(src))
               pNodesIDependedOn.put(node, src);
@@ -457,7 +527,30 @@ class TemplateBuilder
         pTemplateInfo.setNodesIDependedOn(pNodesIDependedOn);
         pTemplateInfo.setProductNodes(pProductNodes);
         pTemplateInfo.setProductContexts(pProductContexts);
+      } //if (pGenerateDependSets) {
+      
+      boolean cleared = false;
+      for (Entry<String, Boolean> entry : pOptionalBranches.entrySet()) {
+        if (!entry.getValue()) {
+          TreeSet<String> taggedNodes = pOptionalBranchValues.get(entry.getKey());
+          for (String node : taggedNodes) {
+            clearNode(node);
+            cleared = true;
+          }
+        }
       }
+      
+      if (cleared) {
+        pLog.log(Kind.Ops, Level.Finest,
+          "\n\nAfter pruning optional branches:");
+        pLog.log(Kind.Ops, Level.Finest, 
+          "The pruned nodesToBuild is:\n" + pNodesToBuild);
+        pLog.log(Kind.Ops, Level.Finest, 
+          "The pruned nodesDependingOnMe is:\n" + pNodesDependingOnMe);
+        pLog.log(Kind.Ops, Level.Finest, 
+          "The pruned nodesIDependOn is:\n" + pNodesIDependedOn);
+      }
+      
       pFinalizableStages = new ArrayList<FinalizableStage>();
       pSecondaryFinalizableStages = new ArrayList<FinalizableStage>();
       pCheckpointStages = new ArrayList<FinalizableStage>();
@@ -747,7 +840,8 @@ class TemplateBuilder
       TemplateStage stage = 
         TemplateStage.getTemplateStage
           (mod, getStageInformation(), pContext, pClient, 
-           pTemplateInfo, replace, contexts, range, pIgnoredNodes, ignorableProducts, 
+           pTemplateInfo, replace, contexts, range,
+           pSkippedNodes, pIgnoredNodes, ignorableProducts, 
            pInhibitCopyFiles, pAllowZeroContexts, pAnnotCache);
 
       if (stage.build()) {
@@ -1017,7 +1111,8 @@ class TemplateBuilder
   public static final String aContextName   = "ContextName";
   public static final String aLinkName      = "LinkName";
   public static final String aConditionName = "ConditionName";
-  public static final String aModeName = "ModeName";
+  public static final String aModeName      = "ModeName";
+  public static final String aOptionName    = "OptionName";
   
   public static final String aAllowZeroContexts = "AllowZeroContexts";
   public static final String aInhibitFileCopy   = "InhibitFileCopy";
@@ -1043,6 +1138,8 @@ class TemplateBuilder
   
   private TripleMap<String, String, String, TreeMap<String, BaseAnnotation>> pAnnotCache;
   
+  private TreeMap<String, Boolean> pOptionalBranches;
+  
   private TemplateBuildInfo pTemplateInfo;
   
   private ArrayList<FinalizableStage> pCheckpointStages;
@@ -1054,10 +1151,27 @@ class TemplateBuilder
   
   private MappedSet<String, String> pNodesIDependedOn;
   private MappedSet<String, String> pNodesDependingOnMe;
+  private MappedSet<String, String> pOptionalBranchValues;
   private TreeMap<String, Boolean> pProductNodes;
   private DoubleMap<String, String, TreeSet<String>> pProductContexts;
   private TreeMap<String, FrameRange> pFrameRanges;
+  private DoubleMap<String, Path, Integer> pExternals;
   
+ 
+  /**
+   * The set of nodes in the template which were skipped, due to conditionals.
+   * <p>
+   * These node names match the actual template node names, not the names in the 
+   * instantiated network. 
+   */
+  private TreeSet<String> pSkippedNodes;
+  
+  /**
+   * The set of the nodes in the instantiated network which have not been built. due
+   * to conditionals.
+   * <p>
+   * These are node names which have been fully expanded with all context replacements.
+   */
   private TreeSet<String> pIgnoredNodes;
   
   private us.temerity.pipeline.VersionID.Level pCheckInLevel;

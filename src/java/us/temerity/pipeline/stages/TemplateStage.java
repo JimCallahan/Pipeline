@@ -1,4 +1,4 @@
-// $Id: TemplateStage.java,v 1.12 2009/05/22 19:16:29 jesse Exp $
+// $Id: TemplateStage.java,v 1.13 2009/05/26 07:09:32 jesse Exp $
 
 package us.temerity.pipeline.stages;
 
@@ -46,6 +46,7 @@ class TemplateStage
     TreeMap<String, String> stringReplacements,
     TreeMap<String, ArrayList<TreeMap<String, String>>> contexts,
     FrameRange templateRange,
+    TreeSet<String> skippedNodes,
     TreeSet<String> ignoredNodes,
     TreeSet<String> ignorableProducts,
     TripleMap<String, String, String, TreeMap<String, BaseAnnotation>> annotCache
@@ -63,6 +64,7 @@ class TemplateStage
     pTemplateRange = templateRange;
     pIgnoredNodes = ignoredNodes;
     pIgnorableProducts = ignorableProducts;
+    pSkippedNodes = skippedNodes;
     pInhibitCopyFiles = inhibitCopy;
     pAllowZeroContexts = allowZeroContexts;
     init(sourceMod);
@@ -85,6 +87,7 @@ class TemplateStage
     TreeMap<String, String> stringReplacements,
     TreeMap<String, ArrayList<TreeMap<String, String>>> maps,
     FrameRange templateRange,
+    TreeSet<String> skippedNodes,
     TreeSet<String> ignoredNodes,
     TreeSet<String> ignorableProducts,
     TripleMap<String, String, String, TreeMap<String, BaseAnnotation>> annotCache
@@ -100,6 +103,7 @@ class TemplateStage
     pAnnotCache = annotCache;
     pTemplateInfo = templateInfo;
     pTemplateRange = templateRange;
+    pSkippedNodes = skippedNodes;
     pIgnoredNodes = ignoredNodes;
     pIgnorableProducts = ignorableProducts;
     pInhibitCopyFiles = inhibitCopy;
@@ -161,11 +165,11 @@ class TemplateStage
     
     for (FileSeq seq : sourceMod.getSecondarySequences()) {
       FileSeq targetSeq = stringReplaceSeq(seq);
-      LogMgr.getInstance().log(Kind.Bld, Level.Finest,
-        "Adding the secondary sequence: " + targetSeq);
       if (pTemplateRange != null) {
         targetSeq = new FileSeq(targetSeq.getFilePattern(), pTemplateRange);
       }
+      LogMgr.getInstance().log(Kind.Bld, Level.Finest,
+        "Adding the secondary sequence: " + targetSeq);
       addSecondarySequence(targetSeq);
       pSecSeqs.put(seq, targetSeq);
     }
@@ -177,6 +181,13 @@ class TemplateStage
       
       LogMgr.getInstance().log(Kind.Bld, Level.Finest, 
         "Checking the link: " + linkName);
+      
+      if (pSkippedNodes.contains(linkName)) {
+        LogMgr.getInstance().log(Kind.Bld, Level.Finest,
+          "The linked node was skipped during construction and the link is being ignored.");
+        continue;
+      }
+      
       TreeSet<String> contexts = getContexts(linkName);
       
       boolean ignoreable = false;
@@ -385,12 +396,16 @@ class TemplateStage
    *   The frame range to be used for this node or <code>null</code> if there is no 
    *   special template frame range.
    * 
+   * @param skippedNodes
+   *   A list of nodes in the template which were never considered for instantiating due to
+   *   an Optional Branch Annotation. 
+   * 
    * @param ignoreableProducts
    *   A list of products which can be ignored if they are not found.
    *   
    * @param ignoredNodes
-   *   A list of nodes in the template which were not built because of a Conditional Build
-   *   annotation
+   *   A list of nodes in the instantiated network which were not built because of a 
+   *   Conditional Build annotation
    *   
    * @param inhibitCopy
    *   Whether the CloneFiles template setting should be ignored.
@@ -417,7 +432,8 @@ class TemplateStage
     TemplateBuildInfo templateInfo,
     TreeMap<String, String> stringReplacements,
     TreeMap<String, ArrayList<TreeMap<String, String>>> contexts,
-    FrameRange range, 
+    FrameRange range,
+    TreeSet<String> skippedNodes,
     TreeSet<String> ignoredNodes,
     TreeSet<String> ignoreableProducts,
     boolean inhibitCopy,
@@ -461,13 +477,13 @@ class TemplateStage
       return new TemplateStage
         (sourceMod, stageInfo, newContext, client, nodeName, oldRange, padding, suffix, 
          editor, action, inhibitCopy, allowZeroContexts, templateInfo, stringReplacements, contexts, range, 
-         ignoredNodes, ignoreableProducts, annotCache);
+         skippedNodes, ignoredNodes, ignoreableProducts, annotCache);
     }
     else 
       return new TemplateStage
         (sourceMod, stageInfo, newContext, client, nodeName, suffix, editor, action, 
-         inhibitCopy, allowZeroContexts, templateInfo, stringReplacements, contexts, range, ignoredNodes, 
-         ignoreableProducts, annotCache);
+         inhibitCopy, allowZeroContexts, templateInfo, stringReplacements, contexts, range, 
+         skippedNodes, ignoredNodes, ignoreableProducts, annotCache);
   }
   
   @Override
@@ -944,8 +960,8 @@ class TemplateStage
   private TreeMap<FileSeq, FileSeq> pSecSeqs;
   
   private TreeSet<String> pIgnorableProducts;
-  
   private TreeSet<String> pIgnoredNodes;
+  private TreeSet<String> pSkippedNodes;
   
   private BaseAction pBackedUpAction;
 }

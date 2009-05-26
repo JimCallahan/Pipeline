@@ -1,4 +1,4 @@
-// $Id: TemplateGlueTool.java,v 1.6 2009/05/07 03:12:50 jesse Exp $
+// $Id: TemplateGlueTool.java,v 1.7 2009/05/26 07:09:32 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateGlueTool.v2_4_3;
 
@@ -75,6 +75,22 @@ class TemplateGlueTool
         pVbox.validate();
         break;
       }
+    case OptionalBranches:
+      {
+        UIFactory.addVerticalSpacer(pTpanel, pVpanel, 6);
+        JTextField field = makeOptionalBranchField("");
+        pOptionalBranchFields.add(field);
+        pVbox.validate();
+        break;
+      }
+    case Externals:
+      {
+        UIFactory.addVerticalSpacer(pTpanel, pVpanel, 6);
+        JTextField field = makeExternalsField("");
+        pExternalFields.add(field);
+        pVbox.validate();
+        break;
+      }
     case ContextNames:
       {
         UIFactory.addVerticalSpacer(pTpanel, pVpanel, 6);
@@ -128,7 +144,7 @@ class TemplateGlueTool
     String value  
   )
   {
-    return UIFactory.createTitledEditableTextField
+    return UIFactory.createTitledParamNameField
       (pTpanel, "ContextName:", sTSize, pVpanel, value, sVSize, 
       "The name of the context.");  
   }
@@ -139,7 +155,7 @@ class TemplateGlueTool
     String value  
   )
   {
-    return UIFactory.createTitledEditableTextField
+    return UIFactory.createTitledParamNameField
       (pTpanel, "FrameRange:", sTSize, pVpanel, value, sVSize, 
       "The name of the frame range.");  
   }
@@ -220,6 +236,45 @@ class TemplateGlueTool
       "The default value for the AoE mode.");
     field.setSelected(aoe.toTitle());
     
+    return field;
+  }
+  
+  public JTextField 
+  makeExternalsField
+  (
+    String value  
+  )
+  {
+    return UIFactory.createTitledParamNameField
+      (pTpanel, "External:", sTSize, pVpanel, value, sVSize, 
+      "The name of the External sequence.");  
+  }
+  
+  public JTextField
+  makeOptionalBranchField
+  (
+    String value  
+  )
+  {
+    return UIFactory.createTitledParamNameField
+      (pTpanel, "Optional Branch:", sTSize, pVpanel, value, sVSize, 
+      "The name of the Optional Branch.");
+  }
+  
+  public JBooleanField
+  makeOptionalBranchDefaultField
+  (
+    String optionalBranch,
+    Boolean value  
+  )
+  {
+    JBooleanField field = UIFactory.createTitledBooleanField
+      (pTpanel, optionalBranch + ":", sTSize, pVpanel, sVSize, 
+      "The name of the Optional Branch.");
+    if (value == null)
+      field.setValue(true);
+    else
+      field.setValue(value);
     return field;
   }
   
@@ -396,19 +451,22 @@ class TemplateGlueTool
     collectInput()
       throws PipelineException
     {
-      pStringReplaceFields = new ArrayList<JTextField>();
-      pStringDefaultFields = new TreeMap<String, JTextField>();
-      pStringParamNameFields = new TreeMap<String, JTextField>();
-      pContextNameFields = new ArrayList<JTextField>();
-      pContextValueFields = new MappedArrayList<String, JTextField>();
+      pStringReplaceFields    = new ArrayList<JTextField>();
+      pStringDefaultFields    = new TreeMap<String, JTextField>();
+      pStringParamNameFields  = new TreeMap<String, JTextField>();
+      pContextNameFields      = new ArrayList<JTextField>();
+      pContextValueFields     = new MappedArrayList<String, JTextField>();
       pContextParamNameFields = new DoubleMap<String, String, JTextField>();
-      pContextDefaultFields = new MappedArrayList<String, TreeMap<String,JTextField>>();
-      pFrameRangeFields = new ArrayList<JTextField>();
-      pFrameRangeStartFields = new TreeMap<String, JIntegerField>();
-      pFrameRangeEndFields = new TreeMap<String, JIntegerField>();
-      pFrameRangeByFields = new TreeMap<String, JIntegerField>();
-      pAOEModeFields = new ArrayList<JTextField>();
-      pAOEModeDefaultFields = new TreeMap<String, JCollectionField>();
+      pContextDefaultFields   = new MappedArrayList<String, TreeMap<String,JTextField>>();
+      pFrameRangeFields       = new ArrayList<JTextField>();
+      pFrameRangeStartFields  = new TreeMap<String, JIntegerField>();
+      pFrameRangeEndFields    = new TreeMap<String, JIntegerField>();
+      pFrameRangeByFields     = new TreeMap<String, JIntegerField>();
+      pAOEModeFields          = new ArrayList<JTextField>();
+      pAOEModeDefaultFields   = new TreeMap<String, JCollectionField>();
+      pOptionalBranchDefaultFields = new TreeMap<String, JBooleanField>();
+      pOptionalBranchFields   = new ArrayList<JTextField>();
+      pExternalFields         = new ArrayList<JTextField>();
       
       
       pVbox = new Box(BoxLayout.Y_AXIS);
@@ -533,6 +591,52 @@ class TemplateGlueTool
         pAOEModes.put(mod, aoe);
       }
       
+      // Externals
+      prepExternalsDialog();
+      pDialog.setVisible(true);
+      
+      if (!pDialog.wasConfirmed())
+        return null;
+      
+      pExternals = new ListSet<String>();
+
+      for (JTextField field : pExternalFields) {
+        String value = field.getText();
+        if (value != null && !value.equals(""))
+          pExternals.add(value);
+      }
+      
+      // Optional Branches
+      
+      prepOptionalBranchDialog();
+      pDialog.setVisible(true);
+      
+      if (!pDialog.wasConfirmed())
+        return null;
+      
+      ListSet<String> branches = new ListSet<String>();
+      
+      for (JTextField field : pOptionalBranchFields) {
+        String value = field.getText();
+        if (value != null && !value.equals(""))
+          branches.add(value);
+      }
+      
+      if (!branches.isEmpty() ) {
+        prepOptionalBranchDefaultDialog(branches);
+        pDialog.setVisible(true);
+
+        if (!pDialog.wasConfirmed())
+          return null;
+      }
+      
+      pOptionalBranches = new ListMap<String, Boolean>();
+      for (String branch : branches) {
+        boolean defaultValue = pOptionalBranchDefaultFields.get(branch).getValue(); 
+        pOptionalBranches.put(branch, defaultValue);
+      }
+      
+      // Context Names
       prepContextNameDialog();
       pDialog.setVisible(true);
       if (!pDialog.wasConfirmed())
@@ -650,6 +754,8 @@ class TemplateGlueTool
       info.setFrameRanges(pFrameRanges);
       info.setFrameRangeDefaults(pFrameRangeDefaults);
       info.setAOEModes(pAOEModes);
+      info.setExternals(pExternals);
+      info.setOptionalBranches(pOptionalBranches);
       
       pTemplateFile.delete();
       try {
@@ -892,7 +998,7 @@ class TemplateGlueTool
       pPhase = TemplatePhase.AOEModes;
       if (pOldSettings != null && !pOldSettings.getAOEModes().isEmpty() ) {
         for (String aoeMode : pOldSettings.getAOEModes().keySet()) {
-          JTextField field = makeFrameRangeField(aoeMode);
+          JTextField field = makeAOEModeField(aoeMode);
           pAOEModeFields.add(field);
           UIFactory.addVerticalSpacer(pTpanel, pVpanel, 6);
         }
@@ -940,6 +1046,118 @@ class TemplateGlueTool
       }
       pVbox.add(UIFactory.createFiller(sTSize +sVSize + 35));
       pDialog.setTitle("Set AoE Mode Defaults");
+      pDialog.pack();
+    }
+
+    private void 
+    prepExternalsDialog()
+    {
+      pVbox.removeAll();
+      {
+        Component comps[] = UIFactory.createTitledPanels();
+        pTpanel = (JPanel) comps[0];
+        pVpanel = (JPanel) comps[1];
+        pBody = (Box) comps[2];
+    
+        pVbox.add(pBody);
+      }
+      
+      String instructions = 
+        "Enter the names of all the External file sequences that are going to be used in " +
+        "the template.  An External will allow the user to input a file sequence outside the " +
+        "working area that will be linked to the node at runtime";
+      UIFactory.createTitledTextArea(pTpanel, "Instructions", sTSize, pVpanel, instructions, sVSize, 5, true);
+      UIFactory.addVerticalSpacer(pTpanel, pVpanel, 12);
+      
+      pPhase = TemplatePhase.Externals;
+      if (pOldSettings != null && !pOldSettings.getExternals().isEmpty() ) {
+        for (String externals : pOldSettings.getExternals()) {
+          JTextField field = makeExternalsField(externals);
+          pExternalFields.add(field);
+          UIFactory.addVerticalSpacer(pTpanel, pVpanel, 6);
+        }
+      }
+      JTextField field = makeExternalsField("");
+      pExternalFields.add(field);
+      
+      pVbox.add(UIFactory.createFiller(sTSize +sVSize + 35));
+      pDialog.setTitle("Add Externals.");
+      pDialog.pack();
+    }
+    
+    private void 
+    prepOptionalBranchDialog()
+    {
+      pVbox.removeAll();
+      {
+        Component comps[] = UIFactory.createTitledPanels();
+        pTpanel = (JPanel) comps[0];
+        pVpanel = (JPanel) comps[1];
+        pBody = (Box) comps[2];
+    
+        pVbox.add(pBody);
+      }
+      
+      String instructions = 
+        "Enter the names of all the Optional Branches that are going to be used in " +
+        "the template.  Optional Branches are part of the template which are not required " +
+        "for template instantiation.  If an Optional Branch is set to true, then the network" +
+        "will be built.  If it is set to false, then the nodes tagged as optional and all " +
+        "unique nodes upstream of them will not be built.";
+      UIFactory.createTitledTextArea(pTpanel, "Instructions", sTSize, pVpanel, instructions, sVSize, 5, true);
+      UIFactory.addVerticalSpacer(pTpanel, pVpanel, 12);
+      
+      pPhase = TemplatePhase.OptionalBranches;
+      if (pOldSettings != null && !pOldSettings.getOptionalBranches().keySet().isEmpty() ) {
+        for (String optional : pOldSettings.getOptionalBranches().keySet()) {
+          JTextField field = makeOptionalBranchField(optional);
+          pOptionalBranchFields.add(field);
+          UIFactory.addVerticalSpacer(pTpanel, pVpanel, 6);
+        }
+      }
+      JTextField field = makeOptionalBranchField("");
+      pOptionalBranchFields.add(field);
+      
+      pVbox.add(UIFactory.createFiller(sTSize +sVSize + 35));
+      pDialog.setTitle("Add Optional Branch.");
+      pDialog.pack();
+    }
+    
+    private void 
+    prepOptionalBranchDefaultDialog
+    (
+      ListSet<String> branches
+    )
+    {
+      pVbox.removeAll();
+      {
+        Component comps[] = UIFactory.createTitledPanels();
+        pTpanel = (JPanel) comps[0];
+        pVpanel = (JPanel) comps[1];
+        pBody = (Box) comps[2];
+
+        pVbox.add(pBody);
+      }
+      
+      String instructions = 
+        "Enter the default values for each optional branch in the template.  " +
+        "If you do not wish to have a default value for a particular replacement, simply " +
+        "leave the field blank.";
+      UIFactory.createTitledTextArea(pTpanel, "Instructions", sTSize, pVpanel, instructions, sVSize, 5, true);
+      UIFactory.addVerticalSpacer(pTpanel, pVpanel, 12);
+      
+      pPhase = TemplatePhase.OptionalBranchDefaults;
+      
+      ListMap<String, Boolean> oldValues = new ListMap<String, Boolean>();
+      if (pOldSettings != null)
+        oldValues = pOldSettings.getOptionalBranches();
+      for (String branch : branches) {
+        JBooleanField field = makeOptionalBranchDefaultField(branch, oldValues.get(branch));
+        pOptionalBranchDefaultFields.put(branch, field);
+        UIFactory.addVerticalSpacer(pTpanel, pVpanel, 6);
+      }
+      pVbox.add(UIFactory.createFiller(sTSize +sVSize + 35));
+      pDialog.setTitle("Set Optional Branch Defaults");
       pDialog.pack();
     }
     
@@ -1164,10 +1382,13 @@ class TemplateGlueTool
     FrameRangeDefaults,
     AOEModes,
     AOEModeDefaults,
+    Externals,
+    OptionalBranches,
+    OptionalBranchDefaults,
     ContextNames, 
     ContextValues, 
     ContextParamNames,
-    ContextDefaults 
+    ContextDefaults,
   }
 
     
@@ -1221,6 +1442,9 @@ class TemplateGlueTool
   private TreeMap<String, JIntegerField> pFrameRangeByFields;
   private ArrayList<JTextField> pAOEModeFields;
   private TreeMap<String, JCollectionField> pAOEModeDefaultFields;
+  private ArrayList<JTextField> pExternalFields;
+  private ArrayList<JTextField> pOptionalBranchFields;
+  private TreeMap<String, JBooleanField> pOptionalBranchDefaultFields;
   
   private ListSet<String> pStringReplacements;
   private TreeMap<String, String> pStringParamNames;
@@ -1232,6 +1456,8 @@ class TemplateGlueTool
   private TreeSet<String> pFrameRanges;
   private TreeMap<String, FrameRange> pFrameRangeDefaults;
   private TreeMap<String, ActionOnExistence> pAOEModes;
+  private ListMap<String, Boolean> pOptionalBranches;
+  private ListSet<String> pExternals;
   
   
 }

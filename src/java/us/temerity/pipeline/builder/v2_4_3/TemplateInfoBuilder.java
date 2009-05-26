@@ -1,9 +1,10 @@
-// $Id: TemplateInfoBuilder.java,v 1.14 2009/05/23 05:13:41 jesse Exp $
+// $Id: TemplateInfoBuilder.java,v 1.15 2009/05/26 07:09:32 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
 import java.io.*;
 import java.util.*;
+import java.util.Map.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
@@ -163,10 +164,14 @@ class TemplateInfoBuilder
     layout.addColumn("Replacements", true);
     layout.addColumn("Contexts", true);
     layout.addColumn("FrameRanges", true);
+    layout.addColumn("OptionalBranches", true);
+    layout.addColumn("ExternalSeqs", true);
     
     pReplacementParams = new ArrayList<KeyValueUtilityParam>();
     pContextParams = new ArrayList<KeyIntValueUtilityParam>();
     pFrameRangeParams = new TreeMap<String, FrameRangeUtilityParam>();
+    pExternalParams = new TreeMap<String, ExternalSeqUtilityParam>();
+    pOptionalBranchesParams = new TreeMap<String, BooleanUtilityParam>();
     
     TreeMap<String, String> rDefaults = pTemplateGlueInfo.getReplacementDefaults();
     TreeMap<String, String> rParamNames = pTemplateGlueInfo.getReplacementParamNames();
@@ -219,6 +224,32 @@ class TemplateInfoBuilder
       LayoutGroup group = new LayoutGroup(range, "The frame range", true);
       group.addEntry(range);
       layout.addSubGroup(4, group);
+    }
+    
+    for (Entry<String, Boolean> entry : pTemplateGlueInfo.getOptionalBranches().entrySet()) {
+      String key = entry.getKey();
+      BooleanUtilityParam param = 
+        new BooleanUtilityParam
+        (key + "Option", 
+         "Whether to build the Optional Branch", 
+         entry.getValue());
+      addParam(param);
+      pOptionalBranchesParams.put(key, param);
+      layout.addEntry(5, key + "Option");
+    }
+
+    for (String key : pTemplateGlueInfo.getExternals()) {
+      ExternalSeqUtilityParam param =
+        new ExternalSeqUtilityParam
+        (key, 
+         key, 
+         null, 
+         null);
+      addParam(param);
+      pExternalParams.put(key, param);
+      LayoutGroup group = new LayoutGroup(key, "The external sequence", true);
+      group.addEntry(key);
+      layout.addSubGroup(6, group);
     }
     
     addCheckinWhenDoneParam();
@@ -286,6 +317,17 @@ class TemplateInfoBuilder
         FrameRangeUtilityParam param = pFrameRangeParams.get(frameRange);
         pFrameRanges.put(frameRange, param.getFrameRangeValue());
       }
+      
+      pOptionalBranch = new TreeMap<String, Boolean>();
+      for (Entry<String, BooleanUtilityParam> entry : pOptionalBranchesParams.entrySet()) {
+        pOptionalBranch.put(entry.getKey(), entry.getValue().getBooleanValue());
+      }
+      
+      pExternals = new DoubleMap<String, Path, Integer>();
+      for (Entry<String, ExternalSeqUtilityParam> entry : pExternalParams.entrySet()) {
+        ExternalSeqUtilityParam param = entry.getValue();
+        pExternals.put(aSelectionKeys, param.getExternalSeq(), param.getFrameStart());
+      }
     }
     
     @Override
@@ -345,7 +387,8 @@ class TemplateInfoBuilder
       if (nodes.isEmpty()) {
         TemplateTaskBuilder builder = 
           new TemplateTaskBuilder(pClient, pQueue, getBuilderInformation(),
-            pTemplateStartNode, pReplacements, pContexts, pFrameRanges, pAOEModes);
+            pTemplateStartNode, pReplacements, pContexts, pFrameRanges, pAOEModes,
+            pExternals, pOptionalBranch);
         addSubBuilder(builder);
         addMappedParam(builder.getName(), aCheckinWhenDone, aCheckinWhenDone);
         addMappedParam(builder.getName(), aAllowZeroContexts, aAllowZeroContexts);
@@ -358,7 +401,8 @@ class TemplateInfoBuilder
         info.setNodesToBuild(nodes);
         TemplateBuilder builder = 
           new TemplateBuilder(pClient, pQueue, getBuilderInformation(),
-            info, pReplacements, pContexts, pFrameRanges, pAOEModes);
+            info, pReplacements, pContexts, pFrameRanges, pAOEModes,
+            pExternals, pOptionalBranch);
         addSubBuilder(builder);
         addMappedParam(builder.getName(), aCheckinWhenDone, aCheckinWhenDone);
         addMappedParam(builder.getName(), aAllowZeroContexts, aAllowZeroContexts);
@@ -578,6 +622,14 @@ class TemplateInfoBuilder
   private TreeMap<String, FrameRangeUtilityParam> pFrameRangeParams;
   
   private TreeMap<String, ActionOnExistence> pAOEModes;
+  
+  private TreeMap<String, BooleanUtilityParam> pOptionalBranchesParams;
+  
+  private TreeMap<String, Boolean> pOptionalBranch;
+  
+  private TreeMap<String, ExternalSeqUtilityParam> pExternalParams;
+  
+  private DoubleMap<String, Path, Integer> pExternals;
 
   private File pFile;
   

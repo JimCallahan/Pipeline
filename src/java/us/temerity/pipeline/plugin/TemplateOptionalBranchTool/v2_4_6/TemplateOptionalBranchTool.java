@@ -1,6 +1,6 @@
-// $Id: TemplateRangeTool.java,v 1.3 2009/05/26 07:09:32 jesse Exp $
+// $Id: TemplateOptionalBranchTool.java,v 1.1 2009/05/26 07:09:32 jesse Exp $
 
-package us.temerity.pipeline.plugin.TemplateRangeTool.v2_4_3;
+package us.temerity.pipeline.plugin.TemplateOptionalBranchTool.v2_4_6;
 
 import java.awt.*;
 
@@ -8,35 +8,35 @@ import javax.swing.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.plugin.*;
+import us.temerity.pipeline.plugin.TemplateOptionalBranchAnnotation.v2_4_6.*;
 import us.temerity.pipeline.ui.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   T E M P L A T E   R A N G E   T O O L                                                  */
+/*   T E M P L A T E   O P T I O N A L   B R A N C H   A N N O T A T I O N                  */
 /*------------------------------------------------------------------------------------------*/
 
 /**
- * Tool for quickly adding TemplateRangeAnnotations to multiple nodes.
+ * Tool to add a {@link TemplateOptionalBranchAnnotation} to nodes.
  */
 public 
-class TemplateRangeTool
-  extends TaskToolUtils
+class TemplateOptionalBranchTool
+  extends CommonToolUtils
 {
   /*----------------------------------------------------------------------------------------*/
   /*   C O N S T R U C T O R                                                                */
   /*----------------------------------------------------------------------------------------*/
 
   public 
-  TemplateRangeTool()
+  TemplateOptionalBranchTool()
   {
-    super("TemplateRange", new VersionID("2.4.3"), "Temerity", 
-          "Tool for adding range annotation to a group of nodes.");
+    super("TemplateOptionalBranch", new VersionID("2.4.6"), "Temerity", 
+          "Tool to add a TemplateOptionalBranch Annotation to nodes.");
     
     addSupport(OsType.Windows);
     addSupport(OsType.MacOS);
     
     underDevelopment();
   }
-
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -66,9 +66,9 @@ class TemplateRangeTool
         
         vBox.add(body);
       
-        pRangeField = UIFactory.createTitledEditableTextField
-          (tPanel, "Range:", sTSize, vPanel, "", sVSize, 
-           "The name of the template range to assign to the selected nodes.");
+        pOptionField = UIFactory.createTitledEditableTextField
+          (tPanel, "Option:", sTSize, vPanel, "", sVSize, 
+           "The name of the template option to assign to the selected nodes.");
 
       }
       vBox.add(UIFactory.createFiller(sTSize +sVSize + 35));
@@ -86,11 +86,11 @@ class TemplateRangeTool
       }
     }
 
-    JToolDialog pDialog = new JToolDialog("Template Range Tool", scroll, "Confirm");
+    JToolDialog pDialog = new JToolDialog("Template Optional Branch Tool", scroll, "Confirm");
     pDialog.setMinimumSize(new Dimension(pDialog.getSize().width, 300));
     pDialog.setVisible(true);
     if (pDialog.wasConfirmed())
-      return ": adding Template Range";
+      return ": adding Template Optional Branch Annotations";
     
     return null;
   }
@@ -106,40 +106,40 @@ class TemplateRangeTool
     throws PipelineException
   {
     PluginMgrClient plug = PluginMgrClient.getInstance();
-    String range = pRangeField.getText();
-    if (range == null || range.equals(""))
+    String option = pOptionField.getText();
+    if (option == null || option.equals(""))
       return false;
 
     for (String node : pSelected.keySet()) {
       BaseAnnotation annot = 
-        plug.newAnnotation("TemplateRange", new VersionID("2.4.3"), "Temerity");
-      annot.setParamValue(aRangeName, range);
+        plug.newAnnotation("TemplateOptionalBranch", new VersionID("2.4.6"), "Temerity");
+      annot.setParamValue(aOptionName, option);
       NodeMod mod = mclient.getWorkingVersion(getAuthor(), getView(), node);
-      mod.addAnnotation("TemplateRange", annot);
+      mod.addAnnotation("TemplateOptionalBranch", annot);
       mclient.modifyProperties(getAuthor(), getView(), mod);
     }
 
     return false;
   }
-
+  
   
   
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  private static final long serialVersionUID = 6054461332747859686L;
+  private static final long serialVersionUID = -3173256588022059471L;
   
   private static final int sVSize = 250;
   private static final int sTSize = 150;
   
-  public static final String aRangeName = "RangeName";
-
+  public static final String aOptionName = "OptionName";
+  
   
   
   /*----------------------------------------------------------------------------------------*/
   /*  I N T E R N A L S                                                                     */
   /*----------------------------------------------------------------------------------------*/
  
-  private JTextField pRangeField;
+  private JTextField pOptionField;
 }

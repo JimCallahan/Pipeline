@@ -1,4 +1,4 @@
-// $Id: TemplateTaskBuilder.java,v 1.12 2009/05/23 05:13:41 jesse Exp $
+// $Id: TemplateTaskBuilder.java,v 1.13 2009/05/26 07:09:32 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -7,9 +7,9 @@ import java.util.*;
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.LogMgr.*;
 import us.temerity.pipeline.builder.*;
-import us.temerity.pipeline.builder.execution.*;
 import us.temerity.pipeline.builder.v2_4_1.*;
 import us.temerity.pipeline.builder.v2_4_1.TaskBuilder;
+import us.temerity.pipeline.plugin.TemplateIgnoreProductAnnotation.v2_4_3.*;
 import us.temerity.pipeline.plugin.TemplateRangeAnnotation.v2_4_3.*;
 
 /*------------------------------------------------------------------------------------------*/
@@ -24,6 +24,10 @@ public
 class TemplateTaskBuilder
   extends TaskBuilder
 {
+  /*----------------------------------------------------------------------------------------*/
+  /*   C O N S T R U C T O R                                                                */
+  /*----------------------------------------------------------------------------------------*/
+  
   /**
    * Constructor.
    * 
@@ -63,6 +67,15 @@ class TemplateTaskBuilder
    * @param aoeModes
    *   The list of AoE modes and the default value for each mode.
    *   
+   * @param externals
+   *   The list of external file sequences that may be used in the template, keyed by the name
+   *   of the external annotation and then complete path (including file sequence).  The value 
+   *   is the frame number where the external sequence will start being read.
+   *   
+   * @param optionalBranches
+   *   The list of optional branches with a boolean value which represents whether the branch 
+   *   should be built.
+   *   
    * @throws PipelineException
    */
   public
@@ -75,7 +88,9 @@ class TemplateTaskBuilder
     TreeMap<String, String> stringReplacements,
     TreeMap<String, ArrayList<TreeMap<String, String>>> contexts,
     TreeMap<String, FrameRange> frameRanges,
-    TreeMap<String, ActionOnExistence> aoeModes
+    TreeMap<String, ActionOnExistence> aoeModes,
+    DoubleMap<String, Path, Integer> externals,
+    TreeMap<String, Boolean> optionalBranches
   ) 
     throws PipelineException
   {
@@ -102,6 +117,14 @@ class TemplateTaskBuilder
     pAOEModes = new TreeMap<String, ActionOnExistence>();
     if (aoeModes != null)
       pAOEModes.putAll(aoeModes);
+    
+    pExternals = new DoubleMap<String, Path, Integer>();
+    if (externals != null)
+      pExternals.putAll(externals);
+    
+    pOptionalBranches = new TreeMap<String, Boolean>();
+    if (optionalBranches != null)
+      pOptionalBranches.putAll(optionalBranches);
     
     addCheckinWhenDoneParam();
     
@@ -176,6 +199,11 @@ class TemplateTaskBuilder
     setLayout(rootLayout);
   }
   
+
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   H E L P E R   M E T H O D S                                                         */
+  /*----------------------------------------------------------------------------------------*/
   
   /**
    * Search upstream from the specified node until all leaf Task nodes are found.
@@ -192,6 +220,7 @@ class TemplateTaskBuilder
     
     findUpstreamNodes(null, status);
   }
+
   
   /**
    * Search downstream from an edit node until the Submit and Approve nodes are found.
@@ -305,16 +334,16 @@ class TemplateTaskBuilder
       }
       return;
     }
-    TreeMap<String, BaseAnnotation> annots = getTaskAnnotations(nodeName);
+    TreeMap<String, BaseAnnotation> taskAnnots = getTaskAnnotations(nodeName);
     TreeSet<String> purposes = new TreeSet<String>();
-    if (annots != null && !annots.isEmpty()) {
+    if (taskAnnots != null && !taskAnnots.isEmpty()) {
       boolean taskMatch = false;
-      for ( String aName : annots.keySet()) {
-        BaseAnnotation annot = annots.get(aName);
+      for ( String aName : taskAnnots.keySet()) {
+        BaseAnnotation annot = taskAnnots.get(aName);
         taskMatch = doesTaskMatch(nodeName, aName, annot);
         purposes.add(lookupPurpose(nodeName, aName, annot));
       }
-      if (taskMatch) {
+      if (taskMatch) { // Part of the template.
         if (parent != null) {
           pNodesIDependedOn.put(parent, nodeName);
           pNodesDependingOnMe.put(nodeName, parent);
@@ -324,6 +353,14 @@ class TemplateTaskBuilder
         Collection<NodeStatus> stati = status.getSources();
         for (NodeStatus childStatus : stati) {
           findUpstreamNodes(nodeName, childStatus);
+        }
+        TreeMap<String, BaseAnnotation> annots = getAnnotations(nodeName); 
+        BaseAnnotation annot = annots.get("TemplateOptionalBranch");
+        if (annot != null) {
+          String optionName = (String) annot.getParamValue(aOptionName);
+          pOptionalBranchValues.put(optionName, nodeName);
+          pLog.log(Kind.Bld, Level.Finest, 
+            "Found an optional branch (" + optionName+ ") for node (" + nodeName + ").");
         }
       }
       else { //if the task doesn't match, it better be a Product node.
@@ -518,13 +555,12 @@ class TemplateTaskBuilder
       //grr, can't forget this call or stuff don't work.
       getStageInformation().setDoAnnotations(true);
       
-      pEditNodes = new TreeSet<String>();
-      pProductNodes = new TreeMap<String, Boolean>();
+      pEditNodes           = new TreeSet<String>();
+      pProductNodes        = new TreeMap<String, Boolean>();
       pProductNodeContexts = new DoubleMap<String, String, TreeSet<String>>();
-      
-      pNodesIDependedOn = new MappedSet<String, String>();
-      pNodesDependingOnMe = new MappedSet<String, String>();
-
+      pNodesIDependedOn    = new MappedSet<String, String>();
+      pNodesDependingOnMe  = new MappedSet<String, String>();
+      pOptionalBranchValues    = new MappedSet<String, String>();
       
       TreeMap<String, BaseAnnotation> annots = getTaskAnnotations(pStartNode);
 
@@ -608,10 +644,11 @@ class TemplateTaskBuilder
     {
       TemplateBuildInfo info = new TemplateBuildInfo
         (pNodesToBuild, pNodesDependingOnMe, pNodesIDependedOn, 
-         pProductNodes, pProductNodeContexts);
+         pProductNodes, pProductNodeContexts, pOptionalBranchValues);
       TemplateBuilder builder = 
         new TemplateBuilder
-          (pClient, pQueue, getBuilderInformation(), info, pReplacements, pContexts, pFrameRanges, pAOEModes);
+          (pClient, pQueue, getBuilderInformation(), info, pReplacements, pContexts, 
+           pFrameRanges, pAOEModes, pExternals, pOptionalBranches);
       addSubBuilder(builder);
       addMappedParam(builder.getName(), aCheckinWhenDone, aCheckinWhenDone);
       addMappedParam(builder.getName(), aAllowZeroContexts, aAllowZeroContexts);
@@ -634,10 +671,11 @@ class TemplateTaskBuilder
   private static final long serialVersionUID = 1416838665331059152L;
 
   public static final String aContextName = "ContextName";
-  public static final String aLinkName = "LinkName";
+  public static final String aLinkName    = "LinkName";
   
   public static final String aAllowZeroContexts = "AllowZeroContexts";
   public static final String aInhibitFileCopy   = "InhibitFileCopy";
+  public static final String aOptionName        = "OptionName";
   
   public static final String aCheckInLevel   = "CheckInLevel";
   public static final String aCheckInMessage = "CheckInMessage";
@@ -671,6 +709,11 @@ class TemplateTaskBuilder
   
   private TreeMap<String, ActionOnExistence> pAOEModes;
   
+  private DoubleMap<String, Path, Integer> pExternals;
+  private TreeMap<String, Boolean> pOptionalBranches;
+  
   private MappedSet<String, String> pNodesIDependedOn;
   private MappedSet<String, String> pNodesDependingOnMe;
+  
+  private MappedSet<String, String> pOptionalBranchValues;
 }

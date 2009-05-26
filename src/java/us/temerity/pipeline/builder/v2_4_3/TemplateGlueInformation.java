@@ -1,4 +1,4 @@
-// $Id: TemplateGlueInformation.java,v 1.5 2009/05/07 03:25:29 jesse Exp $
+// $Id: TemplateGlueInformation.java,v 1.6 2009/05/26 07:09:32 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -43,6 +43,9 @@ class TemplateGlueInformation
     pFrameRangeDefaults = new TreeMap<String, FrameRange>();
     
     pAOEModes = new TreeMap<String, ActionOnExistence>();
+    
+    pExternals = new ListSet<String>();
+    pOptionalBranches = new ListMap<String, Boolean>();
   }
   
   public 
@@ -67,6 +70,9 @@ class TemplateGlueInformation
     pFrameRanges = new TreeSet<String>();
     pFrameRangeDefaults = new TreeMap<String, FrameRange>();
     pAOEModes = new TreeMap<String, ActionOnExistence>();
+    
+    pExternals = new ListSet<String>();
+    pOptionalBranches = new ListMap<String, Boolean>();
   }
   
   
@@ -398,6 +404,51 @@ class TemplateGlueInformation
       pAOEModes = new TreeMap<String, ActionOnExistence>(aoes);
   }
 
+  /**
+   * Get the list of optional branches and the default value for each one.
+   */
+  public final ListMap<String, Boolean>
+  getOptionalBranches()
+  {
+    return new ListMap<String, Boolean>(pOptionalBranches);
+  }
+
+  /**
+   * Set the optional branches in the template.
+   */
+  public final void
+  setOptionalBranches
+  (
+    ListMap<String, Boolean> ob
+  )
+  {
+    if (ob == null)
+      pOptionalBranches = new ListMap<String, Boolean>();
+    else
+      pOptionalBranches = new ListMap<String, Boolean>(ob);
+  }  
+  
+  /**
+   * Set the list of the externals for the template.
+   */
+  public final void 
+  setExternals
+  (
+    ListSet<String> externals
+  )
+  {
+    if (externals == null)
+      pExternals = new ListSet<String>();
+    else
+      pExternals = new ListSet<String>(externals);
+  }
+  
+  public final ListSet<String>
+  getExternals()
+  {
+    return new ListSet<String>(pExternals);
+  }
+  
   
   
   /*----------------------------------------------------------------------------------------*/
@@ -513,6 +564,16 @@ class TemplateGlueInformation
       if (o != null)
         pAOEModes = (TreeMap<String, ActionOnExistence>) o;
     }
+    {
+      Object o = decoder.decode(aExternals);
+      if (o != null)
+        pExternals = (ListSet<String>) o;
+    }
+    {
+      Object o = decoder.decode(aOptionalBranches);
+      if (o != null)
+        pOptionalBranches = (ListMap<String, Boolean>) o;
+    }
   }
 
   @Override
@@ -547,6 +608,10 @@ class TemplateGlueInformation
       encoder.encode(aContextParamNames, pContextParamNames);
     if (!pAOEModes.isEmpty())
       encoder.encode(aAOEModes, pAOEModes);
+    if (!pExternals.isEmpty())
+      encoder.encode(aExternals, pExternals);
+    if (!pOptionalBranches.isEmpty())
+      encoder.encode(aOptionalBranches, pOptionalBranches);
   }
   
   
@@ -567,6 +632,8 @@ class TemplateGlueInformation
   public static final String aFrameRanges = "FrameRanges";
   public static final String aFrameRangeDefaults = "FrameRangeDefaults";
   public static final String aAOEModes = "AOEModes";
+  public static final String aExternals = "Externals";
+  public static final String aOptionalBranches = "OptionalBranches";
   
   
   
@@ -585,6 +652,10 @@ class TemplateGlueInformation
   private TreeMap<String, FrameRange> pFrameRangeDefaults;
   
   private TreeMap<String, ActionOnExistence> pAOEModes;
+  
+  private ListMap<String, Boolean> pOptionalBranches;
+  
+  private ListSet<String> pExternals;
   
   private TreeSet<String> pNodesInTemplate;
 
