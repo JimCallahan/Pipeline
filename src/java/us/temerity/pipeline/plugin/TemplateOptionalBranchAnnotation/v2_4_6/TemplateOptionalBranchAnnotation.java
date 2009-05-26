@@ -1,4 +1,4 @@
-// $Id: TemplateOptionalBranchAnnotation.java,v 1.1 2009/05/26 07:09:32 jesse Exp $
+// $Id: TemplateOptionalBranchAnnotation.java,v 1.2 2009/05/26 07:39:51 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateOptionalBranchAnnotation.v2_4_6;
 
@@ -35,7 +35,7 @@ class TemplateOptionalBranchAnnotation
     
     {
       AnnotationParam param =
-        new StringAnnotationParam
+        new ParamNameAnnotationParam
         (aOptionName,
          "The name of the optional branch.",
          null);

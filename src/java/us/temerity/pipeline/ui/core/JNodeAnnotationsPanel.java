@@ -1,4 +1,4 @@
-// $Id: JNodeAnnotationsPanel.java,v 1.23 2009/03/25 22:02:24 jim Exp $
+// $Id: JNodeAnnotationsPanel.java,v 1.24 2009/05/26 07:39:51 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1623,6 +1623,10 @@ class JNodeAnnotationsPanel
               JTextField field = (JTextField) comp;
               value = field.getText();	  
             }
+            else if(aparam instanceof ParamNameAnnotationParam) {
+              JTextField field = (JTextField) comp;
+              value = field.getText();    
+            }
             else if(aparam instanceof PathAnnotationParam) {
               JPathField field = (JPathField) comp;
               value = field.getPath();	  
@@ -1909,6 +1913,21 @@ class JNodeAnnotationsPanel
                 field.setEnabled(paramEnabled); 
 
                 pParamComponents.put(pname, field);	      
+              }
+              else if(aparam instanceof ParamNameAnnotationParam) {
+                String value = (String) aparam.getValue();
+                JTextField field = 
+                  UIFactory.createTitledParamNameField 
+                  (tpanel, aparam.getNameUI() + ":", sTSize-7, 
+                   vpanel, value, sVSize, 
+                   aparam.getDescription());
+
+                field.setActionCommand("param-changed:" + pName + ":" + pname);
+                field.addActionListener(pParent);
+
+                field.setEnabled(paramEnabled); 
+
+                pParamComponents.put(pname, field);           
               }
               else if(aparam instanceof PathAnnotationParam) {
                 Path value = (Path) aparam.getValue();

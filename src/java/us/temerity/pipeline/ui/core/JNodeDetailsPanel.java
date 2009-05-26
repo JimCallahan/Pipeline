@@ -1,4 +1,4 @@
-// $Id: JNodeDetailsPanel.java,v 1.57 2009/04/22 22:38:21 jesse Exp $
+// $Id: JNodeDetailsPanel.java,v 1.58 2009/05/26 07:39:51 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -6276,6 +6276,10 @@ class JNodeDetailsPanel
                 JTextField field = (JTextField) comps[1];
                 value = field.getText();	  
               }
+              else if(aparam instanceof ParamNameAnnotationParam) {
+                JTextField field = (JTextField) comps[1];
+                value = field.getText();          
+              }
               else if(aparam instanceof PathAnnotationParam) {
                 JPathField field = (JPathField) comps[1];
                 value = field.getPath();	  
@@ -6820,6 +6824,19 @@ class JNodeDetailsPanel
                       	
                       hbox.add(field);         
                     }
+                    else if(aparam instanceof ParamNameAnnotationParam) {
+                      String value = (String) aparam.getValue();
+                      JTextField field = 
+                        UIFactory.createParamNameField(value, sVSize, JLabel.CENTER);
+                      pcomps[1] = field;
+
+                      field.setActionCommand("annot-param-changed:" + cname);
+                      field.addActionListener(pParent);
+                      
+                      field.setEnabled(paramEnabled); 
+                        
+                      hbox.add(field);         
+                    }
                     else if(aparam instanceof PathAnnotationParam) {
                       Path value = (Path) aparam.getValue();
                        JPathField field = 
@@ -7317,6 +7334,10 @@ class JNodeDetailsPanel
               JTextField field = (JTextField) pcomps[1];
               wtext = field.getText();
             }
+            else if(aparam instanceof ParamNameAnnotationParam) {
+              JTextField field = (JTextField) pcomps[1];
+              wtext = field.getText();
+            }
             else if(aparam instanceof PathAnnotationParam) {
               JPathField field = (JPathField) pcomps[1];
               Path path = field.getPath();
@@ -7520,6 +7541,13 @@ class JNodeDetailsPanel
           }
           else if(wparam instanceof StringAnnotationParam) {
             JTextField field = (JTextField) pcomps[1];
+            if(value != null) 
+              field.setText(value.toString());
+            else 
+              field.setText(null);
+          }
+          else if(wparam instanceof ParamNameAnnotationParam) {
+            JParamNameField field = (JParamNameField) pcomps[1];
             if(value != null) 
               field.setText(value.toString());
             else 
