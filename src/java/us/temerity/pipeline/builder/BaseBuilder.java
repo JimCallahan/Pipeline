@@ -1,4 +1,4 @@
-// $Id: BaseBuilder.java,v 1.72 2009/05/22 18:35:34 jesse Exp $
+// $Id: BaseBuilder.java,v 1.73 2009/05/26 09:50:12 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -1514,15 +1514,133 @@ class BaseBuilder
     throws PipelineException
   {
     ArrayList<String> toQueue = new ArrayList<String>();
+    
+    TreeSet<String> roots = new TreeSet<String>(nodes);
+    TreeMap<String, NodeStatus> stati =
+      pClient.status(getAuthor(), getView(), roots, roots, DownstreamMode.None);
+
+    TreeMap<String, NodeStatus> dubiousNodes = new TreeMap<String, NodeStatus>();
+    MappedSet<String, String> nodesIDependOn = new MappedSet<String, String>();
+    MappedSet<String, String> nodesDependingOnMe = new MappedSet<String, String>();
+    
     for (String node : nodes) {
-      NodeStatus stat = 
+      NodeStatus stat = stati.get(node);
+      searchForDubious(stat, dubiousNodes, nodesIDependOn, nodesDependingOnMe, null);
         pClient.status(getAuthor(), getView(), node, false, DownstreamMode.None);
-      queueAndVouchHlp(node, stat);
-      stat = 
-        pClient.status(getAuthor(), getView(), node, false, DownstreamMode.None);
-      toQueue.add(stat.getName());
+      OverallQueueState qstate = stat.getHeavyDetails().getOverallQueueState();
+      if (qstate != OverallQueueState.Dubious)
+        toQueue.add(node);
     }
+    
+    while (!dubiousNodes.isEmpty()) {
+      String nodeName = findNextNode(dubiousNodes, nodesIDependOn, nodesDependingOnMe);
+      ArrayList<String> node = new ArrayList<String>();
+      node.addAll(dubiousNodes.get(nodeName).getSourceNames());
+      queueSomeStuff(node);
+      pClient.vouch(getAuthor(), getView(), nodeName);
+      
+      dubiousNodes.remove(nodeName);
+      TreeSet<String> targets = nodesDependingOnMe.get(nodeName);
+      if (targets != null && !targets.isEmpty()) {
+        for (String target : targets ) {
+          TreeSet<String> temp = nodesIDependOn.get(target);
+          temp.remove(nodeName);
+          if (temp.isEmpty())
+            nodesIDependOn.remove(target);
+          else
+            nodesIDependOn.put(target, temp);
+        }
+      }
+    }
+  
     queueSomeStuff(toQueue);
+  }
+  
+  /**
+   * Recursively search up a tree of nodes to find the dubious nodes.
+   * 
+   * @param status
+   *   Status of the current node.
+   * 
+   * @param dubiousNodes
+   *   A map of the status of the dubious nodes which have been found already.
+   * 
+   * @param nodesIDependOn
+   *   A mapped set of the dubious nodes that each dubious node depends on.
+   * 
+   * @param nodesDependingOnMe
+   *   A mapped set of dubious nodes that are depended on.
+   * 
+   * @param parent
+   *   The previous dubious node found or <code>null</code> if none were found yet.
+   */
+  private void
+  searchForDubious
+  (
+    NodeStatus status,
+    TreeMap<String,NodeStatus> dubiousNodes,
+    MappedSet<String, String> nodesIDependOn,
+    MappedSet<String, String> nodesDependingOnMe,
+    String parent
+  )
+    throws PipelineException
+  {
+    String newParent = parent;
+    
+    String nodeName = status.getName();
+    
+    OverallQueueState qstate = status.getHeavyDetails().getOverallQueueState();
+    if (qstate == OverallQueueState.Dubious) {
+      if (pVouchableNodes.contains(nodeName)) {
+        dubiousNodes.put(nodeName, status);
+        if (parent != null) {
+          nodesIDependOn.put(parent, nodeName);
+          nodesDependingOnMe.put(nodeName, parent);
+        }
+        newParent = nodeName;
+      }
+      else {
+        throw new PipelineException
+          ("The node (" + nodeName + ") is in a dubious state, but is not in the " +
+           "vouchable list.  The queue process cannot continue.");
+      }
+    }
+    for (NodeStatus child : status.getSources()) {
+      searchForDubious(child, dubiousNodes, nodesIDependOn, nodesDependingOnMe, newParent);
+    }
+  }
+  
+  /**
+   * Find the next node that can be queued.
+   * 
+   * @param dubiousNodes
+   *   A map of the status of the dubious nodes which have been found already.
+   * 
+   * @param nodesIDependOn
+   *   A mapped set of the dubious nodes that each dubious node depends on.
+   * 
+   * @param nodesDependingOnMe
+   *   A mapped set of dubious nodes that are depended on.
+   * 
+   * @return
+   *   The next dubious node to address.
+   */
+  private String
+  findNextNode
+  (
+    TreeMap<String,NodeStatus> dubiousNodes,
+    MappedSet<String, String> nodesIDependOn,
+    MappedSet<String, String> nodesDependingOnMe 
+  )
+  {
+    if (nodesIDependOn.isEmpty() && nodesDependingOnMe.isEmpty())
+      return dubiousNodes.firstKey();
+    for (String node : dubiousNodes.keySet()) {
+      TreeSet<String> set = nodesIDependOn.get(node);
+      if ( set == null)
+        return node;
+    }
+    return null;
   }
   
   private void
@@ -1778,8 +1896,11 @@ class BaseBuilder
   {
     pLog.log(Kind.Ops, Level.Finer, "Checking if all the queued nodes finished correctly");
     boolean toReturn = true;
+    TreeSet<String> roots = new TreeSet<String>(queuedNodes);
+    TreeMap<String, NodeStatus> stati = 
+      pClient.status(getAuthor(), getView(), roots, roots, DownstreamMode.None);
     for(String nodeName : queuedNodes) {
-      NodeStatus status = pClient.status(getAuthor(), getView(), nodeName);
+      NodeStatus status = stati.get(nodeName);
       toReturn = isTreeFinished(status);
       if(!toReturn)
 	break;
