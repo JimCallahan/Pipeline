@@ -1,4 +1,4 @@
-// $Id: PanelUpdater.java,v 1.37 2009/05/17 22:06:12 jim Exp $
+// $Id: PanelUpdater.java,v 1.38 2009/05/26 09:45:12 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -462,8 +462,8 @@ class PanelUpdater
       try {
 	
 	/* clear client caches */
-        LogMgr.getInstance().logAndFlush(Kind.Ops, Level.Finest, 
-          "Invalidating UI Cache with ID (" + pGroupID + ")");
+//        LogMgr.getInstance().logAndFlush(Kind.Ops, Level.Finest, 
+//          "Invalidating UI Cache with ID (" + pGroupID + ")");
 
         master.getUICache(pGroupID).invalidateCaches();
 	

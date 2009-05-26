@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.104 2009/05/16 02:06:19 jim Exp $
+// $Id: UIMaster.java,v 1.105 2009/05/26 09:45:12 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -380,8 +380,8 @@ class UIMaster
     int channel  
   )
   {
-    LogMgr.getInstance().log(Kind.Ops, Level.Finest, 
-      "Accessing UI Cache with ID (" + channel + ")");
+//    LogMgr.getInstance().log(Kind.Ops, Level.Finest, 
+//      "Accessing UI Cache with ID (" + channel + ")");
     LogMgr.getInstance().flush(Kind.Ops, Level.Finest);
     assert(channel >= 0 && channel <= pUICaches.size());
     synchronized (pUICaches) {
@@ -405,8 +405,8 @@ class UIMaster
       Integer cacheNum = pUICaches.lastKey() + 1;
       pUICaches.put(cacheNum, new UICache());
       
-      LogMgr.getInstance().log(Kind.Ops, Level.Finest, 
-         "Creating UI Cache with ID (" + cacheNum + ")");
+//      LogMgr.getInstance().log(Kind.Ops, Level.Finest, 
+//         "Creating UI Cache with ID (" + cacheNum + ")");
       return cacheNum;
     }
   }

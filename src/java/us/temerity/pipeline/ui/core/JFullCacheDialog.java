@@ -1,4 +1,4 @@
-// $Id: JFullCacheDialog.java,v 1.1 2009/03/24 01:21:21 jesse Exp $
+// $Id: JFullCacheDialog.java,v 1.2 2009/05/26 09:45:12 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -77,8 +77,8 @@ class JFullCacheDialog
   protected void
   invalidateCaches()
   {
-    LogMgr.getInstance().log(Kind.Ops, Level.Finest, 
-      "Invalidating UI Cache with ID (" + pChannel + ")");
+//    LogMgr.getInstance().log(Kind.Ops, Level.Finest, 
+//      "Invalidating UI Cache with ID (" + pChannel + ")");
     UIMaster.getInstance().getUICache(pChannel).invalidateCaches();
   }
   
