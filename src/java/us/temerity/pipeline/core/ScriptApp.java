@@ -1,4 +1,4 @@
-// $Id: ScriptApp.java,v 1.95 2009/04/01 21:17:59 jim Exp $
+// $Id: ScriptApp.java,v 1.96 2009/05/29 07:21:02 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1843,8 +1843,8 @@ class ScriptApp
 	String sched  = host.getSelectionSchedule();
 	buf.append
 	  ("\n" + 
-	   "Selection Schedule : " + ((sgroup != null) ? sgroup : "-") + "\n" + 
-	   "Selection Group    : " + ((sched != null) ? sched : "-") + "\n");
+	   "Selection Group    : " + ((sgroup != null) ? sgroup : "-") + "\n" + 
+	   "Selection Schedule : " + ((sched != null) ? sched : "-") + "\n");
       }
     }
 
