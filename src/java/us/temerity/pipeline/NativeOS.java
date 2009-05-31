@@ -1,4 +1,4 @@
-// $Id: NativeOS.java,v 1.10 2008/03/02 08:50:10 jim Exp $
+// $Id: NativeOS.java,v 1.11 2009/05/31 23:14:51 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -418,8 +418,12 @@ class NativeOS
             break;
 
           case 5:
-            if(output[0].equals("{") && output[4].equals("}")) 
+            if(values[0].equals("{") && values[4].equals("}")) 
               load = Float.valueOf(values[1]);
+            else 
+              throw new IOException
+                ("Illegal output from sysctl(8):\n" + 
+                 outstr);
             break;
 
           default:
