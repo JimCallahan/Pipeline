@@ -3,3 +3,18 @@ The problem:
 So the new dubious state is hosing builders which construct more than one task at a time and that feature mid-builder network modifications.  Here's how.  We've got a modeling network linked into a rigging network.  The modeling edit node is being built with an attached mel script which is then detached and the action is removed.  The rigging node is being built by importing the model node, but then has its Action removed.  So when we unlink the mel script and remove the action from the edit node, we have to vouch for it.  That is easy, we do it.  Now it is in a finished state, no problems.  However, it has made stuff downstream of it stale.  This is also correct since removing the MEL script link is a substantive change.  Then we move onto the rig edit node.  We remove its Action and vouch for it.  But the vouch fails!  It fails because there are now stale nodes upstream of the rig edit node, caused by the changes to the model edit node.  This is bad, very bad.
 
 So a solution needs to be found.  I think creating a third Construct Pass might solve this problem.  In the 2nd construct pass, the only nodes that we'd actually mess with would be ones that involve modifications to node network strucuture.  i.e., we'd unhook the mel script from the model edit node and remove its action and vouch for it.  Then, we'd queue everything else, then we'd remove the actions and vouch for stuff.  Removing the actions and vouching should not trigger any further staleness or dubiousness, so I think we'll be safe.
+
+
+The real solution:
+
+We need to deal with dubiousness in Builders.  So here's how we do it.  Whenever we queue something, we first do a status update.  We have to traverse the whole network.
+
+What do we need:  A list of nodes that have to be queued and those which are Dubious (and need to be vouched).
+
+
+
+
+
+Then we traverse upstream from the node that has been queued
+If we find no dubious nodes
+
