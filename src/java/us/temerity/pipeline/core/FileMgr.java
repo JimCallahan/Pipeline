@@ -1,4 +1,4 @@
-// $Id: FileMgr.java,v 1.89 2009/05/16 02:06:18 jim Exp $
+// $Id: FileMgr.java,v 1.90 2009/06/01 22:17:23 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -5290,12 +5290,15 @@ class FileMgr
         long total   = pTotal.get();
         long offline = pOffline.get();
 
+        long rate = 0L;
+        if(millis > 0) 
+          rate = total*1000 / millis;
+
         LogMgr.getInstance().log
           (LogMgr.Kind.Net, LogMgr.Level.Info,
            "--- Offlined Task (Active) -----\n" + 
            "      Time Spent: " + TimeStamps.formatInterval(millis) + "\n" +
-           "  Dirs Processed: " + total + 
-           " (" + (total*1000 / millis) + " dirs/sec)\n" + 
+           "  Dirs Processed: " + total + " (" + rate + " dirs/sec)\n" + 
            "   Offline Found: " + offline + "\n" + 
            "--------------------------------");
         LogMgr.getInstance().flush();
