@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.105 2009/05/26 09:45:12 jesse Exp $
+// $Id: UIMaster.java,v 1.106 2009/06/01 03:21:40 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2346,7 +2346,6 @@ class UIMaster
    * @param width
    *   The minimum and preferred width of the field.
    */ 
-  //FIXME This is zero-channel.  Should there be a cache here?
   public JPluginSelectionField
   createMasterExtSelectionField
   (
