@@ -1,4 +1,4 @@
-// $Id: JManageSelectionKeysDialog.java,v 1.20 2009/03/19 21:55:59 jesse Exp $
+// $Id: JManageSelectionKeysDialog.java,v 1.21 2009/06/01 07:40:23 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -504,6 +504,12 @@ class JManageSelectionKeysDialog
       pGroupNamesTableModel.setNames(pGroupNames);
       TreeMap<String,Boolean> modified = 
 	pGroupsTableModel.setSelectionGroups(groups, keyDesc, pPrivilegeDetails);
+      
+      if (pLastSort == LastSort.DATA)
+        pGroupsTableModel.sort();
+      else
+        pGroupNamesTableModel.sort();
+      
       pGroupsTablePanel.refilterColumns(modified);
 
       /* update selection schedules */ 
@@ -619,6 +625,7 @@ class JManageSelectionKeysDialog
   {
     if(pGroupNamesTableModel != null) 
       pGroupNamesTableModel.externalSort(rowToIndex);
+    pLastSort = LastSort.DATA;
   }
 
   /** 
@@ -632,6 +639,7 @@ class JManageSelectionKeysDialog
   {
     if(pGroupsTableModel != null) 
       pGroupsTableModel.externalSort(rowToIndex);
+    pLastSort = LastSort.NAMES;
   }
 
 
@@ -1676,6 +1684,11 @@ class JManageSelectionKeysDialog
     private JTable pTargetTable;
   }  
 
+  private enum
+  LastSort
+  {
+    DATA, NAMES;
+  }
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -1851,6 +1864,11 @@ class JManageSelectionKeysDialog
    * The new selection schedule creation dialog.
    */ 
   private JNewSelectionScheduleDialog pSchedulesNewDialog; 
-
+  
+  /**
+   *  Keep track of which table was the last to be sorted, so the correct sort can be used 
+   *  after an update.  
+   */
+  private LastSort pLastSort;
 }
 

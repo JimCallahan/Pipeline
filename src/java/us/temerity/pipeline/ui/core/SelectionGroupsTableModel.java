@@ -1,4 +1,4 @@
-// $Id: SelectionGroupsTableModel.java,v 1.5 2008/06/26 20:41:13 jesse Exp $
+// $Id: SelectionGroupsTableModel.java,v 1.6 2009/06/01 07:40:23 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -340,8 +340,6 @@ class SelectionGroupsTableModel
     pPrivilegeDetails = privileges; 
     
     pEditedIndices.clear();
-
-    sort();
 
     return modified;
   }

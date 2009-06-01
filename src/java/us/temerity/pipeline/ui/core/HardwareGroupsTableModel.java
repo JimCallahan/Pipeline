@@ -1,4 +1,4 @@
-// $Id: HardwareGroupsTableModel.java,v 1.3 2009/05/13 18:37:51 jesse Exp $
+// $Id: HardwareGroupsTableModel.java,v 1.4 2009/06/01 07:40:23 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -298,8 +298,6 @@ class HardwareGroupsTableModel
     pPrivilegeDetails = privileges; 
     
     pEditedIndices.clear();
-
-    sort();
 
     return modified;
   }

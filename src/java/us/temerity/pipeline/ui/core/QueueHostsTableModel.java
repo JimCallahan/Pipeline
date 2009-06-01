@@ -1,4 +1,4 @@
-// $Id: QueueHostsTableModel.java,v 1.22 2008/06/26 20:41:13 jesse Exp $
+// $Id: QueueHostsTableModel.java,v 1.23 2009/06/01 07:40:23 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -602,8 +602,6 @@ class QueueHostsTableModel
     pEditedGroupIndices.clear();
     pEditedHardwareIndices.clear();
     pEditedScheduleIndices.clear();
-
-    sort();
   }
 
 

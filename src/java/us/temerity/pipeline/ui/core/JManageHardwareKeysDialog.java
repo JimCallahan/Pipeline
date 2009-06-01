@@ -1,4 +1,4 @@
-// $Id: JManageHardwareKeysDialog.java,v 1.5 2009/03/19 21:55:59 jesse Exp $
+// $Id: JManageHardwareKeysDialog.java,v 1.6 2009/06/01 07:40:23 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -11,6 +11,7 @@ import javax.swing.event.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.ui.*;
+import us.temerity.pipeline.ui.core.JManageSelectionKeysDialog.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   M A N A G E   H A R D W A R E   K E Y S   D I A L O G                                  */
@@ -349,6 +350,12 @@ class JManageHardwareKeysDialog
       pGroupNamesTableModel.setNames(pGroupNames);
       TreeMap<String,Boolean> modified = 
 	pGroupsTableModel.setHardwareGroups(groups, keyDesc, pPrivilegeDetails);
+      
+      if (pLastSort == LastSort.DATA)
+        pGroupsTableModel.sort();
+      else
+        pGroupNamesTableModel.sort();
+      
       pGroupsTablePanel.refilterColumns(modified);
 
     }
@@ -415,6 +422,7 @@ class JManageHardwareKeysDialog
   {
     if(pGroupNamesTableModel != null) 
       pGroupNamesTableModel.externalSort(rowToIndex);
+    pLastSort = LastSort.DATA;
   }
 
   /** 
@@ -428,6 +436,7 @@ class JManageHardwareKeysDialog
   {
     if(pGroupsTableModel != null) 
       pGroupsTableModel.externalSort(rowToIndex);
+    pLastSort = LastSort.NAMES;
   }
 
 
@@ -1126,8 +1135,14 @@ class JManageHardwareKeysDialog
     private JTable pTargetTable;
   }  
 
+  private enum
+  LastSort
+  {
+    DATA, NAMES;
+  }
 
-
+  
+  
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
   /*----------------------------------------------------------------------------------------*/
@@ -1244,6 +1259,13 @@ class JManageHardwareKeysDialog
    * The new selection group creation dialog.
    */ 
   private JNewHardwareGroupDialog pGroupsNewDialog;
+
+  
+  /**
+   *  Keep track of which table was the last to be sorted, so the correct sort can be used 
+   *  after an update.  
+   */
+  private LastSort pLastSort;
 
 }
 

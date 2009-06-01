@@ -1,4 +1,4 @@
-// $Id: JQueueJobServersPanel.java,v 1.16 2009/03/25 19:31:58 jesse Exp $
+// $Id: JQueueJobServersPanel.java,v 1.17 2009/06/01 07:40:23 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -541,10 +541,16 @@ class JQueueJobServersPanel
    *   The names of the users with working areas and/or special privileges.
    * 
    * @param selectionGroups
-   *   The valid selection group names. 
+   *   The valid selection group names.
+   *   
+   *  @param hardwareGroups
+   *   The valid hardware group names.
    * 
    * @param selectionSchedules
    *   The valid selection schedule names. 
+   *   
+   * @param matrix
+   *   The matrix used to determine which schedule maps to what group.
    */ 
   public synchronized void 
   applyPanelUpdates
@@ -651,7 +657,10 @@ class JQueueJobServersPanel
    *   The valid selection group names. 
    * 
    * @param selectionSchedules
-   *   The valid selection schedule names. 
+   *   The valid selection schedule names.
+   *   
+   * @param hardwareGroups
+   *   The valid hardware group names.
    */ 
   public synchronized void
   updateJobs
@@ -689,6 +698,11 @@ class JQueueJobServersPanel
       pHostsTableModel.setQueueHosts
 	(hosts, samples, workGroups, workUsers, selectionGroups, selectionSchedules, hardwareGroups, 
 	 pPrivilegeDetails);
+      
+      if (pLastSort == LastSort.NAMES)
+        pHostnamesTableModel.sort();
+      else
+        pHostsTableModel.sort();
 
       updateHostsHeaderButtons();
       pHostsTablePanel.tableStructureChanged();  
@@ -726,6 +740,7 @@ class JQueueJobServersPanel
   {
     if(pHostnamesTableModel != null) 
       pHostnamesTableModel.externalSort(rowToIndex);
+    pLastSort = LastSort.DATA;
   }
 
   /** 
@@ -739,6 +754,7 @@ class JQueueJobServersPanel
   {
     if(pHostsTableModel != null) 
       pHostsTableModel.externalSort(rowToIndex);
+    pLastSort = LastSort.NAMES;
   }
 
 
@@ -1471,6 +1487,12 @@ class JQueueJobServersPanel
 
     private TreeSet<String>  pHostnames; 
   }
+  
+  private enum
+  LastSort
+  {
+    NAMES, DATA
+  }
 
  
 
@@ -1560,5 +1582,9 @@ class JQueueJobServersPanel
    */
   private SelectionScheduleMatrix pMatrix;
 
-
+  /**
+   *  Keep track of which table was the last to be sorted, so the correct sort can be used 
+   *  after an update.  
+   */
+  private LastSort pLastSort;
 }

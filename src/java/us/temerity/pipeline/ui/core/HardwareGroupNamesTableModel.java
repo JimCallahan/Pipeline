@@ -1,4 +1,4 @@
-// $Id: HardwareGroupNamesTableModel.java,v 1.1 2007/11/30 20:06:25 jesse Exp $
+// $Id: HardwareGroupNamesTableModel.java,v 1.2 2009/06/01 07:40:23 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -156,8 +156,6 @@ class HardwareGroupNamesTableModel
     pNames.clear();
     if(names != null)
       pNames.addAll(names);
-
-    sort();
   }
 
 

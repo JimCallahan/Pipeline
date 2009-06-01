@@ -1,4 +1,4 @@
-// $Id: QueueHostnamesTableModel.java,v 1.5 2006/10/18 06:34:22 jim Exp $
+// $Id: QueueHostnamesTableModel.java,v 1.6 2009/06/01 07:40:23 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -156,8 +156,6 @@ class QueueHostnamesTableModel
     pHostnames.clear();
     if(hostnames != null)
       pHostnames.addAll(hostnames);
-
-    sort();
   }
 
 
