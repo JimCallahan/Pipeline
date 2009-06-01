@@ -1,4 +1,4 @@
-// $Id: ViewerNode.java,v 1.14 2008/07/21 17:31:10 jim Exp $
+// $Id: ViewerNode.java,v 1.15 2009/06/01 05:48:29 jesse Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -163,9 +163,9 @@ class ViewerNode
 		com = details.getLatestVersion();
 
 	      FileSeq fseq = com.getPrimarySequence();
-	      if(fseq.isSingle()) 
+	      if(!fseq.hasFrameNumbers()) 
 		text1 = fseq.toString();
-	      else if(fseq.hasFrameNumbers()) {
+	      else {
 		text1 = fseq.getFilePattern().toString();
 		text2 = fseq.getFrameRange().toString();
 	      }
