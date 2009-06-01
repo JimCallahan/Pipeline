@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.277 2009/05/18 06:03:45 jesse Exp $
+// $Id: MasterMgr.java,v 1.278 2009/06/01 02:53:15 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -8439,7 +8439,19 @@ class MasterMgr
       catch(PipelineException ex) {
 	return new FailureRsp(timer, ex.getMessage());
       }
-
+      
+      
+      /* Get the status of the node before the rename so we can reapply it after the
+         rename is complete.  */
+      boolean updateTimeStamps = false;
+      {
+        NodeStatus oldStatus = performNodeOperation(new NodeOp(), id, timer);
+        OverallQueueState qstate = oldStatus.getHeavyDetails().getOverallQueueState();
+        if (qstate == OverallQueueState.Dubious || qstate == OverallQueueState.Stale)
+          updateTimeStamps = true;
+      }
+     
+      
       /* if the prefix is different, 
 	   unlink the downstream working versions from the to be renamed working version 
 	   while collecting the existing downstream links and source parameters */ 
@@ -8615,6 +8627,20 @@ class MasterMgr
 	      releaseFileMgrClient(fclient);
 	    }
 	  }
+	  
+	  /* Now need to update the timestamps in the node mode if the node should be dubious
+	     or stale */
+	  if (updateTimeStamps) {
+	    nmod = getWorkingBundle(nid).getVersion();
+	    nmod.initTimeStamps();
+	    
+	    /* write the new working version to disk */ 
+            writeWorkingVersion(id, nmod);
+            
+            /* update the bundle */ 
+            bundle.setVersion(nmod);
+	  }
+	  
 	}
 	finally {
 	  nlock.writeLock().unlock();
@@ -9732,6 +9758,17 @@ class MasterMgr
 
 	/* record event */ 
 	pPendingEvents.add(new RegisteredNodeEvent(nodeID));
+	
+	/* Touch the files if the node mod has no action */
+	if (mod.getAction() == null) {
+	  FileMgrClient fclient =  acquireFileMgrClient();
+	  try {
+	    fclient.touchAll(nodeID, mod);
+	  }
+	  finally {
+	    releaseFileMgrClient(fclient);
+	  }
+	}
 
 	/* post-op tasks */ 
 	startExtensionTasks(timer, factory);

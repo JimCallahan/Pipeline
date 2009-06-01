@@ -1,4 +1,4 @@
-// $Id: NodeMod.java,v 1.64 2009/03/27 17:46:32 jesse Exp $
+// $Id: NodeMod.java,v 1.65 2009/06/01 02:54:22 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -244,8 +244,12 @@ class NodeMod
 
   /**
    * Initialize the value of all timestamps to now.
+   * <p>
+   * This method is used to initialize the time stamps of working versions.  There is no
+   * need to call this method in user code and values set with the method on the client side
+   * will not be applied on the server side.
    */ 
-  private void
+  public void
   initTimeStamps()
   {
     long now = TimeStamps.now();
