@@ -1,4 +1,4 @@
-// $Id: FileSeq.java,v 1.23 2008/06/15 01:59:49 jim Exp $
+// $Id: FileSeq.java,v 1.24 2009/06/01 03:21:13 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -229,7 +229,7 @@ class FileSeq
   }
 
 
-
+  
   /*----------------------------------------------------------------------------------------*/
   /*   P R E D I C A T E S                                                                  */
   /*----------------------------------------------------------------------------------------*/
@@ -392,6 +392,7 @@ class FileSeq
    * @param obj 
    *   The reference object with which to compare.
    */
+  @Override
   public boolean
   equals
   (
@@ -409,6 +410,7 @@ class FileSeq
   /**
    * Returns a hash code value for the object.
    */
+  @Override
   public int 
   hashCode() 
   {
@@ -418,8 +420,9 @@ class FileSeq
   }
 
   /**
-   * Returns a string representation of the object. 
+   * Return a string representation of the object. 
    */
+  @Override
   public String
   toString() 
   {
@@ -479,6 +482,7 @@ class FileSeq
   /**
    * Return a deep copy of this object.
    */
+  @Override
   public Object 
   clone()
   {
@@ -666,7 +670,145 @@ class FileSeq
     return fseqs;
   }
 
-
+  /**
+   * Construct a {@link FileSeq} from the string representation of a file sequence.
+   * <p>
+   * prefix[.#|@...][.suffix][,start[-end[xby]]]
+   * <p>
+   * Completely specifies a file sequence associated with the target node. The filename prefix
+   * (prefix) is required. The optional frame number pattern may either be a (#) character for
+   * 4-digit padded frame numbers or one or more (@) characters, each specifying one digit of
+   * padding. A single (@) character is the same as unpadded frame numbers. The last entry is
+   * an optional filename suffix (suffix). If a frame number pattern was specified, the start
+   * frame (start) must also be specified. If the file sequence contains only a single frame,
+   * the single frame number is specified by the start frame. Multiple frame sequences also
+   * specify an end frame (end) and optionally a frame step increment (by).
+   * 
+   * @param stringRep
+   *          The string representation of the {@link FileSeq}.
+   * 
+   * @return The file sequence represented by the string.
+   * 
+   * @throws PipelineException
+   *           If the string is not a valid representation of a File Sequence.
+   */
+  public static FileSeq
+  fromString
+  (
+    String stringRep  
+  )
+    throws PipelineException
+  {
+    String buffer[] = stringRep.split("\\.");
+    /* Prefix only */
+    if (buffer.length == 1) {
+      String suffix = null;
+      return new FileSeq(buffer[0], suffix);
+    }
+    // This is either prefix.suffix or prefix.frameRange
+    else if (buffer.length == 2) {
+      // This has a frame range.
+      if (stringRep.contains(",")) {
+        String buffer2[] = buffer[1].split(",");
+        if (buffer2.length != 2)
+          throw new PipelineException
+            ("The String (" + stringRep + ") is not a valid FileSeq representation");
+        int padding = convertPadding(stringRep, buffer2[0]);
+        FrameRange range = convertRange(stringRep, buffer2[1]);
+        FilePattern fPat = new FilePattern(buffer[0], padding, null);
+        return new FileSeq(fPat, range);
+      }
+      // This is a suffix
+      else {
+        return new FileSeq(buffer[0], buffer[1]);
+      }
+    }
+    else if (buffer.length == 3) {
+      String buffer2[] = buffer[2].split(",");
+      if (buffer2.length != 2)
+        throw new PipelineException
+          ("The String (" + stringRep + ") is not a valid FileSeq representation");
+      int padding = convertPadding(stringRep, buffer[1]);
+      FrameRange range = convertRange(stringRep, buffer2[1]);
+      FilePattern fPat = new FilePattern(buffer[0], padding, buffer2[0]);
+      return new FileSeq(fPat, range);
+    }
+    else
+      throw new PipelineException
+        ("The String (" + stringRep + ") is not a valid FileSeq representation");
+  }
+  
+  private static int
+  convertPadding
+  (
+    String sequence,
+    String padding  
+  )
+    throws PipelineException
+  {
+    if (padding.equals("#"))
+      return 4;
+    int length = padding.length();
+    for (int i = 0; i < length; i++) {
+      if (padding.charAt(i) != '@')
+        throw new PipelineException
+          ("The string (" + padding + ") from the sequence (" + sequence + ") is not a " +
+           "valid frame padding value");
+    }
+    return length;
+  }
+  
+  private static FrameRange
+  convertRange
+  (
+    String sequence,
+    String range  
+  )
+    throws PipelineException
+  {
+    PipelineException toThrow = new PipelineException 
+      ("The string (" + range + ") from the sequence (" + sequence + ") is not a " +
+       "valid frame range value");
+    
+    String buffer[] = range.split("x");
+    
+    int by = 1;
+    if (buffer.length == 2) {
+      try {
+        by = Integer.valueOf(buffer[1]);
+      }
+      catch (NumberFormatException ex) {
+        throw toThrow;
+      }
+    }
+    else if (buffer.length != 1)
+      throw toThrow;
+    
+    String buffer2[] = buffer[0].split("-");
+    if (buffer2.length == 2) {
+      try {
+       int start = Integer.valueOf(buffer2[0]);
+       int end = Integer.valueOf(buffer2[1]);
+       return new FrameRange(start, end, by);
+      }
+      catch (NumberFormatException ex ) {
+        throw toThrow;
+      }
+    }
+    else if (buffer2.length == 1) {
+      try {
+        int start = Integer.valueOf(buffer2[0]);
+        return new FrameRange(start);
+       }
+       catch (NumberFormatException ex ) {
+         throw toThrow;
+       }
+    }
+    else
+      throw toThrow;
+  }
+  
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   H E L P E R S                                                                        */
@@ -679,10 +821,7 @@ class FileSeq
   buildCache() 
   {
     if(pFrameRange != null) {
-      if(pFrameRange.isSingle())
-	pStringRep = pFilePattern.getFile(pFrameRange.getStart()).getPath();
-      else 
-	pStringRep = (pFilePattern.toString() + ", " + pFrameRange.toString());
+      pStringRep = (pFilePattern.toString() + "," + pFrameRange.toString());
     }
     else {
       pStringRep = pFilePattern.toString();
@@ -798,7 +937,7 @@ class FileSeq
    * The cached string representation.
    */
   private String  pStringRep;
- 
+  
   /** 
    * The cached hash code.
    */
