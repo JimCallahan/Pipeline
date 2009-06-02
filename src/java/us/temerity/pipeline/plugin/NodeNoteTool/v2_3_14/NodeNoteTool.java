@@ -1,4 +1,4 @@
-// $Id: NodeNoteTool.java,v 1.1 2007/11/03 22:07:36 jesse Exp $
+// $Id: NodeNoteTool.java,v 1.2 2009/06/02 18:17:54 jlee Exp $
 
 package us.temerity.pipeline.plugin.NodeNoteTool.v2_3_14;
 
@@ -103,6 +103,7 @@ class NodeNoteTool
     collectInput()
       throws PipelineException
     {
+      /*
       Box vbox = new Box(BoxLayout.Y_AXIS);
       TextAreaAnnotationParam param = 
 	(TextAreaAnnotationParam) pAnnotation.getParam(aNodeNote);
@@ -131,7 +132,53 @@ class NodeNoteTool
 
       scroll.getViewport().setScrollMode(JViewport.BACKINGSTORE_SCROLL_MODE);
       JToolDialog diag = new JToolDialog("Node Notes", scroll, "Confirm");
+      */
+      Box body = null;
+      TextAreaAnnotationParam param = 
+	(TextAreaAnnotationParam) pAnnotation.getParam(aNodeNote);
+      {
+	Component comps[] = UIFactory.createTitledPanels();
+	JPanel tpanel = (JPanel) comps[0];
+	JPanel vpanel = (JPanel) comps[1];
+	body = (Box) comps[2];
 
+	{
+	  pTextArea = 
+	    UIFactory.createTitledEditableTextArea
+	    (tpanel, "Node Note:", sTSize, vpanel, 
+	     param.getStringValue(), sVSize2, param.getRows(), 
+	     true, "The node note");
+	}
+
+	UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
+
+	{
+	  Box hbox = new Box(BoxLayout.X_AXIS);
+	
+	  hbox.add(Box.createVerticalGlue());
+
+	  hbox.add(Box.createRigidArea(new Dimension(0, 16)));
+	  hbox.add(Box.createHorizontalGlue());
+	  hbox.add(Box.createRigidArea(new Dimension(0, 16)));
+
+	  hbox.setMinimumSize(new Dimension(sTSize, 16));
+	  hbox.setMaximumSize(new Dimension(Integer.MAX_VALUE, 16));
+	
+	  vpanel.add(hbox);
+	}
+
+	tpanel.add(Box.createVerticalGlue());
+      }
+
+      {
+	Dimension size = new Dimension(sTSize + sVSize2 + 52, 300);
+	body.setMinimumSize(size);
+	body.setPreferredSize(size);
+      }
+
+      //JToolDialog diag = new JToolDialog("Node Note: " + pPrimary, body, "Confirm");
+      JToolDialog diag = new JToolDialog("Node Note", body, "Confirm");
+      diag.pack();
       diag.setVisible(true);
 
       if (diag.wasConfirmed()) 
