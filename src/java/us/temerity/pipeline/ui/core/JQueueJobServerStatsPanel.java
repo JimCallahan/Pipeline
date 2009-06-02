@@ -1,10 +1,11 @@
-// $Id: JQueueJobServerStatsPanel.java,v 1.8 2009/03/25 19:31:58 jesse Exp $
+// $Id: JQueueJobServerStatsPanel.java,v 1.9 2009/06/02 20:14:28 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.glue.*;
 import us.temerity.pipeline.math.*;
+import us.temerity.pipeline.ui.UIFactory;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -769,6 +770,16 @@ class JQueueJobServerStatsPanel
     }
   }
 
+  public void
+  mouseReleased
+  (
+   MouseEvent e
+  )
+  {
+    if(!isPanelOpInProgress())
+      pGLComponent.setCursor(Cursor.getDefaultCursor());
+  }
+
 
   /*-- KEY LISTENER METHODS ----------------------------------------------------------------*/
 
@@ -820,7 +831,8 @@ class JQueueJobServerStatsPanel
 	break;
       
       default:
-	Toolkit.getDefaultToolkit().beep();
+	if(UIFactory.getBeepPreference())
+	  Toolkit.getDefaultToolkit().beep();
 	refresh(); 
       }
     }
