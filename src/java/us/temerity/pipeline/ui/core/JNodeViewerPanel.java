@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.132 2009/05/23 03:58:29 jesse Exp $
+// $Id: JNodeViewerPanel.java,v 1.133 2009/06/02 20:12:46 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2900,7 +2900,8 @@ class JNodeViewerPanel
 		}
 	      }
 	      else {
-		Toolkit.getDefaultToolkit().beep();
+		if(UIFactory.getBeepPreference())
+		  Toolkit.getDefaultToolkit().beep();
 	      }
 	    }
 	  }
@@ -3399,7 +3400,8 @@ class JNodeViewerPanel
 	break;
       
       default:
-	Toolkit.getDefaultToolkit().beep();
+	if(UIFactory.getBeepPreference())
+	  Toolkit.getDefaultToolkit().beep();
 	clearSelection();
 	refresh(); 
       }
@@ -5428,6 +5430,8 @@ class JNodeViewerPanel
     } 
 
     /* node detail hints */
+    /* Commented out to implement 1825. */
+    /*
     encoder.encode("ShowDetailHints", pShowDetailHints);
     if(pViewerNodeHint != null) {
       encoder.encode("ShowToolsetHints", pViewerNodeHint.showToolset());
@@ -5435,6 +5439,7 @@ class JNodeViewerPanel
       encoder.encode("ShowActionHints", pViewerNodeHint.showAction());
       encoder.encode("ShowEditingHints", pViewerNodeHint.showEditing());
     }
+    */
 
     /* whether to show the downstram links */
     encoder.encode("DownstreamMode", pDownstreamMode);
@@ -6252,7 +6257,8 @@ class JNodeViewerPanel
       }
     
       ReleaseViewConfirmTask task =
-	new ReleaseViewConfirmTask(pAuthor, pView, names, pRemoveFiles, pRemoveArea);
+	new ReleaseViewConfirmTask(pAuthor, pView, names, 
+				   pRemoveFiles, pRemoveArea, pPattern);
       SwingUtilities.invokeLater(task);
     }
 
@@ -6277,7 +6283,8 @@ class JNodeViewerPanel
      String view, 
      TreeSet<String> names, 
      boolean removeFiles,
-     boolean removeArea
+     boolean removeArea, 
+     String pattern
     ) 
     {
       super("JNodeViewerPanel:ReleaseViewConfirmTask");
@@ -6287,6 +6294,7 @@ class JNodeViewerPanel
       pNames       = names; 
       pRemoveFiles = removeFiles;
       pRemoveArea  = removeArea;
+      pPattern     = pattern;
     }
 
     @Override
@@ -6295,9 +6303,19 @@ class JNodeViewerPanel
     {
       boolean wasConfirmed = false;
       if(pNames.isEmpty()) {
-	JConfirmDialog confirm = new JConfirmDialog(getTopFrame(), "Are you sure?");
-	confirm.setVisible(true);
-	wasConfirmed = confirm.wasConfirmed();
+	if(pPattern == null) {
+	  JConfirmDialog confirm = new JConfirmDialog(getTopFrame(), "Are you sure?");
+	  confirm.setVisible(true);
+	  wasConfirmed = confirm.wasConfirmed();
+	}
+	else {
+	  String message = "The pattern (" + pPattern + ") " + 
+	                   "did not match any nodes in " + 
+			   "(" + pAuthor + "|" + pView + ").";
+
+	  JInfoDialog info = new JInfoDialog(getTopFrame(), "Release View", message);
+	  info.setVisible(true);
+	}
       }
       else {
 	JConfirmListDialog confirm = 
@@ -6319,6 +6337,7 @@ class JNodeViewerPanel
     private TreeSet<String>  pNames; 
     private boolean          pRemoveFiles; 
     private boolean          pRemoveArea; 
+    private String           pPattern;
   }
 
   /** 
@@ -6371,7 +6390,8 @@ class JNodeViewerPanel
 	  master.endPanelOp(pGroupID, "Done.");
 	}
 
-	updateRoots();
+	/* After releasing a view set it to the default view. */
+	setAuthorView(pAuthor, "default");
       }
     }
 
