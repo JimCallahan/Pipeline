@@ -1,4 +1,4 @@
-// $Id: JFileSeqSelectDialog.java,v 1.8 2007/04/01 21:26:34 jim Exp $
+// $Id: JFileSeqSelectDialog.java,v 1.9 2009/06/02 21:22:36 jlee Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -186,7 +186,8 @@ class JFileSeqSelectDialog
       if(canon.isDirectory()) 
 	dir = canon;
       else {
-	Toolkit.getDefaultToolkit().beep();
+	if(UIFactory.getBeepPreference())
+	  Toolkit.getDefaultToolkit().beep();
 	
 	File file = canon;
 	while(isAllowed(file)) {
@@ -261,7 +262,8 @@ class JFileSeqSelectDialog
 	}
       }
       else {
-	Toolkit.getDefaultToolkit().beep();
+	if(UIFactory.getBeepPreference())
+	  Toolkit.getDefaultToolkit().beep();
 	return;
       }
     }
@@ -326,7 +328,8 @@ class JFileSeqSelectDialog
     if(dir.isDirectory()) 
       updateTargetDir(dir);
     else 
-      Toolkit.getDefaultToolkit().beep();
+      if(UIFactory.getBeepPreference())
+	Toolkit.getDefaultToolkit().beep();
   }
 
   /**
@@ -366,7 +369,8 @@ class JFileSeqSelectDialog
       }
     }
     else {
-      Toolkit.getDefaultToolkit().beep();
+      if(UIFactory.getBeepPreference())
+	Toolkit.getDefaultToolkit().beep();
     }
   }
 

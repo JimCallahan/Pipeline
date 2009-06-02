@@ -1,4 +1,4 @@
-// $Id: JFileSelectDialog.java,v 1.10 2007/06/15 00:22:46 jim Exp $
+// $Id: JFileSelectDialog.java,v 1.11 2009/06/02 21:22:36 jlee Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -290,7 +290,8 @@ class JFileSelectDialog
 	name = canon.getName();
       }
       else {
-	Toolkit.getDefaultToolkit().beep();
+	if(UIFactory.getBeepPreference())
+	  Toolkit.getDefaultToolkit().beep();
 
 	File file = canon;
 	while(isAllowed(file)) {
@@ -342,7 +343,8 @@ class JFileSelectDialog
 	pDirField.setText(dir.getPath());
       }
       else {
-	Toolkit.getDefaultToolkit().beep();
+	if(UIFactory.getBeepPreference())
+	  Toolkit.getDefaultToolkit().beep();
 	return;
       }
     }
@@ -406,7 +408,8 @@ class JFileSelectDialog
     if(dir.isDirectory()) 
       updateTargetFile(dir);
     else 
-      Toolkit.getDefaultToolkit().beep();
+      if(UIFactory.getBeepPreference())
+	Toolkit.getDefaultToolkit().beep();
   }
 
   /**
@@ -452,7 +455,8 @@ class JFileSelectDialog
       }
     }
     else {
-      Toolkit.getDefaultToolkit().beep();
+      if(UIFactory.getBeepPreference())
+	Toolkit.getDefaultToolkit().beep();
     }
   }
 
