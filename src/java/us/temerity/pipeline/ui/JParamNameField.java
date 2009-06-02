@@ -1,4 +1,4 @@
-// $Id: JParamNameField.java,v 1.1 2009/05/26 07:09:32 jesse Exp $
+// $Id: JParamNameField.java,v 1.2 2009/06/02 20:08:37 jlee Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -81,7 +81,8 @@ class JParamNameField
       int wk;
       for(wk=0; wk<cs.length; wk++) {
 	if(!(Character.isLetterOrDigit(cs[wk]))) {
-	  Toolkit.getDefaultToolkit().beep();
+	  if(UIFactory.getBeepPreference())
+	    Toolkit.getDefaultToolkit().beep();
 	  return;
 	}
       }

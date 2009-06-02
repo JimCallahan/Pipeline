@@ -1,4 +1,4 @@
-// $Id: JAlphaNumField.java,v 1.2 2004/06/14 22:45:08 jim Exp $
+// $Id: JAlphaNumField.java,v 1.3 2009/06/02 20:08:37 jlee Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -75,7 +75,8 @@ class JAlphaNumField
       int wk;
       for(wk=0; wk<cs.length; wk++) {
 	if(!Character.isLetterOrDigit(cs[wk])) {
-	  Toolkit.getDefaultToolkit().beep();
+	  if(UIFactory.getBeepPreference())
+	    Toolkit.getDefaultToolkit().beep();
 	  return;
 	}
       }

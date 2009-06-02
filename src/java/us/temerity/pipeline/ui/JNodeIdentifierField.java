@@ -1,4 +1,4 @@
-// $Id: JNodeIdentifierField.java,v 1.1 2005/04/30 01:02:20 jim Exp $
+// $Id: JNodeIdentifierField.java,v 1.2 2009/06/02 20:08:37 jlee Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -79,7 +79,8 @@ class JNodeIdentifierField
       int wk;
       for(wk=0; wk<cs.length; wk++) {
 	if(!(Character.isLetterOrDigit(cs[wk]) || (cs[wk] == '_') ||(cs[wk] == '-'))) {
-	  Toolkit.getDefaultToolkit().beep();
+	  if(UIFactory.getBeepPreference())
+	    Toolkit.getDefaultToolkit().beep();
 	  return;
 	}
       }

@@ -1,4 +1,4 @@
-// $Id: JManageHardwareKeysDialog.java,v 1.6 2009/06/01 07:40:23 jesse Exp $
+// $Id: JManageHardwareKeysDialog.java,v 1.7 2009/06/02 20:08:37 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -11,6 +11,7 @@ import javax.swing.event.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.ui.*;
+import us.temerity.pipeline.ui.UIFactory;
 import us.temerity.pipeline.ui.core.JManageSelectionKeysDialog.*;
 
 /*------------------------------------------------------------------------------------------*/
@@ -611,7 +612,8 @@ class JManageHardwareKeysDialog
 	  }
 	}
 	else {
-	  Toolkit.getDefaultToolkit().beep();
+	  if(UIFactory.getBeepPreference())
+	    Toolkit.getDefaultToolkit().beep();
 	}
       }
     }
@@ -673,7 +675,8 @@ class JManageHardwareKeysDialog
 	break;
       
       default:
-	Toolkit.getDefaultToolkit().beep();
+	if(UIFactory.getBeepPreference())
+	  Toolkit.getDefaultToolkit().beep();
       }
     }
   }

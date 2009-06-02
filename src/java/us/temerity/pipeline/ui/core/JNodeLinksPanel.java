@@ -1,4 +1,4 @@
-// $Id: JNodeLinksPanel.java,v 1.34 2009/03/25 19:31:58 jesse Exp $
+// $Id: JNodeLinksPanel.java,v 1.35 2009/06/02 20:08:37 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1070,7 +1070,8 @@ class JNodeLinksPanel
 	break;
       
       default:
-	Toolkit.getDefaultToolkit().beep();
+	if(UIFactory.getBeepPreference())
+	  Toolkit.getDefaultToolkit().beep();
       }
     }
   }

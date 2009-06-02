@@ -1,4 +1,4 @@
-// $Id: JNodeAnnotationsPanel.java,v 1.24 2009/05/26 07:39:51 jesse Exp $
+// $Id: JNodeAnnotationsPanel.java,v 1.25 2009/06/02 20:08:37 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -732,7 +732,8 @@ class JNodeAnnotationsPanel
 	break;
       
       default:
-	Toolkit.getDefaultToolkit().beep();
+	if(UIFactory.getBeepPreference())
+	  Toolkit.getDefaultToolkit().beep();
       }
     }
   }

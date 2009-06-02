@@ -1,4 +1,4 @@
-// $Id: JQueueJobDetailsPanel.java,v 1.19 2009/03/25 19:31:58 jesse Exp $
+// $Id: JQueueJobDetailsPanel.java,v 1.20 2009/06/02 20:08:37 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -1791,7 +1791,8 @@ class JQueueJobDetailsPanel
 	break;
       
       default:
-	Toolkit.getDefaultToolkit().beep();
+	if(UIFactory.getBeepPreference())
+	  Toolkit.getDefaultToolkit().beep();
       }
     }
   }

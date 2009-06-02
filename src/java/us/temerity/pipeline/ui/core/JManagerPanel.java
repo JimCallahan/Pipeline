@@ -1,4 +1,4 @@
-// $Id: JManagerPanel.java,v 1.61 2009/05/04 21:13:16 jim Exp $
+// $Id: JManagerPanel.java,v 1.62 2009/06/02 20:08:37 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2486,7 +2486,8 @@ class JManagerPanel
   doNodeBrowserPanel()
   {
     if(getContents() instanceof JNodeBrowserPanel) {
-      Toolkit.getDefaultToolkit().beep();
+      if(UIFactory.getBeepPreference())
+	Toolkit.getDefaultToolkit().beep();
       return; 
     }
 
@@ -2510,7 +2511,8 @@ class JManagerPanel
   doNodeViewerPanel()
   {
     if(getContents() instanceof JNodeViewerPanel) {
-      Toolkit.getDefaultToolkit().beep();
+      if(UIFactory.getBeepPreference())
+	Toolkit.getDefaultToolkit().beep();
       return; 
     }
 
@@ -2534,7 +2536,8 @@ class JManagerPanel
   doNodeDetailsPanel()
   {
     if(getContents() instanceof JNodeDetailsPanel) {
-      Toolkit.getDefaultToolkit().beep();
+      if(UIFactory.getBeepPreference())
+	Toolkit.getDefaultToolkit().beep();
       return; 
     }
 
@@ -2564,7 +2567,8 @@ class JManagerPanel
   doNodeFilesPanel()
   {
     if(getContents() instanceof JNodeFilesPanel) {
-      Toolkit.getDefaultToolkit().beep();
+      if(UIFactory.getBeepPreference())
+	Toolkit.getDefaultToolkit().beep();
       return; 
     }
 
@@ -2588,7 +2592,8 @@ class JManagerPanel
   doNodeLinksPanel()
   {
     if(getContents() instanceof JNodeLinksPanel) {
-      Toolkit.getDefaultToolkit().beep();
+      if(UIFactory.getBeepPreference())
+	Toolkit.getDefaultToolkit().beep();
       return; 
     }
 
@@ -2612,7 +2617,8 @@ class JManagerPanel
   doNodeHistoryPanel()
   {
     if(getContents() instanceof JNodeHistoryPanel) {
-      Toolkit.getDefaultToolkit().beep();
+      if(UIFactory.getBeepPreference())
+	Toolkit.getDefaultToolkit().beep();
       return; 
     }
 
@@ -2636,7 +2642,8 @@ class JManagerPanel
   doNodeAnnotationsPanel()
   {
     if(getContents() instanceof JNodeAnnotationsPanel) {
-      Toolkit.getDefaultToolkit().beep();
+      if(UIFactory.getBeepPreference())
+	Toolkit.getDefaultToolkit().beep();
       return; 
     }
 
@@ -2663,7 +2670,8 @@ class JManagerPanel
   doJobServerStatsPanel()
   {
     if(getContents() instanceof JQueueJobServerStatsPanel) {
-      Toolkit.getDefaultToolkit().beep();
+      if(UIFactory.getBeepPreference())
+	Toolkit.getDefaultToolkit().beep();
       return; 
     }
 
@@ -2684,7 +2692,8 @@ class JManagerPanel
   doJobServersPanel()
   {
     if(getContents() instanceof JQueueJobServersPanel) {
-      Toolkit.getDefaultToolkit().beep();
+      if(UIFactory.getBeepPreference())
+	Toolkit.getDefaultToolkit().beep();
       return; 
     }
 
@@ -2705,7 +2714,8 @@ class JManagerPanel
   doJobSlotsPanel()
   {
     if(getContents() instanceof JQueueJobSlotsPanel) {
-      Toolkit.getDefaultToolkit().beep();
+      if(UIFactory.getBeepPreference())
+	Toolkit.getDefaultToolkit().beep();
       return; 
     }
 
@@ -2726,7 +2736,8 @@ class JManagerPanel
   doJobBrowserPanel()
   {
     if(getContents() instanceof JQueueJobBrowserPanel) {
-      Toolkit.getDefaultToolkit().beep();
+      if(UIFactory.getBeepPreference())
+	Toolkit.getDefaultToolkit().beep();
       return; 
     }
 
@@ -2747,7 +2758,8 @@ class JManagerPanel
   doJobViewerPanel()
   {
     if(getContents() instanceof JQueueJobViewerPanel) {
-      Toolkit.getDefaultToolkit().beep();
+      if(UIFactory.getBeepPreference())
+	Toolkit.getDefaultToolkit().beep();
       return; 
     }
 
@@ -2768,7 +2780,8 @@ class JManagerPanel
   doJobDetailsPanel()
   {
     if(getContents() instanceof JQueueJobDetailsPanel) {
-      Toolkit.getDefaultToolkit().beep();
+      if(UIFactory.getBeepPreference())
+	Toolkit.getDefaultToolkit().beep();
       return; 
     }
 
@@ -2792,7 +2805,8 @@ class JManagerPanel
   doEmptyPanel()
   {
     if(getContents() instanceof JEmptyPanel) {
-      Toolkit.getDefaultToolkit().beep();
+      if(UIFactory.getBeepPreference())
+	Toolkit.getDefaultToolkit().beep();
       return; 
     }
 

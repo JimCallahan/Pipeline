@@ -1,4 +1,4 @@
-// $Id: JResourceUsageHistoryDialog.java,v 1.26 2009/03/19 21:55:59 jesse Exp $
+// $Id: JResourceUsageHistoryDialog.java,v 1.27 2009/06/02 20:08:37 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -2787,7 +2787,8 @@ class JResourceUsageHistoryDialog
 	break;
       
       default:
-	Toolkit.getDefaultToolkit().beep();
+	if(UIFactory.getBeepPreference())
+	  Toolkit.getDefaultToolkit().beep();
 	pGLDrawable.repaint();
       }
     }

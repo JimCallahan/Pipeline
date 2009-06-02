@@ -1,4 +1,4 @@
-// $Id: JQueueJobServersPanel.java,v 1.17 2009/06/01 07:40:23 jesse Exp $
+// $Id: JQueueJobServersPanel.java,v 1.18 2009/06/02 20:08:37 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -951,7 +951,8 @@ class JQueueJobServersPanel
 	  pHostsPopup.show(e.getComponent(), e.getX(), e.getY());
 	}
 	else {
-	  Toolkit.getDefaultToolkit().beep();
+	  if(UIFactory.getBeepPreference())
+	    Toolkit.getDefaultToolkit().beep();
 	}
       }
     }
@@ -1011,7 +1012,8 @@ class JQueueJobServersPanel
 	break;
       
       default:
-	Toolkit.getDefaultToolkit().beep();
+	if(UIFactory.getBeepPreference())
+	  Toolkit.getDefaultToolkit().beep();
       }
     }
   }

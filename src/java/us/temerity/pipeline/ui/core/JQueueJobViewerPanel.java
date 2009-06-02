@@ -1,4 +1,4 @@
-// $Id: JQueueJobViewerPanel.java,v 1.64 2009/05/16 02:06:19 jim Exp $
+// $Id: JQueueJobViewerPanel.java,v 1.65 2009/06/02 20:08:37 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -16,6 +16,7 @@ import javax.swing.event.PopupMenuListener;
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.glue.*;
 import us.temerity.pipeline.math.*;
+import us.temerity.pipeline.ui.UIFactory;
 
 /*------------------------------------------------------------------------------------------*/
 /*   Q U E U E   J O B   V I E W E R   P A N E L                                            */
@@ -973,7 +974,8 @@ class JQueueJobViewerPanel
     if(!pForcedCollapseMessages.isEmpty()) {
       String warn = prefs.getCollapseWarnings();
       if(warn.equals("Beep")) {
-        Toolkit.getDefaultToolkit().beep();
+	if(UIFactory.getBeepPreference())
+	  Toolkit.getDefaultToolkit().beep();
       }
       else if(warn.equals("Message")) {
         pForcedCollapseMessages.add
@@ -2132,7 +2134,8 @@ class JQueueJobViewerPanel
 	break;
       
       default:
-	Toolkit.getDefaultToolkit().beep();
+	if(UIFactory.getBeepPreference())
+	  Toolkit.getDefaultToolkit().beep();
 	clearSelection();
 	refresh(); 
       }

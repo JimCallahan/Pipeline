@@ -1,4 +1,4 @@
-// $Id: JBaseNumberField.java,v 1.3 2007/07/31 14:34:42 jim Exp $
+// $Id: JBaseNumberField.java,v 1.4 2009/06/02 20:08:37 jlee Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -183,7 +183,8 @@ class JBaseNumberField<T>
       if(isValidResult(before + after)) 
 	super.remove(offset, length);
       else 
-	Toolkit.getDefaultToolkit().beep();
+	if(UIFactory.getBeepPreference())
+	  Toolkit.getDefaultToolkit().beep();
     }
 
     /**
@@ -210,7 +211,8 @@ class JBaseNumberField<T>
       if(isValidResult(before + str + after)) 
 	super.insertString(offset, str, attr);
       else 
-	Toolkit.getDefaultToolkit().beep();
+	if(UIFactory.getBeepPreference())
+	  Toolkit.getDefaultToolkit().beep();
     }
 
 

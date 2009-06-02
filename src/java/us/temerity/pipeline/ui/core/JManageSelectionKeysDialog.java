@@ -1,4 +1,4 @@
-// $Id: JManageSelectionKeysDialog.java,v 1.21 2009/06/01 07:40:23 jesse Exp $
+// $Id: JManageSelectionKeysDialog.java,v 1.22 2009/06/02 20:08:37 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -872,7 +872,8 @@ class JManageSelectionKeysDialog
 	  }
 	}
 	else {
-	  Toolkit.getDefaultToolkit().beep();
+	  if(UIFactory.getBeepPreference())
+	    Toolkit.getDefaultToolkit().beep();
 	}
       }
     }
@@ -956,7 +957,8 @@ class JManageSelectionKeysDialog
 	break;
       
       default:
-	Toolkit.getDefaultToolkit().beep();
+	if(UIFactory.getBeepPreference())
+	  Toolkit.getDefaultToolkit().beep();
       }
     }
   }

@@ -1,4 +1,4 @@
-// $Id: JQueueJobBrowserPanel.java,v 1.41 2009/05/14 23:30:43 jim Exp $
+// $Id: JQueueJobBrowserPanel.java,v 1.42 2009/06/02 20:08:37 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -14,6 +14,7 @@ import us.temerity.pipeline.*;
 import us.temerity.pipeline.glue.*;
 import us.temerity.pipeline.ui.AbstractSortableTableModel;
 import us.temerity.pipeline.ui.JTablePanel;
+import us.temerity.pipeline.ui.UIFactory;
 
 /*------------------------------------------------------------------------------------------*/
 /*   Q U E U E   J O B   B R O W S E R   P A N E L                                          */
@@ -814,7 +815,8 @@ class JQueueJobBrowserPanel
 	  pGroupsPopup.show(e.getComponent(), e.getX(), e.getY());      
 	}
 	else {
-	  Toolkit.getDefaultToolkit().beep();
+	  if(UIFactory.getBeepPreference())
+	    Toolkit.getDefaultToolkit().beep();
 	}
       }
     }
@@ -896,7 +898,8 @@ class JQueueJobBrowserPanel
 	break;
       
       default:
-	Toolkit.getDefaultToolkit().beep();
+	if(UIFactory.getBeepPreference())
+	  Toolkit.getDefaultToolkit().beep();
       }
     }
   }

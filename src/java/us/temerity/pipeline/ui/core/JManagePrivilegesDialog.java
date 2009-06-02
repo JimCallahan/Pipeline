@@ -1,4 +1,4 @@
-// $Id: JManagePrivilegesDialog.java,v 1.7 2009/03/24 01:21:21 jesse Exp $
+// $Id: JManagePrivilegesDialog.java,v 1.8 2009/06/02 20:08:37 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -544,7 +544,8 @@ class  JManagePrivilegesDialog
 	  }
 	}
 	else {
-	  Toolkit.getDefaultToolkit().beep();
+	  if(UIFactory.getBeepPreference())
+	    Toolkit.getDefaultToolkit().beep();
 	}
       }
     }
@@ -604,7 +605,8 @@ class  JManagePrivilegesDialog
 	break;
       
       default:
-	Toolkit.getDefaultToolkit().beep();
+	if(UIFactory.getBeepPreference())
+	  Toolkit.getDefaultToolkit().beep();
       }
     }
   }

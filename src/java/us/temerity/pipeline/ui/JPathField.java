@@ -1,4 +1,4 @@
-// $Id: JPathField.java,v 1.5 2007/07/31 14:52:27 jim Exp $
+// $Id: JPathField.java,v 1.6 2009/06/02 20:08:37 jlee Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -153,7 +153,8 @@ class JPathField
       if(isValidResult(before + after)) 
 	super.remove(offset, length);
       else 
-	Toolkit.getDefaultToolkit().beep();
+	if(UIFactory.getBeepPreference())
+	  Toolkit.getDefaultToolkit().beep();
     }
 
     /**
@@ -180,7 +181,8 @@ class JPathField
       if(isValidResult(before + str + after)) 
 	super.insertString(offset, str, attr);
       else 
-	Toolkit.getDefaultToolkit().beep();
+	if(UIFactory.getBeepPreference())
+	  Toolkit.getDefaultToolkit().beep();
     }
 
     /**

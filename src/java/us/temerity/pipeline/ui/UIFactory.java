@@ -1,4 +1,4 @@
-// $Id: UIFactory.java,v 1.30 2009/05/26 07:09:32 jesse Exp $
+// $Id: UIFactory.java,v 1.31 2009/06/02 20:08:37 jlee Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -6,6 +6,7 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 import java.util.Collection;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.swing.*;
 import javax.swing.plaf.synth.SynthLookAndFeel;
@@ -4194,5 +4195,37 @@ class UIFactory
       ToolTipManager.sharedInstance().setLightWeightPopupEnabled(false);
     }
   }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   B E E P   P R E F E R E N C E                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   *
+   */
+  public static boolean
+  getBeepPreference()
+  {
+    return pBeepPreference.get();
+  }
+
+  /**
+   *
+   */
+  public static void
+  setBeepPreference
+  (
+   boolean v
+  )
+  {
+    pBeepPreference.set(v);
+  }
+
+  /**
+   *
+   */
+  private static AtomicBoolean  pBeepPreference = new AtomicBoolean();
 
 }

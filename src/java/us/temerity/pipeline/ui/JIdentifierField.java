@@ -1,4 +1,4 @@
-// $Id: JIdentifierField.java,v 1.2 2004/06/14 22:47:37 jim Exp $
+// $Id: JIdentifierField.java,v 1.3 2009/06/02 20:08:37 jlee Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -81,7 +81,8 @@ class JIdentifierField
       for(wk=0; wk<cs.length; wk++) {
 	if(!(Character.isLetterOrDigit(cs[wk]) || 
 	     (cs[wk] == '_') ||(cs[wk] == '-') ||(cs[wk] == '.'))) {
-	  Toolkit.getDefaultToolkit().beep();
+	  if(UIFactory.getBeepPreference())
+	    Toolkit.getDefaultToolkit().beep();
 	  return;
 	}
       }

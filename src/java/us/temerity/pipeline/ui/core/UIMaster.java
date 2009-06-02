@@ -1,4 +1,4 @@
-// $Id: UIMaster.java,v 1.106 2009/06/01 03:21:40 jesse Exp $
+// $Id: UIMaster.java,v 1.107 2009/06/02 20:08:37 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -4099,7 +4099,8 @@ class UIMaster
 	SwingUtilities.invokeLater(new BeginOpsTask(channel, msg));
     }
     else {
-      Toolkit.getDefaultToolkit().beep();
+      if(UIFactory.getBeepPreference())
+	Toolkit.getDefaultToolkit().beep();
     }
 
     return aquired;
@@ -4775,6 +4776,9 @@ class UIMaster
 	  Path path = new Path(base, "preferences");
 	  if(path.toFile().isFile()) 	  
 	    UserPrefs.load();
+	    
+	    /* Set the beep preference */
+	    UIFactory.setBeepPreference(UserPrefs.getInstance().getBeep());
 	}
 
 	/* read the collapsed node paths */ 
@@ -5605,7 +5609,7 @@ class UIMaster
 	
 	frames.add(pFrame);
       }
-      
+
       /* hide the splash screen */ 
       pRestoreSplashFrame.setVisible(false);
       
@@ -5665,6 +5669,9 @@ class UIMaster
     run() 
     {
       try {
+	/* Set the beep preference */
+	UIFactory.setBeepPreference(UserPrefs.getInstance().getBeep());
+
 	if(pRootPanel != null) {
 	  JManagerPanel mpanel = (JManagerPanel) pRootPanel.getComponent(0);
 	  if(mpanel != null) 

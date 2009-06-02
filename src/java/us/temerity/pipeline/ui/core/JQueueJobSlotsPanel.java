@@ -1,4 +1,4 @@
-// $Id: JQueueJobSlotsPanel.java,v 1.20 2009/03/25 19:31:58 jesse Exp $
+// $Id: JQueueJobSlotsPanel.java,v 1.21 2009/06/02 20:08:37 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -12,6 +12,7 @@ import javax.swing.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.ui.JTablePanel;
+import us.temerity.pipeline.ui.UIFactory;
 
 /*------------------------------------------------------------------------------------------*/
 /*   Q U E U E   J O B   S L O T S   P A N E L                                              */
@@ -670,7 +671,8 @@ class JQueueJobSlotsPanel
 	  pSlotsPopup.show(e.getComponent(), e.getX(), e.getY());
 	}
 	else {
-	  Toolkit.getDefaultToolkit().beep();
+	  if(UIFactory.getBeepPreference())
+	    Toolkit.getDefaultToolkit().beep();
 	}
       }
     }
@@ -725,7 +727,8 @@ class JQueueJobSlotsPanel
 	break;
       
       default:
-	Toolkit.getDefaultToolkit().beep();
+	if(UIFactory.getBeepPreference())
+	  Toolkit.getDefaultToolkit().beep();
       }
     }
   }
