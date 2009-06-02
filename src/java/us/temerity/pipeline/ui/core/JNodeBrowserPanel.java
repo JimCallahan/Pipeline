@@ -1,4 +1,4 @@
-// $Id: JNodeBrowserPanel.java,v 1.23 2009/03/25 19:31:58 jesse Exp $
+// $Id: JNodeBrowserPanel.java,v 1.24 2009/06/02 20:11:35 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -72,6 +72,8 @@ class JNodeBrowserPanel
       pFilter.put(NodeTreeComp.State.WorkingNoneCheckedInSome,    true);
       pFilter.put(NodeTreeComp.State.WorkingCurrentCheckedInNone, true);
       pFilter.put(NodeTreeComp.State.WorkingOtherCheckedInNone,   true);
+
+      pCollapsedTreePath = new TreeSet<String>();
     }
 
     /* panel popup menu */ 
@@ -93,6 +95,12 @@ class JNodeBrowserPanel
       item.setActionCommand("node-filter");
       item.addActionListener(this);
       pPanelPopup.add(item);  
+
+      item = new JMenuItem("Expand Selected");
+      pExpandSelectedItem = item;
+      item.setActionCommand("expand-selected");
+      item.addActionListener(this);
+      pPanelPopup.add(item);
       
       updateMenuToolTips();
     }
@@ -354,7 +362,16 @@ class JNodeBrowserPanel
   private void 
   updateNodeTree()
   {
-    updateNodeTree(getExpandedPaths(), null);
+    updateNodeTree(getExpandedPaths(), null, false);
+  }
+
+  private void 
+  updateNodeTree
+  (
+   boolean expandSelected
+  )
+  {
+    updateNodeTree(getExpandedPaths(), null, expandSelected);
   }
 
   /**
@@ -369,7 +386,17 @@ class JNodeBrowserPanel
    String deep
   )
   {
-    updateNodeTree(getExpandedPaths(), deep);
+    updateNodeTree(getExpandedPaths(), deep, false);
+  }
+
+  private void 
+  updateNodeTree
+  (    
+   String deep, 
+   boolean expandSelected
+  )
+  {
+    updateNodeTree(getExpandedPaths(), deep, expandSelected);
   }
 
   /**
@@ -380,12 +407,27 @@ class JNodeBrowserPanel
    * 
    * @param deep
    *   If not <CODE>null</CODE>, update and expand all node paths under this path.
+   *
+   * @param expandSelected
+   *   If true overrides the preference for expanding the node browser for 
+   *   selected nodes.
    */ 
   private void 
   updateNodeTree
   (
    TreeSet<String> expanded, 
-   String deep
+   String deep 
+  )
+  {
+    updateNodeTree(expanded, deep, false);
+  }
+
+  private void 
+  updateNodeTree
+  (
+   TreeSet<String> expanded, 
+   String deep, 
+   boolean expandSelected
   )
   {
     if(pTree == null) 
@@ -403,8 +445,15 @@ class JNodeBrowserPanel
 	  TreeMap<String,Boolean> paths = new TreeMap<String,Boolean>();
 	  for(String path : expanded)
 	    paths.put(path, (deep != null) && path.equals(deep));
-	  for(String path : pSelected) 
-	    paths.put(path, false);
+	  for(String path : pSelected) {
+	    Path p = new Path(path);
+	    String parent = p.getParent();
+
+	    if(expandSelected || 
+	       UserPrefs.getInstance().getExpandSelected() || 
+	       !pCollapsedTreePath.contains(parent))
+	      paths.put(path, false);
+	  }
 	  
 	  comp = client.updatePaths(pAuthor, pView, paths); 
 	}
@@ -447,8 +496,10 @@ class JNodeBrowserPanel
       if(e != null) {
 	while(e.hasMoreElements()) {
 	  TreePath tpath = (TreePath) e.nextElement(); 
+
 	  String name = treePathToNodeName(tpath);
-	  if(name.length() > 0) 
+
+	  if(name.length() > 0)
 	    paths.add(name);
 	}
       }
@@ -608,14 +659,21 @@ class JNodeBrowserPanel
   /*-- TREE EXPANSION LISTENER METHODS -----------------------------------------------------*/
 
   /**
-   *Called whenever an item in the tree has been collapsed.
+   * Called whenever an item in the tree has been collapsed.
    */ 
   public void
   treeCollapsed
   (
    TreeExpansionEvent e
   )
-  {}
+  {
+    {
+      TreePath tpath = e.getPath();
+      String   tname = treePathToNodeName(tpath);
+
+      pCollapsedTreePath.add(tname);
+    }
+  }
 
   /**
    * Called whenever an item in the tree has been expanded.
@@ -626,6 +684,13 @@ class JNodeBrowserPanel
    TreeExpansionEvent e
   )
   {
+    {
+      TreePath tpath = e.getPath();
+      String   tname = treePathToNodeName(tpath);
+
+      pCollapsedTreePath.remove(tname);
+    }
+
     updateNodeTree();
   }
 
@@ -722,7 +787,8 @@ class JNodeBrowserPanel
 		
 		/* UNSUPPORTED */ 
 		else {
-		  Toolkit.getDefaultToolkit().beep();
+		  if(UIFactory.getBeepPreference())
+		    Toolkit.getDefaultToolkit().beep();
 		}
 	      }
 	      break;
@@ -788,7 +854,8 @@ class JNodeBrowserPanel
 		}
 		
 		else {
-		  Toolkit.getDefaultToolkit().beep();
+		  if(UIFactory.getBeepPreference())
+		    Toolkit.getDefaultToolkit().beep();
 		}
 	      }
 	    }
@@ -835,7 +902,8 @@ class JNodeBrowserPanel
 	  pPanelPopup.show(e.getComponent(), e.getX(), e.getY());
 	}
 	else {
-	  Toolkit.getDefaultToolkit().beep();
+	  if(UIFactory.getBeepPreference())
+	    Toolkit.getDefaultToolkit().beep();
 	}
       }
     }
@@ -881,7 +949,8 @@ class JNodeBrowserPanel
 	break;
 
       default:
-	Toolkit.getDefaultToolkit().beep();
+	if(UIFactory.getBeepPreference())
+	  Toolkit.getDefaultToolkit().beep();
       }
     }
   }
@@ -936,6 +1005,8 @@ class JNodeBrowserPanel
     String cmd = e.getActionCommand();
     if(cmd.equals("node-filter"))
       doNodeFilter();
+    else if(cmd.startsWith("expand-selected"))
+      doExpandSelected();
     else if(cmd.startsWith("author-view:")) 
       doChangeAuthorView(cmd.substring(12));    
   }
@@ -957,6 +1028,15 @@ class JNodeBrowserPanel
 
     pFilterDialog.updateFilter(pFilter);
     pFilterDialog.setVisible(true);
+  }
+
+  /**
+   * Expand the node browser tree to display all the selected nodes.
+   */
+  public void
+  doExpandSelected()
+  {
+    updateNodeTree(true);
   }
 
   /**
@@ -1070,12 +1150,19 @@ class JNodeBrowserPanel
    * The panel layout popup menu items.
    */ 
   private JMenuItem  pNodeFilterItem;
+  private JMenuItem  pExpandSelectedItem;
 
 
   /**
    * The editor dialog for node filters.
    */ 
   private JNodeBrowserFilterDialog  pFilterDialog; 
+
+
+  /**
+   * The set of TreePath that are expanded.
+   */
+  private TreeSet<String>  pCollapsedTreePath;
 
 
 }
