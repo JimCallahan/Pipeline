@@ -4,7 +4,7 @@ unset JAVA_JVM_VERSION
 
 cd `pwd`
 exec "@CLIENT_JAVA_RUNTIME@" @JAVA_RUNTIME_OPTS@ \
-  -Xms256M -Xmx1536M \
+  @PLMINE_GC_OPTS@ \
   @JAVA_OSARCH_TYPE@ @JAVA_BUILD_TYPE@=Opt \
   -cp @PIPELINE_JAR@ \
   us/temerity/pipeline/bootstrap/Main us.temerity.pipeline.core.MineApp "$@"

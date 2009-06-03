@@ -9,7 +9,7 @@ AC_CONFIG_SRCDIR([AUTHORS])
 AC_CONFIG_AUX_DIR(config)
 
 AC_CONFIG_HEADERS([config.h])
-AM_INIT_AUTOMAKE(Pipeline, 2.4.6b12)
+AM_INIT_AUTOMAKE(Pipeline, 2.4.6b13)
                            
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
@@ -1432,6 +1432,11 @@ AC_SUBST(PLSCRIPT_GC_OPTS)
 PLSCRIPT_GC_OPTS="${java_gc_opts} -Xms8M -Xmx256M"
 AC_MSG_RESULT([$PLSCRIPT_GC_OPTS])
 
+AC_MSG_CHECKING([plbuilder])
+AC_SUBST(PLBUILDER_GC_OPTS)
+PLBUILDER_GC_OPTS="${java_gc_opts} -Xms8M -Xmx256M"
+AC_MSG_RESULT([$PLBUILDER_GC_OPTS])
+
 AC_MSG_CHECKING([plpluginmgr])
 AC_SUBST(PLPLUGINMGR_GC_OPTS)
 PLPLUGINMGR_GC_OPTS="${java_gc_opts} -Xms8M -Xmx512M"
@@ -1447,6 +1452,20 @@ AC_SUBST(PLVERSION_GC_OPTS)
 PLVERSION_GC_OPTS="${java_gc_opts} -Xms8M -Xmx256M"
 AC_MSG_RESULT([$PLVERSION_GC_OPTS])
 
+AC_MSG_CHECKING([plbrowse])
+AC_SUBST(PLBROWSE_GC_OPTS)
+PLBROWSE_GC_OPTS="${java_gc_opts} -Xms8M -Xmx256M"
+AC_MSG_RESULT([$PLBROWSE_GC_OPTS])
+
+AC_MSG_CHECKING([plmine])
+AC_SUBST(PLMINE_GC_OPTS)
+PLMINE_GC_OPTS="${java_gc_opts} -Xms256M -Xmx1536M"
+AC_MSG_RESULT([$PLMINE_GC_OPTS])
+
+AC_MSG_CHECKING([plpython])
+AC_SUBST(PLPYTHON_GC_OPTS)
+PLPYTHON_GC_OPTS="${java_gc_opts} -Xms8M -Xmx256M"
+AC_MSG_RESULT([$PLPYTHON_GC_OPTS])
 
 AC_MSG_RESULT([ ])
 
@@ -1464,69 +1483,112 @@ then
   debug_base=$with_debug_base
 fi
 
-java_runjdwp="-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address="
+java_runjdwp="-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=\${pldebug_port}"
 java_debug_opts="-Xdebug ${java_runjdwp}"
 
 AC_SUBST(PL_REMOTE_PORT)
 PL_REMOTE_PORT=${debug_base}
 
+AC_MSG_CHECKING([plpluginmgr])
+AC_SUBST(PLPLUGINMGR_DEBUG_OPTS)
+PLPLUGINMGR_DEBUG_OPTS=${java_debug_opts}
+AC_SUBST(PLPLUGINMGR_DEBUG_BASE)
+PLPLUGINMGR_DEBUG_BASE=$(($debug_base+10))
+AC_MSG_RESULT([$PLPLUGINMGR_DEBUG_OPTS])
+
 AC_MSG_CHECKING([plmaster])
 AC_SUBST(PLMASTER_DEBUG_OPTS)
-PLMASTER_DEBUG_OPTS=${java_debug_opts}$(($debug_base+1))
+PLMASTER_DEBUG_OPTS=${java_debug_opts}
+AC_SUBST(PLMASTER_DEBUG_BASE)
+PLMASTER_DEBUG_BASE=$(($debug_base+20))
 AC_MSG_RESULT([$PLMASTER_DEBUG_OPTS])
 
 AC_MSG_CHECKING([plfilemgr])
 AC_SUBST(PLFILEMGR_DEBUG_OPTS)
-PLFILEMGR_DEBUG_OPTS=${java_debug_opts}$(($debug_base+2))
+PLFILEMGR_DEBUG_OPTS=${java_debug_opts}
+AC_SUBST(PLFILEMGR_DEBUG_BASE)
+PLFILEMGR_DEBUG_BASE=$(($debug_base+30))
 AC_MSG_RESULT([$PLFILEMGR_DEBUG_OPTS])
-
-AC_MSG_CHECKING([plplugin])
-AC_SUBST(PLPLUGIN_DEBUG_OPTS)
-PLPLUGIN_DEBUG_OPTS=${java_debug_opts}$(($debug_base+4))
-AC_MSG_RESULT([$PLPLUGIN_DEBUG_OPTS])
 
 AC_MSG_CHECKING([plqueuemgr])
 AC_SUBST(PLQUEUEMGR_DEBUG_OPTS)
-PLQUEUEMGR_DEBUG_OPTS=${java_debug_opts}$(($debug_base+5))
+PLQUEUEMGR_DEBUG_OPTS=${java_debug_opts}$
+AC_SUBST(PLQUEUEMGR_DEBUG_BASE)
+PLQUEUEMGR_DEBUG_BASE=$(($debug_base+40))
 AC_MSG_RESULT([$PLQUEUEMGR_DEBUG_OPTS])
 
 AC_MSG_CHECKING([pljobmgr])
 AC_SUBST(PLJOBMGR_DEBUG_OPTS)
-PLJOBMGR_DEBUG_OPTS=${java_debug_opts}$(($debug_base+6))
+PLJOBMGR_DEBUG_OPTS=${java_debug_opts}
+AC_SUBST(PLJOBMGR_DEBUG_BASE)
+PLJOBMGR_DEBUG_BASE=$(($debug_base+50))
 AC_MSG_RESULT([$PLJOBMGR_DEBUG_OPTS])
 
 AC_SUBST(PLJOBMGR_XRUNJDWP)
-PLJOBMGR_XRUNJDWP=${java_runjdwp}$(($debug_base+6))
+PLJOBMGR_XRUNJDWP=${java_runjdwp}$(($debug_base+50))
 
 AC_MSG_CHECKING([plui])
 AC_SUBST(PLUI_DEBUG_OPTS)
-PLUI_DEBUG_OPTS=${java_debug_opts}$(($debug_base+7))
+PLUI_DEBUG_OPTS=${java_debug_opts}
+AC_SUBST(PLUI_DEBUG_BASE)
+PLUI_DEBUG_BASE=$(($debug_base+60))
 AC_MSG_RESULT([$PLUI_DEBUG_OPTS])
+
+AC_MSG_CHECKING([plplugin])
+AC_SUBST(PLPLUGIN_DEBUG_OPTS)
+PLPLUGIN_DEBUG_OPTS=${java_debug_opts}
+AC_SUBST(PLPLUGIN_DEBUG_BASE)
+PLPLUGIN_DEBUG_BASE=$(($debug_base+70))
+AC_MSG_RESULT([$PLPLUGIN_DEBUG_OPTS])
 
 AC_MSG_CHECKING([plscript])
 AC_SUBST(PLSCRIPT_DEBUG_OPTS)
-PLSCRIPT_DEBUG_OPTS=${java_debug_opts}$(($debug_base+8))
+PLSCRIPT_DEBUG_OPTS=${java_debug_opts}
+AC_SUBST(PLSCRIPT_DEBUG_BASE)
+PLSCRIPT_DEBUG_BASE=$(($debug_base+80))
 AC_MSG_RESULT([$PLSCRIPT_DEBUG_OPTS])
-
-AC_MSG_CHECKING([plpluginmgr])
-AC_SUBST(PLPLUGINMGR_DEBUG_OPTS)
-PLPLUGINMGR_DEBUG_OPTS=${java_debug_opts}$(($debug_base+9))
-AC_MSG_RESULT([$PLPLUGINMGR_DEBUG_OPTS])
 
 AC_MSG_CHECKING([pltestnative])
 AC_SUBST(PLTESTNATIVE_DEBUG_OPTS)
-PLTESTNATIVE_DEBUG_OPTS=${java_debug_opts}$(($debug_base+10))
+PLTESTNATIVE_DEBUG_OPTS=${java_debug_opts}
+AC_SUBST(PLTESTNATIVE_DEBUG_BASE)
+PLTESTNATIVE_DEBUG_BASE=$(($debug_base+90))
 AC_MSG_RESULT([$PLTESTNATIVE_DEBUG_OPTS])
 
 AC_MSG_CHECKING([plbuilder])
 AC_SUBST(PLBUILDER_DEBUG_OPTS)
-PLBUILDER_DEBUG_OPTS=${java_debug_opts}$(($debug_base+11))
+PLBUILDER_DEBUG_OPTS=${java_debug_opts}
+AC_SUBST(PLBUILDER_DEBUG_BASE)
+PLBUILDER_DEBUG_BASE=$(($debug_base+100))
 AC_MSG_RESULT([$PLBUILDER_DEBUG_OPTS])
 
 AC_MSG_CHECKING([plversion])
 AC_SUBST(PLVERSION_DEBUG_OPTS)
-PLVERSION_DEBUG_OPTS=${java_debug_opts}$(($debug_base+12))
+PLVERSION_DEBUG_OPTS=${java_debug_opts}
+AC_SUBST(PLVERSION_DEBUG_BASE)
+PLVERSION_DEBUG_BASE=$(($debug_base+110))
 AC_MSG_RESULT([$PLVERSION_DEBUG_OPTS])
+
+AC_MSG_CHECKING([plbrowse])
+AC_SUBST(PLBROWSE_DEBUG_OPTS)
+PLBROWSE_DEBUG_OPTS=${java_debug_opts}
+AC_SUBST(PLBROWSE_DEBUG_BASE)
+PLBROWSE_DEBUG_BASE=$(($debug_base+120))
+AC_MSG_RESULT([$PLBROWSE_DEBUG_OPTS])
+
+AC_MSG_CHECKING([plmine])
+AC_SUBST(PLMINE_DEBUG_OPTS)
+PLMINE_DEBUG_OPTS=${java_debug_opts}
+AC_SUBST(PLMINE_DEBUG_BASE)
+PLMINE_DEBUG_BASE=$(($debug_base+130))
+AC_MSG_RESULT([$PLMINE_DEBUG_OPTS])
+
+AC_MSG_CHECKING([plpython])
+AC_SUBST(PLPYTHON_DEBUG_OPTS)
+PLPYTHON_DEBUG_OPTS=${java_debug_opts}
+AC_SUBST(PLPYTHON_DEBUG_BASE)
+PLPYTHON_DEBUG_BASE=$(($debug_base+140))
+AC_MSG_RESULT([$PLPYTHON_DEBUG_OPTS])
 
 AC_MSG_RESULT([ ])
 
@@ -1538,64 +1600,104 @@ AC_MSG_RESULT([Java Profiling Options])
 AC_ARG_WITH([prof-base], 
             [  --with-prof-base=PORT       The base port number used for profiling.])
 
-prof_base=43100
+prof_base=43300
 if test "$with_prof_base" 
 then
   prof_base=$with_prof_base
 fi
 
-java_prof_opts="-agentlib:yjpagent=onexit=memory,port="
-java_prof_dir=",dir=/usr/tmp/pipeline-profile/"
+java_prof_opts="-agentlib:yjpagent=onexit=memory,port=\${plprof_port},dir=/usr/tmp/pipeline-profile/"
+
+AC_MSG_CHECKING([plpluginmgr])
+AC_SUBST(PLPLUGINMGR_PROFILE_OPTS)
+PLPLUGINMGR_PROFILE_OPTS=${java_prof_opts}"plpluginmgr"
+AC_SUBST(PLPLUGINMGR_PROFILE_BASE)
+PLPLUGINMGR_PROFILE_BASE=$(($prof_base+10))
+AC_MSG_RESULT([$PLPLUGINMGR_PROFILE_OPTS])
 
 AC_MSG_CHECKING([plmaster])
 AC_SUBST(PLMASTER_PROFILE_OPTS)
-PLMASTER_PROFILE_OPTS=${java_prof_opts}$(($prof_base+1))${java_prof_dir}"plmaster"
+PLMASTER_PROFILE_OPTS=${java_prof_opts}"plmaster"
+AC_SUBST(PLMASTER_PROFILE_BASE)
+PLMASTER_PROFILE_BASE=$(($prof_base+20))
 AC_MSG_RESULT([$PLMASTER_PROFILE_OPTS])
 
 AC_MSG_CHECKING([plfilemgr])
 AC_SUBST(PLFILEMGR_PROFILE_OPTS)
-PLFILEMGR_PROFILE_OPTS=${java_prof_opts}$(($prof_base+2))${java_prof_dir}"plfilemgr"
+PLFILEMGR_PROFILE_OPTS=${java_prof_opts}"plfilemgr"
+AC_SUBST(PLFILEMGR_PROFILE_BASE)
+PLFILEMGR_PROFILE_BASE=$(($prof_base+30))
 AC_MSG_RESULT([$PLFILEMGR_PROFILE_OPTS])
-
-AC_MSG_CHECKING([plplugin])
-AC_SUBST(PLPLUGIN_PROFILE_OPTS)
-PLPLUGIN_PROFILE_OPTS=${java_prof_opts}$(($prof_base+4))${java_prof_dir}"plplugin"
-AC_MSG_RESULT([$PLPLUGIN_PROFILE_OPTS])
 
 AC_MSG_CHECKING([plqueuemgr])
 AC_SUBST(PLQUEUEMGR_PROFILE_OPTS)
-PLQUEUEMGR_PROFILE_OPTS=${java_prof_opts}$(($prof_base+5))${java_prof_dir}"plqueuemgr"
+PLQUEUEMGR_PROFILE_OPTS=${java_prof_opts}"plqueuemgr"
+AC_SUBST(PLQUEUEMGR_PROFILE_BASE)
+PLQUEUEMGR_PROFILE_BASE=$(($prof_base+40))
 AC_MSG_RESULT([$PLQUEUEMGR_PROFILE_OPTS])
 
 AC_MSG_CHECKING([pljobmgr])
 AC_SUBST(PLJOBMGR_PROFILE_OPTS)
-PLJOBMGR_PROFILE_OPTS=${java_prof_opts}$(($prof_base+6))${java_prof_dir}"pljobmgr"
+PLJOBMGR_PROFILE_OPTS=${java_prof_opts}"pljobmgr"
+AC_SUBST(PLJOBMGR_PROFILE_BASE)
+PLJOBMGR_PROFILE_BASE=$(($prof_base+50))
 AC_MSG_RESULT([$PLJOBMGR_PROFILE_OPTS])
 
 AC_MSG_CHECKING([plui])
 AC_SUBST(PLUI_PROFILE_OPTS)
-PLUI_PROFILE_OPTS=${java_prof_opts}$(($prof_base+7))${java_prof_dir}"plui"
+PLUI_PROFILE_OPTS=${java_prof_opts}"plui"
+AC_SUBST(PLUI_PROFILE_BASE)
+PLUI_PROFILE_BASE=$(($prof_base+60))
 AC_MSG_RESULT([$PLUI_PROFILE_OPTS])
+
+AC_MSG_CHECKING([plplugin])
+AC_SUBST(PLPLUGIN_PROFILE_OPTS)
+PLPLUGIN_PROFILE_OPTS=${java_prof_opts}"plplugin"
+AC_SUBST(PLPLUGIN_PROFILE_BASE)
+PLPLUGIN_PROFILE_BASE=$(($prof_base+70))
+AC_MSG_RESULT([$PLPLUGIN_PROFILE_OPTS])
 
 AC_MSG_CHECKING([plscript])
 AC_SUBST(PLSCRIPT_PROFILE_OPTS)
-PLSCRIPT_PROFILE_OPTS=${java_prof_opts}$(($prof_base+8))${java_prof_dir}"plscript"
+PLSCRIPT_PROFILE_OPTS=${java_prof_opts}"plscript"
+AC_SUBST(PLSCRIPT_PROFILE_BASE)
+PLSCRIPT_PROFILE_BASE=$(($prof_base+80))
 AC_MSG_RESULT([$PLSCRIPT_PROFILE_OPTS])
-
-AC_MSG_CHECKING([plpluginmgr])
-AC_SUBST(PLPLUGINMGR_PROFILE_OPTS)
-PLPLUGINMGR_PROFILE_OPTS=${java_prof_opts}$(($prof_base+9))${java_prof_dir}"plpluginmgr"
-AC_MSG_RESULT([$PLPLUGINMGR_PROFILE_OPTS])
 
 AC_MSG_CHECKING([plbuilder])
 AC_SUBST(PLBUILDER_PROFILE_OPTS)
-PLBUILDER_PROFILE_OPTS=${java_prof_opts}$(($prof_base+10))${java_prof_dir}"plbuilder"
+PLBUILDER_PROFILE_OPTS=${java_prof_opts}"plbuilder"
+AC_SUBST(PLBUILDER_PROFILE_BASE)
+PLBUILDER_PROFILE_BASE=$(($prof_base+100))
 AC_MSG_RESULT([$PLBUILDER_PROFILE_OPTS])
 
 AC_MSG_CHECKING([plversion])
 AC_SUBST(PLVERSION_PROFILE_OPTS)
-PLVERSION_PROFILE_OPTS=${java_prof_opts}$(($prof_base+11))${java_prof_dir}"plscript"
+PLVERSION_PROFILE_OPTS=${java_prof_opts}"plscript"
+AC_SUBST(PLVERSION_PROFILE_BASE)
+PLVERSION_PROFILE_BASE=$(($prof_base+110))
 AC_MSG_RESULT([$PLVERSION_PROFILE_OPTS])
+
+AC_MSG_CHECKING([plbrowse])
+AC_SUBST(PLBROWSE_PROFILE_OPTS)
+PLBROWSE_PROFILE_OPTS=${java_prof_opts}"plscript"
+AC_SUBST(PLBROWSE_PROFILE_BASE)
+PLBROWSE_PROFILE_BASE=$(($prof_base+120))
+AC_MSG_RESULT([$PLBROWSE_PROFILE_OPTS])
+
+AC_MSG_CHECKING([plmine])
+AC_SUBST(PLMINE_PROFILE_OPTS)
+PLMINE_PROFILE_OPTS=${java_prof_opts}"plscript"
+AC_SUBST(PLMINE_PROFILE_BASE)
+PLMINE_PROFILE_BASE=$(($prof_base+130))
+AC_MSG_RESULT([$PLMINE_PROFILE_OPTS])
+
+AC_MSG_CHECKING([plpython])
+AC_SUBST(PLPYTHON_PROFILE_OPTS)
+PLPYTHON_PROFILE_OPTS=${java_prof_opts}"plpython"
+AC_SUBST(PLPYTHON_PROFILE_BASE)
+PLPYTHON_PROFILE_BASE=$(($prof_base+140))
+AC_MSG_RESULT([$PLPYTHON_PROFILE_OPTS])
 
 AC_MSG_RESULT([ ])
 
@@ -1692,7 +1794,7 @@ dnl ----------------------------------------------------------------------------
 AC_MSG_RESULT([Locating C system headers:])
 
 AC_CHECK_HEADERS([math.h errno.h pwd.h dlfcn.h libgen.h time.h dirent.h ctype.h])
-AC_CHECK_HEADERS([fcntl.h fam.h select.h signal.h utime.h])      
+AC_CHECK_HEADERS([fcntl.h fam.h select.h signal.h sched.h utime.h])      
 AC_CHECK_HEADERS([sys/time.h sys/param.h sys/utsname.h sys/wait.h sys/resource.h])  
 AC_CHECK_HEADERS([sys/statfs.h sys/mount.h])
 AC_CHECK_HEADERS([sys/socket.h netdb.h netinet/in.h arpa/inet.h]) 

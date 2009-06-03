@@ -10,6 +10,49 @@ fi
 
 unset JAVA_JVM_VERSION
 
+function isUnusedPort {
+  test_port=$1
+  port_next=0
+  for x in `lsof -P -n -Fnt`
+  do
+  if [ $x == "tIPv4" ] 
+    then
+      port_next=1
+    elif [ $port_next -eq 1 ]
+    then
+      port=`echo $x | awk -F: '{print $2}' | awk -F- '{print $1}'`
+      if [ $test_port -eq $port ]
+      then 
+        return 1
+      fi
+      port_next=0
+    fi
+  done
+
+  return 0
+}
+
+pldebug_port=0
+first_port=@PLQUEUEMGR_DEBUG_BASE@
+last_port=$(($first_port+10))
+test_port=$first_port
+while [ $test_port -le $last_port ]
+do
+  if isUnusedPort $test_port
+  then
+    pldebug_port=$test_port
+    break
+  fi
+ 
+  test_port=$(($test_port+1))
+done
+
+if [ $pldebug_port -eq 0 ]
+then
+  echo "Unable to find any unused debugging ports in the range of [$first_port:$last_port]!"
+  exit 1
+fi
+
 cd `pwd`
 exec "@JAVA_RUNTIME@" @JAVA_RUNTIME_OPTS@ \
   @PLQUEUEMGR_GC_OPTS@ \
