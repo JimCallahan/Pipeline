@@ -9,70 +9,61 @@ test -x $PLJOBMGR_BIN || { echo "$PLJOBMGR_BIN not installed";
 	if [ "$1" = "stop" ]; then exit 0;
 	else exit 5; fi; }
 
-PLSCRIPT_BIN=@ROOT_INST_PARENT_DIR@/pipeline-latest/Unix-@NATIVE_ARCHTYPE@-Opt/bin/plscript
-test -x $PLSCRIPT_BIN || { echo "$PLSCRIPT_BIN not installed"; 
-	if [ "$1" = "stop" ]; then exit 0;
-	else exit 5; fi; }
-
 JPS_BIN=@UNIX_JAVA_HOME@/../bin/jps
 test -x $JPS_BIN || { echo "$JPS_BIN not installed"; 
 	if [ "$1" = "stop" ]; then exit 0;
 	else exit 5; fi; }
 
-PID_FILE=/var/run/pljobmgr.pid
-
 . /etc/rc.status
+rc_reset
+
+function checkJobMgr {
+    pid=`$JPS_BIN -m | grep JobMgrApp | awk '{print $1}'`
+    if [ "$pid"x != x ]
+    then
+	return 0  # running
+    else
+	return 1  # not running
+    fi
+}
+
+function startJobMgr {
+    if checkJobMgr
+    then
+	return 0
+    else
+	startproc -n -20 -u @PIPELINE_UID@ -g @PIPELINE_GID@ $PLJOBMGR_BIN --standard-log-file --fail-fast
+    fi
+    checkJobMgr
+}
+
+function stopJobMgr {
+  pid=`$JPS_BIN -m | grep JobMgrApp | awk '{print $1}'`
+  if [ "$pid"x != x ]
+  then
+      kill -9 $pid
+      return 0
+  else
+      return 7
+  fi
+}
 
 case "$1" in
   start)
-	echo -n "Starting Pipeline Job Manager: " 	
-	pid=`$JPS_BIN -m | grep JobMgrApp | awk '{print $1}'`
-	if [ "$pid"x != x ]
-	then 
-	  rc_failed
-        else
-	  startproc -u @PIPELINE_UID@ -g @PIPELINE_GID@ $PLJOBMGR_BIN --standard-log-file --fail-fast
-	  pid=`$JPS_BIN -m | grep JobMgrApp | awk '{print $1}'`
-	  if [ "$pid"x != x ]
-	  then 
-	    echo $pid > $PID_FILE
-          else 
-	    rc_failed
-          fi
-        fi
+	echo -n "Starting Pipeline Job Manager: " 
+	startJobMgr
         rc_status -v
         ;;
 
   stop)
 	echo -n "Shutting down Pipeline Job Manager: "
-	if [ ! -f $PID_FILE ]
-        then
-	  rc_failed
-        else 
-	  pid=`$JPS_BIN -m | grep JobMgrApp | awk '{print $1}'`
-	  if [ "$pid"x != `cat $PID_FILE`x ]
-	  then 
-	    rc_failed
-          else 
-            kill `cat $PID_FILE`
-	    rm -f $PID_FILE
-          fi 
-        fi 
+	stopJobMgr
 	rc_status -v
 	;;
 
   status)
 	echo -n "Checking for Job Manager Mananager: "
-	if [ ! -f $PID_FILE ]
-        then
-	  rc_failed
-        else 
-	  pid=`$JPS_BIN -m | grep JobMgrApp | awk '{print $1}'`
-	  if [ "$pid"x != `cat $PID_FILE`x ]
-	  then 
-	    rc_failed
-          fi 
-        fi 
+	checkJobMgr
 	rc_status -v
 	;;
 
