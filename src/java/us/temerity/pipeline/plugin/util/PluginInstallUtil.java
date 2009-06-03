@@ -1,3 +1,5 @@
+// $Id: PluginInstallUtil.java,v 1.4 2009/06/03 01:45:52 jlee Exp $
+
 package us.temerity.pipeline.plugin.util;
 
 import us.temerity.pipeline.*;
@@ -342,7 +344,10 @@ class PluginInstallUtil
 
     LogMgr.getInstance().log
       (LogMgr.Kind.Ops, LogMgr.Level.Info, 
-       "Install path (" + installPath + ")");
+       vendor + "/" + 
+       ptype + "/" + 
+       name + "/" + 
+       vid);
 
     {
       File installDir = installPath.toFile();
