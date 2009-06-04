@@ -1,4 +1,4 @@
-// $Id: Exceptions.java,v 1.3 2008/03/28 21:25:40 jim Exp $
+// $Id: Exceptions.java,v 1.4 2009/06/04 08:51:16 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -123,6 +123,45 @@ class Exceptions
   {
     return getFullMessage(null, cause, true, true);
   }
-  
+
+
+  /** 
+   * Generate a string containing a detailed message about an unusual condition without
+   * requiring an exception to be thrown. 
+   * 
+   * @param header  
+   *   Some introductory text explaining the high-level reason for the message or 
+   *   <CODE>null<CODE> to omit the header.
+   * 
+   * @param appendStack
+   *   Whether to append the complete stack trace of when the exception occured to the 
+   *   returned message.
+   * 
+   * @return 
+   *   The full message text. 
+   */ 
+  public static String 
+  getFullMessage
+  (
+   String header, 
+   boolean appendStack
+  ) 
+  {
+    StringBuilder buf = new StringBuilder();
+     
+    if(header != null) 
+      buf.append(header + "\n\n"); 
+
+    if(appendStack) {
+      buf.append("Stack Trace:\n");
+      StackTraceElement stack[] = Thread.currentThread().getStackTrace();
+      int wk;
+      for(wk=0; wk<stack.length; wk++) 
+        buf.append("  " + stack[wk].toString() + "\n");
+    }
+      
+    return (buf.toString());
+  }
+
 }
   
