@@ -1,4 +1,4 @@
-// $Id: QueueHostsTableModel.java,v 1.23 2009/06/01 07:40:23 jesse Exp $
+// $Id: QueueHostsTableModel.java,v 1.24 2009/06/04 09:17:34 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -101,7 +101,7 @@ class QueueHostsTableModel
 	  "Status", "OS", 
 	  "System Load", "Free Memory", "Free Disk Space", 
 	  "Jobs", "Slots", 
-	  "Reservation", "Order", "Group", "Schedule", "Hardware"
+	  "Reservation", "Order", "Selection", "Schedule", "Hardware"
 	};
 	pColumnNames = names;
       }
@@ -127,9 +127,9 @@ class QueueHostsTableModel
 	  "The maximum number of simultaneous jobs allowed to on the server.",
 	  "The name of the user holding the server reservation.", 
 	  "The order in which jobs are dispatched to the servers.", 
-	  "The name of the selection bias group.", 
+	  "The name of the selection group.", 
 	  "The name of the selection schedule.",
-	  "The name of the hardware value group."
+	  "The name of the hardware group."
 	};
 	pColumnDescriptions = desc;
       }

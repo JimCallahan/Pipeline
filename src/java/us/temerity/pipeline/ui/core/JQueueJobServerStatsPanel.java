@@ -1,4 +1,4 @@
-// $Id: JQueueJobServerStatsPanel.java,v 1.9 2009/06/02 20:14:28 jlee Exp $
+// $Id: JQueueJobServerStatsPanel.java,v 1.10 2009/06/04 09:17:34 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -449,14 +449,21 @@ class JQueueJobServerStatsPanel
 	}
 
 	{
-	  ViewerPie pie = new ViewerPie(pHistograms.getGroupsHist(), false);
+	  ViewerPie pie = new ViewerPie(pHistograms.getSelectionGroupsHist(), false);
 	  pViewerPies.put(pie.getName(), pie);
 	  
 	  pie.setColors(dark, light); 
 	}
 
 	{
-	  ViewerPie pie = new ViewerPie(pHistograms.getSchedulesHist(), false);
+	  ViewerPie pie = new ViewerPie(pHistograms.getSelectionSchedulesHist(), false);
+	  pViewerPies.put(pie.getName(), pie);
+	  
+	  pie.setColors(dark, light); 
+	}
+
+	{
+	  ViewerPie pie = new ViewerPie(pHistograms.getHardwareGroupsHist(), false);
 	  pViewerPies.put(pie.getName(), pie);
 	  
 	  pie.setColors(dark, light); 
@@ -495,8 +502,9 @@ class JQueueJobServerStatsPanel
 	    "ServerOS", 
 	    "Reserved", 
 	    "Order", 
-	    "Groups", 
-	    "Schedules"
+	    "SelectionGroups", 
+	    "SelectionSchedules",
+            "HardwareGroups"
 	  };
 
 	  int wk;
@@ -962,32 +970,32 @@ class JQueueJobServerStatsPanel
   /*   G L U E A B L E                                                                      */
   /*----------------------------------------------------------------------------------------*/
 
-  public synchronized void 
-  toGlue
-  ( 
-   GlueEncoder encoder   
-  ) 
-    throws GlueException
-  {
-    super.toGlue(encoder);
+//   public synchronized void 
+//   toGlue
+//   ( 
+//    GlueEncoder encoder   
+//   ) 
+//     throws GlueException
+//   {
+//     super.toGlue(encoder);
 
-    if(pHistograms != null) 
-      encoder.encode("HistogramSpecs", new QueueHostHistogramSpecs(pHistograms));
-  }
+//     if(pHistograms != null) 
+//       encoder.encode("HistogramSpecs", new QueueHostHistogramSpecs(pHistograms));
+//   }
 
-  public synchronized void 
-  fromGlue
-  (
-   GlueDecoder decoder 
-  ) 
-    throws GlueException
-  {
-    QueueHostHistogramSpecs spec = (QueueHostHistogramSpecs) decoder.decode("HistogramSpecs");
-    if(spec != null) 
-      pHistograms = new QueueHostHistograms(spec);
+//   public synchronized void 
+//   fromGlue
+//   (
+//    GlueDecoder decoder 
+//   ) 
+//     throws GlueException
+//   {
+//     QueueHostHistogramSpecs spec = (QueueHostHistogramSpecs) decoder.decode("HistogramSpecs");
+//     if(spec != null) 
+//       pHistograms = new QueueHostHistograms(spec);
 
-    super.fromGlue(decoder);
-  }
+//     super.fromGlue(decoder);
+//   }
 
 
 

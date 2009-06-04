@@ -1,4 +1,4 @@
-// $Id: QueueHostHistogramSpecs.java,v 1.2 2007/02/21 00:58:38 jim Exp $
+// $Id: QueueHostHistogramSpecs.java,v 1.3 2009/06/04 09:17:34 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -61,11 +61,14 @@ class QueueHostHistogramSpecs
    * @param orderSpec
    *   The histogram specification for server dispatch order. 
    * 
-   * @param groupsSpec
-   *   The histogram specification for selection groups. 
+   * @param selectionGroupsSpec
+   *   The histogram specification for selection selectionGroups. 
    * 
-   * @param schedsSpec
+   * @param selectionSchedsSpec
    *   The histogram specification for selection schedules. 
+   * 
+   * @param hardwareGroupsSpec
+   *   The histogram specification for hardware hardwareGroups. 
    */
   public 
   QueueHostHistogramSpecs
@@ -79,8 +82,9 @@ class QueueHostHistogramSpecs
    HistogramSpec slotsSpec, 
    HistogramSpec reserveSpec,   
    HistogramSpec orderSpec, 
-   HistogramSpec groupsSpec, 
-   HistogramSpec schedsSpec
+   HistogramSpec selectionGroupsSpec, 
+   HistogramSpec selectionSchedsSpec,
+   HistogramSpec hardwareGroupsSpec 
   ) 
   {
     pStatus  = statusSpec; 
@@ -92,8 +96,9 @@ class QueueHostHistogramSpecs
     pSlots   = slotsSpec; 
     pOrder   = orderSpec; 
     pReserve = reserveSpec; 
-    pGroups  = groupsSpec; 
-    pScheds  = schedsSpec; 
+    pSelectionGroups = selectionGroupsSpec; 
+    pSelectionScheds = selectionSchedsSpec; 
+    pHardwareGroups  = hardwareGroupsSpec; 
   }
 
   /**
@@ -114,8 +119,9 @@ class QueueHostHistogramSpecs
     pSlots   = new HistogramSpec(hist.getSlotsHist()); 
     pReserve = new HistogramSpec(hist.getReservationsHist()); 
     pOrder   = new HistogramSpec(hist.getOrderHist()); 
-    pGroups  = new HistogramSpec(hist.getGroupsHist()); 
-    pScheds  = new HistogramSpec(hist.getSchedulesHist()); 
+    pSelectionGroups = new HistogramSpec(hist.getSelectionGroupsHist()); 
+    pSelectionScheds = new HistogramSpec(hist.getSelectionSchedulesHist());
+    pHardwareGroups  = new HistogramSpec(hist.getHardwareGroupsHist());  
   }
 
 
@@ -233,26 +239,34 @@ class QueueHostHistogramSpecs
       orderSpec = new HistogramSpec("Order", ranges);
     }
 
-    HistogramSpec groupsSpec = null;
+    HistogramSpec selectionGroupsSpec = null;
     {
       TreeSet<HistogramRange> ranges = new TreeSet<HistogramRange>();
       ranges.add(new HistogramRange(null, null));
 
-      groupsSpec = new HistogramSpec("Groups", ranges);
+      selectionGroupsSpec = new HistogramSpec("SelectionGroups", ranges);
     }
     
-    HistogramSpec schedsSpec = null;
+    HistogramSpec selectionSchedsSpec = null;
     {
       TreeSet<HistogramRange> ranges = new TreeSet<HistogramRange>();
       ranges.add(new HistogramRange(null, null));
 
-      schedsSpec = new HistogramSpec("Schedules", ranges);
+      selectionSchedsSpec = new HistogramSpec("SelectionSchedules", ranges);
+    }
+    
+    HistogramSpec hardwareGroupsSpec = null;
+    {
+      TreeSet<HistogramRange> ranges = new TreeSet<HistogramRange>();
+      ranges.add(new HistogramRange(null, null));
+
+      hardwareGroupsSpec = new HistogramSpec("HardwareGroups", ranges);
     }
     
     return new QueueHostHistogramSpecs
       (statusSpec, osSpec, 
        loadSpec, memorySpec, diskSpec, numJobsSpec, slotsSpec, 
-       reserveSpec, orderSpec, groupsSpec, schedsSpec);
+       reserveSpec, orderSpec, selectionGroupsSpec, selectionSchedsSpec, hardwareGroupsSpec);
   }
 
 
@@ -277,8 +291,9 @@ class QueueHostHistogramSpecs
             pSlots.allIncluded() && 
             pOrder.allIncluded() && 
             pReserve.allIncluded() && 
-            pGroups.allIncluded() && 
-            pScheds.allIncluded()); 
+            pSelectionGroups.allIncluded() && 
+            pSelectionScheds.allIncluded() &&
+            pHardwareGroups.allIncluded()); 
   }
 
 
@@ -507,21 +522,21 @@ class QueueHostHistogramSpecs
    * Get the histogram specification for selection groups. 
    */ 
   public HistogramSpec
-  getGroupsSpec() 
+  getSelectionGroupsSpec() 
   {
-    return pGroups; 
+    return pSelectionGroups; 
   }
 
   /**
    * Set the histogram specification for selection groups. 
    */ 
   public void 
-  setGroupsSpec
+  setSelectionGroupsSpec
   (
    HistogramSpec spec
   ) 
   {
-    pGroups = spec;
+    pSelectionGroups = spec;
   }
 
 
@@ -531,22 +546,47 @@ class QueueHostHistogramSpecs
    * Get the histogram specification for selection schedules. 
    */ 
   public HistogramSpec
-  getSchedulesSpec() 
+  getSelectionSchedulesSpec() 
   {
-    return pScheds; 
+    return pSelectionScheds; 
   }
 
   /**
    * Set the histogram specification for selection schedules. 
    */ 
   public void 
-  setSchedulesSpec
+  setSelectionSchedulesSpec
   (
    HistogramSpec spec
   ) 
   {
-    pScheds = spec;
+    pSelectionScheds = spec;
   }
+
+  
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the histogram specification for hardware groups. 
+   */ 
+  public HistogramSpec
+  getHardwareGroupsSpec() 
+  {
+    return pHardwareGroups; 
+  }
+
+  /**
+   * Set the histogram specification for hardware groups. 
+   */ 
+  public void 
+  setHardwareGroupsSpec
+  (
+   HistogramSpec spec
+  ) 
+  {
+    pHardwareGroups = spec;
+  }
+
 
   
 
@@ -570,8 +610,9 @@ class QueueHostHistogramSpecs
     encoder.encode("Slots", pSlots);
     encoder.encode("Reservations", pReserve);
     encoder.encode("Order", pOrder);
-    encoder.encode("Groups", pGroups);
-    encoder.encode("Schedules", pScheds);
+    encoder.encode("SelectionGroups", pSelectionGroups);
+    encoder.encode("SelectionScheds", pSelectionScheds);
+    encoder.encode("HardwareGroups",  pHardwareGroups);
   }
 
   public void 
@@ -590,8 +631,9 @@ class QueueHostHistogramSpecs
     pSlots   = (HistogramSpec) decoder.decode("Slots");   
     pReserve = (HistogramSpec) decoder.decode("Reservations");   
     pOrder   = (HistogramSpec) decoder.decode("Order");   
-    pGroups  = (HistogramSpec) decoder.decode("Groups");   
-    pScheds  = (HistogramSpec) decoder.decode("Schedules");   
+    pSelectionGroups = (HistogramSpec) decoder.decode("SelectionGroups");   
+    pSelectionScheds = (HistogramSpec) decoder.decode("SelectionScheds");  
+    pHardwareGroups  = (HistogramSpec) decoder.decode("HardwareGroups");   
   }
 
 
@@ -620,8 +662,9 @@ class QueueHostHistogramSpecs
   private HistogramSpec  pSlots;
   private HistogramSpec  pOrder;
   private HistogramSpec  pReserve;
-  private HistogramSpec  pGroups;
-  private HistogramSpec  pScheds;  
+  private HistogramSpec  pSelectionGroups;
+  private HistogramSpec  pSelectionScheds;  
+  private HistogramSpec  pHardwareGroups;
 
 }
 

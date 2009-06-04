@@ -1,4 +1,4 @@
-// $Id: QueueHostHistograms.java,v 1.1 2006/12/05 18:23:30 jim Exp $
+// $Id: QueueHostHistograms.java,v 1.2 2009/06/04 09:17:34 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -50,8 +50,9 @@ class QueueHostHistograms
     pSlots   = new Histogram(specs.getSlotsSpec()); 
     pReserve = new Histogram(specs.getReservationSpec()); 
     pOrder   = new Histogram(specs.getOrderSpec()); 
-    pGroups  = new Histogram(specs.getGroupsSpec()); 
-    pScheds  = new Histogram(specs.getSchedulesSpec()); 
+    pSelectionGroups = new Histogram(specs.getSelectionGroupsSpec()); 
+    pSelectionScheds = new Histogram(specs.getSelectionSchedulesSpec()); 
+    pHardwareGroups  = new Histogram(specs.getHardwareGroupsSpec()); 
   }
 
 
@@ -146,18 +147,27 @@ class QueueHostHistograms
    * Get the histogram of selection groups. 
    */ 
   public Histogram
-  getGroupsHist() 
+  getSelectionGroupsHist() 
   {
-    return pGroups;
+    return pSelectionGroups;
   }
   
   /**
    * Get the histogram of selection schedules. 
    */ 
   public Histogram
-  getSchedulesHist() 
+  getSelectionSchedulesHist() 
   {
-    return pScheds;
+    return pSelectionScheds;
+  }
+  
+  /**
+   * Get the histogram of hardware groups. 
+   */ 
+  public Histogram
+  getHardwareGroupsHist() 
+  {
+    return pHardwareGroups;
   }
   
   
@@ -183,8 +193,9 @@ class QueueHostHistograms
     pSlots.clearCounts();
     pReserve.clearCounts();
     pOrder.clearCounts();
-    pGroups.clearCounts();
-    pScheds.clearCounts();
+    pSelectionGroups.clearCounts();
+    pSelectionScheds.clearCounts();
+    pHardwareGroups.clearCounts();
   }
 
   /**
@@ -225,14 +236,21 @@ class QueueHostHistograms
       String group = qinfo.getSelectionGroup();
       if(group == null) 
 	group = "-";
-      pGroups.catagorize(group); 
+      pSelectionGroups.catagorize(group); 
     }
 
     {
       String sched = qinfo.getSelectionSchedule();
       if(sched == null) 
 	sched = "-";
-      pScheds.catagorize(sched); 
+      pSelectionScheds.catagorize(sched); 
+    }
+
+    {
+      String group = qinfo.getHardwareGroup();
+      if(group == null) 
+	group = "-";
+      pHardwareGroups.catagorize(group); 
     }
   }
 
@@ -258,8 +276,9 @@ class QueueHostHistograms
     encoder.encode("Slots", pSlots);
     encoder.encode("Reservations", pReserve);
     encoder.encode("Order", pOrder);
-    encoder.encode("Groups", pGroups);
-    encoder.encode("Schedules", pScheds);
+    encoder.encode("SelectionGroups", pSelectionGroups);
+    encoder.encode("SelectionScheds", pSelectionScheds);
+    encoder.encode("HardwareGroups", pHardwareGroups);
   }
 
   public void 
@@ -278,8 +297,9 @@ class QueueHostHistograms
     pSlots   = (Histogram) decoder.decode("Slots");   
     pReserve = (Histogram) decoder.decode("Reservations");   
     pOrder   = (Histogram) decoder.decode("Order");   
-    pGroups  = (Histogram) decoder.decode("Groups");   
-    pScheds  = (Histogram) decoder.decode("Schedules");   
+    pSelectionGroups = (Histogram) decoder.decode("SelectionGroups");   
+    pSelectionScheds = (Histogram) decoder.decode("SelectionScheds");   
+    pHardwareGroups  = (Histogram) decoder.decode("HardwareGroups");   
   }
 
 
@@ -308,8 +328,9 @@ class QueueHostHistograms
   private Histogram  pSlots;
   private Histogram  pOrder;
   private Histogram  pReserve;
-  private Histogram  pGroups;
-  private Histogram  pScheds;
+  private Histogram  pSelectionGroups;
+  private Histogram  pSelectionScheds;
+  private Histogram  pHardwareGroups;
 
 }
 
