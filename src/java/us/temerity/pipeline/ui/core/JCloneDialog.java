@@ -1,4 +1,4 @@
-// $Id: JCloneDialog.java,v 1.22 2009/05/23 03:58:29 jesse Exp $
+// $Id: JCloneDialog.java,v 1.23 2009/06/04 09:12:10 jim Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -755,7 +755,7 @@ class JCloneDialog
       /* copy the files */ 
       if(pCopyFilesField.getValue()) {
         client.cloneFiles(new NodeID(pAuthor, pView, pNodeMod.getName()), 
-          new NodeID(pAuthor, pView, mod.getName()));
+                          new NodeID(pAuthor, pView, mod.getName()));
       }
     }
     finally {
@@ -791,7 +791,8 @@ class JCloneDialog
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp(pChannel, "Registering Cloned Node: " + pNodeModLocal.getName())) {
+      if(master.beginPanelOp(pChannel, 
+                             "Registering Cloned Node: " + pNodeModLocal.getName())) {
 	try {
 	  doClone(pNodeModLocal);
 	  synchronized(pRegistered) {
