@@ -1,4 +1,4 @@
-// $Id: TaskTimer.java,v 1.2 2006/09/29 03:03:21 jim Exp $
+// $Id: TaskTimer.java,v 1.3 2009/06/04 09:00:05 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -27,7 +27,7 @@ class TaskTimer
   TaskTimer() 
   {
     pStartWait   = -1;
-    pStartActive = (new Date()).getTime();
+    pStartActive = System.currentTimeMillis();
 
     pWaitDuration   = 0;
     pActiveDuration = 0;
@@ -50,7 +50,7 @@ class TaskTimer
     pTitle = title;
 
     pStartWait   = -1;
-    pStartActive = (new Date()).getTime();
+    pStartActive = System.currentTimeMillis();
 
     pWaitDuration   = 0;
     pActiveDuration = 0;
@@ -112,11 +112,11 @@ class TaskTimer
   {
     if(pStartWait != -1)
       throw new IllegalStateException(); 
-    pStartWait = (new Date()).getTime();
+    pStartWait = System.currentTimeMillis();
 
     if(pStartActive <= 0)
       throw new IllegalStateException(); 
-    pActiveDuration += (new Date()).getTime() - pStartActive;
+    pActiveDuration += System.currentTimeMillis() - pStartActive;
     pStartActive = -1;
   }
 
@@ -128,11 +128,11 @@ class TaskTimer
   {
     if(pStartActive != -1)
       throw new IllegalStateException(); 
-    pStartActive = (new Date()).getTime();
+    pStartActive = System.currentTimeMillis();
 
     if(pStartWait <= 0)
       throw new IllegalStateException(); 
-    pWaitDuration += (new Date()).getTime() - pStartWait;
+    pWaitDuration += System.currentTimeMillis() - pStartWait;
     pStartWait = -1;
   }
 
@@ -143,11 +143,11 @@ class TaskTimer
   suspend() 
   {
     if(pStartActive > 0)
-      pActiveDuration += (new Date()).getTime() - pStartActive;
+      pActiveDuration += System.currentTimeMillis() - pStartActive;
     pStartActive = -1;
 
     if(pStartWait > 0)
-      pWaitDuration += (new Date()).getTime() - pStartWait;
+      pWaitDuration += System.currentTimeMillis() - pStartWait;
     pStartWait = -1;
   }
 
@@ -169,7 +169,7 @@ class TaskTimer
     pWaitDuration   += timer.getWaitDuration();
     pActiveDuration += timer.getActiveDuration(); 
     
-    pStartActive = (new Date()).getTime();   
+    pStartActive = System.currentTimeMillis();   
   }
 
 
@@ -184,7 +184,7 @@ class TaskTimer
   public String
   toString() 
   {
-    String stats = (pWaitDuration + "/" + pActiveDuration + " (msec) wait/active");
+    String stats = (pWaitDuration + "/" + pActiveDuration + " (ms) wait/active");
     if(pTitle != null) 
       return (pTitle + ":\n  " + stats);
     else 
