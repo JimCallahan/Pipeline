@@ -1,4 +1,4 @@
-// $Id: QueueMgrServer.java,v 1.64 2009/05/18 04:28:34 jim Exp $
+// $Id: QueueMgrServer.java,v 1.65 2009/06/04 09:19:05 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -926,6 +926,11 @@ class QueueMgrServer
               default:
                 throw new IllegalStateException("Unknown request ID (" + kind + ")!"); 
               }
+            }
+            catch(ClosedChannelException ex) {
+              LogMgr.getInstance().log
+                (LogMgr.Kind.Net, LogMgr.Level.Severe, 
+                 "Connection closed by client while performing: " + kind.name());
             }
             catch(Exception opex) {
               String msg = ("Internal Error while performing: " + kind.name() + "\n\n" + 

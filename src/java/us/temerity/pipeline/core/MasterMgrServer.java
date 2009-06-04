@@ -1,4 +1,4 @@
-// $Id: MasterMgrServer.java,v 1.102 2009/05/18 06:03:45 jesse Exp $
+// $Id: MasterMgrServer.java,v 1.103 2009/06/04 09:19:05 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -1814,6 +1814,11 @@ class MasterMgrServer
               default:
                 throw new IllegalStateException("Unknown request ID (" + kind + ")!"); 
               }
+            }
+            catch(ClosedChannelException ex) {
+              LogMgr.getInstance().log
+                (LogMgr.Kind.Net, LogMgr.Level.Severe, 
+                 "Connection closed by client while performing: " + kind.name());
             }
             catch(Exception opex) {
               String msg = ("Internal Error while performing: " + kind.name() + "\n\n" + 
