@@ -1,4 +1,4 @@
-// $Id: SelectionGroup.java,v 1.5 2006/12/14 02:39:05 jim Exp $
+// $Id: SelectionGroup.java,v 1.6 2009/06/04 08:52:34 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -72,6 +72,18 @@ class SelectionGroup
       addBias(key, group.getBias(key));
 
     pFavorMethod = group.getFavorMethod();
+  }
+
+  /**
+   * Copy constructor.
+   */ 
+  public
+  SelectionGroup
+  (
+   SelectionGroup group
+  ) 
+  {
+    this(group.getName(), group);
   }
 
 

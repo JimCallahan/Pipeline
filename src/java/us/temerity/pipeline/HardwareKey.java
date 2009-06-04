@@ -1,4 +1,4 @@
-// $Id: HardwareKey.java,v 1.3 2007/12/16 06:26:40 jesse Exp $
+// $Id: HardwareKey.java,v 1.4 2009/06/04 08:52:34 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -78,6 +78,18 @@ class HardwareKey
   ) 
   {
     super(name, desc, keyChooser);
+  }
+
+  /** 
+   * Copy constructor.
+   */ 
+  public
+  HardwareKey
+  (
+   HardwareKey key
+  ) 
+  {
+    super(key.getName(), key.getDescription(), key.getKeyChooser()); 
   }
 
   

@@ -1,4 +1,4 @@
-// $Id: SelectionKey.java,v 1.4 2007/12/16 06:26:40 jesse Exp $
+// $Id: SelectionKey.java,v 1.5 2009/06/04 08:52:34 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -82,6 +82,18 @@ class SelectionKey
   ) 
   {
     super(name, desc, keyChooser);
+  }
+
+  /** 
+   * Copy constructor.
+   */ 
+  public
+  SelectionKey
+  (
+   SelectionKey key
+  ) 
+  {
+    super(key.getName(), key.getDescription(), key.getKeyChooser()); 
   }
 
 

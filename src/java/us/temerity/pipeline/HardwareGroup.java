@@ -1,4 +1,4 @@
-// $Id: HardwareGroup.java,v 1.2 2007/12/05 05:45:58 jesse Exp $
+// $Id: HardwareGroup.java,v 1.3 2009/06/04 08:52:34 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -70,6 +70,18 @@ class HardwareGroup
 
     for(String key : group.getKeys()) 
       addKey(key);
+  }
+
+  /**
+   * Copy connstructor.
+   */ 
+  public
+  HardwareGroup
+  (
+   HardwareGroup group
+  ) 
+  {
+    this(group.getName(), group); 
   }
 
 
