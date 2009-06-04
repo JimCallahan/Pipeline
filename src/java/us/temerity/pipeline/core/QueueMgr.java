@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.112 2009/05/18 06:03:45 jesse Exp $
+// $Id: QueueMgr.java,v 1.113 2009/06/04 09:45:12 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -6,7 +6,7 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.util.Map.*;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.*;
 
 import us.temerity.pipeline.*;
@@ -95,15 +95,23 @@ class QueueMgr
       pAdminPrivileges = new AdminPrivileges();
       pMasterMgrClient = new MasterMgrClient();
 
-      pLicenseKeys        = new TreeMap<String,LicenseKey>();
+      pLicenseKeys = new TreeMap<String,LicenseKey>();
 
-      pHardwareKeys       = new TreeMap<String, HardwareKey>();
-      pHardwareGroups     = new TreeMap<String, HardwareGroup>();
+      pHardwareKeys         = new TreeMap<String, HardwareKey>();
+      pHardwareGroups       = new TreeMap<String, HardwareGroup>();
+      pHardwareChanged      = new AtomicBoolean(true);
+      pDispHardwareKeyNames = new TreeSet<String>(); 
+      pDispHardwareGroups   = new TreeMap<String,HardwareGroup>();
+      pHardwareProfiles     = new TreeMap<Flags,HardwareProfile>();      
 
-      pSelectionKeys      = new TreeMap<String,SelectionKey>();
-      pSelectionGroups    = new TreeMap<String,SelectionGroup>();
-      pSelectionSchedules = new TreeMap<String,SelectionSchedule>();
-      
+      pSelectionKeys         = new TreeMap<String,SelectionKey>();
+      pSelectionGroups       = new TreeMap<String,SelectionGroup>();
+      pSelectionSchedules    = new TreeMap<String,SelectionSchedule>();
+      pSelectionChanged      = new AtomicBoolean(true);
+      pDispSelectionKeyNames = new TreeSet<String>(); 
+      pDispSelectionGroups   = new TreeMap<String,SelectionGroup>();
+      pSelectionProfiles     = new TreeMap<Flags,SelectionProfile>();
+
       pQueueExtensions = new TreeMap<String,QueueExtensionConfig>();
 
       pToolsets = new DoubleMap<String,OsType,Toolset>();
@@ -116,17 +124,20 @@ class QueueMgr
       pTotalDiskChanges   = new TreeMap<String,Long>();
       pHosts              = new TreeMap<String,QueueHost>(); 
       pHostsInfo          = new TreeMap<String,QueueHostInfo>();
+      pOrderedHosts       = new QueueHost[128];
 
       pLastSampleWritten = new AtomicLong(0L);
       pSamples           = new TreeMap<String,ResourceSampleCache>();
       pSampleFileLock    = new Object();
 
-      pPreemptList = new ConcurrentLinkedQueue<Long>();
-      pHitList     = new ConcurrentLinkedQueue<Long>();
-      pPaused      = new TreeSet<Long>();
+      pPreemptList = new LinkedBlockingDeque<Long>();
+      pHitList     = new LinkedBlockingDeque<Long>();
+      pPause       = new TreeSet<Long>();
+      pResume      = new TreeSet<Long>();
 
-      pWaiting       = new ConcurrentLinkedQueue<Long>();
-      pReady         = new TreeSet<Long>();
+      pWaiting  = new LinkedBlockingDeque<Long>();
+      pReady    = new TreeMap<Long,JobProfile>();
+      pJobRanks = new JobRank[1024]; 
 
       pJobFileLocks = new TreeMap<Long,Object>();
       pJobs         = new TreeMap<Long,QueueJob>();
@@ -384,11 +395,7 @@ class QueueMgr
 	    switch(info.getState()) {
 	    case Queued:
 	    case Preempted:
-	      pWaiting.add(jobID);
-	      break;
-	      
 	    case Paused:
-	      pPaused.add(jobID);
 	      pWaiting.add(jobID);
 	      break;
 	      
@@ -400,9 +407,9 @@ class QueueMgr
 	      pJobs.put(jobID, job);
 	    }
 	    
-	    synchronized(pJobInfo) {
-	      pJobInfo.put(jobID, info);
-	    }
+            synchronized(pJobInfo) {
+              pJobInfo.put(jobID, info); 
+            }
 	  }
 	  catch(NumberFormatException ex) {
 	    LogMgr.getInstance().log
@@ -504,47 +511,50 @@ class QueueMgr
     }
 
     /* start tasks to record the results of the already running jobs */ 
-    for(Long jobID : running.keySet()) {
-      boolean stillExists = false;
-      synchronized(pJobs) {
-	stillExists = pJobs.containsKey(jobID);
-      }
-
-      if(stillExists) {
-	String hostname = running.get(jobID);
-
-	QueueJob job = null;
-	synchronized(pJobs) {
-	  job = pJobs.get(jobID);
-	}
-
-        OsType os = null;
-	synchronized(pJobInfo) {
-          QueueJobInfo info = pJobInfo.get(jobID);
-          if(info != null) 
-            os = info.getOsType();
-	}
-
-        /* attempt to aquire the licenses already being used by the job */ 
-	TreeSet<String> aquiredKeys = new TreeSet<String>();
-        synchronized(pLicenseKeys) {
-          for(String kname : job.getJobRequirements().getLicenseKeys()) {
-            LicenseKey key = pLicenseKeys.get(kname);
-            if(key != null) {
-              if(key.acquire(hostname)) 
-                aquiredKeys.add(kname);
-              else {
-                LogMgr.getInstance().log
-                  (LogMgr.Kind.Ops, LogMgr.Level.Warning,
-                   "Unable to aquire a (" + key.getName() + ") license key for the " + 
-                   "job (" + jobID + ") already running on (" + hostname + ")!");
-              }
-            }            
-          }
+    {
+      TaskTimer timer = new TaskTimer();
+      for(Long jobID : running.keySet()) {
+        boolean stillExists = false;
+        synchronized(pJobs) {
+          stillExists = pJobs.containsKey(jobID);
         }
-
-	MonitorTask task = new MonitorTask(hostname, os, job, aquiredKeys);
-	task.start();
+        
+        if(stillExists) {
+          String hostname = running.get(jobID);
+          
+          QueueJob job = null;
+          synchronized(pJobs) {
+            job = pJobs.get(jobID);
+          }
+          
+          OsType os = null;
+          { 
+            QueueJobInfo info = getJobInfo(timer, jobID);
+            if(info != null) 
+              os = info.getOsType();
+          }
+          
+          /* attempt to aquire the licenses already being used by the job */ 
+          TreeSet<String> aquiredKeys = new TreeSet<String>();
+          synchronized(pLicenseKeys) {
+            for(String kname : job.getJobRequirements().getLicenseKeys()) {
+              LicenseKey key = pLicenseKeys.get(kname);
+              if(key != null) {
+                if(key.acquire(hostname)) 
+                  aquiredKeys.add(kname);
+                else {
+                  LogMgr.getInstance().log
+                    (LogMgr.Kind.Ops, LogMgr.Level.Warning,
+                     "Unable to aquire a (" + key.getName() + ") license key for the " + 
+                     "job (" + jobID + ") already running on (" + hostname + ")!");
+                }
+              }            
+            }
+          }
+          
+          MonitorTask task = new MonitorTask(hostname, os, job, aquiredKeys);
+          task.start();
+        }
       }
     }
   }
@@ -1293,6 +1303,7 @@ class QueueMgr
       synchronized(pSelectionKeys) {
 	timer.resume();
 
+        pSelectionChanged.set(true);
 	pSelectionKeys.put(key.getName(), key);
 	writeSelectionKeys();
 
@@ -1334,6 +1345,8 @@ class QueueMgr
 	synchronized(pSelectionKeys) {
 	  timer.resume();
 	
+          pSelectionChanged.set(true);
+
 	  {
 	    pSelectionKeys.remove(kname);
 	    writeSelectionKeys();
@@ -1433,6 +1446,8 @@ class QueueMgr
 	if(pSelectionGroups.containsKey(name)) 
 	  throw new PipelineException
 	    ("A selection group named (" + name + ") already exists!");
+
+        pSelectionChanged.set(true);
 	pSelectionGroups.put(name, new SelectionGroup(name));
 
 	writeSelectionGroups();
@@ -1475,6 +1490,8 @@ class QueueMgr
 	  synchronized(pSelectionGroups) {
 	    timer.resume();
 	
+            pSelectionChanged.set(true);
+
 	    {
 	      for(String name : names)
 		pSelectionGroups.remove(name);
@@ -1546,6 +1563,8 @@ class QueueMgr
 	synchronized(pSelectionKeys) {
 	  timer.resume();
 	
+          pSelectionChanged.set(true);
+
 	  for(SelectionGroup sg : req.getSelectionGroups()) {
 	    /* strip any obsolete selection keys */ 
 	    TreeSet<String> dead = new TreeSet<String>();
@@ -1880,6 +1899,7 @@ class QueueMgr
       synchronized(pHardwareKeys) {
 	timer.resume();
 
+        pHardwareChanged.set(true);
 	pHardwareKeys.put(key.getName(), key);
 	writeHardwareKeys();
 
@@ -1921,6 +1941,8 @@ class QueueMgr
 	synchronized(pHardwareKeys) {
 	  timer.resume();
 	
+          pHardwareChanged.set(true);
+
 	  {
 	    pHardwareKeys.remove(kname);
 	    writeHardwareKeys();
@@ -2015,6 +2037,8 @@ class QueueMgr
 	if(pHardwareGroups.containsKey(name)) 
 	  throw new PipelineException
 	    ("A hardware group named (" + name + ") already exists!");
+
+        pHardwareChanged.set(true);
 	pHardwareGroups.put(name, new HardwareGroup(name));
 
 	writeHardwareGroups();
@@ -2053,30 +2077,32 @@ class QueueMgr
 	  ("Only a user with Queue Admin privileges may remove hardware groups!"); 
 
       synchronized(pHosts) {
-	  synchronized(pHardwareGroups) {
-	    timer.resume();
-	
-	    {
-	      for(String name : names)
-		pHardwareGroups.remove(name);
-	      
-	      writeHardwareGroups();
-	    }
+        synchronized(pHardwareGroups) {
+          timer.resume();
+          
+          pHardwareChanged.set(true);
+          
+          {
+            for(String name : names)
+              pHardwareGroups.remove(name);
+            
+            writeHardwareGroups();
+          }
+	  
+          {
+            boolean modified = false;
+            for(QueueHost host : pHosts.values()) {
+              String gname = host.getHardwareGroup();
+              if((gname != null) && names.contains(gname)) {
+                host.setHardwareGroup(null);
+                modified = true;
+              }
+            }
 	    
-	    {
-	      boolean modified = false;
-	      for(QueueHost host : pHosts.values()) {
-		String gname = host.getHardwareGroup();
-		if((gname != null) && names.contains(gname)) {
-		  host.setHardwareGroup(null);
-		  modified = true;
-		}
-	      }
-	      
-	      if(modified) 
-		writeHosts();
-	    }
-	  }
+            if(modified) 
+              writeHosts();
+          }
+        }
       }
 
       return new SuccessRsp(timer);
@@ -2117,6 +2143,8 @@ class QueueMgr
 	synchronized(pHardwareKeys) {
 	  timer.resume();
 	
+          pHardwareChanged.set(true);
+
 	  for(HardwareGroup hg : req.getHardwareGroups()) {
 	    /* strip any obsolete hardware keys */ 
 	    TreeSet<String> dead = new TreeSet<String>();
@@ -2537,7 +2565,7 @@ class QueueMgr
       if(specs != null) {
 	updateHistogramSpecs(timer, specs); 
 
-	active = new HistogramSpec[11];
+	active = new HistogramSpec[12];
 	active[0]  = specs.getStatusSpec(); 
 	active[1]  = specs.getOsTypeSpec(); 
 	active[2]  = specs.getLoadSpec(); 
@@ -2547,8 +2575,9 @@ class QueueMgr
 	active[6]  = specs.getSlotsSpec(); 
 	active[7]  = specs.getReservationSpec(); 
 	active[8]  = specs.getOrderSpec(); 
-	active[9]  = specs.getGroupsSpec(); 
-	active[10] = specs.getSchedulesSpec(); 
+	active[9]  = specs.getSelectionGroupsSpec(); 
+	active[10] = specs.getSelectionSchedulesSpec(); 
+	active[11] = specs.getHardwareGroupsSpec(); 
 
 	boolean anyIncluded = false;
 	int wk;
@@ -2559,7 +2588,7 @@ class QueueMgr
 	    active[wk] = null;
 	}
 
-	/* if there are no included catagoried for any histogram, 
+	/* if there are no included catagories for any histogram, 
 	     just return all hosts */ 
 	if(!anyIncluded) 
 	  active = null;
@@ -2654,6 +2683,16 @@ class QueueMgr
 		  if(sched == null) 
 		    sched = "-";
 		  if(!active[wk].isIncludedItem(sched))
+		    included = false;
+		}
+                break; 
+
+	      case 11:
+		{
+		  String group = qinfo.getHardwareGroup();
+		  if(group == null) 
+		    group = "-";
+		  if(!active[wk].isIncludedItem(group))
 		    included = false;
 		}
 	      }
@@ -3634,12 +3673,12 @@ class QueueMgr
 	  ranges.add(new HistogramRange(sname));
       }
       
-      HistogramSpec oldSpec = specs.getGroupsSpec();
-      HistogramSpec newSpec = new HistogramSpec("Groups", ranges);
+      HistogramSpec oldSpec = specs.getSelectionGroupsSpec();
+      HistogramSpec newSpec = new HistogramSpec("SelectionGroups", ranges);
       for(HistogramRange range : oldSpec.getIncluded())
 	newSpec.setIncluded(range, true);
       
-      specs.setGroupsSpec(newSpec); 
+      specs.setSelectionGroupsSpec(newSpec); 
     }
     
     {
@@ -3650,13 +3689,30 @@ class QueueMgr
 	  ranges.add(new HistogramRange(sname));
       }
       
-      HistogramSpec oldSpec = specs.getSchedulesSpec();
-      HistogramSpec newSpec = new HistogramSpec("Schedules", ranges); 
+      HistogramSpec oldSpec = specs.getSelectionSchedulesSpec();
+      HistogramSpec newSpec = new HistogramSpec("SelectionSchedules", ranges); 
       for(HistogramRange range : oldSpec.getIncluded())
 	  newSpec.setIncluded(range, true);
       
-      specs.setSchedulesSpec(newSpec); 
+      specs.setSelectionSchedulesSpec(newSpec); 
     }
+
+    {
+      TreeSet<HistogramRange> ranges = new TreeSet<HistogramRange>();
+      ranges.add(new HistogramRange("-"));
+      synchronized(pHardwareGroups) {
+	for(String sname : pHardwareGroups.keySet())
+	  ranges.add(new HistogramRange(sname));
+      }
+      
+      HistogramSpec oldSpec = specs.getHardwareGroupsSpec();
+      HistogramSpec newSpec = new HistogramSpec("HardwareGroups", ranges);
+      for(HistogramRange range : oldSpec.getIncluded())
+	newSpec.setIncluded(range, true);
+      
+      specs.setHardwareGroupsSpec(newSpec); 
+    }
+    
   }
 
 
@@ -3955,7 +4011,7 @@ class QueueMgr
     timer.aquire();  
     synchronized(pJobInfo) {
       timer.resume();
-      for(Long jobID : pJobInfo.keySet()) {
+      for(Long jobID : pJobInfo.keySet()) {   // CHANGE THIS TO ITERATE OVER MapEntries!
 	QueueJobInfo info = pJobInfo.get(jobID);
 	switch(info.getState()) {
 	case Running:
@@ -4046,7 +4102,7 @@ class QueueMgr
       try {
         Set<Long> jobIDs = req.getJobIDs();
         TreeMap<Long, QueueJobInfo> toReturn = new TreeMap<Long, QueueJobInfo>();
-        for (Long jobID : jobIDs) {
+        for (Long jobID : jobIDs) {  // CHANGE THIS TO ITERATE OVER MapEntries!
           QueueJobInfo info = pJobInfo.get(jobID);
           if(info == null) 
             throw new PipelineException
@@ -4078,7 +4134,7 @@ class QueueMgr
     timer.aquire();  
     synchronized(pJobInfo) {
       timer.resume();
-      for(Long jobID : pJobInfo.keySet()) {
+      for(Long jobID : pJobInfo.keySet()) {  // CHANGE THIS TO ITERATE OVER MapEntries!
 	QueueJobInfo info = pJobInfo.get(jobID);
 	if(info != null) {
 	  switch(info.getState()) {
@@ -4298,16 +4354,37 @@ class QueueMgr
 
       timer.aquire();
       synchronized(pJobs) {
-	timer.resume();
+        timer.resume();
       
 	for(Long jobID : req.getJobIDs()) {
 	  QueueJob job = pJobs.get(jobID);
 	  if(job != null) {
-	    String author = job.getActionAgenda().getNodeID().getAuthor();
-	    if(pAdminPrivileges.isQueueManaged(req, author)) 
-	      pPaused.add(jobID);
-	    else 
+            String author = job.getActionAgenda().getNodeID().getAuthor();
+            if(pAdminPrivileges.isQueueManaged(req, author)) {
+              QueueJobInfo info = null;
+              timer.aquire();
+              synchronized(pJobInfo) {
+                timer.resume();
+                info = pJobInfo.get(jobID);	 
+              }
+  
+              if(info != null) {
+                switch(info.getState()) {
+                case Queued:
+                case Preempted:
+                  synchronized(pPause) {
+                    pPause.add(jobID);
+                  }
+                }
+
+                synchronized(pResume) {
+                  pResume.remove(jobID);
+                }
+              }
+            }
+	    else {
 	      unprivileged = true;
+            }
 	  }
 	}
       }
@@ -4352,10 +4429,30 @@ class QueueMgr
 	  QueueJob job = pJobs.get(jobID);
 	  if(job != null) {
 	    String author = job.getActionAgenda().getNodeID().getAuthor();
-	    if(pAdminPrivileges.isQueueManaged(req, author)) 
-	      pPaused.remove(jobID);
-	    else 
+	    if(pAdminPrivileges.isQueueManaged(req, author)) { 
+              QueueJobInfo info = null;
+              timer.aquire();
+              synchronized(pJobInfo) {
+                timer.resume();
+                info = pJobInfo.get(jobID);	 
+              }
+  
+              if(info != null) {
+                switch(info.getState()) {
+                case Paused: 
+                  synchronized(pResume) {
+                    pResume.add(jobID);
+                  }
+                }
+
+                synchronized(pPause) {
+                  pPause.remove(jobID);
+                }
+              }
+            }
+            else {
 	      unprivileged = true;
+            }
 	  }
 	}
       }
@@ -4486,8 +4583,8 @@ class QueueMgr
         
         throw new PipelineException
           ("While changing job requirements was successful, the following errors occured " +
-           "during KeyChooser execution.  These errors may effect the ability of the jobs on" +
-           "the queue to run.\n\n" + msg);
+           "during KeyChooser execution.  These errors may effect the ability of the jobs " +
+           "on the queue to run.\n\n" + msg);
       }
 
       return new SuccessRsp(timer);
@@ -4631,8 +4728,8 @@ class QueueMgr
    *   The current job requirements that are going to be modified.
    *   
    * @param annots
-   *   The list of annotations associated with the nodeID of the current job.  Shoulld NEVER
-   *   be <code>null</code>
+   *   The list of annotations associated with the nodeID of the current job.  
+   *   Shoulld NEVER be <code>null</code>
    *   
    * @param selectionKeys
    *   A map of the selection key choosers indexed by the selection key name.
@@ -4935,35 +5032,35 @@ class QueueMgr
         }
       }
 
-      /* see which ones are still waiting to run */ 
-      TreeSet<Long> waiting = new TreeSet<Long>();
-      {
-        timer.aquire();  
-        synchronized(pJobInfo) {
-          timer.resume();
-          
-          for(Long jobID : jobIDs) {
-            QueueJobInfo info = pJobInfo.get(jobID);	   
-            if(info != null) {
-              switch(info.getState()) {
-              case Queued:
-              case Preempted:
-                waiting.add(jobID);
-              }
-            }
-          }
-        }
-      }
-
       /* mark them to be paused */ 
       timer.aquire();
       synchronized(pJobs) {
 	timer.resume();
       
-	for(Long jobID : waiting) {
+	for(Long jobID : jobIDs) {
 	  QueueJob job = pJobs.get(jobID);
-	  if(job != null) 
-            pPaused.add(jobID);
+	  if(job != null) {
+            QueueJobInfo info = null;
+            timer.aquire();
+            synchronized(pJobInfo) {
+              timer.resume();
+              info = pJobInfo.get(jobID);	 
+            }
+
+            if(info != null) {
+              switch(info.getState()) {
+              case Queued:
+              case Preempted:
+                synchronized(pPause) {
+                  pPause.add(jobID);
+                }
+              }
+
+              synchronized(pResume) {
+                pResume.remove(jobID);
+              }
+            }
+          }
 	}
       }
 
@@ -5012,35 +5109,35 @@ class QueueMgr
         }
       }
 
-      /* see which ones are currently paused */ 
-      TreeSet<Long> paused = new TreeSet<Long>();
-      {
-        timer.aquire();  
-        synchronized(pJobInfo) {
-          timer.resume();
-          
-          for(Long jobID : jobIDs) {
-            QueueJobInfo info = pJobInfo.get(jobID);	   
-            if(info != null) {
-              switch(info.getState()) {
-              case Paused:
-                paused.add(jobID);
-              }
-            }
-          }
-        }
-      }
-
       /* mark them for resumption */ 
       timer.aquire();
       synchronized(pJobs) {
 	timer.resume();
       
-	for(Long jobID : paused) {
+	for(Long jobID : jobIDs) {
 	  QueueJob job = pJobs.get(jobID);
-	  if(job != null) 
-            pPaused.remove(jobID);
-	}
+	  if(job != null) {
+            QueueJobInfo info = null;
+            timer.aquire();
+            synchronized(pJobInfo) {
+              timer.resume();
+              info = pJobInfo.get(jobID);	 
+            }
+
+            if(info != null) {
+              switch(info.getState()) {
+              case Paused:
+                synchronized(pResume) {
+                  pResume.add(jobID);
+                }
+              }
+
+              synchronized(pPause) {
+                pPause.remove(jobID);
+              }
+            }
+          }
+        }
       }
 
       return new SuccessRsp(timer);
@@ -5410,7 +5507,7 @@ class QueueMgr
 	  }
 	  catch(InterruptedException ex) {
 	    LogMgr.getInstance().log
-	      (LogMgr.Kind.Net, LogMgr.Level.Severe,
+	      (LogMgr.Kind.Col, LogMgr.Level.Severe,
 	       "Interrupted while collecting resource information.");
 	    LogMgr.getInstance().flush();
 	  }
@@ -5564,7 +5661,7 @@ class QueueMgr
 	}
 	catch(PipelineException ex) {
 	  LogMgr.getInstance().log
-	    (LogMgr.Kind.Dsp, LogMgr.Level.Severe,
+	    (LogMgr.Kind.Col, LogMgr.Level.Severe,
 	     ex.getMessage());
 	}
 	finally {
@@ -5578,12 +5675,12 @@ class QueueMgr
       /* cleanup any out-of-date sample files */ 
       {
 	timer.suspend();
-	TaskTimer tm = new TaskTimer("Dispatcher [Clean Samples]");
+	TaskTimer tm = new TaskTimer("Collector [Clean Samples]");
 	{
 	  cleanupSamples(tm);
 	}
 	LogMgr.getInstance().logSubStage
-	  (LogMgr.Kind.Dsp, LogMgr.Level.Finer,
+	  (LogMgr.Kind.Col, LogMgr.Level.Finer,
 	   tm, timer); 
       }
     }
@@ -5597,8 +5694,8 @@ class QueueMgr
       long nap = PackageInfo.sCollectorInterval - timer.getTotalDuration();
       if(nap > 0) {
 	LogMgr.getInstance().logAndFlush
-	  (LogMgr.Kind.Col, LogMgr.Level.Finest,
-	   "Collector: Sleeping for (" + nap + ") ms...");
+	  (LogMgr.Kind.Col, LogMgr.Level.Finer,
+	   "Collector: Sleeping for (" + nap + ") msec...");
 
 	try {
 	  Thread.sleep(nap);
@@ -5608,9 +5705,13 @@ class QueueMgr
       }
       else {
 	LogMgr.getInstance().logAndFlush
-	  (LogMgr.Kind.Col, LogMgr.Level.Finest,
-	   "Collector: Overbudget by (" + (-nap) + ") ms...");
+	  (LogMgr.Kind.Col, LogMgr.Level.Finer,
+	   "Collector: Overbudget by (" + (-nap) + ") msec...");
       }
+
+      LogMgr.getInstance().logAndFlush
+        (LogMgr.Kind.Col, LogMgr.Level.Finer,
+         "\n-----------------------------------------------------------------------------\n");
     }
   }
 
@@ -5629,833 +5730,41 @@ class QueueMgr
     TaskTimer timer = new TaskTimer("Dispatcher");
 
     /* apply any pending modifications to the job servers prior to dispatch */ 
-    {
-      timer.suspend();
-      TaskTimer tm = new TaskTimer("Dispatcher [Apply Host Edits]");
-      try {
-	applyHostEdits(tm);
-      }
-      catch(PipelineException ex) {
-	LogMgr.getInstance().log
-	  (LogMgr.Kind.Net, LogMgr.Level.Severe,
-	   ex.getMessage()); 
-      }
-      LogMgr.getInstance().logSubStage
-	(LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
-	 tm, timer);
-    }
+    dspApplyHostEdits(timer);
 
     /* kill/abort the jobs in the hit list */ 
-    {
-      timer.suspend();
-      TaskTimer tm = new TaskTimer("Dispatcher [Kill/Abort]");
-      while(true) {
-	Long jobID = pHitList.poll();
-	if(jobID == null) 
-	  break;
-	
-	QueueJob job = null;
-	tm.aquire();
-	synchronized(pJobs) {
-	  tm.resume();
-	  job = pJobs.get(jobID);
-	}
-
-	QueueJobInfo info = null;
-	tm.aquire();
-	synchronized(pJobInfo) {
-	  tm.resume();
-	  info = pJobInfo.get(jobID);
-	}
-	
-	if(info != null) {
-	  boolean aborted = false;
-	  switch(info.getState()) {
-	  case Queued:
-	  case Preempted:
-	  case Paused:
-            JobState prevState = info.aborted();
-	    pJobCounters.update(tm, prevState, info);
-	    try {
-	      writeJobInfo(info);
-	    }
-	    catch(PipelineException ex) {
-	      LogMgr.getInstance().log
-		(LogMgr.Kind.Net, LogMgr.Level.Severe,
-		 ex.getMessage()); 
-	    }
-	    aborted = true;
-	    break; 
-	    
-	  case Running:
-	    {
-	      KillTask task = new KillTask(info.getHostname(), jobID);
-	      task.start();
-	      
-	      aborted = true;
-	    }
-	  }
-
-	  /* post-abort tasks */ 
-	  if(aborted) 
-	    startExtensionTasks(tm, new JobAbortedExtFactory(job));
-	}
-      }
-      LogMgr.getInstance().logSubStage
-	(LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
-	 tm, timer);
-    }
+    dspKillAbort(timer); 
     
-    /* kill and requeue running jobs on the preempt list */  
-    {
-      timer.suspend();
-      TaskTimer tm = new TaskTimer("Dispatcher [Preempt]");
-      while(true) {
-	Long jobID = pPreemptList.poll();
-	if(jobID == null) 
-	  break;
-
-	QueueJob job = null;
-	tm.aquire();
-	synchronized(pJobs) {
-	  tm.resume();
-	  job = pJobs.get(jobID);
-	}
-
-	QueueJobInfo info = null;
-	tm.aquire();
-	synchronized(pJobInfo) {
-	  tm.resume();
-	  info = pJobInfo.get(jobID);
-	}
-
-	if(info != null) {
-	  switch(info.getState()) {
-	  case Running:
-	    {
-	      QueueJobInfo preemptedInfo = new QueueJobInfo(info);
-
-	      {
-		String hostname = info.getHostname();
-		
-                JobState prevState = info.preempted();
-		pJobCounters.update(tm, prevState, info);
-		try {
-		  writeJobInfo(info);
-		}
-		catch(PipelineException ex) {
-		  LogMgr.getInstance().log
-		  (LogMgr.Kind.Ops, LogMgr.Level.Severe,
-		   ex.getMessage()); 
-		}
-
-		KillTask task = new KillTask(hostname, jobID);
-		task.start();
-	      }
-
-	      /* post-preempt tasks */ 
-	      startExtensionTasks(tm, new JobPreemptedExtFactory(job, preemptedInfo));
-	    }
-	  }
-	}
-      }
-      LogMgr.getInstance().logSubStage
-	(LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
-	 tm, timer);
-    }
+    /* kill and requeue running jobs on the preempt list */ 
+    dspPreempt(timer); 
     
-    /* Apply the pending changes to the job requirements for jobs.*/
-    boolean jobReqsChanged = false;
-    {
-      timer.suspend();
-      TaskTimer tm = new TaskTimer("Dispatcher [ChangeJobReqs]");
-      
-      while (true) {
-	long jobID;
-	JobReqs reqs;
+    /* the IDs of jobs which need to have their JobProfile recomputed */ 
+    TreeSet<Long> changedIDs = new TreeSet<Long>();
+    
+    /* apply the pending changes to the job requirements for jobs */
+    dspChangeJobReqs(timer, changedIDs); 
 
-	tm.aquire();
-	synchronized (pJobReqsChanges) {
-	  tm.resume();
-	  if (pJobReqsChanges.isEmpty())
-	    break;
-	 jobID = pJobReqsChanges.firstKey();
-	 reqs = pJobReqsChanges.remove(jobID);
-	}
-
-	QueueJobInfo info = null;
-	tm.aquire();
-	synchronized(pJobInfo) {
-	  tm.resume();
-	  info = pJobInfo.get(jobID);
-	}
-	
-	if(info != null) {
-	  switch(info.getState()) {
-	  case Paused:
-	  case Preempted:
-	  case Queued:
-	    QueueJob job = null;
-	    tm.aquire();
-	    synchronized(pJobs) {
-	      tm.resume();
-	      job = pJobs.get(jobID);
-	      job.setJobRequirements(reqs);
-              jobReqsChanged = true;
-	    }
-	  break;
-	  }
-	}
-      }
-      LogMgr.getInstance().logSubStage
-	(LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
-	 tm, timer);
-    }
+    /* he names of the toolsets used by jobs which are ready to run */ 
+    TreeSet<String> readyToolsets = new TreeSet<String>();
 
     /* process the waiting jobs: sorting jobs into killed/aborted, ready and waiting */ 
-    TreeSet<String> readyToolsets = new TreeSet<String>();
-    {
-      timer.suspend();
-      TaskTimer tm = new TaskTimer("Dispatcher [Sort Waiting]");
-      LinkedList<Long> waiting = new LinkedList<Long>();
-      while(true) {
-	Long jobID = pWaiting.poll();
-	if(jobID == null) 
-	  break;
-	
-	QueueJobInfo info = null;
-	tm.aquire();
-	synchronized(pJobInfo) {
-	  tm.resume();
-	  info = pJobInfo.get(jobID);
-	}
-	
-	if(info != null) {
-	  switch(info.getState()) {
-	  case Queued:	     
-	  case Preempted:
-	    {
-	      /* pause waiting jobs marked to be paused */  
-	      if(pPaused.contains(jobID)) {
-		tm.aquire();
-		synchronized(pJobInfo) {
-		  tm.resume();
+    dspSortWaiting(timer, readyToolsets, changedIDs); 
 
-                  JobState prevState = info.paused();
-		  pJobCounters.update(tm, prevState, info);
-		  try {
-		    writeJobInfo(info);
-		  }
-		  catch(PipelineException ex) {
-		    LogMgr.getInstance().log
-		      (LogMgr.Kind.Ops, LogMgr.Level.Severe,
-		       ex.getMessage()); 
-		  }
-		}
-
-		waiting.add(jobID);
-		break;
-	      }
-	      
-	      QueueJob job = null;
-	      tm.aquire();
-	      synchronized(pJobs) {
-		tm.resume();
-		job = pJobs.get(jobID);
-	      }
-
-	      /* determine whether the job is ready for execution */ 
-	      if(job != null) {
-		boolean waitingOnUpstream = false; 
-		boolean abortDueToUpstream = false;
-		for(Long sjobID : job.getSourceJobIDs()) {
-		  QueueJobInfo sinfo = null;
-		  tm.aquire();
-		  synchronized(pJobInfo) {
-		    tm.resume();
-		    sinfo = pJobInfo.get(sjobID);
-		  }
-		  
-		  if(sinfo != null) {
-		    switch(sinfo.getState()) {	   
-		    case Queued:
-		    case Preempted:
-		    case Paused:
-		    case Running:
-		      waitingOnUpstream = true;
-		      break;
-
-		    case Aborted:
-		    case Failed:
-		      abortDueToUpstream = true;
-		    }
-		  }
-		}
-		
-		if(abortDueToUpstream) 
-		  pHitList.add(jobID);
-		else if(waitingOnUpstream) 
-		  waiting.add(jobID);
-		else {
-		  pReady.add(jobID);
-		  readyToolsets.add(job.getActionAgenda().getToolset());
-		}
-	      }
-	    }
-	    break;
-
-	  case Paused:
-	    /* resume previously paused jobs marked to be resumed */ 
-	    {
-	      if(!pPaused.contains(jobID)) {
-		tm.aquire();
-		synchronized(pJobInfo) {
-		  tm.resume();
-
-                  JobState prevState = info.resumed();
-		  pJobCounters.update(tm, prevState, info);
-		  try {
-		    writeJobInfo(info);
-		  }
-		  catch(PipelineException ex) {
-		    LogMgr.getInstance().log
-		      (LogMgr.Kind.Ops, LogMgr.Level.Severe,
-		       ex.getMessage()); 
-		  }
-		}
-	      }
-
-	      waiting.add(jobID);
-	    }
-	  }
-	}
-      }
-      pWaiting.addAll(waiting);      
-
-      LogMgr.getInstance().logSubStage
-	(LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
-	 tm, timer);
-    }
-
-    /* retrieve any toolsets required by newly ready jobs which are not already cached */ 
-    {
-      timer.suspend();
-      TaskTimer tm = new TaskTimer("Dispatcher [Toolsets]");
-      {
-	fetchToolsets(readyToolsets, tm);
-      }
-      LogMgr.getInstance().logSubStage
-	(LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
-	 tm, timer);
-    }
+    /* retrieve any toolsets required by newly ready jobs which are not already cached */
+    dspToolsets(timer, readyToolsets); 
 
     /* update the read-only cache of job server info before acquiring any potentially
        long duration locks on the pHosts table */ 
-    {
-      timer.suspend();
-      TaskTimer tm = new TaskTimer("Dispatcher [Update Hosts Info]");
-      {
-	updateHostsInfo(tm);
-      }
-      LogMgr.getInstance().logSubStage
-	(LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
-	 tm, timer);
-    }
+    dspUpdateHostsInfo(timer); 
 
-    /* process the available job server slots in dispatch order */ 
-    {
-      timer.suspend();
-      TaskTimer dtm = new TaskTimer("Dispatcher [Dispatch Total]");
-
-      TreeSet<String> keys = new TreeSet<String>();
-      dtm.aquire();
-      synchronized(pSelectionKeys) {
-	dtm.resume();
-	keys.addAll(pSelectionKeys.keySet());
-      }
-      
-      TreeSet<String> hardwareKeys = new TreeSet<String>();
-      dtm.aquire();
-      synchronized(pHardwareKeys) {
-	dtm.resume();
-	hardwareKeys.addAll(pHardwareKeys.keySet());
-      }
-
-
-      dtm.aquire();
-      synchronized(pHosts) {
-	dtm.resume();
-	
-	/* sort hosts by dispatch order */ 
-	ArrayList<String> hostsInOrder = new ArrayList<String>();
-	{
-	  dtm.suspend();
-	  TaskTimer tm = new TaskTimer("Dispatcher [Order Hosts]");
-
-	  TreeMap<Integer,TreeSet<String>> inOrder = 
-	    new TreeMap<Integer,TreeSet<String>>();
-	  for(String hostname : pHosts.keySet()) {
-	    QueueHost host = pHosts.get(hostname);
-	    TreeSet<String> names = inOrder.get(host.getOrder());
-	    if(names == null) {
-	      names = new TreeSet<String>();
-	      inOrder.put(host.getOrder(), names);
-	    }
-	    names.add(hostname);
-	  }
-	  
-	  for(TreeSet<String> names : inOrder.values()) 
-	    hostsInOrder.addAll(names);
-
-	  LogMgr.getInstance().logSubStage
-	    (LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
-	     tm, dtm); 
-	}
-
-	for(String hostname : hostsInOrder) {
-	  if(pReady.isEmpty()) 
-	    break;
-
-	  QueueHost host = pHosts.get(hostname);
-	  switch(host.getStatus()) {
-	  case Enabled:
-	    {
-	      int slots = host.getAvailableSlots();
-
-	      LogMgr.getInstance().logAndFlush
-		(LogMgr.Kind.Ops, LogMgr.Level.Finest,
-		 "Initial Slots [" + hostname + "]: Free = " + slots + "\n");
-    
-	      dtm.suspend();
-	      TaskTimer stm = new TaskTimer
-		("Dispatcher [Dispatch Host - " + hostname + "]");
-
-	      while(slots > 0) {
-		/* rank job IDs by selection score, priority and submission stamp */
-		ArrayList<Long> rankedJobIDs = new ArrayList<Long>();
-		{
-		  stm.suspend();
-		  TaskTimer tm = new TaskTimer
-		    ("Dispatcher [Rank Jobs - " + hostname + ":" + slots + "]");
-
-		  /* job ID indexed by selection score, percent, priority and timestamp */ 
-                  TreeMap<Integer,TreeMap<Double,TreeMap<Integer,TreeMap<Long,Long>>>> byScore =
-                    new TreeMap<Integer,TreeMap<Double,TreeMap<Integer,TreeMap<Long,Long>>>>();
-
-		  for(Long jobID : pReady) {
-		    /* selection score */ 
-		    TreeMap<Double,TreeMap<Integer,TreeMap<Long,Long>>> byPercent = null;
-		    {
-		      Integer score = null;
-		      tm.aquire();
-		      synchronized(pJobs) {
-			tm.resume();
-			QueueJob job = pJobs.get(jobID);
-			if(job != null) {
-			  ActionAgenda jagenda = job.getActionAgenda();
-			  String author = jagenda.getNodeID().getAuthor();
-			  JobReqs jreqs = job.getJobRequirements();
-
-			  boolean supportsOsToolset = false;
-			  tm.aquire();
-			  synchronized(pToolsets) {
-			    tm.resume();
-			    String tname = jagenda.getToolset();
-			    supportsOsToolset = 
-			      (pToolsets.containsKey(tname) && 
-			       pToolsets.get(tname).containsKey(host.getOsType()));
-			  }
-
-			  if(supportsOsToolset && 
-			     job.getAction().supports(host.getOsType()) &&
-			     host.isEligible(author, pAdminPrivileges, jreqs)) {
-
-			    if(jreqs.getSelectionKeys().isEmpty()) 
-			      score = 0;
-			    else {
-			      String gname = host.getSelectionGroup();
-			      if(gname != null) {
-				tm.aquire();
-				synchronized(pSelectionGroups) {
-				  tm.resume();
-				  SelectionGroup sg = pSelectionGroups.get(gname);
-				  /* I changed this from setting score=0 to score=null.  My
-				   * reasoning was that if the job has selection keys assigned
-				   * to it and this host has a selection group that is null
-				   * (which is an odd condition, but whatever), then the queue 
-				   * should act as if the host does not have a selection group.
-				   * Which would be make score null.  Technically, all this code
-				   * could be replaced with:
-				   * 
-				   * if(sg != null)  
-				   *   score = sg.computeSelectionScore(jreqs, keys);
-				   * 
-				   * since score is already null, but the logic is more clear
-				   * this way. 
-				   */
-				  if(sg == null) 
-				    score = null;
-				  else 
-				    score = sg.computeSelectionScore(jreqs, keys);
-				}
-			      }
-			    }
-			    /* Hardware Keys*/
-			    if (!jreqs.getHardwareKeys().isEmpty() && score != null) {
-			      String gname = host.getHardwareGroup();
-			      if (gname != null) {
-				tm.aquire();
-				synchronized(pHardwareGroups) {
-				  tm.resume();
-				  HardwareGroup hg = pHardwareGroups.get(gname);
-				  if (hg != null) {
-				    if (!hg.isEligible(jreqs, hardwareKeys))
-				      score = null;
-				  }
-				  else
-				    score = null;
-				}
-			      } // if (gname != null) {
-			      /* If there is a hardware key, but the host is not in a hardware
-			       * group, then the host cannot have the necessary key
-			       */
-			      else {
-			        score = null;
-			      }
-			    }
-			  }
-			}
-		      }
-		    
-		      if(score != null) {
-			byPercent = byScore.get(score);
-			if(byPercent == null) {
-			  byPercent = 
-			    new TreeMap<Double,TreeMap<Integer,TreeMap<Long,Long>>>();
-			  byScore.put(score, byPercent);
-			}
-		      }
-		    }
-		    
-		    /* percent engaged/pending */ 
-		    TreeMap<Integer,TreeMap<Long,Long>> byPriority = null;
-		    if(byPercent != null) {
-		      double percent = 0.0;
-		      {
-			String gname = host.getSelectionGroup();
-			if(gname != null) {
-			  tm.aquire();
-			  synchronized(pSelectionGroups) {
-			    tm.resume();
-			    SelectionGroup sg = pSelectionGroups.get(gname);
-			    if(sg != null) {
-			      switch(sg.getFavorMethod()) {
-			      case MostEngaged:
-				percent = pJobCounters.percentEngaged(tm, jobID);
-				break;
-
-			      case MostPending:
-				percent = pJobCounters.percentPending(tm, jobID);
-			      }
-			    }
-			  }
-			}
-		      }
-
-		      byPriority = byPercent.get(percent);
-		      if(byPriority == null) {
-			byPriority = new TreeMap<Integer,TreeMap<Long,Long>>();
-			byPercent.put(percent, byPriority);
-		      }
-		    }
-
-		    /* job priority */ 
-		    TreeMap<Long,Long> byAge = null;
-		    if(byPriority != null) {
-		      Integer priority = null;
-		      tm.aquire();
-		      synchronized(pJobs) {
-			tm.resume();
-			QueueJob job = pJobs.get(jobID);
-			if(job != null) 
-			  priority = job.getJobRequirements().getPriority();
-		      }
-
-		      if(priority != null) {
-			byAge = byPriority.get(priority);
-			if(byAge == null) {
-			  byAge = new TreeMap<Long,Long>();
-			  byPriority.put(priority, byAge);
-			}
-		      }
-		    }
-
-		    /* submission date */
-		    if(byAge != null) {
-		      Long stamp = null;
-		      tm.aquire();
-		      synchronized(pJobInfo) {
-			tm.resume();
-			QueueJobInfo info = pJobInfo.get(jobID);
-			if(info != null) 
-			  stamp = info.getSubmittedStamp();
-		      }
-		      
-		      if(stamp != null) 
-			byAge.put(stamp, jobID);
-		    }
-		  }
-
-		  /* process into a simple list of ranked job IDs */ 
-		  {
-		    LinkedList<Integer> scores = new LinkedList<Integer>(byScore.keySet());
-		    Collections.reverse(scores);
-
-		    for(Integer score : scores) {
-
-		      TreeMap<Double,TreeMap<Integer,TreeMap<Long,Long>>> byPercent = 
-			byScore.get(score);
-		      LinkedList<Double> percents =  
-			new LinkedList<Double>(byPercent.keySet());
-		      Collections.reverse(percents);
-		      
-		      for(Double percent : percents) {
-			
-			TreeMap<Integer,TreeMap<Long,Long>> byPriority = 
-			  byPercent.get(percent); 
-			LinkedList<Integer> priorities = 
-			  new LinkedList<Integer>(byPriority.keySet());
-			Collections.reverse(priorities);
-			
-			for(Integer priority : priorities) {
-			  for(Long jobID : byPriority.get(priority).values()) 
-			    rankedJobIDs.add(jobID);
-			}
-		      }
-		    }
-		  }
-		  LogMgr.getInstance().logSubStage
-		    (LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
-		     tm, stm);
-		}
-
-		/* attempt to dispatch a job to the slot:
-		     in order of selection score, job priority and age */ 
-		TreeSet<Long> processed = new TreeSet<Long>();
-		{
-		  stm.suspend();
-		  TaskTimer tm = new TaskTimer
-		    ("Dispatcher [Assign Job - " + hostname + ":" + slots + "]");
-
-		  boolean jobDispatched = false;
-		  for(Long jobID : rankedJobIDs) {
-		    if(jobDispatched) 
-		      break;
-
-		    QueueJob job = null;
-		    tm.aquire();
-		    synchronized(pJobs) {
-		      tm.resume();
-		      job = pJobs.get(jobID);
-		    }
-
-		    QueueJobInfo info = null;
-		    {
-		      tm.aquire();
-		      synchronized(pJobInfo) {
-			tm.resume();
-			info = pJobInfo.get(jobID);
-		      }
-		    }
-
-		    if((job == null) || (info == null)) {
-		      processed.add(jobID);
-		    }
-		    else {
-		      switch(info.getState()) {
-		      case Queued:
-		      case Preempted:
-			/* pause ready jobs marked to be paused */ 
-			if(pPaused.contains(jobID)) {
-			  tm.aquire();
-			  synchronized(pJobInfo) {
-			    tm.resume();
-			    
-                            JobState prevState = info.paused();
-			    pJobCounters.update(tm, prevState, info);
-			    try {
-			      writeJobInfo(info);
-			    }
-			    catch(PipelineException ex) {
-			      LogMgr.getInstance().log
-				(LogMgr.Kind.Ops, LogMgr.Level.Severe,
-				 ex.getMessage()); 
-			    }
-			  }
-			  
-			  pWaiting.add(jobID);
-			  processed.add(jobID);
-			}
-			
-			/* try to dispatch the job */ 
-			else if(dispatchJob(job, info, host, tm)) {
-			  processed.add(jobID);
-			  jobDispatched = true;
-			}
-			break;
-		    
-		      /* skip aborted jobs */ 
-		      case Aborted:
-			processed.add(jobID);
-			break;
-			
-		      default:
-			throw new IllegalStateException
-			  ("Unexpected job state (" + info.getState() + ")!");
-		      }
-		    }
-		  }
-		  LogMgr.getInstance().logSubStage
-		    (LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
-		     tm, stm);
-		}
-
-		for(Long jobID : processed) 
-		  pReady.remove(jobID);
-
-		/* next slot, if any are available */ 
-		slots = Math.min(slots-1, host.getAvailableSlots());
-
-		LogMgr.getInstance().logAndFlush
-		  (LogMgr.Kind.Ops, LogMgr.Level.Finest,
-		   "Updated Slots [" + hostname + "]:  Free = " + slots + "\n");
-	      } //while(slots > 0) 
-	      LogMgr.getInstance().logSubStage
-		(LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
-		 stm, dtm); 
-	    }
-	  }
-	}
-      }
-      LogMgr.getInstance().logSubStage
-	(LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
-	 dtm, timer);
-    }
-
-    /* filter any jobs not ready for execution from the ready list */ 
-    {
-      timer.suspend();
-      TaskTimer tm = new TaskTimer("Dispatcher [Filter Unready]");
-      TreeSet<Long> processed = new TreeSet<Long>();
-      for(Long jobID : pReady) {
-	tm.aquire();
-	synchronized(pJobInfo) {
-	  tm.resume();
-
-	  QueueJobInfo info = pJobInfo.get(jobID);
-	  if(info == null) {
-	    processed.add(jobID);
-	  }
-	  else {
-	    switch(info.getState()) {
-	    case Queued:
-	    case Preempted:
-	      /* pause ready jobs marked to be paused */ 
-	      if(pPaused.contains(jobID)) {
-
-                JobState prevState = info.paused();
-		pJobCounters.update(tm, prevState, info);
-		try {
-		  writeJobInfo(info);
-		}
-		catch(PipelineException ex) {
-		  LogMgr.getInstance().log
-		    (LogMgr.Kind.Ops, LogMgr.Level.Severe,
-		     ex.getMessage()); 
-		}		
-
-		pWaiting.add(jobID);
-		processed.add(jobID);
-	      }
-	      break;
-	  
-	    /* strip any not ready */ 
-	    default:
-	      processed.add(jobID);
-	    }
-	  }
-	}
-      }
-
-      for(Long jobID : processed) 
-	pReady.remove(jobID);
-
-      LogMgr.getInstance().logSubStage
-	(LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
-	 tm, timer);
-    }
+    /* process the available job server slots in dispatch order */
+    dspDispatchTotal(timer, changedIDs); 
 
     /* check for newly completed job groups */ 
-    {
-      timer.suspend();
-      TaskTimer tm = new TaskTimer("Dispatcher [Update Job Groups]");
-      tm.aquire();
-      synchronized(pJobGroups) {
-	tm.resume();
-	for(Long groupID : pJobGroups.keySet()) {
-	  QueueJobGroup group = pJobGroups.get(groupID);
-	
-	  /* the job is not yet completed */ 
-	  if((group != null) && (group.getCompletedStamp() == null)) {
-	    boolean done = true; 
-	    Long latest = null;
-	    for(Long jobID : group.getAllJobIDs()) {
-	      QueueJobInfo info = null;
-	      tm.aquire();
-	      synchronized(pJobInfo) {
-		tm.resume();
-		info = pJobInfo.get(jobID);
-	      }
+    dspUpdateJobGroups(timer); 
 
-	      if(info != null) {
-		switch(info.getState()) {
-		case Queued:
-		case Preempted:
-		case Paused:
-		case Running:
-		  done = false;
-		  break;
-
-		default: 
-		  {
-		    Long stamp = info.getCompletedStamp(); 
-                    if((stamp != null) && 
-                       ((latest == null) || (stamp > latest)))
-                      latest = stamp;
-		  }
-		}
-	      }
-	    }
-
-	    /* update the completed group */ 
-	    if(done && (latest != null)) {
-	      group.completed(latest);
-	      try {
-		writeJobGroup(group);
-	      }
-	      catch(PipelineException ex) {
-		LogMgr.getInstance().log
-		  (LogMgr.Kind.Ops, LogMgr.Level.Severe,
-		   ex.getMessage());
-	      }
-	    }
-	  }
-	}
-      }
-      LogMgr.getInstance().logSubStage
-	(LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
-	 tm, timer);
-    }
+    /* filter any jobs not ready for execution from the ready list */
+    dspFilterUnready(timer); 
 
     /* perform garbage collection of jobs at regular intervals */ 
     pDispatcherCycles++;
@@ -6481,8 +5790,8 @@ class QueueMgr
       long nap = pDispatcherInterval.get() - timer.getTotalDuration();
       if(nap > 0) {
 	LogMgr.getInstance().logAndFlush
-	  (LogMgr.Kind.Dsp, LogMgr.Level.Finest,
-	   "Dispatcher: Sleeping for (" + nap + ") ms...");
+	  (LogMgr.Kind.Dsp, LogMgr.Level.Finer,
+	   "Dispatcher: Sleeping for (" + nap + ") msec...");
 	try {
 	  Thread.sleep(nap);
 	}
@@ -6491,10 +5800,1140 @@ class QueueMgr
       }
       else {
 	LogMgr.getInstance().logAndFlush
-	  (LogMgr.Kind.Dsp, LogMgr.Level.Finest,
-	   "Dispatcher: Overbudget by (" + (-nap) + ") ms...");
+	  (LogMgr.Kind.Dsp, LogMgr.Level.Finer,
+	   "Dispatcher: Overbudget by (" + (-nap) + ") msec...");
+      }
+
+      LogMgr.getInstance().logAndFlush
+        (LogMgr.Kind.Dsp, LogMgr.Level.Finer,
+         "\n-----------------------------------------------------------------------------\n");
+    }
+  }
+
+  /**
+   * Apply any pending modifications to the job servers prior to dispatch.<P> 
+   * 
+   * This should only be called from the dispatcher() method!
+   *
+   * @param timer
+   *   The overall dispatcher timer.
+   */ 
+  private void 
+  dspApplyHostEdits
+  (
+   TaskTimer timer
+  ) 
+  {
+    timer.suspend();
+    TaskTimer tm = new TaskTimer("Dispatcher [Apply Host Edits]");
+    try {
+      applyHostEdits(tm);
+    }
+    catch(PipelineException ex) {
+      LogMgr.getInstance().log
+        (LogMgr.Kind.Dsp, LogMgr.Level.Severe,
+         ex.getMessage()); 
+    }
+    LogMgr.getInstance().logSubStage
+      (LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
+       tm, timer);
+  }
+
+  /**
+   * Kill/abort the jobs in the hit list.<P> 
+   * 
+   * This should only be called from the dispatcher() method!
+   *
+   * @param timer
+   *   The overall dispatcher timer.
+   */ 
+  private void 
+  dspKillAbort 
+  (
+   TaskTimer timer
+  ) 
+  {
+    timer.suspend();
+    TaskTimer tm = new TaskTimer("Dispatcher [Kill/Abort]");
+    while(true) {
+      Long jobID = pHitList.poll();
+      if(jobID == null) 
+        break;
+      
+      QueueJob job = null;
+      tm.aquire();
+      synchronized(pJobs) {
+        tm.resume();
+        job = pJobs.get(jobID);
+      }
+      
+      QueueJobInfo info = getJobInfo(tm, jobID);       
+      if(info != null) {
+        boolean aborted = false;
+        switch(info.getState()) {
+        case Queued:
+        case Preempted:
+        case Paused:
+          {
+            JobState prevState = info.aborted();
+            pJobCounters.update(tm, prevState, info);
+            try {
+              writeJobInfo(info);
+            }
+            catch(PipelineException ex) {
+              LogMgr.getInstance().log
+                (LogMgr.Kind.Dsp, LogMgr.Level.Severe,
+                 ex.getMessage()); 
+            }
+            aborted = true;
+          }
+          break; 
+	  
+        case Running:
+          {
+            KillTask task = new KillTask(info.getHostname(), jobID);
+            task.start();
+            
+            aborted = true;
+          }
+        }
+        
+        /* post-abort tasks */ 
+        if(aborted) 
+          startExtensionTasks(tm, new JobAbortedExtFactory(job));
       }
     }
+    LogMgr.getInstance().logSubStage
+      (LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
+       tm, timer);
+  }
+
+  /**
+   * Kill and requeue running jobs on the preempt list.<P> 
+   * 
+   * This should only be called from the dispatcher() method!
+   *
+   * @param timer
+   *   The overall dispatcher timer.
+   */ 
+  private void 
+  dspPreempt
+  (
+   TaskTimer timer
+  ) 
+  {
+    timer.suspend();
+    TaskTimer tm = new TaskTimer("Dispatcher [Preempt]");
+    while(true) {
+      Long jobID = pPreemptList.poll();
+      if(jobID == null) 
+        break;
+      
+      QueueJob job = null;
+      tm.aquire();
+      synchronized(pJobs) {
+        tm.resume();
+        job = pJobs.get(jobID);
+      }
+      
+      QueueJobInfo info = getJobInfo(tm, jobID);       
+      if(info != null) {
+        switch(info.getState()) {
+        case Running:
+          {
+            QueueJobInfo preemptedInfo = new QueueJobInfo(info);
+            
+            {
+              String hostname = info.getHostname();
+              
+              JobState prevState = info.preempted();
+              pJobCounters.update(tm, prevState, info);
+              try {
+                writeJobInfo(info);
+              }
+              catch(PipelineException ex) {
+                LogMgr.getInstance().log
+		  (LogMgr.Kind.Dsp, LogMgr.Level.Severe,
+		   ex.getMessage()); 
+              }
+              
+              KillTask task = new KillTask(hostname, jobID);
+              task.start();
+            }
+
+            /* post-preempt tasks */ 
+            startExtensionTasks(tm, new JobPreemptedExtFactory(job, preemptedInfo));
+          }
+        }
+      }
+    }
+    LogMgr.getInstance().logSubStage
+      (LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
+       tm, timer);
+  }
+
+  /**
+   * Apply the pending changes to the job requirements for jobs.<P> 
+   * 
+   * This should only be called from the dispatcher() method!
+   * 
+   * @param timer
+   *   The overall dispatcher timer.
+   * 
+   * @param changedIDs
+   *   The IDs of jobs which need to have their JobProfile recomputed.
+   */ 
+  private void
+  dspChangeJobReqs
+  (
+   TaskTimer timer, 
+   TreeSet<Long> changedIDs
+  ) 
+  {
+    timer.suspend();
+    TaskTimer tm = new TaskTimer("Dispatcher [Change Job Requirements]");
+    
+    while (true) {
+      long jobID;
+      JobReqs reqs;
+      
+      tm.aquire();
+      synchronized (pJobReqsChanges) {
+        tm.resume();
+        if (pJobReqsChanges.isEmpty())
+          break;
+        jobID = pJobReqsChanges.firstKey();
+        reqs = pJobReqsChanges.remove(jobID);
+      }
+      
+      QueueJobInfo info = getJobInfo(tm, jobID);       
+      if(info != null) {
+        switch(info.getState()) {
+        case Paused:
+        case Preempted:
+        case Queued:
+          tm.aquire();
+          synchronized(pJobs) {
+            tm.resume();
+            QueueJob job = pJobs.get(jobID);
+            if(job != null) {
+              job.setJobRequirements(reqs);
+              changedIDs.add(jobID);
+            }
+          }
+          break;
+        }
+      }
+    }
+    LogMgr.getInstance().logSubStage
+      (LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
+       tm, timer);
+  }
+
+  /** 
+   * Process the waiting jobs: sorting jobs into killed/aborted, ready and waiting.<P> 
+   * 
+   * This should only be called from the dispatcher() method!
+   *
+   * @param timer
+   *   The overall dispatcher timer.
+   * 
+   * @param readyToolets
+   *   The names of the toolsets used by jobs which are ready to run.
+   * 
+   * @param changedIDs
+   *   The IDs of jobs which need to have their JobProfile recomputed.
+   */ 
+  private void 
+  dspSortWaiting
+  (
+   TaskTimer timer, 
+   TreeSet<String> readyToolsets,
+   TreeSet<Long> changedIDs
+  ) 
+  {
+    timer.suspend();
+    TaskTimer tm = new TaskTimer("Dispatcher [Sort Waiting]");
+
+    /* process the waiting jobs */ 
+    LinkedList<Long> stillWaiting = new LinkedList<Long>();
+    while(true) {
+      Long jobID = pWaiting.poll();
+      if(jobID == null) 
+        break;
+	
+      QueueJobInfo info = getJobInfo(tm, jobID); 	
+      if(info != null) {
+        /* resume jobs marked to be resumed */ 
+        switch(info.getState()) {
+        case Paused:
+          {
+            boolean resumeJob = false;
+            synchronized(pResume) {
+              resumeJob = pResume.remove(jobID); 
+            }
+
+            if(resumeJob) {
+              JobState prevState = info.resumed();
+              pJobCounters.update(tm, prevState, info);
+              try {
+                writeJobInfo(info);
+              }
+              catch(PipelineException ex) {
+                LogMgr.getInstance().log
+                  (LogMgr.Kind.Dsp, LogMgr.Level.Severe,
+                   ex.getMessage()); 
+              }
+            }
+          }
+        }
+
+        /* pause jobs marked to be paused */ 
+        switch(info.getState()) {
+        case Queued:
+        case Preempted:
+          {
+            boolean pauseJob = false;
+            synchronized(pPause) {
+              pauseJob = pPause.remove(jobID); 
+            }
+
+            if(pauseJob) {
+              JobState prevState = info.paused();
+              pJobCounters.update(tm, prevState, info);
+              try {
+                writeJobInfo(info);
+              }
+              catch(PipelineException ex) {
+                LogMgr.getInstance().log
+                  (LogMgr.Kind.Dsp, LogMgr.Level.Severe,
+                   ex.getMessage()); 
+              }
+            }
+          }
+        }
+
+        /* sort into ready, waiting and done */ 
+        switch(info.getState()) {
+        case Queued:	     
+        case Preempted:
+          {
+            QueueJob job = null;
+            tm.aquire();
+            synchronized(pJobs) {
+              tm.resume();
+              job = pJobs.get(jobID);
+            }
+
+            if(job == null) {
+              LogMgr.getInstance().logAndFlush
+                (LogMgr.Kind.Dsp, LogMgr.Level.Warning,
+                 "While processing the job (" + jobID + ") in the waiting list, job entry " + 
+                 "could be found!  Removing it from the waiting list."); 
+            }
+            else {           
+              /* determine whether the job is ready for execution */ 
+              boolean waitingOnUpstream = false; 
+              boolean abortDueToUpstream = false;
+              for(Long sjobID : job.getSourceJobIDs()) {
+                QueueJobInfo sinfo = getJobInfo(tm, sjobID); 		  
+                if(sinfo == null) {
+                  LogMgr.getInstance().logAndFlush
+                    (LogMgr.Kind.Dsp, LogMgr.Level.Warning,
+                     "While processing the job (" + sjobID + ") dependeny of job " + 
+                     "(" + jobID + "), no job status information could be found!  " + 
+                     "Aborting the job.");
+                  pHitList.add(sjobID);
+                  abortDueToUpstream = true;
+                }
+                else {
+                  switch(sinfo.getState()) {	   
+                  case Queued:
+                  case Preempted:
+                  case Paused:
+                  case Running:
+                    waitingOnUpstream = true;
+                    break;
+
+                  case Aborted:
+                  case Failed:
+                    abortDueToUpstream = true;
+                  }
+                }
+              }
+		
+              if(abortDueToUpstream) {
+                /* abort this job, because its dependencies have been aborted or failed */ 
+                pHitList.add(jobID);
+              }
+              else if(waitingOnUpstream) {
+                /* keep the job on the waiting list */ 
+                stillWaiting.add(jobID);
+              }
+              else {
+                /* add it to the ready list, re-profile it and 
+                   insure that its toolset has already be cached */ 
+                pReady.put(jobID, null);
+                changedIDs.add(jobID);
+                readyToolsets.add(job.getActionAgenda().getToolset());
+              }
+            }
+          }
+          break;
+
+        case Paused:
+          /* keep paused jobs on the waiting list */ 
+          stillWaiting.add(jobID);
+          break;
+
+        case Aborted:
+        case Running:
+        case Finished:
+        case Failed:
+          /* jobs in these states should not be still waiting to run... */ 
+        }
+      }
+    }
+    pWaiting.addAll(stillWaiting);      
+
+    LogMgr.getInstance().logSubStage
+      (LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
+       tm, timer);
+  }
+
+  /**
+   * Retrieve any toolsets required by newly ready jobs which are not already cached.<P> 
+   * 
+   * This should only be called from the dispatcher() method!
+   *
+   * @param timer
+   *   The overall dispatcher timer.
+   * 
+   * @param readyToolets
+   *   The names of the toolsets used by jobs which are ready to run.
+   */ 
+  private void 
+  dspToolsets
+  (
+   TaskTimer timer, 
+   TreeSet<String> readyToolsets
+  ) 
+  {
+    timer.suspend();
+    TaskTimer tm = new TaskTimer("Dispatcher [Toolsets]");
+    {
+      fetchToolsets(readyToolsets, tm);
+    }
+    LogMgr.getInstance().logSubStage
+      (LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
+       tm, timer);
+  }
+
+  /**
+   * Update the read-only cache of job server info before acquiring any potentially
+   * long duration locks on the pHosts table.<P> 
+   * 
+   * This should only be called from the dispatcher() method!
+   *
+   * @param timer
+   *   The overall dispatcher timer.
+   */ 
+  private void 
+  dspUpdateHostsInfo
+  (
+   TaskTimer timer
+  ) 
+  {
+    timer.suspend();
+    TaskTimer tm = new TaskTimer("Dispatcher [Update Hosts Info]");
+    {
+      updateHostsInfo(tm);
+    }
+    LogMgr.getInstance().logSubStage
+      (LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
+       tm, timer);
+  }
+
+  /**
+   * Process the available job server slots in dispatch order.<P> 
+   * 
+   * This should only be called from the dispatcher() method!
+   *
+   * @param timer
+   *   The overall dispatcher timer.
+   *
+   * @param changedIDs
+   *   The IDs of jobs which need to have their JobProfile recomputed.
+   */ 
+  private void 
+  dspDispatchTotal
+  (
+   TaskTimer timer,
+   TreeSet<Long> changedIDs   
+  ) 
+  {
+    timer.suspend();
+    TaskTimer dtm = new TaskTimer("Dispatcher [Dispatch Total]");
+      
+    /* if there are changes to the seletion/hardware keys, we need to make new profiles */
+    boolean reprofileAllJobs = dsptValidateProfiles(dtm);
+
+    /* create any selection, hardware or job profiles needed before ranking jobs */ 
+    dsptReprofileReadyJobs(dtm, reprofileAllJobs, changedIDs); 
+
+    /* resize rank array (if necessary) */ 
+    int readyCnt = dsptResizeJobRanks(dtm); 
+
+    int slotCnt = 0; 
+    if(readyCnt > 0) {
+
+      int enabledCnt = 0;
+      dtm.aquire();
+      synchronized(pHosts) {
+        dtm.resume();
+	
+        /* resize ordered hosts array (if necessary) */ 
+        dsptResizeOrderedHosts(dtm); 
+        
+        /* sort the enabled host based on their Order property */ 
+        enabledCnt = dsptOrderHosts(dtm); 
+      }
+
+      /* process the hosts */ 
+      int hk;
+      for(hk=0; hk<enabledCnt; hk++) {
+        QueueHost host = pOrderedHosts[hk];
+        String hostname = host.getName(); 
+        int slots = host.getAvailableSlots();
+
+        LogMgr.getInstance().logAndFlush
+          (LogMgr.Kind.Dsp, LogMgr.Level.Finest,
+           "Initial Slots [" + hostname + "]: Free = " + slots + "\n");
+        
+        dtm.suspend();
+        TaskTimer stm = new TaskTimer
+          ("Dispatcher [Dispatch Host - " + hostname + "]");
+        
+        /* dispatch one slot per-host each dispatcher cycle, if available... */ 
+        if(slots > 0) {
+
+          /* fill the pJobRanks array with entries for all jobs which qualify */
+          int jobCnt = dsptQualifyJobs(stm, host, slots); 
+
+          /* rank the jobs by sorting the portion of the rank array just populated */ 
+          dsptRankJobs(stm, hostname, slots, jobCnt); 
+          
+          /* attempt to dispatch a job to the slot:
+             in order of selection score, favor pending/engaged, job priority and age */ 
+          dsptAssignJob(stm, host, slots, jobCnt); 
+          slotCnt++;
+
+          LogMgr.getInstance().logAndFlush
+            (LogMgr.Kind.Dsp, LogMgr.Level.Finest,
+             "Updated Slots [" + hostname + "]:  Free = " + slots + "\n");
+        } 
+
+        LogMgr.getInstance().logSubStage
+          (LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
+           stm, dtm); 
+      }
+    }
+    LogMgr.getInstance().logSubStage
+      (LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
+       dtm, timer);
+
+    LogMgr.getInstance().logAndFlush
+      (LogMgr.Kind.Dsp, LogMgr.Level.Finer,
+       "Processed (" + readyCnt + ") jobs while dispatching (" + slotCnt + ") slots in " +
+       "(" + dtm.getTotalDuration() + ") msec.");
+  }
+
+  /**
+   * Determine if there are changes to the seletion/hardware keys which will require 
+   * new profiles.<P> 
+   * 
+   * This should only be called from the dspDispatchTotal() method!
+   * 
+   * @param dtm
+   *   The core dispatcher timer.
+   */ 
+  private boolean
+  dsptValidateProfiles
+  (
+   TaskTimer dtm   
+  ) 
+  {
+    boolean reprofileAllJobs = false;
+
+    if(pSelectionChanged.get()) {
+      pDispSelectionKeyNames.clear();
+      pDispSelectionGroups.clear();
+      pSelectionProfiles.clear();
+      reprofileAllJobs = true;
+      
+      dtm.aquire();
+      synchronized(pSelectionGroups) {
+        synchronized(pSelectionKeys) {
+          dtm.resume();
+          
+          pDispSelectionKeyNames.addAll(pSelectionKeys.keySet()); 
+          
+          for(SelectionGroup group : pSelectionGroups.values()) 
+            pDispSelectionGroups.put(group.getName(), new SelectionGroup(group)); 
+          
+          pSelectionChanged.set(false);
+        }
+      }
+      
+      LogMgr.getInstance().logAndFlush
+        (LogMgr.Kind.Dsp, LogMgr.Level.Finest,
+         "Cleared all Selection Profiles.");
+    }
+    
+    if(pHardwareChanged.get()) {
+      pDispHardwareKeyNames.clear();
+      pDispHardwareGroups.clear();
+      pHardwareProfiles.clear();
+      reprofileAllJobs = true;
+      
+      dtm.aquire();
+      synchronized(pHardwareGroups) {
+        synchronized(pHardwareKeys) {
+          dtm.resume();
+          
+          pDispHardwareKeyNames.addAll(pHardwareKeys.keySet()); 
+          
+          for(HardwareGroup group : pHardwareGroups.values()) 
+            pDispHardwareGroups.put(group.getName(), new HardwareGroup(group)); 
+          
+          pHardwareChanged.set(false);
+        }
+      }
+      
+      LogMgr.getInstance().logAndFlush
+        (LogMgr.Kind.Dsp, LogMgr.Level.Finest,
+         "Cleared all Hardware Profiles.");
+    }
+
+    return reprofileAllJobs;
+  }
+
+  /**
+   * Create any selection, hardware or job profiles needed before ranking jobs.<P> 
+   * 
+   * This should only be called from the dspDispatchTotal() method!
+   *
+   * @param dtm
+   *   The core dispatcher timer.
+   * 
+   * @param reprofileAllJobs
+   *   Whether to ignore changedIDs and just reprofile everything.
+   * 
+   * @param changedIDs
+   *   The IDs of jobs which need to have their JobProfile recomputed.
+   */ 
+  private void 
+  dsptReprofileReadyJobs
+  (
+   TaskTimer dtm, 
+   boolean reprofileAllJobs, 
+   TreeSet<Long> changedIDs   
+  ) 
+  {
+    if(!pReady.isEmpty()) {
+      dtm.suspend();
+      TaskTimer tm = new TaskTimer("Dispatcher [Reprofile Ready Jobs]");
+
+      /* do we need to process only the new and modified jobs or all of them? */ 
+      TreeSet<Long> reprofileIDs = new TreeSet<Long>();
+      if(reprofileAllJobs) {
+        reprofileIDs.addAll(pReady.keySet());
+      }
+      else {
+        for(Long jobID : changedIDs) {
+          if(pReady.containsKey(jobID)) 
+            reprofileIDs.add(jobID);
+        }
+      }
+        
+      int jobCnt = 0;
+      int selectionCnt = 0;
+      int hardwareCnt = 0;
+      for(Long jobID : reprofileIDs) {
+        tm.aquire();
+        synchronized(pJobs) {
+          tm.resume();
+          QueueJob job = pJobs.get(jobID);
+          if(job != null) {
+            JobReqs jreqs = job.getJobRequirements();
+            ActionAgenda jagenda = job.getActionAgenda();
+
+            SelectionProfile selectionProfile = null;
+            {
+              Flags flags = jreqs.getSelectionFlags(pDispSelectionKeyNames); 
+              selectionProfile = pSelectionProfiles.get(flags); 
+              if(selectionProfile == null) {
+                selectionProfile = 
+                  new SelectionProfile(pDispSelectionKeyNames, pDispSelectionGroups, jreqs); 
+                pSelectionProfiles.put(flags, selectionProfile); 
+                selectionCnt++;
+              }
+            }
+
+            HardwareProfile hardwareProfile = null;
+            {
+              Flags flags = jreqs.getHardwareFlags(pDispHardwareKeyNames); 
+              hardwareProfile = pHardwareProfiles.get(flags); 
+              if(hardwareProfile == null) {
+                hardwareProfile = 
+                  new HardwareProfile(pDispHardwareKeyNames, pDispHardwareGroups, jreqs); 
+                pHardwareProfiles.put(flags, hardwareProfile); 
+                hardwareCnt++;
+              }
+            }
+
+            JobProfile profile = null;
+            {
+              QueueJobInfo info = getJobInfo(tm, jobID); 
+              if(info != null) {
+                tm.aquire();
+                synchronized(pToolsets) {
+                  tm.resume();
+                  String tname = jagenda.getToolset();
+                  TreeMap<OsType,Toolset> supports = pToolsets.get(tname); 
+                  if(supports != null) {
+                    profile = new JobProfile(job, info, selectionProfile, hardwareProfile, 
+                                             supports.keySet());   
+                  }
+                }
+              }
+            }
+            
+            if(profile != null) {
+              pReady.put(jobID, profile);  
+              jobCnt++;
+            }
+          }
+        }
+      }
+
+      LogMgr.getInstance().logSubStage
+        (LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
+         tm, dtm); 
+
+      LogMgr.getInstance().logAndFlush
+        (LogMgr.Kind.Dsp, LogMgr.Level.Finer,
+         "New Profiles: Jobs(" + jobCnt + ") " + 
+         "Selection(" + selectionCnt + ") Hardware(" + hardwareCnt + ")"); 
+        
+      /* print the profile details */ 
+      if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Dsp, LogMgr.Level.Finest)) {
+        StringBuilder buf = new StringBuilder();
+          
+        buf.append("\nSelection Keys:\n"); 
+        for(String key : pDispSelectionKeyNames) 
+          buf.append("  " + key + "\n"); 
+          
+        buf.append("Selection Profiles:\n"); 
+        for(Flags flags : pSelectionProfiles.keySet()) {
+          SelectionProfile profile = pSelectionProfiles.get(flags); 
+          buf.append("  " + flags + ":\n");
+          buf.append("    (null) = " + profile.getScore(null) + "\n"); 
+          for(String gname : pDispSelectionGroups.keySet())
+            buf.append("    " + gname + " = " + profile.getScore(gname) + "\n"); 
+        }
+          
+        buf.append("Hardware Keys:\n"); 
+        for(String key : pDispHardwareKeyNames) 
+          buf.append("  " + key + "\n"); 
+          
+        buf.append("Hardware Profiles:\n"); 
+        for(Flags flags : pHardwareProfiles.keySet()) {
+          HardwareProfile profile = pHardwareProfiles.get(flags); 
+          buf.append("  " + flags + ":\n");
+          buf.append("    (null) = " + profile.isEligible(null) + "\n"); 
+          for(String gname : pDispHardwareGroups.keySet())
+            buf.append("    " + gname + " = " + profile.isEligible(gname) + "\n"); 
+        }
+          
+        LogMgr.getInstance().logAndFlush
+          (LogMgr.Kind.Dsp, LogMgr.Level.Finest, buf.toString());
+      }
+    }
+  }
+
+  /**
+   * Resize rank array (if necessary).<P> 
+   * 
+   * This should only be called from the dspDispatchTotal() method!
+   *
+   * @param dtm
+   *   The core dispatcher timer.
+   * 
+   * @return 
+   *   The number of jobs ready to be dispatched.
+   */ 
+  private int 
+  dsptResizeJobRanks
+  (
+   TaskTimer dtm
+  ) 
+  {
+    int readyCnt = 0;
+    if(!pReady.isEmpty()) {
+      readyCnt = pReady.size();
+      if(pJobRanks.length < readyCnt) {
+        dtm.suspend();
+        TaskTimer tm = new TaskTimer("Dispatcher [Resize Job Ranks]");
+        
+        JobRank[] copy = Arrays.copyOf(pJobRanks, (int)(((float) readyCnt) * 1.5));
+        pJobRanks = copy;
+        
+        LogMgr.getInstance().logSubStage
+          (LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
+           tm, dtm); 
+        
+        LogMgr.getInstance().logAndFlush
+          (LogMgr.Kind.Dsp, LogMgr.Level.Finer,
+           "Job Ranks now has (" + pJobRanks.length + ") possible entries."); 
+      }
+    }
+
+    return readyCnt;
+  }
+
+  /**
+   * Resize ordered hosts array (if necessary).<P> 
+   * 
+   * This should only be called from the dspDispatchTotal() method!
+   *
+   * @param dtm
+   *   The core dispatcher timer.
+   */ 
+  private void
+  dsptResizeOrderedHosts
+  (
+   TaskTimer dtm
+  ) 
+  {
+    if(!pHosts.isEmpty()) {
+      int hostsCnt = pHosts.size();
+      if(pOrderedHosts.length < hostsCnt) {
+        dtm.suspend();
+        TaskTimer tm = new TaskTimer("Dispatcher [Resize Ordered Hosts]");
+        
+        QueueHost[] copy = Arrays.copyOf(pOrderedHosts, (int)(((float) hostsCnt) * 1.5));
+        pOrderedHosts = copy;
+        
+        LogMgr.getInstance().logSubStage
+          (LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
+           tm, dtm); 
+        
+        LogMgr.getInstance().logAndFlush
+          (LogMgr.Kind.Dsp, LogMgr.Level.Finer,
+           "Ordered Hosts now has (" + pOrderedHosts.length + ") possible entries."); 
+      }
+    }
+  }
+
+  /**
+   * Sort the enabled host based on their Order property.<P> 
+   * 
+   * This should only be called from the dspDispatchTotal() method!
+   *
+   * @param dtm
+   *   The core dispatcher timer.
+   * 
+   * @return 
+   *   The number of enabled hosts in pOrderedHosts.
+   */ 
+  private int 
+  dsptOrderHosts
+  (
+   TaskTimer dtm
+  ) 
+  {
+    dtm.suspend();
+    TaskTimer tm = new TaskTimer("Dispatcher [Order Hosts]");
+    
+    int enabledCnt = 0;
+    for(Map.Entry<String,QueueHost> entry : pHosts.entrySet()) {
+      QueueHost host = entry.getValue();
+      switch(host.getStatus()) {
+      case Enabled:
+        pOrderedHosts[enabledCnt] = host;
+        enabledCnt++;
+      }
+    }
+
+    Arrays.sort(pOrderedHosts, 0, enabledCnt, new HostOrderComparator());
+    
+    LogMgr.getInstance().logSubStage
+      (LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
+       tm, dtm); 
+
+    return enabledCnt; 
+  }
+
+  /**
+   * Fill the pJobRanks array with entries for all jobs which qualify.<P> 
+   * 
+   * This should only be called from the dspDispatchTotal() method!
+   *
+   * @param dtm
+   *   The per-slot dispatcher timer.
+   * 
+   * @param host
+   *   The current host.
+   * 
+   * @param slotID
+   *   The index of slots being processed.
+   * 
+   * @return 
+   *   The number of jobs which qualify for the slot.
+   */ 
+  private int 
+  dsptQualifyJobs
+  (
+   TaskTimer stm, 
+   QueueHost host, 
+   int slotID
+  ) 
+  {
+    stm.suspend();
+    TaskTimer tm = new TaskTimer
+      ("Dispatcher [Qualify Jobs - " + host.getName() + ":" + slotID + "]");
+    
+    /* process all ready jobs */ 
+    int jobCnt = 0; 
+    for(Map.Entry<Long,JobProfile> entry : pReady.entrySet()) {
+              
+      /* skip those without a profile */ 
+      Long jobID = entry.getKey();
+      JobProfile profile = entry.getValue();
+      if(profile != null) {
+        
+        /* make sure the slot provides the required hardware keys */ 
+        String hwGroup = host.getHardwareGroup();
+        HardwareProfile hwProfile = profile.getHardwareProfile();
+        if((hwProfile != null) && hwProfile.isEligible(hwGroup)) {
+          
+          /* lookup the selection score */ 
+          String selGroup = host.getSelectionGroup();
+          SelectionProfile selProfile = profile.getSelectionProfile();
+          Integer score = selProfile.getScore(selGroup); 
+          if(score != null) {
+
+            /* make sure the host provides the type of operating system, reservation and 
+               dynamic resources required by the job */                
+            if(profile.isEligible(host, pAdminPrivileges)) {
+          
+              /* compute the percentage of jobs within the job group
+                 which are engaged/pending according to the policy of 
+                 the slots selection group (if any) */ 
+              double percent = 0.0;
+              {
+                String gname = host.getSelectionGroup();
+                if(gname != null) {
+                  tm.aquire();
+                  synchronized(pSelectionGroups) {
+                    tm.resume();
+                    SelectionGroup sg = pSelectionGroups.get(gname);
+                    if(sg != null) {
+                      switch(sg.getFavorMethod()) {
+                      case MostEngaged:
+                        percent = pJobCounters.percentEngaged(tm, jobID);
+                        break;
+                        
+                      case MostPending:
+                        percent = pJobCounters.percentPending(tm, jobID);
+                      }
+                    }
+                  }
+                }
+              }
+              
+              /* create a new rank entry for the job */ 
+              {
+                if(pJobRanks[jobCnt] == null) 
+                  pJobRanks[jobCnt] = new JobRank();
+                
+                pJobRanks[jobCnt].update(jobID, score, percent, 
+                                         profile.getPriority(), 
+                                         profile.getTimeStamp()); 
+                jobCnt++; 
+              }
+            }
+          }
+        }
+      }
+    }
+            
+    LogMgr.getInstance().logSubStage
+      (LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
+       tm, stm);
+
+    LogMgr.getInstance().logAndFlush
+      (LogMgr.Kind.Dsp, LogMgr.Level.Finer,
+       "Qualified (" + jobCnt + ") jobs for the slot."); 
+
+    return jobCnt;
+  }
+
+  /**
+   * Rank the jobs by sorting the portion of the rank array just populated.<P> 
+   * 
+   * This should only be called from the dspDispatchTotal() method!
+   *
+   * @param stm
+   *   The per-slot dispatcher timer.
+   * 
+   * @param hostname
+   *   The name of the current host.
+   * 
+   * @param slotID
+   *   The index of slots being processed.
+   *
+   * @param jobCnt
+   *   The number of jobs which qualify for the slot.
+   */ 
+  private void 
+  dsptRankJobs
+  (
+   TaskTimer stm, 
+   String hostname, 
+   int slotID, 
+   int jobCnt
+  ) 
+  {
+    stm.suspend();
+    TaskTimer tm = new TaskTimer
+      ("Dispatcher [Rank Jobs - " + hostname + ":" + slotID + "]");
+    
+    Arrays.sort(pJobRanks, 0, jobCnt);
+    
+    LogMgr.getInstance().logSubStage
+      (LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
+       tm, stm);
+  }
+
+  /**
+   * Attempt to dispatch a job to the slot in order of selection score, 
+   * favor pending/engaged, job priority and age.<P> 
+   * 
+   * This should only be called from the dspDispatchTotal() method!
+   *
+   * @param stm
+   *   The per-slot dispatcher timer.
+   * 
+   * @param host
+   *   The current host.
+   * 
+   * @param slotID
+   *   The index of slots being processed.
+   * 
+   * @param jobCnt
+   *   The number of jobs which qualify for the slot.
+   */ 
+  private void 
+  dsptAssignJob
+  (
+   TaskTimer stm, 
+   QueueHost host, 
+   int slotID,
+   int jobCnt
+  ) 
+  {
+    stm.suspend();
+    TaskTimer tm = new TaskTimer
+      ("Dispatcher [Assign Job - " + host.getName() + ":" + slotID + "]");
+    
+    TreeSet<Long> notReady = new TreeSet<Long>();
+
+    boolean jobDispatched = false;
+    int jk;
+    for(jk=0; jk<jobCnt && !jobDispatched; jk++) {
+      long jobID = pJobRanks[jk].getJobID();
+              
+      QueueJob job = null;
+      tm.aquire();
+      synchronized(pJobs) {
+        tm.resume();
+        job = pJobs.get(jobID);
+      }
+              
+      QueueJobInfo info = getJobInfo(tm, jobID); 
+              
+      if(job == null) {
+        LogMgr.getInstance().logAndFlush
+          (LogMgr.Kind.Dsp, LogMgr.Level.Warning,
+           "While attempting to dispatch the job (" + jobID + ") from the ranked jobs, " + 
+           "no job entry could be found!  Removing it from the ready list."); 
+        notReady.add(jobID);
+      }
+      else if(info == null) {
+        LogMgr.getInstance().logAndFlush
+          (LogMgr.Kind.Dsp, LogMgr.Level.Warning,
+           "While attempting to dispatch the job (" + jobID + ") from the ranked jobs, " + 
+           "no job status information could be found!  Removing it from the ready list."); 
+        notReady.add(jobID);
+      }
+      else {
+        switch(info.getState()) {
+        case Queued:
+        case Preempted:
+          /* attempt to dispatch the ready to execute job */ 
+          if(dispatchJob(job, info, host, tm)) {
+            notReady.add(jobID);
+            jobDispatched = true;
+          }
+          break;
+
+        case Aborted:
+          notReady.add(jobID);
+          break;
+		
+        default:
+          {
+            String msg = 
+              ("While attempting to dispatch job (" + jobID + ") from the ranked jobs, " + 
+               "it was in an unexpected (" + info.getState() + ") state.  Removing it " + 
+               "from the ready list");
+
+            switch(info.getState()) {
+            case Paused:
+              LogMgr.getInstance().logAndFlush
+                (LogMgr.Kind.Dsp, LogMgr.Level.Warning,
+                 msg + " and putting it back into the waiting list.");
+              notReady.add(jobID);
+              pWaiting.add(jobID);
+              break;
+
+            case Running:
+            case Finished:
+            case Failed:
+              LogMgr.getInstance().logAndFlush
+                (LogMgr.Kind.Dsp, LogMgr.Level.Warning,
+                 msg + "."); 
+              notReady.add(jobID);
+            }
+          }
+        }
+      }
+    }
+
+    for(Long jobID : notReady) 
+      pReady.remove(jobID);
+
+    LogMgr.getInstance().logSubStage
+      (LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
+       tm, stm);
+
+    LogMgr.getInstance().logAndFlush
+      (LogMgr.Kind.Dsp, LogMgr.Level.Finer,
+       "Processed (" + jk + ") jobs " + 
+       (jobDispatched ? "before assigning one" : 
+        "but was unable to assign any") + " to the slot.");
   }
 
   /**
@@ -6503,7 +6942,7 @@ class QueueMgr
    * If all license keys can be obtained, the job will be started on the server and a task
    * will be started to monitor the jobs progress. <P> 
    * 
-   * This should only be called from the dispatcher() method!
+   * This should only be called from the dsptAssignJob() method!
    * 
    * @param job
    *   The queue job.
@@ -6640,6 +7079,159 @@ class QueueMgr
   }
 
   /**
+   * Filter any jobs not ready for execution from the ready list.<P> 
+   * 
+   * This should only be called from the dispatcher() method!
+   *
+   * @param timer
+   *   The overall dispatcher timer.
+   */ 
+  private void 
+  dspFilterUnready
+  (
+   TaskTimer timer
+  ) 
+  {
+    timer.suspend();
+    TaskTimer tm = new TaskTimer("Dispatcher [Filter Unready]");
+
+    /* process the ready jobs */ 
+    TreeSet<Long> notReady = new TreeSet<Long>();
+    for(Long jobID : pReady.keySet()) {
+
+      QueueJobInfo info = getJobInfo(tm, jobID); 
+      if(info == null) {
+        LogMgr.getInstance().logAndFlush
+          (LogMgr.Kind.Dsp, LogMgr.Level.Warning,
+           "While processing the job (" + jobID + ") in the ready list, no job status " + 
+           "information could be found!  Removing it from the ready list."); 
+        notReady.add(jobID);
+      }
+      else {
+        switch(info.getState()) {
+        case Queued:
+        case Preempted:
+          {
+            boolean pauseJob = false;
+            synchronized(pPause) {
+              pauseJob = pPause.remove(jobID); 
+            }
+
+            /* pause ready jobs marked to be paused */ 
+            if(pauseJob) {
+              JobState prevState = info.paused();
+              pJobCounters.update(tm, prevState, info);
+              try {
+                writeJobInfo(info);
+              }
+              catch(PipelineException ex) {
+                LogMgr.getInstance().log
+                  (LogMgr.Kind.Dsp, LogMgr.Level.Severe,
+                   ex.getMessage()); 
+              }		
+              
+              pWaiting.add(jobID);
+              notReady.add(jobID);
+            }
+          }
+          break;
+	  
+        case Paused:
+          LogMgr.getInstance().logAndFlush
+            (LogMgr.Kind.Dsp, LogMgr.Level.Warning,
+             "While processing the job (" + jobID + ") in the ready list, it was in an " + 
+             "unexpected (" + info.getState() + ") state.  Removing it from the ready " + 
+             "list putting it back on the waiting list."); 
+          pWaiting.add(jobID);
+          notReady.add(jobID);
+          break;
+
+        default:
+          /* any job not in a Queued or Preempted state cannot be ready to run */ 
+          notReady.add(jobID);
+        }
+      }
+    }
+
+    /* clean up all unready jobs found */ 
+    for(Long jobID : notReady) 
+      pReady.remove(jobID);
+
+    LogMgr.getInstance().logSubStage
+      (LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
+       tm, timer);
+  }
+
+  /**
+   * Check for newly completed job groups.<P> 
+   * 
+   * This should only be called from the dispatcher() method!
+   *
+   * @param timer
+   *   The overall dispatcher timer.
+   */ 
+  private void 
+  dspUpdateJobGroups
+  (
+   TaskTimer timer
+  ) 
+  {
+    timer.suspend();
+    TaskTimer tm = new TaskTimer("Dispatcher [Update Job Groups]");
+
+    tm.aquire();
+    synchronized(pJobGroups) {
+      tm.resume();
+      for(Long groupID : pJobGroups.keySet()) {
+        QueueJobGroup group = pJobGroups.get(groupID);
+	
+        /* the job is not yet completed */ 
+        if((group != null) && (group.getCompletedStamp() == null)) {
+          boolean done = true; 
+          Long latest = null;
+          for(Long jobID : group.getAllJobIDs()) {
+            QueueJobInfo info = getJobInfo(tm, jobID); 
+            if(info != null) {
+              switch(info.getState()) {
+              case Queued:
+              case Preempted:
+              case Paused:
+              case Running:
+                done = false;
+                break;
+
+              default: 
+                {
+                  Long stamp = info.getCompletedStamp(); 
+                  if((stamp != null) && 
+                     ((latest == null) || (stamp > latest)))
+                    latest = stamp;
+                }
+              }
+            }
+          }
+
+          /* update the completed group */ 
+          if(done && (latest != null)) {
+            group.completed(latest);
+            try {
+              writeJobGroup(group);
+            }
+            catch(PipelineException ex) {
+              LogMgr.getInstance().log
+                (LogMgr.Kind.Dsp, LogMgr.Level.Severe,
+                 ex.getMessage());
+            }
+          }
+        }
+      }
+    }
+    LogMgr.getInstance().logSubStage
+      (LogMgr.Kind.Dsp, LogMgr.Level.Finer, 
+       tm, timer);
+  }
+  
+  /**
    * Garbage collect all jobs no longer referenced by a job group.
    */ 
   private void 
@@ -6762,7 +7354,7 @@ class QueueMgr
 
     synchronized(pReady) {
       buf.append("  Ready:\n");
-      for(Long jobID : pReady) 
+      for(Long jobID : pReady.keySet()) 
 	buf.append(jobID + " ");
       buf.append("\n");
     }
@@ -6814,8 +7406,8 @@ class QueueMgr
       long nap = sSchedulerInterval - timer.getTotalDuration();
       if(nap > 0) {
 	LogMgr.getInstance().logAndFlush
-	  (LogMgr.Kind.Sch, LogMgr.Level.Finest,
-	   "Scheduler: Sleeping for (" + nap + ") ms...");
+	  (LogMgr.Kind.Sch, LogMgr.Level.Finer,
+	   "Scheduler: Sleeping for (" + nap + ") msec...");
 
 	try {
 	  Thread.sleep(nap);
@@ -6825,11 +7417,14 @@ class QueueMgr
       }
       else {
 	LogMgr.getInstance().logAndFlush
-	  (LogMgr.Kind.Sch, LogMgr.Level.Finest,
-	   "Scheduler: Overbudget by (" + (-nap) + ") ms...");
+	  (LogMgr.Kind.Sch, LogMgr.Level.Finer,
+	   "Scheduler: Overbudget by (" + (-nap) + ") msec...");
       }	
-    }
 
+      LogMgr.getInstance().logAndFlush
+        (LogMgr.Kind.Sch, LogMgr.Level.Finer,
+         "\n-----------------------------------------------------------------------------\n");
+    }
   }
   
   /**
@@ -7021,6 +7616,29 @@ class QueueMgr
 
 
   /*----------------------------------------------------------------------------------------*/
+  /*   J O B   H E L P E R S                                                                */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Get the job information for the given job ID.
+   */ 
+  private QueueJobInfo
+  getJobInfo
+  (
+   TaskTimer tm, 
+   long jobID
+  ) 
+  {
+    tm.aquire(); 
+    synchronized(pJobInfo) {
+      tm.resume();
+      return pJobInfo.get(jobID);
+    }
+  }
+
+  
+
+  /*----------------------------------------------------------------------------------------*/
   /*   I / O   H E L P E R S                                                                */
   /*----------------------------------------------------------------------------------------*/
 
@@ -7143,6 +7761,7 @@ class QueueMgr
     throws PipelineException
   {
     synchronized(pHardwareKeys) {
+      pHardwareChanged.set(true);
       pHardwareKeys.clear();
 
       File file = new File(pQueueDir, "queue/etc/hardware-keys");
@@ -7217,6 +7836,7 @@ class QueueMgr
     throws PipelineException
   {
     synchronized(pHardwareGroups) {
+      pHardwareChanged.set(true);
       pHardwareGroups.clear();
 
       File file = new File(pQueueDir, "queue/etc/hardware-groups");
@@ -7292,6 +7912,7 @@ class QueueMgr
     throws PipelineException
   {
     synchronized(pSelectionKeys) {
+      pSelectionChanged.set(true);
       pSelectionKeys.clear();
 
       File file = new File(pQueueDir, "queue/etc/selection-keys");
@@ -7366,6 +7987,7 @@ class QueueMgr
     throws PipelineException
   {
     synchronized(pSelectionGroups) {
+      pSelectionChanged.set(true);
       pSelectionGroups.clear();
 
       File file = new File(pQueueDir, "queue/etc/selection-groups");
@@ -8273,6 +8895,34 @@ class QueueMgr
   /*----------------------------------------------------------------------------------------*/
 
   /**
+   * Comparing host order.
+   */
+  private 
+  class HostOrderComparator
+    implements Comparator<QueueHost>
+  {
+    public 
+    HostOrderComparator() 
+    {}
+
+    /**
+     * Compares its two arguments for order.
+     */ 
+    public int 	
+    compare
+    (
+     QueueHost hostA, 
+     QueueHost hostB
+    )
+    {
+      return (hostA.getOrder() - hostB.getOrder());
+    }      
+  }
+
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
    * Runs the scheduler after selection schedules have been modified
    */
   private 
@@ -8521,11 +9171,8 @@ class QueueMgr
           /* start the job */ 
 	  client.jobStart(pJob, pCookedEnvs); 
  
-	  tm.aquire(); 
-	  synchronized(pJobInfo) {
-	    tm.resume();
-	    startedInfo = new QueueJobInfo(pJobInfo.get(jobID));
-	  }
+          /* make a copy of the job information to hand to extensions */ 
+          startedInfo = new QueueJobInfo(getJobInfo(tm, jobID));
 	}
 	catch (Exception ex) {
 	  LogMgr.getInstance().log
@@ -8650,35 +9297,35 @@ class QueueMgr
 	tm.resume();
 	
 	/* update job information */
-	tm.aquire(); 
-	synchronized(pJobInfo) {
-	  tm.resume();
-
-	  try {
-	    QueueJobInfo info = pJobInfo.get(jobID);
-
-            // Somehow info can be (null) here!!!  NEEDS FIXING
-            
-	    switch(info.getState()) {
-	    case Preempted: 
-	      preempted = true;
-	      break;
-	      
-	    default:
+        QueueJobInfo info = getJobInfo(tm, jobID); 
+        if(info != null) {
+          try {            
+            switch(info.getState()) {
+            case Preempted: 
+              preempted = true;
+              break;
+              
+            default:
               {
                 JobState prevState = info.exited(results);
                 pJobCounters.update(tm, prevState, info);
                 finishedInfo = new QueueJobInfo(info);
               }
-	    }
-	    writeJobInfo(info);
-	  }
-	  catch (PipelineException ex) {
-	    LogMgr.getInstance().log
-	      (LogMgr.Kind.Job, LogMgr.Level.Severe,
-	       ex.getMessage()); 
-	  }	
-	}
+            }
+            writeJobInfo(info);
+          }
+          catch (PipelineException ex) {
+            LogMgr.getInstance().log
+              (LogMgr.Kind.Job, LogMgr.Level.Severe,
+               ex.getMessage()); 
+          }	
+        }
+        else {
+          LogMgr.getInstance().log
+            (LogMgr.Kind.Job, LogMgr.Level.Severe,
+             "The job (" + jobID + ") completed, but somehow there was no QueueJobInfo " + 
+             "entry to update!"); 
+        }
 	
 	LogMgr.getInstance().logSubStage
 	  (LogMgr.Kind.Job, LogMgr.Level.Finer, 
@@ -8764,11 +9411,11 @@ class QueueMgr
     {
       long jobID = pJob.getJobID();
       
-      ActionAgenda agenda = new ActionAgenda(pJob.getActionAgenda(), pCookedEnvs);
+      ActionAgenda agenda = pJob.getActionAgenda();
       String author = agenda.getNodeID().getAuthor();
       Path wpath = new Path(PackageInfo.sProdPath, agenda.getNodeID().getWorkingParent());
       Path tpath = new Path(PackageInfo.sTargetPath, Long.toString(jobID));
-      SortedMap<String,String> env = agenda.getEnvironment();
+      Map<String,String> env = System.getenv();
 
       /* create the windows job target directory */ 
       switch(pHostOsType) {
@@ -8916,11 +9563,11 @@ class QueueMgr
     {
       long jobID = pJob.getJobID();
 
-      ActionAgenda agenda = new ActionAgenda(pJob.getActionAgenda(), pCookedEnvs);
+      ActionAgenda agenda = pJob.getActionAgenda();
       String author = agenda.getNodeID().getAuthor();
       Path wpath = new Path(PackageInfo.sProdPath, agenda.getNodeID().getWorkingParent());
       Path tpath = new Path(PackageInfo.sTargetPath, Long.toString(jobID));
-      SortedMap<String,String> env = agenda.getEnvironment();
+      Map<String,String> env = System.getenv();
 
       /* replace the sylinks from the working directory to the windows job target directory */
       switch(pHostOsType) {
@@ -9018,7 +9665,7 @@ class QueueMgr
             if(nap > 0) {
               LogMgr.getInstance().logAndFlush
                 (LogMgr.Kind.Sub, LogMgr.Level.Fine,
-                 "WinTarget-CopyTargets: Sleeping for (" + nap + ") ms...");
+                 "WinTarget-CopyTargets: Sleeping for (" + nap + ") msec...");
               try {
                 Thread.sleep(nap+100L);  /* a little extra for good measure */
               }
@@ -9121,7 +9768,7 @@ class QueueMgr
             if(nap > 0) {
               LogMgr.getInstance().logAndFlush
                 (LogMgr.Kind.Sub, LogMgr.Level.Fine,
-                 "ReadOnlyTargets: Sleeping for (" + nap + ") ms...");
+                 "ReadOnlyTargets: Sleeping for (" + nap + ") msec...");
               try {
                 Thread.sleep(nap+100L);  /* a little extra for good measure */
               }
@@ -9420,15 +10067,32 @@ class QueueMgr
    * Whether there have been any changes to hardware keys or groups since the last time
    * hardware profiles where regenerated. 
    */ 
-  //private AtomicBoolean pHardwareChanged; 
+  private AtomicBoolean pHardwareChanged; 
+
+  /**
+   * A copy of names of the pHardwareKeys used without locking by the dispatcher.  
+   * The copy is updated at the beginning of the dispatcher cycle if pHardwareChanged is 
+   * (true). 
+   * 
+   * No locking is required, since this field is only accessed by the Dispatcher thread.
+   */ 
+  private TreeSet<String>  pDispHardwareKeyNames; 
+
+  /**
+   * A deep copy of pHardwareGroups used without locking by the dispatcher.  The copy is
+   * updated at the beginning of the dispatcher cycle if pHardwareChanged is (true). 
+   * 
+   * No locking is required, since this field is only accessed by the Dispatcher thread.
+   */ 
+  private TreeMap<String,HardwareGroup>  pDispHardwareGroups; 
 
   /**
    * Whether each of the unique combinations of hardware keys required by jobs are 
    * satisfied by each hardware group.
    * 
-   * Access to this field should be protected by a synchronized block.
+   * No locking is required, since this field is only accessed by the Dispatcher thread.
    */ 
-  //private TreeMap<KeySet,HardwareProfile>  pHardwareProfiles;
+  private TreeMap<Flags,HardwareProfile>  pHardwareProfiles;
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -9458,15 +10122,32 @@ class QueueMgr
    * Whether there have been any changes to selection keys or groups since the last time
    * selection profiles where regenerated. 
    */ 
-  //private AtomicBoolean pSelectionChanged; 
+  private AtomicBoolean pSelectionChanged; 
+
+  /**
+   * A copy of names of the pSelectionKeys used without locking by the dispatcher.  
+   * The copy is updated at the beginning of the dispatcher cycle if pSelectionChanged is 
+   * (true). 
+   * 
+   * No locking is required, since this field is only accessed by the Dispatcher thread.
+   */ 
+  private TreeSet<String>  pDispSelectionKeyNames; 
+
+  /**
+   * A deep copy of pSelectionGroups used without locking by the dispatcher.  The copy is
+   * updated at the beginning of the dispatcher cycle if pSelectionChanged is (true). 
+   * 
+   * No locking is required, since this field is only accessed by the Dispatcher thread.
+   */ 
+  private TreeMap<String,SelectionGroup>  pDispSelectionGroups; 
 
   /**
    * Whether each of the unique combinations of selection keys required by jobs are 
    * satisfied by each selection group.
    * 
-   * Access to this field should be protected by a synchronized block.
+   * No locking is required, since this field is only accessed by the Dispatcher thread.
    */ 
-  //private TreeMap<KeySet,SelectionProfile>  pSelectionProfiles;
+  private TreeMap<Flags,SelectionProfile>  pSelectionProfiles;
 
 
   /*----------------------------------------------------------------------------------------*/
@@ -9546,6 +10227,16 @@ class QueueMgr
    */
   private TreeMap<String,QueueHost>  pHosts; 
 
+  /**
+   * An reusable array containing the sorted (according to Order) QueueHost entries from 
+   * the pHosts table.
+   * 
+   * The host entries are updated at each cylce of the dispatcher and resorted.  If the 
+   * number of hosts is larger than the current size of the array, it resized automatically.
+   * 
+   * No locking is required, since this field is only accessed by the Dispatcher thread.
+   */ 
+  private QueueHost[]  pOrderedHosts; 
 
   /**
    * Last read-only copy of per-host status information indexed by fully resolved host name. 
@@ -9605,21 +10296,28 @@ class QueueMgr
    * 
    * No locking is required.
    */
-  private ConcurrentLinkedQueue<Long>  pPreemptList;
+  private LinkedBlockingDeque<Long>  pPreemptList;
   
   /**
    * The IDs of jobs which should be killed as soon as possible. 
    * 
    * No locking is required.
    */
-  private ConcurrentLinkedQueue<Long>  pHitList;
+  private LinkedBlockingDeque<Long>  pHitList;
   
   /**
-   * The IDs of jobs which are currently paused.
+   * The IDs of Queued/Preempted jobs which should be Paused at the next opportunity.
    * 
    * Access to this field should be protected by a synchronized block.
    */
-  private TreeSet<Long>  pPaused;
+  private TreeSet<Long>  pPause;
+
+  /**
+   * The IDs of Paused jobs which should be Resumed at the next opportunity.
+   * 
+   * Access to this field should be protected by a synchronized block.
+   */
+  private TreeSet<Long>  pResume;
 
   /**
    * The IDs of jobs waiting on one or more source (upstream) jobs to complete before they 
@@ -9628,17 +10326,33 @@ class QueueMgr
    * 
    * No locking is required.
    */ 
-  private ConcurrentLinkedQueue<Long>  pWaiting;
+  private LinkedBlockingDeque<Long>  pWaiting;
 
   /**
-   * The IDs of the jobs which are ready to be run. <P> 
+   * The profiles of the jobs which are ready to be run indexed by their job ID.  If the value
+   * for a given key is (null) then it will means the job requirements have changed and the 
+   * job should be reprofiled at the start of the dispatcher cycle.<P> 
    * 
    * If a ready job has any source (upstream) jobs, they all must have a JobState of 
    * Finished before the job will be added to this table. <P> 
    * 
-   * No locking is required, since this field is only accessed by the dispather() method.
+   * No locking is required, since this field is only accessed by the Dispatcher thread.
    */ 
-  private TreeSet<Long>  pReady;
+  private TreeMap<Long,JobProfile>  pReady;
+
+  /**
+   * An array of reusable objects which encapsulates all factors which contribute to the 
+   * ranking of jobs with respect to a particular slot. <P> 
+   * 
+   * This array and the JobRank instances in it are updated, sorted and recycled for the
+   * dispatch of each slot.  If there are more quailified ready jobs than elements in this
+   * array, it is resized copying all existing elements over to the new array.  If a (null)
+   * element is encountered, a new JobRank is instantiated and inserted into the array on 
+   * demand.
+   * 
+   * No locking is required, since this field is only accessed by the Dispatcher thread.
+   */ 
+  private JobRank[]  pJobRanks; 
 
   /**
    * The number of dispatcher cycles since the last garbage collection of jobs.
@@ -9677,7 +10391,9 @@ class QueueMgr
    * This table is initialized from the job info files on startup and all changes to the 
    * table are immediately written to disk. <P> 
    * 
-   * Access to this field should be protected by a synchronized block.
+   * Access to this field should be protected by a synchronized block when iterating, adding
+   * or removing elements.  However the elements themselves have synchronized methods so after
+   * being looked-up their methods can be called without holding this lock.
    */ 
   private TreeMap<Long,QueueJobInfo>  pJobInfo;
   

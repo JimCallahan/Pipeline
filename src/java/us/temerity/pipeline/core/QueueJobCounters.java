@@ -1,4 +1,4 @@
-// $Id: QueueJobCounters.java,v 1.3 2009/05/14 23:30:43 jim Exp $
+// $Id: QueueJobCounters.java,v 1.4 2009/06/04 09:45:12 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -48,10 +48,12 @@ class QueueJobCounters
    QueueJobGroup group
   ) 
   {
-    long groupID = group.getGroupID();
-    LogMgr.getInstance().log
-      (LogMgr.Kind.Dsp, LogMgr.Level.Finest, 
-       "Init Job Counts for Group [" + groupID + "]");
+    long groupID = group.getGroupID();      
+
+    if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Ops, LogMgr.Level.Finest))
+      LogMgr.getInstance().log
+        (LogMgr.Kind.Ops, LogMgr.Level.Finest, 
+         "Init Job Counts for Group (" + groupID + ")");
     
     SortedSet<Long> jobIDs = group.getJobIDs();
     Counters counters = new Counters(jobIDs.size());
@@ -62,7 +64,7 @@ class QueueJobCounters
       
       if(pCountersByGroup.put(groupID, counters) != null)
         LogMgr.getInstance().logAndFlush
-          (LogMgr.Kind.Dsp, LogMgr.Level.Warning, 
+          (LogMgr.Kind.Ops, LogMgr.Level.Warning, 
            "Somehow the job group (" + groupID + ") was already in the state " + 
            "counts table!");
     }
@@ -74,7 +76,7 @@ class QueueJobCounters
       for(Long jobID : jobIDs) {
         if(pCountersByJob.put(jobID, counters) != null) 
           LogMgr.getInstance().logAndFlush
-            (LogMgr.Kind.Dsp, LogMgr.Level.Warning, 
+            (LogMgr.Kind.Ops, LogMgr.Level.Warning, 
              "Somehow the job (" + jobID + ") was already in the state counts table!");
       }
     }
@@ -141,7 +143,7 @@ class QueueJobCounters
       counters.update(prevState, info);
     else 
       LogMgr.getInstance().logAndFlush
-        (LogMgr.Kind.Dsp, LogMgr.Level.Warning, 
+        (LogMgr.Kind.Ops, LogMgr.Level.Warning, 
          "Somehow the job (" + info.getJobID() + ") was not in the state counts table!");
   }
 
@@ -165,14 +167,17 @@ class QueueJobCounters
 
     if(counters != null) {
       double percent = counters.percentEngaged();
-      LogMgr.getInstance().log
-        (LogMgr.Kind.Dsp, LogMgr.Level.Finest, 
-         "Percent Engaged [" + jobID + "]: " + percent);	      
+      
+      if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Ops, LogMgr.Level.Finest))
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Ops, LogMgr.Level.Finest, 
+           "Percent Engaged [" + jobID + "]: " + percent);	      
+
       return percent;
     }
     else {
       LogMgr.getInstance().logAndFlush
-        (LogMgr.Kind.Dsp, LogMgr.Level.Warning, 
+        (LogMgr.Kind.Ops, LogMgr.Level.Warning, 
          "Somehow the job (" + jobID + ") was not in the state counts table!");
       return 0.0;
     }
@@ -198,14 +203,17 @@ class QueueJobCounters
 
     if(counters != null) {
       double percent = counters.percentPending();
-      LogMgr.getInstance().log
-        (LogMgr.Kind.Dsp, LogMgr.Level.Finest, 
-         "Percent Pending [" + jobID + "]: " + percent);
+
+      if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Ops, LogMgr.Level.Finest))
+        LogMgr.getInstance().log
+          (LogMgr.Kind.Ops, LogMgr.Level.Finest, 
+           "Percent Pending [" + jobID + "]: " + percent);
+
       return percent;
     }
     else {
       LogMgr.getInstance().logAndFlush
-        (LogMgr.Kind.Dsp, LogMgr.Level.Warning, 
+        (LogMgr.Kind.Ops, LogMgr.Level.Warning, 
          "Somehow the job (" + jobID + ") was not in the state counts table!");
       return 0.0;
     }
@@ -231,20 +239,19 @@ class QueueJobCounters
     if(counters != null) {
       double dist[] = counters.distribution();
 
-      if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Dsp, LogMgr.Level.Finest)) {
+      if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Ops, LogMgr.Level.Finest)) {
         StringBuilder buf = new StringBuilder(); 
         buf.append("Job Group Distribution [" + groupID + "]:"); 
         for(JobState js : JobState.all()) 
           buf.append("\n" + js + " = " + dist[js.ordinal()]);
-      
-	LogMgr.getInstance().log(LogMgr.Kind.Dsp, LogMgr.Level.Finest, buf.toString());
+	LogMgr.getInstance().log(LogMgr.Kind.Ops, LogMgr.Level.Finest, buf.toString());
       }
 
       return dist;
     }
     else {
       LogMgr.getInstance().logAndFlush
-        (LogMgr.Kind.Dsp, LogMgr.Level.Warning, 
+        (LogMgr.Kind.Ops, LogMgr.Level.Warning, 
          "Somehow the job group (" + groupID + ") was not in the state counts table!");
       
       return new double[JobState.all().size()];
@@ -277,14 +284,13 @@ class QueueJobCounters
      QueueJobInfo info
     ) 
     {
-      if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Dsp, LogMgr.Level.Finest)) {
+      if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Ops, LogMgr.Level.Finest)) {
         StringBuilder buf = new StringBuilder(); 
         buf.append("Job Pre-Counts [" + info.getJobID() + "]: " + 
                    prevState + " -> " + info.getState()); 
         for(JobState js : JobState.all()) 
           buf.append("\n" + js + " = " + pCounts[js.ordinal()]);
-      
-	LogMgr.getInstance().log(LogMgr.Kind.Dsp, LogMgr.Level.Finest, buf.toString());
+        LogMgr.getInstance().log(LogMgr.Kind.Ops, LogMgr.Level.Finest, buf.toString());
       }
       
       if(prevState != null) {
@@ -293,7 +299,7 @@ class QueueJobCounters
         }
         else {
           LogMgr.getInstance().logAndFlush
-            (LogMgr.Kind.Dsp, LogMgr.Level.Warning, 
+            (LogMgr.Kind.Ops, LogMgr.Level.Warning, 
              "Somehow the count of jobs with a " + prevState + " state was already " + 
              "when attempting to decrement the count after a change to a " + 
              info.getState() + " state for the job (" + info.getJobID() + ")!");
@@ -301,14 +307,14 @@ class QueueJobCounters
       }
 
       pCounts[info.getState().ordinal()]++;
-
-      if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Dsp, LogMgr.Level.Finest)) {
+      
+      if(LogMgr.getInstance().isLoggable(LogMgr.Kind.Ops, LogMgr.Level.Finest)) {
         StringBuilder buf = new StringBuilder(); 
         buf.append("Job Post-Counts [" + info.getJobID() + "]: " + 
                    prevState + " -> " + info.getState()); 
         for(JobState js : JobState.all()) 
           buf.append("\n" + js + " = " + pCounts[js.ordinal()]);
-	LogMgr.getInstance().log(LogMgr.Kind.Dsp, LogMgr.Level.Finest, buf.toString());
+        LogMgr.getInstance().log(LogMgr.Kind.Ops, LogMgr.Level.Finest, buf.toString());
       }
     }
     

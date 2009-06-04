@@ -1,4 +1,4 @@
-// $Id: QueueHost.java,v 1.10 2008/01/04 05:03:00 jim Exp $
+// $Id: QueueHost.java,v 1.11 2009/06/04 09:45:12 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -227,7 +227,7 @@ class QueueHost
   /**
    * Is the reservation status of the host editable.
    */
-  public EditableState 
+  public synchronized EditableState 
   getReservationState()
   {
     return pReservationState;
@@ -237,7 +237,7 @@ class QueueHost
   /**
    * Sets whether the reservation status of the host is editable.
    */
-  public void 
+  public synchronized void 
   setReservationState
   (
     EditableState reservationState
@@ -251,7 +251,7 @@ class QueueHost
   /**
    * Is the status of the host editable.
    */
-  public EditableState 
+  public synchronized EditableState 
   getStatusState()
   {
     return pStatusState;
@@ -260,7 +260,7 @@ class QueueHost
   /**
    * Set whether the status of the host is editable.
    */
-  public void 
+  public synchronized void 
   setStatusState
   (
     EditableState statusState
@@ -275,7 +275,7 @@ class QueueHost
   /**
    * Is the order of the host editable.
    */
-  public EditableState 
+  public synchronized EditableState 
   getOrderState()
   {
     return pOrderState;
@@ -284,7 +284,7 @@ class QueueHost
   /**
    * Set whether the order of the host is editable.
    */
-  public void 
+  public synchronized void 
   setOrderState
   (
     EditableState orderState
@@ -299,7 +299,7 @@ class QueueHost
   /**
    * Is the number of slots on the host editable.
    */
-  public EditableState 
+  public synchronized EditableState 
   getSlotsState()
   {
     return pSlotState;
@@ -308,7 +308,7 @@ class QueueHost
   /**
    * Set whether the status of the host is editable.
    */
-  public void 
+  public synchronized void 
   setSlotsState
   (
     EditableState slotState
@@ -322,7 +322,7 @@ class QueueHost
   /**
    * Is the selection group on the host editable.
    */
-  public EditableState 
+  public synchronized EditableState 
   getGroupState()
   {
     return pGroupState;
@@ -331,7 +331,7 @@ class QueueHost
   /**
    * Set whether the status of the host is editable.
    */
-  public void 
+  public synchronized void 
   setGroupState
   (
     EditableState groupState
@@ -645,7 +645,7 @@ class QueueHost
     /* if not, reset the job count so that it will be reaquired from the job server */ 
     else {
       LogMgr.getInstance().log
-        (LogMgr.Kind.Ops, LogMgr.Level.Warning,
+        (LogMgr.Kind.Ops, LogMgr.Level.Finest,
          "Job Count Reset [" + getName() + "]:  Jobs = " +
          ((pNumJobs != null) ? pNumJobs : "<unknown>"));
 
@@ -673,7 +673,7 @@ class QueueHost
          reset the job count so that it will be reaquired from the job server */ 
     if((pNumJobs == null) || (pNumJobs < 0)) {
       LogMgr.getInstance().log
-        (LogMgr.Kind.Ops, LogMgr.Level.Warning,
+        (LogMgr.Kind.Ops, LogMgr.Level.Finest,
          "Job Count Reset [" + getName() + "]:  Jobs = " +
          ((pNumJobs != null) ? pNumJobs : "<unknown>"));
 
@@ -825,56 +825,7 @@ class QueueHost
     return Math.max(pJobSlots - pNumJobs, 0);
   }
 
-  /**
-   * Determine whether a job with the given job requirements is eligible to run on this 
-   * host. <P> 
-   * 
-   * This method will return <CODE>false</CODE> under the following conditions: <P> 
-   * 
-   * <DIV style="margin-left: 40px;">
-   *   The host is reserved for another user. <P>
-   *   The host has a higher system load than the job requires.<P> 
-   *   The host has less than the required amount of free memory.<P>
-   *   The host has less than the required amount of free temporary disk space.<P>
-   * </DIV>
-   * 
-   * @param author
-   *   The name of the user submitting the job.
-   * 
-   * @param privs
-   *   The current admin privileges. 
-   * 
-   * @param jreqs
-   *   The requirements that this host must meet in order to be eligable to run the job. 
-   * 
-   * @return 
-   *   The combined selection bias or <CODE>null</CODE> if the host fails the requirements.
-   */ 
-  public synchronized boolean
-  isEligible
-  (
-   String author, 
-   AdminPrivileges privs,
-   JobReqs jreqs
-  )
-  {
-    if((pReservation != null) &&
-       !(author.equals(pReservation) || privs.isWorkGroupMember(author, pReservation)))
-      return false;
-
-    ResourceSample sample = getLatestSample();
-    if(sample == null) 
-      return false;
-
-    if((sample.getLoad() > jreqs.getMaxLoad()) ||
-       (sample.getMemory() < jreqs.getMinMemory()) || 
-       (sample.getDisk() < jreqs.getMinDisk()))
-      return false;
-
-    return true;
-  }
   
-
 
   /*----------------------------------------------------------------------------------------*/
   /*   C O N V E R S I O N                                                                  */

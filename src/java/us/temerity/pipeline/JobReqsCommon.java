@@ -146,6 +146,7 @@ class JobReqsCommon
     return pPriority;
   }
   
+
   /*----------------------------------------------------------------------------------------*/
 
   /** 
@@ -186,7 +187,17 @@ class JobReqsCommon
     return pMinDisk;
   }
 
+
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether any license keys are required.
+   */
+  public boolean
+  hasLicenseKeys()
+  {
+    return ((pLicenseKeys != null) && !pLicenseKeys.isEmpty());
+  }
 
   /**
    * Get the names of the required license keys. 
@@ -275,7 +286,17 @@ class JobReqsCommon
     pLicenseKeys.clear();
   }
 
+
   /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether any selection keys are required.
+   */
+  public boolean
+  hasSelectionKeys()
+  {
+    return ((pSelectionKeys != null) && !pSelectionKeys.isEmpty());
+  } 
 
   /**
    * Get the names of the required selection keys. 
@@ -286,6 +307,25 @@ class JobReqsCommon
     if (pSelectionKeys == null)
       return pSelectionKeys;
     return Collections.unmodifiableSet(pSelectionKeys);
+  }
+
+  /**
+   * Get a set of flags which specify which of the given selection keys are required. 
+   */
+  public Flags
+  getSelectionFlags
+  (
+   Set<String> keys
+  )
+  {
+    boolean[] choices = new boolean[keys.size()]; 
+    int wk = 0;
+    for(String key : keys) {
+      choices[wk] = pSelectionKeys.contains(key);
+      wk++;
+    }
+
+    return new Flags(choices);
   }
 
   /** 
@@ -364,8 +404,17 @@ class JobReqsCommon
     pSelectionKeys.clear();
   }
 
+
   /*----------------------------------------------------------------------------------------*/
   
+  /**
+   * Whether any hardware keys are required.
+   */
+  public boolean
+  hasHardwareKeys()
+  {
+    return ((pHardwareKeys != null) && !pHardwareKeys.isEmpty());
+  }
 
   /**
    * Get the names of the required hardware keys. 
@@ -376,6 +425,25 @@ class JobReqsCommon
     if (pHardwareKeys == null)
       return pHardwareKeys;
     return Collections.unmodifiableSet(pHardwareKeys);
+  }
+
+  /**
+   * Get a set of flags which specify which of the given hardware keys are required. 
+   */
+  public Flags
+  getHardwareFlags
+  (
+   Set<String> keys
+  )
+  {
+    boolean[] choices = new boolean[keys.size()]; 
+    int wk = 0;
+    for(String key : keys) {
+      choices[wk] = pHardwareKeys.contains(key);
+      wk++;
+    }
+
+    return new Flags(choices);
   }
 
   /** 
