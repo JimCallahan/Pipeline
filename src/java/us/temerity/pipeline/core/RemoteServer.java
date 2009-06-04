@@ -1,4 +1,4 @@
-// $Id: RemoteServer.java,v 1.7 2009/05/18 04:29:00 jim Exp $
+// $Id: RemoteServer.java,v 1.8 2009/06/04 23:32:36 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -50,6 +50,7 @@ class RemoteServer
     pTimer  = new TaskTimer();
     pMaster = master;
     pTasks  = new TreeSet<HandlerTask>();    
+    pNextHandlerID = new AtomicLong(1);
   }
 
   
@@ -180,6 +181,7 @@ class RemoteServer
   private 
   class HandlerTask
     extends Thread
+    implements Comparable<HandlerTask> 
   {
     public 
     HandlerTask
@@ -189,6 +191,7 @@ class RemoteServer
     {
       super("RemoteServer:HandlerTask");
       pChannel = channel;
+      pHandlerID = pNextHandlerID.incrementAndGet();
     }
 
     public void 
@@ -298,6 +301,35 @@ class RemoteServer
       LogMgr.getInstance().flush();
     }
     
+    public boolean
+    equals
+    (
+     Object obj
+    )
+    {
+      if((obj != null) && (obj instanceof HandlerTask)) {
+        HandlerTask task = (HandlerTask) obj;
+        return (pHandlerID == task.pHandlerID); 
+      }
+      return false;
+    }
+
+    public int
+    compareTo
+    (
+     HandlerTask task
+    )
+    {
+      if(pHandlerID > task.pHandlerID)
+        return 1; 
+      else if(pHandlerID < task.pHandlerID)
+        return -1;
+      else 
+        return 0;
+    }
+
+    private long pHandlerID; 
+
     private SocketChannel  pChannel; 
     private Socket         pSocket;     
   }
@@ -507,5 +539,11 @@ class RemoteServer
    * The set of currently running tasks.
    */ 
   private TreeSet<HandlerTask>  pTasks;
+
+  /**
+   * A counter used to give each incomming connection a unique ID. 
+   */
+  private AtomicLong  pNextHandlerID;
+
 }
 
