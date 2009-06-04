@@ -1,4 +1,4 @@
-// $Id: JPathField.java,v 1.6 2009/06/02 20:08:37 jlee Exp $
+// $Id: JPathField.java,v 1.7 2009/06/04 09:26:58 jim Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -7,6 +7,8 @@ import us.temerity.pipeline.Path;
 import java.awt.*;
 import javax.swing.*;
 import javax.swing.text.*;
+
+import us.temerity.pipeline.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   P A T H   F I E L D                                                                    */
@@ -18,7 +20,7 @@ import javax.swing.text.*;
  * An identifier path may only contain one of the following characters: 
  * '<CODE>a</CODE>'-'<CODE>z</CODE>', '<CODE>A</CODE>'-'<CODE>Z</CODE>',
  * '<CODE>0</CODE>'-'<CODE>9</CODE>', '<CODE>_</CODE>', '<CODE>-</CODE>', 
- * '<CODE>.</CODE>', '<CODE>/</CODE>' <P>
+ * '<CODE>~</CODE>', '<CODE>.</CODE>', '<CODE>/</CODE>' <P>
  * 
  * The path must also start with a '<CODE>/</CODE>' character, not contain two or more 
  * '<CODE>/</CODE>' characters in a row and not end with a '<CODE>/</CODE>' character.
@@ -194,15 +196,7 @@ class JPathField
      String text
     ) 
     {
-      char[] cs = text.toCharArray();
-      int wk;
-      for(wk=1; wk<cs.length; wk++) {
-	if(!(Character.isLetterOrDigit(cs[wk]) || 
-	     (cs[wk] == '_') || (cs[wk] == '-') || (cs[wk] == '.') || (cs[wk] == '/'))) 
-	  return false;
-      }
-    
-      return true;
+      return Identifiers.hasPathChars(text);
     }      
 
     private static final long serialVersionUID = 5609555271270203955L;

@@ -1,4 +1,4 @@
-// $Id: NodeCommon.java,v 1.33 2009/03/20 03:10:38 jim Exp $
+// $Id: NodeCommon.java,v 1.34 2009/06/04 09:26:58 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -896,19 +896,11 @@ class NodeCommon
  	throw new IllegalArgumentException
  	  ("The node name (" + name + ") cannot contain repeated (/) characters!");
       
-      char cs[] = parts[wk].toCharArray();
-      if((wk == (parts.length-1)) && !Character.isLetter(cs[0]))
- 	throw new IllegalArgumentException
- 	  ("The first character the last node name component (" + parts[wk] + ") was not " + 
- 	   "a letter!");
-      
-      int ck;
-      for(ck=1; ck<cs.length; ck++) {
-	if(!(Character.isLetterOrDigit(cs[ck]) ||
-	     (cs[ck] == '_') || (cs[ck] == '-')))
-	  throw new IllegalArgumentException
-	    ("The node name component (" + parts[wk] + ") contained illegal characters!");
-      }
+      if(!Identifiers.isIdent(parts[wk])) 
+        throw new IllegalArgumentException
+          ("The node name (" + name + ") contained a component (" + parts[wk] + ") with " + 
+           "illegal characters!  Each component must start with a letter followed by zero " +
+           "or more letters, digits or any of the following: '_', '-', '~'"); 
     }
   }
 
@@ -916,7 +908,7 @@ class NodeCommon
    * Verify that the given suffix is legal.
    * 
    * @param suffix
-   *   The suffix.  A <CODE>null</CODE> value is legal. 
+   *   The suffix or <CODE>null</CODE> if there is no suffix.
    * 
    * @throws IllegalArgumentException
    *   If the name is illegal.
@@ -930,12 +922,10 @@ class NodeCommon
     if(suffix == null) 
       return; 
 
-    char cs[] = suffix.toCharArray();
-    for(char each : cs) {
-      if(!(Character.isLetterOrDigit(each)))
-        throw new IllegalArgumentException
-          ("The suffix  (" + suffix + ") contained illegal characters!");
-    }
+    if(!Identifiers.hasAlphaNumericChars(suffix)) 
+      throw new IllegalArgumentException
+        ("The suffix  (" + suffix + ") contained illegal characters.  Suffixes may only " + 
+         "contain letters and digits.");
   }
   
   /** 
@@ -953,21 +943,12 @@ class NodeCommon
    FileSeq fseq
   ) 
   {
-    char cs[] = fseq.getFilePattern().getPrefix().toCharArray();
-     
-    if(!Character.isLetter(cs[0]))
+    if(!Identifiers.isIdent(fseq.getFilePattern().getPrefix()))
       throw new IllegalArgumentException
-	("The first character the prefix for the file sequence (" + fseq + ") was not " + 
-	 "a letter!");
+        ("The prefix of the file sequence (" + fseq + ") contained illegal characters!  " + 
+         "Prefixes must start with a letter followed by zero or more letters, digits or " + 
+         "any of the following: '_', '-', '~'"); 
 
-    int ck;
-    for(ck=1; ck<cs.length; ck++) {
-      if(!(Character.isLetterOrDigit(cs[ck]) ||
-	   (cs[ck] == '_') || (cs[ck] == '-')))
-	throw new IllegalArgumentException
-	  ("The prefix of the file sequence (" + fseq + ") contained illegal characters!");
-    }
-    
     validateSuffix(fseq.getFilePattern().getSuffix());
   }
   

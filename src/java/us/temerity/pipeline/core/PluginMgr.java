@@ -1,4 +1,4 @@
-// $Id: PluginMgr.java,v 1.41 2009/05/11 17:48:55 jlee Exp $
+// $Id: PluginMgr.java,v 1.42 2009/06/04 09:26:58 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -2154,18 +2154,11 @@ class PluginMgr
          digits or '_' '-' '.'*/
       {
         String vname = plg.getVendor();
-
-        char[] cs = vname.toCharArray();
-        int wk;
-        for(wk=0; wk<cs.length; wk++) {
-          if(!(Character.isLetterOrDigit(cs[wk]) || 
-              (cs[wk] == '_') ||(cs[wk] == '-') ||(cs[wk] == '.'))) {
-            throw new PipelineException
-              ("The Vendor of the plugin (" + cname + ") contains illegal characters, " + 
-               vname + ", the Vendor name should only contain letters, digits, or the " + 
-               "following 3 characters: _ - . (underbar, dash, period).");
-          }
-        }
+        if(!Identifiers.hasExtendedIdentChars(vname)) 
+          throw new PipelineException
+            ("The Vendor of the plugin (" + cname + ") contains illegal characters. " + 
+             "The Vendor name (" + vname + ") should only contain letters, digits or " + 
+             "the following characters: '_', '-', '~', '.'");
       }
 
       if(plg.getSupports().isEmpty()) 

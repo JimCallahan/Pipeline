@@ -1,4 +1,4 @@
-// $Id: BaseParam.java,v 1.8 2007/03/29 19:27:47 jesse Exp $
+// $Id: BaseParam.java,v 1.9 2009/06/04 09:26:58 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -127,15 +127,7 @@ class BaseParam
    String name
   ) 
   {
-    char cs[] = name.toCharArray();
-
-    int wk;
-    for(wk=0; wk<cs.length; wk++) {
-      if(!Character.isLetterOrDigit(cs[wk])) 
-	return false;
-    }
-
-    return true; 
+    return Identifiers.hasAlphaNumericChars(name);
   }
 
   /**
@@ -148,29 +140,13 @@ class BaseParam
   ) 
     throws GlueException
   {
-    char cs[] = name.toCharArray();
-
-    boolean hasSpaces = false;
-    {
-      int wk;
-      for(wk=0; wk<cs.length; wk++) {
-	if(!Character.isLetterOrDigit(cs[wk])) {
-	  hasSpaces = true;
-	  break;
-	}
-      }
-    }
-
-    if(!hasSpaces) 
+    if(Identifiers.hasAlphaNumericChars(name))
       return name;
-
-    StringBuilder buf = new StringBuilder(cs.length);
-    {
-      int wk;
-      for(wk=0; wk<cs.length; wk++) {
-	if(Character.isLetterOrDigit(cs[wk])) 
-	  buf.append(cs[wk]);
-      }
+    
+    StringBuilder buf = new StringBuilder(); 
+    for(char c : name.toCharArray()) {
+      if(Identifiers.isAlphaNumeric(c))
+        buf.append(c);
     }
     
     String vname = buf.toString();

@@ -1,4 +1,4 @@
-// $Id: TemplateGlueInformation.java,v 1.6 2009/05/26 07:09:32 jesse Exp $
+// $Id: TemplateGlueInformation.java,v 1.7 2009/06/04 09:26:58 jim Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -460,16 +460,8 @@ class TemplateGlueInformation
   (
    String name
   ) 
-  {
-    char cs[] = name.toCharArray();
-
-    int wk;
-    for(wk=0; wk<cs.length; wk++) {
-      if(!Character.isLetterOrDigit(cs[wk])) 
-        return false;
-    }
-
-    return true; 
+  { 
+    return Identifiers.hasAlphaNumericChars(name); 
   }
   
   

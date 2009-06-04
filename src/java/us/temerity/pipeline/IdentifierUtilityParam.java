@@ -1,4 +1,4 @@
-// $Id: IdentifierUtilityParam.java,v 1.2 2009/05/26 07:09:32 jesse Exp $
+// $Id: IdentifierUtilityParam.java,v 1.3 2009/06/04 09:26:58 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -75,18 +75,13 @@ class IdentifierUtilityParam
     IllegalArgumentException ex = 
       new IllegalArgumentException("String (" + value + ") is not a valid identifier value");
     
-    if((value != null) && !(value instanceof String))
-      throw ex;
-    
-    if (value != null) {
-      char[] cs = ((String) value).toCharArray();
-      int wk;
-      for(wk=0; wk<cs.length; wk++) {
-        if(!(Character.isLetterOrDigit(cs[wk]) || 
-          (cs[wk] == '_') ||(cs[wk] == '-') ||(cs[wk] == '.'))) {
-          throw ex;
-        }
-      }
+    if(value != null) {
+      if(!(value instanceof String)) 
+        throw ex;
+      
+      String str = (String) value;
+      if(!Identifiers.hasExtendedIdentChars(str)) 
+        throw ex;
     }
   }
   

@@ -1,10 +1,12 @@
-// $Id: JAlphaNumField.java,v 1.3 2009/06/02 20:08:37 jlee Exp $
+// $Id: JAlphaNumField.java,v 1.4 2009/06/04 09:26:58 jim Exp $
 
 package us.temerity.pipeline.ui;
 
 import java.awt.*;
 import javax.swing.*;
 import javax.swing.text.*;
+
+import us.temerity.pipeline.*;
 
 /*------------------------------------------------------------------------------------------*/
 /*   A L P H A   N U M   F I E L D                                                          */
@@ -67,18 +69,13 @@ class JAlphaNumField
     ) 
       throws BadLocationException 
     {
-      if(str == null) {
+      if(str == null) 
 	return;
-      }
       
-      char[] cs = str.toCharArray();
-      int wk;
-      for(wk=0; wk<cs.length; wk++) {
-	if(!Character.isLetterOrDigit(cs[wk])) {
-	  if(UIFactory.getBeepPreference())
-	    Toolkit.getDefaultToolkit().beep();
-	  return;
-	}
+      if(!Identifiers.hasAlphaNumericChars(str)) {
+        if(UIFactory.getBeepPreference())
+          Toolkit.getDefaultToolkit().beep();
+        return;
       }
 
       super.insertString(offset, str, attr);

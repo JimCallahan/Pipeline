@@ -1,4 +1,4 @@
-// $Id: Path.java,v 1.4 2008/06/15 01:59:49 jim Exp $
+// $Id: Path.java,v 1.5 2009/06/04 09:26:58 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -229,7 +229,7 @@ class Path
 	leftover = child.substring(1);
       }
       else if((child.length() >= 3) && 
-	      Character.isLetter(child.charAt(0)) && 
+	      Identifiers.isAlpha(child.charAt(0)) && 
 	      (child.charAt(1) == ':') && (child.charAt(2) == '/')) {
 	pPrefix = child.substring(0, 3);
 	leftover = child.substring(3);
