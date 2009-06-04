@@ -1,4 +1,4 @@
-// $Id: BaseMgrServer.java,v 1.8 2009/05/16 02:06:18 jim Exp $
+// $Id: BaseMgrServer.java,v 1.9 2009/06/04 09:01:28 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -97,7 +97,7 @@ class BaseMgrServer
          "fixed immediately!");
   }
 
-
+  
 
   /*----------------------------------------------------------------------------------------*/
   /*   I N T E R N A L   C L A S S E S                                                      */

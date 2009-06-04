@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.278 2009/06/01 02:53:15 jesse Exp $
+// $Id: MasterMgr.java,v 1.279 2009/06/04 09:06:02 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -8597,8 +8597,8 @@ class MasterMgr
 		naction.setSingleParamValues(oaction);
 		
 		if (oaction.supportsSourceParams() && 
-		       (!oaction.getSourceNames().isEmpty() || 
-			!oaction.getSecondarySourceNames().isEmpty()))
+                    (!oaction.getSourceNames().isEmpty() || 
+                     !oaction.getSecondarySourceNames().isEmpty()))
 		  naction.setSourceParamValues(oaction);
 		nmod.setAction(naction);
 	      }
