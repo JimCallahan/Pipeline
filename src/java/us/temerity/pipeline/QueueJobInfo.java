@@ -1,4 +1,4 @@
-// $Id: QueueJobInfo.java,v 1.22 2009/05/14 23:30:43 jim Exp $
+// $Id: QueueJobInfo.java,v 1.23 2009/06/04 08:58:55 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -358,28 +358,30 @@ class QueueJobInfo
    GlueEncoder encoder  
   ) 
     throws GlueException
-  {
-    encoder.encode("JobID", pJobID);
-    encoder.encode("State", pState);
-
-    {
-      encoder.encode("SubmittedStamp", pSubmittedStamp);
+  {                                           
+    synchronized(this) {
+      encoder.encode("JobID", pJobID);
+      encoder.encode("State", pState);
       
-      if(pStartedStamp != null) 
-	encoder.encode("StartedStamp", pStartedStamp);
-
-      if(pCompletedStamp != null) 
-	encoder.encode("CompletedStamp", pCompletedStamp);
+      {
+        encoder.encode("SubmittedStamp", pSubmittedStamp);
+        
+        if(pStartedStamp != null) 
+          encoder.encode("StartedStamp", pStartedStamp);
+        
+        if(pCompletedStamp != null) 
+          encoder.encode("CompletedStamp", pCompletedStamp);
+      }
+      
+      if(pHostname != null)
+        encoder.encode("Hostname", pHostname);
+      
+      if(pOsType != null)
+        encoder.encode("OsType", pOsType);
+      
+      if(pResults != null) 
+        encoder.encode("Results", pResults);
     }
-
-    if(pHostname != null)
-      encoder.encode("Hostname", pHostname);
-
-    if(pOsType != null)
-      encoder.encode("OsType", pOsType);
-
-    if(pResults != null) 
-      encoder.encode("Results", pResults);
   }
 
   public void 
@@ -388,40 +390,40 @@ class QueueJobInfo
    GlueDecoder decoder  
   ) 
     throws GlueException
-  {
+  {                  
     Long jobID = (Long) decoder.decode("JobID"); 
     if(jobID == null) 
       throw new GlueException("The \"JobID\" was missing!");
     pJobID = jobID;
-        
+    
     JobState state = (JobState) decoder.decode("State"); 
     if(state == null) 
       throw new GlueException("The \"State\" was missing!");
     pState = state;
-
+    
     {
       Long stamp = (Long) decoder.decode("SubmittedStamp"); 
       if(stamp == null) 
-	throw new GlueException("The \"SubmittedStamp\" was missing!");
+        throw new GlueException("The \"SubmittedStamp\" was missing!");
       pSubmittedStamp = stamp; 
     }
-
+    
     {
       Long stamp = (Long) decoder.decode("StartedStamp"); 
       if(stamp != null) 
-	pStartedStamp = stamp; 
+        pStartedStamp = stamp; 
     }
-
+      
     {
       Long stamp = (Long) decoder.decode("CompletedStamp"); 
       if(stamp != null) 
-	pCompletedStamp = stamp; 
+        pCompletedStamp = stamp; 
     }
-
+    
     {
       String host = (String) decoder.decode("Hostname"); 
       if(host != null) {
-	pHostname = host;
+        pHostname = host;
         initShortHostname();
       }
     }
