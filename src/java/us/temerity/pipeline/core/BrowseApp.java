@@ -1,4 +1,4 @@
-// $Id: BrowseApp.java,v 1.1 2008/10/12 07:21:05 jim Exp $
+// $Id: BrowseApp.java,v 1.2 2009/06/04 09:02:00 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -19,7 +19,7 @@ import javax.swing.plaf.basic.*;
 import javax.swing.plaf.synth.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   V E R S I O N   A P P                                                                  */
+/*   B R O W S E   A P P                                                                    */
 /*------------------------------------------------------------------------------------------*/
 
 /**

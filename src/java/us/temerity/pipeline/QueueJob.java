@@ -1,4 +1,4 @@
-// $Id: QueueJob.java,v 1.14 2007/12/16 06:28:42 jesse Exp $
+// $Id: QueueJob.java,v 1.15 2009/06/04 08:57:48 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -127,15 +127,13 @@ class QueueJob
   /** 
    * Sets the requirements that a server must meet in order to be eligible to run this job. 
    * <p>
-   * Note that there is no way, through the public API, to apply these changes to an existing
-   * job.  Please use the {@link QueueMgrClient#changeJobReqs(LinkedList)} to change the job 
-   * requirements of an existing job.
-   * 
+   * User code should use the {@link QueueMgrClient#changeJobReqs(LinkedList)} to change 
+   * the job requirements of an existing job.  This method should only be used server code.
    */
   public void 
   setJobRequirements
   (
-    JobReqs reqs  
+   JobReqs reqs  
   ) 
   {
     pJobReqs = reqs;
@@ -165,6 +163,8 @@ class QueueJob
     TreeSet<Long> newIDs = new TreeSet<Long>();
     newIDs.addAll(pSourceJobIDs);
     return new QueueJob(pActionAgenda, newAction, newReqs, newIDs);
+
+    // THIS DOES NOT PROPERTY COPY ACTION PARAMETERS!!!!
   }
 
 

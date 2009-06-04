@@ -13,9 +13,9 @@ import java.text.*;
 import java.io.*;
 
 /*------------------------------------------------------------------------------------------*/
-/*   V E R S I O N   O P T S   P A R S E R                                                  */
+/*   B R O W S E   O P T S   P A R S E R                                                    */
 /*                                                                                          */
-/*    The parser for the plversion(1) tool.                                                 */
+/*    The parser for the plbrowse(1) tool.                                                  */
 /*------------------------------------------------------------------------------------------*/
 
 class 
