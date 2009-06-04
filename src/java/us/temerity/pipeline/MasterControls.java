@@ -1,4 +1,4 @@
-// $Id: MasterControls.java,v 1.4 2009/04/02 11:47:55 jim Exp $
+// $Id: MasterControls.java,v 1.5 2009/06/04 08:54:53 jim Exp $
   
 package us.temerity.pipeline;
 
@@ -209,9 +209,9 @@ class MasterControls
    Long msec
   ) 
   {
-    if((msec != null) && (msec <= 2048L))
+    if((msec != null) && (msec <= 15000L))
       throw new IllegalArgumentException
-	("The node garbage collection interval (" + msec + " ms) must be at " +
+	("The node garbage collection interval (" + msec + " msec) must be at " +
 	 "least 15 seconds!");
     pNodeGCInterval = msec;
   }
@@ -247,7 +247,7 @@ class MasterControls
   {
     if((interval != null) && (interval < 3600000L)) 
       throw new IllegalArgumentException
-	("The restore cleanup interval (" + interval + " ms) must be at " + 
+	("The restore cleanup interval (" + interval + " msec) must be at " + 
 	 "least 1 hour!"); 
     pRestoreCleanupInterval = interval; 
   }
