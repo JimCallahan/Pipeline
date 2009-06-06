@@ -1,4 +1,4 @@
-// $Id: NodeCommon.java,v 1.34 2009/06/04 09:26:58 jim Exp $
+// $Id: NodeCommon.java,v 1.35 2009/06/06 01:13:54 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -895,12 +895,21 @@ class NodeCommon
       if(parts[wk].length() == 0) 
  	throw new IllegalArgumentException
  	  ("The node name (" + name + ") cannot contain repeated (/) characters!");
-      
-      if(!Identifiers.isIdent(parts[wk])) 
-        throw new IllegalArgumentException
-          ("The node name (" + name + ") contained a component (" + parts[wk] + ") with " + 
-           "illegal characters!  Each component must start with a letter followed by zero " +
-           "or more letters, digits or any of the following: '_', '-', '~'"); 
+
+      if(wk == (parts.length-1)) {
+        if(!Identifiers.isIdent(parts[wk]))
+          throw new IllegalArgumentException
+            ("The last component (" + parts[wk] + ") of the node node (" + name + ") " + 
+             "contained illegal characters!  The last component must start with a letter " + 
+             "followed by zero or more letters, digits or any of the following: '_', '-', " +
+             "'~'"); 
+      }
+      else if(!Identifiers.hasIdentChars(parts[wk])) {
+          throw new IllegalArgumentException
+            ("The directory component (" + parts[wk] + ") of the node name (" + name + ") " +
+             "contained illegal characters!  These components must contain zero or more " + 
+             "letters, digits or any of the following: '_', '-', '~'"); 
+      }
     }
   }
 
