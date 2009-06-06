@@ -1,4 +1,4 @@
-// $Id: GenUserPrefsApp.java,v 1.73 2009/06/04 04:38:11 jim Exp $
+// $Id: GenUserPrefsApp.java,v 1.74 2009/06/06 01:15:22 jim Exp $
 
 import java.awt.*; 
 import java.io.*; 
@@ -2749,7 +2749,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.73 2009/06/04 04:38:11 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.74 2009/06/06 01:15:22 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3004,7 +3004,7 @@ class GenUserPrefsApp
     StringBuilder buf = new StringBuilder();
     
     buf.append
-      ("// $Id: GenUserPrefsApp.java,v 1.73 2009/06/04 04:38:11 jim Exp $\n" +
+      ("// $Id: GenUserPrefsApp.java,v 1.74 2009/06/06 01:15:22 jim Exp $\n" +
        "\n" + 
        "package us.temerity.pipeline.ui.core;\n" + 
        "\n" + 
@@ -3575,7 +3575,12 @@ class GenUserPrefsApp
     ) 
     {
       buf.append
-        (indent(level) + "p" + pTitle + " = (" + pGlueType + ") decoder.decode(\"" + pTitle + "\");\n");
+	(indent(level) + "{\n" + 
+	 indent(level+1) + pGlueType + " v = (" + pGlueType + ") " + 
+	                   "decoder.decode(\"" + pTitle + "\");\n" + 
+	 indent(level+1) + "if(v != null)\n" + 
+	 indent(level+2) + "p" + pTitle + " = v;\n" +
+	 indent(level) + "}\n");
     }
 
     public void 
@@ -4289,6 +4294,17 @@ class GenUserPrefsApp
       }
     }
 
+    public void
+    genFromGlue
+    (
+     StringBuilder buf,
+     int level
+    ) 
+    {
+      buf.append
+        (indent(level) + "p" + pTitle + " = (" + pGlueType + ") decoder.decode(\"" + pTitle + "\");\n");
+    }
+
     public void 
     genUI
     (
@@ -4356,7 +4372,7 @@ class GenUserPrefsApp
 
       StringBuilder buf = new StringBuilder();
       buf.append
-	("// $Id: GenUserPrefsApp.java,v 1.73 2009/06/04 04:38:11 jim Exp $\n" +
+	("// $Id: GenUserPrefsApp.java,v 1.74 2009/06/06 01:15:22 jim Exp $\n" +
 	 "\n" + 
 	 "package us.temerity.pipeline.ui.core;\n" + 
 	 "\n" + 
