@@ -26,7 +26,7 @@ function isUnusedPort {
 
 pldebug_port=0
 first_port=@PLSCRIPT_DEBUG_BASE@
-last_port=$(($first_port+10))
+last_port=$(($first_port+9))
 test_port=$first_port
 while [ $test_port -le $last_port ]
 do
@@ -43,6 +43,8 @@ if [ $pldebug_port -eq 0 ]
 then
   echo "Unable to find any unused debugging ports in the range of [$first_port:$last_port]!"
   exit 1
+else
+  echo "Using debug port ($pldebug_port)."
 fi
 
 cd `pwd`

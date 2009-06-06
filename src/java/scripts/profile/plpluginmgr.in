@@ -34,7 +34,7 @@ function isUnusedPort {
 
 plprof_port=0
 first_port=@PLPLUGINMGR_PROFILE_BASE@
-last_port=$(($first_port+10))
+last_port=$(($first_port+9))
 test_port=$first_port
 while [ $test_port -le $last_port ]
 do
@@ -49,8 +49,10 @@ done
 
 if [ $plprof_port -eq 0 ]
 then
-  echo "Unable to find any unused debugging ports in the range of [$first_port:$last_port]!"
+  echo "Unable to find any unused profiling ports in the range of [$first_port:$last_port]!"
   exit 1
+else
+  echo "Using profile port ($plprof_port)."
 fi
 
 cd `pwd`
