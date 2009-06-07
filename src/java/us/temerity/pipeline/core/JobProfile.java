@@ -1,4 +1,4 @@
-// $Id: JobProfile.java,v 1.1 2009/06/04 09:45:12 jim Exp $
+// $Id: JobProfile.java,v 1.2 2009/06/07 23:21:06 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -107,11 +107,13 @@ JobProfile
   public boolean
   isEligible
   (
-   QueueHost host, 
+   ResourceSample sample, 
+   OsType os, 
+   String reservation, 
    AdminPrivileges privs
   )
   {
-    switch(host.getOsType()) {
+    switch(os) {
     case Unix:
       if(!pHasUnixToolset || !pHasUnixAction) 
         return false;
@@ -127,16 +129,11 @@ JobProfile
         return false;
     }      
 
-    ResourceSample sample = host.getLatestSample();
-    if(sample == null) 
-      return false;
-
     if((sample.getLoad() > pMaxLoad) ||
        (sample.getMemory() < pMinMemory) || 
        (sample.getDisk() < pMinDisk))
       return false;
 
-    String reservation = host.getReservation(); 
     if((reservation != null) &&
        !(pAuthor.equals(reservation) || privs.isWorkGroupMember(pAuthor, reservation)))
       return false;

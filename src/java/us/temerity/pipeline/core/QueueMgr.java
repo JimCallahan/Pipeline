@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.114 2009/06/07 21:07:25 jim Exp $
+// $Id: QueueMgr.java,v 1.115 2009/06/07 23:20:47 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -6704,6 +6704,9 @@ class QueueMgr
     TaskTimer tm = new TaskTimer
       ("Dispatcher [Qualify Jobs - " + host.getName() + ":" + slotID + "]");
 
+    /* the number of jobs that qualify */ 
+    int jobCnt = 0; 
+
     /* cache of favor method per selection group */ 
     TreeMap<String,JobGroupFavorMethod> favors = new TreeMap<String,JobGroupFavorMethod>();
     tm.aquire();
@@ -6712,61 +6715,69 @@ class QueueMgr
       for(String gname : pSelectionGroups.keySet()) 
         favors.put(gname, pSelectionGroups.get(gname).getFavorMethod());
     }
-    
-    /* process all ready jobs */ 
-    int jobCnt = 0; 
-    for(Map.Entry<Long,JobProfile> entry : pReady.entrySet()) {
-              
-      /* skip those without a profile */ 
-      Long jobID = entry.getKey();
-      JobProfile profile = entry.getValue();
-      if(profile != null) {
-        
-        /* make sure the slot provides the required hardware keys */ 
-        String hwGroup = host.getHardwareGroup();
-        HardwareProfile hwProfile = profile.getHardwareProfile();
-        if((hwProfile != null) && hwProfile.isEligible(hwGroup)) {
-          
-          /* lookup the selection score */ 
-          String selGroup = host.getSelectionGroup();
-          SelectionProfile selProfile = profile.getSelectionProfile();
-          Integer score = selProfile.getScore(selGroup); 
-          if(score != null) {
 
-            /* make sure the host provides the type of operating system, reservation and 
-               dynamic resources required by the job */                
-            if(profile.isEligible(host, pAdminPrivileges)) {
+    /* cache latest resource samples */ 
+    ResourceSample sample = host.getLatestSample();
+    if(sample != null) {
+      
+      /* cache other per-hosts information */ 
+      String reservation = host.getReservation(); 
+      OsType os = host.getOsType();
+
+      /* process all ready jobs */ 
+      for(Map.Entry<Long,JobProfile> entry : pReady.entrySet()) {
+              
+        /* skip those without a profile */ 
+        Long jobID = entry.getKey();
+        JobProfile profile = entry.getValue();
+        if(profile != null) {
+        
+          /* make sure the slot provides the required hardware keys */ 
+          String hwGroup = host.getHardwareGroup();
+          HardwareProfile hwProfile = profile.getHardwareProfile();
+          if((hwProfile != null) && hwProfile.isEligible(hwGroup)) {
           
-              /* compute the percentage of jobs within the job group
-                 which are engaged/pending according to the policy of 
-                 the slots selection group (if any) */ 
-              double percent = 0.0;
-              {
-                String gname = host.getSelectionGroup();
-                if(gname != null) {
-                  JobGroupFavorMethod favor = favors.get(gname); 
-                  if(favor != null) {
-                    switch(favor) {
-                    case MostEngaged:
-                      percent = pJobCounters.percentEngaged(tm, jobID);
-                      break;
+            /* lookup the selection score */ 
+            String selGroup = host.getSelectionGroup();
+            SelectionProfile selProfile = profile.getSelectionProfile();
+            Integer score = selProfile.getScore(selGroup); 
+            if(score != null) {
+
+              /* make sure the host provides the type of operating system, reservation and 
+                 dynamic resources required by the job */                
+              if(profile.isEligible(sample, os, reservation, pAdminPrivileges)) {
+          
+                /* compute the percentage of jobs within the job group
+                   which are engaged/pending according to the policy of 
+                   the slots selection group (if any) */ 
+                double percent = 0.0;
+                {
+                  String gname = host.getSelectionGroup();
+                  if(gname != null) {
+                    JobGroupFavorMethod favor = favors.get(gname); 
+                    if(favor != null) {
+                      switch(favor) {
+                      case MostEngaged:
+                        percent = pJobCounters.percentEngaged(tm, jobID);
+                        break;
                       
-                    case MostPending:
-                      percent = pJobCounters.percentPending(tm, jobID);
+                      case MostPending:
+                        percent = pJobCounters.percentPending(tm, jobID);
+                      }
                     }
                   }
                 }
-              }
               
-              /* create a new rank entry for the job */ 
-              {
-                if(pJobRanks[jobCnt] == null) 
-                  pJobRanks[jobCnt] = new JobRank();
+                /* create a new rank entry for the job */ 
+                {
+                  if(pJobRanks[jobCnt] == null) 
+                    pJobRanks[jobCnt] = new JobRank();
                 
-                pJobRanks[jobCnt].update(jobID, score, percent, 
-                                         profile.getPriority(), 
-                                         profile.getTimeStamp()); 
-                jobCnt++; 
+                  pJobRanks[jobCnt].update(jobID, score, percent, 
+                                           profile.getPriority(), 
+                                           profile.getTimeStamp()); 
+                  jobCnt++; 
+                }
               }
             }
           }
