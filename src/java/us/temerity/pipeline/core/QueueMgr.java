@@ -1,4 +1,4 @@
-// $Id: QueueMgr.java,v 1.113 2009/06/04 09:45:12 jim Exp $
+// $Id: QueueMgr.java,v 1.114 2009/06/07 21:07:25 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -6703,6 +6703,15 @@ class QueueMgr
     stm.suspend();
     TaskTimer tm = new TaskTimer
       ("Dispatcher [Qualify Jobs - " + host.getName() + ":" + slotID + "]");
+
+    /* cache of favor method per selection group */ 
+    TreeMap<String,JobGroupFavorMethod> favors = new TreeMap<String,JobGroupFavorMethod>();
+    tm.aquire();
+    synchronized(pSelectionGroups) {
+      tm.resume();
+      for(String gname : pSelectionGroups.keySet()) 
+        favors.put(gname, pSelectionGroups.get(gname).getFavorMethod());
+    }
     
     /* process all ready jobs */ 
     int jobCnt = 0; 
@@ -6735,19 +6744,15 @@ class QueueMgr
               {
                 String gname = host.getSelectionGroup();
                 if(gname != null) {
-                  tm.aquire();
-                  synchronized(pSelectionGroups) {
-                    tm.resume();
-                    SelectionGroup sg = pSelectionGroups.get(gname);
-                    if(sg != null) {
-                      switch(sg.getFavorMethod()) {
-                      case MostEngaged:
-                        percent = pJobCounters.percentEngaged(tm, jobID);
-                        break;
-                        
-                      case MostPending:
-                        percent = pJobCounters.percentPending(tm, jobID);
-                      }
+                  JobGroupFavorMethod favor = favors.get(gname); 
+                  if(favor != null) {
+                    switch(favor) {
+                    case MostEngaged:
+                      percent = pJobCounters.percentEngaged(tm, jobID);
+                      break;
+                      
+                    case MostPending:
+                      percent = pJobCounters.percentPending(tm, jobID);
                     }
                   }
                 }
