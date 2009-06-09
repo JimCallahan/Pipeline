@@ -1,4 +1,4 @@
-// $Id: JobMgr.java,v 1.46 2009/05/16 02:06:18 jim Exp $
+// $Id: JobMgr.java,v 1.47 2009/06/09 14:12:03 jim Exp $
 
 package us.temerity.pipeline.core;
 
@@ -522,22 +522,27 @@ class JobMgr
 	case Unix:
 	case MacOS:
 	  {
-	    ArrayList<String> args = new ArrayList<String>();
-	    args.add("-rf");
+	    ArrayList<String> preOpts = new ArrayList<String>();
+	    preOpts.add("-rf");
 
+	    ArrayList<String> args = new ArrayList<String>();
 	    for(File dir : deadDirs) 
 	      args.add(dir.getName()); 
 	    
-	    SubProcessLight proc = 
-	      new SubProcessLight("Remove-JobFiles", "rm", args, env, pJobDir);
-	    try {
-	      proc.start();
-	      proc.join();
-	      if(!proc.wasSuccessful()) 
-		throw new PipelineException
-		  ("Unable to remove the output files:\n\n" + 
-		   "  " + proc.getStdErr());	
-	    }
+	    LinkedList<SubProcessLight> procs = 
+	      SubProcessLight.createMultiSubProcess
+	        ("Remove-JobFiles", "rm", preOpts, args, env, pJobDir);
+
+	    try {	    
+	      for(SubProcessLight proc : procs) {
+		proc.start();
+		proc.join();
+                if(!proc.wasSuccessful()) 
+                  throw new PipelineException
+                    ("Unable to remove the output files:\n\n" + 
+                     "  " + proc.getStdErr());
+              }
+            }
 	    catch(InterruptedException ex) {
 	      throw new PipelineException
 		("Interrupted while removing the output files!");
