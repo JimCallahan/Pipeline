@@ -1,4 +1,4 @@
-// $Id: SubProcessLight.java,v 1.20 2009/05/16 02:06:18 jim Exp $
+// $Id: SubProcessLight.java,v 1.21 2009/06/09 14:11:43 jim Exp $
 
 package us.temerity.pipeline;
 
@@ -27,14 +27,16 @@ class SubProcessLight
   /*----------------------------------------------------------------------------------------*/
  
   /**
-   * Initialize fields which must be determined at runtime.
+   * Initialize fields which must be determined at runtime.<P> 
+   * 
+   * On Unix and Mac OS, technically this should be 128k but in practice this does not
+   * seems to be too high so we limit it to 64k instead.  On Windows the limit is only 32k.  
    */ 
   static {
     switch(PackageInfo.sOsType) {
     case Unix:
     case MacOS:
-      sArgMax = 131072L - 1024L - 256L;  
-      // env + args + 1024(MAX_PATH_LEN) + 256? < 128k("getconf ARG_MAX")
+      sArgMax = 65536L; 
       break;
 
     default:
@@ -1094,9 +1096,10 @@ class SubProcessLight
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The maximum length of all command line arguments passed to a subprocess.
+   * The maximum length of the entire environment and command line arguments passed to 
+   * a subprocess.
    */ 
-  private static final long sArgMax;
+  private static final long sArgMax; 
 
 
 
