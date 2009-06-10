@@ -1,4 +1,4 @@
-// $Id: MappedArrayList.java,v 1.4 2008/10/30 15:58:10 jesse Exp $
+// $Id: MappedArrayList.java,v 1.5 2009/06/10 17:33:16 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -115,9 +115,17 @@ class MappedArrayList<K, V>
    MappedArrayList<K,V> mlist
   )  
   {
-    for(K a : mlist.keySet()) 
-      for (V each : mlist.get(a))
-	put(a, each);
+    for(K a : mlist.keySet()) {
+      ArrayList<V> values = mlist.get(a);
+      if (values == null)
+        put(a);
+      else if (values.isEmpty())
+        put(a, new ArrayList<V>());
+      else {
+        for (V each : mlist.get(a))
+          put(a, each);
+      }
+    }
   }
   
   /**

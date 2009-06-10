@@ -113,9 +113,17 @@ class MappedLinkedList<K, V>
    MappedLinkedList<K,V> mlist
   )  
   {
-    for(K a : mlist.keySet()) 
-      for (V each : mlist.get(a))
-	put(a, each);
+    for(K a : mlist.keySet()) {
+      LinkedList<V> values = mlist.get(a);
+      if (values == null)
+        put(a);
+      else if (values.isEmpty())
+        put(a, new LinkedList<V>());
+      else {
+        for (V each : mlist.get(a))
+          put(a, each);
+      }
+    }
   }
   
   /**

@@ -1,4 +1,4 @@
-// $Id: MappedSet.java,v 1.9 2009/05/26 07:09:32 jesse Exp $
+// $Id: MappedSet.java,v 1.10 2009/06/10 17:33:16 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -144,8 +144,10 @@ public class MappedSet<K, V>
   {
     for(K a : mset.keySet()) {
       TreeSet<V> values = mset.get(a);
-      if (values == null)
+      if (values == null )
         put(a);
+      else if (values.isEmpty())
+        put(a, new TreeSet<V>());
       else {
         for (V each : values )
           put(a, each);
