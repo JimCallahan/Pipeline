@@ -1,4 +1,4 @@
-// $Id: MappedListSet.java,v 1.2 2009/04/22 21:44:16 jesse Exp $
+// $Id: MappedListSet.java,v 1.3 2009/06/11 05:15:44 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -128,9 +128,12 @@ class MappedListSet<K, V>
     ListSet<V> set = this.get(key);
     if(set == null) {
       set = new ListSet<V>();
+      set.add(value);
       this.put(key, set);
     }
-    set.add(value);
+    else
+      set.add(value);
+    
   }
   
   /**
@@ -154,6 +157,20 @@ class MappedListSet<K, V>
     return super.put(key, null);
   }
   
+  @Override
+  public ListSet<V> 
+  put
+  (
+    K key, 
+    ListSet<V> value
+  ) 
+  {
+    if (value == null || value.isEmpty())
+      return super.put(key, null);
+    else
+      return super.put(key, value);
+  }
+  
   /**
    * Inserts all the of key/value mappings from the given map into this map.
    * 
@@ -168,7 +185,7 @@ class MappedListSet<K, V>
   {
     for(K a : mset.keySet()) {
       ListSet<V> values = mset.get(a);
-      if (values == null)
+      if (values == null || values.isEmpty())
         put(a);
       else {
         for (V each : values )
@@ -187,6 +204,33 @@ class MappedListSet<K, V>
   )
   {
     return super.get(key);
+  }
+  
+  /**
+   * Remove the value from the set defined by the key.
+   * <p>
+   * If the key does not map to a set or if the value is not in the set, no exception will be
+   * thrown.
+   * 
+   * @param key
+   *   The key which indicates the set that is being edited.  
+   * 
+   * @param value
+   *   The value which should be removed from the set.
+   */
+  public void
+  remove
+  (
+    K key,
+    V value
+  )
+  {
+    ListSet<V> set = get(key);
+    if (set != null) {
+      set.remove(value);
+      if (set.isEmpty())
+        put(key);
+    }
   }
   
   

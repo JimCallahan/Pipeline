@@ -96,9 +96,12 @@ class MappedLinkedList<K, V>
     LinkedList<V> list = this.get(key);
     if(list == null) {
       list = new LinkedList<V>();
+      list.add(value);
       this.put(key, list);
     }
-    list.add(value);
+    else
+      list.add(value);
+    
   }
   
   /**
@@ -115,12 +118,10 @@ class MappedLinkedList<K, V>
   {
     for(K a : mlist.keySet()) {
       LinkedList<V> values = mlist.get(a);
-      if (values == null)
+      if (values == null || values.isEmpty())
         put(a);
-      else if (values.isEmpty())
-        put(a, new LinkedList<V>());
       else {
-        for (V each : mlist.get(a))
+        for (V each : values)
           put(a, each);
       }
     }
@@ -147,6 +148,20 @@ class MappedLinkedList<K, V>
     return super.put(key, null);
   }
   
+  @Override
+  public LinkedList<V> 
+  put
+  (
+    K key, 
+    LinkedList<V> value
+  ) 
+  {
+    if (value == null || value.isEmpty())
+      return super.put(key, null);
+    else
+      return super.put(key, value);
+  }
+  
   /**
    * Type-safe getter method.
    */
@@ -156,6 +171,33 @@ class MappedLinkedList<K, V>
   )
   {
     return super.get(key);
+  }
+  
+  /**
+   * Remove the first instance of the value from the list defined by the key.
+   * <p>
+   * If the key does not map to a list or if the value is not in the list, no exception 
+   * will be thrown.
+   * 
+   * @param key
+   *   The key which indicates the list that is being edited.  
+   * 
+   * @param value
+   *   The value which should be removed from the list.
+   */
+  public void
+  remove
+  (
+    K key,
+    V value
+  )
+  {
+    LinkedList<V> list = get(key);
+    if (list != null) {
+      list.remove(value);
+      if (list.isEmpty())
+        put(key);
+    }
   }
   
   

@@ -1,4 +1,4 @@
-// $Id: MappedSet.java,v 1.10 2009/06/10 17:33:16 jesse Exp $
+// $Id: MappedSet.java,v 1.11 2009/06/11 05:15:44 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -104,9 +104,11 @@ public class MappedSet<K, V>
     TreeSet<V> set = this.get(key);
     if(set == null) {
       set = new TreeSet<V>();
+      set.add(value);
       this.put(key, set);
     }
-    set.add(value);
+    else
+      set.add(value);
   }
   
   /**
@@ -130,6 +132,20 @@ public class MappedSet<K, V>
     return super.put(key, null);
   }
   
+  @Override
+  public TreeSet<V> 
+  put
+  (
+    K key, 
+    TreeSet<V> value
+  ) 
+  {
+    if (value == null || value.isEmpty())
+      return super.put(key, null);
+    else
+      return super.put(key, value);
+  }
+  
   /**
    * Inserts all the of key/value mappings from the given map into this map.
    * 
@@ -144,10 +160,8 @@ public class MappedSet<K, V>
   {
     for(K a : mset.keySet()) {
       TreeSet<V> values = mset.get(a);
-      if (values == null )
+      if (values == null || values.isEmpty())
         put(a);
-      else if (values.isEmpty())
-        put(a, new TreeSet<V>());
       else {
         for (V each : values )
           put(a, each);
@@ -187,8 +201,11 @@ public class MappedSet<K, V>
   )
   {
     TreeSet<V> set = get(key);
-    if (set != null)
+    if (set != null) {
       set.remove(value);
+      if (set.isEmpty())
+        put(key);
+    }
   }
   
   

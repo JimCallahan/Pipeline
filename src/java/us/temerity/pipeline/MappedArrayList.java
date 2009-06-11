@@ -1,4 +1,4 @@
-// $Id: MappedArrayList.java,v 1.5 2009/06/10 17:33:16 jesse Exp $
+// $Id: MappedArrayList.java,v 1.6 2009/06/11 05:15:44 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -98,9 +98,11 @@ class MappedArrayList<K, V>
     ArrayList<V> list = this.get(key);
     if(list == null) {
       list = new ArrayList<V>();
+      list.add(value);
       this.put(key, list);
     }
-    list.add(value);
+    else
+      list.add(value);
   }
   
   /**
@@ -117,12 +119,10 @@ class MappedArrayList<K, V>
   {
     for(K a : mlist.keySet()) {
       ArrayList<V> values = mlist.get(a);
-      if (values == null)
+      if (values == null || values.isEmpty())
         put(a);
-      else if (values.isEmpty())
-        put(a, new ArrayList<V>());
       else {
-        for (V each : mlist.get(a))
+        for (V each : values)
           put(a, each);
       }
     }
@@ -149,6 +149,20 @@ class MappedArrayList<K, V>
     return super.put(key, null);
   }
   
+  @Override
+  public ArrayList<V> 
+  put
+  (
+    K key, 
+    ArrayList<V> value
+  ) 
+  {
+    if (value == null || value.isEmpty())
+      return super.put(key, null);
+    else
+      return super.put(key, value);
+  }
+  
   /**
    * Type-safe getter method.
    */
@@ -160,6 +174,32 @@ class MappedArrayList<K, V>
     return super.get(key);
   }
   
+  /**
+   * Remove the first instance of the value from the list defined by the key.
+   * <p>
+   * If the key does not map to a list or if the value is not in the list, no exception 
+   * will be thrown.
+   * 
+   * @param key
+   *   The key which indicates the list that is being edited.  
+   * 
+   * @param value
+   *   The value which should be removed from the list.
+   */
+  public void
+  remove
+  (
+    K key,
+    V value
+  )
+  {
+    ArrayList<V> list = get(key);
+    if (list != null) {
+      list.remove(value);
+      if (list.isEmpty())
+        put(key);
+    }
+  }
   
   
   /*----------------------------------------------------------------------------------------*/
