@@ -1,4 +1,4 @@
-// $Id: AoEModePanel.java,v 1.1 2009/06/11 05:35:08 jesse Exp $
+// $Id: AoEModePanel.java,v 1.2 2009/06/11 19:41:22 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateGlueTool.v2_4_6;
 
@@ -12,6 +12,7 @@ import javax.swing.*;
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.*;
 import us.temerity.pipeline.builder.v2_4_3.*;
+import us.temerity.pipeline.plugin.TemplateGlueTool.v2_4_6.TemplateUIFactory.*;
 import us.temerity.pipeline.ui.*;
 
 
@@ -38,40 +39,37 @@ class AoEModePanel
     pAddEntries = new ArrayList<AddEntry>();
     
     pMissing = scan.getAoEModes().keySet();
+    pHasMissing = !pMissing.isEmpty();
     
     this.setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
     
     pBox = new Box(BoxLayout.PAGE_AXIS);
     
+    pTitleBox = TemplateUIFactory.createTitleBox("AoE Modes:");
+    
     {
-      pButtonBox = new Box(BoxLayout.LINE_AXIS);
+      pButtonBox = TemplateUIFactory.createHorizontalBox();
       
-      JButton add = UIFactory.createDialogButton("Add", "add", this, "Add an AoE Mode");
+      JButton add = 
+        TemplateUIFactory.createPanelButton("Add AoE Mode", "add", this, "Add an AoE Mode");
       pButtonBox.add(add);
       pButtonBox.add(Box.createHorizontalGlue());
-      pBox.add(pButtonBox);
-      pBox.add(Box.createVerticalStrut(4));
     }
     
     {
-      pHeaderBox = new Box(BoxLayout.LINE_AXIS);
-      Dimension dim = new Dimension(150, 19);
+      pHeaderBox = TemplateUIFactory.createHorizontalBox();
+      int width = 150;
       {
-        JLabel label = UIFactory.createLabel("AoE Mode", dim.width, SwingConstants.LEFT);
-        label.setMaximumSize(dim);
+        JLabel label = UIFactory.createFixedLabel("AoE Mode:", width, SwingConstants.LEFT);
         pHeaderBox.add(label);
-        pHeaderBox.add(Box.createHorizontalStrut(8));
       }
+      pHeaderBox.add(TemplateUIFactory.createHorizontalSpacer());
       {
-        JLabel label = UIFactory.createLabel("Default Value", dim.width, SwingConstants.LEFT);
-        label.setMaximumSize(dim);
+        JLabel label = UIFactory.createFixedLabel("Default Value:", width, SwingConstants.LEFT);
         pHeaderBox.add(label);
-        pHeaderBox.add(Box.createHorizontalStrut(8));
       }
-      
+      pHeaderBox.add(TemplateUIFactory.createHorizontalSpacer());      
       pHeaderBox.add(Box.createHorizontalGlue());
-      pBox.add(pHeaderBox);
-      pBox.add(Box.createVerticalStrut(4));
     }
     
     if (oldSettings != null) {
@@ -81,29 +79,22 @@ class AoEModePanel
        createEntry(entry.getKey(), entry.getValue().toTitle());
      }
     }
-    createEntry(null, null);
-    
-    pBox.add(Box.createVerticalStrut(20));
     
     {
-      pButtonBox2 = new Box(BoxLayout.LINE_AXIS);
+      pButtonBox2 = TemplateUIFactory.createHorizontalBox();
       
       JButton add = 
-        UIFactory.createDialogButton("Add All", "addall", this, "Add all the found AoE Modes.");
+        TemplateUIFactory.createPanelButton
+          ("Add All", "addall", this, "Add all the found AoE Modes.");
       pButtonBox2.add(add);
       pButtonBox2.add(Box.createHorizontalGlue());
-      pBox.add(pButtonBox2);
-      pBox.add(Box.createVerticalStrut(4));
     }
     
     for (String extra : pMissing) {
-      AddEntry entry = new AddEntry(this, extra);
-      pBox.add(entry);
-      pBox.add(Box.createVerticalStrut(4));
+      AddEntry entry = new AddEntry(this, extra, "AoE Mode");
       pAddEntries.add(entry);
     }
     
-    pBox.add(UIFactory.createFiller(100));
     
     Dimension dim = new Dimension(700, 500);
     
@@ -113,7 +104,9 @@ class AoEModePanel
       ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, 
       dim, null, null);
     
-    this.add(scroll); 
+    this.add(scroll);
+    
+    relayout();
   }
   
   public TreeMap<String, ActionOnExistence>
@@ -164,8 +157,6 @@ class AoEModePanel
   {
     AoEEntry entry = 
        new AoEEntry(this, pNextID, range, defaultValue);
-     pBox.add(entry);
-     pBox.add(Box.createVerticalStrut(2));
      pEntries.put(pNextID, entry);
      pOrder.add(pNextID);
      pNextID++;
@@ -175,27 +166,36 @@ class AoEModePanel
   relayout()
   {
     pBox.removeAll();
-    pBox.add(pButtonBox);
-    pBox.add(Box.createVerticalStrut(4));
+    pBox.add(pTitleBox);
+    pBox.add(TemplateUIFactory.createLargeVerticalGap());
     pBox.add(pHeaderBox);
-    pBox.add(Box.createVerticalStrut(4));
+    pBox.add(TemplateUIFactory.createVerticalGap());
     for (int i : pOrder) {
       AoEEntry entry = pEntries.get(i);
       pBox.add(entry);
-      pBox.add(Box.createVerticalStrut(2));
+      pBox.add(TemplateUIFactory.createVerticalGap());
     }
     
-    pBox.add(Box.createVerticalStrut(20));
-    pBox.add(pButtonBox2);
-    pBox.add(Box.createVerticalStrut(4));
+    pBox.add(TemplateUIFactory.createVerticalGap());
+    pBox.add(pButtonBox);
+    pBox.add(TemplateUIFactory.createVerticalGap());
     
-    for (AddEntry entry : pAddEntries) {
-      pBox.add(entry);
-      pBox.add(Box.createVerticalStrut(4));
+    if (pHasMissing) {
+      pBox.add(Box.createVerticalStrut(20));
+      pBox.add(UIFactory.createPanelBreak());
+      pBox.add(Box.createVerticalStrut(20));
+      pBox.add(pButtonBox2);
+      pBox.add(TemplateUIFactory.createVerticalGap());
+
+      for (AddEntry entry : pAddEntries) {
+        pBox.add(entry);
+        pBox.add(TemplateUIFactory.createVerticalGap());
+      }
     }
     
+    pBox.add(TemplateUIFactory.createLargeVerticalGap());
     pBox.add(UIFactory.createFiller(100));
-    pBox.revalidate();
+    pBox.revalidate();  
   }
   
   @Override
@@ -210,7 +210,7 @@ class AoEModePanel
       int id = Integer.valueOf(command.replace("remove-", ""));
       int idx = pOrder.indexOf(id);
       pOrder.remove(idx);
-      pEntries.remove(idx);
+      pEntries.remove(id);
       relayout();
     }
     else if (command.equals("add")) {
@@ -236,35 +236,6 @@ class AoEModePanel
   }
   
   private class
-  AddEntry
-    extends Box
-  {
-    private 
-    AddEntry
-    (
-      ActionListener parent,
-      String range
-    )
-    {
-      super(BoxLayout.LINE_AXIS);
-      
-      JParamNameField field = UIFactory.createParamNameField(range, 150, SwingConstants.LEFT);
-      field.setMaximumSize(field.getPreferredSize());
-      field.setEditable(false);
-      this.add(field);
-      this.add(Box.createHorizontalStrut(8));
-      {
-        JButton but = 
-          UIFactory.createDialogButton("Add", "add-" + range, parent, "Add the missing replacement");
-        this.add(but);
-      }
-      this.add(Box.createHorizontalGlue()); 
-    }
-
-    private static final long serialVersionUID = -4950780858342540005L;
-  }
-  
-  private class
   AoEEntry
     extends Box
   {
@@ -279,10 +250,12 @@ class AoEModePanel
     {
       super(BoxLayout.LINE_AXIS);
       
+      this.add(TemplateUIFactory.createHorizontalIndent());
+      
       pAoEMode = UIFactory.createParamNameField(range, 150, SwingConstants.LEFT);
       pAoEMode.setMaximumSize(pAoEMode.getPreferredSize());
       this.add(pAoEMode);
-      this.add(Box.createHorizontalStrut(8));
+      this.add(TemplateUIFactory.createHorizontalSpacer());
       
       ArrayList<String> values = ActionOnExistence.titles();
       pDefaultValue = UIFactory.createCollectionField(values, pDialog, 150);
@@ -291,11 +264,11 @@ class AoEModePanel
         pDefaultValue.setSelected(defaultValue);
       this.add(pDefaultValue);
       
-      this.add(Box.createHorizontalStrut(4));
+      this.add(TemplateUIFactory.createHorizontalSpacer());
       
       {
         JButton but = 
-          UIFactory.createDialogButton("Remove", "remove-" + id, parent, "Remove the AoE Mode.");
+          TemplateUIFactory.createRemoveButton(parent, "remove-" + id);
         this.add(but);
       }
       
@@ -337,7 +310,10 @@ class AoEModePanel
   private ArrayList<AddEntry> pAddEntries;
   
   private Box pBox;
+  private Box pTitleBox;
   private Box pButtonBox;
   private Box pHeaderBox;
   private Box pButtonBox2;
+  
+  private boolean pHasMissing;
 }

@@ -1,4 +1,4 @@
-// $Id: StringReplacePanel.java,v 1.1 2009/06/11 05:35:08 jesse Exp $
+// $Id: StringReplacePanel.java,v 1.2 2009/06/11 19:41:22 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateGlueTool.v2_4_6;
 
@@ -34,41 +34,28 @@ class StringReplacePanel
     
     pBox = new Box(BoxLayout.PAGE_AXIS);
     
-    {
-      pButtonBox = new Box(BoxLayout.LINE_AXIS);
-      
-      JButton add = UIFactory.createDialogButton("Add", "add", this, "Add a Replacement");
-      pButtonBox.add(add);
-      pButtonBox.add(Box.createHorizontalGlue());
-      pBox.add(pButtonBox);
-      pBox.add(Box.createVerticalStrut(4));
-    }
+    pTitleBox = TemplateUIFactory.createTitleBox("String Replacements:");
     
     {
-      pHeaderBox = new Box(BoxLayout.LINE_AXIS);
-      Dimension dim = new Dimension(150, 19);
+      pHeaderBox = TemplateUIFactory.createHorizontalBox();
+      int width = 150;
       {
-        JLabel label = UIFactory.createLabel("Replacement", dim.width, SwingConstants.LEFT);
-        label.setMaximumSize(dim);
+        JLabel label = UIFactory.createFixedLabel("Replacement:", width, SwingConstants.LEFT);
         pHeaderBox.add(label);
-        pHeaderBox.add(Box.createHorizontalStrut(8));
       }
+      pHeaderBox.add(TemplateUIFactory.createHorizontalSpacer());
       {
-        JLabel label = UIFactory.createLabel("Param Name", dim.width, SwingConstants.LEFT);
-        label.setMaximumSize(dim);
+        JLabel label = UIFactory.createFixedLabel("Param Name:", width, SwingConstants.LEFT);
         pHeaderBox.add(label);
-        pHeaderBox.add(Box.createHorizontalStrut(8));
       }
+      pHeaderBox.add(TemplateUIFactory.createHorizontalSpacer());
       {
-        JLabel label = UIFactory.createLabel("Default Value", dim.width, SwingConstants.LEFT);
-        label.setMaximumSize(dim);
+        JLabel label = UIFactory.createFixedLabel("Default Value:", width, SwingConstants.LEFT);
         pHeaderBox.add(label);
-        pHeaderBox.add(Box.createHorizontalStrut(8));
       }
+      pHeaderBox.add(TemplateUIFactory.createHorizontalSpacer());
       
       pHeaderBox.add(Box.createHorizontalGlue());
-      pBox.add(pHeaderBox);
-      pBox.add(Box.createVerticalStrut(4));
     }
     
     if (oldSettings != null) {
@@ -82,10 +69,14 @@ class StringReplacePanel
        createEntry(rep, def, param);
      }
     }
-    createEntry(null, null, null);
     
+    {
+      pButtonBox = TemplateUIFactory.createHorizontalBox();
+      JButton add = TemplateUIFactory.createPanelButton("Add Replacement", "add", this, "Add a Replacement");
+      pButtonBox.add(add);
+      pButtonBox.add(Box.createHorizontalGlue());
+    }
     
-    pBox.add(UIFactory.createFiller(100));
     
     Dimension dim = new Dimension(700, 500);
     
@@ -151,15 +142,18 @@ class StringReplacePanel
   relayout()
   {
     pBox.removeAll();
-    pBox.add(pButtonBox);
-    pBox.add(Box.createVerticalStrut(4));
+    pBox.add(pTitleBox);
+    pBox.add(TemplateUIFactory.createLargeVerticalGap());
     pBox.add(pHeaderBox);
-    pBox.add(Box.createVerticalStrut(4));
+    pBox.add(TemplateUIFactory.createVerticalGap());
     for (int i : pOrder) {
       ReplaceEntry entry = pEntries.get(i);
       pBox.add(entry);
-      pBox.add(Box.createVerticalStrut(2));
+      pBox.add(TemplateUIFactory.createVerticalGap());
     }
+    pBox.add(TemplateUIFactory.createVerticalGap());
+    pBox.add(pButtonBox);
+    pBox.add(TemplateUIFactory.createLargeVerticalGap());
     pBox.add(UIFactory.createFiller(100));
     pBox.revalidate();
   }
@@ -179,8 +173,6 @@ class StringReplacePanel
   {
     ReplaceEntry entry = 
        new ReplaceEntry(this, pNextID, rep, param, def);
-     pBox.add(entry);
-     pBox.add(Box.createVerticalStrut(2));
      pEntries.put(pNextID, entry);
      pOrder.add(pNextID);
      pNextID++;
@@ -216,7 +208,7 @@ class StringReplacePanel
       int id = Integer.valueOf(command.replace("remove-", ""));
       int idx = pOrder.indexOf(id);
       pOrder.remove(idx);
-      pEntries.remove(idx);
+      pEntries.remove(id);
       relayout();
     }
     else if (command.equals("add")) {
@@ -241,35 +233,38 @@ class StringReplacePanel
     )
     {
       super(BoxLayout.LINE_AXIS);
-      
+     
+      this.add(TemplateUIFactory.createHorizontalIndent());
       pReplace = UIFactory.createEditableTextField(replace, 150, SwingConstants.LEFT);
       pReplace.setMaximumSize(pReplace.getPreferredSize());
       this.add(pReplace);
-      this.add(Box.createHorizontalStrut(8));
+      this.add(TemplateUIFactory.createHorizontalSpacer());
       pParamName = UIFactory.createParamNameField(paramName, 150, SwingConstants.LEFT);
       pParamName.setMaximumSize(pParamName.getPreferredSize());
       this.add(pParamName);
-      this.add(Box.createHorizontalStrut(8));
+      this.add(TemplateUIFactory.createHorizontalSpacer());
       pDefaultValue = 
         UIFactory.createEditableTextField(defaultValue, 150, SwingConstants.LEFT);
       pDefaultValue.setMaximumSize(pDefaultValue.getPreferredSize());
       this.add(pDefaultValue);
-      this.add(Box.createHorizontalStrut(8));
+      this.add(TemplateUIFactory.createHorizontalSpacer());
+      
       {
-        JButton but = 
-          UIFactory.createDialogButton("Up", "up-" + id, parent, "Move the replacement up.");
+        JButton but = TemplateUIFactory.createUpButton(parent, "up-" + id);
         this.add(but);
-        this.add(Box.createHorizontalStrut(8));
       }
+
+      this.add(TemplateUIFactory.createButtonSpacer());
+      
       {
-        JButton but = 
-          UIFactory.createDialogButton("Down", "down-" + id, parent, "Move the replacement down.");
+        JButton but = TemplateUIFactory.createDownButton(parent, "down-" + id);
         this.add(but);
-        this.add(Box.createHorizontalStrut(8));
       }
+      
+      this.add(TemplateUIFactory.createButtonSpacer());
+      
       {
-        JButton but = 
-          UIFactory.createDialogButton("Remove", "remove-" + id, parent, "remove the replacement");
+        JButton but = TemplateUIFactory.createRemoveButton(parent, "remove-" +  id);
         this.add(but);
       }
       this.add(Box.createHorizontalGlue());
@@ -309,4 +304,5 @@ class StringReplacePanel
   private Box pBox;
   private Box pButtonBox;
   private Box pHeaderBox;
+  private Box pTitleBox;
 }

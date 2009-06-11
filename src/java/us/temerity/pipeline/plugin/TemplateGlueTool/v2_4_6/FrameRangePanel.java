@@ -1,4 +1,4 @@
-// $Id: FrameRangePanel.java,v 1.1 2009/06/11 05:35:08 jesse Exp $
+// $Id: FrameRangePanel.java,v 1.2 2009/06/11 19:41:22 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateGlueTool.v2_4_6;
 
@@ -10,6 +10,7 @@ import javax.swing.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.v2_4_3.*;
+import us.temerity.pipeline.plugin.TemplateGlueTool.v2_4_6.TemplateUIFactory.*;
 import us.temerity.pipeline.ui.*;
 
 
@@ -33,40 +34,36 @@ class FrameRangePanel
     pAddEntries = new ArrayList<AddEntry>();
     
     pMissing = scan.getFrameRanges().keySet();
+    pHasMissing = !pMissing.isEmpty();
     
     this.setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
     
     pBox = new Box(BoxLayout.PAGE_AXIS);
     
+    pTitleBox = TemplateUIFactory.createTitleBox("Frame Ranges:");
+    
     {
-      pButtonBox = new Box(BoxLayout.LINE_AXIS);
-      
-      JButton add = UIFactory.createDialogButton("Add", "add", this, "Add a Frame Range");
+      pButtonBox = TemplateUIFactory.createHorizontalBox();
+      JButton add = TemplateUIFactory.createPanelButton("Add Frame Range", "add", this, "Add a Frame Range");
       pButtonBox.add(add);
       pButtonBox.add(Box.createHorizontalGlue());
-      pBox.add(pButtonBox);
-      pBox.add(Box.createVerticalStrut(4));
     }
     
     {
-      pHeaderBox = new Box(BoxLayout.LINE_AXIS);
-      Dimension dim = new Dimension(150, 19);
+      pHeaderBox = TemplateUIFactory.createHorizontalBox();
+      int width = 150;
       {
-        JLabel label = UIFactory.createLabel("Frame Range", dim.width, SwingConstants.LEFT);
-        label.setMaximumSize(dim);
+        JLabel label = UIFactory.createFixedLabel("Frame Range:", width, SwingConstants.LEFT);
         pHeaderBox.add(label);
-        pHeaderBox.add(Box.createHorizontalStrut(8));
       }
+      pHeaderBox.add(TemplateUIFactory.createHorizontalSpacer());
       {
-        JLabel label = UIFactory.createLabel("Default Value", dim.width, SwingConstants.LEFT);
-        label.setMaximumSize(dim);
+        JLabel label = UIFactory.createFixedLabel("Default Value:", width, SwingConstants.LEFT);
         pHeaderBox.add(label);
-        pHeaderBox.add(Box.createHorizontalStrut(8));
       }
+      pHeaderBox.add(TemplateUIFactory.createHorizontalSpacer());
       
       pHeaderBox.add(Box.createHorizontalGlue());
-      pBox.add(pHeaderBox);
-      pBox.add(Box.createVerticalStrut(4));
     }
     
     if (oldSettings != null) {
@@ -78,29 +75,25 @@ class FrameRangePanel
        createEntry(range, def);
      }
     }
-    createEntry(null, null);
-    
-    pBox.add(Box.createVerticalStrut(20));
     
     {
-      pButtonBox2 = new Box(BoxLayout.LINE_AXIS);
+      pButtonBox2 = TemplateUIFactory.createHorizontalBox();
       
+      pButtonBox2.add(UIFactory.createFixedLabel
+        ("Found in scan: ", 150, SwingConstants.LEFT));
+      
+      pHeaderBox.add(TemplateUIFactory.createHorizontalSpacer());
+
       JButton add = 
-        UIFactory.createDialogButton("Add All", "addall", this, "Add all the found frame ranges");
+        TemplateUIFactory.createPanelButton("Add All", "addall", this, "Add all the found frame ranges");
       pButtonBox2.add(add);
       pButtonBox2.add(Box.createHorizontalGlue());
-      pBox.add(pButtonBox2);
-      pBox.add(Box.createVerticalStrut(4));
     }
     
     for (String extra : pMissing) {
-      AddEntry entry = new AddEntry(this, extra);
-      pBox.add(entry);
-      pBox.add(Box.createVerticalStrut(4));
+      AddEntry entry = new AddEntry(this, extra, "frame range");
       pAddEntries.add(entry);
     }
-    
-    pBox.add(UIFactory.createFiller(100));
     
     Dimension dim = new Dimension(700, 500);
     
@@ -111,6 +104,8 @@ class FrameRangePanel
       dim, null, null);
     
     this.add(scroll);
+    
+    relayout();
   }
   
   
@@ -193,8 +188,6 @@ class FrameRangePanel
   {
     RangeEntry entry = 
        new RangeEntry(this, pNextID, range, defaultValues);
-     pBox.add(entry);
-     pBox.add(Box.createVerticalStrut(2));
      pEntries.put(pNextID, entry);
      pOrder.add(pNextID);
      pNextID++;
@@ -204,25 +197,34 @@ class FrameRangePanel
   relayout()
   {
     pBox.removeAll();
-    pBox.add(pButtonBox);
-    pBox.add(Box.createVerticalStrut(4));
+    pBox.add(pTitleBox);
+    pBox.add(TemplateUIFactory.createLargeVerticalGap());
     pBox.add(pHeaderBox);
-    pBox.add(Box.createVerticalStrut(4));
+    pBox.add(TemplateUIFactory.createVerticalGap());
     for (int i : pOrder) {
       RangeEntry entry = pEntries.get(i);
       pBox.add(entry);
-      pBox.add(Box.createVerticalStrut(2));
+      pBox.add(TemplateUIFactory.createVerticalGap());
+    }
+
+    pBox.add(TemplateUIFactory.createVerticalGap());
+    pBox.add(pButtonBox);
+    pBox.add(TemplateUIFactory.createVerticalGap());
+    
+    if (pHasMissing) {
+      pBox.add(Box.createVerticalStrut(20));
+      pBox.add(UIFactory.createPanelBreak());
+      pBox.add(Box.createVerticalStrut(20));
+      pBox.add(pButtonBox2);
+      pBox.add(TemplateUIFactory.createVerticalGap());
+
+      for (AddEntry entry : pAddEntries) {
+        pBox.add(entry);
+        pBox.add(TemplateUIFactory.createVerticalGap());
+      }
     }
     
-    pBox.add(Box.createVerticalStrut(20));
-    pBox.add(pButtonBox2);
-    pBox.add(Box.createVerticalStrut(4));
-    
-    for (AddEntry entry : pAddEntries) {
-      pBox.add(entry);
-      pBox.add(Box.createVerticalStrut(4));
-    }
-    
+    pBox.add(TemplateUIFactory.createLargeVerticalGap());
     pBox.add(UIFactory.createFiller(100));
     pBox.revalidate();
   }
@@ -240,7 +242,7 @@ class FrameRangePanel
       int id = Integer.valueOf(command.replace("remove-", ""));
       int idx = pOrder.indexOf(id);
       pOrder.remove(idx);
-      pEntries.remove(idx);
+      pEntries.remove(id);
       relayout();
     }
     else if (command.equals("add")) {
@@ -265,35 +267,8 @@ class FrameRangePanel
     }
   }
   
-  private class
-  AddEntry
-    extends Box
-  {
-    private 
-    AddEntry
-    (
-      ActionListener parent,
-      String range
-    )
-    {
-      super(BoxLayout.LINE_AXIS);
-      
-      JParamNameField field = UIFactory.createParamNameField(range, 150, SwingConstants.LEFT);
-      field.setMaximumSize(field.getPreferredSize());
-      field.setEditable(false);
-      this.add(field);
-      this.add(Box.createHorizontalStrut(8));
-      {
-        JButton but = 
-          UIFactory.createDialogButton("Add", "add-" + range, parent, "Add the missing replacement");
-        this.add(but);
-      }
-      this.add(Box.createHorizontalGlue()); 
-    }
-    
-    private static final long serialVersionUID = -3561925475151159308L;
-  }
-  
+
+
   private class
   RangeEntry
     extends Box
@@ -309,6 +284,8 @@ class FrameRangePanel
     {
       super(BoxLayout.LINE_AXIS);
       
+      this.add(TemplateUIFactory.createHorizontalIndent());
+      
       Integer start = null;
       Integer end = null;
       Integer by = null;
@@ -321,11 +298,11 @@ class FrameRangePanel
       pRange = UIFactory.createParamNameField(range, 150, SwingConstants.LEFT);
       pRange.setMaximumSize(pRange.getPreferredSize());
       this.add(pRange);
-      this.add(Box.createHorizontalStrut(8));
+      this.add(TemplateUIFactory.createHorizontalSpacer());
       pStart = UIFactory.createIntegerField(start, 70, SwingConstants.LEFT);
       pStart.setMaximumSize(pStart.getPreferredSize());
       this.add(pStart);
-      this.add(Box.createHorizontalStrut(8));
+      this.add(TemplateUIFactory.createHorizontalSpacer());
       {
         JLabel label = new JLabel("to");
 
@@ -334,11 +311,11 @@ class FrameRangePanel
 
         this.add(label);
       }
-      this.add(Box.createHorizontalStrut(8));
+      this.add(TemplateUIFactory.createHorizontalSpacer());
       pEnd = UIFactory.createIntegerField(end, 70, SwingConstants.LEFT);
       pEnd.setMaximumSize(pEnd.getPreferredSize());
       this.add(pEnd);
-      this.add(Box.createHorizontalStrut(8));
+      this.add(TemplateUIFactory.createHorizontalSpacer());
       {
         JLabel label = new JLabel("by");
 
@@ -347,20 +324,20 @@ class FrameRangePanel
 
         this.add(label);
       }
-      this.add(Box.createHorizontalStrut(8));
+      this.add(TemplateUIFactory.createHorizontalSpacer());
       pBy = UIFactory.createIntegerField(by, 70, SwingConstants.LEFT);
       pBy.setMaximumSize(pBy.getPreferredSize());
       this.add(pBy);
-      this.add(Box.createHorizontalStrut(4));
+      this.add(TemplateUIFactory.createHorizontalSpacer());
       
       {
-        JButton but = 
-          UIFactory.createDialogButton("Remove", "remove-" + id, parent, "remove the replacement");
+        JButton but = TemplateUIFactory.createRemoveButton(parent, "remove-" +  id);
         this.add(but);
       }
+      
       this.add(Box.createHorizontalGlue());
     }
-    
+
     private String
     getRange()
     {
@@ -402,8 +379,11 @@ class FrameRangePanel
   private Set<String> pMissing;
   private ArrayList<AddEntry> pAddEntries;
   
+  private Box pTitleBox;
   private Box pBox;
   private Box pButtonBox;
   private Box pHeaderBox;
   private Box pButtonBox2;
+  
+  private boolean pHasMissing;
 }

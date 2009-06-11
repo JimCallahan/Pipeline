@@ -1,4 +1,4 @@
-// $Id: ContextsDefaultsPanel.java,v 1.1 2009/06/11 05:35:08 jesse Exp $
+// $Id: ContextsDefaultsPanel.java,v 1.2 2009/06/11 19:41:22 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateGlueTool.v2_4_6;
 
@@ -34,6 +34,11 @@ class ContextsDefaultsPanel
     this.setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
     
     pBox = new Box(BoxLayout.PAGE_AXIS);
+    
+    Box titleBox = TemplateUIFactory.createTitleBox("Context Defaults:");
+    pBox.add(titleBox);
+    pBox.add(TemplateUIFactory.createLargeVerticalGap());
+    
     
     TreeMap<String, ArrayList<TreeMap<String, String>>> olds = 
       new TreeMap<String, ArrayList<TreeMap<String,String>>>();
@@ -72,7 +77,7 @@ class ContextsDefaultsPanel
     ContextDefaultEntry entry = 
        new ContextDefaultEntry(context, replacements, defaults);
      pBox.add(entry);
-     pBox.add(Box.createVerticalStrut(2));
+     pBox.add(TemplateUIFactory.createLargeVerticalGap());
      pEntries.put(pNextID, entry);
      pEntryByContext.put(context, entry);
      pOrder.add(pNextID);
@@ -123,49 +128,45 @@ class ContextsDefaultsPanel
       
       pInsideBox = new Box(BoxLayout.PAGE_AXIS);
       
-      Box hbox = new Box(BoxLayout.LINE_AXIS);
-      
-      pContextName = UIFactory.createTextField(context, 150, SwingConstants.LEFT);
-      pContextName.setMaximumSize(pContextName.getPreferredSize());
-      hbox.add(pContextName);
-      hbox.add(Box.createHorizontalStrut(8));
-
       {
-        JButton but = 
-          UIFactory.createDialogButton("Add", "add", this, "Add another Context Default");
-        hbox.add(but);
+        Box hbox = TemplateUIFactory.createHorizontalBox();
+
+        pContextName = UIFactory.createTextField(context, 150, SwingConstants.LEFT);
+        pContextName.setMaximumSize(pContextName.getPreferredSize());
+        hbox.add(pContextName);
+        hbox.add(Box.createHorizontalGlue());
+        pHeader = hbox;
       }
       
-      hbox.add(Box.createHorizontalGlue());
       
-      pInsideBox.add(hbox);
-      
-      pHeader = hbox;
-      
-      pInsideBox.add(Box.createVerticalStrut(2));
+      {
+        pAddBox = TemplateUIFactory.createHorizontalBox();
+        pAddBox.add(TemplateUIFactory.createSecondLevelIndent());
+        JButton but = 
+          TemplateUIFactory.createPanelButton
+            ("Add Defaults", "add", this, "Add another Context Default");
+        pAddBox.add(but);
+        pAddBox.add(Box.createHorizontalGlue());
+      }
       
       {
         pReplaceHeader = new Box(BoxLayout.LINE_AXIS);
         pReplaceHeader.add(Box.createHorizontalStrut(75));
         for (String replace : pReplacements) {
-          JLabel l1 = UIFactory.createFixedLabel(replace, 150, SwingConstants.LEFT);
+          JLabel l1 = UIFactory.createFixedLabel(replace + ":", 150, SwingConstants.LEFT);
           pReplaceHeader.add(l1);
-          pReplaceHeader.add(Box.createHorizontalStrut(8));  
         }
+        pReplaceHeader.add(TemplateUIFactory.createHorizontalSpacer());
         pReplaceHeader.add(Box.createHorizontalGlue());
       }
-
-      pInsideBox.add(pReplaceHeader);
-      pInsideBox.add(Box.createVerticalStrut(2));
 
       for (TreeMap<String, String> each : oldValues) {
         if (!each.isEmpty())
           addContextDefault(pReplacements, each);
       }
-      addContextDefault(pReplacements, null);
-      
       
       this.add(pInsideBox);
+      relayout();
     }
     
     public ArrayList<TreeMap<String, String>>
@@ -190,8 +191,6 @@ class ContextsDefaultsPanel
     {
       DefaultEntry entry = 
         new DefaultEntry(this, pReplaceID, sorted, values);
-      pInsideBox.add(entry);
-      pInsideBox.add(Box.createVerticalStrut(2));
       pDefaults.put(pReplaceID, entry);
       pReplaceOrder.add(pReplaceID);
       pReplaceID++;
@@ -202,14 +201,16 @@ class ContextsDefaultsPanel
     {
       pInsideBox.removeAll();
       pInsideBox.add(pHeader);
-      pInsideBox.add(Box.createVerticalStrut(2));
+      pInsideBox.add(TemplateUIFactory.createVerticalGap());
       pInsideBox.add(pReplaceHeader);
-      pInsideBox.add(Box.createVerticalStrut(2));
+      pInsideBox.add(TemplateUIFactory.createVerticalGap());
       for (int i : pReplaceOrder) {
         DefaultEntry entry = pDefaults.get(i);
         pInsideBox.add(entry);
-        pInsideBox.add(Box.createVerticalStrut(2));
+        pInsideBox.add(TemplateUIFactory.createVerticalGap());
       }
+      pInsideBox.add(TemplateUIFactory.createVerticalGap());
+      pInsideBox.add(pAddBox);
       pInsideBox.revalidate();
     }
     
@@ -225,7 +226,7 @@ class ContextsDefaultsPanel
         int id = Integer.valueOf(command.replace("remove-", ""));
         int idx = pReplaceOrder.indexOf(id);
         pReplaceOrder.remove(idx);
-        pDefaults.remove(idx);
+        pDefaults.remove(id);
         relayout();
       }
       else if (command.equals("add")) {
@@ -249,7 +250,8 @@ class ContextsDefaultsPanel
       {
         super(BoxLayout.LINE_AXIS);
         
-        this.add(Box.createHorizontalStrut(75));
+        this.add(TemplateUIFactory.createHorizontalIndent());
+        this.add(TemplateUIFactory.createSecondLevelIndent());
         
         pDefaultValues = new TreeMap<String, JTextField>();
         
@@ -260,15 +262,15 @@ class ContextsDefaultsPanel
           JTextField field = UIFactory.createEditableTextField(dv, 150, SwingConstants.LEFT);
           field.setMaximumSize(field.getPreferredSize());
           this.add(field);
-          this.add(Box.createHorizontalStrut(8));
+          this.add(TemplateUIFactory.createHorizontalSpacer());
           pDefaultValues.put(replace, field);
         }
         
         {
-          JButton but = 
-            UIFactory.createDialogButton("Remove", "remove-" + id, parent, "remove the replacement");
+          JButton but = TemplateUIFactory.createRemoveButton(parent, "remove-" + id);
           this.add(but);
         }
+
         this.add(Box.createHorizontalGlue());
       }
       
@@ -296,6 +298,7 @@ class ContextsDefaultsPanel
     private Box pInsideBox;
     
     private Box pHeader;
+    private Box pAddBox;
     private Box pReplaceHeader;
 
     private int pReplaceID;

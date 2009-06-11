@@ -1,4 +1,4 @@
-// $Id: UIFactory.java,v 1.32 2009/06/11 05:14:06 jesse Exp $
+// $Id: UIFactory.java,v 1.33 2009/06/11 19:41:22 jesse Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -343,10 +343,8 @@ class UIFactory
 
     return btn;
   }
-
   
-  /*----------------------------------------------------------------------------------------*/
-
+  
   /**
    * Create a new non-editable text field. <P> 
    * 
@@ -4230,6 +4228,22 @@ class UIFactory
     spanel.setMinimumSize(new Dimension(7, 0));
     spanel.setMaximumSize(new Dimension(7, Integer.MAX_VALUE));
     spanel.setPreferredSize(new Dimension(7, 0));
+
+    return spanel;
+  }
+  
+  /**
+   * Creates a vertical spacer that will create a vertical 7 pixel bar.<P>
+   */
+  public static JPanel
+  createPanelBreak()
+  {
+    JPanel spanel = new JPanel();
+    spanel.setName("Spacer");
+
+    spanel.setMinimumSize(new Dimension(0, 7));
+    spanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 7));
+    spanel.setPreferredSize(new Dimension(0, 7));
 
     return spanel;
   }

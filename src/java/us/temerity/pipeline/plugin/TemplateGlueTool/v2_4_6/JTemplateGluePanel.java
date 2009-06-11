@@ -1,9 +1,10 @@
-// $Id: JTemplateGluePanel.java,v 1.1 2009/06/11 05:35:08 jesse Exp $
+// $Id: JTemplateGluePanel.java,v 1.2 2009/06/11 19:41:22 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateGlueTool.v2_4_6;
 
 import java.awt.*;
 import java.util.*;
+import java.util.Map.*;
 
 import javax.swing.*;
 import javax.swing.tree.*;
@@ -85,12 +86,12 @@ class JTemplateGluePanel
         (pSettingTree, 
           ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED, 
           ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, 
-          new Dimension(300, 350), null , null);
+          new Dimension(190, 350), null , null);
 
       pTreePanel.add(Box.createRigidArea(new Dimension(0, 4)));
       pTreePanel.add(scroll);
-      pTreePanel.setPreferredSize(new Dimension(300, 500));
-      pTreePanel.setMaximumSize(new Dimension(300, 500));
+      pTreePanel.setPreferredSize(new Dimension(190, 500));
+      pTreePanel.setMaximumSize(new Dimension(190, 500));
       
       
       for (TemplateGlueStage stage : TemplateGlueStage.values()) {
@@ -112,8 +113,8 @@ class JTemplateGluePanel
       firstLayout.show(firstPass, pCurrentStage.toString());
 
       
-      firstPass.setMinimumSize(new Dimension(720, 500));
-      firstPass.setPreferredSize(new Dimension(720, 500));
+      firstPass.setMinimumSize(new Dimension(740, 500));
+      firstPass.setPreferredSize(new Dimension(740, 500));
 //      firstPass.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
       
       pSettingsPanel = firstPass;

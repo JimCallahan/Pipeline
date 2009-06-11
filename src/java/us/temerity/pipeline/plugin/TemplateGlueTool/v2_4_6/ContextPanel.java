@@ -1,4 +1,4 @@
-// $Id: ContextPanel.java,v 1.1 2009/06/11 05:35:08 jesse Exp $
+// $Id: ContextPanel.java,v 1.2 2009/06/11 19:41:22 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateGlueTool.v2_4_6;
 
@@ -11,6 +11,7 @@ import javax.swing.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.v2_4_3.*;
+import us.temerity.pipeline.plugin.TemplateGlueTool.v2_4_6.TemplateUIFactory.*;
 import us.temerity.pipeline.ui.*;
 
 
@@ -34,40 +35,30 @@ class ContextPanel
     pAddEntries = new ArrayList<AddEntry>();
     
     pMissing = scan.getContexts().keySet();
+    pHasMissing = !(pMissing.isEmpty());
     
     this.setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
     
     pBox = new Box(BoxLayout.PAGE_AXIS);
     
+    pTitleBox = TemplateUIFactory.createTitleBox("Contexts:");
+    
     {
-      pButtonBox = new Box(BoxLayout.LINE_AXIS);
+      pButtonBox = TemplateUIFactory.createHorizontalBox();
       
-      JButton add = UIFactory.createDialogButton("Add", "add", this, "Add a Context");
+      JButton add = TemplateUIFactory.createPanelButton("Add Context", "add", this, "Add a Context");
       pButtonBox.add(add);
       pButtonBox.add(Box.createHorizontalGlue());
-      pBox.add(pButtonBox);
-      pBox.add(Box.createVerticalStrut(4));
     }
     
     {
-      pHeaderBox = new Box(BoxLayout.LINE_AXIS);
-      Dimension dim = new Dimension(150, 19);
+      pHeaderBox = TemplateUIFactory.createHorizontalBox();
+      int width = 150;
       {
-        JLabel label = UIFactory.createLabel("Context Name", dim.width, SwingConstants.LEFT);
-        label.setMaximumSize(dim);
+        JLabel label = UIFactory.createFixedLabel("Context Name:", width, SwingConstants.LEFT);
         pHeaderBox.add(label);
-        pHeaderBox.add(Box.createHorizontalStrut(8));
       }
-      {
-        JLabel label = UIFactory.createLabel("Param Name", dim.width, SwingConstants.LEFT);
-        label.setMaximumSize(dim);
-        pHeaderBox.add(label);
-        pHeaderBox.add(Box.createHorizontalStrut(8));
-      }
-      
       pHeaderBox.add(Box.createHorizontalGlue());
-      pBox.add(pHeaderBox);
-      pBox.add(Box.createVerticalStrut(4));
     }
     
     if (oldSettings != null) {
@@ -83,29 +74,26 @@ class ContextPanel
        createEntry(context, map);
      }
     }
-    createEntry(null, null);
     
-    pBox.add(Box.createVerticalStrut(20));
     
     {
-      pButtonBox2 = new Box(BoxLayout.LINE_AXIS);
+      pButtonBox2 = TemplateUIFactory.createHorizontalBox();
       
+      pButtonBox2.add(UIFactory.createFixedLabel
+        ("Found in scan: ", 150, SwingConstants.LEFT));
+      
+      pHeaderBox.add(TemplateUIFactory.createHorizontalSpacer());
+
       JButton add = 
-        UIFactory.createDialogButton("Add All", "addall", this, "Add all the found optional branches");
+        TemplateUIFactory.createPanelButton("Add All", "addall", this, "Add all the found contexts");
       pButtonBox2.add(add);
       pButtonBox2.add(Box.createHorizontalGlue());
-      pBox.add(pButtonBox2);
-      pBox.add(Box.createVerticalStrut(4));
     }
     
     for (String extra : pMissing) {
-      AddEntry entry = new AddEntry(this, extra);
-      pBox.add(entry);
-      pBox.add(Box.createVerticalStrut(4));
+      AddEntry entry = new AddEntry(this, extra, "Context");
       pAddEntries.add(entry);
     }
-    
-    pBox.add(UIFactory.createFiller(100));
     
     Dimension dim = new Dimension(700, 500);
     
@@ -116,6 +104,8 @@ class ContextPanel
       dim, null, null);
     
     this.add(scroll); 
+    
+    relayout();
   }
   
   
@@ -133,8 +123,6 @@ class ContextPanel
   {
     ContextEntry entry = 
        new ContextEntry(this, pNextID, context, replacements);
-     pBox.add(entry);
-     pBox.add(Box.createVerticalStrut(2));
      pEntries.put(pNextID, entry);
      pOrder.add(pNextID);
      pNextID++;
@@ -148,12 +136,15 @@ class ContextPanel
     for (int i : pOrder) {
       ContextEntry entry = pEntries.get(i);
       String context = entry.getContext();
-      if (context != null && !context .equals("")) {
+      if (context != null && !context.equals("")) {
         if (toReturn.keySet().contains(context))
           throw new PipelineException
             ("The context (" + context + ") appears more than once in the panel.  " +
              "Please correct this before continuing.");
         ListSet<String> replacements = entry.getContextReplacements();
+        if (replacements.isEmpty())
+          throw new PipelineException
+            ("The context (" + context + ") contains no replacements.");
         toReturn.put(context, replacements);
       }
     }
@@ -201,7 +192,7 @@ class ContextPanel
       int id = Integer.valueOf(command.replace("remove-", ""));
       int idx = pOrder.indexOf(id);
       pOrder.remove(idx);
-      pEntries.remove(idx);
+      pEntries.remove(id);
       relayout();
     }
     else if (command.equals("add")) {
@@ -230,58 +221,38 @@ class ContextPanel
   relayout()
   {
     pBox.removeAll();
-    pBox.add(pButtonBox);
-    pBox.add(Box.createVerticalStrut(4));
+    pBox.add(pTitleBox);
+    pBox.add(TemplateUIFactory.createLargeVerticalGap());
     pBox.add(pHeaderBox);
-    pBox.add(Box.createVerticalStrut(4));
+    pBox.add(TemplateUIFactory.createVerticalGap());
     for (int i : pOrder) {
       ContextEntry entry = pEntries.get(i);
       pBox.add(entry);
-      pBox.add(Box.createVerticalStrut(2));
+      pBox.add(TemplateUIFactory.createLargeVerticalGap());
     }
     
-    pBox.add(Box.createVerticalStrut(20));
-    pBox.add(pButtonBox2);
-    pBox.add(Box.createVerticalStrut(4));
+    pBox.add(TemplateUIFactory.createVerticalGap());
+    pBox.add(pButtonBox);
+    pBox.add(TemplateUIFactory.createVerticalGap());
     
-    for (AddEntry entry : pAddEntries) {
-      pBox.add(entry);
-      pBox.add(Box.createVerticalStrut(4));
-    }
+    if (pHasMissing) {
+      pBox.add(Box.createVerticalStrut(20));
+      pBox.add(UIFactory.createPanelBreak());
+      pBox.add(Box.createVerticalStrut(20));
+      pBox.add(pButtonBox2);
+      pBox.add(TemplateUIFactory.createVerticalGap());
 
+      for (AddEntry entry : pAddEntries) {
+        pBox.add(entry);
+        pBox.add(TemplateUIFactory.createVerticalGap());
+      }
+    }
+    
+    pBox.add(TemplateUIFactory.createLargeVerticalGap());
     pBox.add(UIFactory.createFiller(100));
     pBox.revalidate();
   }
   
-  
-  private class
-  AddEntry
-    extends Box
-  {
-    private 
-    AddEntry
-    (
-      ActionListener parent,
-      String range
-    )
-    {
-      super(BoxLayout.LINE_AXIS);
-      
-      JParamNameField field = UIFactory.createParamNameField(range, 150, SwingConstants.LEFT);
-      field.setMaximumSize(field.getPreferredSize());
-      field.setEditable(false);
-      this.add(field);
-      this.add(Box.createHorizontalStrut(8));
-      {
-        JButton but = 
-          UIFactory.createDialogButton("Add", "add-" + range, parent, "Add the missing replacement");
-        this.add(but);
-      }
-      this.add(Box.createHorizontalGlue()); 
-    }
-
-    private static final long serialVersionUID = -9016055398021822651L;
-  }
   
   private class
   ContextEntry
@@ -299,6 +270,8 @@ class ContextPanel
     {
       super(BoxLayout.LINE_AXIS);
       
+      this.add(TemplateUIFactory.createHorizontalIndent());
+      
       ListMap<String, String> oldValues = new ListMap<String, String>();
       if (replacements != null)
         oldValues.putAll(replacements);
@@ -308,55 +281,51 @@ class ContextPanel
 
       pReplaceID = 0;
       pInsideBox = new Box(BoxLayout.PAGE_AXIS);
-      
-      Box hbox = new Box(BoxLayout.LINE_AXIS);
-      
-      pContext = UIFactory.createParamNameField(context, 150, SwingConstants.LEFT);
-      pContext.setMaximumSize(pContext.getPreferredSize());
-      hbox.add(pContext);
-      hbox.add(Box.createHorizontalStrut(8));
+
+      {
+        Box hbox = TemplateUIFactory.createHorizontalBox();
+        pContext = UIFactory.createParamNameField(context, 150, SwingConstants.LEFT);
+        pContext.setMaximumSize(pContext.getPreferredSize());
+        hbox.add(pContext);
+        
+        hbox.add(TemplateUIFactory.createHorizontalSpacer());
+        {
+          JButton but = TemplateUIFactory.createRemoveButton(parent, "remove-" + id); 
+          hbox.add(but);
+        }
+        hbox.add(Box.createHorizontalGlue());
+        
+        pHeader = hbox;
+      }
       
       {
+        pAddBox = TemplateUIFactory.createHorizontalBox();
+        pAddBox.add(TemplateUIFactory.createSecondLevelIndent());
         JButton but = 
-          UIFactory.createDialogButton("Add", "add", this, "Add another Context Replacement");
-        hbox.add(but);
+          TemplateUIFactory.createPanelButton
+            ("Add Replacement", "add", this, "Add another Context Replacement");
+        pAddBox.add(but);
+        pAddBox.add(Box.createHorizontalGlue());
       }
 
-      hbox.add(Box.createHorizontalStrut(4));
       
       {
-        JButton but = 
-          UIFactory.createDialogButton("Remove", "remove-" + id, parent, "remove the context");
-        hbox.add(but);
-      }
-      hbox.add(Box.createHorizontalGlue());
-      
-      pInsideBox.add(hbox);
-      
-      pHeader = hbox;
-      
-      pInsideBox.add(Box.createVerticalStrut(2));
-      
-      {
-        pReplaceHeader = new Box(BoxLayout.LINE_AXIS);
-        pReplaceHeader.add(Box.createHorizontalStrut(75));
-        JLabel l1 = UIFactory.createFixedLabel("Replacement", 150, SwingConstants.LEFT);
+        pReplaceHeader = TemplateUIFactory.createHorizontalBox();
+        pReplaceHeader.add(TemplateUIFactory.createSecondLevelIndent());
+        JLabel l1 = UIFactory.createFixedLabel("Replacement:", 150, SwingConstants.LEFT);
         pReplaceHeader.add(l1);
-        pReplaceHeader.add(Box.createHorizontalStrut(8));
-        JLabel l2 = UIFactory.createFixedLabel("Param Name", 150, SwingConstants.LEFT);
+        pReplaceHeader.add(TemplateUIFactory.createHorizontalSpacer());
+        JLabel l2 = UIFactory.createFixedLabel("Param Name:", 150, SwingConstants.LEFT);
         pReplaceHeader.add(l2);
         pReplaceHeader.add(Box.createHorizontalGlue());
       }
       
-      pInsideBox.add(pReplaceHeader);
-      pInsideBox.add(Box.createVerticalStrut(2));
-      
       for (Entry<String, String> replace : oldValues.entrySet()) {
         addContextReplacement(replace.getKey(), replace.getValue());
       }
-      addContextReplacement(null, null);
       
       this.add(pInsideBox);
+      relayout();
     }
     
     private void
@@ -368,8 +337,6 @@ class ContextPanel
     {
       ReplacementEntry entry = 
         new ReplacementEntry(this, pReplaceID, replace, paramName);
-      pInsideBox.add(entry);
-      pInsideBox.add(Box.createVerticalStrut(2));
       pReplacements.put(pReplaceID, entry);
       pReplaceOrder.add(pReplaceID);
       pReplaceID++;
@@ -420,14 +387,16 @@ class ContextPanel
     {
       pInsideBox.removeAll();
       pInsideBox.add(pHeader);
-      pInsideBox.add(Box.createVerticalStrut(2));
+      pInsideBox.add(TemplateUIFactory.createVerticalGap());
       pInsideBox.add(pReplaceHeader);
-      pInsideBox.add(Box.createVerticalStrut(2));
+      pInsideBox.add(TemplateUIFactory.createVerticalGap());
       for (int i : pReplaceOrder) {
         ReplacementEntry entry = pReplacements.get(i);
         pInsideBox.add(entry);
-        pInsideBox.add(Box.createVerticalStrut(2));
+        pInsideBox.add(TemplateUIFactory.createVerticalGap());
       }
+      pInsideBox.add(TemplateUIFactory.createVerticalGap());
+      pInsideBox.add(pAddBox);
       pInsideBox.revalidate();
     }
     
@@ -462,7 +431,7 @@ class ContextPanel
         int id = Integer.valueOf(command.replace("remove-", ""));
         int idx = pReplaceOrder.indexOf(id);
         pReplaceOrder.remove(idx);
-        pReplacements.remove(idx);
+        pReplacements.remove(id);
         relayout();
       }
       else if (command.equals("add")) {
@@ -471,6 +440,12 @@ class ContextPanel
       }
     }
 
+    @Override
+    public String 
+    toString()
+    {
+      return pContext.getText();
+    }
 
     private class
     ReplacementEntry
@@ -487,31 +462,33 @@ class ContextPanel
       {
         super(BoxLayout.LINE_AXIS);
         
-        this.add(Box.createHorizontalStrut(75));
+        this.add(TemplateUIFactory.createHorizontalIndent());
+        this.add(TemplateUIFactory.createSecondLevelIndent());
+        
         pReplaceValue = UIFactory.createEditableTextField(replace, 150, SwingConstants.LEFT);
         pReplaceValue.setMaximumSize(pReplaceValue.getPreferredSize());
         this.add(pReplaceValue);
-        this.add(Box.createHorizontalStrut(8));
+        
+        this.add(TemplateUIFactory.createHorizontalSpacer());
+        
         pParamName = UIFactory.createParamNameField(paramName, 150, SwingConstants.LEFT);
         pParamName.setMaximumSize(pParamName.getPreferredSize());
         this.add(pParamName);
-        this.add(Box.createHorizontalStrut(8));
+        
+        this.add(TemplateUIFactory.createHorizontalSpacer());
         
         {
-          JButton but = 
-            UIFactory.createDialogButton("Up", "up-" + id, parent, "Move the replacement up.");
+          JButton but = TemplateUIFactory.createUpButton(parent, "up-" + id);
           this.add(but);
-          this.add(Box.createHorizontalStrut(8));
         }
+        this.add(TemplateUIFactory.createButtonSpacer());
         {
-          JButton but = 
-            UIFactory.createDialogButton("Down", "down-" + id, parent, "Move the replacement down.");
+          JButton but = TemplateUIFactory.createDownButton(parent, "down-" + id);
           this.add(but);
-          this.add(Box.createHorizontalStrut(8));
         }
+        this.add(TemplateUIFactory.createButtonSpacer());
         {
-          JButton but = 
-            UIFactory.createDialogButton("Remove", "remove-" + id, parent, "remove the replacement");
+          JButton but = TemplateUIFactory.createRemoveButton(parent, "remove-" + id);
           this.add(but);
         }
         this.add(Box.createHorizontalGlue());
@@ -542,6 +519,7 @@ class ContextPanel
     
     private Box pHeader;
     private Box pReplaceHeader;
+    private Box pAddBox;
 
     private int pReplaceID;
     
@@ -561,7 +539,10 @@ class ContextPanel
   private ArrayList<AddEntry> pAddEntries;
   
   private Box pBox;
+  private Box pTitleBox;
   private Box pButtonBox;
   private Box pHeaderBox;
   private Box pButtonBox2;
+  
+  private boolean pHasMissing;
 }

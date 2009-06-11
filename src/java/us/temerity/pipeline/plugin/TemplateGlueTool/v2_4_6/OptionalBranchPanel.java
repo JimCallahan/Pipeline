@@ -1,4 +1,4 @@
-// $Id: OptionalBranchPanel.java,v 1.1 2009/06/11 05:35:08 jesse Exp $
+// $Id: OptionalBranchPanel.java,v 1.2 2009/06/11 19:41:22 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateGlueTool.v2_4_6;
 
@@ -11,6 +11,7 @@ import javax.swing.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.v2_4_3.*;
+import us.temerity.pipeline.plugin.TemplateGlueTool.v2_4_6.TemplateUIFactory.*;
 import us.temerity.pipeline.ui.*;
 
 
@@ -34,34 +35,36 @@ class OptionalBranchPanel
     pAddEntries = new ArrayList<AddEntry>();
     
     pMissing = scan.getOptionalBranchValues().keySet();
+    pHasMissing = !pMissing.isEmpty();
     
     this.setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
     
     pBox = new Box(BoxLayout.PAGE_AXIS);
     
+    pTitleBox = TemplateUIFactory.createTitleBox("Optional Branches:");
+    
     {
-      pButtonBox = new Box(BoxLayout.LINE_AXIS);
+      pButtonBox = TemplateUIFactory.createHorizontalBox();
       
-      JButton add = UIFactory.createDialogButton("Add", "add", this, "Add an Optional Branch");
+      JButton add = TemplateUIFactory.createPanelButton("Add Optional Branch", "add", this, "Add an Optional Branch");
       pButtonBox.add(add);
       pButtonBox.add(Box.createHorizontalGlue());
-      pBox.add(pButtonBox);
-      pBox.add(Box.createVerticalStrut(4));
     }
     
     {
-      pHeaderBox = new Box(BoxLayout.LINE_AXIS);
-      Dimension dim = new Dimension(150, 19);
+      pHeaderBox = TemplateUIFactory.createHorizontalBox();
+      int width = 150;
       {
-        JLabel label = UIFactory.createLabel("Optional Branch", dim.width, SwingConstants.LEFT);
-        label.setMaximumSize(dim);
+        JLabel label = UIFactory.createFixedLabel("Optional Branch:", width, SwingConstants.LEFT);
         pHeaderBox.add(label);
-        pHeaderBox.add(Box.createHorizontalStrut(8));
+      }
+      pHeaderBox.add(TemplateUIFactory.createHorizontalSpacer());
+      {
+        JLabel label = UIFactory.createFixedLabel("Default Value:", width, SwingConstants.LEFT);
+        pHeaderBox.add(label);
       }
       
       pHeaderBox.add(Box.createHorizontalGlue());
-      pBox.add(pHeaderBox);
-      pBox.add(Box.createVerticalStrut(4));
     }
     
     if (oldSettings != null) {
@@ -71,29 +74,22 @@ class OptionalBranchPanel
        createEntry(entry.getKey(), entry.getValue());
      }
     }
-    createEntry(null, null);
     
-    pBox.add(Box.createVerticalStrut(20));
     
     {
-      pButtonBox2 = new Box(BoxLayout.LINE_AXIS);
+      pButtonBox2 = TemplateUIFactory.createHorizontalBox();
       
       JButton add = 
-        UIFactory.createDialogButton("Add All", "addall", this, "Add all the found optional branches");
+        TemplateUIFactory.createPanelButton("Add All", "addall", this, "Add all the found optional branches");
       pButtonBox2.add(add);
       pButtonBox2.add(Box.createHorizontalGlue());
-      pBox.add(pButtonBox2);
-      pBox.add(Box.createVerticalStrut(4));
     }
     
     for (String extra : pMissing) {
-      AddEntry entry = new AddEntry(this, extra);
-      pBox.add(entry);
-      pBox.add(Box.createVerticalStrut(4));
+      AddEntry entry = new AddEntry(this, extra, "Optional Branch");
       pAddEntries.add(entry);
     }
     
-    pBox.add(UIFactory.createFiller(100));
     
     Dimension dim = new Dimension(700, 500);
     
@@ -103,7 +99,9 @@ class OptionalBranchPanel
       ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, 
       dim, null, null);
     
-    this.add(scroll); 
+    this.add(scroll);
+    
+    relayout();
   }
   
   public ListMap<String, Boolean>
@@ -154,8 +152,6 @@ class OptionalBranchPanel
   {
     OptionalBranchEntry entry = 
        new OptionalBranchEntry(this, pNextID, range, defaultValue);
-     pBox.add(entry);
-     pBox.add(Box.createVerticalStrut(2));
      pEntries.put(pNextID, entry);
      pOrder.add(pNextID);
      pNextID++;
@@ -165,25 +161,34 @@ class OptionalBranchPanel
   relayout()
   {
     pBox.removeAll();
-    pBox.add(pButtonBox);
-    pBox.add(Box.createVerticalStrut(4));
+    pBox.add(pTitleBox);
+    pBox.add(TemplateUIFactory.createLargeVerticalGap());
     pBox.add(pHeaderBox);
-    pBox.add(Box.createVerticalStrut(4));
+    pBox.add(TemplateUIFactory.createVerticalGap());
     for (int i : pOrder) {
       OptionalBranchEntry entry = pEntries.get(i);
       pBox.add(entry);
-      pBox.add(Box.createVerticalStrut(2));
+      pBox.add(TemplateUIFactory.createVerticalGap());
     }
     
-    pBox.add(Box.createVerticalStrut(20));
-    pBox.add(pButtonBox2);
-    pBox.add(Box.createVerticalStrut(4));
+    pBox.add(TemplateUIFactory.createVerticalGap());
+    pBox.add(pButtonBox);
+    pBox.add(TemplateUIFactory.createVerticalGap());
     
-    for (AddEntry entry : pAddEntries) {
-      pBox.add(entry);
-      pBox.add(Box.createVerticalStrut(4));
+    if (pHasMissing) {
+      pBox.add(Box.createVerticalStrut(20));
+      pBox.add(UIFactory.createPanelBreak());
+      pBox.add(Box.createVerticalStrut(20));
+      pBox.add(pButtonBox2);
+      pBox.add(TemplateUIFactory.createVerticalGap());
+
+      for (AddEntry entry : pAddEntries) {
+        pBox.add(entry);
+        pBox.add(TemplateUIFactory.createVerticalGap());
+      }
     }
     
+    pBox.add(TemplateUIFactory.createLargeVerticalGap());
     pBox.add(UIFactory.createFiller(100));
     pBox.revalidate();
   }
@@ -200,7 +205,7 @@ class OptionalBranchPanel
       int id = Integer.valueOf(command.replace("remove-", ""));
       int idx = pOrder.indexOf(id);
       pOrder.remove(idx);
-      pEntries.remove(idx);
+      pEntries.remove(id);
       relayout();
     }
     else if (command.startsWith("up-")) {
@@ -245,35 +250,6 @@ class OptionalBranchPanel
   
   
   private class
-  AddEntry
-    extends Box
-  {
-    private 
-    AddEntry
-    (
-      ActionListener parent,
-      String range
-    )
-    {
-      super(BoxLayout.LINE_AXIS);
-      
-      JParamNameField field = UIFactory.createParamNameField(range, 150, SwingConstants.LEFT);
-      field.setMaximumSize(field.getPreferredSize());
-      field.setEditable(false);
-      this.add(field);
-      this.add(Box.createHorizontalStrut(8));
-      {
-        JButton but = 
-          UIFactory.createDialogButton("Add", "add-" + range, parent, "Add the missing replacement");
-        this.add(but);
-      }
-      this.add(Box.createHorizontalGlue()); 
-    }
-
-    private static final long serialVersionUID = -2956919358583413464L;
-  }
-  
-  private class
   OptionalBranchEntry
     extends Box
   {
@@ -288,29 +264,35 @@ class OptionalBranchPanel
     {
       super(BoxLayout.LINE_AXIS);
       
+      this.add(TemplateUIFactory.createHorizontalIndent());
+      
       pOptionalBranch = UIFactory.createParamNameField(branch, 150, SwingConstants.LEFT);
       pOptionalBranch.setMaximumSize(pOptionalBranch.getPreferredSize());
       this.add(pOptionalBranch);
-      this.add(Box.createHorizontalStrut(8));
+      this.add(TemplateUIFactory.createHorizontalSpacer());
       
       pDefaultValue = UIFactory.createBooleanField(defaultValue, 150);
+      pDefaultValue.setMaximumSize(pDefaultValue.getPreferredSize());
+      if (defaultValue != null)
+        pDefaultValue.setValue(defaultValue);
+      else
+        pDefaultValue.setValue(false);
       
-      this.add(Box.createHorizontalStrut(4));
+      this.add(pDefaultValue);
+      this.add(TemplateUIFactory.createHorizontalSpacer());
+
       {
-        JButton but = 
-          UIFactory.createDialogButton("Up", "up-" + id, parent, "Move the optional branch up.");
+        JButton but = TemplateUIFactory.createUpButton(parent, "up-" + id);
         this.add(but);
-        this.add(Box.createHorizontalStrut(8));
       }
+      this.add(TemplateUIFactory.createButtonSpacer());
       {
-        JButton but = 
-          UIFactory.createDialogButton("Down", "down-" + id, parent, "Move the optional branch down.");
+        JButton but = TemplateUIFactory.createDownButton(parent, "down-" + id);
         this.add(but);
-        this.add(Box.createHorizontalStrut(8));
       }
+      this.add(TemplateUIFactory.createButtonSpacer());
       {
-        JButton but = 
-          UIFactory.createDialogButton("Remove", "remove-" + id, parent, "Remove the optional branch.");
+        JButton but = TemplateUIFactory.createRemoveButton(parent, "remove-" + id);
         this.add(but);
       }
       
@@ -345,7 +327,10 @@ class OptionalBranchPanel
   private ArrayList<AddEntry> pAddEntries;
   
   private Box pBox;
+  private Box pTitleBox;
   private Box pButtonBox;
   private Box pHeaderBox;
   private Box pButtonBox2;
+  
+  private boolean pHasMissing;
 }

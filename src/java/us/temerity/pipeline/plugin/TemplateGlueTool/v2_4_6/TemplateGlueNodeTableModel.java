@@ -1,4 +1,4 @@
-// $Id: TemplateGlueNodeTableModel.java,v 1.1 2009/06/11 05:35:08 jesse Exp $
+// $Id: TemplateGlueNodeTableModel.java,v 1.2 2009/06/11 19:41:22 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateGlueTool.v2_4_6;
 
@@ -97,7 +97,7 @@ class TemplateGlueNodeTableModel
           pRenderers[i] = new JSimpleTableCellRenderer(SwingConstants.LEFT);  
         
         for (int i = nameSize ; i < nameSize + shortSize; i++) 
-          pRenderers[i] = new JSimpleTableCellRenderer(SwingConstants.CENTER);
+          pRenderers[i] = new JBooleanTableCellRenderer(SwingConstants.CENTER);
       }
       
       pEditors = new TableCellEditor[pNumColumns];

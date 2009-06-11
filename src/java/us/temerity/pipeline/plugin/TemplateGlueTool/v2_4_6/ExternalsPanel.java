@@ -1,4 +1,4 @@
-// $Id: ExternalsPanel.java,v 1.1 2009/06/11 05:35:08 jesse Exp $
+// $Id: ExternalsPanel.java,v 1.2 2009/06/11 19:41:22 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateGlueTool.v2_4_6;
 
@@ -11,6 +11,7 @@ import javax.swing.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.builder.v2_4_3.*;
+import us.temerity.pipeline.plugin.TemplateGlueTool.v2_4_6.TemplateUIFactory.*;
 import us.temerity.pipeline.ui.*;
 
 public 
@@ -37,34 +38,32 @@ class ExternalsPanel
     pDialog = dialog;
     
     pMissing = scan.getExternals().keySet();
+    pHasMissing = !pMissing.isEmpty();
     
     this.setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
     
     pBox = new Box(BoxLayout.PAGE_AXIS);
     
+    pTitleBox = TemplateUIFactory.createTitleBox("Externals:");
+    
     {
-      pButtonBox = new Box(BoxLayout.LINE_AXIS);
+      pButtonBox = TemplateUIFactory.createHorizontalBox();
       
-      JButton add = UIFactory.createDialogButton("Add", "add", this, "Add an external sequence.");
+      JButton add = TemplateUIFactory.createPanelButton
+        ("Add External", "add", this, "Add an external sequence.");
       pButtonBox.add(add);
       pButtonBox.add(Box.createHorizontalGlue());
-      pBox.add(pButtonBox);
-      pBox.add(Box.createVerticalStrut(4));
     }
     
     {
-      pHeaderBox = new Box(BoxLayout.LINE_AXIS);
-      Dimension dim = new Dimension(150, 19);
+      pHeaderBox = TemplateUIFactory.createHorizontalBox();
+      int width = 150;
       {
-        JLabel label = UIFactory.createLabel("External Name", dim.width, SwingConstants.LEFT);
-        label.setMaximumSize(dim);
+        JLabel label = 
+          UIFactory.createFixedLabel("External Name:", width, SwingConstants.LEFT);
         pHeaderBox.add(label);
-        pHeaderBox.add(Box.createHorizontalStrut(8));
       }
-      
       pHeaderBox.add(Box.createHorizontalGlue());
-      pBox.add(pHeaderBox);
-      pBox.add(Box.createVerticalStrut(4));
     }
     
     if (oldSettings != null) {
@@ -74,29 +73,26 @@ class ExternalsPanel
         createEntry(external, entry.getValue());
       }
      }
-     createEntry(null, null);
-     
-     pBox.add(Box.createVerticalStrut(20));
      
      {
-       pButtonBox2 = new Box(BoxLayout.LINE_AXIS);
+       pButtonBox2 = TemplateUIFactory.createHorizontalBox();
        
+       pButtonBox2.add(UIFactory.createFixedLabel
+         ("Found in scan: ", 150, SwingConstants.LEFT));
+       
+       pHeaderBox.add(TemplateUIFactory.createHorizontalSpacer());
+
        JButton add = 
-         UIFactory.createDialogButton("Add All", "addall", this, "Add all the found external sequences");
+         TemplateUIFactory.createPanelButton("Add All", "addall", this, "Add all the found contexts");
        pButtonBox2.add(add);
        pButtonBox2.add(Box.createHorizontalGlue());
-       pBox.add(pButtonBox2);
-       pBox.add(Box.createVerticalStrut(4));
      }
      
      for (String extra : pMissing) {
-       AddEntry entry = new AddEntry(this, extra);
-       pBox.add(entry);
-       pBox.add(Box.createVerticalStrut(4));
+       AddEntry entry = new AddEntry(this, extra, "External Seq");
        pAddEntries.add(entry);
      }
      
-     pBox.add(UIFactory.createFiller(100));
      
      Dimension dim = new Dimension(700, 500);
      
@@ -107,6 +103,8 @@ class ExternalsPanel
        dim, null, null);
      
      this.add(scroll);
+     
+     relayout();
   }
   
   private void 
@@ -118,8 +116,6 @@ class ExternalsPanel
   {
     ExternalEntry entry = 
        new ExternalEntry(this, pNextID, external, contexts);
-     pBox.add(entry);
-     pBox.add(Box.createVerticalStrut(2));
      pEntries.put(pNextID, entry);
      pOrder.add(pNextID);
      pNextID++;
@@ -137,7 +133,7 @@ class ExternalsPanel
       int id = Integer.valueOf(command.replace("remove-", ""));
       int idx = pOrder.indexOf(id);
       pOrder.remove(idx);
-      pEntries.remove(idx);
+      pEntries.remove(id);
       relayout();
     }
     else if (command.equals("add")) {
@@ -200,25 +196,35 @@ class ExternalsPanel
   relayout()
   {
     pBox.removeAll();
-    pBox.add(pButtonBox);
-    pBox.add(Box.createVerticalStrut(4));
+    pBox.add(pTitleBox);
+    pBox.add(TemplateUIFactory.createLargeVerticalGap());
     pBox.add(pHeaderBox);
-    pBox.add(Box.createVerticalStrut(4));
+    pBox.add(TemplateUIFactory.createVerticalGap());
+    
     for (int i : pOrder) {
       ExternalEntry entry = pEntries.get(i);
       pBox.add(entry);
-      pBox.add(Box.createVerticalStrut(2));
+      pBox.add(TemplateUIFactory.createLargeVerticalGap());
     }
     
-    pBox.add(Box.createVerticalStrut(20));
-    pBox.add(pButtonBox2);
-    pBox.add(Box.createVerticalStrut(4));
+    pBox.add(TemplateUIFactory.createVerticalGap());
+    pBox.add(pButtonBox);
+    pBox.add(TemplateUIFactory.createVerticalGap());
     
-    for (AddEntry entry : pAddEntries) {
-      pBox.add(entry);
-      pBox.add(Box.createVerticalStrut(4));
-    }
+    if (pHasMissing) {
+      pBox.add(Box.createVerticalStrut(20));
+      pBox.add(UIFactory.createPanelBreak());
+      pBox.add(Box.createVerticalStrut(20));
+      pBox.add(pButtonBox2);
+      pBox.add(TemplateUIFactory.createVerticalGap());
 
+      for (AddEntry entry : pAddEntries) {
+        pBox.add(entry);
+        pBox.add(TemplateUIFactory.createVerticalGap());
+      }
+    }
+    
+    pBox.add(TemplateUIFactory.createLargeVerticalGap());
     pBox.add(UIFactory.createFiller(100));
     pBox.revalidate();
   }
@@ -249,47 +255,39 @@ class ExternalsPanel
       pReplaceID = 0;
       pInsideBox = new Box(BoxLayout.PAGE_AXIS);
       
-      Box hbox = new Box(BoxLayout.LINE_AXIS);
-      
-      pExternal = UIFactory.createParamNameField(external, 150, SwingConstants.LEFT);
-      pExternal.setMaximumSize(pExternal.getPreferredSize());
-      hbox.add(pExternal);
-      hbox.add(Box.createHorizontalStrut(8));
-      
       {
-        JButton but = 
-          UIFactory.createDialogButton("Add", "add", this, "Add another External Sequence.");
-        hbox.add(but);
-      }
+        Box hbox = TemplateUIFactory.createHorizontalBox();
 
-      hbox.add(Box.createHorizontalStrut(4));
-      
-      {
+        pExternal = UIFactory.createParamNameField(external, 150, SwingConstants.LEFT);
+        pExternal.setMaximumSize(pExternal.getPreferredSize());
+        hbox.add(pExternal);
+        hbox.add(TemplateUIFactory.createHorizontalSpacer());
         JButton but = 
-          UIFactory.createDialogButton("Remove", "remove-" + id, parent, 
-            "Remove the External Sequence");
+          TemplateUIFactory.createRemoveButton(parent, "remove-" + id);
         hbox.add(but);
+        hbox.add(Box.createHorizontalGlue());
+        pHeader = hbox;
       }
-      hbox.add(Box.createHorizontalGlue());
       
-      pInsideBox.add(hbox);
-      
-      pHeader = hbox;
-      
-      pInsideBox.add(Box.createVerticalStrut(2));
       
       {
-        pReplaceHeader = new Box(BoxLayout.LINE_AXIS);
-        pReplaceHeader.add(Box.createHorizontalStrut(75));
+        pAddBox = TemplateUIFactory.createHorizontalBox();
+        pAddBox.add(TemplateUIFactory.createSecondLevelIndent());
+        JButton but = 
+          TemplateUIFactory.createPanelButton
+            ("Add Context", "add", this, "Add another External Sequence context.");
+        pAddBox.add(but);
+        pAddBox.add(Box.createHorizontalGlue());
+      }
+      
+      {
+        pReplaceHeader = TemplateUIFactory.createHorizontalBox();
+        pReplaceHeader.add(TemplateUIFactory.createSecondLevelIndent());
         JLabel l1 = UIFactory.createFixedLabel("External Context", 150, SwingConstants.LEFT);
         pReplaceHeader.add(l1);
         pReplaceHeader.add(Box.createHorizontalGlue());
       }
 
-      pInsideBox.add(pReplaceHeader);
-      pInsideBox.add(Box.createVerticalStrut(2)); 
-
-      
       for (String context : old) {
        if (pAllContexts.contains(context)) {
         addExternalContext(context); 
@@ -297,6 +295,8 @@ class ExternalsPanel
       }
       
       this.add(pInsideBox);
+      
+      relayout();
     }
     
     private void
@@ -337,14 +337,17 @@ class ExternalsPanel
     {
       pInsideBox.removeAll();
       pInsideBox.add(pHeader);
-      pInsideBox.add(Box.createVerticalStrut(2));
+      pInsideBox.add(TemplateUIFactory.createVerticalGap());
       pInsideBox.add(pReplaceHeader);
-      pInsideBox.add(Box.createVerticalStrut(2));
+      pInsideBox.add(TemplateUIFactory.createVerticalGap());
       for (int i : pReplaceOrder) {
         ExternalContextEntry entry = pContextFields.get(i);
         pInsideBox.add(entry);
-        pInsideBox.add(Box.createVerticalStrut(2));
+        pInsideBox.add(TemplateUIFactory.createVerticalGap());
       }
+      pInsideBox.add(TemplateUIFactory.createVerticalGap());
+      pInsideBox.add(pAddBox);
+      
       pInsideBox.revalidate();
     }
     
@@ -360,7 +363,7 @@ class ExternalsPanel
         int id = Integer.valueOf(command.replace("remove-", ""));
         int idx = pReplaceOrder.indexOf(id);
         pReplaceOrder.remove(idx);
-        pContextFields.remove(idx);
+        pContextFields.remove(id);
         relayout();
       }
       else if (command.equals("add")) {
@@ -383,7 +386,8 @@ class ExternalsPanel
       {
         super(BoxLayout.LINE_AXIS);
         
-        this.add(Box.createHorizontalStrut(75));
+        this.add(TemplateUIFactory.createHorizontalIndent());
+        this.add(TemplateUIFactory.createSecondLevelIndent());
 
         pContext = 
           UIFactory.createCollectionField(pAllContexts, pDialog, 150);
@@ -393,11 +397,11 @@ class ExternalsPanel
         
         this.add(pContext);
         
-        this.add(Box.createHorizontalStrut(4));
+        this.add(TemplateUIFactory.createHorizontalSpacer());
         
         {
           JButton but = 
-            UIFactory.createDialogButton("Remove", "remove-" + id, parent, "remove the replacement");
+            TemplateUIFactory.createRemoveButton(parent, "remove-" + id);
           this.add(but);
         }
         this.add(Box.createHorizontalGlue());
@@ -419,6 +423,7 @@ class ExternalsPanel
     
     private Box pHeader;
     private Box pReplaceHeader;
+    private Box pAddBox;
 
     private int pReplaceID;
     
@@ -430,35 +435,6 @@ class ExternalsPanel
     private static final long serialVersionUID = 561167289784883755L;
   }
   
-  private class
-  AddEntry
-    extends Box
-  {
-    private 
-    AddEntry
-    (
-      ActionListener parent,
-      String range
-    )
-    {
-      super(BoxLayout.LINE_AXIS);
-      
-      JParamNameField field = UIFactory.createParamNameField(range, 150, SwingConstants.LEFT);
-      field.setMaximumSize(field.getPreferredSize());
-      field.setEditable(false);
-      this.add(field);
-      this.add(Box.createHorizontalStrut(8));
-      {
-        JButton but = 
-          UIFactory.createDialogButton("Add", "add-" + range, parent, "Add the missing replacement");
-        this.add(but);
-      }
-      this.add(Box.createHorizontalGlue()); 
-    }
-
-    private static final long serialVersionUID = -8394336171067212249L;
-  }
-
   private static final long serialVersionUID = -5590800937891453791L;
   
   
@@ -473,7 +449,10 @@ class ExternalsPanel
   
   private JTemplateGlueDialog pDialog;
   private Box pBox;
+  private Box pTitleBox;
   private Box pButtonBox;
   private Box pHeaderBox;
   private Box pButtonBox2;
+  
+  private boolean pHasMissing;
 }
