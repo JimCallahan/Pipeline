@@ -76,3 +76,16 @@ etc . . .
 This should happen automatically.  Just by creating the link between A and B, you are stating you want this to happen.  No need for a special annotation on the downstream side.
 
 Seems simple and easy to implement.  There must be something wrong with it.
+
+******************************************************************************
+
+Template External stuff.
+
+So you stick an external annotation on a node.  That node has one or more contexts on them.  We should do a separate external value for each one.  This would require that the string being used as the external value should have strings in it that will be replaced.  If we get into a situation where there are multiple applications of a context which have the same end value (param value), that is an error.
+
+But when we're collecting information about what is going to be built, we have no idea what nodes are actually being tagged as external nodes.  So we do not know what contexts to apply to them in the first place.
+
+Hmmm, we could allow you to specify a list of contexts which are applied to an external as part of the Glue process.  That would fix things . . .
+
+I think that the upshot of all of this is I need to completely overhaul the Template Glue tool and make it much more robust.  Sigh.  But that will make it pretty easy to specify what goes with what in a sane manner.
+
