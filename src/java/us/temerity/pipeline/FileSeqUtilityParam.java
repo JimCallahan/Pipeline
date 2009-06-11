@@ -1,4 +1,4 @@
-// $Id: FileSeqUtilityParam.java,v 1.1 2009/05/26 10:56:09 jesse Exp $
+// $Id: FileSeqUtilityParam.java,v 1.2 2009/06/11 05:14:06 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -12,7 +12,7 @@ import us.temerity.pipeline.glue.*;
  * A Utility parameter with a Path value that can include a file sequence component.
  */
 public class FileSeqUtilityParam
-  extends PathParam
+  extends SimpleParam
   implements UtilityParam
 {
   /*----------------------------------------------------------------------------------------*/
@@ -47,10 +47,61 @@ public class FileSeqUtilityParam
   (
    String name,  
    String desc, 
-   Path value
+   FileSeq value
   ) 
   {
     super(name, desc, value);
+  }
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   A C C E S S                                                                          */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Gets the {@link FileSeq} value of the parameter. 
+   */ 
+  public FileSeq
+  getFileSeqValue() 
+  {
+    return ((FileSeq) getValue());
+  }
+  
+  @Override
+  public void 
+  fromString
+  (
+    String value
+  )
+  {
+    if (value == null)
+      throw new IllegalArgumentException("Cannot set a Parameter value from a null string");
+    FileSeq fseq = FileSeq.fromString(value);
+    setValue(fseq);
+  }
+  
+  
+  
+  /*----------------------------------------------------------------------------------------*/
+  /*   V A L I D A T O R                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * A method to confirm that the input to the param is correct.
+   * <P>
+   */
+  @Override
+  @SuppressWarnings("unchecked")
+  protected void 
+  validate
+  (
+    Comparable value      
+  )
+    throws IllegalArgumentException 
+  {
+    if((value != null) && !(value instanceof FileSeq))
+      throw new IllegalArgumentException
+        ("The parameter (" + pName + ") only accepts (FileSeq) values!");
   }
   
 

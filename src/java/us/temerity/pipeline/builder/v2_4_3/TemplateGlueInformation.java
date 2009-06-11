@@ -1,4 +1,4 @@
-// $Id: TemplateGlueInformation.java,v 1.7 2009/06/04 09:26:58 jim Exp $
+// $Id: TemplateGlueInformation.java,v 1.8 2009/06/11 05:14:06 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -44,7 +44,7 @@ class TemplateGlueInformation
     
     pAOEModes = new TreeMap<String, ActionOnExistence>();
     
-    pExternals = new ListSet<String>();
+    pExternals = new MappedSet<String, String>();
     pOptionalBranches = new ListMap<String, Boolean>();
   }
   
@@ -71,7 +71,7 @@ class TemplateGlueInformation
     pFrameRangeDefaults = new TreeMap<String, FrameRange>();
     pAOEModes = new TreeMap<String, ActionOnExistence>();
     
-    pExternals = new ListSet<String>();
+    pExternals = new MappedSet<String, String>();
     pOptionalBranches = new ListMap<String, Boolean>();
   }
   
@@ -434,19 +434,19 @@ class TemplateGlueInformation
   public final void 
   setExternals
   (
-    ListSet<String> externals
+    MappedSet<String, String> externals
   )
   {
     if (externals == null)
-      pExternals = new ListSet<String>();
+      pExternals = new MappedSet<String, String>();
     else
-      pExternals = new ListSet<String>(externals);
+      pExternals = new MappedSet<String, String>(externals);
   }
   
-  public final ListSet<String>
+  public final MappedSet<String, String>
   getExternals()
   {
-    return new ListSet<String>(pExternals);
+    return new MappedSet<String, String>(pExternals);
   }
   
   
@@ -559,7 +559,7 @@ class TemplateGlueInformation
     {
       Object o = decoder.decode(aExternals);
       if (o != null)
-        pExternals = (ListSet<String>) o;
+        pExternals =  (MappedSet<String, String>) o;
     }
     {
       Object o = decoder.decode(aOptionalBranches);
@@ -647,7 +647,7 @@ class TemplateGlueInformation
   
   private ListMap<String, Boolean> pOptionalBranches;
   
-  private ListSet<String> pExternals;
+  private MappedSet<String, String> pExternals;
   
   private TreeSet<String> pNodesInTemplate;
 

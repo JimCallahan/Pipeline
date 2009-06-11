@@ -1,4 +1,4 @@
-// $Id: ExternalSeqUtilityParam.java,v 1.1 2009/05/26 10:56:09 jesse Exp $
+// $Id: ExternalSeqUtilityParam.java,v 1.2 2009/06/11 05:14:06 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -44,8 +44,8 @@ class ExternalSeqUtilityParam
    * @param desc 
    *   A short description used in tooltips.
    * 
-   * @param pathValue
-   *   The path value (which can include a frame range).
+   * @param fseqValue
+   *   The frame range value (can include the full path as part of the prefix)
    *   
    * @param frameStart
    *   The frame start for the sequence.
@@ -55,7 +55,7 @@ class ExternalSeqUtilityParam
   (
     String name,  
     String desc, 
-    Path pathValue,
+    FileSeq fseqValue,
     Integer frameStart
   ) 
     throws PipelineException 
@@ -64,12 +64,18 @@ class ExternalSeqUtilityParam
 
     {
       pExternalSeqParam = 
-        new FileSeqUtilityParam(aExternalSeq, "The path of the external sequence", pathValue);
+        new FileSeqUtilityParam
+        (aExternalSeq, 
+         "The file sequences of the external sequence", 
+         fseqValue);
       addParam(pExternalSeqParam);
     }
     {
       pFrameStartParam = 
-        new IntegerUtilityParam(aFrameStart, "The frame the external sequence will be read from", frameStart);
+        new IntegerUtilityParam
+        (aFrameStart, 
+         "The frame the external sequence will be read from", 
+         frameStart);
       addParam(pFrameStartParam);
     }
 
@@ -81,10 +87,10 @@ class ExternalSeqUtilityParam
     }
   }
 
-  public final Path
+  public final FileSeq
   getExternalSeq()
   {
-    return pExternalSeqParam.getPathValue();
+    return pExternalSeqParam.getFileSeqValue();
   }
   
   public final Integer

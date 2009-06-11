@@ -1,4 +1,4 @@
-// $Id: TemplateBuildInfo.java,v 1.4 2009/05/26 07:09:32 jesse Exp $
+// $Id: TemplateBuildInfo.java,v 1.5 2009/06/11 05:14:06 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -189,7 +189,7 @@ class TemplateBuildInfo
   }
 
   /**
-   * Get the list of product nodes.
+   * Get the list of product nodes and whether they are optional.
    * <p>
    * A list of all the nodes that the nodes being built depend on. These will either be locked
    * or checked-out frozen depending on how the template is designed. If this value is

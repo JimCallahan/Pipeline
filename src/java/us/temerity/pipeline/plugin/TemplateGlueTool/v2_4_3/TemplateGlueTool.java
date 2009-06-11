@@ -1,4 +1,4 @@
-// $Id: TemplateGlueTool.java,v 1.7 2009/05/26 07:09:32 jesse Exp $
+// $Id: TemplateGlueTool.java,v 1.8 2009/06/11 05:14:06 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateGlueTool.v2_4_3;
 
@@ -598,12 +598,12 @@ class TemplateGlueTool
       if (!pDialog.wasConfirmed())
         return null;
       
-      pExternals = new ListSet<String>();
+      pExternals = new MappedSet<String, String>();
 
       for (JTextField field : pExternalFields) {
         String value = field.getText();
         if (value != null && !value.equals(""))
-          pExternals.add(value);
+          pExternals.put(value);
       }
       
       // Optional Branches
@@ -1071,7 +1071,7 @@ class TemplateGlueTool
       
       pPhase = TemplatePhase.Externals;
       if (pOldSettings != null && !pOldSettings.getExternals().isEmpty() ) {
-        for (String externals : pOldSettings.getExternals()) {
+        for (String externals : pOldSettings.getExternals().keySet()) {
           JTextField field = makeExternalsField(externals);
           pExternalFields.add(field);
           UIFactory.addVerticalSpacer(pTpanel, pVpanel, 6);
@@ -1457,7 +1457,7 @@ class TemplateGlueTool
   private TreeMap<String, FrameRange> pFrameRangeDefaults;
   private TreeMap<String, ActionOnExistence> pAOEModes;
   private ListMap<String, Boolean> pOptionalBranches;
-  private ListSet<String> pExternals;
+  private MappedSet<String, String> pExternals;
   
   
 }

@@ -1,4 +1,4 @@
-// $Id: JBuilderParamPanel.java,v 1.26 2009/04/22 22:12:34 jesse Exp $
+// $Id: JBuilderParamPanel.java,v 1.27 2009/06/11 05:14:06 jesse Exp $
 
 package us.temerity.pipeline.builder.ui;
 
@@ -43,10 +43,13 @@ class JBuilderParamPanel
     super();
     pParentDialog = parentDialog;
     
-    pStorage = new DoubleMap<String, ParamMapping, Component>();
-    pMappedStorage = new DoubleMap<String, ParamMapping, Component>();
-    pCompToParam = new ListMap<Component, ParamMapping>();
-    pViewedPanels = new TreeMap<Integer, Boolean>();
+    pStorage            = new DoubleMap<String, ParamMapping, Component>();
+    pMappedStorage      = new DoubleMap<String, ParamMapping, Component>();
+    pCompToParam        = new ListMap<Component, ParamMapping>();
+    pViewedPanels       = new TreeMap<Integer, Boolean>();
+    pFileSeqParamLookup = new ListMap<JButton, ParamMapping>();
+    
+    pFileDialog = new JFileSeqSelectDialog(pParentDialog);
     
     pBuilder = builder;
     AdvancedLayoutGroup layout = builder.getPassLayout(pass);
@@ -60,9 +63,9 @@ class JBuilderParamPanel
         JPanel topBox = new JPanel();
         JPanel finalBox = new JPanel();
         finalBox.setLayout(new BoxLayout(finalBox, BoxLayout.PAGE_AXIS));
+        String columnName = layout.getColumnNameUI(col);
         {
           topBox.setLayout(new BoxLayout(topBox, BoxLayout.PAGE_AXIS));
-          String columnName = layout.getColumnNameUI(col);
           JTextField field = UIFactory.createTextField(columnName, 40, JLabel.CENTER);
           field.setMaximumSize(new Dimension(sVSize + sTSize+40, 100));
           topBox.add(Box.createRigidArea(new Dimension(0, 4)));
@@ -70,8 +73,6 @@ class JBuilderParamPanel
           topBox.add(Box.createRigidArea(new Dimension(0, 4)));
         }
 
-        //boolean isOpen = layout.isOpen(col);
-        
         Component comps[] = UIFactory.createTitledPanels();
         JPanel tpanel = (JPanel) comps[0];
         JPanel vpanel = (JPanel) comps[1];
@@ -99,7 +100,7 @@ class JBuilderParamPanel
           Box hbox = new Box(BoxLayout.X_AXIS);
           hbox.addComponentListener(this);
           hbox.add(UIFactory.createSidebar());
-          buildSubGroup(params, group, hbox, 1);
+          paramCount += buildSubGroup(params, group, hbox, 1);
           finalBox.add(hbox);
         }
         
@@ -110,8 +111,12 @@ class JBuilderParamPanel
           //makeInternalScrollPane(finalBox, new Dimension(sTSize + sVSize + 50, 600));
         topBox.add(scroll);
         
-        this.addTab(null, sTabIcon, topBox, layout.getDescription());
-        pViewedPanels.put(col, false);
+        this.addTab(null, sTabIcon, topBox, columnName);
+        
+        if (paramCount > 0 )
+         pViewedPanels.put(col, false);
+        else
+          pViewedPanels.put(col, true);
       }
     }
     if (getTabCount() > 0)
@@ -140,7 +145,7 @@ class JBuilderParamPanel
    * @param vSize
    *   The width of the value panel.
    * @param prefix
-   *   The NameUI of all the parent parameters to use when constructing the paramater title.
+   *   The NameUI of all the parent parameters to use when constructing the parameter title.
    * @param actionCommand
    *   The actionCommand the parameter is going to have if it is a simple param.  Being reset
    *   if the parameter is complex.
@@ -164,7 +169,7 @@ class JBuilderParamPanel
     if (pMappedParams.contains(mapping)) {
       if (rightSortOfParam(bparam)) {
         Component field = 
-          parameterToComponent(bparam, tpanel, vpanel, tSize, vSize, prefix, "mapped");
+          parameterToComponent(bparam, tpanel, vpanel, tSize, vSize, prefix, "mapped", mapping);
           field.setEnabled(false);
         pMappedStorage.put(mapping.getParamName(), mapping, field);
       }      
@@ -199,9 +204,8 @@ class JBuilderParamPanel
     }
     else if (rightSortOfParam(bparam)) {
       Component field = 
-	parameterToComponent(bparam, tpanel, vpanel, tSize, vSize, prefix, actionCommand);
+	parameterToComponent(bparam, tpanel, vpanel, tSize, vSize, prefix, actionCommand, mapping);
       pStorage.put(mapping.getParamName(), mapping, field);
-      //pSource.put(mapping.getParamName(), mapping, bparam);
       pCompToParam.put(field, mapping);
     }
     else
@@ -217,7 +221,13 @@ class JBuilderParamPanel
   /*   G U I    M E T H O D S                                                               */
   /*----------------------------------------------------------------------------------------*/
   
-  private void 
+  /**
+   * Build a sub-group (draw) in a column
+   * 
+   * @return
+   *   The number of parameters which were made.
+   */
+  private int 
   buildSubGroup
   (
     SortedMap<String, UtilityParam> params,
@@ -228,6 +238,8 @@ class JBuilderParamPanel
     throws PipelineException
   {
     Box dbox = new Box(BoxLayout.Y_AXIS); 
+
+    int paramCount = 0;
     
     if (!group.getEntries().isEmpty()) {
       Component comps[] = UIFactory.createTitledPanels();
@@ -235,7 +247,6 @@ class JBuilderParamPanel
       JPanel vpanel = (JPanel) comps[1];
 
       boolean first = true;
-      int paramCount = 0;
       for (String pname : group.getEntries()) {
 	if (pname == null) 
 	  UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
@@ -265,7 +276,7 @@ class JBuilderParamPanel
       {
 	Box vbox = new Box(BoxLayout.Y_AXIS);
 	for(LayoutGroup sgroup : group.getSubGroups()) 
-	  buildSubGroup(params, sgroup, vbox, level+1);
+	  paramCount += buildSubGroup(params, sgroup, vbox, level+1);
 
 	hbox.add(vbox);
       }
@@ -278,6 +289,8 @@ class JBuilderParamPanel
       sbox.add(drawer);
       drawer.setIsOpen(group.isOpen());
     }
+    
+    return paramCount;
   }
 
   
@@ -308,7 +321,8 @@ class JBuilderParamPanel
          (param instanceof PathUtilityParam) ||
          (param instanceof NodePathUtilityParam) ||
          (param instanceof IdentifierUtilityParam) ||
-         (param instanceof ConstantStringUtilityParam))
+         (param instanceof ConstantStringUtilityParam) ||
+         (param instanceof FileSeqUtilityParam))
       return true;
     return false;
   }
@@ -318,18 +332,28 @@ class JBuilderParamPanel
    * 
    * @param bparam
    *   The parameter
+   *   
    * @param tpanel
    *   The title panel.
+   *   
    * @param vpanel
    *   The value panel.
+   *   
    * @param tsize
    *   The title panel width.
+   *   
    * @param vsize
    *   The value panel width.
+   *   
    * @param prefix
    *   The prefix to the parameter name in the UI
+   *   
    * @param actionCommand
    *   The actionCommand to add to the parameter.
+   *   
+   * @param mapping
+   *   The param mapping representing the full name of the parameter.
+   *   
    * @return
    */
   private Component 
@@ -341,7 +365,8 @@ class JBuilderParamPanel
     int tsize,
     int vsize,
     String prefix,
-    String actionCommand
+    String actionCommand, 
+    ParamMapping mapping
   ) 
   {
     if (bparam != null) {
@@ -422,6 +447,30 @@ class JBuilderParamPanel
 	  field.setActionCommand(actionCommand);
 	}
 	return field;     
+      }
+      else if(bparam instanceof FileSeqUtilityParam) {
+        FileSeq seq = (FileSeq) sparam.getValue();
+        String value = null;
+        if (seq != null)
+          value = seq.toString();
+        
+        JComponent[] comps = 
+          UIFactory.createTitledBrowsableStringField
+          (tpanel, displayName, tsize, 
+           vpanel, value, vsize, this, "browse-" + actionCommand, 
+           bparam.getDescription());
+        
+        JTextField field = (JTextField) comps[0];
+        field.setEditable(false);
+        JButton button = (JButton) comps[1];
+        
+        pFileSeqParamLookup.put(button, mapping);
+        
+        if (actionCommand != null) {
+          field.addActionListener(this);
+          field.setActionCommand(actionCommand);
+        }
+        return field;     
       }
       else if (bparam instanceof ConstantStringUtilityParam) {
         String value = (String) sparam.getValue();
@@ -540,8 +589,15 @@ class JBuilderParamPanel
     for (String name : pStorage.keySet()) {
       for (ParamMapping mapping : pStorage.keySet(name)) {
 	Component comp = pStorage.get(name, mapping);
+	
+	/* don't try and set key fields */
 	if (comp instanceof JTextField && !((JTextField) comp).isEditable())
 	  continue;
+	
+	/* FileSeq fields have already been set by ActionListener */
+	if (pFileSeqParamLookup.containsKey(mapping))
+	  continue;
+	
 	Comparable value = valueFromComponent(comp);
 	pBuilder.setParamValue(mapping, value);
       }
@@ -651,45 +707,71 @@ class JBuilderParamPanel
   )
   {
     String command = e.getActionCommand();
+    boolean update = false;
     
-    Component source = (Component) e.getSource();
-    ParamMapping mapping = pCompToParam.get(source);
-    Comparable value = valueFromComponent(source);
-    boolean update = pBuilder.setParamValue(mapping, value);
+    if (command.startsWith("browse-" )) {
+      command = command.replace("browse-", "");
+      Component source = (Component) e.getSource();
+      ParamMapping mapping = pFileSeqParamLookup.get(source);
+      FileSeqUtilityParam param = (FileSeqUtilityParam) pBuilder.getParam(mapping);
+      FileSeq seq = param.getFileSeqValue();
+      Path start = new Path("//");
+      if (seq != null)
+        start = new Path(seq.getFilePattern().getPrefix()).getParentPath();
+      pFileDialog.setRootDir(new Path("//").toFile());
+      pFileDialog.updateTargetDir(start.toFile());
+      
+      pFileDialog.setVisible(true);
+      if (!pFileDialog.wasConfirmed()) 
+        return;
+      {
+        FileSeq selected = pFileDialog.getSelectedFileSeq();
+        FileSeq expanded = new FileSeq("/" + pFileDialog.getDirectoryPath().toString(), selected);
+        update = pBuilder.setParamValue(mapping, expanded);
+        JTextField comp = (JTextField) pStorage.get(mapping.getParamName(), mapping);
+        comp.setText(expanded.toString());
+      }
+    }
+    else {
+      Component source = (Component) e.getSource();
+      ParamMapping mapping = pCompToParam.get(source);
+      Comparable value = valueFromComponent(source);
+      update = pBuilder.setParamValue(mapping, value);
+    }
     
     if (update) {
       Map<ParamMapping, Component> comps = pStorage.get(command);
-      
+
       for (ParamMapping map : comps.keySet()) {
-	Component comp = comps.get(map);
-	UtilityParam param = pBuilder.getParam(map);
-//	TODO look at again if this fix doesn't work
-	
-	/* This was causing some stuff to not work as expect.
-	 * it may cause other stuff to break.  If it does, we need
-	 * to re-examine what we're doing here. 
-	 */
-//	if (comp == source)
-//	  continue;
-	if (comp instanceof JCollectionField) {
-	  JCollectionField field = (JCollectionField) comp;
-	  String val = null;
-	  Collection<String> values = null;
-	  if (param instanceof EnumUtilityParam) {
-	    val = (String) ((EnumUtilityParam) param).getValue();
-	    values = ((EnumUtilityParam) param).getValues();
-	  }
-	  else if (param instanceof OptionalEnumUtilityParam) {
-	    val = (String) ((OptionalEnumUtilityParam) param).getValue();
-	    values = ((OptionalEnumUtilityParam) param).getValues();
-	  }
-	  field.removeActionListener(this);
-	  field.setValues(values);
-	  field.setSelected(val);
-	  field.addActionListener(this);
-	} 
-	else 	
-	  updateValueFromParam(comp, param);
+        Component comp = comps.get(map);
+        UtilityParam param = pBuilder.getParam(map);
+        //	TODO look at again if this fix doesn't work
+
+        /* This was causing some stuff to not work as expected.
+         * it may cause other stuff to break.  If it does, we need
+         * to re-examine what we're doing here. 
+         */
+        //	if (comp == source)
+        //	  continue;
+        if (comp instanceof JCollectionField) {
+          JCollectionField field = (JCollectionField) comp;
+          String val = null;
+          Collection<String> values = null;
+          if (param instanceof EnumUtilityParam) {
+            val = (String) ((EnumUtilityParam) param).getValue();
+            values = ((EnumUtilityParam) param).getValues();
+          }
+          else if (param instanceof OptionalEnumUtilityParam) {
+            val = (String) ((OptionalEnumUtilityParam) param).getValue();
+            values = ((OptionalEnumUtilityParam) param).getValues();
+          }
+          field.removeActionListener(this);
+          field.setValues(values);
+          field.setSelected(val);
+          field.addActionListener(this);
+        } 
+        else 	
+          updateValueFromParam(comp, param);
       }
     }
     this.validate();
@@ -790,15 +872,27 @@ class JBuilderParamPanel
    * displayed in the panel).
    */
   private Set<ParamMapping> pMappedParams;
-  
+ 
+  /**
+   * Keeps track of which panels have already been viewed.
+   */
   private TreeMap<Integer, Boolean> pViewedPanels;
   
   /**
-   * A map of all the components in a builder pass indexed by the name of the parameters.
+   * A map of all the components associated with mapped parameters in a builder pass 
+   * indexed by the name of the parameters.
    */
   private DoubleMap<String, ParamMapping, Component> pMappedStorage;
   
   private JBuilderDialog pParentDialog;
+  
+  /**
+   * Map of the ParamMappings of FileSeq parameters indexed by the button that will trigger the
+   * browse dialog for the parameter.
+   */
+  private ListMap<JButton, ParamMapping> pFileSeqParamLookup;
+  
+  private JFileSeqSelectDialog pFileDialog;
   
   private static final Icon sTabIcon = 
     new ImageIcon(LookAndFeelLoader.class.getResource("TabIcon.png"));

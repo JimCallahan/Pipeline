@@ -1,4 +1,4 @@
-// $Id: TemplateStage.java,v 1.13 2009/05/26 07:09:32 jesse Exp $
+// $Id: TemplateStage.java,v 1.14 2009/06/11 05:14:06 jesse Exp $
 
 package us.temerity.pipeline.stages;
 
@@ -49,6 +49,7 @@ class TemplateStage
     TreeSet<String> skippedNodes,
     TreeSet<String> ignoredNodes,
     TreeSet<String> ignorableProducts,
+    TemplateExternalData external, 
     TripleMap<String, String, String, TreeMap<String, BaseAnnotation>> annotCache
   ) 
     throws PipelineException
@@ -67,6 +68,7 @@ class TemplateStage
     pSkippedNodes = skippedNodes;
     pInhibitCopyFiles = inhibitCopy;
     pAllowZeroContexts = allowZeroContexts;
+    pExternal = external;
     init(sourceMod);
   }
 
@@ -90,6 +92,7 @@ class TemplateStage
     TreeSet<String> skippedNodes,
     TreeSet<String> ignoredNodes,
     TreeSet<String> ignorableProducts,
+    TemplateExternalData external,
     TripleMap<String, String, String, TreeMap<String, BaseAnnotation>> annotCache
   ) 
     throws PipelineException
@@ -108,6 +111,7 @@ class TemplateStage
     pIgnorableProducts = ignorableProducts;
     pInhibitCopyFiles = inhibitCopy;
     pAllowZeroContexts = allowZeroContexts;
+    pExternal = external;
     init(sourceMod);
   }
   
@@ -135,6 +139,19 @@ class TemplateStage
     throws PipelineException
   {
     pSourceMod = sourceMod;
+    BaseAction act = sourceMod.getAction();
+    
+    if (pExternal != null && act != null)
+      throw new PipelineException
+        ("The node (" + pRegisteredNodeName + ") has an Action assigned to it, " +
+         "but also has a TemplateExternal annotation associated with it.  Nodes with " +
+         "TemplateExternal annotations cannot have Actions.");
+    
+    if (pExternal != null && PackageInfo.sOsType != OsType.Unix)
+      throw new PipelineException
+        ("The node (" + pRegisteredNodeName + ") has a TemplateExternal annotation associated " +
+         "with it, but this builder is not being run on a Unix/Linux machine.  " +
+         "External Sequence support only exists on Unix-derivative operating systems" );
     
     pUnlinkNodes = new MappedSet<String, String>();
     pTemplateNodesToUnlink = new TreeSet<String>();
@@ -173,8 +190,6 @@ class TemplateStage
       addSecondarySequence(targetSeq);
       pSecSeqs.put(seq, targetSeq);
     }
-    
-    BaseAction act = sourceMod.getAction();
     
     for (LinkMod link : sourceMod.getSources()) {
       String linkName = link.getName();
@@ -412,6 +427,10 @@ class TemplateStage
    *   
    * @param allowZeroContexts
    *   Whether a zero context is acceptable in the sources of the node.
+   *   
+   * @param external
+   *   The external file sequence to link this node to or <code>null</code> if there is no
+   *   external sequence for this node.
    * 
    * @param annotCache
    *   A shared cache of annotations for nodes 
@@ -438,6 +457,7 @@ class TemplateStage
     TreeSet<String> ignoreableProducts,
     boolean inhibitCopy,
     boolean allowZeroContexts,
+    TemplateExternalData external,
     TripleMap<String, String, String, TreeMap<String, BaseAnnotation>> annotCache
   ) 
     throws PipelineException
@@ -477,13 +497,13 @@ class TemplateStage
       return new TemplateStage
         (sourceMod, stageInfo, newContext, client, nodeName, oldRange, padding, suffix, 
          editor, action, inhibitCopy, allowZeroContexts, templateInfo, stringReplacements, contexts, range, 
-         skippedNodes, ignoredNodes, ignoreableProducts, annotCache);
+         skippedNodes, ignoredNodes, ignoreableProducts, external, annotCache);
     }
     else 
       return new TemplateStage
         (sourceMod, stageInfo, newContext, client, nodeName, suffix, editor, action, 
          inhibitCopy, allowZeroContexts, templateInfo, stringReplacements, contexts, range, 
-         skippedNodes, ignoredNodes, ignoreableProducts, annotCache);
+         skippedNodes, ignoredNodes, ignoreableProducts, external, annotCache);
   }
   
   @Override
@@ -514,6 +534,84 @@ class TemplateStage
         pRegisteredNodeMod.setAction(getAction(new PluginContext("Touch"), getToolset()));
         pClient.modifyProperties(getAuthor(), getView(), pRegisteredNodeMod);
         pRegisteredNodeMod = pClient.getWorkingVersion(getAuthor(), getView(), pRegisteredNodeName);
+      }
+      if (pExternal != null) {
+        FileSeq exSeq = pExternal.getFileSeq();
+        FrameRange exRange = exSeq.getFrameRange();
+        
+        FrameRange nodeRange = pRegisteredNodeMod.getPrimarySequence().getFrameRange();
+        
+        if (nodeRange == null && exRange != null)
+          throw new PipelineException
+            ("Cannot link an external sequence with a frame range to a node that " +
+             "does not have a frame range.");
+        
+        FileSeq newExSeq = null;
+        if (nodeRange != null) {
+          if (exRange == null)
+            throw new PipelineException
+              ("Cannot link an external sequence without a frame range to a node that " +
+               "has a frame range.");
+          
+          Integer startFrame = pExternal.getStartFrame();
+          if (startFrame == null)
+            startFrame = exRange.indexToFrame(0);
+          
+          int nodeSize = nodeRange.numFrames();
+          
+          int lastIdx = exRange.numFrames() -1;
+          TreeSet<Integer> frames = new TreeSet<Integer>();
+          int[] frameNumbers = exRange.getFrameNumbers();
+          for (int i = exRange.frameToIndex(startFrame); i <= lastIdx; i++) {
+            frames.add(frameNumbers[i]);
+            if (frames.size() == nodeSize)
+              break;
+          }
+          if (frames.size() < nodeSize) {
+            throw new PipelineException
+              ("There were not enough frames in the external sequence (" + exSeq + ") " +
+               "when starting at (" + startFrame + ") to satisfy the requirements of " +
+               "the current sequence (" + pRegisteredNodeMod.getSequences() + ")");
+          }
+         FrameRange newExRange = new FrameRange(frames);
+         newExSeq = new FileSeq(exSeq.getFilePattern(), newExRange);
+        } //if (nodeRange != null) {
+        else {
+          newExSeq = exSeq;
+        }
+        
+        LogMgr.getInstance().log(Kind.Bld, Level.Finer, 
+          "Creating the symbolic links to (" + newExSeq+ ").");
+        SubProcessLight process = softLinkProcess(newExSeq);
+        process.run();
+        try {
+          process.join();
+        }
+        catch (InterruptedException ex) 
+        {
+          String message = 
+            "The link subprocess for node (" + pRegisteredNodeName + ") failed.";
+          throw new PipelineException(Exceptions.getFullMessage(message, ex));
+        }
+        Integer exit = process.getExitCode();
+        if (exit == null || exit != 0)
+          throw new PipelineException
+            ("The link subprocess did not finish correctly\n" +
+              process.getStdOut() + "\n" + process.getStdErr());
+
+
+        try {
+          vouch(); 
+        }
+        catch (PipelineException ex ) {
+          String message =
+            "An error occured while attempting to vouch for the node " +
+            "(" + pRegisteredNodeName + ") which was linked to external files.  This is " +
+            "most likely caused by the user running the template not having write " +
+            "permissions for the external files (which it needs to touch the files).\n" + 
+            ex.getMessage();
+          throw new PipelineException(message);
+        }
       }
     }
     return build;
@@ -584,6 +682,50 @@ class TemplateStage
         new SubProcessLight("BuilderTouch", "touch", args, toolset, wpath.toFile());
       return light;
     }
+  }
+  
+  private SubProcessLight
+  softLinkProcess
+  (
+    FileSeq exSeq  
+  )
+    throws PipelineException
+  {
+    NodeID nodeID = new NodeID(getAuthor(), getView(), pRegisteredNodeName);
+    
+    Path wpath = new Path(PackageInfo.sProdPath, nodeID.getWorkingParent()); 
+    wpath.toFile().mkdirs();
+    
+    FileSeq seq = pRegisteredNodeMod.getPrimarySequence();
+    
+    int size = seq.numFrames();
+    
+    ArrayList<String> args = new ArrayList<String>();
+    try
+    {
+      File f = File.createTempFile("TemplateExternal.", ".bash", 
+        PackageInfo.sTempPath.toFile());
+      BufferedWriter out = new BufferedWriter(new FileWriter(f));
+      for (int idx = 0; idx < size; idx++) {
+        Path target = seq.getPath(idx);
+        Path source = exSeq.getPath(idx);
+        out.write("ln -s " + source + " " + target + "\n");
+      }
+      out.close();
+      args.add(f.getAbsolutePath());
+    } 
+    catch(IOException ex) {
+      throw new PipelineException
+        ("Unable to create the temporary bash script used to create" + 
+         "the symbolic links!\n" + ex.getMessage());
+    }
+    
+    TreeMap<String, String> toolset = 
+      pClient.getToolsetEnvironment
+        (getAuthor(), getView(), getToolset(), PackageInfo.sOsType);
+    SubProcessLight light = 
+      new SubProcessLight("LinkExternal", "bash", args, toolset, wpath.toFile());
+    return light;
   }
 
   
@@ -952,6 +1094,8 @@ class TemplateStage
   
   private boolean pInhibitCopyFiles;
   private boolean pAllowZeroContexts;
+  
+  private TemplateExternalData pExternal;
   
   private NodeMod pSourceMod;
   

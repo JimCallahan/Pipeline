@@ -1,4 +1,4 @@
-// $Id: TemplateInfoBuilder.java,v 1.15 2009/05/26 07:09:32 jesse Exp $
+// $Id: TemplateInfoBuilder.java,v 1.16 2009/06/11 05:14:06 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -70,7 +70,6 @@ class TemplateInfoBuilder
       new UtilContext(author, view, mclient.getDefaultToolsetName());
     setContext(utilContext);
     setParamValue(aUtilContext, utilContext);
-    
     
     {
       NodeID nodeID = 
@@ -165,12 +164,10 @@ class TemplateInfoBuilder
     layout.addColumn("Contexts", true);
     layout.addColumn("FrameRanges", true);
     layout.addColumn("OptionalBranches", true);
-    layout.addColumn("ExternalSeqs", true);
     
     pReplacementParams = new ArrayList<KeyValueUtilityParam>();
     pContextParams = new ArrayList<KeyIntValueUtilityParam>();
     pFrameRangeParams = new TreeMap<String, FrameRangeUtilityParam>();
-    pExternalParams = new TreeMap<String, ExternalSeqUtilityParam>();
     pOptionalBranchesParams = new TreeMap<String, BooleanUtilityParam>();
     
     TreeMap<String, String> rDefaults = pTemplateGlueInfo.getReplacementDefaults();
@@ -238,24 +235,11 @@ class TemplateInfoBuilder
       layout.addEntry(5, key + "Option");
     }
 
-    for (String key : pTemplateGlueInfo.getExternals()) {
-      ExternalSeqUtilityParam param =
-        new ExternalSeqUtilityParam
-        (key, 
-         key, 
-         null, 
-         null);
-      addParam(param);
-      pExternalParams.put(key, param);
-      LayoutGroup group = new LayoutGroup(key, "The external sequence", true);
-      group.addEntry(key);
-      layout.addSubGroup(6, group);
-    }
-    
     addCheckinWhenDoneParam();
     
     addSetupPass(new InformationPass());
     addSetupPass(new ContextInfoPass());
+    addSetupPass(new ExternalInfoPass());
     
     pAOEModes = pTemplateGlueInfo.getAOEModes();
     for (String mode : pAOEModes.keySet()) {
@@ -265,6 +249,7 @@ class TemplateInfoBuilder
 
     PassLayoutGroup passLayout = new PassLayoutGroup(layout.getName(), layout);
     passLayout.addPass("ContextInfoPass", new AdvancedLayoutGroup("ContextInfoPass", true));
+    passLayout.addPass("ExternalInfoPass", new AdvancedLayoutGroup("ExternalInfoPass", true));
     setLayout(passLayout);
   }
   
@@ -323,11 +308,6 @@ class TemplateInfoBuilder
         pOptionalBranch.put(entry.getKey(), entry.getValue().getBooleanValue());
       }
       
-      pExternals = new DoubleMap<String, Path, Integer>();
-      for (Entry<String, ExternalSeqUtilityParam> entry : pExternalParams.entrySet()) {
-        ExternalSeqUtilityParam param = entry.getValue();
-        pExternals.put(aSelectionKeys, param.getExternalSeq(), param.getFrameStart());
-      }
     }
     
     @Override
@@ -383,6 +363,48 @@ class TemplateInfoBuilder
     initPhase()
       throws PipelineException
     {
+      BaseBuilder builder = 
+        new ExternalInfoBuilder(pClient, pQueue, getBuilderInformation());
+      addSubBuilder(builder);
+    }
+
+    
+    private static final long serialVersionUID = -2407515691903472636L;
+  }
+  
+  private 
+  class ExternalInfoPass
+    extends SetupPass
+  {
+    public 
+    ExternalInfoPass()
+    {
+      super("External Information Pass", 
+            "External Information pass for the TemplateBuilder");
+    }
+    
+    @Override
+    public void 
+    validatePhase()
+      throws PipelineException
+    {
+      pExternals = new TreeMap<String, TemplateExternalData>();
+      for (Entry<String, ExternalSeqUtilityParam> entry : pExternalParams.entrySet()) {
+        ExternalSeqUtilityParam param = entry.getValue();
+        FileSeq extSeq = param.getExternalSeq();
+        if (extSeq != null) {
+          TemplateExternalData data = 
+            new TemplateExternalData(extSeq, param.getFrameStart());
+          pExternals.put(entry.getKey(), data);
+        }
+      }
+    }
+    
+    @Override
+    public void 
+    initPhase()
+      throws PipelineException
+    {
       TreeSet<String> nodes = pTemplateGlueInfo.getNodesInTemplate();
       if (nodes.isEmpty()) {
         TemplateTaskBuilder builder = 
@@ -412,7 +434,7 @@ class TemplateInfoBuilder
       }
     }
     
-    private static final long serialVersionUID = -2407515691903472636L;
+    private static final long serialVersionUID = -3872814815612329203L;
   }
   
   
@@ -583,6 +605,151 @@ class TemplateInfoBuilder
   }
 
   
+  private
+  class ExternalInfoBuilder
+    extends BaseBuilder
+  {
+    private
+    ExternalInfoBuilder
+    (
+      MasterMgrClient mclient,
+      QueueMgrClient qclient,
+      BuilderInformation builderInformation
+    ) 
+      throws PipelineException
+    {
+      super("ExternalInfo", 
+            "Builder to get information about all the external file sequences being used.",
+            mclient, qclient, builderInformation);
+      
+      pExternalParams = new TreeMap<String, ExternalSeqUtilityParam>();
+      
+      pAllExternals = new TreeSet<String>();
+      for (Entry<String, TreeSet<String>> entry : pTemplateGlueInfo.getExternals().entrySet()) {
+        TreeSet<String> contexts = entry.getValue();
+        if (contexts != null)
+          applyContexts(entry.getKey(), contexts, new TreeMap<String, String>(), pContexts);
+        else 
+          pAllExternals.add(entry.getKey());
+      }
+
+      AdvancedLayoutGroup layout = new AdvancedLayoutGroup
+        ("External Information", "External File Sequences", "External Information", true);
+      
+      for (String key : pAllExternals) {
+        ExternalSeqUtilityParam param =
+          new ExternalSeqUtilityParam
+          (key, 
+            key, 
+            null, 
+            null);
+        addParam(param);
+        pExternalParams.put(key, param);
+        LayoutGroup group = new LayoutGroup(key, "The external sequence", true);
+        group.addEntry(key);
+        layout.addSubGroup(1, group);
+      }
+      
+      layout.addEntry(1, aUtilContext);
+      layout.addEntry(1, null);
+      layout.addEntry(1, aActionOnExistence);
+      layout.addEntry(1, aReleaseOnError);
+      
+      noDefaultConstructPasses();
+      
+      addSetupPass(new ExternalInformationPass());
+      
+      PassLayoutGroup pLayout = new PassLayoutGroup(layout.getName(), layout);
+      setLayout(pLayout);
+    }
+    
+    private
+    class ExternalInformationPass
+      extends SetupPass
+    {
+      private 
+      ExternalInformationPass()
+      {
+        super("ExternalInformationBuilder", 
+              "The pass which gets the information about the external sequences");
+      }
+      
+      private static final long serialVersionUID = -5655244696579022388L;
+    }
+    
+    private void
+    applyContexts
+    (
+      String external,
+      TreeSet<String> contextList,
+      TreeMap<String, String> replace,
+      TreeMap<String, ArrayList<TreeMap<String, String>>> contexts
+    )
+    {
+      String currentContext = contextList.pollFirst();
+      ArrayList<TreeMap<String, String>> values = contexts.get(currentContext);
+
+      if (values == null || values.isEmpty()) {
+        TreeMap<String, String> newReplace = new TreeMap<String, String>(replace);
+        TreeMap<String, ArrayList<TreeMap<String, String>>> newMaps = 
+          new TreeMap<String, ArrayList<TreeMap<String,String>>>(contexts);
+        if (contextList.isEmpty()) {  //bottom of the recursion
+          String finalExternal = stringReplace(external, newReplace);
+          pAllExternals.add(finalExternal);
+        }
+        else {
+          applyContexts(external, new TreeSet<String>(contextList), newReplace, newMaps);
+        }
+        return;
+      }
+
+      for (TreeMap<String, String> contextEntry : values) {
+        TreeMap<String, String> newReplace = new TreeMap<String, String>(replace);
+        newReplace.putAll(contextEntry);
+        TreeMap<String, ArrayList<TreeMap<String, String>>> newMaps = 
+          new TreeMap<String, ArrayList<TreeMap<String,String>>>(contexts);
+        ArrayList<TreeMap<String, String>> newStuff = new ArrayList<TreeMap<String,String>>();
+        newStuff.add(new TreeMap<String, String>(contextEntry));
+        newMaps.put(currentContext, newStuff);
+        if (contextList.isEmpty()) {  //bottom of the recursion
+          String finalExternal = stringReplace(external, newReplace);
+          pAllExternals.add(finalExternal);
+        }
+        else {
+          applyContexts(external, new TreeSet<String>(contextList), newReplace, newMaps);
+        }
+      }
+    }
+
+    private String
+    stringReplace
+    (
+      String source,
+      TreeMap<String, String> stringReplacements
+    )
+    {
+      String toReturn = source;
+      for (String pattern : stringReplacements.keySet())
+        toReturn = toReturn.replaceAll(pattern, stringReplacements.get(pattern));
+      return toReturn;
+    }
+
+    
+    /*--------------------------------------------------------------------------------------*/
+    /*   S T A T I C   I N T E R N A L S                                                    */
+    /*--------------------------------------------------------------------------------------*/
+
+    private static final long serialVersionUID = 49377315225367350L;
+
+    
+    
+    /*--------------------------------------------------------------------------------------*/
+    /*  I N T E R N A L S                                                                   */
+    /*--------------------------------------------------------------------------------------*/
+
+    private TreeSet<String> pAllExternals;
+    
+  }
   
   /*----------------------------------------------------------------------------------------*/
   /*   S T A T I C   I N T E R N A L S                                                      */
@@ -629,7 +796,7 @@ class TemplateInfoBuilder
   
   private TreeMap<String, ExternalSeqUtilityParam> pExternalParams;
   
-  private DoubleMap<String, Path, Integer> pExternals;
+  private TreeMap<String, TemplateExternalData> pExternals;
 
   private File pFile;
   

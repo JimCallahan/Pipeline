@@ -1,4 +1,4 @@
-// $Id: FileSeq.java,v 1.24 2009/06/01 03:21:13 jesse Exp $
+// $Id: FileSeq.java,v 1.25 2009/06/11 05:14:06 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -685,19 +685,19 @@ class FileSeq
    * specify an end frame (end) and optionally a frame step increment (by).
    * 
    * @param stringRep
-   *          The string representation of the {@link FileSeq}.
+   *   The string representation of the {@link FileSeq}.
    * 
-   * @return The file sequence represented by the string.
+   * @throws IllegalArgumentException
+   *   If the string passed in does not represent a valid {@link FileSeq}
    * 
-   * @throws PipelineException
-   *           If the string is not a valid representation of a File Sequence.
+   * @return 
+   *   The file sequence represented by the string.
    */
   public static FileSeq
   fromString
   (
     String stringRep  
   )
-    throws PipelineException
   {
     String buffer[] = stringRep.split("\\.");
     /* Prefix only */
@@ -711,7 +711,7 @@ class FileSeq
       if (stringRep.contains(",")) {
         String buffer2[] = buffer[1].split(",");
         if (buffer2.length != 2)
-          throw new PipelineException
+          throw new IllegalArgumentException
             ("The String (" + stringRep + ") is not a valid FileSeq representation");
         int padding = convertPadding(stringRep, buffer2[0]);
         FrameRange range = convertRange(stringRep, buffer2[1]);
@@ -726,7 +726,7 @@ class FileSeq
     else if (buffer.length == 3) {
       String buffer2[] = buffer[2].split(",");
       if (buffer2.length != 2)
-        throw new PipelineException
+        throw new IllegalArgumentException
           ("The String (" + stringRep + ") is not a valid FileSeq representation");
       int padding = convertPadding(stringRep, buffer[1]);
       FrameRange range = convertRange(stringRep, buffer2[1]);
@@ -734,7 +734,7 @@ class FileSeq
       return new FileSeq(fPat, range);
     }
     else
-      throw new PipelineException
+      throw new IllegalArgumentException
         ("The String (" + stringRep + ") is not a valid FileSeq representation");
   }
   
@@ -744,14 +744,13 @@ class FileSeq
     String sequence,
     String padding  
   )
-    throws PipelineException
   {
     if (padding.equals("#"))
       return 4;
     int length = padding.length();
     for (int i = 0; i < length; i++) {
       if (padding.charAt(i) != '@')
-        throw new PipelineException
+        throw new IllegalArgumentException
           ("The string (" + padding + ") from the sequence (" + sequence + ") is not a " +
            "valid frame padding value");
     }
@@ -764,9 +763,8 @@ class FileSeq
     String sequence,
     String range  
   )
-    throws PipelineException
   {
-    PipelineException toThrow = new PipelineException 
+    IllegalArgumentException toThrow = new IllegalArgumentException
       ("The string (" + range + ") from the sequence (" + sequence + ") is not a " +
        "valid frame range value");
     

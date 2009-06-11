@@ -1,4 +1,4 @@
-// $Id: UIFactory.java,v 1.31 2009/06/02 20:08:37 jlee Exp $
+// $Id: UIFactory.java,v 1.32 2009/06/11 05:14:06 jesse Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -693,6 +693,7 @@ class UIFactory
       Dimension size = new Dimension(Math.max(0, width-19), 19);
       field.setMinimumSize(size);
       field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+      field.setPreferredSize(size);
 
       field.setHorizontalAlignment(align);
       field.setEditable(true);
@@ -770,6 +771,7 @@ class UIFactory
       Dimension size = new Dimension(Math.max(0, width-19), 19);
       field.setMinimumSize(size);
       field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+      field.setPreferredSize(size);
 
       field.setHorizontalAlignment(align);
       field.setEditable(true);
@@ -799,6 +801,83 @@ class UIFactory
     return comps;
   }
 
+  /**
+   * Create a new editable text field with a directory browser button used to set the path. <P> 
+   * 
+   * See {@link JLabel#setHorizontalAlignment JLabel.setHorizontalAlignment} for valid
+   * values for the <CODE>align</CODE> argument.
+   * 
+   * @param path
+   *   The initial path.
+   * 
+   * @param width
+   *   The minimum and preferred width.
+   * 
+   * @param align
+   *   The horizontal alignment.
+   * 
+   * @param listener
+   *   The action listener for the browse button.
+   * 
+   * @param command
+   *   The action command associated with pressing the browse button.
+   * 
+   * @return 
+   *   The created components: [JTextField, JButton, Box]
+   */ 
+  public static JComponent[] 
+  createBrowsableStringField
+  (
+    String path, 
+    int width,
+    int align, 
+    ActionListener listener, 
+    String command
+  )
+  {
+    JComponent comps[] = new JComponent[3];
+
+    Box box = new Box(BoxLayout.X_AXIS); 
+    comps[2] = box;
+
+    {
+      JTextField field = new JTextField();
+      comps[0] = field;
+      field.setName("EditableTextField");
+
+      Dimension size = new Dimension(Math.max(0, width-19), 19);
+      field.setMinimumSize(size);
+      field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 19));
+      field.setPreferredSize(size);
+
+      field.setHorizontalAlignment(align);
+      field.setEditable(true);
+      field.setText(path); 
+
+      box.add(field);
+    }
+    
+    box.add(Box.createRigidArea(new Dimension(4, 0)));
+    
+    {
+      JButton btn = new JButton();
+      comps[1] = btn;
+      btn.setName("BrowseButton");
+      
+      Dimension size = new Dimension(15, 19);
+      btn.setMinimumSize(size);
+      btn.setMaximumSize(size);
+      btn.setPreferredSize(size);
+
+      btn.addActionListener(listener);      
+      btn.setActionCommand(command);
+      
+      box.add(btn);
+    }
+    
+    return comps;
+  }
+  
   /**
    * Create a new editable text field which can only contain alphanumeric characters. <P> 
    * 
@@ -2360,6 +2439,64 @@ class UIFactory
     return comps;
   }
 
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Create a new text field with a title and add them to the given panels.
+   * 
+   * @param tpanel
+   *   The titles panel.
+   *   
+   * @param title
+   *   The title of the field.
+   * 
+   * @param twidth
+   *   The minimum and preferred width of the title.
+   * 
+   * @param vpanel
+   *   The values panel.
+   * 
+   * @param path
+   *   The initial path.
+   * 
+   * @param vwidth
+   *   The minimum and preferred width of the path field.
+   * 
+   * @param listener
+   *   The action listener for the browse button.
+   * 
+   * @param command
+   *   The action command associated with pressing the browse button.
+   * 
+   * @param tooltip
+   *   The tooltip text.
+   * 
+   * @return 
+   *   The created components: [JTextField, JButton, Box]
+   */ 
+  public static JComponent[] 
+  createTitledBrowsableStringField
+  (
+   JPanel tpanel, 
+   String title,  
+   int twidth,
+   JPanel vpanel, 
+   String path, 
+   int vwidth, 
+   ActionListener listener, 
+   String command,
+   String tooltip
+  )
+  {
+    tpanel.add(createFixedLabel(title, twidth, JLabel.RIGHT, tooltip));
+
+    JComponent[] comps = 
+      createBrowsableStringField(path, vwidth, JLabel.CENTER, listener, command);
+    vpanel.add(comps[2]);
+
+    return comps;
+  }
 
   /*----------------------------------------------------------------------------------------*/
 

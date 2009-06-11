@@ -1,4 +1,4 @@
-// $Id: TemplateTaskBuilder.java,v 1.13 2009/05/26 07:09:32 jesse Exp $
+// $Id: TemplateTaskBuilder.java,v 1.14 2009/06/11 05:14:06 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -69,8 +69,7 @@ class TemplateTaskBuilder
    *   
    * @param externals
    *   The list of external file sequences that may be used in the template, keyed by the name
-   *   of the external annotation and then complete path (including file sequence).  The value 
-   *   is the frame number where the external sequence will start being read.
+   *   of the external annotation.
    *   
    * @param optionalBranches
    *   The list of optional branches with a boolean value which represents whether the branch 
@@ -89,7 +88,7 @@ class TemplateTaskBuilder
     TreeMap<String, ArrayList<TreeMap<String, String>>> contexts,
     TreeMap<String, FrameRange> frameRanges,
     TreeMap<String, ActionOnExistence> aoeModes,
-    DoubleMap<String, Path, Integer> externals,
+    TreeMap<String, TemplateExternalData> externals,
     TreeMap<String, Boolean> optionalBranches
   ) 
     throws PipelineException
@@ -118,7 +117,7 @@ class TemplateTaskBuilder
     if (aoeModes != null)
       pAOEModes.putAll(aoeModes);
     
-    pExternals = new DoubleMap<String, Path, Integer>();
+    pExternals = new TreeMap<String, TemplateExternalData>();
     if (externals != null)
       pExternals.putAll(externals);
     
@@ -709,7 +708,7 @@ class TemplateTaskBuilder
   
   private TreeMap<String, ActionOnExistence> pAOEModes;
   
-  private DoubleMap<String, Path, Integer> pExternals;
+  private TreeMap<String, TemplateExternalData> pExternals;
   private TreeMap<String, Boolean> pOptionalBranches;
   
   private MappedSet<String, String> pNodesIDependedOn;

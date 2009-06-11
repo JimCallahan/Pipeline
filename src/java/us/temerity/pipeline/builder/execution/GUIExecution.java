@@ -1,4 +1,4 @@
-// $Id: GUIExecution.java,v 1.11 2009/05/23 04:00:11 jesse Exp $
+// $Id: GUIExecution.java,v 1.12 2009/06/11 05:14:06 jesse Exp $
 
 package us.temerity.pipeline.builder.execution;
 
@@ -163,8 +163,8 @@ class GUIExecution
    */
   public 
   class JBuilderDialog
-  extends JTopLevelDialog
-  implements ActionListener, TreeSelectionListener, ChangeListener
+    extends JTopLevelDialog
+    implements ActionListener, TreeSelectionListener, ChangeListener
   {
 
     /**

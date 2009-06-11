@@ -1,4 +1,4 @@
-// $Id: BaseStage.java,v 1.35 2009/05/22 21:52:40 jesse Exp $
+// $Id: BaseStage.java,v 1.36 2009/06/11 05:14:06 jesse Exp $
 
 package us.temerity.pipeline.stages;
 
@@ -1399,7 +1399,7 @@ class BaseStage
         NodeDetailsLight details = status.getLightDetails();
         VersionID baseID = details.getBaseVersion().getVersionID();
         VersionID latestID = details.getLatestVersion().getVersionID();
-        NodeMod mod = details.getWorkingVersion();
+        NodeMod mod = pClient.getWorkingVersion(getAuthor(), getView(), pRegisteredNodeName);
         if (baseID.equals(latestID) && !mod.isFrozen()) {
           pLog.log(Kind.Bld, Level.Finest, 
             "Conform is not checking out the node, since it is already based on the " +

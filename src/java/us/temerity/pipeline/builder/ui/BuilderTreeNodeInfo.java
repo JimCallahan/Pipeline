@@ -1,5 +1,8 @@
 package us.temerity.pipeline.builder.ui;
 
+/*------------------------------------------------------------------------------------------*/
+/*   B U I L D E R   T R E E   N O D E   I N F O                                            */
+/*------------------------------------------------------------------------------------------*/
 
 public 
 class BuilderTreeNodeInfo
@@ -27,6 +30,13 @@ class BuilderTreeNodeInfo
   {
     pActive = false;
     pDone = true;
+  }
+  
+  public void
+  setNotDone()
+  {
+    pActive = false;
+    pDone = false;
   }
   
   public boolean

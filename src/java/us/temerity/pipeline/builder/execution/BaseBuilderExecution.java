@@ -1,10 +1,8 @@
-// $Id: BaseBuilderExecution.java,v 1.7 2009/04/06 00:53:11 jesse Exp $
+// $Id: BaseBuilderExecution.java,v 1.8 2009/06/11 05:14:06 jesse Exp $
 
 package us.temerity.pipeline.builder.execution;
 
 import java.util.*;
-
-import com.sun.java.swing.plaf.gtk.GTKConstants.*;
 
 import us.temerity.pipeline.*;
 import us.temerity.pipeline.LogMgr.*;

@@ -1,4 +1,4 @@
-// $Id: TemplateBuilder.java,v 1.20 2009/05/26 07:09:32 jesse Exp $
+// $Id: TemplateBuilder.java,v 1.21 2009/06/11 05:14:06 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -74,8 +74,7 @@ class TemplateBuilder
    *   
    * @param externals
    *   The list of external file sequences that may be used in the template, keyed by the name
-   *   of the external annotation and then complete path (including file sequence).  The value 
-   *   is the frame number where the external sequence will start being read.
+   *   of the external annotation.
    *   
    * @param optionalBranches
    *   The list of optional branches with a boolean value which represents whether the branch 
@@ -94,7 +93,7 @@ class TemplateBuilder
     TreeMap<String, ArrayList<TreeMap<String, String>>> contexts,
     TreeMap<String, FrameRange> frameRanges,
     TreeMap<String, ActionOnExistence> aoeModes,
-    DoubleMap<String, Path, Integer> externals,
+    TreeMap<String, TemplateExternalData> externals,
     TreeMap<String, Boolean> optionalBranches
   ) 
     throws PipelineException
@@ -187,7 +186,7 @@ class TemplateBuilder
     pLog.log(Kind.Ops, Level.Finest, 
       "The list of frame ranges to apply to this template: " + pFrameRanges);
 
-    pExternals = new DoubleMap<String, Path, Integer>();
+    pExternals = new TreeMap<String, TemplateExternalData>();
     if (externals != null)
       pExternals.putAll(externals);
 
@@ -601,6 +600,7 @@ class TemplateBuilder
         TreeMap<String, ActionOnExistence> aoeOverrides = new TreeMap<String, ActionOnExistence>();
         boolean checkpoint = false;
         boolean vouchable = false;
+        String external = null;
         for (String aName : annots.keySet()) {
           BaseAnnotation annot = annots.get(aName);
           if (aName.startsWith("TemplateContext") && 
@@ -637,6 +637,9 @@ class TemplateBuilder
             pLog.log(Kind.Bld, Level.Finest, 
             "Found a Vouchable annotation.");
           }
+          else if (aName.equals("TemplateExternal")) {
+            external = (String) annot.getParamValue(aExternalName);
+           }
         }
         
         Integer order = null;
@@ -673,11 +676,12 @@ class TemplateBuilder
         TreeSet<String> nodesMade = new TreeSet<String>();
         if (contexts.size() == 0) { //no contexts, just do a straight build
           makeNode(mod, pReplacements, pContexts, range, ignoreableProducts, 
-                   conditionalBuild, checkpoint, aoeOverrides, nodesMade);
+                   conditionalBuild, checkpoint, aoeOverrides, external, nodesMade);
         }
         else { //uh-oh, there are contexts!
           contextLoop(toBuild, mod, contexts, pReplacements, pContexts, 
-                      range, ignoreableProducts, conditionalBuild, checkpoint, aoeOverrides, nodesMade);
+                      range, ignoreableProducts, conditionalBuild, checkpoint, 
+                      aoeOverrides, external, nodesMade);
         }
         
         if (vouchable) {
@@ -740,6 +744,7 @@ class TemplateBuilder
       String conditionalBuild, 
       boolean checkpoint, 
       TreeMap<String,ActionOnExistence> aoeOverrides, 
+      String external, 
       TreeSet<String> nodesMade
     )
       throws PipelineException
@@ -758,13 +763,13 @@ class TemplateBuilder
             new TreeMap<String, ArrayList<TreeMap<String,String>>>(contexts);
           if (contextList.isEmpty()) {  //bottom of the recursion
             makeNode(mod, newReplace, newMaps, range, ignorableProducts, 
-                     conditionalBuild, checkpoint, aoeOverrides, nodesMade);
+                     conditionalBuild, checkpoint, aoeOverrides, external, nodesMade);
           }
           else {
             contextLoop
             (toBuild, mod, new TreeSet<String>(contextList), 
               newReplace, newMaps, range, ignorableProducts, conditionalBuild, 
-              checkpoint, aoeOverrides, nodesMade);
+              checkpoint, aoeOverrides, external, nodesMade);
           }
           return;
         }
@@ -786,13 +791,13 @@ class TemplateBuilder
         
         if (contextList.isEmpty()) {  //bottom of the recursion
           makeNode(mod, newReplace, newMaps, range, ignorableProducts,
-                   conditionalBuild, checkpoint, aoeOverrides, nodesMade);
+                   conditionalBuild, checkpoint, aoeOverrides, external, nodesMade);
         }
         else {
           contextLoop
             (toBuild, mod, new TreeSet<String>(contextList), 
              newReplace, newMaps, range, ignorableProducts, conditionalBuild, 
-             checkpoint, aoeOverrides, nodesMade);
+             checkpoint, aoeOverrides, external, nodesMade);
         }
       }
     }
@@ -808,6 +813,7 @@ class TemplateBuilder
       String conditionalBuild, 
       boolean checkpoint, 
       TreeMap<String,ActionOnExistence> aoeOverrides, 
+      String external, 
       TreeSet<String> nodesMade
     )
       throws PipelineException
@@ -836,13 +842,25 @@ class TemplateBuilder
         addAOEOverride(mode, nodeName, aoeOverrides.get(mode));
       }
       
+       
+      TemplateExternalData exD = null;
+      if (external != null) {
+        String newExternalName = stringReplace(external, replace);
+        exD = pExternals.get(newExternalName);
+        if (exD == null)
+          throw new PipelineException
+            ("An external sequence annotation with ExternalName (" + newExternalName + ") " +
+             "was found but the Template does not specify a value for that external sequence.");        
+      }
+      
+        
       
       TemplateStage stage = 
         TemplateStage.getTemplateStage
           (mod, getStageInformation(), pContext, pClient, 
            pTemplateInfo, replace, contexts, range,
            pSkippedNodes, pIgnoredNodes, ignorableProducts, 
-           pInhibitCopyFiles, pAllowZeroContexts, pAnnotCache);
+           pInhibitCopyFiles, pAllowZeroContexts, exD, pAnnotCache);
 
       if (stage.build()) {
         if (stage.needsFinalization()) {
@@ -1113,6 +1131,7 @@ class TemplateBuilder
   public static final String aConditionName = "ConditionName";
   public static final String aModeName      = "ModeName";
   public static final String aOptionName    = "OptionName";
+  public static final String aExternalName  = "ExternalName";
   
   public static final String aAllowZeroContexts = "AllowZeroContexts";
   public static final String aInhibitFileCopy   = "InhibitFileCopy";
@@ -1155,7 +1174,7 @@ class TemplateBuilder
   private TreeMap<String, Boolean> pProductNodes;
   private DoubleMap<String, String, TreeSet<String>> pProductContexts;
   private TreeMap<String, FrameRange> pFrameRanges;
-  private DoubleMap<String, Path, Integer> pExternals;
+  private TreeMap<String, TemplateExternalData> pExternals;
   
  
   /**
