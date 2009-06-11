@@ -1,4 +1,4 @@
-// $Id: OptionalBranchPanel.java,v 1.2 2009/06/11 19:41:22 jesse Exp $
+// $Id: OptionalBranchPanel.java,v 1.3 2009/06/11 19:47:54 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateGlueTool.v2_4_6;
 
@@ -79,8 +79,13 @@ class OptionalBranchPanel
     {
       pButtonBox2 = TemplateUIFactory.createHorizontalBox();
       
+      pButtonBox2.add(UIFactory.createFixedLabel
+        ("Found in scan: ", 150, SwingConstants.LEFT));
+      
+      pButtonBox2.add(TemplateUIFactory.createHorizontalSpacer());
+
       JButton add = 
-        TemplateUIFactory.createPanelButton("Add All", "addall", this, "Add all the found optional branches");
+        TemplateUIFactory.createPanelButton("Add All", "addall", this, "Add all the found contexts");
       pButtonBox2.add(add);
       pButtonBox2.add(Box.createHorizontalGlue());
     }
