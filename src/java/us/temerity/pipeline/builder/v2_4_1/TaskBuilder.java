@@ -1,4 +1,4 @@
-// $Id: TaskBuilder.java,v 1.11 2009/05/26 07:09:32 jesse Exp $
+// $Id: TaskBuilder.java,v 1.12 2009/06/11 02:23:15 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_1;
 
@@ -56,7 +56,9 @@ class TaskBuilder
   {
     super(name, desc, mclient, qclient, builderInformation);
     
-    pAnnotCache = new TripleMap<String, String, String, TreeMap<String,BaseAnnotation>>();
+    pAllAnnotCache = new TripleMap<String, String, String, TreeMap<String,BaseAnnotation>>();
+    pNodeAnnotCache = new DoubleMap<String, String, BaseAnnotation>();
+    
     
     pAnnotTaskTypeChoices = TaskType.titlesNonCustom(); 
     
@@ -674,7 +676,10 @@ class TaskBuilder
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   * Get the Annotations on the given node.  
+   * Get the per-node and per-version Annotations on the given node.  
+   * <p>
+   * If there is no working version of the node, this method will fail.  If per-node 
+   * annotations need to be retrieved then the method should be used. 
    * <p>
    * This method uses a cache to accelerate access to the annotations.  Annotations will only
    * be looked up once for each node.  This is not a cross-builder cache, so multiple
@@ -685,8 +690,8 @@ class TaskBuilder
    *   The name of the node.
    * 
    * @return
-   *   A TreeMap of Annotations indexed by annotation name or <code>null</code> if none 
-   *   exists.
+   *   A TreeMap of Annotations indexed by annotation name, which may be empty if no 
+   *   annotations exist on the node.
    */
   protected TreeMap<String, BaseAnnotation>
   getAnnotations
@@ -695,10 +700,42 @@ class TaskBuilder
   )
     throws PipelineException
   {
-    TreeMap<String, BaseAnnotation> annots = pAnnotCache.get(getAuthor(), getView(), name);
+    TreeMap<String, BaseAnnotation> annots = 
+      pAllAnnotCache.get(getAuthor(), getView(), name);
     if (annots == null) {
       annots = getMasterMgrClient().getAnnotations(getAuthor(), getView(), name);
-      pAnnotCache.put(getAuthor(), getView(), name, annots);
+      pAllAnnotCache.put(getAuthor(), getView(), name, annots);
+    }
+   return annots;
+  }
+
+  /**
+   * Get the per-node Annotations on the given node.  
+   * <p>
+   * This method uses a cache to accelerate access to the annotations.  Annotations will only
+   * be looked up once for each node.  This is not a cross-builder cache, so multiple
+   * builders based on the TaskBuilder (perhaps being used a sub-builders) may lookup the
+   * same information.
+   * 
+   * @param name
+   *   The name of the node.
+   * 
+   * @return
+   *   A TreeMap of Annotations indexed by annotation name which may be empty if no per-node
+   *   annotations exist.
+   */
+  protected TreeMap<String, BaseAnnotation>
+  getNodeAnnotations
+  (
+    String name
+  )
+    throws PipelineException
+  {
+    TreeMap<String, BaseAnnotation> annots = 
+      pNodeAnnotCache.get(name);
+    if (annots == null) {
+      annots = getMasterMgrClient().getAnnotations(name);
+      pNodeAnnotCache.put(name, annots);
     }
    return annots;
   }
@@ -719,7 +756,7 @@ class TaskBuilder
   )
     throws PipelineException
   {
-    TreeMap<String, BaseAnnotation> annotations = getAnnotations(name);
+    TreeMap<String, BaseAnnotation> annotations = getNodeAnnotations(name);
     
     TreeMap<String, BaseAnnotation> toReturn = null;
     for(String aname : annotations.keySet()) {
@@ -971,7 +1008,12 @@ class TaskBuilder
 
     return purpose;
   }
+
   
+  /*----------------------------------------------------------------------------------------*/
+  /*  S T A T I C   I N T E R N A L S                                                       */
+  /*----------------------------------------------------------------------------------------*/
+ 
 
   /**
    * The names of parameters supported by SubmitTask, ApproveTask, SynchTask, 
@@ -1006,5 +1048,7 @@ class TaskBuilder
   
   private EntityType pEntityType;
   
-  private TripleMap<String, String, String, TreeMap<String, BaseAnnotation>> pAnnotCache;
+  private TripleMap<String, String, String, TreeMap<String, BaseAnnotation>> pAllAnnotCache;
+  
+  private DoubleMap<String, String, BaseAnnotation> pNodeAnnotCache;
 }
