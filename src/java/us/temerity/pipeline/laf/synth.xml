@@ -725,6 +725,46 @@
 
 
 
+  <!--  U P   A R R O W   B U T T O N  -->
+
+  <style id="UpArrowButton"> 
+    <state>
+      <imagePainter path="UpArrowButton.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="PRESSED">
+      <imagePainter path="UpArrowButtonPressed.png"
+                    sourceInsets="0 0 0 0"/>
+    </state> 
+    <state value="DISABLED">
+      <imagePainter path="UpArrowButtonDisabled.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+  </style>
+  <bind style="UpArrowButton" type="name" key="UpArrowButton"/>
+
+
+
+  <!--  D O W N   A R R O W   B U T T O N  -->
+
+  <style id="DownArrowButton"> 
+    <state>
+      <imagePainter path="DownArrowButton.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+    <state value="PRESSED">
+      <imagePainter path="DownArrowButtonPressed.png"
+                    sourceInsets="0 0 0 0"/>
+    </state> 
+    <state value="DISABLED">
+      <imagePainter path="DownArrowButtonDisabled.png"
+                    sourceInsets="0 0 0 0"/>
+    </state>
+  </style>
+  <bind style="DownArrowButton" type="name" key="DownArrowButton"/>
+
+
+
   <!--  E Q U A L S   B U T T O N  -->
 
   <style id="EqualsButton"> 
