@@ -1,4 +1,4 @@
-// $Id: BaseBuilderExecution.java,v 1.8 2009/06/11 05:14:06 jesse Exp $
+// $Id: BaseBuilderExecution.java,v 1.9 2009/06/12 03:22:07 jesse Exp $
 
 package us.temerity.pipeline.builder.execution;
 
@@ -39,6 +39,10 @@ class BaseBuilderExecution
   {
     if (builder == null)
       throw new PipelineException("The builder param cannot be (null");
+
+    pLog = LogMgr.getInstance();
+    
+    validateCommandLineParams(builder, builder.getBuilderInformation());
     
     pBuilder = builder;
     pRunningBuilder = null;
@@ -47,8 +51,6 @@ class BaseBuilderExecution
     pSetupPassQueue = new LinkedList<SetupPassBundle>();
     pExecutionOrder = new LinkedList<BaseConstructPass>();
     pExecutionOrderNames = new LinkedList<String>();
-    
-    pLog = LogMgr.getInstance();
     
     pDidNodesReleaseCorrectly = null;
     
@@ -162,7 +164,7 @@ class BaseBuilderExecution
     pass.run();
     
     ArrayList<BaseBuilder> addedSubs = pass.getSubBuildersAdd();
-    //Need to reverse it since we preprend to the list.
+    //Need to reverse it since we prepend to the list.
     Collections.reverse(addedSubs);
     for (BaseBuilder child : addedSubs) {
       initializeSubBuilder(child, builder);
@@ -320,10 +322,67 @@ class BaseBuilderExecution
   }
   
   /**
+   * Check that all the parameter values passed in have corresponding top level 
+   * parameters.
+   * <p>
+   * This only needs to be called once per builder and does not check the key values,
+   * since those may actually change when parameter replacement is used.
+   * 
+   * @param utility
+   *   The instance of BaseUtil that is being checked.
+   *   
+   * @param info
+   *   The BuilderInformation containing all the command-line parameters.
+   *     
+   * @throws PipelineException
+   *   If there is a command line parameter that doesn't correspond to a parameter in the 
+   *   utility and the builder is set to abort on a bad parameter.
+   */
+  protected final void
+  validateCommandLineParams
+  (
+    BaseUtil utility,
+    BuilderInformation info
+  )
+    throws PipelineException
+  {
+    String prefixName = utility.getPrefixedName().toString();
+    
+    pLog.log(Kind.Arg, Level.Fine, 
+      "Validating command line parameters for Builder identified by (" + prefixName + ").");
+
+    boolean abort = info.abortOnBadParam();
+    
+    MultiMap<String, String> specificEntrys = 
+      info.getCommandLineParams().get(prefixName);
+    
+    if (specificEntrys == null || specificEntrys.isEmpty())
+      return;
+    
+    for (String paramName : specificEntrys.keySet()) {
+      if (!utility.hasParam(paramName)) {
+        if (abort)
+          throw new PipelineException
+            ("The parameter (" + paramName + ") specified as a command line parameter does " +
+             "not exist in the utility (" + prefixName+ ")");
+        else
+          pLog.log(Kind.Ops, Level.Warning, 
+            "The parameter (" + paramName + ") specified as a command line parameter does " +
+            "not exist in the utility (" + prefixName+ ")");
+      }
+    }
+  }
+  
+  
+  /**
    * Assigns all the command-line params for a given pass of a Utility.
    * 
    * @param utility
    *   The instance of BaseUtil that is having its parameter values set.
+   *   
+   * @param info
+   *   The BuilderInformation containing all the command-line parameters.
+   *     
    * @throws PipelineException
    *   If an attempt is made to set a command line parameter which does not implement the
    *   {@link SimpleParamAccess} interface and the --abort command line flag has been set.
@@ -379,6 +438,13 @@ class BaseBuilderExecution
             pLog.log(Kind.Arg, Level.Finest, 
               "Setting command line parameter (" + mapping + ") from builder " +
               "(" + prefixName + ") with the value (" + value + ").");
+            
+            if (!utility.hasParam(mapping) & abort) {
+              throw new PipelineException
+                ("The parameter (" + mapping+ ") specified as a command line parameter does " +
+                 "not exist in the utility (" + prefixName+ ")");
+            }
+            
             if (utility.canSetSimpleParamFromString(mapping)) {
               try {
                 if (keys == null || keys.isEmpty()) {
