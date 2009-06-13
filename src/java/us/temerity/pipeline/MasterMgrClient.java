@@ -1,4 +1,4 @@
-// $Id: MasterMgrClient.java,v 1.138 2009/06/01 02:53:15 jesse Exp $
+// $Id: MasterMgrClient.java,v 1.139 2009/06/13 22:59:29 jesse Exp $
 
 package us.temerity.pipeline;
 
@@ -6394,6 +6394,70 @@ class MasterMgrClient
     handleSimpleResponse(obj);
   }
 
+  /**
+   * Replace the primary and selected secondary files associated with one node with the 
+   * primary and selected secondary files of another node. <P>
+   * 
+   * The two nodes must have exactly the same number of files in their primary file sequences
+   * or the operation will fail. <P> 
+   * 
+   * If the <CODE>author</CODE> argument is different than the current user, this method 
+   * will fail unless the current user has privileged access status.
+   * 
+   * @param sourceID
+   *   The unique working version identifier of the node owning the files being copied. 
+   * 
+   * @param targetID
+   *   The unique working version identifier of the node owning the files being replaced.
+   *
+   * @param secondarySequences
+   *   A map of the secondary file sequences to be copied.  The keys are the secondary
+   *   sequences of the source node and the values are the corresponding sequences in 
+   *   the target node.
+   *   
+   * @param sourceRange
+   *   The frame range in the source node that will be copied.  If this is <code>null</code>
+   *   then the entire frame range of the node will be copied.  If this range ends up having 
+   *   a different number of frames than the targetRange, this request will fail.
+   * 
+   * @param targetRange
+   *   The frame range in the target node what will be copied to.  If this is 
+   *   <code>null</code> then the entire frame range of the node will be copied to.  If this 
+   *   range ends up having a different number of frames than the sourceRange, this request
+   *   will fail.
+   * 
+   * @throws PipelineException
+   *   If unable to clone the files or if some of the specified secondary sequences do not
+   *   exist or if the frame ranges passed in are not valid frame ranges for the nodes or do
+   *   not contain the same number of frames.
+   */ 
+  public synchronized void 
+  cloneFiles  
+  ( 
+    NodeID sourceID, 
+    NodeID targetID,
+    TreeMap<FileSeq, FileSeq> secondarySequences,
+    FrameRange sourceRange,
+    FrameRange targetRange
+  )
+    throws PipelineException
+  {
+    verifyConnection();
+
+    if (sourceRange != null && targetRange != null) {
+      if (sourceRange.numFrames() != targetRange.numFrames())
+        throw new PipelineException
+          ("Cowardly refusing to call cloneFiles() from source (" + sourceID + ") with " +
+           "frame range (" + sourceRange + ") to target (" + targetID + ") with frame range " +
+           "(" + targetRange + ") since the frame ranges are different lengths.");
+    }
+    
+    NodeCloneFilesReq req = 
+      new NodeCloneFilesReq(sourceID, targetID, secondarySequences, sourceRange, targetRange); 
+    
+    Object obj = performTransaction(MasterRequest.CloneFiles, req);
+    handleSimpleResponse(obj);
+  }
 
   /*----------------------------------------------------------------------------------------*/
 

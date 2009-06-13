@@ -1,4 +1,4 @@
-// $Id: MasterMgr.java,v 1.279 2009/06/04 09:06:02 jim Exp $
+// $Id: MasterMgr.java,v 1.280 2009/06/13 22:59:29 jesse Exp $
 
 package us.temerity.pipeline.core;
 
@@ -11709,6 +11709,18 @@ class MasterMgr
 	finally {
 	  lock.readLock().unlock();
 	}
+      }
+      
+      {
+        FrameRange fr = req.getSourceRange();
+        if (fr != null)
+          sourceSeq = new FileSeq(sourceSeq.getFilePattern(), fr);
+      }
+      
+      {
+        FrameRange fr = req.getTargetRange();
+        if (fr != null)
+          targetSeq = new FileSeq(targetSeq.getFilePattern(), fr);
       }
 
       if(sourceSeq.hasFrameNumbers() != targetSeq.hasFrameNumbers()) 
