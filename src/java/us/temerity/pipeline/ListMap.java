@@ -1,3 +1,5 @@
+// $Id: ListMap.java,v 1.9 2009/06/15 21:00:05 jesse Exp $
+
 package us.temerity.pipeline;
 
 import java.util.*;
@@ -479,8 +481,8 @@ class ListMap<K, V>
     public int 
     hashCode()
     {
-      int keyHash = (pKey==null ? 0 : pKey.hashCode());
-      int valueHash = (pValue==null ? 0 : pValue.hashCode());
+      int keyHash = (pKey == null ? 0 : pKey.hashCode());
+      int valueHash = (pValue == null ? 0 : pValue.hashCode());
       return keyHash ^ valueHash;
     }
 
