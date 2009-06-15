@@ -1,4 +1,4 @@
-// $Id: BaseBuilder.java,v 1.73 2009/05/26 09:50:12 jesse Exp $
+// $Id: BaseBuilder.java,v 1.74 2009/06/15 21:08:23 jesse Exp $
 
 package us.temerity.pipeline.builder;
 
@@ -1513,6 +1513,9 @@ class BaseBuilder
   ) 
     throws PipelineException
   {
+    if (nodes == null)
+      return;
+    
     ArrayList<String> toQueue = new ArrayList<String>();
     
     TreeSet<String> roots = new TreeSet<String>(nodes);
@@ -1984,6 +1987,9 @@ class BaseBuilder
     String nodeName
   )
   {
+    if (nodeName == null)
+      throw new IllegalArgumentException
+        ("It is illegal to pass a (null) value to addToQueueList()");
     pNodesToQueue.add(nodeName);
     pLog.log(Kind.Bld, Level.Finest, 
       "Adding node (" + nodeName + ") to queue list in Builder (" + getPrefixedName() + ").");
@@ -2004,6 +2010,9 @@ class BaseBuilder
     String nodeName
   )
   {
+    if (nodeName == null)
+      throw new IllegalArgumentException
+        ("It is illegal to pass a (null) value to removeFromQueueList()");
     pNodesToQueue.remove(nodeName);
     pLog.log(Kind.Bld, Level.Finest, 
       "Removing node (" + nodeName + ") from queue list in " +
@@ -2028,6 +2037,9 @@ class BaseBuilder
     String nodeName
   )
   {
+    if (nodeName == null)
+      throw new IllegalArgumentException
+        ("It is illegal to pass a (null) value to addToDisableList()");
     pNodesToDisable.add(nodeName);
     pLog.log(Kind.Bld, Level.Finest, 
       "Adding node (" + nodeName + ") to disable list in " +
@@ -2051,6 +2063,9 @@ class BaseBuilder
     String nodeName
   )
   {
+    if (nodeName == null)
+      throw new IllegalArgumentException
+        ("It is illegal to pass a (null) value to removeFromDisableList()");
     pNodesToDisable.remove(nodeName);
     pLog.log(Kind.Bld, Level.Finest, 
       "Removing node (" + nodeName + ") from disable list in " +
@@ -2075,6 +2090,9 @@ class BaseBuilder
     String nodeName
   )
   {
+    if (nodeName == null)
+      throw new IllegalArgumentException
+        ("It is illegal to pass a (null) value to addToCheckInList()");
     pNodesToCheckIn.add(nodeName);
     pLog.log(Kind.Bld, Level.Finest, 
       "Adding node (" + nodeName + ") to check-in list in " +
@@ -2096,6 +2114,9 @@ class BaseBuilder
     String nodeName
   )
   {
+    if (nodeName == null)
+      throw new IllegalArgumentException
+        ("It is illegal to pass a (null) value to removeFromCheckInList()");
     pNodesToCheckIn.remove(nodeName);
     pLog.log(Kind.Bld, Level.Finest, 
       "Removing node (" + nodeName + ") from check-in list in " +
@@ -2119,6 +2140,9 @@ class BaseBuilder
     String nodeName
   )
   {
+    if (nodeName == null)
+      throw new IllegalArgumentException
+        ("It is illegal to pass a (null) value to addToVouchableList()");
     pVouchableNodes.add(nodeName);
     pLog.log(Kind.Bld, Level.Finest, 
       "Adding node (" + nodeName + ") to the vouch list in " +
@@ -2140,6 +2164,9 @@ class BaseBuilder
     String nodeName
   )
   {
+    if (nodeName == null)
+      throw new IllegalArgumentException
+        ("It is illegal to pass a (null) value to removeFromVouchableList()");
     pNodesToCheckIn.remove(nodeName);
     pLog.log(Kind.Bld, Level.Finest, 
       "Removing node (" + nodeName + ") from check-in list in " +
@@ -2261,9 +2288,11 @@ class BaseBuilder
     TreeMap<String, PluginContext> defaultEditors
   )
   {
-    for (String function : defaultEditors.keySet()) {
-      PluginContext plugin = defaultEditors.get(function);
-      pStageInfo.setDefaultEditor(function, plugin);
+    if (defaultEditors != null) {
+      for (String function : defaultEditors.keySet()) {
+        PluginContext plugin = defaultEditors.get(function);
+        pStageInfo.setDefaultEditor(function, plugin);
+      }
     }
   }
   
@@ -2899,9 +2928,18 @@ class BaseBuilder
           "List of nodes returned by the pre-build phase: (" + neededNodes + ").");
         queueAndVouch(neededNodes);
       }
-      for (String needed : this.nodesDependedOn())
+      
+      TreeSet<String> nodesDependedOn = this.nodesDependedOn();
+      if (nodesDependedOn == null)
+        nodesDependedOn = new TreeSet<String>();
+        
+      TreeSet<String> productNodes = this.getProductNodes();
+      if (productNodes == null)
+        productNodes = new TreeSet<String>();
+      
+      for (String needed : nodesDependedOn)
 	neededNode(needed);
-      for (String product : this.getProductNodes()) {
+      for (String product : productNodes) {
         verifyAndLock(product);
       }
       pLog.log(LogMgr.Kind.Ops,LogMgr.Level.Finer, 
