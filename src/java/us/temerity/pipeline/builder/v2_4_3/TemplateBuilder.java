@@ -1,4 +1,4 @@
-// $Id: TemplateBuilder.java,v 1.21 2009/06/11 05:14:06 jesse Exp $
+// $Id: TemplateBuilder.java,v 1.22 2009/06/15 20:55:54 jesse Exp $
 
 package us.temerity.pipeline.builder.v2_4_3;
 
@@ -938,11 +938,41 @@ class TemplateBuilder
               throw new PipelineException
                 ("Needed source node (" + realProduct + ") does not exist.");
           }
-          if (mod.isLocked())
-            lockLatest(realProduct);
+          if (mod.isLocked()) {
+            lockIfNeeded(realProduct);
+          }
           else
             frozenStomp(realProduct);
         }
+      }
+    }
+    
+    private void
+    lockIfNeeded
+    (
+      String nodeName  
+    )
+      throws PipelineException
+    {
+      NodeMod mod = null;
+      try {
+        mod = pClient.getWorkingVersion(getAuthor(), getView(), nodeName);
+      }
+      catch (PipelineException ex) {
+        //fail silently
+      }
+      if (mod == null)
+        lockLatest(nodeName);
+      else {
+        VersionID latest = pClient.getCheckedInVersionIDs(nodeName).last();
+        VersionID cur = mod.getWorkingID();
+        if (cur != null && cur.equals(latest) && mod.isLocked() ) {
+          pLog.log(Kind.Bld, Level.Finest, 
+            "Needed source node (" + nodeName + ") is not being locked since it is already " +
+            "locked to the latest version in the current working area.");
+        }
+        else
+          lockLatest(nodeName);
       }
     }
 
