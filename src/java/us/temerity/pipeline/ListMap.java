@@ -479,8 +479,8 @@ class ListMap<K, V>
     public int 
     hashCode()
     {
-      int keyHash = pKey.hashCode();
-      int valueHash = pValue.hashCode();
+      int keyHash = (pKey==null ? 0 : pKey.hashCode());
+      int valueHash = (pValue==null ? 0 : pValue.hashCode());
       return keyHash ^ valueHash;
     }
 
