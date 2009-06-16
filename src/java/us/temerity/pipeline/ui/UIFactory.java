@@ -1,19 +1,20 @@
-// $Id: UIFactory.java,v 1.33 2009/06/11 19:41:22 jesse Exp $
+// $Id: UIFactory.java,v 1.34 2009/06/16 21:56:08 jesse Exp $
 
 package us.temerity.pipeline.ui;
 
 import java.awt.*;
-import java.awt.event.ActionListener;
-import java.util.Collection;
-import java.util.TreeSet;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.awt.event.*;
+import java.util.*;
+import java.util.concurrent.atomic.*;
 
 import javax.swing.*;
-import javax.swing.plaf.synth.SynthLookAndFeel;
+import javax.swing.plaf.synth.*;
+import javax.swing.tree.*;
 
 import us.temerity.pipeline.*;
+import us.temerity.pipeline.laf.*;
 import us.temerity.pipeline.math.*;
-import us.temerity.pipeline.laf.LookAndFeelLoader;
+
 
 /*------------------------------------------------------------------------------------------*/
 /*   U I   F A C T O R Y                                                                    */
@@ -4297,6 +4298,44 @@ class UIFactory
       buf.append("</font></html>");
 
       return buf.toString();
+    }
+  }
+  
+  
+  public static void 
+  expandAll
+  (
+    JTree tree 
+  ) 
+  {
+    TreeNode root = (TreeNode)tree.getModel().getRoot();
+
+    expandAll(tree, new TreePath(root), true);
+  }
+
+  private static void 
+  expandAll
+  (
+    JTree tree, 
+    TreePath parent, 
+    boolean expand
+  ) 
+  {
+    // Traverse children
+    TreeNode node = (TreeNode)parent.getLastPathComponent();
+    if (node.getChildCount() >= 0) {
+      for (Enumeration e=node.children(); e.hasMoreElements(); ) {
+        TreeNode n = (TreeNode)e.nextElement();
+        TreePath path = parent.pathByAddingChild(n);
+        expandAll(tree, path, expand);
+      }
+    }
+
+    // Expansion or collapse must be done bottom-up
+    if (expand) {
+      tree.expandPath(parent);
+    } else {
+      tree.collapsePath(parent);
     }
   }
 
