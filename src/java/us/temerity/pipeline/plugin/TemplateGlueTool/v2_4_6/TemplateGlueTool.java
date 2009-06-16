@@ -1,8 +1,7 @@
-// $Id: TemplateGlueTool.java,v 1.1 2009/06/11 05:35:08 jesse Exp $
+// $Id: TemplateGlueTool.java,v 1.2 2009/06/16 01:32:48 jesse Exp $
 
 package us.temerity.pipeline.plugin.TemplateGlueTool.v2_4_6;
 
-import java.awt.Dialog.*;
 import java.io.*;
 import java.util.*;
 
