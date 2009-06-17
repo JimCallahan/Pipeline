@@ -1,4 +1,4 @@
-// $Id: JEvolveDialog.java,v 1.4 2006/09/25 12:11:44 jim Exp $
+// $Id: JEvolveDialog.java,v 1.5 2009/06/17 00:00:50 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -43,37 +43,36 @@ class JEvolveDialog
   {
     super(owner, "Evolve Version");
 
-    pVersionIDs = new ArrayList<VersionID>();
+    /* initialize fields */ 
+    {
+      pVersionIDs = new TreeMap<String,ArrayList<VersionID>>();
+      
+      pVersionFields = new TreeMap<String,JCollectionField>();
+
+      pCheckedInMessages = new HashMap<JCollectionField,ArrayList<String>>();
+    }
 
     /* create dialog body components */ 
     {
-      Box body = null;
+      Box box = new Box(BoxLayout.Y_AXIS);
+      pMainBox = box;
+
       {
-	Component comps[] = UIFactory.createTitledPanels();
-	JPanel tpanel = (JPanel) comps[0];
-        JPanel vpanel = (JPanel) comps[1];
-	body = (Box) comps[2];
+	Box vbox = new Box(BoxLayout.Y_AXIS);
+	pVersionBox = vbox;
 	
-	pCurrentVersionField = 
-	  UIFactory.createTitledTextField(tpanel, "Current Version:", sTSize, 
-					 vpanel, "-", sVSize);
-	
-	UIFactory.addVerticalSpacer(tpanel, vpanel, 6);
+	vbox.add(UIFactory.createFiller(sTSize+sVSize));
 
 	{
-	  ArrayList<String> values = new ArrayList<String>();
-	  values.add("-");
-
-	  pVersionField = 
-	    UIFactory.createTitledCollectionField(tpanel, "Evolve To Version:", sTSize, 
-						 vpanel, values, this, sVSize, null);
+	  JScrollPane scroll = UIFactory.createVertScrollPane(vbox);
+	  box.add(scroll);
 	}
-
-	UIFactory.addVerticalGlue(tpanel, vpanel);
       }
 
-      super.initUI("X", body, "Evolve", null, null, "Cancel");
+      super.initUI("X", box, "Evolve", null, null, "Cancel");
       pack();
+      
+      setSize(sTSize+sVSize+63, 500);
     }  
   }
 
@@ -84,17 +83,20 @@ class JEvolveDialog
   /*----------------------------------------------------------------------------------------*/
   
   /**
-   * Get the revision number of the checked-in version. <P> 
+   * Get the revision number of the nodes to evolve indexed by node name. <P> 
    * 
    * @return 
-   *   The selected revision number or <CODE>null</CODE> if none exists.
+   *   The selected revision numbers.
    */
-  public VersionID
-  getVersionID() 
+  public TreeMap<String,VersionID> 
+  getVersionIDs()
   {
-    if(pVersionIDs.size() > 0) 
-      return pVersionIDs.get(pVersionField.getSelectedIndex());
-    return null;
+    TreeMap<String,VersionID> versions = new TreeMap<String,VersionID>();
+    for(String name : pVersionFields.keySet()) {
+      JCollectionField field = pVersionFields.get(name);
+      versions.put(name, pVersionIDs.get(name).get(field.getSelectedIndex()));
+    }
+    return versions;
   }
     
 
@@ -122,39 +124,148 @@ class JEvolveDialog
   public void 
   updateNameVersions
   (
-   String header,
-   VersionID currentID, 
-   TreeSet<VersionID> vids,
-   TreeSet<VersionID> offline
+   TreeMap<String,VersionID> currentIDs, 
+   TreeMap<String,TreeSet<VersionID>> versions, 
+   TreeMap<String,TreeSet<VersionID>> offline, 
+   TreeMap<String,TreeMap<VersionID,LogMessage>> checkedInMessages
   )
   { 
-    pHeaderLabel.setText(header);
+    pCheckedInMessages.clear();
+    pVersionIDs.clear();
+    pVersionFields.clear(); 
+    
+    pVersionBox.removeAll();
 
-    if((vids == null) || (vids.isEmpty()))  {
-      pVersionIDs.clear(); 
-      
-      ArrayList<String> values = new ArrayList<String>();
-      values.add("-");
-
-      pVersionField.setValues(values);
-
+    if((versions == null) || (versions.isEmpty()))  {
       pConfirmButton.setEnabled(false);
     }
     else {
-      pVersionIDs.clear(); 
-      pVersionIDs.addAll(vids);
-      Collections.reverse(pVersionIDs);
-      
-      pCurrentVersionField.setText("v" + currentID); 
-      
-      ArrayList<String> values = new ArrayList<String>();
-      for(VersionID vid : pVersionIDs) 
-	values.add("v" + vid.toString() + (offline.contains(vid) ? " - Offline" : ""));
-      
-      pVersionField.setValues(values);
-      pVersionField.setSelectedIndex(0);
+      for(String name :versions.keySet()) {
+	ArrayList<VersionID> vids = new ArrayList<VersionID>(versions.get(name));
+	Collections.reverse(vids);
+	pVersionIDs.put(name, vids);
+
+	{
+	  Component comps[] = UIFactory.createTitledPanels();
+	  JPanel tpanel = (JPanel) comps[0];
+	  JPanel vpanel = (JPanel) comps[1];
+
+	  UIFactory.createTitledTextField
+	    (tpanel, "Current Version:", sTSize, 
+	     vpanel, "v" + currentIDs.get(name), sVSize);
+
+	  UIFactory.addVerticalSpacer(tpanel, vpanel, 12);
+
+	  {
+	    ArrayList<String> values = new ArrayList<String>();
+	    for(VersionID vid : vids) {
+	      String extra = "";
+	      {
+		TreeSet<VersionID> ovids = offline.get(name);
+		if((vids != null) && ovids.contains(vid))
+		  extra = " -  Offiline";
+	      }
+
+	      values.add("v" + vid + extra);
+	    }
+
+	    JCollectionField field = 
+	      UIFactory.createTitledCollectionField
+	      (tpanel, "Evolve to Version:", sTSize, 
+	       vpanel, values, this, sVSize, 
+	       "The revision number of the version to evolve.");
+
+	    ArrayList<String> messages = new ArrayList<String>();
+	    {
+	      TreeMap<VersionID,LogMessage> logHistory = checkedInMessages.get(name);
+
+	      if(logHistory != null) {
+		for(VersionID vid : vids) {
+		  LogMessage log = logHistory.get(vid);
+
+		  if(log != null)
+		    messages.add(log.getMessage());
+		  else
+		    messages.add("There is no log message for (" + vid + ")");
+		}
+	      }
+	    }
+
+	    field.setSelectedIndex(0);
+	    field.setToolTipText(UIFactory.formatToolTip(messages.get(0), 4));
+	    field.addActionListener(this);
+	    field.setActionCommand("version-changed");
+
+	    pVersionFields.put(name, field);
+	    pCheckedInMessages.put(field, messages);
+	  }
+
+	  JDrawer drawer = new JDrawer(name + ":", (JComponent) comps[2], true);
+	  pVersionBox.add(drawer);
+	}
+      }
+
+      pVersionBox.add(UIFactory.createFiller(sTSize+sVSize));
+
+      boolean isSingle = (pVersionIDs.size() == 1);
+      pHeaderLabel.setText("Evolve Version " + (isSingle ? ":" : "Multiple Nodes:"));
 
       pConfirmButton.setEnabled(true);
+    }
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   L I S T E N E R S                                                                    */
+  /*----------------------------------------------------------------------------------------*/
+
+  /*-- ACTION LISTENER METHODS -------------------------------------------------------------*/
+
+  /** 
+   * Invoked when an action occurs. 
+   */ 
+  public void 
+  actionPerformed
+  (
+   ActionEvent e
+  ) 
+  {
+    String cmd = e.getActionCommand();
+    if(cmd.equals("version-changed")) {
+      if(e.getSource() instanceof JCollectionField)
+	doVersionChanged((JCollectionField) e.getSource());
+    }
+    else
+      super.actionPerformed(e);
+  }
+
+
+
+  /*----------------------------------------------------------------------------------------*/
+  /*   A C T I O N S                                                                        */
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Change the checked-in log message tool tip.
+   *
+   * @param field
+   *   The source object of the event.
+   */
+  private void
+  doVersionChanged
+  (
+   JCollectionField field
+  )
+  {
+    ArrayList<String> messages = pCheckedInMessages.get(field);
+    if(messages != null) {
+      int idx = field.getSelectedIndex();
+
+      if(idx > -1 && idx < messages.size())
+	field.setToolTipText(UIFactory.formatToolTip(messages.get(idx), 4));
+      else
+	field.setToolTipText(UIFactory.formatToolTip("There is no log message."));
     }
   }
 
@@ -178,17 +289,29 @@ class JEvolveDialog
   /**
    * The revision numbers of the currently checked-in versions of the node.
    */ 
-  private ArrayList<VersionID>  pVersionIDs;
-
-
-  /**
-   * The current revision number field.
-   */ 
-  private JTextField  pCurrentVersionField;
+  private TreeMap<String,ArrayList<VersionID>>  pVersionIDs;
+  
+  
+  /*----------------------------------------------------------------------------------------*/
 
   /**
-   * The field for selecting the revision number.
+   * The box containing all components.
    */ 
-  private JCollectionField  pVersionField; 
+  private Box  pMainBox;
+
+  /**
+   * The box containing the node version components.
+   */ 
+  private Box  pVersionBox;
+
+  /**
+   * The field for selecting the revision number to check-out.
+   */ 
+  private TreeMap<String,JCollectionField>  pVersionFields;
+
+  /**
+   * The checked-in log message history for each revision number.
+   */
+  private Map<JCollectionField,ArrayList<String>>  pCheckedInMessages;
 
 }

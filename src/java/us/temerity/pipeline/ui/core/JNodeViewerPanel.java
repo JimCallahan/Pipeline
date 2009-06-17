@@ -1,4 +1,4 @@
-// $Id: JNodeViewerPanel.java,v 1.133 2009/06/02 20:12:46 jlee Exp $
+// $Id: JNodeViewerPanel.java,v 1.134 2009/06/17 00:00:50 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -267,38 +267,44 @@ class JNodeViewerPanel
       pNodePopup = new JPopupMenu();  
       pNodePopup.addPopupMenuListener(this);
 
-      pViewsContainingMenus = new JMenu[5];
-      pViewsEditingMenus    = new JMenu[5];
-
-      pEditWithMenus = new JMenu[4];
-      
-      pToolMenu = new JMenu[5];
+      pLockedNodePopup = new JPopupMenu();
+      pLockedNodePopup.addPopupMenuListener(this);
 
       JPopupMenu menus[] = { 
 	pUndefinedNodePopup, pPanelLockedNodePopup, pCheckedInNodePopup, 
-	pFrozenNodePopup, pNodePopup 
+	pFrozenNodePopup, pNodePopup, 
+	pLockedNodePopup
       };
       pNodeMenus = menus;
 
-      pFirstRecentIndex     = new int[5];
-      pRecentMenuItems      = new ArrayList<LinkedList<String>>(5);
-      pRecentActionCommands = new ArrayList<TreeMap<String,String>>(5);
+      int numMenus = menus.length;
 
-      pUpdateDetailsItems   = new JPopupMenuItem[5];
-      pUpdateBranchItems    = new JPopupMenuItem[4];
-      pMakeRootItems        = new JPopupMenuItem[5];
-      pAddRootItems         = new JPopupMenuItem[5];
-      pReplaceRootItems     = new JPopupMenuItem[5];
-      pRemoveRootItems      = new JPopupMenuItem[5];
-      pEditItems            = new JPopupMenuItem[4];
-      pEditWithDefaultItems = new JPopupMenuItem[4];
-      pCheckOutItems        = new JPopupMenuItem[3];
-      pLockItems            = new JPopupMenuItem[3];
-      pRestoreItems         = new JPopupMenuItem[3];
-      pReleaseItems         = new JPopupMenuItem[2];
+      pViewsContainingMenus = new JMenu[numMenus];
+      pViewsEditingMenus    = new JMenu[numMenus];
+
+      pEditWithMenus = new JMenu[numMenus - 1];
+      
+      pToolMenu = new JMenu[numMenus];
+
+      pFirstRecentIndex     = new int[numMenus];
+      pRecentMenuItems      = new ArrayList<LinkedList<String>>(numMenus);
+      pRecentActionCommands = new ArrayList<TreeMap<String,String>>(numMenus);
+
+      pUpdateDetailsItems   = new JPopupMenuItem[numMenus];
+      pUpdateBranchItems    = new JPopupMenuItem[numMenus - 1];
+      pMakeRootItems        = new JPopupMenuItem[numMenus];
+      pAddRootItems         = new JPopupMenuItem[numMenus];
+      pReplaceRootItems     = new JPopupMenuItem[numMenus];
+      pRemoveRootItems      = new JPopupMenuItem[numMenus];
+      pEditItems            = new JPopupMenuItem[numMenus - 1];
+      pEditWithDefaultItems = new JPopupMenuItem[numMenus - 1];
+      pCheckOutItems        = new JPopupMenuItem[numMenus - 2];
+      pLockItems            = new JPopupMenuItem[numMenus - 2];
+      pRestoreItems         = new JPopupMenuItem[numMenus - 2];
+      pReleaseItems         = new JPopupMenuItem[numMenus - 3];
 
       int wk;
-      for(wk=0; wk<menus.length; wk++) {
+      for(wk=0; wk<numMenus; wk++) {
 	item = new JPopupMenuItem(menus[wk], "Update Details");
 	pUpdateDetailsItems[wk] = item;
 	item.setActionCommand("details");
@@ -382,6 +388,18 @@ class JNodeViewerPanel
 	  }
 
 	  menus[wk].addSeparator();
+	}
+
+	/* Add clone to Checked In and Frozen node menus. */
+	if((wk == 2) || (wk == 3)) {
+	  JMenu sub = new JMenu("Modify");
+          menus[wk].add(sub);
+
+	  item = new JPopupMenuItem(menus[wk], "Clone...");
+          pCloneItem = item;
+          item.setActionCommand("clone");
+          item.addActionListener(this);
+          sub.add(item);
 	}
 
         if(wk == 4) {
@@ -500,7 +518,7 @@ class JNodeViewerPanel
         }
 
    
-        if((wk == 2) || (wk == 3) || (wk == 4)) {   
+        if((wk == 2) || (wk == 3) || (wk == 4) || (wk == 5)) {   
           JMenu sub = new JMenu("Version");
           menus[wk].add(sub);  
 
@@ -512,7 +530,7 @@ class JNodeViewerPanel
             sub.add(item);
           }
 
-          if((wk == 2) || (wk == 3) || (wk == 4)) {
+          if((wk == 2) || (wk == 3) || (wk == 4) || (wk == 5)) {
             item = new JPopupMenuItem(menus[wk], "Check-Out...");
             pCheckOutItems[wk-2] = item;
             item.setActionCommand("check-out");
@@ -548,7 +566,7 @@ class JNodeViewerPanel
             sub.add(item);
           }
 
-          if((wk == 3) || (wk == 4)) {
+          if((wk == 3) || (wk == 4) || (wk == 5)) {
             sub.addSeparator();
 	  
             item = new JPopupMenuItem(menus[wk], "Release...");
@@ -2857,7 +2875,7 @@ class JNodeViewerPanel
 
 	      updateWorkingAreaMenus();
 	      updateToolMenus();
-	    
+
 	      NodeDetailsLight details = pPrimary.getNodeStatus().getLightDetails();
 	      if(details != null) {
 		if(isLocked()) {
@@ -2870,7 +2888,11 @@ class JNodeViewerPanel
 		}
 		else if(details.getWorkingVersion().isFrozen()) {
                   updateFrozenNodeMenu();
-		  pFrozenNodePopup.show(e.getComponent(), e.getX(), e.getY());
+
+		  if(details.getWorkingVersion().isLocked())
+		    pLockedNodePopup.show(e.getComponent(), e.getX(), e.getY());
+		  else
+		    pFrozenNodePopup.show(e.getComponent(), e.getX(), e.getY());
 		}
 		else {
 		  updateNodeMenu();
@@ -4182,16 +4204,20 @@ class JNodeViewerPanel
 
     if(pPrimary != null) {
       NodeDetailsLight details = pPrimary.getNodeStatus().getLightDetails();
-      if(details != null) {
 
-	NodeMod mod = details.getWorkingVersion();
-	if(mod == null) 
-	  return; 
-	    
+      if(details != null) {
+	NodeCommon node = details.getWorkingVersion();
+	
+	if(node == null)
+	  node = details.getLatestVersion();
+
+	if(node == null)
+	  return;
+
 	if(pCloneDialog == null) 
 	  pCloneDialog = new JCloneDialog(pGroupID, getTopFrame());
 
-	pCloneDialog.updateNode(pAuthor, pView, mod);
+	pCloneDialog.updateNode(pAuthor, pView, node);
 	pCloneDialog.setVisible(true);
 
 	TreeSet<String> names = pCloneDialog.getRegistered();
@@ -4784,12 +4810,16 @@ class JNodeViewerPanel
     TreeMap<String,TreeSet<VersionID>> versions = new TreeMap<String,TreeSet<VersionID>>();
     TreeMap<String,TreeSet<VersionID>> offline  = new TreeMap<String,TreeSet<VersionID>>();
 
+    TreeMap<String,TreeMap<VersionID,LogMessage>> messages = 
+      new TreeMap<String,TreeMap<VersionID,LogMessage>>();
+
     try {
       for(String name : getMostDownstreamOfSelectedNames()) {
         if(!versions.containsKey(name)) {
           try {
             versions.put(name, client.getCheckedInVersionIDs(name));
             offline.put(name, client.getOfflineVersionIDs(name));
+	    messages.put(name, client.getHistory(name));
           }
           catch (PipelineException ex) {
             master.showErrorDialog(ex);
@@ -4805,7 +4835,7 @@ class JNodeViewerPanel
     if(pCheckOutDialog == null) 
       pCheckOutDialog = new JCheckOutDialog(getTopFrame());
 
-    pCheckOutDialog.updateVersions(versions, offline);
+    pCheckOutDialog.updateVersions(versions, offline, messages);
     pCheckOutDialog.setVisible(true);	
     if(pCheckOutDialog.wasConfirmed()) {
       CheckOutTask task = 
@@ -4893,43 +4923,57 @@ class JNodeViewerPanel
     if(warnUnsavedDetailPanelChangesBeforeOp("Evolve")) 
       return;
 
-    if(pPrimary != null) {
-      NodeStatus status = pPrimary.getNodeStatus();
-      NodeDetailsLight details = status.getLightDetails();
-      if(details != null) {
-	NodeMod work = details.getWorkingVersion();
-	if((work != null) && !work.isFrozen()) {
-	  UIMaster master = UIMaster.getInstance();
-	  MasterMgrClient client = master.acquireMasterMgrClient();
+    if(!pSelected.isEmpty()) {
+      UIMaster master = UIMaster.getInstance();
+      MasterMgrClient client = master.acquireMasterMgrClient();
 
-	  TreeSet<VersionID> versions = null;
-	  TreeSet<VersionID> offline  = null;
-	  try {
-	    versions = client.getCheckedInVersionIDs(status.getName());
-	    offline  = client.getOfflineVersionIDs(status.getName());
-	  }
-	  catch (PipelineException ex) {
-	    master.showErrorDialog(ex);
-	    return;
-	  }
-	  finally {
-	    master.releaseMasterMgrClient(client);
-	  }
-	  	
-	  if(pEvolveDialog == null) 
-	    pEvolveDialog = new JEvolveDialog(getTopFrame());
+      TreeMap<String,VersionID> currentIDs = new TreeMap<String,VersionID>();
+      TreeMap<String,TreeSet<VersionID>> versions = new TreeMap<String,TreeSet<VersionID>>();
+      TreeMap<String,TreeSet<VersionID>> offline  = new TreeMap<String,TreeSet<VersionID>>();
 
-	  pEvolveDialog.updateNameVersions
-	    ("Evolve Version:  " + status, work.getWorkingID(), versions, offline);
-	  pEvolveDialog.setVisible(true);
-	  
-	  if(pEvolveDialog.wasConfirmed()) {
-	    VersionID vid = pEvolveDialog.getVersionID();
-	    if(vid != null) {
-	      EvolveTask task = new EvolveTask(status.getName(), vid);
-	      task.start();
+      TreeMap<String,TreeMap<VersionID,LogMessage>> messages = 
+	new TreeMap<String,TreeMap<VersionID,LogMessage>>();
+      
+      try {
+	for(ViewerNode vnode : pSelected.values()) {
+	  String name = vnode.getName();
+	  NodeStatus status = vnode.getNodeStatus();
+	  NodeDetailsLight details = status.getLightDetails();
+	  if(details != null) {
+	    NodeMod work = details.getWorkingVersion();
+	    if((work != null) && !work.isFrozen()) {
+	      if(!versions.containsKey(name)) {
+		try {
+		  currentIDs.put(name, work.getWorkingID());
+		  versions.put(name, client.getCheckedInVersionIDs(name));
+		  offline.put(name, client.getOfflineVersionIDs(name));
+		  messages.put(name, client.getHistory(name));
+		}
+		catch (PipelineException ex) {
+		  master.showErrorDialog(ex);
+		  return;
+		}
+	      }
 	    }
 	  }
+	}
+      }
+      finally {
+	master.releaseMasterMgrClient(client);
+      }
+
+      if(pEvolveDialog == null) 
+	pEvolveDialog = new JEvolveDialog(getTopFrame());
+
+      pEvolveDialog.updateNameVersions
+	(currentIDs, versions, offline, messages);
+      pEvolveDialog.setVisible(true);
+	  
+      if(pEvolveDialog.wasConfirmed()) {
+	TreeMap<String,VersionID> vids = pEvolveDialog.getVersionIDs();
+	if(vids != null) {
+	  EvolveTask task = new EvolveTask(vids);
+	  task.start();
 	}
       }
     }
@@ -6390,8 +6434,14 @@ class JNodeViewerPanel
 	  master.endPanelOp(pGroupID, "Done.");
 	}
 
-	/* After releasing a view set it to the default view. */
-	setAuthorView(pAuthor, "default");
+	/* After releasing a view and "Remove Working Area" is true, 
+	   set it to the default view.  In either case we want to updateRoots(), 
+	   which setAuthorView does in addtion to changing the author|view. */
+	if(pRemoveArea)
+	  setAuthorView(pAuthor, "default");
+	else {
+	  updateRoots();
+	}
       }
     }
 
@@ -6867,14 +6917,12 @@ class JNodeViewerPanel
     public 
     EvolveTask
     (
-     String name, 
-     VersionID vid
+     TreeMap<String,VersionID> versions
     ) 
     {
       super("JNodeViewerPanel:EvolveTask");
 
-      pName      = name; 
-      pVersionID = vid; 
+      pVersions = versions;
     }
 
     @Override
@@ -6882,10 +6930,14 @@ class JNodeViewerPanel
     run() 
     {
       UIMaster master = UIMaster.getInstance();
-      if(master.beginPanelOp(pGroupID, "Evolving Node: " + pName)) {
+      if(master.beginPanelOp(pGroupID)) {
         MasterMgrClient client = master.acquireMasterMgrClient();
 	try {
-	  client.evolve(pAuthor, pView, pName, pVersionID);
+	  for(String name : pVersions.keySet()) {
+	    master.updatePanelOp(pGroupID, "Evolving Node: " + name);
+
+	    client.evolve(pAuthor, pView, name, pVersions.get(name));
+	  }
 	}
 	catch(PipelineException ex) {
 	  master.showErrorDialog(ex);
@@ -6900,8 +6952,7 @@ class JNodeViewerPanel
       }
     }
 
-    private String     pName; 
-    private VersionID  pVersionID; 
+    private TreeMap<String,VersionID>  pVersions;
   }
 
   /** 
@@ -7698,6 +7749,7 @@ class JNodeViewerPanel
   private JPopupMenu  pCheckedInNodePopup; 
   private JPopupMenu  pFrozenNodePopup; 
   private JPopupMenu  pNodePopup; 
+  private JPopupMenu  pLockedNodePopup;
 
   /** 
    * The Node Menus:

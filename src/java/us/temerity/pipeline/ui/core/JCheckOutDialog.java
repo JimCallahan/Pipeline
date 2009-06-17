@@ -1,4 +1,4 @@
-// $Id: JCheckOutDialog.java,v 1.10 2009/03/01 20:52:42 jim Exp $
+// $Id: JCheckOutDialog.java,v 1.11 2009/06/17 00:00:50 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -49,6 +49,8 @@ class JCheckOutDialog
       pVersionFields = new TreeMap<String,JCollectionField>();
       pModeFields    = new TreeMap<String,JCollectionField>();
       pMethodFields  = new TreeMap<String,JCollectionField>();
+
+      pCheckedInMessages = new HashMap<JCollectionField,ArrayList<String>>();
     }
 
     /* create dialog body components */ 
@@ -215,9 +217,11 @@ class JCheckOutDialog
   updateVersions
   (
    TreeMap<String,TreeSet<VersionID>> versions, 
-   TreeMap<String,TreeSet<VersionID>> offline
+   TreeMap<String,TreeSet<VersionID>> offline, 
+   TreeMap<String,TreeMap<VersionID,LogMessage>> checkedInMessages
   )
   {
+    pCheckedInMessages.clear();
     pVersionIDs.clear(); 
     pVersionFields.clear(); 
     pModeFields.clear(); 
@@ -237,7 +241,7 @@ class JCheckOutDialog
 	ArrayList<VersionID> vids = new ArrayList<VersionID>(versions.get(name));
 	Collections.reverse(vids);
 	pVersionIDs.put(name, vids);
-      
+
 	{
 	  Component comps[] = UIFactory.createTitledPanels();
 	  JPanel tpanel = (JPanel) comps[0];
@@ -270,9 +274,29 @@ class JCheckOutDialog
 	       vpanel, values, this, sVSize, 
 	       "The revision number of the version to check-out.");
 
+	    ArrayList<String> messages = new ArrayList<String>();
+	    {
+	      TreeMap<VersionID,LogMessage> logHistory = checkedInMessages.get(name);
+
+	      if(logHistory != null) {
+		for(VersionID vid : vids) {
+		  LogMessage log = logHistory.get(vid);
+
+		  if(log != null)
+		    messages.add(log.getMessage());
+		  else
+		    messages.add("There is no log message for (" + vid + ")");
+		}
+	      }
+	    }
+
 	    field.setSelectedIndex(0);
+	    field.setToolTipText(UIFactory.formatToolTip(messages.get(0), 4));
+	    field.addActionListener(this);
+	    field.setActionCommand("version-changed");
 
 	    pVersionFields.put(name, field);
+	    pCheckedInMessages.put(field, messages);
 	  }
 	  
 	  UIFactory.addVerticalSpacer(tpanel, vpanel, 3);
@@ -344,6 +368,10 @@ class JCheckOutDialog
       doModeChanged();
     else if(cmd.equals("method-changed")) 
       doMethodChanged();
+    else if(cmd.equals("version-changed")) {
+      if(e.getSource() instanceof JCollectionField)
+	doVersionChanged((JCollectionField) e.getSource());
+    }
     else
       super.actionPerformed(e);
   }
@@ -374,6 +402,29 @@ class JCheckOutDialog
     int idx = pMasterMethodField.getSelectedIndex();
     for(JCollectionField field : pMethodFields.values()) 
       field.setSelectedIndex(idx);
+  }
+
+  /**
+   * Change the checked-in log message tool tip.
+   *
+   * @param field
+   *   The source object of the event.
+   */
+  private void
+  doVersionChanged
+  (
+   JCollectionField field
+  )
+  {
+    ArrayList<String> messages = pCheckedInMessages.get(field);
+    if(messages != null) {
+      int idx = field.getSelectedIndex();
+
+      if(idx > -1 && idx < messages.size())
+	field.setToolTipText(UIFactory.formatToolTip(messages.get(idx), 4));
+      else
+	field.setToolTipText(UIFactory.formatToolTip("There is no log message."));
+    }
   }
 
 
@@ -433,5 +484,10 @@ class JCheckOutDialog
    */
   private JCollectionField                  pMasterMethodField;
   private TreeMap<String,JCollectionField>  pMethodFields;
+
+  /**
+   * The checked-in log message history for each revision number.
+   */
+  private Map<JCollectionField,ArrayList<String>>  pCheckedInMessages;
 
 }

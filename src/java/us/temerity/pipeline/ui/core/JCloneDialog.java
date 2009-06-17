@@ -1,4 +1,4 @@
-// $Id: JCloneDialog.java,v 1.23 2009/06/04 09:12:10 jim Exp $
+// $Id: JCloneDialog.java,v 1.24 2009/06/17 00:00:50 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -232,12 +232,12 @@ class JCloneDialog
   (
    String author, 
    String view, 
-   NodeMod mod
+   NodeCommon node
   )
   {  
-    pAuthor  = author; 
-    pView    = view; 
-    pNodeMod = mod; 
+    pAuthor = author; 
+    pView   = view; 
+    pNode   = node; 
 
     synchronized(pRegistered) {
       pRegistered.clear();
@@ -246,9 +246,9 @@ class JCloneDialog
     pFileSeqDialog.updateHeader(author, view);
     pRootPath = new Path(PackageInfo.sWorkPath, author + "/" + view);
 
-    pPrefixField.setPath(new Path(pNodeMod.getName()));
+    pPrefixField.setPath(new Path(pNode.getName()));
 
-    FileSeq fseq = pNodeMod.getPrimarySequence();
+    FileSeq fseq = pNode.getPrimarySequence();
     if(fseq.hasFrameNumbers()) {
       pFrameNumbersField.setText("YES");
       
@@ -281,10 +281,50 @@ class JCloneDialog
     pFileModeField.setText(fseq.isSingle() ? "Single File" : "File Sequence");
     pFrameNumbersField.setText(fseq.hasFrameNumbers() ? "YES" : "no");
 
-    updateFileSeq(pNodeMod.getPrimarySequence());
+    updateFileSeq(pNode.getPrimarySequence());
 
-    pCopyFilesField.setValue(true);
-    pExportPanel.updateNode(mod);
+    /* If the NodeCommon is an instance of NodeMod proceeed as normal.  
+       Else, there is no working version of the node and need to obtain a 
+       NodeTreeComp to determine the status of the sources. */
+    if(pNode instanceof NodeMod) {
+      pCopyFilesField.setValue(true);
+      pExportPanel.updateNode(pNode);
+    }
+    else {
+      pCopyFilesField.setValue(false);
+      pCopyFilesField.setEnabled(false);
+
+      UIMaster master = UIMaster.getInstance();
+      MasterMgrClient client = master.acquireMasterMgrClient();
+
+      NodeTreeComp workingSources = null;
+      try {
+	TreeMap<String,Boolean> paths = new TreeMap<String,Boolean>();
+	for(String sname : pNode.getSourceNames())
+	  paths.put(sname, false);
+
+	workingSources = client.updatePaths(pAuthor, pView, paths);
+      }
+      catch(PipelineException ex) {
+	/* Handling an error from updatePaths could be better.  Since the clone 
+	   operation actually performs the clone, rather than let JNodeViewerPanel, 
+	   how to let JNodeViewerPanel know of an error and cancel the setVisible call. */
+	showErrorDialog
+	  ("Error:", 
+	   "Unable to determine the status of the sources of node " + 
+	   "(" + pNode.getName() + ").  " + 
+	   "Please report this error to the Pipeline forum: " + 
+	   Exceptions.getFullMessage(ex));
+	
+	workingSources = null;
+	return;
+      }
+      finally {
+	master.releaseMasterMgrClient(client);
+      }
+
+      pExportPanel.updateNode(pNode, workingSources);
+    }
 
     pack();
   }
@@ -301,7 +341,7 @@ class JCloneDialog
     FilePattern fpat = fseq.getFilePattern();
     FrameRange frange = fseq.getFrameRange();
     
-    FileSeq ofseq = pNodeMod.getPrimarySequence();
+    FileSeq ofseq = pNode.getPrimarySequence();
     if(fseq.hasFrameNumbers() && ofseq.hasFrameNumbers()) {
       if(fseq.isSingle() && ofseq.isSingle()) {
 	pStartFrameField.setValue(frange.getStart());
@@ -485,7 +525,7 @@ class JCloneDialog
       if((suffix != null) && (suffix.length() == 0)) 
 	suffix = null;
       
-      FileSeq ofseq = pNodeMod.getPrimarySequence();
+      FileSeq ofseq = pNode.getPrimarySequence();
 
       FilePattern fpat = null;
       if(ofseq.hasFrameNumbers()) {
@@ -558,13 +598,13 @@ class JCloneDialog
         /* node properties */ 
         BaseEditor editor = null;
         if(pExportPanel.exportEditor()) 
-          editor = pNodeMod.getEditor();
+          editor = pNode.getEditor();
         else if(suffix != null) 
           editor = client.getEditorForSuffix(suffix);
 
         String toolset = null;
         if(pExportPanel.exportToolset()) 
-          toolset = pNodeMod.getToolset();
+          toolset = pNode.getToolset();
         else 
           toolset = client.getDefaultToolsetName();
         mod = new NodeMod(name, primary, new TreeSet<FileSeq>(), toolset, editor);
@@ -603,13 +643,27 @@ class JCloneDialog
       /* upstream links */ 
       {
         boolean addedLinks = false;
-        for(String source : pNodeMod.getSourceNames()) {
+        for(String source : pNode.getSourceNames()) {
           if(pExportPanel.exportSource(source)) {
-            LinkMod link = pNodeMod.getSource(source);
-            client.link(pAuthor, pView, name, source, 
-                        link.getPolicy(), link.getRelationship(), 
-                        link.getFrameOffset());
-            addedLinks = true;
+	    LinkCommon link = null;
+
+	    if(pNode instanceof NodeMod) {
+	      NodeMod node = (NodeMod) pNode;
+
+	      link = node.getSource(source);
+	    }
+	    else if(pNode instanceof NodeVersion) {
+	      NodeVersion node = (NodeVersion) pNode;
+
+	      link = node.getSource(source);
+	    }
+
+	    if(link != null) {
+	      client.link(pAuthor, pView, name, source, 
+                          link.getPolicy(), link.getRelationship(), 
+                          link.getFrameOffset());
+	      addedLinks = true;
+	    }
           }
         }
 
@@ -621,7 +675,7 @@ class JCloneDialog
       /* actions */ 
       BaseAction action = null;
       {
-        BaseAction oaction = pNodeMod.getAction(); 
+        BaseAction oaction = pNode.getAction(); 
         if((oaction != null) && pExportPanel.exportAction()) {
 
           /* the action and parameters */ 
@@ -644,7 +698,7 @@ class JCloneDialog
 
           /* action enabled */ 
           if(pExportPanel.exportActionEnabled()) 
-            mod.setActionEnabled(pNodeMod.isActionEnabled()); 
+            mod.setActionEnabled(pNode.isActionEnabled()); 
         }
       }
 
@@ -652,20 +706,20 @@ class JCloneDialog
         /* execution details */ 
         {
           if(pExportPanel.exportOverflowPolicy()) 
-            mod.setOverflowPolicy(pNodeMod.getOverflowPolicy());
+            mod.setOverflowPolicy(pNode.getOverflowPolicy());
 
           if(pExportPanel.exportExecutionMethod()) 
-            mod.setExecutionMethod(pNodeMod.getExecutionMethod());
+            mod.setExecutionMethod(pNode.getExecutionMethod());
 
           if(pExportPanel.exportBatchSize() && 
-            (pNodeMod.getExecutionMethod() == ExecutionMethod.Parallel))
-            mod.setBatchSize(pNodeMod.getBatchSize());
+            (pNode.getExecutionMethod() == ExecutionMethod.Parallel))
+            mod.setBatchSize(pNode.getBatchSize());
         }
 
         /* job requirements */ 
         {
           JobReqs jreqs = mod.getJobRequirements();
-          JobReqs ojreqs = pNodeMod.getJobRequirements();
+          JobReqs ojreqs = pNode.getJobRequirements();
 
           if(pExportPanel.exportPriority()) 
             jreqs.setPriority(ojreqs.getPriority());
@@ -709,7 +763,7 @@ class JCloneDialog
       
       /* Do the per-version annotations*/
       {
-        TreeMap<String, BaseAnnotation> annots = pNodeMod.getAnnotations();
+        TreeMap<String, BaseAnnotation> annots = pNode.getAnnotations();
         for (String aname : annots.keySet()) {
           if (pExportPanel.exportVersionAnnotation(aname)) {
             BaseAnnotation an = annots.get(aname);
@@ -733,7 +787,7 @@ class JCloneDialog
 
       /* Do the per-node annotations */
       {
-        TreeMap<String, BaseAnnotation> annots = client.getAnnotations(pNodeMod.getName());
+        TreeMap<String, BaseAnnotation> annots = client.getAnnotations(pNode.getName());
         for (String aname : annots.keySet()) {
           if (pExportPanel.exportNodeAnnotation(aname)) {
             BaseAnnotation an = annots.get(aname);
@@ -754,7 +808,7 @@ class JCloneDialog
 
       /* copy the files */ 
       if(pCopyFilesField.getValue()) {
-        client.cloneFiles(new NodeID(pAuthor, pView, pNodeMod.getName()), 
+        client.cloneFiles(new NodeID(pAuthor, pView, pNode.getName()), 
                           new NodeID(pAuthor, pView, mod.getName()));
       }
     }
@@ -863,7 +917,7 @@ class JCloneDialog
   /**
    * The original working node version being cloned.
    */ 
-  private NodeMod  pNodeMod; 
+  private NodeCommon  pNode; 
 
   /**
    * The names of the registered nodes.

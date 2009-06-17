@@ -1,4 +1,4 @@
-// $Id: UIFactory.java,v 1.34 2009/06/16 21:56:08 jesse Exp $
+// $Id: UIFactory.java,v 1.35 2009/06/17 00:00:50 jlee Exp $
 
 package us.temerity.pipeline.ui;
 
@@ -4266,18 +4266,66 @@ class UIFactory
    String text
   ) 
   {
+    return formatToolTip(text, Integer.MAX_VALUE);
+  }
+
+  /**
+   * Formats tool tip text as HTML, breaking up long tool tips into multiple lines. 
+   * 
+   * @param text 
+   *   The unformatted tool tip text.
+   *
+   * @param numLines
+   *   The maximum number of lines of tool tip text to display.
+   */
+  public static String
+  formatToolTip
+  (
+   String text, 
+   int numLines
+  )
+  {
+    return formatToolTip(text, numLines, 85);
+  }
+
+  /**
+   * Formats tool tip text as HTML, breaking up long tool tips into multiple lines. 
+   * 
+   * @param text 
+   *   The unformatted tool tip text.
+   *
+   * @param numLines
+   *   The maximum number of lines of tool tip text to display.
+   *
+   * @param numChars
+   *   The maximum number of characters to display in a line, however words will
+   *   not be broken up.
+   */
+  public static String
+  formatToolTip
+  (
+   String text, 
+   int numLines, 
+   int numChars
+  )
+  {
     if(text == null) 
       return null;
 
-    int line = 85;
+    int line = numChars;
+
     if(text.length() < line) {
       return ("<html><font color=\"#000000\">" + text + "</font></html>");
     }
     else {
+      int lineCount = 0;
+
       StringBuilder buf = new StringBuilder();
       buf.append("<html><font color=\"#000000\">");
+      
       int wk, cnt;
       String words[] = text.split("\\s");
+      
       for(wk=0, cnt=0; wk<words.length; wk++) {
 	int wlen = words[wk].length();
 	if(wlen > 0) {
@@ -4290,8 +4338,18 @@ class UIFactory
 	    cnt += wlen + 1;
 	  }
 	  else {
-	    buf.append("<br>" + words[wk]);
-	    cnt = wlen;
+	    lineCount++;
+
+	    if(lineCount < numLines) {
+	      buf.append("<br>");
+	      buf.append(words[wk]);
+	      cnt = wlen;
+	    }
+	    else {
+	      buf.append(" ...");
+	      buf.append("<br>");
+	      break;
+	    }
 	  }
 	}
       }
@@ -4393,7 +4451,7 @@ class UIFactory
   /*----------------------------------------------------------------------------------------*/
 
   /**
-   *
+   * Retrieve the current beep preference setting.
    */
   public static boolean
   getBeepPreference()
@@ -4402,19 +4460,22 @@ class UIFactory
   }
 
   /**
+   * Set the beep boolean preference.
    *
+   * @param beep
+   *   The beep boolean preference.
    */
   public static void
   setBeepPreference
   (
-   boolean v
+   boolean beep
   )
   {
-    pBeepPreference.set(v);
+    pBeepPreference.set(beep);
   }
 
   /**
-   *
+   * Beep preference boolean.
    */
   private static AtomicBoolean  pBeepPreference = new AtomicBoolean();
 

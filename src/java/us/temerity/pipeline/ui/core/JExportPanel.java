@@ -1,4 +1,4 @@
-// $Id: JExportPanel.java,v 1.11 2009/05/23 03:58:29 jesse Exp $
+// $Id: JExportPanel.java,v 1.12 2009/06/17 00:00:50 jlee Exp $
 
 package us.temerity.pipeline.ui.core;
 
@@ -531,12 +531,46 @@ class JExportPanel
   /**
    * Update the selection fields.
    */ 
+  public void
+  updateNode
+  (
+   NodeCommon node
+  )
+  {
+    updateNode(node, null);
+  }
+
   public void 
   updateNode
   (
-   NodeMod mod
+   NodeCommon node, 
+   NodeTreeComp workingSources
   )
   { 
+    /* Since this method has been generalized to use a NodeCommon object 
+       to handle cloning of checked-in nodes (see JCloneDialog), the field 
+       pWorkingVersion contains true if the NodeCommon is a NodeMod, else 
+       false for a NodeVersion.
+       
+       In the case of cloning a checked-in node only sources with a working 
+       version can be exported, so we need to rely on a NodeTreeComp object 
+       to determine if working versions of the sources exist. */
+    {
+      if(node instanceof NodeMod) {
+	pHasWorkingVersion = true;
+	pWorkingSources = null;
+      }
+      else {
+	pHasWorkingVersion = false;
+	pWorkingSources = workingSources;
+      }
+
+      /* The commented code is equivalent to the if-else block above, 
+         but I think it is less clear. */
+      //pHasWorkingVersion = (node instanceof NodeMod);
+      //pWorkingsources = workingSources;
+    }
+
     pExportAllField.setValue(false);
 
     /* properties panel */ 
@@ -559,7 +593,7 @@ class JExportPanel
       
       pActionParamFields.clear();
       pActionSourceParamsField = null;
-      BaseAction action = mod.getAction();
+      BaseAction action = node.getAction();
       if((action == null) || (!action.hasSingleParams() && !action.supportsSourceParams())) {
 	tpanel.add(Box.createRigidArea(new Dimension(pTSize, 0)));
 	vpanel.add(Box.createHorizontalGlue());
@@ -752,7 +786,7 @@ class JExportPanel
     {
       pSourceFields.clear();
       
-      if(mod.hasSources()) {
+      if(node.hasSources()) {
 	Box hbox = new Box(BoxLayout.X_AXIS);
 
 	hbox.addComponentListener(this);
@@ -761,7 +795,7 @@ class JExportPanel
 	{
 	  Box vbox = new Box(BoxLayout.Y_AXIS);
 	  
-	  for(String sname : mod.getSourceNames()) {
+	  for(String sname : node.getSourceNames()) {
 	    Component comps[] = UIFactory.createTitledPanels();
 	    {
 	      JPanel tpanel = (JPanel) comps[0];
@@ -771,6 +805,30 @@ class JExportPanel
 		UIFactory.createTitledBooleanField(tpanel, "Export Link:", pTSize-14, 
 						  vpanel, pVSize);
 	      field.setValue(false);
+
+	      /* If we are displaying source information from a checked-in node, 
+	         disable the JBooleanField if there is no working version. */
+	      if(!pHasWorkingVersion) {
+		if(pWorkingSources != null) {
+		  NodeTreeComp.State nstate = pWorkingSources.getState(sname);
+
+		  if(nstate != null) {
+		    switch(nstate) {
+		      case WorkingCurrentCheckedInSome:
+		      case WorkingCurrentCheckedInNone:
+			break;
+		      default:
+			field.setEnabled(false);
+		    }
+		  }
+		  else {
+		    field.setEnabled(false);
+		  }
+		}
+		else {
+		  field.setEnabled(false);
+		}
+	      }
 
 	      pSourceFields.put(sname, field);
 	    }
@@ -805,7 +863,7 @@ class JExportPanel
       MasterMgrClient mclient = master.acquireMasterMgrClient();
       TreeMap<String, BaseAnnotation> annots = new TreeMap<String, BaseAnnotation>();
       try {
-        annots = mclient.getAnnotations(mod.getName());
+        annots = mclient.getAnnotations(node.getName());
       }
       catch (PipelineException ex) {
 	master.showErrorDialog(ex);
@@ -863,7 +921,7 @@ class JExportPanel
     /* Per-Version annotations*/
     {
       pVersionAnnotationFields.clear();
-      TreeMap<String, BaseAnnotation> annots = mod.getAnnotations();
+      TreeMap<String, BaseAnnotation> annots = node.getAnnotations();
 
       if(!annots.isEmpty()) {
         Box hbox = new Box(BoxLayout.X_AXIS);
@@ -1035,9 +1093,13 @@ class JExportPanel
     
     for(JBooleanField field : pHardwareKeyFields.values()) 
       field.setValue(exportAll);
-    
-    for(JBooleanField field : pSourceFields.values()) 
-      field.setValue(exportAll);
+   
+    for(String sname : pSourceFields.keySet()) {
+      JBooleanField field = pSourceFields.get(sname);
+
+      if(field.isEnabled())
+	field.setValue(exportAll);
+    }
     
     for (JBooleanField field : pNodeAnnotationFields.values())
       field.setValue(exportAll);
@@ -1234,7 +1296,7 @@ class JExportPanel
   /**
    * Whether to export each per-node annotation indexed by the name of the annotation.
    */
-  private TreeMap<String, JBooleanField> pNodeAnnotationFields;
+  private TreeMap<String,JBooleanField> pNodeAnnotationFields;
 
   /*----------------------------------------------------------------------------------------*/
 
@@ -1246,5 +1308,18 @@ class JExportPanel
   /**
    * Whether to export each per-version annotation indexed by the name of the annotation.
    */
-  private TreeMap<String, JBooleanField> pVersionAnnotationFields;
+  private TreeMap<String,JBooleanField> pVersionAnnotationFields;
+
+  /*----------------------------------------------------------------------------------------*/
+
+  /**
+   * Whether the NodeCommon passed to updateNode is a NodeMod or a NodeVersion.
+   */
+  private boolean  pHasWorkingVersion;
+
+  /**
+   * If there is no working version of the node, the NodeTreeComp contains 
+     the status of the sources associated with the NodeVersion.
+   */
+  private NodeTreeComp  pWorkingSources;
 }
